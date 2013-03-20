@@ -127,7 +127,7 @@ void setNonEmptyRowsBySizesTest( ContextPtr loc )
     {
         HostReadAccess<IndexType> rRowIndexes( rowIndexes );
 
-        for( int i = 0; i < numNonEmptyRows; ++i )
+        for ( int i = 0; i < numNonEmptyRows; ++i )
         {
             BOOST_CHECK_EQUAL( valuesResult[i], rRowIndexes[i] );
         }
@@ -363,7 +363,7 @@ void getRowTest( ContextPtr loc )
 
         HostReadAccess<OtherValueType> rRow( row );
 
-        for( IndexType i = 0; i < numColumns; i++ )
+        for ( IndexType i = 0; i < numColumns; i++ )
         {
             BOOST_CHECK_EQUAL( expectedValues[i], rRow[i] );
         }
@@ -405,7 +405,7 @@ void getRowTest( ContextPtr loc )
 
         HostReadAccess<OtherValueType> rRow( row );
 
-        for( IndexType i = 0; i < numColumns; i++ )
+        for ( IndexType i = 0; i < numColumns; i++ )
         {
             BOOST_CHECK_EQUAL( expectedValues[i], rRow[i] );
         }
@@ -443,9 +443,9 @@ void getValueTest( ContextPtr loc )
 
     LAMA_CONTEXT_ACCESS( loc );
 
-    for( IndexType i = 0; i < numRows; i++ )
+    for ( IndexType i = 0; i < numRows; i++ )
     {
-        for( IndexType j = 0; j < valuesIa[i]; j++ )
+        for ( IndexType j = 0; j < valuesIa[i]; j++ )
         {
             OtherValueType result = getValue( i, j, numRows, rIa.get(), rJa.get(), rValues.get() );
             BOOST_CHECK_EQUAL( expectedValues[j * numRows + i], result );
@@ -491,7 +491,7 @@ void scaleValueTest( ContextPtr loc )
 
     HostReadAccess<ValueType> rEllValues( ellValues );
 
-    for( IndexType i = 0; i < nValues; i++ )
+    for ( IndexType i = 0; i < nValues; i++ )
     {
         BOOST_CHECK_EQUAL( expectedValues[i], rEllValues[i] );
     }
@@ -550,7 +550,7 @@ void getCSRValuesTest( ContextPtr loc )
     HostReadAccess<IndexType> rCSRJa( csrJa );
     HostReadAccess<OtherValueType> rCSRValues( csrValues );
 
-    for( IndexType i = 0; i < nCSRValues; i++ )
+    for ( IndexType i = 0; i < nCSRValues; i++ )
     {
         BOOST_CHECK_EQUAL( expectedCSRJa[i], rCSRJa[i] );
         BOOST_CHECK_EQUAL( expectedCSRValues[i], rCSRValues[i] );
@@ -612,7 +612,7 @@ void setCSRValuesTest( ContextPtr loc )
     HostReadAccess<IndexType> rELLJa( ellJa );
     HostReadAccess<OtherValueType> rELLValues( ellValues );
 
-    for( IndexType i = 0; i < nELLValues; i++ )
+    for ( IndexType i = 0; i < nELLValues; i++ )
     {
         BOOST_CHECK_EQUAL( expectedELLJa[i], rELLJa[i] );
         BOOST_CHECK_EQUAL( expectedELLValues[i], rELLValues[i] );
@@ -663,7 +663,7 @@ void compressIATest( ContextPtr loc )
 
         HostReadAccess<IndexType> rNewELLIa( newEllIa );
 
-        for( IndexType i = 0; i < nELLIa; i++ )
+        for ( IndexType i = 0; i < nELLIa; i++ )
         {
             BOOST_CHECK_EQUAL( expectedELLIa[i], rNewELLIa[i] );
         }
@@ -706,7 +706,7 @@ void compressIATest( ContextPtr loc )
 
         HostReadAccess<IndexType> rNewELLIa( newEllIa );
 
-        for( IndexType i = 0; i < nELLIa; i++ )
+        for ( IndexType i = 0; i < nELLIa; i++ )
         {
             BOOST_CHECK_EQUAL( expectedELLIa[i], rNewELLIa[i] );
         }
@@ -749,7 +749,7 @@ void compressIATest( ContextPtr loc )
 
         HostReadAccess<IndexType> rNewELLIa( newEllIa );
 
-        for( IndexType i = 0; i < nELLIa; i++ )
+        for ( IndexType i = 0; i < nELLIa; i++ )
         {
             BOOST_CHECK_EQUAL( expectedELLIa[i], rNewELLIa[i] );
         }
@@ -807,7 +807,7 @@ void compressValuesTest( ContextPtr loc )
         HostReadAccess<ValueType> rNewELLValues( newEllValues );
         HostReadAccess<IndexType> rNewELLJa( newEllJa );
 
-        for( IndexType i = 0; i < numValues; i++ )
+        for ( IndexType i = 0; i < numValues; i++ )
         {
             BOOST_CHECK_EQUAL( expectedELLValues[i], rNewELLValues[i] );
             BOOST_CHECK_EQUAL( expectedELLJa[i], rNewELLJa[i] );
@@ -858,7 +858,7 @@ void compressValuesTest( ContextPtr loc )
         HostReadAccess<ValueType> rNewELLValues( newEllValues );
         HostReadAccess<IndexType> rNewELLJa( newEllJa );
 
-        for( IndexType i = 0; i < numValues; i++ )
+        for ( IndexType i = 0; i < numValues; i++ )
         {
             BOOST_CHECK_EQUAL( expectedELLValues[i], rNewELLValues[i] );
             BOOST_CHECK_EQUAL( expectedELLJa[i], rNewELLJa[i] );
@@ -909,7 +909,7 @@ void compressValuesTest( ContextPtr loc )
         HostReadAccess<ValueType> rNewELLValues( newEllValues );
         HostReadAccess<IndexType> rNewELLJa( newEllJa );
 
-        for( IndexType i = 0; i < numValues; i++ )
+        for ( IndexType i = 0; i < numValues; i++ )
         {
             BOOST_CHECK_EQUAL( expectedELLValues[i], rNewELLValues[i] );
             BOOST_CHECK_EQUAL( expectedELLJa[i], rNewELLJa[i] );
@@ -962,7 +962,7 @@ void computeIATest( ContextPtr loc )
 
         HostReadAccess<IndexType> rCIa( CIa );
 
-        for( IndexType i = 0; i < numValues; i++ )
+        for ( IndexType i = 0; i < numValues; i++ )
         {
             BOOST_CHECK_EQUAL( expectedCIa[i], rCIa[i] );
         }
@@ -1008,7 +1008,7 @@ void computeIATest( ContextPtr loc )
 
         HostReadAccess<IndexType> rCIa( CIa );
 
-        for( IndexType i = 0; i < numValues; i++ )
+        for ( IndexType i = 0; i < numValues; i++ )
         {
             BOOST_CHECK_EQUAL( expectedCIa[i], rCIa[i] );
         }
@@ -1083,7 +1083,7 @@ void computeValuesTest( ContextPtr loc )
         HostReadAccess<ValueType> rCValues( CValues );
         HostReadAccess<IndexType> rCJa( CJa );
 
-        for( IndexType i = 0; i < numValues; i++ )
+        for ( IndexType i = 0; i < numValues; i++ )
         {
             BOOST_CHECK_EQUAL( expectedCValues[i], rCValues[i] );
             BOOST_CHECK_EQUAL( expectedCJa[i], rCJa[i] );
@@ -1153,7 +1153,7 @@ void computeValuesTest( ContextPtr loc )
         HostReadAccess<ValueType> rCValues( CValues );
         HostReadAccess<IndexType> rCJa( CJa );
 
-        for( IndexType i = 0; i < numValues; i++ )
+        for ( IndexType i = 0; i < numValues; i++ )
         {
             BOOST_CHECK_EQUAL( expectedCValues[i]*alpha, rCValues[i] );
             BOOST_CHECK_EQUAL( expectedCJa[i], rCJa[i] );
@@ -1223,7 +1223,7 @@ void computeValuesTest( ContextPtr loc )
         HostReadAccess<ValueType> rCValues( CValues );
         HostReadAccess<IndexType> rCJa( CJa );
 
-        for( IndexType i = 0; i < numValues; i++ )
+        for ( IndexType i = 0; i < numValues; i++ )
         {
             BOOST_CHECK_EQUAL( expectedCValues[i], rCValues[i] );
             BOOST_CHECK_EQUAL( expectedCJa[i], rCJa[i] );
@@ -1275,7 +1275,7 @@ void addComputeIATest( ContextPtr loc )
 
         HostReadAccess<IndexType> rCIa( CIa );
 
-        for( IndexType i = 0; i < numValues; i++ )
+        for ( IndexType i = 0; i < numValues; i++ )
         {
             BOOST_CHECK_EQUAL( expectedCIa[i], rCIa[i] );
         }
@@ -1350,7 +1350,7 @@ void addComputeValuesTest( ContextPtr loc )
         HostReadAccess<ValueType> rCValues( CValues );
         HostReadAccess<IndexType> rCJa( CJa );
 
-        for( IndexType i = 0; i < numValues; i++ )
+        for ( IndexType i = 0; i < numValues; i++ )
         {
             BOOST_CHECK_EQUAL( expectedCValues[i], rCValues[i] );
             BOOST_CHECK_EQUAL( expectedCJa[i], rCJa[i] );
@@ -1420,7 +1420,7 @@ void addComputeValuesTest( ContextPtr loc )
         HostReadAccess<ValueType> rCValues( CValues );
         HostReadAccess<IndexType> rCJa( CJa );
 
-        for( IndexType i = 0; i < numValues; i++ )
+        for ( IndexType i = 0; i < numValues; i++ )
         {
             BOOST_CHECK_EQUAL( expectedCValues[i], rCValues[i] );
             BOOST_CHECK_EQUAL( expectedCJa[i], rCJa[i] );

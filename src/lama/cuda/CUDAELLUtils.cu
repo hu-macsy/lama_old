@@ -98,7 +98,7 @@ struct notEqual
     __host__ __device__
     T operator()( const IndexType& value, const IndexType& index )
     {
-        if( value > x )
+        if ( value > x )
         {
             return index;
         }
@@ -130,7 +130,7 @@ struct identity
     __host__ __device__
     double operator()( thrust::tuple<T,T> x )
     {
-        return thrust::get<0>( x ) == thrust::get<1>( x );
+        return thrust::get < 0 > ( x ) == thrust::get < 1 > ( x );
     }
 };
 
@@ -201,7 +201,7 @@ bool CUDAELLUtils::hasDiagonalProperty( const IndexType numDiagonals, const Inde
     thrust::device_ptr<IndexType> ellJA_ptr( const_cast<IndexType*>( ellJA ) );
     thrust::counting_iterator<IndexType> sequence( 0 );
 
-    if( numDiagonals > 0 )
+    if ( numDiagonals > 0 )
     {
         bool diagonalProperty = thrust::transform_reduce(
                                     thrust::make_zip_iterator( thrust::make_tuple( ellJA_ptr, sequence ) ),
@@ -231,13 +231,13 @@ void checkKernel(
     bool *result )
 {
     const int i = threadId( gridDim, blockIdx, blockDim, threadIdx );
-    if( i < mNumRows )
+    if ( i < mNumRows )
     {
         // check ia integrity
         result[i] = ( ia[i] <= mNumValuesPerRow );
 
         // check ja integrity
-        for( IndexType jj = 0; jj < ia[i]; jj++ )
+        for ( IndexType jj = 0; jj < ia[i]; jj++ )
         {
             IndexType j = ja[jj * mNumRows + i];
             bool jaIntegrity = ( j >= 0 && j < mNumColumns );
@@ -260,7 +260,7 @@ void CUDAELLUtils::check(
     LAMA_CHECK_CUDA_ACCESS
     ;
 
-    if( mNumRows > 0 )
+    if ( mNumRows > 0 )
     {
         thrust::device_ptr<bool> resultPtr = thrust::device_malloc<bool>( mNumRows );
         thrust::fill( resultPtr, resultPtr + mNumRows, false );
@@ -306,7 +306,7 @@ void getRowKernel(
 {
     const int jj = threadId( gridDim, blockIdx, blockDim, threadIdx );
 
-    if( jj < rowNumColumns )
+    if ( jj < rowNumColumns )
     {
         IndexType pos = jj * numRows + i;
         row[ja[pos]] = static_cast<OtherValueType>( values[pos] );
@@ -363,10 +363,10 @@ void getValueKernel(
 {
     const int jj = threadId( gridDim, blockIdx, blockDim, threadIdx );
 
-    if( jj < rowNumColumns )
+    if ( jj < rowNumColumns )
     {
         IndexType pos = jj * numRows + i;
-        if( ja[pos] == j )
+        if ( ja[pos] == j )
         {
             result[jj] = values[pos];
         }
@@ -392,9 +392,9 @@ OtherValueType CUDAELLUtils::getValue(
 
     IndexType rowNumColumns = rowNumColumnsVec[0];
 
-    if( rowNumColumns > 0 )
+    if ( rowNumColumns > 0 )
     {
-        thrust::device_ptr<ValueType> resultPtr = thrust::device_malloc<ValueType>( rowNumColumns );
+        thrust::device_ptr<ValueType> resultPtr = thrust::device_malloc < ValueType > ( rowNumColumns );
         thrust::fill( resultPtr, resultPtr + rowNumColumns, 0.0 );
 
         ValueType *resultRawPtr = thrust::raw_pointer_cast( resultPtr );
@@ -439,7 +439,7 @@ void CUDAELLUtils::scaleValue(
     IndexType maxCols = CUDAUtils::maxval( ia, numRows );
 
     //TODO: maybe find better implementation
-    for( IndexType i = 0; i < maxCols; i++ )
+    for ( IndexType i = 0; i < maxCols; i++ )
     {
         thrust::transform( mValues_ptr + i * numRows, mValues_ptr + i * numRows + numRows, values_ptr,
                            mValues_ptr + i * numRows, multiply<ValueType,OtherValueType>() );
@@ -465,12 +465,12 @@ void ell2csrKernel(
 
     const int i = threadId( gridDim, blockIdx, blockDim, threadIdx );
 
-    if( i < numRows )
+    if ( i < numRows )
     {
         IndexType rowSize = ellIa[i];
         IndexType offset = csrIa[i];
 
-        for( IndexType jj = 0; jj < rowSize; ++jj )
+        for ( IndexType jj = 0; jj < rowSize; ++jj )
         {
             IndexType pos = jj * numRows + i;
             csrJa[offset + jj] = ellJa[pos];
@@ -527,12 +527,12 @@ void csr2ellKernel(
 {
     const int i = threadId( gridDim, blockIdx, blockDim, threadIdx );
 
-    if( i < n )
+    if ( i < n )
     {
         int ellOffset = i;
         int lastJ = 0;
 
-        for( int jj = csr_ia[i]; jj < csr_ia[i + 1]; ++jj )
+        for ( int jj = csr_ia[i]; jj < csr_ia[i + 1]; ++jj )
         {
             lastJ = csr_ja[jj];
             ell_ja[ellOffset] = lastJ;
@@ -542,7 +542,7 @@ void csr2ellKernel(
 
         // fill in useful values until length of line
 
-        for( int jj = ell_ia[i]; jj < ellNumValuesPerRow; ++jj )
+        for ( int jj = ell_ia[i]; jj < ellNumValuesPerRow; ++jj )
         {
             ell_ja[ellOffset] = lastJ;
             ell_values[ellOffset] = 0.0;
@@ -593,7 +593,7 @@ texture<float,1> texELLSXref;
 texture<int2,1> texELLDXref;
 
 template<typename T,bool useTexture>
-__inline__    __device__ T fetch_ELLx( const T* const x, const int i )
+__inline__     __device__ T fetch_ELLx( const T* const x, const int i )
 {
     return x[i];
 }
@@ -628,17 +628,17 @@ void ell_agemvpbv_kernel(
 {
     const int i = threadId( gridDim, blockIdx, blockDim, threadIdx );
 
-    if( i < n )
+    if ( i < n )
     {
         T summand = 0.0;
-        if( beta != 0.0 )
+        if ( beta != 0.0 )
         {
             summand = beta * z_d[i];
         }
 
         T value = 0.0;
         int pos = i;
-        for( int kk = 0; kk < ellNumValuesPerRow; ++kk )
+        for ( int kk = 0; kk < ellNumValuesPerRow; ++kk )
         {
             //if (aValue != 0.0) //compute capability >= 2.0  => disadvantage
             value += ellValues[pos] * fetch_ELLx<T,useTexture>( x_d, ellJA[pos] );
@@ -673,7 +673,7 @@ void CUDAELLUtils::normalGEMV(
 
     cudaStream_t stream = 0;
 
-    if( syncToken )
+    if ( syncToken )
     {
         CUDAStreamSyncToken* cudaStreamSyncToken = dynamic_cast<CUDAStreamSyncToken*>( syncToken );
         LAMA_ASSERT_DEBUG( cudaStreamSyncToken, "no cuda stream sync token provided" );
@@ -698,19 +698,19 @@ void CUDAELLUtils::normalGEMV(
 
     bool useTexture = true; //lama_getUseTex_cuda();
 
-    if( syncToken )
+    if ( syncToken )
     {
         //useTexture = false;
     }
 
-    if( useTexture )
+    if ( useTexture )
     {
 
-        if( sizeof(ValueType) == sizeof(float) )
+        if ( sizeof(ValueType) == sizeof(float) )
         {
             LAMA_CUDA_RT_CALL( cudaBindTexture( NULL, texELLSXref, x ), "LAMA_STATUS_CUDA_BINDTEX_FAILED" );
         }
-        else if( sizeof(ValueType) == sizeof(double) )
+        else if ( sizeof(ValueType) == sizeof(double) )
         {
             LAMA_CUDA_RT_CALL( cudaBindTexture( NULL, texELLDXref, x ), "LAMA_STATUS_CUDA_BINDTEX_FAILED" );
         }
@@ -725,7 +725,7 @@ void CUDAELLUtils::normalGEMV(
     }
 //    if ( *transa == 'N'|| *transa == 'n')
 //    {
-    if( useTexture )
+    if ( useTexture )
     {
         ell_agemvpbv_kernel<ValueType, true> <<<dimGrid, dimBlock, 0, stream>>>
         ( numRows, alpha, numNonZerosPerRow, ellValues, ellJA, x, beta, y, result );
@@ -747,18 +747,18 @@ void CUDAELLUtils::normalGEMV(
 
     LAMA_CUDA_RT_CALL( cudaGetLastError(), "LAMA_STATUS_SELLAGEMVPBV_CUDAKERNEL_FAILED" );
 
-    if( !syncToken )
+    if ( !syncToken )
     {
         LAMA_CUDA_RT_CALL( cudaStreamSynchronize(0), "LAMA_STATUS_SELLAGEMVPBV_CUDAKERNEL_FAILED" );
     }
 
-    if( useTexture )
+    if ( useTexture )
     {
-        if( sizeof(ValueType) == sizeof(float) )
+        if ( sizeof(ValueType) == sizeof(float) )
         {
             LAMA_CUDA_RT_CALL( cudaUnbindTexture( texELLSXref ), "LAMA_STATUS_CUDA_UNBINDTEX_FAILED" );
         }
-        else if( sizeof(ValueType) == sizeof(double) )
+        else if ( sizeof(ValueType) == sizeof(double) )
         {
             LAMA_CUDA_RT_CALL( cudaUnbindTexture( texELLDXref ), "LAMA_STATUS_CUDA_UNBINDTEX_FAILED" );
         }
@@ -780,7 +780,7 @@ void ell_agemvpbsv_kernel(
     T* y_d )
 {
     const int id = threadId( gridDim, blockIdx, blockDim, threadIdx );
-    if( id < nzr )
+    if ( id < nzr )
     {
         const int i = rowIndexes[id];
 
@@ -788,7 +788,7 @@ void ell_agemvpbsv_kernel(
         ellJA += i;
         T value = 0.0;
         const int noneZeros = ellValues[i];
-        for( int kk = 0; kk < noneZeros; ++kk )
+        for ( int kk = 0; kk < noneZeros; ++kk )
         {
             const T aValue = *ellValues;
             //if (aValue != 0.0) //compute capability >= 2.0  => disadvantage
@@ -821,7 +821,7 @@ void CUDAELLUtils::sparseGEMV(
 
     cudaStream_t stream = 0;
 
-    if( syncToken )
+    if ( syncToken )
     {
         CUDAStreamSyncToken* cudaStreamSyncToken = dynamic_cast<CUDAStreamSyncToken*>( syncToken );
         LAMA_ASSERT_DEBUG( cudaStreamSyncToken, "no cuda stream sync token provided" );
@@ -843,13 +843,13 @@ void CUDAELLUtils::sparseGEMV(
 //TODO: Determine this depending on the compute capability
     const bool useTexture = true; // lama_getUseTex_cuda();
 
-    if( useTexture )
+    if ( useTexture )
     {
-        if( sizeof(ValueType) == sizeof(float) )
+        if ( sizeof(ValueType) == sizeof(float) )
         {
             LAMA_CUDA_RT_CALL( cudaBindTexture( NULL, texELLSXref, x ), "LAMA_STATUS_CUDA_BINDTEX_FAILED" );
         }
-        else if( sizeof(ValueType) == sizeof(double) )
+        else if ( sizeof(ValueType) == sizeof(double) )
         {
             LAMA_CUDA_RT_CALL( cudaBindTexture( NULL, texELLDXref, x ), "LAMA_STATUS_CUDA_BINDTEX_FAILED" );
         }
@@ -865,7 +865,7 @@ void CUDAELLUtils::sparseGEMV(
 
 //    if ( *transa == 'N'|| *transa == 'n')
 //    {
-    if( useTexture )
+    if ( useTexture )
     {
         ell_agemvpbsv_kernel<ValueType, true>
         <<<dimGrid, dimBlock, 0, stream>>>( numRows, alpha, numNonZerosPerRows, ellIA, ellValues,
@@ -889,7 +889,7 @@ void CUDAELLUtils::sparseGEMV(
     LAMA_CUDA_RT_CALL( cudaGetLastError(), "LAMA_STATUS_SELLAGEMVPBV_CUDAKERNEL_FAILED" );
     LAMA_CUDA_RT_CALL( cudaStreamSynchronize(0), "LAMA_STATUS_SELLAGEMVPBV_CUDAKERNEL_FAILED" );
 
-    if( useTexture )
+    if ( useTexture )
     {
         LAMA_CUDA_RT_CALL( cudaUnbindTexture( texELLSXref ), "LAMA_STATUS_CUDA_UNBINDTEX_FAILED" );
     }
@@ -913,7 +913,7 @@ void ell_jacobi_kernel(
 {
     const int i = threadId( gridDim, blockIdx, blockDim, threadIdx );
 
-    if( i < numRows )
+    if ( i < numRows )
     {
         T temp = rhs[i];
         ellValues += i;
@@ -923,18 +923,18 @@ void ell_jacobi_kernel(
         ellValues += numRows;
         ellJA += numRows;
 
-        for( int kk = 1; kk < ellNumValuesPerRow; ++kk )
+        for ( int kk = 1; kk < ellNumValuesPerRow; ++kk )
         {
             const T aValue = *ellValues;
             temp -= aValue * fetch_ELLx<T,useTexture>( oldSolution, *ellJA );
             ellValues += numRows;
             ellJA += numRows;
         }
-        if( omega == 0.5 )
+        if ( omega == 0.5 )
         {
             solution[i] = omega * ( fetch_ELLx<T,useTexture>( oldSolution, i ) + temp / diag );
         }
-        else if( omega == 1.0 )
+        else if ( omega == 1.0 )
         {
             solution[i] = temp / diag;
         }
@@ -966,7 +966,7 @@ void CUDAELLUtils::jacobi(
 
     cudaStream_t stream = 0;
 
-    if( syncToken )
+    if ( syncToken )
     {
         CUDAStreamSyncToken* cudaStreamSyncToken = dynamic_cast<CUDAStreamSyncToken*>( syncToken );
         LAMA_ASSERT_DEBUG( cudaStreamSyncToken, "no cuda stream sync token provided" );
@@ -980,14 +980,14 @@ void CUDAELLUtils::jacobi(
 //TODO: Determine this depending on the compute capability
     const bool useTexture = true; // lama_getUseTex_cuda();
 
-    if( useTexture )
+    if ( useTexture )
     {
 
-        if( sizeof(ValueType) == sizeof(double) )
+        if ( sizeof(ValueType) == sizeof(double) )
         {
             LAMA_CUDA_RT_CALL( cudaBindTexture( NULL, texELLDXref, oldSolution ), "LAMA_STATUS_CUDA_BINDTEX_FAILED" );
         }
-        else if( sizeof(ValueType) == sizeof(float) )
+        else if ( sizeof(ValueType) == sizeof(float) )
         {
             LAMA_CUDA_RT_CALL( cudaBindTexture( NULL, texELLSXref, oldSolution ), "LAMA_STATUS_CUDA_BINDTEX_FAILED" );
         }
@@ -1001,7 +1001,7 @@ void CUDAELLUtils::jacobi(
                            "LAMA_STATUS_CUDA_FUNCSETCACHECONFIG_FAILED" );
     }
 
-    if( useTexture )
+    if ( useTexture )
     {
         ell_jacobi_kernel<ValueType, true> <<<dimGrid, dimBlock, 0, stream>>>( ellNumValuesPerRow, ellJA, ellValues,
                 numRows, rhs, solution, oldSolution, omega );
@@ -1015,12 +1015,12 @@ void CUDAELLUtils::jacobi(
 
     LAMA_CUDA_RT_CALL( cudaGetLastError(), "LAMA_STATUS_DCSRJACOBI_CUDAKERNEL_FAILED" );
 
-    if( useTexture )
+    if ( useTexture )
     {
         LAMA_CUDA_RT_CALL( cudaUnbindTexture(texELLSXref), "LAMA_STATUS_CUDA_UNBINDTEX_FAILED" );
     }
 
-    if( !syncToken )
+    if ( !syncToken )
     {
         cudaStreamSynchronize( stream );
     }
@@ -1046,11 +1046,11 @@ void ell_jacobi_halo_kernel(
 {
     const int id = threadId( gridDim, blockIdx, blockDim, threadIdx );
 
-    if( id < numNonEmptyRows )
+    if ( id < numNonEmptyRows )
     {
         int i = id;
 
-        if( rowIndexes )
+        if ( rowIndexes )
         {
             i = rowIndexes[id];
         }
@@ -1059,7 +1059,7 @@ void ell_jacobi_halo_kernel(
 
         int pos = i;
         const int rowEnd = ellSizes[i];
-        for( int jj = 0; jj < rowEnd; ++jj )
+        for ( int jj = 0; jj < rowEnd; ++jj )
         {
             temp += ellValues[pos] * fetch_ELLx<T,useTexture>( oldSolution, ellJA[pos] );
             pos += numRows;
@@ -1096,14 +1096,14 @@ void CUDAELLUtils::jacobiHalo(
 
     const bool useTexture = true; // lama_getUseTex_cuda();
 
-    if( useTexture )
+    if ( useTexture )
     {
 
-        if( sizeof(ValueType) == sizeof(double) )
+        if ( sizeof(ValueType) == sizeof(double) )
         {
             LAMA_CUDA_RT_CALL( cudaBindTexture( NULL, texELLDXref, oldSolution), "LAMA_STATUS_CUDA_BINDTEX_FAILED" );
         }
-        else if( sizeof(ValueType) == sizeof(float) )
+        else if ( sizeof(ValueType) == sizeof(float) )
         {
             LAMA_CUDA_RT_CALL( cudaBindTexture( NULL, texELLSXref, oldSolution), "LAMA_STATUS_CUDA_BINDTEX_FAILED" );
         }
@@ -1117,7 +1117,7 @@ void CUDAELLUtils::jacobiHalo(
                            "LAMA_STATUS_CUDA_FUNCSETCACHECONFIG_FAILED" );
     }
 
-    if( useTexture )
+    if ( useTexture )
     {
         ell_jacobi_halo_kernel<ValueType, true> <<<dimGrid, dimBlock>>>(
             solution, diagonal, ellSizes, ellJA, ellValues,
@@ -1133,13 +1133,13 @@ void CUDAELLUtils::jacobiHalo(
     LAMA_CUDA_RT_CALL( cudaGetLastError(), "LAMA_STATUS_ELLJACOBIHALO_CUDAKERNEL_FAILED" );
     LAMA_CUDA_RT_CALL( cudaStreamSynchronize(0), "LAMA_STATUS_ELLJACOBIHALO_CUDAKERNEL_FAILED" );
 
-    if( useTexture )
+    if ( useTexture )
     {
-        if( sizeof(ValueType) == sizeof(double) )
+        if ( sizeof(ValueType) == sizeof(double) )
         {
             LAMA_CUDA_RT_CALL( cudaUnbindTexture(texELLDXref), "LAMA_STATUS_CUDA_UNBINDTEX_FAILED" );
         }
-        else if( sizeof(ValueType) == sizeof(float) )
+        else if ( sizeof(ValueType) == sizeof(float) )
         {
             LAMA_CUDA_RT_CALL( cudaUnbindTexture(texELLSXref), "LAMA_STATUS_CUDA_UNBINDTEX_FAILED" );
         }

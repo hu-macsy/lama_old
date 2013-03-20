@@ -264,7 +264,7 @@ public:
 template<typename T>
 inline IndexType WriteAccess<T>::size() const
 {
-    if( mArrayView )
+    if ( mArrayView )
     {
         return mArrayView->size();
     }

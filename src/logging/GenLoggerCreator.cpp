@@ -58,7 +58,7 @@ GenLoggerCreator* GenLoggerCreator::theCreator = NULL;
 
 GenLoggerCreator& GenLoggerCreator::getTheCreator()
 {
-    if( !theCreator )
+    if ( !theCreator )
     {
         theCreator = new GenLoggerCreator();
     }

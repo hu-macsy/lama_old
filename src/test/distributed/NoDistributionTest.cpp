@@ -103,7 +103,7 @@ BOOST_AUTO_TEST_CASE( commonTestCases )
 
     DistributionTest disttest( dist );
 
-    if( base_test_case )
+    if ( base_test_case )
     {
         LAMA_LOG_INFO( logger, "Run test method " << testcase << " in NoDistributionTest." );
         DISTRIBUTION_COMMONTESTCASES( disttest );

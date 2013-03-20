@@ -45,7 +45,7 @@ LoggerProvider* LoggerProvider::theProvider = NULL;
 
 LoggerProvider& LoggerProvider::getProvider()
 {
-    if( !theProvider )
+    if ( !theProvider )
     {
         theProvider = new LoggerProvider();
     }
@@ -69,7 +69,7 @@ void LoggerProvider::setLoggerCreator( AbstractLoggerCreator* creator )
 
 Logger& LoggerProvider::getInstance( const std::string& name ) const
 {
-    if( !mLoggerCreator )
+    if ( !mLoggerCreator )
     {
         mLoggerCreator = &theLoggerCreator();
     }
@@ -81,7 +81,7 @@ Logger& LoggerProvider::getInstance( const std::string& name ) const
     // Find first "non-delimiter".
     std::string::size_type pos = name.find_first_of( ".", lastPos );
 
-    while( std::string::npos != pos || std::string::npos != lastPos )
+    while ( std::string::npos != pos || std::string::npos != lastPos )
     {
 
         // Found a token, add it to the vector.
@@ -92,7 +92,7 @@ Logger& LoggerProvider::getInstance( const std::string& name ) const
         pos = name.find_first_of( ".", lastPos );
     }
 
-    if( !mLoggerCreator )
+    if ( !mLoggerCreator )
     {
         std::ostringstream errorMsg;
 
@@ -105,15 +105,15 @@ Logger& LoggerProvider::getInstance( const std::string& name ) const
 
     Logger* instance = &mLoggerCreator->getRoot();
 
-    for( size_t i = 0; i < tokens.size(); i++ )
+    for ( size_t i = 0; i < tokens.size(); i++ )
     {
         Logger* son = NULL; // will point to son that corresponds next token
 
-        for( size_t s = 0; s < instance->mSons.size(); s++ )
+        for ( size_t s = 0; s < instance->mSons.size(); s++ )
         {
             Logger* candidate = instance->mSons[s];
 
-            if( candidate->mName == tokens[i] )
+            if ( candidate->mName == tokens[i] )
             {
                 son = candidate;
                 break;
@@ -122,7 +122,7 @@ Logger& LoggerProvider::getInstance( const std::string& name ) const
 
         // create a new son if not found
 
-        if( son == NULL )
+        if ( son == NULL )
         {
             // logger not available, so create it
             son = mLoggerCreator->create( tokens[i], instance );

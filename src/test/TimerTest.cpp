@@ -86,7 +86,7 @@ BOOST_AUTO_TEST_CASE( testTimer )
 {
 
     IndexType myRank = mComm->getRank();
-    if( myRank == 0 )
+    if ( myRank == 0 )
     {
         std::cout << "this test should not print stack warning of LAMATimeTracer." << std::endl;
     }
@@ -100,7 +100,7 @@ BOOST_AUTO_TEST_CASE( testTimer )
     Matrix::SyncKind mCommunicationKind = Matrix::ASYNCHRONOUS;
     Matrix::SyncKind mComputeKind = Matrix::ASYNCHRONOUS;
 
-    if( myRank == 1 )
+    if ( myRank == 1 )
     {
         mLocalContext = ContextFactory::getContext( Context::CUDA, devNo );
         mHaloContext = ContextFactory::getContext( Context::CUDA, devNo );
@@ -115,7 +115,7 @@ BOOST_AUTO_TEST_CASE( testTimer )
     ELLSparseMatrix<double> tmp2( tmp );
     IndexType numRows = tmp.getNumRows();
 
-    for( IndexType i = 0; i < 10; ++i )
+    for ( IndexType i = 0; i < 10; ++i )
     {
         DistributionPtr dist( new BlockDistribution( numRows, mComm ) );
         ELLSparseMatrix<double> A( tmp2, dist, dist );
@@ -128,7 +128,7 @@ BOOST_AUTO_TEST_CASE( testTimer )
         A.setContext( mLocalContext, mHaloContext );
 
         solution = A * rhs;
-        if( myRank == 0 )
+        if ( myRank == 0 )
         {
             std::cout << "iteration " << i << " of " << 10 << " time: " << LAMA_TIMETRACER("SparseMV") << std::endl;
         }

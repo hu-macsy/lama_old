@@ -125,7 +125,7 @@ CriteriaCreator& CriteriaCreator::getInstance()
 {
     static std::auto_ptr<CriteriaCreator> instance;
 
-    if( !instance.get() )
+    if ( !instance.get() )
     {
         instance = std::auto_ptr<CriteriaCreator>( new CriteriaCreator() );
     }

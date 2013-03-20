@@ -75,20 +75,20 @@ ValueType OpenMPDIAUtils::absMaxVal(
 
         #pragma omp for schedule( LAMA_OMP_SCHEDULE )
 
-        for( IndexType i = 0; i < numRows; ++i )
+        for ( IndexType i = 0; i < numRows; ++i )
         {
-            for( IndexType d = 0; d < numDiagonals; ++d )
+            for ( IndexType d = 0; d < numDiagonals; ++d )
             {
                 const IndexType j = i + diaOffsets[d];
 
-                if( ( j < 0 ) || ( j >= numColumns ) )
+                if ( ( j < 0 ) || ( j >= numColumns ) )
                 {
                     continue;
                 }
 
                 const ValueType val = std::abs( diaValues[i + d * numRows] );
 
-                if( val > threadVal )
+                if ( val > threadVal )
                 {
                     threadVal = val;
                 }
@@ -99,7 +99,7 @@ ValueType OpenMPDIAUtils::absMaxVal(
         {
             LAMA_LOG_DEBUG( logger, "absMaxVal, threadVal = " << threadVal << ", maxVal = " << maxValue );
 
-            if( threadVal > maxValue )
+            if ( threadVal > maxValue )
             {
                 maxValue = threadVal;
             }
@@ -129,12 +129,12 @@ void OpenMPDIAUtils::getCSRValues(
 
     // we cannot check for correct sizes, but at least for valid pointers
 
-    if( numDiagonals == 0 )
+    if ( numDiagonals == 0 )
     {
-        if( diagonalFlag )
+        if ( diagonalFlag )
         {
             LAMA_ASSERT_EQUAL_DEBUG( numRows, csrIA[ numRows ] );
-            for( IndexType i = 0; i < numRows; i++ )
+            for ( IndexType i = 0; i < numRows; i++ )
             {
                 csrJA[i] = i;
                 csrValues[i] = 0.0;
@@ -147,11 +147,11 @@ void OpenMPDIAUtils::getCSRValues(
         return;
     }
 
-    if( numDiagonals > 0 )
+    if ( numDiagonals > 0 )
     {
         LAMA_ASSERT_DEBUG( diaOffsets != NULL, "offset array of DIA data is NULL" );
 
-        if( numRows > 0 )
+        if ( numRows > 0 )
         {
             LAMA_ASSERT_DEBUG( diaValues != NULL, "value array of DIA data is NULL" );
         }
@@ -161,13 +161,13 @@ void OpenMPDIAUtils::getCSRValues(
 
     #pragma omp parallel for schedule(LAMA_OMP_SCHEDULE)
 
-    for( IndexType i = 0; i < numRows; i++ )
+    for ( IndexType i = 0; i < numRows; i++ )
     {
         IndexType offset = csrIA[i];
 
         IndexType ii0 = 0; // first index of diagonal
 
-        if( diagonalFlag )
+        if ( diagonalFlag )
         {
             // store main diagonal at first, must be first diagonal
 
@@ -183,16 +183,16 @@ void OpenMPDIAUtils::getCSRValues(
             ii0 = 1;
         }
 
-        for( IndexType ii = ii0; ii < numDiagonals; ii++ )
+        for ( IndexType ii = ii0; ii < numDiagonals; ii++ )
         {
             IndexType j = i + diaOffsets[ii];
 
-            if( j < 0 )
+            if ( j < 0 )
             {
                 continue;
             }
 
-            if( j >= numColumns )
+            if ( j >= numColumns )
             {
                 break;
             }
@@ -201,7 +201,7 @@ void OpenMPDIAUtils::getCSRValues(
 
             bool nonZero = std::abs( value ) > eps;
 
-            if( nonZero )
+            if ( nonZero )
             {
                 csrJA[offset] = j;
                 csrValues[offset] = static_cast<CSRValueType>( value );
@@ -233,37 +233,37 @@ void OpenMPDIAUtils::getCSRSizes(
                    "get CSRSizes<" << typeid( DIAValueType ).name() << "> for DIA matrix " << numRows << " x " << numColumns << ", #diagonals = " << numDiagonals << ", eps = " << eps << ", diagonalFlag = " << diagonalFlag );
 
     #pragma omp parallel for schedule(LAMA_OMP_SCHEDULE)
-    for( IndexType i = 0; i < numRows; i++ )
+    for ( IndexType i = 0; i < numRows; i++ )
     {
         IndexType count = 0;
 
-        if( diagonalFlag )
+        if ( diagonalFlag )
         {
             count = 1;
         }
 
-        for( IndexType ii = 0; ii < numDiagonals; ii++ )
+        for ( IndexType ii = 0; ii < numDiagonals; ii++ )
         {
             IndexType j = i + diaOffsets[ii]; // column index
 
-            if( j < 0 )
+            if ( j < 0 )
             {
                 continue;
             }
 
-            if( j >= numColumns )
+            if ( j >= numColumns )
             {
                 break;
             }
 
             bool nonZero = std::abs( diaValues[i + ii * numRows] ) > eps;
 
-            if( diagonalFlag && ( i == j ) )
+            if ( diagonalFlag && ( i == j ) )
             {
                 nonZero = false; // already counted
             }
 
-            if( nonZero )
+            if ( nonZero )
             {
                 count++;
             }
@@ -292,19 +292,19 @@ void OpenMPDIAUtils::normalGEMV(
 {
     LAMA_LOG_INFO( logger, "normalGEMV<" << typeid(ValueType).name() << ">, n = " << numRows );
 
-    if( beta == 0.0 )
+    if ( beta == 0.0 )
     {
         #pragma omp parallel for
-        for( IndexType i = 0; i < numRows; ++i )
+        for ( IndexType i = 0; i < numRows; ++i )
         {
             result[i] = 0.0;
         }
     }
-    else if( beta == 1.0 )
+    else if ( beta == 1.0 )
     {
-        if( result != y )
+        if ( result != y )
         {
-            for( IndexType i = 0; i < numRows; ++i )
+            for ( IndexType i = 0; i < numRows; ++i )
             {
                 result[i] = y[i];
             }
@@ -313,26 +313,26 @@ void OpenMPDIAUtils::normalGEMV(
     else
     {
         #pragma omp parallel for
-        for( IndexType i = 0; i < numRows; ++i )
+        for ( IndexType i = 0; i < numRows; ++i )
         {
             result[i] = beta * y[i];
         }
     }
 
     #pragma omp parallel for
-    for( IndexType i = 0; i < numRows; i++ )
+    for ( IndexType i = 0; i < numRows; i++ )
     {
         ValueType accu = 0.0;
 
-        for( IndexType ii = 0; ii < numDiagonals; ++ii )
+        for ( IndexType ii = 0; ii < numDiagonals; ++ii )
         {
             const IndexType j = i + diaOffsets[ii];
 
-            if( j >= numColumns )
+            if ( j >= numColumns )
             {
                 break;
             }
-            if( j >= 0 )
+            if ( j >= 0 )
             {
                 accu += diaValues[ii * numRows + i] * x[j];
             }
@@ -340,10 +340,10 @@ void OpenMPDIAUtils::normalGEMV(
         result[i] += alpha * accu;
     }
 
-    if( LAMA_LOG_TRACE_ON( logger ) )
+    if ( LAMA_LOG_TRACE_ON( logger ) )
     {
         std::cout << "NormalGEMV: result = ";
-        for( IndexType i = 0; i < numRows; ++i )
+        for ( IndexType i = 0; i < numRows; ++i )
         {
             std::cout << " " << result[i];
         }
@@ -367,7 +367,7 @@ void OpenMPDIAUtils::normalGEMV(
     const ValueType diaValues[],
     SyncToken* syncToken )
 {
-    if( !syncToken )
+    if ( !syncToken )
     {
         normalGEMV( result, alpha, x, beta, y, numRows, numColumns, numDiagonals, diaOffsets, diaValues );
     }
@@ -424,7 +424,7 @@ void OpenMPDIAUtils::jacobi(
     LAMA_ASSERT_EQUAL_DEBUG( 0, diaOffset[0] );
     // main diagonal must be first
 
-    if( syncToken != NULL )
+    if ( syncToken != NULL )
     {
         LAMA_LOG_ERROR( logger, "jacobi called asynchronously, not supported here" );
     }
@@ -432,20 +432,20 @@ void OpenMPDIAUtils::jacobi(
     const ValueType oneMinusOmega = static_cast<ValueType>( 1.0 - omega );
 
     #pragma omp parallel for schedule( LAMA_OMP_SCHEDULE )
-    for( IndexType i = 0; i < numRows; i++ )
+    for ( IndexType i = 0; i < numRows; i++ )
     {
         ValueType temp = rhs[i];
         ValueType diag = diaValues[i]; // diagonal is first
 
-        for( IndexType ii = 1; ii < numDiagonals; ++ii )
+        for ( IndexType ii = 1; ii < numDiagonals; ++ii )
         {
             const IndexType j = i + diaOffset[ii];
 
-            if( j >= numColumns )
+            if ( j >= numColumns )
             {
                 break;
             }
-            if( j >= 0 )
+            if ( j >= 0 )
             {
                 temp -= diaValues[ii * numRows + i] * oldSolution[j];
             }

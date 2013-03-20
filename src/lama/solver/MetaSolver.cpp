@@ -102,7 +102,7 @@ void MetaSolver::initialize( const Matrix& coefficients )
 {
     LAMA_LOG_INFO( logger, "Initializing MetaSolver " );
 
-    if( !getRuntime().mRootSolver )
+    if ( !getRuntime().mRootSolver )
     {
         LAMA_THROWEXCEPTION( "No root solver defined for MetaSolver." );
     }
@@ -116,15 +116,15 @@ void MetaSolver::initializePreconditioner( const Matrix& coefficients, LogLevel:
 {
     LAMA_LOG_INFO( logger, "Initializing Meta-Preconditioner " );
 
-    if( !getRuntime().mRootSolver )
+    if ( !getRuntime().mRootSolver )
     {
         LAMA_THROWEXCEPTION( "No root solver defined for MetaSolver." );
     }
 
     IterativeSolver* rootPtr = dynamic_cast<IterativeSolver*>( &( *( getRuntime().mRootSolver ) ) );
-    if( rootPtr )
+    if ( rootPtr )
     {
-        if( rootPtr->getPreconditioner() )
+        if ( rootPtr->getPreconditioner() )
         {
             rootPtr->getPreconditioner()->initialize( coefficients );
             rootPtr->getPreconditioner()->setLogLevel( level );
@@ -142,7 +142,7 @@ void MetaSolver::initializePreconditioner( const Matrix& coefficients, LogLevel:
 
 void MetaSolver::solveImpl()
 {
-    if( !getRuntime().mRootSolver )
+    if ( !getRuntime().mRootSolver )
     {
         LAMA_THROWEXCEPTION( "No root solver defined for MetaSolver." );
     }
@@ -156,7 +156,7 @@ void MetaSolver::interpreteArgument( const std::string arg )
     std::ifstream configFile;
     configFile.open( arg.c_str() );
 
-    if( configFile )
+    if ( configFile )
     {
         LAMA_LOG_DEBUG( logger, "Argument " << arg << " is a file. Reading content now." );
         std::string configuration;
@@ -194,7 +194,7 @@ void MetaSolver::parseConfiguration( const std::string& arg )
 
     LAMA_LOG_DEBUG( logger, "Solver " << *getRuntime().mRootSolver << " is root now." );
 
-    if( !r || first != last )
+    if ( !r || first != last )
     {
         std::string rest( first, last );
         LAMA_THROWEXCEPTION( "Parsing failure. Stopped at " << rest );

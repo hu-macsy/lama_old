@@ -306,37 +306,37 @@ LAMA_COMMON_TEST_CASE_TEMPLATE_END();
 
 static DistributionPtr makeDistribution( const IndexType n, CommunicatorPtr comm, int kind )
 {
-    if( kind == 0 )
+    if ( kind == 0 )
     {
         return DistributionPtr( new BlockDistribution( n, comm ) );
     }
-    else if( kind == 1 )
+    else if ( kind == 1 )
     {
         return DistributionPtr( new CyclicDistribution( n, 3, comm ) );
     }
-    else if( kind == 2 )
+    else if ( kind == 2 )
     {
         float weight = 1.0;
 
-        if( comm->getRank() % 2 == 1 )
+        if ( comm->getRank() % 2 == 1 )
         {
             weight = 0.0001;
         }
 
         return DistributionPtr( new GenBlockDistribution( n, weight, comm ) );
     }
-    else if( kind == 3 )
+    else if ( kind == 3 )
     {
         float weight = 1.0;
 
-        if( comm->getRank() % 2 == 0 )
+        if ( comm->getRank() % 2 == 0 )
         {
             weight = 0.0001;
         }
 
         return DistributionPtr( new GenBlockDistribution( n, weight, comm ) );
     }
-    else if( kind == 4 )
+    else if ( kind == 4 )
     {
         PartitionId size = comm->getSize();
         PartitionId rank = comm->getRank();
@@ -344,10 +344,10 @@ static DistributionPtr makeDistribution( const IndexType n, CommunicatorPtr comm
         IndexType val = 1713;
 
         std::vector<IndexType> localIndexes;
-        for( IndexType i = 0; i < n; i++ )
+        for ( IndexType i = 0; i < n; i++ )
         {
             PartitionId owner = val % size;
-            if( owner == rank )
+            if ( owner == rank )
             {
                 localIndexes.push_back( i );
             }

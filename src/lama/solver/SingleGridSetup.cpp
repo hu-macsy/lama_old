@@ -60,7 +60,7 @@ void SingleGridSetup::initialize( const Matrix& coefficients )
     LAMA_REGION( "initialize_SingleGridSetup" );
 
     // set default solver
-    if( !mSolver )
+    if ( !mSolver )
     {
         SOR* sorSolver = new SOR( "10x SingleGridSetup SOR Solver" );
 

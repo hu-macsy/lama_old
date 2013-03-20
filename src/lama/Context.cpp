@@ -67,7 +67,7 @@ bool Context::operator==( const Context& other ) const
 
     // otherwise: both contexts must have same type and can use data of each other
 
-    if( !same )
+    if ( !same )
     {
         same = mContextType == other.mContextType;
 
@@ -94,15 +94,15 @@ void Context::writeAt( std::ostream& stream ) const
 
 std::ostream& operator<<( std::ostream& stream, const ContextType type )
 {
-    if( type == Context::Host )
+    if ( type == Context::Host )
     {
         stream << "Host";
     }
-    else if( type == Context::CUDA )
+    else if ( type == Context::CUDA )
     {
         stream << "CUDA";
     }
-    else if( type == Context::OpenCL )
+    else if ( type == Context::OpenCL )
     {
         stream << "OpenCL";
     }
@@ -132,7 +132,7 @@ void Context::enable( const char* file, int line ) const
 {
     LAMA_LOG_INFO( logger, file << "( line = " << line << ") : enable " << *this );
 
-    if( mEnabled )
+    if ( mEnabled )
     {
         LAMA_LOG_INFO( logger,
                        "Enable " << *this << " at " << file << " ( line = " << line << " )" << ", already enabled at " << mFile << " ( line = " << mLine << " )" )
@@ -149,7 +149,7 @@ void Context::disable( const char* file, int line ) const
 {
     LAMA_LOG_INFO( logger, file << "( line = " << line << ") : disable " << *this );
 
-    if( !mEnabled )
+    if ( !mEnabled )
     {
         LAMA_LOG_INFO( logger,
                        "Disable " << *this << " at " << file << " ( line = " << line << " )" << ", context was not enabled before" );
@@ -191,7 +191,7 @@ void Context::ContextData::allocate( const size_t size )
 
     context->allocate( *this, size );
 
-    if( !pointer )
+    if ( !pointer )
     {
         LAMA_THROWEXCEPTION( "Could not allocate ContextData of size = " << size << " on " << *context );
     }
@@ -213,7 +213,7 @@ void Context::ContextData::setRef( void* reference, const size_t size )
 
     allocated = false;
 
-    if( !pointer && size )
+    if ( !pointer && size )
     {
         LAMA_THROWEXCEPTION( "NULL pointer cannot set be as reference, size = " << size );
     }
@@ -232,16 +232,16 @@ void Context::ContextData::free()
     LAMA_ASSERT_DEBUG( 0 == lock[Read], "cannot free read locked data on " << *context );
     LAMA_ASSERT_DEBUG( 0 == lock[Write], "cannot free write locked data on " << *context );
 
-    if( context && pointer )
+    if ( context && pointer )
     {
-        if( mCleanFunktion )
+        if ( mCleanFunktion )
         {
             mCleanFunktion( pointer );
         }
 
         pinned = false;
 
-        if( allocated )
+        if ( allocated )
         {
             context->free( pointer, size );
         }
@@ -287,7 +287,7 @@ void Context::ContextData::realloc( const size_t newSize, const size_t saveSize 
     void* oldPointer = pointer;
     size_t oldSize = size;
 
-    if( saveSize <= 0 )
+    if ( saveSize <= 0 )
     {
         context->free( pointer, size );
     }
@@ -296,7 +296,7 @@ void Context::ContextData::realloc( const size_t newSize, const size_t saveSize 
     context->allocate( *this, newSize );
     size = newSize;
 
-    if( saveSize > 0 )
+    if ( saveSize > 0 )
     {
         // copy the old entries in the new memory befree free of old memory
         context->memcpy( pointer, oldPointer, saveSize );

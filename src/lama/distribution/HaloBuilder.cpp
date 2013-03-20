@@ -64,7 +64,7 @@ void HaloBuilder::build( const Distribution& distribution, const std::vector<Ind
         communicator.computeOwners( requiredIndexes, distribution, owners );
     }
 #ifdef LAMA_LOG_TRACE
-    for( unsigned int i = 0; i < requiredIndexes.size(); ++i )
+    for ( unsigned int i = 0; i < requiredIndexes.size(); ++i )
     {
         LAMA_LOG_TRACE( logger, "Index " << requiredIndexes[i] << " belongs to " << owners[i] );
     }
@@ -82,7 +82,7 @@ void HaloBuilder::build( const Distribution& distribution, const std::vector<Ind
 
     std::vector<IndexType> counts( noPartitions, -1 );
 
-    for( IndexType p = 0; p < requiredPlan.size(); ++p )
+    for ( IndexType p = 0; p < requiredPlan.size(); ++p )
     {
         LAMA_LOG_TRACE( logger,
                         "requiredPlan[ " << p << "]: offset = " << requiredPlan[p].offset << ", pid = " << requiredPlan[p].partitionId << ", quantity = " << requiredPlan[p].quantity );
@@ -97,7 +97,7 @@ void HaloBuilder::build( const Distribution& distribution, const std::vector<Ind
 
     // Note: size of requiredIndexesByOnwer == requiredPlan.totalQuanitity()
 
-    for( IndexType jj = 0; jj < requiredPlan.totalQuantity(); ++jj )
+    for ( IndexType jj = 0; jj < requiredPlan.totalQuantity(); ++jj )
     {
         PartitionId owner = owners[jj];
 
@@ -138,11 +138,11 @@ void HaloBuilder::build( const Distribution& distribution, const std::vector<Ind
     {
         HostReadAccess<IndexType> provide( halo.mProvidesIndexes );
         HostReadAccess<IndexType> required( halo.mRequiredIndexes );
-        for( int i = 0; i < provide.size(); ++i )
+        for ( int i = 0; i < provide.size(); ++i )
         {
             LAMA_LOG_TRACE( logger, "halo.mProvidesIndexes[" << i << "] " << provide[i] );
         }
-        for( int i = 0; i < required.size(); ++i )
+        for ( int i = 0; i < required.size(); ++i )
         {
             LAMA_LOG_TRACE( logger, "halo.mRequiredIndexes[" << i << "] " << required[i] );
         }
@@ -153,7 +153,7 @@ void HaloBuilder::build( const Distribution& distribution, const std::vector<Ind
 
     HostWriteAccess<IndexType> providesIndexes( halo.mProvidesIndexes );
 
-    for( PartitionId p = 0; p < providesPlan.size(); ++p )
+    for ( PartitionId p = 0; p < providesPlan.size(); ++p )
     {
         IndexType n = providesPlan[p].quantity;
 
@@ -162,7 +162,7 @@ void HaloBuilder::build( const Distribution& distribution, const std::vector<Ind
 
         IndexType* partitionIndexes = providesIndexes.get() + providesPlan[p].offset;
 
-        for( IndexType i = 0; i < n; i++ )
+        for ( IndexType i = 0; i < n; i++ )
         {
             IndexType localIndex = distribution.global2local( partitionIndexes[i] );
             LAMA_ASSERT( localIndex != nIndex,

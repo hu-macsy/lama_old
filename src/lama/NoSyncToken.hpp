@@ -66,7 +66,7 @@ NoSyncToken::~NoSyncToken()
 {
     LAMA_LOG_DEBUG( logger, "~NoSyncToken, synchronized = " << isSynchronized() );
 
-    if( !isSynchronized() )
+    if ( !isSynchronized() )
     {
         setSynchronized(); // Important: accesses should be freed
     }
@@ -79,7 +79,7 @@ void NoSyncToken::writeAt( std::ostream& stream ) const
 
 void NoSyncToken::wait()
 {
-    if( !isSynchronized() )
+    if ( !isSynchronized() )
     {
         setSynchronized(); // Important: accesses should be freed
     }

@@ -71,7 +71,7 @@ static std::vector<std::string> split( const std::string& params, const char sep
         args.push_back( params.substr( prevFound, found - prevFound ) );
     }
 
-    while( found != std::string::npos );
+    while ( found != std::string::npos );
 
     return args;
 }
@@ -80,7 +80,7 @@ static std::vector<std::string> split( const std::string& params, const char sep
 
 boost::shared_ptr<TraceConfig> TraceConfig::getInstancePtr()
 {
-    if( !config )
+    if ( !config )
     {
         config.reset( new TraceConfig() );
     }
@@ -101,7 +101,7 @@ void TraceConfig::setKey( const std::string& key, const std::string& value )
 {
     LAMA_LOG_INFO( logger, "Set trace key " << key << " = " << value );
 
-    if( key == "PREFIX" )
+    if ( key == "PREFIX" )
     {
         mTraceFilePrefix = value;
     }
@@ -138,7 +138,7 @@ void TraceConfig::enableVampirTrace( bool flag )
 #else
     LAMA_LOG_INFO( logger, "enableVampirTrace: flag =  " << flag << ", level VT disabled" );
 
-    if( mVampirTraceEnabled )
+    if ( mVampirTraceEnabled )
     {
         LAMA_LOG_WARN( logger, "TRACE:vt ignored, use LAMA_TRACE_LEVEL=VT for compilation." );
     }
@@ -151,15 +151,15 @@ void TraceConfig::setParam( const std::string& param )
 {
     LAMA_LOG_INFO( logger, "Set trace config value : " << param );
 
-    if( param == "VT" )
+    if ( param == "VT" )
     {
         mVampirTraceEnabled = true;
     }
-    else if( param == "THREAD" )
+    else if ( param == "THREAD" )
     {
         mThreadEnabled = true;
     }
-    else if( param == "TIME" )
+    else if ( param == "TIME" )
     {
         mTimeTraceEnabled = true;
     }
@@ -185,28 +185,28 @@ TraceConfig::TraceConfig()
     mTimeTraceEnabled = false;
     mTraceFilePrefix = "_";
 
-    if( getenv( LAMA_ENV_TRACE_CONFIG ) )
+    if ( getenv( LAMA_ENV_TRACE_CONFIG ) )
     {
         std::string params = getenv( LAMA_ENV_TRACE_CONFIG );
 
         std::vector<std::string> values = split( params, ':' );
 
-        if( values.size() != 1 || values[0] != "OFF" )
+        if ( values.size() != 1 || values[0] != "OFF" )
         {
             mEnabled = true;
 
-            for( size_t i = 0; i < values.size(); ++i )
+            for ( size_t i = 0; i < values.size(); ++i )
             {
                 std::vector<std::string> keys = split( values[i], '=' );
 
                 std::string& key = keys[0];
 
-                for( size_t j = 0; j < key.length(); j++ )
+                for ( size_t j = 0; j < key.length(); j++ )
                 {
                     key[j] = static_cast<std::string::value_type>( toupper( key[j] ) );
                 }
 
-                if( keys.size() == 1 )
+                if ( keys.size() == 1 )
                 {
                     setParam( key );
                 }
@@ -226,11 +226,11 @@ TraceConfig::TraceConfig()
 
     enableVampirTrace( mVampirTraceEnabled );
 
-    if( mTraceFilePrefix == "_" )
+    if ( mTraceFilePrefix == "_" )
     {
         // no prefix specified, so take default
 
-        if( getenv( "_" ) )
+        if ( getenv( "_" ) )
         {
             mTraceFilePrefix = getenv( "_" );
         }
@@ -264,14 +264,14 @@ TraceConfig::~TraceConfig()
 {
     LAMA_LOG_DEBUG( logger, "Entering Destructor." );
 
-    if( mVampirTraceEnabled )
+    if ( mVampirTraceEnabled )
     {
         // set tracing explicitly to off now
 
         enableVampirTrace( false );
     }
 
-    if( !mTimeTraceEnabled )
+    if ( !mTimeTraceEnabled )
     {
         LAMA_LOG_INFO( logger, "~TraceConfig, no output file" );
         LAMA_LOG_DEBUG( logger, "Leaving Destructor." );
@@ -284,7 +284,7 @@ TraceConfig::~TraceConfig()
 
     fileName << mTraceFilePrefix << ".trace";
 
-    if( mComm->getSize() > 1 )
+    if ( mComm->getSize() > 1 )
     {
         fileName << "." << mComm->getRank();
     }
@@ -293,7 +293,7 @@ TraceConfig::~TraceConfig()
 
     FILE* f = fopen( fileName.str().c_str(), "w" );
 
-    if( f == NULL )
+    if ( f == NULL )
     {
         LAMA_LOG_ERROR( logger, "Could not open " << fileName.str() << " for writing time information." );
         return;
@@ -303,7 +303,7 @@ TraceConfig::~TraceConfig()
 
     std::map<lama::Thread::Id,boost::shared_ptr<RegionTable> >::iterator it;
 
-    for( it = mRegionTables.begin(); it != mRegionTables.end(); it++ )
+    for ( it = mRegionTables.begin(); it != mRegionTables.end(); it++ )
     {
         RegionTable& table = *it->second;
         table.printTimer( f );
@@ -322,14 +322,14 @@ static boost::mutex mapMutex; // needed to avoid conflicts for accesses on mRegi
 
 RegionTable* TraceConfig::getRegionTable()
 {
-    if( !mEnabled )
+    if ( !mEnabled )
     {
         return NULL;
     }
 
     Thread::Id self = Thread::getSelf();
 
-    if( mThreadEnabled || self == mMaster )
+    if ( mThreadEnabled || self == mMaster )
     {
         return getInstance().getRegionTable( self );
     }
@@ -345,7 +345,7 @@ RegionTable* TraceConfig::getRegionTable( Thread::Id threadId )
 {
     boost::shared_ptr<RegionTable> regionTable = mRegionTables[threadId];
 
-    if( !regionTable )
+    if ( !regionTable )
     {
         boost::mutex::scoped_lock scoped_lock( mapMutex );
 

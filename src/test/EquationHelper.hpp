@@ -87,8 +87,8 @@ const std::vector<EquationHelper::EquationSystem<T> (*)()>& EquationHelper::getF
 
     static std::vector<t_system> t_vec;
 
-    if( t_vec.empty() )
-        for( std::size_t i = 0; i < sizeof( t_arr ) / sizeof(t_system); ++i )
+    if ( t_vec.empty() )
+        for ( std::size_t i = 0; i < sizeof( t_arr ) / sizeof(t_system); ++i )
         {
             t_vec.push_back( t_arr[i] );
         }

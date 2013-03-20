@@ -386,7 +386,7 @@ LAMAArray<ValueType>::LAMAArray( const IndexType n, const OtherValueType* const 
 {
     setHostContext();
 
-    if( n <= 0 )
+    if ( n <= 0 )
     {
         LAMA_LOG_DEBUG( logger, "Zero-sized array with value constructed: " << *this );
         return;
@@ -399,7 +399,7 @@ LAMAArray<ValueType>::LAMAArray( const IndexType n, const OtherValueType* const 
     ValueType* host_pointer = static_cast<ValueType*>( host.pointer );
 
     #pragma omp parallel for schedule(LAMA_OMP_SCHEDULE)
-    for( int i = 0; i < mSize; ++i )
+    for ( int i = 0; i < mSize; ++i )
     {
         host_pointer[i] = static_cast<ValueType>( values[i] );
     }

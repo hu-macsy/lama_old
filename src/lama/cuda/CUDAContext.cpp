@@ -87,7 +87,7 @@ CUDAContext::CUDAContext( int deviceNr )
 
     // Note: logging is safe as CUDA context is always created after static initializations
 
-    if( numUsedDevices == 0 )
+    if ( numUsedDevices == 0 )
     {
         unsigned int flags = 0; // must be set to zero
         LAMA_CUDA_DRV_CALL( cuInit( flags ), "cuInit failed for first used CUDA device" );
@@ -139,16 +139,16 @@ CUDAContext::~CUDAContext()
 {
     LAMA_LOG_INFO( logger, "~CUDAContext: " << *this );
 
-    if( mNumberOfAllocates > 0 )
+    if ( mNumberOfAllocates > 0 )
     {
         LAMA_LOG_ERROR( logger, *this << ": " << mNumberOfAllocates << " allocate without free" );
     }
-    else if( mNumberOfAllocates < 0 )
+    else if ( mNumberOfAllocates < 0 )
     {
         LAMA_LOG_ERROR( logger, *this << ": " << mNumberOfAllocates << " free without allocate" );
     }
 
-    if( mNumberOfAllocatedBytes != 0 )
+    if ( mNumberOfAllocatedBytes != 0 )
     {
         LAMA_LOG_ERROR( logger,
                         *this << ": number of allocated bytes = " << mNumberOfAllocatedBytes << ", mismatch of free/allocate sizes" );
@@ -160,14 +160,14 @@ CUDAContext::~CUDAContext()
 
     CUresult res = cuCtxPushCurrent( mCUcontext );
 
-    if( res == CUDA_ERROR_DEINITIALIZED )
+    if ( res == CUDA_ERROR_DEINITIALIZED )
     {
         // this might happen with other software, e.g. VampirTrace
 
         LAMA_LOG_WARN( logger, "CUDA driver already deinitialized" );
         return;
     }
-    else if( res != CUDA_SUCCESS )
+    else if ( res != CUDA_SUCCESS )
     {
         LAMA_LOG_ERROR( logger, "Could not push any more context for " << *this );
         return;
@@ -183,7 +183,7 @@ CUDAContext::~CUDAContext()
     LAMA_CUDA_DRV_CALL( cuStreamSynchronize( mTransferStream ), "cuStreamSynchronize for transfer failed" );
     LAMA_CUDA_DRV_CALL( cuStreamDestroy( mTransferStream ), "cuStreamDestroy for transfer failed" );
 
-    if( !numUsedDevices )
+    if ( !numUsedDevices )
     {
         LAMA_LOG_DEBUG( logger, "no more devices in use -> shutdown cuda" );
 
@@ -192,11 +192,11 @@ CUDAContext::~CUDAContext()
         ;
 
 //        lama_shutdown_cuda();
-        if( CUDAContext_cusparseHandle )
+        if ( CUDAContext_cusparseHandle )
         {
             cusparseStatus_t error = cusparseDestroy( CUDAContext_cusparseHandle );
 
-            if( error != CUSPARSE_STATUS_SUCCESS )
+            if ( error != CUSPARSE_STATUS_SUCCESS )
             {
                 LAMA_LOG_ERROR( logger, "Could not destroy cusparse handle, status = " << error );
             }
@@ -214,7 +214,7 @@ CUDAContext::~CUDAContext()
 
     // if we are current device, set it back to -1
 
-    if( currentDeviceNr == mDeviceNr )
+    if ( currentDeviceNr == mDeviceNr )
     {
         currentDeviceNr = -1;
     }
@@ -273,14 +273,14 @@ bool CUDAContext::canUseData( const Context& other ) const
 {
     // same object by pointer can always use same data.
 
-    if( this == &other )
+    if ( this == &other )
     {
         return true;
     }
 
     // CUDA device can use only data on same CUDA device
 
-    if( other.getType() == CUDA )
+    if ( other.getType() == CUDA )
     {
         const CUDAContext& otherCUDA = static_cast<const CUDAContext&>( other );
         return otherCUDA.mDeviceNr == mDeviceNr;
@@ -514,9 +514,9 @@ void CUDAContext::memcpy( ContextData& dst, const ContextData& src, const size_t
     const Context::ContextType dstType = dst.context->getType();
     const Context::ContextType srcType = src.context->getType();
 
-    if( srcType == Host && dstType == CUDA )
+    if ( srcType == Host && dstType == CUDA )
     {
-        if( !src.isPinned() && size > minPinnedSize )
+        if ( !src.isPinned() && size > minPinnedSize )
         {
             LAMA_REGION("RegisterHostMemory");
             LAMA_CONTEXT_ACCESS( shared_from_this() );
@@ -526,7 +526,7 @@ void CUDAContext::memcpy( ContextData& dst, const ContextData& src, const size_t
             src.setCleanFunction( cuMemHostUnregister );
         }
 
-        if( src.isPinned() )
+        if ( src.isPinned() )
         {
             memcpyFromCUDAHost( dst.pointer, src.pointer, size );
         }
@@ -535,9 +535,9 @@ void CUDAContext::memcpy( ContextData& dst, const ContextData& src, const size_t
             memcpyFromHost( dst.pointer, src.pointer, size );
         }
     }
-    else if( srcType == CUDA && dstType == Host )
+    else if ( srcType == CUDA && dstType == Host )
     {
-        if( !dst.isPinned() && size > minPinnedSize )
+        if ( !dst.isPinned() && size > minPinnedSize )
         {
             LAMA_REGION("RegisterHostMemory");
             LAMA_CONTEXT_ACCESS( shared_from_this() );
@@ -546,7 +546,7 @@ void CUDAContext::memcpy( ContextData& dst, const ContextData& src, const size_t
             dst.setPinned();
             dst.setCleanFunction( cuMemHostUnregister );
         }
-        if( dst.isPinned() )
+        if ( dst.isPinned() )
         {
             memcpyToCUDAHost( dst.pointer, src.pointer, size );
         }
@@ -555,7 +555,7 @@ void CUDAContext::memcpy( ContextData& dst, const ContextData& src, const size_t
             memcpyToHost( dst.pointer, src.pointer, size );
         }
     }
-    else if( srcType == CUDA && dstType == CUDA )
+    else if ( srcType == CUDA && dstType == CUDA )
     {
 //Compile it only if sufficient CUDA Version found.
 #if CUDA_VERSION >= 4000
@@ -611,9 +611,9 @@ std::auto_ptr<SyncToken> CUDAContext::memcpyAsync( ContextData& dst, const Conte
     const Context::ContextType dstType = dst.context->getType();
     const Context::ContextType srcType = src.context->getType();
 
-    if( srcType == Host && dstType == CUDA )
+    if ( srcType == Host && dstType == CUDA )
     {
-        if( !src.isPinned() && size > minPinnedSize )
+        if ( !src.isPinned() && size > minPinnedSize )
         {
             LAMA_REGION("RegisterHostMemory");
             LAMA_CONTEXT_ACCESS( shared_from_this() );
@@ -624,7 +624,7 @@ std::auto_ptr<SyncToken> CUDAContext::memcpyAsync( ContextData& dst, const Conte
             src.setCleanFunction( cuMemHostUnregister );
         }
 
-        if( src.isPinned() )
+        if ( src.isPinned() )
         {
             return memcpyAsyncFromCUDAHost( dst.pointer, src.pointer, size );
         }
@@ -633,9 +633,9 @@ std::auto_ptr<SyncToken> CUDAContext::memcpyAsync( ContextData& dst, const Conte
             return memcpyAsyncFromHost( dst.pointer, src.pointer, size );
         }
     }
-    else if( srcType == CUDA && dstType == Host )
+    else if ( srcType == CUDA && dstType == Host )
     {
-        if( !dst.isPinned() && size > minPinnedSize )
+        if ( !dst.isPinned() && size > minPinnedSize )
         {
             LAMA_REGION("RegisterHostMemory");
             LAMA_CONTEXT_ACCESS( shared_from_this() );
@@ -644,7 +644,7 @@ std::auto_ptr<SyncToken> CUDAContext::memcpyAsync( ContextData& dst, const Conte
             dst.setPinned();
             dst.setCleanFunction( cuMemHostUnregister );
         }
-        if( dst.isPinned() )
+        if ( dst.isPinned() )
         {
             return memcpyAsyncToCUDAHost( dst.pointer, src.pointer, size );
         }
@@ -653,7 +653,7 @@ std::auto_ptr<SyncToken> CUDAContext::memcpyAsync( ContextData& dst, const Conte
             return memcpyAsyncToHost( dst.pointer, src.pointer, size );
         }
     }
-    else if( srcType == CUDA && dstType == CUDA )
+    else if ( srcType == CUDA && dstType == CUDA )
     {
         return memcpyAsync( dst.pointer, src.pointer, size );
     }

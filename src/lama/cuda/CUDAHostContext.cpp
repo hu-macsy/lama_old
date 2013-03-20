@@ -56,7 +56,7 @@ LAMA_LOG_DEF_LOGGER( CUDAHostContext::logger, "Context.CUDAHostContext" );
 CUDAHostContext::CUDAHostContext( boost::shared_ptr<const CUDAContext> cudaContext )
     : mCUDAContext( cudaContext )
 {
-    if( !cudaContext )
+    if ( !cudaContext )
     {
         LAMA_THROWEXCEPTION( "CUDAHostContext requires valid CUDAContext, is NULL" );
     }

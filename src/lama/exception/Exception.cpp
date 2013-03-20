@@ -57,23 +57,23 @@ Exception::UnsupportedType Exception::unsupportedSetting = Exception::UNSUPPORTE
 
 Exception::UnsupportedType Exception::getUnsupportedSetting()
 {
-    if( unsupportedSetting == UNSUPPORTED_UNDEFINED )
+    if ( unsupportedSetting == UNSUPPORTED_UNDEFINED )
     {
         const char* val = getenv( "LAMA_UNSUPPORTED" );
 
-        if( val == NULL )
+        if ( val == NULL )
         {
             unsupportedSetting = UNSUPPORTED_WARN;
         }
-        else if( strcmp( val, "IGNORE" ) == 0 )
+        else if ( strcmp( val, "IGNORE" ) == 0 )
         {
             unsupportedSetting = UNSUPPORTED_IGNORE;
         }
-        else if( strcmp( val, "WARN" ) == 0 )
+        else if ( strcmp( val, "WARN" ) == 0 )
         {
             unsupportedSetting = UNSUPPORTED_WARN;
         }
-        else if( strcmp( val, "ERROR" ) == 0 )
+        else if ( strcmp( val, "ERROR" ) == 0 )
         {
             unsupportedSetting = UNSUPPORTED_ERROR;
         }
@@ -116,7 +116,7 @@ void Exception::addCallStack( std::ostringstream& output )
     size_t stackDepth = backtrace( stackAddrs, maxDepth );
     char** stackStrings = backtrace_symbols( stackAddrs, stackDepth );
 
-    for( size_t i = 1; i < stackDepth; i++ )
+    for ( size_t i = 1; i < stackDepth; i++ )
     {
         output << "   stack[" << i << "] : " << demangle( stackStrings[i] ) << std::endl;
     }
@@ -134,18 +134,18 @@ std::string Exception::demangle( const char* functionName )
     char* begin = 0;
     char* end = 0;
     // find the parentheses and address offset surrounding the mangled name
-    for( char *j = string; *j; ++j )
+    for ( char *j = string; *j; ++j )
     {
-        if( *j == '(' )
+        if ( *j == '(' )
         {
             begin = j;
         }
-        else if( *j == '+' )
+        else if ( *j == '+' )
         {
             end = j;
         }
     }
-    if( begin && end )
+    if ( begin && end )
     {
         begin++;
         *end = '\0';
@@ -153,7 +153,7 @@ std::string Exception::demangle( const char* functionName )
 
         int status;
         char *ret = abi::__cxa_demangle( begin, 0, 0, &status );
-        if( status == 0 )
+        if ( status == 0 )
         {
             // return value may be a realloc() of the input
             demangledString = ret;
@@ -166,7 +166,7 @@ std::string Exception::demangle( const char* functionName )
             //function[sz-1] = ' ';
             demangledString = string;
         }
-        if( ret )
+        if ( ret )
         {
             free( ret );
         }

@@ -90,7 +90,7 @@ BOOST_AUTO_TEST_CASE( commonTestCases )
 {
     DistributionTest disttest( dist );
 
-    if( base_test_case )
+    if ( base_test_case )
     {
         LAMA_LOG_INFO( logger, "Run test method " << testcase << " in CyclicDistributionTest." );
         DISTRIBUTION_COMMONTESTCASES( disttest );
@@ -107,9 +107,9 @@ BOOST_AUTO_TEST_CASE( cyclicGlobal2Local )
 {
     //test local2global
     IndexType counter = rank * chunkSize;
-    for( IndexType i = 0; i < dist->getLocalSize(); i++ )
+    for ( IndexType i = 0; i < dist->getLocalSize(); i++ )
     {
-        if( i != 0 && i % chunkSize == 0 )
+        if ( i != 0 && i % chunkSize == 0 )
         {
             counter += ( size - 1 ) * chunkSize;
         }
@@ -134,13 +134,13 @@ BOOST_AUTO_TEST_CASE( cyclicComputeOwnersTest )
     IndexType chunkOffset = 0;
     IndexType chunkNr = 0;
 
-    for( IndexType i = 0; i < globalSize; i++ )
+    for ( IndexType i = 0; i < globalSize; i++ )
     {
         PartitionId owner = chunkNr % size;
         theOwners.push_back( owner );
 
         chunkOffset++;
-        if( chunkOffset == chunkSize )
+        if ( chunkOffset == chunkSize )
         {
             chunkOffset = 0;
             chunkNr++;
@@ -149,7 +149,7 @@ BOOST_AUTO_TEST_CASE( cyclicComputeOwnersTest )
 
     std::vector<IndexType> indexes;
 
-    for( IndexType i = 0; i < globalSize; i++ )
+    for ( IndexType i = 0; i < globalSize; i++ )
     {
         indexes.push_back( i );
     }
@@ -161,7 +161,7 @@ BOOST_AUTO_TEST_CASE( cyclicComputeOwnersTest )
     BOOST_CHECK_EQUAL( globalSize, static_cast<IndexType>( theOwners.size() ) );
 
     // now check for correct owners
-    for( IndexType i = 0; i < globalSize; i++ )
+    for ( IndexType i = 0; i < globalSize; i++ )
     {
         BOOST_CHECK_EQUAL( theOwners[i], owners[i] );
     }
@@ -179,11 +179,11 @@ BOOST_AUTO_TEST_CASE( cyclicTest )
     { 1, 3, 5, 19 };
 
     //BOOST_FOREACH(IndexType globalSize, globalSizes)
-    for( IndexType i = 0; i < 3; ++i )
+    for ( IndexType i = 0; i < 3; ++i )
     {
         IndexType globalSize = globalSizes[i];
         //BOOST_FOREACH(IndexType chunkSize, chunkSizes)
-        for( IndexType j = 0; j < 4; ++j )
+        for ( IndexType j = 0; j < 4; ++j )
         {
             IndexType chunkSize = chunkSizes[i];
             // printf("Test cyclic distribution of %d elements in chunks of size %d\n", globalSize, chunkSize);

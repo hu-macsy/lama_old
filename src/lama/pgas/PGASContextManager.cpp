@@ -72,7 +72,7 @@ ContextPtr PGASContextManager::getContext()
 
     // use the last contextInstance if it is still valid
 
-    if( contextInstance.expired() )
+    if ( contextInstance.expired() )
     {
         // create a new instance of PGASContext and keep it for further uses
         context = boost::shared_ptr<const PGASContext>( new PGASContext() );

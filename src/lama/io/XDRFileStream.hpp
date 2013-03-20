@@ -145,11 +145,11 @@ private:
 template<typename T>
 void XDRFileStream::write( T * const input, const std::streamsize n )
 {
-    if( m_openmode & std::ios::in )
+    if ( m_openmode & std::ios::in )
     {
         LAMA_THROWEXCEPTION( "XDRFileStream: Stream is not in Output mode" );
     }
-    for( std::streamsize i = 0; i < n; i++ )
+    for ( std::streamsize i = 0; i < n; i++ )
     {
         xdrWrite( &input[i] );
     }
@@ -164,11 +164,11 @@ void XDRFileStream::write( T * const input )
 template<typename T>
 void XDRFileStream::read( T * const input, const std::streamsize n )
 {
-    if( m_openmode & std::ios::out )
+    if ( m_openmode & std::ios::out )
     {
         LAMA_THROWEXCEPTION( "XDRFileStream: Stream is not in Input mode" );
     }
-    for( std::streamsize i = 0; i < n; i++ )
+    for ( std::streamsize i = 0; i < n; i++ )
     {
         xdrRead( &input[i] );
     }
@@ -183,16 +183,16 @@ void XDRFileStream::read( T * const input )
 template<typename T>
 void XDRFileStream::xdrRead( T* const data )
 {
-    if( !is_open() )
+    if ( !is_open() )
     {
         LAMA_THROWEXCEPTION( "Error trying to read from closed XDRFileStream" );
     }
     const int length = getSize( *data );
     *data = 0;
     char* dataptr = reinterpret_cast<char*>( data );
-    if( isLittleEndian() )
+    if ( isLittleEndian() )
     {
-        for( int pos = length - 1; pos >= 0; pos-- )
+        for ( int pos = length - 1; pos >= 0; pos-- )
         {
             m_filestream.read( dataptr + pos, 1 );
         }
@@ -202,7 +202,7 @@ void XDRFileStream::xdrRead( T* const data )
         m_filestream.read( dataptr, length );
     }
     //correct the signed bit
-    if( typeid(T) == typeid(long) )
+    if ( typeid(T) == typeid(long) )
     {
         int i = 0 | static_cast<long>( *data );
         *data = 0;
@@ -212,24 +212,24 @@ void XDRFileStream::xdrRead( T* const data )
 template<typename T>
 void XDRFileStream::xdrWrite( const T* const data )
 {
-    if( !is_open() )
+    if ( !is_open() )
     {
         LAMA_THROWEXCEPTION( "Error trying to read from closed XDRFileStream" );
     }
     const int length = getSize( *data );
     //correct the signed bit
     T tempData = *data;
-    if( typeid(T) == typeid(unsigned long) )
+    if ( typeid(T) == typeid(unsigned long) )
     {
         //Check if unsigned long is over the limit of XDR
-        if( ( ( static_cast<long>( *data ) ) ) > ( ( static_cast<long>( 1 ) << ( length * 8 ) ) - 1 ) )
+        if ( ( ( static_cast<long>( *data ) ) ) > ( ( static_cast<long>( 1 ) << ( length * 8 ) ) - 1 ) )
         {
             LAMA_THROWEXCEPTION( "unsigned long is to big for XDR (Limit 4 Byte)" );
         }
     }
-    if( typeid(T) == typeid(long) )
+    if ( typeid(T) == typeid(long) )
     {
-        if( std::abs( static_cast<long>( *data ) ) >= ( 1 << 30 ) - 1 )
+        if ( std::abs( static_cast<long>( *data ) ) >= ( 1 << 30 ) - 1 )
         {
             LAMA_THROWEXCEPTION( "long is to big for XDR (Limit 4 Byte)" );
         }
@@ -237,9 +237,9 @@ void XDRFileStream::xdrWrite( const T* const data )
         tempData = static_cast<T>( 0 | temp );
     }
     char* dataptr = reinterpret_cast<char*>( &tempData );
-    if( isLittleEndian() )
+    if ( isLittleEndian() )
     {
-        for( int pos = length - 1; pos >= 0; pos-- )
+        for ( int pos = length - 1; pos >= 0; pos-- )
         {
             m_filestream.write( dataptr + pos, 1 );
         }
@@ -255,27 +255,27 @@ int XDRFileStream::getSize( const T )
 {
     int size = 0;
 
-    if( typeid(T) == typeid(double) )
+    if ( typeid(T) == typeid(double) )
     {
         size = 8;
     }
-    else if( typeid(T) == typeid(float) )
+    else if ( typeid(T) == typeid(float) )
     {
         size = 4;
     }
-    else if( typeid(T) == typeid(int) )
+    else if ( typeid(T) == typeid(int) )
     {
         size = 4;
     }
-    else if( typeid(T) == typeid(long) )
+    else if ( typeid(T) == typeid(long) )
     {
         size = 4;
     }
-    else if( typeid(T) == typeid(unsigned long) )
+    else if ( typeid(T) == typeid(unsigned long) )
     {
         size = 4;
     }
-    else if( typeid(T) == typeid(unsigned int) )
+    else if ( typeid(T) == typeid(unsigned int) )
     {
         size = 4;
     }

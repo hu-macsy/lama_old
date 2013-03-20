@@ -707,7 +707,7 @@ void MatrixStorageTest<StorageType>::jacobiTest( const ValueType omega )
     {   // invert the diagonal
 
         HostWriteAccess<ValueType> wDiagonal( diagonal );
-        for( IndexType i = 0; i < n; i++ )
+        for ( IndexType i = 0; i < n; i++ )
         {
             wDiagonal[i] = static_cast<ValueType>( 1.0 ) / wDiagonal[i];
         }
@@ -724,7 +724,7 @@ void MatrixStorageTest<StorageType>::jacobiTest( const ValueType omega )
         HostWriteAccess<ValueType> wSolution( solution2 );
         HostReadAccess<ValueType> rDiagonal( diagonal );
         HostReadAccess<ValueType> rOldSolution( oldSolution );
-        for( IndexType i = 0; i < n; i++ )
+        for ( IndexType i = 0; i < n; i++ )
         {
             wSolution[i] = static_cast<ValueType>( omega * wSolution[i] * rDiagonal[i]
                                                    + ( 1.0 - omega ) * rOldSolution[i] );
@@ -737,7 +737,7 @@ void MatrixStorageTest<StorageType>::jacobiTest( const ValueType omega )
         HostReadAccess<ValueType> rSolution1( solution1 );
         HostReadAccess<ValueType> rSolution2( solution2 );
 
-        for( IndexType i = 0; i < n; ++i )
+        for ( IndexType i = 0; i < n; ++i )
         {
             BOOST_CHECK_CLOSE( rSolution1[i], rSolution2[i], 1 );
         }

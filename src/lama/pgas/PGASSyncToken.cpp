@@ -45,7 +45,7 @@ PGASSyncToken::PGASSyncToken()
 
 PGASSyncToken::~PGASSyncToken()
 {
-    if( !isSynchronized() )
+    if ( !isSynchronized() )
     {
         LAMA_LOG_DEBUG( logger, *this << ": synchnronized at destructor" );
         wait();
@@ -59,7 +59,7 @@ void PGASSyncToken::writeAt( std::ostream& stream ) const
 
 void PGASSyncToken::wait()
 {
-    if( isSynchronized() )
+    if ( isSynchronized() )
     {
         LAMA_LOG_WARN( logger, *this << ": waiting twice" );
 

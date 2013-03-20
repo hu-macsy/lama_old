@@ -38,7 +38,7 @@ namespace log4lama
 Logger::Logger( const std::string& name, Logger* const parent )
     : mName( name ), mSetFlag( false ), mLevel( WARN ), mParent( parent )
 {
-    if( mParent != NULL )
+    if ( mParent != NULL )
     {
         mParent->mSons.push_back( this );
         mLevel = mParent->getLevel();
@@ -53,11 +53,11 @@ std::string Logger::getFullName() const
 {
     std::string fullname = "";
 
-    if( mParent == NULL )
+    if ( mParent == NULL )
     {
         fullname = "<root>";
     }
-    else if( mParent->isRootLogger() )
+    else if ( mParent->isRootLogger() )
     {
         fullname = mName;
     }
@@ -73,7 +73,7 @@ Level Logger::getEffectiveLevel() const
 {
     Level level = mLevel;
 
-    if( !mSetFlag && mParent != NULL )
+    if ( !mSetFlag && mParent != NULL )
     {
         level = mParent->getEffectiveLevel();
     }
@@ -84,7 +84,7 @@ Level Logger::getEffectiveLevel() const
 void Logger::setLevel( const Level level, const bool force/*= true*/)
 {
     // if level is already set and there is no force => return
-    if( !force && mSetFlag )
+    if ( !force && mSetFlag )
     {
         return;
     }
@@ -94,7 +94,7 @@ void Logger::setLevel( const Level level, const bool force/*= true*/)
     mSetFlag = force;
 
     // traverse the sons but do no longer force
-    for( size_t i = 0; i < mSons.size(); i++ )
+    for ( size_t i = 0; i < mSons.size(); i++ )
     {
         mSons[i]->setLevel( level, false );
     }

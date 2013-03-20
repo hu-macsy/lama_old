@@ -67,7 +67,7 @@ void foo( bool call )
 {
     LAMA_REGION( "foo" );
     work( 1 );
-    if( call )
+    if ( call )
     {
         bar();
         work( 1 );

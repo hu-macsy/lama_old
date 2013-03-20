@@ -85,7 +85,7 @@ inline LAMASimpleTimeTracer::~LAMASimpleTimeTracer()
     mStopTime = omp_get_wtime();
 
     double runTime = mStopTime - mStartTime;
-    if( getRuntime() > 0.0 )
+    if ( getRuntime() > 0.0 )
     {
         runTime = getRuntime();
     }

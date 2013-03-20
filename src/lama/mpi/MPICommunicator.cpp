@@ -69,7 +69,7 @@ MPICommunicator::MPICommunicator( int& argc, char** & argv )
 
     LAMA_MPICALL( logger, MPI_Initialized( &initialized ), "MPI_Initialized" );
 
-    if( initialized )
+    if ( initialized )
     {
         mExternInitialization = true;
         LAMA_LOG_WARN( logger, "MPI_Init: MPI has already been initialized." );
@@ -82,22 +82,22 @@ MPICommunicator::MPICommunicator( int& argc, char** & argv )
 
         const char* envConfig = getenv( "LAMA_MPICOMM_THREAD_SAFETY" );
 
-        if( envConfig != NULL )
+        if ( envConfig != NULL )
         {
             threadSafetyEnvironment = envConfig;
         }
 
         int requiredThreadSafety = MPI_THREAD_FUNNELED;
 
-        if( threadSafetyEnvironment == "Multiple" )
+        if ( threadSafetyEnvironment == "Multiple" )
         {
             requiredThreadSafety = MPI_THREAD_MULTIPLE;
         }
-        else if( threadSafetyEnvironment == "Serialized" )
+        else if ( threadSafetyEnvironment == "Serialized" )
         {
             requiredThreadSafety = MPI_THREAD_SERIALIZED;
         }
-        else if( threadSafetyEnvironment != "" )
+        else if ( threadSafetyEnvironment != "" )
         {
             LAMA_LOG_ERROR( logger,
                             "LAMA_MPICOMM_THREAD_SAFETY = " << threadSafetyEnvironment << ", unknown value (try Multiple or Serialized)" );
@@ -108,7 +108,7 @@ MPICommunicator::MPICommunicator( int& argc, char** & argv )
         LAMA_MPICALL( logger, MPI_Init_thread( &argc, &argv, requiredThreadSafety, &providedThreadSafety ),
                       "MPI_Init" );
 
-        switch( providedThreadSafety )
+        switch ( providedThreadSafety )
         {
         case MPI_THREAD_MULTIPLE:
             mThreadSafetyLevel = Communicator::Multiple;
@@ -147,9 +147,9 @@ MPICommunicator::~MPICommunicator()
     int finalized = 0;
     LAMA_MPICALL( logger, MPI_Finalized( &finalized ), "MPI_Finalized" );
 
-    if( !finalized )
+    if ( !finalized )
     {
-        if( !mExternInitialization )
+        if ( !mExternInitialization )
         {
             LAMA_LOG_INFO( logger, "call MPI_Finalize" );
             LAMA_MPICALL( logger, MPI_Finalize(), "MPI_Finalize" );
@@ -170,7 +170,7 @@ bool MPICommunicator::isEqual( const Communicator& other ) const
     bool equal = false;
     const MPICommunicator* otherMPI = dynamic_cast<const MPICommunicator*>( &other );
 
-    if( otherMPI )
+    if ( otherMPI )
     {
         equal = mComm == otherMPI->mComm;
     }
@@ -323,7 +323,7 @@ void MPICommunicator::exchangeByPlanImpl(
 
     // setup receives for each entry in receive plan
 
-    for( PartitionId i = 0; i < maxReceives; ++i )
+    for ( PartitionId i = 0; i < maxReceives; ++i )
     {
         IndexType quantity = recvPlan[i].quantity;
         IndexType offset = recvPlan[i].offset;
@@ -332,7 +332,7 @@ void MPICommunicator::exchangeByPlanImpl(
         LAMA_LOG_DEBUG( logger,
                         *this << ": receive " << quantity << " elements" << " from processor " << p << " at offset " << offset );
 
-        if( p != mRank )
+        if ( p != mRank )
         {
             commRequest[noReceives] = startrecv( recvDataForI, quantity, p );
             noReceives++;
@@ -346,7 +346,7 @@ void MPICommunicator::exchangeByPlanImpl(
 
     // send the data via sendPlan
 
-    for( PartitionId i = 0; i < sendPlan.size(); ++i )
+    for ( PartitionId i = 0; i < sendPlan.size(); ++i )
     {
         IndexType quantity = sendPlan[i].quantity;
         IndexType offset = sendPlan[i].offset;
@@ -355,7 +355,7 @@ void MPICommunicator::exchangeByPlanImpl(
         LAMA_LOG_DEBUG( logger,
                         *this << ": send " << quantity << " elements" << " to processor " << p << " at offset " << offset );
 
-        if( p != mRank )
+        if ( p != mRank )
         {
             send( sendDataForI, quantity, p );
         }
@@ -364,7 +364,7 @@ void MPICommunicator::exchangeByPlanImpl(
             LAMA_LOG_DEBUG( logger, "self-exchange of " << quantity << " elements" );
             LAMA_ASSERT_DEBUG( quantity == recvDataForMeSize, "size mismatch for self exchange" );
 
-            for( IndexType k = 0; k < recvDataForMeSize; k++ )
+            for ( IndexType k = 0; k < recvDataForMeSize; k++ )
             {
                 recvDataForMe[k] = sendDataForI[k];
             }
@@ -403,14 +403,14 @@ auto_ptr<SyncToken> MPICommunicator::exchangeByPlanAsyncImpl(
 
     // setup receives for each entry in receive plan
 
-    for( PartitionId i = 0; i < recvPlan.size(); ++i )
+    for ( PartitionId i = 0; i < recvPlan.size(); ++i )
     {
         IndexType quantity = recvPlan[i].quantity;
         T* recvDataForI = recvData + recvPlan[i].offset;
         PartitionId p = recvPlan[i].partitionId;
         LAMA_LOG_DEBUG( logger, *this << ": receive " << quantity << " elements" << " from processor " << p );
 
-        if( p != mRank )
+        if ( p != mRank )
         {
             syncToken.pushRequest( startrecv( recvDataForI, quantity, p ) );
         }
@@ -423,14 +423,14 @@ auto_ptr<SyncToken> MPICommunicator::exchangeByPlanAsyncImpl(
 
     // send the data via sendPlan
 
-    for( PartitionId i = 0; i < sendPlan.size(); ++i )
+    for ( PartitionId i = 0; i < sendPlan.size(); ++i )
     {
         IndexType quantity = sendPlan[i].quantity;
         const T* sendDataForI = sendData + sendPlan[i].offset;
         PartitionId p = sendPlan[i].partitionId;
         LAMA_LOG_DEBUG( logger, *this << ": send " << quantity << " elements" << " to processor " << p );
 
-        if( p != mRank )
+        if ( p != mRank )
         {
             syncToken.pushRequest( startsend( sendDataForI, quantity, p ) );
         }
@@ -439,7 +439,7 @@ auto_ptr<SyncToken> MPICommunicator::exchangeByPlanAsyncImpl(
             LAMA_LOG_DEBUG( logger, "self-exchange of " << quantity << " elements" );
             LAMA_ASSERT_DEBUG( quantity == recvDataForMeSize, "size mismatch for self exchange" );
 
-            for( IndexType k = 0; k < recvDataForMeSize; k++ )
+            for ( IndexType k = 0; k < recvDataForMeSize; k++ )
             {
                 recvDataForMe[k] = sendDataForI[k];
             }
@@ -453,14 +453,14 @@ auto_ptr<SyncToken> MPICommunicator::exchangeByPlanAsyncImpl(
 
 inline MPI_Comm MPICommunicator::selectMPIComm() const
 {
-    if( mThreadSafetyLevel != Multiple )
+    if ( mThreadSafetyLevel != Multiple )
     {
         return mComm;
     }
 
     const boost::thread thisThread;
 
-    if( thisThread == mMainThread )
+    if ( thisThread == mMainThread )
     {
         return mComm;
     }
@@ -574,7 +574,7 @@ IndexType MPICommunicator::shift(
     LAMA_LOG_DEBUG( logger,
                     *this << ": shift, direction = " << direction << ", sendsize = " << sendSize << ", recvsize = " << recvSize );
 
-    if( direction % getSize() == 0 )
+    if ( direction % getSize() == 0 )
     {
         return shift0( recvData, recvSize, sendVals, sendSize );
     }
@@ -594,7 +594,7 @@ IndexType MPICommunicator::shift(
     LAMA_LOG_DEBUG( logger,
                     *this << ": shift, direction = " << direction << ", sendsize = " << sendSize << ", recvsize = " << recvSize );
 
-    if( direction % getSize() == 0 )
+    if ( direction % getSize() == 0 )
     {
         return shift0( recvData, recvSize, sendVals, sendSize );
     }
@@ -614,7 +614,7 @@ IndexType MPICommunicator::shift(
     LAMA_LOG_DEBUG( logger,
                     *this << ": shift, direction = " << direction << ", sendsize = " << sendSize << ", recvsize = " << recvSize );
 
-    if( direction % getSize() == 0 )
+    if ( direction % getSize() == 0 )
     {
         return shift0( recvData, recvSize, sendVals, sendSize );
     }
@@ -660,7 +660,7 @@ auto_ptr<SyncToken> MPICommunicator::shiftAsync(
 {
     LAMA_LOG_DEBUG( logger, *this << ": shiftAsync size = " << size << ", direction = " << direction );
 
-    if( direction % getSize() == 0 )
+    if ( direction % getSize() == 0 )
     {
         return defaultShiftAsync( recvVals, sendVals, size, 0 );
     }
@@ -676,7 +676,7 @@ auto_ptr<SyncToken> MPICommunicator::shiftAsync(
     const IndexType size,
     const int direction ) const
 {
-    if( direction % getSize() == 0 )
+    if ( direction % getSize() == 0 )
     {
         return defaultShiftAsync( recvVals, sendVals, size, 0 );
     }
@@ -692,7 +692,7 @@ auto_ptr<SyncToken> MPICommunicator::shiftAsync(
     const IndexType size,
     const int direction ) const
 {
-    if( direction % getSize() == 0 )
+    if ( direction % getSize() == 0 )
     {
         return defaultShiftAsync( recvVals, sendVals, size, 0 );
     }
@@ -881,7 +881,7 @@ void MPICommunicator::scatterImpl(
     LAMA_ASSERT_ERROR( root < getSize(), "illegal root, root = " << root );
     MPI_Datatype commType = getMPIType<T>();
 
-    if( root == getRank() )
+    if ( root == getRank() )
     {
         void* sendbuf = const_cast<T*>( allvals );
         PartitionId np = getSize();
@@ -889,7 +889,7 @@ void MPICommunicator::scatterImpl(
         boost::scoped_array<int> displs( new int[np] );
         int displacement = 0;
 
-        for( PartitionId i = 0; i < np; i++ )
+        for ( PartitionId i = 0; i < np; i++ )
         {
             counts[i] = static_cast<int>( sizes[i] );
             displs[i] = displacement;
@@ -908,7 +908,7 @@ void MPICommunicator::scatterImpl(
 
         PartitionId np = getSize();
         boost::scoped_array<int> counts( new int[np] );
-        for( PartitionId i = 0; i < np; i++ )
+        for ( PartitionId i = 0; i < np; i++ )
         {
             counts[i] = 0;
         }
@@ -997,14 +997,14 @@ void MPICommunicator::gatherImpl(
     void* sendbuf = const_cast<T*>( myvals );
     MPI_Datatype commType = getMPIType<T>();
 
-    if( root == getRank() )
+    if ( root == getRank() )
     {
         PartitionId np = getSize();
         boost::scoped_array<int> counts( new int[np] );
         boost::scoped_array<int> displs( new int[np] );
         int displacement = 0;
 
-        for( PartitionId i = 0; i < np; i++ )
+        for ( PartitionId i = 0; i < np; i++ )
         {
             counts[i] = static_cast<int>( sizes[i] );
             displs[i] = displacement;
@@ -1023,7 +1023,7 @@ void MPICommunicator::gatherImpl(
 
         PartitionId np = getSize();
         boost::scoped_array<int> counts( new int[np] );
-        for( PartitionId i = 0; i < np; i++ )
+        for ( PartitionId i = 0; i < np; i++ )
         {
             counts[i] = 0;
         }
@@ -1084,7 +1084,7 @@ void MPICommunicator::maxlocImpl( T& val, int& location, PartitionId root ) cons
     MPI_Datatype commType = getMPI2Type<T,int>();
     MPI_Reduce( &in, &out, 1, commType, MPI_MAXLOC, root, selectMPIComm() );
 
-    if( mRank == root )
+    if ( mRank == root )
     {
         val = out.val;
         location = out.location;
@@ -1113,14 +1113,14 @@ void MPICommunicator::maxloc( int& val, int& location, PartitionId root ) const
 template<typename T>
 void MPICommunicator::swapImpl( T val[], const IndexType n, PartitionId partner ) const
 {
-    if( partner == mRank )
+    if ( partner == mRank )
     {
         return;
     }
 
     boost::scoped_array<T> tmp( new T[n] );
 
-    for( IndexType i = 0; i < n; i++ )
+    for ( IndexType i = 0; i < n; i++ )
     {
         tmp[i] = val[i];
     }

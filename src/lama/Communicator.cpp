@@ -94,28 +94,28 @@ void Communicator::factorize2( const double sizeX, const double sizeY, Partition
 
     PartitionId size = getSize();
 
-    for( PartitionId ipx = 1; ipx <= size; ipx++ )
+    for ( PartitionId ipx = 1; ipx <= size; ipx++ )
     {
-        if( size % ipx != 0 )
+        if ( size % ipx != 0 )
         {
             continue;
         }
 
-        if( usergrid[0] && ( usergrid[0] != ipx ) )
+        if ( usergrid[0] && ( usergrid[0] != ipx ) )
         {
             continue;
         }
 
         PartitionId ipy = size / ipx;
 
-        if( usergrid[1] && ( usergrid[1] != ipy ) )
+        if ( usergrid[1] && ( usergrid[1] != ipy ) )
         {
             continue;
         }
 
         double line = sizeX / ipx + sizeY / ipy;
 
-        if( line < bestline )
+        if ( line < bestline )
         {
             found = true;
             bestline = line;
@@ -125,7 +125,7 @@ void Communicator::factorize2( const double sizeX, const double sizeY, Partition
         }
     }
 
-    if( !found )
+    if ( !found )
     {
         LAMA_THROWEXCEPTION(
             "No processor 2D-grid found for usergrid " << usergrid[0] << " x " << usergrid[1] << ", NP = " << size );
@@ -160,43 +160,43 @@ void Communicator::factorize3(
 
     bool found = false;
 
-    for( PartitionId ipx = 1; ipx <= size; ipx++ )
+    for ( PartitionId ipx = 1; ipx <= size; ipx++ )
     {
-        if( size % ipx != 0 )
+        if ( size % ipx != 0 )
         {
             continue;
         }
 
-        if( usergrid[0] && ( usergrid[0] != ipx ) )
+        if ( usergrid[0] && ( usergrid[0] != ipx ) )
         {
             continue;
         }
 
         PartitionId nremain = size / ipx;
 
-        for( PartitionId ipy = 1; ipy <= nremain; ipy++ )
+        for ( PartitionId ipy = 1; ipy <= nremain; ipy++ )
         {
 
-            if( nremain % ipy != 0 )
+            if ( nremain % ipy != 0 )
             {
                 continue;
             }
 
-            if( usergrid[1] && ( usergrid[1] != ipy ) )
+            if ( usergrid[1] && ( usergrid[1] != ipy ) )
             {
                 continue;
             }
 
             PartitionId ipz = nremain / ipy;
 
-            if( usergrid[2] && ( usergrid[2] != ipz ) )
+            if ( usergrid[2] && ( usergrid[2] != ipz ) )
             {
                 continue;
             }
 
             double surf = area[0] / ipx / ipy + area[1] / ipx / ipz + area[2] / ipy / ipz;
 
-            if( surf < bestsurf )
+            if ( surf < bestsurf )
             {
                 found = true;
                 bestsurf = surf;
@@ -207,7 +207,7 @@ void Communicator::factorize3(
         }
     }
 
-    if( !found )
+    if ( !found )
     {
         LAMA_THROWEXCEPTION(
             "No processor 3D-grid found for usergrid " << usergrid[0] << " x " << usergrid[1] << " x " << usergrid[2] << ", NP = " << size );
@@ -263,7 +263,7 @@ void Communicator::getUserProcArray( PartitionId userProcArray[3] )
 
     const std::string delimiters = " x_";
 
-    if( np4lama )
+    if ( np4lama )
     {
         std::string str( np4lama );
 
@@ -273,12 +273,12 @@ void Communicator::getUserProcArray( PartitionId userProcArray[3] )
         // Find first "non-delimiter".
         std::string::size_type pos = str.find_first_of( delimiters, lastPos );
 
-        while( std::string::npos != pos || std::string::npos != lastPos )
+        while ( std::string::npos != pos || std::string::npos != lastPos )
         {
             // Found a token
             std::istringstream val( str.substr( lastPos, pos - lastPos ) );
 
-            if( offset > 2 )
+            if ( offset > 2 )
             {
                 break; // ignore more than 3 values
             }
@@ -357,7 +357,7 @@ IndexType Communicator::shift0(
 {
     LAMA_ASSERT_ERROR( sourceSize <= maxTargetSize, "insufficient size for target array" );
 
-    for( IndexType i = 0; i < sourceSize; i++ )
+    for ( IndexType i = 0; i < sourceSize; i++ )
     {
         targetVals[i] = sourceVals[i];
     }
@@ -372,7 +372,7 @@ void Communicator::shift( LAMAArray<T>& recvArray, const LAMAArray<T>& sendArray
 {
     LAMA_ASSERT_ERROR( &recvArray != &sendArray, "send and receive array are same, not allowed for shift" );
 
-    if( direction % getSize() == 0 )
+    if ( direction % getSize() == 0 )
     {
         // self assignment
 
@@ -508,7 +508,7 @@ auto_ptr<SyncToken> Communicator::updateHaloAsync(
         HostReadAccess<T> localData( localValues );
         HostReadAccess<IndexType> sendIndexes( halo.getProvidesIndexes() );
 
-        for( IndexType i = 0; i < numSendValues; i++ )
+        for ( IndexType i = 0; i < numSendValues; i++ )
         {
             sendData[i] = localData[sendIndexes[i]];
         }
@@ -539,7 +539,7 @@ void Communicator::computeOwners(
 
     LAMA_LOG_DEBUG( logger, "need owners for " << requiredIndexesSize << " global indexes" );
 
-    if( distribution.getCommunicator() != *this )
+    if ( distribution.getCommunicator() != *this )
     {
         LAMA_THROWEXCEPTION( "The distribution has a different Communicator." );
     }
@@ -548,9 +548,9 @@ void Communicator::computeOwners(
     owners.resize( requiredIndexesSize );
 
     //Check for own ownership. Mark needed Owners. Only exchange requests for unknown indexes.
-    for( IndexType i = 0; i < static_cast<IndexType>( requiredIndexesSize ); ++i )
+    for ( IndexType i = 0; i < static_cast<IndexType>( requiredIndexesSize ); ++i )
     {
-        if( distribution.isLocal( requiredIndexes[i] ) )
+        if ( distribution.isLocal( requiredIndexes[i] ) )
         {
             owners[i] = rank;
         }
@@ -578,9 +578,9 @@ void Communicator::computeOwners(
         HostWriteAccess<IndexType> ownersReceive( ownersReceiveArray );
         n = 0; // reset, counted again
 
-        for( IndexType i = 0; i < static_cast<IndexType>( requiredIndexesSize ); ++i )
+        for ( IndexType i = 0; i < static_cast<IndexType>( requiredIndexesSize ); ++i )
         {
-            if( owners[i] == -1 )
+            if ( owners[i] == -1 )
             {
                 indexesSend[n++] = requiredIndexes[i];
             }
@@ -588,7 +588,7 @@ void Communicator::computeOwners(
 
         // Important: set owners for full buffer of ownersSend
 
-        for( IndexType i = 0; i < receiveSize; ++i )
+        for ( IndexType i = 0; i < receiveSize; ++i )
         {
             ownersSend[i] = -1;
         }
@@ -598,7 +598,7 @@ void Communicator::computeOwners(
     int currentSize = n;
 
     const int direction = 1; // send to right, recv from left
-    for( int iProc = 0; iProc < size - 1; ++iProc )
+    for ( int iProc = 0; iProc < size - 1; ++iProc )
     {
         HostWriteAccess<IndexType> indexesSend( indexesSendArray );
         HostWriteAccess<IndexType> indexesReceive( indexesReceiveArray );
@@ -618,13 +618,13 @@ void Communicator::computeOwners(
         int* currentOwners = ownersSend.get();
         LAMA_LOG_DEBUG( logger, "check buffer with " << currentSize << " global indexes whether I am owner" );
 
-        for( int i = 0; i < currentSize; ++i )
+        for ( int i = 0; i < currentSize; ++i )
         {
             //TODO there should be a blockwise implementation of isLocal
             LAMA_LOG_TRACE( logger,
                             "check global index " << indexes[i] << " with current owner " << currentOwners[i] << ", is local = " << distribution.isLocal( indexes[i] ) );
 
-            if( currentOwners[i] == -1 && distribution.isLocal( indexes[i] ) )
+            if ( currentOwners[i] == -1 && distribution.isLocal( indexes[i] ) )
             {
                 LAMA_LOG_TRACE( logger, *this << ": me is owner of global index " << indexes[i] );
                 currentOwners[i] = rank;
@@ -638,7 +638,7 @@ void Communicator::computeOwners(
 
         LAMA_LOG_DEBUG( logger, *this << ": send array with " << currentSize << " owners to right" );
 
-        for( int i = 0; i < currentSize; i++ )
+        for ( int i = 0; i < currentSize; i++ )
         {
             LAMA_LOG_TRACE( logger, *this << " send currentOwner[" << i << "] = " << ownersSend[i] )
         }
@@ -647,7 +647,7 @@ void Communicator::computeOwners(
         ownersSize = shift( ownersReceive.get(), receiveSize, ownersSend.get(), currentSize, direction );
 
         LAMA_LOG_DEBUG( logger, *this << ": recvd array with " << ownersSize << " owners from left" );
-        for( int i = 0; i < ownersSize; i++ )
+        for ( int i = 0; i < ownersSize; i++ )
         {
             LAMA_LOG_TRACE( logger, *this << ": recv currentOwner[" << i << "] = " << ownersReceive[i] )
         }
@@ -659,7 +659,7 @@ void Communicator::computeOwners(
     }
 
     HostWriteAccess<IndexType> ownersSend( ownersSendArray );
-    for( int i = 0; i < n; ++i )
+    for ( int i = 0; i < n; ++i )
     {
         LAMA_LOG_TRACE( logger,
                         *this << ": final " << i << " of " << n << ": " << requiredIndexes[i] << ", owner = " << ownersSend[i] );
@@ -668,14 +668,14 @@ void Communicator::computeOwners(
     // The Owner Indexes are always passed in the same order, so we can insert them easily.
     int nn = 0;
 
-    for( IndexType i = 0; i < static_cast<IndexType>( requiredIndexesSize ); ++i )
+    for ( IndexType i = 0; i < static_cast<IndexType>( requiredIndexesSize ); ++i )
     {
-        if( owners[i] == -1 )
+        if ( owners[i] == -1 )
         {
             owners[i] = ownersSend[nn++];
 
             //TODO is this usefull for the speed ?
-            if( nn == n )
+            if ( nn == n )
             {
                 break;
             }

@@ -98,7 +98,7 @@ void gemm_kernel(
                 //load next Part of B if necessary
                 const unsigned char coord = ( 1 + ii ) * 16 + threadIdx.y;
                 APart[512 + Load + threadIdx.y * 16 + threadIdx.x] =
-                    ( Cj < n && coord < k ) ? B[coord * ldb + Cj] : 0.0; //B[Bi*ldb+Bj];
+                    ( Cj < n && coord < k ) ? B[coord * ldb + Cj] : 0.0;//B[Bi*ldb+Bj];
             }
             //            if(Ci<m && Cj<n)
 #pragma unroll 16 //Multiplicate Current Tiles
@@ -145,7 +145,7 @@ void gemm_launcher(
     LAMA_CHECK_CUDA_ACCESS
     ;
 
-    if( transA_char != transB_char && transA_char != 'N' )
+    if ( transA_char != transB_char && transA_char != 'N' )
     {
         LAMA_THROWEXCEPTION( "trans = " << transA_char << " not supported for gemm" );
     }

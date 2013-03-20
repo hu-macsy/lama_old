@@ -78,7 +78,7 @@ BOOST_AUTO_TEST_CASE( LoggingTest )
     fileStream.open( logFileName.c_str(), std::fstream::in );
     fileStream.read( fileInput.get(), testMessage.length() );
 
-    for( IndexType i = 0; i < (IndexType) testMessage.length(); ++i )
+    for ( IndexType i = 0; i < (IndexType) testMessage.length(); ++i )
     {
         BOOST_CHECK_EQUAL( testMessage[i], fileInput[i] );
     }

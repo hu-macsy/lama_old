@@ -41,7 +41,7 @@ std::map<lama::ContextType,lama::ContextPtr> Context::contexts;
 
 lama::ContextPtr Context::getContext( const lama::ContextType type )
 {
-    if( !contexts[type] )
+    if ( !contexts[type] )
     {
         contexts[type] = lama::ContextFactory::getContext( type );
     }

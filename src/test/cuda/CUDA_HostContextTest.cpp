@@ -97,7 +97,7 @@ BOOST_AUTO_TEST_CASE( allocateTest )
     {
         HostWriteAccess<IndexType> arr( arrContext );
         arr.resize( 5 );
-        for( IndexType i = 0; i < 5; i++ )
+        for ( IndexType i = 0; i < 5; i++ )
         {
             arr[i] = i;
         }
@@ -113,11 +113,11 @@ BOOST_AUTO_TEST_CASE( allocateTest )
 
     {
         HostWriteAccess<IndexType> arr( arrContext );
-        for( IndexType i = 0; i < 5; i++ )
+        for ( IndexType i = 0; i < 5; i++ )
         {
             BOOST_CHECK_EQUAL( i, arr[i] );
         }
-        for( IndexType i = 0; i < 5; i++ )
+        for ( IndexType i = 0; i < 5; i++ )
         {
             arr[i] = 0;
         }
@@ -133,7 +133,7 @@ BOOST_AUTO_TEST_CASE( allocateTest )
 
     {
         HostReadAccess<IndexType> arr( arrContext );
-        for( IndexType i = 0; i < 5; i++ )
+        for ( IndexType i = 0; i < 5; i++ )
         {
             BOOST_CHECK_EQUAL( 0, arr[i] );
         }

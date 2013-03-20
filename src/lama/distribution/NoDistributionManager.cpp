@@ -85,7 +85,7 @@ NoDistributionManager::~NoDistributionManager()
 
 DistributionPtr NoDistributionManager::getDistribution( const IndexType size, const std::vector<int>& arguments )
 {
-    if( arguments.size() > 0 )
+    if ( arguments.size() > 0 )
     {
         LAMA_LOG_WARN( logger, "additional arguments are ignored" );
     }

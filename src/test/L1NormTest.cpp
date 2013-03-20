@@ -99,7 +99,7 @@ BOOST_AUTO_TEST_CASE( commonTestCases )
     L1Norm l1norm;
     NormTest normtest( l1norm );
 
-    if( base_test_case )
+    if ( base_test_case )
     {
         LAMA_LOG_INFO( logger, "Run method " << testcase << " in L1NormTest." );
         NORMTEST_COMMONTESTCASES( normtest );

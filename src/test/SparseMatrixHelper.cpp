@@ -42,7 +42,7 @@ bool compareMatrices( const lama::CSRSparseMatrix<ValueType>& matrix, const lama
 {
     lama::IndexType nnu = matrix.getLocalNumRows();
 
-    if( !( nnu == other.getLocalNumRows() && matrix.getLocalNumColumns() == other.getLocalNumColumns()
+    if ( !( nnu == other.getLocalNumRows() && matrix.getLocalNumColumns() == other.getLocalNumColumns()
             && matrix.getLocalNumValues() == other.getLocalNumValues() ) )
     {
         return false;
@@ -56,9 +56,9 @@ bool compareMatrices( const lama::CSRSparseMatrix<ValueType>& matrix, const lama
     lama::HostReadAccess<lama::IndexType> ia( matrixLocal.getIA() );
     lama::HostReadAccess<lama::IndexType> iaOther( otherLocal.getIA() );
 
-    for( lama::IndexType i = 0; i < nnu + 1; ++i )
+    for ( lama::IndexType i = 0; i < nnu + 1; ++i )
     {
-        if( ia[i] != iaOther[i] )
+        if ( ia[i] != iaOther[i] )
         {
             return false;
         }
@@ -69,24 +69,24 @@ bool compareMatrices( const lama::CSRSparseMatrix<ValueType>& matrix, const lama
     lama::HostReadAccess<ValueType> data( matrixLocal.getValues() );
     lama::HostReadAccess<ValueType> dataOther( otherLocal.getValues() );
 
-    for( lama::IndexType i = 0; i < nnu; ++i )
+    for ( lama::IndexType i = 0; i < nnu; ++i )
     {
-        for( lama::IndexType jj = ia[i]; jj < ia[i + 1]; ++jj )
+        for ( lama::IndexType jj = ia[i]; jj < ia[i + 1]; ++jj )
         {
             lama::IndexType j = ja[jj];
             bool found = false;
-            for( lama::IndexType kk = iaOther[i]; kk < iaOther[i + 1]; ++kk )
+            for ( lama::IndexType kk = iaOther[i]; kk < iaOther[i + 1]; ++kk )
             {
-                if( j == jaOther[kk] )
+                if ( j == jaOther[kk] )
                 {
                     found = true;
-                    if( data[jj] != dataOther[kk] )
+                    if ( data[jj] != dataOther[kk] )
                     {
                         return false;
                     }
                 }
             }
-            if( !found )
+            if ( !found )
             {
                 return false;
             }

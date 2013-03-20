@@ -84,7 +84,7 @@ SimpleStorageStrategy<ValueType>::~SimpleStorageStrategy()
 template<typename ValueType>
 void SimpleStorageStrategy<ValueType>::applyStrategy( const Matrix )
 {
-    if( getContextPtr()->getType() == Context::CUDA )
+    if ( getContextPtr()->getType() == Context::CUDA )
     {
         mInnerMatrix.reset( new ELLSparseMatrix( getDistributionPtr(), getColDistributionPtr() ) );
     }
@@ -97,7 +97,7 @@ void SimpleStorageStrategy<ValueType>::applyStrategy( const Matrix )
 
     const _SparseMatrix* sparseMatrix = dynamic_cast<const _SparseMatrix*>( &matrix );
 
-    if( sparseMatrix )
+    if ( sparseMatrix )
     {
         // for a sparse matrix local + halo part can be assigned
 

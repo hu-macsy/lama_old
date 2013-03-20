@@ -39,7 +39,7 @@ texture<float,1> texCSRJacobiSXref;
 texture<int2,1> texCSRJacobiDXref;
 
 template<typename T,bool useTexture>
-__inline__    __device__ T fetch_CSRJacobix( const T* const x, const int i )
+__inline__     __device__ T fetch_CSRJacobix( const T* const x, const int i )
 {
     return x[i];
 }
@@ -72,24 +72,26 @@ void cspblas_CSRJacobi_kernel(
     const T omega )
 {
     const int i = threadId( gridDim, blockIdx, blockDim, threadIdx );
-    if( i < nnu )
+    if ( i < nnu )
     {
         T temp = rhs_d[i];
         const int rowStart = ia_d[i];
         const int rowEnd = ia_d[i + 1];
         const T a_diag = a_d[rowStart];
-        for( int jj = rowStart + 1; jj < rowEnd; ++jj )
+        for ( int jj = rowStart + 1; jj < rowEnd; ++jj )
         {
             temp -= a_d[jj] * fetch_CSRJacobix<T,useTexture>( u_old_d, ja_d[jj] );
         }
-        if( omega == 0.5 ) {
+        if ( omega == 0.5 )
+        {
             u_d[i] = omega * ( fetch_CSRJacobix<T,useTexture>( u_old_d, i ) + temp / a_diag );
         }
-        else if( omega == 1.0 )
+        else if ( omega == 1.0 )
         {
             u_d[i] = temp / a_diag;
         }
-        else {
+        else
+        {
             u_d[i] = omega * ( temp / a_diag ) + ( 1.0 - omega ) * fetch_CSRJacobix<T,useTexture>( u_old_d, i );
         }
     }
@@ -114,7 +116,7 @@ void CSRJacobiAsync_launcher(
     //TODO: Determine this depending on the comput capability
     const bool useTexture = true; //lama_getUseTex_cuda();
 
-    if( useTexture )
+    if ( useTexture )
     {
         LAMA_CUDA_RT_CALL( cudaBindTexture(NULL,texCSRJacobiSXref,u_old_d), LAMA_STATUS_CUDA_BINDTEX_FAILED );
         LAMA_CUDA_RT_CALL( cudaFuncSetCacheConfig(cspblas_CSRJacobi_kernel<T,true>, cudaFuncCachePreferL1),
@@ -126,7 +128,7 @@ void CSRJacobiAsync_launcher(
                            LAMA_STATUS_CUDA_FUNCSETCACHECONFIG_FAILED );
     }
 
-    if( useTexture )
+    if ( useTexture )
     {
         cspblas_CSRJacobi_kernel<T,true><<<dimGrid,dimBlock,0,stream>>>(ia_d,ja_d,a_d,nnu,rhs_d,u_d,u_old_d,omega);
     }
@@ -137,7 +139,7 @@ void CSRJacobiAsync_launcher(
 
     LAMA_CUDA_RT_CALL( cudaGetLastError(), LAMA_STATUS_SCSRJACOBI_CUDAKERNEL_FAILED );
 
-    if( useTexture )
+    if ( useTexture )
     {
         LAMA_CUDA_RT_CALL( cudaUnbindTexture(texCSRJacobiSXref), LAMA_STATUS_CUDA_UNBINDTEX_FAILED );
     }
@@ -159,10 +161,10 @@ void cspblas_CSRJacobi_halo_kernel(
     const T omega )
 {
     const int id = threadId( gridDim, blockIdx, blockDim, threadIdx );
-    if( id < nzr )
+    if ( id < nzr )
     {
         int i = id;
-        if( nzr < n )
+        if ( nzr < n )
         {
             i = rows_d[id];
         }
@@ -171,7 +173,7 @@ void cspblas_CSRJacobi_halo_kernel(
         const int rowStart = ia_halo_d[i];
         const int rowEnd = ia_halo_d[i + 1];
 
-        for( int jj = rowStart; jj < rowEnd; ++jj )
+        for ( int jj = rowStart; jj < rowEnd; ++jj )
         {
             temp += a_halo_d[jj] * fetch_CSRJacobix<T,useTexture>( u_old_d, ja_halo_d[jj] );
         }
@@ -201,14 +203,14 @@ void CSRJacobiHalo_launcher(
 
     const bool useTexture = true; //lama_getUseTex_cuda();
 
-    if( useTexture )
+    if ( useTexture )
     {
 
-        if( sizeof(T) == sizeof(double) )
+        if ( sizeof(T) == sizeof(double) )
         {
             LAMA_CUDA_RT_CALL( cudaBindTexture(NULL,texCSRJacobiDXref,u_old_d), LAMA_STATUS_CUDA_BINDTEX_FAILED );
         }
-        else if( sizeof(T) == sizeof(float) )
+        else if ( sizeof(T) == sizeof(float) )
         {
             LAMA_CUDA_RT_CALL( cudaBindTexture(NULL,texCSRJacobiSXref,u_old_d), LAMA_STATUS_CUDA_BINDTEX_FAILED );
         }
@@ -222,7 +224,7 @@ void CSRJacobiHalo_launcher(
                            LAMA_STATUS_CUDA_FUNCSETCACHECONFIG_FAILED );
     }
 
-    if( useTexture )
+    if ( useTexture )
     {
         cspblas_CSRJacobi_halo_kernel<T,true><<<dimGrid,dimBlock>>>(u_d,ia_local_d,a_local_d,ia_halo_d,ja_halo_d,a_halo_d,rows_d,nzr,n,u_old_d,omega);
     }
@@ -234,13 +236,13 @@ void CSRJacobiHalo_launcher(
     LAMA_CUDA_RT_CALL( cudaGetLastError(), LAMA_STATUS_CSRJACOBIHALO_CUDAKERNEL_FAILED );
     LAMA_CUDA_RT_CALL( cudaStreamSynchronize(0), LAMA_STATUS_CSRJACOBIHALO_CUDAKERNEL_FAILED );
 
-    if( useTexture )
+    if ( useTexture )
     {
-        if( sizeof(T) == sizeof(double) )
+        if ( sizeof(T) == sizeof(double) )
         {
             LAMA_CUDA_RT_CALL( cudaUnbindTexture(texCSRJacobiDXref), LAMA_STATUS_CUDA_UNBINDTEX_FAILED );
         }
-        else if( sizeof(T) == sizeof(float) )
+        else if ( sizeof(T) == sizeof(float) )
         {
             LAMA_CUDA_RT_CALL( cudaUnbindTexture(texCSRJacobiDXref), LAMA_STATUS_CUDA_UNBINDTEX_FAILED );
         }
@@ -252,7 +254,7 @@ texture<float,1> texELLJacobiSXref;
 texture<int2,1> texELLJacobiDXref;
 
 template<typename T,bool useTexture>
-__inline__    __device__ T fetch_ELLJacobix( const T* const x, const int i )
+__inline__     __device__ T fetch_ELLJacobix( const T* const x, const int i )
 {
     return x[i];
 }
@@ -285,7 +287,7 @@ void cspblas_ELLJacobi_kernel(
     const T omega )
 {
     const int i = threadId( gridDim, blockIdx, blockDim, threadIdx );
-    if( i < n )
+    if ( i < n )
     {
         T temp = rhs_d[i];
         a_d += i;
@@ -294,22 +296,23 @@ void cspblas_ELLJacobi_kernel(
         const T a_diag = *a_d;
         a_d += n;
         ja_d += n;
-        for( int kk = 1; kk < nnr; ++kk )
+        for ( int kk = 1; kk < nnr; ++kk )
         {
             const T aValue = *a_d;
             temp -= aValue * fetch_ELLJacobix<T,useTexture>( u_old_d, *ja_d );
             a_d += n;
             ja_d += n;
         }
-        if( omega == 0.5 )
+        if ( omega == 0.5 )
         {
             u_d[i] = omega * ( fetch_ELLJacobix<T,useTexture>( u_old_d, i ) + temp / a_diag );
         }
-        else if( omega == 1.0 )
+        else if ( omega == 1.0 )
         {
             u_d[i] = temp / a_diag;
         }
-        else {
+        else
+        {
             u_d[i] = omega * ( temp / a_diag ) + ( 1.0 - omega ) * fetch_ELLJacobix<T,useTexture>( u_old_d, i );
         }
     }
@@ -334,7 +337,7 @@ void ELLJacobiAsync_launcher(
 //TODO: Determine this depending on the comput capability
     const bool useTexture = true; //lama_getUseTex_cuda();
 
-    if( useTexture )
+    if ( useTexture )
     {
         LAMA_CUDA_RT_CALL( cudaBindTexture(NULL,texELLJacobiSXref,u_old_d), LAMA_STATUS_CUDA_BINDTEX_FAILED );
         LAMA_CUDA_RT_CALL( cudaFuncSetCacheConfig(cspblas_ELLJacobi_kernel<T,true>, cudaFuncCachePreferL1),
@@ -346,7 +349,7 @@ void ELLJacobiAsync_launcher(
                            LAMA_STATUS_CUDA_FUNCSETCACHECONFIG_FAILED );
     }
 
-    if( useTexture )
+    if ( useTexture )
     {
         cspblas_ELLJacobi_kernel<T,true><<<dimGrid,dimBlock,0,stream>>>(nnr,ja_d,a_d,nnu,rhs_d,u_d,u_old_d,omega);
     }
@@ -357,7 +360,7 @@ void ELLJacobiAsync_launcher(
 
     LAMA_CUDA_RT_CALL( cudaGetLastError(), LAMA_STATUS_DCSRJACOBI_CUDAKERNEL_FAILED );
 
-    if( useTexture )
+    if ( useTexture )
     {
         LAMA_CUDA_RT_CALL( cudaUnbindTexture(texELLJacobiSXref), LAMA_STATUS_CUDA_UNBINDTEX_FAILED );
     }
@@ -378,10 +381,10 @@ void cspblas_ELLJacobi_halo_kernel(
     const T omega )
 {
     const int id = threadId( gridDim, blockIdx, blockDim, threadIdx );
-    if( id < nzr )
+    if ( id < nzr )
     {
         int i = id;
-        if( nzr < n )
+        if ( nzr < n )
         {
             i = rows_d[id];
         }
@@ -390,7 +393,7 @@ void cspblas_ELLJacobi_halo_kernel(
 
         int pos = i;
         const int rowEnd = ia_halo_d[i];
-        for( int jj = 0; jj < rowEnd; ++jj )
+        for ( int jj = 0; jj < rowEnd; ++jj )
         {
             temp += a_halo_d[pos] * fetch_ELLJacobix<T,useTexture>( u_old_d, ja_halo_d[pos] );
             pos += n;
@@ -420,14 +423,14 @@ void ELLJacobiHalo_launcher(
 
     const bool useTexture = true; //lama_getUseTex_cuda();
 
-    if( useTexture )
+    if ( useTexture )
     {
 
-        if( sizeof(T) == sizeof(double) )
+        if ( sizeof(T) == sizeof(double) )
         {
             LAMA_CUDA_RT_CALL( cudaBindTexture(NULL,texELLJacobiDXref,u_old_d), LAMA_STATUS_CUDA_BINDTEX_FAILED );
         }
-        else if( sizeof(T) == sizeof(float) )
+        else if ( sizeof(T) == sizeof(float) )
         {
             LAMA_CUDA_RT_CALL( cudaBindTexture(NULL,texELLJacobiSXref,u_old_d), LAMA_STATUS_CUDA_BINDTEX_FAILED );
         }
@@ -442,7 +445,7 @@ void ELLJacobiHalo_launcher(
 
     }
 
-    if( useTexture )
+    if ( useTexture )
     {
         cspblas_ELLJacobi_halo_kernel<T,true><<<dimGrid,dimBlock>>>(u_d,a_local_d,ia_halo_d,ja_halo_d,a_halo_d,rows_d,nzr,n,u_old_d,omega);
     }
@@ -454,13 +457,13 @@ void ELLJacobiHalo_launcher(
     LAMA_CUDA_RT_CALL( cudaGetLastError(), LAMA_STATUS_ELLJACOBIHALO_CUDAKERNEL_FAILED );
     LAMA_CUDA_RT_CALL( cudaStreamSynchronize(0), LAMA_STATUS_ELLJACOBIHALO_CUDAKERNEL_FAILED );
 
-    if( useTexture )
+    if ( useTexture )
     {
-        if( sizeof(T) == sizeof(double) )
+        if ( sizeof(T) == sizeof(double) )
         {
             LAMA_CUDA_RT_CALL( cudaUnbindTexture(texCSRJacobiDXref), LAMA_STATUS_CUDA_UNBINDTEX_FAILED );
         }
-        else if( sizeof(T) == sizeof(float) )
+        else if ( sizeof(T) == sizeof(float) )
         {
             LAMA_CUDA_RT_CALL( cudaUnbindTexture(texCSRJacobiDXref), LAMA_STATUS_CUDA_UNBINDTEX_FAILED );
         }
@@ -474,7 +477,7 @@ texture<int2,1> texJDSJacobiDXref;
 texture<int,1> texJDSJacobidlgRef;
 
 template<typename T,bool useTexture>
-__inline__    __device__ T fetch_JDSJacobix( const T* const x, const int i )
+__inline__     __device__ T fetch_JDSJacobix( const T* const x, const int i )
 {
     return x[i];
 }
@@ -539,16 +542,16 @@ void cspblas_jdsjacobi_kernel(
     extern __shared__ int dlg[];
     const int i = threadId( gridDim, blockIdx, blockDim, threadIdx );
 
-    if( useSharedMem )
+    if ( useSharedMem )
     {
-        if( threadIdx.x < ndlg )
+        if ( threadIdx.x < ndlg )
         {
             dlg[threadIdx.x] = dlg_d[threadIdx.x];
         }
         __syncthreads();
     }
 
-    if( i < nnu )
+    if ( i < nnu )
     {
         const int perm = perm_d[i];
 
@@ -558,10 +561,10 @@ void cspblas_jdsjacobi_kernel(
 
         int k = i + fetch_JDSJacobidlg<useTexture,useSharedMem>( dlg_d, dlg, 0 );
         ;
-        for( int jj = 1; jj < ndlg; ++jj )
+        for ( int jj = 1; jj < ndlg; ++jj )
         {
             const int incr = fetch_JDSJacobidlg<useTexture,useSharedMem>( dlg_d, dlg, jj );
-            if( i < incr )
+            if ( i < incr )
             {
                 const int j = ja_d[k];
                 temp -= a_d[k] * fetch_JDSJacobix<T,useTexture>( u_old_d, j );
@@ -573,15 +576,16 @@ void cspblas_jdsjacobi_kernel(
             }
         }
 
-        if( omega == 0.5 )
+        if ( omega == 0.5 )
         {
             u_d[perm] = omega * ( fetch_JDSJacobix<T,useTexture>( u_old_d, perm ) + temp / a_diag );
         }
-        else if( omega == 1.0 )
+        else if ( omega == 1.0 )
         {
             u_d[perm] = temp / a_diag;
         }
-        else {
+        else
+        {
             u_d[perm] = omega * ( temp / a_diag ) + ( 1.0 - omega ) * fetch_JDSJacobix<T,useTexture>( u_old_d, perm );
         }
     }
@@ -608,11 +612,11 @@ void JDSJacobiAsync_launcher(
 
     const bool useTexture = true; //lama_getUseTex_cuda();
 
-    if( useTexture )
+    if ( useTexture )
     {
         LAMA_CUDA_RT_CALL( cudaBindTexture(NULL,texJDSJacobiSXref,u_old_d), LAMA_STATUS_CUDA_BINDTEX_FAILED );
 
-        if( ndlg > block_size )
+        if ( ndlg > block_size )
         {
             LAMA_CUDA_RT_CALL( cudaBindTexture(NULL,texJDSJacobidlgRef,dlg_d), LAMA_STATUS_CUDA_BINDTEX_FAILED );
             LAMA_CUDA_RT_CALL( cudaFuncSetCacheConfig(cspblas_jdsjacobi_kernel<T,true,false>,cudaFuncCachePreferL1),
@@ -627,7 +631,7 @@ void JDSJacobiAsync_launcher(
     }
     else
     {
-        if( ndlg > block_size )
+        if ( ndlg > block_size )
         {
             LAMA_CUDA_RT_CALL( cudaFuncSetCacheConfig(cspblas_jdsjacobi_kernel<T,false,false>,cudaFuncCachePreferL1),
                                LAMA_STATUS_CUDA_FUNCSETCACHECONFIG_FAILED );
@@ -639,9 +643,9 @@ void JDSJacobiAsync_launcher(
         }
     }
 
-    if( useTexture )
+    if ( useTexture )
     {
-        if( ndlg > block_size )
+        if ( ndlg > block_size )
         {
             cspblas_jdsjacobi_kernel<T,true,false><<<dimGrid,dimBlock,0,stream>>>(a_d,dlg_d,ndlg,ja_d,perm_d,nnu,rhs_d,u_d,u_old_d,omega);
         }
@@ -653,7 +657,7 @@ void JDSJacobiAsync_launcher(
     }
     else
     {
-        if( ndlg > block_size )
+        if ( ndlg > block_size )
         {
             cspblas_jdsjacobi_kernel<T,false,false><<<dimGrid,dimBlock,0,stream>>>(a_d,dlg_d,ndlg,ja_d,perm_d,nnu,rhs_d,u_d,u_old_d,omega);
         }
@@ -666,10 +670,10 @@ void JDSJacobiAsync_launcher(
 
     LAMA_CUDA_RT_CALL( cudaGetLastError(), LAMA_STATUS_SJDSJACOBI_CUDAKERNEL_FAILED );
 
-    if( useTexture )
+    if ( useTexture )
     {
         LAMA_CUDA_RT_CALL( cudaUnbindTexture(texJDSJacobiSXref), LAMA_STATUS_CUDA_UNBINDTEX_FAILED );
-        if( ndlg > block_size )
+        if ( ndlg > block_size )
         {
             LAMA_CUDA_RT_CALL( cudaUnbindTexture(texJDSJacobidlgRef), LAMA_STATUS_CUDA_UNBINDTEX_FAILED );
         }
@@ -693,10 +697,10 @@ void cspblas_JDSJacobi_halo_kernel(
     const T omega )
 {
     const int id = threadId( gridDim, blockIdx, blockDim, threadIdx );
-    if( id < nnu )
+    if ( id < nnu )
     {
         int i = id;
-        if( rows_d != NULL )
+        if ( rows_d != NULL )
         {
             i = rows_d[id];
         }
@@ -704,7 +708,7 @@ void cspblas_JDSJacobi_halo_kernel(
 
         int pos = i;
         const int rowEnd = ilg_halo_d[i];
-        for( int jj = 0; jj < rowEnd; ++jj )
+        for ( int jj = 0; jj < rowEnd; ++jj )
         {
             temp += a_halo_d[pos] * fetch_JDSJacobix<T,useTexture>( u_old_halo_d, ja_halo_d[pos] );
             pos += dlg_halo_d[jj];
@@ -736,14 +740,14 @@ void JDSJacobiHalo_launcher(
 
     const bool useTexture = true; //lama_getUseTex_cuda();
 
-    if( useTexture )
+    if ( useTexture )
     {
 
-        if( sizeof(T) == sizeof(double) )
+        if ( sizeof(T) == sizeof(double) )
         {
             LAMA_CUDA_RT_CALL( cudaBindTexture(NULL,texJDSJacobiDXref,u_old_halo_d), LAMA_STATUS_CUDA_BINDTEX_FAILED );
         }
-        else if( sizeof(T) == sizeof(float) )
+        else if ( sizeof(T) == sizeof(float) )
         {
             LAMA_CUDA_RT_CALL( cudaBindTexture(NULL,texJDSJacobiSXref,u_old_halo_d), LAMA_STATUS_CUDA_BINDTEX_FAILED );
         }
@@ -758,7 +762,7 @@ void JDSJacobiHalo_launcher(
 
     }
 
-    if( useTexture )
+    if ( useTexture )
     {
         cspblas_JDSJacobi_halo_kernel<T,true><<<dimGrid,dimBlock>>>(a_local_d,a_halo_d,dlg_halo_d,
                 ndlg_halo,ilg_halo_d,ja_halo_d,
@@ -776,13 +780,13 @@ void JDSJacobiHalo_launcher(
     LAMA_CUDA_RT_CALL( cudaGetLastError(), LAMA_STATUS_CSRJACOBIHALO_CUDAKERNEL_FAILED );
     LAMA_CUDA_RT_CALL( cudaStreamSynchronize(0), LAMA_STATUS_CSRJACOBIHALO_CUDAKERNEL_FAILED );
 
-    if( useTexture )
+    if ( useTexture )
     {
-        if( sizeof(T) == sizeof(double) )
+        if ( sizeof(T) == sizeof(double) )
         {
             LAMA_CUDA_RT_CALL( cudaUnbindTexture(texCSRJacobiDXref), LAMA_STATUS_CUDA_UNBINDTEX_FAILED );
         }
-        else if( sizeof(T) == sizeof(float) )
+        else if ( sizeof(T) == sizeof(float) )
         {
             LAMA_CUDA_RT_CALL( cudaUnbindTexture(texCSRJacobiDXref), LAMA_STATUS_CUDA_UNBINDTEX_FAILED );
         }

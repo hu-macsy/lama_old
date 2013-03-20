@@ -111,7 +111,7 @@ void _MatrixStorage::writeAt( std::ostream& stream ) const
 
 void _MatrixStorage::setCompressThreshold( float ratio )
 {
-    if( ratio < 0.0 || ratio > 1.0 )
+    if ( ratio < 0.0 || ratio > 1.0 )
     {
         LAMA_THROWEXCEPTION( "Illegal threshold " << ratio << ", must be from 0.0 to 1.0" );
     }
@@ -183,7 +183,7 @@ void _MatrixStorage::resetDiagonalProperty()
 
 void _MatrixStorage::setContext( ContextPtr context )
 {
-    if( context.get() != mContext.get() )
+    if ( context.get() != mContext.get() )
     {
         LAMA_LOG_DEBUG( logger, *this << ": new location = " << *context << ", old location = " << *mContext );
     }
@@ -218,7 +218,7 @@ IndexType _MatrixStorage::getNumValues() const
 
 std::ostream& operator<<( std::ostream& stream, const MatrixStorageFormat storageFormat )
 {
-    switch( storageFormat )
+    switch ( storageFormat )
     {
     case CSR:
     {
@@ -269,7 +269,7 @@ void _MatrixStorage::offsets2sizes( LAMAArray<IndexType>& offsets )
 
     // the following loop  is not parallel
 
-    for( IndexType i = 0; i < n; i++ )
+    for ( IndexType i = 0; i < n; i++ )
     {
         writeSizes[i] = writeSizes[i + 1] - writeSizes[i];
     }
@@ -281,7 +281,7 @@ void _MatrixStorage::offsets2sizes( LAMAArray<IndexType>& offsets )
 
 void _MatrixStorage::offsets2sizes( LAMAArray<IndexType>& sizes, const LAMAArray<IndexType>& offsets )
 {
-    if( &sizes == &offsets )
+    if ( &sizes == &offsets )
     {
         LAMA_LOG_WARN( logger, "offset2sizes: sizes and offsets are same array" )
         offsets2sizes( sizes );
@@ -296,7 +296,7 @@ void _MatrixStorage::offsets2sizes( LAMAArray<IndexType>& sizes, const LAMAArray
     writeSizes.clear(); // old values are not used
     writeSizes.resize( n );
 
-    for( IndexType i = 0; i < n; i++ )
+    for ( IndexType i = 0; i < n; i++ )
     {
         writeSizes[i] = readOffsets[i + 1] - readOffsets[i];
     }
@@ -440,7 +440,7 @@ void MatrixStorage<ValueType>::assign( const _MatrixStorage& other )
 {
     LAMA_REGION( "Storage.assign" );
 
-    if( &other == this )
+    if ( &other == this )
     {
         // self assignments might occur during redistributions
 
@@ -450,7 +450,7 @@ void MatrixStorage<ValueType>::assign( const _MatrixStorage& other )
 
     LAMA_LOG_INFO( logger, *this << ": assign ( " << other << " )" );
 
-    if( other.getFormat() == CSR )
+    if ( other.getFormat() == CSR )
     {
         // CSR storage has more efficient solution: just set CSR data
 
@@ -461,7 +461,7 @@ void MatrixStorage<ValueType>::assign( const _MatrixStorage& other )
     // If the size of other value type is smaller that this value type, it might be better
     // to use the other value type.
 
-    if( other.getValueType() == Scalar::FLOAT && getValueType() == Scalar::DOUBLE )
+    if ( other.getValueType() == Scalar::FLOAT && getValueType() == Scalar::DOUBLE )
     {
         other.copyTo( *this );
         return;
@@ -564,13 +564,13 @@ void MatrixStorage<ValueType>::joinRows(
 
         // initialize counters (Attention: sizes.size() != rowSizes.size())
 
-        for( int i = 0; i < sizes.size(); ++i )
+        for ( int i = 0; i < sizes.size(); ++i )
         {
             sizes[i] = 0;
         }
 
         // count elements for each row
-        for( int i = 0; i < rowSizes.size(); ++i )
+        for ( int i = 0; i < rowSizes.size(); ++i )
         {
             sizes[indexes[i]] += rowSizes[i];
         }
@@ -600,10 +600,10 @@ void MatrixStorage<ValueType>::joinRows(
 
     // insert rows
     IndexType dataIndex = 0;
-    for( int i = 0; i < rowSizes.size(); ++i )
+    for ( int i = 0; i < rowSizes.size(); ++i )
     {
         IndexType currentRow = indexes[i];
-        for( int ii = 0; ii < rowSizes[i]; ++ii )
+        for ( int ii = 0; ii < rowSizes[i]; ++ii )
         {
             // insert data at old position 'dataIndex' in row 'currentRow'
             // at new position 'tmpIA[currentRow]'
@@ -653,7 +653,7 @@ void MatrixStorage<ValueType>::joinHalo(
         IndexType numValues = localJA.size();
         HostWriteAccess<IndexType> ja( localJA );
 
-        for( IndexType i = 0; i < numValues; i++ )
+        for ( IndexType i = 0; i < numValues; i++ )
         {
             ja[i] = colDist.local2global( ja[i] );
         }
@@ -673,7 +673,7 @@ void MatrixStorage<ValueType>::joinHalo(
         HostWriteAccess<IndexType> ja( haloJA );
         HostReadAccess<IndexType> halo2global( halo.getRequiredIndexes() );
 
-        for( IndexType i = 0; i < numValues; i++ )
+        for ( IndexType i = 0; i < numValues; i++ )
         {
             ja[i] = halo2global[ja[i]];
         }
@@ -685,7 +685,7 @@ void MatrixStorage<ValueType>::joinHalo(
 
     IndexType numKeepDiagonals = 0;
 
-    if( localData.hasDiagonalProperty() )
+    if ( localData.hasDiagonalProperty() )
     {
         numKeepDiagonals = std::min( localData.getNumRows(), localData.getNumColumns() );
     }
@@ -713,7 +713,7 @@ void MatrixStorage<ValueType>::localize( const _MatrixStorage& globalData, const
 {
     LAMA_REGION( "Storage.localize" );
 
-    if( rowDist.isReplicated() )
+    if ( rowDist.isReplicated() )
     {
         assign( globalData );
         return;
@@ -750,7 +750,7 @@ void MatrixStorage<ValueType>::replicate( const _MatrixStorage& localData, const
 {
     LAMA_REGION( "Storage.replicate" );
 
-    if( rowDist.isReplicated() )
+    if ( rowDist.isReplicated() )
     {
         LAMA_LOG_INFO( logger, "replicate: assign due to replicated distribution" );
         assign( localData );
@@ -797,11 +797,11 @@ void MatrixStorage<ValueType>::splitHalo(
 
     LAMA_ASSERT_EQUAL( mNumColumns, colDist.getGlobalSize() );
 
-    if( colDist.isReplicated() )
+    if ( colDist.isReplicated() )
     {
         // if there is no column distribution, halo is not needed
 
-        if( rowDist )
+        if ( rowDist )
         {
             localData.localize( *this, *rowDist );
         }
@@ -821,7 +821,7 @@ void MatrixStorage<ValueType>::splitHalo(
 
     // check optional row distribution if specified
 
-    if( rowDist )
+    if ( rowDist )
     {
         LAMA_LOG_INFO( logger, *this << ": split also localizes for " << *rowDist );
         LAMA_ASSERT_EQUAL( mNumRows, rowDist->getGlobalSize() );
@@ -1066,7 +1066,7 @@ void MatrixStorage<ValueType>::matrixTimesScalar( const ValueType alpha, const M
 {
     LAMA_LOG_INFO( logger, *this << " = alpha( " << alpha << " ) x " << a );
 
-    if( &a != this )
+    if ( &a != this )
     {
         assign( a );
     }
@@ -1182,16 +1182,16 @@ void MatrixStorage<ValueType>::redistribute( const _MatrixStorage& other, const 
 
     // check for same distribution, either equal or both replicated
 
-    if( sourceDistribution.isReplicated() && targetDistribution.isReplicated() )
+    if ( sourceDistribution.isReplicated() && targetDistribution.isReplicated() )
     {
         sameDist = true;
     }
-    else if( &sourceDistribution == &targetDistribution )
+    else if ( &sourceDistribution == &targetDistribution )
     {
         sameDist = true;
     }
 
-    if( sameDist )
+    if ( sameDist )
     {
         LAMA_LOG_INFO( logger, "redistributor with same source/target distribution" );
 

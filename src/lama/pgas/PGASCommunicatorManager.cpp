@@ -75,7 +75,7 @@ PGASCommunicatorManager::~PGASCommunicatorManager()
 {
     LAMA_LOG_INFO( logger, "~PGASCommunicatorManager(), use count PGAS communicator = " << mCommInstance.use_count() );
 
-    if( mCommInstance.use_count() > 1 )
+    if ( mCommInstance.use_count() > 1 )
     {
         LAMA_LOG_WARN( logger,
                        "PGASCommunicator has " << mCommInstance.use_count() - 1 << " remaining references, seems that not all LAMA data structures have been freed" );
@@ -86,7 +86,7 @@ PGASCommunicatorManager::~PGASCommunicatorManager()
 
 CommunicatorPtr PGASCommunicatorManager::getCommunicator( int& argc, char**& argv )
 {
-    if( !mCommInstance )
+    if ( !mCommInstance )
     {
         LAMA_LOG_INFO( logger, "create new PGASCommunicator" );
 

@@ -96,7 +96,7 @@ void NoCommunicator::exchangeByPlanImpl(
 {
     LAMA_ASSERT_ERROR( recvPlan.size() == sendPlan.size(), "mismatch for size of send/recv plan" );
 
-    if( 0 == recvPlan.size() && 0 == sendPlan.size() )
+    if ( 0 == recvPlan.size() && 0 == sendPlan.size() )
     {
         return;
     }
@@ -176,7 +176,7 @@ IndexType NoCommunicator::shift(
     const IndexType sourceSize,
     const int direction ) const
 {
-    if( direction != 0 )
+    if ( direction != 0 )
     {
         LAMA_LOG_WARN( logger, "shift<double> for NoCommunicator, dir = " << direction )
     }
@@ -191,7 +191,7 @@ IndexType NoCommunicator::shift(
     const IndexType sourceSize,
     const int direction ) const
 {
-    if( direction != 0 )
+    if ( direction != 0 )
     {
         LAMA_LOG_WARN( logger, "shift<float> for NoCommunicator, dir = " << direction )
     }
@@ -205,7 +205,7 @@ IndexType NoCommunicator::shift(
     const IndexType sourceSize,
     const int direction ) const
 {
-    if( direction != 0 )
+    if ( direction != 0 )
     {
         LAMA_LOG_WARN( logger, "shift<int> for NoCommunicator, dir = " << direction )
     }
@@ -246,7 +246,7 @@ void NoCommunicator::scatter( double myvals[], const IndexType n, const Partitio
 {
     LAMA_ASSERT_EQUAL_ERROR( root, 0 );
 
-    for( int i = 0; i < n; i++ )
+    for ( int i = 0; i < n; i++ )
     {
         myvals[i] = allvals[i];
     }
@@ -256,7 +256,7 @@ void NoCommunicator::scatter( float myvals[], const IndexType n, const Partition
 {
     LAMA_ASSERT_EQUAL_ERROR( root, 0 );
 
-    for( int i = 0; i < n; i++ )
+    for ( int i = 0; i < n; i++ )
     {
         myvals[i] = allvals[i];
     }
@@ -266,7 +266,7 @@ void NoCommunicator::scatter( int myvals[], const IndexType n, const PartitionId
 {
     LAMA_ASSERT_EQUAL_ERROR( root, 0 );
 
-    for( int i = 0; i < n; i++ )
+    for ( int i = 0; i < n; i++ )
     {
         myvals[i] = allvals[i];
     }
@@ -282,7 +282,7 @@ void NoCommunicator::scatter(
     LAMA_ASSERT_EQUAL_ERROR( root, 0 );
     LAMA_ASSERT_EQUAL_ERROR( sizes[0], n );
 
-    for( int i = 0; i < n; i++ )
+    for ( int i = 0; i < n; i++ )
     {
         myvals[i] = allvals[i];
     }
@@ -298,7 +298,7 @@ void NoCommunicator::scatter(
     LAMA_ASSERT_EQUAL_ERROR( root, 0 );
     LAMA_ASSERT_EQUAL_ERROR( sizes[0], n );
 
-    for( int i = 0; i < n; i++ )
+    for ( int i = 0; i < n; i++ )
     {
         myvals[i] = allvals[i];
     }
@@ -314,7 +314,7 @@ void NoCommunicator::scatter(
     LAMA_ASSERT_EQUAL_ERROR( root, 0 );
     LAMA_ASSERT_EQUAL_ERROR( sizes[0], n );
 
-    for( int i = 0; i < n; i++ )
+    for ( int i = 0; i < n; i++ )
     {
         myvals[i] = allvals[i];
     }
@@ -324,7 +324,7 @@ void NoCommunicator::gather( double allvals[], const IndexType n, const Partitio
 {
     LAMA_ASSERT_EQUAL_ERROR( root, 0 );
 
-    for( int i = 0; i < n; i++ )
+    for ( int i = 0; i < n; i++ )
     {
         allvals[i] = myvals[i];
     }
@@ -334,7 +334,7 @@ void NoCommunicator::gather( float allvals[], const IndexType n, const Partition
 {
     LAMA_ASSERT_EQUAL_ERROR( root, 0 );
 
-    for( int i = 0; i < n; i++ )
+    for ( int i = 0; i < n; i++ )
     {
         allvals[i] = myvals[i];
     }
@@ -344,7 +344,7 @@ void NoCommunicator::gather( int allvals[], const IndexType n, const PartitionId
 {
     LAMA_ASSERT_EQUAL_ERROR( root, 0 );
 
-    for( int i = 0; i < n; i++ )
+    for ( int i = 0; i < n; i++ )
     {
         allvals[i] = myvals[i];
     }
@@ -360,7 +360,7 @@ void NoCommunicator::gather(
     LAMA_ASSERT_EQUAL_ERROR( root, 0 );
     LAMA_ASSERT_EQUAL_ERROR( sizes[0], n );
 
-    for( int i = 0; i < n; i++ )
+    for ( int i = 0; i < n; i++ )
     {
         allvals[i] = myvals[i];
     }
@@ -376,7 +376,7 @@ void NoCommunicator::gather(
     LAMA_ASSERT_EQUAL_ERROR( root, 0 );
     LAMA_ASSERT_ERROR( sizes[0] == n, "illegal array sizes, sizes[0] = " << sizes[0] << ", expected = " << n );
 
-    for( int i = 0; i < n; i++ )
+    for ( int i = 0; i < n; i++ )
     {
         allvals[i] = myvals[i];
     }
@@ -392,7 +392,7 @@ void NoCommunicator::gather(
     LAMA_ASSERT_EQUAL_ERROR( root, 0 );
     LAMA_ASSERT_ERROR( sizes[0] == n, "illegal array sizes, sizes[0] = " << sizes[0] << ", expected = " << n );
 
-    for( int i = 0; i < n; i++ )
+    for ( int i = 0; i < n; i++ )
     {
         allvals[i] = myvals[i];
     }

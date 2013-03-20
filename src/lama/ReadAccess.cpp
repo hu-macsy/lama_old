@@ -83,7 +83,7 @@ ReadAccess<T>::~ReadAccess()
 template<typename T>
 const T* ReadAccess<T>::get() const
 {
-    if( mArrayView == 0 )
+    if ( mArrayView == 0 )
     {
         LAMA_THROWEXCEPTION( "ReadAccess::get fails, has already been released." );
     }
@@ -98,7 +98,7 @@ const T* ReadAccess<T>::get() const
 template<typename T>
 void ReadAccess<T>::release()
 {
-    if( mArrayView )
+    if ( mArrayView )
     {
         //LAMA_LOG_DEBUG(logger, "release read access for " << *mArrayView  );
         //LAMA_LOG_DEBUG(logger, "release read access for " << *mArray
@@ -117,7 +117,7 @@ template<typename T>
 void ReadAccess<T>::writeAt( std::ostream& stream ) const
 {
     stream << "ReadAccess to ";
-    if( mArrayView )
+    if ( mArrayView )
     {
         stream << *mArrayView;
     }

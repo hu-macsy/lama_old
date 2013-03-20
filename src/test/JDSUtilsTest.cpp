@@ -84,7 +84,7 @@ void setDiagonalWithScalarTest( ContextPtr loc )
 
     HostReadAccess<ValueType> rValues( values );
 
-    for( IndexType i = 0; i < nValues; i++ )
+    for ( IndexType i = 0; i < nValues; i++ )
     {
         BOOST_CHECK_EQUAL( expectedValues[i], rValues[i] );
     }
@@ -140,7 +140,7 @@ void getRowTest( ContextPtr loc )
 
     HostReadAccess<OtherValueType> rRow( row );
 
-    for( IndexType i = 0; i < numColumns; i++ )
+    for ( IndexType i = 0; i < numColumns; i++ )
     {
         BOOST_CHECK_EQUAL( expectedValues[i], rRow[i] );
     }
@@ -191,9 +191,9 @@ void getValueTest( ContextPtr loc )
     ReadAccess<IndexType> rIlg( ilg, loc );
     ReadAccess<IndexType> rPerm( perm, loc );
 
-    for( IndexType i = 0; i < numRows; i++ )
+    for ( IndexType i = 0; i < numRows; i++ )
     {
-        for( IndexType j = 0; j < numColumns; j++ )
+        for ( IndexType j = 0; j < numColumns; j++ )
         {
             LAMA_CONTEXT_ACCESS( loc );
 
@@ -249,7 +249,7 @@ void scaleValueTest( ContextPtr loc )
 
     HostReadAccess<ValueType> rValues( values );
 
-    for( IndexType i = 0; i < nValues; i++ )
+    for ( IndexType i = 0; i < nValues; i++ )
     {
         BOOST_CHECK_EQUAL( expectedValues[i], rValues[i] );
     }
@@ -558,7 +558,7 @@ void ilg2dlgTest( ContextPtr loc )
 
         HostReadAccess<IndexType> rDlg( dlg );
 
-        for( IndexType i = 0; i < numDiagonals; i++ )
+        for ( IndexType i = 0; i < numDiagonals; i++ )
         {
             BOOST_CHECK_EQUAL( expectedValues[i], rDlg.get()[i] );
         }
@@ -599,7 +599,7 @@ void sortRowsTest( ContextPtr loc )
         HostReadAccess<IndexType> rIlg( ilg );
         HostReadAccess<IndexType> rPerm( perm );
 
-        for( IndexType i = 0; i < numRows; i++ )
+        for ( IndexType i = 0; i < numRows; i++ )
         {
             BOOST_CHECK_EQUAL( expectedIlg[i], rIlg.get()[i] );
             BOOST_CHECK_EQUAL( expectedPerm[i], rPerm.get()[i] );
@@ -650,7 +650,7 @@ void setInversePermTest( ContextPtr loc )
 
         HostReadAccess<IndexType> rInversePerm( inversePerm );
 
-        for( IndexType i = 0; i < numRows; i++ )
+        for ( IndexType i = 0; i < numRows; i++ )
         {
             BOOST_CHECK_EQUAL( expectedPerm[i], rInversePerm.get()[i] );
         }
@@ -740,7 +740,7 @@ void setCSRValuesTest( ContextPtr loc )
     HostReadAccess<IndexType> rJDSJa( JDSJa );
     HostReadAccess<ValueType> rJDSValues( JDSValues );
 
-    for( IndexType i = 0; i < nJDS; i++ )
+    for ( IndexType i = 0; i < nJDS; i++ )
     {
         BOOST_CHECK_EQUAL( expectedJDSJa[i], rJDSJa.get()[i] );
         BOOST_CHECK_EQUAL( expectedJDSValues[i], rJDSValues.get()[i] );
@@ -815,7 +815,7 @@ void getCSRValuesTest( ContextPtr loc )
     HostReadAccess<IndexType> rCSRJa( CSRJa );
     HostReadAccess<OtherValueType> rCSRValues( CSRValues );
 
-    for( IndexType i = 0; i < nJDS; i++ )
+    for ( IndexType i = 0; i < nJDS; i++ )
     {
         BOOST_CHECK_EQUAL( expectedCSRJa[i], rCSRJa.get()[i] );
         BOOST_CHECK_EQUAL( expectedCSRValues[i], rCSRValues.get()[i] );

@@ -88,7 +88,7 @@ BOOST_AUTO_TEST_CASE( baseTest )
     HostReadAccess<IndexType> rArray1( array1 );
     HostReadAccess<IndexType> rArray2( array2 );
 
-    for( IndexType i = 0; i < n; i++ )
+    for ( IndexType i = 0; i < n; i++ )
     {
         BOOST_CHECK_EQUAL( rArray1[i] + 1, rArray2[i] );
     }
@@ -136,7 +136,7 @@ BOOST_AUTO_TEST_CASE( refTest1 )
         // destructor of LAMAArrayRef will write back data to the valid location
     }
 
-    for( IndexType i = 0; i < n; ++i )
+    for ( IndexType i = 0; i < n; ++i )
     {
         BOOST_CHECK_EQUAL( value, myData[i] );
     }

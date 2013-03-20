@@ -63,7 +63,7 @@ struct GeneralDistributionTestConfig
 
         globalSize = elemsPerPartition * size;
 
-        for( IndexType k = 0; k < elemsPerPartition; ++k )
+        for ( IndexType k = 0; k < elemsPerPartition; ++k )
         {
             localIndexes.push_back( k * size + rank );
         }
@@ -100,7 +100,7 @@ BOOST_AUTO_TEST_CASE( commonTestCases )
 
     DistributionTest disttest( dist );
 
-    if( base_test_case )
+    if ( base_test_case )
     {
         LAMA_LOG_INFO( logger, "Run test method " << testcase << " in GeneralDistributionTest." );
         DISTRIBUTION_COMMONTESTCASES( disttest );

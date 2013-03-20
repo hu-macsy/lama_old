@@ -857,7 +857,7 @@ inline DistributionPtr Matrix::getColDistributionPtr() const
  */
 inline std::ostream& operator<<( std::ostream& stream, const Matrix::SyncKind& kind )
 {
-    switch( kind )
+    switch ( kind )
     {
     case Matrix::SYNCHRONOUS:
     {

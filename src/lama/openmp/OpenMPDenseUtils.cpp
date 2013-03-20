@@ -57,30 +57,30 @@ void OpenMPDenseUtils::getCSRSizes(
     const DenseValueType denseValues[],
     const DenseValueType eps )
 {
-    if( numRows > 0 )
+    if ( numRows > 0 )
     {
         LAMA_ASSERT_DEBUG( csrSizes != NULL, "csrSizes is NULL" );
 
-        if( numColumns > 0 )
+        if ( numColumns > 0 )
         {
             LAMA_ASSERT_DEBUG( denseValues != NULL, "denseValues is NULL" );
         }
     }
 
     #pragma omp parallel for schedule(LAMA_OMP_SCHEDULE)
-    for( IndexType i = 0; i < numRows; ++i )
+    for ( IndexType i = 0; i < numRows; ++i )
     {
         IndexType nonZeros = 0; // count for each row in parallel
 
-        for( IndexType j = 0; j < numColumns; ++j )
+        for ( IndexType j = 0; j < numColumns; ++j )
         {
             const DenseValueType& value = denseValues[denseindex( i, j, numRows, numColumns )];
 
-            if( std::abs( value ) > eps )
+            if ( std::abs( value ) > eps )
             {
                 ++nonZeros;
             }
-            else if( i == j && diagonalFlag )
+            else if ( i == j && diagonalFlag )
             {
                 ++nonZeros; // count also zero elements for diagonals
             }
@@ -107,11 +107,11 @@ void OpenMPDenseUtils::getCSRValues(
                    "get CSRValues<" << typeid( DenseValueType ).name() << ", " << typeid( CSRValueType ).name() << ">" << ", size is " << numRows << " x " << numColumns );
 
     #pragma omp parallel for schedule(LAMA_OMP_SCHEDULE)
-    for( IndexType i = 0; i < numRows; ++i )
+    for ( IndexType i = 0; i < numRows; ++i )
     {
         IndexType offset = csrIA[i];
 
-        if( i < numColumns && diagonalFlag )
+        if ( i < numColumns && diagonalFlag )
         {
             // start with diagonal element in any case
 
@@ -122,16 +122,16 @@ void OpenMPDenseUtils::getCSRValues(
             offset++;
         }
 
-        for( IndexType j = 0; j < numColumns; ++j )
+        for ( IndexType j = 0; j < numColumns; ++j )
         {
-            if( i == j && diagonalFlag )
+            if ( i == j && diagonalFlag )
             {
                 continue; // diagonal element is already first element in ja, values
             }
 
             const DenseValueType& value = denseValues[denseindex( i, j, numRows, numColumns )];
 
-            if( std::abs( value ) > eps )
+            if ( std::abs( value ) > eps )
             {
                 csrValues[offset] = static_cast<CSRValueType>( value );
                 csrJA[offset] = j;
@@ -163,11 +163,11 @@ void OpenMPDenseUtils::setCSRValues(
     // parallelization possible as offset array csrIA is available
 
     #pragma omp parallel for schedule( LAMA_OMP_SCHEDULE )
-    for( IndexType i = 0; i < numRows; i++ )
+    for ( IndexType i = 0; i < numRows; i++ )
     {
         // Initialize complete row with zero values
 
-        for( IndexType j = 0; j < numColumns; ++j )
+        for ( IndexType j = 0; j < numColumns; ++j )
         {
             DenseValueType& elem = denseValues[denseindex( i, j, numRows, numColumns )];
 
@@ -176,7 +176,7 @@ void OpenMPDenseUtils::setCSRValues(
 
         // fill up positions for which non-zero values are given
 
-        for( IndexType jj = csrIA[i]; jj < csrIA[i + 1]; ++jj )
+        for ( IndexType jj = csrIA[i]; jj < csrIA[i + 1]; ++jj )
         {
             const IndexType j = csrJA[jj];
 
@@ -197,9 +197,9 @@ void OpenMPDenseUtils::copyDenseValues(
     const DenseValueType2 oldValues[] )
 {
     #pragma omp parallel for schedule( LAMA_OMP_SCHEDULE )
-    for( IndexType i = 0; i < numRows; ++i )
+    for ( IndexType i = 0; i < numRows; ++i )
     {
-        for( IndexType j = 0; j < numColumns; ++j )
+        for ( IndexType j = 0; j < numColumns; ++j )
         {
             DenseValueType1& newElem = newValues[denseindex( i, j, numRows, numColumns )];
             const DenseValueType2& oldElem = oldValues[denseindex( i, j, numRows, numColumns )];
@@ -220,7 +220,7 @@ void OpenMPDenseUtils::getDiagonal(
     const IndexType numColumns )
 {
     #pragma omp parallel for schedule (LAMA_OMP_SCHEDULE)
-    for( IndexType i = 0; i < numDiagonalValues; ++i )
+    for ( IndexType i = 0; i < numDiagonalValues; ++i )
     {
         const DenseValueType& elem = denseValues[denseindex( i, i, numRows, numColumns )];
         diagonalValues[i] = static_cast<DiagonalValueType>( elem );
@@ -238,7 +238,7 @@ void OpenMPDenseUtils::setDiagonal(
     const IndexType numDiagonalValues )
 {
     #pragma omp parallel for schedule (LAMA_OMP_SCHEDULE)
-    for( IndexType i = 0; i < numDiagonalValues; ++i )
+    for ( IndexType i = 0; i < numDiagonalValues; ++i )
     {
         DenseValueType& elem = denseValues[denseindex( i, i, numRows, numColumns )];
         elem = static_cast<DenseValueType>( diagonalValues[i] );
@@ -258,7 +258,7 @@ void OpenMPDenseUtils::setDiagonalValue(
 
     #pragma omp parallel for schedule (LAMA_OMP_SCHEDULE)
 
-    for( IndexType i = 0; i < numDiagonalValues; ++i )
+    for ( IndexType i = 0; i < numDiagonalValues; ++i )
     {
         DenseValueType& elem = denseValues[denseindex( i, i, numRows, numColumns )];
         elem = diagonalValue;
@@ -276,14 +276,14 @@ void OpenMPDenseUtils::scaleValue(
 {
     const DenseValueType zero = static_cast<DenseValueType>( 0.0 );
 
-    if( val == zero )
+    if ( val == zero )
     {
         // this solution can also deal with undefined data
 
         #pragma omp parallel for schedule (LAMA_OMP_SCHEDULE)
-        for( IndexType i = 0; i < numRows; ++i )
+        for ( IndexType i = 0; i < numRows; ++i )
         {
-            for( IndexType j = 0; j < numColumns; ++j )
+            for ( IndexType j = 0; j < numColumns; ++j )
             {
                 DenseValueType& elem = denseValues[denseindex( i, j, numRows, numColumns )];
                 elem = zero;
@@ -293,9 +293,9 @@ void OpenMPDenseUtils::scaleValue(
     else
     {
         #pragma omp parallel for schedule (LAMA_OMP_SCHEDULE)
-        for( IndexType i = 0; i < numRows; ++i )
+        for ( IndexType i = 0; i < numRows; ++i )
         {
-            for( IndexType j = 0; j < numColumns; ++j )
+            for ( IndexType j = 0; j < numColumns; ++j )
             {
                 DenseValueType& elem = denseValues[denseindex( i, j, numRows, numColumns )];
                 elem *= val;

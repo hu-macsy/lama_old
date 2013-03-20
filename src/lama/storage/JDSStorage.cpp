@@ -361,12 +361,12 @@ bool JDSStorage<ValueType>::checkDiagonalProperty() const
 {
     LAMA_LOG_INFO( logger, "checkDiagonalProperty" );
 
-    if( mNumRows != mNumColumns )
+    if ( mNumRows != mNumColumns )
     {
         return false;
     }
 
-    if( mNumDiagonals == 0 )
+    if ( mNumDiagonals == 0 )
     {
         // empty storage has no diagonal
         return false;
@@ -411,7 +411,7 @@ void JDSStorage<ValueType>::check( const char* msg ) const
 
     bool valid = check( mNumRows, mNumValues, mNumColumns, rJa.get(), rIlg.get(), rDlg.get() );
 
-    if( !valid )
+    if ( !valid )
     {
         LAMA_THROWEXCEPTION( *this << " @ " << msg << ": illegel indexes in JA, ILG or DLG" );
     }
@@ -478,7 +478,7 @@ void JDSStorage<ValueType>::setupData( ContextPtr loc )
 
     LAMA_CONTEXT_ACCESS( loc );
 
-    if( mNumRows )
+    if ( mNumRows )
     {
         mNumDiagonals = getValue( ilg.get(), 0 );
     }
@@ -534,7 +534,7 @@ void JDSStorage<ValueType>::buildCSR(
     // rowValues[ perm[i] ] = ilg[i]
     setScatter( wCsrIA.get(), rJdsPerm.get(), rJdsILG.get(), mNumRows );
 
-    if( ja == NULL || values == NULL )
+    if ( ja == NULL || values == NULL )
     {
         wCsrIA.resize( mNumRows );
         return;
@@ -791,7 +791,7 @@ void JDSStorage<ValueType>::writeAt( std::ostream& stream ) const
     stream << "JDS( rows = " << mNumRows << ", cols = " << mNumColumns << ", jd = " << mNumDiagonals << ", values = "
            << mNumValues;
 
-    if( Printable::extended )
+    if ( Printable::extended )
     {
         stream << ", context = " << getContext() << ", dlg = " << mDlg << ", ilg = " << mIlg << ", perm = " << mPerm
                << ", ja = " << mJa << ", vales = " << mValues;
@@ -860,7 +860,7 @@ void JDSStorage<ValueType>::matrixTimesVector(
 
     // Possible alias of result and y must be handled by coressponding accesses
 
-    if( result == y )
+    if ( result == y )
     {
         WriteAccess<ValueType> wResult( result, loc );
 
@@ -902,7 +902,7 @@ void JDSStorage<ValueType>::jacobiIterate(
 
     LAMA_ASSERT_ERROR( mDiagonalProperty, *this << ": jacobiIterate requires diagonal property" );
 
-    if( solution == oldSolution )
+    if ( solution == oldSolution )
     {
         LAMA_THROWEXCEPTION( "alias of solution and oldSolution unsupported" );
     }
@@ -987,7 +987,7 @@ ValueType JDSStorage<ValueType>::maxNorm() const
 
     const IndexType n = mNumValues;
 
-    if( n == 0 )
+    if ( n == 0 )
     {
         return 0.0f;
     }
@@ -1021,14 +1021,14 @@ void JDSStorage<ValueType>::print() const
     HostReadAccess<IndexType> ja( mJa );
     HostReadAccess<ValueType> values( mValues );
 
-    for( IndexType ii = 0; ii < mNumRows; ii++ )
+    for ( IndexType ii = 0; ii < mNumRows; ii++ )
     {
         cout << "   row " << ii << " is original row " << perm[ii];
         cout << ", #non-zero values = " << ilg[ii] << endl;
         IndexType offset = ii;
         cout << "     column indexes = ";
 
-        for( IndexType d = 0; d < ilg[ii]; d++ )
+        for ( IndexType d = 0; d < ilg[ii]; d++ )
         {
             cout << " " << ja[offset];
             offset += dlg[d];
@@ -1038,7 +1038,7 @@ void JDSStorage<ValueType>::print() const
         offset = ii;
         cout << "     values   = ";
 
-        for( IndexType d = 0; d < ilg[ii]; d++ )
+        for ( IndexType d = 0; d < ilg[ii]; d++ )
         {
             cout << " " << values[offset];
             offset += dlg[d];
