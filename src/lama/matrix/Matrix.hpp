@@ -153,7 +153,7 @@ public:
     Matrix( const Matrix& other );
 
     /**
-     * @brief Releases all allocated resources.
+     * @brief Destructor, releases all allocated resources.
      */
     virtual ~Matrix();
 
@@ -176,13 +176,13 @@ public:
     virtual bool isConsistent() const = 0;
 
     /**
-     *  Virtual method that delivers the class name to which a matrix belongs.
+     *  @brief Virtual method that delivers the class name to which a matrix belongs.
      */
     virtual const char* getTypeName() const = 0;
 
-    /** This routine creates a LAMA array with the same value type as the matrix.
+    /** @brief Creates a LAMA array with the same value type as the matrix.
      *
-     *  @brief: returns an auto pointer to the LAMA array.
+     *  @return an auto pointer to the LAMA array.
      *
      *  Same as _LAMAArray::create( this.getValueType() )
      *
@@ -204,7 +204,7 @@ public:
      */
     virtual void clear() = 0;
 
-    /** Reallocate this matrix to a replicated zero-matrix of the given shape.
+    /** @brief Reallocate this matrix to a replicated zero-matrix of the given shape.
      *
      * @param[in] numRows      number of rows, must be non-negative.
      * @param[in] numColumns   number of columns, must be non-negative.
@@ -214,7 +214,7 @@ public:
      */
     virtual void allocate( const IndexType numRows, const IndexType numColumns ) = 0;
 
-    /** Reallocate this matrix to a distributed zero-matrix by the given distributions.
+    /** @brief Reallocate this matrix to a distributed zero-matrix by the given distributions.
      *
      *  @param[in] rowDistribution is row distribution, number of rows given by getGlobalSize()
      *  @param[in] colDistribution is col distribution, number of columns given by getGlobalSize()
@@ -267,7 +267,7 @@ public:
      */
     virtual void assign( const _MatrixStorage& storage, DistributionPtr rowDist, DistributionPtr colDist ) = 0;
 
-    /** Get the local part (no splitted columns) of a matrix as if colDist is replicated
+    /** @brief Get the local part (no splitted columns) of a matrix as if the distribution of columns is replicated.
      *
      *  @param[out] storage  will contain the local part of the matrix with all columns.
      *
@@ -277,14 +277,14 @@ public:
      */
     virtual void buildLocalStorage( _MatrixStorage& storage ) const = 0;
 
-    /** This method allows any arbitrary redistribution of the matrix.
+    /** @brief This method allows any arbitrary redistribution of the matrix.
      *
      *  @param[in] rowDistribution is new distribution of rows, global size must be mNumRows
      *  @param[in] colDistribution is new distribution of columns, global size must be mNumColumns
      */
     virtual void redistribute( DistributionPtr rowDistribution, DistributionPtr colDistribution ) = 0;
 
-    /** This method returns one row of the matrix.
+    /** @brief This method returns one row of the matrix.
      *
      * @param[out] row              is a replicated vector with all values of the row
      * @param[in]  globalRowIndex   TODO[doxy] Complete Description.
@@ -296,7 +296,7 @@ public:
      */
     virtual void getRow( Vector& row, const IndexType globalRowIndex ) const = 0;
 
-    /** This method returns the diagonal.
+    /** @brief This method returns the diagonal.
      *
      * @param[out]   diagonal is the destination array
      *
@@ -304,7 +304,7 @@ public:
      */
     virtual void getDiagonal( Vector& diagonal ) const = 0;
 
-    /** This method replaces the diagonal.
+    /** @brief This method replaces the diagonal.
      *
      * @param[in] diagonal  is the source array
      *
@@ -312,7 +312,7 @@ public:
      */
     virtual void setDiagonal( const Vector& diagonal ) = 0;
 
-    /** This method replaces the diagonal by a diagonal value.
+    /** @brief This method replaces the diagonal by a diagonal value.
      *
      * @param[in] scalar  is the source value
      *
@@ -320,7 +320,7 @@ public:
      */
     virtual void setDiagonal( const Scalar scalar ) = 0;
 
-    /** This method scales all values with a vector.
+    /** @brief This method scales all values with a vector.
      *
      * @param[in] scaling   is the source array
      *
@@ -328,14 +328,14 @@ public:
      */
     virtual void scale( const Vector& scaling ) = 0;
 
-    /** This method scales all matrix values with a scalar.
+    /** @brief This method scales all matrix values with a scalar.
      *
      * @param[in] scaling   is the source value.
      */
     virtual void scale( const Scalar scaling ) = 0;
 
     /**
-     * @brief returns a copy of the value at the passed global indexes.
+     * @brief Returns a copy of the value at the passed global indexes.
      *
      * @param[in] i   the global row index
      * @param[in] j   the global column index
@@ -377,7 +377,7 @@ public:
      */
     inline IndexType getNumColumns() const;
 
-    /** Get the total number of non-zero values in the matrix.
+    /** @brief Get the total number of non-zero values in the matrix.
      *
      *  An element is considered to be non-zero if its absolute value
      *  is greater equal than mEpsilon. Zero diagonal elements are also
@@ -560,14 +560,14 @@ public:
     virtual MatrixKind getMatrixKind() const = 0;
 
     /**
-     * @brief get the communication kind.
+     * @brief Getter routine for the communication kind.
      *
      * @return the communication kind.
      */
     inline SyncKind getCommunicationKind() const;
 
     /**
-     * @brief set the communication kind.
+     * @brief Setter routine for the communication kind.
      *
      * @param[in] communicationKind the communication kind.
      */
@@ -589,12 +589,12 @@ public:
     virtual void prefetch() const = 0;
 
     /**
-     * @brief wait for a possibly running prefetch.
+     * @brief Wait for a possibly running prefetch.
      */
     virtual void wait() const = 0;
 
     /**
-     * @brief the assignment operator for matrix.
+     * @brief The assignment operator for matrix.
      *
      * @param[in] other   is the input matrix.
      *
@@ -605,28 +605,28 @@ public:
     Matrix& operator=( const Matrix& other );
 
     /**
-     * @brief the assignment operator for a scalar matrix multiplication.
+     * @brief The assignment operator for a scalar matrix multiplication.
      *
      * @param[in] exp   TODO[doxy] Complete Description.
      */
     Matrix& operator=( const Expression<Scalar,Matrix,Times> exp );
 
     /**
-     * @brief the assignment operator for a matrix matrix multiplication.
+     * @brief The assignment operator for a matrix matrix multiplication.
      *
      * @param[in] exp   TODO[doxy] Complete Description.
      */
     Matrix& operator=( const Expression<Matrix,Matrix,Times> exp );
 
     /**
-     * @brief the assignment operator for a scalar matrix matrix multiplication.
+     * @brief The assignment operator for a scalar matrix matrix multiplication.
      *
      * @param[in] exp   TODO[doxy] Complete Description.
      */
     Matrix& operator=( const Expression<Scalar,Expression<Matrix,Matrix,Times>,Times> exp );
 
     /**
-     * @brief the assignment operator for a GEMM expression.
+     * @brief The assignment operator for a GEMM expression.
      *
      * @param[in] exp   TODO[doxy] Complete Description.
      */
@@ -634,7 +634,7 @@ public:
         const Expression<Expression<Scalar,Expression<Matrix,Matrix,Times>,Times>,Expression<Scalar,Matrix,Times>,Plus> exp );
 
     /**
-     * @brief the assignment operator for a GEMM expression.
+     * @brief The assignment operator for a GEMM expression.
      *
      * @param[in] exp   expression of the form alpha * A + beta * B
      */
@@ -652,14 +652,14 @@ public:
     virtual void invert( const Matrix& other ) = 0;
 
     /**
-     * @brief get the max norm of this matrix
+     * @brief Getter routine of the max norm of this matrix.
      *
      * @return the maximal absolute value for elements of this matrix
      */
     virtual Scalar maxNorm() const = 0;
 
     /**
-     * @brief returns the max norm of ( this - other )
+     * @brief Returns the max norm of ( this - other ).
      *
      * @param[in] other another matrix with the same shape as this matrix
      * @return the max norm of ( this - other )
@@ -726,7 +726,7 @@ public:
     std::auto_ptr<Matrix> create( DistributionPtr distribution ) const;
 
     /**
-     *  @brief Constructor creates a distributed dense vector of same type as a given matrix.
+     * @brief Constructor creates a distributed dense vector of same type as a given matrix.
      *
      * @param[in] distribution   TODO[doxy] Complete Description.
      * @param[in] value          TODO[doxy] Complete Description.
@@ -767,7 +767,7 @@ public:
     virtual void resetDiagonalProperty() = 0;
 
     /**
-     * @brief getMemoryUsage returns the global memory that is allocated to hold this matrix.
+     * @brief Returns the global memory that is allocated to hold this matrix.
      *
      * getMemoryUsage returns the global memory that is allocated to hold this matrix. For a distributed matrix
      * all partitions are summed together.
@@ -779,7 +779,7 @@ public:
 protected:
 
     /**
-     * @brief Set the global/local size of replicated matrix.
+     * @brief Sets the global/local size of replicated matrix.
      *
      * @param[in] numRows      number of rows, must be non-negative.
      * @param[in] numColumns   number of columns, must be non-negative.
@@ -787,7 +787,7 @@ protected:
     void setReplicatedMatrix( const IndexType numRows, const IndexType numColumns );
 
     /**
-     * @brief Set the global and local size of distributed matrix.
+     * @brief Sets the global and local size of distributed matrix.
      *
      * @param[in] distribution is distribution for rows
      * @param[in] colDistribution is distribution for columns
@@ -798,7 +798,7 @@ protected:
 
     DistributionPtr mColDistribution;
 
-    //TODO: remove mNumRows and mNumColumns, this value is stored in the distribution
+    // TODO remove mNumRows and mNumColumns, this value is stored in the distribution
     IndexType mNumRows;
     IndexType mNumColumns;
 
