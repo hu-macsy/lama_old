@@ -1,9 +1,0 @@
-Matrix Example
-==============
-
-::
-
-	#include <lama++/CSRSparseMatrix.hpp>
-	...
-	CSRSparseMatrix<float> csrMatrix ...
-	...
