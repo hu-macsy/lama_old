@@ -115,7 +115,6 @@ void CUDAJDSUtils::setDiagonalWithScalar( const IndexType numDiagonal, ValueType
     LAMA_LOG_INFO( logger, "setDiagonalWithScalar with numDiagonal = " << numDiagonal << " and scalar = " << scalar );
 
     LAMA_CHECK_CUDA_ACCESS
-    ;
 
     ValueType value = scalar.getValue<ValueType>();
 
@@ -161,7 +160,6 @@ void CUDAJDSUtils::getRow(
     LAMA_LOG_INFO( logger, "getRow with i = " << i << ", numColumns = " << numColumns << " and numRows = " << numRows );
 
     LAMA_CHECK_CUDA_ACCESS
-    ;
 
     thrust::device_ptr<OtherValueType> rowPtr( const_cast<OtherValueType*>( row ) );
     thrust::device_ptr<IndexType> permPtr( const_cast<IndexType*>( perm ) );
@@ -185,7 +183,6 @@ void CUDAJDSUtils::getRow(
 
     cudaStreamSynchronize( 0 );
     LAMA_CHECK_CUDA_ERROR
-    ;
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */
@@ -253,7 +250,6 @@ ValueType CUDAJDSUtils::getValue(
     const ValueType* values )
 {
     LAMA_CHECK_CUDA_ACCESS
-    ;
 
     thrust::device_ptr<ValueType> resultPtr = thrust::device_malloc < ValueType > ( 1 );
     ValueType *resultRawPtr = thrust::raw_pointer_cast( resultPtr );
@@ -311,7 +307,6 @@ void CUDAJDSUtils::scaleValue(
     LAMA_LOG_INFO( logger, "scaleValue with numRows = " << numRows );
 
     LAMA_CHECK_CUDA_ACCESS
-    ;
 
     const int block_size = 256;
     dim3 dimBlock( block_size, 1, 1 );
@@ -321,7 +316,6 @@ void CUDAJDSUtils::scaleValue(
 
     cudaStreamSynchronize( 0 );
     LAMA_CHECK_CUDA_ERROR
-    ;
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */
@@ -351,7 +345,6 @@ bool CUDAJDSUtils::checkDiagonalProperty(
                    "checkDiagonalProperty with numDiagonals = " << numDiagonals << ", numRows = " << numRows << " and numColumns = " << numColumns );
 
     LAMA_CHECK_CUDA_ACCESS
-    ;
 
     if ( numRows > 0 )
     {
@@ -421,7 +414,6 @@ bool CUDAJDSUtils::check(
     LAMA_LOG_INFO( logger, "check with numValues = " << numValues << ", numColumns = " << numColumns );
 
     LAMA_CHECK_CUDA_ACCESS
-    ;
 
     if ( numRows > 0 )
     {
@@ -519,7 +511,6 @@ IndexType CUDAJDSUtils::ilg2dlg(
     LAMA_LOG_INFO( logger, "ilg2dlg with numDiagonals = " << numDiagonals << ", numRows = " << numRows );
 
     LAMA_CHECK_CUDA_ACCESS
-    ;
 
     if ( numDiagonals == 0 )
     {
@@ -540,7 +531,6 @@ IndexType CUDAJDSUtils::ilg2dlg(
     ilg2dlgKernel<<<dimGrid, dimBlock>>>( dlg, numDiagonals, ilg, numRows );
 
     LAMA_CHECK_CUDA_ERROR
-    ;
 
     return sumIlg;
 }
@@ -556,14 +546,12 @@ void CUDAJDSUtils::sortRows( IndexType array[], IndexType perm[], const IndexTyp
     // Note: this solution does not work on Tesla cards (doesent it?)
 
     LAMA_CHECK_CUDA_ACCESS
-    ;
     thrust::device_ptr<IndexType> array_d( const_cast<IndexType*>( array ) );
     thrust::device_ptr<IndexType> perm_d( const_cast<IndexType*>( perm ) );
 
     thrust::stable_sort_by_key( array_d, array_d + n, perm_d, thrust::greater<IndexType>() );
 
     LAMA_CHECK_CUDA_ERROR
-    ;
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */
@@ -613,7 +601,6 @@ void CUDAJDSUtils::setCSRValues(
     LAMA_LOG_INFO( logger, "convert CSR to JDS, #rows = " << numRows );
 
     LAMA_CHECK_CUDA_ACCESS
-    ;
 
     const int block_size = 256;
     dim3 dimBlock( block_size, 1, 1 );
@@ -623,7 +610,6 @@ void CUDAJDSUtils::setCSRValues(
 
     cudaStreamSynchronize( 0 );
     LAMA_CHECK_CUDA_ERROR
-    ;
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */
@@ -635,7 +621,6 @@ void CUDAJDSUtils::setInversePerm( IndexType inversePerm[], const IndexType perm
     LAMA_LOG_INFO( logger, "compute inverse perm, n = " << n );
 
     LAMA_CHECK_CUDA_ACCESS
-    ;
 
     if ( n > 0 )
     {
@@ -705,7 +690,6 @@ void CUDAJDSUtils::getCSRValues(
                    "get CSRValues<" << typeid( JDSValueType ).name() << ", " << typeid( CSRValueType ).name() << ">" << ", #rows = " << numRows );
 
     LAMA_CHECK_CUDA_ACCESS
-    ;
 
     const int block_size = 256;
     dim3 dimBlock( block_size, 1, 1 );
@@ -713,13 +697,11 @@ void CUDAJDSUtils::getCSRValues(
 
     cudaStreamSynchronize( 0 );
     LAMA_CHECK_CUDA_ERROR
-    ;
 
     jds2csrKernel<<<dimGrid,dimBlock>>>( csrJA, csrValues, csrIA, numRows, jdsInversePerm, jdsILG, jdsDLG, jdsJA,
                                          jdsValues );
     cudaStreamSynchronize( 0 );
     LAMA_CHECK_CUDA_ERROR
-    ;
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */
@@ -869,7 +851,6 @@ void CUDAJDSUtils::jacobi(
                    "jacobi<" << typeid(ValueType).name() << ">" << ", #rows = " << numRows << ", omega = " << omega );
 
     LAMA_CHECK_CUDA_ACCESS
-    ;
 
     if ( syncToken )
     {
@@ -1052,7 +1033,6 @@ void CUDAJDSUtils::jacobiHalo(
                    "jacobiHalo<" << typeid(ValueType).name() << ">" << ", #rows = " << numRows << ", omega = " << omega );
 
     LAMA_CHECK_CUDA_ACCESS
-    ;
 
     const int block_size = ( numRows > 8191 ? 256 : 128 ) / 2;
     dim3 dimBlock( block_size, 1, 1 );
@@ -1262,7 +1242,6 @@ void CUDAJDSUtils::normalGEMV(
     dim3 dimGrid = makeGrid( numRows, dimBlock.x );
 
     LAMA_CHECK_CUDA_ACCESS
-    ;
 
     if ( useTexture )
     {
@@ -1316,7 +1295,6 @@ void CUDAJDSUtils::normalGEMV(
     }
 
     LAMA_CHECK_CUDA_ERROR
-    ;
 
     cudaStreamSynchronize( 0 );
 }

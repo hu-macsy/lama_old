@@ -143,7 +143,6 @@ void gemm_launcher(
     cudaStream_t cs )
 {
     LAMA_CHECK_CUDA_ACCESS
-    ;
 
     if ( transA_char != transB_char && transA_char != 'N' )
     {

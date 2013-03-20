@@ -64,7 +64,6 @@ void CUDAUtils::scale( ValueType *mValues, const IndexType n, const OtherValueTy
     LAMA_LOG_INFO( logger, "scale, #n = " << n << ", value = " << value );
 
     LAMA_CHECK_CUDA_ACCESS
-    ;
 
     ValueType castedValue = static_cast<ValueType>( value );
 
@@ -506,7 +505,6 @@ ValueType CUDAUtils::sum( const ValueType array[], const IndexType n )
     LAMA_LOG_INFO( logger, "sum # array = " << array << ", n = " << n );
 
     LAMA_CHECK_CUDA_ACCESS
-    ;
 
     thrust::device_ptr<ValueType> data( const_cast<ValueType*>( array ) );
 
@@ -529,7 +527,6 @@ void CUDAUtils::setVal( ValueType array[], const IndexType n, const ValueType va
     LAMA_LOG_INFO( logger, "setVal # array = " << array << ", n = " << n << ", val = " << val );
 
     LAMA_CHECK_CUDA_ACCESS
-    ;
 
     if ( n > 0 )
     {
@@ -547,7 +544,6 @@ void CUDAUtils::setOrder( ValueType array[], const IndexType n )
 {
     LAMA_LOG_INFO( logger, "setOrder # array = " << array << ", n = " << n );
     LAMA_CHECK_CUDA_ACCESS
-    ;
 
     thrust::device_ptr<ValueType> array_ptr( const_cast<ValueType*>( array ) );
     thrust::sequence( array_ptr, array_ptr + n );
@@ -562,7 +558,6 @@ ValueType CUDAUtils::getValue( const ValueType* array, const IndexType i )
 {
     LAMA_LOG_INFO( logger, "getValue # i = " << i );
     LAMA_CHECK_CUDA_ACCESS
-    ;
 
     thrust::device_ptr<ValueType> arrayPtr( const_cast<ValueType*>( array ) );
     thrust::host_vector<ValueType> arrayHost( arrayPtr + i, arrayPtr + i + 1 );
@@ -578,7 +573,6 @@ ValueType CUDAUtils::maxval( const ValueType array[], const IndexType n )
     LAMA_LOG_INFO( logger, "maxval for " << n << " elements " );
 
     LAMA_CHECK_CUDA_ACCESS
-    ;
 
     thrust::device_ptr<ValueType> data( const_cast<ValueType*>( array ) );
     ValueType zero = static_cast<ValueType>( 0 );
@@ -609,7 +603,6 @@ ValueType CUDAUtils::absMaxVal( const ValueType array[], const IndexType n )
     LAMA_LOG_INFO( logger, "absMaxVal for " << n << " elements " );
 
     LAMA_CHECK_CUDA_ACCESS
-    ;
 
     thrust::device_ptr<ValueType> data( const_cast<ValueType*>( array ) );
 
@@ -633,7 +626,6 @@ ValueType CUDAUtils::absMaxDiffVal( const ValueType array1[], const ValueType ar
     LAMA_LOG_INFO( logger, "absMaxDiffVal for " << n << " elements " );
 
     LAMA_CHECK_CUDA_ACCESS
-    ;
 
     thrust::device_ptr<ValueType> data1( const_cast<ValueType*>( array1 ) );
     thrust::device_ptr<ValueType> data2( const_cast<ValueType*>( array2 ) );
@@ -688,7 +680,6 @@ void CUDAUtils::setGather( ValueType1 out[], const ValueType2 in[], const IndexT
                    "setGather<" << typeid(ValueType1).name() << "," << typeid(ValueType2).name() << ">( ..., n = " << n << ")" );
 
     LAMA_CHECK_CUDA_ACCESS
-    ;
 
     const int block_size = 256;
     dim3 dimBlock( block_size, 1, 1 );
@@ -720,7 +711,6 @@ void CUDAUtils::setScatter( ValueType1 out[], const IndexType indexes[], const V
                    "setScatter<" << typeid(ValueType1).name() << "," << typeid(ValueType2).name() << ">( ..., n = " << n << ")" );
 
     LAMA_CHECK_CUDA_ACCESS
-    ;
 
     const int block_size = 256;
     dim3 dimBlock( block_size, 1, 1 );
@@ -754,7 +744,6 @@ void CUDAUtils::set( ValueType1 out[], const ValueType2 in[], const IndexType n 
     LAMA_LOG_DEBUG( logger, "out = " << out << ", in = " << in );
 
     LAMA_CHECK_CUDA_ACCESS
-    ;
 
     if ( n > 0 )
     {
@@ -793,7 +782,6 @@ void CUDAUtils::invert( ValueType array[], const IndexType n )
                    "invert Vector components for vector of type " << typeid(ValueType).name() << " and size n = " << n << "." );
 
     LAMA_CHECK_CUDA_ACCESS
-    ;
 
     if ( n > 0 )
     {

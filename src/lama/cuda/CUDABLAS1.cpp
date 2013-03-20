@@ -50,7 +50,6 @@ template<>
 void CUDABLAS1::scal( IndexType n, const float alpha, float* x_d, const IndexType incx, SyncToken* syncToken )
 {
     LAMA_CHECK_CUDA_ACCESS
-    ;
 
     cudaStream_t stream = NULL;
 
@@ -63,7 +62,6 @@ void CUDABLAS1::scal( IndexType n, const float alpha, float* x_d, const IndexTyp
 
     cublasSetKernelStream( stream );
     LAMA_CHECK_CUBLAS_ERROR
-    ;
 
     cublasSscal( n, alpha, x_d, incx );
 
@@ -73,19 +71,16 @@ void CUDABLAS1::scal( IndexType n, const float alpha, float* x_d, const IndexTyp
     {
         cudaStreamSynchronize( 0 );
         LAMA_CHECK_CUDA_ERROR
-        ;
     }
 
     cublasSetKernelStream( NULL );
     LAMA_CHECK_CUBLAS_ERROR
-    ;
 }
 
 template<>
 void CUDABLAS1::scal( IndexType n, const double alpha, double* x_d, const IndexType incx, SyncToken* syncToken )
 {
     LAMA_CHECK_CUDA_ACCESS
-    ;
 
     cudaStream_t stream = NULL;
 
@@ -98,7 +93,6 @@ void CUDABLAS1::scal( IndexType n, const double alpha, double* x_d, const IndexT
 
     cublasSetKernelStream( stream );
     LAMA_CHECK_CUBLAS_ERROR
-    ;
 
     cublasDscal( n, alpha, x_d, incx );
 
@@ -108,12 +102,10 @@ void CUDABLAS1::scal( IndexType n, const double alpha, double* x_d, const IndexT
     {
         cudaStreamSynchronize( 0 );
         LAMA_CHECK_CUDA_ERROR
-        ;
     }
 
     cublasSetKernelStream( NULL );
     LAMA_CHECK_CUBLAS_ERROR
-    ;
 }
 
 /** nrm2 */
@@ -122,7 +114,6 @@ template<>
 float CUDABLAS1::nrm2( IndexType n, const float* x_d, IndexType incx, SyncToken* syncToken )
 {
     LAMA_CHECK_CUDA_ACCESS
-    ;
 
     cudaStream_t stream = NULL;
 
@@ -135,7 +126,6 @@ float CUDABLAS1::nrm2( IndexType n, const float* x_d, IndexType incx, SyncToken*
 
     cublasSetKernelStream( stream );
     LAMA_CHECK_CUBLAS_ERROR
-    ;
 
     float res = cublasSnrm2( n, x_d, incx );
 
@@ -145,12 +135,10 @@ float CUDABLAS1::nrm2( IndexType n, const float* x_d, IndexType incx, SyncToken*
     {
         cudaStreamSynchronize( 0 );
         LAMA_CHECK_CUDA_ERROR
-        ;
     }
 
     cublasSetKernelStream( NULL );
     LAMA_CHECK_CUBLAS_ERROR
-    ;
 
     return res;
 }
@@ -159,7 +147,6 @@ template<>
 double CUDABLAS1::nrm2( IndexType n, const double* x_d, IndexType incx, SyncToken* syncToken )
 {
     LAMA_CHECK_CUDA_ACCESS
-    ;
 
     cudaStream_t stream = NULL;
 
@@ -172,7 +159,6 @@ double CUDABLAS1::nrm2( IndexType n, const double* x_d, IndexType incx, SyncToke
 
     cublasSetKernelStream( stream );
     LAMA_CHECK_CUBLAS_ERROR
-    ;
 
     double res = cublasDnrm2( n, x_d, incx );
 
@@ -182,12 +168,10 @@ double CUDABLAS1::nrm2( IndexType n, const double* x_d, IndexType incx, SyncToke
     {
         cudaStreamSynchronize( 0 );
         LAMA_CHECK_CUDA_ERROR
-        ;
     }
 
     cublasSetKernelStream( NULL );
     LAMA_CHECK_CUBLAS_ERROR
-    ;
 
     return res;
 }
@@ -197,7 +181,6 @@ template<>
 float CUDABLAS1::asum( const IndexType n, const float* x_d, const IndexType incX, SyncToken* syncToken )
 {
     LAMA_CHECK_CUDA_ACCESS
-    ;
 
     cudaStream_t stream = NULL;
 
@@ -210,7 +193,6 @@ float CUDABLAS1::asum( const IndexType n, const float* x_d, const IndexType incX
 
     cublasSetKernelStream( stream );
     LAMA_CHECK_CUBLAS_ERROR
-    ;
 
     double res = cublasSasum( n, x_d, incX );
 
@@ -220,12 +202,10 @@ float CUDABLAS1::asum( const IndexType n, const float* x_d, const IndexType incX
     {
         cudaStreamSynchronize( 0 );
         LAMA_CHECK_CUDA_ERROR
-        ;
     }
 
     cublasSetKernelStream( NULL );
     LAMA_CHECK_CUBLAS_ERROR
-    ;
 
     return res;
 }
@@ -234,7 +214,6 @@ template<>
 double CUDABLAS1::asum( const IndexType n, const double* x_d, const IndexType incX, SyncToken* syncToken )
 {
     LAMA_CHECK_CUDA_ACCESS
-    ;
 
     cudaStream_t stream = NULL;
 
@@ -247,7 +226,6 @@ double CUDABLAS1::asum( const IndexType n, const double* x_d, const IndexType in
 
     cublasSetKernelStream( stream );
     LAMA_CHECK_CUBLAS_ERROR
-    ;
 
     double res = cublasDasum( n, x_d, incX );
 
@@ -255,7 +233,6 @@ double CUDABLAS1::asum( const IndexType n, const double* x_d, const IndexType in
 
     cudaStreamSynchronize( 0 );
     LAMA_CHECK_CUDA_ERROR
-    ;
 
     return res;
 }
@@ -266,7 +243,6 @@ template<>
 IndexType CUDABLAS1::iamax( const IndexType n, const float* x_d, const IndexType incX, SyncToken* syncToken )
 {
     LAMA_CHECK_CUDA_ACCESS
-    ;
 
     cudaStream_t stream = NULL;
 
@@ -279,7 +255,6 @@ IndexType CUDABLAS1::iamax( const IndexType n, const float* x_d, const IndexType
 
     cublasSetKernelStream( stream );
     LAMA_CHECK_CUBLAS_ERROR
-    ;
 
     IndexType iamax = cublasIsamax( n, x_d, incX );
 
@@ -289,12 +264,10 @@ IndexType CUDABLAS1::iamax( const IndexType n, const float* x_d, const IndexType
     {
         cudaStreamSynchronize( 0 );
         LAMA_CHECK_CUDA_ERROR
-        ;
     }
 
     cublasSetKernelStream( NULL );
     LAMA_CHECK_CUBLAS_ERROR
-    ;
 
     return iamax ? iamax - 1 : 0;
 }
@@ -303,7 +276,6 @@ template<>
 IndexType CUDABLAS1::iamax( const IndexType n, const double* x_d, const IndexType incX, SyncToken* syncToken )
 {
     LAMA_CHECK_CUDA_ACCESS
-    ;
 
     cudaStream_t stream = NULL;
 
@@ -316,7 +288,6 @@ IndexType CUDABLAS1::iamax( const IndexType n, const double* x_d, const IndexTyp
 
     cublasSetKernelStream( stream );
     LAMA_CHECK_CUBLAS_ERROR
-    ;
 
     IndexType iamax = cublasIdamax( n, x_d, incX );
 
@@ -326,12 +297,10 @@ IndexType CUDABLAS1::iamax( const IndexType n, const double* x_d, const IndexTyp
     {
         cudaStreamSynchronize( 0 );
         LAMA_CHECK_CUDA_ERROR
-        ;
     }
 
     cublasSetKernelStream( NULL );
     LAMA_CHECK_CUBLAS_ERROR
-    ;
 
     return iamax ? iamax - 1 : 0;
 }
@@ -348,7 +317,6 @@ void CUDABLAS1::swap(
     SyncToken* syncToken )
 {
     LAMA_CHECK_CUDA_ACCESS
-    ;
 
     cudaStream_t stream = NULL;
 
@@ -361,7 +329,6 @@ void CUDABLAS1::swap(
 
     cublasSetKernelStream( stream );
     LAMA_CHECK_CUBLAS_ERROR
-    ;
 
     cublasSswap( n, x_d, incX, y_d, incY );
 
@@ -371,12 +338,10 @@ void CUDABLAS1::swap(
     {
         cudaStreamSynchronize( 0 );
         LAMA_CHECK_CUDA_ERROR
-        ;
     }
 
     cublasSetKernelStream( NULL );
     LAMA_CHECK_CUBLAS_ERROR
-    ;
 }
 
 template<>
@@ -389,7 +354,6 @@ void CUDABLAS1::swap(
     SyncToken* syncToken )
 {
     LAMA_CHECK_CUDA_ACCESS
-    ;
 
     cudaStream_t stream = NULL;
 
@@ -402,7 +366,6 @@ void CUDABLAS1::swap(
 
     cublasSetKernelStream( stream );
     LAMA_CHECK_CUBLAS_ERROR
-    ;
 
     cublasDswap( n, x_d, incX, y_d, incY );
 
@@ -412,12 +375,10 @@ void CUDABLAS1::swap(
     {
         cudaStreamSynchronize( 0 );
         LAMA_CHECK_CUDA_ERROR
-        ;
     }
 
     cublasSetKernelStream( NULL );
     LAMA_CHECK_CUBLAS_ERROR
-    ;
 }
 
 /** copy */
@@ -426,7 +387,6 @@ template<>
 void CUDABLAS1::copy( IndexType n, const float* x_d, IndexType incx, float* y_d, IndexType incy, SyncToken* syncToken )
 {
     LAMA_CHECK_CUDA_ACCESS
-    ;
 
     cudaStream_t stream = NULL;
 
@@ -439,7 +399,6 @@ void CUDABLAS1::copy( IndexType n, const float* x_d, IndexType incx, float* y_d,
 
     cublasSetKernelStream( stream );
     LAMA_CHECK_CUBLAS_ERROR
-    ;
 
     cublasScopy( n, x_d, incx, y_d, incy );
 
@@ -449,12 +408,10 @@ void CUDABLAS1::copy( IndexType n, const float* x_d, IndexType incx, float* y_d,
     {
         cudaStreamSynchronize( 0 );
         LAMA_CHECK_CUDA_ERROR
-        ;
     }
 
     cublasSetKernelStream( NULL );
     LAMA_CHECK_CUBLAS_ERROR
-    ;
 }
 
 template<>
@@ -467,7 +424,6 @@ void CUDABLAS1::copy(
     SyncToken* syncToken )
 {
     LAMA_CHECK_CUDA_ACCESS
-    ;
 
     cudaStream_t stream = NULL;
 
@@ -480,7 +436,6 @@ void CUDABLAS1::copy(
 
     cublasSetKernelStream( stream );
     LAMA_CHECK_CUBLAS_ERROR
-    ;
 
     cublasDcopy( n, x_d, incx, y_d, incy );
 
@@ -490,12 +445,10 @@ void CUDABLAS1::copy(
     {
         cudaStreamSynchronize( 0 );
         LAMA_CHECK_CUDA_ERROR
-        ;
     }
 
     cublasSetKernelStream( NULL );
     LAMA_CHECK_CUBLAS_ERROR
-    ;
 }
 
 /** axpy */
@@ -511,7 +464,6 @@ void CUDABLAS1::axpy(
     SyncToken* syncToken )
 {
     LAMA_CHECK_CUDA_ACCESS
-    ;
 
     cudaStream_t stream = NULL;
 
@@ -524,7 +476,6 @@ void CUDABLAS1::axpy(
 
     cublasSetKernelStream( stream );
     LAMA_CHECK_CUBLAS_ERROR
-    ;
 
     cublasSaxpy( n, alpha, x_d, incx, y_d, incy );
 
@@ -534,12 +485,10 @@ void CUDABLAS1::axpy(
     {
         cudaStreamSynchronize( 0 );
         LAMA_CHECK_CUDA_ERROR
-        ;
     }
 
     cublasSetKernelStream( NULL );
     LAMA_CHECK_CUBLAS_ERROR
-    ;
 }
 
 template<>
@@ -553,7 +502,6 @@ void CUDABLAS1::axpy(
     SyncToken* syncToken )
 {
     LAMA_CHECK_CUDA_ACCESS
-    ;
 
     cudaStream_t stream = NULL;
 
@@ -566,7 +514,6 @@ void CUDABLAS1::axpy(
 
     cublasSetKernelStream( stream );
     LAMA_CHECK_CUBLAS_ERROR
-    ;
 
     cublasDaxpy( n, alpha, x_d, incx, y_d, incy );
 
@@ -576,12 +523,10 @@ void CUDABLAS1::axpy(
     {
         cudaStreamSynchronize( 0 );
         LAMA_CHECK_CUDA_ERROR
-        ;
     }
 
     cublasSetKernelStream( NULL );
     LAMA_CHECK_CUBLAS_ERROR
-    ;
 }
 
 /** dot */
@@ -596,7 +541,6 @@ float CUDABLAS1::dot(
     SyncToken* syncToken )
 {
     LAMA_CHECK_CUDA_ACCESS
-    ;
 
     cudaStream_t stream = NULL;
 
@@ -609,7 +553,6 @@ float CUDABLAS1::dot(
 
     cublasSetKernelStream( stream );
     LAMA_CHECK_CUBLAS_ERROR
-    ;
 
     float res = cublasSdot( n, x_d, incx, y_d, incy );
 
@@ -619,12 +562,10 @@ float CUDABLAS1::dot(
     {
         cudaStreamSynchronize( 0 );
         LAMA_CHECK_CUDA_ERROR
-        ;
     }
 
     cublasSetKernelStream( NULL );
     LAMA_CHECK_CUBLAS_ERROR
-    ;
 
     return res;
 }
@@ -639,7 +580,6 @@ double CUDABLAS1::dot(
     SyncToken* syncToken )
 {
     LAMA_CHECK_CUDA_ACCESS
-    ;
 
     cudaStream_t stream = NULL;
 
@@ -652,7 +592,6 @@ double CUDABLAS1::dot(
 
     cublasSetKernelStream( stream );
     LAMA_CHECK_CUBLAS_ERROR
-    ;
 
     double res = cublasDdot( n, x_d, incx, y_d, incy );
 
@@ -662,12 +601,10 @@ double CUDABLAS1::dot(
     {
         cudaStreamSynchronize( 0 );
         LAMA_CHECK_CUDA_ERROR
-        ;
     }
 
     cublasSetKernelStream( NULL );
     LAMA_CHECK_CUBLAS_ERROR
-    ;
 
     return res;
 }
@@ -677,7 +614,6 @@ template<typename T>
 void CUDABLAS1::sum( const IndexType n, T alpha, const T* x, T beta, const T* y, T* z, SyncToken* syncToken )
 {
     LAMA_CHECK_CUDA_ACCESS
-    ;
 
     cudaStream_t stream = 0; // default stream if no syncToken is given
 
@@ -696,7 +632,6 @@ void CUDABLAS1::sum( const IndexType n, T alpha, const T* x, T beta, const T* y,
     {
         cudaStreamSynchronize( stream );
         LAMA_CHECK_CUDA_ERROR
-        ;
     }
 }
 
@@ -732,7 +667,6 @@ void CUDABLAS1::rot(
     SyncToken* syncToken )
 {
     LAMA_CHECK_CUDA_ACCESS
-    ;
 
     cudaStream_t stream = NULL;
 
@@ -745,7 +679,6 @@ void CUDABLAS1::rot(
 
     cublasSetKernelStream( stream );
     LAMA_CHECK_CUBLAS_ERROR
-    ;
 
     cublasSrot( n, x_d, incX, y_d, incY, c, s );
 
@@ -755,12 +688,10 @@ void CUDABLAS1::rot(
     {
         cudaStreamSynchronize( 0 );
         LAMA_CHECK_CUDA_ERROR
-        ;
     }
 
     cublasSetKernelStream( NULL );
     LAMA_CHECK_CUBLAS_ERROR
-    ;
 }
 
 template<>
@@ -775,7 +706,6 @@ void CUDABLAS1::rot(
     SyncToken* syncToken )
 {
     LAMA_CHECK_CUDA_ACCESS
-    ;
 
     cudaStream_t stream = NULL;
 
@@ -788,7 +718,6 @@ void CUDABLAS1::rot(
 
     cublasSetKernelStream( stream );
     LAMA_CHECK_CUBLAS_ERROR
-    ;
 
     cublasDrot( n, x_d, incX, y_d, incY, c, s );
 
@@ -798,12 +727,10 @@ void CUDABLAS1::rot(
     {
         cudaStreamSynchronize( 0 );
         LAMA_CHECK_CUDA_ERROR
-        ;
     }
 
     cublasSetKernelStream( NULL );
     LAMA_CHECK_CUBLAS_ERROR
-    ;
 }
 
 /** rotm */
@@ -819,7 +746,6 @@ void CUDABLAS1::rotm(
     SyncToken* syncToken )
 {
     LAMA_CHECK_CUDA_ACCESS
-    ;
 
     cudaStream_t stream = NULL;
 
@@ -832,7 +758,6 @@ void CUDABLAS1::rotm(
 
     cublasSetKernelStream( stream );
     LAMA_CHECK_CUBLAS_ERROR
-    ;
 
     cublasSrotm( n, x_d, incX, y_d, incY, p_d );
 
@@ -842,12 +767,10 @@ void CUDABLAS1::rotm(
     {
         cudaStreamSynchronize( 0 );
         LAMA_CHECK_CUDA_ERROR
-        ;
     }
 
     cublasSetKernelStream( NULL );
     LAMA_CHECK_CUBLAS_ERROR
-    ;
 }
 
 template<>
@@ -861,7 +784,6 @@ void CUDABLAS1::rotm(
     SyncToken* syncToken )
 {
     LAMA_CHECK_CUDA_ACCESS
-    ;
 
     cudaStream_t stream = NULL;
 
@@ -874,7 +796,6 @@ void CUDABLAS1::rotm(
 
     cublasSetKernelStream( stream );
     LAMA_CHECK_CUBLAS_ERROR
-    ;
 
     cublasDrotm( n, x_d, incX, y_d, incY, p_d );
 
@@ -884,12 +805,10 @@ void CUDABLAS1::rotm(
     {
         cudaStreamSynchronize( 0 );
         LAMA_CHECK_CUDA_ERROR
-        ;
     }
 
     cublasSetKernelStream( NULL );
     LAMA_CHECK_CUBLAS_ERROR
-    ;
 }
 
 /** rotg */
@@ -900,7 +819,6 @@ template<typename T>
 void CUDABLAS1::ass( const IndexType n, const T value, T* x, SyncToken* syncToken )
 {
     LAMA_CHECK_CUDA_ACCESS
-    ;
 
     cudaStream_t stream = 0; // default stream if no syncToken is given
 
@@ -919,7 +837,6 @@ void CUDABLAS1::ass( const IndexType n, const T value, T* x, SyncToken* syncToke
     {
         cudaStreamSynchronize( stream );
         LAMA_CHECK_CUDA_ERROR
-        ;
     }
 }
 
@@ -936,7 +853,6 @@ T CUDABLAS1::viamax( const IndexType n, const T* x, const IndexType incx, SyncTo
     cudaMemcpy( &max, x + maxIdx, sizeof(T), cudaMemcpyDeviceToHost );
 
     LAMA_CHECK_CUDA_ERROR
-    ;
 
     return max;
 }

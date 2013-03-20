@@ -91,7 +91,6 @@ void CUDABLAS3::gemm(
     }
 
     LAMA_CHECK_CUDA_ACCESS
-    ;
 
     cudaStream_t stream = 0; // default stream if no syncToken is given
 
@@ -159,7 +158,6 @@ void CUDABLAS3::gemm(
     LAMA_LOG_INFO( logger, "gemm<double>( m = " << m << ", n = " << n << ", k = " << k );
 
     LAMA_CHECK_CUDA_ACCESS
-    ;
 
     cudaStream_t stream = 0; // default stream if no syncToken is given
 
@@ -320,7 +318,6 @@ void CUDABLAS3::trsm(
     }
 
     LAMA_CHECK_CUDA_ACCESS
-    ;
 
     cudaStream_t stream = 0; // default stream if no syncToken is given
 
@@ -428,7 +425,6 @@ void CUDABLAS3::trsm(
     }
 
     LAMA_CHECK_CUDA_ACCESS
-    ;
 
     cudaStream_t stream = 0; // default stream if no syncToken is given
 
