@@ -184,7 +184,7 @@ void OpenMPSCALAPACK::inverse( const IndexType n, const IndexType nB, const T* a
 
     LAMA_LOG_INFO( logger, "lama_DescInit, error = " << ierr );
 
-    if( ierr != 0 )
+    if ( ierr != 0 )
     {
         LAMA_THROWEXCEPTION( "lama_DescInit failed, error = " << ierr );
     }
@@ -201,7 +201,7 @@ void OpenMPSCALAPACK::inverse( const IndexType n, const IndexType nB, const T* a
 
     LAMA_LOG_INFO( logger, "pgetrf: info = " << info );
 
-    if( info != 0 )
+    if ( info != 0 )
     {
         LAMA_THROWEXCEPTION( "pgetrf failed, error = " << info );
     }
@@ -216,7 +216,7 @@ void OpenMPSCALAPACK::inverse( const IndexType n, const IndexType nB, const T* a
 
     info = pgetri( m, a, 1, 1, descA, permutation.get(), &workTmp, lwork, &iworkTmp, liwork );
 
-    if( info != 0 )
+    if ( info != 0 )
     {
         LAMA_THROWEXCEPTION( "pgetri (first call) failed, error = " << info );
     }
@@ -229,7 +229,7 @@ void OpenMPSCALAPACK::inverse( const IndexType n, const IndexType nB, const T* a
 
     info = pgetri( m, a, 1, 1, descA, permutation.get(), work.get(), lwork, iwork.get(), liwork );
 
-    if( info != 0 )
+    if ( info != 0 )
     {
         LAMA_THROWEXCEPTION( "pgetri (final call) failed, error = " << info );
     }

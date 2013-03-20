@@ -106,7 +106,7 @@ void Logger::logString( const std::string& message )
 {
     std::string logMessage = this->createPrefix() + message;
 
-    switch( mWriteBehaviour )
+    switch ( mWriteBehaviour )
     {
     case LoggerWriteBehaviour::toFileAndConsole:
     {
@@ -129,7 +129,7 @@ void Logger::logString( const std::string& message )
 
 void Logger::logString( LogLevel::LogLevel level, const std::string& message )
 {
-    if( level <= mLogLevel && !mIgnoreRank )
+    if ( level <= mLogLevel && !mIgnoreRank )
     {
         logString( message );
     }
@@ -151,7 +151,7 @@ void Logger::logResidual(
     const Norm& norm,
     const std::string iterationPrefix )
 {
-    if( level <= mLogLevel )
+    if ( level <= mLogLevel )
     {
         std::stringstream residualStream;
         residualStream << iterationPrefix;
@@ -168,7 +168,7 @@ void Logger::logTime( const std::string& timerId, LogLevel::LogLevel level, cons
 
     double time = mTimer->getTime( timerId );
 
-    if( level <= mLogLevel )
+    if ( level <= mLogLevel )
     {
         std::stringstream timeStringStream;
         timeStringStream << message;

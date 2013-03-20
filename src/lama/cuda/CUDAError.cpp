@@ -45,7 +45,7 @@ const char* cudaDriverErrorString( CUresult res )
 {
     const char* str = "";
 
-    switch( res )
+    switch ( res )
 
     {
     case CUDA_SUCCESS:
@@ -140,7 +140,7 @@ const char* cublasErrorString( cublasStatus res )
 {
     const char* str = "";
 
-    switch( res )
+    switch ( res )
 
     {
     case CUBLAS_STATUS_SUCCESS:

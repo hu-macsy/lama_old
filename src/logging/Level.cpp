@@ -50,7 +50,7 @@ static const std::string UNKOWN_ID = "UNKNOWN";
 
 const char* level2str( const Level level )
 {
-    switch( level )
+    switch ( level )
     {
 
     case TRACE:
@@ -85,31 +85,31 @@ Level str2level( const std::string& value )
 
     Level level;
 
-    if( strcmp( cvalue, "TRACE" ) == 0 )
+    if ( strcmp( cvalue, "TRACE" ) == 0 )
     {
         level = TRACE;
     }
-    else if( strcmp( cvalue, "DEBUG" ) == 0 )
+    else if ( strcmp( cvalue, "DEBUG" ) == 0 )
     {
         level = DEBUG;
     }
-    else if( strcmp( cvalue, "INFO" ) == 0 )
+    else if ( strcmp( cvalue, "INFO" ) == 0 )
     {
         level = INFO;
     }
-    else if( strcmp( cvalue, "WARN" ) == 0 )
+    else if ( strcmp( cvalue, "WARN" ) == 0 )
     {
         level = WARN;
     }
-    else if( strcmp( cvalue, "ERROR" ) == 0 )
+    else if ( strcmp( cvalue, "ERROR" ) == 0 )
     {
         level = SERROR;
     }
-    else if( strcmp( cvalue, "FATAL" ) == 0 )
+    else if ( strcmp( cvalue, "FATAL" ) == 0 )
     {
         level = FATAL;
     }
-    else if( strcmp( cvalue, "OFF" ) == 0 )
+    else if ( strcmp( cvalue, "OFF" ) == 0 )
     {
         level = OFF;
     }

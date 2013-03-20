@@ -42,7 +42,7 @@ template<typename T>
 LAMAArrayView<T>::LAMAArrayView( LAMAArray<T>& array )
     : mArray( array ), mOffset( 0 ), mSize( mArray.size() )
 {
-    if( array.constFlag )
+    if ( array.constFlag )
     {
         LAMA_THROWEXCEPTION( "Could not create a LAMAArrayView for a const LAMAArray" );
     }
@@ -52,20 +52,20 @@ template<typename T>
 LAMAArrayView<T>::LAMAArrayView( LAMAArray<T>& array, const IndexType offset, const IndexType size )
     : mArray( array ), mOffset( offset ), mSize( size )
 {
-    if( mOffset < 0 )
+    if ( mOffset < 0 )
     {
         LAMA_THROWEXCEPTION( "Could not create a LAMAArrayView with a negative offset " << mOffset );
     }
-    if( mSize < 0 )
+    if ( mSize < 0 )
     {
         LAMA_THROWEXCEPTION( "Could not create a LAMAArrayView with a negative size " << mSize );
     }
-    if( mOffset + mSize > mArray.size() )
+    if ( mOffset + mSize > mArray.size() )
     {
         LAMA_THROWEXCEPTION(
             "Could not create a LAMAArrayView with mOffset + mSize = " << mOffset + mSize << " because it exceeds the size of " << mArray );
     }
-    if( array.constFlag )
+    if ( array.constFlag )
     {
         LAMA_THROWEXCEPTION( "Could not create a LAMAArrayView for a const LAMAArray" );
     }
@@ -133,7 +133,7 @@ void LAMAArrayView<T>::releaseWriteAccess( const size_t index )
 template<typename T>
 void LAMAArrayView<T>::clear( const size_t index )
 {
-    if( mOffset != 0 || mSize != mArray.size() )
+    if ( mOffset != 0 || mSize != mArray.size() )
     {
         LAMA_THROWEXCEPTION(
             "Resizing a LAMAArrayView with 0 != offset = " << mOffset << " or a size not equal to the underlying array is not allowed. ( size = " << mSize << ", array size = " << mArray.size() );
@@ -145,7 +145,7 @@ void LAMAArrayView<T>::clear( const size_t index )
 template<typename T>
 void LAMAArrayView<T>::resize( const size_t index, const IndexType newSize )
 {
-    if( mOffset != 0 || mSize != mArray.size() )
+    if ( mOffset != 0 || mSize != mArray.size() )
     {
         LAMA_THROWEXCEPTION(
             "Resizing a LAMAArrayView with 0 != offset = " << mOffset << " or a size not equal to the underlying array is not allowed. ( size = " << mSize << ", array size = " << mArray.size() );
@@ -157,7 +157,7 @@ void LAMAArrayView<T>::resize( const size_t index, const IndexType newSize )
 template<typename T>
 void LAMAArrayView<T>::reserve( const size_t index, const IndexType capacity, const bool copyFlag )
 {
-    if( mOffset != 0 || mSize != mArray.size() )
+    if ( mOffset != 0 || mSize != mArray.size() )
     {
         LAMA_THROWEXCEPTION(
             "Calling reserve on a LAMAArrayView with 0 != offset = " << mOffset << " or a size not equal to the underlying array is not allowed. ( size = " << mSize << ", array size = " << mArray.size() );
@@ -170,7 +170,7 @@ IndexType LAMAArrayView<T>::capacity( const size_t index ) const
 {
     IndexType capacityValue = mArray.capacity( index );
 
-    if( mOffset != 0 || mSize != mArray.size() )
+    if ( mOffset != 0 || mSize != mArray.size() )
     {
         capacityValue = mSize; // no more available
     }
@@ -202,15 +202,15 @@ template<typename T>
 LAMAArrayConstView<T>::LAMAArrayConstView( const LAMAArray<T>& array, const IndexType offset, const IndexType size )
     : mArray( array ), mOffset( offset ), mSize( size )
 {
-    if( mOffset < 0 )
+    if ( mOffset < 0 )
     {
         LAMA_THROWEXCEPTION( "Could not create a LAMAArrayConstView with a negative offset " << mOffset );
     }
-    if( mSize < 0 )
+    if ( mSize < 0 )
     {
         LAMA_THROWEXCEPTION( "Could not create a LAMAArrayConstView with a negative size " << mSize );
     }
-    if( mOffset + mSize > mArray.size() )
+    if ( mOffset + mSize > mArray.size() )
     {
         LAMA_THROWEXCEPTION(
             "Could not create a LAMAArrayConstView with mOffset + mSize = " << mOffset + mSize << " because it exceeds the size of " << mArray );

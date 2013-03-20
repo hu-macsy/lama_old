@@ -54,7 +54,7 @@ void CUDABLAS1::scal( IndexType n, const float alpha, float* x_d, const IndexTyp
 
     cudaStream_t stream = NULL;
 
-    if( syncToken )
+    if ( syncToken )
     {
         CUDAStreamSyncToken* cudaStreamSyncToken = dynamic_cast<CUDAStreamSyncToken*>( syncToken );
         LAMA_ASSERT_DEBUG( cudaStreamSyncToken, "no cuda stream sync token provided" );
@@ -69,7 +69,7 @@ void CUDABLAS1::scal( IndexType n, const float alpha, float* x_d, const IndexTyp
 
     // No error check here possible as kernel is started asynchronously
 
-    if( !syncToken )
+    if ( !syncToken )
     {
         cudaStreamSynchronize( 0 );
         LAMA_CHECK_CUDA_ERROR
@@ -89,7 +89,7 @@ void CUDABLAS1::scal( IndexType n, const double alpha, double* x_d, const IndexT
 
     cudaStream_t stream = NULL;
 
-    if( syncToken )
+    if ( syncToken )
     {
         CUDAStreamSyncToken* cudaStreamSyncToken = dynamic_cast<CUDAStreamSyncToken*>( syncToken );
         LAMA_ASSERT_DEBUG( cudaStreamSyncToken, "no cuda stream sync token provided" );
@@ -104,7 +104,7 @@ void CUDABLAS1::scal( IndexType n, const double alpha, double* x_d, const IndexT
 
     // No error check here possible as kernel is started asynchronously
 
-    if( !syncToken )
+    if ( !syncToken )
     {
         cudaStreamSynchronize( 0 );
         LAMA_CHECK_CUDA_ERROR
@@ -126,7 +126,7 @@ float CUDABLAS1::nrm2( IndexType n, const float* x_d, IndexType incx, SyncToken*
 
     cudaStream_t stream = NULL;
 
-    if( syncToken )
+    if ( syncToken )
     {
         CUDAStreamSyncToken* cudaStreamSyncToken = dynamic_cast<CUDAStreamSyncToken*>( syncToken );
         LAMA_ASSERT_DEBUG( cudaStreamSyncToken, "no cuda stream sync token provided" );
@@ -141,7 +141,7 @@ float CUDABLAS1::nrm2( IndexType n, const float* x_d, IndexType incx, SyncToken*
 
     // No error check here possible as kernel is started asynchronously
 
-    if( !syncToken )
+    if ( !syncToken )
     {
         cudaStreamSynchronize( 0 );
         LAMA_CHECK_CUDA_ERROR
@@ -163,7 +163,7 @@ double CUDABLAS1::nrm2( IndexType n, const double* x_d, IndexType incx, SyncToke
 
     cudaStream_t stream = NULL;
 
-    if( syncToken )
+    if ( syncToken )
     {
         CUDAStreamSyncToken* cudaStreamSyncToken = dynamic_cast<CUDAStreamSyncToken*>( syncToken );
         LAMA_ASSERT_DEBUG( cudaStreamSyncToken, "no cuda stream sync token provided" );
@@ -178,7 +178,7 @@ double CUDABLAS1::nrm2( IndexType n, const double* x_d, IndexType incx, SyncToke
 
     // No error check here possible as kernel is started asynchronously
 
-    if( !syncToken )
+    if ( !syncToken )
     {
         cudaStreamSynchronize( 0 );
         LAMA_CHECK_CUDA_ERROR
@@ -201,7 +201,7 @@ float CUDABLAS1::asum( const IndexType n, const float* x_d, const IndexType incX
 
     cudaStream_t stream = NULL;
 
-    if( syncToken )
+    if ( syncToken )
     {
         CUDAStreamSyncToken* cudaStreamSyncToken = dynamic_cast<CUDAStreamSyncToken*>( syncToken );
         LAMA_ASSERT_DEBUG( cudaStreamSyncToken, "no cuda stream sync token provided" );
@@ -216,7 +216,7 @@ float CUDABLAS1::asum( const IndexType n, const float* x_d, const IndexType incX
 
     // No error check here possible as kernel is started asynchronously
 
-    if( !syncToken )
+    if ( !syncToken )
     {
         cudaStreamSynchronize( 0 );
         LAMA_CHECK_CUDA_ERROR
@@ -238,7 +238,7 @@ double CUDABLAS1::asum( const IndexType n, const double* x_d, const IndexType in
 
     cudaStream_t stream = NULL;
 
-    if( syncToken )
+    if ( syncToken )
     {
         CUDAStreamSyncToken* cudaStreamSyncToken = dynamic_cast<CUDAStreamSyncToken*>( syncToken );
         LAMA_ASSERT_DEBUG( cudaStreamSyncToken, "no cuda stream sync token provided" );
@@ -270,7 +270,7 @@ IndexType CUDABLAS1::iamax( const IndexType n, const float* x_d, const IndexType
 
     cudaStream_t stream = NULL;
 
-    if( syncToken )
+    if ( syncToken )
     {
         CUDAStreamSyncToken* cudaStreamSyncToken = dynamic_cast<CUDAStreamSyncToken*>( syncToken );
         LAMA_ASSERT_DEBUG( cudaStreamSyncToken, "no cuda stream sync token provided" );
@@ -285,7 +285,7 @@ IndexType CUDABLAS1::iamax( const IndexType n, const float* x_d, const IndexType
 
     // No error check here possible as kernel is started asynchronously
 
-    if( !syncToken )
+    if ( !syncToken )
     {
         cudaStreamSynchronize( 0 );
         LAMA_CHECK_CUDA_ERROR
@@ -307,7 +307,7 @@ IndexType CUDABLAS1::iamax( const IndexType n, const double* x_d, const IndexTyp
 
     cudaStream_t stream = NULL;
 
-    if( syncToken )
+    if ( syncToken )
     {
         CUDAStreamSyncToken* cudaStreamSyncToken = dynamic_cast<CUDAStreamSyncToken*>( syncToken );
         LAMA_ASSERT_DEBUG( cudaStreamSyncToken, "no cuda stream sync token provided" );
@@ -322,7 +322,7 @@ IndexType CUDABLAS1::iamax( const IndexType n, const double* x_d, const IndexTyp
 
     // No error check here possible as kernel is started asynchronously
 
-    if( !syncToken )
+    if ( !syncToken )
     {
         cudaStreamSynchronize( 0 );
         LAMA_CHECK_CUDA_ERROR
@@ -352,7 +352,7 @@ void CUDABLAS1::swap(
 
     cudaStream_t stream = NULL;
 
-    if( syncToken )
+    if ( syncToken )
     {
         CUDAStreamSyncToken* cudaStreamSyncToken = dynamic_cast<CUDAStreamSyncToken*>( syncToken );
         LAMA_ASSERT_DEBUG( cudaStreamSyncToken, "no cuda stream sync token provided" );
@@ -367,7 +367,7 @@ void CUDABLAS1::swap(
 
     // No error check here possible as kernel is started asynchronously
 
-    if( !syncToken )
+    if ( !syncToken )
     {
         cudaStreamSynchronize( 0 );
         LAMA_CHECK_CUDA_ERROR
@@ -393,7 +393,7 @@ void CUDABLAS1::swap(
 
     cudaStream_t stream = NULL;
 
-    if( syncToken )
+    if ( syncToken )
     {
         CUDAStreamSyncToken* cudaStreamSyncToken = dynamic_cast<CUDAStreamSyncToken*>( syncToken );
         LAMA_ASSERT_DEBUG( cudaStreamSyncToken, "no cuda stream sync token provided" );
@@ -408,7 +408,7 @@ void CUDABLAS1::swap(
 
     // No error check here possible as kernel is started asynchronously
 
-    if( !syncToken )
+    if ( !syncToken )
     {
         cudaStreamSynchronize( 0 );
         LAMA_CHECK_CUDA_ERROR
@@ -430,7 +430,7 @@ void CUDABLAS1::copy( IndexType n, const float* x_d, IndexType incx, float* y_d,
 
     cudaStream_t stream = NULL;
 
-    if( syncToken )
+    if ( syncToken )
     {
         CUDAStreamSyncToken* cudaStreamSyncToken = dynamic_cast<CUDAStreamSyncToken*>( syncToken );
         LAMA_ASSERT_DEBUG( cudaStreamSyncToken, "no cuda stream sync token provided" );
@@ -445,7 +445,7 @@ void CUDABLAS1::copy( IndexType n, const float* x_d, IndexType incx, float* y_d,
 
     // No error check here possible as kernel is started asynchronously
 
-    if( !syncToken )
+    if ( !syncToken )
     {
         cudaStreamSynchronize( 0 );
         LAMA_CHECK_CUDA_ERROR
@@ -471,7 +471,7 @@ void CUDABLAS1::copy(
 
     cudaStream_t stream = NULL;
 
-    if( syncToken )
+    if ( syncToken )
     {
         CUDAStreamSyncToken* cudaStreamSyncToken = dynamic_cast<CUDAStreamSyncToken*>( syncToken );
         LAMA_ASSERT_DEBUG( cudaStreamSyncToken, "no cuda stream sync token provided" );
@@ -486,7 +486,7 @@ void CUDABLAS1::copy(
 
     // No error check here possible as kernel is started asynchronously
 
-    if( !syncToken )
+    if ( !syncToken )
     {
         cudaStreamSynchronize( 0 );
         LAMA_CHECK_CUDA_ERROR
@@ -515,7 +515,7 @@ void CUDABLAS1::axpy(
 
     cudaStream_t stream = NULL;
 
-    if( syncToken )
+    if ( syncToken )
     {
         CUDAStreamSyncToken* cudaStreamSyncToken = dynamic_cast<CUDAStreamSyncToken*>( syncToken );
         LAMA_ASSERT_DEBUG( cudaStreamSyncToken, "no cuda stream sync token provided" );
@@ -530,7 +530,7 @@ void CUDABLAS1::axpy(
 
     // No error check here possible as kernel is started asynchronously
 
-    if( !syncToken )
+    if ( !syncToken )
     {
         cudaStreamSynchronize( 0 );
         LAMA_CHECK_CUDA_ERROR
@@ -557,7 +557,7 @@ void CUDABLAS1::axpy(
 
     cudaStream_t stream = NULL;
 
-    if( syncToken )
+    if ( syncToken )
     {
         CUDAStreamSyncToken* cudaStreamSyncToken = dynamic_cast<CUDAStreamSyncToken*>( syncToken );
         LAMA_ASSERT_DEBUG( cudaStreamSyncToken, "no cuda stream sync token provided" );
@@ -572,7 +572,7 @@ void CUDABLAS1::axpy(
 
     // No error check here possible as kernel is started asynchronously
 
-    if( !syncToken )
+    if ( !syncToken )
     {
         cudaStreamSynchronize( 0 );
         LAMA_CHECK_CUDA_ERROR
@@ -600,7 +600,7 @@ float CUDABLAS1::dot(
 
     cudaStream_t stream = NULL;
 
-    if( syncToken )
+    if ( syncToken )
     {
         CUDAStreamSyncToken* cudaStreamSyncToken = dynamic_cast<CUDAStreamSyncToken*>( syncToken );
         LAMA_ASSERT_DEBUG( cudaStreamSyncToken, "no cuda stream sync token provided" );
@@ -615,7 +615,7 @@ float CUDABLAS1::dot(
 
     // No error check here possible as kernel is started asynchronously
 
-    if( !syncToken )
+    if ( !syncToken )
     {
         cudaStreamSynchronize( 0 );
         LAMA_CHECK_CUDA_ERROR
@@ -643,7 +643,7 @@ double CUDABLAS1::dot(
 
     cudaStream_t stream = NULL;
 
-    if( syncToken )
+    if ( syncToken )
     {
         CUDAStreamSyncToken* cudaStreamSyncToken = dynamic_cast<CUDAStreamSyncToken*>( syncToken );
         LAMA_ASSERT_DEBUG( cudaStreamSyncToken, "no cuda stream sync token provided" );
@@ -658,7 +658,7 @@ double CUDABLAS1::dot(
 
     // No error check here possible as kernel is started asynchronously
 
-    if( !syncToken )
+    if ( !syncToken )
     {
         cudaStreamSynchronize( 0 );
         LAMA_CHECK_CUDA_ERROR
@@ -681,7 +681,7 @@ void CUDABLAS1::sum( const IndexType n, T alpha, const T* x, T beta, const T* y,
 
     cudaStream_t stream = 0; // default stream if no syncToken is given
 
-    if( syncToken )
+    if ( syncToken )
     {
         CUDAStreamSyncToken* cudaStreamSyncToken = dynamic_cast<CUDAStreamSyncToken*>( syncToken );
         LAMA_ASSERT_DEBUG( cudaStreamSyncToken, "no cuda stream sync token provided" );
@@ -692,7 +692,7 @@ void CUDABLAS1::sum( const IndexType n, T alpha, const T* x, T beta, const T* y,
 
     // No error check here possible as kernel is started asynchronously
 
-    if( !syncToken )
+    if ( !syncToken )
     {
         cudaStreamSynchronize( stream );
         LAMA_CHECK_CUDA_ERROR
@@ -736,7 +736,7 @@ void CUDABLAS1::rot(
 
     cudaStream_t stream = NULL;
 
-    if( syncToken )
+    if ( syncToken )
     {
         CUDAStreamSyncToken* cudaStreamSyncToken = dynamic_cast<CUDAStreamSyncToken*>( syncToken );
         LAMA_ASSERT_DEBUG( cudaStreamSyncToken, "no cuda stream sync token provided" );
@@ -751,7 +751,7 @@ void CUDABLAS1::rot(
 
     // No error check here possible as kernel is started asynchronously
 
-    if( !syncToken )
+    if ( !syncToken )
     {
         cudaStreamSynchronize( 0 );
         LAMA_CHECK_CUDA_ERROR
@@ -779,7 +779,7 @@ void CUDABLAS1::rot(
 
     cudaStream_t stream = NULL;
 
-    if( syncToken )
+    if ( syncToken )
     {
         CUDAStreamSyncToken* cudaStreamSyncToken = dynamic_cast<CUDAStreamSyncToken*>( syncToken );
         LAMA_ASSERT_DEBUG( cudaStreamSyncToken, "no cuda stream sync token provided" );
@@ -794,7 +794,7 @@ void CUDABLAS1::rot(
 
     // No error check here possible as kernel is started asynchronously
 
-    if( !syncToken )
+    if ( !syncToken )
     {
         cudaStreamSynchronize( 0 );
         LAMA_CHECK_CUDA_ERROR
@@ -823,7 +823,7 @@ void CUDABLAS1::rotm(
 
     cudaStream_t stream = NULL;
 
-    if( syncToken )
+    if ( syncToken )
     {
         CUDAStreamSyncToken* cudaStreamSyncToken = dynamic_cast<CUDAStreamSyncToken*>( syncToken );
         LAMA_ASSERT_DEBUG( cudaStreamSyncToken, "no cuda stream sync token provided" );
@@ -838,7 +838,7 @@ void CUDABLAS1::rotm(
 
     // No error check here possible as kernel is started asynchronously
 
-    if( !syncToken )
+    if ( !syncToken )
     {
         cudaStreamSynchronize( 0 );
         LAMA_CHECK_CUDA_ERROR
@@ -865,7 +865,7 @@ void CUDABLAS1::rotm(
 
     cudaStream_t stream = NULL;
 
-    if( syncToken )
+    if ( syncToken )
     {
         CUDAStreamSyncToken* cudaStreamSyncToken = dynamic_cast<CUDAStreamSyncToken*>( syncToken );
         LAMA_ASSERT_DEBUG( cudaStreamSyncToken, "no cuda stream sync token provided" );
@@ -880,7 +880,7 @@ void CUDABLAS1::rotm(
 
     // No error check here possible as kernel is started asynchronously
 
-    if( !syncToken )
+    if ( !syncToken )
     {
         cudaStreamSynchronize( 0 );
         LAMA_CHECK_CUDA_ERROR
@@ -904,7 +904,7 @@ void CUDABLAS1::ass( const IndexType n, const T value, T* x, SyncToken* syncToke
 
     cudaStream_t stream = 0; // default stream if no syncToken is given
 
-    if( syncToken )
+    if ( syncToken )
     {
         CUDAStreamSyncToken* cudaStreamSyncToken = dynamic_cast<CUDAStreamSyncToken*>( syncToken );
         LAMA_ASSERT_DEBUG( cudaStreamSyncToken, "no cuda stream sync token provided" );
@@ -915,7 +915,7 @@ void CUDABLAS1::ass( const IndexType n, const T value, T* x, SyncToken* syncToke
 
     // No error check here possible as kernel is started asynchronously
 
-    if( !syncToken )
+    if ( !syncToken )
     {
         cudaStreamSynchronize( stream );
         LAMA_CHECK_CUDA_ERROR

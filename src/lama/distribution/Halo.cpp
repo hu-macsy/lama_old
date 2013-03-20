@@ -65,7 +65,7 @@ void Halo::clear()
 
 Halo& Halo::operator=( const Halo& other )
 {
-    if( this != &other )
+    if ( this != &other )
     {
         LAMA_LOG_DEBUG( logger, "make deep copy of Halo" );
 

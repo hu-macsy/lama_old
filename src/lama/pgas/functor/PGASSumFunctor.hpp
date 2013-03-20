@@ -80,7 +80,7 @@ void PGASSumFunctor<T>::iteration( int partner, bool active )
     mInterface->syncronizeAll();
     *mWork = *mResult;
     mInterface->syncronizeAll();
-    if( active )
+    if ( active )
     {
         mInterface->get( mResult, mWork, sizeof(T), partner );
         *mResult += *mWork;

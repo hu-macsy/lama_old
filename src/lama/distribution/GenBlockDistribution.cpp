@@ -54,7 +54,7 @@ void GenBlockDistribution::setOffsets(
     mOffsets.reset( new IndexType[numPartitions] );
     IndexType sumSizes = 0;
 
-    for( PartitionId p = 0; p < numPartitions; p++ )
+    for ( PartitionId p = 0; p < numPartitions; p++ )
     {
         sumSizes += localSizes[p];
         mOffsets[p] = sumSizes;
@@ -148,9 +148,9 @@ GenBlockDistribution::GenBlockDistribution(
     communicator->gather( allWeights, weight );
     float totalWeight = 0;
 
-    for( PartitionId p = 0; p < size; p++ )
+    for ( PartitionId p = 0; p < size; p++ )
     {
-        if( allWeights[p] < /*=*/0 )
+        if ( allWeights[p] < /*=*/0 )
         {
             LAMA_THROWEXCEPTION(
                 "Weight of partition " << p << " = " << allWeights[p] << " illegal, must be positive" );
@@ -164,7 +164,7 @@ GenBlockDistribution::GenBlockDistribution(
     mOffsets.reset( new IndexType[size] );
     float sumWeight = 0.0;
 
-    for( PartitionId p = 0; p < size; p++ )
+    for ( PartitionId p = 0; p < size; p++ )
     {
         sumWeight += allWeights[p];
         mOffsets[p] = static_cast<IndexType>( sumWeight / totalWeight * globalSize + 0.5 );
@@ -173,7 +173,7 @@ GenBlockDistribution::GenBlockDistribution(
     mLB = 0;
     mUB = mOffsets[rank] - 1;
 
-    if( rank > 0 )
+    if ( rank > 0 )
     {
         mLB = mOffsets[rank - 1];
     }
@@ -197,27 +197,27 @@ PartitionId GenBlockDistribution::getOwner( const IndexType globalIndex ) const
     int first = 0;
     int last = mCommunicator->getSize() - 1;
 
-    if( globalIndex < 0 )
+    if ( globalIndex < 0 )
     {
         return -1; // out of range
     }
 
-    if( globalIndex >= mOffsets[last] )
+    if ( globalIndex >= mOffsets[last] )
     {
         return -1; // out of range
     }
 
     // binary search in the array mOffsets
 
-    while( first < last )
+    while ( first < last )
     {
         int mid = ( first + last + 1 ) / 2;
 
-        if( globalIndex < mOffsets[mid - 1] )
+        if ( globalIndex < mOffsets[mid - 1] )
         {
             last = mid - 1;
         }
-        else if( globalIndex >= mOffsets[mid] )
+        else if ( globalIndex >= mOffsets[mid] )
         {
             first = mid + 1;
         }
@@ -235,7 +235,7 @@ IndexType GenBlockDistribution::getLocalSize() const
 {
     IndexType localSize = 0;
 
-    if( mLB <= mUB )
+    if ( mLB <= mUB )
     {
         localSize = mUB - mLB + 1;
     }
@@ -252,7 +252,7 @@ IndexType GenBlockDistribution::global2local( const IndexType globalIndex ) cons
 {
     IndexType localIndex = nIndex; // default value if globalIndex is not local
 
-    if( globalIndex >= mLB && globalIndex <= mUB )
+    if ( globalIndex >= mLB && globalIndex <= mUB )
     {
         localIndex = globalIndex - mLB;
     }
@@ -268,7 +268,7 @@ void GenBlockDistribution::computeOwners(
     owners.reserve( requiredIndexes.size() );
     LAMA_LOG_INFO( logger, "compute " << requiredIndexes.size() << " owners for " << *this );
 
-    for( unsigned int i = 0; i < requiredIndexes.size(); ++i )
+    for ( unsigned int i = 0; i < requiredIndexes.size(); ++i )
     {
         IndexType requiredIndex = requiredIndexes[i];
         PartitionId owner = getOwner( requiredIndex );
@@ -279,28 +279,28 @@ void GenBlockDistribution::computeOwners(
 
 bool GenBlockDistribution::isEqual( const Distribution& other ) const
 {
-    if( this == &other )
+    if ( this == &other )
     {
         return true; // pointer equality, is always okay
     }
 
-    if( *mCommunicator != other.getCommunicator() )
+    if ( *mCommunicator != other.getCommunicator() )
     {
         return false;
     }
 
     const GenBlockDistribution* otherBlock = dynamic_cast<const GenBlockDistribution*>( &other );
 
-    if( !otherBlock )
+    if ( !otherBlock )
     {
         return false;
     }
 
     bool equal = true;
 
-    for( PartitionId p = 0; p < mCommunicator->getSize(); ++p )
+    for ( PartitionId p = 0; p < mCommunicator->getSize(); ++p )
     {
-        if( mOffsets[p] != otherBlock->mOffsets[p] )
+        if ( mOffsets[p] != otherBlock->mOffsets[p] )
         {
             equal = false;
             break;
@@ -324,15 +324,15 @@ void GenBlockDistribution::printDistributionVector( std::string name ) const
     std::vector<IndexType> localSizes( parts );
     mCommunicator->gather( &localSizes[0], 1, 0/*MASTER*/, &myLocalSize );
 
-    if( myRank == 0 ) // process 0 is MASTER process
+    if ( myRank == 0 ) // process 0 is MASTER process
     {
         std::ofstream file;
         file.open( ( name + ".part" ).c_str() );
 
         // print row - partition mapping
-        for( IndexType i = 0; i < parts; ++i )
+        for ( IndexType i = 0; i < parts; ++i )
         {
-            for( IndexType j = 0; j < localSizes[i]; j++ )
+            for ( IndexType j = 0; j < localSizes[i]; j++ )
             {
                 file << i << std::endl;
             }

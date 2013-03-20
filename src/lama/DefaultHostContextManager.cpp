@@ -84,14 +84,14 @@ ContextPtr DefaultHostContextManager::getContext( int deviceNr )
 {
     boost::shared_ptr<DefaultHostContext> context;
 
-    if( deviceNr != LAMA_DEFAULT_DEVICE_NUMBER )
+    if ( deviceNr != LAMA_DEFAULT_DEVICE_NUMBER )
     {
         LAMA_LOG_WARN( logger, "Context number ignored for HostContext, deviceNr = " << deviceNr );
     }
 
     // use the last contextInstance if it is still valid
 
-    if( contextInstance.expired() )
+    if ( contextInstance.expired() )
     {
         // create a new instance of DefaultHostContext and keep it for further uses
 

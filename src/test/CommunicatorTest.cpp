@@ -87,25 +87,25 @@ LAMA_COMMON_TEST_CASE( CommunicatorTest, computeOwnersTest );
 IndexType n = 17;
 std::vector<IndexType> localIndexes, nonLocalIndexes;
 
-for( IndexType i = 0; i < n; ++i )
+for ( IndexType i = 0; i < n; ++i )
 {
     localIndexes.push_back( rank * n + i );
 }
 
 GeneralDistribution dist( n * size, localIndexes, comm );
 
-for( PartitionId p = 0; p < size; ++p )
+for ( PartitionId p = 0; p < size; ++p )
 {
-    if( p == rank )
+    if ( p == rank )
     {
-        for( IndexType i = 0; i < n; ++i )
+        for ( IndexType i = 0; i < n; ++i )
         {
             BOOST_CHECK( dist.isLocal( p * n + i ) );
         }
     }
     else
     {
-        for( IndexType i = 0; i < n; ++i )
+        for ( IndexType i = 0; i < n; ++i )
         {
             nonLocalIndexes.push_back( p * n + i );
         }
@@ -116,11 +116,11 @@ std::vector<PartitionId> owners;
 comm->computeOwners( nonLocalIndexes, dist, owners );
 std::vector<PartitionId>::size_type currentIndex = 0;
 
-for( PartitionId p = 0; p < size; ++p )
+for ( PartitionId p = 0; p < size; ++p )
 {
-    if( p != rank )
+    if ( p != rank )
     {
-        for( IndexType i = 0; i < n; ++i )
+        for ( IndexType i = 0; i < n; ++i )
         {
             BOOST_CHECK_EQUAL( p, owners[currentIndex++] );
         }
@@ -137,9 +137,9 @@ LAMAArray<IndexType> reqQuantities( size );
 {
     HostWriteAccess<IndexType> writeReqQuantities( reqQuantities );
 
-    for( PartitionId p = 0; p < size; ++p )
+    for ( PartitionId p = 0; p < size; ++p )
     {
-        if( p != rank )
+        if ( p != rank )
         {
             writeReqQuantities[p] = ( 2 * p + rank ) % 3;
         }
@@ -154,7 +154,7 @@ CommunicationPlan requiredPlan( reqQuantities );
 // verify that requiredPlan is correctly set up
 IndexType offsetCheck = 0;
 
-for( PartitionId p = 0; p < requiredPlan.size(); ++p )
+for ( PartitionId p = 0; p < requiredPlan.size(); ++p )
 {
     IndexType n = requiredPlan[p].quantity;
     PartitionId partitionId = requiredPlan[p].partitionId;
@@ -169,7 +169,7 @@ CommunicationPlan providesPlan;
 providesPlan.allocateTranspose( requiredPlan, *comm );
 offsetCheck = 0;
 
-for( PartitionId p = 0; p < providesPlan.size(); ++p )
+for ( PartitionId p = 0; p < providesPlan.size(); ++p )
 {
     IndexType n = providesPlan[p].quantity;
     PartitionId partitionId = providesPlan[p].partitionId;
@@ -193,12 +193,12 @@ const PartitionId leftNeighbor = comm->getNeighbor( -1 );
 const PartitionId rightNeighbor = comm->getNeighbor( 1 );
 // Each processor requires values from left and right neighbor
 
-if( !distribution.isLocal( leftNeighbor ) )
+if ( !distribution.isLocal( leftNeighbor ) )
 {
     requiredIndexes.push_back( leftNeighbor );
 }
 
-if( rightNeighbor != leftNeighbor && !distribution.isLocal( rightNeighbor ) )
+if ( rightNeighbor != leftNeighbor && !distribution.isLocal( rightNeighbor ) )
 {
     requiredIndexes.push_back( rightNeighbor );
 }
@@ -218,7 +218,7 @@ const CommunicationPlan& providesPlan = haloRef.getProvidesPlan();
 // check for a correct provide plan
 IndexType offsetCheck = 0;
 
-for( PartitionId p = 0; p < requiredPlan.size(); ++p )
+for ( PartitionId p = 0; p < requiredPlan.size(); ++p )
 {
     IndexType n = requiredPlan[p].quantity;
     BOOST_CHECK_EQUAL( ( IndexType ) 1, n );
@@ -232,7 +232,7 @@ BOOST_CHECK_EQUAL( noReqIndexes, requiredPlan.totalQuantity() );
 offsetCheck = 0;
 PartitionId nProvides = providesPlan.size();
 
-for( PartitionId p = 0; p < nProvides; ++p )
+for ( PartitionId p = 0; p < nProvides; ++p )
 {
     IndexType n = providesPlan[p].quantity;
     BOOST_CHECK_EQUAL( n, static_cast<IndexType>( 1 ) );
@@ -244,7 +244,7 @@ for( PartitionId p = 0; p < nProvides; ++p )
 BOOST_CHECK_EQUAL( noReqIndexes, providesPlan.totalQuantity() );
 
 const HostReadAccess<IndexType> providesIndexes( haloRef.getProvidesIndexes() );
-for( PartitionId p = 0; p < providesPlan.size(); ++p )
+for ( PartitionId p = 0; p < providesPlan.size(); ++p )
 {
     const IndexType* indexes = providesIndexes + providesPlan[p].offset;
     IndexType expectedLocalIndex = rank;
@@ -254,7 +254,7 @@ BOOST_CHECK_EQUAL( noReqIndexes, halo.getHaloSize() );
 
 IndexType nIndexes = static_cast<IndexType>( requiredIndexes.size() );
 
-for( IndexType i = 0; i < nIndexes; ++i )
+for ( IndexType i = 0; i < nIndexes; ++i )
 {
     const IndexType haloIndex = halo.global2halo( requiredIndexes[i] );
     BOOST_CHECK( 0 <= haloIndex && haloIndex < halo.getHaloSize() );
@@ -274,11 +274,11 @@ void CommunicatorTest::updateHaloTest()
     BlockDistribution distribution( vectorSize, comm );
     std::vector<IndexType> requiredIndexes;
 
-    for( IndexType i = 0; i < factor; ++i )
+    for ( IndexType i = 0; i < factor; ++i )
     {
         const IndexType requiredIndex = ( ( rank + 1 ) * factor + i ) % vectorSize;
 
-        if( distribution.isLocal( requiredIndex ) )
+        if ( distribution.isLocal( requiredIndex ) )
         {
             continue;
         }
@@ -292,7 +292,7 @@ void CommunicatorTest::updateHaloTest()
     {
         HostWriteOnlyAccess<ValueType> localDataAccess( localData, distribution.getLocalSize() );
 
-        for( IndexType i = 0; i < localData.size(); ++i )
+        for ( IndexType i = 0; i < localData.size(); ++i )
         {
             localDataAccess[i] = static_cast<ValueType>( distribution.local2global( i ) );
         }
@@ -305,7 +305,7 @@ void CommunicatorTest::updateHaloTest()
     {
         HostReadAccess<ValueType> haloDataAccess( haloData );
 
-        for( IndexType i = 0; i < static_cast<IndexType>( requiredIndexes.size() ); ++i )
+        for ( IndexType i = 0; i < static_cast<IndexType>( requiredIndexes.size() ); ++i )
         {
             ValueType expectedValue = static_cast<ValueType>( requiredIndexes[i] );
             BOOST_CHECK_EQUAL( expectedValue, haloDataAccess[i] );
@@ -313,9 +313,9 @@ void CommunicatorTest::updateHaloTest()
     }
     requiredIndexes.clear();
 
-    for( IndexType i = 0; i < vectorSize; ++i )
+    for ( IndexType i = 0; i < vectorSize; ++i )
     {
-        if( distribution.isLocal( i ) || ( i + rank ) % 2 == 0 )
+        if ( distribution.isLocal( i ) || ( i + rank ) % 2 == 0 )
         {
             continue;
         }
@@ -329,7 +329,7 @@ void CommunicatorTest::updateHaloTest()
     {
         HostReadAccess<ValueType> haloDataAccess( haloData );
 
-        for( IndexType i = 0; i < static_cast<IndexType>( requiredIndexes.size() ); ++i )
+        for ( IndexType i = 0; i < static_cast<IndexType>( requiredIndexes.size() ); ++i )
         {
             ValueType expectedValue = static_cast<ValueType>( requiredIndexes[i] );
             BOOST_CHECK_EQUAL( expectedValue, haloDataAccess[i] );
@@ -349,13 +349,13 @@ void CommunicatorTest::shiftTest()
     // - shift this array around all processors and each processor writes one value at its rank
     // - verify that each processor has written the right value
 
-    if( size > 1 )
+    if ( size > 1 )
     {
         const IndexType vectorSize = size;
         LAMAArray<ValueType> sendBuffer( vectorSize, static_cast<ValueType>( rank ) );
         LAMAArray<ValueType> recvBuffer;
 
-        for( PartitionId rounds = 0; rounds < size; ++rounds )
+        for ( PartitionId rounds = 0; rounds < size; ++rounds )
         {
             comm->shift( recvBuffer, sendBuffer, 1 );
             {
@@ -368,7 +368,7 @@ void CommunicatorTest::shiftTest()
         {
             HostReadAccess<ValueType> recvBufferAccess( recvBuffer );
 
-            for( IndexType i = 0; i < size; ++i )
+            for ( IndexType i = 0; i < size; ++i )
             {
                 ValueType value = static_cast<ValueType>( i );
                 BOOST_CHECK_EQUAL( value, recvBufferAccess[ i ] );

@@ -51,7 +51,7 @@ __global__
 void ass_kernel( const int n, T1* dst_d, const T2 value )
 {
     const int i = threadId( gridDim, blockIdx, blockDim, threadIdx );
-    if( i < n )
+    if ( i < n )
     {
         dst_d[i] = value;
     }
@@ -63,7 +63,7 @@ __global__
 void sum_kernel( const int n, T alpha, const T* x, T beta, const T* y, T* z )
 {
     const int i = threadId( gridDim, blockIdx, blockDim, threadIdx );
-    if( i < n )
+    if ( i < n )
     {
         z[i] = alpha * x[i] + beta * y[i];
     }
@@ -86,27 +86,27 @@ void vamax_kernel(
     int stride = blockDim.x / 2;
     __shared__
     T localMax[block_size];
-    if( i < numThreads )
+    if ( i < numThreads )
     {
         int idx = i;
         T tmpMax = 0;
-        if( idx % incx == 0 )
+        if ( idx % incx == 0 )
         {
             tmpMax = abs( x_d[idx] );
         }
-        for( int j = 1; j < numElemsperThread; ++j )
+        for ( int j = 1; j < numElemsperThread; ++j )
         {
             idx += numThreads;
-            if( idx >= n )
+            if ( idx >= n )
             {
                 break;
             }
-            if( idx % incx != 0 )
+            if ( idx % incx != 0 )
             {
                 continue;
             }
             T value = abs( x_d[idx] );
-            if( value > tmpMax )
+            if ( value > tmpMax )
             {
                 tmpMax = value;
             }
@@ -119,16 +119,16 @@ void vamax_kernel(
         localMax[tId] = 0;
     }
     __syncthreads();
-    while( stride > 0 )
+    while ( stride > 0 )
     {
-        if( tId < stride && localMax[tId + stride] > localMax[tId] )
+        if ( tId < stride && localMax[tId + stride] > localMax[tId] )
         {
             localMax[tId] = localMax[tId + stride];
         }
         stride /= 2;
         __syncthreads();
     }
-    if( tId == 0 )
+    if ( tId == 0 )
     {
         atomicMax( scratch_d, localMax[tId] );
     }
@@ -147,7 +147,7 @@ void max_kernel( const int n, T* scratch_d )
     int stride = blockDim.x / 2;
     __shared__
     T localMax[block_size];
-    if( i < n )
+    if ( i < n )
     {
         localMax[tId] = scratch_d[i];
     }
@@ -156,16 +156,16 @@ void max_kernel( const int n, T* scratch_d )
         localMax[tId] = 0;
     }
     __syncthreads();
-    while( stride > 0 )
+    while ( stride > 0 )
     {
-        if( tId < stride && localMax[tId + stride] > localMax[tId] )
+        if ( tId < stride && localMax[tId + stride] > localMax[tId] )
         {
             localMax[tId] = localMax[tId + stride];
         }
         stride /= 2;
         __syncthreads();
     }
-    if( tId == 0 )
+    if ( tId == 0 )
     {
         scratch_d[bId] = localMax[tId];
     }
@@ -178,7 +178,7 @@ void gather_kernel( T1* dst_d, const T2* src_d, const T3* indexes_d, const int n
 
 {
     const int i = threadId( gridDim, blockIdx, blockDim, threadIdx );
-    if( i < n )
+    if ( i < n )
     {
         dst_d[i] = src_d[indexes_d[i]];
     }
@@ -196,7 +196,7 @@ template<typename T>
 __inline__ __device__
 void limitedIntervalAdd( T* sum, const unsigned int threadId, const unsigned int limit, const unsigned int stride )
 {
-    if( threadId < limit )
+    if ( threadId < limit )
     {
         sum[threadId] += sum[threadId + stride];
     }

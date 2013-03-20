@@ -63,7 +63,7 @@ void verifySameMatrixAll( const Matrix& m1, const Matrix& m2 )
     // y1 = m1 * x1;
     // y2 = m2 * x2;
 
-    for( IndexType i = 0; i < n; i++ )
+    for ( IndexType i = 0; i < n; i++ )
     {
         Scalar s1 = y1.getValue( i );
         Scalar s2 = y2.getValue( i );
@@ -96,7 +96,7 @@ void assertSameMatrix( const Matrix& m1, const Matrix& m2 )
 
     // now compare all rows
 
-    for( IndexType i = 0; i < m; ++i )
+    for ( IndexType i = 0; i < m; ++i )
     {
         // Note: rows will be broadcast in case of distributed matrices
 
@@ -109,7 +109,7 @@ void assertSameMatrix( const Matrix& m1, const Matrix& m2 )
 
         // compare the two vectors element-wise
 
-        for( IndexType j = 0; j < n; j++ )
+        for ( IndexType j = 0; j < n; j++ )
         {
             Scalar s1 = ptrRow1->getValue( j );
             Scalar s2 = ptrRow2->getValue( j );

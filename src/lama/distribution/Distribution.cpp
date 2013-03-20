@@ -63,7 +63,7 @@ Distribution::Distribution( const IndexType globalSize )
 Distribution::Distribution( const IndexType globalSize, const CommunicatorPtr communicator )
     : mGlobalSize( globalSize ), mCommunicator( communicator )
 {
-    if( !mCommunicator )
+    if ( !mCommunicator )
     {
         LAMA_THROWEXCEPTION( "Distribution without a Communicator is not allowed" );
     }
@@ -86,12 +86,12 @@ bool Distribution::operator==( const Distribution& other ) const
     LAMA_LOG_TRACE( logger, "check " << *this << " == " << other );
     bool isSame = false;
 
-    if( this == &other )
+    if ( this == &other )
     {
         isSame = true;
         LAMA_LOG_DEBUG( logger, *this << " == " << other << ": pointer equal" );
     }
-    else if( isReplicated() && other.isReplicated() )
+    else if ( isReplicated() && other.isReplicated() )
     {
         isSame = getGlobalSize() == other.getGlobalSize();
         LAMA_LOG_DEBUG( logger, *this << " == " << other << ": both are replicated, same size" );
@@ -181,7 +181,7 @@ void Distribution::replicate( T1* allValues, const T2* localValues ) const
 
     // set my owned indexes and my values
 
-    for( IndexType i = 0; i < currentSize; i++ )
+    for ( IndexType i = 0; i < currentSize; i++ )
     {
         IndexType globalIndex = local2global( i );
         indexesSend[i] = globalIndex;
@@ -193,7 +193,7 @@ void Distribution::replicate( T1* allValues, const T2* localValues ) const
     // now nproc - 1 steps for cyclic shifting
     PartitionId np = comm.getSize(); // number partitions
 
-    for( PartitionId ip = 0; ip < np - 1; ++ip )
+    for ( PartitionId ip = 0; ip < np - 1; ++ip )
     {
         IndexType newSize1 = 1;
         newSize1 = comm.shift( indexesReceive.get(), maxLocalSize, indexesSend.get(), currentSize, 1 );
@@ -204,7 +204,7 @@ void Distribution::replicate( T1* allValues, const T2* localValues ) const
 
         // sort in the received values
 
-        for( IndexType i = 0; i < currentSize; i++ )
+        for ( IndexType i = 0; i < currentSize; i++ )
         {
             const IndexType globalIndex = indexesReceive[i];
             allValues[globalIndex] = valuesReceive[i]; // implicit type conversion done here
@@ -238,12 +238,12 @@ void Distribution::replicateN( T1* allValues, const T2* localValues, const Index
 
     // set my owned indexes and my values
 
-    for( IndexType i = 0; i < currentSize; i++ )
+    for ( IndexType i = 0; i < currentSize; i++ )
     {
         IndexType globalIndex = local2global( i );
         indexesSend[i] = globalIndex;
 
-        for( IndexType j = 0; j < n; j++ )
+        for ( IndexType j = 0; j < n; j++ )
         {
             valuesSend[i * n + j] = localValues[i * n + j]; // type conversion here
             allValues[globalIndex * n + j] = localValues[i * n + j]; // type conversion here
@@ -254,7 +254,7 @@ void Distribution::replicateN( T1* allValues, const T2* localValues, const Index
     // now nproc - 1 steps for cyclic shifting
     PartitionId np = comm.getSize(); // number partitions
 
-    for( PartitionId ip = 0; ip < np - 1; ++ip )
+    for ( PartitionId ip = 0; ip < np - 1; ++ip )
     {
         IndexType newSize1 = -1;
         newSize1 = comm.shift( indexesReceive.get(), maxLocalSize, indexesSend.get(), currentSize, 1 );
@@ -265,11 +265,11 @@ void Distribution::replicateN( T1* allValues, const T2* localValues, const Index
 
         // sort in the received values
 
-        for( IndexType i = 0; i < currentSize; i++ )
+        for ( IndexType i = 0; i < currentSize; i++ )
         {
             const IndexType globalIndex = indexesReceive[i];
 
-            for( IndexType j = 0; j < n; j++ )
+            for ( IndexType j = 0; j < n; j++ )
             {
                 allValues[globalIndex * n + j] = valuesReceive[i * n + j];
             }
@@ -296,7 +296,7 @@ static IndexType fillGlobal(
 {
     IndexType counter = 0; // traverses values, counts the number of filled values
 
-    for( IndexType i = 0; i < numIndexes; i++ )
+    for ( IndexType i = 0; i < numIndexes; i++ )
     {
         const IndexType allIndex = indexes[i];
         const IndexType offset = allOffsets[allIndex];
@@ -308,7 +308,7 @@ static IndexType fillGlobal(
          << allIndex << ", size = " << size << ", offset = " << offset  << std::endl;
          */
 
-        for( IndexType j = 0; j < size; j++ )
+        for ( IndexType j = 0; j < size; j++ )
         {
             allValues[offset + j] = values[counter + j];
         }
@@ -334,7 +334,7 @@ void Distribution::replicateRagged( T* allValues, const T* localValues, const In
 
     // pack my indexes, work as global indexes for allValues
 
-    for( IndexType i = 0; i < currentElemSize; i++ )
+    for ( IndexType i = 0; i < currentElemSize; i++ )
     {
         indexesSend[i] = local2global( i );
     }
@@ -352,7 +352,7 @@ void Distribution::replicateRagged( T* allValues, const T* localValues, const In
 
     // fill my local values in send buffer
 
-    for( IndexType i = 0; i < currentDataSize; i++ )
+    for ( IndexType i = 0; i < currentDataSize; i++ )
     {
         valuesSend[i] = localValues[i];
     }
@@ -363,7 +363,7 @@ void Distribution::replicateRagged( T* allValues, const T* localValues, const In
     // now nproc - 1 steps for cyclic shifting
     PartitionId np = comm.getSize(); // number partitions
 
-    for( PartitionId ip = 0; ip < np - 1; ++ip )
+    for ( PartitionId ip = 0; ip < np - 1; ++ip )
     {
         int direction = 1;
         IndexType newSize1 = comm.shift( indexesReceive.get(), maxLocalSize, indexesSend.get(), currentElemSize,

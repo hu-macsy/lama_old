@@ -531,7 +531,7 @@ void CUDAUtils::setVal( ValueType array[], const IndexType n, const ValueType va
     LAMA_CHECK_CUDA_ACCESS
     ;
 
-    if( n > 0 )
+    if ( n > 0 )
     {
         thrust::device_ptr<ValueType> data( const_cast<ValueType*>( array ) );
         thrust::fill( data, data + n, val );
@@ -675,7 +675,7 @@ void gatherKernel( ValueType1* out, const ValueType2* in, const IndexType* index
 
     const IndexType i = threadId( gridDim, blockIdx, blockDim, threadIdx );
 
-    if( i < n )
+    if ( i < n )
     {
         out[i] = static_cast<ValueType1>( in[indexes[i]] );
     }
@@ -707,7 +707,7 @@ void scatter_kernel( T1* out, const IndexType* indexes, const T2* in, IndexType 
 {
     const IndexType i = threadId( gridDim, blockIdx, blockDim, threadIdx );
 
-    if( i < n )
+    if ( i < n )
     {
         out[indexes[i]] = in[i];
     }
@@ -739,7 +739,7 @@ void setKernel( T1* out, const T2* in, IndexType n )
 {
     const IndexType i = threadId( gridDim, blockIdx, blockDim, threadIdx );
 
-    if( i < n )
+    if ( i < n )
     {
         out[i] = static_cast<T1>( in[i] );
     }
@@ -756,7 +756,7 @@ void CUDAUtils::set( ValueType1 out[], const ValueType2 in[], const IndexType n 
     LAMA_CHECK_CUDA_ACCESS
     ;
 
-    if( n > 0 )
+    if ( n > 0 )
     {
         const int block_size = 256;
         dim3 dimBlock( block_size, 1, 1 );
@@ -778,7 +778,7 @@ void invertVectorComponents_kernel( ValueType* array, IndexType n )
 
     ValueType one = 1.0;
 
-    if( i < n )
+    if ( i < n )
     {
         array[i] = one / array[i];
     }
@@ -795,7 +795,7 @@ void CUDAUtils::invert( ValueType array[], const IndexType n )
     LAMA_CHECK_CUDA_ACCESS
     ;
 
-    if( n > 0 )
+    if ( n > 0 )
     {
         const int block_size = 256;
         dim3 dimBlock( block_size, 1, 1 );

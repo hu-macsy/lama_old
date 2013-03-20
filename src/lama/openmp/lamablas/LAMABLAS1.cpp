@@ -53,13 +53,13 @@ void LAMABLAS1::scal( const IndexType n, const T alpha, T* x, const IndexType in
 {
     LAMA_LOG_DEBUG( logger, "scal<T>, n = " << n << ", alpha = " << alpha << ", x = " << x << ", incX = " << incX );
 
-    if( syncToken )
+    if ( syncToken )
     {
         LAMA_LOG_WARN( logger, "no asynchronous execution for openmp possible at this level." )
     }
 
     #pragma omp parallel for
-    for( int i = 0; i < n; i++ )
+    for ( int i = 0; i < n; i++ )
     {
         x[i * incX] = alpha * x[i * incX];
     }
@@ -86,19 +86,19 @@ T LAMABLAS1::nrm2( const IndexType n, const T* x, const IndexType incX, SyncToke
 {
     LAMA_LOG_DEBUG( logger, "nrm2<T>, n = " << n << ", x = " << x << ", incX = " << incX );
 
-    if( syncToken )
+    if ( syncToken )
     {
         LAMA_LOG_WARN( logger, "no asynchronous execution for openmp possible at this level." )
     }
 
-    if( syncToken )
+    if ( syncToken )
     {
         LAMA_LOG_WARN( logger, "no asynchronous execution for openmp possible at this level." )
     }
 
     T tmp = 0;
     #pragma omp parallel for reduction(+ : tmp)
-    for( int i = 0; i < n; i++ )
+    for ( int i = 0; i < n; i++ )
     {
         tmp = std::abs( x[i * incX] ) * std::abs( x[i * incX] );
     }
@@ -116,14 +116,14 @@ T LAMABLAS1::asum( const IndexType n, const T* x, const IndexType incX, SyncToke
 {
     LAMA_LOG_DEBUG( logger, "asum<T>, n = " << n << ", x = " << x << ", incX = " << incX );
 
-    if( syncToken )
+    if ( syncToken )
     {
         LAMA_LOG_WARN( logger, "no asynchronous execution for openmp possible at this level." )
     }
 
     T tmp = 0;
     #pragma omp parallel for reduction(+ : tmp)
-    for( int i = 0; i < n; i++ )
+    for ( int i = 0; i < n; i++ )
     {
         tmp = std::abs( x[i * incX] );
     }
@@ -141,17 +141,17 @@ IndexType LAMABLAS1::iamax( const IndexType n, const T* x, const IndexType incX,
 {
     LAMA_LOG_DEBUG( logger, "iamax<T>, n = " << n << ", x = " << x << ", incX = " << incX );
 
-    if( syncToken )
+    if ( syncToken )
     {
         LAMA_LOG_WARN( logger, "no asynchronous execution for openmp possible at this level." )
     }
 
     int iamax = 0;
     #pragma omp parallel for
-    for( int i = 0; i < n; i++ )
+    for ( int i = 0; i < n; i++ )
     {
         #pragma omp critical
-        if( x[i * incX] > iamax )
+        if ( x[i * incX] > iamax )
         {
             iamax = x[i * incX];
         }
@@ -174,16 +174,16 @@ T LAMABLAS1::viamax( const IndexType n, const T* x, const IndexType incX, SyncTo
 {
     LAMA_LOG_DEBUG( logger, "viamax<T>, n = " << n << ", x = " << x << ", incX = " << incX );
 
-    if( syncToken )
+    if ( syncToken )
     {
         LAMA_LOG_WARN( logger, "no asynchronous execution for openmp possible at this level." )
     }
 
     int iamax = 0;
     #pragma omp parallel for reduction( max : iamax)
-    for( int i = 0; i < n; i++ )
+    for ( int i = 0; i < n; i++ )
     {
-        if( x[i * incX] > iamax )
+        if ( x[i * incX] > iamax )
         {
             iamax = x[i * incX];
         }
@@ -207,13 +207,13 @@ void LAMABLAS1::swap( const IndexType n, T* x, const IndexType incX, T* y, const
     LAMA_LOG_DEBUG( logger,
                     "iamax<T>, n = " << n << ", x = " << x << ", incX = " << incX << ", y = " << y << ", incY = " << incY );
 
-    if( syncToken )
+    if ( syncToken )
     {
         LAMA_LOG_WARN( logger, "no asynchronous execution for openmp possible at this level." )
     }
 
     #pragma omp parallel for
-    for( int i = 0; i < n; i++ )
+    for ( int i = 0; i < n; i++ )
     {
         T tmp = x[i * incX];
         x[i * incX] = y[i * incY];
@@ -250,13 +250,13 @@ void LAMABLAS1::copy(
     LAMA_LOG_DEBUG( logger,
                     "copy<T>, n = " << n << ", x = " << x << ", incX = " << incX << ", y = " << y << ", incY = " << incY );
 
-    if( syncToken )
+    if ( syncToken )
     {
         LAMA_LOG_WARN( logger, "no asynchronous execution for openmp possible at this level." )
     }
 
     #pragma omp parallel for
-    for( int i = 0; i < n; i++ )
+    for ( int i = 0; i < n; i++ )
     {
         x[i * incX] = y[i * inc];
     }
@@ -293,13 +293,13 @@ void LAMABLAS1::axpy(
     LAMA_LOG_DEBUG( logger,
                     "axpy<T>, n = " << n << ", alpha = " << alpha << ", x = " << x << ", incX = " << incX << ", y = " << y << ", incY = " << incY );
 
-    if( syncToken )
+    if ( syncToken )
     {
         LAMA_LOG_WARN( logger, "no asynchronous execution for openmp possible at this level." )
     }
 
     #pragma omp parallel for
-    for( int i = 0; i < n; i++ )
+    for ( int i = 0; i < n; i++ )
     {
         x[i] = alpha * x[i * incX] + y[i * incY];
     }
@@ -337,14 +337,14 @@ T LAMABLAS1::dot(
     LAMA_LOG_DEBUG( logger,
                     "dot<T>, n = " << n << ", x = " << x << ", incX = " << incX << ", y = " << y << ", incY = " << incY );
 
-    if( syncToken )
+    if ( syncToken )
     {
         LAMA_LOG_WARN( logger, "no asynchronous execution for openmp possible at this level." )
     }
 
     T dot;
     #pragma omp parallel for reduction ( +: dot )
-    for( int i = 0; i < n; i++ )
+    for ( int i = 0; i < n; i++ )
     {
         dot += x[i * incX] * y[i * incY];
     }
@@ -375,13 +375,13 @@ void LAMABLAS1::sum( const IndexType n, T alpha, const T* x, T beta, const T* y,
     LAMA_LOG_DEBUG( logger,
                     "sum<T>, n = " << n << ", alpha = " << alpha << ", x = " << x << ", beta = " << beta << ", y = " << y << ", z = " << z );
 
-    if( syncToken )
+    if ( syncToken )
     {
         LAMA_LOG_WARN( logger, "no asynchronous execution for openmp possible at this level." )
     }
 
     #pragma omp parallel for
-    for( int i = 0; i < n; i++ )
+    for ( int i = 0; i < n; i++ )
     {
         z[i] = alpha * x[i] + beta * y[i];
     }
@@ -422,21 +422,21 @@ void LAMABLAS1::rot(
     LAMA_LOG_DEBUG( logger,
                     "rot<T>, n = " << n << ", x = " << x << ", incX = " << incX << ", y = " << y << ", incY = " << incY << ", c = " << c << ", s = " << s );
 
-    if( syncToken )
+    if ( syncToken )
     {
         LAMA_LOG_WARN( logger, "no asynchronous execution for openmp possible at this level." )
     }
 
     T stemp;
 
-    if( n < 0 )
+    if ( n < 0 )
     {
         return
     }
 
-        if( incX == 1 && incY == 1 )
+        if ( incX == 1 && incY == 1 )
     {
-        for( int i = 0; i < n; i++ )
+        for ( int i = 0; i < n; i++ )
         {
             stemp = c * x[i] + s * y[i];
             y[i] = c * y[i] - s * x[i];
@@ -449,16 +449,16 @@ void LAMABLAS1::rot(
         int iy = 1;
 
         //TODO: check if we need +1 (assumed from fortran)
-        if( incX < 0 )
+        if ( incX < 0 )
         {
             ix = ( -n + 1 ) * incx + 1;
         }
-        if( incY < 0 )
+        if ( incY < 0 )
         {
             iy = ( -n + 1 ) * incy + 1;
         }
 
-        for( int i = 0; i < n; i++ )
+        for ( int i = 0; i < n; i++ )
         {
             stemp = c * x[ix] + s * y[iy];
             y( iy ) = c * y[iy] - s * x[ix];
@@ -506,7 +506,7 @@ void LAMABLAS1::rotm(
     LAMA_LOG_DEBUG( logger,
                     "rotm<T>, n = " << n << ", x = " << x << ", incX = " << incX << ", y = " << y << ", incY = " << incY << ", P = " << P );
 
-    if( syncToken )
+    if ( syncToken )
     {
         LAMA_LOG_WARN( logger, "no asynchronous execution for openmp possible at this level." )
     }
@@ -539,7 +539,7 @@ void LAMABLAS1::rotg( T* a, T* b, T* c, T* s, SyncToken* syncToken )
 {
     LAMA_LOG_DEBUG( logger, "rotg<T>, a = " << a << ", b = " << b << ", c = " << c << ", s = " << s );
 
-    if( syncToken )
+    if ( syncToken )
     {
         LAMA_LOG_WARN( logger, "no asynchronous execution for openmp possible at this level." )
     }
@@ -560,7 +560,7 @@ void LAMABLAS1::rotmg( T* d1, T* d2, T* b1, const T b2, T* p, SyncToken* syncTok
     LAMA_LOG_DEBUG( logger,
                     "rotmg<float>, d1 = " << d1 << ", d2 = " << d2 << ", b1 = " << b1 << ", b2 = " << b2 << ", p = " << p );
 
-    if( syncToken )
+    if ( syncToken )
     {
         LAMA_LOG_WARN( logger, "no asynchronous execution for openmp possible at this level." )
     }
@@ -586,13 +586,13 @@ void LAMABLAS1::ass( const IndexType n, const T value, T* x, SyncToken* syncToke
 {
     LAMA_LOG_DEBUG( logger, "ass<T>, n = " << n << ", value = " << value << ", x = " << x );
 
-    if( syncToken )
+    if ( syncToken )
     {
         LAMA_LOG_WARN( logger, "no asynchronous execution for openmp possible at this level." )
     }
 
     #pragma omp parallel for
-    for( int i = 0; i < n; i++ )
+    for ( int i = 0; i < n; i++ )
     {
         x[i] = value;
     }

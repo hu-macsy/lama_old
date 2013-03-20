@@ -93,7 +93,7 @@ CommunicationPlan::CommunicationPlan( const CommunicationPlan& other, const Inde
 
     IndexType offset = 0;
 
-    for( size_t i = 0; i < mEntries.size(); i++ )
+    for ( size_t i = 0; i < mEntries.size(); i++ )
     {
         Entry& entry = mEntries[i];
         LAMA_ASSERT_ERROR( entry.offset == offset, "illegal plan to extend for quantities" );
@@ -102,13 +102,13 @@ CommunicationPlan::CommunicationPlan( const CommunicationPlan& other, const Inde
 
     offset = 0; // running for new offsets
 
-    for( size_t i = 0; i < mEntries.size(); i++ )
+    for ( size_t i = 0; i < mEntries.size(); i++ )
     {
         Entry& entry = mEntries[i];
 
         IndexType newQuantity = 0;
 
-        for( IndexType k = 0; k < entry.quantity; k++ )
+        for ( IndexType k = 0; k < entry.quantity; k++ )
         {
             newQuantity += quantities[entry.offset + k];
         }
@@ -145,7 +145,7 @@ CommunicationPlan::CommunicationPlan( const CommunicationPlan& other, const Inde
 
     IndexType offset = 0; // running for new offsets
 
-    for( size_t i = 0; i < mEntries.size(); i++ )
+    for ( size_t i = 0; i < mEntries.size(); i++ )
     {
         Entry& entry = mEntries[i];
         LAMA_ASSERT_EQUAL_DEBUG( entry.offset * n, offset )
@@ -195,7 +195,7 @@ void CommunicationPlan::allocate( const LAMAArray<IndexType>& quantitiesArray, b
 
     HostReadAccess<IndexType> quantitiesHRA( quantitiesArray );
 
-    for( PartitionId i = 0; i < nPartitions; ++i )
+    for ( PartitionId i = 0; i < nPartitions; ++i )
     {
         Entry& entry = mEntries[i];
 
@@ -211,7 +211,7 @@ void CommunicationPlan::allocate( const LAMAArray<IndexType>& quantitiesArray, b
 
     mAllocated = true;
 
-    if( compressFlag )
+    if ( compressFlag )
     {
         compress();
     }
@@ -228,14 +228,14 @@ void CommunicationPlan::allocate(
 
     LAMA_LOG_INFO( logger, "allocate plan for " << noPartitions << " partitions from owners" );
 
-    for( PartitionId p = 0; p < noPartitions; ++p )
+    for ( PartitionId p = 0; p < noPartitions; ++p )
     {
         mEntries[p].quantity = 0;
         mEntries[p].partitionId = p;
     }
 
     std::vector<PartitionId>::const_iterator end = owners.end();
-    for( std::vector<PartitionId>::const_iterator it = owners.begin(); it != end; ++it )
+    for ( std::vector<PartitionId>::const_iterator it = owners.begin(); it != end; ++it )
     {
         const PartitionId& p = *it;
         LAMA_ASSERT( p >= 0 && p < noPartitions,
@@ -246,7 +246,7 @@ void CommunicationPlan::allocate(
 
     mQuantity = 0; // counts total quantity
 
-    for( PartitionId p = 0; p < noPartitions; ++p )
+    for ( PartitionId p = 0; p < noPartitions; ++p )
     {
         mEntries[p].offset = mQuantity;
         mQuantity += mEntries[p].quantity;
@@ -256,7 +256,7 @@ void CommunicationPlan::allocate(
 
     mAllocated = true;
 
-    if( compressFlag )
+    if ( compressFlag )
     {
         compress();
     }
@@ -272,7 +272,7 @@ IndexType CommunicationPlan::maxQuantity() const
 
     IndexType quantity = 0;
 
-    for( PartitionId id = 0; id < size(); id++ )
+    for ( PartitionId id = 0; id < size(); id++ )
     {
         quantity = std::max( quantity, mEntries[id].quantity );
     }
@@ -301,15 +301,15 @@ void CommunicationPlan::compress()
 
     PartitionId count = 0;
 
-    for( PartitionId pid = 0; pid < size(); pid++ )
+    for ( PartitionId pid = 0; pid < size(); pid++ )
     {
         LAMA_LOG_TRACE( logger, "Entries["<<pid<<"].quantity = "<<mEntries[pid].quantity );
-        if( mEntries[pid].quantity == 0 )
+        if ( mEntries[pid].quantity == 0 )
         {
             continue;
         }
 
-        if( count != pid )
+        if ( count != pid )
         {
             mEntries[count] = mEntries[pid];
         }
@@ -339,7 +339,7 @@ void CommunicationPlan::allocateTranspose( const CommunicationPlan& plan, const 
     LAMAArray<IndexType> sendSizesArray( size, 0 ); // quantity 0 as default
     HostWriteAccess<IndexType> sendSizes( sendSizesArray );
 
-    for( PartitionId i = 0; i < plan.size(); ++i )
+    for ( PartitionId i = 0; i < plan.size(); ++i )
     {
         sendSizes[plan[i].partitionId] = plan[i].quantity;
     }
@@ -369,7 +369,7 @@ void CommunicationPlan::writeAt( std::ostream& stream ) const
 
     stream << "CommunicationPlan(size=" << mEntries.size() << ",quantity=" << mQuantity;
 
-    for( size_t i = 0; i < mEntries.size(); i++ )
+    for ( size_t i = 0; i < mEntries.size(); i++ )
     {
         stream << ",->" << mEntries[i].partitionId << ":" << mEntries[i].quantity;
     }

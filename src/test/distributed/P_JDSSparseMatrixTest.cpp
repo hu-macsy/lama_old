@@ -62,7 +62,7 @@ BOOST_AUTO_TEST_CASE( commonTestCases )
 
     P_SparseMatrixTest<JDSSparseMatrix<T> > p_jdsSparseMatrixtest;
 
-    if( base_test_case )
+    if ( base_test_case )
     {
         LAMA_LOG_INFO( logger, "Run test method " << testcase << " in P_JDSSparseMatrixTest." );
         PSPARSEMATRIXTEST_COMMONTESTCASES( p_jdsSparseMatrixtest );

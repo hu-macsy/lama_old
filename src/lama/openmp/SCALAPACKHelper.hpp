@@ -206,7 +206,7 @@ int SCALAPACKHelper::ILCM( int m, int n )
     int ia, iq, ir;
     int ilcm;
 
-    if( m >= n )
+    if ( m >= n )
     {
         ia = m;
         ilcm = n;
@@ -219,7 +219,7 @@ int SCALAPACKHelper::ILCM( int m, int n )
 
     iq = ia / ilcm;
     ir = ia - iq * ilcm;
-    while( ir != 0 )
+    while ( ir != 0 )
     {
         ia = ilcm;
         ilcm = ir;

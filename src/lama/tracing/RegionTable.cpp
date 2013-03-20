@@ -117,7 +117,7 @@ void RegionTable::stop( int regionId, double wallTime )
 {
     CallEntry call = callStack.back();
 
-    if( ( call.mRegion >= 0 ) && ( call.mRegion != regionId ) )
+    if ( ( call.mRegion >= 0 ) && ( call.mRegion != regionId ) )
     {
         fprintf( stderr, "mismatch in call stack, stop %s but in %s\n", array[regionId].mName.c_str(),
                  array[call.mRegion].mName.c_str() );
@@ -132,7 +132,7 @@ void RegionTable::stop( int regionId, double wallTime )
 
     // correct exclusive time of previous entry in call stack
 
-    if( callStack.size() )
+    if ( callStack.size() )
     {
         CallEntry before = callStack.back();
         array[before.mRegion].subRegionCall( spentTime );
@@ -149,7 +149,7 @@ int RegionTable::getCurrentRegionId( const char* regionName )
 
     const RegionEntry& callRegion = getRegion( call.mRegion );
 
-    if( strcmp( callRegion.getRegionName(), regionName ) != 0 )
+    if ( strcmp( callRegion.getRegionName(), regionName ) != 0 )
     {
         fprintf( stderr, "mismatch in call stack, stop %s but in %s\n", regionName, callRegion.getRegionName() );
         return 0;
@@ -168,7 +168,7 @@ void RegionTable::stop( const char* regionName, double wallTime )
 
     const RegionEntry callRegion = getRegion( call.mRegion );
 
-    if( strcmp( callRegion.getRegionName(), regionName ) != 0 )
+    if ( strcmp( callRegion.getRegionName(), regionName ) != 0 )
     {
         fprintf( stderr, "mismatch in call stack, stop %s but in %s\n", regionName, callRegion.getRegionName() );
         return;
@@ -185,11 +185,11 @@ double RegionTable::elapsed( int regionId )
 
     // might be that region is still on the stack
 
-    for( size_t i = 0; i < callStack.size(); i++ )
+    for ( size_t i = 0; i < callStack.size(); i++ )
     {
         CallEntry& call = callStack[i];
 
-        if( call.mRegion == regionId )
+        if ( call.mRegion == regionId )
         {
             elapsedTime += walltime() - call.mTimeStart;
         }
@@ -204,7 +204,7 @@ int RegionTable::getRegion( const char* id, const char* file, int lno )
 {
     std::map<const char*,int,CmpString>::iterator it = mapTimer.find( id );
 
-    if( it == mapTimer.end() )
+    if ( it == mapTimer.end() )
     {
         const size_t regionId = array.size();
         array.resize( regionId + 1 );
@@ -260,7 +260,7 @@ void RegionTable::printTimer( FILE*f )
 
     std::map<const char*,int,CmpString>::iterator it;
 
-    for( it = mapTimer.begin(); it != mapTimer.end(); it++ )
+    for ( it = mapTimer.begin(); it != mapTimer.end(); it++ )
     {
         int regionId = it->second;
         const std::string& name = it->first;

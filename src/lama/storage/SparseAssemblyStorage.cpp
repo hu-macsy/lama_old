@@ -94,7 +94,7 @@ SparseAssemblyStorage<T>::SparseAssemblyStorage(
 {
     LAMA_LOG_INFO( logger,
                    "Creating with " << mNumRows <<" rows, " << mNumColumns << " columns, " << numValuesPerRow << " values per row." );
-    for( IndexType i = 0; i < mNumRows; ++i )
+    for ( IndexType i = 0; i < mNumRows; ++i )
     {
         LAMA_LOG_TRACE( logger, "Reserving storage for row " << i );
         mRows[i].reserve( numValuesPerRow );
@@ -212,7 +212,7 @@ void SparseAssemblyStorage<ValueType>::check( const char* ) const
 template<typename ValueType>
 void SparseAssemblyStorage<ValueType>::check( const char* msg ) const
 {
-    if( mNumRows != static_cast<IndexType>( mRows.size() ) )
+    if ( mNumRows != static_cast<IndexType>( mRows.size() ) )
     {
         LAMA_THROWEXCEPTION(
             msg << ": SparseAssemblyStorage: mNumRows = " << mNumRows << " does not match size of mRows = " << mRows.size() );
@@ -230,15 +230,15 @@ ValueType SparseAssemblyStorage<ValueType>::maxNorm() const
 {
     ValueType maxval = static_cast<ValueType>( 0.0 );
 
-    for( IndexType i = 0; i < mNumRows; ++i )
+    for ( IndexType i = 0; i < mNumRows; ++i )
     {
         const std::vector<ValueType>& values = mRows[i].values;
 
-        for( size_t jj = 0; jj < values.size(); ++jj )
+        for ( size_t jj = 0; jj < values.size(); ++jj )
         {
             const ValueType val = std::abs( mRows[i].values[jj] );
 
-            if( val > maxval )
+            if ( val > maxval )
             {
                 maxval = val;
             }
@@ -268,15 +268,15 @@ bool SparseAssemblyStorage<ValueType>::checkDiagonalProperty() const
 
     const IndexType numDiagonals = std::min( mNumRows, mNumColumns );
 
-    for( IndexType i = 0; i < numDiagonals; ++i )
+    for ( IndexType i = 0; i < numDiagonals; ++i )
     {
         const Row& row = mRows[i];
-        if( row.ja.size() == 0 )
+        if ( row.ja.size() == 0 )
         {
             diagonalProperty = false;
             break;
         }
-        if( row.ja[0] != i )
+        if ( row.ja[0] != i )
         {
             diagonalProperty = false;
             break;
@@ -324,7 +324,7 @@ void SparseAssemblyStorage<T>::Row::reserve( const IndexType numValuesPerRow )
 template<typename T>
 void SparseAssemblyStorage<T>::Row::scale( const ValueType val )
 {
-    for( size_t i = 0; i < values.size(); i++ )
+    for ( size_t i = 0; i < values.size(); i++ )
     {
         values[i] *= val;
     }
@@ -335,16 +335,16 @@ typename SparseAssemblyStorage<T>::ValueType SparseAssemblyStorage<T>::operator(
     const IndexType i,
     const IndexType j ) const
 {
-    if( j >= mNumColumns )
+    if ( j >= mNumColumns )
     {
         LAMA_THROWEXCEPTION( "Passed column Index " << j << " exceeds column count " << mNumColumns << "." );
     }
 
     const std::vector<IndexType>& rJA = mRows[i].ja;
 
-    for( size_t k = 0; k < mRows[i].ja.size(); ++k )
+    for ( size_t k = 0; k < mRows[i].ja.size(); ++k )
     {
-        if( j == rJA[k] )
+        if ( j == rJA[k] )
         {
             const std::vector<ValueType>& rValues = mRows[i].values;
             return rValues[k];
@@ -363,13 +363,13 @@ void SparseAssemblyStorage<ValueType>::print() const
 
     cout << "AssemblyStorage " << mNumRows << " x " << mNumColumns << ", #values = " << mNumValues << endl;
 
-    for( IndexType i = 0; i < mNumRows; i++ )
+    for ( IndexType i = 0; i < mNumRows; i++ )
     {
         const Row& row = mRows[i];
 
         cout << "Row " << i << " ( " << row.ja.size() << " ) :";
 
-        for( size_t k = 0; k < row.ja.size(); ++k )
+        for ( size_t k = 0; k < row.ja.size(); ++k )
         {
             cout << " " << row.ja[k] << ":" << row.values[k];
         }
@@ -382,12 +382,12 @@ void SparseAssemblyStorage<ValueType>::print() const
 template<typename T>
 void SparseAssemblyStorage<T>::set( const IndexType i, const IndexType j, const ValueType value )
 {
-    if( i >= mNumRows )
+    if ( i >= mNumRows )
     {
         LAMA_THROWEXCEPTION( "Passed row Index " << i << " exceeds row count " << mNumRows << "." );
     }
 
-    if( j >= mNumColumns )
+    if ( j >= mNumColumns )
     {
         LAMA_THROWEXCEPTION( "Passed column Index " << j << " exceeds column count " << mNumColumns << "." );
     }
@@ -395,9 +395,9 @@ void SparseAssemblyStorage<T>::set( const IndexType i, const IndexType j, const 
     {
         const std::vector<IndexType>& rJA = mRows[i].ja;
 
-        for( size_t k = 0; k < mRows[i].ja.size(); ++k )
+        for ( size_t k = 0; k < mRows[i].ja.size(); ++k )
         {
-            if( j == rJA[k] )
+            if ( j == rJA[k] )
             {
                 std::vector<ValueType>& wValues = mRows[i].values;
 
@@ -422,7 +422,7 @@ void SparseAssemblyStorage<T>::set( const IndexType i, const IndexType j, const 
     // if we have a diagonal element and the row was not empty before we need to
     // fix the diagonal property
 
-    if( i == j && ( wJA.size() - 1 > 0 ) )
+    if ( i == j && ( wJA.size() - 1 > 0 ) )
     {
         LAMA_LOG_TRACE( logger, "diagonal element swapped to first element of row" );
 
@@ -474,7 +474,7 @@ void SparseAssemblyStorage<T>::setRow(
     HostReadAccess<IndexType> rJA( ja );
     HostReadAccess<ValueType> rValues( values );
 
-    for( IndexType k = 0; k < ja.size(); ++k )
+    for ( IndexType k = 0; k < ja.size(); ++k )
     {
         mRows[i].ja[k] = rJA[k];
         mRows[i].values[k] = rValues[k];
@@ -492,12 +492,12 @@ void SparseAssemblyStorage<T>::fixDiagonalProperty( const IndexType i )
 {
     // fix diagonal property if necessary
 
-    if( i >= mNumColumns )
+    if ( i >= mNumColumns )
     {
         return;
     }
 
-    if( mRows[i].ja.size() == 0 )
+    if ( mRows[i].ja.size() == 0 )
     {
         #pragma omp atomic
         ++mNumValues;
@@ -506,7 +506,7 @@ void SparseAssemblyStorage<T>::fixDiagonalProperty( const IndexType i )
         return;
     }
 
-    if( mRows[i].ja[0] == i )
+    if ( mRows[i].ja[0] == i )
     {
         return;
     }
@@ -516,9 +516,9 @@ void SparseAssemblyStorage<T>::fixDiagonalProperty( const IndexType i )
     std::vector<IndexType>& wJA = mRows[i].ja;
     std::vector<ValueType>& wValues = mRows[i].values;
 
-    for( size_t k = 0; k < wJA.size(); ++k )
+    for ( size_t k = 0; k < wJA.size(); ++k )
     {
-        if( i == wJA[k] )
+        if ( i == wJA[k] )
         {
             std::swap( wValues[0], wValues[k] );
             std::swap( wJA[0], wJA[k] );
@@ -526,7 +526,7 @@ void SparseAssemblyStorage<T>::fixDiagonalProperty( const IndexType i )
         }
     }
 
-    if( wJA[0] != i )
+    if ( wJA[0] != i )
     {
         #pragma omp atomic
         ++mNumValues;
@@ -554,7 +554,7 @@ void SparseAssemblyStorage<ValueType>::setIdentity( const IndexType n )
 
     ValueType one = static_cast<ValueType>( 1.0 );
 
-    for( IndexType i = 0; i < mNumRows; ++i )
+    for ( IndexType i = 0; i < mNumRows; ++i )
     {
         set( i, i, one );
     }
@@ -579,12 +579,12 @@ void SparseAssemblyStorage<ValueType>::setCSRDataImpl(
     HostReadAccess<IndexType> csrJA( ja );
     HostReadAccess<OtherValueType> csrValues( values );
 
-    if( !OpenMPCSRUtils::validOffsets( csrIA.get(), numRows, numValues ) )
+    if ( !OpenMPCSRUtils::validOffsets( csrIA.get(), numRows, numValues ) )
     {
         LAMA_THROWEXCEPTION( "invalid offset array" );
     }
 
-    if( !OpenMPUtils::validIndexes( csrJA.get(), numValues, numColumns ) )
+    if ( !OpenMPUtils::validIndexes( csrJA.get(), numValues, numColumns ) )
     {
         LAMA_THROWEXCEPTION( "invalid column indexes in ja = " << ja << ", #columns = " << numColumns );
     }
@@ -599,7 +599,7 @@ void SparseAssemblyStorage<ValueType>::setCSRDataImpl(
 
     LAMA_LOG_DEBUG( logger, "fill " << *this << " with csr data, " << numValues << " non-zero values" );
 
-    for( IndexType i = 0; i < numRows; ++i )
+    for ( IndexType i = 0; i < numRows; ++i )
     {
         const IndexType n = csrIA[i + 1] - csrIA[i];
 
@@ -610,7 +610,7 @@ void SparseAssemblyStorage<ValueType>::setCSRDataImpl(
 
         IndexType offset = 0;
 
-        for( IndexType k = csrIA[i]; k < csrIA[i + 1]; ++k )
+        for ( IndexType k = csrIA[i]; k < csrIA[i + 1]; ++k )
         {
             row.ja[offset] = csrJA[k];
             row.values[offset] = static_cast<ValueType>( csrValues[k] );
@@ -639,13 +639,13 @@ void SparseAssemblyStorage<ValueType>::buildCSR(
 
     // build csrSizes in ia
 
-    for( IndexType i = 0; i < mNumRows; ++i )
+    for ( IndexType i = 0; i < mNumRows; ++i )
     {
         csrIA[i] = mRows[i].ja.size();
         LAMA_ASSERT_EQUAL_DEBUG( mRows[i].ja.size(), mRows[i].values.size() );
     }
 
-    if( ja == NULL || values == NULL )
+    if ( ja == NULL || values == NULL )
     {
         csrIA.resize( mNumRows );
         return;
@@ -661,11 +661,11 @@ void SparseAssemblyStorage<ValueType>::buildCSR(
     HostWriteOnlyAccess<OtherValueType> csrValues( *values, mNumValues );
 
     #pragma omp parallel for
-    for( IndexType i = 0; i < mNumRows; ++i )
+    for ( IndexType i = 0; i < mNumRows; ++i )
     {
         IndexType offset = 0;
 
-        for( IndexType k = csrIA[i]; k < csrIA[i + 1]; ++k )
+        for ( IndexType k = csrIA[i]; k < csrIA[i + 1]; ++k )
         {
             csrJA[k] = mRows[i].ja[offset];
             csrValues[k] = static_cast<OtherValueType>( mRows[i].values[offset] );
@@ -684,7 +684,7 @@ void SparseAssemblyStorage<ValueType>::setDiagonalImpl( const LAMAArray<OtherVal
 
     HostReadAccess<OtherValueType> rDiagonal( diagonal );
 
-    for( IndexType i = 0; i < numDiagonalElements; ++i )
+    for ( IndexType i = 0; i < numDiagonalElements; ++i )
     {
         set( i, i, static_cast<ValueType>( rDiagonal[i] ) );
     }
@@ -700,7 +700,7 @@ void SparseAssemblyStorage<ValueType>::getDiagonalImpl( LAMAArray<OtherValueType
 
     HostWriteOnlyAccess<OtherValueType> wDiagonal( diagonal, numDiagonalElements );
 
-    for( IndexType i = 0; i < numDiagonalElements; ++i )
+    for ( IndexType i = 0; i < numDiagonalElements; ++i )
     {
         wDiagonal[i] = static_cast<OtherValueType>( operator()( i, i ) );
     }
@@ -716,7 +716,7 @@ void SparseAssemblyStorage<ValueType>::getRowImpl( LAMAArray<OtherType>& row, co
 
     HostWriteOnlyAccess<OtherType> wRow( row, mNumColumns );
 
-    for( IndexType j = 0; j < mNumColumns; ++j )
+    for ( IndexType j = 0; j < mNumColumns; ++j )
     {
         wRow[j] = 0.0;
     }
@@ -726,7 +726,7 @@ void SparseAssemblyStorage<ValueType>::getRowImpl( LAMAArray<OtherType>& row, co
 
     LAMA_ASSERT_EQUAL_DEBUG( ja.size(), values.size() );
 
-    for( size_t k = 0; k < ja.size(); ++k )
+    for ( size_t k = 0; k < ja.size(); ++k )
     {
         const IndexType j = ja[k];
         LAMA_ASSERT_DEBUG( j >= 0 && j < mNumColumns,
@@ -745,7 +745,7 @@ void SparseAssemblyStorage<ValueType>::setDiagonalImpl( const Scalar value )
 
     ValueType val = value.getValue<ValueType>();
 
-    for( IndexType i = 0; i < numDiagonalElements; ++i )
+    for ( IndexType i = 0; i < numDiagonalElements; ++i )
     {
         set( i, i, val );
     }
@@ -758,7 +758,7 @@ void SparseAssemblyStorage<ValueType>::scaleImpl( const Scalar scalar )
 {
     ValueType value = scalar.getValue<ValueType>();
 
-    for( IndexType i = 0; i < mNumRows; ++i )
+    for ( IndexType i = 0; i < mNumRows; ++i )
     {
         mRows[i].scale( value );
     }
@@ -774,7 +774,7 @@ void SparseAssemblyStorage<ValueType>::scaleImpl( const LAMAArray<OtherValueType
 
     HostReadAccess<OtherValueType> rDiagonal( diagonal );
 
-    for( IndexType i = 0; i < n; ++i )
+    for ( IndexType i = 0; i < n; ++i )
     {
         mRows[i].scale( static_cast<ValueType>( rDiagonal[i] ) );
     }

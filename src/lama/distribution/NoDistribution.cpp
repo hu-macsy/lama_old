@@ -84,7 +84,7 @@ void NoDistribution::writeAt( std::ostream& stream ) const
 
 void NoDistribution::printDistributionVector( std::string name ) const
 {
-    if( mCommunicator->getRank() == 0 ) // process 0 ist MASTER process
+    if ( mCommunicator->getRank() == 0 ) // process 0 ist MASTER process
     {
         std::ofstream file;
         file.open( ( name + ".part" ).c_str() );

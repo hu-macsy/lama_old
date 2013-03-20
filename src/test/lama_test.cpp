@@ -78,7 +78,7 @@ int main( int argc, char* argv[] )
     // If there is no value in environment variable LAMATEST_CONTEXT
     // we set this value to *
     char* context = getenv( "LAMATEST_CONTEXT" );
-    if( context == NULL )
+    if ( context == NULL )
     {
         std::string s = ( "LAMATEST_CONTEXT=*" );
         char* buffer = new char[s.length()];
@@ -87,7 +87,7 @@ int main( int argc, char* argv[] )
         putenv( buffer );
     }
 
-    if( argc > 1 )
+    if ( argc > 1 )
     {
         std::string runtest_argument;
         std::string testsuite;
@@ -102,11 +102,11 @@ int main( int argc, char* argv[] )
         TC_REG( commtestclasses, commtestmethods );
 
         /* Parse command line arguments */
-        for( int i = 0; i < argc; i++ )
+        for ( int i = 0; i < argc; i++ )
         {
             std::string s = argv[i];
             int pos = s.find( '=' );
-            if( pos != -1 )
+            if ( pos != -1 )
                 runtime_arguments.insert(
                     std::make_pair( s.substr( 0, pos ),
                                     s.substr( pos + 1, s.length() - s.substr( 0, pos ).length() - 1 ) ) );
@@ -114,24 +114,24 @@ int main( int argc, char* argv[] )
 
         /* Find run_test in runtime parameters */
         std::map<std::string,std::string>::iterator iterator = runtime_arguments.find( "--run_test" );
-        if( iterator != runtime_arguments.end() )
+        if ( iterator != runtime_arguments.end() )
         {
             runtest_argument = iterator->second;
         }
 
         /* Find log_level in runtime parameters */
         iterator = runtime_arguments.find( "--log_level" );
-        if( iterator != runtime_arguments.end() )
+        if ( iterator != runtime_arguments.end() )
         {
             loglevel_argument = iterator->second;
         }
 
         char* loglevel_env = getenv( "BOOST_TEST_LOG_LEVEL" );
-        if( loglevel_argument == "" && loglevel_env == NULL )
+        if ( loglevel_argument == "" && loglevel_env == NULL )
         {
             loglevel_argument = "";
         }
-        else if( loglevel_argument == "" && loglevel_env != NULL )
+        else if ( loglevel_argument == "" && loglevel_env != NULL )
         {
             loglevel_argument = loglevel_env;
         }
@@ -142,7 +142,7 @@ int main( int argc, char* argv[] )
          * nor a runtime parameter. */
 
         iterator = runtime_arguments.find( "--lamatest_context" );
-        if( iterator != runtime_arguments.end() )
+        if ( iterator != runtime_arguments.end() )
         {
             std::string s = ( "LAMATEST_CONTEXT=" + iterator->second );
             char* buffer = new char[s.length()];
@@ -153,33 +153,33 @@ int main( int argc, char* argv[] )
 
         //if a regular expression is used in a base test:
         int posasterix = runtest_argument.find( '*' );
-        if( posasterix != -1 )
+        if ( posasterix != -1 )
         {
             std::list<std::string> matchedtestcases;
             std::string runtest_argument_regex = boost::regex_replace( runtest_argument, boost::regex( "[*]" ),
                                                  "[a-z]*" );
 
-            for( Iter = inherited_test_cases.begin(); Iter != inherited_test_cases.end(); Iter++ )
+            for ( Iter = inherited_test_cases.begin(); Iter != inherited_test_cases.end(); Iter++ )
             {
                 boost::regex re;
                 re.assign( runtest_argument_regex, boost::regex_constants::icase );
 
-                if( boost::regex_match( *Iter, re ) )
+                if ( boost::regex_match( *Iter, re ) )
                 {
                     matchedtestcases.push_back( *Iter );
                 }
             }
 
             //if there is no matched test case, we run main from boost automatically
-            if( matchedtestcases.size() == 0 )
+            if ( matchedtestcases.size() == 0 )
             {
                 // do nothing here, because a base test case will be not detected,
                 // so main from boost will be invoked with the given expression automatically
             }
             //if there is just 1 matched test case, we map this test case to the full name
-            else if( matchedtestcases.size() == 1 )
+            else if ( matchedtestcases.size() == 1 )
             {
-                for( Iter = matchedtestcases.begin(); Iter != matchedtestcases.end(); Iter++ )
+                for ( Iter = matchedtestcases.begin(); Iter != matchedtestcases.end(); Iter++ )
                 {
                     runtest_argument = *Iter;
                 }
@@ -188,7 +188,7 @@ int main( int argc, char* argv[] )
                 // if there are 2 or more matched test cases, we will invoke all test cases from the given testsuite.
                 // We assume here, that there is just one individual test suite in the matched test cases.
             {
-                for( Iter = matchedtestcases.begin(); Iter != matchedtestcases.end(); Iter++ )
+                for ( Iter = matchedtestcases.begin(); Iter != matchedtestcases.end(); Iter++ )
                 {
                     runtest_argument = *Iter;
                 }
@@ -196,13 +196,13 @@ int main( int argc, char* argv[] )
                 testsuite = runtest_argument.substr( 0, pos );
                 runtest_argument = testsuite + "/*";
 
-                for( int i = 0; i < argc; i++ )
+                for ( int i = 0; i < argc; i++ )
                 {
                     std::string valueofarg = argv[i];
                     int pos = valueofarg.find( '=' );
                     std::string category = valueofarg.substr( 0, pos );
 
-                    if( category == "--run_test" )
+                    if ( category == "--run_test" )
                     {
                         std::string newarg = "";
                         newarg = category + "=" + testsuite + "/*";
@@ -224,13 +224,13 @@ int main( int argc, char* argv[] )
          */
 
         /* Check, if argument of run_test is a base test case */
-        for( Iter = inherited_test_cases.begin(); Iter != inherited_test_cases.end(); Iter++ )
-            if( runtest_argument == *Iter )
+        for ( Iter = inherited_test_cases.begin(); Iter != inherited_test_cases.end(); Iter++ )
+            if ( runtest_argument == *Iter )
             {
                 base_test_case = true;
             }
 
-        if( base_test_case )
+        if ( base_test_case )
         {
             int pos = runtest_argument.find( '/' );
             testsuite = runtest_argument.substr( 0, pos );
@@ -238,13 +238,13 @@ int main( int argc, char* argv[] )
                            pos + 1, runtest_argument.length() - runtest_argument.substr( 0, pos ).length() - 1 );
             runtime_arguments["--run_test"] = testsuite + "/commonTestCases*";
 
-            for( int i = 0; i < argc; i++ )
+            for ( int i = 0; i < argc; i++ )
             {
                 std::string value = argv[i];
                 int pos = value.find( '=' );
                 std::string category = value.substr( 0, pos );
 
-                if( category == "--run_test" )
+                if ( category == "--run_test" )
                 {
                     std::string string = category + "=" + runtime_arguments["--run_test"];
                     char* help = new char[string.size() + 1];

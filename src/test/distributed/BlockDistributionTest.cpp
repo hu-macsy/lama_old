@@ -91,7 +91,7 @@ BOOST_AUTO_TEST_CASE( commonTestCases )
 {
     DistributionTest disttest( dist );
 
-    if( base_test_case )
+    if ( base_test_case )
     {
         LAMA_LOG_INFO( logger, "Run test method " << testcase << " in BlockDistributionTest." );
         DISTRIBUTION_COMMONTESTCASES( disttest );
@@ -116,13 +116,13 @@ BOOST_AUTO_TEST_CASE( blockSizeTest )
 {
     // Test smaller sizes
 
-    for( IndexType n = 1; n <= size; n++ )
+    for ( IndexType n = 1; n <= size; n++ )
     {
         BlockDistribution small( n, comm );
 
         // only the first n partitions have one element
 
-        if( rank < n )
+        if ( rank < n )
         {
             BOOST_CHECK( small.getLocalSize() == 1 );
         }
@@ -138,11 +138,11 @@ BOOST_AUTO_TEST_CASE( blockSizeTest )
 BOOST_AUTO_TEST_CASE( blockComputeOwnersTest )
 {
 
-    for( PartitionId p = 0; p < size; ++p )
+    for ( PartitionId p = 0; p < size; ++p )
     {
-        if( p == rank )
+        if ( p == rank )
         {
-            for( IndexType i = 0; i < blockSize; ++i )
+            for ( IndexType i = 0; i < blockSize; ++i )
             {
                 BOOST_CHECK( dist->isLocal( p * blockSize + i ) );
                 BOOST_CHECK_EQUAL( dist->global2local( p * blockSize + i ), i );
@@ -150,7 +150,7 @@ BOOST_AUTO_TEST_CASE( blockComputeOwnersTest )
         }
         else
         {
-            for( IndexType i = 0; i < blockSize; ++i )
+            for ( IndexType i = 0; i < blockSize; ++i )
             {
                 nonLocalIndexes.push_back( p * blockSize + i );
                 BOOST_CHECK_EQUAL( dist->global2local( p * blockSize + i ), nIndex );
@@ -163,14 +163,14 @@ BOOST_AUTO_TEST_CASE( blockComputeOwnersTest )
     BOOST_CHECK_EQUAL( ( int ) owners.size(), ( size - 1 ) * blockSize );
     std::vector<PartitionId>::size_type currentIndex = 0;
 
-    for( PartitionId p = 0; p < size; ++p )
+    for ( PartitionId p = 0; p < size; ++p )
     {
-        if( p == rank )
+        if ( p == rank )
         {
             continue;
         }
 
-        for( IndexType i = 0; i < blockSize; ++i )
+        for ( IndexType i = 0; i < blockSize; ++i )
         {
             BOOST_CHECK_EQUAL( p, owners[currentIndex++] );
         }

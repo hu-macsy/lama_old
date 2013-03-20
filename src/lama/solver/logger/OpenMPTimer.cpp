@@ -58,7 +58,7 @@ void OpenMPTimer::initialize( const std::string& timerId )
 {
     MapIteratorType it = m_timerData.find( timerId );
 
-    if( it == m_timerData.end() )
+    if ( it == m_timerData.end() )
     {
         m_timerData.insert( PairType( timerId, TimerData() ) );
     }
@@ -72,14 +72,14 @@ void OpenMPTimer::start( const std::string& timerId )
 {
     MapIteratorType it = m_timerData.find( timerId );
 
-    if( it == m_timerData.end() )
+    if ( it == m_timerData.end() )
     {
         it = m_timerData.insert( PairType( timerId, TimerData() ) ).first;
     }
 
     TimerData& timer = it->second;
 
-    if( timer.isRunning )
+    if ( timer.isRunning )
     {
         LAMA_THROWEXCEPTION( "Tried to start an already started timer. Timer ID: " << timerId );
     }
@@ -94,14 +94,14 @@ void OpenMPTimer::stop( const std::string& timerId )
 {
     MapIteratorType it = m_timerData.find( timerId );
 
-    if( it == m_timerData.end() )
+    if ( it == m_timerData.end() )
     {
         LAMA_THROWEXCEPTION( "Tried to stop a nonexisting Timer. Timer ID: " << timerId );
     }
 
     TimerData& timer = it->second;
 
-    if( !( timer.isRunning ) )
+    if ( !( timer.isRunning ) )
     {
         LAMA_THROWEXCEPTION( "Tried to stop a not running Timer. Timer ID: " << timerId );
     }
@@ -114,7 +114,7 @@ void OpenMPTimer::reset( const std::string& timerId )
 {
     MapIteratorType it = m_timerData.find( timerId );
 
-    if( it == m_timerData.end() )
+    if ( it == m_timerData.end() )
     {
         LAMA_THROWEXCEPTION( "Tried to reset a nonexisting Timer. Timer ID: " << timerId );
     }
@@ -129,14 +129,14 @@ double OpenMPTimer::getTime( const std::string& timerId )
 {
     MapIteratorType it = m_timerData.find( timerId );
 
-    if( it == m_timerData.end() )
+    if ( it == m_timerData.end() )
     {
         LAMA_THROWEXCEPTION( "Tried to get time from a nonexisting Timer. Timer ID: " << timerId );
     }
 
     TimerData& timer = it->second;
 
-    if( !( timer.isRunning ) )
+    if ( !( timer.isRunning ) )
     {
         return timer.totalTime;
     }
@@ -148,7 +148,7 @@ void OpenMPTimer::stopAndReset( const std::string& timerId )
 {
     MapIteratorType it = m_timerData.find( timerId );
 
-    if( it == m_timerData.end() )
+    if ( it == m_timerData.end() )
     {
         LAMA_THROWEXCEPTION( "Tried to stop and reset a nonexisting Timer. Timer ID: " << timerId );
     }

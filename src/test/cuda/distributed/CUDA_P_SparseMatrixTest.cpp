@@ -105,7 +105,7 @@ void testEqualMatrix( const _SparseMatrix& m1, const _SparseMatrix& m2 )
     y1 = m1 * x1; // YA = mA * XA;
     y2 = m2 * x2; // YB = mB * XB;
 
-    for( IndexType i = 0; i < n; i++ )
+    for ( IndexType i = 0; i < n; i++ )
     {
         LAMA_CHECK_SCALAR_CLOSE( YA.getValue(i), YB.getValue(i), double, 1.0e-5 );
     }
@@ -163,7 +163,7 @@ BOOST_AUTO_TEST_CASE( createPoissonTest )
     testEqualMatrix( inputA, B2 );
 
     float weight = 1.0;
-    if( comm->getRank() % 2 == 1 )
+    if ( comm->getRank() % 2 == 1 )
     {
         weight = 0.0001;
     }
@@ -177,7 +177,7 @@ BOOST_AUTO_TEST_CASE( createPoissonTest )
     testEqualMatrix( inputA, B2 );
 
     weight = 1.0;
-    if( comm->getRank() % 2 == 0 )
+    if ( comm->getRank() % 2 == 0 )
     {
         weight = 0.001;
     }

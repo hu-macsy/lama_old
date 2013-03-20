@@ -80,7 +80,7 @@ MPICommunicatorManager::~MPICommunicatorManager()
 {
     LAMA_LOG_INFO( logger, "~MPICommunicatorManager(), use count MPI communicator = " << mCommInstance.use_count() );
 
-    if( mCommInstance.use_count() > 1 )
+    if ( mCommInstance.use_count() > 1 )
     {
         LAMA_LOG_WARN( logger,
                        "MPICommunicator has " << mCommInstance.use_count() - 1 << " remaining references, seems that not all LAMA data structures have been freed" );
@@ -93,7 +93,7 @@ MPICommunicatorManager::~MPICommunicatorManager()
 
 CommunicatorPtr MPICommunicatorManager::getCommunicator( int& argc, char**& argv )
 {
-    if( !mCommInstance )
+    if ( !mCommInstance )
     {
         LAMA_LOG_INFO( logger, "create new MPICommunicator" );
 

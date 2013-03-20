@@ -79,7 +79,7 @@ inline bool ResidualThreshold::isSatisfied( const IterativeSolver& solver )
     Scalar normResult = ( *mNorm )( solver.getResidual() );
     LAMA_ASSERT( normResult >= 0.0, "A norm should be always positive but is " << normResult );
 
-    switch( mCheckMode )
+    switch ( mCheckMode )
     {
     case ResidualThreshold::Absolute:
         LAMA_LOG_DEBUG( logger,
@@ -87,7 +87,7 @@ inline bool ResidualThreshold::isSatisfied( const IterativeSolver& solver )
         return normResult < mPrecision;
     case ResidualThreshold::Relative:
     {
-        if( mFirstNormResult == -1.0 )
+        if ( mFirstNormResult == -1.0 )
         {
             //TODO define member variable for solver with getInitialResidual function
             mFirstNormResult = normResult;

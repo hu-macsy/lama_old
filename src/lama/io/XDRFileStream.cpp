@@ -58,13 +58,14 @@ bool XDRFileStream::is_open()
 void XDRFileStream::openFilePointer( const std::string filename, const std::ios_base::openmode openmode )
 {
 
-    if( openmode & std::ios::in )
+    if ( openmode & std::ios::in )
     {
-        if( openmode & std::ios::out ) {
+        if ( openmode & std::ios::out )
+        {
             throw Exception( "XDRFileStream: Stream can not be in in and out mode!" );
         }
     }
-    else if( openmode & std::ios::out )
+    else if ( openmode & std::ios::out )
     {
     }
     else
@@ -77,7 +78,8 @@ void XDRFileStream::openFilePointer( const std::string filename, const std::ios_
 
     m_filestream.open( m_filename.c_str(), m_openmode );
 
-    if( !( m_filestream.is_open() ) ) {
+    if ( !( m_filestream.is_open() ) )
+    {
         throw Exception( ( std::string( "XDRFileStream: Can not open file!" ) + m_filename ).c_str() );
     }
 
@@ -85,7 +87,7 @@ void XDRFileStream::openFilePointer( const std::string filename, const std::ios_
 
 void XDRFileStream::close()
 {
-    if( is_open() )
+    if ( is_open() )
     {
         m_filestream.close();
     }

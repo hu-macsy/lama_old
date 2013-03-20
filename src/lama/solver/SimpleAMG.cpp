@@ -87,14 +87,14 @@ SimpleAMG::SimpleAMGRuntime::~SimpleAMGRuntime()
 {
     std::auto_ptr<AMGSetup>& amgSetup = mSetup;
 
-    if( mLibHandle != 0 )
+    if ( mLibHandle != 0 )
     {
         LAMA_LOG_INFO( logger, "~SimpleAMG, now release AMGSetup in lib" );
 
         typedef void (*lama_releaseAMGSetup)( lama::AMGSetup* );
         lama_releaseAMGSetup funcHandle = NULL;
         getFunctionHandle( funcHandle, reinterpret_cast<LAMA_LIB_HANDLE_TYPE&>( mLibHandle ),"lama_releaseAMGSetup" );
-        if( funcHandle )
+        if ( funcHandle )
         {
             funcHandle( amgSetup.release() );
         }
@@ -127,12 +127,12 @@ void SimpleAMG::initialize( const Matrix& coefficients )
 
     std::auto_ptr<AMGSetup>& amgSetup = runtime.mSetup;
 
-    if( amgSetup.get() == 0 )
+    if ( amgSetup.get() == 0 )
     {
         //try to load libAMGSetup.so
         char* amgSetupLibrary = getenv( "LAMA_AMG_SETUP_LIBRARY" );
 
-        if( amgSetupLibrary != 0 )
+        if ( amgSetupLibrary != 0 )
         {
             typedef lama::AMGSetup* (*lama_createAMGSetup)();
             lama_createAMGSetup funcHandle = NULL;
@@ -140,7 +140,7 @@ void SimpleAMG::initialize( const Matrix& coefficients )
             int error = loadLibAndGetFunctionHandle( funcHandle,
                         reinterpret_cast<LAMA_LIB_HANDLE_TYPE&>( runtime.mLibHandle ), amgSetupLibrary, "lama_createAMGSetup" );
 
-            if( error == 0 && runtime.mLibHandle != 0 && funcHandle != 0 )
+            if ( error == 0 && runtime.mLibHandle != 0 && funcHandle != 0 )
             {
                 amgSetup.reset( funcHandle() );
             }
@@ -155,7 +155,7 @@ void SimpleAMG::initialize( const Matrix& coefficients )
             LAMA_LOG_WARN( logger, "LAMA_AMG_SETUP_LIBRARY not set, take SingleGridSetup" );
         }
 
-        if( amgSetup.get() == 0 )
+        if ( amgSetup.get() == 0 )
         {
             amgSetup.reset( new SingleGridSetup() );
         }
@@ -178,9 +178,9 @@ void SimpleAMG::initialize( const Matrix& coefficients )
 
     logSetupDetails();
 
-    if( mSmootherContext )
+    if ( mSmootherContext )
     {
-        for( IndexType level = 0; level < (IndexType) amgSetup->getNumLevels() - 1; ++level )
+        for ( IndexType level = 0; level < (IndexType) amgSetup->getNumLevels() - 1; ++level )
         {
             amgSetup->getSmoother( level ).setContext( mSmootherContext );
         }
@@ -286,7 +286,7 @@ void SimpleAMG::cycle()
 
     const Vector* curRhsPtr = runtime.mRhs;
     Vector* curSolutionPtr = 0;
-    if( runtime.mCurrentLevel == 0 )
+    if ( runtime.mCurrentLevel == 0 )
     {
         curSolutionPtr = &( runtime.mSolution.getReference() );
     }
@@ -300,7 +300,7 @@ void SimpleAMG::cycle()
     const Vector& curRhs = ( *curRhsPtr );
 
     //no more Smoothers we are on the coareste level
-    if( runtime.mCurrentLevel >= amgSetup->getNumLevels() - 1 )
+    if ( runtime.mCurrentLevel >= amgSetup->getNumLevels() - 1 )
     {
         amgSetup->getCoarseLevelSolver().solve( curSolution, curRhs );
     }
@@ -343,11 +343,11 @@ void SimpleAMG::cycle()
 
 void SimpleAMG::logSetupSettings()
 {
-    if( mLogger->getLogLevel() < LogLevel::solverInformation )
+    if ( mLogger->getLogLevel() < LogLevel::solverInformation )
     {
         return;
     }
-    if( getRuntime().mSetup.get() != 0 )
+    if ( getRuntime().mSetup.get() != 0 )
     {
         mLogger->logMessage( LogLevel::solverInformation, "Running SimpleAMG.\n" );
         mLogger->logNewLine( LogLevel::solverInformation );
@@ -381,20 +381,20 @@ void SimpleAMG::logSetupSettings()
 
 void SimpleAMG::logSetupInfo()
 {
-    if( mLogger->getLogLevel() < LogLevel::solverInformation )
+    if ( mLogger->getLogLevel() < LogLevel::solverInformation )
     {
         return;
     }
     mLogger->logMessage( LogLevel::solverInformation, "Setup done.\n" );
     mLogger->logType( LogLevel::solverInformation, "Number of levels\t: ", getRuntime().mSetup->getNumLevels() );
     mLogger->logNewLine( LogLevel::solverInformation );
-    if( mLogger->getLogLevel() < LogLevel::advancedInformation )
+    if ( mLogger->getLogLevel() < LogLevel::advancedInformation )
     {
         return;
     }
-    for( unsigned int i = 0; i < getRuntime().mSetup->getNumLevels(); ++i )
+    for ( unsigned int i = 0; i < getRuntime().mSetup->getNumLevels(); ++i )
     {
-        if( i == 0 )
+        if ( i == 0 )
         {
             std::stringstream output1;
             output1 << "Operator Matrix Hierarchy:\n";
@@ -413,9 +413,9 @@ void SimpleAMG::logSetupInfo()
         mLogger->logMessage( LogLevel::advancedInformation, output.str() );
     }
     mLogger->logNewLine( LogLevel::advancedInformation );
-    for( unsigned int i = 0; i < getRuntime().mSetup->getNumLevels() - 1; ++i )
+    for ( unsigned int i = 0; i < getRuntime().mSetup->getNumLevels() - 1; ++i )
     {
-        if( i == 0 )
+        if ( i == 0 )
         {
             std::stringstream output1;
             output1 << "Interpolation Matrix Hierarchy:\n";
@@ -439,11 +439,11 @@ void SimpleAMG::logSetupInfo()
 
 void SimpleAMG::logSolverInfo()
 {
-    if( mLogger->getLogLevel() < LogLevel::solverInformation )
+    if ( mLogger->getLogLevel() < LogLevel::solverInformation )
     {
         return;
     }
-    if( getRuntime().mSetup.get() != 0 )
+    if ( getRuntime().mSetup.get() != 0 )
     {
         mLogger->logNewLine( LogLevel::solverInformation );
 
@@ -465,7 +465,7 @@ void SimpleAMG::logSolverInfo()
 
 void SimpleAMG::logSetupDetails()
 {
-    if( mLogger->getLogLevel() < LogLevel::advancedInformation )
+    if ( mLogger->getLogLevel() < LogLevel::advancedInformation )
     {
         return;
     }
@@ -477,10 +477,10 @@ void SimpleAMG::logSetupDetails()
     double sizeRestrictionCSR = 0.0;
     double sizeGalerkinCSR = 0.0;
 
-    for( unsigned int i = 0; i < getRuntime().mSetup->getNumLevels(); ++i )
+    for ( unsigned int i = 0; i < getRuntime().mSetup->getNumLevels(); ++i )
     {
         // Vector
-        if( i == 0 )
+        if ( i == 0 )
         {
             sizeVector += 2 * Scalar::getTypeSize( getRuntime().mSetup->getGalerkin( 0 ).getValueType() )
                           * getRuntime().mSetup->getGalerkin( 0 ).getNumRows();
@@ -490,7 +490,7 @@ void SimpleAMG::logSetupDetails()
             sizeVector += getRuntime().mSetup->getSolutionVector( i ).getMemoryUsage();
             sizeVector += getRuntime().mSetup->getRhsVector( i ).getMemoryUsage();
         }
-        if( i != getRuntime().mSetup->getNumLevels() - 1 )
+        if ( i != getRuntime().mSetup->getNumLevels() - 1 )
         {
             sizeVector += getRuntime().mSetup->getTmpResVector( i ).getMemoryUsage();
 

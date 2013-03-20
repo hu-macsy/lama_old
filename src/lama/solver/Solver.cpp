@@ -87,7 +87,7 @@ Solver::SolverRuntime::~SolverRuntime()
 
 void Solver::initialize( const Matrix& coefficients )
 {
-    if( getConstRuntime().mInitialized )
+    if ( getConstRuntime().mInitialized )
     {
         LAMA_LOG_DEBUG( logger, "Previous initialization of solver found! Will be overridden!" );
         mLogger->logMessage( LogLevel::solverInformation, "Solver already initialized, will be overridden\n" );
@@ -100,7 +100,7 @@ void Solver::initialize( const Matrix& coefficients )
 void Solver::solve( Vector& solution, const Vector& rhs )
 {
     LAMA_REGION( "Solver.solve" );
-    if( getConstRuntime().mSolveInit )
+    if ( getConstRuntime().mSolveInit )
     {
         LAMA_LOG_DEBUG( logger, "Previous initialization of 'solve'-process found! Will be overridden!" );
     }
@@ -117,25 +117,25 @@ void Solver::solveInit( Vector& solution, const Vector& rhs )
     runtime.mRhs = &rhs;
     runtime.mSolution = &solution;
 
-    if( runtime.mCoefficients->getNumRows() != runtime.mRhs->size() )
+    if ( runtime.mCoefficients->getNumRows() != runtime.mRhs->size() )
     {
         LAMA_THROWEXCEPTION(
             "Size of rhs vector " << *runtime.mRhs << " does not match column size of matrix " << *runtime.mCoefficients );
     }
 
-    if( runtime.mCoefficients->getNumColumns() != solution.size() )
+    if ( runtime.mCoefficients->getNumColumns() != solution.size() )
     {
         LAMA_THROWEXCEPTION(
             "Size of solution vector " << solution << " does not match row size of matrix " << *runtime.mCoefficients );
     }
 
-    if( runtime.mCoefficients->getColDistribution() != solution.getDistribution() )
+    if ( runtime.mCoefficients->getColDistribution() != solution.getDistribution() )
     {
         LAMA_THROWEXCEPTION(
             "Distribution of lhs " << solution << " = " << solution.getDistribution() << " does not match (row) distribution of " << *runtime.mCoefficients << " = " << runtime.mCoefficients->getColDistribution() );
     }
 
-    if( runtime.mCoefficients->getDistribution() != runtime.mRhs->getDistribution() )
+    if ( runtime.mCoefficients->getDistribution() != runtime.mRhs->getDistribution() )
     {
         LAMA_THROWEXCEPTION(
             "Distribution of old Solution " << *runtime.mRhs << " = " << runtime.mRhs->getDistribution() << " does not match (row) distribution of " << *runtime.mCoefficients << " = " << runtime.mCoefficients->getDistribution() );
@@ -162,10 +162,10 @@ const Vector& Solver::getResidual() const
 
     //mLogger->logMessage(LogLevel::completeInformation,"Request for residual received.\n");
 
-    if( runtime.mSolution.isDirty() || !runtime.mResidual.get() )
+    if ( runtime.mSolution.isDirty() || !runtime.mResidual.get() )
     {
         LAMA_LOG_DEBUG( logger, "calculating residual of = " << &(runtime.mSolution.getConstReference()) );
-        if( !runtime.mResidual.get() )
+        if ( !runtime.mResidual.get() )
         {
             runtime.mResidual = runtime.mRhs->create();
         }

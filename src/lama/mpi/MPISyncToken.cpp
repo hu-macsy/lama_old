@@ -51,7 +51,7 @@ MPISyncToken::MPISyncToken( PartitionId nRequests )
 
 MPISyncToken::~MPISyncToken()
 {
-    if( !isSynchronized() )
+    if ( !isSynchronized() )
     {
         LAMA_LOG_DEBUG( logger, *this << ": synchnronized at destructor" );
         wait();
@@ -65,7 +65,7 @@ void MPISyncToken::writeAt( std::ostream& stream ) const
 
 void MPISyncToken::wait()
 {
-    if( isSynchronized() )
+    if ( isSynchronized() )
     {
         LAMA_LOG_WARN( logger, *this << ": waiting twice" );
 

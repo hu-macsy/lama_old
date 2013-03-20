@@ -103,7 +103,7 @@ void SOR::initialize( const Matrix& coefficients )
 
     const _SparseMatrix* A = dynamic_cast<const _SparseMatrix*>( &coefficients );
 
-    if( A && A->getLocalStorage().getFormat() == CSR && A->getHaloStorage().getFormat() == CSR )
+    if ( A && A->getLocalStorage().getFormat() == CSR && A->getHaloStorage().getFormat() == CSR )
     {
         // with ValueType == coefficients.getValueType() this will be okay :
         // const CSRStorage<ValueType> & csrA = dynamic_cast<const CSRStorage<ValueType>& >( A.getLocalStorage() );
@@ -113,12 +113,12 @@ void SOR::initialize( const Matrix& coefficients )
 
         return; //use mCoefficients
     }
-    else if( coefficients.getValueType() == Scalar::DOUBLE )
+    else if ( coefficients.getValueType() == Scalar::DOUBLE )
     {
         mIterationMatrix.reset( new CSRSparseMatrix<double>( coefficients ) );
         LAMA_LOG_INFO( logger, "conversion of iteration matrix to CSR: " << *mIterationMatrix );
     }
-    else if( coefficients.getValueType() == Scalar::FLOAT )
+    else if ( coefficients.getValueType() == Scalar::FLOAT )
     {
         mIterationMatrix.reset( new CSRSparseMatrix<float>( coefficients ) );
         LAMA_LOG_INFO( logger, "conversion of iteration matrix to CSR: " << *mIterationMatrix );
@@ -134,7 +134,7 @@ void SOR::iterate()
 {
     LAMA_REGION( "Solver.SOR.iterate" );
 
-    switch( getRuntime().mCoefficients->getValueType() )
+    switch ( getRuntime().mCoefficients->getValueType() )
     {
     case Scalar::FLOAT:
     {
@@ -163,7 +163,7 @@ void SOR::iterateImpl()
     const DenseVector<ValueType> & b = dynamic_cast<const DenseVector<ValueType>&>( *getRuntime().mRhs );
     const Matrix* matrixPtr = getRuntime().mCoefficients;
 
-    if( mIterationMatrix.get() )
+    if ( mIterationMatrix.get() )
     {
         LAMA_LOG_DEBUG( logger,
                         "Taking CSR converted matrix " << *mIterationMatrix << " instead of " << *getRuntime().mCoefficients );
@@ -176,7 +176,7 @@ void SOR::iterateImpl()
     const CSRStorage<ValueType> & csrAHalo = dynamic_cast<const CSRStorage<ValueType>&>( A.getHaloStorage() );
     const Halo& Ahalo = A.getHalo();
 
-    if( !Ahalo.isEmpty() )
+    if ( !Ahalo.isEmpty() )
     {
         x.updateHalo( Ahalo );
     }
@@ -199,29 +199,29 @@ void SOR::iterateImpl()
     LAMA_LOG_DEBUG( logger, "iterate, omega = " << omega << ", #rows = " << csrA.getNumRows() );
 
     //SOR with relaxation factor omega
-    if( omega != 1.0 )
+    if ( omega != 1.0 )
     {
         LAMA_REGION( "Solver.SOR.iterate:Relaxation" );
 
         const ValueType oneMinusOmega = 1 - omega;
 
-        for( IndexType i = 0; i < csrA.getNumRows(); i++ )
+        for ( IndexType i = 0; i < csrA.getNumRows(); i++ )
         {
             ValueType sum = 0;
             const ValueType diag = aValues[ia[i]];
 
             //Local loop
-            for( IndexType pos = ia[i] + 1; pos < ia[i + 1]; pos++ )
+            for ( IndexType pos = ia[i] + 1; pos < ia[i + 1]; pos++ )
             {
                 sum = sum + xAcc[ja[pos]] * aValues[pos];
             }
 
             // Halo loop
 
-            if( Ahalo.getHaloSize() > 0 )
+            if ( Ahalo.getHaloSize() > 0 )
             {
 
-                for( IndexType pos = haloIa[i]; pos < haloIa[i + 1]; pos++ )
+                for ( IndexType pos = haloIa[i]; pos < haloIa[i + 1]; pos++ )
                 {
                     sum = sum + xHalo[haloJa[pos]] * aHaloValues[pos];
                 }
@@ -235,21 +235,21 @@ void SOR::iterateImpl()
     {
         LAMA_REGION( "Solver.SOR.iterate:GaussSeidel" );
 
-        for( IndexType i = 0; i < csrA.getNumRows(); i++ )
+        for ( IndexType i = 0; i < csrA.getNumRows(); i++ )
         {
             ValueType sum = 0;
             const ValueType diag = aValues[ia[i]];
 
-            for( IndexType pos = ia[i] + 1; pos < ia[i + 1]; pos++ )
+            for ( IndexType pos = ia[i] + 1; pos < ia[i + 1]; pos++ )
             {
                 sum = sum + xAcc[ja[pos]] * aValues[pos];
             }
 
             // Halo loop
 
-            if( Ahalo.getHaloSize() > 0 )
+            if ( Ahalo.getHaloSize() > 0 )
             {
-                for( IndexType pos = haloIa[i]; pos < haloIa[i + 1]; pos++ )
+                for ( IndexType pos = haloIa[i]; pos < haloIa[i + 1]; pos++ )
                 {
                     sum = sum + xHalo[haloJa[pos]] * aHaloValues[pos];
                 }

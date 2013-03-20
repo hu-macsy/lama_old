@@ -95,13 +95,13 @@ public:
     {
         Scalar::ScalarType arrayType = values.getValueType();
 
-        if( arrayType == Scalar::DOUBLE )
+        if ( arrayType == Scalar::DOUBLE )
         {
             const LAMAArray<double>& typedValues = dynamic_cast<const LAMAArray<double>&>( values );
             static_cast<Derived*>( this )->setCSRDataImpl( numRows, numColumns, numValues, ia, ja, typedValues,
                     this->getContextPtr() );
         }
-        else if( arrayType == Scalar::FLOAT )
+        else if ( arrayType == Scalar::FLOAT )
         {
             const LAMAArray<float>& typedValues = dynamic_cast<const LAMAArray<float>&>( values );
             static_cast<Derived*>( this )->setCSRDataImpl( numRows, numColumns, numValues, ia, ja, typedValues,
@@ -129,12 +129,12 @@ public:
     {
         Scalar::ScalarType arrayType = values.getValueType();
 
-        if( arrayType == Scalar::DOUBLE )
+        if ( arrayType == Scalar::DOUBLE )
         {
             LAMAArray<double>& typedValues = dynamic_cast<LAMAArray<double>&>( values );
             static_cast<const Derived*>( this )->buildCSR( ia, &ja, &typedValues, this->getContextPtr() );
         }
-        else if( arrayType == Scalar::FLOAT )
+        else if ( arrayType == Scalar::FLOAT )
         {
             LAMAArray<float>& typedValues = dynamic_cast<LAMAArray<float>&>( values );
             static_cast<const Derived*>( this )->buildCSR( ia, &ja, &typedValues, this->getContextPtr() );
@@ -151,12 +151,12 @@ public:
     {
         Scalar::ScalarType arrayType = row.getValueType();
 
-        if( arrayType == Scalar::DOUBLE )
+        if ( arrayType == Scalar::DOUBLE )
         {
             LAMAArray<double>& typedRow = dynamic_cast<LAMAArray<double>&>( row );
             static_cast<const Derived*>( this )->getRowImpl( typedRow, i );
         }
-        else if( arrayType == Scalar::FLOAT )
+        else if ( arrayType == Scalar::FLOAT )
         {
             LAMAArray<float>& typedRow = dynamic_cast<LAMAArray<float>&>( row );
             static_cast<const Derived*>( this )->getRowImpl( typedRow, i );
@@ -169,19 +169,19 @@ public:
 
     void getDiagonal( _LAMAArray& diagonal ) const
     {
-        if( !this->hasDiagonalProperty() )
+        if ( !this->hasDiagonalProperty() )
         {
             LAMA_THROWEXCEPTION( *this << ": has not diagonal property, cannot set diagonal" );
         }
 
         Scalar::ScalarType arrayType = diagonal.getValueType();
 
-        if( arrayType == Scalar::DOUBLE )
+        if ( arrayType == Scalar::DOUBLE )
         {
             LAMAArray<double>& typedDiagonal = dynamic_cast<LAMAArray<double>&>( diagonal );
             static_cast<const Derived*>( this )->getDiagonalImpl( typedDiagonal );
         }
-        else if( arrayType == Scalar::FLOAT )
+        else if ( arrayType == Scalar::FLOAT )
         {
             LAMAArray<float>& typedDiagonal = dynamic_cast<LAMAArray<float>&>( diagonal );
             static_cast<const Derived*>( this )->getDiagonalImpl( typedDiagonal );
@@ -201,24 +201,24 @@ public:
     {
         IndexType numDiagonalElements = diagonal.size();
 
-        if( numDiagonalElements > this->getNumRows() || numDiagonalElements > this->getNumColumns() )
+        if ( numDiagonalElements > this->getNumRows() || numDiagonalElements > this->getNumColumns() )
         {
             LAMA_THROWEXCEPTION( "Diagonal of size " << numDiagonalElements << " too large for matrix: " << *this );
         }
 
-        if( !this->hasDiagonalProperty() )
+        if ( !this->hasDiagonalProperty() )
         {
             LAMA_THROWEXCEPTION( *this << ": has not diagonal property, cannot set diagonal" );
         }
 
         Scalar::ScalarType arrayType = diagonal.getValueType();
 
-        if( arrayType == Scalar::DOUBLE )
+        if ( arrayType == Scalar::DOUBLE )
         {
             const LAMAArray<double>& typedDiagonal = dynamic_cast<const LAMAArray<double>&>( diagonal );
             static_cast<Derived*>( this )->setDiagonalImpl( typedDiagonal );
         }
-        else if( arrayType == Scalar::FLOAT )
+        else if ( arrayType == Scalar::FLOAT )
         {
             const LAMAArray<float>& typedDiagonal = dynamic_cast<const LAMAArray<float>&>( diagonal );
             static_cast<Derived*>( this )->setDiagonalImpl( typedDiagonal );
@@ -242,12 +242,12 @@ public:
 
         Scalar::ScalarType arrayType = diagonal.getValueType();
 
-        if( arrayType == Scalar::DOUBLE )
+        if ( arrayType == Scalar::DOUBLE )
         {
             const LAMAArray<double>& typedDiagonal = dynamic_cast<const LAMAArray<double>&>( diagonal );
             static_cast<Derived*>( this )->scaleImpl( typedDiagonal );
         }
-        else if( arrayType == Scalar::FLOAT )
+        else if ( arrayType == Scalar::FLOAT )
         {
             const LAMAArray<float>& typedDiagonal = dynamic_cast<const LAMAArray<float>&>( diagonal );
             static_cast<Derived*>( this )->scaleImpl( typedDiagonal );

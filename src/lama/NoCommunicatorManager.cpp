@@ -76,7 +76,7 @@ CommunicatorPtr NoCommunicatorManager::getCommunicator( int& /* argc */, char** 
 
     // use the last communicatorInstance if it is still valid
 
-    if( mCommunicatorInstance.expired() )
+    if ( mCommunicatorInstance.expired() )
     {
         // create a new instance of NoCommunicator and keep it for further uses
 

@@ -63,7 +63,8 @@ OpenShMemInterface::~OpenShMemInterface()
     OpenShMemInterface::free( pSync, _SHMEM_BCAST_SYNC_SIZE * sizeof(long) );
     OpenShMemInterface::free( pWork, _SHMEM_REDUCE_SYNC_SIZE * sizeof(double) );
 #ifdef LAMA_LOG_TRACE
-    if( mAllocated != 0 ) {
+    if ( mAllocated != 0 )
+    {
         LAMA_LOG_WARN( logger, "There are still " << mAllocated << " B allocated in the OpenShMem pinned memory!" );
     }
 #endif
@@ -178,7 +179,7 @@ void OpenShMemInterface::writeAt( std::ostream & stream ) const
 
 void OpenShMemInterface::initSync() const
 {
-    for( int i = 0; i < _SHMEM_BCAST_SYNC_SIZE; ++i )
+    for ( int i = 0; i < _SHMEM_BCAST_SYNC_SIZE; ++i )
     {
         pSync[i] = _SHMEM_SYNC_VALUE;
     }

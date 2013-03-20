@@ -69,7 +69,7 @@ void OpenMPBLAS3::gemm(
     const IndexType ldc,
     SyncToken* syncToken )
 {
-    if( syncToken )
+    if ( syncToken )
     {
         LAMA_LOG_WARN( logger, "no asynchronous execution for openmp possible at this level." )
     }
@@ -95,17 +95,17 @@ void OpenMPBLAS3::gemm(
     IndexType RowMajorStrg;
     RowMajorStrg = 0;
 
-    if( order == CblasColMajor )
+    if ( order == CblasColMajor )
     {
-        if( TransA == CblasTrans )
+        if ( TransA == CblasTrans )
         {
             TA = 'T';
         }
-        else if( TransA == CblasConjTrans )
+        else if ( TransA == CblasConjTrans )
         {
             TA = 'C';
         }
-        else if( TransA == CblasNoTrans )
+        else if ( TransA == CblasNoTrans )
         {
             TA = 'N';
         }
@@ -116,15 +116,15 @@ void OpenMPBLAS3::gemm(
             return;
         }
 
-        if( TransB == CblasTrans )
+        if ( TransB == CblasTrans )
         {
             TB = 'T';
         }
-        else if( TransB == CblasConjTrans )
+        else if ( TransB == CblasConjTrans )
         {
             TB = 'C';
         }
-        else if( TransB == CblasNoTrans )
+        else if ( TransB == CblasNoTrans )
         {
             TB = 'N';
         }
@@ -141,19 +141,19 @@ void OpenMPBLAS3::gemm(
 #endif
         F77_sgemm( F77_TA, F77_TB, &F77_M, &F77_N, &F77_K, &alpha, A, &F77_lda, B, &F77_ldb, &beta, C, &F77_ldc );
     }
-    else if( order == CblasRowMajor )
+    else if ( order == CblasRowMajor )
     {
         RowMajorStrg = 1;
 
-        if( TransA == CblasTrans )
+        if ( TransA == CblasTrans )
         {
             TB = 'T';
         }
-        else if( TransA == CblasConjTrans )
+        else if ( TransA == CblasConjTrans )
         {
             TB = 'C';
         }
-        else if( TransA == CblasNoTrans )
+        else if ( TransA == CblasNoTrans )
         {
             TB = 'N';
         }
@@ -164,15 +164,15 @@ void OpenMPBLAS3::gemm(
             return;
         }
 
-        if( TransB == CblasTrans )
+        if ( TransB == CblasTrans )
         {
             TA = 'T';
         }
-        else if( TransB == CblasConjTrans )
+        else if ( TransB == CblasConjTrans )
         {
             TA = 'C';
         }
-        else if( TransB == CblasNoTrans )
+        else if ( TransB == CblasNoTrans )
         {
             TA = 'N';
         }
@@ -216,7 +216,7 @@ void OpenMPBLAS3::gemm(
     const IndexType ldc,
     SyncToken* syncToken )
 {
-    if( syncToken )
+    if ( syncToken )
     {
         LAMA_LOG_WARN( logger, "no asynchronous execution for openmp possible at this level." )
     }
@@ -242,17 +242,17 @@ void OpenMPBLAS3::gemm(
     IndexType RowMajorStrg;
     RowMajorStrg = 0;
 
-    if( order == CblasColMajor )
+    if ( order == CblasColMajor )
     {
-        if( TransA == CblasTrans )
+        if ( TransA == CblasTrans )
         {
             TA = 'T';
         }
-        else if( TransA == CblasConjTrans )
+        else if ( TransA == CblasConjTrans )
         {
             TA = 'C';
         }
-        else if( TransA == CblasNoTrans )
+        else if ( TransA == CblasNoTrans )
         {
             TA = 'N';
         }
@@ -263,15 +263,15 @@ void OpenMPBLAS3::gemm(
             return;
         }
 
-        if( TransB == CblasTrans )
+        if ( TransB == CblasTrans )
         {
             TB = 'T';
         }
-        else if( TransB == CblasConjTrans )
+        else if ( TransB == CblasConjTrans )
         {
             TB = 'C';
         }
-        else if( TransB == CblasNoTrans )
+        else if ( TransB == CblasNoTrans )
         {
             TB = 'N';
         }
@@ -288,19 +288,19 @@ void OpenMPBLAS3::gemm(
 #endif
         F77_dgemm( F77_TA, F77_TB, &F77_M, &F77_N, &F77_K, &alpha, A, &F77_lda, B, &F77_ldb, &beta, C, &F77_ldc );
     }
-    else if( order == CblasRowMajor )
+    else if ( order == CblasRowMajor )
     {
         RowMajorStrg = 1;
 
-        if( TransA == CblasTrans )
+        if ( TransA == CblasTrans )
         {
             TB = 'T';
         }
-        else if( TransA == CblasConjTrans )
+        else if ( TransA == CblasConjTrans )
         {
             TB = 'C';
         }
-        else if( TransA == CblasNoTrans )
+        else if ( TransA == CblasNoTrans )
         {
             TB = 'N';
         }
@@ -311,15 +311,15 @@ void OpenMPBLAS3::gemm(
             return;
         }
 
-        if( TransB == CblasTrans )
+        if ( TransB == CblasTrans )
         {
             TA = 'T';
         }
-        else if( TransB == CblasConjTrans )
+        else if ( TransB == CblasConjTrans )
         {
             TA = 'C';
         }
-        else if( TransB == CblasNoTrans )
+        else if ( TransB == CblasNoTrans )
         {
             TA = 'N';
         }
@@ -336,7 +336,8 @@ void OpenMPBLAS3::gemm(
 #endif
         F77_dgemm( F77_TA, F77_TB, &F77_N, &F77_M, &F77_K, &alpha, B, &F77_ldb, A, &F77_lda, &beta, C, &F77_ldc );
     }
-    else {
+    else
+    {
         BLASHelper::XERBLA_cpu( RowMajorStrg, 1, "cblas_dgemm", "Illegal order setting, %d\n", order );
     }
 
@@ -363,7 +364,7 @@ void OpenMPBLAS3::symm(
     const IndexType ldc,
     SyncToken* syncToken )
 {
-    if( syncToken )
+    if ( syncToken )
     {
         LAMA_LOG_WARN( logger, "no asynchronous execution for openmp possible at this level." )
     }
@@ -388,13 +389,13 @@ void OpenMPBLAS3::symm(
     IndexType RowMajorStrg;
     RowMajorStrg = 0;
 
-    if( order == CblasColMajor )
+    if ( order == CblasColMajor )
     {
-        if( Side == CblasRight )
+        if ( Side == CblasRight )
         {
             SD = 'R';
         }
-        else if( Side == CblasLeft )
+        else if ( Side == CblasLeft )
         {
             SD = 'L';
         }
@@ -405,11 +406,11 @@ void OpenMPBLAS3::symm(
             return;
         }
 
-        if( Uplo == CblasUpper )
+        if ( Uplo == CblasUpper )
         {
             UL = 'U';
         }
-        else if( Uplo == CblasLower )
+        else if ( Uplo == CblasLower )
         {
             UL = 'L';
         }
@@ -426,15 +427,15 @@ void OpenMPBLAS3::symm(
 #endif
         F77_ssymm( F77_SD, F77_UL, &F77_M, &F77_N, &alpha, A, &F77_lda, B, &F77_ldb, &beta, C, &F77_ldc );
     }
-    else if( order == CblasRowMajor )
+    else if ( order == CblasRowMajor )
     {
         RowMajorStrg = 1;
 
-        if( Side == CblasRight )
+        if ( Side == CblasRight )
         {
             SD = 'L';
         }
-        else if( Side == CblasLeft )
+        else if ( Side == CblasLeft )
         {
             SD = 'R';
         }
@@ -445,11 +446,11 @@ void OpenMPBLAS3::symm(
             return;
         }
 
-        if( Uplo == CblasUpper )
+        if ( Uplo == CblasUpper )
         {
             UL = 'L';
         }
-        else if( Uplo == CblasLower )
+        else if ( Uplo == CblasLower )
         {
             UL = 'U';
         }
@@ -492,7 +493,7 @@ void OpenMPBLAS3::symm(
     const IndexType ldc,
     SyncToken* syncToken )
 {
-    if( syncToken )
+    if ( syncToken )
     {
         LAMA_LOG_WARN( logger, "no asynchronous execution for openmp possible at this level." )
     }
@@ -517,13 +518,13 @@ void OpenMPBLAS3::symm(
     IndexType RowMajorStrg;
     RowMajorStrg = 0;
 
-    if( order == CblasColMajor )
+    if ( order == CblasColMajor )
     {
-        if( Side == CblasRight )
+        if ( Side == CblasRight )
         {
             SD = 'R';
         }
-        else if( Side == CblasLeft )
+        else if ( Side == CblasLeft )
         {
             SD = 'L';
         }
@@ -534,11 +535,11 @@ void OpenMPBLAS3::symm(
             return;
         }
 
-        if( Uplo == CblasUpper )
+        if ( Uplo == CblasUpper )
         {
             UL = 'U';
         }
-        else if( Uplo == CblasLower )
+        else if ( Uplo == CblasLower )
         {
             UL = 'L';
         }
@@ -555,15 +556,15 @@ void OpenMPBLAS3::symm(
 #endif
         F77_dsymm( F77_SD, F77_UL, &F77_M, &F77_N, &alpha, A, &F77_lda, B, &F77_ldb, &beta, C, &F77_ldc );
     }
-    else if( order == CblasRowMajor )
+    else if ( order == CblasRowMajor )
     {
         RowMajorStrg = 1;
 
-        if( Side == CblasRight )
+        if ( Side == CblasRight )
         {
             SD = 'L';
         }
-        else if( Side == CblasLeft )
+        else if ( Side == CblasLeft )
         {
             SD = 'R';
         }
@@ -574,11 +575,11 @@ void OpenMPBLAS3::symm(
             return;
         }
 
-        if( Uplo == CblasUpper )
+        if ( Uplo == CblasUpper )
         {
             UL = 'L';
         }
-        else if( Uplo == CblasLower )
+        else if ( Uplo == CblasLower )
         {
             UL = 'U';
         }
@@ -622,7 +623,7 @@ void OpenMPBLAS3::trmm(
     const IndexType ldb,
     SyncToken* syncToken )
 {
-    if( syncToken )
+    if ( syncToken )
     {
         LAMA_LOG_WARN( logger, "no asynchronous execution for openmp possible at this level." )
     }
@@ -647,13 +648,13 @@ void OpenMPBLAS3::trmm(
     IndexType RowMajorStrg;
     RowMajorStrg = 0;
 
-    if( order == CblasColMajor )
+    if ( order == CblasColMajor )
     {
-        if( Side == CblasRight )
+        if ( Side == CblasRight )
         {
             SD = 'R';
         }
-        else if( Side == CblasLeft )
+        else if ( Side == CblasLeft )
         {
             SD = 'L';
         }
@@ -664,11 +665,11 @@ void OpenMPBLAS3::trmm(
             return;
         }
 
-        if( Uplo == CblasUpper )
+        if ( Uplo == CblasUpper )
         {
             UL = 'U';
         }
-        else if( Uplo == CblasLower )
+        else if ( Uplo == CblasLower )
         {
             UL = 'L';
         }
@@ -679,15 +680,15 @@ void OpenMPBLAS3::trmm(
             return;
         }
 
-        if( TransA == CblasTrans )
+        if ( TransA == CblasTrans )
         {
             TA = 'T';
         }
-        else if( TransA == CblasConjTrans )
+        else if ( TransA == CblasConjTrans )
         {
             TA = 'C';
         }
-        else if( TransA == CblasNoTrans )
+        else if ( TransA == CblasNoTrans )
         {
             TA = 'N';
         }
@@ -698,11 +699,11 @@ void OpenMPBLAS3::trmm(
             return;
         }
 
-        if( Diag == CblasUnit )
+        if ( Diag == CblasUnit )
         {
             DI = 'U';
         }
-        else if( Diag == CblasNonUnit )
+        else if ( Diag == CblasNonUnit )
         {
             DI = 'N';
         }
@@ -721,15 +722,15 @@ void OpenMPBLAS3::trmm(
 #endif
         F77_strmm( F77_SD, F77_UL, F77_TA, F77_DI, &F77_M, &F77_N, &alpha, A, &F77_lda, B, &F77_ldb );
     }
-    else if( order == CblasRowMajor )
+    else if ( order == CblasRowMajor )
     {
         RowMajorStrg = 1;
 
-        if( Side == CblasRight )
+        if ( Side == CblasRight )
         {
             SD = 'L';
         }
-        else if( Side == CblasLeft )
+        else if ( Side == CblasLeft )
         {
             SD = 'R';
         }
@@ -740,11 +741,11 @@ void OpenMPBLAS3::trmm(
             return;
         }
 
-        if( Uplo == CblasUpper )
+        if ( Uplo == CblasUpper )
         {
             UL = 'L';
         }
-        else if( Uplo == CblasLower )
+        else if ( Uplo == CblasLower )
         {
             UL = 'U';
         }
@@ -755,15 +756,15 @@ void OpenMPBLAS3::trmm(
             return;
         }
 
-        if( TransA == CblasTrans )
+        if ( TransA == CblasTrans )
         {
             TA = 'T';
         }
-        else if( TransA == CblasConjTrans )
+        else if ( TransA == CblasConjTrans )
         {
             TA = 'C';
         }
-        else if( TransA == CblasNoTrans )
+        else if ( TransA == CblasNoTrans )
         {
             TA = 'N';
         }
@@ -774,11 +775,11 @@ void OpenMPBLAS3::trmm(
             return;
         }
 
-        if( Diag == CblasUnit )
+        if ( Diag == CblasUnit )
         {
             DI = 'U';
         }
-        else if( Diag == CblasNonUnit )
+        else if ( Diag == CblasNonUnit )
         {
             DI = 'N';
         }
@@ -797,7 +798,8 @@ void OpenMPBLAS3::trmm(
 #endif
         F77_strmm( F77_SD, F77_UL, F77_TA, F77_DI, &F77_N, &F77_M, &alpha, A, &F77_lda, B, &F77_ldb );
     }
-    else {
+    else
+    {
         BLASHelper::XERBLA_cpu( RowMajorStrg, 1, "cblas_strmm", "Illegal order setting, %d\n", order );
     }
 
@@ -821,7 +823,7 @@ void OpenMPBLAS3::trmm(
     const IndexType ldb,
     SyncToken* syncToken )
 {
-    if( syncToken )
+    if ( syncToken )
     {
         LAMA_LOG_WARN( logger, "no asynchronous execution for openmp possible at this level." )
     }
@@ -846,13 +848,13 @@ void OpenMPBLAS3::trmm(
     IndexType RowMajorStrg;
     RowMajorStrg = 0;
 
-    if( order == CblasColMajor )
+    if ( order == CblasColMajor )
     {
-        if( Side == CblasRight )
+        if ( Side == CblasRight )
         {
             SD = 'R';
         }
-        else if( Side == CblasLeft )
+        else if ( Side == CblasLeft )
         {
             SD = 'L';
         }
@@ -863,11 +865,11 @@ void OpenMPBLAS3::trmm(
             return;
         }
 
-        if( Uplo == CblasUpper )
+        if ( Uplo == CblasUpper )
         {
             UL = 'U';
         }
-        else if( Uplo == CblasLower )
+        else if ( Uplo == CblasLower )
         {
             UL = 'L';
         }
@@ -878,15 +880,15 @@ void OpenMPBLAS3::trmm(
             return;
         }
 
-        if( TransA == CblasTrans )
+        if ( TransA == CblasTrans )
         {
             TA = 'T';
         }
-        else if( TransA == CblasConjTrans )
+        else if ( TransA == CblasConjTrans )
         {
             TA = 'C';
         }
-        else if( TransA == CblasNoTrans )
+        else if ( TransA == CblasNoTrans )
         {
             TA = 'N';
         }
@@ -897,11 +899,11 @@ void OpenMPBLAS3::trmm(
             return;
         }
 
-        if( Diag == CblasUnit )
+        if ( Diag == CblasUnit )
         {
             DI = 'U';
         }
-        else if( Diag == CblasNonUnit )
+        else if ( Diag == CblasNonUnit )
         {
             DI = 'N';
         }
@@ -920,15 +922,15 @@ void OpenMPBLAS3::trmm(
 #endif
         F77_dtrmm( F77_SD, F77_UL, F77_TA, F77_DI, &F77_M, &F77_N, &alpha, A, &F77_lda, B, &F77_ldb );
     }
-    else if( order == CblasRowMajor )
+    else if ( order == CblasRowMajor )
     {
         RowMajorStrg = 1;
 
-        if( Side == CblasRight )
+        if ( Side == CblasRight )
         {
             SD = 'L';
         }
-        else if( Side == CblasLeft )
+        else if ( Side == CblasLeft )
         {
             SD = 'R';
         }
@@ -939,11 +941,11 @@ void OpenMPBLAS3::trmm(
             return;
         }
 
-        if( Uplo == CblasUpper )
+        if ( Uplo == CblasUpper )
         {
             UL = 'L';
         }
-        else if( Uplo == CblasLower )
+        else if ( Uplo == CblasLower )
         {
             UL = 'U';
         }
@@ -954,15 +956,15 @@ void OpenMPBLAS3::trmm(
             return;
         }
 
-        if( TransA == CblasTrans )
+        if ( TransA == CblasTrans )
         {
             TA = 'T';
         }
-        else if( TransA == CblasConjTrans )
+        else if ( TransA == CblasConjTrans )
         {
             TA = 'C';
         }
-        else if( TransA == CblasNoTrans )
+        else if ( TransA == CblasNoTrans )
         {
             TA = 'N';
         }
@@ -973,11 +975,11 @@ void OpenMPBLAS3::trmm(
             return;
         }
 
-        if( Diag == CblasUnit )
+        if ( Diag == CblasUnit )
         {
             DI = 'U';
         }
-        else if( Diag == CblasNonUnit )
+        else if ( Diag == CblasNonUnit )
         {
             DI = 'N';
         }
@@ -1023,7 +1025,7 @@ void OpenMPBLAS3::trsm(
     const IndexType ldb,
     SyncToken* syncToken )
 {
-    if( syncToken )
+    if ( syncToken )
     {
         LAMA_LOG_WARN( logger, "no asynchronous execution for openmp possible at this level." )
     }
@@ -1048,13 +1050,13 @@ void OpenMPBLAS3::trsm(
     IndexType RowMajorStrg;
     RowMajorStrg = 0;
 
-    if( order == CblasColMajor )
+    if ( order == CblasColMajor )
     {
-        if( Side == CblasRight )
+        if ( Side == CblasRight )
         {
             SD = 'R';
         }
-        else if( Side == CblasLeft )
+        else if ( Side == CblasLeft )
         {
             SD = 'L';
         }
@@ -1065,11 +1067,11 @@ void OpenMPBLAS3::trsm(
             return;
         }
 
-        if( Uplo == CblasUpper )
+        if ( Uplo == CblasUpper )
         {
             UL = 'U';
         }
-        else if( Uplo == CblasLower )
+        else if ( Uplo == CblasLower )
         {
             UL = 'L';
         }
@@ -1080,15 +1082,15 @@ void OpenMPBLAS3::trsm(
             return;
         }
 
-        if( TransA == CblasTrans )
+        if ( TransA == CblasTrans )
         {
             TA = 'T';
         }
-        else if( TransA == CblasConjTrans )
+        else if ( TransA == CblasConjTrans )
         {
             TA = 'C';
         }
-        else if( TransA == CblasNoTrans )
+        else if ( TransA == CblasNoTrans )
         {
             TA = 'N';
         }
@@ -1099,11 +1101,11 @@ void OpenMPBLAS3::trsm(
             return;
         }
 
-        if( Diag == CblasUnit )
+        if ( Diag == CblasUnit )
         {
             DI = 'U';
         }
-        else if( Diag == CblasNonUnit )
+        else if ( Diag == CblasNonUnit )
         {
             DI = 'N';
         }
@@ -1122,15 +1124,15 @@ void OpenMPBLAS3::trsm(
 #endif
         F77_strsm( F77_SD, F77_UL, F77_TA, F77_DI, &F77_M, &F77_N, &alpha, A, &F77_lda, B, &F77_ldb );
     }
-    else if( order == CblasRowMajor )
+    else if ( order == CblasRowMajor )
     {
         RowMajorStrg = 1;
 
-        if( Side == CblasRight )
+        if ( Side == CblasRight )
         {
             SD = 'L';
         }
-        else if( Side == CblasLeft )
+        else if ( Side == CblasLeft )
         {
             SD = 'R';
         }
@@ -1141,11 +1143,11 @@ void OpenMPBLAS3::trsm(
             return;
         }
 
-        if( Uplo == CblasUpper )
+        if ( Uplo == CblasUpper )
         {
             UL = 'L';
         }
-        else if( Uplo == CblasLower )
+        else if ( Uplo == CblasLower )
         {
             UL = 'U';
         }
@@ -1156,15 +1158,15 @@ void OpenMPBLAS3::trsm(
             return;
         }
 
-        if( TransA == CblasTrans )
+        if ( TransA == CblasTrans )
         {
             TA = 'T';
         }
-        else if( TransA == CblasConjTrans )
+        else if ( TransA == CblasConjTrans )
         {
             TA = 'C';
         }
-        else if( TransA == CblasNoTrans )
+        else if ( TransA == CblasNoTrans )
         {
             TA = 'N';
         }
@@ -1175,11 +1177,11 @@ void OpenMPBLAS3::trsm(
             return;
         }
 
-        if( Diag == CblasUnit )
+        if ( Diag == CblasUnit )
         {
             DI = 'U';
         }
-        else if( Diag == CblasNonUnit )
+        else if ( Diag == CblasNonUnit )
         {
             DI = 'N';
         }
@@ -1223,7 +1225,7 @@ void OpenMPBLAS3::trsm(
     const IndexType ldb,
     SyncToken* syncToken )
 {
-    if( syncToken )
+    if ( syncToken )
     {
         LAMA_LOG_WARN( logger, "no asynchronous execution for openmp possible at this level." )
     }
@@ -1248,13 +1250,13 @@ void OpenMPBLAS3::trsm(
     IndexType RowMajorStrg;
     RowMajorStrg = 0;
 
-    if( order == CblasColMajor )
+    if ( order == CblasColMajor )
     {
-        if( Side == CblasRight )
+        if ( Side == CblasRight )
         {
             SD = 'R';
         }
-        else if( Side == CblasLeft )
+        else if ( Side == CblasLeft )
         {
             SD = 'L';
         }
@@ -1265,11 +1267,11 @@ void OpenMPBLAS3::trsm(
             return;
         }
 
-        if( Uplo == CblasUpper )
+        if ( Uplo == CblasUpper )
         {
             UL = 'U';
         }
-        else if( Uplo == CblasLower )
+        else if ( Uplo == CblasLower )
         {
             UL = 'L';
         }
@@ -1280,15 +1282,15 @@ void OpenMPBLAS3::trsm(
             return;
         }
 
-        if( TransA == CblasTrans )
+        if ( TransA == CblasTrans )
         {
             TA = 'T';
         }
-        else if( TransA == CblasConjTrans )
+        else if ( TransA == CblasConjTrans )
         {
             TA = 'C';
         }
-        else if( TransA == CblasNoTrans )
+        else if ( TransA == CblasNoTrans )
         {
             TA = 'N';
         }
@@ -1299,11 +1301,11 @@ void OpenMPBLAS3::trsm(
             return;
         }
 
-        if( Diag == CblasUnit )
+        if ( Diag == CblasUnit )
         {
             DI = 'U';
         }
-        else if( Diag == CblasNonUnit )
+        else if ( Diag == CblasNonUnit )
         {
             DI = 'N';
         }
@@ -1322,15 +1324,15 @@ void OpenMPBLAS3::trsm(
 #endif
         F77_dtrsm( F77_SD, F77_UL, F77_TA, F77_DI, &F77_M, &F77_N, &alpha, A, &F77_lda, B, &F77_ldb );
     }
-    else if( order == CblasRowMajor )
+    else if ( order == CblasRowMajor )
     {
         RowMajorStrg = 1;
 
-        if( Side == CblasRight )
+        if ( Side == CblasRight )
         {
             SD = 'L';
         }
-        else if( Side == CblasLeft )
+        else if ( Side == CblasLeft )
         {
             SD = 'R';
         }
@@ -1341,11 +1343,11 @@ void OpenMPBLAS3::trsm(
             return;
         }
 
-        if( Uplo == CblasUpper )
+        if ( Uplo == CblasUpper )
         {
             UL = 'L';
         }
-        else if( Uplo == CblasLower )
+        else if ( Uplo == CblasLower )
         {
             UL = 'U';
         }
@@ -1356,15 +1358,15 @@ void OpenMPBLAS3::trsm(
             return;
         }
 
-        if( TransA == CblasTrans )
+        if ( TransA == CblasTrans )
         {
             TA = 'T';
         }
-        else if( TransA == CblasConjTrans )
+        else if ( TransA == CblasConjTrans )
         {
             TA = 'C';
         }
-        else if( TransA == CblasNoTrans )
+        else if ( TransA == CblasNoTrans )
         {
             TA = 'N';
         }
@@ -1375,11 +1377,11 @@ void OpenMPBLAS3::trsm(
             return;
         }
 
-        if( Diag == CblasUnit )
+        if ( Diag == CblasUnit )
         {
             DI = 'U';
         }
-        else if( Diag == CblasNonUnit )
+        else if ( Diag == CblasNonUnit )
         {
             DI = 'N';
         }
@@ -1426,7 +1428,7 @@ void OpenMPBLAS3::syrk(
     const IndexType ldc,
     SyncToken* syncToken )
 {
-    if( syncToken )
+    if ( syncToken )
     {
         LAMA_LOG_WARN( logger, "no asynchronous execution for openmp possible at this level." )
     }
@@ -1450,13 +1452,13 @@ void OpenMPBLAS3::syrk(
     IndexType RowMajorStrg;
     RowMajorStrg = 0;
 
-    if( order == CblasColMajor )
+    if ( order == CblasColMajor )
     {
-        if( Uplo == CblasUpper )
+        if ( Uplo == CblasUpper )
         {
             UL = 'U';
         }
-        else if( Uplo == CblasLower )
+        else if ( Uplo == CblasLower )
         {
             UL = 'L';
         }
@@ -1467,15 +1469,15 @@ void OpenMPBLAS3::syrk(
             return;
         }
 
-        if( Trans == CblasTrans )
+        if ( Trans == CblasTrans )
         {
             TR = 'T';
         }
-        else if( Trans == CblasConjTrans )
+        else if ( Trans == CblasConjTrans )
         {
             TR = 'C';
         }
-        else if( Trans == CblasNoTrans )
+        else if ( Trans == CblasNoTrans )
         {
             TR = 'N';
         }
@@ -1492,15 +1494,15 @@ void OpenMPBLAS3::syrk(
 #endif
         F77_ssyrk( F77_UL, F77_TR, &F77_N, &F77_K, &alpha, A, &F77_lda, &beta, C, &F77_ldc );
     }
-    else if( order == CblasRowMajor )
+    else if ( order == CblasRowMajor )
     {
         RowMajorStrg = 1;
 
-        if( Uplo == CblasUpper )
+        if ( Uplo == CblasUpper )
         {
             UL = 'L';
         }
-        else if( Uplo == CblasLower )
+        else if ( Uplo == CblasLower )
         {
             UL = 'U';
         }
@@ -1511,15 +1513,15 @@ void OpenMPBLAS3::syrk(
             return;
         }
 
-        if( Trans == CblasTrans )
+        if ( Trans == CblasTrans )
         {
             TR = 'N';
         }
-        else if( Trans == CblasConjTrans )
+        else if ( Trans == CblasConjTrans )
         {
             TR = 'N';
         }
-        else if( Trans == CblasNoTrans )
+        else if ( Trans == CblasNoTrans )
         {
             TR = 'T';
         }
@@ -1560,7 +1562,7 @@ void OpenMPBLAS3::syrk(
     const IndexType ldc,
     SyncToken* syncToken )
 {
-    if( syncToken )
+    if ( syncToken )
     {
         LAMA_LOG_WARN( logger, "no asynchronous execution for openmp possible at this level." )
     }
@@ -1584,13 +1586,13 @@ void OpenMPBLAS3::syrk(
     IndexType RowMajorStrg;
     RowMajorStrg = 0;
 
-    if( order == CblasColMajor )
+    if ( order == CblasColMajor )
     {
-        if( Uplo == CblasUpper )
+        if ( Uplo == CblasUpper )
         {
             UL = 'U';
         }
-        else if( Uplo == CblasLower )
+        else if ( Uplo == CblasLower )
         {
             UL = 'L';
         }
@@ -1601,15 +1603,15 @@ void OpenMPBLAS3::syrk(
             return;
         }
 
-        if( Trans == CblasTrans )
+        if ( Trans == CblasTrans )
         {
             TR = 'T';
         }
-        else if( Trans == CblasConjTrans )
+        else if ( Trans == CblasConjTrans )
         {
             TR = 'C';
         }
-        else if( Trans == CblasNoTrans )
+        else if ( Trans == CblasNoTrans )
         {
             TR = 'N';
         }
@@ -1626,15 +1628,15 @@ void OpenMPBLAS3::syrk(
 #endif
         F77_dsyrk( F77_UL, F77_TR, &F77_N, &F77_K, &alpha, A, &F77_lda, &beta, C, &F77_ldc );
     }
-    else if( order == CblasRowMajor )
+    else if ( order == CblasRowMajor )
     {
         RowMajorStrg = 1;
 
-        if( Uplo == CblasUpper )
+        if ( Uplo == CblasUpper )
         {
             UL = 'L';
         }
-        else if( Uplo == CblasLower )
+        else if ( Uplo == CblasLower )
         {
             UL = 'U';
         }
@@ -1645,15 +1647,15 @@ void OpenMPBLAS3::syrk(
             return;
         }
 
-        if( Trans == CblasTrans )
+        if ( Trans == CblasTrans )
         {
             TR = 'N';
         }
-        else if( Trans == CblasConjTrans )
+        else if ( Trans == CblasConjTrans )
         {
             TR = 'N';
         }
-        else if( Trans == CblasNoTrans )
+        else if ( Trans == CblasNoTrans )
         {
             TR = 'T';
         }
@@ -1698,7 +1700,7 @@ void OpenMPBLAS3::syrk2(
     const IndexType ldc,
     SyncToken* syncToken )
 {
-    if( syncToken )
+    if ( syncToken )
     {
         LAMA_LOG_WARN( logger, "no asynchronous execution for openmp possible at this level." )
     }
@@ -1723,13 +1725,13 @@ void OpenMPBLAS3::syrk2(
     IndexType RowMajorStrg;
     RowMajorStrg = 0;
 
-    if( order == CblasColMajor )
+    if ( order == CblasColMajor )
     {
-        if( Uplo == CblasUpper )
+        if ( Uplo == CblasUpper )
         {
             UL = 'U';
         }
-        else if( Uplo == CblasLower )
+        else if ( Uplo == CblasLower )
         {
             UL = 'L';
         }
@@ -1740,15 +1742,15 @@ void OpenMPBLAS3::syrk2(
             return;
         }
 
-        if( Trans == CblasTrans )
+        if ( Trans == CblasTrans )
         {
             TR = 'T';
         }
-        else if( Trans == CblasConjTrans )
+        else if ( Trans == CblasConjTrans )
         {
             TR = 'C';
         }
-        else if( Trans == CblasNoTrans )
+        else if ( Trans == CblasNoTrans )
         {
             TR = 'N';
         }
@@ -1765,15 +1767,15 @@ void OpenMPBLAS3::syrk2(
 #endif
         F77_ssyr2k( F77_UL, F77_TR, &F77_N, &F77_K, &alpha, A, &F77_lda, B, &F77_ldb, &beta, C, &F77_ldc );
     }
-    else if( order == CblasRowMajor )
+    else if ( order == CblasRowMajor )
     {
         RowMajorStrg = 1;
 
-        if( Uplo == CblasUpper )
+        if ( Uplo == CblasUpper )
         {
             UL = 'L';
         }
-        else if( Uplo == CblasLower )
+        else if ( Uplo == CblasLower )
         {
             UL = 'U';
         }
@@ -1784,15 +1786,15 @@ void OpenMPBLAS3::syrk2(
             return;
         }
 
-        if( Trans == CblasTrans )
+        if ( Trans == CblasTrans )
         {
             TR = 'N';
         }
-        else if( Trans == CblasConjTrans )
+        else if ( Trans == CblasConjTrans )
         {
             TR = 'N';
         }
-        else if( Trans == CblasNoTrans )
+        else if ( Trans == CblasNoTrans )
         {
             TR = 'T';
         }
@@ -1835,7 +1837,7 @@ void OpenMPBLAS3::syrk2(
     const IndexType ldc,
     SyncToken* syncToken )
 {
-    if( syncToken )
+    if ( syncToken )
     {
         LAMA_LOG_WARN( logger, "no asynchronous execution for openmp possible at this level." )
     }
@@ -1860,13 +1862,13 @@ void OpenMPBLAS3::syrk2(
     IndexType RowMajorStrg;
     RowMajorStrg = 0;
 
-    if( order == CblasColMajor )
+    if ( order == CblasColMajor )
     {
-        if( Uplo == CblasUpper )
+        if ( Uplo == CblasUpper )
         {
             UL = 'U';
         }
-        else if( Uplo == CblasLower )
+        else if ( Uplo == CblasLower )
         {
             UL = 'L';
         }
@@ -1877,15 +1879,15 @@ void OpenMPBLAS3::syrk2(
             return;
         }
 
-        if( Trans == CblasTrans )
+        if ( Trans == CblasTrans )
         {
             TR = 'T';
         }
-        else if( Trans == CblasConjTrans )
+        else if ( Trans == CblasConjTrans )
         {
             TR = 'C';
         }
-        else if( Trans == CblasNoTrans )
+        else if ( Trans == CblasNoTrans )
         {
             TR = 'N';
         }
@@ -1902,15 +1904,15 @@ void OpenMPBLAS3::syrk2(
 #endif
         F77_dsyr2k( F77_UL, F77_TR, &F77_N, &F77_K, &alpha, A, &F77_lda, B, &F77_ldb, &beta, C, &F77_ldc );
     }
-    else if( order == CblasRowMajor )
+    else if ( order == CblasRowMajor )
     {
         RowMajorStrg = 1;
 
-        if( Uplo == CblasUpper )
+        if ( Uplo == CblasUpper )
         {
             UL = 'L';
         }
-        else if( Uplo == CblasLower )
+        else if ( Uplo == CblasLower )
         {
             UL = 'U';
         }
@@ -1921,15 +1923,15 @@ void OpenMPBLAS3::syrk2(
             return;
         }
 
-        if( Trans == CblasTrans )
+        if ( Trans == CblasTrans )
         {
             TR = 'N';
         }
-        else if( Trans == CblasConjTrans )
+        else if ( Trans == CblasConjTrans )
         {
             TR = 'N';
         }
-        else if( Trans == CblasNoTrans )
+        else if ( Trans == CblasNoTrans )
         {
             TR = 'T';
         }

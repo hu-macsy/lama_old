@@ -43,7 +43,7 @@ SourceLocation::SourceLocation( const char* const filename, const char* const fu
 {
     const char* shortname = strrchr( filename, '/' );
 
-    if( shortname )
+    if ( shortname )
     {
         mFileName = shortname + 1;
     }

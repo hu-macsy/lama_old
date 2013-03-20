@@ -62,7 +62,7 @@ CUDAContextManager::CUDAContextManager()
 
     // initialize the weak pointers for different devices ( probably not necessary )
 
-    for( int i = 0; i < LAMA_MAX_CUDA_DEVICES; i++ )
+    for ( int i = 0; i < LAMA_MAX_CUDA_DEVICES; i++ )
     {
         mCUDAContext[i] = boost::weak_ptr<CUDAContext>();
     }
@@ -74,9 +74,9 @@ CUDAContextManager::~CUDAContextManager()
 {
     LAMA_LOG_DEBUG( logger, "~CUDAContextManager" );
 
-    for( int i = 0; i < LAMA_MAX_CUDA_DEVICES; i++ )
+    for ( int i = 0; i < LAMA_MAX_CUDA_DEVICES; i++ )
     {
-        if( mCUDAContext[i].expired() )
+        if ( mCUDAContext[i].expired() )
         {
             LAMA_LOG_DEBUG( logger, "expired CUDAContext for device " << i );
         }
@@ -93,11 +93,11 @@ ContextPtr CUDAContextManager::getInstance( int deviceNr )
 {
     int cudaDeviceNr = deviceNr;
 
-    if( cudaDeviceNr == LAMA_DEFAULT_DEVICE_NUMBER )
+    if ( cudaDeviceNr == LAMA_DEFAULT_DEVICE_NUMBER )
     {
         // if no device has been specified we take the value of the environment variable
 
-        if( getenv( LAMA_CUDA_ENV_FOR_DEVICE ) )
+        if ( getenv( LAMA_CUDA_ENV_FOR_DEVICE ) )
         {
             std::string devNumber( getenv( LAMA_CUDA_ENV_FOR_DEVICE ) );
             std::istringstream devNumberReader( devNumber );
@@ -118,7 +118,7 @@ ContextPtr CUDAContextManager::getInstance( int deviceNr )
 
     boost::shared_ptr<CUDAContext> context = boost::shared_ptr<CUDAContext>();
 
-    if( mCUDAContext[cudaDeviceNr].expired() )
+    if ( mCUDAContext[cudaDeviceNr].expired() )
     {
         // create a new context for the device and return the shared pointer
 

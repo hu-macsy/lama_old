@@ -56,26 +56,26 @@ SyncToken::~SyncToken()
 {
     LAMA_LOG_DEBUG( logger, "~SyncToken" );
 
-    if( !mSynchronized )
+    if ( !mSynchronized )
     {
         LAMA_LOG_WARN( logger, "no synchronization called on SyncToken" );
     }
 
     LAMA_LOG_DEBUG( logger, "still delete " << mAccesses.size() << " accesses and " << mArrays.size() << " arrays" );
 
-    while( !mAccesses.empty() )
+    while ( !mAccesses.empty() )
     {
         delete mAccesses.back();
         mAccesses.pop_back();
     }
 
-    while( !mArrays.empty() )
+    while ( !mArrays.empty() )
     {
         delete mArrays.back();
         mArrays.pop_back();
     }
 
-    while( !mChilds.empty() )
+    while ( !mChilds.empty() )
     {
         mChilds.back()->wait();
         delete mChilds.back();
@@ -92,7 +92,7 @@ void SyncToken::pushAccess( std::auto_ptr<BaseAccess> access )
 {
     LAMA_ASSERT_ERROR( access.get(), "NULL access cannot be pushed for synchronization." );
 
-    if( mSynchronized )
+    if ( mSynchronized )
     {
         LAMA_LOG_DEBUG( logger, *this << ": push access not done, already synchronized" );
 
@@ -114,7 +114,7 @@ void SyncToken::pushArray( std::auto_ptr<_LAMAArray> array )
 {
     LAMA_ASSERT_ERROR( array.get(), "NULL array cannot be pushed for synchronization." );
 
-    if( mSynchronized )
+    if ( mSynchronized )
     {
         LAMA_LOG_DEBUG( logger, *this << ": push array not done, already synchronized" );
 
@@ -136,7 +136,7 @@ void SyncToken::pushSyncToken( std::auto_ptr<SyncToken> syncToken )
 {
     LAMA_ASSERT_ERROR( syncToken.get(), "NULL SyncToken cannot be pushed for synchronization." );
 
-    if( mSynchronized )
+    if ( mSynchronized )
     {
         LAMA_LOG_DEBUG( logger, *this << ": push SyncToken not done, already synchronized" );
 
@@ -162,7 +162,7 @@ bool SyncToken::isSynchronized() const
 
 void SyncToken::setSynchronized()
 {
-    if( mSynchronized )
+    if ( mSynchronized )
     {
         LAMA_THROWEXCEPTION( *this << " is already synchronized" );
     }
@@ -174,7 +174,7 @@ void SyncToken::setSynchronized()
     LAMA_LOG_DEBUG( logger,
                     *this << ": delete " << mAccesses.size() << " accesses, " << mArrays.size() << " arrays and synchronizing " << mChilds.size() << " childs " );
 
-    while( !mAccesses.empty() )
+    while ( !mAccesses.empty() )
     {
         BaseAccess* lastAccess = mAccesses.back();
         LAMA_LOG_INFO( logger, "delete " << lastAccess );
@@ -183,13 +183,13 @@ void SyncToken::setSynchronized()
         mAccesses.pop_back();
     }
 
-    while( !mArrays.empty() )
+    while ( !mArrays.empty() )
     {
         delete mArrays.back();
         mArrays.pop_back();
     }
 
-    while( !mChilds.empty() )
+    while ( !mChilds.empty() )
     {
         mChilds.back()->wait();
         delete mChilds.back();

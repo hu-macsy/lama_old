@@ -56,7 +56,7 @@ BOOST_AUTO_TEST_CASE( commonTestCases )
 {
     CommunicatorTest communicatorTest( "none" );
 
-    if( base_test_case )
+    if ( base_test_case )
     {
         LAMA_LOG_INFO( logger, "Run test method " << testcase << " in NoCommunicatorTest." );
         COMMUNICATORTEST_COMMONTESTCASES( communicatorTest );

@@ -82,7 +82,7 @@ void testSameMatrix( const MatrixType1& m1, const MatrixType2& m2 )
     y1.redistribute( replicated );
     y2.redistribute( replicated );
 
-    for( lama::IndexType i = 0; i < m; i++ )
+    for ( lama::IndexType i = 0; i < m; i++ )
     {
         lama::Scalar s1 = y1.getValue( i );
         lama::Scalar s2 = y2.getValue( i );

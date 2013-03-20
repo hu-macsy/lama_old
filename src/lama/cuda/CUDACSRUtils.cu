@@ -108,7 +108,7 @@ static void offsets2sizes_kernel( IndexType sizes[], const IndexType offsets[], 
 {
     const int i = threadId( gridDim, blockIdx, blockDim, threadIdx );
 
-    if( i < n )
+    if ( i < n )
     {
         sizes[i] = offsets[i + 1] - offsets[i];
     }
@@ -147,7 +147,7 @@ struct identic_functor
     __host__ __device__
     double operator()( thrust::tuple<T,T> x )
     {
-        return thrust::get<0>( x ) == thrust::get<1>( x );
+        return thrust::get < 0 > ( x ) == thrust::get < 1 > ( x );
     }
 };
 
@@ -160,13 +160,13 @@ __global__ void hasDiagonalProperty_kernel(
 {
     int i = blockDim.x * blockIdx.x + threadIdx.x;
 
-    if( i >= numDiagonals )
+    if ( i >= numDiagonals )
     {
         return;
     }
 
     //this is the actual check
-    if( ja[ia[i]] != i )
+    if ( ja[ia[i]] != i )
     {
         *hasProperty = false;
     }
@@ -174,7 +174,7 @@ __global__ void hasDiagonalProperty_kernel(
 
 bool CUDACSRUtils::hasDiagonalProperty( const IndexType numDiagonals, const IndexType csrIA[], const IndexType csrJA[] )
 {
-    if( numDiagonals == 0 )
+    if ( numDiagonals == 0 )
     {
         return false;
     }
@@ -274,14 +274,14 @@ void normal_gemv_kernel(
 {
     const int i = threadId( gridDim, blockIdx, blockDim, threadIdx );
 
-    if( i < n )
+    if ( i < n )
     {
         T summand = beta * y_d[i];
         const int rowStart = csrIA[i];
         const int rowEnd = csrIA[i + 1];
         T value = 0.0;
 
-        for( int jj = rowStart; jj < rowEnd; ++jj )
+        for ( int jj = rowStart; jj < rowEnd; ++jj )
         {
             value += csrValues[jj] * x_d[csrJA[jj]];
         }
@@ -306,14 +306,14 @@ void sparse_gemv_kernel(
 {
     const int ii = threadId( gridDim, blockIdx, blockDim, threadIdx );
 
-    if( ii < n )
+    if ( ii < n )
     {
         IndexType i = rows[ii];
         const int rowStart = csrIA[i];
         const int rowEnd = csrIA[i + 1];
         T value = 0.0;
 
-        for( int jj = rowStart; jj < rowEnd; ++jj )
+        for ( int jj = rowStart; jj < rowEnd; ++jj )
         {
             value += csrValues[jj] * x_d[csrJA[jj]];
         }
@@ -353,7 +353,7 @@ void CUDACSRUtils::normalGEMV(
 
     dim3 dimGrid = makeGrid( numRows, dimBlock.x );
 
-    if( syncToken )
+    if ( syncToken )
     {
         CUDAStreamSyncToken* cudaStreamSyncToken = dynamic_cast<CUDAStreamSyncToken*>( syncToken );
         LAMA_ASSERT_DEBUG( cudaStreamSyncToken, "no cuda stream sync token provided" );
@@ -366,7 +366,7 @@ void CUDACSRUtils::normalGEMV(
     normal_gemv_kernel<ValueType> <<< dimGrid, dimBlock, 0, stream>>>
     ( result, numRows, alpha, csrValues, csrIA, csrJA, x, beta, y );
 
-    if( !syncToken )
+    if ( !syncToken )
     {
         LAMA_CUDA_RT_CALL( cudaStreamSynchronize( stream ), "normalGEMV, stream = " << stream );
         LAMA_LOG_INFO( logger, "normalGEMV<" << typeid(ValueType).name() << "> synchronized" );
@@ -395,7 +395,7 @@ void CUDACSRUtils::sparseGEMV(
 
     cudaStream_t stream = 0;
 
-    if( syncToken )
+    if ( syncToken )
     {
         CUDAStreamSyncToken* cudaStreamSyncToken = dynamic_cast<CUDAStreamSyncToken*>( syncToken );
         LAMA_ASSERT_DEBUG( cudaStreamSyncToken, "no cuda stream sync token provided" );
@@ -411,7 +411,7 @@ void CUDACSRUtils::sparseGEMV(
     sparse_gemv_kernel<ValueType> <<< dimGrid, dimBlock, 0, stream>>>
     ( numNonZeroRows, alpha, csrValues, csrIA, csrJA, x, rowIndexes, result );
 
-    if( !syncToken )
+    if ( !syncToken )
     {
         LAMA_CUDA_RT_CALL( cudaStreamSynchronize( stream ), "sparseGEMV, stream = " << stream );
         LAMA_LOG_INFO( logger, "sparseGEMV<" << typeid(ValueType).name() << "> synchronized" );
@@ -427,7 +427,7 @@ texture<float,1> texCSRJacobiSXref;
 texture<int2,1> texCSRJacobiDXref;
 
 template<typename T,bool useTexture>
-__inline__                          __device__ T fetch_CSRJacobix( const T* const x, const int i )
+__inline__                           __device__ T fetch_CSRJacobix( const T* const x, const int i )
 {
     return x[i];
 }
@@ -460,21 +460,21 @@ void csr_jacobi_kernel(
     const T omega )
 {
     const int i = threadId( gridDim, blockIdx, blockDim, threadIdx );
-    if( i < numRows )
+    if ( i < numRows )
     {
         T temp = rhs[i];
         const int rowStart = csrIA[i];
         const int rowEnd = csrIA[i + 1];
         const T diag = csrValues[rowStart];
-        for( int jj = rowStart + 1; jj < rowEnd; ++jj )
+        for ( int jj = rowStart + 1; jj < rowEnd; ++jj )
         {
             temp -= csrValues[jj] * fetch_CSRJacobix<T,useTexture>( oldSolution, csrJA[jj] );
         }
-        if( omega == 0.5 )
+        if ( omega == 0.5 )
         {
             solution[i] = omega * ( fetch_CSRJacobix<T,useTexture>( oldSolution, i ) + temp / diag );
         }
-        else if( omega == 1.0 )
+        else if ( omega == 1.0 )
         {
             solution[i] = temp / diag;
         }
@@ -486,9 +486,9 @@ void csr_jacobi_kernel(
 }
 
 template<typename T>
-__inline__                          __device__ T getSharedValue( T* shared, const T* const value, const int index )
+__inline__                           __device__ T getSharedValue( T* shared, const T* const value, const int index )
 {
-    if( index / blockDim.x == blockIdx.x )
+    if ( index / blockDim.x == blockIdx.x )
     {
         return shared[index % blockDim.x];
     }
@@ -553,7 +553,7 @@ __global__ void csr_alternate_jacobi_kernel(
 
     SharedMemory<T> smem;
     T* shared = smem.getPointer();
-    if( i < numRows )
+    if ( i < numRows )
     {
         //this is the prefetch
         shared[threadIdx.x] = oldSolution[i];
@@ -563,15 +563,15 @@ __global__ void csr_alternate_jacobi_kernel(
         const int rowStart = csrIA[i];
         const int rowEnd = csrIA[i + 1];
         const T diag = csrValues[rowStart];
-        for( int jj = rowStart + 1; jj < rowEnd; ++jj )
+        for ( int jj = rowStart + 1; jj < rowEnd; ++jj )
         {
             temp -= csrValues[jj] * getSharedValue<T>( shared, oldSolution, csrJA[jj] );
         }
-        if( omega == 0.5 )
+        if ( omega == 0.5 )
         {
             solution[i] = omega * ( getSharedValue<T>( shared, oldSolution, i ) + temp / diag );
         }
-        else if( omega == 1.0 )
+        else if ( omega == 1.0 )
         {
             solution[i] = temp / diag;
         }
@@ -602,7 +602,7 @@ void CUDACSRUtils::jacobi(
 
     cudaStream_t stream = 0;
 
-    if( syncToken )
+    if ( syncToken )
     {
         CUDAStreamSyncToken* cudaStreamSyncToken = dynamic_cast<CUDAStreamSyncToken*>( syncToken );
         LAMA_ASSERT_DEBUG( cudaStreamSyncToken, "no cuda stream sync token provided" );
@@ -615,7 +615,7 @@ void CUDACSRUtils::jacobi(
 
     const bool useTexture = false; // lama_getUseTex_cuda();
 
-    if( useTexture )
+    if ( useTexture )
     {
         LAMA_CUDA_RT_CALL( cudaBindTexture( NULL, texCSRJacobiSXref, oldSolution), "LAMA_STATUS_CUDA_BINDTEX_FAILED" );
         LAMA_CUDA_RT_CALL( cudaFuncSetCacheConfig( csr_jacobi_kernel<ValueType, true>, cudaFuncCachePreferL1 ),
@@ -627,7 +627,7 @@ void CUDACSRUtils::jacobi(
                            "LAMA_STATUS_CUDA_FUNCSETCACHECONFIG_FAILED" );
     }
 
-    if( useTexture )
+    if ( useTexture )
     {
         csr_jacobi_kernel <ValueType, true> <<<dimGrid, dimBlock, 0, stream>>>( csrIA, csrJA, csrValues, numRows,
                 rhs, solution, oldSolution, omega );
@@ -648,12 +648,12 @@ void CUDACSRUtils::jacobi(
          */
     }
 
-    if( useTexture )
+    if ( useTexture )
     {
         LAMA_CUDA_RT_CALL( cudaUnbindTexture( texCSRJacobiSXref ), "LAMA_STATUS_CUDA_UNBINDTEX_FAILED" );
     }
 
-    if( !syncToken )
+    if ( !syncToken )
     {
         cudaStreamSynchronize( stream );
     }
@@ -679,11 +679,11 @@ void csr_jacobiHalo_kernel(
 {
     const IndexType ii = threadId( gridDim, blockIdx, blockDim, threadIdx );
 
-    if( ii < numNonEmptyRows )
+    if ( ii < numNonEmptyRows )
     {
         IndexType i = ii; // default: rowIndexes is identity
 
-        if( rowIndexes )
+        if ( rowIndexes )
         {
             i = rowIndexes[ii];
         }
@@ -693,7 +693,7 @@ void csr_jacobiHalo_kernel(
         const IndexType rowStart = haloIA[i];
         const IndexType rowEnd = haloIA[i + 1];
 
-        for( IndexType jj = rowStart; jj < rowEnd; ++jj )
+        for ( IndexType jj = rowStart; jj < rowEnd; ++jj )
         {
             temp += haloValues[jj] * fetch_CSRJacobix<ValueType,useTexture>( oldSolution, haloJA[jj] );
         }
@@ -728,14 +728,14 @@ void CUDACSRUtils::jacobiHalo(
 
     const bool useTexture = false; // lama_getUseTex_cuda();
 
-    if( useTexture )
+    if ( useTexture )
     {
 
-        if( sizeof(ValueType) == sizeof(double) )
+        if ( sizeof(ValueType) == sizeof(double) )
         {
             LAMA_CUDA_RT_CALL( cudaBindTexture( NULL, texCSRJacobiDXref, oldSolution), "LAMA_STATUS_CUDA_BINDTEX_FAILED" );
         }
-        else if( sizeof(ValueType) == sizeof(float) )
+        else if ( sizeof(ValueType) == sizeof(float) )
         {
             LAMA_CUDA_RT_CALL( cudaBindTexture( NULL, texCSRJacobiSXref, oldSolution), "LAMA_STATUS_CUDA_BINDTEX_FAILED" );
         }
@@ -750,7 +750,7 @@ void CUDACSRUtils::jacobiHalo(
 
     }
 
-    if( useTexture )
+    if ( useTexture )
     {
         csr_jacobiHalo_kernel <ValueType, true> <<<dimGrid, dimBlock>>>( solution, localIA, localValues, haloIA,
                 haloJA, haloValues, haloRowIndexes,
@@ -766,13 +766,13 @@ void CUDACSRUtils::jacobiHalo(
     LAMA_CUDA_RT_CALL( cudaGetLastError(), "LAMA_STATUS_CSRJACOBIHALO_CUDAKERNEL_FAILED" );
     LAMA_CUDA_RT_CALL( cudaStreamSynchronize(0), "LAMA_STATUS_CSRJACOBIHALO_CUDAKERNEL_FAILED" );
 
-    if( useTexture )
+    if ( useTexture )
     {
-        if( sizeof(ValueType) == sizeof(double) )
+        if ( sizeof(ValueType) == sizeof(double) )
         {
             LAMA_CUDA_RT_CALL( cudaUnbindTexture(texCSRJacobiDXref), "LAMA_STATUS_CUDA_UNBINDTEX_FAILED" );
         }
-        else if( sizeof(ValueType) == sizeof(float) )
+        else if ( sizeof(ValueType) == sizeof(float) )
         {
             LAMA_CUDA_RT_CALL( cudaUnbindTexture(texCSRJacobiDXref), "LAMA_STATUS_CUDA_UNBINDTEX_FAILED" );
         }
@@ -824,11 +824,11 @@ __global__ void matrixAddSizesKernel(
     IndexType numWarpsGlobal = ( blockDim.x * gridDim.x ) / warpSize;
     IndexType rowIt = globalWarpId;
 
-    for( ; __any( rowIt < numRows ); rowIt += numWarpsGlobal )
+    for ( ; __any( rowIt < numRows ); rowIt += numWarpsGlobal )
     {
-        if( rowIt < numRows )
+        if ( rowIt < numRows )
         {
-            if( diagonalProperty && rowIt >= numColumns )
+            if ( diagonalProperty && rowIt >= numColumns )
             {
                 diagonalProperty = false;
             }
@@ -839,34 +839,34 @@ __global__ void matrixAddSizesKernel(
             IndexType bColIt = bIa[rowIt] + laneId;
             IndexType bColEnd = bIa[rowIt + 1];
 
-            if( laneId == 0 )
+            if ( laneId == 0 )
             {
                 cIa[rowIt] = bColEnd - bColIt;
             }
 
-            for( IndexType aColItOffset = 0; __any( aColIt < aColEnd ); aColIt += warpSize, aColItOffset += warpSize )
+            for ( IndexType aColItOffset = 0; __any( aColIt < aColEnd ); aColIt += warpSize, aColItOffset += warpSize )
             {
                 IndexType colA = aColIt < aColEnd ? aJa[aColIt] : -1;
                 IndexType end = getNumActiveThreads( aColIt, aColEnd, aIa, rowIt, aColItOffset );
 
-                for( IndexType k = 0; k < end && k < warpSize; k++ )
+                for ( IndexType k = 0; k < end && k < warpSize; k++ )
                 {
-                    if( laneId == k )
+                    if ( laneId == k )
                     {
                         sColA[localWarpId] = colA;
                     }
 
                     sFound[localWarpId] = false;
-                    for( IndexType bColItOffset = 0; !sFound[localWarpId] && __any( ( bColIt + bColItOffset ) < bColEnd );
+                    for ( IndexType bColItOffset = 0; !sFound[localWarpId] && __any( ( bColIt + bColItOffset ) < bColEnd );
                             bColItOffset += warpSize )
                     {
                         IndexType colB = ( bColIt + bColItOffset ) < bColEnd ? bJa[bColIt + bColItOffset] : -1;
-                        if( sColA[localWarpId] == colB )
+                        if ( sColA[localWarpId] == colB )
                         {
                             sFound[localWarpId] = true;
                         }
                     }
-                    if( laneId == 0 && !sFound[localWarpId] )
+                    if ( laneId == 0 && !sFound[localWarpId] )
                     {
                         cIa[rowIt]++;
                     }
@@ -969,11 +969,11 @@ void matrixMultiplySizesKernel(
 
     IndexType* hashTableIndexes = ( (IndexType*) hashTables );
 
-    for( ; __any( aRowIt < numRows ); aRowIt += numWarpsGlobal )
+    for ( ; __any( aRowIt < numRows ); aRowIt += numWarpsGlobal )
     {
-        if( aRowIt < numRows )
+        if ( aRowIt < numRows )
         {
-            if( diagonalProperty && aRowIt >= numColumns )
+            if ( diagonalProperty && aRowIt >= numColumns )
             {
                 diagonalProperty = false;
             }
@@ -985,30 +985,30 @@ void matrixMultiplySizesKernel(
 
 // STEP 1: Set Initial data in hash tables
 // TODO: recheck loop condition
-            for( IndexType i = 0; i < SIZE_LOCAL_HASHTABLE; i += warpSize )
+            for ( IndexType i = 0; i < SIZE_LOCAL_HASHTABLE; i += warpSize )
             {
-                if( i + laneId < SIZE_LOCAL_HASHTABLE )
+                if ( i + laneId < SIZE_LOCAL_HASHTABLE )
                 {
                     sHashTableJa[i + laneId] = -1;
                 }
             }
 
 // Set first index of hashtable to row (diagonal property)
-            if( laneId == 0 && diagonalProperty )
+            if ( laneId == 0 && diagonalProperty )
             {
                 sHashTableJa[0] = aRowIt;
                 cIA[aRowIt]++;
             }
 
-            for( IndexType offset = 0; __any( aColIt < aColEnd ); aColIt += warpSize, offset += warpSize )
+            for ( IndexType offset = 0; __any( aColIt < aColEnd ); aColIt += warpSize, offset += warpSize )
             {
                 IndexType colA = aColIt < aColEnd ? aJA[aColIt] : -1;
 
                 IndexType end = getNumActiveThreads( aColIt, aColEnd, aIA, aRowIt, offset );
 
-                for( IndexType k = 0; k < end && k < warpSize; k++ )
+                for ( IndexType k = 0; k < end && k < warpSize; k++ )
                 {
-                    if( laneId == k )
+                    if ( laneId == k )
                     {
                         sColA[localWarpId] = colA;
                     }
@@ -1016,21 +1016,21 @@ void matrixMultiplySizesKernel(
                     IndexType bColIt = bIA[sColA[localWarpId]] + laneId;
                     IndexType bColEnd = bIA[sColA[localWarpId] + 1];
 
-                    for( ; __any( bColIt < bColEnd ); bColIt += warpSize )
+                    for ( ; __any( bColIt < bColEnd ); bColIt += warpSize )
                     {
                         colB = bColIt < bColEnd ? bJA[bColIt] : -1;
 
-                        if( colB != -1 && ( !diagonalProperty || colB != aRowIt ) )
+                        if ( colB != -1 && ( !diagonalProperty || colB != aRowIt ) )
                         {
                             bool inserted = false;
                             unsigned int fx = HASH_A * colB;
                             unsigned int gx = ( fx + HASH_B ) % HASH_P;
 
-                            for( IndexType i = 0; i < MAX_HASH_TRIES; i++ )
+                            for ( IndexType i = 0; i < MAX_HASH_TRIES; i++ )
                             {
                                 //TODO: diagonal property
                                 IndexType hash;
-                                if( diagonalProperty )
+                                if ( diagonalProperty )
                                 {
                                     hash = ( ( gx + HASH_C0 * i + HASH_C1 * (IndexType) i * i ) % ( SIZE_LOCAL_HASHTABLE - 1 ) ) + 1;
                                 }
@@ -1041,25 +1041,25 @@ void matrixMultiplySizesKernel(
 
                                 IndexType val = atomicCAS( &sHashTableJa[hash], -1, colB );
 
-                                if( val == -1 )
+                                if ( val == -1 )
                                 {
                                     atomicAdd( &cIA[aRowIt], 1 );
                                     inserted = true;
                                     break;
                                 }
-                                if( val == colB )
+                                if ( val == colB )
                                 {
                                     inserted = true;
                                     break;
                                 }
                             }
 
-                            if( !inserted )
+                            if ( !inserted )
                             {
-                                for( IndexType i = 0; i < MAX_HASH_TRIES; i++ )
+                                for ( IndexType i = 0; i < MAX_HASH_TRIES; i++ )
                                 {
                                     IndexType hash;
-                                    if( diagonalProperty )
+                                    if ( diagonalProperty )
                                     {
                                         hash = ( ( gx + HASH_C0 * i + HASH_C1 * (IndexType) i * i ) % ( numElementsHashTable - 1 ) )
                                                + 1;
@@ -1070,21 +1070,21 @@ void matrixMultiplySizesKernel(
                                     }
                                     IndexType val = atomicCAS( &hashTableIndexes[hashTableOffset + hash], -1, colB );
 
-                                    if( val == -1 )
+                                    if ( val == -1 )
                                     {
                                         inserted = true;
                                         atomicAdd( &cIA[aRowIt], 1 );
                                         sGlobalHashTableAccessed[localWarpId] = true;
                                         break;
                                     }
-                                    if( val == colB )
+                                    if ( val == colB )
                                     {
                                         inserted = true;
                                         break;
                                     }
                                 }
                             }
-                            if( !inserted )
+                            if ( !inserted )
                             {
                                 // Wert konnte nicht in hashtable eingefügt werden
                                 *hashError = true;
@@ -1095,11 +1095,11 @@ void matrixMultiplySizesKernel(
             }
 
 // if global hashTable was used, clean it!
-            if( sGlobalHashTableAccessed[localWarpId] )
+            if ( sGlobalHashTableAccessed[localWarpId] )
             {
-                for( IndexType i = 0; i < numElementsHashTable; i += warpSize )
+                for ( IndexType i = 0; i < numElementsHashTable; i += warpSize )
                 {
-                    if( i + laneId < numElementsHashTable )
+                    if ( i + laneId < numElementsHashTable )
                     {
                         hashTableIndexes[hashTableOffset + i + laneId] = -1;
                     }
@@ -1157,11 +1157,11 @@ IndexType CUDACSRUtils::matrixMultiplySizes(
     IndexType iterations = 90;
     IndexType rows = std::ceil( std::ceil( numRows / (double) rowsPerLaunch ) / iterations );
 
-    for( IndexType i = 0; i < iterations; i++ )
+    for ( IndexType i = 0; i < iterations; i++ )
     {
         IndexType startRow = rows * i * rowsPerLaunch;
         IndexType endRow = std::min( rows * ( i + 1 ) * rowsPerLaunch, numRows );
-        if( startRow >= numRows )
+        if ( startRow >= numRows )
         {
             break;
         }
@@ -1179,7 +1179,7 @@ IndexType CUDACSRUtils::matrixMultiplySizes(
 
         cudaMemcpy( &hashErrorHost, hashError, sizeof(bool), cudaMemcpyDeviceToHost );
 
-        if( hashErrorHost )
+        if ( hashErrorHost )
         {
 // repeat iteration:
             i--;
@@ -1193,7 +1193,7 @@ IndexType CUDACSRUtils::matrixMultiplySizes(
             hashTable = (IndexType*) loc->allocate( NUM_BLOCKS * hashTableSize * sizeof(IndexType) );
 
 // Reset new hashTable
-            thrust::device_ptr<IndexType> hashTablesPtr( hashTable );
+            thrust::device_ptr < IndexType > hashTablesPtr( hashTable );
             thrust::fill( hashTablesPtr, hashTablesPtr + NUM_BLOCKS * hashTableSize, -1 );
 
 // We need to clean up cIA again (for the crashed rows!)
@@ -1262,11 +1262,11 @@ void matrixAddKernel(
     IndexType numWarpsGlobal = ( blockDim.x * gridDim.x ) / warpSize;
     IndexType rowIt = globalWarpId;
 
-    for( ; __any( rowIt < numRows ); rowIt += numWarpsGlobal )
+    for ( ; __any( rowIt < numRows ); rowIt += numWarpsGlobal )
     {
-        if( rowIt < numRows )
+        if ( rowIt < numRows )
         {
-            if( diagonalProperty && rowIt >= numColumns )
+            if ( diagonalProperty && rowIt >= numColumns )
             {
                 diagonalProperty = false;
             }
@@ -1280,11 +1280,11 @@ void matrixAddKernel(
             IndexType cColIt = cIA[rowIt] + laneId;
 
 // Copy values of b to C
-            for( IndexType bColOffset = 0; __any( ( bColIt + bColOffset ) < bColEnd ); bColOffset += warpSize )
+            for ( IndexType bColOffset = 0; __any( ( bColIt + bColOffset ) < bColEnd ); bColOffset += warpSize )
             {
                 IndexType colB = ( bColIt + bColOffset ) < bColEnd ? bJA[bColIt + bColOffset] : -1;
                 ValueType valB = ( bColIt + bColOffset ) < bColEnd ? bValues[bColIt + bColOffset] : 0.0;
-                if( colB != -1 )
+                if ( colB != -1 )
                 {
                     cJA[cColIt + bColOffset] = colB;
                     cValues[cColIt + bColOffset] = valB * beta;
@@ -1295,33 +1295,33 @@ void matrixAddKernel(
             IndexType cColOffset = bIA[rowIt + 1] - bIA[rowIt];
 
 // Add values of a to c
-            for( IndexType aColItOffset = 0; __any( aColIt < aColEnd ); aColIt += warpSize, aColItOffset += warpSize )
+            for ( IndexType aColItOffset = 0; __any( aColIt < aColEnd ); aColIt += warpSize, aColItOffset += warpSize )
             {
                 IndexType colA = aColIt < aColEnd ? aJA[aColIt] : -1;
                 ValueType valA = aColIt < aColEnd ? aValues[aColIt] : 0.0;
                 IndexType end = getNumActiveThreads( aColIt, aColEnd, aIA, rowIt, aColItOffset );
 
-                for( IndexType k = 0; k < end && k < warpSize; k++ )
+                for ( IndexType k = 0; k < end && k < warpSize; k++ )
                 {
-                    if( laneId == k )
+                    if ( laneId == k )
                     {
                         sColA[localWarpId] = colA;
                         sValA[localWarpId] = valA;
                         sFoundJa[localWarpId] = -1;
                     }
 
-                    for( IndexType bColItOffset = 0; ( sFoundJa[localWarpId] == -1 ) && __any( ( bColIt + bColItOffset ) < bColEnd );
+                    for ( IndexType bColItOffset = 0; ( sFoundJa[localWarpId] == -1 ) && __any( ( bColIt + bColItOffset ) < bColEnd );
                             bColItOffset += warpSize )
                     {
                         IndexType colB = ( bColIt + bColItOffset ) < bColEnd ? bJA[bColIt + bColItOffset] : -1;
-                        if( sColA[localWarpId] == colB )
+                        if ( sColA[localWarpId] == colB )
                         {
                             sFoundJa[localWarpId] = laneId + bColItOffset;
                         }
                     }
-                    if( laneId == 0 )
+                    if ( laneId == 0 )
                     {
-                        if( sFoundJa[localWarpId] == -1 )
+                        if ( sFoundJa[localWarpId] == -1 )
                         {
                             // Element is new element, add new element
                             cJA[cColIt + cColOffset] = colA;
@@ -1428,12 +1428,12 @@ void matrixMultiplyKernel(
     ValueType* hashTableValues = (ValueType*) &hashTableIndexes[numWarpsGlobal * numElementsHashTable];
 
 // Loop over all rows
-    for( ; __any( aRowIt < numRows ); aRowIt += numWarpsGlobal )
+    for ( ; __any( aRowIt < numRows ); aRowIt += numWarpsGlobal )
     {
 // Check if this warp is in valid row
-        if( aRowIt < numRows )
+        if ( aRowIt < numRows )
         {
-            if( diagonalProperty && aRowIt >= numColumns )
+            if ( diagonalProperty && aRowIt >= numColumns )
             {
                 diagonalProperty = false;
             }
@@ -1445,9 +1445,9 @@ void matrixMultiplyKernel(
 
 // STEP 1: Set Initial data in hash tables
 // TODO: recheck loop condition
-            for( IndexType i = 0; i < SIZE_LOCAL_HASHTABLE; i += warpSize )
+            for ( IndexType i = 0; i < SIZE_LOCAL_HASHTABLE; i += warpSize )
             {
-                if( i + laneId < SIZE_LOCAL_HASHTABLE )
+                if ( i + laneId < SIZE_LOCAL_HASHTABLE )
                 {
                     sHashTableJa[i + laneId] = -1;
                 }
@@ -1456,22 +1456,22 @@ void matrixMultiplyKernel(
 // STEP 2: Calculate A x B in hash tables
 
 // Set first index of hashtable to row (diagonal property)
-            if( diagonalProperty && laneId == 0 )
+            if ( diagonalProperty && laneId == 0 )
             {
                 sHashTableJa[0] = aRowIt;
                 sHashTableValues[0] = 0.0;
             }
 
-            for( IndexType offset = 0; __any( aColIt < aColEnd ); aColIt += warpSize, offset += warpSize )
+            for ( IndexType offset = 0; __any( aColIt < aColEnd ); aColIt += warpSize, offset += warpSize )
             {
                 IndexType colA = aColIt < aColEnd ? aJA[aColIt] : -1;
                 ValueType valA = aColIt < aColEnd ? aValues[aColIt] : 0.0;
 
                 IndexType end = getNumActiveThreads( aColIt, aColEnd, aIA, aRowIt, offset );
 
-                for( IndexType k = 0; k < end && k < warpSize; k++ )
+                for ( IndexType k = 0; k < end && k < warpSize; k++ )
                 {
-                    if( laneId == k )
+                    if ( laneId == k )
                     {
                         sColA[localWarpId] = colA;
                         sValA[localWarpId] = valA;
@@ -1480,15 +1480,15 @@ void matrixMultiplyKernel(
                     IndexType bColIt = bIA[sColA[localWarpId]] + laneId;
                     IndexType bColEnd = bIA[sColA[localWarpId] + 1];
 
-                    for( ; __any( bColIt < bColEnd ); bColIt += warpSize )
+                    for ( ; __any( bColIt < bColEnd ); bColIt += warpSize )
                     {
                         IndexType colB = bColIt < bColEnd ? bJA[bColIt] : -1;
                         ValueType valB = bColIt < bColEnd ? bValues[bColIt] : 0.0;
 
-                        if( colB != -1 )
+                        if ( colB != -1 )
                         {
                             // extra check for diagonal property
-                            if( diagonalProperty && colB == aRowIt )
+                            if ( diagonalProperty && colB == aRowIt )
                             {
                                 sHashTableValues[0] += valB * sValA[localWarpId];
                             }
@@ -1499,11 +1499,11 @@ void matrixMultiplyKernel(
                                 unsigned int gx = ( fx + HASH_B ) % HASH_P;
 
                                 // Hashing in shared memory
-                                for( IndexType i = 0; i < MAX_HASH_TRIES; i++ )
+                                for ( IndexType i = 0; i < MAX_HASH_TRIES; i++ )
                                 {
                                     //TODO: diagonal property
                                     IndexType hash;
-                                    if( diagonalProperty )
+                                    if ( diagonalProperty )
                                     {
                                         hash = ( ( gx + HASH_C0 * i + HASH_C1 * (IndexType) i * i ) % ( SIZE_LOCAL_HASHTABLE - 1 ) )
                                                + 1;
@@ -1515,14 +1515,14 @@ void matrixMultiplyKernel(
 
                                     IndexType val = atomicCAS( &sHashTableJa[hash], -1, colB );
 
-                                    if( val == -1 )
+                                    if ( val == -1 )
                                     {
 //                                        atomicAdd(&operations, 1);
                                         sHashTableValues[hash] = valB * sValA[localWarpId];
                                         inserted = true;
                                         break;
                                     }
-                                    if( val == colB )
+                                    if ( val == colB )
                                     {
 //                                        atomicAdd(&operations, 2);
                                         sHashTableValues[hash] += valB * sValA[localWarpId];
@@ -1532,13 +1532,13 @@ void matrixMultiplyKernel(
                                 }
 
                                 // Hashing in global memory
-                                if( !inserted )
+                                if ( !inserted )
                                 {
-                                    for( IndexType i = 0; i < MAX_HASH_TRIES; i++ )
+                                    for ( IndexType i = 0; i < MAX_HASH_TRIES; i++ )
                                     {
                                         //TODO: diagonal property
                                         IndexType hash;
-                                        if( diagonalProperty )
+                                        if ( diagonalProperty )
                                         {
                                             hash = ( ( gx + HASH_C0 * i + HASH_C1 * (IndexType) i * i ) % ( numElementsHashTable - 1 ) )
                                                    + 1;
@@ -1550,7 +1550,7 @@ void matrixMultiplyKernel(
 
                                         IndexType val = atomicCAS( &hashTableIndexes[hashTableOffset + hash], -1, colB );
 
-                                        if( val == -1 )
+                                        if ( val == -1 )
                                         {
                                             //                                        atomicAdd(&operations, 1);
                                             hashTableValues[hashTableOffset + hash] = valB * sValA[localWarpId];
@@ -1558,7 +1558,7 @@ void matrixMultiplyKernel(
                                             sGlobalHashTableAccessed[localWarpId] = true;
                                             break;
                                         }
-                                        if( val == colB )
+                                        if ( val == colB )
                                         {
                                             //                                        atomicAdd(&operations, 2);
                                             hashTableValues[hashTableOffset + hash] += valB * sValA[localWarpId];
@@ -1568,7 +1568,7 @@ void matrixMultiplyKernel(
                                     }
                                 }
 
-                                if( !inserted )
+                                if ( !inserted )
                                 {
                                     // Wert konnte nicht in hashtable eingefügt werden
                                     *hashError = true;
@@ -1584,9 +1584,9 @@ void matrixMultiplyKernel(
 
             sColA[localWarpId] = 0;
             IndexType rowOffset = cIA[aRowIt];
-            for( IndexType offset = 0; offset < SIZE_LOCAL_HASHTABLE; offset += warpSize )
+            for ( IndexType offset = 0; offset < SIZE_LOCAL_HASHTABLE; offset += warpSize )
             {
-                if( offset + laneId < SIZE_LOCAL_HASHTABLE )
+                if ( offset + laneId < SIZE_LOCAL_HASHTABLE )
                 {
                     IndexType hashCol = sHashTableJa[offset + laneId];
                     ValueType hashVal = sHashTableValues[offset + laneId];
@@ -1595,12 +1595,12 @@ void matrixMultiplyKernel(
                     // TODO: be carefull here, ballot is warpsize Bit's long!
                     IndexType ballot = __ballot ( hashCol != -1 );
 #else
-                    if( laneId == 0 )
+                    if ( laneId == 0 )
                     {
                         sBallot[localWarpId] = 0;
                     }
 
-                    if( hashCol != -1 )
+                    if ( hashCol != -1 )
                     {
                         atomicOr( (int*) &sBallot[localWarpId], (int) ( 1 << laneId ) );
                     }
@@ -1609,14 +1609,14 @@ void matrixMultiplyKernel(
 
                     IndexType localOffset = __popc( ballot << ( warpSize - laneId ) );
 
-                    if( hashCol != -1 )
+                    if ( hashCol != -1 )
                     {
 
                         cJA[rowOffset + sColA[localWarpId] + localOffset] = hashCol;
                         cValues[rowOffset + sColA[localWarpId] + localOffset] = hashVal * alpha;
                     }
 
-                    if( laneId == 0 )
+                    if ( laneId == 0 )
                     {
                         sColA[localWarpId] += __popc( ballot );
                     }
@@ -1624,11 +1624,11 @@ void matrixMultiplyKernel(
             }
 
 // copy global memory
-            if( sGlobalHashTableAccessed[localWarpId] )
+            if ( sGlobalHashTableAccessed[localWarpId] )
             {
-                for( IndexType offset = 0; offset < numElementsHashTable; offset += warpSize )
+                for ( IndexType offset = 0; offset < numElementsHashTable; offset += warpSize )
                 {
-                    if( offset + laneId < numElementsHashTable )
+                    if ( offset + laneId < numElementsHashTable )
                     {
                         IndexType hashCol = hashTableIndexes[hashTableOffset + offset + laneId];
                         ValueType hashVal = hashTableValues[hashTableOffset + offset + laneId];
@@ -1640,12 +1640,12 @@ void matrixMultiplyKernel(
                         // TODO: be carefull here, ballot is warpsize Bit's long!
                         IndexType ballot = __ballot ( hashCol != -1 );
 #else
-                        if( laneId == 0 )
+                        if ( laneId == 0 )
                         {
                             sBallot[localWarpId] = 0;
                         }
 
-                        if( hashCol != -1 )
+                        if ( hashCol != -1 )
                         {
                             atomicOr( (int*) &sBallot[localWarpId], (int) ( 1 << laneId ) );
                         }
@@ -1654,14 +1654,14 @@ void matrixMultiplyKernel(
 
                         IndexType localOffset = __popc( ballot << ( warpSize - laneId ) );
 
-                        if( hashCol != -1 )
+                        if ( hashCol != -1 )
                         {
 
                             cJA[rowOffset + sColA[localWarpId] + localOffset] = hashCol;
                             cValues[rowOffset + sColA[localWarpId] + localOffset] = hashVal * alpha;
                         }
 
-                        if( laneId == 0 )
+                        if ( laneId == 0 )
                         {
                             sColA[localWarpId] += __popc( ballot );
                         }
@@ -1728,11 +1728,11 @@ void CUDACSRUtils::matrixMultiply(
     IndexType rowsPerLaunch = NUM_BLOCKS;
     IndexType iterations = 90;
     IndexType rows = std::ceil( std::ceil( numRows / (double) rowsPerLaunch ) / iterations );
-    for( IndexType i = 0; i < iterations; i++ )
+    for ( IndexType i = 0; i < iterations; i++ )
     {
         IndexType startRow = rows * i * rowsPerLaunch;
         IndexType endRow = std::min( rows * ( i + 1 ) * rowsPerLaunch, numRows );
-        if( startRow >= numRows )
+        if ( startRow >= numRows )
         {
             break;
         }
@@ -1747,7 +1747,7 @@ void CUDACSRUtils::matrixMultiply(
         cudaStreamSynchronize( 0 );
         cudaMemcpy( &hashErrorHost, hashError, sizeof(bool), cudaMemcpyDeviceToHost );
 
-        if( hashErrorHost )
+        if ( hashErrorHost )
         {
 // repeat iteration:
             i--;
@@ -1762,7 +1762,7 @@ void CUDACSRUtils::matrixMultiply(
                             NUM_BLOCKS * hashTableSize * sizeof(IndexType) + NUM_BLOCKS * hashTableSize * sizeof(ValueType) );
 
 // Reset new hashTable
-            thrust::device_ptr<IndexType> hashTablesPtr( hashTable );
+            thrust::device_ptr < IndexType > hashTablesPtr( hashTable );
             thrust::fill( hashTablesPtr, hashTablesPtr + NUM_BLOCKS * hashTableSize, -1 );
         }
     }

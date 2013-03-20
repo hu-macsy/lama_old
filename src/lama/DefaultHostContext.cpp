@@ -62,12 +62,12 @@ DefaultHostContext::DefaultHostContext()
 
 DefaultHostContext::~DefaultHostContext()
 {
-    if( mNumberOfAllocates > 0 )
+    if ( mNumberOfAllocates > 0 )
     {
         LAMA_LOG_ERROR( logger, *this << ": " << mNumberOfAllocates << " allocate without free" );
     }
 
-    if( mNumberOfAllocatedBytes != 0 )
+    if ( mNumberOfAllocatedBytes != 0 )
     {
         LAMA_LOG_ERROR( logger,
                         *this << ": number of allocated bytes = " << mNumberOfAllocatedBytes << ", mismatch of free/allocate sizes" );
@@ -88,7 +88,7 @@ void* DefaultHostContext::allocate( const size_t size ) const
 
     void* pointer = malloc( size );
 
-    if( pointer == NULL )
+    if ( pointer == NULL )
     {
         LAMA_THROWEXCEPTION( "malloc failed for size = " << size );
     }

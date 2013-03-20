@@ -50,7 +50,7 @@ LAMAInterfaceRegistry::LAMAInterfaceRegistry()
 
 LAMAInterfaceRegistry::~LAMAInterfaceRegistry()
 {
-    while( !mInterfaceMap.empty() )
+    while ( !mInterfaceMap.empty() )
     {
         InterfaceMapType::iterator begin = mInterfaceMap.begin();
         LAMAInterface* ptr = begin->second;
@@ -68,7 +68,7 @@ const LAMAInterface* LAMAInterfaceRegistry::getInterface( const ContextType loca
 {
     InterfaceMapType::const_iterator loc = mInterfaceMap.find( location );
 
-    if( loc == mInterfaceMap.end() )
+    if ( loc == mInterfaceMap.end() )
     {
         LAMA_THROWEXCEPTION( "No interface on location " << location << " available." );
     }
@@ -82,7 +82,7 @@ bool LAMAInterfaceRegistry::hasInterface( const ContextType location ) const
 
     InterfaceMapType::const_iterator loc = mInterfaceMap.find( location );
 
-    if( loc != mInterfaceMap.end() )
+    if ( loc != mInterfaceMap.end() )
     {
         hasInterface = true;
     }
@@ -93,7 +93,7 @@ bool LAMAInterfaceRegistry::hasInterface( const ContextType location ) const
 LAMAInterfaceRegistry& LAMAInterfaceRegistry::getRegistry()
 {
     static CGuard g;
-    if( instance == 0 )
+    if ( instance == 0 )
     {
         instance = new LAMAInterfaceRegistry();
     }
@@ -106,7 +106,7 @@ LAMAInterfaceRegistry::CGuard::CGuard()
 
 LAMAInterfaceRegistry::CGuard::~CGuard()
 {
-    if( LAMAInterfaceRegistry::instance != 0 )
+    if ( LAMAInterfaceRegistry::instance != 0 )
     {
         delete LAMAInterfaceRegistry::instance;
         LAMAInterfaceRegistry::instance = 0;

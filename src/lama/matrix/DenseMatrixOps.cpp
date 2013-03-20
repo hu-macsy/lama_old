@@ -84,7 +84,7 @@ void DenseMatrixOps::invertCyclic( DenseMatrix<T>& matrix )
 
     const LAMAInterface& lamaInterface = context->getInterface();
 
-    if( !lamaInterface.getSCALAPACKInterface<T>().inverse )
+    if ( !lamaInterface.getSCALAPACKInterface<T>().inverse )
     {
         LAMA_THROWEXCEPTION( "No SCALAPACK routines available" );
     }
@@ -117,7 +117,7 @@ void DenseMatrixOps::invert( DenseMatrix<T>& matrix )
 {
     LAMA_REGION( "DenseMatrixOps::invert" );
 
-    if( matrix.getDistribution().getNumPartitions() == 1 && matrix.getColDistribution().getNumPartitions() == 1 )
+    if ( matrix.getDistribution().getNumPartitions() == 1 && matrix.getColDistribution().getNumPartitions() == 1 )
     {
         LAMA_LOG_INFO( logger, "invert called for replicated matrices" );
         invertReplicated( matrix );
@@ -127,7 +127,7 @@ void DenseMatrixOps::invert( DenseMatrix<T>& matrix )
         LAMA_LOG_INFO( logger, "invert called for distributed matrices" );
         const CyclicDistribution* cyclicDist =
             dynamic_cast<const CyclicDistribution*>( matrix.getDistributionPtr().get() );
-        if( cyclicDist && matrix.getColDistribution().getNumPartitions() == 1 )
+        if ( cyclicDist && matrix.getColDistribution().getNumPartitions() == 1 )
         {
             LAMA_LOG_INFO( logger, "matrix already with cyclic distribution" );
             invertCyclic( matrix );

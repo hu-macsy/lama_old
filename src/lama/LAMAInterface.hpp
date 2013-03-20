@@ -1636,14 +1636,14 @@ struct UtilsInterface
 
         typedef ValueType (*absMaxDiffVal)( const ValueType array1[], const ValueType array2[], const IndexType n );
 
-        /** Predicate that tests whether a sequene is sorted. 
+        /** Predicate that tests whether a sequene is sorted.
          *
          *  @param[in] array values to be checked
          *  @param[in] n number of values to check
          *  @param[in] ascending if true check for ascending order, otherwise for descending
          */
 
-        typedef bool ( *isSorted) ( const ValueType array[], const IndexType n, bool ascending );
+        typedef bool (*isSorted)( const ValueType array[], const IndexType n, bool ascending );
     };
 
     template<typename ValueType>

@@ -76,12 +76,12 @@ bool ResidualStagnation::isSatisfied( const IterativeSolver& solver )
 
     mNextEntry = ( mNextEntry + 1 ) % mLookback;
 
-    if( mNextEntry == 0 )
+    if ( mNextEntry == 0 )
     {
         mEntriesReady = true;
     }
 
-    if( mEntriesReady )
+    if ( mEntriesReady )
     {
         Scalar min = *std::min_element( mLastResidualNorms.begin(), mLastResidualNorms.end() );
         Scalar max = *std::max_element( mLastResidualNorms.begin(), mLastResidualNorms.end() );

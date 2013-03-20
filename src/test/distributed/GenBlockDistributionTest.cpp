@@ -59,13 +59,13 @@ struct GenBlockDistributionTestConfig
         rank = comm->getRank();
         globalSize = size * ( size + 1 );
 
-        for( PartitionId p = 0; p < size; ++p )
+        for ( PartitionId p = 0; p < size; ++p )
         {
             IndexType localSize = 2 * ( p + 1 );
 
             localSizes.push_back( localSize );
 
-            for( IndexType i = 0; i < localSize; i++ )
+            for ( IndexType i = 0; i < localSize; i++ )
             {
                 theOwners.push_back( p );
             }
@@ -101,7 +101,7 @@ BOOST_AUTO_TEST_CASE( commonTestCases )
 {
     DistributionTest disttest( dist );
 
-    if( base_test_case )
+    if ( base_test_case )
     {
         LAMA_LOG_INFO( logger, "Run test method " << testcase << " in GenBlockDistributionTest." );
         DISTRIBUTION_COMMONTESTCASES( disttest );
@@ -118,7 +118,7 @@ BOOST_AUTO_TEST_CASE( genBlockComputeOwnersTest )
 {
     std::vector<IndexType> indexes;
 
-    for( IndexType i = 0; i < globalSize; i++ )
+    for ( IndexType i = 0; i < globalSize; i++ )
     {
         indexes.push_back( i );
     }
@@ -131,7 +131,7 @@ BOOST_AUTO_TEST_CASE( genBlockComputeOwnersTest )
 
     // now check for correct owners
 
-    for( IndexType i = 0; i < globalSize; i++ )
+    for ( IndexType i = 0; i < globalSize; i++ )
     {
         BOOST_CHECK_EQUAL( theOwners[i], owners[i] );
     }
@@ -145,7 +145,7 @@ BOOST_AUTO_TEST_CASE( genBlockSizeTest )
     // setup vector of sizes
     std::vector<IndexType> mlocalSizes; // block size for each partition
 
-    for( PartitionId p = 0; p < size; ++p )
+    for ( PartitionId p = 0; p < size; ++p )
     {
         // Partition p gets '(p + 1) * 2' elements
         mlocalSizes.push_back( 2 * ( p + 1 ) );

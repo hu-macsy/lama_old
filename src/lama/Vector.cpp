@@ -54,7 +54,7 @@ LAMA_LOG_DEF_LOGGER( Vector::logger, "Vector" );
 
 std::auto_ptr<Vector> Vector::createVector( const Scalar::ScalarType valueType, DistributionPtr distribution )
 {
-    switch( valueType )
+    switch ( valueType )
     {
     case Scalar::FLOAT:
         return std::auto_ptr<Vector>( new DenseVector<float>( distribution ) );
@@ -130,7 +130,7 @@ Vector& Vector::operator=(
 {
     LAMA_LOG_DEBUG( logger, "this = a * vector1 + b * vector2, check vector1.size() == vector2.size()" )
 
-    if( expression.getArg1().getArg2().size() != expression.getArg2().getArg2().size() )
+    if ( expression.getArg1().getArg2().size() != expression.getArg2().getArg2().size() )
     {
         LAMA_THROWEXCEPTION(
             "size of input vector 1 " << expression.getArg1().getArg2().size() << " mismatches size of input vector 2 " << expression.getArg2().getArg2().size() );
@@ -153,7 +153,7 @@ Vector& Vector::operator=( const Expression<Scalar,Expression<Matrix,Vector,Time
 
     const Vector& vectorX = expression.getArg2().getArg2();
 
-    if( &vectorX != this )
+    if ( &vectorX != this )
     {
         // so this is not aliased to the vector on the rhs
         // as this will be used on rhs we do allocate it here
@@ -191,7 +191,7 @@ Vector& Vector::operator=(
 
     boost::shared_ptr<Vector> tmpResult;
 
-    if( &vectorX == this )
+    if ( &vectorX == this )
     {
         LAMA_LOG_DEBUG( logger, "Temporary for X required" );
         tmpResult = this->create( getDistributionPtr() );
@@ -202,7 +202,7 @@ Vector& Vector::operator=(
 
     matrix.matrixTimesVector( *resultPtr, alpha, vectorX, beta, vectorY );
 
-    if( resultPtr != this )
+    if ( resultPtr != this )
     {
         swap( *tmpResult );
     }
@@ -304,7 +304,7 @@ void Vector::writeAt( std::ostream& stream ) const
 
 void Vector::setContext( ContextPtr context )
 {
-    if( mContext->getType() != context->getType() )
+    if ( mContext->getType() != context->getType() )
     {
         LAMA_LOG_DEBUG( logger, *this << ": new context = " << *context << ", old context = " << *mContext );
     }

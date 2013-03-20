@@ -74,7 +74,7 @@ void OpenMPJDSUtils::setDiagonalWithScalar( const IndexType numDiagonal, ValueTy
     ValueType value = scalar.getValue<ValueType>();
 
     // TODO: use OpenMP
-    for( IndexType i = 0; i < numDiagonal; ++i )
+    for ( IndexType i = 0; i < numDiagonal; ++i )
     {
         values[i] = value;
     }
@@ -97,7 +97,7 @@ void OpenMPJDSUtils::getRow(
     LAMA_LOG_INFO( logger, "getRow with i = " << i << ", numColumns = " << numColumns << " and numRows = " << numRows );
 
     //TODO: use OpenMP
-    for( IndexType j = 0; j < numColumns; ++j )
+    for ( IndexType j = 0; j < numColumns; ++j )
     {
         row[j] = 0.0;
     }
@@ -106,9 +106,9 @@ void OpenMPJDSUtils::getRow(
 
     // check the permutation of row i
 
-    for( ii = 0; ii < numRows; ii++ )
+    for ( ii = 0; ii < numRows; ii++ )
     {
-        if( perm[ii] == i )
+        if ( perm[ii] == i )
         {
             break;
         }
@@ -116,7 +116,7 @@ void OpenMPJDSUtils::getRow(
 
     IndexType k = 0;
 
-    for( IndexType jj = 0; jj < ilg[ii]; ++jj )
+    for ( IndexType jj = 0; jj < ilg[ii]; ++jj )
     {
         row[ja[ii + k]] = static_cast<OtherValueType>( values[ii + k] );
         k += dlg[jj];
@@ -140,9 +140,9 @@ ValueType OpenMPJDSUtils::getValue(
 
     // check the permutation of row i
 
-    for( ii = 0; ii < numRows; ii++ )
+    for ( ii = 0; ii < numRows; ii++ )
     {
-        if( perm[ii] == i )
+        if ( perm[ii] == i )
         {
             break;
         }
@@ -152,9 +152,9 @@ ValueType OpenMPJDSUtils::getValue(
     // search in the found row
     IndexType k = 0;
 
-    for( IndexType jj = 0; jj < ilg[ii]; jj++ )
+    for ( IndexType jj = 0; jj < ilg[ii]; jj++ )
     {
-        if( ja[ii + k] == j )
+        if ( ja[ii + k] == j )
         {
             return values[ii + k];
         }
@@ -179,12 +179,12 @@ void OpenMPJDSUtils::scaleValue(
     LAMA_LOG_INFO( logger, "scaleValue with numRows = " << numRows );
 
     //TODO: use OpenMP
-    for( IndexType i = 0; i < numRows; i++ )
+    for ( IndexType i = 0; i < numRows; i++ )
     {
         IndexType offset = i;
         OtherValueType scalar = values[perm[i]];
 
-        for( IndexType jj = 0; jj < ilg[i]; jj++ )
+        for ( IndexType jj = 0; jj < ilg[i]; jj++ )
         {
             mValues[offset] *= static_cast<ValueType>( scalar );
             offset += dlg[jj];
@@ -204,11 +204,11 @@ bool OpenMPJDSUtils::checkDiagonalProperty(
 {
     LAMA_LOG_INFO( logger,
                    "checkDiagonalProperty with numDiagonals = " << numDiagonals << ", numColumns = " << numColumns << " and numRows = " << numRows );
-    if( numRows > 0 )
+    if ( numRows > 0 )
     {
         bool diagonalProperty = true;
 
-        if( dlg[0] < std::min( numDiagonals, numColumns ) )
+        if ( dlg[0] < std::min( numDiagonals, numColumns ) )
         {
             // not even one entry for each row / column
             diagonalProperty = false;
@@ -217,16 +217,16 @@ bool OpenMPJDSUtils::checkDiagonalProperty(
 
         #pragma omp parallel for schedule(LAMA_OMP_SCHEDULE)
 
-        for( IndexType ii = 0; ii < std::min( numRows, numColumns ); ++ii )
+        for ( IndexType ii = 0; ii < std::min( numRows, numColumns ); ++ii )
         {
-            if( !diagonalProperty )
+            if ( !diagonalProperty )
             {
                 continue;
             }
 
             const IndexType i = perm[ii];
 
-            if( ja[ii] != i )
+            if ( ja[ii] != i )
             {
                 diagonalProperty = false;
             }
@@ -252,36 +252,36 @@ bool OpenMPJDSUtils::check(
     bool validFlag = true;
 
     #pragma omp parallel for schedule(LAMA_OMP_SCHEDULE) reduction( & : validFlag )
-    for( IndexType i = 0; i < numValues; i++ )
+    for ( IndexType i = 0; i < numValues; i++ )
     {
-        if( numColumns <= ja[i] )
+        if ( numColumns <= ja[i] )
         {
             validFlag = false;
         }
     }
 
-    if( !validFlag )
+    if ( !validFlag )
     {
         return false;
     }
 
-    if( numRows > 1 )
+    if ( numRows > 1 )
     {
-        for( IndexType i = 1; i < numRows; i++ )
+        for ( IndexType i = 1; i < numRows; i++ )
         {
-            if( ilg[i] > ilg[i - 1] )
+            if ( ilg[i] > ilg[i - 1] )
             {
                 return false;
             }
         }
     }
-    if( numRows > 0 )
+    if ( numRows > 0 )
     {
-        if( ilg[0] > 1 )
+        if ( ilg[0] > 1 )
         {
-            for( IndexType i = 1; i < ilg[0]; i++ )
+            for ( IndexType i = 1; i < ilg[0]; i++ )
             {
-                if( dlg[i] > dlg[i - 1] )
+                if ( dlg[i] > dlg[i - 1] )
                 {
                     return false;
                 }
@@ -291,7 +291,7 @@ bool OpenMPJDSUtils::check(
         IndexType sumDlg = OpenMPUtils::sum( dlg, ilg[0] );
         IndexType sumIlg = OpenMPUtils::sum( ilg, numRows );
 
-        if( sumDlg != sumIlg )
+        if ( sumDlg != sumIlg )
         {
             return false;
         }
@@ -309,7 +309,7 @@ void OpenMPJDSUtils::setInversePerm( IndexType inversePerm[], const IndexType pe
     // Parallel execution is safe as perm does not contain a value twice
 
     #pragma omp parallel for schedule(LAMA_OMP_SCHEDULE)
-    for( IndexType ii = 0; ii < n; ii++ )
+    for ( IndexType ii = 0; ii < n; ii++ )
     {
         IndexType i = perm[ii];
         LAMA_ASSERT_DEBUG( 0 <= i && i < n, "permutation value out of range, perm[" << ii << "] = " << i );
@@ -326,7 +326,7 @@ void OpenMPJDSUtils::sortRows( IndexType ilg[], IndexType perm[], const IndexTyp
     // Open: can this routine be called where perm is a valid permutation as input
 
     #pragma omp parallel for schedule(LAMA_OMP_SCHEDULE)
-    for( IndexType i = 0; i < n; i++ )
+    for ( IndexType i = 0; i < n; i++ )
     {
         input[i] = perm[i];
     }
@@ -341,18 +341,18 @@ void OpenMPJDSUtils::sortRows( IndexType ilg[], IndexType perm[], const IndexTyp
 
     boost::scoped_array<IndexType> bucket( new IndexType[maxBucket + 1] );
 
-    for( IndexType i = 0; i <= maxBucket; i++ )
+    for ( IndexType i = 0; i <= maxBucket; i++ )
     {
         bucket[i] = 0;
     }
 
     // counts how many diagonals exist for each possible length
-    for( IndexType i = 0; i < n; i++ )
+    for ( IndexType i = 0; i < n; i++ )
     {
         bucket[ilg[i]]++;
     }
 
-    for( IndexType i = 0; i <= maxBucket; i++ )
+    for ( IndexType i = 0; i <= maxBucket; i++ )
     {
         LAMA_LOG_DEBUG( logger, "bucket " << i << " has " << bucket[i] << " entries" );
     }
@@ -364,7 +364,7 @@ void OpenMPJDSUtils::sortRows( IndexType ilg[], IndexType perm[], const IndexTyp
     // later (end of second for):  21  18  14  11   6   5
 
     IndexType total = 0;
-    for( IndexType i = maxBucket; i >= 0; i-- )
+    for ( IndexType i = maxBucket; i >= 0; i-- )
     {
         IndexType cnt = bucket[i];
         bucket[i] = total;
@@ -374,7 +374,7 @@ void OpenMPJDSUtils::sortRows( IndexType ilg[], IndexType perm[], const IndexTyp
 
     // now we can build the new perm array
     // diagonals with same lengths are moved to position bucket[b] upwards
-    for( IndexType i = 0; i < n; i++ )
+    for ( IndexType i = 0; i < n; i++ )
     {
         IndexType b = ilg[i];
         LAMA_LOG_TRACE( logger, "perm[" << bucket[b] << "]= " << input[i] );
@@ -383,11 +383,11 @@ void OpenMPJDSUtils::sortRows( IndexType ilg[], IndexType perm[], const IndexTyp
 
     // reorganize of ilg has to wait until after filling of perm array is finished
     total = 0;
-    for( IndexType i = maxBucket; i >= 0; i-- )
+    for ( IndexType i = maxBucket; i >= 0; i-- )
     {
         LAMA_LOG_DEBUG( logger, "set ilg[" << total << ":" << (bucket[i]-1) << "] = " << i );
 
-        for( IndexType k = total; k < bucket[i]; k++ )
+        for ( IndexType k = total; k < bucket[i]; k++ )
         {
             ilg[k] = i;
         }
@@ -405,25 +405,25 @@ IndexType OpenMPJDSUtils::ilg2dlg(
 {
     LAMA_LOG_INFO( logger, "ilg2dlg with numDiagonals = " << numDiagonals << ", numRows = " << numRows );
 
-    if( numDiagonals == 0 )
+    if ( numDiagonals == 0 )
     {
         return 0;
     }
 
     LAMA_ASSERT_EQUAL_DEBUG( numDiagonals, ilg[0] );
 
-    for( IndexType d = 0; d < numDiagonals; d++ )
+    for ( IndexType d = 0; d < numDiagonals; d++ )
     {
         dlg[d] = 0;
     }
 
     IndexType numTotal = 0;
 
-    for( IndexType i = 0; i < numRows; i++ )
+    for ( IndexType i = 0; i < numRows; i++ )
     {
         IndexType k = ilg[i];
 
-        if( k == 0 )
+        if ( k == 0 )
         {
             break;
         }
@@ -439,7 +439,7 @@ IndexType OpenMPJDSUtils::ilg2dlg(
 
     IndexType proofTotal = dlg[numDiagonals - 1];
 
-    for( IndexType d = numDiagonals - 1; d > 0; d-- )
+    for ( IndexType d = numDiagonals - 1; d > 0; d-- )
     {
         LAMA_LOG_TRACE( logger, "dlg[" << d << "] = " << dlg[d] );
 
@@ -473,7 +473,7 @@ void OpenMPJDSUtils::getCSRValues(
                    "get CSRValues<" << typeid( JDSValueType ).name() << ", " << typeid( CSRValueType ).name() << ">" << ", #rows = " << numRows << ", #values = " << csrIA[numRows] );
 
     #pragma omp parallel for schedule(LAMA_OMP_SCHEDULE)
-    for( IndexType i = 0; i < numRows; i++ )
+    for ( IndexType i = 0; i < numRows; i++ )
     {
         IndexType ii = jdsInversePerm[i]; // where to find row i in JDS storage
 
@@ -482,7 +482,7 @@ void OpenMPJDSUtils::getCSRValues(
         IndexType jdsOffset = ii; // run through input JDS data
         IndexType offset = csrIA[i]; // run through output data
 
-        for( IndexType jj = 0; jj < numValuesInRow; jj++ )
+        for ( IndexType jj = 0; jj < numValuesInRow; jj++ )
         {
             csrJA[offset + jj] = jdsJA[jdsOffset];
             csrValues[offset + jj] = static_cast<CSRValueType>( jdsValues[jdsOffset] );
@@ -512,11 +512,11 @@ void OpenMPJDSUtils::setCSRValues(
 
     #pragma omp parallel for schedule(LAMA_OMP_SCHEDULE)
 
-    for( IndexType ii = 0; ii < numRows; ii++ )
+    for ( IndexType ii = 0; ii < numRows; ii++ )
     {
         IndexType i = jdsPerm[ii];
         IndexType offset = ii;
-        for( IndexType jdsJJ = 0, csrJJ = csrIA[i]; jdsJJ < jdsILG[ii]; jdsJJ++, csrJJ++ )
+        for ( IndexType jdsJJ = 0, csrJJ = csrIA[i]; jdsJJ < jdsILG[ii]; jdsJJ++, csrJJ++ )
         {
             jdsJA[offset] = csrJA[csrJJ];
             jdsValues[offset] = static_cast<JDSValueType>( csrValues[csrJJ] );
@@ -546,26 +546,26 @@ void OpenMPJDSUtils::normalGEMV(
     LAMA_LOG_INFO( logger,
                    "OpenMPJDS::normalGEMV<" << typeid(ValueType).name() << ">" << ", #rows = " << numRows << ", #diagonals = " << ndlg << ", alpha = " << alpha << ", beta = " << beta );
 
-    if( beta == 0.0 )
+    if ( beta == 0.0 )
     {
         LAMA_LOG_DEBUG( logger, "set result = 0.0" );
 
         #pragma omp parallel for
-        for( IndexType i = 0; i < numRows; ++i )
+        for ( IndexType i = 0; i < numRows; ++i )
         {
             result[i] = 0.0;
         }
     }
-    else if( result == y )
+    else if ( result == y )
     {
         // result = result * beta
 
-        if( beta != 1.0 )
+        if ( beta != 1.0 )
         {
             LAMA_LOG_DEBUG( logger, "set result *= beta" );
 
             #pragma omp parallel for
-            for( IndexType i = 0; i < numRows; ++i )
+            for ( IndexType i = 0; i < numRows; ++i )
             {
                 result[i] *= beta;
             }
@@ -580,13 +580,13 @@ void OpenMPJDSUtils::normalGEMV(
         LAMA_LOG_DEBUG( logger, "set result = beta * y" );
 
         #pragma omp parallel for
-        for( IndexType i = 0; i < numRows; ++i )
+        for ( IndexType i = 0; i < numRows; ++i )
         {
             result[i] = beta * y[i];
         }
     }
 
-    if( ndlg == 0 )
+    if ( ndlg == 0 )
     {
         return; // definitively empty matrix
     }
@@ -602,11 +602,11 @@ void OpenMPJDSUtils::normalGEMV(
         LAMA_REGION( "OpenMP.JDS.normalGEMV" );
 
         #pragma omp for schedule( LAMA_OMP_SCHEDULE )
-        for( IndexType ii = 0; ii < nonEmptyRows; ii++ )
+        for ( IndexType ii = 0; ii < nonEmptyRows; ii++ )
         {
             ValueType value = 0.0; // sums up final value
             IndexType offset = ii;
-            for( IndexType jj = 0; jj < jdsILG[ii]; jj++ )
+            for ( IndexType jj = 0; jj < jdsILG[ii]; jj++ )
             {
                 IndexType j = jdsJA[offset];
                 LAMA_LOG_TRACE( logger,
@@ -644,7 +644,7 @@ void OpenMPJDSUtils::jacobi(
     LAMA_LOG_INFO( logger,
                    "jacobi<" << typeid(ValueType).name() << ">" << ", #rows = " << numRows << ", omega = " << omega );
 
-    if( syncToken != NULL )
+    if ( syncToken != NULL )
     {
         LAMA_LOG_ERROR( logger, "jacobi called asynchronously, not supported here" );
     }
@@ -657,7 +657,7 @@ void OpenMPJDSUtils::jacobi(
 
         #pragma omp for schedule( LAMA_OMP_SCHEDULE )
 
-        for( IndexType ii = 0; ii < numRows; ii++ )
+        for ( IndexType ii = 0; ii < numRows; ii++ )
         {
             const IndexType i = jdsPerm[ii]; // original row index
 
@@ -665,17 +665,17 @@ void OpenMPJDSUtils::jacobi(
             IndexType pos = jdsDlg[0] + ii; // index for jdsValues
             ValueType diag = jdsValues[ii]; // diagonal element
 
-            for( IndexType j = 1; j < jdsIlg[ii]; j++ )
+            for ( IndexType j = 1; j < jdsIlg[ii]; j++ )
             {
                 temp -= jdsValues[pos] * oldSolution[jdsJA[pos]];
                 pos += jdsDlg[j];
             }
 
-            if( 1.0 == omega )
+            if ( 1.0 == omega )
             {
                 solution[i] = temp / diag;
             }
-            else if( 0.5 == omega )
+            else if ( 0.5 == omega )
             {
                 solution[i] = omega * ( temp / diag + oldSolution[i] );
             }
@@ -707,17 +707,17 @@ void OpenMPJDSUtils::jacobiHalo(
     LAMA_LOG_INFO( logger,
                    "jacobiHalo<" << typeid(ValueType).name() << ">" << ", #rows = " << numRows << ", omega = " << omega );
 
-    if( syncToken != NULL )
+    if ( syncToken != NULL )
     {
         LAMA_LOG_ERROR( logger, "jacobi called asynchronously, not supported here" );
     }
 
-    if( numRows == 0 )
+    if ( numRows == 0 )
     {
         return;
     }
 
-    if( numDiagonals == 0 )
+    if ( numDiagonals == 0 )
     {
         return;
     }
@@ -729,7 +729,7 @@ void OpenMPJDSUtils::jacobiHalo(
     LAMA_LOG_DEBUG( logger, "#non empty rows = " << numNonEmptyRows );
 
     #pragma omp parallel for schedule( LAMA_OMP_SCHEDULE )
-    for( IndexType ii = 0; ii < numNonEmptyRows; ++ii )
+    for ( IndexType ii = 0; ii < numNonEmptyRows; ++ii )
     {
         ValueType temp = 0.0;
 
@@ -738,7 +738,7 @@ void OpenMPJDSUtils::jacobiHalo(
 
         IndexType pos = ii;
 
-        for( IndexType j = 0; j < jdsHaloIlg[ii]; j++ )
+        for ( IndexType j = 0; j < jdsHaloIlg[ii]; j++ )
         {
             temp += jdsHaloValues[pos] * oldSolution[jdsHaloJA[pos]];
             pos += jdsHaloDlg[j];

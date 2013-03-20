@@ -160,13 +160,13 @@ void CUDALAPACK::laswp(
     int info = 0;
     int i = k1;
 
-    if( order == CblasRowMajor )
+    if ( order == CblasRowMajor )
     {
         int feedback = 0;
 
-        for( i = k1; i < k2 /*&& feedback == LAMA_STATUS_SUCCESS*/; ++i )
+        for ( i = k1; i < k2 /*&& feedback == LAMA_STATUS_SUCCESS*/; ++i )
         {
-            if( ipiv_h[i * incx] == i )
+            if ( ipiv_h[i * incx] == i )
             {
                 continue;
             }
@@ -178,7 +178,7 @@ void CUDALAPACK::laswp(
 
         info = -1 * (IndexType) feedback;
     }
-    else if( order == CblasColMajor )
+    else if ( order == CblasColMajor )
     {
         info = n + lda;
     }
@@ -188,7 +188,7 @@ void CUDALAPACK::laswp(
         BLASHelper::XERBLA_cpu( 0, info, "slaswp", "Illegal order setting." );
     }
 
-    if( info < 0 )
+    if ( info < 0 )
     {
         //TODO: throw exception
     }
@@ -210,13 +210,13 @@ void CUDALAPACK::laswp(
     int info = 0;
     int i = k1;
 
-    if( order == CblasRowMajor )
+    if ( order == CblasRowMajor )
     {
         int feedback = 0;
 
-        for( i = k1; i < k2 /*&& feedback == LAMA_STATUS_SUCCESS*/; ++i )
+        for ( i = k1; i < k2 /*&& feedback == LAMA_STATUS_SUCCESS*/; ++i )
         {
-            if( ipiv_h[i * incx] == i )
+            if ( ipiv_h[i * incx] == i )
             {
                 continue;
             }
@@ -228,7 +228,7 @@ void CUDALAPACK::laswp(
 
         info = -1 * (IndexType) feedback;
     }
-    else if( order == CblasColMajor )
+    else if ( order == CblasColMajor )
     {
         info = n + lda;
     }
@@ -238,7 +238,7 @@ void CUDALAPACK::laswp(
         BLASHelper::XERBLA_cpu( 0, info, "dlaswp", "Illegal order setting." );
     }
 
-    if( info < 0 )
+    if ( info < 0 )
     {
         //TODO: throw exception
     }

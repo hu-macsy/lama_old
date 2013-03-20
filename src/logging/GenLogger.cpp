@@ -63,7 +63,7 @@ GenLogger* GenLogger::rootLogger = NULL;
 
 Logger& GenLogger::getRoot()
 {
-    if( rootLogger == NULL )
+    if ( rootLogger == NULL )
     {
         rootLogger = new GenLogger( "<root>", NULL );
 #ifdef DEBUGGING
@@ -95,27 +95,27 @@ GenLogger::GenLogger( const std::string& name, Logger* parent )
 
 static bool string2bool( const std::string& value )
 {
-    if( value == "1" )
+    if ( value == "1" )
     {
         return true;
     }
-    if( value == "0" )
+    if ( value == "0" )
     {
         return false;
     }
-    if( value == "TRUE" )
+    if ( value == "TRUE" )
     {
         return true;
     }
-    if( value == "FALSE" )
+    if ( value == "FALSE" )
     {
         return false;
     }
-    if( value == "ON" )
+    if ( value == "ON" )
     {
         return true;
     }
-    if( value == "OFF" )
+    if ( value == "OFF" )
     {
         return false;
     }
@@ -136,7 +136,7 @@ static int evalEntry( char* line, int length, const char* /* filename */)
     printf( "pos of first relevant char = %lu\n", firstPos );
 #endif
 
-    if( string::npos == firstPos )
+    if ( string::npos == firstPos )
     {
         return 0;
     }
@@ -146,7 +146,7 @@ static int evalEntry( char* line, int length, const char* /* filename */)
     printf( "first relevant char = %c\n", myLine[firstPos] );
 #endif
 
-    if( myLine[firstPos] == '#' )
+    if ( myLine[firstPos] == '#' )
     {
         return 0;
     }
@@ -154,7 +154,7 @@ static int evalEntry( char* line, int length, const char* /* filename */)
     // check for an equal sign in the line
     string::size_type equalPos = myLine.find_first_of( "=", 0 );
 
-    if( string::npos == equalPos )
+    if ( string::npos == equalPos )
     {
         throw std::runtime_error( "no equal sign" );
     }
@@ -168,12 +168,12 @@ static int evalEntry( char* line, int length, const char* /* filename */)
     printf( "value at %lu - %lu\n", firstPos, lastPos );
 #endif
 
-    if( string::npos == lastPos )
+    if ( string::npos == lastPos )
     {
         lastPos = myLine.length();
     }
 
-    for( string::size_type i = firstPos; i <= lastPos; i++ )
+    for ( string::size_type i = firstPos; i <= lastPos; i++ )
     {
         myLine[i] = static_cast<string::value_type>( toupper( myLine[i] ) );
     }
@@ -181,7 +181,7 @@ static int evalEntry( char* line, int length, const char* /* filename */)
     string value = myLine.substr( firstPos, lastPos - firstPos );
 
     //Check for other options
-    if( name == "flush" )
+    if ( name == "flush" )
     {
         GenLogger::setFlush( string2bool( value ) );
         return 1;
@@ -190,12 +190,12 @@ static int evalEntry( char* line, int length, const char* /* filename */)
     // get the logger from the provider and set its level
     Level level = str2level( value );
 
-    if( level == MAXLEVEL )
+    if ( level == MAXLEVEL )
     {
         throw std::runtime_error( "illegal log level" );
     }
 
-    if( name == "<root>" )
+    if ( name == "<root>" )
     {
         //Empty name references the rootLogger
         name = "";
@@ -217,7 +217,7 @@ int GenLogger::readConfig( const char* fname )
 
     FILE* configFile = fopen( fname, "r" ); // file with logger configuration
 
-    if( configFile == NULL )
+    if ( configFile == NULL )
     {
         LAMA_LOG_ERROR( ( *rootLogger ), "config: could not open config file " << fname );
         return 0;
@@ -229,11 +229,11 @@ int GenLogger::readConfig( const char* fname )
 
     bool stop = false; // becomes true for termination of read loop
 
-    while( !stop )
+    while ( !stop )
     {
         char c = static_cast<char>( fgetc( configFile ) );
 
-        if( c == '\n' || c == eof )
+        if ( c == '\n' || c == eof )
         {
             /* new line, evaluate current line */
 
@@ -241,7 +241,7 @@ int GenLogger::readConfig( const char* fname )
             {
                 noEntries += evalEntry( buffer, bufferLength, fname );
             }
-            catch( std::runtime_error& e )
+            catch ( std::runtime_error& e )
             {
                 LAMA_LOG_WARN( ( *rootLogger ),
                                "Config file '" << fname << "', ignored invalid line '" << buffer << "'" << ": " << e.what() );
@@ -255,7 +255,7 @@ int GenLogger::readConfig( const char* fname )
         {
             buffer[bufferLength++] = c;
 
-            if( bufferLength == MAX_LINE_LENGTH )
+            if ( bufferLength == MAX_LINE_LENGTH )
             {
                 LAMA_LOG_ERROR( ( *rootLogger ), "Config file '" << fname << "', too long line, stop reading" );
 
@@ -274,7 +274,7 @@ int GenLogger::readConfig( const char* fname )
 
 void GenLogger::configure()
 {
-    if( !rootLogger )
+    if ( !rootLogger )
     {
         throw std::runtime_error( "configure: rootLogger not available yet" );
     }
@@ -287,39 +287,39 @@ void GenLogger::configure()
     const char* configFile = getenv( "LAMA_LOG" );
 #endif
 
-    if( configFile == NULL )
+    if ( configFile == NULL )
     {
         LAMA_LOG_WARN( ( *rootLogger ), "LAMA_LOG not set, use default configuration" );
     }
-    else if( strlen( configFile ) == 0 )
+    else if ( strlen( configFile ) == 0 )
     {
         rootLogger->setLevel( WARN );
     }
-    else if( strcmp( configFile, level2str( OFF ) ) == 0 )
+    else if ( strcmp( configFile, level2str( OFF ) ) == 0 )
     {
         rootLogger->setLevel( OFF );
     }
-    else if( strcmp( configFile, level2str( FATAL ) ) == 0 )
+    else if ( strcmp( configFile, level2str( FATAL ) ) == 0 )
     {
         rootLogger->setLevel( FATAL );
     }
-    else if( strcmp( configFile, level2str( SERROR ) ) == 0 )
+    else if ( strcmp( configFile, level2str( SERROR ) ) == 0 )
     {
         rootLogger->setLevel( SERROR );
     }
-    else if( strcmp( configFile, level2str( WARN ) ) == 0 )
+    else if ( strcmp( configFile, level2str( WARN ) ) == 0 )
     {
         rootLogger->setLevel( WARN );
     }
-    else if( strcmp( configFile, level2str( INFO ) ) == 0 )
+    else if ( strcmp( configFile, level2str( INFO ) ) == 0 )
     {
         rootLogger->setLevel( INFO );
     }
-    else if( strcmp( configFile, level2str( DEBUG ) ) == 0 )
+    else if ( strcmp( configFile, level2str( DEBUG ) ) == 0 )
     {
         rootLogger->setLevel( DEBUG );
     }
-    else if( strcmp( configFile, level2str( TRACE ) ) == 0 )
+    else if ( strcmp( configFile, level2str( TRACE ) ) == 0 )
     {
         rootLogger->setLevel( TRACE );
     }
@@ -341,7 +341,7 @@ void GenLogger::log( const char* level, SourceLocation& loc, const string& msg )
     printf( "%s (%s::%d,func=%s) %s: %s\n", getFullName().c_str(), loc.mFileName, loc.mLine, loc.mFuncName, level,
             msg.c_str() );
 
-    if( sFlush )
+    if ( sFlush )
     {
 #ifdef DEBUGGING
         printf( "Flushed\n" );
@@ -392,11 +392,11 @@ void GenLogger::traverse()
 {
     // LAMA_LOG_DEBUG(myLogger, "rootLogger " << getFullName() << ", level = "
     //            << getEffectiveLevel() << ", set = " << setFlag);
-    for( size_t i = 0; i < mSons.size(); i++ )
+    for ( size_t i = 0; i < mSons.size(); i++ )
     {
         GenLogger* son = dynamic_cast<GenLogger*>( mSons[i] );
 
-        if( son )
+        if ( son )
         {
             son->traverse();
         }

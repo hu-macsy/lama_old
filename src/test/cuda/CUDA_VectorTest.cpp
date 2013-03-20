@@ -102,7 +102,7 @@ void doMatrixTimeVector( Vector& y, const Matrix& A, const Vector& x, const Vect
 
     y = A * x;
 
-    for( IndexType i = 0; i < corResult.size(); ++i )
+    for ( IndexType i = 0; i < corResult.size(); ++i )
     {
         BOOST_CHECK_EQUAL( corResult.getValue(i), y.getValue(i) );
     }
@@ -192,13 +192,13 @@ void matrixTimesVectorTestImpl()
     {
         HostWriteAccess<ValueType> localDenseCorrectResult2Access( localDenseCorrectResult2 );
 
-        for( IndexType i = 0; i < numRows; ++i )
+        for ( IndexType i = 0; i < numRows; ++i )
         {
             ValueType rowSum = 0.0;
-            for( IndexType j = 0; j < numCols; ++j )
+            for ( IndexType j = 0; j < numCols; ++j )
             {
                 ValueType value = 0.0;
-                if( j == i || j + size == i || j - size == i || j + 2 * size == i || j - 2 * size == i
+                if ( j == i || j + size == i || j - size == i || j + 2 * size == i || j - 2 * size == i
                         || j + ( numRows - 1 ) == i || j - ( numRows - 1 ) == i )
                 {
                     value = 1000.0f * ( i + 1 ) + ( j + 1 );
@@ -207,7 +207,7 @@ void matrixTimesVectorTestImpl()
                 rowSum += value;
             }
 
-            if( dist->isLocal( i ) )
+            if ( dist->isLocal( i ) )
             {
                 localDenseCorrectResult2Access[dist->global2local( i )] = rowSum;
             }
@@ -257,7 +257,7 @@ BOOST_AUTO_TEST_CASE( cTorTest )
     std::vector<float> values( m );
     std::vector<double> valuesD( m );
 
-    for( IndexType i = 0; i < m; ++i )
+    for ( IndexType i = 0; i < m; ++i )
     {
         values[i] = static_cast<float>( randomNumber() );
         valuesD[i] = values[i];
@@ -273,7 +273,7 @@ BOOST_AUTO_TEST_CASE( cTorTest )
     cudaVectorA.setContext( cuda );
     cudaVectorB.setContext( cuda );
 
-    for( IndexType i = 0; i < cudaVectorA.size(); i++ )
+    for ( IndexType i = 0; i < cudaVectorA.size(); i++ )
     {
         BOOST_CHECK_EQUAL( cudaVectorA.getValue(i), cudaVectorB.getValue(i) );
     }

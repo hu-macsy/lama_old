@@ -48,9 +48,9 @@ LAMA_COMMON_TEST_CASE_END()
 
 LAMA_COMMON_TEST_CASE( DistributionTest, local2GlobalTest );
 {
-    for( IndexType i = 0; i < mDistributionPtr->getGlobalSize(); i++ )
+    for ( IndexType i = 0; i < mDistributionPtr->getGlobalSize(); i++ )
     {
-        if( mDistributionPtr->isLocal( i ) )
+        if ( mDistributionPtr->isLocal( i ) )
         {
             BOOST_CHECK_EQUAL( i, mDistributionPtr->local2global( mDistributionPtr->global2local(i) ) );
         }
@@ -65,7 +65,7 @@ LAMA_COMMON_TEST_CASE_END()
 
 LAMA_COMMON_TEST_CASE( DistributionTest, global2LocalTest );
 {
-    for( IndexType i = 0; i < mDistributionPtr->getLocalSize(); i++ )
+    for ( IndexType i = 0; i < mDistributionPtr->getLocalSize(); i++ )
     {
         BOOST_CHECK_EQUAL( i, mDistributionPtr->global2local( mDistributionPtr->local2global(i) ) );
     }

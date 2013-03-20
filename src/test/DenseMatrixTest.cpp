@@ -61,9 +61,9 @@ void verifyMatrixWithScalar( Matrix& m, Scalar& s )
 {
     typedef T ValueType;
 
-    for( IndexType i = 0; i < m.getNumRows(); ++i )
+    for ( IndexType i = 0; i < m.getNumRows(); ++i )
     {
-        for( IndexType j = 0; j < m.getNumColumns(); ++j )
+        for ( IndexType j = 0; j < m.getNumColumns(); ++j )
         {
             Scalar expected = m.getValue( i, j );
             Scalar result = s;
@@ -80,9 +80,9 @@ void verifySameMatrix( Matrix& m1, Matrix& m2 )
     BOOST_REQUIRE_EQUAL( m1.getNumRows(), m2.getNumRows() );
     BOOST_REQUIRE_EQUAL( m1.getNumColumns(), m2.getNumColumns() );
 
-    for( IndexType i = 0; i < m1.getNumRows(); ++i )
+    for ( IndexType i = 0; i < m1.getNumRows(); ++i )
     {
-        for( IndexType j = 0; j < m1.getNumColumns(); ++j )
+        for ( IndexType j = 0; j < m1.getNumColumns(); ++j )
         {
             Scalar expected = m1.getValue( i, j );
             Scalar result = m2.getValue( i, j );
@@ -99,9 +99,9 @@ void verifySameMatrix( Matrix& m1, Matrix& m2, T eps )
     BOOST_REQUIRE_EQUAL( m1.getNumRows(), m2.getNumRows() );
     BOOST_REQUIRE_EQUAL( m1.getNumColumns(), m2.getNumColumns() );
 
-    for( IndexType i = 0; i < m1.getNumRows(); ++i )
+    for ( IndexType i = 0; i < m1.getNumRows(); ++i )
     {
-        for( IndexType j = 0; j < m1.getNumColumns(); ++j )
+        for ( IndexType j = 0; j < m1.getNumColumns(); ++j )
         {
             Scalar expected = m1.getValue( i, j );
             Scalar result = m2.getValue( i, j );
@@ -512,11 +512,11 @@ BOOST_AUTO_TEST_CASE( SetIdentityTest )
 
     matrixA.setIdentity();
 
-    for( IndexType i = 0; i < matrixA.getNumRows(); ++i )
+    for ( IndexType i = 0; i < matrixA.getNumRows(); ++i )
     {
-        for( IndexType j = 0; j < matrixA.getNumColumns(); ++j )
+        for ( IndexType j = 0; j < matrixA.getNumColumns(); ++j )
         {
-            if( i == j )
+            if ( i == j )
             {
                 BOOST_CHECK_EQUAL( matrixA.getValue( i, j ), 1.0 );
             }
@@ -542,7 +542,7 @@ BOOST_AUTO_TEST_CASE( SetDiagonalTest )
 
     matrixA.setDiagonal( vector );
 
-    for( IndexType i = 0; i < matrixA.getNumRows(); ++i )
+    for ( IndexType i = 0; i < matrixA.getNumRows(); ++i )
     {
         BOOST_CHECK_EQUAL( matrixA.getValue( i, i ), -1.0 );
     }
@@ -551,7 +551,7 @@ BOOST_AUTO_TEST_CASE( SetDiagonalTest )
 
     matrixA.setDiagonal( s );
 
-    for( IndexType i = 0; i < matrixA.getNumRows(); ++i )
+    for ( IndexType i = 0; i < matrixA.getNumRows(); ++i )
     {
         BOOST_CHECK_EQUAL( matrixA.getValue( i, i ), 4.0 );
     }
@@ -571,11 +571,11 @@ BOOST_AUTO_TEST_CASE( GetRowTest )
 
     Vector& vector = dvector;
 
-    for( int i = 0; i < matrixA.getNumRows(); i++ )
+    for ( int i = 0; i < matrixA.getNumRows(); i++ )
     {
         matrixA.getRow( vector, i );
 
-        for( int j = 0; j < matrixA.getNumColumns(); j++ )
+        for ( int j = 0; j < matrixA.getNumColumns(); j++ )
         {
             BOOST_CHECK_EQUAL( vector.getValue( j ), matrixA.getValue( i, j ) );
         }
@@ -639,9 +639,9 @@ BOOST_AUTO_TEST_CASE( ScaleTest )
     Scalar s = 2.0;
     matrixA.scale( s );
 
-    for( int i = 0; i < matrixA.getNumRows(); i++ )
+    for ( int i = 0; i < matrixA.getNumRows(); i++ )
     {
-        for( int j = 0; j < matrixA.getNumColumns(); j++ )
+        for ( int j = 0; j < matrixA.getNumColumns(); j++ )
         {
             BOOST_CHECK_EQUAL( n4m4SMatrixA.getValue( i, j ) * 2.0, matrixA.getValue( i, j ) );
         }

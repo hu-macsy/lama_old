@@ -89,11 +89,11 @@ void setCSRData( StorageType& storage )
     HostWriteOnlyAccess<IndexType> myJa( csrJas, numValues );
     HostWriteOnlyAccess<ValueType> myData( csrValues, numValues );
 
-    for( IndexType ii = 0; ii <= numRows; ii++ )
+    for ( IndexType ii = 0; ii <= numRows; ii++ )
     {
         myIa[ii] = ia[ii];
     }
-    for( IndexType jj = 0; jj < numValues; jj++ )
+    for ( IndexType jj = 0; jj < numValues; jj++ )
     {
         myJa[jj] = ja[jj];
         myData[jj] = values[jj];
@@ -110,9 +110,9 @@ void setCSRData( StorageType& storage )
     storage.setCSRData( numRows, numColumns, numValues, csrIas, csrJas, csrValues );
 
     // fill with the csr sparse data
-    for( IndexType i = 0; i < numRows; ++i )
+    for ( IndexType i = 0; i < numRows; ++i )
     {
-        for( IndexType jj = ia[i]; jj < ia[i + 1]; ++jj )
+        for ( IndexType jj = ia[i]; jj < ia[i + 1]; ++jj )
         {
             IndexType j = ja[jj];
             BOOST_CHECK_CLOSE( values[jj], storage.getValue( i, j ), 1e-16 );
@@ -122,9 +122,9 @@ void setCSRData( StorageType& storage )
     storage.setContext( cuda );
     storage.setCSRData( numRows, numColumns, numValues, csrIas, csrJas, csrValues );
     // fill with the csr sparse data
-    for( IndexType i = 0; i < numRows; ++i )
+    for ( IndexType i = 0; i < numRows; ++i )
     {
-        for( IndexType jj = ia[i]; jj < ia[i + 1]; ++jj )
+        for ( IndexType jj = ia[i]; jj < ia[i + 1]; ++jj )
         {
             IndexType j = ja[jj];
             BOOST_CHECK_CLOSE( values[jj], storage.getValue( i, j ), 1e-16 );

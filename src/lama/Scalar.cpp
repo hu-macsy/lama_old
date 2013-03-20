@@ -39,7 +39,7 @@ namespace lama
 
 std::ostream& operator<<( std::ostream& stream, const Scalar::ScalarType& object )
 {
-    switch( object )
+    switch ( object )
     {
     case Scalar::FLOAT:
         stream << "float";

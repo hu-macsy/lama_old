@@ -66,7 +66,7 @@ ContextFactory::ContextFactory()
 {
     // initialize the context managers for this factory
 
-    for( int type = 0; type < int( Context::MaxContext ); ++type )
+    for ( int type = 0; type < int( Context::MaxContext ); ++type )
     {
         mContextManager[ContextType( type )] = NULL;
     }
@@ -78,7 +78,7 @@ ContextFactory::~ContextFactory()
 
 ContextFactory& ContextFactory::getFactory()
 {
-    if( !theContextFactory )
+    if ( !theContextFactory )
     {
         theContextFactory = new ContextFactory();
     }
@@ -94,7 +94,7 @@ void ContextFactory::addContextManager( const Context::ContextType type, Context
 
     // be careful about logging, method might be called during static initialization
 
-    if( mContextManager[type] )
+    if ( mContextManager[type] )
     {
         // ContextManager might be replaced, e.g. for Host context (DefaultHost or CUDAHost)
 
@@ -116,7 +116,7 @@ ContextPtr ContextFactory::getContext( Context::ContextType type, int deviceNr )
 
     ContextManager* manager = factory.mContextManager[type];
 
-    if( !manager )
+    if ( !manager )
     {
         LAMA_THROWEXCEPTION( "Context " << theContextIds[type] << " not supported: no device manager available" );
     }
@@ -125,7 +125,7 @@ ContextPtr ContextFactory::getContext( Context::ContextType type, int deviceNr )
 
     LAMA_ASSERT_DEBUG( context, "Context manager returned NULL context, should not happen" );
 
-    if( deviceNr == LAMA_DEFAULT_DEVICE_NUMBER )
+    if ( deviceNr == LAMA_DEFAULT_DEVICE_NUMBER )
     {
         LAMA_LOG_INFO( logger, "getContext(type=" << theContextIds[type] << ") => " << *context )
     }
@@ -161,7 +161,7 @@ void ContextFactory::release()
 
     LAMA_LOG_DEBUG( logger, "release context managers" );
 
-    for( int type = 0; type < int( Context::MaxContext ); ++type )
+    for ( int type = 0; type < int( Context::MaxContext ); ++type )
     {
         factory.mContextManager[ContextType( type )] = NULL;
     }

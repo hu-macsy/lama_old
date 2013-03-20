@@ -83,7 +83,7 @@ void scaleTest( ContextPtr loc )
 
     HostReadAccess<ValueType> rValues( values );
 
-    for( IndexType i = 0; i < nValues; i++ )
+    for ( IndexType i = 0; i < nValues; i++ )
     {
         BOOST_CHECK_EQUAL( expectedValues[i], rValues[i] );
     }
@@ -153,7 +153,7 @@ void setValTest( ContextPtr loc )
 
         HostReadAccess<ValueType> rValues( values );
 
-        for( IndexType i = 0; i < n; i++ )
+        for ( IndexType i = 0; i < n; i++ )
         {
             BOOST_CHECK_EQUAL( 7, rValues.get()[i] );
         }
@@ -195,7 +195,7 @@ void setOrderTest( ContextPtr loc )
 
         HostReadAccess<IndexType> rValues( values );
 
-        for( IndexType i = 0; i < n; i++ )
+        for ( IndexType i = 0; i < n; i++ )
         {
             BOOST_CHECK_EQUAL( i, rValues.get()[i] );
         }
@@ -241,7 +241,7 @@ void invertTest( ContextPtr loc )
 
         HostReadAccess<ValueType> rValues( values );
 
-        for( IndexType i = 0; i < nValues; i++ )
+        for ( IndexType i = 0; i < nValues; i++ )
         {
             BOOST_CHECK_CLOSE( 1 / valuesValues[i], rValues.get()[i], 1 );
         }

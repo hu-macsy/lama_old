@@ -50,7 +50,7 @@ CUDATracerSyncToken::CUDATracerSyncToken(
 
 CUDATracerSyncToken::~CUDATracerSyncToken()
 {
-    if( !isSynchronized() )
+    if ( !isSynchronized() )
     {
         wait();
     }
@@ -61,7 +61,7 @@ void CUDATracerSyncToken::wait()
     mStreamSyncToken.synchronizeEvent( mStopEvent );
     float runTime = 0.0f;
     mStreamSyncToken.getTime( &runTime, mStartEvent, mStopEvent );
-    if( mTracer.get() )
+    if ( mTracer.get() )
     {
         mTracer->setRuntime( runTime / 1000.0 );
     }

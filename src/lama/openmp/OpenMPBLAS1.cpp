@@ -54,7 +54,7 @@ void OpenMPBLAS1::scal( const IndexType n, const float alpha, float* x, const In
 {
     LAMA_LOG_DEBUG( logger, "scal<float>, n = " << n << ", alpha = " << alpha << ", x = " << x << ", incX = " << incX );
 
-    if( syncToken )
+    if ( syncToken )
     {
         LAMA_LOG_WARN( logger, "no asynchronous execution for openmp possible at this level." )
     }
@@ -74,7 +74,7 @@ void OpenMPBLAS1::scal( const IndexType n, const double alpha, double* x, const 
     LAMA_LOG_DEBUG( logger,
                     "scal<double>, n = " << n << ", alpha = " << alpha << ", x = " << x << ", incX = " << incX );
 
-    if( syncToken )
+    if ( syncToken )
     {
         LAMA_LOG_WARN( logger, "no asynchronous execution for openmp possible at this level." )
     }
@@ -95,7 +95,7 @@ float OpenMPBLAS1::nrm2( const IndexType n, const float* x, const IndexType incX
 {
     LAMA_LOG_DEBUG( logger, "nrm2<float>, n = " << n << ", x = " << x << ", incX = " << incX );
 
-    if( syncToken )
+    if ( syncToken )
     {
         LAMA_LOG_WARN( logger, "no asynchronous execution for openmp possible at this level." )
     }
@@ -116,7 +116,7 @@ double OpenMPBLAS1::nrm2( const IndexType n, const double* x, const IndexType in
 {
     LAMA_LOG_DEBUG( logger, "nrm2<double>, n = " << n << ", x = " << x << ", incX = " << incX );
 
-    if( syncToken )
+    if ( syncToken )
     {
         LAMA_LOG_WARN( logger, "no asynchronous execution for openmp possible at this level." )
     }
@@ -139,7 +139,7 @@ float OpenMPBLAS1::asum( const IndexType n, const float* x, const IndexType incX
 {
     LAMA_LOG_DEBUG( logger, "asum<float>, n = " << n << ", x = " << x << ", incX = " << incX );
 
-    if( syncToken )
+    if ( syncToken )
     {
         LAMA_LOG_WARN( logger, "no asynchronous execution for openmp possible at this level." )
     }
@@ -160,7 +160,7 @@ double OpenMPBLAS1::asum( const IndexType n, const double* x, const IndexType in
 {
     LAMA_LOG_DEBUG( logger, "asum<double>, n = " << n << ", x = " << x << ", incX = " << incX );
 
-    if( syncToken )
+    if ( syncToken )
     {
         LAMA_LOG_WARN( logger, "no asynchronous execution for openmp possible at this level." )
     }
@@ -183,7 +183,7 @@ IndexType OpenMPBLAS1::iamax( const IndexType n, const float* x, const IndexType
 {
     LAMA_LOG_DEBUG( logger, "iamax<float>, n = " << n << ", x = " << x << ", incX = " << incX );
 
-    if( syncToken )
+    if ( syncToken )
     {
         LAMA_LOG_WARN( logger, "no asynchronous execution for openmp possible at this level." )
     }
@@ -204,7 +204,7 @@ IndexType OpenMPBLAS1::iamax( const IndexType n, const double* x, const IndexTyp
 {
     LAMA_LOG_DEBUG( logger, "iamax<double>, n = " << n << ", x = " << x << ", incX = " << incX );
 
-    if( syncToken )
+    if ( syncToken )
     {
         LAMA_LOG_WARN( logger, "no asynchronous execution for openmp possible at this level." )
     }
@@ -227,7 +227,7 @@ float OpenMPBLAS1::viamax( const IndexType n, const float* x, const IndexType in
 {
     LAMA_LOG_DEBUG( logger, "viamax<float>, n = " << n << ", x = " << x << ", incX = " << incX );
 
-    if( syncToken )
+    if ( syncToken )
     {
         LAMA_LOG_WARN( logger, "no asynchronous execution for openmp possible at this level." )
     }
@@ -248,7 +248,7 @@ double OpenMPBLAS1::viamax( const IndexType n, const double* x, const IndexType 
 {
     LAMA_LOG_DEBUG( logger, "viamax<double>, n = " << n << ", x = " << x << ", incX = " << incX );
 
-    if( syncToken )
+    if ( syncToken )
     {
         LAMA_LOG_WARN( logger, "no asynchronous execution for openmp possible at this level." )
     }
@@ -278,7 +278,7 @@ void OpenMPBLAS1::swap(
     LAMA_LOG_DEBUG( logger,
                     "iamax<float>, n = " << n << ", x = " << x << ", incX = " << incX << ", y = " << y << ", incY = " << incY );
 
-    if( syncToken )
+    if ( syncToken )
     {
         LAMA_LOG_WARN( logger, "no asynchronous execution for openmp possible at this level." )
     }
@@ -305,7 +305,7 @@ void OpenMPBLAS1::swap(
     LAMA_LOG_DEBUG( logger,
                     "iamax<double>, n = " << n << ", x = " << x << ", incX = " << incX << ", y = " << y << ", incY = " << incY );
 
-    if( syncToken )
+    if ( syncToken )
     {
         LAMA_LOG_WARN( logger, "no asynchronous execution for openmp possible at this level." )
     }
@@ -334,7 +334,7 @@ void OpenMPBLAS1::copy(
     LAMA_LOG_DEBUG( logger,
                     "copy<float>, n = " << n << ", x = " << x << ", incX = " << incX << ", y = " << y << ", incY = " << incY );
 
-    if( syncToken )
+    if ( syncToken )
     {
         LAMA_LOG_WARN( logger, "no asynchronous execution for openmp possible at this level." )
     }
@@ -361,7 +361,7 @@ void OpenMPBLAS1::copy(
     LAMA_LOG_DEBUG( logger,
                     "copy<double>, n = " << n << ", x = " << x << ", incX = " << incX << ", y = " << y << ", incY = " << incY );
 
-    if( syncToken )
+    if ( syncToken )
     {
         LAMA_LOG_WARN( logger, "no asynchronous execution for openmp possible at this level." )
     }
@@ -391,7 +391,7 @@ void OpenMPBLAS1::axpy(
     LAMA_LOG_DEBUG( logger,
                     "axpy<float>, n = " << n << ", alpha = " << alpha << ", x = " << x << ", incX = " << incX << ", y = " << y << ", incY = " << incY );
 
-    if( syncToken )
+    if ( syncToken )
     {
         LAMA_LOG_WARN( logger, "no asynchronous execution for openmp possible at this level." )
     }
@@ -419,7 +419,7 @@ void OpenMPBLAS1::axpy(
     LAMA_LOG_DEBUG( logger,
                     "axpy<double>, n = " << n << ", alpha = " << alpha << ", x = " << x << ", incX = " << incX << ", y = " << y << ", incY = " << incY );
 
-    if( syncToken )
+    if ( syncToken )
     {
         LAMA_LOG_WARN( logger, "no asynchronous execution for openmp possible at this level." )
     }
@@ -448,7 +448,7 @@ float OpenMPBLAS1::dot(
     LAMA_LOG_DEBUG( logger,
                     "dot<float>, n = " << n << ", x = " << x << ", incX = " << incX << ", y = " << y << ", incY = " << incY );
 
-    if( syncToken )
+    if ( syncToken )
     {
         LAMA_LOG_WARN( logger, "no asynchronous execution for openmp possible at this level." )
     }
@@ -477,7 +477,7 @@ double OpenMPBLAS1::dot(
     LAMA_LOG_DEBUG( logger,
                     "dot<double>, n = " << n << ", x = " << x << ", incX = " << incX << ", y = " << y << ", incY = " << incY );
 
-    if( syncToken )
+    if ( syncToken )
     {
         LAMA_LOG_WARN( logger, "no asynchronous execution for openmp possible at this level." )
     }
@@ -502,13 +502,13 @@ void OpenMPBLAS1::sum( const IndexType n, T alpha, const T* x, T beta, const T* 
     LAMA_LOG_DEBUG( logger,
                     "sum<T>, n = " << n << ", alpha = " << alpha << ", x = " << x << ", beta = " << beta << ", y = " << y << ", z = " << z );
 
-    if( syncToken )
+    if ( syncToken )
     {
         LAMA_LOG_WARN( logger, "no asynchronous execution for openmp possible at this level." )
     }
 
     #pragma omp parallel for
-    for( int i = 0; i < n; i++ )
+    for ( int i = 0; i < n; i++ )
     {
         z[i] = alpha * x[i] + beta * y[i];
     }
@@ -549,7 +549,7 @@ void OpenMPBLAS1::rot(
     LAMA_LOG_DEBUG( logger,
                     "rot<float>, n = " << n << ", x = " << x << ", incX = " << incX << ", y = " << y << ", incY = " << incY << ", c = " << c << ", s = " << s );
 
-    if( syncToken )
+    if ( syncToken )
     {
         LAMA_LOG_WARN( logger, "no asynchronous execution for openmp possible at this level." )
     }
@@ -579,7 +579,7 @@ void OpenMPBLAS1::rot(
     LAMA_LOG_DEBUG( logger,
                     "rot<double>, n = " << n << ", x = " << x << ", incX = " << incX << ", y = " << y << ", incY = " << incY << ", c = " << c << ", s = " << s );
 
-    if( syncToken )
+    if ( syncToken )
     {
         LAMA_LOG_WARN( logger, "no asynchronous execution for openmp possible at this level." )
     }
@@ -610,7 +610,7 @@ void OpenMPBLAS1::rotm(
     LAMA_LOG_DEBUG( logger,
                     "rotm<float>, n = " << n << ", x = " << x << ", incX = " << incX << ", y = " << y << ", incY = " << incY << ", P = " << P );
 
-    if( syncToken )
+    if ( syncToken )
     {
         LAMA_LOG_WARN( logger, "no asynchronous execution for openmp possible at this level." )
     }
@@ -639,7 +639,7 @@ void OpenMPBLAS1::rotm(
     LAMA_LOG_DEBUG( logger,
                     "rotm<double>, n = " << n << ", x = " << x << ", incX = " << incX << ", y = " << y << ", incY = " << incY << ", P = " << P );
 
-    if( syncToken )
+    if ( syncToken )
     {
         LAMA_LOG_WARN( logger, "no asynchronous execution for openmp possible at this level." )
     }
@@ -663,7 +663,7 @@ void OpenMPBLAS1::rotg( float* a, float* b, float* c, float* s, SyncToken* syncT
 {
     LAMA_LOG_DEBUG( logger, "rotg<float>, a = " << a << ", b = " << b << ", c = " << c << ", s = " << s );
 
-    if( syncToken )
+    if ( syncToken )
     {
         LAMA_LOG_WARN( logger, "no asynchronous execution for openmp possible at this level." )
     }
@@ -677,7 +677,7 @@ void OpenMPBLAS1::rotg( double* a, double* b, double* c, double* s, SyncToken* s
 {
     LAMA_LOG_DEBUG( logger, "rotg<double>, a = " << a << ", b = " << b << ", c = " << c << ", s = " << s );
 
-    if( syncToken )
+    if ( syncToken )
     {
         LAMA_LOG_WARN( logger, "no asynchronous execution for openmp possible at this level." )
     }
@@ -694,7 +694,7 @@ void OpenMPBLAS1::rotmg( float* d1, float* d2, float* b1, const float b2, float*
     LAMA_LOG_DEBUG( logger,
                     "rotmg<float>, d1 = " << d1 << ", d2 = " << d2 << ", b1 = " << b1 << ", b2 = " << b2 << ", p = " << p );
 
-    if( syncToken )
+    if ( syncToken )
     {
         LAMA_LOG_WARN( logger, "no asynchronous execution for openmp possible at this level." )
     }
@@ -708,7 +708,7 @@ void OpenMPBLAS1::rotmg( double* d1, double* d2, double* b1, const double b2, do
     LAMA_LOG_DEBUG( logger,
                     "rotmg<double>, d1 = " << d1 << ", d2 = " << d2 << ", b1 = " << b1 << ", b2 = " << b2 << ", p = " << p );
 
-    if( syncToken )
+    if ( syncToken )
     {
         LAMA_LOG_WARN( logger, "no asynchronous execution for openmp possible at this level." )
     }
@@ -725,13 +725,13 @@ void OpenMPBLAS1::ass( const IndexType n, const T value, T* x, SyncToken* syncTo
 {
     LAMA_LOG_DEBUG( logger, "ass<float>, n = " << n << ", value = " << value << ", x = " << x );
 
-    if( syncToken )
+    if ( syncToken )
     {
         LAMA_LOG_WARN( logger, "no asynchronous execution for openmp possible at this level." )
     }
 
     #pragma omp parallel for
-    for( int i = 0; i < n; i++ )
+    for ( int i = 0; i < n; i++ )
     {
         x[i] = value;
     }

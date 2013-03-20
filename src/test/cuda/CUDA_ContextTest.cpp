@@ -119,7 +119,7 @@ BOOST_AUTO_TEST_CASE ( releaseTest )
 
     writeAccess.resize( 10 );
 
-    for( IndexType i = 0; i < 10; i++ )
+    for ( IndexType i = 0; i < 10; i++ )
     {
         writeAccess[i] = 3;
     }
@@ -133,7 +133,7 @@ BOOST_AUTO_TEST_CASE ( releaseTest )
 
     HostReadAccess<IndexType> readAccess( ctxArray );
 
-    for( IndexType i = 0; i < 5; i++ )
+    for ( IndexType i = 0; i < 5; i++ )
     {
         BOOST_CHECK_EQUAL( 3, readAccess[i] );
     }
@@ -151,7 +151,7 @@ BOOST_AUTO_TEST_CASE( resizeTest )
         // Possible problem: fetch from any location not possible
         writeAccess.resize( 10 );
 
-        for( IndexType i = 0; i < 10; i++ )
+        for ( IndexType i = 0; i < 10; i++ )
         {
             writeAccess[i] = 3;
         }
@@ -185,7 +185,7 @@ BOOST_AUTO_TEST_CASE( prefetchTest )
     {
         HostWriteAccess<ValueType> v1( vector1 );
 
-        for( IndexType i = 0; i < n; ++i )
+        for ( IndexType i = 0; i < n; ++i )
         {
             v1[i] = value1;
         }
@@ -214,7 +214,7 @@ BOOST_AUTO_TEST_CASE( prefetchTest )
     {
         HostReadAccess<ValueType> v2( vector2 );
 
-        for( IndexType i = 0; i < n; ++i )
+        for ( IndexType i = 0; i < n; ++i )
         {
             BOOST_CHECK_EQUAL( value1, v2[i] );
         }
@@ -260,7 +260,7 @@ BOOST_AUTO_TEST_CASE( asyncTest )
 
     HostReadAccess<float> hostV( vector );
 
-    for( IndexType i = 0; i < n; ++i )
+    for ( IndexType i = 0; i < n; ++i )
     {
         BOOST_CHECK_EQUAL( value * alpha, hostV[i] );
     }
@@ -373,7 +373,7 @@ BOOST_AUTO_TEST_CASE( syncTest )
 
     HostReadAccess<float> hostV( vector );
 
-    for( IndexType i = 0; i < n; ++i )
+    for ( IndexType i = 0; i < n; ++i )
     {
         BOOST_CHECK_EQUAL( value * alpha, hostV[i] );
     }
@@ -388,7 +388,7 @@ static void callSSCAL( LAMAArray<float>& vector, const float alpha, ContextPtr c
 {
     WriteAccess<float> vectorAccess( vector, context );
 
-    if( context->getType() == Context::CUDA )
+    if ( context->getType() == Context::CUDA )
     {
         LAMA_CONTEXT_ACCESS( context );
 
@@ -396,7 +396,7 @@ static void callSSCAL( LAMAArray<float>& vector, const float alpha, ContextPtr c
         LAMA_CHECK_CUDA_ERROR
         ;
     }
-    else if( context->getType() == Context::Host )
+    else if ( context->getType() == Context::Host )
     {
         LAMA_CONTEXT_ACCESS( context );
         // not required for Host, but anyway
@@ -427,7 +427,7 @@ BOOST_AUTO_TEST_CASE( threadTest )
     {
         callSSCAL( vector, alpha, cudaContext );
         HostReadAccess<float> hostV( vector );
-        for( IndexType i = 0; i < n; ++i )
+        for ( IndexType i = 0; i < n; ++i )
         {
             BOOST_CHECK_EQUAL( value * alpha, hostV[i] );
         }
@@ -439,7 +439,7 @@ BOOST_AUTO_TEST_CASE( threadTest )
     {
         callSSCAL( vector, alpha, hostContext );
         HostReadAccess<float> hostV( vector );
-        for( IndexType i = 0; i < n; ++i )
+        for ( IndexType i = 0; i < n; ++i )
         {
             BOOST_CHECK_EQUAL( value * alpha, hostV[i] );
         }
@@ -454,7 +454,7 @@ BOOST_AUTO_TEST_CASE( threadTest )
         Task asyncCall( sscalCUDA );
         asyncCall.synchronize();
         HostReadAccess<float> hostV( vector );
-        for( IndexType i = 0; i < n; ++i )
+        for ( IndexType i = 0; i < n; ++i )
         {
             BOOST_CHECK_EQUAL( value * alpha, hostV[i] );
         }
@@ -467,7 +467,7 @@ BOOST_AUTO_TEST_CASE( threadTest )
         Task asyncCall( sscalHOST );
         asyncCall.synchronize();
         HostReadAccess<float> hostV( vector );
-        for( IndexType i = 0; i < n; ++i )
+        for ( IndexType i = 0; i < n; ++i )
         {
             BOOST_CHECK_EQUAL( value * alpha, hostV[i] );
         }
@@ -485,7 +485,7 @@ BOOST_AUTO_TEST_CASE( threadTest )
         HostReadAccess<float> hostV( vector );
         HostReadAccess<float> hostV2( vector2 );
 
-        for( IndexType i = 0; i < n; ++i )
+        for ( IndexType i = 0; i < n; ++i )
         {
             BOOST_CHECK_EQUAL( value * alpha, hostV[i] );
             BOOST_CHECK_EQUAL( value * alpha, hostV2[i] );
@@ -504,7 +504,7 @@ BOOST_AUTO_TEST_CASE( threadTest )
         HostReadAccess<float> hostV( vector );
         HostReadAccess<float> hostV2( vector2 );
 
-        for( IndexType i = 0; i < n; ++i )
+        for ( IndexType i = 0; i < n; ++i )
         {
             BOOST_CHECK_EQUAL( value * alpha, hostV[i] );
             BOOST_CHECK_EQUAL( value * alpha, hostV2[i] );
@@ -519,7 +519,7 @@ BOOST_AUTO_TEST_CASE( threadTest )
         callSSCAL( vector, alpha, cudaContext );
         HostReadAccess<float> hostV( vector );
 
-        for( IndexType i = 0; i < n; ++i )
+        for ( IndexType i = 0; i < n; ++i )
         {
             BOOST_CHECK_EQUAL( value * alpha, hostV[i] );
         }

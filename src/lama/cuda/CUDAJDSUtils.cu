@@ -81,9 +81,9 @@ struct identity
     __host__ __device__
     T operator()( thrust::tuple<T,T> y )
     {
-        if( thrust::get<0>( y ) == x )
+        if ( thrust::get < 0 > ( y ) == x )
         {
-            return thrust::get<1>( y );
+            return thrust::get < 1 > ( y );
         }
         return 0;
     }
@@ -139,7 +139,7 @@ void getRowKernel(
 {
     IndexType offset = 0;
 
-    for( IndexType j = 0; j < ilg[i]; j++ )
+    for ( IndexType j = 0; j < ilg[i]; j++ )
     {
         row[ja[i + offset]] = static_cast<OtherValueType>( values[i + offset] );
         offset += dlg[j];
@@ -206,14 +206,14 @@ void getValueKernel(
     ValueType* result )
 {
     const int tId = threadId( gridDim, blockIdx, blockDim, threadIdx );
-    if( tId == 0 )
+    if ( tId == 0 )
     {
         IndexType ii;
 
         // check the permutation of row i
-        for( ii = 0; ii < numRows; ii++ )
+        for ( ii = 0; ii < numRows; ii++ )
         {
-            if( perm[ii] == i )
+            if ( perm[ii] == i )
             {
                 break;
             }
@@ -222,9 +222,9 @@ void getValueKernel(
         IndexType k = 0;
         bool found = false;
 
-        for( IndexType jj = 0; jj < ilg[ii]; jj++ )
+        for ( IndexType jj = 0; jj < ilg[ii]; jj++ )
         {
-            if( ja[ii + k] == j )
+            if ( ja[ii + k] == j )
             {
                 result[0] = values[ii + k];
                 found = true;
@@ -234,7 +234,7 @@ void getValueKernel(
             k += dlg[jj];
         }
 
-        if( !found )
+        if ( !found )
         {
             result[0] = 0.0;
         }
@@ -255,7 +255,7 @@ ValueType CUDAJDSUtils::getValue(
     LAMA_CHECK_CUDA_ACCESS
     ;
 
-    thrust::device_ptr<ValueType> resultPtr = thrust::device_malloc<ValueType>( 1 );
+    thrust::device_ptr<ValueType> resultPtr = thrust::device_malloc < ValueType > ( 1 );
     ValueType *resultRawPtr = thrust::raw_pointer_cast( resultPtr );
 
     const int block_size = 256;
@@ -286,12 +286,12 @@ void scaleValueKernel(
 {
     const int i = threadId( gridDim, blockIdx, blockDim, threadIdx );
 
-    if( i < numRows )
+    if ( i < numRows )
     {
         IndexType offset = i;
         OtherValueType value = values[perm[i]];
 
-        for( IndexType j = 0; j < ilg[i]; j++ )
+        for ( IndexType j = 0; j < ilg[i]; j++ )
         {
             mValues[offset] *= static_cast<ValueType>( value );
             offset += dlg[j];
@@ -333,7 +333,7 @@ void checkDiagonalPropertyKernel( const IndexType numRows, bool *result, const I
 {
     const int i = threadId( gridDim, blockIdx, blockDim, threadIdx );
 
-    if( i < numRows )
+    if ( i < numRows )
     {
         result[i] = ( ja[i] == perm[i] );
     }
@@ -353,12 +353,12 @@ bool CUDAJDSUtils::checkDiagonalProperty(
     LAMA_CHECK_CUDA_ACCESS
     ;
 
-    if( numRows > 0 )
+    if ( numRows > 0 )
     {
         thrust::device_ptr<IndexType> dlgPtr( const_cast<IndexType*>( dlg ) );
         thrust::host_vector<IndexType> firstDlg( dlgPtr, dlgPtr + 1 );
 
-        if( firstDlg[0] < std::min( numDiagonals, numColumns ) )
+        if ( firstDlg[0] < std::min( numDiagonals, numColumns ) )
         {
             return false;
         }
@@ -395,13 +395,13 @@ void checkDescendingKernel( const IndexType n, const IndexType *array, bool *res
 {
     const int i = threadId( gridDim, blockIdx, blockDim, threadIdx );
 
-    if( i == 0 )
+    if ( i == 0 )
     {
-        if( n > 1 )
+        if ( n > 1 )
         {
-            for( IndexType i = 1; i < n; i++ )
+            for ( IndexType i = 1; i < n; i++ )
             {
-                if( array[i] > array[i - 1] )
+                if ( array[i] > array[i - 1] )
                 {
                     result[0] = false;
                 }
@@ -423,7 +423,7 @@ bool CUDAJDSUtils::check(
     LAMA_CHECK_CUDA_ACCESS
     ;
 
-    if( numRows > 0 )
+    if ( numRows > 0 )
     {
         thrust::device_ptr<IndexType> jaPtr( const_cast<IndexType*>( ja ) );
 
@@ -431,7 +431,7 @@ bool CUDAJDSUtils::check(
 
         error = thrust::transform_reduce( jaPtr, jaPtr + numValues, greaterThan<IndexType>( numColumns ), 0,
                                           thrust::logical_or<bool>() );
-        if( error )
+        if ( error )
         {
             return false;
         }
@@ -456,7 +456,7 @@ bool CUDAJDSUtils::check(
 
             thrust::host_vector<IndexType> result( resultPtr, resultPtr + 1 );
 
-            if( !result[0] )
+            if ( !result[0] )
             {
                 return false;
             }
@@ -471,7 +471,7 @@ bool CUDAJDSUtils::check(
 
             thrust::host_vector<IndexType> result( resultPtr, resultPtr + 1 );
 
-            if( !result[0] )
+            if ( !result[0] )
             {
                 return false;
             }
@@ -480,7 +480,7 @@ bool CUDAJDSUtils::check(
         IndexType dlgSum = CUDAUtils::sum( dlg, ilgHost[0] );
         IndexType ilgSum = CUDAUtils::sum( ilg, numRows );
 
-        if( dlgSum != ilgSum )
+        if ( dlgSum != ilgSum )
         {
             return false;
         }
@@ -498,11 +498,11 @@ void ilg2dlgKernel( IndexType *dlg, const IndexType numDiagonals, const IndexTyp
 {
     const int i = threadId( gridDim, blockIdx, blockDim, threadIdx );
 
-    if( i < numDiagonals )
+    if ( i < numDiagonals )
     {
-        for( IndexType j = 0; j < numRows; j++ )
+        for ( IndexType j = 0; j < numRows; j++ )
         {
-            if( ilg[j] > i )
+            if ( ilg[j] > i )
             {
                 dlg[i]++;
             }
@@ -521,7 +521,7 @@ IndexType CUDAJDSUtils::ilg2dlg(
     LAMA_CHECK_CUDA_ACCESS
     ;
 
-    if( numDiagonals == 0 )
+    if ( numDiagonals == 0 )
     {
         return 0;
     }
@@ -585,11 +585,11 @@ void csr2jdsKernel(
 {
     const int index = threadId( gridDim, blockIdx, blockDim, threadIdx );
 
-    if( index < nrows )
+    if ( index < nrows )
     {
         int i = jdsPerm[index];
         int offset = index;
-        for( int jdsJJ = 0, csrJJ = csrIa[i]; jdsJJ < jdsIlg[index]; jdsJJ++, csrJJ++ )
+        for ( int jdsJJ = 0, csrJJ = csrIa[i]; jdsJJ < jdsIlg[index]; jdsJJ++, csrJJ++ )
         {
             jdsJa[offset] = csrJa[csrJJ];
             jdsValues[offset] = csrValues[csrJJ];
@@ -637,7 +637,7 @@ void CUDAJDSUtils::setInversePerm( IndexType inversePerm[], const IndexType perm
     LAMA_CHECK_CUDA_ACCESS
     ;
 
-    if( n > 0 )
+    if ( n > 0 )
     {
         thrust::device_ptr<IndexType> inversePermPtr( const_cast<IndexType*>( inversePerm ) );
         thrust::device_ptr<IndexType> permPtr( const_cast<IndexType*>( perm ) );
@@ -670,7 +670,7 @@ void jds2csrKernel(
 {
     const int i = threadId( gridDim, blockIdx, blockDim, threadIdx );
 
-    if( i < numRows )
+    if ( i < numRows )
     {
         IndexType ii = jdsInversePerm[i]; // where to find row i in JDS storage
 
@@ -679,7 +679,7 @@ void jds2csrKernel(
         IndexType jdsOffset = ii; // run through input JDS data
         IndexType offset = csrIA[i]; // run through output data
 
-        for( IndexType jj = 0; jj < numValuesInRow; jj++ )
+        for ( IndexType jj = 0; jj < numValuesInRow; jj++ )
         {
             csrJA[offset + jj] = jdsJA[jdsOffset];
             csrValues[offset + jj] = static_cast<CSRValueType>( jdsValues[jdsOffset] );
@@ -739,7 +739,7 @@ texture<int,1> texJDSdlgRef;
 /* --------------------------------------------------------------------------- */
 
 template<typename T,bool useTexture>
-__inline__   __device__ T fetch_JDSx( const T* const x, const int i )
+__inline__    __device__ T fetch_JDSx( const T* const x, const int i )
 {
     return x[i];
 }
@@ -805,10 +805,10 @@ void jds_jacobi_kernel(
     extern __shared__ int dlg[];
     const int i = threadId( gridDim, blockIdx, blockDim, threadIdx );
 
-    if( useSharedMem )
+    if ( useSharedMem )
     {
         int k = threadIdx.x;
-        while( k < ndlg )
+        while ( k < ndlg )
         {
             dlg[k] = jdsDlg[k];
             k += blockDim.x;
@@ -816,7 +816,7 @@ void jds_jacobi_kernel(
         __syncthreads();
     }
 
-    if( i < numRows )
+    if ( i < numRows )
     {
         const int perm = jdsPerm[i];
 
@@ -826,17 +826,17 @@ void jds_jacobi_kernel(
 
         int pos = i + fetch_JDSdlg<useTexture,useSharedMem>( jdsDlg, dlg, 0 );
         const int rowEnd = jdsIlg[i];
-        for( int jj = 1; jj < rowEnd; ++jj )
+        for ( int jj = 1; jj < rowEnd; ++jj )
         {
             temp -= jdsValues[pos] * fetch_JDSx<T,useTexture>( oldSolution, jdsJA[pos] );
             pos += fetch_JDSdlg<useTexture,useSharedMem>( jdsDlg, dlg, jj );
         }
 
-        if( omega == 0.5 )
+        if ( omega == 0.5 )
         {
             solution[perm] = omega * ( fetch_JDSx<T,useTexture>( oldSolution, perm ) + temp / aDiag );
         }
-        else if( omega == 1.0 )
+        else if ( omega == 1.0 )
         {
             solution[perm] = temp / aDiag;
         }
@@ -871,7 +871,7 @@ void CUDAJDSUtils::jacobi(
     LAMA_CHECK_CUDA_ACCESS
     ;
 
-    if( syncToken )
+    if ( syncToken )
     {
         CUDAStreamSyncToken* cudaStreamSyncToken = dynamic_cast<CUDAStreamSyncToken*>( syncToken );
         LAMA_ASSERT_DEBUG( cudaStreamSyncToken, "no cuda stream sync token provided" );
@@ -887,18 +887,18 @@ void CUDAJDSUtils::jacobi(
 
     LAMA_LOG_DEBUG( logger, "useTexture = " << useTexture << ", useSharedMem = " << useSharedMem );
 
-    if( useTexture )
+    if ( useTexture )
     {
-        if( sizeof(ValueType) == sizeof(double) )
+        if ( sizeof(ValueType) == sizeof(double) )
         {
             LAMA_CUDA_RT_CALL( cudaBindTexture( NULL, texJDSDXref, oldSolution ), "LAMA_STATUS_CUDA_BINDTEX_FAILED" );
         }
-        else if( sizeof(ValueType) == sizeof(float) )
+        else if ( sizeof(ValueType) == sizeof(float) )
         {
             LAMA_CUDA_RT_CALL( cudaBindTexture( NULL, texJDSSXref, oldSolution ), "LAMA_STATUS_CUDA_BINDTEX_FAILED" );
         }
 
-        if( !useSharedMem )
+        if ( !useSharedMem )
         {
             LAMA_CUDA_RT_CALL( cudaBindTexture( NULL, texJDSdlgRef, jdsDlg ), "LAMA_STATUS_CUDA_BINDTEX_FAILED" );
             LAMA_CUDA_RT_CALL(
@@ -913,7 +913,7 @@ void CUDAJDSUtils::jacobi(
     }
     else
     {
-        if( !useSharedMem )
+        if ( !useSharedMem )
         {
             LAMA_CUDA_RT_CALL(
                 cudaFuncSetCacheConfig( jds_jacobi_kernel<ValueType, false, false>,cudaFuncCachePreferL1 ),
@@ -927,9 +927,9 @@ void CUDAJDSUtils::jacobi(
         }
     }
 
-    if( useTexture )
+    if ( useTexture )
     {
-        if( !useSharedMem )
+        if ( !useSharedMem )
         {
             jds_jacobi_kernel<ValueType, true, false> <<<dimGrid, dimBlock, 0, stream>>>( jdsValues, jdsDlg, ndlg, jdsIlg, jdsJA, jdsPerm,
                     numRows, rhs, solution, oldSolution, omega );
@@ -943,7 +943,7 @@ void CUDAJDSUtils::jacobi(
     }
     else
     {
-        if( !useSharedMem )
+        if ( !useSharedMem )
         {
             jds_jacobi_kernel<ValueType, false, false> <<<dimGrid, dimBlock, 0, stream>>>( jdsValues, jdsDlg, ndlg, jdsIlg, jdsJA,
                     jdsPerm, numRows, rhs, solution, oldSolution, omega );
@@ -958,25 +958,25 @@ void CUDAJDSUtils::jacobi(
 
     LAMA_CUDA_RT_CALL( cudaGetLastError(), "LAMA_STATUS_SJDSJACOBI_CUDAKERNEL_FAILED" );
 
-    if( useTexture )
+    if ( useTexture )
     {
 
-        if( sizeof(ValueType) == sizeof(double) )
+        if ( sizeof(ValueType) == sizeof(double) )
         {
             LAMA_CUDA_RT_CALL( cudaUnbindTexture( texJDSDXref ), "LAMA_STATUS_CUDA_UNBINDTEX_FAILED" );
         }
-        else if( sizeof(ValueType) == sizeof(float) )
+        else if ( sizeof(ValueType) == sizeof(float) )
         {
             LAMA_CUDA_RT_CALL( cudaUnbindTexture( texJDSSXref ), "LAMA_STATUS_CUDA_UNBINDTEX_FAILED" );
         }
 
-        if( !useSharedMem )
+        if ( !useSharedMem )
         {
             LAMA_CUDA_RT_CALL( cudaUnbindTexture( texJDSdlgRef ), "LAMA_STATUS_CUDA_UNBINDTEX_FAILED" );
         }
     }
 
-    if( !syncToken )
+    if ( !syncToken )
     {
         cudaStreamSynchronize( stream );
     }
@@ -1004,10 +1004,10 @@ void jds_jacobi_halo_kernel(
 
     const int id = threadId( gridDim, blockIdx, blockDim, threadIdx );
 
-    if( useSharedMem )
+    if ( useSharedMem )
     {
         int k = threadIdx.x;
-        while( k < ndlg_halo )
+        while ( k < ndlg_halo )
         {
             dlg[k] = jdsDlgHalo[k];
             k += blockDim.x;
@@ -1015,13 +1015,13 @@ void jds_jacobi_halo_kernel(
         __syncthreads();
     }
 
-    if( id < fetch_JDSdlg<useTexture,useSharedMem>( jdsDlgHalo, dlg, 0 ) )
+    if ( id < fetch_JDSdlg<useTexture,useSharedMem>( jdsDlgHalo, dlg, 0 ) )
     {
         T temp = 0.0;
         int pos = id;
         const int rowEnd = jdsIlgHalo[id];
         const int perm = jdsPermHalo[id];
-        for( int jj = 0; jj < rowEnd; ++jj )
+        for ( int jj = 0; jj < rowEnd; ++jj )
         {
             temp += jdsValuesHalo[pos] * fetch_JDSx<T,useTexture>( oldSolutionHalo, jdsJAHalo[pos] );
             pos += fetch_JDSdlg<useTexture,useSharedMem>( jdsDlgHalo, dlg, jj );
@@ -1063,18 +1063,18 @@ void CUDAJDSUtils::jacobiHalo(
 
     LAMA_LOG_DEBUG( logger, "useTexture = " << useTexture << ", useSharedMem = " << useSharedMem );
 
-    if( useTexture )
+    if ( useTexture )
     {
 
-        if( sizeof(ValueType) == sizeof(double) )
+        if ( sizeof(ValueType) == sizeof(double) )
         {
             LAMA_CUDA_RT_CALL( cudaBindTexture( NULL, texJDSDXref, oldSolutionHalo ), "LAMA_STATUS_CUDA_BINDTEX_FAILED" );
         }
-        else if( sizeof(ValueType) == sizeof(float) )
+        else if ( sizeof(ValueType) == sizeof(float) )
         {
             LAMA_CUDA_RT_CALL( cudaBindTexture( NULL, texJDSSXref, oldSolutionHalo ), "LAMA_STATUS_CUDA_BINDTEX_FAILED" );
         }
-        if( !useSharedMem )
+        if ( !useSharedMem )
         {
             LAMA_CUDA_RT_CALL( cudaBindTexture( NULL, texJDSdlgRef, jdsDlgHalo ), "LAMA_STATUS_CUDA_BINDTEX_FAILED" );
             LAMA_CUDA_RT_CALL( cudaFuncSetCacheConfig( jds_jacobi_halo_kernel<ValueType, true, false>, cudaFuncCachePreferL1),
@@ -1089,7 +1089,7 @@ void CUDAJDSUtils::jacobiHalo(
     }
     else
     {
-        if( !useSharedMem )
+        if ( !useSharedMem )
         {
             LAMA_CUDA_RT_CALL( cudaFuncSetCacheConfig( jds_jacobi_halo_kernel<ValueType, false, false>, cudaFuncCachePreferL1),
                                "LAMA_STATUS_CUDA_FUNCSETCACHECONFIG_FAILED" );
@@ -1102,9 +1102,9 @@ void CUDAJDSUtils::jacobiHalo(
 
     }
 
-    if( useTexture )
+    if ( useTexture )
     {
-        if( !useSharedMem )
+        if ( !useSharedMem )
         {
             jds_jacobi_halo_kernel<ValueType, true, false> <<<dimGrid,dimBlock,0>>>( diagonal, jdsValuesHalo, jdsDlgHalo,
                     ndlg_halo, jdsIlgHalo, jdsJAHalo,
@@ -1123,7 +1123,7 @@ void CUDAJDSUtils::jacobiHalo(
     }
     else
     {
-        if( !useSharedMem )
+        if ( !useSharedMem )
         {
             jds_jacobi_halo_kernel<ValueType, false, false> <<<dimGrid,dimBlock>>>( diagonal, jdsValuesHalo, jdsDlgHalo,
                     ndlg_halo, jdsIlgHalo, jdsJAHalo,
@@ -1143,17 +1143,17 @@ void CUDAJDSUtils::jacobiHalo(
     LAMA_CUDA_RT_CALL( cudaGetLastError(), "LAMA_STATUS_CSRJACOBIHALO_CUDAKERNEL_FAILED" );
     LAMA_CUDA_RT_CALL( cudaStreamSynchronize(0), "LAMA_STATUS_CSRJACOBIHALO_CUDAKERNEL_FAILED" );
 
-    if( useTexture )
+    if ( useTexture )
     {
-        if( sizeof(ValueType) == sizeof(double) )
+        if ( sizeof(ValueType) == sizeof(double) )
         {
             LAMA_CUDA_RT_CALL( cudaUnbindTexture( texJDSDXref ), "LAMA_STATUS_CUDA_UNBINDTEX_FAILED" );
         }
-        else if( sizeof(ValueType) == sizeof(float) )
+        else if ( sizeof(ValueType) == sizeof(float) )
         {
             LAMA_CUDA_RT_CALL( cudaUnbindTexture( texJDSSXref ), "LAMA_STATUS_CUDA_UNBINDTEX_FAILED" );
         }
-        if( !useSharedMem )
+        if ( !useSharedMem )
         {
             LAMA_CUDA_RT_CALL( cudaUnbindTexture( texJDSdlgRef ), "LAMA_STATUS_CUDA_UNBINDTEX_FAILED" );
         }
@@ -1181,10 +1181,10 @@ void jdsgemvKernel(
     extern __shared__ IndexType dlg[];
     const IndexType i = threadId( gridDim, blockIdx, blockDim, threadIdx );
 
-    if( useSharedMem )
+    if ( useSharedMem )
     {
         int k = threadIdx.x;
-        while( k < ndlg )
+        while ( k < ndlg )
         {
             dlg[k] = jdsDlg[k];
             k += blockDim.x;
@@ -1192,18 +1192,18 @@ void jdsgemvKernel(
         __syncthreads();
     }
 
-    if( i < n )
+    if ( i < n )
     {
         IndexType perm = jdsPerm[i];
         ValueType summand = 0.0;
-        if( beta != 0.0 )
+        if ( beta != 0.0 )
         {
             summand = beta * y_d[perm];
         }
 
         ValueType value = 0.0;
         int k = i;
-        for( int jj = 0; jj < jdsIlg[i]; ++jj )
+        for ( int jj = 0; jj < jdsIlg[i]; ++jj )
         {
             IndexType j = jdsJA[k];
             value += jdsValues[k] * fetch_JDSx<ValueType,useTexture>( x_d, j );
@@ -1264,17 +1264,17 @@ void CUDAJDSUtils::normalGEMV(
     LAMA_CHECK_CUDA_ACCESS
     ;
 
-    if( useTexture )
+    if ( useTexture )
     {
-        if( sizeof(ValueType) == sizeof(double) )
+        if ( sizeof(ValueType) == sizeof(double) )
         {
             LAMA_CUDA_RT_CALL( cudaBindTexture( NULL, texJDSDXref, x ), "LAMA_STATUS_CUDA_BINDTEX_FAILED" );
         }
-        else if( sizeof(ValueType) == sizeof(float) )
+        else if ( sizeof(ValueType) == sizeof(float) )
         {
             LAMA_CUDA_RT_CALL( cudaBindTexture( NULL, texJDSSXref, x ), "LAMA_STATUS_CUDA_BINDTEX_FAILED" );
         }
-        if( useSharedMem )
+        if ( useSharedMem )
         {
             const int sharedMemSize = ndlg * sizeof(int);
             cudaFuncSetCacheConfig( jdsgemvKernel<ValueType,true,true>, cudaFuncCachePreferL1 );
@@ -1289,18 +1289,18 @@ void CUDAJDSUtils::normalGEMV(
             ( numRows, alpha, jdsValues, jdsDLG, ndlg, jdsILG, jdsJA, jdsPerm, x, beta, y, result);
             LAMA_CUDA_RT_CALL( cudaUnbindTexture( texJDSdlgRef ), "LAMA_STATUS_CUDA_UNBINDTEX_FAILED" );
         }
-        if( sizeof(ValueType) == sizeof(double) )
+        if ( sizeof(ValueType) == sizeof(double) )
         {
             LAMA_CUDA_RT_CALL( cudaUnbindTexture( texJDSDXref ), "LAMA_STATUS_CUDA_UNBINDTEX_FAILED" );
         }
-        else if( sizeof(ValueType) == sizeof(float) )
+        else if ( sizeof(ValueType) == sizeof(float) )
         {
             LAMA_CUDA_RT_CALL( cudaUnbindTexture( texJDSSXref ), "LAMA_STATUS_CUDA_UNBINDTEX_FAILED" );
         }
     }
     else // no Texture cache
     {
-        if( useSharedMem )
+        if ( useSharedMem )
         {
             const int sharedMemSize = ndlg * sizeof(int);
             cudaFuncSetCacheConfig( jdsgemvKernel<ValueType,false,true>, cudaFuncCachePreferL1 );

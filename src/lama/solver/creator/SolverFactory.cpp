@@ -53,7 +53,7 @@ SolverFactory::~SolverFactory()
 
 void SolverFactory::addSolverCreator( const std::string& type, SolverCreator::RuleType& rule )
 {
-    if( mCreatorRuleMap.find( type ) )
+    if ( mCreatorRuleMap.find( type ) )
     {
         LAMA_LOG_WARN( logger, "SolverCreator " << type << " wants to register twice." );
         return;
@@ -70,7 +70,7 @@ SolverFactory& SolverFactory::getFactory()
 {
     static std::auto_ptr<SolverFactory> factory;
 
-    if( !factory.get() )
+    if ( !factory.get() )
     {
         factory = std::auto_ptr<SolverFactory>( new SolverFactory() );
     }
@@ -90,7 +90,7 @@ void SolverFactory::addSolver( Solver* solver )
 
     const std::string& name = solverPtr->getId();
 
-    if( hasSolver( name ) )
+    if ( hasSolver( name ) )
     {
         LAMA_LOG_WARN( logger, "Solver " << name << " wants to register with an existing name" );
         return;
@@ -103,7 +103,7 @@ void SolverFactory::addSolver( Solver* solver )
 
 bool SolverFactory::hasSolver( const std::string& solverName ) const
 {
-    if( mSolverInstanceMap.find( solverName ) != NULL )
+    if ( mSolverInstanceMap.find( solverName ) != NULL )
     {
         return true;
     }
@@ -113,7 +113,7 @@ bool SolverFactory::hasSolver( const std::string& solverName ) const
 
 SolverPtr SolverFactory::getSolver( const std::string& solverName )
 {
-    if( !hasSolver( solverName ) )
+    if ( !hasSolver( solverName ) )
     {
         LAMA_THROWEXCEPTION( "No solver instance named " << solverName << " registered." );
     }

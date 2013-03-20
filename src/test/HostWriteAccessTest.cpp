@@ -58,7 +58,7 @@ BOOST_AUTO_TEST_CASE( CtorTest )
 
     HostWriteAccess<double> lamaArrayWriteAccess( lamaArray );
 
-    for( IndexType i = 0; i < n; ++i )
+    for ( IndexType i = 0; i < n; ++i )
     {
         lamaArrayWriteAccess[i] = 2.0;
     }
@@ -67,7 +67,7 @@ BOOST_AUTO_TEST_CASE( CtorTest )
 
     HostReadAccess<double> lamaArrayHostAccess( lamaArray );
 
-    for( IndexType i = 0; i < n; ++i )
+    for ( IndexType i = 0; i < n; ++i )
     {
         BOOST_CHECK_EQUAL( 2.0, lamaArrayHostAccess[i] );
     }
@@ -105,7 +105,7 @@ BOOST_AUTO_TEST_CASE( pushbackTest )
 
     HostWriteAccess<double> lamaArrayWriteAccess( lamaArray );
 
-    for( IndexType i = 0; i < n; ++i )
+    for ( IndexType i = 0; i < n; ++i )
     {
         lamaArrayWriteAccess[i] = 2.0;
     }
@@ -116,7 +116,7 @@ BOOST_AUTO_TEST_CASE( pushbackTest )
 
     HostReadAccess<double> lamaArrayHostReadAccess( lamaArray );
 
-    for( IndexType i = 0; i < ( lamaArray.size() - 1 ); ++i )
+    for ( IndexType i = 0; i < ( lamaArray.size() - 1 ); ++i )
     {
         BOOST_CHECK_EQUAL( 2.0, lamaArrayHostReadAccess[i] );
     }

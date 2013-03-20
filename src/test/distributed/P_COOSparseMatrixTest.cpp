@@ -62,7 +62,7 @@ BOOST_AUTO_TEST_CASE( commonTestCases )
 
     P_SparseMatrixTest<COOSparseMatrix<T> > p_cooSparseMatrixtest;
 
-    if( base_test_case )
+    if ( base_test_case )
     {
         LAMA_LOG_INFO( logger, "Run test method " << testcase << " in P_COOSparseMatrixTest." );
         PSPARSEMATRIXTEST_COMMONTESTCASES( p_cooSparseMatrixtest );

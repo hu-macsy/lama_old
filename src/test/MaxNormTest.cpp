@@ -100,7 +100,7 @@ BOOST_AUTO_TEST_CASE( commonTestCases )
     MaxNorm maxnorm;
     NormTest normtest( maxnorm );
 
-    if( base_test_case )
+    if ( base_test_case )
     {
         LAMA_LOG_INFO( logger, "Run test method " << testcase << " in MaxNormTest." );
         NORMTEST_COMMONTESTCASES( normtest );

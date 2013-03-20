@@ -51,7 +51,7 @@ LAMA_LOG_DEF_LOGGER( CUDADIAUtils::logger, "CUDA.DIAUtils" );
 /* --------------------------------------------------------------------------- */
 
 template<typename T,bool useTexture>
-__inline__   __device__ T fetch_DIAx( const T* const x, const IndexType i )
+__inline__    __device__ T fetch_DIAx( const T* const x, const IndexType i )
 {
     return x[i];
 }
@@ -75,7 +75,7 @@ __global__ void diagemvpbvKernelSmall(
 
     // fill the shared array for diagonals
 
-    if( threadIdx.x < numDiagonals )
+    if ( threadIdx.x < numDiagonals )
     {
         diagonalOffsetsShared[threadIdx.x] = diagonalOffsets[threadIdx.x];
     }
@@ -83,22 +83,22 @@ __global__ void diagemvpbvKernelSmall(
     __syncthreads();
     IndexType i = threadId( gridDim, blockIdx, blockDim, threadIdx );
 
-    if( i < numRows )
+    if ( i < numRows )
     {
         ValueType summand = 0.0;
 
-        if( beta != 0.0 )
+        if ( beta != 0.0 )
         {
             summand = beta * y[i];
         }
 
         ValueType temp = 0.0;
 
-        for( IndexType idiag = 0; idiag < numDiagonals; idiag++ )
+        for ( IndexType idiag = 0; idiag < numDiagonals; idiag++ )
         {
             IndexType j = i + diagonalOffsetsShared[idiag];
 
-            if( j >= 0 && j < numColumns )
+            if ( j >= 0 && j < numColumns )
             {
                 ValueType val = diagonalValues[numRows * idiag + i];
                 temp += val * fetch_DIAx<ValueType,true>( x, j );

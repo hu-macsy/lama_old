@@ -41,7 +41,7 @@ lama::ContextPtr CUDAContext::cudaContext;
 
 lama::ContextPtr CUDAContext::getContext()
 {
-    if( !cudaContext )
+    if ( !cudaContext )
     {
         cudaContext = lama::ContextFactory::getContext( lama::Context::CUDA, 0 );
     }
