@@ -72,7 +72,7 @@ class LAMA_DLL_IMPORTEXPORT CommunicationPlan: public Printable
 public:
 
     /**
-     * Record that is used for the entries of the communication plan.
+     * @brief Record that is used for the entries of the communication plan.
      */
     struct Entry
     {
