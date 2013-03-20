@@ -1,0 +1,62 @@
+/*! 
+
+\page page_features Main Features of LAMA
+
+ - LAMA is written in C++
+ - LAMA is running on distributed machines
+ - LAMA exploits acceleration hardware like GPUs, Cell
+
+<h2>Object-Oriented Design and C++</h2>
+
+LAMA makes heavy use of many 
+
+
+<h2>Support of Distributed Memory Architectures</h2>
+
+LAMA supports distribution of data structures among different processors
+and provides the necessary communication pattern for it.
+
+LAMA uses an abstract Communicator class for the required communication.
+This abstract class is implemented by the MPI communicator using MPI
+communication. A PGAS communicator class uses a one-sided communication
+model. 
+
+<h2>Support of New Acceleration Hardware</h2>
+
+Currently, LAMA supports beside usual CPUs also GPUs. By the context,
+the user can specifiy where data structures reside and where operations
+should be executed on them. The GPU context is supported for the most
+operations, but if one operation is not available as it is not
+implemented yet, the operation will be executed by the CPU.
+
+Using multiple GPUs on one node and GPUs on mutliple nodes is supported
+as long as one GPU is assigned to one process. 
+
+In the same way as for GPUs, LAMA can be easily extended for other 
+acceleration hardware.
+
+<h2>Multiprecision Support</h2>
+
+LAMA supports matrices and vectors of the value type \c double and \c float, i.e.
+mathematical code can be written using one of theses types. By using the C++
+template mechanism, applications can be instantiated for each of
+the supported value types.
+
+But you can also mix up different precisions in the code and in expressions.
+
+\code
+CSRSparseMatrix<float> matrix;
+DenseVector<double> y;
+DenseVector<float> x;
+...
+y = x;
+y = A * x;
+\endcode
+
+At implementation site, Curiously Recursive Template Patterns and tables of
+function pointers, multi-indexed by the involved value types, support this
+kind of operations in such a way that conversions in temporary vectors and
+matrices are avoided.
+
+*/
+

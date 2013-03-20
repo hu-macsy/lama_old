@@ -1,0 +1,176 @@
+/**
+ * @file CUDABLAS1.hpp
+ *
+ * @license
+ * Copyright (c) 2012
+ * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
+ * for Fraunhofer-Gesellschaft
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ * @endlicense
+ *
+ * @brief CUDABLAS1.hpp
+ * @author lschubert
+ * @date 05.07.2012
+ * $Id$
+ */
+#ifndef LAMA_CUDABLAS1_HPP_
+#define LAMA_CUDABLAS1_HPP_
+
+// for dll_import
+#include <lama/config.hpp>
+
+// others
+#include <lama/LAMATypes.hpp>
+#include <lama/SyncToken.hpp>
+
+#include <cublas.h>
+#include <cuda_runtime_api.h>
+
+namespace lama
+{
+
+class LAMA_DLL_IMPORTEXPORT CUDABLAS1
+{
+public:
+
+    /**
+     * This function is the CUDA implementation of lama::BLAS1Interface::scal
+     */
+    template<typename T>
+    static void scal( const IndexType n, const T alpha, T* x, const IndexType incX, SyncToken* syncToken );
+
+    /**
+     * This function is the CUDA implementation of lama::BLAS1Interface::nrm2
+     */
+    template<typename T>
+    static T nrm2( const IndexType n, const T* x, const IndexType incX, SyncToken* syncToken );
+
+    /**
+     * This function is the CUDA implementation of lama::BLAS1Interface::asum
+     */
+    template<typename T>
+    static T asum( const IndexType n, const T* x, const IndexType incX, SyncToken* syncToken );
+
+    /**
+     * This function is the CUDA implementation of lama::BLAS1Interface::iamax
+     */
+    template<typename T>
+    static IndexType iamax( const IndexType n, const T* x, const IndexType incX, SyncToken* syncToken );
+
+    /**
+     * This function is the CUDA implementation of lama::BLAS1Interface::swap
+     */
+    template<typename T>
+    static void swap( const IndexType n, T* y, const IndexType incY, T* x, const IndexType incX, SyncToken* syncToken );
+
+    /**
+     * This function is the CUDA implementation of lama::BLAS1Interface::copy
+     */
+    template<typename T>
+    static void copy(
+        const IndexType n,
+        const T* x,
+        const IndexType incX,
+        T* y,
+        const IndexType incY,
+        SyncToken* syncToken );
+
+    /**
+     * This function is the CUDA implementation of lama::BLAS1Interface::axpy
+     */
+    template<typename T>
+    static void axpy(
+        const IndexType n,
+        const T alpha,
+        const T* x,
+        const IndexType incX,
+        T* y,
+        const IndexType incY,
+        SyncToken* syncToken );
+
+    /**
+     * This function is the CUDA implementation of lama::BLAS1Interface::dot
+     */
+    template<typename T>
+    static T dot(
+        const IndexType n,
+        const T* x,
+        const IndexType incX,
+        const T* y,
+        const IndexType incY,
+        SyncToken* syncToken );
+
+    /**
+     * This function is the CUDA implementation of lama::BLAS1Interface::sum
+     */
+    template<typename T>
+    static void sum( const IndexType n, T alpha, const T* x, T beta, const T* y, T* z, SyncToken* syncToken );
+
+    /**
+     * This function is the CUDA implementation of lama::BLAS1Interface::rot
+     */
+    template<typename T>
+    static void rot(
+        const IndexType n,
+        T* x,
+        const IndexType incX,
+        T* y,
+        const IndexType incY,
+        const T c,
+        const T s,
+        SyncToken* syncToken );
+
+    /**
+     * This function is the CUDA implementation of lama::BLAS1Interface::rotm
+     */
+    template<typename T>
+    static void rotm(
+        const IndexType n,
+        T* x,
+        const IndexType incX,
+        T* y,
+        const IndexType incY,
+        const T* P,
+        SyncToken* syncToken );
+
+    /**
+     * This function is the CUDA implementation of lama::BLAS1Interface::ass
+     */
+    template<typename T>
+    static void ass( const IndexType n, const T value, T* x, SyncToken* syncToken );
+
+    /**
+     * This function is the CUDA implementation of lama::BLAS1Interface::viamax
+     */
+    template<typename T>
+    static T viamax( const IndexType n, const T* x_d, const IndexType incx, SyncToken* syncToken );
+
+private:
+
+    template<typename T>
+    static void ass_launcher( const int n, const T value, T* x, cudaStream_t stream );
+
+    template<typename T>
+    static void sum_launcher( const int n, T alpha, const T* x, T beta, const T* y, T* z, cudaStream_t stream );
+};
+
+} /* namespace lama */
+
+#endif // LAMA_CUDABLAS1_HPP_

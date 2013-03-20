@@ -1,0 +1,38 @@
+/*! 
+
+\page page_lamaarray LAMA Array
+
+<h2>Introduction</h2>
+
+A LAMA array is a container for elements of a given ValueType (float, double).
+
+Its main feature is its support for implicit data transfer between 
+different devices. So it is possible to write subroutines that do
+not have to know where currently valid data is available.
+
+\code
+void subroutine doit ( LAMAArray<double>& data )
+{
+    ContextPtr loc = ContextFactory::getContext( Context::CUDA );
+    WriteAccess<double> wData( data, loc );
+    // work on data at device loc
+}
+\endcode
+
+If the above subroutine is called with an array that has valid
+data at the given device, no data transfer is needed. If not,
+the actual data will be copied to the location.
+
+<h2>Use of LAMAArray</h2>
+
+\code
+LAMAArray<double> A;   // empty container
+LAMAArray<double> A(10);  // array with 10 elements
+LAMAArray<double> A(10, 5.0d0);  // array with 10 elements, initialized to 5.0
+\endcode
+
+The general recommendation is to use the first declaration as it will
+not be allocated. If a size is specified, allocation will take place
+at the host context.
+
+*/

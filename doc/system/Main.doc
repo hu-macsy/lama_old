@@ -1,0 +1,66 @@
+/*! \mainpage LAMA (Library for Acceleration of Mathematical Applications)
+
+\image html LAMA_Logo.png
+
+Welcome to the LAMA System Documentation
+
+\section overview_sec Overview
+
+ - \subpage page_team
+ - \subpage page_features
+
+\section install_sec Installation
+
+ - \subpage page_linuxinstallation
+
+\section directory_sec Directory Strucutre
+
+ - \subpage page_Directory
+
+\section data_sec Data Structures
+
+ - \subpage page_context
+ - \subpage page_lamaarray
+ - \subpage page_storage
+
+\section interface_sec LAMA Interface
+
+ - \subpage page_lamainterface 
+
+\section asynchronous_sec Asynchronous Execution
+
+ - \subpage page_task
+
+\section distributed_sec Distributed Data Structures
+
+ - \subpage page_vector 
+ - \subpage page_matrix 
+ - \subpage page_sparsematrix
+ - \subpage page_densematrix
+ - \subpage page_expressions
+ - \subpage page_distribution
+ - \subpage page_halo 
+
+\section solver_sec Solvers
+
+ - \subpage page_solver 
+ - \subpage page_cgsolver 
+ - \subpage page_jacobisolver 
+ - \subpage page_amgsolver
+
+\section test_sec Testing
+
+ - \subpage page_BoostTests
+
+\section solver_bench Benchmarks
+
+ - \subpage page_BenchFramework
+ - \subpage page_BenchImplementations
+ - \subpage page_BenchInputSets
+ - \subpage page_BenchResults
+
+\section further_sec Implementation Topics
+
+ - \subpage page_logging
+
+*/

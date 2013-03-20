@@ -1,0 +1,13 @@
+/*! 
+
+\page page_amgsolver Algebraic Multigrid (AMG) Solver
+
+<h2>The Idea</h2>
+
+@todo Explaining the method
+
+<h2>Example</h2>
+
+@todo Use of the simple AMG solver.
+
+*/

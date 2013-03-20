@@ -1,0 +1,51 @@
+# Valgrind user supress file see
+# http://valgrind.org/docs/manual/manual-core.html#manual-core.suppress
+# and /usr/lib/valgrind/default.supp for an example
+
+{
+   BCSR40
+   Memcheck:Addr4
+   fun:_ZN5sblas40bcsrSparseMatrixColumnWiseVectorMultiplyIfitEEvT_PKT0_S4_PKS1_T1_S7_S2_S6_S1_S6_PS1_.omp_fn.1
+}
+
+{
+   BCSR41
+   Memcheck:Addr4
+   fun:_ZSt18_Rb_tree_incrementPSt18_Rb_tree_node_base
+}
+
+{
+   BCSR42
+   Memcheck:Addr4  
+   fun:_ZN5sblas16BCSRSparseMatrixIfSaIfEE13createFromCSRIfS1_EEvRKNS_15CSRSparseMatrixIT_T0_EE
+}
+
+{
+   BCSR43
+   Memcheck:Addr4
+   fun:_ZSt18_Rb_tree_decrementPSt18_Rb_tree_node_base
+}
+
+{
+   BCSR44
+   Memcheck:Addr4
+   fun:_ZNKSt4lessIiEclERKiS2_
+}
+
+{
+   BCSR81
+   Memcheck:Addr8
+   fun:_ZSt18_Rb_tree_incrementPSt18_Rb_tree_node_base
+}
+
+{
+   BCSR82
+   Memcheck:Addr8
+   fun:_ZSt18_Rb_tree_decrementPSt18_Rb_tree_node_base
+}
+
+{
+   BCSR83
+   Memcheck:Addr8
+   fun:_ZN5sblas12_GLOBAL__N_120computeRowWise_SSE_2EPdPKdS3_S3_ddPKiS5_iii
+}

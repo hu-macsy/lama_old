@@ -1,0 +1,14 @@
+'ScaLAPACK Matrix Inversion Testing input file'
+'PVM machine.'
+'INV.out'                   output file name (if any)
+6                           device out
+1                           number of matrix types (next line)
+'GEN' 'UTR' 'LTR' 'UPD' LPD' GEN, UTR, LTR, UPD, LPD
+1                           number of problems sizes
+500 1000 2000               values of N
+1                           number of NB's
+ 64                values of NB
+3                           number of process grids (ordered P & Q)
+ 4  2  1                    values of P
+ 1  2  4                    values of Q
+1.0                         threshold

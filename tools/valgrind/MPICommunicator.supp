@@ -1,0 +1,622 @@
+{
+   comm1
+   Memcheck:Param
+   sched_setaffinity(mask)
+   fun:syscall
+   fun:opal_paffinity_linux_plpa_api_probe_init
+   fun:opal_paffinity_linux_plpa_init
+   fun:opal_paffinity_linux_plpa_have_topology_information
+   fun:linux_module_init
+   fun:opal_paffinity_base_select
+   fun:opal_init
+   fun:orte_init
+   fun:ompi_mpi_init
+   fun:PMPI_Init_thread
+   fun:_ZN4lama15MPICommunicatorC1ERiRPPc
+   fun:_ZN4lama22MPICommunicatorManager15getCommunicatorERiRPPc
+}
+
+{
+   comm2
+   Memcheck:Cond
+   fun:mlx4_alloc_context
+   fun:ibv_open_device@@IBVERBS_1.1
+   fun:init_one_device
+   fun:btl_openib_component_init
+   fun:mca_btl_base_select
+   fun:mca_bml_r2_component_init
+   fun:mca_bml_base_init
+   fun:mca_pml_ob1_component_init
+   fun:mca_pml_base_select
+   fun:ompi_mpi_init
+   fun:PMPI_Init_thread
+   fun:_ZN4lama15MPICommunicatorC1ERiRPPc
+}
+
+{
+   comm3
+   Memcheck:Cond
+   fun:mlx4_alloc_context
+   fun:ibv_open_device@@IBVERBS_1.1
+   fun:init_one_device
+   fun:btl_openib_component_init
+   fun:mca_btl_base_select
+   fun:mca_bml_r2_component_init
+   fun:mca_bml_base_init
+   fun:mca_pml_ob1_component_init
+   fun:mca_pml_base_select
+   fun:ompi_mpi_init
+   fun:PMPI_Init_thread
+   fun:_ZN4lama15MPICommunicatorC1ERiRPPc
+}
+
+{
+   comm4
+   Memcheck:Cond
+   fun:init_one_device
+   fun:btl_openib_component_init
+   fun:mca_btl_base_select
+   fun:mca_bml_r2_component_init
+   fun:mca_bml_base_init
+   fun:mca_pml_ob1_component_init
+   fun:mca_pml_base_select
+   fun:ompi_mpi_init
+   fun:PMPI_Init_thread
+   fun:_ZN4lama15MPICommunicatorC1ERiRPPc
+   fun:_ZN4lama22MPICommunicatorManager15getCommunicatorERiRPPc
+   fun:_ZN4lama19CommunicatorFactory3getERKSsRiRPPc
+}
+
+{
+   comm5
+   Memcheck:Cond
+   fun:init_one_device
+   fun:btl_openib_component_init
+   fun:mca_btl_base_select
+   fun:mca_bml_r2_component_init
+   fun:mca_bml_base_init
+   fun:mca_pml_ob1_component_init
+   fun:mca_pml_base_select
+   fun:ompi_mpi_init
+   fun:PMPI_Init_thread
+   fun:_ZN4lama15MPICommunicatorC1ERiRPPc
+   fun:_ZN4lama22MPICommunicatorManager15getCommunicatorERiRPPc
+   fun:_ZN4lama19CommunicatorFactory3getERKSsRiRPPc
+}
+
+{
+   comm6
+   Memcheck:Cond
+   fun:ompi_btl_openib_ini_query
+   fun:init_one_device
+   fun:btl_openib_component_init
+   fun:mca_btl_base_select
+   fun:mca_bml_r2_component_init
+   fun:mca_bml_base_init
+   fun:mca_pml_ob1_component_init
+   fun:mca_pml_base_select
+   fun:ompi_mpi_init
+   fun:PMPI_Init_thread
+   fun:_ZN4lama15MPICommunicatorC1ERiRPPc
+   fun:_ZN4lama22MPICommunicatorManager15getCommunicatorERiRPPc
+}
+
+{
+   comm7
+   Memcheck:Cond
+   fun:init_one_device
+   fun:btl_openib_component_init
+   fun:mca_btl_base_select
+   fun:mca_bml_r2_component_init
+   fun:mca_bml_base_init
+   fun:mca_pml_ob1_component_init
+   fun:mca_pml_base_select
+   fun:ompi_mpi_init
+   fun:PMPI_Init_thread
+   fun:_ZN4lama15MPICommunicatorC1ERiRPPc
+   fun:_ZN4lama22MPICommunicatorManager15getCommunicatorERiRPPc
+   fun:_ZN4lama19CommunicatorFactory3getERKSsRiRPPc
+}
+
+{
+   comm8
+   Memcheck:Cond
+   fun:init_one_device
+   fun:btl_openib_component_init
+   fun:mca_btl_base_select
+   fun:mca_bml_r2_component_init
+   fun:mca_bml_base_init
+   fun:mca_pml_ob1_component_init
+   fun:mca_pml_base_select
+   fun:ompi_mpi_init
+   fun:PMPI_Init_thread
+   fun:_ZN4lama15MPICommunicatorC1ERiRPPc
+   fun:_ZN4lama22MPICommunicatorManager15getCommunicatorERiRPPc
+   fun:_ZN4lama19CommunicatorFactory3getERKSsRiRPPc
+}
+
+{
+   comm9
+   Memcheck:Cond
+   fun:init_one_device
+   fun:btl_openib_component_init
+   fun:mca_btl_base_select
+   fun:mca_bml_r2_component_init
+   fun:mca_bml_base_init
+   fun:mca_pml_ob1_component_init
+   fun:mca_pml_base_select
+   fun:ompi_mpi_init
+   fun:PMPI_Init_thread
+   fun:_ZN4lama15MPICommunicatorC1ERiRPPc
+   fun:_ZN4lama22MPICommunicatorManager15getCommunicatorERiRPPc
+   fun:_ZN4lama19CommunicatorFactory3getERKSsRiRPPc
+}
+
+{
+   comm10
+   Memcheck:Cond
+   fun:init_one_port
+   fun:init_one_device
+   fun:btl_openib_component_init
+   fun:mca_btl_base_select
+   fun:mca_bml_r2_component_init
+   fun:mca_bml_base_init
+   fun:mca_pml_ob1_component_init
+   fun:mca_pml_base_select
+   fun:ompi_mpi_init
+   fun:PMPI_Init_thread
+   fun:_ZN4lama15MPICommunicatorC1ERiRPPc
+   fun:_ZN4lama22MPICommunicatorManager15getCommunicatorERiRPPc
+}
+
+{
+   comm11
+   Memcheck:Cond
+   fun:init_one_port
+   fun:init_one_device
+   fun:btl_openib_component_init
+   fun:mca_btl_base_select
+   fun:mca_bml_r2_component_init
+   fun:mca_bml_base_init
+   fun:mca_pml_ob1_component_init
+   fun:mca_pml_base_select
+   fun:ompi_mpi_init
+   fun:PMPI_Init_thread
+   fun:_ZN4lama15MPICommunicatorC1ERiRPPc
+   fun:_ZN4lama22MPICommunicatorManager15getCommunicatorERiRPPc
+}
+
+{
+   comm12
+   Memcheck:Cond
+   fun:mca_btl_openib_rdma_get_ipv4addr
+   fun:rdmacm_component_query
+   fun:ompi_btl_openib_connect_base_select_for_local_port
+   fun:btl_openib_component_init
+   fun:mca_btl_base_select
+   fun:mca_bml_r2_component_init
+   fun:mca_bml_base_init
+   fun:mca_pml_ob1_component_init
+   fun:mca_pml_base_select
+   fun:ompi_mpi_init
+   fun:PMPI_Init_thread
+   fun:_ZN4lama15MPICommunicatorC1ERiRPPc
+}
+
+{
+   comm13
+   Memcheck:Param
+   write(buf)
+   obj:/lib64/libpthread-2.12.so
+   fun:prepare_device_for_use
+   fun:btl_openib_component_init
+   fun:mca_btl_base_select
+   fun:mca_bml_r2_component_init
+   fun:mca_bml_base_init
+   fun:mca_pml_ob1_component_init
+   fun:mca_pml_base_select
+   fun:ompi_mpi_init
+   fun:PMPI_Init_thread
+   fun:_ZN4lama15MPICommunicatorC1ERiRPPc
+   fun:_ZN4lama22MPICommunicatorManager15getCommunicatorERiRPPc
+}
+
+{
+   comm14
+   Memcheck:Cond
+   fun:btl_openib_async_command_done
+   fun:prepare_device_for_use
+   fun:btl_openib_component_init
+   fun:mca_btl_base_select
+   fun:mca_bml_r2_component_init
+   fun:mca_bml_base_init
+   fun:mca_pml_ob1_component_init
+   fun:mca_pml_base_select
+   fun:ompi_mpi_init
+   fun:PMPI_Init_thread
+   fun:_ZN4lama15MPICommunicatorC1ERiRPPc
+   fun:_ZN4lama22MPICommunicatorManager15getCommunicatorERiRPPc
+}
+
+{
+   comm15
+   Memcheck:Param
+   writev(vector[...])
+   fun:writev
+   fun:mca_oob_tcp_msg_send_handler
+   fun:mca_oob_tcp_peer_send
+   fun:mca_oob_tcp_send_nb
+   fun:orte_rml_oob_send
+   fun:orte_rml_oob_send_buffer
+   fun:allgather
+   fun:modex
+   fun:ompi_mpi_init
+   fun:PMPI_Init_thread
+   fun:_ZN4lama15MPICommunicatorC1ERiRPPc
+   fun:_ZN4lama22MPICommunicatorManager15getCommunicatorERiRPPc
+}
+
+{
+   comm16
+   Memcheck:Cond
+   fun:mlx4_create_cq
+   fun:ibv_create_cq@@IBVERBS_1.1
+   fun:adjust_cq
+   fun:mca_btl_openib_add_procs
+   fun:mca_bml_r2_add_procs
+   fun:mca_pml_ob1_add_procs
+   fun:ompi_mpi_init
+   fun:PMPI_Init_thread
+   fun:_ZN4lama15MPICommunicatorC1ERiRPPc
+   fun:_ZN4lama22MPICommunicatorManager15getCommunicatorERiRPPc
+   fun:_ZN4lama19CommunicatorFactory3getERKSsRiRPPc
+   fun:_ZN4lama19CommunicatorFactory3getERKSs
+}
+
+{
+   comm17
+   Memcheck:Cond
+   fun:mlx4_create_cq
+   fun:ibv_create_cq@@IBVERBS_1.1
+   fun:adjust_cq
+   fun:mca_btl_openib_add_procs
+   fun:mca_bml_r2_add_procs
+   fun:mca_pml_ob1_add_procs
+   fun:ompi_mpi_init
+   fun:PMPI_Init_thread
+   fun:_ZN4lama15MPICommunicatorC1ERiRPPc
+   fun:_ZN4lama22MPICommunicatorManager15getCommunicatorERiRPPc
+   fun:_ZN4lama19CommunicatorFactory3getERKSsRiRPPc
+   fun:_ZN4lama19CommunicatorFactory3getERKSs
+}
+
+{
+   comm18
+   Memcheck:Cond
+   fun:mlx4_create_cq
+   fun:ibv_create_cq@@IBVERBS_1.1
+   fun:adjust_cq
+   fun:mca_btl_openib_add_procs
+   fun:mca_bml_r2_add_procs
+   fun:mca_pml_ob1_add_procs
+   fun:ompi_mpi_init
+   fun:PMPI_Init_thread
+   fun:_ZN4lama15MPICommunicatorC1ERiRPPc
+   fun:_ZN4lama22MPICommunicatorManager15getCommunicatorERiRPPc
+   fun:_ZN4lama19CommunicatorFactory3getERKSsRiRPPc
+   fun:_ZN4lama19CommunicatorFactory3getERKSs
+}
+
+{
+   comm19
+   Memcheck:Cond
+   fun:mlx4_create_cq
+   fun:ibv_create_cq@@IBVERBS_1.1
+   fun:adjust_cq
+   fun:mca_btl_openib_add_procs
+   fun:mca_bml_r2_add_procs
+   fun:mca_pml_ob1_add_procs
+   fun:ompi_mpi_init
+   fun:PMPI_Init_thread
+   fun:_ZN4lama15MPICommunicatorC1ERiRPPc
+   fun:_ZN4lama22MPICommunicatorManager15getCommunicatorERiRPPc
+   fun:_ZN4lama19CommunicatorFactory3getERKSsRiRPPc
+   fun:_ZN4lama19CommunicatorFactory3getERKSs
+}
+
+{
+   comm20
+   Memcheck:Cond
+   fun:mlx4_create_cq
+   fun:ibv_create_cq@@IBVERBS_1.1
+   fun:adjust_cq
+   fun:mca_btl_openib_add_procs
+   fun:mca_bml_r2_add_procs
+   fun:mca_pml_ob1_add_procs
+   fun:ompi_mpi_init
+   fun:PMPI_Init_thread
+   fun:_ZN4lama15MPICommunicatorC1ERiRPPc
+   fun:_ZN4lama22MPICommunicatorManager15getCommunicatorERiRPPc
+   fun:_ZN4lama19CommunicatorFactory3getERKSsRiRPPc
+   fun:_ZN4lama19CommunicatorFactory3getERKSs
+}
+
+{
+   comm21
+   Memcheck:Param
+   write(buf)
+   obj:/lib64/libpthread-2.12.so
+   fun:ibv_cmd_create_srq
+   fun:mlx4_create_srq
+   fun:ibv_create_srq@@IBVERBS_1.1
+   fun:mca_btl_openib_add_procs
+   fun:mca_bml_r2_add_procs
+   fun:mca_pml_ob1_add_procs
+   fun:ompi_mpi_init
+   fun:PMPI_Init_thread
+   fun:_ZN4lama15MPICommunicatorC1ERiRPPc
+   fun:_ZN4lama22MPICommunicatorManager15getCommunicatorERiRPPc
+   fun:_ZN4lama19CommunicatorFactory3getERKSsRiRPPc
+}
+
+{
+   comm22
+   Memcheck:Param
+   write(buf)
+   obj:/lib64/libpthread-2.12.so
+   fun:ibv_cmd_destroy_srq
+   fun:mlx4_destroy_srq
+   fun:mca_btl_openib_finalize
+   fun:mca_btl_base_close
+   fun:mca_bml_r2_finalize
+   fun:mca_pml_ob1_component_fini
+   fun:ompi_mpi_finalize
+   fun:_ZN4lama15MPICommunicatorD1Ev
+   fun:_ZN4lama15MPICommunicatorD0Ev
+   fun:_ZN5boost14checked_deleteIN4lama15MPICommunicatorEEEvPT_
+   fun:_ZN5boost6detail17sp_counted_impl_pIN4lama15MPICommunicatorEE7disposeEv
+}
+
+{
+   comm23
+   Memcheck:Cond
+   fun:ibv_cmd_destroy_srq
+   fun:mlx4_destroy_srq
+   fun:mca_btl_openib_finalize
+   fun:mca_btl_base_close
+   fun:mca_bml_r2_finalize
+   fun:mca_pml_ob1_component_fini
+   fun:ompi_mpi_finalize
+   fun:_ZN4lama15MPICommunicatorD1Ev
+   fun:_ZN4lama15MPICommunicatorD0Ev
+   fun:_ZN5boost14checked_deleteIN4lama15MPICommunicatorEEEvPT_
+   fun:_ZN5boost6detail17sp_counted_impl_pIN4lama15MPICommunicatorEE7disposeEv
+   fun:_ZN5boost6detail15sp_counted_base7releaseEv
+}
+
+{
+   comm24
+   Memcheck:Param
+   write(buf)
+   obj:/lib64/libpthread-2.12.so
+   fun:device_destruct
+   fun:mca_btl_openib_finalize
+   fun:mca_btl_base_close
+   fun:mca_bml_r2_finalize
+   fun:mca_pml_ob1_component_fini
+   fun:ompi_mpi_finalize
+   fun:_ZN4lama15MPICommunicatorD1Ev
+   fun:_ZN4lama15MPICommunicatorD0Ev
+   fun:_ZN5boost14checked_deleteIN4lama15MPICommunicatorEEEvPT_
+   fun:_ZN5boost6detail17sp_counted_impl_pIN4lama15MPICommunicatorEE7disposeEv
+   fun:_ZN5boost6detail15sp_counted_base7releaseEv
+}
+
+{
+   comm25
+   Memcheck:Cond
+   fun:btl_openib_async_command_done
+   fun:device_destruct
+   fun:mca_btl_openib_finalize
+   fun:mca_btl_base_close
+   fun:mca_bml_r2_finalize
+   fun:mca_pml_ob1_component_fini
+   fun:ompi_mpi_finalize
+   fun:_ZN4lama15MPICommunicatorD1Ev
+   fun:_ZN4lama15MPICommunicatorD0Ev
+   fun:_ZN5boost14checked_deleteIN4lama15MPICommunicatorEEEvPT_
+   fun:_ZN5boost6detail17sp_counted_impl_pIN4lama15MPICommunicatorEE7disposeEv
+   fun:_ZN5boost6detail15sp_counted_base7releaseEv
+}
+
+{
+   comm26
+   Memcheck:Param
+   write(buf)
+   obj:/lib64/libpthread-2.12.so
+   fun:ibv_cmd_destroy_cq
+   fun:mlx4_destroy_cq
+   fun:device_destruct
+   fun:mca_btl_openib_finalize
+   fun:mca_btl_base_close
+   fun:mca_bml_r2_finalize
+   fun:mca_pml_ob1_component_fini
+   fun:ompi_mpi_finalize
+   fun:_ZN4lama15MPICommunicatorD1Ev
+   fun:_ZN4lama15MPICommunicatorD0Ev
+   fun:_ZN5boost14checked_deleteIN4lama15MPICommunicatorEEEvPT_
+}
+
+{
+   comm27
+   Memcheck:Cond
+   fun:ibv_cmd_destroy_cq
+   fun:mlx4_destroy_cq
+   fun:device_destruct
+   fun:mca_btl_openib_finalize
+   fun:mca_btl_base_close
+   fun:mca_bml_r2_finalize
+   fun:mca_pml_ob1_component_fini
+   fun:ompi_mpi_finalize
+   fun:_ZN4lama15MPICommunicatorD1Ev
+   fun:_ZN4lama15MPICommunicatorD0Ev
+   fun:_ZN5boost14checked_deleteIN4lama15MPICommunicatorEEEvPT_
+   fun:_ZN5boost6detail17sp_counted_impl_pIN4lama15MPICommunicatorEE7disposeEv
+}
+
+{
+   comm28
+   Memcheck:Cond
+   fun:ibv_cmd_destroy_cq
+   fun:mlx4_destroy_cq
+   fun:device_destruct
+   fun:mca_btl_openib_finalize
+   fun:mca_btl_base_close
+   fun:mca_bml_r2_finalize
+   fun:mca_pml_ob1_component_fini
+   fun:ompi_mpi_finalize
+   fun:_ZN4lama15MPICommunicatorD1Ev
+   fun:_ZN4lama15MPICommunicatorD0Ev
+   fun:_ZN5boost14checked_deleteIN4lama15MPICommunicatorEEEvPT_
+   fun:_ZN5boost6detail17sp_counted_impl_pIN4lama15MPICommunicatorEE7disposeEv
+}
+
+{
+   comm29
+   Memcheck:Param
+   write(buf)
+   obj:/lib64/libpthread-2.12.so
+   fun:ibv_cmd_destroy_cq
+   fun:mlx4_destroy_cq
+   fun:device_destruct
+   fun:mca_btl_openib_finalize
+   fun:mca_btl_base_close
+   fun:mca_bml_r2_finalize
+   fun:mca_pml_ob1_component_fini
+   fun:ompi_mpi_finalize
+   fun:_ZN4lama15MPICommunicatorD1Ev
+   fun:_ZN4lama15MPICommunicatorD0Ev
+   fun:_ZN5boost14checked_deleteIN4lama15MPICommunicatorEEEvPT_
+}
+
+{
+   comm30
+   Memcheck:Cond
+   fun:ibv_cmd_destroy_cq
+   fun:mlx4_destroy_cq
+   fun:device_destruct
+   fun:mca_btl_openib_finalize
+   fun:mca_btl_base_close
+   fun:mca_bml_r2_finalize
+   fun:mca_pml_ob1_component_fini
+   fun:ompi_mpi_finalize
+   fun:_ZN4lama15MPICommunicatorD1Ev
+   fun:_ZN4lama15MPICommunicatorD0Ev
+   fun:_ZN5boost14checked_deleteIN4lama15MPICommunicatorEEEvPT_
+   fun:_ZN5boost6detail17sp_counted_impl_pIN4lama15MPICommunicatorEE7disposeEv
+}
+
+{
+   comm31
+   Memcheck:Cond
+   fun:ibv_cmd_destroy_cq
+   fun:mlx4_destroy_cq
+   fun:device_destruct
+   fun:mca_btl_openib_finalize
+   fun:mca_btl_base_close
+   fun:mca_bml_r2_finalize
+   fun:mca_pml_ob1_component_fini
+   fun:ompi_mpi_finalize
+   fun:_ZN4lama15MPICommunicatorD1Ev
+   fun:_ZN4lama15MPICommunicatorD0Ev
+   fun:_ZN5boost14checked_deleteIN4lama15MPICommunicatorEEEvPT_
+   fun:_ZN5boost6detail17sp_counted_impl_pIN4lama15MPICommunicatorEE7disposeEv
+}
+
+{
+   comm32
+   Memcheck:Param
+   write(buf)
+   obj:/lib64/libpthread-2.12.so
+   fun:ibv_cmd_dealloc_pd
+   fun:mlx4_free_pd
+   fun:device_destruct
+   fun:mca_btl_openib_finalize
+   fun:mca_btl_base_close
+   fun:mca_bml_r2_finalize
+   fun:mca_pml_ob1_component_fini
+   fun:ompi_mpi_finalize
+   fun:_ZN4lama15MPICommunicatorD1Ev
+   fun:_ZN4lama15MPICommunicatorD0Ev
+   fun:_ZN5boost14checked_deleteIN4lama15MPICommunicatorEEEvPT_
+}
+
+{
+   comm33
+   Memcheck:Param
+   close(fd)
+   obj:/lib64/libpthread-2.12.so
+   fun:ibv_close_device@@IBVERBS_1.1
+   fun:device_destruct
+   fun:mca_btl_openib_finalize
+   fun:mca_btl_base_close
+   fun:mca_bml_r2_finalize
+   fun:mca_pml_ob1_component_fini
+   fun:ompi_mpi_finalize
+   fun:_ZN4lama15MPICommunicatorD1Ev
+   fun:_ZN4lama15MPICommunicatorD0Ev
+   fun:_ZN5boost14checked_deleteIN4lama15MPICommunicatorEEEvPT_
+   fun:_ZN5boost6detail17sp_counted_impl_pIN4lama15MPICommunicatorEE7disposeEv
+}
+
+{
+   comm34
+   Memcheck:Param
+   write(buf)
+   obj:/lib64/libpthread-2.12.so
+   fun:ucma_destroy_kern_id
+   fun:rdma_destroy_id
+   fun:id_context_destructor
+   fun:rdmacm_component_finalize
+   fun:ompi_btl_openib_connect_base_finalize
+   fun:btl_openib_component_close
+   fun:mca_base_components_close
+   fun:mca_btl_base_close
+   fun:mca_bml_r2_finalize
+   fun:mca_pml_ob1_component_fini
+   fun:ompi_mpi_finalize
+}
+
+{
+   comm35
+   Memcheck:Cond
+   fun:rdma_destroy_id
+   fun:id_context_destructor
+   fun:rdmacm_component_finalize
+   fun:ompi_btl_openib_connect_base_finalize
+   fun:btl_openib_component_close
+   fun:mca_base_components_close
+   fun:mca_btl_base_close
+   fun:mca_bml_r2_finalize
+   fun:mca_pml_ob1_component_fini
+   fun:ompi_mpi_finalize
+   fun:_ZN4lama15MPICommunicatorD1Ev
+   fun:_ZN4lama15MPICommunicatorD0Ev
+}
+
+{
+   comm36
+   Memcheck:Cond
+   fun:rdma_destroy_id
+   fun:id_context_destructor
+   fun:rdmacm_component_finalize
+   fun:ompi_btl_openib_connect_base_finalize
+   fun:btl_openib_component_close
+   fun:mca_base_components_close
+   fun:mca_btl_base_close
+   fun:mca_bml_r2_finalize
+   fun:mca_pml_ob1_component_fini
+   fun:ompi_mpi_finalize
+   fun:_ZN4lama15MPICommunicatorD1Ev
+   fun:_ZN4lama15MPICommunicatorD0Ev
+}

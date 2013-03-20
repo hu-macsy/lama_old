@@ -1,0 +1,29 @@
+/*! 
+
+\page page_BoostTests Boost Tests 
+
+<h2>Running the Tests</h2>
+
+Pure serial testing.
+
+\code
+export OMP_NUM_THREADS=1
+lama_btests
+\endcode
+
+Testing OpenMP parallelization.
+
+\code
+export OMP_NUM_THREADS=1
+lama_btests
+\endcode
+
+Testing MPI paralleliation
+
+\code
+mpirun -np 2 lama_btests
+mpirun -np 3 lama_btests
+\endcode
+
+
+*/

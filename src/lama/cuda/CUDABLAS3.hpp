@@ -1,0 +1,564 @@
+/**
+ * @file CUDABLAS3.hpp
+ *
+ * @license
+ * Copyright (c) 2012
+ * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
+ * for Fraunhofer-Gesellschaft
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ * @endlicense
+ *
+ * @brief CUDABLAS3.hpp
+ * @author lschubert
+ * @date 05.07.2012
+ * $Id$
+ */
+#ifndef LAMA_CUDABLAS3_HPP_
+#define LAMA_CUDABLAS3_HPP_
+
+// for dll_import
+#include <lama/config.hpp>
+
+// others
+#include <lama/openmp/BLASHelper.hpp>
+#include <lama/LAMATypes.hpp>
+
+// logging
+#include <logging/logging.hpp>
+
+#include <cublas.h>
+#include <cuda_runtime_api.h>
+
+namespace lama
+{
+
+class LAMA_DLL_IMPORTEXPORT CUDABLAS3
+{
+public:
+    /**
+     * @brief gemm computes the product of matrix A and matrix B,
+     * multiplies the result by scalar alpha,
+     * and adds the sum to the product of matrix C and scalar beta.
+     * It performs one of the matrix‐matrix operations:
+     *
+     * C = alpha * op(A) * op(B) + beta * C,
+     * where op(X) = X or op(X) = XT
+     *
+     * alpha and beta are scalars.
+     * A, B, and C are matrices consisting of elements,
+     * with op(A) an m×k matrix,
+     * op(B) a k×n matrix,
+     * C an m×n matrix.
+     * matrix A, B, and C are stored in column‐major format,
+     * lda, ldb, and ldc are the leading dimensions of the two‐dimensional arrays
+     * containing A, B, and C.
+     *
+     * @param[in] order   TODO[doxy] Complete Description.
+     * @param[in] transa  specifies op(A)
+     *                    If transa = 'N', 'n'
+     *                    op(A) = A
+     *                    If transa == 'T', 't', 'C', 'c'
+     *                    op(A) = AT
+     * @param[in] transb  specifies op(B)
+     *                    If transb = 'N', 'n'
+     *                    op(B) = B
+     *                    If transb == 'T', 't', 'C', 'c'
+     *                    op(B) = BT
+     * @param[in] m       number of rows of matrix op(A) and rows of matrix C;
+     *                    m must be at least zero.
+     * @param[in] n       number of columns of matrix op(B) and number of columns of C;
+     *                    n must be at least zero.
+     * @param[in] k       number of columns of matrix op(A) and number of rows of op(B);
+     *                    k must be at least zero.
+     * @param[in] alpha   scalar multiplier applied to op(A) * op(B)
+     * @param[in] A       array of dimensions (lda, k)
+     *                    if transa == 'N' or 'n', and of dimensions (lda, m) otherwise.
+     *                    If transa == 'N' or 'n', lda must be at least max(1, m);
+     *                    otherwise, lda must be at least max(1, k).
+     * @param[in] lda     leading dimension of two-dimensional array used to store matrix A.
+     * @param[in] B       array of dimensions (ldb, n)
+     *                    if transb == 'N' or 'n', and of dimensions (ldb, k) otherwise.
+     *                    If transb == 'N' or 'n', ldb must be at least max(1, k);
+     *                    otherwise, lda must be at least max(1, n).
+     * @param[in] ldb     leading dimension of two-dimensional array used to store matrix B.
+     * @param[in] beta    scalar multiplier applied to C.
+     *                    If zero, C does not have to be a valid input
+     * @param[in] C       array of dimensions (ldc,n);
+     *                    ldc must be at least max(1,m).
+     * @param[in] ldc     leading dimension of two-dimensional array used to store matrix C.
+     * TODO[doxy] Is the following description correct?
+     * @param[out] syncToken updated based on C = alpha * op(A) * op(B) + beta * C
+     */
+    template<typename T>
+    static void gemm(
+        const enum CBLAS_ORDER order,
+        const enum CBLAS_TRANSPOSE transa,
+        const enum CBLAS_TRANSPOSE transb,
+        const IndexType m,
+        const IndexType n,
+        const IndexType k,
+        const T alpha,
+        const T* A,
+        const IndexType lda,
+        const T* B,
+        const IndexType ldb,
+        const T beta,
+        T* C,
+        const IndexType ldc,
+        class SyncToken* syncToken );
+
+///////**
+//     * @brief symm performs one of the matrix-matrix operations
+//     *
+//     * C = alpha * A * B + beta * C or C = alpha * B * A + beta * C,
+//     *
+//     * where alpha and beta are scalars,
+//     * A is a symmetric matrix consisting of single‐precision elements
+//     * and is stored in either lower or upper storage mode.
+//     * B and C are m×n matrices consisting of elements.
+//     *
+//     * @param[in] side    specifies whether the symmetric matrix A appears on the
+//     *                    left-hand side or right-hand side of Matrix B.
+//     *                    If side == 'L' or 'l', C = alpha * A * B + beta * C.
+//     *                    If side == 'R' or 'R', C = alpha * B * A + beta * C.
+//     * @param[in] uplo    specifies whether the symmetric matrix A is stored
+//     *                    in upper or lower storage mode.
+//     *                    If uplo == 'U' or 'u',
+//     *                    only the upper triangular part of the symmetric matrix is referenced,
+//     *                    and the elements of the strictly lower triangular part are inferred
+//     *                    from those in the upper triangular part.
+//     *                    If uplo == 'L' or 'l',
+//     *                    only the lower triangular part of the symmetric matrix is referenced,
+//     *                    and the elements of the strictly upper triangular part are inferred
+//     *                    from those in the lower triangular part.
+//     * @param[in] m       specifies the number of rows of matrix C,
+//     *                    and the number of rows of matrix B.
+//     *                    It also specifies the dimensions of symmetric matrix A when side == 'L' or 'l';
+//     *                    m must be at least zero.
+//     * @param[in] n       specifies the number of columns of matrix C,
+//     *                    and the number of columns of matrix B.
+//     *                    It also specifies the dimensions of symmetric matrix A when side == 'R' or 'r'';
+//     *                    n must be at least zero.
+//     * @param[in] alpha   scalar multiplier applied to A * B or B * A
+//     * @param[in] A       array of dimensions (lda, ka),
+//     *                    where ka is m when side == 'L' or 'l' and is n otherwise.
+//     *                    If side == 'L' or 'l',
+//     *                    the leading m×m part of array A must
+//     *                    contain the symmetric matrix such that when uplo == 'U' or 'u',
+//     *                    the leading m×m part stores the upper triangular part of the symmetric matrix,
+//     *                    and the strictly lower triangular part of A is not referenced;
+//     *                    and when uplo == 'L' or 'l',
+//     *                    the leading m×m part stores the lower triangular part of the symmetric matrix,
+//     *                    and the strictly upper triangular part is not referenced.
+//     *                    If side == 'R' or 'r',
+//     *                    the leading n×n part of array A must contain the symmetric matrix such that
+//     *                    when uplo == 'U' or 'u', the leading n×n part stores the
+//     *                    upper triangular part of the symmetric matrix,
+//     *                    and the strictly lower triangular part of A is not referenced;
+//     *                    and when uplo == 'L' or 'l',
+//     *                    the leading n×n part stores the lower triangular
+//     *                    part of the symmetric matrix, and the strictly upper triangular part is
+//     *                    not referenced.
+//     * @param[in] lda     leading dimension of A.
+//     *                    When side == 'L' or 'l', it must be at least max(1, m)
+//     *                    and at least max(1, n) otherwise.
+//     * @param[in] B       array of dimensions (ldb, n).
+//     *                    On entry, the leading m×n part of the array contains the matrix B.
+//     * @param[in] ldb     leading dimension of B;
+//     *                    ldb must be at least max(1,m).
+//     * @param[in] beta    scalar multiplier applied to C.
+//     *                    If beta is zero, C does not have to be a valid input
+//     * @param[in] C       array of dimensions (ldc,n);
+//     * @param[in] ldc     leading dimension of C.
+//     *                    ldc must be at least max(1,m)
+//     * @param[out] C      updated according to C = alpha * A * B + beta * C
+//     *                    or C = alpha * B * A + beta * C
+//     *
+//     */
+//    template<typename T>
+//    static void symm(
+//        const enum CBLAS_ORDER order,
+//        const enum CBLAS_SIDE side,
+//        const enum CBLAS_UPLO uplo,
+//        const IndexType m,
+//        const IndexType n,
+//        const T alpha,
+//        const T *A,
+//        const IndexType lda,
+//        const T *B,
+//        const IndexType ldb,
+//        const T beta,
+//        T *C,
+//        const IndexType ldc);
+
+///////**
+//     * @brief trmm performs one of the matrix-matrix operations
+//     *
+//     * B = alpha * op(A) * B or
+//     * B = alpha * B * op(A)
+//     * where op(A) = A or op(A) = AT
+//     *
+//     * alpha is a scalar,
+//     * B is an m×n matrix consisting of double‐precision elements,
+//     * A is a unit or non‐unit, upper or lower triangular matrix consisting of double‐precision elements.
+//     * matrix A and B are stored in column‐major format,
+//     * lda and ldb are the leading dimensions of the two‐dimensional arrays
+//     * that contain A and B, respectively.
+//     *
+//     * @param[in] side    specifies whether op(A) multiplies B from the left or right.
+//     *                    If side == 'L' or 'l', C = alpha * op(A) * B
+//     *                    If side == 'R' or 'r', C = alpha * B * op(A)
+//     * @param[in] uplo    specifies whether the  matrix A is an upper or lower triangular matrix.
+//     *                    If uplo == 'U' or 'u',
+//     *                    A is an upper triangular matrix.
+//     *                    If uplo == 'L' or 'l',
+//     *                    A is a lower triangular matrix.
+//     * @param[in] transa  specifies the form of op(A) to be used in the matrix multiplication.
+//     *                    If transa == 'N' or 'n', op(A) = A.
+//     *                    If transa == 'T','t','C','c', op(A) = AT.
+//     * @param[in] diag    specifies whether or not A is a unit triangular matrix.
+//     *                    If diag == 'U' or 'u',
+//     *                    A is assumed to be unit triangular.
+//     *                    If diag == 'N' or 'n',
+//     *                    A is not assumed to be unit triangular.
+//     * @param[in] m       the number of rows of matrix B;
+//     *                    m must be at least zero.
+//     * @param[in] n       the number of columns of matrix B;
+//     *                    n must be at least zero.
+//     * @param[in] alpha   scalar multiplier applied to op(A) * B or B * op(A),
+//     *                    respectively.
+//     *                    If alpha is zero,
+//     *                    no accesses are made to matrix A and no read accesses are made to matrix B.
+//     * @param[in] A       array of dimensions (lda, k).
+//     *                    If side == 'L' or 'l', k = m.
+//     *                    If side == 'R' or 'r', k = n.
+//     *                    If uplo == 'U' or 'u',
+//     *                    the leading k×k upper triangular part of the array A
+//     *                    must contain the upper triangular matrix,
+//     *                    and the strictly lower triangular part of A is not referenced.
+//     *                    If uplo == 'L' or 'l',
+//     *                    the leading k×k lower triangular part of the array A
+//     *                    must contain the lower triangular matrix,
+//     *                    and the strictly upper triangular part of A is not referenced.
+//     *                    When diag == 'U' or 'u',
+//     *                    the diagonal elements of A are not referenced and are assumed to be unity.
+//     * @param[in] lda     leading dimension of A.
+//     *                    When side == 'L' or 'l', it must be at least max(1, m)
+//     *                    and at least max(1, n) otherwise.
+//     * @param[in] B       array of dimensions (ldb, n).
+//     *                    On entry, the leading m×n part of the array contains the matrix B.
+//     *                    It is overwritten with the transformed matrix on exit
+//     * @param[in] ldb     leading dimension of B;
+//     *                    ldb must be at least max(1,m).
+//     * @param[out] B      updated according to
+//     *                    B = alpha * op(A) * B or
+//     *                    B = alpha * B * op(A)
+//     */
+//    template<typename T>
+//    static void trmm(
+//        const enum CBLAS_ORDER order,
+//        const enum CBLAS_SIDE Side,
+//        const enum CBLAS_UPLO Uplo,
+//        const enum CBLAS_TRANSPOSE TransA,
+//        const enum CBLAS_DIAG Diag,
+//        const IndexType M,
+//        const IndexType N,
+//        const T alpha,
+//        const T *A,
+//        const IndexType lda,
+//        T *B,
+//        const IndexType ldb);
+
+    /**
+     * @brief trsm solves one of the matrix equations
+     *
+     * op(A) * X = alpha * B or
+     * X * op(A) = alpha * B
+     * where op(A) = A or op(A) = AT
+     *
+     * alpha is a scalar,
+     * X and B are m×n matrices that consist of elements.
+     * A is a unit or non‐unit, upper or lower, triangular matrix.
+     * The result matrix X overwrites input matrix B;
+     * that is, on exit the result is stored in B.
+     * matrix A and B are stored in column‐major format,
+     * lda and ldb are the leading dimensions of the two‐dimensional arrays
+     * that contain A and B, respectively.
+     *
+     * @param[in] order   TODO[doxy] Complete Description.
+     * @param[in] side    specifies whether op(A) appears on the left or right of X:
+     *                    If side == 'L' or 'l', op(A) * X = alpha * B
+     *                    If side == 'R' or 'R', X * op(A) = alpha * B
+     * @param[in] uplo    specifies whether the  matrix A is an upper or lower triangular matrix.
+     *                    If uplo == 'U' or 'u',
+     *                    A is an upper triangular matrix.
+     *                    If uplo == 'L' or 'l',
+     *                    A is a lower triangular matrix.
+     * @param[in] transa  specifies the form of op(A) to be used in the matrix multiplication.
+     *                    If transa == 'N' or 'n', op(A) = A.
+     *                    If transa == 'T','t','C','c', op(A) = AT.
+     * @param[in] diag    specifies whether or not A is a unit triangular matrix.
+     *                    If diag == 'U' or 'u',
+     *                    A is assumed to be unit triangular.
+     *                    If diag == 'N' or 'n',
+     *                    A is not assumed to be unit triangular.
+     * @param[in] m       the number of rows of matrix B;
+     *                    m must be at least zero.
+     * @param[in] n       the number of columns of matrix B;
+     *                    n must be at least zero.
+     * @param[in] alpha   scalar multiplier applied to B.
+     *                    When alpha is zero,
+     *                    A is not referenced and B does not have to be a valid input.
+     * @param[in] A       array of dimensions (lda, k),
+     *                    where k is m when side == 'L' or 'l'
+     *                    and is n when side == 'R' or 'r'.
+     *                    If uplo == 'U' or 'u',
+     *                    the leading k×k upper triangular part of the array A
+     *                    must contain the upper triangular matrix,
+     *                    and the strictly lower triangular matrix of A is not referenced.
+     *                    When uplo == 'L' or 'l',
+     *                    the leading k×k lower triangular part of the array A
+     *                    must contain the lower triangular matrix,
+     *                    and the strictly upper triangular part of A is not referenced.
+     *                    If diag == 'U' or 'u',
+     *                    the diagonal elements of A are not referenced and are assumed to be unity.
+     * @param[in] lda     leading dimension of the two-dimensional array containing A.
+     *                    When side == 'L' or 'l', lda must be at least max(1, m).
+     *                    When side == 'R' or 'r', lda must be at least max(1, n).
+     * @param[in] B       array of dimensions (ldb, n);
+     *                    ldb must be at least max(1, m). T
+     *                    he leading m×n part of the array B must contain
+     *                    the righthand side matrix B.
+     *                    On exit B is overwritten by the solution matrix X.
+     * @param[in] ldb     leading dimension of the two-dimensional array containing B;
+     *                    ldb must be at least max(1, m).
+     * TODO[doxy] Is the following description correct?
+     * @param[out] syncToken  contains the solution matrix X satisfying
+     *                              op(A) * X = alpha * B
+     *                           or X * op(A) = alpha * B
+     */
+    template<typename T>
+    static void trsm(
+        const enum CBLAS_ORDER order,
+        const enum CBLAS_SIDE side,
+        const enum CBLAS_UPLO uplo,
+        const enum CBLAS_TRANSPOSE transa,
+        const enum CBLAS_DIAG diag,
+        const IndexType m,
+        const IndexType n,
+        const T alpha,
+        const T* A,
+        const IndexType lda,
+        T* B,
+        const IndexType ldb,
+        class SyncToken* syncToken );
+
+///////**
+//     * @brief syrk performs one of the symmetric rank k operations
+//     *
+//     * C = alpha * A * AT + beta * C or C = alpha * AT * A + beta * C
+//     *
+//     * where alpha and beta are scalars.
+//     * C is an n×n symmetric matrix consisting of elements
+//     * and is stored in either lower or upper storage mode.
+//     * A is a matrix consisting of elements with dimensions of n×k
+//     * in the first case and k×n in the second case.
+//     *
+//     * @param[in] order   TODO[doxy] Complete Description.
+//     * @param[in] uplo    specifies whether the symmetric matrix C is
+//     *                    stored in upper or lower storage mode.
+//     *                    If uplo == 'U' or 'u',
+//     *                    only the upper triangular part of the symmetric matrix is referenced,
+//     *                    and the elements of the strictly lower triangular part are inferred
+//     *                    from those in the upper triangular part.
+//     *                    If uplo == 'L' or 'l',
+//     *                    only the lower triangular part of the symmetric matrix is referenced,
+//     *                    and the elements of the strictly upper triangular part are inferred
+//     *                    from those in the lower triangular part.
+//     * @param[in] trans   specifies the operation to be performed.
+//     *                    If trans == 'N', or 'n'
+//     *                    C = alpha * A * AT + beta * C.
+//     *                    If trans == 'T','t','C','c'
+//     *                    C = alpha * AT * A + beta * C.
+//     * @param[in] n       specifies the number of rows and the number columns of matrix C.
+//     *                    If trans == 'N' or 'n',
+//     *                    n specifies the number of rows of matrix A.
+//     *                    If trans == 'T', 't', 'C', or 'c',
+//     *                    n specifies the number of columns of matrix A; n must be at least zero.
+//     * @param[in] k       If trans == 'N' or 'n',
+//     *                    k specifies the number of columns of matrix A.
+//     *                    If trans == 'T', 't', 'C', or 'c',
+//     *                    k specifies the number of rows of matrix A;
+//     *                    k must be at least zero.
+//     * @param[in] alpha   scalar multiplier applied to A * AT or AT * A
+//     * @param[in] A       array of dimensions (lda, ka),
+//     *                    where ka is k when trans == 'N' or 'n'
+//     *                    and is n otherwise.
+//     *                    When trans == 'N' or 'n',
+//     *                    the leading n×k part of array A contains the matrix A;
+//     *                    otherwise,
+//     *                    the leading k×n part of the array contains the matrix A.
+//     * @param[in] lda     leading dimension of A.
+//     *                    When trans == 'N' or 'n', lda must be at least max(1, n).
+//     *                    Otherwise lda must be at least max(1, k).
+//     * @param[in] beta    scalar multiplier applied to C.
+//     *                    If beta is zero, C is not read.
+//     * @param[in] C       array of dimensions (ldc, n).
+//     *                    If uplo == 'U' or 'u',
+//     *                    the leading n×n triangular part of the array C must contain
+//     *                    the upper triangular part of the symmetric matrix C,
+//     *                    and the strictly lower triangular part of C is not referenced.
+//     *                    On exit, the upper triangular part of C is overwritten
+//     *                    by the upper triangular part of the updated matrix.
+//     *                    If uplo == 'L' or 'l',
+//     *                    the leading n×n triangular part of the array C must contain
+//     *                    the lower triangular part of the symmetric matrix C,
+//     *                    and the strictly upper triangular part of C is not referenced.
+//     *                    On exit, the lower triangular part of C is overwritten
+//     *                    by the lower triangular part of the updated matrix.
+//     * @param[in] ldc     leading dimension of C.
+//     *                    ldc must be at least max(1,n)
+//     * @param[out] C      updated according to C = alpha * A * AT + beta * C
+//     *                    or C = alpha * AT * A + beta * C
+//     *
+//     */
+//    template<typename T>
+//    static void syrk(
+//        const enum CBLAS_ORDER order,
+//        const enum CBLAS_UPLO uplo,
+//        const enum CBLAS_TRANSPOSE trans,
+//        const IndexType n,
+//        const IndexType k,
+//        const T alpha,
+//        const T* A,
+//        const IndexType lda,
+//        const T beta,
+//        T* C,
+//        const IndexType ldc );
+
+///////**
+//     * @brief syrk2 performs one of the symmetric rank 2k operations
+//     *
+//     * C = alpha * A * BT + alpha * B * AT + beta * C or
+//     * C = alpha * AT * B + alpha * BT * A + beta * C
+//     *
+//     * where alpha and beta are sscalars.
+//     * C is an n×n symmetric matrix consisting of elements
+//     * and is stored in either lower or upper storage mode.
+//     * A and B are matrices consisting of elements with dimension
+//     * of n×k in the first case and k×n in the second case.
+//     *
+//     * @param[in] uplo    specifies whether the symmetric matrix C is
+//     *                    stored in upper or lower storage mode.
+//     *                    If uplo == 'U' or 'u',
+//     *                    only the upper triangular part of the symmetric matrix is referenced,
+//     *                    and the elements of the strictly lower triangular part are inferred
+//     *                    from those in the upper triangular part.
+//     *                    If uplo == 'L' or 'l',
+//     *                    only the lower triangular part of the symmetric matrix is referenced,
+//     *                    and the elements of the strictly upper triangular part are inferred
+//     *                    from those in the lower triangular part.
+//     * @param[in] trans   specifies the operation to be performed.
+//     *                    If trans = 'N' or 'n'
+//     *                    C = alpha * A * BT + alpha * B * AT + beta * C
+//     *                    If trans == 'T','t','C','c'
+//     *                    alpha * AT * B + alpha * BT * A + beta * C
+//     * @param[in] n       specifies the number of rows and the number columns of matrix C.
+//     *                    If trans == 'N', or 'n'
+//     *                    n specifies the number of rows of matrix A.
+//     *                    If trans == 'T','t','C','c'
+//     *                    n specifies the number of columns of matrix A;
+//     *                    n must be at least zero.
+//     * @param[in] k       If trans == 'N', or 'n'
+//     *                    k specifies the number of columns of matrix A.
+//     *                    If trans == 'T','t','C','c'
+//     *                    k specifies the number of rows of matrix A;
+//     *                    k must be at least zero.
+//     * @param[in] alpha   scalar multiplier applied to A * AT or AT * A
+//     * @param[in] A       array of dimensions (lda, ka),
+//     *                    where ka is k when trans == 'N' or 'n'
+//     *                    and is n otherwise.
+//     *                    When trans == 'N' or 'n',
+//     *                    the leading n×k part of array A must contain the matrix A,
+//     *                    otherwise,
+//     *                    the leading k×n part of the array must contain the matrix A.
+//     * @param[in] lda     leading dimension of A.
+//     *                    When trans == 'N' or 'n', lda must be at least max(1, n).
+//     *                    Otherwise lda must be at least max(1, k).
+//     * @param[in] beta    scalar multiplier applied to C.
+//     *                    If beta is zero, C does not have to be a valid input.
+//     * @param[in] C       array of dimensions (ldc, n).
+//     *                    If uplo == 'U' or 'u',
+//     *                    the leading n×n triangular part of the array C must contain
+//     *                    the upper triangular part of the symmetric matrix C,
+//     *                    and the strictly lower triangular part of C is not referenced.
+//     *                    On exit, the upper triangular part of C is overwritten
+//     *                    by the upper triangular part of the updated matrix.
+//     *                    If uplo == 'L' or 'l',
+//     *                    the leading n×n triangular part of the array C must contain
+//     *                    the lower triangular part of the symmetric matrix C,
+//     *                    and the strictly upper triangular part of C is not referenced.
+//     *                    On exit, the lower triangular part of C is overwritten
+//     *                    by the lower triangular part of the updated matrix.
+//     * @param[in] ldc     leading dimension of C.
+//     *                    ldc must be at least max(1,n)
+//     * @param[out] C      updated according to alpha * A * BT + alpha * B * AT + beta * C or
+//     *                    C = alpha * AT * B + alpha * BT * A + beta * C
+//     */
+//    template<typename T>
+//    static void syrk2(
+//        const enum CBLAS_ORDER order,
+//        const enum CBLAS_UPLO uplo,
+//        const enum CBLAS_TRANSPOSE trans,
+//        const IndexType n,
+//        const IndexType k,
+//        const T alpha,
+//        const T* A,
+//        const IndexType lda,
+//        const T* B,
+//        const IndexType ldb,
+//        const T beta,
+//        T* C,
+//        const IndexType ldc );
+private:
+
+    LAMA_LOG_DECL_STATIC_LOGGER( logger );
+
+    template <typename T>
+    void gemm_launcher(
+        const char transA_char,
+        const char transB_char,
+        const int m,
+        const int n,
+        const int k,
+        const T alpha,
+        const T* const A,
+        const int lda,
+        const T* const B,
+        const int ldb,
+        const T beta,
+        T* const C,
+        const int ldc,
+        cudaStream_t cs );
+};
+
+} /* namespace lama */
+
+#endif // LAMA_CUDABLAS3_HPP_

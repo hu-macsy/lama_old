@@ -1,0 +1,15 @@
+/*! 
+
+\page page_halo Halo
+
+<h2>Introduction</h2>
+
+A halo stands for a container of non-local elements and for
+a communication plan that describes the necessary communication
+pattern for the update of the halo. A halo update applies
+this communication pattern to actualize the values in the halo.
+
+@todo Give a detailled description of Halo.
+
+
+*/

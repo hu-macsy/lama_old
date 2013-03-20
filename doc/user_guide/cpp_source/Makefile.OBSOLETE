@@ -1,0 +1,18 @@
+LAMA_ROOT=/home_nfs/h4h/LAMA/lama
+
+CPP_FLAGS = -I${LAMA_ROOT}/include
+
+LD_FLAGS = -L${LAMA_ROOT}/lib -llama -llog4lama -Wl,-rpath=${LAMA_ROOT}/lib
+
+TASK=task4
+
+EXECUTABLES: ${TASK}
+
+${TASK}: ${TASK}.o
+	g++ -o ${TASK} ${TASK}.o ${LD_FLAGS} 
+
+${TASK}.o: ${TASK}.cpp Makefile
+	g++ ${CPP_FLAGS} -c ${TASK}.cpp
+
+clean:
+	rm -rf ${TASK} *.o *.trace

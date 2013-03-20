@@ -1,0 +1,130 @@
+/*! 
+
+\page page_storage Matrix Storage
+
+<h2>Introduction</h2>
+
+A matrix storage is a data structure that stands for a local
+matrix on a processor. The data is stored in a certain matrix
+format, different value types for the matrix elements are
+supported ( e.g. float, double ).
+
+The following matrix storage types are supported:
+
+  * CSR
+  * ELLPack (short ELL)
+  * JDS (jagged diagonals)
+  * DIA
+  * COO
+  * Dense
+
+Example of a matrix:
+
+\f[
+  \left| \begin{array}{cccc} 
+    {\bf 6.0} & 0.0  &  0.0  &  4.0  \\
+    7.0 & {\bf 0.0 }  &  0.0  &  0.0  \\
+    0.0 & 0.0  &  {\bf 9.0}  &  4.0  \\
+    2.0 & 5.0  &  0.0  &  {\bf 3.0 }  \\
+    0.0 & 0.0  &  0.0  &  1.0  \\
+    0.0 & 0.0  &  0.0  &  0.0  \\
+    0.0 & 1.0  &  0.0  &  2.0 
+  \end{array} \right|
+\f]
+
+In the CSR format all non-zero-elements are shifted to the left. 
+If the option for shifting the main diagonal to the front is set to true, 
+the main diagonal elements will stand in the very beginning of each row. 
+Zeroes that are off the main diagonal are ignored in any case. 
+The CSR saves the number of the saved elements (non-zero-elements 
+plus the number of zeroes on the main diagonal, if the option is set) (numValues), 
+the number of rows of the matrix (numRows), the number of columns in the original 
+non-compressed format (numColumns) and arrays for all the non-zero-values and 
+zeroes in the main diagonal (values), the associated columns for these elements (ja)
+and the indices of the new beginnings of a row in ''values'' as well as the 
+value of ''numValues'' at the very end (ia).
+
+The CSR format with diagonal element shifting(left) and
+without (right)  for the example matrix looks like this:
+
+\f[
+  \left| \begin{array}{ccc} 
+    {\bf 6.0} &  4.0 &  \\
+    {\bf 0.0} &  7.0 & \\
+    {\bf 9.0}  &  4.0 &  \\
+    {\bf 3.0}  &  2.0 & 5.0  \\
+    2.0 & 1.0 &  \\
+       &     &   \\
+    1.0  & 2.0  &
+  \end{array} \right|
+  \left| \begin{array}{ccc} 
+    {\bf 0} &  3 &     \\
+    {\bf 1} &  0 &     \\
+    {\bf 2} &  3 &     \\
+    {\bf 3} &  0 & 1   \\
+    3       &    &  \\
+            &    & \\
+    1       & 3  &  
+  \end{array} \right|
+\f]
+
+\code
+numValues  = 12
+numRows    =  7
+numColumns =  4
+values     = {  6.0,  4.0,  7.0,  9.0,  4.0,  2.0,  5.0,  3.0,  2.0,  1.0,        1.0,  2.0 }
+ja         = {    0,    3,    0,    2,    3,    0,    1,    3,    0,    3,          1,    3 }
+ia         = {    0,          2,    3,          5,                8,         10,   10,         12}
+\endcode
+
+The C++ code for the matrix vector multiplication using a CSR matrix:
+
+\code
+for ( IndexType i = 0; i < numRows; ++i )
+{
+    result[i] = 0.0;
+    for ( IndexType jj = ia[i]; jj < ia[i+1]; ++jj )
+    {
+        IndexType j = ja[jj];
+        result[i] += values[jj] * v[j];
+    }
+}
+\endcode
+
+\code
+    CSRStorage<double> csrDoubleMatrix;
+    JDSStorage<float> jdsFloatMatrix;
+    ELLStorage<double> ellDoubleMatrix ( 10, 10 );
+\endcode
+
+Nearly all operations are supported for each storage format.
+
+\code
+    jdsFloatMatrix.setRawCSRData( ... )
+\endcode
+
+Format and type conversions are done eiterh by using
+the copy constructor or the assignment operator.
+
+\code
+    DIAStorage<float>diaFloatMatrix( csrDoubleMatrix );
+    ellDoubleMatrix = diaFloatMatrix;
+\endcode
+
+<h2>MatrixStorage</h2>
+
+The base class for all storage formats is the class lama::MatrixStorage<T>.
+
+@todo Can we insert the class diagram of MatrixStorage<T> here or maybe a direct reference.
+
+As in some situation we want to deal with matrix storage of different
+value types, the common base class lama::_MatrixStorage has been added.
+
+\code
+    void assign( const _MatrixStorage matrix )
+    {
+        ... // code deals with arbirtray value types
+    }
+\endcode
+
+*/

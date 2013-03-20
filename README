@@ -1,0 +1,74 @@
+CMAKE (Generate Makefiles)
+
+create a build directory and change to it
+run:
+ $ cmake <src_dir>
+
+You can set environment variables in one of the following ways:
+
+  export ENV1=<value1>
+  export ENV2=<value2>
+  cmake <src_dir>
+
+  or
+
+  cmake -D ENV1=<value1> -D ENV2=<value2>  <src_dir>
+
+The following environment variables might be helpful to find
+all required and optional packages:
+
+  BOOST_ROOT=<install-dir-of-boost>
+  CPPUNIT_ROOT=<install-dir-of-cppunit>
+  MKL_ROOT=<install-dir-of-MKL>
+
+For MPI, you should have mpicc or mpicxx in your path. CMake will then
+identify the vendor and necessary link flags for MPI compilation.
+
+To build with the intel compiler execute
+ $ export CC=<c-compiler>
+ $ export CXX=<c++-compiler>
+ $ mkdir <build-dir>
+ $ cd <build-dir>
+ $ cmake [-D CMAKE_INCLUDE_PATH=<install_dir>/include \]
+         [-D CMAKE_LIBRARY_PATH=<install_dir>/lib \]
+         [-D DOXYGEN_EXECUTABLE=<doxygen_bin> \]
+         <src_dir>
+
+BUILD
+
+ $ make
+
+RUN TESTS
+
+ $ make test
+ 
+RUN SPECIFIC TEST
+
+ $ make <TestName>
+ 
+ <TestName> depends on the cpp file in src/tests and is listed during 
+ the cmake execution
+ 
+RUN DOXYGEN (GENERATE DOCUMENTATION)
+
+ $ make doc
+
+RUN MEMORY CHECK ON UNIT TESTS (VALGRIND)
+
+ $ make valgrind
+ 
+RUN SPECIFIC TEST + VALGRIND
+
+ $ make <TestName>_valgrind
+
+OPTIONAL ENVIRONMENT VARIABLES TO INFLUENCE THE CMAKE PROCEDURE
+ CPPUNIT_PATH ## example: $ export CPPUNIT_PATH=$HOME/local_inst/lib64
+
+REQUIREMENTS
+ * Fortran and C++ compiler
+ * CMake >= 2.8
+ * Boost-Library (common, test, thread, program-options)
+ * MPI
+ * Documentation:
+   - doxygen for generating the documentation
+   - graphviz for UML-Graphs

@@ -1,0 +1,14 @@
+# Help script to generate derived classes of SparseMatrix with
+# explicit storage format types for local and halo data.
+
+sed -e "s/XXX/CSR/g" < XXXSparseMatrix.hpp > CSRSparseMatrix.hpp
+sed -e "s/XXX/ELL/g" < XXXSparseMatrix.hpp > ELLSparseMatrix.hpp
+sed -e "s/XXX/COO/g" < XXXSparseMatrix.hpp > COOSparseMatrix.hpp
+sed -e "s/XXX/JDS/g" < XXXSparseMatrix.hpp > JDSSparseMatrix.hpp
+sed -e "s/XXX/DIA/g" < XXXSparseMatrix.hpp > DIASparseMatrix.hpp
+
+sed -e "s/XXX/CSR/g" < XXXSparseMatrix.cpp > CSRSparseMatrix.cpp
+sed -e "s/XXX/ELL/g" < XXXSparseMatrix.cpp > ELLSparseMatrix.cpp
+sed -e "s/XXX/COO/g" < XXXSparseMatrix.cpp > COOSparseMatrix.cpp
+sed -e "s/XXX/JDS/g" < XXXSparseMatrix.cpp > JDSSparseMatrix.cpp
+sed -e "s/XXX/DIA/g" < XXXSparseMatrix.cpp > DIASparseMatrix.cpp
