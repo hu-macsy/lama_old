@@ -1,0 +1,53 @@
+#
+# LAMAMVBenchs.beru
+#
+# Created on 2011-05-22 14:17:03
+#         by jiri
+#
+
+# Comment in, to add an description of your file, which will be printed out, when using it.
+# DESCRIPTION: |
+#     description of LAMAMVBenchs.beru by jiri
+
+# Comment in, to add definitions, for not typing benchmark or inputset twice.
+# DEFINITIONS: |
+#     &alias Name
+
+# The minimal number of repetition of execute( ) within the benchmark.
+REP_MIN: 5
+
+# The minimal time of repetition of execute( ) within the benchmark in seconds.
+TIME_MIN: 0
+
+# The minimal number of repetition of the benchmark, to avoid aberrations.
+REP_CTRL: 3
+
+ALL:
+    # Registered Benchmarks.
+    # Benchmarks needing Arguments, are marked the following:
+    #     Benchmark (<args>)
+    BENCHMARKS:
+        - "LAMA<float>: SparseMatrix*Vector - CSR SAMG format"
+        - "LAMA<double>: SparseMatrix*Vector - CSR SAMG format"
+    # Registered InputSets.
+    INPUT_SETS:
+        - Poisson( 1D3P_1000000 )
+        - Poisson( 2D5P_1000_1000 )
+        - Poisson( 2D9P_1000_1000 )
+        - Poisson( 3D7P_100_100_100 )
+        - Poisson( 3D27P_100_100_100 )
+    
+    # Configuration of environment. Replace ID with the name of your configuration
+    # launch and the empty spaces with the command you wish to have executed, right
+    # before the execution of the benchmark.
+    LAUNCH_CONF:
+        CPU: "LAMA_CONFIG=LOCAL=HOST:THREADS=4"
+        GPU: "LAMA_CONFIG=LOCAL=CUDA:THREADS=4:CUDA=0"
+        CPU+GPUSync: "LAMA_CONFIG=LOCAL=CUDA:HALO=HOST:THREADS=4:CUDA=0"
+        CPU+GPUAsync: "LAMA_CONFIG=LOCAL=CUDA:HALO=HOST:COMP=ASYNC:THREADS=4:CUDA=0"
+        CPU+GPU2Procs: "mpirun -np 2 -x LAMA_CONFIG=LAMA_CONFIG=LOCAL=HOST:THREADS=3,LAMA_CONFIG=LOCAL=CUDA:THREADS=1:CUDA=0" 
+    
+# Put commandline arguments, here.
+# CMD: <command-line-arguments>
+CMD: --maxrepetition=10 --itemlist=-S,-T,-E -C --columns=lc,emin,f
+

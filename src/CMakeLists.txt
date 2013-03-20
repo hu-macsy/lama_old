@@ -402,6 +402,8 @@ endif ( GPI_FOUND )
 
 add_subdirectory ( lama )
 add_subdirectory ( logging )
+add_subdirectory ( bench )
+add_subdirectory ( framework )
 
 if ( ${Boost_VERSION} GREATER "104099" AND Boost_UNIT_TEST_FRAMEWORK_FOUND AND Boost_REGEX_FOUND )
     add_subdirectory ( test )

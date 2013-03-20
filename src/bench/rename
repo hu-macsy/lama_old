@@ -1,0 +1,7 @@
+  for file in *.cpp *.hpp
+  do
+    echo "rename in file $file"
+    sed -e "s/m_do/mDo/g"      \
+        < $file > $file.new
+    mv $file.new $file
+  done

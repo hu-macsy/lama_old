@@ -1,0 +1,55 @@
+#
+# LAMAMVBenchs.beru
+#
+# Created on 2011-05-22 14:17:03
+#         by jiri
+#
+
+# Comment in, to add an description of your file, which will be printed out, when using it.
+# DESCRIPTION: |
+#     description of LAMAMVBenchs.beru by jiri
+
+# Comment in, to add definitions, for not typing benchmark or inputset twice.
+# DEFINITIONS: |
+#     &alias Name
+
+# The minimal number of repetition of execute( ) within the benchmark.
+REP_MIN: 5
+
+# The minimal time of repetition of execute( ) within the benchmark in seconds.
+TIME_MIN: 0
+
+# The minimal number of repetition of the benchmark, to avoid aberrations.
+REP_CTRL: 3
+
+ALL:
+    # Registered Benchmarks.
+    # Benchmarks needing Arguments, are marked the following:
+    #     Benchmark (<args>)
+    BENCHMARKS:
+        - "LAMA<float>: DenseMatrix*Vector"
+        - "LAMA<double>: DenseMatrix*Vector"
+    # Registered InputSets.
+    INPUT_SETS:
+        - Poisson( 1D3P_64 )
+        - Poisson( 1D3P_130 )
+        - Poisson( 1D3P_260 )
+        - Poisson( 1D3P_512 )
+        - Poisson( 1D3P_1005 )
+        - Poisson( 1D3P_1964 )
+        - Poisson( 1D3P_3832 )
+        - Poisson( 1D3P_7473 )
+        - Poisson( 1D3P_9949 )
+    
+    # Configuration of environment. Replace ID with the name of your configuration
+    # launch and the empty spaces with the command you wish to have executed, right
+    # before the execution of the benchmark.
+    LAUNCH_CONF:
+        GPU: "LAMA_CONFIG=LOCAL=CUDA:THREADS=12:CUDA=0"
+        GPUS2ProcsSync: "mpirun -n 2 -bind-to-socket -x LAMA_CONFIG=LOCAL=CUDA:THREADS=6:CUDA=0:COMM=SYNC,LOCAL=CUDA:THREADS=6:CUDA=1:COMM=SYNC"
+        GPUS4ProcsAsync: "mpirun -np 4 -display-map -hostfile hostfile -x LAMA_CONFIG=LOCAL=CUDA:THREADS=6:CUDA=0,LOCAL=CUDA:THREADS=6:CUDA=1,LOCAL=CUDA:THREADS=6:CUDA=0,LOCAL=CUDA:THREADS=6:CUDA=1" 
+    
+# Put commandline arguments, here.
+# CMD: <command-line-arguments>
+CMD: --maxrepetition=10 --itemlist=-E,MAX -C --columns=n,lc,eminm,f --output=/home/jiri/tmp/INTES/RESULTS/LAMA_Distributed.csv
+
