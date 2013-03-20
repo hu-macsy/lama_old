@@ -53,14 +53,14 @@ double LAMASimpleTimeTracer::spentLast( const char* name )
 
     //search aggregated name
     std::list<std::pair<std::string,double> >::iterator end = timerList.end();
-    for( std::list<std::pair<std::string,double> >::iterator it = timerList.begin(); it != end; ++it )
+    for ( std::list<std::pair<std::string,double> >::iterator it = timerList.begin(); it != end; ++it )
     {
-        if( it->first.length() > (unsigned int) suffixLength
+        if ( it->first.length() > (unsigned int) suffixLength
                 && it->first.substr( it->first.length() - suffixLength ) != aggregated )
         {
             break;
         }
-        if( it->first == aggregatedName )
+        if ( it->first == aggregatedName )
         {
             found = true;
             foundIndex = it;
@@ -68,7 +68,7 @@ double LAMASimpleTimeTracer::spentLast( const char* name )
         }
     }
 
-    if( !found )
+    if ( !found )
     {
         std::pair<std::string,double> newEntry = std::pair<std::string,double>( aggregatedName, 0.0 );
         timerList.push_front( newEntry );
@@ -77,10 +77,10 @@ double LAMASimpleTimeTracer::spentLast( const char* name )
 
     end = timerList.end();
     double spentLastTime = 0.0;
-    for( std::list<std::pair<std::string,double> >::iterator it = timerList.begin(); it != end;
+    for ( std::list<std::pair<std::string,double> >::iterator it = timerList.begin(); it != end;
             /*it is incremented in loop body*/)
     {
-        if( it->first == nameToSearch )
+        if ( it->first == nameToSearch )
         {
             spentLastTime += it->second;
 

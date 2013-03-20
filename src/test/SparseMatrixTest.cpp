@@ -318,9 +318,9 @@ void SparseMatrixTest<MatrixType>::matrixMultTestImpl( const Matrix& a, const Ma
 
     MatrixType res( result );
 
-    for( IndexType i = 0; i < csrResult.getNumRows(); ++i )
+    for ( IndexType i = 0; i < csrResult.getNumRows(); ++i )
     {
-        for( IndexType j = 0; j < csrResult.getNumColumns(); ++j )
+        for ( IndexType j = 0; j < csrResult.getNumColumns(); ++j )
         {
             Scalar s1 = csrResult.getValue( i, j );
             Scalar s2 = res.getValue( i, j );
@@ -449,9 +449,9 @@ void SparseMatrixTest<MatrixType>::matrixEqualityCheck( const MatrixType& a, con
     BOOST_CHECK_EQUAL( a.getNumRows(), b.getNumRows() );
     BOOST_CHECK_EQUAL( a.getNumColumns(), b.getNumColumns() );
 
-    for( IndexType i = 0; i < a.getNumRows(); ++i )
+    for ( IndexType i = 0; i < a.getNumRows(); ++i )
     {
-        for( IndexType j = 0; j < b.getNumColumns(); ++j )
+        for ( IndexType j = 0; j < b.getNumColumns(); ++j )
         {
             Scalar s1 = a.getValue( i, j );
             Scalar s2 = b.getValue( i, j );

@@ -68,7 +68,7 @@ CUDAException::~CUDAException() throw ()
 
 void lama_printError_cuda( const int error, const char* file, const int line )
 {
-    if( error != cudaSuccess )
+    if ( error != cudaSuccess )
     {
         fprintf( stderr, "CUDA error: %s (%d) in %s on line %d\n", cudaGetErrorString( (cudaError_t) error ), error,
                  file, line );
@@ -78,9 +78,9 @@ void lama_printError_cuda( const int error, const char* file, const int line )
 void lama_printError_cublas( const int error, const char* file, const int line )
 {
     char errorMsg[256];
-    if( error != CUBLAS_STATUS_SUCCESS )
+    if ( error != CUBLAS_STATUS_SUCCESS )
     {
-        switch( error )
+        switch ( error )
         {
         case CUBLAS_STATUS_NOT_INITIALIZED:
             sprintf( errorMsg, "CUBLAS library not initialized" );

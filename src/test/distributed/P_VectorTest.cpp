@@ -190,7 +190,7 @@ void vectorCheck( DenseVector<T>& v, DenseVector<T>& w )
 
     // so we just have to compare the local values
 
-    for( IndexType i = 0; i < localVectorSize; ++i )
+    for ( IndexType i = 0; i < localVectorSize; ++i )
     {
         BOOST_CHECK_EQUAL( vRead[i], wRead[i] );
     }
@@ -206,14 +206,14 @@ BOOST_AUTO_TEST_CASE( buildTest )
     IndexType vectorSize = 3 * size;
     scoped_array<double> values( new double[vectorSize] );
 
-    for( IndexType i = 0; i < vectorSize; ++i )
+    for ( IndexType i = 0; i < vectorSize; ++i )
     {
         values[i] = static_cast<double>( i );
     }
 
     DoubleVector repV( vectorSize, values.get() );
 
-    for( IndexType i = 0; i < vectorSize; ++i )
+    for ( IndexType i = 0; i < vectorSize; ++i )
     {
         BOOST_CHECK_CLOSE( values[i], repV(i).getValue<double>(), 1e-16 );
     }
@@ -222,7 +222,7 @@ BOOST_AUTO_TEST_CASE( buildTest )
     DoubleVector distV( repV );
     distV.redistribute( dist );
 
-    for( IndexType i = 0; i < vectorSize; ++i )
+    for ( IndexType i = 0; i < vectorSize; ++i )
     {
         BOOST_CHECK_CLOSE( repV(i).getValue<double>(), distV(i).getValue<double>(), 1e-16 );
     }
@@ -923,7 +923,7 @@ BOOST_AUTO_TEST_CASE( dotProductTest )
 
     //Should throw exception, because of different distributions.
     //vectors are distributed if np > 1
-    if( comm->getSize() > 1 )
+    if ( comm->getSize() > 1 )
     {
         LAMA_CHECK_THROW( { result = v3 * v4; }, Exception );
     }

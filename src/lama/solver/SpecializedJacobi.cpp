@@ -89,7 +89,7 @@ void SpecializedJacobi::initialize( const Matrix& coefficients )
     {
         const _SparseMatrix* sparseMatrix = dynamic_cast<const _SparseMatrix*>( &coefficients );
 
-        if( !sparseMatrix )
+        if ( !sparseMatrix )
         {
             LAMA_THROWEXCEPTION(
                 "Coefficients matrix " << typeid(coefficients).name() << "(" << coefficients << ") is of unsupported type for SpecializedJacobi specialization (must be SparseMatrix)." );
@@ -106,7 +106,7 @@ void SpecializedJacobi::initialize( const Matrix& coefficients )
 
     SpecializedJacobiRuntime& runtime = getRuntime();
 
-    if( !runtime.mOldSolution.get() )
+    if ( !runtime.mOldSolution.get() )
     {
         LAMA_LOG_DEBUG( logger, "Creating old solution vector using properties of the coefficient matrix. " );
         runtime.mOldSolution = Vector::createVector( runtime.mCoefficients->getValueType(),
@@ -118,7 +118,7 @@ void SpecializedJacobi::initialize( const Matrix& coefficients )
 
 void SpecializedJacobi::solve( Vector& solution, const Vector& rhs )
 {
-    if( getConstRuntime().mSolveInit )
+    if ( getConstRuntime().mSolveInit )
     {
         LAMA_LOG_DEBUG( logger, "Previous initialization of solver found! Will be overriden!" );
     }
@@ -130,17 +130,18 @@ void SpecializedJacobi::solve( Vector& solution, const Vector& rhs )
 void SpecializedJacobi::solveInit( Vector& solution, const Vector& rhs )
 {
     //Check if oldSolution already exists, if not create copy of solution
-    if( !getConstRuntime().mOldSolution.get() )
+    if ( !getConstRuntime().mOldSolution.get() )
     {
         getRuntime().mOldSolution = solution.create();
 
-        if( getConstRuntime().mCoefficients->getNumColumns() != getConstRuntime().mOldSolution->size() )
+        if ( getConstRuntime().mCoefficients->getNumColumns() != getConstRuntime().mOldSolution->size() )
         {
             LAMA_THROWEXCEPTION(
                 "Size of old solution vector " << *getConstRuntime().mOldSolution << " does not match number of columns of the coefficient matrix " << getConstRuntime().mCoefficients->getNumColumns() );
         }
 
-        if( getConstRuntime().mCoefficients->getColDistribution() != getConstRuntime().mOldSolution->getDistribution() )
+        if ( getConstRuntime().mCoefficients->getColDistribution()
+                != getConstRuntime().mOldSolution->getDistribution() )
         {
             LAMA_THROWEXCEPTION(
                 "Distribution of " << *getConstRuntime().mOldSolution << " = " << getConstRuntime().mOldSolution->getDistribution() << " does not match column distribution of " << *getConstRuntime().mCoefficients << " = " << getConstRuntime().mCoefficients->getColDistribution() );
@@ -156,7 +157,7 @@ void SpecializedJacobi::solveFinalize()
 //    MF: ?????
 //    if( &( mProxyOldSolution.getConstReference() ) ==
 //        &( mSolution.getConstReference() ) )
-    if( getConstRuntime().mIterations % 2 )
+    if ( getConstRuntime().mIterations % 2 )
     {
         LAMA_LOG_DEBUG( logger, "mProxyOldSolution = *mSolution" );
         *getRuntime().mProxyOldSolution = *getRuntime().mSolution;
@@ -170,14 +171,14 @@ void SpecializedJacobi::iterate()
 
     const SparseMatrix<double>* sparseDoubleCoefficients =
         dynamic_cast<const SparseMatrix<double>*>( getRuntime().mCoefficients );
-    if( sparseDoubleCoefficients )
+    if ( sparseDoubleCoefficients )
     {
         iterateTyped( *sparseDoubleCoefficients );
         return;
     }
     const SparseMatrix<float>* sparseFloatCoefficients =
         dynamic_cast<const SparseMatrix<float>*>( getRuntime().mCoefficients );
-    if( sparseFloatCoefficients )
+    if ( sparseFloatCoefficients )
     {
         iterateTyped( *sparseFloatCoefficients );
         return;
@@ -197,7 +198,7 @@ void SpecializedJacobi::iterateTyped( const SparseMatrix<ValueType>& coefficient
     LAMA_LOG_INFO( logger,
                    *getConstRuntime().mSolution << " = " << coefficients << " * " << *getConstRuntime().mOldSolution << " = " << *getConstRuntime().mRhs );
 
-    if( coefficients.getNumRows() == 0 )
+    if ( coefficients.getNumRows() == 0 )
     {
         LAMA_LOG_WARN( logger, "Zero sized matrix given. Won't execute any calculations in this iteration. " )
         return;
@@ -217,7 +218,7 @@ void SpecializedJacobi::iterateTyped( const SparseMatrix<ValueType>& coefficient
     const Vector& oldSolution = getRuntime().mProxyOldSolution.getConstReference();
 
     //1. Check if all Vectors are DenseVectors
-    if( typeid(DenseVector<ValueType> ) == typeid( oldSolution )
+    if ( typeid(DenseVector<ValueType> ) == typeid( oldSolution )
             && typeid( *getRuntime().mSolution ) == typeid( oldSolution )
             && typeid( *getRuntime().mRhs ) == typeid( oldSolution ) )
     {
@@ -227,7 +228,7 @@ void SpecializedJacobi::iterateTyped( const SparseMatrix<ValueType>& coefficient
         const DenseVector<ValueType>& denseRhs = dynamic_cast<const DenseVector<ValueType>&>( *getRuntime().mRhs );
 
         ContextPtr localContext = coefficients.getLocalStorage().getContextPtr();
-        if( mContext )
+        if ( mContext )
         {
             localContext = mContext;
         }
@@ -238,12 +239,12 @@ void SpecializedJacobi::iterateTyped( const SparseMatrix<ValueType>& coefficient
 
         coefficients.getLocalStorage().prefetch();
 
-        if( Matrix::SYNCHRONOUS == coefficients.getCommunicationKind() && !coefficients.getHalo().isEmpty() )
+        if ( Matrix::SYNCHRONOUS == coefficients.getCommunicationKind() && !coefficients.getHalo().isEmpty() )
         {
             LAMA_REGION("Solver.SpJacobi.iterate:syncUpdateHalo");
             //1. gather
             // We might receive vaules but do not send them, so the halo might be none empty but provides indexes are.
-            if( coefficients.getHalo().getProvidesIndexes().size() > 0 )
+            if ( coefficients.getHalo().getProvidesIndexes().size() > 0 )
             {
                 LAMAArrayUtils::gather( coefficients.mTempSendValues, denseOldSolution.getLocalValues(),
                                         coefficients.getHalo().getProvidesIndexes() );
@@ -272,11 +273,11 @@ void SpecializedJacobi::iterateTyped( const SparseMatrix<ValueType>& coefficient
 
         std::auto_ptr<SyncToken> localComputation;
 
-        if( Matrix::ASYNCHRONOUS == coefficients.getCommunicationKind() )
+        if ( Matrix::ASYNCHRONOUS == coefficients.getCommunicationKind() )
         {
             //1. gather
             // We might receive vaules but do not send them, so the halo might be none empty but provides indexes are.
-            if( coefficients.getHalo().getProvidesIndexes().size() > 0 )
+            if ( coefficients.getHalo().getProvidesIndexes().size() > 0 )
             {
                 LAMAArrayUtils::gather( coefficients.mTempSendValues, denseOldSolution.getLocalValues(),
                                         coefficients.getHalo().getProvidesIndexes() );
@@ -312,7 +313,7 @@ void SpecializedJacobi::iterateTyped( const SparseMatrix<ValueType>& coefficient
 
         coefficients.getHaloStorage().prefetch();
 
-        if( Matrix::ASYNCHRONOUS == coefficients.getCommunicationKind() && !coefficients.getHalo().isEmpty() )
+        if ( Matrix::ASYNCHRONOUS == coefficients.getCommunicationKind() && !coefficients.getHalo().isEmpty() )
         {
             LAMA_REGION( "Solver.SpJacobi.iterate:updateHalo");
             //2. exchange by plan
@@ -326,7 +327,7 @@ void SpecializedJacobi::iterateTyped( const SparseMatrix<ValueType>& coefficient
 
         LAMA_LOG_INFO( logger, "Halo available. Size " << coefficients.getHalo().getHaloSize() );
 
-        if( coefficients.getHalo().getHaloSize() > 0 )
+        if ( coefficients.getHalo().getHaloSize() > 0 )
         {
             LAMA_REGION( "Solver.SpJacobi.iterate:computeHalo" );
 
@@ -335,7 +336,7 @@ void SpecializedJacobi::iterateTyped( const SparseMatrix<ValueType>& coefficient
             const LAMAArray<ValueType>& haloOldSolution = denseOldSolution.getHaloValues();
 
             ContextPtr haloLocation = coefficients.getHaloStorage().getContextPtr();
-            if( mContext.get() )
+            if ( mContext.get() )
             {
                 haloLocation = mContext;
             }

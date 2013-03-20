@@ -77,9 +77,9 @@ GMRES::~GMRES()
 
 GMRES::GMRESRuntime::~GMRESRuntime()
 {
-    if( mV != 0 )
+    if ( mV != 0 )
     {
-        for( unsigned int i = 0; i < mV->size(); ++i )
+        for ( unsigned int i = 0; i < mV->size(); ++i )
         {
             delete ( *mV )[i];
         }
@@ -87,19 +87,19 @@ GMRES::GMRESRuntime::~GMRESRuntime()
     }
     mV = 0;
 
-    if( mW != 0 )
+    if ( mW != 0 )
     {
         delete mW;
     }
     mW = 0;
 
-    if( mT != 0 )
+    if ( mT != 0 )
     {
         delete mT;
     }
     mT = 0;
 
-    if( mX0 != 0 )
+    if ( mX0 != 0 )
     {
         delete mX0;
     }
@@ -114,9 +114,9 @@ void GMRES::initialize( const Matrix& coefficients )
 
     GMRESRuntime& runtime = getRuntime();
 
-    if( runtime.mV != 0 )
+    if ( runtime.mV != 0 )
     {
-        for( unsigned int i = 0; i < runtime.mV->size(); ++i )
+        for ( unsigned int i = 0; i < runtime.mV->size(); ++i )
         {
             delete ( *runtime.mV )[i];
         }
@@ -124,19 +124,19 @@ void GMRES::initialize( const Matrix& coefficients )
     }
     runtime.mV = 0;
 
-    if( runtime.mW != 0 )
+    if ( runtime.mW != 0 )
     {
         delete runtime.mW;
     }
     runtime.mW = 0;
 
-    if( runtime.mT != 0 )
+    if ( runtime.mT != 0 )
     {
         delete runtime.mT;
     }
     runtime.mT = 0;
 
-    if( runtime.mX0 != 0 )
+    if ( runtime.mX0 != 0 )
     {
         delete runtime.mX0;
     }
@@ -159,7 +159,7 @@ void GMRES::initialize( const Matrix& coefficients )
 
     runtime.mV = new std::vector<Vector*>( mKrylovDim + 1, 0 );
 
-    switch( coefficients.getValueType() )
+    switch ( coefficients.getValueType() )
     {
     case Scalar::FLOAT:
     {
@@ -239,9 +239,9 @@ void GMRES::iterate()
     const Matrix& A = ( *runtime.mCoefficients );
 
     // lazy allocation structure mV
-    if( !( *runtime.mV )[krylovIndex + 1] )
+    if ( !( *runtime.mV )[krylovIndex + 1] )
     {
-        switch( A.getValueType() )
+        switch ( A.getValueType() )
         {
         case Scalar::FLOAT:
         {
@@ -261,7 +261,7 @@ void GMRES::iterate()
     }
 
     // initialize in case of GMRES start/restart
-    if( krylovIndex == 0 )
+    if ( krylovIndex == 0 )
     {
         // Compute r0=b-Ax0
         this->getResidual();
@@ -272,7 +272,7 @@ void GMRES::iterate()
 
         // set first search direction vCurrent
         LAMA_LOG_INFO( logger, "Doing initial preconditioning." );
-        if( !mPreconditioner )
+        if ( !mPreconditioner )
         {
             vCurrent = residual;
         }
@@ -294,7 +294,7 @@ void GMRES::iterate()
     Vector& tmp = ( *runtime.mT );
 
     LAMA_LOG_INFO( logger, "Doing preconditioning." );
-    if( !mPreconditioner )
+    if ( !mPreconditioner )
     {
         w = A * vCurrent;
     }
@@ -307,7 +307,7 @@ void GMRES::iterate()
 
     // orthogonalization loop
     LAMA_LOG_DEBUG( logger, "Orthogonalization of vCurrent." );
-    for( unsigned int k = 0; k <= krylovIndex; ++k )
+    for ( unsigned int k = 0; k <= krylovIndex; ++k )
     {
         const Vector& Vk = *( ( *runtime.mV )[k] );
         runtime.mH[hIdxStart + k] = ( w * Vk ).getValue<double>();
@@ -323,7 +323,7 @@ void GMRES::iterate()
 
     // apply Givens rotations to new column
     LAMA_LOG_DEBUG( logger, "Apply Givens rotations." );
-    for( unsigned int k = 0; k < krylovIndex; ++k )
+    for ( unsigned int k = 0; k < krylovIndex; ++k )
     {
         double tmp1 = runtime.mH[hIdxStart + k];
         double tmp2 = runtime.mH[hIdxStart + k + 1];
@@ -367,7 +367,7 @@ void GMRES::updateX( unsigned int i )
     GMRESRuntime& runtime = getRuntime();
 
     // implementation using LAPACK
-    for( unsigned int j = 0; j <= i; ++j )
+    for ( unsigned int j = 0; j <= i; ++j )
     {
         runtime.mY[j] = runtime.mG[j];
     }
@@ -388,13 +388,13 @@ void GMRES::updateX( unsigned int i )
     // Update of solution vector
     Vector& x = runtime.mSolution.getReference();
     // reset x to x0
-    if( i != 0 )
+    if ( i != 0 )
     {
         x = *runtime.mX0;
     }
     // update x
     // TODO: Add linar combination method
-    for( unsigned int k = 0; k <= i; ++k )
+    for ( unsigned int k = 0; k <= i; ++k )
     {
         const Vector& Vk = *( ( *runtime.mV )[k] );
         x = x + runtime.mY[k] * Vk;

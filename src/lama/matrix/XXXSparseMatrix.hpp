@@ -96,7 +96,7 @@ public:
     {
         this->setCommunicationKind( other.getCommunicationKind() );
 
-        if( transposeFlag )
+        if ( transposeFlag )
         {
             SparseMatrix<ValueType>::assignTranspose( other );
         }

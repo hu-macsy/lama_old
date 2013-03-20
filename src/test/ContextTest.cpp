@@ -166,7 +166,7 @@ public:
 
     static ContextPtr getInstance()
     {
-        if( !mMockContext )
+        if ( !mMockContext )
         {
             mMockContext = ContextPtr( new MockContext() );
         }
@@ -211,7 +211,7 @@ BOOST_AUTO_TEST_CASE( releaseTest )
 
     writeAccess.resize( 10 );
 
-    for( IndexType i = 0; i < 10; i++ )
+    for ( IndexType i = 0; i < 10; i++ )
     {
         writeAccess[i] = 3;
     }
@@ -226,7 +226,7 @@ BOOST_AUTO_TEST_CASE( releaseTest )
 
     HostReadAccess<IndexType> readAccess( lamaArray );
 
-    for( IndexType i = 0; i < 5; i++ )
+    for ( IndexType i = 0; i < 5; i++ )
     {
         BOOST_CHECK_EQUAL( 3, readAccess[i] );
     }
@@ -246,7 +246,7 @@ BOOST_AUTO_TEST_CASE( allocateTest )
         WriteAccess<IndexType> arr( data, context );
         arr.resize( 10 );
         IndexType* idata = arr.get();
-        for( IndexType i = 0; i < 10; i++ )
+        for ( IndexType i = 0; i < 10; i++ )
         {
             idata[i] = 23;
         }
@@ -278,7 +278,7 @@ BOOST_AUTO_TEST_CASE( copyTest )
     WriteAccess<IndexType> arr( data, context );
     arr.resize( 10 );
     IndexType* idata = arr.get();
-    for( IndexType i = 0; i < 10; i++ )
+    for ( IndexType i = 0; i < 10; i++ )
     {
         idata[i] = 23;
     }
@@ -308,7 +308,7 @@ BOOST_AUTO_TEST_CASE( prefetchTest )
     {
         HostWriteAccess<IndexType> arr( data );
         arr.resize( 10 );
-        for( IndexType i = 0; i < 10; i++ )
+        for ( IndexType i = 0; i < 10; i++ )
         {
             arr[i] = 10 + i;
         }
@@ -337,7 +337,7 @@ BOOST_AUTO_TEST_CASE( swapTest )
         WriteAccess<IndexType> arr( data1, context );
         arr.resize( 10 );
         IndexType* idata = arr.get(); // no indexing allowed for arbitrary write context
-        for( IndexType i = 0; i < 10; i++ )
+        for ( IndexType i = 0; i < 10; i++ )
         {
             idata[i] = 10 + i;
         }
@@ -345,7 +345,7 @@ BOOST_AUTO_TEST_CASE( swapTest )
     {
         HostWriteOnlyAccess<IndexType> arr( data2, 10 );
 
-        for( IndexType i = 0; i < 10; i++ )
+        for ( IndexType i = 0; i < 10; i++ )
         {
             arr[i] = 100 - i;
         }
@@ -379,7 +379,7 @@ const IndexType ITER = 10;
 
 void sumit( IndexType& sum, const LAMAArray<IndexType>& data )
 {
-    for( IndexType i = 0; i < N; i++ )
+    for ( IndexType i = 0; i < N; i++ )
     {
         HostReadAccess<IndexType> arr( data );
         sum += arr[i];
@@ -395,7 +395,7 @@ BOOST_AUTO_TEST_CASE( threadSafetyTest )
     {
         HostWriteAccess<IndexType> arr( data );
         arr.resize( N );
-        for( IndexType i = 0; i < N; i++ )
+        for ( IndexType i = 0; i < N; i++ )
         {
             arr[i] = 1;
         }
@@ -405,7 +405,7 @@ BOOST_AUTO_TEST_CASE( threadSafetyTest )
     IndexType sum2 = 0;
     IndexType sum3 = 0;
 
-    for( IndexType k = 0; k < ITER; k++ )
+    for ( IndexType k = 0; k < ITER; k++ )
     {
         // run this process + two additional threads
         boost::thread t1( boost::bind( sumit, boost::ref( sum1 ), boost::ref( data ) ) );
@@ -434,7 +434,7 @@ BOOST_AUTO_TEST_CASE( ompSafetyTest )
     {
         HostWriteAccess<IndexType> arr( data );
         arr.resize( N );
-        for( IndexType i = 0; i < N; i++ )
+        for ( IndexType i = 0; i < N; i++ )
         {
             arr[i] = 1;
         }
@@ -447,7 +447,7 @@ BOOST_AUTO_TEST_CASE( ompSafetyTest )
     #pragma omp parallel
     {
         IndexType sum = 0;
-        for( IndexType i = 0; i < N; i++ )
+        for ( IndexType i = 0; i < N; i++ )
         {
             HostReadAccess<IndexType> arr( data );
             sum = sum + arr[i];
@@ -463,7 +463,7 @@ BOOST_AUTO_TEST_CASE( ompSafetyTest )
     #pragma omp parallel
     {
         IndexType sum = 0;
-        for( IndexType i = 0; i < N; i++ )
+        for ( IndexType i = 0; i < N; i++ )
         {
             HostReadAccess<IndexType> arr( data1 );
             sum = sum + arr[i];

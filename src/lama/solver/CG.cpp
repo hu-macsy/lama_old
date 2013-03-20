@@ -82,7 +82,7 @@ void CG::initialize( const Matrix& coefficients )
 
     runtime.mPScalar = 0.0;
 
-    switch( coefficients.getValueType() )
+    switch ( coefficients.getValueType() )
     {
     case Scalar::FLOAT:
     {
@@ -120,7 +120,7 @@ void CG::iterate()
     Scalar alpha;
     Scalar beta;
 
-    if( this->getIterationCount() == 0 )
+    if ( this->getIterationCount() == 0 )
     {
         this->getResidual();
     }
@@ -134,7 +134,7 @@ void CG::iterate()
     LAMA_LOG_INFO( logger, "Doing preconditioning." );
 
     //CG implementation start
-    if( !mPreconditioner )
+    if ( !mPreconditioner )
     {
         z = residual;
     }
@@ -149,13 +149,13 @@ void CG::iterate()
     LAMA_LOG_DEBUG( logger, "pScalar = " << pScalar );
     LAMA_LOG_INFO( logger, "Calculating p." );
 
-    if( this->getIterationCount() == 0 )
+    if ( this->getIterationCount() == 0 )
     {
         p = z;
     }
     else
     {
-        if( lastPScalar.getValue<double>() == 0.0 )
+        if ( lastPScalar.getValue<double>() == 0.0 )
         {
             beta = 0.0;
         }
@@ -178,7 +178,7 @@ void CG::iterate()
     const Scalar pqProd = p * q;
     LAMA_LOG_DEBUG( logger, "pqProd = " << pqProd );
 
-    if( pqProd.getValue<double>() == 0.0 )
+    if ( pqProd.getValue<double>() == 0.0 )
     {
         alpha = 0.0;
     }

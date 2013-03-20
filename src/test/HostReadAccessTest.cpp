@@ -57,7 +57,7 @@ BOOST_AUTO_TEST_CASE( CtorTest )
 
     HostReadAccess<double> lamaArrayReadAccess( lamaArray );
 
-    for( IndexType i = 0; i < n; ++i )
+    for ( IndexType i = 0; i < n; ++i )
     {
         BOOST_CHECK_EQUAL( 1.0, lamaArrayReadAccess[i] );
     }

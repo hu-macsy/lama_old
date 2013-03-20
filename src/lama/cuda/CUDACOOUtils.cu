@@ -49,7 +49,7 @@ LAMA_LOG_DEF_LOGGER( CUDACOOUtils::logger, "CUDA.COOUtils" );
 /* --------------------------------------------------------------------------- */
 
 template<typename T,bool useTexture>
-__inline__    __device__ T fetch_COOx( const T* const x, const IndexType i )
+__inline__     __device__ T fetch_COOx( const T* const x, const IndexType i )
 {
     return x[i];
 }
@@ -61,7 +61,7 @@ __global__ void cooInitKernel( ValueType* result, const IndexType numRows, const
 {
     const int i = threadId( gridDim, blockIdx, blockDim, threadIdx );
 
-    if( i < numRows )
+    if ( i < numRows )
     {
         result[i] = beta * y[i];
     }
@@ -82,7 +82,7 @@ __global__ void cooGemvKernel(
 {
     const int k = threadId( gridDim, blockIdx, blockDim, threadIdx );
 
-    if( k < numValues )
+    if ( k < numValues )
     {
         IndexType i = cooIA[k];
         IndexType j = cooJA[k];

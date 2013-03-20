@@ -61,7 +61,7 @@ BOOST_AUTO_TEST_CASE( commonTestCases )
 
     P_SparseMatrixTest<ELLSparseMatrix<T> > p_ellSparseMatrixtest;
 
-    if( base_test_case )
+    if ( base_test_case )
     {
         LAMA_LOG_INFO( logger, "Run test method " << testcase << " in P_ELLSparseMatrixTest." );
         PSPARSEMATRIXTEST_COMMONTESTCASES( p_ellSparseMatrixtest );

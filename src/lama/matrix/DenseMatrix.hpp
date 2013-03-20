@@ -652,7 +652,7 @@ void DenseMatrix<ValueType>::copyDenseMatrix( const DenseMatrix<OtherValueType>&
 
     IndexType n = static_cast<IndexType>( other.mData.size() );
 
-    for( IndexType i = 0; i < n; ++i )
+    for ( IndexType i = 0; i < n; ++i )
     {
         LAMA_LOG_DEBUG( logger, "copy block " << i << " of " << n << " = " << *other.mData[i] );
 

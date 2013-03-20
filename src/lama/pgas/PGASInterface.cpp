@@ -62,12 +62,12 @@ std::auto_ptr<SyncToken> PGASInterface::all2all( void *dst, const void *src, siz
     void* dstptr = static_cast<char*>( dst ) + ( getRank() * elemSize );
     memcpy( dstptr, srcptr, sizeof( elemSize ) );
 
-    for( int i = getRank() + 1; i < getSize(); ++i )
+    for ( int i = getRank() + 1; i < getSize(); ++i )
     {
         void* dstptr = static_cast<char*>( dst ) + i * elemSize;
         token->pushSyncToken( getAsync( dstptr, srcptr, elemSize, i ) );
     }
-    for( int i = 0; i < getRank(); ++i )
+    for ( int i = 0; i < getRank(); ++i )
     {
         void* dstptr = static_cast<char*>( dst ) + i * elemSize;
         token->pushSyncToken( getAsync( dstptr, srcptr, elemSize, i ) );
@@ -86,7 +86,7 @@ std::auto_ptr<SyncToken> PGASInterface::shift(
     LAMA_ASSERT_ERROR( destRank != getRank(), "dest must not be this partition" );
     // need an PGAS communicator with 2 requests, no clean up needed
     std::auto_ptr<SyncToken> pSyncToken( new PGASSyncToken() );
-    if( getPreferredCommunicationKind() == PGASget )
+    if ( getPreferredCommunicationKind() == PGASget )
     {
         pSyncToken->pushSyncToken( getAsync( dst, src, size, srcRank ) );
     }
@@ -177,19 +177,19 @@ void PGASInterface::parallelReduction( PGASFunctor & reduction, PartitionId root
 {
     int vRank = ( getRank() + getSize() - root ) % getSize();
     syncronizeAll();
-    if( getSize() == 1 )
+    if ( getSize() == 1 )
     {
         return;
     }
 
     int size = getSize();
-    for( int i = 0; i < getSize(); ++i ) //Emergency Clause so we never get a infinite loop
+    for ( int i = 0; i < getSize(); ++i ) //Emergency Clause so we never get a infinite loop
     {
         int carry = size % 2;
         size /= 2;
         reduction.iteration( ( getRank() + size + carry ) % getSize(), vRank < size );
         size += carry;
-        if( size <= 1 )
+        if ( size <= 1 )
         {
             break;
         }
@@ -256,7 +256,7 @@ void PGASInterface::maxloc( double & d, int & loc, PartitionId root ) const
 {
     PGASMaxLocFunctor<double> functor( d );
     parallelReduction( functor, root );
-    if( getRank() == root )
+    if ( getRank() == root )
     {
         d = functor.getResult();
         loc = functor.getLoc();
@@ -267,7 +267,7 @@ void PGASInterface::maxloc( float & d, int & loc, PartitionId root ) const
 {
     PGASMaxLocFunctor<float> functor( d );
     parallelReduction( functor, root );
-    if( getRank() == root )
+    if ( getRank() == root )
     {
         d = functor.getResult();
         loc = functor.getLoc();
@@ -278,7 +278,7 @@ void PGASInterface::maxloc( int & d, int & loc, PartitionId root ) const
 {
     PGASMaxLocFunctor<int> functor( d );
     parallelReduction( functor, root );
-    if( getRank() == root )
+    if ( getRank() == root )
     {
         d = functor.getResult();
         loc = functor.getLoc();
@@ -299,18 +299,18 @@ std::auto_ptr<SyncToken> PGASInterface::putAsync( void *dst, const void *src, si
 
 std::auto_ptr<SyncToken> PGASInterface::broadcast( void *dst, const void *src, size_t length, int srcPE ) const
 {
-    if( getPreferredCommunicationKind() == PGASget )
+    if ( getPreferredCommunicationKind() == PGASget )
     {
-        if( getRank() != srcPE )
+        if ( getRank() != srcPE )
         {
             get( dst, src, length, srcPE );
         }
     }
     else
     {
-        for( int i = 0; i < getSize(); i++ )
+        for ( int i = 0; i < getSize(); i++ )
         {
-            if( getRank() == i )
+            if ( getRank() == i )
             {
                 continue;
             }
@@ -319,7 +319,7 @@ std::auto_ptr<SyncToken> PGASInterface::broadcast( void *dst, const void *src, s
 
     }
 
-    if( getRank() == srcPE && src != dst )
+    if ( getRank() == srcPE && src != dst )
     {
         memcpy( dst, src, length );
     }
@@ -329,7 +329,7 @@ std::auto_ptr<SyncToken> PGASInterface::broadcast( void *dst, const void *src, s
 void PGASInterface::swap( void *val, const size_t n, const PartitionId partner ) const
 {
     void *temp = allocate( n );
-    if( getPreferredCommunicationKind() == PGASget )
+    if ( getPreferredCommunicationKind() == PGASget )
     {
         memcpy( temp, val, n );
         syncronizeAll();
@@ -347,29 +347,32 @@ void PGASInterface::swap( void *val, const size_t n, const PartitionId partner )
 
 void PGASInterface::scatter( void *myvals, const size_t partSize, const PartitionId root, const void *allvals ) const
 {
-    if( getPreferredCommunicationKind() == PGASget )
+    if ( getPreferredCommunicationKind() == PGASget )
     {
-        if( root != getRank() ) {
+        if ( root != getRank() )
+        {
             get( myvals, static_cast<const char*>( allvals ) + getRank() * partSize, partSize, root );
         }
 
     }
     else
     {
-        for( int i = 0; i < getSize(); i++ )
+        for ( int i = 0; i < getSize(); i++ )
         {
-            if( getRank() == i )
+            if ( getRank() == i )
             {
                 continue;
             }
-            if( getRank() == root ) {
+            if ( getRank() == root )
+            {
                 put( myvals, static_cast<const char*>( allvals ) + i * partSize, partSize, i );
             }
 
         }
     }
 
-    if( root == getRank() ) {
+    if ( root == getRank() )
+    {
         memcpy( myvals, static_cast<const char*>( allvals ) + getRank() * partSize, partSize );
     }
 }
@@ -381,10 +384,10 @@ void PGASInterface::scatter(
     const void *allvals,
     const IndexType sizes[] ) const
 {
-    if( getPreferredCommunicationKind() == PGASget )
+    if ( getPreferredCommunicationKind() == PGASget )
     {
         int offset = 0;
-        for( int i = 0; i < getRank(); ++i )
+        for ( int i = 0; i < getRank(); ++i )
         {
             offset += sizes[i];
         }
@@ -395,12 +398,12 @@ void PGASInterface::scatter(
     else
     {
         int offset = 0;
-        for( int i = 0; i < getSize(); ++i )
+        for ( int i = 0; i < getSize(); ++i )
         {
             offset += sizes[i];
             char* srcptr = static_cast<char*>( const_cast<void*>( allvals ) );
             srcptr += offset * elemSize;
-            if( getRank() == root )
+            if ( getRank() == root )
             {
                 put( myvals, srcptr, sizes[i] * elemSize, i );
             }
@@ -411,20 +414,21 @@ void PGASInterface::scatter(
 
 void PGASInterface::gather( void *allvals, const size_t partSize, const PartitionId root, const void *myvals ) const
 {
-    if( getPreferredCommunicationKind() == PGASput )
+    if ( getPreferredCommunicationKind() == PGASput )
     {
-        if( getRank() != root ) {
+        if ( getRank() != root )
+        {
             put( static_cast<char*>( allvals ) + ( getRank() * partSize ), myvals, partSize, root );
         }
 
     }
     else
     {
-        if( getRank() == root )
+        if ( getRank() == root )
         {
-            for( int i = 0; i < getSize(); i++ )
+            for ( int i = 0; i < getSize(); i++ )
             {
-                if( getRank() == i )
+                if ( getRank() == i )
                 {
                     continue;
                 }
@@ -434,7 +438,8 @@ void PGASInterface::gather( void *allvals, const size_t partSize, const Partitio
 
     }
 
-    if( getRank() == root ) {
+    if ( getRank() == root )
+    {
         memcpy( static_cast<char*>( allvals ) + getRank() * partSize, myvals, partSize );
     }
 }
@@ -446,14 +451,14 @@ void PGASInterface::gather(
     const void *myvals,
     const IndexType sizes[] ) const
 {
-    if( getPreferredCommunicationKind() == PGASput )
+    if ( getPreferredCommunicationKind() == PGASput )
     {
         int offset = 0;
-        for( int i = 0; i < getRank(); ++i )
+        for ( int i = 0; i < getRank(); ++i )
         {
             offset += sizes[i];
         }
-        if( getRank() == root )
+        if ( getRank() == root )
         {
             memcpy( static_cast<char*>( allvals ) + offset * elemSize, myvals, sizes[getRank()] * elemSize );
         }
@@ -465,11 +470,11 @@ void PGASInterface::gather(
     else
     {
         int offset = 0;
-        if( getRank() == root )
+        if ( getRank() == root )
         {
-            for( int i = 0; i < getSize(); ++i )
+            for ( int i = 0; i < getSize(); ++i )
             {
-                if( getRank() == i )
+                if ( getRank() == i )
                 {
                     memcpy( static_cast<char*>( allvals ) + offset * elemSize, myvals, sizes[getRank()] * elemSize );
                     continue;
@@ -512,7 +517,7 @@ PGASInterface *PGASInterface::init()
 
 const PGASInterface* PGASInterface::getInstance()
 {
-    if( dynamic_cast<PGASNoInterface*>( sInstance.get() ) != NULL )
+    if ( dynamic_cast<PGASNoInterface*>( sInstance.get() ) != NULL )
     {
         sInstance.reset( init() );
     }

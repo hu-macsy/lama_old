@@ -182,7 +182,7 @@ void testSolvePoissonMethod()
 
     n = 1;
 
-    for( int i = 0; i < n; i++ )
+    for ( int i = 0; i < n; i++ )
     {
         omega = omegaMin + omegaStep * i;
 
@@ -264,7 +264,7 @@ void testSolve2Method( ContextPtr loc )
 
     LAMA_LOG_INFO( logger, "Problem size = " << N1 << " x " << N2 );
 
-    for( int i = 0; i < n; i++ )
+    for ( int i = 0; i < n; i++ )
     {
         omega = omegaMin + omegaStep * i;
 

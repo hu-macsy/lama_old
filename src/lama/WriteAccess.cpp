@@ -75,7 +75,7 @@ WriteAccess<T>::WriteAccess(
 
     mIndex = mArrayView->acquireWriteAccess( context, keep );
 
-    if( !keep )
+    if ( !keep )
     {
         mArrayView->clear( mIndex );
     }
@@ -114,7 +114,7 @@ WriteAccess<T>::WriteAccess(
 
     mIndex = mArrayView->acquireWriteAccess( context, keep );
 
-    if( !keep )
+    if ( !keep )
     {
         mArrayView->clear( mIndex );
     }
@@ -150,7 +150,7 @@ WriteAccess<T>::~WriteAccess()
 template<typename T>
 T* WriteAccess<T>::get()
 {
-    if( !mArrayView )
+    if ( !mArrayView )
     {
         LAMA_THROWEXCEPTION( "illegal get(): access has already been released." );
     }
@@ -207,7 +207,7 @@ IndexType WriteAccess<T>::capacity() const
 template<typename T>
 void WriteAccess<T>::release()
 {
-    if( mArrayView )
+    if ( mArrayView )
     {
         LAMA_LOG_DEBUG( logger, "release write access for " << *mArrayView );
         //LOG_DEBUG(logger, "release write access for " << *mArray << " at " << *mArray->mContextData[mIndex].context);
@@ -227,7 +227,7 @@ template<typename T>
 void WriteAccess<T>::writeAt( std::ostream& stream ) const
 {
     stream << "WriteAccess to ";
-    if( mArrayView )
+    if ( mArrayView )
     {
         stream << *mArrayView;
     }

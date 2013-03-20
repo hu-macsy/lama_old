@@ -71,9 +71,9 @@ void CUDABLAS2::gemv(
     char trans_char = ' ';
 
     //switch stuff because columnmajor to rowmajor
-    if( order == CblasRowMajor )
+    if ( order == CblasRowMajor )
     {
-        if( trans == CblasNoTrans )
+        if ( trans == CblasNoTrans )
         {
             trans_char = 'T';
         }
@@ -87,7 +87,7 @@ void CUDABLAS2::gemv(
     }
     else
     {
-        if( trans == CblasNoTrans )
+        if ( trans == CblasNoTrans )
         {
             trans_char = 'N';
         }
@@ -102,7 +102,7 @@ void CUDABLAS2::gemv(
 
     cudaStream_t stream = 0; // default stream if no syncToken is given
 
-    if( syncToken )
+    if ( syncToken )
     {
         CUDAStreamSyncToken* cudaStreamSyncToken = dynamic_cast<CUDAStreamSyncToken*>( syncToken );
         LAMA_ASSERT_DEBUG( cudaStreamSyncToken, "no cuda stream sync token provided" );
@@ -117,7 +117,7 @@ void CUDABLAS2::gemv(
 
     // No error check here possible as kernel is started asynchronously
 
-    if( !syncToken )
+    if ( !syncToken )
     {
         LAMA_CUDA_RT_CALL( cudaStreamSynchronize( stream ), "cudaStreamSynchronize( stream = " << stream << " )" );
     }
@@ -144,9 +144,9 @@ void CUDABLAS2::gemv(
     char trans_char = ' ';
 
     //switch stuff because columnmajor to rowmajor
-    if( order == CblasRowMajor )
+    if ( order == CblasRowMajor )
     {
-        if( trans == CblasNoTrans )
+        if ( trans == CblasNoTrans )
         {
             trans_char = 'T';
         }
@@ -160,7 +160,7 @@ void CUDABLAS2::gemv(
     }
     else
     {
-        if( trans == CblasNoTrans )
+        if ( trans == CblasNoTrans )
         {
             trans_char = 'N';
         }
@@ -175,7 +175,7 @@ void CUDABLAS2::gemv(
 
     cudaStream_t stream = 0; // default stream if no syncToken is given
 
-    if( syncToken )
+    if ( syncToken )
     {
         CUDAStreamSyncToken* cudaStreamSyncToken = dynamic_cast<CUDAStreamSyncToken*>( syncToken );
         LAMA_ASSERT_DEBUG( cudaStreamSyncToken, "no cuda stream sync token provided" );
@@ -190,7 +190,7 @@ void CUDABLAS2::gemv(
 
     // No error check here possible as kernel is started asynchronously
 
-    if( !syncToken )
+    if ( !syncToken )
     {
         LAMA_CUDA_RT_CALL( cudaStreamSynchronize( stream ), "cudaStreamSynchronize( stream = " << stream << " )" );
     }
@@ -216,24 +216,24 @@ void CUDABLAS2::symv(
     char uplo_char = ' ';
 
     //switch stuff because columnmajor to rowmajor
-    if( order == CblasRowMajor )
+    if ( order == CblasRowMajor )
     {
-        if( uplo == CblasUpper )
+        if ( uplo == CblasUpper )
         {
             uplo_char = 'L';
         }
-        else if( uplo == CblasLower )
+        else if ( uplo == CblasLower )
         {
             uplo_char = 'U';
         }
     }
     else
     {
-        if( uplo == CblasUpper )
+        if ( uplo == CblasUpper )
         {
             uplo_char = 'U';
         }
-        else if( uplo == CblasLower )
+        else if ( uplo == CblasLower )
         {
             uplo_char = 'L';
         }
@@ -244,7 +244,7 @@ void CUDABLAS2::symv(
 
     cudaStream_t stream = 0; // default stream if no syncToken is given
 
-    if( syncToken )
+    if ( syncToken )
     {
         CUDAStreamSyncToken* cudaStreamSyncToken = dynamic_cast<CUDAStreamSyncToken*>( syncToken );
         LAMA_ASSERT_DEBUG( cudaStreamSyncToken, "no cuda stream sync token provided" );
@@ -257,7 +257,7 @@ void CUDABLAS2::symv(
 
     // No error check here possible as kernel is started asynchronously
 
-    if( !syncToken )
+    if ( !syncToken )
     {
         LAMA_CUDA_RT_CALL( cudaStreamSynchronize( stream ), "cudaStreamSynchronize( stream = " << stream << " )" );
     }
@@ -281,24 +281,24 @@ void CUDABLAS2::symv(
     char uplo_char = ' ';
 
     //switch stuff because columnmajor to rowmajor
-    if( order == CblasRowMajor )
+    if ( order == CblasRowMajor )
     {
-        if( uplo == CblasUpper )
+        if ( uplo == CblasUpper )
         {
             uplo_char = 'L';
         }
-        else if( uplo == CblasLower )
+        else if ( uplo == CblasLower )
         {
             uplo_char = 'U';
         }
     }
     else
     {
-        if( uplo == CblasUpper )
+        if ( uplo == CblasUpper )
         {
             uplo_char = 'U';
         }
-        else if( uplo == CblasLower )
+        else if ( uplo == CblasLower )
         {
             uplo_char = 'L';
         }
@@ -309,7 +309,7 @@ void CUDABLAS2::symv(
 
     cudaStream_t stream = 0; // default stream if no syncToken is given
 
-    if( syncToken )
+    if ( syncToken )
     {
         CUDAStreamSyncToken* cudaStreamSyncToken = dynamic_cast<CUDAStreamSyncToken*>( syncToken );
         LAMA_ASSERT_DEBUG( cudaStreamSyncToken, "no cuda stream sync token provided" );
@@ -322,7 +322,7 @@ void CUDABLAS2::symv(
 
     // No error check here possible as kernel is started asynchronously
 
-    if( !syncToken )
+    if ( !syncToken )
     {
         LAMA_CUDA_RT_CALL( cudaStreamSynchronize( stream ), "cudaStreamSynchronize( stream = " << stream << " )" );
     }
@@ -347,19 +347,19 @@ void CUDABLAS2::trmv(
     char trans_char = ' ';
     char diag_char = ' ';
 
-    if( diag == CblasUnit )
+    if ( diag == CblasUnit )
     {
         diag_char = 'U';
     }
-    else if( diag == CblasNonUnit )
+    else if ( diag == CblasNonUnit )
     {
         diag_char = 'N';
     }
 
     //switch stuff because columnmajor to rowmajor
-    if( order == CblasRowMajor )
+    if ( order == CblasRowMajor )
     {
-        if( uplo == CblasUpper )
+        if ( uplo == CblasUpper )
         {
             uplo_char = 'L';
         }
@@ -368,7 +368,7 @@ void CUDABLAS2::trmv(
             uplo_char = 'U';
         }
 
-        if( trans == CblasTrans )
+        if ( trans == CblasTrans )
         {
             trans_char = 'N';
         }
@@ -379,7 +379,7 @@ void CUDABLAS2::trmv(
     }
     else
     {
-        if( uplo == CblasUpper )
+        if ( uplo == CblasUpper )
         {
             uplo_char = 'U';
         }
@@ -388,7 +388,7 @@ void CUDABLAS2::trmv(
             uplo_char = 'L';
         }
 
-        if( trans == CblasTrans )
+        if ( trans == CblasTrans )
         {
             trans_char = 'T';
         }
@@ -403,7 +403,7 @@ void CUDABLAS2::trmv(
 
     cudaStream_t stream = 0; // default stream if no syncToken is given
 
-    if( syncToken )
+    if ( syncToken )
     {
         CUDAStreamSyncToken* cudaStreamSyncToken = dynamic_cast<CUDAStreamSyncToken*>( syncToken );
         LAMA_ASSERT_DEBUG( cudaStreamSyncToken, "no cuda stream sync token provided" );
@@ -416,7 +416,7 @@ void CUDABLAS2::trmv(
 
     // No error check here possible as kernel is started asynchronously
 
-    if( !syncToken )
+    if ( !syncToken )
     {
         LAMA_CUDA_RT_CALL( cudaStreamSynchronize( stream ), "cudaStreamSynchronize( stream = " << stream << " )" );
     }
@@ -439,19 +439,19 @@ void CUDABLAS2::trmv(
     char trans_char = ' ';
     char diag_char = ' ';
 
-    if( diag == CblasUnit )
+    if ( diag == CblasUnit )
     {
         diag_char = 'U';
     }
-    else if( diag == CblasNonUnit )
+    else if ( diag == CblasNonUnit )
     {
         diag_char = 'N';
     }
 
     //switch stuff because columnmajor to rowmajor
-    if( order == CblasRowMajor )
+    if ( order == CblasRowMajor )
     {
-        if( uplo == CblasUpper )
+        if ( uplo == CblasUpper )
         {
             uplo_char = 'L';
         }
@@ -460,7 +460,7 @@ void CUDABLAS2::trmv(
             uplo_char = 'U';
         }
 
-        if( trans == CblasTrans )
+        if ( trans == CblasTrans )
         {
             trans_char = 'N';
         }
@@ -471,7 +471,7 @@ void CUDABLAS2::trmv(
     }
     else
     {
-        if( uplo == CblasUpper )
+        if ( uplo == CblasUpper )
         {
             uplo_char = 'U';
         }
@@ -480,7 +480,7 @@ void CUDABLAS2::trmv(
             uplo_char = 'L';
         }
 
-        if( trans == CblasTrans )
+        if ( trans == CblasTrans )
         {
             trans_char = 'T';
         }
@@ -495,7 +495,7 @@ void CUDABLAS2::trmv(
 
     cudaStream_t stream = 0; // default stream if no syncToken is given
 
-    if( syncToken )
+    if ( syncToken )
     {
         CUDAStreamSyncToken* cudaStreamSyncToken = dynamic_cast<CUDAStreamSyncToken*>( syncToken );
         LAMA_ASSERT_DEBUG( cudaStreamSyncToken, "no cuda stream sync token provided" );
@@ -508,7 +508,7 @@ void CUDABLAS2::trmv(
 
     // No error check here possible as kernel is started asynchronously
 
-    if( !syncToken )
+    if ( !syncToken )
     {
         LAMA_CUDA_RT_CALL( cudaStreamSynchronize( stream ), "cudaStreamSynchronize( stream = " << stream << " )" );
     }
@@ -533,19 +533,19 @@ void CUDABLAS2::trsv(
     char trans_char = ' ';
     char diag_char = ' ';
 
-    if( diag == CblasUnit )
+    if ( diag == CblasUnit )
     {
         diag_char = 'U';
     }
-    else if( diag == CblasNonUnit )
+    else if ( diag == CblasNonUnit )
     {
         diag_char = 'N';
     }
 
     //switch stuff because columnmajor to rowmajor
-    if( order == CblasRowMajor )
+    if ( order == CblasRowMajor )
     {
-        if( uplo == CblasUpper )
+        if ( uplo == CblasUpper )
         {
             uplo_char = 'L';
         }
@@ -554,7 +554,7 @@ void CUDABLAS2::trsv(
             uplo_char = 'U';
         }
 
-        if( trans == CblasTrans )
+        if ( trans == CblasTrans )
         {
             trans_char = 'N';
         }
@@ -565,7 +565,7 @@ void CUDABLAS2::trsv(
     }
     else
     {
-        if( uplo == CblasUpper )
+        if ( uplo == CblasUpper )
         {
             uplo_char = 'U';
         }
@@ -574,7 +574,7 @@ void CUDABLAS2::trsv(
             uplo_char = 'L';
         }
 
-        if( trans == CblasTrans )
+        if ( trans == CblasTrans )
         {
             trans_char = 'T';
         }
@@ -589,7 +589,7 @@ void CUDABLAS2::trsv(
 
     cudaStream_t stream = 0; // default stream if no syncToken is given
 
-    if( syncToken )
+    if ( syncToken )
     {
         CUDAStreamSyncToken* cudaStreamSyncToken = dynamic_cast<CUDAStreamSyncToken*>( syncToken );
         LAMA_ASSERT_DEBUG( cudaStreamSyncToken, "no cuda stream sync token provided" );
@@ -602,7 +602,7 @@ void CUDABLAS2::trsv(
 
     // No error check here possible as kernel is started asynchronously
 
-    if( !syncToken )
+    if ( !syncToken )
     {
         LAMA_CUDA_RT_CALL( cudaStreamSynchronize( stream ), "cudaStreamSynchronize( stream = " << stream << " )" );
     }
@@ -625,19 +625,19 @@ void CUDABLAS2::trsv(
     char trans_char = ' ';
     char diag_char = ' ';
 
-    if( diag == CblasUnit )
+    if ( diag == CblasUnit )
     {
         diag_char = 'U';
     }
-    else if( diag == CblasNonUnit )
+    else if ( diag == CblasNonUnit )
     {
         diag_char = 'N';
     }
 
     //switch stuff because columnmajor to rowmajor
-    if( order == CblasRowMajor )
+    if ( order == CblasRowMajor )
     {
-        if( uplo == CblasUpper )
+        if ( uplo == CblasUpper )
         {
             uplo_char = 'L';
         }
@@ -646,7 +646,7 @@ void CUDABLAS2::trsv(
             uplo_char = 'U';
         }
 
-        if( trans == CblasTrans )
+        if ( trans == CblasTrans )
         {
             trans_char = 'N';
         }
@@ -657,7 +657,7 @@ void CUDABLAS2::trsv(
     }
     else
     {
-        if( uplo == CblasUpper )
+        if ( uplo == CblasUpper )
         {
             uplo_char = 'U';
         }
@@ -666,7 +666,7 @@ void CUDABLAS2::trsv(
             uplo_char = 'L';
         }
 
-        if( trans == CblasTrans )
+        if ( trans == CblasTrans )
         {
             trans_char = 'T';
         }
@@ -681,7 +681,7 @@ void CUDABLAS2::trsv(
 
     cudaStream_t stream = 0; // default stream if no syncToken is given
 
-    if( syncToken )
+    if ( syncToken )
     {
         CUDAStreamSyncToken* cudaStreamSyncToken = dynamic_cast<CUDAStreamSyncToken*>( syncToken );
         LAMA_ASSERT_DEBUG( cudaStreamSyncToken, "no cuda stream sync token provided" );
@@ -694,7 +694,7 @@ void CUDABLAS2::trsv(
 
     // No error check here possible as kernel is started asynchronously
 
-    if( !syncToken )
+    if ( !syncToken )
     {
         LAMA_CUDA_RT_CALL( cudaStreamSynchronize( stream ), "cudaStreamSynchronize( stream = " << stream << " )" );
     }
@@ -727,9 +727,9 @@ void CUDABLAS2::gbmv(
     char trans_char = ' ';
 
     //switch stuff because columnmajor to rowmajor
-    if( order == CblasRowMajor )
+    if ( order == CblasRowMajor )
     {
-        if( trans == CblasNoTrans )
+        if ( trans == CblasNoTrans )
         {
             trans_char = 'T';
         }
@@ -745,7 +745,7 @@ void CUDABLAS2::gbmv(
     }
     else
     {
-        if( trans == CblasNoTrans )
+        if ( trans == CblasNoTrans )
         {
             trans_char = 'N';
         }
@@ -760,7 +760,7 @@ void CUDABLAS2::gbmv(
 
     cudaStream_t stream = 0; // default stream if no syncToken is given
 
-    if( syncToken )
+    if ( syncToken )
     {
         CUDAStreamSyncToken* cudaStreamSyncToken = dynamic_cast<CUDAStreamSyncToken*>( syncToken );
         LAMA_ASSERT_DEBUG( cudaStreamSyncToken, "no cuda stream sync token provided" );
@@ -773,7 +773,7 @@ void CUDABLAS2::gbmv(
 
     // No error check here possible as kernel is started asynchronously
 
-    if( !syncToken )
+    if ( !syncToken )
     {
         LAMA_CUDA_RT_CALL( cudaStreamSynchronize( stream ), "cudaStreamSynchronize( stream = " << stream << " )" );
     }
@@ -804,9 +804,9 @@ void CUDABLAS2::gbmv(
     char trans_char = ' ';
 
     //switch stuff because columnmajor to rowmajor
-    if( order == CblasRowMajor )
+    if ( order == CblasRowMajor )
     {
-        if( trans == CblasNoTrans )
+        if ( trans == CblasNoTrans )
         {
             trans_char = 'T';
         }
@@ -822,7 +822,7 @@ void CUDABLAS2::gbmv(
     }
     else
     {
-        if( trans == CblasNoTrans )
+        if ( trans == CblasNoTrans )
         {
             trans_char = 'N';
         }
@@ -837,7 +837,7 @@ void CUDABLAS2::gbmv(
 
     cudaStream_t stream = 0; // default stream if no syncToken is given
 
-    if( syncToken )
+    if ( syncToken )
     {
         CUDAStreamSyncToken* cudaStreamSyncToken = dynamic_cast<CUDAStreamSyncToken*>( syncToken );
         LAMA_ASSERT_DEBUG( cudaStreamSyncToken, "no cuda stream sync token provided" );
@@ -850,7 +850,7 @@ void CUDABLAS2::gbmv(
 
     // No error check here possible as kernel is started asynchronously
 
-    if( !syncToken )
+    if ( !syncToken )
     {
         LAMA_CUDA_RT_CALL( cudaStreamSynchronize( stream ), "cudaStreamSynchronize( stream = " << stream << " )" );
     }
@@ -877,24 +877,24 @@ void CUDABLAS2::sbmv(
     char uplo_char = ' ';
 
     //switch stuff because columnmajor to rowmajor
-    if( order == CblasRowMajor )
+    if ( order == CblasRowMajor )
     {
-        if( uplo == CblasUpper )
+        if ( uplo == CblasUpper )
         {
             uplo_char = 'L';
         }
-        else if( uplo == CblasLower )
+        else if ( uplo == CblasLower )
         {
             uplo_char = 'U';
         }
     }
     else
     {
-        if( uplo == CblasUpper )
+        if ( uplo == CblasUpper )
         {
             uplo_char = 'U';
         }
-        else if( uplo == CblasLower )
+        else if ( uplo == CblasLower )
         {
             uplo_char = 'L';
         }
@@ -905,7 +905,7 @@ void CUDABLAS2::sbmv(
 
     cudaStream_t stream = 0; // default stream if no syncToken is given
 
-    if( syncToken )
+    if ( syncToken )
     {
         CUDAStreamSyncToken* cudaStreamSyncToken = dynamic_cast<CUDAStreamSyncToken*>( syncToken );
         LAMA_ASSERT_DEBUG( cudaStreamSyncToken, "no cuda stream sync token provided" );
@@ -918,7 +918,7 @@ void CUDABLAS2::sbmv(
 
     // No error check here possible as kernel is started asynchronously
 
-    if( !syncToken )
+    if ( !syncToken )
     {
         LAMA_CUDA_RT_CALL( cudaStreamSynchronize( stream ), "cudaStreamSynchronize( stream = " << stream << " )" );
     }
@@ -943,24 +943,24 @@ void CUDABLAS2::sbmv(
     char uplo_char = ' ';
 
     //switch stuff because columnmajor to rowmajor
-    if( order == CblasRowMajor )
+    if ( order == CblasRowMajor )
     {
-        if( uplo == CblasUpper )
+        if ( uplo == CblasUpper )
         {
             uplo_char = 'L';
         }
-        else if( uplo == CblasLower )
+        else if ( uplo == CblasLower )
         {
             uplo_char = 'U';
         }
     }
     else
     {
-        if( uplo == CblasUpper )
+        if ( uplo == CblasUpper )
         {
             uplo_char = 'U';
         }
-        else if( uplo == CblasLower )
+        else if ( uplo == CblasLower )
         {
             uplo_char = 'L';
         }
@@ -971,7 +971,7 @@ void CUDABLAS2::sbmv(
 
     cudaStream_t stream = 0; // default stream if no syncToken is given
 
-    if( syncToken )
+    if ( syncToken )
     {
         CUDAStreamSyncToken* cudaStreamSyncToken = dynamic_cast<CUDAStreamSyncToken*>( syncToken );
         LAMA_ASSERT_DEBUG( cudaStreamSyncToken, "no cuda stream sync token provided" );
@@ -984,7 +984,7 @@ void CUDABLAS2::sbmv(
 
     // No error check here possible as kernel is started asynchronously
 
-    if( !syncToken )
+    if ( !syncToken )
     {
         LAMA_CUDA_RT_CALL( cudaStreamSynchronize( stream ), "cudaStreamSynchronize( stream = " << stream << " )" );
     }
@@ -1010,19 +1010,19 @@ void CUDABLAS2::tbmv(
     char trans_char = ' ';
     char diag_char = ' ';
 
-    if( diag == CblasUnit )
+    if ( diag == CblasUnit )
     {
         diag_char = 'U';
     }
-    else if( diag == CblasNonUnit )
+    else if ( diag == CblasNonUnit )
     {
         diag_char = 'N';
     }
 
     //switch stuff because columnmajor to rowmajor
-    if( order == CblasRowMajor )
+    if ( order == CblasRowMajor )
     {
-        if( uplo == CblasUpper )
+        if ( uplo == CblasUpper )
         {
             uplo_char = 'L';
         }
@@ -1031,7 +1031,7 @@ void CUDABLAS2::tbmv(
             uplo_char = 'U';
         }
 
-        if( trans == CblasTrans )
+        if ( trans == CblasTrans )
         {
             trans_char = 'N';
         }
@@ -1042,7 +1042,7 @@ void CUDABLAS2::tbmv(
     }
     else
     {
-        if( uplo == CblasUpper )
+        if ( uplo == CblasUpper )
         {
             uplo_char = 'U';
         }
@@ -1051,7 +1051,7 @@ void CUDABLAS2::tbmv(
             uplo_char = 'L';
         }
 
-        if( trans == CblasTrans )
+        if ( trans == CblasTrans )
         {
             trans_char = 'T';
         }
@@ -1066,7 +1066,7 @@ void CUDABLAS2::tbmv(
 
     cudaStream_t stream = 0; // default stream if no syncToken is given
 
-    if( syncToken )
+    if ( syncToken )
     {
         CUDAStreamSyncToken* cudaStreamSyncToken = dynamic_cast<CUDAStreamSyncToken*>( syncToken );
         LAMA_ASSERT_DEBUG( cudaStreamSyncToken, "no cuda stream sync token provided" );
@@ -1079,7 +1079,7 @@ void CUDABLAS2::tbmv(
 
     // No error check here possible as kernel is started asynchronously
 
-    if( !syncToken )
+    if ( !syncToken )
     {
         LAMA_CUDA_RT_CALL( cudaStreamSynchronize( stream ), "cudaStreamSynchronize( stream = " << stream << " )" );
     }
@@ -1103,19 +1103,19 @@ void CUDABLAS2::tbmv(
     char trans_char = ' ';
     char diag_char = ' ';
 
-    if( diag == CblasUnit )
+    if ( diag == CblasUnit )
     {
         diag_char = 'U';
     }
-    else if( diag == CblasNonUnit )
+    else if ( diag == CblasNonUnit )
     {
         diag_char = 'N';
     }
 
     //switch stuff because columnmajor to rowmajor
-    if( order == CblasRowMajor )
+    if ( order == CblasRowMajor )
     {
-        if( uplo == CblasUpper )
+        if ( uplo == CblasUpper )
         {
             uplo_char = 'L';
         }
@@ -1124,7 +1124,7 @@ void CUDABLAS2::tbmv(
             uplo_char = 'U';
         }
 
-        if( trans == CblasTrans )
+        if ( trans == CblasTrans )
         {
             trans_char = 'N';
         }
@@ -1135,7 +1135,7 @@ void CUDABLAS2::tbmv(
     }
     else
     {
-        if( uplo == CblasUpper )
+        if ( uplo == CblasUpper )
         {
             uplo_char = 'U';
         }
@@ -1144,7 +1144,7 @@ void CUDABLAS2::tbmv(
             uplo_char = 'L';
         }
 
-        if( trans == CblasTrans )
+        if ( trans == CblasTrans )
         {
             trans_char = 'T';
         }
@@ -1159,7 +1159,7 @@ void CUDABLAS2::tbmv(
 
     cudaStream_t stream = 0; // default stream if no syncToken is given
 
-    if( syncToken )
+    if ( syncToken )
     {
         CUDAStreamSyncToken* cudaStreamSyncToken = dynamic_cast<CUDAStreamSyncToken*>( syncToken );
         LAMA_ASSERT_DEBUG( cudaStreamSyncToken, "no cuda stream sync token provided" );
@@ -1172,7 +1172,7 @@ void CUDABLAS2::tbmv(
 
     // No error check here possible as kernel is started asynchronously
 
-    if( !syncToken )
+    if ( !syncToken )
     {
         LAMA_CUDA_RT_CALL( cudaStreamSynchronize( stream ), "cudaStreamSynchronize( stream = " << stream << " )" );
     }
@@ -1198,19 +1198,19 @@ void CUDABLAS2::tbsv(
     char trans_char = ' ';
     char diag_char = ' ';
 
-    if( diag == CblasUnit )
+    if ( diag == CblasUnit )
     {
         diag_char = 'U';
     }
-    else if( diag == CblasNonUnit )
+    else if ( diag == CblasNonUnit )
     {
         diag_char = 'N';
     }
 
     //switch stuff because columnmajor to rowmajor
-    if( order == CblasRowMajor )
+    if ( order == CblasRowMajor )
     {
-        if( uplo == CblasUpper )
+        if ( uplo == CblasUpper )
         {
             uplo_char = 'L';
         }
@@ -1219,7 +1219,7 @@ void CUDABLAS2::tbsv(
             uplo_char = 'U';
         }
 
-        if( trans == CblasTrans )
+        if ( trans == CblasTrans )
         {
             trans_char = 'N';
         }
@@ -1230,7 +1230,7 @@ void CUDABLAS2::tbsv(
     }
     else
     {
-        if( uplo == CblasUpper )
+        if ( uplo == CblasUpper )
         {
             uplo_char = 'U';
         }
@@ -1239,7 +1239,7 @@ void CUDABLAS2::tbsv(
             uplo_char = 'L';
         }
 
-        if( trans == CblasTrans )
+        if ( trans == CblasTrans )
         {
             trans_char = 'T';
         }
@@ -1254,7 +1254,7 @@ void CUDABLAS2::tbsv(
 
     cudaStream_t stream = 0; // default stream if no syncToken is given
 
-    if( syncToken )
+    if ( syncToken )
     {
         CUDAStreamSyncToken* cudaStreamSyncToken = dynamic_cast<CUDAStreamSyncToken*>( syncToken );
         LAMA_ASSERT_DEBUG( cudaStreamSyncToken, "no cuda stream sync token provided" );
@@ -1267,7 +1267,7 @@ void CUDABLAS2::tbsv(
 
     // No error check here possible as kernel is started asynchronously
 
-    if( !syncToken )
+    if ( !syncToken )
     {
         LAMA_CUDA_RT_CALL( cudaStreamSynchronize( stream ), "cudaStreamSynchronize( stream = " << stream << " )" );
     }
@@ -1291,19 +1291,19 @@ void CUDABLAS2::tbsv(
     char trans_char = ' ';
     char diag_char = ' ';
 
-    if( diag == CblasUnit )
+    if ( diag == CblasUnit )
     {
         diag_char = 'U';
     }
-    else if( diag == CblasNonUnit )
+    else if ( diag == CblasNonUnit )
     {
         diag_char = 'N';
     }
 
     //switch stuff because columnmajor to rowmajor
-    if( order == CblasRowMajor )
+    if ( order == CblasRowMajor )
     {
-        if( uplo == CblasUpper )
+        if ( uplo == CblasUpper )
         {
             uplo_char = 'L';
         }
@@ -1312,7 +1312,7 @@ void CUDABLAS2::tbsv(
             uplo_char = 'U';
         }
 
-        if( trans == CblasTrans )
+        if ( trans == CblasTrans )
         {
             trans_char = 'N';
         }
@@ -1323,7 +1323,7 @@ void CUDABLAS2::tbsv(
     }
     else
     {
-        if( uplo == CblasUpper )
+        if ( uplo == CblasUpper )
         {
             uplo_char = 'U';
         }
@@ -1332,7 +1332,7 @@ void CUDABLAS2::tbsv(
             uplo_char = 'L';
         }
 
-        if( trans == CblasTrans )
+        if ( trans == CblasTrans )
         {
             trans_char = 'T';
         }
@@ -1347,7 +1347,7 @@ void CUDABLAS2::tbsv(
 
     cudaStream_t stream = 0; // default stream if no syncToken is given
 
-    if( syncToken )
+    if ( syncToken )
     {
         CUDAStreamSyncToken* cudaStreamSyncToken = dynamic_cast<CUDAStreamSyncToken*>( syncToken );
         LAMA_ASSERT_DEBUG( cudaStreamSyncToken, "no cuda stream sync token provided" );
@@ -1360,7 +1360,7 @@ void CUDABLAS2::tbsv(
 
     // No error check here possible as kernel is started asynchronously
 
-    if( !syncToken )
+    if ( !syncToken )
     {
         LAMA_CUDA_RT_CALL( cudaStreamSynchronize( stream ), "cudaStreamSynchronize( stream = " << stream << " )" );
     }
@@ -1387,7 +1387,7 @@ void CUDABLAS2::ger(
 
     cudaStream_t stream = 0; // default stream if no syncToken is given
 
-    if( syncToken )
+    if ( syncToken )
     {
         CUDAStreamSyncToken* cudaStreamSyncToken = dynamic_cast<CUDAStreamSyncToken*>( syncToken );
         LAMA_ASSERT_DEBUG( cudaStreamSyncToken, "no cuda stream sync token provided" );
@@ -1396,7 +1396,7 @@ void CUDABLAS2::ger(
 
     LAMA_CUBLAS_CALL( cublasSetKernelStream( stream ), "set cublas kernel stream = " << stream );
 
-    if( order == CblasRowMajor )
+    if ( order == CblasRowMajor )
     {
         cublasSger( n, m, alpha, y, incY, x, incX, A, lda );
         LAMA_CHECK_CUBLAS_ERROR
@@ -1411,7 +1411,7 @@ void CUDABLAS2::ger(
 
     // No error check here possible as kernel is started asynchronously
 
-    if( !syncToken )
+    if ( !syncToken )
     {
         LAMA_CUDA_RT_CALL( cudaStreamSynchronize( stream ), "cudaStreamSynchronize( stream = " << stream << " )" );
     }
@@ -1436,7 +1436,7 @@ void CUDABLAS2::ger(
 
     cudaStream_t stream = 0; // default stream if no syncToken is given
 
-    if( syncToken )
+    if ( syncToken )
     {
         CUDAStreamSyncToken* cudaStreamSyncToken = dynamic_cast<CUDAStreamSyncToken*>( syncToken );
         LAMA_ASSERT_DEBUG( cudaStreamSyncToken, "no cuda stream sync token provided" );
@@ -1445,7 +1445,7 @@ void CUDABLAS2::ger(
 
     LAMA_CUBLAS_CALL( cublasSetKernelStream( stream ), "set cublas kernel stream = " << stream );
 
-    if( order == CblasRowMajor )
+    if ( order == CblasRowMajor )
     {
         cublasDger( n, m, alpha, y, incY, x, incX, A, lda );
         LAMA_CHECK_CUBLAS_ERROR
@@ -1460,7 +1460,7 @@ void CUDABLAS2::ger(
 
     // No error check here possible as kernel is started asynchronously
 
-    if( !syncToken )
+    if ( !syncToken )
     {
         LAMA_CUDA_RT_CALL( cudaStreamSynchronize( stream ), "cudaStreamSynchronize( stream = " << stream << " )" );
     }
@@ -1483,24 +1483,24 @@ void CUDABLAS2::syr(
     char uplo_char = ' ';
 
     //switch stuff because columnmajor to rowmajor
-    if( order == CblasRowMajor )
+    if ( order == CblasRowMajor )
     {
-        if( uplo == CblasUpper )
+        if ( uplo == CblasUpper )
         {
             uplo_char = 'L';
         }
-        else if( uplo == CblasLower )
+        else if ( uplo == CblasLower )
         {
             uplo_char = 'U';
         }
     }
     else
     {
-        if( uplo == CblasUpper )
+        if ( uplo == CblasUpper )
         {
             uplo_char = 'U';
         }
-        else if( uplo == CblasLower )
+        else if ( uplo == CblasLower )
         {
             uplo_char = 'L';
         }
@@ -1511,7 +1511,7 @@ void CUDABLAS2::syr(
 
     cudaStream_t stream = 0; // default stream if no syncToken is given
 
-    if( syncToken )
+    if ( syncToken )
     {
         CUDAStreamSyncToken* cudaStreamSyncToken = dynamic_cast<CUDAStreamSyncToken*>( syncToken );
         LAMA_ASSERT_DEBUG( cudaStreamSyncToken, "no cuda stream sync token provided" );
@@ -1524,7 +1524,7 @@ void CUDABLAS2::syr(
 
     // No error check here possible as kernel is started asynchronously
 
-    if( !syncToken )
+    if ( !syncToken )
     {
         LAMA_CUDA_RT_CALL( cudaStreamSynchronize( stream ), "cudaStreamSynchronize( stream = " << stream << " )" );
     }
@@ -1545,24 +1545,24 @@ void CUDABLAS2::syr(
     char uplo_char = ' ';
 
     //switch stuff because columnmajor to rowmajor
-    if( order == CblasRowMajor )
+    if ( order == CblasRowMajor )
     {
-        if( uplo == CblasUpper )
+        if ( uplo == CblasUpper )
         {
             uplo_char = 'L';
         }
-        else if( uplo == CblasLower )
+        else if ( uplo == CblasLower )
         {
             uplo_char = 'U';
         }
     }
     else
     {
-        if( uplo == CblasUpper )
+        if ( uplo == CblasUpper )
         {
             uplo_char = 'U';
         }
-        else if( uplo == CblasLower )
+        else if ( uplo == CblasLower )
         {
             uplo_char = 'L';
         }
@@ -1573,7 +1573,7 @@ void CUDABLAS2::syr(
 
     cudaStream_t stream = 0; // default stream if no syncToken is given
 
-    if( syncToken )
+    if ( syncToken )
     {
         CUDAStreamSyncToken* cudaStreamSyncToken = dynamic_cast<CUDAStreamSyncToken*>( syncToken );
         LAMA_ASSERT_DEBUG( cudaStreamSyncToken, "no cuda stream sync token provided" );
@@ -1586,7 +1586,7 @@ void CUDABLAS2::syr(
 
     // No error check here possible as kernel is started asynchronously
 
-    if( !syncToken )
+    if ( !syncToken )
     {
         LAMA_CUDA_RT_CALL( cudaStreamSynchronize( stream ), "cudaStreamSynchronize( stream = " << stream << " )" );
     }
@@ -1611,24 +1611,24 @@ void CUDABLAS2::syr2(
     char uplo_char = ' ';
 
     //switch stuff because columnmajor to rowmajor
-    if( order == CblasRowMajor )
+    if ( order == CblasRowMajor )
     {
-        if( uplo == CblasUpper )
+        if ( uplo == CblasUpper )
         {
             uplo_char = 'L';
         }
-        else if( uplo == CblasLower )
+        else if ( uplo == CblasLower )
         {
             uplo_char = 'U';
         }
     }
     else
     {
-        if( uplo == CblasUpper )
+        if ( uplo == CblasUpper )
         {
             uplo_char = 'U';
         }
-        else if( uplo == CblasLower )
+        else if ( uplo == CblasLower )
         {
             uplo_char = 'L';
         }
@@ -1639,7 +1639,7 @@ void CUDABLAS2::syr2(
 
     cudaStream_t stream = 0; // default stream if no syncToken is given
 
-    if( syncToken )
+    if ( syncToken )
     {
         CUDAStreamSyncToken* cudaStreamSyncToken = dynamic_cast<CUDAStreamSyncToken*>( syncToken );
         LAMA_ASSERT_DEBUG( cudaStreamSyncToken, "no cuda stream sync token provided" );
@@ -1652,7 +1652,7 @@ void CUDABLAS2::syr2(
 
     // No error check here possible as kernel is started asynchronously
 
-    if( !syncToken )
+    if ( !syncToken )
     {
         LAMA_CUDA_RT_CALL( cudaStreamSynchronize( stream ), "cudaStreamSynchronize( stream = " << stream << " )" );
     }
@@ -1675,24 +1675,24 @@ void CUDABLAS2::syr2(
     char uplo_char = ' ';
 
     //switch stuff because columnmajor to rowmajor
-    if( order == CblasRowMajor )
+    if ( order == CblasRowMajor )
     {
-        if( uplo == CblasUpper )
+        if ( uplo == CblasUpper )
         {
             uplo_char = 'L';
         }
-        else if( uplo == CblasLower )
+        else if ( uplo == CblasLower )
         {
             uplo_char = 'U';
         }
     }
     else
     {
-        if( uplo == CblasUpper )
+        if ( uplo == CblasUpper )
         {
             uplo_char = 'U';
         }
-        else if( uplo == CblasLower )
+        else if ( uplo == CblasLower )
         {
             uplo_char = 'L';
         }
@@ -1703,7 +1703,7 @@ void CUDABLAS2::syr2(
 
     cudaStream_t stream = 0; // default stream if no syncToken is given
 
-    if( syncToken )
+    if ( syncToken )
     {
         CUDAStreamSyncToken* cudaStreamSyncToken = dynamic_cast<CUDAStreamSyncToken*>( syncToken );
         LAMA_ASSERT_DEBUG( cudaStreamSyncToken, "no cuda stream sync token provided" );
@@ -1716,7 +1716,7 @@ void CUDABLAS2::syr2(
 
     // No error check here possible as kernel is started asynchronously
 
-    if( !syncToken )
+    if ( !syncToken )
     {
         LAMA_CUDA_RT_CALL( cudaStreamSynchronize( stream ), "cudaStreamSynchronize( stream = " << stream << " )" );
     }
@@ -1741,24 +1741,24 @@ void CUDABLAS2::spmv(
     char uplo_char = ' ';
 
     //switch stuff because columnmajor to rowmajor
-    if( order == CblasRowMajor )
+    if ( order == CblasRowMajor )
     {
-        if( uplo == CblasUpper )
+        if ( uplo == CblasUpper )
         {
             uplo_char = 'L';
         }
-        else if( uplo == CblasLower )
+        else if ( uplo == CblasLower )
         {
             uplo_char = 'U';
         }
     }
     else
     {
-        if( uplo == CblasUpper )
+        if ( uplo == CblasUpper )
         {
             uplo_char = 'U';
         }
-        else if( uplo == CblasLower )
+        else if ( uplo == CblasLower )
         {
             uplo_char = 'L';
         }
@@ -1769,7 +1769,7 @@ void CUDABLAS2::spmv(
 
     cudaStream_t stream = 0; // default stream if no syncToken is given
 
-    if( syncToken )
+    if ( syncToken )
     {
         CUDAStreamSyncToken* cudaStreamSyncToken = dynamic_cast<CUDAStreamSyncToken*>( syncToken );
         LAMA_ASSERT_DEBUG( cudaStreamSyncToken, "no cuda stream sync token provided" );
@@ -1782,7 +1782,7 @@ void CUDABLAS2::spmv(
 
     // No error check here possible as kernel is started asynchronously
 
-    if( !syncToken )
+    if ( !syncToken )
     {
         LAMA_CUDA_RT_CALL( cudaStreamSynchronize( stream ), "cudaStreamSynchronize( stream = " << stream << " )" );
     }
@@ -1806,24 +1806,24 @@ void CUDABLAS2::spmv(
 
     //switch stuff because columnmajor to rowmajor
 
-    if( order == CblasRowMajor )
+    if ( order == CblasRowMajor )
     {
-        if( uplo == CblasUpper )
+        if ( uplo == CblasUpper )
         {
             uplo_char = 'L';
         }
-        else if( uplo == CblasLower )
+        else if ( uplo == CblasLower )
         {
             uplo_char = 'U';
         }
     }
     else
     {
-        if( uplo == CblasUpper )
+        if ( uplo == CblasUpper )
         {
             uplo_char = 'U';
         }
-        else if( uplo == CblasLower )
+        else if ( uplo == CblasLower )
         {
             uplo_char = 'L';
         }
@@ -1834,7 +1834,7 @@ void CUDABLAS2::spmv(
 
     cudaStream_t stream = 0; // default stream if no syncToken is given
 
-    if( syncToken )
+    if ( syncToken )
     {
         CUDAStreamSyncToken* cudaStreamSyncToken = dynamic_cast<CUDAStreamSyncToken*>( syncToken );
         LAMA_ASSERT_DEBUG( cudaStreamSyncToken, "no cuda stream sync token provided" );
@@ -1847,7 +1847,7 @@ void CUDABLAS2::spmv(
 
     // No error check here possible as kernel is started asynchronously
 
-    if( !syncToken )
+    if ( !syncToken )
     {
         LAMA_CUDA_RT_CALL( cudaStreamSynchronize( stream ), "cudaStreamSynchronize( stream = " << stream << " )" );
     }
@@ -1869,24 +1869,24 @@ void CUDABLAS2::spr(
     char uplo_char = ' ';
 
     //switch stuff because columnmajor to rowmajor
-    if( order == CblasRowMajor )
+    if ( order == CblasRowMajor )
     {
-        if( uplo == CblasUpper )
+        if ( uplo == CblasUpper )
         {
             uplo_char = 'L';
         }
-        else if( uplo == CblasLower )
+        else if ( uplo == CblasLower )
         {
             uplo_char = 'U';
         }
     }
     else
     {
-        if( uplo == CblasUpper )
+        if ( uplo == CblasUpper )
         {
             uplo_char = 'U';
         }
-        else if( uplo == CblasLower )
+        else if ( uplo == CblasLower )
         {
             uplo_char = 'L';
         }
@@ -1897,7 +1897,7 @@ void CUDABLAS2::spr(
 
     cudaStream_t stream = 0; // default stream if no syncToken is given
 
-    if( syncToken )
+    if ( syncToken )
     {
         CUDAStreamSyncToken* cudaStreamSyncToken = dynamic_cast<CUDAStreamSyncToken*>( syncToken );
         LAMA_ASSERT_DEBUG( cudaStreamSyncToken, "no cuda stream sync token provided" );
@@ -1910,7 +1910,7 @@ void CUDABLAS2::spr(
 
     // No error check here possible as kernel is started asynchronously
 
-    if( !syncToken )
+    if ( !syncToken )
     {
         LAMA_CUDA_RT_CALL( cudaStreamSynchronize( stream ), "cudaStreamSynchronize( stream = " << stream << " )" );
     }
@@ -1930,24 +1930,24 @@ void CUDABLAS2::spr(
     char uplo_char = ' ';
 
     //switch stuff because columnmajor to rowmajor
-    if( order == CblasRowMajor )
+    if ( order == CblasRowMajor )
     {
-        if( uplo == CblasUpper )
+        if ( uplo == CblasUpper )
         {
             uplo_char = 'L';
         }
-        else if( uplo == CblasLower )
+        else if ( uplo == CblasLower )
         {
             uplo_char = 'U';
         }
     }
     else
     {
-        if( uplo == CblasUpper )
+        if ( uplo == CblasUpper )
         {
             uplo_char = 'U';
         }
-        else if( uplo == CblasLower )
+        else if ( uplo == CblasLower )
         {
             uplo_char = 'L';
         }
@@ -1958,7 +1958,7 @@ void CUDABLAS2::spr(
 
     cudaStream_t stream = 0; // default stream if no syncToken is given
 
-    if( syncToken )
+    if ( syncToken )
     {
         CUDAStreamSyncToken* cudaStreamSyncToken = dynamic_cast<CUDAStreamSyncToken*>( syncToken );
         LAMA_ASSERT_DEBUG( cudaStreamSyncToken, "no cuda stream sync token provided" );
@@ -1971,7 +1971,7 @@ void CUDABLAS2::spr(
 
     // No error check here possible as kernel is started asynchronously
 
-    if( !syncToken )
+    if ( !syncToken )
     {
         LAMA_CUDA_RT_CALL( cudaStreamSynchronize( stream ), "cudaStreamSynchronize( stream = " << stream << " )" );
     }
@@ -1995,24 +1995,24 @@ void CUDABLAS2::spr2(
     char uplo_char = ' ';
 
     //switch stuff because columnmajor to rowmajor
-    if( order == CblasRowMajor )
+    if ( order == CblasRowMajor )
     {
-        if( uplo == CblasUpper )
+        if ( uplo == CblasUpper )
         {
             uplo_char = 'L';
         }
-        else if( uplo == CblasLower )
+        else if ( uplo == CblasLower )
         {
             uplo_char = 'U';
         }
     }
     else
     {
-        if( uplo == CblasUpper )
+        if ( uplo == CblasUpper )
         {
             uplo_char = 'U';
         }
-        else if( uplo == CblasLower )
+        else if ( uplo == CblasLower )
         {
             uplo_char = 'L';
         }
@@ -2023,7 +2023,7 @@ void CUDABLAS2::spr2(
 
     cudaStream_t stream = 0; // default stream if no syncToken is given
 
-    if( syncToken )
+    if ( syncToken )
     {
         CUDAStreamSyncToken* cudaStreamSyncToken = dynamic_cast<CUDAStreamSyncToken*>( syncToken );
         LAMA_ASSERT_DEBUG( cudaStreamSyncToken, "no cuda stream sync token provided" );
@@ -2036,7 +2036,7 @@ void CUDABLAS2::spr2(
 
     // No error check here possible as kernel is started asynchronously
 
-    if( !syncToken )
+    if ( !syncToken )
     {
         LAMA_CUDA_RT_CALL( cudaStreamSynchronize( stream ), "cudaStreamSynchronize( stream = " << stream << " )" );
     }
@@ -2058,24 +2058,24 @@ void CUDABLAS2::spr2(
     char uplo_char = ' ';
 
     //switch stuff because columnmajor to rowmajor
-    if( order == CblasRowMajor )
+    if ( order == CblasRowMajor )
     {
-        if( uplo == CblasUpper )
+        if ( uplo == CblasUpper )
         {
             uplo_char = 'L';
         }
-        else if( uplo == CblasLower )
+        else if ( uplo == CblasLower )
         {
             uplo_char = 'U';
         }
     }
     else
     {
-        if( uplo == CblasUpper )
+        if ( uplo == CblasUpper )
         {
             uplo_char = 'U';
         }
-        else if( uplo == CblasLower )
+        else if ( uplo == CblasLower )
         {
             uplo_char = 'L';
         }
@@ -2086,7 +2086,7 @@ void CUDABLAS2::spr2(
 
     cudaStream_t stream = 0; // default stream if no syncToken is given
 
-    if( syncToken )
+    if ( syncToken )
     {
         CUDAStreamSyncToken* cudaStreamSyncToken = dynamic_cast<CUDAStreamSyncToken*>( syncToken );
         LAMA_ASSERT_DEBUG( cudaStreamSyncToken, "no cuda stream sync token provided" );
@@ -2099,7 +2099,7 @@ void CUDABLAS2::spr2(
 
     // No error check here possible as kernel is started asynchronously
 
-    if( !syncToken )
+    if ( !syncToken )
     {
         LAMA_CUDA_RT_CALL( cudaStreamSynchronize( stream ), "cudaStreamSynchronize( stream = " << stream << " )" );
     }
@@ -2123,19 +2123,19 @@ void CUDABLAS2::tpmv(
     char trans_char = ' ';
     char diag_char = ' ';
 
-    if( diag == CblasUnit )
+    if ( diag == CblasUnit )
     {
         diag_char = 'U';
     }
-    else if( diag == CblasNonUnit )
+    else if ( diag == CblasNonUnit )
     {
         diag_char = 'N';
     }
 
     //switch stuff because columnmajor to rowmajor
-    if( order == CblasRowMajor )
+    if ( order == CblasRowMajor )
     {
-        if( uplo == CblasUpper )
+        if ( uplo == CblasUpper )
         {
             uplo_char = 'L';
         }
@@ -2144,7 +2144,7 @@ void CUDABLAS2::tpmv(
             uplo_char = 'U';
         }
 
-        if( trans == CblasTrans )
+        if ( trans == CblasTrans )
         {
             trans_char = 'N';
         }
@@ -2155,7 +2155,7 @@ void CUDABLAS2::tpmv(
     }
     else
     {
-        if( uplo == CblasUpper )
+        if ( uplo == CblasUpper )
         {
             uplo_char = 'U';
         }
@@ -2164,7 +2164,7 @@ void CUDABLAS2::tpmv(
             uplo_char = 'L';
         }
 
-        if( trans == CblasTrans )
+        if ( trans == CblasTrans )
         {
             trans_char = 'T';
         }
@@ -2179,7 +2179,7 @@ void CUDABLAS2::tpmv(
 
     cudaStream_t stream = 0; // default stream if no syncToken is given
 
-    if( syncToken )
+    if ( syncToken )
     {
         CUDAStreamSyncToken* cudaStreamSyncToken = dynamic_cast<CUDAStreamSyncToken*>( syncToken );
         LAMA_ASSERT_DEBUG( cudaStreamSyncToken, "no cuda stream sync token provided" );
@@ -2192,7 +2192,7 @@ void CUDABLAS2::tpmv(
 
     // No error check here possible as kernel is started asynchronously
 
-    if( !syncToken )
+    if ( !syncToken )
     {
         LAMA_CUDA_RT_CALL( cudaStreamSynchronize( stream ), "cudaStreamSynchronize( stream = " << stream << " )" );
     }
@@ -2214,19 +2214,19 @@ void CUDABLAS2::tpmv(
     char trans_char = ' ';
     char diag_char = ' ';
 
-    if( diag == CblasUnit )
+    if ( diag == CblasUnit )
     {
         diag_char = 'U';
     }
-    else if( diag == CblasNonUnit )
+    else if ( diag == CblasNonUnit )
     {
         diag_char = 'N';
     }
 
     //switch stuff because columnmajor to rowmajor
-    if( order == CblasRowMajor )
+    if ( order == CblasRowMajor )
     {
-        if( uplo == CblasUpper )
+        if ( uplo == CblasUpper )
         {
             uplo_char = 'L';
         }
@@ -2235,7 +2235,7 @@ void CUDABLAS2::tpmv(
             uplo_char = 'U';
         }
 
-        if( trans == CblasTrans )
+        if ( trans == CblasTrans )
         {
             trans_char = 'N';
         }
@@ -2246,7 +2246,7 @@ void CUDABLAS2::tpmv(
     }
     else
     {
-        if( uplo == CblasUpper )
+        if ( uplo == CblasUpper )
         {
             uplo_char = 'U';
         }
@@ -2255,7 +2255,7 @@ void CUDABLAS2::tpmv(
             uplo_char = 'L';
         }
 
-        if( trans == CblasTrans )
+        if ( trans == CblasTrans )
         {
             trans_char = 'T';
         }
@@ -2270,7 +2270,7 @@ void CUDABLAS2::tpmv(
 
     cudaStream_t stream = 0; // default stream if no syncToken is given
 
-    if( syncToken )
+    if ( syncToken )
     {
         CUDAStreamSyncToken* cudaStreamSyncToken = dynamic_cast<CUDAStreamSyncToken*>( syncToken );
         LAMA_ASSERT_DEBUG( cudaStreamSyncToken, "no cuda stream sync token provided" );
@@ -2283,7 +2283,7 @@ void CUDABLAS2::tpmv(
 
     // No error check here possible as kernel is started asynchronously
 
-    if( !syncToken )
+    if ( !syncToken )
     {
         LAMA_CUDA_RT_CALL( cudaStreamSynchronize( stream ), "cudaStreamSynchronize( stream = " << stream << " )" );
     }
@@ -2307,19 +2307,19 @@ void CUDABLAS2::tpsv(
     char trans_char = ' ';
     char diag_char = ' ';
 
-    if( diag == CblasUnit )
+    if ( diag == CblasUnit )
     {
         diag_char = 'U';
     }
-    else if( diag == CblasNonUnit )
+    else if ( diag == CblasNonUnit )
     {
         diag_char = 'N';
     }
 
     //switch stuff because columnmajor to rowmajor
-    if( order == CblasRowMajor )
+    if ( order == CblasRowMajor )
     {
-        if( uplo == CblasUpper )
+        if ( uplo == CblasUpper )
         {
             uplo_char = 'L';
         }
@@ -2328,7 +2328,7 @@ void CUDABLAS2::tpsv(
             uplo_char = 'U';
         }
 
-        if( trans == CblasTrans )
+        if ( trans == CblasTrans )
         {
             trans_char = 'N';
         }
@@ -2339,7 +2339,7 @@ void CUDABLAS2::tpsv(
     }
     else
     {
-        if( uplo == CblasUpper )
+        if ( uplo == CblasUpper )
         {
             uplo_char = 'U';
         }
@@ -2348,7 +2348,7 @@ void CUDABLAS2::tpsv(
             uplo_char = 'L';
         }
 
-        if( trans == CblasTrans )
+        if ( trans == CblasTrans )
         {
             trans_char = 'T';
         }
@@ -2363,7 +2363,7 @@ void CUDABLAS2::tpsv(
 
     cudaStream_t stream = 0; // default stream if no syncToken is given
 
-    if( syncToken )
+    if ( syncToken )
     {
         CUDAStreamSyncToken* cudaStreamSyncToken = dynamic_cast<CUDAStreamSyncToken*>( syncToken );
         LAMA_ASSERT_DEBUG( cudaStreamSyncToken, "no cuda stream sync token provided" );
@@ -2376,7 +2376,7 @@ void CUDABLAS2::tpsv(
 
     // No error check here possible as kernel is started asynchronously
 
-    if( !syncToken )
+    if ( !syncToken )
     {
         LAMA_CUDA_RT_CALL( cudaStreamSynchronize( stream ), "cudaStreamSynchronize( stream = " << stream << " )" );
     }
@@ -2398,19 +2398,19 @@ void CUDABLAS2::tpsv(
     char trans_char = ' ';
     char diag_char = ' ';
 
-    if( diag == CblasUnit )
+    if ( diag == CblasUnit )
     {
         diag_char = 'U';
     }
-    else if( diag == CblasNonUnit )
+    else if ( diag == CblasNonUnit )
     {
         diag_char = 'N';
     }
 
     //switch stuff because columnmajor to rowmajor
-    if( order == CblasRowMajor )
+    if ( order == CblasRowMajor )
     {
-        if( uplo == CblasUpper )
+        if ( uplo == CblasUpper )
         {
             uplo_char = 'L';
         }
@@ -2419,7 +2419,7 @@ void CUDABLAS2::tpsv(
             uplo_char = 'U';
         }
 
-        if( trans == CblasTrans )
+        if ( trans == CblasTrans )
         {
             trans_char = 'N';
         }
@@ -2430,7 +2430,7 @@ void CUDABLAS2::tpsv(
     }
     else
     {
-        if( uplo == CblasUpper )
+        if ( uplo == CblasUpper )
         {
             uplo_char = 'U';
         }
@@ -2439,7 +2439,7 @@ void CUDABLAS2::tpsv(
             uplo_char = 'L';
         }
 
-        if( trans == CblasTrans )
+        if ( trans == CblasTrans )
         {
             trans_char = 'T';
         }
@@ -2454,7 +2454,7 @@ void CUDABLAS2::tpsv(
 
     cudaStream_t stream = 0; // default stream if no syncToken is given
 
-    if( syncToken )
+    if ( syncToken )
     {
         CUDAStreamSyncToken* cudaStreamSyncToken = dynamic_cast<CUDAStreamSyncToken*>( syncToken );
         LAMA_ASSERT_DEBUG( cudaStreamSyncToken, "no cuda stream sync token provided" );
@@ -2467,7 +2467,7 @@ void CUDABLAS2::tpsv(
 
     // No error check here possible as kernel is started asynchronously
 
-    if( !syncToken )
+    if ( !syncToken )
     {
         LAMA_CUDA_RT_CALL( cudaStreamSynchronize( stream ), "cudaStreamSynchronize( stream = " << stream << " )" );
     }

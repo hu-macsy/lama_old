@@ -117,11 +117,11 @@ void CSRStorage<ValueType>::print() const
     HostReadAccess<IndexType> ja( mJa );
     HostReadAccess<ValueType> values( mValues );
 
-    for( IndexType i = 0; i < mNumRows; i++ )
+    for ( IndexType i = 0; i < mNumRows; i++ )
     {
         cout << "Row " << i << " ( " << ia[i] << " - " << ia[i + 1] << " ) :";
 
-        for( IndexType jj = ia[i]; jj < ia[i + 1]; ++jj )
+        for ( IndexType jj = ia[i]; jj < ia[i + 1]; ++jj )
         {
             cout << " " << ja[jj] << ":" << values[jj];
         }
@@ -169,14 +169,14 @@ void CSRStorage<ValueType>::check( const char* msg ) const
 
     bool valid1 = OpenMPCSRUtils::validOffsets( csrIA.get(), mNumRows, mNumValues );
 
-    if( !valid1 )
+    if ( !valid1 )
     {
         LAMA_THROWEXCEPTION( "CSR::ia is invalid offset array, msg = " << msg );
     }
 
     bool valid2 = OpenMPUtils::validIndexes( csrJA.get(), mNumValues, mNumColumns );
 
-    if( !valid2 )
+    if ( !valid2 )
     {
         LAMA_THROWEXCEPTION( "CSR::ja contains illegal column index, msg = " << msg );
     }
@@ -188,7 +188,7 @@ void CSRStorage<ValueType>::check( const char* msg ) const
 template<typename ValueType>
 bool CSRStorage<ValueType>::checkDiagonalProperty() const
 {
-    if( mNumValues == 0 )
+    if ( mNumValues == 0 )
     {
         return false;
     }
@@ -261,12 +261,12 @@ void CSRStorage<ValueType>::setCSRDataImpl(
     ReadAccess<IndexType> csrJA( ja, loc );
     ReadAccess<OtherValueType> csrValues( values, loc );
 
-    if( !OpenMPCSRUtils::validOffsets( csrIA.get(), numRows, numValues ) )
+    if ( !OpenMPCSRUtils::validOffsets( csrIA.get(), numRows, numValues ) )
     {
         LAMA_THROWEXCEPTION( "invalid offset array" );
     }
 
-    if( !OpenMPUtils::validIndexes( csrJA.get(), numValues, numColumns ) )
+    if ( !OpenMPUtils::validIndexes( csrJA.get(), numValues, numColumns ) )
     {
         LAMA_THROWEXCEPTION( "invalid column indexes in ja = " << ja << ", #columns = " << numColumns );
     }
@@ -370,12 +370,12 @@ void CSRStorage<ValueType>::buildRowIndexes()
 {
     mRowIndexes.clear();
 
-    if( mNumRows == 0 )
+    if ( mNumRows == 0 )
     {
         return;
     }
 
-    if( getContext().getType() != Context::Host )
+    if ( getContext().getType() != Context::Host )
     {
         LAMA_LOG_INFO( logger, "CSRStorage: build row indices is currently only implemented on host" );
         return;
@@ -391,7 +391,7 @@ void CSRStorage<ValueType>::buildRowIndexes()
 
     float usage = float( nonZeroRows ) / float( mNumRows );
 
-    if( usage >= mCompressThreshold )
+    if ( usage >= mCompressThreshold )
     {
         LAMA_LOG_INFO( logger, "CSRStorage: do not build row indexes, usage = " << usage );
         return;
@@ -470,16 +470,16 @@ void CSRStorage<ValueType>::compress( const ValueType eps /* = 0.0 */)
 
     IndexType nonDiagZeros = 0;
 
-    for( IndexType i = 0; i < mNumRows; ++i )
+    for ( IndexType i = 0; i < mNumRows; ++i )
     {
-        for( IndexType jj = ia[i]; jj < ia[i + 1]; ++jj )
+        for ( IndexType jj = ia[i]; jj < ia[i + 1]; ++jj )
         {
-            if( ja[jj] == i )
+            if ( ja[jj] == i )
             {
                 continue;
             }
 
-            if( std::abs( values[jj] ) <= eps )
+            if ( std::abs( values[jj] ) <= eps )
             {
                 ++nonDiagZeros;
             }
@@ -488,7 +488,7 @@ void CSRStorage<ValueType>::compress( const ValueType eps /* = 0.0 */)
 
     LAMA_LOG_INFO( logger, "compress: " << nonDiagZeros << " non-diagonal zero elements" );
 
-    if( nonDiagZeros == 0 )
+    if ( nonDiagZeros == 0 )
     {
         return;
     }
@@ -503,11 +503,11 @@ void CSRStorage<ValueType>::compress( const ValueType eps /* = 0.0 */)
 
     IndexType gap = 0;
 
-    for( IndexType i = 0; i < mNumRows; ++i )
+    for ( IndexType i = 0; i < mNumRows; ++i )
     {
-        for( IndexType jj = ia[i] + gap; jj < ia[i + 1]; ++jj )
+        for ( IndexType jj = ia[i] + gap; jj < ia[i + 1]; ++jj )
         {
-            if( std::abs( values[jj] ) <= eps && ja[jj] != i )
+            if ( std::abs( values[jj] ) <= eps && ja[jj] != i )
             {
                 ++gap;
                 continue;
@@ -612,14 +612,14 @@ ValueType CSRStorage<ValueType>::getValue( IndexType i, IndexType j ) const
 
     LAMA_LOG_TRACE( logger, "search column in ja from " << ia[i] << ":" << ia[i + 1] );
 
-    for( IndexType jj = ia[i]; jj < ia[i + 1]; ++jj )
+    for ( IndexType jj = ia[i]; jj < ia[i + 1]; ++jj )
     {
         IndexType col = ja[jj];
 
         LAMA_ASSERT_DEBUG( 0 <= col && col < mNumColumns,
                            "column index at pos " << jj << " = " << col << " out of range" );
 
-        if( col == j )
+        if ( col == j )
         {
             LAMA_LOG_TRACE( logger, "found column j = " << j << " at " << jj << ", value = " << values[jj] );
             myValue = values[jj];
@@ -695,7 +695,7 @@ void CSRStorage<ValueType>::setDiagonalImpl( const Scalar value )
 {
     const IndexType numDiagonalElements = std::min( mNumColumns, mNumRows );
 
-    if( !mDiagonalProperty )
+    if ( !mDiagonalProperty )
     {
         LAMA_THROWEXCEPTION( "setDiagonal: matrix storage has not diagonal property." );
     }
@@ -705,7 +705,7 @@ void CSRStorage<ValueType>::setDiagonalImpl( const Scalar value )
     HostReadAccess<IndexType> wIa( mIa );
     HostWriteAccess<ValueType> wValues( mValues );
 
-    for( IndexType i = 0; i < numDiagonalElements; ++i )
+    for ( IndexType i = 0; i < numDiagonalElements; ++i )
     {
         wValues[wIa[i]] = val;
     }
@@ -730,7 +730,7 @@ void CSRStorage<ValueType>::setDiagonalImpl( const LAMAArray<OtherValueType>& di
         OpenMPUtils::setScatter( wValues.get(), csrIA.get(), rDiagonal.get(), numDiagonalElements );
     }
 
-    if( LAMA_LOG_TRACE_ON( logger ) )
+    if ( LAMA_LOG_TRACE_ON( logger ) )
     {
         LAMA_LOG_TRACE( logger, "CSR after setDiagonal" );
         print();
@@ -751,11 +751,11 @@ void CSRStorage<ValueType>::getRowImpl( LAMAArray<OtherType>& row, const IndexTy
     const HostReadAccess<IndexType> ja( mJa );
     const HostReadAccess<ValueType> values( mValues );
 
-    for( IndexType j = 0; j < mNumColumns; ++j )
+    for ( IndexType j = 0; j < mNumColumns; ++j )
     {
         wRow[j] = 0.0;
     }
-    for( IndexType jj = ia[i]; jj < ia[i + 1]; ++jj )
+    for ( IndexType jj = ia[i]; jj < ia[i + 1]; ++jj )
     {
         wRow[ja[jj]] = static_cast<OtherType>( values[jj] );
     }
@@ -809,7 +809,7 @@ void CSRStorage<ValueType>::scaleImpl( const LAMAArray<OtherValueType>& diagonal
         OpenMPCSRUtils::scaleRows( csrValues.get(), csrIA.get(), n, rDiagonal.get() );
     }
 
-    if( LAMA_LOG_TRACE_ON( logger ) )
+    if ( LAMA_LOG_TRACE_ON( logger ) )
     {
         LAMA_LOG_TRACE( logger, "CSR after scale diagonal" );
         print();
@@ -831,7 +831,7 @@ void CSRStorage<ValueType>::wait() const
 template<typename ValueType>
 void CSRStorage<ValueType>::assign( const _MatrixStorage& other )
 {
-    if( &other == this )
+    if ( &other == this )
     {
         // this special case avoids copying of data but is also
         // mandatory to avoid conflicting read/write accesses on LAMA arrays
@@ -872,7 +872,7 @@ void CSRStorage<ValueType>::assignTranspose( const MatrixStorage<ValueType>& oth
 
     // pass LAMAArrays of this storage to build the values in it
 
-    if( &other == this )
+    if ( &other == this )
     {
         LAMAArray<IndexType> tmpIA;
         LAMAArray<IndexType> tmpJA;
@@ -919,7 +919,7 @@ void CSRStorage<ValueType>::buildCSR(
     ReadAccess<IndexType> inIA( mIa, loc );
 
     //build number of values per row into ia
-    if( ja == NULL || values == NULL )
+    if ( ja == NULL || values == NULL )
     {
         WriteAccess<IndexType> csrIA( ia, loc, mNumRows, false );
 
@@ -989,7 +989,7 @@ void CSRStorage<ValueType>::matrixTimesVector(
     LAMA_ASSERT_EQUAL_ERROR( x.size(), mNumColumns );
     LAMA_ASSERT_EQUAL_ERROR( result.size(), mNumRows );
 
-    if( ( beta != 0.0 ) && ( result != y ) )
+    if ( ( beta != 0.0 ) && ( result != y ) )
     {
         LAMA_ASSERT_EQUAL_ERROR( y.size(), mNumRows );
     }
@@ -1009,13 +1009,13 @@ void CSRStorage<ValueType>::matrixTimesVector(
 
     // Possible alias of result and y must be handled by coressponding accesses
 
-    if( result == y )
+    if ( result == y )
     {
         // only write access for y, no read access for result
 
         WriteAccess<ValueType> wResult( result, loc );
 
-        if( mRowIndexes.size() > 0 && ( beta == 1.0 ) )
+        if ( mRowIndexes.size() > 0 && ( beta == 1.0 ) )
         {
             // y += alpha * thisMatrix * x, can take advantage of row indexes
 
@@ -1067,7 +1067,7 @@ void CSRStorage<ValueType>::matrixTimesVectorN(
     LAMA_ASSERT_EQUAL_ERROR( x.size(), n * mNumColumns );
     LAMA_ASSERT_EQUAL_ERROR( result.size(), n * mNumRows );
 
-    if( ( beta != 0.0 ) && ( result != y ) )
+    if ( ( beta != 0.0 ) && ( result != y ) )
     {
         LAMA_ASSERT_EQUAL_ERROR( y.size(), n * mNumRows );
     }
@@ -1086,7 +1086,7 @@ void CSRStorage<ValueType>::matrixTimesVectorN(
 
     // Possible alias of result and y must be handled by coressponding accesses
 
-    if( result == y )
+    if ( result == y )
     {
         // only write access for y, no read access for result
 
@@ -1131,7 +1131,7 @@ auto_ptr<SyncToken> CSRStorage<ValueType>::matrixTimesVectorAsync(
 
     LAMA_LOG_INFO( logger, *this << ": matrixTimesVectorAsync on " << *loc );
 
-    if( loc->getType() == Context::Host )
+    if ( loc->getType() == Context::Host )
     {
         // execution as separate thread
 
@@ -1157,7 +1157,7 @@ auto_ptr<SyncToken> CSRStorage<ValueType>::matrixTimesVectorAsync(
     LAMA_ASSERT_EQUAL_ERROR( x.size(), mNumColumns );
     LAMA_ASSERT_EQUAL_ERROR( result.size(), mNumRows );
 
-    if( ( beta != 0.0 ) && ( result != y ) )
+    if ( ( beta != 0.0 ) && ( result != y ) )
     {
         LAMA_ASSERT_EQUAL_ERROR( y.size(), mNumRows );
     }
@@ -1177,13 +1177,13 @@ auto_ptr<SyncToken> CSRStorage<ValueType>::matrixTimesVectorAsync(
 
     // Possible alias of result and y must be handled by coressponding accesses
 
-    if( result == y )
+    if ( result == y )
     {
         // only write access for y, no read access for result
 
         auto_ptr<WriteAccess<ValueType> > wResult( new WriteAccess<ValueType>( result, loc ) );
 
-        if( mRowIndexes.size() > 0 && ( beta == 1.0 ) )
+        if ( mRowIndexes.size() > 0 && ( beta == 1.0 ) )
         {
             // y += alpha * thisMatrix * x, can take advantage of row indexes
 
@@ -1247,7 +1247,7 @@ void CSRStorage<ValueType>::jacobiIterate(
 
     LAMA_ASSERT_ERROR( mDiagonalProperty, *this << ": jacobiIterate requires diagonal property" );
 
-    if( solution == oldSolution )
+    if ( solution == oldSolution )
     {
         LAMA_THROWEXCEPTION( "alias of solution and oldSolution unsupported" );
     }
@@ -1299,7 +1299,7 @@ void CSRStorage<ValueType>::jacobiIterateHalo(
 
     const CSRStorage<ValueType>* csrLocal;
 
-    if( localStorage.getFormat() == CSR )
+    if ( localStorage.getFormat() == CSR )
     {
         csrLocal = dynamic_cast<const CSRStorage<ValueType>*>( &localStorage );
         LAMA_ASSERT_DEBUG( csrLocal, "could not cast to CSRStorage " << localStorage );
@@ -1328,7 +1328,7 @@ void CSRStorage<ValueType>::jacobiIterateHalo(
 
         LAMA_LOG_INFO( logger, "#row indexes = " << numNonEmptyRows );
 
-        if( numNonEmptyRows != 0 )
+        if ( numNonEmptyRows != 0 )
         {
             ReadAccess<IndexType> haloRowIndexes( mRowIndexes, loc );
 
@@ -1370,7 +1370,7 @@ void CSRStorage<ValueType>::matrixPlusMatrix(
     boost::shared_ptr<CSRStorage<ValueType> > tmpA;
     boost::shared_ptr<CSRStorage<ValueType> > tmpB;
 
-    if( a.getFormat() == CSR )
+    if ( a.getFormat() == CSR )
     {
         csrA = dynamic_cast<const CSRStorage<ValueType>*>( &a );
         LAMA_ASSERT_DEBUG( csrA, "could not cast to CSRStorage " << a );
@@ -1382,7 +1382,7 @@ void CSRStorage<ValueType>::matrixPlusMatrix(
         csrA = tmpA.get();
     }
 
-    if( b.getFormat() == CSR )
+    if ( b.getFormat() == CSR )
     {
         csrB = dynamic_cast<const CSRStorage<ValueType>*>( &b );
         LAMA_ASSERT_DEBUG( csrB, "could not cast to CSRStorage " << b );
@@ -1428,7 +1428,7 @@ void CSRStorage<ValueType>::matrixTimesMatrix(
     boost::shared_ptr<CSRStorage<ValueType> > tmpB;
     boost::shared_ptr<CSRStorage<ValueType> > tmpC;
 
-    if( a.getFormat() == CSR )
+    if ( a.getFormat() == CSR )
     {
         csrA = dynamic_cast<const CSRStorage<ValueType>*>( &a );
         LAMA_ASSERT_DEBUG( csrA, "could not cast to CSRStorage " << a );
@@ -1440,7 +1440,7 @@ void CSRStorage<ValueType>::matrixTimesMatrix(
         csrA = tmpA.get();
     }
 
-    if( b.getFormat() == CSR )
+    if ( b.getFormat() == CSR )
     {
         csrB = dynamic_cast<const CSRStorage<ValueType>*>( &b );
         LAMA_ASSERT_DEBUG( csrB, "could not cast to CSRStorage " << b );
@@ -1452,11 +1452,11 @@ void CSRStorage<ValueType>::matrixTimesMatrix(
         csrB = tmpB.get();
     }
 
-    if( beta != 0.0 )
+    if ( beta != 0.0 )
     {
         // c temporary needed if not correct format/type or aliased to this
 
-        if( ( c.getFormat() == CSR ) && ( &c != this ) )
+        if ( ( c.getFormat() == CSR ) && ( &c != this ) )
         {
             csrC = dynamic_cast<const CSRStorage<ValueType>*>( &c );
             LAMA_ASSERT_DEBUG( csrC, "could not cast to CSRStorage " << c );
@@ -1473,7 +1473,7 @@ void CSRStorage<ValueType>::matrixTimesMatrix(
     // now we have in any case all arguments as CSR Storage
 
     ContextPtr loc = ContextFactory::getContext( Context::Host );
-    if( a.getContext().getType() == b.getContext().getType() )
+    if ( a.getContext().getType() == b.getContext().getType() )
     {
         loc = a.getContextPtr();
     }
@@ -1484,7 +1484,7 @@ void CSRStorage<ValueType>::matrixTimesMatrix(
     tmp1.matrixTimesMatrixCSR( alpha, *csrA, *csrB, loc );
     tmp1.setContext( loc );
 
-    if( beta != 0 )
+    if ( beta != 0 )
     {
         CSRStorage<ValueType> tmp2;
         tmp2.matrixAddMatrixCSR( 1.0, tmp1, beta, *csrC, loc );
@@ -1640,7 +1640,7 @@ ValueType CSRStorage<ValueType>::maxNorm() const
 
     LAMA_LOG_INFO( logger, *this << ": maxNorm()" );
 
-    if( mNumValues == 0 )
+    if ( mNumValues == 0 )
     {
         return 0.0f;
     }
@@ -1674,7 +1674,7 @@ ValueType CSRStorage<ValueType>::maxDiffNorm( const MatrixStorage<ValueType>& ot
 
     const CSRStorage<ValueType>* otherCSR;
 
-    if( other.getValueType() == this->getValueType() && ( other.getFormat() == CSR ) )
+    if ( other.getValueType() == this->getValueType() && ( other.getFormat() == CSR ) )
     {
         otherCSR = dynamic_cast<const CSRStorage<ValueType>*>( &other );
         LAMA_ASSERT_ERROR( otherCSR, other << ": could not cast to " << typeName() );
@@ -1698,7 +1698,7 @@ ValueType CSRStorage<ValueType>::maxDiffNormImpl( const CSRStorage<ValueType>& o
 
     LAMA_LOG_INFO( logger, *this << ": maxDiffNormImpl( " << other << " )" );
 
-    if( mNumRows == 0 )
+    if ( mNumRows == 0 )
     {
         return 0.0f;
     }

@@ -90,9 +90,9 @@ void checkEqual( MatrixStorage<ValueType1>& storage1, MatrixStorage<ValueType2>&
     BOOST_REQUIRE_EQUAL( storage1.getNumRows(), storage2.getNumRows() );
     BOOST_REQUIRE_EQUAL( storage1.getNumColumns(), storage2.getNumColumns() );
 
-    for( IndexType i = 0; i < storage1.getNumRows(); ++i )
+    for ( IndexType i = 0; i < storage1.getNumRows(); ++i )
     {
-        for( IndexType j = 0; j < storage1.getNumColumns(); ++j )
+        for ( IndexType j = 0; j < storage1.getNumColumns(); ++j )
         {
             float v1 = static_cast<float>( storage1.getValue( i, j ) );
             float v2 = static_cast<float>( storage2.getValue( i, j ) );
@@ -104,7 +104,7 @@ void checkEqual( MatrixStorage<ValueType1>& storage1, MatrixStorage<ValueType2>&
 template<typename StorageType1,typename StorageType2>
 void conversion( ContextPtr loc )
 {
-    if( !loc )
+    if ( !loc )
     {
         // skip this test
         return;

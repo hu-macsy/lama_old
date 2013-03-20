@@ -80,12 +80,12 @@ void CUDABLAS3::gemm(
 
     LAMA_LOG_INFO( logger, "gemm<float>( m = " << m << ", n = " << n << ", k = " << k );
 
-    if( transa == CblasTrans )
+    if ( transa == CblasTrans )
     {
         transA_char = 'T';
     }
 
-    if( transb == CblasTrans )
+    if ( transb == CblasTrans )
     {
         transB_char = 'T';
     }
@@ -95,7 +95,7 @@ void CUDABLAS3::gemm(
 
     cudaStream_t stream = 0; // default stream if no syncToken is given
 
-    if( syncToken )
+    if ( syncToken )
     {
         CUDAStreamSyncToken* cudaStreamSyncToken = dynamic_cast<CUDAStreamSyncToken*>( syncToken );
         LAMA_ASSERT_DEBUG( cudaStreamSyncToken, "no cuda stream sync token provided" );
@@ -110,7 +110,7 @@ void CUDABLAS3::gemm(
 
     // No error check here possible as kernel is started asynchronously in any case
 
-    if( !syncToken )
+    if ( !syncToken )
     {
         LAMA_CUDA_RT_CALL( cudaStreamSynchronize( stream ), "stream = " << stream );
     }
@@ -146,12 +146,12 @@ void CUDABLAS3::gemm(
     const double* const A_call = ( order == CblasRowMajor ) ? B : A;
     const double* const B_call = ( order == CblasRowMajor ) ? A : B;
 
-    if( transa == CblasTrans )
+    if ( transa == CblasTrans )
     {
         transA_char = 'T';
     }
 
-    if( transb == CblasTrans )
+    if ( transb == CblasTrans )
     {
         transB_char = 'T';
     }
@@ -163,7 +163,7 @@ void CUDABLAS3::gemm(
 
     cudaStream_t stream = 0; // default stream if no syncToken is given
 
-    if( syncToken )
+    if ( syncToken )
     {
         CUDAStreamSyncToken* cudaStreamSyncToken = dynamic_cast<CUDAStreamSyncToken*>( syncToken );
         LAMA_ASSERT_DEBUG( cudaStreamSyncToken, "no cuda stream sync token provided" );
@@ -178,7 +178,7 @@ void CUDABLAS3::gemm(
 
     // No error check here possible as kernel is started asynchronously in any case
 
-    if( !syncToken )
+    if ( !syncToken )
     {
         LAMA_CUDA_RT_CALL( cudaStreamSynchronize( stream ), "stream = " << stream );
     }
@@ -212,15 +212,15 @@ void CUDABLAS3::trsm(
     char transA = ' ';
     char diag = ' ';
 
-    if( trans == CblasTrans )
+    if ( trans == CblasTrans )
     {
         transA = 'T';
     }
-    else if( trans == CblasConjTrans )
+    else if ( trans == CblasConjTrans )
     {
         transA = 'C';
     }
-    else if( trans == CblasNoTrans )
+    else if ( trans == CblasNoTrans )
     {
         transA = 'N';
     }
@@ -231,11 +231,11 @@ void CUDABLAS3::trsm(
         return;
     }
 
-    if( diagarg == CblasUnit )
+    if ( diagarg == CblasUnit )
     {
         diag = 'U';
     }
-    else if( diagarg == CblasNonUnit )
+    else if ( diagarg == CblasNonUnit )
     {
         diag = 'N';
     }
@@ -246,13 +246,13 @@ void CUDABLAS3::trsm(
         return;
     }
 
-    if( Order == CblasColMajor )
+    if ( Order == CblasColMajor )
     {
-        if( sidearg == CblasRight )
+        if ( sidearg == CblasRight )
         {
             side = 'R';
         }
-        else if( sidearg == CblasLeft )
+        else if ( sidearg == CblasLeft )
         {
             side = 'L';
         }
@@ -263,11 +263,11 @@ void CUDABLAS3::trsm(
             return;
         }
 
-        if( uploarg == CblasUpper )
+        if ( uploarg == CblasUpper )
         {
             uplo = 'U';
         }
-        else if( uploarg == CblasLower )
+        else if ( uploarg == CblasLower )
         {
             uplo = 'L';
         }
@@ -278,15 +278,15 @@ void CUDABLAS3::trsm(
             return;
         }
     }
-    else if( Order == CblasRowMajor )
+    else if ( Order == CblasRowMajor )
     {
         RowMajorStrg = 1;
 
-        if( sidearg == CblasRight )
+        if ( sidearg == CblasRight )
         {
             side = 'L';
         }
-        else if( sidearg == CblasLeft )
+        else if ( sidearg == CblasLeft )
         {
             side = 'R';
         }
@@ -297,11 +297,11 @@ void CUDABLAS3::trsm(
             return;
         }
 
-        if( uploarg == CblasUpper )
+        if ( uploarg == CblasUpper )
         {
             uplo = 'L';
         }
-        else if( uploarg == CblasLower )
+        else if ( uploarg == CblasLower )
         {
             uplo = 'U';
         }
@@ -324,7 +324,7 @@ void CUDABLAS3::trsm(
 
     cudaStream_t stream = 0; // default stream if no syncToken is given
 
-    if( syncToken )
+    if ( syncToken )
     {
         CUDAStreamSyncToken* cudaStreamSyncToken = dynamic_cast<CUDAStreamSyncToken*>( syncToken );
         LAMA_ASSERT_DEBUG( cudaStreamSyncToken, "no cuda stream sync token provided" );
@@ -337,7 +337,7 @@ void CUDABLAS3::trsm(
 
     // No error check here possible as kernel is started asynchronously in any case
 
-    if( !syncToken )
+    if ( !syncToken )
     {
         LAMA_CUDA_RT_CALL( cudaStreamSynchronize( stream ), "stream = " << stream );
     }
@@ -364,64 +364,64 @@ void CUDABLAS3::trsm(
     char transA = ' ';
     char diag = ' ';
 
-    if( trans == CblasTrans )
+    if ( trans == CblasTrans )
     {
         transA = 'T';
     }
-    else if( trans == CblasConjTrans )
+    else if ( trans == CblasConjTrans )
     {
         transA = 'C';
     }
-    else if( trans == CblasNoTrans )
+    else if ( trans == CblasNoTrans )
     {
         transA = 'N';
     }
 
-    if( diagarg == CblasUnit )
+    if ( diagarg == CblasUnit )
     {
         diag = 'U';
     }
-    else if( diagarg == CblasNonUnit )
+    else if ( diagarg == CblasNonUnit )
     {
         diag = 'N';
     }
 
-    if( Order == CblasColMajor )
+    if ( Order == CblasColMajor )
     {
-        if( sidearg == CblasRight )
+        if ( sidearg == CblasRight )
         {
             side = 'R';
         }
-        else if( sidearg == CblasLeft )
+        else if ( sidearg == CblasLeft )
         {
             side = 'L';
         }
 
-        if( uploarg == CblasUpper )
+        if ( uploarg == CblasUpper )
         {
             uplo = 'U';
         }
-        else if( uploarg == CblasLower )
+        else if ( uploarg == CblasLower )
         {
             uplo = 'L';
         }
     }
-    else if( Order == CblasRowMajor )
+    else if ( Order == CblasRowMajor )
     {
-        if( sidearg == CblasRight )
+        if ( sidearg == CblasRight )
         {
             side = 'L';
         }
-        else if( sidearg == CblasLeft )
+        else if ( sidearg == CblasLeft )
         {
             side = 'R';
         }
 
-        if( uploarg == CblasUpper )
+        if ( uploarg == CblasUpper )
         {
             uplo = 'L';
         }
-        else if( uploarg == CblasLower )
+        else if ( uploarg == CblasLower )
         {
             uplo = 'U';
         }
@@ -432,7 +432,7 @@ void CUDABLAS3::trsm(
 
     cudaStream_t stream = 0; // default stream if no syncToken is given
 
-    if( syncToken )
+    if ( syncToken )
     {
         CUDAStreamSyncToken* cudaStreamSyncToken = dynamic_cast<CUDAStreamSyncToken*>( syncToken );
         LAMA_ASSERT_DEBUG( cudaStreamSyncToken, "no cuda stream sync token provided" );
@@ -445,7 +445,7 @@ void CUDABLAS3::trsm(
 
     // No error check here possible as kernel is started asynchronously in any case
 
-    if( !syncToken )
+    if ( !syncToken )
     {
         LAMA_CUDA_RT_CALL( cudaStreamSynchronize( stream ), "stream = " << stream );
     }

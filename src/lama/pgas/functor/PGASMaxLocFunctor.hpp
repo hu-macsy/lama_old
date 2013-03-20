@@ -92,11 +92,11 @@ void PGASMaxLocFunctor<T>::iteration( int partner, bool active )
     mInterface->syncronizeAll();
     *mWork = *mResult;
     mInterface->syncronizeAll();
-    if( active )
+    if ( active )
     {
         mInterface->get( mWork, mResult, sizeof(T), partner );
 
-        if( ( ( *mWork ) > ( *mResult ) ) )
+        if ( ( ( *mWork ) > ( *mResult ) ) )
         {
             *mResult = *mWork;
             mInterface->get( mResultRank, mResultRank, sizeof(int), partner );

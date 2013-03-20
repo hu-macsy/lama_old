@@ -132,13 +132,13 @@ void InverseSolver::computeInverse( Matrix& matrix ) const
     const IndexType n = matrix.getNumRows();
     boost::scoped_array<IndexType> permutation( new IndexType[n] );
 
-    if( typeid( matrix ) == typeid(DenseMatrix<float> ) )
+    if ( typeid( matrix ) == typeid(DenseMatrix<float> ) )
     {
         DenseMatrix<float>& inverse = dynamic_cast<DenseMatrix<float>&>( matrix );
 
         invert( inverse, permutation.get() );
     }
-    else if( typeid( matrix ) == typeid(DenseMatrix<double> ) )
+    else if ( typeid( matrix ) == typeid(DenseMatrix<double> ) )
     {
         DenseMatrix<double>& inverse = dynamic_cast<DenseMatrix<double>&>( matrix );
 
@@ -155,11 +155,11 @@ void InverseSolver::computeInverse( Matrix& matrix ) const
 template<typename T>
 void InverseSolver::decompose( DenseMatrix<T>& matrix, IndexType* const permutation ) const
 {
-    if( matrix.getNumRows() != matrix.getNumColumns() )
+    if ( matrix.getNumRows() != matrix.getNumColumns() )
     {
         LAMA_THROWEXCEPTION( "Can not decompose the not square matrix " << matrix );
     }
-    if( matrix.getDistribution().getNumPartitions() == 1 && matrix.getColDistribution().getNumPartitions() == 1 )
+    if ( matrix.getDistribution().getNumPartitions() == 1 && matrix.getColDistribution().getNumPartitions() == 1 )
     {
         DenseStorage<T>& denseStorage = matrix.getLocalStorage();
 
@@ -167,7 +167,7 @@ void InverseSolver::decompose( DenseMatrix<T>& matrix, IndexType* const permutat
 
         int error = lama_GETRF_cpu( CblasRowMajor, denseStorage.getNumRows(), denseStorage.getNumColumns(),
                                     denseValues.get(), denseStorage.getNumColumns(), &permutation[0] );
-        if( error != 0 )
+        if ( error != 0 )
         {
             LAMA_THROWEXCEPTION( "lama_GETRF_cpu failed" );
         }
@@ -188,11 +188,11 @@ void InverseSolver::invert( DenseMatrix<T>& matrix, IndexType* const permutation
     ContextPtr context = getCoefficients().getContextPtr();
     const LAMAInterface* lamaInterface = LAMAInterfaceRegistry::getRegistry().getInterface( context->getType() );
 
-    if( matrix.getNumRows() != matrix.getNumColumns() )
+    if ( matrix.getNumRows() != matrix.getNumColumns() )
     {
         LAMA_THROWEXCEPTION( "Can not invert the not square matrix " << matrix );
     }
-    if( matrix.getDistribution().getNumPartitions() == 1 && matrix.getColDistribution().getNumPartitions() == 1 )
+    if ( matrix.getDistribution().getNumPartitions() == 1 && matrix.getColDistribution().getNumPartitions() == 1 )
     {
         DenseStorage<T>& denseStorage = matrix.getLocalStorage();
 
@@ -202,7 +202,7 @@ void InverseSolver::invert( DenseMatrix<T>& matrix, IndexType* const permutation
                     denseStorage.getNumColumns(), denseValues.get(),
                     denseStorage.getNumColumns(), &permutation[0] );
 
-        if( error != 0 )
+        if ( error != 0 )
         {
             LAMA_THROWEXCEPTION( "lama_GETRF_cpu failed" );
         }
@@ -211,7 +211,7 @@ void InverseSolver::invert( DenseMatrix<T>& matrix, IndexType* const permutation
                 denseValues.get(), denseStorage.getNumColumns(),
                 &permutation[0] );
 
-        if( error != 0 )
+        if ( error != 0 )
         {
             LAMA_THROWEXCEPTION( "lama_GETRI_cpu failed" );
         }

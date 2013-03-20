@@ -93,20 +93,20 @@ bool Criterion::isSatisfied( const lama::IterativeSolver& solver )
                    "Modifier: "<< mModifier << " Left Child " << (mLeftChild ? *mLeftChild : 0) << " Right Child " << (mRightChild ? *mRightChild : 0) );
 
     bool satisfied = true;
-    if( !hasLeftChild() && !hasRightChild() )
+    if ( !hasLeftChild() && !hasRightChild() )
     {
         return mModifier;
     }
 
-    if( !hasLeftChild() )
+    if ( !hasLeftChild() )
     {
         satisfied = mRightChild->isSatisfied( solver );
     }
-    else if( !hasRightChild() )
+    else if ( !hasRightChild() )
     {
         satisfied = mLeftChild->isSatisfied( solver );
     }
-    else if( mOperation == AND )
+    else if ( mOperation == AND )
     {
         satisfied = mLeftChild->isSatisfied( solver ) && mRightChild->isSatisfied( solver );
     }
@@ -160,16 +160,16 @@ void Criterion::setOperation( const Criterion::BooleanOperator operation )
 
 void Criterion::writeAt( std::ostream& stream ) const
 {
-    if( hasLeftChild() && hasRightChild() ) //boolean operation
+    if ( hasLeftChild() && hasRightChild() ) //boolean operation
     {
-        if( !mModifier )
+        if ( !mModifier )
         {
             stream << "!";
         }
 
         stream << "(" << *getLeftChild();
 
-        if( getOperation() == Criterion::AND )
+        if ( getOperation() == Criterion::AND )
         {
             stream << " && ";
         }

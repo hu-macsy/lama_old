@@ -152,9 +152,9 @@ void testLUMethod( EquationHelper::EquationSystem<T> system, const IndexType til
     DenseMatrix<ValueType> luSolution = DenseMatrix<ValueType>( system.coefficients );
     // ompInverseSolver.computeLUDecomposition( luSolution, permutation );                 //TODO: crashes
 
-    for( IndexType i = 0; i < n; ++i )
+    for ( IndexType i = 0; i < n; ++i )
     {
-        for( IndexType j = 0; j < n; ++j )
+        for ( IndexType j = 0; j < n; ++j )
         {
             Scalar solScalar = luSolution.getValue( i, j );
             Scalar comScalar = result.getValue( i, j );

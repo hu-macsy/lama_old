@@ -104,7 +104,7 @@ void verifySameVector( Vector& v1, Vector& v2 )
 
     IndexType n = v1.size();
 
-    for( IndexType i = 0; i < n; ++i )
+    for ( IndexType i = 0; i < n; ++i )
     {
         LAMA_CHECK_SCALAR_CLOSE( Scalar( v1.getValue( i ) ), Scalar( v2.getValue( i ) ), ValueType, 1 );
     }
@@ -119,7 +119,7 @@ void verifyVectorWithScalar( Vector& v, Scalar s )
 
     IndexType n = v.size();
 
-    for( IndexType i = 0; i < n; ++i )
+    for ( IndexType i = 0; i < n; ++i )
     {
         LAMA_CHECK_SCALAR_CLOSE( Scalar( v.getValue( i ) ), Scalar( s ), ValueType, 1 );
     }
@@ -744,7 +744,7 @@ BOOST_AUTO_TEST_CASE( SwapTest )
 
     v1.swap( v2 );
 
-    for( IndexType i = 0; i < v1.size(); i++ )
+    for ( IndexType i = 0; i < v1.size(); i++ )
     {
         BOOST_CHECK_EQUAL( v1.getValue(i), 1.0 );
         BOOST_CHECK_EQUAL( v2.getValue(i), 0.0 );
@@ -773,7 +773,7 @@ BOOST_AUTO_TEST_CASE( AssignTest )
 
     BOOST_REQUIRE_EQUAL( v2.size(), v3.size() );
 
-    for( IndexType i = 0; i < v1.size(); i++ )
+    for ( IndexType i = 0; i < v1.size(); i++ )
     {
         BOOST_CHECK_EQUAL( v1.getValue( i ), 1.0f );
         BOOST_CHECK_EQUAL( v2.getValue( i ), 1.0 );

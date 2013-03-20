@@ -135,9 +135,9 @@ void cyclicMultVectorTest( const IndexType chunkSize, const IndexType n )
 {
     boost::scoped_array<float> values( new float[n * n] );
 
-    for( IndexType i = 0; i < n; ++i )
+    for ( IndexType i = 0; i < n; ++i )
     {
-        for( IndexType j = 0; j < n; ++j )
+        for ( IndexType j = 0; j < n; ++j )
         {
             values[i * n + j] = 1.0f / n;
         }
@@ -158,14 +158,14 @@ void cyclicMultVectorTest( const IndexType chunkSize, const IndexType n )
 
     res = distMatrix * x;
 
-    for( IndexType i = 0; i < n; ++i )
+    for ( IndexType i = 0; i < n; ++i )
     {
         BOOST_CHECK_CLOSE( 1.0f, res.getValue(i).getValue<float>(), 1.0 / (10.0*n) );
     }
 
     res = 0.0;
 
-    for( IndexType i = 0; i < n; ++i )
+    for ( IndexType i = 0; i < n; ++i )
     {
         BOOST_CHECK_EQUAL( 0.0f, res.getValue(i) );
     }
@@ -174,7 +174,7 @@ void cyclicMultVectorTest( const IndexType chunkSize, const IndexType n )
 
     res = distMatrix * x;
 
-    for( IndexType i = 0; i < n; ++i )
+    for ( IndexType i = 0; i < n; ++i )
     {
         BOOST_CHECK_CLOSE( 1.0f, res.getValue(i).getValue<float>(), 1.0/(10.0*n) );
     }
@@ -365,12 +365,12 @@ BOOST_AUTO_TEST_CASE( buildSquareTest )
     int numCols = 3 * size;
 
     scoped_array<double> values( new double[numRows * numCols] );
-    for( IndexType i = 0; i < numRows; ++i )
+    for ( IndexType i = 0; i < numRows; ++i )
     {
-        for( IndexType j = 0; j < numCols; ++j )
+        for ( IndexType j = 0; j < numCols; ++j )
         {
             double value = 0.0;
-            if( j == i || j + size == i || j - size == i || j + 2 * size == i || j - 2 * size == i
+            if ( j == i || j + size == i || j - size == i || j + 2 * size == i || j - 2 * size == i
                     || j + ( numRows - 1 ) == i || j - ( numRows - 1 ) == i )
             {
                 value = 1000.0 * ( i + 1 ) + ( j + 1 );
@@ -382,9 +382,9 @@ BOOST_AUTO_TEST_CASE( buildSquareTest )
     DenseMatrix<double> repM;
     repM.setRawDenseData( numRows, numCols, values.get() );
 
-    for( IndexType i = 0; i < numRows; ++i )
+    for ( IndexType i = 0; i < numRows; ++i )
     {
-        for( IndexType j = 0; j < numCols; ++j )
+        for ( IndexType j = 0; j < numCols; ++j )
         {
             BOOST_CHECK_CLOSE( values[i*numCols +j], repM.getValue( i, j ).getValue<double>(), 1e-16 );
         }
@@ -394,9 +394,9 @@ BOOST_AUTO_TEST_CASE( buildSquareTest )
 
     // take a cyclic(1) distribution as general distribution
 
-    for( IndexType i = 0; i < numRows; ++i )
+    for ( IndexType i = 0; i < numRows; ++i )
     {
-        if( i % size == rank )
+        if ( i % size == rank )
         {
             localIndexes.push_back( i );
         }
@@ -406,9 +406,9 @@ BOOST_AUTO_TEST_CASE( buildSquareTest )
 
     DenseMatrix<double> distM( repM, dist, dist );
 
-    for( IndexType i = 0; i < numRows; ++i )
+    for ( IndexType i = 0; i < numRows; ++i )
     {
-        for( IndexType j = 0; j < numCols; ++j )
+        for ( IndexType j = 0; j < numCols; ++j )
         {
             BOOST_CHECK_CLOSE( repM.getValue( i, j ).getValue<double>(), distM.getValue( i, j ).getValue<double>(),
                                1e-16 );
@@ -432,29 +432,29 @@ void GEMMTestImpl( const int n, const int m, const int k, T eps )
     int maxdim = std::max( n, m );
 
     boost::scoped_array<ValueType> values( new ValueType[maxdim * k] );
-    for( int i = 0; i < maxdim * k; i++ )
+    for ( int i = 0; i < maxdim * k; i++ )
     {
         values[i] = i + 1;
     }
 
     boost::scoped_array<ValueType> valuesC( new ValueType[m * n] );
 
-    for( int i = 0; i < m; i++ )
+    for ( int i = 0; i < m; i++ )
     {
-        for( int j = 0; j < n; j++ )
+        for ( int j = 0; j < n; j++ )
         {
             valuesC[i * n + j] = 42.0 / beta.getValue<ValueType>();
-            for( int kk = 0; kk < k; kk++ )
+            for ( int kk = 0; kk < k; kk++ )
             {
                 valuesC[i * n + j] -= values[i * k + kk] * values[kk * n + j] / beta.getValue<ValueType>();
             }
         }
     }
 
-    for( ContextType computeLocation = Context::Host; computeLocation < Context::MaxContext; computeLocation =
+    for ( ContextType computeLocation = Context::Host; computeLocation < Context::MaxContext; computeLocation =
                 ContextType( computeLocation + 1 ) )
     {
-        if( !LAMAInterfaceRegistry::getRegistry().hasInterface( computeLocation ) )
+        if ( !LAMAInterfaceRegistry::getRegistry().hasInterface( computeLocation ) )
         {
             LAMA_LOG_WARN( logger, "Skipping location: " << computeLocation << " no Interface found." );
             continue;
@@ -470,9 +470,9 @@ void GEMMTestImpl( const int n, const int m, const int k, T eps )
 
         C = alpha * A * B + beta * C;
 
-        for( int i = 0; i < m; i++ )
+        for ( int i = 0; i < m; i++ )
         {
-            for( int j = 0; j < n; j++ )
+            for ( int j = 0; j < n; j++ )
             {
                 Scalar expectedvalue( 42.0 );
                 Scalar value = C.getValue( i, j );
@@ -486,9 +486,9 @@ void GEMMTestImpl( const int n, const int m, const int k, T eps )
 
         D = alpha * A * B + beta * C2;
 
-        for( int i = 0; i < m; i++ )
+        for ( int i = 0; i < m; i++ )
         {
-            for( int j = 0; j < n; j++ )
+            for ( int j = 0; j < n; j++ )
             {
                 Scalar expectedvalue( 42.0 );
                 Scalar value = D.getValue( i, j );
@@ -533,9 +533,9 @@ BOOST_AUTO_TEST_CASE( GEMMTest )
 void cyclicDistTestImpl( const IndexType chunkSize, const IndexType n )
 {
     boost::scoped_array<float> values( new float[n * n] );
-    for( IndexType i = 0; i < n; ++i )
+    for ( IndexType i = 0; i < n; ++i )
     {
-        for( IndexType j = 0; j < n; ++j )
+        for ( IndexType j = 0; j < n; ++j )
         {
             values[i * n + j] = static_cast<float>( i * n + j );
         }
@@ -548,9 +548,9 @@ void cyclicDistTestImpl( const IndexType chunkSize, const IndexType n )
 
     DenseMatrix<float> distMatrix( repMatrix, dist, dist );
 
-    for( IndexType i = 0; i < n; i++ )
+    for ( IndexType i = 0; i < n; i++ )
     {
-        for( IndexType j = 0; j < n; j++ )
+        for ( IndexType j = 0; j < n; j++ )
         {
             Scalar expectedvalue = repMatrix.getValue( i, j );
             Scalar value = distMatrix.getValue( i, j );

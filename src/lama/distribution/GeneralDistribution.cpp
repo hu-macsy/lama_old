@@ -57,7 +57,7 @@ GeneralDistribution::GeneralDistribution(
 {
     std::vector<IndexType>::const_iterator end = mLocal2Global.end();
     std::vector<IndexType>::const_iterator begin = mLocal2Global.begin();
-    for( std::vector<IndexType>::const_iterator it = begin; it != end; ++it )
+    for ( std::vector<IndexType>::const_iterator it = begin; it != end; ++it )
     {
         IndexType i = static_cast<IndexType>( std::distance( begin, it ) );
         LAMA_ASSERT( 0 <= *it && *it < mGlobalSize,
@@ -70,9 +70,9 @@ GeneralDistribution::GeneralDistribution( const Distribution& other )
     : Distribution( other.getGlobalSize(), other.getCommunicatorPtr() ), mLocal2Global(
         other.getLocalSize() )
 {
-    for( IndexType i = 0; i < getGlobalSize(); ++i )
+    for ( IndexType i = 0; i < getGlobalSize(); ++i )
     {
-        if( other.isLocal( i ) )
+        if ( other.isLocal( i ) )
         {
             IndexType localIndex = other.global2local( i );
             mGlobal2Local[i] = localIndex;
@@ -114,7 +114,7 @@ IndexType GeneralDistribution::local2global( const IndexType localIndex ) const
 IndexType GeneralDistribution::global2local( const IndexType globalIndex ) const
 {
     const Global2LocalMapType::const_iterator elem = mGlobal2Local.find( globalIndex );
-    if( elem == mGlobal2Local.end() )
+    if ( elem == mGlobal2Local.end() )
     {
         return nIndex;
     }
@@ -145,12 +145,12 @@ void GeneralDistribution::getDistributionVector( std::vector<IndexType>& row2Par
     mCommunicator->gather( &numRows[0], 1, MASTER, &numMyRows );
 
     std::vector<IndexType> displ;
-    if( myRank == MASTER )
+    if ( myRank == MASTER )
     {
         displ.reserve( parts + 1 );
 
         IndexType displacement = 0;
-        for( IndexType i = 0; i < parts; i++ )
+        for ( IndexType i = 0; i < parts; i++ )
         {
             displ[i] = displacement;
             displacement += numRows[i];
@@ -165,18 +165,18 @@ void GeneralDistribution::getDistributionVector( std::vector<IndexType>& row2Par
     mCommunicator->gather( &rows[0], numMyRows, MASTER, &mLocal2Global[0], &numRows[0] );
 
     // build mapping row 2 partition
-    if( myRank == MASTER )
+    if ( myRank == MASTER )
     {
 
         // for testing: init
-        for( IndexType i = 0; i < mGlobalSize; ++i )
+        for ( IndexType i = 0; i < mGlobalSize; ++i )
         {
             row2Partition[i] = -1;
         }
 
-        for( IndexType i = 0; i < parts; ++i )
+        for ( IndexType i = 0; i < parts; ++i )
         {
-            for( IndexType j = displ[i]; j < displ[i + 1]; ++j )
+            for ( IndexType j = displ[i]; j < displ[i + 1]; ++j )
             {
                 row2Partition[rows[j]] = i;
             }

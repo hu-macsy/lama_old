@@ -69,7 +69,7 @@ void computeROOTforwards( lama::PartitionId& root, const lama::IndexType& numPro
 
 void computeROOTbackwards( lama::PartitionId& root, const lama::IndexType& numProcs )
 {
-    if( root == 0 )
+    if ( root == 0 )
     {
         root = numProcs - 1;
     }
@@ -154,7 +154,7 @@ LUSolver::~LUSolver()
 
 LUSolver::LUSolverRuntime::~LUSolverRuntime()
 {
-    if( mLUfactorization != 0 )
+    if ( mLUfactorization != 0 )
     {
         delete mLUfactorization;
     }
@@ -162,11 +162,11 @@ LUSolver::LUSolverRuntime::~LUSolverRuntime()
 
 void LUSolver::factorMatrixToLU( Matrix& matrix, std::vector<IndexType>& permutation )
 {
-    if( typeid( matrix ) == typeid(DenseMatrix<double> ) )
+    if ( typeid( matrix ) == typeid(DenseMatrix<double> ) )
     {
         computeLUFactorization( dynamic_cast<DenseMatrix<double>&>( matrix ), permutation );
     }
-    else if( typeid( matrix ) == typeid(DenseMatrix<float> ) )
+    else if ( typeid( matrix ) == typeid(DenseMatrix<float> ) )
     {
         computeLUFactorization( dynamic_cast<DenseMatrix<float>&>( matrix ), permutation );
     }
@@ -178,7 +178,7 @@ void LUSolver::factorMatrixToLU( Matrix& matrix, std::vector<IndexType>& permuta
 
 inline void LUSolver::initializeCommunicator()
 {
-    if( mComm )
+    if ( mComm )
     {
         return;
     }
@@ -190,14 +190,14 @@ void LUSolver::initialize( const Matrix& coefficients )
     LAMA_REGION("initialize");
     LUSolverRuntime& runtime = getRuntime();
 
-    if( runtime.mLUfactorization != 0 )
+    if ( runtime.mLUfactorization != 0 )
     {
         delete runtime.mLUfactorization;
     }
 
     runtime.mPermutation.resize( coefficients.getNumRows(), 0 );
 
-    if( matrixIs<double>( coefficients ) )
+    if ( matrixIs<double>( coefficients ) )
     {
         DenseMatrix<double>* dLUfactorization = new DenseMatrix<double>( coefficients );
 
@@ -205,7 +205,7 @@ void LUSolver::initialize( const Matrix& coefficients )
 
         runtime.mLUfactorization = dLUfactorization;
     }
-    else if( matrixIs<float>( coefficients ) )
+    else if ( matrixIs<float>( coefficients ) )
     {
         DenseMatrix<float>* sLUfactorization = new DenseMatrix<float>( coefficients );
 
@@ -227,12 +227,12 @@ void LUSolver::computeLUFactorization( DenseMatrix<T> & matrix, std::vector<Inde
     const ValueType one = static_cast<ValueType>( 1.0 );
     const IndexType inc1 = 1;
 
-    if( matrix.getDistribution().getNumPartitions() == 1 && matrix.getColDistribution().getNumPartitions() == 1 )
+    if ( matrix.getDistribution().getNumPartitions() == 1 && matrix.getColDistribution().getNumPartitions() == 1 )
     {
         const IndexType n = matrix.getNumRows();
         const IndexType m = matrix.getNumColumns();
 
-        if( permutation.size() != static_cast<std::vector<IndexType>::size_type>( n ) )
+        if ( permutation.size() != static_cast<std::vector<IndexType>::size_type>( n ) )
         {
             permutation.resize( n, 0 );
         }
@@ -241,7 +241,7 @@ void LUSolver::computeLUFactorization( DenseMatrix<T> & matrix, std::vector<Inde
         LAMA_LOG_DEBUG( logger, "Size of tiles is " << tilesize );
 
         boost::scoped_array<IndexType> ipiv( new IndexType[n] );
-        for( IndexType i = 0; i < n; ++i )
+        for ( IndexType i = 0; i < n; ++i )
         {
             permutation[i] = ipiv[i] = i;
         }
@@ -292,7 +292,7 @@ void LUSolver::computeLUFactorization( DenseMatrix<T> & matrix, std::vector<Inde
          *  The last block of the  matrix is  the block  above the GETRF block. This  block has already been computed by
          * previous steps and does not need to be touched during the next steps, again.
          */
-        for( IndexType diagonal = 0; diagonal < tileEnd; diagonal += tilesize )
+        for ( IndexType diagonal = 0; diagonal < tileEnd; diagonal += tilesize )
         {
             const IndexType tile_right_side = ( diagonal + tilesize < m ? tilesize : m - diagonal );
             const IndexType tile_bottom = ( diagonal + tilesize < n ? tilesize : n - diagonal );
@@ -300,9 +300,9 @@ void LUSolver::computeLUFactorization( DenseMatrix<T> & matrix, std::vector<Inde
             OpenMPLAPACK::getrf( CblasRowMajor, n - diagonal, tile_right_side, &decomposition[diagonal * m + diagonal],
                                  n, &ipiv.get()[diagonal] );
 
-            for( IndexType i = 0; i < tile_bottom; ++i )
+            for ( IndexType i = 0; i < tile_bottom; ++i )
             {
-                if( ipiv[diagonal + i] != i )
+                if ( ipiv[diagonal + i] != i )
                 {
                     std::swap( permutation[diagonal + i], permutation[ipiv[diagonal + i] + diagonal] );
                 }
@@ -329,7 +329,7 @@ void LUSolver::computeLUFactorization( DenseMatrix<T> & matrix, std::vector<Inde
 
             // compute the upper right side.
             #pragma omp parallel for schedule (LAMA_OMP_SCHEDULE)
-            for( IndexType offset = diagonal + tilesize; offset < m; offset += tilesize )
+            for ( IndexType offset = diagonal + tilesize; offset < m; offset += tilesize )
             {
                 const IndexType& bottom = tile_bottom;
                 const IndexType right_side = ( offset + tilesize < m ? tilesize : m - offset );
@@ -340,12 +340,12 @@ void LUSolver::computeLUFactorization( DenseMatrix<T> & matrix, std::vector<Inde
 
             // compute the lower right side.
             #pragma omp parallel for schedule (LAMA_OMP_SCHEDULE)
-            for( IndexType iTile = diagonal + tilesize; iTile < m; iTile += tilesize )
+            for ( IndexType iTile = diagonal + tilesize; iTile < m; iTile += tilesize )
             {
                 const IndexType bottom = ( iTile + tilesize < n ? tilesize : n - iTile );
                 const T* const A = &decomposition[iTile * m + diagonal];
 
-                for( IndexType jTile = diagonal + tilesize; jTile < n; jTile += tilesize )
+                for ( IndexType jTile = diagonal + tilesize; jTile < n; jTile += tilesize )
                 {
                     const IndexType right_side = ( jTile + tilesize < m ? tilesize : m - jTile );
 
@@ -361,14 +361,14 @@ void LUSolver::computeLUFactorization( DenseMatrix<T> & matrix, std::vector<Inde
         decomposition.release();
     }
     /* distributed cyclic implementation */
-    else if( matrix.getDistribution() == matrix.getColDistribution() && matrix.getNumRows() == matrix.getNumColumns()
-             && typeid( matrix.getColDistribution() ) == typeid(CyclicDistribution) )
+    else if ( matrix.getDistribution() == matrix.getColDistribution() && matrix.getNumRows() == matrix.getNumColumns()
+              && typeid( matrix.getColDistribution() ) == typeid(CyclicDistribution) )
     {
         initializeCommunicator();
         const PartitionId myRank = mComm->getRank();
         const PartitionId numProcs = mComm->getSize();
 
-        if( matrix.getNumTotalChunks() < numProcs )
+        if ( matrix.getNumTotalChunks() < numProcs )
         {
             LAMA_THROWEXCEPTION(
                 "No LU decomposition has been computed, because there were too many processes ("<<numProcs<<") from which only "<<matrix.getNumTotalChunks( )<<" would be active." );
@@ -386,7 +386,7 @@ void LUSolver::computeLUFactorization( DenseMatrix<T> & matrix, std::vector<Inde
         ContextPtr ctxtPtr;
         {
             const char* const cArr = getenv( "PLU_CONTEXT" );
-            if( cArr == NULL || strcmp( cArr, "HOST" ) == 0 )
+            if ( cArr == NULL || strcmp( cArr, "HOST" ) == 0 )
             {
                 ctxtPtr = ContextFactory::getContext( Context::Host );
                 swap_cuda = swap_cpu;
@@ -396,7 +396,7 @@ void LUSolver::computeLUFactorization( DenseMatrix<T> & matrix, std::vector<Inde
                 gemm.query = lama_gemm<T>::__queryDef;
                 gemm.synchronize = lama_gemm<T>::__synchronizeDef;
             }
-            else if( strcmp( cArr, "CUDA" ) == 0 )
+            else if ( strcmp( cArr, "CUDA" ) == 0 )
             {
 #ifdef LAMA_BUILD_CUDA
                 //XXX CUDA
@@ -419,7 +419,7 @@ void LUSolver::computeLUFactorization( DenseMatrix<T> & matrix, std::vector<Inde
                 // support fast memory transfer Host->CUDA
                 lama::CUDAHostContextManager::setAsCurrent( ctxtPtr );
 #else
-                LAMA_LOG_WARN( logger,"Specified PLU_CONTEXT as CUDA, but CUDA not found. Assuming host." );
+                LAMA_LOG_WARN( logger, "Specified PLU_CONTEXT as CUDA, but CUDA not found. Assuming host." );
                 goto _default;
 #endif
             }
@@ -448,7 +448,7 @@ _default:
             typedef std::vector<typename DenseMatrix<T>::DenseStoragePtr> vec_type;
 
             const vec_type& vec = matrix.getCyclicLocalValues();
-            for( typename vec_type::size_type i = 0; i < vec.size(); ++i )
+            for ( typename vec_type::size_type i = 0; i < vec.size(); ++i )
             {
                 blocks[i] = vec[i].get();
             }
@@ -462,7 +462,7 @@ _default:
         mTilesize = mComm->max( tilesize );
         boost::scoped_array<IndexType> ipiv( new IndexType[globalTilesize] );
 
-        if( permutation.size() != static_cast<std::vector<IndexType>::size_type>( blocks_width * globalTilesize ) )
+        if ( permutation.size() != static_cast<std::vector<IndexType>::size_type>( blocks_width * globalTilesize ) )
         {
             permutation.resize( blocks_width * globalTilesize, 0 );
         }
@@ -484,14 +484,14 @@ _default:
         LAMAArray<T> bArr( tilesize * tilesize );
 
         // loop over each block column
-        for( IndexType blockCol = 0; blockCol < blocks_height; ++blockCol, ROOT = ( ROOT + 1 ) % numProcs )
+        for ( IndexType blockCol = 0; blockCol < blocks_height; ++blockCol, ROOT = ( ROOT + 1 ) % numProcs )
         {
             gemm.synchronize( colEvents[blockCol] );
             const IndexType numBlockRows = blocks_width - ( blockCol / numProcs ) - ( myRank < ROOT ? 1 : 0 );
 
             {   // keep store local.
                 DenseStorage<T>** store = NULL;
-                if( numBlockRows > 0 )
+                if ( numBlockRows > 0 )
                 {
                     store = &blocks[( blockCol + 1 ) * blocks_width - numBlockRows];
                 }
@@ -511,18 +511,18 @@ _default:
              * There is no block row in any of the block columns
              -> do nothing.
              */
-            if( numBlockRows > 1 )
+            if ( numBlockRows > 1 )
             {
-                for( IndexType blockCol_swapL = 0; blockCol_swapL < blockCol; ++blockCol_swapL )
+                for ( IndexType blockCol_swapL = 0; blockCol_swapL < blockCol; ++blockCol_swapL )
                 {
                     plaswp( &blocks[( blockCol_swapL + 1 ) * blocks_width - numBlockRows], ROOT, ipiv.get(), mTilesize,
                             swap_cpu );
                 }
             }
-            else if( numBlockRows == 1 )
+            else if ( numBlockRows == 1 )
             {
                 const IndexType& n = blocks[( blockCol + 1 ) * blocks_width - numBlockRows]->mNumRows;
-                for( IndexType blockCol_swapL = 0; blockCol_swapL < blockCol; ++blockCol_swapL )
+                for ( IndexType blockCol_swapL = 0; blockCol_swapL < blockCol; ++blockCol_swapL )
                 {
                     plaswp( &blocks[( blockCol_swapL + 1 ) * blocks_width - numBlockRows], ROOT, ipiv.get(), n,
                             swap_cpu );
@@ -530,14 +530,14 @@ _default:
             }
             else // numBlockRows == 0
             {
-                for( IndexType blockCol_swapL = 0; blockCol_swapL < blockCol; ++blockCol_swapL )
+                for ( IndexType blockCol_swapL = 0; blockCol_swapL < blockCol; ++blockCol_swapL )
                 {
                     plaswp( &blocks[( blockCol_swapL + 1 ) * blocks_width - numBlockRows], ROOT, ipiv.get(), 0,
                             swap_cpu );
                 }
             }
 
-            if( myRank == ROOT )
+            if ( myRank == ROOT )
             {
                 const IndexType aIndx = blockCol * blocks_width;
                 const IndexType firstBlockRow = blockCol / numProcs;
@@ -545,19 +545,19 @@ _default:
                 HostReadAccess<T> diag( blocks[( blockCol + 1 ) * blocks_width - numBlockRows]->getData() );
 
                 // prefetch trsm-blocks to host
-                for( IndexType blockColff = blocks_height - 1; blockColff >= blockCol + 1; --blockColff )
+                for ( IndexType blockColff = blocks_height - 1; blockColff >= blockCol + 1; --blockColff )
                 {
                     blocks[( blockColff + 1 ) * blocks_width - numBlockRows]->prefetch( swap_cpu.ctxt );
                 }
 
-                for( IndexType blockColff = blockCol + 1; blockColff < blocks_height; ++blockColff )
+                for ( IndexType blockColff = blockCol + 1; blockColff < blocks_height; ++blockColff )
                 {
                     const IndexType blockIdx = ( blockColff + 1 ) * blocks_width - numBlockRows;
                     DenseStorage<T>* firstBlock = blocks[blockIdx];
                     const IndexType n = firstBlock->mNumRows, m = firstBlock->mNumColumns;
 
                     // 1. LASWP
-                    if( numBlockRows > 1 )
+                    if ( numBlockRows > 1 )
                     {
                         plaswp( &blocks[blockIdx], ROOT, ipiv.get(), mTilesize, swap_cuda );
                     }
@@ -577,13 +577,13 @@ _default:
                     // 3. GEMM
                     trsm.release();
 
-                    if( numBlockRows - 1 > 0 )
+                    if ( numBlockRows - 1 > 0 )
                     {
                         ReadAccess<T> B( firstBlock->getData(), ctxtPtr );
                         const IndexType cIndx = blockColff * blocks_width;
 
                         // loop over each block row of block column
-                        for( IndexType blockRow = 1; blockRow < numBlockRows; ++blockRow )
+                        for ( IndexType blockRow = 1; blockRow < numBlockRows; ++blockRow )
                         {
                             ReadAccess<T> A( blocks[aIndx + blockRow + firstBlockRow]->getData(), ctxtPtr );
                             WriteAccess<T> C( blocks[cIndx + blockRow + firstBlockRow]->getData(), ctxtPtr );
@@ -600,7 +600,7 @@ _default:
 
                 // keep permutation global i.e. copy permutation array to the output vector.
                 const IndexType permIndx = ( blockCol / numProcs ) * tilesize;
-                for( IndexType i = 0; i < tilesize; ++i )
+                for ( IndexType i = 0; i < tilesize; ++i )
                 {
                     permutation[permIndx + i] = ipiv[i];
                 }
@@ -611,7 +611,7 @@ _default:
                 const IndexType firstBlockRow = blockCol / numProcs + ( myRank < ROOT ? 1 : 0 );
 
                 // loop over each trailing block column
-                for( IndexType blockColff = blockCol + 1; blockColff < blocks_height; ++blockColff )
+                for ( IndexType blockColff = blockCol + 1; blockColff < blocks_height; ++blockColff )
                 {
                     const IndexType blockIdx = numBlockRows > 0 ? ( blockColff + 1 ) * blocks_width - numBlockRows : 0;
                     DenseStorage<T>* firstBlock = blocks[blockIdx];
@@ -621,7 +621,7 @@ _default:
                     plaswp( &blocks[blockIdx], ROOT, ipiv.get(), mTilesize, swap_cuda );
 
                     // 2. Prefetch while root is doing TRSM
-                    for( IndexType i = 0; i < numBlockRows; ++i )
+                    for ( IndexType i = 0; i < numBlockRows; ++i )
                     {
                         blocks[blockColff * blocks_width + firstBlockRow + i]->prefetch( ctxtPtr );
                         blocks[blockCol * blocks_width + firstBlockRow + i]->prefetch( ctxtPtr );
@@ -634,12 +634,12 @@ _default:
 
                     const IndexType cIndx = blockColff * blocks_width;
 
-                    if( numBlockRows > 0 )
+                    if ( numBlockRows > 0 )
                     {
                         ReadAccess<T> B( bArr, ctxtPtr ); // TODO why is this (2) OR that (1) expensiv?
 
                         // loop over each block row of block column
-                        for( IndexType blockRow = 0; blockRow < numBlockRows; ++blockRow )
+                        for ( IndexType blockRow = 0; blockRow < numBlockRows; ++blockRow )
                         {
                             ReadAccess<T> A( blocks[aIndx + blockRow + firstBlockRow]->getData(), ctxtPtr );
                             WriteAccess<T> C( blocks[cIndx + blockRow + firstBlockRow]->getData(), ctxtPtr );
@@ -684,12 +684,12 @@ void LUSolver::solve( Vector& solution, const Vector& rhs )
 
     Matrix* luFactorization = runtime.mLUfactorization;
 
-    if( typeid( solution ) == typeid( rhs )
+    if ( typeid( solution ) == typeid( rhs )
             && ( ( matrixIs<double>( *luFactorization ) && typeid( solution) == typeid(DenseVector<double> ) )
                  || ( matrixIs<float>( *luFactorization )
                       && typeid( solution) == typeid(DenseVector<float> ) ) ) )
     {
-        if( luFactorization->getColDistribution().getNumPartitions() != rhs.getDistribution().getNumPartitions()
+        if ( luFactorization->getColDistribution().getNumPartitions() != rhs.getDistribution().getNumPartitions()
                 || luFactorization->getDistribution().getNumPartitions()
                 != solution.getDistribution().getNumPartitions() )
         {
@@ -697,12 +697,12 @@ void LUSolver::solve( Vector& solution, const Vector& rhs )
                 "Solving the equation system failed due to not fitting partitioning of at least one " << "of the input vectors. The number of column partitions of the matrix was " << luFactorization->getColDistribution( ).getNumPartitions( ) << " whereas the number of partitions " << "of the right hand side vector was "<<rhs.getDistribution( ).getNumPartitions( ) << ". " << "The number of row partitions of the matrix was " << luFactorization->getDistribution( ).getNumPartitions( ) << " whereas the number of partitions of " << "the solution vector was "<<solution.getDistribution( ).getNumPartitions( ) << '.' );
         }
 
-        if( luFactorization->getDistribution().getNumPartitions() == 1
+        if ( luFactorization->getDistribution().getNumPartitions() == 1
                 && luFactorization->getColDistribution().getNumPartitions() == 1 )
         {
             typedef std::vector<IndexType>::size_type size_type;
 
-            if( matrixIs<double>( *luFactorization ) )
+            if ( matrixIs<double>( *luFactorization ) )
             {
                 DenseMatrix<double>* denseLUFactorization = dynamic_cast<DenseMatrix<double>*>( luFactorization );
                 const DenseVector<double>& denseRhs = dynamic_cast<const DenseVector<double>&>( rhs );
@@ -716,7 +716,7 @@ void LUSolver::solve( Vector& solution, const Vector& rhs )
                 HostReadAccess<double> x( denseRhs.getLocalValues() );
 
                 // Do permutated copy
-                for( IndexType i = 0; i < static_cast<IndexType>( runtime.mPermutation.size() ); ++i )
+                for ( IndexType i = 0; i < static_cast<IndexType>( runtime.mPermutation.size() ); ++i )
                 {
                     vector[i] = x[runtime.mPermutation[i]];
                 }
@@ -731,7 +731,7 @@ void LUSolver::solve( Vector& solution, const Vector& rhs )
                                      denseLUFactorization->getNumColumns(), 1, matrix.get(),
                                      denseLUFactorization->getNumRows(), vector.get(), 1 );
             }
-            else if( matrixIs<float>( *luFactorization ) )
+            else if ( matrixIs<float>( *luFactorization ) )
             {
                 DenseMatrix<float>* denseLUFactorization = dynamic_cast<DenseMatrix<float>*>( luFactorization );
                 const DenseVector<float>& denseRhs = dynamic_cast<const DenseVector<float>&>( rhs );
@@ -745,7 +745,7 @@ void LUSolver::solve( Vector& solution, const Vector& rhs )
                 HostReadAccess<float> x( denseRhs.getLocalValues() );
 
                 // Do permutated copy
-                for( IndexType i = 0; i < static_cast<IndexType>( runtime.mPermutation.size() ); ++i )
+                for ( IndexType i = 0; i < static_cast<IndexType>( runtime.mPermutation.size() ); ++i )
                 {
                     vector[i] = x[runtime.mPermutation[i]];
                 }
@@ -762,9 +762,9 @@ void LUSolver::solve( Vector& solution, const Vector& rhs )
             }
         }
         /* distributed cyclic implementation */
-        else if( luFactorization->getDistribution() == luFactorization->getColDistribution()
-                 && luFactorization->getNumRows() == luFactorization->getNumColumns()
-                 && typeid( luFactorization->getColDistribution() ) == typeid(CyclicDistribution) )
+        else if ( luFactorization->getDistribution() == luFactorization->getColDistribution()
+                  && luFactorization->getNumRows() == luFactorization->getNumColumns()
+                  && typeid( luFactorization->getColDistribution() ) == typeid(CyclicDistribution) )
         {
             LAMA_THROWEXCEPTION( "Solving a distributed matrix is producing segmentation faults, yet." );
 //            const IndexType myRank   = mComm->getRank( );
@@ -927,7 +927,7 @@ void LUSolver::ptrsm( const enum CBLAS_UPLO uplo, const DenseMatrix<T>& matrix, 
     {
         typedef std::vector<typename DenseMatrix<T>::DenseStoragePtr> vec_type;
         const vec_type& vec = matrix.getCyclicLocalValues();
-        for( typename vec_type::size_type i = 0; i < vec.size(); ++i )
+        for ( typename vec_type::size_type i = 0; i < vec.size(); ++i )
         {
             blocks[i] = vec[i].get();
         }
@@ -955,7 +955,7 @@ void LUSolver::ptrsm( const enum CBLAS_UPLO uplo, const DenseMatrix<T>& matrix, 
     IndexType blockCol;
 
     // Add the dynamic pointers for solving forwards or backwards.
-    if( uplo == CblasLower )
+    if ( uplo == CblasLower )
     {
         diag = CblasUnit;
         is = lowerFin; // changes root and increments
@@ -973,7 +973,7 @@ void LUSolver::ptrsm( const enum CBLAS_UPLO uplo, const DenseMatrix<T>& matrix, 
 
     do
     {
-        if( myRank == ROOT )
+        if ( myRank == ROOT )
         {
             DenseStorage<T>* trsm = blocks[blockCol * blocks_width + blockCol / numProcs];
             HostReadAccess<T> diagonal( trsm->getData() );
@@ -1010,7 +1010,7 @@ void LUSolver::ptrsm( const enum CBLAS_UPLO uplo, const DenseMatrix<T>& matrix, 
         HostReadAccess<T> rw( r );
 
         // GEMV-udate
-        for( IndexType blockRow = blockRowBegin; blockRow < blockRowEnd; ++blockRow )
+        for ( IndexType blockRow = blockRowBegin; blockRow < blockRowEnd; ++blockRow )
         {
             LAMA_REGION("GEMV_CPU");
 
@@ -1024,7 +1024,7 @@ void LUSolver::ptrsm( const enum CBLAS_UPLO uplo, const DenseMatrix<T>& matrix, 
             OpenMPBLAS2::gemv( CblasRowMajor, CblasNoTrans, n, m, -one, mat.get(), m, rw.get(), 1, one,
                                &sol[blockRow * tilesize], 1 );
         }
-    } while( is( blockCol, ROOT, numProcs, blocks_height ) );
+    } while ( is( blockCol, ROOT, numProcs, blocks_height ) );
 }
 
 // XXX GETF2
@@ -1046,9 +1046,9 @@ void LUSolver::pgetf2(
     const IndexType& numCol = ( *A )->mNumColumns;
     const IndexType& numRows = ( *A )->mNumRows;
 
-    if( myRank == ROOT ) // ROOT has the diagonal element
+    if ( myRank == ROOT ) // ROOT has the diagonal element
     {
-        for( IndexType j = 0; j < numCol; ++j )
+        for ( IndexType j = 0; j < numCol; ++j )
         {
             const int myLocMaxI = piamax_own( numBlockRows, A, j, j );
             const IndexType divI = myLocMaxI / numRows;
@@ -1057,7 +1057,7 @@ void LUSolver::pgetf2(
             T globalMax, localMax;
             T* m_row = NULL;
 
-            if( divI != 0 )
+            if ( divI != 0 )
             {
                 HostWriteAccess<T> maxBlock( A[divI]->getData() );
                 m_row = &maxBlock[modI * numCol];
@@ -1071,15 +1071,15 @@ void LUSolver::pgetf2(
             mComm->maxloc( globalMax, maxOwner, myRank );
 
             // Do not swap via communication
-            if( maxOwner == myRank || ( localMax > sfmin && std::fabs( globalMax / localMax ) < epsilon ) )
+            if ( maxOwner == myRank || ( localMax > sfmin && std::fabs( globalMax / localMax ) < epsilon ) )
             {
                 maxOwner = myRank;
                 mComm->bcast( &maxOwner, 1, myRank );
                 ipiv[j] = divI * numProc * mTilesize + modI;
 
-                if( j != modI || divI != 0 || ( numCol == 1 && j != divI ) )
+                if ( j != modI || divI != 0 || ( numCol == 1 && j != divI ) )
                 {
-                    if( divI == 0 )
+                    if ( divI == 0 )
                     {
                         OpenMPBLAS1::swap( numCol, &diagonal[j * numCol], 1, &diagonal[modI * numCol], 1 );
                     }
@@ -1103,25 +1103,25 @@ void LUSolver::pgetf2(
             const T diag = diagonal[j * numCol + j];
             mComm->bcast( &diagonal[j * numCol + j], numCol - j, myRank );
 
-            if( diag == 0 )
+            if ( diag == 0 )
             {
                 LAMA_THROWEXCEPTION( "Dividing through zero" );
             }
 
-            if( j < numCol - 1 )
+            if ( j < numCol - 1 )
             {
                 const T* const y = &diagonal[j * numCol + j + 1];
 
                 T* const x = &diagonal[( j + 1 ) * numCol + j];
                 T* const a = &diagonal[( j + 1 ) * numCol + j + 1];
 
-                if( diag >= sfmin )
+                if ( diag >= sfmin )
                 {
                     OpenMPBLAS1::scal( numCol - 1 - j, 1 / diag, x, numCol );
                 }
                 else
                 {
-                    for( IndexType i = 0; i < numCol - 1 - j; ++i )
+                    for ( IndexType i = 0; i < numCol - 1 - j; ++i )
                     {
                         x[i * numCol] /= diag;
                     }
@@ -1130,7 +1130,7 @@ void LUSolver::pgetf2(
                 // like gemm but for vectors
                 OpenMPBLAS2::ger( CblasRowMajor, numCol - 1 - j, numCol - 1 - j, MINUS, x, numCol, y, 1, a, numCol );
 
-                for( IndexType block = 1; block < numBlockRows; ++block )
+                for ( IndexType block = 1; block < numBlockRows; ++block )
                 {
                     HostWriteAccess<T> sub( A[block]->getData() );
                     const IndexType& numRow = A[block]->mNumRows;
@@ -1138,13 +1138,13 @@ void LUSolver::pgetf2(
                     T* const x = &sub[j];
                     T* const a = &sub[j + 1];
 
-                    if( diag >= sfmin )
+                    if ( diag >= sfmin )
                     {
                         OpenMPBLAS1::scal( numRow, 1 / diag, x, numCol );
                     }
                     else
                     {
-                        for( IndexType i = 0; i < numRow; ++i )
+                        for ( IndexType i = 0; i < numRow; ++i )
                         {
                             x[i * numCol] /= diag;
                         }
@@ -1155,19 +1155,19 @@ void LUSolver::pgetf2(
             }
             else
             {
-                for( IndexType block = 1; block < numBlockRows; ++block )
+                for ( IndexType block = 1; block < numBlockRows; ++block )
                 {
                     HostWriteAccess<T> sub( A[block]->getData() );
                     T* const x = &sub[j];
                     const IndexType& numRow = A[block]->mNumRows;
 
-                    if( diag >= sfmin )
+                    if ( diag >= sfmin )
                     {
                         OpenMPBLAS1::scal( numRow, 1 / diag, x, numCol );
                     }
                     else
                     {
-                        for( IndexType i = 0; i < numRow; ++i )
+                        for ( IndexType i = 0; i < numRow; ++i )
                         {
                             x[i * numCol] /= diag;
                         }
@@ -1180,9 +1180,9 @@ void LUSolver::pgetf2(
     {
         boost::scoped_array<T> y( new T[numCol] );
 
-        if( numBlockRows > 0 )
+        if ( numBlockRows > 0 )
         {
-            for( IndexType j = 0; j < numCol; ++j )
+            for ( IndexType j = 0; j < numCol; ++j )
             {
                 const int myLocMaxI = piamax_own( numBlockRows, A, j );
                 const IndexType divI = myLocMaxI / numCol;
@@ -1198,7 +1198,7 @@ void LUSolver::pgetf2(
                 PartitionId maxOwner = myRank;
                 mComm->bcast( &maxOwner, 1, ROOT );
 
-                if( maxOwner == myRank )
+                if ( maxOwner == myRank )
                 {
                     // divI*numProc                     : go to global block as if myRank was ROOT.
                     // (numProc+myRank-ROOT)%numProc    : add the missing blocks to the actual ROOT.
@@ -1212,14 +1212,14 @@ void LUSolver::pgetf2(
                 mComm->bcast( y.get() + j, numCol - j, ROOT );
                 const T diag = y[j];
 
-                if( diag == 0 )
+                if ( diag == 0 )
                 {
                     LAMA_THROWEXCEPTION( "Dividing through zero" );
                 }
 
-                if( j < numCol - 1 )
+                if ( j < numCol - 1 )
                 {
-                    for( IndexType block = 0; block < numBlockRows; ++block )
+                    for ( IndexType block = 0; block < numBlockRows; ++block )
                     {
                         HostWriteAccess<T> sub( A[block]->getData() );
                         const IndexType& numRow = A[block]->mNumRows;
@@ -1227,13 +1227,13 @@ void LUSolver::pgetf2(
                         T* const x = &sub[j];
                         T* const a = &sub[j + 1];
 
-                        if( diag >= sfmin )
+                        if ( diag >= sfmin )
                         {
                             OpenMPBLAS1::scal( numRow, 1 / diag, x, numCol );
                         }
                         else
                         {
-                            for( IndexType i = 0; i < numRow; ++i )
+                            for ( IndexType i = 0; i < numRow; ++i )
                             {
                                 x[i * numCol] /= diag;
                             }
@@ -1245,20 +1245,20 @@ void LUSolver::pgetf2(
                 }
                 else
                 {
-                    for( IndexType block = 0; block < numBlockRows; ++block )
+                    for ( IndexType block = 0; block < numBlockRows; ++block )
                     {
                         LAMA_REGION("SCAL_CPU");
                         HostWriteAccess<T> sub( A[block]->getData() );
                         const IndexType& numRow = A[block]->mNumRows;
                         T* const x = &sub[j];
 
-                        if( diag >= sfmin )
+                        if ( diag >= sfmin )
                         {
                             OpenMPBLAS1::scal( numRow, 1 / diag, x, numCol );
                         }
                         else
                         {
-                            for( IndexType i = 0; i < numRow; ++i )
+                            for ( IndexType i = 0; i < numRow; ++i )
                             {
                                 x[i * numCol] /= diag;
                             }
@@ -1272,7 +1272,7 @@ void LUSolver::pgetf2(
             PartitionId rank = myRank;
             T zero = static_cast<T>( 0.0 );
 
-            for( IndexType j = 0; j < numCol; ++j )
+            for ( IndexType j = 0; j < numCol; ++j )
             {
                 mComm->maxloc( zero, rank, ROOT );
                 mComm->bcast( &rank, 1, ROOT );
@@ -1299,7 +1299,7 @@ int LUSolver::piamax_own(
 
     const IndexType beginLoop = locRow > 0 ? 1 : 0;
 
-    if( beginLoop == 1 )
+    if ( beginLoop == 1 )
     {
         DenseStorage<T>* storage = *local;
         HostReadAccess<T> read( storage->getData() );
@@ -1314,7 +1314,7 @@ int LUSolver::piamax_own(
 
     // Receive from all blocks the indices of the maximum. Because the maximum of maxima is needed, the maxima and
     // their indices need to be stored in seperated arrays.
-    for( IndexType block = beginLoop; block < numBlockCol; ++block )
+    for ( IndexType block = beginLoop; block < numBlockCol; ++block )
     {
         DenseStorage<T>* storage = local[block];
         HostReadAccess<T> read( storage->getData() );
@@ -1346,24 +1346,24 @@ void LUSolver::plaswp(
 
     const IndexType& tilesize = ( *A )->mNumColumns;
 
-    if( myRank == ROOT )
+    if ( myRank == ROOT )
     {
-        for( IndexType i = 0; i < n; ++i )
+        for ( IndexType i = 0; i < n; ++i )
         {
             const IndexType indx = ipiv[i];
 
-            if( indx == i )
+            if ( indx == i )
             {
                 continue;
             }
 
             IndexType proc = ( indx / mTilesize ) % numProc;
 
-            if( proc == 0 )
+            if ( proc == 0 )
             {
                 WriteAccess<T> diagonal( ( *A )->getData(), swap.ctxt );
 
-                if( ( indx / numProc ) / mTilesize == 0 )
+                if ( ( indx / numProc ) / mTilesize == 0 )
                 {
                     LAMA_REGION("LASWAP");
                     swap.func( tilesize, diagonal.get() + i * tilesize, 1,
@@ -1397,9 +1397,9 @@ void LUSolver::plaswp(
     {
         IndexType TOK = myRank;
 
-        for( mComm->bcast( &TOK, 1, ROOT ); TOK != FIN; mComm->bcast( &TOK, 1, ROOT ) )
+        for ( mComm->bcast( &TOK, 1, ROOT ); TOK != FIN; mComm->bcast( &TOK, 1, ROOT ) )
         {
-            if( TOK == myRank )
+            if ( TOK == myRank )
             {
                 mComm->swap( indxes.get(), 2, ROOT );
 
@@ -1417,7 +1417,7 @@ IndexType LUSolver::getTileSize()
 
 void LUSolver::setTileSize( const IndexType tilesize )
 {
-    if( tilesize <= 0 )
+    if ( tilesize <= 0 )
     {
         LAMA_LOG_WARN( logger, "Setting tilesize of " << tilesize << " left LUSolver unaffected." );
     }
@@ -1434,7 +1434,7 @@ IndexType LUSolver::computeTilesize( IndexType m, IndexType n )
 
 void LUSolver::setDeviceNumber( const IndexType dev )
 {
-    if( dev < -1 )
+    if ( dev < -1 )
     {
         LAMA_LOG_WARN( logger, "Setting tilesize of " << dev << " left LUSolver unaffected." );
     }

@@ -224,22 +224,22 @@ IndexType OpenMPLAPACK::getrf(
 #define F77_info info
 #endif
 
-    if( order == CblasColMajor )
+    if ( order == CblasColMajor )
     {
         F77_sgetrf( &F77_M, &F77_N, A, &F77_lda, ipiv, &F77_info );
     }
     else
     {
-        if( m == n && n == lda )
+        if ( m == n && n == lda )
         {
             float tmp = 0.0f;
 
-            for( i = 0; i < m; ++i )
+            for ( i = 0; i < m; ++i )
             {
                 int j = 0;
 
                 // swap row and column
-                for( j = i + 1; j < n; ++j )
+                for ( j = i + 1; j < n; ++j )
                 {
                     tmp = A[i * n + j];
                     A[i * n + j] = A[j * m + i];
@@ -259,17 +259,17 @@ IndexType OpenMPLAPACK::getrf(
     //Fix Fortran Indexes in ipiv array
     #pragma omp parallel for
 
-    for( i = 0; i < m; ++i )
+    for ( i = 0; i < m; ++i )
     {
         --ipiv[i];
     }
 
 #endif //LAMA_HAVE_MKL
-    if( info < 0 )
+    if ( info < 0 )
     {
         LAMA_THROWEXCEPTION( "illegal argument " << ( -info ) );
     }
-    else if( info > 0 )
+    else if ( info > 0 )
     {
         LAMA_THROWEXCEPTION( "value(" << info << "," << info << ")" << " is exactly zero" );
     }
@@ -309,7 +309,7 @@ IndexType OpenMPLAPACK::getrf(
 #define F77_info info
 #endif
 
-    if( order == CblasColMajor )
+    if ( order == CblasColMajor )
     {
         F77_dgetrf( &F77_M, &F77_N, A, &F77_lda, ipiv, &F77_info );
     }
@@ -323,7 +323,7 @@ IndexType OpenMPLAPACK::getrf(
     #pragma omp parallel for
 
     //Fix Fortran Indexes in ipiv array
-    for( i = 0; i < m; ++i )
+    for ( i = 0; i < m; ++i )
     {
         --ipiv[i];
     }
@@ -374,7 +374,7 @@ void OpenMPLAPACK::getinv( const IndexType n, float* a, const IndexType lda )
 
     F77_sgetrf( &F77_N, &F77_N, a, &F77_lda, ipiv.get(), &F77_info );
 
-    if( F77_info )
+    if ( F77_info )
     {
         LAMA_THROWEXCEPTION( "LAPACK sgetrf failed, info = " << F77_info );
     }
@@ -383,7 +383,7 @@ void OpenMPLAPACK::getinv( const IndexType n, float* a, const IndexType lda )
 
     F77_sgetri( &F77_N, a, &F77_lda, ipiv.get(), work.get(), &F77_N, &F77_info );
 
-    if( F77_info )
+    if ( F77_info )
     {
         LAMA_THROWEXCEPTION( "LAPACK sgetri failed, info = " << F77_info );
     }
@@ -431,7 +431,7 @@ void OpenMPLAPACK::getinv( const IndexType n, double* a, const IndexType lda )
 
     F77_dgetrf( &F77_N, &F77_N, a, &F77_lda, ipiv.get(), &F77_info );
 
-    if( F77_info )
+    if ( F77_info )
     {
         LAMA_THROWEXCEPTION( "LAPACK dgetrf failed, info = " << F77_info );
     }
@@ -440,7 +440,7 @@ void OpenMPLAPACK::getinv( const IndexType n, double* a, const IndexType lda )
 
     F77_dgetri( &F77_N, a, &F77_lda, ipiv.get(), work.get(), &F77_N, &F77_info );
 
-    if( F77_info )
+    if ( F77_info )
     {
         LAMA_THROWEXCEPTION( "LAPACK dgetri failed, info = " << F77_info );
     }
@@ -534,7 +534,7 @@ int OpenMPLAPACK::trtrs(
 #   define F77_ldb ldb
 #endif
 
-    switch( uplo )
+    switch ( uplo )
     {
     case CblasUpper:
         UL = 'U';
@@ -548,7 +548,7 @@ int OpenMPLAPACK::trtrs(
         UL = 'U';
     }
 
-    switch( trans )
+    switch ( trans )
     {
     case CblasNoTrans:
         TA = 'N';
@@ -565,7 +565,7 @@ int OpenMPLAPACK::trtrs(
         TA = 'N';
     }
 
-    switch( diag )
+    switch ( diag )
     {
     case CblasNonUnit:
         DI = 'N';
@@ -602,11 +602,11 @@ int OpenMPLAPACK::trtrs(
 
 #else /* LAMA_HAVE_MKL */
 
-    if( order == CblasColMajor )
+    if ( order == CblasColMajor )
     {
         F77_strtrs( F77_UL, F77_TA, F77_DI, &F77_n, &F77_nrhs, A, &F77_lda, B, &F77_ldb, &info );
     }
-    else if( order == CblasRowMajor )
+    else if ( order == CblasRowMajor )
     {
         // TODO: transpose matrix.
         info = -1 * ( n + nrhs + lda + ldb );
@@ -648,7 +648,7 @@ int OpenMPLAPACK::trtrs(
 #   define F77_ldb ldb
 #endif
 
-    switch( uplo )
+    switch ( uplo )
     {
     case CblasUpper:
         UL = 'U';
@@ -662,7 +662,7 @@ int OpenMPLAPACK::trtrs(
         UL = 'U';
     }
 
-    switch( trans )
+    switch ( trans )
     {
     case CblasNoTrans:
         TA = 'N';
@@ -679,7 +679,7 @@ int OpenMPLAPACK::trtrs(
         TA = 'N';
     }
 
-    switch( diag )
+    switch ( diag )
     {
     case CblasNonUnit:
         DI = 'N';
@@ -716,11 +716,11 @@ int OpenMPLAPACK::trtrs(
 
 #else
 
-    if( order == CblasColMajor )
+    if ( order == CblasColMajor )
     {
         F77_dtrtrs( F77_UL, F77_TA, F77_DI, &F77_n, &F77_nrhs, A, &F77_lda, B, &F77_ldb, &info );
     }
-    else if( order == CblasRowMajor )
+    else if ( order == CblasRowMajor )
     {
         // TODO: transpose matrix.
         info = -1 * ( n + nrhs + lda + ldb );
@@ -760,7 +760,7 @@ int OpenMPLAPACK::tptrs(
 #   define F77_ldb ldb
 #endif
 
-    switch( uplo )
+    switch ( uplo )
     {
     case CblasUpper:
         UL = 'U';
@@ -774,7 +774,7 @@ int OpenMPLAPACK::tptrs(
         UL = 'U';
     }
 
-    switch( trans )
+    switch ( trans )
     {
     case CblasNoTrans:
         TA = 'N';
@@ -791,7 +791,7 @@ int OpenMPLAPACK::tptrs(
         TA = 'N';
     }
 
-    switch( diag )
+    switch ( diag )
     {
     case CblasNonUnit:
         DI = 'N';
@@ -828,11 +828,11 @@ int OpenMPLAPACK::tptrs(
 
 #else
 
-    if( order == CblasColMajor )
+    if ( order == CblasColMajor )
     {
         F77_stptrs( F77_UL, F77_TA, F77_DI, &F77_n, &F77_nrhs, AP, B, &F77_ldb, &info );
     }
-    else if( order == CblasRowMajor )
+    else if ( order == CblasRowMajor )
     {
         // TODO: transpose matrix.
         info = -1 * ( n + nrhs + ldb );
@@ -872,7 +872,7 @@ int OpenMPLAPACK::tptrs(
 #   define F77_ldb ldb
 #endif
 
-    switch( uplo )
+    switch ( uplo )
     {
     case CblasUpper:
         UL = 'U';
@@ -886,7 +886,7 @@ int OpenMPLAPACK::tptrs(
         UL = 'U';
     }
 
-    switch( trans )
+    switch ( trans )
     {
     case CblasNoTrans:
         TA = 'N';
@@ -903,7 +903,7 @@ int OpenMPLAPACK::tptrs(
         TA = 'N';
     }
 
-    switch( diag )
+    switch ( diag )
     {
     case CblasNonUnit:
         DI = 'N';
@@ -940,11 +940,11 @@ int OpenMPLAPACK::tptrs(
 
 #else
 
-    if( order == CblasColMajor )
+    if ( order == CblasColMajor )
     {
         F77_dtptrs( F77_UL, F77_TA, F77_DI, &F77_n, &F77_nrhs, AP, B, &F77_ldb, &info );
     }
-    else if( order == CblasRowMajor )
+    else if ( order == CblasRowMajor )
     {
         // TODO: transpose matrix.
         info = -1 * ( n + nrhs + ldb );
@@ -968,11 +968,11 @@ void OpenMPLAPACK::laswp(
 {
     int i = K1;
 
-    if( order == CblasRowMajor )
+    if ( order == CblasRowMajor )
     {
-        for( i = K1; i < K2; ++i )
+        for ( i = K1; i < K2; ++i )
         {
-            if( ipiv[i * INCX] == i )
+            if ( ipiv[i * INCX] == i )
             {
                 continue;
             }
@@ -983,7 +983,7 @@ void OpenMPLAPACK::laswp(
                     syncToken );
         }
     }
-    else if( order == CblasColMajor )
+    else if ( order == CblasColMajor )
     {
 #ifdef F77_INT
         F77_INT F77_N = N, F77_LDA = LDA, F77_K1 = K1, F77_K2 = K2, F77_INCX = INCX;
@@ -1021,11 +1021,11 @@ void OpenMPLAPACK::laswp(
 {
     int i = K1;
 
-    if( order == CblasRowMajor )
+    if ( order == CblasRowMajor )
     {
-        for( i = K1; i < K2; ++i )
+        for ( i = K1; i < K2; ++i )
         {
-            if( ipiv[i * INCX] == i )
+            if ( ipiv[i * INCX] == i )
             {
                 continue;
             }
@@ -1036,7 +1036,7 @@ void OpenMPLAPACK::laswp(
                     syncToken );
         }
     }
-    else if( order == CblasColMajor )
+    else if ( order == CblasColMajor )
     {
 #ifdef F77_INT
         F77_INT F77_N = N, F77_LDA = LDA, F77_K1 = K1, F77_K2 = K2, F77_INCX = INCX;

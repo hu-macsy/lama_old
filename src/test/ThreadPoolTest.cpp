@@ -79,10 +79,10 @@ void work( const int in, int& out )
 
     // just do some stupid work, workload depends on in
 
-    for( int i = 0; i < LAMA_WORKLOAD * factor; i++ )
+    for ( int i = 0; i < LAMA_WORKLOAD * factor; i++ )
     {
         int dir = i & 1;
-        if( dir )
+        if ( dir )
         {
             out += 13;
         }
@@ -108,11 +108,11 @@ BOOST_AUTO_TEST_CASE( runTest )
     IndexType task_sizes[] = LAMA_TASKS;
     IndexType task_configs = sizeof( task_sizes ) / sizeof(IndexType);
 
-    for( IndexType i = 0; i < task_configs; ++i )
+    for ( IndexType i = 0; i < task_configs; ++i )
     {
         IndexType ntasks = task_sizes[i];
 
-        for( IndexType j = 0; j < thread_configs; ++j )
+        for ( IndexType j = 0; j < thread_configs; ++j )
         {
             LAMA_REGION_N( "PoolRun", thread_sizes[j] * 100 + ntasks );
 
@@ -123,7 +123,7 @@ BOOST_AUTO_TEST_CASE( runTest )
 
                 // Just issue the tasks, do not keep references
 
-                for( IndexType i = 0; i < ntasks; i++ )
+                for ( IndexType i = 0; i < ntasks; i++ )
                 {
                     x[i] = -1;
                     pool.schedule( boost::bind( &ThreadPoolTest::work, i, ref( x[i] ) ) );
@@ -132,7 +132,7 @@ BOOST_AUTO_TEST_CASE( runTest )
                 // end of scope: pool waits for all tasks/work to be finished
             }
 
-            for( IndexType i = 0; i < ntasks; i++ )
+            for ( IndexType i = 0; i < ntasks; i++ )
             {
                 BOOST_CHECK_EQUAL( i, x[i] );
             }
@@ -154,11 +154,11 @@ BOOST_AUTO_TEST_CASE( waitTest )
     IndexType task_sizes[] = LAMA_TASKS;
     IndexType task_configs = sizeof( task_sizes ) / sizeof(IndexType);
 
-    for( IndexType i = 0; i < task_configs; ++i )
+    for ( IndexType i = 0; i < task_configs; ++i )
     {
         int ntasks = task_sizes[i];
 
-        for( IndexType j = 0; j < thread_configs; ++j )
+        for ( IndexType j = 0; j < thread_configs; ++j )
         {
             LAMA_REGION_N( "PoolWait", thread_sizes[j] * 100 + ntasks );
 
@@ -168,13 +168,13 @@ BOOST_AUTO_TEST_CASE( waitTest )
 
             LAMAThreadPool pool( thread_sizes[j] );
 
-            for( IndexType i = 0; i < ntasks; i++ )
+            for ( IndexType i = 0; i < ntasks; i++ )
             {
                 x[i] = -1;
                 tasks[i] = pool.schedule( boost::bind( &ThreadPoolTest::work, i, ref( x[i] ) ) );
             }
 
-            for( IndexType i = 0; i < ntasks; i++ )
+            for ( IndexType i = 0; i < ntasks; i++ )
             {
                 pool.wait( tasks[i] );
                 BOOST_CHECK_EQUAL( i, x[i] );
@@ -198,7 +198,7 @@ BOOST_AUTO_TEST_CASE( singleTest )
 
     IndexType rnd = 15;
 
-    for( IndexType i = 0; i < 100; ++i )
+    for ( IndexType i = 0; i < 100; ++i )
     {
         IndexType resultThread;
         IndexType resultMaster;

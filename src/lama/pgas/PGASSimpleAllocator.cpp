@@ -78,7 +78,7 @@ size_t PGASSimpleAllocator::getOffset( const void* actualptr )
 
 void PGASSimpleAllocator::recalcFreeSpace()
 {
-    if( mLastPtrs.size() == 0 )
+    if ( mLastPtrs.size() == 0 )
     {
         mFreeSpace = mSize;
         return;
@@ -91,7 +91,7 @@ void PGASSimpleAllocator::free( void* ptr, size_t size )
     //Nothing to do here
 //    std::cout << "freeing SPACE LEFT:" << mFreeSpace << std::endl;
     char* temp = static_cast<char*>( ptr ) + size;
-    if( ptr != mBasePointer )
+    if ( ptr != mBasePointer )
     {
         mLastPtrs.remove( temp );
     }

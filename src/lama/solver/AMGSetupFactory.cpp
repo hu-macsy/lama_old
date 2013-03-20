@@ -68,7 +68,7 @@ AMGSetupFactory& AMGSetupFactory::getFactory()
 
     // Note: using the auto_ptr guarantees that the instance will be freed at end of the program
 
-    if( !theAMGSetupFactory.get() )
+    if ( !theAMGSetupFactory.get() )
     {
         // printf("create the AMGSetup factory instance\n");
 
@@ -88,7 +88,7 @@ AMGSetupPtr AMGSetupFactory::get( const std::string& type )
 
     AMGSetupToManagerMap::const_iterator id = factory.mAMGSetupToManagerMap.find( type );
 
-    if( id != factory.mAMGSetupToManagerMap.end() )
+    if ( id != factory.mAMGSetupToManagerMap.end() )
     {
         return id->second->getAMGSetup();
     }
@@ -101,7 +101,7 @@ AMGSetupPtr AMGSetupFactory::get( const std::string& type )
 
     id = factory.mAMGSetupToManagerMap.find( factory.getDefaultAMGSetupType() );
 
-    if( id != factory.mAMGSetupToManagerMap.end() )
+    if ( id != factory.mAMGSetupToManagerMap.end() )
     {
         return id->second->getAMGSetup();
     }
@@ -116,11 +116,11 @@ AMGSetupPtr AMGSetupFactory::get()
 
 const std::string& AMGSetupFactory::getDefaultAMGSetupType() const
 {
-    if( mDefaultAMGSetupType.length() == 0 )
+    if ( mDefaultAMGSetupType.length() == 0 )
     {
         // default AMGSetup has not been defined yet, so do it
 
-        if( getenv( LAMA_ENV_FOR_COMMUNICATOR ) )
+        if ( getenv( LAMA_ENV_FOR_COMMUNICATOR ) )
         {
             setDefaultAMGSetupType( getenv( LAMA_ENV_FOR_COMMUNICATOR ) );
         }
@@ -142,7 +142,7 @@ boost::shared_ptr<AMGSetupManager> AMGSetupFactory::getAMGSetupManager( const st
 
 void AMGSetupFactory::setDefaultAMGSetupType( const std::string& defaultType ) const
 {
-    if( mAMGSetupToManagerMap.find( defaultType ) != mAMGSetupToManagerMap.end() )
+    if ( mAMGSetupToManagerMap.find( defaultType ) != mAMGSetupToManagerMap.end() )
     {
         mDefaultAMGSetupType = defaultType;
 
@@ -159,11 +159,11 @@ void AMGSetupFactory::setDefaultAMGSetupType( const std::string& defaultType ) c
 
 void AMGSetupFactory::setDefaultAMGSetupType() const
 {
-    if( mAMGSetupToManagerMap.find( "MPI" ) != mAMGSetupToManagerMap.end() )
+    if ( mAMGSetupToManagerMap.find( "MPI" ) != mAMGSetupToManagerMap.end() )
     {
         mDefaultAMGSetupType = "MPI";
     }
-    else if( mAMGSetupToManagerMap.find( "none" ) != mAMGSetupToManagerMap.end() )
+    else if ( mAMGSetupToManagerMap.find( "none" ) != mAMGSetupToManagerMap.end() )
     {
         mDefaultAMGSetupType = "none";
     }
@@ -203,7 +203,7 @@ void AMGSetupFactory::addAMGSetupManager( const std::string& type, boost::shared
 
     AMGSetupToManagerMap::const_iterator it = mAMGSetupToManagerMap.find( type );
 
-    if( it != mAMGSetupToManagerMap.end() )
+    if ( it != mAMGSetupToManagerMap.end() )
     {
         // AMGSetupManager might be replaced, e.g. for Host context (DefaultHost or CUDAHost)
 

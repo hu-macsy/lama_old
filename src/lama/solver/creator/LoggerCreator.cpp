@@ -147,7 +147,7 @@ LoggerCreator& LoggerCreator::getInstance()
 {
     static std::auto_ptr<LoggerCreator> instance;
 
-    if( !instance.get() )
+    if ( !instance.get() )
     {
         instance = std::auto_ptr<LoggerCreator>( new LoggerCreator() );
     }

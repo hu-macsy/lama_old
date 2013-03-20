@@ -307,7 +307,7 @@ inline size_t Scalar::getTypeSize( const ScalarType type )
 {
     size_t typeSize = 0;
 
-    switch( type )
+    switch ( type )
     {
     case FLOAT:
         typeSize = 4;
@@ -414,7 +414,7 @@ inline bool operator!=( const Scalar& a, const Scalar& b )
 
 inline bool operator<( const Scalar& a, const Scalar& b )
 {
-    if( !a.isReal() || !b.isReal() )
+    if ( !a.isReal() || !b.isReal() )
     {
         LAMA_THROWEXCEPTION(
             "Could not call operator< for Scalar a = " << a << ", b = " << b << ", because one of them is not real." );
@@ -425,7 +425,7 @@ inline bool operator<( const Scalar& a, const Scalar& b )
 
 inline bool operator>( const Scalar& a, const Scalar& b )
 {
-    if( !a.isReal() || !b.isReal() )
+    if ( !a.isReal() || !b.isReal() )
     {
         LAMA_THROWEXCEPTION(
             "Could not call operator> for Scalar a = " << a << ", b = " << b << ", because one of them is not real." );

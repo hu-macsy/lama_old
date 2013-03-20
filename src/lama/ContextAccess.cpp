@@ -45,7 +45,7 @@ ContextAccess::ContextAccess( ContextPtr context, const char* file, int line )
 {
     // Access to NULL context gives warning, and will be ignored
 
-    if( !mContext )
+    if ( !mContext )
     {
         // Might be useful to support NULL context, but give a warning
 
@@ -61,7 +61,7 @@ ContextAccess::ContextAccess( ContextPtr context, const char* file, int line )
 
 void ContextAccess::release()
 {
-    if( mReleased )
+    if ( mReleased )
     {
         return;
     }
@@ -81,7 +81,7 @@ void ContextAccess::writeAt( std::ostream& stream ) const
 {
     stream << "Access of ";
 
-    if( !mContext )
+    if ( !mContext )
     {
         stream << "NULL context";
     }

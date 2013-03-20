@@ -379,12 +379,12 @@ CSRSparseMatrix<T> TestSparseMatrices::nnIdentityMatrix( IndexType n )
 
     boost::scoped_array<ValueType> identityValues( new ValueType[n * n] );
 
-    for( int i = 1; i <= n * n; ++i )
+    for ( int i = 1; i <= n * n; ++i )
     {
         identityValues[i - 1] = 0.0;
     }
 
-    for( int i = 0; i < n; ++i )
+    for ( int i = 0; i < n; ++i )
     {
         identityValues[i * n + i] = 1.0;
     }

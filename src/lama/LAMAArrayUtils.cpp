@@ -80,7 +80,7 @@ void LAMAArrayUtils::assignImpl1( LAMAArray<ValueType>& target, const _LAMAArray
 {
     Scalar::ScalarType sourceType = source.getValueType();
 
-    if( sourceType == target.getValueType() )
+    if ( sourceType == target.getValueType() )
     {
         // dynamic cast is absolutely safe
 
@@ -93,7 +93,7 @@ void LAMAArrayUtils::assignImpl1( LAMAArray<ValueType>& target, const _LAMAArray
 
     // Different types -> select for corresponding template routine
 
-    switch( sourceType )
+    switch ( sourceType )
     {
     case Scalar::FLOAT:
         assignImpl2( target, dynamic_cast<const LAMAArray<float>&>( source ) );
@@ -109,7 +109,7 @@ void LAMAArrayUtils::assignImpl1( LAMAArray<ValueType>& target, const _LAMAArray
 
 void LAMAArrayUtils::assign( _LAMAArray& target, const _LAMAArray& source )
 {
-    switch( target.getValueType() )
+    switch ( target.getValueType() )
     {
     case Scalar::FLOAT:
         assignImpl1( dynamic_cast<LAMAArray<float>&>( target ), source );

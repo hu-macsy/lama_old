@@ -106,11 +106,11 @@ public:
         LAMA_LOG_INFO( logger,
                        result << " = " << alpha << " * " << *this << " * " << x << " + " << beta << " * " << y );
 
-        if( &result == &y )
+        if ( &result == &y )
         {
             LAMA_LOG_DEBUG( logger, "alias: result = y is well handled" );
         }
-        else if( &result == &x )
+        else if ( &result == &x )
         {
             LAMA_THROWEXCEPTION( "alias: result = x is not handled, use temporary" );
         }

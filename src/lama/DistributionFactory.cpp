@@ -68,7 +68,7 @@ DistributionFactory& DistributionFactory::getFactory()
 
     // Note: using the auto_ptr guarantees that the instance will be freed at end of the program
 
-    if( !theDistributionFactory.get() )
+    if ( !theDistributionFactory.get() )
     {
         // printf("create the communicator factory instance\n");
 
@@ -89,7 +89,7 @@ DistributionPtr DistributionFactory::get(
 
     DistributionToManagerMap::const_iterator id = factory.mDistributionToManagerMap.find( type );
 
-    if( id != factory.mDistributionToManagerMap.end() )
+    if ( id != factory.mDistributionToManagerMap.end() )
     {
         return id->second->getDistribution( size, arguments );
     }
@@ -102,7 +102,7 @@ DistributionPtr DistributionFactory::get(
 
     id = factory.mDistributionToManagerMap.find( factory.getDefaultDistributionType() );
 
-    if( id != factory.mDistributionToManagerMap.end() )
+    if ( id != factory.mDistributionToManagerMap.end() )
     {
         return id->second->getDistribution( size, arguments );
     }
@@ -175,11 +175,11 @@ void DistributionFactory::setDefaultDistribution( const std::string& type, const
 
 const std::string& DistributionFactory::getDefaultDistributionType() const
 {
-    if( mDefaultDistributionType.length() == 0 )
+    if ( mDefaultDistributionType.length() == 0 )
     {
         // default distribution has not been defined yet, so do it
 
-        if( getenv( LAMA_ENV_FOR_DISTRIBUTION ) )
+        if ( getenv( LAMA_ENV_FOR_DISTRIBUTION ) )
         {
             setDefaultDistributionType( getenv( LAMA_ENV_FOR_DISTRIBUTION ) );
         }
@@ -201,7 +201,7 @@ boost::shared_ptr<DistributionManager> DistributionFactory::getDistributionManag
 
 void DistributionFactory::setDefaultDistributionType( const std::string& defaultType ) const
 {
-    if( mDistributionToManagerMap.find( defaultType ) != mDistributionToManagerMap.end() )
+    if ( mDistributionToManagerMap.find( defaultType ) != mDistributionToManagerMap.end() )
     {
         mDefaultDistributionType = defaultType;
 
@@ -249,7 +249,7 @@ void DistributionFactory::addDistributionManager(
 
     DistributionToManagerMap::const_iterator it = mDistributionToManagerMap.find( type );
 
-    if( it != mDistributionToManagerMap.end() )
+    if ( it != mDistributionToManagerMap.end() )
     {
         // DistributionManager might be replaced, e.g. for Host context (DefaultHost or CUDAHost)
 

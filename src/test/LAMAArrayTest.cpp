@@ -74,7 +74,7 @@ BOOST_AUTO_TEST_CASE( releaseTest )
 
     writeAccess.resize( 10 );
 
-    for( IndexType i = 0; i < 10; i++ )
+    for ( IndexType i = 0; i < 10; i++ )
     {
         writeAccess[i] = 3;
     }
@@ -87,7 +87,7 @@ BOOST_AUTO_TEST_CASE( releaseTest )
 
     HostReadAccess<IndexType> readAccess( lamaArray );
 
-    for( IndexType i = 0; i < 5; i++ )
+    for ( IndexType i = 0; i < 5; i++ )
     {
         BOOST_CHECK_EQUAL( 3, readAccess[i] );
     }
@@ -105,7 +105,7 @@ BOOST_AUTO_TEST_CASE( resizeTest )
         // Possible problem: fetch from any location not possible
         writeAccess.resize( 10 );
 
-        for( IndexType i = 0; i < 10; i++ )
+        for ( IndexType i = 0; i < 10; i++ )
         {
             writeAccess[i] = static_cast<IndexType>( 3.0 );
         }

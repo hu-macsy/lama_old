@@ -120,7 +120,7 @@ DenseVector<T>::DenseVector( const std::string& filename )
     long dataTypeSize = -1;
     std::string vecFileName( filename + ".vec" );
 
-    if( myRank == host )
+    if ( myRank == host )
     {
         readVectorHeader( filename + ".frv", fileType, dataTypeSize );
 
@@ -137,11 +137,11 @@ DenseVector<T>::DenseVector( const std::string& filename )
 
     allocate( dist );
 
-    if( myRank == host )
+    if ( myRank == host )
     {
         // host owns all elements, all others have no elements
 
-        switch( fileType )
+        switch ( fileType )
         {
         case File::FORMATTED: //ASCII
             readVectorFromFormattedFile( vecFileName );
@@ -348,7 +348,7 @@ Scalar DenseVector<T>::getValue( IndexType globalIndex ) const
     ValueType myValue = 0.0;
     const IndexType localIndex = getDistribution().global2local( globalIndex );
 
-    if( localIndex != nIndex )
+    if ( localIndex != nIndex )
     {
         HostReadAccess<ValueType> localAccess( mLocalValues );
 
@@ -370,7 +370,7 @@ Scalar DenseVector<T>::min() const
     {
         ValueType myLocalMin = localMin;
         #pragma omp for
-        for( IndexType i = 0; i < localValues.size(); ++i )
+        for ( IndexType i = 0; i < localValues.size(); ++i )
         {
             myLocalMin = std::min( localValues[i], myLocalMin );
         }
@@ -393,7 +393,7 @@ Scalar DenseVector<T>::max() const
     {
         ValueType myLocalMax = localMax;
         #pragma omp for
-        for( IndexType i = 0; i < localValues.size(); ++i )
+        for ( IndexType i = 0; i < localValues.size(); ++i )
         {
             myLocalMax = std::max( localValues[i], myLocalMax );
         }
@@ -411,7 +411,7 @@ Scalar DenseVector<T>::l1Norm() const
 {
     IndexType nnu = mLocalValues.size();
 
-    if( nnu == 0 )
+    if ( nnu == 0 )
     {
         return 0.0f; // return as maxIdx would be invalid
     }
@@ -431,7 +431,7 @@ Scalar DenseVector<T>::l2Norm() const
 {
     IndexType nnu = mLocalValues.size();
 
-    if( nnu == 0 )
+    if ( nnu == 0 )
     {
         return 0.0f; // return as maxIdx would be invalid
     }
@@ -452,7 +452,7 @@ Scalar DenseVector<T>::maxNorm() const
 {
     IndexType nnu = mLocalValues.size(); // number of local rows
 
-    if( nnu == 0 )
+    if ( nnu == 0 )
     {
         return 0.0f; // return as maxIdx would be invalid
     }
@@ -489,7 +489,7 @@ void DenseVector<T>::swap( Vector& other )
 
     DenseVector* otherPtr = dynamic_cast<DenseVector*>( &other );
 
-    if( !otherPtr )
+    if ( !otherPtr )
     {
         LAMA_THROWEXCEPTION( "Tried to swap with a Vector of a different type." );
     }
@@ -519,7 +519,7 @@ void DenseVector<T>::vectorPlusVector(
 
     const LAMAInterface* lamaInterface = LAMAInterfaceRegistry::getRegistry().getInterface( context->getType() );
 
-    if( lamaInterface->getBLAS1Interface<T>().scal == NULL || lamaInterface->getBLAS1Interface<T>().axpy == NULL
+    if ( lamaInterface->getBLAS1Interface<T>().scal == NULL || lamaInterface->getBLAS1Interface<T>().axpy == NULL
             || lamaInterface->getBLAS1Interface<T>().sum == NULL )
     {
         LAMA_THROWEXCEPTION( "Needed BLAS functions for vector add are not available on location " << context << "." );
@@ -535,7 +535,7 @@ void DenseVector<T>::vectorPlusVector(
 
     const IndexType nnu = result.size();
 
-    if( result == x && result == y ) //result = alpha * result + beta * result
+    if ( result == x && result == y ) //result = alpha * result + beta * result
     {
         //result = alpha * result + beta * result
         //=>
@@ -551,16 +551,16 @@ void DenseVector<T>::vectorPlusVector(
         LAMA_CONTEXT_ACCESS( context );
         lamaInterface->getBLAS1Interface<T>().scal( nnu, alpha + beta, resultAccess.get(), 1, NULL );
     }
-    else if( result == x ) //result = alpha * result + beta * y
+    else if ( result == x ) //result = alpha * result + beta * y
     {
         ReadAccess<T> yAccess( y, context );
         WriteAccess<T> resultAccess( result, context, true );
 
-        if( beta == 0.0 )
+        if ( beta == 0.0 )
         {
             LAMA_LOG_DEBUG( logger, "vectorPlusVector: result *= alpha" );
 
-            if( alpha != 1.0 ) // result *= alpha
+            if ( alpha != 1.0 ) // result *= alpha
             {
                 LAMA_CONTEXT_ACCESS( context );
                 lamaInterface->getBLAS1Interface<T>().scal( nnu, alpha, resultAccess.get(), 1, NULL );
@@ -570,11 +570,11 @@ void DenseVector<T>::vectorPlusVector(
                 // do nothing: result = 1 * result
             }
         }
-        else if( beta == 1.0 ) // result = alpha * result + y
+        else if ( beta == 1.0 ) // result = alpha * result + y
         {
             LAMA_LOG_DEBUG( logger, "vectorPlusVector: result = alpha * result + y" );
 
-            if( alpha != 1.0 ) // result = alpha * result + y
+            if ( alpha != 1.0 ) // result = alpha * result + y
             {
                 // result *= alpha
                 LAMA_CONTEXT_ACCESS( context );
@@ -590,7 +590,7 @@ void DenseVector<T>::vectorPlusVector(
             LAMA_LOG_DEBUG( logger,
                             "vectorPlusVector: result = alpha(" << alpha << ")" << " * result + beta(" << beta << ") * y" );
 
-            if( alpha != 1.0 )
+            if ( alpha != 1.0 )
             {
                 LAMA_CONTEXT_ACCESS( context );
                 lamaInterface->getBLAS1Interface<T>().scal( nnu, alpha, resultAccess.get(), 1, NULL );
@@ -599,7 +599,7 @@ void DenseVector<T>::vectorPlusVector(
             lamaInterface->getBLAS1Interface<T>().axpy( nnu, beta, yAccess.get(), 1, resultAccess.get(), 1, NULL );
         }
     }
-    else if( result == y ) // result = alpha * x + beta * result
+    else if ( result == y ) // result = alpha * x + beta * result
     {
         LAMA_LOG_DEBUG( logger,
                         "vectorPlusVector: result = alpha(" << alpha << ")" << " * x + beta(" << beta << ") * result" );
@@ -609,14 +609,14 @@ void DenseVector<T>::vectorPlusVector(
         ReadAccess<T> xAccess( x, context );
         WriteAccess<T> resultAccess( result, context, true );
 
-        if( beta != 1.0 ) // result = [alpha * x + ] beta * result
+        if ( beta != 1.0 ) // result = [alpha * x + ] beta * result
         {
             // result *= beta
             LAMA_CONTEXT_ACCESS( context );
             lamaInterface->getBLAS1Interface<T>().scal( nnu, beta, resultAccess.get(), 1, NULL );
         }
 
-        if( alpha != 0.0 )
+        if ( alpha != 0.0 )
         {
             // result = alpha * x + result
             LAMA_CONTEXT_ACCESS( context );
@@ -655,23 +655,23 @@ void DenseVector<T>::assign(
     LAMA_LOG_DEBUG( logger, "dist of x = " << x.getDistribution() );
     LAMA_LOG_DEBUG( logger, "dist of y = " << y.getDistribution() );
 
-    if( x.getDistribution() != y.getDistribution() )
+    if ( x.getDistribution() != y.getDistribution() )
     {
         LAMA_THROWEXCEPTION(
             "distribution do not match for z = alpha * x + beta * y, z = "<< *this <<" , x = "<< x <<" , y = "<< y );
     }
 
-    if( x.getDistribution() != getDistribution() || x.size() != size() )
+    if ( x.getDistribution() != getDistribution() || x.size() != size() )
     {
         resize( x.getDistributionPtr() );
     }
 
-    if( typeid( *this ) == typeid( x ) && typeid( *this ) == typeid( y ) )
+    if ( typeid( *this ) == typeid( x ) && typeid( *this ) == typeid( y ) )
     {
         const DenseVector<ValueType>& denseX = dynamic_cast<const DenseVector<ValueType>&>( x );
         const DenseVector<ValueType>& denseY = dynamic_cast<const DenseVector<ValueType>&>( y );
 
-        if( mLocalValues.size() != denseX.mLocalValues.size() )
+        if ( mLocalValues.size() != denseX.mLocalValues.size() )
         {
             mLocalValues.clear();
             WriteAccess<ValueType> localAccess( mLocalValues, mContext );
@@ -704,9 +704,9 @@ template<typename T>
 Scalar DenseVector<T>::dotProduct( const Vector& other ) const
 {
     LAMA_LOG_INFO( logger, "Calculating dot product for " << *this << " * " << other );
-    if( typeid( *this ) == typeid( other ) )
+    if ( typeid( *this ) == typeid( other ) )
     {
-        if( getDistribution() != other.getDistribution() )
+        if ( getDistribution() != other.getDistribution() )
         {
             LAMA_THROWEXCEPTION(
                 "distribution do not match for this * other, this = "<< *this <<" , other = "<< other );
@@ -835,7 +835,7 @@ void DenseVector<T>::redistribute( DistributionPtr distribution )
 {
     LAMA_ASSERT_EQUAL_ERROR( size(), distribution->getGlobalSize() );
 
-    if( getDistribution() == *distribution )
+    if ( getDistribution() == *distribution )
     {
         LAMA_LOG_INFO( logger, *this << " redistribute to same distribution " << *distribution );
 
@@ -844,7 +844,7 @@ void DenseVector<T>::redistribute( DistributionPtr distribution )
         setDistributionPtr( distribution );
     }
 
-    else if( getDistribution().isReplicated() )
+    else if ( getDistribution().isReplicated() )
 
     {
         LAMA_LOG_INFO( logger, *this << ": replicated vector" << " will be localized to " << *distribution );
@@ -858,9 +858,9 @@ void DenseVector<T>::redistribute( DistributionPtr distribution )
             HostWriteOnlyAccess<T> wNewLocalValues( newLocalValues, newSize );
 
             #pragma omp parallel for
-            for( IndexType i = 0; i < size(); ++i )
+            for ( IndexType i = 0; i < size(); ++i )
             {
-                if( distribution->isLocal( i ) )
+                if ( distribution->isLocal( i ) )
                 {
                     const IndexType iLocal = distribution->global2local( i );
                     LAMA_ASSERT_DEBUG( iLocal < newSize, "illegal index " << iLocal );
@@ -873,7 +873,7 @@ void DenseVector<T>::redistribute( DistributionPtr distribution )
         setDistributionPtr( distribution );
     }
 
-    else if( distribution->isReplicated() )
+    else if ( distribution->isReplicated() )
     {
         LAMA_LOG_INFO( logger, *this << " will be replicated" );
 
@@ -927,7 +927,7 @@ void DenseVector<T>::readVectorHeader( const std::string& filename, File::FileTy
     char charFileType;
     std::ifstream inFile( filename.c_str(), std::ios::in );
 
-    if( !inFile.is_open() )
+    if ( !inFile.is_open() )
     {
         LAMA_THROWEXCEPTION( "Unable to open vector header file " + filename + "." );
     }
@@ -944,7 +944,7 @@ void DenseVector<T>::readVectorHeader( const std::string& filename, File::FileTy
     DistributionPtr distribution( new NoDistribution( numrows ) );
     setDistributionPtr( distribution );
 
-    switch( charFileType )
+    switch ( charFileType )
     {
     case 'b':
         fileType = File::BINARY;
@@ -974,7 +974,7 @@ void DenseVector<T>::writeToFile(
 
     dataTypeSize = getDataTypeSize( dataType );
 
-    switch( fileType )
+    switch ( fileType )
     {
     case File::FORMATTED:
     {
@@ -1011,7 +1011,7 @@ void DenseVector<T>::writeVectorHeader(
 {
     char charFileType;
 
-    switch( fileType )
+    switch ( fileType )
     {
     case File::BINARY:
         charFileType = 'b';
@@ -1032,7 +1032,7 @@ void DenseVector<T>::writeVectorHeader(
 
     std::ofstream outFile( fileName.c_str(), std::ios::out );
 
-    if( !outFile.is_open() )
+    if ( !outFile.is_open() )
     {
         LAMA_THROWEXCEPTION( "Unable to open vector header file " + fileName + "." );
     }
@@ -1050,19 +1050,19 @@ void DenseVector<T>::writeVectorToMMFile( const std::string& filename, const Fil
     mm_initialize_typecode( &veccode );
     mm_set_array( &veccode );
     mm_set_dense( &veccode );
-    if( dataType == File::DOUBLE || dataType == File::FLOAT )
+    if ( dataType == File::DOUBLE || dataType == File::FLOAT )
     {
         mm_set_real( &veccode );
     }
-    else if( dataType == File::COMPLEX )
+    else if ( dataType == File::COMPLEX )
     {
         mm_set_complex( &veccode );
     }
-    else if( dataType == File::INTEGER )
+    else if ( dataType == File::INTEGER )
     {
         mm_set_integer( &veccode );
     }
-    else if( dataType == File::PATTERN )
+    else if ( dataType == File::PATTERN )
     {
         mm_set_pattern( &veccode );
     }
@@ -1073,7 +1073,7 @@ void DenseVector<T>::writeVectorToMMFile( const std::string& filename, const Fil
     }
 
     std::FILE* file;
-    if( !( file = std::fopen( filename.c_str(), "w+" ) ) )
+    if ( !( file = std::fopen( filename.c_str(), "w+" ) ) )
     {
         LAMA_THROWEXCEPTION( "DenseVector<T>::writeVectorToMMFile: '" + filename + "' could not be opened." );
     }
@@ -1083,7 +1083,7 @@ void DenseVector<T>::writeVectorToMMFile( const std::string& filename, const Fil
     mm_write_banner( file, veccode );
     mm_write_mtx_array_size( file, numRows, numRows );
 
-    if( std::fclose( file ) != 0 )
+    if ( std::fclose( file ) != 0 )
     {
         LAMA_THROWEXCEPTION( "DenseVector<T>::writeVectorToMMFile: '" + filename + "' could not be closed." );
     }
@@ -1092,17 +1092,17 @@ void DenseVector<T>::writeVectorToMMFile( const std::string& filename, const Fil
     std::ofstream ofile;
     ofile.open( filename.c_str(), std::ios::out | std::ios::app );
 
-    if( ofile.fail() )
+    if ( ofile.fail() )
     {
         LAMA_THROWEXCEPTION( "DenseVector<T>::writeVectorToMMFile: '" + filename + "' could not be reopened." );
     }
 
     HostReadAccess<ValueType> dataRead( mLocalValues );
 
-    for( IndexType ii = 0; ii < numRows; ++ii )
+    for ( IndexType ii = 0; ii < numRows; ++ii )
     {
         ofile << ii + 1;
-        if( dataType != File::PATTERN )
+        if ( dataType != File::PATTERN )
         {
             ofile << " " << dataRead[ii];
         }
@@ -1114,18 +1114,18 @@ void DenseVector<T>::writeVectorToMMFile( const std::string& filename, const Fil
 template<typename T>
 long DenseVector<T>::getDataTypeSize( const File::DataType dataType ) const
 {
-    switch( dataType )
+    switch ( dataType )
     {
     case File::DOUBLE:
         return TypeTraits<double>::size;
     case File::FLOAT:
         return TypeTraits<float>::size;
     case File::INTERNAL:
-        if( sizeof(ValueType) == TypeTraits<float>::size )
+        if ( sizeof(ValueType) == TypeTraits<float>::size )
         {
             return TypeTraits<float>::size;
         }
-        else if( sizeof(ValueType) == TypeTraits<double>::size )
+        else if ( sizeof(ValueType) == TypeTraits<double>::size )
         {
             return TypeTraits<double>::size;
         }
@@ -1163,26 +1163,26 @@ void DenseVector<T>::writeVectorToXDRFile( const std::string& file, const long d
 
     HostReadAccess<ValueType> dataRead( mLocalValues );
 
-    if( dataTypeSize == sizeof(ValueType) )
+    if ( dataTypeSize == sizeof(ValueType) )
     {
         outFile.write( dataRead.get(), numRows );
     }
-    else if( dataTypeSize == TypeTraits<double>::size )
+    else if ( dataTypeSize == TypeTraits<double>::size )
     {
         double* buffer = new double[numRows];
 
-        for( IndexType i = 0; i < numRows; i++ )
+        for ( IndexType i = 0; i < numRows; i++ )
         {
             buffer[i] = dataRead[i];
         }
         outFile.write( buffer, numRows );
         delete[] buffer;
     }
-    else if( dataTypeSize == TypeTraits<float>::size )
+    else if ( dataTypeSize == TypeTraits<float>::size )
     {
         float* buffer = new float[numRows];
 
-        for( IndexType i = 0; i < numRows; i++ )
+        for ( IndexType i = 0; i < numRows; i++ )
         {
             buffer[i] = static_cast<float>( dataRead[i] );
         }
@@ -1199,7 +1199,7 @@ void DenseVector<T>::writeVectorToXDRFile( const std::string& file, const long d
 template<typename FileType,typename DataType>
 static void writeBinaryData( std::fstream& outFile, const DataType data[], const IndexType n )
 {
-    if( typeid(FileType) == typeid(DataType) )
+    if ( typeid(FileType) == typeid(DataType) )
     {
         // no type conversion needed
 
@@ -1212,7 +1212,7 @@ static void writeBinaryData( std::fstream& outFile, const DataType data[], const
 
     boost::scoped_array<FileType> buffer( new FileType[n] );
 
-    for( IndexType i = 0; i < n; i++ )
+    for ( IndexType i = 0; i < n; i++ )
     {
         buffer[i] = static_cast<FileType>( data[i] );
     }
@@ -1228,15 +1228,15 @@ void DenseVector<T>::writeVectorDataToBinaryFile( std::fstream& outFile, const l
     IndexType numRows = size();
     HostReadAccess<ValueType> dataRead( mLocalValues );
 
-    if( sizeof(ValueType) == dataTypeSize )
+    if ( sizeof(ValueType) == dataTypeSize )
     {
         writeBinaryData<ValueType,ValueType>( outFile, dataRead.get(), numRows );
     }
-    else if( dataTypeSize == TypeTraits<double>::size )
+    else if ( dataTypeSize == TypeTraits<double>::size )
     {
         writeBinaryData<double,ValueType>( outFile, dataRead.get(), numRows );
     }
-    else if( dataTypeSize == TypeTraits<float>::size )
+    else if ( dataTypeSize == TypeTraits<float>::size )
     {
         writeBinaryData<float,ValueType>( outFile, dataRead.get(), numRows );
     }
@@ -1252,7 +1252,7 @@ void DenseVector<T>::writeVectorToFormattedFile( const std::string& file ) const
     std::fstream outFile( file.c_str(), std::ios::out );
     HostReadAccess<ValueType> dataRead( mLocalValues );
 
-    for( IndexType i = 0; i < size(); ++i )
+    for ( IndexType i = 0; i < size(); ++i )
     {
         outFile << dataRead[i] << std::endl;
     }
@@ -1264,7 +1264,7 @@ void DenseVector<T>::readVectorFromFormattedFile( const std::string& fileName )
 {
     std::ifstream inFile( fileName.c_str(), std::ios::in );
 
-    if( !inFile.is_open() )
+    if ( !inFile.is_open() )
     {
         LAMA_THROWEXCEPTION( "Could not open formatted ascii vector file." );
     }
@@ -1273,7 +1273,7 @@ void DenseVector<T>::readVectorFromFormattedFile( const std::string& fileName )
 
     HostWriteOnlyAccess<T> dataWrite( mLocalValues, n );
 
-    for( IndexType i = 0; i < n; ++i )
+    for ( IndexType i = 0; i < n; ++i )
     {
         inFile >> dataWrite[i];
     }
@@ -1286,7 +1286,7 @@ void DenseVector<T>::readVectorFromBinaryFile( const std::string& fileName, cons
 {
     std::fstream inFile( fileName.c_str(), std::ios::in | std::ios::binary );
 
-    if( !inFile.is_open() )
+    if ( !inFile.is_open() )
     {
         LAMA_THROWEXCEPTION( "Could not open binary vector file." );
     }
@@ -1303,7 +1303,7 @@ void DenseVector<T>::readVectorFromXDRFile( const std::string& fileName, const l
 {
     XDRFileStream inFile( fileName.c_str(), std::ios::in | std::ios::binary );
 
-    if( !inFile.is_open() )
+    if ( !inFile.is_open() )
     {
         LAMA_THROWEXCEPTION( "Could not open XDR vector file." );
     }
@@ -1313,7 +1313,7 @@ void DenseVector<T>::readVectorFromXDRFile( const std::string& fileName, const l
     inFile.read( &nnuLong );
 
     IndexType nnu = static_cast<IndexType>( nnuLong );
-    if( size() != nnu )
+    if ( size() != nnu )
     {
         LAMA_THROWEXCEPTION( "Header file doesn't fit to vector data file. Unequal nnu value." );
     }
@@ -1322,7 +1322,7 @@ void DenseVector<T>::readVectorFromXDRFile( const std::string& fileName, const l
     long dataTypeSize = 0;
     inFile.read( &dataTypeSize );
 
-    if( dataTypeSizeHeader != dataTypeSize )
+    if ( dataTypeSizeHeader != dataTypeSize )
     {
         LAMA_THROWEXCEPTION( "Header file doesn't fit to vector data file. Unequal data type size." );
     }
@@ -1330,16 +1330,16 @@ void DenseVector<T>::readVectorFromXDRFile( const std::string& fileName, const l
 //    m_data = m_allocator.allocate( m_capacity );
 
     // read IEEE float
-    if( dataTypeSize == TypeTraits<float>::size )
+    if ( dataTypeSize == TypeTraits<float>::size )
     {
-        if( sizeof(ValueType) == TypeTraits<float>::size )
+        if ( sizeof(ValueType) == TypeTraits<float>::size )
         {   //read float
 
             HostWriteAccess<ValueType> writeData( mLocalValues );
 
             float *buffer = new float[nnu];
             inFile.read( buffer, nnu );
-            for( IndexType i = 0; i < nnu; i++ )
+            for ( IndexType i = 0; i < nnu; i++ )
             {
                 writeData[i] = buffer[i];
             }
@@ -1351,7 +1351,7 @@ void DenseVector<T>::readVectorFromXDRFile( const std::string& fileName, const l
 
             float *buffer = new float[nnu];
             inFile.read( buffer, nnu );
-            for( IndexType i = 0; i < nnu; i++ )
+            for ( IndexType i = 0; i < nnu; i++ )
             {
                 writeData[i] = static_cast<ValueType>( buffer[i] );
             }
@@ -1360,16 +1360,16 @@ void DenseVector<T>::readVectorFromXDRFile( const std::string& fileName, const l
     }
     // read IEEE double
 
-    else if( dataTypeSize == TypeTraits<double>::size )
+    else if ( dataTypeSize == TypeTraits<double>::size )
     {
-        if( sizeof(ValueType) == TypeTraits<double>::size )
+        if ( sizeof(ValueType) == TypeTraits<double>::size )
         {   //read double
             HostWriteAccess<ValueType> writeData( mLocalValues );
             writeData.resize( size() );
 
             double *buffer = new double[nnu];
             inFile.read( buffer, nnu );
-            for( IndexType i = 0; i < nnu; i++ )
+            for ( IndexType i = 0; i < nnu; i++ )
             {
                 writeData[i] = static_cast<ValueType>( buffer[i] );
             }
@@ -1381,7 +1381,7 @@ void DenseVector<T>::readVectorFromXDRFile( const std::string& fileName, const l
 
             double *buffer = new double[nnu];
             inFile.read( buffer, nnu );
-            for( IndexType i = 0; i < nnu; i++ )
+            for ( IndexType i = 0; i < nnu; i++ )
             {
                 writeData[i] = static_cast<ValueType>( buffer[i] );
             }
@@ -1396,14 +1396,14 @@ void DenseVector<T>::readVectorFromXDRFile( const std::string& fileName, const l
     // Validate Header
     nnuLong = 0;
     inFile.read( &nnuLong );
-    if( size() != static_cast<IndexType>( nnuLong ) )
+    if ( size() != static_cast<IndexType>( nnuLong ) )
     {
         LAMA_THROWEXCEPTION( "Invalid header of the vector file. Unequal nnu." );
     }
 
     long checkDataType = 0;
     inFile.read( &checkDataType );
-    if( checkDataType != dataTypeSize )
+    if ( checkDataType != dataTypeSize )
     {
         LAMA_THROWEXCEPTION( "Invalid header of the vector file. Unequal data type size." );
     }
@@ -1414,7 +1414,7 @@ void DenseVector<T>::readVectorFromXDRFile( const std::string& fileName, const l
 template<typename FileType,typename DataType>
 static void readBinaryData( std::fstream& inFile, DataType data[], const IndexType n )
 {
-    if( typeid(FileType) == typeid(DataType) )
+    if ( typeid(FileType) == typeid(DataType) )
     {
         // no type conversion needed
 
@@ -1428,7 +1428,7 @@ static void readBinaryData( std::fstream& inFile, DataType data[], const IndexTy
 
     inFile.read( reinterpret_cast<char*>( buffer.get() ), sizeof(FileType) * n );
 
-    for( IndexType i = 0; i < n; i++ )
+    for ( IndexType i = 0; i < n; i++ )
     {
         data[i] = static_cast<DataType>( buffer[i] );
     }
@@ -1445,15 +1445,15 @@ void DenseVector<T>::readVectorDataFromBinaryFile( std::fstream &inFile, const l
 
     HostWriteOnlyAccess<ValueType> writeData( mLocalValues, n );
 
-    if( dataTypeSize == sizeof(ValueType) )
+    if ( dataTypeSize == sizeof(ValueType) )
     {
         readBinaryData<ValueType,ValueType>( inFile, writeData.get(), n );
     }
-    else if( dataTypeSize == TypeTraits<float>::size )
+    else if ( dataTypeSize == TypeTraits<float>::size )
     {
         readBinaryData<float,ValueType>( inFile, writeData.get(), n );
     }
-    else if( dataTypeSize == TypeTraits<double>::size )
+    else if ( dataTypeSize == TypeTraits<double>::size )
     {
         readBinaryData<double,ValueType>( inFile, writeData.get(), n );
     }

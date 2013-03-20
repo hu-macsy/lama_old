@@ -78,7 +78,7 @@ struct P_ShiftTestConfig
         { 20, 100, 100 };
 
         std::stringstream dimension;
-        for( IndexType i = 0; i < pDim; ++i )
+        for ( IndexType i = 0; i < pDim; ++i )
         {
             dimension << "_" << pSize[i];
         }
@@ -112,7 +112,7 @@ bool checkDeviation( std::vector<double> times, double eps )
 {
     IndexType size = times.size();
     double sum = 0.0;
-    for( IndexType i = 0; i < size; ++i )
+    for ( IndexType i = 0; i < size; ++i )
     {
         sum += times[i];
     }
@@ -120,9 +120,9 @@ bool checkDeviation( std::vector<double> times, double eps )
 
     // check balance
 
-    for( IndexType i = 0; i < size; ++i )
+    for ( IndexType i = 0; i < size; ++i )
     {
-        if( fabs( times[i] - average ) / average > eps )
+        if ( fabs( times[i] - average ) / average > eps )
         {
             return false;
         }
@@ -140,9 +140,9 @@ void printInformations( CommunicatorPtr mComm, MatrixType /*matrix*/, BalanceDis
     mComm->gather( &totalTimes[0], 1, MASTER, &myTotalTime );
 
     double maxTotalTime = totalTimes[0];
-    for( IndexType i = 1; i < size; ++i )
+    for ( IndexType i = 1; i < size; ++i )
     {
-        if( totalTimes[i] > maxTotalTime )
+        if ( totalTimes[i] > maxTotalTime )
         {
             maxTotalTime = totalTimes[i];
         }
@@ -150,12 +150,12 @@ void printInformations( CommunicatorPtr mComm, MatrixType /*matrix*/, BalanceDis
 
     std::vector<float> weights( size );
 
-    if( myRank == MASTER )
+    if ( myRank == MASTER )
     {
         weights = dist->getWeights();
         std::stringstream weightstr;
         std::stringstream timestr;
-        for( IndexType i = 0; i < size; ++i )
+        for ( IndexType i = 0; i < size; ++i )
         {
             weightstr << weights[i] << " ";
             timestr << totalTimes[i] << " ";

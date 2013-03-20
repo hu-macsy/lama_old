@@ -127,7 +127,7 @@ MatrixStorageFormat COOStorage<ValueType>::getFormat() const
 template<typename ValueType>
 bool COOStorage<ValueType>::checkDiagonalProperty() const
 {
-    if( mNumRows != mNumColumns )
+    if ( mNumRows != mNumColumns )
     {
         return false;
     }
@@ -141,14 +141,14 @@ bool COOStorage<ValueType>::checkDiagonalProperty() const
     // are the diagonal elements
 
     #pragma omp parallel for schedule(LAMA_OMP_SCHEDULE)
-    for( IndexType i = 0; i < mNumRows; ++i )
+    for ( IndexType i = 0; i < mNumRows; ++i )
     {
-        if( !diagonalProperty )
+        if ( !diagonalProperty )
         {
             continue;
         }
 
-        if( ia[i] != i || ja[i] != i )
+        if ( ia[i] != i || ja[i] != i )
         {
             diagonalProperty = false;
         }
@@ -221,7 +221,7 @@ void COOStorage<ValueType>::buildCSR(
 
     OpenMPCOOUtils::getCSRSizes( csrIA.get(), mNumRows, mNumValues, cooIA.get() );
 
-    if( ja == NULL || values == NULL )
+    if ( ja == NULL || values == NULL )
     {
         csrIA.resize( mNumRows );
         return;
@@ -269,7 +269,7 @@ void COOStorage<ValueType>::setCSRDataImpl(
 
     mDiagonalProperty = OpenMPCSRUtils::hasDiagonalProperty( numDiagonals, csrIA.get(), csrJA.get() );
 
-    if( !mDiagonalProperty )
+    if ( !mDiagonalProperty )
     {
         numDiagonals = 0; // do not store diagonal data separately
     }
@@ -344,9 +344,9 @@ ValueType COOStorage<ValueType>::getValue( IndexType i, IndexType j ) const
 
     LAMA_LOG_DEBUG( logger, "get value (" << i << ", " << j << ") from " << *this );
 
-    for( IndexType kk = 0; kk < mNumValues; ++kk )
+    for ( IndexType kk = 0; kk < mNumValues; ++kk )
     {
-        if( ia[kk] == i && ja[kk] == j )
+        if ( ia[kk] == i && ja[kk] == j )
         {
             return values[kk];
         }
@@ -409,7 +409,7 @@ void COOStorage<ValueType>::setDiagonalImpl( const Scalar scalar )
     HostReadAccess<IndexType> rIa( mIa );
     ValueType value = scalar.getValue<ValueType>();
 
-    for( IndexType i = 0; i < numDiagonalElements; ++i )
+    for ( IndexType i = 0; i < numDiagonalElements; ++i )
     {
         wValues[i] = value;
     }
@@ -423,7 +423,7 @@ void COOStorage<ValueType>::scaleImpl( const Scalar scalar )
     HostWriteAccess<ValueType> wValues( mValues );
     ValueType value = scalar.getValue<ValueType>();
 
-    for( IndexType i = 0; i < mNumValues; ++i )
+    for ( IndexType i = 0; i < mNumValues; ++i )
     {
         wValues[i] *= value;
     }
@@ -439,7 +439,7 @@ void COOStorage<ValueType>::scaleImpl( const LAMAArray<OtherType>& values )
     HostWriteAccess<ValueType> wValues( mValues );
     HostReadAccess<IndexType> rIa( mIa );
 
-    for( IndexType i = 0; i < mNumValues; ++i )
+    for ( IndexType i = 0; i < mNumValues; ++i )
     {
         wValues[i] *= static_cast<ValueType>( rValues[rIa[i]] );
     }
@@ -482,14 +482,14 @@ void COOStorage<ValueType>::getRowImpl( LAMAArray<OtherType>& row, const IndexTy
     const HostReadAccess<IndexType> ja( mJa );
     const HostReadAccess<ValueType> values( mValues );
 
-    for( IndexType j = 0; j < mNumColumns; ++j )
+    for ( IndexType j = 0; j < mNumColumns; ++j )
     {
         wRow[j] = 0.0;
     }
 
-    for( IndexType kk = 0; kk < mNumValues; ++kk )
+    for ( IndexType kk = 0; kk < mNumValues; ++kk )
     {
-        if( ia[kk] != i )
+        if ( ia[kk] != i )
         {
             continue;
         }
@@ -540,7 +540,7 @@ ValueType COOStorage<ValueType>::maxNorm() const
 
     const IndexType n = mNumValues;
 
-    if( n == 0 )
+    if ( n == 0 )
     {
         return 0.0f;
     }
@@ -607,7 +607,7 @@ void COOStorage<ValueType>::matrixTimesVector(
 
     // Possible alias of result and y must be handled by coressponding accesses
 
-    if( result == y )
+    if ( result == y )
     {
         // only write access for y, no read access for result
 
@@ -668,7 +668,7 @@ auto_ptr<SyncToken> COOStorage<ValueType>::matrixTimesVectorAsyncToDo(
 
     // Possible alias of result and y must be handled by coressponding accesses
 
-    if( result == y )
+    if ( result == y )
     {
         // only write access for y, no read access for result
 
@@ -720,7 +720,7 @@ void COOStorage<ValueType>::jacobiIterate(
 
     LAMA_ASSERT_ERROR( mDiagonalProperty, *this << ": jacobiIterate requires diagonal property" );
 
-    if( solution == oldSolution )
+    if ( solution == oldSolution )
     {
         LAMA_THROWEXCEPTION( "alias of solution and oldSolution unsupported" );
     }

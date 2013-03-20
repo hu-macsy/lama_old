@@ -1,2 +1,5 @@
 .svn
 build/
+.cproject
+.project
+.settings/

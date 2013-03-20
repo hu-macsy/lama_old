@@ -84,18 +84,18 @@ Matrix::Matrix( const IndexType numRows, const IndexType numColumns )
 
 void Matrix::checkSettings() const
 {
-    if( !mColDistribution )
+    if ( !mColDistribution )
     {
         LAMA_THROWEXCEPTION( "NULL pointer for column distribution" );
     }
 
-    if( mNumRows != getDistribution().getGlobalSize() )
+    if ( mNumRows != getDistribution().getGlobalSize() )
     {
         LAMA_THROWEXCEPTION(
             "row distribution " << getDistribution() << ": global size mismatches #rows = " << mNumRows );
     }
 
-    if( mNumColumns != getColDistribution().getGlobalSize() )
+    if ( mNumColumns != getColDistribution().getGlobalSize() )
     {
         LAMA_THROWEXCEPTION(
             "col distribution " << getColDistribution() << ": global size mismatches #columns = " << mNumColumns );
@@ -163,7 +163,7 @@ void Matrix::setReplicatedMatrix( const IndexType numRows, const IndexType numCo
 {
     DistributionPtr rowDist( new NoDistribution( numRows ) );
 
-    if( numRows == numColumns )
+    if ( numRows == numColumns )
     {
         setDistributedMatrix( rowDist, rowDist );
     }
@@ -227,7 +227,7 @@ VectorPtr Matrix::createDenseVector( DistributionPtr distribution, const Scalar 
 
     LAMA_LOG_INFO( logger, "create vector of type " << matrixValueType );
 
-    switch( matrixValueType )
+    switch ( matrixValueType )
     {
     case Scalar::DOUBLE:
         return VectorPtr( new DenseVector<double>( distribution, value.getValue<double>() ) );
@@ -258,7 +258,7 @@ void Matrix::setContext( ContextPtr localContext, ContextPtr haloContext )
 {
     // default implementation for matrices that do not support halo context
 
-    if( *localContext != *haloContext )
+    if ( *localContext != *haloContext )
     {
         LAMA_LOG_WARN( logger, *this << ": halo context = " << *haloContext << " ignored" );
     }
@@ -394,19 +394,19 @@ Matrix& Matrix::operator=(
     const Distribution& rowDistC = C.getDistribution();
     const Distribution& colDistC = C.getColDistribution();
 
-    if( colDistA != rowDistB )
+    if ( colDistA != rowDistB )
     {
         LAMA_THROWEXCEPTION(
             "Distribution of " << A << " = " << A.getColDistribution() << " does not match distribution of " << B << " = " << B.getDistribution() );
     }
 
-    if( rowDistA != rowDistC && beta != zero )
+    if ( rowDistA != rowDistC && beta != zero )
     {
         LAMA_THROWEXCEPTION(
             "Distribution of " << A << " = " << A.getDistribution() << " does not match distribution of " << C << " = " << C.getDistribution() );
     }
 
-    if( colDistB != colDistC && beta != zero )
+    if ( colDistB != colDistC && beta != zero )
     {
         LAMA_THROWEXCEPTION(
             "Distribution of " << B << " = " << B.getColDistribution() << " does not match distribution of " << C << " = " << C.getColDistribution() );
@@ -416,17 +416,17 @@ Matrix& Matrix::operator=(
 
     //size checks are needed because NoDistribution does not compare sizes
 
-    if( A.getNumColumns() != B.getNumRows() )
+    if ( A.getNumColumns() != B.getNumRows() )
     {
         LAMA_THROWEXCEPTION(
             "Number of rows of " << A << " = " << A.getNumRows() << " does not match the number of columns of " << B << " = " << B.getNumColumns() );
     }
-    if( A.getNumRows() != C.getNumRows() && beta != zero )
+    if ( A.getNumRows() != C.getNumRows() && beta != zero )
     {
         LAMA_THROWEXCEPTION(
             "Number of rows of " << A << " = " << A.getNumRows() << " does not match the number of rows of " << C << " = " << C.getNumRows() );
     }
-    if( B.getNumColumns() != C.getNumColumns() && beta != zero )
+    if ( B.getNumColumns() != C.getNumColumns() && beta != zero )
     {
         LAMA_THROWEXCEPTION(
             "Number of columns of " << B << " = " << B.getNumColumns() << " does not match the number of columns of " << C << " = " << C.getNumColumns() );
@@ -458,13 +458,13 @@ Matrix& Matrix::operator=( Expression<Expression<Scalar,Matrix,Times>,Expression
     const Scalar& beta = exp.getArg2().getArg1();
     const Scalar zero( 0.0 );
 
-    if( beta == zero )
+    if ( beta == zero )
     {
         this->matrixTimesScalar( A, alpha );
         return *this;
     }
 
-    if( alpha == zero )
+    if ( alpha == zero )
     {
         this->matrixTimesScalar( B, beta );
         return *this;
@@ -477,13 +477,13 @@ Matrix& Matrix::operator=( Expression<Expression<Scalar,Matrix,Times>,Expression
     const Distribution& rowDistB = B.getDistribution();
     const Distribution& colDistB = B.getColDistribution();
 
-    if( rowDistA != rowDistB )
+    if ( rowDistA != rowDistB )
     {
         LAMA_THROWEXCEPTION(
             "Row distribution of " << A << " = " << rowDistA << " does not match distribution of " << B << " = " << rowDistB );
     }
 
-    if( colDistA != colDistB )
+    if ( colDistA != colDistB )
     {
         LAMA_THROWEXCEPTION(
             "Column distribution of " << A << " = " << colDistA << " does not match distribution of " << B << " = " << colDistB );

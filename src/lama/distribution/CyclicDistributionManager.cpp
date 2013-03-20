@@ -88,7 +88,7 @@ DistributionPtr CyclicDistributionManager::getDistribution( const IndexType size
 {
     int block_size = size; // default
 
-    if( arguments.size() == 0 )
+    if ( arguments.size() == 0 )
     {
         LAMA_LOG_WARN( logger, "argument list should have exactly one int value" );
     }

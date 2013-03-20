@@ -238,7 +238,7 @@ std::auto_ptr<SyncToken> PGASCommunicator::exchangeByPlanAsyncImpl(
 //            temp[i] = -1;
 //        }
         //Copy our offsets from the sendPlan
-        for( int i = 0; i < sendPlan.size(); ++i )
+        for ( int i = 0; i < sendPlan.size(); ++i )
         {
             temp[sendPlan[i].partitionId] = sendPlan[i].offset;
         }
@@ -249,7 +249,7 @@ std::auto_ptr<SyncToken> PGASCommunicator::exchangeByPlanAsyncImpl(
         mPGASInterface->free( temp, getSize() * sizeof(int) );
     }
 #ifdef LAMA_LOG_TRACE
-    for( int i = 0; i < sendPlan.size(); ++i )
+    for ( int i = 0; i < sendPlan.size(); ++i )
     {
         LAMA_LOG_TRACE( logger,
                         "Sending " << sendPlan[i].quantity*sizeof(T) << " Bytes of data to " << sendPlan[i].partitionId << "from" << sendPlan[i].offset )
@@ -257,7 +257,7 @@ std::auto_ptr<SyncToken> PGASCommunicator::exchangeByPlanAsyncImpl(
 #endif
 
     std::auto_ptr<SyncToken> token( mPGASInterface->getSyncToken( 0 ) );
-    for( int i = 0; i < recvPlan.size(); ++i )
+    for ( int i = 0; i < recvPlan.size(); ++i )
     {
         PartitionId p = recvPlan[i].partitionId;
         const T* sendDataForI = sendData; //+ offsets[p];
@@ -301,7 +301,7 @@ IndexType PGASCommunicator::shift(
     LAMA_LOG_DEBUG( logger,
                     *this << ": shift, direction = " << direction << ", sendsize = " << sendSize << ", recvsize = " << recvSize );
 
-    if( direction % getSize() == 0 )
+    if ( direction % getSize() == 0 )
     {
         return shift0( recvData, recvSize, sendVals, sendSize );
     }
@@ -321,7 +321,7 @@ IndexType PGASCommunicator::shift(
     LAMA_LOG_DEBUG( logger,
                     *this << ": shift, direction = " << direction << ", sendsize = " << sendSize << ", recvsize = " << recvSize );
 
-    if( direction % getSize() == 0 )
+    if ( direction % getSize() == 0 )
     {
         return shift0( recvData, recvSize, sendVals, sendSize );
     }
@@ -341,7 +341,7 @@ IndexType PGASCommunicator::shift(
     LAMA_LOG_DEBUG( logger,
                     *this << ": shift, direction = " << direction << ", sendsize = " << sendSize << ", recvsize = " << recvSize );
 
-    if( direction % getSize() == 0 )
+    if ( direction % getSize() == 0 )
     {
         return shift0( recvData, recvSize, sendVals, sendSize );
     }
@@ -375,7 +375,7 @@ std::auto_ptr<SyncToken> PGASCommunicator::shiftAsync(
 {
     LAMA_LOG_DEBUG( logger, *this << ": shiftAsync size = " << size << ", direction = " << direction );
 
-    if( direction % getSize() == 0 )
+    if ( direction % getSize() == 0 )
     {
         return defaultShiftAsync( recvVals, sendVals, size, 0 );
     }
@@ -391,7 +391,7 @@ std::auto_ptr<SyncToken> PGASCommunicator::shiftAsync(
     const IndexType size,
     const int direction ) const
 {
-    if( direction % getSize() == 0 )
+    if ( direction % getSize() == 0 )
     {
         return defaultShiftAsync( recvVals, sendVals, size, 0 );
     }
@@ -407,7 +407,7 @@ std::auto_ptr<SyncToken> PGASCommunicator::shiftAsync(
     const IndexType size,
     const int direction ) const
 {
-    if( direction % getSize() == 0 )
+    if ( direction % getSize() == 0 )
     {
         return defaultShiftAsync( recvVals, sendVals, size, 0 );
     }
@@ -751,7 +751,7 @@ void PGASCommunicator::maxloc( int& val, int& location, PartitionId root ) const
 template<typename T>
 void PGASCommunicator::swapImpl( T val[], const IndexType n, PartitionId partner ) const
 {
-    if( partner == mPGASInterface->getRank() )
+    if ( partner == mPGASInterface->getRank() )
     {
         return;
     }

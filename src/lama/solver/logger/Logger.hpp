@@ -306,7 +306,7 @@ private:
 template<typename T>
 void Logger::logType( LogLevel::LogLevel level, const std::string& message, T arg )
 {
-    if( level <= mLogLevel )
+    if ( level <= mLogLevel )
     {
         std::stringstream intStream;
         intStream << message;

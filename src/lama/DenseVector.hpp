@@ -411,7 +411,7 @@ DenseVector<T>::DenseVector( const IndexType size, const OtherValueType* values 
     HostWriteOnlyAccess<T> writeAccess( mLocalValues, size );
 
     #pragma omp parallel for schedule(LAMA_OMP_SCHEDULE)
-    for( IndexType i = 0; i < size; i++ )
+    for ( IndexType i = 0; i < size; i++ )
     {
         writeAccess[i] = values[i];
     }

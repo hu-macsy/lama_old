@@ -71,17 +71,17 @@
 template<typename T>
 int getSelector( T val )
 {
-    if( val == 0 )
+    if ( val == 0 )
     {
         return IS_ZERO;
     }
 
-    if( val == 1.0 )
+    if ( val == 1.0 )
     {
         return IS_ONE;
     }
 
-    if( val == -1.0 )
+    if ( val == -1.0 )
     {
         return IS_MONE;
     }
@@ -98,7 +98,7 @@ texture<float,1> texCSRSXref;
 texture<int2,1> texCSRDXref;
 
 template<typename T,bool useTexture>
-__inline__    __device__ T fetch_CSRx( const T* const x, const int i )
+__inline__     __device__ T fetch_CSRx( const T* const x, const int i )
 {
     return x[i];
 }
@@ -135,14 +135,14 @@ void cspblas_csrgemv_kernel(
 {
     const int i = threadId( gridDim, blockIdx, blockDim, threadIdx );
 
-    if( i < n )
+    if ( i < n )
     {
         T summand = beta * z_d[i];
         const int rowStart = ia_d[i];
         const int rowEnd = ia_d[i + 1];
         T value = 0.0;
 
-        for( int jj = rowStart; jj < rowEnd; ++jj )
+        for ( int jj = rowStart; jj < rowEnd; ++jj )
         {
             value += a_d[jj] * fetch_CSRx<T,useTexture>( x_d, ja_d[jj] );
         }
@@ -172,13 +172,13 @@ void cspblas_csrgemv_kernel(
 {
     const int i = threadId( gridDim, blockIdx, blockDim, threadIdx );
 
-    if( i < n )
+    if ( i < n )
     {
         const int rowStart = ia_d[i];
         const int rowEnd = ia_d[i + 1];
         T value = 0.0;
 
-        for( int jj = rowStart; jj < rowEnd; ++jj )
+        for ( int jj = rowStart; jj < rowEnd; ++jj )
         {
             value += a_d[jj] * fetch_CSRx<T,useTexture>( x_d, ja_d[jj] );
         }
@@ -204,13 +204,13 @@ void cspblas_csrgemv_kernel(
 {
     const int i = threadId( gridDim, blockIdx, blockDim, threadIdx );
 
-    if( i < n )
+    if ( i < n )
     {
         const int rowStart = ia_d[i];
         const int rowEnd = ia_d[i + 1];
         T value = 0.0;
 
-        for( int jj = rowStart; jj < rowEnd; ++jj )
+        for ( int jj = rowStart; jj < rowEnd; ++jj )
         {
             value += a_d[jj] * fetch_CSRx<T,useTexture>( x_d, ja_d[jj] );
         }
@@ -235,13 +235,13 @@ void cspblas_csrgemv_kernel(
 {
     const int i = threadId( gridDim, blockIdx, blockDim, threadIdx );
 
-    if( i < n )
+    if ( i < n )
     {
         const int rowStart = ia_d[i];
         const int rowEnd = ia_d[i + 1];
         T value = 0.0;
 
-        for( int jj = rowStart; jj < rowEnd; ++jj )
+        for ( int jj = rowStart; jj < rowEnd; ++jj )
         {
             value += a_d[jj] * fetch_CSRx<T,useTexture>( x_d, ja_d[jj] );
         }
@@ -273,13 +273,13 @@ void cspblas_csrgemv_kernel(
 {
     const int i = threadId( gridDim, blockIdx, blockDim, threadIdx );
 
-    if( i < n )
+    if ( i < n )
     {
         const int rowStart = ia_d[i];
         const int rowEnd = ia_d[i + 1];
         T value = 0.0;
 
-        for( int jj = rowStart; jj < rowEnd; ++jj )
+        for ( int jj = rowStart; jj < rowEnd; ++jj )
         {
             value += a_d[jj] * fetch_CSRx<T,useTexture>( x_d, ja_d[jj] );
         }
@@ -304,13 +304,13 @@ void cspblas_csrgemv_kernel(
 {
     const int i = threadId( gridDim, blockIdx, blockDim, threadIdx );
 
-    if( i < n )
+    if ( i < n )
     {
         const int rowStart = ia_d[i];
         const int rowEnd = ia_d[i + 1];
         T value = 0.0;
 
-        for( int jj = rowStart; jj < rowEnd; ++jj )
+        for ( int jj = rowStart; jj < rowEnd; ++jj )
         {
             value += a_d[jj] * fetch_CSRx<T,useTexture>( x_d, ja_d[jj] );
         }
@@ -335,13 +335,13 @@ void cspblas_csrgemv_kernel(
 {
     const int i = threadId( gridDim, blockIdx, blockDim, threadIdx );
 
-    if( i < n )
+    if ( i < n )
     {
         const int rowStart = ia_d[i];
         const int rowEnd = ia_d[i + 1];
         T value = 0.0;
 
-        for( int jj = rowStart; jj < rowEnd; ++jj )
+        for ( int jj = rowStart; jj < rowEnd; ++jj )
         {
             value += a_d[jj] * fetch_CSRx<T,useTexture>( x_d, ja_d[jj] );
         }
@@ -365,16 +365,16 @@ void cspblas_csrgemv_kernel(
 {
     const int i = threadId( gridDim, blockIdx, blockDim, threadIdx );
 
-    if( i < n )
+    if ( i < n )
     {
         T value = 0.0;
 
-        if( alpha != 0 )
+        if ( alpha != 0 )
         {
             const int rowStart = ia_d[i];
             const int rowEnd = ia_d[i + 1];
 
-            for( int jj = rowStart; jj < rowEnd; ++jj )
+            for ( int jj = rowStart; jj < rowEnd; ++jj )
             {
                 value += a_d[jj] * fetch_CSRx<T,useTexture>( x_d, ja_d[jj] );
             }
@@ -398,7 +398,7 @@ void lama_CSPBLAS_CSRAGEMVPBV_launcher(
     T* y_d,
     cudaStream_t stream )
 {
-    if( *m == 0 )
+    if ( *m == 0 )
     {
         // might happen, handle it here as x_d == y_d would give true as both might be NULL
         return;
@@ -406,7 +406,7 @@ void lama_CSPBLAS_CSRAGEMVPBV_launcher(
 
     typedef T ValueType;
 
-    if( x_d == y_d )
+    if ( x_d == y_d )
     {
         LAMA_THROWEXCEPTION( "INPUTVECTOR_IS_ALIASED_WITH_RESULT_VECTOR" );
     }
@@ -429,13 +429,13 @@ void lama_CSPBLAS_CSRAGEMVPBV_launcher(
 //            useTexture = true;//lama_getUseTex_cuda();
 //        //}
 //    }
-    if( useTexture )
+    if ( useTexture )
     {
-        if( sizeof(ValueType) == sizeof(float) )
+        if ( sizeof(ValueType) == sizeof(float) )
         {
             LAMA_CUDA_RT_CALL( cudaBindTexture( NULL, texCSRSXref, x_d ), "" );
         }
-        else if( sizeof(ValueType) == sizeof(double) )
+        else if ( sizeof(ValueType) == sizeof(double) )
         {
             LAMA_CUDA_RT_CALL( cudaBindTexture( NULL, texCSRDXref, x_d ), "" );
         }
@@ -444,14 +444,14 @@ void lama_CSPBLAS_CSRAGEMVPBV_launcher(
     LAMA_CUDA_RT_CALL( cudaThreadSetCacheConfig( cudaFuncCachePreferL1 ), "" );
     int selector = 0;
 
-    if( *transa == 'N' || *transa == 'n' )
+    if ( *transa == 'N' || *transa == 'n' )
     {
         selector = useTexture ? USE_TEXTURE : NO_TEXTURE;
         selector |= ( y_d == z_d ) ? Y_EQ_Z : Y_NE_Z;
         selector |= getSelector<T>( alpha ) << SHIFT_ALPHA;
         selector |= getSelector<T>( beta ) << SHIFT_BETA;
     }
-    else if( *transa == 'T' || *transa == 't' || *transa == 'C' || *transa == 'c' )
+    else if ( *transa == 'T' || *transa == 't' || *transa == 'C' || *transa == 'c' )
     {
         //TODO: Implement this.
         LAMA_THROWEXCEPTION( "Not implemented yet" );
@@ -459,7 +459,7 @@ void lama_CSPBLAS_CSRAGEMVPBV_launcher(
 
     // Oops, sorry, but we really have 2 x 2 x 4 x 4 = 64 different cases
 
-    switch( selector )
+    switch ( selector )
     {
     case NO_TEXTURE | Y_EQ_Z | ALPHA_0 | BETA_0:
         cspblas_csrgemv_kernel<ValueType, false, 0, 0> <<< dimGrid, dimBlock, 0, stream>>>
@@ -722,17 +722,17 @@ void lama_CSPBLAS_CSRAGEMVPBV_launcher(
         THROW_LAMAEXCEPTION( "LAMA_STATUS_NOT_IMPLEMENTED" );
     }
 
-    if( !async )
+    if ( !async )
     {
         LAMA_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "SCSRAGEMVPBV_CUDAKERNEL_FAILED" );
 
-        if( useTexture )
+        if ( useTexture )
         {
-            if( sizeof(ValueType) == sizeof(float) )
+            if ( sizeof(ValueType) == sizeof(float) )
             {
                 LAMA_CUDA_RT_CALL( cudaUnbindTexture( texCSRSXref ), "unbind texture failed" );
             }
-            else if( sizeof(ValueType) == sizeof(double) )
+            else if ( sizeof(ValueType) == sizeof(double) )
             {
                 LAMA_CUDA_RT_CALL( cudaUnbindTexture( texCSRDXref ), "unbind texture failed" );
             }
@@ -750,7 +750,7 @@ texture<float,1> texELLSXref;
 texture<int2,1> texELLDXref;
 
 template<typename T,bool useTexture>
-__inline__    __device__ T fetch_ELLx( const T* const x, const int i )
+__inline__     __device__ T fetch_ELLx( const T* const x, const int i )
 {
     return x[i];
 }
@@ -785,11 +785,11 @@ void cspblas_ellagemvpbv_kernel(
 {
     const int i = threadId( gridDim, blockIdx, blockDim, threadIdx );
 
-    if( i < n )
+    if ( i < n )
     {
         T summand = 0.0;
 
-        if( beta != 0.0 )
+        if ( beta != 0.0 )
         {
             summand = beta * z_d[i];
         }
@@ -798,7 +798,7 @@ void cspblas_ellagemvpbv_kernel(
         ja_d += i;
         T value = 0.0;
 
-        for( int kk = 0; kk < nnr; ++kk )
+        for ( int kk = 0; kk < nnr; ++kk )
         {
             const T aValue = *a_d;
             //if (aValue != 0.0) //compute capability >= 2.0  => disadvantage
@@ -839,18 +839,18 @@ void lama_CSPBLAS_ELLAGEMVPBV_launcher(
     //TODO: Determine this depending on the compute capability
     bool useTexture = true; //lama_getUseTex_cuda();
 
-    if( async )
+    if ( async )
     {
         //useTexture = false;
     }
 
-    if( useTexture )
+    if ( useTexture )
     {
-        if( sizeof(T) == sizeof(float) )
+        if ( sizeof(T) == sizeof(float) )
         {
             LAMA_CUDA_RT_CALL( cudaBindTexture( NULL, texELLSXref, x_d ), "LAMA_STATUS_CUDA_BINDTEX_FAILED" );
         }
-        else if( sizeof(T) == sizeof(double) )
+        else if ( sizeof(T) == sizeof(double) )
         {
             LAMA_CUDA_RT_CALL( cudaBindTexture( NULL, texELLDXref, x_d ), "LAMA_STATUS_CUDA_BINDTEX_FAILED" );
         }
@@ -864,9 +864,9 @@ void lama_CSPBLAS_ELLAGEMVPBV_launcher(
                            "LAMA_STATUS_CUDA_FUNCSETCACHECONFIG_FAILED" );
     }
 
-    if( *transa == 'N' || *transa == 'n' )
+    if ( *transa == 'N' || *transa == 'n' )
     {
-        if( useTexture )
+        if ( useTexture )
         {
             cspblas_ellagemvpbv_kernel<T, true> <<< dimGrid, dimBlock, 0, stream>>>
             ( *m, alpha, *nnr, a_d, ja_d, x_d, beta, z_d, y_d );
@@ -877,7 +877,7 @@ void lama_CSPBLAS_ELLAGEMVPBV_launcher(
             ( *m, alpha, *nnr, a_d, ja_d, x_d, beta, z_d, y_d );
         }
     }
-    else if( *transa == 'T' || *transa == 't' || *transa == 'C' || *transa == 'c' )
+    else if ( *transa == 'T' || *transa == 't' || *transa == 'C' || *transa == 'c' )
     {
 //TODO: Implement this.
         throw lama::Exception( lama_getErrorString( LAMA_STATUS_NOT_IMPLEMENTED ) );
@@ -885,19 +885,19 @@ void lama_CSPBLAS_ELLAGEMVPBV_launcher(
 
     LAMA_CUDA_RT_CALL( cudaGetLastError(), "LAMA_STATUS_SELLAGEMVPBV_CUDAKERNEL_FAILED" );
 
-    if( !async )
+    if ( !async )
     {
         LAMA_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "LAMA_STATUS_SELLAGEMVPBV_CUDAKERNEL_FAILED" );
     }
 
     {
-        if( useTexture )
+        if ( useTexture )
         {
-            if( sizeof(T) == sizeof(float) )
+            if ( sizeof(T) == sizeof(float) )
             {
                 LAMA_CUDA_RT_CALL( cudaUnbindTexture( texELLSXref ), "LAMA_STATUS_CUDA_UNBINDTEX_FAILED" );
             }
-            else if( sizeof(T) == sizeof(double) )
+            else if ( sizeof(T) == sizeof(double) )
             {
                 LAMA_CUDA_RT_CALL( cudaUnbindTexture( texELLDXref ), "LAMA_STATUS_CUDA_UNBINDTEX_FAILED" );
             }
@@ -921,7 +921,7 @@ void cspblas_ellagemvpbsv_kernel(
 {
     const int id = threadId( gridDim, blockIdx, blockDim, threadIdx );
 
-    if( id < nzr )
+    if ( id < nzr )
     {
         const int i = rows_d[id];
         a_d += i;
@@ -929,7 +929,7 @@ void cspblas_ellagemvpbsv_kernel(
         T value = 0.0;
         const int noneZeros = ia_d[i];
 
-        for( int kk = 0; kk < noneZeros; ++kk )
+        for ( int kk = 0; kk < noneZeros; ++kk )
         {
             const T aValue = *a_d;
             //if (aValue != 0.0) //compute capability >= 2.0  => disadvantage
@@ -970,7 +970,7 @@ void lama_CSPBLAS_ELLAGEMVPBSV_launcher(
 //TODO: Determine this depending on the compute capability
     const bool useTexture = true; //lama_getUseTex_cuda();
 
-    if( useTexture )
+    if ( useTexture )
     {
         LAMA_CUDA_RT_CALL( cudaBindTexture( NULL, texELLSXref, x_d ), "LAMA_STATUS_CUDA_BINDTEX_FAILED" );
         LAMA_CUDA_RT_CALL( cudaFuncSetCacheConfig( cspblas_ellagemvpbv_kernel<T, true>, cudaFuncCachePreferL1 ),
@@ -982,9 +982,9 @@ void lama_CSPBLAS_ELLAGEMVPBSV_launcher(
                            "LAMA_STATUS_CUDA_FUNCSETCACHECONFIG_FAILED" );
     }
 
-    if( *transa == 'N' || *transa == 'n' )
+    if ( *transa == 'N' || *transa == 'n' )
     {
-        if( useTexture )
+        if ( useTexture )
         {
             cspblas_ellagemvpbsv_kernel<T, true> <<< dimGrid, dimBlock>>>( *m, alpha, *nnr, ia_d, a_d, ja_d, rows_d, nzr, x_d, y_d );
         }
@@ -993,7 +993,7 @@ void lama_CSPBLAS_ELLAGEMVPBSV_launcher(
             cspblas_ellagemvpbsv_kernel<T, false> <<< dimGrid, dimBlock>>>( *m, alpha, *nnr, ia_d, a_d, ja_d, rows_d, nzr, x_d, y_d );
         }
     }
-    else if( *transa == 'T' || *transa == 't' || *transa == 'C' || *transa == 'c' )
+    else if ( *transa == 'T' || *transa == 't' || *transa == 'C' || *transa == 'c' )
     {
 //TODO: Implement this.
         throw lama::Exception( lama_getErrorString( LAMA_STATUS_NOT_IMPLEMENTED ) );
@@ -1002,7 +1002,7 @@ void lama_CSPBLAS_ELLAGEMVPBSV_launcher(
     LAMA_CUDA_RT_CALL( cudaGetLastError(), "LAMA_STATUS_SELLAGEMVPBV_CUDAKERNEL_FAILED" );
     LAMA_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "LAMA_STATUS_SELLAGEMVPBV_CUDAKERNEL_FAILED" );
 
-    if( useTexture )
+    if ( useTexture )
     {
         LAMA_CUDA_RT_CALL( cudaUnbindTexture( texELLSXref ), "LAMA_STATUS_CUDA_UNBINDTEX_FAILED" );
     }
@@ -1019,7 +1019,7 @@ texture<int2,1> texJDSDXref;
 texture<int,1> texJDSdlgRef;
 
 template<typename T,bool useTexture>
-__inline__    __device__ T fetch_JDSx( const T* const x, const int i )
+__inline__     __device__ T fetch_JDSx( const T* const x, const int i )
 {
     return x[i];
 }
@@ -1086,9 +1086,9 @@ void cspblas_jdsgemv_kernel(
     extern __shared__ int dlg[];
     const int i = threadId( gridDim, blockIdx, blockDim, threadIdx );
 
-    if( useSharedMem )
+    if ( useSharedMem )
     {
-        if( threadIdx.x < ndlg )
+        if ( threadIdx.x < ndlg )
         {
             dlg[threadIdx.x] = dlg_d[threadIdx.x];
         }
@@ -1096,12 +1096,12 @@ void cspblas_jdsgemv_kernel(
         __syncthreads();
     }
 
-    if( i < n )
+    if ( i < n )
     {
         int perm = perm_d[i];
         T summand = 0.0;
 
-        if( beta != 0.0 )
+        if ( beta != 0.0 )
         {
             summand = beta * z_d[perm];
         }
@@ -1110,11 +1110,11 @@ void cspblas_jdsgemv_kernel(
         int j;
         int k = i;
 
-        for( int jj = 0; jj < ndlg; ++jj )
+        for ( int jj = 0; jj < ndlg; ++jj )
         {
             const int incr = fetch_JDSdlg<useTexture,useSharedMem>( dlg_d, dlg, jj );
 
-            if( i < incr )
+            if ( i < incr )
             {
                 j = ja_d[k];
                 value += a_d[k] * fetch_JDSx<T,useTexture>( x_d, j );
@@ -1153,11 +1153,11 @@ void lama_CSPBLAS_JDSAGEMVPBV_cuda(
     dim3 dimGrid = makeGrid( *m, dimBlock.x );
     const bool useTexture = true; //lama_getUseTex_cuda();
 
-    if( useTexture )
+    if ( useTexture )
     {
         LAMA_CUDA_RT_CALL( cudaBindTexture( NULL, texJDSSXref, x_d ), LAMA_STATUS_CUDA_BINDTEX_FAILED );
 
-        if( ndlg > block_size )
+        if ( ndlg > block_size )
         {
             LAMA_CUDA_RT_CALL( cudaBindTexture( NULL, texJDSdlgRef, dlg_d ), LAMA_STATUS_CUDA_BINDTEX_FAILED );
             LAMA_CUDA_RT_CALL( cudaFuncSetCacheConfig( cspblas_jdsgemv_kernel<T, true, false>, cudaFuncCachePreferL1 ),
@@ -1171,7 +1171,7 @@ void lama_CSPBLAS_JDSAGEMVPBV_cuda(
     }
     else
     {
-        if( ndlg > block_size )
+        if ( ndlg > block_size )
         {
             LAMA_CUDA_RT_CALL( cudaFuncSetCacheConfig( cspblas_jdsgemv_kernel<T, false, false>, cudaFuncCachePreferL1 ),
                                LAMA_STATUS_CUDA_FUNCSETCACHECONFIG_FAILED );
@@ -1183,11 +1183,11 @@ void lama_CSPBLAS_JDSAGEMVPBV_cuda(
         }
     }
 
-    if( *transa == 'N' || *transa == 'n' )
+    if ( *transa == 'N' || *transa == 'n' )
     {
-        if( useTexture )
+        if ( useTexture )
         {
-            if( ndlg > block_size )
+            if ( ndlg > block_size )
             {
                 cspblas_jdsgemv_kernel<T, true, false> <<< dimGrid, dimBlock>>>( *m, alpha, a_d, dlg_d, ndlg, ilg_d, ja_d,
                         perm_d, x_d, beta, z_d, y_d );
@@ -1201,7 +1201,7 @@ void lama_CSPBLAS_JDSAGEMVPBV_cuda(
         }
         else
         {
-            if( ndlg > block_size )
+            if ( ndlg > block_size )
             {
                 cspblas_jdsgemv_kernel<T, false, false> <<< dimGrid, dimBlock>>>( *m, alpha, a_d, dlg_d, ndlg, ilg_d, ja_d,
                         perm_d, x_d, beta, z_d, y_d );
@@ -1214,7 +1214,7 @@ void lama_CSPBLAS_JDSAGEMVPBV_cuda(
             }
         }
     }
-    else if( *transa == 'T' || *transa == 't' || *transa == 'C' || *transa == 'c' )
+    else if ( *transa == 'T' || *transa == 't' || *transa == 'C' || *transa == 'c' )
     {
 //TODO: Implement this.
         throw lama::Exception( lama_getErrorString( LAMA_STATUS_NOT_IMPLEMENTED ) );
@@ -1223,11 +1223,11 @@ void lama_CSPBLAS_JDSAGEMVPBV_cuda(
     LAMA_CUDA_RT_CALL( cudaGetLastError(), LAMA_STATUS_SJDSAGEMVPBV_CUDAKERNEL_FAILED );
     LAMA_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), LAMA_STATUS_SJDSAGEMVPBV_CUDAKERNEL_FAILED );
 
-    if( useTexture )
+    if ( useTexture )
     {
         LAMA_CUDA_RT_CALL( cudaUnbindTexture( texJDSSXref ), LAMA_STATUS_CUDA_UNBINDTEX_FAILED );
 
-        if( ndlg > block_size )
+        if ( ndlg > block_size )
         {
             LAMA_CUDA_RT_CALL( cudaUnbindTexture( texJDSdlgRef ), LAMA_STATUS_CUDA_UNBINDTEX_FAILED );
         }
@@ -1245,7 +1245,7 @@ texture<float,1> texBCSRSXref;
 texture<int2,1> texBCSRDXref;
 
 template<typename T>
-__inline__    __device__ T fetch_BCSRx( const int i )
+__inline__     __device__ T fetch_BCSRx( const int i )
 {
     return tex1Dfetch( texBCSRSXref, i );
 }
@@ -1324,7 +1324,7 @@ void cspblas_bcsrgemv_kernel_rowwise(
     __syncthreads();
 
     /* C) thread leaves the block, if its block-row is outside of the matrix. */
-    if( blockRow >= nbu )
+    if ( blockRow >= nbu )
     {
         return;
     }
@@ -1334,7 +1334,7 @@ void cspblas_bcsrgemv_kernel_rowwise(
     /*          value with the belonging value of the vector and add it in    */
     /*          the same step to the value of the shared memory.              */
     /* ====================================================================== */
-    for( int i = 0; blockColumnIndex < blockColEnd; ++blockColumnIndex, ++i )
+    for ( int i = 0; blockColumnIndex < blockColEnd; ++blockColumnIndex, ++i )
     {
         /* A) declaration of orientation variables.                           */
 //        int column      = bja_d[blockColumnIndex]*blockSizeC + columnInSubBlock;
@@ -1351,11 +1351,11 @@ void cspblas_bcsrgemv_kernel_rowwise(
     /* STEP 04: add in a loop over the subblock the values of the subblock.   */
     /* ====================================================================== */
 
-    switch( blockSizeC )
+    switch ( blockSizeC )
     {
     case 16:
 
-        if( columnInSubBlock < 8 )
+        if ( columnInSubBlock < 8 )
         {
             product[localThreadId] += product[localThreadId + 8];
         }
@@ -1364,7 +1364,7 @@ void cspblas_bcsrgemv_kernel_rowwise(
         /* intended fall through                                          */
     case 8:
 
-        if( columnInSubBlock < 4 )
+        if ( columnInSubBlock < 4 )
         {
             product[localThreadId] += product[localThreadId + 4];
         }
@@ -1373,7 +1373,7 @@ void cspblas_bcsrgemv_kernel_rowwise(
         /* intended fall through                                          */
     case 4:
 
-        if( columnInSubBlock < 2 )
+        if ( columnInSubBlock < 2 )
         {
             product[localThreadId] += product[localThreadId + 2];
         }
@@ -1382,7 +1382,7 @@ void cspblas_bcsrgemv_kernel_rowwise(
         /* intended fall through                                          */
     case 2:
 
-        if( columnInSubBlock < 1 )
+        if ( columnInSubBlock < 1 )
         {
             product[localThreadId] += product[localThreadId + 1];
         }
@@ -1395,21 +1395,21 @@ void cspblas_bcsrgemv_kernel_rowwise(
         break;
     case 7:
 
-        if( columnInSubBlock < 3 )
+        if ( columnInSubBlock < 3 )
         {
             product[localThreadId] += product[localThreadId + 4];
         }
 
         __syncthreads();
 
-        if( columnInSubBlock < 2 )
+        if ( columnInSubBlock < 2 )
         {
             product[localThreadId] += product[localThreadId + 2];
         }
 
         __syncthreads();
 
-        if( columnInSubBlock < 1 )
+        if ( columnInSubBlock < 1 )
         {
             product[localThreadId] += product[localThreadId + 1];
         }
@@ -1418,7 +1418,7 @@ void cspblas_bcsrgemv_kernel_rowwise(
         break;
     case 6:
 
-        if( columnInSubBlock < 3 )
+        if ( columnInSubBlock < 3 )
         {
             product[localThreadId] += product[localThreadId + 3];
         }
@@ -1427,14 +1427,14 @@ void cspblas_bcsrgemv_kernel_rowwise(
         /* intended fall through                                          */
     case 3:
 
-        if( columnInSubBlock < 1 )
+        if ( columnInSubBlock < 1 )
         {
             product[localThreadId] += product[localThreadId + 2];
         }
 
         __syncthreads();
 
-        if( columnInSubBlock < 1 )
+        if ( columnInSubBlock < 1 )
         {
             product[localThreadId] += product[localThreadId + 1];
         }
@@ -1443,21 +1443,21 @@ void cspblas_bcsrgemv_kernel_rowwise(
         break;
     case 5:
 
-        if( columnInSubBlock < 2 )
+        if ( columnInSubBlock < 2 )
         {
             product[localThreadId] += product[localThreadId + 3];
         }
 
         __syncthreads();
 
-        if( columnInSubBlock < 1 )
+        if ( columnInSubBlock < 1 )
         {
             product[localThreadId] += product[localThreadId + 2];
         }
 
         __syncthreads();
 
-        if( columnInSubBlock < 1 )
+        if ( columnInSubBlock < 1 )
         {
             product[localThreadId] += product[localThreadId + 1];
         }
@@ -1466,11 +1466,11 @@ void cspblas_bcsrgemv_kernel_rowwise(
         break;
     default:
 
-        for( int i = blockDim.y; i > 1; i = halve( i ) )
+        for ( int i = blockDim.y; i > 1; i = halve( i ) )
         {
             /* A) check if the subblock-column of the thread is within the*/
             /*    first halve of the interval.                            */
-            if( columnInSubBlock < div2( i ) )
+            if ( columnInSubBlock < div2( i ) )
             {
                 /* B) add the product-sum of the other thread with the    */
                 /*    own.                                                */
@@ -1486,7 +1486,7 @@ void cspblas_bcsrgemv_kernel_rowwise(
     /* STEP 05: threads having column 0 write the sum to global memory.       */
     /* ====================================================================== */
 
-    if( columnInSubBlock == 0 )
+    if ( columnInSubBlock == 0 )
     {
         result_d[row] = alpha * product[localThreadId] + beta * z_d[row];
     }
@@ -1515,18 +1515,18 @@ void lama_CSPBLAS_BCSRAGEMVPBV_cuda(
     dim3 dimGrid = makeGrid( nbu * numElements, dimBlock.x * dimBlock.y * dimBlock.z );
     cudaError error = cudaBindTexture( NULL, texBCSRSXref, x_d );
 
-    if( cudaSuccess != error )
+    if ( cudaSuccess != error )
     {
         LAMA_CUDA_RT_CALL( error, LAMA_STATUS_CUDA_BINDTEX_FAILED );
         return;
     }
 
-    switch( blockC )
+    switch ( blockC )
     {
     case 1:
         error = cudaFuncSetCacheConfig( cspblas_bcsrgemv_kernel_rowwise<T,1>, cudaFuncCachePreferShared );
 
-        if( cudaSuccess != error )
+        if ( cudaSuccess != error )
         {
             LAMA_CUDA_RT_CALL( error, LAMA_STATUS_CUDA_FUNCSETCACHECONFIG_FAILED );
             return;
@@ -1539,7 +1539,7 @@ void lama_CSPBLAS_BCSRAGEMVPBV_cuda(
     case 2:
         error = cudaFuncSetCacheConfig( cspblas_bcsrgemv_kernel_rowwise<T,2>, cudaFuncCachePreferShared );
 
-        if( cudaSuccess != error )
+        if ( cudaSuccess != error )
         {
             LAMA_CUDA_RT_CALL( error, LAMA_STATUS_CUDA_FUNCSETCACHECONFIG_FAILED );
             return;
@@ -1551,7 +1551,7 @@ void lama_CSPBLAS_BCSRAGEMVPBV_cuda(
     case 3:
         error = cudaFuncSetCacheConfig( cspblas_bcsrgemv_kernel_rowwise<T,3>, cudaFuncCachePreferShared );
 
-        if( cudaSuccess != error )
+        if ( cudaSuccess != error )
         {
             LAMA_CUDA_RT_CALL( error, LAMA_STATUS_CUDA_FUNCSETCACHECONFIG_FAILED );
             return;
@@ -1563,7 +1563,7 @@ void lama_CSPBLAS_BCSRAGEMVPBV_cuda(
     case 4:
         error = cudaFuncSetCacheConfig( cspblas_bcsrgemv_kernel_rowwise<T,4>, cudaFuncCachePreferShared );
 
-        if( cudaSuccess != error )
+        if ( cudaSuccess != error )
         {
             LAMA_CUDA_RT_CALL( error, LAMA_STATUS_CUDA_FUNCSETCACHECONFIG_FAILED );
             return;
@@ -1575,7 +1575,7 @@ void lama_CSPBLAS_BCSRAGEMVPBV_cuda(
     case 5:
         error = cudaFuncSetCacheConfig( cspblas_bcsrgemv_kernel_rowwise<T,5>, cudaFuncCachePreferShared );
 
-        if( cudaSuccess != error )
+        if ( cudaSuccess != error )
         {
             LAMA_CUDA_RT_CALL( error, LAMA_STATUS_CUDA_FUNCSETCACHECONFIG_FAILED );
             return;
@@ -1587,7 +1587,7 @@ void lama_CSPBLAS_BCSRAGEMVPBV_cuda(
     case 6:
         error = cudaFuncSetCacheConfig( cspblas_bcsrgemv_kernel_rowwise<T,6>, cudaFuncCachePreferShared );
 
-        if( cudaSuccess != error )
+        if ( cudaSuccess != error )
         {
             LAMA_CUDA_RT_CALL( error, LAMA_STATUS_CUDA_FUNCSETCACHECONFIG_FAILED );
             return;
@@ -1599,7 +1599,7 @@ void lama_CSPBLAS_BCSRAGEMVPBV_cuda(
     case 7:
         error = cudaFuncSetCacheConfig( cspblas_bcsrgemv_kernel_rowwise<T,7>, cudaFuncCachePreferShared );
 
-        if( cudaSuccess != error )
+        if ( cudaSuccess != error )
         {
             LAMA_CUDA_RT_CALL( error, LAMA_STATUS_CUDA_FUNCSETCACHECONFIG_FAILED );
             return;
@@ -1611,7 +1611,7 @@ void lama_CSPBLAS_BCSRAGEMVPBV_cuda(
     case 8:
         error = cudaFuncSetCacheConfig( cspblas_bcsrgemv_kernel_rowwise<T,8>, cudaFuncCachePreferShared );
 
-        if( cudaSuccess != error )
+        if ( cudaSuccess != error )
         {
             LAMA_CUDA_RT_CALL( error, LAMA_STATUS_CUDA_FUNCSETCACHECONFIG_FAILED );
             return;
@@ -1623,7 +1623,7 @@ void lama_CSPBLAS_BCSRAGEMVPBV_cuda(
     case 16:
         error = cudaFuncSetCacheConfig( cspblas_bcsrgemv_kernel_rowwise<T,16>, cudaFuncCachePreferShared );
 
-        if( cudaSuccess != error )
+        if ( cudaSuccess != error )
         {
             LAMA_CUDA_RT_CALL( error, LAMA_STATUS_CUDA_FUNCSETCACHECONFIG_FAILED );
             return;
@@ -1641,7 +1641,7 @@ void lama_CSPBLAS_BCSRAGEMVPBV_cuda(
         /* represents -1.                                                 */
         error = cudaFuncSetCacheConfig( cspblas_bcsrgemv_kernel_rowwise<T,255>, cudaFuncCachePreferShared );
 
-        if( cudaSuccess != error )
+        if ( cudaSuccess != error )
         {
             LAMA_CUDA_RT_CALL( error, LAMA_STATUS_CUDA_FUNCSETCACHECONFIG_FAILED );
             return;
@@ -1654,7 +1654,7 @@ void lama_CSPBLAS_BCSRAGEMVPBV_cuda(
 
     error = cudaGetLastError();
 
-    if( cudaSuccess != error )
+    if ( cudaSuccess != error )
     {
         LAMA_CUDA_RT_CALL( error, LAMA_STATUS_SBCSRGEMV_CUDAKERNEL_FAILED );
         return;
@@ -1662,7 +1662,7 @@ void lama_CSPBLAS_BCSRAGEMVPBV_cuda(
 
     error = cudaStreamSynchronize( 0 );
 
-    if( cudaSuccess != error )
+    if ( cudaSuccess != error )
     {
         LAMA_CUDA_RT_CALL( error, LAMA_STATUS_SBCSRGEMV_CUDAKERNEL_FAILED );
         return;
@@ -1682,7 +1682,7 @@ texture<int2,1> texDIADXref;
 
 //DIASparseMatrix
 template<typename T>
-__inline__    __device__ T fetch_DIAx( const int i )
+__inline__     __device__ T fetch_DIAx( const int i )
 {
     return tex1Dfetch( texDIASXref, i );
 }
@@ -1711,7 +1711,7 @@ __global__ void cspblas_diaagemvpbv_kernel(
 {
     extern __shared__ int ia[];
 
-    if( threadIdx.x < nd )
+    if ( threadIdx.x < nd )
     {
         ia[threadIdx.x] = ia_d[threadIdx.x];
     }
@@ -1719,11 +1719,11 @@ __global__ void cspblas_diaagemvpbv_kernel(
     __syncthreads();
     int i = threadId( gridDim, blockIdx, blockDim, threadIdx );
 
-    if( i < nnu )
+    if ( i < nnu )
     {
-        if( first )
+        if ( first )
         {
-            if( beta != 0.0 )
+            if ( beta != 0.0 )
             {
                 result_d[i] = beta * z_d[i];
             }
@@ -1735,11 +1735,11 @@ __global__ void cspblas_diaagemvpbv_kernel(
 
         ValueType temp = 0.0;
 
-        for( int jj = 0; jj < nd; jj++ )
+        for ( int jj = 0; jj < nd; jj++ )
         {
             int j = i + ia[jj];
 
-            if( j >= 0 && j < nnc )
+            if ( j >= 0 && j < nnc )
             {
                 ValueType val = alpha * data_d[nnd * jj + i];
                 temp += val * fetch_DIAx<ValueType>( j );
@@ -1765,7 +1765,7 @@ __global__ void cspblas_diaagemvpbv_kernel_small(
 {
     extern __shared__ int ia[];
 
-    if( threadIdx.x < nd )
+    if ( threadIdx.x < nd )
     {
         ia[threadIdx.x] = ia_d[threadIdx.x];
     }
@@ -1773,22 +1773,22 @@ __global__ void cspblas_diaagemvpbv_kernel_small(
     __syncthreads();
     int i = threadId( gridDim, blockIdx, blockDim, threadIdx );
 
-    if( i < nnu )
+    if ( i < nnu )
     {
         ValueType summand = 0.0;
 
-        if( beta != 0.0 )
+        if ( beta != 0.0 )
         {
             summand = beta * z_d[i];
         }
 
         ValueType temp = 0.0;
 
-        for( int jj = 0; jj < nd; jj++ )
+        for ( int jj = 0; jj < nd; jj++ )
         {
             int j = i + ia[jj];
 
-            if( j >= 0 && j < nnc )
+            if ( j >= 0 && j < nnc )
             {
                 ValueType val = data_d[nnd * jj + i];
                 temp += val * fetch_DIAx<ValueType>( j );
@@ -1814,7 +1814,7 @@ void lama_CSPBLAS_DIAAGEMVPBV_cuda(
     const T* const z_d,
     T* y_d )
 {
-    if( *nnc > 134217728 ) //512MB * 1024 KB/MB * 1024 B/KB / (4 B/float) = 134217728
+    if ( *nnc > 134217728 ) //512MB * 1024 KB/MB * 1024 B/KB / (4 B/float) = 134217728
     {
         throw lama::Exception( lama_getErrorString( LAMA_STATUS_INPUTVECTOR_EXCEEDS_TEXTURESIZE ) );
     }
@@ -1833,11 +1833,11 @@ void lama_CSPBLAS_DIAAGEMVPBV_cuda(
     LAMA_CUDA_RT_CALL( cudaFuncSetCacheConfig( cspblas_diaagemvpbv_kernel_small<T>, cudaFuncCachePreferShared ),
                        LAMA_STATUS_CUDA_FUNCSETCACHECONFIG_FAILED );
 
-    if( *transa == 'n' || *transa == 'N' )
+    if ( *transa == 'n' || *transa == 'N' )
     {
-        if( block_size <= *nd )
+        if ( block_size <= *nd )
         {
-            for( unsigned int base = 0; base < *nd; base += block_size )
+            for ( unsigned int base = 0; base < *nd; base += block_size )
             {
                 int num_diags = min( *nd - base, (unsigned int) block_size );
                 cspblas_diaagemvpbv_kernel <<< dimGrid, dimBlock, num_diags * sizeof( int )>>>( *nnu, alpha, *nnc,
@@ -1850,7 +1850,7 @@ void lama_CSPBLAS_DIAAGEMVPBV_cuda(
                     *nd, *nnd, ia_d, data_d, beta, z_d, y_d );
         }
     }
-    else if( *transa == 't' || *transa == 'T' || *transa == 'c' || *transa == 'C' )
+    else if ( *transa == 't' || *transa == 'T' || *transa == 'c' || *transa == 'C' )
     {
         throw lama::Exception( lama_getErrorString( LAMA_STATUS_NOT_IMPLEMENTED ) );
     }
