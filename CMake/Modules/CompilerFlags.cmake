@@ -26,7 +26,7 @@ endif ( MARCH_NATIVE_SUPPORT )
 
 # gnu cxx
 if ( CMAKE_COMPILER_IS_GNUCXX )
-    set ( ADDITIONAL_CXX_WARNING_FLAGS "-Wextra -Wall -Wl,--no-as-needed" )#-pedantic -std=c++98 " )
+    set ( ADDITIONAL_CXX_WARNING_FLAGS "-Wextra -Wall -Werror -Wl,--no-as-needed" )#-pedantic -std=c++98 " )
     # -march=core02
     if ( ${CMAKE_SYSTEM_PROCESSOR} STREQUAL ppc64 )
         # compile in 32 Bit on Cell Broaband Engine Processor
@@ -43,7 +43,7 @@ endif ( CMAKE_COMPILER_IS_GNUCXX )
 # intel cxx
 if ( CMAKE_CXX_COMPILER_ID MATCHES Intel )
     set ( ADDITIONAL_CXX_FLAGS "-std=c++0x -shared-intel " )
-    set ( ADDITIONAL_CXX_WARNING_FLAGS "-w2 -Wall -Wcheck " ) # Warnings/Errors. No Remarks.
+    set ( ADDITIONAL_CXX_WARNING_FLAGS "-w2 -Wall -Wcheck -Werror-all " ) # Warnings/Errors. No Remarks.
     set ( ADDITIONAL_CXX_RELEASE_FLAGS "-ipo -no-prec-div -xHost " )
 endif ( CMAKE_CXX_COMPILER_ID MATCHES Intel )
 
