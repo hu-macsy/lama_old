@@ -461,15 +461,14 @@ class Distribution;
 /** The template class MatrixStorage<ValueType> is the base
  *  class for all matrix storage classes of a given ValueType.
  *
- *  @tparam T is the value type of the matrix elements.
+ *  @tparam T is the value type of the matrix values.
  */
-
 template<typename T>
 class LAMA_DLL_IMPORTEXPORT MatrixStorage: public _MatrixStorage
 {
 public:
 
-    /** ValueType stands for type of matrix elements, is given by the template argument. */
+    /** ValueType stands for type of matrix values, is given by the template argument. */
 
     typedef T ValueType;
 

@@ -168,7 +168,7 @@ public:
      * not throw an exception. This might be done by the caller of this routine to avoid
      * working with inconsistent matrices.
      *
-     * \begincode
+     * \code
      * LAMA_ASSERT_DEBUG( a.isConsistent(), a << ": is invalid matrix after reading" )
      * \endcode
      */

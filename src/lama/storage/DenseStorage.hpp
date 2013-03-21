@@ -55,9 +55,8 @@ template<typename T> class DenseStorage;
 /**
  * Storage format for a Dense matrix.
  *
- *  @tparam T is the value type for the matrix elements.
+ *  @tparam T is the value type of the matrix values.
  */
-
 template<typename T>
 class LAMA_DLL_IMPORTEXPORT DenseStorageView: public CRTPMatrixStorage<DenseStorageView<T>,T>
 {
@@ -345,8 +344,10 @@ private:
 
 /* --------------------------------------------------------------------------- */
 
-/** The class DenseStorage is a DenseStorageView that manages its own data. */
-
+/** DenseStorage is a DenseStorageView that manages its own data.
+ *
+ *  @tparam T is the value type of the matrix values.
+ */
 template<typename T>
 class LAMA_DLL_IMPORTEXPORT DenseStorage: public DenseStorageView<T>
 {
@@ -354,7 +355,7 @@ public:
 
     typedef T ValueType; //!< This is the type of the matrix values.
 
-    /** get typename of the matrix storage format. */
+    /** @brief Getter of type name of the matrix storage format. */
 
     static const char* typeName();
 

@@ -42,7 +42,7 @@
 namespace lama
 {
 
-/** Storage format for a DIA (compressed storage row) sparse matrix.
+/** @brief Storage format for a DIA (compressed storage row) sparse matrix.
  *
  *  The DIA format has the following data:
  *
@@ -50,9 +50,8 @@ namespace lama
  *  - offsets of the diagonals
  *  - values of the diagonals
  *
- *  @tparam T is the value type for the matrix elements.
+ *  @tparam T is the value type of the matrix values.
  */
-
 template<typename T>
 class LAMA_DLL_IMPORTEXPORT DIAStorage: public CRTPMatrixStorage<DIAStorage<T>,T>
 {
@@ -60,7 +59,7 @@ public:
 
     typedef T ValueType; //!< This is the type of the matrix values.
 
-    /** get typename of the matrix storage format. */
+    /** Getter of type name of the matrix storage format. */
 
     static const char* typeName();
 

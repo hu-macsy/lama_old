@@ -109,32 +109,32 @@ public:
 
     /** @brief TODO[doxy] Complete Description.
      *
-     *  @param[in] sizeX         TODO[doxy] Complete Description.
-     *  @param[in] sizeY         TODO[doxy] Complete Description.
-     *  @param[in] procgrid [2]  TODO[doxy] Complete Description.
+     *  @param[in] sizeX      TODO[doxy] Complete Description.
+     *  @param[in] sizeY      TODO[doxy] Complete Description.
+     *  @param[in] procgrid   TODO[doxy] Complete Description.
      */
     void factorize2( const double sizeX, const double sizeY, PartitionId procgrid[2] ) const;
 
     /** @brief TODO[doxy] Complete Description.
      *
-     *  @param[in] sizeX         TODO[doxy] Complete Description.
-     *  @param[in] sizeY         TODO[doxy] Complete Description.
-     *  @param[in] sizeZ         TODO[doxy] Complete Description.
-     *  @param[in] procgrid[3]   TODO[doxy] Complete Description.
+     *  @param[in] sizeX      TODO[doxy] Complete Description.
+     *  @param[in] sizeY      TODO[doxy] Complete Description.
+     *  @param[in] sizeZ      TODO[doxy] Complete Description.
+     *  @param[in] procgrid   TODO[doxy] Complete Description.
      */
     void factorize3( const double sizeX, const double sizeY, const double sizeZ, PartitionId procgrid[3] ) const;
 
     /** @brief TODO[doxy] Complete Description.
      *
-     *  @param[out] pos[2]        TODO[doxy] Complete Description.
-     *  @param[in]  procgrid[2]   TODO[doxy] Complete Description.
+     *  @param[out] pos       TODO[doxy] Complete Description.
+     *  @param[in]  procgrid  TODO[doxy] Complete Description.
      */
     void getGrid2Rank( PartitionId pos[2], const PartitionId procgrid[2] ) const;
 
     /** @brief TODO[doxy] Complete Description.
      *
-     *  @param[out] pos[3]        TODO[doxy] Complete Description.
-     *  @param[in]  procgrid[3]   TODO[doxy] Complete Description.
+     *  @param[out] pos       TODO[doxy] Complete Description.
+     *  @param[in]  procgrid  TODO[doxy] Complete Description.
      */
     void getGrid3Rank( PartitionId pos[3], const PartitionId procgrid[3] ) const;
 

@@ -54,7 +54,6 @@ namespace lama
  *  the local columns) and a halo part (for the non-local columns). Furthermore,
  *  it builds the halo for exchanging the non-local values between processors.
  */
-
 class LAMA_DLL_IMPORTEXPORT _StorageIO
 {
 public:
@@ -114,6 +113,10 @@ private:
     static const int mIversion;
 };
 
+/** TODO[doxy] Complete Description.
+ *
+ * @tparam T is the type of the matrix values.
+ */
 template<typename T>
 class LAMA_DLL_IMPORTEXPORT StorageIO: public _StorageIO
 {
