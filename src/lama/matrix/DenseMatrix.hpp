@@ -56,6 +56,8 @@ template<typename T> class DenseVector;
  *  blocks that are stored in a vector of shared pointers. A copy of this vector
  *  will not make deep copies of the blocks so default copy constructor and
  *  assignment operator must be overridden.
+ *
+ *  @tparam T is the value type of the matrix values.
  */
 
 template<typename T>

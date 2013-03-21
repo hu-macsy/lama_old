@@ -58,8 +58,7 @@ namespace lama
  * @brief This class provides some static methods to build or create sparse matrices for
  *        certain problem classes.
  *
- * @tparam T is the value type for the matrix elements
- *
+ * @tparam T is the value type of the matrix values.
  */
 
 template<typename T>

@@ -71,9 +71,8 @@ namespace lama
  *  Nevertheless some operations can benefit from it and so an internal flag
  *  is set if values of one row are sorted by column indexes.
  *
- *  @tparam T is the value type for the matrix elements.
+ *  @tparam T is the value type of the matrix values.
  */
-
 template<typename T>
 class LAMA_DLL_IMPORTEXPORT CSRStorage: public CRTPMatrixStorage<CSRStorage<T>,T>
 {

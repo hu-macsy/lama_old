@@ -58,11 +58,10 @@ namespace lama
  *  - original positions of the permuted rows
  *  - values-array
  *
- *  @tparam T is the value type for the matrix elements.
+ *  @tparam T is the value type of the matrix values.
  *
  *  Note: default copy constructor and assignment operator can be used.
  */
-
 template<typename T>
 class LAMA_DLL_IMPORTEXPORT JDSStorage: public CRTPMatrixStorage<JDSStorage<T>,T>
 {
