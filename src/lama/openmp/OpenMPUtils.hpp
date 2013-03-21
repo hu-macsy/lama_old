@@ -96,6 +96,11 @@ public:
     template<typename ValueType>
     static ValueType absMaxDiffVal( const ValueType array1[], const ValueType array2[], const IndexType n );
 
+    /** OpenMP implementation for UtilsInterface::Reductions::isSorted */
+
+    template<typename ValueType>
+    static bool isSorted( const ValueType array[], const IndexType n, bool acending );
+
     template<typename ValueType1,typename ValueType2>
     static void set( ValueType1 out[], const ValueType2 in[], const IndexType n );
 

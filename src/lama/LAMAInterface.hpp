@@ -151,6 +151,21 @@
         LAMA_THROWEXCEPTION( "Method " #module "::" #function " not available on " << *loc ); \
     }
 
+#define LAMA_INTERFACE_FN_DEFAULT( function, loc, module, structname )                        \
+    typename module##Interface::structname::function function =                               \
+       loc->getInterface().module.function();                                                 \
+    if ( function == NULL )                                                                   \
+    {                                                                                         \
+        LAMA_UNSUPPORTED( "Method " #module "::" #function " not available on " << *loc );    \
+        loc = ContextFactory::getContext( Context::Host );                                    \
+        function = loc->getInterface().module.function();                                     \
+        if ( function == NULL )                                                               \
+        {                                                                                     \
+            LAMA_THROWEXCEPTION( "Method " #module "::" #function                             \
+                                 " also not available on " << *loc );                         \
+        }                                                                                     \
+    }
+
 #define LAMA_INTERFACE_FN_T( function, loc, module, structname, T )                           \
     typename module##Interface::structname<T>::function function;                             \
     function = loc->getInterface().module.function<T>();                                      \
@@ -161,7 +176,7 @@
 
 #define LAMA_INTERFACE_FN_DEFAULT_T( function, loc, module, structname, T )                   \
     typename module##Interface::structname<T>::function function =                            \
-            loc->getInterface().module.function<T>();                                              \
+            loc->getInterface().module.function<T>();                                         \
     if ( function == NULL )                                                                   \
     {                                                                                         \
         LAMA_UNSUPPORTED( "Method " #module "::" #function " not available on " << *loc );    \
@@ -1601,6 +1616,8 @@ struct UtilsInterface
         typedef bool (*validIndexes)( const IndexType array[], const IndexType n, const IndexType size );
     };
 
+    LAMA_INTERFACE_DEFINE( Indexes, validIndexes )
+
     /** Structure with type defintions for all reduction methods.
      *
      *  @tparam ValueType specifies the value type used in the reduction.
@@ -1645,6 +1662,12 @@ struct UtilsInterface
 
         typedef bool (*isSorted)( const ValueType array[], const IndexType n, bool ascending );
     };
+
+    LAMA_INTERFACE_DEFINE_T( Reductions, sum )
+    LAMA_INTERFACE_DEFINE_T( Reductions, maxval )
+    LAMA_INTERFACE_DEFINE_T( Reductions, absMaxVal )
+    LAMA_INTERFACE_DEFINE_T( Reductions, absMaxDiffVal )
+    LAMA_INTERFACE_DEFINE_T( Reductions, isSorted ) 
 
     template<typename ValueType>
     struct Setter
@@ -1709,13 +1732,6 @@ struct UtilsInterface
                                   const IndexType n,
                                   const OtherValueType value );
     };
-
-    LAMA_INTERFACE_DEFINE( Indexes, validIndexes )
-
-    LAMA_INTERFACE_DEFINE_T( Reductions, sum )
-    LAMA_INTERFACE_DEFINE_T( Reductions, maxval )
-    LAMA_INTERFACE_DEFINE_T( Reductions, absMaxVal )
-    LAMA_INTERFACE_DEFINE_T( Reductions, absMaxDiffVal )
 
     LAMA_INTERFACE_DEFINE_T( Setter, setVal )
     LAMA_INTERFACE_DEFINE_T( Setter, setOrder )

@@ -229,6 +229,39 @@ ValueType OpenMPUtils::absMaxDiffVal( const ValueType array1[], const ValueType 
 
 /* --------------------------------------------------------------------------- */
 
+template<typename ValueType>
+bool OpenMPUtils::isSorted( const ValueType array[], const IndexType n, bool ascending )
+{
+    bool sorted = true;   //!< will be set to false at violations
+
+    if ( ascending )
+    {
+        for ( IndexType i = 1; i < n; i++ )
+        {
+            if ( array[i-1] > array[i] )
+            {
+                sorted = false;
+                break;
+            }
+        }
+    }
+    else
+    {
+        for ( IndexType i = 1; i < n; i++ )
+        {
+            if ( array[i-1] < array[i] )
+            {
+                sorted = false;
+                break;
+            }
+        }
+    }
+
+    return sorted;
+}
+
+/* --------------------------------------------------------------------------- */
+
 template<typename ValueType1,typename ValueType2>
 void OpenMPUtils::set( ValueType1 out[], const ValueType2 in[], const IndexType n )
 {
@@ -361,6 +394,10 @@ void OpenMPUtils::setInterface( UtilsInterface& Utils )
 
     LAMA_INTERFACE_REGISTER_T( Utils, absMaxDiffVal, float );
     LAMA_INTERFACE_REGISTER_T( Utils, absMaxDiffVal, double );
+
+    LAMA_INTERFACE_REGISTER_T( Utils, isSorted, IndexType );
+    LAMA_INTERFACE_REGISTER_T( Utils, isSorted, float );
+    LAMA_INTERFACE_REGISTER_T( Utils, isSorted, double );
 
     LAMA_INTERFACE_REGISTER_TT( Utils, setScatter, int, int );
 

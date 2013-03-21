@@ -498,6 +498,56 @@ void CUDAUtils::scale( ValueType *mValues, const IndexType n, const OtherValueTy
 //    return scalar;
 //} /* lama_CSPBLAS_sdoti_launcher */
 
+
+/* --------------------------------------------------------------------------- */
+
+template<typename T>
+struct InvalidIndex
+{
+    const T size;  //!< size of array for which index is checked
+
+    InvalidIndex( T _size ) : size( _size ) {}
+
+    __host__ __device__
+    int operator()( T y )
+    {
+        return y >= size || y < 0;
+    }
+};
+
+/* --------------------------------------------------------------------------- */
+
+bool CUDAUtils::validIndexes( const IndexType array[], const IndexType n, const IndexType size )
+{
+    LAMA_LOG_DEBUG( logger, "validIndexes: array[" << n << "], size " << size );
+
+    bool validFlag = true;
+
+    if ( n > 0 ) 
+    {
+        LAMA_CHECK_CUDA_ACCESS;
+
+        thrust::device_ptr<IndexType> arrayPtr( const_cast<IndexType*> ( array ) );
+
+        bool error = false;
+
+        // count invalid indexes
+
+        error = thrust::transform_reduce( arrayPtr,
+                                          arrayPtr + n,
+                                          InvalidIndex<IndexType>( size ),
+                                          0,
+                                          thrust::logical_or<bool>() );
+
+        if ( error ) 
+        {
+            validFlag = false;
+        }
+    }
+
+    return validFlag;
+}
+
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
@@ -814,6 +864,8 @@ void CUDAUtils::invert( ValueType array[], const IndexType n )
 
 void CUDAUtils::setInterface( UtilsInterface& Utils )
 {
+    LAMA_INTERFACE_REGISTER( Utils, validIndexes );
+
     LAMA_INTERFACE_REGISTER_TT( Utils, scale, float, float );
     LAMA_INTERFACE_REGISTER_TT( Utils, scale, double, float );
     LAMA_INTERFACE_REGISTER_TT( Utils, scale, float, double );

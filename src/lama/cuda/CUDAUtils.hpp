@@ -53,6 +53,10 @@ class LAMA_DLL_IMPORTEXPORT CUDAUtils
 {
 public:
 
+    /*  CUDA implementation of UtilsInterface::validIndexes  */
+
+    static bool validIndexes( const IndexType array[], const IndexType n, const IndexType size );
+
     template<typename ValueType>
     static ValueType sum( const ValueType array[], const IndexType n );
 

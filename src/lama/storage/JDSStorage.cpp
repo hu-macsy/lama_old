@@ -390,11 +390,7 @@ bool JDSStorage<ValueType>::checkDiagonalProperty() const
 template<typename ValueType>
 void JDSStorage<ValueType>::check( const char* msg ) const
 {
-    LAMA_LOG_INFO( logger, "check" );
-
-    ContextPtr loc = getContextPtr();
-
-    LAMA_INTERFACE_FN( check, loc, JDSUtils, Helper );
+    LAMA_LOG_FATAL( logger, "check at " << getContext() << ", msg = " << msg );
 
     LAMA_ASSERT_EQUAL_ERROR( mNumRows, mIlg.size() );
     LAMA_ASSERT_EQUAL_ERROR( mNumRows, mPerm.size() );
@@ -402,18 +398,58 @@ void JDSStorage<ValueType>::check( const char* msg ) const
     LAMA_ASSERT_EQUAL_ERROR( mNumValues, mValues.size() );
     LAMA_ASSERT_EQUAL_ERROR( mNumDiagonals, mDlg.size() );
 
-    // check column indexes
-    ReadAccess<IndexType> rJa( mJa, loc );
-    ReadAccess<IndexType> rIlg( mIlg, loc );
-    ReadAccess<IndexType> rDlg( mDlg, loc );
+    // check column indexes in JA
 
-    LAMA_CONTEXT_ACCESS( loc );
-
-    bool valid = check( mNumRows, mNumValues, mNumColumns, rJa.get(), rIlg.get(), rDlg.get() );
-
-    if ( !valid )
     {
-        LAMA_THROWEXCEPTION( *this << " @ " << msg << ": illegel indexes in JA, ILG or DLG" );
+        ContextPtr loc = getContextPtr();
+
+        LAMA_INTERFACE_FN_DEFAULT( validIndexes, loc, Utils, Indexes )
+
+        ReadAccess<IndexType> rJA( mJa, loc );
+
+        LAMA_CONTEXT_ACCESS( loc );
+
+        LAMA_ASSERT_ERROR( validIndexes ( rJA.get(), mNumValues, mNumColumns ),
+                           *this << " @ " << msg << ": illegel indexes in JA" )
+    }
+
+    // ToDo: check ILG[0] == mNumDiagonals, be careful about size of ILG
+
+    // check descending values in ILG, DLG
+
+    {
+        ContextPtr loc = getContextPtr();
+
+        LAMA_INTERFACE_FN_DEFAULT_T( isSorted, loc, Utils, Reductions, IndexType )
+
+        ReadAccess<IndexType> rIlg( mIlg, loc );
+        ReadAccess<IndexType> rDlg( mDlg, loc );
+
+        LAMA_CONTEXT_ACCESS( loc );
+
+        bool ascending = false;  // check for descending
+
+        LAMA_ASSERT_ERROR( isSorted ( rIlg.get(), mNumRows, ascending ),
+                           *this << " @ " << msg << ": not descending values in ILG" )
+
+        LAMA_ASSERT_ERROR( isSorted ( rDlg.get(), mNumDiagonals, ascending ),
+                           *this << " @ " << msg << ": not descending values in DLG" )
+    }
+
+    // both, ILG and DLG, must sum up to mNumValues
+
+    {
+        ContextPtr loc = getContextPtr();
+
+        LAMA_INTERFACE_FN_DEFAULT_T( sum, loc, Utils, Reductions, IndexType )
+
+        ReadAccess<IndexType> rIlg( mIlg, loc );
+        ReadAccess<IndexType> rDlg( mDlg, loc );
+
+        LAMA_CONTEXT_ACCESS( loc );
+
+        LAMA_ASSERT_EQUAL_ERROR( sum( rIlg.get(), mNumRows ), mNumValues )
+        LAMA_ASSERT_EQUAL_ERROR( sum( rDlg.get(), mNumDiagonals ), mNumValues )
     }
 }
 
