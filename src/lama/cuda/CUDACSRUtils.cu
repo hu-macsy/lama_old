@@ -90,7 +90,6 @@ IndexType CUDACSRUtils::sizes2offsets( IndexType array[], const IndexType n )
     LAMA_LOG_INFO( logger, "sizes2offsets " << " #n = " << n );
 
     LAMA_CHECK_CUDA_ACCESS
-    ;
 
     thrust::device_ptr<IndexType> array_ptr( const_cast<IndexType*>( array ) );
     thrust::exclusive_scan( array_ptr, array_ptr + n + 1, array_ptr );
@@ -123,7 +122,6 @@ void CUDACSRUtils::offsets2sizes( IndexType sizes[], const IndexType offsets[], 
     LAMA_LOG_INFO( logger, "offsets2sizes " << " #n = " << n );
 
     LAMA_CHECK_CUDA_ACCESS
-    ;
 
     const int blockSize = 256;
     dim3 dimBlock( blockSize, 1, 1 );
@@ -185,7 +183,6 @@ bool CUDACSRUtils::hasDiagonalProperty( const IndexType numDiagonals, const Inde
     dim3 dimBlock( blockSize, 1, 1 );
 
     LAMA_CHECK_CUDA_ACCESS
-    ;
 
     bool* d_hasProperty;
     bool hasProperty;
@@ -343,7 +340,6 @@ void CUDACSRUtils::normalGEMV(
                    "alpha = " << alpha << ", x = " << x << ", beta = " << beta << ", y = " << y << ", result = " << result );
 
     LAMA_CHECK_CUDA_ACCESS
-    ;
 
     cudaStream_t stream = 0; // default stream if no syncToken is given
 
@@ -391,7 +387,6 @@ void CUDACSRUtils::sparseGEMV(
                    "sparseGEMV<" << typeid(ValueType).name() << ">" << ", #non-zero rows = " << numNonZeroRows );
 
     LAMA_CHECK_CUDA_ACCESS
-    ;
 
     cudaStream_t stream = 0;
 
@@ -598,7 +593,6 @@ void CUDACSRUtils::jacobi(
     LAMA_LOG_INFO( logger, "jacobi, #rows = " << numRows );
 
     LAMA_CHECK_CUDA_ACCESS
-    ;
 
     cudaStream_t stream = 0;
 
@@ -720,7 +714,6 @@ void CUDACSRUtils::jacobiHalo(
     LAMA_LOG_INFO( logger, "jacobiHalo, #non-empty rows = " << numNonEmptyRows );
 
     LAMA_CHECK_CUDA_ACCESS
-    ;
 
     const int block_size = 128;
     dim3 dimBlock( block_size, 1, 1 );
@@ -893,7 +886,6 @@ IndexType CUDACSRUtils::matrixAddSizes(
         "matrixAddSizes for " << numRows << " x " << numColumns << " matrix" << ", diagonalProperty = " << diagonalProperty );
 
     LAMA_CHECK_CUDA_ACCESS
-    ;
 
 // Reset cIa
     thrust::device_ptr<IndexType> cIaPtr( cIa );
@@ -905,7 +897,6 @@ IndexType CUDACSRUtils::matrixAddSizes(
 
     cudaStreamSynchronize( 0 );
     LAMA_CHECK_CUDA_ERROR
-    ;
 
 // Convert sizes array to offset array
     thrust::exclusive_scan( cIaPtr, cIaPtr + numRows + 1, cIaPtr );
@@ -917,7 +908,6 @@ IndexType CUDACSRUtils::matrixAddSizes(
 
     cudaStreamSynchronize( 0 );
     LAMA_CHECK_CUDA_ERROR
-    ;
 
 // TODO: write it!
     return numValues[0];
@@ -1127,7 +1117,6 @@ IndexType CUDACSRUtils::matrixMultiplySizes(
         "matrixMutliplySizes for " << numRows << " x " << numColumns << " matrix" << ", diagonalProperty = " << diagonalProperty );
 
     LAMA_CHECK_CUDA_ACCESS
-    ;
 // Reset cIa
 
     size_t free;
@@ -1222,7 +1211,6 @@ IndexType CUDACSRUtils::matrixMultiplySizes(
 
     cudaStreamSynchronize( 0 );
     LAMA_CHECK_CUDA_ERROR
-    ;
 
     return numValues[0];
 }
@@ -1363,14 +1351,12 @@ void CUDACSRUtils::matrixAdd(
     LAMA_LOG_INFO( logger, "matrixAdd for " << numRows << "x" << numColumns << " matrix" );
 
     LAMA_CHECK_CUDA_ACCESS
-    ;
 
     matrixAddKernel<ValueType, NUM_WARPS><<<NUM_BLOCKS, NUM_THREADS>>>( cJA, cValues, cIA, numRows, numColumns,
             diagonalProperty, alpha, aIA, aJA, aValues, beta, bIA, bJA, bValues );
 
     cudaStreamSynchronize( 0 );
     LAMA_CHECK_CUDA_ERROR
-    ;
 }
 /* ------------------------------------------------------------------------------------------------------------------ */
 /*                                             matrixMultiply                                                         */
@@ -1708,7 +1694,6 @@ void CUDACSRUtils::matrixMultiply(
     LAMA_LOG_INFO( logger, "matrixMultiply for " << numRows << "x" << numColumns << " matrix" );
 
     LAMA_CHECK_CUDA_ACCESS
-    ;
 
     const unsigned int initialHashTableSize = 1024;
 
@@ -1768,7 +1753,6 @@ void CUDACSRUtils::matrixMultiply(
     }
     cudaStreamSynchronize( 0 );
     LAMA_CHECK_CUDA_ERROR
-    ;
 
 // Free hashTable and hashError
     loc->free( (void*) hashTable, hashTableSize );
@@ -1776,7 +1760,6 @@ void CUDACSRUtils::matrixMultiply(
 
     cudaStreamSynchronize( 0 );
     LAMA_CHECK_CUDA_ERROR
-    ;
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */

@@ -98,7 +98,6 @@ void CUDABLAS2::gemv(
     }
 
     LAMA_CHECK_CUDA_ACCESS
-    ;
 
     cudaStream_t stream = 0; // default stream if no syncToken is given
 
@@ -171,7 +170,6 @@ void CUDABLAS2::gemv(
     }
 
     LAMA_CHECK_CUDA_ACCESS
-    ;
 
     cudaStream_t stream = 0; // default stream if no syncToken is given
 
@@ -240,7 +238,6 @@ void CUDABLAS2::symv(
     }
 
     LAMA_CHECK_CUDA_ACCESS
-    ;
 
     cudaStream_t stream = 0; // default stream if no syncToken is given
 
@@ -305,7 +302,6 @@ void CUDABLAS2::symv(
     }
 
     LAMA_CHECK_CUDA_ACCESS
-    ;
 
     cudaStream_t stream = 0; // default stream if no syncToken is given
 
@@ -399,7 +395,6 @@ void CUDABLAS2::trmv(
     }
 
     LAMA_CHECK_CUDA_ACCESS
-    ;
 
     cudaStream_t stream = 0; // default stream if no syncToken is given
 
@@ -491,7 +486,6 @@ void CUDABLAS2::trmv(
     }
 
     LAMA_CHECK_CUDA_ACCESS
-    ;
 
     cudaStream_t stream = 0; // default stream if no syncToken is given
 
@@ -585,7 +579,6 @@ void CUDABLAS2::trsv(
     }
 
     LAMA_CHECK_CUDA_ACCESS
-    ;
 
     cudaStream_t stream = 0; // default stream if no syncToken is given
 
@@ -677,7 +670,6 @@ void CUDABLAS2::trsv(
     }
 
     LAMA_CHECK_CUDA_ACCESS
-    ;
 
     cudaStream_t stream = 0; // default stream if no syncToken is given
 
@@ -756,7 +748,6 @@ void CUDABLAS2::gbmv(
     }
 
     LAMA_CHECK_CUDA_ACCESS
-    ;
 
     cudaStream_t stream = 0; // default stream if no syncToken is given
 
@@ -833,7 +824,6 @@ void CUDABLAS2::gbmv(
     }
 
     LAMA_CHECK_CUDA_ACCESS
-    ;
 
     cudaStream_t stream = 0; // default stream if no syncToken is given
 
@@ -901,7 +891,6 @@ void CUDABLAS2::sbmv(
     }
 
     LAMA_CHECK_CUDA_ACCESS
-    ;
 
     cudaStream_t stream = 0; // default stream if no syncToken is given
 
@@ -967,7 +956,6 @@ void CUDABLAS2::sbmv(
     }
 
     LAMA_CHECK_CUDA_ACCESS
-    ;
 
     cudaStream_t stream = 0; // default stream if no syncToken is given
 
@@ -1062,7 +1050,6 @@ void CUDABLAS2::tbmv(
     }
 
     LAMA_CHECK_CUDA_ACCESS
-    ;
 
     cudaStream_t stream = 0; // default stream if no syncToken is given
 
@@ -1155,7 +1142,6 @@ void CUDABLAS2::tbmv(
     }
 
     LAMA_CHECK_CUDA_ACCESS
-    ;
 
     cudaStream_t stream = 0; // default stream if no syncToken is given
 
@@ -1250,7 +1236,6 @@ void CUDABLAS2::tbsv(
     }
 
     LAMA_CHECK_CUDA_ACCESS
-    ;
 
     cudaStream_t stream = 0; // default stream if no syncToken is given
 
@@ -1343,7 +1328,6 @@ void CUDABLAS2::tbsv(
     }
 
     LAMA_CHECK_CUDA_ACCESS
-    ;
 
     cudaStream_t stream = 0; // default stream if no syncToken is given
 
@@ -1383,7 +1367,6 @@ void CUDABLAS2::ger(
     SyncToken* syncToken )
 {
     LAMA_CHECK_CUDA_ACCESS
-    ;
 
     cudaStream_t stream = 0; // default stream if no syncToken is given
 
@@ -1432,7 +1415,6 @@ void CUDABLAS2::ger(
     SyncToken* syncToken )
 {
     LAMA_CHECK_CUDA_ACCESS
-    ;
 
     cudaStream_t stream = 0; // default stream if no syncToken is given
 
@@ -1507,7 +1489,6 @@ void CUDABLAS2::syr(
     }
 
     LAMA_CHECK_CUDA_ACCESS
-    ;
 
     cudaStream_t stream = 0; // default stream if no syncToken is given
 
@@ -1569,7 +1550,6 @@ void CUDABLAS2::syr(
     }
 
     LAMA_CHECK_CUDA_ACCESS
-    ;
 
     cudaStream_t stream = 0; // default stream if no syncToken is given
 
@@ -1635,7 +1615,6 @@ void CUDABLAS2::syr2(
     }
 
     LAMA_CHECK_CUDA_ACCESS
-    ;
 
     cudaStream_t stream = 0; // default stream if no syncToken is given
 
@@ -1699,7 +1678,6 @@ void CUDABLAS2::syr2(
     }
 
     LAMA_CHECK_CUDA_ACCESS
-    ;
 
     cudaStream_t stream = 0; // default stream if no syncToken is given
 
@@ -1765,7 +1743,6 @@ void CUDABLAS2::spmv(
     }
 
     LAMA_CHECK_CUDA_ACCESS
-    ;
 
     cudaStream_t stream = 0; // default stream if no syncToken is given
 
@@ -1830,7 +1807,6 @@ void CUDABLAS2::spmv(
     }
 
     LAMA_CHECK_CUDA_ACCESS
-    ;
 
     cudaStream_t stream = 0; // default stream if no syncToken is given
 
@@ -1893,7 +1869,6 @@ void CUDABLAS2::spr(
     }
 
     LAMA_CHECK_CUDA_ACCESS
-    ;
 
     cudaStream_t stream = 0; // default stream if no syncToken is given
 
@@ -1954,7 +1929,6 @@ void CUDABLAS2::spr(
     }
 
     LAMA_CHECK_CUDA_ACCESS
-    ;
 
     cudaStream_t stream = 0; // default stream if no syncToken is given
 
@@ -2019,7 +1993,6 @@ void CUDABLAS2::spr2(
     }
 
     LAMA_CHECK_CUDA_ACCESS
-    ;
 
     cudaStream_t stream = 0; // default stream if no syncToken is given
 
@@ -2082,7 +2055,6 @@ void CUDABLAS2::spr2(
     }
 
     LAMA_CHECK_CUDA_ACCESS
-    ;
 
     cudaStream_t stream = 0; // default stream if no syncToken is given
 
@@ -2175,7 +2147,6 @@ void CUDABLAS2::tpmv(
     }
 
     LAMA_CHECK_CUDA_ACCESS
-    ;
 
     cudaStream_t stream = 0; // default stream if no syncToken is given
 
@@ -2266,7 +2237,6 @@ void CUDABLAS2::tpmv(
     }
 
     LAMA_CHECK_CUDA_ACCESS
-    ;
 
     cudaStream_t stream = 0; // default stream if no syncToken is given
 
@@ -2359,7 +2329,6 @@ void CUDABLAS2::tpsv(
     }
 
     LAMA_CHECK_CUDA_ACCESS
-    ;
 
     cudaStream_t stream = 0; // default stream if no syncToken is given
 
@@ -2450,7 +2419,6 @@ void CUDABLAS2::tpsv(
     }
 
     LAMA_CHECK_CUDA_ACCESS
-    ;
 
     cudaStream_t stream = 0; // default stream if no syncToken is given
 
