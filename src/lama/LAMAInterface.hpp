@@ -48,28 +48,28 @@
  */
 
 #define LAMA_INTERFACE_DEFINE( structname, functionname )                                     \
-    \
+                                                                                              \
     /** Method that returns the function pointer for the correspondingly typed version. */    \
-    \
+                                                                                              \
     structname::functionname                                                                  \
     functionname () const                                                                     \
     {                                                                                         \
         return functionname##_Table;                                                          \
     }                                                                                         \
-    \
+                                                                                              \
     /** Register a function pointer in the type table. */                                     \
-    \
+                                                                                              \
     void functionname##_add( structname::functionname functionPtr )                           \
     {                                                                                         \
         functionname##_Table = functionPtr;                                                   \
     }                                                                                         \
-    \
+                                                                                              \
     structname::functionname functionname##_Table;
 
 #define LAMA_INTERFACE_DEFINE_T( structname, functionname )                                   \
-    \
+                                                                                              \
     /** Method that returns the function pointer for the correspondingly typed version. */    \
-    \
+                                                                                              \
     template<typename T>                                                                      \
     typename structname<T>::functionname                                                      \
     functionname () const                                                                     \
@@ -77,22 +77,22 @@
         return ( typename structname<T>::functionname )                                       \
                functionname##_Table[ Scalar::getType<T>() ];                                  \
     }                                                                                         \
-    \
+                                                                                              \
     /** Register a function pointer in the type table. */                                     \
-    \
+                                                                                              \
     template<typename T>                                                                      \
     void functionname##_add( typename structname<T>::functionname functionPtr )               \
     {                                                                                         \
         functionname##_Table[ Scalar::getType<T>() ]                                          \
-        = ( void (*) () ) functionPtr;                                                       \
+         = ( void (*) () ) functionPtr;                                                       \
     }                                                                                         \
-    \
+                                                                                              \
     void ( *functionname##_Table[ Scalar::UNKNOWN ] ) ();
 
 #define LAMA_INTERFACE_DEFINE_TT( structname, functionname )                                  \
-    \
+                                                                                              \
     /** Method that returns the function pointer for the correspondingly typed version. */    \
-    \
+                                                                                              \
     template<typename T1, typename T2>                                                        \
     typename structname<T1, T2>::functionname                                                 \
     functionname () const                                                                     \
@@ -100,16 +100,16 @@
         return ( typename structname<T1,T2>::functionname )                                   \
                functionname##_Table[ Scalar::getType<T1>()][ Scalar::getType<T2>() ];         \
     }                                                                                         \
-    \
+                                                                                              \
     /** Register a function pointer in the type table. */                                     \
-    \
+                                                                                              \
     template<typename T1, typename T2>                                                        \
     void functionname##_add( typename structname<T1, T2>::functionname functionPtr )          \
     {                                                                                         \
         functionname##_Table[ Scalar::getType<T1>() ][ Scalar::getType<T2>() ]                \
-        = ( void (*) () ) functionPtr;                                                     \
+           = ( void (*) () ) functionPtr;                                                     \
     }                                                                                         \
-    \
+                                                                                              \
     void ( *functionname##_Table[ Scalar::UNKNOWN ][ Scalar::UNKNOWN] ) ();
 
 /** This macro intializes type table with of function will NULL function pointers.
@@ -124,7 +124,7 @@
     {                                                                                       \
         functionname##_Table[i] = NULL;                                                     \
     }                                                                                       \
-     
+
 #define LAMA_INTERFACE_INIT_TT( functionname )                                              \
     for ( int i = 0; i < Scalar::UNKNOWN; ++i )                                             \
     {                                                                                       \
@@ -133,7 +133,7 @@
             functionname##_Table[i][j] = NULL;                                              \
         }                                                                                   \
     }                                                                                       \
-     
+
 #define LAMA_INTERFACE_REGISTER( interface, function )                                      \
     interface.function##_add( function );
 
@@ -145,7 +145,7 @@
 
 #define LAMA_INTERFACE_FN( function, loc, module, structname )                                \
     typename module##Interface::structname::function function =                               \
-            loc->getInterface().module.function();                                                 \
+       loc->getInterface().module.function();                                                 \
     if ( function == NULL )                                                                   \
     {                                                                                         \
         LAMA_THROWEXCEPTION( "Method " #module "::" #function " not available on " << *loc ); \
@@ -176,7 +176,7 @@
 
 #define LAMA_INTERFACE_FN_DEFAULT_T( function, loc, module, structname, T )                   \
     typename module##Interface::structname<T>::function function =                            \
-            loc->getInterface().module.function<T>();                                         \
+       loc->getInterface().module.function<T>();                                              \
     if ( function == NULL )                                                                   \
     {                                                                                         \
         LAMA_UNSUPPORTED( "Method " #module "::" #function " not available on " << *loc );    \
@@ -188,6 +188,7 @@
                                  " also not available on " << *loc );                         \
         }                                                                                     \
     }
+
 
 #define LAMA_INTERFACE_FN_TT( function, loc, module, structname, T1, T2 )                     \
     typename module##Interface::structname<T1,T2>::function function;                         \
@@ -215,7 +216,7 @@ struct BLAS1Interface
      * @param[in] incX   storage spacing between elements of x
      * @param[out] x     vector x(unchanged if n<=0 or incX <=0)
      */
-    void (*scal)( const IndexType n, const T alpha, T* x, const IndexType incX, SyncToken* syncToken );
+    void (*scal) ( const IndexType n, const T alpha, T* x, const IndexType incX, SyncToken* syncToken );
 
     /**
      * @brief nrm2 computes the Euclidean norm of the n-vector x
@@ -228,7 +229,7 @@ struct BLAS1Interface
      * @param[in] incX   storage spacing between elements of x
      * return            the Euclidian norm (returns zero if n <=0, incX <=0)
      */
-    T (*nrm2)( const IndexType n, const T* x, const IndexType incX, SyncToken* syncToken );
+    T (*nrm2) ( const IndexType n, const T* x, const IndexType incX, SyncToken* syncToken );
 
     /**
      * @brief asum computes the sum of the absolute values of the elements
@@ -241,7 +242,7 @@ struct BLAS1Interface
      * @param[in] incX   storage spacing between elements of x
      * return            the sum of absolute values (returns zero if n<=0 or incX <=0)
      */
-    T (*asum)( const IndexType n, const T* x, const IndexType incX, SyncToken* syncToken );
+    T (*asum) ( const IndexType n, const T* x, const IndexType incX, SyncToken* syncToken );
 
     /** max norm: maxnorm(x) = max( x_i ) */
 
@@ -254,7 +255,7 @@ struct BLAS1Interface
      * @param[in] incX   storage spacing between elements of x
      * return            the smallest index (returns zero if n <=0 or incX <=0)
      */
-    IndexType (*iamax)( const IndexType n, const T* x, const IndexType incX, SyncToken* syncToken );
+    IndexType (*iamax) ( const IndexType n, const T* x, const IndexType incX, SyncToken* syncToken );
 
     /**
      * @brief iamax finds the smallest index of the maximum magnitude
@@ -265,7 +266,7 @@ struct BLAS1Interface
      * @param[in] incX   storage spacing between elements of x
      * return            the smallest index (returns zero if n <=0 or incX <=0)
      */
-    T (*viamax)( const IndexType n, const T* x, const IndexType incX, SyncToken* syncToken );
+    T (*viamax) ( const IndexType n, const T* x, const IndexType incX, SyncToken* syncToken );
 
     /**
      * @brief swap interchanges vector x with vector y.
@@ -280,7 +281,7 @@ struct BLAS1Interface
      * @param[out] x     vector x(unchanged if n<=0)
      * @param[out] y     vector y(unchanged if n<=0)
      */
-    void (*swap)( const IndexType n, T* x, const IndexType incX, T* y, const IndexType incY, SyncToken* syncToken );
+    void (*swap) ( const IndexType n, T* x, const IndexType incX, T* y, const IndexType incY, SyncToken* syncToken );
 
     /**
      * @brief copy copies the vector x to the vector y.
@@ -351,7 +352,7 @@ struct BLAS1Interface
     /** TODO: need dotu ?! */
 
     /**  sum: z = alpha * x + beta * y */
-    void (*sum)( const IndexType n, T alpha, const T* x, T beta, const T* y, T* z, SyncToken* syncToken );
+    void (*sum) ( const IndexType n, T alpha, const T* x, T beta, const T* y, T* z, SyncToken* syncToken );
 
     /**
      * @brief rot multiplies a 2×2 matrix with the 2×n matrix
@@ -404,7 +405,7 @@ struct BLAS1Interface
      * @param[in,out] c     result
      * @param[in,out] s     result
      */
-    void (*rotg)( T *a, T *b, T *c, T *s, SyncToken* syncToken );
+    void (*rotg) ( T *a, T *b, T *c, T *s, SyncToken* syncToken );
 
     /**
      * @brief Computes the parameters for a modified Givens rotation.
@@ -418,7 +419,7 @@ struct BLAS1Interface
      * @param[out] b1    changed to represent the effect of the transformation
      * @param[out] P     ? //in cublas sparam
      */
-    void (*rotmg)( T *d1, T *d2, T *b1, const T b2, T *p, SyncToken* syncToken );
+    void (*rotmg) ( T *d1, T *d2, T *b1, const T b2, T *p, SyncToken* syncToken );
 
     /**
      * @brief ass The function ass() assigns one scalar value to a vector of the given size.
@@ -431,7 +432,7 @@ struct BLAS1Interface
      * @param[in] value     scalar value, which should be assign to the whole vector
      * @param[out] x        vector, the values should be assigned to
      */
-    void (*ass)( const IndexType n, const T value, T *x, SyncToken* syncToken );
+    void (*ass) ( const IndexType n, const T value, T *x, SyncToken* syncToken );
 
     /** Default constructor, initializes variables with NULL */
 
@@ -952,18 +953,8 @@ struct BLAS2Interface
      * @param[out] A       updated according to y = alpha * x * yT + A
      *
      */
-    void (*ger)(
-        const enum CBLAS_ORDER order,
-        const IndexType m,
-        const IndexType n,
-        const T alpha,
-        const T *x,
-        const IndexType incX,
-        const T *y,
-        const IndexType incY,
-        T *A,
-        const IndexType lda,
-        SyncToken* syncToken );
+    void (*ger)  ( const enum CBLAS_ORDER order, const IndexType m, const IndexType n, const T alpha, const T *x,
+                   const IndexType incX, const T *y, const IndexType incY, T *A, const IndexType lda, SyncToken* syncToken );
 
     /** TODO: need geru ?! */
 
@@ -1002,16 +993,8 @@ struct BLAS2Interface
      * @param[out] A       updated according to A = alpha * x * xT + A
      *
      */
-    void (*syr)(
-        const enum CBLAS_ORDER order,
-        const enum CBLAS_UPLO uplo,
-        const IndexType n,
-        const T alpha,
-        const T *x,
-        const IndexType incX,
-        T *A,
-        const IndexType lda,
-        SyncToken* syncToken );
+    void (*syr) ( const enum CBLAS_ORDER order, const enum CBLAS_UPLO uplo, const IndexType n, const T alpha, const T *x,
+                  const IndexType incX, T *A, const IndexType lda, SyncToken* syncToken );
 
     /**
      * @brief syr2 performs the symmetric rank 2 operation
@@ -1053,18 +1036,8 @@ struct BLAS2Interface
      * @param[out] A       updated according to A = alpha * x * yT + alpha * y * xT + A
      *
      */
-    void (*syr2)(
-        const enum CBLAS_ORDER order,
-        const enum CBLAS_UPLO uplo,
-        const IndexType n,
-        const T alpha,
-        const T *x,
-        const IndexType incX,
-        const T *y,
-        const IndexType incY,
-        T *A,
-        const IndexType lda,
-        SyncToken* syncToken );
+    void (*syr2) ( const enum CBLAS_ORDER order, const enum CBLAS_UPLO uplo, const IndexType n, const T alpha, const T *x,
+                   const IndexType incX, const T *y, const IndexType incY, T *A, const IndexType lda, SyncToken* syncToken );
 
     /**
      * @brief spmv performs matrix vector
@@ -1101,18 +1074,8 @@ struct BLAS2Interface
      * @param[out] y       updated according to y = alpha * A * x + beta * y
      *
      */
-    void (*spmv)(
-        const enum CBLAS_ORDER order,
-        const enum CBLAS_UPLO uplo,
-        const IndexType n,
-        const T alpha,
-        const T *AP,
-        const T *x,
-        const IndexType incX,
-        const T beta,
-        T *y,
-        const IndexType incY,
-        SyncToken* syncToken );
+    void (*spmv) ( const enum CBLAS_ORDER order, const enum CBLAS_UPLO uplo, const IndexType n, const T alpha, const T *AP,
+                   const T *x, const IndexType incX, const T beta, T *y, const IndexType incY, SyncToken* syncToken );
 
     /**
      * @brief spr performs the symmetric rank 1 operation
@@ -1145,15 +1108,8 @@ struct BLAS2Interface
      * @param[out] A       updated according to A = alpha * x * xT + A
      *
      */
-    void (*spr)(
-        const enum CBLAS_ORDER order,
-        const enum CBLAS_UPLO uplo,
-        const IndexType n,
-        const T alpha,
-        const T *x,
-        const IndexType incX,
-        T *AP,
-        SyncToken* syncToken );
+    void (*spr) ( const enum CBLAS_ORDER order, const enum CBLAS_UPLO uplo, const IndexType n, const T alpha, const T *x,
+                  const IndexType incX, T *AP, SyncToken* syncToken );
 
     /**
      * @brief spr2 performs the symmetric rank 2 operation
@@ -1188,17 +1144,8 @@ struct BLAS2Interface
      * @param[out] A       updated according to A = alpha * x * yT + alpha * y * xT + A
      *
      */
-    void (*spr2)(
-        const enum CBLAS_ORDER order,
-        const enum CBLAS_UPLO uplo,
-        const IndexType n,
-        const T alpha,
-        const T *x,
-        const IndexType incX,
-        const T *y,
-        const IndexType incY,
-        T *AP,
-        SyncToken* syncToken );
+    void (*spr2) ( const enum CBLAS_ORDER order, const enum CBLAS_UPLO uplo, const IndexType n, const T alpha, const T *x,
+                   const IndexType incX, const T *y, const IndexType incY, T *AP, SyncToken* syncToken );
 
     /**
      * @brief tpmv performs one of the matrix-vector operations
@@ -1244,16 +1191,8 @@ struct BLAS2Interface
      * @param[out] x       updated according to x = op(A)*x
      *
      */
-    void (*tpmv)(
-        const enum CBLAS_ORDER order,
-        const enum CBLAS_UPLO uplo,
-        const enum CBLAS_TRANSPOSE trans,
-        const enum CBLAS_DIAG diag,
-        const IndexType n,
-        const T *AP,
-        T *x,
-        const IndexType incX,
-        SyncToken* syncToken );
+    void (*tpmv) ( const enum CBLAS_ORDER order, const enum CBLAS_UPLO uplo, const enum CBLAS_TRANSPOSE trans,
+                   const enum CBLAS_DIAG diag, const IndexType n, const T *AP, T *x, const IndexType incX, SyncToken* syncToken );
 
     /**
      * @brief tpsv solves one of the systems of equations
@@ -1304,16 +1243,8 @@ struct BLAS2Interface
      * @param[out] x       updated according to op(A) * x = b
      *
      */
-    void (*tpsv)(
-        const enum CBLAS_ORDER order,
-        const enum CBLAS_UPLO uplo,
-        const enum CBLAS_TRANSPOSE trans,
-        const enum CBLAS_DIAG diag,
-        const IndexType n,
-        const T *Ap,
-        T *x,
-        const IndexType incX,
-        SyncToken* syncToken );
+    void (*tpsv)( const enum CBLAS_ORDER order, const enum CBLAS_UPLO uplo, const enum CBLAS_TRANSPOSE trans,
+                  const enum CBLAS_DIAG diag, const IndexType n, const T *Ap, T *x, const IndexType incX, SyncToken* syncToken );
 
     /** For future versions: left functions for hermitian matrices - hemv, hbmv, her, her2 */
 
@@ -1379,106 +1310,40 @@ struct BLAS3Interface
      * @param[in,out] syncToken is optional synchronization taken that might be used for asynchronous execution
      */
 
-    void (*gemm)(
-        const enum CBLAS_ORDER order,
-        const enum CBLAS_TRANSPOSE transA,
-        const enum CBLAS_TRANSPOSE transB,
-        const IndexType m,
-        const IndexType n,
-        const IndexType k,
-        const T alpha,
-        const T* A,
-        const IndexType lda,
-        const T* B,
-        const IndexType ldb,
-        const T beta,
-        T* C,
-        const IndexType ldc,
-        class SyncToken* syncToken );
+    void (*gemm) (const enum CBLAS_ORDER order, const enum CBLAS_TRANSPOSE transA, const enum CBLAS_TRANSPOSE transB,
+                  const IndexType m, const IndexType n, const IndexType k, const T alpha, const T* A,
+                  const IndexType lda, const T* B, const IndexType ldb,
+                  const T beta, T* C, const IndexType ldc, class SyncToken* syncToken );
 
     /** Product of a real or complex symmetric matrix A and a general matrix B */
 
-    void (*symm)(
-        const enum CBLAS_ORDER order,
-        const enum CBLAS_SIDE side,
-        const enum CBLAS_UPLO uplo,
-        const int m,
-        const int n,
-        const T alpha,
-        const T *A,
-        const int lda,
-        const T *B,
-        const int ldb,
-        const T beta,
-        T *C,
-        const int ldc,
-        SyncToken* syncToken );
+    void (*symm) (const enum CBLAS_ORDER order, const enum CBLAS_SIDE side, const enum CBLAS_UPLO uplo, const int m,
+                  const int n, const T alpha, const T *A, const int lda, const T *B, const int ldb,
+                  const T beta, T *C, const int ldc, SyncToken* syncToken );
 
     /** Product of a triangular matrix A and a general matrix B */
 
-    void (*trmm)(
-        const enum CBLAS_ORDER order,
-        const enum CBLAS_SIDE Side,
-        const enum CBLAS_UPLO Uplo,
-        const enum CBLAS_TRANSPOSE TransA,
-        const enum CBLAS_DIAG Diag,
-        const IndexType M,
-        const IndexType N,
-        const T alpha,
-        const T *A,
-        const IndexType lda,
-        T *B,
-        const IndexType ldb,
-        SyncToken* syncToken );
+    void (*trmm) (const enum CBLAS_ORDER order, const enum CBLAS_SIDE Side, const enum CBLAS_UPLO Uplo,
+                  const enum CBLAS_TRANSPOSE TransA, const enum CBLAS_DIAG Diag, const IndexType M,
+                  const IndexType N, const T alpha, const T *A, const IndexType lda, T *B, const IndexType ldb,
+                  SyncToken* syncToken );
 
     /** Solution of a nonsingular triangular system of equations */
 
-    void (*trsm)(
-        const enum CBLAS_ORDER order,
-        const enum CBLAS_SIDE Side,
-        const enum CBLAS_UPLO Uplo,
-        const enum CBLAS_TRANSPOSE TransA,
-        const enum CBLAS_DIAG Diag,
-        const IndexType M,
-        const IndexType N,
-        const T alpha,
-        const T *A,
-        const IndexType lda,
-        T *B,
-        const IndexType ldb,
-        SyncToken* syncToken );
+    void (*trsm) (const enum CBLAS_ORDER order, const enum CBLAS_SIDE Side, const enum CBLAS_UPLO Uplo,
+                  const enum CBLAS_TRANSPOSE TransA, const enum CBLAS_DIAG Diag, const IndexType M,
+                  const IndexType N, const T alpha, const T *A, const IndexType lda, T *B,
+                  const IndexType ldb, SyncToken* syncToken );
 
     /** Rank-k update of a real or complex symmetric matrix C */
 
-    void (*syrk)(
-        const enum CBLAS_ORDER order,
-        const enum CBLAS_UPLO uplo,
-        const enum CBLAS_TRANSPOSE trans,
-        const int n,
-        const int k,
-        const T alpha,
-        const T *A,
-        const int lda,
-        const T beta,
-        T *C,
-        const int ldc,
-        SyncToken* syncToken );
+    void (*syrk) (const enum CBLAS_ORDER order, const enum CBLAS_UPLO uplo, const enum CBLAS_TRANSPOSE trans,
+                  const int n, const int k, const T alpha, const T *A, const int lda, const T beta,
+                  T *C, const int ldc, SyncToken* syncToken );
 
-    void (*syrk2)(
-        const enum CBLAS_ORDER order,
-        const enum CBLAS_UPLO uplo,
-        const enum CBLAS_TRANSPOSE trans,
-        const IndexType n,
-        const IndexType k,
-        const T alpha,
-        const T *A,
-        const IndexType lda,
-        const T *B,
-        const IndexType ldb,
-        const T beta,
-        T *C,
-        const IndexType ldc,
-        SyncToken* syncToken );
+    void (*syrk2) (const enum CBLAS_ORDER order, const enum CBLAS_UPLO uplo, const enum CBLAS_TRANSPOSE trans,
+                   const IndexType n, const IndexType k, const T alpha, const T *A, const IndexType lda, const T *B,
+                   const IndexType ldb, const T beta, T *C, const IndexType ldc, SyncToken* syncToken );
 
     /** For future versions: left functions for hermetian matrices */
 
@@ -1493,13 +1358,8 @@ template<typename T>
 struct LAPACKInterface
 {
     /**  */
-    IndexType (*getrf)(
-        const enum CBLAS_ORDER order,
-        const IndexType m,
-        const IndexType n,
-        T* a,
-        const IndexType lda,
-        IndexType* ipivot );
+    IndexType (*getrf) (const enum CBLAS_ORDER order, const IndexType m, const IndexType n, T* a,
+                        const IndexType lda, IndexType* ipivot);
 
     /** Method computes the inverse of a matrix by using the LAPACK routines getrf and getri
      *
@@ -1511,76 +1371,39 @@ struct LAPACKInterface
      *  Note that the storage order (column-wise or row-wise does not matter at all)
      */
 
-    void (*getinv)( const IndexType n, T* a, const IndexType lda );
+    void (*getinv) ( const IndexType n, T* a, const IndexType lda );
 
     /**  */
-    IndexType (*getri)( const enum CBLAS_ORDER, const IndexType n, T* a, const IndexType lda, IndexType* ipivot );
+    IndexType (*getri) (const enum CBLAS_ORDER , const IndexType n, T* a,
+                        const IndexType lda, IndexType* ipivot);
 
     /**  */
-    IndexType (*trtrs)(
-        const enum CBLAS_ORDER order,
-        const enum CBLAS_UPLO uplo,
-        const enum CBLAS_TRANSPOSE trans,
-        const enum CBLAS_DIAG diag,
-        const IndexType n,
-        const IndexType nrhs,
-        const T* A,
-        const IndexType lda,
-        T* B,
-        const IndexType ldb );
+    IndexType (*trtrs) (const enum CBLAS_ORDER order, const enum CBLAS_UPLO uplo, const enum CBLAS_TRANSPOSE trans,
+                        const enum CBLAS_DIAG diag, const IndexType n, const IndexType nrhs, const T* A,
+                        const IndexType lda, T* B, const IndexType ldb);
 
     /**  */
-    IndexType (*tptrs)(
-        const enum CBLAS_ORDER order,
-        const enum CBLAS_UPLO uplo,
-        const enum CBLAS_TRANSPOSE trans,
-        const enum CBLAS_DIAG diag,
-        const IndexType n,
-        const IndexType nrhs,
-        const T* AP,
-        T* B,
-        const IndexType ldb );
+    IndexType (*tptrs) (const enum CBLAS_ORDER order, const enum CBLAS_UPLO uplo, const enum CBLAS_TRANSPOSE trans,
+                        const enum CBLAS_DIAG diag, const IndexType n, const IndexType nrhs, const T* AP, T* B,
+                        const IndexType ldb);
 
     /**  */
-    void (*laswp)(
-        const enum CBLAS_ORDER order,
-        const IndexType n,
-        T* A,
-        const IndexType lda,
-        const IndexType k1,
-        const IndexType k2,
-        const IndexType* ipiv,
-        const IndexType incx,
-        SyncToken* syncToken );
+    void (*laswp) (const enum CBLAS_ORDER order, const IndexType n, T* A, const IndexType lda, const IndexType k1,
+                   const IndexType k2, const IndexType* ipiv, const IndexType incx, SyncToken* syncToken);
 
-    LAPACKInterface(); // default constructor, initializes all pointers to NULL
+    LAPACKInterface();   // default constructor, initializes all pointers to NULL
 };
 
 template<typename T>
 struct SCALAPACKInterface
 {
     /**  */
-    IndexType (*pgetrf)(
-        const IndexType m,
-        const IndexType n,
-        const T* const A,
-        const IndexType ia,
-        const IndexType ja,
-        IndexType* descA,
-        IndexType* const ipiv );
+    IndexType (*pgetrf) (const IndexType m, const IndexType n, const T* const A, const IndexType ia, const IndexType ja,
+                         IndexType* descA, IndexType* const ipiv);
 
     /**  */
-    IndexType (*pgetri)(
-        const IndexType n,
-        const T* const A,
-        const IndexType ia,
-        const IndexType ja,
-        IndexType* descA,
-        IndexType* const ipiv,
-        const T* work,
-        IndexType lwork,
-        IndexType* iwork,
-        IndexType liwork );
+    IndexType (*pgetri) (const IndexType n, const T* const A, const IndexType ia, const IndexType ja, IndexType* descA, IndexType* const ipiv,
+                         const T* work, IndexType lwork, IndexType* iwork, IndexType liwork );
 
     /** Function pointer for routine that computes the inverse of a cyclic(nB) distributed matrix.
      *
@@ -1590,7 +1413,8 @@ struct SCALAPACKInterface
      *  @param[in]  comm is the communicator of the distribution
      */
 
-    void (*inverse)( const IndexType n, const IndexType nB, const T* a, const class Communicator& comm );
+    void ( *inverse ) ( const IndexType n, const IndexType nB, const T* a,
+                        const class Communicator& comm );
 
     /** Default constructor, initializes variables with NULL */
 
@@ -1613,10 +1437,8 @@ struct UtilsInterface
          *  @return true if \f$ 0 \le array[i] < size for all i = 0, ..., n-1\f$
          */
 
-        typedef bool (*validIndexes)( const IndexType array[], const IndexType n, const IndexType size );
+        typedef bool ( *validIndexes) ( const IndexType array[], const IndexType n, const IndexType size );
     };
-
-    LAMA_INTERFACE_DEFINE( Indexes, validIndexes )
 
     /** Structure with type defintions for all reduction methods.
      *
@@ -1628,18 +1450,18 @@ struct UtilsInterface
     {
         /** Sum n contiguously stored values.
          *
-         *  @param x is an array of values
-         *  @param n is the size of x
-         *  @return sum of all values in x
+         *  @param array is an array of values
+         *  @param n is the size of array
+         *  @return sum of all values in array
          */
 
-        typedef ValueType (*sum)( const ValueType array[], const IndexType n );
+        typedef ValueType ( *sum ) ( const ValueType array[], const IndexType n );
 
-        typedef ValueType (*maxval)( const ValueType array[], const IndexType n );
+        typedef ValueType ( *maxval ) ( const ValueType array[], const IndexType n );
 
         /** Absolute maximum of n contiguously stored values */
 
-        typedef ValueType (*absMaxVal)( const ValueType array[], const IndexType n );
+        typedef ValueType ( *absMaxVal ) ( const ValueType array[], const IndexType n );
 
         /** Building absolute maximum of element-wise difference of vector elements.
          *
@@ -1651,7 +1473,7 @@ struct UtilsInterface
          *  Function is helpful to compute maximum norm for vectors and matrices
          */
 
-        typedef ValueType (*absMaxDiffVal)( const ValueType array1[], const ValueType array2[], const IndexType n );
+        typedef ValueType ( *absMaxDiffVal ) ( const ValueType array1[], const ValueType array2[], const IndexType n );
 
         /** Predicate that tests whether a sequene is sorted.
          *
@@ -1660,36 +1482,30 @@ struct UtilsInterface
          *  @param[in] ascending if true check for ascending order, otherwise for descending
          */
 
-        typedef bool (*isSorted)( const ValueType array[], const IndexType n, bool ascending );
+        typedef bool ( *isSorted) ( const ValueType array[], const IndexType n, bool ascending );
     };
-
-    LAMA_INTERFACE_DEFINE_T( Reductions, sum )
-    LAMA_INTERFACE_DEFINE_T( Reductions, maxval )
-    LAMA_INTERFACE_DEFINE_T( Reductions, absMaxVal )
-    LAMA_INTERFACE_DEFINE_T( Reductions, absMaxDiffVal )
-    LAMA_INTERFACE_DEFINE_T( Reductions, isSorted ) 
 
     template<typename ValueType>
     struct Setter
     {
         /** Set all elements of a contiguous array with a value. */
 
-        typedef void (*setVal)( ValueType array[], const IndexType n, const ValueType val );
+        typedef void ( *setVal ) ( ValueType array[], const IndexType n, const ValueType val );
 
         /** Set all elements of a contiguous array with its order number 0, 1, 2, ... */
 
-        typedef void (*setOrder)( ValueType array[], const IndexType n );
+        typedef void ( *setOrder ) ( ValueType array[], const IndexType n );
     };
 
     template<typename ValueType>
     struct Getter
     {
-        typedef ValueType (*getValue)( const ValueType* array, const IndexType i );
+        typedef ValueType ( *getValue ) ( const ValueType* array, const IndexType i );
     };
 
     LAMA_INTERFACE_DEFINE_T( Getter, getValue )
 
-    template    <typename ValueType1, typename ValueType2>
+    template<typename ValueType1, typename ValueType2>
     struct Copy
     {
         /** Set out[i] = in[i],  0 <= i < n */
@@ -1733,6 +1549,14 @@ struct UtilsInterface
                                   const OtherValueType value );
     };
 
+    LAMA_INTERFACE_DEFINE( Indexes, validIndexes )
+
+    LAMA_INTERFACE_DEFINE_T( Reductions, sum )
+    LAMA_INTERFACE_DEFINE_T( Reductions, maxval )
+    LAMA_INTERFACE_DEFINE_T( Reductions, absMaxVal )
+    LAMA_INTERFACE_DEFINE_T( Reductions, absMaxDiffVal )
+    LAMA_INTERFACE_DEFINE_T( Reductions, isSorted )
+
     LAMA_INTERFACE_DEFINE_T( Setter, setVal )
     LAMA_INTERFACE_DEFINE_T( Setter, setOrder )
 
@@ -1762,35 +1586,34 @@ struct CSRUtilsInterface
     template<typename ValueType>
     struct Operations
     {
-        typedef void (*sortRowElements)(
-            IndexType csrJA[],
-            ValueType csrValues[],
-            const IndexType csrIA[],
-            const IndexType numRows,
-            const bool diagonalFlag );
+        typedef void ( *sortRowElements ) ( IndexType csrJA[],
+                                            ValueType csrValues[],
+                                            const IndexType csrIA[],
+                                            const IndexType numRows,
+                                            const bool diagonalFlag ) ;
     };
 
     LAMA_INTERFACE_DEFINE_T( Operations, sortRowElements )
 
     /** Structure with type definitions for solver routines */
 
-    template    <typename ValueType>
+    template<typename ValueType>
     struct Solver
     {
-        /** Method to compute one iteration step in Jacobi method
-         *
-         *  solution = omega * ( rhs + B * oldSolution) * dinv  + ( 1 - omega ) * oldSolution
-         *
-         */
-        typedef void ( *jacobi ) ( ValueType* const solution,
-                                   const IndexType csrIA[],
-                                   const IndexType csrJA[],
-                                   const ValueType csrValues[],
-                                   const ValueType oldSolution[],
-                                   const ValueType rhs[],
-                                   const ValueType omega,
-                                   const IndexType numRows,
-                                   class SyncToken* syncToken );
+       /** Method to compute one iteration step in Jacobi method
+        *
+        *  solution = omega * ( rhs + B * oldSolution) * dinv  + ( 1 - omega ) * oldSolution
+        *
+        */
+       typedef void ( *jacobi ) ( ValueType* const solution,
+                                  const IndexType csrIA[],
+                                  const IndexType csrJA[],
+                                  const ValueType csrValues[],
+                                  const ValueType oldSolution[],
+                                  const ValueType rhs[],
+                                  const ValueType omega,
+                                  const IndexType numRows,
+                                  class SyncToken* syncToken );
 
         /** Method to compute one iteration step in Jacobi method
          *
@@ -1866,9 +1689,9 @@ struct CSRUtilsInterface
          */
 
         typedef IndexType ( *matrixAddSizes ) ( IndexType cIa[], const IndexType numRows,
-                                                const IndexType numColumns, bool diagonalProperty,
-                                                const IndexType aIA[], const IndexType aJA[],
-                                                const IndexType bIA[], const IndexType bJA[] );
+                                           const IndexType numColumns, bool diagonalProperty,
+                                           const IndexType aIA[], const IndexType aJA[],
+                                           const IndexType bIA[], const IndexType bJA[] );
 
         /** This method computes the row sizes for result matrix C of matrix multiplication A x B
          *
@@ -1881,9 +1704,9 @@ struct CSRUtilsInterface
          */
 
         typedef IndexType ( *matrixMultiplySizes ) ( IndexType cIa[], const IndexType numRows,
-                const IndexType numColumns, bool diagonalProperty,
-                const IndexType aIA[], const IndexType aJA[],
-                const IndexType bIA[], const IndexType bJA[] );
+                                                     const IndexType numColumns, bool diagonalProperty,
+                                                     const IndexType aIA[], const IndexType aJA[],
+                                                     const IndexType bIA[], const IndexType bJA[] );
 
         /** This method computes the column indexes for result matrix C of matrix multiplication A x B
          *
@@ -1981,8 +1804,8 @@ struct CSRUtilsInterface
          */
 
         typedef ValueType ( *absMaxDiffVal ) ( IndexType numRows, bool sortedRows,
-                                               const IndexType csrIA1[], const IndexType csrJA1[], const ValueType csrValues1[],
-                                               const IndexType csrIA2[], const IndexType csrJA2[], const ValueType csrValues2[] );
+           const IndexType csrIA1[], const IndexType csrJA1[], const ValueType csrValues1[],
+           const IndexType csrIA2[], const IndexType csrJA2[], const ValueType csrValues2[] );
     };
 
     LAMA_INTERFACE_DEFINE_T( Reductions, absMaxDiffVal )
@@ -2158,32 +1981,31 @@ struct DenseUtilsInterface
     template<typename DenseValueType>
     struct Counting
     {
-        /** Counting non-zero values in dense storage for conversion to CSR
-         *
-         *  @param[out] csrSizes is an array that contains for each row the number of non-zero elements
-         *  @param[in]  diagonalFlag if true the diagonal elements are counted in any case
-         *  @param[in]  numRows number of rows
-         *  @param[in]  numColumns number of columns
-         *  @param[in]  denseValues size is numRows x numColumns, array with all matrix elements of dense format
-         *  @param[in]  eps is threshold when an element is to be considered as non-zero
-         *
-         *  The matrix values are stored row-wise in denseValues.
-         */
+         /** Counting non-zero values in dense storage for conversion to CSR
+          *
+          *  @param[out] csrSizes is an array that contains for each row the number of non-zero elements
+          *  @param[in]  diagonalFlag if true the diagonal elements are counted in any case
+          *  @param[in]  numRows number of rows
+          *  @param[in]  numColumns number of columns
+          *  @param[in]  denseValues size is numRows x numColumns, array with all matrix elements of dense format
+          *  @param[in]  eps is threshold when an element is to be considered as non-zero
+          *
+          *  The matrix values are stored row-wise in denseValues.
+          */
 
-        typedef void (*getCSRSizes)(
-            IndexType csrSizes[],
-            bool diagonalFlag,
-            const IndexType numRows,
-            const IndexType numColumns,
-            const DenseValueType denseValues[],
-            const DenseValueType eps );
+        typedef void ( *getCSRSizes )( IndexType csrSizes[],
+                                       bool diagonalFlag,
+                                       const IndexType numRows,
+                                       const IndexType numColumns,
+                                       const DenseValueType denseValues[],
+                                       const DenseValueType eps );
     };
 
     LAMA_INTERFACE_DEFINE_T( Counting, getCSRSizes )
 
     /** Function pointer type definitions for conversion on dense storage. */
 
-    template    <typename DenseValueType, typename CSRValueType>
+    template<typename DenseValueType, typename CSRValueType>
     struct Conversions
     {
         /** Convesion of dense matrix to CSR storage format
@@ -2231,24 +2053,24 @@ struct DenseUtilsInterface
 
         typedef void ( *copyDenseValues ) ( DenseValueType1 newValues[],
                                             const IndexType numRows,
-                                            const IndexType numColumns,
-                                            const DenseValueType2 oldValues[] );
+                                           const IndexType numColumns,
+                                           const DenseValueType2 oldValues[] );
 
-        /** Get diagonal of a dense matrix, type conversion is supported. */
+         /** Get diagonal of a dense matrix, type conversion is supported. */
 
-        typedef void ( *getDiagonal ) ( DenseValueType1 diagonalValues[],
-                                        const IndexType numDiagonalValues,
-                                        const DenseValueType2 denseValues[],
-                                        const IndexType numRows,
-                                        const IndexType numColumns );
+         typedef void ( *getDiagonal ) ( DenseValueType1 diagonalValues[],
+                                         const IndexType numDiagonalValues,
+                                         const DenseValueType2 denseValues[],
+                                         const IndexType numRows,
+                                         const IndexType numColumns );
 
-        /** Set diagonal of a dense matrix, type conversion is supported. */
+         /** Set diagonal of a dense matrix, type conversion is supported. */
 
-        typedef void ( *setDiagonal ) ( DenseValueType1 denseValues[],
-                                        const IndexType numRows,
-                                        const IndexType numColumns,
-                                        const DenseValueType2 diagonalValues[],
-                                        const IndexType numDiagonalValues );
+         typedef void ( *setDiagonal ) ( DenseValueType1 denseValues[],
+                                         const IndexType numRows,
+                                         const IndexType numColumns,
+                                         const DenseValueType2 diagonalValues[],
+                                         const IndexType numDiagonalValues );
     };
 
     LAMA_INTERFACE_DEFINE_TT( Copy, copyDenseValues )
@@ -2338,34 +2160,33 @@ struct ELLUtilsInterface
          *  The ELL storage stands for a square matrix and must have diagonal property.
          */
 
-        typedef void (*jacobi)(
-            ValueType solution[],
-            const IndexType numRows,
-            const IndexType ellNumValuesPerRow,
-            const IndexType ellSizes[],
-            const IndexType ellJA[],
-            const ValueType ellValues[],
-            const ValueType oldSolution[],
-            const ValueType rhs[],
-            const ValueType omega,
-            class SyncToken* syncToken );
+        typedef void ( *jacobi ) ( ValueType solution[],
+                                   const IndexType numRows,
+                                   const IndexType ellNumValuesPerRow,
+                                   const IndexType ellSizes[],
+                                   const IndexType ellJA[],
+                                   const ValueType ellValues[],
+                                   const ValueType oldSolution[],
+                                   const ValueType rhs[],
+                                   const ValueType omega,
+                                   class SyncToken* syncToken );
 
-        typedef void (*jacobiHalo)(
-            ValueType solution[],
-            const IndexType numRows,
-            const ValueType diagonal[],
-            const IndexType ellNumValuesPerRow,
-            const IndexType ellSizes[],
-            const IndexType ellJA[],
-            const ValueType ellValues[],
-            const IndexType rowIndexes[],
-            const IndexType numNonEmptyRows,
-            const ValueType oldSolution[],
-            const ValueType omega,
-            class SyncToken* syncToken );
+        typedef void ( *jacobiHalo ) (ValueType solution[],
+                                      const IndexType numRows,
+                                      const ValueType diagonal[],
+                                      const IndexType ellNumValuesPerRow,
+                                      const IndexType ellSizes[],
+                                      const IndexType ellJA[],
+                                      const ValueType ellValues[],
+                                      const IndexType rowIndexes[],
+                                      const IndexType numNonEmptyRows,
+                                      const ValueType oldSolution[],
+                                      const ValueType omega,
+                                      class SyncToken* syncToken );
     };
 
-    LAMA_INTERFACE_DEFINE_T( Solver, jacobi )LAMA_INTERFACE_DEFINE_T( Solver, jacobiHalo )
+    LAMA_INTERFACE_DEFINE_T( Solver, jacobi )
+    LAMA_INTERFACE_DEFINE_T( Solver, jacobiHalo )
 
     /** Conversion routines between ELL and CSR storage format. */
 
@@ -2402,6 +2223,8 @@ struct ELLUtilsInterface
                                         const IndexType csrJA[],
                                         const CSRValueType csrValues[] );
 
+
+
     };
 
     LAMA_INTERFACE_DEFINE_TT( Conversions, setCSRValues )
@@ -2428,6 +2251,7 @@ struct ELLUtilsInterface
                                        const ValueType eps,
                                        IndexType newIA[] );
 
+
         /** Compresses the given JA and values array using epsilon
          *
          * @param[in]  IA that should be compressed
@@ -2451,6 +2275,7 @@ struct ELLUtilsInterface
 
     LAMA_INTERFACE_DEFINE_T( Helper, compressIA )
     LAMA_INTERFACE_DEFINE_T( Helper, compressValues )
+
 
     template<typename ValueType, typename OtherValueType>
     struct Getter
@@ -2485,11 +2310,11 @@ struct ELLUtilsInterface
          */
 
         typedef OtherValueType ( *getValue ) ( const IndexType i,
-                                               const IndexType j,
-                                               const IndexType numRows,
-                                               const IndexType *ia,
-                                               const IndexType *ja,
-                                               const ValueType *values );
+                                          const IndexType j,
+                                          const IndexType numRows,
+                                          const IndexType *ia,
+                                          const IndexType *ja,
+                                          const ValueType *values );
     };
 
     LAMA_INTERFACE_DEFINE_TT( Getter , getRow )
@@ -2498,15 +2323,15 @@ struct ELLUtilsInterface
     struct Operations
     {
         typedef IndexType ( *countNonEmptyRowsBySizes ) ( const IndexType sizes[],
-                const IndexType numRows );
+                                                          const IndexType numRows );
 
-        typedef void ( *setNonEmptyRowsBySizes ) ( IndexType rowIndexes[],
-                const IndexType numNonEmptyRows,
-                const IndexType sizes[],
-                const IndexType numRows );
+        typedef void ( *setNonEmptyRowsBySizes ) (  IndexType rowIndexes[],
+                                                    const IndexType numNonEmptyRows,
+                                                    const IndexType sizes[],
+                                                    const IndexType numRows );
 
         typedef bool ( *hasDiagonalProperty ) ( const IndexType numDiagonals,
-                                                const IndexType ellJA[] );
+                                                        const IndexType ellJA[] );
 
         typedef void ( *check ) ( const IndexType mNumRows,
                                   const IndexType mNumValuesPerRow,
@@ -2585,13 +2410,13 @@ struct ELLUtilsInterface
     template<typename ValueType>
     struct Reductions
     {
-        /** This method returns the maximal absolute value of an ELLPACK matrix. */
+         /** This method returns the maximal absolute value of an ELLPACK matrix. */
 
-        typedef ValueType ( *absMaxVal ) ( const IndexType numRows,
-                                           const IndexType numNonZerosPerRow,
-                                           const IndexType ellIA[],
-                                           const ValueType ellValues[]
-                                         );
+         typedef ValueType ( *absMaxVal ) ( const IndexType numRows,
+                                            const IndexType numNonZerosPerRow,
+                                            const IndexType ellIA[],
+                                            const ValueType ellValues[]
+                                          );
     };
 
     LAMA_INTERFACE_DEFINE_T( Reductions, absMaxVal )
@@ -2606,6 +2431,7 @@ struct ELLUtilsInterface
     };
 
     LAMA_INTERFACE_DEFINE_TT( Scale, scaleValue )
+
 
     template<typename ValueType>
     struct MatrixTimesMatrix
@@ -2729,43 +2555,42 @@ struct JDSUtilsInterface
     template<typename ValueType>
     struct Solver
     {
-        /** Method to compute one iteration step in Jacobi method
-         *
-         *  solution = omega * ( rhs + B * oldSolution) * dinv  + ( 1 - omega ) * oldSolution
-         *
-         */
-        typedef void (*jacobi)(
-            ValueType* const solution,
-            const IndexType numRows,
-            const IndexType jdsPerm[],
-            const IndexType jdsIlg[],
-            const IndexType jdsNumDiagonals,
-            const IndexType jdsDlg[],
-            const IndexType jdsJA[],
-            const ValueType jdsValues[],
-            const ValueType oldSolution[],
-            const ValueType rhs[],
-            const ValueType omega,
-            class SyncToken* syncToken );
+       /** Method to compute one iteration step in Jacobi method
+        *
+        *  solution = omega * ( rhs + B * oldSolution) * dinv  + ( 1 - omega ) * oldSolution
+        *
+        */
+       typedef void ( *jacobi ) ( ValueType* const solution,
+                                  const IndexType numRows,
+                                  const IndexType jdsPerm[],
+                                  const IndexType jdsIlg[],
+                                  const IndexType jdsNumDiagonals,
+                                  const IndexType jdsDlg[],
+                                  const IndexType jdsJA[],
+                                  const ValueType jdsValues[],
+                                  const ValueType oldSolution[],
+                                  const ValueType rhs[],
+                                  const ValueType omega,
+                                  class SyncToken* syncToken );
 
         /** Method to compute one iteration step in Jacobi method with halo.  */
 
-        typedef void (*jacobiHalo)(
-            ValueType solution[],
-            const IndexType numRows,
-            const ValueType invDiagonal[],
-            const IndexType numDiagonals,
-            const IndexType jdsHaloPerm[],
-            const IndexType jdsHaloIlg[],
-            const IndexType jdsHaloDlg[],
-            const IndexType jdsHaloJA[],
-            const ValueType jdsHaloValues[],
-            const ValueType oldSolution[],
-            const ValueType omega,
-            class SyncToken* syncToken );
+        typedef void ( *jacobiHalo ) ( ValueType solution[],
+                                       const IndexType numRows,
+                                       const ValueType invDiagonal[],
+                                       const IndexType numDiagonals,
+                                       const IndexType jdsHaloPerm[],
+                                       const IndexType jdsHaloIlg[],
+                                       const IndexType jdsHaloDlg[],
+                                       const IndexType jdsHaloJA[],
+                                       const ValueType jdsHaloValues[],
+                                       const ValueType oldSolution[],
+                                       const ValueType omega,
+                                       class SyncToken* syncToken );
     };
 
-    LAMA_INTERFACE_DEFINE_T( Solver, jacobi )LAMA_INTERFACE_DEFINE_T( Solver, jacobiHalo )
+    LAMA_INTERFACE_DEFINE_T( Solver, jacobi )
+    LAMA_INTERFACE_DEFINE_T( Solver, jacobiHalo )
 
     struct Sort
     {
@@ -2825,8 +2650,8 @@ struct JDSUtilsInterface
          *  /endcode
          */
 
-        typedef IndexType ( *ilg2dlg ) ( IndexType dlg[], const IndexType numDiagonals,
-                                         const IndexType ilg[], const IndexType numRows );
+         typedef IndexType ( *ilg2dlg ) ( IndexType dlg[], const IndexType numDiagonals,
+                                          const IndexType ilg[], const IndexType numRows );
 
     };
 
@@ -2926,8 +2751,8 @@ struct JDSUtilsInterface
     struct Operations
     {
         typedef void ( *setDiagonalWithScalar ) ( const IndexType numDiagonal,
-                ValueType values[],
-                Scalar scalar );
+                                                  ValueType values[],
+                                                  Scalar scalar );
     };
 
     LAMA_INTERFACE_DEFINE_T( Operations, setDiagonalWithScalar )
@@ -2975,11 +2800,11 @@ struct JDSUtilsInterface
     struct Helper
     {
         typedef bool ( *checkDiagonalProperty ) ( const IndexType numDiagonals,
-                const IndexType numRows,
-                const IndexType numColumns,
-                const IndexType perm[],
-                const IndexType ja[],
-                const IndexType dlg[] );
+                                                  const IndexType numRows,
+                                                  const IndexType numColumns,
+                                                  const IndexType perm[],
+                                                  const IndexType ja[],
+                                                  const IndexType dlg[] );
 
         typedef bool ( *check ) ( const IndexType numRows,
                                   const IndexType numValues,
@@ -3025,38 +2850,37 @@ struct DIAUtilsInterface
          *  - diaValues has numDiagonals x max(numRows, numColumns) entries
          */
 
-        typedef void (*getCSRSizes)(
-            IndexType csrSizes[],
-            bool diagonalFlag,
-            const IndexType numRows,
-            const IndexType numColumns,
-            const IndexType numDiagonals,
-            const IndexType diaOffsets[],
-            const ValueType diaValues[],
-            const ValueType eps );
+        typedef void ( *getCSRSizes ) ( IndexType csrSizes[],
+                                        bool diagonalFlag,
+                                        const IndexType numRows,
+                                        const IndexType numColumns,
+                                        const IndexType numDiagonals,
+                                        const IndexType diaOffsets[],
+                                        const ValueType diaValues[],
+                                        const ValueType eps );
 
     };
 
     LAMA_INTERFACE_DEFINE_T( Counting, getCSRSizes )
 
-    template    <typename DIAValueType, typename CSRValueType>
+    template<typename DIAValueType, typename CSRValueType>
     struct Conversions
     {
         /** Type definition of function pointer for conversion of DIA storage data to CSR data.
-         *
-         *  @param[out] csrJA will contain the column indexes
-         *  @param[out] csrValues will contain the matrix elements
-         *  @param[in] csrIA is the array with the offsets (must already be available before)
-         *  @param[in] numRows is the number of rows
-         *  @param[in] numColumns is the number of columns
-         *  @param[in] numDiagonals number of diagonals used in the DIA format
-         *  @param[in] diaOffsets diagonal offsets, size is numDiagonals
-         *  @param[in] diaValues are stored values of the diagonals
-         *  @param[in] eps threshold value when an element should be considered as zero
-         *
-         *   - csrIA has numRows + 1 entries
-         *   - csrJA and csrValues must have at least numValues entries, numValues = csrIA[numRows]
-         */
+        *
+        *  @param[out] csrJA will contain the column indexes
+        *  @param[out] csrValues will contain the matrix elements
+        *  @param[in] csrIA is the array with the offsets (must already be available before)
+        *  @param[in] numRows is the number of rows
+        *  @param[in] numColumns is the number of columns
+        *  @param[in] numDiagonals number of diagonals used in the DIA format
+        *  @param[in] diaOffsets diagonal offsets, size is numDiagonals
+        *  @param[in] diaValues are stored values of the diagonals
+        *  @param[in] eps threshold value when an element should be considered as zero
+        *
+        *   - csrIA has numRows + 1 entries
+        *   - csrJA and csrValues must have at least numValues entries, numValues = csrIA[numRows]
+        */
 
         typedef void ( *getCSRValues ) ( IndexType csrJA[],
                                          CSRValueType csrValues[],
@@ -3108,21 +2932,21 @@ struct DIAUtilsInterface
     template<typename ValueType>
     struct Solver
     {
-        /** Method to compute one iteration step in Jacobi method
-         *
-         *  solution = omega * ( rhs + B * oldSolution) * dinv  + ( 1 - omega ) * oldSolution
-         *
-         */
-        typedef void ( *jacobi ) ( ValueType* const solution,
-                                   const IndexType numColumns,
-                                   const IndexType numDiagonals,
-                                   const IndexType diaOffset[],
-                                   const ValueType diaValues[],
-                                   const ValueType oldSolution[],
-                                   const ValueType rhs[],
-                                   const ValueType omega,
-                                   const IndexType numRows,
-                                   class SyncToken* syncToken );
+       /** Method to compute one iteration step in Jacobi method
+        *
+        *  solution = omega * ( rhs + B * oldSolution) * dinv  + ( 1 - omega ) * oldSolution
+        *
+        */
+       typedef void ( *jacobi ) ( ValueType* const solution,
+                                  const IndexType numColumns,
+                                  const IndexType numDiagonals,
+                                  const IndexType diaOffset[],
+                                  const ValueType diaValues[],
+                                  const ValueType oldSolution[],
+                                  const ValueType rhs[],
+                                  const ValueType omega,
+                                  const IndexType numRows,
+                                  class SyncToken* syncToken );
     };
 
     LAMA_INTERFACE_DEFINE_T( Solver, jacobi )
@@ -3132,14 +2956,14 @@ struct DIAUtilsInterface
     template<typename ValueType>
     struct Reductions
     {
-        /** This method returns the maximal absolute value of an ELLPACK matrix. */
+         /** This method returns the maximal absolute value of an ELLPACK matrix. */
 
-        typedef ValueType ( *absMaxVal ) ( const IndexType numRows,
-                                           const IndexType numColumns,
-                                           const IndexType numDiagonals,
-                                           const IndexType diaOffsets[],
-                                           const ValueType diaValues[]
-                                         );
+         typedef ValueType ( *absMaxVal ) ( const IndexType numRows,
+                                            const IndexType numColumns,
+                                            const IndexType numDiagonals,
+                                            const IndexType diaOffsets[],
+                                            const ValueType diaValues[]
+                                          );
     };
 
     LAMA_INTERFACE_DEFINE_T( Reductions, absMaxVal )
@@ -3167,16 +2991,15 @@ struct COOUtilsInterface
          *  @param[in] array with row indexes of COO storage (size is numValues)
          */
 
-        typedef void (*getCSRSizes)(
-            IndexType csrSizes[],
-            const IndexType numRows,
-            const IndexType numValues,
-            const IndexType cooIA[] );
+        typedef void ( *getCSRSizes )( IndexType csrSizes[],
+                                       const IndexType numRows,
+                                       const IndexType numValues,
+                                       const IndexType cooIA[] );
     };
 
     LAMA_INTERFACE_DEFINE( Counting, getCSRSizes )
 
-    template    <typename COOValueType, typename CSRValueType>
+    template<typename COOValueType, typename CSRValueType>
     struct Conversions
     {
         /** Helper routine for conversion COO to CSR
@@ -3261,21 +3084,21 @@ struct COOUtilsInterface
     template<typename ValueType>
     struct Solver
     {
-        /** Method to compute one iteration step in Jacobi method
-         *
-         *  solution = omega * ( rhs + B * oldSolution) * dinv  + ( 1 - omega ) * oldSolution
-         *
-         */
-        typedef void ( *jacobi ) ( ValueType* const solution,
-                                   const IndexType cooNumValues,
-                                   const IndexType cooIA[],
-                                   const IndexType cooJA[],
-                                   const ValueType cooValues[],
-                                   const ValueType oldSolution[],
-                                   const ValueType rhs[],
-                                   const ValueType omega,
-                                   const IndexType numRows,
-                                   class SyncToken* syncToken );
+       /** Method to compute one iteration step in Jacobi method
+        *
+        *  solution = omega * ( rhs + B * oldSolution) * dinv  + ( 1 - omega ) * oldSolution
+        *
+        */
+       typedef void ( *jacobi ) ( ValueType* const solution,
+                                  const IndexType cooNumValues,
+                                  const IndexType cooIA[],
+                                  const IndexType cooJA[],
+                                  const ValueType cooValues[],
+                                  const ValueType oldSolution[],
+                                  const ValueType rhs[],
+                                  const ValueType omega,
+                                  const IndexType numRows,
+                                  class SyncToken* syncToken );
 
         /** Method to compute one iteration step in Jacobi method
          *
@@ -3311,7 +3134,7 @@ struct COOUtilsInterface
  * classes. The implementation of the methods of this base class will all throw
  * an exception.
  */
-class LAMA_DLL_IMPORTEXPORT LAMAInterface: public Printable
+class LAMA_DLL_IMPORTEXPORT LAMAInterface : public Printable
 {
 public:
 
@@ -3354,16 +3177,16 @@ public:
 
 protected:
 
-    BLAS1Interface<float> mFloatBLAS1Interface;
-    BLAS2Interface<float> mFloatBLAS2Interface;
-    BLAS3Interface<float> mFloatBLAS3Interface;
-    LAPACKInterface<float> mFloatLAPACKInterface;
+    BLAS1Interface<float>     mFloatBLAS1Interface;
+    BLAS2Interface<float>     mFloatBLAS2Interface;
+    BLAS3Interface<float>     mFloatBLAS3Interface;
+    LAPACKInterface<float>    mFloatLAPACKInterface;
     SCALAPACKInterface<float> mFloatSCALAPACKInterface;
 
-    BLAS1Interface<double> mDoubleBLAS1Interface;
-    BLAS2Interface<double> mDoubleBLAS2Interface;
-    BLAS3Interface<double> mDoubleBLAS3Interface;
-    LAPACKInterface<double> mDoubleLAPACKInterface;
+    BLAS1Interface<double>     mDoubleBLAS1Interface;
+    BLAS2Interface<double>     mDoubleBLAS2Interface;
+    BLAS3Interface<double>     mDoubleBLAS3Interface;
+    LAPACKInterface<double>    mDoubleLAPACKInterface;
     SCALAPACKInterface<double> mDoubleSCALAPACKInterface;
 
     LAMA_LOG_DECL_STATIC_LOGGER(logger);

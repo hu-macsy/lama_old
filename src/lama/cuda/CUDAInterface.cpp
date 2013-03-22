@@ -202,7 +202,7 @@ CUDAInterface::~CUDAInterface()
 
 // static lama::LAMAInterfaceRegistration<CUDAInterface> cudaRegisterObj( Context::CUDA );
 
-LAMA_LAMAINTERFACE_REGISTRATION( Context::CUDA, CUDAInterface );
+LAMA_LAMAINTERFACE_REGISTRATION( Context::CUDA, CUDAInterface )
 
 } // namespace
 

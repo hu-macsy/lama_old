@@ -222,6 +222,6 @@ OpenMPInterface::~OpenMPInterface()
 {
 }
 
-LAMA_LAMAINTERFACE_REGISTRATION( Context::Host, OpenMPInterface );
+LAMA_LAMAINTERFACE_REGISTRATION( Context::Host, OpenMPInterface )
 
 } // namespace

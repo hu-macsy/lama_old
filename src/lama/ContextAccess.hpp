@@ -98,7 +98,7 @@ private:
  *
  *  \code
  *  {
- *      LAMA_CONTEXT_ACCESS( cudaContext );
+ *      LAMA_CONTEXT_ACCESS( cudaContext )
  *      ...   // computations on CUDA device
  *      // context is released at end of the scope by destructor of access object.
  *  }
