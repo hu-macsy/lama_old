@@ -171,7 +171,7 @@ void CUDAELLUtils::setNonEmptyRowsBySizes(
     const IndexType numRows )
 {
     LAMA_LOG_INFO( logger,
-                   "setNonEmptyRowsBySizes" << " #rowIndexes = " << rowIndexes << ", #numNonEmptyRows = " << numNonEmptyRows << ", #sizes = " << sizes << ", #numRows = " << numRows );
+                   "setNonEmptyRowsBySizes" << " #rowIndexes = " << rowIndexes << ", #numNonEmptyRows = " << numNonEmptyRows << ", #sizes = " << sizes << ", #numRows = " << numRows )
 
     LAMA_CHECK_CUDA_ACCESS
 
@@ -192,7 +192,7 @@ void CUDAELLUtils::setNonEmptyRowsBySizes(
 
 bool CUDAELLUtils::hasDiagonalProperty( const IndexType numDiagonals, const IndexType ellJA[] )
 {
-    LAMA_LOG_INFO( logger, "hasDiagonalProperty, #numDiagonals = " << numDiagonals );
+    LAMA_LOG_INFO( logger, "hasDiagonalProperty, #numDiagonals = " << numDiagonals )
 
     LAMA_CHECK_CUDA_ACCESS
 
