@@ -256,7 +256,7 @@ public:
 
     ~WriteOnlyAccess()
     {
-        LAMA_LOG_TRACE( WriteAccess<T>::logger, "~WriteOnlyAccess" );
+        LAMA_LOG_TRACE( WriteAccess<T>::logger, "~WriteOnlyAccess" )
     }
 };
 
@@ -269,7 +269,7 @@ inline IndexType WriteAccess<T>::size() const
     }
     else
     {
-        LAMA_THROWEXCEPTION( "cannot call size on released array" );
+        LAMA_THROWEXCEPTION( "cannot call size on released array" )
     }
 }
 

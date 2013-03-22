@@ -69,7 +69,7 @@ using std::sqrt;
 namespace lama
 {
 
-LAMA_LOG_DEF_LOGGER( OpenMPInterface::logger, "LAMAInterface.OpenMPInterface" );
+LAMA_LOG_DEF_LOGGER( OpenMPInterface::logger, "LAMAInterface.OpenMPInterface" )
 
 OpenMPInterface::OpenMPInterface()
     : LAMAInterface()

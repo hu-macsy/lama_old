@@ -48,7 +48,7 @@
 namespace lama
 {
 
-LAMA_LOG_DEF_LOGGER( GMRES::logger, "Solver.IterativeSolver.GMRES" );
+LAMA_LOG_DEF_LOGGER( GMRES::logger, "Solver.IterativeSolver.GMRES" )
 
 GMRES::GMRES( const std::string& id )
     : IterativeSolver( id ), mKrylovDim( 10 )
@@ -184,7 +184,7 @@ void GMRES::initialize( const Matrix& coefficients )
     }
     default:
     {
-        LAMA_THROWEXCEPTION( "Unsupported ValueType " << coefficients.getValueType() );
+        LAMA_THROWEXCEPTION( "Unsupported ValueType " << coefficients.getValueType() )
     }
     }
 
@@ -198,7 +198,7 @@ void GMRES::initialize( const Matrix& coefficients )
 
 void GMRES::setKrylovDim( unsigned int krylovDim )
 {
-    LAMA_LOG_DEBUG( logger, " Krylov dimension set to " << krylovDim );
+    LAMA_LOG_DEBUG( logger, " Krylov dimension set to " << krylovDim )
     mKrylovDim = krylovDim;
 }
 
@@ -234,7 +234,7 @@ void GMRES::iterate()
     unsigned int krylovIndex = this->getIterationCount() % mKrylovDim;
     unsigned int hIdxStart = krylovIndex * ( krylovIndex + 1 ) / 2;
     unsigned int hIdxDiag = hIdxStart + krylovIndex;
-    LAMA_LOG_INFO( logger, "GMRES("<<mKrylovDim<<"): Inner Step "<<krylovIndex<<"." );
+    LAMA_LOG_INFO( logger, "GMRES("<<mKrylovDim<<"): Inner Step "<<krylovIndex<<"." )
     Vector& vCurrent = *( ( *runtime.mV )[krylovIndex] );
     const Matrix& A = ( *runtime.mCoefficients );
 
@@ -255,7 +255,7 @@ void GMRES::iterate()
         }
         default:
         {
-            LAMA_THROWEXCEPTION( "Unsupported ValueType " << A.getValueType() );
+            LAMA_THROWEXCEPTION( "Unsupported ValueType " << A.getValueType() )
         }
         }
     }
@@ -271,7 +271,7 @@ void GMRES::iterate()
         *runtime.mX0 = runtime.mSolution.getConstReference();
 
         // set first search direction vCurrent
-        LAMA_LOG_INFO( logger, "Doing initial preconditioning." );
+        LAMA_LOG_INFO( logger, "Doing initial preconditioning." )
         if ( !mPreconditioner )
         {
             vCurrent = residual;
@@ -285,7 +285,7 @@ void GMRES::iterate()
         // normalize vCurrent
         runtime.mG[0] = vCurrent.l2Norm().getValue<double>();
         double scal = 1.0 / runtime.mG[0];
-        LAMA_LOG_DEBUG( logger, "Normalizing vCurrent with start residual "<< runtime.mG[0] <<"." );
+        LAMA_LOG_DEBUG( logger, "Normalizing vCurrent with start residual "<< runtime.mG[0] <<"." )
         vCurrent = scal * vCurrent;
     }
 
@@ -293,7 +293,7 @@ void GMRES::iterate()
     Vector& w = ( *runtime.mW );
     Vector& tmp = ( *runtime.mT );
 
-    LAMA_LOG_INFO( logger, "Doing preconditioning." );
+    LAMA_LOG_INFO( logger, "Doing preconditioning." )
     if ( !mPreconditioner )
     {
         w = A * vCurrent;
@@ -306,7 +306,7 @@ void GMRES::iterate()
     }
 
     // orthogonalization loop
-    LAMA_LOG_DEBUG( logger, "Orthogonalization of vCurrent." );
+    LAMA_LOG_DEBUG( logger, "Orthogonalization of vCurrent." )
     for ( unsigned int k = 0; k <= krylovIndex; ++k )
     {
         const Vector& Vk = *( ( *runtime.mV )[k] );
@@ -316,13 +316,13 @@ void GMRES::iterate()
     runtime.mHd[krylovIndex] = w.l2Norm().getValue<double>();
 
     // normalize/store w in vNext (not needed in last step? Storage?)
-    LAMA_LOG_DEBUG( logger, "Normalizing vNext." );
+    LAMA_LOG_DEBUG( logger, "Normalizing vNext." )
     Vector& vNext = *( *runtime.mV )[krylovIndex + 1];
     double scal = 1.0 / runtime.mHd[krylovIndex];
     vNext = scal * w;
 
     // apply Givens rotations to new column
-    LAMA_LOG_DEBUG( logger, "Apply Givens rotations." );
+    LAMA_LOG_DEBUG( logger, "Apply Givens rotations." )
     for ( unsigned int k = 0; k < krylovIndex; ++k )
     {
         double tmp1 = runtime.mH[hIdxStart + k];
@@ -333,7 +333,7 @@ void GMRES::iterate()
 
     // compute new rotation
     {
-        LAMA_LOG_DEBUG( logger, "Compute next plane rotation." );
+        LAMA_LOG_DEBUG( logger, "Compute next plane rotation." )
         double tmp = std::sqrt(
                          runtime.mH[hIdxDiag] * runtime.mH[hIdxDiag]
                          + runtime.mHd[krylovIndex] * runtime.mHd[krylovIndex] );
@@ -343,12 +343,12 @@ void GMRES::iterate()
 
     // update Hessenberg-system
     {
-        LAMA_LOG_DEBUG( logger, "Update Hessenberg-System." );
+        LAMA_LOG_DEBUG( logger, "Update Hessenberg-System." )
         runtime.mG[krylovIndex + 1] = -1.0 * runtime.mSS[krylovIndex] * runtime.mG[krylovIndex];
         runtime.mG[krylovIndex] = runtime.mCC[krylovIndex] * runtime.mG[krylovIndex];
         runtime.mH[hIdxDiag] = runtime.mCC[krylovIndex] * runtime.mH[hIdxDiag]
                                + runtime.mSS[krylovIndex] * runtime.mHd[krylovIndex];
-        LAMA_LOG_DEBUG( logger, "New Residual estimate "<< abs(runtime.mG[krylovIndex+1]) << "." );
+        LAMA_LOG_DEBUG( logger, "New Residual estimate "<< abs(runtime.mG[krylovIndex+1]) << "." )
     }
 
     // do (partial) update to solution (currently very expensive to do every iteration)
@@ -362,7 +362,7 @@ void GMRES::updateX( unsigned int i )
 {
     // back-substitution Hessenberg system H*y=g
     // H stored in column 'packed' order
-    LAMA_LOG_DEBUG( logger, "Updating X within krylov dimensions i+1 = " << i+1 );
+    LAMA_LOG_DEBUG( logger, "Updating X within krylov dimensions i+1 = " << i+1 )
 
     GMRESRuntime& runtime = getRuntime();
 
@@ -378,12 +378,12 @@ void GMRES::updateX( unsigned int i )
 
     const LAMAInterface& lamaInterface = context->getInterface();
 
-    LAMA_ASSERT_ERROR( lamaInterface.getLAPACKInterface<double>().tptrs, "LAPACK:tptrs not available on " << *context );
+    LAMA_ASSERT_ERROR( lamaInterface.getLAPACKInterface<double>().tptrs, "LAPACK:tptrs not available on " << *context )
 
     int info = lamaInterface.getLAPACKInterface<double>().tptrs( CblasColMajor, CblasUpper, CblasNoTrans, CblasNonUnit,
                i + 1, 1, runtime.mH.get(), runtime.mY.get(), i + 1 );
 
-    LAMA_LOG_DEBUG( logger, "tptrs returned with code = " << info );
+    LAMA_LOG_DEBUG( logger, "tptrs returned with code = " << info )
 
     // Update of solution vector
     Vector& x = runtime.mSolution.getReference();

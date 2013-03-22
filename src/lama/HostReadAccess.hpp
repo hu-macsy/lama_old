@@ -96,7 +96,7 @@ private:
     LAMA_LOG_DECL_STATIC_LOGGER(logger);
 };
 
-LAMA_LOG_DEF_TEMPLATE_LOGGER( template<typename T>, HostReadAccess<T>::logger, "ReadAccess.HostReadAccess" );
+LAMA_LOG_DEF_TEMPLATE_LOGGER( template<typename T>, HostReadAccess<T>::logger, "ReadAccess.HostReadAccess" )
 
 template<typename T>
 HostReadAccess<T>::HostReadAccess( const LAMAArray<ValueType>& array )
@@ -110,13 +110,13 @@ template<typename T>
 HostReadAccess<T>::HostReadAccess( const LAMAArrayConstView<ValueType>& view )
     : ReadAccess<T>( view, ContextFactory::getContext( Context::Host ) ), mData( get() )
 {
-    LAMA_LOG_DEBUG( logger, "read access on host, mData = " << mData );
+    LAMA_LOG_DEBUG( logger, "read access on host, mData = " << mData )
 }
 
 template<typename T>
 HostReadAccess<T>::~HostReadAccess()
 {
-    LAMA_LOG_DEBUG( logger, "~HostReadAccess" );
+    LAMA_LOG_DEBUG( logger, "~HostReadAccess" )
 }
 
 template<typename T>
@@ -128,7 +128,7 @@ inline const T& HostReadAccess<T>::operator[]( const IndexType i ) const
 template<typename T>
 inline HostReadAccess<T>::operator const T*() const
 {
-    LAMA_LOG_TRACE( logger, "mData = " << mData );
+    LAMA_LOG_TRACE( logger, "mData = " << mData )
     return mData;
 }
 

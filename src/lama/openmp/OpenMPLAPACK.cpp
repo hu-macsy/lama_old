@@ -184,7 +184,7 @@ extern "C"
 namespace lama
 {
 
-LAMA_LOG_DEF_LOGGER( OpenMPLAPACK::logger, "OpenMP.LAPACK" );
+LAMA_LOG_DEF_LOGGER( OpenMPLAPACK::logger, "OpenMP.LAPACK" )
 
 template<>
 IndexType OpenMPLAPACK::getrf(
@@ -195,13 +195,13 @@ IndexType OpenMPLAPACK::getrf(
     const int lda,
     int* const ipiv )
 {
-    LAMA_LOG_INFO( logger, "getrf<float> for A of size " << m << " x " << n );
+    LAMA_LOG_INFO( logger, "getrf<float> for A of size " << m << " x " << n )
 
     int info = 0;
 
 #ifdef LAMA_HAVE_MKL
 
-    LAMA_LOG_INFO( logger, "will use MKL routine" );
+    LAMA_LOG_INFO( logger, "will use MKL routine" )
 
     if ( order == CblasColMajor )
     {
@@ -267,11 +267,11 @@ IndexType OpenMPLAPACK::getrf(
 #endif //LAMA_HAVE_MKL
     if ( info < 0 )
     {
-        LAMA_THROWEXCEPTION( "illegal argument " << ( -info ) );
+        LAMA_THROWEXCEPTION( "illegal argument " << ( -info ) )
     }
     else if ( info > 0 )
     {
-        LAMA_THROWEXCEPTION( "value(" << info << "," << info << ")" << " is exactly zero" );
+        LAMA_THROWEXCEPTION( "value(" << info << "," << info << ")" << " is exactly zero" )
     }
 
     return info;
@@ -343,7 +343,7 @@ void OpenMPLAPACK::getinv( const IndexType n, float* a, const IndexType lda )
 
 #ifdef LAMA_HAVE_MKL
 
-    LAMA_LOG_INFO( logger, "getinv<float> for " << n << " x " << n << " matrix, uses MKL" );
+    LAMA_LOG_INFO( logger, "getinv<float> for " << n << " x " << n << " matrix, uses MKL" )
 
     info = LAPACKE_sgetrf( LAPACK_COL_MAJOR, n, n, a, lda, ipiv.get() );
 
@@ -351,14 +351,14 @@ void OpenMPLAPACK::getinv( const IndexType n, float* a, const IndexType lda )
 
     if ( info )
     {
-        LAMA_THROWEXCEPTION( "MKL sgetrf failed, info = " << info );
+        LAMA_THROWEXCEPTION( "MKL sgetrf failed, info = " << info )
     }
 
     info = LAPACKE_sgetri( LAPACK_COL_MAJOR, n, a, lda, ipiv.get() );
 
     if ( info )
     {
-        LAMA_THROWEXCEPTION( "MKL sgetri failed, info = " << info );
+        LAMA_THROWEXCEPTION( "MKL sgetri failed, info = " << info )
     }
 
 #else //LAMA_HAVE_MKL
@@ -370,13 +370,13 @@ void OpenMPLAPACK::getinv( const IndexType n, float* a, const IndexType lda )
 #define F77_info info
 #endif
 
-    LAMA_LOG_INFO( logger, "getinv<float> for " << n << " x " << n << " matrix, uses Fortran interface" );
+    LAMA_LOG_INFO( logger, "getinv<float> for " << n << " x " << n << " matrix, uses Fortran interface" )
 
     F77_sgetrf( &F77_N, &F77_N, a, &F77_lda, ipiv.get(), &F77_info );
 
     if ( F77_info )
     {
-        LAMA_THROWEXCEPTION( "LAPACK sgetrf failed, info = " << F77_info );
+        LAMA_THROWEXCEPTION( "LAPACK sgetrf failed, info = " << F77_info )
     }
 
     boost::scoped_array<float> work( new float[n] );
@@ -385,7 +385,7 @@ void OpenMPLAPACK::getinv( const IndexType n, float* a, const IndexType lda )
 
     if ( F77_info )
     {
-        LAMA_THROWEXCEPTION( "LAPACK sgetri failed, info = " << F77_info );
+        LAMA_THROWEXCEPTION( "LAPACK sgetri failed, info = " << F77_info )
     }
 
 #endif // LAMA_HAVE_MKL
@@ -400,7 +400,7 @@ void OpenMPLAPACK::getinv( const IndexType n, double* a, const IndexType lda )
 
 #ifdef LAMA_HAVE_MKL
 
-    LAMA_LOG_INFO( logger, "getinv<double> for " << n << " x " << n << " matrix, uses MKL" );
+    LAMA_LOG_INFO( logger, "getinv<double> for " << n << " x " << n << " matrix, uses MKL" )
 
     info = LAPACKE_dgetrf( LAPACK_COL_MAJOR, n, n, a, lda, ipiv.get() );
 
@@ -408,14 +408,14 @@ void OpenMPLAPACK::getinv( const IndexType n, double* a, const IndexType lda )
 
     if ( info )
     {
-        LAMA_THROWEXCEPTION( "MKL dgetrf failed, info = " << info );
+        LAMA_THROWEXCEPTION( "MKL dgetrf failed, info = " << info )
     }
 
     info = LAPACKE_dgetri( LAPACK_COL_MAJOR, n, a, lda, ipiv.get() );
 
     if ( info )
     {
-        LAMA_THROWEXCEPTION( "MKL dgetri failed, info = " << info );
+        LAMA_THROWEXCEPTION( "MKL dgetri failed, info = " << info )
     }
 
 #else //LAMA_HAVE_MKL
@@ -427,13 +427,13 @@ void OpenMPLAPACK::getinv( const IndexType n, double* a, const IndexType lda )
 #define F77_info info
 #endif
 
-    LAMA_LOG_INFO( logger, "getinv<double> for " << n << " x " << n << " matrix, uses Fortran interface" );
+    LAMA_LOG_INFO( logger, "getinv<double> for " << n << " x " << n << " matrix, uses Fortran interface" )
 
     F77_dgetrf( &F77_N, &F77_N, a, &F77_lda, ipiv.get(), &F77_info );
 
     if ( F77_info )
     {
-        LAMA_THROWEXCEPTION( "LAPACK dgetrf failed, info = " << F77_info );
+        LAMA_THROWEXCEPTION( "LAPACK dgetrf failed, info = " << F77_info )
     }
 
     boost::scoped_array<double> work( new double[n] );
@@ -442,7 +442,7 @@ void OpenMPLAPACK::getinv( const IndexType n, double* a, const IndexType lda )
 
     if ( F77_info )
     {
-        LAMA_THROWEXCEPTION( "LAPACK dgetri failed, info = " << F77_info );
+        LAMA_THROWEXCEPTION( "LAPACK dgetri failed, info = " << F77_info )
     }
 
 #endif // LAMA_HAVE_MKL
@@ -470,7 +470,7 @@ int OpenMPLAPACK::getri(
     const int UNUSED( lda ),
     int* const UNUSED( ipiv ) )
 {
-    LAMA_THROWEXCEPTION( "Not implemented." );
+    LAMA_THROWEXCEPTION( "Not implemented." )
     return -1;
 }
 #endif
@@ -497,7 +497,7 @@ int OpenMPLAPACK::getri(
     const int UNUSED( lda ),
     int* const UNUSED( ipiv ) )
 {
-    LAMA_THROWEXCEPTION( "Not implemented." );
+    LAMA_THROWEXCEPTION( "Not implemented." )
     return -1;
 }
 #endif

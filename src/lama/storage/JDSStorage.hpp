@@ -349,7 +349,7 @@ private:
 
     void print() const;
 
-    LAMA_LOG_DECL_STATIC_LOGGER( logger ); //!< logger for this matrix format
+    LAMA_LOG_DECL_STATIC_LOGGER( logger ) //!< logger for this matrix format
 };
 
 } // namespace lama

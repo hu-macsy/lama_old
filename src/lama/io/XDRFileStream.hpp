@@ -147,7 +147,7 @@ void XDRFileStream::write( T * const input, const std::streamsize n )
 {
     if ( m_openmode & std::ios::in )
     {
-        LAMA_THROWEXCEPTION( "XDRFileStream: Stream is not in Output mode" );
+        LAMA_THROWEXCEPTION( "XDRFileStream: Stream is not in Output mode" )
     }
     for ( std::streamsize i = 0; i < n; i++ )
     {
@@ -166,7 +166,7 @@ void XDRFileStream::read( T * const input, const std::streamsize n )
 {
     if ( m_openmode & std::ios::out )
     {
-        LAMA_THROWEXCEPTION( "XDRFileStream: Stream is not in Input mode" );
+        LAMA_THROWEXCEPTION( "XDRFileStream: Stream is not in Input mode" )
     }
     for ( std::streamsize i = 0; i < n; i++ )
     {
@@ -185,7 +185,7 @@ void XDRFileStream::xdrRead( T* const data )
 {
     if ( !is_open() )
     {
-        LAMA_THROWEXCEPTION( "Error trying to read from closed XDRFileStream" );
+        LAMA_THROWEXCEPTION( "Error trying to read from closed XDRFileStream" )
     }
     const int length = getSize( *data );
     *data = 0;
@@ -214,7 +214,7 @@ void XDRFileStream::xdrWrite( const T* const data )
 {
     if ( !is_open() )
     {
-        LAMA_THROWEXCEPTION( "Error trying to read from closed XDRFileStream" );
+        LAMA_THROWEXCEPTION( "Error trying to read from closed XDRFileStream" )
     }
     const int length = getSize( *data );
     //correct the signed bit
@@ -224,14 +224,14 @@ void XDRFileStream::xdrWrite( const T* const data )
         //Check if unsigned long is over the limit of XDR
         if ( ( ( static_cast<long>( *data ) ) ) > ( ( static_cast<long>( 1 ) << ( length * 8 ) ) - 1 ) )
         {
-            LAMA_THROWEXCEPTION( "unsigned long is to big for XDR (Limit 4 Byte)" );
+            LAMA_THROWEXCEPTION( "unsigned long is to big for XDR (Limit 4 Byte)" )
         }
     }
     if ( typeid(T) == typeid(long) )
     {
         if ( std::abs( static_cast<long>( *data ) ) >= ( 1 << 30 ) - 1 )
         {
-            LAMA_THROWEXCEPTION( "long is to big for XDR (Limit 4 Byte)" );
+            LAMA_THROWEXCEPTION( "long is to big for XDR (Limit 4 Byte)" )
         }
         int temp = static_cast<long>( *data );
         tempData = static_cast<T>( 0 | temp );
@@ -281,7 +281,7 @@ int XDRFileStream::getSize( const T )
     }
     else
     {
-        LAMA_THROWEXCEPTION( (std::string("XDRFileStream: Type not permitted: ") + typeid(T).name()).c_str() );
+        LAMA_THROWEXCEPTION( (std::string("XDRFileStream: Type not permitted: ") + typeid(T).name()).c_str() )
     }
     return size;
 }

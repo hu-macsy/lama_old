@@ -106,7 +106,7 @@ public:
 
 protected:
 
-    LAMA_LOG_DECL_STATIC_LOGGER( logger ); //!< logger for Storage IO
+    LAMA_LOG_DECL_STATIC_LOGGER( logger ) //!< logger for Storage IO
 
 private:
 

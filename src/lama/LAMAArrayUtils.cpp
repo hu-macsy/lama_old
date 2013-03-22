@@ -49,28 +49,28 @@
 namespace lama
 {
 
-LAMA_LOG_DEF_LOGGER( LAMAArrayUtils::logger, "LAMAArrayUtils" );
+LAMA_LOG_DEF_LOGGER( LAMAArrayUtils::logger, "LAMAArrayUtils" )
 
 template<typename ValueType1,typename ValueType2>
 void LAMAArrayUtils::assignImpl2( LAMAArray<ValueType1>& target, const LAMAArray<ValueType2>& source )
 {
     // verify that dynamic cast operations went okay before
 
-    LAMA_ASSERT_ERROR( &target, "NULL target" );
-    LAMA_ASSERT_ERROR( &source, "NULL source" );
+    LAMA_ASSERT_ERROR( &target, "NULL target" )
+    LAMA_ASSERT_ERROR( &source, "NULL source" )
 
     // Attention: assignment with type conversion is always done on the Host
 
     ContextPtr context = ContextFactory::getContext( Context::Host );
 
-    LAMA_INTERFACE_FN_TT( set, context, Utils, Copy, ValueType1, ValueType2 );
+    LAMA_INTERFACE_FN_TT( set, context, Utils, Copy, ValueType1, ValueType2 )
 
     const IndexType n = source.size();
 
     WriteOnlyAccess<ValueType1> targetVals( target, context, n );
     ReadAccess<ValueType2> sourceVals( source, context );
 
-    LAMA_CONTEXT_ACCESS( context );
+    LAMA_CONTEXT_ACCESS( context )
 
     set( targetVals.get(), sourceVals.get(), n );
 }
@@ -102,7 +102,7 @@ void LAMAArrayUtils::assignImpl1( LAMAArray<ValueType>& target, const _LAMAArray
         assignImpl2( target, dynamic_cast<const LAMAArray<double>&>( source ) );
         break;
     default:
-        LAMA_THROWEXCEPTION( "unsupported source type : " );
+        LAMA_THROWEXCEPTION( "unsupported source type : " )
         break;
     }
 }
@@ -118,7 +118,7 @@ void LAMAArrayUtils::assign( _LAMAArray& target, const _LAMAArray& source )
         assignImpl1( dynamic_cast<LAMAArray<double>&>( target ), source );
         break;
     default:
-        LAMA_THROWEXCEPTION( "unsupported target type : " );
+        LAMA_THROWEXCEPTION( "unsupported target type : " )
         break;
     }
 }
@@ -129,13 +129,13 @@ void LAMAArrayUtils::gather(
     const LAMAArray<ValueType2>& source,
     const LAMAArray<IndexType>& indexes )
 {
-    LAMA_REGION( "LAMAArray.gather" );
+    LAMA_REGION( "LAMAArray.gather" )
 
     // choose location for the operation where source array is currently valid
 
     ContextPtr context = source.getValidContext( Context::Host );
 
-    LAMA_INTERFACE_FN_TT( setGather, context, Utils, Copy, ValueType1, ValueType2 );
+    LAMA_INTERFACE_FN_TT( setGather, context, Utils, Copy, ValueType1, ValueType2 )
 
     const IndexType n = indexes.size();
 
@@ -144,7 +144,7 @@ void LAMAArrayUtils::gather(
     ReadAccess<ValueType2> rSource( source, context );
     ReadAccess<IndexType> rIndexes( indexes, context );
 
-    LAMA_CONTEXT_ACCESS( context );
+    LAMA_CONTEXT_ACCESS( context )
 
     // target[i] = source[ indexes[i] ]
     setGather( wTarget.get(), rSource.get(), rIndexes.get(), n );
@@ -153,11 +153,11 @@ void LAMAArrayUtils::gather(
 template<typename ValueType>
 void LAMAArrayUtils::assign( LAMAArray<ValueType>& target, const Scalar& value, ContextPtr context )
 {
-    LAMA_LOG_INFO( logger, target << " = " << value );
+    LAMA_LOG_INFO( logger, target << " = " << value )
 
     // assignment takes place at the given context
 
-    LAMA_INTERFACE_FN_T( setVal, context, Utils, Setter, ValueType );
+    LAMA_INTERFACE_FN_T( setVal, context, Utils, Setter, ValueType )
 
     const IndexType n = target.size();
 
@@ -165,7 +165,7 @@ void LAMAArrayUtils::assign( LAMAArray<ValueType>& target, const Scalar& value, 
 
     WriteAccess<ValueType> values( target, context );
 
-    LAMA_CONTEXT_ACCESS( context );
+    LAMA_CONTEXT_ACCESS( context )
 
     // values[i] = val, i = 0, .., n-1
 

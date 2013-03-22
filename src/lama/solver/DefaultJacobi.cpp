@@ -44,7 +44,7 @@
 namespace lama
 {
 
-LAMA_LOG_DEF_LOGGER( DefaultJacobi::logger, "Jacobi.DefaultJacobi" );
+LAMA_LOG_DEF_LOGGER( DefaultJacobi::logger, "Jacobi.DefaultJacobi" )
 
 DefaultJacobi::DefaultJacobi( const std::string& id )
     : OmegaSolver( id )
@@ -86,7 +86,7 @@ DefaultJacobi::DefaultJacobiRuntime::~DefaultJacobiRuntime()
 
 void DefaultJacobi::initialize( const Matrix& coefficients )
 {
-    LAMA_LOG_DEBUG( logger, "Initialization started for coefficients = " << coefficients );
+    LAMA_LOG_DEBUG( logger, "Initialization started for coefficients = " << coefficients )
 
     DefaultJacobiRuntime& runtime = getRuntime();
 
@@ -94,36 +94,36 @@ void DefaultJacobi::initialize( const Matrix& coefficients )
     {
         runtime.mDiagonalTimesRhs = Vector::createVector( coefficients.getValueType(),
                                     coefficients.getDistributionPtr() );
-        LAMA_LOG_DEBUG( logger, "Created diagonalTimesRhs vector = " << *runtime.mDiagonalTimesRhs );
+        LAMA_LOG_DEBUG( logger, "Created diagonalTimesRhs vector = " << *runtime.mDiagonalTimesRhs )
     }
 
-    LAMA_LOG_DEBUG( logger, "Diagonal property of coefficients: " << coefficients.hasDiagonalProperty() );
+    LAMA_LOG_DEBUG( logger, "Diagonal property of coefficients: " << coefficients.hasDiagonalProperty() )
 
     coefficients.getDiagonal( *runtime.mDiagonalTimesRhs );
     runtime.mDiagonalTimesRhs->setContext( coefficients.getContextPtr() );
-    LAMA_LOG_DEBUG( logger, "Got diagonalTimesRhs = " << *runtime.mDiagonalTimesRhs );
+    LAMA_LOG_DEBUG( logger, "Got diagonalTimesRhs = " << *runtime.mDiagonalTimesRhs )
     runtime.mDiagonalTimesRhs->invert();
-    LAMA_LOG_DEBUG( logger, "Inverted diagonalTimesRhs = " << *runtime.mDiagonalTimesRhs );
+    LAMA_LOG_DEBUG( logger, "Inverted diagonalTimesRhs = " << *runtime.mDiagonalTimesRhs )
 
-    LAMA_LOG_DEBUG( logger, "Copying main system matrix " << coefficients );
+    LAMA_LOG_DEBUG( logger, "Copying main system matrix " << coefficients )
     runtime.mDiagonalTimesLU = coefficients.copy();
-    LAMA_LOG_DEBUG( logger, "Copied main system matrix : " << *runtime.mDiagonalTimesLU );
+    LAMA_LOG_DEBUG( logger, "Copied main system matrix : " << *runtime.mDiagonalTimesLU )
 
     LAMA_LOG_DEBUG( logger,
-                    "diagonal property of mDiagonalTimesLU: " << runtime.mDiagonalTimesLU->hasDiagonalProperty() );
+                    "diagonal property of mDiagonalTimesLU: " << runtime.mDiagonalTimesLU->hasDiagonalProperty() )
 
     runtime.mDiagonalTimesLU->setDiagonal( 0.0 );
     runtime.mDiagonalTimesLU->scale( *runtime.mDiagonalTimesRhs );
 
-    LAMA_LOG_DEBUG( logger, "Create diagonal matrix" );
+    LAMA_LOG_DEBUG( logger, "Create diagonal matrix" )
     runtime.mDiagonalInverted = coefficients.create(); // zero matrix with same storage type
     runtime.mDiagonalInverted->allocate( coefficients.getDistributionPtr(), coefficients.getDistributionPtr() );
-    LAMA_LOG_DEBUG( logger, "allocated diagonal matrix = " << *runtime.mDiagonalInverted );
+    LAMA_LOG_DEBUG( logger, "allocated diagonal matrix = " << *runtime.mDiagonalInverted )
     runtime.mDiagonalInverted->setIdentity();
     runtime.mDiagonalInverted->inheritAttributes( coefficients );
 
     LAMA_LOG_DEBUG( logger,
-                    "diagonal property of mDiagonalInverted: " << runtime.mDiagonalInverted->hasDiagonalProperty() );
+                    "diagonal property of mDiagonalInverted: " << runtime.mDiagonalInverted->hasDiagonalProperty() )
 
     runtime.mDiagonalInverted->setDiagonal( *runtime.mDiagonalTimesRhs );
 
@@ -132,14 +132,14 @@ void DefaultJacobi::initialize( const Matrix& coefficients )
 
     OmegaSolver::initialize( coefficients );
 
-    LAMA_LOG_DEBUG( logger, "Initialization performed" );
+    LAMA_LOG_DEBUG( logger, "Initialization performed" )
 }
 
 void DefaultJacobi::solve( Vector& solution, const Vector& rhs )
 {
     if ( getConstRuntime().mSolveInit )
     {
-        LAMA_LOG_WARN( logger, "Previous initialization of solver found! Will be overriden!" );
+        LAMA_LOG_WARN( logger, "Previous initialization of solver found! Will be overriden!" )
     }
     solveInit( solution, rhs );
     solveImpl();
@@ -158,10 +158,10 @@ void DefaultJacobi::solveInit( Vector& solution, const Vector& rhs )
 
     if ( !runtime.mDiagonalTimesRhs.get() || !runtime.mDiagonalInverted.get() )
     {
-        LAMA_THROWEXCEPTION( "No initialization executed before running solve." );
+        LAMA_THROWEXCEPTION( "No initialization executed before running solve." )
     }
 
-    LAMA_LOG_DEBUG( logger, " mDiagonalTimesRhs  =  mDiagonalInverted * rhs , rhs = " << rhs );
+    LAMA_LOG_DEBUG( logger, " mDiagonalTimesRhs  =  mDiagonalInverted * rhs , rhs = " << rhs )
     *runtime.mDiagonalTimesRhs = *runtime.mDiagonalInverted * rhs;
 
     IterativeSolver::solveInit( solution, rhs );
@@ -175,10 +175,10 @@ void DefaultJacobi::solveFinalize()
     DefaultJacobiRuntime& runtime = getRuntime();
     if ( runtime.mIterations % 2 )
     {
-        LAMA_LOG_DEBUG( logger, "mProxyOldSolution = *mSolution" );
+        LAMA_LOG_DEBUG( logger, "mProxyOldSolution = *mSolution" )
         *runtime.mProxyOldSolution = *runtime.mSolution;
     }
-    LAMA_LOG_DEBUG( logger, " end solve " );
+    LAMA_LOG_DEBUG( logger, " end solve " )
 }
 
 template<typename T>
@@ -201,18 +201,18 @@ void DefaultJacobi::iterate()
 
     const Vector& oldSolution = runtime.mProxyOldSolution.getConstReference();
 
-    LAMA_LOG_DEBUG( logger, " mSolution  =  mDiagonalTimesRhs -  mDiagonalTimesLU * oldSolution " );
+    LAMA_LOG_DEBUG( logger, " mSolution  =  mDiagonalTimesRhs -  mDiagonalTimesLU * oldSolution " )
     *runtime.mSolution = *runtime.mDiagonalTimesRhs - *runtime.mDiagonalTimesLU * oldSolution;
 
     if ( omega != 1.0 )
     {
-        LAMA_LOG_DEBUG( logger, " mSolution = omega * mSolution - (omega - 1.0) * oldSolution " );
+        LAMA_LOG_DEBUG( logger, " mSolution = omega * mSolution - (omega - 1.0) * oldSolution " )
         *runtime.mSolution = omega * ( *runtime.mSolution ) - ( omega - 1.0 ) * oldSolution;
     }
 
     if ( LAMA_LOG_TRACE_ON( logger ) )
     {
-        LAMA_LOG_TRACE( logger, "Solution " << *runtime.mSolution );
+        LAMA_LOG_TRACE( logger, "Solution " << *runtime.mSolution )
         const DenseVector<T>& sol = dynamic_cast<const DenseVector<T>&>( *runtime.mSolution );
         HostReadAccess<T> rsol( sol.getLocalValues() );
         std::cout << "Solution: ";
@@ -235,7 +235,7 @@ void DefaultJacobi::iterate()
         iterate<double>();
         break;
     default:
-        LAMA_THROWEXCEPTION( "Unsupported ValueType " << getRuntime().mDiagonalTimesLU->getValueType() );
+        LAMA_THROWEXCEPTION( "Unsupported ValueType " << getRuntime().mDiagonalTimesLU->getValueType() )
     }
 }
 

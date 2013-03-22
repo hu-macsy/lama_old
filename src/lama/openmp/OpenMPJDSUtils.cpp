@@ -56,7 +56,7 @@
 namespace lama
 {
 
-LAMA_LOG_DEF_LOGGER( OpenMPJDSUtils::logger, "OpenMP.JDSUtils" );
+LAMA_LOG_DEF_LOGGER( OpenMPJDSUtils::logger, "OpenMP.JDSUtils" )
 
 /* --------------------------------------------------------------------------- */
 /*   Implementation of methods                                                 */
@@ -69,7 +69,7 @@ LAMA_LOG_DEF_LOGGER( OpenMPJDSUtils::logger, "OpenMP.JDSUtils" );
 template<typename ValueType>
 void OpenMPJDSUtils::setDiagonalWithScalar( const IndexType numDiagonal, ValueType values[], Scalar scalar )
 {
-    LAMA_LOG_INFO( logger, "setDiagonalWithScalar with numDiagonal = " << numDiagonal << " and scalar = " << scalar );
+    LAMA_LOG_INFO( logger, "setDiagonalWithScalar with numDiagonal = " << numDiagonal << " and scalar = " << scalar )
 
     ValueType value = scalar.getValue<ValueType>();
 
@@ -94,7 +94,7 @@ void OpenMPJDSUtils::getRow(
     const IndexType ja[],
     const ValueType values[] )
 {
-    LAMA_LOG_INFO( logger, "getRow with i = " << i << ", numColumns = " << numColumns << " and numRows = " << numRows );
+    LAMA_LOG_INFO( logger, "getRow with i = " << i << ", numColumns = " << numColumns << " and numRows = " << numRows )
 
     //TODO: use OpenMP
     for ( IndexType j = 0; j < numColumns; ++j )
@@ -148,7 +148,7 @@ ValueType OpenMPJDSUtils::getValue(
         }
     }
 
-    LAMA_LOG_TRACE( logger, "row " << i << " is now " << ii << ", has " << ilg[ii] << " elements" );
+    LAMA_LOG_TRACE( logger, "row " << i << " is now " << ii << ", has " << ilg[ii] << " elements" )
     // search in the found row
     IndexType k = 0;
 
@@ -176,7 +176,7 @@ void OpenMPJDSUtils::scaleValue(
     ValueType mValues[],
     const OtherValueType values[] )
 {
-    LAMA_LOG_INFO( logger, "scaleValue with numRows = " << numRows );
+    LAMA_LOG_INFO( logger, "scaleValue with numRows = " << numRows )
 
     //TODO: use OpenMP
     for ( IndexType i = 0; i < numRows; i++ )
@@ -203,7 +203,7 @@ bool OpenMPJDSUtils::checkDiagonalProperty(
     const IndexType dlg[] )
 {
     LAMA_LOG_INFO( logger,
-                   "checkDiagonalProperty with numDiagonals = " << numDiagonals << ", numColumns = " << numColumns << " and numRows = " << numRows );
+                   "checkDiagonalProperty with numDiagonals = " << numDiagonals << ", numColumns = " << numColumns << " and numRows = " << numRows )
     if ( numRows > 0 )
     {
         bool diagonalProperty = true;
@@ -247,7 +247,7 @@ bool OpenMPJDSUtils::check(
     const IndexType ilg[],
     const IndexType dlg[] )
 {
-    LAMA_LOG_INFO( logger, "check with numValues = " << numValues << ", numColumns = " << numColumns );
+    LAMA_LOG_INFO( logger, "check with numValues = " << numValues << ", numColumns = " << numColumns )
 
     bool validFlag = true;
 
@@ -304,7 +304,7 @@ bool OpenMPJDSUtils::check(
 
 void OpenMPJDSUtils::setInversePerm( IndexType inversePerm[], const IndexType perm[], const IndexType n )
 {
-    LAMA_LOG_INFO( logger, "compute inverse perm, n = " << n );
+    LAMA_LOG_INFO( logger, "compute inverse perm, n = " << n )
 
     // Parallel execution is safe as perm does not contain a value twice
 
@@ -312,7 +312,7 @@ void OpenMPJDSUtils::setInversePerm( IndexType inversePerm[], const IndexType pe
     for ( IndexType ii = 0; ii < n; ii++ )
     {
         IndexType i = perm[ii];
-        LAMA_ASSERT_DEBUG( 0 <= i && i < n, "permutation value out of range, perm[" << ii << "] = " << i );
+        LAMA_ASSERT_DEBUG( 0 <= i && i < n, "permutation value out of range, perm[" << ii << "] = " << i )
         inversePerm[i] = ii;
     }
 }
@@ -335,7 +335,7 @@ void OpenMPJDSUtils::sortRows( IndexType ilg[], IndexType perm[], const IndexTyp
 
     const IndexType maxBucket = OpenMPUtils::maxval( ilg, n );
 
-    LAMA_LOG_INFO( logger, "sort " << n << " values, number of buckets = " << maxBucket );
+    LAMA_LOG_INFO( logger, "sort " << n << " values, number of buckets = " << maxBucket )
 
     // longest row = maxBucket, but rows with length 0 is possible too!
 
@@ -354,7 +354,7 @@ void OpenMPJDSUtils::sortRows( IndexType ilg[], IndexType perm[], const IndexTyp
 
     for ( IndexType i = 0; i <= maxBucket; i++ )
     {
-        LAMA_LOG_DEBUG( logger, "bucket " << i << " has " << bucket[i] << " entries" );
+        LAMA_LOG_DEBUG( logger, "bucket " << i << " has " << bucket[i] << " entries" )
     }
 
     // use now bucket array for finding right offsets
@@ -369,7 +369,7 @@ void OpenMPJDSUtils::sortRows( IndexType ilg[], IndexType perm[], const IndexTyp
         IndexType cnt = bucket[i];
         bucket[i] = total;
         total += cnt;
-        LAMA_LOG_TRACE( logger, "bucket " << i << " offset = " << bucket[i] << ", total = " << total );
+        LAMA_LOG_TRACE( logger, "bucket " << i << " offset = " << bucket[i] << ", total = " << total )
     }
 
     // now we can build the new perm array
@@ -377,7 +377,7 @@ void OpenMPJDSUtils::sortRows( IndexType ilg[], IndexType perm[], const IndexTyp
     for ( IndexType i = 0; i < n; i++ )
     {
         IndexType b = ilg[i];
-        LAMA_LOG_TRACE( logger, "perm[" << bucket[b] << "]= " << input[i] );
+        LAMA_LOG_TRACE( logger, "perm[" << bucket[b] << "]= " << input[i] )
         perm[bucket[b]++] = input[i];
     }
 
@@ -385,7 +385,7 @@ void OpenMPJDSUtils::sortRows( IndexType ilg[], IndexType perm[], const IndexTyp
     total = 0;
     for ( IndexType i = maxBucket; i >= 0; i-- )
     {
-        LAMA_LOG_DEBUG( logger, "set ilg[" << total << ":" << (bucket[i]-1) << "] = " << i );
+        LAMA_LOG_DEBUG( logger, "set ilg[" << total << ":" << (bucket[i]-1) << "] = " << i )
 
         for ( IndexType k = total; k < bucket[i]; k++ )
         {
@@ -403,14 +403,14 @@ IndexType OpenMPJDSUtils::ilg2dlg(
     const IndexType ilg[],
     const IndexType numRows )
 {
-    LAMA_LOG_INFO( logger, "ilg2dlg with numDiagonals = " << numDiagonals << ", numRows = " << numRows );
+    LAMA_LOG_INFO( logger, "ilg2dlg with numDiagonals = " << numDiagonals << ", numRows = " << numRows )
 
     if ( numDiagonals == 0 )
     {
         return 0;
     }
 
-    LAMA_ASSERT_EQUAL_DEBUG( numDiagonals, ilg[0] );
+    LAMA_ASSERT_EQUAL_DEBUG( numDiagonals, ilg[0] )
 
     for ( IndexType d = 0; d < numDiagonals; d++ )
     {
@@ -430,7 +430,7 @@ IndexType OpenMPJDSUtils::ilg2dlg(
 
         numTotal += k;
 
-        LAMA_LOG_TRACE( logger, "ilg[" << i << "] = " << k );
+        LAMA_LOG_TRACE( logger, "ilg[" << i << "] = " << k )
 
         dlg[k - 1]++;
     }
@@ -441,7 +441,7 @@ IndexType OpenMPJDSUtils::ilg2dlg(
 
     for ( IndexType d = numDiagonals - 1; d > 0; d-- )
     {
-        LAMA_LOG_TRACE( logger, "dlg[" << d << "] = " << dlg[d] );
+        LAMA_LOG_TRACE( logger, "dlg[" << d << "] = " << dlg[d] )
 
         dlg[d - 1] += dlg[d];
 
@@ -450,7 +450,7 @@ IndexType OpenMPJDSUtils::ilg2dlg(
 
     // If sum does not fit, values were not descending in ilg
 
-    LAMA_ASSERT_EQUAL_DEBUG( numTotal, proofTotal );
+    LAMA_ASSERT_EQUAL_DEBUG( numTotal, proofTotal )
 
     return numTotal;
 }
@@ -470,7 +470,7 @@ void OpenMPJDSUtils::getCSRValues(
     const JDSValueType jdsValues[] )
 {
     LAMA_LOG_INFO( logger,
-                   "get CSRValues<" << typeid( JDSValueType ).name() << ", " << typeid( CSRValueType ).name() << ">" << ", #rows = " << numRows << ", #values = " << csrIA[numRows] );
+                   "get CSRValues<" << typeid( JDSValueType ).name() << ", " << typeid( CSRValueType ).name() << ">" << ", #rows = " << numRows << ", #values = " << csrIA[numRows] )
 
     #pragma omp parallel for schedule(LAMA_OMP_SCHEDULE)
     for ( IndexType i = 0; i < numRows; i++ )
@@ -506,7 +506,7 @@ void OpenMPJDSUtils::setCSRValues(
     const CSRValueType csrValues[] )
 {
     LAMA_LOG_INFO( logger,
-                   "set CSRValues<" << typeid( JDSValueType ).name() << ", " << typeid( CSRValueType ).name() << ">" << ", #rows = " << numRows << ", #values = " << csrIA[numRows] );
+                   "set CSRValues<" << typeid( JDSValueType ).name() << ", " << typeid( CSRValueType ).name() << ">" << ", #rows = " << numRows << ", #values = " << csrIA[numRows] )
 
     // parallelization possible as offset array csrIA is available
 
@@ -544,11 +544,11 @@ void OpenMPJDSUtils::normalGEMV(
     class SyncToken* /* syncToken */)
 {
     LAMA_LOG_INFO( logger,
-                   "OpenMPJDS::normalGEMV<" << typeid(ValueType).name() << ">" << ", #rows = " << numRows << ", #diagonals = " << ndlg << ", alpha = " << alpha << ", beta = " << beta );
+                   "OpenMPJDS::normalGEMV<" << typeid(ValueType).name() << ">" << ", #rows = " << numRows << ", #diagonals = " << ndlg << ", alpha = " << alpha << ", beta = " << beta )
 
     if ( beta == 0.0 )
     {
-        LAMA_LOG_DEBUG( logger, "set result = 0.0" );
+        LAMA_LOG_DEBUG( logger, "set result = 0.0" )
 
         #pragma omp parallel for
         for ( IndexType i = 0; i < numRows; ++i )
@@ -562,7 +562,7 @@ void OpenMPJDSUtils::normalGEMV(
 
         if ( beta != 1.0 )
         {
-            LAMA_LOG_DEBUG( logger, "set result *= beta" );
+            LAMA_LOG_DEBUG( logger, "set result *= beta" )
 
             #pragma omp parallel for
             for ( IndexType i = 0; i < numRows; ++i )
@@ -572,12 +572,12 @@ void OpenMPJDSUtils::normalGEMV(
         }
         else
         {
-            LAMA_LOG_DEBUG( logger, "result remains unchanged" );
+            LAMA_LOG_DEBUG( logger, "result remains unchanged" )
         }
     }
     else
     {
-        LAMA_LOG_DEBUG( logger, "set result = beta * y" );
+        LAMA_LOG_DEBUG( logger, "set result = beta * y" )
 
         #pragma omp parallel for
         for ( IndexType i = 0; i < numRows; ++i )
@@ -595,11 +595,11 @@ void OpenMPJDSUtils::normalGEMV(
 
     IndexType nonEmptyRows = jdsDLG[0];
 
-    LAMA_LOG_DEBUG( logger, "y += alpha * A * x, #non-empty row = " << nonEmptyRows );
+    LAMA_LOG_DEBUG( logger, "y += alpha * A * x, #non-empty row = " << nonEmptyRows )
 
     #pragma omp parallel
     {
-        LAMA_REGION( "OpenMP.JDS.normalGEMV" );
+        LAMA_REGION( "OpenMP.JDS.normalGEMV" )
 
         #pragma omp for schedule( LAMA_OMP_SCHEDULE )
         for ( IndexType ii = 0; ii < nonEmptyRows; ii++ )
@@ -610,7 +610,7 @@ void OpenMPJDSUtils::normalGEMV(
             {
                 IndexType j = jdsJA[offset];
                 LAMA_LOG_TRACE( logger,
-                                "compute entry i = " << perm[ii] << ", j = " << j << ", val = " << jdsValues[offset] );
+                                "compute entry i = " << perm[ii] << ", j = " << j << ", val = " << jdsValues[offset] )
                 value += jdsValues[offset] * x[j];
                 offset += jdsDLG[jj]; // there is next value for this row
             }
@@ -642,18 +642,18 @@ void OpenMPJDSUtils::jacobi(
     class SyncToken* syncToken )
 {
     LAMA_LOG_INFO( logger,
-                   "jacobi<" << typeid(ValueType).name() << ">" << ", #rows = " << numRows << ", omega = " << omega );
+                   "jacobi<" << typeid(ValueType).name() << ">" << ", #rows = " << numRows << ", omega = " << omega )
 
     if ( syncToken != NULL )
     {
-        LAMA_LOG_ERROR( logger, "jacobi called asynchronously, not supported here" );
+        LAMA_LOG_ERROR( logger, "jacobi called asynchronously, not supported here" )
     }
 
     const ValueType oneMinusOmega = static_cast<ValueType>( 1.0 - omega );
 
     #pragma omp parallel
     {
-        LAMA_REGION( "OpenMP.JDS.jacobi" );
+        LAMA_REGION( "OpenMP.JDS.jacobi" )
 
         #pragma omp for schedule( LAMA_OMP_SCHEDULE )
 
@@ -705,11 +705,11 @@ void OpenMPJDSUtils::jacobiHalo(
     class SyncToken* syncToken )
 {
     LAMA_LOG_INFO( logger,
-                   "jacobiHalo<" << typeid(ValueType).name() << ">" << ", #rows = " << numRows << ", omega = " << omega );
+                   "jacobiHalo<" << typeid(ValueType).name() << ">" << ", #rows = " << numRows << ", omega = " << omega )
 
     if ( syncToken != NULL )
     {
-        LAMA_LOG_ERROR( logger, "jacobi called asynchronously, not supported here" );
+        LAMA_LOG_ERROR( logger, "jacobi called asynchronously, not supported here" )
     }
 
     if ( numRows == 0 )
@@ -726,7 +726,7 @@ void OpenMPJDSUtils::jacobiHalo(
 
     const IndexType numNonEmptyRows = jdsHaloDlg[0];
 
-    LAMA_LOG_DEBUG( logger, "#non empty rows = " << numNonEmptyRows );
+    LAMA_LOG_DEBUG( logger, "#non empty rows = " << numNonEmptyRows )
 
     #pragma omp parallel for schedule( LAMA_OMP_SCHEDULE )
     for ( IndexType ii = 0; ii < numNonEmptyRows; ++ii )
@@ -745,11 +745,11 @@ void OpenMPJDSUtils::jacobiHalo(
         }
 
         LAMA_LOG_TRACE( logger,
-                        "jds row " << ii << ", is row " << i << " in halo" << ", diag = " << diag << ", temp = " << temp );
+                        "jds row " << ii << ", is row " << i << " in halo" << ", diag = " << diag << ", temp = " << temp )
 
         solution[i] -= temp * omega / diag;
 
-        LAMA_LOG_TRACE( logger, "solution[" << i << "] = " << solution[i] );
+        LAMA_LOG_TRACE( logger, "solution[" << i << "] = " << solution[i] )
     }
 }
 
@@ -759,48 +759,48 @@ void OpenMPJDSUtils::setInterface( JDSUtilsInterface& JDSUtils )
 {
     // Register all CUDA routines of this class for the LAMA interface
 
-    LAMA_INTERFACE_REGISTER( JDSUtils, sortRows );
-    LAMA_INTERFACE_REGISTER( JDSUtils, setInversePerm );
-    LAMA_INTERFACE_REGISTER( JDSUtils, ilg2dlg );
-    LAMA_INTERFACE_REGISTER( JDSUtils, checkDiagonalProperty );
-    LAMA_INTERFACE_REGISTER( JDSUtils, check );
+    LAMA_INTERFACE_REGISTER( JDSUtils, sortRows )
+    LAMA_INTERFACE_REGISTER( JDSUtils, setInversePerm )
+    LAMA_INTERFACE_REGISTER( JDSUtils, ilg2dlg )
+    LAMA_INTERFACE_REGISTER( JDSUtils, checkDiagonalProperty )
+    LAMA_INTERFACE_REGISTER( JDSUtils, check )
 
-    LAMA_INTERFACE_REGISTER_T( JDSUtils, setDiagonalWithScalar, float );
-    LAMA_INTERFACE_REGISTER_T( JDSUtils, setDiagonalWithScalar, double );
+    LAMA_INTERFACE_REGISTER_T( JDSUtils, setDiagonalWithScalar, float )
+    LAMA_INTERFACE_REGISTER_T( JDSUtils, setDiagonalWithScalar, double )
 
-    LAMA_INTERFACE_REGISTER_TT( JDSUtils, scaleValue, float, float );
-    LAMA_INTERFACE_REGISTER_TT( JDSUtils, scaleValue, float, double );
-    LAMA_INTERFACE_REGISTER_TT( JDSUtils, scaleValue, double, float );
-    LAMA_INTERFACE_REGISTER_TT( JDSUtils, scaleValue, double, double );
+    LAMA_INTERFACE_REGISTER_TT( JDSUtils, scaleValue, float, float )
+    LAMA_INTERFACE_REGISTER_TT( JDSUtils, scaleValue, float, double )
+    LAMA_INTERFACE_REGISTER_TT( JDSUtils, scaleValue, double, float )
+    LAMA_INTERFACE_REGISTER_TT( JDSUtils, scaleValue, double, double )
 
-    LAMA_INTERFACE_REGISTER_TT( JDSUtils, getRow, float, float );
-    LAMA_INTERFACE_REGISTER_TT( JDSUtils, getRow, float, double );
-    LAMA_INTERFACE_REGISTER_TT( JDSUtils, getRow, double, float );
-    LAMA_INTERFACE_REGISTER_TT( JDSUtils, getRow, double, double );
+    LAMA_INTERFACE_REGISTER_TT( JDSUtils, getRow, float, float )
+    LAMA_INTERFACE_REGISTER_TT( JDSUtils, getRow, float, double )
+    LAMA_INTERFACE_REGISTER_TT( JDSUtils, getRow, double, float )
+    LAMA_INTERFACE_REGISTER_TT( JDSUtils, getRow, double, double )
 
-    LAMA_INTERFACE_REGISTER_TT( JDSUtils, getValue, float, float );
-    LAMA_INTERFACE_REGISTER_TT( JDSUtils, getValue, float, double );
-    LAMA_INTERFACE_REGISTER_TT( JDSUtils, getValue, double, float );
-    LAMA_INTERFACE_REGISTER_TT( JDSUtils, getValue, double, double );
+    LAMA_INTERFACE_REGISTER_TT( JDSUtils, getValue, float, float )
+    LAMA_INTERFACE_REGISTER_TT( JDSUtils, getValue, float, double )
+    LAMA_INTERFACE_REGISTER_TT( JDSUtils, getValue, double, float )
+    LAMA_INTERFACE_REGISTER_TT( JDSUtils, getValue, double, double )
 
-    LAMA_INTERFACE_REGISTER_TT( JDSUtils, setCSRValues, float, float );
-    LAMA_INTERFACE_REGISTER_TT( JDSUtils, setCSRValues, float, double );
-    LAMA_INTERFACE_REGISTER_TT( JDSUtils, setCSRValues, double, float );
-    LAMA_INTERFACE_REGISTER_TT( JDSUtils, setCSRValues, double, double );
+    LAMA_INTERFACE_REGISTER_TT( JDSUtils, setCSRValues, float, float )
+    LAMA_INTERFACE_REGISTER_TT( JDSUtils, setCSRValues, float, double )
+    LAMA_INTERFACE_REGISTER_TT( JDSUtils, setCSRValues, double, float )
+    LAMA_INTERFACE_REGISTER_TT( JDSUtils, setCSRValues, double, double )
 
-    LAMA_INTERFACE_REGISTER_TT( JDSUtils, getCSRValues, float, float );
-    LAMA_INTERFACE_REGISTER_TT( JDSUtils, getCSRValues, float, double );
-    LAMA_INTERFACE_REGISTER_TT( JDSUtils, getCSRValues, double, float );
-    LAMA_INTERFACE_REGISTER_TT( JDSUtils, getCSRValues, double, double );
+    LAMA_INTERFACE_REGISTER_TT( JDSUtils, getCSRValues, float, float )
+    LAMA_INTERFACE_REGISTER_TT( JDSUtils, getCSRValues, float, double )
+    LAMA_INTERFACE_REGISTER_TT( JDSUtils, getCSRValues, double, float )
+    LAMA_INTERFACE_REGISTER_TT( JDSUtils, getCSRValues, double, double )
 
-    LAMA_INTERFACE_REGISTER_T( JDSUtils, normalGEMV, float );
-    LAMA_INTERFACE_REGISTER_T( JDSUtils, normalGEMV, double );
+    LAMA_INTERFACE_REGISTER_T( JDSUtils, normalGEMV, float )
+    LAMA_INTERFACE_REGISTER_T( JDSUtils, normalGEMV, double )
 
-    LAMA_INTERFACE_REGISTER_T( JDSUtils, jacobi, float );
-    LAMA_INTERFACE_REGISTER_T( JDSUtils, jacobi, double );
+    LAMA_INTERFACE_REGISTER_T( JDSUtils, jacobi, float )
+    LAMA_INTERFACE_REGISTER_T( JDSUtils, jacobi, double )
 
-    LAMA_INTERFACE_REGISTER_T( JDSUtils, jacobiHalo, float );
-    LAMA_INTERFACE_REGISTER_T( JDSUtils, jacobiHalo, double );
+    LAMA_INTERFACE_REGISTER_T( JDSUtils, jacobiHalo, float )
+    LAMA_INTERFACE_REGISTER_T( JDSUtils, jacobiHalo, double )
 }
 
 } // namespace lama

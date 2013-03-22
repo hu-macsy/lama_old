@@ -44,7 +44,7 @@ std::ostringstream OpenShMemInterface::mProtocol;
 #endif
 namespace lama
 {
-LAMA_LOG_DEF_LOGGER( OpenShMemInterface::logger, "PGASInterface.OpenShMemInterface" );
+LAMA_LOG_DEF_LOGGER( OpenShMemInterface::logger, "PGASInterface.OpenShMemInterface" )
 #ifdef LAMA_LOG_TRACE
 long OpenShMemInterface::mAllocated = 0;
 long OpenShMemInterface::mBarrierNum = 0;
@@ -65,7 +65,7 @@ OpenShMemInterface::~OpenShMemInterface()
 #ifdef LAMA_LOG_TRACE
     if ( mAllocated != 0 )
     {
-        LAMA_LOG_WARN( logger, "There are still " << mAllocated << " B allocated in the OpenShMem pinned memory!" );
+        LAMA_LOG_WARN( logger, "There are still " << mAllocated << " B allocated in the OpenShMem pinned memory!" )
     }
 #endif
 }
@@ -106,7 +106,7 @@ void *OpenShMemInterface::allocate( size_t size ) const
         std::cout << "#############################################################################" << std::endl;
     }
 #endif
-    LAMA_ASSERT( ptr != NULL, "Openshmem could not allocate on Rank " << getRank() );
+    LAMA_ASSERT( ptr != NULL, "Openshmem could not allocate on Rank " << getRank() )
     return ptr;
 }
 
@@ -145,7 +145,7 @@ bool OpenShMemInterface::isPinned( const void * const ptr ) const
 {
     LAMA_LOG_TRACE( logger,
                     "Rank: " << getRank() << ": isPinned " << ptr << " (" << shmem_addr_accessible(const_cast<void*>(ptr), 0) << ")" )
-    return shmem_addr_accessible( const_cast<void*>( ptr ), 0 );
+    return shmem_addr_accessible( const_cast<void*>( ptr ), 0 )
 }
 
 PGASSyncToken* OpenShMemInterface::getSyncToken( int ) const
@@ -162,14 +162,14 @@ void OpenShMemInterface::get( void *dst, const void *src, size_t length, int src
 {
     LAMA_LOG_TRACE( logger,
                     "Rank: " << getRank() << ": Fetching " << length << "B from " << srcpe << ".  currently allocated: " << mAllocated )
-    shmem_getmem( static_cast<void*>( dst ), static_cast<const void*>( src ), length, srcpe );
+    shmem_getmem( static_cast<void*>( dst ), static_cast<const void*>( src ), length, srcpe )
 }
 
 void OpenShMemInterface::put( void *dst, const void *src, size_t length, int srcpe ) const
 {
     LAMA_LOG_TRACE( logger,
                     "Rank: " << getRank() << ": Putting " << length << "B to " << srcpe << ".  currently allocated: " << mAllocated )
-    shmem_putmem( static_cast<void*>( dst ), static_cast<const void*>( src ), length, srcpe );
+    shmem_putmem( static_cast<void*>( dst ), static_cast<const void*>( src ), length, srcpe )
 }
 
 void OpenShMemInterface::writeAt( std::ostream & stream ) const

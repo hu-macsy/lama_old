@@ -45,29 +45,29 @@
 namespace lama
 {
 
-LAMA_LOG_DEF_LOGGER( Redistributor::logger, "Redistributor" );
+LAMA_LOG_DEF_LOGGER( Redistributor::logger, "Redistributor" )
 
 Redistributor::Redistributor( DistributionPtr targetDistribution, DistributionPtr sourceDistribution )
 
     : mSourceDistribution( sourceDistribution ), mTargetDistribution( targetDistribution )
 
 {
-    LAMA_ASSERT_ERROR( sourceDistribution, "NULL pointer for source distribution" );
-    LAMA_ASSERT_ERROR( targetDistribution, "NULL pointer for target distribution" );
+    LAMA_ASSERT_ERROR( sourceDistribution, "NULL pointer for source distribution" )
+    LAMA_ASSERT_ERROR( targetDistribution, "NULL pointer for target distribution" )
 
     // Dereference distribution pointers, avoids checks for validity
 
     const Distribution& sourceDist = *sourceDistribution;
     const Distribution& targetDist = *targetDistribution;
 
-    LAMA_ASSERT_EQUAL_ERROR( sourceDist.getGlobalSize(), targetDist.getGlobalSize() );
-    LAMA_ASSERT_EQUAL_ERROR( sourceDist.getCommunicator(), targetDist.getCommunicator() );
+    LAMA_ASSERT_EQUAL_ERROR( sourceDist.getGlobalSize(), targetDist.getGlobalSize() )
+    LAMA_ASSERT_EQUAL_ERROR( sourceDist.getCommunicator(), targetDist.getCommunicator() )
 
     mSourceSize = sourceDist.getLocalSize();
     mTargetSize = targetDist.getLocalSize();
 
     LAMA_LOG_INFO( logger,
-                   sourceDist.getCommunicator() << ": build redistributor " << targetDist << " <- " << sourceDist << ", have " << mSourceSize << " source values and " << mTargetSize << " target values" );
+                   sourceDist.getCommunicator() << ": build redistributor " << targetDist << " <- " << sourceDist << ", have " << mSourceSize << " source values and " << mTargetSize << " target values" )
 
     // localSourceIndexes, localTargetIndexes are used for local permutation
     // we do not know the exact sizes now so we take maximal value
@@ -88,7 +88,7 @@ Redistributor::Redistributor( DistributionPtr targetDistribution, DistributionPt
             IndexType sourceLocalIndex = sourceDist.global2local( globalIndex );
 
             LAMA_LOG_TRACE( logger,
-                            "target local index " << i << " is global " << globalIndex << ", is source local index " << sourceLocalIndex );
+                            "target local index " << i << " is global " << globalIndex << ", is source local index " << sourceLocalIndex )
 
             //  so globalIndex is local in both distributions
 
@@ -98,7 +98,7 @@ Redistributor::Redistributor( DistributionPtr targetDistribution, DistributionPt
         }
         else
         {
-            LAMA_LOG_TRACE( logger, "target local index " << i << " is global " << globalIndex << ", is remote" );
+            LAMA_LOG_TRACE( logger, "target local index " << i << " is global " << globalIndex << ", is remote" )
             // needed from other processor
             requiredIndexes.push_back( globalIndex );
         }
@@ -110,7 +110,7 @@ Redistributor::Redistributor( DistributionPtr targetDistribution, DistributionPt
     localTargetIndexes.resize( mNumLocalValues );
 
     LAMA_LOG_DEBUG( logger,
-                    sourceDist.getCommunicator() << ": target dist has local " << mTargetSize << " vals, " << mNumLocalValues << " are local, " << requiredIndexes.size() << " are remote." );
+                    sourceDist.getCommunicator() << ": target dist has local " << mTargetSize << " vals, " << mNumLocalValues << " are local, " << requiredIndexes.size() << " are remote." )
 
     // Halo is only for exchange of non-local values
 
@@ -121,7 +121,7 @@ Redistributor::Redistributor( DistributionPtr targetDistribution, DistributionPt
     const Halo& halo = mHalo;
 
     LAMA_LOG_INFO( logger,
-                   sourceDist.getCommunicator() << ": halo source has " << halo.getProvidesPlan().totalQuantity() << " indexes, " << "halo target has " << halo.getRequiredPlan().totalQuantity() << " indexes" );
+                   sourceDist.getCommunicator() << ": halo source has " << halo.getProvidesPlan().totalQuantity() << " indexes, " << "halo target has " << halo.getRequiredPlan().totalQuantity() << " indexes" )
 
     const CommunicationPlan& providesPlan = halo.getProvidesPlan();
 
@@ -141,25 +141,25 @@ Redistributor::Redistributor( DistributionPtr targetDistribution, DistributionPt
 
         for ( IndexType j = 0; j < n; j++ )
         {
-            LAMA_LOG_TRACE( logger, "halo source index[" << offset << "] = " << pindexes[j] );
+            LAMA_LOG_TRACE( logger, "halo source index[" << offset << "] = " << pindexes[j] )
 
             haloSourceIndexes[offset++] = pindexes[j];
         }
     }
 
-    LAMA_LOG_INFO( logger, "have set " << offset << " halo source indexes" );
+    LAMA_LOG_INFO( logger, "have set " << offset << " halo source indexes" )
 
     // In contrary to Halo schedules we have here the situation that each non-local
     // index of source should be required by some other processor.
 
-    LAMA_ASSERT_EQUAL_ERROR( offset, haloSourceIndexes.size() );
-    LAMA_ASSERT_EQUAL_ERROR( mNumLocalValues + offset, mSourceSize );
+    LAMA_ASSERT_EQUAL_ERROR( offset, haloSourceIndexes.size() )
+    LAMA_ASSERT_EQUAL_ERROR( mNumLocalValues + offset, mSourceSize )
 
     // Now add the indexes where to scatter the halo into destination
 
     IndexType haloSize = halo.getHaloSize();
 
-    LAMA_ASSERT_ERROR( mNumLocalValues + haloSize == mTargetSize, "size mismatch" );
+    LAMA_ASSERT_ERROR( mNumLocalValues + haloSize == mTargetSize, "size mismatch" )
 
     haloTargetIndexes.resize( haloSize );
 
@@ -170,14 +170,14 @@ Redistributor::Redistributor( DistributionPtr targetDistribution, DistributionPt
         IndexType haloIndex = mHalo.global2halo( globalIndex );
 
         LAMA_LOG_TRACE( logger,
-                        "saved mapping for target dist: local = " << localIndex << ", global = " << globalIndex << ", halo = " << haloIndex );
+                        "saved mapping for target dist: local = " << localIndex << ", global = " << globalIndex << ", halo = " << haloIndex )
 
         haloTargetIndexes[haloIndex] = localIndex;
     }
 
     // all info needed for redistribution is now available
 
-    LAMA_LOG_INFO( logger, "constructed " << *this );
+    LAMA_LOG_INFO( logger, "constructed " << *this )
 }
 
 /* -------------------------------------------------------------------------- */
@@ -225,21 +225,21 @@ void Redistributor::buildVPlans( const IndexType haloSourceSizes[], const IndexT
     {
         IndexType size = haloSourceSizes[i];
         provideQuantities[i] = size;
-        LAMA_LOG_DEBUG( logger, "provides[" << i << "] = " << size );
+        LAMA_LOG_DEBUG( logger, "provides[" << i << "] = " << size )
     }
 
     for ( IndexType i = 0; i < numRequired; i++ )
     {
         IndexType size = haloTargetSizes[i];
         requiredQuantities[i] = size;
-        LAMA_LOG_DEBUG( logger, "required[" << i << "] = " << size );
+        LAMA_LOG_DEBUG( logger, "required[" << i << "] = " << size )
     }
 
     mProvidesPlan.reset( new CommunicationPlan( mHalo.getProvidesPlan(), provideQuantities.get() ) );
     mRequiredPlan.reset( new CommunicationPlan( mHalo.getRequiredPlan(), requiredQuantities.get() ) );
 
-    LAMA_LOG_INFO( logger, "providesPlan = " << *mProvidesPlan );
-    LAMA_LOG_INFO( logger, "requiredPlan = " << *mRequiredPlan );
+    LAMA_LOG_INFO( logger, "providesPlan = " << *mProvidesPlan )
+    LAMA_LOG_INFO( logger, "requiredPlan = " << *mRequiredPlan )
 }
 
 /* -------------------------------------------------------------------------- */
@@ -266,7 +266,7 @@ void Redistributor::buildRowPlans(
         {
             IndexType size = sizes[indexes[i]];
             provideQuantities[i] = size;
-            LAMA_LOG_DEBUG( logger, "provides[" << i << "] = " << size );
+            LAMA_LOG_DEBUG( logger, "provides[" << i << "] = " << size )
         }
     }
 
@@ -278,15 +278,15 @@ void Redistributor::buildRowPlans(
         {
             IndexType size = sizes[indexes[i]];
             requiredQuantities[i] = size;
-            LAMA_LOG_DEBUG( logger, "required[" << i << "] = " << size );
+            LAMA_LOG_DEBUG( logger, "required[" << i << "] = " << size )
         }
     }
 
     mProvidesPlan.reset( new CommunicationPlan( mHalo.getProvidesPlan(), provideQuantities.get() ) );
     mRequiredPlan.reset( new CommunicationPlan( mHalo.getRequiredPlan(), requiredQuantities.get() ) );
 
-    LAMA_LOG_INFO( logger, "providesPlan = " << *mProvidesPlan );
-    LAMA_LOG_INFO( logger, "requiredPlan = " << *mRequiredPlan );
+    LAMA_LOG_INFO( logger, "providesPlan = " << *mProvidesPlan )
+    LAMA_LOG_INFO( logger, "requiredPlan = " << *mRequiredPlan )
 }
 
 /* ========================================================================= */

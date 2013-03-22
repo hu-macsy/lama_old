@@ -44,7 +44,7 @@ LAMAArrayView<T>::LAMAArrayView( LAMAArray<T>& array )
 {
     if ( array.constFlag )
     {
-        LAMA_THROWEXCEPTION( "Could not create a LAMAArrayView for a const LAMAArray" );
+        LAMA_THROWEXCEPTION( "Could not create a LAMAArrayView for a const LAMAArray" )
     }
 }
 
@@ -54,20 +54,20 @@ LAMAArrayView<T>::LAMAArrayView( LAMAArray<T>& array, const IndexType offset, co
 {
     if ( mOffset < 0 )
     {
-        LAMA_THROWEXCEPTION( "Could not create a LAMAArrayView with a negative offset " << mOffset );
+        LAMA_THROWEXCEPTION( "Could not create a LAMAArrayView with a negative offset " << mOffset )
     }
     if ( mSize < 0 )
     {
-        LAMA_THROWEXCEPTION( "Could not create a LAMAArrayView with a negative size " << mSize );
+        LAMA_THROWEXCEPTION( "Could not create a LAMAArrayView with a negative size " << mSize )
     }
     if ( mOffset + mSize > mArray.size() )
     {
         LAMA_THROWEXCEPTION(
-            "Could not create a LAMAArrayView with mOffset + mSize = " << mOffset + mSize << " because it exceeds the size of " << mArray );
+            "Could not create a LAMAArrayView with mOffset + mSize = " << mOffset + mSize << " because it exceeds the size of " << mArray )
     }
     if ( array.constFlag )
     {
-        LAMA_THROWEXCEPTION( "Could not create a LAMAArrayView for a const LAMAArray" );
+        LAMA_THROWEXCEPTION( "Could not create a LAMAArrayView for a const LAMAArray" )
     }
 }
 
@@ -204,16 +204,16 @@ LAMAArrayConstView<T>::LAMAArrayConstView( const LAMAArray<T>& array, const Inde
 {
     if ( mOffset < 0 )
     {
-        LAMA_THROWEXCEPTION( "Could not create a LAMAArrayConstView with a negative offset " << mOffset );
+        LAMA_THROWEXCEPTION( "Could not create a LAMAArrayConstView with a negative offset " << mOffset )
     }
     if ( mSize < 0 )
     {
-        LAMA_THROWEXCEPTION( "Could not create a LAMAArrayConstView with a negative size " << mSize );
+        LAMA_THROWEXCEPTION( "Could not create a LAMAArrayConstView with a negative size " << mSize )
     }
     if ( mOffset + mSize > mArray.size() )
     {
         LAMA_THROWEXCEPTION(
-            "Could not create a LAMAArrayConstView with mOffset + mSize = " << mOffset + mSize << " because it exceeds the size of " << mArray );
+            "Could not create a LAMAArrayConstView with mOffset + mSize = " << mOffset + mSize << " because it exceeds the size of " << mArray )
     }
 }
 

@@ -2223,8 +2223,6 @@ struct ELLUtilsInterface
                                         const IndexType csrJA[],
                                         const CSRValueType csrValues[] );
 
-
-
     };
 
     LAMA_INTERFACE_DEFINE_TT( Conversions, setCSRValues )
@@ -2251,7 +2249,6 @@ struct ELLUtilsInterface
                                        const ValueType eps,
                                        IndexType newIA[] );
 
-
         /** Compresses the given JA and values array using epsilon
          *
          * @param[in]  IA that should be compressed
@@ -2275,7 +2272,6 @@ struct ELLUtilsInterface
 
     LAMA_INTERFACE_DEFINE_T( Helper, compressIA )
     LAMA_INTERFACE_DEFINE_T( Helper, compressValues )
-
 
     template<typename ValueType, typename OtherValueType>
     struct Getter
@@ -2431,7 +2427,6 @@ struct ELLUtilsInterface
     };
 
     LAMA_INTERFACE_DEFINE_TT( Scale, scaleValue )
-
 
     template<typename ValueType>
     struct MatrixTimesMatrix
@@ -3189,7 +3184,7 @@ protected:
     LAPACKInterface<double>    mDoubleLAPACKInterface;
     SCALAPACKInterface<double> mDoubleSCALAPACKInterface;
 
-    LAMA_LOG_DECL_STATIC_LOGGER(logger);
+    LAMA_LOG_DECL_STATIC_LOGGER(logger)
 };
 
 } //namespace lama

@@ -45,7 +45,7 @@ void *PGASCheckInterface::allocate( size_t size ) const
 void PGASCheckInterface::free( void *ptr, const size_t size ) const
 {
     LAMA_ASSERT( mInterface->isPinned(ptr), "Memory is not pinned" )
-    mInterface->free( ptr, size );
+    mInterface->free( ptr, size )
 }
 
 void PGASCheckInterface::syncronizeAll() const
@@ -72,7 +72,7 @@ void PGASCheckInterface::get( void *dst, const void *src, size_t length, int src
 {
     LAMA_ASSERT( mInterface->isPinned(dst), "Memory is not pinned" )
     LAMA_ASSERT( mInterface->isPinned(src), "Memory is not pinned" )
-    mInterface->get( dst, src, length, srcpe );
+    mInterface->get( dst, src, length, srcpe )
 
 }
 
@@ -80,7 +80,7 @@ void PGASCheckInterface::put( void *dst, const void *src, size_t length, int src
 {
     LAMA_ASSERT( mInterface->isPinned(dst), "Memory is not pinned" )
     LAMA_ASSERT( mInterface->isPinned(src), "Memory is not pinned" )
-    mInterface->put( dst, src, length, srcpe );
+    mInterface->put( dst, src, length, srcpe )
 }
 
 std::auto_ptr<SyncToken> lama::PGASCheckInterface::getAsync(
@@ -91,7 +91,7 @@ std::auto_ptr<SyncToken> lama::PGASCheckInterface::getAsync(
 {
     LAMA_ASSERT( mInterface->isPinned(dst), "Memory is not pinned" )
     LAMA_ASSERT( mInterface->isPinned(src), "Memory is not pinned" )
-    return mInterface->getAsync( dst, src, length, srcPE );
+    return mInterface->getAsync( dst, src, length, srcPE )
 }
 
 std::auto_ptr<SyncToken> lama::PGASCheckInterface::putAsync(
@@ -102,7 +102,7 @@ std::auto_ptr<SyncToken> lama::PGASCheckInterface::putAsync(
 {
     LAMA_ASSERT( mInterface->isPinned(dst), "Memory is not pinned" )
     LAMA_ASSERT( mInterface->isPinned(src), "Memory is not pinned" )
-    return mInterface->putAsync( dst, src, length, srcPE );
+    return mInterface->putAsync( dst, src, length, srcPE )
 }
 
 std::auto_ptr<SyncToken> lama::PGASCheckInterface::shift(
@@ -114,7 +114,7 @@ std::auto_ptr<SyncToken> lama::PGASCheckInterface::shift(
 {
     LAMA_ASSERT( mInterface->isPinned(dst), "Memory is not pinned" )
     LAMA_ASSERT( mInterface->isPinned(src), "Memory is not pinned" )
-    return mInterface->shift( dst, src, size, destRank, srcRank );
+    return mInterface->shift( dst, src, size, destRank, srcRank )
 }
 
 std::auto_ptr<SyncToken> lama::PGASCheckInterface::broadcast(
@@ -125,20 +125,20 @@ std::auto_ptr<SyncToken> lama::PGASCheckInterface::broadcast(
 {
     LAMA_ASSERT( mInterface->isPinned(dst), "Memory is not pinned" )
     LAMA_ASSERT( mInterface->isPinned(src), "Memory is not pinned" )
-    return mInterface->broadcast( dst, src, length, srcPE );
+    return mInterface->broadcast( dst, src, length, srcPE )
 }
 
 std::auto_ptr<SyncToken> lama::PGASCheckInterface::all2all( void *dst, const void *src, size_t elemSize ) const
 {
     LAMA_ASSERT( mInterface->isPinned(dst), "Memory is not pinned" )
     LAMA_ASSERT( mInterface->isPinned(src), "Memory is not pinned" )
-    return mInterface->all2all( dst, src, elemSize );
+    return mInterface->all2all( dst, src, elemSize )
 }
 
 void lama::PGASCheckInterface::swap( void *val, const size_t n, const PartitionId partner ) const
 {
     LAMA_ASSERT( mInterface->isPinned(val), "Memory is not pinned" )
-    mInterface->swap( val, n, partner );
+    mInterface->swap( val, n, partner )
 }
 
 void lama::PGASCheckInterface::scatter(
@@ -149,7 +149,7 @@ void lama::PGASCheckInterface::scatter(
 {
     LAMA_ASSERT( mInterface->isPinned(myvals), "Memory is not pinned" )
     LAMA_ASSERT( mInterface->isPinned(allvals), "Memory is not pinned" )
-    mInterface->scatter( myvals, partSize, root, allvals );
+    mInterface->scatter( myvals, partSize, root, allvals )
 }
 
 void lama::PGASCheckInterface::scatter(
@@ -161,7 +161,7 @@ void lama::PGASCheckInterface::scatter(
 {
     LAMA_ASSERT( mInterface->isPinned(myvals), "Memory is not pinned" )
     LAMA_ASSERT( mInterface->isPinned(allvals), "Memory is not pinned" )
-    mInterface->scatter( myvals, elemSize, root, allvals, sizes );
+    mInterface->scatter( myvals, elemSize, root, allvals, sizes )
 }
 
 void lama::PGASCheckInterface::gather(
@@ -172,7 +172,7 @@ void lama::PGASCheckInterface::gather(
 {
     LAMA_ASSERT( mInterface->isPinned(myvals), "Memory is not pinned" )
     LAMA_ASSERT( mInterface->isPinned(allvals), "Memory is not pinned" )
-    mInterface->gather( allvals, partSize, root, myvals );
+    mInterface->gather( allvals, partSize, root, myvals )
 }
 
 void lama::PGASCheckInterface::gather(
@@ -184,7 +184,7 @@ void lama::PGASCheckInterface::gather(
 {
     LAMA_ASSERT( mInterface->isPinned(myvals), "Memory is not pinned: " << myvals )
     LAMA_ASSERT( mInterface->isPinned(allvals), "Memory is not pinned: " << allvals )
-    mInterface->gather( allvals, elemSize, root, myvals, sizes );
+    mInterface->gather( allvals, elemSize, root, myvals, sizes )
 }
 
 lama::PGASCheckInterface::PGASCheckInterface( PGASInterface* interface )

@@ -425,7 +425,7 @@ DenseVector<T>::DenseVector( const DenseVector<ValueType>& other )
     // implementation here can be simpler as DenseVector( const Vector& other )
 
     LAMA_LOG_INFO( logger,
-                   "Copy of vector of global size " << size() << ", local size " << getDistribution().getLocalSize() );
+                   "Copy of vector of global size " << size() << ", local size " << getDistribution().getLocalSize() )
 
     mLocalValues = other.getLocalValues();
 }

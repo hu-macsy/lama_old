@@ -45,7 +45,7 @@ public:
 //    static LAMAInstance init(int argc, char** argv, bool keepArguments);
     LAMAInstance( int argc, char** argv, bool keepArguments );
 private:
-    LAMA_LOG_DECL_STATIC_LOGGER( logger );
+    LAMA_LOG_DECL_STATIC_LOGGER( logger )
 };
 
 }

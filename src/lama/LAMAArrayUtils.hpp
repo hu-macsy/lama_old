@@ -86,7 +86,7 @@ private:
     template<typename ValueType>
     static void assignImpl1( LAMAArray<ValueType>& target, const _LAMAArray& source );
 
-    LAMA_LOG_DECL_STATIC_LOGGER( logger );
+    LAMA_LOG_DECL_STATIC_LOGGER( logger )
 };
 
 } // namespace

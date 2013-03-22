@@ -303,7 +303,7 @@ public:
      *
      void assignLocal( const _MatrixStorage&
      {
-     LAMA_THROWEXCEPTION( "not available yet" );
+     LAMA_THROWEXCEPTION( "not available yet" )
      }
      */
 
@@ -607,7 +607,7 @@ private:
      */
     SparseMatrix();
 
-    LAMA_LOG_DECL_STATIC_LOGGER( logger );
+    LAMA_LOG_DECL_STATIC_LOGGER( logger )
 
     /** This method sets a row-distributed matrix corresponding to the distribution of this matrix.
      *  ( no column distribution, no halo ).

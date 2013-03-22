@@ -124,7 +124,7 @@ void upperInit(
 namespace lama
 {
 
-LAMA_LOG_DEF_LOGGER( LUSolver::logger, "LUSolver" );
+LAMA_LOG_DEF_LOGGER( LUSolver::logger, "LUSolver" )
 
 const double LUSolver::epsilon = 1 + 1E-06;
 
@@ -172,7 +172,7 @@ void LUSolver::factorMatrixToLU( Matrix& matrix, std::vector<IndexType>& permuta
     }
     else
     {
-        LAMA_THROWEXCEPTION( "LU factorization cannot be done for matrix "<<matrix );
+        LAMA_THROWEXCEPTION( "LU factorization cannot be done for matrix "<<matrix )
     }
 }
 
@@ -238,7 +238,7 @@ void LUSolver::computeLUFactorization( DenseMatrix<T> & matrix, std::vector<Inde
         }
 
         const IndexType tilesize = computeTilesize( n, m );
-        LAMA_LOG_DEBUG( logger, "Size of tiles is " << tilesize );
+        LAMA_LOG_DEBUG( logger, "Size of tiles is " << tilesize )
 
         boost::scoped_array<IndexType> ipiv( new IndexType[n] );
         for ( IndexType i = 0; i < n; ++i )
@@ -400,12 +400,12 @@ void LUSolver::computeLUFactorization( DenseMatrix<T> & matrix, std::vector<Inde
             {
 #ifdef LAMA_BUILD_CUDA
                 //XXX CUDA
-                LAMA_LOG_INFO( logger, "Using CUDA" );
+                LAMA_LOG_INFO( logger, "Using CUDA" )
                 lama_init0_cuda();
                 ctxtPtr = ContextFactory::getContext( Context::CUDA, mDev );
                 const CUDAContext* cuda = dynamic_cast<const CUDAContext*>( ctxtPtr.get() );
 
-                LAMA_ASSERT_ERROR( cuda, "dynamic cast for CUDAContext failed" );
+                LAMA_ASSERT_ERROR( cuda, "dynamic cast for CUDAContext failed" )
                 lama_gemm<T>::__syncTok = cuda->getComputeSyncToken();
 
                 swap_cuda.ctxt = ctxtPtr;
@@ -419,7 +419,7 @@ void LUSolver::computeLUFactorization( DenseMatrix<T> & matrix, std::vector<Inde
                 // support fast memory transfer Host->CUDA
                 lama::CUDAHostContextManager::setAsCurrent( ctxtPtr );
 #else
-                LAMA_LOG_WARN( logger, "Specified PLU_CONTEXT as CUDA, but CUDA not found. Assuming host." );
+                LAMA_LOG_WARN( logger, "Specified PLU_CONTEXT as CUDA, but CUDA not found. Assuming host." )
                 goto _default;
 #endif
             }
@@ -438,7 +438,7 @@ _default:
                 gemm.query = lama_gemm<T>::__queryDef;
                 gemm.synchronize = lama_gemm<T>::__synchronizeDef;
                 LAMA_LOG_WARN( logger,
-                               "Invalid value for environment variable PLU_CONTEXT: "<<cArr <<". Should be 'HOST' or not set, to be host, or 'CUDA', to be on cuda. Assuming host, now." );
+                               "Invalid value for environment variable PLU_CONTEXT: "<<cArr <<". Should be 'HOST' or not set, to be host, or 'CUDA', to be on cuda. Assuming host, now." )
             }
         }
 
@@ -672,7 +672,7 @@ _default:
     }
     else
     {
-        LAMA_THROWEXCEPTION( "LU-factorization not supported for " << matrix << "." );
+        LAMA_THROWEXCEPTION( "LU-factorization not supported for " << matrix << "." )
     }
 }
 
@@ -766,7 +766,7 @@ void LUSolver::solve( Vector& solution, const Vector& rhs )
                   && luFactorization->getNumRows() == luFactorization->getNumColumns()
                   && typeid( luFactorization->getColDistribution() ) == typeid(CyclicDistribution) )
         {
-            LAMA_THROWEXCEPTION( "Solving a distributed matrix is producing segmentation faults, yet." );
+            LAMA_THROWEXCEPTION( "Solving a distributed matrix is producing segmentation faults, yet." )
 //            const IndexType myRank   = mComm->getRank( );
 //            const IndexType numProcs = mComm->getSize( );
 //
@@ -904,7 +904,7 @@ void LUSolver::solve( Vector& solution, const Vector& rhs )
         }
         else
         {
-            LAMA_THROWEXCEPTION( "Solving equation system not supported for matrix " << (*luFactorization) << '.' );
+            LAMA_THROWEXCEPTION( "Solving equation system not supported for matrix " << (*luFactorization) << '.' )
         }
     }
     else
@@ -1105,7 +1105,7 @@ void LUSolver::pgetf2(
 
             if ( diag == 0 )
             {
-                LAMA_THROWEXCEPTION( "Dividing through zero" );
+                LAMA_THROWEXCEPTION( "Dividing through zero" )
             }
 
             if ( j < numCol - 1 )
@@ -1214,7 +1214,7 @@ void LUSolver::pgetf2(
 
                 if ( diag == 0 )
                 {
-                    LAMA_THROWEXCEPTION( "Dividing through zero" );
+                    LAMA_THROWEXCEPTION( "Dividing through zero" )
                 }
 
                 if ( j < numCol - 1 )
@@ -1419,7 +1419,7 @@ void LUSolver::setTileSize( const IndexType tilesize )
 {
     if ( tilesize <= 0 )
     {
-        LAMA_LOG_WARN( logger, "Setting tilesize of " << tilesize << " left LUSolver unaffected." );
+        LAMA_LOG_WARN( logger, "Setting tilesize of " << tilesize << " left LUSolver unaffected." )
     }
     else
     {
@@ -1436,7 +1436,7 @@ void LUSolver::setDeviceNumber( const IndexType dev )
 {
     if ( dev < -1 )
     {
-        LAMA_LOG_WARN( logger, "Setting tilesize of " << dev << " left LUSolver unaffected." );
+        LAMA_LOG_WARN( logger, "Setting tilesize of " << dev << " left LUSolver unaffected." )
     }
     else
     {

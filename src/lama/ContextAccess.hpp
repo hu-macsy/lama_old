@@ -104,6 +104,6 @@ private:
  *  }
  *  \endcode
  */
-#define LAMA_CONTEXT_ACCESS( context ) lama::ContextAccess LAMA_Ctx_Access__( context, __FILE__, __LINE__ )
+#define LAMA_CONTEXT_ACCESS( context ) lama::ContextAccess LAMA_Ctx_Access__( context, __FILE__, __LINE__ );
 
 #endif // LAMA_CONTEXT_ACCESS_HPP_

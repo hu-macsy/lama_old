@@ -154,7 +154,7 @@ const LAMAArray<IndexType>& Halo::getRequiredIndexes() const
 void Halo::setGlobal2Halo( IndexType globalIndex, IndexType haloIndex )
 {
     LAMA_ASSERT_DEBUG( 0 <= haloIndex && haloIndex < getHaloSize(),
-                       "illegal halo index " << haloIndex << ", halo size = " << getHaloSize() );
+                       "illegal halo index " << haloIndex << ", halo size = " << getHaloSize() )
     mGlobal2Halo[globalIndex] = haloIndex;
 }
 

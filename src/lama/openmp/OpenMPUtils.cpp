@@ -45,12 +45,12 @@
 namespace lama
 {
 
-LAMA_LOG_DEF_LOGGER( OpenMPUtils::logger, "OpenMP.Utils" );
+LAMA_LOG_DEF_LOGGER( OpenMPUtils::logger, "OpenMP.Utils" )
 
 template<typename ValueType,typename OtherValueType>
 void OpenMPUtils::scale( ValueType mValues[], const IndexType n, const OtherValueType value )
 {
-    LAMA_LOG_INFO( logger, "scale, #n = " << n << ", value = " << value );
+    LAMA_LOG_INFO( logger, "scale, #n = " << n << ", value = " << value )
 
     #pragma omp parallel for schedule( LAMA_OMP_SCHEDULE )
     for ( IndexType i = 0; i < n; i++ )
@@ -64,7 +64,7 @@ void OpenMPUtils::scale( ValueType mValues[], const IndexType n, const OtherValu
 template<typename ValueType>
 ValueType OpenMPUtils::sum( const ValueType array[], const IndexType n )
 {
-    LAMA_LOG_INFO( logger, "sum # array = " << array << ", n = " << n );
+    LAMA_LOG_INFO( logger, "sum # array = " << array << ", n = " << n )
     ValueType val = static_cast<ValueType>( 0.0 );
 
     #pragma omp parallel for schedule( LAMA_OMP_SCHEDULE ) reduction( +:val )
@@ -81,7 +81,7 @@ ValueType OpenMPUtils::sum( const ValueType array[], const IndexType n )
 template<typename ValueType>
 void OpenMPUtils::setVal( ValueType array[], const IndexType n, const ValueType val )
 {
-    LAMA_LOG_DEBUG( logger, "setVal<" << typeid(ValueType).name() << ">: " << "array[" << n << "] = " << val );
+    LAMA_LOG_DEBUG( logger, "setVal<" << typeid(ValueType).name() << ">: " << "array[" << n << "] = " << val )
 
     #pragma omp parallel for schedule( LAMA_OMP_SCHEDULE )
     for ( IndexType i = 0; i < n; ++i )
@@ -96,7 +96,7 @@ template<typename ValueType>
 void OpenMPUtils::setOrder( ValueType array[], const IndexType n )
 {
     LAMA_LOG_DEBUG( logger,
-                    "setOrder<" << typeid(ValueType).name() << ">: " << "array[" << n << "] = 0, 1, 2, ..., " << ( n - 1 ) );
+                    "setOrder<" << typeid(ValueType).name() << ">: " << "array[" << n << "] = 0, 1, 2, ..., " << ( n - 1 ) )
 
     #pragma omp parallel for schedule( LAMA_OMP_SCHEDULE )
     for ( IndexType i = 0; i < n; ++i )
@@ -110,7 +110,7 @@ void OpenMPUtils::setOrder( ValueType array[], const IndexType n )
 template<typename ValueType>
 ValueType OpenMPUtils::getValue( const ValueType* array, const IndexType i )
 {
-    LAMA_LOG_DEBUG( logger, "getValue<" << typeid(ValueType).name() << ">: i = " << i );
+    LAMA_LOG_DEBUG( logger, "getValue<" << typeid(ValueType).name() << ">: i = " << i )
 
     return array[i];
 }
@@ -120,7 +120,7 @@ ValueType OpenMPUtils::getValue( const ValueType* array, const IndexType i )
 template<typename ValueType>
 ValueType OpenMPUtils::maxval( const ValueType array[], const IndexType n )
 {
-    LAMA_LOG_DEBUG( logger, "maxval<" << typeid(ValueType).name() << ">: " << "array[" << n << "]" );
+    LAMA_LOG_DEBUG( logger, "maxval<" << typeid(ValueType).name() << ">: " << "array[" << n << "]" )
 
     ValueType val = static_cast<ValueType>( 0.0 );
 
@@ -139,7 +139,7 @@ ValueType OpenMPUtils::maxval( const ValueType array[], const IndexType n )
 
         #pragma omp critical
         {
-            LAMA_LOG_TRACE( logger, "max val of thread = " << threadVal << ", global was " << val );
+            LAMA_LOG_TRACE( logger, "max val of thread = " << threadVal << ", global was " << val )
 
             if ( threadVal > val )
             {
@@ -156,7 +156,7 @@ ValueType OpenMPUtils::maxval( const ValueType array[], const IndexType n )
 template<typename ValueType>
 ValueType OpenMPUtils::absMaxVal( const ValueType array[], const IndexType n )
 {
-    LAMA_LOG_DEBUG( logger, "absMaxVal<" << typeid(ValueType).name() << ">: " << "array[" << n << "]" );
+    LAMA_LOG_DEBUG( logger, "absMaxVal<" << typeid(ValueType).name() << ">: " << "array[" << n << "]" )
 
     ValueType val = static_cast<ValueType>( 0.0 );
 
@@ -177,7 +177,7 @@ ValueType OpenMPUtils::absMaxVal( const ValueType array[], const IndexType n )
 
         #pragma omp critical
         {
-            LAMA_LOG_TRACE( logger, "max val of thread  = " << threadVal << ", global was " << val );
+            LAMA_LOG_TRACE( logger, "max val of thread  = " << threadVal << ", global was " << val )
 
             if ( threadVal > val )
             {
@@ -194,7 +194,7 @@ ValueType OpenMPUtils::absMaxVal( const ValueType array[], const IndexType n )
 template<typename ValueType>
 ValueType OpenMPUtils::absMaxDiffVal( const ValueType array1[], const ValueType array2[], const IndexType n )
 {
-    LAMA_LOG_DEBUG( logger, "absMaxDiffVal<" << typeid(ValueType).name() << ">: " << "array[" << n << "]" );
+    LAMA_LOG_DEBUG( logger, "absMaxDiffVal<" << typeid(ValueType).name() << ">: " << "array[" << n << "]" )
 
     ValueType val = static_cast<ValueType>( 0.0 );
 
@@ -215,7 +215,7 @@ ValueType OpenMPUtils::absMaxDiffVal( const ValueType array1[], const ValueType 
 
         #pragma omp critical
         {
-            LAMA_LOG_TRACE( logger, "max val of thread  = " << threadVal << ", global was " << val );
+            LAMA_LOG_TRACE( logger, "max val of thread  = " << threadVal << ", global was " << val )
 
             if ( threadVal > val )
             {
@@ -266,7 +266,7 @@ template<typename ValueType1,typename ValueType2>
 void OpenMPUtils::set( ValueType1 out[], const ValueType2 in[], const IndexType n )
 {
     LAMA_LOG_DEBUG( logger,
-                    "set: out<" << typeid(ValueType1).name() << "[" << n << "]" << " = in<" << typeid(ValueType2).name() << ">[" << n << "]" );
+                    "set: out<" << typeid(ValueType1).name() << "[" << n << "]" << " = in<" << typeid(ValueType2).name() << ">[" << n << "]" )
 
     #pragma omp parallel for schedule(LAMA_OMP_SCHEDULE)
     for ( IndexType i = 0; i < n; i++ )
@@ -279,7 +279,7 @@ void OpenMPUtils::set( ValueType1 out[], const ValueType2 in[], const IndexType 
 
 bool OpenMPUtils::validIndexes( const IndexType array[], const IndexType n, const IndexType size )
 {
-    LAMA_LOG_DEBUG( logger, "validIndexes: array[" << n << "], size " << size );
+    LAMA_LOG_DEBUG( logger, "validIndexes: array[" << n << "], size " << size )
 
     bool validFlag = true;
 
@@ -292,7 +292,7 @@ bool OpenMPUtils::validIndexes( const IndexType array[], const IndexType n, cons
 
             /*
              LAMA_THROWEXCEPTION( "array[" << i << "] = " << array[i]
-             << " is illegal index, size = " << size );
+             << " is illegal index, size = " << size )
              */
 
             validFlag = false;
@@ -308,7 +308,7 @@ template<typename ValueType1,typename ValueType2>
 void OpenMPUtils::setGather( ValueType1 out[], const ValueType2 in[], const IndexType indexes[], const IndexType n )
 {
     LAMA_LOG_DEBUG( logger,
-                    "setGather: out<" << typeid(ValueType1).name() << ">[" << n << "]" << " = in<" << typeid(ValueType2).name() << ">[ indexes[" << n << "] ]" );
+                    "setGather: out<" << typeid(ValueType1).name() << ">[" << n << "]" << " = in<" << typeid(ValueType2).name() << ">[ indexes[" << n << "] ]" )
 
     #pragma omp parallel for schedule(LAMA_OMP_SCHEDULE)
     for ( IndexType i = 0; i < n; i++ )
@@ -323,7 +323,7 @@ template<typename ValueType1,typename ValueType2>
 void OpenMPUtils::setScatter( ValueType1 out[], const IndexType indexes[], const ValueType2 in[], const IndexType n )
 {
     LAMA_LOG_DEBUG( logger,
-                    "setScatterr: out<" << typeid(ValueType1).name() << ">" << "[ indexes[" << n << "] ]" << " = in<" << typeid(ValueType2).name() << ">[" << n << "]" );
+                    "setScatterr: out<" << typeid(ValueType1).name() << ">" << "[ indexes[" << n << "] ]" << " = in<" << typeid(ValueType2).name() << ">[" << n << "]" )
 
     #pragma omp parallel for schedule(LAMA_OMP_SCHEDULE)
     for ( IndexType i = 0; i < n; i++ )
@@ -364,64 +364,64 @@ void OpenMPUtils::scaleVal( ValueType array[], const IndexType n, const ValueTyp
 
 void OpenMPUtils::setInterface( UtilsInterface& Utils )
 {
-    LAMA_INTERFACE_REGISTER( Utils, validIndexes );
+    LAMA_INTERFACE_REGISTER( Utils, validIndexes )
 
-    LAMA_INTERFACE_REGISTER_TT( Utils, scale, float, float );
-    LAMA_INTERFACE_REGISTER_TT( Utils, scale, double, float );
-    LAMA_INTERFACE_REGISTER_TT( Utils, scale, float, double );
-    LAMA_INTERFACE_REGISTER_TT( Utils, scale, double, double );
+    LAMA_INTERFACE_REGISTER_TT( Utils, scale, float, float )
+    LAMA_INTERFACE_REGISTER_TT( Utils, scale, double, float )
+    LAMA_INTERFACE_REGISTER_TT( Utils, scale, float, double )
+    LAMA_INTERFACE_REGISTER_TT( Utils, scale, double, double )
 
-    LAMA_INTERFACE_REGISTER_T( Utils, sum, IndexType );
-    LAMA_INTERFACE_REGISTER_T( Utils, sum, float );
-    LAMA_INTERFACE_REGISTER_T( Utils, sum, double );
+    LAMA_INTERFACE_REGISTER_T( Utils, sum, IndexType )
+    LAMA_INTERFACE_REGISTER_T( Utils, sum, float )
+    LAMA_INTERFACE_REGISTER_T( Utils, sum, double )
 
-    LAMA_INTERFACE_REGISTER_T( Utils, setVal, IndexType );
-    LAMA_INTERFACE_REGISTER_T( Utils, setVal, float );
-    LAMA_INTERFACE_REGISTER_T( Utils, setVal, double );
+    LAMA_INTERFACE_REGISTER_T( Utils, setVal, IndexType )
+    LAMA_INTERFACE_REGISTER_T( Utils, setVal, float )
+    LAMA_INTERFACE_REGISTER_T( Utils, setVal, double )
 
-    LAMA_INTERFACE_REGISTER_T( Utils, setOrder, IndexType );
+    LAMA_INTERFACE_REGISTER_T( Utils, setOrder, IndexType )
 
-    LAMA_INTERFACE_REGISTER_T( Utils, getValue, IndexType );
-    LAMA_INTERFACE_REGISTER_T( Utils, getValue, float );
-    LAMA_INTERFACE_REGISTER_T( Utils, getValue, double );
+    LAMA_INTERFACE_REGISTER_T( Utils, getValue, IndexType )
+    LAMA_INTERFACE_REGISTER_T( Utils, getValue, float )
+    LAMA_INTERFACE_REGISTER_T( Utils, getValue, double )
 
-    LAMA_INTERFACE_REGISTER_T( Utils, maxval, IndexType );
-    LAMA_INTERFACE_REGISTER_T( Utils, maxval, float );
-    LAMA_INTERFACE_REGISTER_T( Utils, maxval, double );
+    LAMA_INTERFACE_REGISTER_T( Utils, maxval, IndexType )
+    LAMA_INTERFACE_REGISTER_T( Utils, maxval, float )
+    LAMA_INTERFACE_REGISTER_T( Utils, maxval, double )
 
-    LAMA_INTERFACE_REGISTER_T( Utils, absMaxVal, float );
-    LAMA_INTERFACE_REGISTER_T( Utils, absMaxVal, double );
+    LAMA_INTERFACE_REGISTER_T( Utils, absMaxVal, float )
+    LAMA_INTERFACE_REGISTER_T( Utils, absMaxVal, double )
 
-    LAMA_INTERFACE_REGISTER_T( Utils, absMaxDiffVal, float );
-    LAMA_INTERFACE_REGISTER_T( Utils, absMaxDiffVal, double );
+    LAMA_INTERFACE_REGISTER_T( Utils, absMaxDiffVal, float )
+    LAMA_INTERFACE_REGISTER_T( Utils, absMaxDiffVal, double )
 
-    LAMA_INTERFACE_REGISTER_T( Utils, isSorted, IndexType );
-    LAMA_INTERFACE_REGISTER_T( Utils, isSorted, float );
-    LAMA_INTERFACE_REGISTER_T( Utils, isSorted, double );
+    LAMA_INTERFACE_REGISTER_T( Utils, isSorted, IndexType )
+    LAMA_INTERFACE_REGISTER_T( Utils, isSorted, float )
+    LAMA_INTERFACE_REGISTER_T( Utils, isSorted, double )
 
-    LAMA_INTERFACE_REGISTER_TT( Utils, setScatter, int, int );
+    LAMA_INTERFACE_REGISTER_TT( Utils, setScatter, int, int )
 
-    LAMA_INTERFACE_REGISTER_TT( Utils, setScatter, float, float );
-    LAMA_INTERFACE_REGISTER_TT( Utils, setScatter, double, float );
-    LAMA_INTERFACE_REGISTER_TT( Utils, setScatter, float, double );
-    LAMA_INTERFACE_REGISTER_TT( Utils, setScatter, double, double );
+    LAMA_INTERFACE_REGISTER_TT( Utils, setScatter, float, float )
+    LAMA_INTERFACE_REGISTER_TT( Utils, setScatter, double, float )
+    LAMA_INTERFACE_REGISTER_TT( Utils, setScatter, float, double )
+    LAMA_INTERFACE_REGISTER_TT( Utils, setScatter, double, double )
 
-    LAMA_INTERFACE_REGISTER_TT( Utils, setGather, int, int );
+    LAMA_INTERFACE_REGISTER_TT( Utils, setGather, int, int )
 
-    LAMA_INTERFACE_REGISTER_TT( Utils, setGather, float, float );
-    LAMA_INTERFACE_REGISTER_TT( Utils, setGather, float, double );
-    LAMA_INTERFACE_REGISTER_TT( Utils, setGather, double, float );
-    LAMA_INTERFACE_REGISTER_TT( Utils, setGather, double, double );
+    LAMA_INTERFACE_REGISTER_TT( Utils, setGather, float, float )
+    LAMA_INTERFACE_REGISTER_TT( Utils, setGather, float, double )
+    LAMA_INTERFACE_REGISTER_TT( Utils, setGather, double, float )
+    LAMA_INTERFACE_REGISTER_TT( Utils, setGather, double, double )
 
-    LAMA_INTERFACE_REGISTER_TT( Utils, set, int, int );
+    LAMA_INTERFACE_REGISTER_TT( Utils, set, int, int )
 
-    LAMA_INTERFACE_REGISTER_TT( Utils, set, float, float );
-    LAMA_INTERFACE_REGISTER_TT( Utils, set, float, double );
-    LAMA_INTERFACE_REGISTER_TT( Utils, set, double, float );
-    LAMA_INTERFACE_REGISTER_TT( Utils, set, double, double );
+    LAMA_INTERFACE_REGISTER_TT( Utils, set, float, float )
+    LAMA_INTERFACE_REGISTER_TT( Utils, set, float, double )
+    LAMA_INTERFACE_REGISTER_TT( Utils, set, double, float )
+    LAMA_INTERFACE_REGISTER_TT( Utils, set, double, double )
 
-    LAMA_INTERFACE_REGISTER_T( Utils, invert, float );
-    LAMA_INTERFACE_REGISTER_T( Utils, invert, double );
+    LAMA_INTERFACE_REGISTER_T( Utils, invert, float )
+    LAMA_INTERFACE_REGISTER_T( Utils, invert, double )
 }
 
 } // namespace lama

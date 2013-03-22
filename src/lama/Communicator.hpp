@@ -609,7 +609,7 @@ PartitionId Communicator::getNeighbor( int pos ) const
     PartitionId size = getSize();
     PartitionId rank = getRank();
 
-    LAMA_ASSERT( std::abs(pos) <= size, "neighbor pos "<<pos<<" out of range ("<<size<<")" );
+    LAMA_ASSERT( std::abs(pos) <= size, "neighbor pos "<<pos<<" out of range ("<<size<<")" )
 
     return ( size + rank + pos ) % size;
 }
@@ -625,7 +625,7 @@ void Communicator::exchangeByPlan(
 {
     LAMA_ASSERT_ERROR(
         sendArray.size() == sendPlan.totalQuantity(),
-        "Send array has size " << sendArray.size() << ", but send plan requires " << sendPlan.totalQuantity() << " entries" );
+        "Send array has size " << sendArray.size() << ", but send plan requires " << sendPlan.totalQuantity() << " entries" )
 
     IndexType recvSize = recvPlan.totalQuantity();
 

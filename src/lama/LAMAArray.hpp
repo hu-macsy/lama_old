@@ -334,7 +334,7 @@ protected:
 
     mutable std::auto_ptr<SyncToken> mSyncToken; //!<  outstanding transfers
 
-    LAMA_LOG_DECL_STATIC_LOGGER( logger );
+    LAMA_LOG_DECL_STATIC_LOGGER( logger )
 
     static size_t nContextIndex; // stands for no valid index
 
@@ -387,13 +387,13 @@ LAMAArray<ValueType>::LAMAArray( const IndexType n, const OtherValueType* const 
 
     if ( n <= 0 )
     {
-        LAMA_LOG_DEBUG( logger, "Zero-sized array with value constructed: " << *this );
+        LAMA_LOG_DEBUG( logger, "Zero-sized array with value constructed: " << *this )
         return;
     }
 
     Context::ContextData& host = *mContextData[0];
     host.allocate( mSize * sizeof(ValueType) );
-    LAMA_LOG_DEBUG( logger, "constructed: " << *this );
+    LAMA_LOG_DEBUG( logger, "constructed: " << *this )
 
     ValueType* host_pointer = static_cast<ValueType*>( host.pointer );
 
@@ -404,7 +404,7 @@ LAMAArray<ValueType>::LAMAArray( const IndexType n, const OtherValueType* const 
     }
 
     host.valid = true;
-    LAMA_LOG_DEBUG( logger, "constructed: " << *this );
+    LAMA_LOG_DEBUG( logger, "constructed: " << *this )
 }
 
 }

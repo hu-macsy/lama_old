@@ -40,7 +40,7 @@
 namespace lama
 {
 
-LAMA_LOG_DEF_LOGGER( ContextManager::logger, "ContextManager" );
+LAMA_LOG_DEF_LOGGER( ContextManager::logger, "ContextManager" )
 
 ContextManager::ContextManager( ContextType type )
     : mContextType( type )
@@ -50,12 +50,12 @@ ContextManager::ContextManager( ContextType type )
 
 ContextManager::~ContextManager()
 {
-    LAMA_LOG_DEBUG( logger, "~Context, type = " << mContextType );
+    LAMA_LOG_DEBUG( logger, "~Context, type = " << mContextType )
 }
 
 void ContextManager::registerFactory()
 {
-    LAMA_LOG_DEBUG( logger, "Registering default Context Manager" );
+    LAMA_LOG_DEBUG( logger, "Registering default Context Manager" )
     ContextFactory::getFactory().addContextManager( mContextType, *this );
 }
 

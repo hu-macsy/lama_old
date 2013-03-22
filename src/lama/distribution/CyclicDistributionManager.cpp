@@ -49,7 +49,7 @@ namespace lama
 
 /* ----  Static variables  -------------------------------------------------- */
 
-LAMA_LOG_DEF_LOGGER( CyclicDistributionManager::logger, "DistributionManager.CyclicDistributionManager" );
+LAMA_LOG_DEF_LOGGER( CyclicDistributionManager::logger, "DistributionManager.CyclicDistributionManager" )
 
 // make sure that static initialization is called.
 
@@ -61,7 +61,7 @@ bool CyclicDistributionManager::init()
 {
     // logger should already be available as it is initialized before __init
 
-    LAMA_LOG_DEBUG( logger, "create NO communicator manager and add it to DistributionFactory" );
+    LAMA_LOG_DEBUG( logger, "create NO communicator manager and add it to DistributionFactory" )
 
     boost::shared_ptr<DistributionManager> manager( new CyclicDistributionManager() );
     DistributionFactory::getFactory().addDistributionManager( DISTRIBUTION_TYPE, manager );
@@ -79,7 +79,7 @@ CyclicDistributionManager::CyclicDistributionManager()
 
 CyclicDistributionManager::~CyclicDistributionManager()
 {
-    LAMA_LOG_DEBUG( logger, "~CyclicDistributionManager" );
+    LAMA_LOG_DEBUG( logger, "~CyclicDistributionManager" )
 }
 
 /* -------------------------------------------------------------------------- */
@@ -90,7 +90,7 @@ DistributionPtr CyclicDistributionManager::getDistribution( const IndexType size
 
     if ( arguments.size() == 0 )
     {
-        LAMA_LOG_WARN( logger, "argument list should have exactly one int value" );
+        LAMA_LOG_WARN( logger, "argument list should have exactly one int value" )
     }
     else
     {

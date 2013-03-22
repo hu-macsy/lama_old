@@ -337,7 +337,7 @@ private:
 
     // inline IndexType index(IndexType irow, IndexType icolumn) const { return icolumn * mNumRows + irow; }
 
-    LAMA_LOG_DECL_STATIC_LOGGER( logger );
+    LAMA_LOG_DECL_STATIC_LOGGER( logger )
 };
 
 } // namespace lama

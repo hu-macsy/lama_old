@@ -36,7 +36,7 @@
 
 namespace lama
 {
-LAMA_LOG_DEF_LOGGER( LAMAInstance::logger, "LAMAInstance" );
+LAMA_LOG_DEF_LOGGER( LAMAInstance::logger, "LAMAInstance" )
 
 LAMAInstance::~LAMAInstance()
 {
@@ -46,7 +46,7 @@ LAMAInstance::~LAMAInstance()
 LAMAInstance::LAMAInstance( int argc, char** argv, bool keepArguments )
 {
     LAMA_LOG_INFO( logger, "LAMAInstance created" )
-    LAMAArguments::init( argc, argv, keepArguments );
+    LAMAArguments::init( argc, argv, keepArguments )
 }
 
 }

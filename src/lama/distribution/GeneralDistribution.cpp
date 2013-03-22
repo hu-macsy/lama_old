@@ -47,7 +47,7 @@
 namespace lama
 {
 
-LAMA_LOG_DEF_LOGGER( GeneralDistribution::logger, "Distribution.General" );
+LAMA_LOG_DEF_LOGGER( GeneralDistribution::logger, "Distribution.General" )
 
 GeneralDistribution::GeneralDistribution(
     const IndexType globalSize,
@@ -61,7 +61,7 @@ GeneralDistribution::GeneralDistribution(
     {
         IndexType i = static_cast<IndexType>( std::distance( begin, it ) );
         LAMA_ASSERT( 0 <= *it && *it < mGlobalSize,
-                     *it << " is illegal index for general distribution of size " << mGlobalSize );
+                     *it << " is illegal index for general distribution of size " << mGlobalSize )
         mGlobal2Local[ *it] = i;
     }
 }
@@ -88,7 +88,7 @@ GeneralDistribution::GeneralDistribution( const IndexType globalSize, const Comm
 
 GeneralDistribution::~GeneralDistribution()
 {
-    LAMA_LOG_INFO( logger, "~GeneralDistribution" );
+    LAMA_LOG_INFO( logger, "~GeneralDistribution" )
 }
 
 bool GeneralDistribution::isLocal( const IndexType index ) const
@@ -156,7 +156,7 @@ void GeneralDistribution::getDistributionVector( std::vector<IndexType>& row2Par
             displacement += numRows[i];
         }
         displ[parts] = displacement;
-        LAMA_ASSERT( displ[ parts ] == mGlobalSize, "sum of local rows is not global size" );
+        LAMA_ASSERT( displ[ parts ] == mGlobalSize, "sum of local rows is not global size" )
     }
 
     // gather global indices of local rows

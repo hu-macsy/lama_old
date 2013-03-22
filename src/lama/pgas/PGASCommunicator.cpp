@@ -39,7 +39,7 @@ namespace lama
 
 const int PGASCommunicator::defaultTag = 1;
 
-LAMA_LOG_DEF_LOGGER( PGASCommunicator::logger, "Communicator.PGASCommunicator" );
+LAMA_LOG_DEF_LOGGER( PGASCommunicator::logger, "Communicator.PGASCommunicator" )
 
 PGASCommunicator::PGASCommunicator( int&, char** & )
     : Communicator( "PGAS" ), mPGASInterface( PGASInterface::getInstance() ), mThreadSafetyLevel(
@@ -144,12 +144,12 @@ void PGASCommunicator::exchangeByPlanImpl(
 {
 
     exchangeByPlanAsyncImpl( recvData, recvPlan, sendData, sendPlan );
-//    LAMA_REGION( "PGASCommunicator::exchangeByPlan" );
-//    LAMA_ASSERT_ERROR( sendPlan.allocated(), "sendPlan not allocated" );
-//    LAMA_ASSERT_ERROR( recvPlan.allocated(), "recvPlan not allocated" );
+//    LAMA_REGION( "PGASCommunicator::exchangeByPlan" )
+//    LAMA_ASSERT_ERROR( sendPlan.allocated(), "sendPlan not allocated" )
+//    LAMA_ASSERT_ERROR( recvPlan.allocated(), "recvPlan not allocated" )
 //    LAMA_LOG_INFO( logger, *this << ": exchange for values of type " << typeid( T ).name()
 //              << ", send to " << sendPlan.size()
-//              << " processors, recv from " << recvPlan.size() );
+//              << " processors, recv from " << recvPlan.size() )
 //    int maxReceives = recvPlan.size();
 //    int noReceives  = 0;  // will be incremented
 //    T* recvDataForMe = NULL;
@@ -164,7 +164,7 @@ void PGASCommunicator::exchangeByPlanImpl(
 //        T* recvDataForI = recvData + recvPlan[i].offset;
 //        PartitionId p = recvPlan[i].partitionId;
 //        LAMA_LOG_DEBUG( logger, *this << ": receive " << quantity << " elements"
-//                   << " from processor " << p );
+//                   << " from processor " << p )
 //
 //        if ( p != mRank )
 //        {
@@ -186,7 +186,7 @@ void PGASCommunicator::exchangeByPlanImpl(
 //        const T* sendDataForI = sendData + sendPlan[i].offset;
 //        PartitionId p = sendPlan[i].partitionId;
 //        LAMA_LOG_DEBUG( logger, *this << ": send " << quantity << " elements"
-//                   << " to processor " << p );
+//                   << " to processor " << p )
 //
 //        if ( p != mRank )
 //        {
@@ -194,8 +194,8 @@ void PGASCommunicator::exchangeByPlanImpl(
 //        }
 //        else
 //        {
-//            LAMA_LOG_DEBUG( logger, "self-exchange of " << quantity << " elements" );
-//            LAMA_ASSERT_DEBUG( quantity == recvDataForMeSize, "size mismatch for self exchange" );
+//            LAMA_LOG_DEBUG( logger, "self-exchange of " << quantity << " elements" )
+//            LAMA_ASSERT_DEBUG( quantity == recvDataForMeSize, "size mismatch for self exchange" )
 //
 //            for ( IndexType k = 0; k < recvDataForMeSize; k++ )
 //            {
@@ -219,10 +219,10 @@ std::auto_ptr<SyncToken> PGASCommunicator::exchangeByPlanAsyncImpl(
     const T* const sendData,
     const CommunicationPlan& sendPlan ) const
 {
-    LAMA_ASSERT_ERROR( sendPlan.allocated(), "sendPlan not allocated" );
-    LAMA_ASSERT_ERROR( recvPlan.allocated(), "recvPlan not allocated" );
+    LAMA_ASSERT_ERROR( sendPlan.allocated(), "sendPlan not allocated" )
+    LAMA_ASSERT_ERROR( recvPlan.allocated(), "recvPlan not allocated" )
     LAMA_LOG_INFO( logger,
-                   *this << ": exchange for values of type " << typeid( T ).name() << ", send to " << sendPlan.size() << " processors, recv from " << recvPlan.size() );
+                   *this << ": exchange for values of type " << typeid( T ).name() << ", send to " << sendPlan.size() << " processors, recv from " << recvPlan.size() )
 
     //TODO Optimize
     //While Using PGAS for exchangeByPlan we need the offsets of our Data on the
@@ -256,7 +256,7 @@ std::auto_ptr<SyncToken> PGASCommunicator::exchangeByPlanAsyncImpl(
     }
 #endif
 
-    std::auto_ptr<SyncToken> token( mPGASInterface->getSyncToken( 0 ) );
+    std::auto_ptr<SyncToken> token( mPGASInterface->getSyncToken( 0 ) )
     for ( int i = 0; i < recvPlan.size(); ++i )
     {
         PartitionId p = recvPlan[i].partitionId;
@@ -267,7 +267,7 @@ std::auto_ptr<SyncToken> PGASCommunicator::exchangeByPlanAsyncImpl(
         LAMA_LOG_TRACE( logger, "Reciving " << quantity*sizeof(T) << " Bytes of data from " << p << "@" << offsets[p] )
     }
     //Free our offsets array. This can be done asynchronous because no remote node will access it.
-    mPGASInterface->free( offsets, getSize() * sizeof(int) );
+    mPGASInterface->free( offsets, getSize() * sizeof(int) )
 
     return token;
 }
@@ -299,7 +299,7 @@ IndexType PGASCommunicator::shift(
     const int direction ) const
 {
     LAMA_LOG_DEBUG( logger,
-                    *this << ": shift, direction = " << direction << ", sendsize = " << sendSize << ", recvsize = " << recvSize );
+                    *this << ": shift, direction = " << direction << ", sendsize = " << sendSize << ", recvsize = " << recvSize )
 
     if ( direction % getSize() == 0 )
     {
@@ -319,7 +319,7 @@ IndexType PGASCommunicator::shift(
     const int direction ) const
 {
     LAMA_LOG_DEBUG( logger,
-                    *this << ": shift, direction = " << direction << ", sendsize = " << sendSize << ", recvsize = " << recvSize );
+                    *this << ": shift, direction = " << direction << ", sendsize = " << sendSize << ", recvsize = " << recvSize )
 
     if ( direction % getSize() == 0 )
     {
@@ -339,7 +339,7 @@ IndexType PGASCommunicator::shift(
     const int direction ) const
 {
     LAMA_LOG_DEBUG( logger,
-                    *this << ": shift, direction = " << direction << ", sendsize = " << sendSize << ", recvsize = " << recvSize );
+                    *this << ": shift, direction = " << direction << ", sendsize = " << sendSize << ", recvsize = " << recvSize )
 
     if ( direction % getSize() == 0 )
     {
@@ -373,7 +373,7 @@ std::auto_ptr<SyncToken> PGASCommunicator::shiftAsync(
     const IndexType size,
     const int direction ) const
 {
-    LAMA_LOG_DEBUG( logger, *this << ": shiftAsync size = " << size << ", direction = " << direction );
+    LAMA_LOG_DEBUG( logger, *this << ": shiftAsync size = " << size << ", direction = " << direction )
 
     if ( direction % getSize() == 0 )
     {
@@ -525,9 +525,9 @@ void PGASCommunicator::scatterImpl( T myvals[], const IndexType n, const Partiti
     mPGASInterface->scatter( myvals, n * sizeof(T), root, allvals );
 
 //    Shmemwrapper::barrier_all();
-//    LAMA_ASSERT_DEBUG( root < getSize(), "illegal root, root = " << root );
+//    LAMA_ASSERT_DEBUG( root < getSize(), "illegal root, root = " << root )
 //    LAMA_LOG_DEBUG( logger, *this << ": scatter of " << n
-//               << " elements, root = " << root );
+//               << " elements, root = " << root )
 //    Shmemwrapper::shgetmem(myvals, (&allvals[n*mRank]), n, root);
 //    Shmemwrapper::barrier_all();
 }
@@ -565,9 +565,9 @@ void PGASCommunicator::scatterImpl(
 {
     mPGASInterface->scatter( myvals, sizeof(T), root, allvals, sizes );
 //    Shmemwrapper::barrier_all();
-//    LAMA_ASSERT_DEBUG( root < getSize(), "illegal root, root = " << root );
+//    LAMA_ASSERT_DEBUG( root < getSize(), "illegal root, root = " << root )
 //    LAMA_LOG_DEBUG( logger, *this << ": scatter of " << n
-//               << " elements, root = " << root );
+//               << " elements, root = " << root )
 //
 //    int offset = 0;
 //    for(int i = 0; i< mRank; ++i) offset+=sizes[i];
@@ -615,9 +615,9 @@ void PGASCommunicator::gatherImpl( T allvals[], const IndexType n, const Partiti
 
     mPGASInterface->gather( allvals, n * sizeof(T), root, myvals );
 //    Shmemwrapper::barrier_all();
-//    LAMA_ASSERT_DEBUG( root < getSize(), "illegal root, root = " << root );
+//    LAMA_ASSERT_DEBUG( root < getSize(), "illegal root, root = " << root )
 //    LAMA_LOG_DEBUG( logger, *this << ": gather of " << n
-//               << " elements, root = " << root );
+//               << " elements, root = " << root )
 //    if(mRank == root)
 //        for(int i = 0; i< mSize; ++i)
 //        {

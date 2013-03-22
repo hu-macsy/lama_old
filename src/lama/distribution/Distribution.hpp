@@ -235,7 +235,7 @@ private:
 
     Distribution(); // disable default constructor
 
-    LAMA_LOG_DECL_STATIC_LOGGER( logger );
+    LAMA_LOG_DECL_STATIC_LOGGER( logger )
 };
 
 IndexType Distribution::getGlobalSize() const

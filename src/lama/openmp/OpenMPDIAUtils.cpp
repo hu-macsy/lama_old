@@ -51,7 +51,7 @@
 namespace lama
 {
 
-LAMA_LOG_DEF_LOGGER( OpenMPDIAUtils::logger, "OpenMP.DIAUtils" );
+LAMA_LOG_DEF_LOGGER( OpenMPDIAUtils::logger, "OpenMP.DIAUtils" )
 
 /* --------------------------------------------------------------------------- */
 /*   Implementation of methods                                                 */
@@ -97,7 +97,7 @@ ValueType OpenMPDIAUtils::absMaxVal(
 
         #pragma omp critical
         {
-            LAMA_LOG_DEBUG( logger, "absMaxVal, threadVal = " << threadVal << ", maxVal = " << maxValue );
+            LAMA_LOG_DEBUG( logger, "absMaxVal, threadVal = " << threadVal << ", maxVal = " << maxValue )
 
             if ( threadVal > maxValue )
             {
@@ -125,7 +125,7 @@ void OpenMPDIAUtils::getCSRValues(
     const DIAValueType eps )
 {
     LAMA_LOG_INFO( logger,
-                   "get CSRValues<" << typeid( DIAValueType ).name() << ", " << typeid( CSRValueType ).name() << ">" << ", #rows = " << numRows << ", #diagonals = " << numDiagonals << ", #non-zero values = " << csrIA[numRows] << ", diagonalFlag = " << diagonalFlag );
+                   "get CSRValues<" << typeid( DIAValueType ).name() << ", " << typeid( CSRValueType ).name() << ">" << ", #rows = " << numRows << ", #diagonals = " << numDiagonals << ", #non-zero values = " << csrIA[numRows] << ", diagonalFlag = " << diagonalFlag )
 
     // we cannot check for correct sizes, but at least for valid pointers
 
@@ -133,7 +133,7 @@ void OpenMPDIAUtils::getCSRValues(
     {
         if ( diagonalFlag )
         {
-            LAMA_ASSERT_EQUAL_DEBUG( numRows, csrIA[ numRows ] );
+            LAMA_ASSERT_EQUAL_DEBUG( numRows, csrIA[ numRows ] )
             for ( IndexType i = 0; i < numRows; i++ )
             {
                 csrJA[i] = i;
@@ -142,18 +142,18 @@ void OpenMPDIAUtils::getCSRValues(
         }
         else
         {
-            LAMA_ASSERT_EQUAL_DEBUG( 0, csrIA[ numRows ] );
+            LAMA_ASSERT_EQUAL_DEBUG( 0, csrIA[ numRows ] )
         }
         return;
     }
 
     if ( numDiagonals > 0 )
     {
-        LAMA_ASSERT_DEBUG( diaOffsets != NULL, "offset array of DIA data is NULL" );
+        LAMA_ASSERT_DEBUG( diaOffsets != NULL, "offset array of DIA data is NULL" )
 
         if ( numRows > 0 )
         {
-            LAMA_ASSERT_DEBUG( diaValues != NULL, "value array of DIA data is NULL" );
+            LAMA_ASSERT_DEBUG( diaValues != NULL, "value array of DIA data is NULL" )
         }
     }
 
@@ -171,13 +171,13 @@ void OpenMPDIAUtils::getCSRValues(
         {
             // store main diagonal at first, must be first diagonal
 
-            LAMA_ASSERT_EQUAL_ERROR( diaOffsets[0], 0 );
+            LAMA_ASSERT_EQUAL_ERROR( diaOffsets[0], 0 )
 
             csrJA[offset] = i;
             csrValues[offset] = static_cast<CSRValueType>( diaValues[i] );
 
             LAMA_LOG_TRACE( logger,
-                            "csrJA[" << offset << "] = " << csrJA[offset] << ", csrValues[" << offset << "] = " << csrValues[offset] );
+                            "csrJA[" << offset << "] = " << csrJA[offset] << ", csrValues[" << offset << "] = " << csrValues[offset] )
 
             offset++;
             ii0 = 1;
@@ -206,13 +206,13 @@ void OpenMPDIAUtils::getCSRValues(
                 csrJA[offset] = j;
                 csrValues[offset] = static_cast<CSRValueType>( value );
                 LAMA_LOG_TRACE( logger,
-                                "csrJA[" << offset << "] = " << csrJA[offset] << ", csrValues[" << offset << "] = " << csrValues[offset] );
+                                "csrJA[" << offset << "] = " << csrJA[offset] << ", csrValues[" << offset << "] = " << csrValues[offset] )
 
                 offset++;
             }
         }
 
-        LAMA_ASSERT_EQUAL_DEBUG( offset, csrIA[i+1] );
+        LAMA_ASSERT_EQUAL_DEBUG( offset, csrIA[i+1] )
     }
 }
 
@@ -230,7 +230,7 @@ void OpenMPDIAUtils::getCSRSizes(
     const DIAValueType eps )
 {
     LAMA_LOG_INFO( logger,
-                   "get CSRSizes<" << typeid( DIAValueType ).name() << "> for DIA matrix " << numRows << " x " << numColumns << ", #diagonals = " << numDiagonals << ", eps = " << eps << ", diagonalFlag = " << diagonalFlag );
+                   "get CSRSizes<" << typeid( DIAValueType ).name() << "> for DIA matrix " << numRows << " x " << numColumns << ", #diagonals = " << numDiagonals << ", eps = " << eps << ", diagonalFlag = " << diagonalFlag )
 
     #pragma omp parallel for schedule(LAMA_OMP_SCHEDULE)
     for ( IndexType i = 0; i < numRows; i++ )
@@ -271,7 +271,7 @@ void OpenMPDIAUtils::getCSRSizes(
 
         csrSizes[i] = count;
 
-        LAMA_LOG_TRACE( logger, "#entries in row " << i << ": " << count );
+        LAMA_LOG_TRACE( logger, "#entries in row " << i << ": " << count )
     }
 }
 
@@ -290,7 +290,7 @@ void OpenMPDIAUtils::normalGEMV(
     const IndexType diaOffsets[],
     const ValueType diaValues[] )
 {
-    LAMA_LOG_INFO( logger, "normalGEMV<" << typeid(ValueType).name() << ">, n = " << numRows );
+    LAMA_LOG_INFO( logger, "normalGEMV<" << typeid(ValueType).name() << ">, n = " << numRows )
 
     if ( beta == 0.0 )
     {
@@ -373,13 +373,13 @@ void OpenMPDIAUtils::normalGEMV(
     }
     else
     {
-        LAMA_THROWEXCEPTION( "no asynchronous support due to boost problem" );
+        LAMA_THROWEXCEPTION( "no asynchronous support due to boost problem" )
 
         /* not possible
 
          TaskSyncToken* taskSyncToken = dynamic_cast<TaskSyncToken*>( syncToken );
 
-         LAMA_ASSERT_DEBUG( taskSyncToken, "no task sync token provided" );
+         LAMA_ASSERT_DEBUG( taskSyncToken, "no task sync token provided" )
 
          // Function pointer needed as bind cannot identify template method
 
@@ -419,14 +419,14 @@ void OpenMPDIAUtils::jacobi(
     class SyncToken* syncToken )
 {
     LAMA_LOG_INFO( logger,
-                   "jacobi<" << typeid(ValueType).name() << ">" << ", #rows = " << numRows << ", #cols = " << numColumns << ", #diagonals = " << numDiagonals << ", omega = " << omega );
+                   "jacobi<" << typeid(ValueType).name() << ">" << ", #rows = " << numRows << ", #cols = " << numColumns << ", #diagonals = " << numDiagonals << ", omega = " << omega )
 
-    LAMA_ASSERT_EQUAL_DEBUG( 0, diaOffset[0] );
+    LAMA_ASSERT_EQUAL_DEBUG( 0, diaOffset[0] )
     // main diagonal must be first
 
     if ( syncToken != NULL )
     {
-        LAMA_LOG_ERROR( logger, "jacobi called asynchronously, not supported here" );
+        LAMA_LOG_ERROR( logger, "jacobi called asynchronously, not supported here" )
     }
 
     const ValueType oneMinusOmega = static_cast<ValueType>( 1.0 - omega );
@@ -461,26 +461,26 @@ void OpenMPDIAUtils::setInterface( DIAUtilsInterface& DIAUtils )
 {
     // Register all CUDA routines of this class for the LAMA interface
 
-    LAMA_INTERFACE_REGISTER_T( DIAUtils, getCSRSizes, float );
-    LAMA_INTERFACE_REGISTER_T( DIAUtils, getCSRSizes, double );
+    LAMA_INTERFACE_REGISTER_T( DIAUtils, getCSRSizes, float )
+    LAMA_INTERFACE_REGISTER_T( DIAUtils, getCSRSizes, double )
 
     // DIAUtilsInterface::Counting<double>::getCSRSizes fn = &getCSRSizes<double>;
 
-    // LAMA_INTERFACE_REGISTER_T( DIAUtils, getCSRSizes, IndexType );
+    // LAMA_INTERFACE_REGISTER_T( DIAUtils, getCSRSizes, IndexType )
 
-    LAMA_INTERFACE_REGISTER_TT( DIAUtils, getCSRValues, float, float );
-    LAMA_INTERFACE_REGISTER_TT( DIAUtils, getCSRValues, float, double );
-    LAMA_INTERFACE_REGISTER_TT( DIAUtils, getCSRValues, double, float );
-    LAMA_INTERFACE_REGISTER_TT( DIAUtils, getCSRValues, double, double );
+    LAMA_INTERFACE_REGISTER_TT( DIAUtils, getCSRValues, float, float )
+    LAMA_INTERFACE_REGISTER_TT( DIAUtils, getCSRValues, float, double )
+    LAMA_INTERFACE_REGISTER_TT( DIAUtils, getCSRValues, double, float )
+    LAMA_INTERFACE_REGISTER_TT( DIAUtils, getCSRValues, double, double )
 
-    LAMA_INTERFACE_REGISTER_T( DIAUtils, absMaxVal, float );
-    LAMA_INTERFACE_REGISTER_T( DIAUtils, absMaxVal, double );
+    LAMA_INTERFACE_REGISTER_T( DIAUtils, absMaxVal, float )
+    LAMA_INTERFACE_REGISTER_T( DIAUtils, absMaxVal, double )
 
-    LAMA_INTERFACE_REGISTER_T( DIAUtils, normalGEMV, float );
-    LAMA_INTERFACE_REGISTER_T( DIAUtils, normalGEMV, double );
+    LAMA_INTERFACE_REGISTER_T( DIAUtils, normalGEMV, float )
+    LAMA_INTERFACE_REGISTER_T( DIAUtils, normalGEMV, double )
 
-    LAMA_INTERFACE_REGISTER_T( DIAUtils, jacobi, float );
-    LAMA_INTERFACE_REGISTER_T( DIAUtils, jacobi, double );
+    LAMA_INTERFACE_REGISTER_T( DIAUtils, jacobi, float )
+    LAMA_INTERFACE_REGISTER_T( DIAUtils, jacobi, double )
 }
 
 } // namespace lama

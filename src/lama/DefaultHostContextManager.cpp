@@ -57,7 +57,7 @@ boost::weak_ptr<DefaultHostContext> DefaultHostContextManager::contextInstance;
 
 void DefaultHostContextManager::setAsCurrent()
 {
-    LAMA_LOG_INFO( logger, "DefaultHostContextManager used for " << "ContextFactory::getContext( Context::Host )" );
+    LAMA_LOG_INFO( logger, "DefaultHostContextManager used for " << "ContextFactory::getContext( Context::Host )" )
 
     theInstance.registerFactory();
 }
@@ -86,7 +86,7 @@ ContextPtr DefaultHostContextManager::getContext( int deviceNr )
 
     if ( deviceNr != LAMA_DEFAULT_DEVICE_NUMBER )
     {
-        LAMA_LOG_WARN( logger, "Context number ignored for HostContext, deviceNr = " << deviceNr );
+        LAMA_LOG_WARN( logger, "Context number ignored for HostContext, deviceNr = " << deviceNr )
     }
 
     // use the last contextInstance if it is still valid

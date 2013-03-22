@@ -64,7 +64,7 @@ void* PGASSimpleAllocator::allocate( size_t size )
     mFreeSpace -= size;
 //    std::cout << "SPACE LEFT:" << mFreeSpace << std::endl;
 //    std::cout << "Allocated @ " << static_cast<void*>(temp) << std::endl;
-    LAMA_ASSERT( mFreeSpace > 0, "Out of Memory" );
+    LAMA_ASSERT( mFreeSpace > 0, "Out of Memory" )
     mLastPtrs.push_back( mActualPointer );
     return temp;
 }
