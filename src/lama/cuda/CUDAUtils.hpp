@@ -116,7 +116,7 @@ public:
 
 private:
 
-    LAMA_LOG_DECL_STATIC_LOGGER( logger );
+    LAMA_LOG_DECL_STATIC_LOGGER( logger )
 };
 
 } // namespace lama

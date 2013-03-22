@@ -408,12 +408,12 @@ void lama_CSPBLAS_CSRAGEMVPBV_launcher(
 
     if ( x_d == y_d )
     {
-        LAMA_THROWEXCEPTION( "INPUTVECTOR_IS_ALIASED_WITH_RESULT_VECTOR" );
+        LAMA_THROWEXCEPTION( "INPUTVECTOR_IS_ALIASED_WITH_RESULT_VECTOR" )
     }
 
     const int block_size = 256;
 
-    dim3 dimBlock( block_size, 1, 1 );
+    dim3 dimBlock( block_size, 1, 1 )
 
     dim3 dimGrid = makeGrid( *m, dimBlock.x );
 
@@ -454,7 +454,7 @@ void lama_CSPBLAS_CSRAGEMVPBV_launcher(
     else if ( *transa == 'T' || *transa == 't' || *transa == 'C' || *transa == 'c' )
     {
         //TODO: Implement this.
-        LAMA_THROWEXCEPTION( "Not implemented yet" );
+        LAMA_THROWEXCEPTION( "Not implemented yet" )
     }
 
     // Oops, sorry, but we really have 2 x 2 x 4 x 4 = 64 different cases
@@ -463,7 +463,7 @@ void lama_CSPBLAS_CSRAGEMVPBV_launcher(
     {
     case NO_TEXTURE | Y_EQ_Z | ALPHA_0 | BETA_0:
         cspblas_csrgemv_kernel<ValueType, false, 0, 0> <<< dimGrid, dimBlock, 0, stream>>>
-        ( *m, a_d, ia_d, ja_d, x_d, y_d );
+        ( *m, a_d, ia_d, ja_d, x_d, y_d )
         break;
     case NO_TEXTURE | Y_EQ_Z | ALPHA_0 | BETA_1:
         cspblas_csrgemv_kernel<ValueType, false, 0, 1> <<< dimGrid, dimBlock, 0, stream>>>

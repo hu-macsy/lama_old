@@ -52,7 +52,7 @@
 namespace lama
 {
 
-LAMA_LOG_DEF_LOGGER( CUDAUtils::logger, "CUDA.Utils" );
+LAMA_LOG_DEF_LOGGER( CUDAUtils::logger, "CUDA.Utils" )
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 /*                                                  scale                                                             */
@@ -61,7 +61,7 @@ LAMA_LOG_DEF_LOGGER( CUDAUtils::logger, "CUDA.Utils" );
 template<typename ValueType,typename OtherValueType>
 void CUDAUtils::scale( ValueType *mValues, const IndexType n, const OtherValueType value )
 {
-    LAMA_LOG_INFO( logger, "scale, #n = " << n << ", value = " << value );
+    LAMA_LOG_INFO( logger, "scale, #n = " << n << ", value = " << value )
 
     LAMA_CHECK_CUDA_ACCESS
 
@@ -518,13 +518,13 @@ struct InvalidIndex
 
 bool CUDAUtils::validIndexes( const IndexType array[], const IndexType n, const IndexType size )
 {
-    LAMA_LOG_DEBUG( logger, "validIndexes: array[" << n << "], size " << size );
+    LAMA_LOG_DEBUG( logger, "validIndexes: array[" << n << "], size " << size )
 
     bool validFlag = true;
 
     if ( n > 0 ) 
     {
-        LAMA_CHECK_CUDA_ACCESS;
+        LAMA_CHECK_CUDA_ACCESS
 
         thrust::device_ptr<IndexType> arrayPtr( const_cast<IndexType*> ( array ) );
 
@@ -552,7 +552,7 @@ bool CUDAUtils::validIndexes( const IndexType array[], const IndexType n, const 
 template<typename ValueType>
 ValueType CUDAUtils::sum( const ValueType array[], const IndexType n )
 {
-    LAMA_LOG_INFO( logger, "sum # array = " << array << ", n = " << n );
+    LAMA_LOG_INFO( logger, "sum # array = " << array << ", n = " << n )
 
     LAMA_CHECK_CUDA_ACCESS
 
@@ -564,7 +564,7 @@ ValueType CUDAUtils::sum( const ValueType array[], const IndexType n )
 
     LAMA_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "cudaStreamSynchronize( 0 )" );
 
-    LAMA_LOG_INFO( logger, "sum of " << n << " values = " << result );
+    LAMA_LOG_INFO( logger, "sum of " << n << " values = " << result )
 
     return result;
 }
@@ -574,7 +574,7 @@ ValueType CUDAUtils::sum( const ValueType array[], const IndexType n )
 template<typename ValueType>
 void CUDAUtils::setVal( ValueType array[], const IndexType n, const ValueType val )
 {
-    LAMA_LOG_INFO( logger, "setVal # array = " << array << ", n = " << n << ", val = " << val );
+    LAMA_LOG_INFO( logger, "setVal # array = " << array << ", n = " << n << ", val = " << val )
 
     LAMA_CHECK_CUDA_ACCESS
 
@@ -592,7 +592,7 @@ void CUDAUtils::setVal( ValueType array[], const IndexType n, const ValueType va
 template<typename ValueType>
 void CUDAUtils::setOrder( ValueType array[], const IndexType n )
 {
-    LAMA_LOG_INFO( logger, "setOrder # array = " << array << ", n = " << n );
+    LAMA_LOG_INFO( logger, "setOrder # array = " << array << ", n = " << n )
     LAMA_CHECK_CUDA_ACCESS
 
     thrust::device_ptr<ValueType> array_ptr( const_cast<ValueType*>( array ) );
@@ -606,7 +606,7 @@ void CUDAUtils::setOrder( ValueType array[], const IndexType n )
 template<typename ValueType>
 ValueType CUDAUtils::getValue( const ValueType* array, const IndexType i )
 {
-    LAMA_LOG_INFO( logger, "getValue # i = " << i );
+    LAMA_LOG_INFO( logger, "getValue # i = " << i )
     LAMA_CHECK_CUDA_ACCESS
 
     thrust::device_ptr<ValueType> arrayPtr( const_cast<ValueType*>( array ) );
@@ -620,7 +620,7 @@ ValueType CUDAUtils::getValue( const ValueType* array, const IndexType i )
 template<typename ValueType>
 ValueType CUDAUtils::maxval( const ValueType array[], const IndexType n )
 {
-    LAMA_LOG_INFO( logger, "maxval for " << n << " elements " );
+    LAMA_LOG_INFO( logger, "maxval for " << n << " elements " )
 
     LAMA_CHECK_CUDA_ACCESS
 
@@ -630,7 +630,7 @@ ValueType CUDAUtils::maxval( const ValueType array[], const IndexType n )
 
     LAMA_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "cudaStreamSynchronize( 0 )" );
 
-    LAMA_LOG_INFO( logger, "max of " << n << " values = " << result );
+    LAMA_LOG_INFO( logger, "max of " << n << " values = " << result )
 
     return result;
 }
@@ -650,7 +650,7 @@ struct absolute_value: public thrust::unary_function<T,T>
 template<typename ValueType>
 ValueType CUDAUtils::absMaxVal( const ValueType array[], const IndexType n )
 {
-    LAMA_LOG_INFO( logger, "absMaxVal for " << n << " elements " );
+    LAMA_LOG_INFO( logger, "absMaxVal for " << n << " elements " )
 
     LAMA_CHECK_CUDA_ACCESS
 
@@ -663,7 +663,7 @@ ValueType CUDAUtils::absMaxVal( const ValueType array[], const IndexType n )
 
     LAMA_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "cudaStreamSynchronize( 0 )" );
 
-    LAMA_LOG_INFO( logger, "abs max of " << n << " values = " << result );
+    LAMA_LOG_INFO( logger, "abs max of " << n << " values = " << result )
 
     return result;
 }
@@ -673,7 +673,7 @@ ValueType CUDAUtils::absMaxVal( const ValueType array[], const IndexType n )
 template<typename ValueType>
 ValueType CUDAUtils::absMaxDiffVal( const ValueType array1[], const ValueType array2[], const IndexType n )
 {
-    LAMA_LOG_INFO( logger, "absMaxDiffVal for " << n << " elements " );
+    LAMA_LOG_INFO( logger, "absMaxDiffVal for " << n << " elements " )
 
     LAMA_CHECK_CUDA_ACCESS
 
@@ -700,9 +700,9 @@ ValueType CUDAUtils::absMaxDiffVal( const ValueType array1[], const ValueType ar
      thrust::maximum<ValueType>());
      */
 
-    LAMA_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "cudaStreamSynchronize( 0 )" );
+    LAMA_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "cudaStreamSynchronize( 0 )" )
 
-    LAMA_LOG_INFO( logger, "abs max diff of " << n << " values = " << result );
+    LAMA_LOG_INFO( logger, "abs max diff of " << n << " values = " << result )
 
     return result;
 }
@@ -727,7 +727,7 @@ template<typename ValueType1,typename ValueType2>
 void CUDAUtils::setGather( ValueType1 out[], const ValueType2 in[], const IndexType indexes[], const IndexType n )
 {
     LAMA_LOG_INFO( logger,
-                   "setGather<" << typeid(ValueType1).name() << "," << typeid(ValueType2).name() << ">( ..., n = " << n << ")" );
+                   "setGather<" << typeid(ValueType1).name() << "," << typeid(ValueType2).name() << ">( ..., n = " << n << ")" )
 
     LAMA_CHECK_CUDA_ACCESS
 
@@ -758,7 +758,7 @@ template<typename ValueType1,typename ValueType2>
 void CUDAUtils::setScatter( ValueType1 out[], const IndexType indexes[], const ValueType2 in[], const IndexType n )
 {
     LAMA_LOG_INFO( logger,
-                   "setScatter<" << typeid(ValueType1).name() << "," << typeid(ValueType2).name() << ">( ..., n = " << n << ")" );
+                   "setScatter<" << typeid(ValueType1).name() << "," << typeid(ValueType2).name() << ">( ..., n = " << n << ")" )
 
     LAMA_CHECK_CUDA_ACCESS
 
@@ -789,9 +789,9 @@ template<typename ValueType1,typename ValueType2>
 void CUDAUtils::set( ValueType1 out[], const ValueType2 in[], const IndexType n )
 {
     LAMA_LOG_INFO( logger,
-                   "set<" << typeid(ValueType1).name() << "," << typeid(ValueType2).name() << ">( ..., n = " << n << ")" );
+                   "set<" << typeid(ValueType1).name() << "," << typeid(ValueType2).name() << ">( ..., n = " << n << ")" )
 
-    LAMA_LOG_DEBUG( logger, "out = " << out << ", in = " << in );
+    LAMA_LOG_DEBUG( logger, "out = " << out << ", in = " << in )
 
     LAMA_CHECK_CUDA_ACCESS
 
@@ -829,7 +829,7 @@ template<typename ValueType>
 void CUDAUtils::invert( ValueType array[], const IndexType n )
 {
     LAMA_LOG_INFO( logger,
-                   "invert Vector components for vector of type " << typeid(ValueType).name() << " and size n = " << n << "." );
+                   "invert Vector components for vector of type " << typeid(ValueType).name() << " and size n = " << n << "." )
 
     LAMA_CHECK_CUDA_ACCESS
 
@@ -842,7 +842,6 @@ void CUDAUtils::invert( ValueType array[], const IndexType n )
         invertVectorComponents_kernel<<<dimGrid,dimBlock>>>( array, n );
         cudaStreamSynchronize( 0 );
         LAMA_CHECK_CUDA_ERROR
-        ;
     }
 }
 
@@ -852,59 +851,59 @@ void CUDAUtils::invert( ValueType array[], const IndexType n )
 
 void CUDAUtils::setInterface( UtilsInterface& Utils )
 {
-    LAMA_INTERFACE_REGISTER( Utils, validIndexes );
+    LAMA_INTERFACE_REGISTER( Utils, validIndexes )
 
-    LAMA_INTERFACE_REGISTER_TT( Utils, scale, float, float );
-    LAMA_INTERFACE_REGISTER_TT( Utils, scale, double, float );
-    LAMA_INTERFACE_REGISTER_TT( Utils, scale, float, double );
-    LAMA_INTERFACE_REGISTER_TT( Utils, scale, double, double );
+    LAMA_INTERFACE_REGISTER_TT( Utils, scale, float, float )
+    LAMA_INTERFACE_REGISTER_TT( Utils, scale, double, float )
+    LAMA_INTERFACE_REGISTER_TT( Utils, scale, float, double )
+    LAMA_INTERFACE_REGISTER_TT( Utils, scale, double, double )
 
-    LAMA_INTERFACE_REGISTER_T( Utils, sum, IndexType );
-    LAMA_INTERFACE_REGISTER_T( Utils, sum, float );
-    LAMA_INTERFACE_REGISTER_T( Utils, sum, double );
+    LAMA_INTERFACE_REGISTER_T( Utils, sum, IndexType )
+    LAMA_INTERFACE_REGISTER_T( Utils, sum, float )
+    LAMA_INTERFACE_REGISTER_T( Utils, sum, double )
 
-    LAMA_INTERFACE_REGISTER_T( Utils, setVal, IndexType );
-    LAMA_INTERFACE_REGISTER_T( Utils, setVal, float );
-    LAMA_INTERFACE_REGISTER_T( Utils, setVal, double );
+    LAMA_INTERFACE_REGISTER_T( Utils, setVal, IndexType )
+    LAMA_INTERFACE_REGISTER_T( Utils, setVal, float )
+    LAMA_INTERFACE_REGISTER_T( Utils, setVal, double )
 
-    LAMA_INTERFACE_REGISTER_T( Utils, setOrder, IndexType );
+    LAMA_INTERFACE_REGISTER_T( Utils, setOrder, IndexType )
 
-    LAMA_INTERFACE_REGISTER_T( Utils, getValue, IndexType );
-    LAMA_INTERFACE_REGISTER_T( Utils, getValue, float );
-    LAMA_INTERFACE_REGISTER_T( Utils, getValue, double );
+    LAMA_INTERFACE_REGISTER_T( Utils, getValue, IndexType )
+    LAMA_INTERFACE_REGISTER_T( Utils, getValue, float )
+    LAMA_INTERFACE_REGISTER_T( Utils, getValue, double )
 
-    LAMA_INTERFACE_REGISTER_T( Utils, maxval, IndexType );
-    LAMA_INTERFACE_REGISTER_T( Utils, maxval, float );
-    LAMA_INTERFACE_REGISTER_T( Utils, maxval, double );
+    LAMA_INTERFACE_REGISTER_T( Utils, maxval, IndexType )
+    LAMA_INTERFACE_REGISTER_T( Utils, maxval, float )
+    LAMA_INTERFACE_REGISTER_T( Utils, maxval, double )
 
-    LAMA_INTERFACE_REGISTER_T( Utils, absMaxVal, IndexType );
-    LAMA_INTERFACE_REGISTER_T( Utils, absMaxVal, float );
-    LAMA_INTERFACE_REGISTER_T( Utils, absMaxVal, double );
+    LAMA_INTERFACE_REGISTER_T( Utils, absMaxVal, IndexType )
+    LAMA_INTERFACE_REGISTER_T( Utils, absMaxVal, float )
+    LAMA_INTERFACE_REGISTER_T( Utils, absMaxVal, double )
 
-    LAMA_INTERFACE_REGISTER_T( Utils, absMaxDiffVal, IndexType );
-    LAMA_INTERFACE_REGISTER_T( Utils, absMaxDiffVal, float );
-    LAMA_INTERFACE_REGISTER_T( Utils, absMaxDiffVal, double );
+    LAMA_INTERFACE_REGISTER_T( Utils, absMaxDiffVal, IndexType )
+    LAMA_INTERFACE_REGISTER_T( Utils, absMaxDiffVal, float )
+    LAMA_INTERFACE_REGISTER_T( Utils, absMaxDiffVal, double )
 
-    LAMA_INTERFACE_REGISTER_TT( Utils, set, int, int );
-    LAMA_INTERFACE_REGISTER_TT( Utils, set, float, float );
-    LAMA_INTERFACE_REGISTER_TT( Utils, set, float, double );
-    LAMA_INTERFACE_REGISTER_TT( Utils, set, double, float );
-    LAMA_INTERFACE_REGISTER_TT( Utils, set, double, double );
+    LAMA_INTERFACE_REGISTER_TT( Utils, set, int, int )
+    LAMA_INTERFACE_REGISTER_TT( Utils, set, float, float )
+    LAMA_INTERFACE_REGISTER_TT( Utils, set, float, double )
+    LAMA_INTERFACE_REGISTER_TT( Utils, set, double, float )
+    LAMA_INTERFACE_REGISTER_TT( Utils, set, double, double )
 
-    LAMA_INTERFACE_REGISTER_TT( Utils, setScatter, int, int );
-    LAMA_INTERFACE_REGISTER_TT( Utils, setScatter, float, float );
-    LAMA_INTERFACE_REGISTER_TT( Utils, setScatter, float, double );
-    LAMA_INTERFACE_REGISTER_TT( Utils, setScatter, double, float );
-    LAMA_INTERFACE_REGISTER_TT( Utils, setScatter, double, double );
+    LAMA_INTERFACE_REGISTER_TT( Utils, setScatter, int, int )
+    LAMA_INTERFACE_REGISTER_TT( Utils, setScatter, float, float )
+    LAMA_INTERFACE_REGISTER_TT( Utils, setScatter, float, double )
+    LAMA_INTERFACE_REGISTER_TT( Utils, setScatter, double, float )
+    LAMA_INTERFACE_REGISTER_TT( Utils, setScatter, double, double )
 
-    LAMA_INTERFACE_REGISTER_TT( Utils, setGather, int, int );
-    LAMA_INTERFACE_REGISTER_TT( Utils, setGather, float, float );
-    LAMA_INTERFACE_REGISTER_TT( Utils, setGather, float, double );
-    LAMA_INTERFACE_REGISTER_TT( Utils, setGather, double, float );
-    LAMA_INTERFACE_REGISTER_TT( Utils, setGather, double, double );
+    LAMA_INTERFACE_REGISTER_TT( Utils, setGather, int, int )
+    LAMA_INTERFACE_REGISTER_TT( Utils, setGather, float, float )
+    LAMA_INTERFACE_REGISTER_TT( Utils, setGather, float, double )
+    LAMA_INTERFACE_REGISTER_TT( Utils, setGather, double, float )
+    LAMA_INTERFACE_REGISTER_TT( Utils, setGather, double, double )
 
-    LAMA_INTERFACE_REGISTER_T( Utils, invert, float );
-    LAMA_INTERFACE_REGISTER_T( Utils, invert, double );
+    LAMA_INTERFACE_REGISTER_T( Utils, invert, float )
+    LAMA_INTERFACE_REGISTER_T( Utils, invert, double )
 }
 
 } // namespace lama

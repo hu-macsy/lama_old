@@ -55,7 +55,7 @@ using std::auto_ptr;
 namespace lama
 {
 
-LAMA_LOG_DEF_LOGGER( CUDAInterface::logger, "LAMAInterface.CUDAInterface" );
+LAMA_LOG_DEF_LOGGER( CUDAInterface::logger, "LAMAInterface.CUDAInterface" )
 
 CUDAInterface::CUDAInterface()
     : LAMAInterface()

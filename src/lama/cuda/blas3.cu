@@ -146,7 +146,7 @@ void gemm_launcher(
 
     if ( transA_char != transB_char && transA_char != 'N' )
     {
-        LAMA_THROWEXCEPTION( "trans = " << transA_char << " not supported for gemm" );
+        LAMA_THROWEXCEPTION( "trans = " << transA_char << " not supported for gemm" )
     }
 
     dim3 dimBlock( 16, 16, 1 );

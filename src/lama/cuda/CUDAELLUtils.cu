@@ -64,7 +64,7 @@
 namespace lama
 {
 
-LAMA_LOG_DEF_LOGGER( CUDAELLUtils::logger, "CUDA.ELLUtils" );
+LAMA_LOG_DEF_LOGGER( CUDAELLUtils::logger, "CUDA.ELLUtils" )
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 /*                                                  thrust functors                                                   */
@@ -150,10 +150,10 @@ struct multiply
 
 IndexType CUDAELLUtils::countNonEmptyRowsBySizes( const IndexType sizes[], const IndexType numRows )
 {
-    LAMA_LOG_INFO( logger, "countNonEmptyRowsBySizes #sizes = " << sizes << " #numRows = " << numRows );
+    LAMA_LOG_INFO( logger, "countNonEmptyRowsBySizes #sizes = " << sizes << " #numRows = " << numRows )
 
     LAMA_CHECK_CUDA_ACCESS
-    ;
+
     thrust::device_ptr<IndexType> sizes_ptr( const_cast<IndexType*>( sizes ) );
     IndexType counter = thrust::transform_reduce( sizes_ptr, sizes_ptr + numRows, greaterThan<IndexType>( 0 ), 0,
                         thrust::plus<IndexType>() );
@@ -174,7 +174,6 @@ void CUDAELLUtils::setNonEmptyRowsBySizes(
                    "setNonEmptyRowsBySizes" << " #rowIndexes = " << rowIndexes << ", #numNonEmptyRows = " << numNonEmptyRows << ", #sizes = " << sizes << ", #numRows = " << numRows );
 
     LAMA_CHECK_CUDA_ACCESS
-    ;
 
     // Create device ptr and help variables
     thrust::device_ptr<IndexType> rowIndexes_ptr( const_cast<IndexType*>( rowIndexes ) );
@@ -196,7 +195,6 @@ bool CUDAELLUtils::hasDiagonalProperty( const IndexType numDiagonals, const Inde
     LAMA_LOG_INFO( logger, "hasDiagonalProperty, #numDiagonals = " << numDiagonals );
 
     LAMA_CHECK_CUDA_ACCESS
-    ;
 
     thrust::device_ptr<IndexType> ellJA_ptr( const_cast<IndexType*>( ellJA ) );
     thrust::counting_iterator<IndexType> sequence( 0 );
@@ -255,10 +253,9 @@ void CUDAELLUtils::check(
     const char* msg )
 {
     LAMA_LOG_INFO( logger,
-                   "check # mNumRows = " << mNumRows << ", mNumValuesPerRow = " << mNumValuesPerRow << ", mNumColumns = " << mNumColumns );
+                   "check # mNumRows = " << mNumRows << ", mNumValuesPerRow = " << mNumValuesPerRow << ", mNumColumns = " << mNumColumns )
 
     LAMA_CHECK_CUDA_ACCESS
-    ;
 
     if ( mNumRows > 0 )
     {
@@ -275,17 +272,16 @@ void CUDAELLUtils::check(
 
         cudaStreamSynchronize( 0 );
         LAMA_CHECK_CUDA_ERROR
-        ;
 
         bool integrity = thrust::reduce( resultPtr, resultPtr + mNumRows, true, thrust::logical_and<bool>() );
 
-        LAMA_ASSERT_ERROR( integrity, msg << ": ia to large, or ja out of range" );
+        LAMA_ASSERT_ERROR( integrity, msg << ": ia to large, or ja out of range" )
     }
     else
     {
         LAMA_ASSERT_ERROR( mNumValuesPerRow == 0,
-                           msg << ": mNumValuesPerRow should be 0, but is: " << mNumValuesPerRow );
-        LAMA_ASSERT_ERROR( mNumColumns == 0, msg << ": mNumColumns should be 0, but is: " << mNumColumns );
+                           msg << ": mNumValuesPerRow should be 0, but is: " << mNumValuesPerRow )
+        LAMA_ASSERT_ERROR( mNumColumns == 0, msg << ": mNumColumns should be 0, but is: " << mNumColumns )
     }
 }
 
@@ -323,10 +319,9 @@ void CUDAELLUtils::getRow(
     const IndexType *ja,
     const ValueType *values )
 {
-    LAMA_LOG_TRACE( logger, "get row #i = " << i );
+    LAMA_LOG_TRACE( logger, "get row #i = " << i )
 
     LAMA_CHECK_CUDA_ACCESS
-    ;
 
     thrust::device_ptr<OtherValueType> rowPtr( const_cast<OtherValueType*>( row ) );
     thrust::fill( rowPtr, rowPtr + numColumns, 0.0 );
@@ -343,7 +338,6 @@ void CUDAELLUtils::getRow(
 
     cudaStreamSynchronize( 0 );
     LAMA_CHECK_CUDA_ERROR
-    ;
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */
@@ -383,9 +377,8 @@ OtherValueType CUDAELLUtils::getValue(
     const ValueType *values )
 {
     LAMA_CHECK_CUDA_ACCESS
-    ;
 
-    LAMA_LOG_TRACE( logger, "get value i = " << i << ", j = " << j << " numRows = " << numRows );
+    LAMA_LOG_TRACE( logger, "get value i = " << i << ", j = " << j << " numRows = " << numRows )
 
     thrust::device_ptr<IndexType> iaPtr( const_cast<IndexType*>( ia ) );
     thrust::host_vector<IndexType> rowNumColumnsVec( iaPtr + i, iaPtr + i + 1 );
@@ -407,7 +400,6 @@ OtherValueType CUDAELLUtils::getValue(
 
         cudaStreamSynchronize( 0 );
         LAMA_CHECK_CUDA_ERROR
-        ;
 
         return thrust::reduce( resultPtr, resultPtr + rowNumColumns );
     }
@@ -427,10 +419,9 @@ void CUDAELLUtils::scaleValue(
 {
 
     LAMA_LOG_INFO( logger,
-                   "scaleValue, #numRows = " << numRows << ", ia = " << ia << ", mValues = " << mValues << ", values = " << values );
+                   "scaleValue, #numRows = " << numRows << ", ia = " << ia << ", mValues = " << mValues << ", values = " << values )
 
     LAMA_CHECK_CUDA_ACCESS
-    ;
 
     thrust::device_ptr<IndexType> ia_ptr( const_cast<IndexType*>( ia ) );
     thrust::device_ptr<ValueType> mValues_ptr( const_cast<ValueType*>( mValues ) );
@@ -491,10 +482,9 @@ void CUDAELLUtils::getCSRValues(
     const ELLValueType ellValues[] )
 {
     LAMA_LOG_INFO( logger,
-                   "get CSRValues<" << typeid( ELLValueType ).name() << ", " << typeid( CSRValueType ).name() << ">" << ", #rows = " << numRows );
+                   "get CSRValues<" << typeid( ELLValueType ).name() << ", " << typeid( CSRValueType ).name() << ">" << ", #rows = " << numRows )
 
     LAMA_CHECK_CUDA_ACCESS
-    ;
 
     const int block_size = 256;
     dim3 dimBlock( block_size, 1, 1 );
@@ -506,7 +496,6 @@ void CUDAELLUtils::getCSRValues(
 
     cudaStreamSynchronize( 0 );
     LAMA_CHECK_CUDA_ERROR
-    ;
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */
@@ -563,13 +552,12 @@ void CUDAELLUtils::setCSRValues(
     const CSRValueType csrValues[] )
 {
     LAMA_LOG_INFO( logger,
-                   "set CSRValues<" << typeid( ELLValueType ).name() << ", " << typeid( CSRValueType ).name() << ">" << ", #rows = " << numRows << ", #values/row = " << numValuesPerRow );
+                   "set CSRValues<" << typeid( ELLValueType ).name() << ", " << typeid( CSRValueType ).name() << ">" << ", #rows = " << numRows << ", #values/row = " << numValuesPerRow )
 
     LAMA_LOG_DEBUG( logger,
-                    "ellJA = " << ellJA << ", ellValues = " << ellValues << ", ellSizes = " << ellSizes << ", csrIA = " << csrIA << ", csrJA = " << csrJA << ", csrValues = " << csrValues );
+                    "ellJA = " << ellJA << ", ellValues = " << ellValues << ", ellSizes = " << ellSizes << ", csrIA = " << csrIA << ", csrJA = " << csrJA << ", csrValues = " << csrValues )
 
     LAMA_CHECK_CUDA_ACCESS
-    ;
 
     const int block_size = 256;
     dim3 dimBlock( block_size, 1, 1 );
@@ -579,7 +567,6 @@ void CUDAELLUtils::setCSRValues(
                                           csrIA, csrJA, csrValues);
     cudaStreamSynchronize( 0 );
     LAMA_CHECK_CUDA_ERROR
-    ;
 
     // throw exception if ERROR
 }
@@ -663,20 +650,19 @@ void CUDAELLUtils::normalGEMV(
     const ValueType ellValues[],
     SyncToken* syncToken )
 {
-    LAMA_LOG_INFO( logger, "normalGEMV<" << typeid(ValueType).name() << ">" << ", #rows = " << numRows );
+    LAMA_LOG_INFO( logger, "normalGEMV<" << typeid(ValueType).name() << ">" << ", #rows = " << numRows )
 
     LAMA_LOG_INFO( logger,
-                   "alpha = " << alpha << ", x = " << x << ", beta = " << beta << ", y = " << y << ", result = " << result );
+                   "alpha = " << alpha << ", x = " << x << ", beta = " << beta << ", y = " << y << ", result = " << result )
 
     LAMA_CHECK_CUDA_ACCESS
-    ;
 
     cudaStream_t stream = 0;
 
     if ( syncToken )
     {
         CUDAStreamSyncToken* cudaStreamSyncToken = dynamic_cast<CUDAStreamSyncToken*>( syncToken );
-        LAMA_ASSERT_DEBUG( cudaStreamSyncToken, "no cuda stream sync token provided" );
+        LAMA_ASSERT_DEBUG( cudaStreamSyncToken, "no cuda stream sync token provided" )
         stream = cudaStreamSyncToken->getCUDAStream();
     }
 
@@ -708,20 +694,20 @@ void CUDAELLUtils::normalGEMV(
 
         if ( sizeof(ValueType) == sizeof(float) )
         {
-            LAMA_CUDA_RT_CALL( cudaBindTexture( NULL, texELLSXref, x ), "LAMA_STATUS_CUDA_BINDTEX_FAILED" );
+            LAMA_CUDA_RT_CALL( cudaBindTexture( NULL, texELLSXref, x ), "LAMA_STATUS_CUDA_BINDTEX_FAILED" )
         }
         else if ( sizeof(ValueType) == sizeof(double) )
         {
-            LAMA_CUDA_RT_CALL( cudaBindTexture( NULL, texELLDXref, x ), "LAMA_STATUS_CUDA_BINDTEX_FAILED" );
+            LAMA_CUDA_RT_CALL( cudaBindTexture( NULL, texELLDXref, x ), "LAMA_STATUS_CUDA_BINDTEX_FAILED" )
         }
 
         LAMA_CUDA_RT_CALL( cudaFuncSetCacheConfig( ell_agemvpbv_kernel<ValueType, true>, cudaFuncCachePreferL1 ),
-                           "LAMA_STATUS_CUDA_FUNCSETCACHECONFIG_FAILED" );
+                           "LAMA_STATUS_CUDA_FUNCSETCACHECONFIG_FAILED" )
     }
     else
     {
         LAMA_CUDA_RT_CALL( cudaFuncSetCacheConfig( ell_agemvpbv_kernel<ValueType, false>, cudaFuncCachePreferL1 ),
-                           "LAMA_STATUS_CUDA_FUNCSETCACHECONFIG_FAILED" );
+                           "LAMA_STATUS_CUDA_FUNCSETCACHECONFIG_FAILED" )
     }
 //    if ( *transa == 'N'|| *transa == 'n')
 //    {
@@ -745,22 +731,22 @@ void CUDAELLUtils::normalGEMV(
 //        return;
 //    }
 
-    LAMA_CUDA_RT_CALL( cudaGetLastError(), "LAMA_STATUS_SELLAGEMVPBV_CUDAKERNEL_FAILED" );
+    LAMA_CUDA_RT_CALL( cudaGetLastError(), "LAMA_STATUS_SELLAGEMVPBV_CUDAKERNEL_FAILED" )
 
     if ( !syncToken )
     {
-        LAMA_CUDA_RT_CALL( cudaStreamSynchronize(0), "LAMA_STATUS_SELLAGEMVPBV_CUDAKERNEL_FAILED" );
+        LAMA_CUDA_RT_CALL( cudaStreamSynchronize(0), "LAMA_STATUS_SELLAGEMVPBV_CUDAKERNEL_FAILED" )
     }
 
     if ( useTexture )
     {
         if ( sizeof(ValueType) == sizeof(float) )
         {
-            LAMA_CUDA_RT_CALL( cudaUnbindTexture( texELLSXref ), "LAMA_STATUS_CUDA_UNBINDTEX_FAILED" );
+            LAMA_CUDA_RT_CALL( cudaUnbindTexture( texELLSXref ), "LAMA_STATUS_CUDA_UNBINDTEX_FAILED" )
         }
         else if ( sizeof(ValueType) == sizeof(double) )
         {
-            LAMA_CUDA_RT_CALL( cudaUnbindTexture( texELLDXref ), "LAMA_STATUS_CUDA_UNBINDTEX_FAILED" );
+            LAMA_CUDA_RT_CALL( cudaUnbindTexture( texELLDXref ), "LAMA_STATUS_CUDA_UNBINDTEX_FAILED" )
         }
     }
 }
@@ -814,17 +800,16 @@ void CUDAELLUtils::sparseGEMV(
     const ValueType ellValues[],
     SyncToken* syncToken )
 {
-    LAMA_LOG_INFO( logger, "sparseGEMV<" << typeid(ValueType).name() << ">" << ", #non-zero rows = " << numNonZeroRows );
+    LAMA_LOG_INFO( logger, "sparseGEMV<" << typeid(ValueType).name() << ">" << ", #non-zero rows = " << numNonZeroRows )
 
     LAMA_CHECK_CUDA_ACCESS
-    ;
 
     cudaStream_t stream = 0;
 
     if ( syncToken )
     {
         CUDAStreamSyncToken* cudaStreamSyncToken = dynamic_cast<CUDAStreamSyncToken*>( syncToken );
-        LAMA_ASSERT_DEBUG( cudaStreamSyncToken, "no cuda stream sync token provided" );
+        LAMA_ASSERT_DEBUG( cudaStreamSyncToken, "no cuda stream sync token provided" )
         stream = cudaStreamSyncToken->getCUDAStream();
     }
 
@@ -847,20 +832,20 @@ void CUDAELLUtils::sparseGEMV(
     {
         if ( sizeof(ValueType) == sizeof(float) )
         {
-            LAMA_CUDA_RT_CALL( cudaBindTexture( NULL, texELLSXref, x ), "LAMA_STATUS_CUDA_BINDTEX_FAILED" );
+            LAMA_CUDA_RT_CALL( cudaBindTexture( NULL, texELLSXref, x ), "LAMA_STATUS_CUDA_BINDTEX_FAILED" )
         }
         else if ( sizeof(ValueType) == sizeof(double) )
         {
-            LAMA_CUDA_RT_CALL( cudaBindTexture( NULL, texELLDXref, x ), "LAMA_STATUS_CUDA_BINDTEX_FAILED" );
+            LAMA_CUDA_RT_CALL( cudaBindTexture( NULL, texELLDXref, x ), "LAMA_STATUS_CUDA_BINDTEX_FAILED" )
         }
 
         LAMA_CUDA_RT_CALL( cudaFuncSetCacheConfig( ell_agemvpbv_kernel<ValueType, true>, cudaFuncCachePreferL1),
-                           "LAMA_STATUS_CUDA_FUNCSETCACHECONFIG_FAILED" );
+                           "LAMA_STATUS_CUDA_FUNCSETCACHECONFIG_FAILED" )
     }
     else
     {
         LAMA_CUDA_RT_CALL( cudaFuncSetCacheConfig( ell_agemvpbv_kernel<ValueType, false>, cudaFuncCachePreferL1),
-                           "LAMA_STATUS_CUDA_FUNCSETCACHECONFIG_FAILED" );
+                           "LAMA_STATUS_CUDA_FUNCSETCACHECONFIG_FAILED" )
     }
 
 //    if ( *transa == 'N'|| *transa == 'n')
@@ -886,12 +871,12 @@ void CUDAELLUtils::sparseGEMV(
 //        return;
 //    }
 
-    LAMA_CUDA_RT_CALL( cudaGetLastError(), "LAMA_STATUS_SELLAGEMVPBV_CUDAKERNEL_FAILED" );
-    LAMA_CUDA_RT_CALL( cudaStreamSynchronize(0), "LAMA_STATUS_SELLAGEMVPBV_CUDAKERNEL_FAILED" );
+    LAMA_CUDA_RT_CALL( cudaGetLastError(), "LAMA_STATUS_SELLAGEMVPBV_CUDAKERNEL_FAILED" )
+    LAMA_CUDA_RT_CALL( cudaStreamSynchronize(0), "LAMA_STATUS_SELLAGEMVPBV_CUDAKERNEL_FAILED" )
 
     if ( useTexture )
     {
-        LAMA_CUDA_RT_CALL( cudaUnbindTexture( texELLSXref ), "LAMA_STATUS_CUDA_UNBINDTEX_FAILED" );
+        LAMA_CUDA_RT_CALL( cudaUnbindTexture( texELLSXref ), "LAMA_STATUS_CUDA_UNBINDTEX_FAILED" )
     }
 }
 
@@ -959,17 +944,16 @@ void CUDAELLUtils::jacobi(
     class SyncToken* syncToken )
 {
 
-    LAMA_LOG_INFO( logger, "jacobi, #rows = " << numRows );
+    LAMA_LOG_INFO( logger, "jacobi, #rows = " << numRows )
 
     LAMA_CHECK_CUDA_ACCESS
-    ;
 
     cudaStream_t stream = 0;
 
     if ( syncToken )
     {
         CUDAStreamSyncToken* cudaStreamSyncToken = dynamic_cast<CUDAStreamSyncToken*>( syncToken );
-        LAMA_ASSERT_DEBUG( cudaStreamSyncToken, "no cuda stream sync token provided" );
+        LAMA_ASSERT_DEBUG( cudaStreamSyncToken, "no cuda stream sync token provided" )
         stream = cudaStreamSyncToken->getCUDAStream();
     }
 
@@ -985,20 +969,20 @@ void CUDAELLUtils::jacobi(
 
         if ( sizeof(ValueType) == sizeof(double) )
         {
-            LAMA_CUDA_RT_CALL( cudaBindTexture( NULL, texELLDXref, oldSolution ), "LAMA_STATUS_CUDA_BINDTEX_FAILED" );
+            LAMA_CUDA_RT_CALL( cudaBindTexture( NULL, texELLDXref, oldSolution ), "LAMA_STATUS_CUDA_BINDTEX_FAILED" )
         }
         else if ( sizeof(ValueType) == sizeof(float) )
         {
-            LAMA_CUDA_RT_CALL( cudaBindTexture( NULL, texELLSXref, oldSolution ), "LAMA_STATUS_CUDA_BINDTEX_FAILED" );
+            LAMA_CUDA_RT_CALL( cudaBindTexture( NULL, texELLSXref, oldSolution ), "LAMA_STATUS_CUDA_BINDTEX_FAILED" )
         }
 
         LAMA_CUDA_RT_CALL( cudaFuncSetCacheConfig( ell_jacobi_kernel<ValueType, true>, cudaFuncCachePreferL1),
-                           "LAMA_STATUS_CUDA_FUNCSETCACHECONFIG_FAILED" );
+                           "LAMA_STATUS_CUDA_FUNCSETCACHECONFIG_FAILED" )
     }
     else
     {
         LAMA_CUDA_RT_CALL( cudaFuncSetCacheConfig( ell_jacobi_kernel<ValueType, false>, cudaFuncCachePreferL1 ),
-                           "LAMA_STATUS_CUDA_FUNCSETCACHECONFIG_FAILED" );
+                           "LAMA_STATUS_CUDA_FUNCSETCACHECONFIG_FAILED" )
     }
 
     if ( useTexture )
@@ -1013,11 +997,11 @@ void CUDAELLUtils::jacobi(
                 numRows, rhs, solution, oldSolution, omega );
     }
 
-    LAMA_CUDA_RT_CALL( cudaGetLastError(), "LAMA_STATUS_DCSRJACOBI_CUDAKERNEL_FAILED" );
+    LAMA_CUDA_RT_CALL( cudaGetLastError(), "LAMA_STATUS_DCSRJACOBI_CUDAKERNEL_FAILED" )
 
     if ( useTexture )
     {
-        LAMA_CUDA_RT_CALL( cudaUnbindTexture(texELLSXref), "LAMA_STATUS_CUDA_UNBINDTEX_FAILED" );
+        LAMA_CUDA_RT_CALL( cudaUnbindTexture(texELLSXref), "LAMA_STATUS_CUDA_UNBINDTEX_FAILED" )
     }
 
     if ( !syncToken )
@@ -1085,10 +1069,9 @@ void CUDAELLUtils::jacobiHalo(
     const ValueType omega,
     SyncToken* syncToken )
 {
-    LAMA_LOG_INFO( logger, "jacobiHalo, #non-empty rows = " << numNonEmptyRows );
+    LAMA_LOG_INFO( logger, "jacobiHalo, #non-empty rows = " << numNonEmptyRows )
 
     LAMA_CHECK_CUDA_ACCESS
-    ;
 
     const int block_size = ( numNonEmptyRows > 8191 ? 256 : 128 );
     dim3 dimBlock( block_size, 1, 1 );
@@ -1101,20 +1084,20 @@ void CUDAELLUtils::jacobiHalo(
 
         if ( sizeof(ValueType) == sizeof(double) )
         {
-            LAMA_CUDA_RT_CALL( cudaBindTexture( NULL, texELLDXref, oldSolution), "LAMA_STATUS_CUDA_BINDTEX_FAILED" );
+            LAMA_CUDA_RT_CALL( cudaBindTexture( NULL, texELLDXref, oldSolution), "LAMA_STATUS_CUDA_BINDTEX_FAILED" )
         }
         else if ( sizeof(ValueType) == sizeof(float) )
         {
-            LAMA_CUDA_RT_CALL( cudaBindTexture( NULL, texELLSXref, oldSolution), "LAMA_STATUS_CUDA_BINDTEX_FAILED" );
+            LAMA_CUDA_RT_CALL( cudaBindTexture( NULL, texELLSXref, oldSolution), "LAMA_STATUS_CUDA_BINDTEX_FAILED" )
         }
 
         LAMA_CUDA_RT_CALL( cudaFuncSetCacheConfig( ell_jacobi_halo_kernel<ValueType, true>, cudaFuncCachePreferL1 ),
-                           "LAMA_STATUS_CUDA_FUNCSETCACHECONFIG_FAILED" );
+                           "LAMA_STATUS_CUDA_FUNCSETCACHECONFIG_FAILED" )
     }
     else
     {
         LAMA_CUDA_RT_CALL( cudaFuncSetCacheConfig( ell_jacobi_halo_kernel<ValueType, false>, cudaFuncCachePreferL1 ),
-                           "LAMA_STATUS_CUDA_FUNCSETCACHECONFIG_FAILED" );
+                           "LAMA_STATUS_CUDA_FUNCSETCACHECONFIG_FAILED" )
     }
 
     if ( useTexture )
@@ -1130,18 +1113,18 @@ void CUDAELLUtils::jacobiHalo(
             rowIndexes, numNonEmptyRows, numRows, oldSolution, omega );
     }
 
-    LAMA_CUDA_RT_CALL( cudaGetLastError(), "LAMA_STATUS_ELLJACOBIHALO_CUDAKERNEL_FAILED" );
-    LAMA_CUDA_RT_CALL( cudaStreamSynchronize(0), "LAMA_STATUS_ELLJACOBIHALO_CUDAKERNEL_FAILED" );
+    LAMA_CUDA_RT_CALL( cudaGetLastError(), "LAMA_STATUS_ELLJACOBIHALO_CUDAKERNEL_FAILED" )
+    LAMA_CUDA_RT_CALL( cudaStreamSynchronize(0), "LAMA_STATUS_ELLJACOBIHALO_CUDAKERNEL_FAILED" )
 
     if ( useTexture )
     {
         if ( sizeof(ValueType) == sizeof(double) )
         {
-            LAMA_CUDA_RT_CALL( cudaUnbindTexture(texELLDXref), "LAMA_STATUS_CUDA_UNBINDTEX_FAILED" );
+            LAMA_CUDA_RT_CALL( cudaUnbindTexture(texELLDXref), "LAMA_STATUS_CUDA_UNBINDTEX_FAILED" )
         }
         else if ( sizeof(ValueType) == sizeof(float) )
         {
-            LAMA_CUDA_RT_CALL( cudaUnbindTexture(texELLSXref), "LAMA_STATUS_CUDA_UNBINDTEX_FAILED" );
+            LAMA_CUDA_RT_CALL( cudaUnbindTexture(texELLSXref), "LAMA_STATUS_CUDA_UNBINDTEX_FAILED" )
         }
     }
 }
@@ -1152,47 +1135,47 @@ void CUDAELLUtils::jacobiHalo(
 
 void CUDAELLUtils::setInterface( ELLUtilsInterface& ELLUtils )
 {
-    LAMA_INTERFACE_REGISTER( ELLUtils, countNonEmptyRowsBySizes );
-    LAMA_INTERFACE_REGISTER( ELLUtils, setNonEmptyRowsBySizes );
-    LAMA_INTERFACE_REGISTER( ELLUtils, hasDiagonalProperty );
-    LAMA_INTERFACE_REGISTER( ELLUtils, check );
+    LAMA_INTERFACE_REGISTER( ELLUtils, countNonEmptyRowsBySizes )
+    LAMA_INTERFACE_REGISTER( ELLUtils, setNonEmptyRowsBySizes )
+    LAMA_INTERFACE_REGISTER( ELLUtils, hasDiagonalProperty )
+    LAMA_INTERFACE_REGISTER( ELLUtils, check )
 
-    LAMA_INTERFACE_REGISTER_TT( ELLUtils, getRow, float, float );
-    LAMA_INTERFACE_REGISTER_TT( ELLUtils, getRow, float, double );
-    LAMA_INTERFACE_REGISTER_TT( ELLUtils, getRow, double, float );
-    LAMA_INTERFACE_REGISTER_TT( ELLUtils, getRow, double, double );
+    LAMA_INTERFACE_REGISTER_TT( ELLUtils, getRow, float, float )
+    LAMA_INTERFACE_REGISTER_TT( ELLUtils, getRow, float, double )
+    LAMA_INTERFACE_REGISTER_TT( ELLUtils, getRow, double, float )
+    LAMA_INTERFACE_REGISTER_TT( ELLUtils, getRow, double, double )
 
-    LAMA_INTERFACE_REGISTER_TT( ELLUtils, getValue, float, float );
-    LAMA_INTERFACE_REGISTER_TT( ELLUtils, getValue, float, double );
-    LAMA_INTERFACE_REGISTER_TT( ELLUtils, getValue, double, float );
-    LAMA_INTERFACE_REGISTER_TT( ELLUtils, getValue, double, double );
+    LAMA_INTERFACE_REGISTER_TT( ELLUtils, getValue, float, float )
+    LAMA_INTERFACE_REGISTER_TT( ELLUtils, getValue, float, double )
+    LAMA_INTERFACE_REGISTER_TT( ELLUtils, getValue, double, float )
+    LAMA_INTERFACE_REGISTER_TT( ELLUtils, getValue, double, double )
 
-    LAMA_INTERFACE_REGISTER_TT( ELLUtils, scaleValue, float, float );
-    LAMA_INTERFACE_REGISTER_TT( ELLUtils, scaleValue, double, float );
-    LAMA_INTERFACE_REGISTER_TT( ELLUtils, scaleValue, float, double );
-    LAMA_INTERFACE_REGISTER_TT( ELLUtils, scaleValue, double, double );
+    LAMA_INTERFACE_REGISTER_TT( ELLUtils, scaleValue, float, float )
+    LAMA_INTERFACE_REGISTER_TT( ELLUtils, scaleValue, double, float )
+    LAMA_INTERFACE_REGISTER_TT( ELLUtils, scaleValue, float, double )
+    LAMA_INTERFACE_REGISTER_TT( ELLUtils, scaleValue, double, double )
 
-    LAMA_INTERFACE_REGISTER_TT( ELLUtils, setCSRValues, float, float );
-    LAMA_INTERFACE_REGISTER_TT( ELLUtils, setCSRValues, double, float );
-    LAMA_INTERFACE_REGISTER_TT( ELLUtils, setCSRValues, float, double );
-    LAMA_INTERFACE_REGISTER_TT( ELLUtils, setCSRValues, double, double );
+    LAMA_INTERFACE_REGISTER_TT( ELLUtils, setCSRValues, float, float )
+    LAMA_INTERFACE_REGISTER_TT( ELLUtils, setCSRValues, double, float )
+    LAMA_INTERFACE_REGISTER_TT( ELLUtils, setCSRValues, float, double )
+    LAMA_INTERFACE_REGISTER_TT( ELLUtils, setCSRValues, double, double )
 
-    LAMA_INTERFACE_REGISTER_TT( ELLUtils, getCSRValues, float, float );
-    LAMA_INTERFACE_REGISTER_TT( ELLUtils, getCSRValues, float, double );
-    LAMA_INTERFACE_REGISTER_TT( ELLUtils, getCSRValues, double, float );
-    LAMA_INTERFACE_REGISTER_TT( ELLUtils, getCSRValues, double, double );
+    LAMA_INTERFACE_REGISTER_TT( ELLUtils, getCSRValues, float, float )
+    LAMA_INTERFACE_REGISTER_TT( ELLUtils, getCSRValues, float, double )
+    LAMA_INTERFACE_REGISTER_TT( ELLUtils, getCSRValues, double, float )
+    LAMA_INTERFACE_REGISTER_TT( ELLUtils, getCSRValues, double, double )
 
-    LAMA_INTERFACE_REGISTER_T( ELLUtils, normalGEMV, float );
-    LAMA_INTERFACE_REGISTER_T( ELLUtils, normalGEMV, double );
+    LAMA_INTERFACE_REGISTER_T( ELLUtils, normalGEMV, float )
+    LAMA_INTERFACE_REGISTER_T( ELLUtils, normalGEMV, double )
 
-    LAMA_INTERFACE_REGISTER_T( ELLUtils, sparseGEMV, float );
-    LAMA_INTERFACE_REGISTER_T( ELLUtils, sparseGEMV, double );
+    LAMA_INTERFACE_REGISTER_T( ELLUtils, sparseGEMV, float )
+    LAMA_INTERFACE_REGISTER_T( ELLUtils, sparseGEMV, double )
 
-    LAMA_INTERFACE_REGISTER_T( ELLUtils, jacobi, float );
-    LAMA_INTERFACE_REGISTER_T( ELLUtils, jacobi, double );
+    LAMA_INTERFACE_REGISTER_T( ELLUtils, jacobi, float )
+    LAMA_INTERFACE_REGISTER_T( ELLUtils, jacobi, double )
 
-    LAMA_INTERFACE_REGISTER_T( ELLUtils, jacobiHalo, float );
-    LAMA_INTERFACE_REGISTER_T( ELLUtils, jacobiHalo, double );
+    LAMA_INTERFACE_REGISTER_T( ELLUtils, jacobiHalo, float )
+    LAMA_INTERFACE_REGISTER_T( ELLUtils, jacobiHalo, double )
 }
 
 } // namespace lama
