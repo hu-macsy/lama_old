@@ -46,14 +46,14 @@ namespace lama
 
 /* ------------------------------------------------------------------------- */
 
-LAMA_LOG_DEF_LOGGER( CommunicationPlan::logger, "CommunicationPlan" );
+LAMA_LOG_DEF_LOGGER( CommunicationPlan::logger, "CommunicationPlan" )
 
 /* ------------------------------------------------------------------------- */
 
 CommunicationPlan::CommunicationPlan()
     : mAllocated( false ), mQuantity( 0 )
 {
-    LAMA_LOG_INFO( logger, "Communication plan constructed, not allocated" );
+    LAMA_LOG_INFO( logger, "Communication plan constructed, not allocated" )
 }
 
 /* ------------------------------------------------------------------------- */
@@ -81,9 +81,9 @@ CommunicationPlan::CommunicationPlan( const CommunicationPlan& other, const Inde
 
     : mAllocated( false ), mQuantity( 0 )
 {
-    LAMA_LOG_INFO( logger, "extend plan for quantity of quantites: " << other );
+    LAMA_LOG_INFO( logger, "extend plan for quantity of quantites: " << other )
 
-    LAMA_ASSERT_ERROR( other.allocated(), "non allocated plan cannot be extended" );
+    LAMA_ASSERT_ERROR( other.allocated(), "non allocated plan cannot be extended" )
 
     // copy the entries of the available plan, partitionIds do not change
 
@@ -96,7 +96,7 @@ CommunicationPlan::CommunicationPlan( const CommunicationPlan& other, const Inde
     for ( size_t i = 0; i < mEntries.size(); i++ )
     {
         Entry& entry = mEntries[i];
-        LAMA_ASSERT_ERROR( entry.offset == offset, "illegal plan to extend for quantities" );
+        LAMA_ASSERT_ERROR( entry.offset == offset, "illegal plan to extend for quantities" )
         offset += entry.quantity;
     }
 
@@ -124,7 +124,7 @@ CommunicationPlan::CommunicationPlan( const CommunicationPlan& other, const Inde
     mCompressed = other.compressed();
     mQuantity = offset;
 
-    LAMA_LOG_INFO( logger, "extended quantity plan: " << *this );
+    LAMA_LOG_INFO( logger, "extended quantity plan: " << *this )
 }
 
 /* ------------------------------------------------------------------------- */
@@ -133,9 +133,9 @@ CommunicationPlan::CommunicationPlan( const CommunicationPlan& other, const Inde
 
     : mAllocated( false ), mQuantity( 0 )
 {
-    LAMA_LOG_INFO( logger, "Construct multiply plan: " << other << ", factor = " << n );
+    LAMA_LOG_INFO( logger, "Construct multiply plan: " << other << ", factor = " << n )
 
-    LAMA_ASSERT_ERROR( other.allocated(), "non allocated plan cannot be extended" );
+    LAMA_ASSERT_ERROR( other.allocated(), "non allocated plan cannot be extended" )
 
     // copy the entries of the available plan, partitionIds do not change
 
@@ -160,14 +160,14 @@ CommunicationPlan::CommunicationPlan( const CommunicationPlan& other, const Inde
     mCompressed = other.compressed();
     mQuantity = offset;
 
-    LAMA_LOG_INFO( logger, "multiplied quantity plan: " << *this );
+    LAMA_LOG_INFO( logger, "multiplied quantity plan: " << *this )
 }
 
 /* ------------------------------------------------------------------------- */
 
 CommunicationPlan::~CommunicationPlan()
 {
-    LAMA_LOG_DEBUG( logger, "~CommunicationPlan" );
+    LAMA_LOG_DEBUG( logger, "~CommunicationPlan" )
 }
 
 /* ------------------------------------------------------------------------- */
@@ -185,7 +185,7 @@ void CommunicationPlan::clear()
 
 void CommunicationPlan::allocate( const LAMAArray<IndexType>& quantitiesArray, bool compressFlag )
 {
-    LAMA_LOG_INFO( logger, "allocate plan for " << quantitiesArray.size() << " partitions from quantities" );
+    LAMA_LOG_INFO( logger, "allocate plan for " << quantitiesArray.size() << " partitions from quantities" )
 
     mEntries.resize( quantitiesArray.size() );
 
@@ -205,8 +205,8 @@ void CommunicationPlan::allocate( const LAMAArray<IndexType>& quantitiesArray, b
 
         mQuantity += entry.quantity;
 
-        LAMA_LOG_TRACE( logger, "Entries["<<i<<"].quantity = "<<mEntries[i].quantity );
-        LAMA_LOG_TRACE( logger, " mQuantity = " << mQuantity );
+        LAMA_LOG_TRACE( logger, "Entries["<<i<<"].quantity = "<<mEntries[i].quantity )
+        LAMA_LOG_TRACE( logger, " mQuantity = " << mQuantity )
     }
 
     mAllocated = true;
@@ -226,7 +226,7 @@ void CommunicationPlan::allocate(
 {
     mEntries.resize( noPartitions );
 
-    LAMA_LOG_INFO( logger, "allocate plan for " << noPartitions << " partitions from owners" );
+    LAMA_LOG_INFO( logger, "allocate plan for " << noPartitions << " partitions from owners" )
 
     for ( PartitionId p = 0; p < noPartitions; ++p )
     {
@@ -239,9 +239,9 @@ void CommunicationPlan::allocate(
     {
         const PartitionId& p = *it;
         LAMA_ASSERT( p >= 0 && p < noPartitions,
-                     "Illegal owner value: " << p << " at Position " << std::distance(owners.begin(),it) );
+                     "Illegal owner value: " << p << " at Position " << std::distance(owners.begin(),it) )
         ++mEntries[p].quantity;
-        LAMA_LOG_TRACE( logger, " entry for p = " << p << ", total = " << mEntries[p].quantity );
+        LAMA_LOG_TRACE( logger, " entry for p = " << p << ", total = " << mEntries[p].quantity )
     }
 
     mQuantity = 0; // counts total quantity
@@ -252,7 +252,7 @@ void CommunicationPlan::allocate(
         mQuantity += mEntries[p].quantity;
     }
 
-    LAMA_ASSERT( mQuantity == (IndexType) owners.size(), "allocation mismatch" );
+    LAMA_ASSERT( mQuantity == (IndexType) owners.size(), "allocation mismatch" )
 
     mAllocated = true;
 
@@ -266,7 +266,7 @@ void CommunicationPlan::allocate(
 
 IndexType CommunicationPlan::maxQuantity() const
 {
-    LAMA_ASSERT( allocated(), "Plan not allocated." );
+    LAMA_ASSERT( allocated(), "Plan not allocated." )
 
     // Get the maximal quantity of another proc
 
@@ -303,7 +303,7 @@ void CommunicationPlan::compress()
 
     for ( PartitionId pid = 0; pid < size(); pid++ )
     {
-        LAMA_LOG_TRACE( logger, "Entries["<<pid<<"].quantity = "<<mEntries[pid].quantity );
+        LAMA_LOG_TRACE( logger, "Entries["<<pid<<"].quantity = "<<mEntries[pid].quantity )
         if ( mEntries[pid].quantity == 0 )
         {
             continue;
@@ -318,7 +318,7 @@ void CommunicationPlan::compress()
     }
 
     LAMA_LOG_INFO( logger,
-                   "CommunicationPlan compressed from " << size() << " to " << count << " entries, total quantity = " << mQuantity );
+                   "CommunicationPlan compressed from " << size() << " to " << count << " entries, total quantity = " << mQuantity )
 
     mEntries.resize( count );
 
@@ -329,7 +329,7 @@ void CommunicationPlan::compress()
 
 void CommunicationPlan::allocateTranspose( const CommunicationPlan& plan, const Communicator& comm )
 {
-    LAMA_ASSERT( plan.allocated(), "plan to reverse not allocated" );
+    LAMA_ASSERT( plan.allocated(), "plan to reverse not allocated" )
 
     const int size = comm.getSize();
     comm.synchronize();

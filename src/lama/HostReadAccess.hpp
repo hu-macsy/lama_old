@@ -46,19 +46,18 @@ namespace lama
 {
 
 /**
- * @brief HostReadAccess is a specialization of ReadAccess for a Host context with an extended interface.
+ * @brief HostReadAccess is a specialization of ReadAccess for a host context with an extended interface.
+ *
+ * @tparam T is the type stored in the wrapped container.
  */
 template<typename T>
 class HostReadAccess: public ReadAccess<T>
 {
 public:
-    /**
-     * @brief ValueType is the type stored in the wrapped container.
-     */
-    typedef T ValueType;
+    typedef T ValueType; //!< This is the type stored in the wrapped container.
 
     /**
-     * @brief acquire a ReadAccess to the passed LAMAArray for the Host Location
+     * @brief Acquire a ReadAccess to the passed LAMAArray for the host location.
      *
      * @param[in] array     the LAMAArray to acquire a ReadAccess for
      * @throws Exception    if the ReadAccess can not be acquired, e.g. because a WriteContext exists.
@@ -73,7 +72,7 @@ public:
     virtual ~HostReadAccess();
 
     /**
-     * @brief constant access to the element i of the wrapped LAMAArray
+     * @brief Constant access to the element i of the wrapped LAMAArray.
      *
      * @param[in] i the index of the element of the wrapped LAMAArray to access
      * @return      a constant reference to the element i of the wrapped LAMAArray
@@ -81,7 +80,7 @@ public:
     inline const ValueType& operator[]( const IndexType i ) const;
 
     /**
-     * @brief conversion to a constant ValueType pointer (shortcut for get() )
+     * @brief Conversion to a constant ValueType pointer (shortcut for get() ).
      *
      * @return  a constant pointer to the data of the wrapped LAMAArray
      */
@@ -97,7 +96,7 @@ private:
     LAMA_LOG_DECL_STATIC_LOGGER(logger);
 };
 
-LAMA_LOG_DEF_TEMPLATE_LOGGER( template<typename T>, HostReadAccess<T>::logger, "ReadAccess.HostReadAccess" );
+LAMA_LOG_DEF_TEMPLATE_LOGGER( template<typename T>, HostReadAccess<T>::logger, "ReadAccess.HostReadAccess" )
 
 template<typename T>
 HostReadAccess<T>::HostReadAccess( const LAMAArray<ValueType>& array )
@@ -111,13 +110,13 @@ template<typename T>
 HostReadAccess<T>::HostReadAccess( const LAMAArrayConstView<ValueType>& view )
     : ReadAccess<T>( view, ContextFactory::getContext( Context::Host ) ), mData( get() )
 {
-    LAMA_LOG_DEBUG( logger, "read access on host, mData = " << mData );
+    LAMA_LOG_DEBUG( logger, "read access on host, mData = " << mData )
 }
 
 template<typename T>
 HostReadAccess<T>::~HostReadAccess()
 {
-    LAMA_LOG_DEBUG( logger, "~HostReadAccess" );
+    LAMA_LOG_DEBUG( logger, "~HostReadAccess" )
 }
 
 template<typename T>
@@ -129,7 +128,7 @@ inline const T& HostReadAccess<T>::operator[]( const IndexType i ) const
 template<typename T>
 inline HostReadAccess<T>::operator const T*() const
 {
-    LAMA_LOG_TRACE( logger, "mData = " << mData );
+    LAMA_LOG_TRACE( logger, "mData = " << mData )
     return mData;
 }
 

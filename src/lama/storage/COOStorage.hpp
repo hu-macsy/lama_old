@@ -56,10 +56,10 @@ namespace lama
  * If the diagonal property flag is set, the first numRows entries of the COO data will
  * contain the diagonal elements.
  *
- *  @tparam T is the value type for the matrix elements.
+ * @tparam T is the value type of the matrix values.
  *
- *  Note: Copy constructor and operator= are supported by default implementations,
- *        copies of LAMAArray will be deep copies.
+ * Note: Copy constructor and operator= are supported by default implementations,
+ *       copies of LAMAArray will be deep copies.
  */
 
 template<typename T>
@@ -337,7 +337,7 @@ private:
 
     // inline IndexType index(IndexType irow, IndexType icolumn) const { return icolumn * mNumRows + irow; }
 
-    LAMA_LOG_DECL_STATIC_LOGGER( logger );
+    LAMA_LOG_DECL_STATIC_LOGGER( logger )
 };
 
 } // namespace lama

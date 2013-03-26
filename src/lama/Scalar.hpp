@@ -158,7 +158,7 @@ public:
 
 protected:
 
-    LAMA_LOG_DECL_STATIC_LOGGER( logger );
+    LAMA_LOG_DECL_STATIC_LOGGER( logger )
 
 private:
 
@@ -456,16 +456,16 @@ inline Scalar abs( const Scalar scalar )
 
 inline Scalar max( const Scalar a, const Scalar b )
 {
-    LAMA_ASSERT_DEBUG( a.isReal(), "Non-real value in max : " << a );
-    LAMA_ASSERT_DEBUG( b.isReal(), "Non-real value in max : " << b );
+    LAMA_ASSERT_DEBUG( a.isReal(), "Non-real value in max : " << a )
+    LAMA_ASSERT_DEBUG( b.isReal(), "Non-real value in max : " << b )
 
     return std::max( a.getValue<long double>(), b.getValue<long double>() );
 }
 
 inline Scalar min( const Scalar a, const Scalar b )
 {
-    LAMA_ASSERT_DEBUG( a.isReal(), "Non-real value in max : " << a );
-    LAMA_ASSERT_DEBUG( b.isReal(), "Non-real value in max : " << b );
+    LAMA_ASSERT_DEBUG( a.isReal(), "Non-real value in max : " << a )
+    LAMA_ASSERT_DEBUG( b.isReal(), "Non-real value in max : " << b )
 
     return std::min( a.getValue<long double>(), b.getValue<long double>() );
 }

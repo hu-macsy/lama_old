@@ -48,12 +48,12 @@ using namespace boost;
 namespace lama
 {
 
-LAMA_LOG_DEF_LOGGER( TaskSyncToken::logger, "SyncToken.TaskSyncToken" );
+LAMA_LOG_DEF_LOGGER( TaskSyncToken::logger, "SyncToken.TaskSyncToken" )
 
 TaskSyncToken::TaskSyncToken( boost::function<void()> function, int numOmpThreads /* = 0 */)
     : mTask( new Task( function, numOmpThreads ) )
 {
-    LAMA_LOG_DEBUG( logger, "Thread " << *mTask << " with function " << function << " started." );
+    LAMA_LOG_DEBUG( logger, "Thread " << *mTask << " with function " << function << " started." )
 }
 
 TaskSyncToken::TaskSyncToken()
@@ -65,7 +65,7 @@ void TaskSyncToken::run( boost::function<void()> function, int numOmpThreads /* 
 {
     mTask = boost::shared_ptr<Task>( new Task( function, numOmpThreads ) );
 
-    LAMA_LOG_DEBUG( logger, "Thread " << *mTask << " with function " << function << " started." );
+    LAMA_LOG_DEBUG( logger, "Thread " << *mTask << " with function " << function << " started." )
 }
 
 TaskSyncToken::~TaskSyncToken()
@@ -75,7 +75,7 @@ TaskSyncToken::~TaskSyncToken()
 
 void TaskSyncToken::wait()
 {
-    LAMA_REGION( "TaskSyncToken.wait" );
+    LAMA_REGION( "TaskSyncToken.wait" )
 
     if ( isSynchronized() )
     {
@@ -88,7 +88,7 @@ void TaskSyncToken::wait()
 
     if ( mTask ) // might be running task
     {
-        LAMA_LOG_DEBUG( logger, "Waiting for thread " << mTask );
+        LAMA_LOG_DEBUG( logger, "Waiting for thread " << mTask )
 
         mTask->synchronize(); // not really needed as destructor will be called
 

@@ -61,7 +61,7 @@
 namespace lama
 {
 
-LAMA_LOG_DEF_LOGGER( MetaSolver::logger, "Solver.MetaSolver" );
+LAMA_LOG_DEF_LOGGER( MetaSolver::logger, "Solver.MetaSolver" )
 
 MetaSolver::MetaSolver( const std::string& id )
     : Solver( id )
@@ -100,11 +100,11 @@ MetaSolver::MetaSolverRuntime::~MetaSolverRuntime()
 
 void MetaSolver::initialize( const Matrix& coefficients )
 {
-    LAMA_LOG_INFO( logger, "Initializing MetaSolver " );
+    LAMA_LOG_INFO( logger, "Initializing MetaSolver " )
 
     if ( !getRuntime().mRootSolver )
     {
-        LAMA_THROWEXCEPTION( "No root solver defined for MetaSolver." );
+        LAMA_THROWEXCEPTION( "No root solver defined for MetaSolver." )
     }
 
     getRuntime().mRootSolver->initialize( coefficients );
@@ -114,11 +114,11 @@ void MetaSolver::initialize( const Matrix& coefficients )
 
 void MetaSolver::initializePreconditioner( const Matrix& coefficients, LogLevel::LogLevel level )
 {
-    LAMA_LOG_INFO( logger, "Initializing Meta-Preconditioner " );
+    LAMA_LOG_INFO( logger, "Initializing Meta-Preconditioner " )
 
     if ( !getRuntime().mRootSolver )
     {
-        LAMA_THROWEXCEPTION( "No root solver defined for MetaSolver." );
+        LAMA_THROWEXCEPTION( "No root solver defined for MetaSolver." )
     }
 
     IterativeSolver* rootPtr = dynamic_cast<IterativeSolver*>( &( *( getRuntime().mRootSolver ) ) );
@@ -131,12 +131,12 @@ void MetaSolver::initializePreconditioner( const Matrix& coefficients, LogLevel:
         }
         else
         {
-            LAMA_THROWEXCEPTION( "No preconditioner defined for MetaSolver." );
+            LAMA_THROWEXCEPTION( "No preconditioner defined for MetaSolver." )
         }
     }
     else
     {
-        LAMA_THROWEXCEPTION( "No iterative solver defined for MetaSolver." );
+        LAMA_THROWEXCEPTION( "No iterative solver defined for MetaSolver." )
     }
 }
 
@@ -144,10 +144,10 @@ void MetaSolver::solveImpl()
 {
     if ( !getRuntime().mRootSolver )
     {
-        LAMA_THROWEXCEPTION( "No root solver defined for MetaSolver." );
+        LAMA_THROWEXCEPTION( "No root solver defined for MetaSolver." )
     }
 
-    LAMA_LOG_INFO( logger, "Solver " << getRuntime().mRootSolver->getId() << " solves now." );
+    LAMA_LOG_INFO( logger, "Solver " << getRuntime().mRootSolver->getId() << " solves now." )
     getRuntime().mRootSolver->solve( *getRuntime().mSolution, *getRuntime().mRhs );
 }
 
@@ -158,7 +158,7 @@ void MetaSolver::interpreteArgument( const std::string arg )
 
     if ( configFile )
     {
-        LAMA_LOG_DEBUG( logger, "Argument " << arg << " is a file. Reading content now." );
+        LAMA_LOG_DEBUG( logger, "Argument " << arg << " is a file. Reading content now." )
         std::string configuration;
 
         configFile.unsetf( std::ios::skipws ); // No white space skipping!
@@ -175,7 +175,7 @@ void MetaSolver::interpreteArgument( const std::string arg )
 
 void MetaSolver::parseConfiguration( const std::string& arg )
 {
-    LAMA_LOG_INFO( logger, "Parsing configuration " << arg );
+    LAMA_LOG_INFO( logger, "Parsing configuration " << arg )
 
     mLogger->startTimer( "ConfigurationTimer" );
 
@@ -190,14 +190,14 @@ void MetaSolver::parseConfiguration( const std::string& arg )
 
     getRuntime().mRootSolver = configReader.getRootSolver();
 
-    LAMA_ASSERT( getRuntime().mRootSolver, "No root solver defined in this configuration." );
+    LAMA_ASSERT( getRuntime().mRootSolver, "No root solver defined in this configuration." )
 
-    LAMA_LOG_DEBUG( logger, "Solver " << *getRuntime().mRootSolver << " is root now." );
+    LAMA_LOG_DEBUG( logger, "Solver " << *getRuntime().mRootSolver << " is root now." )
 
     if ( !r || first != last )
     {
         std::string rest( first, last );
-        LAMA_THROWEXCEPTION( "Parsing failure. Stopped at " << rest );
+        LAMA_THROWEXCEPTION( "Parsing failure. Stopped at " << rest )
     }
     mLogger->stopTimer( "ConfigurationTimer" );
     mLogger->logTime( "ConfigurationTimer", LogLevel::completeInformation,
@@ -209,7 +209,7 @@ void MetaSolver::parseConfiguration( const std::string& arg )
 
 SolverPtr MetaSolver::copy()
 {
-    LAMA_THROWEXCEPTION( "Copy of MetaSolver not implemented." );
+    LAMA_THROWEXCEPTION( "Copy of MetaSolver not implemented." )
     return SolverPtr();
 }
 
@@ -223,7 +223,7 @@ const MetaSolver::MetaSolverRuntime& MetaSolver::getConstRuntime() const
     return mMetaSovlerRuntime;
 }
 
-LAMA_LOG_DEF_LOGGER( SolverConfigGrammar::logger, "Solver.MetaSolver.Grammar" );
+LAMA_LOG_DEF_LOGGER( SolverConfigGrammar::logger, "Solver.MetaSolver.Grammar" )
 
 SolverConfigGrammar::SolverConfigGrammar()
     : base_type( mRConfigurationSequence )
@@ -251,7 +251,7 @@ SolverConfigGrammar::SolverConfigGrammar()
     using phoenix::if_;
 
     SolverFactory& factory = SolverFactory::getFactory();
-    LAMA_LOG_DEBUG( logger, "Get creator rule symbol map." );
+    LAMA_LOG_DEBUG( logger, "Get creator rule symbol map." )
     const SolverFactory::TypeToCreatorMap& creatorMap = factory.getCreatorRuleSymbols();
 
     mRSolverConfiguration = creatorMap[_a = _1]
@@ -278,16 +278,16 @@ SolverConfigGrammar::SolverConfigGrammar()
 
 void SolverConfigGrammar::setRootSolver( SolverPtr solver )
 {
-    LAMA_ASSERT( solver, "Defined root solver is Null." );
+    LAMA_ASSERT( solver, "Defined root solver is Null." )
 
-    LAMA_LOG_DEBUG( logger, "Defined root solver " << *solver << "." );
+    LAMA_LOG_DEBUG( logger, "Defined root solver " << *solver << "." )
 
     mRootSolver = solver;
 }
 
 SolverPtr SolverConfigGrammar::getRootSolver()
 {
-    LAMA_ASSERT( mRootSolver, "No root solver defined." );
+    LAMA_ASSERT( mRootSolver, "No root solver defined." )
 
     return mRootSolver;
 }

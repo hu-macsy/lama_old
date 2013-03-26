@@ -208,7 +208,6 @@ template<typename T>
 void CUDABLAS1::ass_launcher( const int n, const T value, T* x, cudaStream_t stream )
 {
     LAMA_CHECK_CUDA_ACCESS
-    ;
 
     const int block_size = 256;
     dim3 dimBlock( block_size, 1, 1 );
@@ -225,7 +224,6 @@ template<typename T>
 void CUDABLAS1::sum_launcher( const int n, T alpha, const T* x, T beta, const T* y, T* z, cudaStream_t stream )
 {
     LAMA_CHECK_CUDA_ACCESS
-    ;
 
     const int block_size = 256;
     dim3 dimBlock( block_size, 1, 1 );

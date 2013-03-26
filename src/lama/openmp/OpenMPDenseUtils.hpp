@@ -154,7 +154,7 @@ private:
         return i * numColumns + j;
     }
 
-    LAMA_LOG_DECL_STATIC_LOGGER( logger );
+    LAMA_LOG_DECL_STATIC_LOGGER( logger )
 
 };
 

@@ -52,7 +52,7 @@ using boost::shared_ptr;
 /* --------------------------------------------------------------------------- */
 
 LAMA_LOG_DEF_TEMPLATE_LOGGER( template<typename ValueType>, DenseStorageView<ValueType>::logger,
-                              "MatrixStorage.DenseStorage" );
+                              "MatrixStorage.DenseStorage" )
 
 /* --------------------------------------------------------------------------- */
 
@@ -93,10 +93,10 @@ DenseStorageView<ValueType>::DenseStorageView(
 {
     if ( initializedData )
     {
-        LAMA_ASSERT_EQUAL_ERROR( data.size(), numRows * numColumns );
+        LAMA_ASSERT_EQUAL_ERROR( data.size(), numRows * numColumns )
     }
 
-    LAMA_LOG_DEBUG( logger, "created dense storage with referenced data" );
+    LAMA_LOG_DEBUG( logger, "created dense storage with referenced data" )
 
     // we can always access diagonals directly
 
@@ -139,7 +139,7 @@ IndexType DenseStorageView<ValueType>::getNumValues() const
         }
     }
 
-    LAMA_LOG_INFO( logger, *this << ": #non-zero values = " << count );
+    LAMA_LOG_INFO( logger, *this << ": #non-zero values = " << count )
 
     return count;
 }
@@ -154,7 +154,7 @@ void DenseStorageView<ValueType>::check( const char* ) const
 template<typename ValueType>
 void DenseStorageView<ValueType>::check( const char* /* msg */) const
 {
-    LAMA_ASSERT_EQUAL_ERROR( mNumRows * mNumColumns, mData.size() );
+    LAMA_ASSERT_EQUAL_ERROR( mNumRows * mNumColumns, mData.size() )
 }
 #endif
 
@@ -174,7 +174,7 @@ template<typename ValueType>
 template<typename OtherType>
 void DenseStorageView<ValueType>::getRowImpl( LAMAArray<OtherType>& row, const IndexType i ) const
 {
-    LAMA_ASSERT_DEBUG( i >= 0 && i < mNumRows, "row index " << i << " out of range" );
+    LAMA_ASSERT_DEBUG( i >= 0 && i < mNumRows, "row index " << i << " out of range" )
 
     HostWriteOnlyAccess<OtherType> wRow( row, mNumColumns );
     HostReadAccess<ValueType> rData( mData );
@@ -309,7 +309,7 @@ void DenseStorageView<ValueType>::setIdentity()
     OpenMPDenseUtils::scaleValue( data.get(), mNumRows, mNumColumns, zero );
     OpenMPDenseUtils::setDiagonalValue( data.get(), mNumRows, mNumColumns, one );
 
-    LAMA_LOG_INFO( logger, *this << " has been set to identity" );
+    LAMA_LOG_INFO( logger, *this << " has been set to identity" )
 }
 
 /* --------------------------------------------------------------------------- */
@@ -325,7 +325,7 @@ void DenseStorageView<ValueType>::setZero()
 
     OpenMPDenseUtils::scaleValue( data.get(), mNumRows, mNumColumns, zero );
 
-    LAMA_LOG_INFO( logger, *this << " has been set to zero" );
+    LAMA_LOG_INFO( logger, *this << " has been set to zero" )
 }
 
 /* --------------------------------------------------------------------------- */
@@ -385,7 +385,7 @@ void DenseStorageView<ValueType>::setCSRDataImpl(
     ContextPtr loc = ContextFactory::getContext( Context::Host );
 
     LAMA_LOG_INFO( logger,
-                   "setCRSData for dense storage " << numRows << " x " << numColumns << ", nnz = " << numValues );
+                   "setCRSData for dense storage " << numRows << " x " << numColumns << ", nnz = " << numValues )
 
     mNumRows = numRows;
     mNumColumns = numColumns;
@@ -396,12 +396,12 @@ void DenseStorageView<ValueType>::setCSRDataImpl(
 
     if ( !OpenMPCSRUtils::validOffsets( csrIA.get(), numRows, numValues ) )
     {
-        LAMA_THROWEXCEPTION( "invalid offset array" );
+        LAMA_THROWEXCEPTION( "invalid offset array" )
     }
 
     if ( !OpenMPUtils::validIndexes( csrJA.get(), numValues, numColumns ) )
     {
-        LAMA_THROWEXCEPTION( "invalid column indexes, #columns = " << numColumns );
+        LAMA_THROWEXCEPTION( "invalid column indexes, #columns = " << numColumns )
     }
 
     WriteOnlyAccess<ValueType> data( mData, loc, mNumRows * mNumColumns );
@@ -418,18 +418,18 @@ void DenseStorageView<ValueType>::setCSRDataImpl(
 template<typename ValueType>
 void DenseStorageView<ValueType>::invert( const MatrixStorage<ValueType>& other )
 {
-    LAMA_LOG_INFO( logger, "invert( " << other << ") to a dense storage" );
+    LAMA_LOG_INFO( logger, "invert( " << other << ") to a dense storage" )
 
     if ( other.getFormat() == DENSE )
     {
         const DenseStorageView<ValueType>* otherDense = dynamic_cast<const DenseStorageView<ValueType>*>( &other );
 
-        LAMA_ASSERT_ERROR( otherDense, "Internal error: dynamic cast Dense" );
+        LAMA_ASSERT_ERROR( otherDense, "Internal error: dynamic cast Dense" )
         invertDense( *otherDense );
     }
     else
     {
-        LAMA_UNSUPPORTED( "invert (" << other << ") requires conversion to dense storage" );
+        LAMA_UNSUPPORTED( "invert (" << other << ") requires conversion to dense storage" )
 
         assign( other );
         invertDense( *this ); // is always done in place
@@ -441,20 +441,20 @@ void DenseStorageView<ValueType>::invert( const MatrixStorage<ValueType>& other 
 template<typename ValueType>
 void DenseStorageView<ValueType>::invertDense( const DenseStorageView<ValueType>& other )
 {
-    LAMA_LOG_INFO( logger, "invertDense: " << other );
+    LAMA_LOG_INFO( logger, "invertDense: " << other )
 
     // invert is always done in place, so assign other to this
 
     if ( &other != this )
     {
-        LAMA_LOG_INFO( logger, "invertDense: copy input matrix to this matrix" );
+        LAMA_LOG_INFO( logger, "invertDense: copy input matrix to this matrix" )
         assign( other );
     }
 
     int nRows = this->getNumRows();
     int nCols = this->getNumColumns();
 
-    LAMA_ASSERT_EQUAL_ERROR( nRows, nCols );
+    LAMA_ASSERT_EQUAL_ERROR( nRows, nCols )
 
     HostWriteAccess<ValueType> denseValues( this->getData() );
 
@@ -464,11 +464,11 @@ void DenseStorageView<ValueType>::invertDense( const DenseStorageView<ValueType>
 
     const LAMAInterface& lamaInterface = context->getInterface();
 
-    LAMA_ASSERT_ERROR( lamaInterface.getLAPACKInterface<ValueType>().getinv, "getinv not available" );
+    LAMA_ASSERT_ERROR( lamaInterface.getLAPACKInterface<ValueType>().getinv, "getinv not available" )
 
     lamaInterface.getLAPACKInterface<ValueType>().getinv( nRows, denseValues.get(), nCols );
 
-    LAMA_LOG_INFO( logger, "invertDense: this = " << *this );
+    LAMA_LOG_INFO( logger, "invertDense: this = " << *this )
 }
 
 /* --------------------------------------------------------------------------- */
@@ -483,18 +483,18 @@ void DenseStorageView<ValueType>::matrixTimesVector(
     const LAMAArrayConstView<ValueType> y ) const
 {
     LAMA_LOG_DEBUG( logger,
-                    "Computing z = alpha * A * x + beta * y, with A = " << *this << ", x = " << x << ", y = " << y << ", z = " << result );
+                    "Computing z = alpha * A * x + beta * y, with A = " << *this << ", x = " << x << ", y = " << y << ", z = " << result )
 
-    LAMA_ASSERT_EQUAL_ERROR( x.size(), mNumColumns );
-    LAMA_ASSERT_EQUAL_ERROR( y.size(), mNumRows );
+    LAMA_ASSERT_EQUAL_ERROR( x.size(), mNumColumns )
+    LAMA_ASSERT_EQUAL_ERROR( y.size(), mNumRows )
 
     // ContextPtr loc = ContextFactory::getContext( Context::Host );
 
     ContextPtr loc = mContext;
 
-    LAMA_LOG_INFO( logger, *this << ": matrixTimesVector on " << *loc );
+    LAMA_LOG_INFO( logger, *this << ": matrixTimesVector on " << *loc )
 
-    // not used here: LAMA_INTERFACE_FN_T( normalGEMV, loc, DenseUtils, Mult, ValueType );
+    // not used here: LAMA_INTERFACE_FN_T( normalGEMV, loc, DenseUtils, Mult, ValueType )
 
     ReadAccess<ValueType> denseValues( mData, loc );
 
@@ -516,17 +516,17 @@ void DenseStorageView<ValueType>::matrixTimesVector(
 
         ReadAccess<ValueType> rY( y, loc );
 
-        LAMA_ASSERT_ERROR( lamaInterface.getBLAS1Interface<ValueType>().copy, "no  BLAS1::copy at " << *loc );
+        LAMA_ASSERT_ERROR( lamaInterface.getBLAS1Interface<ValueType>().copy, "no  BLAS1::copy at " << *loc )
 
-        LAMA_CONTEXT_ACCESS( loc );
+        LAMA_CONTEXT_ACCESS( loc )
         lamaInterface.getBLAS1Interface<ValueType>().copy( n, rY.get(), 1, wResult.get(), 1, NULL );
     }
 
     WriteAccess<ValueType> wResult( result, loc );
 
-    LAMA_CONTEXT_ACCESS( loc );
+    LAMA_CONTEXT_ACCESS( loc )
 
-    LAMA_ASSERT_ERROR( lamaInterface.getBLAS2Interface<ValueType>().gemv, "no  BLAS2::gemv at " << *loc );
+    LAMA_ASSERT_ERROR( lamaInterface.getBLAS2Interface<ValueType>().gemv, "no  BLAS2::gemv at " << *loc )
 
     lamaInterface.getBLAS2Interface<ValueType>().gemv( CblasRowMajor, CblasNoTrans, n, m, alpha, denseValues.get(), lda,
             rX.get(), 1, beta, wResult.get(), 1, NULL );
@@ -567,7 +567,7 @@ void DenseStorageView<ValueType>::matrixTimesMatrix(
     const MatrixStorage<ValueType>& c )
 {
     LAMA_LOG_INFO( logger,
-                   *this << ": = " << alpha << " * A * B + " << beta << " * C" << ", with A = " << a << ", B = " << b << ", C = " << c );
+                   *this << ": = " << alpha << " * A * B + " << beta << " * C" << ", with A = " << a << ", B = " << b << ", C = " << c )
 
     // a and b have to be Dense storages, otherwise create temporaries.
 
@@ -584,11 +584,11 @@ void DenseStorageView<ValueType>::matrixTimesMatrix(
     if ( a.getFormat() == DENSE )
     {
         denseA = dynamic_cast<const DenseStorageView<ValueType>*>( &a );
-        LAMA_ASSERT_DEBUG( denseA, "could not cast to DenseStorage " << a );
+        LAMA_ASSERT_DEBUG( denseA, "could not cast to DenseStorage " << a )
     }
     else
     {
-        LAMA_UNSUPPORTED( a << ": will be converted to Dense for matrix multiply" );
+        LAMA_UNSUPPORTED( a << ": will be converted to Dense for matrix multiply" )
         tmpA = shared_ptr<DenseStorage<ValueType> >( new DenseStorage<ValueType>( a ) );
         denseA = tmpA.get();
     }
@@ -596,11 +596,11 @@ void DenseStorageView<ValueType>::matrixTimesMatrix(
     if ( b.getFormat() == DENSE )
     {
         denseB = dynamic_cast<const DenseStorageView<ValueType>*>( &b );
-        LAMA_ASSERT_DEBUG( denseB, "could not cast to DenseStorage " << b );
+        LAMA_ASSERT_DEBUG( denseB, "could not cast to DenseStorage " << b )
     }
     else
     {
-        LAMA_UNSUPPORTED( b << ": will be converted to Dense for matrix multiply" );
+        LAMA_UNSUPPORTED( b << ": will be converted to Dense for matrix multiply" )
         tmpB = shared_ptr<DenseStorage<ValueType> >( new DenseStorage<ValueType>( b ) );
         denseB = tmpB.get();
     }
@@ -608,11 +608,11 @@ void DenseStorageView<ValueType>::matrixTimesMatrix(
     if ( c.getFormat() == DENSE )
     {
         denseC = dynamic_cast<const DenseStorageView<ValueType>*>( &c );
-        LAMA_ASSERT_DEBUG( denseB, "could not cast to DenseStorage " << c );
+        LAMA_ASSERT_DEBUG( denseB, "could not cast to DenseStorage " << c )
     }
     else
     {
-        LAMA_UNSUPPORTED( c << ": will ce converted to Dense for matrix multiply" );
+        LAMA_UNSUPPORTED( c << ": will ce converted to Dense for matrix multiply" )
         tmpC = shared_ptr<DenseStorage<ValueType> >( new DenseStorage<ValueType>( c ) );
         denseC = tmpC.get();
     }
@@ -641,11 +641,11 @@ void DenseStorageView<ValueType>::matrixTimesMatrixDense(
     boost::shared_ptr<DenseStorage<ValueType> > tmpB;
 
     LAMA_LOG_INFO( logger,
-                   "matrixTimesMatrixDense: " << alpha << " * a * b + " << beta << " * c, with a = " << a << ", b = " << b << ", c = " << c );
+                   "matrixTimesMatrixDense: " << alpha << " * a * b + " << beta << " * c, with a = " << a << ", b = " << b << ", c = " << c )
 
     if ( &a == this )
     {
-        LAMA_LOG_INFO( logger, "temporary for A in A * B ( dense storages) needed" );
+        LAMA_LOG_INFO( logger, "temporary for A in A * B ( dense storages) needed" )
         tmpA = boost::shared_ptr<DenseStorage<ValueType> >( new DenseStorage<ValueType>( a ) );
         ptrA = tmpA.get();
     }
@@ -657,12 +657,12 @@ void DenseStorageView<ValueType>::matrixTimesMatrixDense(
 
         if ( &a == &b )
         {
-            LAMA_LOG_INFO( logger, "same temporary for A and B in A * B ( dense storages) needed" );
+            LAMA_LOG_INFO( logger, "same temporary for A and B in A * B ( dense storages) needed" )
             ptrB = tmpA.get();
         }
         else
         {
-            LAMA_LOG_INFO( logger, "temporary for B in A * B ( dense storages) needed" );
+            LAMA_LOG_INFO( logger, "temporary for B in A * B ( dense storages) needed" )
             tmpB = boost::shared_ptr<DenseStorage<ValueType> >( new DenseStorage<ValueType>( b ) );
             ptrB = tmpB.get();
         }
@@ -672,7 +672,7 @@ void DenseStorageView<ValueType>::matrixTimesMatrixDense(
     int k = b.getNumRows();
     int n = b.getNumColumns();
 
-    LAMA_ASSERT_EQUAL_ERROR( k, a.getNumColumns() );
+    LAMA_ASSERT_EQUAL_ERROR( k, a.getNumColumns() )
 
     mNumRows = m;
     mNumColumns = n;
@@ -685,30 +685,30 @@ void DenseStorageView<ValueType>::matrixTimesMatrixDense(
     {
         // do not care at all about C as it might be any dummy, or aliased to result
 
-        LAMA_LOG_INFO( logger, "init this result with 0, size = " << m * n );
+        LAMA_LOG_INFO( logger, "init this result with 0, size = " << m * n )
         WriteOnlyAccess<ValueType> resAccess( getData(), context, m * n );
-        LAMA_INTERFACE_FN_T( setVal, context, Utils, Setter, ValueType );
-        LAMA_CONTEXT_ACCESS( context );
+        LAMA_INTERFACE_FN_T( setVal, context, Utils, Setter, ValueType )
+        LAMA_CONTEXT_ACCESS( context )
         setVal( resAccess.get(), m * n, 0.0 );
     }
     else if ( this != &c )
     {
         // force result = C
 
-        LAMA_ASSERT_EQUAL_ERROR( m, c.getNumRows () );
-        LAMA_ASSERT_EQUAL_ERROR( n, c.getNumColumns () );
+        LAMA_ASSERT_EQUAL_ERROR( m, c.getNumRows () )
+        LAMA_ASSERT_EQUAL_ERROR( n, c.getNumColumns () )
         mNumRows = m;
         mNumColumns = n;
         ReadAccess<ValueType> cAccess( c.getData(), context );
         WriteOnlyAccess<ValueType> resAccess( getData(), context, m * n );
-        LAMA_LOG_TRACE( logger, "Copying: res = c " );
-        LAMA_CONTEXT_ACCESS( context );
+        LAMA_LOG_TRACE( logger, "Copying: res = c " )
+        LAMA_CONTEXT_ACCESS( context )
         context->getInterface().getBLAS1Interface<ValueType>().copy( n * m, cAccess.get(), 1, resAccess.get(), 1,
                 NULL );
     }
     else
     {
-        LAMA_LOG_INFO( logger, "results is aliased with C as required for gemm, beta = " << beta );
+        LAMA_LOG_INFO( logger, "results is aliased with C as required for gemm, beta = " << beta )
     }
 
     // now C used for BLAS3 call of GEMM is this matrix
@@ -724,11 +724,11 @@ void DenseStorageView<ValueType>::matrixTimesMatrixDense(
     // Now  C = alpha * A * B + beta * C, can use GEMM of BLAS3
 
     LAMA_LOG_TRACE( logger,
-                    "GEMM( CblasRowMajor, CblasNoTrans, CblasNoTrans, m:" << m << ", n:" << n << ", k:" << k << ", alpha:" << alpha << ", A , lda:" << lda << " ,B ,ldb:"<< ldb << " ,beta:" << beta << " C ,ldc:" << ldc << " )" );
+                    "GEMM( CblasRowMajor, CblasNoTrans, CblasNoTrans, m:" << m << ", n:" << n << ", k:" << k << ", alpha:" << alpha << ", A , lda:" << lda << " ,B ,ldb:"<< ldb << " ,beta:" << beta << " C ,ldc:" << ldc << " )" )
 
     if ( lda != 0 && n != 0 && m != 0 )
     {
-        LAMA_CONTEXT_ACCESS( context );
+        LAMA_CONTEXT_ACCESS( context )
         lamaInterface.getBLAS3Interface<ValueType>().gemm( CblasRowMajor, CblasNoTrans, CblasNoTrans, m, n, k, alpha,
                 aAccess.get(), lda, bAccess.get(), ldb, beta,
                 resAccess.get(), ldc, NULL );
@@ -740,7 +740,7 @@ void DenseStorageView<ValueType>::matrixTimesMatrixDense(
 template<typename ValueType>
 DenseStorageView<ValueType>::~DenseStorageView()
 {
-    LAMA_LOG_DEBUG( logger, "~DenseStorage for matrix " << mNumRows << " x " << mNumColumns );
+    LAMA_LOG_DEBUG( logger, "~DenseStorage for matrix " << mNumRows << " x " << mNumColumns )
 }
 
 /* --------------------------------------------------------------------------- */
@@ -757,11 +757,11 @@ ValueType DenseStorageView<ValueType>::maxNorm() const
 
     ContextPtr loc = this->getContextPtr();
 
-    LAMA_INTERFACE_FN_DEFAULT_T( absMaxVal, loc, Utils, Reductions, ValueType );
+    LAMA_INTERFACE_FN_DEFAULT_T( absMaxVal, loc, Utils, Reductions, ValueType )
 
     ReadAccess<ValueType> read1( mData, loc );
 
-    LAMA_CONTEXT_ACCESS( loc );
+    LAMA_CONTEXT_ACCESS( loc )
 
     ValueType maxval = absMaxVal( read1.get(), n );
 
@@ -773,8 +773,8 @@ ValueType DenseStorageView<ValueType>::maxNorm() const
 template<typename ValueType>
 ValueType DenseStorageView<ValueType>::maxDiffNorm( const MatrixStorage<ValueType>& other )
 {
-    LAMA_ASSERT_EQUAL_ERROR( mNumRows, other.getNumRows() );
-    LAMA_ASSERT_EQUAL_ERROR( mNumColumns, other.getNumColumns() );
+    LAMA_ASSERT_EQUAL_ERROR( mNumRows, other.getNumRows() )
+    LAMA_ASSERT_EQUAL_ERROR( mNumColumns, other.getNumColumns() )
 
     boost::shared_ptr<DenseStorage<ValueType> > tmpOtherDense;
 
@@ -783,11 +783,11 @@ ValueType DenseStorageView<ValueType>::maxDiffNorm( const MatrixStorage<ValueTyp
     if ( other.getValueType() == getValueType() && ( other.getFormat() == DENSE ) )
     {
         otherDense = dynamic_cast<const DenseStorageView<ValueType>*>( &other );
-        LAMA_ASSERT_ERROR( otherDense, other << ": could not cast to " << typeName() );
+        LAMA_ASSERT_ERROR( otherDense, other << ": could not cast to " << typeName() )
     }
     else
     {
-        LAMA_UNSUPPORTED( other << ": converted to " << typeName() << " for maxDiffNorm" );
+        LAMA_UNSUPPORTED( other << ": converted to " << typeName() << " for maxDiffNorm" )
         tmpOtherDense.reset( new DenseStorage<ValueType>( other ) );
         otherDense = tmpOtherDense.get();
     }
@@ -811,12 +811,12 @@ ValueType DenseStorageView<ValueType>::maxDiffNormImpl( const DenseStorageView<V
 
     ContextPtr loc = mContext;
 
-    LAMA_INTERFACE_FN_DEFAULT_T( absMaxDiffVal, loc, Utils, Reductions, ValueType );
+    LAMA_INTERFACE_FN_DEFAULT_T( absMaxDiffVal, loc, Utils, Reductions, ValueType )
 
     ReadAccess<ValueType> read1( mData, loc );
     ReadAccess<ValueType> read2( other.mData, loc );
 
-    LAMA_CONTEXT_ACCESS( loc );
+    LAMA_CONTEXT_ACCESS( loc )
 
     ValueType maxval = absMaxDiffVal( read1.get(), read2.get(), n );
 
@@ -840,7 +840,7 @@ void DenseStorageView<ValueType>::assignDenseStorageImpl( const DenseStorageView
 
     OpenMPDenseUtils::copyDenseValues( data.get(), mNumRows, mNumColumns, otherData.get() );
 
-    LAMA_LOG_INFO( logger, *this << ": assigned dense storage " << other );
+    LAMA_LOG_INFO( logger, *this << ": assigned dense storage " << other )
 
     mDiagonalProperty = checkDiagonalProperty();
 }
@@ -854,7 +854,7 @@ void DenseStorageView<ValueType>::assign( const _MatrixStorage& other )
 
     if ( &other == this )
     {
-        LAMA_LOG_INFO( logger, "self assign, is skipped" );
+        LAMA_LOG_INFO( logger, "self assign, is skipped" )
         return;
     }
 
@@ -865,20 +865,20 @@ void DenseStorageView<ValueType>::assign( const _MatrixStorage& other )
         if ( other.getValueType() == Scalar::FLOAT )
         {
             const DenseStorageView<float>* otherFloat = dynamic_cast<const DenseStorageView<float>*>( &other );
-            LAMA_ASSERT_DEBUG( otherFloat, other << ": dynamic cast failed, should not happen" );
+            LAMA_ASSERT_DEBUG( otherFloat, other << ": dynamic cast failed, should not happen" )
             assignDenseStorageImpl( *otherFloat );
             return;
         }
         else if ( other.getValueType() == Scalar::DOUBLE )
         {
             const DenseStorageView<double>* otherDouble = dynamic_cast<const DenseStorageView<double>*>( &other );
-            LAMA_ASSERT_DEBUG( otherDouble, other << ": Dynamic cast failed, should not happen" );
+            LAMA_ASSERT_DEBUG( otherDouble, other << ": Dynamic cast failed, should not happen" )
             assignDenseStorageImpl( *otherDouble );
             return;
         }
     }
 
-    LAMA_LOG_INFO( logger, *this << ": (dense) assign " << other );
+    LAMA_LOG_INFO( logger, *this << ": (dense) assign " << other )
 
     // In all other cases we use the fallback routine
 
@@ -890,7 +890,7 @@ void DenseStorageView<ValueType>::assign( const _MatrixStorage& other )
 template<typename ValueType>
 void DenseStorageView<ValueType>::allocate( IndexType numRows, IndexType numCols )
 {
-    LAMA_LOG_INFO( logger, "allocate Dense sparse matrix of size " << numRows << " x " << numCols );
+    LAMA_LOG_INFO( logger, "allocate Dense sparse matrix of size " << numRows << " x " << numCols )
 
     mNumRows = numRows;
     mNumColumns = numCols;
@@ -899,7 +899,7 @@ void DenseStorageView<ValueType>::allocate( IndexType numRows, IndexType numCols
 
     WriteOnlyAccess<ValueType> data( mData, loc, numRows * numCols );
 
-    LAMA_LOG_DEBUG( logger, *this << " allocated, #values = " << mNumRows * mNumColumns << ", not initialized" );
+    LAMA_LOG_DEBUG( logger, *this << " allocated, #values = " << mNumRows * mNumColumns << ", not initialized" )
 }
 
 /* --------------------------------------------------------------------------- */
@@ -917,7 +917,7 @@ ValueType DenseStorageView<ValueType>::getValue( IndexType i, IndexType j ) cons
 {
     const HostReadAccess<ValueType> data( mData );
     LAMA_LOG_TRACE( logger,
-                    "get value (" << i << ", " << j << ")--> " << i*mNumColumns+j << "= " << data[i*mNumColumns+j] );
+                    "get value (" << i << ", " << j << ")--> " << i*mNumColumns+j << "= " << data[i*mNumColumns+j] )
     return data[i * mNumColumns + j];
 }
 
@@ -981,7 +981,7 @@ DenseStorage<ValueType>::DenseStorage(
 {
     // here we can check for correct size
 
-    LAMA_ASSERT_EQUAL_ERROR( data.size(), numRows * numColumns );
+    LAMA_ASSERT_EQUAL_ERROR( data.size(), numRows * numColumns )
 
     mDataArray = data; // is a flat copy of the array
 }

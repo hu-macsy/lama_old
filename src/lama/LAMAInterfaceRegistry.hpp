@@ -98,7 +98,7 @@ public:
 
 #define LAMA_LAMAINTERFACE_REGISTRATION( location, type ) \
     static lama::LAMAInterfaceRegistration<type >       \
-    LAMA_UNIQUE_NAME( lamaInterfaceRegObj, type )( location )
+    LAMA_UNIQUE_NAME( lamaInterfaceRegObj, type )( location );
 }
 
 #endif // LAMA_LAMAINTERREGISTRY_HPP_

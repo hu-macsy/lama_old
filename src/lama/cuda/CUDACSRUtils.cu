@@ -83,14 +83,13 @@
 namespace lama
 {
 
-LAMA_LOG_DEF_LOGGER( CUDACSRUtils::logger, "CUDA.CSRUtils" );
+LAMA_LOG_DEF_LOGGER( CUDACSRUtils::logger, "CUDA.CSRUtils" )
 
 IndexType CUDACSRUtils::sizes2offsets( IndexType array[], const IndexType n )
 {
-    LAMA_LOG_INFO( logger, "sizes2offsets " << " #n = " << n );
+    LAMA_LOG_INFO( logger, "sizes2offsets " << " #n = " << n )
 
     LAMA_CHECK_CUDA_ACCESS
-    ;
 
     thrust::device_ptr<IndexType> array_ptr( const_cast<IndexType*>( array ) );
     thrust::exclusive_scan( array_ptr, array_ptr + n + 1, array_ptr );
@@ -120,17 +119,16 @@ static void offsets2sizes_kernel( IndexType sizes[], const IndexType offsets[], 
 
 void CUDACSRUtils::offsets2sizes( IndexType sizes[], const IndexType offsets[], const IndexType n )
 {
-    LAMA_LOG_INFO( logger, "offsets2sizes " << " #n = " << n );
+    LAMA_LOG_INFO( logger, "offsets2sizes " << " #n = " << n )
 
     LAMA_CHECK_CUDA_ACCESS
-    ;
 
     const int blockSize = 256;
     dim3 dimBlock( blockSize, 1, 1 );
     dim3 dimGrid = makeGrid( n, dimBlock.x );
 
     offsets2sizes_kernel<<<dimGrid, dimBlock>>>( sizes, offsets, n );
-    LAMA_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "offsets2sizes" );
+    LAMA_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "offsets2sizes" )
 }
 
 /** Correct handle for cusparse is set due to the context. */
@@ -185,20 +183,19 @@ bool CUDACSRUtils::hasDiagonalProperty( const IndexType numDiagonals, const Inde
     dim3 dimBlock( blockSize, 1, 1 );
 
     LAMA_CHECK_CUDA_ACCESS
-    ;
 
     bool* d_hasProperty;
     bool hasProperty;
 
     LAMA_CUDA_RT_CALL( cudaMalloc( (void**)&d_hasProperty, sizeof(bool) ),
-                       "allocate 4 bytes on the device for the result of hasDiagonalProperty_kernel" );
-    LAMA_CUDA_RT_CALL( cudaMemset( d_hasProperty, 1, sizeof(bool) ), "memset bool hasProperty = true" );
+                       "allocate 4 bytes on the device for the result of hasDiagonalProperty_kernel" )
+    LAMA_CUDA_RT_CALL( cudaMemset( d_hasProperty, 1, sizeof(bool) ), "memset bool hasProperty = true" )
 
     hasDiagonalProperty_kernel<<<dimGrid, dimBlock>>>( numDiagonals, csrIA, csrJA, d_hasProperty );
-    LAMA_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "hasDiagonalProperty failed: are ia and ja correct?" );
+    LAMA_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "hasDiagonalProperty failed: are ia and ja correct?" )
 
     LAMA_CUDA_RT_CALL( cudaMemcpy( &hasProperty, d_hasProperty, sizeof(bool), cudaMemcpyDeviceToHost ),
-                       "copy the result of hasDiagonalProperty_kernel to host" );
+                       "copy the result of hasDiagonalProperty_kernel to host" )
 
     return hasProperty;
 }
@@ -220,13 +217,13 @@ void CUDACSRUtils::convertCSR2CSC(
     int /* numValues */)
 {
     LAMA_LOG_INFO( logger,
-                   "convertCSR2CSC<float> -> cusparseScsr2csc" << ", matrix size = " << numRows << " x " << numColumns );
+                   "convertCSR2CSC<float> -> cusparseScsr2csc" << ", matrix size = " << numRows << " x " << numColumns )
 
     LAMA_CUSPARSE_CALL(
         cusparseScsr2csc( CUDAContext_cusparseHandle, numRows, numColumns, csrValues, csrIA, csrJA, cscValues, cscJA, cscIA, 1, CUSPARSE_INDEX_BASE_ZERO ),
         "convertCSR2SCC<float>" )
 
-    LAMA_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "convertCSR2CSC" );
+    LAMA_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "convertCSR2CSC" )
 }
 
 /* --------------------------------------------------------------------------- */
@@ -246,13 +243,13 @@ void CUDACSRUtils::convertCSR2CSC(
     int /* numValues */)
 {
     LAMA_LOG_INFO( logger,
-                   "convertCSR2CSC<double> -> cusparseDcsr2csc" << ", matrix size = " << numRows << " x " << numColumns );
+                   "convertCSR2CSC<double> -> cusparseDcsr2csc" << ", matrix size = " << numRows << " x " << numColumns )
 
     LAMA_CUSPARSE_CALL(
         cusparseDcsr2csc( CUDAContext_cusparseHandle, numRows, numColumns, csrValues, csrIA, csrJA, cscValues, cscJA, cscIA, 1, CUSPARSE_INDEX_BASE_ZERO ),
         "convertCSR2SCC<double>" )
 
-    LAMA_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "convertCSR2CSC" );
+    LAMA_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "convertCSR2CSC" )
 }
 
 /* --------------------------------------------------------------------------- */
@@ -337,13 +334,12 @@ void CUDACSRUtils::normalGEMV(
     const ValueType csrValues[],
     SyncToken* syncToken )
 {
-    LAMA_LOG_INFO( logger, "normalGEMV<" << typeid(ValueType).name() << ">" << ", #rows = " << numRows );
+    LAMA_LOG_INFO( logger, "normalGEMV<" << typeid(ValueType).name() << ">" << ", #rows = " << numRows )
 
     LAMA_LOG_INFO( logger,
-                   "alpha = " << alpha << ", x = " << x << ", beta = " << beta << ", y = " << y << ", result = " << result );
+                   "alpha = " << alpha << ", x = " << x << ", beta = " << beta << ", y = " << y << ", result = " << result )
 
     LAMA_CHECK_CUDA_ACCESS
-    ;
 
     cudaStream_t stream = 0; // default stream if no syncToken is given
 
@@ -356,20 +352,20 @@ void CUDACSRUtils::normalGEMV(
     if ( syncToken )
     {
         CUDAStreamSyncToken* cudaStreamSyncToken = dynamic_cast<CUDAStreamSyncToken*>( syncToken );
-        LAMA_ASSERT_DEBUG( cudaStreamSyncToken, "no cuda stream sync token provided" );
+        LAMA_ASSERT_DEBUG( cudaStreamSyncToken, "no cuda stream sync token provided" )
         stream = cudaStreamSyncToken->getCUDAStream();
     }
 
     // ToDo: implement and choose more efficient variants for special
     //       cases: alpha = 1.0, alpha = -1.0, beta = 1.0, beta = 0.0, beta = -1.0
 
-    normal_gemv_kernel<ValueType> <<< dimGrid, dimBlock, 0, stream>>>
-    ( result, numRows, alpha, csrValues, csrIA, csrJA, x, beta, y );
+    normal_gemv_kernel<ValueType> <<< dimGrid, dimBlock, 0, stream >>>
+                    ( result, numRows, alpha, csrValues, csrIA, csrJA, x, beta, y );
 
     if ( !syncToken )
     {
-        LAMA_CUDA_RT_CALL( cudaStreamSynchronize( stream ), "normalGEMV, stream = " << stream );
-        LAMA_LOG_INFO( logger, "normalGEMV<" << typeid(ValueType).name() << "> synchronized" );
+        LAMA_CUDA_RT_CALL( cudaStreamSynchronize( stream ), "normalGEMV, stream = " << stream )
+        LAMA_LOG_INFO( logger, "normalGEMV<" << typeid(ValueType).name() << "> synchronized" )
     }
 }
 
@@ -388,17 +384,16 @@ void CUDACSRUtils::sparseGEMV(
     SyncToken* syncToken )
 {
     LAMA_LOG_INFO( logger,
-                   "sparseGEMV<" << typeid(ValueType).name() << ">" << ", #non-zero rows = " << numNonZeroRows );
+                   "sparseGEMV<" << typeid(ValueType).name() << ">" << ", #non-zero rows = " << numNonZeroRows )
 
     LAMA_CHECK_CUDA_ACCESS
-    ;
 
     cudaStream_t stream = 0;
 
     if ( syncToken )
     {
         CUDAStreamSyncToken* cudaStreamSyncToken = dynamic_cast<CUDAStreamSyncToken*>( syncToken );
-        LAMA_ASSERT_DEBUG( cudaStreamSyncToken, "no cuda stream sync token provided" );
+        LAMA_ASSERT_DEBUG( cudaStreamSyncToken, "no cuda stream sync token provided" )
         stream = cudaStreamSyncToken->getCUDAStream();
     }
 
@@ -408,13 +403,13 @@ void CUDACSRUtils::sparseGEMV(
 
     dim3 dimGrid = makeGrid( numNonZeroRows, dimBlock.x );
 
-    sparse_gemv_kernel<ValueType> <<< dimGrid, dimBlock, 0, stream>>>
-    ( numNonZeroRows, alpha, csrValues, csrIA, csrJA, x, rowIndexes, result );
+    sparse_gemv_kernel<ValueType> <<< dimGrid, dimBlock, 0, stream >>>
+                    ( numNonZeroRows, alpha, csrValues, csrIA, csrJA, x, rowIndexes, result );
 
     if ( !syncToken )
     {
-        LAMA_CUDA_RT_CALL( cudaStreamSynchronize( stream ), "sparseGEMV, stream = " << stream );
-        LAMA_LOG_INFO( logger, "sparseGEMV<" << typeid(ValueType).name() << "> synchronized" );
+        LAMA_CUDA_RT_CALL( cudaStreamSynchronize( stream ), "sparseGEMV, stream = " << stream )
+        LAMA_LOG_INFO( logger, "sparseGEMV<" << typeid(ValueType).name() << "> synchronized" )
     }
 }
 
@@ -595,17 +590,16 @@ void CUDACSRUtils::jacobi(
     const IndexType numRows,
     SyncToken* syncToken )
 {
-    LAMA_LOG_INFO( logger, "jacobi, #rows = " << numRows );
+    LAMA_LOG_INFO( logger, "jacobi, #rows = " << numRows )
 
     LAMA_CHECK_CUDA_ACCESS
-    ;
 
     cudaStream_t stream = 0;
 
     if ( syncToken )
     {
         CUDAStreamSyncToken* cudaStreamSyncToken = dynamic_cast<CUDAStreamSyncToken*>( syncToken );
-        LAMA_ASSERT_DEBUG( cudaStreamSyncToken, "no cuda stream sync token provided" );
+        LAMA_ASSERT_DEBUG( cudaStreamSyncToken, "no cuda stream sync token provided" )
         stream = cudaStreamSyncToken->getCUDAStream();
     }
 
@@ -617,14 +611,14 @@ void CUDACSRUtils::jacobi(
 
     if ( useTexture )
     {
-        LAMA_CUDA_RT_CALL( cudaBindTexture( NULL, texCSRJacobiSXref, oldSolution), "LAMA_STATUS_CUDA_BINDTEX_FAILED" );
+        LAMA_CUDA_RT_CALL( cudaBindTexture( NULL, texCSRJacobiSXref, oldSolution), "LAMA_STATUS_CUDA_BINDTEX_FAILED" )
         LAMA_CUDA_RT_CALL( cudaFuncSetCacheConfig( csr_jacobi_kernel<ValueType, true>, cudaFuncCachePreferL1 ),
-                           "LAMA_STATUS_CUDA_FUNCSETCACHECONFIG_FAILED" );
+                           "LAMA_STATUS_CUDA_FUNCSETCACHECONFIG_FAILED" )
     }
     else
     {
         LAMA_CUDA_RT_CALL( cudaFuncSetCacheConfig( csr_jacobi_kernel<ValueType, false>, cudaFuncCachePreferL1 ),
-                           "LAMA_STATUS_CUDA_FUNCSETCACHECONFIG_FAILED" );
+                           "LAMA_STATUS_CUDA_FUNCSETCACHECONFIG_FAILED" )
     }
 
     if ( useTexture )
@@ -650,7 +644,7 @@ void CUDACSRUtils::jacobi(
 
     if ( useTexture )
     {
-        LAMA_CUDA_RT_CALL( cudaUnbindTexture( texCSRJacobiSXref ), "LAMA_STATUS_CUDA_UNBINDTEX_FAILED" );
+        LAMA_CUDA_RT_CALL( cudaUnbindTexture( texCSRJacobiSXref ), "LAMA_STATUS_CUDA_UNBINDTEX_FAILED" )
     }
 
     if ( !syncToken )
@@ -717,10 +711,9 @@ void CUDACSRUtils::jacobiHalo(
     const ValueType omega,
     const IndexType numNonEmptyRows )
 {
-    LAMA_LOG_INFO( logger, "jacobiHalo, #non-empty rows = " << numNonEmptyRows );
+    LAMA_LOG_INFO( logger, "jacobiHalo, #non-empty rows = " << numNonEmptyRows )
 
     LAMA_CHECK_CUDA_ACCESS
-    ;
 
     const int block_size = 128;
     dim3 dimBlock( block_size, 1, 1 );
@@ -733,20 +726,20 @@ void CUDACSRUtils::jacobiHalo(
 
         if ( sizeof(ValueType) == sizeof(double) )
         {
-            LAMA_CUDA_RT_CALL( cudaBindTexture( NULL, texCSRJacobiDXref, oldSolution), "LAMA_STATUS_CUDA_BINDTEX_FAILED" );
+            LAMA_CUDA_RT_CALL( cudaBindTexture( NULL, texCSRJacobiDXref, oldSolution), "LAMA_STATUS_CUDA_BINDTEX_FAILED" )
         }
         else if ( sizeof(ValueType) == sizeof(float) )
         {
-            LAMA_CUDA_RT_CALL( cudaBindTexture( NULL, texCSRJacobiSXref, oldSolution), "LAMA_STATUS_CUDA_BINDTEX_FAILED" );
+            LAMA_CUDA_RT_CALL( cudaBindTexture( NULL, texCSRJacobiSXref, oldSolution), "LAMA_STATUS_CUDA_BINDTEX_FAILED" )
         }
 
         LAMA_CUDA_RT_CALL( cudaFuncSetCacheConfig( csr_jacobiHalo_kernel<ValueType, true>, cudaFuncCachePreferL1 ),
-                           "LAMA_STATUS_CUDA_FUNCSETCACHECONFIG_FAILED" );
+                           "LAMA_STATUS_CUDA_FUNCSETCACHECONFIG_FAILED" )
     }
     else
     {
         LAMA_CUDA_RT_CALL( cudaFuncSetCacheConfig( csr_jacobiHalo_kernel<ValueType, false>, cudaFuncCachePreferL1),
-                           "LAMA_STATUS_CUDA_FUNCSETCACHECONFIG_FAILED" );
+                           "LAMA_STATUS_CUDA_FUNCSETCACHECONFIG_FAILED" )
 
     }
 
@@ -763,18 +756,18 @@ void CUDACSRUtils::jacobiHalo(
                 oldSolution, omega );
     }
 
-    LAMA_CUDA_RT_CALL( cudaGetLastError(), "LAMA_STATUS_CSRJACOBIHALO_CUDAKERNEL_FAILED" );
-    LAMA_CUDA_RT_CALL( cudaStreamSynchronize(0), "LAMA_STATUS_CSRJACOBIHALO_CUDAKERNEL_FAILED" );
+    LAMA_CUDA_RT_CALL( cudaGetLastError(), "LAMA_STATUS_CSRJACOBIHALO_CUDAKERNEL_FAILED" )
+    LAMA_CUDA_RT_CALL( cudaStreamSynchronize(0), "LAMA_STATUS_CSRJACOBIHALO_CUDAKERNEL_FAILED" )
 
     if ( useTexture )
     {
         if ( sizeof(ValueType) == sizeof(double) )
         {
-            LAMA_CUDA_RT_CALL( cudaUnbindTexture(texCSRJacobiDXref), "LAMA_STATUS_CUDA_UNBINDTEX_FAILED" );
+            LAMA_CUDA_RT_CALL( cudaUnbindTexture(texCSRJacobiDXref), "LAMA_STATUS_CUDA_UNBINDTEX_FAILED" )
         }
         else if ( sizeof(ValueType) == sizeof(float) )
         {
-            LAMA_CUDA_RT_CALL( cudaUnbindTexture(texCSRJacobiDXref), "LAMA_STATUS_CUDA_UNBINDTEX_FAILED" );
+            LAMA_CUDA_RT_CALL( cudaUnbindTexture(texCSRJacobiDXref), "LAMA_STATUS_CUDA_UNBINDTEX_FAILED" )
         }
     }
 }
@@ -886,14 +879,13 @@ IndexType CUDACSRUtils::matrixAddSizes(
     const IndexType bIa[],
     const IndexType bJa[] )
 {
-    LAMA_REGION( "CUDA.CSR.matrixAddSizes" );
+    LAMA_REGION( "CUDA.CSR.matrixAddSizes" )
 
     LAMA_LOG_INFO(
         logger,
-        "matrixAddSizes for " << numRows << " x " << numColumns << " matrix" << ", diagonalProperty = " << diagonalProperty );
+        "matrixAddSizes for " << numRows << " x " << numColumns << " matrix" << ", diagonalProperty = " << diagonalProperty )
 
     LAMA_CHECK_CUDA_ACCESS
-    ;
 
 // Reset cIa
     thrust::device_ptr<IndexType> cIaPtr( cIa );
@@ -905,7 +897,6 @@ IndexType CUDACSRUtils::matrixAddSizes(
 
     cudaStreamSynchronize( 0 );
     LAMA_CHECK_CUDA_ERROR
-    ;
 
 // Convert sizes array to offset array
     thrust::exclusive_scan( cIaPtr, cIaPtr + numRows + 1, cIaPtr );
@@ -917,7 +908,6 @@ IndexType CUDACSRUtils::matrixAddSizes(
 
     cudaStreamSynchronize( 0 );
     LAMA_CHECK_CUDA_ERROR
-    ;
 
 // TODO: write it!
     return numValues[0];
@@ -1120,14 +1110,13 @@ IndexType CUDACSRUtils::matrixMultiplySizes(
     const IndexType bIa[],
     const IndexType bJa[] )
 {
-    LAMA_REGION( "CUDA.CSR.matrixMultiplySizes" );
+    LAMA_REGION( "CUDA.CSR.matrixMultiplySizes" )
 
     LAMA_LOG_INFO(
         logger,
-        "matrixMutliplySizes for " << numRows << " x " << numColumns << " matrix" << ", diagonalProperty = " << diagonalProperty );
+        "matrixMutliplySizes for " << numRows << " x " << numColumns << " matrix" << ", diagonalProperty = " << diagonalProperty )
 
     LAMA_CHECK_CUDA_ACCESS
-    ;
 // Reset cIa
 
     size_t free;
@@ -1222,7 +1211,6 @@ IndexType CUDACSRUtils::matrixMultiplySizes(
 
     cudaStreamSynchronize( 0 );
     LAMA_CHECK_CUDA_ERROR
-    ;
 
     return numValues[0];
 }
@@ -1358,19 +1346,17 @@ void CUDACSRUtils::matrixAdd(
     const IndexType bJA[],
     const ValueType bValues[] )
 {
-    LAMA_REGION( "CUDA.CSR.matrixAdd" );
+    LAMA_REGION( "CUDA.CSR.matrixAdd" )
 
-    LAMA_LOG_INFO( logger, "matrixAdd for " << numRows << "x" << numColumns << " matrix" );
+    LAMA_LOG_INFO( logger, "matrixAdd for " << numRows << "x" << numColumns << " matrix" )
 
     LAMA_CHECK_CUDA_ACCESS
-    ;
 
     matrixAddKernel<ValueType, NUM_WARPS><<<NUM_BLOCKS, NUM_THREADS>>>( cJA, cValues, cIA, numRows, numColumns,
             diagonalProperty, alpha, aIA, aJA, aValues, beta, bIA, bJA, bValues );
 
     cudaStreamSynchronize( 0 );
     LAMA_CHECK_CUDA_ERROR
-    ;
 }
 /* ------------------------------------------------------------------------------------------------------------------ */
 /*                                             matrixMultiply                                                         */
@@ -1703,12 +1689,11 @@ void CUDACSRUtils::matrixMultiply(
     const IndexType bJa[],
     const ValueType bValues[] )
 {
-    LAMA_REGION( "CUDA.CSR.matrixMultiply" );
+    LAMA_REGION( "CUDA.CSR.matrixMultiply" )
 
-    LAMA_LOG_INFO( logger, "matrixMultiply for " << numRows << "x" << numColumns << " matrix" );
+    LAMA_LOG_INFO( logger, "matrixMultiply for " << numRows << "x" << numColumns << " matrix" )
 
     LAMA_CHECK_CUDA_ACCESS
-    ;
 
     const unsigned int initialHashTableSize = 1024;
 
@@ -1768,7 +1753,6 @@ void CUDACSRUtils::matrixMultiply(
     }
     cudaStreamSynchronize( 0 );
     LAMA_CHECK_CUDA_ERROR
-    ;
 
 // Free hashTable and hashError
     loc->free( (void*) hashTable, hashTableSize );
@@ -1776,7 +1760,6 @@ void CUDACSRUtils::matrixMultiply(
 
     cudaStreamSynchronize( 0 );
     LAMA_CHECK_CUDA_ERROR
-    ;
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */
@@ -1787,32 +1770,32 @@ void CUDACSRUtils::matrixMultiply(
 
 void CUDACSRUtils::setInterface( CSRUtilsInterface& CSRUtils )
 {
-    LAMA_INTERFACE_REGISTER( CSRUtils, sizes2offsets );
-    LAMA_INTERFACE_REGISTER( CSRUtils, offsets2sizes );
-    LAMA_INTERFACE_REGISTER( CSRUtils, hasDiagonalProperty );
-    LAMA_INTERFACE_REGISTER( CSRUtils, matrixAddSizes );
-    LAMA_INTERFACE_REGISTER( CSRUtils, matrixMultiplySizes );
+    LAMA_INTERFACE_REGISTER( CSRUtils, sizes2offsets )
+    LAMA_INTERFACE_REGISTER( CSRUtils, offsets2sizes )
+    LAMA_INTERFACE_REGISTER( CSRUtils, hasDiagonalProperty )
+    LAMA_INTERFACE_REGISTER( CSRUtils, matrixAddSizes )
+    LAMA_INTERFACE_REGISTER( CSRUtils, matrixMultiplySizes )
 
-    LAMA_INTERFACE_REGISTER_T( CSRUtils, convertCSR2CSC, float );
-    LAMA_INTERFACE_REGISTER_T( CSRUtils, convertCSR2CSC, double );
+    LAMA_INTERFACE_REGISTER_T( CSRUtils, convertCSR2CSC, float )
+    LAMA_INTERFACE_REGISTER_T( CSRUtils, convertCSR2CSC, double )
 
-    LAMA_INTERFACE_REGISTER_T( CSRUtils, normalGEMV, float );
-    LAMA_INTERFACE_REGISTER_T( CSRUtils, normalGEMV, double );
+    LAMA_INTERFACE_REGISTER_T( CSRUtils, normalGEMV, float )
+    LAMA_INTERFACE_REGISTER_T( CSRUtils, normalGEMV, double )
 
-    LAMA_INTERFACE_REGISTER_T( CSRUtils, sparseGEMV, float );
-    LAMA_INTERFACE_REGISTER_T( CSRUtils, sparseGEMV, double );
+    LAMA_INTERFACE_REGISTER_T( CSRUtils, sparseGEMV, float )
+    LAMA_INTERFACE_REGISTER_T( CSRUtils, sparseGEMV, double )
 
-    LAMA_INTERFACE_REGISTER_T( CSRUtils, jacobi, float );
-    LAMA_INTERFACE_REGISTER_T( CSRUtils, jacobi, double );
+    LAMA_INTERFACE_REGISTER_T( CSRUtils, jacobi, float )
+    LAMA_INTERFACE_REGISTER_T( CSRUtils, jacobi, double )
 
-    LAMA_INTERFACE_REGISTER_T( CSRUtils, jacobiHalo, float );
-    LAMA_INTERFACE_REGISTER_T( CSRUtils, jacobiHalo, double );
+    LAMA_INTERFACE_REGISTER_T( CSRUtils, jacobiHalo, float )
+    LAMA_INTERFACE_REGISTER_T( CSRUtils, jacobiHalo, double )
 
-    LAMA_INTERFACE_REGISTER_T( CSRUtils, matrixAdd, float );
-    LAMA_INTERFACE_REGISTER_T( CSRUtils, matrixAdd, double );
+    LAMA_INTERFACE_REGISTER_T( CSRUtils, matrixAdd, float )
+    LAMA_INTERFACE_REGISTER_T( CSRUtils, matrixAdd, double )
 
-    LAMA_INTERFACE_REGISTER_T( CSRUtils, matrixMultiply, float );
-    LAMA_INTERFACE_REGISTER_T( CSRUtils, matrixMultiply, double );
+    LAMA_INTERFACE_REGISTER_T( CSRUtils, matrixMultiply, float )
+    LAMA_INTERFACE_REGISTER_T( CSRUtils, matrixMultiply, double )
 }
 
 } // namespace lama

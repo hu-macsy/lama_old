@@ -58,10 +58,10 @@ CUDAHostContext::CUDAHostContext( boost::shared_ptr<const CUDAContext> cudaConte
 {
     if ( !cudaContext )
     {
-        LAMA_THROWEXCEPTION( "CUDAHostContext requires valid CUDAContext, is NULL" );
+        LAMA_THROWEXCEPTION( "CUDAHostContext requires valid CUDAContext, is NULL" )
     }
 
-    LAMA_LOG_INFO( logger, "CUDAHostContext created, allows faster transfer HOST <-> " << *mCUDAContext );
+    LAMA_LOG_INFO( logger, "CUDAHostContext created, allows faster transfer HOST <-> " << *mCUDAContext )
 }
 
 CUDAHostContext::~CUDAHostContext()
@@ -76,16 +76,16 @@ void CUDAHostContext::writeAt( std::ostream& stream ) const
 
 void* CUDAHostContext::allocate( const size_t size ) const
 {
-    LAMA_REGION( "CUDAHostContext::allocate" );
-    LAMA_LOG_TRACE( logger, *this << ": allocate " << size << " bytes" );
+    LAMA_REGION( "CUDAHostContext::allocate" )
+    LAMA_LOG_TRACE( logger, *this << ": allocate " << size << " bytes" )
 
     void* pointer = 0;
 
     LAMA_CONTEXT_ACCESS( mCUDAContext );
 
-    LAMA_CUDA_DRV_CALL( cuMemAllocHost( &pointer, size), "cuMemAllocHost( size = " << size << " ) failed" );
+    LAMA_CUDA_DRV_CALL( cuMemAllocHost( &pointer, size), "cuMemAllocHost( size = " << size << " ) failed" )
 
-    LAMA_LOG_DEBUG( logger, *this << ": allocated " << size << " bytes, pointer = " << pointer );
+    LAMA_LOG_DEBUG( logger, *this << ": allocated " << size << " bytes, pointer = " << pointer )
 
     return pointer;
 }
@@ -98,22 +98,22 @@ void CUDAHostContext::allocate( ContextData& contextData, const size_t size ) co
 
 void CUDAHostContext::free( void* pointer, const size_t size ) const
 {
-    LAMA_REGION( "CUDAHostContext::free" );
+    LAMA_REGION( "CUDAHostContext::free" )
     // Be careful: do not use
     // ContextAccess useCUDA( ContextPtr( mCUDAContext ) );
     // as this defines a function and not a variable
     // General rule: never use shared_ptr temporaries implicitly
 
-    LAMA_CONTEXT_ACCESS( mCUDAContext );
+    LAMA_CONTEXT_ACCESS( mCUDAContext )
 
-    LAMA_CUDA_DRV_CALL( cuMemFreeHost( pointer ), "cuMemFreeHost( " << pointer << ", " << size << " ) failed" );
+    LAMA_CUDA_DRV_CALL( cuMemFreeHost( pointer ), "cuMemFreeHost( " << pointer << ", " << size << " ) failed" )
 
-    LAMA_LOG_DEBUG( logger, *this << ": freed " << size << " bytes, pointer = " << pointer );
+    LAMA_LOG_DEBUG( logger, *this << ": freed " << size << " bytes, pointer = " << pointer )
 }
 
 void CUDAHostContext::free( ContextData& contextData ) const
 {
-    LAMA_ASSERT_EQUAL_ERROR( contextData.context->getType(), getType() );
+    LAMA_ASSERT_EQUAL_ERROR( contextData.context->getType(), getType() )
     free( contextData.pointer, contextData.size );
 }
 
@@ -124,15 +124,15 @@ void CUDAHostContext::memcpy( void* dst, const void* src, const size_t size ) co
 
 std::auto_ptr<SyncToken> CUDAHostContext::memcpyAsync( void* dst, const void* src, const size_t size ) const
 {
-    LAMA_CONTEXT_ACCESS( mCUDAContext );
+    LAMA_CONTEXT_ACCESS( mCUDAContext )
 
     CUDAStreamSyncTokenPtr syncToken( mCUDAContext->getTransferSyncToken() );
 
-    LAMA_LOG_INFO( logger, "copy async " << size << " bytes from " << src << " (host) to " << dst << " (host) " );
+    LAMA_LOG_INFO( logger, "copy async " << size << " bytes from " << src << " (host) to " << dst << " (host) " )
 
     LAMA_CUDA_RT_CALL(
         cudaMemcpyAsync( dst, src, size, cudaMemcpyHostToHost, syncToken->getCUDAStream() ),
-        "cudaMemcpyAsync( " << dst << ", " << src << ", " << size << ", " << cudaMemcpyHostToHost << ", " << syncToken->getCUDAStream() << ") failed " );
+        "cudaMemcpyAsync( " << dst << ", " << src << ", " << size << ", " << cudaMemcpyHostToHost << ", " << syncToken->getCUDAStream() << ") failed " )
 
     return syncToken;
 }
@@ -145,7 +145,7 @@ bool CUDAHostContext::cancpy( const ContextData& dst, const ContextData& src ) c
 void CUDAHostContext::memcpy( ContextData& dst, const ContextData& src, const size_t size ) const
 {
     LAMA_ASSERT_ERROR( dst.context->getType() == getType() && src.context->getType() == getType(),
-                       "Can not copy from "<< *(src.context) << " to " << *(dst.context) );
+                       "Can not copy from "<< *(src.context) << " to " << *(dst.context) )
     memcpy( dst.pointer, src.pointer, size );
 }
 
@@ -155,7 +155,7 @@ std::auto_ptr<SyncToken> CUDAHostContext::memcpyAsync(
     const size_t size ) const
 {
     LAMA_ASSERT_ERROR( dst.context->getType() == getType() && src.context->getType() == getType(),
-                       "Can not copy from "<< *(src.context) << " to " << *(dst.context) );
+                       "Can not copy from "<< *(src.context) << " to " << *(dst.context) )
     return memcpyAsync( dst.pointer, src.pointer, size );
 }
 

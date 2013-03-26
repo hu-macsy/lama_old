@@ -457,6 +457,10 @@ file ( MAKE_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/include")
 
 set ( BOOST_VERSION_ERROR_STRING "Included Boost version does not match linked Boost version ${Boost_VERSION}" )
 
+### Current version of LAMA (should be set by GIT version) ###
+
+set ( Project_WC_REVISION "1.0" )
+
 set ( LAMA_HPP_CONTENS " 
 #include <boost/version.hpp>
 #define LAMA_LINKED_BOOST_VERSION ${Boost_VERSION}

@@ -58,15 +58,15 @@ namespace lama
  * ReadAccess enforces the consistency of the template LAMAArray by following the RAII Idiom. This is
  * done by acquiring a read lock on a LAMAArray in the constructor and releasing this read lock in
  * the destructor. Therefore a ReadAccess should be only used as a stack object.
+ *
+ * @tparam T is the value type stored in the wrapped container.
  */
 template<typename T>
 class LAMA_DLL_IMPORTEXPORT ReadAccess: public BaseAccess
 {
 public:
-    /**
-     * @brief ValueType is the type stored in the wrapped container.
-     */
-    typedef T ValueType;
+
+	typedef T ValueType; //!< This is the type stored in the wrapped  container.
 
     /**
      * @brief acquire a ReadAccess to the passed LAMAArray for the passed context

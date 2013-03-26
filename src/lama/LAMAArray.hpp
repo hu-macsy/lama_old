@@ -70,10 +70,7 @@ class LAMAArrayView;
 template<typename T>
 class LAMAArrayConstView;
 
-/** Common base class for typed LAMAArray.
- *
- *
- */
+/** Common base class for typed LAMAArray. */
 
 class LAMA_DLL_IMPORTEXPORT _LAMAArray: public Printable
 {
@@ -113,10 +110,12 @@ protected:
 };
 
 /**
- * @brief LAMAArray is the base array containter for all compute relevant data within LAMA
+ * @brief LAMAArray is the base array container for all compute relevant data within LAMA.
  *
- * LAMAArray its contens on all supported Locations, e.g. Host, CUDA and OpenCL. It transparently handles
- * synchronization between the Locations. To enforce the consitency of the data a LAMAArray can be only
+ * @tparam T is the type stored in this container.
+ *
+ * LAMAArray its contents on all supported locations, e.g. Host, CUDA and OpenCL. It transparently handles
+ * synchronization between the locations. To enforce the consistency of the data a LAMAArray can be only
  * indirectly accessed via a ReadAccess or a WriteAccess.
  */
 template<typename T>
@@ -127,10 +126,7 @@ class LAMA_DLL_IMPORTEXPORT LAMAArray: public _LAMAArray
 
 public:
 
-    /**
-     * @brief ValueType is the type stored in this container.
-     */
-    typedef T ValueType;
+    typedef T ValueType;  //!< This is the type stored in this container.
 
     /**
      * @brief LAMAArray() creates an empty LAMAArray with size 0
@@ -147,7 +143,7 @@ public:
     explicit LAMAArray( const IndexType n );
 
     /**
-     * @brief creates a LAMAArray of size n
+     * @brief Creates a LAMAArray of size n.
      *
      * @param[in] n     the size of the LAMAArray to create
      * @param[in] value the value to initialize the container contens with
@@ -158,7 +154,7 @@ public:
     LAMAArray( const IndexType n, const ValueType& value );
 
     /**
-     * @brief creates a LAMAArray of size n
+     * @brief Creates a LAMAArray of size n.
      *
      * @param[in] n         the size of the LAMAArray to create
      * @param[in] values    the values to initialize the container contens with
@@ -170,7 +166,7 @@ public:
     LAMAArray( const IndexType n, const OtherValueType* const values );
 
     /**
-     * @brief creates a copy of the passed LAMAArray
+     * @brief Creates a copy of the passed LAMAArray.
      *
      * @param[in] other the LAMAArray to copy
      *
@@ -180,12 +176,12 @@ public:
     LAMAArray( const LAMAArray<ValueType>& other );
 
     /**
-     * @brief Releases all used resources.
+     * @brief Destructor, releases all used resources.
      */
     virtual ~LAMAArray();
 
     /**
-     * @brief Copies the passed LAMAArray into this
+     * @brief Copies the passed LAMAArray into this.
      *
      * @param[in] other the LAMAArray to copy
      *
@@ -196,7 +192,7 @@ public:
     LAMAArray<ValueType>& operator=( const LAMAArray<ValueType>& other );
 
     /**
-     * @brief Copies the passed LAMAArray into this
+     * @brief Copies the passed LAMAArray into this.
      *
      * @param[in] other     the LAMAArray to copy
      * @param[in] context   the context where the assignment should be carried out
@@ -208,14 +204,14 @@ public:
     void assign( const LAMAArray<ValueType>& other, ContextPtr context );
 
     /**
-     * @brief swaps the contens of this with other
+     * @brief Swaps the contens of this with other.
      *
      * @param[in] other the LAMAArray to swap the contens with.
      */
     void swap( LAMAArray<ValueType>& other );
 
     /**
-     * @brief prefetches the contents of the container to the passed context
+     * @brief Prefetches the contents of the container to the passed context.
      *
      * @param[in] context  the context to prefetch to
      *
@@ -237,8 +233,9 @@ public:
     bool isAvailableAt( ContextPtr context ) const;
 
     /**
-     * @brief Gets the fist context where the data of this LAMAArray is available. If possible a context of
-     *        the passed preferred type is returned.
+     * @brief Gets the fist context where the data of this LAMAArray is available.
+     *
+     * If possible a context of the passed preferred type is returned.
      *
      * @param[in] preferredType the preferred type for the valid context.
      * @return                  a context there the data of this LAMAArray is available.
@@ -246,7 +243,7 @@ public:
     ContextPtr getValidContext( const Context::ContextType preferredType = Context::Host ) const;
 
     /**
-     * @brief waits for potentially running prefetch
+     * Waits for potentially running prefetch.
      */
     void wait() const;
 
@@ -337,7 +334,7 @@ protected:
 
     mutable std::auto_ptr<SyncToken> mSyncToken; //!<  outstanding transfers
 
-    LAMA_LOG_DECL_STATIC_LOGGER( logger );
+    LAMA_LOG_DECL_STATIC_LOGGER( logger )
 
     static size_t nContextIndex; // stands for no valid index
 
@@ -346,6 +343,8 @@ protected:
 
 /**
  * @brief LAMAArrayRef is a container that uses external data.
+ *
+ * @tparam T is the type stored in this container.
  */
 template<typename T>
 class LAMA_DLL_IMPORTEXPORT LAMAArrayRef: public LAMAArray<T>
@@ -388,13 +387,13 @@ LAMAArray<ValueType>::LAMAArray( const IndexType n, const OtherValueType* const 
 
     if ( n <= 0 )
     {
-        LAMA_LOG_DEBUG( logger, "Zero-sized array with value constructed: " << *this );
+        LAMA_LOG_DEBUG( logger, "Zero-sized array with value constructed: " << *this )
         return;
     }
 
     Context::ContextData& host = *mContextData[0];
     host.allocate( mSize * sizeof(ValueType) );
-    LAMA_LOG_DEBUG( logger, "constructed: " << *this );
+    LAMA_LOG_DEBUG( logger, "constructed: " << *this )
 
     ValueType* host_pointer = static_cast<ValueType*>( host.pointer );
 
@@ -405,7 +404,7 @@ LAMAArray<ValueType>::LAMAArray( const IndexType n, const OtherValueType* const 
     }
 
     host.valid = true;
-    LAMA_LOG_DEBUG( logger, "constructed: " << *this );
+    LAMA_LOG_DEBUG( logger, "constructed: " << *this )
 }
 
 }

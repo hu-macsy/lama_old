@@ -39,7 +39,7 @@ namespace lama
 
 /* --------------------------------------------------------------------------- */
 
-LAMA_LOG_DEF_TEMPLATE_LOGGER( template<typename ValueType>, ReadAccess<ValueType>::logger, "ReadAccess" );
+LAMA_LOG_DEF_TEMPLATE_LOGGER( template<typename ValueType>, ReadAccess<ValueType>::logger, "ReadAccess" )
 
 /* --------------------------------------------------------------------------- */
 
@@ -48,7 +48,7 @@ ReadAccess<T>::ReadAccess( const LAMAArray<ValueType>& array, ContextPtr context
     : mArrayView( new LAMAArrayConstView<ValueType>(array,0,array.size() ) )
 {
     LAMA_ASSERT_ERROR( context, "NULL context for read access");
-    //LAMA_LOG_DEBUG(logger, "will acquire read access for " << *mArrayView << " at " << *context );
+    //LAMA_LOG_DEBUG(logger, "will acquire read access for " << *mArrayView << " at " << *context )
     mIndex = mArrayView->acquireReadAccess(context);
     //LAMA_LOG_TRACE(logger, "acquired read access for " << *mArrayView << " at " << *context );
 }
@@ -57,7 +57,7 @@ template<typename T>
 ReadAccess<T>::ReadAccess( const LAMAArrayView<ValueType>& view, ContextPtr context )
     : mArrayView( new LAMAArrayConstView<ValueType>( view ) )
 {
-    LAMA_ASSERT_ERROR( context, "NULL context for read access" );
+    LAMA_ASSERT_ERROR( context, "NULL context for read access" )
     //LAMA_LOG_DEBUG(logger, "acquire read access for " << *mArrayView << " at " << *context);
     mIndex = mArrayView->acquireReadAccess( context );
     //LAMA_LOG_TRACE(logger, "acquired read access for " << *mArrayView << " at " << *context );
@@ -67,7 +67,7 @@ template<typename T>
 ReadAccess<T>::ReadAccess( const LAMAArrayConstView<ValueType>& view, ContextPtr context )
     : mArrayView( new LAMAArrayConstView<ValueType>( view ) )
 {
-    LAMA_ASSERT_ERROR( context, "NULL context for read access" );
+    LAMA_ASSERT_ERROR( context, "NULL context for read access" )
     //LAMA_LOG_DEBUG(logger, "acquire read access for " << *mArrayView << " at " << *context);
     mIndex = mArrayView->acquireReadAccess( context );
     //LAMA_LOG_TRACE(logger, "acquired read access for " << *mArrayView << " at " << *context );
@@ -76,7 +76,7 @@ ReadAccess<T>::ReadAccess( const LAMAArrayConstView<ValueType>& view, ContextPtr
 template<typename T>
 ReadAccess<T>::~ReadAccess()
 {
-    LAMA_LOG_TRACE( logger, "~ReadAccess: release" );
+    LAMA_LOG_TRACE( logger, "~ReadAccess: release" )
     release();
 }
 
@@ -85,13 +85,13 @@ const T* ReadAccess<T>::get() const
 {
     if ( mArrayView == 0 )
     {
-        LAMA_THROWEXCEPTION( "ReadAccess::get fails, has already been released." );
+        LAMA_THROWEXCEPTION( "ReadAccess::get fails, has already been released." )
     }
 
     const T* ptr = mArrayView->get( mIndex );
 
-    //LAMA_LOG_TRACE( logger, "mArray->get(" << mIndex<< ") with ptr = " << ptr );
-    //*mArray->mContextData[mIndex].context << ", ptr = " << ptr );
+    //LAMA_LOG_TRACE( logger, "mArray->get(" << mIndex<< ") with ptr = " << ptr )
+    //*mArray->mContextData[mIndex].context << ", ptr = " << ptr )
     return ptr;
 }
 

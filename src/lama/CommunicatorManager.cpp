@@ -40,19 +40,19 @@ using namespace boost;
 namespace lama
 {
 
-LAMA_LOG_DEF_LOGGER( CommunicatorManager::logger, "CommunicatorManager" );
+LAMA_LOG_DEF_LOGGER( CommunicatorManager::logger, "CommunicatorManager" )
 
 CommunicatorManager::CommunicatorManager( const char* type )
 
     : mCommunicatorType( type )
 {
     // do not log here as manager might be created during initialization
-    // printf("CommunicatorManager (type = %d)\n", int(type) );
+    // printf("CommunicatorManager (type = %d)\n", int(type) )
 }
 
 CommunicatorManager::~CommunicatorManager()
 {
-    LAMA_LOG_INFO( logger, "~CommunicatorManager, type = " << mCommunicatorType );
+    LAMA_LOG_INFO( logger, "~CommunicatorManager, type = " << mCommunicatorType )
 }
 
 }

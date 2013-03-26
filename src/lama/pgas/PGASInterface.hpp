@@ -142,7 +142,7 @@ private:
     template<typename T>
     T sumToAllImpl( const T val ) const;
 
-    LAMA_LOG_DECL_STATIC_LOGGER( logger );
+    LAMA_LOG_DECL_STATIC_LOGGER( logger )
 
 //Singleton Pattern
 public:

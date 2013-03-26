@@ -51,6 +51,8 @@ namespace lama
  * element is constant (amortized time, reallocation may happen).
  *
  * Due to the use of std::vector, this storage will only reside on the host.
+ *
+ *  @tparam T is the value type of the matrix values.
  */
 template<typename T>
 class LAMA_DLL_IMPORTEXPORT SparseAssemblyStorage:
@@ -58,12 +60,9 @@ class LAMA_DLL_IMPORTEXPORT SparseAssemblyStorage:
     public CRTPMatrixStorage<SparseAssemblyStorage<T>,T>
 {
 public:
-    /**
-     * @brief   The type of the values.
-     */
-    typedef T ValueType;
+    typedef T ValueType; //!< This is the type of the matrix values.
 
-    /** get typename of the matrix storage format. */
+    /** Getter of the type name of the matrix storage format. */
 
     static const char* typeName();
 
@@ -387,7 +386,7 @@ private:
      */
     virtual bool checkDiagonalProperty() const;
 
-    LAMA_LOG_DECL_STATIC_LOGGER( logger );
+    LAMA_LOG_DECL_STATIC_LOGGER( logger )
 };
 
 } //namespace lama

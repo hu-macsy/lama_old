@@ -75,14 +75,14 @@ static boost::mutex printMutex; // needed to avoid mixing output of threads
 
 /* -------------------------------------------------------------------------- */
 
-LAMA_LOG_DEF_LOGGER( RegionTable::logger, "RegionTable" );
+LAMA_LOG_DEF_LOGGER( RegionTable::logger, "RegionTable" )
 
 /* ---------------------------------------------------------------------- */
 
 RegionTable::RegionTable( lama::Thread::Id threadId )
     : mThreadId( threadId )
 {
-    LAMA_LOG_DEBUG( logger, "Thread " << threadId << ": creates RegionTable" );
+    LAMA_LOG_DEBUG( logger, "Thread " << threadId << ": creates RegionTable" )
 }
 
 /* ---------------------------------------------------------------------- */
@@ -218,7 +218,7 @@ int RegionTable::getRegion( const char* id, const char* file, int lno )
         // do not use this: mapTimer[id] = regionId; // causes problems with composed strings
         mapTimer[entry.mName.c_str()] = static_cast<int>( regionId );
         LAMA_LOG_DEBUG( logger,
-                        "Thread " << mThreadId << " added region " << regionId << "( " << array[regionId].mName << ") for region " << id );
+                        "Thread " << mThreadId << " added region " << regionId << "( " << array[regionId].mName << ") for region " << id )
         return static_cast<int>( regionId );
     }
     else

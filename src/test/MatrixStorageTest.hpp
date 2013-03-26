@@ -57,14 +57,15 @@ static std::string storagetestmethods[] =
  *
  *  Dependent on the default communicator, it will select between serial
  *  and/or distributed tests.
+ *
+ * @tparam T is the value type stored in the wrapped container.
  */
-
 template<typename T>
 class MatrixStorageTest
 {
 public:
 
-    typedef T ValueType;
+    typedef T ValueType; //!< This is the type stored in the wrapped container.
 
     /** Constructor of the test.
      *

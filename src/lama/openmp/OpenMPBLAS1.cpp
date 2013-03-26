@@ -45,14 +45,14 @@
 namespace lama
 {
 
-LAMA_LOG_DEF_LOGGER( OpenMPBLAS1::logger, "OpenMP.BLAS1" );
+LAMA_LOG_DEF_LOGGER( OpenMPBLAS1::logger, "OpenMP.BLAS1" )
 
 /** scal */
 
 template<>
 void OpenMPBLAS1::scal( const IndexType n, const float alpha, float* x, const IndexType incX, SyncToken* syncToken )
 {
-    LAMA_LOG_DEBUG( logger, "scal<float>, n = " << n << ", alpha = " << alpha << ", x = " << x << ", incX = " << incX );
+    LAMA_LOG_DEBUG( logger, "scal<float>, n = " << n << ", alpha = " << alpha << ", x = " << x << ", incX = " << incX )
 
     if ( syncToken )
     {
@@ -72,7 +72,7 @@ template<>
 void OpenMPBLAS1::scal( const IndexType n, const double alpha, double* x, const IndexType incX, SyncToken* syncToken )
 {
     LAMA_LOG_DEBUG( logger,
-                    "scal<double>, n = " << n << ", alpha = " << alpha << ", x = " << x << ", incX = " << incX );
+                    "scal<double>, n = " << n << ", alpha = " << alpha << ", x = " << x << ", incX = " << incX )
 
     if ( syncToken )
     {
@@ -93,7 +93,7 @@ void OpenMPBLAS1::scal( const IndexType n, const double alpha, double* x, const 
 template<>
 float OpenMPBLAS1::nrm2( const IndexType n, const float* x, const IndexType incX, SyncToken* syncToken )
 {
-    LAMA_LOG_DEBUG( logger, "nrm2<float>, n = " << n << ", x = " << x << ", incX = " << incX );
+    LAMA_LOG_DEBUG( logger, "nrm2<float>, n = " << n << ", x = " << x << ", incX = " << incX )
 
     if ( syncToken )
     {
@@ -114,7 +114,7 @@ float OpenMPBLAS1::nrm2( const IndexType n, const float* x, const IndexType incX
 template<>
 double OpenMPBLAS1::nrm2( const IndexType n, const double* x, const IndexType incX, SyncToken* syncToken )
 {
-    LAMA_LOG_DEBUG( logger, "nrm2<double>, n = " << n << ", x = " << x << ", incX = " << incX );
+    LAMA_LOG_DEBUG( logger, "nrm2<double>, n = " << n << ", x = " << x << ", incX = " << incX )
 
     if ( syncToken )
     {
@@ -137,7 +137,7 @@ double OpenMPBLAS1::nrm2( const IndexType n, const double* x, const IndexType in
 template<>
 float OpenMPBLAS1::asum( const IndexType n, const float* x, const IndexType incX, SyncToken* syncToken )
 {
-    LAMA_LOG_DEBUG( logger, "asum<float>, n = " << n << ", x = " << x << ", incX = " << incX );
+    LAMA_LOG_DEBUG( logger, "asum<float>, n = " << n << ", x = " << x << ", incX = " << incX )
 
     if ( syncToken )
     {
@@ -158,7 +158,7 @@ float OpenMPBLAS1::asum( const IndexType n, const float* x, const IndexType incX
 template<>
 double OpenMPBLAS1::asum( const IndexType n, const double* x, const IndexType incX, SyncToken* syncToken )
 {
-    LAMA_LOG_DEBUG( logger, "asum<double>, n = " << n << ", x = " << x << ", incX = " << incX );
+    LAMA_LOG_DEBUG( logger, "asum<double>, n = " << n << ", x = " << x << ", incX = " << incX )
 
     if ( syncToken )
     {
@@ -181,7 +181,7 @@ double OpenMPBLAS1::asum( const IndexType n, const double* x, const IndexType in
 template<>
 IndexType OpenMPBLAS1::iamax( const IndexType n, const float* x, const IndexType incX, SyncToken* syncToken )
 {
-    LAMA_LOG_DEBUG( logger, "iamax<float>, n = " << n << ", x = " << x << ", incX = " << incX );
+    LAMA_LOG_DEBUG( logger, "iamax<float>, n = " << n << ", x = " << x << ", incX = " << incX )
 
     if ( syncToken )
     {
@@ -202,7 +202,7 @@ IndexType OpenMPBLAS1::iamax( const IndexType n, const float* x, const IndexType
 template<>
 IndexType OpenMPBLAS1::iamax( const IndexType n, const double* x, const IndexType incX, SyncToken* syncToken )
 {
-    LAMA_LOG_DEBUG( logger, "iamax<double>, n = " << n << ", x = " << x << ", incX = " << incX );
+    LAMA_LOG_DEBUG( logger, "iamax<double>, n = " << n << ", x = " << x << ", incX = " << incX )
 
     if ( syncToken )
     {
@@ -225,7 +225,7 @@ IndexType OpenMPBLAS1::iamax( const IndexType n, const double* x, const IndexTyp
 template<>
 float OpenMPBLAS1::viamax( const IndexType n, const float* x, const IndexType incX, SyncToken* syncToken )
 {
-    LAMA_LOG_DEBUG( logger, "viamax<float>, n = " << n << ", x = " << x << ", incX = " << incX );
+    LAMA_LOG_DEBUG( logger, "viamax<float>, n = " << n << ", x = " << x << ", incX = " << incX )
 
     if ( syncToken )
     {
@@ -246,7 +246,7 @@ float OpenMPBLAS1::viamax( const IndexType n, const float* x, const IndexType in
 template<>
 double OpenMPBLAS1::viamax( const IndexType n, const double* x, const IndexType incX, SyncToken* syncToken )
 {
-    LAMA_LOG_DEBUG( logger, "viamax<double>, n = " << n << ", x = " << x << ", incX = " << incX );
+    LAMA_LOG_DEBUG( logger, "viamax<double>, n = " << n << ", x = " << x << ", incX = " << incX )
 
     if ( syncToken )
     {
@@ -276,7 +276,7 @@ void OpenMPBLAS1::swap(
     SyncToken* syncToken )
 {
     LAMA_LOG_DEBUG( logger,
-                    "iamax<float>, n = " << n << ", x = " << x << ", incX = " << incX << ", y = " << y << ", incY = " << incY );
+                    "iamax<float>, n = " << n << ", x = " << x << ", incX = " << incX << ", y = " << y << ", incY = " << incY )
 
     if ( syncToken )
     {
@@ -303,7 +303,7 @@ void OpenMPBLAS1::swap(
     SyncToken* syncToken )
 {
     LAMA_LOG_DEBUG( logger,
-                    "iamax<double>, n = " << n << ", x = " << x << ", incX = " << incX << ", y = " << y << ", incY = " << incY );
+                    "iamax<double>, n = " << n << ", x = " << x << ", incX = " << incX << ", y = " << y << ", incY = " << incY )
 
     if ( syncToken )
     {
@@ -332,7 +332,7 @@ void OpenMPBLAS1::copy(
     SyncToken* syncToken )
 {
     LAMA_LOG_DEBUG( logger,
-                    "copy<float>, n = " << n << ", x = " << x << ", incX = " << incX << ", y = " << y << ", incY = " << incY );
+                    "copy<float>, n = " << n << ", x = " << x << ", incX = " << incX << ", y = " << y << ", incY = " << incY )
 
     if ( syncToken )
     {
@@ -359,7 +359,7 @@ void OpenMPBLAS1::copy(
     SyncToken* syncToken )
 {
     LAMA_LOG_DEBUG( logger,
-                    "copy<double>, n = " << n << ", x = " << x << ", incX = " << incX << ", y = " << y << ", incY = " << incY );
+                    "copy<double>, n = " << n << ", x = " << x << ", incX = " << incX << ", y = " << y << ", incY = " << incY )
 
     if ( syncToken )
     {
@@ -389,7 +389,7 @@ void OpenMPBLAS1::axpy(
     SyncToken* syncToken )
 {
     LAMA_LOG_DEBUG( logger,
-                    "axpy<float>, n = " << n << ", alpha = " << alpha << ", x = " << x << ", incX = " << incX << ", y = " << y << ", incY = " << incY );
+                    "axpy<float>, n = " << n << ", alpha = " << alpha << ", x = " << x << ", incX = " << incX << ", y = " << y << ", incY = " << incY )
 
     if ( syncToken )
     {
@@ -417,7 +417,7 @@ void OpenMPBLAS1::axpy(
     SyncToken* syncToken )
 {
     LAMA_LOG_DEBUG( logger,
-                    "axpy<double>, n = " << n << ", alpha = " << alpha << ", x = " << x << ", incX = " << incX << ", y = " << y << ", incY = " << incY );
+                    "axpy<double>, n = " << n << ", alpha = " << alpha << ", x = " << x << ", incX = " << incX << ", y = " << y << ", incY = " << incY )
 
     if ( syncToken )
     {
@@ -446,7 +446,7 @@ float OpenMPBLAS1::dot(
     SyncToken* syncToken )
 {
     LAMA_LOG_DEBUG( logger,
-                    "dot<float>, n = " << n << ", x = " << x << ", incX = " << incX << ", y = " << y << ", incY = " << incY );
+                    "dot<float>, n = " << n << ", x = " << x << ", incX = " << incX << ", y = " << y << ", incY = " << incY )
 
     if ( syncToken )
     {
@@ -475,7 +475,7 @@ double OpenMPBLAS1::dot(
     SyncToken* syncToken )
 {
     LAMA_LOG_DEBUG( logger,
-                    "dot<double>, n = " << n << ", x = " << x << ", incX = " << incX << ", y = " << y << ", incY = " << incY );
+                    "dot<double>, n = " << n << ", x = " << x << ", incX = " << incX << ", y = " << y << ", incY = " << incY )
 
     if ( syncToken )
     {
@@ -500,7 +500,7 @@ template<typename T>
 void OpenMPBLAS1::sum( const IndexType n, T alpha, const T* x, T beta, const T* y, T* z, SyncToken* syncToken )
 {
     LAMA_LOG_DEBUG( logger,
-                    "sum<T>, n = " << n << ", alpha = " << alpha << ", x = " << x << ", beta = " << beta << ", y = " << y << ", z = " << z );
+                    "sum<T>, n = " << n << ", alpha = " << alpha << ", x = " << x << ", beta = " << beta << ", y = " << y << ", z = " << z )
 
     if ( syncToken )
     {
@@ -547,7 +547,7 @@ void OpenMPBLAS1::rot(
     SyncToken* syncToken )
 {
     LAMA_LOG_DEBUG( logger,
-                    "rot<float>, n = " << n << ", x = " << x << ", incX = " << incX << ", y = " << y << ", incY = " << incY << ", c = " << c << ", s = " << s );
+                    "rot<float>, n = " << n << ", x = " << x << ", incX = " << incX << ", y = " << y << ", incY = " << incY << ", c = " << c << ", s = " << s )
 
     if ( syncToken )
     {
@@ -577,7 +577,7 @@ void OpenMPBLAS1::rot(
     SyncToken* syncToken )
 {
     LAMA_LOG_DEBUG( logger,
-                    "rot<double>, n = " << n << ", x = " << x << ", incX = " << incX << ", y = " << y << ", incY = " << incY << ", c = " << c << ", s = " << s );
+                    "rot<double>, n = " << n << ", x = " << x << ", incX = " << incX << ", y = " << y << ", incY = " << incY << ", c = " << c << ", s = " << s )
 
     if ( syncToken )
     {
@@ -608,7 +608,7 @@ void OpenMPBLAS1::rotm(
     SyncToken* syncToken )
 {
     LAMA_LOG_DEBUG( logger,
-                    "rotm<float>, n = " << n << ", x = " << x << ", incX = " << incX << ", y = " << y << ", incY = " << incY << ", P = " << P );
+                    "rotm<float>, n = " << n << ", x = " << x << ", incX = " << incX << ", y = " << y << ", incY = " << incY << ", P = " << P )
 
     if ( syncToken )
     {
@@ -637,7 +637,7 @@ void OpenMPBLAS1::rotm(
     SyncToken* syncToken )
 {
     LAMA_LOG_DEBUG( logger,
-                    "rotm<double>, n = " << n << ", x = " << x << ", incX = " << incX << ", y = " << y << ", incY = " << incY << ", P = " << P );
+                    "rotm<double>, n = " << n << ", x = " << x << ", incX = " << incX << ", y = " << y << ", incY = " << incY << ", P = " << P )
 
     if ( syncToken )
     {
@@ -661,7 +661,7 @@ void OpenMPBLAS1::rotm(
 template<>
 void OpenMPBLAS1::rotg( float* a, float* b, float* c, float* s, SyncToken* syncToken )
 {
-    LAMA_LOG_DEBUG( logger, "rotg<float>, a = " << a << ", b = " << b << ", c = " << c << ", s = " << s );
+    LAMA_LOG_DEBUG( logger, "rotg<float>, a = " << a << ", b = " << b << ", c = " << c << ", s = " << s )
 
     if ( syncToken )
     {
@@ -675,7 +675,7 @@ void OpenMPBLAS1::rotg( float* a, float* b, float* c, float* s, SyncToken* syncT
 template<>
 void OpenMPBLAS1::rotg( double* a, double* b, double* c, double* s, SyncToken* syncToken )
 {
-    LAMA_LOG_DEBUG( logger, "rotg<double>, a = " << a << ", b = " << b << ", c = " << c << ", s = " << s );
+    LAMA_LOG_DEBUG( logger, "rotg<double>, a = " << a << ", b = " << b << ", c = " << c << ", s = " << s )
 
     if ( syncToken )
     {
@@ -692,7 +692,7 @@ template<>
 void OpenMPBLAS1::rotmg( float* d1, float* d2, float* b1, const float b2, float* p, SyncToken* syncToken )
 {
     LAMA_LOG_DEBUG( logger,
-                    "rotmg<float>, d1 = " << d1 << ", d2 = " << d2 << ", b1 = " << b1 << ", b2 = " << b2 << ", p = " << p );
+                    "rotmg<float>, d1 = " << d1 << ", d2 = " << d2 << ", b1 = " << b1 << ", b2 = " << b2 << ", p = " << p )
 
     if ( syncToken )
     {
@@ -706,7 +706,7 @@ template<>
 void OpenMPBLAS1::rotmg( double* d1, double* d2, double* b1, const double b2, double* p, SyncToken* syncToken )
 {
     LAMA_LOG_DEBUG( logger,
-                    "rotmg<double>, d1 = " << d1 << ", d2 = " << d2 << ", b1 = " << b1 << ", b2 = " << b2 << ", p = " << p );
+                    "rotmg<double>, d1 = " << d1 << ", d2 = " << d2 << ", b1 = " << b1 << ", b2 = " << b2 << ", p = " << p )
 
     if ( syncToken )
     {
@@ -723,7 +723,7 @@ void OpenMPBLAS1::rotmg( double* d1, double* d2, double* b1, const double b2, do
 template<typename T>
 void OpenMPBLAS1::ass( const IndexType n, const T value, T* x, SyncToken* syncToken )
 {
-    LAMA_LOG_DEBUG( logger, "ass<float>, n = " << n << ", value = " << value << ", x = " << x );
+    LAMA_LOG_DEBUG( logger, "ass<float>, n = " << n << ", value = " << value << ", x = " << x )
 
     if ( syncToken )
     {

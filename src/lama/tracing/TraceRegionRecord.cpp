@@ -48,7 +48,7 @@ namespace tracing
 
 /* -------------------------------------------------------------------------- */
 
-LAMA_LOG_DEF_LOGGER( TraceRegionRecord::logger, "TraceRegionRecord" );
+LAMA_LOG_DEF_LOGGER( TraceRegionRecord::logger, "TraceRegionRecord" )
 
 /* -------------------------------------------------------------------------- */
 
@@ -103,7 +103,7 @@ void TraceRegionRecord::start( const char* regionName, const char* file, int lno
     int regionId = regionTable->getRegion( regionName, file, lno );
 
     LAMA_LOG_DEBUG( logger,
-                    "Thread " << regionTable->getId() << ": enters region " << regionName << ", timer = " << regionId );
+                    "Thread " << regionTable->getId() << ": enters region " << regionName << ", timer = " << regionId )
 
     if ( traceConfig->isTimeTraceEnabled() )
     {
@@ -140,7 +140,7 @@ void TraceRegionRecord::stop( const char* regionName )
 
     double stopTime = getWallTime();
 
-    LAMA_LOG_DEBUG( logger, "Thread " << regionTable->getId() << ": leaves region " << regionName );
+    LAMA_LOG_DEBUG( logger, "Thread " << regionTable->getId() << ": leaves region " << regionName )
 
     if ( traceConfig->isTimeTraceEnabled() )
     {
@@ -169,7 +169,7 @@ void TraceRegionRecord::enter( const char* regionName, const char* file, int lno
     mRegionId = mRegionTable->getRegion( regionName, file, lno );
 
     LAMA_LOG_DEBUG( logger,
-                    "Thread " << mRegionTable->getId() << ": enters region " << regionName << ", timer = " << mRegionId );
+                    "Thread " << mRegionTable->getId() << ": enters region " << regionName << ", timer = " << mRegionId )
 
     mTimeTrace = mTraceConfig->isTimeTraceEnabled();
 
@@ -238,7 +238,7 @@ TraceRegionRecord::~TraceRegionRecord()
     double stopTime = getWallTime();
 
     LAMA_LOG_DEBUG( logger,
-                    "Thread " << mRegionTable->getId() << ": leaves region " << mRegionTable->getRegion( mRegionId ).getRegionName() << ", timer = " << mRegionId );
+                    "Thread " << mRegionTable->getId() << ": leaves region " << mRegionTable->getRegion( mRegionId ).getRegionName() << ", timer = " << mRegionId )
 
     if ( mTimeTrace )
     {
@@ -259,7 +259,7 @@ double TraceRegionRecord::spentLast( const char* name )
 
     if ( !regionTable )
     {
-        LAMA_LOG_WARN( logger, "spentLast " << name << ": trace is disabled" );
+        LAMA_LOG_WARN( logger, "spentLast " << name << ": trace is disabled" )
     }
 
     int regionId = regionTable->getRegion( name, NULL, 0 );
@@ -268,7 +268,7 @@ double TraceRegionRecord::spentLast( const char* name )
 
     double lastTime = region.getLastTime();
 
-    LAMA_LOG_DEBUG( logger, "Spent time for last call of " << region.getRegionName() << " : " << lastTime );
+    LAMA_LOG_DEBUG( logger, "Spent time for last call of " << region.getRegionName() << " : " << lastTime )
     return lastTime;
 }
 

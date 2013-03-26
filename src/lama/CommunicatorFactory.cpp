@@ -58,7 +58,7 @@ class Communicator;
 
 /* ---- Static variables of CommunicatorFactory  ----------------------------------- */
 
-LAMA_LOG_DEF_LOGGER( CommunicatorFactory::logger, "CommunicatorFactory" );
+LAMA_LOG_DEF_LOGGER( CommunicatorFactory::logger, "CommunicatorFactory" )
 
 CommunicatorFactory& CommunicatorFactory::getFactory()
 {
@@ -82,7 +82,7 @@ CommunicatorFactory& CommunicatorFactory::getFactory()
 
 CommunicatorPtr CommunicatorFactory::get( const std::string& type, int& argc, char** & argv )
 {
-    LAMA_LOG_TRACE( logger, "Get communicator of type " << type );
+    LAMA_LOG_TRACE( logger, "Get communicator of type " << type )
 
     const CommunicatorFactory& factory = getFactory();
 
@@ -95,7 +95,7 @@ CommunicatorPtr CommunicatorFactory::get( const std::string& type, int& argc, ch
 
     const std::string& defaultType = factory.getDefaultCommunicatorType();
 
-    LAMA_LOG_WARN( logger, "Communicator for " << type << " not supported, will use " << defaultType );
+    LAMA_LOG_WARN( logger, "Communicator for " << type << " not supported, will use " << defaultType )
 
     // try to get a default communicator
 
@@ -106,7 +106,7 @@ CommunicatorPtr CommunicatorFactory::get( const std::string& type, int& argc, ch
         return id->second->getCommunicator( argc, argv );
     }
 
-    LAMA_THROWEXCEPTION( "Communicator for " << type << " not supported, no manager registered" );
+    LAMA_THROWEXCEPTION( "Communicator for " << type << " not supported, no manager registered" )
 }
 
 CommunicatorPtr CommunicatorFactory::get( const std::string& type )
@@ -145,7 +145,7 @@ const std::string& CommunicatorFactory::getDefaultCommunicatorType() const
 boost::shared_ptr<CommunicatorManager> CommunicatorFactory::getCommunicatorManager( const std::string& type )
 {
     LAMA_ASSERT( mCommunicatorToManagerMap.find( type ) != mCommunicatorToManagerMap.end(),
-                 "Communicator for " << type << " not supported, no manager registered" );
+                 "Communicator for " << type << " not supported, no manager registered" )
     return mCommunicatorToManagerMap[type];
 }
 
@@ -155,14 +155,14 @@ void CommunicatorFactory::setDefaultCommunicatorType( const std::string& default
     {
         mDefaultCommunicatorType = defaultType;
 
-        LAMA_LOG_INFO( logger, "set default communicator: " << mDefaultCommunicatorType );
+        LAMA_LOG_INFO( logger, "set default communicator: " << mDefaultCommunicatorType )
     }
     else
     {
         setDefaultCommunicatorType();
 
         LAMA_LOG_WARN( logger,
-                       "default communicator " << defaultType << " not available, will be " << mDefaultCommunicatorType );
+                       "default communicator " << defaultType << " not available, will be " << mDefaultCommunicatorType )
     }
 }
 
@@ -178,7 +178,7 @@ void CommunicatorFactory::setDefaultCommunicatorType() const
     }
     else
     {
-        LAMA_THROWEXCEPTION( "No default communicator available" );
+        LAMA_THROWEXCEPTION( "No default communicator available" )
     }
 }
 
@@ -201,7 +201,7 @@ CommunicatorFactory::CommunicatorFactory()
 
 CommunicatorFactory::~CommunicatorFactory()
 {
-    LAMA_LOG_INFO( logger, "~CommunicatorFactory" );
+    LAMA_LOG_INFO( logger, "~CommunicatorFactory" )
 }
 
 /* ---- CommunicatorFactory methods  ----------------------------------------------- */
@@ -218,7 +218,7 @@ void CommunicatorFactory::addCommunicatorManager(
     {
         // CommunicatorManager might be replaced, e.g. for Host context (DefaultHost or CUDAHost)
 
-        LAMA_LOG_INFO( logger, "Communicator manager replaced for communicator type " << type );
+        LAMA_LOG_INFO( logger, "Communicator manager replaced for communicator type " << type )
     }
 
     mCommunicatorToManagerMap[type] = commManager; // ownership of pointer is taken over

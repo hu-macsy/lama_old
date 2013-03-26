@@ -59,15 +59,15 @@ namespace lama
  * WriteAccess enforces the consistency of the template LAMAArray by following the RAII Idiom. This is
  * done by acquiring a write lock on a LAMAArray in the constructor and releasing this write lock in
  * the destructor. There for a WriteAccess should be only used as a stack object.
+ *
+ * @tparam T is the value type stored in the wrapped container.
  */
 template<typename T>
 class LAMA_DLL_IMPORTEXPORT WriteAccess: public BaseAccess
 {
 public:
-    /**
-     * @brief ValueType is the type stored in the wrapped container.
-     */
-    typedef T ValueType;
+
+	typedef T ValueType; //!< This is the type stored in the wrapped container.
 
     /**
      * @brief acquire a WriteAccess to the passed LAMAArray for the passed location
@@ -217,16 +217,15 @@ protected:
  *
  * A WriteOnlyAccess should be used whenever possible. It avoids any memory transfer of no more
  * needed values between devices and in case of a reallocation it avoids copying of old values.
+ *
+ * @tparam T is the value type stored in the wrapped container.
  */
 template<typename T>
 class LAMA_DLL_IMPORTEXPORT WriteOnlyAccess: public WriteAccess<T>
 {
 public:
 
-    /**
-     * @brief ValueType is the type stored in the wrapped container.
-     */
-    typedef T ValueType;
+    typedef T ValueType; //!< This is the type stored in the wrapped container.
 
     /** Create a write access with keep flag = false. */
 
@@ -257,7 +256,7 @@ public:
 
     ~WriteOnlyAccess()
     {
-        LAMA_LOG_TRACE( WriteAccess<T>::logger, "~WriteOnlyAccess" );
+        LAMA_LOG_TRACE( WriteAccess<T>::logger, "~WriteOnlyAccess" )
     }
 };
 
@@ -270,7 +269,7 @@ inline IndexType WriteAccess<T>::size() const
     }
     else
     {
-        LAMA_THROWEXCEPTION( "cannot call size on released array" );
+        LAMA_THROWEXCEPTION( "cannot call size on released array" )
     }
 }
 

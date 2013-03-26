@@ -48,14 +48,14 @@ namespace lama
 
 /* ------  Static class variables --------------------------------------- */
 
-LAMA_LOG_DEF_LOGGER( Distribution::logger, "Distribution" );
+LAMA_LOG_DEF_LOGGER( Distribution::logger, "Distribution" )
 
 /* ------  Constructor  ------------------------------------------------- */
 
 Distribution::Distribution( const IndexType globalSize )
     : mGlobalSize( globalSize ), mCommunicator( CommunicatorFactory::get( "none" ) )
 {
-    LAMA_LOG_INFO( logger, "Distribution(" << mGlobalSize << ") onto NoCommunicator" );
+    LAMA_LOG_INFO( logger, "Distribution(" << mGlobalSize << ") onto NoCommunicator" )
 }
 
 /* ------  Constructor  ------------------------------------------------- */
@@ -65,17 +65,17 @@ Distribution::Distribution( const IndexType globalSize, const CommunicatorPtr co
 {
     if ( !mCommunicator )
     {
-        LAMA_THROWEXCEPTION( "Distribution without a Communicator is not allowed" );
+        LAMA_THROWEXCEPTION( "Distribution without a Communicator is not allowed" )
     }
 
-    LAMA_LOG_INFO( logger, "Distribution( size = " << globalSize << ", comm = " << *mCommunicator << " )" );
+    LAMA_LOG_INFO( logger, "Distribution( size = " << globalSize << ", comm = " << *mCommunicator << " )" )
 }
 
 /* -------  Destructor  ------------------------------------------------- */
 
 Distribution::~Distribution()
 {
-    LAMA_LOG_INFO( logger, "~Distribution, global size " << mGlobalSize << ", communicator = " << mCommunicator );
+    LAMA_LOG_INFO( logger, "~Distribution, global size " << mGlobalSize << ", communicator = " << mCommunicator )
 }
 
 /* ---------------------------------------------------------------------- */
@@ -83,23 +83,23 @@ Distribution::~Distribution()
 bool Distribution::operator==( const Distribution& other ) const
 {
     // two distributions are the same if they are both replicated
-    LAMA_LOG_TRACE( logger, "check " << *this << " == " << other );
+    LAMA_LOG_TRACE( logger, "check " << *this << " == " << other )
     bool isSame = false;
 
     if ( this == &other )
     {
         isSame = true;
-        LAMA_LOG_DEBUG( logger, *this << " == " << other << ": pointer equal" );
+        LAMA_LOG_DEBUG( logger, *this << " == " << other << ": pointer equal" )
     }
     else if ( isReplicated() && other.isReplicated() )
     {
         isSame = getGlobalSize() == other.getGlobalSize();
-        LAMA_LOG_DEBUG( logger, *this << " == " << other << ": both are replicated, same size" );
+        LAMA_LOG_DEBUG( logger, *this << " == " << other << ": both are replicated, same size" )
     }
     else
     {
         isSame = isEqual( other );
-        LAMA_LOG_DEBUG( logger, *this << " == " << other << ": " << isSame );
+        LAMA_LOG_DEBUG( logger, *this << " == " << other << ": " << isSame )
     }
 
     return isSame;
@@ -131,7 +131,7 @@ CommunicatorPtr Distribution::getCommunicatorPtr() const
 PartitionId Distribution::getNumPartitions() const
 {
     // mCommunicator is never NULL, but just in case
-    LAMA_ASSERT( mCommunicator, "Distribution without a Communicator is not allowed" );
+    LAMA_ASSERT( mCommunicator, "Distribution without a Communicator is not allowed" )
     return mCommunicator->getSize();
 }
 
@@ -149,7 +149,7 @@ void Distribution::computeOwners(
     const std::vector<IndexType>& requiredIndexes,
     std::vector<PartitionId>& owners ) const
 {
-    LAMA_LOG_INFO( logger, "compute owners via communicator (default)" );
+    LAMA_LOG_INFO( logger, "compute owners via communicator (default)" )
     // use communicator to compute ownership on each processor
     mCommunicator->computeOwners( requiredIndexes, *this, owners );
 }
@@ -171,7 +171,7 @@ void Distribution::replicate( T1* allValues, const T2* localValues ) const
     IndexType currentSize = getLocalSize();
     // Implemenation via cyclic shifting of the vector data and distribution
     IndexType maxLocalSize = comm.max( currentSize );
-    LAMA_LOG_DEBUG( logger, comm << ": local size = " << currentSize << ", maximal local size  = " << maxLocalSize );
+    LAMA_LOG_DEBUG( logger, comm << ": local size = " << currentSize << ", maximal local size  = " << maxLocalSize )
     // Only allocate the needed size of the Arrays
     boost::scoped_array<T1> valuesSend( new T1[maxLocalSize] );
     boost::scoped_array<T1> valuesReceive( new T1[maxLocalSize] );
@@ -199,7 +199,7 @@ void Distribution::replicate( T1* allValues, const T2* localValues ) const
         newSize1 = comm.shift( indexesReceive.get(), maxLocalSize, indexesSend.get(), currentSize, 1 );
         IndexType newSize2 = -1;
         newSize2 = comm.shift( valuesReceive.get(), maxLocalSize, valuesSend.get(), currentSize, 1 );
-        LAMA_ASSERT_EQUAL_DEBUG( newSize1, newSize2 );
+        LAMA_ASSERT_EQUAL_DEBUG( newSize1, newSize2 )
         currentSize = newSize1;
 
         // sort in the received values
@@ -216,7 +216,7 @@ void Distribution::replicate( T1* allValues, const T2* localValues ) const
     }
 
     // # globalSize values must have been counted
-    LAMA_ASSERT_EQUAL_DEBUG( countValues, getGlobalSize() );
+    LAMA_ASSERT_EQUAL_DEBUG( countValues, getGlobalSize() )
 }
 
 /* ---------------------------------------------------------------------- */
@@ -228,7 +228,7 @@ void Distribution::replicateN( T1* allValues, const T2* localValues, const Index
     IndexType currentSize = getLocalSize();
     // Implemenation via cyclic shifting of the vector data and distribution
     IndexType maxLocalSize = comm.max( currentSize );
-    LAMA_LOG_DEBUG( logger, comm << ": local size = " << currentSize << ", maximal local size  = " << maxLocalSize );
+    LAMA_LOG_DEBUG( logger, comm << ": local size = " << currentSize << ", maximal local size  = " << maxLocalSize )
     // Only allocate the needed size of the Arrays
     boost::scoped_array<T1> valuesSend( new T1[maxLocalSize * n] );
     boost::scoped_array<T1> valuesReceive( new T1[maxLocalSize * n] );
@@ -260,7 +260,7 @@ void Distribution::replicateN( T1* allValues, const T2* localValues, const Index
         newSize1 = comm.shift( indexesReceive.get(), maxLocalSize, indexesSend.get(), currentSize, 1 );
         IndexType newSize2 = -1;
         newSize2 = comm.shift( valuesReceive.get(), n * maxLocalSize, valuesSend.get(), n * currentSize, 1 );
-        LAMA_ASSERT_EQUAL_DEBUG( newSize1 * n, newSize2 );
+        LAMA_ASSERT_EQUAL_DEBUG( newSize1 * n, newSize2 )
         currentSize = newSize1;
 
         // sort in the received values
@@ -281,7 +281,7 @@ void Distribution::replicateN( T1* allValues, const T2* localValues, const Index
     }
 
     // # globalSize values must have been counted
-    LAMA_ASSERT_EQUAL_DEBUG( countLines, getGlobalSize() );
+    LAMA_ASSERT_EQUAL_DEBUG( countLines, getGlobalSize() )
 }
 
 /* ---------------------------------------------------------------------- */
@@ -342,11 +342,11 @@ void Distribution::replicateRagged( T* allValues, const T* localValues, const In
     // fill my local values in all values
     IndexType currentDataSize = fillGlobal( allValues, allOffsets, indexesSend.get(), currentElemSize, localValues );
     LAMA_LOG_DEBUG( logger,
-                    comm << ": filled my local data: " << currentElemSize << " buckets with " << currentDataSize << " values" );
+                    comm << ": filled my local data: " << currentElemSize << " buckets with " << currentDataSize << " values" )
     // get maximal size of data values and allocate send buffer
     IndexType maxLocalDataSize = comm.max( currentDataSize );
     // Implemenation via cyclic shifting of the vector data and distribution
-    LAMA_LOG_DEBUG( logger, "maximal data size for exchange = " << maxLocalDataSize );
+    LAMA_LOG_DEBUG( logger, "maximal data size for exchange = " << maxLocalDataSize )
     boost::scoped_array<T> valuesSend( new T[maxLocalDataSize] );
     boost::scoped_array<T> valuesReceive( new T[maxLocalDataSize] );
 
@@ -374,8 +374,8 @@ void Distribution::replicateRagged( T* allValues, const T* localValues, const In
         IndexType size = -1;
         size = fillGlobal( allValues, allOffsets, indexesReceive.get(), newSize1, valuesReceive.get() );
         LAMA_LOG_DEBUG( logger,
-                        comm << ": filled received data: " << newSize1 << " buckets with " << size << " values" );
-        LAMA_ASSERT_EQUAL_DEBUG( size, newSize2 );
+                        comm << ": filled received data: " << newSize1 << " buckets with " << size << " values" )
+        LAMA_ASSERT_EQUAL_DEBUG( size, newSize2 )
         currentElemSize = newSize1;
         currentDataSize = newSize2;
         countElemValues += currentElemSize;
@@ -386,8 +386,8 @@ void Distribution::replicateRagged( T* allValues, const T* localValues, const In
     }
 
     // verify that all values are available
-    LAMA_ASSERT_EQUAL_DEBUG( countElemValues, getGlobalSize() );
-    LAMA_ASSERT_EQUAL_DEBUG( countDataValues, allOffsets[getGlobalSize()] );
+    LAMA_ASSERT_EQUAL_DEBUG( countElemValues, getGlobalSize() )
+    LAMA_ASSERT_EQUAL_DEBUG( countDataValues, allOffsets[getGlobalSize()] )
 }
 
 /* ---------------------------------------------------------------------- */

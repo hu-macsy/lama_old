@@ -58,7 +58,7 @@ class Distribution;
 
 /* ---- Static variables of DistributionFactory  ----------------------------------- */
 
-LAMA_LOG_DEF_LOGGER( DistributionFactory::logger, "DistributionFactory" );
+LAMA_LOG_DEF_LOGGER( DistributionFactory::logger, "DistributionFactory" )
 
 DistributionFactory& DistributionFactory::getFactory()
 {
@@ -83,7 +83,7 @@ DistributionPtr DistributionFactory::get(
     const std::string& type,
     const std::vector<int>& arguments )
 {
-    LAMA_LOG_DEBUG( logger, "Get distribution of type " << type );
+    LAMA_LOG_DEBUG( logger, "Get distribution of type " << type )
 
     const DistributionFactory& factory = getFactory();
 
@@ -96,7 +96,7 @@ DistributionPtr DistributionFactory::get(
 
     const std::string& defaultType = factory.getDefaultDistributionType();
 
-    LAMA_LOG_WARN( logger, "Distribution for " << type << " not supported, will use " << defaultType );
+    LAMA_LOG_WARN( logger, "Distribution for " << type << " not supported, will use " << defaultType )
 
     // try to get a default communicator
 
@@ -107,7 +107,7 @@ DistributionPtr DistributionFactory::get(
         return id->second->getDistribution( size, arguments );
     }
 
-    LAMA_THROWEXCEPTION( "Distribution for " << type << " not supported, no manager registered" );
+    LAMA_THROWEXCEPTION( "Distribution for " << type << " not supported, no manager registered" )
 }
 
 DistributionPtr DistributionFactory::get( const IndexType size )
@@ -195,7 +195,7 @@ const std::string& DistributionFactory::getDefaultDistributionType() const
 boost::shared_ptr<DistributionManager> DistributionFactory::getDistributionManager( const std::string& type )
 {
     LAMA_ASSERT( mDistributionToManagerMap.find( type ) != mDistributionToManagerMap.end(),
-                 "Distribution for " << type << " not supported, no manager registered" );
+                 "Distribution for " << type << " not supported, no manager registered" )
     return mDistributionToManagerMap[type];
 }
 
@@ -205,14 +205,14 @@ void DistributionFactory::setDefaultDistributionType( const std::string& default
     {
         mDefaultDistributionType = defaultType;
 
-        LAMA_LOG_INFO( logger, "set default communicator: " << mDefaultDistributionType );
+        LAMA_LOG_INFO( logger, "set default communicator: " << mDefaultDistributionType )
     }
     else
     {
         setDefaultDistributionType( "NO" );
 
         LAMA_LOG_WARN( logger,
-                       "default distribution " << defaultType << " not available, will be " << mDefaultDistributionType );
+                       "default distribution " << defaultType << " not available, will be " << mDefaultDistributionType )
     }
 }
 
@@ -236,7 +236,7 @@ DistributionFactory::DistributionFactory()
 
 DistributionFactory::~DistributionFactory()
 {
-    LAMA_LOG_INFO( logger, "~DistributionFactory" );
+    LAMA_LOG_INFO( logger, "~DistributionFactory" )
 }
 
 /* ---- DistributionFactory methods  ----------------------------------------------- */
@@ -253,7 +253,7 @@ void DistributionFactory::addDistributionManager(
     {
         // DistributionManager might be replaced, e.g. for Host context (DefaultHost or CUDAHost)
 
-        LAMA_LOG_INFO( logger, "Distribution manager replaced for communicator type " << type );
+        LAMA_LOG_INFO( logger, "Distribution manager replaced for communicator type " << type )
     }
 
     mDistributionToManagerMap[type] = commManager; // ownership of pointer is taken over

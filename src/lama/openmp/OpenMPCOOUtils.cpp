@@ -44,7 +44,7 @@ namespace lama
 
 /* --------------------------------------------------------------------------- */
 
-LAMA_LOG_DEF_LOGGER( OpenMPCOOUtils::logger, "OpenMP.COOUtils" );
+LAMA_LOG_DEF_LOGGER( OpenMPCOOUtils::logger, "OpenMP.COOUtils" )
 
 /* --------------------------------------------------------------------------- */
 /*     Template implementations                                                */
@@ -56,7 +56,7 @@ void OpenMPCOOUtils::getCSRSizes(
     const IndexType numValues,
     const IndexType cooIA[] )
 {
-    LAMA_LOG_INFO( logger, "get CSR sizes, #rows = " << numRows << ", #values = " << numValues );
+    LAMA_LOG_INFO( logger, "get CSR sizes, #rows = " << numRows << ", #values = " << numValues )
 
     // initialize size array for each row
 
@@ -70,7 +70,7 @@ void OpenMPCOOUtils::getCSRSizes(
     for ( IndexType k = 0; k < numValues; k++ )
     {
         IndexType i = cooIA[k];
-        LAMA_ASSERT_DEBUG( i < numRows, "cooIA[" << k << "] = " << i << " out of range, #rows = " << numRows );
+        LAMA_ASSERT_DEBUG( i < numRows, "cooIA[" << k << "] = " << i << " out of range, #rows = " << numRows )
         csrSizes[i]++;
     }
 }
@@ -86,7 +86,7 @@ void OpenMPCOOUtils::getCSRValues( IndexType csrJA[], CSRValueType csrValues[], 
                                    const COOValueType cooValues[] )
 {
     LAMA_LOG_INFO( logger,
-                   "get CSRValues<" << typeid( COOValueType ).name() << ", " << typeid( CSRValueType ).name() << ">" << ", #rows = " << numRows << ", #values = " << numValues );
+                   "get CSRValues<" << typeid( COOValueType ).name() << ", " << typeid( CSRValueType ).name() << ">" << ", #rows = " << numRows << ", #values = " << numValues )
 
     // traverse the non-zero values and put data at the right places
 
@@ -99,7 +99,7 @@ void OpenMPCOOUtils::getCSRValues( IndexType csrJA[], CSRValueType csrValues[], 
         csrJA[offset] = cooJA[k];
         csrValues[offset] = static_cast<CSRValueType>( cooValues[k] );
 
-        LAMA_LOG_DEBUG( logger, "row " << i << ": new offset = " << offset );
+        LAMA_LOG_DEBUG( logger, "row " << i << ": new offset = " << offset )
 
         offset++;
     }
@@ -113,7 +113,7 @@ void OpenMPCOOUtils::getCSRValues( IndexType csrJA[], CSRValueType csrValues[], 
 
     csrIA[0] = 0;
 
-    LAMA_ASSERT_EQUAL_DEBUG( csrIA[numRows], numValues );
+    LAMA_ASSERT_EQUAL_DEBUG( csrIA[numRows], numValues )
 }
 
 /* --------------------------------------------------------------------------- */
@@ -131,11 +131,11 @@ void OpenMPCOOUtils::setCSRValues(
     const bool csrDiagonalProperty )
 {
     LAMA_LOG_INFO( logger,
-                   "set CSRValues<" << typeid( COOValueType ).name() << ", " << typeid( CSRValueType ).name() << ">" << ", #rows = " << numRows << ", #values = " << csrIA[numRows] );
+                   "set CSRValues<" << typeid( COOValueType ).name() << ", " << typeid( CSRValueType ).name() << ">" << ", #rows = " << numRows << ", #values = " << csrIA[numRows] )
 
     if ( numDiagonals == 0 || csrDiagonalProperty )
     {
-        LAMA_LOG_INFO( logger, "parallel fill in possible, #diagonal elements = " << numDiagonals );
+        LAMA_LOG_INFO( logger, "parallel fill in possible, #diagonal elements = " << numDiagonals )
 
         // parallel execution only possible if we have no separate diagonal elements
         // or if CSR data has diagonal property
@@ -151,8 +151,8 @@ void OpenMPCOOUtils::setCSRValues(
                 // csr data must have the diagonal property, should have been checked before
 
                 LAMA_ASSERT_DEBUG( csrOffset < csrIA[i+1],
-                                   "diagonal property requires at least one entry in row " << i );
-                LAMA_ASSERT_EQUAL_DEBUG( csrJA[csrOffset], i );
+                                   "diagonal property requires at least one entry in row " << i )
+                LAMA_ASSERT_EQUAL_DEBUG( csrJA[csrOffset], i )
 
                 // diagonal elements will be the first nrows entries
 
@@ -187,7 +187,7 @@ void OpenMPCOOUtils::setCSRValues(
             cooValues[i] = 0.0;
         }
 
-        LAMA_LOG_INFO( logger, "serial fill in, #diagonal elements = " << numDiagonals );
+        LAMA_LOG_INFO( logger, "serial fill in, #diagonal elements = " << numDiagonals )
 
         // only serial fill-in possible as we do not now how many diagonal elements are available
 
@@ -233,11 +233,11 @@ void OpenMPCOOUtils::normalGEMV(
     const IndexType numValues,
     SyncToken* syncToken )
 {
-    LAMA_LOG_INFO( logger, "normalGEMV<" << typeid(ValueType).name() << ">, n = " << numRows );
+    LAMA_LOG_INFO( logger, "normalGEMV<" << typeid(ValueType).name() << ">, n = " << numRows )
 
     if ( syncToken )
     {
-        LAMA_THROWEXCEPTION( "asynchronous execution not supported here, do it by a task" );
+        LAMA_THROWEXCEPTION( "asynchronous execution not supported here, do it by a task" )
     }
 
     if ( beta == 0.0 )
@@ -269,7 +269,7 @@ void OpenMPCOOUtils::normalGEMV(
 
     #pragma omp parallel
     {
-        LAMA_REGION( "OpenMP.COO.normalGEMV" );
+        LAMA_REGION( "OpenMP.COO.normalGEMV" )
 
         #pragma omp for
         for ( IndexType k = 0; k < numValues; ++k )
@@ -303,11 +303,11 @@ void OpenMPCOOUtils::jacobi(
     class SyncToken* syncToken )
 {
     LAMA_LOG_INFO( logger,
-                   "jacobi<" << typeid(ValueType).name() << ">" << ", #rows = " << numRows << ", omega = " << omega );
+                   "jacobi<" << typeid(ValueType).name() << ">" << ", #rows = " << numRows << ", omega = " << omega )
 
     if ( syncToken )
     {
-        LAMA_THROWEXCEPTION( "asynchronous execution should be done by LAMATask before" );
+        LAMA_THROWEXCEPTION( "asynchronous execution should be done by LAMATask before" )
     }
 
     // solution = omega * ( rhs - B * oldSolution ) * dinv + ( 1 - omega * oldSolution
@@ -325,7 +325,7 @@ void OpenMPCOOUtils::jacobi(
 
     #pragma omp parallel
     {
-        LAMA_REGION( "OpenMP.COO.jacobi" );
+        LAMA_REGION( "OpenMP.COO.jacobi" )
 
         #pragma omp for
         for ( IndexType k = numRows; k < cooNumValues; ++k )
@@ -349,23 +349,23 @@ void OpenMPCOOUtils::jacobi(
 
 void OpenMPCOOUtils::setInterface( COOUtilsInterface& COOUtils )
 {
-    LAMA_INTERFACE_REGISTER( COOUtils, getCSRSizes );
+    LAMA_INTERFACE_REGISTER( COOUtils, getCSRSizes )
 
-    LAMA_INTERFACE_REGISTER_TT( COOUtils, setCSRValues, float, float );
-    LAMA_INTERFACE_REGISTER_TT( COOUtils, setCSRValues, float, double );
-    LAMA_INTERFACE_REGISTER_TT( COOUtils, setCSRValues, double, float );
-    LAMA_INTERFACE_REGISTER_TT( COOUtils, setCSRValues, double, double );
+    LAMA_INTERFACE_REGISTER_TT( COOUtils, setCSRValues, float, float )
+    LAMA_INTERFACE_REGISTER_TT( COOUtils, setCSRValues, float, double )
+    LAMA_INTERFACE_REGISTER_TT( COOUtils, setCSRValues, double, float )
+    LAMA_INTERFACE_REGISTER_TT( COOUtils, setCSRValues, double, double )
 
-    LAMA_INTERFACE_REGISTER_TT( COOUtils, getCSRValues, float, float );
-    LAMA_INTERFACE_REGISTER_TT( COOUtils, getCSRValues, float, double );
-    LAMA_INTERFACE_REGISTER_TT( COOUtils, getCSRValues, double, float );
-    LAMA_INTERFACE_REGISTER_TT( COOUtils, getCSRValues, double, double );
+    LAMA_INTERFACE_REGISTER_TT( COOUtils, getCSRValues, float, float )
+    LAMA_INTERFACE_REGISTER_TT( COOUtils, getCSRValues, float, double )
+    LAMA_INTERFACE_REGISTER_TT( COOUtils, getCSRValues, double, float )
+    LAMA_INTERFACE_REGISTER_TT( COOUtils, getCSRValues, double, double )
 
-    LAMA_INTERFACE_REGISTER_T( COOUtils, normalGEMV, float );
-    LAMA_INTERFACE_REGISTER_T( COOUtils, normalGEMV, double );
+    LAMA_INTERFACE_REGISTER_T( COOUtils, normalGEMV, float )
+    LAMA_INTERFACE_REGISTER_T( COOUtils, normalGEMV, double )
 
-    LAMA_INTERFACE_REGISTER_T( COOUtils, jacobi, float );
-    LAMA_INTERFACE_REGISTER_T( COOUtils, jacobi, double );
+    LAMA_INTERFACE_REGISTER_T( COOUtils, jacobi, float )
+    LAMA_INTERFACE_REGISTER_T( COOUtils, jacobi, double )
 }
 
 } // namespace lama

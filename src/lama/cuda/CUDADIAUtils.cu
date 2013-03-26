@@ -46,7 +46,7 @@
 namespace lama
 {
 
-LAMA_LOG_DEF_LOGGER( CUDADIAUtils::logger, "CUDA.DIAUtils" );
+LAMA_LOG_DEF_LOGGER( CUDADIAUtils::logger, "CUDA.DIAUtils" )
 
 /* --------------------------------------------------------------------------- */
 
@@ -144,10 +144,10 @@ void CUDADIAUtils::normalGEMV(
 
 void CUDADIAUtils::setInterface( DIAUtilsInterface& DIAUtils )
 {
-    LAMA_LOG_INFO( logger, "set DIA routines for CUDA in Interface" );
+    LAMA_LOG_INFO( logger, "set DIA routines for CUDA in Interface" )
 
-    LAMA_INTERFACE_REGISTER_T( DIAUtils, normalGEMV, float );
-    LAMA_INTERFACE_REGISTER_T( DIAUtils, normalGEMV, double );
+    LAMA_INTERFACE_REGISTER_T( DIAUtils, normalGEMV, float )
+    LAMA_INTERFACE_REGISTER_T( DIAUtils, normalGEMV, double )
 }
 
 } // namespace lama

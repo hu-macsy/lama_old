@@ -56,12 +56,11 @@ namespace lama
  *  On the other hand, the arrays must be filled up completely with
  *  values. For ja the value nIndex is used, for data the value 0.0.
  *
- *  @tparam T is the value type for the matrix elements.
+ *  @tparam T is the value type of the matrix values.
  *
  *  Note: default copy constructor and assignment operator are enabled.
  *  Copies of LAMAArray will be deep copies.
  */
-
 template<typename T>
 class LAMA_DLL_IMPORTEXPORT ELLStorage: public CRTPMatrixStorage<ELLStorage<T>,T>
 {
@@ -400,7 +399,7 @@ private:
 
     void buildRowIndexes( const ContextPtr loc );
 
-    LAMA_LOG_DECL_STATIC_LOGGER( logger ); //!< logger for this matrix format
+    LAMA_LOG_DECL_STATIC_LOGGER( logger ) //!< logger for this matrix format
 
     /** Matrix times Matrix for ELL only */
     void matrixTimesMatrixELL( const ValueType alpha,

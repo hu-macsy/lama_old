@@ -44,24 +44,24 @@
 namespace lama
 {
 
-LAMA_LOG_DEF_LOGGER( SyncToken::logger, "SyncToken" );
+LAMA_LOG_DEF_LOGGER( SyncToken::logger, "SyncToken" )
 
 SyncToken::SyncToken()
     : mSynchronized( false )
 {
-    LAMA_LOG_DEBUG( logger, "SyncToken constructed" );
+    LAMA_LOG_DEBUG( logger, "SyncToken constructed" )
 }
 
 SyncToken::~SyncToken()
 {
-    LAMA_LOG_DEBUG( logger, "~SyncToken" );
+    LAMA_LOG_DEBUG( logger, "~SyncToken" )
 
     if ( !mSynchronized )
     {
-        LAMA_LOG_WARN( logger, "no synchronization called on SyncToken" );
+        LAMA_LOG_WARN( logger, "no synchronization called on SyncToken" )
     }
 
-    LAMA_LOG_DEBUG( logger, "still delete " << mAccesses.size() << " accesses and " << mArrays.size() << " arrays" );
+    LAMA_LOG_DEBUG( logger, "still delete " << mAccesses.size() << " accesses and " << mArrays.size() << " arrays" )
 
     while ( !mAccesses.empty() )
     {
@@ -90,11 +90,11 @@ void SyncToken::writeAt( std::ostream& stream ) const
 
 void SyncToken::pushAccess( std::auto_ptr<BaseAccess> access )
 {
-    LAMA_ASSERT_ERROR( access.get(), "NULL access cannot be pushed for synchronization." );
+    LAMA_ASSERT_ERROR( access.get(), "NULL access cannot be pushed for synchronization." )
 
     if ( mSynchronized )
     {
-        LAMA_LOG_DEBUG( logger, *this << ": push access not done, already synchronized" );
+        LAMA_LOG_DEBUG( logger, *this << ": push access not done, already synchronized" )
 
         // delete the access, do not push it anymore
 
@@ -102,7 +102,7 @@ void SyncToken::pushAccess( std::auto_ptr<BaseAccess> access )
     }
     else
     {
-        LAMA_LOG_DEBUG( logger, *this << ": push access, will be freed at synchronization" );
+        LAMA_LOG_DEBUG( logger, *this << ": push access, will be freed at synchronization" )
 
         // take ownership of the pointer, have to be deleted at synchronization
 
@@ -112,11 +112,11 @@ void SyncToken::pushAccess( std::auto_ptr<BaseAccess> access )
 
 void SyncToken::pushArray( std::auto_ptr<_LAMAArray> array )
 {
-    LAMA_ASSERT_ERROR( array.get(), "NULL array cannot be pushed for synchronization." );
+    LAMA_ASSERT_ERROR( array.get(), "NULL array cannot be pushed for synchronization." )
 
     if ( mSynchronized )
     {
-        LAMA_LOG_DEBUG( logger, *this << ": push array not done, already synchronized" );
+        LAMA_LOG_DEBUG( logger, *this << ": push array not done, already synchronized" )
 
         // delete the pointer, do not push it anymore
 
@@ -124,7 +124,7 @@ void SyncToken::pushArray( std::auto_ptr<_LAMAArray> array )
     }
     else
     {
-        LAMA_LOG_DEBUG( logger, *this << ": push array, will be freed at synchronization" );
+        LAMA_LOG_DEBUG( logger, *this << ": push array, will be freed at synchronization" )
 
         // take ownership of the pointer, have to be deleted at synchronization
 
@@ -134,11 +134,11 @@ void SyncToken::pushArray( std::auto_ptr<_LAMAArray> array )
 
 void SyncToken::pushSyncToken( std::auto_ptr<SyncToken> syncToken )
 {
-    LAMA_ASSERT_ERROR( syncToken.get(), "NULL SyncToken cannot be pushed for synchronization." );
+    LAMA_ASSERT_ERROR( syncToken.get(), "NULL SyncToken cannot be pushed for synchronization." )
 
     if ( mSynchronized )
     {
-        LAMA_LOG_DEBUG( logger, *this << ": push SyncToken not done, already synchronized" );
+        LAMA_LOG_DEBUG( logger, *this << ": push SyncToken not done, already synchronized" )
 
         // delete the pointer, do not push it anymore
 
@@ -146,7 +146,7 @@ void SyncToken::pushSyncToken( std::auto_ptr<SyncToken> syncToken )
     }
     else
     {
-        LAMA_LOG_DEBUG( logger, *this << ": push SyncToken, will be synchronized after synchronization" );
+        LAMA_LOG_DEBUG( logger, *this << ": push SyncToken, will be synchronized after synchronization" )
 
         // take ownership of the pointer, have to be deleted at synchronization
 
@@ -164,7 +164,7 @@ void SyncToken::setSynchronized()
 {
     if ( mSynchronized )
     {
-        LAMA_THROWEXCEPTION( *this << " is already synchronized" );
+        LAMA_THROWEXCEPTION( *this << " is already synchronized" )
     }
 
     mSynchronized = true;
@@ -172,12 +172,12 @@ void SyncToken::setSynchronized()
     // after synchronization we can unlock used LAMA arrays
 
     LAMA_LOG_DEBUG( logger,
-                    *this << ": delete " << mAccesses.size() << " accesses, " << mArrays.size() << " arrays and synchronizing " << mChilds.size() << " childs " );
+                    *this << ": delete " << mAccesses.size() << " accesses, " << mArrays.size() << " arrays and synchronizing " << mChilds.size() << " childs " )
 
     while ( !mAccesses.empty() )
     {
         BaseAccess* lastAccess = mAccesses.back();
-        LAMA_LOG_INFO( logger, "delete " << lastAccess );
+        LAMA_LOG_INFO( logger, "delete " << lastAccess )
 
         delete lastAccess;
         mAccesses.pop_back();

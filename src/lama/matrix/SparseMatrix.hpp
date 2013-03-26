@@ -135,6 +135,7 @@ public:
  * It is possible to use different storage formats for the local and halo part,
  * but both representations must have the same value type.
  *
+ * @tparam T is the value type of the matrix values.
  */
 
 template<typename T>
@@ -145,10 +146,7 @@ class LAMA_DLL_IMPORTEXPORT SparseMatrix: public _SparseMatrix
 
 public:
 
-    /**
-     * @brief the Type of elements of this.
-     */
-    typedef T ValueType;
+    typedef T ValueType; //!< This is the type of the matrix values.
 
     /** Getter for the type name of the class. */
 
@@ -305,7 +303,7 @@ public:
      *
      void assignLocal( const _MatrixStorage&
      {
-     LAMA_THROWEXCEPTION( "not available yet" );
+     LAMA_THROWEXCEPTION( "not available yet" )
      }
      */
 
@@ -609,7 +607,7 @@ private:
      */
     SparseMatrix();
 
-    LAMA_LOG_DECL_STATIC_LOGGER( logger );
+    LAMA_LOG_DECL_STATIC_LOGGER( logger )
 
     /** This method sets a row-distributed matrix corresponding to the distribution of this matrix.
      *  ( no column distribution, no halo ).

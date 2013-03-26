@@ -399,7 +399,7 @@ protected:
 
     ContextPtr mContext; //!< decides about location of vector operations
 
-    LAMA_LOG_DECL_STATIC_LOGGER( logger );
+    LAMA_LOG_DECL_STATIC_LOGGER( logger )
 };
 
 IndexType Vector::size() const
