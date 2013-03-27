@@ -45,16 +45,16 @@
 namespace lama
 {
 
-LAMA_LOG_DEF_LOGGER( PGASContext::logger, "Context.PGASContext" );
+LAMA_LOG_DEF_LOGGER( PGASContext::logger, "Context.PGASContext" )
 
 PGASContext::PGASContext()
 {
-    LAMA_LOG_DEBUG( logger, "PGASContext created, allows communication via PGAS" );
+    LAMA_LOG_DEBUG( logger, "PGASContext created, allows communication via PGAS" )
 }
 
 PGASContext::~PGASContext()
 {
-    LAMA_LOG_DEBUG( logger, "~PGASContext()" );
+    LAMA_LOG_DEBUG( logger, "~PGASContext()" )
 }
 
 void PGASContext::writeAt( std::ostream& stream ) const
@@ -65,8 +65,8 @@ void PGASContext::writeAt( std::ostream& stream ) const
 
 void* PGASContext::allocate( const size_t size ) const
 {
-    LAMA_REGION( "PGASContext::allocate" );
-    LAMA_LOG_DEBUG( logger, *this << ": allocated " << size << " bytes" );
+    LAMA_REGION( "PGASContext::allocate" )
+    LAMA_LOG_DEBUG( logger, *this << ": allocated " << size << " bytes" )
     PGASInterface::getInstance()->syncronizeAll();
     return PGASInterface::getInstance()->allocate( size );
 }
@@ -79,14 +79,14 @@ void PGASContext::allocate( ContextData& contextData, const size_t size ) const
 
 void PGASContext::free( void* pointer, const size_t size ) const
 {
-    LAMA_REGION( "PGASContext::free" );
+    LAMA_REGION( "PGASContext::free" )
     PGASInterface::getInstance()->free( pointer, size );
-    LAMA_LOG_DEBUG( logger, *this << ": freed " << size << " bytes, pointer = " << pointer );
+    LAMA_LOG_DEBUG( logger, *this << ": freed " << size << " bytes, pointer = " << pointer )
 }
 
 void PGASContext::free( ContextData& contextData ) const
 {
-    LAMA_ASSERT_EQUAL_ERROR( contextData.context->getType(), getType() );
+    LAMA_ASSERT_EQUAL_ERROR( contextData.context->getType(), getType() )
     free( contextData.pointer, contextData.size );
 }
 
@@ -108,14 +108,14 @@ bool PGASContext::cancpy( const ContextData& dst, const ContextData& src ) const
 void PGASContext::memcpy( ContextData& dst, const ContextData& src, const size_t size ) const
 {
     LAMA_ASSERT_ERROR( dst.context->getType() == getType() && src.context->getType() == getType(),
-                       "Can not copy from "<< *(src.context) << " to " << *(dst.context) );
+                       "Can not copy from "<< *(src.context) << " to " << *(dst.context) )
     memcpy( dst.pointer, src.pointer, size );
 }
 
 std::auto_ptr<SyncToken> PGASContext::memcpyAsync( ContextData& dst, const ContextData& src, const size_t size ) const
 {
     LAMA_ASSERT_ERROR( dst.context->getType() == getType() && src.context->getType() == getType(),
-                       "Can not copy from "<< *(src.context) << " to " << *(dst.context) );
+                       "Can not copy from "<< *(src.context) << " to " << *(dst.context) )
     return memcpyAsync( dst.pointer, src.pointer, size );
 }
 

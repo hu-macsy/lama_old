@@ -399,7 +399,7 @@ private:
 
     void buildRowIndexes( const ContextPtr loc );
 
-    LAMA_LOG_DECL_STATIC_LOGGER( logger ); //!< logger for this matrix format
+    LAMA_LOG_DECL_STATIC_LOGGER( logger ) //!< logger for this matrix format
 
     /** Matrix times Matrix for ELL only */
     void matrixTimesMatrixELL( const ValueType alpha,

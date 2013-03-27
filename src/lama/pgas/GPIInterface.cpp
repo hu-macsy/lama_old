@@ -44,7 +44,7 @@
 
 namespace lama
 {
-LAMA_LOG_DEF_LOGGER( GPIInterface::logger, "PGASInterface.GPIInterface" );
+LAMA_LOG_DEF_LOGGER( GPIInterface::logger, "PGASInterface.GPIInterface" )
 #ifdef LAMA_LOG_TRACE
 long GPIInterface::mAllocated = 0;
 long GPIInterface::mBarrierNum = 0;
@@ -63,12 +63,12 @@ GPIInterface::GPIInterface()
 //#pragma omp single
 //    {
     std::cout << "STARTING GPI" << std::endl << std::flush;
-    LAMA_ASSERT( !(startGPI(LAMAArguments::getArgc(),LAMAArguments::getArgv(),"",size) != 0), "GPI startGPI failed!" );
+    LAMA_ASSERT( !(startGPI(LAMAArguments::getArgc(),LAMAArguments::getArgv(),"",size) != 0), "GPI startGPI failed!" )
     std::cout << "STARTED GPI" << std::endl << std::flush;
 
     mRank = getRankGPI();
     mSize = getNodeCountGPI();
-    LAMA_LOG_WARN( logger, "GPIInterface started: Rank: "<< mRank << "/" << mSize );
+    LAMA_LOG_WARN( logger, "GPIInterface started: Rank: "<< mRank << "/" << mSize )
 
     mAllocator = new PGASSimpleAllocator( getDmaMemPtrGPI(), size );
 //    }
@@ -109,7 +109,7 @@ void *GPIInterface::allocate( size_t size ) const
     void* ptr = mAllocator->allocate( size );
     LAMA_LOG_TRACE( logger,
                     "Rank: " << getRank() << ": Allocated " << size << "B @ " << mAllocator->getOffset(ptr) << ". currently allocated " << (mAllocated+=size) )
-    LAMA_ASSERT( ptr!=NULL, "GPI could not allocate on Rank " << getRank() );
+    LAMA_ASSERT( ptr!=NULL, "GPI could not allocate on Rank " << getRank() )
     return ptr;
 }
 
@@ -179,7 +179,7 @@ void GPIInterface::get( void *dst, const void *src, size_t length, int srcpe ) c
                     "Rank: " << getRank() << ": Fetching " << mAllocator->getOffset(src) << " --> " << mAllocator->getOffset(dst) )
 //    syncronizeAll();
     int stat = readDmaGPI( mAllocator->getOffset( dst ), mAllocator->getOffset( src ), length, srcpe, GPIQueue0 );
-    LAMA_ASSERT( stat==0, "readDmaGPI failed" );
+    LAMA_ASSERT( stat==0, "readDmaGPI failed" )
     waitDmaGPI (GPIQueue0);
 //    syncronizeAll();
 }
@@ -190,7 +190,7 @@ void GPIInterface::put( void *dst, const void *src, size_t length, int srcpe ) c
                     "Rank: " << getRank() << ": Putting " << length << "B to " << srcpe << ".  currently allocated: " << mAllocated )
 //    syncronizeAll();
     int stat = writeDmaGPI( mAllocator->getOffset( src ), mAllocator->getOffset( dst ), length, srcpe, GPIQueue0 );
-    LAMA_ASSERT( stat==0, "writeDmaGPI failed" );
+    LAMA_ASSERT( stat==0, "writeDmaGPI failed" )
 //    syncronizeAll();
     waitDmaGPI (GPIQueue0);
 }

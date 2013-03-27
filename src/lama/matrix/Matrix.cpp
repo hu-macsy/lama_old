@@ -45,14 +45,14 @@ using namespace boost;
 namespace lama
 {
 
-LAMA_LOG_DEF_LOGGER( Matrix::logger, "Matrix" );
+LAMA_LOG_DEF_LOGGER( Matrix::logger, "Matrix" )
 
 Matrix::Matrix( const Matrix& other )
 
     : Distributed( other ), mColDistribution( other.mColDistribution ), mNumRows( other.mNumRows ), mNumColumns(
         other.mNumColumns ), mCommunicationKind( other.mCommunicationKind )
 {
-    LAMA_LOG_INFO( logger, "Creating copy of " << other << " with same distributions." );
+    LAMA_LOG_INFO( logger, "Creating copy of " << other << " with same distributions." )
 }
 
 Matrix::Matrix( const Matrix& other, DistributionPtr distribution, DistributionPtr colDistribution )
@@ -65,7 +65,7 @@ Matrix::Matrix( const Matrix& other, DistributionPtr distribution, DistributionP
     checkSettings();
 
     LAMA_LOG_INFO( logger,
-                   "Creating copy of " << other << " with new distributions: " << "row = " << getDistribution() << ", col = " << getColDistribution() );
+                   "Creating copy of " << other << " with new distributions: " << "row = " << getDistribution() << ", col = " << getColDistribution() )
 
 }
 
@@ -77,7 +77,7 @@ Matrix::Matrix( const IndexType numRows, const IndexType numColumns )
 {
     setDefaultKind();
 
-    LAMA_LOG_INFO( logger, "Creating a replicated Matrix of size " << mNumRows << " x " << mNumColumns );
+    LAMA_LOG_INFO( logger, "Creating a replicated Matrix of size " << mNumRows << " x " << mNumColumns )
 }
 
 /* ----------------------------------------------------------------------- */
@@ -86,7 +86,7 @@ void Matrix::checkSettings() const
 {
     if ( !mColDistribution )
     {
-        LAMA_THROWEXCEPTION( "NULL pointer for column distribution" );
+        LAMA_THROWEXCEPTION( "NULL pointer for column distribution" )
     }
 
     if ( mNumRows != getDistribution().getGlobalSize() )
@@ -111,7 +111,7 @@ Matrix::Matrix( DistributionPtr rowDistribution, DistributionPtr colDistribution
     setDefaultKind();
 
     LAMA_LOG_INFO( logger,
-                   "Construct a Matrix of size " << mNumRows << " x " << mNumColumns << " with the distribution " << getDistribution() );
+                   "Construct a Matrix of size " << mNumRows << " x " << mNumColumns << " with the distribution " << getDistribution() )
 
     checkSettings();
 }
@@ -122,7 +122,7 @@ Matrix::Matrix( DistributionPtr distribution )
     setDistributedMatrix( distribution, distribution );
 
     LAMA_LOG_INFO( logger,
-                   "Construct a square Matrix of size " << mNumRows << " x " << mNumColumns << " with the row/col distribution " << getDistribution() );
+                   "Construct a square Matrix of size " << mNumRows << " x " << mNumColumns << " with the row/col distribution " << getDistribution() )
 
     checkSettings();
 }
@@ -137,7 +137,7 @@ Matrix::Matrix()
 
 Matrix::~Matrix()
 {
-    LAMA_LOG_DEBUG( logger, "~Matrix" );
+    LAMA_LOG_DEBUG( logger, "~Matrix" )
 }
 
 void Matrix::setDefaultKind()
@@ -149,8 +149,8 @@ void Matrix::setDefaultKind()
 
 void Matrix::setDistributedMatrix( DistributionPtr rowDistribution, DistributionPtr colDistribution )
 {
-    LAMA_ASSERT_ERROR( rowDistribution, "NULL row distribution for matrix not allowd" );
-    LAMA_ASSERT_ERROR( colDistribution, "NULL column distribution for matrix not allowd" );
+    LAMA_ASSERT_ERROR( rowDistribution, "NULL row distribution for matrix not allowd" )
+    LAMA_ASSERT_ERROR( colDistribution, "NULL column distribution for matrix not allowd" )
     mNumRows = rowDistribution->getGlobalSize();
     setDistributionPtr( rowDistribution );
     mNumColumns = colDistribution->getGlobalSize();
@@ -225,7 +225,7 @@ VectorPtr Matrix::createDenseVector( DistributionPtr distribution, const Scalar 
 {
     Scalar::ScalarType matrixValueType = getValueType();
 
-    LAMA_LOG_INFO( logger, "create vector of type " << matrixValueType );
+    LAMA_LOG_INFO( logger, "create vector of type " << matrixValueType )
 
     switch ( matrixValueType )
     {
@@ -234,7 +234,7 @@ VectorPtr Matrix::createDenseVector( DistributionPtr distribution, const Scalar 
     case Scalar::FLOAT:
         return VectorPtr( new DenseVector<float>( distribution, value.getValue<float>() ) );
     default:
-        LAMA_THROWEXCEPTION( "unsupported vector type : " << matrixValueType );
+        LAMA_THROWEXCEPTION( "unsupported vector type : " << matrixValueType )
     }
 }
 
@@ -260,7 +260,7 @@ void Matrix::setContext( ContextPtr localContext, ContextPtr haloContext )
 
     if ( *localContext != *haloContext )
     {
-        LAMA_LOG_WARN( logger, *this << ": halo context = " << *haloContext << " ignored" );
+        LAMA_LOG_WARN( logger, *this << ": halo context = " << *haloContext << " ignored" )
     }
 
     setContext( localContext );
@@ -291,7 +291,7 @@ void Matrix::matrix2CSRGraph(
     const IndexType* /*globalRowIndices*/,
     IndexType* /*vtxdist = NULL*/) const
 {
-    LAMA_THROWEXCEPTION( "Transformation of "<< *this << "to CSR Graph not specialized." );
+    LAMA_THROWEXCEPTION( "Transformation of "<< *this << "to CSR Graph not specialized." )
 }
 
 /* ---------------------------------------------------------------------------------*/
@@ -300,11 +300,11 @@ Matrix& Matrix::operator=( const Matrix& other )
 {
     // assignment operator is just implemented by the assign method
 
-    LAMA_LOG_INFO( logger, *this << ": operator = " << other );
+    LAMA_LOG_INFO( logger, *this << ": operator = " << other )
 
     this->assign( other );
 
-    LAMA_LOG_INFO( logger, *this << ": end operator = " << other );
+    LAMA_LOG_INFO( logger, *this << ": end operator = " << other )
 
     return *this;
 }
@@ -376,7 +376,7 @@ double Matrix::getSparsityRate() const
 Matrix& Matrix::operator=(
     Expression<Expression<Scalar,Expression<Matrix,Matrix,Times>,Times>,Expression<Scalar,Matrix,Times>,Plus> exp )
 {
-    LAMA_LOG_INFO( logger, "operator=:  A * B * alpha + C * beta " );
+    LAMA_LOG_INFO( logger, "operator=:  A * B * alpha + C * beta " )
 
     const Matrix& A = exp.getArg1().getArg2().getArg1();
     const Matrix& B = exp.getArg1().getArg2().getArg2();
@@ -432,13 +432,13 @@ Matrix& Matrix::operator=(
             "Number of columns of " << B << " = " << B.getNumColumns() << " does not match the number of columns of " << C << " = " << C.getNumColumns() );
     }
 
-    LAMA_LOG_INFO( logger, "Context of this before matrixTimesMatrix = " << this->getContext() );
+    LAMA_LOG_INFO( logger, "Context of this before matrixTimesMatrix = " << this->getContext() )
 
     A.matrixTimesMatrix( *this, alpha, B, beta, C );
 
-    LAMA_LOG_INFO( logger, "end operator=:  A * B * alpha + C * beta " );
+    LAMA_LOG_INFO( logger, "end operator=:  A * B * alpha + C * beta " )
 
-    LAMA_LOG_INFO( logger, "Context of this after matrixTimesMatrix = " << this->getContext() );
+    LAMA_LOG_INFO( logger, "Context of this after matrixTimesMatrix = " << this->getContext() )
 
     return *this;
 }
@@ -450,7 +450,7 @@ Matrix& Matrix::operator=(
  */
 Matrix& Matrix::operator=( Expression<Expression<Scalar,Matrix,Times>,Expression<Scalar,Matrix,Times>,Plus> exp )
 {
-    LAMA_LOG_INFO( logger, "operator=:  A * alpha + B * beta " );
+    LAMA_LOG_INFO( logger, "operator=:  A * alpha + B * beta " )
 
     const Matrix& A = exp.getArg1().getArg2();
     const Matrix& B = exp.getArg2().getArg2();

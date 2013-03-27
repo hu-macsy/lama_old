@@ -72,17 +72,17 @@ CUDAContextManager::CUDAContextManager()
 
 CUDAContextManager::~CUDAContextManager()
 {
-    LAMA_LOG_DEBUG( logger, "~CUDAContextManager" );
+    LAMA_LOG_DEBUG( logger, "~CUDAContextManager" )
 
     for ( int i = 0; i < LAMA_MAX_CUDA_DEVICES; i++ )
     {
         if ( mCUDAContext[i].expired() )
         {
-            LAMA_LOG_DEBUG( logger, "expired CUDAContext for device " << i );
+            LAMA_LOG_DEBUG( logger, "expired CUDAContext for device " << i )
         }
         else
         {
-            LAMA_LOG_DEBUG( logger, "available CUDAContext for device " << i );
+            LAMA_LOG_DEBUG( logger, "available CUDAContext for device " << i )
         }
     }
 }
@@ -103,18 +103,18 @@ ContextPtr CUDAContextManager::getInstance( int deviceNr )
             std::istringstream devNumberReader( devNumber );
             devNumberReader >> cudaDeviceNr;
 
-            LAMA_LOG_INFO( logger, LAMA_CUDA_ENV_FOR_DEVICE << " = " << cudaDeviceNr << " set, take it" );
+            LAMA_LOG_INFO( logger, LAMA_CUDA_ENV_FOR_DEVICE << " = " << cudaDeviceNr << " set, take it" )
         }
         else
         {
-            LAMA_LOG_WARN( logger, LAMA_CUDA_ENV_FOR_DEVICE << " not set, take device 0" );
+            LAMA_LOG_WARN( logger, LAMA_CUDA_ENV_FOR_DEVICE << " not set, take device 0" )
             cudaDeviceNr = 0;
         }
     }
 
     LAMA_ASSERT_ERROR(
         0 <= cudaDeviceNr && cudaDeviceNr < LAMA_MAX_CUDA_DEVICES,
-        "device = " << cudaDeviceNr << " out of range, max supported device = " << LAMA_MAX_CUDA_DEVICES );
+        "device = " << cudaDeviceNr << " out of range, max supported device = " << LAMA_MAX_CUDA_DEVICES )
 
     boost::shared_ptr<CUDAContext> context = boost::shared_ptr<CUDAContext>();
 

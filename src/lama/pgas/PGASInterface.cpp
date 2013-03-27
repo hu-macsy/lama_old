@@ -50,7 +50,7 @@
 #endif
 namespace lama
 {
-LAMA_LOG_DEF_LOGGER( PGASInterface::logger, "PGASInterface" );
+LAMA_LOG_DEF_LOGGER( PGASInterface::logger, "PGASInterface" )
 
 std::auto_ptr<SyncToken> PGASInterface::all2all( void *dst, const void *src, size_t elemSize ) const
 {
@@ -82,8 +82,8 @@ std::auto_ptr<SyncToken> PGASInterface::shift(
     PartitionId destRank,
     PartitionId srcRank ) const
 {
-    LAMA_ASSERT_ERROR( srcRank != getRank(), "source must not be this partition" );
-    LAMA_ASSERT_ERROR( destRank != getRank(), "dest must not be this partition" );
+    LAMA_ASSERT_ERROR( srcRank != getRank(), "source must not be this partition" )
+    LAMA_ASSERT_ERROR( destRank != getRank(), "dest must not be this partition" )
     // need an PGAS communicator with 2 requests, no clean up needed
     std::auto_ptr<SyncToken> pSyncToken( new PGASSyncToken() );
     if ( getPreferredCommunicationKind() == PGASget )
@@ -488,12 +488,12 @@ void PGASInterface::gather(
 }
 PGASInterface::PGASInterface()
 {
-    LAMA_LOG_DEBUG( logger, "PGASInterface()" );
+    LAMA_LOG_DEBUG( logger, "PGASInterface()" )
 }
 
 PGASInterface::~PGASInterface()
 {
-    LAMA_LOG_DEBUG( logger, "~PGASInterface()" );
+    LAMA_LOG_DEBUG( logger, "~PGASInterface()" )
 }
 
 PGASInterface *PGASInterface::init()
@@ -507,7 +507,7 @@ PGASInterface *PGASInterface::init()
     PGASInterface *temp = new PGASNoInterface();
 #endif
 #endif
-    LAMA_LOG_INFO( logger, "PGASInterface initialized: " << *temp );
+    LAMA_LOG_INFO( logger, "PGASInterface initialized: " << *temp )
 #ifdef LAMA_ASSERT_LEVEL_DEBUG
     return new PGASCheckInterface(temp);
 #else

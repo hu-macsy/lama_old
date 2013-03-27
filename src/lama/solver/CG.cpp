@@ -44,7 +44,7 @@
 namespace lama
 {
 
-LAMA_LOG_DEF_LOGGER( CG::logger, "Solver.IterativeSolver.CG" );
+LAMA_LOG_DEF_LOGGER( CG::logger, "Solver.IterativeSolver.CG" )
 
 CG::CG( const std::string& id )
     : IterativeSolver( id )
@@ -76,7 +76,7 @@ CG::CGRuntime::~CGRuntime()
 
 void CG::initialize( const Matrix& coefficients )
 {
-    LAMA_REGION( "Solver.CG.initialize" );
+    LAMA_REGION( "Solver.CG.initialize" )
     IterativeSolver::initialize( coefficients );
     CGRuntime& runtime = getRuntime();
 
@@ -100,7 +100,7 @@ void CG::initialize( const Matrix& coefficients )
     }
     default:
     {
-        LAMA_THROWEXCEPTION( "Unsupported ValueType " << coefficients.getValueType() );
+        LAMA_THROWEXCEPTION( "Unsupported ValueType " << coefficients.getValueType() )
         break;
     }
     }
@@ -113,7 +113,7 @@ void CG::initialize( const Matrix& coefficients )
 
 void CG::iterate()
 {
-    LAMA_REGION( "Solver.CG.iterate" );
+    LAMA_REGION( "Solver.CG.iterate" )
     CGRuntime& runtime = getRuntime();
     Scalar lastPScalar( runtime.mPScalar );
     Scalar& pScalar = runtime.mPScalar;
@@ -131,7 +131,7 @@ void CG::iterate()
     Vector& p = *runtime.mP;
     Vector& q = *runtime.mQ;
     Vector& z = *runtime.mZ;
-    LAMA_LOG_INFO( logger, "Doing preconditioning." );
+    LAMA_LOG_INFO( logger, "Doing preconditioning." )
 
     //CG implementation start
     if ( !mPreconditioner )
@@ -144,10 +144,10 @@ void CG::iterate()
         mPreconditioner->solve( z, residual );
     }
 
-    LAMA_LOG_INFO( logger, "Calculating pScalar." );
+    LAMA_LOG_INFO( logger, "Calculating pScalar." )
     pScalar = residual * z;
-    LAMA_LOG_DEBUG( logger, "pScalar = " << pScalar );
-    LAMA_LOG_INFO( logger, "Calculating p." );
+    LAMA_LOG_DEBUG( logger, "pScalar = " << pScalar )
+    LAMA_LOG_INFO( logger, "Calculating p." )
 
     if ( this->getIterationCount() == 0 )
     {
@@ -164,19 +164,19 @@ void CG::iterate()
             beta = pScalar / lastPScalar;
         }
 
-        LAMA_LOG_DEBUG( logger, "beta = " << beta );
+        LAMA_LOG_DEBUG( logger, "beta = " << beta )
         p = z + beta * p;
     }
 
     {
-        LAMA_REGION( "Solver.CG.calc_q" );
-        LAMA_LOG_INFO( logger, "Calculating q." );
+        LAMA_REGION( "Solver.CG.calc_q" )
+        LAMA_LOG_INFO( logger, "Calculating q." )
         q = A * p;
     }
 
-    LAMA_LOG_INFO( logger, "Calculating pqProd." );
+    LAMA_LOG_INFO( logger, "Calculating pqProd." )
     const Scalar pqProd = p * q;
-    LAMA_LOG_DEBUG( logger, "pqProd = " << pqProd );
+    LAMA_LOG_DEBUG( logger, "pqProd = " << pqProd )
 
     if ( pqProd.getValue<double>() == 0.0 )
     {
@@ -187,15 +187,15 @@ void CG::iterate()
         alpha = pScalar / pqProd;
     }
 
-    LAMA_LOG_DEBUG( logger, "alpha = " << alpha );
+    LAMA_LOG_DEBUG( logger, "alpha = " << alpha )
     {
-        LAMA_LOG_INFO( logger, "Calculating x." );
-        LAMA_REGION( "Solver.CG.update_x" );
+        LAMA_LOG_INFO( logger, "Calculating x." )
+        LAMA_REGION( "Solver.CG.update_x" )
         x = x + alpha * p;
     }
     {
-        LAMA_LOG_INFO( logger, "Updating residual." );
-        LAMA_REGION( "Solver.CG.update_res" );
+        LAMA_LOG_INFO( logger, "Updating residual." )
+        LAMA_REGION( "Solver.CG.update_res" )
         residual = residual - alpha * q;
     }
     //CG implementation end

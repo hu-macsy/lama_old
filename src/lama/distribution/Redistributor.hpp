@@ -140,7 +140,7 @@ public:
 
         for ( IndexType i = 0; i < indexes.size(); i++ )
         {
-            LAMA_LOG_DEBUG( logger, "target[" << i << "] = source[" << indexes[i] << "] = " << source[indexes[i]] );
+            LAMA_LOG_DEBUG( logger, "target[" << i << "] = source[" << indexes[i] << "] = " << source[indexes[i]] )
 
             target[i] = source[indexes[i]];
         }
@@ -161,7 +161,7 @@ public:
         for ( IndexType i = 0; i < indexes.size(); i++ )
         {
             LAMA_LOG_DEBUG( logger,
-                            "targetN[" << i << "] = sourceN[" << indexes[i] << "] = " << source[indexes[i] * n] << " ..." );
+                            "targetN[" << i << "] = sourceN[" << indexes[i] << "] = " << source[indexes[i] * n] << " ..." )
 
             for ( IndexType j = 0; j < n; j++ )
             {
@@ -189,7 +189,7 @@ public:
 
         for ( IndexType i = 0; i < indexes.size(); i++ )
         {
-            LAMA_LOG_DEBUG( logger, "target[" << indexes[i] << "] = source[" << i << "] = " << source[i] );
+            LAMA_LOG_DEBUG( logger, "target[" << indexes[i] << "] = source[" << i << "] = " << source[i] )
 
             target[indexes[i]] = source[i];
         }
@@ -210,7 +210,7 @@ public:
         for ( IndexType i = 0; i < indexes.size(); i++ )
         {
             LAMA_LOG_DEBUG( logger,
-                            "targetN[" << indexes[i] << "] = sourceN[" << i << "] = " << source[i * n] << " ..." );
+                            "targetN[" << indexes[i] << "] = sourceN[" << i << "] = " << source[i * n] << " ..." )
 
             for ( IndexType j = 0; j < n; j++ )
             {
@@ -238,12 +238,12 @@ public:
         HostReadAccess<IndexType> tindexes( targetIndexes );
         HostReadAccess<IndexType> sindexes( sourceIndexes );
 
-        LAMA_ASSERT_ERROR( tindexes.size() == sindexes.size(), "index size mismatch" );
+        LAMA_ASSERT_ERROR( tindexes.size() == sindexes.size(), "index size mismatch" )
 
         for ( IndexType i = 0; i < tindexes.size(); i++ )
         {
             LAMA_LOG_DEBUG( logger,
-                            "target[" << tindexes[i] << "] = source[" << sindexes[i] << "] = " << source[ sindexes[i] ] );
+                            "target[" << tindexes[i] << "] = source[" << sindexes[i] << "] = " << source[ sindexes[i] ] )
 
             target[tindexes[i]] = source[sindexes[i]];
         }
@@ -262,13 +262,13 @@ public:
         HostReadAccess<IndexType> tindexes( targetIndexes );
         HostReadAccess<IndexType> sindexes( sourceIndexes );
 
-        LAMA_ASSERT_ERROR( tindexes.size() == sindexes.size(), "index size mismatch" );
+        LAMA_ASSERT_ERROR( tindexes.size() == sindexes.size(), "index size mismatch" )
 
         #pragma omp parallel for
         for ( IndexType i = 0; i < tindexes.size(); i++ )
         {
             LAMA_LOG_DEBUG( logger,
-                            "targetN[" << tindexes[i] << "] = sourceN[" << sindexes[i] << "] = " << source[ sindexes[i] * n ] << " ..." );
+                            "targetN[" << tindexes[i] << "] = sourceN[" << sindexes[i] << "] = " << source[ sindexes[i] * n ] << " ..." )
 
             for ( IndexType j = 0; j < n; j++ )
             {
@@ -389,17 +389,17 @@ void Redistributor::redistribute( LAMAArray<ValueType>& targetArray, const LAMAA
     LAMAArray<ValueType> sourceHalo( getHaloSourceSize() );
     LAMAArray<ValueType> targetHalo( getHaloTargetSize() );
 
-    LAMA_LOG_DEBUG( logger, "gather: sourceHalo " << mHaloSourceIndexes.size() << " values" );
+    LAMA_LOG_DEBUG( logger, "gather: sourceHalo " << mHaloSourceIndexes.size() << " values" )
 
     gather( sourceHalo, sourceArray, mHaloSourceIndexes );
 
-    LAMA_LOG_DEBUG( logger, "copy: source -> target " << mLocalTargetIndexes.size() << " values" );
+    LAMA_LOG_DEBUG( logger, "copy: source -> target " << mLocalTargetIndexes.size() << " values" )
 
     copy( targetArray, mLocalTargetIndexes, sourceArray, mLocalSourceIndexes );
 
     exchangeHalo( targetHalo, sourceHalo );
 
-    LAMA_LOG_DEBUG( logger, "scatter: targetHalo " << mHaloTargetIndexes.size() << " values" );
+    LAMA_LOG_DEBUG( logger, "scatter: targetHalo " << mHaloTargetIndexes.size() << " values" )
 
     scatter( targetArray, mHaloTargetIndexes, targetHalo );
 }
@@ -423,17 +423,17 @@ void Redistributor::redistributeN(
     LAMAArray<ValueType> sourceHalo( n * getHaloSourceSize() );
     LAMAArray<ValueType> targetHalo( n * getHaloTargetSize() );
 
-    LAMA_LOG_DEBUG( logger, "gather: sourceHalo " << mHaloSourceIndexes.size() << " * " << n << " values" );
+    LAMA_LOG_DEBUG( logger, "gather: sourceHalo " << mHaloSourceIndexes.size() << " * " << n << " values" )
 
     gatherN( sourceHalo, sourceArray, mHaloSourceIndexes, n );
 
-    LAMA_LOG_DEBUG( logger, "copy: source -> target " << mLocalTargetIndexes.size() << " * " << n << " values" );
+    LAMA_LOG_DEBUG( logger, "copy: source -> target " << mLocalTargetIndexes.size() << " * " << n << " values" )
 
     copyN( targetArray, mLocalTargetIndexes, sourceArray, mLocalSourceIndexes, n );
 
     exchangeHaloN( targetHalo, sourceHalo, n );
 
-    LAMA_LOG_DEBUG( logger, "scatter: targetHalo " << mHaloTargetIndexes.size() << " * " << n << " values" );
+    LAMA_LOG_DEBUG( logger, "scatter: targetHalo " << mHaloTargetIndexes.size() << " * " << n << " values" )
 
     scatterN( targetArray, mHaloTargetIndexes, targetHalo, n );
 
@@ -535,7 +535,7 @@ void Redistributor::copyV(
     const LAMAArray<IndexType>& sourceOffsets,
     const LAMAArray<IndexType>& sourceIndexes )
 {
-    LAMA_ASSERT_EQUAL_ERROR( targetIndexes.size(), sourceIndexes.size() );
+    LAMA_ASSERT_EQUAL_ERROR( targetIndexes.size(), sourceIndexes.size() )
 
     const IndexType n = targetIndexes.size();
 
@@ -559,7 +559,7 @@ void Redistributor::copyV(
             ++k;
         }
 
-        LAMA_ASSERT_EQUAL_DEBUG( k, rTargetOffsets[ targetI + 1 ] );
+        LAMA_ASSERT_EQUAL_DEBUG( k, rTargetOffsets[ targetI + 1 ] )
     }
 }
 
@@ -592,8 +592,8 @@ void Redistributor::exchangeHaloN(
     CommunicationPlan requiredN( mHalo.getRequiredPlan(), n );
     CommunicationPlan providesN( mHalo.getProvidesPlan(), n );
 
-    LAMA_LOG_DEBUG( logger, "requiredN ( n = " << n << "): " << requiredN );
-    LAMA_LOG_DEBUG( logger, "providesN ( n = " << n << "): " << providesN );
+    LAMA_LOG_DEBUG( logger, "requiredN ( n = " << n << "): " << requiredN )
+    LAMA_LOG_DEBUG( logger, "providesN ( n = " << n << "): " << providesN )
 
     // use asynchronous communication to avoid deadlocks
 
@@ -609,7 +609,7 @@ void Redistributor::exchangeVHalo( LAMAArray<ValueType>& targetHalo, const LAMAA
 {
     const Communicator& comm = mSourceDistribution->getCommunicator();
 
-    LAMA_ASSERT_ERROR( mRequiredPlan.get(), "There was no previous call of buildVPlan" );
+    LAMA_ASSERT_ERROR( mRequiredPlan.get(), "There was no previous call of buildVPlan" )
 
     comm.exchangeByPlanAsync( targetHalo, *mRequiredPlan, sourceHalo, *mProvidesPlan );
 }

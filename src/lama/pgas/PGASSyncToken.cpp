@@ -39,7 +39,7 @@ namespace lama
 
 PGASSyncToken::PGASSyncToken()
 {
-    LAMA_LOG_INFO( logger, "PGASSyncToken constructed" );
+    LAMA_LOG_INFO( logger, "PGASSyncToken constructed" )
 
 }
 
@@ -47,7 +47,7 @@ PGASSyncToken::~PGASSyncToken()
 {
     if ( !isSynchronized() )
     {
-        LAMA_LOG_DEBUG( logger, *this << ": synchnronized at destructor" );
+        LAMA_LOG_DEBUG( logger, *this << ": synchnronized at destructor" )
         wait();
     }
 }
@@ -61,23 +61,23 @@ void PGASSyncToken::wait()
 {
     if ( isSynchronized() )
     {
-        LAMA_LOG_WARN( logger, *this << ": waiting twice" );
+        LAMA_LOG_WARN( logger, *this << ": waiting twice" )
 
         return; // do not wait twice, especially do not clean-up twice
     }
 
-    LAMA_LOG_INFO( logger, *this << ": wait" );
+    LAMA_LOG_INFO( logger, *this << ": wait" )
 
     PGASInterface::getInstance()->syncronizeAll();
 
-    LAMA_LOG_INFO( logger, *this << ": synchronized, clean up and free accesses" );
+    LAMA_LOG_INFO( logger, *this << ": synchronized, clean up and free accesses" )
 
     setSynchronized();
 }
 
 bool PGASSyncToken::probe() const
 {
-    LAMA_LOG_WARN( logger, *this << ": probing is not possible --> probe has the same effect as isSyncronized()" );
+    LAMA_LOG_WARN( logger, *this << ": probing is not possible --> probe has the same effect as isSyncronized()" )
     return isSynchronized();
 }
 

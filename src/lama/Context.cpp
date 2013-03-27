@@ -46,17 +46,17 @@
 namespace lama
 {
 
-LAMA_LOG_DEF_LOGGER( Context::logger, "Context" );
+LAMA_LOG_DEF_LOGGER( Context::logger, "Context" )
 
 Context::Context( ContextType type )
     : mContextType( type ), mEnabled( false ), mFile( NULL ), mLine( 0 )
 {
-    LAMA_LOG_DEBUG( logger, "Context( type = " << mContextType << " )" );
+    LAMA_LOG_DEBUG( logger, "Context( type = " << mContextType << " )" )
 }
 
 Context::~Context()
 {
-    LAMA_LOG_DEBUG( logger, "~Context( type = " << mContextType << " )" );
+    LAMA_LOG_DEBUG( logger, "~Context( type = " << mContextType << " )" )
 }
 
 bool Context::operator==( const Context& other ) const
@@ -71,12 +71,12 @@ bool Context::operator==( const Context& other ) const
     {
         same = mContextType == other.mContextType;
 
-        LAMA_ASSERT_EQUAL_DEBUG( canUseData( other), other.canUseData( *this ) );
+        LAMA_ASSERT_EQUAL_DEBUG( canUseData( other), other.canUseData( *this ) )
 
         same = same && canUseData( other ) && other.canUseData( *this );
     }
 
-    LAMA_LOG_TRACE( logger, *this << " == " << other << " is " << same );
+    LAMA_LOG_TRACE( logger, *this << " == " << other << " is " << same )
     return same;
 }
 
@@ -121,7 +121,7 @@ const LAMAInterface& Context::getInterface() const
 
     // Registry throws an exception if no interface is available
 
-    LAMA_ASSERT_DEBUG( lamaInterface, "No lama interface available on " << *this );
+    LAMA_ASSERT_DEBUG( lamaInterface, "No lama interface available on " << *this )
 
     return *lamaInterface;
 }
@@ -130,7 +130,7 @@ const LAMAInterface& Context::getInterface() const
 
 void Context::enable( const char* file, int line ) const
 {
-    LAMA_LOG_INFO( logger, file << "( line = " << line << ") : enable " << *this );
+    LAMA_LOG_INFO( logger, file << "( line = " << line << ") : enable " << *this )
 
     if ( mEnabled )
     {
@@ -147,12 +147,12 @@ void Context::enable( const char* file, int line ) const
 
 void Context::disable( const char* file, int line ) const
 {
-    LAMA_LOG_INFO( logger, file << "( line = " << line << ") : disable " << *this );
+    LAMA_LOG_INFO( logger, file << "( line = " << line << ") : disable " << *this )
 
     if ( !mEnabled )
     {
         LAMA_LOG_INFO( logger,
-                       "Disable " << *this << " at " << file << " ( line = " << line << " )" << ", context was not enabled before" );
+                       "Disable " << *this << " at " << file << " ( line = " << line << " )" << ", context was not enabled before" )
     }
 
     mEnabled = false;
@@ -185,7 +185,7 @@ Context::ContextData::~ContextData()
 
 void Context::ContextData::allocate( const size_t size )
 {
-    LAMA_ASSERT_DEBUG( 0 == pointer, "ContextData data already given at " << *context );
+    LAMA_ASSERT_DEBUG( 0 == pointer, "ContextData data already given at " << *context )
 
     this->size = size;
 
@@ -193,19 +193,19 @@ void Context::ContextData::allocate( const size_t size )
 
     if ( !pointer )
     {
-        LAMA_THROWEXCEPTION( "Could not allocate ContextData of size = " << size << " on " << *context );
+        LAMA_THROWEXCEPTION( "Could not allocate ContextData of size = " << size << " on " << *context )
     }
 
     allocated = true;
 
-    LAMA_LOG_DEBUG( logger, "allocated " << size << " bytes" );
+    LAMA_LOG_DEBUG( logger, "allocated " << size << " bytes" )
 }
 
 /* ---------------------------------------------------------------------------------*/
 
 void Context::ContextData::setRef( void* reference, const size_t size )
 {
-    LAMA_ASSERT_DEBUG( 0 == pointer, "ContextData data already given at " << *context );
+    LAMA_ASSERT_DEBUG( 0 == pointer, "ContextData data already given at " << *context )
 
     pointer = reference;
 
@@ -215,10 +215,10 @@ void Context::ContextData::setRef( void* reference, const size_t size )
 
     if ( !pointer && size )
     {
-        LAMA_THROWEXCEPTION( "NULL pointer cannot set be as reference, size = " << size );
+        LAMA_THROWEXCEPTION( "NULL pointer cannot set be as reference, size = " << size )
     }
 
-    LAMA_LOG_DEBUG( logger, "set ref for " << size << " bytes" );
+    LAMA_LOG_DEBUG( logger, "set ref for " << size << " bytes" )
 }
 
 /* ---------------------------------------------------------------------------------*/
@@ -227,10 +227,10 @@ void Context::ContextData::free()
 {
     // Free will/should only be called on an unlocked array
 
-    LAMA_LOG_TRACE( logger, "free for " << *context );
+    LAMA_LOG_TRACE( logger, "free for " << *context )
 
-    LAMA_ASSERT_DEBUG( 0 == lock[Read], "cannot free read locked data on " << *context );
-    LAMA_ASSERT_DEBUG( 0 == lock[Write], "cannot free write locked data on " << *context );
+    LAMA_ASSERT_DEBUG( 0 == lock[Read], "cannot free read locked data on " << *context )
+    LAMA_ASSERT_DEBUG( 0 == lock[Write], "cannot free write locked data on " << *context )
 
     if ( context && pointer )
     {
@@ -278,12 +278,12 @@ void Context::ContextData::setCleanFunction( boost::function<void( void* )> clea
 
 void Context::ContextData::realloc( const size_t newSize, const size_t saveSize )
 {
-    LAMA_ASSERT_ERROR( allocated, "Cannot realloc data set by reference" );
+    LAMA_ASSERT_ERROR( allocated, "Cannot realloc data set by reference" )
 
     // Note: realloc cn also be used to shrink the array size
-    LAMA_ASSERT_DEBUG( context, "no context available for realloc" );
-    LAMA_ASSERT_DEBUG( saveSize <= size, "cannot save more than current size" );
-    LAMA_ASSERT_DEBUG( saveSize <= newSize, "cannot save more than new size" );
+    LAMA_ASSERT_DEBUG( context, "no context available for realloc" )
+    LAMA_ASSERT_DEBUG( saveSize <= size, "cannot save more than current size" )
+    LAMA_ASSERT_DEBUG( saveSize <= newSize, "cannot save more than new size" )
     void* oldPointer = pointer;
     size_t oldSize = size;
 

@@ -38,7 +38,7 @@
 namespace lama
 {
 
-LAMA_LOG_DEF_LOGGER( ContextAccess::logger, "ContextAccess" );
+LAMA_LOG_DEF_LOGGER( ContextAccess::logger, "ContextAccess" )
 
 ContextAccess::ContextAccess( ContextPtr context, const char* file, int line )
     : mContext( context ), mReleased( false ), mFile( file ), mLine( line )
@@ -49,12 +49,12 @@ ContextAccess::ContextAccess( ContextPtr context, const char* file, int line )
     {
         // Might be useful to support NULL context, but give a warning
 
-        LAMA_LOG_WARN( logger, *this << " enabled" );
+        LAMA_LOG_WARN( logger, *this << " enabled" )
         mReleased = true;
         return;
     }
 
-    LAMA_LOG_INFO( logger, *this << " enabled" );
+    LAMA_LOG_INFO( logger, *this << " enabled" )
 
     mContext->enable( mFile, mLine );
 }
@@ -66,7 +66,7 @@ void ContextAccess::release()
         return;
     }
 
-    LAMA_LOG_INFO( logger, *this << " released" );
+    LAMA_LOG_INFO( logger, *this << " released" )
 
     mContext->disable( mFile, mLine );
     mReleased = false;

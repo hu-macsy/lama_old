@@ -642,9 +642,9 @@ void DenseMatrix<ValueType>::copyDenseMatrix( const DenseMatrix<OtherValueType>&
 {
     // check for valid pointer, might be dynamic cast went wrong somewhere else
 
-    LAMA_ASSERT_ERROR( &other, "NULL matrix in assignment operator" );
+    LAMA_ASSERT_ERROR( &other, "NULL matrix in assignment operator" )
 
-    LAMA_LOG_INFO( logger, "copy dense, this = " << this << ", other = " << &other );
+    LAMA_LOG_INFO( logger, "copy dense, this = " << this << ", other = " << &other )
 
     // inherit size and distributions
 
@@ -656,7 +656,7 @@ void DenseMatrix<ValueType>::copyDenseMatrix( const DenseMatrix<OtherValueType>&
 
     for ( IndexType i = 0; i < n; ++i )
     {
-        LAMA_LOG_DEBUG( logger, "copy block " << i << " of " << n << " = " << *other.mData[i] );
+        LAMA_LOG_DEBUG( logger, "copy block " << i << " of " << n << " = " << *other.mData[i] )
 
         mData[i].reset( new DenseStorage<ValueType>( *other.mData[i] ) );
     }

@@ -196,7 +196,7 @@ public:
      * @brief Clear the full matrix, resets global and local sizes to 0.
      *
      * \code
-     *     CSRSparseMatrix<double> a ( ... );
+     *     CSRSparseMatrix<double> a ( ... )
      *     a = CSRSparseMatrix<double> ();     \\ will free all arrays
      *     a.clear();                          \\ same functionality, clears involved arrays
      *
@@ -229,7 +229,7 @@ public:
      * \code
      * void sub( ..., Matrix& a, ... )
      * ...
-     * LAMA_ASSERT_EQUAL_DEBUG( a.getNumRows(), a.getNumColumns() );
+     * LAMA_ASSERT_EQUAL_DEBUG( a.getNumRows(), a.getNumColumns() )
      * a.setIdentity();
      * \endcode
      */
@@ -808,7 +808,7 @@ protected:
 
     void swapMatrix( Matrix& other ); // swap member variables of Matrix
 
-    LAMA_LOG_DECL_STATIC_LOGGER( logger );
+    LAMA_LOG_DECL_STATIC_LOGGER( logger )
 
 private:
 
@@ -840,13 +840,13 @@ inline Matrix::SyncKind Matrix::getCommunicationKind() const
 
 inline const Distribution& Matrix::getColDistribution() const
 {
-    LAMA_ASSERT_ERROR( mColDistribution, "NULL column distribution for Matrix" );
+    LAMA_ASSERT_ERROR( mColDistribution, "NULL column distribution for Matrix" )
     return *mColDistribution;
 }
 
 inline DistributionPtr Matrix::getColDistributionPtr() const
 {
-    LAMA_ASSERT_ERROR( mColDistribution, "NULL column distribution for Matrix" );
+    LAMA_ASSERT_ERROR( mColDistribution, "NULL column distribution for Matrix" )
     return mColDistribution;
 }
 

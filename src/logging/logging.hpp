@@ -191,12 +191,12 @@
  *   Defintions for logging                             *
  *******************************************************/
 
-#define LAMA_LOG_DECL_STATIC_LOGGER(aLogger) static class log4lama::Logger& aLogger
+#define LAMA_LOG_DECL_STATIC_LOGGER(aLogger) static class log4lama::Logger& aLogger;
 #define LAMA_LOG_DEF_LOGGER(aLogger,name) log4lama::Logger& aLogger = \
-        log4lama::LoggerProvider::getProvider().getInstance(std::string(name))
+        log4lama::LoggerProvider::getProvider().getInstance(std::string(name));
 #define LAMA_LOG_DEF_TEMPLATE_LOGGER(temp,aLogger,name) temp log4lama::Logger& aLogger = \
-        log4lama::LoggerProvider::getProvider().getInstance(std::string(name))
-#define LAMA_LOG_USING(alogger) using alogger
+        log4lama::LoggerProvider::getProvider().getInstance(std::string(name));
+#define LAMA_LOG_USING(alogger) using alogger;
 
 #include <sstream>
 

@@ -47,7 +47,7 @@ namespace lama
 
 {
 
-LAMA_LOG_DEF_TEMPLATE_LOGGER( template<typename ValueType>, MatrixCreator<ValueType>::logger, "MatrixCreator" );
+LAMA_LOG_DEF_TEMPLATE_LOGGER( template<typename ValueType>, MatrixCreator<ValueType>::logger, "MatrixCreator" )
 
 static inline void getStencilProperties( IndexType& dimension, IndexType& length, IndexType& distance, IndexType stencilType )
 {
@@ -87,7 +87,7 @@ static inline void getStencilProperties( IndexType& dimension, IndexType& length
         length = 1;
         distance = 1;
         dimension = 1;
-        LAMA_THROWEXCEPTION( "Invalid Stencil type = " << stencilType );
+        LAMA_THROWEXCEPTION( "Invalid Stencil type = " << stencilType )
     }
 }
 
@@ -163,16 +163,16 @@ static inline IndexType getNStencilValues(
     IndexType length,
     IndexType maxDistance )
 {
-    LAMA_ASSERT_DEBUG( idX < dimX, "idX = " << idX << " out of range, dimX = " << dimX );
-    LAMA_ASSERT_DEBUG( idY < dimY, "idY = " << idY << " out of range, dimY = " << dimY );
-    LAMA_ASSERT_DEBUG( idZ < dimZ, "idZ = " << idZ << " out of range, dimZ = " << dimZ );
+    LAMA_ASSERT_DEBUG( idX < dimX, "idX = " << idX << " out of range, dimX = " << dimX )
+    LAMA_ASSERT_DEBUG( idY < dimY, "idY = " << idY << " out of range, dimY = " << dimY )
+    LAMA_ASSERT_DEBUG( idZ < dimZ, "idZ = " << idZ << " out of range, dimZ = " << dimZ )
 
     IndexType nX = getNumNeighbors( idX, dimX, -length ) + getNumNeighbors( idX, dimX, length );
     IndexType nY = getNumNeighbors( idY, dimY, -length ) + getNumNeighbors( idY, dimY, length );
     IndexType nZ = getNumNeighbors( idZ, dimZ, -length ) + getNumNeighbors( idZ, dimZ, length );
 
     // LAMA_LOG_DEBUG( logger, idX << "," << idY << "," << idZ << ": neighbors = "
-    //                   << nX << "," << nY << "," << nZ );
+    //                   << nX << "," << nY << "," << nZ )
 
     // printf("%d,%d,%d has %d,%d,%d neighbors\n", idX, idY, idZ, nX, nY, nZ);
 
@@ -182,12 +182,12 @@ static inline IndexType getNStencilValues(
 
     if ( maxDistance >= 2 )
     {
-        LAMA_ASSERT_ERROR( length == 1, "length > 1 for stencil not supported" );
+        LAMA_ASSERT_ERROR( length == 1, "length > 1 for stencil not supported" )
         numValues += nX * nY + nX * nZ + nY * nZ;
     }
     if ( maxDistance >= 3 )
     {
-        LAMA_ASSERT_ERROR( length == 1, "length > 1 for stencil not supported" );
+        LAMA_ASSERT_ERROR( length == 1, "length > 1 for stencil not supported" )
         // dimension cannot be 1, 2
         numValues += nX * nY * nZ;
     }
@@ -307,7 +307,7 @@ void MatrixCreator<ValueType>::buildPoisson(
     }
 
     LAMA_LOG_INFO( logger,
-                   *comm << ": rank = (" << gridRank[0] << "," << gridRank[1] << "," << gridRank[2] << ") of (" << gridSize[0] << "," << gridSize[1] << "," << gridSize[2] << "), local range = [" << dimLB[0] << ":" << dimUB[0] << "," << dimLB[1] << ":" << dimUB[1] << "," << dimLB[2] << ":" << dimUB[2] << "] of " << dimX << " x " << dimY << " x " << dimZ );
+                   *comm << ": rank = (" << gridRank[0] << "," << gridRank[1] << "," << gridRank[2] << ") of (" << gridSize[0] << "," << gridSize[1] << "," << gridSize[2] << "), local range = [" << dimLB[0] << ":" << dimUB[0] << "," << dimLB[1] << ":" << dimUB[1] << "," << dimLB[2] << ":" << dimUB[2] << "] of " << dimX << " x " << dimY << " x " << dimZ )
 
     IndexType globalSize = dimX * dimY * dimZ; // number of rows, columns of full matrix
 
@@ -330,7 +330,7 @@ void MatrixCreator<ValueType>::buildPoisson(
         localSize *= ( dimUB[i] - dimLB[i] + 1 );
     }
 
-    LAMA_LOG_DEBUG( logger, *comm << ": has local size = " << localSize );
+    LAMA_LOG_DEBUG( logger, *comm << ": has local size = " << localSize )
 
     myGlobalIndexes.reserve( localSize );
     myIA.reserve( localSize );
@@ -341,10 +341,10 @@ void MatrixCreator<ValueType>::buildPoisson(
 
     getStencilProperties( dimStencil, length, maxDistance, stencilType );
 
-    LAMA_ASSERT_EQUAL_ERROR( dimStencil, dimension );
+    LAMA_ASSERT_EQUAL_ERROR( dimStencil, dimension )
 
     LAMA_LOG_INFO( logger,
-                   "stencil type = " << stencilType << " -> dim = " << dimStencil << ", direction length = " << length << ", max distance = " << maxDistance );
+                   "stencil type = " << stencilType << " -> dim = " << dimStencil << ", direction length = " << length << ", max distance = " << maxDistance )
 
     // compute global indexes this processor is responsibile for and number of non-zero values
     // of the rows owned by this processor
@@ -370,13 +370,13 @@ void MatrixCreator<ValueType>::buildPoisson(
         }
     }
 
-    LAMA_LOG_INFO( logger, *comm << ": has local " << localSize << " rows, nna = " << myNNA );
+    LAMA_LOG_INFO( logger, *comm << ": has local " << localSize << " rows, nna = " << myNNA )
     // allocate and fill local part of the distributed matrix
 
     lama::DistributionPtr distribution = lama::DistributionPtr(
             new lama::GeneralDistribution( globalSize, myGlobalIndexes, comm ) );
 
-    LAMA_LOG_INFO( logger, "distribution = " << *distribution );
+    LAMA_LOG_INFO( logger, "distribution = " << *distribution )
 
     // create new local CSR data ( # local rows x # columns )
 
@@ -429,10 +429,10 @@ void MatrixCreator<ValueType>::buildPoisson(
                         (int) colIndexes.size(),
                         getNStencilValues( idX, idY, idZ, dimX, dimY, dimZ, length, maxDistance ) );
 
-                    LAMA_ASSERT_EQUAL_DEBUG( colIndexes.size(), colValues.size() );
+                    LAMA_ASSERT_EQUAL_DEBUG( colIndexes.size(), colValues.size() )
 
                     LAMA_LOG_TRACE( logger,
-                                    *comm << ": at " << idX << " x " << idY << " x " << idZ << ", local row : " << rowCounter << ", global row : " << getMatrixPosition( idX, idY, idZ, dimX, dimY, dimZ ) << ": " << colIndexes.size() << " entries: " << colIndexes[0] << ": " << colValues[0] << ", ..." );
+                                    *comm << ": at " << idX << " x " << idY << " x " << idZ << ", local row : " << rowCounter << ", global row : " << getMatrixPosition( idX, idY, idZ, dimX, dimY, dimZ ) << ": " << colIndexes.size() << " entries: " << colIndexes[0] << ": " << colValues[0] << ", ..." )
 
                     ia[rowCounter + 1] = ia[rowCounter] + static_cast<IndexType>( colIndexes.size() );
 
@@ -451,16 +451,16 @@ void MatrixCreator<ValueType>::buildPoisson(
 
     localMatrix.swap( csrIA, csrJA, csrValues );
 
-    LAMA_LOG_DEBUG( logger, "replace owned data with " << localMatrix );
+    LAMA_LOG_DEBUG( logger, "replace owned data with " << localMatrix )
 
     matrix.assign( localMatrix, distribution, distribution ); // builds also halo
 
     // but now the local part of matrixA should have the diagonal property as global column
     // indexes have been localized
 
-    LAMA_ASSERT_DEBUG( matrix.getLocalStorage().hasDiagonalProperty(), "CSR data has not diagonal property" );
+    LAMA_ASSERT_DEBUG( matrix.getLocalStorage().hasDiagonalProperty(), "CSR data has not diagonal property" )
 
-    LAMA_LOG_INFO( logger, "built matrix A = " << matrix );
+    LAMA_LOG_INFO( logger, "built matrix A = " << matrix )
 }
 
 /* ------------------------------------------------------------------------- */
@@ -468,7 +468,7 @@ void MatrixCreator<ValueType>::buildPoisson(
 template<typename T>
 void MatrixCreator<T>::buildPoisson1D( CSRSparseMatrix<T>& matrix, const IndexType stencilType, const IndexType dim )
 {
-    LAMA_LOG_INFO( logger, "build Poisson1D" << stencilType << "P( " << dim << ")" );
+    LAMA_LOG_INFO( logger, "build Poisson1D" << stencilType << "P( " << dim << ")" )
 
     buildPoisson( matrix, 1, stencilType, dim, 1, 1 );
 }
@@ -482,7 +482,7 @@ void MatrixCreator<T>::buildPoisson2D(
     const IndexType dim1,
     const IndexType dim2 )
 {
-    LAMA_LOG_INFO( logger, "build Poisson2D" << stencilType << "P( " << dim1 << ", " << dim2 << ")" );
+    LAMA_LOG_INFO( logger, "build Poisson2D" << stencilType << "P( " << dim1 << ", " << dim2 << ")" )
 
     buildPoisson( matrix, 2, stencilType, dim1, dim2, 1 );
 }
@@ -497,7 +497,7 @@ void MatrixCreator<T>::buildPoisson3D(
     const IndexType dim2,
     const IndexType dim3 )
 {
-    LAMA_LOG_INFO( logger, "build Poisson3D" << stencilType << "P( " << dim1 << ", " << dim2 << ", " << dim3 << ")" );
+    LAMA_LOG_INFO( logger, "build Poisson3D" << stencilType << "P( " << dim1 << ", " << dim2 << ", " << dim3 << ")" )
 
     buildPoisson( matrix, 3, stencilType, dim1, dim2, dim3 );
 }
@@ -564,7 +564,7 @@ void MatrixCreator<ValueType>::fillRandom( Matrix& matrix, double density )
 
     localCSRStorage.setRawCSRData( localRowSize, colSize, numValues, &csrIA[0], &csrJA[0], &csrValues[0] );
 
-    LAMA_LOG_DEBUG( logger, "replace owned data with " << localCSRStorage );
+    LAMA_LOG_DEBUG( logger, "replace owned data with " << localCSRStorage )
 
     // The new matrix data has the same row distribution as the input
     // matrix, also take over the original column distribution

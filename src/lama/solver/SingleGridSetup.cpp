@@ -44,11 +44,11 @@
 namespace lama
 {
 
-LAMA_LOG_DEF_LOGGER( SingleGridSetup::logger, "AMGSetup.SingleGridSetup" );
+LAMA_LOG_DEF_LOGGER( SingleGridSetup::logger, "AMGSetup.SingleGridSetup" )
 
 SingleGridSetup::SingleGridSetup()
 {
-    LAMA_LOG_DEBUG( logger, "SingleGridSetup" );
+    LAMA_LOG_DEBUG( logger, "SingleGridSetup" )
 }
 
 SingleGridSetup::~SingleGridSetup()
@@ -57,7 +57,7 @@ SingleGridSetup::~SingleGridSetup()
 
 void SingleGridSetup::initialize( const Matrix& coefficients )
 {
-    LAMA_REGION( "initialize_SingleGridSetup" );
+    LAMA_REGION( "initialize_SingleGridSetup" )
 
     // set default solver
     if ( !mSolver )
@@ -77,7 +77,7 @@ void SingleGridSetup::initialize( const Matrix& coefficients )
     mIdentity->allocate( coefficients.getDistributionPtr(), coefficients.getDistributionPtr() );
     mIdentity->setIdentity();
 
-    LAMA_LOG_DEBUG( logger, "Identity matrix = " << *mIdentity );
+    LAMA_LOG_DEBUG( logger, "Identity matrix = " << *mIdentity )
 
     mSolutionVector = Vector::createVector( coefficients.getValueType(), mIdentity->getDistributionPtr() );
     mRhsVector = Vector::createVector( coefficients.getValueType(), mIdentity->getDistributionPtr() );

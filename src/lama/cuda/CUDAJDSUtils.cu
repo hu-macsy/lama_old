@@ -64,7 +64,7 @@
 namespace lama
 {
 
-LAMA_LOG_DEF_LOGGER( CUDAJDSUtils::logger, "CUDA.JDSUtils" );
+LAMA_LOG_DEF_LOGGER( CUDAJDSUtils::logger, "CUDA.JDSUtils" )
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 /*                                                  thrust functors                                                   */
@@ -112,7 +112,7 @@ struct greaterThan
 template<typename ValueType>
 void CUDAJDSUtils::setDiagonalWithScalar( const IndexType numDiagonal, ValueType values[], Scalar scalar )
 {
-    LAMA_LOG_INFO( logger, "setDiagonalWithScalar with numDiagonal = " << numDiagonal << " and scalar = " << scalar );
+    LAMA_LOG_INFO( logger, "setDiagonalWithScalar with numDiagonal = " << numDiagonal << " and scalar = " << scalar )
 
     LAMA_CHECK_CUDA_ACCESS
 
@@ -157,7 +157,7 @@ void CUDAJDSUtils::getRow(
     const IndexType ja[],
     const ValueType values[] )
 {
-    LAMA_LOG_INFO( logger, "getRow with i = " << i << ", numColumns = " << numColumns << " and numRows = " << numRows );
+    LAMA_LOG_INFO( logger, "getRow with i = " << i << ", numColumns = " << numColumns << " and numRows = " << numRows )
 
     LAMA_CHECK_CUDA_ACCESS
 
@@ -304,7 +304,7 @@ void CUDAJDSUtils::scaleValue(
     ValueType mValues[],
     const OtherValueType values[] )
 {
-    LAMA_LOG_INFO( logger, "scaleValue with numRows = " << numRows );
+    LAMA_LOG_INFO( logger, "scaleValue with numRows = " << numRows )
 
     LAMA_CHECK_CUDA_ACCESS
 
@@ -342,7 +342,7 @@ bool CUDAJDSUtils::checkDiagonalProperty(
     const IndexType dlg[] )
 {
     LAMA_LOG_INFO( logger,
-                   "checkDiagonalProperty with numDiagonals = " << numDiagonals << ", numRows = " << numRows << " and numColumns = " << numColumns );
+                   "checkDiagonalProperty with numDiagonals = " << numDiagonals << ", numRows = " << numRows << " and numColumns = " << numColumns )
 
     LAMA_CHECK_CUDA_ACCESS
 
@@ -411,7 +411,7 @@ bool CUDAJDSUtils::check(
     const IndexType ilg[],
     const IndexType dlg[] )
 {
-    LAMA_LOG_INFO( logger, "check with numValues = " << numValues << ", numColumns = " << numColumns );
+    LAMA_LOG_INFO( logger, "check with numValues = " << numValues << ", numColumns = " << numColumns )
 
     LAMA_CHECK_CUDA_ACCESS
 
@@ -508,7 +508,7 @@ IndexType CUDAJDSUtils::ilg2dlg(
     const IndexType ilg[],
     const IndexType numRows )
 {
-    LAMA_LOG_INFO( logger, "ilg2dlg with numDiagonals = " << numDiagonals << ", numRows = " << numRows );
+    LAMA_LOG_INFO( logger, "ilg2dlg with numDiagonals = " << numDiagonals << ", numRows = " << numRows )
 
     LAMA_CHECK_CUDA_ACCESS
 
@@ -541,7 +541,7 @@ IndexType CUDAJDSUtils::ilg2dlg(
 
 void CUDAJDSUtils::sortRows( IndexType array[], IndexType perm[], const IndexType n )
 {
-    LAMA_LOG_INFO( logger, "sort " << n << " rows by sizes" );
+    LAMA_LOG_INFO( logger, "sort " << n << " rows by sizes" )
 
     // Note: this solution does not work on Tesla cards (doesent it?)
 
@@ -598,7 +598,7 @@ void CUDAJDSUtils::setCSRValues(
     const IndexType csrJA[],
     const CSRValueType csrValues[] )
 {
-    LAMA_LOG_INFO( logger, "convert CSR to JDS, #rows = " << numRows );
+    LAMA_LOG_INFO( logger, "convert CSR to JDS, #rows = " << numRows )
 
     LAMA_CHECK_CUDA_ACCESS
 
@@ -618,7 +618,7 @@ void CUDAJDSUtils::setCSRValues(
 
 void CUDAJDSUtils::setInversePerm( IndexType inversePerm[], const IndexType perm[], const IndexType n )
 {
-    LAMA_LOG_INFO( logger, "compute inverse perm, n = " << n );
+    LAMA_LOG_INFO( logger, "compute inverse perm, n = " << n )
 
     LAMA_CHECK_CUDA_ACCESS
 
@@ -687,7 +687,7 @@ void CUDAJDSUtils::getCSRValues(
     const JDSValueType jdsValues[] )
 {
     LAMA_LOG_INFO( logger,
-                   "get CSRValues<" << typeid( JDSValueType ).name() << ", " << typeid( CSRValueType ).name() << ">" << ", #rows = " << numRows );
+                   "get CSRValues<" << typeid( JDSValueType ).name() << ", " << typeid( CSRValueType ).name() << ">" << ", #rows = " << numRows )
 
     LAMA_CHECK_CUDA_ACCESS
 
@@ -848,14 +848,14 @@ void CUDAJDSUtils::jacobi(
     cudaStream_t stream = 0;
 
     LAMA_LOG_INFO( logger,
-                   "jacobi<" << typeid(ValueType).name() << ">" << ", #rows = " << numRows << ", omega = " << omega );
+                   "jacobi<" << typeid(ValueType).name() << ">" << ", #rows = " << numRows << ", omega = " << omega )
 
     LAMA_CHECK_CUDA_ACCESS
 
     if ( syncToken )
     {
         CUDAStreamSyncToken* cudaStreamSyncToken = dynamic_cast<CUDAStreamSyncToken*>( syncToken );
-        LAMA_ASSERT_DEBUG( cudaStreamSyncToken, "no cuda stream sync token provided" );
+        LAMA_ASSERT_DEBUG( cudaStreamSyncToken, "no cuda stream sync token provided" )
         stream = cudaStreamSyncToken->getCUDAStream();
     }
 
@@ -866,13 +866,13 @@ void CUDAJDSUtils::jacobi(
     const bool useTexture = true; // lama_getUseTex_cuda();
     const bool useSharedMem = false; // maybe optimize later
 
-    LAMA_LOG_DEBUG( logger, "useTexture = " << useTexture << ", useSharedMem = " << useSharedMem );
+    LAMA_LOG_DEBUG( logger, "useTexture = " << useTexture << ", useSharedMem = " << useSharedMem )
 
     if ( useTexture )
     {
         if ( sizeof(ValueType) == sizeof(double) )
         {
-            LAMA_CUDA_RT_CALL( cudaBindTexture( NULL, texJDSDXref, oldSolution ), "LAMA_STATUS_CUDA_BINDTEX_FAILED" );
+            LAMA_CUDA_RT_CALL( cudaBindTexture( NULL, texJDSDXref, oldSolution ), "LAMA_STATUS_CUDA_BINDTEX_FAILED" )
         }
         else if ( sizeof(ValueType) == sizeof(float) )
         {
@@ -1030,7 +1030,7 @@ void CUDAJDSUtils::jacobiHalo(
 {
 
     LAMA_LOG_INFO( logger,
-                   "jacobiHalo<" << typeid(ValueType).name() << ">" << ", #rows = " << numRows << ", omega = " << omega );
+                   "jacobiHalo<" << typeid(ValueType).name() << ">" << ", #rows = " << numRows << ", omega = " << omega )
 
     LAMA_CHECK_CUDA_ACCESS
 
@@ -1041,14 +1041,14 @@ void CUDAJDSUtils::jacobiHalo(
     const bool useTexture = true; // lama_getUseTex_cuda();
     const bool useSharedMem = false; // maybe optimize later
 
-    LAMA_LOG_DEBUG( logger, "useTexture = " << useTexture << ", useSharedMem = " << useSharedMem );
+    LAMA_LOG_DEBUG( logger, "useTexture = " << useTexture << ", useSharedMem = " << useSharedMem )
 
     if ( useTexture )
     {
 
         if ( sizeof(ValueType) == sizeof(double) )
         {
-            LAMA_CUDA_RT_CALL( cudaBindTexture( NULL, texJDSDXref, oldSolutionHalo ), "LAMA_STATUS_CUDA_BINDTEX_FAILED" );
+            LAMA_CUDA_RT_CALL( cudaBindTexture( NULL, texJDSDXref, oldSolutionHalo ), "LAMA_STATUS_CUDA_BINDTEX_FAILED" )
         }
         else if ( sizeof(ValueType) == sizeof(float) )
         {
@@ -1226,15 +1226,15 @@ void CUDAJDSUtils::normalGEMV(
     class SyncToken* /* syncToken */)
 {
 
-    LAMA_LOG_INFO( logger, "normalGEMV<" << typeid(ValueType).name() << ">" << ", #rows = " << numRows );
+    LAMA_LOG_INFO( logger, "normalGEMV<" << typeid(ValueType).name() << ">" << ", #rows = " << numRows )
 
     LAMA_LOG_INFO(
-        logger, "alpha = " << alpha << ", x = " << x << ", beta = " << beta << ", y = " << y << ", result = " << result );
+        logger, "alpha = " << alpha << ", x = " << x << ", beta = " << beta << ", y = " << y << ", result = " << result )
 
     const bool useTexture = true; //lama_getUseTex_cuda();
     const bool useSharedMem = false; // maybe optimize later
 
-    LAMA_LOG_DEBUG( logger, "useTexture = " << useTexture << ", useSharedMem = " << useSharedMem );
+    LAMA_LOG_DEBUG( logger, "useTexture = " << useTexture << ", useSharedMem = " << useSharedMem )
 
     const int block_size = ( numRows > 8191 ? 256 : 128 );
 
@@ -1303,50 +1303,50 @@ void CUDAJDSUtils::normalGEMV(
 
 void CUDAJDSUtils::setInterface( JDSUtilsInterface& JDSUtils )
 {
-    LAMA_LOG_INFO( logger, "set JDS routines for CUDA in Interface" );
+    LAMA_LOG_INFO( logger, "set JDS routines for CUDA in Interface" )
 
-    LAMA_INTERFACE_REGISTER( JDSUtils, sortRows );
-    LAMA_INTERFACE_REGISTER( JDSUtils, checkDiagonalProperty );
-    LAMA_INTERFACE_REGISTER( JDSUtils, check );
-    LAMA_INTERFACE_REGISTER( JDSUtils, ilg2dlg );
-    LAMA_INTERFACE_REGISTER( JDSUtils, setInversePerm );
+    LAMA_INTERFACE_REGISTER( JDSUtils, sortRows )
+    LAMA_INTERFACE_REGISTER( JDSUtils, checkDiagonalProperty )
+    LAMA_INTERFACE_REGISTER( JDSUtils, check )
+    LAMA_INTERFACE_REGISTER( JDSUtils, ilg2dlg )
+    LAMA_INTERFACE_REGISTER( JDSUtils, setInversePerm )
 
-    LAMA_INTERFACE_REGISTER_T( JDSUtils, setDiagonalWithScalar, float );
-    LAMA_INTERFACE_REGISTER_T( JDSUtils, setDiagonalWithScalar, double );
+    LAMA_INTERFACE_REGISTER_T( JDSUtils, setDiagonalWithScalar, float )
+    LAMA_INTERFACE_REGISTER_T( JDSUtils, setDiagonalWithScalar, double )
 
-    LAMA_INTERFACE_REGISTER_TT( JDSUtils, scaleValue, float, float );
-    LAMA_INTERFACE_REGISTER_TT( JDSUtils, scaleValue, float, double );
-    LAMA_INTERFACE_REGISTER_TT( JDSUtils, scaleValue, double, float );
-    LAMA_INTERFACE_REGISTER_TT( JDSUtils, scaleValue, double, double );
+    LAMA_INTERFACE_REGISTER_TT( JDSUtils, scaleValue, float, float )
+    LAMA_INTERFACE_REGISTER_TT( JDSUtils, scaleValue, float, double )
+    LAMA_INTERFACE_REGISTER_TT( JDSUtils, scaleValue, double, float )
+    LAMA_INTERFACE_REGISTER_TT( JDSUtils, scaleValue, double, double )
 
-    LAMA_INTERFACE_REGISTER_TT( JDSUtils, getRow, float, float );
-    LAMA_INTERFACE_REGISTER_TT( JDSUtils, getRow, float, double );
-    LAMA_INTERFACE_REGISTER_TT( JDSUtils, getRow, double, float );
-    LAMA_INTERFACE_REGISTER_TT( JDSUtils, getRow, double, double );
+    LAMA_INTERFACE_REGISTER_TT( JDSUtils, getRow, float, float )
+    LAMA_INTERFACE_REGISTER_TT( JDSUtils, getRow, float, double )
+    LAMA_INTERFACE_REGISTER_TT( JDSUtils, getRow, double, float )
+    LAMA_INTERFACE_REGISTER_TT( JDSUtils, getRow, double, double )
 
-    LAMA_INTERFACE_REGISTER_TT( JDSUtils, getValue, float, float );
-    LAMA_INTERFACE_REGISTER_TT( JDSUtils, getValue, float, double );
-    LAMA_INTERFACE_REGISTER_TT( JDSUtils, getValue, double, float );
-    LAMA_INTERFACE_REGISTER_TT( JDSUtils, getValue, double, double );
+    LAMA_INTERFACE_REGISTER_TT( JDSUtils, getValue, float, float )
+    LAMA_INTERFACE_REGISTER_TT( JDSUtils, getValue, float, double )
+    LAMA_INTERFACE_REGISTER_TT( JDSUtils, getValue, double, float )
+    LAMA_INTERFACE_REGISTER_TT( JDSUtils, getValue, double, double )
 
-    LAMA_INTERFACE_REGISTER_TT( JDSUtils, getCSRValues, float, float );
-    LAMA_INTERFACE_REGISTER_TT( JDSUtils, getCSRValues, float, double );
-    LAMA_INTERFACE_REGISTER_TT( JDSUtils, getCSRValues, double, float );
-    LAMA_INTERFACE_REGISTER_TT( JDSUtils, getCSRValues, double, double );
+    LAMA_INTERFACE_REGISTER_TT( JDSUtils, getCSRValues, float, float )
+    LAMA_INTERFACE_REGISTER_TT( JDSUtils, getCSRValues, float, double )
+    LAMA_INTERFACE_REGISTER_TT( JDSUtils, getCSRValues, double, float )
+    LAMA_INTERFACE_REGISTER_TT( JDSUtils, getCSRValues, double, double )
 
-    LAMA_INTERFACE_REGISTER_TT( JDSUtils, setCSRValues, float, float );
-    LAMA_INTERFACE_REGISTER_TT( JDSUtils, setCSRValues, float, double );
-    LAMA_INTERFACE_REGISTER_TT( JDSUtils, setCSRValues, double, float );
-    LAMA_INTERFACE_REGISTER_TT( JDSUtils, setCSRValues, double, double );
+    LAMA_INTERFACE_REGISTER_TT( JDSUtils, setCSRValues, float, float )
+    LAMA_INTERFACE_REGISTER_TT( JDSUtils, setCSRValues, float, double )
+    LAMA_INTERFACE_REGISTER_TT( JDSUtils, setCSRValues, double, float )
+    LAMA_INTERFACE_REGISTER_TT( JDSUtils, setCSRValues, double, double )
 
-    LAMA_INTERFACE_REGISTER_T( JDSUtils, jacobi, float );
-    LAMA_INTERFACE_REGISTER_T( JDSUtils, jacobi, double );
+    LAMA_INTERFACE_REGISTER_T( JDSUtils, jacobi, float )
+    LAMA_INTERFACE_REGISTER_T( JDSUtils, jacobi, double )
 
-    LAMA_INTERFACE_REGISTER_T( JDSUtils, normalGEMV, float );
-    LAMA_INTERFACE_REGISTER_T( JDSUtils, normalGEMV, double );
+    LAMA_INTERFACE_REGISTER_T( JDSUtils, normalGEMV, float )
+    LAMA_INTERFACE_REGISTER_T( JDSUtils, normalGEMV, double )
 
-    LAMA_INTERFACE_REGISTER_T( JDSUtils, jacobiHalo, float );
-    LAMA_INTERFACE_REGISTER_T( JDSUtils, jacobiHalo, double );
+    LAMA_INTERFACE_REGISTER_T( JDSUtils, jacobiHalo, float )
+    LAMA_INTERFACE_REGISTER_T( JDSUtils, jacobiHalo, double )
 }
 
 } // namespace lama

@@ -46,7 +46,7 @@ using namespace boost;
 namespace lama
 {
 
-LAMA_LOG_DEF_LOGGER( ContextFactory::logger, "ContextFactory" );
+LAMA_LOG_DEF_LOGGER( ContextFactory::logger, "ContextFactory" )
 
 /** Set NULL manager as defaults for all devices */
 
@@ -90,7 +90,7 @@ ContextFactory& ContextFactory::getFactory()
 
 void ContextFactory::addContextManager( const Context::ContextType type, ContextManager& deviceManager )
 {
-    LAMA_ASSERT_DEBUG( type < Context::MaxContext, "illegal device" );
+    LAMA_ASSERT_DEBUG( type < Context::MaxContext, "illegal device" )
 
     // be careful about logging, method might be called during static initialization
 
@@ -98,7 +98,7 @@ void ContextFactory::addContextManager( const Context::ContextType type, Context
     {
         // ContextManager might be replaced, e.g. for Host context (DefaultHost or CUDAHost)
 
-        LAMA_LOG_INFO( logger, "Context manager replaced for context type " << theContextIds[type] );
+        LAMA_LOG_INFO( logger, "Context manager replaced for context type " << theContextIds[type] )
     }
 
     mContextManager[type] = &deviceManager;
@@ -108,9 +108,9 @@ void ContextFactory::addContextManager( const Context::ContextType type, Context
 
 ContextPtr ContextFactory::getContext( Context::ContextType type, int deviceNr )
 {
-    LAMA_ASSERT_DEBUG( type < Context::MaxContext, "illegal device type = " << type << ", out of range" );
+    LAMA_ASSERT_DEBUG( type < Context::MaxContext, "illegal device type = " << type << ", out of range" )
 
-    LAMA_LOG_DEBUG( logger, "getContext: type = " << theContextIds[type] << ", nr = " << deviceNr );
+    LAMA_LOG_DEBUG( logger, "getContext: type = " << theContextIds[type] << ", nr = " << deviceNr )
 
     const ContextFactory& factory = getFactory();
 
@@ -118,12 +118,12 @@ ContextPtr ContextFactory::getContext( Context::ContextType type, int deviceNr )
 
     if ( !manager )
     {
-        LAMA_THROWEXCEPTION( "Context " << theContextIds[type] << " not supported: no device manager available" );
+        LAMA_THROWEXCEPTION( "Context " << theContextIds[type] << " not supported: no device manager available" )
     }
 
     ContextPtr context = manager->getContext( deviceNr );
 
-    LAMA_ASSERT_DEBUG( context, "Context manager returned NULL context, should not happen" );
+    LAMA_ASSERT_DEBUG( context, "Context manager returned NULL context, should not happen" )
 
     if ( deviceNr == LAMA_DEFAULT_DEVICE_NUMBER )
     {
@@ -139,7 +139,7 @@ ContextPtr ContextFactory::getContext( Context::ContextType type, int deviceNr )
 
 ContextManager* ContextFactory::getContextManager( Context::ContextType type )
 {
-    LAMA_ASSERT_DEBUG( type < Context::MaxContext, "illegal device type = " << type << ", out of range" );
+    LAMA_ASSERT_DEBUG( type < Context::MaxContext, "illegal device type = " << type << ", out of range" )
     return mContextManager[type];
 }
 
@@ -159,14 +159,14 @@ void ContextFactory::release()
 
     ContextFactory& factory = getFactory();
 
-    LAMA_LOG_DEBUG( logger, "release context managers" );
+    LAMA_LOG_DEBUG( logger, "release context managers" )
 
     for ( int type = 0; type < int( Context::MaxContext ); ++type )
     {
         factory.mContextManager[ContextType( type )] = NULL;
     }
 
-    LAMA_LOG_DEBUG( logger, "released all context managers" );
+    LAMA_LOG_DEBUG( logger, "released all context managers" )
 }
 
 }

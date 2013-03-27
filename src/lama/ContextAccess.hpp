@@ -98,12 +98,12 @@ private:
  *
  *  \code
  *  {
- *      LAMA_CONTEXT_ACCESS( cudaContext );
+ *      LAMA_CONTEXT_ACCESS( cudaContext )
  *      ...   // computations on CUDA device
  *      // context is released at end of the scope by destructor of access object.
  *  }
  *  \endcode
  */
-#define LAMA_CONTEXT_ACCESS( context ) lama::ContextAccess LAMA_Ctx_Access__( context, __FILE__, __LINE__ )
+#define LAMA_CONTEXT_ACCESS( context ) lama::ContextAccess LAMA_Ctx_Access__( context, __FILE__, __LINE__ );
 
 #endif // LAMA_CONTEXT_ACCESS_HPP_

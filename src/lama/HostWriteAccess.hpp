@@ -195,7 +195,7 @@ template<typename T>
 T& HostWriteAccess<T>::operator[]( const IndexType i )
 {
     LAMA_ASSERT_ERROR( mData,
-                       "[" << i << "]: HostWriteAccess has already" << " been released or has not been allocated." );
+                       "[" << i << "]: HostWriteAccess has already" << " been released or has not been allocated." )
 
     return mData[i];
 }

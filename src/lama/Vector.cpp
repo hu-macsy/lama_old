@@ -50,7 +50,7 @@ using namespace boost;
 namespace lama
 {
 
-LAMA_LOG_DEF_LOGGER( Vector::logger, "Vector" );
+LAMA_LOG_DEF_LOGGER( Vector::logger, "Vector" )
 
 std::auto_ptr<Vector> Vector::createVector( const Scalar::ScalarType valueType, DistributionPtr distribution )
 {
@@ -73,40 +73,40 @@ std::auto_ptr<Vector> Vector::createVector( const Scalar::ScalarType valueType, 
 //            return std::auto_ptr<Vector>( new DenseVector<std::complex<long double> >( distribution) );
 //            break;
     default:
-        LAMA_THROWEXCEPTION( "createVector does not support " << valueType );
+        LAMA_THROWEXCEPTION( "createVector does not support " << valueType )
     }
 }
 
 Vector::Vector( const IndexType size, ContextPtr context )
     : Distributed( shared_ptr<Distribution>( new NoDistribution( size ) ) ), mContext( context )
 {
-    LAMA_ASSERT_ERROR( mContext, "NULL context not allowed" );
-    LAMA_LOG_INFO( logger, "Vector(" << size << "), replicated, on " << *mContext );
+    LAMA_ASSERT_ERROR( mContext, "NULL context not allowed" )
+    LAMA_LOG_INFO( logger, "Vector(" << size << "), replicated, on " << *mContext )
 }
 
 Vector::Vector( DistributionPtr distribution, ContextPtr context )
     : Distributed( distribution ), mContext( context )
 {
-    LAMA_ASSERT_ERROR( mContext, "NULL context not allowed" );
+    LAMA_ASSERT_ERROR( mContext, "NULL context not allowed" )
     LAMA_LOG_INFO( logger,
-                   "Vector(" << distribution->getGlobalSize() << ") with " << getDistribution() << " constructed" );
+                   "Vector(" << distribution->getGlobalSize() << ") with " << getDistribution() << " constructed" )
 }
 
 Vector::Vector( const Vector& other )
     : Distributed( other ), mContext( other.getContext() )
 {
-    LAMA_ASSERT_ERROR( mContext, "NULL context not allowed" );
-    LAMA_LOG_INFO( logger, "Vector(" << other.getDistribution().getGlobalSize() << "), distributed, copied" );
+    LAMA_ASSERT_ERROR( mContext, "NULL context not allowed" )
+    LAMA_LOG_INFO( logger, "Vector(" << other.getDistribution().getGlobalSize() << "), distributed, copied" )
 }
 
 Vector::~Vector()
 {
-    LAMA_LOG_INFO( logger, "~Vector(" << getDistribution().getGlobalSize() << ")" );
+    LAMA_LOG_INFO( logger, "~Vector(" << getDistribution().getGlobalSize() << ")" )
 }
 
 Vector& Vector::operator=( const Expression<Matrix,Vector,Times>& expression )
 {
-    LAMA_LOG_DEBUG( logger, "this = matrix * vector1 -> this = 1.0 * matrix * vector1 + 0.0 * this" );
+    LAMA_LOG_DEBUG( logger, "this = matrix * vector1 -> this = 1.0 * matrix * vector1 + 0.0 * this" )
 
     // expression = A * x, generalized to A * x * 1.0 + 0.0 * this
     // but be careful: this might not be resized correctly, so we do it here
@@ -133,7 +133,7 @@ Vector& Vector::operator=(
     if ( expression.getArg1().getArg2().size() != expression.getArg2().getArg2().size() )
     {
         LAMA_THROWEXCEPTION(
-            "size of input vector 1 " << expression.getArg1().getArg2().size() << " mismatches size of input vector 2 " << expression.getArg2().getArg2().size() );
+            "size of input vector 1 " << expression.getArg1().getArg2().size() << " mismatches size of input vector 2 " << expression.getArg2().getArg2().size() )
     }
 
     assign( expression );
@@ -142,7 +142,7 @@ Vector& Vector::operator=(
 
 Vector& Vector::operator=( const Expression<Scalar,Expression<Matrix,Vector,Times>,Times>& expression )
 {
-    LAMA_LOG_INFO( logger, "this = alpha * matrix * vectorX -> this = alpha * matrix * vectorX + 0.0 * this" );
+    LAMA_LOG_INFO( logger, "this = alpha * matrix * vectorX -> this = alpha * matrix * vectorX + 0.0 * this" )
 
     const Scalar& beta = 0.0;
 
@@ -176,7 +176,7 @@ Vector& Vector::operator=(
     const Expression<Expression<Scalar,Expression<Matrix,Vector,Times>,Times>,Expression<Scalar,Vector,Times>,Plus>& expression )
 {
     LAMA_LOG_INFO( logger,
-                   "Vector::operator=(const Expression<Expression<Scalar, Expression<Matrix, Vector, Times>, Times>," << "Expression<Scalar, Vector, Times>, Plus>& expression)" );
+                   "Vector::operator=(const Expression<Expression<Scalar, Expression<Matrix, Vector, Times>, Times>," << "Expression<Scalar, Vector, Times>, Plus>& expression)" )
     const Expression<Scalar,Expression<Matrix,Vector,Times>,Times>& exp1 = expression.getArg1();
     const Expression<Scalar,Vector,Times>& exp2 = expression.getArg2();
     const Scalar& alpha = exp1.getArg1();
@@ -193,12 +193,12 @@ Vector& Vector::operator=(
 
     if ( &vectorX == this )
     {
-        LAMA_LOG_DEBUG( logger, "Temporary for X required" );
+        LAMA_LOG_DEBUG( logger, "Temporary for X required" )
         tmpResult = this->create( getDistributionPtr() );
         resultPtr = tmpResult.get();
     }
 
-    LAMA_LOG_DEBUG( logger, "call matrixTimesVector with matrix = " << matrix );
+    LAMA_LOG_DEBUG( logger, "call matrixTimesVector with matrix = " << matrix )
 
     matrix.matrixTimesVector( *resultPtr, alpha, vectorX, beta, vectorY );
 
@@ -212,7 +212,7 @@ Vector& Vector::operator=(
 
 Vector& Vector::operator=( const Expression<Scalar,Vector,Times>& expression )
 {
-    LAMA_LOG_DEBUG( logger, "a * vector1 -> a * vector1 + 0.0 * vector1" );
+    LAMA_LOG_DEBUG( logger, "a * vector1 -> a * vector1 + 0.0 * vector1" )
 
     Expression<Scalar,Vector,Times> exp1( 0.0, expression.getArg2() );
     Expression<Expression<Scalar,Vector,Times>,Expression<Scalar,Vector,Times>,Plus> tmpExp( expression, exp1 );
@@ -225,7 +225,7 @@ Vector& Vector::operator=( const Expression<Scalar,Vector,Times>& expression )
 
 Vector& Vector::operator=( const Expression<Vector,Vector,Plus>& expression )
 {
-    LAMA_LOG_DEBUG( logger, "vector1 + vector2 -> 1.0 * vector1 + 1.0 * vector2" );
+    LAMA_LOG_DEBUG( logger, "vector1 + vector2 -> 1.0 * vector1 + 1.0 * vector2" )
 
     Expression<Scalar,Vector,Times> exp1( 1.0, expression.getArg1() );
     Expression<Scalar,Vector,Times> exp2( 1.0, expression.getArg2() );
@@ -285,7 +285,7 @@ const Scalar Vector::operator()( const IndexType i ) const
 
 Scalar Vector::operator*( const Vector& other ) const
 {
-    LAMA_REGION( "Vector.dotP" );
+    LAMA_REGION( "Vector.dotP" )
     return dotProduct( other );
 }
 
@@ -306,7 +306,7 @@ void Vector::setContext( ContextPtr context )
 {
     if ( mContext->getType() != context->getType() )
     {
-        LAMA_LOG_DEBUG( logger, *this << ": new context = " << *context << ", old context = " << *mContext );
+        LAMA_LOG_DEBUG( logger, *this << ": new context = " << *context << ", old context = " << *mContext )
     }
 
     mContext = context;

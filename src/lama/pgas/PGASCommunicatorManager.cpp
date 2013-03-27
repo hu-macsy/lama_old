@@ -44,7 +44,7 @@ namespace lama
 
 /* ----  Static variables  -------------------------------------------------- */
 
-LAMA_LOG_DEF_LOGGER( PGASCommunicatorManager::logger, "CommunicatorManager.PGASCommunicatorManager" );
+LAMA_LOG_DEF_LOGGER( PGASCommunicatorManager::logger, "CommunicatorManager.PGASCommunicatorManager" )
 
 // make sure that static initialization is called.
 
@@ -55,7 +55,7 @@ bool PGASCommunicatorManager::__init = PGASCommunicatorManager::init();
 bool PGASCommunicatorManager::init()
 {
     // logger should already be available as it is initialized before __init
-    LAMA_LOG_DEBUG( logger, "create PGAS communicator manager and add it to CommunicatorFactory" );
+    LAMA_LOG_DEBUG( logger, "create PGAS communicator manager and add it to CommunicatorFactory" )
     boost::shared_ptr<CommunicatorManager> manager( new PGASCommunicatorManager() );
     CommunicatorFactory::getFactory().addCommunicatorManager( COMMUNICATOR_TYPE, manager );
     PGASInterface::getInstance(); //call get Instance so the PGASInterface gets initialized
@@ -73,12 +73,12 @@ PGASCommunicatorManager::PGASCommunicatorManager()
 
 PGASCommunicatorManager::~PGASCommunicatorManager()
 {
-    LAMA_LOG_INFO( logger, "~PGASCommunicatorManager(), use count PGAS communicator = " << mCommInstance.use_count() );
+    LAMA_LOG_INFO( logger, "~PGASCommunicatorManager(), use count PGAS communicator = " << mCommInstance.use_count() )
 
     if ( mCommInstance.use_count() > 1 )
     {
         LAMA_LOG_WARN( logger,
-                       "PGASCommunicator has " << mCommInstance.use_count() - 1 << " remaining references, seems that not all LAMA data structures have been freed" );
+                       "PGASCommunicator has " << mCommInstance.use_count() - 1 << " remaining references, seems that not all LAMA data structures have been freed" )
     }
 }
 
@@ -88,7 +88,7 @@ CommunicatorPtr PGASCommunicatorManager::getCommunicator( int& argc, char**& arg
 {
     if ( !mCommInstance )
     {
-        LAMA_LOG_INFO( logger, "create new PGASCommunicator" );
+        LAMA_LOG_INFO( logger, "create new PGASCommunicator" )
 
         // create a new instance of PGASCommunicator, will call PGAS_Init
 

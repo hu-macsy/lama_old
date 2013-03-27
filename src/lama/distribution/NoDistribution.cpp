@@ -39,7 +39,7 @@
 namespace lama
 {
 
-LAMA_LOG_DEF_LOGGER( NoDistribution::logger, "Distribution.NoDistribution" );
+LAMA_LOG_DEF_LOGGER( NoDistribution::logger, "Distribution.NoDistribution" )
 
 NoDistribution::NoDistribution( const IndexType globalSize )
     : Distribution( globalSize )

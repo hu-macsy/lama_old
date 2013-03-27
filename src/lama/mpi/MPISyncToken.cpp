@@ -46,14 +46,14 @@ MPISyncToken::MPISyncToken( PartitionId nRequests )
     : mNRequests( nRequests ), mUsedRequests( 0 ), mRequests( new MPI_Request[mNRequests] ), mStatuses(
         new MPI_Status[mNRequests] )
 {
-    LAMA_LOG_INFO( logger, "MPISyncToken for " << mNRequests << " requests constructed" );
+    LAMA_LOG_INFO( logger, "MPISyncToken for " << mNRequests << " requests constructed" )
 }
 
 MPISyncToken::~MPISyncToken()
 {
     if ( !isSynchronized() )
     {
-        LAMA_LOG_DEBUG( logger, *this << ": synchnronized at destructor" );
+        LAMA_LOG_DEBUG( logger, *this << ": synchnronized at destructor" )
         wait();
     }
 }
@@ -67,16 +67,16 @@ void MPISyncToken::wait()
 {
     if ( isSynchronized() )
     {
-        LAMA_LOG_WARN( logger, *this << ": waiting twice" );
+        LAMA_LOG_WARN( logger, *this << ": waiting twice" )
 
         return; // do not wait twice, especially do not clean-up twice
     }
 
-    LAMA_LOG_INFO( logger, *this << ": wait" );
+    LAMA_LOG_INFO( logger, *this << ": wait" )
 
     LAMA_MPICALL( logger, MPI_Waitall( mUsedRequests, mRequests.get(), mStatuses.get() ), "MPI_Waitall" );
 
-    LAMA_LOG_INFO( logger, *this << ": synchronized, clean up and free accesses" );
+    LAMA_LOG_INFO( logger, *this << ": synchronized, clean up and free accesses" )
 
     setSynchronized();
 }
@@ -93,11 +93,11 @@ bool MPISyncToken::probe() const
 void MPISyncToken::pushRequest( const MPI_Request& request )
 {
     LAMA_ASSERT_ERROR( mUsedRequests < mNRequests,
-                       "too many requests" << ", MPISyncToken allocated for maximal " << mNRequests << " requests" );
+                       "too many requests" << ", MPISyncToken allocated for maximal " << mNRequests << " requests" )
 
     mRequests[mUsedRequests++] = request;
 
-    LAMA_LOG_INFO( logger, "# used requests = " << mUsedRequests );
+    LAMA_LOG_INFO( logger, "# used requests = " << mUsedRequests )
 }
 
 }

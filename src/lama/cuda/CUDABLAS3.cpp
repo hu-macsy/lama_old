@@ -44,7 +44,7 @@
 namespace lama
 {
 
-LAMA_LOG_DEF_LOGGER( CUDABLAS3::logger, "CUDA.BLAS3" );
+LAMA_LOG_DEF_LOGGER( CUDABLAS3::logger, "CUDA.BLAS3" )
 
 /** gemm */
 
@@ -78,7 +78,7 @@ void CUDABLAS3::gemm(
     const float* const A_call = ( order == CblasRowMajor ) ? B : A;
     const float* const B_call = ( order == CblasRowMajor ) ? A : B;
 
-    LAMA_LOG_INFO( logger, "gemm<float>( m = " << m << ", n = " << n << ", k = " << k );
+    LAMA_LOG_INFO( logger, "gemm<float>( m = " << m << ", n = " << n << ", k = " << k )
 
     if ( transa == CblasTrans )
     {
@@ -97,13 +97,13 @@ void CUDABLAS3::gemm(
     if ( syncToken )
     {
         CUDAStreamSyncToken* cudaStreamSyncToken = dynamic_cast<CUDAStreamSyncToken*>( syncToken );
-        LAMA_ASSERT_DEBUG( cudaStreamSyncToken, "no cuda stream sync token provided" );
+        LAMA_ASSERT_DEBUG( cudaStreamSyncToken, "no cuda stream sync token provided" )
         stream = cudaStreamSyncToken->getCUDAStream();
     }
 
     LAMA_CUBLAS_CALL( cublasSetKernelStream( stream ), "set cublas kernel stream = " << stream );
 
-    LAMA_LOG_INFO( logger, "cublasSgemm: m = " << m_call << " x " << n_call );
+    LAMA_LOG_INFO( logger, "cublasSgemm: m = " << m_call << " x " << n_call )
 
     cublasSgemm( transA_char, transB_char, m_call, n_call, k, alpha, A_call, lda_call, B_call, ldb_call, beta, C, ldc );
 
@@ -155,7 +155,7 @@ void CUDABLAS3::gemm(
         transB_char = 'T';
     }
 
-    LAMA_LOG_INFO( logger, "gemm<double>( m = " << m << ", n = " << n << ", k = " << k );
+    LAMA_LOG_INFO( logger, "gemm<double>( m = " << m << ", n = " << n << ", k = " << k )
 
     LAMA_CHECK_CUDA_ACCESS
 
@@ -164,13 +164,13 @@ void CUDABLAS3::gemm(
     if ( syncToken )
     {
         CUDAStreamSyncToken* cudaStreamSyncToken = dynamic_cast<CUDAStreamSyncToken*>( syncToken );
-        LAMA_ASSERT_DEBUG( cudaStreamSyncToken, "no cuda stream sync token provided" );
+        LAMA_ASSERT_DEBUG( cudaStreamSyncToken, "no cuda stream sync token provided" )
         stream = cudaStreamSyncToken->getCUDAStream();
     }
 
     LAMA_CUBLAS_CALL( cublasSetKernelStream( stream ), "set cublas kernel stream = " << stream );
 
-    LAMA_LOG_INFO( logger, "cublasDgemm: m = " << m_call << " x " << n_call );
+    LAMA_LOG_INFO( logger, "cublasDgemm: m = " << m_call << " x " << n_call )
 
     cublasDgemm( transA_char, transB_char, m_call, n_call, k, alpha, A_call, lda_call, B_call, ldb_call, beta, C, ldc );
 
@@ -324,7 +324,7 @@ void CUDABLAS3::trsm(
     if ( syncToken )
     {
         CUDAStreamSyncToken* cudaStreamSyncToken = dynamic_cast<CUDAStreamSyncToken*>( syncToken );
-        LAMA_ASSERT_DEBUG( cudaStreamSyncToken, "no cuda stream sync token provided" );
+        LAMA_ASSERT_DEBUG( cudaStreamSyncToken, "no cuda stream sync token provided" )
         stream = cudaStreamSyncToken->getCUDAStream();
     }
 

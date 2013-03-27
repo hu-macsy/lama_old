@@ -40,19 +40,19 @@ using namespace boost;
 namespace lama
 {
 
-LAMA_LOG_DEF_LOGGER( DistributionManager::logger, "DistributionManager" );
+LAMA_LOG_DEF_LOGGER( DistributionManager::logger, "DistributionManager" )
 
 DistributionManager::DistributionManager( const char* type )
 
     : mDistributionType( type )
 {
     // do not log here as manager might be created during initialization
-    // printf("DistributionManager (type = %d)\n", int(type) );
+    // printf("DistributionManager (type = %d)\n", int(type) )
 }
 
 DistributionManager::~DistributionManager()
 {
-    LAMA_LOG_INFO( logger, "~DistributionManager, type = " << mDistributionType );
+    LAMA_LOG_INFO( logger, "~DistributionManager, type = " << mDistributionType )
 }
 
 }

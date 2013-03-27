@@ -539,7 +539,7 @@ public:
 //        const IndexType ldc );
 private:
 
-    LAMA_LOG_DECL_STATIC_LOGGER( logger );
+    LAMA_LOG_DECL_STATIC_LOGGER( logger )
 
     template <typename T>
     void gemm_launcher(

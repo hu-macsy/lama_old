@@ -94,18 +94,18 @@ void NoCommunicator::exchangeByPlanImpl(
     const CommunicationPlan& sendPlan,
     int elemSize ) const
 {
-    LAMA_ASSERT_ERROR( recvPlan.size() == sendPlan.size(), "mismatch for size of send/recv plan" );
+    LAMA_ASSERT_ERROR( recvPlan.size() == sendPlan.size(), "mismatch for size of send/recv plan" )
 
     if ( 0 == recvPlan.size() && 0 == sendPlan.size() )
     {
         return;
     }
 
-    LAMA_ASSERT_ERROR( recvPlan.size() == 1, "send/recv plan should have maximal one element" );
+    LAMA_ASSERT_ERROR( recvPlan.size() == 1, "send/recv plan should have maximal one element" )
 
     int quantity = recvPlan[0].quantity;
 
-    LAMA_ASSERT_ERROR( quantity == sendPlan[0].quantity, "mismatch for self send/recv size in plans" );
+    LAMA_ASSERT_ERROR( quantity == sendPlan[0].quantity, "mismatch for self send/recv size in plans" )
 
     // self copy of send data to recv data
 
@@ -214,37 +214,37 @@ IndexType NoCommunicator::shift(
 
 void NoCommunicator::maxloc( double&, int&, const PartitionId root ) const
 {
-    LAMA_ASSERT_EQUAL_ERROR( root, 0 );
+    LAMA_ASSERT_EQUAL_ERROR( root, 0 )
 }
 
 void NoCommunicator::maxloc( float&, int&, const PartitionId root ) const
 {
-    LAMA_ASSERT_EQUAL_ERROR( root, 0 );
+    LAMA_ASSERT_EQUAL_ERROR( root, 0 )
 }
 
 void NoCommunicator::maxloc( int&, int&, const PartitionId root ) const
 {
-    LAMA_ASSERT_EQUAL_ERROR( root, 0 );
+    LAMA_ASSERT_EQUAL_ERROR( root, 0 )
 }
 
 void NoCommunicator::bcast( double[], const IndexType, const PartitionId root ) const
 {
-    LAMA_ASSERT_EQUAL_ERROR( root, 0 );
+    LAMA_ASSERT_EQUAL_ERROR( root, 0 )
 }
 
 void NoCommunicator::bcast( float[], const IndexType, const PartitionId root ) const
 {
-    LAMA_ASSERT_EQUAL_ERROR( root, 0 );
+    LAMA_ASSERT_EQUAL_ERROR( root, 0 )
 }
 
 void NoCommunicator::bcast( int[], const IndexType, const PartitionId root ) const
 {
-    LAMA_ASSERT_EQUAL_ERROR( root, 0 );
+    LAMA_ASSERT_EQUAL_ERROR( root, 0 )
 }
 
 void NoCommunicator::scatter( double myvals[], const IndexType n, const PartitionId root, const double allvals[] ) const
 {
-    LAMA_ASSERT_EQUAL_ERROR( root, 0 );
+    LAMA_ASSERT_EQUAL_ERROR( root, 0 )
 
     for ( int i = 0; i < n; i++ )
     {
@@ -254,7 +254,7 @@ void NoCommunicator::scatter( double myvals[], const IndexType n, const Partitio
 
 void NoCommunicator::scatter( float myvals[], const IndexType n, const PartitionId root, const float allvals[] ) const
 {
-    LAMA_ASSERT_EQUAL_ERROR( root, 0 );
+    LAMA_ASSERT_EQUAL_ERROR( root, 0 )
 
     for ( int i = 0; i < n; i++ )
     {
@@ -264,7 +264,7 @@ void NoCommunicator::scatter( float myvals[], const IndexType n, const Partition
 
 void NoCommunicator::scatter( int myvals[], const IndexType n, const PartitionId root, const int allvals[] ) const
 {
-    LAMA_ASSERT_EQUAL_ERROR( root, 0 );
+    LAMA_ASSERT_EQUAL_ERROR( root, 0 )
 
     for ( int i = 0; i < n; i++ )
     {
@@ -279,8 +279,8 @@ void NoCommunicator::scatter(
     const double allvals[],
     const IndexType sizes[] ) const
 {
-    LAMA_ASSERT_EQUAL_ERROR( root, 0 );
-    LAMA_ASSERT_EQUAL_ERROR( sizes[0], n );
+    LAMA_ASSERT_EQUAL_ERROR( root, 0 )
+    LAMA_ASSERT_EQUAL_ERROR( sizes[0], n )
 
     for ( int i = 0; i < n; i++ )
     {
@@ -295,8 +295,8 @@ void NoCommunicator::scatter(
     const float allvals[],
     const IndexType sizes[] ) const
 {
-    LAMA_ASSERT_EQUAL_ERROR( root, 0 );
-    LAMA_ASSERT_EQUAL_ERROR( sizes[0], n );
+    LAMA_ASSERT_EQUAL_ERROR( root, 0 )
+    LAMA_ASSERT_EQUAL_ERROR( sizes[0], n )
 
     for ( int i = 0; i < n; i++ )
     {
@@ -311,8 +311,8 @@ void NoCommunicator::scatter(
     const int allvals[],
     const IndexType sizes[] ) const
 {
-    LAMA_ASSERT_EQUAL_ERROR( root, 0 );
-    LAMA_ASSERT_EQUAL_ERROR( sizes[0], n );
+    LAMA_ASSERT_EQUAL_ERROR( root, 0 )
+    LAMA_ASSERT_EQUAL_ERROR( sizes[0], n )
 
     for ( int i = 0; i < n; i++ )
     {
@@ -322,7 +322,7 @@ void NoCommunicator::scatter(
 
 void NoCommunicator::gather( double allvals[], const IndexType n, const PartitionId root, const double myvals[] ) const
 {
-    LAMA_ASSERT_EQUAL_ERROR( root, 0 );
+    LAMA_ASSERT_EQUAL_ERROR( root, 0 )
 
     for ( int i = 0; i < n; i++ )
     {
@@ -332,7 +332,7 @@ void NoCommunicator::gather( double allvals[], const IndexType n, const Partitio
 
 void NoCommunicator::gather( float allvals[], const IndexType n, const PartitionId root, const float myvals[] ) const
 {
-    LAMA_ASSERT_EQUAL_ERROR( root, 0 );
+    LAMA_ASSERT_EQUAL_ERROR( root, 0 )
 
     for ( int i = 0; i < n; i++ )
     {
@@ -342,7 +342,7 @@ void NoCommunicator::gather( float allvals[], const IndexType n, const Partition
 
 void NoCommunicator::gather( int allvals[], const IndexType n, const PartitionId root, const int myvals[] ) const
 {
-    LAMA_ASSERT_EQUAL_ERROR( root, 0 );
+    LAMA_ASSERT_EQUAL_ERROR( root, 0 )
 
     for ( int i = 0; i < n; i++ )
     {
@@ -357,8 +357,8 @@ void NoCommunicator::gather(
     const double myvals[],
     const IndexType sizes[] ) const
 {
-    LAMA_ASSERT_EQUAL_ERROR( root, 0 );
-    LAMA_ASSERT_EQUAL_ERROR( sizes[0], n );
+    LAMA_ASSERT_EQUAL_ERROR( root, 0 )
+    LAMA_ASSERT_EQUAL_ERROR( sizes[0], n )
 
     for ( int i = 0; i < n; i++ )
     {
@@ -373,8 +373,8 @@ void NoCommunicator::gather(
     const float myvals[],
     const IndexType sizes[] ) const
 {
-    LAMA_ASSERT_EQUAL_ERROR( root, 0 );
-    LAMA_ASSERT_ERROR( sizes[0] == n, "illegal array sizes, sizes[0] = " << sizes[0] << ", expected = " << n );
+    LAMA_ASSERT_EQUAL_ERROR( root, 0 )
+    LAMA_ASSERT_ERROR( sizes[0] == n, "illegal array sizes, sizes[0] = " << sizes[0] << ", expected = " << n )
 
     for ( int i = 0; i < n; i++ )
     {
@@ -389,8 +389,8 @@ void NoCommunicator::gather(
     const int myvals[],
     const IndexType sizes[] ) const
 {
-    LAMA_ASSERT_EQUAL_ERROR( root, 0 );
-    LAMA_ASSERT_ERROR( sizes[0] == n, "illegal array sizes, sizes[0] = " << sizes[0] << ", expected = " << n );
+    LAMA_ASSERT_EQUAL_ERROR( root, 0 )
+    LAMA_ASSERT_ERROR( sizes[0] == n, "illegal array sizes, sizes[0] = " << sizes[0] << ", expected = " << n )
 
     for ( int i = 0; i < n; i++ )
     {
@@ -400,17 +400,17 @@ void NoCommunicator::gather(
 
 void NoCommunicator::swap( double[], const IndexType, const PartitionId partner ) const
 {
-    LAMA_ASSERT_EQUAL_ERROR( partner, 0 );
+    LAMA_ASSERT_EQUAL_ERROR( partner, 0 )
 }
 
 void NoCommunicator::swap( float[], const IndexType, const PartitionId partner ) const
 {
-    LAMA_ASSERT_EQUAL_ERROR( partner, 0 );
+    LAMA_ASSERT_EQUAL_ERROR( partner, 0 )
 }
 
 void NoCommunicator::swap( int[], const IndexType, const PartitionId partner ) const
 {
-    LAMA_ASSERT_EQUAL_ERROR( partner, 0 );
+    LAMA_ASSERT_EQUAL_ERROR( partner, 0 )
 }
 
 float NoCommunicator::sum( const float value ) const

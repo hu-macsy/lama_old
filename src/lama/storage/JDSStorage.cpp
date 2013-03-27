@@ -47,7 +47,7 @@ namespace lama
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 
-LAMA_LOG_DEF_TEMPLATE_LOGGER( template<typename ValueType>, JDSStorage<ValueType>::logger, "MatrixStorage.JDSStorage" );
+LAMA_LOG_DEF_TEMPLATE_LOGGER( template<typename ValueType>, JDSStorage<ValueType>::logger, "MatrixStorage.JDSStorage" )
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 
@@ -59,12 +59,12 @@ JDSStorage<ValueType>::JDSStorage( const IndexType numRows,
       mNumDiagonals( 0 ),
       mNumValues( 0 )
 {
-    LAMA_LOG_DEBUG( logger, "JDSStorage for matrix " << mNumRows << " x " << mNumColumns << ", no non-zero elements" );
+    LAMA_LOG_DEBUG( logger, "JDSStorage for matrix " << mNumRows << " x " << mNumColumns << ", no non-zero elements" )
 
     ContextPtr loc = getContextPtr();
 
-    LAMA_INTERFACE_FN_T( setVal, loc, Utils, Setter, IndexType );
-    LAMA_INTERFACE_FN_T( setOrder, loc, Utils, Setter, IndexType );
+    LAMA_INTERFACE_FN_T( setVal, loc, Utils, Setter, IndexType )
+    LAMA_INTERFACE_FN_T( setOrder, loc, Utils, Setter, IndexType )
 
     if ( numRows <= 0 )
     {
@@ -98,7 +98,7 @@ JDSStorage<ValueType>::JDSStorage(
 {
     check( "JDSStorage( #row, #cols, #values, #diags, dlg, ilg, perm, ja, values" );
     this->resetDiagonalProperty();
-    LAMA_LOG_INFO( logger, *this << ": constructed by JDS arrays dlg, ilg, .., values" );
+    LAMA_LOG_INFO( logger, *this << ": constructed by JDS arrays dlg, ilg, .., values" )
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */
@@ -183,7 +183,7 @@ JDSStorage<ValueType>::JDSStorage()
 
     : CRTPMatrixStorage<JDSStorage<ValueType>,ValueType>( 0, 0 ), mNumDiagonals( 0 ), mNumValues( 0 )
 {
-    LAMA_LOG_DEBUG( logger, "JDSStorage, matrix is 0 x 0." );
+    LAMA_LOG_DEBUG( logger, "JDSStorage, matrix is 0 x 0." )
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */
@@ -215,17 +215,17 @@ IndexType JDSStorage<ValueType>::getNumDiagonals() const
 template<typename ValueType>
 void JDSStorage<ValueType>::setDiagonalImpl( const Scalar scalar )
 {
-    LAMA_LOG_INFO( logger, "setDiagonalImpl with scalar = " << scalar );
+    LAMA_LOG_INFO( logger, "setDiagonalImpl with scalar = " << scalar )
     // TODO: check diagonal property?
     ContextPtr loc = getContextPtr();
 
-    LAMA_INTERFACE_FN_T( setDiagonalWithScalar, loc, JDSUtils, Operations, ValueType );
+    LAMA_INTERFACE_FN_T( setDiagonalWithScalar, loc, JDSUtils, Operations, ValueType )
 
     IndexType numDiagonal = std::min( mNumColumns, mNumRows );
 
     WriteOnlyAccess<ValueType> wValues( mValues, loc, numDiagonal );
 
-    LAMA_CONTEXT_ACCESS( loc );
+    LAMA_CONTEXT_ACCESS( loc )
 
     setDiagonalWithScalar( numDiagonal, wValues.get(), scalar );
 
@@ -237,11 +237,11 @@ template<typename ValueType>
 template<typename OtherValueType>
 void JDSStorage<ValueType>::setDiagonalImpl( const LAMAArray<OtherValueType>& diagonal )
 {
-    LAMA_LOG_INFO( logger, "setDiagonalImpl" );
+    LAMA_LOG_INFO( logger, "setDiagonalImpl" )
     // TODO: check diagonal property?
     ContextPtr loc = getContextPtr();
 
-    LAMA_INTERFACE_FN_TT( setGather, loc, Utils, Copy, ValueType, OtherValueType );
+    LAMA_INTERFACE_FN_TT( setGather, loc, Utils, Copy, ValueType, OtherValueType )
 
     IndexType numDiagonal = std::min( mNumColumns, mNumRows );
 
@@ -249,7 +249,7 @@ void JDSStorage<ValueType>::setDiagonalImpl( const LAMAArray<OtherValueType>& di
     ReadAccess<IndexType> rJa( mJa, loc );
     WriteOnlyAccess<ValueType> wValues( mValues, loc, numDiagonal );
 
-    LAMA_CONTEXT_ACCESS( loc );
+    LAMA_CONTEXT_ACCESS( loc )
 
     // diagonal is first column in JDS data
     // values[i] = diagonal[ ja[ i ] ]
@@ -262,13 +262,13 @@ template<typename ValueType>
 template<typename OtherValueType>
 void JDSStorage<ValueType>::getRowImpl( LAMAArray<OtherValueType>& row, const IndexType i ) const
 {
-    LAMA_LOG_INFO( logger, "getRowImpl with i = " << i );
+    LAMA_LOG_INFO( logger, "getRowImpl with i = " << i )
 
     ContextPtr loc = getContextPtr();
 
-    LAMA_ASSERT_DEBUG( i >= 0 && i < mNumRows, "row index " << i << " out of range" );
+    LAMA_ASSERT_DEBUG( i >= 0 && i < mNumRows, "row index " << i << " out of range" )
 
-    LAMA_INTERFACE_FN_TT( getRow, loc, JDSUtils, Getter, ValueType, OtherValueType );
+    LAMA_INTERFACE_FN_TT( getRow, loc, JDSUtils, Getter, ValueType, OtherValueType )
 
     ReadAccess<IndexType> dlg( mDlg, loc );
     ReadAccess<IndexType> ilg( mIlg, loc );
@@ -277,7 +277,7 @@ void JDSStorage<ValueType>::getRowImpl( LAMAArray<OtherValueType>& row, const In
     ReadAccess<ValueType> values( mValues, loc );
     WriteOnlyAccess<OtherValueType> wRow( row, loc, mNumColumns );
 
-    LAMA_CONTEXT_ACCESS( loc );
+    LAMA_CONTEXT_ACCESS( loc )
 
     getRow( wRow.get(), i, mNumColumns, mNumRows, perm.get(), ilg.get(), dlg.get(), ja.get(), values.get() );
 }
@@ -288,11 +288,11 @@ template<typename ValueType>
 template<typename OtherValueType>
 void JDSStorage<ValueType>::getDiagonalImpl( LAMAArray<OtherValueType>& diagonal ) const
 {
-    LAMA_LOG_INFO( logger, "getDiagonalImpl" );
+    LAMA_LOG_INFO( logger, "getDiagonalImpl" )
     //TODO: check diagonal property?
     ContextPtr loc = getContextPtr();
 
-    LAMA_INTERFACE_FN_TT( setScatter, loc, Utils, Copy, OtherValueType, ValueType );
+    LAMA_INTERFACE_FN_TT( setScatter, loc, Utils, Copy, OtherValueType, ValueType )
 
     IndexType numDiagonal = std::min( mNumColumns, mNumRows );
 
@@ -303,7 +303,7 @@ void JDSStorage<ValueType>::getDiagonalImpl( LAMAArray<OtherValueType>& diagonal
     // diagonal is first column in JDS data
     // wDiagonal[ rJa[ i ] ] = rValues[ i ];
 
-    LAMA_CONTEXT_ACCESS( loc );
+    LAMA_CONTEXT_ACCESS( loc )
 
     setScatter( wDiagonal.get(), rPerm.get(), rValues.get(), numDiagonal );
 }
@@ -313,20 +313,20 @@ void JDSStorage<ValueType>::getDiagonalImpl( LAMAArray<OtherValueType>& diagonal
 template<typename ValueType>
 void JDSStorage<ValueType>::scaleImpl( const Scalar scalar )
 {
-    LAMA_LOG_INFO( logger, "scaleImpl with scalar = " << scalar );
+    LAMA_LOG_INFO( logger, "scaleImpl with scalar = " << scalar )
 
     ContextPtr loc = getContextPtr();
 
-    LAMA_INTERFACE_FN_TT( scale, loc, Utils, Transform, ValueType, ValueType );
+    LAMA_INTERFACE_FN_TT( scale, loc, Utils, Transform, ValueType, ValueType )
 
     IndexType size = mValues.size();
 
-    LAMA_ASSERT_EQUAL_DEBUG( size, mNumValues );
+    LAMA_ASSERT_EQUAL_DEBUG( size, mNumValues )
 
     WriteAccess<ValueType> wValues( mValues, loc );
     ValueType value = scalar.getValue<ValueType>();
 
-    LAMA_CONTEXT_ACCESS( loc );
+    LAMA_CONTEXT_ACCESS( loc )
 
     scale( wValues.get(), size, value );
 }
@@ -337,11 +337,11 @@ template<typename ValueType>
 template<typename OtherValueType>
 void JDSStorage<ValueType>::scaleImpl( const LAMAArray<OtherValueType>& diagonal )
 {
-    LAMA_LOG_INFO( logger, "scaleImpl" );
+    LAMA_LOG_INFO( logger, "scaleImpl" )
 
     ContextPtr loc = getContextPtr();
 
-    LAMA_INTERFACE_FN_TT( scaleValue, loc, JDSUtils, Scale, ValueType, OtherValueType );
+    LAMA_INTERFACE_FN_TT( scaleValue, loc, JDSUtils, Scale, ValueType, OtherValueType )
 
     ReadAccess<OtherValueType> rDiagonal( diagonal, loc );
     ReadAccess<IndexType> rPerm( mPerm, loc );
@@ -349,7 +349,7 @@ void JDSStorage<ValueType>::scaleImpl( const LAMAArray<OtherValueType>& diagonal
     ReadAccess<IndexType> rDlg( mDlg, loc );
     WriteAccess<ValueType> wValues( mValues, loc );
 
-    LAMA_CONTEXT_ACCESS( loc );
+    LAMA_CONTEXT_ACCESS( loc )
 
     scaleValue( mNumRows, rPerm.get(), rIlg.get(), rDlg.get(), wValues.get(), rDiagonal.get() );
 }
@@ -359,7 +359,7 @@ void JDSStorage<ValueType>::scaleImpl( const LAMAArray<OtherValueType>& diagonal
 template<typename ValueType>
 bool JDSStorage<ValueType>::checkDiagonalProperty() const
 {
-    LAMA_LOG_INFO( logger, "checkDiagonalProperty" );
+    LAMA_LOG_INFO( logger, "checkDiagonalProperty" )
 
     if ( mNumRows != mNumColumns )
     {
@@ -374,13 +374,13 @@ bool JDSStorage<ValueType>::checkDiagonalProperty() const
 
     ContextPtr loc = getContextPtr();
 
-    LAMA_INTERFACE_FN( checkDiagonalProperty, loc, JDSUtils, Helper );
+    LAMA_INTERFACE_FN( checkDiagonalProperty, loc, JDSUtils, Helper )
 
     ReadAccess<IndexType> rPerm( mPerm, loc );
     ReadAccess<IndexType> rJa( mJa, loc );
     ReadAccess<IndexType> rDlg( mDlg, loc );
 
-    LAMA_CONTEXT_ACCESS( loc );
+    LAMA_CONTEXT_ACCESS( loc )
 
     return checkDiagonalProperty( mNumDiagonals, mNumRows, mNumColumns, rPerm.get(), rJa.get(), rDlg.get() );
 }
@@ -390,13 +390,13 @@ bool JDSStorage<ValueType>::checkDiagonalProperty() const
 template<typename ValueType>
 void JDSStorage<ValueType>::check( const char* msg ) const
 {
-    LAMA_LOG_FATAL( logger, "check at " << getContext() << ", msg = " << msg );
+    LAMA_LOG_FATAL( logger, "check at " << getContext() << ", msg = " << msg )
 
-    LAMA_ASSERT_EQUAL_ERROR( mNumRows, mIlg.size() );
-    LAMA_ASSERT_EQUAL_ERROR( mNumRows, mPerm.size() );
-    LAMA_ASSERT_EQUAL_ERROR( mNumValues, mJa.size() );
-    LAMA_ASSERT_EQUAL_ERROR( mNumValues, mValues.size() );
-    LAMA_ASSERT_EQUAL_ERROR( mNumDiagonals, mDlg.size() );
+    LAMA_ASSERT_EQUAL_ERROR( mNumRows, mIlg.size() )
+    LAMA_ASSERT_EQUAL_ERROR( mNumRows, mPerm.size() )
+    LAMA_ASSERT_EQUAL_ERROR( mNumValues, mJa.size() )
+    LAMA_ASSERT_EQUAL_ERROR( mNumValues, mValues.size() )
+    LAMA_ASSERT_EQUAL_ERROR( mNumDiagonals, mDlg.size() )
 
     // check column indexes in JA
 
@@ -407,7 +407,7 @@ void JDSStorage<ValueType>::check( const char* msg ) const
 
         ReadAccess<IndexType> rJA( mJa, loc );
 
-        LAMA_CONTEXT_ACCESS( loc );
+        LAMA_CONTEXT_ACCESS( loc )
 
         LAMA_ASSERT_ERROR( validIndexes ( rJA.get(), mNumValues, mNumColumns ),
                            *this << " @ " << msg << ": illegel indexes in JA" )
@@ -425,7 +425,7 @@ void JDSStorage<ValueType>::check( const char* msg ) const
         ReadAccess<IndexType> rIlg( mIlg, loc );
         ReadAccess<IndexType> rDlg( mDlg, loc );
 
-        LAMA_CONTEXT_ACCESS( loc );
+        LAMA_CONTEXT_ACCESS( loc )
 
         bool ascending = false;  // check for descending
 
@@ -446,7 +446,7 @@ void JDSStorage<ValueType>::check( const char* msg ) const
         ReadAccess<IndexType> rIlg( mIlg, loc );
         ReadAccess<IndexType> rDlg( mDlg, loc );
 
-        LAMA_CONTEXT_ACCESS( loc );
+        LAMA_CONTEXT_ACCESS( loc )
 
         LAMA_ASSERT_EQUAL_ERROR( sum( rIlg.get(), mNumRows ), mNumValues )
         LAMA_ASSERT_EQUAL_ERROR( sum( rDlg.get(), mNumDiagonals ), mNumValues )
@@ -458,7 +458,7 @@ void JDSStorage<ValueType>::check( const char* msg ) const
 template<typename ValueType>
 void JDSStorage<ValueType>::setIdentity( const IndexType size )
 {
-    LAMA_LOG_INFO( logger, "set identity values with size = " << size );
+    LAMA_LOG_INFO( logger, "set identity values with size = " << size )
 
     ContextPtr loc = getContextPtr();
 
@@ -473,18 +473,18 @@ void JDSStorage<ValueType>::setIdentity( const IndexType size )
     WriteOnlyAccess<IndexType> wJa( mJa, loc, mNumValues );
     WriteOnlyAccess<ValueType> wValues( mValues, loc, mNumValues );
 
-    LAMA_CONTEXT_ACCESS( loc );
+    LAMA_CONTEXT_ACCESS( loc )
 
     {
         ValueType one = static_cast<ValueType>( 1.0 );
-        LAMA_INTERFACE_FN_T( setVal, loc, Utils, Setter, ValueType );
+        LAMA_INTERFACE_FN_T( setVal, loc, Utils, Setter, ValueType )
 
         setVal( wValues.get(), mNumRows, one );
     }
 
     IndexType one = 1;
-    LAMA_INTERFACE_FN_T( setVal, loc, Utils, Setter, IndexType );
-    LAMA_INTERFACE_FN_T( setOrder, loc, Utils, Setter, IndexType );
+    LAMA_INTERFACE_FN_T( setVal, loc, Utils, Setter, IndexType )
+    LAMA_INTERFACE_FN_T( setOrder, loc, Utils, Setter, IndexType )
 
     setVal( wDlg.get(), 1, mNumRows );
     setVal( wIlg.get(), mNumRows, one );
@@ -499,12 +499,12 @@ void JDSStorage<ValueType>::setIdentity( const IndexType size )
 template<typename ValueType>
 void JDSStorage<ValueType>::setupData( ContextPtr loc )
 {
-    LAMA_LOG_INFO( logger, "setupData" );
+    LAMA_LOG_INFO( logger, "setupData" )
 
-    LAMA_ASSERT_EQUAL_ERROR( mIlg.size(), mNumRows );
+    LAMA_ASSERT_EQUAL_ERROR( mIlg.size(), mNumRows )
 
-    LAMA_INTERFACE_FN_T( getValue, loc, Utils, Getter, IndexType );
-    LAMA_INTERFACE_FN( ilg2dlg, loc, JDSUtils, Sort );
+    LAMA_INTERFACE_FN_T( getValue, loc, Utils, Getter, IndexType )
+    LAMA_INTERFACE_FN( ilg2dlg, loc, JDSUtils, Sort )
 
     ReadAccess<IndexType> ilg( mIlg, loc );
     WriteOnlyAccess<IndexType> dlg( mDlg, loc, mNumDiagonals );
@@ -512,7 +512,7 @@ void JDSStorage<ValueType>::setupData( ContextPtr loc )
     mNumDiagonals = 0;
     mNumValues = 0;
 
-    LAMA_CONTEXT_ACCESS( loc );
+    LAMA_CONTEXT_ACCESS( loc )
 
     if ( mNumRows )
     {
@@ -527,16 +527,16 @@ void JDSStorage<ValueType>::setupData( ContextPtr loc )
 template<typename ValueType>
 void JDSStorage<ValueType>::sortRows( ContextPtr loc )
 {
-    LAMA_LOG_INFO( logger, *this << "sortRows, number of jagged diagonals = " << mNumDiagonals );
+    LAMA_LOG_INFO( logger, *this << "sortRows, number of jagged diagonals = " << mNumDiagonals )
 
-    LAMA_INTERFACE_FN_T( maxval, loc, Utils, Reductions, IndexType );
-    LAMA_INTERFACE_FN( sortRows, loc, JDSUtils, Sort );
+    LAMA_INTERFACE_FN_T( maxval, loc, Utils, Reductions, IndexType )
+    LAMA_INTERFACE_FN( sortRows, loc, JDSUtils, Sort )
 
     // sort the rows according to the array ilg, take sorting over in perm
     WriteAccess<IndexType> ilg( mIlg, loc );
     WriteAccess<IndexType> perm( mPerm, loc );
 
-    LAMA_CONTEXT_ACCESS( loc );
+    LAMA_CONTEXT_ACCESS( loc )
 
     mNumDiagonals = maxval( ilg.get(), mNumRows );
 
@@ -554,18 +554,18 @@ void JDSStorage<ValueType>::buildCSR(
     const ContextPtr loc ) const
 {
     LAMA_LOG_INFO( logger,
-                   "buildCSR<" << Scalar::getType<OtherValueType>() << ">" << " from JDS<" << Scalar::getType<ValueType>() << ">" << " on " << *loc );
+                   "buildCSR<" << Scalar::getType<OtherValueType>() << ">" << " from JDS<" << Scalar::getType<ValueType>() << ">" << " on " << *loc )
 
-    LAMA_INTERFACE_FN_TT( setScatter, loc, Utils, Copy, IndexType, IndexType );
-    LAMA_INTERFACE_FN_TT( getCSRValues, loc, JDSUtils, Conversions, ValueType, OtherValueType );
-    LAMA_INTERFACE_FN( sizes2offsets, loc, CSRUtils, Offsets );
-    LAMA_INTERFACE_FN( setInversePerm, loc, JDSUtils, Sort );
+    LAMA_INTERFACE_FN_TT( setScatter, loc, Utils, Copy, IndexType, IndexType )
+    LAMA_INTERFACE_FN_TT( getCSRValues, loc, JDSUtils, Conversions, ValueType, OtherValueType )
+    LAMA_INTERFACE_FN( sizes2offsets, loc, CSRUtils, Offsets )
+    LAMA_INTERFACE_FN( setInversePerm, loc, JDSUtils, Sort )
 
     ReadAccess<IndexType> rJdsPerm( mPerm, loc );
     ReadAccess<IndexType> rJdsILG( mIlg, loc );
     WriteOnlyAccess<IndexType> wCsrIA( ia, loc, mNumRows + 1 );
 
-    LAMA_CONTEXT_ACCESS( loc );
+    LAMA_CONTEXT_ACCESS( loc )
 
     // rowValues[ perm[i] ] = ilg[i]
     setScatter( wCsrIA.get(), rJdsPerm.get(), rJdsILG.get(), mNumRows );
@@ -578,7 +578,7 @@ void JDSStorage<ValueType>::buildCSR(
 
     IndexType numValues = sizes2offsets( wCsrIA.get(), mNumRows );
 
-    LAMA_ASSERT_EQUAL_DEBUG( numValues, mNumValues );
+    LAMA_ASSERT_EQUAL_DEBUG( numValues, mNumValues )
 
     // temporary array for inverse permutation
     LAMAArray<IndexType> invPermArray; // allows to find a CSR row in JDS rows
@@ -614,13 +614,13 @@ void JDSStorage<ValueType>::setCSRDataImpl(
     const ContextPtr )
 {
     LAMA_LOG_INFO( logger,
-                   "setCSRDataImpl<" << typeid(ValueType).name() << "," << typeid(OtherValueType).name() << ">" << ", shape is " << numRows << " x " << numColumns << ", #values for CSR = " << numValues );
+                   "setCSRDataImpl<" << typeid(ValueType).name() << "," << typeid(OtherValueType).name() << ">" << ", shape is " << numRows << " x " << numColumns << ", #values for CSR = " << numValues )
 
     ContextPtr loc = getContextPtr();
 
-    LAMA_INTERFACE_FN( offsets2sizes, loc, CSRUtils, Offsets );
-    LAMA_INTERFACE_FN_T( setOrder, loc, Utils, Setter, IndexType );
-    LAMA_INTERFACE_FN_TT( setCSRValues, loc, JDSUtils, Conversions, ValueType, OtherValueType );
+    LAMA_INTERFACE_FN( offsets2sizes, loc, CSRUtils, Offsets )
+    LAMA_INTERFACE_FN_T( setOrder, loc, Utils, Setter, IndexType )
+    LAMA_INTERFACE_FN_TT( setCSRValues, loc, JDSUtils, Conversions, ValueType, OtherValueType )
 
     ReadAccess<IndexType> rCsrIA( ia, loc );
     ReadAccess<IndexType> rCsrJA( ja, loc );
@@ -638,7 +638,7 @@ void JDSStorage<ValueType>::setCSRDataImpl(
         WriteOnlyAccess<IndexType> wIlg( mIlg, loc, mNumRows );
         WriteOnlyAccess<IndexType> wPerm( mPerm, loc, mNumRows );
 
-        LAMA_CONTEXT_ACCESS( loc );
+        LAMA_CONTEXT_ACCESS( loc )
 
         // ilg willl contain the sizes of each row
         offsets2sizes( wIlg.get(), rCsrIA.get(), mNumRows );
@@ -658,7 +658,7 @@ void JDSStorage<ValueType>::setCSRDataImpl(
         WriteOnlyAccess<ValueType> wValues( mValues, loc, mNumValues );
         WriteOnlyAccess<IndexType> wJa( mJa, loc, mNumValues );
 
-        LAMA_CONTEXT_ACCESS( loc );
+        LAMA_CONTEXT_ACCESS( loc )
 
         setCSRValues( wJa.get(), wValues.get(), numRows, rPerm.get(), rIlg.get(), rDlg.get(), rCsrIA.get(),
                       rCsrJA.get(), rCsrValues.get() );
@@ -675,7 +675,7 @@ void JDSStorage<ValueType>::setCSRDataImpl(
  template<typename ValueType>
  void JDSStorage<ValueType>::setCompressJDS( const JDSStorage<ValueType>& other )
  {
- LAMA_LOG_DEBUG( logger, "compress " << other );
+ LAMA_LOG_DEBUG( logger, "compress " << other )
 
  ContextPtr loc = ContextFactory::getContext( Context::Host );
 
@@ -716,7 +716,7 @@ void JDSStorage<ValueType>::setCSRDataImpl(
  }
  sortRows( loc );   // sorts ilg and builds perm, computes mNumDiagonals
  LAMA_LOG_INFO( logger, "initial setup with compressed JDS data, #values = " << mNumValues
- << ", #jagged diagonals = " << mNumDiagonals );
+ << ", #jagged diagonals = " << mNumDiagonals )
  ReadAccess<IndexType> ilg( mIlg, loc );
 
  if ( mNumRows )
@@ -724,7 +724,7 @@ void JDSStorage<ValueType>::setCSRDataImpl(
  ReadAccess<IndexType> perm( mPerm, loc );
  LAMA_LOG_DEBUG( logger, "sorted rows: max is row " << perm.get()[0] << " with "
  << ilg.get()[0] << " elements, min is row " <<  perm.get()[mNumRows - 1]
- << " with " << ilg.get()[mNumRows - 1] << " elements" );
+ << " with " << ilg.get()[mNumRows - 1] << " elements" )
  }
 
  setupData( loc );  // sets dlg, allocates mValues, mJa
@@ -739,7 +739,7 @@ void JDSStorage<ValueType>::setCSRDataImpl(
  IndexType offset = ii;
  IndexType offsetOld = iiOld;
  LAMA_LOG_DEBUG( logger, "compress JDS new row " << ii << "(was row " << iiOld
- << "), " << otherIlg.get()[iiOld] << " to " << ilg.get()[ii] << " values" );
+ << "), " << otherIlg.get()[iiOld] << " to " << ilg.get()[ii] << " values" )
  IndexType cnt = 0;
 
  for ( IndexType d = 0; d < otherIlg.get()[iiOld] ; d++ )
@@ -755,7 +755,7 @@ void JDSStorage<ValueType>::setCSRDataImpl(
  offsetOld += otherDlg.get()[d];
  }
 
- LAMA_ASSERT( cnt == ilg.get()[ii], "count mismatch in JDS row " << ii );
+ LAMA_ASSERT( cnt == ilg.get()[ii], "count mismatch in JDS row " << ii )
  perm.get()[ii] = otherPerm.get()[iiOld];  // that is now the correct value
  }
  }
@@ -768,7 +768,7 @@ template<typename ValueType>
 JDSStorage<ValueType>::~JDSStorage()
 {
     LAMA_LOG_DEBUG( logger,
-                    "~JDSStorage for matrix " << mNumRows << " x " << mNumColumns << ", # diags = " << mNumDiagonals );
+                    "~JDSStorage for matrix " << mNumRows << " x " << mNumColumns << ", # diags = " << mNumDiagonals )
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */
@@ -792,12 +792,12 @@ void JDSStorage<ValueType>::purge()
 template<typename ValueType>
 void JDSStorage<ValueType>::allocate( IndexType numRows, IndexType numColumns )
 {
-    LAMA_LOG_INFO( logger, "allocate JDS sparse matrix of size " << numRows << " x " << numColumns );
+    LAMA_LOG_INFO( logger, "allocate JDS sparse matrix of size " << numRows << " x " << numColumns )
 
     ContextPtr loc = getContextPtr();
 
-    LAMA_INTERFACE_FN_T( setVal, loc, Utils, Setter, IndexType );
-    LAMA_INTERFACE_FN_T( setOrder, loc, Utils, Setter, IndexType );
+    LAMA_INTERFACE_FN_T( setVal, loc, Utils, Setter, IndexType )
+    LAMA_INTERFACE_FN_T( setOrder, loc, Utils, Setter, IndexType )
 
     mNumRows = numRows;
     mNumColumns = numColumns;
@@ -807,7 +807,7 @@ void JDSStorage<ValueType>::allocate( IndexType numRows, IndexType numColumns )
     WriteOnlyAccess<IndexType> ilg( mIlg, loc, mNumRows );
     WriteOnlyAccess<IndexType> perm( mPerm, loc, mNumRows );
 
-    LAMA_CONTEXT_ACCESS( loc );
+    LAMA_CONTEXT_ACCESS( loc )
 
     setVal( ilg.get(), mNumRows, 0 );
     setOrder( perm.get(), mNumRows );
@@ -841,7 +841,7 @@ void JDSStorage<ValueType>::writeAt( std::ostream& stream ) const
 template<typename ValueType>
 ValueType JDSStorage<ValueType>::getValue( IndexType i, IndexType j ) const
 {
-    LAMA_LOG_TRACE( logger, "get value (" << i << ", " << j << ") from " << *this );
+    LAMA_LOG_TRACE( logger, "get value (" << i << ", " << j << ") from " << *this )
 
     ContextPtr loc = getContextPtr();
 
@@ -851,9 +851,9 @@ ValueType JDSStorage<ValueType>::getValue( IndexType i, IndexType j ) const
     ReadAccess<IndexType> ja( mJa, loc );
     ReadAccess<ValueType> values( mValues, loc );
 
-    LAMA_INTERFACE_FN_TT( getValue, loc, JDSUtils, Getter, ValueType, ValueType );
+    LAMA_INTERFACE_FN_TT( getValue, loc, JDSUtils, Getter, ValueType, ValueType )
 
-    LAMA_CONTEXT_ACCESS( loc );
+    LAMA_CONTEXT_ACCESS( loc )
 
     return getValue( i, j, mNumRows, dlg.get(), ilg.get(), perm.get(), ja.get(), values.get() );
 }
@@ -872,19 +872,19 @@ void JDSStorage<ValueType>::matrixTimesVector(
 {
     // TODO: check CUDA implementation
 
-    LAMA_REGION( "Storage.JDS.timesVector" );
+    LAMA_REGION( "Storage.JDS.timesVector" )
 
     LAMA_LOG_DEBUG( logger,
-                    "Computing z = alpha * A * x + beta * y, with A = " << *this << ", x = " << x << ", y = " << y << ", z = " << result );
+                    "Computing z = alpha * A * x + beta * y, with A = " << *this << ", x = " << x << ", y = " << y << ", z = " << result )
 
-    LAMA_ASSERT_EQUAL_ERROR( x.size(), mNumColumns );
-    LAMA_ASSERT_EQUAL_ERROR( y.size(), mNumRows );
+    LAMA_ASSERT_EQUAL_ERROR( x.size(), mNumColumns )
+    LAMA_ASSERT_EQUAL_ERROR( y.size(), mNumRows )
 
     ContextPtr loc = getContextPtr();
 
-    LAMA_LOG_INFO( logger, *this << ": matrixTimesVector on " << *loc );
+    LAMA_LOG_INFO( logger, *this << ": matrixTimesVector on " << *loc )
 
-    LAMA_INTERFACE_FN_T( normalGEMV, loc, JDSUtils, Mult, ValueType );
+    LAMA_INTERFACE_FN_T( normalGEMV, loc, JDSUtils, Mult, ValueType )
 
     ReadAccess<IndexType> jdsPerm( mPerm, loc );
     ReadAccess<IndexType> jdsDLG( mDlg, loc );
@@ -902,7 +902,7 @@ void JDSStorage<ValueType>::matrixTimesVector(
 
         // we assume that normalGEMV can deal with the alias of result, y
 
-        LAMA_CONTEXT_ACCESS( loc );
+        LAMA_CONTEXT_ACCESS( loc )
 
         normalGEMV( wResult.get(), alpha, rX.get(), beta, wResult.get(), mNumRows, jdsPerm.get(), jdsILG.get(),
                     mNumDiagonals, jdsDLG.get(), jdsJA.get(), jdsValues.get(), NULL );
@@ -912,7 +912,7 @@ void JDSStorage<ValueType>::matrixTimesVector(
         WriteOnlyAccess<ValueType> wResult( result, loc, mNumRows );
         ReadAccess<ValueType> rY( y, loc );
 
-        LAMA_CONTEXT_ACCESS( loc );
+        LAMA_CONTEXT_ACCESS( loc )
 
         normalGEMV( wResult.get(), alpha, rX.get(), beta, rY.get(), mNumRows, jdsPerm.get(), jdsILG.get(),
                     mNumDiagonals, jdsDLG.get(), jdsJA.get(), jdsValues.get(), NULL );
@@ -928,24 +928,24 @@ void JDSStorage<ValueType>::jacobiIterate(
     const LAMAArrayConstView<ValueType> rhs,
     const ValueType omega ) const
 {
-    LAMA_REGION( "Storage.JDS.jacobiIterate" );
+    LAMA_REGION( "Storage.JDS.jacobiIterate" )
 
-    LAMA_LOG_INFO( logger, *this << ": Jacobi iteration for local matrix data." );
+    LAMA_LOG_INFO( logger, *this << ": Jacobi iteration for local matrix data." )
 
     ContextPtr loc = getContextPtr();
 
-    LAMA_INTERFACE_FN_T( jacobi, loc, JDSUtils, Solver, ValueType );
+    LAMA_INTERFACE_FN_T( jacobi, loc, JDSUtils, Solver, ValueType )
 
-    LAMA_ASSERT_ERROR( mDiagonalProperty, *this << ": jacobiIterate requires diagonal property" );
+    LAMA_ASSERT_ERROR( mDiagonalProperty, *this << ": jacobiIterate requires diagonal property" )
 
     if ( solution == oldSolution )
     {
-        LAMA_THROWEXCEPTION( "alias of solution and oldSolution unsupported" );
+        LAMA_THROWEXCEPTION( "alias of solution and oldSolution unsupported" )
     }
 
-    LAMA_ASSERT_EQUAL_DEBUG( mNumRows, oldSolution.size() );
-    LAMA_ASSERT_EQUAL_DEBUG( mNumRows, solution.size() );
-    LAMA_ASSERT_EQUAL_DEBUG( mNumRows, mNumColumns );
+    LAMA_ASSERT_EQUAL_DEBUG( mNumRows, oldSolution.size() )
+    LAMA_ASSERT_EQUAL_DEBUG( mNumRows, solution.size() )
+    LAMA_ASSERT_EQUAL_DEBUG( mNumRows, mNumColumns )
     // matrix must be square
 
     {
@@ -959,7 +959,7 @@ void JDSStorage<ValueType>::jacobiIterate(
         ReadAccess<ValueType> rOldSolution( oldSolution, loc );
         ReadAccess<ValueType> rRhs( rhs, loc );
 
-        LAMA_CONTEXT_ACCESS( loc );
+        LAMA_CONTEXT_ACCESS( loc )
 
         jacobi( wSolution.get(), mNumRows, jdsPerm.get(), jdsIlg.get(), mNumDiagonals, jdsDlg.get(), jdsJA.get(),
                 jdsValues.get(), rOldSolution.get(), rRhs.get(), omega, NULL );
@@ -976,20 +976,20 @@ void JDSStorage<ValueType>::jacobiIterateHalo(
     const LAMAArrayConstView<ValueType> oldHaloSolution,
     const ValueType omega ) const
 {
-    LAMA_LOG_INFO( logger, *this << ": Jacobi iteration for halo matrix data." );
+    LAMA_LOG_INFO( logger, *this << ": Jacobi iteration for halo matrix data." )
 
-    LAMA_REGION( "Storage.JDS.jacobiIterateHalo" );
+    LAMA_REGION( "Storage.JDS.jacobiIterateHalo" )
 
     ContextPtr loc = getContextPtr();
 
-    LAMA_INTERFACE_FN_T( jacobiHalo, loc, JDSUtils, Solver, ValueType );
-    LAMA_INTERFACE_FN_T( invert, loc, Utils, Math, ValueType );
+    LAMA_INTERFACE_FN_T( jacobiHalo, loc, JDSUtils, Solver, ValueType )
+    LAMA_INTERFACE_FN_T( invert, loc, Utils, Math, ValueType )
 
-    LAMA_ASSERT_EQUAL_DEBUG( mNumRows, localSolution.size() );
-    LAMA_ASSERT_EQUAL_DEBUG( mNumRows, localStorage.getNumRows() );
-    LAMA_ASSERT_EQUAL_DEBUG( mNumRows, localStorage.getNumColumns() );
-    LAMA_ASSERT_DEBUG( localStorage.hasDiagonalProperty(), localStorage << ": has not diagonal property" );
-    LAMA_ASSERT_EQUAL_DEBUG( mNumColumns, oldHaloSolution.size() );
+    LAMA_ASSERT_EQUAL_DEBUG( mNumRows, localSolution.size() )
+    LAMA_ASSERT_EQUAL_DEBUG( mNumRows, localStorage.getNumRows() )
+    LAMA_ASSERT_EQUAL_DEBUG( mNumRows, localStorage.getNumColumns() )
+    LAMA_ASSERT_DEBUG( localStorage.hasDiagonalProperty(), localStorage << ": has not diagonal property" )
+    LAMA_ASSERT_EQUAL_DEBUG( mNumColumns, oldHaloSolution.size() )
 
     // need diagonal of local storage in *natural* order
     const LAMAArray<ValueType>* localDiagonal;
@@ -1007,7 +1007,7 @@ void JDSStorage<ValueType>::jacobiIterateHalo(
     ReadAccess<ValueType> jdsHaloValues( mValues, loc );
     ReadAccess<ValueType> rOldHaloSolution( oldHaloSolution, loc );
 
-    LAMA_CONTEXT_ACCESS( loc );
+    LAMA_CONTEXT_ACCESS( loc )
 
     jacobiHalo( wSolution.get(), mNumRows, diagonal.get(), mNumDiagonals, jdsHaloPerm.get(), jdsHaloIlg.get(),
                 jdsHaloDlg.get(), jdsHaloJA.get(), jdsHaloValues.get(), rOldHaloSolution.get(), omega, NULL );
@@ -1019,7 +1019,7 @@ void JDSStorage<ValueType>::jacobiIterateHalo(
 template<typename ValueType>
 ValueType JDSStorage<ValueType>::maxNorm() const
 {
-    LAMA_LOG_INFO( logger, *this << ": maxNorm()" );
+    LAMA_LOG_INFO( logger, *this << ": maxNorm()" )
 
     const IndexType n = mNumValues;
 
@@ -1030,11 +1030,11 @@ ValueType JDSStorage<ValueType>::maxNorm() const
 
     ContextPtr loc = getContextPtr();
 
-    LAMA_INTERFACE_FN_DEFAULT_T( absMaxVal, loc, Utils, Reductions, ValueType );
+    LAMA_INTERFACE_FN_DEFAULT_T( absMaxVal, loc, Utils, Reductions, ValueType )
 
     ReadAccess<ValueType> jdsValues( mValues, loc );
 
-    LAMA_CONTEXT_ACCESS( loc );
+    LAMA_CONTEXT_ACCESS( loc )
 
     ValueType maxval = absMaxVal( jdsValues.get(), n );
 

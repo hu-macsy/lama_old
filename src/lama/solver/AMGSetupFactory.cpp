@@ -58,7 +58,7 @@ class AMGSetup;
 
 /* ---- Static variables of AMGSetupFactory  ----------------------------------- */
 
-LAMA_LOG_DEF_LOGGER( AMGSetupFactory::logger, "AMGSetupFactory" );
+LAMA_LOG_DEF_LOGGER( AMGSetupFactory::logger, "AMGSetupFactory" )
 
 AMGSetupFactory& AMGSetupFactory::getFactory()
 {
@@ -82,7 +82,7 @@ AMGSetupFactory& AMGSetupFactory::getFactory()
 
 AMGSetupPtr AMGSetupFactory::get( const std::string& type )
 {
-    LAMA_LOG_TRACE( logger, "Get AMGSetup of type " << type );
+    LAMA_LOG_TRACE( logger, "Get AMGSetup of type " << type )
 
     const AMGSetupFactory& factory = getFactory();
 
@@ -95,7 +95,7 @@ AMGSetupPtr AMGSetupFactory::get( const std::string& type )
 
     const std::string& defaultType = factory.getDefaultAMGSetupType();
 
-    LAMA_LOG_WARN( logger, "AMGSetup for " << type << " not supported, will use " << defaultType );
+    LAMA_LOG_WARN( logger, "AMGSetup for " << type << " not supported, will use " << defaultType )
 
     // try to get a default AMGSetup
 
@@ -106,7 +106,7 @@ AMGSetupPtr AMGSetupFactory::get( const std::string& type )
         return id->second->getAMGSetup();
     }
 
-    LAMA_THROWEXCEPTION( "AMGSetup for " << type << " not supported, no manager registered" );
+    LAMA_THROWEXCEPTION( "AMGSetup for " << type << " not supported, no manager registered" )
 }
 
 AMGSetupPtr AMGSetupFactory::get()
@@ -136,7 +136,7 @@ const std::string& AMGSetupFactory::getDefaultAMGSetupType() const
 boost::shared_ptr<AMGSetupManager> AMGSetupFactory::getAMGSetupManager( const std::string& type )
 {
     LAMA_ASSERT( mAMGSetupToManagerMap.find( type ) != mAMGSetupToManagerMap.end(),
-                 "AMGSetup for " << type << " not supported, no manager registered" );
+                 "AMGSetup for " << type << " not supported, no manager registered" )
     return mAMGSetupToManagerMap[type];
 }
 
@@ -146,14 +146,14 @@ void AMGSetupFactory::setDefaultAMGSetupType( const std::string& defaultType ) c
     {
         mDefaultAMGSetupType = defaultType;
 
-        LAMA_LOG_INFO( logger, "set default AMGSetup: " << mDefaultAMGSetupType );
+        LAMA_LOG_INFO( logger, "set default AMGSetup: " << mDefaultAMGSetupType )
     }
     else
     {
         setDefaultAMGSetupType();
 
         LAMA_LOG_WARN( logger,
-                       "default AMGSetup " << defaultType << " not available, will be " << mDefaultAMGSetupType );
+                       "default AMGSetup " << defaultType << " not available, will be " << mDefaultAMGSetupType )
     }
 }
 
@@ -169,7 +169,7 @@ void AMGSetupFactory::setDefaultAMGSetupType() const
     }
     else
     {
-        LAMA_THROWEXCEPTION( "No default AMGSetup available" );
+        LAMA_THROWEXCEPTION( "No default AMGSetup available" )
     }
 }
 
@@ -192,7 +192,7 @@ AMGSetupFactory::AMGSetupFactory()
 
 AMGSetupFactory::~AMGSetupFactory()
 {
-    LAMA_LOG_INFO( logger, "~AMGSetupFactory" );
+    LAMA_LOG_INFO( logger, "~AMGSetupFactory" )
 }
 
 /* ---- AMGSetupFactory methods  ----------------------------------------------- */
@@ -207,7 +207,7 @@ void AMGSetupFactory::addAMGSetupManager( const std::string& type, boost::shared
     {
         // AMGSetupManager might be replaced, e.g. for Host context (DefaultHost or CUDAHost)
 
-        LAMA_LOG_INFO( logger, "AMGSetup manager replaced for AMGSetup type " << type );
+        LAMA_LOG_INFO( logger, "AMGSetup manager replaced for AMGSetup type " << type )
     }
 
     mAMGSetupToManagerMap[type] = commManager; // ownership of pointer is taken over

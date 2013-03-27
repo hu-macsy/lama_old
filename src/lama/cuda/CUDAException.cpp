@@ -57,7 +57,7 @@ CUDAException::CUDAException( const std::string& message, const cudaError_t cuda
     oss << " (" << cudaGetErrorString( cudaError ) << ")";
     mMessage = oss.str();
 
-    LAMA_LOG_WARN( logger, "EXCEPTION: " << message );
+    LAMA_LOG_WARN( logger, "EXCEPTION: " << message )
 }
 
 CUDAException::~CUDAException() throw ()

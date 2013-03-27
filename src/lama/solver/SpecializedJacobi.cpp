@@ -98,17 +98,17 @@ void SpecializedJacobi::initialize( const Matrix& coefficients )
 
     OmegaSolver::initialize( coefficients );
 
-    LAMA_LOG_DEBUG( logger, "Initialization started" );
+    LAMA_LOG_DEBUG( logger, "Initialization started" )
 
-    LAMA_LOG_DEBUG( logger, "diagonal property of coefficients: " << coefficients.hasDiagonalProperty() );
+    LAMA_LOG_DEBUG( logger, "diagonal property of coefficients: " << coefficients.hasDiagonalProperty() )
 
-    LAMA_ASSERT( coefficients.hasDiagonalProperty(), "Diagonal Property not set." );
+    LAMA_ASSERT( coefficients.hasDiagonalProperty(), "Diagonal Property not set." )
 
     SpecializedJacobiRuntime& runtime = getRuntime();
 
     if ( !runtime.mOldSolution.get() )
     {
-        LAMA_LOG_DEBUG( logger, "Creating old solution vector using properties of the coefficient matrix. " );
+        LAMA_LOG_DEBUG( logger, "Creating old solution vector using properties of the coefficient matrix. " )
         runtime.mOldSolution = Vector::createVector( runtime.mCoefficients->getValueType(),
                                runtime.mCoefficients->getDistributionPtr() );
     }
@@ -120,7 +120,7 @@ void SpecializedJacobi::solve( Vector& solution, const Vector& rhs )
 {
     if ( getConstRuntime().mSolveInit )
     {
-        LAMA_LOG_DEBUG( logger, "Previous initialization of solver found! Will be overriden!" );
+        LAMA_LOG_DEBUG( logger, "Previous initialization of solver found! Will be overriden!" )
     }
     solveInit( solution, rhs );
     solveImpl();
@@ -159,15 +159,15 @@ void SpecializedJacobi::solveFinalize()
 //        &( mSolution.getConstReference() ) )
     if ( getConstRuntime().mIterations % 2 )
     {
-        LAMA_LOG_DEBUG( logger, "mProxyOldSolution = *mSolution" );
+        LAMA_LOG_DEBUG( logger, "mProxyOldSolution = *mSolution" )
         *getRuntime().mProxyOldSolution = *getRuntime().mSolution;
     }
-    LAMA_LOG_DEBUG( logger, " end solve " );
+    LAMA_LOG_DEBUG( logger, " end solve " )
 }
 
 void SpecializedJacobi::iterate()
 {
-    LAMA_REGION( "Solver.SpJacobi.iterate" );
+    LAMA_REGION( "Solver.SpJacobi.iterate" )
 
     const SparseMatrix<double>* sparseDoubleCoefficients =
         dynamic_cast<const SparseMatrix<double>*>( getRuntime().mCoefficients );
@@ -193,10 +193,10 @@ void SpecializedJacobi::iterate()
 template<typename ValueType>
 void SpecializedJacobi::iterateTyped( const SparseMatrix<ValueType>& coefficients )
 {
-    LAMA_REGION( "Solver.SpJacobi.iterateTyped" );
+    LAMA_REGION( "Solver.SpJacobi.iterateTyped" )
 
     LAMA_LOG_INFO( logger,
-                   *getConstRuntime().mSolution << " = " << coefficients << " * " << *getConstRuntime().mOldSolution << " = " << *getConstRuntime().mRhs );
+                   *getConstRuntime().mSolution << " = " << coefficients << " * " << *getConstRuntime().mOldSolution << " = " << *getConstRuntime().mRhs )
 
     if ( coefficients.getNumRows() == 0 )
     {
@@ -204,7 +204,7 @@ void SpecializedJacobi::iterateTyped( const SparseMatrix<ValueType>& coefficient
         return;
     }
 
-    LAMA_LOG_INFO( logger, "Swap old solution and solution pointer." );
+    LAMA_LOG_INFO( logger, "Swap old solution and solution pointer." )
 
     Vector* ptr_OldSolution = &( *getRuntime().mProxyOldSolution );
     Vector* ptr_solution = &( *getRuntime().mSolution );
@@ -222,7 +222,7 @@ void SpecializedJacobi::iterateTyped( const SparseMatrix<ValueType>& coefficient
             && typeid( *getRuntime().mSolution ) == typeid( oldSolution )
             && typeid( *getRuntime().mRhs ) == typeid( oldSolution ) )
     {
-        LAMA_LOG_INFO( logger, "All types have the same value type." );
+        LAMA_LOG_INFO( logger, "All types have the same value type." )
         const DenseVector<ValueType>& denseOldSolution = dynamic_cast<const DenseVector<ValueType>&>( oldSolution );
         DenseVector<ValueType>& denseSolution = dynamic_cast<DenseVector<ValueType>&>( *getRuntime().mSolution );
         const DenseVector<ValueType>& denseRhs = dynamic_cast<const DenseVector<ValueType>&>( *getRuntime().mRhs );
@@ -235,7 +235,7 @@ void SpecializedJacobi::iterateTyped( const SparseMatrix<ValueType>& coefficient
 
         //Prefetch matrix to local location while exchanging the halo
         //see comment below why prefetch for halo location is not started here
-        LAMA_LOG_DEBUG( logger, "Starting prefetch of input data for local computation to: " << localContext );
+        LAMA_LOG_DEBUG( logger, "Starting prefetch of input data for local computation to: " << localContext )
 
         coefficients.getLocalStorage().prefetch();
 
@@ -254,18 +254,18 @@ void SpecializedJacobi::iterateTyped( const SparseMatrix<ValueType>& coefficient
                 denseOldSolution.getHaloValues(), coefficients.getHalo().getRequiredPlan(),
                 coefficients.mTempSendValues, coefficients.getHalo().getProvidesPlan() );
 
-            LAMA_LOG_INFO( logger, "Synchronous update of halo values done." );
+            LAMA_LOG_INFO( logger, "Synchronous update of halo values done." )
         }
         else
         {
-            LAMA_LOG_INFO( logger, "No update for halo values necessary." );
+            LAMA_LOG_INFO( logger, "No update for halo values necessary." )
         }
 
         const LAMAArray<ValueType>& localOldSolution = denseOldSolution.getLocalValues();
         LAMAArray<ValueType>& localSolution = denseSolution.getLocalValues();
         const LAMAArray<ValueType>& localRhs = denseRhs.getLocalValues();
 
-        LAMA_LOG_INFO( logger, "Starting local computation." );
+        LAMA_LOG_INFO( logger, "Starting local computation." )
 
         //get best possible routine for computation of local matrix
 
@@ -284,8 +284,8 @@ void SpecializedJacobi::iterateTyped( const SparseMatrix<ValueType>& coefficient
                 //prefetch neede because if the copy is started after the computation the copy blocks
                 coefficients.mTempSendValues.prefetch( ContextFactory::getContext( Context::Host ) );
             }
-            LAMA_REGION( "Solver.SpJacobi.iterate:computeLocalAsync" );
-            LAMA_LOG_INFO( logger, "Starting asynchronous computation of local values on " << *localContext );
+            LAMA_REGION( "Solver.SpJacobi.iterate:computeLocalAsync" )
+            LAMA_LOG_INFO( logger, "Starting asynchronous computation of local values on " << *localContext )
 
             const ValueType omega = mOmega.getValue<ValueType>();
 
@@ -294,8 +294,8 @@ void SpecializedJacobi::iterateTyped( const SparseMatrix<ValueType>& coefficient
         }
         else
         {
-            LAMA_REGION( "Solver.SpJacobi.iterate:computeLocalSync" );
-            LAMA_LOG_INFO( logger, "Starting synchronous computation of local values on " << *localContext );
+            LAMA_REGION( "Solver.SpJacobi.iterate:computeLocalSync" )
+            LAMA_LOG_INFO( logger, "Starting synchronous computation of local values on " << *localContext )
 
             const ValueType omega = mOmega.getValue<ValueType>();
 
@@ -322,16 +322,16 @@ void SpecializedJacobi::iterateTyped( const SparseMatrix<ValueType>& coefficient
                 coefficients.mTempSendValues, coefficients.getHalo().getProvidesPlan() );
             //denseOldSolution.updateHalo( coefficients.getHalo() );
             LAMA_LOG_INFO( logger,
-                           "Synchronous update of halo values parallel to asynchronous local computation done." );
+                           "Synchronous update of halo values parallel to asynchronous local computation done." )
         }
 
-        LAMA_LOG_INFO( logger, "Halo available. Size " << coefficients.getHalo().getHaloSize() );
+        LAMA_LOG_INFO( logger, "Halo available. Size " << coefficients.getHalo().getHaloSize() )
 
         if ( coefficients.getHalo().getHaloSize() > 0 )
         {
-            LAMA_REGION( "Solver.SpJacobi.iterate:computeHalo" );
+            LAMA_REGION( "Solver.SpJacobi.iterate:computeHalo" )
 
-            LAMA_LOG_INFO( logger, "Halo compute, size = " << coefficients.getHalo().getHaloSize() );
+            LAMA_LOG_INFO( logger, "Halo compute, size = " << coefficients.getHalo().getHaloSize() )
 
             const LAMAArray<ValueType>& haloOldSolution = denseOldSolution.getHaloValues();
 
@@ -343,17 +343,17 @@ void SpecializedJacobi::iterateTyped( const SparseMatrix<ValueType>& coefficient
 
             haloOldSolution.prefetch( haloLocation );
 
-            LAMA_LOG_INFO( logger, "Halo compute, haloX = " << haloOldSolution );
+            LAMA_LOG_INFO( logger, "Halo compute, haloX = " << haloOldSolution )
 
             LAMA_LOG_DEBUG( logger,
-                            " Calling LAMAInterface for z += alpha * A * x + beta * y " << " with A = " << coefficients.getHaloStorage() << ", x = " << haloOldSolution << ", z = " << localSolution );
+                            " Calling LAMAInterface for z += alpha * A * x + beta * y " << " with A = " << coefficients.getHaloStorage() << ", x = " << haloOldSolution << ", z = " << localSolution )
 
-            LAMA_LOG_INFO( logger, "Starting halo computation after the local computation on " << *haloLocation );
+            LAMA_LOG_INFO( logger, "Starting halo computation after the local computation on " << *haloLocation )
             {
                 LAMA_REGION("Solver.SpJacobi.iterate:waitLocal");
                 localComputation->wait();
             }
-            LAMA_LOG_INFO( logger, "Local computation done." );
+            LAMA_LOG_INFO( logger, "Local computation done." )
             {
                 LAMA_REGION( "Solver.SpJacobi.iterate:halo");
 
@@ -367,7 +367,7 @@ void SpecializedJacobi::iterateTyped( const SparseMatrix<ValueType>& coefficient
         }
 
         {
-            LAMA_REGION( "Solver.SpJacobi.iterate:waitLocal" );
+            LAMA_REGION( "Solver.SpJacobi.iterate:waitLocal" )
             // Need to synchronize the localComputation if halo is empty and we have async comp
             localComputation->wait();
         }

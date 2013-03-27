@@ -180,7 +180,7 @@ private:
 
     mutable std::vector<int> mDefaultArgs;
 
-    LAMA_LOG_DECL_STATIC_LOGGER( logger );
+    LAMA_LOG_DECL_STATIC_LOGGER( logger )
 };
 
 }
