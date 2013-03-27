@@ -84,6 +84,8 @@ public:
 
     _MatrixStorage();
 
+    /** Destructor. */
+
     virtual ~_MatrixStorage();
 
     /** This method returns the type name of a matrix storage, e.g. CSRStorage<double>.
@@ -93,7 +95,10 @@ public:
 
     virtual const char* getTypeName() const = 0;
 
-    /** Initialization of base class due to a resize. */
+    /** Initialization of base class due to a resize. 
+     *
+     *  @param numRows, numColumns specifiy the size of the matrix
+     */
 
     void init( const IndexType numRows, const IndexType numColumns );
 
@@ -136,19 +141,16 @@ public:
 
     /** @brief Getter for the preferred context of the storage data, returns pointer. */
 
-    ContextPtr getContextPtr() const
-    {
-        return mContext;
-    }
+    inline ContextPtr getContextPtr() const;
 
     /** @brief Getter for the preferred context of the storage data. */
 
-    const Context& getContext() const
-    {
-        return *mContext;
-    }
+    inline const Context& getContext() const;
 
-    /** @brief Pure method that prefetches storage data into a given context. */
+    /** @brief Pure method that prefetches storage data into a given context. 
+     *
+     *  @param context specifies location where data will resize
+     */
 
     virtual void prefetch( const ContextPtr context ) const = 0;
 
@@ -167,7 +169,11 @@ public:
 
     void setCompressThreshold( float ratio );
 
+    /** Getter routine for the number of rows. */
+
     inline IndexType getNumRows() const;
+
+    /** Getter routine for the number of rows. */
 
     inline IndexType getNumColumns() const;
 
@@ -906,6 +912,16 @@ protected:
 /* ------------------------------------------------------------------------- */
 /* ------------------------------------------------------------------------- */
 /* ------------------------------------------------------------------------- */
+
+ContextPtr _MatrixStorage::getContextPtr() const
+{
+    return mContext;
+}
+
+const Context& _MatrixStorage::getContext() const
+{
+    return *mContext;
+}
 
 IndexType _MatrixStorage::getNumRows() const
 {
