@@ -65,7 +65,7 @@ public:
     HostReadAccess( const LAMAArray<ValueType>& array );
 
     /**
-     * @brief Acquire a ReadAccess to the passed LAMAArrayConstView for the host location.
+     * @brief Acquires a ReadAccess to the passed LAMAArrayConstView for the host location.
      *
      * @param[in] view      the LAMAArrayConstView to acquire a ReadAccess for
      * @throws Exception    if the ReadAccess can not be acquired, e.g. because a WriteContext exists.
@@ -80,8 +80,8 @@ public:
     /**
      * @brief Constant access to the element i of the wrapped LAMAArray.
      *
-     * @param[in] i the index of the element of the wrapped LAMAArray to access
-     * @return      a constant reference to the element i of the wrapped LAMAArray
+     * @param[in] i   the index of the element of the wrapped LAMAArray to access
+     * @return        a constant reference to the element i of the wrapped LAMAArray
      */
     inline const ValueType& operator[]( const IndexType i ) const;
 

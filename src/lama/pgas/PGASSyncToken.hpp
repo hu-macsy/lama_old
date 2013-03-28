@@ -58,11 +58,9 @@ public:
 
     virtual void wait();
 
-    /** Method to check wheter communications have already been finished. */
+    /** Method to check whether communications have already been finished. */
 
     virtual bool probe() const;
-
-    /** Write representation of this object into an output stream. */
 
     virtual void writeAt( std::ostream& stream ) const;
 

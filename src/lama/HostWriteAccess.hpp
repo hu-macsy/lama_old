@@ -58,7 +58,7 @@ public:
     typedef T ValueType; //!< This is the type stored in the wrapped container.
 
     /**
-     * @brief acquire a WriteAccess to the passed LAMAArray for the Host location
+     * @brief acquire a WriteAccess to the passed LAMAArray for the host location
      *
      * @param[in] array     the LAMAArray to acquire a WriteAccess for
      * @throws Exception    if the WriteAccess can not be acquired, e.g. because another WriteAccess exists.
@@ -68,10 +68,10 @@ public:
     HostWriteAccess( LAMAArray<ValueType>& array );
 
     /**
-     * @brief acquire a WriteAccess to the passed LAMAArray for the Host location
+     * @brief acquire a WriteAccess to the passed LAMAArray for the host location
      *
      * @param[in] array     the LAMAArray to acquire a WriteAccess for
-     * @param[in] size      TODO[doxy] Complete Description.
+     * @param[in] size      the new size of the LAMA array
      * @param[in] keep      if the contents of the LAMAArray should be kept or not (default: true)
      * @throws Exception    if the WriteAccess can not be acquired, e.g. because another WriteAccess exists.
      *
@@ -80,9 +80,9 @@ public:
     HostWriteAccess( LAMAArray<ValueType>& array, const IndexType size, const bool keep );
 
     /**
-     * @brief acquire a WriteAccess to the passed LAMAArray for the Host location
+     * @brief acquire a WriteAccess to the passed LAMAArray for the host location
      *
-     * @param[in] view      TODO[doxy] Complete Description.
+     * @param[in] view      the LAMAArrayView to acquire a WriteAccess for
      * @param[in] keep      if the contents of the LAMAArray should be kept or not (default: true)
      * @throws Exception    if the WriteAccess can not be acquired, e.g. because another WriteAccess exists.
      *

@@ -102,11 +102,6 @@ public:
      */
     void setIterationExtrema( IndexType iterationExtrema );
 
-    /**
-     * @brief TODO[doxy] Complete Description.
-     *
-     * @param[in] stream   TODO[doxy] Complete Description.
-     */
     virtual void writeAt( std::ostream& stream ) const;
 
 protected:

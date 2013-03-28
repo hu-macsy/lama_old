@@ -63,7 +63,9 @@ public:
     /**
      * @brief Writes some information about this to the passed stream.
      *
-     * If a deriving class does not override writeAt, typeid(this).name() is
+     * The method should be overwritten by base classes to give more
+     * specific information about the object.
+     * If a deriving class does not override it, typeid(this).name() is
      * written to stream.
      *
      * @param[out]  stream  the stream to write to.
@@ -72,7 +74,6 @@ public:
 
     /**
      * @brief Sets or resets extended output mode for printing structures.
-     *
      */
     static void enableExtended( const bool flag );
 

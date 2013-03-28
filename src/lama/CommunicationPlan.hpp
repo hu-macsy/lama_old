@@ -194,8 +194,6 @@ public:
      */
     inline const Entry& operator[]( const PartitionId index ) const;
 
-    /** Override default implementation of base class Printable. */
-
     void writeAt( std::ostream& stream ) const;
 
 private:

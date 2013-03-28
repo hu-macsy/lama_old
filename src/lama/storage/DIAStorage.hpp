@@ -239,17 +239,19 @@ public:
         const LAMAArrayConstView<ValueType> rhs,
         const ValueType omega ) const;
 
-    /** Print relevant information about matrix storage format. */
+    /* Print relevant information about matrix storage format. */
 
     virtual void writeAt( std::ostream& stream ) const;
 
-    /** get Offsets, Values */
+    /** Getter routine for the matrix offsets (read-only). */
 
     const LAMAArray<IndexType>& getOffsets() const;
 
+    /** Getter routine for the matrix values (read-only). */
+
     const LAMAArray<ValueType>& getValues() const;
 
-    /** Getter routine for the number of diagonals*/
+    /** Getter routine for the number of diagonals. */
 
     IndexType getNumDiagonals() const;
 

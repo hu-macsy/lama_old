@@ -356,11 +356,6 @@ public:
      */
     virtual Scalar getValue( IndexType i, IndexType j ) const = 0;
 
-    /**
-     * @brief Write some information about this to the passed stream.
-     *
-     * @param[out] stream   the stream to write to.
-     */
     virtual void writeAt( std::ostream& stream ) const;
 
     /**

@@ -115,10 +115,6 @@ public:
      */
     virtual void release();
 
-    /** Writes information about the read access into an output stream.
-     *
-     * @param[out] stream   output stream.
-     */
     virtual void writeAt( std::ostream& stream ) const;
 
     /**

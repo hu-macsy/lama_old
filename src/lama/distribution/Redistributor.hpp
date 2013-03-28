@@ -347,8 +347,6 @@ public:
 
 private:
 
-    /** Method to write info about a Redistributor into a stream. */
-
     virtual void writeAt( std::ostream& stream ) const;
 
     DistributionPtr mSourceDistribution;

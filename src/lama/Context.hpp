@@ -183,10 +183,6 @@ public:
      */
     virtual bool canUseData( const Context& other ) const = 0;
 
-    /** This method writes info about the device in the output stream
-     *  The method should be overwritten by base classes to give more
-     *  specific information about the device that might be useful for logging.
-     */
     virtual void writeAt( std::ostream& stream ) const;
 
 ///////** This method allocates memory and must be implemented by

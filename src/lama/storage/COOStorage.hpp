@@ -189,19 +189,23 @@ public:
         const LAMAArray<OtherValueType>& values,
         const ContextPtr loc );
 
-    /** Print relevant information about matrix storage format. */
+    /* Print relevant information about matrix storage format. */
 
     virtual void writeAt( std::ostream& stream ) const;
 
-    /** getter for member variables IA, JA, Data, only const reference */
+    /** Getter for member variable IA, only const reference. */
 
     const LAMAArray<IndexType>& getIA() const;
 
+    /** Getter for member variable JA, only const reference. */
+
     const LAMAArray<IndexType>& getJA() const;
+
+    /** Getter for member variable values, only const reference. */
 
     const LAMAArray<ValueType>& getValues() const;
 
-    /** Getter routine for the number of stored values*/
+    /** Getter for the number of stored values. */
 
     virtual IndexType getNumValues() const;
 

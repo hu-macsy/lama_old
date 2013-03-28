@@ -3139,24 +3139,32 @@ public:
 
     /** This method writes the name of the interface into the output stream.
      *  Output message helps to identify which interfaces have been used.
+     *
+     * @see Printable for more details.
      */
     virtual void writeAt( std::ostream& stream ) const;
 
-    /**
-     * getter for template interfaces
-     */
+    /** Getter function for template BLAS1Interface. */
 
     template<typename T>
     const BLAS1Interface<T>& getBLAS1Interface() const;
 
+    /** Getter function for template BLAS2Interface. */
+
     template<typename T>
     const BLAS2Interface<T>& getBLAS2Interface() const;
+
+    /** Getter function for template BLAS3Interface. */
 
     template<typename T>
     const BLAS3Interface<T>& getBLAS3Interface() const;
 
+    /** Getter function for template LAPACKInterface. */
+
     template<typename T>
     const LAPACKInterface<T>& getLAPACKInterface() const;
+
+    /** Getter function for template SCALAPACKInterface. */
 
     template<typename T>
     const SCALAPACKInterface<T>& getSCALAPACKInterface() const;

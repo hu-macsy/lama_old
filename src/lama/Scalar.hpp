@@ -145,12 +145,6 @@ public:
      */
     inline bool isReal() const;
 
-    /**
-     * @brief Overrides virtual method of base class Printable to
-     *        Write the represented value of this to the passed stream.
-     *
-     * @param[in] stream    the stream to write this to.
-     */
     inline virtual void writeAt( std::ostream& stream ) const;
 
     /**

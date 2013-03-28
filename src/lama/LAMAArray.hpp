@@ -261,11 +261,6 @@ public:
      */
     void purge();
 
-    /**
-     * @brief writes the current status of this to the passed stream
-     *
-     * @param[out] stream   the stream to write to
-     */
     virtual void writeAt( std::ostream& stream ) const;
 
     /**

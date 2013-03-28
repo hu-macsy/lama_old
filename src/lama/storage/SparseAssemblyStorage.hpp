@@ -108,8 +108,6 @@ public:
      */
     virtual ~SparseAssemblyStorage();
 
-    /** Override _MatrixStorage::writeAt with more detailed routine. */
-
     virtual void writeAt( std::ostream& stream ) const;
 
     /**

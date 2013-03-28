@@ -106,9 +106,6 @@ public:
         return mGlobal2Halo;
     }
 
-    /** This method writes info about the halo into an output stream.
-     *
-     */
     virtual void writeAt( std::ostream& stream ) const;
 
 protected:

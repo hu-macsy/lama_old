@@ -117,45 +117,14 @@ public:
      */
     IndexType getPartitionSize( const PartitionId partition ) const;
 
-    /**
-     * @brief TODO[doxy] Complete Description.
-     *
-     * @param[in] localIndex TODO[doxy] Complete Description.
-     *
-     * @return TODO[doxy] Complete Description.
-     */
     virtual IndexType local2global( const IndexType localIndex ) const;
 
-    /**
-     * @brief TODO[doxy] Complete Description.
-     * @param[in] globalIndex TODO[doxy] Complete Description.
-     *
-     * @return TODO[doxy] Complete Description.
-     */
     virtual IndexType global2local( const IndexType globalIndex ) const;
 
-    /**
-     * @brief TODO[doxy] Complete Description.
-     *
-     * @param[in] other TODO[doxy] Complete Description.
-     *
-     * @return TODO[doxy] Complete Description.
-     */
     virtual bool isEqual( const Distribution& other ) const;
 
-    /**
-     * @brief TODO[doxy] Complete Description.
-     *
-     * @param[in] stream TODO[doxy] Complete Description.
-     */
     virtual void writeAt( std::ostream& stream ) const;
 
-    /** Method to compute directly the owners of global indexes without
-     *  any communication.
-     *
-     * @param[in] requiredIndexes   TODO[doxy] Complete Description.
-     * @param[in] owners            TODO[doxy] Complete Description.
-     */
     virtual void computeOwners( const std::vector<IndexType>& requiredIndexes, std::vector<PartitionId>& owners ) const;
 
     /**

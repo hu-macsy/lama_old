@@ -201,7 +201,7 @@ public:
         const LAMAArray<OtherValueType>& values,
         const ContextPtr loc );
 
-    /** Print relevant information about matrix storage format. */
+    /* Print relevant information about matrix storage format. */
 
     virtual void writeAt( std::ostream& stream ) const;
 

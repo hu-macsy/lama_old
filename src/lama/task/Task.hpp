@@ -122,11 +122,6 @@ public:
      */
     Id getId() const;
 
-    /**
-     * @brief Override method of Printable.
-     *
-     * @param[out] stream   the stream to write to.
-     */
     virtual void writeAt( std::ostream& stream ) const;
 
 private:
