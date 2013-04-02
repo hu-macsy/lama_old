@@ -209,7 +209,7 @@ public:
         const LAMAArrayConstView<ValueType> haloOldSolution,
         const ValueType omega ) const;
 
-    /** Print relevant information about matrix storage format. */
+    /* Print relevant information about matrix storage format. */
 
     virtual void writeAt( std::ostream& stream ) const;
 

@@ -95,8 +95,10 @@ public:
 
     virtual bool probe() const = 0;
 
-    /** Base class provides a default implementation for the virtual method of Printable. */
-
+    /** Base class provides a default implementation for the virtual method of Printable.
+     *
+     * @see Printable for more details.
+     */
     virtual void writeAt( std::ostream& stream ) const;
 
     /** Add a read/write access to the token so that LAMA arrays will be locked until synchronization. */

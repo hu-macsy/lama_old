@@ -73,8 +73,6 @@ public:
 
     virtual void release();
 
-    /** Override default routine of base class Printable. */
-
     virtual void writeAt( std::ostream& stream ) const;
 
 private:

@@ -81,7 +81,8 @@ public:
      *
      * The templated converstion constructor needs to be explicit, because the operator==(Scalar,Scalar) can lead to ambiguities.
      *
-     * @param[in] value the value this scalar should represent
+     * @tparam T          TODO[doxy] Complete Description.
+     * @param[in] value   the value this scalar should represent
      */
     template<typename T>
     explicit inline Scalar( const T value );
@@ -110,7 +111,8 @@ public:
     /**
      * @brief Constructs a scalar representing the passed complex value.
      *
-     * @param[in] value the value this scalar should represent
+     * @tparam T    TODO[doxy] Complete Description.
+     * @param[in]   value the value this scalar should represent
      */
     template<typename T>
     inline Scalar( const std::complex<T> value );
@@ -121,9 +123,10 @@ public:
     inline virtual ~Scalar();
 
     /**
-     * @brief returns the value this Scalar represents as type T.
+     * @brief Returns the value this Scalar represents as type T.
      *
-     * @return  the value this Scalar represents.
+     * @tparam T    TODO[doxy] Complete Description.
+     * @return      the value this Scalar represents.
      */
     template<typename T>
     inline T getValue() const;
@@ -135,7 +138,6 @@ public:
     /**
      * @brief Unary minus operator for Scalar.
      */
-
     inline Scalar operator-() const;
 
     /**
@@ -143,17 +145,23 @@ public:
      */
     inline bool isReal() const;
 
-    /**
-     * @brief Override virtual method of base class Printable to
-     *        Write the represented value of this to the passed stream.
-     *
-     * @param[in] stream    the stream to write this to.
-     */
     inline virtual void writeAt( std::ostream& stream ) const;
 
+    /**
+     * @brief Returns the type this Scalar represents.
+     *
+     * @tparam T    TODO[doxy] Complete Description.
+     * @return      the ScalarType
+     */
     template<typename T>
     inline static ScalarType getType();
 
+    /**
+     * @brief Returns the size of the given ScalarType.
+     *
+     * @param[in] type    the given ScalarType.
+     * @return            the size of the given ScalarType.
+     */
     inline static size_t getTypeSize( const ScalarType type );
 
 protected:

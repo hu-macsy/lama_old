@@ -73,8 +73,6 @@ public:
 
     virtual bool probe() const;
 
-    /** Write representation of this object into an output stream. */
-
     virtual void writeAt( std::ostream& stream ) const;
 
 private:

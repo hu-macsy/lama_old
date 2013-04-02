@@ -552,11 +552,9 @@ public:
 
     virtual void synchronize() const = 0;
 
-    /** @brief Override virtual method of base class Printable. */
-
     virtual void writeAt( std::ostream& stream ) const;
 
-    /** @brief getter for the type of a communicator. */
+    /** @brief Getter for the type of a communicator. */
 
     const std::string& getType() const
     {

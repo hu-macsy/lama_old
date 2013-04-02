@@ -151,7 +151,7 @@ public:
         const LAMAArray<OtherValueType>& values,
         const ContextPtr loc );
 
-    /** Print relevant information about matrix storage format. */
+    /* Print relevant information about matrix storage format. */
 
     virtual void writeAt( std::ostream& stream ) const;
 
@@ -173,15 +173,15 @@ public:
 
     void wait() const;
 
-    /** Getter routine for the matrix data array (write) */
+    /** Getter routine for the matrix data array (write). */
 
     LAMAArray<ValueType>& getData();
 
-    /** Getter routine for the matrix data array (read-only) */
+    /** Getter routine for the matrix data array (read-only). */
 
     const LAMAArray<ValueType>& getData() const;
 
-    /** Getter routine for the number of stored values*/
+    /** Getter routine for the number of stored values. */
 
     virtual IndexType getNumValues() const;
 

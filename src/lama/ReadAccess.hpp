@@ -69,7 +69,7 @@ public:
 	typedef T ValueType; //!< This is the type stored in the wrapped  container.
 
     /**
-     * @brief acquire a ReadAccess to the passed LAMAArray for the passed context
+     * @brief Acquires a ReadAccess to the passed LAMAArray for the passed context.
      *
      * @param[in] array     the LAMAArray to acquire a ReadAccess for
      * @param[in] context   the context that needs a read acess
@@ -77,8 +77,22 @@ public:
      */
     ReadAccess( const LAMAArray<ValueType>& array, ContextPtr context );
 
+    /**
+     * @brief Acquires a ReadAccess to the passed LAMAArrayView for the passed context.
+     *
+     * @param[in] view      the LAMAArrayView to acquire a ReadAccess for
+     * @param[in] context   the context that needs a read acess
+     * @throws Exception    if the ReadAccess can not be acquired, e.g. because a WriteAccess exists.
+     */
     ReadAccess( const LAMAArrayView<ValueType>& view, ContextPtr context );
 
+    /**
+     * @brief Acquires a ReadAccess to the passed LAMAArrayConstView for the passed context.
+     *
+     * @param[in] view      the LAMAArrayConstView to acquire a ReadAccess for
+     * @param[in] context   the context that needs a read acess
+     * @throws Exception    if the ReadAccess can not be acquired, e.g. because a WriteAccess exists.
+     */
     ReadAccess( const LAMAArrayConstView<ValueType>& view, ContextPtr context );
 
     /**
@@ -87,14 +101,14 @@ public:
     virtual ~ReadAccess();
 
     /**
-     * @brief returns a valid pointer to the data usable for the context
+     * @brief Returns a valid pointer to the data usable for the context.
      *
      * @return a pointer to the wrapped LAMAArray.
      */
     const ValueType* get() const;
 
     /**
-     * @brief release the acquired ReadAccess.
+     * @brief Releases the acquired ReadAccess.
      *
      * Release is mandatory to unlock the array so that it might be
      * used for further write accesses.
