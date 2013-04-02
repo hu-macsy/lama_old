@@ -106,7 +106,7 @@ protected:
 
     virtual void iterate();
 
-    LAMA_LOG_DECL_STATIC_LOGGER(logger);
+    LAMA_LOG_DECL_STATIC_LOGGER( logger )
 
     CGRuntime mCGRuntime;
 

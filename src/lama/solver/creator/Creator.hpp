@@ -72,7 +72,7 @@ protected:
     qi::rule<std::string::const_iterator,Scalar(),ascii::space_type> mRScalar;
 
 private:
-    LAMA_LOG_DECL_STATIC_LOGGER(logger);
+    LAMA_LOG_DECL_STATIC_LOGGER( logger )
 };
 
 }

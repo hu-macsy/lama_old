@@ -368,7 +368,7 @@ private:
     mutable std::auto_ptr<CommunicationPlan> mProvidesPlan;
     mutable std::auto_ptr<CommunicationPlan> mRequiredPlan;
 
-    LAMA_LOG_DECL_STATIC_LOGGER(logger);
+    LAMA_LOG_DECL_STATIC_LOGGER( logger )
 };
 
 /* ------------------------------------------------------------------------------- */

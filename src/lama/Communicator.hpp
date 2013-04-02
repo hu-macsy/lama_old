@@ -569,7 +569,7 @@ protected:
 
     std::string mCommunicatorType;
 
-    LAMA_LOG_DECL_STATIC_LOGGER(logger);
+    LAMA_LOG_DECL_STATIC_LOGGER( logger )
 
     /** Read in the environment variable NP4LAMA for user processor array.
      *

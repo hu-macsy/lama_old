@@ -219,7 +219,7 @@ protected:
 
     ValueType* mData; // pointer to the context data
 
-    LAMA_LOG_DECL_STATIC_LOGGER(logger);
+    LAMA_LOG_DECL_STATIC_LOGGER( logger )
 
     LAMAArrayView<ValueType>* mArrayView;
 

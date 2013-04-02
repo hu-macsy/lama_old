@@ -99,7 +99,7 @@ public:
 private:
     const ValueType* const mData;
 
-    LAMA_LOG_DECL_STATIC_LOGGER(logger);
+    LAMA_LOG_DECL_STATIC_LOGGER( logger )
 };
 
 LAMA_LOG_DEF_TEMPLATE_LOGGER( template<typename T>, HostReadAccess<T>::logger, "ReadAccess.HostReadAccess" )

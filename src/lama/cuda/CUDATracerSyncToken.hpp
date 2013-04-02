@@ -72,7 +72,7 @@ private:
 
     std::auto_ptr<LAMABaseTracer> mTracer;
 
-    LAMA_LOG_DECL_STATIC_LOGGER(logger);
+    LAMA_LOG_DECL_STATIC_LOGGER( logger )
 };
 
 #endif // LAMA_CUDATRACERSYNCTOKEN_HPP_

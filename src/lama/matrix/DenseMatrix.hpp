@@ -625,7 +625,7 @@ private:
     //TODO: no implementation: implement or delete
     //void initChunks();  // common initialization for constructors
 
-    LAMA_LOG_DECL_STATIC_LOGGER(logger);
+    LAMA_LOG_DECL_STATIC_LOGGER( logger )
 
     void computeOwners();
 

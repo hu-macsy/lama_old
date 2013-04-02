@@ -103,7 +103,7 @@ public:
         IndexType mHostOnlyLevel;
         IndexType mReplicatedLevel;
 
-        LAMA_LOG_DECL_STATIC_LOGGER(logger);
+        LAMA_LOG_DECL_STATIC_LOGGER( logger )
     };
 
     /**
@@ -141,7 +141,7 @@ private:
     void logSolverInfo();
     void logSetupDetails();
 
-    LAMA_LOG_DECL_STATIC_LOGGER(logger);
+    LAMA_LOG_DECL_STATIC_LOGGER( logger )
 
     void cycle();
 };

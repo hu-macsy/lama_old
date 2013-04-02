@@ -120,7 +120,7 @@ private:
 
     GeneralDistribution& operator=( const GeneralDistribution& other );
 
-    LAMA_LOG_DECL_STATIC_LOGGER(logger);
+    LAMA_LOG_DECL_STATIC_LOGGER( logger )
 };
 
 typedef boost::shared_ptr<GeneralDistribution> GeneralDistributionPtr;

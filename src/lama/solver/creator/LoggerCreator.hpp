@@ -76,7 +76,7 @@ public:
     static qi::rule<std::string::const_iterator,void(),ascii::space_type>& getIndependentRule();
 
 protected:
-    LAMA_LOG_DECL_STATIC_LOGGER(logger);
+    LAMA_LOG_DECL_STATIC_LOGGER( logger )
 
 private:
     static LoggerCreator& getInstance();
