@@ -77,6 +77,11 @@ public:
         const std::vector<IndexType>& myGlobalIndexes,
         const CommunicatorPtr communicator );
 
+    GeneralDistribution(
+        const std::vector<IndexType>& row2Partition, 
+	const IndexType globalSize,
+	const CommunicatorPtr communicator  );
+
     explicit GeneralDistribution( const Distribution& other );
 
 //    GeneralDistribution(const GeneralDistribution& other);
