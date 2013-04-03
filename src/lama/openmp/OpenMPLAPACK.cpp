@@ -37,8 +37,7 @@
 // others
 #include <lama/openmp/OpenMPBLAS1.hpp>
 
-#include <lama/LAMAInterfaceRegistry.hpp>
-#include <lama/LAMAInterface.hpp>
+#include <lama/BLASInterface.hpp>
 #include <boost/scoped_array.hpp>
 
 // macros

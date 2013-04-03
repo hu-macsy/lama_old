@@ -195,8 +195,8 @@ BOOST_AUTO_TEST_CASE( prefetchTest )
     vector1.prefetch( cudaContext );
 
     {
-        LAMA_INTERFACE_FN_T(  nrm2, cudaContext, BLAS, BLAS1, ValueType );
-        LAMA_INTERFACE_FN_T(  copy, cudaContext, BLAS, BLAS1, ValueType );
+        LAMA_INTERFACE_FN_t(  nrm2, cudaContext, BLAS, BLAS1, ValueType );
+        LAMA_INTERFACE_FN_t(  copy, cudaContext, BLAS, BLAS1, ValueType );
 
         ReadAccess<ValueType> v1( vector1, cudaContext );
         cudaContext->enable( __FILE__, __LINE__ );
@@ -251,7 +251,7 @@ BOOST_AUTO_TEST_CASE( asyncTest )
     token = cuda->getComputeSyncToken();
 
     {
-        LAMA_INTERFACE_FN_T( scal, cudaContext, BLAS, BLAS1, float )
+        LAMA_INTERFACE_FN_t( scal, cudaContext, BLAS, BLAS1, float )
 
         LAMA_CONTEXT_ACCESS( cudaContext )
 
@@ -369,7 +369,7 @@ BOOST_AUTO_TEST_CASE( syncTest )
     LAMAArray<float> vector( n, value );
 
     {
-        LAMA_INTERFACE_FN_T( scal, cudaContext, BLAS, BLAS1, float );
+        LAMA_INTERFACE_FN_t( scal, cudaContext, BLAS, BLAS1, float );
 
         WriteAccess<float> cudaV( vector, cudaContext );
         LAMA_CONTEXT_ACCESS( cudaContext );
@@ -394,7 +394,7 @@ static void callSSCAL( LAMAArray<float>& vector, const float alpha, ContextPtr c
 {
     // get routine for context, must be available, otherwise Exception
 
-    LAMA_INTERFACE_FN_T( scal, context, BLAS, BLAS1, float );
+    LAMA_INTERFACE_FN_t( scal, context, BLAS, BLAS1, float );
 
     WriteAccess<float> vectorAccess( vector, context );
 

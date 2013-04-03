@@ -376,7 +376,7 @@ void GMRES::updateX( unsigned int i )
 
     ContextPtr context = ContextFactory::getContext( Context::Host );
 
-    LAMA_INTERFACE_FN_T( tptrs, context, BLAS, LAPACK, double );
+    LAMA_INTERFACE_FN_t( tptrs, context, BLAS, LAPACK, double );
 
     int info = tptrs( CblasColMajor, CblasUpper, CblasNoTrans, CblasNonUnit,
                       i + 1, 1, runtime.mH.get(), runtime.mY.get(), i + 1 );

@@ -32,10 +32,13 @@
  */
 
 // hpp
+
 #include <lama/openmp/OpenMPSCALAPACK.hpp>
 #include <lama/openmp/SCALAPACKHelper.hpp>
 #include <lama/Communicator.hpp>
 #include <boost/scoped_array.hpp>
+
+#include <lama/LAMAInterface.hpp>
 
 // macros
 #include <lama/macros/unused.hpp>
@@ -235,12 +238,19 @@ void OpenMPSCALAPACK::inverse( const IndexType n, const IndexType nB, const T* a
     }
 }
 
-// Template instantiation needed
+/* --------------------------------------------------------------------------- */
+/*     Template instantiations via registration routine                        */
+/* --------------------------------------------------------------------------- */
 
-template
-void OpenMPSCALAPACK::inverse( const IndexType n, const IndexType nB, const float* a, const class Communicator& comm );
+void OpenMPSCALAPACK::setInterface( BLASInterface& BLAS )
+{
+    // Note: macro takes advantage of same name for routines and type definitions 
+    //       ( e.g. routine CUDABLAS1::sum<T> is set for BLAS::BLAS1::sum variable
 
-template
-void OpenMPSCALAPACK::inverse( const IndexType n, const IndexType nB, const double* a, const class Communicator& comm );
+    LAMA_INTERFACE_REGISTER_T( BLAS, inverse, float )
+    LAMA_INTERFACE_REGISTER_T( BLAS, inverse, double )
+
+    // other routines are not used by LAMA yet
+}
 
 } /* namespace lama */

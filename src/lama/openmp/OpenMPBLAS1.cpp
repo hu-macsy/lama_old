@@ -36,7 +36,7 @@
 
 // others
 #include <lama/openmp/BLASHelper.hpp>
-#include <lama/LAMAInterface.hpp>
+#include <lama/BLASInterface.hpp>
 
 // macros
 #include <lama/macros/unused.hpp>

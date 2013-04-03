@@ -49,11 +49,6 @@ LAMAInterface::~LAMAInterface()
 {
 }
 
-BLASInterface::BLASInterface()
-{
-    memset( this, 0, sizeof( *this ) );
-}
-
 UtilsInterface::UtilsInterface()
 {
     memset( this, 0, sizeof( *this ) );

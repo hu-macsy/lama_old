@@ -863,7 +863,7 @@ void CUDAJDSUtils::jacobi(
     dim3 dimBlock( block_size, 1, 1 );
     dim3 dimGrid = makeGrid( numRows, dimBlock.x );
 
-    const bool useTexture = true; // lama_getUseTex_cuda();
+    const bool useTexture = false; // lama_getUseTex_cuda();
     const bool useSharedMem = false; // maybe optimize later
 
     LAMA_LOG_DEBUG( logger, "useTexture = " << useTexture << ", useSharedMem = " << useSharedMem )
@@ -1038,7 +1038,7 @@ void CUDAJDSUtils::jacobiHalo(
     dim3 dimBlock( block_size, 1, 1 );
     dim3 dimGrid = makeGrid( numRows, dimBlock.x ); // TODO:numRows is too much...
 
-    const bool useTexture = true; // lama_getUseTex_cuda();
+    const bool useTexture = false; // lama_getUseTex_cuda();
     const bool useSharedMem = false; // maybe optimize later
 
     LAMA_LOG_DEBUG( logger, "useTexture = " << useTexture << ", useSharedMem = " << useSharedMem )
@@ -1231,7 +1231,7 @@ void CUDAJDSUtils::normalGEMV(
     LAMA_LOG_INFO(
         logger, "alpha = " << alpha << ", x = " << x << ", beta = " << beta << ", y = " << y << ", result = " << result )
 
-    const bool useTexture = true; //lama_getUseTex_cuda();
+    const bool useTexture = false; //lama_getUseTex_cuda();
     const bool useSharedMem = false; // maybe optimize later
 
     LAMA_LOG_DEBUG( logger, "useTexture = " << useTexture << ", useSharedMem = " << useSharedMem )

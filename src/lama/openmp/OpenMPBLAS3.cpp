@@ -35,7 +35,7 @@
 #include <lama/openmp/OpenMPBLAS3.hpp>
 
 // others
-#include <lama/LAMAInterface.hpp>
+#include <lama/BLASInterface.hpp>
 #include <lama/SyncToken.hpp>
 
 // macros

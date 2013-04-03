@@ -76,6 +76,9 @@ BOOST_AUTO_TEST_CASE( getContextTest )
 
     cudaHostContext = ContextFactory::getContext( Context::Host );
 
+    LAMA_LOG_FATAL( logger, "defaultHostContext = " << *defaultHostContext );
+    LAMA_LOG_FATAL( logger, "cudaHostContext = " << *cudaHostContext );
+
     BOOST_CHECK( defaultHostContext.get() != cudaHostContext.get() );
 
     // Note: the two shared pointers will be freed at the end of the subroutine

@@ -38,6 +38,7 @@
 
 // macros
 #include <lama/macros/unused.hpp>
+#include <lama/LAMAInterface.hpp>
 
 // tracing
 #include <lama/tracing.hpp>
