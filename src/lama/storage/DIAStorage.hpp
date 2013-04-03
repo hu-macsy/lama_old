@@ -42,7 +42,7 @@
 namespace lama
 {
 
-/** Storage format for a DIA (compressed storage row) sparse matrix.
+/** @brief Storage format for a DIA (compressed storage row) sparse matrix.
  *
  *  The DIA format has the following data:
  *
@@ -50,9 +50,8 @@ namespace lama
  *  - offsets of the diagonals
  *  - values of the diagonals
  *
- *  @tparam T is the value type for the matrix elements.
+ *  @tparam T is the value type of the matrix values.
  */
-
 template<typename T>
 class LAMA_DLL_IMPORTEXPORT DIAStorage: public CRTPMatrixStorage<DIAStorage<T>,T>
 {
@@ -60,7 +59,7 @@ public:
 
     typedef T ValueType; //!< This is the type of the matrix values.
 
-    /** get typename of the matrix storage format. */
+    /** Getter of type name of the matrix storage format. */
 
     static const char* typeName();
 
@@ -240,17 +239,19 @@ public:
         const LAMAArrayConstView<ValueType> rhs,
         const ValueType omega ) const;
 
-    /** Print relevant information about matrix storage format. */
+    /* Print relevant information about matrix storage format. */
 
     virtual void writeAt( std::ostream& stream ) const;
 
-    /** get Offsets, Values */
+    /** Getter routine for the matrix offsets (read-only). */
 
     const LAMAArray<IndexType>& getOffsets() const;
 
+    /** Getter routine for the matrix values (read-only). */
+
     const LAMAArray<ValueType>& getValues() const;
 
-    /** Getter routine for the number of diagonals*/
+    /** Getter routine for the number of diagonals. */
 
     IndexType getNumDiagonals() const;
 
@@ -364,7 +365,7 @@ private:
 
     static void setUsedDiagonal( bool upperDiagonalUsed[], bool lowerDiagonalUsed[], IndexType i, IndexType j );
 
-    LAMA_LOG_DECL_STATIC_LOGGER( logger ); //!< logger for this matrix format
+    LAMA_LOG_DECL_STATIC_LOGGER( logger ) //!< logger for this matrix format
 };
 
 } // namespace lama

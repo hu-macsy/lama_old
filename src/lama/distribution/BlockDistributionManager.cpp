@@ -49,7 +49,7 @@ namespace lama
 
 /* ----  Static variables  -------------------------------------------------- */
 
-LAMA_LOG_DEF_LOGGER( BlockDistributionManager::logger, "DistributionManager.BlockDistributionManager" );
+LAMA_LOG_DEF_LOGGER( BlockDistributionManager::logger, "DistributionManager.BlockDistributionManager" )
 
 // make sure that static initialization is called.
 
@@ -61,7 +61,7 @@ bool BlockDistributionManager::init()
 {
     // logger should already be available as it is initialized before __init
 
-    LAMA_LOG_DEBUG( logger, "create NO communicator manager and add it to DistributionFactory" );
+    LAMA_LOG_DEBUG( logger, "create NO communicator manager and add it to DistributionFactory" )
 
     boost::shared_ptr<DistributionManager> manager( new BlockDistributionManager() );
     DistributionFactory::getFactory().addDistributionManager( DISTRIBUTION_TYPE, manager );
@@ -79,7 +79,7 @@ BlockDistributionManager::BlockDistributionManager()
 
 BlockDistributionManager::~BlockDistributionManager()
 {
-    LAMA_LOG_INFO( logger, "~BlockDistributionManager" );
+    LAMA_LOG_INFO( logger, "~BlockDistributionManager" )
 }
 
 /* -------------------------------------------------------------------------- */

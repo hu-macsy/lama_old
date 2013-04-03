@@ -32,10 +32,13 @@
  */
 
 // hpp
+
 #include <lama/openmp/OpenMPSCALAPACK.hpp>
 #include <lama/openmp/SCALAPACKHelper.hpp>
 #include <lama/Communicator.hpp>
 #include <boost/scoped_array.hpp>
+
+#include <lama/LAMAInterface.hpp>
 
 // macros
 #include <lama/macros/unused.hpp>
@@ -66,7 +69,7 @@ using namespace lama;
 namespace lama
 {
 
-LAMA_LOG_DEF_LOGGER( OpenMPSCALAPACK::logger, "OpenMP.SCALAPACK" );
+LAMA_LOG_DEF_LOGGER( OpenMPSCALAPACK::logger, "OpenMP.SCALAPACK" )
 
 template<>
 IndexType OpenMPSCALAPACK::pgetrf(
@@ -145,7 +148,7 @@ void OpenMPSCALAPACK::inverse( const IndexType n, const IndexType nB, const T* a
 
     SCALAPACKHelper::BLACS_Context( &contxt );
 
-    LAMA_LOG_INFO( logger, "Default system context = " << contxt );
+    LAMA_LOG_INFO( logger, "Default system context = " << contxt )
 
     // Some tricky stuff here: we compute inverse of the transposed matrix
     // So we do as if the matrix is distributed among the columns
@@ -165,11 +168,11 @@ void OpenMPSCALAPACK::inverse( const IndexType n, const IndexType nB, const T* a
     SCALAPACKHelper::GridInit( &contxt, "Col-major", npRow, npCol );
     SCALAPACKHelper::GridInfo( contxt, npRow, npCol, &myRow, &myCol );
 
-    LAMA_LOG_INFO( logger, comm << ": me is " << myRow << " x " << myCol << " of " << npRow << " x " << npCol );
+    LAMA_LOG_INFO( logger, comm << ": me is " << myRow << " x " << myCol << " of " << npRow << " x " << npCol )
 
     // Note: numbering must be the same as communicator
 
-    LAMA_ASSERT_EQUAL_ERROR( myCol, comm.getRank() );
+    LAMA_ASSERT_EQUAL_ERROR( myCol, comm.getRank() )
 
     int descA[9]; // descriptor needed for matrix A
 
@@ -182,28 +185,28 @@ void OpenMPSCALAPACK::inverse( const IndexType n, const IndexType nB, const T* a
 
     int ierr = SCALAPACKHelper::DescInit( descA, m, n, mb_a, nb_a, irsrc, icsrc, contxt, lld );
 
-    LAMA_LOG_INFO( logger, "lama_DescInit, error = " << ierr );
+    LAMA_LOG_INFO( logger, "lama_DescInit, error = " << ierr )
 
     if ( ierr != 0 )
     {
-        LAMA_THROWEXCEPTION( "lama_DescInit failed, error = " << ierr );
+        LAMA_THROWEXCEPTION( "lama_DescInit failed, error = " << ierr )
     }
 
     const int mp = SCALAPACKHelper::numRoC( m, mb_a, myRow, npRow );
 
-    LAMA_LOG_INFO( logger, "mp = " << mp << ", np = " << SCALAPACKHelper::numRoC( n, nb_a, myCol, npCol ) );
+    LAMA_LOG_INFO( logger, "mp = " << mp << ", np = " << SCALAPACKHelper::numRoC( n, nb_a, myCol, npCol ) )
 
     boost::scoped_array<IndexType> permutation( new IndexType[mp + mb_a] );
 
-    LAMA_LOG_INFO( logger, "now call pgetrf" );
+    LAMA_LOG_INFO( logger, "now call pgetrf" )
 
     int info = pgetrf( m, n, a, 1, 1, descA, permutation.get() );
 
-    LAMA_LOG_INFO( logger, "pgetrf: info = " << info );
+    LAMA_LOG_INFO( logger, "pgetrf: info = " << info )
 
     if ( info != 0 )
     {
-        LAMA_THROWEXCEPTION( "pgetrf failed, error = " << info );
+        LAMA_THROWEXCEPTION( "pgetrf failed, error = " << info )
     }
 
     int lwork = -1;
@@ -218,7 +221,7 @@ void OpenMPSCALAPACK::inverse( const IndexType n, const IndexType nB, const T* a
 
     if ( info != 0 )
     {
-        LAMA_THROWEXCEPTION( "pgetri (first call) failed, error = " << info );
+        LAMA_THROWEXCEPTION( "pgetri (first call) failed, error = " << info )
     }
 
     lwork = static_cast<int>( workTmp );
@@ -231,16 +234,23 @@ void OpenMPSCALAPACK::inverse( const IndexType n, const IndexType nB, const T* a
 
     if ( info != 0 )
     {
-        LAMA_THROWEXCEPTION( "pgetri (final call) failed, error = " << info );
+        LAMA_THROWEXCEPTION( "pgetri (final call) failed, error = " << info )
     }
 }
 
-// Template instantiation needed
+/* --------------------------------------------------------------------------- */
+/*     Template instantiations via registration routine                        */
+/* --------------------------------------------------------------------------- */
 
-template
-void OpenMPSCALAPACK::inverse( const IndexType n, const IndexType nB, const float* a, const class Communicator& comm );
+void OpenMPSCALAPACK::setInterface( BLASInterface& BLAS )
+{
+    // Note: macro takes advantage of same name for routines and type definitions 
+    //       ( e.g. routine CUDABLAS1::sum<T> is set for BLAS::BLAS1::sum variable
 
-template
-void OpenMPSCALAPACK::inverse( const IndexType n, const IndexType nB, const double* a, const class Communicator& comm );
+    LAMA_INTERFACE_REGISTER_T( BLAS, inverse, float )
+    LAMA_INTERFACE_REGISTER_T( BLAS, inverse, double )
+
+    // other routines are not used by LAMA yet
+}
 
 } /* namespace lama */

@@ -73,15 +73,13 @@ public:
 
     virtual bool probe() const;
 
-    /** Write representation of this object into an output stream. */
-
     virtual void writeAt( std::ostream& stream ) const;
 
 private:
 
     boost::shared_ptr<Task> mTask;
 
-    LAMA_LOG_DECL_STATIC_LOGGER(logger);
+    LAMA_LOG_DECL_STATIC_LOGGER( logger )
 };
 
 }

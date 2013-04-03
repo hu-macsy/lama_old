@@ -70,7 +70,7 @@ const LAMAInterface* LAMAInterfaceRegistry::getInterface( const ContextType loca
 
     if ( loc == mInterfaceMap.end() )
     {
-        LAMA_THROWEXCEPTION( "No interface on location " << location << " available." );
+        LAMA_THROWEXCEPTION( "No interface on location " << location << " available." )
     }
 
     return loc->second;

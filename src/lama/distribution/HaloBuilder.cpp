@@ -43,30 +43,30 @@
 namespace lama
 {
 
-LAMA_LOG_DEF_LOGGER( HaloBuilder::logger, "Halo.Builder" );
+LAMA_LOG_DEF_LOGGER( HaloBuilder::logger, "Halo.Builder" )
 
 void HaloBuilder::build( const Distribution& distribution, const std::vector<IndexType>& requiredIndexes, Halo& halo )
 {
-    LAMA_REGION( "HaloBuilder.build" );
+    LAMA_REGION( "HaloBuilder.build" )
 
     const PartitionId noPartitions = distribution.getNumPartitions();
 
     const Communicator& communicator = distribution.getCommunicator();
 
     LAMA_LOG_INFO( logger,
-                   communicator << ": building halo for " << noPartitions << " partitions, # requiredIndexes = " << requiredIndexes.size() );
+                   communicator << ": building halo for " << noPartitions << " partitions, # requiredIndexes = " << requiredIndexes.size() )
 
     std::vector<PartitionId> owners;
     owners.reserve( requiredIndexes.size() );
 
     {
-        LAMA_REGION( "HaloBuilder.computeOwners" );
+        LAMA_REGION( "HaloBuilder.computeOwners" )
         communicator.computeOwners( requiredIndexes, distribution, owners );
     }
 #ifdef LAMA_LOG_TRACE
     for ( unsigned int i = 0; i < requiredIndexes.size(); ++i )
     {
-        LAMA_LOG_TRACE( logger, "Index " << requiredIndexes[i] << " belongs to " << owners[i] );
+        LAMA_LOG_TRACE( logger, "Index " << requiredIndexes[i] << " belongs to " << owners[i] )
     }
 #endif
 
@@ -76,7 +76,7 @@ void HaloBuilder::build( const Distribution& distribution, const std::vector<Ind
     requiredPlan.allocate( noPartitions, owners );
 
     LAMA_LOG_INFO( logger,
-                   communicator << ": allocated required plan for " << noPartitions << " partitions, size = " << requiredPlan.size() << ", total quantity = " << requiredPlan.totalQuantity() );
+                   communicator << ": allocated required plan for " << noPartitions << " partitions, size = " << requiredPlan.size() << ", total quantity = " << requiredPlan.totalQuantity() )
 
     // sort required indexes by the owner and define global->local mapping
 
@@ -85,7 +85,7 @@ void HaloBuilder::build( const Distribution& distribution, const std::vector<Ind
     for ( IndexType p = 0; p < requiredPlan.size(); ++p )
     {
         LAMA_LOG_TRACE( logger,
-                        "requiredPlan[ " << p << "]: offset = " << requiredPlan[p].offset << ", pid = " << requiredPlan[p].partitionId << ", quantity = " << requiredPlan[p].quantity );
+                        "requiredPlan[ " << p << "]: offset = " << requiredPlan[p].offset << ", pid = " << requiredPlan[p].partitionId << ", quantity = " << requiredPlan[p].quantity )
         counts[requiredPlan[p].partitionId] = requiredPlan[p].offset;
     }
 
@@ -101,12 +101,12 @@ void HaloBuilder::build( const Distribution& distribution, const std::vector<Ind
     {
         PartitionId owner = owners[jj];
 
-        LAMA_ASSERT( owner >= 0 && owner < noPartitions, "No owner for required Index " << requiredIndexes[jj] );
+        LAMA_ASSERT( owner >= 0 && owner < noPartitions, "No owner for required Index " << requiredIndexes[jj] )
 
         //The offset for the owner
         IndexType haloIndex = counts[owner];
 
-        LAMA_ASSERT( haloIndex >= 0, "No offset for owner "<<owner<< " of required Index "<<requiredIndexes[jj] );
+        LAMA_ASSERT( haloIndex >= 0, "No offset for owner "<<owner<< " of required Index "<<requiredIndexes[jj] )
 
         requiredIndexesByOwner[haloIndex] = requiredIndexes[jj];
 
@@ -125,26 +125,26 @@ void HaloBuilder::build( const Distribution& distribution, const std::vector<Ind
 
     providesPlan.allocateTranspose( requiredPlan, communicator );
 
-    LAMA_LOG_DEBUG( logger, communicator << ": providesPlan = " << providesPlan );
+    LAMA_LOG_DEBUG( logger, communicator << ": providesPlan = " << providesPlan )
 
-    LAMA_LOG_TRACE( logger, "requiredPlan: " << requiredPlan );
-    LAMA_LOG_TRACE( logger, "providesPlan: " << providesPlan );
+    LAMA_LOG_TRACE( logger, "requiredPlan: " << requiredPlan )
+    LAMA_LOG_TRACE( logger, "providesPlan: " << providesPlan )
 
     // communicate required indexes to other processors to get provideIndexes
     communicator.exchangeByPlanAsync( halo.mProvidesIndexes, providesPlan, halo.mRequiredIndexes, requiredPlan );
 
-    LAMA_LOG_INFO( logger, "exchanged plan indexes" );
+    LAMA_LOG_INFO( logger, "exchanged plan indexes" )
 #ifdef LAMA_LOG_TRACE
     {
         HostReadAccess<IndexType> provide( halo.mProvidesIndexes );
         HostReadAccess<IndexType> required( halo.mRequiredIndexes );
         for ( int i = 0; i < provide.size(); ++i )
         {
-            LAMA_LOG_TRACE( logger, "halo.mProvidesIndexes[" << i << "] " << provide[i] );
+            LAMA_LOG_TRACE( logger, "halo.mProvidesIndexes[" << i << "] " << provide[i] )
         }
         for ( int i = 0; i < required.size(); ++i )
         {
-            LAMA_LOG_TRACE( logger, "halo.mRequiredIndexes[" << i << "] " << required[i] );
+            LAMA_LOG_TRACE( logger, "halo.mRequiredIndexes[" << i << "] " << required[i] )
         }
     }
 #endif
@@ -158,7 +158,7 @@ void HaloBuilder::build( const Distribution& distribution, const std::vector<Ind
         IndexType n = providesPlan[p].quantity;
 
         LAMA_LOG_TRACE( logger,
-                        "Partition " << providesPlan[p].partitionId << " needs " << n << " entries from me(Partition: " << communicator.getRank() << "), offset = " << providesPlan[p].offset );
+                        "Partition " << providesPlan[p].partitionId << " needs " << n << " entries from me(Partition: " << communicator.getRank() << "), offset = " << providesPlan[p].offset )
 
         IndexType* partitionIndexes = providesIndexes.get() + providesPlan[p].offset;
 
@@ -166,7 +166,7 @@ void HaloBuilder::build( const Distribution& distribution, const std::vector<Ind
         {
             IndexType localIndex = distribution.global2local( partitionIndexes[i] );
             LAMA_ASSERT( localIndex != nIndex,
-                         "global index "<<partitionIndexes[i]<<" is not local on Rank " << communicator.getRank() );
+                         "global index "<<partitionIndexes[i]<<" is not local on Rank " << communicator.getRank() )
             partitionIndexes[i] = localIndex;
         }
     }

@@ -38,11 +38,12 @@
 #include <lama/LAMAInterface.hpp>
 
 #include <omp.h>
+#include <typeinfo>
 
 namespace lama
 {
 
-LAMA_LOG_DEF_LOGGER( OpenMPDenseUtils::logger, "OpenMP.DenseUtils" );
+LAMA_LOG_DEF_LOGGER( OpenMPDenseUtils::logger, "OpenMP.DenseUtils" )
 
 /* --------------------------------------------------------------------------- */
 /*     Template implementations                                                */
@@ -59,11 +60,11 @@ void OpenMPDenseUtils::getCSRSizes(
 {
     if ( numRows > 0 )
     {
-        LAMA_ASSERT_DEBUG( csrSizes != NULL, "csrSizes is NULL" );
+        LAMA_ASSERT_DEBUG( csrSizes != NULL, "csrSizes is NULL" )
 
         if ( numColumns > 0 )
         {
-            LAMA_ASSERT_DEBUG( denseValues != NULL, "denseValues is NULL" );
+            LAMA_ASSERT_DEBUG( denseValues != NULL, "denseValues is NULL" )
         }
     }
 
@@ -104,7 +105,7 @@ void OpenMPDenseUtils::getCSRValues(
     const DenseValueType eps )
 {
     LAMA_LOG_INFO( logger,
-                   "get CSRValues<" << typeid( DenseValueType ).name() << ", " << typeid( CSRValueType ).name() << ">" << ", size is " << numRows << " x " << numColumns );
+                   "get CSRValues<" << typeid( DenseValueType ).name() << ", " << typeid( CSRValueType ).name() << ">" << ", size is " << numRows << " x " << numColumns )
 
     #pragma omp parallel for schedule(LAMA_OMP_SCHEDULE)
     for ( IndexType i = 0; i < numRows; ++i )
@@ -142,7 +143,7 @@ void OpenMPDenseUtils::getCSRValues(
         // verification that offset array was really a good one
         // check is not needed if non-zero values have been counted by getCSRSizes
 
-        LAMA_ASSERT_EQUAL_DEBUG( offset, csrIA[i + 1] );
+        LAMA_ASSERT_EQUAL_DEBUG( offset, csrIA[i + 1] )
     }
 }
 
@@ -158,7 +159,7 @@ void OpenMPDenseUtils::setCSRValues(
     const CSRValueType csrValues[] )
 {
     LAMA_LOG_INFO( logger,
-                   "set CSRValues<" << typeid( DenseValueType ).name() << ", " << typeid( CSRValueType ).name() << ">" << ", size is " << numRows << " x " << numColumns );
+                   "set CSRValues<" << typeid( DenseValueType ).name() << ", " << typeid( CSRValueType ).name() << ">" << ", size is " << numRows << " x " << numColumns )
 
     // parallelization possible as offset array csrIA is available
 
@@ -312,45 +313,45 @@ void OpenMPDenseUtils::setInterface( DenseUtilsInterface& DenseUtils )
 {
     // Counting
 
-    LAMA_INTERFACE_REGISTER_T( DenseUtils, getCSRSizes, double );
-    LAMA_INTERFACE_REGISTER_T( DenseUtils, getCSRSizes, float );
+    LAMA_INTERFACE_REGISTER_T( DenseUtils, getCSRSizes, double )
+    LAMA_INTERFACE_REGISTER_T( DenseUtils, getCSRSizes, float )
 
     // Conversions
 
-    LAMA_INTERFACE_REGISTER_TT( DenseUtils, setCSRValues, double, double );
-    LAMA_INTERFACE_REGISTER_TT( DenseUtils, setCSRValues, double, float );
-    LAMA_INTERFACE_REGISTER_TT( DenseUtils, setCSRValues, float, double );
-    LAMA_INTERFACE_REGISTER_TT( DenseUtils, setCSRValues, float, float );
+    LAMA_INTERFACE_REGISTER_TT( DenseUtils, setCSRValues, double, double )
+    LAMA_INTERFACE_REGISTER_TT( DenseUtils, setCSRValues, double, float )
+    LAMA_INTERFACE_REGISTER_TT( DenseUtils, setCSRValues, float, double )
+    LAMA_INTERFACE_REGISTER_TT( DenseUtils, setCSRValues, float, float )
 
-    LAMA_INTERFACE_REGISTER_TT( DenseUtils, getCSRValues, double, double );
-    LAMA_INTERFACE_REGISTER_TT( DenseUtils, getCSRValues, double, float );
-    LAMA_INTERFACE_REGISTER_TT( DenseUtils, getCSRValues, float, double );
-    LAMA_INTERFACE_REGISTER_TT( DenseUtils, getCSRValues, float, float );
+    LAMA_INTERFACE_REGISTER_TT( DenseUtils, getCSRValues, double, double )
+    LAMA_INTERFACE_REGISTER_TT( DenseUtils, getCSRValues, double, float )
+    LAMA_INTERFACE_REGISTER_TT( DenseUtils, getCSRValues, float, double )
+    LAMA_INTERFACE_REGISTER_TT( DenseUtils, getCSRValues, float, float )
 
     // Copy
 
-    LAMA_INTERFACE_REGISTER_TT( DenseUtils, copyDenseValues, double, double );
-    LAMA_INTERFACE_REGISTER_TT( DenseUtils, copyDenseValues, double, float );
-    LAMA_INTERFACE_REGISTER_TT( DenseUtils, copyDenseValues, float, double );
-    LAMA_INTERFACE_REGISTER_TT( DenseUtils, copyDenseValues, float, float );
+    LAMA_INTERFACE_REGISTER_TT( DenseUtils, copyDenseValues, double, double )
+    LAMA_INTERFACE_REGISTER_TT( DenseUtils, copyDenseValues, double, float )
+    LAMA_INTERFACE_REGISTER_TT( DenseUtils, copyDenseValues, float, double )
+    LAMA_INTERFACE_REGISTER_TT( DenseUtils, copyDenseValues, float, float )
 
-    LAMA_INTERFACE_REGISTER_TT( DenseUtils, getDiagonal, double, double );
-    LAMA_INTERFACE_REGISTER_TT( DenseUtils, getDiagonal, double, float );
-    LAMA_INTERFACE_REGISTER_TT( DenseUtils, getDiagonal, float, double );
-    LAMA_INTERFACE_REGISTER_TT( DenseUtils, getDiagonal, float, float );
+    LAMA_INTERFACE_REGISTER_TT( DenseUtils, getDiagonal, double, double )
+    LAMA_INTERFACE_REGISTER_TT( DenseUtils, getDiagonal, double, float )
+    LAMA_INTERFACE_REGISTER_TT( DenseUtils, getDiagonal, float, double )
+    LAMA_INTERFACE_REGISTER_TT( DenseUtils, getDiagonal, float, float )
 
-    LAMA_INTERFACE_REGISTER_TT( DenseUtils, setDiagonal, double, double );
-    LAMA_INTERFACE_REGISTER_TT( DenseUtils, setDiagonal, double, float );
-    LAMA_INTERFACE_REGISTER_TT( DenseUtils, setDiagonal, float, double );
-    LAMA_INTERFACE_REGISTER_TT( DenseUtils, setDiagonal, float, float );
+    LAMA_INTERFACE_REGISTER_TT( DenseUtils, setDiagonal, double, double )
+    LAMA_INTERFACE_REGISTER_TT( DenseUtils, setDiagonal, double, float )
+    LAMA_INTERFACE_REGISTER_TT( DenseUtils, setDiagonal, float, double )
+    LAMA_INTERFACE_REGISTER_TT( DenseUtils, setDiagonal, float, float )
 
     // Modify
 
-    LAMA_INTERFACE_REGISTER_T( DenseUtils, setDiagonalValue, double );
-    LAMA_INTERFACE_REGISTER_T( DenseUtils, setDiagonalValue, float );
+    LAMA_INTERFACE_REGISTER_T( DenseUtils, setDiagonalValue, double )
+    LAMA_INTERFACE_REGISTER_T( DenseUtils, setDiagonalValue, float )
 
-    LAMA_INTERFACE_REGISTER_T( DenseUtils, scaleValue, double );
-    LAMA_INTERFACE_REGISTER_T( DenseUtils, scaleValue, float );
+    LAMA_INTERFACE_REGISTER_T( DenseUtils, scaleValue, double )
+    LAMA_INTERFACE_REGISTER_T( DenseUtils, scaleValue, float )
 }
 
 /* --------------------------------------------------------------------------- */

@@ -84,6 +84,8 @@ public:
 
     _MatrixStorage();
 
+    /** Destructor. */
+
     virtual ~_MatrixStorage();
 
     /** This method returns the type name of a matrix storage, e.g. CSRStorage<double>.
@@ -93,7 +95,10 @@ public:
 
     virtual const char* getTypeName() const = 0;
 
-    /** Initialization of base class due to a resize. */
+    /** Initialization of base class due to a resize. 
+     *
+     *  @param numRows, numColumns specifiy the size of the matrix
+     */
 
     void init( const IndexType numRows, const IndexType numColumns );
 
@@ -136,19 +141,16 @@ public:
 
     /** @brief Getter for the preferred context of the storage data, returns pointer. */
 
-    ContextPtr getContextPtr() const
-    {
-        return mContext;
-    }
+    inline ContextPtr getContextPtr() const;
 
     /** @brief Getter for the preferred context of the storage data. */
 
-    const Context& getContext() const
-    {
-        return *mContext;
-    }
+    inline const Context& getContext() const;
 
-    /** @brief Pure method that prefetches storage data into a given context. */
+    /** @brief Pure method that prefetches storage data into a given context. 
+     *
+     *  @param context specifies location where data will resize
+     */
 
     virtual void prefetch( const ContextPtr context ) const = 0;
 
@@ -167,7 +169,11 @@ public:
 
     void setCompressThreshold( float ratio );
 
+    /** Getter routine for the number of rows. */
+
     inline IndexType getNumRows() const;
+
+    /** Getter routine for the number of rows. */
 
     inline IndexType getNumColumns() const;
 
@@ -442,7 +448,7 @@ protected:
 
     bool mDiagonalProperty; //!< if true, diagonal elements are always stored at first position in each row
 
-    LAMA_LOG_DECL_STATIC_LOGGER( logger ); //!< logger for this matrix format
+    LAMA_LOG_DECL_STATIC_LOGGER( logger ) //!< logger for this matrix format
 
     ContextPtr mContext;//!< preferred context for the storage
 
@@ -461,15 +467,14 @@ class Distribution;
 /** The template class MatrixStorage<ValueType> is the base
  *  class for all matrix storage classes of a given ValueType.
  *
- *  @tparam T is the value type of the matrix elements.
+ *  @tparam T is the value type of the matrix values.
  */
-
 template<typename T>
 class LAMA_DLL_IMPORTEXPORT MatrixStorage: public _MatrixStorage
 {
 public:
 
-    /** ValueType stands for type of matrix elements, is given by the template argument. */
+    /** ValueType stands for type of matrix values, is given by the template argument. */
 
     typedef T ValueType;
 
@@ -907,6 +912,16 @@ protected:
 /* ------------------------------------------------------------------------- */
 /* ------------------------------------------------------------------------- */
 /* ------------------------------------------------------------------------- */
+
+ContextPtr _MatrixStorage::getContextPtr() const
+{
+    return mContext;
+}
+
+const Context& _MatrixStorage::getContext() const
+{
+    return *mContext;
+}
 
 IndexType _MatrixStorage::getNumRows() const
 {

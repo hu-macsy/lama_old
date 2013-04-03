@@ -121,6 +121,44 @@ include ( PackageDoxygen )
 
 
 
+<<<<<<< HEAD
+=======
+else ( DOXYGEN_FOUND )
+    message ( WARNING "Not building system documentation because Doxygen not found." )
+endif ( DOXYGEN_FOUND )
+
+file ( MAKE_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/include")
+
+### boost version check ###
+
+set ( BOOST_VERSION_ERROR_STRING "Included Boost version does not match linked Boost version ${Boost_VERSION}" )
+
+### Current version of LAMA (should be set by GIT version) ###
+
+set ( Project_WC_REVISION "1.0" )
+
+set ( LAMA_HPP_CONTENS " 
+#include <boost/version.hpp>
+#define LAMA_LINKED_BOOST_VERSION ${Boost_VERSION}
+
+#if LAMA_LINKED_BOOST_VERSION != BOOST_VERSION
+    #error \"${BOOST_VERSION_ERROR_STRING}\"
+#endif //LAMA_LINKED_BOOST_VERSION != BOOST_VERSION
+
+#define LAMA_REVISION ${Project_WC_REVISION}
+
+#define LAMA_ASSERT_LEVEL_${LAMA_ASSERT_LEVEL}
+#define LAMA_LOG_LEVEL_${LAMA_LOG_LEVEL}
+#define LAMA_TRACE_LEVEL_${LAMA_TRACE_LEVEL}
+#define LAMA_OMP_SCHEDULE ${LAMA_OMP_SCHEDULE}
+
+extern \"C\" inline int lama_getRevision()
+{
+    return LAMA_REVISION\;
+}
+
+")
+>>>>>>> branch 'develop' of ssh://jan-ecker@git.code.sf.net/p/libama/git
 
 
 ### install ###

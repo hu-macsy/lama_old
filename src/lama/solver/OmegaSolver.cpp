@@ -37,7 +37,7 @@
 namespace lama
 {
 
-LAMA_LOG_DEF_LOGGER( OmegaSolver::logger, "Solver.IterativeSolver.OmegaSolver" );
+LAMA_LOG_DEF_LOGGER( OmegaSolver::logger, "Solver.IterativeSolver.OmegaSolver" )
 
 OmegaSolver::OmegaSolver( const std::string& id )
     : IterativeSolver( id ), mOmega( 0.5 )

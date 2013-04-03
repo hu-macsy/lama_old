@@ -54,7 +54,7 @@ namespace lama
 
 /* --------------------------------------------------------------------------- */
 
-LAMA_LOG_DEF_TEMPLATE_LOGGER( template<typename ValueType>, COOStorage<ValueType>::logger, "MatrixStorage.COOStorage" );
+LAMA_LOG_DEF_TEMPLATE_LOGGER( template<typename ValueType>, COOStorage<ValueType>::logger, "MatrixStorage.COOStorage" )
 
 /* --------------------------------------------------------------------------- */
 
@@ -64,7 +64,7 @@ COOStorage<ValueType>::COOStorage(const IndexType numRows, const IndexType numCo
     mNumValues(0)
 {
     LAMA_LOG_DEBUG( logger, "COOStorage for matrix " << mNumRows << " x " << mNumColumns
-                    << ", no non-zero elements" );
+                    << ", no non-zero elements" )
 }
 
 /* --------------------------------------------------------------------------- */
@@ -82,8 +82,8 @@ COOStorage<ValueType>::COOStorage(
     // all array must have the same size
 
     const IndexType size = ia.size();
-    LAMA_ASSERT_EQUAL_ERROR( size, ja.size() );
-    LAMA_ASSERT_EQUAL_ERROR( size, values.size() );
+    LAMA_ASSERT_EQUAL_ERROR( size, ja.size() )
+    LAMA_ASSERT_EQUAL_ERROR( size, values.size() )
 
     mNumValues = size;
     mIa = ia;
@@ -111,7 +111,7 @@ template<typename ValueType>
 COOStorage<ValueType>::COOStorage()
     : CRTPMatrixStorage<COOStorage<ValueType>,ValueType>( 0, 0 ), mNumValues( 0 )
 {
-    LAMA_LOG_DEBUG( logger, "COOStorage, matrix is 0 x 0." );
+    LAMA_LOG_DEBUG( logger, "COOStorage, matrix is 0 x 0." )
 }
 
 /* --------------------------------------------------------------------------- */
@@ -186,7 +186,7 @@ void COOStorage<ValueType>::check( const char* msg ) const
 template<typename ValueType>
 void COOStorage<ValueType>::setIdentity( const IndexType size )
 {
-    LAMA_LOG_INFO( logger, "set identity values for " << size );
+    LAMA_LOG_INFO( logger, "set identity values for " << size )
 
     mNumRows = size;
     mNumColumns = size;
@@ -229,7 +229,7 @@ void COOStorage<ValueType>::buildCSR(
 
     IndexType numValues = OpenMPCSRUtils::sizes2offsets( csrIA.get(), mNumRows );
 
-    LAMA_ASSERT_EQUAL_DEBUG( mNumValues, numValues );
+    LAMA_ASSERT_EQUAL_DEBUG( mNumValues, numValues )
 
     HostReadAccess<IndexType> cooJA( mJa );
     HostReadAccess<ValueType> cooValues( mValues );
@@ -277,7 +277,7 @@ void COOStorage<ValueType>::setCSRDataImpl(
     mNumValues = numValues;
 
     LAMA_LOG_DEBUG( logger,
-                    "input csr data with " << mNumValues << "entries,  has diagonal property = " << mDiagonalProperty );
+                    "input csr data with " << mNumValues << "entries,  has diagonal property = " << mDiagonalProperty )
 
     WriteOnlyAccess<IndexType> cooIA( mIa, loc, mNumValues );
     WriteOnlyAccess<IndexType> cooJA( mJa, loc, mNumValues );
@@ -292,7 +292,7 @@ void COOStorage<ValueType>::setCSRDataImpl(
 template<typename ValueType>
 COOStorage<ValueType>::~COOStorage()
 {
-    LAMA_LOG_DEBUG( logger, "~COOStorage for matrix " << mNumRows << " x " << mNumColumns );
+    LAMA_LOG_DEBUG( logger, "~COOStorage for matrix " << mNumRows << " x " << mNumColumns )
 }
 
 /* --------------------------------------------------------------------------- */
@@ -314,7 +314,7 @@ void COOStorage<ValueType>::purge()
 template<typename ValueType>
 void COOStorage<ValueType>::allocate( IndexType numRows, IndexType numColumns )
 {
-    LAMA_LOG_INFO( logger, "allocate COO sparse matrix of size " << numRows << " x " << numColumns );
+    LAMA_LOG_INFO( logger, "allocate COO sparse matrix of size " << numRows << " x " << numColumns )
 
     purge(); // completely destroy old data of the matrix if available
 
@@ -342,7 +342,7 @@ ValueType COOStorage<ValueType>::getValue( IndexType i, IndexType j ) const
     const HostReadAccess<IndexType> ja( mJa );
     const HostReadAccess<ValueType> values( mValues );
 
-    LAMA_LOG_DEBUG( logger, "get value (" << i << ", " << j << ") from " << *this );
+    LAMA_LOG_DEBUG( logger, "get value (" << i << ", " << j << ") from " << *this )
 
     for ( IndexType kk = 0; kk < mNumValues; ++kk )
     {
@@ -474,7 +474,7 @@ template<typename ValueType>
 template<typename OtherType>
 void COOStorage<ValueType>::getRowImpl( LAMAArray<OtherType>& row, const IndexType i ) const
 {
-    LAMA_ASSERT_DEBUG( i >= 0 && i < mNumRows, "row index " << i << " out of range" );
+    LAMA_ASSERT_DEBUG( i >= 0 && i < mNumRows, "row index " << i << " out of range" )
 
     HostWriteOnlyAccess<OtherType> wRow( row, mNumColumns );
 
@@ -536,7 +536,7 @@ void COOStorage<ValueType>::setDiagonalImpl( const LAMAArray<OtherType>& diagona
 template<typename ValueType>
 ValueType COOStorage<ValueType>::maxNorm() const
 {
-    LAMA_LOG_INFO( logger, *this << ": maxNorm()" );
+    LAMA_LOG_INFO( logger, *this << ": maxNorm()" )
 
     const IndexType n = mNumValues;
 
@@ -547,11 +547,11 @@ ValueType COOStorage<ValueType>::maxNorm() const
 
     ContextPtr loc = getContextPtr();
 
-    LAMA_INTERFACE_FN_DEFAULT_T( absMaxVal, loc, Utils, Reductions, ValueType );
+    LAMA_INTERFACE_FN_DEFAULT_T( absMaxVal, loc, Utils, Reductions, ValueType )
 
     ReadAccess<ValueType> cooValues( mValues, loc );
 
-    LAMA_CONTEXT_ACCESS( loc );
+    LAMA_CONTEXT_ACCESS( loc )
 
     ValueType maxval = absMaxVal( cooValues.get(), n );
 
@@ -583,21 +583,21 @@ void COOStorage<ValueType>::matrixTimesVector(
     const LAMAArrayConstView<ValueType> y ) const
 
 {
-    LAMA_REGION( "Storage.COO.timesVector" );
+    LAMA_REGION( "Storage.COO.timesVector" )
 
     LAMA_LOG_DEBUG( logger,
-                    "Computing z = alpha * A * x + beta * y, with A = " << *this << ", x = " << x << ", y = " << y << ", z = " << result );
+                    "Computing z = alpha * A * x + beta * y, with A = " << *this << ", x = " << x << ", y = " << y << ", z = " << result )
 
-    LAMA_ASSERT_EQUAL_ERROR( x.size(), mNumColumns );
-    LAMA_ASSERT_EQUAL_ERROR( y.size(), mNumRows );
+    LAMA_ASSERT_EQUAL_ERROR( x.size(), mNumColumns )
+    LAMA_ASSERT_EQUAL_ERROR( y.size(), mNumRows )
 
     // Method on CUDA is not safe duet to atomic
 
     ContextPtr loc = ContextFactory::getContext( Context::Host );
 
-    LAMA_LOG_INFO( logger, *this << ": matrixTimesVector on " << *loc );
+    LAMA_LOG_INFO( logger, *this << ": matrixTimesVector on " << *loc )
 
-    LAMA_INTERFACE_FN_T( normalGEMV, loc, COOUtils, Mult, ValueType );
+    LAMA_INTERFACE_FN_T( normalGEMV, loc, COOUtils, Mult, ValueType )
 
     ReadAccess<IndexType> cooIA( mIa, loc );
     ReadAccess<IndexType> cooJA( mJa, loc );
@@ -615,7 +615,7 @@ void COOStorage<ValueType>::matrixTimesVector(
 
         // we assume that normalGEMV can deal with the alias of result, y
 
-        LAMA_CONTEXT_ACCESS( loc );
+        LAMA_CONTEXT_ACCESS( loc )
         normalGEMV( wResult.get(), alpha, rX.get(), beta, wResult.get(), mNumRows, cooIA.get(), cooJA.get(),
                     cooValues.get(), mNumValues, NULL );
     }
@@ -626,7 +626,7 @@ void COOStorage<ValueType>::matrixTimesVector(
         WriteOnlyAccess<ValueType> wResult( result, loc, mNumRows );
         ReadAccess<ValueType> rY( y, loc );
 
-        LAMA_CONTEXT_ACCESS( loc );
+        LAMA_CONTEXT_ACCESS( loc )
         normalGEMV( wResult.get(), alpha, rX.get(), beta, rY.get(), mNumRows, cooIA.get(), cooJA.get(), cooValues.get(),
                     mNumValues, NULL );
     }
@@ -643,18 +643,18 @@ auto_ptr<SyncToken> COOStorage<ValueType>::matrixTimesVectorAsyncToDo(
     const LAMAArrayConstView<ValueType> y ) const
 {
     LAMA_LOG_DEBUG( logger,
-                    "Computing z = alpha * A * x + beta * y, with A = " << *this << ", x = " << x << ", y = " << y << ", z = " << result );
+                    "Computing z = alpha * A * x + beta * y, with A = " << *this << ", x = " << x << ", y = " << y << ", z = " << result )
 
-    LAMA_ASSERT_EQUAL_ERROR( x.size(), mNumRows );
-    LAMA_ASSERT_EQUAL_ERROR( y.size(), mNumRows );
+    LAMA_ASSERT_EQUAL_ERROR( x.size(), mNumRows )
+    LAMA_ASSERT_EQUAL_ERROR( y.size(), mNumRows )
 
     // not yet available on other devices, so we take Host
 
     ContextPtr loc = ContextFactory::getContext( Context::Host );
 
-    LAMA_LOG_INFO( logger, *this << ": matrixTimesVectorAsync on " << *loc );
+    LAMA_LOG_INFO( logger, *this << ": matrixTimesVectorAsync on " << *loc )
 
-    LAMA_INTERFACE_FN_T( normalGEMV, loc, COOUtils, Mult, ValueType );
+    LAMA_INTERFACE_FN_T( normalGEMV, loc, COOUtils, Mult, ValueType )
 
     auto_ptr<SyncToken> syncToken = loc->getSyncToken();
 
@@ -676,7 +676,7 @@ auto_ptr<SyncToken> COOStorage<ValueType>::matrixTimesVectorAsyncToDo(
 
         // we assume that normalGEMV can deal with the alias of result, y
 
-        LAMA_CONTEXT_ACCESS( loc );
+        LAMA_CONTEXT_ACCESS( loc )
 
         normalGEMV( wResult->get(), alpha, rX->get(), beta, wResult->get(), mNumRows, cooIA->get(), cooJA->get(),
                     cooValues->get(), mNumValues, syncToken.get() );
@@ -688,7 +688,7 @@ auto_ptr<SyncToken> COOStorage<ValueType>::matrixTimesVectorAsyncToDo(
         auto_ptr<WriteAccess<ValueType> > wResult( new WriteOnlyAccess<ValueType>( result, loc, mNumRows ) );
         auto_ptr<ReadAccess<ValueType> > rY( new ReadAccess<ValueType>( y, loc ) );
 
-        LAMA_CONTEXT_ACCESS( loc );
+        LAMA_CONTEXT_ACCESS( loc )
 
         normalGEMV( wResult->get(), alpha, rX->get(), beta, rY->get(), mNumRows, cooIA->get(), cooJA->get(),
                     cooValues->get(), mNumValues, syncToken.get() );
@@ -714,27 +714,27 @@ void COOStorage<ValueType>::jacobiIterate(
     const LAMAArrayConstView<ValueType> rhs,
     const ValueType omega ) const
 {
-    LAMA_REGION( "Storage.COO.jacobiIterate" );
+    LAMA_REGION( "Storage.COO.jacobiIterate" )
 
-    LAMA_LOG_INFO( logger, *this << ": Jacobi iteration for local matrix data." );
+    LAMA_LOG_INFO( logger, *this << ": Jacobi iteration for local matrix data." )
 
-    LAMA_ASSERT_ERROR( mDiagonalProperty, *this << ": jacobiIterate requires diagonal property" );
+    LAMA_ASSERT_ERROR( mDiagonalProperty, *this << ": jacobiIterate requires diagonal property" )
 
     if ( solution == oldSolution )
     {
-        LAMA_THROWEXCEPTION( "alias of solution and oldSolution unsupported" );
+        LAMA_THROWEXCEPTION( "alias of solution and oldSolution unsupported" )
     }
 
-    LAMA_ASSERT_EQUAL_DEBUG( mNumRows, oldSolution.size() );
-    LAMA_ASSERT_EQUAL_DEBUG( mNumRows, solution.size() );
-    LAMA_ASSERT_EQUAL_DEBUG( mNumRows, mNumColumns );
+    LAMA_ASSERT_EQUAL_DEBUG( mNumRows, oldSolution.size() )
+    LAMA_ASSERT_EQUAL_DEBUG( mNumRows, solution.size() )
+    LAMA_ASSERT_EQUAL_DEBUG( mNumRows, mNumColumns )
     // matrix must be square
 
     ContextPtr loc = getContextPtr();
 
     // loc = ContextFactory::getContext( Context::Host );  // does not run on other devices
 
-    LAMA_INTERFACE_FN_DEFAULT_T( jacobi, loc, COOUtils, Solver, ValueType );
+    LAMA_INTERFACE_FN_DEFAULT_T( jacobi, loc, COOUtils, Solver, ValueType )
 
     WriteAccess<ValueType> wSolution( solution, loc );
     ReadAccess<IndexType> cooIA( mIa, loc );
@@ -745,7 +745,7 @@ void COOStorage<ValueType>::jacobiIterate(
 
     // Due to diagonal property there is no advantage by taking row indexes
 
-    LAMA_CONTEXT_ACCESS( loc );
+    LAMA_CONTEXT_ACCESS( loc )
 
     jacobi( wSolution.get(), mNumValues, cooIA.get(), cooJA.get(), cooValues.get(), rOldSolution.get(), rRhs.get(),
             omega, mNumRows, NULL );

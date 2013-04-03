@@ -51,14 +51,14 @@
 namespace lama
 {
 
-LAMA_LOG_DEF_LOGGER( DenseMatrixOps::logger, "DenseMatrixOps" );
+LAMA_LOG_DEF_LOGGER( DenseMatrixOps::logger, "DenseMatrixOps" )
 
 template<typename T>
 void DenseMatrixOps::invertReplicated( DenseMatrix<T>& matrix )
 {
-    LAMA_REGION( "DenseMatrixOps::invertReplicated" );
-    LAMA_ASSERT_EQUAL_ERROR( 1, matrix.getDistribution().getNumPartitions() );
-    LAMA_ASSERT_EQUAL_ERROR( 1, matrix.getColDistribution().getNumPartitions() );
+    LAMA_REGION( "DenseMatrixOps::invertReplicated" )
+    LAMA_ASSERT_EQUAL_ERROR( 1, matrix.getDistribution().getNumPartitions() )
+    LAMA_ASSERT_EQUAL_ERROR( 1, matrix.getColDistribution().getNumPartitions() )
 
     DenseStorage<T>& denseStorage = matrix.getLocalStorage();
 
@@ -70,13 +70,13 @@ void DenseMatrixOps::invertReplicated( DenseMatrix<T>& matrix )
 template<typename T>
 void DenseMatrixOps::invertCyclic( DenseMatrix<T>& matrix )
 {
-    LAMA_REGION( "DenseMatrixOps::invertCyclic" );
+    LAMA_REGION( "DenseMatrixOps::invertCyclic" )
 
     const Communicator& comm = matrix.getDistribution().getCommunicator();
 
     const CyclicDistribution* cyclicDist = dynamic_cast<const CyclicDistribution*>( matrix.getDistributionPtr().get() );
 
-    LAMA_ASSERT_ERROR( cyclicDist, "no cyclic distribution: " << matrix.getDistribution() );
+    LAMA_ASSERT_ERROR( cyclicDist, "no cyclic distribution: " << matrix.getDistribution() )
 
     const int nb = cyclicDist->chunkSize(); // blocking factor
 
@@ -86,28 +86,28 @@ void DenseMatrixOps::invertCyclic( DenseMatrix<T>& matrix )
 
     if ( !lamaInterface.getSCALAPACKInterface<T>().inverse )
     {
-        LAMA_THROWEXCEPTION( "No SCALAPACK routines available" );
+        LAMA_THROWEXCEPTION( "No SCALAPACK routines available" )
     }
 
     const int n = matrix.getNumRows();
 
     // assert square matrix
 
-    LAMA_ASSERT_EQUAL_ERROR( matrix.getNumColumns(), n );
+    LAMA_ASSERT_EQUAL_ERROR( matrix.getNumColumns(), n )
 
     DenseStorage<T>& denseStorage = matrix.getLocalStorage();
 
     const IndexType localSize = denseStorage.getData().size();
 
-    LAMA_ASSERT_EQUAL_ERROR( localSize, denseStorage.getNumRows() * n );
+    LAMA_ASSERT_EQUAL_ERROR( localSize, denseStorage.getNumRows() * n )
 
-    LAMA_LOG_INFO( logger, "local dense data = " << denseStorage << ", localSize = " << localSize );
+    LAMA_LOG_INFO( logger, "local dense data = " << denseStorage << ", localSize = " << localSize )
 
     HostWriteAccess<T> localValues( denseStorage.getData() );
 
     T* data = localValues.get();
 
-    LAMA_LOG_INFO( logger, "now call inverse" );
+    LAMA_LOG_INFO( logger, "now call inverse" )
 
     lamaInterface.getSCALAPACKInterface<T>().inverse( n, nb, data, comm );
 }
@@ -115,21 +115,21 @@ void DenseMatrixOps::invertCyclic( DenseMatrix<T>& matrix )
 template<typename T>
 void DenseMatrixOps::invert( DenseMatrix<T>& matrix )
 {
-    LAMA_REGION( "DenseMatrixOps::invert" );
+    LAMA_REGION( "DenseMatrixOps::invert" )
 
     if ( matrix.getDistribution().getNumPartitions() == 1 && matrix.getColDistribution().getNumPartitions() == 1 )
     {
-        LAMA_LOG_INFO( logger, "invert called for replicated matrices" );
+        LAMA_LOG_INFO( logger, "invert called for replicated matrices" )
         invertReplicated( matrix );
     }
     else
     {
-        LAMA_LOG_INFO( logger, "invert called for distributed matrices" );
+        LAMA_LOG_INFO( logger, "invert called for distributed matrices" )
         const CyclicDistribution* cyclicDist =
             dynamic_cast<const CyclicDistribution*>( matrix.getDistributionPtr().get() );
         if ( cyclicDist && matrix.getColDistribution().getNumPartitions() == 1 )
         {
-            LAMA_LOG_INFO( logger, "matrix already with cyclic distribution" );
+            LAMA_LOG_INFO( logger, "matrix already with cyclic distribution" )
             invertCyclic( matrix );
         }
         else
@@ -143,13 +143,13 @@ void DenseMatrixOps::invert( DenseMatrix<T>& matrix )
                 new CyclicDistribution( matrix.getNumRows(), blockSize,
                                         oldRowDist->getCommunicatorPtr() ) );
 
-            LAMA_LOG_INFO( logger, "redistibuting matrix" );
+            LAMA_LOG_INFO( logger, "redistibuting matrix" )
             matrix.redistribute( cycDist, noDist );
 
-            LAMA_LOG_INFO( logger, "calling invert cyclic" );
+            LAMA_LOG_INFO( logger, "calling invert cyclic" )
             invertCyclic( matrix );
 
-            LAMA_LOG_INFO( logger, "back-redistribution" );
+            LAMA_LOG_INFO( logger, "back-redistribution" )
             matrix.redistribute( oldRowDist, oldColDist );
         }
     }

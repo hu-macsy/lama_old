@@ -42,7 +42,7 @@ namespace lama
 
 /* -------------------------------------------------------------------------- */
 
-LAMA_LOG_DEF_TEMPLATE_LOGGER( template<typename T>, ELLSparseMatrix<T>::logger, "Matrix.SparseMatrix.ELLSparseMatrix" );
+LAMA_LOG_DEF_TEMPLATE_LOGGER( template<typename T>, ELLSparseMatrix<T>::logger, "Matrix.SparseMatrix.ELLSparseMatrix" )
 
 /* -------------------------------------------------------------------------- */
 
@@ -52,7 +52,7 @@ ELLSparseMatrix<ValueType>::ELLSparseMatrix()
     : SparseMatrix<ValueType>( createStorage() )
 
 {
-    LAMA_LOG_INFO( logger, "ELLSpareMatrix()" );
+    LAMA_LOG_INFO( logger, "ELLSpareMatrix()" )
 }
 
 template<typename ValueType>
@@ -61,7 +61,7 @@ ELLSparseMatrix<ValueType>::ELLSparseMatrix( const IndexType numRows, const Inde
     : SparseMatrix<ValueType>( createStorage( numRows, numColumns ) )
 
 {
-    LAMA_LOG_INFO( logger, "ELLSpareMatrix( " << numRows << " x " << numColumns << " )" );
+    LAMA_LOG_INFO( logger, "ELLSpareMatrix( " << numRows << " x " << numColumns << " )" )
 }
 
 /* -------------------------------------------------------------------------- */
@@ -69,7 +69,7 @@ ELLSparseMatrix<ValueType>::ELLSparseMatrix( const IndexType numRows, const Inde
 template<typename ValueType>
 ELLSparseMatrix<ValueType>::~ELLSparseMatrix()
 {
-    LAMA_LOG_INFO( logger, "~ELLSpareMatrix" );
+    LAMA_LOG_INFO( logger, "~ELLSpareMatrix" )
 }
 
 /* ---------------------------------------------------------------------------------------*/
@@ -77,7 +77,7 @@ ELLSparseMatrix<ValueType>::~ELLSparseMatrix()
 template<typename ValueType>
 ELLSparseMatrix<ValueType>& ELLSparseMatrix<ValueType>::operator=( const ELLSparseMatrix& matrix )
 {
-    LAMA_LOG_INFO( logger, "ELLSparseMatrix = ELLSparseMatrix : " << matrix );
+    LAMA_LOG_INFO( logger, "ELLSparseMatrix = ELLSparseMatrix : " << matrix )
     assign( matrix );
     return *this;
 }
@@ -85,7 +85,7 @@ ELLSparseMatrix<ValueType>& ELLSparseMatrix<ValueType>::operator=( const ELLSpar
 template<typename ValueType>
 ELLSparseMatrix<ValueType>& ELLSparseMatrix<ValueType>::operator=( const Matrix& matrix )
 {
-    LAMA_LOG_INFO( logger, " = Matrix : " << matrix );
+    LAMA_LOG_INFO( logger, " = Matrix : " << matrix )
     this->assign( matrix ); // matrix does not depend on template parameter, so this-> is needed.
     return *this;
 }
@@ -93,7 +93,7 @@ ELLSparseMatrix<ValueType>& ELLSparseMatrix<ValueType>::operator=( const Matrix&
 template<typename ValueType>
 ELLSparseMatrix<ValueType>& ELLSparseMatrix<ValueType>::operator=( const Expression<Matrix,Matrix,Times>& exp )
 {
-    LAMA_LOG_INFO( logger, " = A * B " );
+    LAMA_LOG_INFO( logger, " = A * B " )
     Matrix::operator=( exp );
     return *this;
 }
@@ -101,7 +101,7 @@ ELLSparseMatrix<ValueType>& ELLSparseMatrix<ValueType>::operator=( const Express
 template<typename ValueType>
 ELLSparseMatrix<ValueType>& ELLSparseMatrix<ValueType>::operator=( const Expression<Scalar,Matrix,Times>& exp )
 {
-    LAMA_LOG_INFO( logger, " = alpha * A " );
+    LAMA_LOG_INFO( logger, " = alpha * A " )
     Matrix::operator=( exp );
     return *this;
 }
@@ -110,7 +110,7 @@ template<typename ValueType>
 ELLSparseMatrix<ValueType>& ELLSparseMatrix<ValueType>::operator=(
     const Expression<Scalar,Expression<Matrix,Matrix,Times>,Times>& exp )
 {
-    LAMA_LOG_INFO( logger, " = alpha * A * B" );
+    LAMA_LOG_INFO( logger, " = alpha * A * B" )
     Matrix::operator=( exp );
     return *this;
 }
@@ -119,7 +119,7 @@ template<typename ValueType>
 ELLSparseMatrix<ValueType>& ELLSparseMatrix<ValueType>::operator=(
     const Expression<Expression<Scalar,Expression<Matrix,Matrix,Times>,Times>,Expression<Scalar,Matrix,Times>,Plus> exp )
 {
-    LAMA_LOG_INFO( logger, "ELLSparseMatrix = alpha * A * B" );
+    LAMA_LOG_INFO( logger, "ELLSparseMatrix = alpha * A * B" )
     Matrix::operator=( exp );
     return *this;
 }
@@ -128,7 +128,7 @@ template<typename ValueType>
 ELLSparseMatrix<ValueType>& ELLSparseMatrix<ValueType>::operator=(
     const Expression<Expression<Scalar,Matrix,Times>,Expression<Scalar,Matrix,Times>,Plus> exp )
 {
-    LAMA_LOG_INFO( logger, "ELLSparseMatrix = alpha * A + beta * B" );
+    LAMA_LOG_INFO( logger, "ELLSparseMatrix = alpha * A + beta * B" )
     Matrix::operator=( exp );
     return *this;
 }
@@ -144,7 +144,7 @@ ELLSparseMatrix<ValueType>::getLocalStorage() const
 
     const StorageType* local = dynamic_cast<const StorageType*>( this->mLocalData.get() );
 
-    LAMA_ASSERT_ERROR( local, "ELLSparseMatrix: local storage is no more ELL: " << *this->mLocalData );
+    LAMA_ASSERT_ERROR( local, "ELLSparseMatrix: local storage is no more ELL: " << *this->mLocalData )
 
     return *local;
 }
@@ -160,7 +160,7 @@ ELLSparseMatrix<ValueType>::getLocalStorage()
 
     StorageType* local = dynamic_cast<StorageType*>( this->mLocalData.get() );
 
-    LAMA_ASSERT_ERROR( local, "ELLSparseMatrix: local storage is no more ELL: " << *this->mLocalData );
+    LAMA_ASSERT_ERROR( local, "ELLSparseMatrix: local storage is no more ELL: " << *this->mLocalData )
 
     return *local;
 }
@@ -176,7 +176,7 @@ ELLSparseMatrix<ValueType>::getHaloStorage() const
 
     const StorageType* halo = dynamic_cast<const StorageType*>( mHaloData.get() );
 
-    LAMA_ASSERT_ERROR( halo, "ELLSparseMatrix: halo storage is no more ELL: " << *mHaloData );
+    LAMA_ASSERT_ERROR( halo, "ELLSparseMatrix: halo storage is no more ELL: " << *mHaloData )
 
     return *halo;
 }
@@ -188,14 +188,14 @@ void ELLSparseMatrix<ValueType>::swapLocalStorage( StorageType& localStorage )
 {
     // make sure that local storage fits into this sparse matrix
 
-    LAMA_ASSERT_EQUAL_ERROR( localStorage.getNumRows(), mLocalData->getNumRows() );
-    LAMA_ASSERT_EQUAL_ERROR( localStorage.getNumColumns(), mLocalData->getNumColumns() );
+    LAMA_ASSERT_EQUAL_ERROR( localStorage.getNumRows(), mLocalData->getNumRows() )
+    LAMA_ASSERT_EQUAL_ERROR( localStorage.getNumColumns(), mLocalData->getNumColumns() )
 
     // make sure that local matrix storage has the correct format / value type
 
     StorageType* localData = dynamic_cast<StorageType*>( mLocalData.get() );
 
-    LAMA_ASSERT_ERROR( localData, *mLocalData << ": does not fit matrix type " << typeName() );
+    LAMA_ASSERT_ERROR( localData, *mLocalData << ": does not fit matrix type " << typeName() )
 
     localData->swap( localStorage );
 }

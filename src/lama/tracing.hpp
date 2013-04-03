@@ -33,106 +33,27 @@
 #ifndef LAMA_TRACING_HPP_
 #define LAMA_TRACING_HPP_
 
-/* ToDo: use it from CUDA directory
- #ifdef LAMA_BUILD_CUDA
- #include <lama/tracing/CUDATracerHelper.hpp>
- #endif
- */
-
 #if defined( LAMA_TRACE_LEVEL_VT ) || defined( LAMA_TRACE_LEVEL_TIME )
 
 #include <lama/tracing/TraceRegionRecord.hpp>
-
-#define LAMA_REGION( name ) tracing::TraceRegionRecord LAMA_Trc__( name, __FILE__, __LINE__ )
-
-#define LAMA_REGION_N( name, n ) tracing::TraceRegionRecord LAMA_Trc__( name, n, __FILE__, __LINE__ )
-
-#define LAMA_REGION_START( name ) tracing::TraceRegionRecord::start( name, __FILE__, __LINE__ )
-
-#define LAMA_REGION_END( name ) tracing::TraceRegionRecord::stop( name )
-
-/* ToDo: use it from CUDA subdirectory
- #ifdef LAMA_BUILD_CUDA
- #define LAMA_CUDAREGION( name, syncToken ) \
-        CUDATracerHelper<tracing::TraceRegionRecord> LAMA_Trc__( name, __FILE__, __LINE__, syncToken )
- #else
- #define LAMA_CUDAREGION( name, syncToken )
- #endif
-
- #ifdef LAMA_BUILD_OPENCL
- //TODO: OpenCLTracerHelper
- #define LAMA_OPENCLREGION( name, syncToken )
- #else
- #define LAMA_OPENCLREGION( name, syncToken )
- #endif
- */
-
-#define LAMA_TIMETRACER( name ) tracing::TraceRegionRecord::spentLast( name )
-
-#elif defined( LAMA_TRACE_LEVEL_SIMPLE )
-
-#include <lama/tracing/LAMASimpleTimeTracer.hpp>
-
-#define LAMA_REGION( name ) LAMASimpleTimeTracer LAMA_Trc__( name, __FILE__, __LINE__ )
-
-#define LAMA_REGION_N( name, n )
-
-#define LAMA_REGION_START( name )
-
-#define LAMA_REGION_END( name )
-
-#ifdef LAMA_BUILD_CUDA
-#define LAMA_CUDAREGION( name, syncToken ) \
-    CUDATracerHelper<LAMASimpleTimeTracer> LAMA_Trc__( name, __FILE__, __LINE__, syncToken )
-#else
-#define LAMA_CUDAREGION( name, syncToken )
-#endif
-
-#ifdef LAMA_BUILD_OPENCL
-//TODO: OpenCLTracerHelper
-#define LAMA_OPENCLREGION( name, syncToken )
-#else
-#define LAMA_OPENCLREGION( name, syncToken )
-#endif
-
-#define LAMA_TIMETRACER( name ) LAMASimpleTimeTracer::spentLast( name )
-
+#define LAMA_REGION( name ) tracing::TraceRegionRecord LAMA_Trc__( name, __FILE__, __LINE__ );
+#define LAMA_REGION_N( name, n ) tracing::TraceRegionRecord LAMA_Trc__( name, n, __FILE__, __LINE__ );
+#define LAMA_REGION_START( name ) tracing::TraceRegionRecord::start( name, __FILE__, __LINE__ );
+#define LAMA_REGION_END( name ) tracing::TraceRegionRecord::stop( name );
+#define LAMA_TIMETRACER( name ) tracing::TraceRegionRecord::spentLast( name );
 #elif defined( LAMA_TRACE_LEVEL_OFF )
-
 #define LAMA_REGION( name )
-
 #define LAMA_REGION_START( name )
-
 #define LAMA_REGION_END( name )
-
 #define LAMA_REGION_N( name, n )
-
-#define LAMA_CUDAREGION( name, syncToken )
-
-#define LAMA_OPENCLREGION( name, syncToken )
-
 #define LAMA_TIMETRACER( name ) 0.0
-
 #else
-
 //Macro LAMA_REGION should also be defined in case of error for convenience with Eclipse.
-
 #define LAMA_REGION( name )
-
 #define LAMA_REGION_START( name )
-
 #define LAMA_REGION_END( name )
-
 #define LAMA_REGION_N( name, n )
-
-#define LAMA_CUDAREGION( name, syncToken )
-
-#define LAMA_OPENCLREGION( name, syncToken )
-
 #define LAMA_TIMETRACER( name ) 0.0
-
-#error "Must define LAMA_TRACE_LEVEL_xxx with xxx = VT, TIME, SIMPLE, or OFF"
-
+#error "Must define LAMA_TRACE_LEVEL_xxx with xxx = VT, TIME, or OFF"
 #endif
-
 #endif // LAMA_TRACING_HPP_

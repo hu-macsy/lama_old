@@ -71,9 +71,8 @@ namespace lama
  *  Nevertheless some operations can benefit from it and so an internal flag
  *  is set if values of one row are sorted by column indexes.
  *
- *  @tparam T is the value type for the matrix elements.
+ *  @tparam T is the value type of the matrix values.
  */
-
 template<typename T>
 class LAMA_DLL_IMPORTEXPORT CSRStorage: public CRTPMatrixStorage<CSRStorage<T>,T>
 {
@@ -211,29 +210,35 @@ public:
         LAMAArray<OtherValueType>& values,
         const ContextPtr loc );
 
-    /** Print relevant information about matrix storage format. */
+    /* Print relevant information about matrix storage format. */
 
     virtual void writeAt( std::ostream& stream ) const;
 
-    /** Getter routines for the CSR arrays: ia, ja, values */
+    /** Getter routine for member variable IA. */
 
     LAMAArray<IndexType>& getIA();
 
-    /** Getter routines for the CSR arrays: ia, ja, values */
+    /** Getter routine for member variable JA. */
 
     LAMAArray<IndexType>& getJA();
 
-    /** Getter routines for the values array of the CSR format */
+    /** Getter routine for member variable values. */
 
     LAMAArray<ValueType>& getValues();
 
+    /** Getter routine for member variable IA (read-only). */
+
     const LAMAArray<IndexType>& getIA() const;
+
+    /** Getter routine for member variable JA (read-only). */
 
     const LAMAArray<IndexType>& getJA() const;
 
+    /** Getter routine for member variable values (read-only). */
+
     const LAMAArray<ValueType>& getValues() const;
 
-    /** Getter routine for the number of stored values*/
+    /** Getter routine for the number of stored values. */
 
     IndexType getNumValues() const;
 
@@ -482,7 +487,7 @@ private:
 
     void buildRowIndexes();
 
-    LAMA_LOG_DECL_STATIC_LOGGER( logger ); //!< logger for this matrix format
+    LAMA_LOG_DECL_STATIC_LOGGER( logger ) //!< logger for this matrix format
 
     /** Matrix + Matrix for CSR only */
 

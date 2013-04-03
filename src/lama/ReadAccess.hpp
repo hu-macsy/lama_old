@@ -58,18 +58,18 @@ namespace lama
  * ReadAccess enforces the consistency of the template LAMAArray by following the RAII Idiom. This is
  * done by acquiring a read lock on a LAMAArray in the constructor and releasing this read lock in
  * the destructor. Therefore a ReadAccess should be only used as a stack object.
+ *
+ * @tparam T is the value type stored in the wrapped container.
  */
 template<typename T>
 class LAMA_DLL_IMPORTEXPORT ReadAccess: public BaseAccess
 {
 public:
-    /**
-     * @brief ValueType is the type stored in the wrapped container.
-     */
-    typedef T ValueType;
+
+	typedef T ValueType; //!< This is the type stored in the wrapped  container.
 
     /**
-     * @brief acquire a ReadAccess to the passed LAMAArray for the passed context
+     * @brief Acquires a ReadAccess to the passed LAMAArray for the passed context.
      *
      * @param[in] array     the LAMAArray to acquire a ReadAccess for
      * @param[in] context   the context that needs a read acess
@@ -77,8 +77,22 @@ public:
      */
     ReadAccess( const LAMAArray<ValueType>& array, ContextPtr context );
 
+    /**
+     * @brief Acquires a ReadAccess to the passed LAMAArrayView for the passed context.
+     *
+     * @param[in] view      the LAMAArrayView to acquire a ReadAccess for
+     * @param[in] context   the context that needs a read acess
+     * @throws Exception    if the ReadAccess can not be acquired, e.g. because a WriteAccess exists.
+     */
     ReadAccess( const LAMAArrayView<ValueType>& view, ContextPtr context );
 
+    /**
+     * @brief Acquires a ReadAccess to the passed LAMAArrayConstView for the passed context.
+     *
+     * @param[in] view      the LAMAArrayConstView to acquire a ReadAccess for
+     * @param[in] context   the context that needs a read acess
+     * @throws Exception    if the ReadAccess can not be acquired, e.g. because a WriteAccess exists.
+     */
     ReadAccess( const LAMAArrayConstView<ValueType>& view, ContextPtr context );
 
     /**
@@ -87,14 +101,14 @@ public:
     virtual ~ReadAccess();
 
     /**
-     * @brief returns a valid pointer to the data usable for the context
+     * @brief Returns a valid pointer to the data usable for the context.
      *
      * @return a pointer to the wrapped LAMAArray.
      */
     const ValueType* get() const;
 
     /**
-     * @brief release the acquired ReadAccess.
+     * @brief Releases the acquired ReadAccess.
      *
      * Release is mandatory to unlock the array so that it might be
      * used for further write accesses.
@@ -116,7 +130,7 @@ private:
 
     size_t mIndex;
 
-    LAMA_LOG_DECL_STATIC_LOGGER(logger);
+    LAMA_LOG_DECL_STATIC_LOGGER( logger )
 };
 
 template<typename T>

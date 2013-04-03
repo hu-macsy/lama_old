@@ -106,9 +106,6 @@ public:
         return mGlobal2Halo;
     }
 
-    /** This method writes info about the halo into an output stream.
-     *
-     */
     virtual void writeAt( std::ostream& stream ) const;
 
 protected:
@@ -128,7 +125,7 @@ private:
 
     std::map<IndexType,IndexType> mGlobal2Halo;
 
-    LAMA_LOG_DECL_STATIC_LOGGER(logger);
+    LAMA_LOG_DECL_STATIC_LOGGER( logger )
 };
 
 const CommunicationPlan& Halo::getRequiredPlan() const
@@ -154,7 +151,7 @@ const LAMAArray<IndexType>& Halo::getRequiredIndexes() const
 void Halo::setGlobal2Halo( IndexType globalIndex, IndexType haloIndex )
 {
     LAMA_ASSERT_DEBUG( 0 <= haloIndex && haloIndex < getHaloSize(),
-                       "illegal halo index " << haloIndex << ", halo size = " << getHaloSize() );
+                       "illegal halo index " << haloIndex << ", halo size = " << getHaloSize() )
     mGlobal2Halo[globalIndex] = haloIndex;
 }
 

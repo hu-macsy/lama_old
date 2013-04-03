@@ -38,10 +38,6 @@
 
 // others
 #include <lama/LAMATypes.hpp>
-#include <lama/LAMAInterface.hpp>
-
-// assert
-#include <lama/exception/LAMAAssert.hpp>
 
 // logging
 #include <logging/logging.hpp>
@@ -56,7 +52,14 @@ namespace lama
 
 class LAMA_DLL_IMPORTEXPORT OpenMPELLUtils
 {
+
 public:
+
+    /** Routine that registers all routines of this class at the LAMA interface. */
+
+    static void setInterface( struct ELLUtilsInterface& ELLUtils );
+
+private:
 
     /** This method computes the total number of non-zero rows by the size array  */
 
@@ -298,12 +301,6 @@ public:
         const ValueType csrValues[],
         class SyncToken* syncToken );
 
-    /** Routine that registers all routines of this class at the LAMA interface. */
-
-    static void setInterface( struct ELLUtilsInterface& ELLUtils );
-
-private:
-
     template<typename ValueType>
     static void normalGEMV(
         ValueType result[],
@@ -328,7 +325,7 @@ private:
         const IndexType csrJA[],
         const ValueType csrValues[] );
 
-    LAMA_LOG_DECL_STATIC_LOGGER( logger );
+    LAMA_LOG_DECL_STATIC_LOGGER( logger )
 };
 
 /* --------------------------------------------------------------------------- */

@@ -159,12 +159,6 @@ public:
      */
     virtual bool isEqual( const Distribution& other ) const = 0;
 
-    /** This method writes info about the distribution into an output stream.
-     *  The method should be overwritten by base classes to give more
-     *  specific information about the object.
-     *
-     * @param[out] stream   output stream.
-     */
     virtual void writeAt( std::ostream& stream ) const;
 
     /** Check for equality of two distributions.
@@ -235,7 +229,7 @@ private:
 
     Distribution(); // disable default constructor
 
-    LAMA_LOG_DECL_STATIC_LOGGER( logger );
+    LAMA_LOG_DECL_STATIC_LOGGER( logger )
 };
 
 IndexType Distribution::getGlobalSize() const

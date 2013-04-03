@@ -40,11 +40,11 @@ Important Links
   .. _User Documentation : http://libama.sourceforge.net/user_guide/index.html
   .. _System Documentation : http://libama.sourceforge.net/doc/index.html
 
-You can check out the source code via SVN where the HTTP access is as follows:
+You can check out the source code via GIT where the HTTP access is as follows:
 
 ::
 
-    svn checkout http://svn.code.sf.net/p/libama/code/trunk libama-code
+    git clone http://git.code.sf.net/p/libama/git libama-git
 
 Features
 --------

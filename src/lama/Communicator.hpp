@@ -109,32 +109,32 @@ public:
 
     /** @brief TODO[doxy] Complete Description.
      *
-     *  @param[in] sizeX         TODO[doxy] Complete Description.
-     *  @param[in] sizeY         TODO[doxy] Complete Description.
-     *  @param[in] procgrid [2]  TODO[doxy] Complete Description.
+     *  @param[in] sizeX      TODO[doxy] Complete Description.
+     *  @param[in] sizeY      TODO[doxy] Complete Description.
+     *  @param[in] procgrid   TODO[doxy] Complete Description.
      */
     void factorize2( const double sizeX, const double sizeY, PartitionId procgrid[2] ) const;
 
     /** @brief TODO[doxy] Complete Description.
      *
-     *  @param[in] sizeX         TODO[doxy] Complete Description.
-     *  @param[in] sizeY         TODO[doxy] Complete Description.
-     *  @param[in] sizeZ         TODO[doxy] Complete Description.
-     *  @param[in] procgrid[3]   TODO[doxy] Complete Description.
+     *  @param[in] sizeX      TODO[doxy] Complete Description.
+     *  @param[in] sizeY      TODO[doxy] Complete Description.
+     *  @param[in] sizeZ      TODO[doxy] Complete Description.
+     *  @param[in] procgrid   TODO[doxy] Complete Description.
      */
     void factorize3( const double sizeX, const double sizeY, const double sizeZ, PartitionId procgrid[3] ) const;
 
     /** @brief TODO[doxy] Complete Description.
      *
-     *  @param[out] pos[2]        TODO[doxy] Complete Description.
-     *  @param[in]  procgrid[2]   TODO[doxy] Complete Description.
+     *  @param[out] pos       TODO[doxy] Complete Description.
+     *  @param[in]  procgrid  TODO[doxy] Complete Description.
      */
     void getGrid2Rank( PartitionId pos[2], const PartitionId procgrid[2] ) const;
 
     /** @brief TODO[doxy] Complete Description.
      *
-     *  @param[out] pos[3]        TODO[doxy] Complete Description.
-     *  @param[in]  procgrid[3]   TODO[doxy] Complete Description.
+     *  @param[out] pos       TODO[doxy] Complete Description.
+     *  @param[in]  procgrid  TODO[doxy] Complete Description.
      */
     void getGrid3Rank( PartitionId pos[3], const PartitionId procgrid[3] ) const;
 
@@ -552,11 +552,9 @@ public:
 
     virtual void synchronize() const = 0;
 
-    /** @brief Override virtual method of base class Printable. */
-
     virtual void writeAt( std::ostream& stream ) const;
 
-    /** @brief getter for the type of a communicator. */
+    /** @brief Getter for the type of a communicator. */
 
     const std::string& getType() const
     {
@@ -571,7 +569,7 @@ protected:
 
     std::string mCommunicatorType;
 
-    LAMA_LOG_DECL_STATIC_LOGGER(logger);
+    LAMA_LOG_DECL_STATIC_LOGGER( logger )
 
     /** Read in the environment variable NP4LAMA for user processor array.
      *
@@ -609,7 +607,7 @@ PartitionId Communicator::getNeighbor( int pos ) const
     PartitionId size = getSize();
     PartitionId rank = getRank();
 
-    LAMA_ASSERT( std::abs(pos) <= size, "neighbor pos "<<pos<<" out of range ("<<size<<")" );
+    LAMA_ASSERT( std::abs(pos) <= size, "neighbor pos "<<pos<<" out of range ("<<size<<")" )
 
     return ( size + rank + pos ) % size;
 }
@@ -625,7 +623,7 @@ void Communicator::exchangeByPlan(
 {
     LAMA_ASSERT_ERROR(
         sendArray.size() == sendPlan.totalQuantity(),
-        "Send array has size " << sendArray.size() << ", but send plan requires " << sendPlan.totalQuantity() << " entries" );
+        "Send array has size " << sendArray.size() << ", but send plan requires " << sendPlan.totalQuantity() << " entries" )
 
     IndexType recvSize = recvPlan.totalQuantity();
 

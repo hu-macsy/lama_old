@@ -143,11 +143,10 @@ void gemm_launcher(
     cudaStream_t cs )
 {
     LAMA_CHECK_CUDA_ACCESS
-    ;
 
     if ( transA_char != transB_char && transA_char != 'N' )
     {
-        LAMA_THROWEXCEPTION( "trans = " << transA_char << " not supported for gemm" );
+        LAMA_THROWEXCEPTION( "trans = " << transA_char << " not supported for gemm" )
     }
 
     dim3 dimBlock( 16, 16, 1 );

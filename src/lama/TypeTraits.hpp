@@ -41,19 +41,21 @@ namespace lama
  * @brief The template class TypeTraits determines the index and value types.
  *
  * The template class TypeTraits is used to determine the type of indices and
- * values in higher level types like CSRSparseMatrix. It facilities are used by
+ * values in higher level types like CSRSparseMatrix. Its facilities are used by
  * the template function maxNorm (@see MaxNorm.hpp) among others.
+ *
+ * @tparam T The type for values and indices.
  */
 template<typename T>
 class TypeTraits
 {
 public:
     /**
-     * @brief The Type for indices.
+     * @brief The type for indices.
      */
     typedef typename T::IndexType IndexType;
     /**
-     * @brief The Type for values.
+     * @brief The type for values.
      */
     typedef typename T::ValueType ValueType;
 

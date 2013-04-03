@@ -63,25 +63,25 @@ LAMAThreadPool& Task::getThreadPool()
 
 /* ------------------------------------------------------------------------- */
 
-LAMA_LOG_DEF_LOGGER( Task::logger, "Task" );
+LAMA_LOG_DEF_LOGGER( Task::logger, "Task" )
 
 /* ------------------------------------------------------------------------- */
 
 Task::Task( boost::function<void()> taskFunction, int numOmpThreads /* = 0 */)
 
 {
-    LAMA_LOG_DEBUG( logger, "Creating Task" );
+    LAMA_LOG_DEBUG( logger, "Creating Task" )
 
     mTask = getThreadPool().schedule( taskFunction, numOmpThreads );
 
-    LAMA_LOG_DEBUG( logger, "Task created" );
+    LAMA_LOG_DEBUG( logger, "Task created" )
 }
 
 /* ------------------------------------------------------------------------- */
 
 Task::~Task()
 {
-    LAMA_LOG_INFO( logger, "~Task" );
+    LAMA_LOG_INFO( logger, "~Task" )
 }
 
 /* ------------------------------------------------------------------------- */
@@ -93,15 +93,15 @@ void Task::synchronize()
         return;
     }
 
-    LAMA_LOG_DEBUG( logger, "Waiting for task = " << mTask->mTaskId << ", state = " << mTask->mState );
+    LAMA_LOG_DEBUG( logger, "Waiting for task = " << mTask->mTaskId << ", state = " << mTask->mState )
 
     getThreadPool().wait( mTask );
 
-    LAMA_LOG_DEBUG( logger, "Task = " << mTask->mTaskId << " finished" << ", exception = " << mTask->mException );
+    LAMA_LOG_DEBUG( logger, "Task = " << mTask->mTaskId << " finished" << ", exception = " << mTask->mException )
 
     if ( mTask->mException )
     {
-        LAMA_THROWEXCEPTION( "Task got exception" );
+        LAMA_THROWEXCEPTION( "Task got exception" )
     }
 
     mTask.reset();

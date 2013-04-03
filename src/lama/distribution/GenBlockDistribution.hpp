@@ -144,14 +144,13 @@ public:
      *  Each processor knowns the sizes of each partition and can therefore compute
      *  owners without any communication.
      */
-
     virtual void computeOwners( const std::vector<IndexType>& requiredIndexes, std::vector<PartitionId>& owners ) const;
 
     void printDistributionVector( std::string name ) const;
 
 protected:
 
-    LAMA_LOG_DECL_STATIC_LOGGER(logger);
+    LAMA_LOG_DECL_STATIC_LOGGER( logger )
 
 private:
 

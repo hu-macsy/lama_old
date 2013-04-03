@@ -51,9 +51,26 @@
 namespace lama
 {
 
+/** Static class that provides CUDA implementaions for the BLAS2 routines of the BLAS interface. 
+ *
+ *  The BLAS2 routines are all private and can only be accessed via registration at an interface.
+ *
+ */
+
 class LAMA_DLL_IMPORTEXPORT CUDABLAS2
 {
 public:
+
+    /** Routine that sets functions pointers belonging to BLAS1 in a BLASInterface.
+     *
+     *  param[inout] BLASInterface struct to register all routines implemented in CUDA
+     *
+     *  Note: this routine will make instantiations of the template routines.
+     */
+
+    static void setInterface( struct BLASInterface& BLAS );
+
+private:
 
     /**
      * This function is the CUDA implementation of lama::BLAS2Interface::gemv
@@ -324,9 +341,7 @@ public:
         const IndexType incX,
         SyncToken* syncToken );
 
-private:
-
-    LAMA_LOG_DECL_STATIC_LOGGER( logger );
+    LAMA_LOG_DECL_STATIC_LOGGER( logger )
 
 };
 

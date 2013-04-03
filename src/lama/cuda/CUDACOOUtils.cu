@@ -44,7 +44,7 @@
 namespace lama
 {
 
-LAMA_LOG_DEF_LOGGER( CUDACOOUtils::logger, "CUDA.COOUtils" );
+LAMA_LOG_DEF_LOGGER( CUDACOOUtils::logger, "CUDA.COOUtils" )
 
 /* --------------------------------------------------------------------------- */
 
@@ -117,7 +117,6 @@ void CUDACOOUtils::normalGEMV(
     dim3 dimGrid = makeGrid( numRows, dimBlock.x );
 
     LAMA_CHECK_CUDA_ACCESS
-    ;
 
     cooInitKernel<<< dimGrid, dimBlock, block_size * sizeof( IndexType )>>>
     ( result, numRows, beta, y );
@@ -126,7 +125,6 @@ void CUDACOOUtils::normalGEMV(
     ( result, numRows, alpha, x, numValues, cooIA, cooJA, cooValues );
 
     LAMA_CHECK_CUDA_ERROR
-    ;
 
     cudaStreamSynchronize( 0 );
 }
@@ -135,10 +133,10 @@ void CUDACOOUtils::normalGEMV(
 
 void CUDACOOUtils::setInterface( COOUtilsInterface& COOUtils )
 {
-    LAMA_LOG_INFO( logger, "set COO routines for CUDA in Interface" );
+    LAMA_LOG_INFO( logger, "set COO routines for CUDA in Interface" )
 
-    LAMA_INTERFACE_REGISTER_T( COOUtils, normalGEMV, float );
-    LAMA_INTERFACE_REGISTER_T( COOUtils, normalGEMV, double );
+    LAMA_INTERFACE_REGISTER_T( COOUtils, normalGEMV, float )
+    LAMA_INTERFACE_REGISTER_T( COOUtils, normalGEMV, double )
 }
 
 } // namespace lama

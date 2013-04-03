@@ -61,9 +61,11 @@ public:
     virtual ~Printable();
 
     /**
-     * @brief Writes some Information about this to the passed stream.
+     * @brief Writes some information about this to the passed stream.
      *
-     * If a deriving class does not overrides writeAt, typeid(this).name() is
+     * The method should be overwritten by base classes to give more
+     * specific information about the object.
+     * If a deriving class does not override it, typeid(this).name() is
      * written to stream.
      *
      * @param[out]  stream  the stream to write to.
@@ -71,8 +73,7 @@ public:
     virtual void writeAt( std::ostream& stream ) const;
 
     /**
-     * @brief Set or reset extended output mode for printing structures.
-     *
+     * @brief Sets or resets extended output mode for printing structures.
      */
     static void enableExtended( const bool flag );
 
@@ -85,7 +86,7 @@ protected:
  * @brief Calls Printable::writeAt() on the passed stream.
  *
  * @param[out] stream   the stream to write to.
- * @param[in] object the Printable which should write to stream.
+ * @param[in]  object   the Printable which should write to stream.
  *
  * @return a reference to the passed stream.
  */

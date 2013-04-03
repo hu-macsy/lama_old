@@ -55,7 +55,7 @@ public:
 
 protected:
 
-    LAMA_LOG_DECL_STATIC_LOGGER( logger ); //!< logger for this matrix format
+    LAMA_LOG_DECL_STATIC_LOGGER( logger ) //!< logger for this matrix format
 
 };
 
@@ -67,8 +67,9 @@ protected:
  *  Due to a column distribution the storage is divided into a local part (having
  *  the local columns) and a halo part (for the non-local columns). Furthermore,
  *  it builds the halo for exchanging the non-local values between processors.
+ *
+ *  @tparam T is the value type of the matrix values.
  */
-
 template<typename T>
 class LAMA_DLL_IMPORTEXPORT StorageMethods: public _StorageMethods
 {

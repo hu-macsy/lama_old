@@ -37,6 +37,7 @@
 // others
 #include <lama/cuda/CUDAError.hpp>
 #include <lama/cuda/CUDAStreamSyncToken.hpp>
+#include <lama/LAMAInterface.hpp>
 
 // macros
 #include <lama/macros/unused.hpp>
@@ -50,20 +51,18 @@ template<>
 void CUDABLAS1::scal( IndexType n, const float alpha, float* x_d, const IndexType incx, SyncToken* syncToken )
 {
     LAMA_CHECK_CUDA_ACCESS
-    ;
 
     cudaStream_t stream = NULL;
 
     if ( syncToken )
     {
         CUDAStreamSyncToken* cudaStreamSyncToken = dynamic_cast<CUDAStreamSyncToken*>( syncToken );
-        LAMA_ASSERT_DEBUG( cudaStreamSyncToken, "no cuda stream sync token provided" );
+        LAMA_ASSERT_DEBUG( cudaStreamSyncToken, "no cuda stream sync token provided" )
         stream = cudaStreamSyncToken->getCUDAStream();
     }
 
     cublasSetKernelStream( stream );
     LAMA_CHECK_CUBLAS_ERROR
-    ;
 
     cublasSscal( n, alpha, x_d, incx );
 
@@ -73,32 +72,28 @@ void CUDABLAS1::scal( IndexType n, const float alpha, float* x_d, const IndexTyp
     {
         cudaStreamSynchronize( 0 );
         LAMA_CHECK_CUDA_ERROR
-        ;
     }
 
     cublasSetKernelStream( NULL );
     LAMA_CHECK_CUBLAS_ERROR
-    ;
 }
 
 template<>
 void CUDABLAS1::scal( IndexType n, const double alpha, double* x_d, const IndexType incx, SyncToken* syncToken )
 {
     LAMA_CHECK_CUDA_ACCESS
-    ;
 
     cudaStream_t stream = NULL;
 
     if ( syncToken )
     {
         CUDAStreamSyncToken* cudaStreamSyncToken = dynamic_cast<CUDAStreamSyncToken*>( syncToken );
-        LAMA_ASSERT_DEBUG( cudaStreamSyncToken, "no cuda stream sync token provided" );
+        LAMA_ASSERT_DEBUG( cudaStreamSyncToken, "no cuda stream sync token provided" )
         stream = cudaStreamSyncToken->getCUDAStream();
     }
 
     cublasSetKernelStream( stream );
     LAMA_CHECK_CUBLAS_ERROR
-    ;
 
     cublasDscal( n, alpha, x_d, incx );
 
@@ -108,12 +103,10 @@ void CUDABLAS1::scal( IndexType n, const double alpha, double* x_d, const IndexT
     {
         cudaStreamSynchronize( 0 );
         LAMA_CHECK_CUDA_ERROR
-        ;
     }
 
     cublasSetKernelStream( NULL );
     LAMA_CHECK_CUBLAS_ERROR
-    ;
 }
 
 /** nrm2 */
@@ -122,20 +115,18 @@ template<>
 float CUDABLAS1::nrm2( IndexType n, const float* x_d, IndexType incx, SyncToken* syncToken )
 {
     LAMA_CHECK_CUDA_ACCESS
-    ;
 
     cudaStream_t stream = NULL;
 
     if ( syncToken )
     {
         CUDAStreamSyncToken* cudaStreamSyncToken = dynamic_cast<CUDAStreamSyncToken*>( syncToken );
-        LAMA_ASSERT_DEBUG( cudaStreamSyncToken, "no cuda stream sync token provided" );
+        LAMA_ASSERT_DEBUG( cudaStreamSyncToken, "no cuda stream sync token provided" )
         stream = cudaStreamSyncToken->getCUDAStream();
     }
 
     cublasSetKernelStream( stream );
     LAMA_CHECK_CUBLAS_ERROR
-    ;
 
     float res = cublasSnrm2( n, x_d, incx );
 
@@ -145,12 +136,10 @@ float CUDABLAS1::nrm2( IndexType n, const float* x_d, IndexType incx, SyncToken*
     {
         cudaStreamSynchronize( 0 );
         LAMA_CHECK_CUDA_ERROR
-        ;
     }
 
     cublasSetKernelStream( NULL );
     LAMA_CHECK_CUBLAS_ERROR
-    ;
 
     return res;
 }
@@ -159,20 +148,18 @@ template<>
 double CUDABLAS1::nrm2( IndexType n, const double* x_d, IndexType incx, SyncToken* syncToken )
 {
     LAMA_CHECK_CUDA_ACCESS
-    ;
 
     cudaStream_t stream = NULL;
 
     if ( syncToken )
     {
         CUDAStreamSyncToken* cudaStreamSyncToken = dynamic_cast<CUDAStreamSyncToken*>( syncToken );
-        LAMA_ASSERT_DEBUG( cudaStreamSyncToken, "no cuda stream sync token provided" );
+        LAMA_ASSERT_DEBUG( cudaStreamSyncToken, "no cuda stream sync token provided" )
         stream = cudaStreamSyncToken->getCUDAStream();
     }
 
     cublasSetKernelStream( stream );
     LAMA_CHECK_CUBLAS_ERROR
-    ;
 
     double res = cublasDnrm2( n, x_d, incx );
 
@@ -182,12 +169,10 @@ double CUDABLAS1::nrm2( IndexType n, const double* x_d, IndexType incx, SyncToke
     {
         cudaStreamSynchronize( 0 );
         LAMA_CHECK_CUDA_ERROR
-        ;
     }
 
     cublasSetKernelStream( NULL );
     LAMA_CHECK_CUBLAS_ERROR
-    ;
 
     return res;
 }
@@ -197,20 +182,18 @@ template<>
 float CUDABLAS1::asum( const IndexType n, const float* x_d, const IndexType incX, SyncToken* syncToken )
 {
     LAMA_CHECK_CUDA_ACCESS
-    ;
 
     cudaStream_t stream = NULL;
 
     if ( syncToken )
     {
         CUDAStreamSyncToken* cudaStreamSyncToken = dynamic_cast<CUDAStreamSyncToken*>( syncToken );
-        LAMA_ASSERT_DEBUG( cudaStreamSyncToken, "no cuda stream sync token provided" );
+        LAMA_ASSERT_DEBUG( cudaStreamSyncToken, "no cuda stream sync token provided" )
         stream = cudaStreamSyncToken->getCUDAStream();
     }
 
     cublasSetKernelStream( stream );
     LAMA_CHECK_CUBLAS_ERROR
-    ;
 
     double res = cublasSasum( n, x_d, incX );
 
@@ -220,12 +203,10 @@ float CUDABLAS1::asum( const IndexType n, const float* x_d, const IndexType incX
     {
         cudaStreamSynchronize( 0 );
         LAMA_CHECK_CUDA_ERROR
-        ;
     }
 
     cublasSetKernelStream( NULL );
     LAMA_CHECK_CUBLAS_ERROR
-    ;
 
     return res;
 }
@@ -234,20 +215,18 @@ template<>
 double CUDABLAS1::asum( const IndexType n, const double* x_d, const IndexType incX, SyncToken* syncToken )
 {
     LAMA_CHECK_CUDA_ACCESS
-    ;
 
     cudaStream_t stream = NULL;
 
     if ( syncToken )
     {
         CUDAStreamSyncToken* cudaStreamSyncToken = dynamic_cast<CUDAStreamSyncToken*>( syncToken );
-        LAMA_ASSERT_DEBUG( cudaStreamSyncToken, "no cuda stream sync token provided" );
+        LAMA_ASSERT_DEBUG( cudaStreamSyncToken, "no cuda stream sync token provided" )
         stream = cudaStreamSyncToken->getCUDAStream();
     }
 
     cublasSetKernelStream( stream );
     LAMA_CHECK_CUBLAS_ERROR
-    ;
 
     double res = cublasDasum( n, x_d, incX );
 
@@ -255,7 +234,6 @@ double CUDABLAS1::asum( const IndexType n, const double* x_d, const IndexType in
 
     cudaStreamSynchronize( 0 );
     LAMA_CHECK_CUDA_ERROR
-    ;
 
     return res;
 }
@@ -266,20 +244,18 @@ template<>
 IndexType CUDABLAS1::iamax( const IndexType n, const float* x_d, const IndexType incX, SyncToken* syncToken )
 {
     LAMA_CHECK_CUDA_ACCESS
-    ;
 
     cudaStream_t stream = NULL;
 
     if ( syncToken )
     {
         CUDAStreamSyncToken* cudaStreamSyncToken = dynamic_cast<CUDAStreamSyncToken*>( syncToken );
-        LAMA_ASSERT_DEBUG( cudaStreamSyncToken, "no cuda stream sync token provided" );
+        LAMA_ASSERT_DEBUG( cudaStreamSyncToken, "no cuda stream sync token provided" )
         stream = cudaStreamSyncToken->getCUDAStream();
     }
 
     cublasSetKernelStream( stream );
     LAMA_CHECK_CUBLAS_ERROR
-    ;
 
     IndexType iamax = cublasIsamax( n, x_d, incX );
 
@@ -289,12 +265,10 @@ IndexType CUDABLAS1::iamax( const IndexType n, const float* x_d, const IndexType
     {
         cudaStreamSynchronize( 0 );
         LAMA_CHECK_CUDA_ERROR
-        ;
     }
 
     cublasSetKernelStream( NULL );
     LAMA_CHECK_CUBLAS_ERROR
-    ;
 
     return iamax ? iamax - 1 : 0;
 }
@@ -303,20 +277,18 @@ template<>
 IndexType CUDABLAS1::iamax( const IndexType n, const double* x_d, const IndexType incX, SyncToken* syncToken )
 {
     LAMA_CHECK_CUDA_ACCESS
-    ;
 
     cudaStream_t stream = NULL;
 
     if ( syncToken )
     {
         CUDAStreamSyncToken* cudaStreamSyncToken = dynamic_cast<CUDAStreamSyncToken*>( syncToken );
-        LAMA_ASSERT_DEBUG( cudaStreamSyncToken, "no cuda stream sync token provided" );
+        LAMA_ASSERT_DEBUG( cudaStreamSyncToken, "no cuda stream sync token provided" )
         stream = cudaStreamSyncToken->getCUDAStream();
     }
 
     cublasSetKernelStream( stream );
     LAMA_CHECK_CUBLAS_ERROR
-    ;
 
     IndexType iamax = cublasIdamax( n, x_d, incX );
 
@@ -326,12 +298,10 @@ IndexType CUDABLAS1::iamax( const IndexType n, const double* x_d, const IndexTyp
     {
         cudaStreamSynchronize( 0 );
         LAMA_CHECK_CUDA_ERROR
-        ;
     }
 
     cublasSetKernelStream( NULL );
     LAMA_CHECK_CUBLAS_ERROR
-    ;
 
     return iamax ? iamax - 1 : 0;
 }
@@ -348,20 +318,18 @@ void CUDABLAS1::swap(
     SyncToken* syncToken )
 {
     LAMA_CHECK_CUDA_ACCESS
-    ;
 
     cudaStream_t stream = NULL;
 
     if ( syncToken )
     {
         CUDAStreamSyncToken* cudaStreamSyncToken = dynamic_cast<CUDAStreamSyncToken*>( syncToken );
-        LAMA_ASSERT_DEBUG( cudaStreamSyncToken, "no cuda stream sync token provided" );
+        LAMA_ASSERT_DEBUG( cudaStreamSyncToken, "no cuda stream sync token provided" )
         stream = cudaStreamSyncToken->getCUDAStream();
     }
 
     cublasSetKernelStream( stream );
     LAMA_CHECK_CUBLAS_ERROR
-    ;
 
     cublasSswap( n, x_d, incX, y_d, incY );
 
@@ -371,12 +339,10 @@ void CUDABLAS1::swap(
     {
         cudaStreamSynchronize( 0 );
         LAMA_CHECK_CUDA_ERROR
-        ;
     }
 
     cublasSetKernelStream( NULL );
     LAMA_CHECK_CUBLAS_ERROR
-    ;
 }
 
 template<>
@@ -389,20 +355,18 @@ void CUDABLAS1::swap(
     SyncToken* syncToken )
 {
     LAMA_CHECK_CUDA_ACCESS
-    ;
 
     cudaStream_t stream = NULL;
 
     if ( syncToken )
     {
         CUDAStreamSyncToken* cudaStreamSyncToken = dynamic_cast<CUDAStreamSyncToken*>( syncToken );
-        LAMA_ASSERT_DEBUG( cudaStreamSyncToken, "no cuda stream sync token provided" );
+        LAMA_ASSERT_DEBUG( cudaStreamSyncToken, "no cuda stream sync token provided" )
         stream = cudaStreamSyncToken->getCUDAStream();
     }
 
     cublasSetKernelStream( stream );
     LAMA_CHECK_CUBLAS_ERROR
-    ;
 
     cublasDswap( n, x_d, incX, y_d, incY );
 
@@ -412,12 +376,10 @@ void CUDABLAS1::swap(
     {
         cudaStreamSynchronize( 0 );
         LAMA_CHECK_CUDA_ERROR
-        ;
     }
 
     cublasSetKernelStream( NULL );
     LAMA_CHECK_CUBLAS_ERROR
-    ;
 }
 
 /** copy */
@@ -426,20 +388,18 @@ template<>
 void CUDABLAS1::copy( IndexType n, const float* x_d, IndexType incx, float* y_d, IndexType incy, SyncToken* syncToken )
 {
     LAMA_CHECK_CUDA_ACCESS
-    ;
 
     cudaStream_t stream = NULL;
 
     if ( syncToken )
     {
         CUDAStreamSyncToken* cudaStreamSyncToken = dynamic_cast<CUDAStreamSyncToken*>( syncToken );
-        LAMA_ASSERT_DEBUG( cudaStreamSyncToken, "no cuda stream sync token provided" );
+        LAMA_ASSERT_DEBUG( cudaStreamSyncToken, "no cuda stream sync token provided" )
         stream = cudaStreamSyncToken->getCUDAStream();
     }
 
     cublasSetKernelStream( stream );
     LAMA_CHECK_CUBLAS_ERROR
-    ;
 
     cublasScopy( n, x_d, incx, y_d, incy );
 
@@ -449,12 +409,10 @@ void CUDABLAS1::copy( IndexType n, const float* x_d, IndexType incx, float* y_d,
     {
         cudaStreamSynchronize( 0 );
         LAMA_CHECK_CUDA_ERROR
-        ;
     }
 
     cublasSetKernelStream( NULL );
     LAMA_CHECK_CUBLAS_ERROR
-    ;
 }
 
 template<>
@@ -467,20 +425,18 @@ void CUDABLAS1::copy(
     SyncToken* syncToken )
 {
     LAMA_CHECK_CUDA_ACCESS
-    ;
 
     cudaStream_t stream = NULL;
 
     if ( syncToken )
     {
         CUDAStreamSyncToken* cudaStreamSyncToken = dynamic_cast<CUDAStreamSyncToken*>( syncToken );
-        LAMA_ASSERT_DEBUG( cudaStreamSyncToken, "no cuda stream sync token provided" );
+        LAMA_ASSERT_DEBUG( cudaStreamSyncToken, "no cuda stream sync token provided" )
         stream = cudaStreamSyncToken->getCUDAStream();
     }
 
     cublasSetKernelStream( stream );
     LAMA_CHECK_CUBLAS_ERROR
-    ;
 
     cublasDcopy( n, x_d, incx, y_d, incy );
 
@@ -490,12 +446,10 @@ void CUDABLAS1::copy(
     {
         cudaStreamSynchronize( 0 );
         LAMA_CHECK_CUDA_ERROR
-        ;
     }
 
     cublasSetKernelStream( NULL );
     LAMA_CHECK_CUBLAS_ERROR
-    ;
 }
 
 /** axpy */
@@ -511,20 +465,18 @@ void CUDABLAS1::axpy(
     SyncToken* syncToken )
 {
     LAMA_CHECK_CUDA_ACCESS
-    ;
 
     cudaStream_t stream = NULL;
 
     if ( syncToken )
     {
         CUDAStreamSyncToken* cudaStreamSyncToken = dynamic_cast<CUDAStreamSyncToken*>( syncToken );
-        LAMA_ASSERT_DEBUG( cudaStreamSyncToken, "no cuda stream sync token provided" );
+        LAMA_ASSERT_DEBUG( cudaStreamSyncToken, "no cuda stream sync token provided" )
         stream = cudaStreamSyncToken->getCUDAStream();
     }
 
     cublasSetKernelStream( stream );
     LAMA_CHECK_CUBLAS_ERROR
-    ;
 
     cublasSaxpy( n, alpha, x_d, incx, y_d, incy );
 
@@ -534,12 +486,10 @@ void CUDABLAS1::axpy(
     {
         cudaStreamSynchronize( 0 );
         LAMA_CHECK_CUDA_ERROR
-        ;
     }
 
     cublasSetKernelStream( NULL );
     LAMA_CHECK_CUBLAS_ERROR
-    ;
 }
 
 template<>
@@ -553,20 +503,18 @@ void CUDABLAS1::axpy(
     SyncToken* syncToken )
 {
     LAMA_CHECK_CUDA_ACCESS
-    ;
 
     cudaStream_t stream = NULL;
 
     if ( syncToken )
     {
         CUDAStreamSyncToken* cudaStreamSyncToken = dynamic_cast<CUDAStreamSyncToken*>( syncToken );
-        LAMA_ASSERT_DEBUG( cudaStreamSyncToken, "no cuda stream sync token provided" );
+        LAMA_ASSERT_DEBUG( cudaStreamSyncToken, "no cuda stream sync token provided" )
         stream = cudaStreamSyncToken->getCUDAStream();
     }
 
     cublasSetKernelStream( stream );
     LAMA_CHECK_CUBLAS_ERROR
-    ;
 
     cublasDaxpy( n, alpha, x_d, incx, y_d, incy );
 
@@ -576,12 +524,10 @@ void CUDABLAS1::axpy(
     {
         cudaStreamSynchronize( 0 );
         LAMA_CHECK_CUDA_ERROR
-        ;
     }
 
     cublasSetKernelStream( NULL );
     LAMA_CHECK_CUBLAS_ERROR
-    ;
 }
 
 /** dot */
@@ -596,20 +542,18 @@ float CUDABLAS1::dot(
     SyncToken* syncToken )
 {
     LAMA_CHECK_CUDA_ACCESS
-    ;
 
     cudaStream_t stream = NULL;
 
     if ( syncToken )
     {
         CUDAStreamSyncToken* cudaStreamSyncToken = dynamic_cast<CUDAStreamSyncToken*>( syncToken );
-        LAMA_ASSERT_DEBUG( cudaStreamSyncToken, "no cuda stream sync token provided" );
+        LAMA_ASSERT_DEBUG( cudaStreamSyncToken, "no cuda stream sync token provided" )
         stream = cudaStreamSyncToken->getCUDAStream();
     }
 
     cublasSetKernelStream( stream );
     LAMA_CHECK_CUBLAS_ERROR
-    ;
 
     float res = cublasSdot( n, x_d, incx, y_d, incy );
 
@@ -619,12 +563,10 @@ float CUDABLAS1::dot(
     {
         cudaStreamSynchronize( 0 );
         LAMA_CHECK_CUDA_ERROR
-        ;
     }
 
     cublasSetKernelStream( NULL );
     LAMA_CHECK_CUBLAS_ERROR
-    ;
 
     return res;
 }
@@ -639,20 +581,18 @@ double CUDABLAS1::dot(
     SyncToken* syncToken )
 {
     LAMA_CHECK_CUDA_ACCESS
-    ;
 
     cudaStream_t stream = NULL;
 
     if ( syncToken )
     {
         CUDAStreamSyncToken* cudaStreamSyncToken = dynamic_cast<CUDAStreamSyncToken*>( syncToken );
-        LAMA_ASSERT_DEBUG( cudaStreamSyncToken, "no cuda stream sync token provided" );
+        LAMA_ASSERT_DEBUG( cudaStreamSyncToken, "no cuda stream sync token provided" )
         stream = cudaStreamSyncToken->getCUDAStream();
     }
 
     cublasSetKernelStream( stream );
     LAMA_CHECK_CUBLAS_ERROR
-    ;
 
     double res = cublasDdot( n, x_d, incx, y_d, incy );
 
@@ -662,12 +602,10 @@ double CUDABLAS1::dot(
     {
         cudaStreamSynchronize( 0 );
         LAMA_CHECK_CUDA_ERROR
-        ;
     }
 
     cublasSetKernelStream( NULL );
     LAMA_CHECK_CUBLAS_ERROR
-    ;
 
     return res;
 }
@@ -677,14 +615,13 @@ template<typename T>
 void CUDABLAS1::sum( const IndexType n, T alpha, const T* x, T beta, const T* y, T* z, SyncToken* syncToken )
 {
     LAMA_CHECK_CUDA_ACCESS
-    ;
 
     cudaStream_t stream = 0; // default stream if no syncToken is given
 
     if ( syncToken )
     {
         CUDAStreamSyncToken* cudaStreamSyncToken = dynamic_cast<CUDAStreamSyncToken*>( syncToken );
-        LAMA_ASSERT_DEBUG( cudaStreamSyncToken, "no cuda stream sync token provided" );
+        LAMA_ASSERT_DEBUG( cudaStreamSyncToken, "no cuda stream sync token provided" )
         stream = cudaStreamSyncToken->getCUDAStream();
     }
 
@@ -696,27 +633,8 @@ void CUDABLAS1::sum( const IndexType n, T alpha, const T* x, T beta, const T* y,
     {
         cudaStreamSynchronize( stream );
         LAMA_CHECK_CUDA_ERROR
-        ;
     }
 }
-
-// instantiation
-template void CUDABLAS1::sum<float>(
-    const IndexType n,
-    float alpha,
-    const float* x,
-    float beta,
-    const float* y,
-    float* z,
-    SyncToken* syncToken );
-template void CUDABLAS1::sum<double>(
-    const IndexType n,
-    double alpha,
-    const double* x,
-    double beta,
-    const double* y,
-    double* z,
-    SyncToken* syncToken );
 
 /** rot */
 
@@ -732,20 +650,18 @@ void CUDABLAS1::rot(
     SyncToken* syncToken )
 {
     LAMA_CHECK_CUDA_ACCESS
-    ;
 
     cudaStream_t stream = NULL;
 
     if ( syncToken )
     {
         CUDAStreamSyncToken* cudaStreamSyncToken = dynamic_cast<CUDAStreamSyncToken*>( syncToken );
-        LAMA_ASSERT_DEBUG( cudaStreamSyncToken, "no cuda stream sync token provided" );
+        LAMA_ASSERT_DEBUG( cudaStreamSyncToken, "no cuda stream sync token provided" )
         stream = cudaStreamSyncToken->getCUDAStream();
     }
 
     cublasSetKernelStream( stream );
     LAMA_CHECK_CUBLAS_ERROR
-    ;
 
     cublasSrot( n, x_d, incX, y_d, incY, c, s );
 
@@ -755,12 +671,10 @@ void CUDABLAS1::rot(
     {
         cudaStreamSynchronize( 0 );
         LAMA_CHECK_CUDA_ERROR
-        ;
     }
 
     cublasSetKernelStream( NULL );
     LAMA_CHECK_CUBLAS_ERROR
-    ;
 }
 
 template<>
@@ -775,20 +689,18 @@ void CUDABLAS1::rot(
     SyncToken* syncToken )
 {
     LAMA_CHECK_CUDA_ACCESS
-    ;
 
     cudaStream_t stream = NULL;
 
     if ( syncToken )
     {
         CUDAStreamSyncToken* cudaStreamSyncToken = dynamic_cast<CUDAStreamSyncToken*>( syncToken );
-        LAMA_ASSERT_DEBUG( cudaStreamSyncToken, "no cuda stream sync token provided" );
+        LAMA_ASSERT_DEBUG( cudaStreamSyncToken, "no cuda stream sync token provided" )
         stream = cudaStreamSyncToken->getCUDAStream();
     }
 
     cublasSetKernelStream( stream );
     LAMA_CHECK_CUBLAS_ERROR
-    ;
 
     cublasDrot( n, x_d, incX, y_d, incY, c, s );
 
@@ -798,12 +710,10 @@ void CUDABLAS1::rot(
     {
         cudaStreamSynchronize( 0 );
         LAMA_CHECK_CUDA_ERROR
-        ;
     }
 
     cublasSetKernelStream( NULL );
     LAMA_CHECK_CUBLAS_ERROR
-    ;
 }
 
 /** rotm */
@@ -819,20 +729,18 @@ void CUDABLAS1::rotm(
     SyncToken* syncToken )
 {
     LAMA_CHECK_CUDA_ACCESS
-    ;
 
     cudaStream_t stream = NULL;
 
     if ( syncToken )
     {
         CUDAStreamSyncToken* cudaStreamSyncToken = dynamic_cast<CUDAStreamSyncToken*>( syncToken );
-        LAMA_ASSERT_DEBUG( cudaStreamSyncToken, "no cuda stream sync token provided" );
+        LAMA_ASSERT_DEBUG( cudaStreamSyncToken, "no cuda stream sync token provided" )
         stream = cudaStreamSyncToken->getCUDAStream();
     }
 
     cublasSetKernelStream( stream );
     LAMA_CHECK_CUBLAS_ERROR
-    ;
 
     cublasSrotm( n, x_d, incX, y_d, incY, p_d );
 
@@ -842,12 +750,10 @@ void CUDABLAS1::rotm(
     {
         cudaStreamSynchronize( 0 );
         LAMA_CHECK_CUDA_ERROR
-        ;
     }
 
     cublasSetKernelStream( NULL );
     LAMA_CHECK_CUBLAS_ERROR
-    ;
 }
 
 template<>
@@ -861,20 +767,18 @@ void CUDABLAS1::rotm(
     SyncToken* syncToken )
 {
     LAMA_CHECK_CUDA_ACCESS
-    ;
 
     cudaStream_t stream = NULL;
 
     if ( syncToken )
     {
         CUDAStreamSyncToken* cudaStreamSyncToken = dynamic_cast<CUDAStreamSyncToken*>( syncToken );
-        LAMA_ASSERT_DEBUG( cudaStreamSyncToken, "no cuda stream sync token provided" );
+        LAMA_ASSERT_DEBUG( cudaStreamSyncToken, "no cuda stream sync token provided" )
         stream = cudaStreamSyncToken->getCUDAStream();
     }
 
     cublasSetKernelStream( stream );
     LAMA_CHECK_CUBLAS_ERROR
-    ;
 
     cublasDrotm( n, x_d, incX, y_d, incY, p_d );
 
@@ -884,30 +788,23 @@ void CUDABLAS1::rotm(
     {
         cudaStreamSynchronize( 0 );
         LAMA_CHECK_CUDA_ERROR
-        ;
     }
 
     cublasSetKernelStream( NULL );
     LAMA_CHECK_CUBLAS_ERROR
-    ;
 }
 
-/** rotg */
-// TODO: implement
-/** rotmg */
-// TODO: implement
 template<typename T>
 void CUDABLAS1::ass( const IndexType n, const T value, T* x, SyncToken* syncToken )
 {
     LAMA_CHECK_CUDA_ACCESS
-    ;
 
     cudaStream_t stream = 0; // default stream if no syncToken is given
 
     if ( syncToken )
     {
         CUDAStreamSyncToken* cudaStreamSyncToken = dynamic_cast<CUDAStreamSyncToken*>( syncToken );
-        LAMA_ASSERT_DEBUG( cudaStreamSyncToken, "no cuda stream sync token provided" );
+        LAMA_ASSERT_DEBUG( cudaStreamSyncToken, "no cuda stream sync token provided" )
         stream = cudaStreamSyncToken->getCUDAStream();
     }
 
@@ -919,13 +816,8 @@ void CUDABLAS1::ass( const IndexType n, const T value, T* x, SyncToken* syncToke
     {
         cudaStreamSynchronize( stream );
         LAMA_CHECK_CUDA_ERROR
-        ;
     }
 }
-
-// instantiation
-template void CUDABLAS1::ass<float>( const IndexType n, const float value, float* x, SyncToken* syncToken );
-template void CUDABLAS1::ass<double>( const IndexType n, const double value, double* x, SyncToken* syncToken );
 
 template<typename T>
 T CUDABLAS1::viamax( const IndexType n, const T* x, const IndexType incx, SyncToken* syncToken )
@@ -936,21 +828,54 @@ T CUDABLAS1::viamax( const IndexType n, const T* x, const IndexType incx, SyncTo
     cudaMemcpy( &max, x + maxIdx, sizeof(T), cudaMemcpyDeviceToHost );
 
     LAMA_CHECK_CUDA_ERROR
-    ;
 
     return max;
 }
 
-// instantiation
-template float CUDABLAS1::viamax<float>(
-    const IndexType n,
-    const float* x,
-    const IndexType incx,
-    SyncToken* syncToken );
-template double CUDABLAS1::viamax<double>(
-    const IndexType n,
-    const double* x,
-    const IndexType incx,
-    SyncToken* syncToken );
+/* --------------------------------------------------------------------------- */
+/*     Template instantiations via registration routine                        */
+/* --------------------------------------------------------------------------- */
+
+void CUDABLAS1::setInterface( BLASInterface& BLAS )
+{
+    // Note: macro takes advantage of same name for routines and type definitions 
+    //       ( e.g. routine CUDABLAS1::sum<T> is set for BLAS::BLAS1::sum variable
+
+    LAMA_INTERFACE_REGISTER_T( BLAS, scal, float )
+    LAMA_INTERFACE_REGISTER_T( BLAS, scal, double )
+
+    LAMA_INTERFACE_REGISTER_T( BLAS, nrm2, float )
+    LAMA_INTERFACE_REGISTER_T( BLAS, nrm2, double )
+
+    LAMA_INTERFACE_REGISTER_T( BLAS, asum, float )
+    LAMA_INTERFACE_REGISTER_T( BLAS, asum, double )
+
+    LAMA_INTERFACE_REGISTER_T( BLAS, iamax, float )
+    LAMA_INTERFACE_REGISTER_T( BLAS, iamax, double )
+
+    LAMA_INTERFACE_REGISTER_T( BLAS, viamax, float )
+    LAMA_INTERFACE_REGISTER_T( BLAS, viamax, double )
+
+    /* not used in Interface yet:
+
+       LAMA_INTERFACE_REGISTER_T( BLAS, swap, float )
+       LAMA_INTERFACE_REGISTER_T( BLAS, swap, double )
+    */
+
+    LAMA_INTERFACE_REGISTER_T( BLAS, copy, float )
+    LAMA_INTERFACE_REGISTER_T( BLAS, copy, double )
+
+    LAMA_INTERFACE_REGISTER_T( BLAS, axpy, float )
+    LAMA_INTERFACE_REGISTER_T( BLAS, axpy, double )
+
+    LAMA_INTERFACE_REGISTER_T( BLAS, dot, float )
+    LAMA_INTERFACE_REGISTER_T( BLAS, dot, double )
+
+    LAMA_INTERFACE_REGISTER_T( BLAS, sum, float )
+    LAMA_INTERFACE_REGISTER_T( BLAS, sum, double )
+
+    LAMA_INTERFACE_REGISTER_T( BLAS, ass, float )
+    LAMA_INTERFACE_REGISTER_T( BLAS, ass, double )
+}
 
 } /* namespace lama */

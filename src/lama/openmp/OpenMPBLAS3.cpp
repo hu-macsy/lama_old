@@ -35,6 +35,7 @@
 #include <lama/openmp/OpenMPBLAS3.hpp>
 
 // others
+#include <lama/BLASInterface.hpp>
 #include <lama/SyncToken.hpp>
 
 // macros
@@ -49,7 +50,7 @@
 namespace lama
 {
 
-LAMA_LOG_DEF_LOGGER( OpenMPBLAS3::logger, "OpenMP.BLAS3" );
+LAMA_LOG_DEF_LOGGER( OpenMPBLAS3::logger, "OpenMP.BLAS3" )
 
 template<>
 void OpenMPBLAS3::gemm(
@@ -1955,6 +1956,21 @@ void OpenMPBLAS3::syrk2(
 
     RowMajorStrg = 0;
     return;
+}
+
+/* --------------------------------------------------------------------------- */
+/*     Template instantiations via registration routine                        */
+/* --------------------------------------------------------------------------- */
+
+void OpenMPBLAS3::setInterface( BLASInterface& BLAS )
+{
+    // Note: macro takes advantage of same name for routines and type definitions 
+    //       ( e.g. routine CUDABLAS1::sum<T> is set for BLAS::BLAS1::sum variable
+
+    LAMA_INTERFACE_REGISTER_T( BLAS, gemm, float )
+    LAMA_INTERFACE_REGISTER_T( BLAS, gemm, double )
+
+    // trsm routines are not used yet by LAMA
 }
 
 } /* namespace lama */

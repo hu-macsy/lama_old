@@ -122,16 +122,11 @@ public:
      */
     Id getId() const;
 
-    /**
-     * @brief Override method of Printable.
-     *
-     * @param[out] stream   the stream to write to.
-     */
     virtual void writeAt( std::ostream& stream ) const;
 
 private:
 
-    LAMA_LOG_DECL_STATIC_LOGGER( logger );
+    LAMA_LOG_DECL_STATIC_LOGGER( logger )
 
     /** Thread pool will be allocated on need, shared pointer guarantees deallocation. */
 

@@ -70,9 +70,18 @@ public:
     template<typename T>
     static void inverse( const IndexType n, const IndexType nB, const T* a, const class Communicator& comm );
 
+    /** Routine that sets functions pointers belonging to BLAS1 in a BLASInterface.
+     *
+     *  param[inout] BLASInterface struct to register all routines implemented in CUDA
+     *
+     *  Note: this routine will make instantiations of the template routines.
+     */
+
+    static void setInterface( struct BLASInterface& BLAS );
+
 private:
 
-    LAMA_LOG_DECL_STATIC_LOGGER( logger );
+    LAMA_LOG_DECL_STATIC_LOGGER( logger )
 
 };
 

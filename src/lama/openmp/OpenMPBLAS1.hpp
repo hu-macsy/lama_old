@@ -56,7 +56,7 @@ class LAMA_DLL_IMPORTEXPORT OpenMPBLAS1
 public:
 
     /**
-     * This function is the OpenMP implementation of lama::BLAS1Interface::scal
+     * This function is the OpenMP implementation of lama::BLAS1Interface::BLAS1::scal
      */
     template<typename T>
     static void scal( const IndexType n, const T alpha, T* x, const IndexType incX, SyncToken* syncToken );
@@ -179,9 +179,18 @@ public:
     template<typename T>
     static void ass( const IndexType n, const T value, T* x, SyncToken* syncToken );
 
+    /** Routine that sets functions pointers belonging to BLAS1 in a BLASInterface.
+     *
+     *  param[inout] BLASInterface struct to register all routines implemented in CUDA
+     *
+     *  Note: this routine will make instantiations of the template routines.
+     */
+
+    static void setInterface( struct BLASInterface& BLAS );
+
 private:
 
-    LAMA_LOG_DECL_STATIC_LOGGER( logger );
+    LAMA_LOG_DECL_STATIC_LOGGER( logger )
 
 };
 

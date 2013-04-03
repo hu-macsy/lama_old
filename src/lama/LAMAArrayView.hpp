@@ -56,6 +56,8 @@ class LAMAArrayConstView;
 
 /**
  * @brief LAMAArrayView is a proxy which gives a view to a sub range of a LAMAArray.
+ *
+ * @tparam T is the type stored in this container.
  */
 template<typename T>
 class LAMA_DLL_IMPORTEXPORT LAMAArrayView: public Printable
@@ -65,10 +67,8 @@ class LAMA_DLL_IMPORTEXPORT LAMAArrayView: public Printable
     friend class LAMAArrayConstView<T> ;
 
 public:
-    /**
-     * @brief ValueType is the type stored in this container.
-     */
-    typedef T ValueType;
+
+    typedef T ValueType; //!< This is the type stored in this container.
 
     /**
      * @brief Constructs a view into the whole passed LAMAArray.
@@ -182,6 +182,8 @@ private:
 
 /**
  * @brief LAMAArrayConstView is a proxy which gives a constant view to a sub range of a LAMAArray.
+ *
+ * @tparam T the value type for the elements of this.
  */
 template<typename T>
 class LAMAArrayConstView: public Printable
@@ -189,10 +191,7 @@ class LAMAArrayConstView: public Printable
     friend class ReadAccess<T> ;
 
 public:
-    /**
-     * @brief ValueType is the type stored in this container.
-     */
-    typedef T ValueType;
+    typedef T ValueType;  //!< This is the type stored in this container.
 
     /**
      * @brief Takes a copy of the passed LAMAArrayConstView.

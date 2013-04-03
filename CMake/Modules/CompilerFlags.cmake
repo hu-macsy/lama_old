@@ -44,7 +44,7 @@ endif ( MARCH_NATIVE_SUPPORT )
 
 # gnu cxx
 if ( CMAKE_COMPILER_IS_GNUCXX )
-    set ( ADDITIONAL_CXX_WARNING_FLAGS "-Wextra -Wall -Werror -Wl,--no-as-needed" )#-pedantic -std=c++98 " )
+    set ( ADDITIONAL_CXX_WARNING_FLAGS "-Wextra -Wall -Wl,--no-as-needed" )#-pedantic -std=c++98 " )
     # -march=core02
     if ( ${CMAKE_SYSTEM_PROCESSOR} STREQUAL ppc64 )
         # compile in 32 Bit on Cell Broaband Engine Processor

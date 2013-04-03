@@ -85,7 +85,7 @@ public:
 
 private:
 
-    LAMA_LOG_DECL_STATIC_LOGGER( logger );
+    LAMA_LOG_DECL_STATIC_LOGGER( logger )
 
     CUDAHostContext( boost::shared_ptr<const CUDAContext> cudaContext );
 

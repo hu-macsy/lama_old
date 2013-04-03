@@ -48,7 +48,7 @@ namespace lama
 
 /* ----  Static variables  -------------------------------------------------- */
 
-LAMA_LOG_DEF_LOGGER( MPICommunicatorManager::logger, "CommunicatorManager.MPICommunicatorManager" );
+LAMA_LOG_DEF_LOGGER( MPICommunicatorManager::logger, "CommunicatorManager.MPICommunicatorManager" )
 
 // make sure that static initialization is called.
 
@@ -60,7 +60,7 @@ bool MPICommunicatorManager::init()
 {
     // logger should already be available as it is initialized before __init
 
-    LAMA_LOG_DEBUG( logger, "create MPI communicator manager and add it to CommunicatorFactory" );
+    LAMA_LOG_DEBUG( logger, "create MPI communicator manager and add it to CommunicatorFactory" )
 
     boost::shared_ptr<CommunicatorManager> manager( new MPICommunicatorManager() );
     CommunicatorFactory::getFactory().addCommunicatorManager( COMMUNICATOR_TYPE, manager );
@@ -78,12 +78,12 @@ MPICommunicatorManager::MPICommunicatorManager()
 
 MPICommunicatorManager::~MPICommunicatorManager()
 {
-    LAMA_LOG_INFO( logger, "~MPICommunicatorManager(), use count MPI communicator = " << mCommInstance.use_count() );
+    LAMA_LOG_INFO( logger, "~MPICommunicatorManager(), use count MPI communicator = " << mCommInstance.use_count() )
 
     if ( mCommInstance.use_count() > 1 )
     {
         LAMA_LOG_WARN( logger,
-                       "MPICommunicator has " << mCommInstance.use_count() - 1 << " remaining references, seems that not all LAMA data structures have been freed" );
+                       "MPICommunicator has " << mCommInstance.use_count() - 1 << " remaining references, seems that not all LAMA data structures have been freed" )
     }
 
     // Note: destructor will free commInstance and therefore call MPI_Finalize
@@ -95,7 +95,7 @@ CommunicatorPtr MPICommunicatorManager::getCommunicator( int& argc, char**& argv
 {
     if ( !mCommInstance )
     {
-        LAMA_LOG_INFO( logger, "create new MPICommunicator" );
+        LAMA_LOG_INFO( logger, "create new MPICommunicator" )
 
         // create a new instance of MPICommunicator, will call MPI_Init
 

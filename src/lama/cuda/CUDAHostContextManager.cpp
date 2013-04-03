@@ -72,7 +72,7 @@ ContextPtr CUDAHostContextManager::getContext( int deviceNr )
 
     if ( deviceNr != LAMA_DEFAULT_DEVICE_NUMBER )
     {
-        LAMA_LOG_WARN( logger, "Context number ignored for HostContext, deviceNr = " << deviceNr );
+        LAMA_LOG_WARN( logger, "Context number ignored for HostContext, deviceNr = " << deviceNr )
     }
 
     // use the last contextInstance if it is still valid
@@ -102,12 +102,12 @@ void CUDAHostContextManager::setAsCurrent( ContextPtr cudaContext )
 {
     if ( !cudaContext )
     {
-        LAMA_THROWEXCEPTION( "no valid CUDAContext, is NULL" );
+        LAMA_THROWEXCEPTION( "no valid CUDAContext, is NULL" )
     }
 
     if ( cudaContext->getType() != Context::CUDA )
     {
-        LAMA_THROWEXCEPTION( "no valid CUDAContext, is not CUDA" );
+        LAMA_THROWEXCEPTION( "no valid CUDAContext, is not CUDA" )
     }
 
     const CUDAContext& cc = static_cast<const CUDAContext&>( *cudaContext );

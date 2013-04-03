@@ -48,7 +48,7 @@ namespace lama
 
 /* ----  Static variables  -------------------------------------------------- */
 
-LAMA_LOG_DEF_LOGGER( NoDistributionManager::logger, "DistributionManager.NoDistributionManager" );
+LAMA_LOG_DEF_LOGGER( NoDistributionManager::logger, "DistributionManager.NoDistributionManager" )
 
 // make sure that static initialization is called.
 
@@ -60,7 +60,7 @@ bool NoDistributionManager::init()
 {
     // logger should already be available as it is initialized before __init
 
-    LAMA_LOG_DEBUG( logger, "create NO communicator manager and add it to DistributionFactory" );
+    LAMA_LOG_DEBUG( logger, "create NO communicator manager and add it to DistributionFactory" )
 
     boost::shared_ptr<DistributionManager> manager( new NoDistributionManager() );
     DistributionFactory::getFactory().addDistributionManager( DISTRIBUTION_TYPE, manager );
@@ -78,7 +78,7 @@ NoDistributionManager::NoDistributionManager()
 
 NoDistributionManager::~NoDistributionManager()
 {
-    LAMA_LOG_INFO( logger, "~NoDistributionManager" );
+    LAMA_LOG_INFO( logger, "~NoDistributionManager" )
 }
 
 /* -------------------------------------------------------------------------- */
@@ -87,7 +87,7 @@ DistributionPtr NoDistributionManager::getDistribution( const IndexType size, co
 {
     if ( arguments.size() > 0 )
     {
-        LAMA_LOG_WARN( logger, "additional arguments are ignored" );
+        LAMA_LOG_WARN( logger, "additional arguments are ignored" )
     }
 
     return boost::shared_ptr<const NoDistribution>( new NoDistribution( size ) );

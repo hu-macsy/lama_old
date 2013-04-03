@@ -92,7 +92,7 @@ private:
 
     DefaultHostContext();
 
-    LAMA_LOG_DECL_STATIC_LOGGER(logger);
+    LAMA_LOG_DECL_STATIC_LOGGER( logger )
 
     mutable size_t mNumberOfAllocates; //!< variable counts allocates
 
