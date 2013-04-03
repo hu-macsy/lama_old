@@ -695,13 +695,8 @@ void OpenMPCSRUtils::jacobiHalo(
     const ValueType omega,
     const IndexType numNonEmptyRows )
 {
-<<<<<<< HEAD
     LAMA_LOG_INFO( logger, "jacobiHalo<" << typeid(ValueType).name() << ">" 
                    << ", #rows (not empty) = " << numNonEmptyRows << ", omega = " << omega );
-=======
-    LAMA_LOG_INFO( logger,
-                   "jacobiHalo<" << typeid(ValueType).name() << ">" << ", #rows (not empty) = " << numNonEmptyRows << ", omega = " << omega )
->>>>>>> e56fea759d58ae8e36756d63c6ab87ffa84d0d29
 
     #pragma omp parallel
     {
