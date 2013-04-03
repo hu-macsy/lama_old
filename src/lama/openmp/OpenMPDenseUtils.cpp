@@ -38,6 +38,7 @@
 #include <lama/LAMAInterface.hpp>
 
 #include <omp.h>
+#include <typeinfo>
 
 namespace lama
 {

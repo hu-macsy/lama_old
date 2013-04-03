@@ -40,6 +40,7 @@
 // assert
 #include <lama/exception/LAMAAssert.hpp>
 
+#include <typeinfo>
 #include <omp.h>
 
 namespace lama

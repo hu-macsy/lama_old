@@ -49,6 +49,9 @@
 #include <thrust/transform.h>
 #include <thrust/transform_reduce.h>
 
+// others
+#include <typeinfo>
+
 namespace lama
 {
 
