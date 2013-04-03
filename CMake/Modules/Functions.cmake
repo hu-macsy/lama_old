@@ -36,13 +36,19 @@ endfunction ( setAndCheckCache )
 
 function ( get_relative_path RELATIVE_PATH )
     # get relative path
-    string ( LENGTH "${CMAKE_SOURCE_DIR}lama/" CMAKE_SOURCE_DIR_LENGTH )
+    string ( LENGTH "${CMAKE_SOURCE_DIR}" CMAKE_SOURCE_DIR_LENGTH )
     string ( LENGTH ${CMAKE_CURRENT_SOURCE_DIR} CMAKE_CURRENT_SOURCE_DIR_LENGTH )
+    
+    if ( ${CMAKE_SOURCE_DIR_LENGTH} LESS ${CMAKE_CURRENT_SOURCE_DIR_LENGTH} )
+        math ( EXPR CMAKE_SOURCE_DIR_LENGTH ${CMAKE_SOURCE_DIR_LENGTH}+1 )
+        set ( PATH_SUFFIX / )
+    endif ()
+    
     math ( EXPR PATH_LENGTH ${CMAKE_CURRENT_SOURCE_DIR_LENGTH}-${CMAKE_SOURCE_DIR_LENGTH} )
     string ( SUBSTRING ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_SOURCE_DIR_LENGTH} ${PATH_LENGTH} PATH )
     
     # set return parameter (via PARENT_SCOPE)
-    set ( ${RELATIVE_PATH} "${PATH}/" PARENT_SCOPE )
+    set ( ${RELATIVE_PATH} ${PATH}${PATH_SUFFIX} PARENT_SCOPE )
 endfunction ( get_relative_path )
 
 function ( lama_get_relative_path RELATIVE_PATH )
@@ -110,6 +116,7 @@ endmacro ( lama_sources )
 
 macro ( lama_headers )
     lama_get_relative_path ( LAMA_RELATIVE_PATH )
+    get_relative_path ( RELATIVE_PATH )
     
     # clear CXX_HEADERS
     set ( CXX_HEADERS "" )
@@ -120,7 +127,7 @@ macro ( lama_headers )
     endforeach()
     
     # install CXX_HEADERS
-    install ( FILES ${CXX_HEADERS} DESTINATION "include/lama/${LAMA_RELATIVE_PATH}" )
+    install ( FILES ${CXX_HEADERS} DESTINATION "include/${RELATIVE_PATH}" )
 endmacro ( lama_headers )
 
 macro ( lama_add )

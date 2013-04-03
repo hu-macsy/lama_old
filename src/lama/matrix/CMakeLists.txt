@@ -35,7 +35,6 @@ set ( CLASSES
         COOSparseMatrix
         CSRSparseMatrix
         DenseMatrix
-        DenseMatrixOps
         DIASparseMatrix
         ELLSparseMatrix
         JDSSparseMatrix
