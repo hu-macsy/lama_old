@@ -25,20 +25,27 @@
  # SOFTWARE.
  # @endlicense
  #
- # @brief lama/task/CMakeLists.txt
+ # @brief lama/solver/logger/CMakeLists.txt
  # @author Jan Ecker
- # @date 28.03.2013
+ # @date 02.04.2013
 ###
 
 ### Add classes and header files ###
 set ( CLASSES
-        LAMAThreadPool
-        Task
-        TaskSyncToken
-        Thread
+        CommonLogger
+        FileLogger
+        Logger
+        OpenMPTimer
+        Timer
+    )
+
+set ( HEADERS
+        LoggerWriteBehaviour
+        LogLevel
     )
     
 lama_classes ( ${CLASSES} )
+lama_headers ( ${HEADERS} )
 
 ### add sources and headers to parent scope ###
 lama_add ()

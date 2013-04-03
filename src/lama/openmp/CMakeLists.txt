@@ -1,48 +1,61 @@
-### set include directories ### 
+###
+ # @file CMakeLists.txt
+ #
+ # @license
+ # Copyright (c) 2013
+ # Fraunhofer Institute for Algorithms and Scientific Computing SCAI
+ # for Fraunhofer-Gesellschaft
+ #
+ # Permission is hereby granted, free of charge, to any person obtaining a copy
+ # of this software and associated documentation files (the "Software"), to deal
+ # in the Software without restriction, including without limitation the rights
+ # to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ # copies of the Software, and to permit persons to whom the Software is
+ # furnished to do so, subject to the following conditions:
+ #
+ # The above copyright notice and this permission notice shall be included in
+ # all copies or substantial portions of the Software.
+ #
+ # THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ # IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ # FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ # AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ # SOFTWARE.
+ # @endlicense
+ #
+ # @brief lama/openmp/CMakeLists.txt
+ # @author Jan Ecker
+ # @date 02.04.2013
+###
 
-include_directories ( . )
-
-
-### set source files ###
-
-set ( OPENMP_SOURCES
-
-      openmp/OpenMPInterface.cpp
-      
-      openmp/BLASHelper.cpp
-
-      openmp/OpenMPBLAS1.cpp
-      openmp/OpenMPBLAS2.cpp
-      openmp/OpenMPBLAS3.cpp
-      openmp/OpenMPLAPACK.cpp
-
-      openmp/OpenMPUtils.cpp
-      openmp/OpenMPCSRUtils.cpp
-      openmp/OpenMPELLUtils.cpp
-      openmp/OpenMPCOOUtils.cpp
-      openmp/OpenMPDenseUtils.cpp
-      openmp/OpenMPJDSUtils.cpp
-      openmp/OpenMPDIAUtils.cpp
+### Add classes and header files ###
+set ( CLASSES
+        BLASHelper
+        OpenMPBLAS1
+        OpenMPBLAS2
+        OpenMPBLAS3
+        OpenMPCOOUtils
+        OpenMPCSRUtils
+        OpenMPDenseUtils
+        OpenMPDIAUtils
+        OpenMPELLUtils
+        OpenMPInterface
+        OpenMPJDSUtils
+        OpenMPLAPACK
+        OpenMPUtils
     )
-
+    
+# can only be compiled if MKL SCALAPACK and MPI is availabe
 if ( SCALAPACK_FOUND AND MPI_FOUND )
-
-# can only be compiled if MKL ScaLAPACK is availabe
-
-set ( OPENMP_SOURCES ${OPENMP_SOURCES}
-      openmp/OpenMPSCALAPACK.cpp
+    set ( CLASSES
+            ${CLASSES}
+            OpenMPSCALAPACK
     )
-
 endif()
+    
+lama_classes ( ${CLASSES} )
 
-set ( CXXSOURCES 
-      ${CXXSOURCES} 
-      ${OPENMP_SOURCES} 
-
-      PARENT_SCOPE
-    )
-
-### install ###
-
-file ( GLOB includefiles *.hpp )
-install ( FILES ${includefiles} DESTINATION include/lama/openmp )
+### add sources and headers to parent scope ###
+lama_add ()

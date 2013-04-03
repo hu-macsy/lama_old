@@ -25,17 +25,17 @@
  # SOFTWARE.
  # @endlicense
  #
- # @brief lama/task/CMakeLists.txt
+ # @brief lama/solver/criteria/CMakeLists.txt
  # @author Jan Ecker
- # @date 28.03.2013
+ # @date 02.04.2013
 ###
 
 ### Add classes and header files ###
 set ( CLASSES
-        LAMAThreadPool
-        Task
-        TaskSyncToken
-        Thread
+        Criterion
+        IterationCount
+        ResidualStagnation
+        ResidualThreshold
     )
     
 lama_classes ( ${CLASSES} )
