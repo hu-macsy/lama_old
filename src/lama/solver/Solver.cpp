@@ -46,7 +46,7 @@
 namespace lama
 {
 
-LAMA_LOG_DEF_LOGGER( Solver::logger, "Solver" );
+LAMA_LOG_DEF_LOGGER( Solver::logger, "Solver" )
 
 Solver::Solver( const std::string& id )
     : mId( id ), mLogger(
@@ -54,13 +54,13 @@ Solver::Solver( const std::string& id )
                           lama::LoggerWriteBehaviour::toConsoleOnly,
                           std::auto_ptr<Timer>( new OpenMPTimer() ) ) )
 {
-    LAMA_LOG_INFO( Solver::logger, "Solver id = " << mId << " created, dummy log" );
+    LAMA_LOG_INFO( Solver::logger, "Solver id = " << mId << " created, dummy log" )
 }
 
 Solver::Solver( const std::string& id, LoggerPtr logger )
     : mId( id ), mLogger( logger )
 {
-    LAMA_LOG_INFO( Solver::logger, "Solver id = " << mId << " created, with logger" );
+    LAMA_LOG_INFO( Solver::logger, "Solver id = " << mId << " created, with logger" )
 }
 
 Solver::Solver( const Solver& other )
@@ -78,7 +78,7 @@ Solver::~Solver()
 {
     // mRhs, mCoefficents are used as 'dynamic' references, no free
 
-    LAMA_LOG_INFO( Solver::logger, "~Solver " << mId );
+    LAMA_LOG_INFO( Solver::logger, "~Solver " << mId )
 }
 
 Solver::SolverRuntime::~SolverRuntime()
@@ -89,7 +89,7 @@ void Solver::initialize( const Matrix& coefficients )
 {
     if ( getConstRuntime().mInitialized )
     {
-        LAMA_LOG_DEBUG( logger, "Previous initialization of solver found! Will be overridden!" );
+        LAMA_LOG_DEBUG( logger, "Previous initialization of solver found! Will be overridden!" )
         mLogger->logMessage( LogLevel::solverInformation, "Solver already initialized, will be overridden\n" );
     }
     getRuntime().mCoefficients = &coefficients;
@@ -99,10 +99,10 @@ void Solver::initialize( const Matrix& coefficients )
 
 void Solver::solve( Vector& solution, const Vector& rhs )
 {
-    LAMA_REGION( "Solver.solve" );
+    LAMA_REGION( "Solver.solve" )
     if ( getConstRuntime().mSolveInit )
     {
-        LAMA_LOG_DEBUG( logger, "Previous initialization of 'solve'-process found! Will be overridden!" );
+        LAMA_LOG_DEBUG( logger, "Previous initialization of 'solve'-process found! Will be overridden!" )
     }
 
     solveInit( solution, rhs );
@@ -150,21 +150,21 @@ void Solver::solveFinalize()
 
 const std::string& Solver::getId() const
 {
-    LAMA_LOG_TRACE( logger, "Returning Solver Id " << mId );
+    LAMA_LOG_TRACE( logger, "Returning Solver Id " << mId )
     return mId;
 }
 
 const Vector& Solver::getResidual() const
 {
     const SolverRuntime& runtime = getConstRuntime();
-    LAMA_ASSERT_DEBUG( runtime.mCoefficients, "mCoefficients == NULL" );
-    LAMA_ASSERT_DEBUG( runtime.mRhs, "mRhs == NULL" );
+    LAMA_ASSERT_DEBUG( runtime.mCoefficients, "mCoefficients == NULL" )
+    LAMA_ASSERT_DEBUG( runtime.mRhs, "mRhs == NULL" )
 
     //mLogger->logMessage(LogLevel::completeInformation,"Request for residual received.\n");
 
     if ( runtime.mSolution.isDirty() || !runtime.mResidual.get() )
     {
-        LAMA_LOG_DEBUG( logger, "calculating residual of = " << &(runtime.mSolution.getConstReference()) );
+        LAMA_LOG_DEBUG( logger, "calculating residual of = " << &(runtime.mSolution.getConstReference()) )
         if ( !runtime.mResidual.get() )
         {
             runtime.mResidual = runtime.mRhs->create();
@@ -187,7 +187,7 @@ const Vector& Solver::getResidual() const
 
 const Matrix& Solver::getCoefficients() const
 {
-    LAMA_ASSERT_DEBUG( getConstRuntime().mCoefficients, "mCoefficents == NULL" );
+    LAMA_ASSERT_DEBUG( getConstRuntime().mCoefficients, "mCoefficents == NULL" )
 
     return *getConstRuntime().mCoefficients;
 }
@@ -204,7 +204,7 @@ void Solver::setLogLevel( LogLevel::LogLevel level )
 
 void Solver::setContext( ContextPtr context )
 {
-    LAMA_LOG_DEBUG( logger, "Set context to " << *context );
+    LAMA_LOG_DEBUG( logger, "Set context to " << *context )
     mContext = context;
 }
 

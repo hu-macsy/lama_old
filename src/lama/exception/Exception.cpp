@@ -51,7 +51,7 @@
 namespace lama
 {
 
-LAMA_LOG_DEF_LOGGER( Exception::logger, "Exception" );
+LAMA_LOG_DEF_LOGGER( Exception::logger, "Exception" )
 
 Exception::UnsupportedType Exception::unsupportedSetting = Exception::UNSUPPORTED_UNDEFINED;
 
@@ -93,7 +93,7 @@ Exception::Exception()
 Exception::Exception( const std::string& message )
     : mMessage( message )
 {
-    LAMA_LOG_WARN( logger, "EXCEPTION: " << message );
+    LAMA_LOG_WARN( logger, "EXCEPTION: " << message )
 }
 
 Exception::~Exception() throw ()

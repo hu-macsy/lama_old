@@ -56,10 +56,10 @@ namespace lama
  * If the diagonal property flag is set, the first numRows entries of the COO data will
  * contain the diagonal elements.
  *
- *  @tparam T is the value type for the matrix elements.
+ * @tparam T is the value type of the matrix values.
  *
- *  Note: Copy constructor and operator= are supported by default implementations,
- *        copies of LAMAArray will be deep copies.
+ * Note: Copy constructor and operator= are supported by default implementations,
+ *       copies of LAMAArray will be deep copies.
  */
 
 template<typename T>
@@ -189,19 +189,23 @@ public:
         const LAMAArray<OtherValueType>& values,
         const ContextPtr loc );
 
-    /** Print relevant information about matrix storage format. */
+    /* Print relevant information about matrix storage format. */
 
     virtual void writeAt( std::ostream& stream ) const;
 
-    /** getter for member variables IA, JA, Data, only const reference */
+    /** Getter for member variable IA, only const reference. */
 
     const LAMAArray<IndexType>& getIA() const;
 
+    /** Getter for member variable JA, only const reference. */
+
     const LAMAArray<IndexType>& getJA() const;
+
+    /** Getter for member variable values, only const reference. */
 
     const LAMAArray<ValueType>& getValues() const;
 
-    /** Getter routine for the number of stored values*/
+    /** Getter for the number of stored values. */
 
     virtual IndexType getNumValues() const;
 
@@ -337,7 +341,7 @@ private:
 
     // inline IndexType index(IndexType irow, IndexType icolumn) const { return icolumn * mNumRows + irow; }
 
-    LAMA_LOG_DECL_STATIC_LOGGER( logger );
+    LAMA_LOG_DECL_STATIC_LOGGER( logger )
 };
 
 } // namespace lama

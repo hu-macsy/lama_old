@@ -109,7 +109,7 @@ public:
         }
         else
         {
-            LAMA_THROWEXCEPTION( *this << ": setCSRData with value type " << arrayType << " not supported" );
+            LAMA_THROWEXCEPTION( *this << ": setCSRData with value type " << arrayType << " not supported" )
         }
     }
 
@@ -141,7 +141,7 @@ public:
         }
         else
         {
-            LAMA_THROWEXCEPTION( *this << ": build CSR with value type " << arrayType << " not supported" );
+            LAMA_THROWEXCEPTION( *this << ": build CSR with value type " << arrayType << " not supported" )
         }
     }
 
@@ -163,7 +163,7 @@ public:
         }
         else
         {
-            LAMA_THROWEXCEPTION( "getRow for array of type " << arrayType << " not supported" );
+            LAMA_THROWEXCEPTION( "getRow for array of type " << arrayType << " not supported" )
         }
     }
 
@@ -171,7 +171,7 @@ public:
     {
         if ( !this->hasDiagonalProperty() )
         {
-            LAMA_THROWEXCEPTION( *this << ": has not diagonal property, cannot set diagonal" );
+            LAMA_THROWEXCEPTION( *this << ": has not diagonal property, cannot set diagonal" )
         }
 
         Scalar::ScalarType arrayType = diagonal.getValueType();
@@ -188,7 +188,7 @@ public:
         }
         else
         {
-            LAMA_THROWEXCEPTION( "getDiagonal for array of type " << arrayType << " not supported" );
+            LAMA_THROWEXCEPTION( "getDiagonal for array of type " << arrayType << " not supported" )
         }
     }
 
@@ -203,12 +203,12 @@ public:
 
         if ( numDiagonalElements > this->getNumRows() || numDiagonalElements > this->getNumColumns() )
         {
-            LAMA_THROWEXCEPTION( "Diagonal of size " << numDiagonalElements << " too large for matrix: " << *this );
+            LAMA_THROWEXCEPTION( "Diagonal of size " << numDiagonalElements << " too large for matrix: " << *this )
         }
 
         if ( !this->hasDiagonalProperty() )
         {
-            LAMA_THROWEXCEPTION( *this << ": has not diagonal property, cannot set diagonal" );
+            LAMA_THROWEXCEPTION( *this << ": has not diagonal property, cannot set diagonal" )
         }
 
         Scalar::ScalarType arrayType = diagonal.getValueType();
@@ -225,7 +225,7 @@ public:
         }
         else
         {
-            LAMA_THROWEXCEPTION( "setDiagonal to array of type " << arrayType << " not supported" );
+            LAMA_THROWEXCEPTION( "setDiagonal to array of type " << arrayType << " not supported" )
         }
     }
 
@@ -238,7 +238,7 @@ public:
 
     void scale( const _LAMAArray& diagonal )
     {
-        LAMA_ASSERT_EQUAL_ERROR( this->getNumRows(), diagonal.size() );
+        LAMA_ASSERT_EQUAL_ERROR( this->getNumRows(), diagonal.size() )
 
         Scalar::ScalarType arrayType = diagonal.getValueType();
 
@@ -254,7 +254,7 @@ public:
         }
         else
         {
-            LAMA_THROWEXCEPTION( "scale of type " << arrayType << " not supported" );
+            LAMA_THROWEXCEPTION( "scale of type " << arrayType << " not supported" )
         }
     }
 

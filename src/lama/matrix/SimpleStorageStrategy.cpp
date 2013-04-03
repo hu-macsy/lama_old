@@ -66,7 +66,7 @@
 namespace lama
 {
 LAMA_LOG_DEF_TEMPLATE_LOGGER( template<typename ValueType>, SimpleStorageStrategy<ValueType>::logger,
-                              "Matrix.SimpleStorageStrategy" );
+                              "Matrix.SimpleStorageStrategy" )
 
 template<typename ValueType>
 SimpleStorageStrategy<ValueType>::SimpleStorageStrategy( Matrix& other ) :
@@ -93,7 +93,7 @@ void SimpleStorageStrategy<ValueType>::applyStrategy( const Matrix )
         mInnerMatrix.reset( new CSRSparseMatrix( getDistributionPtr(), getColDistributionPtr() ) );
     }
 
-    LAMA_LOG_INFO( logger, "assign " << matrix << " to " << *this );
+    LAMA_LOG_INFO( logger, "assign " << matrix << " to " << *this )
 
     const _SparseMatrix* sparseMatrix = dynamic_cast<const _SparseMatrix*>( &matrix );
 
@@ -143,48 +143,48 @@ void SimpleStorageStrategy<ValueType>::redistribute( DistributionPtr rowDistribu
 template<typename ValueType>
 const char* SimpleStorageStrategy<ValueType>::getTypeName() const
 {
-    LAMA_ASSERT( mInnerMatrix, "Matrix is not created. Already assigned a matrix to the SimpleStorageStrategy?" );
+    LAMA_ASSERT( mInnerMatrix, "Matrix is not created. Already assigned a matrix to the SimpleStorageStrategy?" )
     return mInnerMatrix->getTypeName();
 }
 
 template<typename ValueType>
 void SimpleStorageStrategy<ValueType>::clear()
 {
-    LAMA_ASSERT( mInnerMatrix, "Matrix is not created. Already assigned a matrix to the SimpleStorageStrategy?" );
+    LAMA_ASSERT( mInnerMatrix, "Matrix is not created. Already assigned a matrix to the SimpleStorageStrategy?" )
     mInnerMatrix->clear();
 }
 template<typename ValueType>
 void SimpleStorageStrategy<ValueType>::allocate( const IndexType numRows, const IndexType numColumns )
 {
-    LAMA_ASSERT( mInnerMatrix, "Matrix is not created. Already assigned a matrix to the SimpleStorageStrategy?" );
+    LAMA_ASSERT( mInnerMatrix, "Matrix is not created. Already assigned a matrix to the SimpleStorageStrategy?" )
     mInnerMatrix->allocate( numRows, numColumns );
 }
 
 template<typename ValueType>
 void SimpleStorageStrategy<ValueType>::allocate( DistributionPtr rowDistribution, DistributionPtr colDistribution )
 {
-    LAMA_ASSERT( mInnerMatrix, "Matrix is not created. Already assigned a matrix to the SimpleStorageStrategy?" );
+    LAMA_ASSERT( mInnerMatrix, "Matrix is not created. Already assigned a matrix to the SimpleStorageStrategy?" )
     mInnerMatrix->allocate( rowDistribution, colDistribution );
 }
 
 template<typename ValueType>
 void SimpleStorageStrategy<ValueType>::setIdentity()
 {
-    LAMA_ASSERT( mInnerMatrix, "Matrix is not created. Already assigned a matrix to the SimpleStorageStrategy?" );
+    LAMA_ASSERT( mInnerMatrix, "Matrix is not created. Already assigned a matrix to the SimpleStorageStrategy?" )
     mInnerMatrix->setIdentity();
 }
 
 template<typename ValueType>
 void SimpleStorageStrategy<ValueType>::assign( const Matrix& other )
 {
-    LAMA_ASSERT( mInnerMatrix, "Matrix is not created. Already assigned a matrix to the SimpleStorageStrategy?" );
+    LAMA_ASSERT( mInnerMatrix, "Matrix is not created. Already assigned a matrix to the SimpleStorageStrategy?" )
     mInnerMatrix->assign( other );
 }
 
 template<typename ValueType>
 void SimpleStorageStrategy<ValueType>::assign( const _MatrixStorage& other )
 {
-    LAMA_ASSERT( mInnerMatrix, "Matrix is not created. Already assigned a matrix to the SimpleStorageStrategy?" );
+    LAMA_ASSERT( mInnerMatrix, "Matrix is not created. Already assigned a matrix to the SimpleStorageStrategy?" )
     mInnerMatrix->assign( other );
 }
 
@@ -194,70 +194,70 @@ void SimpleStorageStrategy<ValueType>::assign(
     DistributionPtr rowDist,
     DistributionPtr colDist )
 {
-    LAMA_ASSERT( mInnerMatrix, "Matrix is not created. Already assigned a matrix to the SimpleStorageStrategy?" );
+    LAMA_ASSERT( mInnerMatrix, "Matrix is not created. Already assigned a matrix to the SimpleStorageStrategy?" )
     mInnerMatrix->assign( storage, rowDist, colDist );
 }
 
 template<typename ValueType>
 void SimpleStorageStrategy<ValueType>::buildLocalStorage( _MatrixStorage& storage ) const
 {
-    LAMA_ASSERT( mInnerMatrix, "Matrix is not created. Already assigned a matrix to the SimpleStorageStrategy?" );
+    LAMA_ASSERT( mInnerMatrix, "Matrix is not created. Already assigned a matrix to the SimpleStorageStrategy?" )
     mInnerMatrix->buildLocalStorage( storage );
 }
 
 template<typename ValueType>
 void SimpleStorageStrategy<ValueType>::getRow( Vector& row, const IndexType globalRowIndex ) const
 {
-    LAMA_ASSERT( mInnerMatrix, "Matrix is not created. Already assigned a matrix to the SimpleStorageStrategy?" );
+    LAMA_ASSERT( mInnerMatrix, "Matrix is not created. Already assigned a matrix to the SimpleStorageStrategy?" )
     mInnerMatrix->getRow( row, globalRowIndex );
 }
 
 template<typename ValueType>
 void SimpleStorageStrategy<ValueType>::getDiagonal( Vector& diagonal ) const
 {
-    LAMA_ASSERT( mInnerMatrix, "Matrix is not created. Already assigned a matrix to the SimpleStorageStrategy?" );
+    LAMA_ASSERT( mInnerMatrix, "Matrix is not created. Already assigned a matrix to the SimpleStorageStrategy?" )
     mInnerMatrix->getDiagonal( diagonal );
 }
 
 template<typename ValueType>
 void SimpleStorageStrategy<ValueType>::setDiagonal( const Vector& diagonal )
 {
-    LAMA_ASSERT( mInnerMatrix, "Matrix is not created. Already assigned a matrix to the SimpleStorageStrategy?" );
+    LAMA_ASSERT( mInnerMatrix, "Matrix is not created. Already assigned a matrix to the SimpleStorageStrategy?" )
     mInnerMatrix->setDiagonal( diagonal );
 }
 
 template<typename ValueType>
 void SimpleStorageStrategy<ValueType>::setDiagonal( const Scalar scalar )
 {
-    LAMA_ASSERT( mInnerMatrix, "Matrix is not created. Already assigned a matrix to the SimpleStorageStrategy?" );
+    LAMA_ASSERT( mInnerMatrix, "Matrix is not created. Already assigned a matrix to the SimpleStorageStrategy?" )
     mInnerMatrix->setDiagonal( scalar );
 }
 
 template<typename ValueType>
 void SimpleStorageStrategy<ValueType>::scale( const Vector& scaling )
 {
-    LAMA_ASSERT( mInnerMatrix, "Matrix is not created. Already assigned a matrix to the SimpleStorageStrategy?" );
+    LAMA_ASSERT( mInnerMatrix, "Matrix is not created. Already assigned a matrix to the SimpleStorageStrategy?" )
     mInnerMatrix->scale( scaling );
 }
 
 template<typename ValueType>
 void SimpleStorageStrategy<ValueType>::scale( const Scalar scaling )
 {
-    LAMA_ASSERT( mInnerMatrix, "Matrix is not created. Already assigned a matrix to the SimpleStorageStrategy?" );
+    LAMA_ASSERT( mInnerMatrix, "Matrix is not created. Already assigned a matrix to the SimpleStorageStrategy?" )
     mInnerMatrix->scale( scaling );
 }
 
 template<typename ValueType>
 Scalar SimpleStorageStrategy<ValueType>::getValue( IndexType i, IndexType j ) const
 {
-    LAMA_ASSERT( mInnerMatrix, "Matrix is not created. Already assigned a matrix to the SimpleStorageStrategy?" );
+    LAMA_ASSERT( mInnerMatrix, "Matrix is not created. Already assigned a matrix to the SimpleStorageStrategy?" )
     return mInnerMatrix->getValue( i, j );
 }
 
 template<typename ValueType>
 IndexType SimpleStorageStrategy<ValueType>::getNumValues() const
 {
-    LAMA_ASSERT( mInnerMatrix, "Matrix is not created. Already assigned a matrix to the SimpleStorageStrategy?" );
+    LAMA_ASSERT( mInnerMatrix, "Matrix is not created. Already assigned a matrix to the SimpleStorageStrategy?" )
     return mInnerMatrix->getNumValues();
 }
 
@@ -269,14 +269,14 @@ void SimpleStorageStrategy<ValueType>::matrixTimesVector(
     const Scalar beta,
     const Vector& y ) const
 {
-    LAMA_ASSERT( mInnerMatrix, "Matrix is not created. Already assigned a matrix to the SimpleStorageStrategy?" );
+    LAMA_ASSERT( mInnerMatrix, "Matrix is not created. Already assigned a matrix to the SimpleStorageStrategy?" )
     mInnerMatrix->matrixTimesVector( result, alpha, x, beta, y );
 }
 
 template<typename ValueType>
 void SimpleStorageStrategy<ValueType>::matrixTimesScalar( const Matrix& other, const Scalar alpha )
 {
-    LAMA_ASSERT( mInnerMatrix, "Matrix is not created. Already assigned a matrix to the SimpleStorageStrategy?" );
+    LAMA_ASSERT( mInnerMatrix, "Matrix is not created. Already assigned a matrix to the SimpleStorageStrategy?" )
     mInnerMatrix->matrixTimesScalar( other, alpha );
 }
 
@@ -288,112 +288,112 @@ void SimpleStorageStrategy<ValueType>::matrixTimesMatrix(
     const Scalar beta,
     const Matrix& C ) const
 {
-    LAMA_ASSERT( mInnerMatrix, "Matrix is not created. Already assigned a matrix to the SimpleStorageStrategy?" );
+    LAMA_ASSERT( mInnerMatrix, "Matrix is not created. Already assigned a matrix to the SimpleStorageStrategy?" )
     mInnerMatrix->matrixTimesMatrix( result, alpha, B, beta, C );
 }
 
 template<typename ValueType>
 IndexType SimpleStorageStrategy<ValueType>::getLocalNumValues() const
 {
-    LAMA_ASSERT( mInnerMatrix, "Matrix is not created. Already assigned a matrix to the SimpleStorageStrategy?" );
+    LAMA_ASSERT( mInnerMatrix, "Matrix is not created. Already assigned a matrix to the SimpleStorageStrategy?" )
     return mInnerMatrix->getLocalNumValues();
 }
 
 template<typename ValueType>
 IndexType SimpleStorageStrategy<ValueType>::getLocalNumRows() const
 {
-    LAMA_ASSERT( mInnerMatrix, "Matrix is not created. Already assigned a matrix to the SimpleStorageStrategy?" );
+    LAMA_ASSERT( mInnerMatrix, "Matrix is not created. Already assigned a matrix to the SimpleStorageStrategy?" )
     return mInnerMatrix->getLocalNumRows();
 }
 
 template<typename ValueType>
 IndexType SimpleStorageStrategy<ValueType>::getLocalNumColumns() const
 {
-    LAMA_ASSERT( mInnerMatrix, "Matrix is not created. Already assigned a matrix to the SimpleStorageStrategy?" );
+    LAMA_ASSERT( mInnerMatrix, "Matrix is not created. Already assigned a matrix to the SimpleStorageStrategy?" )
     return mInnerMatrix->getLocalNumColumns();
 }
 
 template<typename ValueType>
 ContextPtr SimpleStorageStrategy<ValueType>::getContextPtr() const
 {
-    LAMA_ASSERT( mInnerMatrix, "Matrix is not created. Already assigned a matrix to the SimpleStorageStrategy?" );
+    LAMA_ASSERT( mInnerMatrix, "Matrix is not created. Already assigned a matrix to the SimpleStorageStrategy?" )
     return mInnerMatrix->getContextPtr();
 }
 
 template<typename ValueType>
 Matrix::MatrixKind SimpleStorageStrategy<ValueType>::getMatrixKind() const
 {
-    LAMA_ASSERT( mInnerMatrix, "Matrix is not created. Already assigned a matrix to the SimpleStorageStrategy?" );
+    LAMA_ASSERT( mInnerMatrix, "Matrix is not created. Already assigned a matrix to the SimpleStorageStrategy?" )
     return mInnerMatrix->getMatrixKind();
 }
 
 template<typename ValueType>
 void SimpleStorageStrategy<ValueType>::prefetch() const
 {
-    LAMA_ASSERT( mInnerMatrix, "Matrix is not created. Already assigned a matrix to the SimpleStorageStrategy?" );
+    LAMA_ASSERT( mInnerMatrix, "Matrix is not created. Already assigned a matrix to the SimpleStorageStrategy?" )
     mInnerMatrix->prefetch();
 }
 
 template<typename ValueType>
 void SimpleStorageStrategy<ValueType>::wait() const
 {
-    LAMA_ASSERT( mInnerMatrix, "Matrix is not created. Already assigned a matrix to the SimpleStorageStrategy?" );
+    LAMA_ASSERT( mInnerMatrix, "Matrix is not created. Already assigned a matrix to the SimpleStorageStrategy?" )
     mInnerMatrix->wait();
 }
 
 template<typename ValueType>
 void SimpleStorageStrategy<ValueType>::invert( const Matrix& other )
 {
-    LAMA_ASSERT( mInnerMatrix, "Matrix is not created. Already assigned a matrix to the SimpleStorageStrategy?" );
+    LAMA_ASSERT( mInnerMatrix, "Matrix is not created. Already assigned a matrix to the SimpleStorageStrategy?" )
     mInnerMatrix->invert( other );
 }
 
 template<typename ValueType>
 Scalar SimpleStorageStrategy<ValueType>::maxDiffNorm( const Matrix& other ) const
 {
-    LAMA_ASSERT( mInnerMatrix, "Matrix is not created. Already assigned a matrix to the SimpleStorageStrategy?" );
+    LAMA_ASSERT( mInnerMatrix, "Matrix is not created. Already assigned a matrix to the SimpleStorageStrategy?" )
     return mInnerMatrix->maxDiffNorm( other );
 }
 
 template<typename ValueType>
 std::auto_ptr<Matrix> SimpleStorageStrategy<ValueType>::create() const
 {
-    LAMA_ASSERT( mInnerMatrix, "Matrix is not created. Already assigned a matrix to the SimpleStorageStrategy?" );
+    LAMA_ASSERT( mInnerMatrix, "Matrix is not created. Already assigned a matrix to the SimpleStorageStrategy?" )
     return mInnerMatrix->create();
 }
 
 template<typename ValueType>
 std::auto_ptr<Matrix> SimpleStorageStrategy<ValueType>::copy() const
 {
-    LAMA_ASSERT( mInnerMatrix, "Matrix is not created. Already assigned a matrix to the SimpleStorageStrategy?" );
+    LAMA_ASSERT( mInnerMatrix, "Matrix is not created. Already assigned a matrix to the SimpleStorageStrategy?" )
     return mInnerMatrix->copy();
 }
 
 template<typename ValueType>
 Scalar::ScalarType SimpleStorageStrategy<ValueType>::getValueType() const
 {
-    LAMA_ASSERT( mInnerMatrix, "Matrix is not created. Already assigned a matrix to the SimpleStorageStrategy?" );
+    LAMA_ASSERT( mInnerMatrix, "Matrix is not created. Already assigned a matrix to the SimpleStorageStrategy?" )
     return mInnerMatrix->getValueType();
 }
 
 template<typename ValueType>
 bool SimpleStorageStrategy<ValueType>::hasDiagonalProperty() const
 {
-    LAMA_ASSERT( mInnerMatrix, "Matrix is not created. Already assigned a matrix to the SimpleStorageStrategy?" );
+    LAMA_ASSERT( mInnerMatrix, "Matrix is not created. Already assigned a matrix to the SimpleStorageStrategy?" )
     return mInnerMatrix->hasDiagonalProperty();
 }
 
 template<typename ValueType>
 void SimpleStorageStrategy<ValueType>::resetDiagonalProperty()
 {
-    LAMA_ASSERT( mInnerMatrix, "Matrix is not created. Already assigned a matrix to the SimpleStorageStrategy?" );
+    LAMA_ASSERT( mInnerMatrix, "Matrix is not created. Already assigned a matrix to the SimpleStorageStrategy?" )
     mInnerMatrix->resetDiagonalProperty();
 }
 
 template<typename ValueType>
 size_t SimpleStorageStrategy<ValueType>::getMemoryUsage() const
 {
-    LAMA_ASSERT( mInnerMatrix, "Matrix is not created. Already assigned a matrix to the SimpleStorageStrategy?" );
+    LAMA_ASSERT( mInnerMatrix, "Matrix is not created. Already assigned a matrix to the SimpleStorageStrategy?" )
     return mInnerMatrix->getMemoryUsage();
 }
 

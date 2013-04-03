@@ -51,7 +51,7 @@ namespace lama
 /* --------------------------------------------------------------------------- */
 
 LAMA_LOG_DEF_TEMPLATE_LOGGER( template<typename ValueType>, SparseAssemblyStorage<ValueType>::logger,
-                              "MatrixStorage.SparseAssemblyStorage" );
+                              "MatrixStorage.SparseAssemblyStorage" )
 
 /* --------------------------------------------------------------------------- */
 
@@ -93,13 +93,13 @@ SparseAssemblyStorage<T>::SparseAssemblyStorage(
         numRows ), mNumValues( 0 )
 {
     LAMA_LOG_INFO( logger,
-                   "Creating with " << mNumRows <<" rows, " << mNumColumns << " columns, " << numValuesPerRow << " values per row." );
+                   "Creating with " << mNumRows <<" rows, " << mNumColumns << " columns, " << numValuesPerRow << " values per row." )
     for ( IndexType i = 0; i < mNumRows; ++i )
     {
-        LAMA_LOG_TRACE( logger, "Reserving storage for row " << i );
+        LAMA_LOG_TRACE( logger, "Reserving storage for row " << i )
         mRows[i].reserve( numValuesPerRow );
     }
-    LAMA_LOG_DEBUG( logger, "Created." );
+    LAMA_LOG_DEBUG( logger, "Created." )
 }
 
 template<typename T>
@@ -144,7 +144,7 @@ SparseAssemblyStorage<T>& SparseAssemblyStorage<T>::operator=( const _MatrixStor
 template<typename ValueType>
 void SparseAssemblyStorage<ValueType>::allocate( const IndexType numRows, const IndexType numColumns )
 {
-    LAMA_LOG_INFO( logger, "allocate sparse assembly storage " << numRows << " x " << numColumns );
+    LAMA_LOG_INFO( logger, "allocate sparse assembly storage " << numRows << " x " << numColumns )
 
     _MatrixStorage::init( numRows, numColumns );
 
@@ -337,7 +337,7 @@ typename SparseAssemblyStorage<T>::ValueType SparseAssemblyStorage<T>::operator(
 {
     if ( j >= mNumColumns )
     {
-        LAMA_THROWEXCEPTION( "Passed column Index " << j << " exceeds column count " << mNumColumns << "." );
+        LAMA_THROWEXCEPTION( "Passed column Index " << j << " exceeds column count " << mNumColumns << "." )
     }
 
     const std::vector<IndexType>& rJA = mRows[i].ja;
@@ -384,12 +384,12 @@ void SparseAssemblyStorage<T>::set( const IndexType i, const IndexType j, const 
 {
     if ( i >= mNumRows )
     {
-        LAMA_THROWEXCEPTION( "Passed row Index " << i << " exceeds row count " << mNumRows << "." );
+        LAMA_THROWEXCEPTION( "Passed row Index " << i << " exceeds row count " << mNumRows << "." )
     }
 
     if ( j >= mNumColumns )
     {
-        LAMA_THROWEXCEPTION( "Passed column Index " << j << " exceeds column count " << mNumColumns << "." );
+        LAMA_THROWEXCEPTION( "Passed column Index " << j << " exceeds column count " << mNumColumns << "." )
     }
 
     {
@@ -402,7 +402,7 @@ void SparseAssemblyStorage<T>::set( const IndexType i, const IndexType j, const 
                 std::vector<ValueType>& wValues = mRows[i].values;
 
                 LAMA_LOG_TRACE( logger,
-                                "set( " << i << ", " << j << ", " << value << ") : override existing value " << wValues[k] );
+                                "set( " << i << ", " << j << ", " << value << ") : override existing value " << wValues[k] )
 
                 wValues[k] = value;
                 return;
@@ -410,7 +410,7 @@ void SparseAssemblyStorage<T>::set( const IndexType i, const IndexType j, const 
         }
     }
 
-    LAMA_LOG_TRACE( logger, "set( " << i << ", " << j << ", " << value << ") : new entry " );
+    LAMA_LOG_TRACE( logger, "set( " << i << ", " << j << ", " << value << ") : new entry " )
 
     std::vector<IndexType>& wJA = mRows[i].ja;
     std::vector<ValueType>& wValues = mRows[i].values;
@@ -424,7 +424,7 @@ void SparseAssemblyStorage<T>::set( const IndexType i, const IndexType j, const 
 
     if ( i == j && ( wJA.size() - 1 > 0 ) )
     {
-        LAMA_LOG_TRACE( logger, "diagonal element swapped to first element of row" );
+        LAMA_LOG_TRACE( logger, "diagonal element swapped to first element of row" )
 
         std::swap( wValues[0], wValues[wValues.size() - 1] );
         std::swap( wJA[0], wJA[wJA.size() - 1] );
@@ -463,7 +463,7 @@ void SparseAssemblyStorage<T>::setRow(
     const LAMAArrayConstView<IndexType>& ja,
     const LAMAArrayConstView<ValueType>& values )
 {
-    LAMA_ASSERT_EQUAL_ERROR( ja.size(), values.size() );
+    LAMA_ASSERT_EQUAL_ERROR( ja.size(), values.size() )
 
     #pragma omp atomic
     mNumValues -= mRows[i].ja.size();
@@ -581,12 +581,12 @@ void SparseAssemblyStorage<ValueType>::setCSRDataImpl(
 
     if ( !OpenMPCSRUtils::validOffsets( csrIA.get(), numRows, numValues ) )
     {
-        LAMA_THROWEXCEPTION( "invalid offset array" );
+        LAMA_THROWEXCEPTION( "invalid offset array" )
     }
 
     if ( !OpenMPUtils::validIndexes( csrJA.get(), numValues, numColumns ) )
     {
-        LAMA_THROWEXCEPTION( "invalid column indexes in ja = " << ja << ", #columns = " << numColumns );
+        LAMA_THROWEXCEPTION( "invalid column indexes in ja = " << ja << ", #columns = " << numColumns )
     }
 
     mNumRows = numRows;
@@ -595,9 +595,9 @@ void SparseAssemblyStorage<ValueType>::setCSRDataImpl(
 
     mRows.resize( mNumRows );
 
-    LAMA_ASSERT_EQUAL_ERROR( csrIA[numRows], numValues );
+    LAMA_ASSERT_EQUAL_ERROR( csrIA[numRows], numValues )
 
-    LAMA_LOG_DEBUG( logger, "fill " << *this << " with csr data, " << numValues << " non-zero values" );
+    LAMA_LOG_DEBUG( logger, "fill " << *this << " with csr data, " << numValues << " non-zero values" )
 
     for ( IndexType i = 0; i < numRows; ++i )
     {
@@ -633,7 +633,7 @@ void SparseAssemblyStorage<ValueType>::buildCSR(
 {
     // TODO all done on host, so loc is unused
 
-    LAMA_LOG_INFO( logger, *this << ": build CSR data from it" );
+    LAMA_LOG_INFO( logger, *this << ": build CSR data from it" )
 
     HostWriteOnlyAccess<IndexType> csrIA( ia, mNumRows + 1 );
 
@@ -642,7 +642,7 @@ void SparseAssemblyStorage<ValueType>::buildCSR(
     for ( IndexType i = 0; i < mNumRows; ++i )
     {
         csrIA[i] = mRows[i].ja.size();
-        LAMA_ASSERT_EQUAL_DEBUG( mRows[i].ja.size(), mRows[i].values.size() );
+        LAMA_ASSERT_EQUAL_DEBUG( mRows[i].ja.size(), mRows[i].values.size() )
     }
 
     if ( ja == NULL || values == NULL )
@@ -712,7 +712,7 @@ template<typename ValueType>
 template<typename OtherType>
 void SparseAssemblyStorage<ValueType>::getRowImpl( LAMAArray<OtherType>& row, const IndexType i ) const
 {
-    LAMA_ASSERT_DEBUG( i >= 0 && i < mNumRows, "row index " << i << " out of range" );
+    LAMA_ASSERT_DEBUG( i >= 0 && i < mNumRows, "row index " << i << " out of range" )
 
     HostWriteOnlyAccess<OtherType> wRow( row, mNumColumns );
 
@@ -724,13 +724,13 @@ void SparseAssemblyStorage<ValueType>::getRowImpl( LAMAArray<OtherType>& row, co
     const std::vector<IndexType>& ja = mRows[i].ja;
     const std::vector<ValueType>& values = mRows[i].values;
 
-    LAMA_ASSERT_EQUAL_DEBUG( ja.size(), values.size() );
+    LAMA_ASSERT_EQUAL_DEBUG( ja.size(), values.size() )
 
     for ( size_t k = 0; k < ja.size(); ++k )
     {
         const IndexType j = ja[k];
         LAMA_ASSERT_DEBUG( j >= 0 && j < mNumColumns,
-                           "col index " << j << " out of range" << " is at row " << i << ":" << k );
+                           "col index " << j << " out of range" << " is at row " << i << ":" << k )
 
         wRow[j] = static_cast<OtherType>( values[k] );
     }

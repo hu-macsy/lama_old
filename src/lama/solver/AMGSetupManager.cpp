@@ -39,7 +39,7 @@ using namespace boost;
 namespace lama
 {
 
-LAMA_LOG_DEF_LOGGER( AMGSetupManager::logger, "AMGSetupManager" );
+LAMA_LOG_DEF_LOGGER( AMGSetupManager::logger, "AMGSetupManager" )
 
 AMGSetupManager::AMGSetupManager( const char* type )
 
@@ -51,7 +51,7 @@ AMGSetupManager::AMGSetupManager( const char* type )
 
 AMGSetupManager::~AMGSetupManager()
 {
-    LAMA_LOG_INFO( logger, "~AMGSetupManager, type = " << mAMGSetupType );
+    LAMA_LOG_INFO( logger, "~AMGSetupManager, type = " << mAMGSetupType )
 }
 
 }

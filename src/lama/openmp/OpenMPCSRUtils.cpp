@@ -54,7 +54,7 @@
 namespace lama
 {
 
-LAMA_LOG_DEF_LOGGER( OpenMPCSRUtils::logger, "OpenMP.CSRUtils" );
+LAMA_LOG_DEF_LOGGER( OpenMPCSRUtils::logger, "OpenMP.CSRUtils" )
 
 /** Number of minimal threads for which parallelization is effective. */
 
@@ -64,7 +64,7 @@ static int minThreads = 3;
 
 IndexType OpenMPCSRUtils::scanSerial( IndexType array[], const IndexType numValues )
 {
-    LAMA_LOG_DEBUG( logger, "scanSerial: " << numValues << " entries" );
+    LAMA_LOG_DEBUG( logger, "scanSerial: " << numValues << " entries" )
 
     // In this case we do it just serial, probably faster
 
@@ -74,7 +74,7 @@ IndexType OpenMPCSRUtils::scanSerial( IndexType array[], const IndexType numValu
     {
         IndexType tmp = runningSum;
         runningSum += array[i];
-        LAMA_LOG_TRACE( logger, "scan, row = " << i << ", size = " << array[i] << ", offset = " << runningSum );
+        LAMA_LOG_TRACE( logger, "scan, row = " << i << ", size = " << array[i] << ", offset = " << runningSum )
         array[i] = tmp;
     }
 
@@ -92,7 +92,7 @@ IndexType OpenMPCSRUtils::scanParallel( PartitionId numThreads, IndexType array[
 
     boost::scoped_array<IndexType> threadCounter( new IndexType[numThreads] );
 
-    LAMA_LOG_DEBUG( logger, "scanParallel: " << numValues << " entries for " << numThreads << " threads" );
+    LAMA_LOG_DEBUG( logger, "scanParallel: " << numValues << " entries for " << numThreads << " threads" )
 
     #pragma omp parallel
     {
@@ -139,7 +139,7 @@ IndexType OpenMPCSRUtils::scan( IndexType array[], const IndexType numValues )
         numThreads = omp_get_num_threads();
     }
 
-    LAMA_LOG_INFO( logger, "scan " << numValues << " entries, #threads = " << numThreads );
+    LAMA_LOG_INFO( logger, "scan " << numValues << " entries, #threads = " << numThreads )
 
     if ( numThreads < minThreads )
     {
@@ -155,7 +155,7 @@ IndexType OpenMPCSRUtils::scan( IndexType array[], const IndexType numValues )
 
 bool OpenMPCSRUtils::validOffsets( const IndexType array[], const IndexType n, const IndexType total )
 {
-    LAMA_LOG_INFO( logger, "check offset array[ " << n << "] for validity, total = " << total );
+    LAMA_LOG_INFO( logger, "check offset array[ " << n << "] for validity, total = " << total )
 
     bool validFlag = true;
 
@@ -164,14 +164,14 @@ bool OpenMPCSRUtils::validOffsets( const IndexType array[], const IndexType n, c
     {
         if ( !( array[i] <= array[i + 1] ) )
         {
-            LAMA_LOG_DEBUG( logger, "illegal offsets at pos " << i << ": " << array[i] << " - " << array[i+1] );
+            LAMA_LOG_DEBUG( logger, "illegal offsets at pos " << i << ": " << array[i] << " - " << array[i+1] )
             validFlag = false;
         }
     }
 
     if ( array[n] != total )
     {
-        LAMA_LOG_DEBUG( logger, "last entry in offset array = " << array[n] << " illegal, should be " << total );
+        LAMA_LOG_DEBUG( logger, "last entry in offset array = " << array[n] << " illegal, should be " << total )
         validFlag = false;
     }
 
@@ -185,7 +185,7 @@ IndexType OpenMPCSRUtils::sizes2offsets( IndexType array[], const IndexType numV
     IndexType totalValues = scan( array, numValues );
     array[numValues] = totalValues;
 
-    LAMA_LOG_INFO( logger, "sizes2offsets, #values = " << numValues << ", total = " << totalValues );
+    LAMA_LOG_INFO( logger, "sizes2offsets, #values = " << numValues << ", total = " << totalValues )
 
     return totalValues;
 }
@@ -224,7 +224,7 @@ bool OpenMPCSRUtils::hasDiagonalProperty(
     const IndexType csrIA[],
     const IndexType csrJA[] )
 {
-    LAMA_LOG_INFO( logger, "hasDiagonalProperty, #numDiagonals = " << numDiagonals );
+    LAMA_LOG_INFO( logger, "hasDiagonalProperty, #numDiagonals = " << numDiagonals )
 
     bool diagonalProperty = true;
 
@@ -245,7 +245,7 @@ bool OpenMPCSRUtils::hasDiagonalProperty(
         }
     }
 
-    LAMA_LOG_DEBUG( logger, "hasDiagonalProperty = " << diagonalProperty );
+    LAMA_LOG_DEBUG( logger, "hasDiagonalProperty = " << diagonalProperty )
 
     return diagonalProperty;
 }
@@ -261,7 +261,7 @@ void OpenMPCSRUtils::sortRowElements(
     const bool diagonalFlag )
 {
 
-    LAMA_LOG_INFO( logger, "sort elements in each of " << numRows << " rows, diagonal flag = " << diagonalFlag );
+    LAMA_LOG_INFO( logger, "sort elements in each of " << numRows << " rows, diagonal flag = " << diagonalFlag )
 
     #pragma omp parallel for
     for ( IndexType i = 0; i < numRows; ++i )
@@ -271,7 +271,7 @@ void OpenMPCSRUtils::sortRowElements(
         const IndexType start = csrIA[i];
         IndexType end = csrIA[i + 1] - 1;
 
-        LAMA_LOG_TRACE( logger, "row " << i << ": sort " << start << " - " << end );
+        LAMA_LOG_TRACE( logger, "row " << i << ": sort " << start << " - " << end )
 
         bool sorted = false;
 
@@ -279,7 +279,7 @@ void OpenMPCSRUtils::sortRowElements(
         {
             sorted = true; // will be reset if any wrong order appears
 
-            LAMA_LOG_TRACE( logger, "sort from " << start << " - " << end );
+            LAMA_LOG_TRACE( logger, "sort from " << start << " - " << end )
 
             for ( IndexType jj = start; jj < end; ++jj )
             {
@@ -306,7 +306,7 @@ void OpenMPCSRUtils::sortRowElements(
 
                 if ( swapIt )
                 {
-                    LAMA_LOG_TRACE( logger, "swap at pos " << jj << " : " << csrJA[jj] << " - " << csrJA[ jj+1 ] );
+                    LAMA_LOG_TRACE( logger, "swap at pos " << jj << " : " << csrJA[jj] << " - " << csrJA[ jj+1 ] )
                     sorted = false;
                     std::swap( csrJA[jj], csrJA[jj + 1] );
                     std::swap( csrValues[jj], csrValues[jj + 1] );
@@ -334,7 +334,7 @@ IndexType OpenMPCSRUtils::countNonEmptyRowsByOffsets( const IndexType offsets[],
         }
     }
 
-    LAMA_LOG_INFO( logger, "#non-zero rows = " << counter << ", counted by offsets" );
+    LAMA_LOG_INFO( logger, "#non-zero rows = " << counter << ", counted by offsets" )
 
     return counter;
 }
@@ -362,9 +362,9 @@ void OpenMPCSRUtils::setNonEmptyRowsByOffsets(
         }
     }
 
-    LAMA_ASSERT_EQUAL_DEBUG( counter, numNonEmptyRows );
+    LAMA_ASSERT_EQUAL_DEBUG( counter, numNonEmptyRows )
 
-    LAMA_LOG_INFO( logger, "#non-zero rows = " << counter << ", set by offsets" );
+    LAMA_LOG_INFO( logger, "#non-zero rows = " << counter << ", set by offsets" )
 }
 
 /* --------------------------------------------------------------------------- */
@@ -403,9 +403,9 @@ void OpenMPCSRUtils::convertCSR2CSC(
     IndexType numColumns,
     IndexType numValues )
 {
-    LAMA_LOG_INFO( logger, "convertCSR2CSC of matrix " << numRows << " x " << numColumns );
+    LAMA_LOG_INFO( logger, "convertCSR2CSC of matrix " << numRows << " x " << numColumns )
 
-    LAMA_ASSERT_EQUAL_DEBUG( numValues, rIA[ numRows ] );
+    LAMA_ASSERT_EQUAL_DEBUG( numValues, rIA[ numRows ] )
 
     // initialization of column counters with 0
 
@@ -423,16 +423,16 @@ void OpenMPCSRUtils::convertCSR2CSC(
         for ( IndexType jj = rIA[i]; jj < rIA[i + 1]; ++jj )
         {
             IndexType j = rJA[jj];
-            LAMA_ASSERT_DEBUG( j < numColumns, "column index " << j << " out of range, #cols = " << numColumns );
+            LAMA_ASSERT_DEBUG( j < numColumns, "column index " << j << " out of range, #cols = " << numColumns )
             cIA[j]++;
         }
     }
 
     sizes2offsets( cIA, numColumns );
 
-    LAMA_LOG_INFO( logger, "convertCSR2CSC, #num values counted = " << cIA[ numColumns ] );
+    LAMA_LOG_INFO( logger, "convertCSR2CSC, #num values counted = " << cIA[ numColumns ] )
 
-    LAMA_ASSERT_EQUAL_DEBUG( numValues, cIA[ numColumns ] );
+    LAMA_ASSERT_EQUAL_DEBUG( numValues, cIA[ numColumns ] )
 
     // fill in the array cJA and cValues
 
@@ -447,7 +447,7 @@ void OpenMPCSRUtils::convertCSR2CSC(
         }
     }
 
-    LAMA_LOG_INFO( logger, "convertCSR2CSC, #num values counted = " << cIA[ numColumns ] );
+    LAMA_LOG_INFO( logger, "convertCSR2CSC, #num values counted = " << cIA[ numColumns ] )
 
     // set back the old offsets
 
@@ -458,7 +458,7 @@ void OpenMPCSRUtils::convertCSR2CSC(
 
     cIA[0] = 0;
 
-    LAMA_ASSERT_EQUAL_DEBUG( cIA[numColumns], numValues );
+    LAMA_ASSERT_EQUAL_DEBUG( cIA[numColumns], numValues )
 }
 
 /* --------------------------------------------------------------------------- */
@@ -477,11 +477,11 @@ void OpenMPCSRUtils::normalGEMV(
     SyncToken* syncToken )
 {
     LAMA_LOG_INFO( logger,
-                   "normalGEMV<" << typeid(ValueType).name() << ">, n = " << numRows << ", alpha = " << alpha << ", beta = " << beta );
+                   "normalGEMV<" << typeid(ValueType).name() << ">, n = " << numRows << ", alpha = " << alpha << ", beta = " << beta )
 
     if ( syncToken )
     {
-        LAMA_THROWEXCEPTION( "asynchronous execution should be done by LAMATask before" );
+        LAMA_THROWEXCEPTION( "asynchronous execution should be done by LAMATask before" )
     }
 
     // ToDo: for efficiency the following cases should be considered
@@ -495,7 +495,7 @@ void OpenMPCSRUtils::normalGEMV(
     {
         // Note: region will be entered by each thread
 
-        LAMA_REGION( "OpenMP.CSR.normalGEMV" );
+        LAMA_REGION( "OpenMP.CSR.normalGEMV" )
 
         #pragma omp for schedule(LAMA_OMP_SCHEDULE)
         for ( IndexType i = 0; i < numRows; ++i )
@@ -545,7 +545,7 @@ void OpenMPCSRUtils::sparseGEMV(
 {
     if ( syncToken )
     {
-        LAMA_THROWEXCEPTION( "asynchronous execution should be done by LAMATask before" );
+        LAMA_THROWEXCEPTION( "asynchronous execution should be done by LAMATask before" )
     }
 
     #pragma omp parallel for schedule(LAMA_OMP_SCHEDULE)
@@ -593,11 +593,11 @@ void OpenMPCSRUtils::gemm(
     SyncToken* syncToken )
 {
     LAMA_LOG_INFO( logger,
-                   "gemm<" << typeid(ValueType).name() << ">, " << " result " << m << " x " << n << " CSR " << m << " x " << p );
+                   "gemm<" << typeid(ValueType).name() << ">, " << " result " << m << " x " << n << " CSR " << m << " x " << p )
 
     if ( syncToken )
     {
-        LAMA_THROWEXCEPTION( "asynchronous execution should be done by LAMATask before" );
+        LAMA_THROWEXCEPTION( "asynchronous execution should be done by LAMATask before" )
     }
 
     #pragma omp parallel for schedule(LAMA_OMP_SCHEDULE)
@@ -612,7 +612,7 @@ void OpenMPCSRUtils::gemm(
             {
                 IndexType j = csrJA[jj];
 
-                // LAMA_ASSERT_DEBUG( j < p , "index j = " << j << " out of range " << p );
+                // LAMA_ASSERT_DEBUG( j < p , "index j = " << j << " out of range " << p )
 
                 // csrValues[jj] stands for CSR( i, j )
 
@@ -639,18 +639,18 @@ void OpenMPCSRUtils::jacobi(
     class SyncToken* syncToken )
 {
     LAMA_LOG_INFO( logger,
-                   "jacobi<" << typeid(ValueType).name() << ">" << ", #rows = " << numRows << ", omega = " << omega );
+                   "jacobi<" << typeid(ValueType).name() << ">" << ", #rows = " << numRows << ", omega = " << omega )
 
     if ( syncToken )
     {
-        LAMA_THROWEXCEPTION( "asynchronous execution should be done by LAMATask before" );
+        LAMA_THROWEXCEPTION( "asynchronous execution should be done by LAMATask before" )
     }
 
     const ValueType oneMinusOmega = static_cast<ValueType>( 1.0 ) - omega;
 
     #pragma omp parallel
     {
-        LAMA_REGION( "OpenMP.CSR.jacobi" );
+        LAMA_REGION( "OpenMP.CSR.jacobi" )
 
         #pragma omp for schedule( LAMA_OMP_SCHEDULE )
         for ( IndexType i = 0; i < numRows; i++ )
@@ -695,12 +695,17 @@ void OpenMPCSRUtils::jacobiHalo(
     const ValueType omega,
     const IndexType numNonEmptyRows )
 {
+<<<<<<< HEAD
     LAMA_LOG_INFO( logger, "jacobiHalo<" << typeid(ValueType).name() << ">" 
                    << ", #rows (not empty) = " << numNonEmptyRows << ", omega = " << omega );
+=======
+    LAMA_LOG_INFO( logger,
+                   "jacobiHalo<" << typeid(ValueType).name() << ">" << ", #rows (not empty) = " << numNonEmptyRows << ", omega = " << omega )
+>>>>>>> e56fea759d58ae8e36756d63c6ab87ffa84d0d29
 
     #pragma omp parallel
     {
-        LAMA_REGION( "OpenMP.CSR.jacabiHalo" );
+        LAMA_REGION( "OpenMP.CSR.jacabiHalo" )
 
         #pragma omp for schedule( LAMA_OMP_SCHEDULE )
         for ( IndexType ii = 0; ii < numNonEmptyRows; ++ii )
@@ -746,9 +751,9 @@ IndexType OpenMPCSRUtils::matrixAddSizes(
     const IndexType bJA[] )
 {
     LAMA_LOG_INFO( logger,
-                   "matrixAddSizes for " << numRows << " x " << numColumns << " matrix" << ", diagonalProperty = " << diagonalProperty );
+                   "matrixAddSizes for " << numRows << " x " << numColumns << " matrix" << ", diagonalProperty = " << diagonalProperty )
 
-    LAMA_REGION( "OpenMP.CSR.matrixAddSizes" );
+    LAMA_REGION( "OpenMP.CSR.matrixAddSizes" )
 
     // determine the number of entries in output matrix
 
@@ -785,7 +790,7 @@ IndexType OpenMPCSRUtils::matrixAddSizes(
 
                 if ( indexList[j] == NINIT )
                 {
-                    LAMA_LOG_TRACE( logger, "entry for [" << i << "," << j << "] by a" );
+                    LAMA_LOG_TRACE( logger, "entry for [" << i << "," << j << "] by a" )
 
                     // Add column position j to the indexList
 
@@ -811,7 +816,7 @@ IndexType OpenMPCSRUtils::matrixAddSizes(
 
                 if ( indexList[j] == NINIT )
                 {
-                    LAMA_LOG_TRACE( logger, "entry for [" << i << "," << j << "] by b" );
+                    LAMA_LOG_TRACE( logger, "entry for [" << i << "," << j << "] by b" )
 
                     // Add column position j to the indexList
 
@@ -833,7 +838,7 @@ IndexType OpenMPCSRUtils::matrixAddSizes(
 
             // so we have now the correct length
 
-            LAMA_LOG_TRACE( logger, "row " << i << " will have " << length << " entries" );
+            LAMA_LOG_TRACE( logger, "row " << i << " will have " << length << " entries" )
 
             cSizes[i] = length;
 
@@ -841,7 +846,7 @@ IndexType OpenMPCSRUtils::matrixAddSizes(
 
             while ( firstCol != END )
             {
-                LAMA_LOG_TRACE( logger, "entry [" << i << "," << firstCol << "] will be set" );
+                LAMA_LOG_TRACE( logger, "entry [" << i << "," << firstCol << "] will be set" )
                 IndexType nextCol = indexList[firstCol];
                 indexList[firstCol] = NINIT;
                 firstCol = nextCol;
@@ -865,10 +870,10 @@ IndexType OpenMPCSRUtils::matrixMultiplySizes(
     const IndexType bIA[],
     const IndexType bJA[] )
 {
-    LAMA_REGION( "OpenMP.CSR.matrixMultiplySizes" );
+    LAMA_REGION( "OpenMP.CSR.matrixMultiplySizes" )
 
     LAMA_LOG_INFO( logger,
-                   "matrixMutliplySizes for " << numRows << " x " << numColumns << " matrix" << ", diagonalProperty = " << diagonalProperty );
+                   "matrixMutliplySizes for " << numRows << " x " << numColumns << " matrix" << ", diagonalProperty = " << diagonalProperty )
 
     // determine the number of entries in output matrix
 
@@ -915,13 +920,13 @@ IndexType OpenMPCSRUtils::matrixMultiplySizes(
 
                     IndexType k = bJA[kk];
 
-                    LAMA_ASSERT_DEBUG( 0 <= k && k < numColumns, "invalid k = " << k );
+                    LAMA_ASSERT_DEBUG( 0 <= k && k < numColumns, "invalid k = " << k )
 
                     // element a(i,j) an b(j,k) will generate the output element c(i,k)
 
                     if ( indexList[k] == NINIT )
                     {
-                        LAMA_LOG_TRACE( logger, "entry for [" << i << "," << k << "]" );
+                        LAMA_LOG_TRACE( logger, "entry for [" << i << "," << k << "]" )
 
                         // Add column position k to the indexList
 
@@ -957,7 +962,7 @@ IndexType OpenMPCSRUtils::matrixMultiplySizes(
 
             // so we have now the correct length
 
-            LAMA_LOG_TRACE( logger, "row " << i << " will have " << length << " entries" );
+            LAMA_LOG_TRACE( logger, "row " << i << " will have " << length << " entries" )
 
             cSizes[i] = length;
 
@@ -965,7 +970,7 @@ IndexType OpenMPCSRUtils::matrixMultiplySizes(
 
             while ( firstCol != END )
             {
-                LAMA_LOG_TRACE( logger, "entry [" << i << "," << firstCol << "] will be set" );
+                LAMA_LOG_TRACE( logger, "entry [" << i << "," << firstCol << "] will be set" )
                 IndexType nextCol = indexList[firstCol];
                 indexList[firstCol] = NINIT;
                 firstCol = nextCol;
@@ -997,10 +1002,10 @@ void OpenMPCSRUtils::matrixAdd(
     const IndexType bJA[],
     const ValueType bValues[] )
 {
-    LAMA_REGION( "OpenMP.CSR.matrixAdd" );
+    LAMA_REGION( "OpenMP.CSR.matrixAdd" )
 
     LAMA_LOG_INFO( logger,
-                   "matrixAddJA for " << numRows << " x " << numColumns << " matrix" << ", diagonalProperty = " << diagonalProperty );
+                   "matrixAddJA for " << numRows << " x " << numColumns << " matrix" << ", diagonalProperty = " << diagonalProperty )
 
     const IndexType NINIT = numColumns + 1;
     const IndexType END = numColumns + 2;
@@ -1033,7 +1038,7 @@ void OpenMPCSRUtils::matrixAdd(
 
                 valueList[j] += alpha * aValues[jj];
 
-                LAMA_LOG_INFO( logger, "entry for [" << i << "," << j << "] by a" << ", new val = " << valueList[j] );
+                LAMA_LOG_INFO( logger, "entry for [" << i << "," << j << "] by a" << ", new val = " << valueList[j] )
 
                 // element a(i,j) will generate an output element c(i,j)
 
@@ -1057,7 +1062,7 @@ void OpenMPCSRUtils::matrixAdd(
 
                 valueList[j] += beta * bValues[jj];
 
-                LAMA_LOG_TRACE( logger, "entry for [" << i << "," << j << "] by b" << ", new val = " << valueList[j] );
+                LAMA_LOG_TRACE( logger, "entry for [" << i << "," << j << "] by b" << ", new val = " << valueList[j] )
 
                 // element b(i,j) will generate an output element c(i,j)
 
@@ -1077,7 +1082,7 @@ void OpenMPCSRUtils::matrixAdd(
             if ( diagonalProperty )
             {
                 // first element is reserved for diagonal element
-                LAMA_LOG_TRACE( logger, "entry for [" << i << "," << i << "] as diagonal" );
+                LAMA_LOG_TRACE( logger, "entry for [" << i << "," << i << "] as diagonal" )
                 cJA[offset] = i;
                 cValues[offset] = 0.0;
                 ++offset;
@@ -1095,13 +1100,13 @@ void OpenMPCSRUtils::matrixAdd(
 
                 if ( diagonalProperty && firstCol == i )
                 {
-                    LAMA_LOG_TRACE( logger, "diagonal already added before" );
-                    LAMA_LOG_TRACE( logger, "entry for [" << i << "," << i << "] = " << val );
+                    LAMA_LOG_TRACE( logger, "diagonal already added before" )
+                    LAMA_LOG_TRACE( logger, "entry for [" << i << "," << i << "] = " << val )
                     cValues[cIA[i]] = val;
                 }
                 else
                 {
-                    LAMA_LOG_TRACE( logger, "entry for [" << i << "," << firstCol << "] = " << val );
+                    LAMA_LOG_TRACE( logger, "entry for [" << i << "," << firstCol << "] = " << val )
                     cJA[offset] = firstCol;
                     cValues[offset] = val;
                     ++offset;
@@ -1112,7 +1117,7 @@ void OpenMPCSRUtils::matrixAdd(
 
             // make sure that we have still the right offsets
 
-            LAMA_ASSERT_EQUAL_DEBUG( offset, cIA[i+1] );
+            LAMA_ASSERT_EQUAL_DEBUG( offset, cIA[i+1] )
 
         } //end loop over all rows of input matrix a
     }
@@ -1132,7 +1137,7 @@ void OpenMPCSRUtils::matrixMultiplyJA(
     const IndexType bJA[] )
 {
     LAMA_LOG_INFO( logger,
-                   "matrixMutliplyJA for " << numRows << " x " << numColumns << " matrix" << ", diagonalProperty = " << diagonalProperty );
+                   "matrixMutliplyJA for " << numRows << " x " << numColumns << " matrix" << ", diagonalProperty = " << diagonalProperty )
 
     const IndexType NINIT = numColumns + 1;
     const IndexType END = numColumns + 2;
@@ -1183,7 +1188,7 @@ void OpenMPCSRUtils::matrixMultiplyJA(
                         indexList[k] = firstCol;
                         firstCol = k;
                         ++length;
-                        LAMA_LOG_TRACE( logger, "entry for [" << i << "," << k << "]" );
+                        LAMA_LOG_TRACE( logger, "entry for [" << i << "," << k << "]" )
                     }
                 }
             }
@@ -1193,7 +1198,7 @@ void OpenMPCSRUtils::matrixMultiplyJA(
             if ( diagonalProperty )
             {
                 // first element is reserved for diagonal element
-                LAMA_LOG_TRACE( logger, "entry for [" << i << "," << i << "] as diagonal" );
+                LAMA_LOG_TRACE( logger, "entry for [" << i << "," << i << "] as diagonal" )
                 cJA[offset] = i;
                 ++offset;
             }
@@ -1208,11 +1213,11 @@ void OpenMPCSRUtils::matrixMultiplyJA(
 
                 if ( diagonalProperty && firstCol == i )
                 {
-                    LAMA_LOG_TRACE( logger, "diagonal already added before" );
+                    LAMA_LOG_TRACE( logger, "diagonal already added before" )
                 }
                 else
                 {
-                    LAMA_LOG_TRACE( logger, "entry for [" << i << "," << firstCol << "]" );
+                    LAMA_LOG_TRACE( logger, "entry for [" << i << "," << firstCol << "]" )
                     cJA[offset] = firstCol;
                     ++offset;
                 }
@@ -1222,7 +1227,7 @@ void OpenMPCSRUtils::matrixMultiplyJA(
 
             // make sure that we have still the right offsets
 
-            LAMA_ASSERT_EQUAL_DEBUG( offset, cIA[i+1] );
+            LAMA_ASSERT_EQUAL_DEBUG( offset, cIA[i+1] )
 
         } //end loop over all rows of input matrix a
     }
@@ -1281,7 +1286,7 @@ void OpenMPCSRUtils::matrixMultiplyJA(
  cValues[jj] *= alpha;
 
  LAMA_LOG_TRACE( logger, "Computed output Element ( "
- << i << ", " << j << " ) = " << cValues[jj] );
+ << i << ", " << j << " ) = " << cValues[jj] )
  }
  }
  }
@@ -1303,7 +1308,7 @@ void OpenMPCSRUtils::matrixMultiply(
     const IndexType bJA[],
     const ValueType bValues[] )
 {
-    LAMA_REGION( "OpenMP.CSR.matrixMultiply" );
+    LAMA_REGION( "OpenMP.CSR.matrixMultiply" )
 
     //TODO: Rewrite this!
     const IndexType NINIT = numColumns + 1;
@@ -1354,7 +1359,7 @@ void OpenMPCSRUtils::matrixMultiply(
                         indexList[k] = firstCol;
                         firstCol = k;
                         ++length;
-                        LAMA_LOG_TRACE( logger, "entry for [" << i << "," << k << "]" );
+                        LAMA_LOG_TRACE( logger, "entry for [" << i << "," << k << "]" )
                     }
                 }
             }
@@ -1364,7 +1369,7 @@ void OpenMPCSRUtils::matrixMultiply(
             if ( diagonalProperty )
             {
                 // first element is reserved for diagonal element
-                LAMA_LOG_TRACE( logger, "entry for [" << i << "," << i << "] as diagonal" );
+                LAMA_LOG_TRACE( logger, "entry for [" << i << "," << i << "] as diagonal" )
                 cJA[offset] = i;
                 ++offset;
             }
@@ -1379,11 +1384,11 @@ void OpenMPCSRUtils::matrixMultiply(
 
                 if ( diagonalProperty && firstCol == i )
                 {
-                    LAMA_LOG_TRACE( logger, "diagonal already added before" );
+                    LAMA_LOG_TRACE( logger, "diagonal already added before" )
                 }
                 else
                 {
-                    LAMA_LOG_TRACE( logger, "entry for [" << i << "," << firstCol << "]" );
+                    LAMA_LOG_TRACE( logger, "entry for [" << i << "," << firstCol << "]" )
                     cJA[offset] = firstCol;
                     ++offset;
                 }
@@ -1393,7 +1398,7 @@ void OpenMPCSRUtils::matrixMultiply(
 
             // make sure that we have still the right offsets
 
-            // LAMA_ASSERT_EQUAL_DEBUG( offset, cIA[i+1] );
+            // LAMA_ASSERT_EQUAL_DEBUG( offset, cIA[i+1] )
 
         } //end loop over all rows of input matrix a
     }
@@ -1436,7 +1441,7 @@ void OpenMPCSRUtils::matrixMultiply(
 
             cValues[jj] *= alpha;
 
-            LAMA_LOG_TRACE( logger, "Computed output Element ( " << i << ", " << j << " ) = " << cValues[jj] );
+            LAMA_LOG_TRACE( logger, "Computed output Element ( " << i << ", " << j << " ) = " << cValues[jj] )
         }
     }
 
@@ -1583,7 +1588,7 @@ ValueType OpenMPCSRUtils::absMaxDiffRowSorted(
                 ++i1;
                 if ( i1 < n1 )
                 {
-                    LAMA_ASSERT_ERROR( csrJA1[i1-1] < csrJA1[i1], "unsorted col indexes at csrJA1[" << i1 << "]" );
+                    LAMA_ASSERT_ERROR( csrJA1[i1-1] < csrJA1[i1], "unsorted col indexes at csrJA1[" << i1 << "]" )
                 }
             }
             else if ( j1 > j2 )
@@ -1592,7 +1597,7 @@ ValueType OpenMPCSRUtils::absMaxDiffRowSorted(
                 ++i2;
                 if ( i2 < n2 )
                 {
-                    LAMA_ASSERT_ERROR( csrJA2[i2-1] < csrJA2[i2], "unsorted col indexes at csrJA2[" << i2 << "]" );
+                    LAMA_ASSERT_ERROR( csrJA2[i2-1] < csrJA2[i2], "unsorted col indexes at csrJA2[" << i2 << "]" )
                 }
             }
         }
@@ -1622,7 +1627,7 @@ ValueType OpenMPCSRUtils::absMaxDiffVal(
     const ValueType csrValues2[] )
 {
     LAMA_LOG_INFO( logger,
-                   "absMaxDiffVal<" << typeid(ValueType).name() << ">: " << "csr[" << numRows << "], sorted = " << sortedRows );
+                   "absMaxDiffVal<" << typeid(ValueType).name() << ">: " << "csr[" << numRows << "], sorted = " << sortedRows )
 
     ValueType (*absMaxDiffRow)(
         const IndexType,
@@ -1667,7 +1672,7 @@ ValueType OpenMPCSRUtils::absMaxDiffVal(
 
         #pragma omp critical
         {
-            LAMA_LOG_TRACE( logger, "max val of thread  = " << threadVal << ", global was " << val );
+            LAMA_LOG_TRACE( logger, "max val of thread  = " << threadVal << ", global was " << val )
 
             if ( threadVal > val )
             {
@@ -1685,48 +1690,48 @@ ValueType OpenMPCSRUtils::absMaxDiffVal(
 
 void OpenMPCSRUtils::setInterface( CSRUtilsInterface& CSRUtils )
 {
-    LAMA_INTERFACE_REGISTER( CSRUtils, sizes2offsets );
-    LAMA_INTERFACE_REGISTER( CSRUtils, offsets2sizes );
-    LAMA_INTERFACE_REGISTER( CSRUtils, validOffsets );
-    LAMA_INTERFACE_REGISTER( CSRUtils, hasDiagonalProperty );
+    LAMA_INTERFACE_REGISTER( CSRUtils, sizes2offsets )
+    LAMA_INTERFACE_REGISTER( CSRUtils, offsets2sizes )
+    LAMA_INTERFACE_REGISTER( CSRUtils, validOffsets )
+    LAMA_INTERFACE_REGISTER( CSRUtils, hasDiagonalProperty )
 
-    LAMA_INTERFACE_REGISTER( CSRUtils, matrixAddSizes );
-    LAMA_INTERFACE_REGISTER( CSRUtils, matrixMultiplySizes );
-    LAMA_INTERFACE_REGISTER( CSRUtils, matrixMultiplyJA );
+    LAMA_INTERFACE_REGISTER( CSRUtils, matrixAddSizes )
+    LAMA_INTERFACE_REGISTER( CSRUtils, matrixMultiplySizes )
+    LAMA_INTERFACE_REGISTER( CSRUtils, matrixMultiplyJA )
 
-    LAMA_INTERFACE_REGISTER_T( CSRUtils, convertCSR2CSC, float );
-    LAMA_INTERFACE_REGISTER_T( CSRUtils, convertCSR2CSC, double );
+    LAMA_INTERFACE_REGISTER_T( CSRUtils, convertCSR2CSC, float )
+    LAMA_INTERFACE_REGISTER_T( CSRUtils, convertCSR2CSC, double )
 
-    LAMA_INTERFACE_REGISTER_T( CSRUtils, sortRowElements, float );
-    LAMA_INTERFACE_REGISTER_T( CSRUtils, sortRowElements, double );
+    LAMA_INTERFACE_REGISTER_T( CSRUtils, sortRowElements, float )
+    LAMA_INTERFACE_REGISTER_T( CSRUtils, sortRowElements, double )
 
-    LAMA_INTERFACE_REGISTER_TT( CSRUtils, scaleRows, float, float );
-    LAMA_INTERFACE_REGISTER_TT( CSRUtils, scaleRows, float, double );
-    LAMA_INTERFACE_REGISTER_TT( CSRUtils, scaleRows, double, float );
-    LAMA_INTERFACE_REGISTER_TT( CSRUtils, scaleRows, double, double );
+    LAMA_INTERFACE_REGISTER_TT( CSRUtils, scaleRows, float, float )
+    LAMA_INTERFACE_REGISTER_TT( CSRUtils, scaleRows, float, double )
+    LAMA_INTERFACE_REGISTER_TT( CSRUtils, scaleRows, double, float )
+    LAMA_INTERFACE_REGISTER_TT( CSRUtils, scaleRows, double, double )
 
-    LAMA_INTERFACE_REGISTER_T( CSRUtils, normalGEMV, float );
-    LAMA_INTERFACE_REGISTER_T( CSRUtils, normalGEMV, double );
+    LAMA_INTERFACE_REGISTER_T( CSRUtils, normalGEMV, float )
+    LAMA_INTERFACE_REGISTER_T( CSRUtils, normalGEMV, double )
 
-    LAMA_INTERFACE_REGISTER_T( CSRUtils, sparseGEMV, float );
-    LAMA_INTERFACE_REGISTER_T( CSRUtils, sparseGEMV, double );
+    LAMA_INTERFACE_REGISTER_T( CSRUtils, sparseGEMV, float )
+    LAMA_INTERFACE_REGISTER_T( CSRUtils, sparseGEMV, double )
 
-    LAMA_INTERFACE_REGISTER_T( CSRUtils, gemm, float );
-    LAMA_INTERFACE_REGISTER_T( CSRUtils, gemm, double );
+    LAMA_INTERFACE_REGISTER_T( CSRUtils, gemm, float )
+    LAMA_INTERFACE_REGISTER_T( CSRUtils, gemm, double )
 
-    LAMA_INTERFACE_REGISTER_T( CSRUtils, matrixAdd, float );
-    LAMA_INTERFACE_REGISTER_T( CSRUtils, matrixAdd, double );
-    LAMA_INTERFACE_REGISTER_T( CSRUtils, matrixMultiply, float );
-    LAMA_INTERFACE_REGISTER_T( CSRUtils, matrixMultiply, double );
+    LAMA_INTERFACE_REGISTER_T( CSRUtils, matrixAdd, float )
+    LAMA_INTERFACE_REGISTER_T( CSRUtils, matrixAdd, double )
+    LAMA_INTERFACE_REGISTER_T( CSRUtils, matrixMultiply, float )
+    LAMA_INTERFACE_REGISTER_T( CSRUtils, matrixMultiply, double )
 
-    LAMA_INTERFACE_REGISTER_T( CSRUtils, jacobi, float );
-    LAMA_INTERFACE_REGISTER_T( CSRUtils, jacobi, double );
+    LAMA_INTERFACE_REGISTER_T( CSRUtils, jacobi, float )
+    LAMA_INTERFACE_REGISTER_T( CSRUtils, jacobi, double )
 
-    LAMA_INTERFACE_REGISTER_T( CSRUtils, jacobiHalo, float );
-    LAMA_INTERFACE_REGISTER_T( CSRUtils, jacobiHalo, double );
+    LAMA_INTERFACE_REGISTER_T( CSRUtils, jacobiHalo, float )
+    LAMA_INTERFACE_REGISTER_T( CSRUtils, jacobiHalo, double )
 
-    LAMA_INTERFACE_REGISTER_T( CSRUtils, absMaxDiffVal, float );
-    LAMA_INTERFACE_REGISTER_T( CSRUtils, absMaxDiffVal, double );
+    LAMA_INTERFACE_REGISTER_T( CSRUtils, absMaxDiffVal, float )
+    LAMA_INTERFACE_REGISTER_T( CSRUtils, absMaxDiffVal, double )
 }
 
 } // namespace lama

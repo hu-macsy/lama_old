@@ -77,6 +77,11 @@ public:
         const std::vector<IndexType>& myGlobalIndexes,
         const CommunicatorPtr communicator );
 
+    GeneralDistribution(
+        const std::vector<IndexType>& row2Partition, 
+	const IndexType globalSize,
+	const CommunicatorPtr communicator  );
+
     explicit GeneralDistribution( const Distribution& other );
 
 //    GeneralDistribution(const GeneralDistribution& other);
@@ -120,7 +125,7 @@ private:
 
     GeneralDistribution& operator=( const GeneralDistribution& other );
 
-    LAMA_LOG_DECL_STATIC_LOGGER(logger);
+    LAMA_LOG_DECL_STATIC_LOGGER( logger )
 };
 
 typedef boost::shared_ptr<GeneralDistribution> GeneralDistributionPtr;

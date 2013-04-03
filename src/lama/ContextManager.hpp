@@ -86,7 +86,7 @@ protected:
      */
     ContextManager( ContextType type );
 
-    LAMA_LOG_DECL_STATIC_LOGGER(logger);
+    LAMA_LOG_DECL_STATIC_LOGGER( logger )
 
     /** This method sets the context manager as responsible for its context type
      *  in the factory.

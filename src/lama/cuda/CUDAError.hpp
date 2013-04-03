@@ -133,7 +133,7 @@ const char* cublasErrorString( cublasStatus res );
         CUcontext pctx;                                                                   \
         const int cudaErrorValue = cuCtxGetCurrent( &pctx );                              \
         LAMA_ASSERT_EQUAL_ERROR( cudaErrorValue, cudaSuccess )                            \
-        LAMA_ASSERT_ERROR( pctx, "No current context, forgotten LAMA_CONTEXT_ACCESS ?" ); \
+        LAMA_ASSERT_ERROR( pctx, "No current context, forgotten LAMA_CONTEXT_ACCESS ?" ) \
     }
 
 #define LAMA_CHECK_CUDA_ERROR                                                     \

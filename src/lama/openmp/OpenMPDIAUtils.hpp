@@ -138,7 +138,7 @@ private:
         const IndexType diaOffsets[],
         const ValueType diaValues[] );
 
-    LAMA_LOG_DECL_STATIC_LOGGER(logger);
+    LAMA_LOG_DECL_STATIC_LOGGER( logger )
 };
 
 } // namespace lama

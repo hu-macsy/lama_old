@@ -115,7 +115,7 @@ public:
     const CriteriaInstanceMap& getCriteriaInstanceMap();
 
 protected:
-    LAMA_LOG_DECL_STATIC_LOGGER(logger);
+    LAMA_LOG_DECL_STATIC_LOGGER( logger )
 
 private:
     CriteriaCreator();

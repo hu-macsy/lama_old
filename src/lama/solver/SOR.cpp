@@ -48,7 +48,7 @@
 namespace lama
 {
 
-LAMA_LOG_DEF_LOGGER( SOR::logger, "Solver.IterativeSolver.OmegaSolver.SOR" );
+LAMA_LOG_DEF_LOGGER( SOR::logger, "Solver.IterativeSolver.OmegaSolver.SOR" )
 
 SOR::SOR( const std::string& id )
     :
@@ -95,7 +95,7 @@ SOR::SORRuntime::~SORRuntime()
 
 void SOR::initialize( const Matrix& coefficients )
 {
-    LAMA_REGION( "Solver.SOR.initialize" );
+    LAMA_REGION( "Solver.SOR.initialize" )
 
     Solver::initialize( coefficients );
 
@@ -109,19 +109,19 @@ void SOR::initialize( const Matrix& coefficients )
         // const CSRStorage<ValueType> & csrA = dynamic_cast<const CSRStorage<ValueType>& >( A.getLocalStorage() );
         // const CSRStorage<ValueType> & csrAHalo = dynamic_cast<const CSRStorage<ValueType>& >( A.getHaloStorage() );
 
-        LAMA_LOG_INFO( logger, "No iteration matrix, coefficients is CSR: " << coefficients );
+        LAMA_LOG_INFO( logger, "No iteration matrix, coefficients is CSR: " << coefficients )
 
         return; //use mCoefficients
     }
     else if ( coefficients.getValueType() == Scalar::DOUBLE )
     {
         mIterationMatrix.reset( new CSRSparseMatrix<double>( coefficients ) );
-        LAMA_LOG_INFO( logger, "conversion of iteration matrix to CSR: " << *mIterationMatrix );
+        LAMA_LOG_INFO( logger, "conversion of iteration matrix to CSR: " << *mIterationMatrix )
     }
     else if ( coefficients.getValueType() == Scalar::FLOAT )
     {
         mIterationMatrix.reset( new CSRSparseMatrix<float>( coefficients ) );
-        LAMA_LOG_INFO( logger, "conversion of iteration matrix to CSR: " << *mIterationMatrix );
+        LAMA_LOG_INFO( logger, "conversion of iteration matrix to CSR: " << *mIterationMatrix )
     }
     else
     {
@@ -132,7 +132,7 @@ void SOR::initialize( const Matrix& coefficients )
 
 void SOR::iterate()
 {
-    LAMA_REGION( "Solver.SOR.iterate" );
+    LAMA_REGION( "Solver.SOR.iterate" )
 
     switch ( getRuntime().mCoefficients->getValueType() )
     {
@@ -150,7 +150,7 @@ void SOR::iterate()
 
     default:
     {
-        LAMA_THROWEXCEPTION( "Value type " << getRuntime().mCoefficients->getValueType() << " is not implement." );
+        LAMA_THROWEXCEPTION( "Value type " << getRuntime().mCoefficients->getValueType() << " is not implement." )
     }
     }
 }
@@ -166,13 +166,13 @@ void SOR::iterateImpl()
     if ( mIterationMatrix.get() )
     {
         LAMA_LOG_DEBUG( logger,
-                        "Taking CSR converted matrix " << *mIterationMatrix << " instead of " << *getRuntime().mCoefficients );
+                        "Taking CSR converted matrix " << *mIterationMatrix << " instead of " << *getRuntime().mCoefficients )
         matrixPtr = mIterationMatrix.get();
     }
 
     const SparseMatrix<ValueType> & A = dynamic_cast<const SparseMatrix<ValueType>&>( *matrixPtr );
     const CSRStorage<ValueType> & csrA = dynamic_cast<const CSRStorage<ValueType>&>( A.getLocalStorage() );
-    LAMA_ASSERT_ERROR( csrA.hasDiagonalProperty(), "csrA = " << csrA << " has not diagonal property" );
+    LAMA_ASSERT_ERROR( csrA.hasDiagonalProperty(), "csrA = " << csrA << " has not diagonal property" )
     const CSRStorage<ValueType> & csrAHalo = dynamic_cast<const CSRStorage<ValueType>&>( A.getHaloStorage() );
     const Halo& Ahalo = A.getHalo();
 
@@ -196,12 +196,12 @@ void SOR::iterateImpl()
 
     ValueType omega = mOmega.getValue<ValueType>();
 
-    LAMA_LOG_DEBUG( logger, "iterate, omega = " << omega << ", #rows = " << csrA.getNumRows() );
+    LAMA_LOG_DEBUG( logger, "iterate, omega = " << omega << ", #rows = " << csrA.getNumRows() )
 
     //SOR with relaxation factor omega
     if ( omega != 1.0 )
     {
-        LAMA_REGION( "Solver.SOR.iterate:Relaxation" );
+        LAMA_REGION( "Solver.SOR.iterate:Relaxation" )
 
         const ValueType oneMinusOmega = 1 - omega;
 
@@ -233,7 +233,7 @@ void SOR::iterateImpl()
     }
     else //GaussSeidel (SOR without relaxation factor omega)
     {
-        LAMA_REGION( "Solver.SOR.iterate:GaussSeidel" );
+        LAMA_REGION( "Solver.SOR.iterate:GaussSeidel" )
 
         for ( IndexType i = 0; i < csrA.getNumRows(); i++ )
         {

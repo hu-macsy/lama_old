@@ -168,7 +168,7 @@ public:
      * not throw an exception. This might be done by the caller of this routine to avoid
      * working with inconsistent matrices.
      *
-     * \begincode
+     * \code
      * LAMA_ASSERT_DEBUG( a.isConsistent(), a << ": is invalid matrix after reading" )
      * \endcode
      */
@@ -196,7 +196,7 @@ public:
      * @brief Clear the full matrix, resets global and local sizes to 0.
      *
      * \code
-     *     CSRSparseMatrix<double> a ( ... );
+     *     CSRSparseMatrix<double> a ( ... )
      *     a = CSRSparseMatrix<double> ();     \\ will free all arrays
      *     a.clear();                          \\ same functionality, clears involved arrays
      *
@@ -229,7 +229,7 @@ public:
      * \code
      * void sub( ..., Matrix& a, ... )
      * ...
-     * LAMA_ASSERT_EQUAL_DEBUG( a.getNumRows(), a.getNumColumns() );
+     * LAMA_ASSERT_EQUAL_DEBUG( a.getNumRows(), a.getNumColumns() )
      * a.setIdentity();
      * \endcode
      */
@@ -356,11 +356,6 @@ public:
      */
     virtual Scalar getValue( IndexType i, IndexType j ) const = 0;
 
-    /**
-     * @brief Write some information about this to the passed stream.
-     *
-     * @param[out] stream   the stream to write to.
-     */
     virtual void writeAt( std::ostream& stream ) const;
 
     /**
@@ -808,7 +803,7 @@ protected:
 
     void swapMatrix( Matrix& other ); // swap member variables of Matrix
 
-    LAMA_LOG_DECL_STATIC_LOGGER( logger );
+    LAMA_LOG_DECL_STATIC_LOGGER( logger )
 
 private:
 
@@ -840,13 +835,13 @@ inline Matrix::SyncKind Matrix::getCommunicationKind() const
 
 inline const Distribution& Matrix::getColDistribution() const
 {
-    LAMA_ASSERT_ERROR( mColDistribution, "NULL column distribution for Matrix" );
+    LAMA_ASSERT_ERROR( mColDistribution, "NULL column distribution for Matrix" )
     return *mColDistribution;
 }
 
 inline DistributionPtr Matrix::getColDistributionPtr() const
 {
-    LAMA_ASSERT_ERROR( mColDistribution, "NULL column distribution for Matrix" );
+    LAMA_ASSERT_ERROR( mColDistribution, "NULL column distribution for Matrix" )
     return mColDistribution;
 }
 

@@ -50,30 +50,30 @@ using namespace boost;
 namespace lama
 {
 
-LAMA_LOG_DEF_LOGGER( DefaultHostContext::logger, "Context.DefaultHostContext" );
+LAMA_LOG_DEF_LOGGER( DefaultHostContext::logger, "Context.DefaultHostContext" )
 
 DefaultHostContext::DefaultHostContext()
 {
     mNumberOfAllocatedBytes = 0;
     mNumberOfAllocates = 0;
 
-    LAMA_LOG_INFO( logger, "DefaultHostContext created" );
+    LAMA_LOG_INFO( logger, "DefaultHostContext created" )
 }
 
 DefaultHostContext::~DefaultHostContext()
 {
     if ( mNumberOfAllocates > 0 )
     {
-        LAMA_LOG_ERROR( logger, *this << ": " << mNumberOfAllocates << " allocate without free" );
+        LAMA_LOG_ERROR( logger, *this << ": " << mNumberOfAllocates << " allocate without free" )
     }
 
     if ( mNumberOfAllocatedBytes != 0 )
     {
         LAMA_LOG_ERROR( logger,
-                        *this << ": number of allocated bytes = " << mNumberOfAllocatedBytes << ", mismatch of free/allocate sizes" );
+                        *this << ": number of allocated bytes = " << mNumberOfAllocatedBytes << ", mismatch of free/allocate sizes" )
     }
 
-    LAMA_LOG_INFO( logger, "~DefaultHostContext" );
+    LAMA_LOG_INFO( logger, "~DefaultHostContext" )
 }
 
 void DefaultHostContext::writeAt( std::ostream& stream ) const
@@ -84,13 +84,13 @@ void DefaultHostContext::writeAt( std::ostream& stream ) const
 
 void* DefaultHostContext::allocate( const size_t size ) const
 {
-    LAMA_ASSERT_ERROR( size > 0, "allocate with size = " << size << " should not be done" );
+    LAMA_ASSERT_ERROR( size > 0, "allocate with size = " << size << " should not be done" )
 
     void* pointer = malloc( size );
 
     if ( pointer == NULL )
     {
-        LAMA_THROWEXCEPTION( "malloc failed for size = " << size );
+        LAMA_THROWEXCEPTION( "malloc failed for size = " << size )
     }
 
     // allocate must be thread-safe in case where multiple threads use LAMA arrays
@@ -100,7 +100,7 @@ void* DefaultHostContext::allocate( const size_t size ) const
     mNumberOfAllocatedBytes += size;
     mNumberOfAllocates++;
 
-    LAMA_LOG_DEBUG( logger, "allocated " << pointer << ", size = " << size );
+    LAMA_LOG_DEBUG( logger, "allocated " << pointer << ", size = " << size )
 
     return pointer;
 }
@@ -112,9 +112,9 @@ void DefaultHostContext::allocate( ContextData& contextData, const size_t size )
 
 void DefaultHostContext::free( void* pointer, const size_t size ) const
 {
-    LAMA_LOG_DEBUG( logger, "free " << pointer << ", size = " << size );
+    LAMA_LOG_DEBUG( logger, "free " << pointer << ", size = " << size )
 
-    LAMA_ASSERT_ERROR( mNumberOfAllocates >= 1, "Invalid Free, because there are no open allocates." );
+    LAMA_ASSERT_ERROR( mNumberOfAllocates >= 1, "Invalid Free, because there are no open allocates." )
     ::free( pointer );
 
     boost::recursive_mutex::scoped_lock scoped_lock( allocate_mutex );
@@ -125,13 +125,13 @@ void DefaultHostContext::free( void* pointer, const size_t size ) const
 
 void DefaultHostContext::free( ContextData& contextData ) const
 {
-    LAMA_ASSERT_EQUAL_ERROR( contextData.context->getType(), getType() );
+    LAMA_ASSERT_EQUAL_ERROR( contextData.context->getType(), getType() )
     contextData.free();
 }
 
 void DefaultHostContext::memcpy( void* dst, const void* src, const size_t size ) const
 {
-    LAMA_LOG_DEBUG( logger, "memcpy: " << dst << " <- " << src << ", size = " << size );
+    LAMA_LOG_DEBUG( logger, "memcpy: " << dst << " <- " << src << ", size = " << size )
     ::memcpy( dst, src, size );
 }
 
@@ -148,7 +148,7 @@ bool DefaultHostContext::cancpy( const ContextData& dst, const ContextData& src 
 void DefaultHostContext::memcpy( ContextData& dst, const ContextData& src, const size_t size ) const
 {
     LAMA_ASSERT_ERROR( dst.context->getType() == getType() && src.context->getType() == getType(),
-                       "Can not copy from "<< *(src.context) << " to " << *(dst.context) );
+                       "Can not copy from "<< *(src.context) << " to " << *(dst.context) )
     memcpy( dst.pointer, src.pointer, size );
 }
 
@@ -158,7 +158,7 @@ std::auto_ptr<SyncToken> DefaultHostContext::memcpyAsync(
     const size_t size ) const
 {
     LAMA_ASSERT_ERROR( dst.context->getType() == getType() && src.context->getType() == getType(),
-                       "Can not copy from "<< *(src.context) << " to " << *(dst.context) );
+                       "Can not copy from "<< *(src.context) << " to " << *(dst.context) )
     return memcpyAsync( dst.pointer, src.pointer, size );
 }
 

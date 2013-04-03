@@ -194,8 +194,6 @@ public:
      */
     inline const Entry& operator[]( const PartitionId index ) const;
 
-    /** Override default implementation of base class Printable. */
-
     void writeAt( std::ostream& stream ) const;
 
 private:
@@ -208,7 +206,7 @@ private:
 
     IndexType mQuantity; //!< sum of quantities for all entries
 
-    LAMA_LOG_DECL_STATIC_LOGGER(logger);
+    LAMA_LOG_DECL_STATIC_LOGGER( logger )
 };
 
 /* ----------------------------------------------------------------------*/

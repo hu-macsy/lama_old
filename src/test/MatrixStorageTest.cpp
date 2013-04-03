@@ -751,10 +751,12 @@ LAMA_COMMON_TEST_CASE_TEMPLATE_END();
 
 /* ------------------------------------------------------------------------- */
 
-LAMA_COMMON_TEST_CASE_TEMPLATE( MatrixStorageTest, StorageType, jacobiHaloTest )const ValueType omega = static_cast<ValueType> ( 0.35 );
+LAMA_COMMON_TEST_CASE_TEMPLATE( MatrixStorageTest, StorageType, jacobiHaloTest )
 
-LAMA_LOG_INFO( logger, "jacobiHaloTest: matrix = " << mMatrixStorage
-               << ", omega = " << omega );
+const ValueType omega = static_cast<ValueType> ( 0.35 );
+
+LAMA_LOG_INFO( logger, "jacobiHaloTest: matrix = " << mMatrixStorage 
+                        << ", omega = " << omega );
 
 setDenseHalo( mMatrixStorage );
 

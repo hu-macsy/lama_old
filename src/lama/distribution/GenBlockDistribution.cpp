@@ -39,11 +39,11 @@
 namespace lama
 {
 
-LAMA_LOG_DEF_LOGGER( GenBlockDistribution::logger, "Distribution.GenBlockDistribution" );
+LAMA_LOG_DEF_LOGGER( GenBlockDistribution::logger, "Distribution.GenBlockDistribution" )
 
 GenBlockDistribution::~GenBlockDistribution()
 {
-    LAMA_LOG_INFO( logger, "~GenBlockDistribution" );
+    LAMA_LOG_INFO( logger, "~GenBlockDistribution" )
 }
 
 void GenBlockDistribution::setOffsets(
@@ -59,10 +59,10 @@ void GenBlockDistribution::setOffsets(
         sumSizes += localSizes[p];
         mOffsets[p] = sumSizes;
         LAMA_LOG_TRACE( logger,
-                        "Partition " << p << ": local size =  " << localSizes[p] << ", offset = " << mOffsets[p] );
+                        "Partition " << p << ": local size =  " << localSizes[p] << ", offset = " << mOffsets[p] )
     }
 
-    LAMA_ASSERT_EQUAL_ERROR( sumSizes, getGlobalSize() );
+    LAMA_ASSERT_EQUAL_ERROR( sumSizes, getGlobalSize() )
 
     mUB = mOffsets[rank] - 1;
     mLB = mOffsets[rank] - localSizes[rank];
@@ -76,7 +76,7 @@ void GenBlockDistribution::setOffsets( const IndexType rank, const IndexType num
     mCommunicator->gather( localSizes.get(), 1, root, &mySize );
     mCommunicator->bcast( localSizes.get(), numPartitions, root );
 
-    LAMA_ASSERT_EQUAL_DEBUG( localSizes[ rank ], mySize );
+    LAMA_ASSERT_EQUAL_DEBUG( localSizes[ rank ], mySize )
 
     setOffsets( rank, numPartitions, localSizes.get() );
 }
@@ -91,13 +91,13 @@ GenBlockDistribution::GenBlockDistribution(
     PartitionId size = mCommunicator->getSize();
     PartitionId rank = mCommunicator->getRank();
 
-    LAMA_LOG_INFO( logger, "GenBlockDistribution of " << getGlobalSize() << " elements" );
+    LAMA_LOG_INFO( logger, "GenBlockDistribution of " << getGlobalSize() << " elements" )
 
-    LAMA_ASSERT_EQUAL_ERROR( size, static_cast<PartitionId>( localSizes.size() ) );
+    LAMA_ASSERT_EQUAL_ERROR( size, static_cast<PartitionId>( localSizes.size() ) )
 
     setOffsets( rank, size, &localSizes[0] );
 
-    LAMA_LOG_INFO( logger, *this << ": constructed by local sizes" );
+    LAMA_LOG_INFO( logger, *this << ": constructed by local sizes" )
 }
 
 GenBlockDistribution::GenBlockDistribution(
@@ -113,10 +113,10 @@ GenBlockDistribution::GenBlockDistribution(
 
     setOffsets( rank, size, lastGlobalIdx - firstGlobalIdx + 1 );
 
-    LAMA_ASSERT_EQUAL_ERROR( mLB, firstGlobalIdx );
-    LAMA_ASSERT_EQUAL_ERROR( mUB, lastGlobalIdx );
+    LAMA_ASSERT_EQUAL_ERROR( mLB, firstGlobalIdx )
+    LAMA_ASSERT_EQUAL_ERROR( mUB, lastGlobalIdx )
 
-    LAMA_LOG_INFO( logger, *this << ": constructed by local range " << firstGlobalIdx << ":" << lastGlobalIdx );
+    LAMA_LOG_INFO( logger, *this << ": constructed by local range " << firstGlobalIdx << ":" << lastGlobalIdx )
 }
 
 GenBlockDistribution::GenBlockDistribution(
@@ -142,7 +142,7 @@ GenBlockDistribution::GenBlockDistribution(
     int rank = mCommunicator->getRank();
 
     LAMA_LOG_DEBUG( logger,
-                    "GenBlockDistribution of " << getGlobalSize() << " elements" << ", my weight = " << weight );
+                    "GenBlockDistribution of " << getGlobalSize() << " elements" << ", my weight = " << weight )
 
     std::vector<float> allWeights;
     communicator->gather( allWeights, weight );
@@ -160,7 +160,7 @@ GenBlockDistribution::GenBlockDistribution(
     }
 
     LAMA_LOG_INFO( logger,
-                   "GenBlockDistribution of " << getGlobalSize() << " elements" << ", total weight = " << totalWeight );
+                   "GenBlockDistribution of " << getGlobalSize() << " elements" << ", total weight = " << totalWeight )
     mOffsets.reset( new IndexType[size] );
     float sumWeight = 0.0;
 
@@ -178,7 +178,7 @@ GenBlockDistribution::GenBlockDistribution(
         mLB = mOffsets[rank - 1];
     }
 
-    LAMA_LOG_INFO( logger, *this << " constructed by weight factors" );
+    LAMA_LOG_INFO( logger, *this << " constructed by weight factors" )
 }
 
 bool GenBlockDistribution::isLocal( const IndexType globalIndex ) const
@@ -266,14 +266,14 @@ void GenBlockDistribution::computeOwners(
 {
     owners.clear();
     owners.reserve( requiredIndexes.size() );
-    LAMA_LOG_INFO( logger, "compute " << requiredIndexes.size() << " owners for " << *this );
+    LAMA_LOG_INFO( logger, "compute " << requiredIndexes.size() << " owners for " << *this )
 
     for ( unsigned int i = 0; i < requiredIndexes.size(); ++i )
     {
         IndexType requiredIndex = requiredIndexes[i];
         PartitionId owner = getOwner( requiredIndex );
         owners.push_back( owner );
-        LAMA_LOG_TRACE( logger, "owner of required index = " << requiredIndex << " is " << owner );
+        LAMA_LOG_TRACE( logger, "owner of required index = " << requiredIndex << " is " << owner )
     }
 }
 

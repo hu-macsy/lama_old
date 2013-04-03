@@ -75,7 +75,7 @@ protected:
 
     std::string mAMGSetupType; //!< type of AMGSetup managed
 
-    LAMA_LOG_DECL_STATIC_LOGGER(logger);
+    LAMA_LOG_DECL_STATIC_LOGGER( logger )
 };
 
 } // namespace lama

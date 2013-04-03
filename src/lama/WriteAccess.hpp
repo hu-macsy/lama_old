@@ -59,18 +59,18 @@ namespace lama
  * WriteAccess enforces the consistency of the template LAMAArray by following the RAII Idiom. This is
  * done by acquiring a write lock on a LAMAArray in the constructor and releasing this write lock in
  * the destructor. There for a WriteAccess should be only used as a stack object.
+ *
+ * @tparam T is the value type stored in the wrapped container.
  */
 template<typename T>
 class LAMA_DLL_IMPORTEXPORT WriteAccess: public BaseAccess
 {
 public:
-    /**
-     * @brief ValueType is the type stored in the wrapped container.
-     */
-    typedef T ValueType;
+
+	typedef T ValueType; //!< This is the type stored in the wrapped container.
 
     /**
-     * @brief acquire a WriteAccess to the passed LAMAArray for the passed location
+     * @brief Acquires a WriteAccess to the passed LAMAArray for the passed location.
      *
      * @param[in] array     the LAMAArray to acquire a WriteAccess for
      * @param[in] context   the context to acquire a WriteAccess for
@@ -84,7 +84,7 @@ public:
     WriteAccess( LAMAArray<ValueType>& array, ContextPtr context );
 
     /**
-     * @brief acquire a WriteAccess to the passed LAMAArray for the passed location with resize
+     * @brief Acquires a WriteAccess to the passed LAMAArray for the passed location with resize.
      *
      * @param[in] array     the LAMAArray to acquire a WriteAccess for
      * @param[in] context   the context to acquire a WriteAccess for
@@ -105,11 +105,10 @@ public:
      *
      * Attention: this kind of write access assumes that the array is completely new written.
      */
-
     WriteAccess( LAMAArray<ValueType>& array, ContextPtr context, const IndexType size, const bool keep );
 
     /**
-     * @brief acquire a WriteAccess to the passed LAMAArray for a valid context.
+     * @brief Acquires a WriteAccess to the passed LAMAArray for a valid context.
      *
      * @param[in] array     the LAMAArray to acquire a WriteAccess for
      * @throws Exception    if the WriteAccess can not be acquired, e.g. because another WriteAccess exists.
@@ -122,8 +121,25 @@ public:
 
     //WriteAccess( LAMAArray<ValueType>& array, ContextType context, const bool keep = true );
 
+    /**
+     * @brief Acquires a WriteAccess to the passed LAMAArrayView for the passed location.
+     *
+     * @param[in] view      the LAMAArrayView to acquire a WriteAccess for
+     * @param[in] context   the context to acquire a WriteAccess for
+     * @param[in] keep      if false, implicit clear, old values of the array are no more needed
+     * @throws Exception    if the WriteAccess can not be acquired, e.g. because another WriteAccess exists.
+     */
     WriteAccess( LAMAArrayView<ValueType>& view, ContextPtr context, const bool keep = true );
 
+    /**
+     * @brief Acquires a WriteAccess to the passed LAMAArrayView for the passed location with resize.
+     *
+     * @param[in] view      the LAMAArrayView to acquire a WriteAccess for
+     * @param[in] context   the context to acquire a WriteAccess for
+     * @param[in] size      the new size of the LAMA array
+     * @param[in] keep      if false, implicit clear, old values of the array are no more needed
+     * @throws Exception    if the WriteAccess can not be acquired, e.g. because another WriteAccess exists.
+     */
     WriteAccess( LAMAArrayView<ValueType>& view, ContextPtr context, const IndexType size, const bool keep = true );
 
     //WriteAccess( LAMAArrayView<ValueType>& view, ContextType context, const bool keep = true );
@@ -134,14 +150,14 @@ public:
     virtual ~WriteAccess();
 
     /**
-     * @brief returns a pointer to the data of the wrapped LAMAArray
+     * @brief Returns a pointer to the data of the wrapped LAMAArray.
      *
      * @return a pointer to the wrapped LAMAArray.
      */
     ValueType* get();
 
     /**
-     * @brief Set the size of the LAMAArray to 0.
+     * @brief Sets the size of the LAMAArray to 0.
      *
      * This operation only sets the size but does not free any reserved memory.
      *
@@ -163,7 +179,7 @@ public:
     void clear();
 
     /**
-     * @brief resizes the wrapped LAMAArray
+     * @brief Resizes the wrapped LAMAArray.
      *
      * @param[in] newSize   the new size of the wrapped LAMAArray
      *
@@ -174,14 +190,14 @@ public:
     void resize( const IndexType newSize );
 
     /**
-     * @brief reserve storage for wth wrapped LAMAArray at the associated location
+     * @brief Reserves storage for the wrapped LAMAArray at the associated location.
      *
      * @param[in] capacity  the number of elements that should fit into the new storage
      */
     void reserve( const IndexType capacity );
 
     /**
-     *  @brief query the capacity of the array on the reserved context
+     *  @brief Queries the capacity of the array on the reserved context.
      */
     IndexType capacity() const;
 
@@ -203,7 +219,7 @@ protected:
 
     ValueType* mData; // pointer to the context data
 
-    LAMA_LOG_DECL_STATIC_LOGGER(logger);
+    LAMA_LOG_DECL_STATIC_LOGGER( logger )
 
     LAMAArrayView<ValueType>* mArrayView;
 
@@ -217,16 +233,15 @@ protected:
  *
  * A WriteOnlyAccess should be used whenever possible. It avoids any memory transfer of no more
  * needed values between devices and in case of a reallocation it avoids copying of old values.
+ *
+ * @tparam T is the value type stored in the wrapped container.
  */
 template<typename T>
 class LAMA_DLL_IMPORTEXPORT WriteOnlyAccess: public WriteAccess<T>
 {
 public:
 
-    /**
-     * @brief ValueType is the type stored in the wrapped container.
-     */
-    typedef T ValueType;
+    typedef T ValueType; //!< This is the type stored in the wrapped container.
 
     /** Create a write access with keep flag = false. */
 
@@ -257,7 +272,7 @@ public:
 
     ~WriteOnlyAccess()
     {
-        LAMA_LOG_TRACE( WriteAccess<T>::logger, "~WriteOnlyAccess" );
+        LAMA_LOG_TRACE( WriteAccess<T>::logger, "~WriteOnlyAccess" )
     }
 };
 
@@ -270,7 +285,7 @@ inline IndexType WriteAccess<T>::size() const
     }
     else
     {
-        LAMA_THROWEXCEPTION( "cannot call size on released array" );
+        LAMA_THROWEXCEPTION( "cannot call size on released array" )
     }
 }
 

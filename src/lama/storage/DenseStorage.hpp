@@ -55,9 +55,8 @@ template<typename T> class DenseStorage;
 /**
  * Storage format for a Dense matrix.
  *
- *  @tparam T is the value type for the matrix elements.
+ *  @tparam T is the value type of the matrix values.
  */
-
 template<typename T>
 class LAMA_DLL_IMPORTEXPORT DenseStorageView: public CRTPMatrixStorage<DenseStorageView<T>,T>
 {
@@ -152,7 +151,7 @@ public:
         const LAMAArray<OtherValueType>& values,
         const ContextPtr loc );
 
-    /** Print relevant information about matrix storage format. */
+    /* Print relevant information about matrix storage format. */
 
     virtual void writeAt( std::ostream& stream ) const;
 
@@ -174,15 +173,15 @@ public:
 
     void wait() const;
 
-    /** Getter routine for the matrix data array (write) */
+    /** Getter routine for the matrix data array (write). */
 
     LAMAArray<ValueType>& getData();
 
-    /** Getter routine for the matrix data array (read-only) */
+    /** Getter routine for the matrix data array (read-only). */
 
     const LAMAArray<ValueType>& getData() const;
 
-    /** Getter routine for the number of stored values*/
+    /** Getter routine for the number of stored values. */
 
     virtual IndexType getNumValues() const;
 
@@ -319,7 +318,7 @@ protected:
 
     LAMAArray<ValueType>& mData; //!<  Reference to the matrix value array
 
-    LAMA_LOG_DECL_STATIC_LOGGER( logger ); //!< logger for this matrix format
+    LAMA_LOG_DECL_STATIC_LOGGER( logger ) //!< logger for this matrix format
 
 private:
 
@@ -345,8 +344,10 @@ private:
 
 /* --------------------------------------------------------------------------- */
 
-/** The class DenseStorage is a DenseStorageView that manages its own data. */
-
+/** DenseStorage is a DenseStorageView that manages its own data.
+ *
+ *  @tparam T is the value type of the matrix values.
+ */
 template<typename T>
 class LAMA_DLL_IMPORTEXPORT DenseStorage: public DenseStorageView<T>
 {
@@ -354,7 +355,7 @@ public:
 
     typedef T ValueType; //!< This is the type of the matrix values.
 
-    /** get typename of the matrix storage format. */
+    /** @brief Getter of type name of the matrix storage format. */
 
     static const char* typeName();
 

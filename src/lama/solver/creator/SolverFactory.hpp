@@ -127,7 +127,7 @@ private:
     /* solver types holding all possible solver managers to create a solver */
     SolverInstanceMap mSolverInstanceMap;
 
-    LAMA_LOG_DECL_STATIC_LOGGER(logger);
+    LAMA_LOG_DECL_STATIC_LOGGER( logger )
 };
 
 }

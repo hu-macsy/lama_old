@@ -129,7 +129,7 @@ private:
     void logStartSolve();
     void logEndSolve();
 
-    LAMA_LOG_DECL_STATIC_LOGGER(logger);
+    LAMA_LOG_DECL_STATIC_LOGGER( logger )
 };
 
 }

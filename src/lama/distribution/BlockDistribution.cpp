@@ -39,7 +39,7 @@
 namespace lama
 {
 
-LAMA_LOG_DEF_LOGGER( BlockDistribution::logger, "Distribution.BlockDistribution" );
+LAMA_LOG_DEF_LOGGER( BlockDistribution::logger, "Distribution.BlockDistribution" )
 
 void BlockDistribution::getRange(
     IndexType& lb,
@@ -48,7 +48,7 @@ void BlockDistribution::getRange(
     const PartitionId rank,
     const PartitionId size )
 {
-    LAMA_ASSERT_DEBUG( rank < size, "illegal rank = " << rank << ", size = " << size );
+    LAMA_ASSERT_DEBUG( rank < size, "illegal rank = " << rank << ", size = " << size )
     IndexType blockSize = ( n + size - 1 ) / size;
     lb = rank * blockSize;
     ub = ( rank + 1 ) * blockSize - 1;
@@ -57,7 +57,7 @@ void BlockDistribution::getRange(
 
 BlockDistribution::~BlockDistribution()
 {
-    LAMA_LOG_INFO( logger, "~BlockDistribution" );
+    LAMA_LOG_INFO( logger, "~BlockDistribution" )
 }
 
 BlockDistribution::BlockDistribution( const IndexType globalSize, const CommunicatorPtr communicator )
@@ -66,11 +66,11 @@ BlockDistribution::BlockDistribution( const IndexType globalSize, const Communic
 {
     PartitionId size = mCommunicator->getSize();
     PartitionId rank = mCommunicator->getRank();
-    LAMA_LOG_DEBUG( logger, "BlockDistribution of " << getGlobalSize() << " elements" );
+    LAMA_LOG_DEBUG( logger, "BlockDistribution of " << getGlobalSize() << " elements" )
     mBlockSize = ( globalSize + size - 1 ) / size;
     getRange( lb, ub, globalSize, rank, size );
     LAMA_LOG_INFO( logger,
-                   "BlockDistribution of " << getGlobalSize() << " elements" << ", me has " << lb << " : " << ub );
+                   "BlockDistribution of " << getGlobalSize() << " elements" << ", me has " << lb << " : " << ub )
 }
 
 bool BlockDistribution::isLocal( const IndexType globalIndex ) const
@@ -118,7 +118,7 @@ void BlockDistribution::computeOwners(
 {
     owners.clear();
     owners.reserve( requiredIndexes.size() );
-    LAMA_LOG_INFO( logger, "compute " << requiredIndexes.size() << " owners for " << *this );
+    LAMA_LOG_INFO( logger, "compute " << requiredIndexes.size() << " owners for " << *this )
 
     for ( size_t i = 0; i < requiredIndexes.size(); i++ )
     {

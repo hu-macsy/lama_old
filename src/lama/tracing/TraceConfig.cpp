@@ -55,7 +55,7 @@ boost::shared_ptr<TraceConfig> TraceConfig::config;
 
 /* -------------------------------------------------------------------------- */
 
-LAMA_LOG_DEF_LOGGER( TraceConfig::logger, "TraceConfig" );
+LAMA_LOG_DEF_LOGGER( TraceConfig::logger, "TraceConfig" )
 
 /* -------------------------------------------------------------------------- */
 
@@ -99,7 +99,7 @@ extern "C" void VT_User_trace_off__();
 
 void TraceConfig::setKey( const std::string& key, const std::string& value )
 {
-    LAMA_LOG_INFO( logger, "Set trace key " << key << " = " << value );
+    LAMA_LOG_INFO( logger, "Set trace key " << key << " = " << value )
 
     if ( key == "PREFIX" )
     {
@@ -107,7 +107,7 @@ void TraceConfig::setKey( const std::string& key, const std::string& value )
     }
     else
     {
-        LAMA_LOG_WARN( logger, key << " is unknown key for TRACE configuration" );
+        LAMA_LOG_WARN( logger, key << " is unknown key for TRACE configuration" )
     }
 }
 
@@ -123,24 +123,24 @@ void TraceConfig::enableVampirTrace( bool flag )
         // enable the context when tracing is switched on / off
 
         LAMA_LOG_INFO( logger, "enableVampirTrace: flag =  " << flag
-                       << ", context = " << *mCUDAContext );
+                       << ", context = " << *mCUDAContext )
 
-        LAMA_CONTEXT_ACCESS( mCUDAContext );
+        LAMA_CONTEXT_ACCESS( mCUDAContext )
 
         VTInterface::enable( flag );
     }
     else
     {
-        LAMA_LOG_INFO( logger, "enableVampirTrace: flag =  " << flag << ", no context" );
+        LAMA_LOG_INFO( logger, "enableVampirTrace: flag =  " << flag << ", no context" )
 
         VTInterface::enable( flag );
     }
 #else
-    LAMA_LOG_INFO( logger, "enableVampirTrace: flag =  " << flag << ", level VT disabled" );
+    LAMA_LOG_INFO( logger, "enableVampirTrace: flag =  " << flag << ", level VT disabled" )
 
     if ( mVampirTraceEnabled )
     {
-        LAMA_LOG_WARN( logger, "TRACE:vt ignored, use LAMA_TRACE_LEVEL=VT for compilation." );
+        LAMA_LOG_WARN( logger, "TRACE:vt ignored, use LAMA_TRACE_LEVEL=VT for compilation." )
     }
 #endif
 }
@@ -149,7 +149,7 @@ void TraceConfig::enableVampirTrace( bool flag )
 
 void TraceConfig::setParam( const std::string& param )
 {
-    LAMA_LOG_INFO( logger, "Set trace config value : " << param );
+    LAMA_LOG_INFO( logger, "Set trace config value : " << param )
 
     if ( param == "VT" )
     {
@@ -165,7 +165,7 @@ void TraceConfig::setParam( const std::string& param )
     }
     else
     {
-        LAMA_LOG_WARN( logger, param << " is unknown option for TRACE" );
+        LAMA_LOG_WARN( logger, param << " is unknown option for TRACE" )
     }
 }
 
@@ -219,7 +219,7 @@ TraceConfig::TraceConfig()
     }
     else
     {
-        LAMA_LOG_WARN( logger, "LAMA_TRACE not set, tracing is disabled. Enable by LAMA_TRACE=time[:vt][:thread]" );
+        LAMA_LOG_WARN( logger, "LAMA_TRACE not set, tracing is disabled. Enable by LAMA_TRACE=time[:vt][:thread]" )
     }
 
     // enable/disable VampirTrace, action needed now
@@ -255,14 +255,14 @@ TraceConfig::TraceConfig()
 
     mMaster = Thread::getSelf();
 
-    LAMA_LOG_INFO( logger, "ThreadConfig: enabled = " << mEnabled );
+    LAMA_LOG_INFO( logger, "ThreadConfig: enabled = " << mEnabled )
 }
 
 /* -------------------------------------------------------------------------- */
 
 TraceConfig::~TraceConfig()
 {
-    LAMA_LOG_DEBUG( logger, "Entering Destructor." );
+    LAMA_LOG_DEBUG( logger, "Entering Destructor." )
 
     if ( mVampirTraceEnabled )
     {
@@ -273,8 +273,8 @@ TraceConfig::~TraceConfig()
 
     if ( !mTimeTraceEnabled )
     {
-        LAMA_LOG_INFO( logger, "~TraceConfig, no output file" );
-        LAMA_LOG_DEBUG( logger, "Leaving Destructor." );
+        LAMA_LOG_INFO( logger, "~TraceConfig, no output file" )
+        LAMA_LOG_DEBUG( logger, "Leaving Destructor." )
         return;
     }
 
@@ -289,13 +289,13 @@ TraceConfig::~TraceConfig()
         fileName << "." << mComm->getRank();
     }
 
-    LAMA_LOG_INFO( logger, "~TraceConfig, output file = " << fileName.str() );
+    LAMA_LOG_INFO( logger, "~TraceConfig, output file = " << fileName.str() )
 
     FILE* f = fopen( fileName.str().c_str(), "w" );
 
     if ( f == NULL )
     {
-        LAMA_LOG_ERROR( logger, "Could not open " << fileName.str() << " for writing time information." );
+        LAMA_LOG_ERROR( logger, "Could not open " << fileName.str() << " for writing time information." )
         return;
     }
 
@@ -311,7 +311,7 @@ TraceConfig::~TraceConfig()
 
     fclose( f );
 
-    LAMA_LOG_DEBUG( logger, "Leaving Destructor." );
+    LAMA_LOG_DEBUG( logger, "Leaving Destructor." )
 }
 
 /* -------------------------------------------------------------------------- */

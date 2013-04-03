@@ -3,3 +3,5 @@ build/
 .cproject
 .project
 .settings/
+doc/doxygen
+src/lama/solver/amg

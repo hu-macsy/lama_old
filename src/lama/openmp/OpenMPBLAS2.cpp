@@ -44,7 +44,7 @@
 namespace lama
 {
 
-LAMA_LOG_DEF_LOGGER( OpenMPBLAS2::logger, "OpenMP.BLAS2" );
+LAMA_LOG_DEF_LOGGER( OpenMPBLAS2::logger, "OpenMP.BLAS2" )
 
 /** gemv */
 
@@ -65,7 +65,7 @@ void OpenMPBLAS2::gemv(
     SyncToken* syncToken )
 {
     LAMA_LOG_INFO( logger,
-                   "gemv<float>: M = " << M << ", N = " << N << ", LDA = " << lda << ", incX = " << incX << ", incY = " << incY << ", alpha = " << alpha << ", beta = " << beta );
+                   "gemv<float>: M = " << M << ", N = " << N << ", LDA = " << lda << ", incX = " << incX << ", incY = " << incY << ", alpha = " << alpha << ", beta = " << beta )
 
     if ( syncToken )
     {
@@ -169,7 +169,7 @@ void OpenMPBLAS2::gemv(
     SyncToken* syncToken )
 {
     LAMA_LOG_INFO( logger,
-                   "gemv<double>: M = " << M << ", N = " << N << ", LDA = " << lda << ", incX = " << incX << ", incY = " << incY << ", alpha = " << alpha << ", beta = " << beta );
+                   "gemv<double>: M = " << M << ", N = " << N << ", LDA = " << lda << ", incX = " << incX << ", incY = " << incY << ", alpha = " << alpha << ", beta = " << beta )
 
     if ( syncToken )
     {
@@ -275,7 +275,7 @@ void OpenMPBLAS2::symv(
     SyncToken* syncToken )
 {
     LAMA_LOG_INFO( logger,
-                   "symv<float>: N = " << N << ", LDA = " << lda << ", incX = " << incX << ", incY = " << incY << ", alpha = " << alpha << ", beta = " << beta );
+                   "symv<float>: N = " << N << ", LDA = " << lda << ", incX = " << incX << ", incY = " << incY << ", alpha = " << alpha << ", beta = " << beta )
 
     if ( syncToken )
     {
@@ -371,7 +371,7 @@ void OpenMPBLAS2::symv(
     SyncToken* syncToken )
 {
     LAMA_LOG_INFO( logger,
-                   "symv<double>: N = " << N << ", LDA = " << lda << ", incX = " << incX << ", incY = " << incY << ", alpha = " << alpha << ", beta = " << beta );
+                   "symv<double>: N = " << N << ", LDA = " << lda << ", incX = " << incX << ", incY = " << incY << ", alpha = " << alpha << ", beta = " << beta )
 
     if ( syncToken )
     {
@@ -465,7 +465,7 @@ void OpenMPBLAS2::trmv(
     const IndexType incX,
     SyncToken* syncToken )
 {
-    LAMA_LOG_INFO( logger, "symv<float>: N = " << N << ", LDA = " << lda << ", incX = " << incX );
+    LAMA_LOG_INFO( logger, "symv<float>: N = " << N << ", LDA = " << lda << ", incX = " << incX )
 
     if ( syncToken )
     {
@@ -632,7 +632,7 @@ void OpenMPBLAS2::trmv(
     const IndexType incX,
     SyncToken* syncToken )
 {
-    LAMA_LOG_INFO( logger, "symv<double>: N = " << N << ", LDA = " << lda << ", incX = " << incX );
+    LAMA_LOG_INFO( logger, "symv<double>: N = " << N << ", LDA = " << lda << ", incX = " << incX )
 
     if ( syncToken )
     {
@@ -801,7 +801,7 @@ void OpenMPBLAS2::trsv(
     const IndexType incX,
     SyncToken* syncToken )
 {
-    LAMA_LOG_INFO( logger, "trsv<float>: N = " << N << ", LDA = " << lda << ", incX = " << incX );
+    LAMA_LOG_INFO( logger, "trsv<float>: N = " << N << ", LDA = " << lda << ", incX = " << incX )
 
     if ( syncToken )
     {
@@ -968,7 +968,7 @@ void OpenMPBLAS2::trsv(
     const IndexType incX,
     SyncToken* syncToken )
 {
-    LAMA_LOG_INFO( logger, "trsv<doubel>: N = " << N << ", LDA = " << lda << ", incX = " << incX );
+    LAMA_LOG_INFO( logger, "trsv<doubel>: N = " << N << ", LDA = " << lda << ", incX = " << incX )
 
     if ( syncToken )
     {
@@ -1143,7 +1143,7 @@ void OpenMPBLAS2::gbmv(
     SyncToken* syncToken )
 {
     LAMA_LOG_INFO( logger,
-                   "gbmv<float>: M = " << M << ", N = " << N << ", KL = " << KL << ", KU = " << KU << ", alpha = " << alpha << ", LDA = " << lda << ", beta = " << beta );
+                   "gbmv<float>: M = " << M << ", N = " << N << ", KL = " << KL << ", KU = " << KU << ", alpha = " << alpha << ", LDA = " << lda << ", beta = " << beta )
 
     if ( syncToken )
     {
@@ -1253,7 +1253,7 @@ void OpenMPBLAS2::gbmv(
     SyncToken* syncToken )
 {
     LAMA_LOG_INFO( logger,
-                   "gbmv<double>: M = " << M << ", N = " << N << ", KL = " << KL << ", KU = " << KU << ", alpha = " << alpha << ", LDA = " << lda << ", beta = " << beta );
+                   "gbmv<double>: M = " << M << ", N = " << N << ", KL = " << KL << ", KU = " << KU << ", alpha = " << alpha << ", LDA = " << lda << ", beta = " << beta )
 
     if ( syncToken )
     {
@@ -1362,7 +1362,7 @@ void OpenMPBLAS2::sbmv(
     SyncToken* syncToken )
 {
     LAMA_LOG_INFO( logger,
-                   "sbmv<float>: N = " << N << ", K = " << K << ", alpha = " << alpha << ", LDA = " << lda << ", beta = " << beta );
+                   "sbmv<float>: N = " << N << ", K = " << K << ", alpha = " << alpha << ", LDA = " << lda << ", beta = " << beta )
 
     if ( syncToken )
     {
@@ -1459,7 +1459,7 @@ void OpenMPBLAS2::sbmv(
     SyncToken* syncToken )
 {
     LAMA_LOG_INFO( logger,
-                   "sbmv<double>: N = " << N << ", K = " << K << ", alpha = " << alpha << ", LDA = " << lda << ", beta = " << beta );
+                   "sbmv<double>: N = " << N << ", K = " << K << ", alpha = " << alpha << ", LDA = " << lda << ", beta = " << beta )
 
     if ( syncToken )
     {
@@ -1555,7 +1555,7 @@ void OpenMPBLAS2::tbmv(
     const IndexType incX,
     SyncToken* syncToken )
 {
-    LAMA_LOG_INFO( logger, "tbmv<float>: N = " << N << ", K = " << K << ", LDA = " << lda );
+    LAMA_LOG_INFO( logger, "tbmv<float>: N = " << N << ", K = " << K << ", LDA = " << lda )
 
     if ( syncToken )
     {
@@ -1724,7 +1724,7 @@ void OpenMPBLAS2::tbmv(
     const IndexType incX,
     SyncToken* syncToken )
 {
-    LAMA_LOG_INFO( logger, "tbmv<double>: N = " << N << ", K = " << K << ", LDA = " << lda );
+    LAMA_LOG_INFO( logger, "tbmv<double>: N = " << N << ", K = " << K << ", LDA = " << lda )
 
     if ( syncToken )
     {
@@ -1894,7 +1894,7 @@ void OpenMPBLAS2::tbsv(
     const IndexType incX,
     SyncToken* syncToken )
 {
-    LAMA_LOG_INFO( logger, "tbsv<float>: N = " << N << ", K = " << K << ", LDA = " << lda );
+    LAMA_LOG_INFO( logger, "tbsv<float>: N = " << N << ", K = " << K << ", LDA = " << lda )
 
     if ( syncToken )
     {
@@ -2063,7 +2063,7 @@ void OpenMPBLAS2::tbsv(
     const IndexType incX,
     SyncToken* syncToken )
 {
-    LAMA_LOG_INFO( logger, "tbsv<double>: N = " << N << ", K = " << K << ", LDA = " << lda );
+    LAMA_LOG_INFO( logger, "tbsv<double>: N = " << N << ", K = " << K << ", LDA = " << lda )
 
     if ( syncToken )
     {
@@ -2234,7 +2234,7 @@ void OpenMPBLAS2::ger(
     const IndexType lda,
     SyncToken* syncToken )
 {
-    LAMA_LOG_INFO( logger, "ger<float>: M = " << M << ", N = " << N << ", LDA = " << lda );
+    LAMA_LOG_INFO( logger, "ger<float>: M = " << M << ", N = " << N << ", LDA = " << lda )
 
     if ( syncToken )
     {
@@ -2285,7 +2285,7 @@ void OpenMPBLAS2::ger(
     const IndexType lda,
     SyncToken* syncToken )
 {
-    LAMA_LOG_INFO( logger, "ger<double>: M = " << M << ", N = " << N << ", LDA = " << lda );
+    LAMA_LOG_INFO( logger, "ger<double>: M = " << M << ", N = " << N << ", LDA = " << lda )
 
     if ( syncToken )
     {
@@ -2336,7 +2336,7 @@ void OpenMPBLAS2::syr(
     const IndexType lda,
     SyncToken* syncToken )
 {
-    LAMA_LOG_INFO( logger, "syr<float>: N = " << N << ", LDA = " << lda );
+    LAMA_LOG_INFO( logger, "syr<float>: N = " << N << ", LDA = " << lda )
 
     if ( syncToken )
     {
@@ -2426,7 +2426,7 @@ void OpenMPBLAS2::syr(
     const IndexType lda,
     SyncToken* syncToken )
 {
-    LAMA_LOG_INFO( logger, "syr<double>: N = " << N << ", LDA = " << lda );
+    LAMA_LOG_INFO( logger, "syr<double>: N = " << N << ", LDA = " << lda )
 
     if ( syncToken )
     {
@@ -2520,7 +2520,7 @@ void OpenMPBLAS2::syr2(
     const IndexType lda,
     SyncToken* syncToken )
 {
-    LAMA_LOG_INFO( logger, "syr2<float>: N = " << N << ", alpha = " << alpha << ", LDA = " << lda );
+    LAMA_LOG_INFO( logger, "syr2<float>: N = " << N << ", alpha = " << alpha << ", LDA = " << lda )
 
     if ( syncToken )
     {
@@ -2613,7 +2613,7 @@ void OpenMPBLAS2::syr2(
     const IndexType lda,
     SyncToken* syncToken )
 {
-    LAMA_LOG_INFO( logger, "syr2<double>: N = " << N << ", alpha = " << alpha << ", LDA = " << lda );
+    LAMA_LOG_INFO( logger, "syr2<double>: N = " << N << ", alpha = " << alpha << ", LDA = " << lda )
 
     if ( syncToken )
     {
@@ -2708,7 +2708,7 @@ void OpenMPBLAS2::spmv(
     const IndexType incY,
     SyncToken* syncToken )
 {
-    LAMA_LOG_INFO( logger, "spmv<float>: N = " << N << ", alpha = " << alpha << ", beta = " << beta );
+    LAMA_LOG_INFO( logger, "spmv<float>: N = " << N << ", alpha = " << alpha << ", beta = " << beta )
 
     if ( syncToken )
     {
@@ -2799,7 +2799,7 @@ void OpenMPBLAS2::spmv(
     const IndexType incY,
     SyncToken* syncToken )
 {
-    LAMA_LOG_INFO( logger, "spmv<double>: N = " << N << ", alpha = " << alpha << ", beta = " << beta );
+    LAMA_LOG_INFO( logger, "spmv<double>: N = " << N << ", alpha = " << alpha << ", beta = " << beta )
 
     if ( syncToken )
     {
@@ -2890,7 +2890,7 @@ void OpenMPBLAS2::spr(
     float* Ap,
     SyncToken* syncToken )
 {
-    LAMA_LOG_INFO( logger, "spr<float>: N = " << N << ", alpha = " << alpha );
+    LAMA_LOG_INFO( logger, "spr<float>: N = " << N << ", alpha = " << alpha )
 
     if ( syncToken )
     {
@@ -2978,7 +2978,7 @@ void OpenMPBLAS2::spr(
     double* Ap,
     SyncToken* syncToken )
 {
-    LAMA_LOG_INFO( logger, "spr<float>: N = " << N << ", alpha = " << alpha );
+    LAMA_LOG_INFO( logger, "spr<float>: N = " << N << ", alpha = " << alpha )
 
     if ( syncToken )
     {
@@ -3070,7 +3070,7 @@ void OpenMPBLAS2::spr2(
     float* A,
     SyncToken* syncToken )
 {
-    LAMA_LOG_INFO( logger, "spr2<float>: N = " << N << ", alpha = " << alpha );
+    LAMA_LOG_INFO( logger, "spr2<float>: N = " << N << ", alpha = " << alpha )
 
     if ( syncToken )
     {
@@ -3160,7 +3160,7 @@ void OpenMPBLAS2::spr2(
     double* A,
     SyncToken* syncToken )
 {
-    LAMA_LOG_INFO( logger, "spr2<double>: N = " << N << ", alpha = " << alpha );
+    LAMA_LOG_INFO( logger, "spr2<double>: N = " << N << ", alpha = " << alpha )
 
     if ( syncToken )
     {
@@ -3252,7 +3252,7 @@ void OpenMPBLAS2::tpmv(
     const IndexType incX,
     SyncToken* syncToken )
 {
-    LAMA_LOG_INFO( logger, "tpmv<float>: N = " << N );
+    LAMA_LOG_INFO( logger, "tpmv<float>: N = " << N )
 
     if ( syncToken )
     {
@@ -3417,7 +3417,7 @@ void OpenMPBLAS2::tpmv(
     const IndexType incX,
     SyncToken* syncToken )
 {
-    LAMA_LOG_INFO( logger, "tpmv<double>: N = " << N );
+    LAMA_LOG_INFO( logger, "tpmv<double>: N = " << N )
 
     if ( syncToken )
     {
@@ -3584,7 +3584,7 @@ void OpenMPBLAS2::tpsv(
     const IndexType incX,
     SyncToken* syncToken )
 {
-    LAMA_LOG_INFO( logger, "tpsv<float>: N = " << N );
+    LAMA_LOG_INFO( logger, "tpsv<float>: N = " << N )
 
     if ( syncToken )
     {
@@ -3749,7 +3749,7 @@ void OpenMPBLAS2::tpsv(
     const IndexType incX,
     SyncToken* syncToken )
 {
-    LAMA_LOG_INFO( logger, "tpsv<double>: N = " << N );
+    LAMA_LOG_INFO( logger, "tpsv<double>: N = " << N )
 
     if ( syncToken )
     {

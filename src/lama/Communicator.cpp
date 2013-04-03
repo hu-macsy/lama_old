@@ -49,17 +49,17 @@ using namespace std;
 namespace lama
 {
 
-LAMA_LOG_DEF_LOGGER( Communicator::logger, "Communicator" );
+LAMA_LOG_DEF_LOGGER( Communicator::logger, "Communicator" )
 
 Communicator::Communicator( const std::string& type )
     : mCommunicatorType( type )
 {
-    LAMA_LOG_DEBUG( logger, "Communicator constructed, type = " << type );
+    LAMA_LOG_DEBUG( logger, "Communicator constructed, type = " << type )
 }
 
 Communicator::~Communicator()
 {
-    LAMA_LOG_DEBUG( logger, "~Communicator" );
+    LAMA_LOG_DEBUG( logger, "~Communicator" )
 }
 
 bool Communicator::operator==( const Communicator& other ) const
@@ -132,7 +132,7 @@ void Communicator::factorize2( const double sizeX, const double sizeY, Partition
     }
 
     LAMA_LOG_INFO( logger,
-                   "Best processor factorization of size = " << size << ": " << procgrid[0] << " x " << procgrid[1] );
+                   "Best processor factorization of size = " << size << ": " << procgrid[0] << " x " << procgrid[1] )
 }
 
 void Communicator::factorize3(
@@ -214,12 +214,12 @@ void Communicator::factorize3(
     }
 
     LAMA_LOG_INFO( logger,
-                   "Best processor factorization of size = " << size << ": " << procgrid[0] << " x " << procgrid[1] << " x " << procgrid[2] );
+                   "Best processor factorization of size = " << size << ": " << procgrid[0] << " x " << procgrid[1] << " x " << procgrid[2] )
 }
 
 void Communicator::getGrid2Rank( PartitionId pos[2], const PartitionId procgrid[2] ) const
 {
-    LAMA_ASSERT_ERROR( getSize() == procgrid[0] * procgrid[1], "illegal procgrid" );
+    LAMA_ASSERT_ERROR( getSize() == procgrid[0] * procgrid[1], "illegal procgrid" )
 
     PartitionId rank = getRank();
     PartitionId size = procgrid[0];
@@ -229,12 +229,12 @@ void Communicator::getGrid2Rank( PartitionId pos[2], const PartitionId procgrid[
     pos[0] = rank;
 
     LAMA_LOG_INFO( logger,
-                   *this << ": is (" << pos[0] << "," << pos[1] << ") of (" << procgrid[0] << "," << procgrid[1] << ")" );
+                   *this << ": is (" << pos[0] << "," << pos[1] << ") of (" << procgrid[0] << "," << procgrid[1] << ")" )
 }
 
 void Communicator::getGrid3Rank( PartitionId pos[3], const PartitionId procgrid[3] ) const
 {
-    LAMA_ASSERT_ERROR( getSize() == procgrid[0] * procgrid[1] * procgrid[2], "illegal procgrid" );
+    LAMA_ASSERT_ERROR( getSize() == procgrid[0] * procgrid[1] * procgrid[2], "illegal procgrid" )
 
     PartitionId rank = getRank();
 
@@ -250,7 +250,7 @@ void Communicator::getGrid3Rank( PartitionId pos[3], const PartitionId procgrid[
     pos[0] = rank;
 
     LAMA_LOG_INFO( logger,
-                   *this << ": is (" << pos[0] << "," << pos[1] << "," << pos[2] << ") of (" << procgrid[0] << "," << procgrid[1] << "," << procgrid[2] << ")" );
+                   *this << ": is (" << pos[0] << "," << pos[1] << "," << pos[2] << ") of (" << procgrid[0] << "," << procgrid[1] << "," << procgrid[2] << ")" )
 }
 
 void Communicator::getUserProcArray( PartitionId userProcArray[3] )
@@ -292,11 +292,11 @@ void Communicator::getUserProcArray( PartitionId userProcArray[3] )
         }
 
         LAMA_LOG_INFO( logger,
-                       "NP4LAMA=" << np4lama << " -> userProcArray " << userProcArray[0] << " x " << userProcArray[1] << " x " << userProcArray[2] );
+                       "NP4LAMA=" << np4lama << " -> userProcArray " << userProcArray[0] << " x " << userProcArray[1] << " x " << userProcArray[2] )
     }
     else
     {
-        LAMA_LOG_INFO( logger, "environment variable NP4LAMA no set" );
+        LAMA_LOG_INFO( logger, "environment variable NP4LAMA no set" )
     }
 }
 
@@ -314,7 +314,7 @@ auto_ptr<SyncToken> Communicator::defaultShiftAsync(
     IndexType recvSize = -1;
     recvSize = shift( targetVals, size, sourceVals, size, direction );
 
-    LAMA_ASSERT_ERROR( recvSize == size, "asynchronous shift with different sizes on partitions" );
+    LAMA_ASSERT_ERROR( recvSize == size, "asynchronous shift with different sizes on partitions" )
 
     return auto_ptr<SyncToken>( new NoSyncToken() );
 }
@@ -355,7 +355,7 @@ IndexType Communicator::shift0(
     const T sourceVals[],
     const IndexType sourceSize ) const
 {
-    LAMA_ASSERT_ERROR( sourceSize <= maxTargetSize, "insufficient size for target array" );
+    LAMA_ASSERT_ERROR( sourceSize <= maxTargetSize, "insufficient size for target array" )
 
     for ( IndexType i = 0; i < sourceSize; i++ )
     {
@@ -370,7 +370,7 @@ IndexType Communicator::shift0(
 template<typename T>
 void Communicator::shift( LAMAArray<T>& recvArray, const LAMAArray<T>& sendArray, const int direction ) const
 {
-    LAMA_ASSERT_ERROR( &recvArray != &sendArray, "send and receive array are same, not allowed for shift" );
+    LAMA_ASSERT_ERROR( &recvArray != &sendArray, "send and receive array are same, not allowed for shift" )
 
     if ( direction % getSize() == 0 )
     {
@@ -396,7 +396,7 @@ void Communicator::shift( LAMAArray<T>& recvArray, const LAMAArray<T>& sendArray
     IndexType numRecvElems = shift( recvData.get(), maxNumRecvElems, sendData.get(), numSendElems, direction );
 
     LAMA_LOG_INFO( logger,
-                   "shift, direction = " << direction << ", sent " << numSendElems << ", recvd " << numRecvElems << "( max was " << maxNumRecvElems << ")" );
+                   "shift, direction = " << direction << ", sent " << numSendElems << ", recvd " << numRecvElems << "( max was " << maxNumRecvElems << ")" )
 
     recvData.resize( numRecvElems ); // take over the size
 }
@@ -409,7 +409,7 @@ auto_ptr<SyncToken> Communicator::shiftAsync(
     const LAMAArray<T>& sendArray,
     const int direction ) const
 {
-    LAMA_ASSERT_ERROR( &recvArray != &sendArray, "send and receive array are same, not allowed for shift" );
+    LAMA_ASSERT_ERROR( &recvArray != &sendArray, "send and receive array are same, not allowed for shift" )
 
     recvArray.clear(); // do not keep any old data, keep capacities
 
@@ -425,7 +425,7 @@ auto_ptr<SyncToken> Communicator::shiftAsync(
 
     auto_ptr<SyncToken> syncToken = shiftAsync( recvData->get(), sendData->get(), numElems, direction );
 
-    LAMA_ASSERT_DEBUG( syncToken.get(), "NULL pointer for sync token" );
+    LAMA_ASSERT_DEBUG( syncToken.get(), "NULL pointer for sync token" )
 
     // accesses are pushed in the sync token so they are freed after synchronization
 
@@ -440,19 +440,19 @@ auto_ptr<SyncToken> Communicator::shiftAsync(
 template<typename T>
 void Communicator::updateHalo( LAMAArray<T> &haloValues, const LAMAArray<T>& localValues, const Halo& halo ) const
 {
-    LAMA_REGION( "Communicator.updateHalo" );
+    LAMA_REGION( "Communicator.updateHalo" )
 
-    LAMA_LOG_INFO( logger, *this << ": update halo" );
+    LAMA_LOG_INFO( logger, *this << ": update halo" )
 
     const CommunicationPlan& requiredPlan = halo.getRequiredPlan();
 
-    LAMA_ASSERT_ERROR( requiredPlan.allocated(), "Required plan in Halo not allocated" );
-    LAMA_ASSERT_ERROR( requiredPlan.size() < getSize(), "Required plan in Halo mismatches size of communicator" );
+    LAMA_ASSERT_ERROR( requiredPlan.allocated(), "Required plan in Halo not allocated" )
+    LAMA_ASSERT_ERROR( requiredPlan.size() < getSize(), "Required plan in Halo mismatches size of communicator" )
 
     const CommunicationPlan& providesPlan = halo.getProvidesPlan();
 
-    LAMA_ASSERT_ERROR( providesPlan.allocated(), "Provides plan in Halo not allocated" );
-    LAMA_ASSERT_ERROR( providesPlan.size() < getSize(), "Provides plan in Halo mismatches size of communicator" );
+    LAMA_ASSERT_ERROR( providesPlan.allocated(), "Provides plan in Halo not allocated" )
+    LAMA_ASSERT_ERROR( providesPlan.size() < getSize(), "Provides plan in Halo mismatches size of communicator" )
 
     // Before we exchange by plan, we have to pack local values to send
 
@@ -477,19 +477,19 @@ auto_ptr<SyncToken> Communicator::updateHaloAsync(
     const LAMAArray<T>& localValues,
     const Halo& halo ) const
 {
-    LAMA_REGION( "Communicator.updateHaloAsync" );
+    LAMA_REGION( "Communicator.updateHaloAsync" )
 
-    LAMA_LOG_INFO( logger, *this << ": asynchronous update halo" );
+    LAMA_LOG_INFO( logger, *this << ": asynchronous update halo" )
 
     const CommunicationPlan& requiredPlan = halo.getRequiredPlan();
 
-    LAMA_ASSERT_ERROR( requiredPlan.allocated(), "Required plan in Halo not allocated" );
-    LAMA_ASSERT_ERROR( requiredPlan.size() < getSize(), "Required plan in Halo mismatches size of communicator" );
+    LAMA_ASSERT_ERROR( requiredPlan.allocated(), "Required plan in Halo not allocated" )
+    LAMA_ASSERT_ERROR( requiredPlan.size() < getSize(), "Required plan in Halo mismatches size of communicator" )
 
     const CommunicationPlan& providesPlan = halo.getProvidesPlan();
 
-    LAMA_ASSERT_ERROR( providesPlan.allocated(), "Provides plan in Halo not allocated" );
-    LAMA_ASSERT_ERROR( providesPlan.size() < getSize(), "Provides plan in Halo mismatches size of communicator" );
+    LAMA_ASSERT_ERROR( providesPlan.allocated(), "Provides plan in Halo not allocated" )
+    LAMA_ASSERT_ERROR( providesPlan.size() < getSize(), "Provides plan in Halo mismatches size of communicator" )
 
     // Before we exchange by plan, we have to pack local values to send
 
@@ -537,11 +537,11 @@ void Communicator::computeOwners(
 
     const size_t requiredIndexesSize = requiredIndexes.size();
 
-    LAMA_LOG_DEBUG( logger, "need owners for " << requiredIndexesSize << " global indexes" );
+    LAMA_LOG_DEBUG( logger, "need owners for " << requiredIndexesSize << " global indexes" )
 
     if ( distribution.getCommunicator() != *this )
     {
-        LAMA_THROWEXCEPTION( "The distribution has a different Communicator." );
+        LAMA_THROWEXCEPTION( "The distribution has a different Communicator." )
     }
 
     int n = 0;
@@ -561,9 +561,9 @@ void Communicator::computeOwners(
         }
     }
 
-    LAMA_LOG_DEBUG( logger, requiredIndexesSize - n << " Indexes are local. Only need to send " << n << " values." );
+    LAMA_LOG_DEBUG( logger, requiredIndexesSize - n << " Indexes are local. Only need to send " << n << " values." )
     IndexType receiveSize = max( n ); // --> pure method call
-    LAMA_LOG_DEBUG( logger, "max size of receive buffer is " << receiveSize );
+    LAMA_LOG_DEBUG( logger, "max size of receive buffer is " << receiveSize )
 
     // Allocate the maxiamal needed size for the communication buffers
 
@@ -605,28 +605,28 @@ void Communicator::computeOwners(
         HostWriteAccess<IndexType> ownersSend( ownersSendArray );
         HostWriteAccess<IndexType> ownersReceive( ownersReceiveArray );
         LAMA_LOG_DEBUG( logger,
-                        *this << " shift: recv " << receiveSize << ", send " << currentSize << ", direction = " << direction );
+                        *this << " shift: recv " << receiveSize << ", send " << currentSize << ", direction = " << direction )
 
         // --->   Pure method call
 
         currentSize = shift( indexesReceive.get(), receiveSize, indexesSend.get(), currentSize, direction );
 
-        LAMA_ASSERT_ERROR( ownersSize == -1 || currentSize == ownersSize, "Communication corrupted." );
+        LAMA_ASSERT_ERROR( ownersSize == -1 || currentSize == ownersSize, "Communication corrupted." )
 
-        LAMA_LOG_DEBUG( logger, "owners size = " << ownersSize << ", current size = " << currentSize );
+        LAMA_LOG_DEBUG( logger, "owners size = " << ownersSize << ", current size = " << currentSize )
         IndexType* indexes = indexesReceive.get();
         int* currentOwners = ownersSend.get();
-        LAMA_LOG_DEBUG( logger, "check buffer with " << currentSize << " global indexes whether I am owner" );
+        LAMA_LOG_DEBUG( logger, "check buffer with " << currentSize << " global indexes whether I am owner" )
 
         for ( int i = 0; i < currentSize; ++i )
         {
             //TODO there should be a blockwise implementation of isLocal
             LAMA_LOG_TRACE( logger,
-                            "check global index " << indexes[i] << " with current owner " << currentOwners[i] << ", is local = " << distribution.isLocal( indexes[i] ) );
+                            "check global index " << indexes[i] << " with current owner " << currentOwners[i] << ", is local = " << distribution.isLocal( indexes[i] ) )
 
             if ( currentOwners[i] == -1 && distribution.isLocal( indexes[i] ) )
             {
-                LAMA_LOG_TRACE( logger, *this << ": me is owner of global index " << indexes[i] );
+                LAMA_LOG_TRACE( logger, *this << ": me is owner of global index " << indexes[i] )
                 currentOwners[i] = rank;
             }
         }
@@ -636,7 +636,7 @@ void Communicator::computeOwners(
         indexesSend.release();
         indexesReceiveArray.swap( indexesSendArray );
 
-        LAMA_LOG_DEBUG( logger, *this << ": send array with " << currentSize << " owners to right" );
+        LAMA_LOG_DEBUG( logger, *this << ": send array with " << currentSize << " owners to right" )
 
         for ( int i = 0; i < currentSize; i++ )
         {
@@ -646,7 +646,7 @@ void Communicator::computeOwners(
         // --->   Pure method call
         ownersSize = shift( ownersReceive.get(), receiveSize, ownersSend.get(), currentSize, direction );
 
-        LAMA_LOG_DEBUG( logger, *this << ": recvd array with " << ownersSize << " owners from left" );
+        LAMA_LOG_DEBUG( logger, *this << ": recvd array with " << ownersSize << " owners from left" )
         for ( int i = 0; i < ownersSize; i++ )
         {
             LAMA_LOG_TRACE( logger, *this << ": recv currentOwner[" << i << "] = " << ownersReceive[i] )
@@ -662,7 +662,7 @@ void Communicator::computeOwners(
     for ( int i = 0; i < n; ++i )
     {
         LAMA_LOG_TRACE( logger,
-                        *this << ": final " << i << " of " << n << ": " << requiredIndexes[i] << ", owner = " << ownersSend[i] );
+                        *this << ": final " << i << " of " << n << ": " << requiredIndexes[i] << ", owner = " << ownersSend[i] )
     }
 
     // The Owner Indexes are always passed in the same order, so we can insert them easily.

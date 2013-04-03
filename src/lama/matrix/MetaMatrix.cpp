@@ -75,7 +75,7 @@ namespace lama
 //        MetaMatrix<ValueType>::logger,
 //        "Matrix.MetaMatrix");
 
-LAMA_LOG_DEF_LOGGER( MetaMatrix::logger, "Matrix.MetaMatrix" );
+LAMA_LOG_DEF_LOGGER( MetaMatrix::logger, "Matrix.MetaMatrix" )
 
 MetaMatrix::MetaMatrix( Matrix& other, const std::string& config )
 {
@@ -93,7 +93,7 @@ void MetaMatrix::interpreteArgument( Matrix& other, const std::string& arg )
 
     if ( configFile )
     {
-        LAMA_LOG_DEBUG( logger, "Argument " << arg << " is a file. Reading content now." );
+        LAMA_LOG_DEBUG( logger, "Argument " << arg << " is a file. Reading content now." )
         std::string configuration;
 
         configFile.unsetf( std::ios::skipws ); // No white space skipping!
@@ -110,7 +110,7 @@ void MetaMatrix::interpreteArgument( Matrix& other, const std::string& arg )
 
 void MetaMatrix::parseConfiguration( Matrix& other, const std::string& arg )
 {
-    LAMA_LOG_INFO( logger, "Parsing configuration " << arg );
+    LAMA_LOG_INFO( logger, "Parsing configuration " << arg )
 
     MatrixConfigGrammar configReader; // Our grammar
 
@@ -123,18 +123,18 @@ void MetaMatrix::parseConfiguration( Matrix& other, const std::string& arg )
     if ( !r || first != last )
     {
         std::string rest( first, last );
-        LAMA_THROWEXCEPTION( "Parsing failure. Stopped at " << rest );
+        LAMA_THROWEXCEPTION( "Parsing failure. Stopped at " << rest )
     }
 
-    LAMA_ASSERT( mMatrix, "No root matrix defined in this configuration." );
+    LAMA_ASSERT( mMatrix, "No root matrix defined in this configuration." )
 
-    LAMA_LOG_DEBUG( logger, "Matrix " << *mMatrix << " is root now." );
+    LAMA_LOG_DEBUG( logger, "Matrix " << *mMatrix << " is root now." )
 
 }
 
 /***** Grammar Class *****/
 
-LAMA_LOG_DEF_LOGGER( MatrixConfigGrammar::logger, "Matrix.MetaMatrix.Grammar" );
+LAMA_LOG_DEF_LOGGER( MatrixConfigGrammar::logger, "Matrix.MetaMatrix.Grammar" )
 
 MatrixConfigGrammar::MatrixConfigGrammar()
     : base_type( mRMatrixConfiguration )
@@ -238,109 +238,109 @@ MatrixConfigGrammar::MatrixConfigGrammar()
 
 const char* MetaMatrix::getTypeName() const
 {
-    LAMA_ASSERT( mMatrix, "Matrix is not created. Already configured the MetaMatrix?" );
+    LAMA_ASSERT( mMatrix, "Matrix is not created. Already configured the MetaMatrix?" )
     return mMatrix->getTypeName();
 }
 
 void MetaMatrix::clear()
 {
-    LAMA_ASSERT( mMatrix, "Matrix is not created. Already configured the MetaMatrix?" );
+    LAMA_ASSERT( mMatrix, "Matrix is not created. Already configured the MetaMatrix?" )
     mMatrix->clear();
 }
 
 void MetaMatrix::allocate( const IndexType numRows, const IndexType numColumns )
 {
-    LAMA_ASSERT( mMatrix, "Matrix is not created. Already configured the MetaMatrix?" );
+    LAMA_ASSERT( mMatrix, "Matrix is not created. Already configured the MetaMatrix?" )
     mMatrix->allocate( numRows, numColumns );
 }
 
 void MetaMatrix::allocate( DistributionPtr rowDistribution, DistributionPtr colDistribution )
 {
-    LAMA_ASSERT( mMatrix, "Matrix is not created. Already configured the MetaMatrix?" );
+    LAMA_ASSERT( mMatrix, "Matrix is not created. Already configured the MetaMatrix?" )
     mMatrix->allocate( rowDistribution, colDistribution );
 }
 
 void MetaMatrix::setIdentity()
 {
-    LAMA_ASSERT( mMatrix, "Matrix is not created. Already configured the MetaMatrix?" );
+    LAMA_ASSERT( mMatrix, "Matrix is not created. Already configured the MetaMatrix?" )
     mMatrix->setIdentity();
 }
 
 void MetaMatrix::assign( const Matrix& other )
 {
-    LAMA_ASSERT( mMatrix, "Matrix is not created. Already configured the MetaMatrix?" );
+    LAMA_ASSERT( mMatrix, "Matrix is not created. Already configured the MetaMatrix?" )
     mMatrix->assign( other );
 }
 
 void MetaMatrix::assign( const _MatrixStorage& other )
 {
-    LAMA_ASSERT( mMatrix, "Matrix is not created. Already configured the MetaMatrix?" );
+    LAMA_ASSERT( mMatrix, "Matrix is not created. Already configured the MetaMatrix?" )
     mMatrix->assign( other );
 }
 
 void MetaMatrix::assign( const _MatrixStorage& storage, DistributionPtr rowDist, DistributionPtr colDist )
 {
-    LAMA_ASSERT( mMatrix, "Matrix is not created. Already configured the MetaMatrix?" );
+    LAMA_ASSERT( mMatrix, "Matrix is not created. Already configured the MetaMatrix?" )
     mMatrix->assign( storage, rowDist, colDist );
 }
 
 void MetaMatrix::buildLocalStorage( _MatrixStorage& storage ) const
 {
-    LAMA_ASSERT( mMatrix, "Matrix is not created. Already configured the MetaMatrix?" );
+    LAMA_ASSERT( mMatrix, "Matrix is not created. Already configured the MetaMatrix?" )
     mMatrix->buildLocalStorage( storage );
 }
 
 void MetaMatrix::redistribute( DistributionPtr rowDistribution, DistributionPtr colDistribution )
 {
-    LAMA_ASSERT( mMatrix, "Matrix is not created. Already configured the MetaMatrix?" );
+    LAMA_ASSERT( mMatrix, "Matrix is not created. Already configured the MetaMatrix?" )
     mMatrix->redistribute( rowDistribution, colDistribution );
 }
 
 void MetaMatrix::getRow( Vector& row, const IndexType globalRowIndex ) const
 {
-    LAMA_ASSERT( mMatrix, "Matrix is not created. Already configured the MetaMatrix?" );
+    LAMA_ASSERT( mMatrix, "Matrix is not created. Already configured the MetaMatrix?" )
     mMatrix->getRow( row, globalRowIndex );
 }
 
 void MetaMatrix::getDiagonal( Vector& diagonal ) const
 {
-    LAMA_ASSERT( mMatrix, "Matrix is not created. Already configured the MetaMatrix?" );
+    LAMA_ASSERT( mMatrix, "Matrix is not created. Already configured the MetaMatrix?" )
     mMatrix->getDiagonal( diagonal );
 }
 
 void MetaMatrix::setDiagonal( const Vector& diagonal )
 {
-    LAMA_ASSERT( mMatrix, "Matrix is not created. Already configured the MetaMatrix?" );
+    LAMA_ASSERT( mMatrix, "Matrix is not created. Already configured the MetaMatrix?" )
     mMatrix->setDiagonal( diagonal );
 }
 
 void MetaMatrix::setDiagonal( const Scalar scalar )
 {
-    LAMA_ASSERT( mMatrix, "Matrix is not created. Already configured the MetaMatrix?" );
+    LAMA_ASSERT( mMatrix, "Matrix is not created. Already configured the MetaMatrix?" )
     mMatrix->setDiagonal( scalar );
 }
 
 void MetaMatrix::scale( const Vector& scaling )
 {
-    LAMA_ASSERT( mMatrix, "Matrix is not created. Already configured the MetaMatrix?" );
+    LAMA_ASSERT( mMatrix, "Matrix is not created. Already configured the MetaMatrix?" )
     mMatrix->scale( scaling );
 }
 
 void MetaMatrix::scale( const Scalar scaling )
 {
-    LAMA_ASSERT( mMatrix, "Matrix is not created. Already configured the MetaMatrix?" );
+    LAMA_ASSERT( mMatrix, "Matrix is not created. Already configured the MetaMatrix?" )
     mMatrix->scale( scaling );
 }
 
 Scalar MetaMatrix::getValue( IndexType i, IndexType j ) const
 {
-    LAMA_ASSERT( mMatrix, "Matrix is not created. Already configured the MetaMatrix?" );
+    LAMA_ASSERT( mMatrix, "Matrix is not created. Already configured the MetaMatrix?" )
     return mMatrix->getValue( i, j );
 }
 
 IndexType MetaMatrix::getNumValues() const
 {
-    LAMA_ASSERT( mMatrix, "Matrix is not created. Already configured the MetaMatrix?" );
+    LAMA_ASSERT( mMatrix, "Matrix is not created. Already configured the MetaMatrix?" )
     return mMatrix->getNumValues();
 }
 
@@ -351,13 +351,13 @@ void MetaMatrix::matrixTimesVector(
     const Scalar beta,
     const Vector& y ) const
 {
-    LAMA_ASSERT( mMatrix, "Matrix is not created. Already configured the MetaMatrix?" );
+    LAMA_ASSERT( mMatrix, "Matrix is not created. Already configured the MetaMatrix?" )
     mMatrix->matrixTimesVector( result, alpha, x, beta, y );
 }
 
 void MetaMatrix::matrixTimesScalar( const Matrix& other, const Scalar alpha )
 {
-    LAMA_ASSERT( mMatrix, "Matrix is not created. Already configured the MetaMatrix?" );
+    LAMA_ASSERT( mMatrix, "Matrix is not created. Already configured the MetaMatrix?" )
     mMatrix->matrixTimesScalar( other, alpha );
 }
 
@@ -368,103 +368,103 @@ void MetaMatrix::matrixTimesMatrix(
     const Scalar beta,
     const Matrix& C ) const
 {
-    LAMA_ASSERT( mMatrix, "Matrix is not created. Already configured the MetaMatrix?" );
+    LAMA_ASSERT( mMatrix, "Matrix is not created. Already configured the MetaMatrix?" )
     mMatrix->matrixTimesMatrix( result, alpha, B, beta, C );
 }
 
 IndexType MetaMatrix::getLocalNumValues() const
 {
-    LAMA_ASSERT( mMatrix, "Matrix is not created. Already configured the MetaMatrix?" );
+    LAMA_ASSERT( mMatrix, "Matrix is not created. Already configured the MetaMatrix?" )
     return mMatrix->getLocalNumValues();
 }
 
 IndexType MetaMatrix::getLocalNumRows() const
 {
-    LAMA_ASSERT( mMatrix, "Matrix is not created. Already configured the MetaMatrix?" );
+    LAMA_ASSERT( mMatrix, "Matrix is not created. Already configured the MetaMatrix?" )
     return mMatrix->getLocalNumRows();
 }
 
 IndexType MetaMatrix::getLocalNumColumns() const
 {
-    LAMA_ASSERT( mMatrix, "Matrix is not created. Already configured the MetaMatrix?" );
+    LAMA_ASSERT( mMatrix, "Matrix is not created. Already configured the MetaMatrix?" )
     return mMatrix->getLocalNumColumns();
 }
 
 void MetaMatrix::setContext( const ContextPtr context )
 {
-    LAMA_ASSERT( mMatrix, "Matrix is not created. Already configured the MetaMatrix?" );
+    LAMA_ASSERT( mMatrix, "Matrix is not created. Already configured the MetaMatrix?" )
     mMatrix->setContext( context );
 }
 
 ContextPtr MetaMatrix::getContextPtr() const
 {
-    LAMA_ASSERT( mMatrix, "Matrix is not created. Already configured the MetaMatrix?" );
+    LAMA_ASSERT( mMatrix, "Matrix is not created. Already configured the MetaMatrix?" )
     return mMatrix->getContextPtr();
 }
 
 Matrix::MatrixKind MetaMatrix::getMatrixKind() const
 {
-    LAMA_ASSERT( mMatrix, "Matrix is not created. Already configured the MetaMatrix?" );
+    LAMA_ASSERT( mMatrix, "Matrix is not created. Already configured the MetaMatrix?" )
     return mMatrix->getMatrixKind();
 }
 
 void MetaMatrix::prefetch() const
 {
-    LAMA_ASSERT( mMatrix, "Matrix is not created. Already configured the MetaMatrix?" );
+    LAMA_ASSERT( mMatrix, "Matrix is not created. Already configured the MetaMatrix?" )
     mMatrix->prefetch();
 }
 
 void MetaMatrix::wait() const
 {
-    LAMA_ASSERT( mMatrix, "Matrix is not created. Already configured the MetaMatrix?" );
+    LAMA_ASSERT( mMatrix, "Matrix is not created. Already configured the MetaMatrix?" )
     mMatrix->wait();
 }
 
 void MetaMatrix::invert( const Matrix& other )
 {
-    LAMA_ASSERT( mMatrix, "Matrix is not created. Already configured the MetaMatrix?" );
+    LAMA_ASSERT( mMatrix, "Matrix is not created. Already configured the MetaMatrix?" )
     mMatrix->invert( other );
 }
 
 Scalar MetaMatrix::maxDiffNorm( const Matrix& other ) const
 {
-    LAMA_ASSERT( mMatrix, "Matrix is not created. Already configured the MetaMatrix?" );
+    LAMA_ASSERT( mMatrix, "Matrix is not created. Already configured the MetaMatrix?" )
     return mMatrix->maxDiffNorm( other );
 }
 
 std::auto_ptr<Matrix> MetaMatrix::create() const
 {
-    LAMA_ASSERT( mMatrix, "Matrix is not created. Already configured the MetaMatrix?" );
+    LAMA_ASSERT( mMatrix, "Matrix is not created. Already configured the MetaMatrix?" )
     return mMatrix->create();
 }
 
 std::auto_ptr<Matrix> MetaMatrix::copy() const
 {
-    LAMA_ASSERT( mMatrix, "Matrix is not created. Already configured the MetaMatrix?" );
+    LAMA_ASSERT( mMatrix, "Matrix is not created. Already configured the MetaMatrix?" )
     return mMatrix->copy();
 }
 
 Scalar::ScalarType MetaMatrix::getValueType() const
 {
-    LAMA_ASSERT( mMatrix, "Matrix is not created. Already configured the MetaMatrix?" );
+    LAMA_ASSERT( mMatrix, "Matrix is not created. Already configured the MetaMatrix?" )
     return mMatrix->getValueType();
 }
 
 bool MetaMatrix::hasDiagonalProperty() const
 {
-    LAMA_ASSERT( mMatrix, "Matrix is not created. Already configured the MetaMatrix?" );
+    LAMA_ASSERT( mMatrix, "Matrix is not created. Already configured the MetaMatrix?" )
     return mMatrix->hasDiagonalProperty();
 }
 
 void MetaMatrix::resetDiagonalProperty()
 {
-    LAMA_ASSERT( mMatrix, "Matrix is not created. Already configured the MetaMatrix?" );
+    LAMA_ASSERT( mMatrix, "Matrix is not created. Already configured the MetaMatrix?" )
     mMatrix->resetDiagonalProperty();
 }
 
 size_t MetaMatrix::getMemoryUsage() const
 {
-    LAMA_ASSERT( mMatrix, "Matrix is not created. Already configured the MetaMatrix?" );
+    LAMA_ASSERT( mMatrix, "Matrix is not created. Already configured the MetaMatrix?" )
     return mMatrix->getMemoryUsage();
 }
 

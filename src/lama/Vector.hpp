@@ -118,55 +118,80 @@ public:
 
     Vector& operator=( const Expression<Vector,Vector,Plus>& expression );
 
-    Vector& operator=( const Vector& other );
-
-    Vector& operator*=( const Scalar value );
-
-    Vector& operator+=( const Vector& other );
-
     Vector& operator+=( const Expression<Scalar,Vector,Times>& expression );
 
+    /**
+     * @brief Assigns the values of other to the elements of this.
+     *
+     * @param[in] other   the vector to get values from.
+     * @return            a reference to this.
+     */
+    Vector& operator=( const Vector& other );
+
+    /**
+     * @brief Multiplies the passed value with all elements of this.
+     *
+     * @param[in] value   the value to multiply all elements of this with.
+     * @return            a reference to this.
+     */
+    Vector& operator*=( const Scalar value );
+
+    /**
+     * @brief Returns the addition of this and other.
+     *
+     * @param[in] other the vector to do the addition with.
+     * @return          a reference to this.
+     */
+    Vector& operator+=( const Vector& other );
+
+
+    /**
+     * @brief Returns the subtraction of this and other.
+     *
+     * @param[in] other the vector to do the subtraction with.
+     * @return          a reference to this.
+     */
     Vector& operator-=( const Vector& other );
 
     /**
      * @brief Assigns the passed value to all elements of this.
      *
-     * @param[in] value the value to assign to all elements of this.
-     * @return          a reference to this.
+     * @param[in] value   the value to assign to all elements of this.
+     * @return            a reference to this.
      */
     Vector& operator=( const Scalar value );
 
     /**
-     * @brief returns a copy of the value at the passed global index.
+     * @brief Returns a copy of the value at the passed global index.
      *
-     * @param[in] i the global index to get the value at.
-     * @return       a copy of the value at the passed global position.
+     * @param[in] i    the global index to get the value at.
+     * @return         a copy of the value at the passed global position.
      *
      * As this operator requires communication ins SPMD mode it can be very inefficient in some situations.
      */
     const Scalar operator()( const IndexType i ) const;
 
     /**
-     * @brief returns the dot product of this and other
+     * @brief Returns the dot product of this and other.
      *
-     * @param[in] other the vector do calculate the dot product with.
-     * @return          the dot product of this and other
+     * @param[in] other   the vector to calculate the dot product with.
+     * @return            the dot product of this and other
      */
     Scalar operator*( const Vector& other ) const;
 
     /**
-     * @brief Build an array with local values of the vector.
+     * @brief Builds an array with local values of the vector.
      *
-     * @param[in,out] values LAMA array that will be filled with the local values.
+     * @param[in,out] values   LAMA array that will be filled with the local values.
      *
      * Only the type of the LAMA array is used as input arg to determine the value type.
      */
     virtual void buildValues( _LAMAArray& values ) const = 0;
 
     /**
-     * @brief Set the local values of a vector by an array.
+     * @brief Sets the local values of a vector by an array.
      *
-     * @param[out] values is the array with local vector values.
+     * @param[out] values    is the array with local vector values.
      *
      * Note: A conversion operator must be available for values.getValueType() to
      *       the type of this vector.
@@ -174,12 +199,12 @@ public:
     virtual void setValues( const _LAMAArray& values ) = 0;
 
     /**
-     * @brief Query the value type of the vector elements, e.g. DOUBLE or FLOAT.
+     * @brief Queries the value type of the vector elements, e.g. DOUBLE or FLOAT.
      */
     virtual Scalar::ScalarType getValueType() const = 0;
 
     /**
-     * @brief returns a copy of the value at the passed global index.
+     * @brief Returns a copy of the value at the passed global index.
      *
      * @param[in] globalIndex   the global index to get the value at.
      * @return                  a copy of the value at the passed global position.
@@ -189,21 +214,21 @@ public:
     virtual Scalar getValue( IndexType globalIndex ) const =0;
 
     /**
-     * @brief returns the global minimum value of this.
+     * @brief Returns the global minimum value of this.
      *
-     * @return the global minimum value of this vector.
+     * @return   the global minimum value of this vector.
      */
     virtual Scalar min() const =0;
 
     /**
-     * @brief returns the global maximum value of this.
+     * @brief Returns the global maximum value of this.
      *
      * @return the global maximum value of this vector.
      */
     virtual Scalar max() const =0;
 
     /**
-     * @brief returns the L1 norm of this.
+     * @brief Returns the L1 norm of this.
      *
      * @return the L1 norm of this.
      *
@@ -212,7 +237,7 @@ public:
     virtual Scalar l1Norm() const =0;
 
     /**
-     * @brief returns the L2 norm of this.
+     * @brief Returns the L2 norm of this.
      *
      * @return the L2 norm of this.
      *
@@ -221,7 +246,7 @@ public:
     virtual Scalar l2Norm() const =0;
 
     /**
-     * @brief returns the max norm of this.
+     * @brief Returns the max norm of this.
      *
      * @return the max norm of this.
      *
@@ -232,19 +257,19 @@ public:
     //TODO: This is an uninitialized create, do we need a initialized create?
     //      What is a good interface for an initialized create?
     /**
-     * @brief Create is a virtual constructor, which creates a new Vector with the same concrete class, size and distribuiton than this.
+     * @brief Create is a virtual constructor, which creates a new Vector with the same concrete class, size and distribution as this.
      *
      * @return                  a pointer to the new Vector, caller has the owner ship.
      */
-    virtual std::auto_ptr<Vector> create() const =0;
+    virtual std::auto_ptr<Vector> create() const = 0;
 
     /**
-     * @brief Create is a virtual constructor, which creates a new Vector with the same concrete class than this.
+     * @brief Create is a virtual constructor, which creates a new Vector with the same concrete class as this.
      *
      * @param[in] distribution  the distribution to use for the new Vector.
      * @return                  a pointer to the new Vector, caller has the owner ship.
      */
-    virtual std::auto_ptr<Vector> create( DistributionPtr distribution ) const =0;
+    virtual std::auto_ptr<Vector> create( DistributionPtr distribution ) const = 0;
 
     /**
      * @brief Returns the size of the vector.
@@ -254,49 +279,41 @@ public:
     inline IndexType size() const;
 
     /**
-     * @brief Swap the content of of this vector with another vector.
+     * @brief Swaps the content of this vector with another vector.
      *
-     * @param[in,out] other the Vector to swap the contents with.
+     * @param[in,out] other   the Vector to swap the contents with.
      *
      * Swap is only possible if both vectors are of the same kind (DENSE) and
      * have the same value type.
      */
     virtual void swap( Vector& other ) = 0;
 
-    /**
-     * @brief Write some information about this to the passed stream.
-     *
-     * @param[out] stream   the stream to write to.
-     */
     virtual void writeAt( std::ostream& stream ) const;
 
     /**
-     *  @brief Assign an arbitrary vector to this vector.
+     *  @brief Assigns an arbitrary vector to this vector.
      */
-
-    virtual void assign( const Vector& other ) =0;
+    virtual void assign( const Vector& other ) = 0;
 
     /**
      *  Assignment to vector by local values and distribution.
      */
-
     virtual void assign( const _LAMAArray& localValues, DistributionPtr distribution ) = 0;
 
     /**
-     *  Build an array with local values of a distributed vector.
+     *  Builds an array with local values of a distributed vector.
      *
-     *  @param[out] localValues will be an array that contains local values of the vector
+     *  @param[out] localValues   will be an array that contains local values of the vector
      *
      *  For different value types, implicit format conversion will be done.
      *  A sparse vector should generate an array with all values.
      */
-
     virtual void buildLocalValues( _LAMAArray& localValues ) const = 0;
 
     /**
      * @brief Assigns the passed value to all elements of this.
      *
-     * @param[in] value the value to assign to all elements of this.
+     * @param[in] value   the value to assign to all elements of this.
      */
     virtual void assign( const Scalar value ) =0;
 
@@ -306,48 +323,51 @@ public:
     virtual void assign(
         const Expression<Expression<Scalar,Vector,Times>,Expression<Scalar,Vector,Times>,Plus>& expression ) =0;
 
-    virtual Scalar dotProduct( const Vector& other ) const =0;
+    /**
+     * @brief Returns the dot product of this and other.
+     *
+     * @param[in] other   the vector to calculate the dot product with.
+     * @return            the dot product of this and other
+     */
+    virtual Scalar dotProduct( const Vector& other ) const = 0;
 
     /**
      * @brief Starts a prefetch to make this valid at the passed context.
      *
      * @param[in] context specifies the location to make this vector valid at
      */
-    virtual void prefetch( const ContextPtr context ) const =0;
+    virtual void prefetch( const ContextPtr context ) const = 0;
 
     /**
-     * @brief wait for a possibly running prefetch.
+     * @brief Waits for a possibly running prefetch.
      */
-    virtual void wait() const =0;
+    virtual void wait() const = 0;
 
     /**
      * @brief This method inverts all elements of the vector and is completely local.
      */
-
-    virtual void invert() =0;
+    virtual void invert() = 0;
 
     /**
-     * @brief Set the 'preferred' context where data resides and computations are done
+     * @brief Sets the 'preferred' context where data resides and computations are done.
      */
     void setContext( ContextPtr location );
 
     /**
-     * @brief Getter for the context (pointer) of a vector.
+     * @brief Getter function for the context (pointer) of a vector.
      */
     inline ContextPtr getContext() const;
 
     /**
-     * @brief getMemoryUsage returns the global memory that is allocated to hold this vector.
-     *
-     * getMemoryUsage returns the global memory that is allocated to hold this vector. For a distributed vector
-     * all partitions are summed together.
+     * @brief Returns the global memory that is allocated to hold this vector.
+     * For a distributed vector all partitions are summed together.
      *
      * @return the memory consumption of this vector.
      */
     virtual size_t getMemoryUsage() const =0;
 
     /**
-     *  @brief Allocate this vector for a given distribution.
+     *  @brief Allocates this vector for a given distribution.
      *
      *  All elements of the vector are undefined after this operation.
      *  Elements can be set e.g. with
@@ -355,51 +375,52 @@ public:
     void resize( DistributionPtr distributionPtr );
 
     /**
-     * @brief redistributes this vector to the new passed distribution.
+     * @brief Redistributes this vector to the new passed distribution.
      *
-     * @param[in] distribution  the new distribution for this vector.
+     * @param[in] distribution   the new distribution for this vector.
      *
      * The global vector itself remains unchanged; only local parts
-     * can be now different.
+     * can be different now.
      */
-    virtual void redistribute( DistributionPtr distribution ) =0;
+    virtual void redistribute( DistributionPtr distribution ) = 0;
 
 protected:
 
     /**
      *  Constructor of Vector for derived classes by size and/or context
      */
-
     explicit Vector( const IndexType size = 0, ContextPtr context = ContextFactory::getContext( Context::Host ) );
 
     /**
      * @brief Constructor of Vector for derived classes by distribution
      *
      * @param[in] distribution  the distribution to use for the new Vector.
-     * @param[in] context is optional, will be Host context
+     * @param[in] context       is optional, will be Host context.
      */
     explicit Vector( DistributionPtr distribution, ContextPtr context = ContextFactory::getContext( Context::Host ) );
 
     /**
      * @brief Creates a copy of the passed Vector.
      *
-     * @param[in] other the Vector to take a copy from.
+     * @param[in] other   the Vector to take a copy from.
      *
      * Inherits size/distribution and the context of the passed vector.
      */
     Vector( const Vector& other );
 
     /**
-     *  @brief Swap member variables of Vector class.
+     *  @brief Swaps member variables of Vector class.
      */
-
     void swapVector( Vector& other );
 
-    virtual void resizeImpl() =0;
+    /**
+     *  @brief TODO[doxy] Complete Description.
+     */
+    virtual void resizeImpl() = 0;
 
     ContextPtr mContext; //!< decides about location of vector operations
 
-    LAMA_LOG_DECL_STATIC_LOGGER( logger );
+    LAMA_LOG_DECL_STATIC_LOGGER( logger )
 };
 
 IndexType Vector::size() const

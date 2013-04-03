@@ -50,7 +50,7 @@ namespace lama
 
 /* ------------------------------------------------------------------------- */
 
-LAMA_LOG_DEF_LOGGER( LAMAThreadPool::logger, "LAMAThreadPool" );
+LAMA_LOG_DEF_LOGGER( LAMAThreadPool::logger, "LAMAThreadPool" )
 
 /* ------------------------------------------------------------------------- */
 
@@ -82,7 +82,7 @@ boost::shared_ptr<LAMAThreadTask> LAMAThreadTask::create(
 
 LAMAThreadPool::LAMAThreadPool( int size )
 {
-    LAMA_LOG_INFO( logger, "Construct thread pool with " << size << " threads" );
+    LAMA_LOG_INFO( logger, "Construct thread pool with " << size << " threads" )
     mMaxSize = size;
     mThreads.reserve( mMaxSize );
 
@@ -100,7 +100,7 @@ LAMAThreadPool::LAMAThreadPool( int size )
 
 boost::shared_ptr<LAMAThreadTask> LAMAThreadPool::schedule( boost::function<void()> work, int numOmpThreads /* = 0 */)
 {
-    LAMA_REGION( "LAMAThreadPool::schedule" );
+    LAMA_REGION( "LAMAThreadPool::schedule" )
     boost::thread thisThread;
     bool isRecursiveTask = false;
     std::vector<boost::thread*>::const_iterator end = mThreads.end();
@@ -117,7 +117,7 @@ boost::shared_ptr<LAMAThreadTask> LAMAThreadPool::schedule( boost::function<void
 
     if ( isRecursiveTask )
     {
-        LAMA_LOG_WARN( logger, "Executing recursive taks synchronously to avoid deadlocks." );
+        LAMA_LOG_WARN( logger, "Executing recursive taks synchronously to avoid deadlocks." )
         work();
         task->mState = LAMAThreadTask::FINISHED;
         return task;
@@ -125,7 +125,7 @@ boost::shared_ptr<LAMAThreadTask> LAMAThreadPool::schedule( boost::function<void
     boost::mutex::scoped_lock lock( mTaskQueueMutex );
 
     mTaskQueue.push( task );
-    LAMA_LOG_DEBUG( logger, "Added task " << task->mTaskId << " to task queue" );
+    LAMA_LOG_DEBUG( logger, "Added task " << task->mTaskId << " to task queue" )
     task->mState = LAMAThreadTask::QUEUED;
 
     //  notifiy one waiting worker
@@ -139,9 +139,9 @@ boost::shared_ptr<LAMAThreadTask> LAMAThreadPool::schedule( boost::function<void
 
 void LAMAThreadPool::wait( boost::shared_ptr<LAMAThreadTask> task )
 {
-    LAMA_ASSERT_ERROR( task, "NULL pointer for task" );
+    LAMA_ASSERT_ERROR( task, "NULL pointer for task" )
 
-    LAMA_LOG_DEBUG( logger, "wait on task id = " << task->mTaskId << ", state = " << task->mState );
+    LAMA_LOG_DEBUG( logger, "wait on task id = " << task->mTaskId << ", state = " << task->mState )
 
     while ( task->mState != LAMAThreadTask::FINISHED )
     {
@@ -155,7 +155,7 @@ void LAMAThreadPool::wait( boost::shared_ptr<LAMAThreadTask> task )
             mNotifyFinished.wait( lock );
         }
 
-        LAMA_LOG_DEBUG( logger, "notified, task state = " << task->mState );
+        LAMA_LOG_DEBUG( logger, "notified, task state = " << task->mState )
     }
 }
 
@@ -167,7 +167,7 @@ void LAMAThreadPool::worker( int id )
     // Each thread picks up a task if available in the task queue
     // No busy wait, waits on signal mNotifyTask
 
-    LAMA_LOG_INFO( logger, "worker thread " << id << " starts" );
+    LAMA_LOG_INFO( logger, "worker thread " << id << " starts" )
 
     mWorkerState = WORKING;
 
@@ -187,7 +187,7 @@ void LAMAThreadPool::worker( int id )
             {
                 // Instead of busy wait this thread waits on notification
 
-                LAMA_LOG_DEBUG( logger, "worker thread " << id << " waits on notify for new task" );
+                LAMA_LOG_DEBUG( logger, "worker thread " << id << " waits on notify for new task" )
 
                 mWorkerState = WAITING;
 
@@ -195,7 +195,7 @@ void LAMAThreadPool::worker( int id )
 
                 mWorkerState = WORKING;
 
-                LAMA_LOG_DEBUG( logger, "worker thread " << id << " notified about a new task" );
+                LAMA_LOG_DEBUG( logger, "worker thread " << id << " notified about a new task" )
             }
             else
             {
@@ -204,7 +204,7 @@ void LAMAThreadPool::worker( int id )
 
                 if ( !task )
                 {
-                    LAMA_LOG_DEBUG( logger, "worker thread " << id << " picked shutdown task" );
+                    LAMA_LOG_DEBUG( logger, "worker thread " << id << " picked shutdown task" )
                     // this is the shutdown task
                     break;
                 }
@@ -214,7 +214,7 @@ void LAMAThreadPool::worker( int id )
         if ( task )
         {
             LAMA_LOG_DEBUG( logger,
-                            "worker thread " << id << " runs task " << task->mTaskId << " with " << task->ompThreads << " OMP threads" );
+                            "worker thread " << id << " runs task " << task->mTaskId << " with " << task->ompThreads << " OMP threads" )
 
             task->mState = LAMAThreadTask::RUNNING;
             if ( task->ompThreads != ompThreads )
@@ -229,7 +229,7 @@ void LAMAThreadPool::worker( int id )
             }
             catch ( ... )
             {
-                LAMA_LOG_INFO( logger, "worker thread got exception, has been caught" );
+                LAMA_LOG_INFO( logger, "worker thread got exception, has been caught" )
                 task->mException = true;
             }
 
@@ -237,7 +237,7 @@ void LAMAThreadPool::worker( int id )
 
             task->mState = LAMAThreadTask::FINISHED;
 
-            LAMA_LOG_DEBUG( logger, "worker thread " << id << " finished task " << task->mTaskId );
+            LAMA_LOG_DEBUG( logger, "worker thread " << id << " finished task " << task->mTaskId )
 
             // notify threads waiting on a finished task
 
@@ -247,14 +247,14 @@ void LAMAThreadPool::worker( int id )
 
     // worker is finished
 
-    LAMA_LOG_INFO( logger, "worker thread " << id << " finishes" );
+    LAMA_LOG_INFO( logger, "worker thread " << id << " finishes" )
 }
 
 /* ------------------------------------------------------------------------- */
 
 LAMAThreadPool::~LAMAThreadPool()
 {
-    LAMA_LOG_INFO( logger, "~LAMAThreadPool: shut down " << mThreads.size() << " threads" );
+    LAMA_LOG_INFO( logger, "~LAMAThreadPool: shut down " << mThreads.size() << " threads" )
 
     boost::shared_ptr<LAMAThreadTask> shutdownTask; // NULL pointer
 
@@ -272,15 +272,15 @@ LAMAThreadPool::~LAMAThreadPool()
         mNotifyTask.notify_all();
     }
 
-    LAMA_LOG_DEBUG( logger, "added " << mThreads.size() << " shutdown tasks" );
+    LAMA_LOG_DEBUG( logger, "added " << mThreads.size() << " shutdown tasks" )
 
     // and now wait for completion of all worker threads and delete them
 
     for ( size_t i = 0; i < mThreads.size(); ++i )
     {
-        LAMA_LOG_DEBUG( logger, "wait for worker thread " << i );
+        LAMA_LOG_DEBUG( logger, "wait for worker thread " << i )
         mThreads[i]->join();
-        LAMA_LOG_DEBUG( logger, "worker thread " << i << " terminated (joined)" );
+        LAMA_LOG_DEBUG( logger, "worker thread " << i << " terminated (joined)" )
         delete mThreads[i];
         mThreads[i] = NULL;
     }

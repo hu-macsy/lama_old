@@ -56,6 +56,8 @@ template<typename T> class DenseVector;
  *  blocks that are stored in a vector of shared pointers. A copy of this vector
  *  will not make deep copies of the blocks so default copy constructor and
  *  assignment operator must be overridden.
+ *
+ *  @tparam T is the value type of the matrix values.
  */
 
 template<typename T>
@@ -623,7 +625,7 @@ private:
     //TODO: no implementation: implement or delete
     //void initChunks();  // common initialization for constructors
 
-    LAMA_LOG_DECL_STATIC_LOGGER(logger);
+    LAMA_LOG_DECL_STATIC_LOGGER( logger )
 
     void computeOwners();
 
@@ -640,9 +642,9 @@ void DenseMatrix<ValueType>::copyDenseMatrix( const DenseMatrix<OtherValueType>&
 {
     // check for valid pointer, might be dynamic cast went wrong somewhere else
 
-    LAMA_ASSERT_ERROR( &other, "NULL matrix in assignment operator" );
+    LAMA_ASSERT_ERROR( &other, "NULL matrix in assignment operator" )
 
-    LAMA_LOG_INFO( logger, "copy dense, this = " << this << ", other = " << &other );
+    LAMA_LOG_INFO( logger, "copy dense, this = " << this << ", other = " << &other )
 
     // inherit size and distributions
 
@@ -654,7 +656,7 @@ void DenseMatrix<ValueType>::copyDenseMatrix( const DenseMatrix<OtherValueType>&
 
     for ( IndexType i = 0; i < n; ++i )
     {
-        LAMA_LOG_DEBUG( logger, "copy block " << i << " of " << n << " = " << *other.mData[i] );
+        LAMA_LOG_DEBUG( logger, "copy block " << i << " of " << n << " = " << *other.mData[i] )
 
         mData[i].reset( new DenseStorage<ValueType>( *other.mData[i] ) );
     }

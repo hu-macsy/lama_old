@@ -56,7 +56,7 @@ void CUDABLAS1::scal( IndexType n, const float alpha, float* x_d, const IndexTyp
     if ( syncToken )
     {
         CUDAStreamSyncToken* cudaStreamSyncToken = dynamic_cast<CUDAStreamSyncToken*>( syncToken );
-        LAMA_ASSERT_DEBUG( cudaStreamSyncToken, "no cuda stream sync token provided" );
+        LAMA_ASSERT_DEBUG( cudaStreamSyncToken, "no cuda stream sync token provided" )
         stream = cudaStreamSyncToken->getCUDAStream();
     }
 
@@ -87,7 +87,7 @@ void CUDABLAS1::scal( IndexType n, const double alpha, double* x_d, const IndexT
     if ( syncToken )
     {
         CUDAStreamSyncToken* cudaStreamSyncToken = dynamic_cast<CUDAStreamSyncToken*>( syncToken );
-        LAMA_ASSERT_DEBUG( cudaStreamSyncToken, "no cuda stream sync token provided" );
+        LAMA_ASSERT_DEBUG( cudaStreamSyncToken, "no cuda stream sync token provided" )
         stream = cudaStreamSyncToken->getCUDAStream();
     }
 
@@ -120,7 +120,7 @@ float CUDABLAS1::nrm2( IndexType n, const float* x_d, IndexType incx, SyncToken*
     if ( syncToken )
     {
         CUDAStreamSyncToken* cudaStreamSyncToken = dynamic_cast<CUDAStreamSyncToken*>( syncToken );
-        LAMA_ASSERT_DEBUG( cudaStreamSyncToken, "no cuda stream sync token provided" );
+        LAMA_ASSERT_DEBUG( cudaStreamSyncToken, "no cuda stream sync token provided" )
         stream = cudaStreamSyncToken->getCUDAStream();
     }
 
@@ -153,7 +153,7 @@ double CUDABLAS1::nrm2( IndexType n, const double* x_d, IndexType incx, SyncToke
     if ( syncToken )
     {
         CUDAStreamSyncToken* cudaStreamSyncToken = dynamic_cast<CUDAStreamSyncToken*>( syncToken );
-        LAMA_ASSERT_DEBUG( cudaStreamSyncToken, "no cuda stream sync token provided" );
+        LAMA_ASSERT_DEBUG( cudaStreamSyncToken, "no cuda stream sync token provided" )
         stream = cudaStreamSyncToken->getCUDAStream();
     }
 
@@ -187,7 +187,7 @@ float CUDABLAS1::asum( const IndexType n, const float* x_d, const IndexType incX
     if ( syncToken )
     {
         CUDAStreamSyncToken* cudaStreamSyncToken = dynamic_cast<CUDAStreamSyncToken*>( syncToken );
-        LAMA_ASSERT_DEBUG( cudaStreamSyncToken, "no cuda stream sync token provided" );
+        LAMA_ASSERT_DEBUG( cudaStreamSyncToken, "no cuda stream sync token provided" )
         stream = cudaStreamSyncToken->getCUDAStream();
     }
 
@@ -220,7 +220,7 @@ double CUDABLAS1::asum( const IndexType n, const double* x_d, const IndexType in
     if ( syncToken )
     {
         CUDAStreamSyncToken* cudaStreamSyncToken = dynamic_cast<CUDAStreamSyncToken*>( syncToken );
-        LAMA_ASSERT_DEBUG( cudaStreamSyncToken, "no cuda stream sync token provided" );
+        LAMA_ASSERT_DEBUG( cudaStreamSyncToken, "no cuda stream sync token provided" )
         stream = cudaStreamSyncToken->getCUDAStream();
     }
 
@@ -249,7 +249,7 @@ IndexType CUDABLAS1::iamax( const IndexType n, const float* x_d, const IndexType
     if ( syncToken )
     {
         CUDAStreamSyncToken* cudaStreamSyncToken = dynamic_cast<CUDAStreamSyncToken*>( syncToken );
-        LAMA_ASSERT_DEBUG( cudaStreamSyncToken, "no cuda stream sync token provided" );
+        LAMA_ASSERT_DEBUG( cudaStreamSyncToken, "no cuda stream sync token provided" )
         stream = cudaStreamSyncToken->getCUDAStream();
     }
 
@@ -282,7 +282,7 @@ IndexType CUDABLAS1::iamax( const IndexType n, const double* x_d, const IndexTyp
     if ( syncToken )
     {
         CUDAStreamSyncToken* cudaStreamSyncToken = dynamic_cast<CUDAStreamSyncToken*>( syncToken );
-        LAMA_ASSERT_DEBUG( cudaStreamSyncToken, "no cuda stream sync token provided" );
+        LAMA_ASSERT_DEBUG( cudaStreamSyncToken, "no cuda stream sync token provided" )
         stream = cudaStreamSyncToken->getCUDAStream();
     }
 
@@ -323,7 +323,7 @@ void CUDABLAS1::swap(
     if ( syncToken )
     {
         CUDAStreamSyncToken* cudaStreamSyncToken = dynamic_cast<CUDAStreamSyncToken*>( syncToken );
-        LAMA_ASSERT_DEBUG( cudaStreamSyncToken, "no cuda stream sync token provided" );
+        LAMA_ASSERT_DEBUG( cudaStreamSyncToken, "no cuda stream sync token provided" )
         stream = cudaStreamSyncToken->getCUDAStream();
     }
 
@@ -360,7 +360,7 @@ void CUDABLAS1::swap(
     if ( syncToken )
     {
         CUDAStreamSyncToken* cudaStreamSyncToken = dynamic_cast<CUDAStreamSyncToken*>( syncToken );
-        LAMA_ASSERT_DEBUG( cudaStreamSyncToken, "no cuda stream sync token provided" );
+        LAMA_ASSERT_DEBUG( cudaStreamSyncToken, "no cuda stream sync token provided" )
         stream = cudaStreamSyncToken->getCUDAStream();
     }
 
@@ -393,7 +393,7 @@ void CUDABLAS1::copy( IndexType n, const float* x_d, IndexType incx, float* y_d,
     if ( syncToken )
     {
         CUDAStreamSyncToken* cudaStreamSyncToken = dynamic_cast<CUDAStreamSyncToken*>( syncToken );
-        LAMA_ASSERT_DEBUG( cudaStreamSyncToken, "no cuda stream sync token provided" );
+        LAMA_ASSERT_DEBUG( cudaStreamSyncToken, "no cuda stream sync token provided" )
         stream = cudaStreamSyncToken->getCUDAStream();
     }
 
@@ -430,7 +430,7 @@ void CUDABLAS1::copy(
     if ( syncToken )
     {
         CUDAStreamSyncToken* cudaStreamSyncToken = dynamic_cast<CUDAStreamSyncToken*>( syncToken );
-        LAMA_ASSERT_DEBUG( cudaStreamSyncToken, "no cuda stream sync token provided" );
+        LAMA_ASSERT_DEBUG( cudaStreamSyncToken, "no cuda stream sync token provided" )
         stream = cudaStreamSyncToken->getCUDAStream();
     }
 
@@ -470,7 +470,7 @@ void CUDABLAS1::axpy(
     if ( syncToken )
     {
         CUDAStreamSyncToken* cudaStreamSyncToken = dynamic_cast<CUDAStreamSyncToken*>( syncToken );
-        LAMA_ASSERT_DEBUG( cudaStreamSyncToken, "no cuda stream sync token provided" );
+        LAMA_ASSERT_DEBUG( cudaStreamSyncToken, "no cuda stream sync token provided" )
         stream = cudaStreamSyncToken->getCUDAStream();
     }
 
@@ -508,7 +508,7 @@ void CUDABLAS1::axpy(
     if ( syncToken )
     {
         CUDAStreamSyncToken* cudaStreamSyncToken = dynamic_cast<CUDAStreamSyncToken*>( syncToken );
-        LAMA_ASSERT_DEBUG( cudaStreamSyncToken, "no cuda stream sync token provided" );
+        LAMA_ASSERT_DEBUG( cudaStreamSyncToken, "no cuda stream sync token provided" )
         stream = cudaStreamSyncToken->getCUDAStream();
     }
 
@@ -547,7 +547,7 @@ float CUDABLAS1::dot(
     if ( syncToken )
     {
         CUDAStreamSyncToken* cudaStreamSyncToken = dynamic_cast<CUDAStreamSyncToken*>( syncToken );
-        LAMA_ASSERT_DEBUG( cudaStreamSyncToken, "no cuda stream sync token provided" );
+        LAMA_ASSERT_DEBUG( cudaStreamSyncToken, "no cuda stream sync token provided" )
         stream = cudaStreamSyncToken->getCUDAStream();
     }
 
@@ -586,7 +586,7 @@ double CUDABLAS1::dot(
     if ( syncToken )
     {
         CUDAStreamSyncToken* cudaStreamSyncToken = dynamic_cast<CUDAStreamSyncToken*>( syncToken );
-        LAMA_ASSERT_DEBUG( cudaStreamSyncToken, "no cuda stream sync token provided" );
+        LAMA_ASSERT_DEBUG( cudaStreamSyncToken, "no cuda stream sync token provided" )
         stream = cudaStreamSyncToken->getCUDAStream();
     }
 
@@ -620,7 +620,7 @@ void CUDABLAS1::sum( const IndexType n, T alpha, const T* x, T beta, const T* y,
     if ( syncToken )
     {
         CUDAStreamSyncToken* cudaStreamSyncToken = dynamic_cast<CUDAStreamSyncToken*>( syncToken );
-        LAMA_ASSERT_DEBUG( cudaStreamSyncToken, "no cuda stream sync token provided" );
+        LAMA_ASSERT_DEBUG( cudaStreamSyncToken, "no cuda stream sync token provided" )
         stream = cudaStreamSyncToken->getCUDAStream();
     }
 
@@ -673,7 +673,7 @@ void CUDABLAS1::rot(
     if ( syncToken )
     {
         CUDAStreamSyncToken* cudaStreamSyncToken = dynamic_cast<CUDAStreamSyncToken*>( syncToken );
-        LAMA_ASSERT_DEBUG( cudaStreamSyncToken, "no cuda stream sync token provided" );
+        LAMA_ASSERT_DEBUG( cudaStreamSyncToken, "no cuda stream sync token provided" )
         stream = cudaStreamSyncToken->getCUDAStream();
     }
 
@@ -712,7 +712,7 @@ void CUDABLAS1::rot(
     if ( syncToken )
     {
         CUDAStreamSyncToken* cudaStreamSyncToken = dynamic_cast<CUDAStreamSyncToken*>( syncToken );
-        LAMA_ASSERT_DEBUG( cudaStreamSyncToken, "no cuda stream sync token provided" );
+        LAMA_ASSERT_DEBUG( cudaStreamSyncToken, "no cuda stream sync token provided" )
         stream = cudaStreamSyncToken->getCUDAStream();
     }
 
@@ -752,7 +752,7 @@ void CUDABLAS1::rotm(
     if ( syncToken )
     {
         CUDAStreamSyncToken* cudaStreamSyncToken = dynamic_cast<CUDAStreamSyncToken*>( syncToken );
-        LAMA_ASSERT_DEBUG( cudaStreamSyncToken, "no cuda stream sync token provided" );
+        LAMA_ASSERT_DEBUG( cudaStreamSyncToken, "no cuda stream sync token provided" )
         stream = cudaStreamSyncToken->getCUDAStream();
     }
 
@@ -790,7 +790,7 @@ void CUDABLAS1::rotm(
     if ( syncToken )
     {
         CUDAStreamSyncToken* cudaStreamSyncToken = dynamic_cast<CUDAStreamSyncToken*>( syncToken );
-        LAMA_ASSERT_DEBUG( cudaStreamSyncToken, "no cuda stream sync token provided" );
+        LAMA_ASSERT_DEBUG( cudaStreamSyncToken, "no cuda stream sync token provided" )
         stream = cudaStreamSyncToken->getCUDAStream();
     }
 
@@ -825,7 +825,7 @@ void CUDABLAS1::ass( const IndexType n, const T value, T* x, SyncToken* syncToke
     if ( syncToken )
     {
         CUDAStreamSyncToken* cudaStreamSyncToken = dynamic_cast<CUDAStreamSyncToken*>( syncToken );
-        LAMA_ASSERT_DEBUG( cudaStreamSyncToken, "no cuda stream sync token provided" );
+        LAMA_ASSERT_DEBUG( cudaStreamSyncToken, "no cuda stream sync token provided" )
         stream = cudaStreamSyncToken->getCUDAStream();
     }
 

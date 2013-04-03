@@ -57,7 +57,7 @@ namespace lama
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 
-LAMA_LOG_DEF_LOGGER( OpenMPELLUtils::logger, "OpenMP.ELLUtils" );
+LAMA_LOG_DEF_LOGGER( OpenMPELLUtils::logger, "OpenMP.ELLUtils" )
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 
@@ -74,7 +74,7 @@ IndexType OpenMPELLUtils::countNonEmptyRowsBySizes( const IndexType sizes[], con
         }
     }
 
-    LAMA_LOG_INFO( logger, "#non-zero rows = " << counter << ", counted by sizes" );
+    LAMA_LOG_INFO( logger, "#non-zero rows = " << counter << ", counted by sizes" )
 
     return counter;
 }
@@ -100,16 +100,16 @@ void OpenMPELLUtils::setNonEmptyRowsBySizes(
         }
     }
 
-    LAMA_ASSERT_EQUAL_DEBUG( counter, numNonEmptyRows );
+    LAMA_ASSERT_EQUAL_DEBUG( counter, numNonEmptyRows )
 
-    LAMA_LOG_INFO( logger, "#non-zero rows = " << counter << ", set by sizes" );
+    LAMA_LOG_INFO( logger, "#non-zero rows = " << counter << ", set by sizes" )
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 
 bool OpenMPELLUtils::hasDiagonalProperty( const IndexType numDiagonals, const IndexType ellJA[] )
 {
-    LAMA_LOG_INFO( logger, "hasDiagonalProperty, #numDiagonals = " << numDiagonals );
+    LAMA_LOG_INFO( logger, "hasDiagonalProperty, #numDiagonals = " << numDiagonals )
 
     if ( numDiagonals == 0 )
     {
@@ -144,7 +144,7 @@ void OpenMPELLUtils::scaleValue(
     const OtherValueType values[] )
 {
     LAMA_LOG_INFO( logger,
-                   "scaleValue, #numRows = " << numRows << ", Ia = " << ia << ", mValues = " << mValues << ", values = " << values );
+                   "scaleValue, #numRows = " << numRows << ", Ia = " << ia << ", mValues = " << mValues << ", values = " << values )
 
     #pragma omp parallel for schedule( LAMA_OMP_SCHEDULE )
     for ( IndexType i = 0; i < numRows; i++ ) //rows
@@ -167,7 +167,7 @@ void OpenMPELLUtils::check(
     const char* msg )
 {
     LAMA_LOG_INFO( logger,
-                   "check # mNumRows = " << mNumRows << ", mNumValuesPerRow = " << mNumValuesPerRow << ", mNumColumns = " << mNumColumns );
+                   "check # mNumRows = " << mNumRows << ", mNumValuesPerRow = " << mNumValuesPerRow << ", mNumColumns = " << mNumColumns )
 
     if ( mNumRows > 0 )
     {
@@ -197,9 +197,9 @@ void OpenMPELLUtils::check(
     else
     {
         LAMA_ASSERT_ERROR( mNumValuesPerRow == 0,
-                           msg << ": mNumRows is 0 but mNumValuesPerRow is: " << mNumValuesPerRow << ", should be 0" );
+                           msg << ": mNumRows is 0 but mNumValuesPerRow is: " << mNumValuesPerRow << ", should be 0" )
         LAMA_ASSERT_ERROR( mNumColumns == 0,
-                           msg << ": mNumRows is 0, but mNumColumns is: " << mNumColumns <<", should be 0" );
+                           msg << ": mNumRows is 0, but mNumColumns is: " << mNumColumns <<", should be 0" )
     }
 }
 
@@ -231,13 +231,13 @@ ValueType OpenMPELLUtils::absMaxVal(
                     threadVal = val;
                 }
 
-                // LAMA_LOG_TRACE( logger, "absMaxVal, val[" << i << ", " << jj << "] = " << val );
+                // LAMA_LOG_TRACE( logger, "absMaxVal, val[" << i << ", " << jj << "] = " << val )
             }
         }
 
         #pragma omp critical
         {
-            LAMA_LOG_DEBUG( logger, "absMaxVal, threadVal = " << threadVal << ", maxVal = " << maxValue );
+            LAMA_LOG_DEBUG( logger, "absMaxVal, threadVal = " << threadVal << ", maxVal = " << maxValue )
 
             if ( threadVal > maxValue )
             {
@@ -246,7 +246,7 @@ ValueType OpenMPELLUtils::absMaxVal(
         }
     }
 
-    LAMA_LOG_DEBUG( logger, "absMaxVal, maxVal = " << maxValue );
+    LAMA_LOG_DEBUG( logger, "absMaxVal, maxVal = " << maxValue )
 
     return maxValue;
 }
@@ -263,7 +263,7 @@ void OpenMPELLUtils::getRow(
     const IndexType *ja,
     const ValueType *values )
 {
-    LAMA_LOG_DEBUG( logger, "get row #i = " << i );
+    LAMA_LOG_DEBUG( logger, "get row #i = " << i )
 
     #pragma omp parallel for schedule( LAMA_OMP_SCHEDULE )
     for ( IndexType j = 0; j < numColumns; ++j )
@@ -287,7 +287,7 @@ OtherValueType OpenMPELLUtils::getValue(
     const IndexType *ja,
     const ValueType *values )
 {
-    LAMA_LOG_TRACE( logger, "get value i = " << i << ", j = " << j );
+    LAMA_LOG_TRACE( logger, "get value i = " << i << ", j = " << j )
 
     for ( IndexType jj = 0; jj < ia[i]; ++jj )
     {
@@ -314,7 +314,7 @@ void OpenMPELLUtils::getCSRValues(
     const ELLValueType ellValues[] )
 {
     LAMA_LOG_INFO( logger,
-                   "get CSRValues<" << typeid( ELLValueType ).name() << ", " << typeid( CSRValueType ).name() << ">" << ", #rows = " << numRows );
+                   "get CSRValues<" << typeid( ELLValueType ).name() << ", " << typeid( CSRValueType ).name() << ">" << ", #rows = " << numRows )
 
     // parallelization possible as offset array csrIA is available
 
@@ -326,7 +326,7 @@ void OpenMPELLUtils::getCSRValues(
 
         // just make sure that csrIA and ellSizes really fit with each other
 
-        LAMA_ASSERT_EQUAL_DEBUG( csrIA[i] + rowSize, csrIA[i+1] );
+        LAMA_ASSERT_EQUAL_DEBUG( csrIA[i] + rowSize, csrIA[i+1] )
 
         for ( IndexType jj = 0; jj < rowSize; ++jj )
         {
@@ -351,7 +351,7 @@ void OpenMPELLUtils::setCSRValues(
     const CSRValueType csrValues[] )
 {
     LAMA_LOG_INFO( logger,
-                   "set CSRValues<" << typeid( ELLValueType ).name() << ", " << typeid( CSRValueType ).name() << ">" << ", #rows = " << numRows << ", #values/row = " << numValuesPerRow );
+                   "set CSRValues<" << typeid( ELLValueType ).name() << ", " << typeid( CSRValueType ).name() << ">" << ", #rows = " << numRows << ", #values/row = " << numValuesPerRow )
 
     // parallelization possible as offset array csrIA is available
 
@@ -392,7 +392,7 @@ void OpenMPELLUtils::compressIA(
     const ValueType eps,
     IndexType newIA[] )
 {
-    LAMA_LOG_INFO( logger, "compressIA with eps = " << eps );
+    LAMA_LOG_INFO( logger, "compressIA with eps = " << eps )
 
     #pragma omp parallel
     {
@@ -428,7 +428,7 @@ void OpenMPELLUtils::compressValues(
     IndexType newJA[],
     ValueType newValues[] )
 {
-    LAMA_LOG_INFO( logger, "compressValues with eps = " << eps );
+    LAMA_LOG_INFO( logger, "compressValues with eps = " << eps )
 
     #pragma omp parallel
     {
@@ -462,7 +462,7 @@ void OpenMPELLUtils::computeIA(
     const IndexType bNumRows,
     IndexType cIA[] )
 {
-    LAMA_LOG_INFO( logger, "computeIA with numRows A = " << aNumRows << " and numRows B = " << bNumRows );
+    LAMA_LOG_INFO( logger, "computeIA with numRows A = " << aNumRows << " and numRows B = " << bNumRows )
 
     #pragma omp parallel
     {
@@ -507,7 +507,7 @@ void OpenMPELLUtils::computeValues(
     IndexType cJA[],
     ValueType cValues[] )
 {
-    LAMA_LOG_INFO( logger, "computeValues with numRows A = " << aNumRows << " and numRows B = " << bNumRows );
+    LAMA_LOG_INFO( logger, "computeValues with numRows A = " << aNumRows << " and numRows B = " << bNumRows )
 
     #pragma omp parallel
     {
@@ -565,7 +565,7 @@ void OpenMPELLUtils::addComputeIA(
     const IndexType bNumRows,
     IndexType cIA[] )
 {
-    LAMA_LOG_INFO( logger, "addComputeIA with numRows A = " << aNumRows << " and numRows B = " << bNumRows );
+    LAMA_LOG_INFO( logger, "addComputeIA with numRows A = " << aNumRows << " and numRows B = " << bNumRows )
 
     #pragma omp parallel
     {
@@ -610,7 +610,7 @@ void OpenMPELLUtils::addComputeValues(
     IndexType cJA[],
     ValueType cValues[] )
 {
-    LAMA_LOG_INFO( logger, "computeValues with numRows A = " << aNumRows << " and numRows B = " << bNumRows );
+    LAMA_LOG_INFO( logger, "computeValues with numRows A = " << aNumRows << " and numRows B = " << bNumRows )
 
     #pragma omp parallel
     {
@@ -675,17 +675,17 @@ void OpenMPELLUtils::jacobi(
     class SyncToken* syncToken )
 {
     LAMA_LOG_INFO( logger,
-                   "jacobi<" << typeid(ValueType).name() << ">" << ", #rows = " << numRows << ", omega = " << omega );
+                   "jacobi<" << typeid(ValueType).name() << ">" << ", #rows = " << numRows << ", omega = " << omega )
 
     if ( syncToken != NULL )
     {
-        LAMA_LOG_ERROR( logger, "jacobi called asynchronously, not supported here" );
+        LAMA_LOG_ERROR( logger, "jacobi called asynchronously, not supported here" )
     }
 
     const ValueType oneMinusOmega = static_cast<ValueType>( 1.0 - omega );
     #pragma omp parallel
     {
-        LAMA_REGION( "OpenMP.ELL.jacobi" );
+        LAMA_REGION( "OpenMP.ELL.jacobi" )
         #pragma omp for schedule(LAMA_OMP_SCHEDULE)
         for ( IndexType i = 0; i < numRows; i++ )
         {
@@ -733,12 +733,12 @@ void OpenMPELLUtils::jacobiHalo(
 {
     if ( syncToken != NULL )
     {
-        LAMA_LOG_WARN( logger, "jacobi called asynchronously, not supported here" );
+        LAMA_LOG_WARN( logger, "jacobi called asynchronously, not supported here" )
     }
 
     #pragma omp parallel
     {
-        LAMA_REGION( "OpenMP.ELL.jacobiHalo" );
+        LAMA_REGION( "OpenMP.ELL.jacobiHalo" )
 
         #pragma omp for schedule(LAMA_OMP_SCHEDULE)
         for ( IndexType ii = 0; ii < numNonEmptyRows; ++ii )
@@ -781,11 +781,11 @@ void OpenMPELLUtils::normalGEMV(
     const ValueType ellValues[] )
 {
     LAMA_LOG_INFO( logger,
-                   "normalGEMV<" << typeid(ValueType).name() << ">, n = " << numRows << ", alpha = " << alpha << ", beta = " << beta );
+                   "normalGEMV<" << typeid(ValueType).name() << ">, n = " << numRows << ", alpha = " << alpha << ", beta = " << beta )
 
     #pragma omp parallel
     {
-        LAMA_REGION( "OpenMP.ELL.GEMV" );
+        LAMA_REGION( "OpenMP.ELL.GEMV" )
 
         #pragma omp for schedule(LAMA_OMP_SCHEDULE)
         for ( IndexType i = 0; i < numRows; ++i )
@@ -796,13 +796,13 @@ void OpenMPELLUtils::normalGEMV(
             {
                 IndexType j = ellJA[i + jj * numRows];
                 LAMA_LOG_TRACE( logger,
-                                "temp += dataAccess[i + jj * numRows] * xAccess[j];, jj = " << jj << ", j = " << j );
-                LAMA_LOG_TRACE( logger, ", dataAccess[i + jj * numRows] = " << ellValues[ i + jj * numRows ] );
-                LAMA_LOG_TRACE( logger, ", xAccess[j] = " << x[ j ] );
+                                "temp += dataAccess[i + jj * numRows] * xAccess[j];, jj = " << jj << ", j = " << j )
+                LAMA_LOG_TRACE( logger, ", dataAccess[i + jj * numRows] = " << ellValues[ i + jj * numRows ] )
+                LAMA_LOG_TRACE( logger, ", xAccess[j] = " << x[ j ] )
                 temp += ellValues[i + jj * numRows] * x[j];
             }
 
-            LAMA_LOG_TRACE( logger, "row = " << i << ", temp = " << temp );
+            LAMA_LOG_TRACE( logger, "row = " << i << ", temp = " << temp )
 
             if ( 0.0 == beta )
             {
@@ -845,7 +845,7 @@ void OpenMPELLUtils::normalGEMV(
     else
     {
         TaskSyncToken* taskSyncToken = dynamic_cast<TaskSyncToken*>( syncToken );
-        LAMA_ASSERT_DEBUG( taskSyncToken, "no task sync token provided" );
+        LAMA_ASSERT_DEBUG( taskSyncToken, "no task sync token provided" )
 
         void (*gemv)(
             ValueType result[],
@@ -877,11 +877,11 @@ void OpenMPELLUtils::sparseGEMV(
     const ValueType ellValues[] )
 {
     LAMA_LOG_INFO( logger,
-                   "sparseGEMV<" << typeid(ValueType).name() << ">, n = " << numRows << ", nonZeroRows = " << numNonZeroRows << ", alpha = " << alpha );
+                   "sparseGEMV<" << typeid(ValueType).name() << ">, n = " << numRows << ", nonZeroRows = " << numNonZeroRows << ", alpha = " << alpha )
 
     #pragma omp parallel
     {
-        LAMA_REGION( "OpenMP.ELL.spGEMV" );
+        LAMA_REGION( "OpenMP.ELL.spGEMV" )
 
         #pragma omp for schedule(LAMA_OMP_SCHEDULE)
         for ( IndexType ii = 0; ii < numNonZeroRows; ++ii )
@@ -895,13 +895,13 @@ void OpenMPELLUtils::sparseGEMV(
             {
                 IndexType j = ellJA[i + jj * numRows];
                 LAMA_LOG_TRACE( logger,
-                                "temp += dataAccess[i + jj * numRows] * xAccess[j];, jj = " << jj << ", j = " << j );
-                LAMA_LOG_TRACE( logger, ", dataAccess[i + jj * numRows] = " << ellValues[ i + jj * numRows ] );
-                LAMA_LOG_TRACE( logger, ", xAccess[j] = " << x[ j ] );
+                                "temp += dataAccess[i + jj * numRows] * xAccess[j];, jj = " << jj << ", j = " << j )
+                LAMA_LOG_TRACE( logger, ", dataAccess[i + jj * numRows] = " << ellValues[ i + jj * numRows ] )
+                LAMA_LOG_TRACE( logger, ", xAccess[j] = " << x[ j ] )
                 temp += ellValues[i + jj * numRows] * x[j];
             }
 
-            LAMA_LOG_TRACE( logger, "row = " << i << ", temp = " << temp );
+            LAMA_LOG_TRACE( logger, "row = " << i << ", temp = " << temp )
 
             if ( alpha == 1.0 )
             {
@@ -938,7 +938,7 @@ void OpenMPELLUtils::sparseGEMV(
     else
     {
         TaskSyncToken* taskSyncToken = dynamic_cast<TaskSyncToken*>( syncToken );
-        LAMA_ASSERT_DEBUG( taskSyncToken, "no task sync token provided" );
+        LAMA_ASSERT_DEBUG( taskSyncToken, "no task sync token provided" )
 
         void (*gemv)(
             ValueType result[],
@@ -961,65 +961,65 @@ void OpenMPELLUtils::sparseGEMV(
 
 void OpenMPELLUtils::setInterface( ELLUtilsInterface& ELLUtils )
 {
-    LAMA_INTERFACE_REGISTER( ELLUtils, countNonEmptyRowsBySizes );
-    LAMA_INTERFACE_REGISTER( ELLUtils, setNonEmptyRowsBySizes );
-    LAMA_INTERFACE_REGISTER( ELLUtils, hasDiagonalProperty );
-    LAMA_INTERFACE_REGISTER( ELLUtils, check );
+    LAMA_INTERFACE_REGISTER( ELLUtils, countNonEmptyRowsBySizes )
+    LAMA_INTERFACE_REGISTER( ELLUtils, setNonEmptyRowsBySizes )
+    LAMA_INTERFACE_REGISTER( ELLUtils, hasDiagonalProperty )
+    LAMA_INTERFACE_REGISTER( ELLUtils, check )
 
-    LAMA_INTERFACE_REGISTER_TT( ELLUtils, getRow, float, float );
-    LAMA_INTERFACE_REGISTER_TT( ELLUtils, getRow, float, double );
-    LAMA_INTERFACE_REGISTER_TT( ELLUtils, getRow, double, float );
-    LAMA_INTERFACE_REGISTER_TT( ELLUtils, getRow, double, double );
+    LAMA_INTERFACE_REGISTER_TT( ELLUtils, getRow, float, float )
+    LAMA_INTERFACE_REGISTER_TT( ELLUtils, getRow, float, double )
+    LAMA_INTERFACE_REGISTER_TT( ELLUtils, getRow, double, float )
+    LAMA_INTERFACE_REGISTER_TT( ELLUtils, getRow, double, double )
 
-    LAMA_INTERFACE_REGISTER_TT( ELLUtils, getValue, float, float );
-    LAMA_INTERFACE_REGISTER_TT( ELLUtils, getValue, float, double );
-    LAMA_INTERFACE_REGISTER_TT( ELLUtils, getValue, double, float );
-    LAMA_INTERFACE_REGISTER_TT( ELLUtils, getValue, double, double );
+    LAMA_INTERFACE_REGISTER_TT( ELLUtils, getValue, float, float )
+    LAMA_INTERFACE_REGISTER_TT( ELLUtils, getValue, float, double )
+    LAMA_INTERFACE_REGISTER_TT( ELLUtils, getValue, double, float )
+    LAMA_INTERFACE_REGISTER_TT( ELLUtils, getValue, double, double )
 
-    LAMA_INTERFACE_REGISTER_TT( ELLUtils, scaleValue, float, float );
-    LAMA_INTERFACE_REGISTER_TT( ELLUtils, scaleValue, double, float );
-    LAMA_INTERFACE_REGISTER_TT( ELLUtils, scaleValue, float, double );
-    LAMA_INTERFACE_REGISTER_TT( ELLUtils, scaleValue, double, double );
+    LAMA_INTERFACE_REGISTER_TT( ELLUtils, scaleValue, float, float )
+    LAMA_INTERFACE_REGISTER_TT( ELLUtils, scaleValue, double, float )
+    LAMA_INTERFACE_REGISTER_TT( ELLUtils, scaleValue, float, double )
+    LAMA_INTERFACE_REGISTER_TT( ELLUtils, scaleValue, double, double )
 
-    LAMA_INTERFACE_REGISTER_TT( ELLUtils, setCSRValues, float, float );
-    LAMA_INTERFACE_REGISTER_TT( ELLUtils, setCSRValues, float, double );
-    LAMA_INTERFACE_REGISTER_TT( ELLUtils, setCSRValues, double, float );
-    LAMA_INTERFACE_REGISTER_TT( ELLUtils, setCSRValues, double, double );
+    LAMA_INTERFACE_REGISTER_TT( ELLUtils, setCSRValues, float, float )
+    LAMA_INTERFACE_REGISTER_TT( ELLUtils, setCSRValues, float, double )
+    LAMA_INTERFACE_REGISTER_TT( ELLUtils, setCSRValues, double, float )
+    LAMA_INTERFACE_REGISTER_TT( ELLUtils, setCSRValues, double, double )
 
-    LAMA_INTERFACE_REGISTER_TT( ELLUtils, getCSRValues, float, float );
-    LAMA_INTERFACE_REGISTER_TT( ELLUtils, getCSRValues, float, double );
-    LAMA_INTERFACE_REGISTER_TT( ELLUtils, getCSRValues, double, float );
-    LAMA_INTERFACE_REGISTER_TT( ELLUtils, getCSRValues, double, double );
+    LAMA_INTERFACE_REGISTER_TT( ELLUtils, getCSRValues, float, float )
+    LAMA_INTERFACE_REGISTER_TT( ELLUtils, getCSRValues, float, double )
+    LAMA_INTERFACE_REGISTER_TT( ELLUtils, getCSRValues, double, float )
+    LAMA_INTERFACE_REGISTER_TT( ELLUtils, getCSRValues, double, double )
 
-    LAMA_INTERFACE_REGISTER_T( ELLUtils, absMaxVal, float );
-    LAMA_INTERFACE_REGISTER_T( ELLUtils, absMaxVal, double );
+    LAMA_INTERFACE_REGISTER_T( ELLUtils, absMaxVal, float )
+    LAMA_INTERFACE_REGISTER_T( ELLUtils, absMaxVal, double )
 
-    LAMA_INTERFACE_REGISTER_T( ELLUtils, compressIA, float );
-    LAMA_INTERFACE_REGISTER_T( ELLUtils, compressIA, double );
+    LAMA_INTERFACE_REGISTER_T( ELLUtils, compressIA, float )
+    LAMA_INTERFACE_REGISTER_T( ELLUtils, compressIA, double )
 
-    LAMA_INTERFACE_REGISTER_T( ELLUtils, compressValues, float );
-    LAMA_INTERFACE_REGISTER_T( ELLUtils, compressValues, double );
+    LAMA_INTERFACE_REGISTER_T( ELLUtils, compressValues, float )
+    LAMA_INTERFACE_REGISTER_T( ELLUtils, compressValues, double )
 
-    LAMA_INTERFACE_REGISTER_T( ELLUtils, computeIA, IndexType );
-    LAMA_INTERFACE_REGISTER_T( ELLUtils, addComputeIA, IndexType );
+    LAMA_INTERFACE_REGISTER_T( ELLUtils, computeIA, IndexType )
+    LAMA_INTERFACE_REGISTER_T( ELLUtils, addComputeIA, IndexType )
 
-    LAMA_INTERFACE_REGISTER_T( ELLUtils, computeValues, float );
-    LAMA_INTERFACE_REGISTER_T( ELLUtils, computeValues, double );
+    LAMA_INTERFACE_REGISTER_T( ELLUtils, computeValues, float )
+    LAMA_INTERFACE_REGISTER_T( ELLUtils, computeValues, double )
 
-    LAMA_INTERFACE_REGISTER_T( ELLUtils, addComputeValues, float );
-    LAMA_INTERFACE_REGISTER_T( ELLUtils, addComputeValues, double );
+    LAMA_INTERFACE_REGISTER_T( ELLUtils, addComputeValues, float )
+    LAMA_INTERFACE_REGISTER_T( ELLUtils, addComputeValues, double )
 
-    LAMA_INTERFACE_REGISTER_T( ELLUtils, normalGEMV, float );
-    LAMA_INTERFACE_REGISTER_T( ELLUtils, normalGEMV, double );
+    LAMA_INTERFACE_REGISTER_T( ELLUtils, normalGEMV, float )
+    LAMA_INTERFACE_REGISTER_T( ELLUtils, normalGEMV, double )
 
-    LAMA_INTERFACE_REGISTER_T( ELLUtils, sparseGEMV, float );
-    LAMA_INTERFACE_REGISTER_T( ELLUtils, sparseGEMV, double );
+    LAMA_INTERFACE_REGISTER_T( ELLUtils, sparseGEMV, float )
+    LAMA_INTERFACE_REGISTER_T( ELLUtils, sparseGEMV, double )
 
-    LAMA_INTERFACE_REGISTER_T( ELLUtils, jacobi, float );
-    LAMA_INTERFACE_REGISTER_T( ELLUtils, jacobi, double );
+    LAMA_INTERFACE_REGISTER_T( ELLUtils, jacobi, float )
+    LAMA_INTERFACE_REGISTER_T( ELLUtils, jacobi, double )
 
-    LAMA_INTERFACE_REGISTER_T( ELLUtils, jacobiHalo, float );
-    LAMA_INTERFACE_REGISTER_T( ELLUtils, jacobiHalo, double );
+    LAMA_INTERFACE_REGISTER_T( ELLUtils, jacobiHalo, float )
+    LAMA_INTERFACE_REGISTER_T( ELLUtils, jacobiHalo, double )
 }
 
 } // namespace lama

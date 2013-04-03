@@ -257,7 +257,7 @@ public:
 private:
     MatrixPtr mMatrix;
 
-    LAMA_LOG_DECL_STATIC_LOGGER(logger);
+    LAMA_LOG_DECL_STATIC_LOGGER( logger )
 
 };
 
@@ -293,7 +293,7 @@ private:
 
     MatrixPtr mMatrix;
 
-    LAMA_LOG_DECL_STATIC_LOGGER(logger);
+    LAMA_LOG_DECL_STATIC_LOGGER( logger )
 };
 
 } //namespace lama

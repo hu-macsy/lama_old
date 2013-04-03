@@ -260,7 +260,7 @@ private:
 
     CommunicatorPtr mComm;
 
-    LAMA_LOG_DECL_STATIC_LOGGER(logger);
+    LAMA_LOG_DECL_STATIC_LOGGER( logger )
 };
 
 // implementation of inner classes.

@@ -64,17 +64,14 @@ namespace lama
 /**
  * @brief The template DenseVector represents a distributed 1D Vector with elements of type T.
  *
- * @param T the value type for the elements of this.
+ * @tparam T the value type for the vector values.
  */
 template<typename T>
 class LAMA_DLL_IMPORTEXPORT DenseVector: public Vector
 {
 public:
 
-    /**
-     * @brief the Type of elements of this.
-     */
-    typedef T ValueType;
+    typedef T ValueType; //!< This is the type of the vector values.
 
     /** Default constructor, creates replicated 0 vector */
 
@@ -351,7 +348,7 @@ protected:
 
     using Vector::mContext;
 
-    LAMA_LOG_DECL_STATIC_LOGGER(logger);
+    LAMA_LOG_DECL_STATIC_LOGGER( logger )
 
 private:
 
@@ -428,7 +425,7 @@ DenseVector<T>::DenseVector( const DenseVector<ValueType>& other )
     // implementation here can be simpler as DenseVector( const Vector& other )
 
     LAMA_LOG_INFO( logger,
-                   "Copy of vector of global size " << size() << ", local size " << getDistribution().getLocalSize() );
+                   "Copy of vector of global size " << size() << ", local size " << getDistribution().getLocalSize() )
 
     mLocalValues = other.getLocalValues();
 }

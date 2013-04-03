@@ -43,7 +43,7 @@ Distributed::Distributed( DistributionPtr distribution )
 {
     if ( !distribution )
     {
-        LAMA_THROWEXCEPTION( "Distributed object must not have NULL distribution" );
+        LAMA_THROWEXCEPTION( "Distributed object must not have NULL distribution" )
     }
 }
 

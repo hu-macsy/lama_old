@@ -49,7 +49,7 @@
 namespace lama
 {
 
-LAMA_LOG_DEF_LOGGER( OpenMPBLAS3::logger, "OpenMP.BLAS3" );
+LAMA_LOG_DEF_LOGGER( OpenMPBLAS3::logger, "OpenMP.BLAS3" )
 
 template<>
 void OpenMPBLAS3::gemm(
