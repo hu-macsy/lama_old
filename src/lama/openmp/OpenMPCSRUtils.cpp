@@ -695,14 +695,19 @@ void OpenMPCSRUtils::jacobiHalo(
     const ValueType omega,
     const IndexType numNonEmptyRows )
 {
+<<<<<<< HEAD
+    LAMA_LOG_INFO( logger, "jacobiHalo<" << typeid(ValueType).name() << ">" 
+                   << ", #rows (not empty) = " << numNonEmptyRows << ", omega = " << omega );
+=======
     LAMA_LOG_INFO( logger,
                    "jacobiHalo<" << typeid(ValueType).name() << ">" << ", #rows (not empty) = " << numNonEmptyRows << ", omega = " << omega )
+>>>>>>> e56fea759d58ae8e36756d63c6ab87ffa84d0d29
 
     #pragma omp parallel
     {
         LAMA_REGION( "OpenMP.CSR.jacabiHalo" )
 
-        #pragma omp parallel for schedule( LAMA_OMP_SCHEDULE )
+        #pragma omp for schedule( LAMA_OMP_SCHEDULE )
         for ( IndexType ii = 0; ii < numNonEmptyRows; ++ii )
         {
             IndexType i = ii; // default: rowIndexes == NULL stands for identity

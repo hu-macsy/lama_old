@@ -129,9 +129,11 @@ inline std::string getEnvContext()
 inline lama::ContextType mapEnvContexttoContextType( std::string contextname )
 {
     lama::ContextType myContext;
-    std::map<std::string,lama::ContextType> contextmap = boost::assign::map_list_of( "Host", lama::Context::Host )(
-                "CUDA", lama::Context::CUDA )( "OPENCL", lama::Context::OpenCL )( "MaxContext",
-                        lama::Context::MaxContext );
+    std::map<std::string,lama::ContextType> contextmap = 
+       boost::assign::map_list_of ( "Host", lama::Context::Host )
+                                  ( "CUDA", lama::Context::CUDA )
+                                  ( "OPENCL", lama::Context::OpenCL )
+                                  ( "MaxContext", lama::Context::MaxContext );
     myContext = contextmap[contextname];
     return myContext;
 }
@@ -231,27 +233,27 @@ inline lama::ContextType mapEnvContexttoContextType( std::string contextname )
  */
 
 #define CONTEXTLOOP()                                                                                                  \
-    std::list<ContextType> listofcontexts;                                                                         \
-    std::list<ContextType>::iterator Iter;                                                                         \
-    std::string contexttype;                                                                                       \
-    contexttype = getEnvContext();                                                                                 \
-    if ( contexttype == "*" )                                                                                      \
-    {                                                                                                              \
+    std::list<ContextType> listofcontexts;                                                                             \
+    std::list<ContextType>::iterator Iter;                                                                             \
+    std::string contexttype;                                                                                           \
+    contexttype = getEnvContext();                                                                                     \
+    if ( contexttype == "*" )                                                                                          \
+    {                                                                                                                  \
         LAMA_LOG_INFO( logger, "LAMATEST_CONTEXT is not set or has value '*', so all available contexts will be used." );  \
-        for ( ContextType i = Context::Host; i < Context::MaxContext; i = static_cast<ContextType>( i + 1 ) )      \
-        {                                                                                                          \
-            if ( ContextFactory::hasContext( i ) )                                                                 \
-            {                                                                                                      \
-                listofcontexts.push_back( i );                                                                     \
-                LAMA_LOG_DEBUG( logger, "Context " << i << " is available");                                       \
-            }                                                                                                      \
-            else                                                                                                   \
-                LAMA_LOG_WARN( logger, "The following context will be skipped, because it is not available: " << i );  \
-        }                                                                                                          \
-    } else {                                                                                                       \
-        listofcontexts.push_back( mapEnvContexttoContextType( contexttype ) );                                     \
-        LAMA_LOG_INFO( logger, "Environment variable LAMATEST_CONTEXT contains context = " << getEnvContext() );   \
-    }                                                                                                              \
+        for ( ContextType i = Context::Host; i < Context::MaxContext; i = static_cast<ContextType>( i + 1 ) )          \
+        {                                                                                                              \
+            if ( ContextFactory::hasContext( i ) )                                                                     \
+            {                                                                                                          \
+                listofcontexts.push_back( i );                                                                         \
+                LAMA_LOG_DEBUG( logger, "Context " << i << " is available");                                           \
+            }                                                                                                          \
+            else                                                                                                       \
+                LAMA_LOG_INFO( logger, "The following context will be skipped, because it is not available: " << i );  \
+        }                                                                                                              \
+    } else {                                                                                                           \
+        listofcontexts.push_back( mapEnvContexttoContextType( contexttype ) );                                         \
+        LAMA_LOG_INFO( logger, "Environment variable LAMATEST_CONTEXT contains context = " << getEnvContext() );       \
+    }                                                                                                                  \
     for ( Iter = listofcontexts.begin(); Iter != listofcontexts.end(); Iter++ )
 
 /*
