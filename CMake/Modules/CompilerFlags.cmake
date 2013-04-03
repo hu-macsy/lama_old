@@ -16,7 +16,6 @@ endif ( CMAKE_C_COMPILER_ID MATCHES Intel )
 
 
 
-
 # Define Compile Flags for LAMA
 #
 # Variables which can be modified:
