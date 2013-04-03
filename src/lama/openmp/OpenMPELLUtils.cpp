@@ -171,19 +171,28 @@ void OpenMPELLUtils::check(
 
     if ( mNumRows > 0 )
     {
-        bool integrity = true;
-        #pragma omp parallel for reduction( && : integrity ) schedule( LAMA_OMP_SCHEDULE )
+        bool integrityIA = true;
+        bool integrityJA = true;
+
+        #pragma omp parallel for reduction( && : integrityIA, integrityJA ) schedule( LAMA_OMP_SCHEDULE )
         for ( IndexType i = 0; i < mNumRows; i++ )
         {
-            integrity = ( ia[i] <= mNumValuesPerRow );
-            for ( IndexType jj = 0; jj < ia[i]; jj++ )
+            if ( ia[i] >= 0 && ia[i] <= mNumValuesPerRow )
             {
-                IndexType j = ja[jj * mNumRows + i];
-                integrity = integrity && ( 0 <= j && j < mNumColumns );
+                for ( IndexType jj = 0; jj < ia[i]; jj++ )
+                {
+                    IndexType j = ja[jj * mNumRows + i];
+                    integrityJA = integrityJA && ( 0 <= j && j < mNumColumns );
+                }
+            }
+            else
+            { 
+                integrityIA = false;
             }
         }
 
-        LAMA_ASSERT_ERROR( integrity, msg << ": ia to large, or ja out of range" );
+        LAMA_ASSERT_ERROR( integrityIA, msg << ": ia: at least one value out of range" );
+        LAMA_ASSERT_ERROR( integrityJA, msg << ": ja: at least one value out of range" );
     }
     else
     {
