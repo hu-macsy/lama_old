@@ -977,10 +977,7 @@ void OpenMPLAPACK::laswp(
                 continue;
             }
 
-            const LAMAInterface* const lamaInterface = LAMAInterfaceRegistry::getRegistry().getInterface(
-                        Context::Host );
-            lamaInterface->getBLAS1Interface<float>().swap( N, &A[ipiv[i * INCX] * LDA], INCX, &A[i * LDA], INCX,
-                    syncToken );
+            OpenMPBLAS1::swap<float>( N, &A[ipiv[i * INCX] * LDA], INCX, &A[i * LDA], INCX, syncToken );
         }
     }
     else if ( order == CblasColMajor )
@@ -1030,10 +1027,7 @@ void OpenMPLAPACK::laswp(
                 continue;
             }
 
-            const LAMAInterface* const lamaInterface = LAMAInterfaceRegistry::getRegistry().getInterface(
-                        Context::Host );
-            lamaInterface->getBLAS1Interface<double>().swap( N, &A[ipiv[i * INCX] * LDA], INCX, &A[i * LDA], INCX,
-                    syncToken );
+            OpenMPBLAS1::swap<double>( N, &A[ipiv[i * INCX] * LDA], INCX, &A[i * LDA], INCX, syncToken );
         }
     }
     else if ( order == CblasColMajor )
@@ -1055,6 +1049,33 @@ void OpenMPLAPACK::laswp(
     {
         BLASHelper::XERBLA_cpu( 0, 1, "cblas_dlaswp", "Illegal order setting, %d\n", order );
     }
+}
+
+/* --------------------------------------------------------------------------- */
+/*     Template instantiations via registration routine                        */
+/* --------------------------------------------------------------------------- */
+
+void OpenMPLAPACK::setInterface( BLASInterface& BLAS )
+{
+    // Note: macro takes advantage of same name for routines and type definitions 
+    //       ( e.g. routine CUDABLAS1::sum<T> is set for BLAS::BLAS1::sum variable
+
+    LAMA_INTERFACE_REGISTER_T( BLAS, getrf, float )
+    LAMA_INTERFACE_REGISTER_T( BLAS, getrf, double )
+
+    LAMA_INTERFACE_REGISTER_T( BLAS, getri, float )
+    LAMA_INTERFACE_REGISTER_T( BLAS, getri, double )
+
+    LAMA_INTERFACE_REGISTER_T( BLAS, getinv, float )
+    LAMA_INTERFACE_REGISTER_T( BLAS, getinv, double )
+
+    LAMA_INTERFACE_REGISTER_T( BLAS, tptrs, float )
+    LAMA_INTERFACE_REGISTER_T( BLAS, tptrs, double )
+
+    LAMA_INTERFACE_REGISTER_T( BLAS, laswp, float )
+    LAMA_INTERFACE_REGISTER_T( BLAS, laswp, double )
+
+    // other routines are not used by LAMA yet
 }
 
 } /* namespace lama */

@@ -30,17 +30,14 @@
  * @date 26.05.2011
  * $Id$
  */
-#ifndef LAMA_CUDAINTERFACE_HPP_
-#define LAMA_CUDAINTERFACE_HPP_
+#ifndef LAMA_CUDA_INTERFACE_HPP_
+#define LAMA_CUDA_INTERFACE_HPP_
 
 // for dll_import
 #include <lama/config.hpp>
 
 // base classes
 #include <lama/LAMAInterface.hpp>
-
-// others
-#include <cuda_runtime_api.h>
 
 namespace lama
 {
@@ -60,4 +57,4 @@ private:
 
 }
 
-#endif // LAMA_CUDAINTERFACE_HPP_
+#endif // LAMA_CUDA_INTERFACE_HPP_

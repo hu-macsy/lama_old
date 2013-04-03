@@ -33,6 +33,7 @@
 
 // hpp
 #include <lama/openmp/OpenMPBLAS2.hpp>
+#include <lama/LAMAInterface.hpp>
 
 // macros
 #include <lama/macros/unused.hpp>
@@ -3902,58 +3903,21 @@ void OpenMPBLAS2::tpsv(
     return;
 }
 
-//TODO:
-//template<>
-//void OpenMPBLAS2::agemvpbv(
-//    IndexType n,
-//    const float alpha,
-//    const float* const a,
-//    IndexType m,
-//    const float* const x,
-//    const float beta,
-//    const float* const z,
-//    float* y )
-//{
-//    char type = 'T';//because of row major
-//    const LAMA_BLAS_INT one = 1;
-//    const float zero = 0.0;
-//
-//    if ( beta == 0.0 )
-//    {
-//        F77_sgemv( &type, &n, &m, &alpha, a, &m, x, &one, &zero, y, &one );
-//    }
-//    else
-//    {
-//        F77_sgemv( &type, &n, &m, &alpha, a, &m, x, &one, &zero, y, &one );
-//        F77_saxpy( &n, &beta, z, &one, y, &one );
-//    }
-//}
-//
-//template<>
-//void OpenMPBLAS2::agemvpbv(
-//    IndexType n,
-//    const double alpha,
-//    const double* const a,
-//    IndexType m,
-//    const double* const x,
-//    const double beta,
-//    const double* const z,
-//    double* y )
-//{
-//    char type = 'T';//because of row major
-//    const LAMA_BLAS_INT one = 1;
-//    const double zero = 0.0;
-//
-//    if ( beta == 0.0 )
-//    {
-//        F77_dgemv( &type, &n, &m, &alpha, a, &m, x, &one, &zero, y, &one );
-//    }
-//    else
-//    {
-//        F77_dgemv( &type, &n, &m, &alpha, a, &m, x, &one, &zero, y, &one );
-//        F77_daxpy( &n, &beta, z, &one, y, &one );
-//    }
-//}
+/* --------------------------------------------------------------------------- */
+/*     Template instantiations via registration routine                        */
+/* --------------------------------------------------------------------------- */
+
+void OpenMPBLAS2::setInterface( BLASInterface& BLAS )
+{
+    // Note: macro takes advantage of same name for routines and type definitions 
+    //       ( e.g. routine CUDABLAS1::sum<T> is set for BLAS::BLAS1::sum variable
+
+    LAMA_INTERFACE_REGISTER_T( BLAS, gemv, float )
+    LAMA_INTERFACE_REGISTER_T( BLAS, gemv, double )
+
+    // all other routines are not used in LAMA yet
+}
+
 
 } /* namespace lama */
 

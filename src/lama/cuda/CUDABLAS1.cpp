@@ -37,6 +37,7 @@
 // others
 #include <lama/cuda/CUDAError.hpp>
 #include <lama/cuda/CUDAStreamSyncToken.hpp>
+#include <lama/LAMAInterface.hpp>
 
 // macros
 #include <lama/macros/unused.hpp>
@@ -635,24 +636,6 @@ void CUDABLAS1::sum( const IndexType n, T alpha, const T* x, T beta, const T* y,
     }
 }
 
-// instantiation
-template void CUDABLAS1::sum<float>(
-    const IndexType n,
-    float alpha,
-    const float* x,
-    float beta,
-    const float* y,
-    float* z,
-    SyncToken* syncToken );
-template void CUDABLAS1::sum<double>(
-    const IndexType n,
-    double alpha,
-    const double* x,
-    double beta,
-    const double* y,
-    double* z,
-    SyncToken* syncToken );
-
 /** rot */
 
 template<>
@@ -811,10 +794,6 @@ void CUDABLAS1::rotm(
     LAMA_CHECK_CUBLAS_ERROR
 }
 
-/** rotg */
-// TODO: implement
-/** rotmg */
-// TODO: implement
 template<typename T>
 void CUDABLAS1::ass( const IndexType n, const T value, T* x, SyncToken* syncToken )
 {
@@ -840,10 +819,6 @@ void CUDABLAS1::ass( const IndexType n, const T value, T* x, SyncToken* syncToke
     }
 }
 
-// instantiation
-template void CUDABLAS1::ass<float>( const IndexType n, const float value, float* x, SyncToken* syncToken );
-template void CUDABLAS1::ass<double>( const IndexType n, const double value, double* x, SyncToken* syncToken );
-
 template<typename T>
 T CUDABLAS1::viamax( const IndexType n, const T* x, const IndexType incx, SyncToken* syncToken )
 {
@@ -857,16 +832,29 @@ T CUDABLAS1::viamax( const IndexType n, const T* x, const IndexType incx, SyncTo
     return max;
 }
 
-// instantiation
-template float CUDABLAS1::viamax<float>(
-    const IndexType n,
-    const float* x,
-    const IndexType incx,
-    SyncToken* syncToken );
-template double CUDABLAS1::viamax<double>(
-    const IndexType n,
-    const double* x,
-    const IndexType incx,
-    SyncToken* syncToken );
+/* --------------------------------------------------------------------------- */
+/*     Template instantiations via registration routine                        */
+/* --------------------------------------------------------------------------- */
+
+void CUDABLAS1::setInterface( BLASInterface& BLAS )
+{
+    // Note: macro takes advantage of same name for routines and type definitions 
+    //       ( e.g. routine CUDABLAS1::sum<T> is set for BLAS::BLAS1::sum variable
+
+    LAMA_INTERFACE_REGISTER_T( BLAS, scal, float )
+    LAMA_INTERFACE_REGISTER_T( BLAS, scal, double )
+
+    LAMA_INTERFACE_REGISTER_T( BLAS, nrm2, float )
+    LAMA_INTERFACE_REGISTER_T( BLAS, nrm2, double )
+
+    LAMA_INTERFACE_REGISTER_T( BLAS, sum, float )
+    LAMA_INTERFACE_REGISTER_T( BLAS, sum, double )
+
+    LAMA_INTERFACE_REGISTER_T( BLAS, ass, float )
+    LAMA_INTERFACE_REGISTER_T( BLAS, ass, double )
+
+    LAMA_INTERFACE_REGISTER_T( BLAS, viamax, float )
+    LAMA_INTERFACE_REGISTER_T( BLAS, viamax, double )
+}
 
 } /* namespace lama */

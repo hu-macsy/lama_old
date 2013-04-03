@@ -26,7 +26,7 @@
  * @endlicense
  *
  * @brief Default implementations for LAMA interface.
- * @author brandes
+ * @author Thomas Brandes
  * @date 28.04.2011
  * $Id$
  */
@@ -49,32 +49,7 @@ LAMAInterface::~LAMAInterface()
 {
 }
 
-template<typename T>
-BLAS1Interface<T>::BLAS1Interface()
-{
-    memset( this, 0, sizeof( *this ) );
-}
-
-template<typename T>
-BLAS2Interface<T>::BLAS2Interface()
-{
-    memset( this, 0, sizeof( *this ) );
-}
-
-template<typename T>
-BLAS3Interface<T>::BLAS3Interface()
-{
-    memset( this, 0, sizeof( *this ) );
-}
-
-template<typename T>
-LAPACKInterface<T>::LAPACKInterface()
-{
-    memset( this, 0, sizeof( *this ) );
-}
-
-template<typename T>
-SCALAPACKInterface<T>::SCALAPACKInterface()
+BLASInterface::BLASInterface()
 {
     memset( this, 0, sizeof( *this ) );
 }
@@ -118,66 +93,6 @@ void LAMAInterface::writeAt( std::ostream& stream ) const
 {
     // write identification of this object
     stream << "LAMAInterface(base class)";
-}
-
-template<>
-const BLAS1Interface<float>& LAMAInterface::getBLAS1Interface<>() const
-{
-    return mFloatBLAS1Interface;
-}
-
-template<>
-const BLAS2Interface<float>& LAMAInterface::getBLAS2Interface<>() const
-{
-    return mFloatBLAS2Interface;
-}
-
-template<>
-const BLAS3Interface<float>& LAMAInterface::getBLAS3Interface<>() const
-{
-    return mFloatBLAS3Interface;
-}
-
-template<>
-const LAPACKInterface<float>& LAMAInterface::getLAPACKInterface<>() const
-{
-    return mFloatLAPACKInterface;
-}
-
-template<>
-const SCALAPACKInterface<float>& LAMAInterface::getSCALAPACKInterface<>() const
-{
-    return mFloatSCALAPACKInterface;
-}
-
-template<>
-const BLAS1Interface<double>& LAMAInterface::getBLAS1Interface<>() const
-{
-    return mDoubleBLAS1Interface;
-}
-
-template<>
-const BLAS2Interface<double>& LAMAInterface::getBLAS2Interface<>() const
-{
-    return mDoubleBLAS2Interface;
-}
-
-template<>
-const BLAS3Interface<double>& LAMAInterface::getBLAS3Interface<>() const
-{
-    return mDoubleBLAS3Interface;
-}
-
-template<>
-const LAPACKInterface<double>& LAMAInterface::getLAPACKInterface<>() const
-{
-    return mDoubleLAPACKInterface;
-}
-
-template<>
-const SCALAPACKInterface<double>& LAMAInterface::getSCALAPACKInterface<>() const
-{
-    return mDoubleSCALAPACKInterface;
 }
 
 } //namespace lama

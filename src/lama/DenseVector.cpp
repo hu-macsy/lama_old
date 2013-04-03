@@ -416,12 +416,19 @@ Scalar DenseVector<T>::l1Norm() const
         return 0.0f; // return as maxIdx would be invalid
     }
 
-    const LAMAInterface* const lamaInterface = LAMAInterfaceRegistry::getRegistry().getInterface( mContext->getType() );
+    //choose preferred context
 
-    ReadAccess<T> read( mLocalValues, mContext );
+    ContextPtr loc = mContext;
 
-    LAMA_CONTEXT_ACCESS( mContext )
-    ValueType localL1Norm = lamaInterface->getBLAS1Interface<T>().asum( nnu, read.get(), 1, NULL );
+    // get function pointer BLAS::BLAS1<T>::asum in appropriate context
+
+    LAMA_INTERFACE_FN_DEFAULT_T( asum, loc, BLAS, BLAS1, T )
+
+    ReadAccess<T> read( mLocalValues, loc );
+
+    LAMA_CONTEXT_ACCESS( loc )
+
+    ValueType localL1Norm = asum( nnu, read.get(), 1, NULL );
 
     return getDistribution().getCommunicator().sum( localL1Norm );
 }
@@ -436,12 +443,19 @@ Scalar DenseVector<T>::l2Norm() const
         return 0.0f; // return as maxIdx would be invalid
     }
 
-    const LAMAInterface* const lamaInterface = LAMAInterfaceRegistry::getRegistry().getInterface( mContext->getType() );
+    // choose preferred context as context of vector, might be changed by availability
 
-    ReadAccess<T> read( mLocalValues, mContext );
+    ContextPtr loc = mContext;
+
+    // get function pointer BLAS::BLAS1<T>::dot in appropriate context
+
+    LAMA_INTERFACE_FN_DEFAULT_T( dot, loc, BLAS, BLAS1, T )
+
+    ReadAccess<T> read( mLocalValues, loc );
 
     LAMA_CONTEXT_ACCESS( mContext )
-    ValueType localDotProduct = lamaInterface->getBLAS1Interface<T>().dot( nnu, read.get(), 1, read.get(), 1, NULL );
+
+    ValueType localDotProduct = dot( nnu, read.get(), 1, read.get(), 1, NULL );
     ValueType globalDotProduct = getDistribution().getCommunicator().sum( localDotProduct );
 
     return sqrt( globalDotProduct );
@@ -517,21 +531,11 @@ void DenseVector<T>::vectorPlusVector(
     LAMA_LOG_DEBUG( logger,
                     "vectorPlusVector: result:" << result << " = " << alpha << " * x:" << x << " + " << beta << " * y:" << y )
 
-    const LAMAInterface* lamaInterface = LAMAInterfaceRegistry::getRegistry().getInterface( context->getType() );
+    // get function pointers, do not use fallbacks here
 
-    if ( lamaInterface->getBLAS1Interface<T>().scal == NULL || lamaInterface->getBLAS1Interface<T>().axpy == NULL
-            || lamaInterface->getBLAS1Interface<T>().sum == NULL )
-    {
-        LAMA_THROWEXCEPTION( "Needed BLAS functions for vector add are not available on location " << context << "." )
-        //TODO: implement default interface
-//        LAMA_LOG_WARN(logger, "Needed BLAS functions for vector add are not available on location " << context
-//                               << ". Use default location.");
-//        lamaInterface = LAMAInterfaceRegistry::getRegistry().getDefaultInterface();
-//        if ( lamaInterface->getBLAS1Interface<T>().scal )
-//        {
-//            LAMA_THROWEXCEPTION("Default interface also not available. Exit.");
-//        }
-    }
+    LAMA_INTERFACE_FN_T( scal, context, BLAS, BLAS1, T )
+    LAMA_INTERFACE_FN_T( axpy, context, BLAS, BLAS1, T )
+    LAMA_INTERFACE_FN_T( sum, context, BLAS, BLAS1, T )
 
     const IndexType nnu = result.size();
 
@@ -549,7 +553,7 @@ void DenseVector<T>::vectorPlusVector(
         WriteAccess<T> resultAccess( result, context, true );
 
         LAMA_CONTEXT_ACCESS( context )
-        lamaInterface->getBLAS1Interface<T>().scal( nnu, alpha + beta, resultAccess.get(), 1, NULL );
+        scal( nnu, alpha + beta, resultAccess.get(), 1, NULL );
     }
     else if ( result == x ) //result = alpha * result + beta * y
     {
@@ -563,7 +567,7 @@ void DenseVector<T>::vectorPlusVector(
             if ( alpha != 1.0 ) // result *= alpha
             {
                 LAMA_CONTEXT_ACCESS( context )
-                lamaInterface->getBLAS1Interface<T>().scal( nnu, alpha, resultAccess.get(), 1, NULL );
+                scal( nnu, alpha, resultAccess.get(), 1, NULL );
             }
             else
             {
@@ -578,12 +582,11 @@ void DenseVector<T>::vectorPlusVector(
             {
                 // result *= alpha
                 LAMA_CONTEXT_ACCESS( context )
-                lamaInterface->getBLAS1Interface<T>().scal( nnu, alpha, resultAccess.get(), 1, NULL );
+                scal( nnu, alpha, resultAccess.get(), 1, NULL );
             }
             // result += y
             LAMA_CONTEXT_ACCESS( context )
-            lamaInterface->getBLAS1Interface<T>().axpy( nnu, 1/*alpha*/, yAccess.get(), 1, resultAccess.get(), 1,
-                    NULL );
+            axpy( nnu, 1/*alpha*/, yAccess.get(), 1, resultAccess.get(), 1, NULL );
         }
         else // beta != 1.0 && beta != 0.0 --> result = alpha * result + beta * y
         {
@@ -593,10 +596,10 @@ void DenseVector<T>::vectorPlusVector(
             if ( alpha != 1.0 )
             {
                 LAMA_CONTEXT_ACCESS( context )
-                lamaInterface->getBLAS1Interface<T>().scal( nnu, alpha, resultAccess.get(), 1, NULL );
+                scal( nnu, alpha, resultAccess.get(), 1, NULL );
             }
             LAMA_CONTEXT_ACCESS( context )
-            lamaInterface->getBLAS1Interface<T>().axpy( nnu, beta, yAccess.get(), 1, resultAccess.get(), 1, NULL );
+            axpy( nnu, beta, yAccess.get(), 1, resultAccess.get(), 1, NULL );
         }
     }
     else if ( result == y ) // result = alpha * x + beta * result
@@ -613,14 +616,14 @@ void DenseVector<T>::vectorPlusVector(
         {
             // result *= beta
             LAMA_CONTEXT_ACCESS( context )
-            lamaInterface->getBLAS1Interface<T>().scal( nnu, beta, resultAccess.get(), 1, NULL );
+            scal( nnu, beta, resultAccess.get(), 1, NULL );
         }
 
         if ( alpha != 0.0 )
         {
             // result = alpha * x + result
             LAMA_CONTEXT_ACCESS( context )
-            lamaInterface->getBLAS1Interface<T>().axpy( nnu, alpha, xAccess.get(), 1, resultAccess.get(), 1, NULL );
+            axpy( nnu, alpha, xAccess.get(), 1, resultAccess.get(), 1, NULL );
         }
     }
     else // result = alpha * x + beta * y
@@ -634,8 +637,7 @@ void DenseVector<T>::vectorPlusVector(
         WriteAccess<T> resultAccess( result, context, false );
 
         LAMA_CONTEXT_ACCESS( context )
-        lamaInterface->getBLAS1Interface<T>().sum( nnu, alpha, xAccess.get(), beta, yAccess.get(), resultAccess.get(),
-                NULL );
+        sum( nnu, alpha, xAccess.get(), beta, yAccess.get(), resultAccess.get(), NULL );
     }
 
     LAMA_LOG_INFO( logger, "vectorPlusVector done" )
@@ -697,7 +699,6 @@ void DenseVector<T>::assign(
         LAMA_THROWEXCEPTION(
             "Can not calculate z = alpha * x + beta * y, z = " << *this << ", x = " << x << ", y = " << y << " because of type mismatch." );
     }
-
 }
 
 template<typename T>
@@ -713,22 +714,24 @@ Scalar DenseVector<T>::dotProduct( const Vector& other ) const
         }
         const DenseVector<ValueType>& denseOther = dynamic_cast<const DenseVector<ValueType>&>( other );
 
-        const LAMAInterface* const lamaInterface = LAMAInterfaceRegistry::getRegistry().getInterface(
-                    mContext->getType() );
-
         LAMA_LOG_DEBUG( logger, "Calculating local dot product at " << *mContext )
 
-        ReadAccess<T> localRead( mLocalValues, mContext );
-        ReadAccess<T> otherRead( denseOther.mLocalValues, mContext );
+        ContextPtr loc = mContext;   // prefered location is context of this vector
 
-        LAMA_CONTEXT_ACCESS( mContext )
+        LAMA_INTERFACE_FN_DEFAULT_T( dot, loc, BLAS, BLAS1, T );
+
+        // Now do the dot production at location loc ( might have been changed to other location  )
+
+        ReadAccess<T> localRead( mLocalValues, loc );
+        ReadAccess<T> otherRead( denseOther.mLocalValues, loc );
+
+        LAMA_CONTEXT_ACCESS( loc )
 
         const IndexType localSize = mLocalValues.size();
 
         LAMA_ASSERT_EQUAL_DEBUG( localSize, getDistribution().getLocalSize() )
 
-        const ValueType localDotProduct = lamaInterface->getBLAS1Interface<T>().dot( localSize, localRead.get(), 1,
-                                          otherRead.get(), 1, NULL );
+        const ValueType localDotProduct = dot( localSize, localRead.get(), 1, otherRead.get(), 1, NULL );
 
         LAMA_LOG_DEBUG( logger, "Calculating global dot product form local dot product = " << localDotProduct )
 

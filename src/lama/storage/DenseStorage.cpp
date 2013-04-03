@@ -456,17 +456,15 @@ void DenseStorageView<ValueType>::invertDense( const DenseStorageView<ValueType>
 
     LAMA_ASSERT_EQUAL_ERROR( nRows, nCols )
 
-    HostWriteAccess<ValueType> denseValues( this->getData() );
+    ContextPtr loc = ContextFactory::getContext( Context::Host );
 
-    // ContextPtr context = matrix.getContextPtr();
+    LAMA_INTERFACE_FN_DEFAULT_T( getinv, loc, BLAS, LAPACK, ValueType );
 
-    ContextPtr context = ContextFactory::getContext( Context::Host );
+    WriteAccess<ValueType> denseValues( this->getData(), loc );
 
-    const LAMAInterface& lamaInterface = context->getInterface();
+    LAMA_CONTEXT_ACCESS( loc );
 
-    LAMA_ASSERT_ERROR( lamaInterface.getLAPACKInterface<ValueType>().getinv, "getinv not available" )
-
-    lamaInterface.getLAPACKInterface<ValueType>().getinv( nRows, denseValues.get(), nCols );
+    getinv( nRows, denseValues.get(), nCols );
 
     LAMA_LOG_INFO( logger, "invertDense: this = " << *this )
 }
@@ -500,8 +498,6 @@ void DenseStorageView<ValueType>::matrixTimesVector(
 
     ReadAccess<ValueType> rX( x, loc );
 
-    const LAMAInterface& lamaInterface = loc->getInterface();
-
     int n = mNumRows;
     int m = mNumColumns;
     int lda = mNumColumns; // stride for denseValues between rows
@@ -510,26 +506,27 @@ void DenseStorageView<ValueType>::matrixTimesVector(
 
     if ( result != y )
     {
+        LAMA_INTERFACE_FN_T( copy, loc, BLAS, BLAS1, ValueType )
+
         WriteOnlyAccess<ValueType> wResult( result, loc, mNumRows );
 
         // by setting result = y we get the correct results
 
         ReadAccess<ValueType> rY( y, loc );
 
-        LAMA_ASSERT_ERROR( lamaInterface.getBLAS1Interface<ValueType>().copy, "no  BLAS1::copy at " << *loc )
-
         LAMA_CONTEXT_ACCESS( loc )
-        lamaInterface.getBLAS1Interface<ValueType>().copy( n, rY.get(), 1, wResult.get(), 1, NULL );
+
+        copy( n, rY.get(), 1, wResult.get(), 1, NULL );
     }
+
+    LAMA_INTERFACE_FN_T( gemv, loc, BLAS, BLAS2, ValueType );
 
     WriteAccess<ValueType> wResult( result, loc );
 
     LAMA_CONTEXT_ACCESS( loc )
 
-    LAMA_ASSERT_ERROR( lamaInterface.getBLAS2Interface<ValueType>().gemv, "no  BLAS2::gemv at " << *loc )
-
-    lamaInterface.getBLAS2Interface<ValueType>().gemv( CblasRowMajor, CblasNoTrans, n, m, alpha, denseValues.get(), lda,
-            rX.get(), 1, beta, wResult.get(), 1, NULL );
+    gemv( CblasRowMajor, CblasNoTrans, n, m, alpha, denseValues.get(), lda,
+          rX.get(), 1, beta, wResult.get(), 1, NULL );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -679,8 +676,6 @@ void DenseStorageView<ValueType>::matrixTimesMatrixDense(
 
     ContextPtr context = mContext;
 
-    const LAMAInterface& lamaInterface = context->getInterface();
-
     if ( beta == 0.0 )
     {
         // do not care at all about C as it might be any dummy, or aliased to result
@@ -699,12 +694,12 @@ void DenseStorageView<ValueType>::matrixTimesMatrixDense(
         LAMA_ASSERT_EQUAL_ERROR( n, c.getNumColumns () )
         mNumRows = m;
         mNumColumns = n;
+        LAMA_INTERFACE_FN_T( copy, context, BLAS, BLAS1, ValueType )
         ReadAccess<ValueType> cAccess( c.getData(), context );
         WriteOnlyAccess<ValueType> resAccess( getData(), context, m * n );
         LAMA_LOG_TRACE( logger, "Copying: res = c " )
         LAMA_CONTEXT_ACCESS( context )
-        context->getInterface().getBLAS1Interface<ValueType>().copy( n * m, cAccess.get(), 1, resAccess.get(), 1,
-                NULL );
+        copy( n * m, cAccess.get(), 1, resAccess.get(), 1, NULL );
     }
     else
     {
@@ -728,10 +723,13 @@ void DenseStorageView<ValueType>::matrixTimesMatrixDense(
 
     if ( lda != 0 && n != 0 && m != 0 )
     {
+        LAMA_INTERFACE_FN_T( gemm, context, BLAS, BLAS3, ValueType );
+
         LAMA_CONTEXT_ACCESS( context )
-        lamaInterface.getBLAS3Interface<ValueType>().gemm( CblasRowMajor, CblasNoTrans, CblasNoTrans, m, n, k, alpha,
-                aAccess.get(), lda, bAccess.get(), ldb, beta,
-                resAccess.get(), ldc, NULL );
+
+        gemm( CblasRowMajor, CblasNoTrans, CblasNoTrans, m, n, k, alpha,
+              aAccess.get(), lda, bAccess.get(), ldb, beta,
+              resAccess.get(), ldc, NULL );
     }
 }
 

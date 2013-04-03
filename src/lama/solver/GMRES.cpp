@@ -376,12 +376,10 @@ void GMRES::updateX( unsigned int i )
 
     ContextPtr context = ContextFactory::getContext( Context::Host );
 
-    const LAMAInterface& lamaInterface = context->getInterface();
+    LAMA_INTERFACE_FN_T( tptrs, context, BLAS, LAPACK, double );
 
-    LAMA_ASSERT_ERROR( lamaInterface.getLAPACKInterface<double>().tptrs, "LAPACK:tptrs not available on " << *context )
-
-    int info = lamaInterface.getLAPACKInterface<double>().tptrs( CblasColMajor, CblasUpper, CblasNoTrans, CblasNonUnit,
-               i + 1, 1, runtime.mH.get(), runtime.mY.get(), i + 1 );
+    int info = tptrs( CblasColMajor, CblasUpper, CblasNoTrans, CblasNonUnit,
+                      i + 1, 1, runtime.mH.get(), runtime.mY.get(), i + 1 );
 
     LAMA_LOG_DEBUG( logger, "tptrs returned with code = " << info )
 

@@ -46,6 +46,7 @@
 
 #include <lama/task/Task.hpp>
 
+#include <lama/LAMAInterface.hpp>
 #include <lama/cuda/CUDAStreamSyncToken.hpp>
 #include <lama/cuda/CUDAContext.hpp>
 #include <lama/cuda/CUDAError.hpp>
@@ -194,9 +195,12 @@ BOOST_AUTO_TEST_CASE( prefetchTest )
     vector1.prefetch( cudaContext );
 
     {
+        LAMA_INTERFACE_FN_T(  nrm2, cudaContext, BLAS, BLAS1, ValueType );
+        LAMA_INTERFACE_FN_T(  copy, cudaContext, BLAS, BLAS1, ValueType );
+
         ReadAccess<ValueType> v1( vector1, cudaContext );
         cudaContext->enable( __FILE__, __LINE__ );
-        double norm = CUDABLAS1::nrm2( n, v1.get(), 1, cudaContext->getSyncToken().get() );
+        double norm = nrm2( n, v1.get(), 1, cudaContext->getSyncToken().get() );
         double expNormSqr = n * ( value1 * value1 );
         cudaContext->disable( __FILE__, __LINE__ );
         BOOST_CHECK_CLOSE( expNormSqr, norm * norm, 1 );
@@ -204,7 +208,7 @@ BOOST_AUTO_TEST_CASE( prefetchTest )
         // vector2 = vector1   via copy
         WriteAccess<ValueType> v2( vector2, cudaContext );
         cudaContext->enable( __FILE__, __LINE__ );
-        CUDABLAS1::copy( n, v1.get(), 1, v2.get(), 1, cudaContext->getSyncToken().get() );
+        copy( n, v1.get(), 1, v2.get(), 1, cudaContext->getSyncToken().get() );
         cudaContext->disable( __FILE__, __LINE__ );
     }
 
@@ -247,9 +251,13 @@ BOOST_AUTO_TEST_CASE( asyncTest )
     token = cuda->getComputeSyncToken();
 
     {
-        LAMA_CONTEXT_ACCESS( cudaContext );
+        LAMA_INTERFACE_FN_T( scal, cudaContext, BLAS, BLAS1, float )
+
+        LAMA_CONTEXT_ACCESS( cudaContext )
+
         // test: should be async!!!
-        CUDABLAS1::scal( n, alpha, cudaV->get(), 1, cudaContext->getSyncToken().get() );
+        scal( n, alpha, cudaV->get(), 1, cudaContext->getSyncToken().get() );
+
         LAMA_CHECK_CUDA_ERROR
         ;
     }
@@ -265,8 +273,6 @@ BOOST_AUTO_TEST_CASE( asyncTest )
         BOOST_CHECK_EQUAL( value * alpha, hostV[i] );
     }
 }
-
-/* --------------------------------------------------------------------- */
 
 //TODO: To benchmarks?
 //BOOST_AUTO_TEST_CASE( benchTest )
@@ -363,12 +369,12 @@ BOOST_AUTO_TEST_CASE( syncTest )
     LAMAArray<float> vector( n, value );
 
     {
+        LAMA_INTERFACE_FN_T( scal, cudaContext, BLAS, BLAS1, float );
+
         WriteAccess<float> cudaV( vector, cudaContext );
         LAMA_CONTEXT_ACCESS( cudaContext );
 
-        CUDABLAS1::scal( n, alpha, cudaV.get(), 1, cudaContext->getSyncToken().get() );
-        LAMA_CHECK_CUDA_ERROR
-        ;
+        scal( n, alpha, cudaV.get(), 1, cudaContext->getSyncToken().get() );
     }
 
     HostReadAccess<float> hostV( vector );
@@ -386,25 +392,15 @@ namespace
 
 static void callSSCAL( LAMAArray<float>& vector, const float alpha, ContextPtr context )
 {
+    // get routine for context, must be available, otherwise Exception
+
+    LAMA_INTERFACE_FN_T( scal, context, BLAS, BLAS1, float );
+
     WriteAccess<float> vectorAccess( vector, context );
 
-    if ( context->getType() == Context::CUDA )
-    {
-        LAMA_CONTEXT_ACCESS( context );
+    LAMA_CONTEXT_ACCESS( context );
 
-        CUDABLAS1::scal( vector.size(), alpha, vectorAccess.get(), 1, context->getSyncToken().get() );
-        LAMA_CHECK_CUDA_ERROR
-        ;
-    }
-    else if ( context->getType() == Context::Host )
-    {
-        LAMA_CONTEXT_ACCESS( context );
-        // not required for Host, but anyway
-
-        OpenMPBLAS1::scal( vector.size(), alpha, vectorAccess.get(), 1, NULL );
-        LAMA_CHECK_CUDA_ERROR
-        ;
-    }
+    scal( vector.size(), alpha, vectorAccess.get(), 1, context->getSyncToken().get() );
 }
 
 }

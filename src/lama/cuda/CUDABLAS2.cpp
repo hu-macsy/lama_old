@@ -35,6 +35,7 @@
 #include <lama/cuda/CUDABLAS2.hpp>
 
 // others
+#include <lama/LAMAInterface.hpp>
 #include <lama/cuda/CUDAError.hpp>
 #include <lama/cuda/CUDAStreamSyncToken.hpp>
 
@@ -2439,6 +2440,21 @@ void CUDABLAS2::tpsv(
     {
         LAMA_CUDA_RT_CALL( cudaStreamSynchronize( stream ), "cudaStreamSynchronize( stream = " << stream << " )" );
     }
+}
+
+/* --------------------------------------------------------------------------- */
+/*     Template instantiations via registration routine                        */
+/* --------------------------------------------------------------------------- */
+
+void CUDABLAS2::setInterface( BLASInterface& BLAS )
+{
+    // Note: macro takes advantage of same name for routines and type definitions 
+    //       ( e.g. routine CUDABLAS1::sum<T> is set for BLAS::BLAS1::sum variable
+
+    LAMA_INTERFACE_REGISTER_T( BLAS, gemv, float )
+    LAMA_INTERFACE_REGISTER_T( BLAS, gemv, double )
+
+    // other routines are not used by LAMA yet
 }
 
 } /* namespace lama */

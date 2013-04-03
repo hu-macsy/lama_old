@@ -38,6 +38,8 @@
 
 #include <lama/NoSyncToken.hpp>
 
+#include <lama/ContextAccess.hpp>
+
 #include <lama/distribution/NoDistribution.hpp>
 #include <lama/distribution/CyclicDistribution.hpp>
 #include <lama/distribution/Redistributor.hpp>
@@ -509,14 +511,11 @@ void DenseMatrix<ValueType>::invertCyclic()
 
     const int nb = cyclicDist->chunkSize(); // blocking factor
 
-    ContextPtr context = getContextPtr();
+    ContextPtr loc = getContextPtr();  // location where inverse computation will be done
 
-    const LAMAInterface& lamaInterface = context->getInterface();
+    LAMA_INTERFACE_FN_DEFAULT_T( inverse, loc, BLAS, SCALAPACK, ValueType );
 
-    if ( !lamaInterface.getSCALAPACKInterface<ValueType>().inverse )
-    {
-        LAMA_THROWEXCEPTION( "No SCALAPACK routines available" )
-    }
+    // be careful: loc might have changed to location where 'inverse' is available
 
     const int n = getNumRows();
 
@@ -532,13 +531,15 @@ void DenseMatrix<ValueType>::invertCyclic()
 
     LAMA_LOG_INFO( logger, "local dense data = " << denseStorage << ", localSize = " << localSize )
 
-    HostWriteAccess<ValueType> localValues( denseStorage.getData() );
+    WriteAccess<ValueType> localValues( denseStorage.getData(), loc );
 
     ValueType* data = localValues.get();
 
     LAMA_LOG_INFO( logger, "now call inverse" )
 
-    lamaInterface.getSCALAPACKInterface<ValueType>().inverse( n, nb, data, comm );
+    LAMA_CONTEXT_ACCESS( loc )
+
+    inverse( n, nb, data, comm );
 }
 
 /* ------------------------------------------------------------------ */

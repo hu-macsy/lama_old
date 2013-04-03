@@ -186,7 +186,6 @@ void InverseSolver::invert( DenseMatrix<T>& matrix, IndexType* const permutation
     typedef T ValueType;
 
     ContextPtr context = getCoefficients().getContextPtr();
-    const LAMAInterface* lamaInterface = LAMAInterfaceRegistry::getRegistry().getInterface( context->getType() );
 
     if ( matrix.getNumRows() != matrix.getNumColumns() )
     {
@@ -198,22 +197,26 @@ void InverseSolver::invert( DenseMatrix<T>& matrix, IndexType* const permutation
 
         HostWriteAccess<T> denseValues( denseStorage.getData() );
 
-        int error = lamaInterface->getLAPACKInterface<T>().getrf( CblasRowMajor, denseStorage.getNumRows(),
-                    denseStorage.getNumColumns(), denseValues.get(),
-                    denseStorage.getNumColumns(), &permutation[0] );
+        LAMA_INTERFACE_FN_T( getrf, context, BLAS, LAPACK, T );
+
+        int error = getrf( CblasRowMajor, denseStorage.getNumRows(),
+                           denseStorage.getNumColumns(), denseValues.get(),
+                           denseStorage.getNumColumns(), &permutation[0] );
 
         if ( error != 0 )
         {
-            LAMA_THROWEXCEPTION( "lama_GETRF_cpu failed" )
+            LAMA_THROWEXCEPTION( "getrf on " << *context << " failed, error = " << error )
         }
 
-        error = lamaInterface->getLAPACKInterface<T>().getri( CblasRowMajor, denseStorage.getNumRows(),
-                denseValues.get(), denseStorage.getNumColumns(),
-                &permutation[0] );
+        LAMA_INTERFACE_FN_T( getri, context, BLAS, LAPACK, T );
+
+        error = getri( CblasRowMajor, denseStorage.getNumRows(),
+                       denseValues.get(), denseStorage.getNumColumns(),
+                       &permutation[0] );
 
         if ( error != 0 )
         {
-            LAMA_THROWEXCEPTION( "lama_GETRI_cpu failed" )
+            LAMA_THROWEXCEPTION( "getri on " << *context << " failed, error = " << error )
         }
     }
     else

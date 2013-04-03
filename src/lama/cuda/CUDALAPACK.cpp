@@ -32,119 +32,14 @@
  */
 
 #include <lama/cuda/CUDABLAS1.hpp>
+
+#include <lama/LAMAInterface.hpp>
 #include <lama/cuda/CUDAError.hpp>
 #include <lama/cuda/CUDALAPACK.hpp>
 
 namespace lama
 {
 
-//TODO implement
-//    template<>
-//    T CUDALAPACK::lamch( const enum CBLAS_MACHINE_PARAM param );
-//
-//    template<>
-//    IndexType CUDALAPACK::getrf(
-//        const enum CBLAS_ORDER order,
-//        const IndexType m,
-//        const IndexType n,
-//        float* const A,
-//        const IndexType lda,
-//        IndexType* const ipiv )
-//
-//    template<>
-//    IndexType CUDALAPACK::getrf(
-//        const enum CBLAS_ORDER order,
-//        const IndexType m,
-//        const IndexType n,
-//        double* const A,
-//        const IndexType lda,
-//        IndexType* const ipiv )
-//
-//    template<>
-//    IndexType CUDALAPACK::getrf(
-//        const enum CBLAS_ORDER order,
-//        const IndexType m,
-//        const IndexType n,
-//        float* const A,
-//        const IndexType lda,
-//        IndexType* const ipiv)
-//
-//    template<>
-//    IndexType CUDALAPACK::getrf(
-//        const enum CBLAS_ORDER order,
-//        const IndexType m,
-//        const IndexType n,
-//        double* const A,
-//        const IndexType lda,
-//        IndexType* const ipiv)
-//
-//    template<>
-//    IndexType CUDALAPACK::getri(
-//        const enum CBLAS_ORDER order,
-//        const IndexType n,
-//        float* const A,
-//        const IndexType lda,
-//        IndexType* const ipiv)
-//
-//    template<>
-//    IndexType CUDALAPACK::getri(
-//        const enum CBLAS_ORDER order,
-//        const IndexType n,
-//        double* const A,
-//        const IndexType lda,
-//        IndexType* const ipiv)
-//
-//    template<>
-//    IndexType CUDALAPACK::trtrs(
-//        const enum CBLAS_ORDER order,
-//        const enum CBLAS_UPLO uplo,
-//        const enum CBLAS_TRANSPOSE trans,
-//        const enum CBLAS_DIAG diag,
-//        const IndexType n,
-//        const IndexType nrhs,
-//        const flaot* A,
-//        const IndexType lda,
-//        float* B,
-//        const IndexType ldb)
-//
-//    template<>
-//    IndexType CUDALAPACK::trtrs(
-//        const enum CBLAS_ORDER order,
-//        const enum CBLAS_UPLO uplo,
-//        const enum CBLAS_TRANSPOSE trans,
-//        const enum CBLAS_DIAG diag,
-//        const IndexType n,
-//        const IndexType nrhs,
-//        const double* A,
-//        const IndexType lda,
-//        double* B,
-//        const IndexType ldb)
-//
-//    template<>
-//    IndexType CUDALAPACK::tptrs(
-//        const enum CBLAS_ORDER order,
-//        const enum CBLAS_UPLO uplo,
-//        const enum CBLAS_TRANSPOSE trans,
-//        const enum CBLAS_DIAG diag,
-//        const IndexType n,
-//        const IndexType nrhs,
-//        const float* AP,
-//        float* B,
-//        const IndexType ldb)
-//
-//    template<>
-//    IndexType CUDALAPACK::tptrs(
-//        const enum CBLAS_ORDER order,
-//        const enum CBLAS_UPLO uplo,
-//        const enum CBLAS_TRANSPOSE trans,
-//        const enum CBLAS_DIAG diag,
-//        const IndexType n,
-//        const IndexType nrhs,
-//        const double* AP,
-//        double* B,
-//        const IndexType ldb)
-
-//TODO look at info and feedback variables
 template<>
 void CUDALAPACK::laswp(
     const enum CBLAS_ORDER order,
@@ -243,6 +138,21 @@ void CUDALAPACK::laswp(
         //TODO: throw exception
     }
 //        return info;
+}
+
+/* --------------------------------------------------------------------------- */
+/*     Template instantiations via registration routine                        */
+/* --------------------------------------------------------------------------- */
+
+void CUDALAPACK::setInterface( BLASInterface& BLAS )
+{
+    // Note: macro takes advantage of same name for routines and type definitions 
+    //       ( e.g. routine CUDABLAS1::sum<T> is set for BLAS::BLAS1::sum variable
+
+    LAMA_INTERFACE_REGISTER_T( BLAS, laswp, float )
+    LAMA_INTERFACE_REGISTER_T( BLAS, laswp, double )
+
+    // other routines are not used by LAMA yet
 }
 
 } /* namespace lama */

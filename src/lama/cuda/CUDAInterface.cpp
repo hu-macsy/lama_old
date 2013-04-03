@@ -57,135 +57,16 @@ namespace lama
 
 LAMA_LOG_DEF_LOGGER( CUDAInterface::logger, "LAMAInterface.CUDAInterface" )
 
-CUDAInterface::CUDAInterface()
-    : LAMAInterface()
+CUDAInterface::CUDAInterface() : LAMAInterface()
 {
-    /** BLAS */
+    // set typed function pointers with the corresponding CUDA implementations
 
-    /** Level 1 */
+    CUDABLAS1::setInterface( BLAS );
+    CUDABLAS2::setInterface( BLAS );
+    CUDABLAS3::setInterface( BLAS );
+    CUDALAPACK::setInterface( BLAS );
 
-    /** float */
-    mFloatBLAS1Interface.scal = &CUDABLAS1::scal<float>;
-    mFloatBLAS1Interface.nrm2 = &CUDABLAS1::nrm2<float>;
-    mFloatBLAS1Interface.asum = &CUDABLAS1::asum<float>;
-    mFloatBLAS1Interface.iamax = &CUDABLAS1::iamax<float>;
-    mFloatBLAS1Interface.viamax = &CUDABLAS1::viamax<float>;
-    mFloatBLAS1Interface.swap = &CUDABLAS1::swap<float>;
-    mFloatBLAS1Interface.copy = &CUDABLAS1::copy<float>;
-    mFloatBLAS1Interface.axpy = &CUDABLAS1::axpy<float>;
-    mFloatBLAS1Interface.dot = &CUDABLAS1::dot<float>;
-    mFloatBLAS1Interface.sum = &CUDABLAS1::sum<float>;
-    mFloatBLAS1Interface.rot = &CUDABLAS1::rot<float>;
-    mFloatBLAS1Interface.rotm = &CUDABLAS1::rotm<float>;
-//    mFloatBLAS1Interface.rotg    = &CUDABLAS1::rotg<float>;
-//    mFloatBLAS1Interface.rotmg   = &CUDABLAS1::rotmg<float>;
-    mFloatBLAS1Interface.ass = &CUDABLAS1::ass<float>;
-
-    /** double */
-    mDoubleBLAS1Interface.scal = &CUDABLAS1::scal<double>;
-    mDoubleBLAS1Interface.nrm2 = &CUDABLAS1::nrm2<double>;
-    mDoubleBLAS1Interface.asum = &CUDABLAS1::asum<double>;
-    mDoubleBLAS1Interface.iamax = &CUDABLAS1::iamax<double>;
-    mDoubleBLAS1Interface.viamax = &CUDABLAS1::viamax<double>;
-    mDoubleBLAS1Interface.swap = &CUDABLAS1::swap<double>;
-    mDoubleBLAS1Interface.copy = &CUDABLAS1::copy<double>;
-    mDoubleBLAS1Interface.axpy = &CUDABLAS1::axpy<double>;
-    mDoubleBLAS1Interface.dot = &CUDABLAS1::dot<double>;
-    mDoubleBLAS1Interface.sum = &CUDABLAS1::sum<double>;
-    mDoubleBLAS1Interface.rot = &CUDABLAS1::rot<double>;
-    mDoubleBLAS1Interface.rotm = &CUDABLAS1::rotm<double>;
-//    mDoubleBLAS1Interface.rotg    = &CUDABLAS1::rotg<double>;
-//    mDoubleBLAS1Interface.rotmg   = &CUDABLAS1::rotmg<double>;
-    mDoubleBLAS1Interface.ass = &CUDABLAS1::ass<double>;
-
-    /** Level 2 */
-
-    /** float */
-    mFloatBLAS2Interface.gemv = &CUDABLAS2::gemv<float>;
-    mFloatBLAS2Interface.symv = &CUDABLAS2::symv<float>;
-    mFloatBLAS2Interface.trmv = &CUDABLAS2::trmv<float>;
-    mFloatBLAS2Interface.trsv = &CUDABLAS2::trsv<float>;
-    mFloatBLAS2Interface.gbmv = &CUDABLAS2::gbmv<float>;
-    mFloatBLAS2Interface.sbmv = &CUDABLAS2::sbmv<float>;
-    mFloatBLAS2Interface.tbmv = &CUDABLAS2::tbmv<float>;
-    mFloatBLAS2Interface.tbsv = &CUDABLAS2::tbsv<float>;
-    mFloatBLAS2Interface.ger = &CUDABLAS2::ger<float>;
-    mFloatBLAS2Interface.syr = &CUDABLAS2::syr<float>;
-    mFloatBLAS2Interface.syr2 = &CUDABLAS2::syr2<float>;
-    mFloatBLAS2Interface.spmv = &CUDABLAS2::spmv<float>;
-    mFloatBLAS2Interface.spr = &CUDABLAS2::spr<float>;
-    mFloatBLAS2Interface.spr2 = &CUDABLAS2::spr2<float>;
-    mFloatBLAS2Interface.tpmv = &CUDABLAS2::tpmv<float>;
-    mFloatBLAS2Interface.tpsv = &CUDABLAS2::tpsv<float>;
-
-    /** double */
-    mDoubleBLAS2Interface.gemv = &CUDABLAS2::gemv<double>;
-    mDoubleBLAS2Interface.symv = &CUDABLAS2::symv<double>;
-    mDoubleBLAS2Interface.trmv = &CUDABLAS2::trmv<double>;
-    mDoubleBLAS2Interface.trsv = &CUDABLAS2::trsv<double>;
-    mDoubleBLAS2Interface.gbmv = &CUDABLAS2::gbmv<double>;
-    mDoubleBLAS2Interface.sbmv = &CUDABLAS2::sbmv<double>;
-    mDoubleBLAS2Interface.tbmv = &CUDABLAS2::tbmv<double>;
-    mDoubleBLAS2Interface.tbsv = &CUDABLAS2::tbsv<double>;
-    mDoubleBLAS2Interface.ger = &CUDABLAS2::ger<double>;
-    mDoubleBLAS2Interface.syr = &CUDABLAS2::syr<double>;
-    mDoubleBLAS2Interface.syr2 = &CUDABLAS2::syr2<double>;
-    mDoubleBLAS2Interface.spmv = &CUDABLAS2::spmv<double>;
-    mDoubleBLAS2Interface.spr = &CUDABLAS2::spr<double>;
-    mDoubleBLAS2Interface.spr2 = &CUDABLAS2::spr2<double>;
-    mDoubleBLAS2Interface.tpmv = &CUDABLAS2::tpmv<double>;
-    mDoubleBLAS2Interface.tpsv = &CUDABLAS2::tpsv<double>;
-
-    /** Level 3 */
-
-    /** float */
-    mFloatBLAS3Interface.gemm = &CUDABLAS3::gemm<float>;
-//    mFloatBLAS3Interface.symm  = &CUDABLAS3::symm<float>;
-//    mFloatBLAS3Interface.trmm  = &CUDABLAS3::trmm<float>;
-    mFloatBLAS3Interface.trsm = &CUDABLAS3::trsm<float>;
-//    mFloatBLAS3Interface.syrk  = &CUDABLAS3::syrk<float>;
-//    mFloatBLAS3Interface.syrk2 = &CUDABLAS3::syrk2<float>;
-
-    /** double */
-    mDoubleBLAS3Interface.gemm = &CUDABLAS3::gemm<double>;
-//    mDoubleBLAS3Interface.symm  = &CUDABLAS3::symm<double>;
-//    mDoubleBLAS3Interface.trmm  = &CUDABLAS3::trmm<double>;
-    mDoubleBLAS3Interface.trsm = &CUDABLAS3::trsm<double>;
-//    mDoubleBLAS3Interface.syrk  = &CUDABLAS3::syrk<double>;
-//    mDoubleBLAS3Interface.syrk2 = &CUDABLAS3::syrk2<double>;
-
-    /** LAPACK */
-
-    /** float */
-//    mFloatLAPACKInterface.lamch = &CUDALAPACK::lamch<float>;
-//    mFloatLAPACKInterface.getrf = &CUDALAPACK::getrf<float>;
-//    mFloatLAPACKInterface.getri = &CUDALAPACK::getri<float>;
-//    mFloatLAPACKInterface.trtrs = &CUDALAPACK::trtrs<float>;
-//    mFloatLAPACKInterface.tptrs = &CUDALAPACK::tptrs<float>;
-    mFloatLAPACKInterface.laswp = &CUDALAPACK::laswp<float>;
-
-    /** double */
-//    mDoubleLAPACKInterface.lamch = &CUDALAPACK::lamch<double>;
-//    mDoubleLAPACKInterface.getrf = &CUDALAPACK::getrf<double>;
-//    mDoubleLAPACKInterface.getri = &CUDALAPACK::getri<double>;
-//    mDoubleLAPACKInterface.trtrs = &CUDALAPACK::trtrs<double>;
-//    mDoubleLAPACKInterface.tptrs = &CUDALAPACK::tptrs<double>;
-    mDoubleLAPACKInterface.laswp = &CUDALAPACK::laswp<double>;
-
-//    /** SCALAPACK */
-//
-//    /** float */
-//
-//    mFloatSCALAPACKInterface.pgetrf = &CUDASCALAPACK::pgetrf<float>;
-//    mFloatSCALAPACKInterface.pgetri = &CUDASCALAPACK::pgetri<float>;
-//
-//    /** double */
-//
-//    mDoubleSCALAPACKInterface.pgetrf = &CUDASCALAPACK::pgetrf<double>;
-//    mDoubleSCALAPACKInterface.pgetri = &CUDASCALAPACK::pgetri<double>;
-
-// Each interface part provides an own implementation to
-// add function pointers in the tables.
+    // Use of SCALAPACK is not supported in CUDA, no entries required
 
     CUDAUtils::setInterface( Utils );
 
@@ -194,13 +75,15 @@ CUDAInterface::CUDAInterface()
     CUDAJDSUtils::setInterface( JDSUtils );
     CUDADIAUtils::setInterface( DIAUtils );
     CUDACOOUtils::setInterface( COOUtils );
+
+    CUDABLAS1::setInterface( BLAS );
 }
 
 CUDAInterface::~CUDAInterface()
 {
 }
 
-// static lama::LAMAInterfaceRegistration<CUDAInterface> cudaRegisterObj( Context::CUDA );
+// register an incarnation of CUDAInterface at the LAMA Interface registry that is used for the CUDA Context
 
 LAMA_LAMAINTERFACE_REGISTRATION( Context::CUDA, CUDAInterface )
 

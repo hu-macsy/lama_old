@@ -35,6 +35,7 @@
 #include <lama/cuda/CUDABLAS3.hpp>
 
 // others
+#include <lama/LAMAInterface.hpp>
 #include <lama/cuda/CUDAError.hpp>
 #include <lama/cuda/CUDAStreamSyncToken.hpp>
 
@@ -447,6 +448,19 @@ void CUDABLAS3::trsm(
     }
 }
 
-//TODO: implement syrk, syrk2
+/* --------------------------------------------------------------------------- */
+/*     Template instantiations via registration routine                        */
+/* --------------------------------------------------------------------------- */
+
+void CUDABLAS3::setInterface( BLASInterface& BLAS )
+{
+    // Note: macro takes advantage of same name for routines and type definitions 
+    //       ( e.g. routine CUDABLAS1::sum<T> is set for BLAS::BLAS1::sum variable
+
+    LAMA_INTERFACE_REGISTER_T( BLAS, gemm, float )
+    LAMA_INTERFACE_REGISTER_T( BLAS, gemm, double )
+
+    // trsm routines are not used yet by LAMA
+}
 
 } /* namespace lama */

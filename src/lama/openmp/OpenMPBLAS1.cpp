@@ -36,6 +36,7 @@
 
 // others
 #include <lama/openmp/BLASHelper.hpp>
+#include <lama/LAMAInterface.hpp>
 
 // macros
 #include <lama/macros/unused.hpp>
@@ -515,24 +516,6 @@ void OpenMPBLAS1::sum( const IndexType n, T alpha, const T* x, T beta, const T* 
     return;
 }
 
-template void OpenMPBLAS1::sum<float>(
-    const IndexType n,
-    float alpha,
-    const float* x,
-    float beta,
-    const float* y,
-    float* z,
-    SyncToken* syncToken );
-
-template void OpenMPBLAS1::sum<double>(
-    const IndexType n,
-    double alpha,
-    const double* x,
-    double beta,
-    const double* y,
-    double* z,
-    SyncToken* syncToken );
-
 /** rot */
 
 template<>
@@ -738,8 +721,35 @@ void OpenMPBLAS1::ass( const IndexType n, const T value, T* x, SyncToken* syncTo
     return;
 }
 
-// instantiation
-template void OpenMPBLAS1::ass<float>( const IndexType n, const float value, float* x, SyncToken* syncToken );
-template void OpenMPBLAS1::ass<double>( const IndexType n, const double value, double* x, SyncToken* syncToken );
+/* --------------------------------------------------------------------------- */
+/*     Template instantiations via registration routine                        */
+/* --------------------------------------------------------------------------- */
+
+void OpenMPBLAS1::setInterface( BLASInterface& BLAS )
+{
+    // Note: macro takes advantage of same name for routines and type definitions 
+    //       ( e.g. routine CUDABLAS1::sum<T> is set for BLAS::BLAS1::sum variable
+
+    LAMA_INTERFACE_REGISTER_T( BLAS, scal, float )
+    LAMA_INTERFACE_REGISTER_T( BLAS, scal, double )
+
+    LAMA_INTERFACE_REGISTER_T( BLAS, nrm2, float )
+    LAMA_INTERFACE_REGISTER_T( BLAS, nrm2, double )
+
+    LAMA_INTERFACE_REGISTER_T( BLAS, asum, float )
+    LAMA_INTERFACE_REGISTER_T( BLAS, asum, double )
+
+    LAMA_INTERFACE_REGISTER_T( BLAS, iamax, float )
+    LAMA_INTERFACE_REGISTER_T( BLAS, iamax, double )
+
+    LAMA_INTERFACE_REGISTER_T( BLAS, sum, float )
+    LAMA_INTERFACE_REGISTER_T( BLAS, sum, double )
+
+    LAMA_INTERFACE_REGISTER_T( BLAS, ass, float )
+    LAMA_INTERFACE_REGISTER_T( BLAS, ass, double )
+
+    LAMA_INTERFACE_REGISTER_T( BLAS, viamax, float )
+    LAMA_INTERFACE_REGISTER_T( BLAS, viamax, double )
+}
 
 } /** namespace lama */
