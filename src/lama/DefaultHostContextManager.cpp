@@ -80,6 +80,15 @@ DefaultHostContextManager::~DefaultHostContextManager()
 
 /* ------------------------------------------------------------------------ */
 
+void DefaultHostContextManager::writeAt( std::ostream& stream ) const
+{
+    // write identification of this object
+
+    stream << "DefaultHostContextManager";
+}
+
+/* ------------------------------------------------------------------------ */
+
 ContextPtr DefaultHostContextManager::getContext( int deviceNr )
 {
     boost::shared_ptr<DefaultHostContext> context;

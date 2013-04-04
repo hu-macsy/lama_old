@@ -69,6 +69,8 @@ public:
 
     static void setAsCurrent( ContextPtr cudaContext );
 
+    virtual void writeAt( std::ostream& stream ) const;
+
 private:
 
     CUDAHostContextManager();

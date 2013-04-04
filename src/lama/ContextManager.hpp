@@ -38,6 +38,7 @@
 
 // base classes
 #include <lama/NonCopyable.hpp>
+#include <lama/Printable.hpp>
 
 // others
 #include <lama/Context.hpp>
@@ -63,7 +64,7 @@ namespace lama
  *  with new context classes and types.
  */
 
-class LAMA_DLL_IMPORTEXPORT ContextManager: private NonCopyable
+class LAMA_DLL_IMPORTEXPORT ContextManager: public Printable, private NonCopyable
 {
 public:
 
@@ -75,6 +76,10 @@ public:
      *
      */
     virtual ContextPtr getContext( int deviceNr ) = 0;
+
+    /** Override Printable::writeAt. */
+
+    virtual void writeAt( std::ostream& stream ) const;
 
 protected:
 

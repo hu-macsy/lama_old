@@ -39,8 +39,11 @@
 
 namespace lama
 {
+/* -------------------------------------------------------------------------- */
 
 LAMA_LOG_DEF_LOGGER( ContextManager::logger, "ContextManager" )
+
+/* -------------------------------------------------------------------------- */
 
 ContextManager::ContextManager( ContextType type )
     : mContextType( type )
@@ -48,15 +51,31 @@ ContextManager::ContextManager( ContextType type )
     // Derived classes must call explicitly registerFactory
 }
 
+/* -------------------------------------------------------------------------- */
+
 ContextManager::~ContextManager()
 {
-    LAMA_LOG_DEBUG( logger, "~Context, type = " << mContextType )
+    LAMA_LOG_DEBUG( logger, "~ContextManager( type = " << mContextType << " )" )
 }
+
+/* -------------------------------------------------------------------------- */
 
 void ContextManager::registerFactory()
 {
-    LAMA_LOG_DEBUG( logger, "Registering default Context Manager" )
+    LAMA_LOG_INFO( logger, *this << ": register at context factory" );
+
     ContextFactory::getFactory().addContextManager( mContextType, *this );
 }
+ 
+/* -------------------------------------------------------------------------- */
 
+void ContextManager::writeAt( std::ostream& stream ) const
+{
+    // write identification of this object
+
+    stream << "ContextManager( type = " << mContextType << " ) ";
 }
+
+/* -------------------------------------------------------------------------- */
+
+}  // namespace lama

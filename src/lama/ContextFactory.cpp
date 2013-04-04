@@ -58,6 +58,7 @@ const char* ContextFactory::theContextIds[] =
 /* --------------------------------------------------------------------------------- */
 
 // Static variables of Context Factory
+
 ContextFactory* ContextFactory::theContextFactory = NULL;
 
 /* --------------------------------------------------------------------------------- */
@@ -72,9 +73,13 @@ ContextFactory::ContextFactory()
     }
 }
 
+/* --------------------------------------------------------------------------------- */
+
 ContextFactory::~ContextFactory()
 {
 }
+
+/* --------------------------------------------------------------------------------- */
 
 ContextFactory& ContextFactory::getFactory()
 {
@@ -127,15 +132,18 @@ ContextPtr ContextFactory::getContext( Context::ContextType type, int deviceNr )
 
     if ( deviceNr == LAMA_DEFAULT_DEVICE_NUMBER )
     {
-        LAMA_LOG_INFO( logger, "getContext(type=" << theContextIds[type] << ") => " << *context )
+        LAMA_LOG_DEBUG( logger, "getContext( type =" << theContextIds[type] << " ) => " << *context )
     }
     else
     {
-        LAMA_LOG_INFO( logger, "getContext(type=" << theContextIds[type] << ",nr=" << deviceNr << ") => " << *context )
+        LAMA_LOG_DEBUG( logger, "getContext( type = " << theContextIds[type] 
+                                 << ", nr = " << deviceNr << ") => " << *context )
     }
 
     return context;
 }
+
+/* --------------------------------------------------------------------------------- */
 
 ContextManager* ContextFactory::getContextManager( Context::ContextType type )
 {
@@ -166,7 +174,7 @@ void ContextFactory::release()
         factory.mContextManager[ContextType( type )] = NULL;
     }
 
-    LAMA_LOG_DEBUG( logger, "released all context managers" )
+    LAMA_LOG_INFO( logger, "released all context managers" )
 }
 
 }

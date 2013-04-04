@@ -66,6 +66,15 @@ CUDAHostContextManager::~CUDAHostContextManager()
 
 /* ------------------------------------------------------------------------ */
 
+void CUDAHostContextManager::writeAt( std::ostream& stream ) const
+{
+    // write identification of this object
+
+    stream << "CUDAHostContextManager";
+}
+
+/* ------------------------------------------------------------------------ */
+
 ContextPtr CUDAHostContextManager::getContext( int deviceNr )
 {
     boost::shared_ptr<const CUDAHostContext> context;

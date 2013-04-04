@@ -66,6 +66,10 @@ public:
      */
     static void setAsCurrent();
 
+    /** Override Printable::writeAt. */
+
+    virtual void writeAt( std::ostream& stream ) const;
+
 private:
 
     DefaultHostContextManager();
