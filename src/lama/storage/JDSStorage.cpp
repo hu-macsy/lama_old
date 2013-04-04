@@ -390,7 +390,7 @@ bool JDSStorage<ValueType>::checkDiagonalProperty() const
 template<typename ValueType>
 void JDSStorage<ValueType>::check( const char* msg ) const
 {
-    LAMA_LOG_FATAL( logger, "check at " << getContext() << ", msg = " << msg )
+    LAMA_LOG_DEBUG( logger, "check at " << getContext() << ", msg = " << msg )
 
     LAMA_ASSERT_EQUAL_ERROR( mNumRows, mIlg.size() )
     LAMA_ASSERT_EQUAL_ERROR( mNumRows, mPerm.size() )
