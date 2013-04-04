@@ -93,15 +93,15 @@ inline lama::Scalar scalarEps<double>()
 }
 
 /**
- * @brief getEnvContext() returns the current context from enviroment variable LAMATEST_CONTEXT
+ * @brief getEnvContext() returns the current context from enviroment variable LAMA_TEST_CONTEXT
  * If this variable is not set or contains a context, which is not available, all contexts will be used.
  *
- * @return the current context from enviroment variable LAMATEST_CONTEXT as a string
+ * @return the current context from enviroment variable LAMA_TEST_CONTEXT as a string
  */
 
 inline std::string getEnvContext()
 {
-    char* context = getenv( "LAMATEST_CONTEXT" );
+    char* context = getenv( "LAMA_TEST_CONTEXT" );
     if ( ( (std::string) context == "Host" ) || ( (std::string) context == "CUDA" )
             || ( (std::string) context == "OPENCL" ) || ( (std::string) context == "MaxContext" ) )
     {
@@ -227,7 +227,7 @@ inline lama::ContextType mapEnvContexttoContextType( std::string contextname )
  * This makro creates a loop iterating throw all existing contexts.
  * All contexts, which are not adressable, will be skipped.
  *
- * If the environment variable LAMATEST_CONTEXT or the runtime parameter --context
+ * If the environment variable LAMA_TEST_CONTEXT or the runtime parameter --context
  * is set to a specific context, just this context will be used.
  *
  */
@@ -239,7 +239,7 @@ inline lama::ContextType mapEnvContexttoContextType( std::string contextname )
     contexttype = getEnvContext();                                                                                     \
     if ( contexttype == "*" )                                                                                          \
     {                                                                                                                  \
-        LAMA_LOG_INFO( logger, "LAMATEST_CONTEXT is not set or has value '*', so all available contexts will be used." );  \
+        LAMA_LOG_INFO( logger, "LAMA_TEST_CONTEXT is not set or has value '*', so all available contexts will be used." );  \
         for ( ContextType i = Context::Host; i < Context::MaxContext; i = static_cast<ContextType>( i + 1 ) )          \
         {                                                                                                              \
             if ( ContextFactory::hasContext( i ) )                                                                     \
@@ -252,7 +252,7 @@ inline lama::ContextType mapEnvContexttoContextType( std::string contextname )
         }                                                                                                              \
     } else {                                                                                                           \
         listofcontexts.push_back( mapEnvContexttoContextType( contexttype ) );                                         \
-        LAMA_LOG_INFO( logger, "Environment variable LAMATEST_CONTEXT contains context = " << getEnvContext() );       \
+        LAMA_LOG_INFO( logger, "Environment variable LAMA_TEST_CONTEXT contains context = " << getEnvContext() );       \
     }                                                                                                                  \
     for ( Iter = listofcontexts.begin(); Iter != listofcontexts.end(); Iter++ )
 
