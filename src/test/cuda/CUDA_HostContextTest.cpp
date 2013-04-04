@@ -79,8 +79,8 @@ BOOST_AUTO_TEST_CASE( getContextTest )
 
     cudaHostContext = ContextFactory::getContext( Context::Host );
 
-    LAMA_LOG_FATAL( logger, "defaultHostContext = " << *defaultHostContext );
-    LAMA_LOG_FATAL( logger, "cudaHostContext = " << *cudaHostContext );
+    LAMA_LOG_INFO( logger, "defaultHostContext = " << *defaultHostContext );
+    LAMA_LOG_INFO( logger, "cudaHostContext = " << *cudaHostContext );
 
     BOOST_CHECK( defaultHostContext.get() != cudaHostContext.get() );
 
