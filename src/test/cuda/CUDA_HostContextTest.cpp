@@ -34,6 +34,7 @@
 #include <boost/test/unit_test.hpp>
 #include <boost/mpl/list.hpp>
 
+#include <lama/DefaultHostContextManager.hpp>
 #include <lama/cuda/CUDAHostContextManager.hpp>
 #include <lama/cuda/CUDAHostContext.hpp>
 
@@ -61,7 +62,7 @@ LAMA_LOG_DEF_LOGGER( logger, "Test.CUDA_HostContextTest" );
 
 BOOST_AUTO_TEST_CASE( getContextTest )
 {
-    // Test will take the default CUDA device
+    DefaultHostContextManager::setAsCurrent();
 
     ContextPtr defaultHostContext = ContextFactory::getContext( Context::Host );
     ContextPtr cudaHostContext = ContextFactory::getContext( Context::Host );
@@ -69,6 +70,8 @@ BOOST_AUTO_TEST_CASE( getContextTest )
     // Two queries for the same context should deliver same pointer
 
     BOOST_CHECK( defaultHostContext.get() == cudaHostContext.get() );
+
+    // Test will take the default CUDA device
 
     ContextPtr cudaContext = lama_test::CUDAContext::getContext();
 
