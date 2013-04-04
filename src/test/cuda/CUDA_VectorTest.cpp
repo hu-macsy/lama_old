@@ -92,7 +92,7 @@ struct CUDA_VectorTestConfig
 BOOST_FIXTURE_TEST_SUITE( CUDA_VectorTest, CUDA_VectorTestConfig )
 ;
 
-LAMA_LOG_DEF_LOGGER( logger, "Test.CUDA_VectorTest" );
+LAMA_LOG_DEF_LOGGER( logger, "Test.CUDA_VectorTest" )
 
 /* ------------------------------------------------------------------------- */
 
@@ -116,12 +116,12 @@ void doMatrixTimeVectorSyncAsyncTests( Vector& y, Matrix& A, const Vector& x, co
 
     //1. Synchronous
     A.setCommunicationKind( Matrix::SYNCHRONOUS );
-    LAMA_LOG_INFO( logger, "Communicate sync" );
+    LAMA_LOG_INFO( logger, "Communicate sync" )
     doMatrixTimeVector( y, A, x, corResult );
 
     //2. Asynchronous
     A.setCommunicationKind( Matrix::ASYNCHRONOUS );
-    LAMA_LOG_INFO( logger, "Communicate async" );
+    LAMA_LOG_INFO( logger, "Communicate async" )
     doMatrixTimeVector( y, A, x, corResult );
 
     //reset to original value
@@ -134,7 +134,7 @@ void doMatrixTimeVectorLocationTests( Vector& y, MatrixType& A, const Vector& x,
     //1. Host, Host
     ContextPtr hostContext = ContextFactory::getContext( Context::Host );
 
-    LAMA_LOG_INFO( logger, "Run local on Host, halo on Host" );
+    LAMA_LOG_INFO( logger, "Run local on Host, halo on Host" )
 
     A.setContext( hostContext, hostContext );
     doMatrixTimeVectorSyncAsyncTests( y, A, x, corResult );
@@ -142,17 +142,17 @@ void doMatrixTimeVectorLocationTests( Vector& y, MatrixType& A, const Vector& x,
     ContextPtr cudaContext = lama_test::CUDAContext::getContext();
 
     //2. CUDA, Host
-    LAMA_LOG_INFO( logger, "Run local on CUDA, halo on Host" );
+    LAMA_LOG_INFO( logger, "Run local on CUDA, halo on Host" )
     A.setContext( cudaContext, hostContext );
     doMatrixTimeVectorSyncAsyncTests( y, A, x, corResult );
 
     //3. Host, CUDA
-    LAMA_LOG_INFO( logger, "Run local on Host, halo on Cuda" );
+    LAMA_LOG_INFO( logger, "Run local on Host, halo on Cuda" )
     A.setContext( hostContext, cudaContext );
     doMatrixTimeVectorSyncAsyncTests( y, A, x, corResult );
 
     //4. CUDA, CUDA
-    LAMA_LOG_INFO( logger, "Run local on CUDA, halo on CUDA" );
+    LAMA_LOG_INFO( logger, "Run local on CUDA, halo on CUDA" )
     A.setContext( cudaContext, cudaContext );
     doMatrixTimeVectorSyncAsyncTests( y, A, x, corResult );
 
@@ -168,6 +168,8 @@ void matrixTimesVectorTestImpl()
 
     ContextPtr cuda = lama_test::CUDAContext::getContext();
     CUDAHostContextManager::setAsCurrent( cuda );
+
+    LAMA_LOG_INFO( logger, "set CUDAHostContext as CUDAHostContextManager" )
 
     PartitionId size = comm->getSize();
     const IndexType vectorSize = 4 * size;
