@@ -255,7 +255,7 @@ void Communicator::getGrid3Rank( PartitionId pos[3], const PartitionId procgrid[
 
 void Communicator::getUserProcArray( PartitionId userProcArray[3] )
 {
-    const char* np4lama = getenv( "NP4LAMA" );
+    const char* np4lama = getenv( "LAMA_NP" );
 
     userProcArray[0] = 0;
     userProcArray[1] = 0;
@@ -292,11 +292,11 @@ void Communicator::getUserProcArray( PartitionId userProcArray[3] )
         }
 
         LAMA_LOG_INFO( logger,
-                       "NP4LAMA=" << np4lama << " -> userProcArray " << userProcArray[0] << " x " << userProcArray[1] << " x " << userProcArray[2] )
+                       "LAMA_NP=" << np4lama << " -> userProcArray " << userProcArray[0] << " x " << userProcArray[1] << " x " << userProcArray[2] )
     }
     else
     {
-        LAMA_LOG_INFO( logger, "environment variable NP4LAMA no set" )
+        LAMA_LOG_INFO( logger, "environment variable LAMA_NP no set" )
     }
 }
 

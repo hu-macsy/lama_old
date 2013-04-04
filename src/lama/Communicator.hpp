@@ -571,7 +571,7 @@ protected:
 
     LAMA_LOG_DECL_STATIC_LOGGER( logger )
 
-    /** Read in the environment variable NP4LAMA for user processor array.
+    /** Read in the environment variable LAMA_NP for user processor array.
      *
      * @param[out] userProcArray specifies the user processor array.
      *
