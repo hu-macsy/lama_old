@@ -104,14 +104,13 @@ if ( CUDA_FOUND )
     # TODO: maybe we can change this with future CUDA releases
     if ( WIN32 )
         set ( CUDA_PROPAGATE_HOST_FLAGS ON )
-        set ( CUDA_NVCC_FLAGS "-arch=sm_13" )
     else ( WIN32 )
         set ( CUDA_PROPAGATE_HOST_FLAGS OFF )
         #-Xcompiler;-fno-inline is used because of compability issues of CUDA with gcc-4.4
         if ( ${CMAKE_BUILD_TYPE} MATCHES "Debug" )
-            set ( CUDA_NVCC_FLAGS "-arch=sm_13;-g;-G;-Xcompiler;-fPIC" )
+      	    list (APPEND CUDA_NVCC_FLAGS "-g;-G;-Xcompiler;-fPIC" )
         else ( ${CMAKE_BUILD_TYPE} MATCHES "Debug" )
-            set ( CUDA_NVCC_FLAGS "-arch=sm_13;-Xcompiler;-fPIC" )
+       	    list (APPEND CUDA_NVCC_FLAGS "-Xcompiler;-fPIC" )
         endif ( ${CMAKE_BUILD_TYPE} MATCHES "Debug" )
         # set -march=core02,-mmmx,-msse,-msse2,-msse3,-mssse3,-msse4a flaggs here
         if ( MARCH_NATIVE_SUPPORT )
@@ -120,5 +119,9 @@ if ( CUDA_FOUND )
             set ( CUDA_NVCC_FLAGS_RELEASE "-O3;-use_fast_math;-Xcompiler;-ffast-math;-Xcompiler;-fno-inline" )
         endif ( MARCH_NATIVE_SUPPORT )
     endif ( WIN32 )
+    # We need at least compute capability 1.3, so if no architecture is specified set it here
+    if ( NOT "${CUDA_NVCC_FLAGS}" MATCHES "-arch" )
+    	list (APPEND CUDA_NVCC_FLAGS "-arch=sm_13" )
+    endif ( NOT "${CUDA_NVCC_FLAGS}" MATCHES "-arch" )
 endif( CUDA_FOUND )
 
