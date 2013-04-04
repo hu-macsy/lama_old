@@ -143,7 +143,7 @@ solution of the implementation for the invert routine is as follows:
 
 \code
 template<typename T>
-void invertCUDA( LAMAArray<T>& values );
+void invert( LAMAArray<T>& values );
 {
     ContextPtr loc = values.getValidContext();
     LAMA_INTERFACE_FN_DEFAULT_T( invert, loc, Utils, Math, T);
@@ -163,16 +163,14 @@ the second one another location has been chosen.
 
 <h2>Function Groups of the Interface</h2>
 
- - BLAS1 ( lama::BLAS1Interface )
- - BLAS2 (lama::BLAS2Interface)
- - BLAS3
+ - BLAS ( lama::BLASInterface )
  - Utils ( lama::UtilsInterface )
  - CSRUtils ( lama::CSRUtilsInterface )
- - ELLUtils
- - DIAUtils
- - JDSUtils
- - COOUtils
- - DenseUtils
+ - ELLUtils ( lama::ELLUtilsInterface )
+ - DIAUtils ( lama::DIAUtilsInterface )
+ - JDSUtils ( lama::JDSUtilsInterface )
+ - COOUtils ( lama::COOUtilsInterface )
+ - DenseUtils ( lama::DenseUtilsInterface )
 
 <h2>OpenMP Impelmentations</h2>
 
@@ -182,14 +180,10 @@ parallelized with OpenMP.
 <h2>CUDA Impelmentations</h2>
 
 For the CUDA interface LAMA provides implementations for the most
-important routines.
+important routines, but not for all routines.
 
- - BLAS1
- - BLAS2
- - BLAS3
- - Utils
- - ELLUtils
- - JDSUtils: only some conversins and matrix-vector multiplication
+If one routine is not available at the CUDA interface, a
+corresponding OpenMP routine can be used as fallback.
 
 <h2>Asyncrhonous Execution</h2>
 

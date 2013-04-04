@@ -5,6 +5,11 @@ Running the unit tests is very helpful to identify problems at an early stage.
 Therefore it is recommended to run the LAMA unit tests after successful compilation.
 
 The unit tests will be built automatically by calling ``make`` in the build directory.
+The following executables will be available in the build directory:
+
+* ``lama_test`` in directory ``test`` (will be generated always)
+* ``lama_cuda_test`` in directory ``test/cuda`` (will be generated only if CUDA is available and enabled)
+* ``lama_dist_test`` in directory ``test/distributed`` (will be generated only if MPI is available and enabled)
 
 In a first step, you should run the unit tests only as a single process (but with
 multiple OpenMP threads) and without using any GPU. Here are the commands::
@@ -41,7 +46,7 @@ you can run also the tests on the GPU (you can choose the device by the environm
   ./cuda/lama_cuda_test
 
 Note: the executable ``lama_cuda_test`` in the subdirectory ``cuda`` contains some special tests
-only for the GPU and must not be used if CUDA is disabled.
+only for the GPU and will not be generated if CUDA is disabled.
 
 Parallel execution of the tests can be started via ``mpirun`` (if MPI has been enabled and found 
 during the configuration).

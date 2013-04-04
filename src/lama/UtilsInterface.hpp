@@ -50,7 +50,7 @@ namespace lama
 
 struct UtilsInterface
 {
-    /** @brief Structure with type definitions for methods on indexes */
+    /** @brief Structure with function pointer type definitions for methods on indexes */
 
     struct Indexes
     {
@@ -59,7 +59,7 @@ struct UtilsInterface
          *  @param array is an array of index values
          *  @param n is the size of array
          *  @param size specifies the range in which array values must fit
-         *  @return true if \f$ 0 \le array[i] < size for all i = 0, ..., n-1\f$
+         *  @return true if \f$ 0 \le array[i] < size \forall i = 0, ..., n-1\f$
          */
 
         typedef bool ( *validIndexes) ( const IndexType array[], const IndexType n, const IndexType size );
@@ -67,7 +67,7 @@ struct UtilsInterface
 
     LAMA_INTERFACE_DEFINE( Indexes, validIndexes )
 
-    /** Structure with type defintions for all reduction methods.
+    /** @brief Structure with functiooń pointer type defintions for all reduction methods.
      *
      *  @tparam ValueType specifies the value type used in the reduction.
      */
@@ -75,22 +75,29 @@ struct UtilsInterface
     template<typename ValueType>
     struct Reductions
     {
-        /** Sum n contiguously stored values.
+        /** @brief Sum n contiguously stored values.
          *
-         *  @param array is an array of values
-         *  @param n is the size of array
+         *  @param[in] array is an array of values
+         *  @param[in] n is the size of array
          *  @return sum of all values in array
          */
 
         typedef ValueType ( *sum ) ( const ValueType array[], const IndexType n );
 
+        /** @brief Find maximal value of n contiguously stored values.
+         *
+         *  @param[in] array is an array of values
+         *  @param[in] n is the size of array
+         *  @return maximum of all values in array
+         */
+
         typedef ValueType ( *maxval ) ( const ValueType array[], const IndexType n );
 
-        /** Absolute maximum of n contiguously stored values */
+        /** @brief Find absolute maximal value of n contiguously stored values. */
 
         typedef ValueType ( *absMaxVal ) ( const ValueType array[], const IndexType n );
 
-        /** Building absolute maximum of element-wise difference of vector elements.
+        /** @brief Building absolute maximum of element-wise difference of vector elements.
          *
          *  @param array1i[in] first array
          *  @param array2i[in] second array
@@ -102,7 +109,7 @@ struct UtilsInterface
 
         typedef ValueType ( *absMaxDiffVal ) ( const ValueType array1[], const ValueType array2[], const IndexType n );
 
-        /** Predicate that tests whether a sequene is sorted.
+        /** @brief Predicate that tests whether a sequene is sorted.
          *
          *  @param[in] array values to be checked
          *  @param[in] n number of values to check
@@ -117,6 +124,11 @@ struct UtilsInterface
     LAMA_INTERFACE_DEFINE_T( Reductions, absMaxVal )
     LAMA_INTERFACE_DEFINE_T( Reductions, absMaxDiffVal )
     LAMA_INTERFACE_DEFINE_T( Reductions, isSorted )
+
+    /** @brief Structure with functiooń pointer type defintions for setter methods.
+     *
+     *  @tparam ValueType specifies the value type used in the set operations.
+     */
 
     template<typename ValueType>
     struct Setter
@@ -168,7 +180,7 @@ struct UtilsInterface
     template<typename ValueType>
     struct Math
     {
-        /** Set array[i] = 1.0 / array[i],  0 <= i < n
+        /** @brief Set array[i] = 1.0 / array[i],  0 <= i < n
          *
          *  @param[in,out] array is the array to invert
          *  @param         n     is the number of entries to invert
@@ -198,7 +210,7 @@ struct UtilsInterface
     UtilsInterface ();
 };
 
-/** Interface for utility functions to be used in CSR storage.
+/** @brief Interface for utility functions to be used in CSR storage.
  *
  *  This interface contains function pointer type definitions for all used routines
  *  and tables with actual values for the functions.
