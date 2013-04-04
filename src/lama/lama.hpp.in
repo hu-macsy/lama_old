@@ -37,7 +37,8 @@
     #error "Included Boost version does not match linked Boost version ${Boost_VERSION}"
 #endif //LAMA_LINKED_BOOST_VERSION != BOOST_VERSION
 
-#define LAMA_REVISION ${Project_WC_REVISION}
+//#define LAMA_REVISION ${Project_WC_REVISION}
+#define LAMA_REVISION 1.0
 
 #define LAMA_ASSERT_LEVEL_${LAMA_ASSERT_LEVEL}
 #define LAMA_LOG_LEVEL_${LAMA_LOG_LEVEL}
