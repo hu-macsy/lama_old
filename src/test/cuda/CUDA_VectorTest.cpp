@@ -66,6 +66,8 @@
 
 #include <lama/matutils/MatrixCreator.hpp>
 
+#include <typeinfo>
+
 using namespace boost;
 using namespace lama;
 
@@ -230,14 +232,21 @@ void matrixTimesVectorTestImpl()
     doMatrixTimeVectorLocationTests( denseTemp, matrixTypeMatrix2, denseVector, denseCorrectResult2 );
 }
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( matrixTimesVectorTest, T, test_types ) {
+BOOST_AUTO_TEST_CASE_TEMPLATE( matrixTimesVectorTest, T, test_types ) 
+{
     typedef T ValueType;
 
+    LAMA_LOG_INFO( logger, "matrixTimesVectorTest: call implementation for CSR" )
     matrixTimesVectorTestImpl< CSRSparseMatrix<ValueType> >();
+    LAMA_LOG_INFO( logger, "matrixTimesVectorTest: call implementation for ELL" )
     matrixTimesVectorTestImpl< ELLSparseMatrix<ValueType> >();
+    LAMA_LOG_INFO( logger, "matrixTimesVectorTest: call implementation for JDS" )
     matrixTimesVectorTestImpl< JDSSparseMatrix<ValueType> >();
+    LAMA_LOG_INFO( logger, "matrixTimesVectorTest: call implementation for COO" )
     matrixTimesVectorTestImpl< COOSparseMatrix<ValueType> >();
+    LAMA_LOG_INFO( logger, "matrixTimesVectorTest: call implementation for DIA" )
     matrixTimesVectorTestImpl< DIASparseMatrix<ValueType> >();
+    LAMA_LOG_INFO( logger, "matrixTimesVectorTest: call implementation for Dense" )
     matrixTimesVectorTestImpl< DenseMatrix<ValueType> >();
 }
 
@@ -306,7 +315,10 @@ BOOST_AUTO_TEST_CASE( dotProductTest )
 
 //TODO: Do we need this test? VectorTest/SpecialAssignmentTest executes the same operations
 //with different contexts (e.g. CUDA)
-BOOST_AUTO_TEST_CASE_TEMPLATE( scaleVectorTest, T, test_types ) {
+BOOST_AUTO_TEST_CASE_TEMPLATE( scaleVectorTest, T, test_types ) 
+{
+    LAMA_LOG_INFO( logger, "scaleVectorTest<" << typeid(T).name() << ">" )
+
     typedef T ValueType;
 
     IndexType n = 4;
@@ -327,7 +339,6 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( scaleVectorTest, T, test_types ) {
     {
         BOOST_CHECK_EQUAL( vec1.getValue(i), vec2.getValue(i) );
     }
-
 }
 
 /* --------------------------------------------------------------------- */

@@ -53,4 +53,4 @@ For our runtime parameter "context" there will be a environment variable aswell.
 
 .. code-block:: bash
 
-	export LAMATEST_CONTEXT=CUDA 
+	export LAMA_TEST_CONTEXT=CUDA 

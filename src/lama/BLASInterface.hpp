@@ -27,7 +27,7 @@
  *
  * @brief Interface class for context dependent BLAS operations used in LAMA.
  * @author Thomas Brandes
- * @date revised 02.04.2013
+ * @date 02.04.2013
  * $Id$
  */
 #ifndef LAMA_BLAS_INTERFACE_HPP_
@@ -44,7 +44,7 @@
 namespace lama
 {
 
-/** Interface for BLAS routines.
+/** Interface struct for BLAS routines.
  *
  *  This interface contains function pointer type definitions for all used routines
  *  and tables with actual values for the functions.
@@ -54,6 +54,8 @@ namespace lama
  *  - BLAS1 for BLAS level-1 routines
  *  - BLAS2 for BLAS level-2 routines
  *  - BLAS3 for BLAS level-3 routines
+ *  - LAPACK for LAPACK routines
+ *  - SCALAPACK for SCALAPACK routines
  *
  */
 
@@ -447,6 +449,8 @@ struct BLASInterface
 
     BLASInterface()
     {
+        // intialize all function pointers with NULL
+
         memset( this, 0, sizeof( *this ) );
     }
 };
