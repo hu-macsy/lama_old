@@ -75,12 +75,12 @@ int main( int argc, char* argv[] )
 {
     bool result;
 
-    // If there is no value in environment variable LAMATEST_CONTEXT
+    // If there is no value in environment variable LAMA_TEST_CONTEXT
     // we set this value to *
-    char* context = getenv( "LAMATEST_CONTEXT" );
+    char* context = getenv( "LAMA_TEST_CONTEXT" );
     if ( context == NULL )
     {
-        std::string s = ( "LAMATEST_CONTEXT=*" );
+        std::string s = ( "LAMA_TEST_CONTEXT=*" );
         char* buffer = new char[s.length()];
         std::strcpy( buffer, s.c_str() );
         /*int error = */
@@ -137,14 +137,14 @@ int main( int argc, char* argv[] )
         }
 
         /* Find specific context from the given runtime parameters.
-         * If the environment variable LAMATEST_CONTEXT is set before, it will be overwritten.
+         * If the environment variable LAMA_TEST_CONTEXT is set before, it will be overwritten.
          * Tests will run throw all available contexts, if there is neither a environment variable
          * nor a runtime parameter. */
 
-        iterator = runtime_arguments.find( "--lamatest_context" );
+        iterator = runtime_arguments.find( "--lama_test_context" );
         if ( iterator != runtime_arguments.end() )
         {
-            std::string s = ( "LAMATEST_CONTEXT=" + iterator->second );
+            std::string s = ( "LAMA_TEST_CONTEXT=" + iterator->second );
             char* buffer = new char[s.length()];
             std::strcpy( buffer, s.c_str() );
             /*int error = */
