@@ -416,7 +416,7 @@ LAMA_COMMON_TEST_CASE_TEMPLATE( P_SparseMatrixTest, MatrixType, createPoissonTes
     {
         DistributionPtr dist = makeDistribution ( n, comm, kind );
 
-        LAMA_LOG_INFO( logger, "redistribute to dist = " << *dist );
+        LAMA_LOG_INFO( logger, *comm << ": redistribute to dist = " << *dist );
 
         B2.redistribute( dist, dist );
 

@@ -133,7 +133,9 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( buildHaloTest, StorageType, StorageTypes ) {
     BOOST_CHECK_EQUAL( localStorage->getNumRows(), matrixStorage.getNumRows() );
     BOOST_CHECK_EQUAL( haloStorage->getNumRows(), matrixStorage.getNumRows() );
 
-    matrixStorage.joinHalo( *localStorage, *haloStorage, halo, *colDist );
+    bool keepDiagonalFlag = false;  // does not matter here
+
+    matrixStorage.joinHalo( *localStorage, *haloStorage, halo, *colDist, keepDiagonalFlag );
 
     LAMA_LOG_DEBUG( logger, *comm << ": join done, result = " << matrixStorage );
 

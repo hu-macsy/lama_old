@@ -632,7 +632,8 @@ void MatrixStorage<ValueType>::joinHalo(
     const _MatrixStorage& localData,
     const _MatrixStorage& haloData,
     const Halo& halo,
-    const Distribution& colDist )
+    const Distribution& colDist,
+    const bool attemptDiagonalProperty  )
 {
     LAMA_REGION( "Storage.joinHalo" )
 
@@ -685,9 +686,10 @@ void MatrixStorage<ValueType>::joinHalo(
 
     IndexType numKeepDiagonals = 0;
 
-    if ( localData.hasDiagonalProperty() )
+    if ( attemptDiagonalProperty && localData.hasDiagonalProperty() )
     {
         numKeepDiagonals = std::min( localData.getNumRows(), localData.getNumColumns() );
+        LAMA_LOG_INFO( logger, localData << ": has diagonal property, numKeepDiagonals = " << numKeepDiagonals );
     }
 
     // use static method of MatrixStorage

@@ -75,6 +75,12 @@ set ( SOURCE_FILES
 lama_classes ( ${CLASSES} )
 lama_sources ( ${SOURCE_FILES} )
 
+# individual preprocessor definition 
+
+set_property( SOURCE ../Configuration.cpp 
+              PROPERTY COMPILE_DEFINITIONS LAMA_TESTFILE_PATH="${CMAKE_SOURCE_DIR}/../res/testfiles" 
+            )
+
 ### add definitions ###
 if ( WIN32 )
     add_definitions ( -DLAMA_COMPILING_DLL )

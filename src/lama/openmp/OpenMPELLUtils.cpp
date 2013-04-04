@@ -199,8 +199,6 @@ void OpenMPELLUtils::check(
     {
         LAMA_ASSERT_ERROR( mNumValuesPerRow == 0,
                            msg << ": mNumRows is 0 but mNumValuesPerRow is: " << mNumValuesPerRow << ", should be 0" )
-        LAMA_ASSERT_ERROR( mNumColumns == 0,
-                           msg << ": mNumRows is 0, but mNumColumns is: " << mNumColumns <<", should be 0" )
     }
 }
 

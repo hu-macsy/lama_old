@@ -548,6 +548,7 @@ public:
      * @param[in] haloData is the matrix storage with halo data
      * @param[in] halo is the communicaton halo, contains also mapping halo to global indexes
      * @param[in] colDist is the distribution that has be used for getting the local data
+     * @param[in] keepDiagonalProperty if true routine attempts to keep diagonal property
      *
      * Attention: localData might be aliased with this matrix storage,
      *            while haloData must not
@@ -560,7 +561,8 @@ public:
         const _MatrixStorage& localData,
         const _MatrixStorage& haloData,
         const class Halo& halo,
-        const class Distribution& colDist );
+        const class Distribution& colDist,
+        const bool keepDiagonalProperty );
 
     /** Splitting of matrix storage for halo
      *

@@ -1186,7 +1186,7 @@ void ELLStorage<ValueType>::matrixTimesMatrix(
     }
     else
     {
-        LAMA_THROWEXCEPTION( "Other types than ELL unsupported, " << a.getFormat() << " given!" )
+        LAMA_LOG_ERROR( logger, a << ": a not ELL format" )
     }
     if ( b.getFormat() == ELL )
     {
@@ -1195,7 +1195,15 @@ void ELLStorage<ValueType>::matrixTimesMatrix(
     }
     else
     {
-        LAMA_THROWEXCEPTION( "Other types than ELL unsupported, " << b.getFormat() << " given!" )
+        LAMA_LOG_ERROR( logger, b << ": b not ELL format" )
+    }
+
+    if ( ellA == NULL || ellB == NULL )
+    {
+        // input matrices not ELL format, so try via CSR
+
+        MatrixStorage<ValueType>::matrixTimesMatrix( alpha, a, b, beta, c );
+        return;
     }
 
     if ( beta != 0.0 )

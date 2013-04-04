@@ -643,8 +643,10 @@ void SparseMatrix<ValueType>::buildLocalStorage( _MatrixStorage& storage ) const
     {
         // temporary local storage with joined columns needed before
 
+        bool keepDiagonalProperty = true;
+
         boost::shared_ptr<MatrixStorage<ValueType> > tmp( mLocalData->create() );
-        tmp->joinHalo( *mLocalData, *mHaloData, mHalo, getColDistribution() );
+        tmp->joinHalo( *mLocalData, *mHaloData, mHalo, getColDistribution(), keepDiagonalProperty );
         storage = *tmp;
     }
 }
@@ -709,7 +711,9 @@ void SparseMatrix<ValueType>::redistribute( DistributionPtr rowDistributionPtr, 
     {
         LAMA_LOG_DEBUG( logger, "remove halo, join local = " << *mLocalData << " and halo = " << *mHaloData )
 
-        mLocalData->joinHalo( *mLocalData, *mHaloData, mHalo, *oldColDistributionPtr );
+        bool keepDiagonalProperty = ( *oldColDistributionPtr == *oldRowDistributionPtr );
+
+        mLocalData->joinHalo( *mLocalData, *mHaloData, mHalo, *oldColDistributionPtr, keepDiagonalProperty );
 
         mHaloData->allocate( mLocalData->getNumRows(), 0 );
 
@@ -1784,7 +1788,9 @@ void SparseMatrix<ValueType>::writeToFile(
 
             CSRStorage<ValueType> local;
 
-            local.joinHalo( *mLocalData, *mHaloData, mHalo, getColDistribution() );
+            bool keepDiagonalProperty = true;
+
+            local.joinHalo( *mLocalData, *mHaloData, mHalo, getColDistribution(), keepDiagonalProperty );
 
             local.writeToFile( comm.getSize(), comm.getRank(), fileName, fileType, dataType, indexDataTypeIA,
                                indexDataTypeJA );

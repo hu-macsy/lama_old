@@ -252,8 +252,11 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( SwapTest, MatrixType, SparseMatrixTypes ) {
 
 /* ------------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( FullConstructorTest, MatrixType, SparseMatrixTypes ) {
+BOOST_AUTO_TEST_CASE_TEMPLATE( FullConstructorTest, MatrixType, SparseMatrixTypes ) 
+{
     std::string prefix = Configuration::getInstance().getPath();
+
+    LAMA_LOG_INFO( logger, "prefix = " << prefix << ", can be changed by LAMA" );
 
     CSRSparseMatrix<double> tmp( prefix + "/can___24.mtx" );
 
