@@ -14,8 +14,7 @@ if ( ${CMAKE_SYSTEM_PROCESSOR} STREQUAL "ppc64" AND CBEBLAS_FOUND )
 else ( ${CMAKE_SYSTEM_PROCESSOR} STREQUAL "ppc64" AND CBEBLAS_FOUND )
 	# no cell processor
 
-	# try to find one of this blas libraries in this order: MKL, ACML, GOTOBLAS, FortranBLAS, MYBLAS
-
+	# try to find one of this blas libraries in this order: MKL, ACML, GOTOBLAS, FortranBLAS
 	include ( ${CMAKE_MODULE_PATH}/LAMA_BLAS/FindMKL.cmake )
 	
 	if ( NOT MKL_FOUND )
@@ -33,6 +32,7 @@ else ( ${CMAKE_SYSTEM_PROCESSOR} STREQUAL "ppc64" AND CBEBLAS_FOUND )
 	# at this point one blas library should be found
 	
 	if ( MKL_FOUND )
+	   message ( STATUS "BLAS library found: MKL" )
 		# include is not required because lama uses its own header files 
 		set ( LAMA_BLAS_LIBRARIES ${MKL_LIBRARIES} )
 		set ( LAMA_PBLAS_LIBRARIES ${MKL_PLIBRARIES} )

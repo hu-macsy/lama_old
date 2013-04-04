@@ -56,7 +56,10 @@ else( NOT EXISTS ${MKL_INCLUDE_DIR} )
 
     if ( NOT DEFINED MKL_LIBRARY_PATH )
         get_filename_component ( MKL_ROOT_PATH ${MKL_INCLUDE_DIR} PATH CACHE )
-        message ( STATUS "MKL_ROOT_PATH = ${MKL_ROOT_PATH}" )
+        if ( LAMA_CMAKE_VERBOSE )
+            message ( STATUS "MKL_ROOT_PATH = ${MKL_ROOT_PATH}" )
+        endif ( LAMA_CMAKE_VERBOSE )
+        
         if ( NOT DEFINED MKL_Is64 )
             get_cmake_property ( MKL_Is64 FIND_LIBRARY_USE_LIB64_PATHS )
         endif( NOT DEFINED MKL_Is64 )
@@ -77,8 +80,9 @@ else( NOT EXISTS ${MKL_INCLUDE_DIR} )
         endif( EXISTS ${MKL_ROOT_PATH}/lib )
     endif( NOT DEFINED MKL_LIBRARY_PATH )
     
-    message( STATUS "MKL_LIBRARY_PATH = ${MKL_LIBRARY_PATH}, MKL_LIBRARY_PATH_SUFFIXES = ${MKL_LIBRARY_PATH_SUFFIXES}" )
-    
+    if ( LAMA_CMAKE_VERBOSE )
+        message( STATUS "MKL_LIBRARY_PATH = ${MKL_LIBRARY_PATH}, MKL_LIBRARY_PATH_SUFFIXES = ${MKL_LIBRARY_PATH_SUFFIXES}" )
+    endif ( LAMA_CMAKE_VERBOSE )
     ### Search for libraries mkl_gnu_thread, mkl_intel_thread and mkl_core
     
     if ( EXISTS ${MKL_LIBRARY_PATH} )
@@ -201,3 +205,9 @@ mark_as_advanced( MKL_INCLUDE_DIRS
                   MKL_LIBRARY_GNU 
                   MKL_LIBRARY_INTEL
                   SCALAPACK_FOUND )
+                  
+                  
+# if MKL is found, include directories    
+if ( MKL_FOUND )
+    include_directories ( ${MKL_INCLUDE_DIRS} )
+endif ( MKL_FOUND )

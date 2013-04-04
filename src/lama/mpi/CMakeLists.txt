@@ -1,55 +1,81 @@
-# This directory contains the (optional) LAMA-MPI interface
+###
+ # @file CMakeLists.txt
+ #
+ # @license
+ # Copyright (c) 2013
+ # Fraunhofer Institute for Algorithms and Scientific Computing SCAI
+ # for Fraunhofer-Gesellschaft
+ #
+ # Permission is hereby granted, free of charge, to any person obtaining a copy
+ # of this software and associated documentation files (the "Software"), to deal
+ # in the Software without restriction, including without limitation the rights
+ # to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ # copies of the Software, and to permit persons to whom the Software is
+ # furnished to do so, subject to the following conditions:
+ #
+ # The above copyright notice and this permission notice shall be included in
+ # all copies or substantial portions of the Software.
+ #
+ # THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ # IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ # FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ # AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ # SOFTWARE.
+ # @endlicense
+ #
+ # @brief lama/mpi/CMakeLists.txt
+ # @author Jan Ecker
+ # @date 02.04.2013
+###
 
-### set include directories ###
+### set this dir as lama source dir ###
+lama_set_source_dir ()
 
-include_directories ( . )
+### Add classes and header files ###
+set ( CLASSES
+        MPICommunicator
+        MPICommunicatorManager
+        MPIException
+        MPISyncToken
+    )
+    
+set ( HEADERS
+        MPIUtils
+    )
 
-# This directory contains all relevant MPI stuff and is completely optional
+lama_classes ( ${CLASSES} )
+lama_headers ( ${HEADERS} )
 
-set ( MPISOURCES
-       MPICommunicator.cpp
-       MPICommunicatorManager.cpp
-       MPISyncToken.cpp
-       MPIException.cpp
-     )
-
+################################################################################
+#TODO: RECHECK!
 if ( CMAKE_COMPILER_IS_GNUCXX )
-    set_source_files_properties ( ${MPISOURCES} PROPERTIES COMPILE_FLAGS "-Wno-unused-parameter" )
+    set_source_files_properties ( ${CXX_SOURCES} PROPERTIES COMPILE_FLAGS "-Wno-unused-parameter" )
 endif ( CMAKE_COMPILER_IS_GNUCXX )
 
 if ( LAMA_TRACE_LEVEL STREQUAL "VT" )
     find_package ( VampirTrace REQUIRED)
     include_directories ( ${VAMPIRTRACE_INCLUDE_DIR} )
 endif ( LAMA_TRACE_LEVEL STREQUAL "VT" )
+################################################################################
 
-add_library ( lamampi SHARED ${MPISOURCES} )
+### add library ###
+add_library ( lamampi SHARED ${CXX_SOURCES} )
 
 ### set target link libraries ###  
-
+################################################################################
+#TODO: RECHECK!
 if ( LAMA_TRACE_LEVEL STREQUAL "VT" )
     target_link_libraries ( lamampi ${VAMPIRTRACE_LIBRARIES} )
 endif ( LAMA_TRACE_LEVEL STREQUAL "VT" )
-
+################################################################################
 target_link_libraries ( lamampi ${MPI_LIBRARIES} )
-    
-if ( NOT HAVE_INTEL_MPI )
-    if ( METIS_FOUND )
-        set ( PARTION_LIBRARIES ${PARTION_LIBRARIES} ${METIS_LIBRARIES} )
-    endif ( METIS_FOUND )
-    
-    if ( PARMETIS_FOUND )
-        set ( PARTION_LIBRARIES ${PARTION_LIBRARIES} ${PARMETIS_LIBRARIES} )
-    endif ( PARMETIS_FOUND )
-
-    target_link_libraries ( lamampi ${PARTION_LIBRARIES} )
-endif ( NOT HAVE_INTEL_MPI ) 
 
 ### add definitions ###
-
 if ( WIN32 )
     add_definitions ( -DLAMA_COMPILING_DLL )
 endif ( WIN32 )
 
-# Install of the LAMA-MPI library
-
+### install ####
 install ( TARGETS lamampi DESTINATION lib )

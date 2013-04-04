@@ -35,8 +35,6 @@
 #include <lama/solver/InverseSolver.hpp>
 
 // others
-#include <lama/solver/h_frag.h>
-
 #include <lama/norm/L2Norm.hpp>
 
 #include <lama/matrix/DenseMatrix.hpp>

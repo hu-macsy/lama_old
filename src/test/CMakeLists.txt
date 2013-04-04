@@ -1,130 +1,153 @@
-########################################################################
-#
-#  CMakeLists.txt : CMake configuration for unit tests
-#
-########################################################################
+###
+ # @file CMakeLists.txt
+ #
+ # @license
+ # Copyright (c) 2013
+ # Fraunhofer Institute for Algorithms and Scientific Computing SCAI
+ # for Fraunhofer-Gesellschaft
+ #
+ # Permission is hereby granted, free of charge, to any person obtaining a copy
+ # of this software and associated documentation files (the "Software"), to deal
+ # in the Software without restriction, including without limitation the rights
+ # to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ # copies of the Software, and to permit persons to whom the Software is
+ # furnished to do so, subject to the following conditions:
+ #
+ # The above copyright notice and this permission notice shall be included in
+ # all copies or substantial portions of the Software.
+ #
+ # THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ # IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ # FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ # AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ # SOFTWARE.
+ # @endlicense
+ #
+ # @brief test/CMakeLists.txt
+ # @author Jan Ecker
+ # @date 03.04.2013
+###
 
+### set this dir as lama source dir ###
+lama_set_source_dir ()
+
+### Add classes and header files ###
+set ( CLASSES
+        Configuration
+        Context
+        MatrixStorageTest
+        NormTest
+        SameMatrixHelper
+        SparseMatrixHelper
+        SparseMatrixTest
+    )
+    
+set ( HEADERS
+        EquationHelper
+        TestMacros
+        TestSparseMatrices
+    )
+
+set ( SOURCE_FILES
+        CGTest
+        CommonLoggerTest
+        CommunicatorTest
+        COOSparseMatrixTest
+        COOStorageTest
+        CriterionTest
+        CSRSparseMatrixTest
+        CSRStorageTest
+        DenseMatrixTest
+        DenseMatrixTest1
+        DenseStorageTest
+        DerivedSparseMatrixTest
+        DIASparseMatrixTest
+        DIAStorageTest
+        ELLSparseMatrixTest
+        ELLStorageTest
+        ELLUtilsTest
+        ExceptionTest
+        FileLoggerTest
+        GMRESTest
+        HostReadAccessTest
+        HostWriteAccessTest
+        InverseSolverTest
+        IterationCountTest
+        JacobiTest
+        JDSSparseMatrixTest
+        JDSStorageTest
+        JDSUtilsTest
+        L1NormTest
+        L2NormTest
+        LAMAArrayTest
+        MatrixStorageConversionTest
+        MatrixTest
+        MaxNormTest
+        NoCommunicatorTest
+        OpenMPTimerTest
+        ResidualStagnationTest
+        ResidualThresholdTest
+        ScalarTest
+        SimpleAMGTest
+        SolutionProxyTest
+        SORTest
+        SparseAssemblyStorageTest
+        SpecializedJacobiTest
+        StorageIOTest
+        TaskSyncTokenTest
+        ThreadPoolTest
+        TracingTest
+        UtilsTest
+        VectorTest
+    )
+
+lama_classes ( ${CLASSES} )
+lama_headers ( ${HEADERS} )
+lama_sources ( ${SOURCE_FILES} )
+
+### checks ####
 if ( ${LAMA_ASSERT_LEVEL} STREQUAL "OFF" )
    message ( STATUS "WARNING: tests will not check for exceptions (assertions are switched off)" )
 endif ( ${LAMA_ASSERT_LEVEL} STREQUAL "OFF" )
-
-### set include directories ### 
 
 if ( NOT ( Boost_UNIT_TEST_FRAMEWORK_LIBRARY OR Boost_REGEX ) )
     message ( FATAL_ERROR "No Boost unit test available." )
 endif ( NOT ( Boost_UNIT_TEST_FRAMEWORK_LIBRARY OR Boost_REGEX ) )
 
+### set include directories ###
 include_directories ( .. ../lama ${Boost_INCLUDE_DIRS} )
 
-
-### set source files ###
-
-set ( TESTSOURCES 
-        CriterionTest.cpp
-        CGTest.cpp
-        CommonLoggerTest.cpp
-        CommunicatorTest.cpp
-        Configuration.cpp
-        Context.cpp
-        COOSparseMatrixTest.cpp
-        COOStorageTest.cpp
-        CSRSparseMatrixTest.cpp
-        CSRStorageTest.cpp
-        DenseMatrixTest.cpp
-        DenseMatrixTest1.cpp
-        DenseStorageTest.cpp
-        DIASparseMatrixTest.cpp
-        DerivedSparseMatrixTest.cpp
-        DIAStorageTest.cpp
-        ELLSparseMatrixTest.cpp
-        ELLStorageTest.cpp
-        ELLUtilsTest.cpp
-        ExceptionTest.cpp
-        #ExpressionTest.cpp
-        FileLoggerTest.cpp
-        GMRESTest.cpp
-        HostReadAccessTest.cpp
-        HostWriteAccessTest.cpp
-        InverseSolverTest.cpp
-        IterationCountTest.cpp
-        JacobiTest.cpp
-        JDSSparseMatrixTest.cpp
-        JDSStorageTest.cpp
-        JDSUtilsTest.cpp
-        L1NormTest.cpp
-        L2NormTest.cpp
-        LAMAArrayTest.cpp
-        #LUSolverTest.cpp
-        MatrixStorageConversionTest.cpp
-        MatrixStorageTest.cpp
-        MatrixTest.cpp
-        MaxNormTest.cpp
-        MetaSolverTest.cpp
-        NoCommunicatorTest.cpp
-        NormTest.cpp
-        OpenMPTimerTest.cpp
-        ResidualStagnationTest.cpp
-        ResidualThresholdTest.cpp
-        SameMatrixHelper.cpp
-        ScalarTest.cpp
-        SimpleAMGTest.cpp
-        SolutionProxyTest.cpp
-        SORTest.cpp
-        SparseAssemblyStorageTest.cpp
-        SparseMatrixHelper.cpp
-        SparseMatrixTest.cpp
-        SpecializedJacobiTest.cpp
-        StorageIOTest.cpp
-        ThreadPoolTest.cpp
-        TaskSyncTokenTest.cpp
-        #TimerTest.cpp
-        TracingTest.cpp
-        UtilsTest.cpp
-        VectorTest.cpp
-    )
-
-    
 ### add subdirectories ###
-
-if ( MPI_FOUND OR ( ( OSHMEM_FOUND AND GASNET_FOUND) OR GPI_FOUND ) )
+if ( MPI_FOUND )
     add_subdirectory ( distributed )
-endif ( MPI_FOUND OR ( ( OSHMEM_FOUND AND GASNET_FOUND) OR GPI_FOUND ) )
+endif ( MPI_FOUND )
 
 if ( CUDA_FOUND )
     add_subdirectory ( cuda )
 endif ( CUDA_FOUND )
-
-if ( OPENCL_FOUND )
-    add_subdirectory ( OpenCL )
-endif ( OPENCL_FOUND )
  
-
 ### add definitions ###
-       
 add_definitions ( -DLAMA_TESTFILE_PATH="${CMAKE_SOURCE_DIR}/../res/testfiles" )
 
-
 ### add link directories ###
-
 if ( WIN32 )
     link_directories ( ${Boost_LIBRARY_DIRS} )
 endif ( WIN32 )
 
-
 ### add executeable ###
-
-add_executable ( lama_test lama_test.cpp ${TESTSOURCES} )
+add_executable ( lama_test lama_test.cpp ${CXX_SOURCES} )
 
 ### target link libraries ###
-
 if ( WIN32 )
     target_link_libraries ( lama_test lama )
 else ( WIN32 )
     target_link_libraries ( lama_test lama ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY} ${Boost_REGEX_LIBRARY} )
 endif ( WIN32 )
 
-### Copy the README file in build directory ### 
 
+### Copy the README file in build directory ### 
 file ( COPY README DESTINATION ${CMAKE_BINARY_DIR}/test )
 
 if ( CODE_COVERAGE )

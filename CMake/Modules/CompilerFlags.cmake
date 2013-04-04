@@ -1,3 +1,21 @@
+
+#### needed to find BLAS Libraries ###
+
+if ( NOT WIN32 )
+    enable_language ( Fortran )
+endif ( NOT WIN32)
+
+if ( CMAKE_C_COMPILER_ID MATCHES Intel )
+    find_program ( XIAR xiar )
+    if ( XIAR )
+        set ( CMAKE_AR "${XIAR}" )
+    endif ( XIAR )
+    mark_as_advanced ( XIAR )
+endif ( CMAKE_C_COMPILER_ID MATCHES Intel )
+
+
+
+
 # Define Compile Flags for LAMA
 #
 # Variables which can be modified:
@@ -75,3 +93,32 @@ else ( NOT WIN32 )
     set ( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${ADDITIONAL_CXX_FLAGS} ${CXX_WARNING_FLAGS}  ${ADDITIONAL_CXX_WARNING_FLAGS}" )
 endif ( NOT WIN32 )
 set ( CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} ${CXX_RELEASE_FLAGS} ${ADDITIONAL_CXX_RELEASE_FLAGS}" )
+
+
+
+if ( CUDA_FOUND )
+    set ( CUDA_VERBOSE_BUILD OFF )
+    set ( CUDA_BUILD_EMULATION OFF )
+    # unfortunately we can not propagate the host flags to CUDA
+    # because this issues to much warning in cuda headers
+    # TODO: maybe we can change this with future CUDA releases
+    if ( WIN32 )
+        set ( CUDA_PROPAGATE_HOST_FLAGS ON )
+        set ( CUDA_NVCC_FLAGS "-arch=sm_13" )
+    else ( WIN32 )
+        set ( CUDA_PROPAGATE_HOST_FLAGS OFF )
+        #-Xcompiler;-fno-inline is used because of compability issues of CUDA with gcc-4.4
+        if ( ${CMAKE_BUILD_TYPE} MATCHES "Debug" )
+            set ( CUDA_NVCC_FLAGS "-arch=sm_13;-g;-G;-Xcompiler;-fPIC" )
+        else ( ${CMAKE_BUILD_TYPE} MATCHES "Debug" )
+            set ( CUDA_NVCC_FLAGS "-arch=sm_13;-Xcompiler;-fPIC" )
+        endif ( ${CMAKE_BUILD_TYPE} MATCHES "Debug" )
+        # set -march=core02,-mmmx,-msse,-msse2,-msse3,-mssse3,-msse4a flaggs here
+        if ( MARCH_NATIVE_SUPPORT )
+            set ( CUDA_NVCC_FLAGS_RELEASE "-O3;-use_fast_math;-Xcompiler;-ffast-math;-Xcompiler;-fno-inline;-Xcompiler;-march=native" )
+        else ( MARCH_NATIVE_SUPPORT )
+            set ( CUDA_NVCC_FLAGS_RELEASE "-O3;-use_fast_math;-Xcompiler;-ffast-math;-Xcompiler;-fno-inline" )
+        endif ( MARCH_NATIVE_SUPPORT )
+    endif ( WIN32 )
+endif( CUDA_FOUND )
+
