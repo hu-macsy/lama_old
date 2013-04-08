@@ -31,7 +31,7 @@
  # $Id$
 ###
 
-cmake_minimum_required ( VERSION 2.64 )
+cmake_minimum_required ( VERSION 2.6 )
 
 ### Set PROJECT NAME / supported LANGUAGES and Module Path ###
 
