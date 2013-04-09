@@ -38,7 +38,6 @@
 #include <lama/expression/VectorExpressions.hpp>
 #include <lama/expression/MatrixVectorExpressions.hpp>
 
-#include <lama/LAMAInterfaceRegistry.hpp>
 #include <lama/DenseVector.hpp>
 #include <lama/LAMAInterface.hpp>
 

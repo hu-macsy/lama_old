@@ -43,8 +43,6 @@
 #include <lama/LAMAArray.hpp>
 #include <lama/Scalar.hpp>
 
-#include <lama/distribution/Distribution.hpp>
-
 namespace lama
 {
 

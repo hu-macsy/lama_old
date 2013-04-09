@@ -34,9 +34,6 @@
 // hpp
 #include <lama/CommunicatorManager.hpp>
 
-using namespace std;
-using namespace boost;
-
 namespace lama
 {
 

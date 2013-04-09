@@ -40,9 +40,6 @@
 // base classes
 #include <lama/DistributionManager.hpp>
 
-// others
-#include <lama/distribution/BlockDistribution.hpp>
-
 // logging
 #include <logging/logging.hpp>
 

@@ -32,9 +32,6 @@
  */
 
 // hpp
-#include <lama/cuda/CUDAContext.hpp>
-
-// others
 #include <lama/cuda/CUDATracerSyncToken.hpp>
 
 CUDATracerSyncToken::CUDATracerSyncToken(

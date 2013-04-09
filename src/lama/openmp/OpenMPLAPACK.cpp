@@ -38,10 +38,12 @@
 #include <lama/openmp/OpenMPBLAS1.hpp>
 
 #include <lama/BLASInterface.hpp>
-#include <boost/scoped_array.hpp>
 
 // macros
 #include <lama/macros/unused.hpp>
+
+// boost
+#include <boost/scoped_array.hpp>
 
 #ifdef __cplusplus
 extern "C"

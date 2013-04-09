@@ -33,18 +33,19 @@
 
 // hpp
 #include <lama/matrix/SparseMatrix.hpp>
-#include <lama/matrix/DenseMatrix.hpp>
 
 // others
 #include <lama/NoSyncToken.hpp>
 #include <lama/LAMAArrayUtils.hpp>
+#include <lama/CommunicatorFactory.hpp>
+
+#include <lama/matrix/DenseMatrix.hpp>
 
 #include <lama/storage/MatrixStorage.hpp>
 #include <lama/storage/CSRStorage.hpp>
 
 #include <lama/exception/Exception.hpp>
 
-#include <lama/CommunicatorFactory.hpp>
 #include <lama/distribution/NoDistribution.hpp>
 #include <lama/distribution/CyclicDistribution.hpp>
 #include <lama/distribution/Redistributor.hpp>

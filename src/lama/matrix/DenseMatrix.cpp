@@ -31,20 +31,23 @@
  * $Id$
  */
 
+// hpp
 #include <lama/matrix/DenseMatrix.hpp>
+
+// others
 #include <lama/matrix/CSRSparseMatrix.hpp>
+
 #include <lama/DenseVector.hpp>
 #include <lama/LAMAInterface.hpp>
-
-#include <lama/NoSyncToken.hpp>
-
 #include <lama/ContextAccess.hpp>
+#include <lama/NoSyncToken.hpp>
+#include <lama/tracing.hpp>
 
 #include <lama/distribution/NoDistribution.hpp>
 #include <lama/distribution/CyclicDistribution.hpp>
 #include <lama/distribution/Redistributor.hpp>
-#include <lama/tracing.hpp>
 
+// boost
 #include <boost/scoped_array.hpp>
 
 namespace lama

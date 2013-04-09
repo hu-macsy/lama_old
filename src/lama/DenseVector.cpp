@@ -35,10 +35,10 @@
 #include <lama/DenseVector.hpp>
 
 // others
-#include <lama/ContextAccess.hpp>
-#include <lama/Vector.hpp>
 #include <lama/LAMAArrayUtils.hpp>
-#include <lama/LAMAInterfaceRegistry.hpp>
+#include <lama/LAMAInterface.hpp>
+#include <lama/ContextAccess.hpp>
+//#include <lama/LAMAInterfaceRegistry.hpp>
 
 #include <lama/CommunicatorFactory.hpp>
 

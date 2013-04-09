@@ -45,6 +45,7 @@
 #include <lama/HostReadAccess.hpp>
 #include <lama/HostWriteAccess.hpp>
 #include <lama/CommunicationPlan.hpp>
+#include <lama/SyncToken.hpp>
 
 #include <lama/exception/LAMAAssert.hpp>
 
@@ -63,11 +64,7 @@ namespace lama
 
 // Forward declaration of all classes that are used in the interface
 
-class CommunicationPlan;
-
 template<typename T> class LAMAArray;
-
-class SyncToken;
 
 class Distribution;
 

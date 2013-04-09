@@ -33,8 +33,10 @@
 #ifndef LAMA_CUDATRACERSYNCTOKEN_HPP_
 #define LAMA_CUDATRACERSYNCTOKEN_HPP_
 
+// base classes
 #include <lama/SyncToken.hpp>
 
+// others
 #include <lama/tracing/LAMABaseTracer.hpp>
 
 #include <lama/cuda/CUDAStreamSyncToken.hpp>

@@ -33,6 +33,7 @@
 #ifndef LOG4LAMA_NONCOPYABLE_HPP_
 #define LOG4LAMA_NONCOPYABLE_HPP_
 
+// for dll import
 #include <logging/config.hpp>
 
 namespace log4lama

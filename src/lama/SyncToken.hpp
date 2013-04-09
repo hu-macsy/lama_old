@@ -44,9 +44,6 @@
 // logging
 #include <logging/logging.hpp>
 
-// boost
-#include <boost/function.hpp>
-
 #include <vector>
 #include <memory>
 

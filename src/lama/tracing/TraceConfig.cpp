@@ -33,10 +33,11 @@
 
 // hpp
 #include <lama/tracing/TraceConfig.hpp>
-#include <lama/tracing/VTInterface.hpp>
 
 // others
+#include <lama/tracing/VTInterface.hpp>
 #include <lama/tracing/RegionTable.hpp>
+
 #include <lama/CommunicatorFactory.hpp>
 #include <lama/ContextFactory.hpp>
 #include <lama/ContextAccess.hpp>

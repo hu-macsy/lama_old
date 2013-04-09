@@ -45,7 +45,6 @@ namespace lama
 {
 
 CUDAStreamSyncToken::CUDAStreamSyncToken( CUDAContextPtr cudaContext, CUstream stream )
-
     : mCUDAContext( cudaContext ), mStream( stream ), mEvent( 0 )
 {
     LAMA_LOG_DEBUG( logger, "StreamSyncToken for " << *cudaContext << " generated, stream = " << stream )

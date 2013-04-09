@@ -47,6 +47,7 @@
 
 #include <omp.h>
 #include <cmath>
+#include <typeinfo>
 
 namespace lama
 {

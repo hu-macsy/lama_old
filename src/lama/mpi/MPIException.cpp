@@ -32,6 +32,7 @@
  */
 
 #include <mpi.h> //Intel MPI need mpi.h to be included before stdio.h so this header comes first
+
 #include <lama/mpi/MPIException.hpp>
 
 #include <sstream>

@@ -36,7 +36,6 @@
 
 // others
 #include <lama/mpi/MPISyncToken.hpp>
-#include <lama/mpi/MPIException.hpp>
 #include <lama/mpi/MPIUtils.hpp>
 
 #include <lama/exception/LAMAAssert.hpp>

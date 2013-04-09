@@ -37,14 +37,12 @@
 // others
 #include <lama/storage/CSRStorage.hpp>
 #include <lama/storage/DenseStorage.hpp>
-#include <lama/storage/SparseAssemblyStorage.hpp>
 #include <lama/storage/StorageMethods.hpp>
 
 #include <lama/distribution/Distribution.hpp>
 #include <lama/distribution/Redistributor.hpp>
 #include <lama/distribution/Halo.hpp>
 
-#include <lama/LAMAArrayUtils.hpp>
 #include <lama/LAMAInterface.hpp>
 #include <lama/ContextAccess.hpp>
 #include <lama/StorageIO.hpp>

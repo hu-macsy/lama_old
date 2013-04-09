@@ -36,7 +36,6 @@
 
 // others
 #include <lama/DenseVector.hpp>
-#include <lama/Scalar.hpp>
 
 #include <lama/distribution/NoDistribution.hpp>
 

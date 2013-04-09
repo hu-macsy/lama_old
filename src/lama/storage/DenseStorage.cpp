@@ -38,6 +38,7 @@
 #include <lama/LAMAInterface.hpp>
 #include <lama/ContextAccess.hpp>
 
+#include <lama/openmp/OpenMPDenseUtils.hpp>
 #include <lama/openmp/OpenMPCSRUtils.hpp>
 #include <lama/openmp/OpenMPUtils.hpp>
 

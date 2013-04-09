@@ -40,15 +40,12 @@
 #include <lama/Vector.hpp>
 
 // others
-#include <lama/HostWriteAccess.hpp>
-#include <lama/HostReadAccess.hpp>
 #include <lama/LAMAArray.hpp>
 #include <lama/SyncToken.hpp>
 #include <lama/TypeTraits.hpp>
 
 #include <lama/distribution/Distribution.hpp>
 #include <lama/distribution/Halo.hpp>
-#include <lama/distribution/HaloBuilder.hpp>
 
 #include <lama/exception/Exception.hpp>
 

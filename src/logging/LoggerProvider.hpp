@@ -33,7 +33,10 @@
 #ifndef LAMA_LOGGERPROVIDER_HPP_
 #define LAMA_LOGGERPROVIDER_HPP_
 
+// for dll import
 #include <logging/config.hpp>
+
+// others
 #include <logging/AbstractLoggerCreator.hpp>
 
 namespace log4lama

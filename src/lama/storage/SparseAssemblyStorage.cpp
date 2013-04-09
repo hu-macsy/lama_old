@@ -31,10 +31,7 @@
  * $Id$
  */
 
-// for dll_import
-#include <lama/config.hpp>
-
-// others
+// hpp
 #include <lama/storage/SparseAssemblyStorage.hpp>
 
 #include <lama/openmp/OpenMPUtils.hpp>

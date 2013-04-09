@@ -37,9 +37,6 @@
 // others
 #include <lama/LAMAInterface.hpp>
 
-// assert
-#include <lama/exception/LAMAAssert.hpp>
-
 #include <typeinfo>
 #include <omp.h>
 

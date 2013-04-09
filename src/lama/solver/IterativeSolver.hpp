@@ -41,7 +41,7 @@
 #include <lama/solver/Solver.hpp>
 
 // others
-#include <lama/solver/criteria/IterationCount.hpp>
+#include <lama/solver/criteria/Criterion.hpp>
 
 // logging
 #include <logging/Logger.hpp>

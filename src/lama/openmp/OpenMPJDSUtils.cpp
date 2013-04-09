@@ -32,10 +32,10 @@
  */
 
 // hpp
-#include <lama/openmp/OpenMPUtils.hpp>
+#include <lama/openmp/OpenMPJDSUtils.hpp>
 
 // others
-#include <lama/openmp/OpenMPJDSUtils.hpp>
+#include <lama/openmp/OpenMPUtils.hpp>
 
 #include <lama/LAMAInterface.hpp>
 
@@ -52,6 +52,8 @@
 #include <boost/scoped_array.hpp>
 
 #include <omp.h>
+
+#include <typeinfo>
 
 namespace lama
 {

@@ -34,9 +34,6 @@
 // hpp
 #include <lama/matrix/ELLSparseMatrix.hpp>
 
-// others
-#include <lama/distribution/GeneralDistribution.hpp>
-
 namespace lama
 {
 

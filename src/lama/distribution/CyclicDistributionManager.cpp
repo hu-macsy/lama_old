@@ -33,9 +33,11 @@
 
 // hpp
 #include <lama/distribution/CyclicDistributionManager.hpp>
-#include <lama/CommunicatorFactory.hpp>
 
 // others
+#include <lama/distribution/CyclicDistribution.hpp>
+
+#include <lama/CommunicatorFactory.hpp>
 #include <lama/DistributionFactory.hpp>
 
 #include <cstdio>

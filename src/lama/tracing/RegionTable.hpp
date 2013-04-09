@@ -37,9 +37,9 @@
 // for dll_import
 #include <lama/config.hpp>
 
+// others
 #include <lama/tracing/RegionEntry.hpp>
 
-// others
 #include <lama/task/Thread.hpp>
 
 // logging

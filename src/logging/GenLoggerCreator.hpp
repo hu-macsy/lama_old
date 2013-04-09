@@ -34,6 +34,7 @@
 #ifndef LAMA_GEN_LOGGER_CREATOR_HPP_
 #define LAMA_GEN_LOGGER_CREATOR_HPP_
 
+// base classes
 #include <logging/AbstractLoggerCreator.hpp>
 
 namespace log4lama

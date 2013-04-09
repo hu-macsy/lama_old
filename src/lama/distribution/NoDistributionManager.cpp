@@ -35,6 +35,8 @@
 #include <lama/distribution/NoDistributionManager.hpp>
 
 // others
+#include <lama/distribution/NoDistribution.hpp>
+
 #include <lama/DistributionFactory.hpp>
 
 #include <cstdio>

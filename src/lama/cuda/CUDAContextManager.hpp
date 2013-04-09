@@ -42,8 +42,6 @@
 // others
 #include <lama/Context.hpp>
 
-#include <lama/cuda/CUDAContext.hpp>
-
 // boost
 #include <boost/weak_ptr.hpp>
 

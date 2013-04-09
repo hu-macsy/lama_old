@@ -38,6 +38,7 @@
 #include <stdexcept>       // runtime_error
 #include <cstring>
 
+// hpp
 #include <logging/GenLogger.hpp>
 
 #undef DEBUGGING

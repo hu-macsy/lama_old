@@ -32,6 +32,7 @@
  */
 #ifndef LAMA_LEVEL_HPP_
 #define LAMA_LEVEL_HPP_
+
 #include <ostream>
 #include <string>
 

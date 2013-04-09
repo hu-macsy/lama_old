@@ -34,7 +34,6 @@
 // hpp
 #include <lama/openmp/OpenMPInterface.hpp>
 
-// others
 #include <lama/openmp/OpenMPUtils.hpp>
 #include <lama/openmp/OpenMPCSRUtils.hpp>
 #include <lama/openmp/OpenMPELLUtils.hpp>
@@ -50,10 +49,6 @@
 #include <lama/openmp/OpenMPSCALAPACK.hpp>
 
 #include <lama/LAMAInterfaceRegistry.hpp>
-#include <lama/HostReadAccess.hpp>
-#include <lama/HostWriteAccess.hpp>
-
-#include <lama/task/TaskSyncToken.hpp>
 
 // boost
 #include <boost/bind.hpp>

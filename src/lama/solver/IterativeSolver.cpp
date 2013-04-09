@@ -37,6 +37,8 @@
 // others
 #include <lama/norm/L2Norm.hpp>
 
+#include <lama/solver/criteria/IterationCount.hpp>
+
 namespace lama
 {
 

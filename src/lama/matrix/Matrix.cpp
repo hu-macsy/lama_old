@@ -48,7 +48,6 @@ namespace lama
 LAMA_LOG_DEF_LOGGER( Matrix::logger, "Matrix" )
 
 Matrix::Matrix( const Matrix& other )
-
     : Distributed( other ), mColDistribution( other.mColDistribution ), mNumRows( other.mNumRows ), mNumColumns(
         other.mNumColumns ), mCommunicationKind( other.mCommunicationKind )
 {
@@ -56,7 +55,6 @@ Matrix::Matrix( const Matrix& other )
 }
 
 Matrix::Matrix( const Matrix& other, DistributionPtr distribution, DistributionPtr colDistribution )
-
     : Distributed( distribution ), mColDistribution( colDistribution ), mNumRows( other.mNumRows ), mNumColumns(
         other.mNumColumns ), mCommunicationKind( other.mCommunicationKind )
 {
@@ -103,7 +101,6 @@ void Matrix::checkSettings() const
 }
 
 Matrix::Matrix( DistributionPtr rowDistribution, DistributionPtr colDistribution )
-
     : Distributed( rowDistribution )
 {
     setDistributedMatrix( rowDistribution, colDistribution );
@@ -128,7 +125,6 @@ Matrix::Matrix( DistributionPtr distribution )
 }
 
 Matrix::Matrix()
-
     : Distributed( DistributionPtr( new NoDistribution( 0 ) ) ), mColDistribution(
         DistributionPtr( new NoDistribution( 0 ) ) ), mNumRows( 0 ), mNumColumns( 0 )
 {

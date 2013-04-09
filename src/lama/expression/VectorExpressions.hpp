@@ -33,6 +33,7 @@
 #ifndef LAMA_VECTOREXPRESSIONS_HPP_
 #define LAMA_VECTOREXPRESSIONS_HPP_
 
+#include <lama/Scalar.hpp>
 #include <lama/Vector.hpp>
 #include <lama/expression/Expression.hpp>
 

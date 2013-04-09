@@ -38,6 +38,7 @@
 #include <lama/solver/IterativeSolver.hpp>
 
 #include <lama/norm/L2Norm.hpp> //default
+
 namespace lama
 {
 

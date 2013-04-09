@@ -33,7 +33,10 @@
 #ifndef LAMA_OPENMPSCALAPACK_HPP_
 #define LAMA_OPENMPSCALAPACK_HPP_
 
+// others
 #include <lama/LAMATypes.hpp>
+
+// logging
 #include <logging/logging.hpp>
 
 namespace lama

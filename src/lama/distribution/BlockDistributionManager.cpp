@@ -33,10 +33,12 @@
 
 // hpp
 #include <lama/distribution/BlockDistributionManager.hpp>
-#include <lama/CommunicatorFactory.hpp>
 
 // others
+#include <lama/distribution/BlockDistribution.hpp>
+
 #include <lama/DistributionFactory.hpp>
+#include <lama/CommunicatorFactory.hpp>
 
 #include <cstdio>
 

@@ -31,6 +31,7 @@
  * $Id$
  */
 
+// hpp
 #include <logging/SourceLocation.hpp>
 
 #include <string.h>

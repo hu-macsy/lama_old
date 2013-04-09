@@ -31,10 +31,10 @@
  */
 
 // hpp
-#include <lama/cuda/CUDAContext.hpp>
+#include <lama/cuda/CUDAContextManager.hpp>
 
 // others
-#include <lama/cuda/CUDAContextManager.hpp>
+#include <lama/cuda/CUDAContext.hpp>
 
 #include <lama/ContextFactory.hpp>
 

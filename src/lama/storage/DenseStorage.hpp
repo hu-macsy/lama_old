@@ -45,8 +45,6 @@
 #include <lama/HostWriteAccess.hpp>
 #include <lama/Scalar.hpp>
 
-#include <lama/openmp/OpenMPDenseUtils.hpp>
-
 namespace lama
 {
 

@@ -43,7 +43,6 @@
 #include <lama/LAMAArray.hpp>
 #include <lama/LAMAArrayView.hpp>
 #include <lama/Context.hpp>
-#include <lama/SyncToken.hpp>
 
 #include <lama/exception/Exception.hpp>
 

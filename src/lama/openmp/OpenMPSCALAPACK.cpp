@@ -32,16 +32,19 @@
  */
 
 // hpp
-
 #include <lama/openmp/OpenMPSCALAPACK.hpp>
-#include <lama/openmp/SCALAPACKHelper.hpp>
-#include <lama/Communicator.hpp>
-#include <boost/scoped_array.hpp>
 
+// others
+#include <lama/openmp/SCALAPACKHelper.hpp>
+
+#include <lama/Communicator.hpp>
 #include <lama/LAMAInterface.hpp>
 
 // macros
 #include <lama/macros/unused.hpp>
+
+// boost
+#include <boost/scoped_array.hpp>
 
 #include <mkl_scalapack.h>
 #include <mkl_blacs.h>

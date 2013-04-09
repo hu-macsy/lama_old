@@ -39,14 +39,10 @@
 
 #include <lama/matrix/DenseMatrix.hpp>
 
-#include <lama/LAMAInterfaceRegistry.hpp>
 #include <lama/LAMAInterface.hpp>
 #include <lama/tracing.hpp>
 
 #include <lama/expression/MatrixVectorExpressions.hpp>
-
-#include <lama/distribution/NoDistribution.hpp>
-#include <lama/distribution/CyclicDistribution.hpp>
 
 // boost
 #include <boost/scoped_array.hpp>

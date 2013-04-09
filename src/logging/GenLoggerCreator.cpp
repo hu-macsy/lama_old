@@ -36,6 +36,7 @@
 #include <cstdlib>         // import getenv
 #include <cstdio>          // FILE
 #include <stdexcept>       // runtime_error
+
 #include <logging/logging.hpp>
 #include <logging/GenLoggerCreator.hpp>
 #include <logging/GenLogger.hpp>

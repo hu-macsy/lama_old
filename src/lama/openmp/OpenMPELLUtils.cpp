@@ -34,11 +34,13 @@
 // hpp
 #include <lama/openmp/OpenMPELLUtils.hpp>
 
+// others
+#include <lama/LAMAInterface.hpp>
+
 #include <lama/task/TaskSyncToken.hpp>
 
 // macros
 #include <lama/macros/unused.hpp>
-#include <lama/LAMAInterface.hpp>
 
 // tracing
 #include <lama/tracing.hpp>
@@ -52,6 +54,7 @@
 #include <set>
 #include <map>
 #include <cmath>
+#include <typeinfo>
 
 namespace lama
 {

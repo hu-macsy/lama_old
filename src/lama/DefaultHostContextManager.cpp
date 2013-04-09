@@ -36,6 +36,7 @@
 
 // others
 #include <lama/DefaultHostContext.hpp>
+#include <lama/ContextFactory.hpp>
 
 #include <lama/exception/LAMAAssert.hpp>
 

@@ -33,15 +33,20 @@
 #ifndef LAMA_DENSEMATRIX_HPP_
 #define LAMA_DENSEMATRIX_HPP_
 
-#include <boost/lexical_cast.hpp>
-#include <boost/shared_ptr.hpp>
-
+// for dll_import
 #include <lama/config.hpp>
 
+// base classes
 #include <lama/matrix/CRTPMatrix.hpp>
+
+//others
 #include <lama/matrix/SparseMatrix.hpp>
 
 #include <lama/storage/DenseStorage.hpp>
+
+//boost
+#include <boost/lexical_cast.hpp>
+#include <boost/shared_ptr.hpp>
 
 namespace lama
 {

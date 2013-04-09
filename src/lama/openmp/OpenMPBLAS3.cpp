@@ -36,7 +36,6 @@
 
 // others
 #include <lama/BLASInterface.hpp>
-#include <lama/SyncToken.hpp>
 
 // macros
 #include <lama/macros/unused.hpp>

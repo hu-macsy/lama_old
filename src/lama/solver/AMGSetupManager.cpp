@@ -33,9 +33,6 @@
 
 #include <lama/solver/AMGSetupManager.hpp>
 
-using namespace std;
-using namespace boost;
-
 namespace lama
 {
 

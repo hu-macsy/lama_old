@@ -31,10 +31,13 @@
  * $Id$
  */
 
+// hpp
 #include "VTInterface.hpp"
+
+// others
 #include "RegionEntry.hpp"
 
-#include<string>
+#include <string>
 
 namespace tracing
 {

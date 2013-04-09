@@ -39,9 +39,6 @@
 // base classes
 #include <lama/Context.hpp>
 
-// others
-#include <lama/ContextFactory.hpp>
-
 namespace lama
 {
 

@@ -35,6 +35,8 @@
 #include <lama/cuda/CUDAHostContextManager.hpp>
 
 // others
+#include <lama/ContextFactory.hpp>
+
 #include <lama/cuda/CUDAHostContext.hpp>
 
 #include <lama/exception/Exception.hpp>

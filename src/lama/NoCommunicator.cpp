@@ -38,8 +38,6 @@
 #include <lama/NoSyncToken.hpp>
 #include <lama/CommunicationPlan.hpp>
 
-#include <lama/distribution/Halo.hpp>
-
 // assert
 #include <lama/exception/LAMAAssert.hpp>
 

@@ -34,9 +34,6 @@
 // hpp
 #include <lama/matrix/CSRSparseMatrix.hpp>
 
-// others
-#include <lama/distribution/GeneralDistribution.hpp>
-
 namespace lama
 {
 

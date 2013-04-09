@@ -36,8 +36,9 @@
 
 // others
 #include <lama/LAMAInterface.hpp>
-#include <lama/task/TaskSyncToken.hpp>
 #include <lama/tracing.hpp>
+
+#include <lama/task/TaskSyncToken.hpp>
 
 namespace lama
 {

@@ -36,9 +36,11 @@
 // for dll_import
 #include <lama/config.hpp>
 
+// base classes
+#include <lama/Printable.hpp>
+
 // others
 #include <lama/distribution/Distribution.hpp>
-#include <lama/Printable.hpp>
 
 namespace lama
 {

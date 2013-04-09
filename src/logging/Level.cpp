@@ -30,6 +30,7 @@
  * @date 01.03.2011
  * $Id$
  */
+
 #include <logging/Level.hpp>
 
 #include <cstring>

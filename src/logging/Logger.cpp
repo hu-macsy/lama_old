@@ -30,6 +30,8 @@
  * @date 01.03.2011
  * $Id$
  */
+
+// hpp
 #include <logging/Logger.hpp>
 
 namespace log4lama

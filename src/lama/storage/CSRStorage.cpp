@@ -39,13 +39,15 @@
 #include <lama/ContextAccess.hpp>
 #include <lama/HostReadAccess.hpp>
 #include <lama/HostWriteAccess.hpp>
-#include <lama/distribution/Distribution.hpp>
-#include <lama/exception/LAMAAssert.hpp>
+
 #include <lama/task/TaskSyncToken.hpp>
 
 #include <lama/openmp/OpenMPUtils.hpp>
 #include <lama/openmp/OpenMPBLAS1.hpp>
 #include <lama/openmp/OpenMPCSRUtils.hpp>
+
+// assert
+#include <lama/exception/LAMAAssert.hpp>
 
 // boost
 #include <boost/bind.hpp>

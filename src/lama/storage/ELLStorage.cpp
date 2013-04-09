@@ -39,6 +39,7 @@
 #include <lama/HostReadAccess.hpp>
 #include <lama/LAMAArrayUtils.hpp>
 #include <lama/LAMAInterface.hpp>
+#include <lama/SyncToken.hpp>
 #include <lama/ReadAccess.hpp>
 #include <lama/WriteAccess.hpp>
 

@@ -36,9 +36,6 @@
 // for dll_import
 #include <lama/config.hpp>
 
-// base classes
-#include <lama/Printable.hpp>
-
 // others
 #include <lama/macros/interface.hpp>
 #include <lama/BLASInterface.hpp>

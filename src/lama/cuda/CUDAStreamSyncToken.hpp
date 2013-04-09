@@ -33,6 +33,9 @@
 #ifndef LAMA_CUDA_STREAM_SYNC_TOKEN_HPP_
 #define LAMA_CUDA_STREAM_SYNC_TOKEN_HPP_
 
+// base classes
+#include <lama/SyncToken.hpp>
+
 // boost
 #include <boost/shared_ptr.hpp>
 

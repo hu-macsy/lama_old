@@ -39,9 +39,11 @@
 // base classes
 #include <lama/tracing/LAMABaseTracer.hpp>
 
+// boost
+#include <boost/thread/mutex.hpp>
+
 #include <list>
 #include <string>
-#include <boost/thread/mutex.hpp>
 #include <omp.h>
 
 /**

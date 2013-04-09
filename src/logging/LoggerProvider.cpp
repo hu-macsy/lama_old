@@ -31,7 +31,10 @@
  * $Id$
  */
 
+// hpp
 #include <logging/LoggerProvider.hpp>
+
+// others
 #include <logging/Logger.hpp>
 
 #include <stdexcept>

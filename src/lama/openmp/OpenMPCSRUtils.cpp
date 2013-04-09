@@ -37,8 +37,6 @@
 // others
 #include <lama/LAMAInterface.hpp>
 
-#include <lama/task/TaskSyncToken.hpp>
-
 // assert
 #include <lama/exception/LAMAAssert.hpp>
 
@@ -50,6 +48,7 @@
 #include <boost/scoped_array.hpp>
 
 #include <omp.h>
+#include <typeinfo>
 
 namespace lama
 {

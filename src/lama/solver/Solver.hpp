@@ -39,10 +39,10 @@
 
 // base classes
 #include <lama/NonCopyable.hpp>
+#include <lama/Printable.hpp>
 
 // others
 #include <lama/Vector.hpp>
-#include <lama/Printable.hpp>
 
 #include <lama/matrix/Matrix.hpp>
 

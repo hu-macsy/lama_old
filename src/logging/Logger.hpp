@@ -32,14 +32,20 @@
  */
 #ifndef LAMA_LOGGER_HPP_
 #define LAMA_LOGGER_HPP_
-#include <string>
-#include <vector>
 
+// for dll import
 #include <logging/config.hpp>
+
+// base classes
+#include <logging/NonCopyable.hpp>
+
+// others
 #include <logging/SourceLocation.hpp>
 #include <logging/Level.hpp>
 #include <logging/logging.hpp>
-#include <logging/NonCopyable.hpp>
+
+#include <string>
+#include <vector>
 
 /** Namespace for logging in LAMA */
 

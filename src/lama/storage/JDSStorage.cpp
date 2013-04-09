@@ -35,12 +35,16 @@
 #include <lama/storage/JDSStorage.hpp>
 
 // others
+#include <lama/ContextFactory.hpp>
 #include <lama/ContextAccess.hpp>
 #include <lama/LAMAInterface.hpp>
-#include <lama/tracing.hpp>
 
+#include <lama/HostReadAccess.hpp>
 #include <lama/ReadAccess.hpp>
 #include <lama/WriteAccess.hpp>
+
+// tracing
+#include <lama/tracing.hpp>
 
 namespace lama
 {
