@@ -320,7 +320,9 @@ protected:
 
 private:
 
-    DenseStorageView();// disable the default constructor
+    /** Disable default constructor. */
+
+    DenseStorageView();  
 
     virtual bool checkDiagonalProperty() const;
 

@@ -196,9 +196,9 @@ void Distribution::replicate( T1* allValues, const T2* localValues ) const
     for ( PartitionId ip = 0; ip < np - 1; ++ip )
     {
         IndexType newSize1 = 1;
-        newSize1 = comm.shift( indexesReceive.get(), maxLocalSize, indexesSend.get(), currentSize, 1 );
+        newSize1 = comm.shiftData( indexesReceive.get(), maxLocalSize, indexesSend.get(), currentSize, 1 );
         IndexType newSize2 = -1;
-        newSize2 = comm.shift( valuesReceive.get(), maxLocalSize, valuesSend.get(), currentSize, 1 );
+        newSize2 = comm.shiftData( valuesReceive.get(), maxLocalSize, valuesSend.get(), currentSize, 1 );
         LAMA_ASSERT_EQUAL_DEBUG( newSize1, newSize2 )
         currentSize = newSize1;
 
@@ -257,9 +257,9 @@ void Distribution::replicateN( T1* allValues, const T2* localValues, const Index
     for ( PartitionId ip = 0; ip < np - 1; ++ip )
     {
         IndexType newSize1 = -1;
-        newSize1 = comm.shift( indexesReceive.get(), maxLocalSize, indexesSend.get(), currentSize, 1 );
+        newSize1 = comm.shiftData( indexesReceive.get(), maxLocalSize, indexesSend.get(), currentSize, 1 );
         IndexType newSize2 = -1;
-        newSize2 = comm.shift( valuesReceive.get(), n * maxLocalSize, valuesSend.get(), n * currentSize, 1 );
+        newSize2 = comm.shiftData( valuesReceive.get(), n * maxLocalSize, valuesSend.get(), n * currentSize, 1 );
         LAMA_ASSERT_EQUAL_DEBUG( newSize1 * n, newSize2 )
         currentSize = newSize1;
 
@@ -366,10 +366,10 @@ void Distribution::replicateRagged( T* allValues, const T* localValues, const In
     for ( PartitionId ip = 0; ip < np - 1; ++ip )
     {
         int direction = 1;
-        IndexType newSize1 = comm.shift( indexesReceive.get(), maxLocalSize, indexesSend.get(), currentElemSize,
-                                         direction );
-        IndexType newSize2 = comm.shift( valuesReceive.get(), maxLocalDataSize, valuesSend.get(), currentDataSize,
-                                         direction );
+        IndexType newSize1 = comm.shiftData( indexesReceive.get(), maxLocalSize, indexesSend.get(), currentElemSize,
+                                             direction );
+        IndexType newSize2 = comm.shiftData( valuesReceive.get(), maxLocalDataSize, valuesSend.get(), currentDataSize,
+                                             direction );
         // fill the received values in allValues
         IndexType size = -1;
         size = fillGlobal( allValues, allOffsets, indexesReceive.get(), newSize1, valuesReceive.get() );

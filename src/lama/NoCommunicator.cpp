@@ -167,7 +167,7 @@ std::auto_ptr<SyncToken> NoCommunicator::exchangeByPlanAsync(
     return auto_ptr<SyncToken>( new NoSyncToken() );
 }
 
-IndexType NoCommunicator::shift(
+IndexType NoCommunicator::shiftImpl(
     double targetVals[],
     const IndexType targetSize,
     const double sourceVals[],
@@ -182,7 +182,7 @@ IndexType NoCommunicator::shift(
     return Communicator::shift0( targetVals, targetSize, sourceVals, sourceSize );
 }
 
-IndexType NoCommunicator::shift(
+IndexType NoCommunicator::shiftImpl(
     float targetVals[],
     const IndexType targetSize,
     const float sourceVals[],
@@ -196,7 +196,7 @@ IndexType NoCommunicator::shift(
     return Communicator::shift0( targetVals, targetSize, sourceVals, sourceSize );
 }
 
-IndexType NoCommunicator::shift(
+IndexType NoCommunicator::shiftImpl(
     int targetVals[],
     const IndexType targetSize,
     const int sourceVals[],

@@ -166,40 +166,40 @@ public:
 
     virtual void synchronize() const;
 
-    virtual IndexType shift(
+    virtual IndexType shiftImpl(
         double newVals[],
         const IndexType newSize,
         const double oldVals[],
         const IndexType oldSize,
         const int direction ) const;
 
-    virtual IndexType shift(
+    virtual IndexType shiftImpl(
         float newVals[],
         const IndexType newSize,
         const float oldVals[],
         const IndexType oldSize,
         const int direction ) const;
 
-    virtual IndexType shift(
+    virtual IndexType shiftImpl(
         int newVals[],
         const IndexType newSize,
         const int oldVals[],
         const IndexType oldSize,
         const int direction ) const;
 
-    virtual std::auto_ptr<SyncToken> shiftAsync(
+    virtual std::auto_ptr<SyncToken> shiftAsyncImpl(
         double newVals[],
         const double oldVals[],
         const IndexType size,
         const int direction ) const;
 
-    virtual std::auto_ptr<SyncToken> shiftAsync(
+    virtual std::auto_ptr<SyncToken> shiftAsyncImpl(
         float newVals[],
         const float oldVals[],
         const IndexType size,
         const int direction ) const;
 
-    virtual std::auto_ptr<SyncToken> shiftAsync(
+    virtual std::auto_ptr<SyncToken> shiftAsyncImpl(
         int newVals[],
         const int oldVals[],
         const IndexType size,
@@ -339,7 +339,7 @@ private:
         const IndexType sizes[] ) const;
 
     template<typename T>
-    IndexType shiftImpl(
+    IndexType shiftMPI(
         T newvals[],
         const IndexType newSize,
         const PartitionId source,
@@ -348,7 +348,7 @@ private:
         const PartitionId dest ) const;
 
     template<typename T>
-    std::auto_ptr<SyncToken> shiftAsyncImpl(
+    std::auto_ptr<SyncToken> shiftAsyncMPI(
         T newvals[],
         const PartitionId source,
         const T oldVals[],

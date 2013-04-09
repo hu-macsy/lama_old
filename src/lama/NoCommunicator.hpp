@@ -103,21 +103,21 @@ public:
         const double* const sendData,
         const CommunicationPlan& sendPlan ) const;
 
-    virtual IndexType shift(
+    virtual IndexType shiftImpl(
         double targetVals[],
         const IndexType targetSize,
         const double sourceVals[],
         const IndexType oldSize,
         const int direction ) const;
 
-    virtual IndexType shift(
+    virtual IndexType shiftImpl(
         float targetVals[],
         const IndexType targetSize,
         const float sourceVals[],
         const IndexType oldSize,
         const int direction ) const;
 
-    virtual IndexType shift(
+    virtual IndexType shiftImpl(
         int targetVals[],
         const IndexType targetSize,
         const int sourceVals[],

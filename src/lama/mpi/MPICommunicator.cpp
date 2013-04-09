@@ -531,7 +531,7 @@ inline MPI_Datatype MPICommunicator::getMPI2Type<int,int>()
 /* ---------------------------------------------------------------------------------- */
 
 template<typename T>
-IndexType MPICommunicator::shiftImpl(
+IndexType MPICommunicator::shiftMPI(
     T recvVals[],
     const IndexType recvSize,
     const PartitionId source,
@@ -563,7 +563,7 @@ IndexType MPICommunicator::shiftImpl(
     return count;
 }
 
-IndexType MPICommunicator::shift(
+IndexType MPICommunicator::shiftImpl(
     double recvData[],
     const IndexType recvSize,
     const double sendVals[],
@@ -580,10 +580,10 @@ IndexType MPICommunicator::shift(
 
     PartitionId dest = getNeighbor( direction );
     PartitionId source = getNeighbor( -direction );
-    return shiftImpl( recvData, recvSize, source, sendVals, sendSize, dest );
+    return shiftMPI( recvData, recvSize, source, sendVals, sendSize, dest );
 }
 
-IndexType MPICommunicator::shift(
+IndexType MPICommunicator::shiftImpl(
     float recvData[],
     const IndexType recvSize,
     const float sendVals[],
@@ -600,10 +600,10 @@ IndexType MPICommunicator::shift(
 
     PartitionId dest = getNeighbor( direction );
     PartitionId source = getNeighbor( -direction );
-    return shiftImpl( recvData, recvSize, source, sendVals, sendSize, dest );
+    return shiftMPI( recvData, recvSize, source, sendVals, sendSize, dest );
 }
 
-IndexType MPICommunicator::shift(
+IndexType MPICommunicator::shiftImpl(
     int recvData[],
     const IndexType recvSize,
     const int sendVals[],
@@ -620,7 +620,7 @@ IndexType MPICommunicator::shift(
 
     PartitionId dest = getNeighbor( direction );
     PartitionId source = getNeighbor( -direction );
-    return shiftImpl( recvData, recvSize, source, sendVals, sendSize, dest );
+    return shiftMPI( recvData, recvSize, source, sendVals, sendSize, dest );
 }
 
 /* ---------------------------------------------------------------------------------- */
@@ -628,7 +628,7 @@ IndexType MPICommunicator::shift(
 /* ---------------------------------------------------------------------------------- */
 
 template<typename T>
-auto_ptr<SyncToken> MPICommunicator::shiftAsyncImpl(
+auto_ptr<SyncToken> MPICommunicator::shiftAsyncMPI(
     T recvVals[],
     const PartitionId source,
     const T sendVals[],
@@ -651,7 +651,7 @@ auto_ptr<SyncToken> MPICommunicator::shiftAsyncImpl(
     return auto_ptr<SyncToken>( pSyncToken.release() );
 }
 
-auto_ptr<SyncToken> MPICommunicator::shiftAsync(
+auto_ptr<SyncToken> MPICommunicator::shiftAsyncImpl(
     double recvVals[],
     const double sendVals[],
     const IndexType size,
@@ -666,10 +666,10 @@ auto_ptr<SyncToken> MPICommunicator::shiftAsync(
 
     PartitionId dest = getNeighbor( direction );
     PartitionId source = getNeighbor( -direction );
-    return shiftAsyncImpl( recvVals, source, sendVals, dest, size );
+    return shiftAsyncMPI( recvVals, source, sendVals, dest, size );
 }
 
-auto_ptr<SyncToken> MPICommunicator::shiftAsync(
+auto_ptr<SyncToken> MPICommunicator::shiftAsyncImpl(
     float recvVals[],
     const float sendVals[],
     const IndexType size,
@@ -682,10 +682,10 @@ auto_ptr<SyncToken> MPICommunicator::shiftAsync(
 
     PartitionId dest = getNeighbor( direction );
     PartitionId source = getNeighbor( -direction );
-    return shiftAsyncImpl( recvVals, source, sendVals, dest, size );
+    return shiftAsyncMPI( recvVals, source, sendVals, dest, size );
 }
 
-auto_ptr<SyncToken> MPICommunicator::shiftAsync(
+auto_ptr<SyncToken> MPICommunicator::shiftAsyncImpl(
     int recvVals[],
     const int sendVals[],
     const IndexType size,
@@ -698,7 +698,7 @@ auto_ptr<SyncToken> MPICommunicator::shiftAsync(
 
     PartitionId dest = getNeighbor( direction );
     PartitionId source = getNeighbor( -direction );
-    return shiftAsyncImpl( recvVals, source, sendVals, dest, size );
+    return shiftAsyncMPI( recvVals, source, sendVals, dest, size );
 }
 
 /* ---------------------------------------------------------------------------------- */

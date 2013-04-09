@@ -357,7 +357,7 @@ void CommunicatorTest::shiftTest()
 
         for ( PartitionId rounds = 0; rounds < size; ++rounds )
         {
-            comm->shift( recvBuffer, sendBuffer, 1 );
+            comm->shiftArray( recvBuffer, sendBuffer, 1 );
             {
                 HostWriteAccess<ValueType> recvBufferAccess( recvBuffer );
                 recvBufferAccess[rank] = static_cast<ValueType>( rank );
