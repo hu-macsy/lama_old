@@ -1238,6 +1238,8 @@ void ELLStorage<ValueType>::matrixTimesMatrix(
     }
 }
 
+/* --------------------------------------------------------------------------- */
+
 template<typename ValueType>
 void ELLStorage<ValueType>::matrixTimesMatrixELL(
     const ValueType alpha,

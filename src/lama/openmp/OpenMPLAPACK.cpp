@@ -38,12 +38,10 @@
 #include <lama/openmp/OpenMPBLAS1.hpp>
 
 #include <lama/BLASInterface.hpp>
+#include <boost/scoped_array.hpp>
 
 // macros
 #include <lama/macros/unused.hpp>
-
-// boost
-#include <boost/scoped_array.hpp>
 
 #ifdef __cplusplus
 extern "C"
@@ -449,7 +447,8 @@ void OpenMPLAPACK::getinv( const IndexType n, double* a, const IndexType lda )
 #endif // LAMA_HAVE_MKL
 }
 
-#ifdef LAMA_HAVE_MKL
+/* ------------------------------------------------------------------------- */
+
 template<>
 int OpenMPLAPACK::getri(
     const enum CBLAS_ORDER order,
@@ -458,25 +457,83 @@ int OpenMPLAPACK::getri(
     const int lda,
     int* const ipiv )
 {
+    LAMA_LOG_INFO( logger, "getri<float> for A of size " << n << " x " << n )
+
     int info = 0;
-    info = LAPACKE_sgetri( order, n, a, lda, ipiv );
-    return info;
-}
-#else
-template<>
-int OpenMPLAPACK::getri(
-    const enum CBLAS_ORDER UNUSED( order ),
-    const int UNUSED( n ),
-    float* const UNUSED( a ),
-    const int UNUSED( lda ),
-    int* const UNUSED( ipiv ) )
-{
-    LAMA_THROWEXCEPTION( "Not implemented." )
-    return -1;
-}
-#endif
 
 #ifdef LAMA_HAVE_MKL
+
+    LAMA_LOG_INFO( logger, "will use MKL/LAPACKE routine" )
+
+    if ( order == CblasColMajor )
+    {
+        info = LAPACKE_sgetri( LAPACK_COL_MAJOR, n, a, lda, ipiv );
+    }
+    else
+    {
+        info = LAPACKE_sgetri( LAPACK_ROW_MAJOR, n, a, lda, ipiv );
+    }
+
+#else
+
+    LAMA_LOG_INFO( logger, "will use F77/LAPACK routine" )
+
+    // translate C indexes into  Fortran Indexes for ipiv
+
+    #pragma omp parallel for
+    
+    for ( int i = 0; i < n; ++i )
+    {
+        ++ipiv[i];
+    }
+
+    // transpose if not column major order
+
+    if ( order != CblasColMajor )
+    {
+
+        LAMA_ASSERT_EQUAL_ERROR( lda, n )
+
+        for ( int i = 0; i < n; ++i )
+        {
+            // swap row and column
+
+            for ( int j = i + 1; j < n; ++j )
+            {
+                std::swap( a[ i * n + j], a[ j * n + i ] );
+            }
+        }
+    }
+
+#ifdef F77_INT
+    F77_INT F77_M = M, F77_N = N, F77_lda = lda, F77_info = info;
+#else
+#define F77_M m
+#define F77_N n
+#define F77_lda lda
+#define F77_info info
+#endif
+
+    boost::scoped_array<float> work( new float[n] );
+
+    F77_sgetri( &F77_N, a, &F77_lda, ipiv, work.get(), &F77_N, &F77_info );
+
+#endif // LAMA_HAVE_MKL
+
+    if ( info < 0 )
+    {
+        LAMA_THROWEXCEPTION( "illegal argument " << ( -info ) )
+    }
+    else if ( info > 0 )
+    {
+        LAMA_THROWEXCEPTION( "value(" << info << "," << info << ")" << " is exactly zero" )
+    }
+
+    return info;
+}
+
+/* ------------------------------------------------------------------------- */
+
 template<>
 int OpenMPLAPACK::getri(
     const enum CBLAS_ORDER order,
@@ -485,23 +542,82 @@ int OpenMPLAPACK::getri(
     const int lda,
     int* const ipiv )
 {
+    LAMA_LOG_INFO( logger, "getri<double> for A of size " << n << " x " << n )
+
     int info = 0;
-    info = LAPACKE_dgetri( order, n, a, lda, ipiv );
+
+#ifdef LAMA_HAVE_MKL
+
+    LAMA_LOG_INFO( logger, "will use MKL/LAPACKE routine" )
+
+    if ( order == CblasColMajor )
+    {
+        info = LAPACKE_dgetri( LAPACK_COL_MAJOR, n, a, lda, ipiv );
+    }
+    else
+    {
+        info = LAPACKE_dgetri( LAPACK_ROW_MAJOR, n, a, lda, ipiv );
+    }
+
+#else
+
+    LAMA_LOG_INFO( logger, "will use F77/LAPACK routine" )
+
+    // translate C indexes into  Fortran Indexes for ipiv
+
+    #pragma omp parallel for
+    
+    for ( int i = 0; i < n; ++i )
+    {
+        ++ipiv[i];
+    }
+
+    // transpose if not column major order
+
+    if ( order != CblasColMajor )
+    {
+
+        LAMA_ASSERT_EQUAL_ERROR( lda, n )
+
+        for ( int i = 0; i < n; ++i )
+        {
+            // swap row and column
+
+            for ( int j = i + 1; j < n; ++j )
+            {
+                std::swap( a[ i * n + j], a[ j * n + i ] );
+            }
+        }
+    }
+
+#ifdef F77_INT
+    F77_INT F77_M = M, F77_N = N, F77_lda = lda, F77_info = info;
+#else
+#define F77_M m
+#define F77_N n
+#define F77_lda lda
+#define F77_info info
+#endif
+
+    boost::scoped_array<double> work( new double[n] );
+
+    F77_dgetri( &F77_N, a, &F77_lda, ipiv, work.get(), &F77_N, &F77_info );
+
+#endif // LAMA_HAVE_MKL
+
+    if ( info < 0 )
+    {
+        LAMA_THROWEXCEPTION( "illegal argument " << ( -info ) )
+    }
+    else if ( info > 0 )
+    {
+        LAMA_THROWEXCEPTION( "value(" << info << "," << info << ")" << " is exactly zero" )
+    }
+
     return info;
 }
-#else
-template<>
-int OpenMPLAPACK::getri(
-    const enum CBLAS_ORDER UNUSED( order ),
-    const int UNUSED( n ),
-    double* const UNUSED( a ),
-    const int UNUSED( lda ),
-    int* const UNUSED( ipiv ) )
-{
-    LAMA_THROWEXCEPTION( "Not implemented." )
-    return -1;
-}
-#endif
+
+/* ------------------------------------------------------------------------- */
 
 template<>
 int OpenMPLAPACK::trtrs(

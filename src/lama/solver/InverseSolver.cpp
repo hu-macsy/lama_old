@@ -189,6 +189,10 @@ void InverseSolver::invert( DenseMatrix<T>& matrix, IndexType* const permutation
     {
         DenseStorage<T>& denseStorage = matrix.getLocalStorage();
 
+        denseStorage.invert( denseStorage );
+
+        /** Old implemention: should also work but does not -> make own test for getrf / getri
+
         HostWriteAccess<T> denseValues( denseStorage.getData() );
 
         LAMA_INTERFACE_FN_T( getrf, context, BLAS, LAPACK, T );
@@ -212,6 +216,8 @@ void InverseSolver::invert( DenseMatrix<T>& matrix, IndexType* const permutation
         {
             LAMA_THROWEXCEPTION( "getri on " << *context << " failed, error = " << error )
         }
+       */
+
     }
     else
     {
