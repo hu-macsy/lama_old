@@ -78,7 +78,7 @@ public:
     typedef const Matrix& ExpressionMemberType;
 
     /**
-     * @brief Construct a matrix by corresponding distributions.
+     * @brief Constructs a matrix by corresponding distributions.
      *
      * @param[in] rowDistribution   specifies number of rows and how the rows of the matrix are
      *                              distributed among the available partitions.
@@ -95,7 +95,7 @@ public:
     Matrix( DistributionPtr rowDistribution, DistributionPtr colDistribution );
 
     /**
-     * @brief Construct a matrix of a given size replicated on each partition.
+     * @brief Constructs a matrix of a given size replicated on each partition.
      *
      * @param[in] numRows      number of rows, must be non-negative.
      * @param[in] numColumns   number of columns, must be non-negative.
@@ -105,7 +105,7 @@ public:
     Matrix( const IndexType numRows, const IndexType numColumns );
 
     /**
-     * @brief Construct a square matrix with the given size and the specified distribution.
+     * @brief Constructs a square matrix with the given size and the specified distribution.
      *
      * @param[in] distribution      specifies how the rows of the matrix are distributed among
      *                              the available partitions.
@@ -115,7 +115,7 @@ public:
     Matrix( DistributionPtr distribution );
 
     /**
-     * @brief Construct a square matrix with a replicated distribution.
+     * @brief Constructs a square matrix with a replicated distribution.
      *
      * @param[in] size              is the number of rows
      *
@@ -124,7 +124,7 @@ public:
     explicit Matrix( const IndexType size );
 
     /**
-     * @brief Default constructor creates a replicated matrix of size 0 x 0.
+     * @brief Default constructor, creates a replicated matrix of size 0 x 0.
      */
     Matrix();
 
@@ -145,9 +145,9 @@ public:
     Matrix( const Matrix& other, DistributionPtr rowDistribution, DistributionPtr colDistribution );
 
     /**
-     * @brief Copy a matrix to a new matrix with the same distribution.
+     * @brief Copies a matrix to a new matrix with the same distribution.
      *
-     * @param[in] other the matrix to take a copy from
+     * @param[in] other  the matrix to take a copy from
      *
      */
     Matrix( const Matrix& other );
@@ -158,7 +158,7 @@ public:
     virtual ~Matrix();
 
     /**
-     * @brief This method checks for a given matrix whether the content of its data is sound
+     * @brief Checks for a given matrix whether the content of its data is sound.
      *
      * @return false if any of the internal data structures is not okay
      *
@@ -193,7 +193,7 @@ public:
     std::auto_ptr<_LAMAArray> createArray() const;
 
     /**
-     * @brief Clear the full matrix, resets global and local sizes to 0.
+     * @brief Clears the full matrix, resets global and local sizes to 0.
      *
      * \code
      *     CSRSparseMatrix<double> a ( ... )
@@ -204,7 +204,7 @@ public:
      */
     virtual void clear() = 0;
 
-    /** @brief Reallocate this matrix to a replicated zero-matrix of the given shape.
+    /** @brief Reallocates this matrix to a replicated zero-matrix of the given shape.
      *
      * @param[in] numRows      number of rows, must be non-negative.
      * @param[in] numColumns   number of columns, must be non-negative.
@@ -214,7 +214,7 @@ public:
      */
     virtual void allocate( const IndexType numRows, const IndexType numColumns ) = 0;
 
-    /** @brief Reallocate this matrix to a distributed zero-matrix by the given distributions.
+    /** @brief Reallocates this matrix to a distributed zero-matrix by the given distributions.
      *
      *  @param[in] rowDistribution is row distribution, number of rows given by getGlobalSize()
      *  @param[in] colDistribution is col distribution, number of columns given by getGlobalSize()
@@ -267,7 +267,7 @@ public:
      */
     virtual void assign( const _MatrixStorage& storage, DistributionPtr rowDist, DistributionPtr colDist ) = 0;
 
-    /** @brief Get the local part (no splitted columns) of a matrix as if the distribution of columns is replicated.
+    /** @brief Gets the local part (no splitted columns) of a matrix as if the distribution of columns is replicated.
      *
      *  @param[out] storage  will contain the local part of the matrix with all columns.
      *
@@ -346,7 +346,7 @@ public:
     Scalar operator()( IndexType i, IndexType j ) const;
 
     /**
-     * @brief returns a copy of the value at the passed global indexes.
+     * @brief Returns a copy of the value at the passed global indexes.
      *
      * @param[in] i   the global row index
      * @param[in] j   the global column index
@@ -372,7 +372,7 @@ public:
      */
     inline IndexType getNumColumns() const;
 
-    /** @brief Get the total number of non-zero values in the matrix.
+    /** @brief Gets the total number of non-zero values in the matrix.
      *
      *  An element is considered to be non-zero if its absolute value
      *  is greater equal than mEpsilon. Zero diagonal elements are also
@@ -393,7 +393,7 @@ public:
     double getSparsityRate() const;
 
     /**
-     * @brief matrixTimesVector computes result = alpha * this * x + beta * y
+     * @brief Computes result = alpha * this * x + beta * y.
      *
      * @param[out]  result  the Vector to store the result to
      * @param[in]   alpha   the Scalar alpha of the expression
@@ -401,7 +401,7 @@ public:
      * @param[in]   beta    the Scalar beta of the expression
      * @param[in]   y       the Vector y of the expression
      *
-     * matrixTimesVector computes result = alpha * this * x + beta * y. If
+     * This method computes result = alpha * this * x + beta * y. If
      * result == x or result == y new storage is allocated to store the result.
      */
     virtual void matrixTimesVector(
@@ -412,17 +412,15 @@ public:
         const Vector& y ) const = 0;
 
     /**
-     * @brief matrixTimesScalar computes this = alpha * other
+     * @brief Computes this = alpha * other.
      *
      * @param[out]  other   the Matrix to multiply
      * @param[in]   alpha   the Scalar of the expression
-     *
-     * matrixTimesScalar computes this = alpha * other.
      */
     virtual void matrixTimesScalar( const Matrix& other, const Scalar alpha ) = 0;
 
     /**
-     * @brief matrixPlusMatrix computes this = alpha * A + beta * B
+     * @brief Computes this = alpha * A + beta * B.
      *
      * @param[in]   alpha   the Scalar alpha of the expression
      * @param[in]   A       the Matrix A of the expression
@@ -432,15 +430,13 @@ public:
     virtual void matrixPlusMatrix( const Scalar alpha, const Matrix& A, const Scalar beta, const Matrix& B ) = 0;
 
     /**
-     * @brief matrixTimesMatrix computes result = alpha * this * B + beta * C
+     * @brief Computes result = alpha * this * B + beta * C.
      *
      * @param[out]  result  the Matrix to store the result to
      * @param[in]   alpha   the Scalar alpha of the expression
      * @param[in]   B       the Matrix B of the expression
      * @param[in]   beta    the Scalar beta of the expression
      * @param[in]   C       the Matrix C of the expression
-     *
-     * matrixTimesMatrix computes result = alpha * this * x + beta * y.
      */
     virtual void matrixTimesMatrix(
         Matrix& result,
@@ -450,7 +446,7 @@ public:
         const Matrix& C ) const = 0;
 
     /**
-     * @brief transformation from matrix type to a csr graph.
+     * @brief Transformation from matrix type to a csr graph.
      *
      * transformation from matrix type to a csr graph,
      * so that it (Par)Metis can work with it.
@@ -470,34 +466,34 @@ public:
         const IndexType* globalRowIndices = NULL,
         IndexType* vtxdist = NULL ) const;
 
-    /** Getter routine for the local number of stored values */
+    /** Getter routine for the local number of stored values. */
 
     virtual IndexType getLocalNumValues() const = 0;
 
-    /** Getter routine for the local number of rows */
+    /** Getter routine for the local number of rows. */
 
     virtual IndexType getLocalNumRows() const = 0;
 
-    /** Getter routine for the local number of columns */
+    /** Getter routine for the local number of columns. */
 
     virtual IndexType getLocalNumColumns() const = 0;
 
     /**
-     * @brief gets a constant reference to the column distribution.
+     * @brief Gets a constant reference to the column distribution.
      *
      * @return a constant reference to the column distribution.
      */
     inline const Distribution& getColDistribution() const;
 
     /**
-     * @brief gets a pointer to the column distribution.
+     * @brief Gets a pointer to the column distribution.
      *
      * @return a pointer to the column distribution.
      */
     inline DistributionPtr getColDistributionPtr() const;
 
     /**
-     * @brief specifies on which compute back end the matrix operations should take place.
+     * @brief Specifies on which compute back end the matrix operations should take place.
      *
      * @param[in] context  the compute back to use for calculations with matrix
      *
@@ -569,7 +565,7 @@ public:
     void setCommunicationKind( SyncKind communicationKind );
 
     /**
-     * @brief Inherit context and kind arguments from another matrix.
+     * @brief Inherits context and kind arguments from another matrix.
      *
      * @param[in] other   is the input matrix.
      *
@@ -579,12 +575,12 @@ public:
     void inheritAttributes( const Matrix& other );
 
     /**
-     * @brief Prefetch matrix data to its 'preferred' context location.
+     * @brief Prefetches matrix data to its 'preferred' context location.
      */
     virtual void prefetch() const = 0;
 
     /**
-     * @brief Wait for a possibly running prefetch.
+     * @brief Waits for a possibly running prefetch.
      */
     virtual void wait() const = 0;
 
@@ -636,7 +632,7 @@ public:
     Matrix& operator=( const Expression<Expression<Scalar,Matrix,Times>,Expression<Scalar,Matrix,Times>,Plus> exp );
 
     /**
-     * @brief Compute the inverse of a matrix.
+     * @brief Computes the inverse of a matrix.
      *
      * @param[in] other   another matrix with the same shape as this matrix
      *
@@ -743,7 +739,7 @@ public:
     virtual std::auto_ptr<Matrix> copy() const = 0;
 
     /**
-     * @brief Query the value type of the matrix elements, e.g. DOUBLE or FLOAT.
+     * @brief Queries the value type of the matrix elements, e.g. DOUBLE or FLOAT.
      */
     virtual Scalar::ScalarType getValueType() const = 0;
 

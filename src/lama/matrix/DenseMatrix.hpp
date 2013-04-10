@@ -33,15 +33,20 @@
 #ifndef LAMA_DENSEMATRIX_HPP_
 #define LAMA_DENSEMATRIX_HPP_
 
-#include <boost/lexical_cast.hpp>
-#include <boost/shared_ptr.hpp>
-
+// for dll_import
 #include <lama/config.hpp>
 
+// base classes
 #include <lama/matrix/CRTPMatrix.hpp>
+
+//others
 #include <lama/matrix/SparseMatrix.hpp>
 
 #include <lama/storage/DenseStorage.hpp>
+
+//boost
+#include <boost/lexical_cast.hpp>
+#include <boost/shared_ptr.hpp>
 
 namespace lama
 {
@@ -78,26 +83,36 @@ public:
 
     DenseMatrix();
 
-    /** Constructor of a replicated dense matrix. */
-
+    /** Constructor of a replicated dense matrix.
+     *
+     * @param[in] numRows      number of rows, must be non-negative.
+     * @param[in] numColumns   number of columns, must be non-negative.
+     */
     DenseMatrix( const IndexType numRows, const IndexType numColumns );
 
-    /** Constructor of a distributed dense matrix. */
-
+    /**
+     * Constructor of a distributed dense matrix.
+     *
+     * @param[in] rowDist   TODO[doxy] Complete Description.
+     * @param[in] colDist   TODO[doxy] Complete Description.
+     */
     DenseMatrix( DistributionPtr rowDist, DistributionPtr colDist );
 
-    /** Construct a square unity matrix. */
-
+    /**
+     * Constructor of a square unity matrix.
+     *
+     * @param[in] dist   TODO[doxy] Complete Description.
+     */
     explicit DenseMatrix( DistributionPtr dist );
 
-    /** Overwrite default copy constructor so it uses other copy constructor.
+    /** Overwrites default copy constructor so it uses other copy constructor.
      *
      *  Note: Default copy constructor would not make deep copies of the
      *        storages, so it must be overridden
      */
     DenseMatrix( const DenseMatrix<ValueType>& other );
 
-    /** Construct a dense matrix from any other matrix that can be of a different type.
+    /** Constructs a dense matrix from any other matrix that can be of a different type.
      *
      *  @param[in] other   input matrix.
      *
@@ -105,7 +120,7 @@ public:
      */
     DenseMatrix( const Matrix& other );
 
-    /** Construct a dense matrix from any other matrix with new distributions.
+    /** Constructs a dense matrix from any other matrix with new distributions.
      *
      *  @param[in] other             input matrix.
      *  @param[in] rowDistribution   TODO[doxy] Complete Description.
@@ -125,7 +140,7 @@ public:
      */
     DenseMatrix( const Matrix& other, DistributionPtr rowDistribution, DistributionPtr colDistribution );
 
-    /** Construct a dense matrix from another dense matrix with new distributions.
+    /** Constructs a dense matrix from another dense matrix with new distributions.
      *
      *  @param[in] matrix            input matrix.
      *  @param[in] rowDistribution   TODO[doxy] Complete Description.
@@ -149,7 +164,7 @@ public:
     DenseMatrix( const _MatrixStorage& localData, DistributionPtr rowDist, DistributionPtr colDist );
 
     /**
-     * @brief Creates a replicated dense matrix from the passed csr sparse matrix
+     * Constructor of a replicated dense matrix from the passed csr sparse matrix.
      *
      * @param[in] numRows       the number of rows of the matrix
      * @param[in] numColumns    the number of columns of the matrix
@@ -168,7 +183,7 @@ public:
         const OtherValueType* const values );
 
     /**
-     * @brief TODO[doxy] Complete Description.
+     * TODO[doxy] Complete Description.
      *
      * @param[in] expression   TODO[doxy] Complete Description.
      */
@@ -176,21 +191,21 @@ public:
         const Expression<Expression<Scalar,Expression<Matrix,Matrix,Times>,Times>,Expression<Scalar,Matrix,Times>,Plus> expression );
 
     /**
-     * @brief TODO[doxy] Complete Description.
+     * TODO[doxy] Complete Description.
      *
      * @param[in] expression   TODO[doxy] Complete Description.
      */
     DenseMatrix( const Expression<Matrix,Matrix,Times> expression );
 
     /**
-     * @brief TODO[doxy] Complete Description.
+     * TODO[doxy] Complete Description.
      *
      * @param[in] expression   TODO[doxy] Complete Description.
      */
     DenseMatrix( const Expression<Scalar,Expression<Matrix,Matrix,Times>,Times> expression );
 
     /**
-     * @brief TODO[doxy] Complete Description.
+     * TODO[doxy] Complete Description.
      *
      * @param[in] expression   TODO[doxy] Complete Description.
      */
@@ -199,6 +214,8 @@ public:
     /** Constructor of a replicated dense matrix by reading the matrix
      *  data from a file.
      *
+     *  @param[in] filename   TODO[doxy] Complete Description.
+
      *  Next releases will also support distributed/parallel I/O. In the
      *  meantime this constructor should be used with a following call of
      *  the redistribute method.
@@ -206,7 +223,7 @@ public:
     DenseMatrix( const std::string& filename );
 
     /**
-     * @brief Releases all allocated resources.
+     * Destructor, releases all allocated resources.
      */
     virtual ~DenseMatrix();
 
@@ -214,11 +231,11 @@ public:
 
     virtual bool isConsistent() const;
 
-    /** Override the default assignment operator to guarantee deep copy. */
+    /** Overrides the default assignment operator to guarantee deep copy. */
 
     DenseMatrix& operator=( const DenseMatrix& matrix );
 
-    /** Redefine assignment operator to get the correct return value; implementation is same as for base classes. */
+    /** Redefines assignment operator to get the correct return value; implementation is same as for base classes. */
 
     DenseMatrix& operator=( const Matrix& matrix );
 
