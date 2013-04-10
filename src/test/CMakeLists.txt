@@ -82,6 +82,7 @@ set ( SOURCE_FILES
         L1NormTest
         L2NormTest
         LAMAArrayTest
+        LAPACKTest
         MatrixStorageConversionTest
         MatrixTest
         MaxNormTest
