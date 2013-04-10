@@ -185,6 +185,10 @@ namespace lama
 
 LAMA_LOG_DEF_LOGGER( OpenMPLAPACK::logger, "OpenMP.LAPACK" )
 
+/* ------------------------------------------------------------------------- */
+/*      getrf<float>                                                         */
+/* ------------------------------------------------------------------------- */
+
 template<>
 IndexType OpenMPLAPACK::getrf(
     const enum CBLAS_ORDER order,
@@ -200,7 +204,7 @@ IndexType OpenMPLAPACK::getrf(
 
 #ifdef LAMA_HAVE_MKL
 
-    LAMA_LOG_INFO( logger, "will use MKL routine" )
+    LAMA_LOG_DEBUG( logger, "will use MKL routine" )
 
     if ( order == CblasColMajor )
     {
@@ -208,12 +212,11 @@ IndexType OpenMPLAPACK::getrf(
     }
     else
     {
-//        printf( "Calling LAPACKE_sgetrf( %d, %d, %d, %f, %d, %d )\n,", LAPACK_COL_MAJOR, m, n, A[0], lda, ipiv[0] );
         info = LAPACKE_sgetrf( LAPACK_ROW_MAJOR, m, n, A, lda, ipiv );
     }
 
-#else //LAMA_HAVE_MKL
-    int i = 0;
+#else // LAMA_HAVE_MKL
+
 #ifdef F77_INT
     F77_INT F77_M = M, F77_N = N, F77_lda = lda, F77_info = info;
 #else
@@ -227,43 +230,38 @@ IndexType OpenMPLAPACK::getrf(
     {
         F77_sgetrf( &F77_M, &F77_N, A, &F77_lda, ipiv, &F77_info );
     }
-    else
+    else if ( m == n && n == lda )
     {
-        if ( m == n && n == lda )
+        for ( int i = 0; i < m; ++i )
         {
-            float tmp = 0.0f;
-
-            for ( i = 0; i < m; ++i )
+            for ( int j = i + 1; j < n; ++j )
             {
-                int j = 0;
-
-                // swap row and column
-                for ( j = i + 1; j < n; ++j )
-                {
-                    tmp = A[i * n + j];
-                    A[i * n + j] = A[j * m + i];
-                    A[j + m + i] = tmp;
-                }
+                std::swap( A[i * n + j], A[j * m + i] );
             }
-        }
-        else
-        {
-            //TODO: Transpose non-square or blocked intput matrix
-            return -1 * ( m + n + lda );
         }
 
         F77_sgetrf( &F77_M, &F77_N, A, &F77_lda, ipiv, &F77_info );
+
+        for ( int i = 0; i < m; ++i )
+        {
+            for ( int j = i + 1; j < n; ++j )
+            {
+                std::swap( A[i * n + j], A[j * m + i] );
+            }
+        }
     }
-
-    //Fix Fortran Indexes in ipiv array
-    #pragma omp parallel for
-
-    for ( i = 0; i < m; ++i )
+    else
     {
-        --ipiv[i];
+        LAMA_THROWEXCEPTION( "row major only supported for square matrices" );
     }
 
-#endif //LAMA_HAVE_MKL
+    for ( int i = 0; i < m; ++i )
+    {
+        --ipiv[i];   // Fortran numbering from 1 to n ->  0 to n-1
+    }
+
+#endif // LAMA_HAVE_MKL
+
     if ( info < 0 )
     {
         LAMA_THROWEXCEPTION( "illegal argument " << ( -info ) )
@@ -276,6 +274,10 @@ IndexType OpenMPLAPACK::getrf(
     return info;
 }
 
+/* ------------------------------------------------------------------------- */
+/*      getrf<double>                                                        */
+/* ------------------------------------------------------------------------- */
+
 template<>
 IndexType OpenMPLAPACK::getrf(
     const enum CBLAS_ORDER order,
@@ -285,8 +287,13 @@ IndexType OpenMPLAPACK::getrf(
     const int lda,
     int* const ipiv )
 {
+    LAMA_LOG_INFO( logger, "getrf<double> for A of size " << m << " x " << n )
+
     int info = 0;
+
 #ifdef LAMA_HAVE_MKL
+
+    LAMA_LOG_DEBUG( logger, "will use MKL routine" )
 
     if ( order == CblasColMajor )
     {
@@ -297,8 +304,8 @@ IndexType OpenMPLAPACK::getrf(
         info = LAPACKE_dgetrf( LAPACK_ROW_MAJOR, m, n, A, lda, ipiv );
     }
 
-#else //LAMA_HAVE_MKL
-    int i = 0;
+#else // LAMA_HAVE_MKL
+
 #ifdef F77_INT
     F77_INT F77_M = M, F77_N = N, F77_lda = lda, F77_info = info;
 #else
@@ -312,24 +319,53 @@ IndexType OpenMPLAPACK::getrf(
     {
         F77_dgetrf( &F77_M, &F77_N, A, &F77_lda, ipiv, &F77_info );
     }
+    else if ( m == n && n == lda )
+    {
+        for ( int i = 0; i < m; ++i )
+        {
+            for ( int j = i + 1; j < n; ++j )
+            {
+                std::swap( A[i * n + j], A[j * m + i] );
+            }
+        }
+
+        F77_dgetrf( &F77_M, &F77_N, A, &F77_lda, ipiv, &F77_info );
+
+        for ( int i = 0; i < m; ++i )
+        {
+            for ( int j = i + 1; j < n; ++j )
+            {
+                std::swap( A[i * n + j], A[j * m + i] );
+            }
+        }
+    }
     else
     {
-        //TODO: Transpose intput matrix
-        return -1 * ( m + n + lda );
-        //F77_dgetrf( &F77_M, &F77_N, A, &F77_lda, ipiv, &F77_info );
+        LAMA_THROWEXCEPTION( "row major only supported for square matrices" );
     }
 
-    #pragma omp parallel for
-
-    //Fix Fortran Indexes in ipiv array
-    for ( i = 0; i < m; ++i )
+    for ( int i = 0; i < m; ++i )
     {
-        --ipiv[i];
+        --ipiv[i];   // Fortran numbering from 1 to n ->  0 to n-1
     }
 
-#endif //LAMA_HAVE_MKL
+#endif // LAMA_HAVE_MKL
+
+    if ( info < 0 )
+    {
+        LAMA_THROWEXCEPTION( "illegal argument " << ( -info ) )
+    }
+    else if ( info > 0 )
+    {
+        LAMA_THROWEXCEPTION( "value(" << info << "," << info << ")" << " is exactly zero" )
+    }
+
     return info;
 }
+
+/* ------------------------------------------------------------------------- */
+/*      getinv<float>                                                        */
+/* ------------------------------------------------------------------------- */
 
 template<>
 void OpenMPLAPACK::getinv( const IndexType n, float* a, const IndexType lda )
@@ -390,6 +426,10 @@ void OpenMPLAPACK::getinv( const IndexType n, float* a, const IndexType lda )
 #endif // LAMA_HAVE_MKL
 }
 
+/* ------------------------------------------------------------------------- */
+/*      getinv<double>                                                       */
+/* ------------------------------------------------------------------------- */
+
 template<>
 void OpenMPLAPACK::getinv( const IndexType n, double* a, const IndexType lda )
 {
@@ -448,6 +488,8 @@ void OpenMPLAPACK::getinv( const IndexType n, double* a, const IndexType lda )
 }
 
 /* ------------------------------------------------------------------------- */
+/*      getri<float>                                                         */
+/* ------------------------------------------------------------------------- */
 
 template<>
 int OpenMPLAPACK::getri(
@@ -480,8 +522,6 @@ int OpenMPLAPACK::getri(
 
     // translate C indexes into  Fortran Indexes for ipiv
 
-    #pragma omp parallel for
-    
     for ( int i = 0; i < n; ++i )
     {
         ++ipiv[i];
@@ -491,7 +531,6 @@ int OpenMPLAPACK::getri(
 
     if ( order != CblasColMajor )
     {
-
         LAMA_ASSERT_EQUAL_ERROR( lda, n )
 
         for ( int i = 0; i < n; ++i )
@@ -518,6 +557,19 @@ int OpenMPLAPACK::getri(
 
     F77_sgetri( &F77_N, a, &F77_lda, ipiv, work.get(), &F77_N, &F77_info );
 
+    if ( order != CblasColMajor )
+    {
+        // transpose back 
+
+        for ( int i = 0; i < n; ++i )
+        {
+            for ( int j = i + 1; j < n; ++j )
+            {
+                std::swap( a[ i * n + j], a[ j * n + i ] );
+            }
+        }
+    }
+
 #endif // LAMA_HAVE_MKL
 
     if ( info < 0 )
@@ -532,6 +584,8 @@ int OpenMPLAPACK::getri(
     return info;
 }
 
+/* ------------------------------------------------------------------------- */
+/*      getri<double>                                                        */
 /* ------------------------------------------------------------------------- */
 
 template<>
@@ -565,8 +619,6 @@ int OpenMPLAPACK::getri(
 
     // translate C indexes into  Fortran Indexes for ipiv
 
-    #pragma omp parallel for
-    
     for ( int i = 0; i < n; ++i )
     {
         ++ipiv[i];
@@ -576,7 +628,6 @@ int OpenMPLAPACK::getri(
 
     if ( order != CblasColMajor )
     {
-
         LAMA_ASSERT_EQUAL_ERROR( lda, n )
 
         for ( int i = 0; i < n; ++i )
@@ -602,6 +653,19 @@ int OpenMPLAPACK::getri(
     boost::scoped_array<double> work( new double[n] );
 
     F77_dgetri( &F77_N, a, &F77_lda, ipiv, work.get(), &F77_N, &F77_info );
+
+    if ( order != CblasColMajor )
+    {
+        // transpose back 
+
+        for ( int i = 0; i < n; ++i )
+        {
+            for ( int j = i + 1; j < n; ++j )
+            {
+                std::swap( a[ i * n + j], a[ j * n + i ] );
+            }
+        }
+    }
 
 #endif // LAMA_HAVE_MKL
 
