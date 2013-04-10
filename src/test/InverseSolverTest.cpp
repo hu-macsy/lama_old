@@ -128,12 +128,13 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( InverseTest2, T, test_types ) {
     std::string s = "DataType";
     InverseSolver inverseSolver( "InverseSolverTest<" + s + "> solver" );
 
-    DenseMatrix<ValueType> inverse = DenseMatrix<ValueType>( system.coefficients );
+    // DenseMatrix<ValueType> inverse = DenseMatrix<ValueType>( system.coefficients );
     DenseMatrix<ValueType> origin = DenseMatrix<ValueType>( system.coefficients );
     DenseMatrix<ValueType> result = DenseMatrix<ValueType>( system.coefficients );
 
     inverseSolver.initialize( origin );
-    inverseSolver.computeInverse( inverse );
+
+    const Matrix& inverse = inverseSolver.getInverse();
 
     origin.matrixTimesMatrix( result, 1.0, inverse, 0.0, result );
 

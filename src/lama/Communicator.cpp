@@ -312,14 +312,14 @@ auto_ptr<SyncToken> Communicator::defaultShiftAsync(
     // This default implementation uses synchronous shift and returns a NoSyncToken.
 
     IndexType recvSize = -1;
-    recvSize = shift( targetVals, size, sourceVals, size, direction );
+    recvSize = shiftImpl( targetVals, size, sourceVals, size, direction );
 
     LAMA_ASSERT_ERROR( recvSize == size, "asynchronous shift with different sizes on partitions" )
 
     return auto_ptr<SyncToken>( new NoSyncToken() );
 }
 
-std::auto_ptr<SyncToken> Communicator::shiftAsync(
+std::auto_ptr<SyncToken> Communicator::shiftAsyncImpl(
     double newVals[],
     const double oldVals[],
     const IndexType size,
@@ -328,7 +328,7 @@ std::auto_ptr<SyncToken> Communicator::shiftAsync(
     return defaultShiftAsync( newVals, oldVals, size, direction );
 }
 
-std::auto_ptr<SyncToken> Communicator::shiftAsync(
+std::auto_ptr<SyncToken> Communicator::shiftAsyncImpl(
     float newVals[],
     const float oldVals[],
     const IndexType size,
@@ -337,7 +337,7 @@ std::auto_ptr<SyncToken> Communicator::shiftAsync(
     return defaultShiftAsync( newVals, oldVals, size, direction );
 }
 
-std::auto_ptr<SyncToken> Communicator::shiftAsync(
+std::auto_ptr<SyncToken> Communicator::shiftAsyncImpl(
     int newVals[],
     const int oldVals[],
     const IndexType size,
@@ -368,7 +368,7 @@ IndexType Communicator::shift0(
 /* -------------------------------------------------------------------------- */
 
 template<typename T>
-void Communicator::shift( LAMAArray<T>& recvArray, const LAMAArray<T>& sendArray, const int direction ) const
+void Communicator::shiftArray( LAMAArray<T>& recvArray, const LAMAArray<T>& sendArray, const int direction ) const
 {
     LAMA_ASSERT_ERROR( &recvArray != &sendArray, "send and receive array are same, not allowed for shift" )
 
@@ -393,7 +393,7 @@ void Communicator::shift( LAMAArray<T>& recvArray, const LAMAArray<T>& sendArray
 
     // For shifting of data we use the pure virtual methods implemened by each communicator
 
-    IndexType numRecvElems = shift( recvData.get(), maxNumRecvElems, sendData.get(), numSendElems, direction );
+    IndexType numRecvElems = shiftImpl( recvData.get(), maxNumRecvElems, sendData.get(), numSendElems, direction );
 
     LAMA_LOG_INFO( logger,
                    "shift, direction = " << direction << ", sent " << numSendElems << ", recvd " << numRecvElems << "( max was " << maxNumRecvElems << ")" )
@@ -423,7 +423,7 @@ auto_ptr<SyncToken> Communicator::shiftAsync(
     // For shifting of data we use the pure virtual methods implemened by each communicator
     // Note: get is the method of the accesses and not of the auto_ptr
 
-    auto_ptr<SyncToken> syncToken = shiftAsync( recvData->get(), sendData->get(), numElems, direction );
+    auto_ptr<SyncToken> syncToken = shiftAsyncImpl( recvData->get(), sendData->get(), numElems, direction );
 
     LAMA_ASSERT_DEBUG( syncToken.get(), "NULL pointer for sync token" )
 
@@ -609,7 +609,7 @@ void Communicator::computeOwners(
 
         // --->   Pure method call
 
-        currentSize = shift( indexesReceive.get(), receiveSize, indexesSend.get(), currentSize, direction );
+        currentSize = shiftImpl( indexesReceive.get(), receiveSize, indexesSend.get(), currentSize, direction );
 
         LAMA_ASSERT_ERROR( ownersSize == -1 || currentSize == ownersSize, "Communication corrupted." )
 
@@ -644,7 +644,7 @@ void Communicator::computeOwners(
         }
 
         // --->   Pure method call
-        ownersSize = shift( ownersReceive.get(), receiveSize, ownersSend.get(), currentSize, direction );
+        ownersSize = shiftImpl( ownersReceive.get(), receiveSize, ownersSend.get(), currentSize, direction );
 
         LAMA_LOG_DEBUG( logger, *this << ": recvd array with " << ownersSize << " owners from left" )
         for ( int i = 0; i < ownersSize; i++ )
@@ -708,13 +708,13 @@ IndexType Communicator::shift0(
     const IndexType sourceSize ) const;
 
 template LAMA_DLL_IMPORTEXPORT
-void Communicator::shift( LAMAArray<float>& recvArray, const LAMAArray<float>& sendArray, const int direction ) const;
+void Communicator::shiftArray( LAMAArray<float>& recvArray, const LAMAArray<float>& sendArray, const int direction ) const;
 
 template LAMA_DLL_IMPORTEXPORT
-void Communicator::shift( LAMAArray<double>& recvArray, const LAMAArray<double>& sendArray, const int direction ) const;
+void Communicator::shiftArray( LAMAArray<double>& recvArray, const LAMAArray<double>& sendArray, const int direction ) const;
 
 template LAMA_DLL_IMPORTEXPORT
-void Communicator::shift( LAMAArray<int>& recvArray, const LAMAArray<int>& sendArray, const int direction ) const;
+void Communicator::shiftArray( LAMAArray<int>& recvArray, const LAMAArray<int>& sendArray, const int direction ) const;
 
 template LAMA_DLL_IMPORTEXPORT
 auto_ptr<SyncToken> Communicator::defaultShiftAsync(

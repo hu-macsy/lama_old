@@ -1633,7 +1633,7 @@ void DenseMatrix<ValueType>::matrixTimesVectorImpl(
 
         LAMA_LOG_INFO( logger, comm << ": synchronous communication" )
 
-        comm.shift( *recvValues, *sendValues, 1 );
+        comm.shiftArray( *recvValues, *sendValues, 1 );
 
         // For the synchronous shift we have no problems regarding the correct sizes
 
@@ -1646,7 +1646,7 @@ void DenseMatrix<ValueType>::matrixTimesVectorImpl(
         for ( PartitionId p = 1; p < n; ++p )
         {
             PartitionId actualPartition = comm.getNeighbor( -p );
-            comm.shift( *recvValues, *sendValues, 1 );
+            comm.shiftArray( *recvValues, *sendValues, 1 );
             LAMA_LOG_DEBUG( logger,
                             comm << ": send " << *sendValues << ", recv " << *recvValues << ", actual = " << actualPartition )
             mData[actualPartition]->matrixTimesVector( localResult, alphaValue, *sendValues, one, localResult );

@@ -311,8 +311,8 @@ public:
 
     /** @brief Shift on LAMA arrays.
      *
-     *  @tparam     T           TODO[doxy] Complete Description.
-     *  @param[out] recv        array to receive for this partition
+     *  @tparam     T           type of data to be shifted       
+     *  @param[out] recv        array to receive  this partition
      *  @param[in]  send        array to send from this partition
      *  @param[in]  direction   number of positions to shift, e.g. 1 or -1
      *
@@ -320,7 +320,7 @@ public:
      *        receive all the data.
      */
     template<typename T>
-    void shift( LAMAArray<T>& recv, const LAMAArray<T>& send, const int direction ) const;
+    void shiftArray( LAMAArray<T>& recv, const LAMAArray<T>& send, const int direction ) const;
 
     /** @brief Asychronous shift on LAMA arrays.
      *
@@ -451,28 +451,20 @@ public:
      *  Each partition sends to rank() + direction and receives from rank() - direction.
      *
      */
-    virtual IndexType shift(
-        double newVals[],
-        const IndexType newSize,
-        const double oldVals[],
-        const IndexType oldSize,
-        const int direction ) const = 0;
-
-    virtual IndexType shift(
-        float newVals[],
-        const IndexType newSize,
-        const float oldVals[],
-        const IndexType oldSize,
-        const int direction ) const = 0;
-
-    virtual IndexType shift(
-        int newVals[],
-        const IndexType newSize,
-        const int oldVals[],
-        const IndexType oldSize,
-        const int direction ) const = 0;
-
+    template <typename T>
+    IndexType shiftData( T newVals[], const IndexType newSize,
+                         const T oldVals[], const IndexType oldSize,
+                         const int direction ) const
+    {
+        return shiftImpl( newVals, newSize, oldVals, oldSize, direction );
+    }
+ 
     /** @brief Asynchronous version of shift.
+     *
+     *  @param[out] newVals  array with data this partition get from neighbored partition
+     *  @param[in]  oldVals  array with data this partition sends to neighbored partition
+     *  @param[in]  size  number of elements of array oldVals to be sent andd newVals to receive
+     *  @param[in]  direction specifies the neighbored partitions to send and receive
      *
      *  As there is no information about the received size this routine can only be called for
      *  arrays that have the same size on all partitions.
@@ -480,23 +472,18 @@ public:
      *  A default implementation is provided that returns a NoSyncToken. Derived classes
      *  should override this method if there is a benefit of using asynchronous transfers.
      */
-    virtual std::auto_ptr<SyncToken> shiftAsync(
-        double newVals[],
-        const double oldVals[],
-        const IndexType size,
-        const int direction ) const;
 
-    virtual std::auto_ptr<SyncToken> shiftAsync(
-        float newVals[],
-        const float oldVals[],
+    template <typename T>
+    std::auto_ptr<SyncToken> shiftDataAsync(
+        T newVals[],
+        const T oldVals[],
         const IndexType size,
-        const int direction ) const;
+        const int direction ) const
+    {
+        // call virtual implementation routine 
 
-    virtual std::auto_ptr<SyncToken> shiftAsync(
-        int newVals[],
-        const int oldVals[],
-        const IndexType size,
-        const int direction ) const;
+        return shiftAsyncImpl( newVals, oldVals, size, direction );
+    }
 
     /** @brief Sum operations sum up one single value from each partition to a global value.
      *
@@ -593,6 +580,56 @@ protected:
      */
     virtual ContextPtr getCommunicationContext() const = 0;
 
+    /** Implemenation of shiftData for double, must be provided by derived classes. */
+
+    virtual IndexType shiftImpl(
+        double newVals[],
+        const IndexType newSize,
+        const double oldVals[],
+        const IndexType oldSize,
+        const int direction ) const = 0;
+
+    /** Implemenation of shiftData for float, must be provided by derived classes. */
+
+    virtual IndexType shiftImpl(
+        float newVals[],
+        const IndexType newSize,
+        const float oldVals[],
+        const IndexType oldSize,
+        const int direction ) const = 0;
+
+    /** Implemenation of shiftData for int, must be provided by derived classes. */
+
+    virtual IndexType shiftImpl(
+        int newVals[],
+        const IndexType newSize,
+        const int oldVals[],
+        const IndexType oldSize,
+        const int direction ) const = 0;
+
+    /** Implemenation of shiftDataAsync for int, can be overriden by derived classes. */
+
+    virtual std::auto_ptr<SyncToken> shiftAsyncImpl(
+        double newVals[],
+        const double oldVals[],
+        const IndexType size,
+        const int direction ) const;
+
+    /** Implemenation of shiftDataAsync for float, can be overriden by derived classes. */
+
+    virtual std::auto_ptr<SyncToken> shiftAsyncImpl(
+        float newVals[],
+        const float oldVals[],
+        const IndexType size,
+        const int direction ) const;
+
+    /** Implemenation of shiftDataAsync for double, can be overriden by derived classes. */
+
+    virtual std::auto_ptr<SyncToken> shiftAsyncImpl(
+        int newVals[],
+        const int oldVals[],
+        const IndexType size,
+        const int direction ) const;
 };
 
 typedef boost::shared_ptr<const Communicator> CommunicatorPtr;

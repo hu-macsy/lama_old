@@ -85,6 +85,8 @@ InverseSolver::InverseSolverRuntime::~InverseSolverRuntime()
 {
 }
 
+/* --------------------------------------------------------------------------- */
+
 void InverseSolver::initialize( const Matrix& coefficients )
 {
     LAMA_REGION( "Solver.Inverse.intialize" )
@@ -102,6 +104,17 @@ void InverseSolver::initialize( const Matrix& coefficients )
     Solver::initialize( coefficients );
 }
 
+/* --------------------------------------------------------------------------- */
+
+const Matrix& InverseSolver::getInverse() const
+{
+    LAMA_ASSERT_ERROR( getConstRuntime().mInverse, "inverse not available (no call of initialize before)" );
+ 
+    return *getConstRuntime().mInverse;
+}
+
+/* --------------------------------------------------------------------------- */
+
 void InverseSolver::solveImpl()
 {
     LAMA_REGION( "Solver.Inverse.solve" )
@@ -115,114 +128,22 @@ void InverseSolver::solveImpl()
     logEndSolve();
 }
 
+/* --------------------------------------------------------------------------- */
+
 void InverseSolver::setContext( ContextPtr context )
 {
     Solver::setContext( context );
     getRuntime().mInverse->setContext( mContext );
 }
 
-void InverseSolver::computeInverse( Matrix& matrix ) const
-{
-    const IndexType n = matrix.getNumRows();
-    boost::scoped_array<IndexType> permutation( new IndexType[n] );
-
-    if ( typeid( matrix ) == typeid(DenseMatrix<float> ) )
-    {
-        DenseMatrix<float>& inverse = dynamic_cast<DenseMatrix<float>&>( matrix );
-
-        invert( inverse, permutation.get() );
-    }
-    else if ( typeid( matrix ) == typeid(DenseMatrix<double> ) )
-    {
-        DenseMatrix<double>& inverse = dynamic_cast<DenseMatrix<double>&>( matrix );
-
-        invert( inverse, permutation.get() );
-    }
-    else
-    {
-        //TODO: Implement fall back? (Create new Dense, invert new Dense and assign result to passed matrix?)
-        LAMA_THROWEXCEPTION(
-            "Computation of inverse is not supported for " << matrix << " because of a type missmatch (Type is not DenseMatrix)." );
-    }
-}
-
-template<typename T>
-void InverseSolver::decompose( DenseMatrix<T>& matrix, IndexType* const permutation ) const
-{
-    if ( matrix.getNumRows() != matrix.getNumColumns() )
-    {
-        LAMA_THROWEXCEPTION( "Can not decompose the not square matrix " << matrix )
-    }
-    if ( matrix.getDistribution().getNumPartitions() == 1 && matrix.getColDistribution().getNumPartitions() == 1 )
-    {
-        DenseStorage<T>& denseStorage = matrix.getLocalStorage();
-
-        HostWriteAccess<T> denseValues( denseStorage.getData(), true );
-
-        int error = lama_GETRF_cpu( CblasRowMajor, denseStorage.getNumRows(), denseStorage.getNumColumns(),
-                                    denseValues.get(), denseStorage.getNumColumns(), &permutation[0] );
-        if ( error != 0 )
-        {
-            LAMA_THROWEXCEPTION( "lama_GETRF_cpu failed" )
-        }
-    }
-    else
-    {
-        LAMA_THROWEXCEPTION( "Decomposition is not supported, because " << matrix << " is distributed." )
-    }
-}
-
-template<typename T>
-void InverseSolver::invert( DenseMatrix<T>& matrix, IndexType* const permutation ) const
-{
-    LAMA_REGION( "Solver.Inverse.invert" )
-
-    typedef T ValueType;
-
-    ContextPtr context = getCoefficients().getContextPtr();
-
-    if ( matrix.getNumRows() != matrix.getNumColumns() )
-    {
-        LAMA_THROWEXCEPTION( "Can not invert the not square matrix " << matrix )
-    }
-    if ( matrix.getDistribution().getNumPartitions() == 1 && matrix.getColDistribution().getNumPartitions() == 1 )
-    {
-        DenseStorage<T>& denseStorage = matrix.getLocalStorage();
-
-        HostWriteAccess<T> denseValues( denseStorage.getData() );
-
-        LAMA_INTERFACE_FN_T( getrf, context, BLAS, LAPACK, T );
-
-        int error = getrf( CblasRowMajor, denseStorage.getNumRows(),
-                           denseStorage.getNumColumns(), denseValues.get(),
-                           denseStorage.getNumColumns(), &permutation[0] );
-
-        if ( error != 0 )
-        {
-            LAMA_THROWEXCEPTION( "getrf on " << *context << " failed, error = " << error )
-        }
-
-        LAMA_INTERFACE_FN_T( getri, context, BLAS, LAPACK, T );
-
-        error = getri( CblasRowMajor, denseStorage.getNumRows(),
-                       denseValues.get(), denseStorage.getNumColumns(),
-                       &permutation[0] );
-
-        if ( error != 0 )
-        {
-            LAMA_THROWEXCEPTION( "getri on " << *context << " failed, error = " << error )
-        }
-    }
-    else
-    {
-        LAMA_THROWEXCEPTION( "Inversion is not supported, because " << matrix << " is distributed." )
-    }
-}
+/* --------------------------------------------------------------------------- */
 
 void InverseSolver::logStartSolve()
 {
     mLogger->startTimer( "SolutionTimer" );
 }
+
+/* --------------------------------------------------------------------------- */
 
 void InverseSolver::logEndSolve()
 {
@@ -234,15 +155,21 @@ void InverseSolver::logEndSolve()
 
 }
 
+/* --------------------------------------------------------------------------- */
+
 InverseSolver::InverseSolverRuntime& InverseSolver::getRuntime()
 {
     return mInverseSolverRuntime;
 }
 
+/* --------------------------------------------------------------------------- */
+
 const InverseSolver::InverseSolverRuntime& InverseSolver::getConstRuntime() const
 {
     return mInverseSolverRuntime;
 }
+
+/* --------------------------------------------------------------------------- */
 
 SolverPtr InverseSolver::copy()
 {

@@ -26,8 +26,8 @@
  * @endlicense
  *
  * @brief Contains the class InversteSolver.
- * @author Matthias Makulla
- * @date 06.04.2011
+ * @author Thomas Brandes
+ * @date 10.04.2013
  * $Id$
  */
 #ifndef LAMA_INVERSESOLVER_HPP_
@@ -49,7 +49,7 @@ namespace lama
 {
 
 /**
- * @brief Uses matrix inverse to solve the equation system.
+ * @brief Solver class that uses matrix inverse to solve an equation system.
  */
 class LAMA_DLL_IMPORTEXPORT InverseSolver: public Solver
 {
@@ -93,7 +93,12 @@ public:
 
     virtual void setContext( ContextPtr context );
 
-    void computeInverse( Matrix& matrix ) const;
+    /** This method returns the inverse of the coefficient matrix. 
+     *
+     *  This routine must not be called before having called 'initialize'.
+     */
+
+    const Matrix& getInverse() const;
 
     struct InverseSolverRuntime: SolverRuntime
     {
@@ -119,12 +124,6 @@ protected:
     InverseSolverRuntime mInverseSolverRuntime;
 
 private:
-
-    template<typename T>
-    void invert( DenseMatrix<T>& matrix, IndexType* const permutation ) const;
-
-    template<typename T>
-    void decompose( DenseMatrix<T>& matrix, IndexType* const permutation ) const;
 
     void logStartSolve();
     void logEndSolve();
