@@ -48,9 +48,18 @@
 namespace lama
 {
 
+/** @brief Implementation of LAPACK functionality at the LAMAInterface by
+ *         using LAPACKe (C/C++ extensions for LAPACK).
+ *
+ *  The use of these routines is more convenient if LAPACKe is available
+ *  but has the same functionality as OpenMPLAPACK using Fortran calling conventions.
+ */
+
 class OpenMPLAPACKe
 {
 public:
+
+    /** Implementation of BLASInterface::LAPACK::getrf by LAPACKe. */
 
     template<typename T>
     static IndexType getrf(
@@ -61,6 +70,8 @@ public:
         const IndexType lda,
         IndexType* const ipiv );
 
+    /** Implementation of BLASInterface::LAPACK::getri by LAPACKe. */
+
     template<typename T>
     static IndexType getri(
         const enum CBLAS_ORDER order,
@@ -69,23 +80,12 @@ public:
         const IndexType lda,
         IndexType* const ipiv );
 
-    /** Implementation of LAPACKInterface::getinv vi LAPACKe. */
+    /** Implementation of BLASInterface::LAPACK::getinv by LAPACKe. */
 
     template<typename T>
     static void getinv( const IndexType n, T* a, const IndexType lda );
 
-    template<typename T>
-    static IndexType trtrs(
-        const enum CBLAS_ORDER order,
-        const enum CBLAS_UPLO uplo,
-        const enum CBLAS_TRANSPOSE trans,
-        const enum CBLAS_DIAG diag,
-        const IndexType n,
-        const IndexType nrhs,
-        const T* A,
-        const IndexType lda,
-        T* B,
-        const IndexType ldb );
+    /** Implementation of BLASInterface::LAPACK::tptrs by LAPACKe. */
 
     template<typename T>
     static IndexType tptrs(
@@ -98,18 +98,6 @@ public:
         const T* AP,
         T* B,
         const IndexType ldb );
-
-    template<typename T>
-    static void laswp(
-        const enum CBLAS_ORDER order,
-        const IndexType n,
-        T* A,
-        const IndexType lda,
-        const IndexType k1,
-        const IndexType k2,
-        const IndexType* ipiv,
-        const IndexType incx,
-        SyncToken* syncToken );
 
     /** Routine that sets functions pointers belonging to LAPACK in a BLASInterface.
      *

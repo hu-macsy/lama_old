@@ -40,12 +40,6 @@
 // macros
 #include <lama/macros/unused.hpp>
 
-#ifdef LAMA_HAVE_MKL
-#include <mkl_lapack.h>
-#endif /* LAMA_HAVE_MKL */
-
-/** gemm */
-
 namespace lama
 {
 

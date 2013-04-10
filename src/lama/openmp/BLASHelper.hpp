@@ -954,12 +954,8 @@ extern "C"
 }
 #endif
 
-// TODO: decide what to do with this
-//enum COMPUTE_UNIT
-//{
-//    /*lama_noCompute = 0,*/lama_compute_with_cpu = 1, lama_compute_with_gpu = 2,
-//    lama_compute_mixed_nvidia = 3
-//};
+#include <lama/LAMATypes.hpp>
+#include <lama/exception/Exception.hpp>
 
 namespace lama
 {
@@ -967,6 +963,11 @@ namespace lama
 class BLASHelper
 {
 public:
+
+    static char lapack_transpose( const enum CBLAS_TRANSPOSE trans );
+    static char lapack_uplo( const enum CBLAS_UPLO uplo );
+    static char lapack_diag( const enum CBLAS_DIAG diag );
+
     void cblas_xerbla( int p, const char *rout, const char *form, ... );
     //    void setComputeUnit(enum COMPUTE_UNIT unit);
     //    enum COMPUTE_UNIT getComputeUnit();

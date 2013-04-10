@@ -38,6 +38,7 @@
 #include <lama/openmp/OpenMPBLAS1.hpp>
 
 #include <lama/BLASInterface.hpp>
+#include <lama/openmp/BLASHelper.hpp>
 #include <boost/scoped_array.hpp>
 
 #include <mkl_lapacke.h>
@@ -47,13 +48,13 @@ namespace lama
 
 /* ------------------------------------------------------------------------- */
 
-static int lapacke_order( const enum CBLAS_ORDER order )
+static int lapack_order( const enum CBLAS_ORDER order )
 {
     int matrix_order = LAPACK_COL_MAJOR;
 
     if ( order == CblasColMajor )
     {
-        matrix_order = LAPACK_ROW_MAJOR;
+        matrix_order = LAPACK_COL_MAJOR;
     }
     else if ( order == CblasRowMajor )
     {
@@ -65,74 +66,6 @@ static int lapacke_order( const enum CBLAS_ORDER order )
     }
 
     return matrix_order;
-}
-
-/* ------------------------------------------------------------------------- */
-
-static char lapacke_uplo( const enum CBLAS_UPLO uplo )
-{
-    char UL = 'U';
-
-    if ( uplo == CblasUpper )
-    {
-        UL = 'U';
-    }
-    else if ( uplo == CblasLower )
-    {
-        UL = 'L';
-    }
-    else
-    {
-        LAMA_THROWEXCEPTION( "Illegal uplo: " << uplo );
-    }
-
-    return UL;
-}
-
-/* ------------------------------------------------------------------------- */
-
-static char lapacke_uplo( const enum CBLAS_TRANS trans )
-{
-    char TA = 'N';
-
-    if ( trans == CblasNoTrans )
-    {
-        TA = 'N';
-    }
-    else if ( trans == CblasTrans )
-    {
-        TA = 'T';
-    }
-    else if ( trans == CblasConjTrans )
-    {
-        TA = 'C';
-    }
-    else
-    {
-        LAMA_THROWEXCEPTION( "Illegal trans: " << trans );
-    }
- 
-    return TA;
-}
-
-/* ------------------------------------------------------------------------- */
-
-static char lapacke_diag( const enum CBLAS_DIAG diag )
-{
-    char DI = 'N';
-    if ( diag == CblasNonUnit )
-    {
-        DI = 'N';
-    }
-    else if ( diag == CblasUnit )
-    {
-        DI = 'U';
-    }
-    else
-    {
-        LAMA_THROWEXCEPTION( "Illegal diag: " << diag );
-    }
-    return DI;
 }
 
 /* ------------------------------------------------------------------------- */
@@ -154,7 +87,7 @@ IndexType OpenMPLAPACKe::getrf(
 {
     LAMA_LOG_INFO( logger, "getrf<float> for A of size " << m << " x " << n )
 
-    int info = LAPACKE_sgetrf( lapacke_order( order), m, n, A, lda, ipiv );
+    int info = LAPACKE_sgetrf( lapack_order( order), m, n, A, lda, ipiv );
 
     if ( info < 0 )
     {
@@ -183,7 +116,7 @@ IndexType OpenMPLAPACKe::getrf(
 {
     LAMA_LOG_INFO( logger, "getrf<double> for A of size " << m << " x " << n )
 
-    int matrix_order = lapacke_order( order );
+    int matrix_order = lapack_order( order );
 
     int info = LAPACKE_dgetrf( matrix_order, m, n, A, lda, ipiv );
 
@@ -277,7 +210,7 @@ int OpenMPLAPACKe::getri(
 {
     LAMA_LOG_INFO( logger, "getri<float> for A of size " << n << " x " << n )
 
-    int matrix_order = lapacke_order( order );
+    int matrix_order = lapack_order( order );
 
     int info = LAPACKE_sgetri( matrix_order, n, a, lda, ipiv );
 
@@ -307,7 +240,7 @@ int OpenMPLAPACKe::getri(
 {
     LAMA_LOG_INFO( logger, "getri<double> for A of size " << n << " x " << n )
 
-    int matrix_order = lapacke_order( order );
+    int matrix_order = lapack_order( order );
 
     int info = LAPACKE_dgetri( matrix_order, n, a, lda, ipiv );
 
@@ -339,11 +272,17 @@ int OpenMPLAPACKe::tptrs(
     float* B,
     const int ldb )
 {
-    char UL = lapacke_uplo( uplo );
-    char TA = lapacke_trans( trans );
-    char DI = lapacke_diag( diag );
+    char UL = BLASHelper::lapack_uplo( uplo );
+    char TA = BLASHelper::lapack_transpose( trans );
+    char DI = BLASHelper::lapack_diag( diag );
 
-    int matrix_order = lapacke_order( order );
+    int matrix_order = lapack_order( order );
+
+    LAMA_LOG_INFO( logger, "tptrs<float>, n = " << n << ", nrhs = " << nrhs 
+                   << ", order = " << matrix_order << ", UL = " << UL 
+                   << ", TA = " << TA << ", DI = " << DI );
+
+    LAMA_ASSERT_ERROR( ldb >= std::max( 1, n ), "ldb = " << ldb << " out of range" );
 
     int info = LAPACKE_stptrs( matrix_order, UL, TA, DI, n, nrhs, AP, B, ldb );
 
@@ -366,11 +305,15 @@ int OpenMPLAPACKe::tptrs(
     double* B,
     const int ldb )
 {
-    char UL = lapacke_uplo( uplo );
-    char TA = lapacke_trans( trans );
-    char DI = lapacke_diag( diag );
+    char UL = BLASHelper::lapack_uplo( uplo );
+    char TA = BLASHelper::lapack_transpose( trans );
+    char DI = BLASHelper::lapack_diag( diag );
 
-    int matrix_order = lapacke_order( order );
+    int matrix_order = lapack_order( order );
+
+    LAMA_LOG_INFO( logger, "tptrs<double>, n = " << n << ", nrhs = " << nrhs 
+                   << ", order = " << matrix_order << ", UL = " << UL 
+                   << ", TA = " << TA << ", DI = " << DI );
 
     int info = LAPACKE_dtptrs( matrix_order, UL, TA, DI, n, nrhs, AP, B, ldb );
 

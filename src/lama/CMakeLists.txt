@@ -146,17 +146,15 @@ endif( LAMA_BLAS_FOUND )
 target_link_libraries ( lama ${LAMA_LINK_LIBRARIES} )
 
 
-
 ### add definitions ###
 if ( WIN32 )
     add_definitions ( -DLAMA_COMPILING_DLL )
 endif ( WIN32 )
 
 if ( MKL_FOUND )
-        add_definitions ( -DLAMA_HAVE_MKL )
-        # default: LAMA_FORTRAN_BLAS_STYLE_LOWERCASE
+    # default: LAMA_FORTRAN_BLAS_STYLE_LOWERCASE
 elseif ( ACML_FOUND )
-        add_definitions ( -DLAMA_FORTRAN_BLAS_STYLE_UPCASE )
+    add_definitions ( -DLAMA_FORTRAN_BLAS_STYLE_UPCASE )
 else ()
     add_definitions ( -DLAMA_FORTRAN_BLAS_STYLE_UNDERSCORE )
 endif ()

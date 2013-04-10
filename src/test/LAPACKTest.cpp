@@ -77,6 +77,42 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( inverseTest, T, test_types ) {
 
     {
         WriteAccess<ValueType> wA( a, loc );
+
+        LAMA_INTERFACE_FN_T( getinv, loc, BLAS, LAPACK, ValueType )
+
+        getinv( n, wA.get(), n );
+    }
+    
+    {
+        HostReadAccess<ValueType> rA( a );
+
+        for ( int i = 0; i < n * n ; ++i )
+        {
+            BOOST_CHECK_CLOSE( rA[i], bvalues[i], 1 );
+        }
+    }
+}
+
+/* ------------------------------------------------------------------------- */
+
+BOOST_AUTO_TEST_CASE_TEMPLATE( getrifTest, T, test_types ) {
+
+    typedef T ValueType;
+
+    const IndexType n = 3;
+
+    // set up values for A and B with A * B = identiy
+
+    static ValueType avalues[] = { 2.0, 0.0, -1.0, -3.0, 0.0, 2.0, -2.0, -1.0, 0.0 };
+    static ValueType bvalues[] = { 2.0, 1.0,  0.0, -4.0, -2.0, -1.0, 3.0, 2.0, 0.0 };
+
+    LAMAArray<ValueType> a( n * n, avalues );
+    LAMAArray<IndexType> permutation( n );
+
+    ContextPtr loc = ContextFactory::getContext( Context::Host );
+
+    {
+        WriteAccess<ValueType> wA( a, loc );
         WriteAccess<IndexType> wPermutation( permutation, loc );
 
         LAMA_INTERFACE_FN_T( getrf, loc, BLAS, LAPACK, ValueType )
@@ -98,6 +134,68 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( inverseTest, T, test_types ) {
         for ( int i = 0; i < n * n ; ++i )
         {
             BOOST_CHECK_CLOSE( rA[i], bvalues[i], 1 );
+        }
+    }
+}
+
+/* ------------------------------------------------------------------------- */
+
+BOOST_AUTO_TEST_CASE_TEMPLATE( tptrsTest, T, test_types ) {
+
+    typedef T ValueType;
+
+    const IndexType n = 3;
+    const IndexType ntri = n * ( n + 1 ) / 2;
+
+    // set up values for A, X and B with A * X = B
+
+    static ValueType avalues[] = { 1.0, 1.0, 1.0, 1.0, 1.0, 1.0 };
+    static ValueType bvalues1[] = { 1.0, 2.0, 3.0 };
+    static ValueType bvalues2[] = { 3.0, 2.0, 1.0 };
+    static ValueType xvalues[] = { 1.0, 1.0, 1.0 };
+
+    LAMAArray<ValueType> a( ntri, avalues );
+    LAMAArray<ValueType> b1( n, bvalues1 );
+    LAMAArray<ValueType> b2( n, bvalues2 );
+
+    ContextPtr loc = ContextFactory::getContext( Context::Host );
+
+    {
+        ReadAccess<ValueType> rA( a, loc );
+        WriteAccess<ValueType> wB1( b1, loc );
+        WriteAccess<ValueType> wB2( b2, loc );
+
+        LAMA_INTERFACE_FN_T( tptrs, loc, BLAS, LAPACK, ValueType )
+
+        //  A            X    B
+        //  1  0   0     1    1
+        //  1  1   0     1    2
+        //  1  1   1     1    3
+
+        int error = tptrs( CblasColMajor, CblasLower, CblasNoTrans, CblasNonUnit,
+                           n, 1, rA.get(), wB1.get(), n );
+    
+        BOOST_CHECK_EQUAL( 0, error );
+
+        //  A            X    B
+        //  1  1   1     1    3
+        //  0  1   1     1    2
+        //  0  0   1     1    1
+
+        error = tptrs( CblasColMajor, CblasUpper, CblasNoTrans, CblasNonUnit,
+                       n, 1, rA.get(), wB2.get(), n );
+    
+        BOOST_CHECK_EQUAL( 0, error );
+    }
+    
+    {
+        HostReadAccess<ValueType> rX1( b1 );
+        HostReadAccess<ValueType> rX2( b2 );
+
+        for ( int i = 0; i < n ; ++i )
+        {
+            BOOST_CHECK_CLOSE( rX1[i], xvalues[i], 1 );
+            BOOST_CHECK_CLOSE( rX2[i], xvalues[i], 1 );
         }
     }
 }
