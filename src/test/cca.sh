@@ -34,8 +34,9 @@
 
 # Setting some enviroment variables
 
-#export LAMA_LOG=config
+export LAMA_LOG=ERROR
 export LAMA_UNSUPPORTED=IGNORE
+export LAMA_DEVICE=0 #default
 
 echo `pwd`
 

@@ -10,22 +10,14 @@ Contents:
 
 .. toctree::
    :titlesonly:
-   :maxdepth: 2
+   :maxdepth: 1
    
    introduction
    installation/index
-   environmentVariables
-   include
-   overview
    tutorial/index
-   reference/index
    lecture/index
+   reference/index
    testing/index
    benchmarks/index
    developer/index
-
-.. Indices and tables
-   ==================
-   - :ref:`genindex`
-   - :ref:`modindex`
-   - :ref:`search`
+   relatedWork
