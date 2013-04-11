@@ -1,3 +1,16 @@
+# defined functions:
+#     setAndCheckCache: sets FOUND_XXX depending on LAMA_USE_XXX variable
+#     get_relative_path:
+#     lama_get_relative_path:
+#     install_header_files:
+
+# defined makros:
+#     lama_set_source_dir:
+#     lama_classes:
+#     lama_sources:
+#     lama_headers:
+#     lama_add:
+
 # Function to set FOUND_XXX variables depending on the corresponding LAMA_USE_XXX variable
 function ( setAndCheckCache PACKAGE_NAME )
     # Create variable names with LAMA_USE_XXX and FOUND_XXX

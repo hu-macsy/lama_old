@@ -102,9 +102,11 @@ else( NOT EXISTS ${MKL_INCLUDE_DIR} )
             set( SCALAPACK_FOUND TRUE )
         endif( NOT EXISTS ${MKL_LIBRARY_SCALAPACK} )
         
+        setAndCheckCache( "SCALAPACK" )
+        
         #search for mkl_blacs lib
         if ( SCALAPACK_FOUND )
-	    if ( ${MPI_INCLUDE_PATH} MATCHES "impi" )
+	    	if ( ${MPI_INCLUDE_PATH} MATCHES "impi" )
                 find_library ( MKL_LIBRARY_BLACS mkl_blacs_intelmpi_lp64 PATHS ${MKL_LIBRARY_PATH} PATH_SUFFIXES ${MKL_LIBRARY_PATH_SUFFIXES})
             elseif ( HAVE_MS_MPI )
                 find_library ( MKL_LIBRARY_BLACS mkl_blacs_msmpi_lp64 PATHS ${MKL_LIBRARY_PATH} PATH_SUFFIXES ${MKL_LIBRARY_PATH_SUFFIXES})
@@ -131,6 +133,7 @@ else( NOT EXISTS ${MKL_INCLUDE_DIR} )
             endif( NOT EXISTS ${MKL_LIBRARY_GNU} )
             list ( APPEND MKL_LIBRARIES ${MKL_LIBRARY_GNU} )
         endif( CMAKE_COMPILER_IS_GNUCC )
+        
         # search for intel compiler libs
         if ( CMAKE_C_COMPILER_ID MATCHES Intel )
             find_library(MKL_LIBRARY_INTEL mkl_intel_thread PATHS ${MKL_LIBRARY_PATH} PATH_SUFFIXES ${MKL_LIBRARY_PATH_SUFFIXES})

@@ -38,7 +38,7 @@ cmake_minimum_required ( VERSION 2.8 )
 project ( LAMA CXX C )
 set ( CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/../CMake/Modules" )
 
-### Print LAMA Insallation header
+### Print LAMA Installation header
 message ( STATUS "" )
 message ( STATUS "LAMA Installation:" )
 message ( STATUS "==================" )
