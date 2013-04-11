@@ -76,6 +76,22 @@ const LAMAInterface* LAMAInterfaceRegistry::getInterface( const ContextType loca
     return loc->second;
 }
 
+LAMAInterface& LAMAInterfaceRegistry::modifyInterface( const ContextType location )
+{
+    InterfaceMapType::const_iterator loc = mInterfaceMap.find( location );
+
+    if ( loc == mInterfaceMap.end() )
+    {
+        // create a new default interface that can be filled for this context type
+
+        LAMAInterface* lamaInterface = new LAMAInterface();
+        mInterfaceMap[location] = lamaInterface;
+        return *lamaInterface;
+    }
+
+    return *loc->second;
+}
+
 bool LAMAInterfaceRegistry::hasInterface( const ContextType location ) const
 {
     bool hasInterface = false;

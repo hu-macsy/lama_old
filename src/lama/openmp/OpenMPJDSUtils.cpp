@@ -38,6 +38,7 @@
 #include <lama/openmp/OpenMPUtils.hpp>
 
 #include <lama/LAMAInterface.hpp>
+#include <lama/LAMAInterfaceRegistry.hpp>
 
 // assert
 #include <lama/exception/LAMAAssert.hpp>
@@ -804,5 +805,22 @@ void OpenMPJDSUtils::setInterface( JDSUtilsInterface& JDSUtils )
     LAMA_INTERFACE_REGISTER_T( JDSUtils, jacobiHalo, float )
     LAMA_INTERFACE_REGISTER_T( JDSUtils, jacobiHalo, double )
 }
+
+/* --------------------------------------------------------------------------- */
+/*    Static registration of the JDSUtils routines                             */
+/* --------------------------------------------------------------------------- */
+
+bool OpenMPJDSUtils::registerInterface()
+{
+    LAMAInterface& interface = LAMAInterfaceRegistry::getRegistry().modifyInterface( Context::Host );
+    setInterface( interface.JDSUtils );
+    return true;
+}
+
+/* --------------------------------------------------------------------------- */
+/*    Static initialiazion at program start                                    */
+/* --------------------------------------------------------------------------- */
+
+bool OpenMPJDSUtils::initialized = registerInterface();
 
 } // namespace lama

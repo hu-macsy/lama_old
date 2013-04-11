@@ -510,8 +510,11 @@ public:
 
 private:
 
-    LAMA_LOG_DECL_STATIC_LOGGER( logger )
+    static bool initialized;
 
+    static bool registerInterface();
+
+    LAMA_LOG_DECL_STATIC_LOGGER( logger )
 };
 
 } /* namespace lama */

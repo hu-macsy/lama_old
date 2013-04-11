@@ -61,6 +61,8 @@ public:
 
     const LAMAInterface* getInterface( const ContextType location ) const;
 
+    LAMAInterface& modifyInterface( const ContextType location );
+
     bool hasInterface( const ContextType location ) const;
 
 private:

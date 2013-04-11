@@ -36,6 +36,7 @@
 
 // others
 #include <lama/LAMAInterface.hpp>
+#include <lama/LAMAInterfaceRegistry.hpp>
 
 #include <lama/task/TaskSyncToken.hpp>
 
@@ -1023,5 +1024,22 @@ void OpenMPELLUtils::setInterface( ELLUtilsInterface& ELLUtils )
     LAMA_INTERFACE_REGISTER_T( ELLUtils, jacobiHalo, float )
     LAMA_INTERFACE_REGISTER_T( ELLUtils, jacobiHalo, double )
 }
+
+/* --------------------------------------------------------------------------- */
+/*    Static registration of the ELLUtils routines                             */
+/* --------------------------------------------------------------------------- */
+
+bool OpenMPELLUtils::registerInterface()
+{
+    LAMAInterface& interface = LAMAInterfaceRegistry::getRegistry().modifyInterface( Context::Host );
+    setInterface( interface.ELLUtils );
+    return true;
+}
+
+/* --------------------------------------------------------------------------- */
+/*    Static initialiazion at program start                                    */
+/* --------------------------------------------------------------------------- */
+
+bool OpenMPELLUtils::initialized = registerInterface();
 
 } // namespace lama

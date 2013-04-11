@@ -82,6 +82,10 @@ public:
 
     static void setInterface( struct BLASInterface& BLAS );
 
+    static bool initialized;
+
+    static bool registerInterface();
+
 private:
 
     LAMA_LOG_DECL_STATIC_LOGGER( logger )

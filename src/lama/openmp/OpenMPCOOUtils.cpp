@@ -36,6 +36,7 @@
 
 // others
 #include <lama/LAMAInterface.hpp>
+#include <lama/LAMAInterfaceRegistry.hpp>
 #include <lama/tracing.hpp>
 
 #include <lama/task/TaskSyncToken.hpp>
@@ -368,5 +369,22 @@ void OpenMPCOOUtils::setInterface( COOUtilsInterface& COOUtils )
     LAMA_INTERFACE_REGISTER_T( COOUtils, jacobi, float )
     LAMA_INTERFACE_REGISTER_T( COOUtils, jacobi, double )
 }
+
+/* --------------------------------------------------------------------------- */
+/*    Static registration of the Utils routines                                */
+/* --------------------------------------------------------------------------- */
+
+bool OpenMPCOOUtils::registerInterface()
+{
+    LAMAInterface& interface = LAMAInterfaceRegistry::getRegistry().modifyInterface( Context::Host );
+    setInterface( interface.COOUtils );
+    return true;
+}
+
+/* --------------------------------------------------------------------------- */
+/*    Static initialiazion at program start                                    */
+/* --------------------------------------------------------------------------- */
+
+bool OpenMPCOOUtils::initialized = registerInterface();
 
 } // namespace lama

@@ -35,7 +35,7 @@
 #include <lama/openmp/OpenMPUtils.hpp>
 
 // others
-#include <lama/LAMAInterface.hpp>
+#include <lama/LAMAInterfaceRegistry.hpp>
 
 #include <typeinfo>
 #include <omp.h>
@@ -421,5 +421,22 @@ void OpenMPUtils::setInterface( UtilsInterface& Utils )
     LAMA_INTERFACE_REGISTER_T( Utils, invert, float )
     LAMA_INTERFACE_REGISTER_T( Utils, invert, double )
 }
+
+/* --------------------------------------------------------------------------- */
+/*    Static registration of the Utils routines                                */
+/* --------------------------------------------------------------------------- */
+
+bool OpenMPUtils::registerInterface()
+{
+    LAMAInterface& interface = LAMAInterfaceRegistry::getRegistry().modifyInterface( Context::Host );
+    setInterface( interface.Utils );
+    return true;
+}
+
+/* --------------------------------------------------------------------------- */
+/*    Static initialiazion at program start                                    */
+/* --------------------------------------------------------------------------- */
+
+bool OpenMPUtils::initialized = registerInterface();
 
 } // namespace lama

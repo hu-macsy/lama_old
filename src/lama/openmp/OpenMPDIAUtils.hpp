@@ -138,6 +138,10 @@ private:
         const IndexType diaOffsets[],
         const ValueType diaValues[] );
 
+    static bool initialized;
+
+    static bool registerInterface();
+
     LAMA_LOG_DECL_STATIC_LOGGER( logger )
 };
 

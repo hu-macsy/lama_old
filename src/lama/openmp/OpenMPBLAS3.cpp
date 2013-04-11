@@ -36,6 +36,7 @@
 
 // others
 #include <lama/BLASInterface.hpp>
+#include <lama/LAMAInterfaceRegistry.hpp>
 
 // macros
 #include <lama/macros/unused.hpp>
@@ -1965,5 +1966,22 @@ void OpenMPBLAS3::setInterface( BLASInterface& BLAS )
 
     // trsm routines are not used yet by LAMA
 }
+
+/* --------------------------------------------------------------------------- */
+/*    Static registration of the BLAS3 routines                                */
+/* --------------------------------------------------------------------------- */
+
+bool OpenMPBLAS3::registerInterface()
+{
+    LAMAInterface& interface = LAMAInterfaceRegistry::getRegistry().modifyInterface( Context::Host );
+    setInterface( interface.BLAS );
+    return true;
+}
+
+/* --------------------------------------------------------------------------- */
+/*    Static initialiazion at program start                                    */
+/* --------------------------------------------------------------------------- */
+
+bool OpenMPBLAS3::initialized = registerInterface();
 
 } /* namespace lama */

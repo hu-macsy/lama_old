@@ -36,6 +36,7 @@
 
 // others
 #include <lama/LAMAInterface.hpp>
+#include <lama/LAMAInterfaceRegistry.hpp>
 
 #include <omp.h>
 #include <typeinfo>
@@ -353,6 +354,23 @@ void OpenMPDenseUtils::setInterface( DenseUtilsInterface& DenseUtils )
     LAMA_INTERFACE_REGISTER_T( DenseUtils, scaleValue, double )
     LAMA_INTERFACE_REGISTER_T( DenseUtils, scaleValue, float )
 }
+
+/* --------------------------------------------------------------------------- */
+/*    Static registration of the DenseUtils routines                           */
+/* --------------------------------------------------------------------------- */
+
+bool OpenMPDenseUtils::registerInterface()
+{
+    LAMAInterface& interface = LAMAInterfaceRegistry::getRegistry().modifyInterface( Context::Host );
+    setInterface( interface.DenseUtils );
+    return true;
+}
+
+/* --------------------------------------------------------------------------- */
+/*    Static initialiazion at program start                                    */
+/* --------------------------------------------------------------------------- */
+
+bool OpenMPDenseUtils::initialized = registerInterface();
 
 /* --------------------------------------------------------------------------- */
 

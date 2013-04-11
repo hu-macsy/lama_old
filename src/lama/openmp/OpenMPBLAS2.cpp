@@ -34,6 +34,7 @@
 // hpp
 #include <lama/openmp/OpenMPBLAS2.hpp>
 #include <lama/BLASInterface.hpp>
+#include <lama/LAMAInterfaceRegistry.hpp>
 
 // macros
 #include <lama/macros/unused.hpp>
@@ -3914,6 +3915,23 @@ void OpenMPBLAS2::setInterface( BLASInterface& BLAS )
     // all other routines are not used in LAMA yet
 }
 
+
+/* --------------------------------------------------------------------------- */
+/*    Static registration of the BLAS2 routines                                */
+/* --------------------------------------------------------------------------- */
+
+bool OpenMPBLAS2::registerInterface()
+{
+    LAMAInterface& interface = LAMAInterfaceRegistry::getRegistry().modifyInterface( Context::Host );
+    setInterface( interface.BLAS );
+    return true;
+}
+
+/* --------------------------------------------------------------------------- */
+/*    Static initialiazion at program start                                    */
+/* --------------------------------------------------------------------------- */
+
+bool OpenMPBLAS2::initialized = registerInterface();
 
 } /* namespace lama */
 
