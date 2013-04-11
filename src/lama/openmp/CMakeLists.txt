@@ -46,6 +46,14 @@ set ( CLASSES
         OpenMPLAPACK
         OpenMPUtils
     )
+
+# OpenMPLAPACKe requires LAPACKe interface, is in MKL
+if ( MKL_FOUND )
+    set ( CLASSES
+            ${CLASSES}
+            OpenMPLAPACKe
+    )
+endif()
     
 # can only be compiled if MKL SCALAPACK and MPI is availabe
 if ( SCALAPACK_FOUND AND MPI_FOUND )

@@ -40,6 +40,78 @@
 namespace lama
 {
 
+/* ------------------------------------------------------------------------- */
+
+char BLASHelper::lapack_uplo( const enum CBLAS_UPLO uplo )
+{
+    char UL = 'U';
+
+    if ( uplo == CblasUpper )
+    {
+        UL = 'U';
+    }
+    else if ( uplo == CblasLower )
+    {
+        UL = 'L';
+    }
+    else
+    {
+        LAMA_THROWEXCEPTION( "Illegal uplo: " << uplo );
+    }
+
+    return UL;
+}
+
+/* ------------------------------------------------------------------------- */
+
+char BLASHelper::lapack_transpose( const enum CBLAS_TRANSPOSE trans )
+{
+    char TA = 'N';
+
+    if ( trans == CblasNoTrans )
+    {
+        TA = 'N';
+    }
+    else if ( trans == CblasTrans )
+    {
+        TA = 'T';
+    }
+    else if ( trans == CblasConjTrans )
+    {
+        TA = 'C';
+    }
+    else
+    {
+        LAMA_THROWEXCEPTION( "Illegal trans: " << trans );
+    }
+
+    return TA;
+}
+
+/* ------------------------------------------------------------------------- */
+
+char BLASHelper::lapack_diag( const enum CBLAS_DIAG diag )
+{
+    char DI = 'N';
+
+    if ( diag == CblasNonUnit )
+    {
+        DI = 'N';
+    }
+    else if ( diag == CblasUnit )
+    {
+        DI = 'U';
+    }
+    else
+    {
+        LAMA_THROWEXCEPTION( "Illegal diag: " << diag );
+    }
+
+    return DI;
+}
+
+/* ------------------------------------------------------------------------- */
+
 void BLASHelper::XERBLA_cpu(
     int UNUSED(RowMajorStrg),
     int UNUSED(info),

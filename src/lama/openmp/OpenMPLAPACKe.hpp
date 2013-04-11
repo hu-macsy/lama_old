@@ -1,5 +1,5 @@
 /**
- * @file OpenMPLAPACK.hpp
+ * @file OpenMPLAPACKe.hpp
  *
  * @license
  * Copyright (c) 2012
@@ -25,13 +25,13 @@
  * SOFTWARE.
  * @endlicense
  *
- * @brief OpenMPLAPACK.hpp
- * @author lschubert
- * @date 02.07.2012
+ * @brief Implemenation of LAMA LAPACK interface via LAPACKe
+ * @author Thomas Brandes
+ * @date 10.04.2013
  * $Id$
  */
-#ifndef LAMA_OPENMPLAPACK_HPP_
-#define LAMA_OPENMPLAPACK_HPP_
+#ifndef LAMA_OPENMP_LAPACKE_HPP_
+#define LAMA_OPENMP_LAPACKE_HPP_
 
 // for dll_import
 #include <lama/config.hpp>
@@ -39,8 +39,6 @@
 // others
 #include <lama/LAMATypes.hpp>
 #include <lama/SyncToken.hpp>
-
-#include <lama/openmp/BLASHelper.hpp>
 
 // logging
 #include <logging/logging.hpp>
@@ -50,11 +48,18 @@
 namespace lama
 {
 
-class OpenMPLAPACK
+/** @brief Implementation of LAPACK functionality at the LAMAInterface by
+ *         using LAPACKe (C/C++ extensions for LAPACK).
+ *
+ *  The use of these routines is more convenient if LAPACKe is available
+ *  but has the same functionality as OpenMPLAPACK using Fortran calling conventions.
+ */
+
+class OpenMPLAPACKe
 {
 public:
 
-    /** Implementation of BLASInterface::LAPACK::getrf by LAPACK. */
+    /** Implementation of BLASInterface::LAPACK::getrf by LAPACKe. */
 
     template<typename T>
     static IndexType getrf(
@@ -65,7 +70,7 @@ public:
         const IndexType lda,
         IndexType* const ipiv );
 
-    /** Implementation of BLASInterface::LAPACK::getrf by LAPACK. */
+    /** Implementation of BLASInterface::LAPACK::getri by LAPACKe. */
 
     template<typename T>
     static IndexType getri(
@@ -75,12 +80,12 @@ public:
         const IndexType lda,
         IndexType* const ipiv );
 
-    /** Implementation of BLASInterface::LAPACK::getinv by LAPACK. */
+    /** Implementation of BLASInterface::LAPACK::getinv by LAPACKe. */
 
     template<typename T>
     static void getinv( const IndexType n, T* a, const IndexType lda );
 
-    /** Implementation of BLASInterface::LAPACK::tptrs vi LAPACK. */
+    /** Implementation of BLASInterface::LAPACK::tptrs by LAPACKe. */
 
     template<typename T>
     static IndexType tptrs(
@@ -93,20 +98,6 @@ public:
         const T* AP,
         T* B,
         const IndexType ldb );
-
-    /** OpenMP implementation for BLASInterface::LAPACK::laswp */
-
-    template<typename T>
-    static void laswp(
-        const enum CBLAS_ORDER order,
-        const IndexType n,
-        T* A,
-        const IndexType lda,
-        const IndexType k1,
-        const IndexType k2,
-        const IndexType* ipiv,
-        const IndexType incx,
-        SyncToken* syncToken );
 
     /** Routine that sets functions pointers belonging to LAPACK in a BLASInterface.
      *
@@ -121,8 +112,8 @@ private:
 
     LAMA_LOG_DECL_STATIC_LOGGER( logger )
 
-}; /* OpenMPLAPACK */
+}; /* OpenMPLAPACKe */
 
 } /* namespace lama */
 
-#endif // LAMA_OPENMPLAPACK_HPP_
+#endif // LAMA_OPENMP_LAPACKE_HPP_

@@ -46,6 +46,7 @@
 #include <lama/openmp/OpenMPBLAS2.hpp>
 #include <lama/openmp/OpenMPBLAS3.hpp>
 #include <lama/openmp/OpenMPLAPACK.hpp>
+#include <lama/openmp/OpenMPLAPACKe.hpp>
 #include <lama/openmp/OpenMPSCALAPACK.hpp>
 
 #include <lama/LAMAInterfaceRegistry.hpp>

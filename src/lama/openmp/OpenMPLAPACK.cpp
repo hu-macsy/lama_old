@@ -48,22 +48,6 @@ extern "C"
 {
 #endif /*__cplusplus*/
 
-#ifdef LAMA_HAVE_MKL
-
-#   include <mkl_lapack.h>
-#   include <mkl_lapacke.h>
-
-#define F77_sgetrf sgetrf_
-#define F77_dgetrf dgetrf_
-#define F77_sgetri sgetri_
-#define F77_dgetri dgetri_
-#define F77_strtrs strtrs_
-#define F77_dtrtrs dtrtrs_
-#define F77_stptrs stptrs_
-#define F77_dtptrs dtptrs_
-
-#else /* LAMA_BLAS_MKL */
-
 #if defined( LAMA_FORTRAN_BLAS_STYLE_UNDERSCORE )
 
 #define F77_sgetrf sgetrf_
@@ -115,66 +99,10 @@ extern "C"
     void F77_dgetrf( const int* m, const int* n, double* a, const int* lda, int* ipivot, int* info );
     void F77_sgetri( const int* n, float* a, const int* lda, int* ipivot, float* work, const int* ldwork, int* info );
     void F77_dgetri( const int* n, double* a, const int* lda, int* ipivot, double* work, const int* ldwork, int* info );
-    void F77_strtrs(
-        char* uplo,
-        char* transa,
-        char* diag,
-        const int* n,
-        const int* nrhs,
-        const float* a,
-        const int* lda,
-        float* b,
-        const int* ldb,
-        int* info );
-    void F77_dtrtrs(
-        char* uplo,
-        char* transa,
-        char* diag,
-        const int* n,
-        const int* nrhs,
-        const double* a,
-        const int* lda,
-        double* b,
-        const int* ldb,
-        int* info );
-    void F77_stptrs(
-        char* uplo,
-        char* transa,
-        char* diag,
-        const int* n,
-        const int* nrhs,
-        const float* ap,
-        float* b,
-        const int* ldb,
-        int* info );
-    void F77_dtptrs(
-        char* uplo,
-        char* transa,
-        char* diag,
-        const int* n,
-        const int* nrhs,
-        const double* ap,
-        double* b,
-        const int* ldb,
-        int* info );
-    int F77_slaswp(
-        const int* n,
-        float* a,
-        const int* lda,
-        const int* k1,
-        const int* k2,
-        const int* ipiv,
-        const int* incx );
-    int F77_dlaswp(
-        const int* n,
-        double* a,
-        const int* lda,
-        const int* k1,
-        const int* k2,
-        const int* ipiv,
-        const int* incx );
-
-#endif /* LAMA_BLAS_MKL */
+    void F77_stptrs( char* uplo, char* transa, char* diag, const int* n, const int* nrhs, const float* ap, float* b, const int* ldb, int* info );
+    void F77_dtptrs( char* uplo, char* transa, char* diag, const int* n, const int* nrhs, const double* ap, double* b, const int* ldb, int* info );
+    int F77_slaswp( const int* n, float* a, const int* lda, const int* k1, const int* k2, const int* ipiv, const int* incx );
+    int F77_dlaswp( const int* n, double* a, const int* lda, const int* k1, const int* k2, const int* ipiv, const int* incx );
 
 #ifdef __cplusplus
 } /*extern "C"*/
@@ -182,6 +110,8 @@ extern "C"
 
 namespace lama
 {
+
+/* ------------------------------------------------------------------------- */
 
 LAMA_LOG_DEF_LOGGER( OpenMPLAPACK::logger, "OpenMP.LAPACK" )
 
@@ -201,21 +131,6 @@ IndexType OpenMPLAPACK::getrf(
     LAMA_LOG_INFO( logger, "getrf<float> for A of size " << m << " x " << n )
 
     int info = 0;
-
-#ifdef LAMA_HAVE_MKL
-
-    LAMA_LOG_DEBUG( logger, "will use MKL routine" )
-
-    if ( order == CblasColMajor )
-    {
-        info = LAPACKE_sgetrf( LAPACK_COL_MAJOR, m, n, A, lda, ipiv );
-    }
-    else
-    {
-        info = LAPACKE_sgetrf( LAPACK_ROW_MAJOR, m, n, A, lda, ipiv );
-    }
-
-#else // LAMA_HAVE_MKL
 
 #ifdef F77_INT
     F77_INT F77_M = M, F77_N = N, F77_lda = lda, F77_info = info;
@@ -259,8 +174,6 @@ IndexType OpenMPLAPACK::getrf(
     {
         --ipiv[i];   // Fortran numbering from 1 to n ->  0 to n-1
     }
-
-#endif // LAMA_HAVE_MKL
 
     if ( info < 0 )
     {
@@ -291,21 +204,6 @@ IndexType OpenMPLAPACK::getrf(
 
     int info = 0;
 
-#ifdef LAMA_HAVE_MKL
-
-    LAMA_LOG_DEBUG( logger, "will use MKL routine" )
-
-    if ( order == CblasColMajor )
-    {
-        info = LAPACKE_dgetrf( LAPACK_COL_MAJOR, m, n, A, lda, ipiv );
-    }
-    else
-    {
-        info = LAPACKE_dgetrf( LAPACK_ROW_MAJOR, m, n, A, lda, ipiv );
-    }
-
-#else // LAMA_HAVE_MKL
-
 #ifdef F77_INT
     F77_INT F77_M = M, F77_N = N, F77_lda = lda, F77_info = info;
 #else
@@ -349,8 +247,6 @@ IndexType OpenMPLAPACK::getrf(
         --ipiv[i];   // Fortran numbering from 1 to n ->  0 to n-1
     }
 
-#endif // LAMA_HAVE_MKL
-
     if ( info < 0 )
     {
         LAMA_THROWEXCEPTION( "illegal argument " << ( -info ) )
@@ -376,27 +272,6 @@ void OpenMPLAPACK::getinv( const IndexType n, float* a, const IndexType lda )
 
     boost::scoped_array<IndexType> ipiv( new IndexType[n] );
 
-#ifdef LAMA_HAVE_MKL
-
-    LAMA_LOG_INFO( logger, "getinv<float> for " << n << " x " << n << " matrix, uses MKL" )
-
-    info = LAPACKE_sgetrf( LAPACK_COL_MAJOR, n, n, a, lda, ipiv.get() );
-
-    // return error if factorization did not work
-
-    if ( info )
-    {
-        LAMA_THROWEXCEPTION( "MKL sgetrf failed, info = " << info )
-    }
-
-    info = LAPACKE_sgetri( LAPACK_COL_MAJOR, n, a, lda, ipiv.get() );
-
-    if ( info )
-    {
-        LAMA_THROWEXCEPTION( "MKL sgetri failed, info = " << info )
-    }
-
-#else //LAMA_HAVE_MKL
 #ifdef F77_INT
     F77_INT F77_N = n, F77_lda = lda, F77_info = info;
 #else
@@ -422,8 +297,6 @@ void OpenMPLAPACK::getinv( const IndexType n, float* a, const IndexType lda )
     {
         LAMA_THROWEXCEPTION( "LAPACK sgetri failed, info = " << F77_info )
     }
-
-#endif // LAMA_HAVE_MKL
 }
 
 /* ------------------------------------------------------------------------- */
@@ -437,27 +310,6 @@ void OpenMPLAPACK::getinv( const IndexType n, double* a, const IndexType lda )
 
     boost::scoped_array<IndexType> ipiv( new IndexType[n] );
 
-#ifdef LAMA_HAVE_MKL
-
-    LAMA_LOG_INFO( logger, "getinv<double> for " << n << " x " << n << " matrix, uses MKL" )
-
-    info = LAPACKE_dgetrf( LAPACK_COL_MAJOR, n, n, a, lda, ipiv.get() );
-
-    // return error if factorization did not work
-
-    if ( info )
-    {
-        LAMA_THROWEXCEPTION( "MKL dgetrf failed, info = " << info )
-    }
-
-    info = LAPACKE_dgetri( LAPACK_COL_MAJOR, n, a, lda, ipiv.get() );
-
-    if ( info )
-    {
-        LAMA_THROWEXCEPTION( "MKL dgetri failed, info = " << info )
-    }
-
-#else //LAMA_HAVE_MKL
 #ifdef F77_INT
     F77_INT F77_N = n, F77_lda = lda, F77_info = info;
 #else
@@ -483,8 +335,6 @@ void OpenMPLAPACK::getinv( const IndexType n, double* a, const IndexType lda )
     {
         LAMA_THROWEXCEPTION( "LAPACK dgetri failed, info = " << F77_info )
     }
-
-#endif // LAMA_HAVE_MKL
 }
 
 /* ------------------------------------------------------------------------- */
@@ -502,23 +352,6 @@ int OpenMPLAPACK::getri(
     LAMA_LOG_INFO( logger, "getri<float> for A of size " << n << " x " << n )
 
     int info = 0;
-
-#ifdef LAMA_HAVE_MKL
-
-    LAMA_LOG_INFO( logger, "will use MKL/LAPACKE routine" )
-
-    if ( order == CblasColMajor )
-    {
-        info = LAPACKE_sgetri( LAPACK_COL_MAJOR, n, a, lda, ipiv );
-    }
-    else
-    {
-        info = LAPACKE_sgetri( LAPACK_ROW_MAJOR, n, a, lda, ipiv );
-    }
-
-#else
-
-    LAMA_LOG_INFO( logger, "will use F77/LAPACK routine" )
 
     // translate C indexes into  Fortran Indexes for ipiv
 
@@ -570,8 +403,6 @@ int OpenMPLAPACK::getri(
         }
     }
 
-#endif // LAMA_HAVE_MKL
-
     if ( info < 0 )
     {
         LAMA_THROWEXCEPTION( "illegal argument " << ( -info ) )
@@ -599,23 +430,6 @@ int OpenMPLAPACK::getri(
     LAMA_LOG_INFO( logger, "getri<double> for A of size " << n << " x " << n )
 
     int info = 0;
-
-#ifdef LAMA_HAVE_MKL
-
-    LAMA_LOG_INFO( logger, "will use MKL/LAPACKE routine" )
-
-    if ( order == CblasColMajor )
-    {
-        info = LAPACKE_dgetri( LAPACK_COL_MAJOR, n, a, lda, ipiv );
-    }
-    else
-    {
-        info = LAPACKE_dgetri( LAPACK_ROW_MAJOR, n, a, lda, ipiv );
-    }
-
-#else
-
-    LAMA_LOG_INFO( logger, "will use F77/LAPACK routine" )
 
     // translate C indexes into  Fortran Indexes for ipiv
 
@@ -667,8 +481,6 @@ int OpenMPLAPACK::getri(
         }
     }
 
-#endif // LAMA_HAVE_MKL
-
     if ( info < 0 )
     {
         LAMA_THROWEXCEPTION( "illegal argument " << ( -info ) )
@@ -681,235 +493,7 @@ int OpenMPLAPACK::getri(
     return info;
 }
 
-/* ------------------------------------------------------------------------- */
-
-template<>
-int OpenMPLAPACK::trtrs(
-    const enum CBLAS_ORDER order,
-    const enum CBLAS_UPLO uplo,
-    const enum CBLAS_TRANSPOSE trans,
-    const enum CBLAS_DIAG diag,
-    const int n,
-    const int nrhs,
-    const float* A,
-    const int lda,
-    float* B,
-    const int ldb )
-{
-    char* f_name = (char*) "strtrs";
-    int info = 0;
-    char UL, TA, DI;
-#ifdef F77_CHAR
-    F77_CHAR F77_UL, F77_TA, F77_DI;
-#else
-#   define F77_UL &UL
-#   define F77_TA &TA
-#   define F77_DI &DI
-#endif
-#ifdef F77_INT
-    F77_INT F77_n = n, F77_nrhs = nrhs, F77_lda = lda, F77_ldb = ldb;
-#else
-#   define F77_n n
-#   define F77_nrhs nrhs
-#   define F77_lda lda
-#   define F77_ldb ldb
-#endif
-
-    switch ( uplo )
-    {
-    case CblasUpper:
-        UL = 'U';
-        break;
-    case CblasLower:
-        UL = 'L';
-        break;
-    default:
-        info = 2;
-        BLASHelper::XERBLA_cpu( 0, info, f_name, "Illegal uplo setting." );
-        UL = 'U';
-    }
-
-    switch ( trans )
-    {
-    case CblasNoTrans:
-        TA = 'N';
-        break;
-    case CblasTrans:
-        TA = 'T';
-        break;
-    case CblasConjTrans:
-        TA = 'C';
-        break;
-    default:
-        info = 3;
-        BLASHelper::XERBLA_cpu( 0, info, f_name, "Illegal trans setting." );
-        TA = 'N';
-    }
-
-    switch ( diag )
-    {
-    case CblasNonUnit:
-        DI = 'N';
-        break;
-    case CblasUnit:
-        DI = 'U';
-        break;
-    default:
-        info = 4;
-        BLASHelper::XERBLA_cpu( 0, info, f_name, "Illegal diag setting." );
-        DI = 'N';
-    }
-
-#ifdef F77_CHAR
-    F77_UL = C2F_CHAR( &UL );
-    F77_TA = C2F_CHAR( &TA );
-    F77_DI = C2F_CHAR( &DI );
-#endif
-#ifdef LAMA_HAVE_MKL
-
-    if ( order == CblasColMajor )
-    {
-        info = LAPACKE_strtrs( LAPACK_COL_MAJOR, UL, TA, DI, n, nrhs, A, lda, B, ldb );
-    }
-    else if ( order == CblasRowMajor )
-    {
-        info = LAPACKE_strtrs( LAPACK_ROW_MAJOR, UL, TA, DI, n, nrhs, A, lda, B, ldb );
-    }
-    else
-    {
-        info = 1;
-        BLASHelper::XERBLA_cpu( 0, info, f_name, "Illegal order setting." );
-    }
-
-#else /* LAMA_HAVE_MKL */
-
-    if ( order == CblasColMajor )
-    {
-        F77_strtrs( F77_UL, F77_TA, F77_DI, &F77_n, &F77_nrhs, A, &F77_lda, B, &F77_ldb, &info );
-    }
-    else if ( order == CblasRowMajor )
-    {
-        // TODO: transpose matrix.
-        info = -1 * ( n + nrhs + lda + ldb );
-    }
-
-#endif/* LAMA_HAVE_MKL */
-    return info;
-}
-
-template<>
-int OpenMPLAPACK::trtrs(
-    const enum CBLAS_ORDER order,
-    const enum CBLAS_UPLO uplo,
-    const enum CBLAS_TRANSPOSE trans,
-    const enum CBLAS_DIAG diag,
-    const int n,
-    const int nrhs,
-    const double* A,
-    const int lda,
-    double* B,
-    const int ldb )
-{
-    char* f_name = (char*) "dtrtrs";
-    int info = 0;
-    char UL, TA, DI;
-#ifdef F77_CHAR
-    F77_CHAR F77_UL, F77_TA, F77_DI;
-#else
-#   define F77_UL &UL
-#   define F77_TA &TA
-#   define F77_DI &DI
-#endif
-#ifdef F77_INT
-    F77_INT F77_n = n, F77_nrhs = nrhs, F77_lda = lda, F77_ldb = ldb;
-#else
-#   define F77_n n
-#   define F77_nrhs nrhs
-#   define F77_lda lda
-#   define F77_ldb ldb
-#endif
-
-    switch ( uplo )
-    {
-    case CblasUpper:
-        UL = 'U';
-        break;
-    case CblasLower:
-        UL = 'L';
-        break;
-    default:
-        info = 2;
-        BLASHelper::XERBLA_cpu( 0, info, f_name, "Illegal uplo setting." );
-        UL = 'U';
-    }
-
-    switch ( trans )
-    {
-    case CblasNoTrans:
-        TA = 'N';
-        break;
-    case CblasTrans:
-        TA = 'T';
-        break;
-    case CblasConjTrans:
-        TA = 'C';
-        break;
-    default:
-        info = 3;
-        BLASHelper::XERBLA_cpu( 0, info, f_name, "Illegal trans setting." );
-        TA = 'N';
-    }
-
-    switch ( diag )
-    {
-    case CblasNonUnit:
-        DI = 'N';
-        break;
-    case CblasUnit:
-        DI = 'U';
-        break;
-    default:
-        info = 4;
-        BLASHelper::XERBLA_cpu( 0, info, f_name, "Illegal diag setting." );
-        DI = 'N';
-    }
-
-#ifdef F77_CHAR
-    F77_UL = C2F_CHAR( &UL );
-    F77_TA = C2F_CHAR( &TA );
-    F77_DI = C2F_CHAR( &DI );
-#endif
-#ifdef LAMA_HAVE_MKL
-
-    if ( order == CblasColMajor )
-    {
-        info = LAPACKE_dtrtrs( LAPACK_COL_MAJOR, UL, TA, DI, n, nrhs, A, lda, B, ldb );
-    }
-    else if ( order == CblasRowMajor )
-    {
-        info = LAPACKE_dtrtrs( LAPACK_ROW_MAJOR, UL, TA, DI, n, nrhs, A, lda, B, ldb );
-    }
-    else
-    {
-        info = 1;
-        BLASHelper::XERBLA_cpu( 0, info, f_name, "Illegal order setting." );
-    }
-
-#else
-
-    if ( order == CblasColMajor )
-    {
-        F77_dtrtrs( F77_UL, F77_TA, F77_DI, &F77_n, &F77_nrhs, A, &F77_lda, B, &F77_ldb, &info );
-    }
-    else if ( order == CblasRowMajor )
-    {
-        // TODO: transpose matrix.
-        info = -1 * ( n + nrhs + lda + ldb );
-    }
-
-#endif
-    return info;
-}
+/* --------------------------------------------------------------------------- */
 
 template<>
 int OpenMPLAPACK::tptrs(
@@ -923,9 +507,12 @@ int OpenMPLAPACK::tptrs(
     float* B,
     const int ldb )
 {
-    char* f_name = (char*) "stptrs";
     int info = 0;
-    char UL, TA, DI;
+
+    char UL = BLASHelper::lapack_uplo( uplo );
+    char TA = BLASHelper::lapack_transpose( trans );
+    char DI = BLASHelper::lapack_diag( diag );
+
 #ifdef F77_CHAR
     F77_CHAR F77_UL, F77_TA, F77_DI;
 #else
@@ -941,73 +528,15 @@ int OpenMPLAPACK::tptrs(
 #   define F77_ldb ldb
 #endif
 
-    switch ( uplo )
-    {
-    case CblasUpper:
-        UL = 'U';
-        break;
-    case CblasLower:
-        UL = 'L';
-        break;
-    default:
-        info = 2;
-        BLASHelper::XERBLA_cpu( 0, info, f_name, "Illegal uplo setting." );
-        UL = 'U';
-    }
-
-    switch ( trans )
-    {
-    case CblasNoTrans:
-        TA = 'N';
-        break;
-    case CblasTrans:
-        TA = 'T';
-        break;
-    case CblasConjTrans:
-        TA = 'C';
-        break;
-    default:
-        info = 3;
-        BLASHelper::XERBLA_cpu( 0, info, f_name, "Illegal trans setting." );
-        TA = 'N';
-    }
-
-    switch ( diag )
-    {
-    case CblasNonUnit:
-        DI = 'N';
-        break;
-    case CblasUnit:
-        DI = 'U';
-        break;
-    default:
-        info = 4;
-        BLASHelper::XERBLA_cpu( 0, info, f_name, "Illegal diag setting." );
-        DI = 'N';
-    }
-
 #ifdef F77_CHAR
     F77_UL = C2F_CHAR( &UL );
     F77_TA = C2F_CHAR( &TA );
     F77_DI = C2F_CHAR( &DI );
 #endif
-#ifdef LAMA_HAVE_MKL
 
-    if ( order == CblasColMajor )
-    {
-        info = LAPACKE_stptrs( LAPACK_COL_MAJOR, UL, TA, DI, n, nrhs, AP, B, ldb );
-    }
-    else if ( order == CblasRowMajor )
-    {
-        info = LAPACKE_stptrs( LAPACK_ROW_MAJOR, UL, TA, DI, n, nrhs, AP, B, ldb );
-    }
-    else
-    {
-        info = 1;
-        BLASHelper::XERBLA_cpu( 0, info, f_name, "Illegal order setting." );
-    }
-
-#else
+    LAMA_LOG_INFO( logger, "tptrs<float>, n = " << n << ", nrhs = " << nrhs
+                   << ", order = " << order << ", UL = " << UL
+                   << ", TA = " << TA << ", DI = " << DI );
 
     if ( order == CblasColMajor )
     {
@@ -1016,12 +545,13 @@ int OpenMPLAPACK::tptrs(
     else if ( order == CblasRowMajor )
     {
         // TODO: transpose matrix.
-        info = -1 * ( n + nrhs + ldb );
+        LAMA_THROWEXCEPTION( "row major order not supported for tptrs" );
     }
 
-#endif
     return info;
 }
+
+/* --------------------------------------------------------------------------- */
 
 template<>
 int OpenMPLAPACK::tptrs(
@@ -1035,9 +565,12 @@ int OpenMPLAPACK::tptrs(
     double* B,
     const int ldb )
 {
-    char* f_name = (char*) "dtptrs";
     int info = 0;
-    char UL, TA, DI;
+
+    char UL = BLASHelper::lapack_uplo( uplo );
+    char TA = BLASHelper::lapack_transpose( trans );
+    char DI = BLASHelper::lapack_diag( diag );
+
 #ifdef F77_CHAR
     F77_CHAR F77_UL, F77_TA, F77_DI;
 #else
@@ -1053,73 +586,15 @@ int OpenMPLAPACK::tptrs(
 #   define F77_ldb ldb
 #endif
 
-    switch ( uplo )
-    {
-    case CblasUpper:
-        UL = 'U';
-        break;
-    case CblasLower:
-        UL = 'L';
-        break;
-    default:
-        info = 2;
-        BLASHelper::XERBLA_cpu( 0, info, f_name, "Illegal uplo setting." );
-        UL = 'U';
-    }
-
-    switch ( trans )
-    {
-    case CblasNoTrans:
-        TA = 'N';
-        break;
-    case CblasTrans:
-        TA = 'T';
-        break;
-    case CblasConjTrans:
-        TA = 'C';
-        break;
-    default:
-        info = 3;
-        BLASHelper::XERBLA_cpu( 0, info, f_name, "Illegal trans setting." );
-        TA = 'N';
-    }
-
-    switch ( diag )
-    {
-    case CblasNonUnit:
-        DI = 'N';
-        break;
-    case CblasUnit:
-        DI = 'U';
-        break;
-    default:
-        info = 4;
-        BLASHelper::XERBLA_cpu( 0, info, f_name, "Illegal diag setting." );
-        DI = 'N';
-    }
-
 #ifdef F77_CHAR
     F77_UL = C2F_CHAR( &UL );
     F77_TA = C2F_CHAR( &TA );
     F77_DI = C2F_CHAR( &DI );
 #endif
-#ifdef LAMA_HAVE_MKL
 
-    if ( order == CblasColMajor )
-    {
-        info = LAPACKE_dtptrs( LAPACK_COL_MAJOR, UL, TA, DI, n, nrhs, AP, B, ldb );
-    }
-    else if ( order == CblasRowMajor )
-    {
-        info = LAPACKE_dtptrs( LAPACK_ROW_MAJOR, UL, TA, DI, n, nrhs, AP, B, ldb );
-    }
-    else
-    {
-        info = 1;
-        BLASHelper::XERBLA_cpu( 0, info, f_name, "Illegal order setting." );
-    }
-
-#else
+    LAMA_LOG_INFO( logger, "tptrs<double>, n = " << n << ", nrhs = " << nrhs
+                   << ", order = " << order << ", UL = " << UL
+                   << ", TA = " << TA << ", DI = " << DI );
 
     if ( order == CblasColMajor )
     {
@@ -1128,12 +603,13 @@ int OpenMPLAPACK::tptrs(
     else if ( order == CblasRowMajor )
     {
         // TODO: transpose matrix.
-        info = -1 * ( n + nrhs + ldb );
+        LAMA_THROWEXCEPTION( "row major order not supported for tptrs" );
     }
 
-#endif
     return info;
 }
+
+/* --------------------------------------------------------------------------- */
 
 template<>
 void OpenMPLAPACK::laswp(
@@ -1185,6 +661,8 @@ void OpenMPLAPACK::laswp(
     }
 }
 
+/* --------------------------------------------------------------------------- */
+
 template<>
 void OpenMPLAPACK::laswp(
     const enum CBLAS_ORDER order,
@@ -1228,7 +706,7 @@ void OpenMPLAPACK::laswp(
     }
     else
     {
-        BLASHelper::XERBLA_cpu( 0, 1, "cblas_dlaswp", "Illegal order setting, %d\n", order );
+        LAMA_THROWEXCEPTION( "Illegal order setting: " << order );
     }
 }
 
