@@ -43,6 +43,7 @@
 #include <lama/exception/LAMAAssert.hpp>
 
 #include <lama/LAMAInterface.hpp>
+#include <lama/LAMAInterfaceRegistry.hpp>
 
 // macros
 #include <lama/macros/unused.hpp>
@@ -1348,5 +1349,23 @@ void CUDAJDSUtils::setInterface( JDSUtilsInterface& JDSUtils )
     LAMA_INTERFACE_REGISTER_T( JDSUtils, jacobiHalo, float )
     LAMA_INTERFACE_REGISTER_T( JDSUtils, jacobiHalo, double )
 }
+
+/* --------------------------------------------------------------------------- */
+/*    Static registration of the Utils routines                                */
+/* --------------------------------------------------------------------------- */
+
+bool CUDAJDSUtils::registerInterface()
+{
+    LAMAInterface& interface = LAMAInterfaceRegistry::getRegistry().modifyInterface( Context::CUDA );
+    setInterface( interface.JDSUtils );
+    return true;
+}
+
+/* --------------------------------------------------------------------------- */
+/*    Static initialiazion at program start                                    */
+/* --------------------------------------------------------------------------- */
+
+bool CUDAJDSUtils::initialized = registerInterface();
+
 
 } // namespace lama

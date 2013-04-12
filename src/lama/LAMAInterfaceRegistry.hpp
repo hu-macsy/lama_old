@@ -26,16 +26,19 @@
  * @endlicense
  *
  * @brief LAMAInterfaceRegistry.hpp
- * @author brandes
- * @date 28.04.2011
+ * @author Thomas Brandes
+ * @date 12.04.2013
  * $Id$
  */
 
-#ifndef LAMA_LAMAINTERREGISTRY_HPP_
-#define LAMA_LAMAINTERREGISTRY_HPP_
+#ifndef LAMA_LAMA_INTERFACE_REGISTRY_HPP_
+#define LAMA_LAMA_INTERFACE_REGISTRY_HPP_
 
 // for dll_import
 #include <lama/config.hpp>
+
+// base classes
+#include <lama/NonCopyable.hpp>
 
 // others
 #include <lama/LAMAInterface.hpp>
@@ -49,27 +52,46 @@
 namespace lama
 {
 
-class LAMA_DLL_IMPORTEXPORT LAMAInterfaceRegistry
+/** @brief This class provides a registry that gives for a context its corresponding
+ *         LAMAInterface.
+ *
+ *  At program start the interfaces are dynamically filled with function pointers to
+ *  implemented routines that are used later for operations on vectors and matrices.
+ */
+
+class LAMA_DLL_IMPORTEXPORT LAMAInterfaceRegistry : NonCopyable
 {
+
 public:
 
     virtual ~LAMAInterfaceRegistry();
 
+    /** @brief Get a refernce to the registry. */
+
     static LAMAInterfaceRegistry& getRegistry();
 
-    void addInterface( const ContextType location, LAMAInterface* lamaInterface );
+    /** @brief Get const reference to an interface for a certain context type. */
 
     const LAMAInterface* getInterface( const ContextType location ) const;
 
+    /** @brief Get a modify reference for a LAMAInterface; if not available an
+     *         new interface is generated. 
+     *
+     *  @param[in] location context type for which interface is wanted
+     *  @return    reference to the corresponding interface
+     *
+     *  If an interface is not available a default one will be created 
+     *  (all function pointers are set to NULL).
+     */
     LAMAInterface& modifyInterface( const ContextType location );
+
+    /** @brief Query whether an interface for a certain context is available  */
 
     bool hasInterface( const ContextType location ) const;
 
 private:
-    LAMAInterfaceRegistry();
-    LAMAInterfaceRegistry( const LAMAInterfaceRegistry& other );
 
-    LAMAInterfaceRegistry& operator=( const LAMAInterfaceRegistry& other );
+    LAMAInterfaceRegistry();
 
     static LAMAInterfaceRegistry* instance;
 
@@ -83,24 +105,10 @@ private:
         CGuard();
         ~CGuard();
     };
+
     friend class CGuard;
 };
 
-template<typename T>
-class LAMAInterfaceRegistration
-{
-public:
+}  // namespace
 
-    LAMAInterfaceRegistration( const ContextType location )
-    {
-        LAMAInterfaceRegistry& reg = LAMAInterfaceRegistry::getRegistry();
-        reg.addInterface( location, new T() );
-    }
-};
-
-#define LAMA_LAMAINTERFACE_REGISTRATION( location, type ) \
-    static lama::LAMAInterfaceRegistration<type >       \
-    LAMA_UNIQUE_NAME( lamaInterfaceRegObj, type )( location );
-}
-
-#endif // LAMA_LAMAINTERREGISTRY_HPP_
+#endif // LAMA_LAMA_INTERFACE_REGISTRY_HPP_

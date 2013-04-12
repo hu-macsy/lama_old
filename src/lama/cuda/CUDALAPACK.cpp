@@ -34,6 +34,7 @@
 #include <lama/cuda/CUDABLAS1.hpp>
 
 #include <lama/LAMAInterface.hpp>
+#include <lama/LAMAInterfaceRegistry.hpp>
 #include <lama/cuda/CUDAError.hpp>
 #include <lama/cuda/CUDALAPACK.hpp>
 
@@ -152,6 +153,24 @@ void CUDALAPACK::setInterface( BLASInterface& BLAS )
 
     // other routines are not used by LAMA yet
 }
+
+/* --------------------------------------------------------------------------- */
+/*    Static registration of the Utils routines                                */
+/* --------------------------------------------------------------------------- */
+
+bool CUDALAPACK::registerInterface()
+{
+    LAMAInterface& interface = LAMAInterfaceRegistry::getRegistry().modifyInterface( Context::CUDA );
+    setInterface( interface.BLAS );
+    return true;
+}
+
+/* --------------------------------------------------------------------------- */
+/*    Static initialiazion at program start                                    */
+/* --------------------------------------------------------------------------- */
+
+bool CUDALAPACK::initialized = registerInterface();
+
 
 } /* namespace lama */
 

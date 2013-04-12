@@ -32,6 +32,7 @@
  */
 
 #include <lama/LAMAInterface.hpp>
+#include <lama/LAMAInterfaceRegistry.hpp>
 
 #include <lama/cuda/utils.cu.h>
 #include <lama/cuda/CUDAError.hpp>
@@ -1797,5 +1798,23 @@ void CUDACSRUtils::setInterface( CSRUtilsInterface& CSRUtils )
     LAMA_INTERFACE_REGISTER_T( CSRUtils, matrixMultiply, float )
     LAMA_INTERFACE_REGISTER_T( CSRUtils, matrixMultiply, double )
 }
+
+/* --------------------------------------------------------------------------- */
+/*    Static registration of the Utils routines                                */
+/* --------------------------------------------------------------------------- */
+
+bool CUDACSRUtils::registerInterface()
+{
+    LAMAInterface& interface = LAMAInterfaceRegistry::getRegistry().modifyInterface( Context::CUDA );
+    setInterface( interface.CSRUtils );
+    return true;
+}
+
+/* --------------------------------------------------------------------------- */
+/*    Static initialiazion at program start                                    */
+/* --------------------------------------------------------------------------- */
+
+bool CUDACSRUtils::initialized = registerInterface();
+
 
 } // namespace lama
