@@ -112,6 +112,10 @@ private:
 
     LAMA_LOG_DECL_STATIC_LOGGER( logger )
 
+    static bool initialized;
+
+    static bool registerInterface();
+
 }; /* OpenMPLAPACKe */
 
 } /* namespace lama */

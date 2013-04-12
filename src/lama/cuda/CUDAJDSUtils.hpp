@@ -217,6 +217,9 @@ private:
 
     LAMA_LOG_DECL_STATIC_LOGGER( logger )
 
+    static bool initialized;   //!< static initialization used for registration
+
+    static bool registerInterface();  //!< registration
 };
 
 /* --------------------------------------------------------------------------- */

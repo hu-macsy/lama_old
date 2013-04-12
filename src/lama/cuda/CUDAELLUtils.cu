@@ -40,6 +40,7 @@
 
 // others
 #include <lama/LAMAInterface.hpp>
+#include <lama/LAMAInterfaceRegistry.hpp>
 #include <lama/macros/unused.hpp>
 
 // cuda
@@ -1177,5 +1178,22 @@ void CUDAELLUtils::setInterface( ELLUtilsInterface& ELLUtils )
     LAMA_INTERFACE_REGISTER_T( ELLUtils, jacobiHalo, float )
     LAMA_INTERFACE_REGISTER_T( ELLUtils, jacobiHalo, double )
 }
+
+/* --------------------------------------------------------------------------- */
+/*    Static registration of the Utils routines                                */
+/* --------------------------------------------------------------------------- */
+
+bool CUDAELLUtils::registerInterface()
+{
+    LAMAInterface& interface = LAMAInterfaceRegistry::getRegistry().modifyInterface( Context::CUDA );
+    setInterface( interface.ELLUtils );
+    return true;
+}
+
+/* --------------------------------------------------------------------------- */
+/*    Static initialiazion at program start                                    */
+/* --------------------------------------------------------------------------- */
+
+bool CUDAELLUtils::initialized = registerInterface();
 
 } // namespace lama

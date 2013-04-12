@@ -58,6 +58,10 @@ public:
 
 private:
 
+    static bool initialized;   //!< static initialization used for registration
+
+    static bool registerInterface();  //!< registration
+
     template<typename T>
     static void laswp(
         const enum CBLAS_ORDER order,

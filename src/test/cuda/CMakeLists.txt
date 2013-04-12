@@ -44,6 +44,7 @@ set ( SOURCE_FILES
         CUDA_LAMAArrayTest
         CUDA_MatrixStorageTest
         CUDA_VectorTest
+        CUDA_InterfaceRegistryTest
     )
 
 lama_classes ( ${CLASSES} )

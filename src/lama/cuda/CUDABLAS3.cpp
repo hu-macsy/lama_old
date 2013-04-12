@@ -36,6 +36,7 @@
 
 // others
 #include <lama/LAMAInterface.hpp>
+#include <lama/LAMAInterfaceRegistry.hpp>
 #include <lama/cuda/CUDAError.hpp>
 #include <lama/cuda/CUDAStreamSyncToken.hpp>
 
@@ -462,5 +463,22 @@ void CUDABLAS3::setInterface( BLASInterface& BLAS )
 
     // trsm routines are not used yet by LAMA
 }
+
+/* --------------------------------------------------------------------------- */
+/*    Static registration of the Utils routines                                */
+/* --------------------------------------------------------------------------- */
+
+bool CUDABLAS3::registerInterface()
+{
+    LAMAInterface& interface = LAMAInterfaceRegistry::getRegistry().modifyInterface( Context::CUDA );
+    setInterface( interface.BLAS );
+    return true;
+}
+
+/* --------------------------------------------------------------------------- */
+/*    Static initialiazion at program start                                    */
+/* --------------------------------------------------------------------------- */
+
+bool CUDABLAS3::initialized = registerInterface();
 
 } /* namespace lama */

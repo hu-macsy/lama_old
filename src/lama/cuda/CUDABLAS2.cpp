@@ -36,6 +36,7 @@
 
 // others
 #include <lama/LAMAInterface.hpp>
+#include <lama/LAMAInterfaceRegistry.hpp>
 #include <lama/cuda/CUDAError.hpp>
 #include <lama/cuda/CUDAStreamSyncToken.hpp>
 
@@ -2448,13 +2449,27 @@ void CUDABLAS2::tpsv(
 
 void CUDABLAS2::setInterface( BLASInterface& BLAS )
 {
-    // Note: macro takes advantage of same name for routines and type definitions 
-    //       ( e.g. routine CUDABLAS1::sum<T> is set for BLAS::BLAS1::sum variable
-
     LAMA_INTERFACE_REGISTER_T( BLAS, gemv, float )
     LAMA_INTERFACE_REGISTER_T( BLAS, gemv, double )
 
     // other routines are not used by LAMA yet
 }
+
+/* --------------------------------------------------------------------------- */
+/*    Static registration of the Utils routines                                */
+/* --------------------------------------------------------------------------- */
+
+bool CUDABLAS2::registerInterface()
+{
+    LAMAInterface& interface = LAMAInterfaceRegistry::getRegistry().modifyInterface( Context::CUDA );
+    setInterface( interface.BLAS );
+    return true;
+}
+
+/* --------------------------------------------------------------------------- */
+/*    Static initialiazion at program start                                    */
+/* --------------------------------------------------------------------------- */
+
+bool CUDABLAS2::initialized = registerInterface();
 
 } /* namespace lama */

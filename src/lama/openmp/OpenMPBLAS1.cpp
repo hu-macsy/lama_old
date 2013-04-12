@@ -37,6 +37,7 @@
 // others
 #include <lama/openmp/BLASHelper.hpp>
 #include <lama/BLASInterface.hpp>
+#include <lama/LAMAInterfaceRegistry.hpp>
 
 // macros
 #include <lama/macros/unused.hpp>
@@ -763,5 +764,22 @@ void OpenMPBLAS1::setInterface( BLASInterface& BLAS )
     LAMA_INTERFACE_REGISTER_T( BLAS, ass, float )
     LAMA_INTERFACE_REGISTER_T( BLAS, ass, double )
 }
+
+/* --------------------------------------------------------------------------- */
+/*    Static registration of the BLAS1 routines                                */
+/* --------------------------------------------------------------------------- */
+
+bool OpenMPBLAS1::registerInterface()
+{
+    LAMAInterface& interface = LAMAInterfaceRegistry::getRegistry().modifyInterface( Context::Host );
+    setInterface( interface.BLAS );
+    return true;
+}
+
+/* --------------------------------------------------------------------------- */
+/*    Static initialiazion at program start                                    */
+/* --------------------------------------------------------------------------- */
+
+bool OpenMPBLAS1::initialized = registerInterface();
 
 } /** namespace lama */

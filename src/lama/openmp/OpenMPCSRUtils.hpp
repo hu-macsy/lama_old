@@ -320,6 +320,10 @@ protected:
 
 private:
 
+    static bool initialized;
+
+    static bool registerInterface();
+
     static IndexType scanSerial( IndexType array[], const IndexType numValues );
 
     static IndexType scanParallel( PartitionId numThreads, IndexType array[], const IndexType numValues );

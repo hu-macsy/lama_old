@@ -39,6 +39,7 @@
 
 #include <lama/Communicator.hpp>
 #include <lama/LAMAInterface.hpp>
+#include <lama/LAMAInterfaceRegistry.hpp>
 
 // macros
 #include <lama/macros/unused.hpp>
@@ -255,5 +256,22 @@ void OpenMPSCALAPACK::setInterface( BLASInterface& BLAS )
 
     // other routines are not used by LAMA yet
 }
+
+/* --------------------------------------------------------------------------- */
+/*    Static registration of the LAPACK routines                               */
+/* --------------------------------------------------------------------------- */
+
+bool OpenMPSCALAPACK::registerInterface()
+{
+    LAMAInterface& interface = LAMAInterfaceRegistry::getRegistry().modifyInterface( Context::Host );
+    setInterface( interface.BLAS );
+    return true;
+}
+
+/* --------------------------------------------------------------------------- */
+/*    Static initialiazion at program start                                    */
+/* --------------------------------------------------------------------------- */
+
+bool OpenMPSCALAPACK::initialized = registerInterface();
 
 } /* namespace lama */

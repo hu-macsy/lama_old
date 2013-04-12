@@ -36,6 +36,7 @@
 
 // others
 #include <lama/LAMAInterface.hpp>
+#include <lama/LAMAInterfaceRegistry.hpp>
 
 // assert
 #include <lama/exception/LAMAAssert.hpp>
@@ -1727,5 +1728,22 @@ void OpenMPCSRUtils::setInterface( CSRUtilsInterface& CSRUtils )
     LAMA_INTERFACE_REGISTER_T( CSRUtils, absMaxDiffVal, float )
     LAMA_INTERFACE_REGISTER_T( CSRUtils, absMaxDiffVal, double )
 }
+
+/* --------------------------------------------------------------------------- */
+/*    Static registration of the Utils routines                                */
+/* --------------------------------------------------------------------------- */
+
+bool OpenMPCSRUtils::registerInterface()
+{
+    LAMAInterface& interface = LAMAInterfaceRegistry::getRegistry().modifyInterface( Context::Host );
+    setInterface( interface.CSRUtils );
+    return true;
+}
+
+/* --------------------------------------------------------------------------- */
+/*    Static initialiazion at program start                                    */
+/* --------------------------------------------------------------------------- */
+
+bool OpenMPCSRUtils::initialized = registerInterface();
 
 } // namespace lama

@@ -26,8 +26,8 @@
  * @endlicense
  *
  * @brief LAMAInterfaceRegistry.cpp
- * @author brandes
- * @date 28.04.2011
+ * @author Thomas Brandes
+ * @date 12.04.2013
  * $Id$
  */
 
@@ -50,6 +50,8 @@ LAMAInterfaceRegistry::LAMAInterfaceRegistry()
 
 LAMAInterfaceRegistry::~LAMAInterfaceRegistry()
 {
+    // free all allocated interfaces
+
     while ( !mInterfaceMap.empty() )
     {
         InterfaceMapType::iterator begin = mInterfaceMap.begin();
@@ -57,11 +59,6 @@ LAMAInterfaceRegistry::~LAMAInterfaceRegistry()
         mInterfaceMap.erase( begin );
         delete ptr;
     }
-}
-
-void LAMAInterfaceRegistry::addInterface( const ContextType location, LAMAInterface* lamaInterface )
-{
-    mInterfaceMap[location] = lamaInterface;
 }
 
 const LAMAInterface* LAMAInterfaceRegistry::getInterface( const ContextType location ) const
@@ -74,6 +71,22 @@ const LAMAInterface* LAMAInterfaceRegistry::getInterface( const ContextType loca
     }
 
     return loc->second;
+}
+
+LAMAInterface& LAMAInterfaceRegistry::modifyInterface( const ContextType location )
+{
+    InterfaceMapType::const_iterator loc = mInterfaceMap.find( location );
+
+    if ( loc == mInterfaceMap.end() )
+    {
+        // create a new default interface that can be filled for this context type
+
+        LAMAInterface* lamaInterface = new LAMAInterface();
+        mInterfaceMap[location] = lamaInterface;
+        return *lamaInterface;
+    }
+
+    return *loc->second;
 }
 
 bool LAMAInterfaceRegistry::hasInterface( const ContextType location ) const

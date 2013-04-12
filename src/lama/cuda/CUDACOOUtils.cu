@@ -32,6 +32,7 @@
  */
 
 #include <lama/LAMAInterface.hpp>
+#include <lama/LAMAInterfaceRegistry.hpp>
 
 #include <lama/cuda/utils.cu.h>
 #include <lama/cuda/CUDAError.hpp>
@@ -138,5 +139,22 @@ void CUDACOOUtils::setInterface( COOUtilsInterface& COOUtils )
     LAMA_INTERFACE_REGISTER_T( COOUtils, normalGEMV, float )
     LAMA_INTERFACE_REGISTER_T( COOUtils, normalGEMV, double )
 }
+
+/* --------------------------------------------------------------------------- */
+/*    Static registration of the Utils routines                                */
+/* --------------------------------------------------------------------------- */
+
+bool CUDACOOUtils::registerInterface()
+{
+    LAMAInterface& interface = LAMAInterfaceRegistry::getRegistry().modifyInterface( Context::CUDA );
+    setInterface( interface.COOUtils );
+    return true;
+}
+
+/* --------------------------------------------------------------------------- */
+/*    Static initialiazion at program start                                    */
+/* --------------------------------------------------------------------------- */
+
+bool CUDACOOUtils::initialized = registerInterface();
 
 } // namespace lama

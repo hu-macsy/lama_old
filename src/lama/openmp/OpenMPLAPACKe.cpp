@@ -38,6 +38,7 @@
 #include <lama/openmp/OpenMPBLAS1.hpp>
 
 #include <lama/BLASInterface.hpp>
+#include <lama/LAMAInterfaceRegistry.hpp>
 #include <lama/openmp/BLASHelper.hpp>
 #include <boost/scoped_array.hpp>
 
@@ -341,5 +342,22 @@ void OpenMPLAPACKe::setInterface( BLASInterface& BLAS )
     LAMA_INTERFACE_REGISTER_T( BLAS, tptrs, float )
     LAMA_INTERFACE_REGISTER_T( BLAS, tptrs, double )
 }
+
+/* --------------------------------------------------------------------------- */
+/*    Static registration of the LAPACK routines                               */
+/* --------------------------------------------------------------------------- */
+
+bool OpenMPLAPACKe::registerInterface()
+{
+    LAMAInterface& interface = LAMAInterfaceRegistry::getRegistry().modifyInterface( Context::Host );
+    setInterface( interface.BLAS );
+    return true;
+}
+
+/* --------------------------------------------------------------------------- */
+/*    Static initialiazion at program start                                    */
+/* --------------------------------------------------------------------------- */
+
+bool OpenMPLAPACKe::initialized = registerInterface();
 
 } /* namespace lama */

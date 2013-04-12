@@ -124,6 +124,8 @@ public:
     template<typename ValueType>
     static void scale( ValueType array[], const IndexType n, const ValueType val );
 
+private:
+
     /** Routine that registers all routines of this class at the LAMA interface.
      *
      *  param[inout] UtilsInterface struct to register all routines implemented in OpenMP
@@ -131,7 +133,9 @@ public:
 
     static void setInterface( struct UtilsInterface& Utils );
 
-private:
+    static bool initialized;
+
+    static bool registerInterface();
 
     LAMA_LOG_DECL_STATIC_LOGGER( logger )
 };

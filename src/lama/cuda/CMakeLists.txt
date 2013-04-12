@@ -44,7 +44,6 @@ set ( CLASSES
         CUDAException
         CUDAHostContext
         CUDAHostContextManager
-        CUDAInterface
         CUDALAPACK
         CUDAStreamSyncToken
         CUDATracerSyncToken

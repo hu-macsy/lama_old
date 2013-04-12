@@ -41,26 +41,43 @@ set ( CLASSES
         OpenMPDenseUtils
         OpenMPDIAUtils
         OpenMPELLUtils
-        OpenMPInterface
         OpenMPJDSUtils
-        OpenMPLAPACK
         OpenMPUtils
     )
 
 # OpenMPLAPACKe requires LAPACKe interface, is in MKL
+
+set ( LAPACKEeFound FALSE )
+
 if ( MKL_FOUND )
+    if ( EXISTS "${MKL_INCLUDE_DIR}/mkl_lapacke.h" ) 
+        set ( LAPACKeFound TRUE )
+    endif()
+endif()
+
+if ( ${LAPACKeFound} )
+    message( STATUS "LAPACKe is supported and will be used" ) 
     set ( CLASSES
             ${CLASSES}
             OpenMPLAPACKe
+    )
+else()
+    message( STATUS "LAPACKe is not supported, will use LAPACK via Fortran interface" ) 
+    set ( CLASSES
+            ${CLASSES}
+            OpenMPLAPACK
     )
 endif()
     
 # can only be compiled if MKL SCALAPACK and MPI is availabe
 if ( SCALAPACK_FOUND AND MPI_FOUND )
+    message( STATUS "SCALAPACK is supported and will be used" ) 
     set ( CLASSES
             ${CLASSES}
             OpenMPSCALAPACK
     )
+else()
+    message( STATUS "SCALAPACK(optional) is not supported" ) 
 endif()
     
 lama_classes ( ${CLASSES} )

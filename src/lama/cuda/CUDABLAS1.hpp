@@ -186,6 +186,10 @@ private:
 
     template<typename T>
     static void sum_launcher( const int n, T alpha, const T* x, T beta, const T* y, T* z, cudaStream_t stream );
+
+    static bool initialized;   //!< static initialization used for registration
+
+    static bool registerInterface();  //!< registration
 };
 
 } /* namespace lama */

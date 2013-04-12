@@ -38,6 +38,7 @@
 #include <lama/openmp/OpenMPDIAUtils.hpp>
 
 #include <lama/LAMAInterface.hpp>
+#include <lama/LAMAInterfaceRegistry.hpp>
 
 // assert
 #include <lama/exception/LAMAAssert.hpp>
@@ -483,5 +484,22 @@ void OpenMPDIAUtils::setInterface( DIAUtilsInterface& DIAUtils )
     LAMA_INTERFACE_REGISTER_T( DIAUtils, jacobi, float )
     LAMA_INTERFACE_REGISTER_T( DIAUtils, jacobi, double )
 }
+
+/* --------------------------------------------------------------------------- */
+/*    Static registration of the DIAUtils routines                             */
+/* --------------------------------------------------------------------------- */
+
+bool OpenMPDIAUtils::registerInterface()
+{
+    LAMAInterface& interface = LAMAInterfaceRegistry::getRegistry().modifyInterface( Context::Host );
+    setInterface( interface.DIAUtils );
+    return true;
+}
+
+/* --------------------------------------------------------------------------- */
+/*    Static initialiazion at program start                                    */
+/* --------------------------------------------------------------------------- */
+
+bool OpenMPDIAUtils::initialized = registerInterface();
 
 } // namespace lama
