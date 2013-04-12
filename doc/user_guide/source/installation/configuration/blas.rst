@@ -32,13 +32,13 @@ the MKL is needed; this is possible by the CMake variable ``MKL_Is64``:
 
 .. code-block:: bash
 
-    export MKL_ROOT=<path-to-mkl-installation>
+    export MKL_ROOT=<path/to/mkl/installation>
 
 or
 
 .. code-block:: bash
 
-    cmake -D MKL_ROOT=<path-to-mkl-installation> -D MKL_Is64=TRUE ...
+    cmake -D MKL_ROOT=<path/to/mkl/installation> -D MKL_Is64=TRUE ...
 
 If the MKL is not available, the LAMA configuration tries to find other 
 BLAS or LAPACK libraries. If it fails, you will see a typical message like this::

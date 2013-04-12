@@ -3,6 +3,9 @@
 Windows Requirement Installation Tipps
 ======================================
 
+.. [#f1] Make sure that cmake.exe is in your (system) path, subsequent cmake calls depend on it. You can also have the
+         cygwin cmake in the path. It will cooperate with the cmake-gui. 
+
 Boost
 -----
 

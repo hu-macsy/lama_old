@@ -3,6 +3,16 @@
 Configuration
 -------------
 
+.. toctree::
+   :titlesonly:
+
+   c++
+   boost
+   blas
+   cuda
+   mpi
+   tracing
+
 The configuration of LAMA tries to find required and optional software 
 needed by LAMA and to identify correct compilation ang link flags.
 At the end of the configuration, a ``Makefile`` is generated

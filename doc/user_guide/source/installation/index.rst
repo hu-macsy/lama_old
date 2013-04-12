@@ -3,7 +3,9 @@
 Installation
 ============
 
-This guide describes how to configure and build LAMA.
+This guide describes what you will need for the installation and how to configure and build LAMA.
+Please check the requirements and download our sources. In :ref:`configuration` we explain the general steps to
+configure the build. Detailed information for special packages   
 
 Contents:
 
@@ -12,14 +14,8 @@ Contents:
    :maxdepth: 2
 
    requirements
-   windowsTipps
    download
-   configuration
-   c++
-   boost
-   blas
-   cuda
-   mpi
-   tracing
+   configuration/index
    build
    install
+   windowsTipps
