@@ -16,7 +16,7 @@ supported.
 
 .. code-block:: bash 
 
-   make -j <number-of-build-processes>
+   make [-j <number-of-build-processes>]
 
 API Documentation
 ^^^^^^^^^^^^^^^^^

@@ -38,10 +38,10 @@ or::
 
 Via ccmake you can verify that the Boost variables needed for LAMA have correct values::
 
-    BOOST_ROOT                     <path/to/boost/installation>/boost_1_46_0
-    Boost_INCLUDE_DIR              <path/to/boost/installation>/boost_1_46_0/include
-    Boost_LIBRARY_DIRS             <path/to/boost/installation>/boost_1_46_0/lib
-    Boost_PROGRAM_OPTIONS_LIBRARY  <path/to/boost/installation>/boost_1_46_0/lib/libboost_program_options.so
-    Boost_THREAD_LIBRARY           <path/to/boost/installation>/boost_1_46_0/lib/libboost_thread.so
-    Boost_UNIT_TEST_FRAMEWORK_LIBR <path/to/boost/installation>/boost_1_46_0/lib/libboost_unit_test_framework.so
+    BOOST_ROOT                     <path/to/boost/installation>
+    Boost_INCLUDE_DIR              <path/to/boost/installation>/include
+    Boost_LIBRARY_DIRS             <path/to/boost/installation>/lib
+    Boost_PROGRAM_OPTIONS_LIBRARY  <path/to/boost/installation>/lib/libboost_program_options.so
+    Boost_THREAD_LIBRARY           <path/to/boost/installation>/lib/libboost_thread.so
+    Boost_UNIT_TEST_FRAMEWORK_LIBR <path/to/boost/installation>/lib/libboost_unit_test_framework.so
 

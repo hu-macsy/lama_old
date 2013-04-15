@@ -3,7 +3,7 @@ Software Prerequisites
 
 For the installation of LAMA you will need some general software packages. In the following sections we list the
 :ref:`required <required>`, :ref:`recommended <recommended>`,  :ref:`optional <optional>` and
-:ref:`experimental <experimental>`software for building LAMA.
+:ref:`experimental <experimental>` software for building LAMA.
 You will get precise help to tell LAMA the installation path of the individual packages in seperate chapters.
 At the end we will summarize our experience with different :ref:`configurations <supported>` regarding various versions of packages.
 

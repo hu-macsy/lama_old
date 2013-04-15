@@ -64,6 +64,7 @@ json:
     && find ./ -type f -exec sed -i 's/<img/<image/g' {} \; \
     && find ./ -type f -exec sed -i 's/\.\.\/fileadmin/fileadmin/g' {} \; \
     && find ./ -type f -exec sed -i 's/\\\"installation\/\\\"/\\\"installation\/index\/\\\"/g' {} \; \
+    && find ./ -type f -exec sed -i 's/\\\"installation\/configuration\/\\\"/\\\"installation\/configuration\/index\/\\\"/g' {} \; \
     && find ./ -type f -exec sed -i 's/\\\"tutorial\/\\\"/\\\"tutorial\/index\/\\\"/g' {} \; \
     && find ./ -type f -exec sed -i 's/\\\"lecture\/\\\"/\\\"lecture\/index\/\\\"/g' {} \; \
     && find ./ -type f -exec sed -i 's/\\\"reference\/\\\"/\\\"reference\/index\/\\\"/g' {} \; \

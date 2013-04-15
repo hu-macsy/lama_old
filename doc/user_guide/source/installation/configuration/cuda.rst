@@ -3,20 +3,20 @@
 Using CUDA in LAMA
 ------------------
 
-CUDA is needed to utilize CUDA capable GPUs from NVidia. The CUDA toolkit can be downloaded here `CUDA`_.
+CUDA is needed to utilize CUDA capable GPUs from NVidia. The CUDA toolkit can be downloaded `here`__.
 
-.. _CUDA: https://developer.nvidia.com/cuda-downloads
+__ https://developer.nvidia.com/cuda-downloads
 
 CUDA is optional and LAMA can be built without it. But you will not be able to take advantage of GPUs.
 
 The configuration of LAMA usually finds an available CUDA installation on your system.
 If not, you can give it a hint where to find it::
 
-   cmake -DCUDA_TOOLKIT_ROOT=<path-to-cuda-installation>
+   cmake -D CUDA_TOOLKIT_ROOT=<path/to/cuda/installation>
 
 If CUDA is available on your system but you do not want to use it, you can switch off its use as follows::
 
-   cmake -DLAMA_USE_CUDA=OFF
+   cmake -D LAMA_USE_CUDA=OFF
 
 Furthermore, you can change relevant CMake variables for CUDA by using the ccmake utility.
 

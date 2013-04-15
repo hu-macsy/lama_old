@@ -5,16 +5,14 @@ C/C++ Compiler
 
 LAMA is written in C++, therefore a C++ compiler is mandatory.
 
-On Linux systems, the use of the GNU C++ compiler (version 4.4.x or higher)
-or the Intel C++ compiler is recommended.
+On Linux systems, the use of the GNU C++ compiler (version 4.4.x or higher) or the Intel C++ compiler is recommended.
 On Window systems, the use of Visual Studio is recommended.
 
-LAMA exploits OpenMP parallelization for the use of multiple cores of one CPU and/or for
-multiple CPUs sharing a global address space. Therefore a C++ compiler supporting
-OpenMP is strongly recommended.
+LAMA exploits OpenMP parallelization for the use of multiple cores of one CPU and/or for multiple CPUs sharing a global
+address space. Therefore a C++ compiler supporting OpenMP is strongly recommended.
 
-During the configuration with cmake a valid C++ compiler will be identified on your
-machine. You can force the use of a certain C and C++ compiler in the following way::
+During the configuration with cmake a valid C++ compiler will be identified on your machine. You can force the use of a
+certain C and C++ compiler in the following way::
 
   export CC=<link to C-compiler>
   export CXX<link to C++ compiler>

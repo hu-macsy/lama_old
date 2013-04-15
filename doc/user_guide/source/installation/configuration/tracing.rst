@@ -3,13 +3,12 @@
 Tracing with LAMA
 =================
 
-Within LAMA, many routines have been instrumented at source code level by so-called regions.
-If tracing is enabled, an internal subroutine is called at each entry and exit of
-such a region. These internal subroutines are used for timing of the regions
-and/or for the generation of Vampir trace files that can be visualized by Vampir.
+Within LAMA, many routines have been instrumented at source code level by so-called regions. If tracing is enabled, an
+internal subroutine is called at each entry and exit of such a region. These internal subroutines are used for timing
+of the regions and/or for the generation of Vampir trace files that can be visualized by Vampir.
 
-By default, tracing is disabled (OFF) and the regions are not instrumented. Tracing can
-be enabled by the cmake variable ``LAMA_TRACE_LEVEL``.
+By default, tracing is disabled (OFF) and the regions are not instrumented. Tracing can be enabled by the cmake
+variable ``LAMA_TRACE_LEVEL`` for timing (TIME) or Vampir tracing (VT).
 
 .. code-block:: bash 
 
@@ -26,7 +25,7 @@ are timed.
    cmake -DLAMA_TRACE_LEVEL=TIME ...
 
 Beside the source code instrumentation for the installation, take into account that
-the timing must be explicitly enabled at runtime.
+the timing must be explicitly enabled at runtime by:
 
 .. code-block:: bash 
 
@@ -52,7 +51,7 @@ During the build, source code instrumentation of LAMA for VampirTrace must be en
 
 .. code-block:: bash 
 
-   export VT_ROOT=<VampirTrace-installation-directory>
+   export VT_ROOT=<VampirTrace/installation/directory>
    cmake -DLAMA_TRACE_LEVEL=VT ...
 
 The environment variable ``VT_ROOT`` should be set to the directory where the VampirTrace installation is available.

@@ -49,8 +49,8 @@ Unfortunately, the CMake modules have some problems in finding the BLAS and LAPA
 Especially the module FindLAPACK.cmake has the problem that in some versions the CMAKE_FIND_LIBRARY_SUFFIXES 
 variable was misspelled as CMAKE_FIND_LIBRRAY_SUFFIXES. Here is a solution of how to specify the corresponding libraries directly::
 
-  cmake -DBLAS_blas_LIBRARY=/usr/lib64/libblas.so.3  \
-        -DLAPACK_lapack_LIBRARY=/usr/lib64/liblapack.so.3
+  cmake -D BLAS_blas_LIBRARY=/usr/lib64/libblas.so.3  \
+        -D LAPACK_lapack_LIBRARY=/usr/lib64/liblapack.so.3
 
 ScaLAPACK is optional and is used for building the inverse of a distributed dense matrix.
 If it is not available, the inverse is calculated on a replicated matrix. 

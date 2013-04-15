@@ -12,6 +12,6 @@ and should download the software as follows::
    
    git clone ssh://<your_user_id>@git.code.sf.net/p/libama/git lama
 
-A new directory lama will be created. This directory will be refered to by ``<project-root>``
+A new directory lama will be created. This directory will be refered to by ``<project-root>``.
 
 
