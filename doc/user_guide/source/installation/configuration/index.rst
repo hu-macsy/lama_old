@@ -1,7 +1,7 @@
 .. _configuration:
 
 Configuration
--------------
+=============
 
 The configuration of LAMA tries to find required and optional software needed by LAMA and to identify correct
 compilation and link flags. At the end of the configuration, a ``Makefile`` or ``Visual Studio project`` is generated

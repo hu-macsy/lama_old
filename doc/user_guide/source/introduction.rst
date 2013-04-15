@@ -1,5 +1,6 @@
+************
 Introduction
-============
+************
 
 This documentation will give an overview of the features of the \Library of
 \Accelerated \Math \Applications (\L\A\M\A) and will describe the general usage
@@ -12,7 +13,7 @@ advanced :ref:`lecture_index` of our hands-on session follows before you get the
 :ref:`benchmarks_index` and on special hints :ref:`developer_index`. 
 
 About LAMA
-----------
+==========
 
 .. image:: _images/LAMA.png
 
@@ -24,7 +25,7 @@ communicating distributed data between processes. On top of this we prepare a se
 or CG method.
 
 Our goals
----------
+=========
 
 - easy to use text-book syntax for linear algebra operations (y = A * x + b)
 - hidden complexity of hardware specific programming and communication needs 
@@ -33,7 +34,7 @@ Our goals
 - easy extensibility (e.g. for sparse matrix formats, compute backends, communication models, ...)
 
 Given features
---------------
+==============
 
 The supported features of the actual release are listed below:
 
@@ -101,7 +102,7 @@ If you are interested in this, please `contact`_ us.
 .. _`contact`: mailto:lama@scai.fraunhofer.de
 
 Use Cases
----------
+=========
 
 So, when it's time to use LAMA?
 

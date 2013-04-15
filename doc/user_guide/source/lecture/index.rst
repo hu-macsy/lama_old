@@ -1,7 +1,8 @@
 .. _lecture_index:
 
+*******
 Lecture
-=======
+********
 
 This tutorial gives an insight into the Library for Accelerated Math
 Applications(LAMA) and its concepts. It guides you through the LAMA-architecture
@@ -19,7 +20,7 @@ functions and classes you should use to complete the tasks. Please consult the
 .. _online API documentation: http://libama.sourceforge.net/doc/index.html
 
 Requirements
-------------
+============
 
 Here we assume that LAMA has already been downloaded, configured, compiled and
 installed on your machine.
@@ -62,7 +63,7 @@ A example **Makefile** can be found together with the **simple.cpp** example
 and the solutions for the tutorial tasks at **$LAMA_ROOT/share/tutorial**.
 
 H4H Tutorial Remarks
---------------------
+====================
 
 To run the tutorial on nova log in to the head node of nova and submit a
 interactive job to the gpus queue. Please allocate 2 cpus so that all tutorial
@@ -78,7 +79,8 @@ below.
    export LAMA_ROOT=/home_nfs/h4h/LAMA/lama
 
 Tasks
-^^^^^
+-----
+
 .. toctree::
    :titlesonly:
 
@@ -92,7 +94,7 @@ Tasks
    task_7
 
 Solutions
-^^^^^^^^^
+---------
 
 .. toctree::
    :titlesonly:

@@ -1,7 +1,7 @@
 .. _installation_tracing:
 
 Tracing with LAMA
-=================
+-----------------
 
 Within LAMA, many routines have been instrumented at source code level by so-called regions. If tracing is enabled, an
 internal subroutine is called at each entry and exit of such a region. These internal subroutines are used for timing
@@ -15,7 +15,7 @@ variable ``LAMA_TRACE_LEVEL`` for timing (TIME) or Vampir tracing (VT).
    cmake -DLAMA_TRACE_LEVEL=<OFF | TIME | VT>
 
 Tracing for Time Measurements
------------------------------
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 The value ``TIME`` will instrument LAMA in such a way that all regions in the code
 are timed.
@@ -37,7 +37,7 @@ be very low and negligible. Regions in LAMA are usually at a higher lever and ne
 within time-consuming loops.
 
 Using Vampir/VampirTrace in LAMA
---------------------------------
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 VampirTrace is an open source library that allows detailed logging of program execution for parallel applications 
 using message passing (MPI) and threads (OpenMP, Pthreads). Besides these typical parallelization paradigms, 

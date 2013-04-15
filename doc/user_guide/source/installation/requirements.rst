@@ -14,7 +14,8 @@ On Windows you need to download the package from the precise page and install th
 .. 	_required:
 
 Required software
-^^^^^^^^^^^^^^^^^
+-----------------
+
 First of all you need to install the following software for building LAMA:
 
 - CMake Version 2.8 or later
@@ -36,7 +37,8 @@ First of all you need to install the following software for building LAMA:
 .. _recommended:
 
 Recommended software
-^^^^^^^^^^^^^^^^^^^^
+--------------------
+
 For using the support of parallel/hybrid machines in LAMA, you need the following:
 
 - OpenMP 2.0 capable :ref:`C++ Compiler <c++>`
@@ -54,7 +56,8 @@ For using the support of parallel/hybrid machines in LAMA, you need the followin
 .. _optional:
 
 Optional software
-^^^^^^^^^^^^^^^^^
+-----------------
+
 For optional features you may also install the following:
 
 - Doxygen
@@ -74,7 +77,8 @@ For optional features you may also install the following:
 .. _experimental:
 
 Experimental software 
-^^^^^^^^^^^^^^^^^^^^^
+---------------------
+
 For experimental features (only available in the corresponding git branches not in the release!) you may also install
 the following:
 
@@ -95,7 +99,7 @@ the following:
 .. _supported:
 
 Configurations
-^^^^^^^^^^^^^^
+--------------
 We have tested the installation of LAMA with various versions of the required software.
 Have a look at the following table whether you configuration is explicitly supported.
 

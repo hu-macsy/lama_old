@@ -1,8 +1,8 @@
 .. _benchmarks_index:
 
+**********
 Benchmarks
-==========
-
+**********
 
 .. toctree::
    :titlesonly:

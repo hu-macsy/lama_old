@@ -1,7 +1,8 @@
 .. _testing_index:
 
+*******
 Testing
-=======
+*******
 
 .. toctree::
    :titlesonly:

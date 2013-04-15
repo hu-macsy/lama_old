@@ -1,5 +1,5 @@
 Install
--------
+=======
 
 To install LAMA to the configured installation path just call
 
