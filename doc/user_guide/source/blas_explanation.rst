@@ -1,5 +1,7 @@
 .. _blas_explanation:
 
+:orphan:
+
 Brief Introduction into BLAS
 ============================
  
