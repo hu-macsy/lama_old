@@ -45,7 +45,6 @@ All possible options and there significations are listed in the table below.
 
 .. csv-table:: 
    :header: "CMake variable", "Signification"
-   :widths: 0.45, 0.55
 
    "CMAKE_BUILD_TYPE", "Debug (default), or Release (for an optimized build)"
    "CMAKE_INSTALL_PREFIX", "Installation path of LAMA library"
@@ -69,7 +68,6 @@ following table. For advanced help refer to the seperate section.
 
 .. csv-table:: 
    :header: "Package", "CMake variable"
-   :widths: 0.45, 0.55
 
    "Boost", "BOOST_ROOT"
    "MKL (for BLAS, LAPack and ScaLAPack)", "MKL_ROOT or MKL_INCLUDE_DIR and MKL_LIBRARY_PATH"
