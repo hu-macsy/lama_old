@@ -1,3 +1,5 @@
+:orphan:
+
 Task 1: Setup a system of linear equations
 ==========================================
 

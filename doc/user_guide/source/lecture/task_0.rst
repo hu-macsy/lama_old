@@ -1,3 +1,5 @@
+:orphan:
+
 Task 0: Solving a system of linear equations
 ============================================
 

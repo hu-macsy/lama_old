@@ -1,3 +1,5 @@
+:orphan:
+
 Solution of Task 1 (a)
 ======================
 

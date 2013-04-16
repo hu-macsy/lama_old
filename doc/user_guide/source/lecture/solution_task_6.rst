@@ -1,4 +1,4 @@
-.. _tutorial_solution_task6:
+:orphan:
 
 Solution of Task 6
 ==================

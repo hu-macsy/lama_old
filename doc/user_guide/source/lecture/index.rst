@@ -2,7 +2,7 @@
 
 *******
 Lecture
-********
+*******
 
 This tutorial gives an insight into the Library for Accelerated Math
 Applications(LAMA) and its concepts. It guides you through the LAMA-architecture
@@ -29,7 +29,7 @@ should be set via the environment variable **LAMA_ROOT**.
 
 .. code-block:: bash
 
-   export LAMA_ROOT=<path-to-lama-installation-directory>
+   export LAMA_ROOT=<path/to/lama/installation/directory>
 
 The installation directory should contain online documentation
 that is also available online `here`__.
@@ -57,10 +57,10 @@ into your library path.
 The following example program can be used to verify that compilation, linking
 and running works fine.
 
-:ref:`example`
+:doc:`Solver <../tutorial/example_solver>`
 
 A example **Makefile** can be found together with the **simple.cpp** example
-and the solutions for the tutorial tasks at **$LAMA_ROOT/share/tutorial**.
+and the solutions for the tutorial tasks at **$LAMA_ROOT/doc/user_guide/cpp_source/tutorial/**.
 
 H4H Tutorial Remarks
 ====================
@@ -78,32 +78,14 @@ below.
    module load intel_compiler/12.0.2.137
    export LAMA_ROOT=/home_nfs/h4h/LAMA/lama
 
-Tasks
------
+.. csv-table:: 
+   :header: "Tasks", "Solutions"
 
-.. toctree::
-   :titlesonly:
-
-   task_0
-   task_1
-   task_2
-   task_3
-   task_4
-   task_5
-   task_6
-   task_7
-
-Solutions
----------
-
-.. toctree::
-   :titlesonly:
-
-   solution_task_1
-   solution_task_2
-   solution_task_3
-   solution_task_4
-   solution_task_5
-   solution_task_6
-   solution_task_7
-   
+   ":doc:`Task 0 <task_0>`", ":doc:`Solution 0 <solution_task_0>`"
+   ":doc:`Task 1 <task_1>`", ":doc:`Solution 1 <solution_task_1>`"
+   ":doc:`Task 2 <task_2>`", ":doc:`Solution 2 <solution_task_2>`"
+   ":doc:`Task 3 <task_3>`", ":doc:`Solution 3 <solution_task_3>`"
+   ":doc:`Task 4 <task_4>`", ":doc:`Solution 4 <solution_task_4>`"
+   ":doc:`Task 5 <task_5>`", ":doc:`Solution 5 <solution_task_5>`"
+   ":doc:`Task 6 <task_6>`", ":doc:`Solution 6 <solution_task_6>`"
+   ":doc:`Task 7 <task_7>`", ":doc:`Solution 7 <solution_task_7>`"

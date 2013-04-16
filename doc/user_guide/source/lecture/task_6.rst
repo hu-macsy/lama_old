@@ -1,3 +1,5 @@
+:orphan:
+
 Task 6: Enable Logging to track the moving of data to an from the GPU
 =====================================================================
 

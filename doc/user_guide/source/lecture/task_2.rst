@@ -1,3 +1,5 @@
+:orphan:
+
 Task 2: Implement a CG Iterative Solver
 =======================================
 

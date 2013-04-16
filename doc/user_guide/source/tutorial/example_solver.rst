@@ -1,5 +1,3 @@
-.. _example:
-
 Solver Example
 ==============
 
@@ -9,26 +7,29 @@ Method.
 ::
    
    typedef double ValueType;
-   
-   DenseVector<ValueType> solution( ... );
-   const DenseVector<ValueType> rhs( solution );
-   CSRSparseMatrix<ValueType> matrix( ... );
-   
-   LoggerPtr logger( 
-      new CommonLogger( 
-         "<CG>: ",        
+
+   DenseVector<ValueType> solution( 8, 2.0 );
+   const DenseVector<ValueType> rhs( solution.getDistributionPtr(), 1.0 );
+
+   CSRSparseMatrix<ValueType> matrix;
+   MatrixCreator<ValueType>::buildPoisson2D( matrix, 9, 100, 100 );
+
+   LoggerPtr logger(
+      new CommonLogger(
+         "<CG>: ",
          LogLevel::solverInformation,
          LoggerWriteBehaviour::toConsoleOnly,
          std::auto_ptr<Timer>( new OpenMPTimer() ) ) );
-   
-   BooleanConditionPtr criterion( new IterationCount( 10 ) );
-   
-   CG solver( "mySolverName", logger );
-   
-   solver.setStoppingCriterion( criteria );
-   solver.intitialize( matrix ); 
-   solver.solve( solution, rhs );   
 
+   CriterionPtr criterion( new IterationCount( 10 ) );
+
+   CG solver( "mySolverName", logger );
+
+   solver.setStoppingCriterion( criterion );
+   solver.initialize( matrix );
+   solver.solve( solution, rhs );  
+
+:download:`Download source file <../../cpp_source/tutorial/solver.cpp>`
 
 First we need the required vectors and matrices for the lineare equation :math:`Ax=b` where A is the 
 matrix, x is the solution vector and b is the right-hand-side (rhs).

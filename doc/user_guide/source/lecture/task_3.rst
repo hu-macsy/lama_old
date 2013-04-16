@@ -1,3 +1,5 @@
+:orphan:
+
 Task 3: Enable Solver logging
 =============================
 

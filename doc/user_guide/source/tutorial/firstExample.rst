@@ -5,9 +5,7 @@ The following C++ program shows a very simple example program of how to use LAMA
 
 ::
 
-    // Always include this file at the beginning
-
-    #include <lama.hpp>
+    #include <lama.hpp> // Always include this file at the beginning
 
     #include <lama/DenseVector.hpp>
     #include <lama/Scalar.hpp>

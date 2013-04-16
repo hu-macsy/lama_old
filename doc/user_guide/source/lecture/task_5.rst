@@ -1,3 +1,5 @@
+:orphan:
+
 Task 5: Let the CG Iterative Solver run on a GPU
 ================================================
 
