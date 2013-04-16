@@ -1,14 +1,8 @@
 First Steps
 ===========
 
-**TODO: Parts of this page are deprecated, please update.**
-
-Content
--------
-
-- Requirements
-- SVN
-- Makefile Generation with CMake
+This description should give you a good start in programming with and in LAMA. It will show you the requirements for a 
+smooth implementation process, how to work with the versioning tool git and how to properly build LAMA.
 
 Requirements
 ^^^^^^^^^^^^
