@@ -1,5 +1,5 @@
-BOOST_ROOT=/home/brandes/local/boost_1_46_0
-LAMA_ROOT=/home/brandes/local/lama
+BOOST_ROOT=<path/to/your/boost/install/dir>
+LAMA_ROOT=<path/to/your/lama/install/dir>
 
 CPP_FLAGS = -I${BOOST_ROOT}/include -I${LAMA_ROOT}/include
 

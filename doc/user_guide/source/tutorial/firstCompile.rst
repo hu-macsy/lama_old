@@ -3,7 +3,7 @@ Compilation and Execution of LAMA Programs on Linux Systems
 
 The envrionment variable LAMA_ROOT refers the directory of your LAMA installation::
 
-    export LAMA_ROOT=<installation-directory>
+    export LAMA_ROOT=<installation/directory>
 
 The following command compiles and links your example program simple.cpp::
 
@@ -18,7 +18,7 @@ If this step was successful, you can run the executable::
 
     ./simple
 
-Due to the dynamic linking of libraries, the executable simple will not contain the LAMA codes itself.
+Due to the dynamic linking of libraries, the executable **simple** will not contain the LAMA codes itself.
 Instead, it contains a reference to the LAMA library and references will be resolved when the executable
 is started. Here, it is very likely that you get the following error message::
 
@@ -60,6 +60,8 @@ The environment variable LAMA_LOG should be set with a useful value to get rid o
 You can set the variable explicitly with the default value::
 
     export LAMA_LOG=WARN
+    
+For other useful environment variables see doc:`here <environmentVariables>`.
 
 Now the output should be as follows::
 
