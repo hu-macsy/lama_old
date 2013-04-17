@@ -252,11 +252,11 @@ public:
 
     /** Implementation for MatrixStorage::maxDiffNorm */
 
-    virtual ValueType maxDiffNorm( const MatrixStorage<ValueType>& other );
+    virtual ValueType maxDiffNorm( const MatrixStorage<ValueType>& other ) const;
 
     /** Implementation of maxDiffNorm for dense matrices */
 
-    virtual ValueType maxDiffNormImpl( const DenseStorageView<ValueType>& other );
+    virtual ValueType maxDiffNormImpl( const DenseStorageView<ValueType>& other ) const;
 
     /** Template method for getting row. */
 

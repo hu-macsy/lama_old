@@ -770,7 +770,7 @@ ValueType DenseStorageView<ValueType>::maxNorm() const
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-ValueType DenseStorageView<ValueType>::maxDiffNorm( const MatrixStorage<ValueType>& other )
+ValueType DenseStorageView<ValueType>::maxDiffNorm( const MatrixStorage<ValueType>& other ) const
 {
     LAMA_ASSERT_EQUAL_ERROR( mNumRows, other.getNumRows() )
     LAMA_ASSERT_EQUAL_ERROR( mNumColumns, other.getNumColumns() )
@@ -797,7 +797,7 @@ ValueType DenseStorageView<ValueType>::maxDiffNorm( const MatrixStorage<ValueTyp
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-ValueType DenseStorageView<ValueType>::maxDiffNormImpl( const DenseStorageView<ValueType>& other )
+ValueType DenseStorageView<ValueType>::maxDiffNormImpl( const DenseStorageView<ValueType>& other ) const
 {
     // no more checks needed here
 
