@@ -15,4 +15,4 @@ Adding a new Sparse Matrix Storage
 - Test Matrix Vector Multiplication by instantiating matrixTimesVectorTestImpl for the new Matrix template in
   PVectorTest
 
-- Add a Benchmark for Matrix Vector Multiplication by instantiating LAMAMVBenchmark for the new Matrix template
+- optional: Add a Benchmark for Matrix Vector Multiplication by instantiating LAMAMVBenchmark for the new Matrix template

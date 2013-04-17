@@ -2,10 +2,23 @@ First Steps
 ===========
 
 This description should give you a good start in programming with and in LAMA. It will show you the requirements for a 
-smooth implementation process, how to work with the versioning tool git and how to properly build LAMA.
+convenient implementation process, how to work with the versioning tool and how to properly build and test LAMA.
 
 Requirements
-^^^^^^^^^^^^
+------------
+
+  - programming environment: Eclipse IDE C/C++
+  - versioning tool: Git
+  - build tool: CMake
+  - test framework: Boost test
+  - documentation tool: Doxygen (system docu) and Sphinx (user docu --> web page)
+
+Eclipse
+^^^^^^^
+We are using the Eclipse IDE for C/C++ as our standard programming environment. It is well known, so most programmers
+are comfortable with it and it offers a couple of nice features as there are plugins for versioning, cmake and ReST
+(Sphinx) editor as well as a build-in debugger or code-formatting support.  
+
 
 - Java SDK and Eclipse IDE C/C++ have to be both either 32bit or 64bit (esp. Linux)! 
 - Please, also refer to the Eclipse documentation in order to avoid problems with non-suitable java versions
@@ -13,135 +26,60 @@ Requirements
 
 .. code-block:: bash
 
-	JAVA_HOME=<install_dir_java>/bin
+	JAVA_HOME=<install/dir/java>/bin
+	
+We recommend Eclipse CDT `Indigo`_ now at least with the `EGit`_ plugin. Optional you can install the
+`CMake <http://www.cthing.com>`_ and `ReST`_ editor. 
 
-- CMake (Version > 2.8) and cppunit have to be installed and be present in the standard executable path
-- Doxygen has to be present on the system, if API documentation is supposed to be generated
+.. _Indigo: http://www.eclipse.org/downloads/packages/eclipse-ide-cc-developers-includes-incubating-components/indigosr2
+.. _EGit: http://www.eclipse.org/egit/
+.. _ReST: http://resteditor.sourceforge.net/
 
-SVN
----
+GIT
+^^^
 
-Installation
-^^^^^^^^^^^^
+Our versioning tool of choice is `Git`_. The repository is hosted at sourceforge.
+You can check out the source code via Git where the HTTP access is as follows:
 
-In order to check out this project's source code, it is advisable to rely on `Subclipse`_ for Ecplise or
-`Tortoisesvn`_ for Windows. Please refer to the documentation on the respective sites for help with the
-installation process.
-
-.. _Subclipse: http://subclipse.tigris.org/
-.. _Tortoisesvn: http://tortoisesvn.tigris.org/
-
-Working with SVN
-^^^^^^^^^^^^^^^^
-
-Creating a Makefile with CMake
--------------------------------
-
-The subfolder **build** is going to contain the complete build of this project.
-In order to be able to use the normal **make** a makefile has to be generated.
-This project is using CMake for this purpose. In order to create the Makefile with all dependencies for
-a given system CMake has to be called in the following way:
+.. _Git: http://git-scm.com/
 
 .. code-block:: bash
 
-	$ cmake [-D CMAKE_INCLUDE_PATH=<install_dir_cmake>/include \]
-        [-D CMAKE_LIBRARY_PATH=<install_dir_cmake>/lib \]
-        [-D DOXYGEN_EXECUTABLE=<doxygen_bin> \]
-        <src_dir>
+    git clone http://git.code.sf.net/p/libama/git lama
 
-in a UNIX-like environment where *<src_dir>* points to the folder containing the source.
+Code developers must register at `Sourceforge`_ and join the LAMA developer team.
+Place your rsa-key at Account --> Services to be able for checking in.
+You should download the software as follows:
 
-The option
-
-.. code-block:: bash
-
-	-D DOXYGEN_EXECUTABLE
-
-defines the path to the doxygen executable, if not present in the standard path.
-
-In order to execute CMake with settings for the Intel Compiler the following has to be specified (assuming a
-bash shell):
+.. _Sourceforge: http://sourceforge.net/
 
 .. code-block:: bash
 
-	$ export CC=icc
-	$ export CXX=icpc
+   git clone ssh://<your_user_id>@git.code.sf.net/p/libama/git lama
 
-before calling *cmake*
+Using the EGit Eclipse plugin just import a Git project and use ``ssh://<your_user_id>@git.code.sf.net/p/libama/git`` as
+repository location.
 
-Overview: Makefile targets
-^^^^^^^^^^^^^^^^^^^^^^^^^^
+CMake
+^^^^^
 
-**Compiling**
+We are using `CMake <http://www.cmake.org/>`_ for creating our Makefiles (Linux) and Visual Studio project (Windows).
+Therefore CMake (in Version 2.8 or greater) have to be installed and be present in the standard executable path.
 
-Compile everyting
+Doxygen
+^^^^^^^
 
-.. code-block:: bash
+For our system documentation we make use of `Doxygen`_. So if API documentation is supposed to be generated Doxygen has
+to be present on the system. To build it just call ``make doc`` in the build directory after the configuration step.
 
-	make
+.. _Doxygen: http://www.doxygen.org
 
-Compile the C-part of the library
+Sphinx
+^^^^^^
 
-.. code-block:: bash
+`Sphinx`_ is used for our user documentation. Sphinx offers a wide support of different targets. So you can create a
+local webbased documentation by calling ``make html`` or a pdf by ``make pdflatex`` in **LAMA_ROOT/doc/user_guide/**.
+The Sphinx source are located in LAMA_ROOT/doc/user_guide/source/, refered C++-sources of the lecture and the tutorial
+you can find in the subfolders of LAMA_ROOT/doc/user_guide/cpp_source/.
 
-	make lama
-
-Compile the C++ and the C-part of the library
-
-.. code-block:: bash
-
-	$ make lama++
-
-**Unit Tests**
-
-Compile unit tests
-
-.. code-block:: bash
-
-	$ make lama_unit_test
-
-Run the unit tests
-
-.. code-block:: bash
-
-	make test
-
-Run tests with valgrind
-
-.. code-block:: bash
-
-	make test_valgrind
-
-Run a specific test
-
-
-.. code-block:: bash
-
-	make <testname>
-
-for a complete list of testnames refer to :ref:`testList`.
-Run that specific test with valgrind
-
-.. code-block:: bash
-
-	make <testname>_valgrind
-
-Create the API documentation with Doxygen
-
-.. code-block:: bash
-
-	make doc
-
-**Cleaning up**
-
-Remove executables and dependencies which are no longer needed:
-
-.. code-block:: bash
-
-	make clean
-
-Remove everything which has been created after checkout
-
-.. code-block:: bash
-
-	make distclean
+.. _Sphinx: http://sphinx-doc.org/

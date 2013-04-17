@@ -1,16 +1,15 @@
-laa.. _styleGuide:
+.. _styleGuide:
 
 Style Guide
 ===========
 
-This style guide should improve the readability and help to maintain a common style of the LAMA
-source code. In general it should be considered as a guide line not strict rule set. To fulfill
-these requirements and to make it easier to flow each rule should have a motivation. This style
-guide is mainly intended for C++ therefor some exceptions may apply to source code written in other
-languages.
+This style guide should improve the readability and help to maintain a common style of the LAMA source code. In general
+it should be considered as a guide line not strict rule set. To fulfill these requirements and to make it easier to
+flow each rule should have a motivation. This style guide is mainly intended for C++ therefore some exceptions may
+apply to source code written in other languages.
 
 General Remarks
-----------------
+---------------
 
 - All source files should compile with all enabled warnings without emitting any warning message.
   This rule also applies for the generation of the documentation with doxygen and CMake. Rationale:
@@ -48,34 +47,32 @@ other rationale is given.
 
 ::
 	
-	void veryLongMethodName(
-    	ValueType longArgumentName1,
-    	ValueType longArgumentName2);
+   void veryLongMethodName(
+       ValueType longArgumentName1,
+       ValueType longArgumentName2 );
     	
-   or this way
+or this way
 
 ::
 
-	template<typename T, typename Allocator>
-	inline const Expression<
-                 Expression<
-                     T,
-                     CUDAVector<T, Allocator>,
-                     Times>,
-                 Expression<
-                     T,
-                     Expression<
-                        CUDACSRSparseMatrix<T, Allocator>,
+   template<typename T, typename Allocator>
+       inline const Expression<
+            Expression< T,
+                CUDAVector<T, Allocator>,
+                    Times>,
+            Expression< T,
+                Expression<
+                    CUDACSRSparseMatrix<T, Allocator>,
                         CUDAVector<T, Allocator>,
+                            Times>,
                         Times>,
-                     Times>,
-                 Plus>
-    operator+(
-        const CUDAVector<T, Allocator>& arg1,
-        const Expression<
-                  CUDACSRSparseMatrix<T, Allocator>,
-                  CUDAVector<T, Allocator>,
-                  Times>& arg2 );
+                    Plus>
+        operator+(
+             const CUDAVector<T, Allocator>& arg1,
+             const Expression<
+                 CUDACSRSparseMatrix<T, Allocator>,
+                 CUDAVector<T, Allocator>,
+                 Times>& arg2 );
                   
 This rule should inhibit the necessarity to scroll horizontally within source code editors and
 allow the usage of different editors also on the command line (e.g. **vi**)
@@ -97,46 +94,46 @@ Example1
 
 ::
 
-	for ( IndexType i = 0; i < n; ++i )
-	{
-        y[i] += a * x[i];
-        if ( doZComputation )
-        {
-	        z[i] = y[i] / b;
-	    }
-	} // for ( IndexType i = 0; i < n; ++i )
+   for ( IndexType i = 0; i < n; ++i )
+   {
+       y[i] += a * x[i];
+       if ( doZComputation )
+       {
+           z[i] = y[i] / b;
+       }
+   } // for ( IndexType i = 0; i < n; ++i )
 
 Example2
 
 ::
 
-	int result = -1;
-	switch( a )
-	{
-        case 0:
-        {
-	        result = 0;
-        	break;
-        }
-        case 1:
-        {
-	        result += 1;
-        	// intended fall through
-        }
-        case 2:
-    	    // intended fall through
-        case 3:
-        {
-	        const int b = 2;
-        	result += b;
-        	break;
-        }
-    	default:
-    	{
-	        result = -2;
-        	break;
-    	}
-	}
+   int result = -1;
+   switch( a )
+   {
+       case 0:
+       {
+           result = 0;
+           break;
+       }
+       case 1:
+       {
+           result += 1;
+           // intended fall through
+       }
+       case 2:
+           // intended fall through
+       case 3:
+       {
+           const int b = 2;
+           result += b;
+           break;
+       }
+       default:
+       {
+           result = -2;
+           break;
+       }
+    }
 
 The arrangement of the curly braces in the same column together improves the ascertainability of
 structured blocks.
@@ -235,18 +232,18 @@ To give an example, here the code for a CSR sparse matrix vector multiplication:
 
 ::
 
-	for ( IndexType i = 0; i < numRows; ++i )
-	{
-	    y[i] = 0.0;
-	    for ( IndexType jj = ia[i]; jj < ia[i + 1]; ++jj )
-	    {
-        	const IndexType j = ja[jj];
-        	y[i] += values[jj] * x[j];
-        }
-	}
+   for ( IndexType i = 0; i < numRows; ++i )
+   {
+       y[i] = 0.0;
+       for ( IndexType jj = ia[i]; jj < ia[i + 1]; ++jj )
+       {
+           const IndexType j = ja[jj];
+           y[i] += values[jj] * x[j];
+       }
+   }
 
 Files
-------
+-----
 - Source files which contain a main method are named like the executable build.
 
 - We use the following file extensions: **.hpp** for C++ header files, **.h** for C header files, **.cuh** for C for
@@ -263,6 +260,7 @@ Files
 
 	#ifndef LAMA_NAMEOFTHEHEADERFILE_HPP
 	#define LAMA_NAMEOFTHEHEADERFILE_HPP
+   ...
 	#endif // LAMA_NAMEOFTHEHEADERFILE_HPP
 
 The include header guards avoid violation of the multiple definition rule.
@@ -274,38 +272,39 @@ The include header guards avoid violation of the multiple definition rule.
 
    - Each target directory (lama/, bench/, tests/, ...) has its own system include path, which is set by **include_directories()** in CMake.
     
-   - In a target (sub-)directory we use local includes like: **#include "CUDA/CUDADevice.h"**
+   - In a target (sub-)directory we use local includes like: **#include "CUDA/CUDADevice.hpp"**
    
-   - Avoid using relative paths like **"../Exception/Assert.h"**, because in general this indicates a bad design or directory structure.
+   - Avoid using relative paths like **"../Exception/Assert.hpp"**, because in general this indicates a bad design or directory structure.
    
-   - **#include <lama.h>** from the testing target shouldn't be used. Instead use: **#include <lama/lama.h>**.
+   - **#include <lama.hpp>** from the testing target shouldn't be used. Instead use: **#include <lama/lama.hpp>**.
    
   - Includes of header files that are not part of LAMA should be always done with **#include <file>** to maintain a clear separation between projects.
 
-Example:
+Example
+^^^^^^^
+   
+directory structure:
    
 .. code-block:: bash
-
-   **
-     src
-     src/lama/cppFile.hpp
-     src/lama/cppFile.cpp
-     src/lama/subdir2/cppFile2.hpp
-     src/lama/subdir3/cppFile3.cpp
-     src/test/cppFile.hpp
-     src/test/cppFile.cpp
-     src/test/subdir1/cppFile2.hpp
-   **
    
-src/lama/cppfile.cpp
+   src
+   src/lama/cppFile.hpp
+   src/lama/cppFile.cpp
+   src/lama/subdir2/cppFile2.hpp
+   src/lama/subdir3/cppFile3.cpp
+   src/test/cppFile.hpp
+   src/test/cppFile.cpp
+   src/test/subdir1/cppFile2.hpp
+   
+in src/lama/cppfile.cpp:
    
 .. code-block:: bash
 
    #include "cppFile.hpp"
    #include "subdir2/cppFile2.hpp"
-   #include <test/cppFfile.hpp>
+   #include <test/cppFile.hpp>
    
-src/lama/subdir3/cppfile3.cpp
+in src/lama/subdir3/cppfile3.cpp:
    
 .. code-block:: bash
 
@@ -313,7 +312,7 @@ src/lama/subdir3/cppfile3.cpp
    #include "../subdir2/cppFile2.hpp"  //this should be avoided in general
    #include <test/cppFfile.hpp>
 
-src/test/cppFile.cpp
+in src/test/cppFile.cpp:
    
 .. code-block:: bash
 
@@ -321,7 +320,7 @@ src/test/cppFile.cpp
    #include "cppFile2.hpp"
 
 Directories
-------------
+-----------
 
 - If directories are getting to full sub directories that form logical subgroups should be created.
 
@@ -335,13 +334,13 @@ Variables
   and dependencies and therefore they especially make it hard to parallelize code.
 
 - Variables should be initialized together with their declaration if possible. In general we follow
-  the RAII idiom ([http://en.wikipedia.org/wiki/Resource_Acquisition_Is_Initialization Resource
-  Acquisition Is Initialization]). This helps to avoid memory leaks, especially when exceptions occur.
+  the `RAII <http://en.wikipedia.org/wiki/Resource_Acquisition_Is_Initialization>`_ (Resource
+  Acquisition Is Initialization) idiom. This helps to avoid memory leaks, especially when exceptions occur.
 
 - Variables should be declared at their first use. This is necessary to follow the RAII idiom and
   restricts the lifetime of the variable and therefore makes the code more maintainable.
 
-- We are [http://en.wikipedia.org/wiki/Const-correctness const correct], i.e. where ether it is
+- We are `const correct <http://en.wikipedia.org/wiki/Const-correctness>`_, i.e. where it is
   possible to declare a variable as constant we do so. This rule makes it much easier to see
   dependencies and spot side effects.
 
@@ -353,7 +352,7 @@ Variables
 - Static class member are not prefixed with **m**.
 
 - Pointers to accelerator memory (e.g. pointer to the global memory of a CUDA GPU) get the suffix
-  **<VariableName>d}}, e.g. **mIad**. This avoids confusion between host and device pointers. If it
+  **<VariableName>d**, e.g. **mIad**. This avoids confusion between host and device pointers. If it
   is necessary pointers to host memory are have the suffix **<VariableName>h**.
 
 Methods and Functions
@@ -378,14 +377,14 @@ Comments
 
 - The closing curly brackets of long structured blocks should be commented with the head of the structured block.
 
-Example
+Example:
 
 ::
 
-	if ( doLongCalculation )
-	{
-	    // here we have many lines of source code
-	} // if ( doLongCalculation )
+   if ( doLongCalculation )
+   {
+       // here we have many lines of source code
+   } // if ( doLongCalculation )
 
 - All Entities should described with a meaningful doxygen comments at their point of declaration.
 
@@ -416,7 +415,7 @@ Logging and Output
 - Please keep in mind, that good logging messages are also explaining the source code.
 
 CMake
-------
+-----
 
 In all CMake files we stick to the style of the `official CMake documentation`_. All **VARIABLE_NAMES** are written
 in upper case and joined by underscore. The **function_names()** are written in lower case letters and are also joined
@@ -431,13 +430,17 @@ __ http://www.itk.org/Wiki/CMake:How_To_Find_Libraries#Writing_find_modules
 Tools
 -----
 
-- Eclipse Code Style in **tools/eclipse/LAMA-Styleguide.xml** a configuration file for the
-  eclipse code formatter is provided. Due to the configurable rules, the configuration file does
-  not perfectly fit to this style guide. But it gives a good starting point and therefore it should
-  be used.
+- Eclipse Code Style:
 
-- astyle in **tools/lama_format** a shell script which uses the tool astyle to format the source code is provided.
+  - in **tools/eclipse/LAMA-Styleguide.xml** a configuration file for the
+    eclipse code formatter is provided. Due to the configurable rules, the configuration file does
+    not perfectly fit to this style guide. But it gives a good starting point and therefore it should
+    be used.
 
-- A valgrind suppressions file is provided at **tools/valgrind/lama.supp**.
+- astyle:
 
-- ASSERT macro
+  - in **tools/lama_format** a shell script which uses the tool astyle to format the source code is provided.
+
+- valgrind:
+
+  - a suppressions file is provided at **tools/valgrind/lama.supp**.

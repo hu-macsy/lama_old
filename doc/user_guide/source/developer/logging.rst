@@ -3,11 +3,6 @@
 Logging
 =======
 
-LAMA uses its own logging module.
-
-Introduction
-------------
-
 Inserting log statements into code is a low-tech method for debugging it. It may also be the only way because
 debuggers are not always available or applicable. This is usually the case for multithreaded applications and
 distributed applications at large.
@@ -28,13 +23,12 @@ Logging Libraries
 
 The following three versions of Logging libraries are available:
 
-- log4cpp `log4cpp`_
-- log4cxx `log4cxx`_
-- Boost logging `boost`_
+- `log4cpp`_
+- `log4cxx`_
+- `boost logging <http://boost-log.sourceforge.net/libs/log/doc/html/index.html>`_
 
 .. _log4cpp: http://log4cpp.sourceforge.net/
 .. _log4cxx: http://logging.apache.org/log4cxx/
-.. _boost: http://www.torjo.com/
 
 There are certain advantages and disadvantges for each of the libraries.
 There is a comparative survey `here`__ for the different facilities but this survey does not give any hints
@@ -66,11 +60,12 @@ reading a configuration file that itself is specified by an environment variable
 ::
 
 	LAMA_LOG_DEFINITION()
+   
 	int main(int argc, char **argv)
 	{ // this is only done in the main file or any other initial routine
-	  // it reads a configuration file for the different loggers
-	LAMA_LOG_CONFIGURE();
-	...
+	    // it reads a configuration file for the different loggers
+	    LAMA_LOG_CONFIGURE();
+	    ...
 	}
 
 In the different subroutines and modules it is possible to get access to a logger. The macro LAMA_LOG_ROOTLOGGER
@@ -88,6 +83,7 @@ A logger is used in the following macros that stand for the logging statements a
 variable logger must have been defined with one of the two previous macros:
 
 ::
+
 	LAMA_LOG_DEBUG(logger, "debug message");
 	LAMA_LOG_INFO (logger, "info message");
 	LAMA_LOG_WARN (logger, "warn message");
@@ -114,7 +110,7 @@ There is an include file that contains the definitions for all the macros:
 	#include "logging/logging.hpp"
 
 Disabling logging at compile time
-----------------------------------
+---------------------------------
 
 By default, all logging statements will be compiled so that they can be enabled at runtime. If the logging
 is switched off at runtime, the logging becomes just a comparison between integers. But even this might
@@ -146,16 +142,16 @@ the logging. It should be executed only if the corresponding logging level is en
 
 ::
 
-	#ifdef LAMA_LOG_INFO_ENABLED
-	if ( LAMA_LOG_INFO_ON( rootLogger ) )
-	{
-        int sum = 0;
-        for (int k = 0; k < N; k++)
-        {
-            sum += k;
-        }
-        LAMA_LOG_INFO( rootLogger, "main program terminates with sum = " << sum );
-   	}
+   #ifdef LAMA_LOG_INFO_ENABLED
+   if ( LAMA_LOG_INFO_ON( rootLogger ) )
+   {
+       int sum = 0;
+       for (int k = 0; k < N; k++)
+       {
+           sum += k;
+       }
+       LAMA_LOG_INFO( rootLogger, "main program terminates with sum = " << sum );
+   }
 	#endif
 
 The macro LAMA_LOG_INFO_ON( logger ) returns true if the info level is enabled for the logger at runtme. The
@@ -169,15 +165,15 @@ The logger becomes a static variable of the class.
 
 ::
 
-	#include "logging/logging.hpp"
- 
-	class Example
-	{
- 	...
- 	protected: 
-	LAMA_LOG_DECL_STATIC_LOGGER(logger);
-	...
-	}
+   #include "logging/logging.hpp"
+   
+   class Example
+   {
+       ...
+   protected: 
+       LAMA_LOG_DECL_STATIC_LOGGER(logger);
+       ...
+   }
 
 A logger should not be declared as public. Derived classes should usually have their own logger, 
 so the logger should become private. The logger should be protected in situatons  where it is 
@@ -195,12 +191,13 @@ Configuration of Logging with the default logger
 
 Logging can be configured at runtime by setting the environment variable ``LAMA_LOG`` with a configuration file.
 
-::bash
+.. code-block:: bash
+
 	export LAMA_LOG=config
 
 The file config contains lines that specfy the levels of the logger.
 
-::bash
+::
 
 	<root> = ERROR
 	Matrix = INFO

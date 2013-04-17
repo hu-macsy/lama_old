@@ -40,8 +40,17 @@ The general cmake-call looks like this:
 
    cmake [options] <project-root>/src
 
-For defining the options you need to write ''-D <VARIABLE_NAME>=value''.  
-All possible options and there significations are listed in the table below.
+For defining the options you need to write ''-D <VARIABLE_NAME>=value''.
+
+If you have not installed CMake in the system path you need to specify to CMake include and library path by:
+
+.. code-block:: bash
+
+   cmake [-D CMAKE_INCLUDE_PATH=<install/dir/cmake>/include \]
+         [-D CMAKE_LIBRARY_PATH=<install/dir/cmake>/lib \]
+         <project-root>/src
+  
+All relevant LAMA options and there significations are listed in the table below.
 
 .. csv-table:: 
    :header: "CMake variable", "Signification"
@@ -67,22 +76,24 @@ have to give Cmake hints where to find the packages. For passing these hints you
 following table. For advanced help refer to the seperate section.
 
 .. csv-table:: 
-   :header: "Package", "CMake variable"
+   :header: "Package", "CMake variable", "Signification"
 
-   "Boost", "BOOST_ROOT"
-   "MKL (for BLAS, LAPack and ScaLAPack)", "MKL_ROOT or MKL_INCLUDE_DIR and MKL_LIBRARY_PATH"
-   "ACML (for BLAS and LAPack)", "ACML_ROOT or ACML_INCLUDE_DIR and ACML_LIBRARY_PATH"
-   "GOTO (for BLAS and LAPack)", ""
-   "FortranBLAS (for BLAS and LAPack)", ""
-   "MPI", "MPI_ROOT"
-   "CUDA", "CUDA_TOOLKIT_ROOT"
-   "Vampir Trace", "VAMPIRTRACE_ROOT" or "VT_ROOT"
+   "Boost", "BOOST_ROOT", "path to boost root dir"
+   "MKL (for BLAS, LAPack and ScaLAPack)", "MKL_ROOT or MKL_INCLUDE_DIR and MKL_LIBRARY_PATH", "path to MKL root dir, or paths to MKL include and library dir"
+   "FortranBLAS (for BLAS and LAPack)", "", ""
+   "MPI", "MPI_ROOT", "path to MPI root dir"
+   "CUDA", "CUDA_TOOLKIT_ROOT", "path to CUDA toolkit"
+   "DOXYGEN", "DOXYGEN_EXECUTABLE", "path to doxygen binary dir"
+   "Vampir Trace", "VAMPIRTRACE_ROOT" or "VT_ROOT", "path to vampir root dir"
    "------------", "--------------------------------------------------------------------------"
-   "OpenCL", "OPENCL_ROOT or OPENCL_INCLUDE_DIR and OPENCL_LIBRARY_PATH"
-   "Metis", "METIS_ROOT or METIS_INCLUDE_DIR and METIS_LIBRARY_PATH"
-   "ParMetis", "PARMETIS_ROOT or PARMETIS_INCLUDE_DIR and PARMETIS_LIBRARY_PATH"
-   "GASNet", "GASNET_LIBRARY_PATH"
-   "OpenShmem", "OSHMEM_INCLUDE_PATH and OSHMEM_LIBRARY_PATH"
+   "OpenCL", "OPENCL_ROOT or OPENCL_INCLUDE_DIR and OPENCL_LIBRARY_PATH", "path to OpenCL root dir, or paths to OpenCL include and library dir"
+   "Metis", "METIS_ROOT or METIS_INCLUDE_DIR and METIS_LIBRARY_PATH", "path to Metis root dir, or paths to Metis include and library dir"
+   "ParMetis", "PARMETIS_ROOT or PARMETIS_INCLUDE_DIR and PARMETIS_LIBRARY_PATH", "path to ParMetis root dir, or paths to ParMetis include and library di"
+   "GASNet", "GASNET_LIBRARY_PATH", "path to GASNet library"
+   "OpenShmem", "OSHMEM_INCLUDE_PATH and OSHMEM_LIBRARY_PATH", "paths to Open shared memory include and library dir"
+
+.. "ACML (for BLAS and LAPack)", "ACML_ROOT or ACML_INCLUDE_DIR and ACML_LIBRARY_PATH"
+.. "GOTO (for BLAS and LAPack)", ""
 
 For changing the C compiler there is a different way for telling cmake. Please see :ref:`here <c++>`. 
 

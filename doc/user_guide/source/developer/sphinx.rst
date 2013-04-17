@@ -1,3 +1,5 @@
+:orphan:
+
 Examples of Sphinx for User Guide
 =================================
 
