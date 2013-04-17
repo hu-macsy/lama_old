@@ -68,6 +68,7 @@ set ( CLASSES
     )
 
 set ( HEADERS
+        config
         HostReadAccess
         HostWriteAccess
         LAMATypes
@@ -130,7 +131,6 @@ if ( SCALAPACK_FOUND AND MPI_FOUND )
 else ( SCALAPACK_FOUND AND MPI_FOUND )
     set ( LAMAPP_LINK_LIBRARIES ${LAMAPP_LINK_LIBRARIES} ${LAMA_BLAS_LIBRARIES} )
 endif ( SCALAPACK_FOUND AND MPI_FOUND )
-
 
 if ( NOT WIN32 )
     set ( LAMAPP_LINK_LIBRARIES ${LAMAPP_LINK_LIBRARIES} ${Boost_THREAD_LIBRARY} )
