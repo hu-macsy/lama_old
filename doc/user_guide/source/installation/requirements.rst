@@ -76,7 +76,7 @@ For optional features you may also install the following:
 
 .. _experimental:
 
-Experimental software 
+Experimental software
 ---------------------
 
 For experimental features (only available in the corresponding git branches not in the release!) you may also install
@@ -102,6 +102,7 @@ Configurations
 --------------
 We have tested the installation of LAMA with various versions of the required software.
 Have a look at the following table whether you configuration is explicitly supported.
+All tests are configured as release build.
 
 .. csv-table:: 
    :header: "compiler", "boost", "BLAS", "cuda", "communication", "build"
@@ -110,7 +111,7 @@ Have a look at the following table whether you configuration is explicitly suppo
    "gcc 4.4", "1.46", "MKL composerxe-2011.2.137", "4.0", "OpenMPI 1.4.3", "ok"
    "gcc 4.6.1 / 4.6.2", "1.49.0", "blas 3", "4.2 / 5.0", "mpich2 1.2.1p1 (Parastation 5.0.25-2)", "ok"
    "gcc 4.6.1 / 4.6.2", "1.49.0", "blas 3", "4.2", "mvapich2", "ok"
-   "", "", "", "", "", ""
+   "icc 12.1.3/13.0.0", "1.46", "MKL composerxe-2011.2.137", " not supported", "OpenMPI 1.4.3", "ok"
    "", "", "", "", "", ""
  
 If you have problems with the installation of supported configuration, do not hesitate to `contact`_ us.

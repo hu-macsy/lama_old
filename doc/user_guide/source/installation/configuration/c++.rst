@@ -14,8 +14,8 @@ address space. Therefore a C++ compiler supporting OpenMP is strongly recommende
 During the configuration with cmake a valid C++ compiler will be identified on your machine. You can force the use of a
 certain C and C++ compiler in the following way::
 
-  export CC=<link to C-compiler>
-  export CXX<link to C++ compiler>
+  export CC=<path/to/C-compiler>
+  export CXX<path/to/C++ compiler>
   cmake ..
 
 or::
