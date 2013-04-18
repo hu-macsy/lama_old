@@ -40,13 +40,6 @@ endif ( NOT LAMA_USE_MPI )
 
 set ( LAMA_USE_MPI ${DEFAULT_USE_MPI} CACHE BOOL "Enable / Disable use of MPI" )
 
-if ( NOT LAMA_USE_MPI )
-    set ( MPI_FOUND FALSE )
-endif ( NOT LAMA_USE_MPI )
-
-# TODO: SUMMARY
-#message( STATUS "MPI: found = ${MPI_FOUND}, use = ${LAMA_USE_MPI}" )
-
-if ( MPI_FOUND )
+if ( MPI_FOUND AND LAMA_USE_MPI)
     include_directories ( ${MPI_INCLUDE_PATH} )
-endif ( MPI_FOUND )
+endif ( MPI_FOUND AND LAMA_USE_MPI)

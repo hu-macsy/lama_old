@@ -20,7 +20,9 @@ endif( LAMA_DEBUG_CMAKE )
 
 # Find Boost 
 
-find_package ( Boost COMPONENTS ${Boost_COMPONENTS} QUIET )
+set( LAMA_CMAKE_VERBOSE QUIET )
+
+find_package ( Boost COMPONENTS ${Boost_COMPONENTS} ${LAMA_CMAKE_VERBOSE} )
 
 # Note: we use Boost_INCLUDE_DIR, Boost_<lib>_FOUND, Boost_<lib>_LIBRARY, but
 #       not Boost_FOUND, as it is false if some optional libraries are missing
@@ -64,7 +66,7 @@ endif ( NOT Boost_THREAD_LIBRARY )
 # Check boost versions
 # TODO: RECHECK
 if ( ${Boost_VERSION} GREATER "104099" AND Boost_UNIT_TEST_FRAMEWORK_FOUND AND Boost_REGEX_FOUND )
-    set ( LAMA_BUILD_TEST TRUE )
+    set ( FOUND_BOOST_TEST TRUE )
 else ( ${Boost_VERSION} GREATER "104099" AND Boost_UNIT_TEST_FRAMEWORK_FOUND AND Boost_REGEX_FOUND )
     if ( NOT Boost_UNIT_TEST_FRAMEWORK_FOUND )
        message ( WARNING "Not building tests because Boost unit test framework is missing." )
@@ -79,3 +81,25 @@ endif ( ${Boost_VERSION} GREATER "104099" AND Boost_UNIT_TEST_FRAMEWORK_FOUND AN
 
 
 
+# Check if cache variable is already set
+if ( DEFINED LAMA_BUILD_TEST )
+    # if use of package is enabled
+    if ( ${LAMA_BUILD_TEST} )
+        if ( NOT ${FOUND_BOOST_TEST} )
+            # if package is enabled, but not found: ERROR!
+            message ( FATAL_ERROR "Boost Test Framework or Bost Regex missing, but tests are enabled!" )
+        endif ( NOT ${FOUND_BOOST_TEST} )
+    endif ( ${LAMA_BUILD_TEST} )
+
+# if cache variable is NOT set
+else ( DEFINED LAMA_BUILD_TEST )
+    # Check if package was found
+    if ( ${FOUND_BOOST_TEST} )
+        set ( USE_PACKAGE TRUE )
+    else ( ${FOUND_BOOST_TEST} )
+        set ( USE_PACKAGE FALSE )
+    endif ( ${FOUND_BOOST_TEST} )
+    
+    # Set cache variable
+    set ( LAMA_BUILD_TEST ${USE_PACKAGE} CACHE BOOL "Enable / Disable building of tests" )
+endif ( DEFINED LAMA_BUILD_TEST )

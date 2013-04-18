@@ -70,7 +70,8 @@ else()
 endif()
     
 # can only be compiled if MKL SCALAPACK and MPI is availabe
-if ( SCALAPACK_FOUND AND MPI_FOUND )
+
+if ( SCALAPACK_FOUND AND MPI_FOUND AND LAMA_USE_MPI)
     message( STATUS "SCALAPACK is supported and will be used" ) 
     set ( CLASSES
             ${CLASSES}
