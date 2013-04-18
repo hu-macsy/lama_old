@@ -13,9 +13,6 @@ if ( CMAKE_C_COMPILER_ID MATCHES Intel )
     mark_as_advanced ( XIAR )
 endif ( CMAKE_C_COMPILER_ID MATCHES Intel )
 
-
-
-
 # Define Compile Flags for LAMA
 #
 # Variables which can be modified:
@@ -44,24 +41,16 @@ endif ( MARCH_NATIVE_SUPPORT )
 
 # gnu cxx
 if ( CMAKE_COMPILER_IS_GNUCXX )
-    set ( ADDITIONAL_CXX_WARNING_FLAGS "-Wextra -Wall -Wl,--no-as-needed" )#-pedantic -std=c++98 " )
-    # -march=core02
-    if ( ${CMAKE_SYSTEM_PROCESSOR} STREQUAL ppc64 )
-        # compile in 32 Bit on Cell Broaband Engine Processor
-        set ( ADDITIONAL_CXX_FLAGS "-m32 " )
-        set ( CMAKE_REQUIRED_FLAGS "-m32 " )
-        set ( ADDITIONAL_CXX_RELEASE_FLAGS "-ffast-math -maltivec " )
-    else ( ${CMAKE_SYSTEM_PROCESSOR} STREQUAL ppc64 )
-        set ( ADDITIONAL_CXX_RELEASE_FLAGS "-ffast-math -msse4a " )
-    endif ( ${CMAKE_SYSTEM_PROCESSOR} STREQUAL ppc64 )
+    set ( ADDITIONAL_CXX_WARNING_FLAGS "-Wextra -Wall -Wl,--no-as-needed" ) #-pedantic -std=c++98 " ) # -march=core02
+    set ( ADDITIONAL_CXX_RELEASE_FLAGS "-ffast-math -msse4a " )
 endif ( CMAKE_COMPILER_IS_GNUCXX )
 
 # INTEL
 
 # intel cxx
 if ( CMAKE_CXX_COMPILER_ID MATCHES Intel )
-    set ( ADDITIONAL_CXX_FLAGS "-std=c++0x -shared-intel " )
-    set ( ADDITIONAL_CXX_WARNING_FLAGS "-w2 -Wall -Wcheck -Werror-all " ) # Warnings/Errors. No Remarks.
+    set ( ADDITIONAL_CXX_FLAGS "-std=c++0x -shared-intel -wd1478" ) #suppress warning 1478: deprecated auto_ptr
+    set ( ADDITIONAL_CXX_WARNING_FLAGS "-w2 -Wall -Wcheck -Werror-all " ) # -Werror-all Warnings/Errors. No Remarks.
     set ( ADDITIONAL_CXX_RELEASE_FLAGS "-ipo -no-prec-div -xHost " )
 endif ( CMAKE_CXX_COMPILER_ID MATCHES Intel )
 
@@ -95,8 +84,7 @@ endif ( NOT WIN32 )
 set ( CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} ${CXX_RELEASE_FLAGS} ${ADDITIONAL_CXX_RELEASE_FLAGS}" )
 
 
-
-if ( CUDA_FOUND )
+if ( CUDA_FOUND AND LAMA_USE_CUDA )
     set ( CUDA_VERBOSE_BUILD OFF )
     set ( CUDA_BUILD_EMULATION OFF )
     # unfortunately we can not propagate the host flags to CUDA
@@ -123,5 +111,5 @@ if ( CUDA_FOUND )
     if ( NOT "${CUDA_NVCC_FLAGS}" MATCHES "-arch" )
     	list (APPEND CUDA_NVCC_FLAGS "-arch=sm_13" )
     endif ( NOT "${CUDA_NVCC_FLAGS}" MATCHES "-arch" )
-endif( CUDA_FOUND )
+endif( CUDA_FOUND AND LAMA_USE_CUDA )
 
