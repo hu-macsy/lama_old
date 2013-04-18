@@ -121,13 +121,13 @@ endif ( NOT ( Boost_UNIT_TEST_FRAMEWORK_LIBRARY OR Boost_REGEX ) )
 include_directories ( .. ../lama ${Boost_INCLUDE_DIRS} )
 
 ### add subdirectories ###
-if ( MPI_FOUND )
+if ( MPI_FOUND AND LAMA_USE_MPI )
     add_subdirectory ( distributed )
-endif ( MPI_FOUND )
+endif ( MPI_FOUND AND LAMA_USE_MPI )
 
-if ( CUDA_FOUND )
+if ( CUDA_FOUND AND LAMA_USE_CUDA )
     add_subdirectory ( cuda )
-endif ( CUDA_FOUND )
+endif ( CUDA_FOUND AND LAMA_USE_CUDA )
  
 ### add definitions ###
 add_definitions ( -DLAMA_TESTFILE_PATH="${CMAKE_SOURCE_DIR}/../res/testfiles" )

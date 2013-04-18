@@ -37,9 +37,9 @@ add_subdirectory ( logger )
 ### for external amg ###
 file ( GLOB AMG_SUBDIRPRESENT "amg" )
 
-if ( AMG_SUBDIRPRESENT AND MPI_FOUND )
+if ( AMG_SUBDIRPRESENT AND MPI_FOUND AND LAMA_USE_MPI )
     add_subdirectory ( ${AMG_SUBDIRPRESENT} )
-endif ( AMG_SUBDIRPRESENT AND MPI_FOUND )
+endif ( AMG_SUBDIRPRESENT AND MPI_FOUND AND LAMA_USE_MPI )
 
 ### Add classes and header files ###
 set ( CLASSES

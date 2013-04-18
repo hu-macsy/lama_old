@@ -95,8 +95,7 @@ endif ( NOT WIN32 )
 set ( CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} ${CXX_RELEASE_FLAGS} ${ADDITIONAL_CXX_RELEASE_FLAGS}" )
 
 
-
-if ( CUDA_FOUND )
+if ( CUDA_FOUND AND LAMA_USE_CUDA )
     set ( CUDA_VERBOSE_BUILD OFF )
     set ( CUDA_BUILD_EMULATION OFF )
     # unfortunately we can not propagate the host flags to CUDA
@@ -123,5 +122,5 @@ if ( CUDA_FOUND )
     if ( NOT "${CUDA_NVCC_FLAGS}" MATCHES "-arch" )
     	list (APPEND CUDA_NVCC_FLAGS "-arch=sm_13" )
     endif ( NOT "${CUDA_NVCC_FLAGS}" MATCHES "-arch" )
-endif( CUDA_FOUND )
+endif( CUDA_FOUND AND LAMA_USE_CUDA )
 

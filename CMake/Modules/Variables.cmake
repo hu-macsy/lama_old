@@ -1,3 +1,36 @@
+###
+ # @file Variables.cmake
+ #
+ # @license
+ # Copyright (c) 2011
+ # Fraunhofer Institute for Algorithms and Scientific Computing SCAI
+ # for Fraunhofer-Gesellschaft
+ #
+ # Permission is hereby granted, free of charge, to any person obtaining a copy
+ # of this software and associated documentation files (the "Software"), to deal
+ # in the Software without restriction, including without limitation the rights
+ # to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ # copies of the Software, and to permit persons to whom the Software is
+ # furnished to do so, subject to the following conditions:
+ #
+ # The above copyright notice and this permission notice shall be included in
+ # all copies or substantial portions of the Software.
+ #
+ # THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ # IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ # FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ # AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ # SOFTWARE.
+ # @endlicense
+ #
+ # @brief Variables.cmake
+ # @author Jan Ecker
+ # @date 16.04.2013
+ #
+###
+
 # Check if verbose mode for CMAKE is selected
 if ( DEFINED LAMA_CMAKE_VERBOSE AND LAMA_CMAKE_VERBOSE )
     #set ( LAMA_CMAKE_VERBOSE TRUE )
@@ -19,15 +52,6 @@ set ( CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE )
 
 get_property ( FIND_LIB64 GLOBAL PROPERTY FIND_LIBRARY_USE_LIB64_PATHS )
 message ( STATUS "FindLib64: " ${FIND_LIB64} )
-
-
-# Choose Default CMAKE_BUILD_TYPE
-if ( NOT CMAKE_BUILD_TYPE )
-  # Can be: (RelWithDebInfo)
-  set ( CMAKE_BUILD_TYPE Debug CACHE STRING 
-        "Choose the type of build, options are: None Debug Release RelWithDebInfo MinSizeRel." FORCE )
-endif ( NOT CMAKE_BUILD_TYPE )
-
 
 
 # Makefile outputs
@@ -136,6 +160,9 @@ set ( LAMA_TRACE_LEVEL ${DEFAULT_TRACE_LEVEL} CACHE STRING
      "Choose level of TRACE: VT (for VampirTrace), TIME(region timing), SIMPLE(simple timing) or OFF (default)" )
 
 add_definitions( -DLAMA_TRACE_LEVEL_${LAMA_TRACE_LEVEL} )
+
+
+
 
 
     

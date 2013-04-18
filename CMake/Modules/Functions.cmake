@@ -29,7 +29,7 @@ function ( setAndCheckCache PACKAGE_NAME )
         # if use of package is disabled
         else ( ${CACHE_VARIABLE_NAME} )
             # disable the package
-            set ( ${FOUND_VARIABLE_NAME} FALSE PARENT_SCOPE )
+            #set ( ${FOUND_VARIABLE_NAME} FALSE PARENT_SCOPE )
         endif ( ${CACHE_VARIABLE_NAME} )
     
     # if cache variable is NOT set

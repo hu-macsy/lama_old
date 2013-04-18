@@ -35,8 +35,13 @@ cmake_minimum_required ( VERSION 2.8 )
 
 ### Set PROJECT NAME / supported LANGUAGES and Module Path ###
 
-project ( LAMA CXX C )
+project ( LAMA CXX C)
 set ( CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/../CMake/Modules" )
+set ( LAMA_VERSION "1.0.0" )
+set ( LAMA_VERSION_MAJOR 1 )
+set ( LAMA_VERSION_MINOR 0 )
+set ( LAMA_VERSION_PATCH 0 )
+set ( LAMA_VERSION_COUNT 3 )
 
 ### Print LAMA Installation header
 message ( STATUS "" )
@@ -47,7 +52,6 @@ message ( STATUS "" )
 ### Variables / CMAKE Functions ###
 include ( Variables )
 include ( Functions )
-
 
 if ( LAMA_CMAKE_VERBOSE )
     message ( STATUS "break 1" )
@@ -68,6 +72,9 @@ foreach ( PACKAGE_TO_FIND ${OPTIONAL_PACKAGES_TO_FIND} )
     find_package ( ${PACKAGE_TO_FIND} QUIET )
 endforeach ( PACKAGE_TO_FIND ${OPTIONAL_PACKAGES_TO_FIND} )
 
+# ALLOW to switch off CUDA explicitly
+setAndCheckCache ( "CUDA" )
+setAndCheckCache ( "OPENMP" )
 
 ### Include Compiler Flags, after all packages are found ###
 include ( CompilerFlags )
@@ -81,16 +88,11 @@ endif ( NOT LAMA_OMP_SCHEDULE )
 #message ( STATUS "OpenMP schedule set to " ${LAMA_OMP_SCHEDULE} )
 add_definitions ( -DLAMA_OMP_SCHEDULE=${LAMA_OMP_SCHEDULE} )
 
-if ( OPENMP_FOUND )
+if ( OPENMP_FOUND AND LAMA_USE_OPENMP )
     set ( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}" )
-endif( OPENMP_FOUND )
+endif( OPENMP_FOUND AND LAMA_USE_OPENMP)
 
 
-
-
-# ALLOW to switch off CUDA explicitly
-setAndCheckCache ( "CUDA" )
-setAndCheckCache ( "OPENCL" )
 
 # LAMA irrelevant entries will be marked as advanced ( Remove them from default cmake GUI )
 mark_as_advanced ( CUDA_BUILD_CUBIN CUDA_BUILD_EMULATION CUDA_SDK_ROOT_DIR CUDA_VERBOSE_BUILD )
@@ -107,10 +109,9 @@ endif ( Boost_INCLUDE_DIR )
 ### add subdirectories ###
 add_subdirectory ( lama )
 add_subdirectory ( logging )
-
-if ( LAMA_BUILD_TEST )
+if ( FOUND_BOOST_TEST AND LAMA_BUILD_TEST )
     add_subdirectory ( test )
-endif ( LAMA_BUILD_TEST )
+endif ( FOUND_BOOST_TEST AND LAMA_BUILD_TEST )
 
 include ( PackageDoxygen )
 
@@ -137,75 +138,111 @@ add_custom_command (
 
 
 
-
+if(CMAKE_COMPILER_IS_GNUCXX)
+  execute_process( COMMAND ${CMAKE_CXX_COMPILER} --version
+                   OUTPUT_VARIABLE _compiler_output )
+  string( REGEX MATCH "([0-9]+\\.[0-9]+\\.[0-9]+)" gcc_compiler_version ${_compiler_output})
+endif (CMAKE_COMPILER_IS_GNUCXX )
 
 
 
 
 ### Summary ###
 
-message( STATUS "" )
-message( STATUS "" )
-message( STATUS "Summary of LAMA Installation:" )
-message( STATUS "=============================" )
-message( STATUS "" )
+message ( STATUS "" )
+message ( STATUS "" )
+message ( STATUS "Summary of LAMA Configuration:" )
+message ( STATUS "==============================" )
+message ( STATUS "" )
+message ( STATUS "REQUIRED PACKAGES:" )
 
-message ( STATUS "Build Type    : ${CMAKE_BUILD_TYPE}" )
+if ( CMAKE_CXX_COMPILER )
+    message ( STATUS "    [FOUND]       C++ Compiler - ${CMAKE_CXX_COMPILER_ID} ${gcc_compiler_version}" )
+else ( CMAKE_CXX_COMPILER )
+    message ( STATUS "    [NOT FOUND]   C++ Compiler" )
+endif ( CMAKE_CXX_COMPILER )
 
+
+
+if ( CMAKE_C_COMPILER )
+    message ( STATUS "    [FOUND]       C Compiler - ${CMAKE_C_COMPILER_ID}" )
+else ( CMAKE_C_COMPILER )
+    message ( STATUS "    [NOT FOUND]   C Compiler" )
+endif ( CMAKE_C_COMPILER )
+if ( Boost_INCLUDE_DIR )
+    message ( STATUS "    [FOUND]       Boost - Version ${Boost_VERSION} at ${Boost_INCLUDE_DIR}" )
+else ( Boost_INCLUDE_DIR )
+    message ( STATUS "    [NOT FOUND]   Boost" )
+endif ( Boost_INCLUDE_DIR )
 if ( LAMA_BLAS_LIBRARIES )
-    message ( STATUS "BLAS libraries: ${LAMA_BLAS_LIBRARIES}" )
+    message ( STATUS "    [FOUND]       BLAS - Libraries: ${LAMA_BLAS_LIBRARIES}" )
+    message ( STATUS "    [FOUND]       LAPACK GOES HERE!" )
 else ( LAMA_BLAS_LIBRARIES )
-    message ( STATUS "BLAS not found" )
+    message ( STATUS "    [NOT FOUND]   BLAS" )
 endif ( LAMA_BLAS_LIBRARIES )
 
-if ( Boost_INCLUDE_DIR )
-    message ( STATUS "Boost version ${Boost_VERSION} found at ${Boost_PATH}" )
-    foreach ( lib ${Boost_COMPONENTS} )
-        string ( TOUPPER ${lib} libname )
-        set ( libname "Boost_${libname}_LIBRARY" ) 
-        message ( STATUS "    ${libname} = ${${libname}}" )
-    endforeach ( lib ${Boost_COMPONENTS} )
-else ( Boost_INCLUDE_DIR )
-    message ( STATUS "Boost not found" )
-endif ( Boost_INCLUDE_DIR )
- 
-if( OPENMP_FOUND )
-    message ( STATUS "OpenMP supported, uses compiler flags ${OpenMP_CXX_FLAGS}" )
-else ( OPENMP_FOUND )
-    message ( STATUS "OpenMP not found" )
-endif ( OPENMP_FOUND )
 
-if ( CUDA_FOUND )
-    message ( STATUS "CUDA found at ${CUDA_INCLUDE_DIRS}" )
-else ( CUDA_FOUND )
-    message ( STATUS "CUDA not found" )
-endif ( CUDA_FOUND )
-
-if ( MPI_FOUND )
-    message ( STATUS "MPI found at ${MPI_INCLUDE_PATH}" )
-else ( MPI_FOUND )
-    message ( STATUS "MPI not found" )
-endif ( MPI_FOUND )
-
-if ( OSHMEM_FOUND )
-    message ( STATUS "OSHMEM found at ${OSHMEM_LIBRARIES}" )
-else ( OSHMEM_FOUND )
-    message ( STATUS "OSHMEM not found" )
-endif ( OSHMEM_FOUND )
-
-if ( GPI_FOUND )
-    message ( STATUS "GPI found at ${GPI_LIBRARIES}" )
-else ( GPI_FOUND )
-    message ( STATUS "GPI not found" )
-endif ( GPI_FOUND )
-
-if ( GASNET_FOUND )
-    message ( STATUS "GASNET found at ${GASNET_LIBRARIES}" )
-else ( GASNET_FOUND )
-    message ( STATUS "GASNET not found" )
-endif ( GASNET_FOUND )
 
 message ( STATUS "" )
-message ( STATUS "LOG Level    : ${LAMA_LOG_LEVEL}" )
-message ( STATUS "ASSERT Level : ${LAMA_ASSERT_LEVEL}" )
-message ( STATUS "TRACE Level  : ${LAMA_TRACE_LEVEL}" )
+message ( STATUS "OPTIONAL PACKAGES:" )
+
+## OpenMP
+if( OPENMP_FOUND )
+    if ( LAMA_USE_OPENMP )
+        message ( STATUS "    [SUPPORTED]   OpenMP" )
+    else ( LAMA_USE_OPENMP )
+        message ( STATUS "    [DISABLED]    OpenMP" )
+    endif ( LAMA_USE_OPENMP )
+else ( OPENMP_FOUND )
+    message ( STATUS "    [UNSUPPORTED] OpenMP" )
+endif ( OPENMP_FOUND )
+
+
+## MPI
+if ( MPI_FOUND )
+    if ( LAMA_USE_MPI )
+        message ( STATUS "    [FOUND]       MPI at ${MPI_INCLUDE_PATH}" )
+    else ( LAMA_USE_MPI )
+        message ( STATUS "    [DISABLED]    MPI at ${MPI_INCLUDE_PATH}" )
+    endif ( LAMA_USE_MPI )
+else ( MPI_FOUND )
+    message ( STATUS "    [NOT FOUND]   MPI not found" )
+endif ( MPI_FOUND )
+
+## CUDA
+if ( CUDA_FOUND )
+    if ( LAMA_USE_CUDA )
+        message ( STATUS "    [FOUND]       CUDA ${CUDA_VERSION} at ${CUDA_INCLUDE_DIRS}" )
+    else ( LAMA_USE_CUDA )
+        message ( STATUS "    [DISABLED]    CUDA ${CUDA_VERSION} at ${CUDA_INCLUDE_DIRS}" )
+    endif ( LAMA_USE_CUDA )
+else ( CUDA_FOUND )
+    message ( STATUS "    [NOT FOUND]   CUDA" )
+endif ( CUDA_FOUND )
+
+## DOXYGEN
+if ( DOXYGEN_FOUND )
+    message ( STATUS "    [FOUND]       DOXYGEN - make doc to build documentation" )
+else ( DOXYGEN_FOUND )
+    message ( STATUS "    [NOT FOUND]   DOXYGEN" )
+endif ( DOXYGEN_FOUND )
+
+## Tests
+if ( Boost_UNIT_TEST_FRAMEWORK_FOUND )
+    message ( STATUS "    [FOUND]       Boost Unit Test Framework" )
+else ( Boost_UNIT_TEST_FRAMEWORK_FOUND )
+    message ( STATUS "    [NOT FOUND]   Boost Unit Test Framework" )
+endif ( Boost_UNIT_TEST_FRAMEWORK_FOUND )
+
+
+
+message ( STATUS "" )
+
+
+message ( STATUS "INFO:" )
+message ( STATUS "    LAMA Version : ${LAMA_VERSION}" )
+message ( STATUS "    Build Type   : ${CMAKE_BUILD_TYPE}" )
+message ( STATUS "    LOG Level    : ${LAMA_LOG_LEVEL}" )
+message ( STATUS "    ASSERT Level : ${LAMA_ASSERT_LEVEL}" )
+message ( STATUS "    TRACE Level  : ${LAMA_TRACE_LEVEL}" )
+message ( STATUS "" )
