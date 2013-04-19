@@ -22,7 +22,7 @@ First of all you need to install the following software for building LAMA:
 
   - Needed for creating platform independent makefiles or projects.  
 
-- :ref:`C/C++ Compiler <c++>`
+- :ref:`C/C++ Compiler <c++>` with OpenMP 2.0 capable
 
   - Supported Compilers are: GNU, Intel, PGI. 
 
@@ -40,10 +40,6 @@ Recommended software
 --------------------
 
 For using the support of parallel/hybrid machines in LAMA, you need the following:
-
-- OpenMP 2.0 capable :ref:`C++ Compiler <c++>`
-
-  - If no OpenMP Capable C++ Compiler is available shared memory parallelization is not used.
 
 - :ref:`CUDA (version 4.0 or later) <section_cuda>`
 
