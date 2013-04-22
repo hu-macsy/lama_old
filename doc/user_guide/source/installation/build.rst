@@ -28,4 +28,3 @@ To build LAMAs doxygen API documentation call
    make doc
 
 in your build directory.
-

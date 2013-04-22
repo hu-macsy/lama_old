@@ -20,6 +20,5 @@ The diretory ``{LAMA_ROOT}/lib`` should contain the following libraries:
 
 - liblama.so  
 - liblog4lama.so
-- liblamacuda.so   (available if CUDA is available)
-- libmpistubs.so   (available if MPI is available)
-- many other libraries for experimental features
+- liblamacuda.so  (available if CUDA is available)
+- liblamampi.so   (available if MPI is available)
