@@ -51,6 +51,8 @@ message ( STATUS "" )
 
 ### Variables / CMAKE Functions ###
 include ( Variables )
+include ( SearchPackages )
+include ( LAMAdefines )
 include ( Functions )
 
 if ( LAMA_CMAKE_VERBOSE )
@@ -74,7 +76,6 @@ endforeach ( PACKAGE_TO_FIND ${OPTIONAL_PACKAGES_TO_FIND} )
 
 # ALLOW to switch off CUDA explicitly
 setAndCheckCache ( "CUDA" )
-setAndCheckCache ( "OPENMP" )
 
 ### Include Compiler Flags, after all packages are found ###
 include ( CompilerFlags )
@@ -88,9 +89,9 @@ endif ( NOT LAMA_OMP_SCHEDULE )
 #message ( STATUS "OpenMP schedule set to " ${LAMA_OMP_SCHEDULE} )
 add_definitions ( -DLAMA_OMP_SCHEDULE=${LAMA_OMP_SCHEDULE} )
 
-if ( OPENMP_FOUND AND LAMA_USE_OPENMP )
+if ( OPENMP_FOUND )
     set ( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}" )
-endif( OPENMP_FOUND AND LAMA_USE_OPENMP)
+endif( OPENMP_FOUND)
 
 
 
@@ -156,24 +157,35 @@ message ( STATUS "==============================" )
 message ( STATUS "" )
 message ( STATUS "REQUIRED PACKAGES:" )
 
+## CXX
 if ( CMAKE_CXX_COMPILER )
     message ( STATUS "    [FOUND]       C++ Compiler - ${CMAKE_CXX_COMPILER_ID} ${gcc_compiler_version}" )
 else ( CMAKE_CXX_COMPILER )
     message ( STATUS "    [NOT FOUND]   C++ Compiler" )
 endif ( CMAKE_CXX_COMPILER )
 
-
-
+## C
 if ( CMAKE_C_COMPILER )
     message ( STATUS "    [FOUND]       C Compiler - ${CMAKE_C_COMPILER_ID}" )
 else ( CMAKE_C_COMPILER )
     message ( STATUS "    [NOT FOUND]   C Compiler" )
 endif ( CMAKE_C_COMPILER )
+
+## OpenMP
+if( OPENMP_FOUND )
+    message ( STATUS "    [FOUND]       OpenMP" )
+else ( OPENMP_FOUND )
+    message ( STATUS "    [NOT FOUND]   OpenMP" )
+endif ( OPENMP_FOUND )
+
+## Boost
 if ( Boost_INCLUDE_DIR )
     message ( STATUS "    [FOUND]       Boost - Version ${Boost_VERSION} at ${Boost_INCLUDE_DIR}" )
 else ( Boost_INCLUDE_DIR )
     message ( STATUS "    [NOT FOUND]   Boost" )
 endif ( Boost_INCLUDE_DIR )
+
+## BLAS
 if ( LAMA_BLAS_LIBRARIES )
     message ( STATUS "    [FOUND]       BLAS - Libraries: ${LAMA_BLAS_LIBRARIES}" )
     message ( STATUS "    [FOUND]       LAPACK GOES HERE!" )
@@ -185,17 +197,6 @@ endif ( LAMA_BLAS_LIBRARIES )
 
 message ( STATUS "" )
 message ( STATUS "OPTIONAL PACKAGES:" )
-
-## OpenMP
-if( OPENMP_FOUND )
-    if ( LAMA_USE_OPENMP )
-        message ( STATUS "    [SUPPORTED]   OpenMP" )
-    else ( LAMA_USE_OPENMP )
-        message ( STATUS "    [DISABLED]    OpenMP" )
-    endif ( LAMA_USE_OPENMP )
-else ( OPENMP_FOUND )
-    message ( STATUS "    [UNSUPPORTED] OpenMP" )
-endif ( OPENMP_FOUND )
 
 
 ## MPI
@@ -222,7 +223,7 @@ endif ( CUDA_FOUND )
 
 ## DOXYGEN
 if ( DOXYGEN_FOUND )
-    message ( STATUS "    [FOUND]       DOXYGEN - make doc to build documentation" )
+    message ( STATUS "    [FOUND]       DOXYGEN - 'make doc' to build documentation" )
 else ( DOXYGEN_FOUND )
     message ( STATUS "    [NOT FOUND]   DOXYGEN" )
 endif ( DOXYGEN_FOUND )
