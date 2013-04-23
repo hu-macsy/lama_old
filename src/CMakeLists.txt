@@ -35,7 +35,7 @@ cmake_minimum_required ( VERSION 2.8 )
 
 ### Set PROJECT NAME / supported LANGUAGES and Module Path ###
 
-project ( LAMA CXX C)
+project ( LAMA CXX C )
 set ( CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/../CMake/Modules" )
 set ( LAMA_VERSION "1.0.0" )
 set ( LAMA_VERSION_MAJOR 1 )
@@ -145,104 +145,141 @@ if(CMAKE_COMPILER_IS_GNUCXX)
 endif (CMAKE_COMPILER_IS_GNUCXX )
 
 
-
-
 ### Summary ###
 
+
+
+
 message ( STATUS "" )
+message ( STATUS "        _    _")
+message ( STATUS "       ( \\__//)")
+message ( STATUS "       .'     )")
+message ( STATUS "    __/b d  .  )")
+message ( STATUS "   (_Y_`,     .)")
+message ( STATUS "    `--'-,-'  )")
+message ( STATUS "         (.  )")
+message ( STATUS "         (   )")
+message ( STATUS "        (   )")
+message ( STATUS "       ( . )         .---.")
+message ( STATUS "      (    )        (     )")
+message ( STATUS "      (   . )      (  .    )")
+message ( STATUS "      (      )    (      .  ),")
+message ( STATUS "      ( .     `\"'`  .       `)\\")
+message ( STATUS "       (      .              .)\\")
+message ( STATUS "       ((  .      .   (   .   )\\\\")
+message ( STATUS "       ((       .    (        ) \\\\")
+message ( STATUS "        ((     )     _( .   . )  \\\\")
+message ( STATUS "        ( ( .   )\"'\"`(.(     )   ( ;")
+message ( STATUS "        ( (    )      ( ( . )     \\'")
+message ( STATUS "         |~(  )        |~(  )")
+message ( STATUS "         | ||~|        | ||~|")
+message ( STATUS "    jgs  | || |        | || |  ")  
+message ( STATUS "        _| || |       _| || |")
+message ( STATUS "       /___(| |      /___(| |")
+message ( STATUS "          /___(         /___(")
 message ( STATUS "" )
 message ( STATUS "Summary of LAMA Configuration:" )
 message ( STATUS "==============================" )
 message ( STATUS "" )
-message ( STATUS "REQUIRED PACKAGES:" )
-
+lama_status_message ( HEADLINE "REQUIRED PACKAGES:" )
+## C++ Compiler
 if ( CMAKE_CXX_COMPILER )
-    message ( STATUS "    [FOUND]       C++ Compiler - ${CMAKE_CXX_COMPILER_ID} ${gcc_compiler_version}" )
+    lama_status_message ( INFO "[FOUND]" "      C++ Compiler - ${CMAKE_CXX_COMPILER_ID} ${gcc_compiler_version}" )
 else ( CMAKE_CXX_COMPILER )
-    message ( STATUS "    [NOT FOUND]   C++ Compiler" )
+    lama_status_message ( ERROR "[NOT FOUND]" "  C++ Compiler" )
 endif ( CMAKE_CXX_COMPILER )
 
-
-
+# C Compiler
 if ( CMAKE_C_COMPILER )
-    message ( STATUS "    [FOUND]       C Compiler - ${CMAKE_C_COMPILER_ID}" )
+    lama_status_message ( INFO "[FOUND]" "      C Compiler - ${CMAKE_C_COMPILER_ID}" )
 else ( CMAKE_C_COMPILER )
-    message ( STATUS "    [NOT FOUND]   C Compiler" )
+    lama_status_message ( ERROR "[NOT FOUND]" "  C Compiler" )
 endif ( CMAKE_C_COMPILER )
+
+# Boost 
 if ( Boost_INCLUDE_DIR )
-    message ( STATUS "    [FOUND]       Boost - Version ${Boost_VERSION} at ${Boost_INCLUDE_DIR}" )
+    lama_status_message ( INFO "[FOUND]" "      Boost - Version ${Boost_VERSION} at ${Boost_INCLUDE_DIR}" )
 else ( Boost_INCLUDE_DIR )
-    message ( STATUS "    [NOT FOUND]   Boost" )
+    lama_status_message ( ERROR "[NOT FOUND]" "  Boost" )
 endif ( Boost_INCLUDE_DIR )
+
+# BLAS
 if ( LAMA_BLAS_LIBRARIES )
-    message ( STATUS "    [FOUND]       BLAS - Libraries: ${LAMA_BLAS_LIBRARIES}" )
-    message ( STATUS "    [FOUND]       LAPACK GOES HERE!" )
+    lama_status_message ( INFO "[FOUND]" "      BLAS - Libraries: ${LAMA_BLAS_LIBRARIES}" )
+    lama_status_message ( INFO "[FOUND]" "      LAPACK GOES HERE!" )
 else ( LAMA_BLAS_LIBRARIES )
-    message ( STATUS "    [NOT FOUND]   BLAS" )
+    lama_status_message ( ERROR "[NOT FOUND]" "  BLAS" )
 endif ( LAMA_BLAS_LIBRARIES )
 
 
 
 message ( STATUS "" )
-message ( STATUS "OPTIONAL PACKAGES:" )
+lama_status_message ( HEADLINE "OPTIONAL PACKAGES:" )
 
 ## OpenMP
 if( OPENMP_FOUND )
     if ( LAMA_USE_OPENMP )
-        message ( STATUS "    [SUPPORTED]   OpenMP" )
+        lama_status_message ( INFO "[SUPPORTED]" "  OpenMP" )
     else ( LAMA_USE_OPENMP )
-        message ( STATUS "    [DISABLED]    OpenMP" )
+        lama_status_message ( WARNING "[DISABLED]" "   OpenMP" )
     endif ( LAMA_USE_OPENMP )
 else ( OPENMP_FOUND )
-    message ( STATUS "    [UNSUPPORTED] OpenMP" )
+    lama_status_message ( WARNING "[UNSUPPORTED]" "OpenMP" )
 endif ( OPENMP_FOUND )
 
 
 ## MPI
 if ( MPI_FOUND )
     if ( LAMA_USE_MPI )
-        message ( STATUS "    [FOUND]       MPI at ${MPI_INCLUDE_PATH}" )
+        lama_status_message ( INFO "[FOUND]" "      MPI at ${MPI_INCLUDE_PATH}" )
     else ( LAMA_USE_MPI )
-        message ( STATUS "    [DISABLED]    MPI at ${MPI_INCLUDE_PATH}" )
+        lama_status_message ( WARNING "[DISABLED]" "   MPI at ${MPI_INCLUDE_PATH}" )
     endif ( LAMA_USE_MPI )
 else ( MPI_FOUND )
-    message ( STATUS "    [NOT FOUND]   MPI not found" )
+    lama_status_message ( WARNING "[NOT FOUND]" "  MPI not found" )
 endif ( MPI_FOUND )
 
 ## CUDA
 if ( CUDA_FOUND )
     if ( LAMA_USE_CUDA )
-        message ( STATUS "    [FOUND]       CUDA ${CUDA_VERSION} at ${CUDA_INCLUDE_DIRS}" )
+        lama_status_message ( INFO "[FOUND]" "      CUDA ${CUDA_VERSION} at ${CUDA_INCLUDE_DIRS}" )
     else ( LAMA_USE_CUDA )
-        message ( STATUS "    [DISABLED]    CUDA ${CUDA_VERSION} at ${CUDA_INCLUDE_DIRS}" )
+        lama_status_message ( WARNING "[DISABLED]" "   CUDA ${CUDA_VERSION} at ${CUDA_INCLUDE_DIRS}" )
     endif ( LAMA_USE_CUDA )
 else ( CUDA_FOUND )
-    message ( STATUS "    [NOT FOUND]   CUDA" )
+    lama_status_message ( WARNING "[NOT FOUND]" "  CUDA" )
 endif ( CUDA_FOUND )
 
 ## DOXYGEN
 if ( DOXYGEN_FOUND )
-    message ( STATUS "    [FOUND]       DOXYGEN - make doc to build documentation" )
+    lama_status_message ( INFO "[FOUND]" "      DOXYGEN - make doc to build documentation" )
 else ( DOXYGEN_FOUND )
-    message ( STATUS "    [NOT FOUND]   DOXYGEN" )
+    lama_status_message ( WARNING "[NOT FOUND]" "  DOXYGEN" )
 endif ( DOXYGEN_FOUND )
 
-## Tests
+## Boost Unit Test Framework
 if ( Boost_UNIT_TEST_FRAMEWORK_FOUND )
-    message ( STATUS "    [FOUND]       Boost Unit Test Framework" )
+    lama_status_message ( INFO "[FOUND]" "      Boost Unit Test Framework" )
 else ( Boost_UNIT_TEST_FRAMEWORK_FOUND )
-    message ( STATUS "    [NOT FOUND]   Boost Unit Test Framework" )
+    lama_status_message ( WARNING "[NOT FOUND]" "  Boost Unit Test Framework" )
 endif ( Boost_UNIT_TEST_FRAMEWORK_FOUND )
+
+## Boost regex
+if ( Boost_REGEX_FOUND )
+    lama_status_message ( INFO "[FOUND]" "      Boost Regex" )
+else ( Boost_REGEX_FOUND )
+    lama_status_message ( WARNING "[NOT FOUND]" "   Boost Regex" )
+endif ( Boost_REGEX_FOUND )
 
 
 
 message ( STATUS "" )
 
 
-message ( STATUS "INFO:" )
-message ( STATUS "    LAMA Version : ${LAMA_VERSION}" )
-message ( STATUS "    Build Type   : ${CMAKE_BUILD_TYPE}" )
-message ( STATUS "    LOG Level    : ${LAMA_LOG_LEVEL}" )
-message ( STATUS "    ASSERT Level : ${LAMA_ASSERT_LEVEL}" )
-message ( STATUS "    TRACE Level  : ${LAMA_TRACE_LEVEL}" )
+lama_status_message ( HEADLINE "INFO:" )
+message ( STATUS "LAMA Version : ${LAMA_VERSION}" )
+message ( STATUS "Build Type   : ${CMAKE_BUILD_TYPE}" )
+message ( STATUS "LOG Level    : ${LAMA_LOG_LEVEL}" )
+message ( STATUS "ASSERT Level : ${LAMA_ASSERT_LEVEL}" )
+message ( STATUS "TRACE Level  : ${LAMA_TRACE_LEVEL}" )
 message ( STATUS "" )

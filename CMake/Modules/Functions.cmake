@@ -148,9 +148,33 @@ macro ( lama_add )
     set ( CXX_SOURCES ${CXX_SOURCES} PARENT_SCOPE )
 endmacro ( lama_add )
 
-
-
-
+# inspired by soci colormsg function
+function ( lama_status_message )
+    string ( ASCII 27 _escape )
+    # ANSI Display Atributes
+    set ( ERROR "1\;31" )
+    set ( WARNING "33" )
+    set ( INFO "2\;32" )
+    set ( HEADLINE "4" )
+    
+    set ( coloron FALSE )
+    set ( str "" )
+    foreach ( arg ${ARGV} )
+        if ( DEFINED ${arg} AND CMAKE_COLOR_MAKEFILE )
+            set(str "${str}${_escape}[${${arg}}m")
+            set(coloron TRUE)
+        else ( DEFINED ${arg} AND CMAKE_COLOR_MAKEFILE )
+            set ( str "${str}${arg}" )
+            if ( coloron )
+                set ( str "${str}${_escape}[0m" )
+                set ( coloron FALSE )
+            endif()
+            set(str "${str} ")
+        endif ( DEFINED ${arg} AND CMAKE_COLOR_MAKEFILE )
+    endforeach ()
+    
+    message (STATUS ${str} )
+endfunction( lama_status_message )
 
 
 
