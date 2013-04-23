@@ -26,7 +26,7 @@ if ( EXISTS ${GOTOBLAS_LIBRARY} )
     
     set ( CMAKE_THREAD_PREFER_PTHREAD TRUE )
     
-    find_package( Threads QUIET )
+    find_package( Threads ${LAMA_FIND_PACKAGE_FLAGS} )
     
     if ( Threads_FOUND )
         if ( CMAKE_USE_PTHREADS_INIT )

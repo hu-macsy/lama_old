@@ -1,3 +1,3 @@
 
 #find_package( BLAS )
-find_package( LAPACK )
+find_package( LAPACK ${LAMA_FIND_PACKAGE_FLAGS} )

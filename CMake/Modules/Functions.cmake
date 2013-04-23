@@ -41,6 +41,11 @@ function ( setAndCheckCache PACKAGE_NAME )
             set ( USE_PACKAGE FALSE )
         endif ( ${FOUND_VARIABLE_NAME} )
         
+        # if optional parameter is set, use this one as package name for message
+        if( DEFINED ARGV1 )
+            set ( PACKAGE_NAME ${ARGV1} )
+        endif ( DEFINED ARGV1 )
+        
         # Set cache variable
         set ( ${CACHE_VARIABLE_NAME} ${USE_PACKAGE} CACHE BOOL "Enable / Disable use of ${PACKAGE_NAME}" )
     endif ( DEFINED ${CACHE_VARIABLE_NAME} )

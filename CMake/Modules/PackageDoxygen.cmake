@@ -29,5 +29,7 @@ if ( DOXYGEN_FOUND )
    # install ( DIRECTORY ${DOXYGEN_BUILD_ROOT}/ DESTINATION ${DOXYGEN_BUILD_ROOT}/html )
 
 else ( DOXYGEN_FOUND )
-    message ( WARNING "Not building system documentation because Doxygen not found." )
+    if ( LAMA_CMAKE_VERBOSE )
+        message ( STATUS "Not building system documentation because Doxygen not found." )
+    endif ( LAMA_CMAKE_VERBOSE )
 endif ( DOXYGEN_FOUND )

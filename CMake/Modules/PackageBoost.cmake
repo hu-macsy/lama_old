@@ -22,7 +22,7 @@ endif( LAMA_DEBUG_CMAKE )
 
 set( LAMA_CMAKE_VERBOSE QUIET )
 
-find_package ( Boost COMPONENTS ${Boost_COMPONENTS} ${LAMA_CMAKE_VERBOSE} )
+find_package ( Boost COMPONENTS ${Boost_COMPONENTS} ${LAMA_FIND_PACKAGE_FLAGS} )
 
 # Note: we use Boost_INCLUDE_DIR, Boost_<lib>_FOUND, Boost_<lib>_LIBRARY, but
 #       not Boost_FOUND, as it is false if some optional libraries are missing

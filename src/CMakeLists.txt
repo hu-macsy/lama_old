@@ -31,10 +31,16 @@
  # $Id$
 ###
 
+### Set required CMake version
 cmake_minimum_required ( VERSION 2.8 )
 
-### Set PROJECT NAME / supported LANGUAGES and Module Path ###
+### Print LAMA Installation header
+message ( STATUS "" )
+message ( STATUS "LAMA Configuration:" )
+message ( STATUS "===================" )
+message ( STATUS "" )
 
+### Set PROJECT NAME / supported LANGUAGES and Module Path ###
 project ( LAMA CXX C )
 set ( CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/../CMake/Modules" )
 set ( LAMA_VERSION "1.0.0" )
@@ -43,21 +49,14 @@ set ( LAMA_VERSION_MINOR 0 )
 set ( LAMA_VERSION_PATCH 0 )
 set ( LAMA_VERSION_COUNT 3 )
 
-### Print LAMA Installation header
-message ( STATUS "" )
-message ( STATUS "LAMA Installation:" )
-message ( STATUS "==================" )
-message ( STATUS "" )
+
 
 ### Variables / CMAKE Functions ###
 include ( Variables )
 include ( SearchPackages )
 include ( LAMAdefines )
 include ( Functions )
-
-if ( LAMA_CMAKE_VERBOSE )
-    message ( STATUS "break 1" )
-endif()
+include ( CompilerVersion )
 
 ### PACKAGES ###
 include ( PackageMPI )
@@ -66,12 +65,20 @@ include ( PackageCodeCoverage )
 
 # Find required packages
 foreach ( PACKAGE_TO_FIND ${REQUIRED_PACKAGES_TO_FIND} )
-    find_package ( ${PACKAGE_TO_FIND} QUIET REQUIRED )
+    find_package ( ${PACKAGE_TO_FIND} ${LAMA_FIND_PACKAGE_FLAGS} REQUIRED )
 endforeach ( PACKAGE_TO_FIND ${REQUIRED_PACKAGES_TO_FIND} )
+
+
+
+
+
+
+
+
 
 # Find optional packages
 foreach ( PACKAGE_TO_FIND ${OPTIONAL_PACKAGES_TO_FIND} )
-    find_package ( ${PACKAGE_TO_FIND} QUIET )
+    find_package ( ${PACKAGE_TO_FIND} ${LAMA_FIND_PACKAGE_FLAGS} )
 endforeach ( PACKAGE_TO_FIND ${OPTIONAL_PACKAGES_TO_FIND} )
 
 # ALLOW to switch off CUDA explicitly
@@ -134,81 +141,73 @@ add_custom_command (
     COMMAND ${CMAKE_COMMAND} -E remove ${BUILD_GLOB_RES}
 )
 
-
-
-
-
-
-
-if(CMAKE_COMPILER_IS_GNUCXX)
-  execute_process( COMMAND ${CMAKE_CXX_COMPILER} --version
-                   OUTPUT_VARIABLE _compiler_output )
-  string( REGEX MATCH "([0-9]+\\.[0-9]+\\.[0-9]+)" gcc_compiler_version ${_compiler_output})
-endif (CMAKE_COMPILER_IS_GNUCXX )
-
-
 ### Summary ###
-
-
-
-
 message ( STATUS "" )
-message ( STATUS "        _    _")
-message ( STATUS "       ( \\__//)")
-message ( STATUS "       .'     )")
-message ( STATUS "    __/b d  .  )")
-message ( STATUS "   (_Y_`,     .)")
-message ( STATUS "    `--'-,-'  )")
-message ( STATUS "         (.  )")
-message ( STATUS "         (   )")
-message ( STATUS "        (   )")
-message ( STATUS "       ( . )         .---.")
-message ( STATUS "      (    )        (     )")
-message ( STATUS "      (   . )      (  .    )")
-message ( STATUS "      (      )    (      .  ),")
-message ( STATUS "      ( .     `\"'`  .       `)\\")
-message ( STATUS "       (      .              .)\\")
-message ( STATUS "       ((  .      .   (   .   )\\\\")
-message ( STATUS "       ((       .    (        ) \\\\")
-message ( STATUS "        ((     )     _( .   . )  \\\\")
-message ( STATUS "        ( ( .   )\"'\"`(.(     )   ( ;")
-message ( STATUS "        ( (    )      ( ( . )     \\'")
-message ( STATUS "         |~(  )        |~(  )")
-message ( STATUS "         | ||~|        | ||~|")
-message ( STATUS "    jgs  | || |        | || |  ")  
-message ( STATUS "        _| || |       _| || |")
-message ( STATUS "       /___(| |      /___(| |")
-message ( STATUS "          /___(         /___(")
+#message ( STATUS "        _    _")
+#message ( STATUS "       ( \\__//)")
+#message ( STATUS "       .'     )")
+#message ( STATUS "    __/b d  .  )")
+#message ( STATUS "   (_Y_`,     .)")
+#message ( STATUS "    `--'-,-'  )")
+#message ( STATUS "         (.  )")
+#message ( STATUS "         (   )")
+#message ( STATUS "        (   )")
+#message ( STATUS "       ( . )         .---.")
+#message ( STATUS "      (    )        (     )")
+#message ( STATUS "      (   . )      (  .    )")
+#message ( STATUS "      (      )    (      .  ),")
+#message ( STATUS "      ( .     `\"'`  .       `)\\")
+#message ( STATUS "       (      .              .)\\")
+#message ( STATUS "       ((  .      .   (   .   )\\\\")
+#message ( STATUS "       ((       .    (        ) \\\\")
+#message ( STATUS "        ((     )     _( .   . )  \\\\")
+#message ( STATUS "        ( ( .   )\"'\"`(.(     )   ( ;")
+#message ( STATUS "        ( (    )      ( ( . )     \\'")
+#message ( STATUS "         |~(  )        |~(  )")
+#message ( STATUS "         | ||~|        | ||~|")
+#message ( STATUS "    jgs  | || |        | || |  ")  
+#message ( STATUS "        _| || |       _| || |")
+#message ( STATUS "       /___(| |      /___(| |")
+#message ( STATUS "          /___(         /___(")
 message ( STATUS "" )
 message ( STATUS "Summary of LAMA Configuration:" )
 message ( STATUS "==============================" )
 message ( STATUS "" )
+
 lama_status_message ( HEADLINE "REQUIRED PACKAGES:" )
 ## C++ Compiler
 if ( CMAKE_CXX_COMPILER )
-    lama_status_message ( INFO "[FOUND]" "      C++ Compiler - ${CMAKE_CXX_COMPILER_ID} ${gcc_compiler_version}" )
+    lama_status_message ( INFO "[FOUND]" "      C++ Compiler - ${CMAKE_CXX_COMPILER_ID}"
+                               "${${CMAKE_CXX_COMPILER_ID}CXX_COMPILER_VERSION}" )
 else ( CMAKE_CXX_COMPILER )
     lama_status_message ( ERROR "[NOT FOUND]" "  C++ Compiler" )
 endif ( CMAKE_CXX_COMPILER )
 
 # C Compiler
 if ( CMAKE_C_COMPILER )
-    lama_status_message ( INFO "[FOUND]" "      C Compiler - ${CMAKE_C_COMPILER_ID}" )
+    lama_status_message ( INFO "[FOUND]" "      C Compiler - ${CMAKE_C_COMPILER_ID}" 
+                               "${${CMAKE_CXX_COMPILER_ID}CC_COMPILER_VERSION}" )
 else ( CMAKE_C_COMPILER )
     lama_status_message ( ERROR "[NOT FOUND]" "  C Compiler" )
 endif ( CMAKE_C_COMPILER )
 
 # Boost 
 if ( Boost_INCLUDE_DIR )
-    lama_status_message ( INFO "[FOUND]" "      Boost - Version ${Boost_VERSION} at ${Boost_INCLUDE_DIR}" )
+    lama_status_message ( INFO "[FOUND]" "      Boost - Version"
+                               "${Boost_MAJOR_VERSION}.${Boost_MINOR_VERSION}.${Boost_SUBMINOR_VERSION}"
+                               "at ${Boost_INCLUDE_DIR}" )
 else ( Boost_INCLUDE_DIR )
     lama_status_message ( ERROR "[NOT FOUND]" "  Boost" )
 endif ( Boost_INCLUDE_DIR )
 
 # BLAS
 if ( LAMA_BLAS_LIBRARIES )
-    lama_status_message ( INFO "[FOUND]" "      BLAS - Libraries: ${LAMA_BLAS_LIBRARIES}" )
-    lama_status_message ( INFO "[FOUND]" "      LAPACK GOES HERE!" )
+    lama_status_message ( INFO "[FOUND]" "      BLAS (${LAMA_BLAS_NAME}) with libraries: ${LAMA_BLAS_LIBRARIES}" )
+    if ( LAPACK_FOUND ) 
+        lama_status_message ( INFO "[FOUND]" "      LAPACK" )
+    else ( LAPACK_FOUND )
+        lama_status_message ( ERROR "[NOT FOUND]" "  LAPACK" )
+    endif ( LAPACK_FOUND )
 else ( LAMA_BLAS_LIBRARIES )
     lama_status_message ( ERROR "[NOT FOUND]" "  BLAS" )
 endif ( LAMA_BLAS_LIBRARIES )

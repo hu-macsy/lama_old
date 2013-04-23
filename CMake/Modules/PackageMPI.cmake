@@ -27,10 +27,7 @@ endif ( WIN32 AND NOT ( MPI_C_INCLUDE_PATH OR MPI_CXX_INCLUDE_PATH OR MPI_C_LIBR
 #  MPI Stuff
 ##############################################################################
 
-# TODO: SUMMARY
-find_package ( MPI QUIET )
-
-
+find_package ( MPI ${LAMA_FIND_PACKAGE_FLAGS} )
 
 ### ALLOW to switch off MPI explicitly ###
 
