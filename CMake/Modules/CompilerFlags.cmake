@@ -107,6 +107,10 @@ if ( CUDA_FOUND AND LAMA_USE_CUDA )
             set ( CUDA_NVCC_FLAGS_RELEASE "-O3;-use_fast_math;-Xcompiler;-ffast-math;-Xcompiler;-fno-inline" )
         endif ( MARCH_NATIVE_SUPPORT )
     endif ( WIN32 )
+    
+    # TODO: determine cuda compute capability and use highest
+    # with sm_20 no warnings about Cannot tell what pointer points to, assuming global memory space in Release build
+    
     # We need at least compute capability 1.3, so if no architecture is specified set it here
     if ( NOT "${CUDA_NVCC_FLAGS}" MATCHES "-arch" )
     	list (APPEND CUDA_NVCC_FLAGS "-arch=sm_13" )

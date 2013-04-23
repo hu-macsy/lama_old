@@ -51,6 +51,8 @@ message ( STATUS "" )
 
 ### Variables / CMAKE Functions ###
 include ( Variables )
+include ( SearchPackages )
+include ( LAMAdefines )
 include ( Functions )
 
 if ( LAMA_CMAKE_VERBOSE )
@@ -252,7 +254,7 @@ endif ( CUDA_FOUND )
 
 ## DOXYGEN
 if ( DOXYGEN_FOUND )
-    lama_status_message ( INFO "[FOUND]" "      DOXYGEN - make doc to build documentation" )
+    lama_status_message ( INFO "[FOUND]" "      DOXYGEN - 'make doc' to build documentation" )
 else ( DOXYGEN_FOUND )
     lama_status_message ( WARNING "[NOT FOUND]" "  DOXYGEN" )
 endif ( DOXYGEN_FOUND )

@@ -32,7 +32,7 @@ find_package ( Boost COMPONENTS ${Boost_COMPONENTS} ${LAMA_CMAKE_VERBOSE} )
 if ( Boost_INCLUDE_DIR )
 # TODO: SUMMARY
     #message ( STATUS "Boost_INCLUDE_DIR = ${Boost_INCLUDE_DIR}" )
-    get_filename_component ( Boost_PATH ${Boost_INCLUDE_DIR} PATH )
+    get_filename_component ( Boost_PATH "${Boost_INCLUDE_DIR}" PATH )
 # TODO: SUMMARY
     #message ( STATUS "Boost_PATH = ${Boost_PATH}" )
     # Boost_PATH should be same as BOOST_ROOT

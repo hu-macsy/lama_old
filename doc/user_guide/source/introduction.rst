@@ -16,6 +16,8 @@ About LAMA
 ==========
 
 .. image:: _images/LAMA.png
+   :align: center
+   :alt: LAMA Design
 
 LAMA is an easy to use open source \Basic \Linear \Algebra \Subprogram (:ref:`\B\L\A\S <blas_explanation>`)) Library with special focus on large
 sparse matrices. Its core is written in C++, so you have the comfort of writting your algorithms in a text-book syntax
@@ -38,35 +40,60 @@ Given features
 
 The supported features of the actual release are listed below:
 
-+------------------------------+----------------------------------------------------+
-| - matrix formats             | - distributions                                    |
-|                              |                                                    |
-|   - Dense                    |   - blocked                                        |
-|                              |                                                    |
-|   - Sparse                   |   - cyclic                                         |
-|                              |                                                    |
-|     - CSR                    |   - blockcyclic (general block)                    |
-|                              |                                                    |
-|     - COO                    |   - general                                        |
-|                              |                                                    |
-|     - ELL                    | - solvers                                          |
-|                              |                                                    |
-|     - JDS                    |   - direct solvers                                 |
-|                              |                                                    |
-|     - DIA                    |     - inverse solver                               |
-|                              |                                                    |
-|  - backends                  |   - iterative solvers                              |
-|                              |                                                    |
-|    - CPU (OpenMP optimized)  |     - jacobi method                                |
-|                              |                                                    |
-|    - GPU                     |     - conjugated gradiant (CG) method              |
-|                              |                                                    |
-|      - CUDA                  |     - generalized minimal residual (GMRES) method  |
-|                              |                                                    |
-|                              |     - simple algebraic multigrid (SAMG) method     |
-|                              |                                                    |
-|                              |     - successive over-relaxation (SOR) method      |
-+------------------------------+----------------------------------------------------+
+
+ - matrix formats
+
+   - Dense 
+
+   - Sparse
+
+     - CSR
+
+     - COO
+
+     - ELL
+     
+     - JDS
+     
+     - DIA
+
+  - backends
+
+    - CPU (OpenMP optimized)
+
+    - GPU
+
+      - CUDA
+
+
+ - distributions
+ 
+   - blocked
+
+   - cyclic
+
+   - blockcyclic (general block)
+
+   - general
+   
+ - solvers
+ 
+   - direct solvers
+   
+     - inverse solver
+     
+   - iterative solvers
+   
+     - jacobi method
+     
+     - conjugated gradiant (CG) method
+     
+     - successive over-relaxation (SOR) method
+     
+     - generalized minimal residual (GMRES) method
+     
+     - simple algebraic multigrid (SAMG) method
+
     
 Work in process that you can find in our feature branches and that will come with next releases are:
  

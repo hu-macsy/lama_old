@@ -38,6 +38,7 @@
 
 #include <cuda_runtime.h>
 
+__attribute__ ((unused)) /* only to remove used varibale warning */
 const int block_size = 512;
 
 namespace lama

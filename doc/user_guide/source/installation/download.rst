@@ -8,7 +8,7 @@ You can check out the source code via GIT where the HTTP access is as follows:
     git clone http://git.code.sf.net/p/libama/git lama
 
 Code developers must register at SourceForge, place there rsa-key at Account --> Services
-and should download the software as follows::
+and should download the software as follows:
 
 .. code-block:: bash
 
