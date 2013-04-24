@@ -83,7 +83,6 @@ endforeach ( PACKAGE_TO_FIND ${OPTIONAL_PACKAGES_TO_FIND} )
 
 # ALLOW to switch off CUDA explicitly
 setAndCheckCache ( "CUDA" )
-setAndCheckCache ( "OPENMP" )
 
 ### Include Compiler Flags, after all packages are found ###
 include ( CompilerFlags )
@@ -177,99 +176,94 @@ message ( STATUS "" )
 lama_status_message ( HEADLINE "REQUIRED PACKAGES:" )
 ## C++ Compiler
 if ( CMAKE_CXX_COMPILER )
-    lama_status_message ( INFO "[FOUND]" "      C++ Compiler - ${CMAKE_CXX_COMPILER_ID}"
+    lama_status_message ( INFO "[FOUND]" "    C++ Compiler - ${CMAKE_CXX_COMPILER_ID}"
                                "${${CMAKE_CXX_COMPILER_ID}CXX_COMPILER_VERSION}" )
 else ( CMAKE_CXX_COMPILER )
-    lama_status_message ( ERROR "[NOT FOUND]" "  C++ Compiler" )
+    lama_status_message ( ERROR "[NOT FOUND]" "C++ Compiler" )
 endif ( CMAKE_CXX_COMPILER )
 
 # C Compiler
 if ( CMAKE_C_COMPILER )
-    lama_status_message ( INFO "[FOUND]" "      C Compiler - ${CMAKE_C_COMPILER_ID}" 
+    lama_status_message ( INFO "[FOUND]" "    C Compiler - ${CMAKE_C_COMPILER_ID}" 
                                "${${CMAKE_CXX_COMPILER_ID}CC_COMPILER_VERSION}" )
 else ( CMAKE_C_COMPILER )
-    lama_status_message ( ERROR "[NOT FOUND]" "  C Compiler" )
+    lama_status_message ( ERROR "[NOT FOUND]" "C Compiler" )
 endif ( CMAKE_C_COMPILER )
 
 # Boost 
 if ( Boost_INCLUDE_DIR )
-    lama_status_message ( INFO "[FOUND]" "      Boost - Version"
+    lama_status_message ( INFO "[FOUND]" "    Boost - Version"
                                "${Boost_MAJOR_VERSION}.${Boost_MINOR_VERSION}.${Boost_SUBMINOR_VERSION}"
                                "at ${Boost_INCLUDE_DIR}" )
 else ( Boost_INCLUDE_DIR )
-    lama_status_message ( ERROR "[NOT FOUND]" "  Boost" )
+    lama_status_message ( ERROR "[NOT FOUND]" "Boost" )
 endif ( Boost_INCLUDE_DIR )
 
 # BLAS
 if ( LAMA_BLAS_LIBRARIES )
-    lama_status_message ( INFO "[FOUND]" "      BLAS (${LAMA_BLAS_NAME}) with libraries: ${LAMA_BLAS_LIBRARIES}" )
+    lama_status_message ( INFO "[FOUND]" "    BLAS (${LAMA_BLAS_NAME}) with libraries: ${LAMA_BLAS_LIBRARIES}" )
     if ( LAPACK_FOUND ) 
-        lama_status_message ( INFO "[FOUND]" "      LAPACK" )
+        lama_status_message ( INFO "[FOUND]" "    LAPACK" )
     else ( LAPACK_FOUND )
-        lama_status_message ( ERROR "[NOT FOUND]" "  LAPACK" )
+        lama_status_message ( ERROR "[NOT FOUND]" "LAPACK" )
     endif ( LAPACK_FOUND )
 else ( LAMA_BLAS_LIBRARIES )
-    lama_status_message ( ERROR "[NOT FOUND]" "  BLAS" )
+    lama_status_message ( ERROR "[NOT FOUND]" "BLAS" )
 endif ( LAMA_BLAS_LIBRARIES )
+
+## OpenMP
+if( OPENMP_FOUND )
+    lama_status_message ( INFO "[FOUND]" "    OpenMP" )
+else ( OPENMP_FOUND )
+    lama_status_message ( ERROR "[NOT FOUND]" "OpenMP" )
+endif ( OPENMP_FOUND )
 
 
 
 message ( STATUS "" )
 lama_status_message ( HEADLINE "OPTIONAL PACKAGES:" )
 
-## OpenMP
-if( OPENMP_FOUND )
-    if ( LAMA_USE_OPENMP )
-        lama_status_message ( INFO "[SUPPORTED]" "  OpenMP" )
-    else ( LAMA_USE_OPENMP )
-        lama_status_message ( WARNING "[DISABLED]" "   OpenMP" )
-    endif ( LAMA_USE_OPENMP )
-else ( OPENMP_FOUND )
-    lama_status_message ( WARNING "[UNSUPPORTED]" "OpenMP" )
-endif ( OPENMP_FOUND )
-
-
 ## MPI
 if ( MPI_FOUND )
     if ( LAMA_USE_MPI )
-        lama_status_message ( INFO "[FOUND]" "      MPI at ${MPI_INCLUDE_PATH}" )
+        lama_status_message ( INFO "[FOUND]" "    MPI at ${MPI_INCLUDE_PATH}" )
     else ( LAMA_USE_MPI )
-        lama_status_message ( WARNING "[DISABLED]" "   MPI at ${MPI_INCLUDE_PATH}" )
+        lama_status_message ( WARNING "[DISABLED]" " MPI at ${MPI_INCLUDE_PATH}" )
     endif ( LAMA_USE_MPI )
 else ( MPI_FOUND )
-    lama_status_message ( WARNING "[NOT FOUND]" "  MPI not found" )
+    lama_status_message ( WARNING "[NOT FOUND]" "MPI not found" )
 endif ( MPI_FOUND )
 
 ## CUDA
 if ( CUDA_FOUND )
     if ( LAMA_USE_CUDA )
-        lama_status_message ( INFO "[FOUND]" "      CUDA ${CUDA_VERSION} at ${CUDA_INCLUDE_DIRS}" )
+        lama_status_message ( INFO "[FOUND]" "    CUDA ${CUDA_VERSION} at ${CUDA_INCLUDE_DIRS}" )
     else ( LAMA_USE_CUDA )
-        lama_status_message ( WARNING "[DISABLED]" "   CUDA ${CUDA_VERSION} at ${CUDA_INCLUDE_DIRS}" )
+        lama_status_message ( WARNING "[DISABLED]" " CUDA ${CUDA_VERSION} at ${CUDA_INCLUDE_DIRS}" )
     endif ( LAMA_USE_CUDA )
 else ( CUDA_FOUND )
-    lama_status_message ( WARNING "[NOT FOUND]" "  CUDA" )
+    lama_status_message ( WARNING "[NOT FOUND]" "CUDA" )
 endif ( CUDA_FOUND )
 
 ## DOXYGEN
 if ( DOXYGEN_FOUND )
-    lama_status_message ( INFO "[FOUND]" "      DOXYGEN - 'make doc' to build documentation" )
+    lama_status_message ( INFO "[FOUND]" "    DOXYGEN - 'make doc' to build documentation" )
 else ( DOXYGEN_FOUND )
-    lama_status_message ( WARNING "[NOT FOUND]" "  DOXYGEN" )
+    lama_status_message ( WARNING "[NOT FOUND]" "DOXYGEN" )
 endif ( DOXYGEN_FOUND )
 
 ## Boost Unit Test Framework
 if ( Boost_UNIT_TEST_FRAMEWORK_FOUND )
-    lama_status_message ( INFO "[FOUND]" "      Boost Unit Test Framework" )
+    lama_status_message ( INFO "[FOUND]" "    Boost Unit Test Framework" )
 else ( Boost_UNIT_TEST_FRAMEWORK_FOUND )
-    lama_status_message ( WARNING "[NOT FOUND]" "  Boost Unit Test Framework" )
+    lama_status_message ( WARNING "[NOT FOUND]" "Boost Unit Test Framework" )
 endif ( Boost_UNIT_TEST_FRAMEWORK_FOUND )
 
 ## Boost regex
 if ( Boost_REGEX_FOUND )
-    lama_status_message ( INFO "[FOUND]" "      Boost Regex" )
+    lama_status_message ( INFO "[FOUND]" "    Boost Regex" )
 else ( Boost_REGEX_FOUND )
-    lama_status_message ( WARNING "[NOT FOUND]" "   Boost Regex" )
+    lama_status_message ( WARNING "[NOT FOUND]" "Boost Regex" )
 endif ( Boost_REGEX_FOUND )
 
 

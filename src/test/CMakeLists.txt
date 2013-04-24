@@ -151,7 +151,7 @@ endif ( WIN32 )
 ### Copy the README file in build directory ### 
 file ( COPY README DESTINATION ${CMAKE_BINARY_DIR}/test )
 
-if ( CODE_COVERAGE )
+if ( LAMA_USE_CODE_COVERAGE )
 	### Copy the cca.sh file in build directory ###
 	file ( COPY cca.sh DESTINATION ${CMAKE_BINARY_DIR}/test ) 
-endif ( CODE_COVERAGE )
+endif ( LAMA_USE_CODE_COVERAGE )
