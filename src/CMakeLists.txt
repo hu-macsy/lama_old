@@ -96,9 +96,9 @@ endif ( NOT LAMA_OMP_SCHEDULE )
 #message ( STATUS "OpenMP schedule set to " ${LAMA_OMP_SCHEDULE} )
 add_definitions ( -DLAMA_OMP_SCHEDULE=${LAMA_OMP_SCHEDULE} )
 
-if ( OPENMP_FOUND AND LAMA_USE_OPENMP )
+if ( OPENMP_FOUND )
     set ( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}" )
-endif( OPENMP_FOUND AND LAMA_USE_OPENMP)
+endif( OPENMP_FOUND )
 
 
 
