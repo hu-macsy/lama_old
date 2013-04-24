@@ -61,7 +61,7 @@ set ( CMAKE_VERBOSE_MAKEFILE OFF )
 # Choose Default CMAKE_BUILD_TYPE
 if ( NOT CMAKE_BUILD_TYPE )
   # Can be: (RelWithDebInfo)
-  set ( CMAKE_BUILD_TYPE Debug CACHE STRING 
+  set ( CMAKE_BUILD_TYPE Release CACHE STRING 
         "Choose the type of build, options are: None Debug Release RelWithDebInfo MinSizeRel." FORCE )
 endif ( NOT CMAKE_BUILD_TYPE )
 
