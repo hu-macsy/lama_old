@@ -58,6 +58,7 @@ All relevant LAMA options and there significations are listed in the table below
    "CMAKE_BUILD_TYPE", "Debug (default), or Release (for an optimized build)"
    "CMAKE_INSTALL_PREFIX", "Installation path of LAMA library"
    "LAMA_ADDITIONAL_LINK_LIBRARIES", "Pathes to libraries that should be linked to lama, separated by ;"
+   "LAMA_ADDITIONAL_LINK_FLAGS", "Additional linker Flags"
    "LAMA_CMAKE_VERBOSE", "set to 1 or TRUE for more detailed infos about configuration"
    "LAMA_ASSERT_LEVEL", "ERROR recommended, DEBUG adds much more assertions into the code"
    "LAMA_BLAS_LIBRARY", "Selected the used BLAS library: auto, MKL, ACML, GOTOBLAS, BLAS"
