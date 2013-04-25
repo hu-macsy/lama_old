@@ -45,10 +45,10 @@ endif ( WIN32 )
 set ( Boost_COMPONENTS thread unit_test_framework regex )
 
 # FindBoost Debug options comment
-if ( LAMA_DEBUG_CMAKE )
+if ( LAMA_CMAKE_VERBOSE )
     set ( Boost_DEBUG TRUE )
     set ( Boost_DETAILED_FAILURE_MSG TRUE )
-endif( LAMA_DEBUG_CMAKE )
+endif( LAMA_CMAKE_VERBOSE )
 
 # Find Boost 
 

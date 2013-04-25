@@ -57,11 +57,16 @@ All relevant LAMA options and there significations are listed in the table below
 
    "CMAKE_BUILD_TYPE", "Debug (default), or Release (for an optimized build)"
    "CMAKE_INSTALL_PREFIX", "Installation path of LAMA library"
-   "LAMA_DEBUG_CMAKE", "set to 1 or TRUE for more detailed infos about configuration"
+   "LAMA_ADDITIONAL_LINK_LIBRARIES", "Pathes to libraries that should be linked to lama, separated by ;"
+   "LAMA_CMAKE_VERBOSE", "set to 1 or TRUE for more detailed infos about configuration"
    "LAMA_ASSERT_LEVEL", "ERROR recommended, DEBUG adds much more assertions into the code"
+   "LAMA_BLAS_LIBRARY", "Selected the used BLAS library: auto, MKL, ACML, GOTOBLAS, BLAS"
+   "LAMA_BUILD_TEST", "ON or OFF, explicitly enable/disable building the tests"
    "LAMA_LOG_LEVEL", "INFO recomemended, alternatively DEBUG or more detailled TRACE"
+   "LAMA_USE_CODE_COVERAGE", "ON or OFF, explicitly enable/disable use of Code Coverage"
    "LAMA_USE_CUDA", "ON or OFF, explicitly enable/disable use of CUDA"
    "LAMA_USE_MPI", "ON or OFF, explicitly enable/disable use of MPI"
+   "LAMA_USE_SCALAPACK", "ON or OFF, explicitly enable/disable use of SCALAPACK"
    
 For an optimized installation of LAMA call
 
