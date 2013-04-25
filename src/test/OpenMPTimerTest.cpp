@@ -1,5 +1,5 @@
 /**
- * @file OpenMPTimerTest.cpp
+ * @file TimerTest.cpp
  *
  * @license
  * Copyright (c) 2011
@@ -25,7 +25,7 @@
  * SOFTWARE.
  * @endlicense
  *
- * @brief Contains the implementation of the class OpenMPTimerTest.
+ * @brief Contains the implementation of the class TimerTest.
  * @author: Alexander Büchel, Matthias Makulla
  * @date 03.02.2012
  * $
@@ -33,7 +33,7 @@
 
 #include <boost/test/unit_test.hpp>
 
-#include <lama/solver/logger/OpenMPTimer.hpp>
+#include <lama/solver/logger/Timer.hpp>
 #include <lama/exception/Exception.hpp>
 
 #include "TestMacros.hpp"
@@ -54,16 +54,16 @@ using namespace lama;
 
 /* --------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_SUITE( OpenMPTimerTest )
+BOOST_AUTO_TEST_SUITE( TimerTest )
 ;
 
-LAMA_LOG_DEF_LOGGER( logger, "Test.OpenMPTimerTest" );
+LAMA_LOG_DEF_LOGGER( logger, "Test.TimerTest" );
 
 /* --------------------------------------------------------------------- */
 
 BOOST_AUTO_TEST_CASE( ConstructorTest )
 {
-    OpenMPTimer timer;
+    Timer timer;
     timer.start( "Solver" );
 
     // cannot start timer twice
@@ -83,21 +83,21 @@ BOOST_AUTO_TEST_CASE( ConstructorTest )
 
 BOOST_AUTO_TEST_CASE( ResetTest )
 {
-    OpenMPTimer timer;
-    LAMA_CHECK_THROW( { timer.reset("OpenMPTimer") ; }, Exception );
+    Timer timer;
+    LAMA_CHECK_THROW( { timer.reset("Timer") ; }, Exception );
 
-    timer.start( "OpenMPTimer" );
+    timer.start( "Timer" );
     usleep( 100000 );
 
-    double time1 = timer.getTime( "OpenMPTimer" );
-    BOOST_CHECK( 0.0 < timer.getTime( "OpenMPTimer" ) );
+    double time1 = timer.getTime( "Timer" );
+    BOOST_CHECK( 0.0 < timer.getTime( "Timer" ) );
 
     //Call reset, but do not stop the timer
-    timer.reset( "OpenMPTimer" );
+    timer.reset( "Timer" );
     usleep( 10000 );
 
-    double time2 = timer.getTime( "OpenMPTimer" );
-    timer.stop( "OpenMPTimer" );
+    double time2 = timer.getTime( "Timer" );
+    timer.stop( "Timer" );
 
     BOOST_CHECK( time2 < time1 );
     BOOST_CHECK_CLOSE( time1, 0.1, 2 );
@@ -108,7 +108,7 @@ BOOST_AUTO_TEST_CASE( ResetTest )
 
 BOOST_AUTO_TEST_CASE( StartAndStopTimerTest )
 {
-    OpenMPTimer timer;
+    Timer timer;
 
     timer.start( "TestTimer" );
     usleep( 100000 );
@@ -120,7 +120,7 @@ BOOST_AUTO_TEST_CASE( StartAndStopTimerTest )
 
 BOOST_AUTO_TEST_CASE( ResumeTimerTest )
 {
-    OpenMPTimer timer;
+    Timer timer;
 
     timer.start( "TestTimer2" );
 
@@ -149,7 +149,7 @@ BOOST_AUTO_TEST_CASE( ResumeTimerTest )
 
 BOOST_AUTO_TEST_CASE( ResetTimerTest )
 {
-    OpenMPTimer timer;
+    Timer timer;
 
     timer.start( "TestTimer" );
     usleep( 100000 );
@@ -168,7 +168,7 @@ BOOST_AUTO_TEST_CASE( ResetTimerTest )
 
 BOOST_AUTO_TEST_CASE( GetTimeTest )
 {
-    OpenMPTimer timer;
+    Timer timer;
 
     timer.start( "TestTimer" );
     timer.start( "TestTimer2" );
@@ -187,7 +187,7 @@ BOOST_AUTO_TEST_CASE( GetTimeTest )
 
 BOOST_AUTO_TEST_CASE( StartExceptionsTest )
 {
-    OpenMPTimer timer;
+    Timer timer;
     timer.start( "TestTimer" );
     BOOST_CHECK_THROW( timer.start( "TestTimer" ), Exception );
 }
@@ -196,7 +196,7 @@ BOOST_AUTO_TEST_CASE( StartExceptionsTest )
 
 BOOST_AUTO_TEST_CASE( StopExceptionTest )
 {
-    OpenMPTimer timer;
+    Timer timer;
     BOOST_CHECK_THROW( timer.stop( "TestTimer" ), Exception );
     timer.start( "TestTimer" );
     timer.stop( "TestTimer" );
@@ -207,7 +207,7 @@ BOOST_AUTO_TEST_CASE( StopExceptionTest )
 
 BOOST_AUTO_TEST_CASE( GetTimeExceptionTest )
 {
-    OpenMPTimer timer;
+    Timer timer;
     BOOST_CHECK_THROW( timer.getTime( "TestTimer" ), Exception );
 }
 
@@ -215,10 +215,10 @@ BOOST_AUTO_TEST_CASE( GetTimeExceptionTest )
 
 BOOST_AUTO_TEST_CASE( ResetExceptionTest )
 {
-    OpenMPTimer timer;
+    Timer timer;
     BOOST_CHECK_THROW( timer.stopAndReset("TestTimer"), Exception );
 
-    OpenMPTimer timer1;
+    Timer timer1;
     BOOST_CHECK_THROW( timer1.reset("TestTimer"), Exception );
 }
 /* --------------------------------------------------------------------- */BOOST_AUTO_TEST_SUITE_END();

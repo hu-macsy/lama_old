@@ -35,7 +35,7 @@
 #include <lama/solver/logger/Logger.hpp>
 
 // default timer
-#include <lama/solver/logger/OpenMPTimer.hpp>
+#include <lama/solver/logger/Timer.hpp>
 
 // others
 #include <lama/solver/logger/FileLogger.hpp>
@@ -61,7 +61,7 @@ Logger::Logger(
     bool ignoreRank )
     : mId( id ), mLogLevel( level ), mWriteBehaviour( writeBehaviour ), mIgnoreRank( ignoreRank )
 {
-    mTimer.reset( new OpenMPTimer() );
+    mTimer.reset( new Timer() );
 }
 
 Logger::Logger(

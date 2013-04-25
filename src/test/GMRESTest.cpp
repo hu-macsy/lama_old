@@ -40,7 +40,7 @@
 #include <lama/solver/TrivialPreconditioner.hpp>
 #include <lama/solver/criteria/IterationCount.hpp>
 #include <lama/solver/criteria/ResidualThreshold.hpp>
-#include <lama/solver/logger/OpenMPTimer.hpp>
+#include <lama/solver/logger/Timer.hpp>
 #include <lama/solver/logger/CommonLogger.hpp>
 
 #include <lama/DenseVector.hpp>
@@ -86,7 +86,7 @@ void testSolveWithPreconditionmethod()
 //        "<GMRES>: ",
 //        lama::LogLevel::solverInformation,
 //        lama::LoggerWriteBehaviour::toConsoleOnly,
-//        std::auto_ptr<Timer>( new OpenMPTimer() ) ) );
+//        std::auto_ptr<Timer>( new Timer() ) ) );
 
     GMRES gmresSolver( "GMRESTestSolver"/*, slogger*/);
 
@@ -156,7 +156,7 @@ void testSolveWithoutPreconditionmethod()
 //        "<GMRES>: ",
 //        lama::LogLevel::solverInformation,
 //        lama::LoggerWriteBehaviour::toConsoleOnly,
-//        std::auto_ptr<Timer>( new OpenMPTimer() ) ) );
+//        std::auto_ptr<Timer>( new Timer() ) ) );
 
     GMRES gmresSolver( "GMRESTestSolver"/*, slogger */);
 
