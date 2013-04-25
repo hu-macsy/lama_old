@@ -36,11 +36,15 @@
 
 #if defined( _OPENMP )
 
+// with OpenMP support the routine omp_get_wtime can be used
+
 #include <omp.h>
 
 #elif defined( WIN32 )
 
 #else
+
+#include <sys/time.h>  
 
 #endif
 
