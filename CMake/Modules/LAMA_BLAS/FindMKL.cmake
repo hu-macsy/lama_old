@@ -131,26 +131,6 @@ else ( NOT EXISTS ${MKL_INCLUDE_DIR} )
         endif( NOT EXISTS ${MKL_LIBRARY_LP64} )
         set(MKL_LIBRARIES  ${MKL_LIBRARY_LP64} )
         
-        # search for mkl_scalapack lib 
-        find_library ( MKL_LIBRARY_SCALAPACK mkl_scalapack_lp64 PATHS ${MKL_LIBRARY_PATH} PATH_SUFFIXES ${MKL_LIBRARY_PATH_SUFFIXES} )
-        if ( NOT EXISTS ${MKL_LIBRARY_SCALAPACK} )
-            message ( STATUS "WARNING MKL library mkl_scalapack not found with MKL_LIBRARY_PATH=${MKL_LIBRARY_PATH}." )
-        else( NOT EXISTS ${MKL_LIBRARY_SCALAPACK} )
-            set( SCALAPACK_FOUND TRUE )
-        endif( NOT EXISTS ${MKL_LIBRARY_SCALAPACK} )   
-        setAndCheckCache( "SCALAPACK" )
-        
-        #search for mkl_blacs lib
-        if ( SCALAPACK_FOUND )
-	    	if ( ${MPI_INCLUDE_PATH} MATCHES "impi" )
-                find_library ( MKL_LIBRARY_BLACS mkl_blacs_intelmpi_lp64 PATHS ${MKL_LIBRARY_PATH} PATH_SUFFIXES ${MKL_LIBRARY_PATH_SUFFIXES})
-            elseif ( HAVE_MS_MPI )
-                find_library ( MKL_LIBRARY_BLACS mkl_blacs_msmpi_lp64 PATHS ${MKL_LIBRARY_PATH} PATH_SUFFIXES ${MKL_LIBRARY_PATH_SUFFIXES})
-            else( )
-                find_library ( MKL_LIBRARY_BLACS mkl_blacs_openmpi_lp64 PATHS ${MKL_LIBRARY_PATH} PATH_SUFFIXES ${MKL_LIBRARY_PATH_SUFFIXES})
-            endif( ) 
-        endif( SCALAPACK_FOUND )
-        
         if ( NOT EXISTS ${MKL_LIBRARY_BLACS} )
             message ( STATUS "WARNING MKL library mkl_blacs not found with MKL_LIBRARY_PATH=${MKL_LIBRARY_PATH}." )
         endif( NOT EXISTS ${MKL_LIBRARY_BLACS} )
@@ -204,20 +184,12 @@ else ( NOT EXISTS ${MKL_INCLUDE_DIR} )
         # conclude libs
         list ( APPEND MKL_LIBRARIES ${MKL_LIBRARY_CORE} )
         
-        # conclude libs
-        if ( SCALAPACK_FOUND )
-            set ( MKL_PLIBRARIES ${MKL_LIBRARY_SCALAPACK} ${MKL_LIBRARIES} ${MKL_LIBRARY_BLACS} )
-        endif( SCALAPACK_FOUND )
-        
         if ( WIN32 )
             find_library ( INTEL_IOMP_LIBRARY libiomp5md PATHS ${MKL_LIBRARY_PATH} ${MKL_ROOT_PATH}/../compiler/lib PATH_SUFFIXES ${MKL_LIBRARY_PATH_SUFFIXES} )
             if ( NOT EXISTS ${INTEL_IOMP_LIBRARY} )
                 message ( STATUS "WARNING Intel OMP library iomp5md not found with INTEL_COMPILER_PATH=${MKL_ROOT_PATH}/../compiler/lib." )
             endif ( NOT EXISTS ${INTEL_IOMP_LIBRARY} )
             list ( APPEND MKL_LIBRARIES ${INTEL_IOMP_LIBRARY} )
-            if ( SCALAPACK_FOUND )
-                list ( APPEND MKL_PLIBRARIES ${INTEL_IOMP_LIBRARY} )
-            endif ( SCALAPACK_FOUND )
         endif ( WIN32 )
         
         if ( LAMA_CMAKE_VERBOSE )
@@ -238,13 +210,11 @@ find_package_handle_standard_args ( MKL DEFAULT_MSG MKL_LIBRARIES MKL_INCLUDE_DI
 mark_as_advanced( MKL_INCLUDE_DIRS 
                   MKL_LIBRARIES
                   MKL_ROOT_PATH
-                  MKL_LIBRARY_SCALAPACK
                   MKL_LIBRARY_BLACS
                   MKL_LIBRARY_CORE 
                   MKL_LIBRARY_LP64
                   MKL_LIBRARY_GNU 
-                  MKL_LIBRARY_INTEL
-                  SCALAPACK_FOUND )
+                  MKL_LIBRARY_INTEL )
                   
 # if MKL is found, include directories    
 if ( MKL_FOUND )

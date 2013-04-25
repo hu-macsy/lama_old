@@ -34,6 +34,14 @@
 // hpp
 #include <lama/solver/logger/Timer.hpp>
 
+// others
+#include <lama/exception/Exception.hpp>
+#include <lama/Walltime.hpp>
+
+#include <iostream>
+#include <cstdio>
+#include <sstream>
+
 namespace lama
 {
 
@@ -43,6 +51,112 @@ Timer::Timer()
 
 Timer::~Timer()
 {
+}
+
+void Timer::initialize( const std::string& timerId )
+{
+    MapIteratorType it = m_timerData.find( timerId );
+
+    if ( it == m_timerData.end() )
+    {
+        m_timerData.insert( PairType( timerId, TimerData() ) );
+    }
+    else
+    {
+        LAMA_THROWEXCEPTION( "Tried to initialize an already existing timer. Timer ID: " << timerId );
+    }
+}
+
+void Timer::start( const std::string& timerId )
+{
+    MapIteratorType it = m_timerData.find( timerId );
+
+    if ( it == m_timerData.end() )
+    {
+        it = m_timerData.insert( PairType( timerId, TimerData() ) ).first;
+    }
+
+    TimerData& timer = it->second;
+
+    if ( timer.isRunning )
+    {
+        LAMA_THROWEXCEPTION( "Tried to start an already started timer. Timer ID: " << timerId );
+    }
+    else
+    {
+        timer.startTime = Walltime::get();
+        timer.isRunning = true;
+    }
+}
+
+void Timer::stop( const std::string& timerId )
+{
+    MapIteratorType it = m_timerData.find( timerId );
+
+    if ( it == m_timerData.end() )
+    {
+        LAMA_THROWEXCEPTION( "Tried to stop a nonexisting Timer. Timer ID: " << timerId );
+    }
+
+    TimerData& timer = it->second;
+
+    if ( !( timer.isRunning ) )
+    {
+        LAMA_THROWEXCEPTION( "Tried to stop a not running Timer. Timer ID: " << timerId );
+    }
+
+    timer.isRunning = false;
+    timer.totalTime = timer.totalTime + ( Walltime::get() - timer.startTime );
+}
+
+void Timer::reset( const std::string& timerId )
+{
+    MapIteratorType it = m_timerData.find( timerId );
+
+    if ( it == m_timerData.end() )
+    {
+        LAMA_THROWEXCEPTION( "Tried to reset a nonexisting Timer. Timer ID: " << timerId );
+    }
+
+    TimerData& timer = it->second;
+
+    timer.totalTime = 0.0;
+    timer.startTime = Walltime::get();
+}
+
+double Timer::getTime( const std::string& timerId )
+{
+    MapIteratorType it = m_timerData.find( timerId );
+
+    if ( it == m_timerData.end() )
+    {
+        LAMA_THROWEXCEPTION( "Tried to get time from a nonexisting Timer. Timer ID: " << timerId );
+    }
+
+    TimerData& timer = it->second;
+
+    if ( !( timer.isRunning ) )
+    {
+        return timer.totalTime;
+    }
+
+    return timer.totalTime + ( Walltime::get() - timer.startTime );
+}
+
+void Timer::stopAndReset( const std::string& timerId )
+{
+    MapIteratorType it = m_timerData.find( timerId );
+
+    if ( it == m_timerData.end() )
+    {
+        LAMA_THROWEXCEPTION( "Tried to stop and reset a nonexisting Timer. Timer ID: " << timerId );
+    }
+
+    TimerData& timer = it->second;
+
+    timer.totalTime = 0.0;
+    timer.startTime = 0.0;
+    timer.isRunning = false;
 }
 
 } // namespace lama

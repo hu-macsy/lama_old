@@ -25,38 +25,40 @@
  * SOFTWARE.
  * @endlicense
  *
- * @brief Timer.hpp
- * @brief Contains a simple timer interface
+ * @brief Class that provides a set of timers accessed by their ids.
  * @author Matthias Makulla
  * @date 06.04.2011
  * $Id$
  */
-#ifndef LAMA_TIMER_HPP_
-#define LAMA_TIMER_HPP_
+#ifndef LAMA_OPENMPTIMER_HPP_
+#define LAMA_OPENMPTIMER_HPP_
 
 // for dll_import
 #include <lama/config.hpp>
 
+// base classes
+#include <lama/solver/logger/Timer.hpp>
+
+#include <map>
 #include <string>
 
 namespace lama
 {
 
 /**
- * @brief A simple timer interface, offering a few, common timer operations
+ * @brief Timer class that offers a set of timers identified by their ids.
+ *
+ * An object of this class provides routines to start and stop timers that
+ * are identified by a string.
  */
 class LAMA_DLL_IMPORTEXPORT Timer
 {
 public:
 
-    /**
-     * @brief Constructor
-     */
+    /** Constructor of a new object for set of timers. */
+
     Timer();
 
-    /**
-     * @brief Destructor
-     */
     virtual ~Timer();
 
     /**
@@ -64,16 +66,16 @@ public:
      *
      * @param[in] timerId   the ID of the timer
      */
-    virtual void start( const std::string& timerId ) = 0;
+    void start( const std::string& timerId );
 
     /**
      * @brief Stops the timer and stores time measured time internally.
      *        Measurement may be resumed by calling start()
      *
      * @param[in] timerId   the ID of the timer
-     * @return Time measured in seconds
+     * @throw Exception if timer has already been started
      */
-    virtual void stop( const std::string& timerId ) = 0;
+    void stop( const std::string& timerId );
 
     /**
      * @brief Gets the elapsed time since the last reset
@@ -81,17 +83,50 @@ public:
      * @param[in] timerId   the ID of the timer
      * @return Time measured in seconds
      */
-    virtual double getTime( const std::string& timerId ) = 0;
+    double getTime( const std::string& timerId );
 
     /**
      * @brief Stops and resets the timer.
      *
      * @param[in] timerId   the ID of the timer
-     * @return Time measured in seconds
+     * 
+     * Note: this routine might be typically called after a call of getTime
      */
-    virtual void stopAndReset( const std::string& timerId ) = 0;
+    void stopAndReset( const std::string& timerId );
+
+    /**
+     * @brief Reset a timer.
+     *
+     * @param[in] timerId  the ID of an existing timer
+     * 
+     * The timer might also be an already started timer.
+     */
+    void reset( const std::string& timerId );
+
+private:
+
+    void initialize( const std::string& timerId );
+
+    struct TimerData
+    {
+        double startTime;
+        double totalTime;
+        bool isRunning;
+
+        TimerData()
+            : startTime( 0.0 ), totalTime( 0.0 ), isRunning( false )
+        {
+        }
+    };
+
+    typedef std::map<std::string,TimerData> MapType;
+    typedef std::pair<std::string,TimerData> PairType;
+    typedef MapType::iterator MapIteratorType;
+
+    MapType m_timerData;
+
 };
 
 } // namespace lama
 
-#endif // LAMA_TIMER_HPP_
+#endif // LAMA_OPENMPTIMER_HPP_

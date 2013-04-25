@@ -36,7 +36,7 @@
 
 // others
 #include <lama/solver/logger/CommonLogger.hpp>
-#include <lama/solver/logger/OpenMPTimer.hpp>
+#include <lama/solver/logger/Timer.hpp>
 
 #include <lama/expression/MatrixVectorExpressions.hpp>
 
@@ -52,7 +52,7 @@ Solver::Solver( const std::string& id )
     : mId( id ), mLogger(
         new CommonLogger( "dummyLog", lama::LogLevel::noLogging,
                           lama::LoggerWriteBehaviour::toConsoleOnly,
-                          std::auto_ptr<Timer>( new OpenMPTimer() ) ) )
+                          std::auto_ptr<Timer>( new Timer() ) ) )
 {
     LAMA_LOG_INFO( Solver::logger, "Solver id = " << mId << " created, dummy log" )
 }

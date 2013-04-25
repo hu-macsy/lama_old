@@ -1,5 +1,5 @@
 /**
- * @file OpenMPTimer.hpp
+ * @file Walltime.cpp
  *
  * @license
  * Copyright (c) 2011
@@ -25,68 +25,58 @@
  * SOFTWARE.
  * @endlicense
  *
- * @brief Timer implementation using OpenMP timing
- * @author Matthias Makulla
- * @date 06.04.2011
+ * @brief Implementation of method that delivers the walltime
+ * @author Thomas Brandes
+ * @date 25.04.2013
  * $Id$
  */
-#ifndef LAMA_OPENMPTIMER_HPP_
-#define LAMA_OPENMPTIMER_HPP_
 
-// for dll_import
-#include <lama/config.hpp>
+// hpp
+#include <lama/Walltime.hpp>
 
-// base classes
-#include <lama/solver/logger/Timer.hpp>
+#if defined( _OPENMP )
 
-#include <map>
+// with OpenMP support the routine omp_get_wtime can be used
+
+#include <omp.h>
+
+#elif defined( WIN32 )
+
+#else
+
+#include <sys/time.h>  
+
+#endif
 
 namespace lama
 {
 
-/**
- * @brief Timer implementation using OpenMP timing
- *        For further documentation see Timer interface
- */
-class LAMA_DLL_IMPORTEXPORT OpenMPTimer: public Timer
+double Walltime::get()
 {
-public:
+    
+#if defined( _OPENMP )
 
-    OpenMPTimer();
-    virtual ~OpenMPTimer();
+    return omp_get_wtime();
 
-    void initialize( const std::string& timerId );
+#elif defined( WIN32 )
 
-    void start( const std::string& timerId );
-    void stop( const std::string& timerId );
+    SYSTEMTIME lpSystemTime;
+    GetLocalTime( &lpSystemTime );
+    return ( lpSystemTime.wHour * 60.0 + lpSystemTime.wMinute ) * 60.0 +
+           lpSystemTime.wSecond + lpSystemTime.wMilliseconds * 0.001;
 
-    void reset( const std::string& timerId );
+#else
 
-    double getTime( const std::string& timerId );
-    void stopAndReset( const std::string& timerId );
+    struct timeval tp;
+    struct timezone tzp;
 
-private:
+    gettimeofday( &tp, &tzp );
 
-    struct TimerData
-    {
-        double startTime;
-        double totalTime;
-        bool isRunning;
+    return (double) tp.tv_sec + tp.tv_usec * 0.000001;
 
-        TimerData()
-            : startTime( 0.0 ), totalTime( 0.0 ), isRunning( false )
-        {
-        }
-    };
-
-    typedef std::map<std::string,TimerData> MapType;
-    typedef std::pair<std::string,TimerData> PairType;
-    typedef MapType::iterator MapIteratorType;
-
-    MapType m_timerData;
-
-};
+#endif 
+     
+}
 
 } // namespace lama
 
-#endif // LAMA_OPENMPTIMER_HPP_

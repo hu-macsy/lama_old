@@ -35,7 +35,7 @@
 #include <boost/mpl/list.hpp>
 
 #include <lama/solver/SimpleAMG.hpp>
-#include <lama/solver/logger/OpenMPTimer.hpp>
+#include <lama/solver/logger/Timer.hpp>
 #include <lama/solver/logger/CommonLogger.hpp>
 #include <lama/solver/criteria/IterationCount.hpp>
 
@@ -78,7 +78,7 @@ void solverTestMethod( ContextPtr context )
 
     LoggerPtr consoleLogger(
         new CommonLogger( "<SimpleAMG>: ", LogLevel::noLogging, LoggerWriteBehaviour::toConsoleOnly,
-                          std::auto_ptr<Timer>( new OpenMPTimer() ) ) );
+                          std::auto_ptr<Timer>( new Timer() ) ) );
 
     EquationHelper::EquationSystem<ValueType> system = EquationHelper::get8x8SystemA<ValueType>();
 

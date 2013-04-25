@@ -35,7 +35,6 @@ set ( CLASSES
         CommonLogger
         FileLogger
         Logger
-        OpenMPTimer
         Timer
     )
 

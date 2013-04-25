@@ -186,6 +186,8 @@ TraceConfig::TraceConfig()
     mTimeTraceEnabled = false;
     mTraceFilePrefix = "_";
 
+    // value of environmentvariable:  param1:param2=valx:param3:param4=valy
+
     if ( getenv( LAMA_ENV_TRACE_CONFIG ) )
     {
         std::string params = getenv( LAMA_ENV_TRACE_CONFIG );
@@ -202,6 +204,8 @@ TraceConfig::TraceConfig()
 
                 std::string& key = keys[0];
 
+                // make upper case of key 
+
                 for ( size_t j = 0; j < key.length(); j++ )
                 {
                     key[j] = static_cast<std::string::value_type>( toupper( key[j] ) );
@@ -209,10 +213,14 @@ TraceConfig::TraceConfig()
 
                 if ( keys.size() == 1 )
                 {
+                    // is just a param
+
                     setParam( key );
                 }
                 else
                 {
+                    // is param=val
+
                     setKey( key, keys[1] );
                 }
             }

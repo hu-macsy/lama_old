@@ -35,7 +35,7 @@
 #include <boost/mpl/list.hpp>
 
 #include <lama/solver/DefaultJacobi.hpp>
-#include <lama/solver/logger/OpenMPTimer.hpp>
+#include <lama/solver/logger/Timer.hpp>
 #include <lama/solver/logger/CommonLogger.hpp>
 #include <lama/solver/logger/Timer.hpp>
 #include <lama/solver/criteria/IterationCount.hpp>
@@ -69,16 +69,16 @@ struct JacobiTestConfig
 {
     JacobiTestConfig()
     {
-        Timer* timerD = new OpenMPTimer();
+        Timer* timerD = new Timer();
         std::auto_ptr<Timer> autoTimerD( timerD );
 
-        Timer* timerF = new OpenMPTimer();
+        Timer* timerF = new Timer();
         std::auto_ptr<Timer> autoTimerF( timerF );
 
         LoggerPtr loggerD(
             new CommonLogger( "<Jacobi>: ", LogLevel::completeInformation,
                               LoggerWriteBehaviour::toConsoleOnly,
-                              std::auto_ptr<Timer>( new OpenMPTimer() ) ) );
+                              std::auto_ptr<Timer>( new Timer() ) ) );
 
         mJacobiDouble = new DefaultJacobi( "JacobiTest double solver", loggerD );
 
@@ -156,7 +156,7 @@ void testSolveMethod( std::string solverId, ContextPtr context )
 
     LoggerPtr slogger(
         new CommonLogger( solverId, LogLevel::noLogging, LoggerWriteBehaviour::toConsoleOnly,
-                          std::auto_ptr<Timer>( new OpenMPTimer() ) ) );
+                          std::auto_ptr<Timer>( new Timer() ) ) );
 
     DefaultJacobi jacobiSolver( "JacobiTest", slogger );
 

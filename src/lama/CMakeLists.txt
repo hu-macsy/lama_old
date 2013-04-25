@@ -64,6 +64,7 @@ set ( CLASSES
         StorageIO
         SyncToken
         Vector
+        Walltime
         WriteAccess
     )
 

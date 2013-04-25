@@ -33,7 +33,7 @@
 
 #include <boost/test/unit_test.hpp>
 
-#include <lama/solver/logger/OpenMPTimer.hpp>
+#include <lama/solver/logger/Timer.hpp>
 #include <lama/solver/logger/CommonLogger.hpp>
 #include <lama/solver/logger/FileLogger.hpp>
 
@@ -56,7 +56,7 @@ LAMA_LOG_DEF_LOGGER( logger, "Test.CommonLoggerTest" );
 BOOST_AUTO_TEST_CASE( LoggerIdTest )
 {
     CommonLogger consoleLogger( "<CommonLoggerTest>: ", LogLevel::convergenceHistory,
-                                LoggerWriteBehaviour::toConsoleOnly, std::auto_ptr<Timer>( new OpenMPTimer() ) );
+                                LoggerWriteBehaviour::toConsoleOnly, std::auto_ptr<Timer>( new Timer() ) );
 
     std::string s = consoleLogger.id();
 
@@ -68,7 +68,7 @@ BOOST_AUTO_TEST_CASE( LoggerIdTest )
 BOOST_AUTO_TEST_CASE( setAndGetLogLevelTest )
 {
     CommonLogger consoleLogger( "<CommonLoggerTest>: ", LogLevel::convergenceHistory,
-                                LoggerWriteBehaviour::toConsoleOnly, std::auto_ptr<Timer>( new OpenMPTimer() ) );
+                                LoggerWriteBehaviour::toConsoleOnly, std::auto_ptr<Timer>( new Timer() ) );
 
     BOOST_CHECK_EQUAL( consoleLogger.getLogLevel(), LogLevel::convergenceHistory );
 
@@ -84,7 +84,7 @@ void logMessageTest( std::string logFileName, LoggerWriteBehaviour::LoggerWriteB
     LAMA_LOG_DEBUG( logger, "CommonLoggerTest with LoggerWriteBehaviour: " << lwb );
 
     CommonLogger consoleAndFileLogger( "<CommonLoggerTest>: ", LogLevel::noLogging, lwb, logFileName,
-                                       std::auto_ptr<Timer>( new OpenMPTimer() ) );
+                                       std::auto_ptr<Timer>( new Timer() ) );
 
     FileLogger::getFileLogger().setLogFile( logFileName );
 
