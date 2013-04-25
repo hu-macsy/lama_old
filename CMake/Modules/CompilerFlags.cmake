@@ -59,7 +59,7 @@ if ( CMAKE_CXX_COMPILER_ID MATCHES PGI )
     # set ( ADDITIONAL_CXX_FLAGS "-std=c++0x " )
     # Disable warning 1097 to avoid warnings from openmpi headers with
     # gcc specific attributes
-    set ( ADDITIONAL_CXX_WARNING_FLAGS "--display_error_number --diag_suppress1097 " )
+    set ( ADDITIONAL_CXX_WARNING_FLAGS "--display_error_number --diag_suppress1097 -DBOOST_HAS_THREADS" )
     set ( ADDITIONAL_CXX_RELEASE_FLAGS "-fast " )
 endif ( CMAKE_CXX_COMPILER_ID MATCHES PGI )
 
