@@ -42,6 +42,10 @@
 namespace tracing
 {
 
+/** Macro that should be defined if a version of VampirTrace is available that also 
+ *  supports the definition of a group for a region.
+ */
+
 #define NEW_VT
 
 #ifdef LAMA_TRACE_LEVEL_VT

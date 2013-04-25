@@ -36,8 +36,8 @@
 
 // others
 #include <lama/exception/Exception.hpp>
+#include <lama/Walltime.hpp>
 
-#include <omp.h>
 #include <iostream>
 #include <cstdio>
 #include <sstream>
@@ -85,7 +85,7 @@ void OpenMPTimer::start( const std::string& timerId )
     }
     else
     {
-        timer.startTime = omp_get_wtime();
+        timer.startTime = Walltime::get();
         timer.isRunning = true;
     }
 }
@@ -107,7 +107,7 @@ void OpenMPTimer::stop( const std::string& timerId )
     }
 
     timer.isRunning = false;
-    timer.totalTime = timer.totalTime + ( omp_get_wtime() - timer.startTime );
+    timer.totalTime = timer.totalTime + ( Walltime::get() - timer.startTime );
 }
 
 void OpenMPTimer::reset( const std::string& timerId )
@@ -122,7 +122,7 @@ void OpenMPTimer::reset( const std::string& timerId )
     TimerData& timer = it->second;
 
     timer.totalTime = 0.0;
-    timer.startTime = omp_get_wtime();
+    timer.startTime = Walltime::get();
 }
 
 double OpenMPTimer::getTime( const std::string& timerId )
@@ -141,7 +141,7 @@ double OpenMPTimer::getTime( const std::string& timerId )
         return timer.totalTime;
     }
 
-    return timer.totalTime + ( omp_get_wtime() - timer.startTime );
+    return timer.totalTime + ( Walltime::get() - timer.startTime );
 }
 
 void OpenMPTimer::stopAndReset( const std::string& timerId )

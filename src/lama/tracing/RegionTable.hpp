@@ -50,8 +50,6 @@
 #include <vector>
 #include <map>
 
-#define NEW_VT
-
 namespace tracing
 {
 
@@ -62,13 +60,13 @@ namespace tracing
  be started and stopped according a subroutine call structure.
 
  \code
- start(region1)
- start(region2)
- stop(region2)
- start(region3)
- elapsed(region1)
- stop(region3)
- stop(region1)
+ start( region1, <timestamp_1> )
+ start( region2, <timestamp_2> )
+ stop( region2, <timestamp_3> )
+ start( region3, <timestamp_4> )
+ elapsed( region1, <timestamp_5> )
+ stop( region3, <timestamp_6> )
+ stop( region1, <timestamp_7> )
  \endcode
 
  At the end of a run, inclusive and exclusive time is available for

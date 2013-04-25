@@ -162,6 +162,8 @@ private:
 
     std::map<lama::Thread::Id,boost::shared_ptr<RegionTable> > mRegionTables;
 
+    /** Get the region table by the thread id. */
+
     RegionTable* getRegionTable( lama::Thread::Id );
 
     lama::CommunicatorPtr mComm; //!< communicator used for distribution, parallel execution
