@@ -36,7 +36,7 @@
 
 #include <lama/solver/SpecializedJacobi.hpp>
 #include <lama/solver/criteria/IterationCount.hpp>
-#include <lama/solver/logger/OpenMPTimer.hpp>
+#include <lama/solver/logger/Timer.hpp>
 #include <lama/solver/logger/CommonLogger.hpp>
 
 #include <lama/DenseVector.hpp>
@@ -73,16 +73,16 @@ struct P_SpecializedJacobiTestConfig
 {
     P_SpecializedJacobiTestConfig()
     {
-        Timer* timerD = new OpenMPTimer();
+        Timer* timerD = new Timer();
         std::auto_ptr<Timer> autoTimerD( timerD );
 
-        Timer* timerF = new OpenMPTimer();
+        Timer* timerF = new Timer();
         std::auto_ptr<Timer> autoTimerF( timerF );
 
         LoggerPtr loggerD(
             new CommonLogger( "<Jacobi>: ", lama::LogLevel::completeInformation,
                               lama::LoggerWriteBehaviour::toConsoleOnly,
-                              std::auto_ptr<Timer>( new OpenMPTimer() ) ) );
+                              std::auto_ptr<Timer>( new Timer() ) ) );
 
         mJacobiDouble = new SpecializedJacobi( "SpecializedJacobiTest double solver", loggerD );
 
@@ -133,7 +133,7 @@ void testSolveMethod( ContextPtr loc )
 //                        loggerName.str(),
 //                        LogLevel::solverInformation, //solverInformation, //noLogging,
 //                        LoggerWriteBehaviour::toConsoleOnly,
-//                        std::auto_ptr<Timer>( new OpenMPTimer() ) ) );
+//                        std::auto_ptr<Timer>( new Timer() ) ) );
 
     SpecializedJacobi jacobiSolver( "SpecializedJacobiTest"/*, slogger */);
 

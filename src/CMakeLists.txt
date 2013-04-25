@@ -28,7 +28,6 @@
  # @brief Main specification file for CMake
  # @author Thomas Brandes, Jiri Kraus
  # @date 29.03.2012
- # $Id$
 ###
 
 ### Set required CMake version
@@ -68,14 +67,6 @@ foreach ( PACKAGE_TO_FIND ${REQUIRED_PACKAGES_TO_FIND} )
     find_package ( ${PACKAGE_TO_FIND} ${LAMA_FIND_PACKAGE_FLAGS} REQUIRED )
 endforeach ( PACKAGE_TO_FIND ${REQUIRED_PACKAGES_TO_FIND} )
 
-
-
-
-
-
-
-
-
 # Find optional packages
 foreach ( PACKAGE_TO_FIND ${OPTIONAL_PACKAGES_TO_FIND} )
     find_package ( ${PACKAGE_TO_FIND} ${LAMA_FIND_PACKAGE_FLAGS} )
@@ -96,9 +87,9 @@ endif ( NOT LAMA_OMP_SCHEDULE )
 #message ( STATUS "OpenMP schedule set to " ${LAMA_OMP_SCHEDULE} )
 add_definitions ( -DLAMA_OMP_SCHEDULE=${LAMA_OMP_SCHEDULE} )
 
-if ( OPENMP_FOUND AND LAMA_USE_OPENMP )
+if ( OPENMP_FOUND )
     set ( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}" )
-endif( OPENMP_FOUND AND LAMA_USE_OPENMP)
+endif( OPENMP_FOUND )
 
 
 

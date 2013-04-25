@@ -1,8 +1,40 @@
+###
+ # @file Functions.cmake
+ #
+ # @license
+ # Copyright (c) 2013
+ # Fraunhofer Institute for Algorithms and Scientific Computing SCAI
+ # for Fraunhofer-Gesellschaft
+ #
+ # Permission is hereby granted, free of charge, to any person obtaining a copy
+ # of this software and associated documentation files (the "Software"), to deal
+ # in the Software without restriction, including without limitation the rights
+ # to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ # copies of the Software, and to permit persons to whom the Software is
+ # furnished to do so, subject to the following conditions:
+ #
+ # The above copyright notice and this permission notice shall be included in
+ # all copies or substantial portions of the Software.
+ #
+ # THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ # IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ # FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ # AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ # SOFTWARE.
+ # @endlicense
+ #
+ # @brief CMake functions and macros
+ # @author Jan Ecker
+ # @date 25.04.2013
+###
+
 # defined functions:
 #     setAndCheckCache: sets FOUND_XXX depending on LAMA_USE_XXX variable
 #     get_relative_path:
 #     lama_get_relative_path:
-#     install_header_files:
+#     lama_status_message:
 
 # defined makros:
 #     lama_set_source_dir:
@@ -11,7 +43,8 @@
 #     lama_headers:
 #     lama_add:
 
-# Function to set FOUND_XXX variables depending on the corresponding LAMA_USE_XXX variable
+# Function for setting LAMA_USE_{PACKAGE_NAME} variables depending on {PACKAGE_NAME}_FOUND.
+# Also sets cache Variables
 function ( setAndCheckCache PACKAGE_NAME )
     # Create variable names with LAMA_USE_XXX and FOUND_XXX
     set ( CACHE_VARIABLE_NAME LAMA_USE_${PACKAGE_NAME} )
@@ -46,7 +79,7 @@ function ( setAndCheckCache PACKAGE_NAME )
     endif ( DEFINED ${CACHE_VARIABLE_NAME} )
 endfunction ( setAndCheckCache )
 
-
+# returns the relative path to the actual directory to the CMAKE_SOURCE_DIR
 function ( get_relative_path RELATIVE_PATH )
     # get relative path
     string ( LENGTH "${CMAKE_SOURCE_DIR}" CMAKE_SOURCE_DIR_LENGTH )
@@ -64,6 +97,7 @@ function ( get_relative_path RELATIVE_PATH )
     set ( ${RELATIVE_PATH} ${PATH}${PATH_SUFFIX} PARENT_SCOPE )
 endfunction ( get_relative_path )
 
+# returns the relative path to the actual directory to the LAMA_SOURCE_DIR (Path of the actual target)
 function ( lama_get_relative_path RELATIVE_PATH )
     # get relative path
     string ( LENGTH "${LAMA_SOURCE_DIR}" LAMA_SOURCE_DIR_LENGTH )
@@ -81,74 +115,8 @@ function ( lama_get_relative_path RELATIVE_PATH )
     set ( ${RELATIVE_PATH} ${PATH}${PATH_SUFFIX} PARENT_SCOPE )
 endfunction ( lama_get_relative_path )
 
-
-
-
-
-
-function ( install_header_files )
-    # get actual subdir
-    string ( LENGTH ${CMAKE_SOURCE_DIR} CMAKE_SOURCE_DIR_LENGTH )
-    string ( LENGTH ${CMAKE_CURRENT_SOURCE_DIR} CMAKE_CURRENT_SOURCE_DIR_LENGTH )
-    math ( EXPR PATH_LENGTH ${CMAKE_CURRENT_SOURCE_DIR_LENGTH}-${CMAKE_SOURCE_DIR_LENGTH} )
-    string ( SUBSTRING ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_SOURCE_DIR_LENGTH} ${PATH_LENGTH} SUB_PATH )
-    
-    if ( DEFINED ARGV0 )
-        set ( SUB_PATH ${SUB_PATH}/${ARGV0} )
-        file ( GLOB INCLUDE_FILES ${ARGV0}/*.hpp )
-    else ()
-        file ( GLOB INCLUDE_FILES *.hpp )
-    endif ( DEFINED ARGV0 )
-    
-    # find all *.hpp files and copy them in the correct subdir
-    install ( FILES ${INCLUDE_FILES} DESTINATION "include${SUB_PATH}" )
-endfunction ( install_header_files )
-
-
-
-
-macro ( lama_set_source_dir )
-    set ( LAMA_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR} )
-    set ( CXX_SOURCES "" )
-endmacro ( lama_set_source_dir )
-
-
-# Needs to be macros not functions, because modifications of the parent scope
-macro ( lama_classes )
-    lama_sources ( ${ARGN} )
-    lama_headers ( ${ARGN} )
-endmacro ( lama_classes )
-
-macro ( lama_sources )    
-    lama_get_relative_path ( LAMA_RELATIVE_PATH )
-    
-    foreach(SOURCE_FILE ${ARGN})
-        set ( CXX_SOURCES ${CXX_SOURCES} "${LAMA_RELATIVE_PATH}${SOURCE_FILE}.cpp" )
-    endforeach()
-endmacro ( lama_sources )
-
-macro ( lama_headers )
-    lama_get_relative_path ( LAMA_RELATIVE_PATH )
-    get_relative_path ( RELATIVE_PATH )
-    
-    # clear CXX_HEADERS
-    set ( CXX_HEADERS "" )
-    
-    foreach(SOURCE_FILE ${ARGN})
-        set ( CXX_SOURCES ${CXX_SOURCES} "${LAMA_RELATIVE_PATH}${SOURCE_FILE}.hpp" )
-        set ( CXX_HEADERS ${CXX_HEADERS} "${SOURCE_FILE}.hpp" )
-    endforeach()
-    
-    # install CXX_HEADERS
-    install ( FILES ${CXX_HEADERS} DESTINATION "include/${RELATIVE_PATH}" )
-endmacro ( lama_headers )
-
-macro ( lama_add )
-    # publish CXX_SOURCES in parent scope
-    set ( CXX_SOURCES ${CXX_SOURCES} PARENT_SCOPE )
-endmacro ( lama_add )
-
 # inspired by soci colormsg function
+# prints colored text messages
 function ( lama_status_message )
     string ( ASCII 27 _escape )
     # ANSI Display Atributes
@@ -177,12 +145,50 @@ function ( lama_status_message )
 endfunction( lama_status_message )
 
 
+# sets the LAMA_SOURCE_DIR (used to mark the path of the actual build target
+macro ( lama_set_source_dir )
+    set ( LAMA_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR} )
+    set ( CXX_SOURCES "" )
+endmacro ( lama_set_source_dir )
 
 
+## Need to be macros not functions, because modifications of the parent scope
 
+# Adds a list of classes to the target (the related *.cpp and *.hpp files) and configures
+# the installation of the header files
+macro ( lama_classes )
+    lama_sources ( ${ARGN} )
+    lama_headers ( ${ARGN} )
+endmacro ( lama_classes )
 
+# Adds a list of sources to the target (the related *.cpp files)
+macro ( lama_sources )    
+    lama_get_relative_path ( LAMA_RELATIVE_PATH )
+    
+    foreach(SOURCE_FILE ${ARGN})
+        set ( CXX_SOURCES ${CXX_SOURCES} "${LAMA_RELATIVE_PATH}${SOURCE_FILE}.cpp" )
+    endforeach()
+endmacro ( lama_sources )
 
+# Adds a list of headers to the target configures the installation of the header files
+macro ( lama_headers )
+    lama_get_relative_path ( LAMA_RELATIVE_PATH )
+    get_relative_path ( RELATIVE_PATH )
+    
+    # clear CXX_HEADERS
+    set ( CXX_HEADERS "" )
+    
+    foreach(SOURCE_FILE ${ARGN})
+        set ( CXX_SOURCES ${CXX_SOURCES} "${LAMA_RELATIVE_PATH}${SOURCE_FILE}.hpp" )
+        set ( CXX_HEADERS ${CXX_HEADERS} "${SOURCE_FILE}.hpp" )
+    endforeach()
+    
+    # install CXX_HEADERS
+    install ( FILES ${CXX_HEADERS} DESTINATION "include/${RELATIVE_PATH}" )
+endmacro ( lama_headers )
 
-
-
-
+# Publishes sources and headers in the parent scope
+macro ( lama_add )
+    set ( CXX_SOURCES ${CXX_SOURCES} PARENT_SCOPE )
+    set ( CXX_HEADERS ${CXX_HEADERS} PARENT_SCOPE )
+endmacro ( lama_add )

@@ -37,7 +37,7 @@
 #include <lama/solver/SpecializedJacobi.hpp>
 #include <lama/solver/TrivialPreconditioner.hpp>
 #include <lama/solver/criteria/IterationCount.hpp>
-#include <lama/solver/logger/OpenMPTimer.hpp>
+#include <lama/solver/logger/Timer.hpp>
 #include <lama/solver/logger/CommonLogger.hpp>
 
 #include <lama/DenseVector.hpp>
@@ -70,16 +70,16 @@ struct SpecializedJacobiTestConfig
 {
     SpecializedJacobiTestConfig()
     {
-        Timer* timerD = new OpenMPTimer();
+        Timer* timerD = new Timer();
         std::auto_ptr<Timer> autoTimerD( timerD );
 
-        Timer* timerF = new OpenMPTimer();
+        Timer* timerF = new Timer();
         std::auto_ptr<Timer> autoTimerF( timerF );
 
         LoggerPtr loggerD(
             new CommonLogger( "<Jacobi>: ", lama::LogLevel::completeInformation,
                               lama::LoggerWriteBehaviour::toConsoleOnly,
-                              std::auto_ptr<Timer>( new OpenMPTimer() ) ) );
+                              std::auto_ptr<Timer>( new Timer() ) ) );
 
         mJacobiDouble = new SpecializedJacobi( "SpecializedJacobiTest double solver", loggerD );
 
@@ -117,7 +117,7 @@ BOOST_AUTO_TEST_CASE( CtorTest )
 {
     LoggerPtr slogger(
         new CommonLogger( "<SJ>: ", LogLevel::noLogging, LoggerWriteBehaviour::toConsoleOnly,
-                          std::auto_ptr<Timer>( new OpenMPTimer() ) ) );
+                          std::auto_ptr<Timer>( new Timer() ) ) );
 
     SpecializedJacobi sjSolver( "SJTestSolver", slogger );
     BOOST_CHECK_EQUAL( sjSolver.getId(), "SJTestSolver" );
@@ -195,7 +195,7 @@ void testSolveMethod( std::string solverId, ContextPtr context )
 
     LoggerPtr slogger(
         new CommonLogger( solverId, LogLevel::solverInformation, LoggerWriteBehaviour::toConsoleOnly,
-                          std::auto_ptr<Timer>( new OpenMPTimer() ) ) );
+                          std::auto_ptr<Timer>( new Timer() ) ) );
 
     SpecializedJacobi jacobiSolver( "JacobiTest"/*, slogger*/);
 

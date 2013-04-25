@@ -37,7 +37,7 @@
 #include <lama/solver/SOR.hpp>
 #include <lama/solver/criteria/IterationCount.hpp>
 //#include <lama/solver/logging/CommonLogger.hpp>
-//#include <lama/solver/logging/OpenMPTimer.hpp>
+//#include <lama/solver/logging/Timer.hpp>
 
 #include <lama/DenseVector.hpp>
 
@@ -193,7 +193,7 @@ void testSolvePoissonMethod()
 //            "<SOR>: ",
 //            lama::LogLevel::solverInformation,
 //            lama::LoggerWriteBehaviour::toConsoleOnly,
-//            std::auto_ptr<Timer>( new OpenMPTimer() ) ) );
+//            std::auto_ptr<Timer>( new Timer() ) ) );
 
         SOR sor( "SORTest", omega /*, slogger*/);
 
@@ -274,7 +274,7 @@ void testSolve2Method( ContextPtr loc )
 //            "<SOR>: ",
 //            lama::LogLevel::solverInformation,
 //            lama::LoggerWriteBehaviour::toConsoleOnly,
-//            std::auto_ptr<Timer>( new OpenMPTimer() ) ) );
+//            std::auto_ptr<Timer>( new Timer() ) ) );
 
         SOR sor( "SORTest", omega/*, slogger */);
 

@@ -38,7 +38,7 @@
 #include <lama/solver/TrivialPreconditioner.hpp>
 #include <lama/solver/criteria/IterationCount.hpp>
 #include <lama/solver/criteria/ResidualThreshold.hpp>
-#include <lama/solver/logger/OpenMPTimer.hpp>
+#include <lama/solver/logger/Timer.hpp>
 #include <lama/solver/logger/CommonLogger.hpp>
 
 #include <lama/DenseVector.hpp>
@@ -78,7 +78,7 @@ BOOST_AUTO_TEST_CASE( CtorTest )
 {
     LoggerPtr slogger(
         new CommonLogger( "<CG>: ", LogLevel::noLogging, LoggerWriteBehaviour::toConsoleOnly,
-                          std::auto_ptr<Timer>( new OpenMPTimer() ) ) );
+                          std::auto_ptr<Timer>( new Timer() ) ) );
 
     CG cgSolver( "CGTestSolver", slogger );
     BOOST_CHECK_EQUAL( cgSolver.getId(), "CGTestSolver" );
@@ -112,7 +112,7 @@ void testSolveWithPreconditionmethod( ContextPtr context )
 
     LoggerPtr slogger(
         new CommonLogger( "<CG>: ", LogLevel::noLogging, LoggerWriteBehaviour::toConsoleOnly,
-                          std::auto_ptr<Timer>( new OpenMPTimer() ) ) );
+                          std::auto_ptr<Timer>( new Timer() ) ) );
 
     CG cgSolver( "CGTestSolver", slogger );
 
