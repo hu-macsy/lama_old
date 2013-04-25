@@ -25,7 +25,7 @@
  * SOFTWARE.
  * @endlicense
  *
- * @brief Timer implementation using OpenMP timing
+ * @brief Class that provides a set of timers accessed by their ids.
  * @author Matthias Makulla
  * @date 06.04.2011
  * $Id$
@@ -45,27 +45,66 @@ namespace lama
 {
 
 /**
- * @brief Timer implementation using OpenMP timing
- *        For further documentation see Timer interface
+ * @brief Timer class that offers a set of timers identified by their ids.
+ *
+ * An object of this class provides routines to start and stop timers that
+ * are identified by a string.
  */
 class LAMA_DLL_IMPORTEXPORT OpenMPTimer: public Timer
 {
 public:
 
+    /** Constructor of a new object for set of timers. */
+
     OpenMPTimer();
+
     virtual ~OpenMPTimer();
 
-    void initialize( const std::string& timerId );
-
+    /**
+     * @brief Starts or resumes the timer.
+     *
+     * @param[in] timerId   the ID of the timer
+     */
     void start( const std::string& timerId );
+
+    /**
+     * @brief Stops the timer and stores time measured time internally.
+     *        Measurement may be resumed by calling start()
+     *
+     * @param[in] timerId   the ID of the timer
+     * @throw Exception if timer has already been started
+     */
     void stop( const std::string& timerId );
 
-    void reset( const std::string& timerId );
-
+    /**
+     * @brief Gets the elapsed time since the last reset
+     *
+     * @param[in] timerId   the ID of the timer
+     * @return Time measured in seconds
+     */
     double getTime( const std::string& timerId );
+
+    /**
+     * @brief Stops and resets the timer.
+     *
+     * @param[in] timerId   the ID of the timer
+     * 
+     * Note: this routine might be typically called after a call of getTime
+     */
     void stopAndReset( const std::string& timerId );
 
+    /**
+     * @brief Reset a timer.
+     *
+     * @param[in] timerId  the ID of an existing timer
+     * 
+     * The timer might also be an already started timer.
+     */
+    void reset( const std::string& timerId );
+
 private:
+
+    void initialize( const std::string& timerId );
 
     struct TimerData
     {

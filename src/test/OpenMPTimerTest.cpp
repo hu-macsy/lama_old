@@ -64,9 +64,19 @@ LAMA_LOG_DEF_LOGGER( logger, "Test.OpenMPTimerTest" );
 BOOST_AUTO_TEST_CASE( ConstructorTest )
 {
     OpenMPTimer timer;
-    timer.initialize( "OpenMPTimer" );
+    timer.start( "Solver" );
 
-    LAMA_CHECK_THROW( { timer.initialize( "OpenMPTimer" ); }, Exception );
+    // cannot start timer twice
+
+    LAMA_CHECK_THROW( { timer.start( "Solver" ); }, Exception );
+
+    // cannot stop non-existing timer
+    LAMA_CHECK_THROW( { timer.stop( "Solver1" ); }, Exception );
+
+    timer.stop( "Solver" );
+
+    // cannot stop timer twice
+    LAMA_CHECK_THROW( { timer.stop( "Solver" ); }, Exception );
 }
 
 /* --------------------------------------------------------------------- */
@@ -75,8 +85,6 @@ BOOST_AUTO_TEST_CASE( ResetTest )
 {
     OpenMPTimer timer;
     LAMA_CHECK_THROW( { timer.reset("OpenMPTimer") ; }, Exception );
-
-    timer.initialize( "OpenMPTimer" );
 
     timer.start( "OpenMPTimer" );
     usleep( 100000 );
