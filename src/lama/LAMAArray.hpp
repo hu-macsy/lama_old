@@ -331,8 +331,6 @@ protected:
 
     LAMA_LOG_DECL_STATIC_LOGGER( logger )
 
-    static size_t nContextIndex; // stands for no valid index
-
     mutable boost::recursive_mutex access_mutex;// needed to make accesses thread-safe
 };
 
