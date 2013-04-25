@@ -152,6 +152,9 @@ message ( STATUS "LAMA_LINK_LIBRARIES ${LAMA_LINK_LIBRARIES}" )
 
 target_link_libraries ( lama ${LAMA_LINK_LIBRARIES} )
 
+if ( LAMA_ADDITIONAL_LINK_FLAGS )
+    set_target_properties ( lama PROPERTIES LINK_FLAGS ${LAMA_ADDITIONAL_LINK_FLAGS} )
+endif ( LAMA_ADDITIONAL_LINK_FLAGS )
 
 ### add definitions ###
 if ( WIN32 )

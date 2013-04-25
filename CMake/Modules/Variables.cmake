@@ -68,3 +68,5 @@ endif ( NOT CMAKE_BUILD_TYPE )
 message ( STATUS "Build type is set to " ${CMAKE_BUILD_TYPE} )
 
 set ( LAMA_ADDITIONAL_LINK_LIBRARIES ${LAMA_ADDITIONAL_LINK_LIBRARIES} CACHE STRING "Additional libraries for linking, separated by ;" )
+
+set ( LAMA_ADDITIONAL_LINK_FLAGS ${LAMA_ADDITIONAL_LINK_FLAGS} CACHE STRING "Additional link flags, separated by ;" )
