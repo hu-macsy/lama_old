@@ -113,11 +113,11 @@ link_directories ( ${LAMAPP_LINK_DIRECTORIES} )
 add_library ( lama SHARED ${CXX_SOURCES} ${HEADERS} )
 
 ### set target link libraries ###
-set( LAMA_LINK_LIBRARIES log4lama )
+#set( LAMA_LINK_LIBRARIES log4lama )
 
 if ( CUDA_FOUND AND LAMA_USE_CUDA )
     #target_link_libraries( lama lamacuda )
-    set ( LAMA_LINK_LIBRARIES ${LAMA_LINK_LIBRARIES} lamacuda )
+    #set ( LAMA_LINK_LIBRARIES ${LAMA_LINK_LIBRARIES} lamacuda )
 endif ( CUDA_FOUND AND LAMA_USE_CUDA )
 
 if ( MPI_FOUND AND LAMA_USE_MPI )
@@ -143,6 +143,9 @@ if ( LAMA_BLAS_FOUND )
     #message ( STATUS "LAMA_BLAS_LIBRARIES ${LAMAPP_LINK_LIBRARIES}" )
     set ( LAMA_LINK_LIBRARIES ${LAMA_LINK_LIBRARIES} ${LAMAPP_LINK_LIBRARIES} )
 endif( LAMA_BLAS_FOUND )
+
+# add additional link libraries
+set ( LAMA_LINK_LIBRARIES ${LAMA_LINK_LIBRARIES} ${LAMA_ADDITIONAL_LINK_LIBRARIES} )
 
 message ( STATUS "LAMA_LINK_LIBRARIES ${LAMA_LINK_LIBRARIES}" )     
 

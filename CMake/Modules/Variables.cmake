@@ -2,7 +2,7 @@
  # @file Variables.cmake
  #
  # @license
- # Copyright (c) 2011
+ # Copyright (c) 2013
  # Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  # for Fraunhofer-Gesellschaft
  #
@@ -25,7 +25,7 @@
  # SOFTWARE.
  # @endlicense
  #
- # @brief Variables.cmake
+ # @brief Important CMake variable definitions
  # @author Jan Ecker
  # @date 16.04.2013
  #
@@ -66,3 +66,5 @@ if ( NOT CMAKE_BUILD_TYPE )
 endif ( NOT CMAKE_BUILD_TYPE )
 
 message ( STATUS "Build type is set to " ${CMAKE_BUILD_TYPE} )
+
+set ( LAMA_ADDITIONAL_LINK_LIBRARIES ${LAMA_ADDITIONAL_LINK_LIBRARIES} CACHE STRING "Additional libraries for linking, separated by ;" )
