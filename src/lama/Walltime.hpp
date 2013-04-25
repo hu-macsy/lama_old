@@ -1,5 +1,5 @@
 /**
- * @file Configuration.hpp
+ * @file Walltime.hpp
  *
  * @license
  * Copyright (c) 2011
@@ -25,37 +25,42 @@
  * SOFTWARE.
  * @endlicense
  *
- * @brief Configuration.hpp
- * @author Jiri Kraus
- * @date 22.02.2011
+ * @brief Class that gives back walltime
+ * @author Thomas Brandes
+ * @date 25.04.2013
  * $Id$
  */
-#ifndef LAMA_CONFIGURATION_HPP_
-#define LAMA_CONFIGURATION_HPP_
+#ifndef LAMA_WALLTIME_HPP_
+#define LAMA_WALLTIME_HPP_
+
+// for dll_import
+#include <lama/config.hpp>
 
 #include <string>
-#include <lama/CommunicatorFactory.hpp>
 
-class Configuration
+namespace lama
 {
 
+/**
+ * @brief A simple static class that delivers walltime (used for logging and tracing)
+ */
+class LAMA_DLL_IMPORTEXPORT Walltime
+{
 public:
-    virtual ~Configuration();
-    static Configuration& getInstance();
-    const std::string& getPath() const;
-    const std::string& getCommunicatorType() const;
-    void setCommunicatorType( const std::string& commType );
+
+    /** Get the current walltime.
+     *
+     *  @return current walltime in seconds
+     */
+    static double get();
 
 private:
-    void setPath( const std::string& path );
 
-    LAMA_LOG_DECL_STATIC_LOGGER( logger )
+    /** Private constructor for a static class. */
 
-    Configuration();
-    Configuration(const Configuration& cc);
-    std::string mPath;
-    std::string mCommType;
-
+    Walltime();
 };
 
-#endif // LAMA_CONFIGURATION_HPP_
+} // namespace lama
+
+#endif // LAMA_WALLTIME_HPP

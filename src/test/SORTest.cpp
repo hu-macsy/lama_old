@@ -39,7 +39,7 @@
 #include <lama/solver/criteria/IterationCount.hpp>
 #include <lama/solver/criteria/ResidualThreshold.hpp>
 #include <lama/solver/logger/CommonLogger.hpp>
-#include <lama/solver/logger/OpenMPTimer.hpp>
+#include <lama/solver/logger/Timer.hpp>
 
 #include <lama/DenseVector.hpp>
 
@@ -78,7 +78,7 @@ BOOST_AUTO_TEST_CASE( CtorTest )
 {
     LoggerPtr slogger(
         new CommonLogger( "<SOR>: ", LogLevel::noLogging, LoggerWriteBehaviour::toConsoleOnly,
-                          std::auto_ptr<Timer>( new OpenMPTimer() ) ) );
+                          std::auto_ptr<Timer>( new Timer() ) ) );
 
     SOR sorSolver( "SORTestSolver", slogger );
     BOOST_CHECK_EQUAL( sorSolver.getId(), "SORTestSolver" );
@@ -127,12 +127,12 @@ void testSolveOmegaMethod( Scalar omega )
 {
     typedef typename Matrix::ValueType ValueType;
 
-    Timer* timer = new OpenMPTimer();
+    Timer* timer = new Timer();
     std::auto_ptr<Timer> autoTimer( timer );
 
     LoggerPtr loggerD(
         new CommonLogger( "<SOR>: ", LogLevel::noLogging, LoggerWriteBehaviour::toConsoleOnly,
-                          std::auto_ptr<Timer>( new OpenMPTimer() ) ) );
+                          std::auto_ptr<Timer>( new Timer() ) ) );
 
     SOR sor( "SORTest", omega, loggerD );
 

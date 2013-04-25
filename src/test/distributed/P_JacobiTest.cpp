@@ -162,7 +162,7 @@ void testSolveWithPreconditionMethod( ContextPtr loc )
 //        "<SOR>: ",
 //        lama::LogLevel::solverInformation,
 //        lama::LoggerWriteBehaviour::toConsoleOnly,
-//        std::auto_ptr<Timer>( new OpenMPTimer() ) ) );
+//        std::auto_ptr<Timer>( new Timer() ) ) );
 
     DefaultJacobi jacobiSolver( "JacobiTestSolver"/*, slogger */);
 

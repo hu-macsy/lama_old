@@ -116,14 +116,12 @@ DistributionPtr makeDistribution( const IndexType n, CommunicatorPtr comm, int k
     else
     {
         LAMA_THROWEXCEPTION( "unsupported kind of makeDistribution" );
-        return DistributionPtr();
     }
 }
 
 /* ------------------------------------------------------------------------- */
 
 BOOST_AUTO_TEST_SUITE( P_MatrixTest )
-;
 
 LAMA_LOG_DEF_LOGGER( logger, "Test.MatrixTest" );
 

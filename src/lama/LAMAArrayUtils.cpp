@@ -103,7 +103,6 @@ void LAMAArrayUtils::assignImpl1( LAMAArray<ValueType>& target, const _LAMAArray
         break;
     default:
         LAMA_THROWEXCEPTION( "unsupported source type : " )
-        break;
     }
 }
 
@@ -119,7 +118,6 @@ void LAMAArrayUtils::assign( _LAMAArray& target, const _LAMAArray& source )
         break;
     default:
         LAMA_THROWEXCEPTION( "unsupported target type : " )
-        break;
     }
 }
 

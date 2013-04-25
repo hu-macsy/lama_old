@@ -34,6 +34,8 @@
 // hpp
 #include <lama/tracing/TraceRegionRecord.hpp>
 
+#include <lama/Walltime.hpp>
+
 // others
 #include <lama/tracing/RegionTable.hpp>
 #include <lama/tracing/TraceConfig.hpp>
@@ -52,34 +54,6 @@ LAMA_LOG_DEF_LOGGER( TraceRegionRecord::logger, "TraceRegionRecord" )
 
 /* -------------------------------------------------------------------------- */
 
-static double getWallTime()
-{
-
-#if defined( _OPENMP )
-
-    return omp_get_wtime();
-
-#elif defined( WIN32 )
-
-    SYSTEMTIME lpSystemTime;
-    GetLocalTime( &lpSystemTime );
-    return ( lpSystemTime.wHour * 60.0 + lpSystemTime.wMinute ) * 60.0 +
-           lpSystemTime.wSecond + lpSystemTime.wMilliseconds * 0.001;
-
-#else
-
-    struct timeval tp;
-    struct timezone tzp;
-
-    gettimeofday( &tp, &tzp );
-
-    return (double) tp.tv_sec + tp.tv_usec * 0.000001;
-
-#endif //WIN32
-}
-
-/* -------------------------------------------------------------------------- */
-
 void TraceRegionRecord::start( const char* regionName, const char* file, int lno )
 {
     // enter a region withtout using member variables
@@ -91,7 +65,7 @@ void TraceRegionRecord::start( const char* regionName, const char* file, int lno
         return;
     }
 
-    double startTime = getWallTime();
+    double startTime = lama::Walltime::get();
 
     RegionTable* regionTable = traceConfig->getRegionTable();
 
@@ -138,7 +112,7 @@ void TraceRegionRecord::stop( const char* regionName )
 
     int regionId = regionTable->getCurrentRegionId( regionName );
 
-    double stopTime = getWallTime();
+    double stopTime = lama::Walltime::get();
 
     LAMA_LOG_DEBUG( logger, "Thread " << regionTable->getId() << ": leaves region " << regionName )
 
@@ -157,7 +131,7 @@ void TraceRegionRecord::stop( const char* regionName )
 
 void TraceRegionRecord::enter( const char* regionName, const char* file, int lno )
 {
-    mStartTime = getWallTime();
+    mStartTime = lama::Walltime::get();
 
     mRegionTable = mTraceConfig->getRegionTable();
 
@@ -235,7 +209,7 @@ TraceRegionRecord::~TraceRegionRecord()
         return;
     }
 
-    double stopTime = getWallTime();
+    double stopTime = lama::Walltime::get();
 
     LAMA_LOG_DEBUG( logger,
                     "Thread " << mRegionTable->getId() << ": leaves region " << mRegionTable->getRegion( mRegionId ).getRegionName() << ", timer = " << mRegionId )

@@ -78,8 +78,7 @@ std::auto_ptr<_LAMAArray> _LAMAArray::create( const Scalar::ScalarType valueType
 
 LAMA_LOG_DEF_TEMPLATE_LOGGER( template<typename ValueType>, LAMAArray<ValueType>::logger, "LAMAArray" )
 
-template<typename ValueType>
-size_t LAMAArray<ValueType>::nContextIndex = std::numeric_limits<std::size_t>::max();
+size_t _LAMAArray::nContextIndex = std::numeric_limits<std::size_t>::max();
 
 /* ================================================================================= */
 

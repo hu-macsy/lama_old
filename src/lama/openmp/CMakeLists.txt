@@ -69,18 +69,6 @@ else()
     )
 endif()
     
-# can only be compiled if MKL SCALAPACK and MPI is availabe
-
-if ( SCALAPACK_FOUND AND MPI_FOUND AND LAMA_USE_MPI)
-    message( STATUS "SCALAPACK is supported and will be used" ) 
-    set ( CLASSES
-            ${CLASSES}
-            OpenMPSCALAPACK
-    )
-else()
-    message( STATUS "SCALAPACK(optional) is not supported" ) 
-endif()
-    
 lama_classes ( ${CLASSES} )
 
 ### add sources and headers to parent scope ###
