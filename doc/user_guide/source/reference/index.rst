@@ -13,8 +13,7 @@ Contents:
    scalar
    vector
    matrix
-   solver
-   solver/metasolver
+   solver/index
    storage
    expressions
    distributions

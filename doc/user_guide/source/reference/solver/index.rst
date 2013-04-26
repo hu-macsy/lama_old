@@ -1,8 +1,9 @@
 Solver
 ======
 
-LAMA provides different linear euquation solvers. These are available in the ``src/lama/solver/`` 
-directory. See the example for a short introduction how the solvers can be used.s
+LAMA provides different linear equation solvers. These are available in the ``src/lama/solver/`` directory.
+See the example for a short introduction how the solvers can be used.
+For writing your own solver with see :doc:'here <writingSolver>'.
 
 Available Direct Solvers
 ------------------------
@@ -33,11 +34,7 @@ Available Direct Solvers
 
 - Generative Solver
 
-.. toctree::
-   :titlesonly:
-   :maxdepth: 2
-
-   solver/metasolver
+ - :ref:'MetaSolver <metasolver>'
 
 Solver Interface
 ----------------
