@@ -305,7 +305,8 @@ void* CUDAContext::allocate( const size_t size ) const
 
     LAMA_CUDA_DRV_CALL(
         cuMemAlloc( &pointer, size),
-        "cuMemAlloc( " << pointer << ", " << size << " ) failed. This allocation would require a total of " << mMaxNumberOfAllocatedBytes + size << " bytes global memory." )
+        "cuMemAlloc( size = " << size << " ) failed. This allocation would require a total of " 
+                      << mMaxNumberOfAllocatedBytes + size << " bytes global memory." )
 
     LAMA_LOG_DEBUG( logger, *this << ": allocated " << size << " bytes, ptr = " << pointer )
 
