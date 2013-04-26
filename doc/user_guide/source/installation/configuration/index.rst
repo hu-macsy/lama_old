@@ -86,6 +86,7 @@ following table. For advanced help refer to the seperate section.
 
    "Boost", "BOOST_ROOT", "path to boost root dir"
    "MKL (for BLAS, LAPack and ScaLAPack)", "MKL_ROOT or MKL_INCLUDE_DIR and MKL_LIBRARY_PATH", "path to MKL root dir, or paths to MKL include and library dir"
+   "ACML (for BLAS and LAPack)", "ACML_ROOT or ACML_INCLUDE_DIR and ACML_LIBRARY_PATH", "path to ACML root dir, or paths to MKL include and library dir"
    "FortranBLAS (for BLAS and LAPack)", "", ""
    "MPI", "MPI_ROOT", "path to MPI root dir"
    "CUDA", "CUDA_TOOLKIT_ROOT", "path to CUDA toolkit"
@@ -98,8 +99,7 @@ following table. For advanced help refer to the seperate section.
    "GASNet", "GASNET_LIBRARY_PATH", "path to GASNet library"
    "OpenShmem", "OSHMEM_INCLUDE_PATH and OSHMEM_LIBRARY_PATH", "paths to Open shared memory include and library dir"
 
-.. "ACML (for BLAS and LAPack)", "ACML_ROOT or ACML_INCLUDE_DIR and ACML_LIBRARY_PATH"
-.. "GOTO (for BLAS and LAPack)", ""
+.. "GOTO (for BLAS and LAPack)", "", ""
 
 For changing the C compiler there is a different way for telling cmake. Please see :ref:`here <c++>`. 
 
