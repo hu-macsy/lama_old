@@ -105,6 +105,7 @@ All tests are configured as release build.
    :widths: 150, 100, 100, 100, 200, 100 
 
    "gcc 4.4", "1.46", "MKL composerxe-2011.2.137", "4.2", "OpenMPI 1.4.3", "ok"
+
    "gcc 4.4", "1.46", "ACML", "4.2", "OpenMPI 1.4.3", "ok"
    "gcc 4.6.0", "1.41", "...", "5.0", "OpenMPI 1.4.3", "ok"
    "gcc 4.6.1 / 4.6.2", "1.49.0", "blas 3", "4.2 / 5.0", "mpich2 1.2.1p1 (Parastation 5.0.25-2)", "ok"
