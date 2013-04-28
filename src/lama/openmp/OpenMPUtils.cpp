@@ -230,6 +230,9 @@ ValueType OpenMPUtils::absMaxDiffVal( const ValueType array1[], const ValueType 
 template<typename ValueType>
 bool OpenMPUtils::isSorted( const ValueType array[], const IndexType n, bool ascending )
 {
+    LAMA_LOG_INFO( logger, "isSorted<" << typeid( ValueType ).name() 
+                           << ", n = " << n << ", ascending = " << ascending )
+
     bool sorted = true;   //!< will be set to false at violations
 
     if ( ascending )

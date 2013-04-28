@@ -288,6 +288,68 @@ ValueType CUDAUtils::absMaxDiffVal( const ValueType array1[], const ValueType ar
 
 /* --------------------------------------------------------------------------- */
 
+// template argument ascending: make two instantiations of kernel to avoid bool test
+
+template<typename ValueType, bool ascending>
+__global__
+void isSortedKernel( bool* result, const IndexType numValues, const ValueType* values )
+{
+    const int i = threadId( gridDim, blockIdx, blockDim, threadIdx );
+
+    if ( i < numValues )
+    {
+        if ( ascending )
+        {
+            result[i] = values[i] <= values[i+1];
+        }
+        else
+        {
+            result[i] = values[i] >= values[i+1];
+        }
+    }
+}
+
+template<typename ValueType>
+bool CUDAUtils::isSorted( const ValueType array[], const IndexType n, bool ascending )
+{
+    LAMA_LOG_INFO( logger, "isSorted<" << typeid( ValueType ).name() 
+                           << ", n = " << n << ", ascending = " << ascending )
+
+    LAMA_CHECK_CUDA_ACCESS
+
+    if ( n < 2 )
+    {
+        return true;   // 0 or 1 element is always sorted
+    }
+
+    // create a tempory bool array on device with n-1 entries
+
+    thrust::device_ptr<bool> resultPtr = thrust::device_malloc<bool>( n - 1 );
+
+    bool* resultRawPtr = thrust::raw_pointer_cast( resultPtr );
+
+    const int block_size = 256;
+    dim3 dimBlock( block_size, 1, 1 );
+    dim3 dimGrid = makeGrid( n - 1, dimBlock.x );
+
+    if ( ascending )
+    {
+        isSortedKernel<ValueType, true><<<dimGrid, dimBlock>>> ( resultRawPtr, n - 1, array );
+    }
+    else
+    {
+        isSortedKernel<ValueType, false><<<dimGrid, dimBlock>>> ( resultRawPtr, n - 1, array );
+    }
+
+    cudaStreamSynchronize( 0 );
+
+    LAMA_CHECK_CUDA_ERROR
+
+    return thrust::reduce( resultPtr, resultPtr + n - 1, true, thrust::logical_and<bool>() );
+}
+
+/* --------------------------------------------------------------------------- */
+
 template<typename ValueType1,typename ValueType2>
 __global__
 void gatherKernel( ValueType1* out, const ValueType2* in, const IndexType* indexes, IndexType n )
@@ -462,6 +524,10 @@ void CUDAUtils::setInterface( UtilsInterface& Utils )
     LAMA_INTERFACE_REGISTER_T( Utils, absMaxDiffVal, IndexType )
     LAMA_INTERFACE_REGISTER_T( Utils, absMaxDiffVal, float )
     LAMA_INTERFACE_REGISTER_T( Utils, absMaxDiffVal, double )
+
+    LAMA_INTERFACE_REGISTER_T( Utils, isSorted, IndexType )
+    LAMA_INTERFACE_REGISTER_T( Utils, isSorted, float )
+    LAMA_INTERFACE_REGISTER_T( Utils, isSorted, double )
 
     LAMA_INTERFACE_REGISTER_TT( Utils, set, int, int )
     LAMA_INTERFACE_REGISTER_TT( Utils, set, float, float )
