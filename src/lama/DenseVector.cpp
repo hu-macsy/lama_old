@@ -960,7 +960,6 @@ void DenseVector<T>::readVectorHeader( const std::string& filename, File::FileTy
         break;
     default:
         LAMA_THROWEXCEPTION( "Invalid header file." )
-        break;
     }
     LAMA_LOG_TRACE( logger, "Read Vector Header, size = " << size() )
 }
@@ -1030,7 +1029,6 @@ void DenseVector<T>::writeVectorHeader(
         return;
     default:
         LAMA_THROWEXCEPTION( "Invalid header file." )
-        break;
     }
 
     std::ofstream outFile( fileName.c_str(), std::ios::out );
@@ -1136,10 +1134,8 @@ long DenseVector<T>::getDataTypeSize( const File::DataType dataType ) const
         {
             LAMA_THROWEXCEPTION( "Unknown vector value type size." )
         }
-        break;
     default:
         LAMA_THROWEXCEPTION( "Unknown vector data type for writing the XDR file." )
-        break;
     }
 }
 

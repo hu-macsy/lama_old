@@ -71,7 +71,6 @@ const char* level2str( const Level level )
     default:
         return "UNKNOWN";
     }
-    return "";
 }
 
 std::ostream& operator<<( std::ostream& os, const Level& level )

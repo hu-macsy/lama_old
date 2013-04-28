@@ -145,10 +145,16 @@ if ( LAMA_BLAS_FOUND )
     set ( LAMA_LINK_LIBRARIES ${LAMA_LINK_LIBRARIES} ${LAMAPP_LINK_LIBRARIES} )
 endif( LAMA_BLAS_FOUND )
 
+# add additional link libraries
+set ( LAMA_LINK_LIBRARIES ${LAMA_LINK_LIBRARIES} ${LAMA_ADDITIONAL_LINK_LIBRARIES} )
+
 message ( STATUS "LAMA_LINK_LIBRARIES ${LAMA_LINK_LIBRARIES}" )     
 
 target_link_libraries ( lama ${LAMA_LINK_LIBRARIES} )
 
+if ( LAMA_ADDITIONAL_LINK_FLAGS )
+    set_target_properties ( lama PROPERTIES LINK_FLAGS ${LAMA_ADDITIONAL_LINK_FLAGS} )
+endif ( LAMA_ADDITIONAL_LINK_FLAGS )
 
 ### add definitions ###
 if ( WIN32 )

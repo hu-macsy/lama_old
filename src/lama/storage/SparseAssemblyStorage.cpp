@@ -460,7 +460,7 @@ void SparseAssemblyStorage<T>::setRow(
     const LAMAArrayConstView<IndexType>& ja,
     const LAMAArrayConstView<ValueType>& values )
 {
-    LAMA_ASSERT_EQUAL_ERROR( ja.size(), values.size() )
+    //LAMA_ASSERT_EQUAL_ERROR( ja.size(), values.size() )
 
     #pragma omp atomic
     mNumValues -= mRows[i].ja.size();

@@ -6,7 +6,7 @@ This documentation will give an overview of the features of the \Library of
 \Accelerated \Math \Applications (\L\A\M\A) and will describe the general usage
 of these features.
 
-You will find concise :ref:`installation_index` instruction, an easy beginners guide with serval short describtions of
+You will find concise :ref:`installation_index` instruction, an easy beginners guide with several short descriptions of
 our basic data structures, their behaviour as well as simple examples on how to use them (:ref:`tutorial_index`). An
 advanced :ref:`lecture_index` of our hands-on session follows before you get the chance to have a look at the
 :ref:`reference_index`. We close with informations about writing own tests (see :ref:`testing_index`) and 
@@ -19,10 +19,10 @@ About LAMA
    :align: center
    :alt: LAMA Design
 
-LAMA is an easy to use open source \Basic \Linear \Algebra \Subprogram (:ref:`\B\L\A\S <blas_explanation>`)) Library with special focus on large
-sparse matrices. Its core is written in C++, so you have the comfort of writting your algorithms in a text-book syntax
+LAMA is an easy to use open source \Basic \Linear \Algebra \Subprogram (:ref:`\B\L\A\S <blas_explanation>`) Library with special focus on large
+sparse matrices. Its core is written in C++, so you have the comfort of writing your algorithms in a text-book syntax
 because of expressions templates. Within the given backends there are optimized matrix-vector kernels for various sparse
-matrix formts organized, so you do not have to care about hardware specific programming (e.g. CUDA). We also care about
+matrix formats organized, so you do not have to care about hardware specific programming (e.g. CUDA). We also care about
 communicating distributed data between processes. On top of this we prepare a set of basic linear solvers as a jacobi
 or CG method.
 
@@ -103,7 +103,7 @@ Work in process that you can find in our feature branches and that will come wit
 
 - PGAS support for communication (till now we support MPI)
 
-- ease to use configuration of solver through a DSL
+- easy to use configuration of solver through a DSL
 
 - sparse matrix ordering and partitioning through METIS
 
@@ -131,7 +131,7 @@ If you are interested in this, please `contact`_ us.
 Use Cases
 =========
 
-So, when it's time to use LAMA?
+So, when is the time to use LAMA?
 
 LAMA is the right decision for you, if you are doing linear algebra on sparse matrices and you want to reach the full
 performance of your (parallel) machine without taking care on the kernel code on your own. With LAMA it's easy for you

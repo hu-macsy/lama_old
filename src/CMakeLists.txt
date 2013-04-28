@@ -28,7 +28,6 @@
  # @brief Main specification file for CMake
  # @author Thomas Brandes, Jiri Kraus
  # @date 29.03.2012
- # $Id$
 ###
 
 ### Set required CMake version
@@ -67,14 +66,6 @@ include ( PackageCodeCoverage )
 foreach ( PACKAGE_TO_FIND ${REQUIRED_PACKAGES_TO_FIND} )
     find_package ( ${PACKAGE_TO_FIND} ${LAMA_FIND_PACKAGE_FLAGS} REQUIRED )
 endforeach ( PACKAGE_TO_FIND ${REQUIRED_PACKAGES_TO_FIND} )
-
-
-
-
-
-
-
-
 
 # Find optional packages
 foreach ( PACKAGE_TO_FIND ${OPTIONAL_PACKAGES_TO_FIND} )

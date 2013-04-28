@@ -49,7 +49,7 @@ set ( CLASSES
 
 set ( LAPACKEeFound FALSE )
 
-if ( MKL_FOUND )
+if ( LAMA_BLAS_NAME STREQUAL "MKL" )
     if ( EXISTS "${MKL_INCLUDE_DIR}/mkl_lapacke.h" ) 
         set ( LAPACKeFound TRUE )
     endif()
