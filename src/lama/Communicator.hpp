@@ -179,6 +179,19 @@ public:
      */
     virtual PartitionId getRank() const = 0;
 
+    /** @brief Getter of the number of partitions on same node.
+     *
+     * @return number of partitions on same node as this partition.
+     */
+
+    virtual PartitionId getNodeSize() const = 0;
+
+    /** @brief Getter of node rank 
+     *
+     * @return rank of this partition on its node, 0 <= rank < getNodeSize()
+     */
+    virtual PartitionId getNodeRank() const = 0;
+
     /**
      * Help routine to get the rank of a neighbored position.
      *

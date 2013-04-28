@@ -76,9 +76,21 @@ public:
 
     virtual ThreadSafetyLevel getThreadSafetyLevel() const;
 
+    /** @brief Provide implementation for Communicator::getSize */
+
     virtual PartitionId getSize() const;
 
+    /** @brief Provide implementation for Communicator::getRank */
+
     virtual PartitionId getRank() const;
+
+    /** @brief Provide implementation for Communicator::getNodeSize */
+
+    virtual PartitionId getNodeSize() const;
+
+    /** @brief Provide implementation for Communicator::getNodeRank */
+
+    virtual PartitionId getNodeRank() const;
 
     MPI_Comm getMPIComm() const;
 
@@ -295,6 +307,8 @@ private:
 
     MPICommunicator( int& argc, char** & argv );
 
+    void setNodeData();
+
     template<typename T>
     inline static MPI_Datatype getMPIType();
 
@@ -387,6 +401,9 @@ private:
 
     int mRank; // rank of this processor
     int mSize; // size of communicator
+
+    int mNodeRank; // rank of this processor on its node
+    int mNodeSize; // number of processors on same node
 
     bool mExternInitialization;
 

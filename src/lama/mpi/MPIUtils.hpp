@@ -25,7 +25,7 @@
  * SOFTWARE.
  * @endlicense
  *
- * @brief MPIUtils.hpp
+ * @brief Utility macros for MPI calls
  * @author brandes
  * @date 23.03.2011
  * $Id$
@@ -38,25 +38,29 @@
 #include <sstream>
 #include <mpi.h>
 
-#ifdef LAMACHECKASSERTS
+#ifdef LAMA_CHECK_ASSERTS
 
-#define LAMA_MPICALL(logger,exp,msg)                                                 \
+#define LAMA_MPICALL( logger, exp, msg)                                             \
     {                                                                               \
-        LAMA_LOG_TRACE(logger, "MPI call " << msg);                                      \
+        LAMA_LOG_TRACE( logger, "MPI call " << msg );                               \
         int status = exp;                                                           \
-        LAMA_LOG_TRACE(logger, "MPI call " << msg  << ", status = " << status);          \
-        if (status != MPI_SUCCESS)                                                  \
+        LAMA_LOG_TRACE( logger, "MPI call " << msg  << ", status = " << status );   \
+        if ( status != MPI_SUCCESS )                                                \
         {                                                                           \
             std::ostringstream errorStr;                                            \
-            errorStr<<"MPI error in line "<<__LINE__;                               \
-            errorStr<<" of file "<<__FILE__<<": ";                                  \
-            errorStr<<msg<<"\n";                                                    \
+            errorStr << "MPI error in line " << __LINE__ ;                          \
+            errorStr << " of file " << __FILE__ << ": ";                            \
+            errorStr << msg<< "\n";                                                 \
             lama::Exception::addCallStack( errorStr );                              \
-            fprintf(stderr, "%s\n", errorStr.str().c_str() );                       \
-            throw MPIException(errorStr.str(),status);                              \
+            fprintf( stderr, "%s\n", errorStr.str().c_str() );                      \
+            throw MPIException( errorStr.str(), status );                           \
         }                                                                           \
     }
+
 #else
-#define LAMA_MPICALL(logger,exp,msg) exp
-#endif //LAMACHECKASSERTS
+
+#define LAMA_MPICALL( logger, exp, msg) exp;
+
+#endif // LAMA_CHECK_ASSERTS
+
 #endif // LAMA_MPIUTILS_HPP_

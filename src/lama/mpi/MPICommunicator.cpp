@@ -66,7 +66,7 @@ MPICommunicator::MPICommunicator( int& argc, char** & argv )
 {
     int initialized = 0;
 
-    LAMA_MPICALL( logger, MPI_Initialized( &initialized ), "MPI_Initialized" );
+    LAMA_MPICALL( logger, MPI_Initialized( &initialized ), "MPI_Initialized" )
 
     if ( initialized )
     {
@@ -136,22 +136,79 @@ MPICommunicator::MPICommunicator( int& argc, char** & argv )
     MPI_Comm_dup( mCommWorld, &mComm );
     MPI_Comm_dup( mCommWorld, &mCommTask );
     LAMA_LOG_INFO( logger, "MPI_Init" )
-    LAMA_MPICALL( logger, MPI_Comm_size( mComm, &mSize ), "MPI_Comm_size" );
-    LAMA_MPICALL( logger, MPI_Comm_rank( mComm, &mRank ), "MPI_Comm_rank" );
+    LAMA_MPICALL( logger, MPI_Comm_size( mComm, &mSize ), "MPI_Comm_size" )
+    LAMA_MPICALL( logger, MPI_Comm_rank( mComm, &mRank ), "MPI_Comm_rank" )
+
+    setNodeData();   // determine mNodeRank, mNodeSize
 }
+
+/* ---------------------------------------------------------------------------------- */
+
+void MPICommunicator::setNodeData()
+{
+    // routine set mNodeRank and mNodeSize
+
+    // processors with same processor_name are assumed to be on the same node
+
+    int nodeNameLength;                     // lenght of node name for this processor
+
+    char nodeName[MPI_MAX_PROCESSOR_NAME];  // name of node for this processor
+
+    LAMA_MPICALL( logger, MPI_Get_processor_name( nodeName, &nodeNameLength ), "MPI_Get_processor_name" )
+
+    LAMA_LOG_INFO( logger, "Processor " << mRank << " runs on node " << nodeName )
+
+    // now gather names of all processors
+
+    char allNodeNames[ MPI_MAX_PROCESSOR_NAME * mSize ];
+
+    LAMA_MPICALL( logger, 
+                  MPI_Allgather( &nodeName, MPI_MAX_PROCESSOR_NAME, MPI_CHAR,
+                                 &allNodeNames, MPI_MAX_PROCESSOR_NAME, MPI_CHAR,
+                                 mComm ), 
+                  "MPI_Allgather( <node_names> )" )
+
+    mNodeSize = 0;
+    mNodeRank = mSize;  // illegal value to verify that it will be set
+
+    for ( int i = 0; i < mSize; ++i )
+    {
+        if ( strcmp( &allNodeNames[ i * MPI_MAX_PROCESSOR_NAME ], nodeName ) )
+        {
+            continue;   // processor i is not on same node
+        }
+
+        // Processor i is on same node as this processor
+
+        if ( i == mRank ) 
+        {
+            mNodeRank = mNodeSize;
+        }
+
+        ++mNodeSize;
+    }
+
+    LAMA_ASSERT_ERROR( mNodeSize > 0, "Serious problem encountered to get node size" )
+
+    LAMA_ASSERT_ERROR( mNodeRank < mNodeSize, "Serious problem encountered to get node size" )
+
+    LAMA_LOG_INFO( logger, "Processor " << mRank << ": node rank " << mNodeRank << " of " << mNodeSize )
+}
+
+/* ---------------------------------------------------------------------------------- */
 
 MPICommunicator::~MPICommunicator()
 {
     LAMA_LOG_INFO( logger, *this << ": ~MPICommunicator" )
     int finalized = 0;
-    LAMA_MPICALL( logger, MPI_Finalized( &finalized ), "MPI_Finalized" );
+    LAMA_MPICALL( logger, MPI_Finalized( &finalized ), "MPI_Finalized" )
 
     if ( !finalized )
     {
         if ( !mExternInitialization )
         {
             LAMA_LOG_INFO( logger, "call MPI_Finalize" )
-            LAMA_MPICALL( logger, MPI_Finalize(), "MPI_Finalize" );
+            LAMA_MPICALL( logger, MPI_Finalize(), "MPI_Finalize" )
         }
         else
         {
@@ -163,6 +220,8 @@ MPICommunicator::~MPICommunicator()
         LAMA_LOG_WARN( logger, *this << ": tried to finalize MPI, but MPI has already been finalized." )
     }
 }
+
+/* ---------------------------------------------------------------------------------- */
 
 bool MPICommunicator::isEqual( const Communicator& other ) const
 {
@@ -176,6 +235,8 @@ bool MPICommunicator::isEqual( const Communicator& other ) const
 
     return equal;
 }
+
+/* ---------------------------------------------------------------------------------- */
 
 Communicator::ThreadSafetyLevel MPICommunicator::getThreadSafetyLevel() const
 {
@@ -192,6 +253,16 @@ PartitionId MPICommunicator::getRank() const
     return mRank;
 }
 
+PartitionId MPICommunicator::getNodeSize() const
+{
+    return mNodeSize;
+}
+
+PartitionId MPICommunicator::getNodeRank() const
+{
+    return mNodeRank;
+}
+
 MPI_Comm MPICommunicator::getMPIComm() const
 {
     return mComm;
@@ -203,7 +274,7 @@ MPI_Request MPICommunicator::startrecv( T* buffer, int count, int source ) const
     MPI_Request request;
     MPI_Datatype commType = getMPIType<T>();
     LAMA_MPICALL( logger, MPI_Irecv( buffer, count, commType, source, defaultTag, selectMPIComm(), &request ),
-                  "MPI_Irecv" );
+                  "MPI_Irecv" )
     return request;
 }
 
@@ -214,7 +285,7 @@ MPI_Request MPICommunicator::startsend( const T* buffer, int count, int target )
     MPI_Datatype commType = getMPIType<T>();
     LAMA_MPICALL( logger,
                   MPI_Isend( const_cast<T*>( buffer ), count, commType, target, defaultTag, selectMPIComm(), &request ),
-                  "MPI_Isend" );
+                  "MPI_Isend" )
     return request;
 }
 
@@ -223,7 +294,7 @@ int MPICommunicator::getCount( MPI_Status& mpiStatus ) const
 {
     int size = 0;
     MPI_Datatype commType = getMPIType<T>();
-    LAMA_MPICALL( logger, MPI_Get_count( &mpiStatus, commType, &size ), "MPI_Get_count" );
+    LAMA_MPICALL( logger, MPI_Get_count( &mpiStatus, commType, &size ), "MPI_Get_count" )
     return size;
 }
 
@@ -231,8 +302,9 @@ template<typename T>
 void MPICommunicator::send( const T* buffer, int count, int target ) const
 {
     MPI_Datatype commType = getMPIType<T>();
-    LAMA_MPICALL( logger, MPI_Send( const_cast<T*>( buffer ), count, commType, target, defaultTag, selectMPIComm() ),
-                  "MPI_Send" );
+    LAMA_MPICALL( logger, 
+                  MPI_Send( const_cast<T*>( buffer ), count, commType, target, defaultTag, selectMPIComm() ),
+                  "MPI_Send" )
 }
 
 /* ---------------------------------------------------------------------------------- */
@@ -243,7 +315,7 @@ void MPICommunicator::all2all( int* recvSizes, const int* sendSizes ) const
     LAMA_ASSERT_ERROR( recvSizes != 0, " invalid recvSizes " )
     LAMA_MPICALL( logger,
                   MPI_Alltoall( const_cast<int*>( sendSizes ), 1, MPI_INT, recvSizes, 1, MPI_INT, selectMPIComm() ),
-                  "MPI_Alltoall" );
+                  "MPI_Alltoall" )
 }
 
 /* ---------------------------------------------------------------------------------- */
@@ -372,7 +444,7 @@ void MPICommunicator::exchangeByPlanImpl(
 
     // wait for completion of receives
     boost::scoped_array<MPI_Status> statuses( new MPI_Status[noReceives] );
-    LAMA_MPICALL( logger, MPI_Waitall( noReceives, commRequest.get(), statuses.get() ), "MPI_Waitall" );
+    LAMA_MPICALL( logger, MPI_Waitall( noReceives, commRequest.get(), statuses.get() ), "MPI_Waitall" )
     // ToDo: check for correct sizes, was done in earlier version, but is now redundant
 }
 
@@ -549,14 +621,16 @@ IndexType MPICommunicator::shiftMPI(
     MPI_Status mpiStatus;
 
     LAMA_MPICALL( logger,
-                  MPI_Sendrecv( const_cast<T*>( sendVals ), sendSize, commType, dest, 4711, recvVals, recvSize, commType, source, 4711, selectMPIComm(), &mpiStatus ),
-                  "MPI_Sendrecv" );
+                  MPI_Sendrecv( const_cast<T*>( sendVals ), sendSize, commType, dest, 4711, 
+                                recvVals, recvSize, commType, source, 4711, 
+                                selectMPIComm(), &mpiStatus ),
+                  "MPI_Sendrecv" )
 
     // extract number of read values from status
 
     int count = 0;
 
-    LAMA_MPICALL( logger, MPI_Get_count( &mpiStatus, commType, &count ), "MPI_Get_count(T)" );
+    LAMA_MPICALL( logger, MPI_Get_count( &mpiStatus, commType, &count ), "MPI_Get_count(T)" )
 
     LAMA_LOG_DEBUG( logger, "received from " << source << " #values = " << count << ", max was " << recvSize )
 
@@ -711,7 +785,7 @@ T MPICommunicator::sumImpl( const T value ) const
     T sum;
     MPI_Datatype commType = getMPIType<T>();
     LAMA_MPICALL( logger, MPI_Allreduce( ( void* ) &value, ( void* ) &sum, 1, commType, MPI_SUM, selectMPIComm() ),
-                  "MPI_Allreduce(MPI_SUM)" );
+                  "MPI_Allreduce(MPI_SUM)" )
     return sum;
 }
 
@@ -750,7 +824,7 @@ T MPICommunicator::minval( const T value ) const
 
     LAMA_MPICALL( logger,
                   MPI_Allreduce( ( void* ) &value, ( void* ) &globalMin, 1, commType, MPI_MIN, selectMPIComm() ),
-                  "MPI_Allreduce( MPI_MIN )" );
+                  "MPI_Allreduce( MPI_MIN )" )
     return globalMin;
 }
 
@@ -763,7 +837,7 @@ T MPICommunicator::maxval( const T value ) const
 
     LAMA_MPICALL( logger,
                   MPI_Allreduce( ( void* ) &value, ( void* ) &globalMax, 1, commType, MPI_MAX, selectMPIComm() ),
-                  "MPI_Allreduce( MPI_MAX )" );
+                  "MPI_Allreduce( MPI_MAX )" )
     return globalMax;
 }
 
@@ -803,12 +877,12 @@ void MPICommunicator::gather( vector<float>& values, float value ) const
     values.clear();
     values.resize( mSize, 0.0 );
     LAMA_MPICALL( logger, MPI_Allgather( &value, 1, MPI_FLOAT, &values[0], 1, MPI_FLOAT, selectMPIComm() ),
-                  "MPI_Allgather(MPI_FLOAT,MPI_FLOAT)" );
+                  "MPI_Allgather(MPI_FLOAT,MPI_FLOAT)" )
 }
 
 void MPICommunicator::synchronize() const
 {
-    LAMA_MPICALL( logger, MPI_Barrier( selectMPIComm() ), "MPI_Barrier()" );
+    LAMA_MPICALL( logger, MPI_Barrier( selectMPIComm() ), "MPI_Barrier()" )
 }
 
 /* ---------------------------------------------------------------------------------- */
@@ -817,17 +891,17 @@ void MPICommunicator::synchronize() const
 
 void MPICommunicator::bcast( int val[], const IndexType n, const PartitionId root ) const
 {
-    LAMA_MPICALL( logger, MPI_Bcast( val, n, MPI_INT, root, selectMPIComm() ), "MPI_Bcast<int>" );
+    LAMA_MPICALL( logger, MPI_Bcast( val, n, MPI_INT, root, selectMPIComm() ), "MPI_Bcast<int>" )
 }
 
 void MPICommunicator::bcast( double val[], const IndexType n, const PartitionId root ) const
 {
-    LAMA_MPICALL( logger, MPI_Bcast( val, n, MPI_DOUBLE, root, selectMPIComm() ), "MPI_Bcast<double>" );
+    LAMA_MPICALL( logger, MPI_Bcast( val, n, MPI_DOUBLE, root, selectMPIComm() ), "MPI_Bcast<double>" )
 }
 
 void MPICommunicator::bcast( float val[], const IndexType n, const PartitionId root ) const
 {
-    LAMA_MPICALL( logger, MPI_Bcast( val, n, MPI_FLOAT, root, selectMPIComm() ), "MPI_Bcast<float>" );
+    LAMA_MPICALL( logger, MPI_Bcast( val, n, MPI_FLOAT, root, selectMPIComm() ), "MPI_Bcast<float>" )
 }
 
 /* ---------------------------------------------------------------------------------- */
@@ -843,7 +917,7 @@ void MPICommunicator::scatterImpl( T myvals[], const IndexType n, const Partitio
     // MPI interface is not aware of const, so const_cast is required
     LAMA_MPICALL( logger,
                   MPI_Scatter( const_cast<T*>( allvals ), n, commType, myvals, n, commType, root, selectMPIComm() ),
-                  "MPI_Scatter" );
+                  "MPI_Scatter" )
 }
 
 void MPICommunicator::scatter( float myvals[], const IndexType n, const PartitionId root, const float allvals[] ) const
@@ -899,7 +973,7 @@ void MPICommunicator::scatterImpl(
                         *this << ": scatter of " << displacement << " elements, I receive " << n << " elements" )
         LAMA_MPICALL( logger,
                       MPI_Scatterv( sendbuf, counts.get(), displs.get(), commType, myvals, n, commType, root, selectMPIComm() ),
-                      "MPI_Scatterv" );
+                      "MPI_Scatterv" )
     }
     else
     {
@@ -915,7 +989,7 @@ void MPICommunicator::scatterImpl(
         LAMA_LOG_DEBUG( logger, *this << ": root = " << root << " scatters " << n << " elements to me" )
         LAMA_MPICALL( logger,
                       MPI_Scatterv( NULL, counts.get(), NULL, commType, myvals, n, commType, root, selectMPIComm() ),
-                      "MPI_Scatterv" );
+                      "MPI_Scatterv" )
     }
 }
 
@@ -961,8 +1035,9 @@ void MPICommunicator::gatherImpl( T allvals[], const IndexType n, const Partitio
     MPI_Datatype commType = getMPIType<T>();
     // MPI interface is not aware of const, so const_cast is required
     void* sendbuf = const_cast<T*>( myvals );
-    LAMA_MPICALL( logger, MPI_Gather ( sendbuf, n, commType, allvals, n, commType, root, selectMPIComm() ),
-                  "MPI_Gather<T>" );
+    LAMA_MPICALL( logger, 
+                  MPI_Gather ( sendbuf, n, commType, allvals, n, commType, root, selectMPIComm() ),
+                  "MPI_Gather<T>" )
 }
 
 void MPICommunicator::gather( double allvals[], const IndexType n, const PartitionId root, const double myvals[] ) const
@@ -1014,7 +1089,7 @@ void MPICommunicator::gatherImpl(
                         *this << ": scatter of " << displacement << " elements, I receive " << n << " elements" )
         LAMA_MPICALL( logger,
                       MPI_Gatherv( sendbuf, n, commType, allvals, counts.get(), displs.get(), commType, root, selectMPIComm() ),
-                      "MPI_Gatherv<T>" );
+                      "MPI_Gatherv<T>" )
     }
     else
     {
@@ -1030,7 +1105,7 @@ void MPICommunicator::gatherImpl(
         LAMA_LOG_DEBUG( logger, *this << ": root = " << root << " scatters " << n << " elements to me" )
         LAMA_MPICALL( logger,
                       MPI_Gatherv( sendbuf, n, commType, NULL, counts.get(), NULL, commType, root, selectMPIComm() ),
-                      "MPI_Gatherv<T>" );
+                      "MPI_Gatherv<T>" )
     }
 }
 
@@ -1127,8 +1202,10 @@ void MPICommunicator::swapImpl( T val[], const IndexType n, PartitionId partner 
     MPI_Status mpiStatus;
     MPI_Datatype commType = getMPIType<T>();
     LAMA_MPICALL( logger,
-                  MPI_Sendrecv( tmp.get(), n, commType, partner, defaultTag, val, n, commType, partner, defaultTag, selectMPIComm(), &mpiStatus ),
-                  "MPI_Sendrecv" );
+                  MPI_Sendrecv( tmp.get(), n, commType, partner, defaultTag, 
+                                val, n, commType, partner, defaultTag, 
+                                selectMPIComm(), &mpiStatus ),
+                  "MPI_Sendrecv" )
     LAMA_ASSERT_ERROR( getCount<T>( mpiStatus ) == n, "size mismatch for swap" )
 }
 

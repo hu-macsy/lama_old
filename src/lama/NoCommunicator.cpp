@@ -80,6 +80,16 @@ PartitionId NoCommunicator::getRank() const
     return 0;
 }
 
+PartitionId NoCommunicator::getNodeSize() const
+{
+    return 1;
+}
+
+PartitionId NoCommunicator::getNodeRank() const
+{
+    return 0;
+}
+
 void NoCommunicator::all2all( int* recvValues, const int* sendValues ) const
 {
     recvValues[0] = sendValues[0];

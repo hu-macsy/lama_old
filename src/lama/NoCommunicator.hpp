@@ -65,6 +65,10 @@ public:
 
     virtual PartitionId getRank() const;
 
+    virtual PartitionId getNodeSize() const;
+
+    virtual PartitionId getNodeRank() const;
+
     virtual void all2all( int* recvValues, const int* sendValues ) const;
 
     virtual void exchangeByPlan(
