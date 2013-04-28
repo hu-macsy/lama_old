@@ -467,12 +467,10 @@ void DenseMatrix<ValueType>::invert( const Matrix& other )
 
     DistributionPtr tmpColDist( new NoDistribution( other.getNumColumns() ) );
 
-    if ( rowDist->isReplicated() )
+    if ( rowDist->isReplicated() || ( ! hasScalaPack() ) )
     {
         assign( other );
-        redistribute( rowDist, tmpColDist );
-        mData[0]->invert( *mData[0] );
-        redistribute( rowDist, colDist );
+        invertReplicated();
         return;
     }
 
@@ -494,6 +492,43 @@ void DenseMatrix<ValueType>::invert( const Matrix& other )
     assign( other );
     redistribute( tmpRowDist, tmpColDist );
     invertCyclic();
+    redistribute( rowDist, colDist );
+}
+
+/* ------------------------------------------------------------------ */
+
+template<typename ValueType>
+bool DenseMatrix<ValueType>::hasScalaPack()
+{
+    // check the LAMAInterface if ScalaPack is available ( at least on Host )
+
+    ContextPtr loc = ContextFactory::getContext( Context::Host );
+
+    typename BLASInterface::SCALAPACK<ValueType>::inverse 
+        inverse = loc->getInterface().BLAS.inverse<ValueType>();
+
+    return inverse != NULL;
+}
+
+/* ------------------------------------------------------------------ */
+
+template<typename ValueType>
+void DenseMatrix<ValueType>::invertReplicated()
+{
+    LAMA_REGION( "Mat.Dense.invertReplicated" )
+
+    DistributionPtr rowDist = getDistributionPtr();
+    DistributionPtr colDist = getColDistributionPtr();
+
+    DistributionPtr repRowDist( new NoDistribution( getNumRows() ) );
+    DistributionPtr repColDist( new NoDistribution( getNumColumns() ) );
+
+    redistribute( repRowDist, repColDist );
+
+    // now invert the dense matrix storage
+
+    mData[0]->invert( *mData[0] );
+
     redistribute( rowDist, colDist );
 }
 

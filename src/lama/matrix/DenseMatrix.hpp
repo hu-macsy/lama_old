@@ -650,9 +650,15 @@ private:
 
     void computeOwners();
 
+    /** @brief Predicate to check if SCALapack is supported via LAMAInterface. */
+
+    bool hasScalaPack();
+
     /** Special implementation of invert in place for a cyclic distributed matrix. */
 
     void invertCyclic();
+
+    void invertReplicated();
 };
 
 /*  template methods implementations */
