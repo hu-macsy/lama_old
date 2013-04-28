@@ -192,16 +192,23 @@ void COOStorage<ValueType>::setIdentity( const IndexType size )
     mNumColumns = size;
     mNumValues = mNumRows;
 
-    HostWriteOnlyAccess<IndexType> ia( mIa, mNumValues );
-    HostWriteOnlyAccess<IndexType> ja( mJa, mNumValues );
-    HostWriteOnlyAccess<ValueType> values( mValues, mNumValues );
+    ContextPtr loc = getContextPtr();
+
+    LAMA_INTERFACE_FN_T( setOrder, loc, Utils, Setter, IndexType )
+    LAMA_INTERFACE_FN_T( setVal, loc, Utils, Setter, ValueType )
+
+    WriteOnlyAccess<IndexType> ia( mIa, loc, mNumValues );
+    WriteOnlyAccess<IndexType> ja( mJa, loc, mNumValues );
+    WriteOnlyAccess<ValueType> values( mValues, loc, mNumValues );
 
     ValueType one = static_cast<ValueType>( 1.0 );
 
-    OpenMPUtils::setOrder( ia.get(), mNumValues );
-    OpenMPUtils::setOrder( ja.get(), mNumValues );
+    LAMA_CONTEXT_ACCESS( loc )
 
-    OpenMPUtils::setVal( values.get(), mNumValues, one );
+    setOrder( ia.get(), mNumValues );
+    setOrder( ja.get(), mNumValues );
+
+    setVal( values.get(), mNumValues, one );
 
     mDiagonalProperty = true;
 }
@@ -216,10 +223,18 @@ void COOStorage<ValueType>::buildCSR(
     LAMAArray<OtherValueType>* values,
     const ContextPtr /* loc */) const
 {
-    HostWriteOnlyAccess<IndexType> csrIA( ia, mNumRows + 1 );
-    HostReadAccess<IndexType> cooIA( mIa );
+    // multiple routines from interface needed, so do it on Host to be safe
 
-    OpenMPCOOUtils::getCSRSizes( csrIA.get(), mNumRows, mNumValues, cooIA.get() );
+    ContextPtr loc = ContextFactory::getContext( Context::Host );
+
+    LAMA_INTERFACE_FN( getCSRSizes, loc, COOUtils, Counting )
+    LAMA_INTERFACE_FN( sizes2offsets, loc, CSRUtils, Offsets )
+    LAMA_INTERFACE_FN_TT( getCSRValues, loc, COOUtils, Conversions, ValueType, OtherValueType )
+
+    WriteOnlyAccess<IndexType> csrIA( ia, loc, mNumRows + 1 );
+    ReadAccess<IndexType> cooIA( mIa, loc );
+
+    getCSRSizes( csrIA.get(), mNumRows, mNumValues, cooIA.get() );
 
     if ( ja == NULL || values == NULL )
     {
@@ -227,18 +242,18 @@ void COOStorage<ValueType>::buildCSR(
         return;
     }
 
-    IndexType numValues = OpenMPCSRUtils::sizes2offsets( csrIA.get(), mNumRows );
+    IndexType numValues = sizes2offsets( csrIA.get(), mNumRows );
 
     LAMA_ASSERT_EQUAL_DEBUG( mNumValues, numValues )
 
-    HostReadAccess<IndexType> cooJA( mJa );
-    HostReadAccess<ValueType> cooValues( mValues );
+    ReadAccess<IndexType> cooJA( mJa, loc );
+    ReadAccess<ValueType> cooValues( mValues, loc );
 
-    HostWriteOnlyAccess<IndexType> csrJA( *ja, numValues );
-    HostWriteOnlyAccess<OtherValueType> csrValues( *values, numValues );
+    WriteOnlyAccess<IndexType> csrJA( *ja, loc, numValues );
+    WriteOnlyAccess<OtherValueType> csrValues( *values, loc, numValues );
 
-    OpenMPCOOUtils::getCSRValues( csrJA.get(), csrValues.get(), csrIA.get(), mNumRows, mNumValues, cooIA.get(),
-                                  cooJA.get(), cooValues.get() );
+    getCSRValues( csrJA.get(), csrValues.get(), csrIA.get(), mNumRows, mNumValues, cooIA.get(),
+                  cooJA.get(), cooValues.get() );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -338,6 +353,8 @@ void COOStorage<ValueType>::writeAt( std::ostream& stream ) const
 template<typename ValueType>
 ValueType COOStorage<ValueType>::getValue( IndexType i, IndexType j ) const
 {
+    // only supported on Host at this time
+
     const HostReadAccess<IndexType> ia( mIa );
     const HostReadAccess<IndexType> ja( mJa );
     const HostReadAccess<ValueType> values( mValues );
@@ -500,35 +517,52 @@ void COOStorage<ValueType>::getRowImpl( LAMAArray<OtherType>& row, const IndexTy
 
 /* --------------------------------------------------------------------------- */
 
+// Note: template instantation of this method for OtherType=[double,float] is
+//       done implicitly by getDiagonal method of CRTPMatrixStorage
+
 template<typename ValueType>
 template<typename OtherType>
 void COOStorage<ValueType>::getDiagonalImpl( LAMAArray<OtherType>& diagonal ) const
 {
-    IndexType numDiagonalElements = std::min( mNumColumns, mNumRows );
+    const IndexType numDiagonalElements = std::min( mNumColumns, mNumRows );
 
-    HostWriteOnlyAccess<OtherType> wDiagonal( diagonal, numDiagonalElements );
+    ContextPtr loc = getContextPtr();
 
-    HostReadAccess<ValueType> rValues( mValues );
+    LAMA_INTERFACE_FN_TT( set, loc, Utils, Copy, OtherType, ValueType )
+
+    WriteOnlyAccess<OtherType> wDiagonal( diagonal, loc, numDiagonalElements );
+    ReadAccess<ValueType> rValues( mValues, loc );
+
+    LAMA_CONTEXT_ACCESS( loc )
 
     // diagonal elements are the first entries of mValues
 
-    OpenMPUtils::set( wDiagonal.get(), rValues.get(), numDiagonalElements );
+    set( wDiagonal.get(), rValues.get(), numDiagonalElements );
 }
 
 /* --------------------------------------------------------------------------- */
+
+// Note: template instantation of this method for OtherType=[double,float] is
+//       done implicitly by setDiagonal method of CRTPMatrixStorage
 
 template<typename ValueType>
 template<typename OtherType>
 void COOStorage<ValueType>::setDiagonalImpl( const LAMAArray<OtherType>& diagonal )
 {
-    IndexType numDiagonalElements = std::min( mNumColumns, mNumRows );
+    const IndexType numDiagonalElements = std::min( mNumColumns, mNumRows );
 
-    HostReadAccess<OtherType> rDiagonal( diagonal );
-    HostWriteAccess<ValueType> wValues( mValues );
+    ContextPtr loc = getContextPtr();
+
+    LAMA_INTERFACE_FN_TT( set, loc, Utils, Copy, ValueType, OtherType )
+
+    ReadAccess<OtherType> rDiagonal( diagonal, loc );
+    WriteAccess<ValueType> wValues( mValues, loc );
+
+    LAMA_CONTEXT_ACCESS( loc )
 
     // diagonal elements are the first entries of mValues
 
-    OpenMPUtils::set( wValues.get(), rDiagonal.get(), numDiagonalElements );
+    set( wValues.get(), rDiagonal.get(), numDiagonalElements );
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */
