@@ -42,6 +42,8 @@
 
 #elif defined( WIN32 )
 
+#include <windows.h>
+
 #else
 
 #include <sys/time.h>  

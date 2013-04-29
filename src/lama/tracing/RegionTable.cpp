@@ -48,28 +48,6 @@
 namespace tracing
 {
 
-static double walltime()
-{
-
-#ifdef WIN32
-
-    SYSTEMTIME lpSystemTime;
-    GetLocalTime( &lpSystemTime );
-    return ( lpSystemTime.wHour * 60.0 + lpSystemTime.wMinute ) * 60.0 +
-           lpSystemTime.wSecond + lpSystemTime.wMilliseconds * 0.001;
-
-#else
-
-    struct timeval tp;
-    struct timezone tzp;
-
-    gettimeofday( &tp, &tzp );
-
-    return (double) tp.tv_sec + tp.tv_usec * 0.000001;
-
-#endif //WIN32
-}
-
 /* -------------------------------------------------------------------------- */
 
 static boost::mutex printMutex; // needed to avoid mixing output of threads
@@ -192,7 +170,7 @@ double RegionTable::elapsed( int regionId )
 
         if ( call.mRegion == regionId )
         {
-            elapsedTime += walltime() - call.mTimeStart;
+            elapsedTime += lama::Walltime::get() - call.mTimeStart;
         }
     }
 
