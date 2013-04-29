@@ -413,9 +413,6 @@ DenseVector<T>::DenseVector( const IndexType size, const OtherValueType* values 
     // Halo is not used yet
 }
 
-template<typename T>
-DenseVector<T>::DenseVector( const DenseVector<T>& other );
-
 }
 
 #endif // LAMA_DENSE_VECTOR_HPP_
