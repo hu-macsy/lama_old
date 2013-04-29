@@ -61,7 +61,7 @@ You can set the variable explicitly with the default value::
 
     export LAMA_LOG=WARN
     
-For other useful environment variables see doc:`here <environmentVariables>`.
+For other useful environment variables see :doc:`here <environmentVariables>`.
 
 Now the output should be as follows::
 
