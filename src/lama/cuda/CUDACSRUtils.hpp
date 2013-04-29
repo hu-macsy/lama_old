@@ -88,7 +88,7 @@ public:
         const IndexType csrIA[],
         const IndexType csrJA[],
         const ValueType csrValues[],
-        class SyncToken* syncToken );
+        SyncToken* syncToken );
 
     /** Implementation for CSRUtilsInterface::Mult::sparseGEMV  */
 
@@ -102,7 +102,7 @@ public:
         const IndexType csrIA[],
         const IndexType csrJA[],
         const ValueType csrValues[],
-        class SyncToken* syncToken );
+        SyncToken* syncToken );
 
     /** Implementation for CSRUtilsInterface::Solver::jacobi  */
 
@@ -116,7 +116,7 @@ public:
         const ValueType oldSolution[],
         const ValueType omega,
         const IndexType numRows,
-        class SyncToken* syncToken );
+        SyncToken* syncToken );
 
     /** Implementation for CSRUtilsInterface::Solver::jacobiHalo  */
 

@@ -38,7 +38,6 @@
 
 // others
 #include <lama/LAMATypes.hpp>
-#include <lama/SyncToken.hpp>
 #include <lama/Scalar.hpp>
 
 // logging
@@ -46,6 +45,8 @@
 
 namespace lama
 {
+
+class SyncToken;   // forward declaration
 
 /** This class provides CUDA parallelized routines needed for JDS format.
  *
@@ -207,7 +208,7 @@ public:
         const IndexType jdsDLG[],
         const IndexType jdsJA[],
         const ValueType jdsValues[],
-        class SyncToken* syncToken );
+        SyncToken* syncToken );
 
     /** Routine that registers all routines of this class at the LAMA interface. */
 

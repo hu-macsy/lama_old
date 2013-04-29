@@ -1224,7 +1224,7 @@ void CUDAJDSUtils::normalGEMV(
     const IndexType jdsDLG[],
     const IndexType jdsJA[],
     const ValueType jdsValues[],
-    class SyncToken* /* syncToken */)
+    SyncToken* /* syncToken */)
 {
 
     LAMA_LOG_INFO( logger, "normalGEMV<" << typeid(ValueType).name() << ">" << ", #rows = " << numRows )

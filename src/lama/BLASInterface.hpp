@@ -44,6 +44,8 @@
 namespace lama
 {
 
+class SyncToken;   // forward declaration
+
 /** Interface struct for BLAS routines.
  *
  *  This interface contains function pointer type definitions for all used routines
@@ -82,7 +84,7 @@ struct BLASInterface
                                  const ValueType alpha, 
                                  ValueType* x, 
                                  const IndexType incX, 
-                                 class SyncToken* syncToken );
+                                 SyncToken* syncToken );
 
         /**
          * @brief nrm2 computes the Euclidean norm of the n-vector x
@@ -98,7 +100,7 @@ struct BLASInterface
         typedef ValueType ( *nrm2 ) ( const IndexType n, 
                                       const ValueType* x, 
                                       const IndexType incX, 
-                                      class SyncToken* syncToken );
+                                      SyncToken* syncToken );
 
         /**
          * @brief asum computes the sum of the absolute values of the elements
@@ -169,7 +171,7 @@ struct BLASInterface
                                 const IndexType incX,
                                 ValueType* y,
                                 const IndexType incY,
-                                class SyncToken* syncToken );
+                                SyncToken* syncToken );
     
         /**
          * @brief axpy multiplies vector x by scalar alpha and
@@ -191,7 +193,7 @@ struct BLASInterface
                                 const IndexType incX,
                                 ValueType* y,
                                 const IndexType incY,
-                                class SyncToken* syncToken );
+                                SyncToken* syncToken );
     
         /**
          * @brief dot computes the dot product of two vectors.
@@ -213,7 +215,7 @@ struct BLASInterface
                                     const IndexType incX,
                                     const ValueType* y,
                                     const IndexType inc,
-                                    class SyncToken* syncToken );
+                                    SyncToken* syncToken );
     
         /**  sum: z = alpha * x + beta * y */
         typedef void ( *sum ) ( const IndexType n, 
@@ -222,7 +224,7 @@ struct BLASInterface
                                 ValueType beta, 
                                 const ValueType* y, 
                                 ValueType* z, 
-                                class SyncToken* syncToken );
+                                SyncToken* syncToken );
     
         /**
          * @brief ass The function ass() assigns one scalar value to a vector of the given size.
@@ -231,7 +233,7 @@ struct BLASInterface
          * @param[in] value     scalar value, which should be assign to the whole vector
          * @param[out] x        vector, the values should be assigned to
          */
-         typedef void ( *ass ) ( const IndexType n, const ValueType value, ValueType *x, class SyncToken* syncToken );
+         typedef void ( *ass ) ( const IndexType n, const ValueType value, ValueType *x, SyncToken* syncToken );
     
     };
 
@@ -297,7 +299,7 @@ struct BLASInterface
                                  const ValueType beta,
                                  ValueType *y,
                                  const IndexType incY,
-                                 class SyncToken* syncToken );
+                                 SyncToken* syncToken );
     };
     
     LAMA_INTERFACE_DEFINE_T( BLAS2, gemv )
@@ -373,7 +375,7 @@ struct BLASInterface
                                  const ValueType beta, 
                                  ValueType* C, 
                                  const IndexType ldc, 
-                                 class SyncToken* syncToken );
+                                 SyncToken* syncToken );
     
     };
 
@@ -529,7 +531,7 @@ struct BLASInterface
                                   const IndexType k2,   
                                   const IndexType* ipiv,   
                                   const IndexType incx,   
-                                  class SyncToken* syncToken);
+                                  SyncToken* syncToken);
     };
 
     LAMA_INTERFACE_DEFINE_T( LAPACK, getrf )

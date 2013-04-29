@@ -43,6 +43,8 @@
 namespace lama
 {
 
+class SyncToken;  // forward declaration 
+
 /** Structure with pointers for all Utils methods. */
 
 struct UtilsInterface
@@ -247,7 +249,7 @@ struct CSRUtilsInterface
                                   const ValueType rhs[],
                                   const ValueType omega,
                                   const IndexType numRows,
-                                  class SyncToken* syncToken );
+                                  SyncToken* syncToken );
 
         /** Method to compute one iteration step in Jacobi method
          *
@@ -481,7 +483,7 @@ struct CSRUtilsInterface
                                        const IndexType csrIA[],
                                        const IndexType csrJA[],
                                        const ValueType csrValues[],
-                                       class SyncToken* syncToken );
+                                       SyncToken* syncToken );
 
         /** result = alpha * CSR-Matrix * x, CSR matrix has only some non-zero rows
          *
@@ -505,7 +507,7 @@ struct CSRUtilsInterface
                                        const IndexType csrIA[],
                                        const IndexType csrJA[],
                                        const ValueType csrValues[],
-                                       class SyncToken* syncToken );
+                                       SyncToken* syncToken );
 
         /**  This method computes result = alpha * CSR * x + beta * y  with dense result, x, y
          *
@@ -531,7 +533,7 @@ struct CSRUtilsInterface
                                  const IndexType csrIA[],
                                  const IndexType csrJA[],
                                  const ValueType csrValues[],
-                                 class SyncToken* syncToken );
+                                 SyncToken* syncToken );
 
         /** computes c = alpha * a + beta * b for CSR sparse matrices a, b, c
          *
@@ -758,7 +760,7 @@ struct DenseUtilsInterface
                                        const IndexType numRows,
                                        const IndexType numColumns,
                                        const ValueType denseValues[],
-                                       class SyncToken* syncToken );
+                                       SyncToken* syncToken );
     };
 
     LAMA_INTERFACE_DEFINE_T( Mult, normalGEMV )
@@ -803,7 +805,7 @@ struct ELLUtilsInterface
                                    const ValueType oldSolution[],
                                    const ValueType rhs[],
                                    const ValueType omega,
-                                   class SyncToken* syncToken );
+                                   SyncToken* syncToken );
 
         typedef void ( *jacobiHalo ) (ValueType solution[],
                                       const IndexType numRows,
@@ -816,7 +818,7 @@ struct ELLUtilsInterface
                                       const IndexType numNonEmptyRows,
                                       const ValueType oldSolution[],
                                       const ValueType omega,
-                                      class SyncToken* syncToken );
+                                      SyncToken* syncToken );
     };
 
     LAMA_INTERFACE_DEFINE_T( Solver, jacobi )
@@ -1003,7 +1005,7 @@ struct ELLUtilsInterface
                                        const IndexType ellIA[],
                                        const IndexType ellJA[],
                                        const ValueType ellValues[],
-                                       class SyncToken* syncToken );
+                                       SyncToken* syncToken );
 
         /** result = alpha * ELL-Matrix * x, CSR matrix has only some non-zero rows
          *
@@ -1029,7 +1031,7 @@ struct ELLUtilsInterface
                                        const IndexType ellIA[],
                                        const IndexType ellJA[],
                                        const ValueType ellValues[],
-                                       class SyncToken* syncToken );
+                                       SyncToken* syncToken );
     };
 
     LAMA_INTERFACE_DEFINE_T( Mult, normalGEMV )
@@ -1200,7 +1202,7 @@ struct JDSUtilsInterface
                                   const ValueType oldSolution[],
                                   const ValueType rhs[],
                                   const ValueType omega,
-                                  class SyncToken* syncToken );
+                                  SyncToken* syncToken );
 
         /** Method to compute one iteration step in Jacobi method with halo.  */
 
@@ -1215,7 +1217,7 @@ struct JDSUtilsInterface
                                        const ValueType jdsHaloValues[],
                                        const ValueType oldSolution[],
                                        const ValueType omega,
-                                       class SyncToken* syncToken );
+                                       SyncToken* syncToken );
     };
 
     LAMA_INTERFACE_DEFINE_T( Solver, jacobi )
@@ -1371,7 +1373,7 @@ struct JDSUtilsInterface
                                        const IndexType jdsDLG[],
                                        const IndexType jdsJA[],
                                        const ValueType jdsValues[],
-                                       class SyncToken* syncToken );
+                                       SyncToken* syncToken );
     };
 
     LAMA_INTERFACE_DEFINE_T( Mult, normalGEMV )
@@ -1551,7 +1553,7 @@ struct DIAUtilsInterface
                                        const IndexType numDiagonals,
                                        const IndexType diaOffsets[],
                                        const ValueType diaValues[],
-                                       class SyncToken* syncToken );
+                                       SyncToken* syncToken );
     };
 
     LAMA_INTERFACE_DEFINE_T( Mult, normalGEMV )
@@ -1575,7 +1577,7 @@ struct DIAUtilsInterface
                                   const ValueType rhs[],
                                   const ValueType omega,
                                   const IndexType numRows,
-                                  class SyncToken* syncToken );
+                                  SyncToken* syncToken );
     };
 
     LAMA_INTERFACE_DEFINE_T( Solver, jacobi )
@@ -1704,7 +1706,7 @@ struct COOUtilsInterface
                                        const IndexType cooJA[],
                                        const ValueType cooValues[],
                                        const IndexType numValues,
-                                       class SyncToken* syncToken );
+                                       SyncToken* syncToken );
     };
 
     LAMA_INTERFACE_DEFINE_T( Mult, normalGEMV )
@@ -1727,7 +1729,7 @@ struct COOUtilsInterface
                                   const ValueType rhs[],
                                   const ValueType omega,
                                   const IndexType numRows,
-                                  class SyncToken* syncToken );
+                                  SyncToken* syncToken );
 
         /** Method to compute one iteration step in Jacobi method
          *

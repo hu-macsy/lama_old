@@ -38,13 +38,14 @@
 
 // others
 #include <lama/LAMATypes.hpp>
-#include <lama/SyncToken.hpp>
 
 #include <cublas.h>
 #include <cuda_runtime_api.h>
 
 namespace lama
 {
+
+class SyncToken;    // forward declaration
 
 class LAMA_DLL_IMPORTEXPORT CUDABLAS1
 {
@@ -71,31 +72,31 @@ private:
      * This function is the CUDA implementation of lama::BLAS1Interface::scal
      */
     template<typename T>
-    static void scal( const IndexType n, const T alpha, T* x, const IndexType incX, class SyncToken* syncToken );
+    static void scal( const IndexType n, const T alpha, T* x, const IndexType incX, SyncToken* syncToken );
 
     /**
      * This function is the CUDA implementation of lama::BLAS1Interface::nrm2
      */
     template<typename T>
-    static T nrm2( const IndexType n, const T* x, const IndexType incX, class SyncToken* syncToken );
+    static T nrm2( const IndexType n, const T* x, const IndexType incX, SyncToken* syncToken );
 
     /**
      * This function is the CUDA implementation of lama::BLAS1Interface::asum
      */
     template<typename T>
-    static T asum( const IndexType n, const T* x, const IndexType incX, class SyncToken* syncToken );
+    static T asum( const IndexType n, const T* x, const IndexType incX, SyncToken* syncToken );
 
     /**
      * This function is the CUDA implementation of lama::BLAS1Interface::iamax
      */
     template<typename T>
-    static IndexType iamax( const IndexType n, const T* x, const IndexType incX, class SyncToken* syncToken );
+    static IndexType iamax( const IndexType n, const T* x, const IndexType incX, SyncToken* syncToken );
 
     /**
      * This function is the CUDA implementation of lama::BLAS1Interface::swap
      */
     template<typename T>
-    static void swap( const IndexType n, T* y, const IndexType incY, T* x, const IndexType incX, class SyncToken* syncToken );
+    static void swap( const IndexType n, T* y, const IndexType incY, T* x, const IndexType incX, SyncToken* syncToken );
 
     /**
      * This function is the CUDA implementation of lama::BLAS1Interface::copy
@@ -107,7 +108,7 @@ private:
         const IndexType incX,
         T* y,
         const IndexType incY,
-        class SyncToken* syncToken );
+        SyncToken* syncToken );
 
     /**
      * This function is the CUDA implementation of lama::BLAS1Interface::axpy
@@ -120,7 +121,7 @@ private:
         const IndexType incX,
         T* y,
         const IndexType incY,
-        class SyncToken* syncToken );
+        SyncToken* syncToken );
 
     /**
      * This function is the CUDA implementation of lama::BLAS1Interface::dot
@@ -132,13 +133,13 @@ private:
         const IndexType incX,
         const T* y,
         const IndexType incY,
-        class SyncToken* syncToken );
+        SyncToken* syncToken );
 
     /**
      * This function is the CUDA implementation of lama::BLAS1Interface::sum
      */
     template<typename T>
-    static void sum( const IndexType n, T alpha, const T* x, T beta, const T* y, T* z, class SyncToken* syncToken );
+    static void sum( const IndexType n, T alpha, const T* x, T beta, const T* y, T* z, SyncToken* syncToken );
 
     /**
      * This function is the CUDA implementation of lama::BLAS1Interface::rot
@@ -152,7 +153,7 @@ private:
         const IndexType incY,
         const T c,
         const T s,
-        class SyncToken* syncToken );
+        SyncToken* syncToken );
 
     /**
      * This function is the CUDA implementation of lama::BLAS1Interface::rotm
@@ -165,19 +166,19 @@ private:
         T* y,
         const IndexType incY,
         const T* P,
-        class SyncToken* syncToken );
+        SyncToken* syncToken );
 
     /**
      * This function is the CUDA implementation of lama::BLAS1Interface::ass
      */
     template<typename T>
-    static void ass( const IndexType n, const T value, T* x, class SyncToken* syncToken );
+    static void ass( const IndexType n, const T value, T* x, SyncToken* syncToken );
 
     /**
      * This function is the CUDA implementation of lama::BLAS1Interface::viamax
      */
     template<typename T>
-    static T viamax( const IndexType n, const T* x_d, const IndexType incx, class SyncToken* syncToken );
+    static T viamax( const IndexType n, const T* x_d, const IndexType incx, SyncToken* syncToken );
 
 private:
 

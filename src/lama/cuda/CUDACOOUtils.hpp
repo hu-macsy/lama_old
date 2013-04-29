@@ -45,6 +45,8 @@
 namespace lama
 {
 
+class SyncToken;
+
 /** This class provides CUDA parallelized routines needed for COO format.
  *
  */
@@ -67,7 +69,7 @@ public:
         const IndexType cooJA[],
         const ValueType cooValues[],
         const IndexType numValues,
-        class SyncToken* syncToken );
+        SyncToken* syncToken );
 
     /** Routine that registers all routines of this class at the LAMA interface. */
 

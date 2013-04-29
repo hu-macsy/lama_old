@@ -38,13 +38,14 @@
 
 // others
 #include <lama/LAMATypes.hpp>
-#include <lama/SyncToken.hpp>
 
 // logging
 #include <logging/logging.hpp>
 
 namespace lama
 {
+
+class SyncToken;   // forward declaration 
 
 /** This class provides routines on compressed sparse row data
  */
@@ -194,7 +195,7 @@ public:
         const IndexType csrIA[],
         const IndexType csrJA[],
         const ValueType csrValues[],
-        class SyncToken* syncToken );
+        SyncToken* syncToken );
 
     /** Implementation for CSRUtilsInterface::Jacobi::jacobi(Async/Halo) */
 

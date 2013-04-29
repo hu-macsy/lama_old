@@ -43,6 +43,8 @@
 namespace lama
 {
 
+class SyncToken;   // forward declaration
+
 class LAMA_DLL_IMPORTEXPORT CUDALAPACK
 {
 public:
@@ -72,7 +74,7 @@ private:
         const IndexType k2,
         const IndexType* ipiv,
         const IndexType incx,
-        class SyncToken* syncToken );
+        SyncToken* syncToken );
 };
 
 } /* namespace lama */

@@ -942,7 +942,7 @@ void CUDAELLUtils::jacobi(
     const ValueType oldSolution[],
     const ValueType rhs[],
     const ValueType omega,
-    class SyncToken* syncToken )
+    SyncToken* syncToken )
 {
 
     LAMA_LOG_INFO( logger, "jacobi, #rows = " << numRows )
