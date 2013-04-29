@@ -52,8 +52,6 @@
 // boost
 #include <boost/scoped_array.hpp>
 
-#include <omp.h>
-
 #include <typeinfo>
 
 namespace lama

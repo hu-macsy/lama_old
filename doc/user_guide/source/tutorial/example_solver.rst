@@ -19,7 +19,7 @@ Method.
          "<CG>: ",
          LogLevel::solverInformation,
          LoggerWriteBehaviour::toConsoleOnly,
-         std::auto_ptr<Timer>( new OpenMPTimer() ) ) );
+         std::auto_ptr<Timer>( new Timer() ) ) );
 
    CriterionPtr criterion( new IterationCount( 10 ) );
 

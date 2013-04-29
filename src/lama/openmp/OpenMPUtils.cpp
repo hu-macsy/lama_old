@@ -38,7 +38,6 @@
 #include <lama/LAMAInterfaceRegistry.hpp>
 
 #include <typeinfo>
-#include <omp.h>
 
 namespace lama
 {

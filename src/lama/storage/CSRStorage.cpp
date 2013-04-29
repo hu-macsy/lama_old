@@ -604,7 +604,7 @@ void CSRStorage<ValueType>::writeAt( std::ostream& stream ) const
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-ValueType CSRStorage<ValueType>::getValue( IndexType i, IndexType j ) const
+ValueType CSRStorage<ValueType>::getValue( const IndexType i, const IndexType j ) const
 {
     LAMA_LOG_TRACE( logger, "get value (" << i << ", " << j << ")" )
     const HostReadAccess<IndexType> ia( mIa );

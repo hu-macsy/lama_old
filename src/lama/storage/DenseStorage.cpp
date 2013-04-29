@@ -912,7 +912,7 @@ void DenseStorageView<ValueType>::writeAt( std::ostream& stream ) const
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-ValueType DenseStorageView<ValueType>::getValue( IndexType i, IndexType j ) const
+ValueType DenseStorageView<ValueType>::getValue( const IndexType i, const IndexType j ) const
 {
     const HostReadAccess<ValueType> data( mData );
     LAMA_LOG_TRACE( logger,

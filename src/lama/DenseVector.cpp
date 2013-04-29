@@ -1464,6 +1464,23 @@ void DenseVector<T>::readVectorDataFromBinaryFile( std::fstream &inFile, const l
 
 /* ---------------------------------------------------------------------------------*/
 
+template<typename T>
+DenseVector<T>::DenseVector( const DenseVector<T>& other )
+
+    : Vector( other )
+
+{
+    // implementation here can be simpler as DenseVector( const Vector& other )
+
+    LAMA_LOG_INFO( logger,
+                   "Copy of vector of global size " << size() << ", local size " << getDistribution().getLocalSize() )
+
+    mLocalValues = other.getLocalValues();
+}
+
+/* ---------------------------------------------------------------------------------*/
+
+
 // Template instantiation for all relevant types
 template class LAMA_DLL_IMPORTEXPORT DenseVector<float> ;
 template class LAMA_DLL_IMPORTEXPORT DenseVector<double> ;

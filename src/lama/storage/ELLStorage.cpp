@@ -692,7 +692,7 @@ void ELLStorage<ValueType>::writeAt( std::ostream& stream ) const
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-ValueType ELLStorage<ValueType>::getValue( IndexType i, IndexType j ) const
+ValueType ELLStorage<ValueType>::getValue( const IndexType i, const IndexType j ) const
 {
     LAMA_LOG_TRACE( logger, "get value (" << i << ", " << j << ")" )
     LAMA_LOG_TRACE( logger, "sizes: ia = " << mIA.size() << ", ja = " << mJA.size() << ", data = " << mValues.size() )

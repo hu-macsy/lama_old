@@ -46,7 +46,6 @@
 // boost
 #include <boost/scoped_array.hpp>
 
-#include <omp.h>
 #include <cmath>
 #include <typeinfo>
 

@@ -39,13 +39,13 @@
 #include "TestMacros.hpp"
 
 //Adding support for Timers under Windows
-#ifdef WIN32
+#ifdef _WIN32
 #include <windows.h>
 inline void usleep(int t)
 {
     Sleep(t/1000);
 }
-#elif WIN32
+#elif _WIN32
 #include <unistd.h>
 #endif
 

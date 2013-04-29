@@ -40,12 +40,6 @@
 
 #include <cstdio>
 
-#ifdef WIN32
-#include <Windows.h>
-#else
-#include <sys/time.h>
-#endif
-
 namespace tracing
 {
 

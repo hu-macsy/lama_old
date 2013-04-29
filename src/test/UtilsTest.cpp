@@ -121,19 +121,15 @@ void sumTest( ContextPtr loc )
     }
 
     {
-        ValueType valuesValues[] =
-            { };
-        const IndexType nValues = 0;
-
         const ValueType expectedSum = 0;
 
-        LAMAArray<ValueType> values( nValues, valuesValues );
+        LAMAArray<ValueType> values;
 
         ReadAccess<ValueType> rValues( values, loc );
 
         LAMA_CONTEXT_ACCESS( loc );
 
-        const ValueType resultSum = sum( rValues.get(), nValues );
+        const ValueType resultSum = sum( rValues.get(), values.size() );
 
         BOOST_CHECK_EQUAL( expectedSum, resultSum );
     }
