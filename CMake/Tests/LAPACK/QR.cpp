@@ -100,7 +100,7 @@ float* randomnumber( float* A, int seed, int m, int n )
     for ( int i = 0; i < m * n; ++i )
     {
         curr = ( a * curr + b ) % c;
-        A[i] = 10 * ( float( curr ) / c - 0.5 );
+        A[i] = 10.0f * ( float( curr ) / float( c ) - 0.5f );
     }
 
     return A;
