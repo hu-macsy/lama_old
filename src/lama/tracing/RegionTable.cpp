@@ -36,6 +36,7 @@
 
 // others
 #include <lama/tracing/VTInterface.hpp>
+#include <lama/Walltime.hpp>
 
 #include <cstdio>
 
