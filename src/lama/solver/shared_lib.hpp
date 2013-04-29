@@ -34,16 +34,17 @@
 #ifndef LAMA_SHARED_LIB_HPP_
 #define LAMA_SHARED_LIB_HPP_
 
-#ifdef WIN32
-#include <Windows.h>
-#define LAMA_LIB_HANDLE_TYPE HINSTANCE
-#ifdef max
-#undef max
-#endif
+#ifdef _WIN32
+    #include <Windows.h>
+    #define LAMA_LIB_HANDLE_TYPE HINSTANCE
+    #ifdef max
+        #undef max
+    #endif
 #else
-#include <dlfcn.h>
-#define LAMA_LIB_HANDLE_TYPE void*
-#endif //WIN32
+    #include <dlfcn.h>
+    #define LAMA_LIB_HANDLE_TYPE void*
+#endif // _WIN32
+
 #include <string>
 #include <vector>
 #include <sstream>
@@ -52,7 +53,7 @@
 template<typename FunctionHandleType>
 int loadLibAndGetFunctionHandle( FunctionHandleType& functionHandle, LAMA_LIB_HANDLE_TYPE& handle, const char* const filename, const char* const functionName )
 {
-#ifdef WIN32
+#ifdef _WIN32
     handle = LoadLibrary( filename );
     if( !handle )
     {
@@ -105,7 +106,7 @@ int loadLibAndGetFunctionHandle( FunctionHandleType& functionHandle, LAMA_LIB_HA
 template<typename FunctionHandleType>
 int getFunctionHandle( FunctionHandleType& functionHandle, LAMA_LIB_HANDLE_TYPE& handle, const char* const functionName )
 {
-#ifdef WIN32
+#ifdef _WIN32
     functionHandle = ( FunctionHandleType ) GetProcAddress ( handle , functionName );
 
     if( !functionHandle )
@@ -136,7 +137,7 @@ int getFunctionHandle( FunctionHandleType& functionHandle, LAMA_LIB_HANDLE_TYPE&
 
 inline void freeLibHandle( LAMA_LIB_HANDLE_TYPE handle )
 {
-#ifdef WIN32
+#ifdef _WIN32
     FreeLibrary( handle );
 #else
     dlclose( handle );
