@@ -54,7 +54,7 @@ include ( CheckCCompilerFlag )
 #### compiler independent flag definition ####
 
 # standard compiler flags
-set ( CMAKE_CXX_FLAGS "-fPIC ${COVERAGE_FLAGS}" )
+set ( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${COVERAGE_FLAGS}" )
 
 # default warning flags
 set ( CXX_WARNING_FLAGS "" )
@@ -79,7 +79,7 @@ endif ( CMAKE_COMPILER_IS_GNUCXX )
 
 # INTEL
 if ( CMAKE_CXX_COMPILER_ID MATCHES Intel )
-    set ( ADDITIONAL_CXX_FLAGS "-std=c++0x -shared-intel -wd1478 " ) #suppress warning 1478: deprecated auto_ptr
+    set ( ADDITIONAL_CXX_FLAGS "-fPIC -std=c++0x -shared-intel -wd1478 " ) #suppress warning 1478: deprecated auto_ptr
     set ( ADDITIONAL_CXX_WARNING_FLAGS "-w2 -Wall -Wcheck -Werror-all " ) # -Werror-all Warnings/Errors. No Remarks.
     set ( ADDITIONAL_CXX_RELEASE_FLAGS "-ipo -no-prec-div -xHost " )
 endif ( CMAKE_CXX_COMPILER_ID MATCHES Intel )
@@ -87,7 +87,7 @@ endif ( CMAKE_CXX_COMPILER_ID MATCHES Intel )
 
 # PGI
 if ( CMAKE_CXX_COMPILER_ID MATCHES PGI )
-    set ( ADDITIONAL_CXX_FLAGS "-Kieee -Mipa=libc -DBOOST_HAS_THREADS " ) # -std=c++0x 
+    set ( ADDITIONAL_CXX_FLAGS "-fPIC -Kieee -Mipa=libc -DBOOST_HAS_THREADS " ) # -std=c++0x 
     # Disable warning 1097 to avoid warnings from openmpi headers with gcc specific attributes
     set ( ADDITIONAL_CXX_WARNING_FLAGS "--display_error_number --diag_suppress1097 " )
     set ( ADDITIONAL_CXX_RELEASE_FLAGS "-fast " )
