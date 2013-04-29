@@ -30,8 +30,8 @@
  * @date 02.07.2012
  * $Id$
  */
-#ifndef LAMA_OPENMPLAPACK_HPP_
-#define LAMA_OPENMPLAPACK_HPP_
+#ifndef LAMA_OPENMP_LAPACK_HPP_
+#define LAMA_OPENMP_LAPACK_HPP_
 
 // for dll_import
 #include <lama/config.hpp>
@@ -44,8 +44,6 @@
 
 // logging
 #include <logging/logging.hpp>
-
-#include <omp.h>
 
 namespace lama
 {
@@ -129,4 +127,4 @@ private:
 
 } /* namespace lama */
 
-#endif // LAMA_OPENMPLAPACK_HPP_
+#endif // LAMA_OPENMP_LAPACK_HPP_
