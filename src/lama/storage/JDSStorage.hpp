@@ -277,7 +277,7 @@ public:
      * Out-of-range check is enabled for DEBUG version.
      */
 
-    ValueType getValue( IndexType i, IndexType j ) const;
+    ValueType getValue( const IndexType i, const IndexType j ) const;
 
     /** Initiate an asynchronous data transfer to a specified location. */
 

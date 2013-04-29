@@ -843,7 +843,7 @@ void JDSStorage<ValueType>::writeAt( std::ostream& stream ) const
 /* ------------------------------------------------------------------------------------------------------------------ */
 
 template<typename ValueType>
-ValueType JDSStorage<ValueType>::getValue( IndexType i, IndexType j ) const
+ValueType JDSStorage<ValueType>::getValue( const IndexType i, const IndexType j ) const
 {
     LAMA_LOG_TRACE( logger, "get value (" << i << ", " << j << ") from " << *this )
 

@@ -684,7 +684,7 @@ ValueType DIAStorage<ValueType>::maxNorm() const
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-ValueType DIAStorage<ValueType>::getValue( IndexType i, IndexType j ) const
+ValueType DIAStorage<ValueType>::getValue( const IndexType i, const IndexType j ) const
 {
     LAMA_LOG_DEBUG( logger, "get value (" << i << ", " << j << ") from " << *this )
 

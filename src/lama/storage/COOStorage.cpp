@@ -351,7 +351,7 @@ void COOStorage<ValueType>::writeAt( std::ostream& stream ) const
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-ValueType COOStorage<ValueType>::getValue( IndexType i, IndexType j ) const
+ValueType COOStorage<ValueType>::getValue( const IndexType i, const IndexType j ) const
 {
     // only supported on Host at this time
 

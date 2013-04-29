@@ -616,7 +616,7 @@ public:
      * @throw Exception out-of-range is enabled for ASSERT_LEVEL=DEBUG.
      */
 
-    virtual ValueType getValue( IndexType i, IndexType j ) const = 0;
+    virtual ValueType getValue( const IndexType i, const IndexType j ) const = 0;
 
     /**
      *  This method builds CSC sparse data (column sizes, row indexes and data values) for a matrix storage.
