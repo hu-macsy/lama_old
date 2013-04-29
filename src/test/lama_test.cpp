@@ -31,9 +31,7 @@
  * $
  **/
 
-#ifndef WIN32
 #define BOOST_TEST_NO_MAIN
-#endif //WIN32
 #define BOOST_TEST_MODULE lama_test
 
 #include <boost/test/included/unit_test.hpp>
@@ -49,7 +47,7 @@
 #include <string>
 #include <map>
 
-#include <stdio.h>
+#include <cstdio>
 
 using namespace boost;
 

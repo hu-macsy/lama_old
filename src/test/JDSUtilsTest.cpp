@@ -340,27 +340,14 @@ void checkDiagonalPropertyTest( ContextPtr loc )
 
     // check with empty matrix
     {
-        IndexType valuesJa[] =
-            { };
-        const IndexType nJa = sizeof( valuesJa ) / sizeof(IndexType);
-        IndexType valuesDlg[] =
-            { };
-        const IndexType nDlg = sizeof( valuesDlg ) / sizeof(IndexType);
-        IndexType valuesIlg[] =
-            { };
-        const IndexType nIlg = sizeof( valuesIlg ) / sizeof(IndexType);
-        IndexType valuesPerm[] =
-            { };
-        const IndexType nPerm = sizeof( valuesPerm ) / sizeof(IndexType);
-
         const IndexType numRows = 0;
         const IndexType numColumns = 0;
         const IndexType numDiagonals = 0;
 
-        LAMAArray<IndexType> ja( nJa, valuesJa );
-        LAMAArray<IndexType> dlg( nDlg, valuesDlg );
-        LAMAArray<IndexType> ilg( nIlg, valuesIlg );
-        LAMAArray<IndexType> perm( nPerm, valuesPerm );
+        LAMAArray<IndexType> ja;
+        LAMAArray<IndexType> dlg;
+        LAMAArray<IndexType> ilg;
+        LAMAArray<IndexType> perm;
 
         ReadAccess<IndexType> rJa( ja, loc );
         ReadAccess<IndexType> rDlg( dlg, loc );
