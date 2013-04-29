@@ -313,7 +313,7 @@ template<typename ValueType>
 bool CUDAUtils::isSorted( const ValueType array[], const IndexType n, bool ascending )
 {
     LAMA_LOG_INFO( logger, "isSorted<" << typeid( ValueType ).name() 
-                           << ", n = " << n << ", ascending = " << ascending )
+                           << ">, n = " << n << ", ascending = " << ascending )
 
     LAMA_CHECK_CUDA_ACCESS
 

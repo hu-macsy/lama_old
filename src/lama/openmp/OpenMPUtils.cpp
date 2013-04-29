@@ -231,7 +231,7 @@ template<typename ValueType>
 bool OpenMPUtils::isSorted( const ValueType array[], const IndexType n, bool ascending )
 {
     LAMA_LOG_INFO( logger, "isSorted<" << typeid( ValueType ).name() 
-                           << ", n = " << n << ", ascending = " << ascending )
+                           << ">, n = " << n << ", ascending = " << ascending )
 
     bool sorted = true;   //!< will be set to false at violations
 
@@ -324,7 +324,8 @@ template<typename ValueType1,typename ValueType2>
 void OpenMPUtils::setScatter( ValueType1 out[], const IndexType indexes[], const ValueType2 in[], const IndexType n )
 {
     LAMA_LOG_DEBUG( logger,
-                    "setScatterr: out<" << typeid(ValueType1).name() << ">" << "[ indexes[" << n << "] ]" << " = in<" << typeid(ValueType2).name() << ">[" << n << "]" )
+                    "setScatter: out<" << typeid(ValueType1).name() << ">" 
+                     << "[ indexes[" << n << "] ]" << " = in<" << typeid(ValueType2).name() << ">[" << n << "]" )
 
     #pragma omp parallel for schedule(LAMA_OMP_SCHEDULE)
     for ( IndexType i = 0; i < n; i++ )
@@ -338,6 +339,8 @@ void OpenMPUtils::setScatter( ValueType1 out[], const IndexType indexes[], const
 template<typename ValueType>
 void OpenMPUtils::invert( ValueType array[], const IndexType n )
 {
+    LAMA_LOG_INFO( logger, "invert array[ " << n << " ]" )
+
     ValueType one = static_cast<ValueType>( 1.0 );
 
     #pragma omp parallel for schedule( LAMA_OMP_SCHEDULE )
@@ -352,6 +355,8 @@ void OpenMPUtils::invert( ValueType array[], const IndexType n )
 template<typename ValueType>
 void OpenMPUtils::scaleVal( ValueType array[], const IndexType n, const ValueType val )
 {
+    LAMA_LOG_INFO( logger, "scale array[ " << n << " ] with " << val )
+
     #pragma omp parallel for schedule( LAMA_OMP_SCHEDULE )
     for ( IndexType i = 0; i < n; ++i )
     {
