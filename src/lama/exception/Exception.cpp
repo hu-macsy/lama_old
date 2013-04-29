@@ -41,13 +41,15 @@
 #include <cstdlib>
 #include <sstream>
 
-#ifndef WIN32
-#include <execinfo.h>
-#endif //WIND32
+#ifndef _WIN32
+    #include <execinfo.h>
+#endif //_WIND32
+
 #ifdef __GNUC__
-#include <cxxabi.h>
-#include <cstring>
+    #include <cxxabi.h>
+    #include <cstring>
 #endif // __GNUC__
+
 namespace lama
 {
 
