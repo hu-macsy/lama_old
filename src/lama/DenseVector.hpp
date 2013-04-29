@@ -414,18 +414,7 @@ DenseVector<T>::DenseVector( const IndexType size, const OtherValueType* values 
 }
 
 template<typename T>
-DenseVector<T>::DenseVector( const DenseVector<ValueType>& other )
-
-    : Vector( other )
-
-{
-    // implementation here can be simpler as DenseVector( const Vector& other )
-
-    LAMA_LOG_INFO( logger,
-                   "Copy of vector of global size " << size() << ", local size " << getDistribution().getLocalSize() )
-
-    mLocalValues = other.getLocalValues();
-}
+DenseVector<T>::DenseVector( const DenseVector<T>& other );
 
 }
 
