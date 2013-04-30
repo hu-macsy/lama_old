@@ -81,9 +81,9 @@ have to give Cmake hints where to find the packages. For passing these hints you
 -D <VARIABLE_NAME>=<path/to/package/dir>. A summary of possible Build-Variables for the packages are given in the
 following table. For advanced help refer to the seperate section.
 
-.. csv-table:: 
+.. csv-table::
    :header: "Package", "CMake variable", "Signification"
-
+   
    "Boost", "BOOST_ROOT", "path to boost root dir"
    "MKL (for BLAS, LAPack and ScaLAPack)", "MKL_ROOT or MKL_INCLUDE_DIR and MKL_LIBRARY_PATH", "path to MKL root dir, or paths to MKL include and library dir"
    "ACML (for BLAS and LAPack)", "ACML_ROOT or ACML_INCLUDE_DIR and ACML_LIBRARY_PATH", "path to ACML root dir, or paths to MKL include and library dir"
@@ -98,8 +98,6 @@ following table. For advanced help refer to the seperate section.
    "ParMetis", "PARMETIS_ROOT or PARMETIS_INCLUDE_DIR and PARMETIS_LIBRARY_PATH", "path to ParMetis root dir, or paths to ParMetis include and library di"
    "GASNet", "GASNET_LIBRARY_PATH", "path to GASNet library"
    "OpenShmem", "OSHMEM_INCLUDE_PATH and OSHMEM_LIBRARY_PATH", "paths to Open shared memory include and library dir"
-
-.. "GOTO (for BLAS and LAPack)", "", ""
 
 For changing the C compiler there is a different way for telling cmake. Please see :ref:`here <c++>`. 
 

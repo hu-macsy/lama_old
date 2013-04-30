@@ -34,7 +34,7 @@ Available Direct Solvers
 
 - Generative Solver
 
- - :ref:`MetaSolver <metasolver>`
+ - :doc:`MetaSolver <metasolver>`
 
 Solver Interface
 ----------------
@@ -47,13 +47,13 @@ Solver Interface
 
     Solver::solve( Vector& solution, Vector& rhs );
 
-.. _stopping-criteria:
+.. _stopping-criteria-label:
 
 Stopping Criteria
 -----------------
 
 
-.. _solver-logging:
+.. _solver-logging-label:
 
 Solver Logging
 --------------

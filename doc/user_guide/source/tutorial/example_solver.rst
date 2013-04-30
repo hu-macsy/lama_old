@@ -34,12 +34,12 @@ Method.
 First we need the required vectors and matrices for the lineare equation :math:`Ax=b` where A is the 
 matrix, x is the solution vector and b is the right-hand-side (rhs).
 
-Then we define the :ref:`solver-logging`. This is optional. By default there is no logging. The example 
+Then we define the :ref:`solver-logging-label`. This is optional. By default there is no logging. The example 
 creates a logger that shows all solver information like current iteration, residual, etc.
 
 Every iterative solver needs a stopping criterion to define how exact the solution should be or how 
 many iterations the solver should run through. These criterions are connectable by using logical 
-connectives. For more information see :ref:`stopping-criteria`. 
+connectives. For more information see :ref:`stopping-criteria-label`. 
 
 Afterwards we are ready to create a solver, by defining a identifier and handing the logger over to 
 the CGs constructor. Now we can intialize the solver with the matrix. This a required step before a 
