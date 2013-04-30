@@ -47,13 +47,13 @@ Solver Interface
 
     Solver::solve( Vector& solution, Vector& rhs );
 
-.. _stopping-criteria-label:
+.. _stopping-criteria:
 
 Stopping Criteria
 -----------------
 
 
-.. _solver-logging-label:
+.. _solver-logging:
 
 Solver Logging
 --------------
