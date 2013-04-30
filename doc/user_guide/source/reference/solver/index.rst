@@ -34,7 +34,7 @@ Available Direct Solvers
 
 - Generative Solver
 
- - :ref:`MetaSolver <metasolver>`
+ - :doc:`MetaSolver <metasolver>`
 
 Solver Interface
 ----------------

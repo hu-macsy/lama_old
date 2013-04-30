@@ -1,8 +1,8 @@
 Matrix Example
 ==============
 
-Muliplication of a DenseVector and a CSRSparseMatrix
-----------------------------------------------------
+Multiplication of a DenseVector and a CSRSparseMatrix
+-----------------------------------------------------
 
 In this example we simply multiply a dense vector with a sparse matrix in CSR format.  
 
