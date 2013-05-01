@@ -16,7 +16,9 @@ set ( Boost_DEBUG TRUE )
 set ( Boost_DETAILED_FAILURE_MSG TRUE )
 
 # Alternative on WIN32
-# set ( Boost_USE_STATIC_LIBS ON )
+
+set ( Boost_USE_STATIC_LIBS ON )
+
 # set ( Boost_USE_MULTITHREADED ON )
 # set ( Boost_USE_STATIC_RUNTIME OFF )
 
@@ -29,14 +31,24 @@ if ( NOT Boost_THREAD_LIBRARY )
 endif ( NOT Boost_THREAD_LIBRARY )
 
 if ( Boost_FOUND )
-    message( STATUS "Boost found, Boost_THREAD_LIBRARY=${Boost_THREAD_LIBRARY}" )
+    message( STATUS "Boost found" )
+    message( STATUS "Boost_THREAD_LIBRARY=${Boost_THREAD_LIBRARY}" )
+    message( STATUS "Boost_LIBRARY_DIRS=${Boost_LIBRARY_DIRS}" )
+    include_directories( ${Boost_INCLUDE_DIR} )
+
+    # For static libraries on Windows it is likely that others must be added
+    # (e.g. data_time, system); so add library directory
+    # must appear before executable is defined
+
+    link_directories( ${Boost_LIBRARY_DIRS} )
+
     add_executable( example example.cpp )
+
     target_link_libraries( example ${Boost_THREAD_LIBRARY} )
 
-# Alternative on WIN32
-#   link_directories( ${Boost_LIBRARY_DIRS} )
-
 else( Boost_FOUND )
+
     message( STATUS "Boost not found" )
+
 endif( Boost_FOUND )
 
