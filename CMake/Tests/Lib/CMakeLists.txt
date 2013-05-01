@@ -12,9 +12,10 @@ project ( LibTest CXX )
 #   Simple C++ program                         #
 ################################################
 
-set ( LIBRARY_MODE DYNAMIC )
+set ( LIBRARY_MODE SHARED )
+# set ( LIBRARY_MODE STATIC )
 
-add_library( rectangle ${LIBRARY_MODE} rectangle.cpp rectangle.hpp )
+add_library( rectangle ${LIBRARY_MODE} Rectangle.cpp Rectangle.hpp )
 add_executable( example example.cpp )
 target_link_libraries( example rectangle )
 

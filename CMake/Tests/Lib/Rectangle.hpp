@@ -6,6 +6,7 @@ class Rectangle
 
 public:
 
+    Rectangle( double, double );
     void setValues ( double, double );
     double getArea (void);
 };
