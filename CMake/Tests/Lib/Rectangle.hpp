@@ -1,5 +1,6 @@
+#include "config.hpp"
 
-class Rectangle 
+class DLL_IMPORTEXPORT Rectangle 
 {
     double x;
     double y;

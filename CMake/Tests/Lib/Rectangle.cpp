@@ -1,3 +1,6 @@
+
+#define COMPILING_DLL
+
 #include "Rectangle.hpp"
 
 void Rectangle::setValues ( double _x, double _y )
