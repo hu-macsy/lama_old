@@ -115,10 +115,7 @@ if ( CUDA_FOUND AND LAMA_USE_CUDA )
 
     set ( CUDA_VERBOSE_BUILD OFF )
     set ( CUDA_BUILD_EMULATION OFF )
-    
-    set ( CUDA_NVCC_FLAGS "${CUDA_NVCC_FLAGS} " CACHE STRING "NVCC compiler flags" )
-    set ( CUDA_NVCC_FLAGS_RELEASE "${CUDA_NVCC_FLAGS_RELEASE} " CACHE STRING "NVCC compiler release flags" )
-    
+      
     # unfortunately we can not propagate the host flags to CUDA
     # because this issues to much warning in cuda headers
     # TODO: maybe we can change this with future CUDA releases
@@ -129,14 +126,14 @@ if ( CUDA_FOUND AND LAMA_USE_CUDA )
         
         # Intel compiler
         if ( CMAKE_CXX_COMPILER_ID MATCHES Intel )
-            list ( APPEND CUDA_NVCC_FLAGS "---compiler-bindir ${CMAKE_CXX_COMPILER} " )  
+            set ( CUDA_NVCC_FLAGS "${CUDA_NVCC_FLAGS};---compiler-bindir ${CMAKE_CXX_COMPILER} " )  
         endif ( CMAKE_CXX_COMPILER_ID MATCHES Intel )
         
         #-Xcompiler;-fno-inline is used because of compability issues of CUDA with gcc-4.4
         if ( ${CMAKE_BUILD_TYPE} MATCHES "Debug" )
-      	    list (APPEND CUDA_NVCC_FLAGS "-g;-G;-Xcompiler;-fPIC" )
+      	    set ( CUDA_NVCC_FLAGS "${CUDA_NVCC_FLAGS};-g;-G;-Xcompiler;-fPIC" )
         else ( ${CMAKE_BUILD_TYPE} MATCHES "Debug" )
-       	    list (APPEND CUDA_NVCC_FLAGS "-Xcompiler;-fPIC" )
+       	    set ( CUDA_NVCC_FLAGS "${CUDA_NVCC_FLAGS};-Xcompiler;-fPIC" )
         endif ( ${CMAKE_BUILD_TYPE} MATCHES "Debug" )
         
         # set -march=core02,-mmmx,-msse,-msse2,-msse3,-mssse3,-msse4a flaggs here
@@ -153,19 +150,44 @@ if ( CUDA_FOUND AND LAMA_USE_CUDA )
     
     # We need at least compute capability 1.3, so if no architecture is specified set it here
     if ( NOT "${CUDA_NVCC_FLAGS}" MATCHES "-arch" )
-    	list (APPEND CUDA_NVCC_FLAGS "-arch=sm_13" )
+    	set ( CUDA_NVCC_FLAGS "${CUDA_NVCC_FLAGS};-arch=sm_13" )
     endif ( NOT "${CUDA_NVCC_FLAGS}" MATCHES "-arch" )
+    
+    message ( STATUS "cudaflags ${CUDA_NVCC_FLAGS}" )
     
 endif( CUDA_FOUND AND LAMA_USE_CUDA )
 
-#add variables to cache
+## add variables to cache
 
-#set ( ADDITIONAL_CXX_FLAGS "${ADDITIONAL_CXX_FLAGS}" CACHE STRING "additional cxx compiler flags" )
-#set ( ADDITIONAL_CXX_WARNING_FLAGS "${ADDITIONAL_CXX_WARNING_FLAGS}" CACHE STRING "additional cxx compiler flags concerning warnings" )
-#set ( ADDITIONAL_CXX_RELEASE_FLAGS "${ADDITIONAL_CXX_RELEASE_FLAGS}" CACHE STRING "addtional cxx compiler flags for release optimizations" )
+set ( ADDITIONAL_CXX_FLAGS "${ADDITIONAL_CXX_FLAGS}" CACHE STRING "additional cxx compiler flags" )
+set ( ADDITIONAL_CXX_WARNING_FLAGS "${ADDITIONAL_CXX_WARNING_FLAGS}" CACHE STRING "additional cxx compiler flags concerning warnings" )
+set ( ADDITIONAL_CXX_RELEASE_FLAGS "${ADDITIONAL_CXX_RELEASE_FLAGS}" CACHE STRING "addtional cxx compiler flags for release optimizations" )
 
-#mark_as_advanced ( ADDITIONAL_CXX_FLAGS )
-#mark_as_advanced ( ADDITIONAL_CXX_WARNING_FLAGS )
-#mark_as_advanced ( ADDITIONAL_CXX_RELEASE_FLAGS )
-#mark_as_advanced ( CUDA_NVCC_FLAGS )
-#mark_as_advanced ( CUDA_NVCC_FLAGS_RELEASE )
+mark_as_advanced ( ADDITIONAL_CXX_FLAGS ADDITIONAL_CXX_WARNING_FLAGS ADDITIONAL_CXX_RELEASE_FLAGS )
+
+## hide flags (we do not use) from the default CMake screen 
+
+set ( CMAKE_CXX_FLAGS_MINSIZEREL "${CMAKE_CXX_FLAGS_MINSIZEREL}" CACHE INTERNAL "" )
+set ( CMAKE_CXX_FLAGS_RELWITHDEBINFO "${CMAKE_CXX_FLAGS_RELWITHDEBINFO}" CACHE INTERNAL "" )
+set ( CMAKE_C_FLAGS_MINSIZEREL "${CMAKE_C_FLAGS_MINSIZEREL}" CACHE INTERNAL "" )
+set ( CMAKE_C_FLAGS_RELWITHDEBINFO "${CMAKE_C_FLAGS_RELWITHDEBINFO}" CACHE INTERNAL "" )
+set ( CMAKE_Fortran_FLAGS_MINSIZEREL "${CMAKE_Fortran_FLAGS_MINSIZEREL}" CACHE INTERNAL "" )
+set ( CMAKE_Fortran_FLAGS_RELWITHDEB "${CMAKE_Fortran_FLAGS_RELWITHDEB}" CACHE INTERNAL "" )
+set ( CMAKE_EXE_LINKER_FLAGS_MINSIZEREL "${CMAKE_EXE_LINKER_FLAGS_MINSIZEREL}" CACHE INTERNAL "" )
+set ( CMAKE_EXE_LINKER_FLAGS_RELWITHDEB "${CMAKE_EXE_LINKER_FLAGS_RELWITHDEB}" CACHE INTERNAL "" )
+set ( CMAKE_MODULE_LINKER_FLAGS_MINSIZEREL "${CMAKE_MODULE_LINKER_FLAGS_MINSIZEREL}" CACHE INTERNAL "" )
+set ( CMAKE_MODULE_LINKER_FLAGS_RELWITHDEB "${CMAKE_MODULE_LINKER_FLAGS_RELWITHDEB}" CACHE INTERNAL "" )
+set ( CMAKE_SHARED_LINKER_FLAGS_MINSIZEREL "${CMAKE_SHARED_LINKER_FLAGS_MINSIZEREL}" CACHE INTERNAL "" )
+set ( CMAKE_SHARED_LINKER_FLAGS_RELWITHDEB "${CMAKE_SHARED_LINKER_FLAGS_RELWITHDEB}" CACHE INTERNAL "" )
+set ( CMAKE_SHARED_LINKER_FLAGS_MINSIZEREL "${CMAKE_SHARED_LINKER_FLAGS_MINSIZEREL}" CACHE INTERNAL "" )
+
+if ( CUDA_FOUND  )
+    set ( CUDA_NVCC_FLAGS_MINSIZEREL "${CUDA_NVCC_FLAGS_MINSIZEREL}" CACHE INTERNAL "" )
+    set ( CUDA_NVCC_FLAGS_RELWITHDEBINFO "${CUDA_NVCC_FLAGS_RELWITHDEBINFO}" CACHE INTERNAL "" )
+    set ( CUDA_GENERATED_OUTPUT_DIR "${CUDA_GENERATED_OUTPUT_DIR}" CACHE INTERNAL "" )
+endif ( CUDA_FOUND  )
+
+if ( MPI_FOUND )
+    set ( MPIEXEC_POSTFLAGS "${MPIEXEC_POSTFLAGS}" CACHE INTERNAL "" )
+    set ( MPIEXEC_PREFLAGS "${MPIEXEC_PREFLAGS}" CACHE INTERNAL "" )
+endif ( MPI_FOUND)
