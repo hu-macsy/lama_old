@@ -484,8 +484,9 @@ void getCSRValuesTest( ContextPtr loc )
 {
     LAMA_INTERFACE_FN_TT( getCSRValues, loc, ELLUtils, Conversions, ValueType, OtherValueType );
 
-    ValueType valuesELLValues[] =
-    { 0, 0, 0, 1, 1, 1, 2, 2, 2, 3, 3, 3, 4, 4, 4 };
+    ValueType valuesELLValues[] = 
+	{ 0, 0, 0, 1, 1, 1, 2, 2, 2, 3, 3, 3, 4, 4, 4 };
+
     const IndexType nELLValues = sizeof( valuesELLValues ) / sizeof(ValueType);
     IndexType valuesELLIa[] =
     { 5, 5, 5 };
@@ -509,8 +510,8 @@ void getCSRValuesTest( ContextPtr loc )
     LAMAArray<IndexType> ellJa( nELLJa, valuesELLJa );
     LAMAArray<IndexType> csrIa( nCSRIa, valuesCSRIa );
 
-    LAMAArray<OtherValueType> csrValues( nCSRValues, 0.0 );
-    LAMAArray<IndexType> csrJa( nCSRValues, 0.0 );
+    LAMAArray<OtherValueType> csrValues( nCSRValues, 0.0f );
+    LAMAArray<IndexType> csrJa( nCSRValues, 0 );
 
     {
         ReadAccess<ValueType> rELLValues( ellValues, loc );

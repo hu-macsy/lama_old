@@ -70,7 +70,8 @@ json:
     && find ./ -type f -exec sed -i 's/\\\"reference\/\\\"/\\\"reference\/index\/\\\"/g' {} \; \
     && find ./ -type f -exec sed -i 's/\\\"testing\/\\\"/\\\"testing\/index\/\\\"/g' {} \; \
     && find ./ -type f -exec sed -i 's/\\\"benchmarks\/\\\"/\\\"benchmarks\/index\/\\\"/g' {} \; \
-    && find ./ -type f -exec sed -i 's/\\\"developer\/\\\"/\\\"developer\/index\/\\\"/g' {} \;
+    && find ./ -type f -exec sed -i 's/\\\"developer\/\\\"/\\\"developer\/index\/\\\"/g' {} \;\
+    && find ./ -type f -exec sed -i 's/\\\"solver\/\\\"/\\\"solver\/index\/\\\"/g' {} \;
 	@echo
 	@echo "Build finished; now you can process the JSON files."
 

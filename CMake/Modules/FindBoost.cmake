@@ -995,6 +995,7 @@ ELSE (_boost_IN_CACHE)
   MARK_AS_ADVANCED(Boost_INCLUDE_DIR
       Boost_INCLUDE_DIRS
       Boost_LIBRARY_DIRS
+      BOOST_ROOT
   )
 ENDIF(_boost_IN_CACHE)
 

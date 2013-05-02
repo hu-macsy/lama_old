@@ -44,8 +44,7 @@ cmake_policy ( SET CMP0009 NEW )
 
 ### Search for include path for all required acml header files
 
-# If ACML_ROOT was defined use it.
-
+# If ACML_ROOT was defined in the environment, use it.
 if ( ACML_ROOT AND NOT ACML_INCLUDE_DIR )
     set ( ACML_INCLUDE_DIR ${ACML_ROOT}/include )
 else ( ACML_ROOT AND NOT ACML_INCLUDE_DIR )
@@ -56,7 +55,7 @@ else ( ACML_ROOT AND NOT ACML_INCLUDE_DIR )
 	    set  ( ACML_INCLUDE_DIR $ENV{ACMLROOT}/include )
 	#else( ) do nothing
     endif ( NOT ACML_INCLUDE_DIR AND NOT $ENV{ACML_ROOT} STREQUAL "" )
-
+    
 endif ( ACML_ROOT AND NOT ACML_INCLUDE_DIR )
 
 if ( NOT DEFINED ACML_INCLUDE_DIR )
@@ -133,10 +132,10 @@ else ( NOT EXISTS ${ACML_INCLUDE_DIR} )
     endif( EXISTS ${ACML_LIBRARY_PATH} )
     
     set ( ACML_INCLUDE_DIRS ${ACML_INCLUDE_DIR} )
-endif( NOT EXISTS ${ACML_INCLUDE_DIR} )
+endif ( NOT EXISTS ${ACML_INCLUDE_DIR} )
 
 include( FindPackageHandleStandardArgs )
 # handle the QUIET and REQUIRED arguments and set MKL_FOUND to TRUE if all listed variables are TRUE
 find_package_handle_standard_args ( ACML DEFAULT_MSG ACML_LIBRARIES ACML_INCLUDE_DIRS )
 
-mark_as_advanced( ACML_INCLUDE_DIRS ACML_LIBRARIES)
+mark_as_advanced( ACML_INCLUDE_DIRS ACML_INCLUDE_DIR )

@@ -113,7 +113,6 @@ All tests are configured as release build.
    "icc 12.1.3/13.0.0", "1.46", "MKL composerxe-2011.2.137", "not supported", "OpenMPI 1.4.3", "ok"
    "-----", "-----", "-----", "-----", "-----", "-----"
    "pgcpp ", "1.46", "ACML", " not supported", "OpenMPI 1.4.3", "ok"
-   "", "", "", "", "", ""
  
 If you have problems with the installation of supported configuration, do not hesitate to `contact`_ us.
 If you have tested not listed configurations we are pleased to get new input for the list.

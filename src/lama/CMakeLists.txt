@@ -161,17 +161,5 @@ if ( WIN32 )
     add_definitions ( -DLAMA_COMPILING_DLL )
 endif ( WIN32 )
 
-if ( MKL_FOUND )
-    # default: LAMA_FORTRAN_BLAS_STYLE_LOWERCASE
-elseif ( ACML_FOUND )
-    if ( WIN32 )
-        add_definitions ( -DLAMA_FORTRAN_BLAS_STYLE_UPCASE ) # not tested yet
-    else( WIN32 )
-        add_definitions ( -DLAMA_FORTRAN_BLAS_STYLE_UNDERSCORE )
-    endif ( WIN32 )
-else ()
-    add_definitions ( -DLAMA_FORTRAN_BLAS_STYLE_UNDERSCORE )
-endif ()
-
 ### install ###
 install ( TARGETS lama DESTINATION lib )

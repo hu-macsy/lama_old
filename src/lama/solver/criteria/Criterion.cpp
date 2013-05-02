@@ -89,10 +89,10 @@ Criterion& Criterion::operator=( const Criterion& other )
 
 bool Criterion::isSatisfied( const lama::IterativeSolver& solver )
 {
-    LAMA_LOG_INFO( logger,
-                   "Modifier: "<< mModifier << " Left Child " << (mLeftChild ? *mLeftChild : 0) << " Right Child " << (mRightChild ? *mRightChild : 0) );
+    LAMA_LOG_INFO( logger, "isSatisfied: " << *this );
 
     bool satisfied = true;
+
     if ( !hasLeftChild() && !hasRightChild() )
     {
         return mModifier;

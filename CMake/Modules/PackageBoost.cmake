@@ -30,14 +30,19 @@
  # @date 25.04.2013
 ###
 
+### Boost_USE_STATIC_LIBS  ( default is OFF )
+### 
+###    - should be set to OFF, default ( will use dynamic Boost libraries if available )
+###    - should only be set to ON  if only static BOOST libraries are availabe 
+###    - On Linux systems static 64-bit libraries must have been compiled with -fPIC
+
+# set ( Boost_USE_STATIC_LIBS OFF )
 # set ( Boost_USE_MULTITHREADED OFF )
 
 if ( WIN32 )
     message ( STATUS "Setting special Boost options on Windows" )
     #set ( Boost_USE_STATIC_LIBS ON )
     set ( Boost_USE_MULTITHREADED ON )
-    set ( Boost_USE_STATIC_RUNTIME OFF )
-    #add_definitions ( -DBOOST_ALL_NO_LIB )
 endif ( WIN32 )
 
 # Finds packages with custom search options 
@@ -135,3 +140,4 @@ else ( DEFINED LAMA_BUILD_TEST )
     # Set cache variable
     set ( LAMA_BUILD_TEST ${USE_PACKAGE} CACHE BOOL "Enable / Disable building of tests" )
 endif ( DEFINED LAMA_BUILD_TEST )
+
