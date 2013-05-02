@@ -1147,13 +1147,11 @@ auto_ptr<SyncToken> CSRStorage<ValueType>::matrixTimesVectorAsync(
         = &CSRStorage<ValueType>::matrixTimesVector;
 
         using boost::bind;
-        using boost::ref;
-        using boost::cref;
 
         LAMA_LOG_INFO( logger, *this << ": matrixTimesVectorAsync on Host by own thread" )
 
         return std::auto_ptr<SyncToken>(
-                   new TaskSyncToken( bind( pf, this, ref( result ), alpha, cref( x ), beta, cref( y ) ) ) );
+                   new TaskSyncToken( bind( pf, this, result, alpha, x, beta, y ) ) );
     }
 
     LAMA_ASSERT_EQUAL_ERROR( x.size(), mNumColumns )
