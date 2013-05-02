@@ -94,8 +94,6 @@ public:
 
     void buildCSRDataTest();
 
-    void setSparseRowsTest();
-
     /** Test for virtual methods MatrixStorage<T>::setDiagonal and
      *  MatrixStorage<T>::getDiagonal.
      */

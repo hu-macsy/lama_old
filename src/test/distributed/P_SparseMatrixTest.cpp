@@ -316,11 +316,11 @@ static DistributionPtr makeDistribution( const IndexType n, CommunicatorPtr comm
     }
     else if ( kind == 2 )
     {
-        float weight = 1.0;
+        float weight = 1.0f;
 
         if ( comm->getRank() % 2 == 1 )
         {
-            weight = 0.0001;
+            weight = 0.0001f;
         }
 
         return DistributionPtr( new GenBlockDistribution( n, weight, comm ) );

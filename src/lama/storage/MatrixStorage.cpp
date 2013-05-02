@@ -990,11 +990,9 @@ std::auto_ptr<SyncToken> MatrixStorage<ValueType>::matrixTimesVectorAsync(
     = &MatrixStorage<ValueType>::matrixTimesVector;
 
     using boost::bind;
-    using boost::ref;
-    using boost::cref;
 
     return std::auto_ptr<SyncToken>(
-               new TaskSyncToken( bind( pf, this, ref( result ), alpha, cref( x ), beta, cref( y ) ) ) );
+               new TaskSyncToken( bind( pf, this, result, alpha, x, beta, y ) ) );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -1032,11 +1030,9 @@ std::auto_ptr<SyncToken> MatrixStorage<ValueType>::jacobiIterateAsync(
     = &MatrixStorage<ValueType>::jacobiIterate;
 
     using boost::bind;
-    using boost::ref;
-    using boost::cref;
 
     return std::auto_ptr<SyncToken>(
-               new TaskSyncToken( bind( pf, this, ref( solution ), cref( oldSolution ), cref( rhs ), omega ) ) );
+               new TaskSyncToken( bind( pf, this, solution, oldSolution, rhs, omega ) ) );
 }
 
 /* --------------------------------------------------------------------------- */
