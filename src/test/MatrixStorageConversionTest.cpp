@@ -55,7 +55,7 @@ void setCSRStorage( _MatrixStorage& storage )
     const IndexType numColumns = 4;
 
     ValueType values[] =
-    { 6.0, 4.0, 7.0, 9.0, 4.0, 2.0, 5.0, 3.0, 2.0, 1.0, 1.0, 2.0 };
+    { 6.0f, 4.0f, 7.0f, 9.0f, 4.0f, 2.0f, 5.0f, 3.0f, 2.0f, 1.0f, 1.0f, 2.0f };
     IndexType ja[] =
     { 0, 3, 0, 2, 3, 0, 1, 3, 0, 3, 1, 3 };
     IndexType ia[] =
@@ -75,7 +75,7 @@ void setDenseStorage( MatrixStorage<ValueType>& storage )
     const IndexType numColumns = 4;
 
     static ValueType values[] =
-    { 6.0, 0.0, 0.0, 4.0, 7.0, 1.0, 0.0, 0.0, 0.0, 0.0, 9.0, 4.0, 2.0, 5.0, 0.0, 3.0 };
+    { 6.0f, 0.0f, 0.0f, 4.0f, 7.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 9.0f, 4.0f, 2.0f, 5.0f, 0.0f, 3.0f };
 
     // just make sure that number of entries in values matches the matrix size
 
@@ -96,7 +96,7 @@ void checkEqual( MatrixStorage<ValueType1>& storage1, MatrixStorage<ValueType2>&
         {
             float v1 = static_cast<float>( storage1.getValue( i, j ) );
             float v2 = static_cast<float>( storage2.getValue( i, j ) );
-            BOOST_CHECK_CLOSE( v1, v2, 1.0e-5 );
+            BOOST_CHECK_CLOSE( v1, v2, 1.0e-5f );
         }
     }
 }
@@ -145,29 +145,38 @@ typedef boost::mpl::list<float,double> test_types;
 
 /* ------------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( CSR2ELLTest, T, test_types ) {
+BOOST_AUTO_TEST_CASE_TEMPLATE( CSR2ELLTest, T, test_types ) 
+{
     conversion< CSRStorage<T>, ELLStorage<float> >( cuda );
     conversion< CSRStorage<T>, ELLStorage<double> >( cuda );
 }
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( CSR2DenseTest, T, test_types ) {
+BOOST_AUTO_TEST_CASE_TEMPLATE( CSR2DenseTest, T, test_types ) 
+{
     conversion< CSRStorage<T>, DenseStorage<float> >( host );
     conversion< CSRStorage<T>, DenseStorage<double> >( host );
     conversion< CSRStorage<T>, DenseStorage<float> >( cuda );
     conversion< CSRStorage<T>, DenseStorage<double> >( cuda );
 }
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( Dense2CSRTest, T, test_types ) {
+BOOST_AUTO_TEST_CASE_TEMPLATE( Dense2CSRTest, T, test_types )
+{
     conversion< DenseStorage<T>, CSRStorage<float> >( host );
     conversion< DenseStorage<T>, CSRStorage<double> >( cuda );
 }
 
 /* ------------------------------------------------------------------------- */
 
-typedef boost::mpl::list<CSRStorage<double>,ELLStorage<float>,COOStorage<double>,JDSStorage<float>,DIAStorage<double>,
-        DenseStorage<float>,SparseAssemblyStorage<double> > StorageTypes;
+typedef boost::mpl::list< CSRStorage<double>,
+	                      ELLStorage<float>,
+						  COOStorage<double>,
+						  JDSStorage<float>,
+						  DIAStorage<double>,
+                          DenseStorage<float>,
+						  SparseAssemblyStorage<double> > StorageTypes;
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( CreateTest, StorageType, StorageTypes ) {
+BOOST_AUTO_TEST_CASE_TEMPLATE( CreateTest, StorageType, StorageTypes ) 
+{
     typedef typename StorageType::ValueType ValueType;
 
     StorageType storage;
@@ -186,7 +195,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( CreateTest, StorageType, StorageTypes ) {
     BOOST_CHECK_EQUAL( storage1->getNumColumns(), 0 );
 }
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( CopyTest, StorageType, StorageTypes ) {
+BOOST_AUTO_TEST_CASE_TEMPLATE( CopyTest, StorageType, StorageTypes ) 
+{
     typedef typename StorageType::ValueType ValueType;
 
     StorageType storage;
@@ -204,7 +214,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( CopyTest, StorageType, StorageTypes ) {
     checkEqual( storage, *storage1 );
 }
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( DefaultConstructorTest, StorageType, StorageTypes ) {
+BOOST_AUTO_TEST_CASE_TEMPLATE( DefaultConstructorTest, StorageType, StorageTypes ) 
+{
     typedef typename StorageType::ValueType ValueType;
 
     StorageType storage;
@@ -222,7 +233,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( DefaultConstructorTest, StorageType, StorageTypes
     checkEqual( storage, storage1 );
 }
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( ConstructorTest, StorageType, StorageTypes ) {
+BOOST_AUTO_TEST_CASE_TEMPLATE( ConstructorTest, StorageType, StorageTypes ) 
+{
     typedef typename StorageType::ValueType ValueType;
 
     DenseStorage<ValueType> dense;
@@ -230,12 +242,13 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( ConstructorTest, StorageType, StorageTypes ) {
 
     StorageType storage( dense );
 
-// check that it has the same values
+    // check that it has the same values
 
     checkEqual( dense, storage );
 }
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( DefaultAssignmentTest, StorageType, StorageTypes ) {
+BOOST_AUTO_TEST_CASE_TEMPLATE( DefaultAssignmentTest, StorageType, StorageTypes ) 
+{
     typedef typename StorageType::ValueType ValueType;
 
     StorageType storage;
@@ -249,7 +262,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( DefaultAssignmentTest, StorageType, StorageTypes 
     checkEqual( storage, storage1 );
 }
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( AssignmentTest, StorageType, StorageTypes ) {
+BOOST_AUTO_TEST_CASE_TEMPLATE( AssignmentTest, StorageType, StorageTypes ) 
+{
     typedef typename StorageType::ValueType ValueType;
 
     CSRStorage<ValueType> csr;
@@ -263,7 +277,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( AssignmentTest, StorageType, StorageTypes ) {
     checkEqual( csr, storage );
 }
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( SwapTest, StorageType, StorageTypes ) {
+BOOST_AUTO_TEST_CASE_TEMPLATE( SwapTest, StorageType, StorageTypes ) 
+{
     typedef typename StorageType::ValueType ValueType;
 
     StorageType storage, saveStorage;
