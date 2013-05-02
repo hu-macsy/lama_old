@@ -70,19 +70,31 @@ set ( CUDA_SOURCES
     )
     
 ### set include directories ### 
-if ( NOT WIN32 )
-    cuda_compile ( CUDA_FILES ${CUDA_SOURCES} )
-endif( NOT WIN32 )
-
-### add library ###
 include_directories ( . ${CUDA_INCLUDE_DIRS} )
-add_library( lamacuda SHARED ${CXX_SOURCES} ${CUDA_FILES} )
+
+### add CUDA library ###
+
+if ( NOT WIN32 )
+
+    # Linux requires explicit CUDA compilation of *.cu files
+
+    cuda_compile ( CUDA_FILES ${CUDA_SOURCES} )
+    add_library( lamacuda SHARED ${CXX_SOURCES} ${CUDA_FILES} )
+
+else( NOT WIN32 )
+
+    # Windows suports different compilation for *.cpp and *.cu files
+
+    cuda_add_library( lamacuda SHARED ${CXX_SOURCES} ${CUDA_SOURCES} )
+
+endif( NOT WIN32 )
 
 
 ### target link libraries ###
 target_link_libraries( lamacuda
-                        ${CUDA_TOOLKIT_ROOT_DIR}/lib64/libcusparse.so
-                        ${CUDA_cublas_LIBRARY} ${CUDA_CUDART_LIBRARY}
+                        ${CUDA_cusparse_LIBRARY}
+                        ${CUDA_cublas_LIBRARY} 
+                        ${CUDA_CUDART_LIBRARY}
                         ${CUDA_CUDA_LIBRARY}
                      )
 

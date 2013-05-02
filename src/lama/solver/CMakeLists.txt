@@ -37,7 +37,9 @@ add_subdirectory ( logger )
 ### for external amg ###
 file ( GLOB AMG_SUBDIRPRESENT "amg" )
 
-if ( AMG_SUBDIRPRESENT AND MPI_FOUND AND LAMA_USE_MPI )
+if ( AMG_SUBDIRPRESENT AND MPI_FOUND AND LAMA_USE_MPI 
+                       AND CUDA_FOUND AND LAMA_USE_CUDA )
+
     add_subdirectory ( ${AMG_SUBDIRPRESENT} )
 endif ( AMG_SUBDIRPRESENT AND MPI_FOUND AND LAMA_USE_MPI )
 
