@@ -97,7 +97,7 @@ if ( NOT CUDA_cusparse_LIBRARY )
 
     get_filename_component( HINT_CUDA_LIBRARY_DIR ${CUDA_cublas_LIBRARY} PATH )
 
-    find_library( CUDA_cusparse_LIBARY NAMES cusparse
+    find_library( CUDA_cusparse_LIBRARY NAMES cusparse
                   HINTS ${HINT_CUDA_LIBRARY_DIR} )
 
     mark_as_advanced( CUDA_cusparse_LIBRARY )
