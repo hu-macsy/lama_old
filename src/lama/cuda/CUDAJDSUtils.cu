@@ -165,7 +165,7 @@ void CUDAJDSUtils::getRow(
     thrust::device_ptr<OtherValueType> rowPtr( const_cast<OtherValueType*>( row ) );
     thrust::device_ptr<IndexType> permPtr( const_cast<IndexType*>( perm ) );
 
-    thrust::fill( rowPtr, rowPtr + numColumns, 0 );
+    thrust::fill( rowPtr, rowPtr + numColumns, static_cast<OtherValueType>( 0 ) );
 
     thrust::counting_iterator<IndexType> sequence( 0 );
 

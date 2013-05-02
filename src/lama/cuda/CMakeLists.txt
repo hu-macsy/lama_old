@@ -89,6 +89,20 @@ else( NOT WIN32 )
 
 endif( NOT WIN32 )
 
+### Older cmake version have not set CUDA_cusparse_LIBRARY
+
+if ( NOT CUDA_cusparse_LIBRARY )
+
+    ### cusparse is usually in same directory as cublas
+
+    get_filename_component( HINT_CUDA_LIBRARY_DIR ${CUDA_cublas_LIBRARY} PATH )
+
+    find_library( CUDA_cusparse_LIBARY NAMES cusparse
+                  HINTS ${HINT_CUDA_LIBRARY_DIR} )
+
+    mark_as_advanced( CUDA_cusparse_LIBRARY )
+
+endif ( NOT CUDA_cusparse_LIBRARY )
 
 ### target link libraries ###
 target_link_libraries( lamacuda

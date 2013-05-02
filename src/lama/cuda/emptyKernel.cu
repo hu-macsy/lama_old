@@ -1,4 +1,4 @@
-#include <omp.h>
+#include <lama/Walltime.hpp>
 
 __global__
 void empty_kernel()
@@ -11,9 +11,9 @@ extern "C" double getKernelLaunchTime( int devNo )
 
     empty_kernel<<<1, 1>>>( );
 
-    double time = omp_get_wtime();
+    double time = lama::Walltime::get();
     cudaDeviceSynchronize();
     empty_kernel<<<1, 1>>>();
     cudaDeviceSynchronize();
-    return omp_get_wtime() - time;
+    return lama::Walltime::get() - time;
 }
