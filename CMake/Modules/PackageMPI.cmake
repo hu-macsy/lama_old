@@ -64,7 +64,3 @@ find_package ( MPI ${LAMA_FIND_PACKAGE_FLAGS} )
 ### ALLOW to switch off MPI explicitly ###
 
 setAndCheckCache ( MPI )
-
-if ( MPI_FOUND AND LAMA_USE_MPI)
-    include_directories ( ${MPI_INCLUDE_PATH} )
-endif ( MPI_FOUND AND LAMA_USE_MPI)

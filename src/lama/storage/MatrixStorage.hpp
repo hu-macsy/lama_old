@@ -54,7 +54,7 @@ typedef enum
     CSR, ELL, DIA, JDS, COO, DENSE, ASSEMBLY, UNDEFINED
 } MatrixStorageFormat;
 
-std::ostream& operator<<( std::ostream& stream, const MatrixStorageFormat storageFormat );
+LAMA_DLL_IMPORTEXPORT std::ostream& operator<<( std::ostream& stream, const MatrixStorageFormat storageFormat );
 
 /** The class _MatrixStorage is the base class for all matrix storage classes
  supported by LAMA.

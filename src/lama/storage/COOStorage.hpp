@@ -106,11 +106,6 @@ public:
         assign( other );
     }
 
-    /** Copy constructor can take any matrix storage or context. */
-
-    COOStorage( const _MatrixStorage& other, const ContextPtr context );
-    //{  setContext(context); assign( other ); }
-
     /** Default assignment operator is overridden */
 
     COOStorage<ValueType>& operator=( const COOStorage<ValueType>& other )
