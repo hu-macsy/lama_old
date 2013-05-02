@@ -25,34 +25,58 @@
  * SOFTWARE.
  * @endlicense
  *
- * @brief config.hpp
+ * @brief Macros needed for Microsoft compiler
  * @author Jiri Kraus
  * @date 20.10.2011
  * $Id$
  */
-//No include header guards be cause we want to allow this header to be included multiple times
-#ifdef WIN32
-#ifdef min
-#undef min
-#endif //min
-#ifdef max
-#undef max
-#endif //max
-//Do not display warnings about dll-interface issues.
-// @todo How can we resolve these issues? Do we want to resolve these issues?
-#pragma warning( disable: 4251 )
 
-#ifndef LAMA_DLL_IMPORTEXPORT
-#ifdef LAMA_COMPILING_DLL
-#define LAMA_DLL_IMPORTEXPORT   __declspec( dllexport )
-#define LAMA_DLL_EXTERN_TEMPLATE
-#else //LAMA_COMPILING_DLL is defined
-#define LAMA_DLL_IMPORTEXPORT   __declspec( dllimport )
-#define LAMA_DLL_EXTERN_TEMPLATE extern
-#endif //LAMA_COMPILING_DLL
-#endif //LAMA_DLL_IMPORTEXPORT
+// No include header guards be cause we want to allow this header to be included multiple times
+
+#ifdef WIN32
+
+    // Microsoft compilers use strange macros for min, max : disable them
+
+    #ifdef min
+        #undef min
+    #endif //min
+
+    #ifdef max
+        #undef max
+    #endif //max
+
+    // Do not display warnings about dll-interface issues.
+
+    #pragma warning( disable: 4251 )
+    
+    // Handling for dll import / export
+
+    #ifndef LAMA_DLL_IMPORTEXPORT
+
+        #ifdef LAMA_COMPILING_DLL
+
+            // when compiling DLL we export routines
+
+            #define LAMA_DLL_IMPORTEXPORT   __declspec( dllexport )
+            #define LAMA_DLL_EXTERN_TEMPLATE
+
+        #else 
+
+            // when using DLL we import routines
+
+            #define LAMA_DLL_IMPORTEXPORT   __declspec( dllimport )
+            #define LAMA_DLL_EXTERN_TEMPLATE extern
+
+        #endif //LAMA_COMPILING_DLL
+
+    #endif //LAMA_DLL_IMPORTEXPORT
+
 #else //WIN32 is not defined
-#ifndef LAMA_DLL_IMPORTEXPORT
-#define LAMA_DLL_IMPORTEXPORT
-#endif //LAMA_DLL_IMPORTEXPORT
+
+    // Other compilers do not care about IMPORTEXPORT
+
+    #ifndef LAMA_DLL_IMPORTEXPORT
+        #define LAMA_DLL_IMPORTEXPORT
+    #endif 
+
 #endif //WIN32
