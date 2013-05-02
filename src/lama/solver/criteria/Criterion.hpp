@@ -88,8 +88,10 @@ public:
      * @brief Creates a Criterion which evaluates to the passed boolean.
      *
      * @param[in] boolean   the boolean to set the result of this boolean condition to.
+     *
+     * Note: implicit type conversions of bool argument are disabled
      */
-    Criterion( const bool boolean );
+    explicit Criterion( const bool boolean );
 
     /**
      * @brief Creates a copy of the passed boolean condition.
