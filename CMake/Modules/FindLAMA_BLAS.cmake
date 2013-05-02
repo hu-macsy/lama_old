@@ -102,8 +102,6 @@ elseif ( LAMA_BLAS_LIBRARY STREQUAL "BLAS" OR ( LAMA_BLAS_LIBRARY STREQUAL "auto
     endif ( BLAS_FOUND )
 endif ()
 
-message ( STATUS "LAMA_BLAS_LIBRARIES ${LAMA_BLAS_LIBRARIES}" )
-
 include ( FindPackageHandleStandardArgs )
 # handle the QUIETLY and REQUIRED arguments and set LAMA_BLAS_FOUND to TRUE if all listed variables are TRUE
 find_package_handle_standard_args ( LAMA_BLAS DEFAULT_MSG LAMA_BLAS_LIBRARIES)
