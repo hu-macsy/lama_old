@@ -112,6 +112,14 @@ set ( CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} ${CXX_RELEASE_FLAGS} $
 #### CUDA specific compiler flags ####
 
 if ( CUDA_FOUND AND LAMA_USE_CUDA )
+    
+    ### choosing the right compute capability
+    ### we just start from version 1.3 ( 1.0 - 1.2 is not supported )
+    LIST ( APPEND CC_CHOICES "13" "20" "21" "30" "35" )
+    set ( CUDA_COMPUTE_CAPABILITY "13" CACHE STRING "CUDA compute capability (supported up from 13)" )
+	set ( CACHE CUDA_COMPUTE_CAPABILITY PROPERTY STRINGS ${CC_CHOICES} )
+    checkValue( ${CUDA_COMPUTE_CAPABILITY} "${CC_CHOICES}" )
+	mark_as_advanced ( CUDA_COMPUTE_CAPABILITY )
 
     set ( CUDA_VERBOSE_BUILD OFF )
     set ( CUDA_BUILD_EMULATION OFF )
@@ -126,21 +134,21 @@ if ( CUDA_FOUND AND LAMA_USE_CUDA )
         
         # Intel compiler
         if ( CMAKE_CXX_COMPILER_ID MATCHES Intel )
-            set ( CUDA_NVCC_FLAGS "${CUDA_NVCC_FLAGS};---compiler-bindir ${CMAKE_CXX_COMPILER} " )  
+            list ( APPEND CUDA_NVCC_FLAGS "---compiler-bindir ${CMAKE_CXX_COMPILER} " )  
         endif ( CMAKE_CXX_COMPILER_ID MATCHES Intel )
         
         #-Xcompiler;-fno-inline is used because of compability issues of CUDA with gcc-4.4
         if ( ${CMAKE_BUILD_TYPE} MATCHES "Debug" )
-      	    set ( CUDA_NVCC_FLAGS "${CUDA_NVCC_FLAGS};-g;-G;-Xcompiler;-fPIC" )
+      	    list ( APPEND CUDA_NVCC_FLAGS "-g;-G;-Xcompiler;-fPIC" )
         else ( ${CMAKE_BUILD_TYPE} MATCHES "Debug" )
-       	    set ( CUDA_NVCC_FLAGS "${CUDA_NVCC_FLAGS};-Xcompiler;-fPIC" )
+       	    list ( APPEND CUDA_NVCC_FLAGS "-Xcompiler;-fPIC" )
         endif ( ${CMAKE_BUILD_TYPE} MATCHES "Debug" )
         
         # set -march=core02,-mmmx,-msse,-msse2,-msse3,-mssse3,-msse4a flaggs here
         if ( MARCH_NATIVE_SUPPORT )
-            set ( CUDA_NVCC_FLAGS_RELEASE "-O3;-use_fast_math;-Xcompiler;-ffast-math;-Xcompiler;-fno-inline;-Xcompiler;-march=native" )
+            list ( APPEND CUDA_NVCC_FLAGS_RELEASE "-O3;-use_fast_math;-Xcompiler;-ffast-math;-Xcompiler;-fno-inline;-Xcompiler;-march=native" )
         else ( MARCH_NATIVE_SUPPORT )
-            set ( CUDA_NVCC_FLAGS_RELEASE "-O3;-use_fast_math;-Xcompiler;-ffast-math;-Xcompiler;-fno-inline" )
+            list ( APPEND CUDA_NVCC_FLAGS_RELEASE "-O3;-use_fast_math;-Xcompiler;-ffast-math;-Xcompiler;-fno-inline" )
         endif ( MARCH_NATIVE_SUPPORT )
         
     endif ( WIN32 )
@@ -150,10 +158,8 @@ if ( CUDA_FOUND AND LAMA_USE_CUDA )
     
     # We need at least compute capability 1.3, so if no architecture is specified set it here
     if ( NOT "${CUDA_NVCC_FLAGS}" MATCHES "-arch" )
-    	set ( CUDA_NVCC_FLAGS "${CUDA_NVCC_FLAGS};-arch=sm_13" )
+    	list (APPEND CUDA_NVCC_FLAGS "-arch=sm_${CUDA_COMPUTE_CAPABILITY}" )
     endif ( NOT "${CUDA_NVCC_FLAGS}" MATCHES "-arch" )
-    
-    message ( STATUS "cudaflags ${CUDA_NVCC_FLAGS}" )
     
 endif( CUDA_FOUND AND LAMA_USE_CUDA )
 
@@ -185,6 +191,7 @@ if ( CUDA_FOUND  )
     set ( CUDA_NVCC_FLAGS_MINSIZEREL "${CUDA_NVCC_FLAGS_MINSIZEREL}" CACHE INTERNAL "" )
     set ( CUDA_NVCC_FLAGS_RELWITHDEBINFO "${CUDA_NVCC_FLAGS_RELWITHDEBINFO}" CACHE INTERNAL "" )
     set ( CUDA_GENERATED_OUTPUT_DIR "${CUDA_GENERATED_OUTPUT_DIR}" CACHE INTERNAL "" )
+    set ( CUDA_SDK_ROOT_DIR "$CUDA_SDK_ROOT_DIR" CACHE INTERNAL "" )
 endif ( CUDA_FOUND  )
 
 if ( MPI_FOUND )

@@ -53,8 +53,8 @@ set ( LAMA_VERSION_COUNT 3 )
 ### Variables / CMAKE Functions ###
 include ( Variables )
 include ( SearchPackages )
-include ( LAMAdefines )
 include ( Functions )
+include ( LAMAdefines )
 include ( CompilerVersion )
 
 ### PACKAGES ###

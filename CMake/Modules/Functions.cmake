@@ -35,6 +35,7 @@
 #     get_relative_path:
 #     lama_get_relative_path:
 #     lama_status_message:
+#     checkValue: checks whether the given value is in the value list ( pass list as "${LIST}" (doublequotes !!!) )
 
 # defined makros:
 #     lama_set_source_dir:
@@ -144,15 +145,26 @@ function ( lama_status_message )
     message (STATUS ${str} )
 endfunction( lama_status_message )
 
+function ( checkValue SINGLEVALUE VALUELIST )
+    set ( BOOLVALUE FALSE )
+    foreach ( ITEM ${VALUELIST} )
+        if ( ${SINGLEVALUE} MATCHES ${ITEM} )
+            set ( BOOLVALUE TRUE )
+        endif ( ${SINGLEVALUE} MATCHES ${ITEM} )
+    endforeach( ITEM ${VALUELIST} )
+    if ( NOT BOOLVALUE )
+        message ( ERROR "Selected Value ${SINGLEVALUE} is no valid choice out of ${VALUELIST}" )
+    endif ( NOT BOOLVALUE )
+endfunction ( checkValue SINGLEVALUE VALUELIST )
+
+
+## Need to be macros not functions, because modifications of the parent scope
 
 # sets the LAMA_SOURCE_DIR (used to mark the path of the actual build target
 macro ( lama_set_source_dir )
     set ( LAMA_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR} )
     set ( CXX_SOURCES "" )
 endmacro ( lama_set_source_dir )
-
-
-## Need to be macros not functions, because modifications of the parent scope
 
 # Adds a list of classes to the target (the related *.cpp and *.hpp files) and configures
 # the installation of the header files
