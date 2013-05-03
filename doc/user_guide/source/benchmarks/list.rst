@@ -38,7 +38,7 @@ CPU Tests
 
 - NormTest
 
-- OpenMPTimerTest
+- TimerTest
 
 - ResidualTest
 

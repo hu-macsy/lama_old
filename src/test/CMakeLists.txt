@@ -87,7 +87,6 @@ set ( SOURCE_FILES
         MatrixTest
         MaxNormTest
         NoCommunicatorTest
-        OpenMPTimerTest
         ResidualStagnationTest
         ResidualThresholdTest
         ScalarTest
@@ -99,6 +98,7 @@ set ( SOURCE_FILES
         StorageIOTest
         TaskSyncTokenTest
         ThreadPoolTest
+        TimerTest
         TracingTest
         UtilsTest
         VectorTest
