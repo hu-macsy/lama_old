@@ -241,7 +241,7 @@ void SpecializedJacobi::iterateTyped( const SparseMatrix<ValueType>& coefficient
 
         if ( Matrix::SYNCHRONOUS == coefficients.getCommunicationKind() && !coefficients.getHalo().isEmpty() )
         {
-            LAMA_REGION("Solver.SpJacobi.iterate:syncUpdateHalo");
+            LAMA_REGION( "Solver.SpJacobi.iterate:syncUpdateHalo" )
             //1. gather
             // We might receive vaules but do not send them, so the halo might be none empty but provides indexes are.
             if ( coefficients.getHalo().getProvidesIndexes().size() > 0 )
@@ -315,7 +315,7 @@ void SpecializedJacobi::iterateTyped( const SparseMatrix<ValueType>& coefficient
 
         if ( Matrix::ASYNCHRONOUS == coefficients.getCommunicationKind() && !coefficients.getHalo().isEmpty() )
         {
-            LAMA_REGION( "Solver.SpJacobi.iterate:updateHalo");
+            LAMA_REGION( "Solver.SpJacobi.iterate:updateHalo" )
             //2. exchange by plan
             coefficients.getColDistribution().getCommunicator().exchangeByPlan(
                 denseOldSolution.getHaloValues(), coefficients.getHalo().getRequiredPlan(),
@@ -350,12 +350,12 @@ void SpecializedJacobi::iterateTyped( const SparseMatrix<ValueType>& coefficient
 
             LAMA_LOG_INFO( logger, "Starting halo computation after the local computation on " << *haloLocation )
             {
-                LAMA_REGION("Solver.SpJacobi.iterate:waitLocal");
+                LAMA_REGION( "Solver.SpJacobi.iterate:waitLocal" )
                 localComputation->wait();
             }
             LAMA_LOG_INFO( logger, "Local computation done." )
             {
-                LAMA_REGION( "Solver.SpJacobi.iterate:halo");
+                LAMA_REGION( "Solver.SpJacobi.iterate:halo" )
 
                 // local storage needed for the diagonal
 

@@ -273,7 +273,7 @@ void OpenMPCOOUtils::normalGEMV(
     {
         LAMA_REGION( "OpenMP.COO.normalGEMV" )
 
-        #pragma omp for
+        #pragma omp for schedule( LAMA_OMP_SCHEDULE )
         for ( IndexType k = 0; k < numValues; ++k )
         {
             IndexType i = cooIA[k];

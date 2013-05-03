@@ -557,6 +557,8 @@ void JDSStorage<ValueType>::buildCSR(
     LAMAArray<OtherValueType>* values,
     const ContextPtr loc ) const
 {
+    LAMA_REGION( "Storage.JDS->CSR" )
+
     LAMA_LOG_INFO( logger,
                    "buildCSR<" << Scalar::getType<OtherValueType>() << ">" << " from JDS<" << Scalar::getType<ValueType>() << ">" << " on " << *loc )
 
@@ -617,6 +619,8 @@ void JDSStorage<ValueType>::setCSRDataImpl(
     const LAMAArray<OtherValueType>& values,
     const ContextPtr )
 {
+    LAMA_REGION( "Storage.JDS<-CSR" )
+
     LAMA_LOG_INFO( logger,
                    "setCSRDataImpl<" << typeid(ValueType).name() << "," << typeid(OtherValueType).name() << ">" << ", shape is " << numRows << " x " << numColumns << ", #values for CSR = " << numValues )
 

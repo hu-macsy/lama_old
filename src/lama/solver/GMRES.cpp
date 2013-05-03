@@ -107,7 +107,7 @@ GMRES::GMRESRuntime::~GMRESRuntime()
 
 void GMRES::initialize( const Matrix& coefficients )
 {
-    LAMA_REGION("initialize_GMRES");
+    LAMA_REGION( "Solver.GMRES.initialize" )
 
     IterativeSolver::initialize( coefficients );
 
@@ -226,7 +226,7 @@ void GMRES::setKrylovDim( unsigned int krylovDim )
 
 void GMRES::iterate()
 {
-    LAMA_REGION("iterate_GMRES");
+    LAMA_REGION( "Solver.GMRES.initialize" )
 
     GMRESRuntime& runtime = getRuntime();
 

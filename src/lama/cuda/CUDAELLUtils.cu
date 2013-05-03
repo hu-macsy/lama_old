@@ -42,6 +42,7 @@
 #include <lama/LAMAInterface.hpp>
 #include <lama/LAMAInterfaceRegistry.hpp>
 #include <lama/macros/unused.hpp>
+#include <lama/tracing.hpp>
 
 // cuda
 #include <cuda.h>
@@ -651,6 +652,8 @@ void CUDAELLUtils::normalGEMV(
     const ValueType ellValues[],
     SyncToken* syncToken )
 {
+    LAMA_REGION( "CUDA.ELL.normalGEMV" )
+
     LAMA_LOG_INFO( logger, "normalGEMV<" << typeid(ValueType).name() << ">" << ", #rows = " << numRows )
 
     LAMA_LOG_INFO( logger,
@@ -801,6 +804,8 @@ void CUDAELLUtils::sparseGEMV(
     const ValueType ellValues[],
     SyncToken* syncToken )
 {
+    LAMA_REGION( "CUDA.ELL.sparseGEMV" )
+
     LAMA_LOG_INFO( logger, "sparseGEMV<" << typeid(ValueType).name() << ">" << ", #non-zero rows = " << numNonZeroRows )
 
     LAMA_CHECK_CUDA_ACCESS
@@ -944,6 +949,7 @@ void CUDAELLUtils::jacobi(
     const ValueType omega,
     SyncToken* syncToken )
 {
+    LAMA_REGION( "CUDA.ELL.jacobi" )
 
     LAMA_LOG_INFO( logger, "jacobi, #rows = " << numRows )
 
@@ -1070,6 +1076,8 @@ void CUDAELLUtils::jacobiHalo(
     const ValueType omega,
     SyncToken* syncToken )
 {
+    LAMA_REGION( "CUDA.ELL.jacobiHalo" )
+ 
     LAMA_LOG_INFO( logger, "jacobiHalo, #non-empty rows = " << numNonEmptyRows )
 
     LAMA_CHECK_CUDA_ACCESS

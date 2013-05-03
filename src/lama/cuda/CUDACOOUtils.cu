@@ -37,6 +37,7 @@
 #include <lama/cuda/utils.cu.h>
 #include <lama/cuda/CUDAError.hpp>
 #include <lama/cuda/CUDACOOUtils.hpp>
+#include <lama/tracing.hpp>
 
 // thrust
 #include <thrust/device_ptr.h>
@@ -113,6 +114,8 @@ void CUDACOOUtils::normalGEMV(
     const IndexType numValues,
     class SyncToken* /* syncToken */)
 {
+    LAMA_REGION( "CUDA.COO.normalGEMV" )
+
     const IndexType block_size = 256;
     dim3 dimBlock( block_size, 1, 1 );
     dim3 dimGrid = makeGrid( numRows, dimBlock.x );

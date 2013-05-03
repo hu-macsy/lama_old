@@ -41,6 +41,7 @@
 #include <lama/cuda/CUDAUtils.hpp>
 
 #include <lama/exception/LAMAAssert.hpp>
+#include <lama/tracing.hpp>
 
 #include <lama/LAMAInterface.hpp>
 #include <lama/LAMAInterfaceRegistry.hpp>
@@ -342,42 +343,41 @@ bool CUDAJDSUtils::checkDiagonalProperty(
     const IndexType ja[],
     const IndexType dlg[] )
 {
-    LAMA_LOG_INFO( logger,
-                   "checkDiagonalProperty with numDiagonals = " << numDiagonals << ", numRows = " << numRows << " and numColumns = " << numColumns )
+    LAMA_LOG_INFO( logger, "checkDiagonalProperty with numDiagonals = " << numDiagonals 
+                     << ", numRows = " << numRows << " and numColumns = " << numColumns )
 
     LAMA_CHECK_CUDA_ACCESS
 
-    if ( numRows > 0 )
-    {
-        thrust::device_ptr<IndexType> dlgPtr( const_cast<IndexType*>( dlg ) );
-        thrust::host_vector<IndexType> firstDlg( dlgPtr, dlgPtr + 1 );
-
-        if ( firstDlg[0] < std::min( numDiagonals, numColumns ) )
-        {
-            return false;
-        }
-
-        thrust::device_ptr<bool> resultPtr = thrust::device_malloc<bool>( numDiagonals );
-        thrust::fill( resultPtr, resultPtr + numDiagonals, false );
-
-        bool *resultRawPtr = thrust::raw_pointer_cast( resultPtr );
-
-        const int block_size = 256;
-        dim3 dimBlock( block_size, 1, 1 );
-        dim3 dimGrid = makeGrid( numRows, dimBlock.x );
-
-        checkDiagonalPropertyKernel<<<dimGrid, dimBlock>>>( numRows, resultRawPtr, perm, ja );
-
-        cudaStreamSynchronize( 0 );
-        LAMA_CHECK_CUDA_ERROR
-        ;
-
-        return thrust::reduce( resultPtr, resultPtr + numDiagonals, true, thrust::logical_and<bool>() );
-    }
-    else
+    if ( numRows <= 0 ) 
     {
         return false;
     }
+
+    // now it is sure that dlg, perm and ja are not empty
+
+    thrust::device_ptr<IndexType> dlgPtr( const_cast<IndexType*>( dlg ) );
+    thrust::host_vector<IndexType> firstDlg( dlgPtr, dlgPtr + 1 );
+
+    if ( firstDlg[0] < std::min( numDiagonals, numColumns ) )
+    {
+         return false;
+    }
+
+    thrust::device_ptr<bool> resultPtr = thrust::device_malloc<bool>( numRows );
+    thrust::fill( resultPtr, resultPtr + numRows, false );
+
+    bool *resultRawPtr = thrust::raw_pointer_cast( resultPtr );
+
+    const int block_size = 256;
+    dim3 dimBlock( block_size, 1, 1 );
+    dim3 dimGrid = makeGrid( numRows, dimBlock.x );
+
+    checkDiagonalPropertyKernel<<<dimGrid, dimBlock>>>( numRows, resultRawPtr, perm, ja );
+
+    cudaStreamSynchronize( 0 );
+    LAMA_CHECK_CUDA_ERROR
+
+    return thrust::reduce( resultPtr, resultPtr + numRows, true, thrust::logical_and<bool>() );
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */
@@ -445,7 +445,6 @@ bool CUDAJDSUtils::check(
 
             cudaStreamSynchronize( 0 );
             LAMA_CHECK_CUDA_ERROR
-            ;
 
             thrust::host_vector<IndexType> result( resultPtr, resultPtr + 1 );
 
@@ -460,7 +459,6 @@ bool CUDAJDSUtils::check(
 
             cudaStreamSynchronize( 0 );
             LAMA_CHECK_CUDA_ERROR
-            ;
 
             thrust::host_vector<IndexType> result( resultPtr, resultPtr + 1 );
 
@@ -610,6 +608,7 @@ void CUDAJDSUtils::setCSRValues(
     csr2jdsKernel<<<dimGrid,dimBlock>>>( jdsJA, jdsValues, jdsDLG, jdsILG, jdsPerm, numRows, csrIA, csrJA, csrValues );
 
     cudaStreamSynchronize( 0 );
+
     LAMA_CHECK_CUDA_ERROR
 }
 
@@ -633,7 +632,6 @@ void CUDAJDSUtils::setInversePerm( IndexType inversePerm[], const IndexType perm
         thrust::scatter( sequence, sequence + n, permPtr, inversePermPtr );
 
         LAMA_CHECK_CUDA_ERROR
-        ;
     }
 }
 
@@ -846,6 +844,8 @@ void CUDAJDSUtils::jacobi(
     const ValueType omega,
     SyncToken* syncToken )
 {
+    LAMA_REGION( "CUDA.JDS.jacobi" )
+
     cudaStream_t stream = 0;
 
     LAMA_LOG_INFO( logger,
@@ -1029,6 +1029,7 @@ void CUDAJDSUtils::jacobiHalo(
     const ValueType omega,
     SyncToken* UNUSED(syncToken) )
 {
+    LAMA_REGION( "CUDA.JDS.jacobiHalo" )
 
     LAMA_LOG_INFO( logger,
                    "jacobiHalo<" << typeid(ValueType).name() << ">" << ", #rows = " << numRows << ", omega = " << omega )
@@ -1226,6 +1227,7 @@ void CUDAJDSUtils::normalGEMV(
     const ValueType jdsValues[],
     SyncToken* /* syncToken */)
 {
+    LAMA_REGION( "CUDA.JDS.normalGEMV" )
 
     LAMA_LOG_INFO( logger, "normalGEMV<" << typeid(ValueType).name() << ">" << ", #rows = " << numRows )
 

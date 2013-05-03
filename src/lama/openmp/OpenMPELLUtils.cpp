@@ -322,25 +322,32 @@ void OpenMPELLUtils::getCSRValues(
     const ELLValueType ellValues[] )
 {
     LAMA_LOG_INFO( logger,
-                   "get CSRValues<" << typeid( ELLValueType ).name() << ", " << typeid( CSRValueType ).name() << ">" << ", #rows = " << numRows )
+                   "get CSRValues<" << typeid( ELLValueType ).name() 
+                    << ", " << typeid( CSRValueType ).name() << ">" 
+                    << ", #rows = " << numRows )
 
     // parallelization possible as offset array csrIA is available
 
-    #pragma omp parallel for schedule( LAMA_OMP_SCHEDULE )
-    for ( IndexType i = 0; i < numRows; i++ )
+    #pragma omp parallel 
     {
-        IndexType rowSize = ellSizes[i];
-        IndexType offset = csrIA[i];
+        LAMA_REGION( "OpenMP.ELL->CSR_values" )
 
-        // just make sure that csrIA and ellSizes really fit with each other
-
-        LAMA_ASSERT_EQUAL_DEBUG( csrIA[i] + rowSize, csrIA[i+1] )
-
-        for ( IndexType jj = 0; jj < rowSize; ++jj )
+        #pragma omp for schedule( LAMA_OMP_SCHEDULE )
+        for ( IndexType i = 0; i < numRows; i++ )
         {
-            IndexType pos = ellindex( i, jj, numRows );
-            csrJA[offset + jj] = ellJA[pos];
-            csrValues[offset + jj] = static_cast<CSRValueType>( ellValues[pos] );
+            IndexType rowSize = ellSizes[i];
+            IndexType offset = csrIA[i];
+
+            // just make sure that csrIA and ellSizes really fit with each other
+
+            LAMA_ASSERT_EQUAL_DEBUG( csrIA[i] + rowSize, csrIA[i+1] )
+
+            for ( IndexType jj = 0; jj < rowSize; ++jj )
+            {
+                IndexType pos = ellindex( i, jj, numRows );
+                csrJA[offset + jj] = ellJA[pos];
+                csrValues[offset + jj] = static_cast<CSRValueType>( ellValues[pos] );
+            }
         }
     }
 }
@@ -363,28 +370,33 @@ void OpenMPELLUtils::setCSRValues(
 
     // parallelization possible as offset array csrIA is available
 
-    #pragma omp parallel for schedule( LAMA_OMP_SCHEDULE )
-    for ( IndexType i = 0; i < numRows; i++ )
+    #pragma omp parallel 
     {
-        IndexType rowSize = ellSizes[i];
-        IndexType offset = csrIA[i];
-        IndexType j = 0; // will be last column index
+        LAMA_REGION( "OpenMP.ELL<-CSR_values" )
 
-        for ( IndexType jj = 0; jj < rowSize; ++jj )
+        #pragma omp for schedule( LAMA_OMP_SCHEDULE )
+        for ( IndexType i = 0; i < numRows; i++ )
         {
-            IndexType pos = ellindex( i, jj, numRows );
-            j = csrJA[offset + jj];
-            ellJA[pos] = j;
-            ellValues[pos] = static_cast<ELLValueType>( csrValues[offset + jj] );
-        }
+            IndexType rowSize = ellSizes[i];
+            IndexType offset = csrIA[i];
+            IndexType j = 0; // will be last column index
 
-        // fill up the remaining entries with something useful
+            for ( IndexType jj = 0; jj < rowSize; ++jj )
+            {
+                IndexType pos = ellindex( i, jj, numRows );
+                j = csrJA[offset + jj];
+                ellJA[pos] = j;
+                ellValues[pos] = static_cast<ELLValueType>( csrValues[offset + jj] );
+            }
 
-        for ( IndexType jj = rowSize; jj < numValuesPerRow; ++jj )
-        {
-            IndexType pos = ellindex( i, jj, numRows );
-            ellJA[pos] = j; // last used column index
-            ellValues[pos] = 0.0; // zero entry
+            // fill up the remaining entries with something useful
+
+            for ( IndexType jj = rowSize; jj < numValuesPerRow; ++jj )
+            {
+                IndexType pos = ellindex( i, jj, numRows );
+                ellJA[pos] = j; // last used column index
+                ellValues[pos] = 0.0; // zero entry
+            }
         }
     }
 }
