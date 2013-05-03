@@ -18,7 +18,7 @@ Solution Task 3
    #include <lama/norm/L2Norm.hpp>
 
    #include <lama/solver/logger/CommonLogger.hpp>
-   #include <lama/solver/logger/OpenMPTimer.hpp>
+   #include <lama/solver/logger/Timer.hpp>
 
    #include <iostream>
 
@@ -51,7 +51,7 @@ Solution Task 3
        //Reset soution to zero so that there is something to solve
        solution = 0.0;
    
-       /* 1 */      std::auto_ptr<Timer> timer( new OpenMPTimer() );
+       /* 1 */      std::auto_ptr<Timer> timer( new Timer() );
        /* 2 */      std::auto_ptr<Logger> logger( new CommonLogger("CGLogger", LogLevel::convergenceHistory, LoggerWriteBehaviour::toConsoleOnly, timer) );
 
        //Create a CG solver using the Constructor with logger as an argument
@@ -77,7 +77,7 @@ Solution Task 3
        return 0;
    }
 
-(1) Creating a OpenMPTimer
+(1) Creating a Timer
 (2) Creating a CommonLogger
 (3) Using Constructor with logger as an argument
 

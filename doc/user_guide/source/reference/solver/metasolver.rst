@@ -14,7 +14,7 @@ configure method as a std::string.
 
 code block::
 
-   CommonLogger loggerDef( <CGpre>, solverInformation, toConsoleOnly, OpenMPTimer );
+   CommonLogger loggerDef( <CGpre>, solverInformation, toConsoleOnly, Timer );
 
    SOR sorSolver {
       logger = loggerDef; 
