@@ -1214,7 +1214,7 @@ void SparseMatrix<ValueType>::matrixTimesVectorImpl(
 
     if ( SYNCHRONOUS == getCommunicationKind() && !mHalo.isEmpty() )
     {
-        LAMA_REGION( "Mat.Sp.timesVector::syncUpdateHalo");
+        LAMA_REGION( "Mat.Sp.timesVector::syncUpdateHalo" )
         //1. gather
         // We might receive vaules but do not send them, so the halo might be none empty but provides indexes are.
         if ( mHalo.getProvidesIndexes().size() > 0 )
@@ -1279,7 +1279,7 @@ void SparseMatrix<ValueType>::matrixTimesVectorImpl(
 
     if ( ASYNCHRONOUS == getCommunicationKind() && !mHalo.isEmpty() )
     {
-        LAMA_REGION( "Mat.Sp.timesVector::updateHalo");
+        LAMA_REGION( "Mat.Sp.timesVector::updateHalo" )
         //2. do exchange by plan
         getColDistribution().getCommunicator().exchangeByPlan( denseX.getHaloValues(), mHalo.getRequiredPlan(),
                 mTempSendValues, mHalo.getProvidesPlan() );
@@ -1319,17 +1319,17 @@ void SparseMatrix<ValueType>::matrixTimesVectorImpl(
 
         LAMA_LOG_INFO( logger, "Starting halo computation after the local computation on " << *haloLocation )
         {
-            LAMA_REGION( "Mat.Sp.timesVector::waitLocal");
+            LAMA_REGION( "Mat.Sp.timesVector::waitLocal")
             localComputation->wait();
         }
         LAMA_LOG_INFO( logger, "Local computation done." )
         {
-            LAMA_REGION("Mat.Sp.timesVector::halo_timesVector");
+            LAMA_REGION("Mat.Sp.timesVector::halo_timesVector")
             mHaloData->matrixTimesVector( localResult, alphaValue, haloX, 1.0, localResult );
         }
     }
     {
-        LAMA_REGION( "Mat.Sp.timesVector::waitLocalNoHalo");
+        LAMA_REGION( "Mat.Sp.timesVector::waitLocalNoHalo")
         // Need to synchronize the localComputation if halo is empty and we have async comp
         localComputation->wait();
     }

@@ -473,21 +473,26 @@ void OpenMPJDSUtils::getCSRValues(
     LAMA_LOG_INFO( logger,
                    "get CSRValues<" << typeid( JDSValueType ).name() << ", " << typeid( CSRValueType ).name() << ">" << ", #rows = " << numRows << ", #values = " << csrIA[numRows] )
 
-    #pragma omp parallel for schedule(LAMA_OMP_SCHEDULE)
-    for ( IndexType i = 0; i < numRows; i++ )
+    #pragma omp parallel 
     {
-        IndexType ii = jdsInversePerm[i]; // where to find row i in JDS storage
+        LAMA_REGION( "OpenMP.JDS->CSR_values" )
 
-        const IndexType numValuesInRow = jdsILG[ii];
-
-        IndexType jdsOffset = ii; // run through input JDS data
-        IndexType offset = csrIA[i]; // run through output data
-
-        for ( IndexType jj = 0; jj < numValuesInRow; jj++ )
+        #pragma omp for schedule(LAMA_OMP_SCHEDULE)
+        for ( IndexType i = 0; i < numRows; i++ )
         {
-            csrJA[offset + jj] = jdsJA[jdsOffset];
-            csrValues[offset + jj] = static_cast<CSRValueType>( jdsValues[jdsOffset] );
-            jdsOffset += jdsDLG[jj];
+            IndexType ii = jdsInversePerm[i]; // where to find row i in JDS storage
+    
+            const IndexType numValuesInRow = jdsILG[ii];
+
+            IndexType jdsOffset = ii; // run through input JDS data
+            IndexType offset = csrIA[i]; // run through output data
+
+            for ( IndexType jj = 0; jj < numValuesInRow; jj++ )
+            {
+                csrJA[offset + jj] = jdsJA[jdsOffset];
+                csrValues[offset + jj] = static_cast<CSRValueType>( jdsValues[jdsOffset] );
+                jdsOffset += jdsDLG[jj];
+            }
         }
     }
 }
@@ -511,17 +516,21 @@ void OpenMPJDSUtils::setCSRValues(
 
     // parallelization possible as offset array csrIA is available
 
-    #pragma omp parallel for schedule(LAMA_OMP_SCHEDULE)
-
-    for ( IndexType ii = 0; ii < numRows; ii++ )
+    #pragma omp parallel
     {
-        IndexType i = jdsPerm[ii];
-        IndexType offset = ii;
-        for ( IndexType jdsJJ = 0, csrJJ = csrIA[i]; jdsJJ < jdsILG[ii]; jdsJJ++, csrJJ++ )
+        LAMA_REGION( "OpenMP.JDS<-CSR_values" )
+
+        #pragma omp for schedule( LAMA_OMP_SCHEDULE )
+        for ( IndexType ii = 0; ii < numRows; ii++ )
         {
-            jdsJA[offset] = csrJA[csrJJ];
-            jdsValues[offset] = static_cast<JDSValueType>( csrValues[csrJJ] );
-            offset += jdsDLG[jdsJJ]; // index for next value of the row
+            IndexType i = jdsPerm[ii];
+            IndexType offset = ii;
+            for ( IndexType jdsJJ = 0, csrJJ = csrIA[i]; jdsJJ < jdsILG[ii]; jdsJJ++, csrJJ++ )
+            {
+                jdsJA[offset] = csrJA[csrJJ];
+                jdsValues[offset] = static_cast<JDSValueType>( csrValues[csrJJ] );
+                offset += jdsDLG[jdsJJ]; // index for next value of the row
+            }
         }
     }
 }
@@ -616,7 +625,7 @@ void OpenMPJDSUtils::normalGEMV(
                 offset += jdsDLG[jj]; // there is next value for this row
             }
 
-            // scattering needs no synchronization as values of perm are uniqe
+            // scattering needs no synchronization as values of perm are unique
 
             result[perm[ii]] += alpha * value;
         }
@@ -729,28 +738,34 @@ void OpenMPJDSUtils::jacobiHalo(
 
     LAMA_LOG_DEBUG( logger, "#non empty rows = " << numNonEmptyRows )
 
-    #pragma omp parallel for schedule( LAMA_OMP_SCHEDULE )
-    for ( IndexType ii = 0; ii < numNonEmptyRows; ++ii )
+    #pragma omp parallel
     {
-        ValueType temp = 0.0;
+        LAMA_REGION( "OpenMP.JDS.jacobiHalo" )
 
-        const IndexType i = jdsHaloPerm[ii];
-        const ValueType diag = localDiagonal[i];
-
-        IndexType pos = ii;
-
-        for ( IndexType j = 0; j < jdsHaloIlg[ii]; j++ )
+        #pragma omp for schedule( LAMA_OMP_SCHEDULE )
+        for ( IndexType ii = 0; ii < numNonEmptyRows; ++ii )
         {
-            temp += jdsHaloValues[pos] * oldSolution[jdsHaloJA[pos]];
-            pos += jdsHaloDlg[j];
+            ValueType temp = 0.0;
+
+            const IndexType i = jdsHaloPerm[ii];
+            const ValueType diag = localDiagonal[i];
+
+            IndexType pos = ii;
+
+            for ( IndexType j = 0; j < jdsHaloIlg[ii]; j++ )
+            {
+                temp += jdsHaloValues[pos] * oldSolution[jdsHaloJA[pos]];
+                pos += jdsHaloDlg[j];
+            }
+
+            LAMA_LOG_TRACE( logger,
+                            "jds row " << ii << ", is row " << i << " in halo" 
+                            << ", diag = " << diag << ", temp = " << temp )
+
+            solution[i] -= temp * omega / diag;
+
+            LAMA_LOG_TRACE( logger, "solution[" << i << "] = " << solution[i] )
         }
-
-        LAMA_LOG_TRACE( logger,
-                        "jds row " << ii << ", is row " << i << " in halo" << ", diag = " << diag << ", temp = " << temp )
-
-        solution[i] -= temp * omega / diag;
-
-        LAMA_LOG_TRACE( logger, "solution[" << i << "] = " << solution[i] )
     }
 }
 

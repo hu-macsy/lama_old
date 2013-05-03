@@ -38,11 +38,13 @@
 #include <lama/openmp/OpenMPUtils.hpp>
 #include <lama/openmp/OpenMPCSRUtils.hpp>
 #include <lama/openmp/OpenMPDIAUtils.hpp>
+#include <lama/tracing.hpp>
 
 #include <lama/HostReadAccess.hpp>
 #include <lama/HostWriteAccess.hpp>
 #include <lama/LAMAInterface.hpp>
 #include <lama/ContextAccess.hpp>
+#include <lama/tracing.hpp>
 
 // macros
 #include <lama/macros/unused.hpp>
@@ -425,6 +427,8 @@ void DIAStorage<ValueType>::buildCSR(
     LAMAArray<OtherValueType>* values,
     const ContextPtr /* loc */) const
 {
+    LAMA_REGION( "Storage.DIA->CSR" )
+
     // TODO all done on host, so loc is unused
 
     LAMA_LOG_INFO( logger,
@@ -470,6 +474,8 @@ void DIAStorage<ValueType>::setCSRDataImpl(
     const LAMAArray<OtherValueType>& values,
     ContextPtr UNUSED( loc ) )
 {
+    LAMA_REGION( "Storage.DIA<-CSR" )
+
     // loc is ignored, we do it on the Host
 
     HostReadAccess<IndexType> csrIA( ia );
@@ -787,6 +793,8 @@ void DIAStorage<ValueType>::matrixTimesVector(
     const LAMAArrayConstView<ValueType> y ) const
 
 {
+    LAMA_REGION( "Storage.DIA.timesVector" )
+
     LAMA_LOG_INFO( logger,
                    *this << ": matrixTimesVector, result = " << result << ", alpha = " << alpha << ", x = " << x << ", beta = " << beta << ", y = " << y )
 

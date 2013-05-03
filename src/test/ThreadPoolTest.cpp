@@ -75,7 +75,7 @@ void work( const int in, int& out )
     std::ostringstream regionName;
 
     regionName << "work_" << factor;
-    LAMA_REGION( regionName.str().c_str() );
+    LAMA_REGION( regionName.str().c_str() )
 
     // just do some stupid work, workload depends on in
 
@@ -100,7 +100,7 @@ BOOST_AUTO_TEST_CASE( runTest )
 {
     LAMA_LOG_INFO( logger, "runTest" );
 
-    LAMA_REGION( "runTest" );
+    LAMA_REGION( "runTest" )
 
     IndexType thread_sizes[] = LAMA_THREADS;
     IndexType thread_configs = sizeof( thread_sizes ) / sizeof(IndexType);
@@ -114,7 +114,7 @@ BOOST_AUTO_TEST_CASE( runTest )
 
         for ( IndexType j = 0; j < thread_configs; ++j )
         {
-            LAMA_REGION_N( "PoolRun", thread_sizes[j] * 100 + ntasks );
+            LAMA_REGION_N( "PoolRun", thread_sizes[j] * 100 + ntasks )
 
             scoped_array<IndexType> x( new IndexType[ntasks] );
 
@@ -146,7 +146,7 @@ BOOST_AUTO_TEST_CASE( waitTest )
 {
     LAMA_LOG_INFO( logger, "waitTest" );
 
-    LAMA_REGION( "waitTest" );
+    LAMA_REGION( "waitTest" )
 
     IndexType thread_sizes[] = LAMA_THREADS;
     IndexType thread_configs = sizeof( thread_sizes ) / sizeof(IndexType);
@@ -160,7 +160,7 @@ BOOST_AUTO_TEST_CASE( waitTest )
 
         for ( IndexType j = 0; j < thread_configs; ++j )
         {
-            LAMA_REGION_N( "PoolWait", thread_sizes[j] * 100 + ntasks );
+            LAMA_REGION_N( "PoolWait", thread_sizes[j] * 100 + ntasks )
 
             scoped_array<IndexType> x( new IndexType[ntasks] ); // array with result for each task
 
@@ -187,7 +187,7 @@ BOOST_AUTO_TEST_CASE( waitTest )
 
 BOOST_AUTO_TEST_CASE( singleTest )
 {
-    LAMA_REGION( "singleTest" );
+    LAMA_REGION( "singleTest" )
 
     LAMA_LOG_INFO( logger, "singleTest" );
 
