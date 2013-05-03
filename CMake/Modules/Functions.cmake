@@ -153,7 +153,7 @@ function ( checkValue SINGLEVALUE VALUELIST )
         endif ( ${SINGLEVALUE} MATCHES ${ITEM} )
     endforeach( ITEM ${VALUELIST} )
     if ( NOT BOOLVALUE )
-        message ( ERROR "Selected Value ${SINGLEVALUE} is no valid choice out of ${VALUELIST}" )
+        message ( FATAL_ERROR "Selected Value ${SINGLEVALUE} is no valid choice out of ${VALUELIST}" )
     endif ( NOT BOOLVALUE )
 endfunction ( checkValue SINGLEVALUE VALUELIST )
 
