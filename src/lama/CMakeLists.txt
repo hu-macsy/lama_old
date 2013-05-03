@@ -148,8 +148,6 @@ endif( LAMA_BLAS_FOUND )
 # add additional link libraries
 set ( LAMA_LINK_LIBRARIES ${LAMA_LINK_LIBRARIES} ${LAMA_ADDITIONAL_LINK_LIBRARIES} )
 
-message ( STATUS "LAMA_LINK_LIBRARIES ${LAMA_LINK_LIBRARIES}" )     
-
 target_link_libraries ( lama ${LAMA_LINK_LIBRARIES} )
 
 if ( LAMA_ADDITIONAL_LINK_FLAGS )

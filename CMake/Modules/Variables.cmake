@@ -59,16 +59,16 @@ set ( CMAKE_VERBOSE_MAKEFILE OFF )
 ## BUILDTYPE
 
 # Choose Default CMAKE_BUILD_TYPE
-if ( NOT CMAKE_BUILD_TYPE )
-  # Can be: (RelWithDebInfo)
-  set ( CMAKE_BUILD_TYPE Release CACHE STRING 
-        "Choose the type of build, options are: None Debug Release RelWithDebInfo MinSizeRel." FORCE )
-endif ( NOT CMAKE_BUILD_TYPE )
+# Can be: (RelWithDebInfo or MinSizeRel)
+if ( DEFINED CMAKE_BUILD_TYPE )
+    set ( CMAKE_BUILD_TYPE ${CMAKE_BUILD_TYPE} CACHE STRING "Options are: Debug Release")
+else ( DEFINED CMAKE_BUILD_TYPE )
+    set (CMAKE_BUILD_TYPE Debug CACHE STRING "Options are: Debug Release")
+endif ( DEFINED CMAKE_BUILD_TYPE )
 
 message ( STATUS "Build type is set to " ${CMAKE_BUILD_TYPE} )
 
+## set cache entries
 set ( LAMA_ADDITIONAL_LINK_LIBRARIES ${LAMA_ADDITIONAL_LINK_LIBRARIES} CACHE STRING "Additional libraries for linking, separated by ;" )
-
 set ( LAMA_ADDITIONAL_LINK_FLAGS ${LAMA_ADDITIONAL_LINK_FLAGS} CACHE STRING "Additional link flags, separated by ;" )
-
 mark_as_advanced ( LAMA_ADDITIONAL_LINK_LIBRARIES LAMA_ADDITIONAL_LINK_FLAGS )
