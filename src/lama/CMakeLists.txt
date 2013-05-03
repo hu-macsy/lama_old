@@ -117,13 +117,11 @@ add_library ( lama SHARED ${CXX_SOURCES} ${HEADERS} )
 set( LAMA_LINK_LIBRARIES log4lama )
 
 if ( CUDA_FOUND AND LAMA_USE_CUDA )
-    #target_link_libraries( lama lamacuda )
     set ( LAMA_LINK_LIBRARIES ${LAMA_LINK_LIBRARIES} lamacuda )
 endif ( CUDA_FOUND AND LAMA_USE_CUDA )
 
 if ( MPI_FOUND AND LAMA_USE_MPI )
     set ( LAMA_LINK_LIBRARIES ${LAMA_LINK_LIBRARIES} lamampi )
-    #target_link_libraries ( lama lamampi )
 endif ( MPI_FOUND AND LAMA_USE_MPI )
 
 if ( SCALAPACK_FOUND AND MPI_FOUND AND LAMA_USE_MPI )

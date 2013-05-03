@@ -74,14 +74,14 @@ endif ( MARCH_NATIVE_SUPPORT )
 # GNU
 if ( CMAKE_COMPILER_IS_GNUCXX )
     set ( ADDITIONAL_CXX_FLAGS "-Wl,--no-as-needed " )
-    set ( ADDITIONAL_CXX_WARNING_FLAGS "-Wextra -Wall " ) #-pedantic -std=c++98 " ) # -march=core02
+    set ( ADDITIONAL_CXX_WARNING_FLAGS "-Wextra -Wall " ) # -pedantic -std=c++98 " ) # -march=core02
     set ( ADDITIONAL_CXX_RELEASE_FLAGS "-ffast-math -msse4a " )
 endif ( CMAKE_COMPILER_IS_GNUCXX )
 
 
 # INTEL
 if ( CMAKE_CXX_COMPILER_ID MATCHES Intel )
-    set ( ADDITIONAL_CXX_FLAGS "-fPIC -std=c++0x -shared-intel -wd1478 " ) #suppress warning 1478: deprecated auto_ptr
+    set ( ADDITIONAL_CXX_FLAGS "-fPIC -std=c++0x -shared-intel -wd1478 " ) # suppress warning 1478: deprecated auto_ptr
     set ( ADDITIONAL_CXX_WARNING_FLAGS "-w2 -Wall -Wcheck -Werror-all " ) # -Werror-all Warnings/Errors. No Remarks.
     set ( ADDITIONAL_CXX_RELEASE_FLAGS "-ipo -no-prec-div -xHost " )
 endif ( CMAKE_CXX_COMPILER_ID MATCHES Intel )
@@ -133,21 +133,21 @@ if ( CUDA_FOUND AND LAMA_USE_CUDA )
         
         # Intel compiler
         if ( CMAKE_CXX_COMPILER_ID MATCHES Intel )
-            list ( APPEND CUDA_NVCC_FLAGS "---compiler-bindir ${CMAKE_CXX_COMPILER} " )  
+            set ( ADDITIONAL_NVCC_FLAGS "---compiler-bindir ${CMAKE_CXX_COMPILER};${ADDITIONAL_NVCC_FLAGS}" )  
         endif ( CMAKE_CXX_COMPILER_ID MATCHES Intel )
         
         #-Xcompiler;-fno-inline is used because of compability issues of CUDA with gcc-4.4
         if ( ${CMAKE_BUILD_TYPE} MATCHES "Debug" )
-      	    list ( APPEND CUDA_NVCC_FLAGS "-g;-G;-Xcompiler;-fPIC" )
+      	    set ( ADDITIONAL_NVCC_FLAGS "-g;-G;-Xcompiler;-fPIC;${ADDITIONAL_NVCC_FLAGS}" )
         else ( ${CMAKE_BUILD_TYPE} MATCHES "Debug" )
-       	    list ( APPEND CUDA_NVCC_FLAGS "-Xcompiler;-fPIC" )
+       	    set ( ADDITIONAL_NVCC_FLAGS "-Xcompiler;-fPIC;${ADDITIONAL_NVCC_FLAGS}" )
         endif ( ${CMAKE_BUILD_TYPE} MATCHES "Debug" )
         
         # set -march=core02,-mmmx,-msse,-msse2,-msse3,-mssse3,-msse4a flaggs here
         if ( MARCH_NATIVE_SUPPORT )
-            list ( APPEND CUDA_NVCC_FLAGS_RELEASE "-O3;-use_fast_math;-Xcompiler;-ffast-math;-Xcompiler;-fno-inline;-Xcompiler;-march=native" )
+            set ( ADDITIONAL_NVCC_RELEASE_FLAGS "-O3;-use_fast_math;-Xcompiler;-ffast-math;-Xcompiler;-fno-inline;-Xcompiler;-march=native;${ADDITIONAL_NVCC_FLAGS}" )
         else ( MARCH_NATIVE_SUPPORT )
-            list ( APPEND CUDA_NVCC_FLAGS_RELEASE "-O3;-use_fast_math;-Xcompiler;-ffast-math;-Xcompiler;-fno-inline" )
+            set ( ADDITIONAL_NVCC_RELEASE_FLAGS "-O3;-use_fast_math;-Xcompiler;-ffast-math;-Xcompiler;-fno-inline;${ADDITIONAL_NVCC_FLAGS}" )
         endif ( MARCH_NATIVE_SUPPORT )
         
     endif ( WIN32 )
@@ -157,8 +157,14 @@ if ( CUDA_FOUND AND LAMA_USE_CUDA )
     
     # We need at least compute capability 1.3, so if no architecture is specified set it here
     if ( NOT "${CUDA_NVCC_FLAGS}" MATCHES "-arch" )
-    	list (APPEND CUDA_NVCC_FLAGS "-arch=sm_${CUDA_COMPUTE_CAPABILITY}" )
+    	set ( ADDITIONAL_NVCC_FLAGS "-arch=sm_${CUDA_COMPUTE_CAPABILITY};${ADDITIONAL_NVCC_FLAGS}" )
     endif ( NOT "${CUDA_NVCC_FLAGS}" MATCHES "-arch" )
+    
+    list ( APPEND CUDA_NVCC_FLAGS "${ADDITIONAL_NVCC_FLAGS}" )
+    list ( APPEND CUDA_NVCC_FLAGS_RELEASE "${ADDITIONAL_NVCC_RELEASE_FLAGS}" )
+    
+    mark_as_advanced ( ADDITIONAL_NVCC_FLAGS )
+    mark_as_advanced ( ADDITIONAL_NVCC_RELEASE_FLAGS )
     
     message ( STATUS "CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS}" )
     message ( STATUS "CUDA_NVCC_FLAGS_RELEASE ${CUDA_NVCC_FLAGS_RELEASE}" )

@@ -31,18 +31,18 @@
 ###
 
 # defined functions:
-#     setAndCheckCache: sets FOUND_XXX depending on LAMA_USE_XXX variable
-#     get_relative_path:
-#     lama_get_relative_path:
-#     lama_status_message:
+#     setAndCheckCache: Function for setting LAMA_USE_{PACKAGE_NAME} variables depending on {PACKAGE_NAME}_FOUND.
+#     get_relative_path: returns the relative path to the actual directory to the CMAKE_SOURCE_DIR
+#     lama_get_relative_path: returns the relative path to the actual directory to the LAMA_SOURCE_DIR (Path of the actual target)
+#     lama_status_message: prints colored text messages
 #     checkValue: checks whether the given value is in the value list ( pass list as "${LIST}" (doublequotes !!!) )
 
 # defined makros:
-#     lama_set_source_dir:
-#     lama_classes:
-#     lama_sources:
-#     lama_headers:
-#     lama_add:
+#     lama_set_source_dir: sets the LAMA_SOURCE_DIR (used to mark the path of the actual build target
+#     lama_classes: Adds a list of classes to the target (the related *.cpp and *.hpp files) and configures the installation of the header files
+#     lama_sources: Adds a list of classes to the target (the related *.cpp and *.hpp files) and configures the installation of the header files
+#     lama_headers: Adds a list of classes to the target (the related *.cpp and *.hpp files) and configures # the installation of the header files
+#     lama_add: Publishes sources and headers in the parent scope
 
 # Function for setting LAMA_USE_{PACKAGE_NAME} variables depending on {PACKAGE_NAME}_FOUND.
 # Also sets cache Variables
