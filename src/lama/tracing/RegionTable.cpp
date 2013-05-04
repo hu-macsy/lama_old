@@ -226,9 +226,17 @@ void RegionTable::printTimer()
 
 /* ---------------------------------------------------------------------- */
 
-void RegionTable::printTimer( FILE*f )
+void RegionTable::printTimer( FILE* f )
 {
-    std::cout << "Summary of all timers for thread " << mThreadId << "\n";
+    std::cout << "Summary of all timers for thread " << mThreadId << std::endl;
+
+    std::ostringstream threadInfo; 
+
+    threadInfo << mThreadId;  
+    
+    fprintf( f, "====================================\n" );
+    fprintf( f, "Timing info of regions for Thread %s\n", threadInfo.str().c_str() );
+    fprintf( f, "====================================\n" );
 
     // use map iterator for alphabetical output
 
