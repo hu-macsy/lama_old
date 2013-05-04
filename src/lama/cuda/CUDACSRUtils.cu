@@ -37,6 +37,7 @@
 #include <lama/cuda/utils.cu.h>
 #include <lama/cuda/CUDAError.hpp>
 #include <lama/cuda/CUDACSRUtils.hpp>
+#include <lama/cuda/CUDATexture.hpp>
 #include <lama/cuda/CUDAStreamSyncToken.hpp>
 
 // macros
@@ -608,7 +609,7 @@ void CUDACSRUtils::jacobi(
     dim3 dimBlock( blockSize, 1, 1 );
     dim3 dimGrid = makeGrid( numRows, dimBlock.x );
 
-    const bool useTexture = false; // lama_getUseTex_cuda();
+    const bool useTexture = CUDATexture::useTexture();
 
     if ( useTexture )
     {
@@ -720,7 +721,7 @@ void CUDACSRUtils::jacobiHalo(
     dim3 dimBlock( block_size, 1, 1 );
     dim3 dimGrid = makeGrid( numNonEmptyRows, dimBlock.x );
 
-    const bool useTexture = false; // lama_getUseTex_cuda();
+    const bool useTexture = CUDATexture::useTexture();
 
     if ( useTexture )
     {

@@ -47,6 +47,7 @@ set ( CLASSES
         CUDALAPACK
         CUDAStreamSyncToken
         CUDATracerSyncToken
+        CUDATexture
     )
 
 set ( HEADERS

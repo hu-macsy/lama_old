@@ -37,6 +37,7 @@
 // others
 #include <lama/cuda/CUDAStreamSyncToken.hpp>
 #include <lama/cuda/CUDAError.hpp>
+#include <lama/cuda/CUDATexture.hpp>
 #include <lama/cuda/CUDAJDSUtils.hpp>
 #include <lama/cuda/CUDAUtils.hpp>
 
@@ -597,6 +598,10 @@ void CUDAJDSUtils::setCSRValues(
     const IndexType csrJA[],
     const CSRValueType csrValues[] )
 {
+    // convert CSR data to JDS, ja and values
+
+    LAMA_REGION( "CUDA.JDS<-CSR_values" )
+
     LAMA_LOG_INFO( logger, "convert CSR to JDS, #rows = " << numRows )
 
     LAMA_CHECK_CUDA_ACCESS
@@ -685,6 +690,8 @@ void CUDAJDSUtils::getCSRValues(
     const IndexType jdsJA[],
     const JDSValueType jdsValues[] )
 {
+    LAMA_REGION( "CUDA.JDS->CSR_values" )
+
     LAMA_LOG_INFO( logger,
                    "get CSRValues<" << typeid( JDSValueType ).name() << ", " << typeid( CSRValueType ).name() << ">" << ", #rows = " << numRows )
 
@@ -864,7 +871,8 @@ void CUDAJDSUtils::jacobi(
     dim3 dimBlock( block_size, 1, 1 );
     dim3 dimGrid = makeGrid( numRows, dimBlock.x );
 
-    const bool useTexture = false; // lama_getUseTex_cuda();
+    const bool useTexture = CUDATexture::useTexture();
+
     const bool useSharedMem = false; // maybe optimize later
 
     LAMA_LOG_DEBUG( logger, "useTexture = " << useTexture << ", useSharedMem = " << useSharedMem )
@@ -1040,7 +1048,8 @@ void CUDAJDSUtils::jacobiHalo(
     dim3 dimBlock( block_size, 1, 1 );
     dim3 dimGrid = makeGrid( numRows, dimBlock.x ); // TODO:numRows is too much...
 
-    const bool useTexture = false; // lama_getUseTex_cuda();
+    const bool useTexture = CUDATexture::useTexture();
+
     const bool useSharedMem = false; // maybe optimize later
 
     LAMA_LOG_DEBUG( logger, "useTexture = " << useTexture << ", useSharedMem = " << useSharedMem )
@@ -1234,7 +1243,8 @@ void CUDAJDSUtils::normalGEMV(
     LAMA_LOG_INFO(
         logger, "alpha = " << alpha << ", x = " << x << ", beta = " << beta << ", y = " << y << ", result = " << result )
 
-    const bool useTexture = false; //lama_getUseTex_cuda();
+    const bool useTexture = CUDATexture::useTexture();
+
     const bool useSharedMem = false; // maybe optimize later
 
     LAMA_LOG_DEBUG( logger, "useTexture = " << useTexture << ", useSharedMem = " << useSharedMem )
