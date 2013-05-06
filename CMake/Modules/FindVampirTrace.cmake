@@ -84,7 +84,7 @@ if ( _vampirtrace_DEBUG)
 endif ( _vampirtrace_DEBUG)
 
 find_library(VAMPIRTRACE_OTF_LIBRARY 
-             NAMES otf
+             NAMES otf open-trace-format
              HINTS ${_vampirtrace_LIBRARY_SEARCH_DIRS})
 
 find_library(VAMPIRTRACE_VT_LIBRARY 
