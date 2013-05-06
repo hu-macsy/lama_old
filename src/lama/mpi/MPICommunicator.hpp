@@ -402,9 +402,6 @@ private:
     int mRank; // rank of this processor
     int mSize; // size of communicator
 
-    int mNodeRank; // rank of this processor on its node
-    int mNodeSize; // number of processors on same node
-
     bool mExternInitialization;
 
     LAMA_LOG_DECL_STATIC_LOGGER( logger )
