@@ -356,8 +356,9 @@ void ELLStorage<ValueType>::setCSRDataImpl(
 {
     LAMA_REGION( "Storage.ELL<-CSR" )
 
-    LAMA_LOG_INFO( logger,
-                   "set CSR data on " << *loc << ": numRows = " << numRows << ", numColumns = " << numColumns << ", numValues = " << numValues )
+    LAMA_LOG_INFO( logger, "set CSR data on " << *loc 
+                            << ": numRows = " << numRows << ", numColumns = " << numColumns 
+                            << ", numValues = " << numValues )
 
     _MatrixStorage::init( numRows, numColumns );
 
@@ -403,6 +404,19 @@ void ELLStorage<ValueType>::setCSRDataImpl(
 
     const IndexType dataSize = mNumValuesPerRow * mNumRows;
 
+    if ( mNumRows > 200 && mNumValuesPerRow > 0 )
+    {
+        // make this check only on larger matrices, dataSize must not be equal 0
+
+        double fillRate = double( numValues ) / double( dataSize );
+
+        if ( fillRate < 0.5 )
+        {
+            LAMA_LOG_WARN( logger, *this << ": fill rate = " << fillRate 
+                           << " ( " << numValues << " non-zero values ), consider using JDS" )
+        } 
+    }
+
     {
         // now fill the matrix values and column indexes
 
@@ -411,19 +425,21 @@ void ELLStorage<ValueType>::setCSRDataImpl(
         ReadAccess<OtherValueType> csrValues( values, loc );
 
         ReadAccess<IndexType> ellIA( mIA, loc );
-        WriteAccess<IndexType> ellJA( mJA, loc );
-        WriteAccess<ValueType> ellValues( mValues, loc );
+ 
+        WriteOnlyAccess<IndexType> ellJA( mJA, loc, dataSize );
+        WriteOnlyAccess<ValueType> ellValues( mValues, loc, dataSize );
 
-        ellJA.resize( dataSize );
-        ellValues.resize( dataSize );
-        LAMA_LOG_DEBUG( logger, "convert CSR -> ELL" )
-
-        LAMA_LOG_DEBUG( logger, " size = " <<ellJA.size() )
+        LAMA_LOG_DEBUG( logger, "convert CSR -> ELL, ellSize = " << dataSize )
 
         LAMA_CONTEXT_ACCESS( loc )
-        setCSRValues( ellJA.get(), ellValues.get(), ellIA.get(), mNumRows, mNumValuesPerRow, csrIA.get(), csrJA.get(),
-                      csrValues.get() );
+
+        setCSRValues( ellJA.get(), ellValues.get(), 
+                      ellIA.get(), mNumRows, mNumValuesPerRow, 
+                      csrIA.get(), csrJA.get(), csrValues.get() 
+                    );
+
         LAMA_LOG_DEBUG( logger, " size = " <<ellJA.size() )
+
         IndexType numDiagonals = std::min( mNumRows, mNumColumns );
 
         if ( numDiagonals > 0 && numValues > 0 )
