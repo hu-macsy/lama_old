@@ -110,6 +110,7 @@ set ( CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} ${CXX_RELEASE_FLAGS} $
 
 #### CUDA specific compiler flags ####
 
+
 if ( CUDA_FOUND AND LAMA_USE_CUDA )
     
     ### choosing the right compute capability
@@ -122,7 +123,7 @@ if ( CUDA_FOUND AND LAMA_USE_CUDA )
 
     set ( CUDA_VERBOSE_BUILD OFF )
     set ( CUDA_BUILD_EMULATION OFF )
-      
+    
     # unfortunately we can not propagate the host flags to CUDA
     # because this issues to much warning in cuda headers
     # TODO: maybe we can change this with future CUDA releases
@@ -159,15 +160,14 @@ if ( CUDA_FOUND AND LAMA_USE_CUDA )
     if ( NOT "${CUDA_NVCC_FLAGS}" MATCHES "-arch" )
     	set ( ADDITIONAL_NVCC_FLAGS "-arch=sm_${CUDA_COMPUTE_CAPABILITY};${ADDITIONAL_NVCC_FLAGS}" )
     endif ( NOT "${CUDA_NVCC_FLAGS}" MATCHES "-arch" )
+
+    set ( ADDITIONAL_NVCC_FLAGS "${ADDITIONAL_NVCC_FLAGS}" CACHE STRING "additional nvcc compiler flags" )
+    set ( ADDITIONAL_NVCC_RELEASE_FLAGS "${ADDITIONAL_NVCC_RELEASE_FLAGS}" CACHE STRING "additional nvcc release compiler flags" )
+    
+    mark_as_advanced ( ADDITIONAL_NVCC_FLAGS ADDITIONAL_NVCC_RELEASE_FLAGS )
     
     list ( APPEND CUDA_NVCC_FLAGS "${ADDITIONAL_NVCC_FLAGS}" )
     list ( APPEND CUDA_NVCC_FLAGS_RELEASE "${ADDITIONAL_NVCC_RELEASE_FLAGS}" )
-    
-    mark_as_advanced ( ADDITIONAL_NVCC_FLAGS )
-    mark_as_advanced ( ADDITIONAL_NVCC_RELEASE_FLAGS )
-    
-    message ( STATUS "CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS}" )
-    message ( STATUS "CUDA_NVCC_FLAGS_RELEASE ${CUDA_NVCC_FLAGS_RELEASE}" )
     
 endif( CUDA_FOUND AND LAMA_USE_CUDA )
 
