@@ -410,7 +410,7 @@ Logging and Output
 ------------------
 
 - We do not use the standard output or standard error streams. Instead we use the logging mechanism
-  described in :ref:`logging`.
+  described in :doc:`logging`.
 
 - Please keep in mind, that good logging messages are also explaining the source code.
 

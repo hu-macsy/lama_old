@@ -566,6 +566,9 @@ protected:
 
     std::string mCommunicatorType;
 
+    int mNodeRank; // rank of this processor on its node
+    int mNodeSize; // number of processors on same node
+
     LAMA_LOG_DECL_STATIC_LOGGER( logger )
 
     /** Read in the environment variable LAMA_NP for user processor array.

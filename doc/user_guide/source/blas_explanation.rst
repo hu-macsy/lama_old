@@ -1,5 +1,3 @@
-.. _blas_explanation:
-
 :orphan:
 
 Brief Introduction into BLAS
@@ -20,7 +18,7 @@ Functionality
 -------------
 
 Level 1
-^^^^^^^^
+^^^^^^^
 Level 1 contains vector operations of the form
 
 .. math::
@@ -29,7 +27,7 @@ Level 1 contains vector operations of the form
 as well as scalar dot products and vector norms, among other things.
 
 Level 2
-^^^^^^^^
+^^^^^^^
 Level 2 contains vector-matrix operations of the form
 
 .. math::
@@ -37,7 +35,7 @@ Level 2 contains vector-matrix operations of the form
 
 
 Level 3
-^^^^^^^^
+^^^^^^^
 Level 3 contains matrix-matrix operations of the form
 
 .. math::

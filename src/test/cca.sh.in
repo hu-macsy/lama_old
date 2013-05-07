@@ -29,19 +29,17 @@
 #         measure code coverage of LAMA.
 #  @author: Alexander Büchel, Lauretta Schubert
 #  @date 15.08.2012
-#  $
 #
 
 # Setting some enviroment variables
-
 export LAMA_LOG=ERROR
 export LAMA_UNSUPPORTED=IGNORE
 export LAMA_DEVICE=0 #default
 
 echo `pwd`
 
-path_lcov=/home/lama/bin/lcov
-path_genhtml=/home/lama/bin/genhtml
+path_lcov=lcov
+path_genhtml=genhtml
 
 # Creating dir named by YEARS_MONTHS_DAYS-HOURSMINUTES
 dirname=$(date +%y_%m_%d-%k%M)
@@ -51,7 +49,7 @@ mkdir ${dirname}
 cd ${dirname}
 
 # Clearing up environment
-${path_lcov} --base-directory ../.. --directory ../.. --zerocounters
+lcov --base-directory ../.. --directory ../.. --zerocounters
 
 
 
@@ -87,7 +85,7 @@ cd ${dirname}
 ${path_lcov} --base-directory ../.. --directory ../.. --capture --output-file=data.info
 
 #Extracting just Sourcefiles from LAMA/src/*
-${path_lcov} --extract data.info "*/LAMA/src/*" --output-file=data.info
+${path_lcov} --extract data.info "@CMAKE_SOURCE_DIR@/*" --output-file=data.info
 
 # Generating html-structure
 ${path_genhtml} data.info

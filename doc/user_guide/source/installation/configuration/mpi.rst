@@ -1,5 +1,3 @@
-.. _section_mpi:
-
 Using MPI in LAMA
 -----------------
 
