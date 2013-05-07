@@ -29,19 +29,14 @@
 #         measure code coverage of LAMA.
 #  @author: Alexander Büchel, Lauretta Schubert
 #  @date 15.08.2012
-#  $
 #
 
 # Setting some enviroment variables
-
 export LAMA_LOG=ERROR
 export LAMA_UNSUPPORTED=IGNORE
 export LAMA_DEVICE=0 #default
 
 echo `pwd`
-
-#path_lcov=/home/lama/bin/lcov
-#path_genhtml=/home/lama/bin/genhtml
 
 path_lcov=lcov
 path_genhtml=genhtml
@@ -62,17 +57,16 @@ cd ..
 
 # Running tests serial
 echo "Running serial tests"
-#./lama_test
-./lama_test --run_test=DenseMatrixTest
+./lama_test
 
 if [ -d distributed ];
 then
 	# Running parallel tests serial and with two processes
 	cd distributed
 	echo "Running distributed tests serial"
-#	./lama_dist_test
+	./lama_dist_test
 	echo "Running distributed tests with 2 processes"
-#	mpirun -np 2 ./lama_dist_test
+	mpirun -np 2 ./lama_dist_test
 	cd ..
 fi
 
@@ -81,7 +75,7 @@ then
 	#Running CUDA tests
 	cd cuda
 	echo "Running cuda tests"
-#	./lama_cuda_test
+	./lama_cuda_test
 	cd ..
 fi
 
