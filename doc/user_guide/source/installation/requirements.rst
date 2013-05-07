@@ -22,15 +22,15 @@ First of all you need to install the following software for building LAMA:
 
   - Needed for creating platform independent makefiles or projects.  
 
-- :ref:`C/C++ Compiler <c++>` with OpenMP 2.0 capable
+- :doc:`C/C++ Compiler <configuration/c++>` with OpenMP 2.0 capable
 
   - Supported Compilers are: GNU, Intel, PGI. 
 
-- :ref:`Boost (version 1.34 or later) <section_boost>`
+- :doc:`Boost (version 1.34 or later) <configuration/boost>`
 
   - For LAMA we need the headers only packages *thread* for the internal thread management. *unit_test_framework* and *regex* are used for the tests (optional).
 
-- :ref:`BLAS and LAPack <blas>`
+- :doc:`BLAS and LAPack <configuration/blas>`
 
   - Needed for the implementation of the dense blas functions. LAMA only prepares own implementations for sparse blas routines, for dense matrices we rely on given implementations. Supported libraries are: Intel MKL, GOTO, ATLAS, FortranBLAS. 
 
@@ -41,11 +41,11 @@ Recommended software
 
 For using the support of parallel/hybrid machines in LAMA, you need the following:
 
-- :ref:`CUDA (version 4.0 or later) <section_cuda>`
+- :doc:`CUDA (version 4.0 or later) <configuration/cuda>`
 
   - Needed to utilize CUDA capable GPUs from NVidia.
 
-- :ref:`MPI <section_mpi>`
+- :doc:`MPI <configuration/mpi>`
 
   - Needed for distributed memory parallelism.
 

@@ -22,7 +22,7 @@ packages or which one to choose. For a specific package please refer to the belo
    Tracing <tracing>
 
 The following steps are for generating Makefiles under Linux. For the creation of a Visual Studio project under Windows
-see :ref:`here <windowsTipps>`.
+see :doc:`here <../windowsTipps>`.
 
 LAMA uses for its configuration the CMake utility. This utility is called in the build directory. Although in-source
 builds are supported we recommend an out-of-source build. So create a build directory and change to it.
@@ -99,7 +99,7 @@ following table. For advanced help refer to the seperate section.
    "GASNet", "GASNET_LIBRARY_PATH", "path to GASNet library"
    "OpenShmem", "OSHMEM_INCLUDE_PATH and OSHMEM_LIBRARY_PATH", "paths to Open shared memory include and library dir"
 
-For changing the C compiler there is a different way for telling cmake. Please see :ref:`here <c++>`. 
+For changing the C compiler there is a different way for telling cmake. Please see :doc:`here <c++>`. 
 
 Your cmake-call may look like this then:
 

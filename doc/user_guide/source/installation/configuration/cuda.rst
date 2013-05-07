@@ -1,5 +1,3 @@
-.. _section_cuda:
-
 Using CUDA in LAMA
 ------------------
 

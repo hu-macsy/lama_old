@@ -1,5 +1,3 @@
-.. _lecture_index:
-
 *******
 Lecture
 *******

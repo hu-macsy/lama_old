@@ -1,10 +1,6 @@
-.. _developer_index:
-
 **************
 For Developers
 **************
-
-
 
 .. toctree::
    :titlesonly:
