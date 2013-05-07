@@ -8,8 +8,7 @@ The Benchmark Runner File contains 2 Lists:
 
 - INPUT_SETS
 
-Each List has one or more Elements. The elements are annotated as in the
-following example:
+Each List has one or more Elements. The elements are annotated as in the following example:
 
 .. code-block:: bash
 
@@ -20,8 +19,8 @@ following example:
     - inputSet1(args)
     - inputSet2(args)
 
-As you can see in the example there are two Benchmarks specified and two input
-sets. This will result in the following Tests.
+As you can see in the example there are two Benchmarks specified and two input sets.
+This will result in the following Tests.
 
 - Benchmark1 with inputSet1
 - Benchmark1 with inputSet2
@@ -42,13 +41,8 @@ These variables are annotated as follows:
    TIME_MIN: y
    REP_CTRL: z
 
-This Configuratin would result in the benchmarks beeing lauched at least **z**
-times to avoid aberrations. One Benchmark will execute its execute() function at
-least **x** times. But the benchmark will run at least **y** seconds.
-
-.. code-block:: bash
-
-   TODO LAUNCH_CONF
+This Configuration would result in the benchmarks being lauched at least **z** times to avoid aberrations. One
+Benchmark will execute its execute() function at least **x** times. But the benchmark will run at least **y** seconds.
 
 Input Sets
 ----------
@@ -61,6 +55,7 @@ You can specify arguments, passed to an Input Set, with brackets:
     - inputSet1(400 500)
     - inputSet2(arument)
 
-This will pass the Arguments **400** and **500** to **inputSet1** and
-**argument** to **inputSet2** for a list on the specific Input Sets and their
-arguments you should have a look at :doc:`inputSet`
+This will pass the Arguments **400** and **500** to **inputSet1** and **argument** to **inputSet2** for a list on the
+specific Input Sets and their arguments you should have a look at :doc:`inputSet`
+
+.. TODO LAUNCH_CONF
