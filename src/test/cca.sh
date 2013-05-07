@@ -59,16 +59,17 @@ cd ..
 
 # Running tests serial
 echo "Running serial tests"
-./lama_test
+#./lama_test
+./lama_test --run_test=DenseMatrixTest
 
 if [ -d distributed ];
 then
 	# Running parallel tests serial and with two processes
 	cd distributed
 	echo "Running distributed tests serial"
-	./lama_dist_test
+#	./lama_dist_test
 	echo "Running distributed tests with 2 processes"
-	mpirun -np 2 ./lama_dist_test
+#	mpirun -np 2 ./lama_dist_test
 	cd ..
 fi
 
@@ -77,7 +78,7 @@ then
 	#Running CUDA tests
 	cd cuda
 	echo "Running cuda tests"
-	./lama_cuda_test
+#	./lama_cuda_test
 	cd ..
 fi
 
