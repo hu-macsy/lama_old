@@ -171,7 +171,7 @@ void Matrix::setReplicatedMatrix( const IndexType numRows, const IndexType numCo
 
 /* ---------------------------------------------------------------------------------*/
 
-std::auto_ptr<_LAMAArray> Matrix::createArray() const
+_LAMAArray* Matrix::createArray() const
 {
     // Static method of _LAMAArray provides exactly the needed functionality.
 
@@ -180,44 +180,52 @@ std::auto_ptr<_LAMAArray> Matrix::createArray() const
 
 /* ---------------------------------------------------------------------------------*/
 
-std::auto_ptr<Matrix> Matrix::create( const IndexType numRows, const IndexType numColumns ) const
+Matrix* Matrix::create( const IndexType numRows, const IndexType numColumns ) const
 {
-    std::auto_ptr<Matrix> matrix = create();
+    // use auto pointer so new created matrix is freed in case of Exception
+
+    std::auto_ptr<Matrix> matrix( create() );
+
     matrix->allocate( numRows, numColumns );
-    return matrix;
+
+    return matrix.release();
 }
 
 /* ---------------------------------------------------------------------------------*/
 
-std::auto_ptr<Matrix> Matrix::create( const IndexType size ) const
+Matrix* Matrix::create( const IndexType size ) const
 {
-    std::auto_ptr<Matrix> matrix = create();
+    std::auto_ptr<Matrix> matrix ( create() );
     DistributionPtr dist( new NoDistribution( size ) );
     matrix->allocate( dist, dist );
-    return matrix;
+    return matrix.release();
 }
 
 /* ---------------------------------------------------------------------------------*/
 
-std::auto_ptr<Matrix> Matrix::create( DistributionPtr rowDistribution, DistributionPtr colDistribution ) const
+Matrix* Matrix::create( DistributionPtr rowDistribution, DistributionPtr colDistribution ) const
 {
-    std::auto_ptr<Matrix> matrix = create();
+    std::auto_ptr<Matrix> matrix( create() );
+
     matrix->allocate( rowDistribution, colDistribution );
-    return matrix;
+
+    return matrix.release();
 }
 
 /* ---------------------------------------------------------------------------------*/
 
-std::auto_ptr<Matrix> Matrix::create( DistributionPtr distribution ) const
+Matrix* Matrix::create( DistributionPtr distribution ) const
 {
-    std::auto_ptr<Matrix> matrix = create();
+    std::auto_ptr<Matrix> matrix( create() );
+
     matrix->allocate( distribution, distribution );
-    return matrix;
+
+    return matrix.release();
 }
 
 /* ---------------------------------------------------------------------------------*/
 
-VectorPtr Matrix::createDenseVector( DistributionPtr distribution, const Scalar value ) const
+Vector* Matrix::createDenseVector( DistributionPtr distribution, const Scalar value ) const
 {
     Scalar::ScalarType matrixValueType = getValueType();
 
@@ -226,9 +234,9 @@ VectorPtr Matrix::createDenseVector( DistributionPtr distribution, const Scalar 
     switch ( matrixValueType )
     {
     case Scalar::DOUBLE:
-        return VectorPtr( new DenseVector<double>( distribution, value.getValue<double>() ) );
+        return new DenseVector<double>( distribution, value.getValue<double>() );
     case Scalar::FLOAT:
-        return VectorPtr( new DenseVector<float>( distribution, value.getValue<float>() ) );
+        return new DenseVector<float>( distribution, value.getValue<float>() );
     default:
         LAMA_THROWEXCEPTION( "unsupported vector type : " << matrixValueType )
     }

@@ -347,7 +347,7 @@ void MPICommunicator::exchangeByPlan(
     exchangeByPlanImpl( recvData, recvPlan, sendData, sendPlan );
 }
 
-std::auto_ptr<SyncToken> MPICommunicator::exchangeByPlanAsync(
+SyncToken* MPICommunicator::exchangeByPlanAsync(
     int* const recvData,
     const CommunicationPlan& recvPlan,
     const int* const sendData,
@@ -356,7 +356,7 @@ std::auto_ptr<SyncToken> MPICommunicator::exchangeByPlanAsync(
     return exchangeByPlanAsyncImpl( recvData, recvPlan, sendData, sendPlan );
 }
 
-std::auto_ptr<SyncToken> MPICommunicator::exchangeByPlanAsync(
+SyncToken* MPICommunicator::exchangeByPlanAsync(
     float* const recvData,
     const CommunicationPlan& recvPlan,
     const float* const sendData,
@@ -365,7 +365,7 @@ std::auto_ptr<SyncToken> MPICommunicator::exchangeByPlanAsync(
     return exchangeByPlanAsyncImpl( recvData, recvPlan, sendData, sendPlan );
 }
 
-std::auto_ptr<SyncToken> MPICommunicator::exchangeByPlanAsync(
+SyncToken* MPICommunicator::exchangeByPlanAsync(
     double* const recvData,
     const CommunicationPlan& recvPlan,
     const double* const sendData,
@@ -451,7 +451,7 @@ void MPICommunicator::exchangeByPlanImpl(
 /* ---------------------------------------------------------------------------------- */
 
 template<typename T>
-auto_ptr<SyncToken> MPICommunicator::exchangeByPlanAsyncImpl(
+SyncToken* MPICommunicator::exchangeByPlanAsyncImpl(
     T* const recvData,
     const CommunicationPlan& recvPlan,
     const T* const sendData,
@@ -517,7 +517,7 @@ auto_ptr<SyncToken> MPICommunicator::exchangeByPlanAsyncImpl(
         }
     }
 
-    return auto_ptr<SyncToken>( pSyncToken.release() );
+    return pSyncToken.release();
 }
 
 /* ---------------------------------------------------------------------------------- */
@@ -702,7 +702,7 @@ IndexType MPICommunicator::shiftImpl(
 /* ---------------------------------------------------------------------------------- */
 
 template<typename T>
-auto_ptr<SyncToken> MPICommunicator::shiftAsyncMPI(
+SyncToken* MPICommunicator::shiftAsyncMPI(
     T recvVals[],
     const PartitionId source,
     const T sendVals[],
@@ -722,10 +722,10 @@ auto_ptr<SyncToken> MPICommunicator::shiftAsyncMPI(
     pSyncToken->pushRequest( startrecv( recvVals, size, source ) );
     pSyncToken->pushRequest( startsend( sendVals, size, dest ) );
 
-    return auto_ptr<SyncToken>( pSyncToken.release() );
+    return pSyncToken.release();
 }
 
-auto_ptr<SyncToken> MPICommunicator::shiftAsyncImpl(
+SyncToken* MPICommunicator::shiftAsyncImpl(
     double recvVals[],
     const double sendVals[],
     const IndexType size,
@@ -743,7 +743,7 @@ auto_ptr<SyncToken> MPICommunicator::shiftAsyncImpl(
     return shiftAsyncMPI( recvVals, source, sendVals, dest, size );
 }
 
-auto_ptr<SyncToken> MPICommunicator::shiftAsyncImpl(
+SyncToken* MPICommunicator::shiftAsyncImpl(
     float recvVals[],
     const float sendVals[],
     const IndexType size,
@@ -759,7 +759,7 @@ auto_ptr<SyncToken> MPICommunicator::shiftAsyncImpl(
     return shiftAsyncMPI( recvVals, source, sendVals, dest, size );
 }
 
-auto_ptr<SyncToken> MPICommunicator::shiftAsyncImpl(
+SyncToken* MPICommunicator::shiftAsyncImpl(
     int recvVals[],
     const int sendVals[],
     const IndexType size,
@@ -835,9 +835,14 @@ T MPICommunicator::maxval( const T value ) const
 
     T globalMax; // no initialization needed, done in MPI call
 
+    LAMA_LOG_DEBUG( logger, "maxval: local value = " << value )
+
     LAMA_MPICALL( logger,
                   MPI_Allreduce( ( void* ) &value, ( void* ) &globalMax, 1, commType, MPI_MAX, selectMPIComm() ),
                   "MPI_Allreduce( MPI_MAX )" )
+
+    LAMA_LOG_DEBUG( logger, "maxval: global value = " << globalMax )
+
     return globalMax;
 }
 

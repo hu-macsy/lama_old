@@ -269,6 +269,8 @@ void CommunicatorTest::updateHaloTest()
 {
     typedef T ValueType;
 
+    LAMA_LOG_INFO( logger, "updateHaloTest<" << typeid( T ).name() << ">" );
+
     const IndexType factor = 4;
     const IndexType vectorSize = factor * size;
     BlockDistribution distribution( vectorSize, comm );
@@ -286,8 +288,13 @@ void CommunicatorTest::updateHaloTest()
         requiredIndexes.push_back( requiredIndex );
     }
 
+    LAMA_LOG_INFO( logger, "build the Halo" );
+
     Halo halo;
     HaloBuilder::build( distribution, requiredIndexes, halo );
+
+    LAMA_LOG_INFO( logger, "halo is now available: " << halo );
+
     LAMAArray<ValueType> localData;
     {
         HostWriteOnlyAccess<ValueType> localDataAccess( localData, distribution.getLocalSize() );
@@ -297,6 +304,8 @@ void CommunicatorTest::updateHaloTest()
             localDataAccess[i] = static_cast<ValueType>( distribution.local2global( i ) );
         }
     }
+
+    LAMA_LOG_INFO( logger, "update halo data by communicator" );
 
     LAMAArray<ValueType> haloData;
     comm->updateHalo( haloData, localData, halo );
@@ -390,7 +399,7 @@ LAMA_COMMON_TEST_CASE_TM( CommunicatorTest, T, shiftASyncTest ) {
         sbuffer[ 1 ] = static_cast<ValueType>( comm->getNeighbor( 1 ) );
     }
 // if we do not keep the token, it will be synchronized immeadiately
-    std::auto_ptr<SyncToken> token1 = comm->shiftAsync( recvBuffer, sendBuffer, 1 );
+    std::auto_ptr<SyncToken> token1( comm->shiftAsync( recvBuffer, sendBuffer, 1 ) );
     LAMA_LOG_INFO( logger, "token for shiftAsync before wait : " << *token1 );
     token1->wait();
     LAMA_LOG_INFO( logger, "token for shiftAsync after wait : " << *token1 );
@@ -400,7 +409,7 @@ LAMA_COMMON_TEST_CASE_TM( CommunicatorTest, T, shiftASyncTest ) {
         HostReadAccess<ValueType> rbuffer( recvBuffer );
     }
 // dir = 0: should be like assignment
-    comm->shiftAsync( recvBuffer, sendBuffer, 0 );
+    delete comm->shiftAsync( recvBuffer, sendBuffer, 0 );
     LAMA_LOG_INFO( logger, "async shift dir = 0, self assing" );
     BOOST_CHECK_EQUAL( 2, recvBuffer.size() );
     {
@@ -411,11 +420,11 @@ LAMA_COMMON_TEST_CASE_TM( CommunicatorTest, T, shiftASyncTest ) {
     }
 // Buffers must be different
     LAMA_LOG_INFO( logger, "async shift : using same send and recv buffer should fail" );
-    LAMA_CHECK_THROW( comm->shiftAsync( sendBuffer, sendBuffer, 1 ), Exception );
+    LAMA_CHECK_THROW( delete comm->shiftAsync( sendBuffer, sendBuffer, 1 ), Exception );
 // We also verify that the exception is thrown before changing the send Buffer
     BOOST_CHECK_EQUAL( 2, sendBuffer.size() );
     LAMA_LOG_INFO( logger, "async shift : try to access send / receive buffer before synchronization" );
-    std::auto_ptr<SyncToken> token = comm->shiftAsync( recvBuffer, sendBuffer, 1 );
+    std::auto_ptr<SyncToken> token( comm->shiftAsync( recvBuffer, sendBuffer, 1 ) );
 // read access on send buffer should be possible
     {
         HostReadAccess<ValueType> sbuffer( sendBuffer );

@@ -131,7 +131,8 @@ void HaloBuilder::build( const Distribution& distribution, const std::vector<Ind
     LAMA_LOG_TRACE( logger, "providesPlan: " << providesPlan )
 
     // communicate required indexes to other processors to get provideIndexes
-    communicator.exchangeByPlanAsync( halo.mProvidesIndexes, providesPlan, halo.mRequiredIndexes, requiredPlan );
+
+    communicator.exchangeByPlan( halo.mProvidesIndexes, providesPlan, halo.mRequiredIndexes, requiredPlan );
 
     LAMA_LOG_INFO( logger, "exchanged plan indexes" )
 #ifdef LAMA_LOG_TRACE

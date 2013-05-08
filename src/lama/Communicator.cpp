@@ -303,7 +303,7 @@ void Communicator::getUserProcArray( PartitionId userProcArray[3] )
 /* -------------------------------------------------------------------------- */
 
 template<typename T>
-auto_ptr<SyncToken> Communicator::defaultShiftAsync(
+SyncToken* Communicator::defaultShiftAsync(
     T targetVals[],
     const T sourceVals[],
     const IndexType size,
@@ -316,10 +316,10 @@ auto_ptr<SyncToken> Communicator::defaultShiftAsync(
 
     LAMA_ASSERT_ERROR( recvSize == size, "asynchronous shift with different sizes on partitions" )
 
-    return auto_ptr<SyncToken>( new NoSyncToken() );
+    return new NoSyncToken();
 }
 
-std::auto_ptr<SyncToken> Communicator::shiftAsyncImpl(
+SyncToken* Communicator::shiftAsyncImpl(
     double newVals[],
     const double oldVals[],
     const IndexType size,
@@ -328,7 +328,7 @@ std::auto_ptr<SyncToken> Communicator::shiftAsyncImpl(
     return defaultShiftAsync( newVals, oldVals, size, direction );
 }
 
-std::auto_ptr<SyncToken> Communicator::shiftAsyncImpl(
+SyncToken* Communicator::shiftAsyncImpl(
     float newVals[],
     const float oldVals[],
     const IndexType size,
@@ -337,7 +337,7 @@ std::auto_ptr<SyncToken> Communicator::shiftAsyncImpl(
     return defaultShiftAsync( newVals, oldVals, size, direction );
 }
 
-std::auto_ptr<SyncToken> Communicator::shiftAsyncImpl(
+SyncToken* Communicator::shiftAsyncImpl(
     int newVals[],
     const int oldVals[],
     const IndexType size,
@@ -404,7 +404,7 @@ void Communicator::shiftArray( LAMAArray<T>& recvArray, const LAMAArray<T>& send
 /* -------------------------------------------------------------------------- */
 
 template<typename T>
-auto_ptr<SyncToken> Communicator::shiftAsync(
+SyncToken* Communicator::shiftAsync(
     LAMAArray<T>& recvArray,
     const LAMAArray<T>& sendArray,
     const int direction ) const
@@ -413,8 +413,8 @@ auto_ptr<SyncToken> Communicator::shiftAsync(
 
     recvArray.clear(); // do not keep any old data, keep capacities
 
-    auto_ptr<HostWriteAccess<T> > recvData( new HostWriteAccess<T>( recvArray ) );
-    auto_ptr<HostReadAccess<T> > sendData( new HostReadAccess<T>( sendArray ) );
+    boost::shared_ptr<HostWriteAccess<T> > recvData( new HostWriteAccess<T>( recvArray ) );
+    boost::shared_ptr<HostReadAccess<T> > sendData( new HostReadAccess<T>( sendArray ) );
 
     IndexType numElems = sendData->size();
 
@@ -423,14 +423,14 @@ auto_ptr<SyncToken> Communicator::shiftAsync(
     // For shifting of data we use the pure virtual methods implemened by each communicator
     // Note: get is the method of the accesses and not of the auto_ptr
 
-    auto_ptr<SyncToken> syncToken = shiftAsyncImpl( recvData->get(), sendData->get(), numElems, direction );
+    SyncToken* syncToken = shiftAsyncImpl( recvData->get(), sendData->get(), numElems, direction );
 
-    LAMA_ASSERT_DEBUG( syncToken.get(), "NULL pointer for sync token" )
+    LAMA_ASSERT_DEBUG( syncToken, "NULL pointer for sync token" )
 
     // accesses are pushed in the sync token so they are freed after synchronization
 
-    syncToken->pushAccess( auto_ptr<BaseAccess>( sendData.release() ) );
-    syncToken->pushAccess( auto_ptr<BaseAccess>( recvData.release() ) );
+    syncToken->pushAccess( sendData );
+    syncToken->pushAccess( recvData );
 
     return syncToken;
 }
@@ -472,7 +472,7 @@ void Communicator::updateHalo( LAMAArray<T> &haloValues, const LAMAArray<T>& loc
 /* -------------------------------------------------------------------------- */
 
 template<typename T>
-auto_ptr<SyncToken> Communicator::updateHaloAsync(
+SyncToken* Communicator::updateHaloAsync(
     LAMAArray<T>& haloValues,
     const LAMAArray<T>& localValues,
     const Halo& halo ) const
@@ -499,7 +499,7 @@ auto_ptr<SyncToken> Communicator::updateHaloAsync(
 
     IndexType numSendValues = providesPlan.totalQuantity();
 
-    auto_ptr<LAMAArray<T> > sendValues( new LAMAArray<T>( numSendValues ) );
+    boost::shared_ptr<LAMAArray<T> > sendValues( new LAMAArray<T>( numSendValues ) );
 
     // put together the (send) values to provide for other partitions
 
@@ -514,13 +514,13 @@ auto_ptr<SyncToken> Communicator::updateHaloAsync(
         }
     }
 
-    auto_ptr<SyncToken> token = exchangeByPlanAsync( haloValues, requiredPlan, *sendValues, providesPlan );
+    SyncToken* token( exchangeByPlanAsync( haloValues, requiredPlan, *sendValues, providesPlan ) );
 
     // Also push the sendValues array to the token so it will be freed after synchronization
 
     // Note: it is guaranteed that access to sendValues is freed before sendValues
 
-    token->pushArray( auto_ptr<_LAMAArray>( sendValues.release() ) );
+    token->pushArray( sendValues );
 
     return token;
 }
@@ -685,6 +685,34 @@ void Communicator::computeOwners(
 
 /* -------------------------------------------------------------------------- */
 
+bool Communicator::all( const bool flag ) const
+{
+    int val = 0;  // flag is true
+
+    if ( !flag ) val = 1;
+
+    int allval = sum( val );  // count flags == false
+ 
+    LAMA_LOG_DEBUG( logger, "sum( " << val << " ) = " << allval )
+
+    return allval == 0;
+}
+
+/* -------------------------------------------------------------------------- */
+
+bool Communicator::any( const bool flag ) const
+{
+    int val =  flag ? 1 : 0 ;  //  1 if flag is true
+
+    int allval = sum( val );  // count flags == false
+ 
+    LAMA_LOG_DEBUG( logger, "sum( " << val << " ) = " << allval )
+
+    return allval > 0;
+}
+
+/* -------------------------------------------------------------------------- */
+
 // Instantiation of template methods for the supported types
 template LAMA_DLL_IMPORTEXPORT
 IndexType Communicator::shift0(
@@ -717,38 +745,40 @@ template LAMA_DLL_IMPORTEXPORT
 void Communicator::shiftArray( LAMAArray<int>& recvArray, const LAMAArray<int>& sendArray, const int direction ) const;
 
 template LAMA_DLL_IMPORTEXPORT
-auto_ptr<SyncToken> Communicator::defaultShiftAsync(
+SyncToken* Communicator::defaultShiftAsync(
     double targetVals[],
     const double sourceVals[],
     const IndexType size,
     const int direction ) const;
 
 template LAMA_DLL_IMPORTEXPORT
-auto_ptr<SyncToken> Communicator::defaultShiftAsync(
+SyncToken* Communicator::defaultShiftAsync(
     float targetVals[],
     const float sourceVals[],
     const IndexType size,
     const int direction ) const;
 
 template LAMA_DLL_IMPORTEXPORT
-auto_ptr<SyncToken> Communicator::defaultShiftAsync(
+SyncToken* Communicator::defaultShiftAsync(
     int targetVals[],
     const int sourceVals[],
     const IndexType size,
     const int direction ) const;
 
 template LAMA_DLL_IMPORTEXPORT
-auto_ptr<SyncToken> Communicator::shiftAsync(
+SyncToken* Communicator::shiftAsync(
     LAMAArray<float>& recvArray,
     const LAMAArray<float>& sendArray,
     const int direction ) const;
+
 template LAMA_DLL_IMPORTEXPORT
-auto_ptr<SyncToken> Communicator::shiftAsync(
+SyncToken* Communicator::shiftAsync(
     LAMAArray<double>& recvArray,
     const LAMAArray<double>& sendArray,
     const int direction ) const;
+
 template LAMA_DLL_IMPORTEXPORT
-auto_ptr<SyncToken> Communicator::shiftAsync(
+SyncToken* Communicator::shiftAsync(
     LAMAArray<int>& recvArray,
     const LAMAArray<int>& sendArray,
     const int direction ) const;
@@ -769,19 +799,19 @@ template LAMA_DLL_IMPORTEXPORT
 void Communicator::updateHalo( LAMAArray<int>& haloValues, const LAMAArray<int>& localValues, const Halo& halo ) const;
 
 template LAMA_DLL_IMPORTEXPORT
-auto_ptr<SyncToken> Communicator::updateHaloAsync(
+SyncToken* Communicator::updateHaloAsync(
     LAMAArray<float>& haloValues,
     const LAMAArray<float>& localValues,
     const Halo& halo ) const;
 
 template LAMA_DLL_IMPORTEXPORT
-auto_ptr<SyncToken> Communicator::updateHaloAsync(
+SyncToken* Communicator::updateHaloAsync(
     LAMAArray<double>& haloValues,
     const LAMAArray<double>& localValues,
     const Halo& halo ) const;
 
 template LAMA_DLL_IMPORTEXPORT
-auto_ptr<SyncToken> Communicator::updateHaloAsync(
+SyncToken* Communicator::updateHaloAsync(
     LAMAArray<int>& haloValues,
     const LAMAArray<int>& localValues,
     const Halo& halo ) const;

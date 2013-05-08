@@ -85,7 +85,7 @@ Vector& SolutionProxy::getReference()
 
 std::auto_ptr<Vector> SolutionProxy::create()
 {
-    return mSolution->create();
+    return std::auto_ptr<Vector>( mSolution->create() );
 }
 
 void SolutionProxy::swap( Vector*& other )

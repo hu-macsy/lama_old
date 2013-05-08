@@ -190,7 +190,7 @@ public:
      *  is returned. Auto pointer indicates that calling routine takes ownership of
      *  the allocated array.
      */
-    std::auto_ptr<_LAMAArray> createArray() const;
+    _LAMAArray* createArray() const;
 
     /**
      * @brief Clears the full matrix, resets global and local sizes to 0.
@@ -669,12 +669,12 @@ public:
      *     ...
      *     // Create a copy of the input matrix
      *
-     *     std::auto_ptr<Matrix> newMatrix = matrix.create();
+     *     std::auto_ptr<Matrix> newMatrix ( matrix.create() );
      *     *newMatrix = matrix;
      *
      *     // Create a unity matrix of same type and same row distribution as matrix
      *
-     *     std::auto_ptr<Matrix> newMatrix = matrix.create();
+     *     std::auto_ptr<Matrix> newMatrix ( matrix.create() );
      *     newMatrix->allocate( matrix.getRowDistributionPtr(), matrix.getRowDistributionPtr() );
      *     newMatrix->setIdentity();
      *     ...
@@ -684,7 +684,7 @@ public:
      * This method is a workaround to call the constructor of a derived matrix class
      * where the derived class is not known at compile time.
      */
-    virtual std::auto_ptr<Matrix> create() const = 0;
+    virtual Matrix* create() const = 0;
 
     /**
      * @brief Constructor creates a replicated matrix of same type as a given matrix.
@@ -692,14 +692,14 @@ public:
      * @param[in] numRows      number of rows, must be non-negative.
      * @param[in] numColumns   number of columns, must be non-negative.
      */
-    std::auto_ptr<Matrix> create( const IndexType numRows, const IndexType numColumns ) const;
+    Matrix* create( const IndexType numRows, const IndexType numColumns ) const;
 
     /**
      * @brief Constructor creates a distributed zero matrix of same type as a given matrix.
      *
      * @param[in] size   TODO[doxy] Complete Description.
      */
-    std::auto_ptr<Matrix> create( const IndexType size ) const;
+    Matrix* create( const IndexType size ) const;
 
     /**
      * @brief Constructor creates a distributed zero matrix of same type as a given matrix.
@@ -707,14 +707,14 @@ public:
      * @param[in] rowDistribution   TODO[doxy] Complete Description.
      * @param[in] colDistribution   TODO[doxy] Complete Description.
      */
-    std::auto_ptr<Matrix> create( DistributionPtr rowDistribution, DistributionPtr colDistribution ) const;
+    Matrix* create( DistributionPtr rowDistribution, DistributionPtr colDistribution ) const;
 
     /**
      * @brief Constructor creates a distributed zero matrix of same type as a given matrix.
      *
      * @param[in] distribution   TODO[doxy] Complete Description.
      */
-    std::auto_ptr<Matrix> create( DistributionPtr distribution ) const;
+    Matrix* create( DistributionPtr distribution ) const;
 
     /**
      * @brief Constructor creates a distributed dense vector of same type as a given matrix.
@@ -722,7 +722,7 @@ public:
      * @param[in] distribution   TODO[doxy] Complete Description.
      * @param[in] value          TODO[doxy] Complete Description.
      */
-    VectorPtr createDenseVector( DistributionPtr distribution, const Scalar value ) const;
+    Vector* createDenseVector( DistributionPtr distribution, const Scalar value ) const;
 
     /**
      * @brief Constructor function which creates a copy of this matrix.
@@ -736,7 +736,7 @@ public:
      * This method is a workaround to call the copy constructor of a derived matrix class
      * where the derived class is not known at compile time.
      */
-    virtual std::auto_ptr<Matrix> copy() const = 0;
+    virtual Matrix* copy() const = 0;
 
     /**
      * @brief Queries the value type of the matrix elements, e.g. DOUBLE or FLOAT.

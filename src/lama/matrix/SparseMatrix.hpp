@@ -492,13 +492,13 @@ public:
 
     virtual Scalar::ScalarType getValueType() const;
 
-    /* Implementation of pure method of class Matrix. */
+    /* Implementation of pure method Matrix::create with covariant return type */
 
-    virtual std::auto_ptr<Matrix> create() const;
+    virtual SparseMatrix<ValueType>* create() const;
 
-    /* Implementation of pure method of class Matrix. */
+    /* Implementation of pure method Matrix::copy with covariant return type */
 
-    virtual std::auto_ptr<Matrix> copy() const;
+    virtual SparseMatrix<ValueType>* copy() const;
 
     /* Implementation of pure method of class Matrix. */
 

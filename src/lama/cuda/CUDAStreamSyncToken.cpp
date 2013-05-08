@@ -50,6 +50,13 @@ CUDAStreamSyncToken::CUDAStreamSyncToken( CUDAContextPtr cudaContext, CUstream s
     LAMA_LOG_DEBUG( logger, "StreamSyncToken for " << *cudaContext << " generated, stream = " << stream )
 }
 
+CUDAStreamSyncToken::CUDAStreamSyncToken( CUDAContextPtr cudaContext, CUstream stream, CUevent event )
+    : mCUDAContext( cudaContext ), mStream( stream ), mEvent( event )
+{
+    LAMA_LOG_DEBUG( logger, "StreamSyncToken for " << *cudaContext << " generated" 
+                             << ", event = " << event << ", stream = " << stream )
+}
+
 CUDAStreamSyncToken::~CUDAStreamSyncToken()
 {
     wait();
@@ -65,7 +72,7 @@ void CUDAStreamSyncToken::wait()
     LAMA_LOG_DEBUG( logger, "wait on CUDA stream synchronization" )
 
     {
-        LAMA_REGION( "CUDA_synchronize" )
+        LAMA_REGION( "CUDA.streamSynchronize" )
 
         LAMA_CONTEXT_ACCESS( mCUDAContext )
 
@@ -77,7 +84,9 @@ void CUDAStreamSyncToken::wait()
         }
         else
         {
+            LAMA_LOG_DEBUG( logger, "synchronize with stream " << mStream );
             LAMA_CUDA_DRV_CALL( cuStreamSynchronize( mStream ), "cuStreamSynchronize( " << mStream <<" ) failed." );
+            LAMA_LOG_DEBUG( logger, "synchronized with stream " << mStream );
         }
     }
 
@@ -95,33 +104,7 @@ bool CUDAStreamSyncToken::probe() const
 
 cudaStream_t CUDAStreamSyncToken::getCUDAStream() const
 {
-    return (cudaStream_t) mStream;
-}
-
-void CUDAStreamSyncToken::createEvent( CUevent& event ) const
-{
-    LAMA_CONTEXT_ACCESS( mCUDAContext )
-    LAMA_CUDA_DRV_CALL( cuEventCreate( &event, CU_EVENT_DEFAULT | CU_EVENT_DISABLE_TIMING ),
-                        "Could not create event " )
-}
-
-void CUDAStreamSyncToken::createTimingEvent( CUevent& event ) const
-{
-    LAMA_CONTEXT_ACCESS( mCUDAContext )
-    LAMA_CUDA_DRV_CALL( cuEventCreate( &event, CU_EVENT_DEFAULT ), "Could not create event " )
-}
-
-void CUDAStreamSyncToken::getTime( float* time, CUevent& startEvent, CUevent& stopEvent ) const
-{
-    LAMA_CONTEXT_ACCESS( mCUDAContext )
-    LAMA_CUDA_DRV_CALL( cuEventElapsedTime( time, startEvent, stopEvent ),
-                        "cuEventElapsedTime failed for CUevent " << stopEvent << '.' )
-}
-
-void CUDAStreamSyncToken::recordEvent( const CUevent event )
-{
-    LAMA_CONTEXT_ACCESS( mCUDAContext )
-    LAMA_CUDA_DRV_CALL( cuEventRecord ( event, mStream ), "cuEventRecord failed for CUevent "<<event<<'.' )
+    return ( cudaStream_t ) mStream;
 }
 
 bool CUDAStreamSyncToken::probeEvent( const CUevent& stopEvent ) const
@@ -160,66 +143,5 @@ void CUDAStreamSyncToken::synchronizeEvent( const CUevent event ) const
     LAMA_CUDA_DRV_CALL( cuEventSynchronize( event ), "cuEventSynchronize failed for CUevent "<<event<<'.' )
 }
 
-CUDAStreamSyncTokenPtr::CUDAStreamSyncTokenPtr() throw ()
-{
-}
-
-CUDAStreamSyncTokenPtr::CUDAStreamSyncTokenPtr( CUDAStreamSyncTokenPtr& other ) throw ()
-    : mCUDAStreamSyncToken( other.mCUDAStreamSyncToken )
-{
-}
-
-CUDAStreamSyncTokenPtr::CUDAStreamSyncTokenPtr( std::auto_ptr<CUDAStreamSyncToken> other ) throw ()
-    : mCUDAStreamSyncToken( other )
-{
-}
-
-CUDAStreamSyncTokenPtr::CUDAStreamSyncTokenPtr( CUDAStreamSyncToken* pointer ) throw ()
-    : mCUDAStreamSyncToken( pointer )
-{
-}
-
-CUDAStreamSyncTokenPtr::~CUDAStreamSyncTokenPtr()
-{
-}
-
-CUDAStreamSyncTokenPtr& CUDAStreamSyncTokenPtr::operator=( std::auto_ptr<CUDAStreamSyncToken> other ) throw ()
-{
-    mCUDAStreamSyncToken = other;
-    return *this;
-}
-
-CUDAStreamSyncTokenPtr& CUDAStreamSyncTokenPtr::operator=( CUDAStreamSyncTokenPtr& other ) throw ()
-{
-    mCUDAStreamSyncToken = other.mCUDAStreamSyncToken;
-    return *this;
-}
-
-CUDAStreamSyncTokenPtr::operator std::auto_ptr<SyncToken>&()
-{
-    LAMA_ASSERT_ERROR( mCUDAStreamSyncToken->mEvent == 0, "Tried to create a already created event." )
-    mCUDAStreamSyncToken->createEvent( mCUDAStreamSyncToken->mEvent );
-    mCUDAStreamSyncToken->recordEvent( mCUDAStreamSyncToken->mEvent );
-    mSyncToken = mCUDAStreamSyncToken;
-    return mSyncToken;
-}
-
-CUDAStreamSyncToken* CUDAStreamSyncTokenPtr::operator->() const throw ()
-{
-    LAMA_ASSERT_ERROR( mCUDAStreamSyncToken.get() != 0, "Tried to dereference a NULL Pointer." )
-    return mCUDAStreamSyncToken.get();
-}
-
-CUDAStreamSyncToken& CUDAStreamSyncTokenPtr::operator*() const throw ()
-{
-    LAMA_ASSERT_ERROR( mCUDAStreamSyncToken.get() != 0, "Tried to dereference a NULL Pointer." )
-    return *mCUDAStreamSyncToken;
-}
-
-CUDAStreamSyncToken* CUDAStreamSyncTokenPtr::release() throw ()
-{
-    return mCUDAStreamSyncToken.release();
-}
-
-}
+} // namespace
 

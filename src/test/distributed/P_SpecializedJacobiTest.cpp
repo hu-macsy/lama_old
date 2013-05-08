@@ -151,7 +151,11 @@ void testSolveMethod( ContextPtr loc )
 
     solution = 0.0;
 
+    LAMA_LOG_INFO( logger, "Specialized Jacobi Solver:solve" )
+
     jacobiSolver.solve( solution, rhs );
+
+    LAMA_LOG_INFO( logger, "l2norm( compute solution - exactSolution )" )
 
     DenseVector<ValueType> diff( solution - exactSolution );
 

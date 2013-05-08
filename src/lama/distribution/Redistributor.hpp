@@ -570,7 +570,11 @@ void Redistributor::exchangeHalo( LAMAArray<ValueType>& targetHalo, const LAMAAr
 
     // use asynchronous communication to avoid deadlocks
 
-    comm.exchangeByPlanAsync( targetHalo, mHalo.getRequiredPlan(), sourceHalo, mHalo.getProvidesPlan() );
+    SyncToken* token = comm.exchangeByPlanAsync( targetHalo, mHalo.getRequiredPlan(), sourceHalo, mHalo.getProvidesPlan() );
+
+    token->wait();
+
+    delete token;
 
     // synchronization is done implicitly
 }
@@ -609,7 +613,7 @@ void Redistributor::exchangeVHalo( LAMAArray<ValueType>& targetHalo, const LAMAA
 
     LAMA_ASSERT_ERROR( mRequiredPlan.get(), "There was no previous call of buildVPlan" )
 
-    comm.exchangeByPlanAsync( targetHalo, *mRequiredPlan, sourceHalo, *mProvidesPlan );
+    delete comm.exchangeByPlanAsync( targetHalo, *mRequiredPlan, sourceHalo, *mProvidesPlan );
 }
 
 } // namespace

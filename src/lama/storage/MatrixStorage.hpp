@@ -763,7 +763,7 @@ public:
      *  and returns a NoSyncToken.
      */
 
-    virtual std::auto_ptr<SyncToken> matrixTimesVectorAsync(
+    virtual SyncToken* matrixTimesVectorAsync(
         LAMAArrayView<ValueType> result,
         const ValueType alpha,
         const LAMAArrayConstView<ValueType> x,
@@ -855,7 +855,7 @@ public:
 
     /** Asynchrounous version of jacobiIterate */
 
-    virtual std::auto_ptr<SyncToken> jacobiIterateAsync(
+    virtual SyncToken* jacobiIterateAsync(
         LAMAArrayView<ValueType> solution,
         const LAMAArrayConstView<ValueType> oldSolution,
         const LAMAArrayConstView<ValueType> rhs,
@@ -879,6 +879,8 @@ public:
         const MatrixStorage<ValueType>& localStorage,
         const LAMAArrayConstView<ValueType> haloOldSolution,
         const ValueType omega ) const;
+
+    // Note: Asynchronous version of jacobiIterateHalo not supported 
 
     using _MatrixStorage::getContext;
     using _MatrixStorage::getContextPtr;

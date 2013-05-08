@@ -83,6 +83,7 @@ Solver::~Solver()
 
 Solver::SolverRuntime::~SolverRuntime()
 {
+    LAMA_LOG_INFO( logger, "~SolverRuntime" )
 }
 
 void Solver::initialize( const Matrix& coefficients )
@@ -156,6 +157,8 @@ const std::string& Solver::getId() const
 
 const Vector& Solver::getResidual() const
 {
+    LAMA_LOG_DEBUG( logger, "getResidual of solver " << mId )
+
     const SolverRuntime& runtime = getConstRuntime();
     LAMA_ASSERT_DEBUG( runtime.mCoefficients, "mCoefficients == NULL" )
     LAMA_ASSERT_DEBUG( runtime.mRhs, "mRhs == NULL" )
@@ -167,8 +170,9 @@ const Vector& Solver::getResidual() const
         LAMA_LOG_DEBUG( logger, "calculating residual of = " << &(runtime.mSolution.getConstReference()) )
         if ( !runtime.mResidual.get() )
         {
-            runtime.mResidual = runtime.mRhs->create();
+            runtime.mResidual.reset( runtime.mRhs->create() );
         }
+
         //mLogger->logMessage(LogLevel::completeInformation,"Residual needs revaluation.\n");
 
         mLogger->startTimer( "ResidualTimer" );

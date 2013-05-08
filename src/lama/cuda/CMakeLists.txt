@@ -46,16 +46,10 @@ set ( CLASSES
         CUDAHostContextManager
         CUDALAPACK
         CUDAStreamSyncToken
-        CUDATracerSyncToken
         CUDATexture
     )
 
-set ( HEADERS
-        CUDATracerHelper
-    )
-    
 lama_classes ( ${CLASSES} )
-lama_headers ( ${HEADERS} )
 
 ### Add CUDA Sources ###
 set ( CUDA_SOURCES

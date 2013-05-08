@@ -79,7 +79,7 @@ class LAMA_DLL_IMPORTEXPORT Vector: public Distributed
 {
 public:
 
-    static std::auto_ptr<Vector> createVector( const Scalar::ScalarType valueType, DistributionPtr distribution );
+    static Vector* createVector( const Scalar::ScalarType valueType, DistributionPtr distribution );
 
     /**
      * @brief ExpressionMemberType is the type that is used the template Expression to store a Vector.
@@ -261,7 +261,7 @@ public:
      *
      * @return                  a pointer to the new Vector, caller has the owner ship.
      */
-    virtual std::auto_ptr<Vector> create() const = 0;
+    virtual Vector* create() const = 0;
 
     /**
      * @brief Create is a virtual constructor, which creates a new Vector with the same concrete class as this.
@@ -269,7 +269,7 @@ public:
      * @param[in] distribution  the distribution to use for the new Vector.
      * @return                  a pointer to the new Vector, caller has the owner ship.
      */
-    virtual std::auto_ptr<Vector> create( DistributionPtr distribution ) const = 0;
+    virtual Vector* create( DistributionPtr distribution ) const = 0;
 
     /**
      * @brief Returns the size of the vector.

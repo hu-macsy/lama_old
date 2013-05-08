@@ -97,14 +97,22 @@ void testSolveWithoutPreconditionmethod( ContextPtr loc )
     const IndexType N1 = 4;
     const IndexType N2 = 4;
 
+    LAMA_LOG_INFO( logger, "testSolveWithoutPreconditionmethod<" << typeid( mt ).name() << " at " << *loc );
+
     LAMA_LOG_INFO( logger, "Problem size = " << N1 << " x " << N2 );
 
     CG cgSolver( "CGTestSolver" );
 
+    LAMA_LOG_INFO( logger, "Solver = " << cgSolver );
+
     CSRSparseMatrix<ValueType> helpcoefficients;
     MatrixCreator<ValueType>::buildPoisson2D( helpcoefficients, 9, N1, N2 );
 
+    LAMA_LOG_INFO( logger, "Poisson2D matrix = " << helpcoefficients );
+
     MatrixType coefficients( helpcoefficients );
+
+    LAMA_LOG_INFO( logger, "Poisson2D matrix (converted to MatrixType)  = " << helpcoefficients );
 
     DistributionPtr dist( new BlockDistribution( coefficients.getNumRows(), comm ) );
     coefficients.redistribute( dist, dist );
@@ -162,6 +170,8 @@ void testSolveWithPreconditionmethod( ContextPtr loc )
 {
     typedef mt MatrixType;
     typedef typename mt::ValueType ValueType;
+
+    LAMA_LOG_INFO( logger, "testSolveWithPreconditionmethod<" << typeid( mt ).name() << "> on " << *loc );
 
 //    LoggerPtr slogger( new CommonLogger(
 //        "<SOR>: ",

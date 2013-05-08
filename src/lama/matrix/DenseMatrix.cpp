@@ -1614,11 +1614,9 @@ void DenseMatrix<ValueType>::matrixTimesVectorImpl(
     {
         LAMA_LOG_INFO( logger, comm << ": asynchronous communication" )
 
-        std::auto_ptr<SyncToken> st;
-
         // asynchronous communication always requires same sizes of arrays
 
-        st = comm.shiftAsync( *recvValues, *sendValues, 1 );
+        std::auto_ptr<SyncToken> st( comm.shiftAsync( *recvValues, *sendValues, 1 ) );
 
         LAMA_LOG_INFO( logger,
                        comm << ": matrixTimesVector, my dense block = " << *mData[rank] << ", localX = " << localX << ", localY = " << localY << ", localResult = " << localResult )
@@ -1639,7 +1637,7 @@ void DenseMatrix<ValueType>::matrixTimesVectorImpl(
 
             if ( p < ( n - 1 ) )
             {
-                st = comm.shiftAsync( *recvValues, *sendValues, 1 );
+                st.reset( comm.shiftAsync( *recvValues, *sendValues, 1 ) );
             }
             else
             {
@@ -2006,21 +2004,19 @@ Scalar::ScalarType DenseMatrix<ValueType>::getValueType() const
 }
 
 template<typename ValueType>
-std::auto_ptr<Matrix> DenseMatrix<ValueType>::create() const
+DenseMatrix<ValueType>* DenseMatrix<ValueType>::create() const
 {
-    Matrix* newDenseMatrix = new DenseMatrix<ValueType>();
+    LAMA_LOG_INFO( logger, "DenseMatrix<ValueType>::create" )
 
-    std::auto_ptr<Matrix> newMatrix( newDenseMatrix );
-
-    return newMatrix;
+    return new DenseMatrix<ValueType>();
 }
 
 template<typename ValueType>
-std::auto_ptr<Matrix> DenseMatrix<ValueType>::copy() const
+DenseMatrix<ValueType>* DenseMatrix<ValueType>::copy() const
 {
     LAMA_LOG_INFO( logger, "DenseMatrix<ValueType>::copy" )
-    std::auto_ptr<Matrix> newMatrix( new DenseMatrix<ValueType>( *this ) );
-    return newMatrix;
+
+    return  new DenseMatrix<ValueType>( *this );
 }
 
 template<typename ValueType>

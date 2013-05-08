@@ -41,15 +41,44 @@
 #include <lama/exception/LAMAAssert.hpp>
 #include <lama/exception/Exception.hpp>
 
+using boost::shared_ptr;
+
 namespace lama
 {
 
 LAMA_LOG_DEF_LOGGER( SyncToken::logger, "SyncToken" )
 
+/* ------------------------------------------------------------------------ */
+
+SyncToken::CGuard::CGuard()
+{
+}
+
+SyncToken::CGuard::~CGuard()
+{
+    // this destructor is called at the end of the program
+    // Give an error message if not all SyncTokens have been deleted
+
+    if ( countSyncToken )
+    {
+        LAMA_LOG_ERROR( logger, "Remaining SyncToken (undeleted) = " << countSyncToken );
+    }
+}
+
+/* ------------------------------------------------------------------------ */
+
+int SyncToken::countSyncToken = 0;
+
+SyncToken::CGuard SyncToken::cguard;
+
+/* ------------------------------------------------------------------------ */
+
 SyncToken::SyncToken()
     : mSynchronized( false )
 {
     LAMA_LOG_DEBUG( logger, "SyncToken constructed" )
+
+    countSyncToken++;
 }
 
 SyncToken::~SyncToken()
@@ -61,56 +90,39 @@ SyncToken::~SyncToken()
         LAMA_LOG_WARN( logger, "no synchronization called on SyncToken" )
     }
 
-    LAMA_LOG_DEBUG( logger, "still delete " << mAccesses.size() << " accesses and " << mArrays.size() << " arrays" )
-
-    while ( !mAccesses.empty() )
-    {
-        delete mAccesses.back();
-        mAccesses.pop_back();
-    }
-
-    while ( !mArrays.empty() )
-    {
-        delete mArrays.back();
-        mArrays.pop_back();
-    }
-
-    while ( !mChilds.empty() )
-    {
-        mChilds.back()->wait();
-        delete mChilds.back();
-        mChilds.pop_back();
-    }
+    countSyncToken--;
 }
+
+/* ------------------------------------------------------------------------ */
 
 void SyncToken::writeAt( std::ostream& stream ) const
 {
     stream << "SyncToken( synchronized = " << mSynchronized << " )";
 }
 
-void SyncToken::pushAccess( std::auto_ptr<BaseAccess> access )
+/* ------------------------------------------------------------------------ */
+
+void SyncToken::pushAccess( shared_ptr<BaseAccess> access )
 {
     LAMA_ASSERT_ERROR( access.get(), "NULL access cannot be pushed for synchronization." )
 
     if ( mSynchronized )
     {
         LAMA_LOG_DEBUG( logger, *this << ": push access not done, already synchronized" )
-
-        // delete the access, do not push it anymore
-
-        access.reset();
     }
     else
     {
         LAMA_LOG_DEBUG( logger, *this << ": push access, will be freed at synchronization" )
 
-        // take ownership of the pointer, have to be deleted at synchronization
+        // take ownership of the access so it is not deleted before synchronization
 
-        mAccesses.push_back( access.release() );
+        mAccesses.push_back( access );
     }
 }
 
-void SyncToken::pushArray( std::auto_ptr<_LAMAArray> array )
+/* ------------------------------------------------------------------------ */
+
+void SyncToken::pushArray( shared_ptr<_LAMAArray> array )
 {
     LAMA_ASSERT_ERROR( array.get(), "NULL array cannot be pushed for synchronization." )
 
@@ -118,9 +130,6 @@ void SyncToken::pushArray( std::auto_ptr<_LAMAArray> array )
     {
         LAMA_LOG_DEBUG( logger, *this << ": push array not done, already synchronized" )
 
-        // delete the pointer, do not push it anymore
-
-        array.reset();
     }
     else
     {
@@ -128,11 +137,13 @@ void SyncToken::pushArray( std::auto_ptr<_LAMAArray> array )
 
         // take ownership of the pointer, have to be deleted at synchronization
 
-        mArrays.push_back( array.release() );
+        mArrays.push_back( array );
     }
 }
 
-void SyncToken::pushSyncToken( std::auto_ptr<SyncToken> syncToken )
+/* ------------------------------------------------------------------------ */
+
+void SyncToken::pushSyncToken( shared_ptr<SyncToken> syncToken )
 {
     LAMA_ASSERT_ERROR( syncToken.get(), "NULL SyncToken cannot be pushed for synchronization." )
 
@@ -141,8 +152,6 @@ void SyncToken::pushSyncToken( std::auto_ptr<SyncToken> syncToken )
         LAMA_LOG_DEBUG( logger, *this << ": push SyncToken not done, already synchronized" )
 
         // delete the pointer, do not push it anymore
-
-        syncToken.reset();
     }
     else
     {
@@ -150,15 +159,19 @@ void SyncToken::pushSyncToken( std::auto_ptr<SyncToken> syncToken )
 
         // take ownership of the pointer, have to be deleted at synchronization
 
-        mChilds.push_back( syncToken.release() );
+        mChilds.push_back( syncToken );
     }
 
 }
+
+/* ----------------------------------------------------------------------- */
 
 bool SyncToken::isSynchronized() const
 {
     return mSynchronized;
 }
+
+/* ----------------------------------------------------------------------- */
 
 void SyncToken::setSynchronized()
 {
@@ -169,32 +182,11 @@ void SyncToken::setSynchronized()
 
     mSynchronized = true;
 
-    // after synchronization we can unlock used LAMA arrays
+    // after synchronization we can give up ownership of accesses, arrays, childs
 
-    LAMA_LOG_DEBUG( logger,
-                    *this << ": delete " << mAccesses.size() << " accesses, " << mArrays.size() << " arrays and synchronizing " << mChilds.size() << " childs " )
-
-    while ( !mAccesses.empty() )
-    {
-        BaseAccess* lastAccess = mAccesses.back();
-        LAMA_LOG_INFO( logger, "delete " << lastAccess )
-
-        delete lastAccess;
-        mAccesses.pop_back();
-    }
-
-    while ( !mArrays.empty() )
-    {
-        delete mArrays.back();
-        mArrays.pop_back();
-    }
-
-    while ( !mChilds.empty() )
-    {
-        mChilds.back()->wait();
-        delete mChilds.back();
-        mChilds.pop_back();
-    }
+    mAccesses.clear();
+    mArrays.clear();
+    mChilds.clear();
 }
 
 }

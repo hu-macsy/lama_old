@@ -48,6 +48,7 @@
 #include <lama/tracing.hpp>
 
 using std::auto_ptr;
+using boost::shared_ptr;
 
 namespace lama
 {
@@ -690,15 +691,15 @@ auto_ptr<SyncToken> COOStorage<ValueType>::matrixTimesVectorAsyncToDo(
 
     LAMA_INTERFACE_FN_T( normalGEMV, loc, COOUtils, Mult, ValueType )
 
-    auto_ptr<SyncToken> syncToken = loc->getSyncToken();
+    auto_ptr<SyncToken> syncToken( loc->getSyncToken() );
 
     // all accesses will be pushed to the sync token as LAMA arrays have to be protected up
     // to the end of the computations.
 
-    auto_ptr<ReadAccess<IndexType> > cooIA( new ReadAccess<IndexType>( mIa, loc ) );
-    auto_ptr<ReadAccess<IndexType> > cooJA( new ReadAccess<IndexType>( mJa, loc ) );
-    auto_ptr<ReadAccess<ValueType> > cooValues( new ReadAccess<ValueType>( mValues, loc ) );
-    auto_ptr<ReadAccess<ValueType> > rX( new ReadAccess<ValueType>( x, loc ) );
+    shared_ptr<ReadAccess<IndexType> > cooIA( new ReadAccess<IndexType>( mIa, loc ) );
+    shared_ptr<ReadAccess<IndexType> > cooJA( new ReadAccess<IndexType>( mJa, loc ) );
+    shared_ptr<ReadAccess<ValueType> > cooValues( new ReadAccess<ValueType>( mValues, loc ) );
+    shared_ptr<ReadAccess<ValueType> > rX( new ReadAccess<ValueType>( x, loc ) );
 
     // Possible alias of result and y must be handled by coressponding accesses
 
@@ -706,7 +707,7 @@ auto_ptr<SyncToken> COOStorage<ValueType>::matrixTimesVectorAsyncToDo(
     {
         // only write access for y, no read access for result
 
-        auto_ptr<WriteAccess<ValueType> > wResult( new WriteAccess<ValueType>( result, loc ) );
+        shared_ptr<WriteAccess<ValueType> > wResult( new WriteAccess<ValueType>( result, loc ) );
 
         // we assume that normalGEMV can deal with the alias of result, y
 
@@ -715,26 +716,26 @@ auto_ptr<SyncToken> COOStorage<ValueType>::matrixTimesVectorAsyncToDo(
         normalGEMV( wResult->get(), alpha, rX->get(), beta, wResult->get(), mNumRows, cooIA->get(), cooJA->get(),
                     cooValues->get(), mNumValues, syncToken.get() );
 
-        syncToken->pushAccess( auto_ptr<BaseAccess>( wResult ) );
+        syncToken->pushAccess( wResult );
     }
     else
     {
-        auto_ptr<WriteAccess<ValueType> > wResult( new WriteOnlyAccess<ValueType>( result, loc, mNumRows ) );
-        auto_ptr<ReadAccess<ValueType> > rY( new ReadAccess<ValueType>( y, loc ) );
+        shared_ptr<WriteAccess<ValueType> > wResult( new WriteOnlyAccess<ValueType>( result, loc, mNumRows ) );
+        shared_ptr<ReadAccess<ValueType> > rY( new ReadAccess<ValueType>( y, loc ) );
 
         LAMA_CONTEXT_ACCESS( loc )
 
         normalGEMV( wResult->get(), alpha, rX->get(), beta, rY->get(), mNumRows, cooIA->get(), cooJA->get(),
                     cooValues->get(), mNumValues, syncToken.get() );
 
-        syncToken->pushAccess( auto_ptr<BaseAccess>( wResult ) );
-        syncToken->pushAccess( auto_ptr<BaseAccess>( rY ) );
+        syncToken->pushAccess( shared_ptr<BaseAccess>( wResult ) );
+        syncToken->pushAccess( shared_ptr<BaseAccess>( rY ) );
     }
 
-    syncToken->pushAccess( auto_ptr<BaseAccess>( cooIA ) );
-    syncToken->pushAccess( auto_ptr<BaseAccess>( cooJA ) );
-    syncToken->pushAccess( auto_ptr<BaseAccess>( cooValues ) );
-    syncToken->pushAccess( auto_ptr<BaseAccess>( rX ) );
+    syncToken->pushAccess( cooIA );
+    syncToken->pushAccess( cooJA );
+    syncToken->pushAccess( cooValues );
+    syncToken->pushAccess( rX );
 
     return syncToken;
 }
