@@ -62,7 +62,6 @@ namespace ELLUtilsTest
 template<typename NoType>
 void countNonEmptyRowsBySizesTest( ContextPtr loc )
 {
-    BOOST_CHECK_EQUAL( 4, 5 );
     LAMA_INTERFACE_FN( countNonEmptyRowsBySizes, loc, ELLUtils, Operations );
 
     // count valid array

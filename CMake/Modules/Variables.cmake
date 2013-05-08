@@ -56,6 +56,11 @@ message ( STATUS "FindLib64: " ${FIND_LIB64} )
 # Makefile outputs
 set ( CMAKE_VERBOSE_MAKEFILE OFF )
 
+# Define default library type as SHARED
+if ( NOT DEFINED BUILD_SHARED_LIBS )
+    set ( BUILD_SHARED_LIBS TRUE )
+endif( NOT DEFINED BUILD_SHARED_LIBS )
+
 ## BUILDTYPE
 
 # Choose Default CMAKE_BUILD_TYPE

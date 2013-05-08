@@ -3,12 +3,12 @@
 Task 0: Solving a system of linear equations
 ============================================
 
-The aim of this task is to build an application that reads a matrix from file,
-initializes a right hand side and solve this equation system with the LAMA
+The aim of this task is to build an application that reads a matrix from a file,
+initializes a right hand side and solves this equation system with the LAMA
 provided CG solver.
 
-First we need include the headers for the types and operations we are going to
-use later. **lama.hpp** needs to be included always make sure it is included
+First we need to include the headers for the types and operations we are going to
+use later. **lama.hpp** needs to be included. Always make sure it is included
 first.
 
 ::
@@ -128,16 +128,12 @@ the error.
         return 0;
         }
 
-The solution of task 0 and an example input matrix can be found in
-**$LAMA_ROOT/share/tutorial/solutions**.
+Task 0 and an example input matrix can be found in
+**<project-root>/doc/user_guide/cpp_source/lecture**.
 
-The source code is also available for download `here`__ 
+:download:`Download source file Task 0 <../../cpp_source/lecture/task0.cpp>`
 
-__ http://libama.sourceforge.net/tutorial/solutions/task0.cpp
-
-and the example input matrix can be downloaded `here`__.
-
-__ http://libama.sourceforge.net/tutorial/solutions/gr_30_30.mtx
+:download:`Download input matrix <../../cpp_source/lecture/gr_30_30.mtx>`
 
 .. csv-table:: 
    :header: "previous", "Solution", "next"

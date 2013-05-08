@@ -2,7 +2,7 @@
 
 #include <lama.hpp>
 
-#include <lama/LAMATypes.hpp>
+// #include <lama/LAMATypes.hpp>
 
 #include <lama/DenseVector.hpp>
 #include <lama/matrix/CSRSparseMatrix.hpp>

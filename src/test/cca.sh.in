@@ -40,6 +40,7 @@ echo `pwd`
 
 path_lcov=lcov
 path_genhtml=genhtml
+error_count=0
 
 # Creating dir named by YEARS_MONTHS_DAYS-HOURSMINUTES
 dirname=$(date +%y_%m_%d-%k%M)
@@ -52,12 +53,12 @@ cd ${dirname}
 lcov --base-directory ../.. --directory ../.. --zerocounters
 
 
-
 cd ..
 
 # Running tests serial
 echo "Running serial tests"
 ./lama_test
+error_count=$(($error_count + $?))
 
 if [ -d distributed ];
 then
@@ -65,8 +66,11 @@ then
 	cd distributed
 	echo "Running distributed tests serial"
 	./lama_dist_test
+    error_count=$(($error_count + $?))
+
 	echo "Running distributed tests with 2 processes"
 	mpirun -np 2 ./lama_dist_test
+	error_count=$(($error_count + $?))
 	cd ..
 fi
 
@@ -75,7 +79,8 @@ then
 	#Running CUDA tests
 	cd cuda
 	echo "Running cuda tests"
-	./lama_cuda_test
+#	./lama_cuda_test
+    error_count=$(($error_count + $?))
 	cd ..
 fi
 
@@ -83,9 +88,16 @@ cd ${dirname}
 
 #Running lcov and creating data
 ${path_lcov} --base-directory ../.. --directory ../.. --capture --output-file=data.info
+error_count=$(($error_count + $?))
 
 #Extracting just Sourcefiles from LAMA/src/*
 ${path_lcov} --extract data.info "@CMAKE_SOURCE_DIR@/*" --output-file=data.info
+error_count=$(($error_count + $?))
 
 # Generating html-structure
 ${path_genhtml} data.info
+error_count=$(($error_count + $?))
+
+if [[ $error_count != 0 ]] ; then
+    exit 1
+fi

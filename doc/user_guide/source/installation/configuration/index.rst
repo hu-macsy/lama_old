@@ -24,7 +24,7 @@ packages or which one to choose. For a specific package please refer to the belo
 The following steps are for generating Makefiles under Linux. For the creation of a Visual Studio project under Windows
 see :doc:`here <../windowsTipps>`.
 
-LAMA uses for its configuration the CMake utility. This utility is called in the build directory. Although in-source
+For its configuration LAMA uses the CMake utility. This utility is called in the build directory. Although in-source
 builds are supported we recommend an out-of-source build. So create a build directory and change to it.
 
 .. code-block:: bash 
@@ -50,20 +50,20 @@ If you have not installed CMake in the system path you need to specify to CMake 
          [-D CMAKE_LIBRARY_PATH=<install/dir/cmake>/lib \]
          <project-root>/src
   
-All relevant LAMA options and there significations are listed in the table below.
+All relevant LAMA options and their significations are listed in the table below.
 
 .. csv-table:: 
    :header: "CMake variable", "Signification"
 
    "CMAKE_BUILD_TYPE", "Debug (default), or Release (for an optimized build)"
    "CMAKE_INSTALL_PREFIX", "Installation path of LAMA library"
-   "LAMA_ADDITIONAL_LINK_LIBRARIES", "Pathes to libraries that should be linked to lama, separated by ;"
+   "LAMA_ADDITIONAL_LINK_LIBRARIES", "Paths to libraries that should be linked to lama, separated by ;"
    "LAMA_ADDITIONAL_LINK_FLAGS", "Additional linker Flags"
    "LAMA_CMAKE_VERBOSE", "set to 1 or TRUE for more detailed infos about configuration"
    "LAMA_ASSERT_LEVEL", "ERROR recommended, DEBUG adds much more assertions into the code"
    "LAMA_BLAS_LIBRARY", "Selected the used BLAS library: auto, MKL, ACML, GOTOBLAS, BLAS"
    "LAMA_BUILD_TEST", "ON or OFF, explicitly enable/disable building the tests"
-   "LAMA_LOG_LEVEL", "INFO recomemended, alternatively DEBUG or more detailled TRACE"
+   "LAMA_LOG", "INFO recommended, alternatively DEBUG or even more detailed TRACE"
    "LAMA_USE_CODE_COVERAGE", "ON or OFF, explicitly enable/disable use of Code Coverage"
    "LAMA_USE_CUDA", "ON or OFF, explicitly enable/disable use of CUDA"
    "LAMA_USE_MPI", "ON or OFF, explicitly enable/disable use of MPI"
@@ -75,11 +75,11 @@ For an optimized installation of LAMA call
 
    cmake -D CMAKE_INSTALL_PREFIX=<path/to/install/dir> -D CMAKE_BUILD_TYPE=Release <project-root>/src
 
-If all packages are installed in the system path Cmake should find them automatically if they are available. If they are
+If all packages are installed in the system path, Cmake should find them automatically if they are available. If they are
 located at different paths or you have additional packages installed on your system and want to use the alternative, you
 have to give Cmake hints where to find the packages. For passing these hints you need to define Cmake-Variables by
 -D <VARIABLE_NAME>=<path/to/package/dir>. A summary of possible Build-Variables for the packages are given in the
-following table. For advanced help refer to the seperate section.
+following table. For advanced help refer to the separate section.
 
 .. csv-table::
    :header: "Package", "CMake variable", "Signification"
@@ -107,25 +107,25 @@ Your cmake-call may look like this then:
 
    cmake -D MKL_ROOT=/opt/intel/mkl -D VAMPIRTRACE_ROOT=/opt/vampir_trace -D CMAKE_INSTALL_PREFIX=<path/to/install/dir> -D CMAKE_BUILD_TYPE=Release <project-root>/src
 
-The the mkl library from '/opt/intel/mkl' and vampir library from '/opt/vampir_trace' will be used (instead of the
-libries in the system path). All others libraries will be taken from the system path. To check the configuration you may
+The mkl library from '/opt/intel/mkl' and vampir library from '/opt/vampir_trace' will be used (instead of the
+libraries in the system path). All other libraries will be taken from the system path. To check the configuration you may
 call in the build directory:
 
 .. code-block:: bash
 
    ccmake .
 
-It will show you the advanced LAMA configuration definitions first, after toggeling (t) you can view all setting.
+It will show you the advanced LAMA configuration definitions first, after toggeling (t) you can view all settings.
 
 
 More information about useful CMake variables can be found in the `CMake Wiki`_.
 
 .. _CMake Wiki: http://www.cmake.org/Wiki/CMake_Useful_Variables
 
-A description of the CMake provided find modules can be found in the `CMake documentation`_. We are using FindBoost,
+A description of the find modules provided by CMake can be found in the `CMake documentation`_. We are using FindBoost,
 FindMPI, FindCUDA.
 
-.. _CMake documentation : http://www.cmake.org/cmake/help/cmake-2-8-docs.html
+.. _CMake documentation : http://www.cmake.org/cmake/help/v2.8.8/cmake.html
 
 In short:
 
