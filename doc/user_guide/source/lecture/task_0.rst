@@ -48,7 +48,7 @@ market file for this.
         CSRSparseMatrix<double> m( argv[1] );
 
 Then we create our right hand side and our solution vector of appropriate
-size. To verify the correctness of the solution we will compute later we are
+size. To verify the correctness of the solution we are
 calculating a right hand side from the exact solution. LAMA uses operator
 overloading and proxy objects to support and easy to use and simple interface
 to BLAS functionality, that we are using to calculate the vector **rhs**.
