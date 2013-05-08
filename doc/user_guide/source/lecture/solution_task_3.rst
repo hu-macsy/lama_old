@@ -81,10 +81,7 @@ Solution Task 3
 (2) Creating a CommonLogger
 (3) Using Constructor with logger as an argument
 
-The solution of task 3 can be downloaded `here`__.
-
-__ http://libama.sourceforge.net/tutorial/solutions/task3.cpp
-
+:download:`Download complete solution Task 3 <../../cpp_source/lecture/task3.cpp>`
 
 .. csv-table::
    :header: "back to this Task", "Index", "next Task"

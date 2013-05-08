@@ -36,7 +36,7 @@ __ http://libama.sourceforge.net/doc/index.html
 
 .. code-block:: bash
 
-   firefox $LAMA_ROOT/share/doc/index.html
+   firefox <project-root>/doc/doxygen/html/index.html
 
 The compilation of your LAMA application, e.g. 'simple.cpp' is usually done as
 follows:
@@ -58,7 +58,7 @@ and running works fine.
 :doc:`Solver <../tutorial/example_solver>`
 
 An example **Makefile** can be found together with the **simple.cpp** example
-and the solutions for the tutorial tasks at **$LAMA_ROOT/doc/user_guide/cpp_source/tutorial/**.
+and the solutions for the lecture tasks at **<project-root>/doc/user_guide/cpp_source/tutorial/**.
 
 .. H4H Tutorial Remarks
 .. ====================

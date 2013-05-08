@@ -1,11 +1,11 @@
 :orphan:
 
-Solution of Task 6
-==================
+Solution Task 6
+===============
 
 Here is the solution of task 6.
 
-In total there are six logging-levels: TRACE, DEBUG, INFO, WARN, ERROR, FATAL. Where TRACE is the most verbose level.
+In total there are six logging-levels: TRACE, DEBUG, INFO, WARN, ERROR, and FATAL with TRACE being the most verbose one.
 
 Setting the environment variable LAMA_LOG with a configuration file:
 

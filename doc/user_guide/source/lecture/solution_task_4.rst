@@ -73,9 +73,7 @@ To execute task4 in parallel use mpirun
 
    mpirun -np <num-procs> ./task4 <input-file>
 
-The solution of task 4 can be downloaded `here`__.
-
-__ http://libama.sourceforge.net/tutorial/solutions/task4.cpp
+:download:`Download complete solution Task 4 <../../cpp_source/lecture/task4.cpp>`
 
 **Excursion 2:**
 
