@@ -117,7 +117,7 @@ void testSolveWithoutPreconditionmethod( ContextPtr loc )
     rhs = coefficients * exactSolution;
 
     //initialize
-    IndexType expectedIterations = 10;
+    IndexType expectedIterations = 15;
     CriterionPtr criterion( new IterationCount( expectedIterations ) );
     cgSolver.setStoppingCriterion( criterion );
     cgSolver.initialize( coefficients );
@@ -127,8 +127,16 @@ void testSolveWithoutPreconditionmethod( ContextPtr loc )
     BOOST_CHECK_EQUAL( expectedIterations, cgSolver.getIterationCount() );
 
     DenseVector<ValueType> diff( solution - exactSolution );
+
     Scalar s = maxNorm( diff );
-    BOOST_CHECK( s.getValue<ValueType>() < 1E-6 );
+    ValueType sval = s.getValue<ValueType>();
+
+    if ( ! ( sval < 1E-6 ) ) 
+    {
+        LAMA_LOG_ERROR( logger, "max norm of diff = " << sval << ", should be < 1E-6 " )
+    }
+
+    BOOST_CHECK( sval < 1E-6 );
 }
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( testSolveWithoutPreconditioning, T, test_types ) {
