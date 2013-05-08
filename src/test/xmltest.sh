@@ -37,26 +37,26 @@ export LAMA_UNSUPPORTED=IGNORE
 export LAMA_DEVICE=0 #default
 
 # Creating dir named by YEARS_MONTHS_DAYS-HOURSMINUTES
-dirname=xmlresult
+dirname=xmlresult$(date +%y_%m_%d-%k%M)
 echo "Create result directory: ${dirname}"
 mkdir ${dirname}
 
 # Running tests serial
 echo "Running serial tests"
-./lama_test --output_format=XML --log_level=all --report_level=no 1>serial_tests.xml
+./lama_test --output_format=XML --log_level=all --report_level=no 1>${dirname}/serial_tests.xml
 if [ -d distributed ];
 then
     # Running parallel tests serial and with two processes
     echo "Running distributed tests serial"
-    distributed/lama_dist_test --output_format=XML --log_level=all --report_level=no 1>dist_tests.xml
+    distributed/lama_dist_test --output_format=XML --log_level=all --report_level=no 1>${dirname}/dist_tests.xml
 
     echo "Running distributed tests with 2 processes"
-    mpirun -np 2 --output-filename dist_tests_mpi.xml distributed/lama_dist_test -output_format=XML --log_level=all --report_level=no
+    mpirun -np 2 --output-filename ${dirname}/dist_tests_mpi.xml distributed/lama_dist_test -output_format=XML --log_level=all --report_level=no
 fi
 
 if [ -d cuda ];
 then
     #Running CUDA tests
     echo "Running cuda tests"
-    cuda/lama_cuda_test --output_format=XML --log_level=all --report_level=no 1>cuda_tests.xml
+    cuda/lama_cuda_test --output_format=XML --log_level=all --report_level=no 1>${dirname}/cuda_tests.xml
 fi
