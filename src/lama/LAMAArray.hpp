@@ -86,7 +86,14 @@ public:
      */
     virtual Scalar::ScalarType getValueType() const = 0;
 
-    static std::auto_ptr<_LAMAArray> create( const Scalar::ScalarType );
+    /**
+     * @brief Create an empty array of a certain type.
+     *
+     * @param type specifies the type of the array to be created.
+     *
+     */
+   
+    static _LAMAArray* create( const Scalar::ScalarType type );
 
     /**
      * @brief Query the current size of the LAMA array, i.e. number of entries.
@@ -315,7 +322,7 @@ protected:
 
     /** Asynchronous copy data from a valid source context to an invalid target context. */
 
-    std::auto_ptr<SyncToken> fetchAsync( Context::ContextData& target, const Context::ContextData& source ) const;
+    SyncToken* fetchAsync( Context::ContextData& target, const Context::ContextData& source ) const;
 
     void getAccess(
         size_t& contextIndex,

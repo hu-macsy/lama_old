@@ -523,14 +523,14 @@ public:
         const File::IndexDataType indexDataTypeIA = File::INT,
         const File::IndexDataType indexDataTypeJA = File::INT ) const;
     /**
-     * @brief Constructing a new object by the default constructor.
+     * @brief Implementation of pure function Matrix::create with covariant return type. 
      */
-    virtual std::auto_ptr<Matrix> create() const;
+    virtual DenseMatrix<ValueType>* create() const;
 
     /**
-     * @brief Constructing a new object by the copy constructor.
+     * @brief Implementation of pure function Matrix::copy with covariant return type. 
      */
-    virtual std::auto_ptr<Matrix> copy() const;
+    virtual DenseMatrix<ValueType>* copy() const;
 
     /* Implementation of pure method of class Matrix. */
 

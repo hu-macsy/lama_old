@@ -43,14 +43,18 @@
 #include <memory>
 
 #include <cuda.h>
+
 #if __GNUC__ >= 4 &&  __GNUC_MINOR__ > 6
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wunused-parameter"
+    #pragma GCC diagnostic push
+    #pragma GCC diagnostic ignored "-Wunused-parameter"
 #endif //__GNUC__ >= 4 &&  __GNUC_MINOR__ > 6
+
 #include <cuda_runtime.h> /* no diagnostic for this one */
+
 #if __GNUC__ >= 4 &&  __GNUC_MINOR__ > 6
-#pragma GCC diagnostic pop
+    #pragma GCC diagnostic pop
 #endif //__GNUC__ >= 4&&  __GNUC_MINOR__ > 6
+
 #include <lama/config.hpp>
 #include <lama/SyncToken.hpp>
 
@@ -80,6 +84,10 @@ public:
      */
 
     CUDAStreamSyncToken( CUDAContextPtr context, CUstream stream );
+
+    CUDAStreamSyncToken( CUDAContextPtr context, CUstream stream, CUevent event );
+
+    void setEvent( CUevent event ) { mEvent = event; }
 
     virtual ~CUDAStreamSyncToken();
 
@@ -111,37 +119,6 @@ private:
     CUevent mEvent;
 };
 
-class LAMA_DLL_IMPORTEXPORT CUDAStreamSyncTokenPtr
-{
-public:
-
-    CUDAStreamSyncTokenPtr() throw ();
-
-    CUDAStreamSyncTokenPtr( CUDAStreamSyncTokenPtr& other ) throw ();
-
-    CUDAStreamSyncTokenPtr( std::auto_ptr<CUDAStreamSyncToken> other ) throw ();
-
-    CUDAStreamSyncTokenPtr( CUDAStreamSyncToken* pointer ) throw ();
-
-    ~CUDAStreamSyncTokenPtr();
-
-    CUDAStreamSyncTokenPtr& operator=( std::auto_ptr<CUDAStreamSyncToken> other ) throw ();
-
-    CUDAStreamSyncTokenPtr& operator=( CUDAStreamSyncTokenPtr& other ) throw ();
-
-    operator std::auto_ptr<SyncToken>&();
-
-    CUDAStreamSyncToken* operator->() const throw ();
-
-    CUDAStreamSyncToken& operator*() const throw ();
-
-    CUDAStreamSyncToken* release() throw ();
-
-private:
-    std::auto_ptr<CUDAStreamSyncToken> mCUDAStreamSyncToken;
-    std::auto_ptr<SyncToken> mSyncToken;
-};
-
-}
+} // namespace
 
 #endif // LAMA_CUDA_STREAM_SYNC_TOKEN_HPP_

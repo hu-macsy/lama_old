@@ -171,7 +171,7 @@ public:
     {
         if ( !this->hasDiagonalProperty() )
         {
-            LAMA_THROWEXCEPTION( *this << ": has not diagonal property, cannot set diagonal" )
+            LAMA_THROWEXCEPTION( *this << ": has not diagonal property, cannot get diagonal" )
         }
 
         Scalar::ScalarType arrayType = diagonal.getValueType();

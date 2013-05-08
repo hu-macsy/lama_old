@@ -45,7 +45,7 @@
 #include <logging/logging.hpp>
 
 #include <vector>
-#include <memory>
+#include <boost/shared_ptr.hpp>
 
 namespace lama
 {
@@ -59,18 +59,29 @@ class _LAMAArray;
  * token is needed mainly to wait on the completion of the operation.
  *
  * This class also supports the possibility to push LAMA array accesses and LAMA arrays
- * to a token. After successful synchronization, the accesses are destroyed and
- * the arrays can be accesses for other purposes. LAMA arrays used for temporary purpose
- * can also be freed at synchronization.
+ * to a token. After successful synchronization, the accesses/arrays are release and
+ * the arrays can be accesses for other purposes. 
+ *
+ * All started asynchronous operations in LAMA must be synchronized. This is
+ * absolutely mandatory and can be done in the following ways:
+ *
+ * \begin
+ *    auto_ptr<SyncToken> token = new XXXSyncToken( ... )
+ *    ! synchronization is alway done when object will be deleted at the end of the scope
+ *    
+ *    token->wait();     // explicit wait
+ *
+ *    !  This is not recommened but works
+ *    SyncToken* token = new XXXSyncToken( ... )
+ *       ....
+ *    delete token;   // easy to forget, token will never be synchronized
+ * \end
+ *
  */
 
 class LAMA_DLL_IMPORTEXPORT SyncToken: public Printable, private NonCopyable
 {
 public:
-
-    /** Default constructor */
-
-    SyncToken();
 
     /** Destructor.
      *
@@ -98,19 +109,29 @@ public:
      */
     virtual void writeAt( std::ostream& stream ) const;
 
-    /** Add a read/write access to the token so that LAMA arrays will be locked until synchronization. */
+    /** Add a read/write access to the token so that LAMA arrays remain locked until synchronization.
+     *
+     *  @param access shared pointer to an access
+     */
 
-    void pushAccess( std::auto_ptr<BaseAccess> access );
+    void pushAccess( boost::shared_ptr<BaseAccess> access );
 
-    /** Add a LAMA array that will be free after synchronization */
+    /** Add a LAMA array that will be free after synchronization 
+     *
+     *  @param array shared pointer to an array
+     */
 
-    void pushArray( std::auto_ptr<_LAMAArray> array );
+    void pushArray( boost::shared_ptr<_LAMAArray> array );
 
     /** Add a Synctoken that will be synchronized after synchronization */
 
-    void pushSyncToken( std::auto_ptr<SyncToken> syncToken );
+    void pushSyncToken( boost::shared_ptr<SyncToken> syncToken );
 
 protected:
+
+    /** Default constructor can only be called by derived classes. */
+
+    SyncToken();
 
     /** This method should be called by base classes after a successful wait. */
 
@@ -120,13 +141,26 @@ protected:
 
 private:
 
+    class CGuard
+    {
+    public:
+        CGuard();
+        ~CGuard();  
+    };
+
+    // counts allocated - freed sync tokens, verify for 0 at then end
+
+    static int countSyncToken;  
+
+    static CGuard cguard;
+
     /** Vector of accesses that will be freed after completion. */
 
-    std::vector< BaseAccess* > mAccesses;
+    std::vector< boost::shared_ptr<BaseAccess> > mAccesses;
 
-    std::vector< _LAMAArray* > mArrays;
+    std::vector< boost::shared_ptr<_LAMAArray> > mArrays;
 
-    std::vector< SyncToken* > mChilds;
+    std::vector< boost::shared_ptr<SyncToken> > mChilds;
 
     bool mSynchronized;
 };

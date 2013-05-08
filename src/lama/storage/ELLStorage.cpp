@@ -49,6 +49,8 @@
 namespace lama
 {
 
+using boost::shared_ptr;
+
 /* --------------------------------------------------------------------------- */
 
 LAMA_LOG_DEF_TEMPLATE_LOGGER( template<typename ValueType>, ELLStorage<ValueType>::logger, "MatrixStorage.ELLStorage" )
@@ -262,17 +264,36 @@ bool ELLStorage<ValueType>::checkDiagonalProperty() const
 {
     LAMA_LOG_INFO( logger, "checkDiagonalProperty" )
 
-    ContextPtr loc = getContextPtr();
-
-    LAMA_INTERFACE_FN( hasDiagonalProperty, loc, ELLUtils, Operations )
-
     IndexType numDiagonals = std::min( mNumRows, mNumColumns );
 
-    ReadAccess<IndexType> ja( mJA, loc );
+    bool diagonalProperty = true;
 
-    LAMA_CONTEXT_ACCESS( loc )
+    if ( numDiagonals == 0 )
+    {
+        // diagonal property is given for zero-sized matrices
 
-    bool diagonalProperty = hasDiagonalProperty( numDiagonals, ja.get() );
+        diagonalProperty = true;
+    }
+    else if ( mNumValuesPerRow < 1 )
+    {
+        // no elements, so certainly it does not have diagonl property
+
+        diagonalProperty = false;
+    }
+    else
+    {
+        ContextPtr loc = getContextPtr();
+
+        LAMA_INTERFACE_FN( hasDiagonalProperty, loc, ELLUtils, Operations )
+
+        ReadAccess<IndexType> ja( mJA, loc );
+
+        LAMA_CONTEXT_ACCESS( loc )
+
+        diagonalProperty = hasDiagonalProperty( numDiagonals, ja.get() );
+    }
+
+    LAMA_LOG_INFO( logger, *this << ": checkDiagonalProperty = " << diagonalProperty )
 
     return diagonalProperty;
 }
@@ -442,14 +463,18 @@ void ELLStorage<ValueType>::setCSRDataImpl(
 
         IndexType numDiagonals = std::min( mNumRows, mNumColumns );
 
-        if ( numDiagonals > 0 && numValues > 0 )
+        if ( numDiagonals == 0)
+        { 
+            mDiagonalProperty = true;
+        }
+        else if ( numValues == 0 )
+        {
+            mDiagonalProperty = false;
+        } 
+        else
         {
             LAMA_CONTEXT_ACCESS( loc )
             mDiagonalProperty = hasDiagonalProperty( numDiagonals, ellJA.get() );
-        }
-        else
-        {
-            mDiagonalProperty = false;
         }
     }
 
@@ -936,7 +961,7 @@ void ELLStorage<ValueType>::matrixTimesVector(
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-std::auto_ptr<SyncToken> ELLStorage<ValueType>::matrixTimesVectorAsync(
+SyncToken* ELLStorage<ValueType>::matrixTimesVectorAsync(
     LAMAArrayView<ValueType> result,
     const ValueType alpha,
     const LAMAArrayConstView<ValueType> x,
@@ -955,15 +980,15 @@ std::auto_ptr<SyncToken> ELLStorage<ValueType>::matrixTimesVectorAsync(
     LAMA_INTERFACE_FN_T( sparseGEMV, loc, ELLUtils, Mult, ValueType )
     LAMA_INTERFACE_FN_T( normalGEMV, loc, ELLUtils, Mult, ValueType )
 
-    std::auto_ptr<SyncToken> syncToken = loc->getSyncToken();
+    std::auto_ptr<SyncToken> syncToken( loc->getSyncToken() );
 
     // all accesses will be pushed to the sync token as LAMA arrays have to be protected up
     // to the end of the computations.
 
-    std::auto_ptr<ReadAccess<IndexType> > ellIA( new ReadAccess<IndexType>( mIA, loc ) );
-    std::auto_ptr<ReadAccess<IndexType> > ellJA( new ReadAccess<IndexType>( mJA, loc ) );
-    std::auto_ptr<ReadAccess<ValueType> > ellValues( new ReadAccess<ValueType>( mValues, loc ) );
-    std::auto_ptr<ReadAccess<ValueType> > rX( new ReadAccess<ValueType>( x, loc ) );
+    shared_ptr<ReadAccess<IndexType> > ellIA( new ReadAccess<IndexType>( mIA, loc ) );
+    shared_ptr<ReadAccess<IndexType> > ellJA( new ReadAccess<IndexType>( mJA, loc ) );
+    shared_ptr<ReadAccess<ValueType> > ellValues( new ReadAccess<ValueType>( mValues, loc ) );
+    shared_ptr<ReadAccess<ValueType> > rX( new ReadAccess<ValueType>( x, loc ) );
 
     // Possible alias of result and y must be handled by coressponding accesses
 
@@ -971,7 +996,7 @@ std::auto_ptr<SyncToken> ELLStorage<ValueType>::matrixTimesVectorAsync(
     {
         // only write access for y, no read access for result
 
-        std::auto_ptr<WriteAccess<ValueType> > wResult( new WriteAccess<ValueType>( result, loc ) );
+        shared_ptr<WriteAccess<ValueType> > wResult( new WriteAccess<ValueType>( result, loc ) );
 
         if ( mRowIndexes.size() > 0 && ( beta == 1.0 ) )
         {
@@ -979,13 +1004,13 @@ std::auto_ptr<SyncToken> ELLStorage<ValueType>::matrixTimesVectorAsync(
 
             IndexType numNonZeroRows = mRowIndexes.size();
 
-            std::auto_ptr<ReadAccess<IndexType> > rows( new ReadAccess<IndexType>( mRowIndexes, loc ) );
+            shared_ptr<ReadAccess<IndexType> > rRowIndexes( new ReadAccess<IndexType>( mRowIndexes, loc ) );
 
-            syncToken->pushAccess( std::auto_ptr<BaseAccess>( rows ) );
+            syncToken->pushAccess( rRowIndexes );
 
             LAMA_CONTEXT_ACCESS( loc )
 
-            sparseGEMV( wResult->get(), mNumRows, mNumValuesPerRow, alpha, rX->get(), numNonZeroRows, rows->get(),
+            sparseGEMV( wResult->get(), mNumRows, mNumValuesPerRow, alpha, rX->get(), numNonZeroRows, rRowIndexes->get(),
                         ellIA->get(), ellJA->get(), ellValues->get(), syncToken.get() );
         }
         else
@@ -998,28 +1023,28 @@ std::auto_ptr<SyncToken> ELLStorage<ValueType>::matrixTimesVectorAsync(
                         ellIA->get(), ellJA->get(), ellValues->get(), syncToken.get() );
         }
 
-        syncToken->pushAccess( std::auto_ptr<BaseAccess>( wResult ) );
+        syncToken->pushAccess( wResult );
     }
     else
     {
-        std::auto_ptr<WriteAccess<ValueType> > wResult( new WriteOnlyAccess<ValueType>( result, loc, mNumRows ) );
-        std::auto_ptr<ReadAccess<ValueType> > rY( new ReadAccess<ValueType>( y, loc ) );
+        shared_ptr<WriteAccess<ValueType> > wResult( new WriteOnlyAccess<ValueType>( result, loc, mNumRows ) );
+        shared_ptr<ReadAccess<ValueType> > rY( new ReadAccess<ValueType>( y, loc ) );
 
         LAMA_CONTEXT_ACCESS( loc )
 
         normalGEMV( wResult->get(), alpha, rX->get(), beta, rY->get(), mNumRows, mNumValuesPerRow, ellIA->get(),
                     ellJA->get(), ellValues->get(), syncToken.get() );
 
-        syncToken->pushAccess( std::auto_ptr<BaseAccess>( wResult ) );
-        syncToken->pushAccess( std::auto_ptr<BaseAccess>( rY ) );
+        syncToken->pushAccess( wResult );
+        syncToken->pushAccess( rY );
     }
 
-    syncToken->pushAccess( std::auto_ptr<BaseAccess>( ellIA ) );
-    syncToken->pushAccess( std::auto_ptr<BaseAccess>( ellJA ) );
-    syncToken->pushAccess( std::auto_ptr<BaseAccess>( ellValues ) );
-    syncToken->pushAccess( std::auto_ptr<BaseAccess>( rX ) );
+    syncToken->pushAccess( ellIA );
+    syncToken->pushAccess( ellJA );
+    syncToken->pushAccess( ellValues );
+    syncToken->pushAccess( rX );
 
-    return syncToken;
+    return syncToken.release();
 }
 
 /* --------------------------------------------------------------------------- */

@@ -412,7 +412,7 @@ public:
 
     /** Implementation of MatrixStorage::matrixTimesVectorAsync for CSR */
 
-    virtual std::auto_ptr<SyncToken> matrixTimesVectorAsync(
+    virtual SyncToken* matrixTimesVectorAsync(
         LAMAArrayView<ValueType> result,
         const ValueType alpha,
         const LAMAArrayConstView<ValueType> x,

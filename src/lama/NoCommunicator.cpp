@@ -46,13 +46,17 @@ using namespace std;
 namespace lama
 {
 
+LAMA_LOG_DEF_LOGGER( NoCommunicator::logger, "Communicator.NoCommunicator" )
+
 NoCommunicator::NoCommunicator()
     : Communicator( "none" )
 {
+    LAMA_LOG_DEBUG( logger, "NoCommunicator()" )
 }
 
 NoCommunicator::~NoCommunicator()
 {
+    LAMA_LOG_DEBUG( logger, "~NoCommunicator()" )
 }
 
 ContextPtr NoCommunicator::getCommunicationContext() const
@@ -102,18 +106,22 @@ void NoCommunicator::exchangeByPlanImpl(
     const CommunicationPlan& sendPlan,
     int elemSize ) const
 {
-    LAMA_ASSERT_ERROR( recvPlan.size() == sendPlan.size(), "mismatch for size of send/recv plan" )
+    LAMA_ASSERT_EQUAL_ERROR( recvPlan.size(), sendPlan.size() )
 
     if ( 0 == recvPlan.size() && 0 == sendPlan.size() )
     {
         return;
     }
 
-    LAMA_ASSERT_ERROR( recvPlan.size() == 1, "send/recv plan should have maximal one element" )
+    // send / recv plan have maximal one value 
+
+    LAMA_ASSERT_EQUAL_ERROR( 1, recvPlan.size() )
 
     int quantity = recvPlan[0].quantity;
 
-    LAMA_ASSERT_ERROR( quantity == sendPlan[0].quantity, "mismatch for self send/recv size in plans" )
+    // recv and send plan must have same quantity
+
+    LAMA_ASSERT_EQUAL_ERROR( quantity, sendPlan[0].quantity )
 
     // self copy of send data to recv data
 
@@ -147,34 +155,34 @@ void NoCommunicator::exchangeByPlan(
     exchangeByPlanImpl( recvData, recvPlan, sendData, sendPlan, sizeof(double) );
 }
 
-std::auto_ptr<SyncToken> NoCommunicator::exchangeByPlanAsync(
+SyncToken* NoCommunicator::exchangeByPlanAsync(
     int* const recvData,
     const CommunicationPlan& recvPlan,
     const int* const sendData,
     const CommunicationPlan& sendPlan ) const
 {
     exchangeByPlanImpl( recvData, recvPlan, sendData, sendPlan, sizeof(int) );
-    return auto_ptr<SyncToken>( new NoSyncToken() );
+    return new NoSyncToken();
 }
 
-std::auto_ptr<SyncToken> NoCommunicator::exchangeByPlanAsync(
+SyncToken* NoCommunicator::exchangeByPlanAsync(
     float* const recvData,
     const CommunicationPlan& recvPlan,
     const float* const sendData,
     const CommunicationPlan& sendPlan ) const
 {
     exchangeByPlanImpl( recvData, recvPlan, sendData, sendPlan, sizeof(float) );
-    return auto_ptr<SyncToken>( new NoSyncToken() );
+    return new NoSyncToken();
 }
 
-std::auto_ptr<SyncToken> NoCommunicator::exchangeByPlanAsync(
+SyncToken* NoCommunicator::exchangeByPlanAsync(
     double* const recvData,
     const CommunicationPlan& recvPlan,
     const double* const sendData,
     const CommunicationPlan& sendPlan ) const
 {
     exchangeByPlanImpl( recvData, recvPlan, sendData, sendPlan, sizeof(double) );
-    return auto_ptr<SyncToken>( new NoSyncToken() );
+    return new NoSyncToken();
 }
 
 IndexType NoCommunicator::shiftImpl(

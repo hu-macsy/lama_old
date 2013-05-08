@@ -89,19 +89,19 @@ public:
         const double* const sendData,
         const CommunicationPlan& sendPlan ) const;
 
-    virtual std::auto_ptr<SyncToken> exchangeByPlanAsync(
+    virtual SyncToken* exchangeByPlanAsync(
         int* const recvData,
         const CommunicationPlan& recvPlan,
         const int* const sendData,
         const CommunicationPlan& sendPlan ) const;
 
-    virtual std::auto_ptr<SyncToken> exchangeByPlanAsync(
+    virtual SyncToken* exchangeByPlanAsync(
         float* const recvData,
         const CommunicationPlan& recvPlan,
         const float* const sendData,
         const CommunicationPlan& sendPlan ) const;
 
-    virtual std::auto_ptr<SyncToken> exchangeByPlanAsync(
+    virtual SyncToken* exchangeByPlanAsync(
         double* const recvData,
         const CommunicationPlan& recvPlan,
         const double* const sendData,
@@ -225,6 +225,7 @@ private:
 
     virtual ContextPtr getCommunicationContext() const;
 
+    LAMA_LOG_DECL_STATIC_LOGGER( logger )
 };
 
 }

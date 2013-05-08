@@ -135,9 +135,9 @@ void DefaultHostContext::memcpy( void* dst, const void* src, const size_t size )
     ::memcpy( dst, src, size );
 }
 
-std::auto_ptr<SyncToken> DefaultHostContext::memcpyAsync( void* dst, const void* src, const size_t size ) const
+SyncToken* DefaultHostContext::memcpyAsync( void* dst, const void* src, const size_t size ) const
 {
-    return std::auto_ptr<SyncToken>( new TaskSyncToken( boost::bind( &::memcpy, dst, src, size ) ) );
+    return new TaskSyncToken( boost::bind( &::memcpy, dst, src, size ) );
 }
 
 bool DefaultHostContext::cancpy( const ContextData& dst, const ContextData& src ) const
@@ -152,7 +152,7 @@ void DefaultHostContext::memcpy( ContextData& dst, const ContextData& src, const
     memcpy( dst.pointer, src.pointer, size );
 }
 
-std::auto_ptr<SyncToken> DefaultHostContext::memcpyAsync(
+SyncToken* DefaultHostContext::memcpyAsync(
     ContextData& dst,
     const ContextData& src,
     const size_t size ) const

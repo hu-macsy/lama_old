@@ -501,7 +501,11 @@ LAMA_LOG_INFO( logger, "Test " << mMatrixStorage.getTypeName()
 
     // asynchronous execution, only checks correct calling
 
-    mMatrixStorage.matrixTimesVectorAsync( result, alpha, x, beta, y );
+    {
+        std::auto_ptr<SyncToken> token ( mMatrixStorage.matrixTimesVectorAsync( result, alpha, x, beta, y ) );
+
+        // free of token at end of this scope does the synchronization
+    }
 
     BOOST_CHECK_EQUAL( result.size(), mMatrixStorage.getNumRows() );
 

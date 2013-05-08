@@ -57,6 +57,7 @@ namespace lama
 {
 
 using std::auto_ptr;
+using boost::shared_ptr;
 
 /* --------------------------------------------------------------------------- */
 
@@ -190,13 +191,21 @@ void CSRStorage<ValueType>::check( const char* msg ) const
 template<typename ValueType>
 bool CSRStorage<ValueType>::checkDiagonalProperty() const
 {
+    // diagonal property is given if size of matrix is 0
+
+    if ( mNumRows == 0  || mNumColumns == 0 )
+    {
+        return true;
+    }
+
+    // non-zero sized matrix with no values has not diagonal property
+
     if ( mNumValues == 0 )
     {
         return false;
     }
 
-    //choose preferred context
-    ContextPtr loc = getContextPtr();
+    ContextPtr loc = getContextPtr();  // there we do the checks
 
     //get function pointer
     LAMA_INTERFACE_FN( hasDiagonalProperty, loc, CSRUtils, Offsets )
@@ -1114,7 +1123,7 @@ void CSRStorage<ValueType>::matrixTimesVectorN(
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-auto_ptr<SyncToken> CSRStorage<ValueType>::matrixTimesVectorAsync(
+SyncToken* CSRStorage<ValueType>::matrixTimesVectorAsync(
     LAMAArrayView<ValueType> result,
     const ValueType alpha,
     const LAMAArrayConstView<ValueType> x,
@@ -1150,8 +1159,7 @@ auto_ptr<SyncToken> CSRStorage<ValueType>::matrixTimesVectorAsync(
 
         LAMA_LOG_INFO( logger, *this << ": matrixTimesVectorAsync on Host by own thread" )
 
-        return std::auto_ptr<SyncToken>(
-                   new TaskSyncToken( bind( pf, this, result, alpha, x, beta, y ) ) );
+        return new TaskSyncToken( bind( pf, this, result, alpha, x, beta, y ) );
     }
 
     LAMA_ASSERT_EQUAL_ERROR( x.size(), mNumColumns )
@@ -1165,15 +1173,15 @@ auto_ptr<SyncToken> CSRStorage<ValueType>::matrixTimesVectorAsync(
     LAMA_INTERFACE_FN_T( sparseGEMV, loc, CSRUtils, Mult, ValueType )
     LAMA_INTERFACE_FN_T( normalGEMV, loc, CSRUtils, Mult, ValueType )
 
-    auto_ptr<SyncToken> syncToken = loc->getSyncToken();
+    auto_ptr<SyncToken> syncToken( loc->getSyncToken() );
 
     // all accesses will be pushed to the sync token as LAMA arrays have to be protected up
     // to the end of the computations.
 
-    auto_ptr<ReadAccess<IndexType> > csrIA( new ReadAccess<IndexType>( mIa, loc ) );
-    auto_ptr<ReadAccess<IndexType> > csrJA( new ReadAccess<IndexType>( mJa, loc ) );
-    auto_ptr<ReadAccess<ValueType> > csrValues( new ReadAccess<ValueType>( mValues, loc ) );
-    auto_ptr<ReadAccess<ValueType> > rX( new ReadAccess<ValueType>( x, loc ) );
+    shared_ptr<ReadAccess<IndexType> > csrIA( new ReadAccess<IndexType>( mIa, loc ) );
+    shared_ptr<ReadAccess<IndexType> > csrJA( new ReadAccess<IndexType>( mJa, loc ) );
+    shared_ptr<ReadAccess<ValueType> > csrValues( new ReadAccess<ValueType>( mValues, loc ) );
+    shared_ptr<ReadAccess<ValueType> > rX( new ReadAccess<ValueType>( x, loc ) );
 
     // Possible alias of result and y must be handled by coressponding accesses
 
@@ -1181,7 +1189,7 @@ auto_ptr<SyncToken> CSRStorage<ValueType>::matrixTimesVectorAsync(
     {
         // only write access for y, no read access for result
 
-        auto_ptr<WriteAccess<ValueType> > wResult( new WriteAccess<ValueType>( result, loc ) );
+        shared_ptr<WriteAccess<ValueType> > wResult( new WriteAccess<ValueType>( result, loc ) );
 
         if ( mRowIndexes.size() > 0 && ( beta == 1.0 ) )
         {
@@ -1189,9 +1197,9 @@ auto_ptr<SyncToken> CSRStorage<ValueType>::matrixTimesVectorAsync(
 
             IndexType numNonZeroRows = mRowIndexes.size();
 
-            auto_ptr<ReadAccess<IndexType> > rows( new ReadAccess<IndexType>( mRowIndexes, loc ) );
+            shared_ptr<ReadAccess<IndexType> > rows( new ReadAccess<IndexType>( mRowIndexes, loc ) );
 
-            syncToken->pushAccess( auto_ptr<BaseAccess>( rows ) );
+            syncToken->pushAccess( rows );
 
             LAMA_CONTEXT_ACCESS( loc )
 
@@ -1208,28 +1216,28 @@ auto_ptr<SyncToken> CSRStorage<ValueType>::matrixTimesVectorAsync(
                         csrValues->get(), syncToken.get() );
         }
 
-        syncToken->pushAccess( auto_ptr<BaseAccess>( wResult ) );
+        syncToken->pushAccess( wResult );
     }
     else
     {
-        auto_ptr<WriteAccess<ValueType> > wResult( new WriteOnlyAccess<ValueType>( result, loc, mNumRows ) );
-        auto_ptr<ReadAccess<ValueType> > rY( new ReadAccess<ValueType>( y, loc ) );
+        shared_ptr<WriteAccess<ValueType> > wResult( new WriteOnlyAccess<ValueType>( result, loc, mNumRows ) );
+        shared_ptr<ReadAccess<ValueType> > rY( new ReadAccess<ValueType>( y, loc ) );
 
         LAMA_CONTEXT_ACCESS( loc )
 
         normalGEMV( wResult->get(), alpha, rX->get(), beta, rY->get(), mNumRows, csrIA->get(), csrJA->get(),
                     csrValues->get(), syncToken.get() );
 
-        syncToken->pushAccess( auto_ptr<BaseAccess>( wResult ) );
-        syncToken->pushAccess( auto_ptr<BaseAccess>( rY ) );
+        syncToken->pushAccess( wResult );
+        syncToken->pushAccess( rY );
     }
 
-    syncToken->pushAccess( auto_ptr<BaseAccess>( csrIA ) );
-    syncToken->pushAccess( auto_ptr<BaseAccess>( csrJA ) );
-    syncToken->pushAccess( auto_ptr<BaseAccess>( csrValues ) );
-    syncToken->pushAccess( auto_ptr<BaseAccess>( rX ) );
+    syncToken->pushAccess( csrIA );
+    syncToken->pushAccess( csrJA );
+    syncToken->pushAccess( csrValues );
+    syncToken->pushAccess( rX );
 
-    return syncToken;
+    return syncToken.release();
 }
 
 /* --------------------------------------------------------------------------- */

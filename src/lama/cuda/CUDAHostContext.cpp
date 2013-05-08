@@ -122,19 +122,30 @@ void CUDAHostContext::memcpy( void* dst, const void* src, const size_t size ) co
     ::memcpy( dst, src, size );
 }
 
-std::auto_ptr<SyncToken> CUDAHostContext::memcpyAsync( void* dst, const void* src, const size_t size ) const
+SyncToken* CUDAHostContext::memcpyAsync( void* dst, const void* src, const size_t size ) const
 {
     LAMA_CONTEXT_ACCESS( mCUDAContext )
 
-    CUDAStreamSyncTokenPtr syncToken( mCUDAContext->getTransferSyncToken() );
+    std::auto_ptr<CUDAStreamSyncToken> syncToken ( mCUDAContext->getTransferSyncToken() );
 
     LAMA_LOG_INFO( logger, "copy async " << size << " bytes from " << src << " (host) to " << dst << " (host) " )
 
     LAMA_CUDA_RT_CALL(
         cudaMemcpyAsync( dst, src, size, cudaMemcpyHostToHost, syncToken->getCUDAStream() ),
-        "cudaMemcpyAsync( " << dst << ", " << src << ", " << size << ", " << cudaMemcpyHostToHost << ", " << syncToken->getCUDAStream() << ") failed " )
+                        "cudaMemcpyAsync( " << dst << ", " << src << ", " << size << ", " 
+                         << cudaMemcpyHostToHost << ", " << syncToken->getCUDAStream() << ") failed " )
 
-    return syncToken;
+    CUevent event;
+
+    LAMA_CUDA_DRV_CALL( cuEventCreate( &event, CU_EVENT_DEFAULT | CU_EVENT_DISABLE_TIMING ),
+                        "Could not create event " )
+
+    LAMA_CUDA_DRV_CALL( cuEventRecord ( event, syncToken->getCUDAStream() ), 
+                        "cuEventRecord failed for CUevent " << event << '.' )
+
+    syncToken->setEvent( event );
+
+    return syncToken.release();
 }
 
 bool CUDAHostContext::cancpy( const ContextData& dst, const ContextData& src ) const
@@ -149,7 +160,7 @@ void CUDAHostContext::memcpy( ContextData& dst, const ContextData& src, const si
     memcpy( dst.pointer, src.pointer, size );
 }
 
-std::auto_ptr<SyncToken> CUDAHostContext::memcpyAsync(
+SyncToken* CUDAHostContext::memcpyAsync(
     ContextData& dst,
     const ContextData& src,
     const size_t size ) const

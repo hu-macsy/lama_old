@@ -38,6 +38,7 @@
 
 // base classes
 #include <lama/Context.hpp>
+#include <lama/task/TaskSyncToken.hpp>
 
 namespace lama
 {
@@ -70,9 +71,9 @@ public:
 
     virtual HostContextType getHostType() const = 0;
 
-    /** Providing implementation for Context::getSyncToken */
+    /** Providing implementation for Context::getSyncToken with covariant return type */
 
-    virtual std::auto_ptr<SyncToken> getSyncToken() const;
+    virtual TaskSyncToken* getSyncToken() const;
 
 protected:
 

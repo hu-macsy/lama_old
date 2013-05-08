@@ -871,7 +871,15 @@ void CUDAJDSUtils::jacobi(
     dim3 dimBlock( block_size, 1, 1 );
     dim3 dimGrid = makeGrid( numRows, dimBlock.x );
 
-    const bool useTexture = CUDATexture::useTexture();
+    bool useTexture = CUDATexture::useTexture();
+    useTexture = false; // not yet tested
+
+    if ( syncToken )
+    {
+        // asycnronous operation not supported with textures ( free must be done dynamically )
+
+        useTexture = false;
+    }
 
     const bool useSharedMem = false; // maybe optimize later
 
@@ -950,7 +958,6 @@ void CUDAJDSUtils::jacobi(
 
     if ( useTexture )
     {
-
         if ( sizeof(ValueType) == sizeof(double) )
         {
             LAMA_CUDA_RT_CALL( cudaUnbindTexture( texJDSDXref ), "LAMA_STATUS_CUDA_UNBINDTEX_FAILED" );
@@ -1048,7 +1055,9 @@ void CUDAJDSUtils::jacobiHalo(
     dim3 dimBlock( block_size, 1, 1 );
     dim3 dimGrid = makeGrid( numRows, dimBlock.x ); // TODO:numRows is too much...
 
-    const bool useTexture = CUDATexture::useTexture();
+    bool useTexture   = CUDATexture::useTexture();
+
+    useTexture = false; // not yet tested
 
     const bool useSharedMem = false; // maybe optimize later
 
@@ -1243,8 +1252,7 @@ void CUDAJDSUtils::normalGEMV(
     LAMA_LOG_INFO(
         logger, "alpha = " << alpha << ", x = " << x << ", beta = " << beta << ", y = " << y << ", result = " << result )
 
-    const bool useTexture = CUDATexture::useTexture();
-
+    const bool useTexture   = false; // still problems: CUDATexture::useTexture();
     const bool useSharedMem = false; // maybe optimize later
 
     LAMA_LOG_DEBUG( logger, "useTexture = " << useTexture << ", useSharedMem = " << useSharedMem )
@@ -1279,8 +1287,17 @@ void CUDAJDSUtils::normalGEMV(
             cudaFuncSetCacheConfig( jdsgemvKernel<ValueType,true,false>, cudaFuncCachePreferL1 );
             jdsgemvKernel<ValueType, true, false><<<dimGrid,dimBlock>>>
             ( numRows, alpha, jdsValues, jdsDLG, ndlg, jdsILG, jdsJA, jdsPerm, x, beta, y, result);
+        }
+
+        // skip the following in case of asynchronous execution 
+
+        LAMA_CUDA_RT_CALL( cudaStreamSynchronize(0), "JDS: gemvKernel FAILED" )
+
+        if ( useSharedMem )
+        {
             LAMA_CUDA_RT_CALL( cudaUnbindTexture( texJDSdlgRef ), "LAMA_STATUS_CUDA_UNBINDTEX_FAILED" );
         }
+
         if ( sizeof(ValueType) == sizeof(double) )
         {
             LAMA_CUDA_RT_CALL( cudaUnbindTexture( texJDSDXref ), "LAMA_STATUS_CUDA_UNBINDTEX_FAILED" );

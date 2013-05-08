@@ -51,14 +51,14 @@ namespace lama
 
 LAMA_LOG_DEF_LOGGER( Vector::logger, "Vector" )
 
-std::auto_ptr<Vector> Vector::createVector( const Scalar::ScalarType valueType, DistributionPtr distribution )
+Vector* Vector::createVector( const Scalar::ScalarType valueType, DistributionPtr distribution )
 {
     switch ( valueType )
     {
     case Scalar::FLOAT:
-        return std::auto_ptr<Vector>( new DenseVector<float>( distribution ) );
+        return new DenseVector<float>( distribution );
     case Scalar::DOUBLE:
-        return std::auto_ptr<Vector>( new DenseVector<double>( distribution ) );
+        return new DenseVector<double>( distribution );
 //        case Scalar::LONG_DOUBLE:
 //            return std::auto_ptr<Vector>( new DenseVector<long double>( distribution) );
 //            break;
@@ -193,7 +193,7 @@ Vector& Vector::operator=(
     if ( &vectorX == this )
     {
         LAMA_LOG_DEBUG( logger, "Temporary for X required" )
-        tmpResult = this->create( getDistributionPtr() );
+        tmpResult = boost::shared_ptr<Vector>( this->create( getDistributionPtr() ) );
         resultPtr = tmpResult.get();
     }
 

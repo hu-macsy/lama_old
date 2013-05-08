@@ -289,13 +289,13 @@ void DenseVector<T>::setValues( const _LAMAArray& values )
 }
 
 template<typename T>
-std::auto_ptr<Vector> DenseVector<T>::create() const
+Vector* DenseVector<T>::create() const
 {
     return create( getDistributionPtr() );
 }
 
 template<typename T>
-std::auto_ptr<Vector> DenseVector<T>::create( DistributionPtr distribution ) const
+Vector* DenseVector<T>::create( DistributionPtr distribution ) const
 {
     LAMA_LOG_INFO( logger, "DenseVector<T>::create" )
 
@@ -303,7 +303,9 @@ std::auto_ptr<Vector> DenseVector<T>::create( DistributionPtr distribution ) con
 
     newDenseVector->setContext( mContext );
 
-    return newDenseVector;
+    // give back the new vector and its ownership
+
+    return newDenseVector.release();
 }
 
 template<typename T>
@@ -323,20 +325,15 @@ void DenseVector<T>::updateHalo( const Halo& halo ) const
 }
 
 template<typename T>
-std::auto_ptr<SyncToken> DenseVector<T>::updateHaloAsync( const Halo& halo ) const
+SyncToken* DenseVector<T>::updateHaloAsync( const Halo& halo ) const
 {
     const IndexType haloSize = halo.getHaloSize();
 
-    LAMA_LOG_DEBUG( logger, "Acquiring halo write access on "<< mContext )
+    // create correct size of Halo
 
-    mHaloValues.clear();
-    WriteAccess<T> haloAccess( mHaloValues, mContext );
-
-    haloAccess.reserve( haloSize );
-
-    LAMA_LOG_DEBUG( logger, "Releasing halo write access on " << mContext )
-
-    haloAccess.release();
+    {
+        WriteOnlyAccess<T> haloAccess( mHaloValues, mContext, haloSize );
+    }
 
     return getDistribution().getCommunicator().updateHaloAsync( mHaloValues, mLocalValues, halo );
 }
@@ -443,7 +440,7 @@ template<typename T>
 Scalar DenseVector<T>::l2Norm() const
 {
     IndexType nnu = mLocalValues.size();
-
+    
     ValueType localDotProduct = static_cast<ValueType>( 0 );
 
     if ( nnu > 0 )

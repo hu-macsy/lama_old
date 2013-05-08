@@ -1,8 +1,8 @@
 #
-#  @file cca.sh
+#  @file xmltest.sh
 # 
 #  @license
-#  Copyright (c) 2011
+#  Copyright (c) 2013
 #  Fraunhofer Institute for Algorithms and Scientific Computing SCAI
 #  for Fraunhofer-Gesellschaft
 # 
@@ -25,10 +25,10 @@
 #  SOFTWARE.
 #  @endlicense
 # 
-#  @brief This file is a shellscript, which contains all necessary steps to 
-#         measure code coverage of LAMA.
-#  @author: Alexander Büchel, Lauretta Schubert
-#  @date 15.08.2012
+#  @brief This file is a shellscript, which executes all lama tests and creates
+#         xml result files for further usage
+#  @author: Jan Ecker
+#  @date 08.05.2013
 #
 
 # Setting some enviroment variables
@@ -36,68 +36,27 @@ export LAMA_LOG=ERROR
 export LAMA_UNSUPPORTED=IGNORE
 export LAMA_DEVICE=0 #default
 
-echo `pwd`
-
-path_lcov=lcov
-path_genhtml=genhtml
-error_count=0
-
 # Creating dir named by YEARS_MONTHS_DAYS-HOURSMINUTES
-dirname=$(date +%y_%m_%d-%k%M)
-echo "Create coverage directory: ${dirname}"
+dirname=xmlresult$(date +%y_%m_%d-%k%M)
+echo "Create result directory: ${dirname}"
 mkdir ${dirname}
-
-cd ${dirname}
-
-# Clearing up environment
-lcov --base-directory ../.. --directory ../.. --zerocounters
-
-
-cd ..
 
 # Running tests serial
 echo "Running serial tests"
-./lama_test
-error_count=$(($error_count + $?))
-
+./lama_test --output_format=XML --log_level=all --report_level=no 1>${dirname}/serial_tests.xml
 if [ -d distributed ];
 then
-	# Running parallel tests serial and with two processes
-	cd distributed
-	echo "Running distributed tests serial"
-	./lama_dist_test
-    error_count=$(($error_count + $?))
+    # Running parallel tests serial and with two processes
+    echo "Running distributed tests serial"
+    distributed/lama_dist_test --output_format=XML --log_level=all --report_level=no 1>${dirname}/dist_tests.xml
 
-	echo "Running distributed tests with 2 processes"
-	mpirun -np 2 ./lama_dist_test
-	error_count=$(($error_count + $?))
-	cd ..
+    echo "Running distributed tests with 2 processes"
+    mpirun -np 2 --output-filename ${dirname}/dist_tests_mpi.xml distributed/lama_dist_test --output_format=XML --log_level=all --report_level=no
 fi
 
 if [ -d cuda ];
 then
-	#Running CUDA tests
-	cd cuda
-	echo "Running cuda tests"
-	./lama_cuda_test
-    error_count=$(($error_count + $?))
-	cd ..
-fi
-
-cd ${dirname}
-
-#Running lcov and creating data
-${path_lcov} --base-directory ../.. --directory ../.. --capture --output-file=data.info
-error_count=$(($error_count + $?))
-
-#Extracting just Sourcefiles from LAMA/src/*
-${path_lcov} --extract data.info "@CMAKE_SOURCE_DIR@/*" --output-file=data.info
-error_count=$(($error_count + $?))
-
-# Generating html-structure
-${path_genhtml} data.info
-error_count=$(($error_count + $?))
-
-if [[ $error_count != 0 ]] ; then
-    exit 1
+    #Running CUDA tests
+    echo "Running cuda tests"
+    cuda/lama_cuda_test --output_format=XML --log_level=all --report_level=no 1>${dirname}/cuda_tests.xml
 fi

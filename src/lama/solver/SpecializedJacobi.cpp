@@ -78,10 +78,12 @@ SpecializedJacobi::SpecializedJacobiRuntime::SpecializedJacobiRuntime()
 
 SpecializedJacobi::~SpecializedJacobi()
 {
+    LAMA_LOG_INFO( logger, "~SpecializedJacobi" )
 }
 
 SpecializedJacobi::SpecializedJacobiRuntime::~SpecializedJacobiRuntime()
 {
+    LAMA_LOG_INFO( logger, "~SpecializedJacobiRuntime" )
 }
 
 void SpecializedJacobi::initialize( const Matrix& coefficients )
@@ -109,8 +111,8 @@ void SpecializedJacobi::initialize( const Matrix& coefficients )
     if ( !runtime.mOldSolution.get() )
     {
         LAMA_LOG_DEBUG( logger, "Creating old solution vector using properties of the coefficient matrix. " )
-        runtime.mOldSolution = Vector::createVector( runtime.mCoefficients->getValueType(),
-                               runtime.mCoefficients->getDistributionPtr() );
+        runtime.mOldSolution.reset( Vector::createVector( runtime.mCoefficients->getValueType(),
+                                    runtime.mCoefficients->getDistributionPtr() ) );
     }
 
 //    mPointerOldSolution = &mOldSolution; --> in every solve-call
@@ -132,7 +134,7 @@ void SpecializedJacobi::solveInit( Vector& solution, const Vector& rhs )
     //Check if oldSolution already exists, if not create copy of solution
     if ( !getConstRuntime().mOldSolution.get() )
     {
-        getRuntime().mOldSolution = solution.create();
+        getRuntime().mOldSolution.reset( solution.create() );
 
         if ( getConstRuntime().mCoefficients->getNumColumns() != getConstRuntime().mOldSolution->size() )
         {
@@ -289,8 +291,10 @@ void SpecializedJacobi::iterateTyped( const SparseMatrix<ValueType>& coefficient
 
             const ValueType omega = mOmega.getValue<ValueType>();
 
-            localComputation = coefficients.getLocalStorage().jacobiIterateAsync( localSolution, localOldSolution,
-                               localRhs, omega );
+            const MatrixStorage<ValueType>& localStorage = coefficients.getLocalStorage();
+
+            localComputation.reset( localStorage.jacobiIterateAsync( localSolution, localOldSolution,
+                                                                     localRhs, omega ) );
         }
         else
         {

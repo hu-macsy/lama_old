@@ -52,7 +52,7 @@ namespace lama
 
 /* -------------------------------------------------------------------------- */
 
-LAMA_LOG_DEF_LOGGER( _StorageMethods::logger, "StorageMethods" )
+LAMA_LOG_DEF_LOGGER( _StorageMethods::logger, "Storage.Methods" )
 
 /* -------------------------------------------------------------------------- */
 

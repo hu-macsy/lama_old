@@ -87,7 +87,7 @@ struct InvalidIndex
     InvalidIndex( T _size ) : size( _size ) {}
 
     __host__ __device__
-    int operator()( T y )
+    bool operator()( T y )
     {
         return y >= size || y < 0;
     }
@@ -114,7 +114,7 @@ bool CUDAUtils::validIndexes( const IndexType array[], const IndexType n, const 
         error = thrust::transform_reduce( arrayPtr,
                                           arrayPtr + n,
                                           InvalidIndex<IndexType>( size ),
-                                          0,
+                                          false,
                                           thrust::logical_or<bool>() );
 
         if ( error ) 

@@ -609,7 +609,14 @@ void CUDACSRUtils::jacobi(
     dim3 dimBlock( blockSize, 1, 1 );
     dim3 dimGrid = makeGrid( numRows, dimBlock.x );
 
-    const bool useTexture = CUDATexture::useTexture();
+    bool useTexture = CUDATexture::useTexture();
+
+    useTexture = false; // not tested yet
+
+    if ( syncToken )
+    {
+        useTexture = false;
+    }
 
     if ( useTexture )
     {
@@ -721,7 +728,9 @@ void CUDACSRUtils::jacobiHalo(
     dim3 dimBlock( block_size, 1, 1 );
     dim3 dimGrid = makeGrid( numNonEmptyRows, dimBlock.x );
 
-    const bool useTexture = CUDATexture::useTexture();
+    bool useTexture = CUDATexture::useTexture();
+
+    useTexture = false;
 
     if ( useTexture )
     {
