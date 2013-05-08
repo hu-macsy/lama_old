@@ -148,11 +148,11 @@ else ( WIN32 )
 endif ( WIN32 )
 
 
-### Copy the README file in build directory ### 
+### Copy the README and xmltest.sh file in build directory ### 
 file ( COPY README DESTINATION ${CMAKE_BINARY_DIR}/test )
+file ( COPY xmltest.sh DESTINATION ${CMAKE_BINARY_DIR}/test ) 
 
 if ( LAMA_USE_CODE_COVERAGE )
 	### Copy the cca.sh file in build directory ###
-	#file ( COPY cca.sh DESTINATION ${CMAKE_BINARY_DIR}/test ) 
 	configure_file( "${CMAKE_SOURCE_DIR}/test/cca.sh.in" "${CMAKE_CURRENT_BINARY_DIR}/cca.sh" @ONLY)
 endif ( LAMA_USE_CODE_COVERAGE )
