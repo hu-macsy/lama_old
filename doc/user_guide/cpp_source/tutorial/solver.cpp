@@ -50,7 +50,7 @@ int main()
 {
    typedef double ValueType;
 
-   DenseVector<ValueType> solution( 8, 2.0 );
+   DenseVector<ValueType> solution( 10000, 2.0 );
    const DenseVector<ValueType> rhs( solution.getDistributionPtr(), 1.0 );
 
    CSRSparseMatrix<ValueType> matrix;
