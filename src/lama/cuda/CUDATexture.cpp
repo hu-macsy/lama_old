@@ -50,13 +50,18 @@ bool CUDATexture::initialized = false;
 
 // flag for using Texture will be set at initialization
 
-bool CUDATexture::theUseTextureFlag = getUseTextureByEnv();
+bool CUDATexture::theUseTextureFlag = false;
 
 bool CUDATexture::getUseTextureByEnv()
 {
     const char* env = getenv ( "LAMA_CUDA_USE_TEXTURE" );
 
-    if ( !env ) return false;   // no initialization by environment
+    if ( !env ) 
+    {
+        LAMA_LOG_INFO( logger, "LAMA_CUDA_USE_TEXTURE not set, will select by compute capability" )
+
+        return false;   // no initialization by environment
+    }
 
     char key = toupper( env[0] );
 
@@ -120,9 +125,17 @@ bool CUDATexture::useTexture()
 {
     if ( !initialized )
     {
+        initialized = getUseTextureByEnv();
+
         // initialization not done by enviroment variable, so do it by device
 
-        setUseTextureByDevice();
+        if ( !initialized )
+        {
+            setUseTextureByDevice();
+        }
+
+        LAMA_LOG_INFO( logger, "USE_TEXTURE = " << theUseTextureFlag )
+
     }
 
     return theUseTextureFlag;
