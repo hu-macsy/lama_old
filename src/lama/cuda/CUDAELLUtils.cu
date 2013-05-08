@@ -689,11 +689,14 @@ void CUDAELLUtils::normalGEMV(
     dim3 dimBlock( block_size, 1, 1 );
     dim3 dimGrid = makeGrid( numRows, dimBlock.x );
 
-    const bool useTexture = CUDATexture::useTexture();
+    bool useTexture = CUDATexture::useTexture();
+    useTexture = false; // not yet supported
 
     if ( syncToken )
     {
-        //useTexture = false;
+        // Not yet supported: unbind Texture after synchronization 
+
+        useTexture = false;   
     }
 
     if ( useTexture )
@@ -734,6 +737,8 @@ void CUDAELLUtils::normalGEMV(
     {
         LAMA_CUDA_RT_CALL( cudaStreamSynchronize(0), "LAMA_STATUS_SELLAGEMVPBV_CUDAKERNEL_FAILED" )
     }
+
+    // ToDo: create a task for unbind in case of asynchronous execution 
 
     if ( useTexture )
     {
@@ -824,7 +829,14 @@ void CUDAELLUtils::sparseGEMV(
     dim3 dimBlock( block_size, 1, 1 );
     dim3 dimGrid = makeGrid( numNonZeroRows, dimBlock.x );
 
-    const bool useTexture = CUDATexture::useTexture();
+    bool useTexture = CUDATexture::useTexture();
+
+    useTexture = false; // not yet tested
+
+    if ( syncToken ) 
+    {
+        useTexture = false;
+    }
 
     if ( useTexture )
     {
@@ -960,7 +972,9 @@ void CUDAELLUtils::jacobi(
     dim3 dimBlock( block_size, 1, 1 );
     dim3 dimGrid = makeGrid( numRows, dimBlock.x );
 
-    const bool useTexture = CUDATexture::useTexture();
+    bool useTexture = CUDATexture::useTexture();
+
+    useTexture = false;
 
     if ( useTexture )
     {
@@ -1077,7 +1091,9 @@ void CUDAELLUtils::jacobiHalo(
     dim3 dimBlock( block_size, 1, 1 );
     dim3 dimGrid = makeGrid( numNonEmptyRows, dimBlock.x );
 
-    const bool useTexture = CUDATexture::useTexture();
+    bool useTexture = CUDATexture::useTexture();
+
+    useTexture = false;  // not yet tested
 
     if ( useTexture )
     {
