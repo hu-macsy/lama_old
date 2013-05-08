@@ -190,13 +190,21 @@ void CSRStorage<ValueType>::check( const char* msg ) const
 template<typename ValueType>
 bool CSRStorage<ValueType>::checkDiagonalProperty() const
 {
+    // diagonal property is given if size of matrix is 0
+
+    if ( mNumRows == 0  || mNumColumns == 0 )
+    {
+        return true;
+    }
+
+    // non-zero sized matrix with no values has not diagonal property
+
     if ( mNumValues == 0 )
     {
         return false;
     }
 
-    //choose preferred context
-    ContextPtr loc = getContextPtr();
+    ContextPtr loc = getContextPtr();  // there we do the checks
 
     //get function pointer
     LAMA_INTERFACE_FN( hasDiagonalProperty, loc, CSRUtils, Offsets )

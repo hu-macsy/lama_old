@@ -142,6 +142,8 @@ void testSolveMethod( ContextPtr loc )
 
     DenseVector<ValueType> rhs( coefficients * solution );
 
+    LAMA_LOG_INFO( logger, "Matrix for solver: " << coefficients )
+
     jacobiSolver.initialize( coefficients );
 
     CriterionPtr criterion( new IterationCount( 40 ) );

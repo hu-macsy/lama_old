@@ -262,17 +262,36 @@ bool ELLStorage<ValueType>::checkDiagonalProperty() const
 {
     LAMA_LOG_INFO( logger, "checkDiagonalProperty" )
 
-    ContextPtr loc = getContextPtr();
-
-    LAMA_INTERFACE_FN( hasDiagonalProperty, loc, ELLUtils, Operations )
-
     IndexType numDiagonals = std::min( mNumRows, mNumColumns );
 
-    ReadAccess<IndexType> ja( mJA, loc );
+    bool diagonalProperty = true;
 
-    LAMA_CONTEXT_ACCESS( loc )
+    if ( numDiagonals == 0 )
+    {
+        // diagonal property is given for zero-sized matrices
 
-    bool diagonalProperty = hasDiagonalProperty( numDiagonals, ja.get() );
+        diagonalProperty = true;
+    }
+    else if ( mNumValuesPerRow < 1 )
+    {
+        // no elements, so certainly it does not have diagonl property
+
+        diagonalProperty = false;
+    }
+    else
+    {
+        ContextPtr loc = getContextPtr();
+
+        LAMA_INTERFACE_FN( hasDiagonalProperty, loc, ELLUtils, Operations )
+
+        ReadAccess<IndexType> ja( mJA, loc );
+
+        LAMA_CONTEXT_ACCESS( loc )
+
+        diagonalProperty = hasDiagonalProperty( numDiagonals, ja.get() );
+    }
+
+    LAMA_LOG_INFO( logger, *this << ": checkDiagonalProperty = " << diagonalProperty )
 
     return diagonalProperty;
 }
@@ -442,14 +461,18 @@ void ELLStorage<ValueType>::setCSRDataImpl(
 
         IndexType numDiagonals = std::min( mNumRows, mNumColumns );
 
-        if ( numDiagonals > 0 && numValues > 0 )
+        if ( numDiagonals == 0)
+        { 
+            mDiagonalProperty = true;
+        }
+        else if ( numValues == 0 )
+        {
+            mDiagonalProperty = false;
+        } 
+        else
         {
             LAMA_CONTEXT_ACCESS( loc )
             mDiagonalProperty = hasDiagonalProperty( numDiagonals, ellJA.get() );
-        }
-        else
-        {
-            mDiagonalProperty = false;
         }
     }
 
