@@ -386,6 +386,8 @@ Scalar DenseVector<T>::min() const
 template<typename T>
 Scalar DenseVector<T>::max() const
 {
+    LAMA_ASSERT_ERROR( mLocalValues.size() > 0 , "no local values for max" )
+
     //TODO: need a interface function for this
     HostReadAccess<ValueType> localValues( mLocalValues );
     ValueType localMax = localValues[0];
@@ -406,95 +408,100 @@ Scalar DenseVector<T>::max() const
     return getDistribution().getCommunicator().max( localMax );
 }
 
+/* ------------------------------------------------------------------------- */
+
 template<typename T>
 Scalar DenseVector<T>::l1Norm() const
 {
     IndexType nnu = mLocalValues.size();
 
-    if ( nnu == 0 )
+    ValueType localL1Norm = static_cast<ValueType>( 0 );
+
+    if ( nnu > 0 )
     {
-        return 0.0f; // return as maxIdx would be invalid
+        //choose preferred context
+
+        ContextPtr loc = mContext;
+
+        // get function pointer BLAS::BLAS1<T>::asum in appropriate context
+
+        LAMA_INTERFACE_FN_DEFAULT_T( asum, loc, BLAS, BLAS1, T )
+
+        ReadAccess<T> read( mLocalValues, loc );
+
+        LAMA_CONTEXT_ACCESS( loc )
+
+        localL1Norm = asum( nnu, read.get(), 1, NULL );
     }
-
-    //choose preferred context
-
-    ContextPtr loc = mContext;
-
-    // get function pointer BLAS::BLAS1<T>::asum in appropriate context
-
-    LAMA_INTERFACE_FN_DEFAULT_T( asum, loc, BLAS, BLAS1, T )
-
-    ReadAccess<T> read( mLocalValues, loc );
-
-    LAMA_CONTEXT_ACCESS( loc )
-
-    ValueType localL1Norm = asum( nnu, read.get(), 1, NULL );
 
     return getDistribution().getCommunicator().sum( localL1Norm );
 }
+
+/* ------------------------------------------------------------------------- */
 
 template<typename T>
 Scalar DenseVector<T>::l2Norm() const
 {
     IndexType nnu = mLocalValues.size();
 
-    if ( nnu == 0 )
+    ValueType localDotProduct = static_cast<ValueType>( 0 );
+
+    if ( nnu > 0 )
     {
-        return 0.0f; // return as maxIdx would be invalid
+        // choose preferred context as context of vector, might be changed by availability
+
+        ContextPtr loc = mContext;
+
+        // get function pointer BLAS::BLAS1<T>::dot in appropriate context
+
+        LAMA_INTERFACE_FN_DEFAULT_T( dot, loc, BLAS, BLAS1, T )
+
+        ReadAccess<T> read( mLocalValues, loc );
+
+        LAMA_CONTEXT_ACCESS( mContext )
+
+        localDotProduct = dot( nnu, read.get(), 1, read.get(), 1, NULL );
     }
 
-    // choose preferred context as context of vector, might be changed by availability
-
-    ContextPtr loc = mContext;
-
-    // get function pointer BLAS::BLAS1<T>::dot in appropriate context
-
-    LAMA_INTERFACE_FN_DEFAULT_T( dot, loc, BLAS, BLAS1, T )
-
-    ReadAccess<T> read( mLocalValues, loc );
-
-    LAMA_CONTEXT_ACCESS( mContext )
-
-    ValueType localDotProduct = dot( nnu, read.get(), 1, read.get(), 1, NULL );
     ValueType globalDotProduct = getDistribution().getCommunicator().sum( localDotProduct );
 
     return sqrt( globalDotProduct );
 }
+
+/* ------------------------------------------------------------------------- */
 
 template<typename T>
 Scalar DenseVector<T>::maxNorm() const
 {
     IndexType nnu = mLocalValues.size(); // number of local rows
 
-    if ( nnu == 0 )
+    ValueType localMaxNorm = static_cast<ValueType>( 0 );
+
+    if ( nnu > 0 )
     {
-        return 0.0f; // return as maxIdx would be invalid
+        ContextPtr loc = mContext; // loc might be set to Host
+
+        LAMA_INTERFACE_FN_DEFAULT_T( absMaxVal, loc, Utils, Reductions, ValueType )
+
+        ReadAccess<T> read( mLocalValues, loc );
+
+        LAMA_CONTEXT_ACCESS( loc )
+
+        localMaxNorm = absMaxVal( read.get(), nnu );
     }
-
-    ContextPtr loc = mContext; // loc might be set to Host
-
-    LAMA_INTERFACE_FN_DEFAULT_T( absMaxVal, loc, Utils, Reductions, ValueType )
-
-    ReadAccess<T> read( mLocalValues, loc );
-
-    LAMA_CONTEXT_ACCESS( loc )
-
-    ValueType localMaxNorm = absMaxVal( read.get(), nnu );
-
-    // @todo using BLAS1 routine viamax caused problems, sometimes just returning nan
-    // Note: valgrind identified some issues there, but this is also the case with localMaxNorm
-    // const LAMAInterface* const lamaInterface = LAMAInterfaceRegistry::getRegistry().getInterface( mContext->getType() );
-    // ValueType localMaxNorm = lamaInterface->getBLAS1Interface<T>().viamax( nnu, read.get(), 1, NULL );
 
     const Communicator& comm = getDistribution().getCommunicator();
 
     ValueType globalMaxNorm = comm.max( localMaxNorm );
 
     LAMA_LOG_INFO( logger,
-                   comm << ": max norm " << *this << ", local max norm of " << nnu << " elements: " << localMaxNorm << ", max norm global = " << globalMaxNorm )
+                   comm << ": max norm " << *this << ", local max norm of " << nnu << " elements: "
+                   << localMaxNorm << ", max norm global = " << globalMaxNorm )
 
     return globalMaxNorm;
 }
+
+/* ------------------------------------------------------------------------- */
 
 template<typename T>
 void DenseVector<T>::swap( Vector& other )
