@@ -51,7 +51,7 @@ then
     distributed/lama_dist_test --output_format=XML --log_level=all --report_level=no 1>${dirname}/dist_tests.xml
 
     echo "Running distributed tests with 2 processes"
-    mpirun -np 2 --output-filename ${dirname}/dist_tests_mpi.xml distributed/lama_dist_test -output_format=XML --log_level=all --report_level=no
+    mpirun -np 2 --output-filename ${dirname}/dist_tests_mpi.xml distributed/lama_dist_test --output_format=XML --log_level=all --report_level=no
 fi
 
 if [ -d cuda ];
