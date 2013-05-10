@@ -91,7 +91,7 @@ COOStorage<ValueType>::COOStorage(
     mJa = ja;
     mValues = values;
 
-    this->resetDiagonalProperty(); // sets mDiagonalProperty correctly
+    mDiagonalProperty = checkDiagonalProperty();
 }
 
 /* --------------------------------------------------------------------------- */
@@ -128,33 +128,49 @@ MatrixStorageFormat COOStorage<ValueType>::getFormat() const
 template<typename ValueType>
 bool COOStorage<ValueType>::checkDiagonalProperty() const
 {
-    if ( mNumRows != mNumColumns )
-    {
-        return false;
-    }
-
     bool diagonalProperty = true;
 
-    HostReadAccess<IndexType> ia( mIa );
-    HostReadAccess<IndexType> ja( mJa );
-
-    // The diagonal property is given if the first numDiags entries
-    // are the diagonal elements
-
-    #pragma omp parallel for schedule(LAMA_OMP_SCHEDULE)
-    for ( IndexType i = 0; i < mNumRows; ++i )
+    if ( mNumRows != mNumColumns )
     {
-        if ( !diagonalProperty )
-        {
-            continue;
-        }
+        diagonalProperty = false;
+    }
+    else if ( mNumRows == 0 )
+    {
+        // zero sized matrix
 
-        if ( ia[i] != i || ja[i] != i )
+        diagonalProperty = true;
+    }
+    else if ( mIa.size() == 0 )
+    {
+        diagonalProperty = false;
+    }
+    else
+    {
+        diagonalProperty = true; // intialization for reduction
+
+        HostReadAccess<IndexType> ia( mIa );
+        HostReadAccess<IndexType> ja( mJa );
+
+        // The diagonal property is given if the first numDiags entries
+        // are the diagonal elements
+
+        #pragma omp parallel for schedule(LAMA_OMP_SCHEDULE)
+        for ( IndexType i = 0; i < mNumRows; ++i )
         {
-            diagonalProperty = false;
+            if ( !diagonalProperty )
+            {
+                continue;
+            }
+    
+            if ( ia[i] != i || ja[i] != i )
+            {
+                diagonalProperty = false;
+            }
         }
     }
 
+    LAMA_LOG_INFO( logger, *this << ": checkDiagonalProperty -> " << diagonalProperty )
+   
     return diagonalProperty;
 }
 
@@ -170,6 +186,8 @@ void COOStorage<ValueType>::clear()
     mIa.clear();
     mJa.clear();
     mValues.clear();
+
+    mDiagonalProperty = checkDiagonalProperty();
 }
 
 /* --------------------------------------------------------------------------- */
@@ -323,6 +341,8 @@ void COOStorage<ValueType>::purge()
     mIa.purge();
     mJa.purge();
     mValues.purge();
+
+    mDiagonalProperty = checkDiagonalProperty();
 }
 
 /* --------------------------------------------------------------------------- */
@@ -332,13 +352,12 @@ void COOStorage<ValueType>::allocate( IndexType numRows, IndexType numColumns )
 {
     LAMA_LOG_INFO( logger, "allocate COO sparse matrix of size " << numRows << " x " << numColumns )
 
-    purge(); // completely destroy old data of the matrix if available
+    clear();   // all variables are set for a zero-sized matrix
 
     mNumRows = numRows;
     mNumColumns = numColumns;
-    mNumValues = 0;
 
-    // all other variables reset by purge, no allocation now needed
+    mDiagonalProperty = checkDiagonalProperty();
 }
 
 /* --------------------------------------------------------------------------- */

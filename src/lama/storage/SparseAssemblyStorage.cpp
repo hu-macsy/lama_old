@@ -185,6 +185,8 @@ void SparseAssemblyStorage<ValueType>::clear()
     mNumValues = 0;
 
     mRows.clear();
+
+    mDiagonalProperty = checkDiagonalProperty();
 }
 
 /* --------------------------------------------------------------------------- */
@@ -197,6 +199,8 @@ void SparseAssemblyStorage<ValueType>::purge()
     mNumValues = 0;
 
     mRows.clear();
+
+    mDiagonalProperty = checkDiagonalProperty();
 }
 
 /* --------------------------------------------------------------------------- */
@@ -263,9 +267,9 @@ bool SparseAssemblyStorage<ValueType>::checkDiagonalProperty() const
 {
     bool diagonalProperty = true;
 
-    const IndexType numDiagonals = std::min( mNumRows, mNumColumns );
+    IndexType n = std::min( mNumRows, mNumColumns );
 
-    for ( IndexType i = 0; i < numDiagonals; ++i )
+    for ( IndexType i = 0; i < n; ++i )
     {
         const Row& row = mRows[i];
         if ( row.ja.size() == 0 )
@@ -279,6 +283,9 @@ bool SparseAssemblyStorage<ValueType>::checkDiagonalProperty() const
             break;
         }
     }
+
+    LAMA_LOG_INFO( logger, *this << ": checkDiagonalProperty -> " << diagonalProperty )
+
     return diagonalProperty;
 }
 

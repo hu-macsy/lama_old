@@ -143,6 +143,8 @@ void CSRStorage<ValueType>::clear()
     mIa.clear();
     mJa.clear();
     mValues.clear();
+
+    mDiagonalProperty = checkDiagonalProperty();
 }
 
 /* --------------------------------------------------------------------------- */
@@ -444,6 +446,8 @@ void CSRStorage<ValueType>::purge()
     mIa.purge();
     mJa.purge();
     mValues.purge();
+
+    mDiagonalProperty = checkDiagonalProperty();
 }
 
 /* --------------------------------------------------------------------------- */

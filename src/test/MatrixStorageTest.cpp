@@ -209,38 +209,71 @@ void MatrixStorageTest<T>::setDenseRandomInverse( MatrixStorage<T>& storage )
 
 /* ========================================================================= */
 
-LAMA_COMMON_TEST_CASE_TEMPLATE( MatrixStorageTest, StorageType, setIdentityTest )const IndexType n = 15;
-
-LAMA_LOG_INFO( logger, "setIdentity, uses n = " << n );
-
-mMatrixStorage.clear();
-
-mMatrixStorage.setIdentity( n );
-
-BOOST_REQUIRE_EQUAL( n, mMatrixStorage.getNumRows() );
-BOOST_REQUIRE_EQUAL( n, mMatrixStorage.getNumColumns() );
-BOOST_REQUIRE_EQUAL( n, mMatrixStorage.getNumValues() );
-
-LAMAArray<double> row;
-
-for ( IndexType i = 0; i < n; ++i )
+LAMA_COMMON_TEST_CASE_TEMPLATE( MatrixStorageTest, StorageType, emptyTest )
 {
-    mMatrixStorage.getRow( row, i );
+    LAMA_LOG_INFO( logger, "emptyTest" );
 
-    HostReadAccess<double> rRow( row );
+    mMatrixStorage.clear();
 
-    for ( IndexType j = 0; j < n; ++j )
+    // verify that empty matrix has diagonal property
+
+    BOOST_CHECK( mMatrixStorage.hasDiagonalProperty() );
+
+    mMatrixStorage.allocate( 1, 1 );
+
+    if ( mMatrixStorage.getFormat() == DENSE )
     {
-        if ( i == j )
+        // only dense matrix keeps its diagonal property
+
+        BOOST_CHECK( mMatrixStorage.hasDiagonalProperty() );
+    }
+    else
+    {
+        BOOST_CHECK( ! mMatrixStorage.hasDiagonalProperty() );
+    }
+
+    mMatrixStorage.purge();
+
+    BOOST_CHECK( mMatrixStorage.hasDiagonalProperty() );
+}
+LAMA_COMMON_TEST_CASE_TEMPLATE_END();
+
+/* ========================================================================= */
+
+LAMA_COMMON_TEST_CASE_TEMPLATE( MatrixStorageTest, StorageType, setIdentityTest )
+
+    const IndexType n = 15;
+
+    LAMA_LOG_INFO( logger, "setIdentity, uses n = " << n );
+
+    mMatrixStorage.clear();
+
+    mMatrixStorage.setIdentity( n );
+
+    BOOST_REQUIRE_EQUAL( n, mMatrixStorage.getNumRows() );
+    BOOST_REQUIRE_EQUAL( n, mMatrixStorage.getNumColumns() );
+    BOOST_REQUIRE_EQUAL( n, mMatrixStorage.getNumValues() );
+
+    LAMAArray<double> row;
+
+    for ( IndexType i = 0; i < n; ++i )
+    {
+        mMatrixStorage.getRow( row, i );
+    
+        HostReadAccess<double> rRow( row );
+
+        for ( IndexType j = 0; j < n; ++j )
         {
-            BOOST_CHECK_EQUAL( 1.0, rRow[j] );
-        }
-        else
-        {
-            BOOST_CHECK_EQUAL( 0.0, rRow[j] );
+            if ( i == j )
+            {
+                BOOST_CHECK_EQUAL( 1.0, rRow[j] );
+            }
+            else
+            {
+                BOOST_CHECK_EQUAL( 0.0, rRow[j] );
+            }
         }
     }
-}
 LAMA_COMMON_TEST_CASE_TEMPLATE_END();
 
 /* ------------------------------------------------------------------------- */
@@ -867,6 +900,8 @@ LAMA_COMMON_TEST_CASE_TEMPLATE_END();
 /* ------------------------------------------------------------------------- */
 
 LAMA_COMMON_TEST_CASE_RUNNER_TEMPLATE( MatrixStorageTest ) {
+
+    emptyTest();
     purgeTest();
     setIdentityTest();
     setCSRDataTest();

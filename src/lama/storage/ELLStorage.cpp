@@ -212,6 +212,9 @@ void ELLStorage<ValueType>::purge()
     mIA.purge();
     mJA.purge();
     mValues.purge();
+    mRowIndexes.purge();
+
+    mDiagonalProperty = checkDiagonalProperty();
 }
 
 /* --------------------------------------------------------------------------- */
@@ -305,15 +308,16 @@ void ELLStorage<ValueType>::clear()
 {
     LAMA_LOG_INFO( logger, "clear" )
 
-    mNumRows = 0;
-    mNumColumns = 0;
-
+    mNumRows         = 0;
+    mNumColumns      = 0;
     mNumValuesPerRow = 0;
 
-    mDiagonalProperty = false;
     mIA.clear();
     mJA.clear();
     mValues.clear();
+    mRowIndexes.clear();
+
+    mDiagonalProperty = checkDiagonalProperty();
 }
 
 /* --------------------------------------------------------------------------- */
@@ -696,27 +700,26 @@ void ELLStorage<ValueType>::allocate( IndexType numRows, IndexType numColumns )
 {
     LAMA_LOG_INFO( logger, "allocate ELL sparse matrix of size " << numRows << " x " << numColumns )
 
-    ContextPtr loc = getContextPtr();
+    clear();   
 
-    mNumRows = numRows;
+    mNumRows    = numRows;
     mNumColumns = numColumns;
-
-    mNumValuesPerRow = 0;
-
-    mIA.clear();
-    mJA.clear();
-    mValues.clear();
-    mRowIndexes.clear();
 
     LAMA_LOG_DEBUG( logger, "resize mIA, mNumRows = " << mNumRows )
 
     {
+        // Intialize array mIA with 0
+
+        ContextPtr loc = getContextPtr();
+
+        LAMA_INTERFACE_FN_T( setVal, loc, Utils, Setter, IndexType )
+
         WriteOnlyAccess<IndexType> ia( mIA, loc, mNumRows );
+
+        setVal( ia.get(), mNumRows, 0 );
     }
 
-    LAMA_LOG_DEBUG( logger, "initialize with 0" )
-
-    LAMAArrayUtils::assign( mIA, Scalar( 0 ), loc );
+    mDiagonalProperty = checkDiagonalProperty();
 
     LAMA_LOG_DEBUG( logger, "ready allocate" )
 }

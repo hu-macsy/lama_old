@@ -191,6 +191,7 @@ public:
         mNumRows = 0;
         mNumColumns = 0;
         mData.clear();
+        mDiagonalProperty = checkDiagonalProperty();
     }
 
     /**
@@ -201,6 +202,7 @@ public:
         mNumRows = 0;
         mNumColumns = 0;
         mData.purge();
+        mDiagonalProperty = checkDiagonalProperty();
     }
 
     /** Help routine to build any kind of CSR storage.

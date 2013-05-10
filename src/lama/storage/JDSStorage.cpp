@@ -169,15 +169,17 @@ void JDSStorage<ValueType>::clear()
 {
     mNumRows = 0;
     mNumColumns = 0;
-    mDiagonalProperty = false;
     mNumDiagonals = 0;
     mNumValues = 0;
+
     // clear all LAMA arrays used for this storage
     mDlg.clear();
     mIlg.clear();
     mPerm.clear();
     mJa.clear();
     mValues.clear();
+
+    mDiagonalProperty = checkDiagonalProperty();
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */
@@ -365,28 +367,36 @@ bool JDSStorage<ValueType>::checkDiagonalProperty() const
 {
     LAMA_LOG_INFO( logger, "checkDiagonalProperty" )
 
-    if ( mNumRows != mNumColumns )
-    {
-        return false;
-    }
+    IndexType n = std::min( mNumRows, mNumColumns );
 
-    if ( mNumDiagonals == 0 )
+    bool diagonalProperty = false;  // initialization just for safety
+
+    if ( n == 0 ) 
+    {
+        diagonalProperty = true;
+    }
+    else if ( mNumDiagonals == 0 )
     {
         // empty storage has no diagonal
-        return false;
+
+        diagonalProperty = false;
+    }
+    else
+    {
+        ContextPtr loc = getContextPtr();
+
+        LAMA_INTERFACE_FN( checkDiagonalProperty, loc, JDSUtils, Helper )
+
+        ReadAccess<IndexType> rPerm( mPerm, loc );
+        ReadAccess<IndexType> rJa( mJa, loc );
+        ReadAccess<IndexType> rDlg( mDlg, loc );
+
+        LAMA_CONTEXT_ACCESS( loc )
+
+        diagonalProperty = checkDiagonalProperty( mNumDiagonals, mNumRows, mNumColumns, rPerm.get(), rJa.get(), rDlg.get() );
     }
 
-    ContextPtr loc = getContextPtr();
-
-    LAMA_INTERFACE_FN( checkDiagonalProperty, loc, JDSUtils, Helper )
-
-    ReadAccess<IndexType> rPerm( mPerm, loc );
-    ReadAccess<IndexType> rJa( mJa, loc );
-    ReadAccess<IndexType> rDlg( mDlg, loc );
-
-    LAMA_CONTEXT_ACCESS( loc )
-
-    return checkDiagonalProperty( mNumDiagonals, mNumRows, mNumColumns, rPerm.get(), rJa.get(), rDlg.get() );
+    return diagonalProperty;
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */
@@ -788,6 +798,8 @@ void JDSStorage<ValueType>::purge()
     mNumRows = 0;
     mNumDiagonals = 0;
     mNumValues = 0;
+    mDiagonalProperty = checkDiagonalProperty();
+
     mDlg.purge();
     mIlg.purge();
     mPerm.purge();
@@ -802,29 +814,35 @@ void JDSStorage<ValueType>::allocate( IndexType numRows, IndexType numColumns )
 {
     LAMA_LOG_INFO( logger, "allocate JDS sparse matrix of size " << numRows << " x " << numColumns )
 
-    ContextPtr loc = getContextPtr();
+    clear();
 
-    LAMA_INTERFACE_FN_T( setVal, loc, Utils, Setter, IndexType )
-    LAMA_INTERFACE_FN_T( setOrder, loc, Utils, Setter, IndexType )
-
-    mNumRows = numRows;
+    mNumRows    = numRows;
     mNumColumns = numColumns;
 
-    // we allocate at least ilg and perm with the correct value for a zero matrix
+    if ( mNumRows >  0 )
+    {
+        // the arrays mIlg and mPerm need initialization
 
-    WriteOnlyAccess<IndexType> ilg( mIlg, loc, mNumRows );
-    WriteOnlyAccess<IndexType> perm( mPerm, loc, mNumRows );
+        ContextPtr loc = getContextPtr();
 
-    LAMA_CONTEXT_ACCESS( loc )
+        LAMA_INTERFACE_FN_T( setVal, loc, Utils, Setter, IndexType )
+        LAMA_INTERFACE_FN_T( setOrder, loc, Utils, Setter, IndexType )
 
-    setVal( ilg.get(), mNumRows, 0 );
-    setOrder( perm.get(), mNumRows );
+        mNumRows = numRows;
+        mNumColumns = numColumns;
 
-    mDlg.clear();
-    mJa.clear();
-    mValues.clear();
-    mNumDiagonals = 0;
-    mNumValues = 0;
+        // we allocate at least ilg and perm with the correct value for a zero matrix
+
+        WriteOnlyAccess<IndexType> ilg( mIlg, loc, mNumRows );
+        WriteOnlyAccess<IndexType> perm( mPerm, loc, mNumRows );
+
+        LAMA_CONTEXT_ACCESS( loc )
+
+        setVal( ilg.get(), mNumRows, 0 );
+        setOrder( perm.get(), mNumRows );
+    }
+
+    mDiagonalProperty = checkDiagonalProperty();
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */

@@ -177,6 +177,8 @@ void DIAStorage<ValueType>::clear()
 
     mOffset.clear();
     mValues.clear();
+
+    mDiagonalProperty = checkDiagonalProperty();
 }
 
 /* --------------------------------------------------------------------------- */
@@ -331,20 +333,33 @@ void DIAStorage<ValueType>::scaleImpl( const LAMAArray<OtherType>& diagonal )
 template<typename ValueType>
 bool DIAStorage<ValueType>::checkDiagonalProperty() const
 {
-    if ( mNumRows != mNumColumns )
+    IndexType n = std::min( mNumRows, mNumColumns );
+
+    bool diagonalProperty = false;
+
+    if ( n == 0 )
     {
-        return false;
+        // zero sized matrix has diagonal property
+
+        diagonalProperty = true;
+    }
+    else if ( mOffset.size() == 0 )
+    {
+        // full zero matrix but not zero size -> no diagonal property
+
+        diagonalProperty = false;
+    }
+    else
+    {
+        // diagonal property is given if first diagonal is the main one
+
+        HostReadAccess<IndexType> offset( mOffset );
+        diagonalProperty = offset[0] == 0;
     }
 
-    if ( mOffset.size() == 0 )
-    {
-        return false;
-    }
+    LAMA_LOG_INFO( logger, *this << ": checkDiagonalProperty -> " << diagonalProperty )
 
-    // diagonal property is given if first diagonal is the main one
-
-    HostReadAccess<IndexType> offset( mOffset );
-    return ( offset[0] == 0 );
+    return diagonalProperty;
 }
 
 /* --------------------------------------------------------------------------- */
@@ -640,6 +655,8 @@ void DIAStorage<ValueType>::purge()
 
     mOffset.purge();
     mValues.purge();
+
+    mDiagonalProperty = checkDiagonalProperty();
 }
 
 /* --------------------------------------------------------------------------- */
@@ -649,13 +666,12 @@ void DIAStorage<ValueType>::allocate( IndexType numRows, IndexType numColumns )
 {
     LAMA_LOG_INFO( logger, "allocate DIA sparse matrix of size " << numRows << " x " << numColumns )
 
+    clear();
+
     mNumRows = numRows;
     mNumColumns = numColumns;
 
-    // clear arrays to avoid unnecessary data transfer (write-only)
-
-    mValues.clear();
-    mOffset.clear();
+    mDiagonalProperty = checkDiagonalProperty();
 }
 
 /* --------------------------------------------------------------------------- */
