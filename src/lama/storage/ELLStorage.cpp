@@ -385,18 +385,16 @@ void ELLStorage<ValueType>::setCSRDataImpl(
                             << ": numRows = " << numRows << ", numColumns = " << numColumns 
                             << ", numValues = " << numValues )
 
-    _MatrixStorage::init( numRows, numColumns );
-
     if ( numRows == 0 )
     {
-        mNumValuesPerRow = 0;
+        // just allocate will clear member arrays
 
-        mIA.clear();
-        mJA.clear();
-        mValues.clear();
+        allocate( numRows, numColumns );
 
         return;
     }
+
+    _MatrixStorage::init( numRows, numColumns );
 
     // Get function pointers for needed routines at the LAMA interface
 

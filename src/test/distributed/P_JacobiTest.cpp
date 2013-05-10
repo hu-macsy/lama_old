@@ -105,10 +105,23 @@ void testSolveWithoutPreconditionMethod( ContextPtr loc )
     CSRSparseMatrix<ValueType> helpcoefficients;
     MatrixCreator<ValueType>::buildPoisson2D( helpcoefficients, 9, N1, N2 );
 
+    // created matrix must have diagonal property
+
+    BOOST_REQUIRE( helpcoefficients.hasDiagonalProperty() );
+
     MatrixType coefficients( helpcoefficients );
+
+    // converted matrix must have diagonal property
+
+    BOOST_REQUIRE( coefficients.hasDiagonalProperty() );
 
     DistributionPtr dist( new BlockDistribution( coefficients.getNumRows(), mComm ) );
     coefficients.redistribute( dist, dist );
+
+    // converted redistributed matrix must have kept the diagonal property
+
+    BOOST_REQUIRE( coefficients.hasDiagonalProperty() );
+
     coefficients.setContext( loc );
 
     DenseVector<ValueType> solution( dist, 2.0 );
