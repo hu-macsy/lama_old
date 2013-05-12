@@ -492,7 +492,7 @@ void checkTest( ContextPtr loc )
         { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 };
         const IndexType nJa = sizeof( valuesJa ) / sizeof(IndexType);
         IndexType valuesDlg[] =
-        { 3, 3, 3 };
+        { 3, 3, 1, 3 };    // not descending -> causes check too fail
         const IndexType nDlg = sizeof( valuesDlg ) / sizeof(IndexType);
         IndexType valuesIlg[] =
         { 4, 3, 3 };
@@ -505,6 +505,10 @@ void checkTest( ContextPtr loc )
         LAMAArray<IndexType> ja( nJa, valuesJa );
         LAMAArray<IndexType> dlg( nDlg, valuesDlg );
         LAMAArray<IndexType> ilg( nIlg, valuesIlg );
+
+        // make sure that dlg array is large enough otherwise out-of-range indexing
+
+        BOOST_REQUIRE_EQUAL( dlg.size(), valuesIlg[0] );
 
         ReadAccess<IndexType> rJa( ja, loc );
         ReadAccess<IndexType> rDlg( dlg, loc );
