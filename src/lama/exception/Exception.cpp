@@ -61,27 +61,44 @@ Exception::UnsupportedType Exception::getUnsupportedSetting()
 {
     if ( unsupportedSetting == UNSUPPORTED_UNDEFINED )
     {
-        const char* val = getenv( "LAMA_UNSUPPORTED" );
+        const char* envVal = getenv( "LAMA_UNSUPPORTED" );
 
-        if ( val == NULL )
+        if ( envVal == NULL )
         {
+            LAMA_LOG_WARN( logger, "LAMA_UNSUPPORTED not set, default is WARN" )
+
             unsupportedSetting = UNSUPPORTED_WARN;
-        }
-        else if ( strcmp( val, "IGNORE" ) == 0 )
-        {
-            unsupportedSetting = UNSUPPORTED_IGNORE;
-        }
-        else if ( strcmp( val, "WARN" ) == 0 )
-        {
-            unsupportedSetting = UNSUPPORTED_WARN;
-        }
-        else if ( strcmp( val, "ERROR" ) == 0 )
-        {
-            unsupportedSetting = UNSUPPORTED_ERROR;
         }
         else
         {
-            unsupportedSetting = UNSUPPORTED_WARN;
+            std::string val = envVal;
+ 
+            // transform to uppercase
+
+            for ( std::string::iterator p = val.begin(); val.end() != p; ++p )
+            {
+                *p = toupper( *p );
+            }
+
+            LAMA_LOG_INFO( logger, "LAMA_UNSUPPORTED=" << val << ", setting used for LAMA" )
+
+            if ( "IGNORE" == val )
+            {
+                unsupportedSetting = UNSUPPORTED_IGNORE;
+            }
+            else if ( "WARN" == val )
+            {
+                unsupportedSetting = UNSUPPORTED_WARN;
+            }
+            else if ( "ERROR" == val )
+            {
+                unsupportedSetting = UNSUPPORTED_ERROR;
+            }
+            else
+            {
+                LAMA_LOG_ERROR( logger, "LAMA_UNSUPPORTED=" << val << ", illegal value, take WARN" )
+                unsupportedSetting = UNSUPPORTED_WARN;
+            }
         }
     }
 
