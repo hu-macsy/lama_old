@@ -52,6 +52,37 @@ boost::weak_ptr<CUDAContext> CUDAContextManager::mCUDAContext[LAMA_MAX_CUDA_DEVI
 
 CUDAContextManager CUDAContextManager::theInstance;
 
+int CUDAContextManager::defaultDeviceNr = LAMA_DEFAULT_DEVICE_NUMBER;
+
+/* ----------------------------------------------------------------------------- */
+
+int CUDAContextManager::getDefaultDeviceNr()
+{
+    if ( defaultDeviceNr == LAMA_DEFAULT_DEVICE_NUMBER )
+    {
+
+        // not yet set, so do it now exactly once 
+
+        if ( getenv( LAMA_CUDA_ENV_FOR_DEVICE ) )
+        {
+            std::string devNumber( getenv( LAMA_CUDA_ENV_FOR_DEVICE ) );
+            std::istringstream devNumberReader( devNumber );
+            devNumberReader >> defaultDeviceNr;
+
+            LAMA_LOG_INFO( logger, LAMA_CUDA_ENV_FOR_DEVICE << " = " << defaultDeviceNr << " set, take it" )
+        }
+        else
+        {
+            LAMA_LOG_WARN( logger, LAMA_CUDA_ENV_FOR_DEVICE << " not set, take device 0" )
+            defaultDeviceNr = 0;
+        }
+    }
+
+    return defaultDeviceNr;
+}
+
+/* ----------------------------------------------------------------------------- */
+
 CUDAContextManager::CUDAContextManager()
     : ContextManager( Context::CUDA )
 {
@@ -95,21 +126,7 @@ ContextPtr CUDAContextManager::getInstance( int deviceNr )
 
     if ( cudaDeviceNr == LAMA_DEFAULT_DEVICE_NUMBER )
     {
-        // if no device has been specified we take the value of the environment variable
-
-        if ( getenv( LAMA_CUDA_ENV_FOR_DEVICE ) )
-        {
-            std::string devNumber( getenv( LAMA_CUDA_ENV_FOR_DEVICE ) );
-            std::istringstream devNumberReader( devNumber );
-            devNumberReader >> cudaDeviceNr;
-
-            LAMA_LOG_INFO( logger, LAMA_CUDA_ENV_FOR_DEVICE << " = " << cudaDeviceNr << " set, take it" )
-        }
-        else
-        {
-            LAMA_LOG_WARN( logger, LAMA_CUDA_ENV_FOR_DEVICE << " not set, take device 0" )
-            cudaDeviceNr = 0;
-        }
+        cudaDeviceNr = getDefaultDeviceNr();
     }
 
     LAMA_ASSERT_ERROR(
