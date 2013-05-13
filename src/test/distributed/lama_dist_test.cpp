@@ -72,14 +72,12 @@ int main( int argc, char* argv[] )
 
     // If there is no value in environment variable LAMA_TEST_CONTEXT
     // we set this value to *
+
     char* context = getenv( "LAMA_TEST_CONTEXT" );
+
     if ( context == NULL )
     {
-        std::string s = ( "LAMA_TEST_CONTEXT=*" );
-        char* buffer = new char[s.length()];
-        std::strcpy( buffer, s.c_str() );
-        /*int error = */
-        putenv( buffer );
+        putenv( const_cast<char*>( "LAMA_TEST_CONTEXT=*") );
     }
 
     if ( argc > 1 )

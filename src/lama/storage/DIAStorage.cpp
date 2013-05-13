@@ -333,11 +333,13 @@ void DIAStorage<ValueType>::scaleImpl( const LAMAArray<OtherType>& diagonal )
 template<typename ValueType>
 bool DIAStorage<ValueType>::checkDiagonalProperty() const
 {
-    IndexType n = std::min( mNumRows, mNumColumns );
+    bool diagonalProperty = true;
 
-    bool diagonalProperty = false;
-
-    if ( n == 0 )
+    if ( mNumRows != mNumColumns )
+    {
+        diagonalProperty = false;
+    }
+    else if ( mNumRows == 0 )
     {
         // zero sized matrix has diagonal property
 

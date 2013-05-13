@@ -137,10 +137,12 @@ void OpenMPDIAUtils::getCSRValues(
     {
         if ( diagonalFlag )
         {
-            LAMA_ASSERT_EQUAL_DEBUG( numRows, csrIA[ numRows ] )
+            IndexType n = std::min( numRows, numColumns );
+
+            LAMA_ASSERT_EQUAL_DEBUG( n, csrIA[ numRows ] )
 
             #pragma omp parallel for schedule( LAMA_OMP_SCHEDULE )
-            for ( IndexType i = 0; i < numRows; i++ )
+            for ( IndexType i = 0; i < n; i++ )
             {
                 csrJA[i] = i;
                 csrValues[i] = 0.0;
@@ -177,7 +179,7 @@ void OpenMPDIAUtils::getCSRValues(
 
             IndexType ii0 = 0; // first index of diagonal
 
-            if ( diagonalFlag )
+            if ( diagonalFlag && ( i < numColumns ) )
             {
                 // store main diagonal at first, must be first diagonal
 
@@ -248,7 +250,7 @@ void OpenMPDIAUtils::getCSRSizes(
     {
         IndexType count = 0;
 
-        if ( diagonalFlag )
+        if ( diagonalFlag && ( i < numColumns ) )
         {
             count = 1;
         }

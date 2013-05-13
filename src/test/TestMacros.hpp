@@ -101,23 +101,39 @@ inline lama::Scalar scalarEps<double>()
 
 inline std::string getEnvContext()
 {
-    char* context = getenv( "LAMA_TEST_CONTEXT" );
-    if ( ( (std::string) context == "Host" ) || ( (std::string) context == "CUDA" )
-            || ( (std::string) context == "OPENCL" ) || ( (std::string) context == "MaxContext" ) )
+    std::string context;  // default is using each context
+
+    const char* envContext = getenv( "LAMA_TEST_CONTEXT" );
+
+    if ( !envContext )
     {
-        std::string myContext = context;
-        return myContext;
+        context = "*";
+        return context;
     }
-    else if ( (std::string) context == "*" )
+    
+    context = envContext;
+
+    // to upper for convenience
+
+    for ( std::string::iterator p = context.begin(); context.end() != p; ++p )
     {
-        //std::printf( "All contexts will be used. \n" );
-        return "*";
+        *p = toupper( *p );
+    }
+
+    if ( context == "HOST" )
+    { 
+        context = "Host";    // set back 
+    }
+    else if ( context == "CUDA" || context == "OPENCL" )
+    {
+        // good values
     }
     else
     {
-        //std::printf( "WARNING: Unknown context. Possible values are: *, Host, CUDA, OPENCL, MaxContext. \n" );
-        return "*";
+        context = "*";
     }
+    
+    return context;
 }
 
 /**
