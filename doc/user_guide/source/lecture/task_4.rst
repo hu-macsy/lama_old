@@ -4,13 +4,13 @@ Task 4: Let the CG Iterative Solver run MPI parallel
 ====================================================
 
 LAMA offers different solvers for equation systems, e.g. Jacobi, AMG, or SOR.
-Using one of these LAMA-Solvers is a alternative instead of integrating a
+Using one of these LAMA-Solvers is an alternative to integrating a
 self-provided implementation. To demonstrate the use of a LAMA-Solver, you can
-see an example in the appropriated solution of task 2. You can use either the
+see an example in the appropriated solution of task 2. You can either use the
 LAMA provided CG-Solver or the one you have created in Task 2 to solve the
 equation system in parallel. LAMA provides the concept of Communicators and
-Distributions, through the classes Communicator and Distribution, to handle the
-complexity of distributed memory parallelism.
+Distributions to handle the complexity of distributed memory parallelism 
+through the classes Communicator and Distribution.
 
 Our next exercise is to run a CG-Solver MPI parallel. To run a program parallel,
 we need to create an object of type CommunicatorPtr to get access to a parallel
