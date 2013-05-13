@@ -200,7 +200,9 @@ BOOST_AUTO_TEST_CASE( prefetchTest )
 
         ReadAccess<ValueType> v1( vector1, cudaContext );
         cudaContext->enable( __FILE__, __LINE__ );
-        double norm = nrm2( n, v1.get(), 1, cudaContext->getSyncToken() );
+        SyncToken* token = cudaContext->getSyncToken();
+        double norm = nrm2( n, v1.get(), 1, token );
+        delete token;
         double expNormSqr = n * ( value1 * value1 );
         cudaContext->disable( __FILE__, __LINE__ );
         BOOST_CHECK_CLOSE( expNormSqr, norm * norm, 1 );
@@ -208,7 +210,9 @@ BOOST_AUTO_TEST_CASE( prefetchTest )
         // vector2 = vector1   via copy
         WriteAccess<ValueType> v2( vector2, cudaContext );
         cudaContext->enable( __FILE__, __LINE__ );
-        copy( n, v1.get(), 1, v2.get(), 1, cudaContext->getSyncToken() );
+        token = cudaContext->getSyncToken();
+        copy( n, v1.get(), 1, v2.get(), 1, token );
+        delete token;
         cudaContext->disable( __FILE__, __LINE__ );
     }
 
