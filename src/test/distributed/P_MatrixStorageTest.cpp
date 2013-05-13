@@ -90,8 +90,13 @@ LAMA_LOG_DEF_LOGGER( logger, "Test.P_MatrixStorageTest" );
 
 /* ------------------------------------------------------------------------- */
 
-typedef boost::mpl::list<CSRStorage<float>,ELLStorage<double>,JDSStorage<float>,COOStorage<double>,DenseStorage<float>,
-        DIAStorage<double> > StorageTypes;
+typedef boost::mpl::list< CSRStorage<float>,
+                          ELLStorage<double>,
+                          JDSStorage<float>,
+                          COOStorage<double>,
+                          DenseStorage<float>,
+                          DIAStorage<double>
+                        > StorageTypes;
 
 /* ------------------------------------------------------------------------- */
 
@@ -99,7 +104,8 @@ using boost::shared_ptr;
 
 /* ------------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( buildHaloTest, StorageType, StorageTypes ) {
+BOOST_AUTO_TEST_CASE_TEMPLATE( buildHaloTest, StorageType, StorageTypes ) 
+{
     StorageType matrixStorage;
 
     typedef typename StorageType::ValueType ValueType;
@@ -118,12 +124,14 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( buildHaloTest, StorageType, StorageTypes ) {
 
     DistributionPtr colDist = DistributionPtr( new BlockDistribution( numColumns, comm ) );
 
-// create matrix storage for local and halo part of the same type
+    // create matrix storage for local and halo part of same type as matrixStorage
 
     shared_ptr<MatrixStorage<ValueType> > localStorage ( matrixStorage.create() );
     shared_ptr<MatrixStorage<ValueType> > haloStorage ( matrixStorage.create() );
 
     Halo halo;
+
+    LAMA_LOG_INFO( logger, *comm << ", split halo : " << matrixStorage )
 
     matrixStorage.splitHalo( *localStorage, *haloStorage, halo, *colDist, NULL );
 
@@ -142,7 +150,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( buildHaloTest, StorageType, StorageTypes ) {
     BOOST_REQUIRE_EQUAL( matrixStorage.getNumRows(), numRows );
     BOOST_REQUIRE_EQUAL( matrixStorage.getNumColumns(), numColumns );
 
-// Now we should have the original matrix
+    // Now we should have the original matrix
 
     for ( IndexType i = 0; i < numRows; ++i )
     {
@@ -178,7 +186,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( replicateTest, StorageType, StorageTypes ) {
     LAMA_LOG_INFO( logger, matrixStorage << ": localize"
                    " for row distribution = " << rowDist );
 
-// Localize the matrix data according to the source distribution
+    // Localize the matrix data according to the source distribution
 
     matrixStorage.localize( matrixStorage, rowDist );
 
@@ -191,7 +199,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( replicateTest, StorageType, StorageTypes ) {
     BOOST_REQUIRE_EQUAL( matrixStorage.getNumRows(), numRows );
     BOOST_REQUIRE_EQUAL( matrixStorage.getNumColumns(), numColumns );
 
-// Now we should have the original matrix
+    // Now we should have the original matrix
 
     for ( IndexType i = 0; i < numRows; ++i )
     {
@@ -205,7 +213,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( replicateTest, StorageType, StorageTypes ) {
 
 /* ------------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( redistributeTest, StorageType, StorageTypes ) {
+BOOST_AUTO_TEST_CASE_TEMPLATE( redistributeTest, StorageType, StorageTypes ) 
+{
     typedef typename StorageType::ValueType ValueType;
 
     StorageType matrixStorage;
@@ -228,7 +237,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( redistributeTest, StorageType, StorageTypes ) {
     LAMA_LOG_INFO( logger, matrixStorage << ": localize"
                    " for row distribution = " << *rowDist1 );
 
-// Localize the matrix data according to the source distribution
+    // Localize the matrix data according to the source distribution
 
     matrixStorage.localize( matrixStorage, *rowDist1 );
 
@@ -247,7 +256,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( redistributeTest, StorageType, StorageTypes ) {
     BOOST_REQUIRE_EQUAL( matrixStorage.getNumRows(), numRows );
     BOOST_REQUIRE_EQUAL( matrixStorage.getNumColumns(), numColumns );
 
-// Now we should have the original matrix
+    // Now we should have the original matrix
 
     for ( IndexType i = 0; i < numRows; ++i )
     {
@@ -261,8 +270,9 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( redistributeTest, StorageType, StorageTypes ) {
 
 /* ------------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( exchangeHaloTest, StorageType, StorageTypes ) {
-// Test for method MatrixStorage::exchangeHalo
+BOOST_AUTO_TEST_CASE_TEMPLATE( exchangeHaloTest, StorageType, StorageTypes ) 
+{
+    // Test for method MatrixStorage::exchangeHalo
 
     StorageType matrixStorage;
 
@@ -282,11 +292,11 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( exchangeHaloTest, StorageType, StorageTypes ) {
 
     DistributionPtr rowDist = DistributionPtr( new BlockDistribution( numColumns, comm ) );
 
-// create local matrix storage
+    // create local matrix storage
 
     matrixStorage.localize( matrixStorage, *rowDist );
 
-// build a vector of required indexes
+    // build a vector of required indexes
 
     Halo halo;
 
@@ -294,12 +304,10 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( exchangeHaloTest, StorageType, StorageTypes ) {
 
     for ( IndexType i = 0; i < numRows; ++i )
     {
-        if ( rowDist->isLocal(i) )
+        if ( ! rowDist->isLocal(i) )
         {
-            continue;
+            requiredIndexes.push_back( i );
         }
-
-        requiredIndexes.push_back( i );
     }
 
     LAMA_LOG_INFO( logger, *comm << ": #required rows = " << requiredIndexes.size() );
@@ -314,7 +322,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( exchangeHaloTest, StorageType, StorageTypes ) {
     BOOST_REQUIRE_EQUAL( haloMatrix.getNumRows(), static_cast<IndexType>( requiredIndexes.size() ) );
     BOOST_REQUIRE_EQUAL( haloMatrix.getNumColumns(), numColumns );
 
-// Halo matrix must contain the right values
+    // Halo matrix must contain the right values
 
     for ( IndexType i = 0; i < haloMatrix.getNumRows(); ++i )
     {
