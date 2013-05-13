@@ -786,6 +786,7 @@ T MPICommunicator::sumImpl( const T value ) const
     MPI_Datatype commType = getMPIType<T>();
     LAMA_MPICALL( logger, MPI_Allreduce( ( void* ) &value, ( void* ) &sum, 1, commType, MPI_SUM, selectMPIComm() ),
                   "MPI_Allreduce(MPI_SUM)" )
+    LAMA_LOG_DEBUG( logger, "sum: my value = " << value << ", sum = " << sum )
     return sum;
 }
 
