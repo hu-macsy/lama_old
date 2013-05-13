@@ -36,8 +36,8 @@ export LAMA_LOG=ERROR
 export LAMA_UNSUPPORTED=IGNORE
 export LAMA_DEVICE=0 #default
 
-# Creating dir named by YEARS_MONTHS_DAYS-HOURSMINUTES
-dirname=xmlresult$(date +%y_%m_%d-%k%M)
+# Creating dir named by YEAR_MONTH_DAY-HOURMINUTE
+dirname=xmlresult$(date +%y_%m_%d-%H%M)
 echo "Create result directory: ${dirname}"
 mkdir ${dirname}
 
