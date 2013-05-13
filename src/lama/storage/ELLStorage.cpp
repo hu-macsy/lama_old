@@ -416,8 +416,8 @@ void ELLStorage<ValueType>::setCSRDataImpl(
     // determine the maximal number of non-zero in one row
 
     {
-        LAMA_CONTEXT_ACCESS( loc )
         ReadAccess<IndexType> ellSizes( mIA, loc );
+        LAMA_CONTEXT_ACCESS( loc )
         mNumValuesPerRow = maxval( ellSizes.get(), mNumRows );
     }
 
@@ -713,6 +713,8 @@ void ELLStorage<ValueType>::allocate( IndexType numRows, IndexType numColumns )
         LAMA_INTERFACE_FN_T( setVal, loc, Utils, Setter, IndexType )
 
         WriteOnlyAccess<IndexType> ia( mIA, loc, mNumRows );
+
+        LAMA_CONTEXT_ACCESS( loc )
 
         setVal( ia.get(), mNumRows, 0 );
     }
