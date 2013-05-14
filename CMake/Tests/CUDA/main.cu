@@ -36,5 +36,6 @@ int main( int argc, char** argv)
         cout << "Device " << dev << ": " << deviceProp.name << endl;
         cout << "  total amount of global memory = " << deviceProp.totalGlobalMem << " Byte"
              << " = " << deviceProp.totalGlobalMem / ( 1024.0 * 1024.0 ) << " MByte" << endl;
+        cout << "  compute capability = " << deviceProp.major << "." << deviceProp.minor << endl;
     }
 }
