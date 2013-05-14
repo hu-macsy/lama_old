@@ -42,8 +42,8 @@ path_lcov=lcov
 path_genhtml=genhtml
 error_count=0
 
-# Creating dir named by YEARS_MONTHS_DAYS-HOURSMINUTES
-dirname=$(date +%y_%m_%d-%k%M)
+# Creating dir named by YEAR_MONTH_DAY-HOURMINUTE
+dirname=$(date +%y_%m_%d-%H%M)
 echo "Create coverage directory: ${dirname}"
 mkdir ${dirname}
 
