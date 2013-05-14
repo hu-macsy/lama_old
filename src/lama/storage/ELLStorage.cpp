@@ -49,6 +49,8 @@
 namespace lama
 {
 
+using boost::shared_ptr;
+
 /* --------------------------------------------------------------------------- */
 
 LAMA_LOG_DEF_TEMPLATE_LOGGER( template<typename ValueType>, ELLStorage<ValueType>::logger, "MatrixStorage.ELLStorage" )
@@ -210,6 +212,9 @@ void ELLStorage<ValueType>::purge()
     mIA.purge();
     mJA.purge();
     mValues.purge();
+    mRowIndexes.purge();
+
+    mDiagonalProperty = checkDiagonalProperty();
 }
 
 /* --------------------------------------------------------------------------- */
@@ -262,17 +267,36 @@ bool ELLStorage<ValueType>::checkDiagonalProperty() const
 {
     LAMA_LOG_INFO( logger, "checkDiagonalProperty" )
 
-    ContextPtr loc = getContextPtr();
-
-    LAMA_INTERFACE_FN( hasDiagonalProperty, loc, ELLUtils, Operations )
-
     IndexType numDiagonals = std::min( mNumRows, mNumColumns );
 
-    ReadAccess<IndexType> ja( mJA, loc );
+    bool diagonalProperty = true;
 
-    LAMA_CONTEXT_ACCESS( loc )
+    if ( numDiagonals == 0 )
+    {
+        // diagonal property is given for zero-sized matrices
 
-    bool diagonalProperty = hasDiagonalProperty( numDiagonals, ja.get() );
+        diagonalProperty = true;
+    }
+    else if ( mNumValuesPerRow < 1 )
+    {
+        // no elements, so certainly it does not have diagonl property
+
+        diagonalProperty = false;
+    }
+    else
+    {
+        ContextPtr loc = getContextPtr();
+
+        LAMA_INTERFACE_FN( hasDiagonalProperty, loc, ELLUtils, Operations )
+
+        ReadAccess<IndexType> ja( mJA, loc );
+
+        LAMA_CONTEXT_ACCESS( loc )
+
+        diagonalProperty = hasDiagonalProperty( numDiagonals, ja.get() );
+    }
+
+    LAMA_LOG_INFO( logger, *this << ": checkDiagonalProperty = " << diagonalProperty )
 
     return diagonalProperty;
 }
@@ -284,15 +308,16 @@ void ELLStorage<ValueType>::clear()
 {
     LAMA_LOG_INFO( logger, "clear" )
 
-    mNumRows = 0;
-    mNumColumns = 0;
-
+    mNumRows         = 0;
+    mNumColumns      = 0;
     mNumValuesPerRow = 0;
 
-    mDiagonalProperty = false;
     mIA.clear();
     mJA.clear();
     mValues.clear();
+    mRowIndexes.clear();
+
+    mDiagonalProperty = checkDiagonalProperty();
 }
 
 /* --------------------------------------------------------------------------- */
@@ -356,21 +381,20 @@ void ELLStorage<ValueType>::setCSRDataImpl(
 {
     LAMA_REGION( "Storage.ELL<-CSR" )
 
-    LAMA_LOG_INFO( logger,
-                   "set CSR data on " << *loc << ": numRows = " << numRows << ", numColumns = " << numColumns << ", numValues = " << numValues )
-
-    _MatrixStorage::init( numRows, numColumns );
+    LAMA_LOG_INFO( logger, "set CSR data on " << *loc 
+                            << ": numRows = " << numRows << ", numColumns = " << numColumns 
+                            << ", numValues = " << numValues )
 
     if ( numRows == 0 )
     {
-        mNumValuesPerRow = 0;
+        // just allocate will clear member arrays
 
-        mIA.clear();
-        mJA.clear();
-        mValues.clear();
+        allocate( numRows, numColumns );
 
         return;
     }
+
+    _MatrixStorage::init( numRows, numColumns );
 
     // Get function pointers for needed routines at the LAMA interface
 
@@ -392,8 +416,8 @@ void ELLStorage<ValueType>::setCSRDataImpl(
     // determine the maximal number of non-zero in one row
 
     {
-        LAMA_CONTEXT_ACCESS( loc )
         ReadAccess<IndexType> ellSizes( mIA, loc );
+        LAMA_CONTEXT_ACCESS( loc )
         mNumValuesPerRow = maxval( ellSizes.get(), mNumRows );
     }
 
@@ -403,6 +427,19 @@ void ELLStorage<ValueType>::setCSRDataImpl(
 
     const IndexType dataSize = mNumValuesPerRow * mNumRows;
 
+    if ( mNumRows > 200 && mNumValuesPerRow > 0 )
+    {
+        // make this check only on larger matrices, dataSize must not be equal 0
+
+        double fillRate = double( numValues ) / double( dataSize );
+
+        if ( fillRate < 0.5 )
+        {
+            LAMA_LOG_WARN( logger, *this << ": fill rate = " << fillRate 
+                           << " ( " << numValues << " non-zero values ), consider using JDS" )
+        } 
+    }
+
     {
         // now fill the matrix values and column indexes
 
@@ -411,29 +448,35 @@ void ELLStorage<ValueType>::setCSRDataImpl(
         ReadAccess<OtherValueType> csrValues( values, loc );
 
         ReadAccess<IndexType> ellIA( mIA, loc );
-        WriteAccess<IndexType> ellJA( mJA, loc );
-        WriteAccess<ValueType> ellValues( mValues, loc );
+ 
+        WriteOnlyAccess<IndexType> ellJA( mJA, loc, dataSize );
+        WriteOnlyAccess<ValueType> ellValues( mValues, loc, dataSize );
 
-        ellJA.resize( dataSize );
-        ellValues.resize( dataSize );
-        LAMA_LOG_DEBUG( logger, "convert CSR -> ELL" )
-
-        LAMA_LOG_DEBUG( logger, " size = " <<ellJA.size() )
+        LAMA_LOG_DEBUG( logger, "convert CSR -> ELL, ellSize = " << dataSize )
 
         LAMA_CONTEXT_ACCESS( loc )
-        setCSRValues( ellJA.get(), ellValues.get(), ellIA.get(), mNumRows, mNumValuesPerRow, csrIA.get(), csrJA.get(),
-                      csrValues.get() );
+
+        setCSRValues( ellJA.get(), ellValues.get(), 
+                      ellIA.get(), mNumRows, mNumValuesPerRow, 
+                      csrIA.get(), csrJA.get(), csrValues.get() 
+                    );
+
         LAMA_LOG_DEBUG( logger, " size = " <<ellJA.size() )
+
         IndexType numDiagonals = std::min( mNumRows, mNumColumns );
 
-        if ( numDiagonals > 0 && numValues > 0 )
+        if ( numDiagonals == 0)
+        { 
+            mDiagonalProperty = true;
+        }
+        else if ( numValues == 0 )
+        {
+            mDiagonalProperty = false;
+        } 
+        else
         {
             LAMA_CONTEXT_ACCESS( loc )
             mDiagonalProperty = hasDiagonalProperty( numDiagonals, ellJA.get() );
-        }
-        else
-        {
-            mDiagonalProperty = false;
         }
     }
 
@@ -655,27 +698,28 @@ void ELLStorage<ValueType>::allocate( IndexType numRows, IndexType numColumns )
 {
     LAMA_LOG_INFO( logger, "allocate ELL sparse matrix of size " << numRows << " x " << numColumns )
 
-    ContextPtr loc = getContextPtr();
+    clear();   
 
-    mNumRows = numRows;
+    mNumRows    = numRows;
     mNumColumns = numColumns;
-
-    mNumValuesPerRow = 0;
-
-    mIA.clear();
-    mJA.clear();
-    mValues.clear();
-    mRowIndexes.clear();
 
     LAMA_LOG_DEBUG( logger, "resize mIA, mNumRows = " << mNumRows )
 
     {
+        // Intialize array mIA with 0
+
+        ContextPtr loc = getContextPtr();
+
+        LAMA_INTERFACE_FN_T( setVal, loc, Utils, Setter, IndexType )
+
         WriteOnlyAccess<IndexType> ia( mIA, loc, mNumRows );
+
+        LAMA_CONTEXT_ACCESS( loc )
+
+        setVal( ia.get(), mNumRows, 0 );
     }
 
-    LAMA_LOG_DEBUG( logger, "initialize with 0" )
-
-    LAMAArrayUtils::assign( mIA, Scalar( 0 ), loc );
+    mDiagonalProperty = checkDiagonalProperty();
 
     LAMA_LOG_DEBUG( logger, "ready allocate" )
 }
@@ -692,7 +736,7 @@ void ELLStorage<ValueType>::writeAt( std::ostream& stream ) const
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-ValueType ELLStorage<ValueType>::getValue( IndexType i, IndexType j ) const
+ValueType ELLStorage<ValueType>::getValue( const IndexType i, const IndexType j ) const
 {
     LAMA_LOG_TRACE( logger, "get value (" << i << ", " << j << ")" )
     LAMA_LOG_TRACE( logger, "sizes: ia = " << mIA.size() << ", ja = " << mJA.size() << ", data = " << mValues.size() )
@@ -920,7 +964,7 @@ void ELLStorage<ValueType>::matrixTimesVector(
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-std::auto_ptr<SyncToken> ELLStorage<ValueType>::matrixTimesVectorAsync(
+SyncToken* ELLStorage<ValueType>::matrixTimesVectorAsync(
     LAMAArrayView<ValueType> result,
     const ValueType alpha,
     const LAMAArrayConstView<ValueType> x,
@@ -939,15 +983,15 @@ std::auto_ptr<SyncToken> ELLStorage<ValueType>::matrixTimesVectorAsync(
     LAMA_INTERFACE_FN_T( sparseGEMV, loc, ELLUtils, Mult, ValueType )
     LAMA_INTERFACE_FN_T( normalGEMV, loc, ELLUtils, Mult, ValueType )
 
-    std::auto_ptr<SyncToken> syncToken = loc->getSyncToken();
+    std::auto_ptr<SyncToken> syncToken( loc->getSyncToken() );
 
     // all accesses will be pushed to the sync token as LAMA arrays have to be protected up
     // to the end of the computations.
 
-    std::auto_ptr<ReadAccess<IndexType> > ellIA( new ReadAccess<IndexType>( mIA, loc ) );
-    std::auto_ptr<ReadAccess<IndexType> > ellJA( new ReadAccess<IndexType>( mJA, loc ) );
-    std::auto_ptr<ReadAccess<ValueType> > ellValues( new ReadAccess<ValueType>( mValues, loc ) );
-    std::auto_ptr<ReadAccess<ValueType> > rX( new ReadAccess<ValueType>( x, loc ) );
+    shared_ptr<ReadAccess<IndexType> > ellIA( new ReadAccess<IndexType>( mIA, loc ) );
+    shared_ptr<ReadAccess<IndexType> > ellJA( new ReadAccess<IndexType>( mJA, loc ) );
+    shared_ptr<ReadAccess<ValueType> > ellValues( new ReadAccess<ValueType>( mValues, loc ) );
+    shared_ptr<ReadAccess<ValueType> > rX( new ReadAccess<ValueType>( x, loc ) );
 
     // Possible alias of result and y must be handled by coressponding accesses
 
@@ -955,7 +999,7 @@ std::auto_ptr<SyncToken> ELLStorage<ValueType>::matrixTimesVectorAsync(
     {
         // only write access for y, no read access for result
 
-        std::auto_ptr<WriteAccess<ValueType> > wResult( new WriteAccess<ValueType>( result, loc ) );
+        shared_ptr<WriteAccess<ValueType> > wResult( new WriteAccess<ValueType>( result, loc ) );
 
         if ( mRowIndexes.size() > 0 && ( beta == 1.0 ) )
         {
@@ -963,13 +1007,13 @@ std::auto_ptr<SyncToken> ELLStorage<ValueType>::matrixTimesVectorAsync(
 
             IndexType numNonZeroRows = mRowIndexes.size();
 
-            std::auto_ptr<ReadAccess<IndexType> > rows( new ReadAccess<IndexType>( mRowIndexes, loc ) );
+            shared_ptr<ReadAccess<IndexType> > rRowIndexes( new ReadAccess<IndexType>( mRowIndexes, loc ) );
 
-            syncToken->pushAccess( std::auto_ptr<BaseAccess>( rows ) );
+            syncToken->pushAccess( rRowIndexes );
 
             LAMA_CONTEXT_ACCESS( loc )
 
-            sparseGEMV( wResult->get(), mNumRows, mNumValuesPerRow, alpha, rX->get(), numNonZeroRows, rows->get(),
+            sparseGEMV( wResult->get(), mNumRows, mNumValuesPerRow, alpha, rX->get(), numNonZeroRows, rRowIndexes->get(),
                         ellIA->get(), ellJA->get(), ellValues->get(), syncToken.get() );
         }
         else
@@ -982,28 +1026,28 @@ std::auto_ptr<SyncToken> ELLStorage<ValueType>::matrixTimesVectorAsync(
                         ellIA->get(), ellJA->get(), ellValues->get(), syncToken.get() );
         }
 
-        syncToken->pushAccess( std::auto_ptr<BaseAccess>( wResult ) );
+        syncToken->pushAccess( wResult );
     }
     else
     {
-        std::auto_ptr<WriteAccess<ValueType> > wResult( new WriteOnlyAccess<ValueType>( result, loc, mNumRows ) );
-        std::auto_ptr<ReadAccess<ValueType> > rY( new ReadAccess<ValueType>( y, loc ) );
+        shared_ptr<WriteAccess<ValueType> > wResult( new WriteOnlyAccess<ValueType>( result, loc, mNumRows ) );
+        shared_ptr<ReadAccess<ValueType> > rY( new ReadAccess<ValueType>( y, loc ) );
 
         LAMA_CONTEXT_ACCESS( loc )
 
         normalGEMV( wResult->get(), alpha, rX->get(), beta, rY->get(), mNumRows, mNumValuesPerRow, ellIA->get(),
                     ellJA->get(), ellValues->get(), syncToken.get() );
 
-        syncToken->pushAccess( std::auto_ptr<BaseAccess>( wResult ) );
-        syncToken->pushAccess( std::auto_ptr<BaseAccess>( rY ) );
+        syncToken->pushAccess( wResult );
+        syncToken->pushAccess( rY );
     }
 
-    syncToken->pushAccess( std::auto_ptr<BaseAccess>( ellIA ) );
-    syncToken->pushAccess( std::auto_ptr<BaseAccess>( ellJA ) );
-    syncToken->pushAccess( std::auto_ptr<BaseAccess>( ellValues ) );
-    syncToken->pushAccess( std::auto_ptr<BaseAccess>( rX ) );
+    syncToken->pushAccess( ellIA );
+    syncToken->pushAccess( ellJA );
+    syncToken->pushAccess( ellValues );
+    syncToken->pushAccess( rX );
 
-    return syncToken;
+    return syncToken.release();
 }
 
 /* --------------------------------------------------------------------------- */

@@ -48,11 +48,11 @@ void verifySameMatrixAll( const Matrix& m1, const Matrix& m2 )
     BOOST_CHECK_EQUAL( n, m2.getNumRows() );
     BOOST_CHECK_EQUAL( n, m2.getNumColumns() );
 
-    VectorPtr ptrX1 = m1.createDenseVector( m1.getColDistributionPtr(), 1.0 );
-    VectorPtr ptrX2 = m2.createDenseVector( m2.getColDistributionPtr(), 1.0 );
+    VectorPtr ptrX1( m1.createDenseVector( m1.getColDistributionPtr(), 1.0 ) );
+    VectorPtr ptrX2( m2.createDenseVector( m2.getColDistributionPtr(), 1.0 ) );
 
-    VectorPtr ptrY1 = m1.createDenseVector( m1.getDistributionPtr(), 0.0 );
-    VectorPtr ptrY2 = m2.createDenseVector( m2.getDistributionPtr(), 0.0 );
+    VectorPtr ptrY1( m1.createDenseVector( m1.getDistributionPtr(), 0.0 ) );
+    VectorPtr ptrY2( m2.createDenseVector( m2.getDistributionPtr(), 0.0 ) );
 
 //    Vector& x1 = *ptrX1;
 //    Vector& x2 = *ptrX2;
@@ -91,8 +91,8 @@ void assertSameMatrix( const Matrix& m1, const Matrix& m2 )
 
     // create replicated vectors for the rows with the same value type
 
-    VectorPtr ptrRow1 = m1.createDenseVector( replicated, 0.0 );
-    VectorPtr ptrRow2 = m2.createDenseVector( replicated, 0.0 );
+    VectorPtr ptrRow1( m1.createDenseVector( replicated, 0.0 ) );
+    VectorPtr ptrRow2( m2.createDenseVector( replicated, 0.0 ) );
 
     // now compare all rows
 

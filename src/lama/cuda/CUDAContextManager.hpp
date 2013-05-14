@@ -56,9 +56,16 @@ class CUDAContext;
 
 #define LAMA_MAX_CUDA_DEVICES 4
 
+/** @brief This class is a derived class of ContextManager for managing CUDA Context.
+ *
+ *  It provides instances of CUDAContext for a given device number.
+ */
+
 class LAMA_DLL_IMPORTEXPORT CUDAContextManager: public ContextManager
 {
 public:
+
+    /** Implementation of ContextManager::getContext */
 
     ContextPtr getContext( int deviceNr )
     {
@@ -85,6 +92,12 @@ private:
     static boost::weak_ptr<CUDAContext> mCUDAContext[LAMA_MAX_CUDA_DEVICES];
 
     static CUDAContextManager theInstance; //!< singleton instance of this class
+
+    static int defaultDeviceNr;  //!< will be set to the default device
+
+    /** Getter for the default device number; it will be set if not available at first call. */
+
+    static int getDefaultDeviceNr();
 };
 
 }

@@ -107,13 +107,15 @@ public:
 
     virtual void memcpy( void* dst, const void* src, const size_t size ) const;
 
-    virtual std::auto_ptr<SyncToken> memcpyAsync( void* dst, const void* src, const size_t size ) const;
+    virtual SyncToken* memcpyAsync( void* dst, const void* src, const size_t size ) const;
 
     virtual bool cancpy( const ContextData& dst, const ContextData& src ) const;
 
     virtual void memcpy( ContextData& dst, const ContextData& src, const size_t size ) const;
 
-    virtual std::auto_ptr<SyncToken> memcpyAsync( ContextData& dst, const ContextData& src, const size_t size ) const;
+    /** This method implements Context::memcpyAsync */
+
+    virtual SyncToken* memcpyAsync( ContextData& dst, const ContextData& src, const size_t size ) const;
 
     /** The CUDA interface used for the implementation requires that the device
      *  must be set via a setDevice routine. This method takes care of it if this
@@ -125,12 +127,13 @@ public:
 
     virtual void disable( const char* filename, int line ) const;
 
-    std::auto_ptr<CUDAStreamSyncToken> getComputeSyncToken() const;
-    std::auto_ptr<CUDAStreamSyncToken> getTransferSyncToken() const;
+    CUDAStreamSyncToken* getComputeSyncToken() const;
+
+    CUDAStreamSyncToken* getTransferSyncToken() const;
 
     /** Implementation for Context::getSyncToken */
 
-    virtual std::auto_ptr<SyncToken> getSyncToken() const;
+    virtual SyncToken* getSyncToken() const;
 
 protected:
 
@@ -153,10 +156,10 @@ private:
     void memcpyFromCUDAHost( void* dst, const void* src, const size_t size ) const;
     void memcpyToCUDAHost( void* dst, const void* src, const size_t size ) const;
 
-    std::auto_ptr<SyncToken> memcpyAsyncFromHost( void* dst, const void* src, const size_t size ) const;
-    std::auto_ptr<SyncToken> memcpyAsyncToHost( void* dst, const void* src, const size_t size ) const;
-    std::auto_ptr<SyncToken> memcpyAsyncFromCUDAHost( void* dst, const void* src, const size_t size ) const;
-    std::auto_ptr<SyncToken> memcpyAsyncToCUDAHost( void* dst, const void* src, const size_t size ) const;
+    SyncToken* memcpyAsyncFromHost( void* dst, const void* src, const size_t size ) const;
+    SyncToken* memcpyAsyncToHost( void* dst, const void* src, const size_t size ) const;
+    SyncToken* memcpyAsyncFromCUDAHost( void* dst, const void* src, const size_t size ) const;
+    SyncToken* memcpyAsyncToCUDAHost( void* dst, const void* src, const size_t size ) const;
 
     int mDeviceNr; //!< number of device for this context
 

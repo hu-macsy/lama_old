@@ -1,7 +1,7 @@
 :orphan:
 
-Solution of Task 7
-==================
+Solution Task 7
+===============
 
 A possible solution for task 7 is shown in the following sourcecode:
 

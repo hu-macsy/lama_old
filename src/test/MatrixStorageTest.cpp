@@ -71,14 +71,14 @@ void getMatrix_7_4 ( IndexType& numRows,
     IndexType ia[] =
     {   2, 1, 2, 3, 2, 0, 2};
     ValueType values[] =
-    {   6.0, 4.0, 7.0, -9.3, 4.0, 2.0, 5.0, 3.0, 2.0, 1.0, 1.0, 2.0};
+    {   6.0f, 4.0f, 7.0f, -9.3f, 4.0f, 2.0f, 5.0f, 3.0f, 2.0f, 1.0f, 1.0f, 2.0f };
     IndexType ja[] =
     {   0, 3, 0, 2, 3, 0, 1, 3, 0, 3, 1, 3};
 
     ValueType Resultmatrix[] =
     {   6, 0, 0, 4,
         7, 0, 0, 0,
-        0, 0, -9.3, 4,
+        0, 0, -9.3f , 4,
         2, 5, 0, 3,
         2, 0, 0, 1,
         0, 0, 0, 0,
@@ -100,7 +100,7 @@ void MatrixStorageTest<T>::setDenseData( MatrixStorage<T>& storage )
     const IndexType numColumns = 4;
 
     static ValueType values[] =
-    { 6.0, 0.0, 0.0, 4.0, 7.0, 0.0, 0.0, 0.0, 0.0, 0.0, -9.3, 4.0, 2.0, 5.0, 0.0, 3.0 };
+    { 6, 0, 0, 4, 7, 0, 0, 0, 0, 0, -9.3f, 4, 2, 5, 0, 3 };
 
     // just make sure that number of entries in values matches the matrix size
 
@@ -122,7 +122,7 @@ void MatrixStorageTest<T>::setDenseLocal( MatrixStorage<T>& storage )
     const IndexType numColumns = 4;
 
     static ValueType values[] =
-    { 10.0, 0.0, 0.0, 4.0, 3.0, 10.0, 0.0, 0.0, 0.0, 0.0, -9.3, 4.0, 1.0, 5.0, 0.0, 13.0 };
+    { 10, 0, 0, 4, 3, 10, 0, 0, 0, 0, -9.3f, 4, 1, 5, 0, 13 };
 
     // just make sure that number of entries in values matches the matrix size
 
@@ -166,8 +166,10 @@ void MatrixStorageTest<T>::setDenseRandom( MatrixStorage<T>& storage )
     const IndexType numColumns = 4;
 
     static ValueType values[] =
-    {   0.436213f, 0.683202f, 0.531013f, 0.422152f, 0.4632f, 0.168648f, 0.967549f, 0.498486f, 0.126115f, 0.708545f,
-        0.131853f, 0.820422f, 0.992481f, 0.202542f, 0.47369f, 0.947076f
+    {   0.436213f, 0.683202f, 0.531013f, 0.422152f, 
+	    0.4632f,   0.168648f, 0.967549f, 0.498486f,
+		0.126115f, 0.708545f, 0.131853f, 0.820422f, 
+		0.992481f, 0.202542f, 0.47369f,  0.947076f
     };
 
     // just make sure that number of entries in values matches the matrix size
@@ -207,38 +209,71 @@ void MatrixStorageTest<T>::setDenseRandomInverse( MatrixStorage<T>& storage )
 
 /* ========================================================================= */
 
-LAMA_COMMON_TEST_CASE_TEMPLATE( MatrixStorageTest, StorageType, setIdentityTest )const IndexType n = 15;
-
-LAMA_LOG_INFO( logger, "setIdentity, uses n = " << n );
-
-mMatrixStorage.clear();
-
-mMatrixStorage.setIdentity( n );
-
-BOOST_REQUIRE_EQUAL( n, mMatrixStorage.getNumRows() );
-BOOST_REQUIRE_EQUAL( n, mMatrixStorage.getNumColumns() );
-BOOST_REQUIRE_EQUAL( n, mMatrixStorage.getNumValues() );
-
-LAMAArray<double> row;
-
-for ( IndexType i = 0; i < n; ++i )
+LAMA_COMMON_TEST_CASE_TEMPLATE( MatrixStorageTest, StorageType, emptyTest )
 {
-    mMatrixStorage.getRow( row, i );
+    LAMA_LOG_INFO( logger, "emptyTest" );
 
-    HostReadAccess<double> rRow( row );
+    mMatrixStorage.clear();
 
-    for ( IndexType j = 0; j < n; ++j )
+    // verify that empty matrix has diagonal property
+
+    BOOST_CHECK( mMatrixStorage.hasDiagonalProperty() );
+
+    mMatrixStorage.allocate( 1, 1 );
+
+    if ( mMatrixStorage.getFormat() == DENSE )
     {
-        if ( i == j )
+        // only dense matrix keeps its diagonal property
+
+        BOOST_CHECK( mMatrixStorage.hasDiagonalProperty() );
+    }
+    else
+    {
+        BOOST_CHECK( ! mMatrixStorage.hasDiagonalProperty() );
+    }
+
+    mMatrixStorage.purge();
+
+    BOOST_CHECK( mMatrixStorage.hasDiagonalProperty() );
+}
+LAMA_COMMON_TEST_CASE_TEMPLATE_END();
+
+/* ========================================================================= */
+
+LAMA_COMMON_TEST_CASE_TEMPLATE( MatrixStorageTest, StorageType, setIdentityTest )
+
+    const IndexType n = 15;
+
+    LAMA_LOG_INFO( logger, "setIdentity, uses n = " << n );
+
+    mMatrixStorage.clear();
+
+    mMatrixStorage.setIdentity( n );
+
+    BOOST_REQUIRE_EQUAL( n, mMatrixStorage.getNumRows() );
+    BOOST_REQUIRE_EQUAL( n, mMatrixStorage.getNumColumns() );
+    BOOST_REQUIRE_EQUAL( n, mMatrixStorage.getNumValues() );
+
+    LAMAArray<double> row;
+
+    for ( IndexType i = 0; i < n; ++i )
+    {
+        mMatrixStorage.getRow( row, i );
+    
+        HostReadAccess<double> rRow( row );
+
+        for ( IndexType j = 0; j < n; ++j )
         {
-            BOOST_CHECK_EQUAL( 1.0, rRow[j] );
-        }
-        else
-        {
-            BOOST_CHECK_EQUAL( 0.0, rRow[j] );
+            if ( i == j )
+            {
+                BOOST_CHECK_EQUAL( 1.0, rRow[j] );
+            }
+            else
+            {
+                BOOST_CHECK_EQUAL( 0.0, rRow[j] );
+            }
         }
     }
-}
 LAMA_COMMON_TEST_CASE_TEMPLATE_END();
 
 /* ------------------------------------------------------------------------- */
@@ -435,7 +470,7 @@ LAMA_COMMON_TEST_CASE_TEMPLATE( MatrixStorageTest, StorageType, normTest )setDen
 
 ValueType maxNorm = mMatrixStorage.maxNorm();
 
-ValueType expected = 9.3; // maximal absolute value
+ValueType expected = 9.3f; // maximal absolute value
 
 BOOST_CHECK_CLOSE( maxNorm, expected, 1 );
 
@@ -480,7 +515,7 @@ LAMA_LOG_INFO( logger, "Test matrixTimesVector" );
 
         sum += beta * yVal;
 
-        BOOST_CHECK_CLOSE( sum, res[i], 0.1 );
+        BOOST_CHECK_CLOSE( sum, res[i], 0.1f );
     }
 }
 
@@ -488,10 +523,10 @@ LAMA_LOG_INFO( logger, "Test " << mMatrixStorage.getTypeName()
                << "::matrixTimesVectorAsync" );
 
 {
-    const ValueType xVal = 1.5;
-    const ValueType yVal = 2.0;
-    const ValueType alpha = 0.5;
-    const ValueType beta = 1.0;
+    const ValueType xVal = static_cast<ValueType>( 1.5 );
+    const ValueType yVal = static_cast<ValueType>( 2.0 );
+    const ValueType alpha = static_cast<ValueType>( 0.5f );
+    const ValueType beta = static_cast<ValueType>( 1.0f );
 
     LAMAArray<ValueType> x( mMatrixStorage.getNumColumns(), xVal );
     LAMAArray<ValueType> y( mMatrixStorage.getNumRows(), yVal );
@@ -499,7 +534,11 @@ LAMA_LOG_INFO( logger, "Test " << mMatrixStorage.getTypeName()
 
     // asynchronous execution, only checks correct calling
 
-    mMatrixStorage.matrixTimesVectorAsync( result, alpha, x, beta, y );
+    {
+        std::auto_ptr<SyncToken> token ( mMatrixStorage.matrixTimesVectorAsync( result, alpha, x, beta, y ) );
+
+        // free of token at end of this scope does the synchronization
+    }
 
     BOOST_CHECK_EQUAL( result.size(), mMatrixStorage.getNumRows() );
 
@@ -744,9 +783,10 @@ void MatrixStorageTest<StorageType>::jacobiTest( const ValueType omega )
     }
 }
 
-LAMA_COMMON_TEST_CASE_TEMPLATE( MatrixStorageTest, StorageType, jacobiTest )jacobiTest( 1.0 );
-jacobiTest( 0.8 );
-jacobiTest( 0.5 );
+LAMA_COMMON_TEST_CASE_TEMPLATE( MatrixStorageTest, StorageType, jacobiTest )
+    jacobiTest( 1.0f );
+    jacobiTest( 0.8f );
+    jacobiTest( 0.5f );
 LAMA_COMMON_TEST_CASE_TEMPLATE_END();
 
 /* ------------------------------------------------------------------------- */
@@ -860,6 +900,8 @@ LAMA_COMMON_TEST_CASE_TEMPLATE_END();
 /* ------------------------------------------------------------------------- */
 
 LAMA_COMMON_TEST_CASE_RUNNER_TEMPLATE( MatrixStorageTest ) {
+
+    emptyTest();
     purgeTest();
     setIdentityTest();
     setCSRDataTest();

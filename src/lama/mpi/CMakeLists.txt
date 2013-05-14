@@ -48,6 +48,10 @@ set ( HEADERS
 lama_classes ( ${CLASSES} )
 lama_headers ( ${HEADERS} )
 
+### MPI source files need path to find "mpi.h"
+
+include_directories ( ${MPI_INCLUDE_PATH} )
+
 ################################################################################
 #TODO: RECHECK!
 if ( CMAKE_COMPILER_IS_GNUCXX )

@@ -101,7 +101,6 @@ void CG::initialize( const Matrix& coefficients )
     default:
     {
         LAMA_THROWEXCEPTION( "Unsupported ValueType " << coefficients.getValueType() )
-        break;
     }
     }
 

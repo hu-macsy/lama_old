@@ -30,8 +30,8 @@
  * @date 06.04.2011
  * $Id$
  */
-#ifndef LAMA_OPENMPTIMER_HPP_
-#define LAMA_OPENMPTIMER_HPP_
+#ifndef LAMA_TIMER_HPP_
+#define LAMA_TIMER_HPP_
 
 // for dll_import
 #include <lama/config.hpp>
@@ -129,4 +129,4 @@ private:
 
 } // namespace lama
 
-#endif // LAMA_OPENMPTIMER_HPP_
+#endif // LAMA_TIMER_HPP_

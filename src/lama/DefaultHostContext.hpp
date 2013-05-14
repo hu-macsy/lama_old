@@ -80,13 +80,15 @@ public:
 
     virtual void memcpy( void* dst, const void* src, const size_t size ) const;
 
-    virtual std::auto_ptr<SyncToken> memcpyAsync( void* dst, const void* src, const size_t size ) const;
+    /** This routine implements Context::memcpyAsync  */
+
+    virtual SyncToken* memcpyAsync( void* dst, const void* src, const size_t size ) const;
 
     virtual bool cancpy( const ContextData& dst, const ContextData& src ) const;
 
     virtual void memcpy( ContextData& dst, const ContextData& src, const size_t size ) const;
 
-    virtual std::auto_ptr<SyncToken> memcpyAsync( ContextData& dst, const ContextData& src, const size_t size ) const;
+    virtual SyncToken* memcpyAsync( ContextData& dst, const ContextData& src, const size_t size ) const;
 
 private:
 

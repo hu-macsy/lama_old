@@ -46,15 +46,10 @@ set ( CLASSES
         CUDAHostContextManager
         CUDALAPACK
         CUDAStreamSyncToken
-        CUDATracerSyncToken
+        CUDATexture
     )
 
-set ( HEADERS
-        CUDATracerHelper
-    )
-    
 lama_classes ( ${CLASSES} )
-lama_headers ( ${HEADERS} )
 
 ### Add CUDA Sources ###
 set ( CUDA_SOURCES
@@ -70,19 +65,45 @@ set ( CUDA_SOURCES
     )
     
 ### set include directories ### 
+include_directories ( . ${CUDA_INCLUDE_DIRS} )
+
+### add CUDA library ###
+
 if ( NOT WIN32 )
+
+    # Linux requires explicit CUDA compilation of *.cu files
+
     cuda_compile ( CUDA_FILES ${CUDA_SOURCES} )
+    add_library( lamacuda SHARED ${CXX_SOURCES} ${CUDA_FILES} )
+
+else( NOT WIN32 )
+
+    # Windows suports different compilation for *.cpp and *.cu files
+
+    cuda_add_library( lamacuda SHARED ${CXX_SOURCES} ${CUDA_SOURCES} )
+
 endif( NOT WIN32 )
 
-### add library ###
-include_directories ( . ${CUDA_INCLUDE_DIRS} )
-add_library( lamacuda SHARED ${CXX_SOURCES} ${CUDA_FILES} )
+### Older cmake version have not set CUDA_cusparse_LIBRARY
 
+if ( NOT CUDA_cusparse_LIBRARY )
+
+    ### cusparse is usually in same directory as cublas
+
+    get_filename_component( HINT_CUDA_LIBRARY_DIR ${CUDA_cublas_LIBRARY} PATH )
+
+    find_library( CUDA_cusparse_LIBRARY NAMES cusparse
+                  HINTS ${HINT_CUDA_LIBRARY_DIR} )
+
+    mark_as_advanced( CUDA_cusparse_LIBRARY )
+
+endif ( NOT CUDA_cusparse_LIBRARY )
 
 ### target link libraries ###
 target_link_libraries( lamacuda
-                        ${CUDA_TOOLKIT_ROOT_DIR}/lib64/libcusparse.so
-                        ${CUDA_cublas_LIBRARY} ${CUDA_CUDART_LIBRARY}
+                        ${CUDA_cusparse_LIBRARY}
+                        ${CUDA_cublas_LIBRARY} 
+                        ${CUDA_CUDART_LIBRARY}
                         ${CUDA_CUDA_LIBRARY}
                      )
 

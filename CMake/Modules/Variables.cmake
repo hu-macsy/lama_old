@@ -2,7 +2,7 @@
  # @file Variables.cmake
  #
  # @license
- # Copyright (c) 2011
+ # Copyright (c) 2013
  # Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  # for Fraunhofer-Gesellschaft
  #
@@ -25,7 +25,7 @@
  # SOFTWARE.
  # @endlicense
  #
- # @brief Variables.cmake
+ # @brief Important CMake variable definitions
  # @author Jan Ecker
  # @date 16.04.2013
  #
@@ -56,13 +56,23 @@ message ( STATUS "FindLib64: " ${FIND_LIB64} )
 # Makefile outputs
 set ( CMAKE_VERBOSE_MAKEFILE OFF )
 
+# Define default library type as SHARED
+if ( NOT DEFINED BUILD_SHARED_LIBS )
+    set ( BUILD_SHARED_LIBS TRUE )
+endif( NOT DEFINED BUILD_SHARED_LIBS )
+
 ## BUILDTYPE
 
 # Choose Default CMAKE_BUILD_TYPE
 if ( NOT CMAKE_BUILD_TYPE )
   # Can be: (RelWithDebInfo)
-  set ( CMAKE_BUILD_TYPE Debug CACHE STRING 
+  set ( CMAKE_BUILD_TYPE Release CACHE STRING 
         "Choose the type of build, options are: None Debug Release RelWithDebInfo MinSizeRel." FORCE )
 endif ( NOT CMAKE_BUILD_TYPE )
 
 message ( STATUS "Build type is set to " ${CMAKE_BUILD_TYPE} )
+
+## set cache entries
+set ( LAMA_ADDITIONAL_LINK_LIBRARIES ${LAMA_ADDITIONAL_LINK_LIBRARIES} CACHE STRING "Additional libraries for linking, separated by ;" )
+set ( LAMA_ADDITIONAL_LINK_FLAGS ${LAMA_ADDITIONAL_LINK_FLAGS} CACHE STRING "Additional link flags, separated by ;" )
+mark_as_advanced ( LAMA_ADDITIONAL_LINK_LIBRARIES LAMA_ADDITIONAL_LINK_FLAGS )

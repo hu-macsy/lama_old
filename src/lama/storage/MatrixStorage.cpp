@@ -636,7 +636,8 @@ void MatrixStorage<ValueType>::joinHalo(
     LAMA_REGION( "Storage.joinHalo" )
 
     LAMA_LOG_INFO( logger,
-                   "join local = " << localData << " with diag = " << localData.hasDiagonalProperty() << " and halo = " << haloData << ", col dist = " << colDist )
+                   "join local = " << localData << " with diag = " << localData.hasDiagonalProperty() 
+                   << " and halo = " << haloData << ", col dist = " << colDist )
 
     //  Default solution joins storage data via the CSR format
     //  Note: this solution works also for *this == localData or haloData
@@ -646,6 +647,9 @@ void MatrixStorage<ValueType>::joinHalo(
     LAMAArray<ValueType> localValues;
 
     localData.buildCSRData( localIA, localJA, localValues );
+
+    LAMA_LOG_DEBUG( logger, "local CSR: ia = " << localIA << ", ja = " 
+                             << localJA << ", values = " << localValues )
 
     // map back the local indexes to global column indexes
     {
@@ -663,6 +667,9 @@ void MatrixStorage<ValueType>::joinHalo(
     LAMAArray<ValueType> haloValues;
 
     haloData.buildCSRData( haloIA, haloJA, haloValues );
+
+    LAMA_LOG_DEBUG( logger, "halo CSR: ia = " << haloIA << ", ja = " 
+                             << haloJA << ", values = " << haloValues )
 
     // map back the halo indexes to global column indexes
     // this mapping is given by the array of required indexes
@@ -864,6 +871,8 @@ void MatrixStorage<ValueType>::splitHalo(
 
     _StorageMethods::buildHalo( halo, haloJA, haloNumColumns, colDist );
 
+    LAMA_LOG_INFO( logger, "build halo: " << halo )
+
     localData.setCSRData( numRows, localNumColumns, localNumValues, localIA, localJA, localValues );
 
     localData.check( "local part after split" );
@@ -969,7 +978,7 @@ void MatrixStorage<ValueType>::matrixTimesVectorN(
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-std::auto_ptr<SyncToken> MatrixStorage<ValueType>::matrixTimesVectorAsync(
+SyncToken* MatrixStorage<ValueType>::matrixTimesVectorAsync(
     LAMAArrayView<ValueType> result,
     const ValueType alpha,
     const LAMAArrayConstView<ValueType> x,
@@ -990,11 +999,8 @@ std::auto_ptr<SyncToken> MatrixStorage<ValueType>::matrixTimesVectorAsync(
     = &MatrixStorage<ValueType>::matrixTimesVector;
 
     using boost::bind;
-    using boost::ref;
-    using boost::cref;
 
-    return std::auto_ptr<SyncToken>(
-               new TaskSyncToken( bind( pf, this, ref( result ), alpha, cref( x ), beta, cref( y ) ) ) );
+    return new TaskSyncToken( bind( pf, this, result, alpha, x, beta, y ) );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -1015,7 +1021,7 @@ void MatrixStorage<ValueType>::jacobiIterate(
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-std::auto_ptr<SyncToken> MatrixStorage<ValueType>::jacobiIterateAsync(
+SyncToken* MatrixStorage<ValueType>::jacobiIterateAsync(
     LAMAArrayView<ValueType> solution,
     const LAMAArrayConstView<ValueType> oldSolution,
     const LAMAArrayConstView<ValueType> rhs,
@@ -1032,11 +1038,8 @@ std::auto_ptr<SyncToken> MatrixStorage<ValueType>::jacobiIterateAsync(
     = &MatrixStorage<ValueType>::jacobiIterate;
 
     using boost::bind;
-    using boost::ref;
-    using boost::cref;
 
-    return std::auto_ptr<SyncToken>(
-               new TaskSyncToken( bind( pf, this, ref( solution ), cref( oldSolution ), cref( rhs ), omega ) ) );
+    return new TaskSyncToken( bind( pf, this, solution, oldSolution, rhs, omega ) );
 }
 
 /* --------------------------------------------------------------------------- */

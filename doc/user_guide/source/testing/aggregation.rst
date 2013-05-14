@@ -144,7 +144,6 @@ The structure of a !TestClass.cpp looks like this:
 (6) :   To parameterize testcases, you can use the makro BOOST_AUTO_TEST_CASE_TEMPLATE( casename, T, test_types). This case will run as often as the count of objects in the collection test_types. 
 (7) :   The makro BOOST_AUTO_TEST_SUITE_END() will close the testsuite
 
-
 Assertions
 ^^^^^^^^^^
 
@@ -176,7 +175,7 @@ LAMA_BOOST_CHECK, but in this case the epsilon is taken from TestHelper::eps<Val
 	LAMA_BOOST_CHECK_EPS( x, y )
 
 Some helpfull Classes
-----------------------
+---------------------
 
 TestSparseMatrices
 ^^^^^^^^^^^^^^^^^^
@@ -191,7 +190,7 @@ In the class EquationHelper there are predefined solutionsystems. A system consi
 Matrix, a solutionvector and a rhs-vector.
 
 Using CTest
-------------
+-----------
 
 CTest is part of Cmake and helps to integrate various testing executable with various runtime
 configurations to the existing buildsystem.  
@@ -225,13 +224,11 @@ Sources:
 
 - `Boost`_
 
-
 .. _Cmake: http://www.cmake.org/Wiki/CMake_Testing_With_CTest 
 .. _LinuxMagazin: http://www.linux-magazin.de/Heft-Abo/Ausgaben/2007/02/Mal-ausspannen 
 .. _Boost: https://svn.boost.org/trac/boost/wiki/CMakeTesting 
 
-
 Archive
 -------
 
-Here are some ideas of testing for LAMA :ref:`brainstorming`
+Here are some ideas of testing for LAMA :doc:`brainstorming`

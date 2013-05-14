@@ -289,13 +289,13 @@ void DenseVector<T>::setValues( const _LAMAArray& values )
 }
 
 template<typename T>
-std::auto_ptr<Vector> DenseVector<T>::create() const
+Vector* DenseVector<T>::create() const
 {
     return create( getDistributionPtr() );
 }
 
 template<typename T>
-std::auto_ptr<Vector> DenseVector<T>::create( DistributionPtr distribution ) const
+Vector* DenseVector<T>::create( DistributionPtr distribution ) const
 {
     LAMA_LOG_INFO( logger, "DenseVector<T>::create" )
 
@@ -303,7 +303,9 @@ std::auto_ptr<Vector> DenseVector<T>::create( DistributionPtr distribution ) con
 
     newDenseVector->setContext( mContext );
 
-    return newDenseVector;
+    // give back the new vector and its ownership
+
+    return newDenseVector.release();
 }
 
 template<typename T>
@@ -323,20 +325,15 @@ void DenseVector<T>::updateHalo( const Halo& halo ) const
 }
 
 template<typename T>
-std::auto_ptr<SyncToken> DenseVector<T>::updateHaloAsync( const Halo& halo ) const
+SyncToken* DenseVector<T>::updateHaloAsync( const Halo& halo ) const
 {
     const IndexType haloSize = halo.getHaloSize();
 
-    LAMA_LOG_DEBUG( logger, "Acquiring halo write access on "<< mContext )
+    // create correct size of Halo
 
-    mHaloValues.clear();
-    WriteAccess<T> haloAccess( mHaloValues, mContext );
-
-    haloAccess.reserve( haloSize );
-
-    LAMA_LOG_DEBUG( logger, "Releasing halo write access on " << mContext )
-
-    haloAccess.release();
+    {
+        WriteOnlyAccess<T> haloAccess( mHaloValues, mContext, haloSize );
+    }
 
     return getDistribution().getCommunicator().updateHaloAsync( mHaloValues, mLocalValues, halo );
 }
@@ -386,6 +383,8 @@ Scalar DenseVector<T>::min() const
 template<typename T>
 Scalar DenseVector<T>::max() const
 {
+    LAMA_ASSERT_ERROR( mLocalValues.size() > 0 , "no local values for max" )
+
     //TODO: need a interface function for this
     HostReadAccess<ValueType> localValues( mLocalValues );
     ValueType localMax = localValues[0];
@@ -406,95 +405,100 @@ Scalar DenseVector<T>::max() const
     return getDistribution().getCommunicator().max( localMax );
 }
 
+/* ------------------------------------------------------------------------- */
+
 template<typename T>
 Scalar DenseVector<T>::l1Norm() const
 {
     IndexType nnu = mLocalValues.size();
 
-    if ( nnu == 0 )
+    ValueType localL1Norm = static_cast<ValueType>( 0 );
+
+    if ( nnu > 0 )
     {
-        return 0.0f; // return as maxIdx would be invalid
+        //choose preferred context
+
+        ContextPtr loc = mContext;
+
+        // get function pointer BLAS::BLAS1<T>::asum in appropriate context
+
+        LAMA_INTERFACE_FN_DEFAULT_T( asum, loc, BLAS, BLAS1, T )
+
+        ReadAccess<T> read( mLocalValues, loc );
+
+        LAMA_CONTEXT_ACCESS( loc )
+
+        localL1Norm = asum( nnu, read.get(), 1, NULL );
     }
-
-    //choose preferred context
-
-    ContextPtr loc = mContext;
-
-    // get function pointer BLAS::BLAS1<T>::asum in appropriate context
-
-    LAMA_INTERFACE_FN_DEFAULT_T( asum, loc, BLAS, BLAS1, T )
-
-    ReadAccess<T> read( mLocalValues, loc );
-
-    LAMA_CONTEXT_ACCESS( loc )
-
-    ValueType localL1Norm = asum( nnu, read.get(), 1, NULL );
 
     return getDistribution().getCommunicator().sum( localL1Norm );
 }
+
+/* ------------------------------------------------------------------------- */
 
 template<typename T>
 Scalar DenseVector<T>::l2Norm() const
 {
     IndexType nnu = mLocalValues.size();
+    
+    ValueType localDotProduct = static_cast<ValueType>( 0 );
 
-    if ( nnu == 0 )
+    if ( nnu > 0 )
     {
-        return 0.0f; // return as maxIdx would be invalid
+        // choose preferred context as context of vector, might be changed by availability
+
+        ContextPtr loc = mContext;
+
+        // get function pointer BLAS::BLAS1<T>::dot in appropriate context
+
+        LAMA_INTERFACE_FN_DEFAULT_T( dot, loc, BLAS, BLAS1, T )
+
+        ReadAccess<T> read( mLocalValues, loc );
+
+        LAMA_CONTEXT_ACCESS( mContext )
+
+        localDotProduct = dot( nnu, read.get(), 1, read.get(), 1, NULL );
     }
 
-    // choose preferred context as context of vector, might be changed by availability
-
-    ContextPtr loc = mContext;
-
-    // get function pointer BLAS::BLAS1<T>::dot in appropriate context
-
-    LAMA_INTERFACE_FN_DEFAULT_T( dot, loc, BLAS, BLAS1, T )
-
-    ReadAccess<T> read( mLocalValues, loc );
-
-    LAMA_CONTEXT_ACCESS( mContext )
-
-    ValueType localDotProduct = dot( nnu, read.get(), 1, read.get(), 1, NULL );
     ValueType globalDotProduct = getDistribution().getCommunicator().sum( localDotProduct );
 
     return sqrt( globalDotProduct );
 }
+
+/* ------------------------------------------------------------------------- */
 
 template<typename T>
 Scalar DenseVector<T>::maxNorm() const
 {
     IndexType nnu = mLocalValues.size(); // number of local rows
 
-    if ( nnu == 0 )
+    ValueType localMaxNorm = static_cast<ValueType>( 0 );
+
+    if ( nnu > 0 )
     {
-        return 0.0f; // return as maxIdx would be invalid
+        ContextPtr loc = mContext; // loc might be set to Host
+
+        LAMA_INTERFACE_FN_DEFAULT_T( absMaxVal, loc, Utils, Reductions, ValueType )
+
+        ReadAccess<T> read( mLocalValues, loc );
+
+        LAMA_CONTEXT_ACCESS( loc )
+
+        localMaxNorm = absMaxVal( read.get(), nnu );
     }
-
-    ContextPtr loc = mContext; // loc might be set to Host
-
-    LAMA_INTERFACE_FN_DEFAULT_T( absMaxVal, loc, Utils, Reductions, ValueType )
-
-    ReadAccess<T> read( mLocalValues, loc );
-
-    LAMA_CONTEXT_ACCESS( loc )
-
-    ValueType localMaxNorm = absMaxVal( read.get(), nnu );
-
-    // @todo using BLAS1 routine viamax caused problems, sometimes just returning nan
-    // Note: valgrind identified some issues there, but this is also the case with localMaxNorm
-    // const LAMAInterface* const lamaInterface = LAMAInterfaceRegistry::getRegistry().getInterface( mContext->getType() );
-    // ValueType localMaxNorm = lamaInterface->getBLAS1Interface<T>().viamax( nnu, read.get(), 1, NULL );
 
     const Communicator& comm = getDistribution().getCommunicator();
 
     ValueType globalMaxNorm = comm.max( localMaxNorm );
 
     LAMA_LOG_INFO( logger,
-                   comm << ": max norm " << *this << ", local max norm of " << nnu << " elements: " << localMaxNorm << ", max norm global = " << globalMaxNorm )
+                   comm << ": max norm " << *this << ", local max norm of " << nnu << " elements: "
+                   << localMaxNorm << ", max norm global = " << globalMaxNorm )
 
     return globalMaxNorm;
 }
+
+/* ------------------------------------------------------------------------- */
 
 template<typename T>
 void DenseVector<T>::swap( Vector& other )
@@ -960,7 +964,6 @@ void DenseVector<T>::readVectorHeader( const std::string& filename, File::FileTy
         break;
     default:
         LAMA_THROWEXCEPTION( "Invalid header file." )
-        break;
     }
     LAMA_LOG_TRACE( logger, "Read Vector Header, size = " << size() )
 }
@@ -1030,7 +1033,6 @@ void DenseVector<T>::writeVectorHeader(
         return;
     default:
         LAMA_THROWEXCEPTION( "Invalid header file." )
-        break;
     }
 
     std::ofstream outFile( fileName.c_str(), std::ios::out );
@@ -1136,10 +1138,8 @@ long DenseVector<T>::getDataTypeSize( const File::DataType dataType ) const
         {
             LAMA_THROWEXCEPTION( "Unknown vector value type size." )
         }
-        break;
     default:
         LAMA_THROWEXCEPTION( "Unknown vector data type for writing the XDR file." )
-        break;
     }
 }
 
@@ -1467,6 +1467,23 @@ void DenseVector<T>::readVectorDataFromBinaryFile( std::fstream &inFile, const l
 }
 
 /* ---------------------------------------------------------------------------------*/
+
+template<typename T>
+DenseVector<T>::DenseVector( const DenseVector<T>& other )
+
+    : Vector( other )
+
+{
+    // implementation here can be simpler as DenseVector( const Vector& other )
+
+    LAMA_LOG_INFO( logger,
+                   "Copy of vector of global size " << size() << ", local size " << getDistribution().getLocalSize() )
+
+    mLocalValues = other.getLocalValues();
+}
+
+/* ---------------------------------------------------------------------------------*/
+
 
 // Template instantiation for all relevant types
 template class LAMA_DLL_IMPORTEXPORT DenseVector<float> ;

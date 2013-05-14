@@ -523,14 +523,14 @@ public:
         const File::IndexDataType indexDataTypeIA = File::INT,
         const File::IndexDataType indexDataTypeJA = File::INT ) const;
     /**
-     * @brief Constructing a new object by the default constructor.
+     * @brief Implementation of pure function Matrix::create with covariant return type. 
      */
-    virtual std::auto_ptr<Matrix> create() const;
+    virtual DenseMatrix<ValueType>* create() const;
 
     /**
-     * @brief Constructing a new object by the copy constructor.
+     * @brief Implementation of pure function Matrix::copy with covariant return type. 
      */
-    virtual std::auto_ptr<Matrix> copy() const;
+    virtual DenseMatrix<ValueType>* copy() const;
 
     /* Implementation of pure method of class Matrix. */
 
@@ -650,9 +650,15 @@ private:
 
     void computeOwners();
 
+    /** @brief Predicate to check if SCALapack is supported via LAMAInterface. */
+
+    bool hasScalaPack();
+
     /** Special implementation of invert in place for a cyclic distributed matrix. */
 
     void invertCyclic();
+
+    void invertReplicated();
 };
 
 /*  template methods implementations */

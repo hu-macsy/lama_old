@@ -286,7 +286,7 @@ public:
      * Out-of-range check is enabled for DEBUG version.
      */
 
-    T getValue( IndexType i, IndexType j ) const;
+    T getValue( const IndexType i, const IndexType j ) const;
 
     /** Initiate an asynchronous data transfer to a specified location. */
 
@@ -412,7 +412,7 @@ public:
 
     /** Implementation of MatrixStorage::matrixTimesVectorAsync for CSR */
 
-    virtual std::auto_ptr<SyncToken> matrixTimesVectorAsync(
+    virtual SyncToken* matrixTimesVectorAsync(
         LAMAArrayView<ValueType> result,
         const ValueType alpha,
         const LAMAArrayConstView<ValueType> x,

@@ -179,6 +179,19 @@ public:
      */
     virtual PartitionId getRank() const = 0;
 
+    /** @brief Getter of the number of partitions on same node.
+     *
+     * @return number of partitions on same node as this partition.
+     */
+
+    virtual PartitionId getNodeSize() const = 0;
+
+    /** @brief Getter of node rank 
+     *
+     * @return rank of this partition on its node, 0 <= rank < getNodeSize()
+     */
+    virtual PartitionId getNodeRank() const = 0;
+
     /**
      * Help routine to get the rank of a neighbored position.
      *
@@ -258,7 +271,7 @@ public:
      *  The size of recvData must be recvPlan.totalQuantity().
      *  The size of sendData must be sendPlan.totalQuantity().
      */
-    virtual std::auto_ptr<SyncToken> exchangeByPlanAsync(
+    virtual SyncToken* exchangeByPlanAsync(
         int* const recvData,
         const CommunicationPlan& recvPlan,
         const int* const sendData,
@@ -266,7 +279,7 @@ public:
 
     /** Asynchronous exchange of float values. */
 
-    virtual std::auto_ptr<SyncToken> exchangeByPlanAsync(
+    virtual SyncToken* exchangeByPlanAsync(
         float* const recvData,
         const CommunicationPlan& recvPlan,
         const float* const sendData,
@@ -274,7 +287,7 @@ public:
 
     /** Asynchronous exchange of double values. */
 
-    virtual std::auto_ptr<SyncToken> exchangeByPlanAsync(
+    virtual SyncToken* exchangeByPlanAsync(
         double* const recvData,
         const CommunicationPlan& recvPlan,
         const double* const sendData,
@@ -283,7 +296,7 @@ public:
     /** Asynchronous exchange of LAMAArrays. */
 
     template<typename T>
-    std::auto_ptr<SyncToken> exchangeByPlanAsync(
+    SyncToken* exchangeByPlanAsync(
         LAMAArray<T>& recvArray,
         const CommunicationPlan& recvPlan,
         const LAMAArray<T>& sendArray,
@@ -304,7 +317,7 @@ public:
     /** @brief Asynchronous update of halo array via Halo object. */
 
     template<typename T>
-    std::auto_ptr<SyncToken> updateHaloAsync(
+    SyncToken* updateHaloAsync(
         LAMAArray<T>& haloValues,
         const LAMAArray<T>& localValues,
         const Halo& halo ) const;
@@ -332,7 +345,7 @@ public:
      *  Note: All partitions must have the same size for send/recv array
      */
     template<typename T>
-    std::auto_ptr<SyncToken> shiftAsync(
+    SyncToken* shiftAsync(
         LAMAArray<T>& recvArray,
         const LAMAArray<T>& sendArray,
         const int direction ) const;
@@ -474,7 +487,7 @@ public:
      */
 
     template <typename T>
-    std::auto_ptr<SyncToken> shiftDataAsync(
+    SyncToken* shiftDataAsync(
         T newVals[],
         const T oldVals[],
         const IndexType size,
@@ -503,6 +516,11 @@ public:
 
     virtual int min( const int value ) const = 0;
     virtual int max( const int value ) const = 0;
+
+    // Boolean reduction operations can be implemented by using the sum reduction.
+
+    virtual bool all( const bool flag ) const;
+    virtual bool any( const bool flag ) const;
 
     /** @brief Maximal value combined with a location value where maximum was found.
      *
@@ -553,6 +571,9 @@ protected:
 
     std::string mCommunicatorType;
 
+    int mNodeRank; // rank of this processor on its node
+    int mNodeSize; // number of processors on same node
+
     LAMA_LOG_DECL_STATIC_LOGGER( logger )
 
     /** Read in the environment variable LAMA_NP for user processor array.
@@ -571,7 +592,7 @@ protected:
     /** Default asynchronous shift uses synchronous shift. */
 
     template<typename T>
-    std::auto_ptr<SyncToken> defaultShiftAsync( T newVals[], const T oldVals[],
+    SyncToken* defaultShiftAsync( T newVals[], const T oldVals[],
             const IndexType size, const int direction ) const;
 
     /** getter for Context needed for Communication
@@ -609,7 +630,7 @@ protected:
 
     /** Implemenation of shiftDataAsync for int, can be overriden by derived classes. */
 
-    virtual std::auto_ptr<SyncToken> shiftAsyncImpl(
+    virtual SyncToken* shiftAsyncImpl(
         double newVals[],
         const double oldVals[],
         const IndexType size,
@@ -617,7 +638,7 @@ protected:
 
     /** Implemenation of shiftDataAsync for float, can be overriden by derived classes. */
 
-    virtual std::auto_ptr<SyncToken> shiftAsyncImpl(
+    virtual SyncToken* shiftAsyncImpl(
         float newVals[],
         const float oldVals[],
         const IndexType size,
@@ -625,7 +646,7 @@ protected:
 
     /** Implemenation of shiftDataAsync for double, can be overriden by derived classes. */
 
-    virtual std::auto_ptr<SyncToken> shiftAsyncImpl(
+    virtual SyncToken* shiftAsyncImpl(
         int newVals[],
         const int oldVals[],
         const IndexType size,
@@ -675,7 +696,7 @@ void Communicator::exchangeByPlan(
 /* -------------------------------------------------------------------------- */
 
 template<typename T>
-std::auto_ptr<SyncToken> Communicator::exchangeByPlanAsync(
+SyncToken* Communicator::exchangeByPlanAsync(
     LAMAArray<T>& recvArray,
     const CommunicationPlan& recvPlan,
     const LAMAArray<T>& sendArray,
@@ -689,18 +710,21 @@ std::auto_ptr<SyncToken> Communicator::exchangeByPlanAsync(
 
     // allocate accesses, SyncToken will take ownership
 
-    std::auto_ptr<HostWriteAccess<T> > recvData( new HostWriteAccess<T>( recvArray ) );
-    std::auto_ptr<HostReadAccess<T> > sendData( new HostReadAccess<T>( sendArray ) );
+    boost::shared_ptr<HostWriteAccess<T> > recvData( new HostWriteAccess<T>( recvArray ) );
+    boost::shared_ptr<HostReadAccess<T> > sendData( new HostReadAccess<T>( sendArray ) );
 
     recvData->clear();
     recvData->resize( recvSize );
 
-    std::auto_ptr<SyncToken> token = exchangeByPlanAsync( recvData->get(), recvPlan, sendData->get(), sendPlan );
+    SyncToken* token( exchangeByPlanAsync( recvData->get(), recvPlan, sendData->get(), sendPlan ) );
 
     // Add the read and write access to the sync token to get it freed after successful wait
+    // conversion boost::shared_ptr<HostWriteAccess<T> > -> boost::shared_ptr<BaseAccess> supported
 
-    token->pushAccess( std::auto_ptr<BaseAccess>( recvData.release() ) );
-    token->pushAccess( std::auto_ptr<BaseAccess>( sendData.release() ) );
+    token->pushAccess( recvData ); 
+    token->pushAccess( sendData );
+
+    // return ownership of new created object 
 
     return token;
 }

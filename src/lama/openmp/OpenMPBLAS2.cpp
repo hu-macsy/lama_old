@@ -63,7 +63,16 @@ void OpenMPBLAS2::gemv(
     SyncToken* syncToken )
 {
     LAMA_LOG_INFO( logger,
-                   "gemv<float>: M = " << M << ", N = " << N << ", LDA = " << lda << ", incX = " << incX << ", incY = " << incY << ", alpha = " << alpha << ", beta = " << beta )
+                   "gemv<float>: M = " << M << ", N = " << N << ", LDA = " << lda 
+                    << ", incX = " << incX << ", incY = " << incY 
+                    << ", alpha = " << alpha << ", beta = " << beta )
+
+    if ( N == 0 )
+    {
+        return;   // empty X, Y, A  
+    }
+
+    // M == 0: empty A, we can handle this here
 
     if ( syncToken )
     {
@@ -167,7 +176,16 @@ void OpenMPBLAS2::gemv(
     SyncToken* syncToken )
 {
     LAMA_LOG_INFO( logger,
-                   "gemv<double>: M = " << M << ", N = " << N << ", LDA = " << lda << ", incX = " << incX << ", incY = " << incY << ", alpha = " << alpha << ", beta = " << beta )
+                   "gemv<double>: M = " << M << ", N = " << N << ", LDA = " << lda 
+                    << ", incX = " << incX << ", incY = " << incY 
+                    << ", alpha = " << alpha << ", beta = " << beta )
+
+    if ( N == 0 )
+    {
+        return;   // empty X, Y, A  
+    }
+
+    // M == 0: empty A, we can handle this here
 
     if ( syncToken )
     {

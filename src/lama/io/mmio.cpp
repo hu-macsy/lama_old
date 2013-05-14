@@ -51,6 +51,8 @@
 #include <stdlib.h>
 #include <ctype.h>
 
+#include <lama/macros/unused.hpp>
+
 int mm_read_unsymmetric_sparse( const char* fname, int* M_, int* N_, int* nz_, double** val_, int** I_, int** J_ )
 {
     FILE* f;
@@ -366,13 +368,10 @@ int mm_write_mtx_array_size( FILE* f, int M, int N )
 /* use when I[], J[], and val[]J, and val[] are already allocated */
 /******************************************************************/
 
-int mm_read_mtx_crd_data( FILE* f, int M, int N, int nz, int I[], int J[], double val[], MM_typecode matcode )
+int mm_read_mtx_crd_data( FILE* f, int UNUSED(M), int UNUSED(N), int nz, int I[], int J[], double val[], MM_typecode matcode )
 {
-    // TODO: need M and N ???
-    // touch M,N to get rid of warning
-    M = N = 0;
-    // get rid of another warning
-    N = M;
+    //M = N = 0;
+    //N = M;
 
     if ( mm_is_complex( matcode ) )
     {

@@ -1,7 +1,7 @@
 :orphan:
 
-Solution of Task 5
-==================
+Solution Task 5
+===============
 
 Setting a Context was realized as simple as possible:
 
@@ -35,10 +35,7 @@ Setting a Context was realized as simple as possible:
 (1) : Getting a CudaContext for cuda device 0.
 (2) : Setting a CudaContext to matrix and vectors.
 
-The solution of task 5 can be downloaded `here`__ 
-
-__ http://libama.sourceforge.net/tutorial/solutions/task5.cpp
-
+:download:`Download complete solution Task 5 <../../cpp_source/lecture/task5.cpp>`
 
 .. csv-table::
    :header: "back to this Task", "Index", "next Task"

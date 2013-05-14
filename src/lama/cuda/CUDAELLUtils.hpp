@@ -157,7 +157,7 @@ public:
         const IndexType csrIA[],
         const IndexType csrJA[],
         const ValueType csrValues[],
-        class SyncToken* syncToken );
+        SyncToken* syncToken );
 
     /** Implementation for CSRUtilsInterface::Mult::sparseGEMV  */
 
@@ -173,7 +173,7 @@ public:
         const IndexType csrIA[],
         const IndexType csrJA[],
         const ValueType csrValues[],
-        class SyncToken* syncToken );
+        SyncToken* syncToken );
 
     /** Implementation for ELLUtilsInterface::Solver::jacobi  */
 
@@ -188,7 +188,7 @@ public:
         const ValueType oldSolution[],
         const ValueType rhs[],
         const ValueType omega,
-        class SyncToken* syncToken );
+        SyncToken* syncToken );
 
     /** Implementation for ELLUtilsInterface::Solver::jacobiHalo  */
 
@@ -205,7 +205,7 @@ public:
         const IndexType numNonEmptyRows,
         const ValueType oldSolution[],
         const ValueType omega,
-        class SyncToken* syncToken );
+        SyncToken* syncToken );
 
     /** Routine that registers all routines of this class at the LAMA interface. */
 

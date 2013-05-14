@@ -1,5 +1,3 @@
-.. _testing_index:
-
 *******
 Testing
 *******

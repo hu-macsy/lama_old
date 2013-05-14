@@ -92,8 +92,9 @@ void DefaultJacobi::initialize( const Matrix& coefficients )
 
     if ( !runtime.mDiagonalTimesRhs.get() )
     {
-        runtime.mDiagonalTimesRhs = Vector::createVector( coefficients.getValueType(),
-                                    coefficients.getDistributionPtr() );
+        runtime.mDiagonalTimesRhs.reset( Vector::createVector( coefficients.getValueType(),
+                                                               coefficients.getDistributionPtr() ) );
+
         LAMA_LOG_DEBUG( logger, "Created diagonalTimesRhs vector = " << *runtime.mDiagonalTimesRhs )
     }
 
@@ -106,7 +107,7 @@ void DefaultJacobi::initialize( const Matrix& coefficients )
     LAMA_LOG_DEBUG( logger, "Inverted diagonalTimesRhs = " << *runtime.mDiagonalTimesRhs )
 
     LAMA_LOG_DEBUG( logger, "Copying main system matrix " << coefficients )
-    runtime.mDiagonalTimesLU = coefficients.copy();
+    runtime.mDiagonalTimesLU.reset( coefficients.copy() );
     LAMA_LOG_DEBUG( logger, "Copied main system matrix : " << *runtime.mDiagonalTimesLU )
 
     LAMA_LOG_DEBUG( logger,
@@ -116,7 +117,7 @@ void DefaultJacobi::initialize( const Matrix& coefficients )
     runtime.mDiagonalTimesLU->scale( *runtime.mDiagonalTimesRhs );
 
     LAMA_LOG_DEBUG( logger, "Create diagonal matrix" )
-    runtime.mDiagonalInverted = coefficients.create(); // zero matrix with same storage type
+    runtime.mDiagonalInverted.reset( coefficients.create() ); // zero matrix with same storage type
     runtime.mDiagonalInverted->allocate( coefficients.getDistributionPtr(), coefficients.getDistributionPtr() );
     LAMA_LOG_DEBUG( logger, "allocated diagonal matrix = " << *runtime.mDiagonalInverted )
     runtime.mDiagonalInverted->setIdentity();
@@ -127,7 +128,7 @@ void DefaultJacobi::initialize( const Matrix& coefficients )
 
     runtime.mDiagonalInverted->setDiagonal( *runtime.mDiagonalTimesRhs );
 
-    runtime.mOldSolution = runtime.mDiagonalTimesRhs->create();
+    runtime.mOldSolution.reset( runtime.mDiagonalTimesRhs->create() );
     runtime.mOldSolution->setContext( runtime.mDiagonalTimesRhs->getContext() );
 
     OmegaSolver::initialize( coefficients );
@@ -152,7 +153,7 @@ void DefaultJacobi::solveInit( Vector& solution, const Vector& rhs )
     //Check if oldSolution already exists, if not create copy of solution
     if ( !runtime.mOldSolution.get() )
     {
-        runtime.mOldSolution = solution.create();
+        runtime.mOldSolution.reset( solution.create() );
     }
     runtime.mProxyOldSolution = runtime.mOldSolution.get();
 

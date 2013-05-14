@@ -3,12 +3,12 @@
 Task 0: Solving a system of linear equations
 ============================================
 
-The aim of this task is to build an application that reads a matrix from file,
-initializes a right hand side and solve this equation system with the LAMA
+The aim of this task is to build an application that reads a matrix from a file,
+initializes a right hand side and solves this equation system with the LAMA
 provided CG solver.
 
-First we need include the headers for the types and operations we are going to
-use later. **lama.hpp** needs to be included always make sure it is included
+First we need to include the headers for the types and operations we are going to
+use later. **lama.hpp** needs to be included. Always make sure it is included
 first.
 
 ::
@@ -47,8 +47,8 @@ market file for this.
         //Read a sparse matrix from the passed input file
         CSRSparseMatrix<double> m( argv[1] );
 
-Next we are creating our right hand side and our solution vector of appropriate
-size. To verify the correctness of the solution we will compute later we are
+Then we create our right hand side and our solution vector of appropriate
+size. To verify the correctness of the solution we are
 calculating a right hand side from the exact solution. LAMA uses operator
 overloading and proxy objects to support and easy to use and simple interface
 to BLAS functionality, that we are using to calculate the vector **rhs**.
@@ -69,15 +69,15 @@ to BLAS functionality, that we are using to calculate the vector **rhs**.
         //Compute the rhs that fits our solution to be able to calculate the error later
         rhs = m*solution;
 
-        //Reset soution to zero so that there is something to solve
+        //Reset solution to zero so that there is something to solve
         solution = 0.0;
 
-Now we have created a system of linear equations. To solve this we want to use
-the CG solver provided by LAMA. To use this we need to create an object of type
+Now we have created a system of linear equations. To solve it we want to use
+the CG solver provided by LAMA and so we start with creating an object of type
 CG. The constructor of CG takes a string to identify that solver. This string is
-used distinguish different solvers, especially if the state of the solver is
+used to distinguish different solvers, especially if the state of the solver is
 logged, e.g. the norm of intermediate residues. Because CG is an iterative
-solver we need to define some kind of stopping criterion. We want our solver to
+solver, we need to define some kind of stopping criterion. We want our solver to
 stop after the residue of the current solution falls below **1E-8**. For this
 we create an object of Type ResidualThreshold. The constructor of
 ResidualThreshold takes three arguments:
@@ -128,16 +128,12 @@ the error.
         return 0;
         }
 
-The solution of task 0 and an example input matrix can be found in
-**$LAMA_ROOT/share/tutorial/solutions**.
+Task 0 and an example input matrix can be found in
+**<project-root>/doc/user_guide/cpp_source/lecture**.
 
-The source code is also available for download `here`__ 
+:download:`Download source file Task 0 <../../cpp_source/lecture/task0.cpp>`
 
-__ http://libama.sourceforge.net/tutorial/solutions/task0.cpp
-
-and the example input matrix can be downloaded `here`__.
-
-__ http://libama.sourceforge.net/tutorial/solutions/gr_30_30.mtx
+:download:`Download input matrix <../../cpp_source/lecture/gr_30_30.mtx>`
 
 .. csv-table:: 
    :header: "previous", "Solution", "next"

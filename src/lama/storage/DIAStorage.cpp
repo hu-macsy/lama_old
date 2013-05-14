@@ -38,11 +38,13 @@
 #include <lama/openmp/OpenMPUtils.hpp>
 #include <lama/openmp/OpenMPCSRUtils.hpp>
 #include <lama/openmp/OpenMPDIAUtils.hpp>
+#include <lama/tracing.hpp>
 
 #include <lama/HostReadAccess.hpp>
 #include <lama/HostWriteAccess.hpp>
 #include <lama/LAMAInterface.hpp>
 #include <lama/ContextAccess.hpp>
+#include <lama/tracing.hpp>
 
 // macros
 #include <lama/macros/unused.hpp>
@@ -175,6 +177,8 @@ void DIAStorage<ValueType>::clear()
 
     mOffset.clear();
     mValues.clear();
+
+    mDiagonalProperty = checkDiagonalProperty();
 }
 
 /* --------------------------------------------------------------------------- */
@@ -329,20 +333,35 @@ void DIAStorage<ValueType>::scaleImpl( const LAMAArray<OtherType>& diagonal )
 template<typename ValueType>
 bool DIAStorage<ValueType>::checkDiagonalProperty() const
 {
+    bool diagonalProperty = true;
+
     if ( mNumRows != mNumColumns )
     {
-        return false;
+        diagonalProperty = false;
     }
-
-    if ( mOffset.size() == 0 )
+    else if ( mNumRows == 0 )
     {
-        return false;
+        // zero sized matrix has diagonal property
+
+        diagonalProperty = true;
+    }
+    else if ( mOffset.size() == 0 )
+    {
+        // full zero matrix but not zero size -> no diagonal property
+
+        diagonalProperty = false;
+    }
+    else
+    {
+        // diagonal property is given if first diagonal is the main one
+
+        HostReadAccess<IndexType> offset( mOffset );
+        diagonalProperty = offset[0] == 0;
     }
 
-    // diagonal property is given if first diagonal is the main one
+    LAMA_LOG_INFO( logger, *this << ": checkDiagonalProperty -> " << diagonalProperty )
 
-    HostReadAccess<IndexType> offset( mOffset );
-    return ( offset[0] == 0 );
+    return diagonalProperty;
 }
 
 /* --------------------------------------------------------------------------- */
@@ -425,6 +444,8 @@ void DIAStorage<ValueType>::buildCSR(
     LAMAArray<OtherValueType>* values,
     const ContextPtr /* loc */) const
 {
+    LAMA_REGION( "Storage.DIA->CSR" )
+
     // TODO all done on host, so loc is unused
 
     LAMA_LOG_INFO( logger,
@@ -470,6 +491,8 @@ void DIAStorage<ValueType>::setCSRDataImpl(
     const LAMAArray<OtherValueType>& values,
     ContextPtr UNUSED( loc ) )
 {
+    LAMA_REGION( "Storage.DIA<-CSR" )
+
     // loc is ignored, we do it on the Host
 
     HostReadAccess<IndexType> csrIA( ia );
@@ -634,6 +657,8 @@ void DIAStorage<ValueType>::purge()
 
     mOffset.purge();
     mValues.purge();
+
+    mDiagonalProperty = checkDiagonalProperty();
 }
 
 /* --------------------------------------------------------------------------- */
@@ -643,13 +668,12 @@ void DIAStorage<ValueType>::allocate( IndexType numRows, IndexType numColumns )
 {
     LAMA_LOG_INFO( logger, "allocate DIA sparse matrix of size " << numRows << " x " << numColumns )
 
+    clear();
+
     mNumRows = numRows;
     mNumColumns = numColumns;
 
-    // clear arrays to avoid unnecessary data transfer (write-only)
-
-    mValues.clear();
-    mOffset.clear();
+    mDiagonalProperty = checkDiagonalProperty();
 }
 
 /* --------------------------------------------------------------------------- */
@@ -684,7 +708,7 @@ ValueType DIAStorage<ValueType>::maxNorm() const
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-ValueType DIAStorage<ValueType>::getValue( IndexType i, IndexType j ) const
+ValueType DIAStorage<ValueType>::getValue( const IndexType i, const IndexType j ) const
 {
     LAMA_LOG_DEBUG( logger, "get value (" << i << ", " << j << ") from " << *this )
 
@@ -787,6 +811,8 @@ void DIAStorage<ValueType>::matrixTimesVector(
     const LAMAArrayConstView<ValueType> y ) const
 
 {
+    LAMA_REGION( "Storage.DIA.timesVector" )
+
     LAMA_LOG_INFO( logger,
                    *this << ": matrixTimesVector, result = " << result << ", alpha = " << alpha << ", x = " << x << ", beta = " << beta << ", y = " << y )
 

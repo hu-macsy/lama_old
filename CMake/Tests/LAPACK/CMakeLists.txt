@@ -12,11 +12,18 @@ if (NOT CMAKE_BUILD_TYPE)
       FORCE)
 endif (NOT CMAKE_BUILD_TYPE)
 
+set ( CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/../../Modules" )
+
+# Example of setting BLAS and LAPACK library for Windows
+# 
+# set( BLAS_blas_LIBRARY "E:/lapack/libblas.lib" )
+# set( LAPACK_lapack_LIBRARY "E:/lapack/liblapack.lib" )
+
 include( FindLAPACK )
 
 if ( LAPACK_FOUND )
     message( STATUS "LAPACK found, LAPACK_LIBRARIES=${LAPACK_LIBRARIES}" )
-    add_executable( QR QR.cpp )
+    add_executable( QR QR.cpp Walltime.cpp )
     target_link_libraries( QR ${LAPACK_LIBRARIES} )
 else( LAPACK_FOUND )
     message( STATUS "LAPACK not found" )

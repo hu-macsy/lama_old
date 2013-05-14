@@ -49,7 +49,7 @@ public:
 private:
     void setPath( const std::string& path );
 
-    LAMA_LOG_DECL_STATIC_LOGGER( logger );
+    LAMA_LOG_DECL_STATIC_LOGGER( logger )
 
     Configuration();
     Configuration(const Configuration& cc);

@@ -196,7 +196,7 @@ float CUDABLAS1::asum( const IndexType n, const float* x_d, const IndexType incX
     cublasSetKernelStream( stream );
     LAMA_CHECK_CUBLAS_ERROR
 
-    double res = cublasSasum( n, x_d, incX );
+    float res = cublasSasum( n, x_d, incX );
 
     // No error check here possible as kernel is started asynchronously
 

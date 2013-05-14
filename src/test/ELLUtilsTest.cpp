@@ -83,17 +83,14 @@ void countNonEmptyRowsBySizesTest( ContextPtr loc )
 
     // count empty array
     {
-        const IndexType values[] =
-            { };
-        const IndexType n = sizeof( values ) / sizeof(IndexType);
 
-        LAMAArray<IndexType> sizes( n, values );
+        LAMAArray<IndexType> sizes;
 
         ReadAccess<IndexType> rSizes( sizes, loc );
 
         LAMA_CONTEXT_ACCESS( loc );
 
-        IndexType count = countNonEmptyRowsBySizes( rSizes.get(), n );
+        IndexType count = countNonEmptyRowsBySizes( rSizes.get(), sizes.size() );
 
         BOOST_CHECK_EQUAL( 0, count );
     }
@@ -178,12 +175,9 @@ void hasDiagonalPropertyTest( ContextPtr loc )
 
     // test empty array
     {
-        const IndexType ellJaValues[] =
-            { };
-        const IndexType n = sizeof( ellJaValues ) / sizeof(IndexType);
         const IndexType numDiagonals = 0;
 
-        LAMAArray<IndexType> ellJa( n, ellJaValues );
+        LAMAArray<IndexType> ellJa;
         ReadAccess<IndexType> rEllJa( ellJa, loc );
 
         LAMA_CONTEXT_ACCESS( loc );
@@ -274,19 +268,12 @@ void checkTest( ContextPtr loc )
 
     // check with valid empty values
     {
-        const IndexType valuesIa[] =
-            { };
-        const IndexType nIa = sizeof( valuesIa ) / sizeof(IndexType);
-        const IndexType valuesJa[] =
-            { };
-        const IndexType nJa = sizeof( valuesJa ) / sizeof(IndexType);
-
-        const IndexType numRows = nIa;
+        const IndexType numRows = 0;
         const IndexType numValuesPerRow = 0;
         const IndexType numColumns = 0;
 
-        LAMAArray<IndexType> ia( nIa, valuesIa );
-        LAMAArray<IndexType> ja( nJa, valuesJa );
+        LAMAArray<IndexType> ia;
+        LAMAArray<IndexType> ja;
 
         ReadAccess<IndexType> rIa( ia, loc );
         ReadAccess<IndexType> rJa( ja, loc );
@@ -297,19 +284,12 @@ void checkTest( ContextPtr loc )
 
     // check with invalid empty values
     {
-        const IndexType valuesIa[] =
-            { };
-        const IndexType nIa = sizeof( valuesIa ) / sizeof(IndexType);
-        const IndexType valuesJa[] =
-            { };
-        const IndexType nJa = sizeof( valuesJa ) / sizeof(IndexType);
-
-        const IndexType numRows = nIa;
+        const IndexType numRows = 0;
         const IndexType numValuesPerRow = 1;
         const IndexType numColumns = 1;
 
-        LAMAArray<IndexType> ia( nIa, valuesIa );
-        LAMAArray<IndexType> ja( nJa, valuesJa );
+        LAMAArray<IndexType> ia;
+        LAMAArray<IndexType> ja;
 
         ReadAccess<IndexType> rIa( ia, loc );
         ReadAccess<IndexType> rJa( ja, loc );
@@ -504,8 +484,9 @@ void getCSRValuesTest( ContextPtr loc )
 {
     LAMA_INTERFACE_FN_TT( getCSRValues, loc, ELLUtils, Conversions, ValueType, OtherValueType );
 
-    ValueType valuesELLValues[] =
-    { 0, 0, 0, 1, 1, 1, 2, 2, 2, 3, 3, 3, 4, 4, 4 };
+    ValueType valuesELLValues[] = 
+	{ 0, 0, 0, 1, 1, 1, 2, 2, 2, 3, 3, 3, 4, 4, 4 };
+
     const IndexType nELLValues = sizeof( valuesELLValues ) / sizeof(ValueType);
     IndexType valuesELLIa[] =
     { 5, 5, 5 };
@@ -529,8 +510,8 @@ void getCSRValuesTest( ContextPtr loc )
     LAMAArray<IndexType> ellJa( nELLJa, valuesELLJa );
     LAMAArray<IndexType> csrIa( nCSRIa, valuesCSRIa );
 
-    LAMAArray<OtherValueType> csrValues( nCSRValues, 0.0 );
-    LAMAArray<IndexType> csrJa( nCSRValues, 0.0 );
+    LAMAArray<OtherValueType> csrValues( nCSRValues, 0.0f );
+    LAMAArray<IndexType> csrJa( nCSRValues, 0 );
 
     {
         ReadAccess<ValueType> rELLValues( ellValues, loc );

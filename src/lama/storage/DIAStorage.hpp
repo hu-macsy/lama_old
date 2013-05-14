@@ -305,7 +305,7 @@ public:
 
     /** Implementation of pure method. */
 
-    ValueType getValue( IndexType i, IndexType j ) const;
+    ValueType getValue( const IndexType i, const IndexType j ) const;
 
     /** Initiate an asynchronous data transfer to a specified location. */
 

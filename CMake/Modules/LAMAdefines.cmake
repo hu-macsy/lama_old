@@ -1,3 +1,35 @@
+###
+ # @file LAMAdefines.cmake
+ #
+ # @license
+ # Copyright (c) 2013
+ # Fraunhofer Institute for Algorithms and Scientific Computing SCAI
+ # for Fraunhofer-Gesellschaft
+ #
+ # Permission is hereby granted, free of charge, to any person obtaining a copy
+ # of this software and associated documentation files (the "Software"), to deal
+ # in the Software without restriction, including without limitation the rights
+ # to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ # copies of the Software, and to permit persons to whom the Software is
+ # furnished to do so, subject to the following conditions:
+ #
+ # The above copyright notice and this permission notice shall be included in
+ # all copies or substantial portions of the Software.
+ #
+ # THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ # IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ # FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ # AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ # SOFTWARE.
+ # @endlicense
+ #
+ # @brief Definitions for LAMA
+ # @author Jan Ecker
+ # @date 25.04.2013
+###
+
 ## LOGGING Level
 #
 #  Debug   : use -DLOG_LEVEL_DEBUG
@@ -5,6 +37,8 @@
 #  
 #  For serious problems: -DLOG_LEVEL_TRACE
 #  For benchmarks:       -DLOG_LEVEL_OFF (or -DLOG_LEVEL_FATAL, -DLOG_LEVEL_ERROR)
+
+LIST ( APPEND LOG_CHOICES "TRACE" "DEBUG" "INFO" "WARN" "ERROR" "OFF" )
 
 if ( NOT LAMA_LOG_LEVEL )
     if ( CMAKE_BUILD_TYPE STREQUAL "Release" )
@@ -17,7 +51,9 @@ if ( NOT LAMA_LOG_LEVEL )
 endif ( NOT LAMA_LOG_LEVEL )
 
 set ( LAMA_LOG_LEVEL ${DEFAULT_LOG_LEVEL} CACHE STRING
-      "Choose level of compile time logging: TRACE, DEBUG, INFO, WARN, ERROR, OFF" )
+      "Choose level of compile time logging: ${LOG_CHOICES}" )
+set ( CACHE LAMA_LOG_LEVEL PROPERTY STRINGS ${LOG_CHOICES} )
+checkValue( ${LAMA_LOG_LEVEL} "${LOG_CHOICES}" )
 
 add_definitions ( -DLAMA_LOG_LEVEL_${LAMA_LOG_LEVEL} )
 
@@ -27,6 +63,8 @@ add_definitions ( -DLAMA_LOG_LEVEL_${LAMA_LOG_LEVEL} )
 #  Release : use -DASSERT_LEVEL_ERROR
 #  
 #  For benchmarks:       -DASSERT_LEVEL_OFF
+
+LIST ( APPEND ASSERT_CHOICES "DEBUG" "ERROR" "OFF" )
 
 if ( NOT LAMA_ASSERT_LEVEL )
     if ( CMAKE_BUILD_TYPE STREQUAL "Release" )
@@ -39,7 +77,9 @@ if ( NOT LAMA_ASSERT_LEVEL )
 endif ( NOT LAMA_ASSERT_LEVEL )
 
 set ( LAMA_ASSERT_LEVEL ${DEFAULT_ASSERT_LEVEL} CACHE STRING
-      "Choose level of ASSERT: DEBUG, ERROR, OFF" )
+      "Choose level of ASSERT: ${ASSERT_CHOICES}" )
+set ( CACHE LAMA_ASSERT_LEVEL PROPERTY STRINGS ${ASSERT_CHOICES} )
+checkValue( ${LAMA_ASSERT_LEVEL} "${ASSERT_CHOICES}" )
 
 add_definitions ( -DLAMA_ASSERT_LEVEL_${LAMA_ASSERT_LEVEL} )
 
@@ -49,11 +89,15 @@ add_definitions ( -DLAMA_ASSERT_LEVEL_${LAMA_ASSERT_LEVEL} )
 # completely ignored. If TRACE is set to VT, regions will be traced
 # (entry, exit event) for VampirTrace.
 
+LIST ( APPEND TRACE_CHOICES "VT" "TIME" "OFF" )
+
 if ( NOT LAMA_TRACE_LEVEL )
     set ( DEFAULT_TRACE_LEVEL "OFF" )
 endif ( NOT LAMA_TRACE_LEVEL )
 
 set ( LAMA_TRACE_LEVEL ${DEFAULT_TRACE_LEVEL} CACHE STRING
      "Choose level of TRACE: VT (for VampirTrace), TIME(region timing), SIMPLE(simple timing) or OFF (default)" )
+set ( CACHE LAMA_TRACE_LEVEL PROPERTY STRINGS ${TRACE_CHOICES} )
+checkValue( ${LAMA_TRACE_LEVEL} "${TRACE_CHOICES}" )
 
 add_definitions( -DLAMA_TRACE_LEVEL_${LAMA_TRACE_LEVEL} )

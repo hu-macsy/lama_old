@@ -235,7 +235,17 @@ public:
      */
     virtual void memcpy( void* dst, const void* src, const size_t size ) const = 0;
 
-    virtual std::auto_ptr<SyncToken> memcpyAsync( void* dst, const void* src, const size_t size ) const = 0;
+    /** Asynchronous memory copy within the same context.
+     *
+     * param[in] dst pointer to the destination
+     * param[in] src pointer to the source
+     * param[in] size is the number of bytes to be copied.
+     * return new SyncToken object for the asynchronous operation.
+     *
+     * This memory copies size values.
+     *
+     */
+    virtual SyncToken* memcpyAsync( void* dst, const void* src, const size_t size ) const = 0;
 
     /** Checks if this Context can copy from src to dst
      *
@@ -260,14 +270,14 @@ public:
      */
     virtual void memcpy( ContextData& dst, const ContextData& src, const size_t size ) const = 0;
 
-    virtual std::auto_ptr<SyncToken> memcpyAsync(
-        ContextData& dst,
-        const ContextData& src,
-        const size_t size ) const = 0;
+    virtual SyncToken* memcpyAsync( ContextData& dst, const ContextData& src, const size_t size ) const = 0;
 
-    /** Getter routine for a new sync token that allows to asynchronous computations on the context. */
+    /** Getter routine for a new sync token that allows to asynchronous computations on the context.
+     *
+     *  @returns new SyncToken object 
+     */
 
-    virtual std::auto_ptr<SyncToken> getSyncToken() const = 0;
+    virtual SyncToken* getSyncToken() const = 0;
 
     /**
      * @brief Enable computations in the context.

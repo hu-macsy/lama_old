@@ -106,11 +106,6 @@ public:
         assign( other );
     }
 
-    /** Copy constructor can take any matrix storage or context. */
-
-    COOStorage( const _MatrixStorage& other, const ContextPtr context );
-    //{  setContext(context); assign( other ); }
-
     /** Default assignment operator is overridden */
 
     COOStorage<ValueType>& operator=( const COOStorage<ValueType>& other )
@@ -295,7 +290,7 @@ public:
      * Out-of-range check is enabled for DEBUG version.
      */
 
-    ValueType getValue( IndexType i, IndexType j ) const;
+    ValueType getValue( const IndexType i, const IndexType j ) const;
 
     /** Initiate an asynchronous data transfer to a specified location. */
 

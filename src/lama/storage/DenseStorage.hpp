@@ -161,7 +161,7 @@ public:
      * Out-of-range check is enabled for DEBUG version.
      */
 
-    ValueType getValue( IndexType i, IndexType j ) const;
+    ValueType getValue( const IndexType i, const IndexType j ) const;
 
     /** Initiate an asynchronous data transfer to a specified location. */
 
@@ -191,6 +191,7 @@ public:
         mNumRows = 0;
         mNumColumns = 0;
         mData.clear();
+        mDiagonalProperty = checkDiagonalProperty();
     }
 
     /**
@@ -201,6 +202,7 @@ public:
         mNumRows = 0;
         mNumColumns = 0;
         mData.purge();
+        mDiagonalProperty = checkDiagonalProperty();
     }
 
     /** Help routine to build any kind of CSR storage.

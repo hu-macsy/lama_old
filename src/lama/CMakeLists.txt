@@ -117,13 +117,11 @@ add_library ( lama SHARED ${CXX_SOURCES} ${HEADERS} )
 set( LAMA_LINK_LIBRARIES log4lama )
 
 if ( CUDA_FOUND AND LAMA_USE_CUDA )
-    #target_link_libraries( lama lamacuda )
     set ( LAMA_LINK_LIBRARIES ${LAMA_LINK_LIBRARIES} lamacuda )
 endif ( CUDA_FOUND AND LAMA_USE_CUDA )
 
 if ( MPI_FOUND AND LAMA_USE_MPI )
     set ( LAMA_LINK_LIBRARIES ${LAMA_LINK_LIBRARIES} lamampi )
-    #target_link_libraries ( lama lamampi )
 endif ( MPI_FOUND AND LAMA_USE_MPI )
 
 if ( SCALAPACK_FOUND AND MPI_FOUND AND LAMA_USE_MPI )
@@ -137,35 +135,23 @@ if ( NOT WIN32 )
     set ( LAMAPP_LINK_LIBRARIES ${LAMAPP_LINK_LIBRARIES} ${Boost_THREAD_LIBRARY} )
 endif ( NOT WIN32 )
 
-message ( STATUS "LAMA_BLAS_FOUND ${LAMA_BLAS_FOUND} as ${LAMA_BLAS_LIBRARIES}" )
-
 if ( LAMA_BLAS_FOUND )
-#TODO: SUMMARY
-    #message ( STATUS "LAMA_BLAS_LIBRARIES ${LAMAPP_LINK_LIBRARIES}" )
     set ( LAMA_LINK_LIBRARIES ${LAMA_LINK_LIBRARIES} ${LAMAPP_LINK_LIBRARIES} )
 endif( LAMA_BLAS_FOUND )
 
-message ( STATUS "LAMA_LINK_LIBRARIES ${LAMA_LINK_LIBRARIES}" )     
+# add additional link libraries
+set ( LAMA_LINK_LIBRARIES ${LAMA_LINK_LIBRARIES} ${LAMA_ADDITIONAL_LINK_LIBRARIES} )
 
 target_link_libraries ( lama ${LAMA_LINK_LIBRARIES} )
 
+if ( LAMA_ADDITIONAL_LINK_FLAGS )
+    set_target_properties ( lama PROPERTIES LINK_FLAGS ${LAMA_ADDITIONAL_LINK_FLAGS} )
+endif ( LAMA_ADDITIONAL_LINK_FLAGS )
 
 ### add definitions ###
 if ( WIN32 )
     add_definitions ( -DLAMA_COMPILING_DLL )
 endif ( WIN32 )
-
-if ( MKL_FOUND )
-    # default: LAMA_FORTRAN_BLAS_STYLE_LOWERCASE
-elseif ( ACML_FOUND )
-    if ( WIN32 )
-        add_definitions ( -DLAMA_FORTRAN_BLAS_STYLE_UPCASE ) # not tested yet
-    else( WIN32 )
-        add_definitions ( -DLAMA_FORTRAN_BLAS_STYLE_UNDERSCORE )
-    endif ( WIN32 )
-else ()
-    add_definitions ( -DLAMA_FORTRAN_BLAS_STYLE_UNDERSCORE )
-endif ()
 
 ### install ###
 install ( TARGETS lama DESTINATION lib )

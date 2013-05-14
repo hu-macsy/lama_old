@@ -2,7 +2,7 @@
 
 #include <lama.hpp>
 
-#include <lama/LAMATypes.hpp>
+// #include <lama/LAMATypes.hpp>
 
 #include <lama/DenseVector.hpp>
 #include <lama/matrix/CSRSparseMatrix.hpp>
@@ -42,7 +42,7 @@ int main ( int argc, char* argv[] )
     //Compute the rhs that fits our solution to be able to calculate the error later
     rhs = m * solution;
 
-    //Reset soution to zero so that there is something to solve
+    //Reset solution to zero so that there is something to solve
     solution = 0.0;
 
     //Create a CG solver 

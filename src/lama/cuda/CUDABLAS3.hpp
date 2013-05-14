@@ -49,6 +49,8 @@
 namespace lama
 {
 
+class SyncToken;   // forward declaration
+
 class LAMA_DLL_IMPORTEXPORT CUDABLAS3
 {
 public:
@@ -134,7 +136,7 @@ private:
         const T beta,
         T* C,
         const IndexType ldc,
-        class SyncToken* syncToken );
+        SyncToken* syncToken );
 
     /**
      * @brief trsm solves one of the matrix equations
@@ -218,7 +220,7 @@ private:
         const IndexType lda,
         T* B,
         const IndexType ldb,
-        class SyncToken* syncToken );
+        SyncToken* syncToken );
 
 private:
 

@@ -1,20 +1,18 @@
-.. _lecture_index:
-
 *******
 Lecture
 *******
 
-This tutorial gives an insight into the Library for Accelerated Math
+This lecture gives an insight into the Library for Accelerated Math
 Applications(LAMA) and its concepts. It guides you through the LAMA-architecture
-and the most important classes and offers tasks for practical experience. The
-practical parts of this tutorial illustrate step by step how to create a equation
-system, to solve it and run it on different devices. The concepts of logging and
-tracing in LAMA are introduced as well.
+and the most important classes, and offers tasks for practical experience. The
+practical parts of this lecture illustrate step by step how to create an equation
+system, how to solve it and how to run it on different devices. The concepts of 
+logging and tracing in LAMA are introduced as well.
 
-Before this tutorial starts, you should follow the :doc:`../installation/index`
-to obtain a working LAMA. This tutorial gives a step by step introduction to the
-basic usage of LAMA with task 0. The following task only giving hints which
-functions and classes you should use to complete the tasks. Please consult the
+Before you start, you should follow the :doc:`../installation/index`
+to obtain a working LAMA. With task 0 this lecture gives a step by step introduction 
+to the basic usage of LAMA. The following tasks are only giving hints which
+functions and classes you should use to complete them. Please consult the
 `online API documentation`_ on how to use these classes.
 
 .. _online API documentation: http://libama.sourceforge.net/doc/index.html
@@ -22,7 +20,7 @@ functions and classes you should use to complete the tasks. Please consult the
 Requirements
 ============
 
-Here we assume that LAMA has already been downloaded, configured, compiled and
+Here we assume that LAMA has already been downloaded, configured, compiled, and
 installed on your machine.
 The installation directory (**INSTALL_PREFIX** used for the configuration) 
 should be set via the environment variable **LAMA_ROOT**.
@@ -38,7 +36,7 @@ __ http://libama.sourceforge.net/doc/index.html
 
 .. code-block:: bash
 
-   firefox $LAMA_ROOT/share/doc/index.html
+   firefox <project-root>/doc/doxygen/html/index.html
 
 The compilation of your LAMA application, e.g. 'simple.cpp' is usually done as
 follows:
@@ -59,17 +57,17 @@ and running works fine.
 
 :doc:`Solver <../tutorial/example_solver>`
 
-A example **Makefile** can be found together with the **simple.cpp** example
-and the solutions for the tutorial tasks at **$LAMA_ROOT/doc/user_guide/cpp_source/tutorial/**.
+An example **Makefile** can be found together with the **simple.cpp** example
+and the solutions for the lecture tasks at **<project-root>/doc/user_guide/cpp_source/tutorial/**.
 
-H4H Tutorial Remarks
-====================
+.. H4H Tutorial Remarks
+.. ====================
 
-To run the tutorial on nova log in to the head node of nova and submit a
-interactive job to the gpus queue. Please allocate 2 cpus so that all tutorial
-participants can get free resources and we are able to run MPI parallel jobs
-later in this tutorial. The tutorial will also need the two modules mentioned
-below.
+.. To run the tutorial on nova you need to log in to the head node of nova and submit an
+.. interactive job to the gpus queue. Please allocate 2 cpus so that all tutorial
+.. participants can get free resources and we are able to run MPI parallel jobs
+.. later in this tutorial. The tutorial will also need the two modules mentioned
+.. below.
 
 .. code-block:bash
 
@@ -81,7 +79,7 @@ below.
 .. csv-table:: 
    :header: "Tasks", "Solutions"
 
-   ":doc:`Task 0 <task_0>`", ":doc:`Solution 0 <solution_task_0>`"
+   ":doc:`Task 0 <task_0>`", ""
    ":doc:`Task 1 <task_1>`", ":doc:`Solution 1 <solution_task_1>`"
    ":doc:`Task 2 <task_2>`", ":doc:`Solution 2 <solution_task_2>`"
    ":doc:`Task 3 <task_3>`", ":doc:`Solution 3 <solution_task_3>`"

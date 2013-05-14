@@ -73,15 +73,15 @@ void SingleGridSetup::initialize( const Matrix& coefficients )
 
     mSolver->initialize( coefficients );
 
-    mIdentity = coefficients.create();
+    mIdentity.reset( coefficients.create() );
     mIdentity->allocate( coefficients.getDistributionPtr(), coefficients.getDistributionPtr() );
     mIdentity->setIdentity();
 
     LAMA_LOG_DEBUG( logger, "Identity matrix = " << *mIdentity )
 
-    mSolutionVector = Vector::createVector( coefficients.getValueType(), mIdentity->getDistributionPtr() );
-    mRhsVector = Vector::createVector( coefficients.getValueType(), mIdentity->getDistributionPtr() );
-    mTmpResVector = Vector::createVector( coefficients.getValueType(), mIdentity->getDistributionPtr() );
+    mSolutionVector.reset( Vector::createVector( coefficients.getValueType(), mIdentity->getDistributionPtr() ) );
+    mRhsVector.reset( Vector::createVector( coefficients.getValueType(), mIdentity->getDistributionPtr() ) );
+    mTmpResVector.reset( Vector::createVector( coefficients.getValueType(), mIdentity->getDistributionPtr() ) );
 }
 
 Solver& SingleGridSetup::getCoarseLevelSolver()

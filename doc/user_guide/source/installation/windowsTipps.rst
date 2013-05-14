@@ -1,5 +1,3 @@
-.. _windowsTipps:
-
 Windows Installation
 ====================
 

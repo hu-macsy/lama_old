@@ -63,14 +63,15 @@ json:
     find ./ -type f -exec sed -i 's/\.\.\/\_images/fileadmin\/LAMA\/json\/_images/g' {} \; \
     && find ./ -type f -exec sed -i 's/<img/<image/g' {} \; \
     && find ./ -type f -exec sed -i 's/\.\.\/fileadmin/fileadmin/g' {} \; \
+    && find ./ -type f -exec sed -i 's/\\\"configuration\/\\\"/\\\"configuration\/index\/\\\"/g' {} \; \
     && find ./ -type f -exec sed -i 's/\\\"installation\/\\\"/\\\"installation\/index\/\\\"/g' {} \; \
-    && find ./ -type f -exec sed -i 's/\\\"installation\/configuration\/\\\"/\\\"installation\/configuration\/index\/\\\"/g' {} \; \
     && find ./ -type f -exec sed -i 's/\\\"tutorial\/\\\"/\\\"tutorial\/index\/\\\"/g' {} \; \
     && find ./ -type f -exec sed -i 's/\\\"lecture\/\\\"/\\\"lecture\/index\/\\\"/g' {} \; \
     && find ./ -type f -exec sed -i 's/\\\"reference\/\\\"/\\\"reference\/index\/\\\"/g' {} \; \
     && find ./ -type f -exec sed -i 's/\\\"testing\/\\\"/\\\"testing\/index\/\\\"/g' {} \; \
     && find ./ -type f -exec sed -i 's/\\\"benchmarks\/\\\"/\\\"benchmarks\/index\/\\\"/g' {} \; \
-    && find ./ -type f -exec sed -i 's/\\\"developer\/\\\"/\\\"developer\/index\/\\\"/g' {} \;
+    && find ./ -type f -exec sed -i 's/\\\"developer\/\\\"/\\\"developer\/index\/\\\"/g' {} \;\
+    && find ./ -type f -exec sed -i 's/\\\"solver\/\\\"/\\\"solver\/index\/\\\"/g' {} \;
 	@echo
 	@echo "Build finished; now you can process the JSON files."
 

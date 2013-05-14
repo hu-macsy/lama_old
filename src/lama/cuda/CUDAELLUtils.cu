@@ -37,11 +37,13 @@
 #include <lama/cuda/CUDAError.hpp>
 #include <lama/cuda/CUDAELLUtils.hpp>
 #include <lama/cuda/CUDAUtils.hpp>
+#include <lama/cuda/CUDATexture.hpp>
 
 // others
 #include <lama/LAMAInterface.hpp>
 #include <lama/LAMAInterfaceRegistry.hpp>
 #include <lama/macros/unused.hpp>
+#include <lama/tracing.hpp>
 
 // cuda
 #include <cuda.h>
@@ -482,6 +484,8 @@ void CUDAELLUtils::getCSRValues(
     const IndexType ellJA[],
     const ELLValueType ellValues[] )
 {
+    LAMA_REGION( "CUDA.ELL->CSR_values" )
+
     LAMA_LOG_INFO( logger,
                    "get CSRValues<" << typeid( ELLValueType ).name() << ", " << typeid( CSRValueType ).name() << ">" << ", #rows = " << numRows )
 
@@ -552,6 +556,8 @@ void CUDAELLUtils::setCSRValues(
     const IndexType csrJA[],
     const CSRValueType csrValues[] )
 {
+    LAMA_REGION( "CUDA.ELL<-CSR_values" )
+
     LAMA_LOG_INFO( logger,
                    "set CSRValues<" << typeid( ELLValueType ).name() << ", " << typeid( CSRValueType ).name() << ">" << ", #rows = " << numRows << ", #values/row = " << numValuesPerRow )
 
@@ -651,6 +657,8 @@ void CUDAELLUtils::normalGEMV(
     const ValueType ellValues[],
     SyncToken* syncToken )
 {
+    LAMA_REGION( "CUDA.ELL.normalGEMV" )
+
     LAMA_LOG_INFO( logger, "normalGEMV<" << typeid(ValueType).name() << ">" << ", #rows = " << numRows )
 
     LAMA_LOG_INFO( logger,
@@ -681,13 +689,14 @@ void CUDAELLUtils::normalGEMV(
     dim3 dimBlock( block_size, 1, 1 );
     dim3 dimGrid = makeGrid( numRows, dimBlock.x );
 
-    //TODO: Determine this depending on the compute capability
-
-    bool useTexture = true; //lama_getUseTex_cuda();
+    bool useTexture = CUDATexture::useTexture();
+    useTexture = false; // not yet supported
 
     if ( syncToken )
     {
-        //useTexture = false;
+        // Not yet supported: unbind Texture after synchronization 
+
+        useTexture = false;   
     }
 
     if ( useTexture )
@@ -710,8 +719,7 @@ void CUDAELLUtils::normalGEMV(
         LAMA_CUDA_RT_CALL( cudaFuncSetCacheConfig( ell_agemvpbv_kernel<ValueType, false>, cudaFuncCachePreferL1 ),
                            "LAMA_STATUS_CUDA_FUNCSETCACHECONFIG_FAILED" )
     }
-//    if ( *transa == 'N'|| *transa == 'n')
-//    {
+
     if ( useTexture )
     {
         ell_agemvpbv_kernel<ValueType, true> <<<dimGrid, dimBlock, 0, stream>>>
@@ -723,21 +731,14 @@ void CUDAELLUtils::normalGEMV(
         ( numRows, alpha, numNonZerosPerRow, ellValues, ellJA, x, beta, y, result );
     }
 
-//    }
-//    else if ( *transa == 'T' || *transa == 't' ||
-//              *transa == 'C' || *transa == 'c')
-//    {
-//        //TODO: Implement transpose and conjugate versions
-//        lama_setLastError( LAMA_STATUS_NOT_IMPLEMENTED );
-//        return;
-//    }
-
     LAMA_CUDA_RT_CALL( cudaGetLastError(), "LAMA_STATUS_SELLAGEMVPBV_CUDAKERNEL_FAILED" )
 
     if ( !syncToken )
     {
         LAMA_CUDA_RT_CALL( cudaStreamSynchronize(0), "LAMA_STATUS_SELLAGEMVPBV_CUDAKERNEL_FAILED" )
     }
+
+    // ToDo: create a task for unbind in case of asynchronous execution 
 
     if ( useTexture )
     {
@@ -801,6 +802,8 @@ void CUDAELLUtils::sparseGEMV(
     const ValueType ellValues[],
     SyncToken* syncToken )
 {
+    LAMA_REGION( "CUDA.ELL.sparseGEMV" )
+
     LAMA_LOG_INFO( logger, "sparseGEMV<" << typeid(ValueType).name() << ">" << ", #non-zero rows = " << numNonZeroRows )
 
     LAMA_CHECK_CUDA_ACCESS
@@ -826,8 +829,14 @@ void CUDAELLUtils::sparseGEMV(
     dim3 dimBlock( block_size, 1, 1 );
     dim3 dimGrid = makeGrid( numNonZeroRows, dimBlock.x );
 
-//TODO: Determine this depending on the compute capability
-    const bool useTexture = true; // lama_getUseTex_cuda();
+    bool useTexture = CUDATexture::useTexture();
+
+    useTexture = false; // not yet tested
+
+    if ( syncToken ) 
+    {
+        useTexture = false;
+    }
 
     if ( useTexture )
     {
@@ -942,8 +951,9 @@ void CUDAELLUtils::jacobi(
     const ValueType oldSolution[],
     const ValueType rhs[],
     const ValueType omega,
-    class SyncToken* syncToken )
+    SyncToken* syncToken )
 {
+    LAMA_REGION( "CUDA.ELL.jacobi" )
 
     LAMA_LOG_INFO( logger, "jacobi, #rows = " << numRows )
 
@@ -962,8 +972,9 @@ void CUDAELLUtils::jacobi(
     dim3 dimBlock( block_size, 1, 1 );
     dim3 dimGrid = makeGrid( numRows, dimBlock.x );
 
-//TODO: Determine this depending on the compute capability
-    const bool useTexture = true; // lama_getUseTex_cuda();
+    bool useTexture = CUDATexture::useTexture();
+
+    useTexture = false;
 
     if ( useTexture )
     {
@@ -1070,6 +1081,8 @@ void CUDAELLUtils::jacobiHalo(
     const ValueType omega,
     SyncToken* syncToken )
 {
+    LAMA_REGION( "CUDA.ELL.jacobiHalo" )
+ 
     LAMA_LOG_INFO( logger, "jacobiHalo, #non-empty rows = " << numNonEmptyRows )
 
     LAMA_CHECK_CUDA_ACCESS
@@ -1078,7 +1091,9 @@ void CUDAELLUtils::jacobiHalo(
     dim3 dimBlock( block_size, 1, 1 );
     dim3 dimGrid = makeGrid( numNonEmptyRows, dimBlock.x );
 
-    const bool useTexture = true; // lama_getUseTex_cuda();
+    bool useTexture = CUDATexture::useTexture();
+
+    useTexture = false;  // not yet tested
 
     if ( useTexture )
     {

@@ -89,11 +89,11 @@ void HostContext::writeAt( std::ostream& stream ) const
     stream << "HostContext";
 }
 
-std::auto_ptr<SyncToken> HostContext::getSyncToken() const
+TaskSyncToken* HostContext::getSyncToken() const
 {
     // on Host we will run asynchronous computations as a task
 
-    return std::auto_ptr<SyncToken>( new TaskSyncToken() );
+    return new TaskSyncToken();
 }
 
 }

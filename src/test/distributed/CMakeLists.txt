@@ -65,6 +65,7 @@ set ( SOURCE_FILES
         P_SORTest
         P_SpecializedJacobiTest
         P_VectorTest
+        P_NormTest
         #TODO: REMOVE!
         ../Configuration
         ../SameMatrixHelper

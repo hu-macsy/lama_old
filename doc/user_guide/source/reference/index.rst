@@ -1,5 +1,3 @@
-.. _reference_index:
-
 *************
 API Reference
 *************
@@ -13,8 +11,7 @@ Contents:
    scalar
    vector
    matrix
-   solver
-   solver/metasolver
+   solver/index
    storage
    expressions
    distributions

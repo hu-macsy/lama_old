@@ -55,9 +55,14 @@ typedef bool NoType;
 /* ------------------------------------------------------------------------------------------------------------------ */
 
 namespace lama
+
 {
+/* ------------------------------------------------------------------------------------------------------------------ */
+
 namespace UtilsTest
 {
+
+/* ------------------------------------------------------------------------------------------------------------------ */
 
 template<typename ValueType,typename OtherValueType>
 void scaleTest( ContextPtr loc )
@@ -90,6 +95,8 @@ void scaleTest( ContextPtr loc )
 
 }
 
+/* ------------------------------------------------------------------------------------------------------------------ */
+
 template<typename ValueType>
 void sumTest( ContextPtr loc )
 {
@@ -114,23 +121,21 @@ void sumTest( ContextPtr loc )
     }
 
     {
-        ValueType valuesValues[] =
-            { };
-        const IndexType nValues = 0;
-
         const ValueType expectedSum = 0;
 
-        LAMAArray<ValueType> values( nValues, valuesValues );
+        LAMAArray<ValueType> values;
 
         ReadAccess<ValueType> rValues( values, loc );
 
         LAMA_CONTEXT_ACCESS( loc );
 
-        const ValueType resultSum = sum( rValues.get(), nValues );
+        const ValueType resultSum = sum( rValues.get(), values.size() );
 
         BOOST_CHECK_EQUAL( expectedSum, resultSum );
     }
 }
+
+/* ------------------------------------------------------------------------------------------------------------------ */
 
 template<typename ValueType>
 void setValTest( ContextPtr loc )
@@ -173,6 +178,55 @@ void setValTest( ContextPtr loc )
         }
     }
 }
+
+/* ------------------------------------------------------------------------------------------------------------------ */
+
+template<typename ValueType>
+void isSortedTest( ContextPtr loc )
+{
+    LAMA_INTERFACE_FN_T( isSorted, loc, Utils, Reductions, ValueType );
+
+    {
+        ValueType values1[] = { 1, 2, 2, 2, 5, 8 };
+        ValueType values2[] = { 2, 2, 1, 0 }; 
+        ValueType values3[] = { 1, 0, 1 };
+
+        const IndexType nValues1 = sizeof( values1 ) / sizeof(ValueType);
+        const IndexType nValues2 = sizeof( values2 ) / sizeof(ValueType);
+        const IndexType nValues3 = sizeof( values3 ) / sizeof(ValueType);
+
+        LAMAArray<ValueType> valueArray1( nValues1, values1 );
+        LAMAArray<ValueType> valueArray2( nValues2, values2 );
+        LAMAArray<ValueType> valueArray3( nValues3, values3 );
+
+        ReadAccess<ValueType> rValues1( valueArray1, loc );
+        ReadAccess<ValueType> rValues2( valueArray2, loc );
+        ReadAccess<ValueType> rValues3( valueArray3, loc );
+
+        LAMA_CONTEXT_ACCESS( loc );
+
+        // values1 are sorted, ascending = true
+
+        BOOST_CHECK ( isSorted( rValues1.get(), nValues1, true ) );
+        BOOST_CHECK ( ! isSorted( rValues1.get(), nValues1, false ) );
+
+        // values2 are sorted, ascending = false 
+
+        BOOST_CHECK ( isSorted( rValues2.get(), nValues2, false ) );
+        BOOST_CHECK ( ! isSorted( rValues2.get(), nValues2, true ) );
+
+        BOOST_CHECK ( isSorted( rValues2.get(), 0, true ) );   // only first two values are sorted
+        BOOST_CHECK ( isSorted( rValues2.get(), 1, true ) );   // only first two values are sorted
+        BOOST_CHECK ( isSorted( rValues2.get(), 2, true ) );   // only first two values are sorted
+
+        // values3 are not sorted, neither ascending nor descending
+
+        BOOST_CHECK ( ! isSorted( rValues3.get(), nValues3, false ) );
+        BOOST_CHECK ( ! isSorted( rValues3.get(), nValues3, true ) );
+    }
+}
+
+/* ------------------------------------------------------------------------------------------------------------------ */
 
 template<typename NoType>
 void setOrderTest( ContextPtr loc )
@@ -220,7 +274,6 @@ void setOrderTest( ContextPtr loc )
 template<typename ValueType>
 void invertTest( ContextPtr loc )
 {
-
     LAMA_INTERFACE_FN_T( invert, loc, Utils, Math, ValueType );
 
     {
@@ -276,6 +329,7 @@ BOOST_AUTO_TEST_SUITE( UtilsTest )
 LAMA_LOG_DEF_LOGGER( logger, "Test.UtilsTest" );
 
 LAMA_AUTO_TEST_CASE_T( sumTest, UtilsTest );
+LAMA_AUTO_TEST_CASE_T( isSortedTest, UtilsTest );
 LAMA_AUTO_TEST_CASE_T( setValTest, UtilsTest );
 LAMA_AUTO_TEST_CASE_T( invertTest, UtilsTest );
 

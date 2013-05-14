@@ -63,4 +63,4 @@ possible to have multiple ReadAcess, but just one WriteAccess at a time.
    :header: "previous", "Solution", "next"
    :widths: 330, 340, 330
 
-   ":doc:`task_0`", ":doc:`solution_task_1`", ":doc:`task_2`"
+   ":doc:`task_0`", :doc:`Solution Task 1 <solution_task_1>`, ":doc:`task_2`"

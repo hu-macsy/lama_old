@@ -97,14 +97,22 @@ void testSolveWithoutPreconditionmethod( ContextPtr loc )
     const IndexType N1 = 4;
     const IndexType N2 = 4;
 
+    LAMA_LOG_INFO( logger, "testSolveWithoutPreconditionmethod<" << typeid( mt ).name() << " at " << *loc );
+
     LAMA_LOG_INFO( logger, "Problem size = " << N1 << " x " << N2 );
 
     CG cgSolver( "CGTestSolver" );
 
+    LAMA_LOG_INFO( logger, "Solver = " << cgSolver );
+
     CSRSparseMatrix<ValueType> helpcoefficients;
     MatrixCreator<ValueType>::buildPoisson2D( helpcoefficients, 9, N1, N2 );
 
+    LAMA_LOG_INFO( logger, "Poisson2D matrix = " << helpcoefficients );
+
     MatrixType coefficients( helpcoefficients );
+
+    LAMA_LOG_INFO( logger, "Poisson2D matrix (converted to MatrixType)  = " << helpcoefficients );
 
     DistributionPtr dist( new BlockDistribution( coefficients.getNumRows(), comm ) );
     coefficients.redistribute( dist, dist );
@@ -117,7 +125,7 @@ void testSolveWithoutPreconditionmethod( ContextPtr loc )
     rhs = coefficients * exactSolution;
 
     //initialize
-    IndexType expectedIterations = 10;
+    IndexType expectedIterations = 15;
     CriterionPtr criterion( new IterationCount( expectedIterations ) );
     cgSolver.setStoppingCriterion( criterion );
     cgSolver.initialize( coefficients );
@@ -127,8 +135,16 @@ void testSolveWithoutPreconditionmethod( ContextPtr loc )
     BOOST_CHECK_EQUAL( expectedIterations, cgSolver.getIterationCount() );
 
     DenseVector<ValueType> diff( solution - exactSolution );
+
     Scalar s = maxNorm( diff );
-    BOOST_CHECK( s.getValue<ValueType>() < 1E-6 );
+    ValueType sval = s.getValue<ValueType>();
+
+    if ( ! ( sval < 1E-6 ) ) 
+    {
+        LAMA_LOG_ERROR( logger, "max norm of diff = " << sval << ", should be < 1E-6 " )
+    }
+
+    BOOST_CHECK( sval < 1E-6 );
 }
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( testSolveWithoutPreconditioning, T, test_types ) {
@@ -154,6 +170,8 @@ void testSolveWithPreconditionmethod( ContextPtr loc )
 {
     typedef mt MatrixType;
     typedef typename mt::ValueType ValueType;
+
+    LAMA_LOG_INFO( logger, "testSolveWithPreconditionmethod<" << typeid( mt ).name() << "> on " << *loc );
 
 //    LoggerPtr slogger( new CommonLogger(
 //        "<SOR>: ",

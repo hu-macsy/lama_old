@@ -223,9 +223,9 @@ public:
      */
     virtual void setValues( const _LAMAArray& values );
 
-    virtual std::auto_ptr<Vector> create() const;
+    virtual Vector* create() const;
 
-    virtual std::auto_ptr<Vector> create( DistributionPtr distribution ) const;
+    virtual Vector* create( DistributionPtr distribution ) const;
 
     //TODO: We either need a none const getLocalValues()
     // or an operator[] with local sematics or both
@@ -281,7 +281,7 @@ public:
      * @param[in] halo  the halo which describes which remote values should be put into the halo cache.
      * @return          a SyncToken which can be used to synchronize to the asynchronous update.
      */
-    std::auto_ptr<SyncToken> updateHaloAsync( const Halo& halo ) const;
+    SyncToken* updateHaloAsync( const Halo& halo ) const;
 
     virtual Scalar getValue( IndexType globalIndex ) const;
 
@@ -411,20 +411,6 @@ DenseVector<T>::DenseVector( const IndexType size, const OtherValueType* values 
     }
 
     // Halo is not used yet
-}
-
-template<typename T>
-DenseVector<T>::DenseVector( const DenseVector<ValueType>& other )
-
-    : Vector( other )
-
-{
-    // implementation here can be simpler as DenseVector( const Vector& other )
-
-    LAMA_LOG_INFO( logger,
-                   "Copy of vector of global size " << size() << ", local size " << getDistribution().getLocalSize() )
-
-    mLocalValues = other.getLocalValues();
 }
 
 }

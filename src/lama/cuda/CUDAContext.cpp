@@ -308,7 +308,7 @@ void* CUDAContext::allocate( const size_t size ) const
         "cuMemAlloc( size = " << size << " ) failed. This allocation would require a total of " 
                       << mMaxNumberOfAllocatedBytes + size << " bytes global memory." )
 
-    LAMA_LOG_DEBUG( logger, *this << ": allocated " << size << " bytes, ptr = " << pointer )
+    LAMA_LOG_DEBUG( logger, *this << ": allocated " << size << " bytes, ptr = " << ( (void *) pointer ) )
 
     mNumberOfAllocatedBytes += size;
     mNumberOfAllocates++;
@@ -364,18 +364,41 @@ void CUDAContext::memcpy( void* dst, const void* src, const size_t size ) const
 
 /* ----------------------------------------------------------------------------- */
 
-std::auto_ptr<SyncToken> CUDAContext::memcpyAsync( void* dst, const void* src, const size_t size ) const
+SyncToken* CUDAContext::memcpyAsync( void* dst, const void* src, const size_t size ) const
 {
     LAMA_CONTEXT_ACCESS( shared_from_this() )
 
-    CUDAStreamSyncTokenPtr syncToken( new CUDAStreamSyncToken( shared_from_this(), mTransferStream ) );
+    // use auto pointer so memory will be freed in case of exceptions
 
     LAMA_LOG_INFO( logger, "copy async " << size << " bytes from " << src << " (device) to " << dst << " (device) " )
 
-    LAMA_CUDA_DRV_CALL( cuMemcpyDtoDAsync( (CUdeviceptr) dst,(CUdeviceptr) src, size, mTransferStream ),
+    LAMA_CUDA_DRV_CALL( cuMemcpyDtoDAsync( ( CUdeviceptr ) dst, ( CUdeviceptr ) src, size, mTransferStream ),
                         "cuMemcpyDtoDAsync( " << dst << ", " << src << ", " << size << ") failed " )
 
-    return syncToken;
+    // sync token should not synchronize on the full stream but only on the transfer, so add event
+
+    CUevent event;
+
+    LAMA_CUDA_DRV_CALL( cuEventCreate( &event, CU_EVENT_DEFAULT | CU_EVENT_DISABLE_TIMING ),
+                        "Could not create event " )
+
+    LAMA_CUDA_DRV_CALL( cuEventRecord ( event, mTransferStream ), "cuEventRecord failed for CUevent " << event << '.' )
+
+    // This way timing might be added
+    // CuEvent startEevent;
+    // CuEvent stopEevent;
+    // startEvent = CUDAStreamSyncToken::getStartEvent( shared_from_this(), mTransferStream )
+    // LAMA_CUDA_DRV_CALL( cuEventCreate( &startEvent, CU_EVENT_DEFAULT )
+    // LAMA_CUDA_DRV_CALL( cuEventRecord( startEvent, mTransferStream )
+    // now cuMemcpyDToDAsync
+    // stopEvent = CUDAStreamSyncToken::getStopEvent( shared_from_this(), mTransferStream )
+    // LAMA_CUDA_DRV_CALL( cuEventCreate( &stopEvent, CU_EVENT_DEFAULT | CU_EVENT_DISABLE_TIMING ),
+    // LAMA_CUDA_DRV_CALL( cuEventRecord( &stopEvent, mTransferStream )
+    // new CUDAStreamSyncToken( shared_from_this(), mTransferStream, startEvent, stopEvent )
+    // -> will synchronize on stopEvent, gets time as follows
+    // LAMA_CUDA_DRV_CALL( cuEventElapsedTime( time, startEvent, stopEvent ),
+
+    return new CUDAStreamSyncToken( shared_from_this(), mTransferStream, event );
 }
 
 /* ----------------------------------------------------------------------------- */
@@ -394,13 +417,12 @@ void CUDAContext::memcpyFromHost( void* dst, const void* src, const size_t size 
 
 /* ----------------------------------------------------------------------------- */
 
-std::auto_ptr<SyncToken> CUDAContext::memcpyAsyncFromHost( void* dst, const void* src, const size_t size ) const
+SyncToken* CUDAContext::memcpyAsyncFromHost( void* dst, const void* src, const size_t size ) const
 {
     LAMA_LOG_INFO( logger, "async copy " << size << " bytes from " << src << " (host) to " << dst << " (device) " )
 
     // as current thread has disabled the context, another thread might use it
-    return std::auto_ptr<SyncToken>(
-               new TaskSyncToken( boost::bind( &CUDAContext::memcpyFromHost, this, dst, src, size ) ) );
+    return new TaskSyncToken( boost::bind( &CUDAContext::memcpyFromHost, this, dst, src, size ) );
 }
 
 /* ----------------------------------------------------------------------------- */
@@ -408,9 +430,10 @@ std::auto_ptr<SyncToken> CUDAContext::memcpyAsyncFromHost( void* dst, const void
 void CUDAContext::memcpyToHost( void* dst, const void* src, const size_t size ) const
 {
     //LAMA_THROWEXCEPTION("memcpyToHost is temporarily forbidden for tracking");
+
     LAMA_CONTEXT_ACCESS( shared_from_this() )
 
-    LAMA_REGION("memcpyCuda2Host");
+    LAMA_REGION( "CUDA.memcpyDtoH")
 
     LAMA_LOG_INFO( logger, "copy " << size << " bytes from " << src << " (device) to " << dst << " (host) " )
 
@@ -420,21 +443,20 @@ void CUDAContext::memcpyToHost( void* dst, const void* src, const size_t size ) 
 
 /* ----------------------------------------------------------------------------- */
 
-std::auto_ptr<SyncToken> CUDAContext::memcpyAsyncToHost( void* dst, const void* src, const size_t size ) const
+SyncToken* CUDAContext::memcpyAsyncToHost( void* dst, const void* src, const size_t size ) const
 {
     LAMA_LOG_INFO( logger, "async copy " << size << " bytes from " << src << " (device) to " << dst << " (host) " )
 
     // as current thread has disabled the context, another thread might use it
 
-    return std::auto_ptr<SyncToken>(
-               new TaskSyncToken( boost::bind( &CUDAContext::memcpyToHost, this, dst, src, size ) ) );
+    return new TaskSyncToken( boost::bind( &CUDAContext::memcpyToHost, this, dst, src, size ) );
 }
 
 /* ----------------------------------------------------------------------------- */
 
 void CUDAContext::memcpyFromCUDAHost( void* dst, const void* src, const size_t size ) const
 {
-    LAMA_REGION("memcpyCudaHost2CudaDev");
+    LAMA_REGION("memcpyCudaHost2CudaDev")
 
     LAMA_CONTEXT_ACCESS( shared_from_this() )
 
@@ -446,28 +468,26 @@ void CUDAContext::memcpyFromCUDAHost( void* dst, const void* src, const size_t s
 
 /* ----------------------------------------------------------------------------- */
 
-std::auto_ptr<SyncToken> CUDAContext::memcpyAsyncFromCUDAHost( void* dst, const void* src, const size_t size ) const
+SyncToken* CUDAContext::memcpyAsyncFromCUDAHost( void* dst, const void* src, const size_t size ) const
 {
     // Alternative solution for comparison:
     //   return std::auto_ptr<SyncToken>(new TaskSyncToken( boost::bind( &CUDAContext::memcpyFromCUDAHost, this, dst, src, size ) ) );
 
     LAMA_CONTEXT_ACCESS( shared_from_this() )
 
-    CUDAStreamSyncTokenPtr syncToken( new CUDAStreamSyncToken( shared_from_this(), mTransferStream ) );
-
     LAMA_LOG_INFO( logger, "copy async " << size << " bytes from " << src << " (host) to " << dst << " (device) " )
 
     LAMA_CUDA_DRV_CALL( cuMemcpyHtoDAsync( (CUdeviceptr) dst, src, size, mTransferStream ),
                         "cuMemcpyHtoDAsync( " << dst << ", " << src << ", " << size << ") failed " )
 
-    return syncToken;
+    return new CUDAStreamSyncToken( shared_from_this(), mTransferStream );
 }
 
 /* ----------------------------------------------------------------------------- */
 
 void CUDAContext::memcpyToCUDAHost( void* dst, const void* src, const size_t size ) const
 {
-    LAMA_REGION("memcpyCudaDev2CudaHost");
+    LAMA_REGION( "memcpyCudaDev2CudaHost" )
 
     LAMA_CONTEXT_ACCESS( shared_from_this() )
 
@@ -479,13 +499,9 @@ void CUDAContext::memcpyToCUDAHost( void* dst, const void* src, const size_t siz
 
 /* ----------------------------------------------------------------------------- */
 
-std::auto_ptr<SyncToken> CUDAContext::memcpyAsyncToCUDAHost( void* dst, const void* src, const size_t size ) const
+SyncToken* CUDAContext::memcpyAsyncToCUDAHost( void* dst, const void* src, const size_t size ) const
 {
-    // return std::auto_ptr<SyncToken>(new TaskSyncToken( boost::bind( &CUDAContext::memcpyToCUDAHost, this, dst, src, size ) ) );
-
     LAMA_CONTEXT_ACCESS( shared_from_this() )
-
-    CUDAStreamSyncTokenPtr syncToken( new CUDAStreamSyncToken( shared_from_this(), mTransferStream ) );
 
     LAMA_LOG_INFO( logger, "copy async " << size << " bytes from " << src << " (device) to " << dst << " (host) " )
 
@@ -493,7 +509,16 @@ std::auto_ptr<SyncToken> CUDAContext::memcpyAsyncToCUDAHost( void* dst, const vo
         cuMemcpyDtoHAsync( dst, (CUdeviceptr) src, size, mTransferStream ),
         "cuMemcpyDtoHAsync( " << dst << ", " << src << ", " << size << ", " << mTransferStream << ") failed " )
 
-    return syncToken;
+    // sync token should not synchronize on the full stream but only on the transfer, so add event
+
+    CUevent event;
+
+    LAMA_CUDA_DRV_CALL( cuEventCreate( &event, CU_EVENT_DEFAULT | CU_EVENT_DISABLE_TIMING ),
+                        "Could not create event " )
+
+    LAMA_CUDA_DRV_CALL( cuEventRecord ( event, mTransferStream ), "cuEventRecord failed for CUevent " << event << '.' )
+
+    return new CUDAStreamSyncToken( shared_from_this(), mTransferStream, event );
 }
 
 /* ----------------------------------------------------------------------------- */
@@ -519,7 +544,7 @@ void CUDAContext::memcpy( ContextData& dst, const ContextData& src, const size_t
     {
         if ( !src.isPinned() && size > minPinnedSize )
         {
-            LAMA_REGION("RegisterHostMemory");
+            LAMA_REGION( "RegisterHostMemory" )
             LAMA_CONTEXT_ACCESS( shared_from_this() )
             LAMA_CUDA_DRV_CALL( cuMemHostRegister( src.pointer, src.size,0),
                                 "cuMemHostRegister( " << src.pointer << ", " << src.size << ", " << 0 << ") failed " )
@@ -540,7 +565,7 @@ void CUDAContext::memcpy( ContextData& dst, const ContextData& src, const size_t
     {
         if ( !dst.isPinned() && size > minPinnedSize )
         {
-            LAMA_REGION("RegisterHostMemory");
+            LAMA_REGION( "RegisterHostMemory" )
             LAMA_CONTEXT_ACCESS( shared_from_this() )
             LAMA_CUDA_DRV_CALL( cuMemHostRegister( dst.pointer, dst.size,0),
                                 "cuMemHostRegister( " << src.pointer << ", " << dst.size << ", " << 0 << ") failed " )
@@ -603,7 +628,7 @@ void CUDAContext::memcpy( ContextData& dst, const ContextData& src, const size_t
 
 /* ----------------------------------------------------------------------------- */
 
-std::auto_ptr<SyncToken> CUDAContext::memcpyAsync( ContextData& dst, const ContextData& src, const size_t size ) const
+SyncToken* CUDAContext::memcpyAsync( ContextData& dst, const ContextData& src, const size_t size ) const
 {
     LAMA_LOG_INFO( logger, "memcpyAsync from " << *src.context << " to " << *dst.context << ", size = " << size )
 
@@ -616,7 +641,7 @@ std::auto_ptr<SyncToken> CUDAContext::memcpyAsync( ContextData& dst, const Conte
     {
         if ( !src.isPinned() && size > minPinnedSize )
         {
-            LAMA_REGION("RegisterHostMemory");
+            LAMA_REGION( "RegisterHostMemory" )
             LAMA_CONTEXT_ACCESS( shared_from_this() )
             LAMA_LOG_DEBUG( logger, "register host memory, size = " << src.size )
             LAMA_CUDA_DRV_CALL( cuMemHostRegister( src.pointer, src.size,0),
@@ -638,7 +663,7 @@ std::auto_ptr<SyncToken> CUDAContext::memcpyAsync( ContextData& dst, const Conte
     {
         if ( !dst.isPinned() && size > minPinnedSize )
         {
-            LAMA_REGION("RegisterHostMemory");
+            LAMA_REGION( "RegisterHostMemory" )
             LAMA_CONTEXT_ACCESS( shared_from_this() )
             LAMA_CUDA_DRV_CALL( cuMemHostRegister( dst.pointer, dst.size,0),
                                 "cuMemHostRegister( " << src.pointer << ", " << dst.size << ", " << 0 << ") failed " )
@@ -666,23 +691,23 @@ std::auto_ptr<SyncToken> CUDAContext::memcpyAsync( ContextData& dst, const Conte
 
 /* ----------------------------------------------------------------------------- */
 
-std::auto_ptr<CUDAStreamSyncToken> CUDAContext::getComputeSyncToken() const
+CUDAStreamSyncToken* CUDAContext::getComputeSyncToken() const
 {
-    return std::auto_ptr<CUDAStreamSyncToken>( new CUDAStreamSyncToken( shared_from_this(), mComputeStream ) );
+    return new CUDAStreamSyncToken( shared_from_this(), mComputeStream );
 }
 
 /* ----------------------------------------------------------------------------- */
 
-std::auto_ptr<SyncToken> CUDAContext::getSyncToken() const
+SyncToken* CUDAContext::getSyncToken() const
 {
-    return std::auto_ptr<SyncToken>( new CUDAStreamSyncToken( shared_from_this(), mComputeStream ) );
+    return new CUDAStreamSyncToken( shared_from_this(), mComputeStream );
 }
 
 /* ----------------------------------------------------------------------------- */
 
-std::auto_ptr<CUDAStreamSyncToken> CUDAContext::getTransferSyncToken() const
+CUDAStreamSyncToken* CUDAContext::getTransferSyncToken() const
 {
-    return std::auto_ptr<CUDAStreamSyncToken>( new CUDAStreamSyncToken( shared_from_this(), mTransferStream ) );
+    return new CUDAStreamSyncToken( shared_from_this(), mTransferStream );
 }
 
 /* ----------------------------------------------------------------------------- */

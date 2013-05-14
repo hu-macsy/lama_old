@@ -24,7 +24,7 @@ CPU Tests
 - L2NormTest
 - MPICommunicatorTest
 - NormTest
-- OpenMPTimerTest
+- TimerTest
 - ResidualTest
 - SolutionProxyTest
 - SparseAssemblyMatrixTest

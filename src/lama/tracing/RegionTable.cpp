@@ -36,39 +36,12 @@
 
 // others
 #include <lama/tracing/VTInterface.hpp>
+#include <lama/Walltime.hpp>
 
 #include <cstdio>
 
-#ifdef WIN32
-#include <Windows.h>
-#else
-#include <sys/time.h>
-#endif
-
 namespace tracing
 {
-
-static double walltime()
-{
-
-#ifdef WIN32
-
-    SYSTEMTIME lpSystemTime;
-    GetLocalTime( &lpSystemTime );
-    return ( lpSystemTime.wHour * 60.0 + lpSystemTime.wMinute ) * 60.0 +
-           lpSystemTime.wSecond + lpSystemTime.wMilliseconds * 0.001;
-
-#else
-
-    struct timeval tp;
-    struct timezone tzp;
-
-    gettimeofday( &tp, &tzp );
-
-    return (double) tp.tv_sec + tp.tv_usec * 0.000001;
-
-#endif //WIN32
-}
 
 /* -------------------------------------------------------------------------- */
 
@@ -192,7 +165,7 @@ double RegionTable::elapsed( int regionId )
 
         if ( call.mRegion == regionId )
         {
-            elapsedTime += walltime() - call.mTimeStart;
+            elapsedTime += lama::Walltime::get() - call.mTimeStart;
         }
     }
 
@@ -253,9 +226,17 @@ void RegionTable::printTimer()
 
 /* ---------------------------------------------------------------------- */
 
-void RegionTable::printTimer( FILE*f )
+void RegionTable::printTimer( FILE* f )
 {
-    std::cout << "Summary of all timers for thread " << mThreadId << "\n";
+    std::cout << "Summary of all timers for thread " << mThreadId << std::endl;
+
+    std::ostringstream threadInfo; 
+
+    threadInfo << mThreadId;  
+    
+    fprintf( f, "====================================\n" );
+    fprintf( f, "Timing info of regions for Thread %s\n", threadInfo.str().c_str() );
+    fprintf( f, "====================================\n" );
 
     // use map iterator for alphabetical output
 

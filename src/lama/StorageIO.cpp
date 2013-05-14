@@ -1005,7 +1005,6 @@ void _StorageIO::writeCSRHeader(
         break;
     default:
         LAMA_THROWEXCEPTION( "Invalid header file." )
-        break;
     }
 
     std::fstream outFile( fileName.c_str(), std::ios::out );
@@ -1114,7 +1113,6 @@ size_t _StorageIO::getIndexDataTypeSize( const File::IndexDataType indexDataType
         return TypeTraits<int>::size;
     default:
         LAMA_THROWEXCEPTION( "Unknown matrix data type for writing the file." )
-        break;
     }
 }
 
@@ -1148,10 +1146,8 @@ size_t StorageIO<ValueType>::getDataTypeSize( const File::DataType dataType )
         {
             LAMA_THROWEXCEPTION( "Unknown matrix value type size." )
         }
-        break;
     default:
         LAMA_THROWEXCEPTION( "Unknown matrix data type for writing the file." )
-        break;
     }
 }
 
@@ -1237,7 +1233,6 @@ void StorageIO<ValueType>::writeCSRToFile(
     default:
     {
         LAMA_THROWEXCEPTION( "Unknown file type definition." )
-        break;
     }
     } //switch(fileType)
 
@@ -1315,7 +1310,6 @@ void StorageIO<ValueType>::readCSRFromFile(
     }
     default:
         LAMA_THROWEXCEPTION( "Read storage file: unknown file type = " << fileType )
-        break;
     }
 }
 

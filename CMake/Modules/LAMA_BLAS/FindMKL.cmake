@@ -1,3 +1,35 @@
+ ###
+ # @file FindMKL.cmake
+ #
+ # @license
+ # Copyright (c) 2013
+ # Fraunhofer Institute for Algorithms and Scientific Computing SCAI
+ # for Fraunhofer-Gesellschaft
+ #
+ # Permission is hereby granted, free of charge, to any person obtaining a copy
+ # of this software and associated documentation files (the "Software"), to deal
+ # in the Software without restriction, including without limitation the rights
+ # to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ # copies of the Software, and to permit persons to whom the Software is
+ # furnished to do so, subject to the following conditions:
+ #
+ # The above copyright notice and this permission notice shall be included in
+ # all copies or substantial portions of the Software.
+ #
+ # THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ # IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ # FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ # AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ # SOFTWARE.
+ # @endlicense
+ #
+ # @brief Find MKL
+ # @author
+ # @date 25.04.2013
+###
+
 # - Try to find MKL
 #
 #  MKL_INCLUDE_DIR and MKL_LIBRARY_PATH can be user defined in cmake call 
@@ -8,7 +40,7 @@
 #  MKL_LIBRARIES - The libraries needed to use MKL
 
 # FILE GLOB_RECURSE do not follow symlinks
-cmake_policy( SET CMP0009 NEW )
+cmake_policy ( SET CMP0009 NEW )
 
 ### Search for include path for all required mkl header files
 
@@ -50,17 +82,18 @@ if ( NOT DEFINED MKL_INCLUDE_DIR )
             
         endif( EXISTS ${MKL_HINT} )
         
-    endforeach( MKL_HINT ${MKL_HINTS} )
+    endforeach ( MKL_HINT ${MKL_HINTS} )
 endif( NOT DEFINED MKL_INCLUDE_DIR )
 
 if ( NOT EXISTS ${MKL_INCLUDE_DIR} )
-    message ( STATUS "WARNING No MKL include directory found. Please define MKL_INCLUDE_DIR." )
+    message ( STATUS "WARNING No MKL include directory found. Please define MKL_INCLUDE_DIR or MKL_ROOT." )
     unset ( MKL_INCLUDE_DIR )
 else ( NOT EXISTS ${MKL_INCLUDE_DIR} )
     ### Search for available library directories
 
     if ( NOT DEFINED MKL_LIBRARY_PATH )
         get_filename_component ( MKL_ROOT_PATH "${MKL_INCLUDE_DIR}" PATH )
+        
         if ( LAMA_CMAKE_VERBOSE )
             message ( STATUS "MKL_ROOT_PATH = ${MKL_ROOT_PATH}" )
         endif ( LAMA_CMAKE_VERBOSE )
@@ -84,10 +117,11 @@ else ( NOT EXISTS ${MKL_INCLUDE_DIR} )
             message ( STATUS "WARNING MKL library path not found. Please define MKL_LIBRARY_PATH." )
         endif( EXISTS ${MKL_ROOT_PATH}/lib )
     endif( NOT DEFINED MKL_LIBRARY_PATH )
-    
+
     if ( LAMA_CMAKE_VERBOSE )
         message( STATUS "MKL_LIBRARY_PATH = ${MKL_LIBRARY_PATH}, MKL_LIBRARY_PATH_SUFFIXES = ${MKL_LIBRARY_PATH_SUFFIXES}" )
     endif ( LAMA_CMAKE_VERBOSE )
+    
     ### Search for libraries mkl_gnu_thread, mkl_intel_thread and mkl_core
     
     if ( EXISTS ${MKL_LIBRARY_PATH} )
@@ -160,20 +194,20 @@ else ( NOT EXISTS ${MKL_INCLUDE_DIR} )
             list ( APPEND MKL_LIBRARIES ${INTEL_IOMP_LIBRARY} )
         endif ( WIN32 )
         
-        if ( LAMA_DEBUG_CMAKE )
+        if ( LAMA_CMAKE_VERBOSE )
             message ( STATUS "Found MKL Libraries: ${MKL_LIBRARIES}." )
             message ( STATUS "Found MKL PLibraries: ${MKL_PLIBRARIES}." )
-        endif ( LAMA_DEBUG_CMAKE )
+        endif ( LAMA_CMAKE_VERBOSE )
     else ( EXISTS ${MKL_LIBRARY_PATH} )
         message ( STATUS "WARNING MKL libraries not found. MKL_LIBRARY_PATH=${MKL_LIBRARY_PATH} directory does not exist." )
     endif ( EXISTS ${MKL_LIBRARY_PATH} )
     
     set ( MKL_INCLUDE_DIRS ${MKL_INCLUDE_DIR} )
-endif (  NOT EXISTS ${MKL_INCLUDE_DIR} )
+endif ( NOT EXISTS ${MKL_INCLUDE_DIR} )
 
 include( FindPackageHandleStandardArgs )
 # handle the QUIET and REQUIRED arguments and set MKL_FOUND to TRUE if all listed variables are TRUE
-find_package_handle_standard_args ( MKL DEFAULT_MSG MKL_LIBRARIES MKL_INCLUDE_DIRS)
+find_package_handle_standard_args ( MKL DEFAULT_MSG MKL_LIBRARIES MKL_INCLUDE_DIRS )
 
 mark_as_advanced( MKL_INCLUDE_DIRS 
                   MKL_LIBRARIES

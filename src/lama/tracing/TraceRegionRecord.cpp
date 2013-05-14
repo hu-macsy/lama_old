@@ -41,8 +41,6 @@
 #include <lama/tracing/TraceConfig.hpp>
 #include <lama/tracing/VTInterface.hpp>
 
-#include <omp.h>
-
 #include <cstdio>
 
 namespace tracing

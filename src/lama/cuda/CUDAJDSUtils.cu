@@ -37,10 +37,12 @@
 // others
 #include <lama/cuda/CUDAStreamSyncToken.hpp>
 #include <lama/cuda/CUDAError.hpp>
+#include <lama/cuda/CUDATexture.hpp>
 #include <lama/cuda/CUDAJDSUtils.hpp>
 #include <lama/cuda/CUDAUtils.hpp>
 
 #include <lama/exception/LAMAAssert.hpp>
+#include <lama/tracing.hpp>
 
 #include <lama/LAMAInterface.hpp>
 #include <lama/LAMAInterfaceRegistry.hpp>
@@ -165,7 +167,7 @@ void CUDAJDSUtils::getRow(
     thrust::device_ptr<OtherValueType> rowPtr( const_cast<OtherValueType*>( row ) );
     thrust::device_ptr<IndexType> permPtr( const_cast<IndexType*>( perm ) );
 
-    thrust::fill( rowPtr, rowPtr + numColumns, 0 );
+    thrust::fill( rowPtr, rowPtr + numColumns, static_cast<OtherValueType>( 0 ) );
 
     thrust::counting_iterator<IndexType> sequence( 0 );
 
@@ -596,6 +598,10 @@ void CUDAJDSUtils::setCSRValues(
     const IndexType csrJA[],
     const CSRValueType csrValues[] )
 {
+    // convert CSR data to JDS, ja and values
+
+    LAMA_REGION( "CUDA.JDS<-CSR_values" )
+
     LAMA_LOG_INFO( logger, "convert CSR to JDS, #rows = " << numRows )
 
     LAMA_CHECK_CUDA_ACCESS
@@ -684,6 +690,8 @@ void CUDAJDSUtils::getCSRValues(
     const IndexType jdsJA[],
     const JDSValueType jdsValues[] )
 {
+    LAMA_REGION( "CUDA.JDS->CSR_values" )
+
     LAMA_LOG_INFO( logger,
                    "get CSRValues<" << typeid( JDSValueType ).name() << ", " << typeid( CSRValueType ).name() << ">" << ", #rows = " << numRows )
 
@@ -843,6 +851,8 @@ void CUDAJDSUtils::jacobi(
     const ValueType omega,
     SyncToken* syncToken )
 {
+    LAMA_REGION( "CUDA.JDS.jacobi" )
+
     cudaStream_t stream = 0;
 
     LAMA_LOG_INFO( logger,
@@ -861,7 +871,16 @@ void CUDAJDSUtils::jacobi(
     dim3 dimBlock( block_size, 1, 1 );
     dim3 dimGrid = makeGrid( numRows, dimBlock.x );
 
-    const bool useTexture = false; // lama_getUseTex_cuda();
+    bool useTexture = CUDATexture::useTexture();
+    useTexture = false; // not yet tested
+
+    if ( syncToken )
+    {
+        // asycnronous operation not supported with textures ( free must be done dynamically )
+
+        useTexture = false;
+    }
+
     const bool useSharedMem = false; // maybe optimize later
 
     LAMA_LOG_DEBUG( logger, "useTexture = " << useTexture << ", useSharedMem = " << useSharedMem )
@@ -939,7 +958,6 @@ void CUDAJDSUtils::jacobi(
 
     if ( useTexture )
     {
-
         if ( sizeof(ValueType) == sizeof(double) )
         {
             LAMA_CUDA_RT_CALL( cudaUnbindTexture( texJDSDXref ), "LAMA_STATUS_CUDA_UNBINDTEX_FAILED" );
@@ -1026,6 +1044,7 @@ void CUDAJDSUtils::jacobiHalo(
     const ValueType omega,
     SyncToken* UNUSED(syncToken) )
 {
+    LAMA_REGION( "CUDA.JDS.jacobiHalo" )
 
     LAMA_LOG_INFO( logger,
                    "jacobiHalo<" << typeid(ValueType).name() << ">" << ", #rows = " << numRows << ", omega = " << omega )
@@ -1036,7 +1055,10 @@ void CUDAJDSUtils::jacobiHalo(
     dim3 dimBlock( block_size, 1, 1 );
     dim3 dimGrid = makeGrid( numRows, dimBlock.x ); // TODO:numRows is too much...
 
-    const bool useTexture = false; // lama_getUseTex_cuda();
+    bool useTexture   = CUDATexture::useTexture();
+
+    useTexture = false; // not yet tested
+
     const bool useSharedMem = false; // maybe optimize later
 
     LAMA_LOG_DEBUG( logger, "useTexture = " << useTexture << ", useSharedMem = " << useSharedMem )
@@ -1221,15 +1243,16 @@ void CUDAJDSUtils::normalGEMV(
     const IndexType jdsDLG[],
     const IndexType jdsJA[],
     const ValueType jdsValues[],
-    class SyncToken* /* syncToken */)
+    SyncToken* /* syncToken */)
 {
+    LAMA_REGION( "CUDA.JDS.normalGEMV" )
 
     LAMA_LOG_INFO( logger, "normalGEMV<" << typeid(ValueType).name() << ">" << ", #rows = " << numRows )
 
     LAMA_LOG_INFO(
         logger, "alpha = " << alpha << ", x = " << x << ", beta = " << beta << ", y = " << y << ", result = " << result )
 
-    const bool useTexture = false; //lama_getUseTex_cuda();
+    const bool useTexture   = false; // still problems: CUDATexture::useTexture();
     const bool useSharedMem = false; // maybe optimize later
 
     LAMA_LOG_DEBUG( logger, "useTexture = " << useTexture << ", useSharedMem = " << useSharedMem )
@@ -1264,8 +1287,17 @@ void CUDAJDSUtils::normalGEMV(
             cudaFuncSetCacheConfig( jdsgemvKernel<ValueType,true,false>, cudaFuncCachePreferL1 );
             jdsgemvKernel<ValueType, true, false><<<dimGrid,dimBlock>>>
             ( numRows, alpha, jdsValues, jdsDLG, ndlg, jdsILG, jdsJA, jdsPerm, x, beta, y, result);
+        }
+
+        // skip the following in case of asynchronous execution 
+
+        LAMA_CUDA_RT_CALL( cudaStreamSynchronize(0), "JDS: gemvKernel FAILED" )
+
+        if ( useSharedMem )
+        {
             LAMA_CUDA_RT_CALL( cudaUnbindTexture( texJDSdlgRef ), "LAMA_STATUS_CUDA_UNBINDTEX_FAILED" );
         }
+
         if ( sizeof(ValueType) == sizeof(double) )
         {
             LAMA_CUDA_RT_CALL( cudaUnbindTexture( texJDSDXref ), "LAMA_STATUS_CUDA_UNBINDTEX_FAILED" );

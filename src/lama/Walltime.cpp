@@ -40,7 +40,9 @@
 
 #include <omp.h>
 
-#elif defined( WIN32 )
+#elif defined( _WIN32 )
+
+#include <windows.h>
 
 #else
 

@@ -45,6 +45,8 @@
 namespace lama
 {
 
+class SyncToken;  // forward declaration 
+
 /** This class provides routines to converse ELL storage data to CSR storage data and vice versa.
  *
  *  All routines work on already allocated data and utilize OpenMP for their parallelization.
@@ -250,7 +252,7 @@ private:
         const ValueType oldSolution[],
         const ValueType rhs[],
         const ValueType omega,
-        class SyncToken* syncToken );
+        SyncToken* syncToken );
 
     /** Implementation for ELLUtilsInterface::Solver::jacobiHalo */
 
@@ -267,7 +269,7 @@ private:
         const IndexType numNonEmptyRows,
         const ValueType oldSolution[],
         const ValueType omega,
-        class SyncToken* syncToken );
+        SyncToken* syncToken );
 
     /** Implementation for ELLUtilsInterface::Mult::normalGEMV  */
 
@@ -283,7 +285,7 @@ private:
         const IndexType csrIA[],
         const IndexType csrJA[],
         const ValueType csrValues[],
-        class SyncToken* syncToken );
+        SyncToken* syncToken );
 
     /** Implementation for ELLUtilsInterface::Mult::sparseGEMV  */
 
@@ -299,7 +301,7 @@ private:
         const IndexType csrIA[],
         const IndexType csrJA[],
         const ValueType csrValues[],
-        class SyncToken* syncToken );
+        SyncToken* syncToken );
 
     template<typename ValueType>
     static void normalGEMV(

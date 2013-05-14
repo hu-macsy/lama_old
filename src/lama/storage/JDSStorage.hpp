@@ -104,10 +104,6 @@ public:
 
     explicit JDSStorage( const _MatrixStorage& other );
 
-    /** Copy constructor can take any matrix storage or context. */
-
-    JDSStorage( const _MatrixStorage& other, const ContextPtr context );
-
     /** Default assignment operator is overridden */
 
     JDSStorage<ValueType>& operator=( const JDSStorage<ValueType>& other );
@@ -277,7 +273,7 @@ public:
      * Out-of-range check is enabled for DEBUG version.
      */
 
-    ValueType getValue( IndexType i, IndexType j ) const;
+    ValueType getValue( const IndexType i, const IndexType j ) const;
 
     /** Initiate an asynchronous data transfer to a specified location. */
 

@@ -200,7 +200,9 @@ BOOST_AUTO_TEST_CASE( prefetchTest )
 
         ReadAccess<ValueType> v1( vector1, cudaContext );
         cudaContext->enable( __FILE__, __LINE__ );
-        double norm = nrm2( n, v1.get(), 1, cudaContext->getSyncToken().get() );
+        SyncToken* token = cudaContext->getSyncToken();
+        double norm = nrm2( n, v1.get(), 1, token );
+        delete token;
         double expNormSqr = n * ( value1 * value1 );
         cudaContext->disable( __FILE__, __LINE__ );
         BOOST_CHECK_CLOSE( expNormSqr, norm * norm, 1 );
@@ -208,7 +210,9 @@ BOOST_AUTO_TEST_CASE( prefetchTest )
         // vector2 = vector1   via copy
         WriteAccess<ValueType> v2( vector2, cudaContext );
         cudaContext->enable( __FILE__, __LINE__ );
-        copy( n, v1.get(), 1, v2.get(), 1, cudaContext->getSyncToken().get() );
+        token = cudaContext->getSyncToken();
+        copy( n, v1.get(), 1, v2.get(), 1, token );
+        delete token;
         cudaContext->disable( __FILE__, __LINE__ );
     }
 
@@ -239,16 +243,14 @@ BOOST_AUTO_TEST_CASE( asyncTest )
 
     LAMAArray<float> vector( n, value );
 
-    CUDAStreamSyncTokenPtr token;
-
-    std::auto_ptr<WriteAccess<float> > cudaV( new WriteAccess<float>( vector, cudaContext ) );
+    boost::shared_ptr<WriteAccess<float> > cudaV( new WriteAccess<float>( vector, cudaContext ) );
 
     //CUDAContext* cuda = dynamic_cast<const CUDAContext*>( cudaContext.get() );
     const CUDAContext* cuda = (CUDAContext*) cudaContext.get();
 
     LAMA_ASSERT_ERROR( cuda, "dynamic cast for CUDAContext failed" );
 
-    token = cuda->getComputeSyncToken();
+    boost::shared_ptr<CUDAStreamSyncToken> token( cuda->getComputeSyncToken() );
 
     {
         LAMA_INTERFACE_FN_t( scal, cudaContext, BLAS, BLAS1, float )
@@ -256,15 +258,19 @@ BOOST_AUTO_TEST_CASE( asyncTest )
         LAMA_CONTEXT_ACCESS( cudaContext )
 
         // test: should be async!!!
-        scal( n, alpha, cudaV->get(), 1, cudaContext->getSyncToken().get() );
 
-        LAMA_CHECK_CUDA_ERROR
-        ;
+        std::auto_ptr<SyncToken> token( cudaContext->getSyncToken() );
+
+        scal( n, alpha, cudaV->get(), 1, token.get() );
+
+        token->pushAccess( cudaV );
+
+        token->wait();
+
+        LAMA_CHECK_CUDA_ERROR;
     }
 
-    token->pushAccess( std::auto_ptr<BaseAccess>( cudaV ) );
-
-    token->wait(); // frees/releases the pushed write access
+    cudaV.reset();  // give free the write access
 
     HostReadAccess<float> hostV( vector );
 
@@ -274,86 +280,6 @@ BOOST_AUTO_TEST_CASE( asyncTest )
     }
 }
 
-//TODO: To benchmarks?
-//BOOST_AUTO_TEST_CASE( benchTest )
-//{
-//    ContextPtr cudaContext = ContextFactory::getContext( Context::CUDA );
-//    ContextPtr hostContext = ContextFactory::getContext( Context::Host );
-//
-//    const int n = 8 * 1024;
-//
-//    const float value = 1.4;
-//    const float alpha = 1.0;
-//
-//    LAMAArray<float> vector( n, value );
-//
-//    const int ITER = 10000;
-//
-//    // Avoid measuring overhead of first call
-//
-//    {
-//        WriteAccess<float> cudaV( vector, cudaContext ) ;
-//        LAMA_CONTEXT_ACCESS( cudaContext );
-//        lama_SSCAL_cuda(n, alpha, cudaV.get(), 1 );
-//        LAMA_CHECK_ERROR( "lama_SSCAL_cuda" );
-//    }
-//
-//    double time_pure = 0.0;
-//    double time_access = 0.0;
-//    double time_full = 0.0;
-//
-//    {
-//        double start = timestamp();
-//        WriteAccess<float> cudaV( vector, cudaContext ) ;
-//        LAMA_CONTEXT_ACCESS( cudaContext );
-//        for ( int i = 0; i < ITER; i++)
-//        {
-//            lama_SSCAL_cuda(n, alpha, cudaV.get(), 1 );
-//            LAMA_CHECK_ERROR( "lama_SSCAL_cuda" );
-//        }
-//        double stop = timestamp();
-//        time_pure = (stop - start) / double(ITER);
-//    }
-//
-//    {
-//        double start = timestamp();
-//        LAMA_CONTEXT_ACCESS( cudaContext );
-//        for ( int i = 0; i < ITER; i++)
-//        {
-//            WriteAccess<float> cudaV( vector, cudaContext ) ;
-//            lama_SSCAL_cuda(n, alpha, cudaV.get(), 1 );
-//            LAMA_CHECK_ERROR( "lama_SSCAL_cuda" );
-//        }
-//        double stop = timestamp();
-//        time_access = (stop - start) / double(ITER);
-//    }
-//
-//    {
-//        double start = timestamp();
-//        for ( int i = 0; i < ITER; i++)
-//        {
-//            WriteAccess<float> cudaV( vector, cudaContext ) ;
-//            LAMA_CONTEXT_ACCESS( cudaContext );
-//            lama_SSCAL_cuda(n, alpha, cudaV.get(), 1 );
-//            LAMA_CHECK_ERROR( "lama_SSCAL_cuda" );
-//        }
-//        double stop = timestamp();
-//        time_full = (stop - start) / double(ITER);
-//    }
-//
-//    cout << "Execution times in milliseconds for 1 call (average over "
-//              << ITER << " iterations)" << endl;
-//
-//    cout << "   pure    = " << ( time_pure * 1000.0 ) << " ms" << endl;
-//    cout << "   access  = " << ( time_access * 1000.0 ) << " ms" << endl;
-//    cout << "   full    = " << ( time_full * 1000.0 ) << " ms" << endl;
-//
-//    double overhead1 = ( time_access - time_pure ) / time_pure * 100;
-//    double overhead2 = ( time_full - time_pure ) / time_pure * 100;
-//
-//    cout << "Overhead access = " << overhead1 << " %" << endl;
-//    cout << "Overhead full   = " << overhead2 << " %" << endl;
-//}
 /* --------------------------------------------------------------------- */
 
 BOOST_AUTO_TEST_CASE( syncTest )
@@ -372,9 +298,14 @@ BOOST_AUTO_TEST_CASE( syncTest )
         LAMA_INTERFACE_FN_t( scal, cudaContext, BLAS, BLAS1, float );
 
         WriteAccess<float> cudaV( vector, cudaContext );
+
         LAMA_CONTEXT_ACCESS( cudaContext );
 
-        scal( n, alpha, cudaV.get(), 1, cudaContext->getSyncToken().get() );
+        std::auto_ptr<SyncToken> token( cudaContext->getSyncToken() );
+
+        scal( n, alpha, cudaV.get(), 1, token.get() );
+
+        // synchronize on token at end of this scope
     }
 
     HostReadAccess<float> hostV( vector );
@@ -400,7 +331,11 @@ static void callSSCAL( LAMAArray<float>& vector, const float alpha, ContextPtr c
 
     LAMA_CONTEXT_ACCESS( context );
 
-    scal( vector.size(), alpha, vectorAccess.get(), 1, context->getSyncToken().get() );
+    std::auto_ptr<SyncToken> token( context->getSyncToken() );
+
+    scal( vector.size(), alpha, vectorAccess.get(), 1, token.get() );
+
+    // syncronize on token is done here at end of scope where token will be destroyed
 }
 
 }
@@ -521,5 +456,8 @@ BOOST_AUTO_TEST_CASE( threadTest )
         }
     }
 }
-/* ------------------------------------------------------------------------- */BOOST_AUTO_TEST_SUITE_END();
+
+/* ------------------------------------------------------------------------- */
+
+BOOST_AUTO_TEST_SUITE_END();
 

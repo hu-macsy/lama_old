@@ -39,6 +39,7 @@
 
 #include <lama/LAMAInterfaceRegistry.hpp>
 #include <lama/BLASInterface.hpp>
+#include <lama/tracing.hpp>
 #include <boost/scoped_array.hpp>
 
 // macros
@@ -129,6 +130,8 @@ IndexType OpenMPLAPACK::getrf(
     const int lda,
     int* const ipiv )
 {
+    LAMA_REGION( "OpenMP.LAPACK.getrf<float>" )
+
     LAMA_LOG_INFO( logger, "getrf<float> for A of size " << m << " x " << n )
 
     int info = 0;
@@ -201,6 +204,8 @@ IndexType OpenMPLAPACK::getrf(
     const int lda,
     int* const ipiv )
 {
+    LAMA_REGION( "OpenMP.LAPACK.getrf<double>" )
+
     LAMA_LOG_INFO( logger, "getrf<double> for A of size " << m << " x " << n )
 
     int info = 0;
@@ -267,6 +272,8 @@ IndexType OpenMPLAPACK::getrf(
 template<>
 void OpenMPLAPACK::getinv( const IndexType n, float* a, const IndexType lda )
 {
+    LAMA_REGION( "OpenMP.LAPACK.getinv<float>" )
+
     int info = 0;
 
     // scoped array, will also be freed in case of exception
@@ -307,6 +314,8 @@ void OpenMPLAPACK::getinv( const IndexType n, float* a, const IndexType lda )
 template<>
 void OpenMPLAPACK::getinv( const IndexType n, double* a, const IndexType lda )
 {
+    LAMA_REGION( "OpenMP.LAPACK.getinv<double>" )
+
     int info = 0;
 
     boost::scoped_array<IndexType> ipiv( new IndexType[n] );
@@ -350,6 +359,8 @@ int OpenMPLAPACK::getri(
     const int lda,
     int* const ipiv )
 {
+    LAMA_REGION( "OpenMP.LAPACK.getri<float>" )
+
     LAMA_LOG_INFO( logger, "getri<float> for A of size " << n << " x " << n )
 
     int info = 0;
@@ -428,6 +439,8 @@ int OpenMPLAPACK::getri(
     const int lda,
     int* const ipiv )
 {
+    LAMA_REGION( "OpenMP.LAPACK.getri<double>" )
+
     LAMA_LOG_INFO( logger, "getri<double> for A of size " << n << " x " << n )
 
     int info = 0;
@@ -508,6 +521,8 @@ int OpenMPLAPACK::tptrs(
     float* B,
     const int ldb )
 {
+    LAMA_REGION( "OpenMP.LAPACK.tptrs<float>" )
+
     int info = 0;
 
     char UL = BLASHelper::lapack_uplo( uplo );
@@ -566,6 +581,8 @@ int OpenMPLAPACK::tptrs(
     double* B,
     const int ldb )
 {
+    LAMA_REGION( "OpenMP.LAPACK.tptrs<double>" )
+
     int info = 0;
 
     char UL = BLASHelper::lapack_uplo( uplo );
@@ -624,6 +641,8 @@ void OpenMPLAPACK::laswp(
     const int INCX,
     SyncToken* syncToken )
 {
+    LAMA_REGION( "OpenMP.LAPACK.laswp<float>" )
+
     int i = K1;
 
     if ( order == CblasRowMajor )
@@ -676,6 +695,8 @@ void OpenMPLAPACK::laswp(
     const int INCX,
     SyncToken* syncToken )
 {
+    LAMA_REGION( "OpenMP.LAPACK.laswp<double>" )
+
     int i = K1;
 
     if ( order == CblasRowMajor )

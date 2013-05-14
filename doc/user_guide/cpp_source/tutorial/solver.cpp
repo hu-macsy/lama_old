@@ -1,5 +1,5 @@
 /**
- * @file solver_example.cpp
+ * @file solver.cpp
  *
  * @license
  * Copyright (c) 2012
@@ -25,7 +25,7 @@
  * SOFTWARE.
  * @endlicense
  *
- * @brief solver_example.cpp
+ * @brief solver.cpp
  * @author kbuschulte
  * @date 12.09.2012
  * $Id$
@@ -33,14 +33,14 @@
 
 #include <lama.hpp>
 
-// Matrix & vector related inlcudes
+// Matrix & vector related includes
 #include <lama/DenseVector.hpp>
 #include <lama/matrix/CSRSparseMatrix.hpp>
 #include <lama/matutils/MatrixCreator.hpp>
 
-// Solver related inlcudes
+// Solver related includes
 #include <lama/solver/logger/CommonLogger.hpp>
-#include <lama/solver/logger/OpenMPTimer.hpp>
+#include <lama/solver/logger/Timer.hpp>
 #include <lama/solver/criteria/IterationCount.hpp>
 #include <lama/solver/CG.hpp>
 
@@ -50,7 +50,7 @@ int main()
 {
    typedef double ValueType;
 
-   DenseVector<ValueType> solution( 8, 2.0 );
+   DenseVector<ValueType> solution( 10000, 2.0 );
    const DenseVector<ValueType> rhs( solution.getDistributionPtr(), 1.0 );
 
    CSRSparseMatrix<ValueType> matrix;
@@ -61,7 +61,7 @@ int main()
          "<CG>: ",
          LogLevel::solverInformation,
          LoggerWriteBehaviour::toConsoleOnly,
-         std::auto_ptr<Timer>( new OpenMPTimer() ) ) );
+         std::auto_ptr<Timer>( new Timer() ) ) );
 
    CriterionPtr criterion( new IterationCount( 10 ) );
 

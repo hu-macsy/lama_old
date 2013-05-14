@@ -48,6 +48,7 @@
 #include <lama/tracing.hpp>
 
 using std::auto_ptr;
+using boost::shared_ptr;
 
 namespace lama
 {
@@ -90,7 +91,7 @@ COOStorage<ValueType>::COOStorage(
     mJa = ja;
     mValues = values;
 
-    this->resetDiagonalProperty(); // sets mDiagonalProperty correctly
+    mDiagonalProperty = checkDiagonalProperty();
 }
 
 /* --------------------------------------------------------------------------- */
@@ -127,33 +128,49 @@ MatrixStorageFormat COOStorage<ValueType>::getFormat() const
 template<typename ValueType>
 bool COOStorage<ValueType>::checkDiagonalProperty() const
 {
-    if ( mNumRows != mNumColumns )
-    {
-        return false;
-    }
-
     bool diagonalProperty = true;
 
-    HostReadAccess<IndexType> ia( mIa );
-    HostReadAccess<IndexType> ja( mJa );
-
-    // The diagonal property is given if the first numDiags entries
-    // are the diagonal elements
-
-    #pragma omp parallel for schedule(LAMA_OMP_SCHEDULE)
-    for ( IndexType i = 0; i < mNumRows; ++i )
+    if ( mNumRows != mNumColumns )
     {
-        if ( !diagonalProperty )
-        {
-            continue;
-        }
+        diagonalProperty = false;
+    }
+    else if ( mNumRows == 0 )
+    {
+        // zero sized matrix
 
-        if ( ia[i] != i || ja[i] != i )
+        diagonalProperty = true;
+    }
+    else if ( mIa.size() == 0 )
+    {
+        diagonalProperty = false;
+    }
+    else
+    {
+        diagonalProperty = true; // intialization for reduction
+
+        HostReadAccess<IndexType> ia( mIa );
+        HostReadAccess<IndexType> ja( mJa );
+
+        // The diagonal property is given if the first numDiags entries
+        // are the diagonal elements
+
+        #pragma omp parallel for schedule(LAMA_OMP_SCHEDULE)
+        for ( IndexType i = 0; i < mNumRows; ++i )
         {
-            diagonalProperty = false;
+            if ( !diagonalProperty )
+            {
+                continue;
+            }
+    
+            if ( ia[i] != i || ja[i] != i )
+            {
+                diagonalProperty = false;
+            }
         }
     }
 
+    LAMA_LOG_INFO( logger, *this << ": checkDiagonalProperty -> " << diagonalProperty )
+   
     return diagonalProperty;
 }
 
@@ -169,6 +186,8 @@ void COOStorage<ValueType>::clear()
     mIa.clear();
     mJa.clear();
     mValues.clear();
+
+    mDiagonalProperty = checkDiagonalProperty();
 }
 
 /* --------------------------------------------------------------------------- */
@@ -192,16 +211,23 @@ void COOStorage<ValueType>::setIdentity( const IndexType size )
     mNumColumns = size;
     mNumValues = mNumRows;
 
-    HostWriteOnlyAccess<IndexType> ia( mIa, mNumValues );
-    HostWriteOnlyAccess<IndexType> ja( mJa, mNumValues );
-    HostWriteOnlyAccess<ValueType> values( mValues, mNumValues );
+    ContextPtr loc = getContextPtr();
+
+    LAMA_INTERFACE_FN_T( setOrder, loc, Utils, Setter, IndexType )
+    LAMA_INTERFACE_FN_T( setVal, loc, Utils, Setter, ValueType )
+
+    WriteOnlyAccess<IndexType> ia( mIa, loc, mNumValues );
+    WriteOnlyAccess<IndexType> ja( mJa, loc, mNumValues );
+    WriteOnlyAccess<ValueType> values( mValues, loc, mNumValues );
 
     ValueType one = static_cast<ValueType>( 1.0 );
 
-    OpenMPUtils::setOrder( ia.get(), mNumValues );
-    OpenMPUtils::setOrder( ja.get(), mNumValues );
+    LAMA_CONTEXT_ACCESS( loc )
 
-    OpenMPUtils::setVal( values.get(), mNumValues, one );
+    setOrder( ia.get(), mNumValues );
+    setOrder( ja.get(), mNumValues );
+
+    setVal( values.get(), mNumValues, one );
 
     mDiagonalProperty = true;
 }
@@ -216,10 +242,18 @@ void COOStorage<ValueType>::buildCSR(
     LAMAArray<OtherValueType>* values,
     const ContextPtr /* loc */) const
 {
-    HostWriteOnlyAccess<IndexType> csrIA( ia, mNumRows + 1 );
-    HostReadAccess<IndexType> cooIA( mIa );
+    // multiple routines from interface needed, so do it on Host to be safe
 
-    OpenMPCOOUtils::getCSRSizes( csrIA.get(), mNumRows, mNumValues, cooIA.get() );
+    ContextPtr loc = ContextFactory::getContext( Context::Host );
+
+    LAMA_INTERFACE_FN( getCSRSizes, loc, COOUtils, Counting )
+    LAMA_INTERFACE_FN( sizes2offsets, loc, CSRUtils, Offsets )
+    LAMA_INTERFACE_FN_TT( getCSRValues, loc, COOUtils, Conversions, ValueType, OtherValueType )
+
+    WriteOnlyAccess<IndexType> csrIA( ia, loc, mNumRows + 1 );
+    ReadAccess<IndexType> cooIA( mIa, loc );
+
+    getCSRSizes( csrIA.get(), mNumRows, mNumValues, cooIA.get() );
 
     if ( ja == NULL || values == NULL )
     {
@@ -227,18 +261,18 @@ void COOStorage<ValueType>::buildCSR(
         return;
     }
 
-    IndexType numValues = OpenMPCSRUtils::sizes2offsets( csrIA.get(), mNumRows );
+    IndexType numValues = sizes2offsets( csrIA.get(), mNumRows );
 
     LAMA_ASSERT_EQUAL_DEBUG( mNumValues, numValues )
 
-    HostReadAccess<IndexType> cooJA( mJa );
-    HostReadAccess<ValueType> cooValues( mValues );
+    ReadAccess<IndexType> cooJA( mJa, loc );
+    ReadAccess<ValueType> cooValues( mValues, loc );
 
-    HostWriteOnlyAccess<IndexType> csrJA( *ja, numValues );
-    HostWriteOnlyAccess<OtherValueType> csrValues( *values, numValues );
+    WriteOnlyAccess<IndexType> csrJA( *ja, loc, numValues );
+    WriteOnlyAccess<OtherValueType> csrValues( *values, loc, numValues );
 
-    OpenMPCOOUtils::getCSRValues( csrJA.get(), csrValues.get(), csrIA.get(), mNumRows, mNumValues, cooIA.get(),
-                                  cooJA.get(), cooValues.get() );
+    getCSRValues( csrJA.get(), csrValues.get(), csrIA.get(), mNumRows, mNumValues, cooIA.get(),
+                  cooJA.get(), cooValues.get() );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -307,6 +341,8 @@ void COOStorage<ValueType>::purge()
     mIa.purge();
     mJa.purge();
     mValues.purge();
+
+    mDiagonalProperty = checkDiagonalProperty();
 }
 
 /* --------------------------------------------------------------------------- */
@@ -316,13 +352,12 @@ void COOStorage<ValueType>::allocate( IndexType numRows, IndexType numColumns )
 {
     LAMA_LOG_INFO( logger, "allocate COO sparse matrix of size " << numRows << " x " << numColumns )
 
-    purge(); // completely destroy old data of the matrix if available
+    clear();   // all variables are set for a zero-sized matrix
 
     mNumRows = numRows;
     mNumColumns = numColumns;
-    mNumValues = 0;
 
-    // all other variables reset by purge, no allocation now needed
+    mDiagonalProperty = checkDiagonalProperty();
 }
 
 /* --------------------------------------------------------------------------- */
@@ -336,8 +371,10 @@ void COOStorage<ValueType>::writeAt( std::ostream& stream ) const
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-ValueType COOStorage<ValueType>::getValue( IndexType i, IndexType j ) const
+ValueType COOStorage<ValueType>::getValue( const IndexType i, const IndexType j ) const
 {
+    // only supported on Host at this time
+
     const HostReadAccess<IndexType> ia( mIa );
     const HostReadAccess<IndexType> ja( mJa );
     const HostReadAccess<ValueType> values( mValues );
@@ -500,35 +537,52 @@ void COOStorage<ValueType>::getRowImpl( LAMAArray<OtherType>& row, const IndexTy
 
 /* --------------------------------------------------------------------------- */
 
+// Note: template instantation of this method for OtherType=[double,float] is
+//       done implicitly by getDiagonal method of CRTPMatrixStorage
+
 template<typename ValueType>
 template<typename OtherType>
 void COOStorage<ValueType>::getDiagonalImpl( LAMAArray<OtherType>& diagonal ) const
 {
-    IndexType numDiagonalElements = std::min( mNumColumns, mNumRows );
+    const IndexType numDiagonalElements = std::min( mNumColumns, mNumRows );
 
-    HostWriteOnlyAccess<OtherType> wDiagonal( diagonal, numDiagonalElements );
+    ContextPtr loc = getContextPtr();
 
-    HostReadAccess<ValueType> rValues( mValues );
+    LAMA_INTERFACE_FN_TT( set, loc, Utils, Copy, OtherType, ValueType )
+
+    WriteOnlyAccess<OtherType> wDiagonal( diagonal, loc, numDiagonalElements );
+    ReadAccess<ValueType> rValues( mValues, loc );
+
+    LAMA_CONTEXT_ACCESS( loc )
 
     // diagonal elements are the first entries of mValues
 
-    OpenMPUtils::set( wDiagonal.get(), rValues.get(), numDiagonalElements );
+    set( wDiagonal.get(), rValues.get(), numDiagonalElements );
 }
 
 /* --------------------------------------------------------------------------- */
+
+// Note: template instantation of this method for OtherType=[double,float] is
+//       done implicitly by setDiagonal method of CRTPMatrixStorage
 
 template<typename ValueType>
 template<typename OtherType>
 void COOStorage<ValueType>::setDiagonalImpl( const LAMAArray<OtherType>& diagonal )
 {
-    IndexType numDiagonalElements = std::min( mNumColumns, mNumRows );
+    const IndexType numDiagonalElements = std::min( mNumColumns, mNumRows );
 
-    HostReadAccess<OtherType> rDiagonal( diagonal );
-    HostWriteAccess<ValueType> wValues( mValues );
+    ContextPtr loc = getContextPtr();
+
+    LAMA_INTERFACE_FN_TT( set, loc, Utils, Copy, ValueType, OtherType )
+
+    ReadAccess<OtherType> rDiagonal( diagonal, loc );
+    WriteAccess<ValueType> wValues( mValues, loc );
+
+    LAMA_CONTEXT_ACCESS( loc )
 
     // diagonal elements are the first entries of mValues
 
-    OpenMPUtils::set( wValues.get(), rDiagonal.get(), numDiagonalElements );
+    set( wValues.get(), rDiagonal.get(), numDiagonalElements );
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */
@@ -656,15 +710,15 @@ auto_ptr<SyncToken> COOStorage<ValueType>::matrixTimesVectorAsyncToDo(
 
     LAMA_INTERFACE_FN_T( normalGEMV, loc, COOUtils, Mult, ValueType )
 
-    auto_ptr<SyncToken> syncToken = loc->getSyncToken();
+    auto_ptr<SyncToken> syncToken( loc->getSyncToken() );
 
     // all accesses will be pushed to the sync token as LAMA arrays have to be protected up
     // to the end of the computations.
 
-    auto_ptr<ReadAccess<IndexType> > cooIA( new ReadAccess<IndexType>( mIa, loc ) );
-    auto_ptr<ReadAccess<IndexType> > cooJA( new ReadAccess<IndexType>( mJa, loc ) );
-    auto_ptr<ReadAccess<ValueType> > cooValues( new ReadAccess<ValueType>( mValues, loc ) );
-    auto_ptr<ReadAccess<ValueType> > rX( new ReadAccess<ValueType>( x, loc ) );
+    shared_ptr<ReadAccess<IndexType> > cooIA( new ReadAccess<IndexType>( mIa, loc ) );
+    shared_ptr<ReadAccess<IndexType> > cooJA( new ReadAccess<IndexType>( mJa, loc ) );
+    shared_ptr<ReadAccess<ValueType> > cooValues( new ReadAccess<ValueType>( mValues, loc ) );
+    shared_ptr<ReadAccess<ValueType> > rX( new ReadAccess<ValueType>( x, loc ) );
 
     // Possible alias of result and y must be handled by coressponding accesses
 
@@ -672,7 +726,7 @@ auto_ptr<SyncToken> COOStorage<ValueType>::matrixTimesVectorAsyncToDo(
     {
         // only write access for y, no read access for result
 
-        auto_ptr<WriteAccess<ValueType> > wResult( new WriteAccess<ValueType>( result, loc ) );
+        shared_ptr<WriteAccess<ValueType> > wResult( new WriteAccess<ValueType>( result, loc ) );
 
         // we assume that normalGEMV can deal with the alias of result, y
 
@@ -681,26 +735,26 @@ auto_ptr<SyncToken> COOStorage<ValueType>::matrixTimesVectorAsyncToDo(
         normalGEMV( wResult->get(), alpha, rX->get(), beta, wResult->get(), mNumRows, cooIA->get(), cooJA->get(),
                     cooValues->get(), mNumValues, syncToken.get() );
 
-        syncToken->pushAccess( auto_ptr<BaseAccess>( wResult ) );
+        syncToken->pushAccess( wResult );
     }
     else
     {
-        auto_ptr<WriteAccess<ValueType> > wResult( new WriteOnlyAccess<ValueType>( result, loc, mNumRows ) );
-        auto_ptr<ReadAccess<ValueType> > rY( new ReadAccess<ValueType>( y, loc ) );
+        shared_ptr<WriteAccess<ValueType> > wResult( new WriteOnlyAccess<ValueType>( result, loc, mNumRows ) );
+        shared_ptr<ReadAccess<ValueType> > rY( new ReadAccess<ValueType>( y, loc ) );
 
         LAMA_CONTEXT_ACCESS( loc )
 
         normalGEMV( wResult->get(), alpha, rX->get(), beta, rY->get(), mNumRows, cooIA->get(), cooJA->get(),
                     cooValues->get(), mNumValues, syncToken.get() );
 
-        syncToken->pushAccess( auto_ptr<BaseAccess>( wResult ) );
-        syncToken->pushAccess( auto_ptr<BaseAccess>( rY ) );
+        syncToken->pushAccess( shared_ptr<BaseAccess>( wResult ) );
+        syncToken->pushAccess( shared_ptr<BaseAccess>( rY ) );
     }
 
-    syncToken->pushAccess( auto_ptr<BaseAccess>( cooIA ) );
-    syncToken->pushAccess( auto_ptr<BaseAccess>( cooJA ) );
-    syncToken->pushAccess( auto_ptr<BaseAccess>( cooValues ) );
-    syncToken->pushAccess( auto_ptr<BaseAccess>( rX ) );
+    syncToken->pushAccess( cooIA );
+    syncToken->pushAccess( cooJA );
+    syncToken->pushAccess( cooValues );
+    syncToken->pushAccess( rX );
 
     return syncToken;
 }

@@ -60,9 +60,9 @@ static void setDenseData( MatrixStorage<ValueType>& storage )
     const IndexType numColumns = 7;
 
     static ValueType values[] =
-    {   6.0, 0.0, 0.0, 4.0, 0.0, 1.0, -2.11, 7.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 9.0, 4.0, 0.0, 1.0, 0.0, 0.0,
-        0.0, 0.0, 3.0, 1.0, -1.0, 0.0, 0.0, 1.1, 0.0, 0.0, 2.0, 0.0, 0.0, 0.0, 2.3, 0.0, 1.0, 0.0, 1.0, 0.0, 1.0, 0.0,
-        0.0, 1.0, 0.0, 1.0, -3.0
+    {   6.0f, 0.0f, 0.0f, 4.0f, 0.0f, 1.0f, -2.11f, 7.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 9.0f, 4.0f, 0.0f, 1.0f, 0.0f, 0.0f,
+        0.0f, 0.0f, 3.0f, 1.0f, -1.0f, 0.0f, 0.0f, 1.1f, 0.0f, 0.0f, 2.0f, 0.0f, 0.0f, 0.0f, 2.3f, 0.0f, 1.0f, 0.0f, 1.0f, 0.0f, 1.0f, 0.0f,
+        0.0f, 1.0f, 0.0f, 1.0f, -3.0f
     };
 
     // just make sure that number of entries in values matches the matrix size
@@ -100,7 +100,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( StorageIOFormatted, T, test_types ) {
         for ( IndexType j = 0; j < csrMatrix.getNumColumns(); ++j )
         {
             BOOST_CHECK_CLOSE( csrMatrix.getValue( i, j ),
-                               readMatrix.getValue( i, j ), 0.01 );
+                               readMatrix.getValue( i, j ), 0.01f );
         }
     }
 
@@ -132,7 +132,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( StorageIOmatrixMarket, T, test_types ) {
         for ( IndexType j = 0; j < csrMatrix.getNumColumns(); ++j )
         {
             BOOST_CHECK_CLOSE( csrMatrix.getValue( i, j ),
-                               readMatrix.getValue( i, j ), 0.01 );
+                               readMatrix.getValue( i, j ), 0.01f );
         }
     }
 

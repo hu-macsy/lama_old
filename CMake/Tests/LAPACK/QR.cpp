@@ -20,7 +20,8 @@
 #include <cstdlib>
 #include <cstdio>
 #include <cmath>
-#include <sys/time.h>
+
+#include "Walltime.hpp"
 
 using namespace std;
 
@@ -99,7 +100,7 @@ float* randomnumber( float* A, int seed, int m, int n )
     for ( int i = 0; i < m * n; ++i )
     {
         curr = ( a * curr + b ) % c;
-        A[i] = 10 * ( float( curr ) / c - 0.5 );
+        A[i] = 10.0f * ( float( curr ) / float( c ) - 0.5f );
     }
 
     return A;
@@ -107,10 +108,7 @@ float* randomnumber( float* A, int seed, int m, int n )
 
 double timestamp()
 {
-    struct timeval tp;
-    struct timezone tzp;
-    gettimeofday( &tp, &tzp );
-    return( double ) tp.tv_sec + tp.tv_usec * 0.000001;
+	return lama::Walltime::get();
 }
 
 void printMatrix( const char* name, float* mat, int m, int n )
@@ -145,7 +143,7 @@ int main( int argc, char** argv )
 
     randomnumber( A, seed, m, n );
 
-    if ( n < 10 and m < 10 )
+    if ( n < 10 && m < 10 )
     {
         printMatrix( "A", A, m, n );
     }
@@ -182,7 +180,7 @@ int main( int argc, char** argv )
     cout << "N " << n << endl;
     cout << "M " << m << endl;
 
-    if ( n < 10 and m < 10 )
+    if ( n < 10 && m < 10 )
     {
         printMatrix( "Q", Q, m, n );
         printMatrix( "R", R, n, n );

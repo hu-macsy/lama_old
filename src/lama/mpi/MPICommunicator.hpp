@@ -76,9 +76,21 @@ public:
 
     virtual ThreadSafetyLevel getThreadSafetyLevel() const;
 
+    /** @brief Provide implementation for Communicator::getSize */
+
     virtual PartitionId getSize() const;
 
+    /** @brief Provide implementation for Communicator::getRank */
+
     virtual PartitionId getRank() const;
+
+    /** @brief Provide implementation for Communicator::getNodeSize */
+
+    virtual PartitionId getNodeSize() const;
+
+    /** @brief Provide implementation for Communicator::getNodeRank */
+
+    virtual PartitionId getNodeRank() const;
 
     MPI_Comm getMPIComm() const;
 
@@ -118,19 +130,19 @@ public:
         const double* const sendData,
         const CommunicationPlan& sendPlan ) const;
 
-    virtual std::auto_ptr<SyncToken> exchangeByPlanAsync(
+    virtual SyncToken* exchangeByPlanAsync(
         int* const recvData,
         const CommunicationPlan& recvPlan,
         const int* const sendData,
         const CommunicationPlan& sendPlan ) const;
 
-    virtual std::auto_ptr<SyncToken> exchangeByPlanAsync(
+    virtual SyncToken* exchangeByPlanAsync(
         float* const recvData,
         const CommunicationPlan& recvPlan,
         const float* const sendData,
         const CommunicationPlan& sendPlan ) const;
 
-    virtual std::auto_ptr<SyncToken> exchangeByPlanAsync(
+    virtual SyncToken* exchangeByPlanAsync(
         double* const recvData,
         const CommunicationPlan& recvPlan,
         const double* const sendData,
@@ -187,19 +199,19 @@ public:
         const IndexType oldSize,
         const int direction ) const;
 
-    virtual std::auto_ptr<SyncToken> shiftAsyncImpl(
+    virtual SyncToken* shiftAsyncImpl(
         double newVals[],
         const double oldVals[],
         const IndexType size,
         const int direction ) const;
 
-    virtual std::auto_ptr<SyncToken> shiftAsyncImpl(
+    virtual SyncToken* shiftAsyncImpl(
         float newVals[],
         const float oldVals[],
         const IndexType size,
         const int direction ) const;
 
-    virtual std::auto_ptr<SyncToken> shiftAsyncImpl(
+    virtual SyncToken* shiftAsyncImpl(
         int newVals[],
         const int oldVals[],
         const IndexType size,
@@ -295,6 +307,8 @@ private:
 
     MPICommunicator( int& argc, char** & argv );
 
+    void setNodeData();
+
     template<typename T>
     inline static MPI_Datatype getMPIType();
 
@@ -348,7 +362,7 @@ private:
         const PartitionId dest ) const;
 
     template<typename T>
-    std::auto_ptr<SyncToken> shiftAsyncMPI(
+    SyncToken* shiftAsyncMPI(
         T newvals[],
         const PartitionId source,
         const T oldVals[],
@@ -369,7 +383,7 @@ private:
         const CommunicationPlan& sendPlan ) const;
 
     template<typename T>
-    std::auto_ptr<SyncToken> exchangeByPlanAsyncImpl(
+    SyncToken* exchangeByPlanAsyncImpl(
         T* const recvData,
         const CommunicationPlan& recvPlan,
         const T* const sendData,

@@ -13,7 +13,7 @@
 #include <lama/norm/L2Norm.hpp>
 
 #include <lama/solver/logger/CommonLogger.hpp>
-#include <lama/solver/logger/OpenMPTimer.hpp>
+#include <lama/solver/logger/Timer.hpp>
 
 #include <iostream>
 
@@ -46,7 +46,7 @@ int main( int argc, char* argv[] )
     //Reset soution to zero so that there is something to solve
     solution = 0.0;
 
-    std::auto_ptr<Timer> timer( new OpenMPTimer() );
+    std::auto_ptr<Timer> timer( new Timer() );
     LoggerPtr logger( new CommonLogger("CGLogger", LogLevel::convergenceHistory, LoggerWriteBehaviour::toConsoleOnly, timer) );
 
     //Create a CG solver using the Constructor with logger as an argument

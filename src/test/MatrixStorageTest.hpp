@@ -41,7 +41,7 @@ static std::string storagetestclasses[] =
 { "CSRStorageTest", "COOStorageTest", "DIAStorageTest", "ELLStorageTest", "JDSStorageTest", "DenseStorageTest" };
 
 static std::string storagetestmethods[] =
-{   "purgeTest", "setIdentityTest", "setCSRDataTest", "buildCSRDataTest", "diagonalTest", "scaleTest", "normTest",
+{   "purgeTest", "emptyTest", "setIdentityTest", "setCSRDataTest", "buildCSRDataTest", "diagonalTest", "scaleTest", "normTest",
     "vectorMultTest", "jacobiTest", "jacobiHaloTest", "matrixMultTest", "matrixMultTest1", "matrixAddTest"
     "writeAtTest",
     "inverseTest"
@@ -82,6 +82,10 @@ public:
 
     void purgeTest();
 
+    /** Test for MatrixStorage<T>::hasDiagonalProperty() on empty matrx. */
+
+    void emptyTest();
+
     /** Test for MatrixStorage<T>::setIdentity. */
 
     void setIdentityTest();
@@ -93,8 +97,6 @@ public:
     /** Test for virtual method MatrixStorage<T>::buildCSRData. */
 
     void buildCSRDataTest();
-
-    void setSparseRowsTest();
 
     /** Test for virtual methods MatrixStorage<T>::setDiagonal and
      *  MatrixStorage<T>::getDiagonal.

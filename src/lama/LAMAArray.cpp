@@ -55,17 +55,17 @@ typedef Context::ContextData::AccessKind AccessKind;
 
 /* -------------------------------------------------------------------------- */
 
-std::auto_ptr<_LAMAArray> _LAMAArray::create( const Scalar::ScalarType valueType )
+_LAMAArray* _LAMAArray::create( const Scalar::ScalarType valueType )
 {
     switch ( valueType )
     {
     case Scalar::FLOAT:
     {
-        return std::auto_ptr<_LAMAArray>( new LAMAArray<float>() );
+        return new LAMAArray<float>();
     }
     case Scalar::DOUBLE:
     {
-        return std::auto_ptr<_LAMAArray>( new LAMAArray<double>() );
+        return new LAMAArray<double>();
     }
     default:
     {
@@ -78,8 +78,7 @@ std::auto_ptr<_LAMAArray> _LAMAArray::create( const Scalar::ScalarType valueType
 
 LAMA_LOG_DEF_TEMPLATE_LOGGER( template<typename ValueType>, LAMAArray<ValueType>::logger, "LAMAArray" )
 
-template<typename ValueType>
-size_t LAMAArray<ValueType>::nContextIndex = std::numeric_limits<std::size_t>::max();
+size_t _LAMAArray::nContextIndex = std::numeric_limits<std::size_t>::max();
 
 /* ================================================================================= */
 
@@ -417,7 +416,8 @@ void LAMAArray<ValueType>::prefetch( ContextPtr context ) const
     LAMA_ASSERT_DEBUG( validIndex != nContextIndex, "no valid context for " << *this )
     const ContextData& validEntry = *mContextData[validIndex];
     reserve( contextIndex, mSize, false ); //  take care for sufficient memory
-    mSyncToken = fetchAsync( contextEntry, validEntry );
+    mSyncToken.reset( fetchAsync( contextEntry, validEntry ) );
+    mSyncToken->wait();  // To be deleted
     contextEntry.valid = true;
 }
 
@@ -535,7 +535,7 @@ void LAMAArray<ValueType>::fetch( ContextData& target, const ContextData& source
 /* ---------------------------------------------------------------------------------*/
 
 template<typename ValueType>
-std::auto_ptr<SyncToken> LAMAArray<ValueType>::fetchAsync( ContextData& target, const ContextData& source ) const
+SyncToken* LAMAArray<ValueType>::fetchAsync( ContextData& target, const ContextData& source ) const
 {
     LAMA_LOG_INFO( logger,
                    *this << ": async fetch (size = " << mSize << ") from " << *source.context << " to " << *target.context )
@@ -582,7 +582,8 @@ void LAMAArray<ValueType>::wait() const
     if ( 0 != mSyncToken.get() )
     {
         LAMA_LOG_DEBUG( logger, "Waiting for SyncToken: " << *mSyncToken )
-        mSyncToken.reset( 0 );
+
+        mSyncToken.reset();  // waits for transfer and frees resources
     }
 }
 

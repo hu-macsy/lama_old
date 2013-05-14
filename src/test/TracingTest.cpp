@@ -35,8 +35,8 @@
 
 #include <lama/tracing.hpp>
 
-#ifdef WIN32
-#include <Windows.h>
+#ifdef _WIN32
+    #include <Windows.h>
 #endif //WIN32
 /* --------------------------------------------------------------------- */
 
@@ -47,7 +47,7 @@ BOOST_AUTO_TEST_SUITE( TracingTest )
 
 void work( int n )
 {
-#ifdef WIN32
+#ifdef _WIN32
     Sleep( n );
 #else
     sleep( n );
@@ -57,15 +57,15 @@ void work( int n )
 
 void bar()
 {
-    LAMA_REGION_START( "bar" );
+    LAMA_REGION_START( "bar" )
     work( 1 );
-    LAMA_REGION_END( "bar" );
+    LAMA_REGION_END( "bar" )
 }
 ;
 
 void foo( bool call )
 {
-    LAMA_REGION( "foo" );
+    LAMA_REGION( "foo" )
     work( 1 );
     if ( call )
     {

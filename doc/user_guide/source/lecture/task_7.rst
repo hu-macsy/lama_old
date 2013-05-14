@@ -5,7 +5,7 @@ Task 7: Performance Visualization with Vampir (optional)
 
 Vampir is a tool to measure and visualize the performance of instrumented programs.
 During the build process of LAMA it is possible to switch on source
-code instrumentation that makes possible the generation of trace files at runtime
+code instrumentation which makes the generation of trace files at runtime possible 
 (see ":doc:`../installation/configuration/tracing`").
 This is supported by corresponding calls of the VampirTrace library.
 So by using LAMA you can also generate Vampir trace files of your
@@ -35,8 +35,8 @@ setting the following environment variable (of VampirTrace):
    export VT_GPUTRACE=yes
 
 By using VampirTrace you can take advantage of all the features offered
-by this trace library. Very convenient for performance analysis is the
-hardware counter support. 
+by this trace library. The hardware counter support is very convenient
+for performance analysis. 
 
 .. code-block:: bash
 

@@ -31,9 +31,7 @@
  * $
  **/
 
-#ifndef WIN32
 #define BOOST_TEST_NO_MAIN
-#endif //WIN32
 #define BOOST_TEST_MODULE lama_test
 
 #include <boost/test/included/unit_test.hpp>
@@ -49,7 +47,7 @@
 #include <string>
 #include <map>
 
-#include <stdio.h>
+#include <cstdio>
 
 using namespace boost;
 
@@ -80,11 +78,7 @@ int main( int argc, char* argv[] )
     char* context = getenv( "LAMA_TEST_CONTEXT" );
     if ( context == NULL )
     {
-        std::string s = ( "LAMA_TEST_CONTEXT=*" );
-        char* buffer = new char[s.length()];
-        std::strcpy( buffer, s.c_str() );
-        /*int error = */
-        putenv( buffer );
+        putenv( const_cast<char*>( "LAMA_TEST_CONTEXT=*" ) );
     }
 
     if ( argc > 1 )
