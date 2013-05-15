@@ -311,6 +311,11 @@ void Vector::setContext( ContextPtr context )
     mContext = context;
 }
 
+void Vector::prefetch() const
+{
+    prefetch( mContext );
+}
+
 void Vector::resize( DistributionPtr distributionPtr )
 {
     setDistributionPtr( distributionPtr );

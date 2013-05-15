@@ -326,6 +326,8 @@ public:
 
     virtual void prefetch( const ContextPtr location ) const;
 
+    using Vector::prefetch;
+
     virtual void wait() const;
 
     virtual void invert();
