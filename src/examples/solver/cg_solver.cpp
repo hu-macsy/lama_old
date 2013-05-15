@@ -67,7 +67,21 @@ struct LamaConfig
     Matrix::SyncKind mCommunicationKind;
     CommunicatorPtr  mComm;
 
-} lamaconf;
+    LamaConfig()
+    {
+        // overlap communication with local computation
+        mCommunicationKind = Matrix::ASYNCHRONOUS;
+    }
+
+    ~LamaConfig()
+    {
+        // give up ownership for communicator and context
+
+        mComm.reset();
+        mContext.reset();
+    }
+
+};
 
 SparseMatrix<ValueType>* createMatrix( const char* type )
 {
@@ -95,6 +109,8 @@ SparseMatrix<ValueType>* createMatrix( const char* type )
 
 int main( int argc, char* argv[] )
 {
+    LamaConfig lamaconf;
+
     // Get (default) communicator, will be MPI if available
 
     lamaconf.mComm = CommunicatorFactory::get();
@@ -283,7 +299,5 @@ int main( int argc, char* argv[] )
     {
         cout << "Writing solution: " << stop - start << " secs." << endl;
     }
-
-    lamaconf.mContext.reset();
 }
 
