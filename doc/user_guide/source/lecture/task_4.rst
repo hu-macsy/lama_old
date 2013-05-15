@@ -16,8 +16,8 @@ Our next exercise is to run a CG-Solver MPI parallel. To run a program parallel,
 we need to create an object of type CommunicatorPtr to get access to a parallel
 environment. We can obtain a CommunicatorPtr from the CommunicatorFactory.
 Besides this object, we need a DistributionPtr. A DistributionPtr is a shared
-pointer to a Distribution. You can create one by passing the pointer to a
-Distribution to its constructor. In this tutorial we want to work with the class 
+pointer to a Distribution and can be created by passing the pointer to a
+Distribution into its constructor. In this tutorial we want to work with the class 
 BlockDistribution. BlockDistribution is one possible solution in LAMA to handle
 distributed data types (there are many more: CyclicDistribution,
 GenBlockDistribution and NoDistribution).
