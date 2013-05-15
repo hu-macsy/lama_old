@@ -42,6 +42,7 @@
 #include <lama/DenseVector.hpp>
 #include <lama/CommunicatorFactory.hpp>
 #include <lama/distribution/BlockDistribution.hpp>
+#include <lama/distribution/NoDistribution.hpp>
 
 #include <lama/solver/CG.hpp>
 #include <lama/solver/logger/CommonLogger.hpp>
@@ -232,7 +233,7 @@ int main( int argc, char* argv[] )
 
     std::ostringstream loggerName;
 
-    loggerName << "<CG>, " << lamaconf.mComm << ": ";
+    loggerName << "<CG>, " << *lamaconf.mComm << ": ";
 
     LoggerPtr logger( new CommonLogger ( loggerName.str(), LogLevel::solverInformation,
                    LoggerWriteBehaviour::toConsoleOnly,
@@ -274,7 +275,7 @@ int main( int argc, char* argv[] )
 
     start = Walltime::get();
 
-    solution.writeToFile( "CG_solution" );
+    // solution.writeToFile( "CG_solution" );
 
     stop = Walltime::get();
 
