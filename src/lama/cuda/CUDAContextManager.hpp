@@ -72,6 +72,8 @@ public:
         return getInstance( deviceNr );
     }
 
+    /** Destructor will free all managed contexts. */
+
     ~CUDAContextManager();
 
     /** Static version of the member method getContext. */
@@ -97,7 +99,7 @@ private:
 
     /** Getter for the default device number; it will be set if not available at first call. */
 
-    static int getDefaultDeviceNr();
+    static int getDefaultDeviceNr ();   // getter for defaultDeviceNr, might be set
 };
 
 }
