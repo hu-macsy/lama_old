@@ -19,5 +19,6 @@ Contents:
    configuration/index
    build
    install
+   examples
    
    windowsTipps
