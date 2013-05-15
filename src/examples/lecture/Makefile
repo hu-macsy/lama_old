@@ -4,7 +4,7 @@ INCLUDE_FLAGS = -I${BOOST_INCLUDE_DIR} -I${LAMA_ROOT}/include
 
 LD_FLAGS = -L${LAMA_ROOT}/lib -llama -Wl,-rpath=${LAMA_ROOT}/lib 
 
-EXECUTABLE: task0 task1a task1b task2 task2a task3 task4
+EXECUTABLE: task0.exe task1a.exe task1b.exe task2.exe task2a.exe task3.exe task4.exe
 
 .SUFFIXES:
 
