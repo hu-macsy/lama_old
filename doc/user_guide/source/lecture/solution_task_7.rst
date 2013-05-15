@@ -56,34 +56,6 @@ Starting Vampir:
 .. code-block:: bash
 
    vampir foo.otf
-
-Starting Vampir on NOVA cluster:
-
-.. code-block:: bash
-
-   module load UNITE
-   module load vampir
-
-Open a new bash on your local machine and connect to NOVA via:
-
-.. code-block:: bash
-
-   ssh -X <user>@129.184.111.23
-   ssh -X nv47
-   echo $DISPLAY
-
-Switch back to the original qsub-shell and export the value - e.g.:
-
-.. code-block:: bash
- 
-   export DISPLAY=localhost:13.0
-
-Start vampir in your qsub-shell:
-
-.. code-block:: bash
-   
-   vampir &
-
    
 .. csv-table::
    :header: "back to this Task", "Index", "next Task"
