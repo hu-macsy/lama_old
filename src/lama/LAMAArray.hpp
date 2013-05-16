@@ -102,6 +102,8 @@ public:
      */
     inline IndexType size() const;
 
+    virtual ContextPtr getValidContext( const Context::ContextType preferredType = Context::Host ) const = 0;
+
 protected:
 
     explicit _LAMAArray( const IndexType n )
