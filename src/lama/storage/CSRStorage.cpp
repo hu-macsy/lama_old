@@ -103,7 +103,7 @@ CSRStorage<ValueType>::CSRStorage(
 {
     mDiagonalProperty = checkDiagonalProperty();
     check( "CSRStorage( ... )" );
-    LAMA_LOG_INFO( logger, *this << ": construcuted by input arrays" )
+    LAMA_LOG_INFO( logger, *this << ": constructed by input arrays" )
 }
 
 /* --------------------------------------------------------------------------- */
