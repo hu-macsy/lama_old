@@ -69,5 +69,5 @@ Now the output should be as follows::
 
 Congratulations, your first LAMA program is running.
 
-:download:`Download Linux Makefile <../../cpp_source/tutorial/Makefile>`
+:download:`Download Linux Makefile <../../../examples/tutorial/Makefile>`
 

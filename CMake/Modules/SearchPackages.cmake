@@ -41,6 +41,7 @@ set ( REQUIRED_PACKAGES_TO_FIND
 set ( OPTIONAL_PACKAGES_TO_FIND
         Doxygen
         Threads
+        Sphinx
         #add optional packages here
     )
     

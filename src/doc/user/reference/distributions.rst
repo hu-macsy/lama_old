@@ -7,12 +7,12 @@ Distribution Typs
 Block Distribution
 ^^^^^^^^^^^^^^^^^^
 
-.. image:: ../_images/blockweise.png
+.. image:: fileadmin/LAMA/json/_images/blockweise.png
 
 Cyclic Distribution
 ^^^^^^^^^^^^^^^^^^^
 
-.. image:: ../_images/cyclic.png
+.. image:: fileadmin/LAMA/json/_images/cyclic.png
 
 Redistribute
 ------------

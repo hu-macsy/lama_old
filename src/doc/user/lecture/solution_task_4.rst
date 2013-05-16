@@ -73,7 +73,7 @@ To execute task4 in parallel use mpirun
 
    mpirun -np <num-procs> ./task4 <input-file>
 
-:download:`Download complete solution Task 4 <../../cpp_source/lecture/task4.cpp>`
+:download:`Download complete solution Task 4 <../../../examples/lecture/task4.cpp>`
 
 **Excursion 2:**
 

@@ -61,7 +61,7 @@ json:
 	cd $(BUILDDIR)/json; \
 	echo `pwd`; \
     find ./ -type f -exec sed -i 's/\.\.\/\_images/fileadmin\/LAMA\/json\/_images/g' {} \; \
-    && find ./ -type f -exec sed -i 's/<img/<image/g' {} \; \
+    && find ./ -type f -exec sed -i 's/<image/<image/g' {} \; \
     && find ./ -type f -exec sed -i 's/\.\.\/fileadmin/fileadmin/g' {} \; \
     && find ./ -type f -exec sed -i 's/\\\"configuration\/\\\"/\\\"configuration\/index\/\\\"/g' {} \; \
     && find ./ -type f -exec sed -i 's/\\\"installation\/\\\"/\\\"installation\/index\/\\\"/g' {} \; \

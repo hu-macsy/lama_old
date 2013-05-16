@@ -98,7 +98,7 @@ Here is the solution of task 2. The code demonstrate a self-provided CG-Solver.
 (2) Creation of Vectors, that are needed by your implementation.
 (3) Here is the self-provided algorithm of a CG-Solver.
 
-:download:`Download complete solution Task 2 <../../cpp_source/lecture/task2.cpp>`
+:download:`Download complete solution Task 2 <../../../examples/lecture/task2.cpp>`
 
 A alternative solution for task 2 is the lama++-CG-class, which contains the same calculation.
 
@@ -113,7 +113,7 @@ A alternative solution for task 2 is the lama++-CG-class, which contains the sam
    cgSolver.initialize( m );
    cgSolver.solve( solution, rhs );
 
-:download:`Download complete alternative solution Task 2 <../../cpp_source/lecture/task2a.cpp>`
+:download:`Download complete alternative solution Task 2 <../../../examples/lecture/task2a.cpp>`
 
 **Excursion:**
 

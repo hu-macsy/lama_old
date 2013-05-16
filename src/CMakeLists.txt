@@ -258,10 +258,17 @@ endif ( CUDA_FOUND )
 
 ## DOXYGEN
 if ( DOXYGEN_FOUND )
-    lama_status_message ( INFO "[FOUND]" "    DOXYGEN - 'make doc' to build documentation" )
+    lama_status_message ( INFO "[FOUND]" "    DOXYGEN - 'make doc' to build system documentation" )
 else ( DOXYGEN_FOUND )
     lama_status_message ( WARNING "[NOT FOUND]" "DOXYGEN" )
 endif ( DOXYGEN_FOUND )
+
+## SPHINX
+if ( SPHINX_FOUND )
+    lama_status_message ( INFO "[FOUND]" "    SPHINX - 'make userdoc' to build user documentation" )
+else ( SPHINX_FOUND )
+    lama_status_message ( WARNING "[NOT FOUND]" "SPHINX" )
+endif ( SPHINX_FOUND )
 
 ## Boost Unit Test Framework
 if ( Boost_UNIT_TEST_FRAMEWORK_FOUND )

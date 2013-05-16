@@ -129,11 +129,11 @@ the error.
         }
 
 Task 0 and an example input matrix can be found in
-**<project-root>/doc/user_guide/cpp_source/lecture**.
+**<project-root>/examples/lecture**.
 
-:download:`Download source file Task 0 <../../cpp_source/lecture/task0.cpp>`
+:download:`Download source file Task 0 <../../../examples/lecture/task0.cpp>`
 
-:download:`Download input matrix <../../cpp_source/lecture/gr_30_30.mtx>`
+:download:`Download input matrix <../../../examples/lecture/gr_30_30.mtx>`
 
 .. csv-table:: 
    :header: "previous", "Solution", "next"

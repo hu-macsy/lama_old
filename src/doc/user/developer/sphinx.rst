@@ -32,7 +32,7 @@ Lists
 Images
 ------
 
-.. image:: ../_images/test.jpg
+.. image:: fileadmin/LAMA/json/_images/test.jpg
 
 Links
 -----

@@ -22,7 +22,7 @@ Solution Task 1 (a)
 the SparseMatrix-Constructor.
 (2) You can get the number of rows by using the method getNumRows().
 
-:download:`Download complete solution Task 1 (a) <../../cpp_source/lecture/task1a.cpp>`
+:download:`Download complete solution Task 1 (a) <../../../examples/lecture/task1a.cpp>`
 
 __ http://libama.sourceforge.net/tutorial/solutions/task1a.cpp
 
@@ -106,7 +106,7 @@ Setting the right hand side and the solution vector
 (4) Release of HostWriteAccesses. Instead of releasing the HostWriteAccess you can use a block { /\* set() here \*/ }. The release()-method will be automatically called of the Destructor at the end of this block.
 (5) Creation of DenseVector solution. Default-value is 0.0.
 
-:download:`Download complete solution Task 1 (b) <../../cpp_source/lecture/task1b.cpp>`
+:download:`Download complete solution Task 1 (b) <../../../examples/lecture/task1b.cpp>`
 
 .. csv-table::
    :header: "back to this Task", "Index", "next Task"
