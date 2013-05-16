@@ -52,31 +52,33 @@ namespace lama
 LAMA_LOG_DEF_LOGGER( LAMAArrayUtils::logger, "LAMAArrayUtils" )
 
 template<typename ValueType1,typename ValueType2>
-void LAMAArrayUtils::assignImpl2( LAMAArray<ValueType1>& target, const LAMAArray<ValueType2>& source )
+void LAMAArrayUtils::assignImpl2( LAMAArray<ValueType1>& target, 
+                                  const LAMAArray<ValueType2>& source,
+                                  const ContextPtr loc )
 {
     // verify that dynamic cast operations went okay before
 
     LAMA_ASSERT_ERROR( &target, "NULL target" )
     LAMA_ASSERT_ERROR( &source, "NULL source" )
 
-    // Attention: assignment with type conversion is always done on the Host
+    // set should be available on interface for each loc
 
-    ContextPtr context = ContextFactory::getContext( Context::Host );
-
-    LAMA_INTERFACE_FN_TT( set, context, Utils, Copy, ValueType1, ValueType2 )
+    LAMA_INTERFACE_FN_TT( set, loc, Utils, Copy, ValueType1, ValueType2 )
 
     const IndexType n = source.size();
 
-    WriteOnlyAccess<ValueType1> targetVals( target, context, n );
-    ReadAccess<ValueType2> sourceVals( source, context );
+    WriteOnlyAccess<ValueType1> targetVals( target, loc, n );
+    ReadAccess<ValueType2> sourceVals( source, loc );
 
-    LAMA_CONTEXT_ACCESS( context )
+    LAMA_CONTEXT_ACCESS( loc )
 
     set( targetVals.get(), sourceVals.get(), n );
 }
 
 template<typename ValueType>
-void LAMAArrayUtils::assignImpl1( LAMAArray<ValueType>& target, const _LAMAArray& source )
+void LAMAArrayUtils::assignImpl1( LAMAArray<ValueType>& target, 
+                                  const _LAMAArray& source,
+                                  const ContextPtr loc )
 {
     Scalar::ScalarType sourceType = source.getValueType();
 
@@ -86,7 +88,9 @@ void LAMAArrayUtils::assignImpl1( LAMAArray<ValueType>& target, const _LAMAArray
 
         const LAMAArray<ValueType>& typedSource = dynamic_cast<const LAMAArray<ValueType>&>( source );
 
-        target = typedSource; // use assignment operator of LAMA array, more efficient
+        // use assign method of LAMA array, more efficient
+
+        target.assign( typedSource, loc );
 
         return;
     }
@@ -96,29 +100,43 @@ void LAMAArrayUtils::assignImpl1( LAMAArray<ValueType>& target, const _LAMAArray
     switch ( sourceType )
     {
     case Scalar::FLOAT:
-        assignImpl2( target, dynamic_cast<const LAMAArray<float>&>( source ) );
+        assignImpl2( target, dynamic_cast<const LAMAArray<float>&>( source ), loc );
         break;
     case Scalar::DOUBLE:
-        assignImpl2( target, dynamic_cast<const LAMAArray<double>&>( source ) );
+        assignImpl2( target, dynamic_cast<const LAMAArray<double>&>( source ), loc );
+        break;
+    case Scalar::INDEX_TYPE:
+        assignImpl2( target, dynamic_cast<const LAMAArray< IndexType>& >( source ), loc );
         break;
     default:
         LAMA_THROWEXCEPTION( "unsupported source type : " )
     }
 }
 
-void LAMAArrayUtils::assign( _LAMAArray& target, const _LAMAArray& source )
+void LAMAArrayUtils::assign( _LAMAArray& target, const _LAMAArray& source, const ContextPtr loc )
 {
     switch ( target.getValueType() )
     {
     case Scalar::FLOAT:
-        assignImpl1( dynamic_cast<LAMAArray<float>&>( target ), source );
+        assignImpl1( dynamic_cast<LAMAArray<float>&>( target ), source, loc );
         break;
     case Scalar::DOUBLE:
-        assignImpl1( dynamic_cast<LAMAArray<double>&>( target ), source );
+        assignImpl1( dynamic_cast<LAMAArray<double>&>( target ), source, loc );
+        break;
+    case Scalar::INDEX_TYPE:
+        assignImpl1( dynamic_cast<LAMAArray< IndexType>& >( target ), source, loc );
         break;
     default:
         LAMA_THROWEXCEPTION( "unsupported target type : " )
     }
+}
+
+void LAMAArrayUtils::assign( _LAMAArray& target, const _LAMAArray& source )
+{
+    // if no context is given we assign where source has a valid copy available
+
+    ContextPtr loc = source.getValidContext( Context::Host );
+    assign( target, source, loc );
 }
 
 template<typename ValueType1,typename ValueType2>
