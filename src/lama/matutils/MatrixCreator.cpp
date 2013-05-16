@@ -380,7 +380,8 @@ void MatrixCreator<ValueType>::buildPoisson(
 
     // create new local CSR data ( # local rows x # columns )
 
-    lama::CSRStorage<ValueType> localMatrix( localSize, globalSize );
+    lama::CSRStorage<ValueType> localMatrix;
+    localMatrix.allocate( localSize, globalSize );
 
     // Allocate local matrix with correct sizes and correct first touch in case of OpenMP
     // ToDo: localMatrix( localSize, numColumns, numNonZeros, &myIA[0] );

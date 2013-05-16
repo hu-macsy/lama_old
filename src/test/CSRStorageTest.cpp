@@ -85,7 +85,9 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( ConstructorTest, T, test_types ) {
     const IndexType numRows = 10;
     const IndexType numColumns = 15;
 
-    CSRStorage<T> csrStorage( numRows, numColumns );
+    CSRStorage<T> csrStorage;
+
+    csrStorage.allocate( numRows, numColumns );
 
     BOOST_REQUIRE_EQUAL( numRows, csrStorage.getNumRows() );
     BOOST_REQUIRE_EQUAL( numColumns, csrStorage.getNumColumns() );
