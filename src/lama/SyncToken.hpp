@@ -65,7 +65,7 @@ class _LAMAArray;
  * All started asynchronous operations in LAMA must be synchronized. This is
  * absolutely mandatory and can be done in the following ways:
  *
- * \begin
+ * \code 
  *    auto_ptr<SyncToken> token = new XXXSyncToken( ... )
  *    ! synchronization is alway done when object will be deleted at the end of the scope
  *    
@@ -75,7 +75,7 @@ class _LAMAArray;
  *    SyncToken* token = new XXXSyncToken( ... )
  *       ....
  *    delete token;   // easy to forget, token will never be synchronized
- * \end
+ * \endcode
  *
  */
 
