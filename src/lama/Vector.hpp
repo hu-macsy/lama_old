@@ -339,6 +339,13 @@ public:
     virtual void prefetch( const ContextPtr context ) const = 0;
 
     /**
+     * @brief Starts a prefetch to make data valid at the context of the vector.
+     *
+     */
+
+    void prefetch() const;
+
+    /**
      * @brief Waits for a possibly running prefetch.
      */
     virtual void wait() const = 0;

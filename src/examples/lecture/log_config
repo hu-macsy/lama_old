@@ -1,0 +1,9 @@
+# Example configuration file for LAMA logging
+# enable loggers by defining the corresponding log level
+
+<root> = WARN
+# Solver.IterativeSolver.CG = INFO
+# Matrix.CSRSparseMatrix = DEBUG
+# Distribution.BlockDistribution = INFO
+Context = INFO
+LAMAArray = DEBUG

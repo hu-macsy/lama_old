@@ -43,6 +43,7 @@
 #include <lama/storage/COOStorage.hpp>
 
 #include <lama/distribution/GeneralDistribution.hpp>
+#include <lama/distribution/NoDistribution.hpp>
 
 namespace lama
 {
@@ -123,6 +124,21 @@ public:
 
         SparseMatrix<ValueType>::assign( other );
         this->redistribute( rowDist, colDist );
+    }
+
+    /** Constructor of a (replicated) sparse matrix by global storage.
+     *
+     *  @param[in] globalData  contains local rows of the distributed matrix
+     */
+    COOSparseMatrix( const _MatrixStorage& globalData )
+
+        : SparseMatrix<ValueType>( createStorage() )
+
+    {
+        DistributionPtr rowDist( new NoDistribution( globalData.getNumRows() ) );
+        DistributionPtr colDist( new NoDistribution( globalData.getNumRows() ) );
+
+        SparseMatrix<ValueType>::assign( globalData, rowDist, colDist );
     }
 
     /** Constructor of a sparse matrix by local storage.
