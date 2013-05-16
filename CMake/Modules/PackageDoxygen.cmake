@@ -36,6 +36,7 @@ if ( DOXYGEN_FOUND )
     ### install ###
     set ( LAMA_DOC_DIR "${LAMA_SOURCE_DIR}/doc/" )
     set ( DOXYGEN_BUILD_ROOT "${CMAKE_CURRENT_BINARY_DIR}/doc" )
+    set ( DOXYGEN_INSTALL_ROOT ${CMAKE_INSTALL_PREFIX})
     file ( MAKE_DIRECTORY ${DOXYGEN_BUILD_ROOT} )
     
     configure_file( "${CMAKE_SOURCE_DIR}/doc/LAMA.Doxyfile.in" "${CMAKE_CURRENT_BINARY_DIR}/doc/LAMA.Doxyfile" )
@@ -57,10 +58,13 @@ if ( DOXYGEN_FOUND )
       DEPENDS
       ${DOXYGEN_BUILD_ROOT}/html/index.html
    )
-
-   # Install the documentation generated at "make" time.
-
-   # install ( DIRECTORY ${DOXYGEN_BUILD_ROOT}/ DESTINATION ${DOXYGEN_BUILD_ROOT}/html )
+    add_custom_target (
+        install_doc
+        COMMAND mkdir -p ${DOXYGEN_INSTALL_ROOT}/share/doc/lama-${LAMA_VERSION}/system
+        COMMAND cp -r ${DOXYGEN_BUILD_ROOT}/system/html/* ${DOXYGEN_INSTALL_ROOT}/share/doc/lama-${LAMA_VERSION}/system
+        DEPENDS ${DOXYGEN_BUILD_ROOT}/system/html/index.html
+        WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
+    )
 
 else ( DOXYGEN_FOUND )
     if ( LAMA_CMAKE_VERBOSE )
