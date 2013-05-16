@@ -38,7 +38,7 @@ PROJECT_NUMBER         =
 # If a relative path is entered, it will be relative to the location
 # where doxygen was started. If left blank the current directory will be used.
 
-OUTPUT_DIRECTORY       = doxygen
+OUTPUT_DIRECTORY       = system
 
 # If the CREATE_SUBDIRS tag is set to YES, then doxygen will create
 # 4096 sub-directories (in 2 levels) under the output directory of each output
@@ -575,16 +575,12 @@ WARN_LOGFILE           =
 # directories like "/usr/src/myproject". Separate the files or directories
 # with spaces.
 
-INPUT                  = system \
-                         ../src/lama  \
-                         ../src/lama/openmp
+INPUT                  = ${LAMA_SOURCE_DIR}/doc/system \
+                         ${LAMA_SOURCE_DIR}/lama  \
+                         ${LAMA_SOURCE_DIR}/lama/openmp
 
 #                        add additional directories
 #                        ../src/logging \
-#                        ../src/lama++/distribution \
-#                        ../src/lama++/matrix \
-#                        ../src/lama++/storages \
-#                        ../src/lama++/solver \
 
 # Note: system contains additional documentation
 
@@ -665,7 +661,7 @@ EXAMPLE_RECURSIVE      = NO
 # directories that contain image that are included in the documentation (see
 # the \image command).
 
-IMAGE_PATH             = figs
+IMAGE_PATH             = ${LAMA_SOURCE_DIR}/doc/figs
 
 # The INPUT_FILTER tag can be used to specify a program that doxygen should
 # invoke to filter for each input file. Doxygen will invoke the filter program

@@ -113,6 +113,7 @@ if ( FOUND_BOOST_TEST AND LAMA_BUILD_TEST )
 endif ( FOUND_BOOST_TEST AND LAMA_BUILD_TEST )
 
 include ( PackageDoxygen )
+include ( PackageSphinx )
 
 
 ### install ###

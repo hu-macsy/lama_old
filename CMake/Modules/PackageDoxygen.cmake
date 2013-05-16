@@ -33,21 +33,23 @@
 ### DOXYGEN DOCUMENTATION ###
 
 if ( DOXYGEN_FOUND )
-
-    set ( LAMA_DOC_DIR "${LAMA_SOURCE_DIR}/../doc" )
-    set ( DOXYGEN_BUILD_ROOT "${LAMA_DOC_DIR}/doxygen" )
-    filE ( MAKE_DIRECTORY ${DOXYGEN_BUILD_ROOT} )
+    ### install ###
+    set ( LAMA_DOC_DIR "${LAMA_SOURCE_DIR}/doc/" )
+    set ( DOXYGEN_BUILD_ROOT "${CMAKE_CURRENT_BINARY_DIR}/doc" )
+    file ( MAKE_DIRECTORY ${DOXYGEN_BUILD_ROOT} )
+    
+    configure_file( "${CMAKE_SOURCE_DIR}/doc/LAMA.Doxyfile.in" "${CMAKE_CURRENT_BINARY_DIR}/doc/LAMA.Doxyfile" )
 
    # The initial rm command gets rid of everything previously built by this
    # custom command.
 
    add_custom_command (
       OUTPUT ${DOXYGEN_BUILD_ROOT}/html/index.html
-      COMMAND rm -rf ${DOXYGEN_BUILD_ROOT}
-      COMMAND mkdir ${DOXYGEN_BUILD_ROOT}
-      COMMAND ${DOXYGEN_EXECUTABLE} ${LAMA_DOC_DIR}/LAMA.Doxyfile
+      #COMMAND rm -rf ${DOXYGEN_BUILD_ROOT}
+      #COMMAND mkdir ${DOXYGEN_BUILD_ROOT}
+      COMMAND ${DOXYGEN_EXECUTABLE} LAMA.Doxyfile
       DEPENDS ${LAMA_DOC_DIR}/LAMA.Doxyfile
-      WORKING_DIRECTORY ${LAMA_DOC_DIR}
+      WORKING_DIRECTORY ${DOXYGEN_BUILD_ROOT}
    )
 
    add_custom_target (
