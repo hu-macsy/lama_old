@@ -271,7 +271,7 @@ public:
 
     virtual void setContext( const ContextPtr context );
 
-    using CRTPMatrix<DenseMatrix<T>,T>::setContext; // setContext( localContext, haloContext )
+    using CRTPMatrix<DenseMatrix<T>, T>::setContext; // setContext( localContext, haloContext )
 
     /* Implementation of pure method of class Matrix. */
 
@@ -280,9 +280,11 @@ public:
         return mData[0]->getContextPtr();
     }
 
-    /* Implementation of pure method of class Matrix. */
+    /** Implementation of pure method Matrix::setIdentity. */
 
-    virtual void setIdentity();
+    virtual void setIdentity( DistributionPtr distribution );
+
+    using CRTPMatrix<DenseMatrix<T>, T>::setIdentity;  // setIdentity( const IndexType n )
 
     /** Set matrix with global dense data */
 
@@ -485,10 +487,6 @@ public:
     /* Implementation of pure method of class Matrix. */
 
     virtual IndexType getLocalNumColumns() const;
-
-    //TODO: no instantiation of these functions --> implement or delete
-    //IndexType getNumLocalChunks( ) const;
-    //IndexType getNumTotalChunks( ) const;
 
     /* Implementation of pure method of class Matrix. */
 

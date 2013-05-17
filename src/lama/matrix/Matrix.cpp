@@ -80,6 +80,15 @@ Matrix::Matrix( const IndexType numRows, const IndexType numColumns )
 
 /* ----------------------------------------------------------------------- */
 
+void Matrix::setIdentity( const IndexType n )
+{
+    // take replicated distribution and use pure method
+
+    setIdentity( DistributionPtr( new NoDistribution( n ) ) );
+}
+
+/* ----------------------------------------------------------------------- */
+
 void Matrix::checkSettings() const
 {
     if ( !mColDistribution )

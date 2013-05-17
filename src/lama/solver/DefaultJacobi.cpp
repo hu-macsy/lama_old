@@ -118,9 +118,8 @@ void DefaultJacobi::initialize( const Matrix& coefficients )
 
     LAMA_LOG_DEBUG( logger, "Create diagonal matrix" )
     runtime.mDiagonalInverted.reset( coefficients.create() ); // zero matrix with same storage type
-    runtime.mDiagonalInverted->allocate( coefficients.getDistributionPtr(), coefficients.getDistributionPtr() );
-    LAMA_LOG_DEBUG( logger, "allocated diagonal matrix = " << *runtime.mDiagonalInverted )
-    runtime.mDiagonalInverted->setIdentity();
+    runtime.mDiagonalInverted->setIdentity( coefficients.getDistributionPtr() );
+    LAMA_LOG_DEBUG( logger, "identity diagonal matrix = " << *runtime.mDiagonalInverted )
     runtime.mDiagonalInverted->inheritAttributes( coefficients );
 
     LAMA_LOG_DEBUG( logger,

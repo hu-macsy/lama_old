@@ -104,21 +104,55 @@ public:
      * @return               a reference to this.
      * @throws               Exceptions thrown by the Allocator
      */
-    Vector& operator=( const Expression<Matrix,Vector,Times>& expression );
+    Vector& operator=( const Expression<Matrix, Vector, Times>& expression );
 
-    Vector& operator=( const Expression<Scalar,Expression<Matrix,Vector,Times>,Times>& expression );
+    /** this = alpha * A * x */
 
-    Vector& operator=(
-        const Expression<Expression<Scalar,Vector,Times>,Expression<Scalar,Vector,Times>,Plus>& expression );
+    Vector& operator=( const Expression<Scalar, Expression<Matrix, Vector, Times>, Times>& expression );
 
-    Vector& operator=(
-        const Expression<Expression<Scalar,Expression<Matrix,Vector,Times>,Times>,Expression<Scalar,Vector,Times>,Plus>& expression );
+    /** this = alpha * x + beta * y */
 
-    Vector& operator=( const Expression<Scalar,Vector,Times>& expression );
+    Vector& operator=( const Expression<Expression<Scalar, Vector, Times>,
+                                        Expression<Scalar, Vector, Times>,
+                                        Plus>& expression );
 
-    Vector& operator=( const Expression<Vector,Vector,Plus>& expression );
+    /** this = alpha * A * x + beta * y */
 
-    Vector& operator+=( const Expression<Scalar,Vector,Times>& expression );
+    Vector& operator=( const Expression<Expression<Scalar, Expression<Matrix, Vector, Times>, Times>,
+                                        Expression<Scalar, Vector, Times>,
+                                        Plus>& expression );
+
+    /** this = alpha * x */
+
+    Vector& operator=( const Expression<Scalar, Vector, Times>& expression );
+
+    /** this =  x + y */
+
+    Vector& operator=( const Expression<Vector, Vector, Plus>& expression );
+
+    /** this +=  alpha * A * x */
+
+    Vector& operator+=( const Expression<Scalar, Expression<Matrix, Vector, Times>, Times>& expression );
+
+    /** this +=  A * x */
+
+    Vector& operator+=( const Expression<Matrix, Vector, Times>& expression );
+
+    /** this +=  alpha * x */
+
+    Vector& operator+=( const Expression<Scalar, Vector, Times>& expression );
+
+    /** this -=  alpha * A * x */
+
+    Vector& operator-=( const Expression<Scalar, Expression<Matrix, Vector, Times>, Times>& expression );
+
+    /** this -=  A * x */
+
+    Vector& operator-=( const Expression<Matrix, Vector, Times>& expression );
+
+    /** this -=  alpha * x */
+
+    Vector& operator-=( const Expression<Scalar, Vector, Times>& expression );
 
     /**
      * @brief Assigns the values of other to the elements of this.
@@ -254,12 +288,10 @@ public:
      */
     virtual Scalar maxNorm() const =0;
 
-    //TODO: This is an uninitialized create, do we need a initialized create?
-    //      What is a good interface for an initialized create?
     /**
-     * @brief Create is a virtual constructor, which creates a new Vector with the same concrete class, size and distribution as this.
+     * @brief create is a virtual call of the default constructor of the derived classes
      *
-     * @return                  a pointer to the new Vector, caller has the owner ship.
+     * @return a pointer to the new Vector, caller takes the ownership.
      */
     virtual Vector* create() const = 0;
 
@@ -270,6 +302,11 @@ public:
      * @return                  a pointer to the new Vector, caller has the owner ship.
      */
     virtual Vector* create( DistributionPtr distribution ) const = 0;
+
+    /**
+     *  @brief copy is a virtual call of the copy constructor of the derived classes
+     */
+    virtual Vector* copy() const = 0;
 
     /**
      * @brief Returns the size of the vector.
@@ -396,7 +433,7 @@ protected:
     /**
      *  Constructor of Vector for derived classes by size and/or context
      */
-    explicit Vector( const IndexType size = 0, ContextPtr context = ContextFactory::getContext( Context::Host ) );
+    explicit Vector( const IndexType size = 0, ContextPtr context = ContextPtr() );
 
     /**
      * @brief Constructor of Vector for derived classes by distribution
@@ -404,14 +441,14 @@ protected:
      * @param[in] distribution  the distribution to use for the new Vector.
      * @param[in] context       is optional, will be Host context.
      */
-    explicit Vector( DistributionPtr distribution, ContextPtr context = ContextFactory::getContext( Context::Host ) );
+    explicit Vector( DistributionPtr distribution, ContextPtr context = ContextPtr() );
 
     /**
      * @brief Creates a copy of the passed Vector.
      *
      * @param[in] other   the Vector to take a copy from.
      *
-     * Inherits size/distribution and the context of the passed vector.
+     * Inherits size/distribution, context and content of the passed vector.
      */
     Vector( const Vector& other );
 
