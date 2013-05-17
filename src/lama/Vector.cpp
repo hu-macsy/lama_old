@@ -79,14 +79,22 @@ Vector* Vector::createVector( const Scalar::ScalarType valueType, DistributionPt
 Vector::Vector( const IndexType size, ContextPtr context )
     : Distributed( shared_ptr<Distribution>( new NoDistribution( size ) ) ), mContext( context )
 {
-    LAMA_ASSERT_ERROR( mContext, "NULL context not allowed" )
+    if ( !mContext )
+    {
+        mContext = ContextFactory::getContext( Context::Host );
+    }
+
     LAMA_LOG_INFO( logger, "Vector(" << size << "), replicated, on " << *mContext )
 }
 
 Vector::Vector( DistributionPtr distribution, ContextPtr context )
     : Distributed( distribution ), mContext( context )
 {
-    LAMA_ASSERT_ERROR( mContext, "NULL context not allowed" )
+    if ( !mContext )
+    {
+        mContext = ContextFactory::getContext( Context::Host );
+    }
+
     LAMA_LOG_INFO( logger,
                    "Vector(" << distribution->getGlobalSize() << ") with " << getDistribution() << " constructed" )
 }
@@ -260,10 +268,74 @@ Vector& Vector::operator+=( const Vector& other )
     return operator=( exp1 );
 }
 
-Vector& Vector::operator+=( const Expression<Scalar,Vector,Times>& expression )
+Vector& Vector::operator+=( const Expression<Scalar, Vector, Times>& expression )
 {
     Expression<Scalar,Vector,Times> exp1( 1.0, *this );
-    Expression<Expression<Scalar,Vector,Times>,Expression<Scalar,Vector,Times>,Plus> exp3( exp1, expression );
+    Expression<Expression<Scalar,Vector,Times>,
+               Expression<Scalar,Vector,Times>,
+               Plus> exp3( exp1, expression );
+    return operator=( exp3 );
+}
+
+Vector& Vector::operator-=( const Expression<Scalar, Vector, Times>& expression )
+{
+    Expression<Scalar, Vector, Times> exp1( 1.0, *this );
+    Expression<Scalar, Vector, Times> exp2( - expression.getArg1(), expression.getArg2() );
+    Expression<Expression<Scalar, Vector, Times>,
+               Expression<Scalar, Vector, Times>,
+               Plus> exp3( exp1, exp2 );
+
+    return operator=( exp3 );
+}
+
+Vector& Vector::operator+=( const Expression<Matrix, Vector, Times>& expression )
+{
+    // build exp3 = 1.0 * this + 1.0 * A * x
+
+    Expression<Scalar, Vector, Times> exp1( 1.0, *this );
+    Expression<Scalar, Expression<Matrix, Vector, Times>, Times> exp2 ( 1.0, expression );
+
+    Expression<Expression<Scalar, Expression<Matrix, Vector, Times>, Times>,
+               Expression<Scalar, Vector, Times>,
+               Plus> exp3( exp2, exp1 );
+
+    return operator=( exp3 );
+}
+
+Vector& Vector::operator-=( const Expression<Matrix, Vector, Times>& expression )
+{
+    // build exp3 = 1.0 * this - 1.0 * A * x
+
+    Expression<Scalar, Vector, Times> exp1( 1.0, *this );
+    Expression<Scalar, Expression<Matrix, Vector, Times>, Times> exp2 ( -1.0, expression );
+
+    Expression<Expression<Scalar, Expression<Matrix, Vector, Times>, Times>,
+               Expression<Scalar, Vector, Times>,
+               Plus> exp3( exp2, exp1 );
+
+    return operator=( exp3 );
+}
+
+Vector& Vector::operator+=( const Expression<Scalar, Expression<Matrix, Vector, Times>, Times>& expression )
+{
+    // build exp3 = 1.0 * this + alpha * A * x
+
+    Expression<Scalar, Vector, Times> exp1( 1.0, *this );
+    Expression<Expression<Scalar, Expression<Matrix, Vector, Times>, Times>,
+               Expression<Scalar, Vector, Times>,
+               Plus> exp3( expression, exp1 );
+
+    return operator=( exp3 );
+}
+
+Vector& Vector::operator-=( const Expression<Scalar, Expression<Matrix, Vector, Times>, Times>& expression )
+{
+    Expression<Scalar, Vector, Times> exp1( 1.0, *this );
+    Expression<Scalar, Expression<Matrix, Vector, Times>, Times> exp2( - expression.getArg1(), expression.getArg2() );
+    Expression<Expression<Scalar, Expression<Matrix, Vector, Times>, Times>,
+               Expression<Scalar, Vector, Times>,
+               Plus> exp3( exp2, exp1 );
+
     return operator=( exp3 );
 }
 
