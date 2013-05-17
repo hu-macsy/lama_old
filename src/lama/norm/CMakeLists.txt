@@ -38,7 +38,12 @@ set ( CLASSES
         Norm
     )
 
+set ( HEADERS
+        all
+    )
+
 lama_classes ( ${CLASSES} )
+lama_headers ( ${HEADERS} )
 
 ### add sources and headers to parent scope ###
 lama_add ()
