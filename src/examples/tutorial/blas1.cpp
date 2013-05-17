@@ -79,17 +79,17 @@ int main()
 
   // pure scalar operations only can be executed on the host
   std::cout << "Manipulating a few scalars..." << std::endl;
-//  std::cout << "operator +=" << std::endl;
-//  s1 += s2;
+  std::cout << "operator +=" << std::endl;
+  s1 += s2;
 
-  /*std::cout << "operator *=" << std::endl;
+  std::cout << "operator *=" << std::endl;
   s1 *= s2;
 
   std::cout << "operator -=" << std::endl;
   s1 -= s2;;
 
   std::cout << "operator /=" << std::endl;
-  s1 /= s2;*/
+  s1 /= s2;
 
   std::cout << "operator +" << std::endl;
   s1 = s2 + s3;

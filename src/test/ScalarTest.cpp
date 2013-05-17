@@ -133,8 +133,10 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( AdditionTest, T, test_types ) {
     Scalar t ( 3.0 );
 
     Scalar u = s + t;
+    s += t;
 
     BOOST_CHECK_EQUAL( u.getValue<ValueType>(), 5.0 );
+    BOOST_CHECK_EQUAL( s.getValue<ValueType>(), 5.0 );
 }
 
 /* --------------------------------------------------------------------- */
@@ -146,8 +148,10 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( MultiplicationTest, T, test_types ) {
     Scalar t ( 3.0 );
 
     Scalar u = s * t;
+    s *= t;
 
     BOOST_CHECK_EQUAL( u.getValue<ValueType>(), 6.0 );
+    BOOST_CHECK_EQUAL( s.getValue<ValueType>(), 6.0 );
 }
 
 /* --------------------------------------------------------------------- */
@@ -159,8 +163,10 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( SubtractionTest, T, test_types ) {
     Scalar t ( 3.0 );
 
     Scalar u = s - t;
+    s -= t;
 
     BOOST_CHECK_EQUAL( u.getValue<ValueType>(), -1.0 );
+    BOOST_CHECK_EQUAL( s.getValue<ValueType>(), -1.0 );
 }
 
 /* --------------------------------------------------------------------- */
@@ -172,8 +178,10 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( DivisionTest, T, test_types ) {
     Scalar t ( 3.0 );
 
     Scalar u = s / t;
+    s /= t;
 
     BOOST_CHECK_CLOSE( u.getValue<ValueType>(), 0.6666, 1 );
+    BOOST_CHECK_CLOSE( s.getValue<ValueType>(), 0.6666, 1 );
 }
 
 /* --------------------------------------------------------------------- */
