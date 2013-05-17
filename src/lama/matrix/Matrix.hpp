@@ -878,6 +878,35 @@ inline std::ostream& operator<<( std::ostream& stream, const Matrix::SyncKind& k
     return stream;
 }
 
+/** This function prints a MatrixKind on an output stream.
+ *
+ *  \param stream   is the reference to the output stream
+ *  \param kind      is the enum value that is printed
+ */
+inline std::ostream& operator<<( std::ostream& stream, const Matrix::MatrixKind& kind )
+{
+    switch ( kind )
+    {
+    case Matrix::DENSE:
+    {
+        stream << "DENSE";
+        break;
+    }
+    case Matrix::SPARSE:
+    {
+        stream << "SPARSE";
+        break;
+    }
+    default:
+    {
+        stream << "<unknown matrix kind>";
+        break;
+    }
+    }
+
+    return stream;
+}
+
 }
 
 #endif // LAMA_MATRIX_HPP_
