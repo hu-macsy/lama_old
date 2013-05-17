@@ -258,21 +258,27 @@ Vector& Vector::operator=( const Scalar value )
 
 Vector& Vector::operator*=( const Scalar value )
 {
-    Expression<Scalar,Vector,Times> exp1( value, *this );
+    Expression<Scalar, Vector, Times> exp1( value, *this );
+    return operator=( exp1 );
+}
+
+Vector& Vector::operator/=( const Scalar value )
+{
+    Expression<Scalar, Vector, Times> exp1( Scalar( 1.0 ) / value , *this );
     return operator=( exp1 );
 }
 
 Vector& Vector::operator+=( const Vector& other )
 {
-    Expression<Vector,Vector,Plus> exp1( other, *this );
+    Expression<Vector, Vector, Plus> exp1( other, *this );
     return operator=( exp1 );
 }
 
 Vector& Vector::operator+=( const Expression<Scalar, Vector, Times>& expression )
 {
-    Expression<Scalar,Vector,Times> exp1( 1.0, *this );
-    Expression<Expression<Scalar,Vector,Times>,
-               Expression<Scalar,Vector,Times>,
+    Expression<Scalar, Vector, Times> exp1( 1.0, *this );
+    Expression<Expression<Scalar, Vector, Times>,
+               Expression<Scalar, Vector, Times>,
                Plus> exp3( exp1, expression );
     return operator=( exp3 );
 }

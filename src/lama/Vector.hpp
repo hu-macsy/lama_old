@@ -171,6 +171,14 @@ public:
     Vector& operator*=( const Scalar value );
 
     /**
+     * @brief Divides the passed value with all elements of this.
+     *
+     * @param[in] value   the value to divide all elements of this with.
+     * @return            a reference to this.
+     */
+    Vector& operator/=( const Scalar value );
+
+    /**
      * @brief Returns the addition of this and other.
      *
      * @param[in] other the vector to do the addition with.
