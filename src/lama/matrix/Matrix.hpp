@@ -155,10 +155,17 @@ public:
      * void sub( ..., Matrix& a, ... )
      * ...
      * LAMA_ASSERT_EQUAL_DEBUG( a.getNumRows(), a.getNumColumns() )
-     * a.setIdentity();
+     * a.setIdentity( a.getRowDistribution() );
      * \endcode
      */
-    virtual void setIdentity() = 0;
+
+    /** Set matrix to a identity square matrix with same row and column distribution. */
+
+    virtual void setIdentity( DistributionPtr distribution ) = 0;
+
+    /** Set matrix to a (replicated) identity matrix with same row and column distribution. */
+
+    void setIdentity( const IndexType n );
 
     /** @brief Assignment of a matrix to this matrix
      *
@@ -186,7 +193,7 @@ public:
      *
      *  The columns of the local storage will be splitted according to the column distribution.
      *
-     *  @param[in] storage   TODO[doxy] Complete Description.
+     *  @param[in] storage   local part of the matrix on this processor
      *  @param[in] rowDist   the given row distribution.
      *  @param[in] colDist   storage will be splitted according to the column distribution.
      */
@@ -212,12 +219,11 @@ public:
     /** @brief This method returns one row of the matrix.
      *
      * @param[out] row              is a replicated vector with all values of the row
-     * @param[in]  globalRowIndex   TODO[doxy] Complete Description.
+     * @param[in]  globalRowIndex   global index of the row that should be extracted
      *
-     * Note: the value type of the vector should be the same type as the matrix (otherwise conversion)
-     *       and it should be a replicated vector (otherwise reallocation)
-     *
-     * Unclear: should the distribution always be unchanged ?
+     * - the vector row might be of any type but for efficiency it should have the same type as the matrix
+     *   (otherwise conversion)
+     * - the output vector will always be replicated
      */
     virtual void getRow( Vector& row, const IndexType globalRowIndex ) const = 0;
 

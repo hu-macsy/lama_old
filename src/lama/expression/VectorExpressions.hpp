@@ -45,7 +45,7 @@ namespace lama
  *
  * @param[in] alpha     The scalar.
  * @param[in] x         The vector.
- * @return              The expression representing this difference.
+ * @return              The expression representing this product.
  */
 
 inline Expression<Scalar,Vector,Times> operator*( const Scalar& alpha, const Vector& x )
@@ -58,12 +58,25 @@ inline Expression<Scalar,Vector,Times> operator*( const Scalar& alpha, const Vec
  *
  * @param[in] x         The vector.
  * @param[in] alpha     The scalar.
- * @return              The expression representing this difference.
+ * @return              The expression representing this product.
  */
 
 inline Expression<Scalar,Vector,Times> operator*( const Vector& x, const Scalar& alpha )
 {
     return Expression<Scalar,Vector,Times>( alpha, x );
+}
+
+/**
+ * @brief The division operator creates an expression that represents Vector times 1.0 / Scalar
+ *
+ * @param[in] x         The vector.
+ * @param[in] alpha     The scalar.
+ * @return              The expression representing this product.
+ */
+
+inline Expression<Scalar,Vector,Times> operator/( const Vector& x, const Scalar& alpha )
+{
+    return Expression<Scalar,Vector,Times>( Scalar( 1.0 ) / alpha, x );
 }
 
 /**

@@ -74,8 +74,7 @@ void SingleGridSetup::initialize( const Matrix& coefficients )
     mSolver->initialize( coefficients );
 
     mIdentity.reset( coefficients.create() );
-    mIdentity->allocate( coefficients.getDistributionPtr(), coefficients.getDistributionPtr() );
-    mIdentity->setIdentity();
+    mIdentity->setIdentity( coefficients.getDistributionPtr() );
 
     LAMA_LOG_DEBUG( logger, "Identity matrix = " << *mIdentity )
 
