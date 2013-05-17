@@ -141,6 +141,14 @@ public:
     inline Scalar operator-() const;
 
     /**
+     * @brief Binary operator
+     */
+    Scalar& operator+=( Scalar& other );
+    Scalar& operator-=( Scalar& other );
+    Scalar& operator*=( Scalar& other );
+    Scalar& operator/=( Scalar& other );
+
+    /**
      *  @brief Query that scalar values has no imaginary part.
      */
     inline bool isReal() const;

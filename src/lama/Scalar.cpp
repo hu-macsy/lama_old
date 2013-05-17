@@ -37,6 +37,30 @@
 namespace lama
 {
 
+Scalar& Scalar::operator+=( Scalar& other )
+{
+    mValue += other.mValue;
+    return *this;
+}
+
+Scalar& Scalar::operator-=( Scalar& other )
+{
+    mValue -= other.mValue;
+    return *this;
+}
+
+Scalar& Scalar::operator*=( Scalar& other )
+{
+    mValue *= other.mValue;
+    return *this;
+}
+
+Scalar& Scalar::operator/=( Scalar& other )
+{
+    mValue /= other.mValue;
+    return *this;
+}
+
 std::ostream& operator<<( std::ostream& stream, const Scalar::ScalarType& object )
 {
     switch ( object )
