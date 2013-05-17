@@ -78,6 +78,23 @@ Our multiplication looks like this:
 	result = csrMatrix * vector;
 	result.writeToFile( "result.txt" , File::FORMATTED );
 	
+The result is:
 
+.. math::
+  \left(\begin{matrix} r_0 \\
+    r_1 \\
+    r_2 \\
+    r_3 \\
+    r_4 \\
+    r_5 \\
+    r_6 \end{matrix}\right) = 
+  \left(\begin{matrix} -1.2 \\
+    42 \\
+    -102.3 \\
+    4.1 \\
+    2.7 \\
+    0 \\
+    -14.6 \end{matrix}\right)    
+    
 The full example program can be found here :download:`matrix.cpp <../../../examples/tutorial/matrix.cpp>`
 	
