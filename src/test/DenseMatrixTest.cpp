@@ -508,9 +508,9 @@ BOOST_AUTO_TEST_CASE( SetIdentityTest )
 
     CSRSparseMatrix<ValueType> n4m4SMatrixA = TestSparseMatrices::n4m4MatrixA1<ValueType>();
 
-    DenseMatrix<ValueType> matrixA( n4m4SMatrixA );
+    DenseMatrix<ValueType> matrixA;
 
-    matrixA.setIdentity();
+    matrixA.setIdentity( n4m4SMatrixA.getNumRows() );
 
     for ( IndexType i = 0; i < matrixA.getNumRows(); ++i )
     {

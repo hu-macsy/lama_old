@@ -277,9 +277,9 @@ public:
 
     virtual void allocate( DistributionPtr rowDistribution, DistributionPtr colDistribution );
 
-    /* Implementation of pure method of class Matrix. */
+    /** Set matrix to a identity square matrix with same row and column distribution. */
 
-    virtual void setIdentity();
+    virtual void setIdentity( DistributionPtr distribution );
 
     /* Implementation of pure method of class Matrix. */
 

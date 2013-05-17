@@ -142,9 +142,9 @@ BOOST_CHECK_EQUAL( matrix3.getNumColumns() , 0 );
 
 LAMA_LOG_INFO( logger, "Matrix( bdist = " << *bdist << ", cdist = " << *cdist << ")" );
 
-MatrixType matrix4 ( bdist, cdist );
+MatrixType matrix4;
 
-matrix4.setIdentity();
+matrix4.setIdentity( bdist );
 
 LAMA_LOG_INFO( logger, "Matrix( " << matrix4 << " )" );
 
