@@ -391,7 +391,10 @@ DenseMatrix<ValueType>::DenseMatrix( DistributionPtr distribution )
 template<typename ValueType>
 void DenseMatrix<ValueType>::setIdentity( DistributionPtr dist )
 {
-    allocate( dist, dist );
+    Matrix::setDistributedMatrix( dist, dist );
+
+    computeOwners();
+    allocateData();
 
     // Note: data is already allocated, so we just set it
 
