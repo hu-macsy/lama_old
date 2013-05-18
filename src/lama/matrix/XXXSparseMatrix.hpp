@@ -90,6 +90,18 @@ public:
         // Note: splitting of local rows to local + halo part is done by SparseMatrix constructor
     }
 
+    /** Override default constructor, make sure that deep copies are created. */
+
+    XXXSparseMatrix( const XXXSparseMatrix& other )
+
+        : SparseMatrix<ValueType>( createStorage() )
+
+    {
+        this->setCommunicationKind( other.getCommunicationKind() );
+        this->setContext( other.getContextPtr() );
+        SparseMatrix<ValueType>::assign( other );
+    }
+
     XXXSparseMatrix( const Matrix& other, bool transposeFlag = false )
 
         : SparseMatrix<ValueType>( createStorage() )
