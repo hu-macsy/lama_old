@@ -67,12 +67,12 @@ void OpenMPBLAS2::gemv(
                     << ", incX = " << incX << ", incY = " << incY 
                     << ", alpha = " << alpha << ", beta = " << beta )
 
-    if ( N == 0 )
+    if ( M == 0 )
     {
         return;   // empty X, Y, A  
     }
 
-    // M == 0: empty A, we can handle this here
+    // N == 0: empty A, but deal with X, Y, we can handle this here
 
     if ( syncToken )
     {
@@ -180,7 +180,7 @@ void OpenMPBLAS2::gemv(
                     << ", incX = " << incX << ", incY = " << incY 
                     << ", alpha = " << alpha << ", beta = " << beta )
 
-    if ( N == 0 )
+    if ( M == 0 )
     {
         return;   // empty X, Y, A  
     }

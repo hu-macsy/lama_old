@@ -481,53 +481,104 @@ void DenseStorageView<ValueType>::matrixTimesVector(
     const ValueType beta,
     const LAMAArrayConstView<ValueType> y ) const
 {
-    LAMA_LOG_DEBUG( logger,
-                    "Computing z = alpha * A * x + beta * y, with A = " << *this << ", x = " << x << ", y = " << y << ", z = " << result )
+    LAMA_LOG_INFO( logger,
+                   "Computing z = " << alpha << " * A * x + " << beta << " * y"
+                   << ", with A = " << *this << ", x = " << x << ", y = " << y << ", z = " << result )
 
     LAMA_ASSERT_EQUAL_ERROR( x.size(), mNumColumns )
     LAMA_ASSERT_EQUAL_ERROR( y.size(), mNumRows )
 
-    // ContextPtr loc = ContextFactory::getContext( Context::Host );
+    if ( mNumRows == 0 )
+    {
+        return;   // nothing to do
+    }
 
-    ContextPtr loc = mContext;
+    ContextPtr loc = mContext;  
 
     LAMA_LOG_INFO( logger, *this << ": matrixTimesVector on " << *loc )
 
     // not used here: LAMA_INTERFACE_FN_T( normalGEMV, loc, DenseUtils, Mult, ValueType )
 
-    ReadAccess<ValueType> denseValues( mData, loc );
-
-    ReadAccess<ValueType> rX( x, loc );
-
-    int n = mNumRows;
-    int m = mNumColumns;
-    int lda = mNumColumns; // stride for denseValues between rows
-
     // using BLAS2 interface requires result and y to be aliased
 
-    if ( result != y )
+    if ( beta == static_cast<ValueType>( 0 )  )
     {
+        LAMA_LOG_INFO( logger, "set result = 0 as y != result and beta = 0" )
+
+        LAMA_INTERFACE_FN_T( setVal, loc, Utils, Setter, ValueType )
+
+        WriteOnlyAccess<ValueType> wResult( result, loc, mNumRows );
+    
+        LAMA_CONTEXT_ACCESS( loc )
+
+        setVal( wResult.get(), mNumRows, static_cast<ValueType>( 0 ) );
+    }
+    else if ( result != y )
+    {
+        LAMA_LOG_INFO( logger, "set result = y as y != result" )
+
         LAMA_INTERFACE_FN_T( copy, loc, BLAS, BLAS1, ValueType )
 
         WriteOnlyAccess<ValueType> wResult( result, loc, mNumRows );
-
+    
         // by setting result = y we get the correct results
 
         ReadAccess<ValueType> rY( y, loc );
 
         LAMA_CONTEXT_ACCESS( loc )
 
-        copy( n, rY.get(), 1, wResult.get(), 1, NULL );
+        copy( mNumRows, rY.get(), 1, wResult.get(), 1, NULL );
+    }
+    else
+    {
+        LAMA_LOG_INFO( logger, "alias of result and y, can use it" )
     }
 
-    LAMA_INTERFACE_FN_T( gemv, loc, BLAS, BLAS2, ValueType );
+    // now we have: result = alpha * A * x + beta * result
 
-    WriteAccess<ValueType> wResult( result, loc );
+    if ( mNumColumns == 0 )
+    {
+        LAMA_LOG_INFO( logger, "empty matrix, so compute result = " << beta << " * result " )
 
-    LAMA_CONTEXT_ACCESS( loc )
+        if ( beta == static_cast<ValueType>( 0 ) )
+        {
+            // nothing more to do, y is already 0
+        }
+        else if ( beta == static_cast<ValueType>( 1 ) )
+        {
+            // no scaling required
+        }
+        else
+        { 
+            LAMA_INTERFACE_FN_T( scal, loc, BLAS, BLAS1, ValueType )
 
-    gemv( CblasRowMajor, CblasNoTrans, n, m, alpha, denseValues.get(), lda,
+            WriteAccess<ValueType> wResult( result, loc );
+
+            LAMA_CONTEXT_ACCESS( loc )
+
+            scal( mNumRows, beta, wResult.get(), 1, NULL );
+        }
+    }
+    else
+    {
+        // mNumColums > 0, mnumRows > 0, so we avoid problems for gemv with m==0 or n==0
+
+        LAMA_INTERFACE_FN_T( gemv, loc, BLAS, BLAS2, ValueType );
+
+        ReadAccess<ValueType> denseValues( mData, loc );
+        ReadAccess<ValueType> rX( x, loc );
+
+        int lda = mNumColumns; // stride for denseValues between rows
+
+        WriteAccess<ValueType> wResult( result, loc );
+
+        LAMA_CONTEXT_ACCESS( loc )
+
+        // gemv:  result = alpha * this * x + beta * result
+
+        gemv( CblasRowMajor, CblasNoTrans, mNumRows, mNumColumns, alpha, denseValues.get(), lda,
           rX.get(), 1, beta, wResult.get(), 1, NULL );
+    }
 }
 
 /* --------------------------------------------------------------------------- */

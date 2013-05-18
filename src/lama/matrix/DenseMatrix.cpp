@@ -1563,7 +1563,12 @@ void DenseMatrix<ValueType>::matrixTimesVectorImpl(
 
     const LAMAArray<ValueType>& localX = denseX.getLocalValues();
 
-    LAMA_LOG_INFO( logger, comm << ": matrixTimesVector, localX = " << localX << ", localY = " << localY )
+    LAMA_LOG_INFO( logger, comm << ": matrixTimesVector"
+                           << ", alpha = " << alphaValue << ", localX = " << localX 
+                           << ", beta = " << betaValue << ", localY = " << localY )
+
+    LAMA_LOG_INFO( logger, "Aliasing: result = y : " << ( &denseResult == &denseY ) 
+                           << ", local = " << ( &localResult == &localY ) )
 
     if ( n == 1 )
     {
@@ -1609,16 +1614,20 @@ void DenseMatrix<ValueType>::matrixTimesVectorImpl(
         }
     }
 
+    const int COMM_DIRECTION = 1;  // shift buffer to next processor
+
     if ( Matrix::ASYNCHRONOUS == Matrix::getCommunicationKind() )
     {
         LAMA_LOG_INFO( logger, comm << ": asynchronous communication" )
 
-        // asynchronous communication always requires same sizes of arrays
+        // asynchronous communication always requires same sizes of arrays, might shift some more data
 
-        std::auto_ptr<SyncToken> st( comm.shiftAsync( *recvValues, *sendValues, 1 ) );
+        std::auto_ptr<SyncToken> st( comm.shiftAsync( *recvValues, *sendValues, COMM_DIRECTION ) );
 
         LAMA_LOG_INFO( logger,
                        comm << ": matrixTimesVector, my dense block = " << *mData[rank] << ", localX = " << localX << ", localY = " << localY << ", localResult = " << localResult )
+
+        // overlap communication with local computation 
 
         mData[rank]->matrixTimesVector( localResult, alphaValue, localX, betaValue, localY );
 
@@ -1636,14 +1645,16 @@ void DenseMatrix<ValueType>::matrixTimesVectorImpl(
 
             if ( p < ( n - 1 ) )
             {
-                st.reset( comm.shiftAsync( *recvValues, *sendValues, 1 ) );
+                st.reset( comm.shiftAsync( *recvValues, *sendValues, COMM_DIRECTION ) );
             }
             else
             {
                 st.reset( new NoSyncToken() );
             }
-            LAMA_LOG_INFO( logger,
-                           comm << ": matrixTimesVector, actual dense block [" << actualPartition << "] = " << *mData[actualPartition] << ", sendX = " << localX << ", localResult = " << localResult )
+
+            LAMA_LOG_INFO( logger, comm 
+                           << ": matrixTimesVector, actual dense block [" << actualPartition << "] = " 
+                           << *mData[actualPartition] << ", sendX = " << localX << ", localResult = " << localResult )
 
             // adapt the size of recvValues, that is now sendValues after swap
 
@@ -1665,22 +1676,31 @@ void DenseMatrix<ValueType>::matrixTimesVectorImpl(
 
         LAMA_LOG_INFO( logger, comm << ": synchronous communication" )
 
-        comm.shiftArray( *recvValues, *sendValues, 1 );
+        comm.shiftArray( *recvValues, *sendValues, COMM_DIRECTION );
 
         // For the synchronous shift we have no problems regarding the correct sizes
 
         LAMA_LOG_DEBUG( logger, comm << ": send " << *sendValues << ", recv " << *recvValues )
 
-        mData[rank]->matrixTimesVector( localResult, alphaValue, *sendValues, betaValue, localResult );
+        LAMA_LOG_INFO( logger, comm 
+                       << ": matrixTimesVector, actual dense block [" << rank << "] = " 
+                       << *mData[rank] << ", local X = " << localX << ", local Y = " << localY )
+
+        mData[rank]->matrixTimesVector( localResult, alphaValue, localX, betaValue, localY );
 
         std::swap( sendValues, recvValues );
 
         for ( PartitionId p = 1; p < n; ++p )
         {
             PartitionId actualPartition = comm.getNeighbor( -p );
-            comm.shiftArray( *recvValues, *sendValues, 1 );
+            comm.shiftArray( *recvValues, *sendValues, COMM_DIRECTION );
             LAMA_LOG_DEBUG( logger,
                             comm << ": send " << *sendValues << ", recv " << *recvValues << ", actual = " << actualPartition )
+
+            LAMA_LOG_INFO( logger, comm 
+                           << ": matrixTimesVector, actual dense block [" << actualPartition << "] = " 
+                           << *mData[actualPartition] << ", sendX = " << *sendValues << ", localResult = " << localResult )
+
             mData[actualPartition]->matrixTimesVector( localResult, alphaValue, *sendValues, one, localResult );
             std::swap( sendValues, recvValues );
         }
