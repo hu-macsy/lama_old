@@ -345,7 +345,7 @@ void DenseStorageView<ValueType>::buildCSR(
 
     HostWriteOnlyAccess<IndexType> csrIA( ia, mNumRows + 1 );
 
-    ValueType eps = 0.0;
+    ValueType eps = this->mEpsilon;
 
     // Note: mDiagonalProperty == ( mNumRows == mNumColumns )
 

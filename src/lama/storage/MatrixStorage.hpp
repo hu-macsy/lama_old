@@ -524,7 +524,7 @@ public:
         const IndexType numRows,
         const IndexType numColumns,
         const _LAMAArray& values,
-        const ValueType epsilon );
+        const ValueType eps = 0.0 );
 
     /**
      * @brief fills matrix storage by csr sparse data.
@@ -891,6 +891,13 @@ public:
     using _MatrixStorage::getContext;
     using _MatrixStorage::getContextPtr;
 
+    // Use this method to change epsiolon temporarily  
+
+    void swapEpsilon( ValueType& epsilon ) const
+    {
+        std::swap( epsilon, mEpsilon );
+    }
+
 protected:
 
     /** The value mEpsilon is an individual value for each matrix storage that
@@ -899,7 +906,7 @@ protected:
      *  the storage data is compressed.
      */
 
-    ValueType mEpsilon;
+    mutable ValueType mEpsilon;
 
     /** Swap member variables of base class MatrixStorage<T>
      *

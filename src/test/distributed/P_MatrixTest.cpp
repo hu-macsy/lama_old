@@ -125,11 +125,16 @@ BOOST_AUTO_TEST_SUITE( P_MatrixTest )
 
 LAMA_LOG_DEF_LOGGER( logger, "Test.MatrixTest" );
 
-typedef boost::mpl::list<CSRSparseMatrix<float>,DenseMatrix<double>,DIASparseMatrix<float>,ELLSparseMatrix<double> > MatrixTypes;
+typedef boost::mpl::list<
+    CSRSparseMatrix<float>,
+    DenseMatrix<double>,
+    DIASparseMatrix<float>,
+    ELLSparseMatrix<double>  > MatrixTypes;
 
 /* ------------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( LocalConstructorTest, MatrixType, MatrixTypes ) {
+BOOST_AUTO_TEST_CASE_TEMPLATE( LocalConstructorTest, MatrixType, MatrixTypes ) 
+{
     CommunicatorPtr comm = CommunicatorFactory::get();
 
     const int size = comm->getSize();
@@ -160,7 +165,130 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( LocalConstructorTest, MatrixType, MatrixTypes ) {
 
 /* ------------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( CopyConstructorTest, MatrixType, MatrixTypes ) {
+BOOST_AUTO_TEST_CASE_TEMPLATE( SetDenseDataTest, MatrixType, MatrixTypes ) 
+{
+    typedef typename MatrixType::ValueType ValueType;
+
+    CommunicatorPtr comm = CommunicatorFactory::get();
+
+    // use multiple test cases for different nValues
+
+    const IndexType nValues[] = { 0, 1, 3, 17 };
+
+    const int nCases = sizeof( nValues ) / sizeof( IndexType );
+
+    for ( int k = 0; k < nCases; ++k )
+    {
+        int n = nValues[k];
+
+        DistributionPtr dist( new BlockDistribution( n, comm ) );
+
+        MatrixType m1;
+        m1.setIdentity( dist );
+
+        // build CSR data owned by this partition for identity matrix
+
+        std::vector<ValueType> values;
+        values.reserve( dist->getLocalSize() * n );
+
+        MatrixType m2;   // will be filled with dense data
+
+        double eps = 0.05;
+
+        // eps will only be used for sparse matrices
+
+        if ( m2.getMatrixKind() == Matrix::DENSE )
+        {
+            eps = 0.0;
+        }
+
+        for ( IndexType i = 0; i < n; ++i )
+        {
+            if ( ! dist->isLocal( i ) ) 
+            {
+                continue;
+            }
+            for ( IndexType j = 0; j < n; ++j )
+            {
+                ValueType val = static_cast<ValueType>( eps );
+
+                if ( i == j )
+                {
+                    val = static_cast<ValueType>( 1 );
+                }
+
+                values.push_back( val );
+            }
+        }
+
+        m2.setRawDenseData( dist, dist, &values[0], 2 * eps );
+
+        testSameMatrix( m1, m2 );
+    }
+}
+
+/* ------------------------------------------------------------------------- */
+
+BOOST_AUTO_TEST_CASE_TEMPLATE( SetCSRDataTest, MatrixType, MatrixTypes ) 
+{
+    typedef typename MatrixType::ValueType ValueType;
+
+    CommunicatorPtr comm = CommunicatorFactory::get();
+
+    // use multiple test cases for different nValues
+
+    const IndexType nValues[] = { 0, 1, 3, 17 };
+
+    const int nCases = sizeof( nValues ) / sizeof( IndexType );
+
+    for ( int k = 0; k < nCases; ++k )
+    {
+        int n = nValues[k];
+
+        DistributionPtr dist( new BlockDistribution( n, comm ) );
+
+        MatrixType m1;
+        m1.setIdentity( dist );
+
+        // build CSR data owned by this partition for identity matrix
+
+        std::vector<IndexType> iaOffset;
+        std::vector<IndexType> iaSizes;
+        std::vector<IndexType> ja;
+        std::vector<ValueType> values;
+
+        IndexType offset = 0;
+        IndexType numValues = 0;
+
+        iaOffset.push_back( offset );
+
+        for ( IndexType i = 0; i < n; ++i )
+        {
+            if ( ! dist->isLocal( i ) ) 
+            {
+                continue;
+            }
+            ja.push_back( i );
+            ValueType val = static_cast<ValueType>( 1.0 );
+            values.push_back( val );
+            offset ++;
+            numValues ++;
+            iaOffset.push_back( offset );
+            iaSizes.push_back( 1 );
+        }
+
+        MatrixType m2;
+
+        m2.setRawCSRData( dist, dist, numValues, &iaOffset[0], &ja[0], &values[0] );
+
+        testSameMatrix( m1, m2 );
+    }
+}
+
+/* ------------------------------------------------------------------------- */
+
+BOOST_AUTO_TEST_CASE_TEMPLATE( CopyConstructorTest, MatrixType, MatrixTypes ) 
+{
     const IndexType N1 = 10;
     const IndexType N2 = 10;
 
@@ -346,13 +474,11 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( InvertTest, MatrixType, SparseMatrixTypes ) {
     DistributionPtr ndist( new NoDistribution( n ) );
 
     m1.redistribute( bdist, ndist );
-// m1.getLocalStorage().print();
 
     LAMA_LOG_INFO( logger, "Input random matrix for invert: " << m1 );
 
     MatrixType m2;
     m2.invert( m1 );
-// m2.getLocalStorage().print();
 
     LAMA_LOG_INFO( logger, "Inverted matrix: " << m2 );
 
@@ -361,10 +487,9 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( InvertTest, MatrixType, SparseMatrixTypes ) {
 
     m1.redistribute( bdist, bdist );// otherwise no matrix mult possible
 
-// dense matrix multiplication not supported yet with distributed m2
+    // dense matrix multiplication not supported yet with distributed m2
 
     MatrixType mm( m1 * m2 );
-// mm.getLocalStorage().print();
 
     LAMA_LOG_INFO( logger, "Result of matrix x inverse : " << mm );
 
@@ -378,7 +503,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( InvertTest, MatrixType, SparseMatrixTypes ) {
 
 /* --------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( MatrixMultTest, MatrixType, SparseMatrixTypes ) {
+BOOST_AUTO_TEST_CASE_TEMPLATE( MatrixMultTest, MatrixType, SparseMatrixTypes ) 
+{
     typedef typename MatrixType::ValueType ValueType;
 
 // first we test for replicated matrices

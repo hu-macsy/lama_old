@@ -214,7 +214,8 @@ public:
     void setRawDenseData( 
         DistributionPtr rowDist, 
         DistributionPtr colDist, 
-        const ValueType* values )
+        const ValueType* values,
+        const double eps = 0.0 )
     {
         const IndexType n = rowDist->getLocalSize();
         const IndexType m = colDist->getGlobalSize();
@@ -223,7 +224,7 @@ public:
 
         const LAMAArrayRef<ValueType> valueArray( values, n * m );
 
-        setDenseData( rowDist, colDist, valueArray );
+        setDenseData( rowDist, colDist, valueArray, eps );
     }
 
     /** This method sets raw CSR data in the same way as setCSRData but with raw value array */
@@ -238,13 +239,12 @@ public:
         const ValueType* values )
     {
         const IndexType n = rowDist->getLocalSize();
-        const IndexType m = colDist->getGlobalSize();
 
         // use of LAMAArrayRef instead of LAMAArray avoids additional copying of values
 
-        const LAMAArrayRef<IndexType> iaArray( ia, n );
+        const LAMAArrayRef<IndexType> iaArray( ia, n + 1 );
         const LAMAArrayRef<IndexType> jaArray( ja, numValues );
-        const LAMAArrayRef<ValueType> valueArray( values, n * m );
+        const LAMAArrayRef<ValueType> valueArray( values, numValues );
 
         setCSRData( rowDist, colDist, numValues, iaArray, jaArray, valueArray );
     }
@@ -255,11 +255,13 @@ public:
     void setRawDenseData( 
         const IndexType n, 
         const IndexType m, 
-        const ValueType* values )
+        const ValueType* values,
+        const double eps = 0.0 )
     {
         setRawDenseData( DistributionPtr( new NoDistribution( n ) ),
                          DistributionPtr( new NoDistribution( m ) ), 
-                         values );
+                         values,
+                         eps );
     }
 
     /** @brief Assignment of a matrix to this matrix
