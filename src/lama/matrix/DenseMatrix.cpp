@@ -454,6 +454,41 @@ void DenseMatrix<ValueType>::setDenseData(
 /* ------------------------------------------------------------------------ */
 
 template<typename ValueType>
+void DenseMatrix<ValueType>::setCSRData(
+    DistributionPtr rowDist,
+    DistributionPtr colDist,
+    const IndexType numValues,
+    const LAMAArray<IndexType>& ia,
+    const LAMAArray<IndexType>& ja,
+    const _LAMAArray& values )
+{
+    DistributionPtr tmpReplicatedColDistribution = colDist;
+
+    const IndexType n = rowDist->getLocalSize();
+    const IndexType m = colDist->getGlobalSize();
+
+    // splitting of the column data will be done after setting full column data
+
+    if ( !colDist->isReplicated() )
+    {
+        tmpReplicatedColDistribution.reset( new NoDistribution( m ) );
+    }
+
+    Matrix::setDistributedMatrix( rowDist, tmpReplicatedColDistribution );
+
+    // due to temporary replicated col distribution, mData has only one entry
+
+    mData[0]->setCSRData( n, m, numValues, ia, ja, values );
+
+    if ( !colDist->isReplicated() )
+    {
+        splitColumns( colDist );
+    }
+}
+
+/* ------------------------------------------------------------------------ */
+
+template<typename ValueType>
 bool DenseMatrix<ValueType>::isConsistent() const
 {
     int consistencyErrors = 0;

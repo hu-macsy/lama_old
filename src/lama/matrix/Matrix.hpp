@@ -179,21 +179,42 @@ public:
      *
      *  The following must be valid: values.size() == rowDist->getLocalSize() * colDist->getGlobalSize()
      */
-    virtual void setDenseData( DistributionPtr rowDistribution, 
-                               DistributionPtr colDistribution, 
-                               const _LAMAArray& values,
-                               double eps = 0.0                ) = 0;
+    virtual void setDenseData( 
+        DistributionPtr rowDist,
+        DistributionPtr colDist, 
+        const _LAMAArray& values,
+        double eps = 0.0                ) = 0;
 
-    /*
-    virtual void setCSRData( DistributionPtr rowDistribution, DistributionPtr colDistribution, 
-                             const LAMAArray<IndexType>& ia, const LAMAArray<IndexType>& ja, 
-                             const _LAMAArray& ) = 0;
-    */
+    /** This method set a matrix with the values owned by this partition in CSR format 
+     *
+     *  @param[in] rowDist distributon of rows for the matrix
+     *  @param[in] colDist distributon of columns for the matrix
+     *  @param[in] numValues number of non-zero values 
+     *  @param[in] ia     is the offset array for number of elements in local rows
+     *  @param[in] ja     contains the (global) column indexes
+     *  @param[in] values contains the matrix values for the entries specified by ja
+     *
+     *  Note: only the row distribution decides which data is owned by this processor
+     *
+     *  - ja.size() == values.size() must be valid, stands for the number of non-zero values of this partition
+     *  - ia.size() == rowDistribution.getLocalSize() + 1 must be valid
+     */
+
+    virtual void setCSRData( 
+        DistributionPtr rowDist, 
+        DistributionPtr colDist, 
+        const IndexType numValues,
+        const LAMAArray<IndexType>& ia, 
+        const LAMAArray<IndexType>& ja, 
+        const _LAMAArray& values ) = 0;
 
     /** This method sets raw dense data in the same way as setDenseData but with raw value array */
 
     template<typename ValueType>
-    void setRawDenseData( DistributionPtr rowDist, DistributionPtr colDist, const ValueType* values )
+    void setRawDenseData( 
+        DistributionPtr rowDist, 
+        DistributionPtr colDist, 
+        const ValueType* values )
     {
         const IndexType n = rowDist->getLocalSize();
         const IndexType m = colDist->getGlobalSize();
@@ -205,13 +226,40 @@ public:
         setDenseData( rowDist, colDist, valueArray );
     }
 
-    /** Setting raw dense data for a replicated matrix, used for convenience. */
+    /** This method sets raw CSR data in the same way as setCSRData but with raw value array */
 
     template<typename ValueType>
-    void setRawDenseData( const IndexType n, const IndexType m, const ValueType* values )
+    void setRawCSRData(
+        DistributionPtr rowDist,
+        DistributionPtr colDist,
+        const IndexType numValues,
+        const IndexType* ia,
+        const IndexType* ja,
+        const ValueType* values )
     {
-        setRawDenseData( DistributionPtr( new NoDistribution( n ) )
-                         DistributionPtr( new NoDistribution( m ) ), valueArray );
+        const IndexType n = rowDist->getLocalSize();
+        const IndexType m = colDist->getGlobalSize();
+
+        // use of LAMAArrayRef instead of LAMAArray avoids additional copying of values
+
+        const LAMAArrayRef<IndexType> iaArray( ia, n );
+        const LAMAArrayRef<IndexType> jaArray( ja, numValues );
+        const LAMAArrayRef<ValueType> valueArray( values, n * m );
+
+        setCSRData( rowDist, colDist, numValues, iaArray, jaArray, valueArray );
+    }
+
+    /** Setting raw dense data for a replicated matrix, only for convenience. */
+
+    template<typename ValueType>
+    void setRawDenseData( 
+        const IndexType n, 
+        const IndexType m, 
+        const ValueType* values )
+    {
+        setRawDenseData( DistributionPtr( new NoDistribution( n ) ),
+                         DistributionPtr( new NoDistribution( m ) ), 
+                         values );
     }
 
     /** @brief Assignment of a matrix to this matrix

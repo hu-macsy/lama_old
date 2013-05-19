@@ -1780,6 +1780,39 @@ void SparseMatrix<ValueType>::setDenseData( DistributionPtr rowDist, Distributio
 /* ------------------------------------------------------------------------- */
 
 template<typename ValueType>
+void SparseMatrix<ValueType>::setCSRData( 
+    DistributionPtr rowDist, 
+    DistributionPtr colDist,
+    const IndexType numValues,
+    const LAMAArray<IndexType>& ia, 
+    const LAMAArray<IndexType>& ja,
+    const _LAMAArray& values )
+{
+    Matrix::setDistributedMatrix( rowDist, colDist );
+
+    IndexType localNumRows   = rowDist->getLocalSize();
+    IndexType globalNumCols  = colDist->getGlobalSize();
+
+    mLocalData->setCSRData( localNumRows, globalNumCols, numValues, ia, ja, values );
+
+    if ( !colDist->isReplicated() )
+    {
+        // localize the data according to row distribution, use splitHalo with replicated columns
+
+        mLocalData->splitHalo( *mLocalData, *mHaloData, mHalo, getColDistribution(), NULL );
+    }
+    else
+    {
+        mHaloData->allocate( localNumRows, 0 );
+        mHalo.clear();
+    }
+
+    LAMA_LOG_INFO( logger, *this << ": filled by (local) dense data" )
+}
+
+/* ------------------------------------------------------------------------- */
+
+template<typename ValueType>
 size_t SparseMatrix<ValueType>::getMemoryUsage() const
 {
     size_t memoryUsage = mLocalData->getMemoryUsage() + mHaloData->getMemoryUsage();

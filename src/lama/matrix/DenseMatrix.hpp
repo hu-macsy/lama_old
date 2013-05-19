@@ -288,9 +288,21 @@ public:
 
     /** Implementation of pure Matrix::setDenseData */
 
-    virtual void setDenseData( DistributionPtr rowDistribution,
-                               DistributionPtr colDistribution,
-                               const _LAMAArray& values, const double eps );
+    virtual void setDenseData( 
+        DistributionPtr rowDistribution,
+        DistributionPtr colDistribution,
+        const _LAMAArray& values, 
+        const double eps );
+
+    /** Implementation for pure method Matrix::setCSRData. */
+
+    virtual void setCSRData(
+        DistributionPtr rowDist,
+        DistributionPtr colDist,
+        const IndexType numValues,
+        const LAMAArray<IndexType>& ia,
+        const LAMAArray<IndexType>& ja,
+        const _LAMAArray& values );
 
     /** Implementation of pure method for the dense storage format. */
 
