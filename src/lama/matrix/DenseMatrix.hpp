@@ -280,20 +280,17 @@ public:
         return mData[0]->getContextPtr();
     }
 
+    using CRTPMatrix<DenseMatrix<T>, T>::setIdentity;  // setIdentity( const IndexType n )
+
     /** Implementation of pure method Matrix::setIdentity. */
 
     virtual void setIdentity( DistributionPtr distribution );
 
-    using CRTPMatrix<DenseMatrix<T>, T>::setIdentity;  // setIdentity( const IndexType n )
+    /** Implementation of pure Matrix::setDenseData */
 
-    /** Set matrix with global dense data */
-
-    template<typename OtherValueType>
-    void setRawDenseData(
-        const IndexType numRows,
-        const IndexType numColumns,
-        const OtherValueType values[],
-        const OtherValueType eps = 0.0 );
+    virtual void setDenseData( DistributionPtr rowDistribution,
+                               DistributionPtr colDistribution,
+                               const _LAMAArray& values, const double eps );
 
     /** Implementation of pure method for the dense storage format. */
 
@@ -690,18 +687,6 @@ void DenseMatrix<ValueType>::copyDenseMatrix( const DenseMatrix<OtherValueType>&
     }
 
     mOwners = other.getOwners();
-}
-
-template<typename ValueType>
-template<typename OtherValueType>
-void DenseMatrix<ValueType>::setRawDenseData(
-    const IndexType numRows,
-    const IndexType numColumns,
-    const OtherValueType values[],
-    const OtherValueType eps )
-{
-    allocate( numRows, numColumns );
-    mData[0]->setRawDenseData( numRows, numColumns, values, eps );
 }
 
 template<typename ValueType>

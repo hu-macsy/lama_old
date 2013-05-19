@@ -1259,6 +1259,39 @@ void MatrixStorage<ValueType>::setRawDenseData(
     LAMA_LOG_INFO( logger, *this << ": have set dense data " << numRows << " x " << numColumns )
 }
 
+/* ------------------------------------------------------------------------- */
+
+template<typename ValueType>
+void MatrixStorage<ValueType>::setDenseData(
+    const IndexType numRows,
+    const IndexType numColumns,
+    const _LAMAArray& values,
+    const ValueType epsilon )
+{
+    mEpsilon = epsilon;
+
+    // const_cast required, is safe as we will create a const DenseStorageView
+
+    _LAMAArray& mValues = const_cast<_LAMAArray&>( values );
+
+    if ( values.getValueType() == Scalar::FLOAT )
+    {
+        LAMAArray<float>& floatValues = dynamic_cast<LAMAArray<float>&>( mValues );
+        const DenseStorageView<float> denseStorage( floatValues, numRows, numColumns );
+        assign( denseStorage );
+    }
+    else if ( values.getValueType() == Scalar::DOUBLE )
+    {
+        LAMAArray<double>& doubleValues = dynamic_cast<LAMAArray<double>&>( mValues );
+        const DenseStorageView<double> denseStorage( doubleValues, numRows, numColumns );
+        assign( denseStorage );
+    }
+    else
+    {
+        LAMA_THROWEXCEPTION( "Unsupported type for setting dense data: " << values.getValueType() )
+    }
+}
+
 /* ========================================================================= */
 /*       File I/O                                                            */
 /* ========================================================================= */

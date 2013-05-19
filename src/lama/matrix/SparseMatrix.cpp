@@ -1739,11 +1739,42 @@ void SparseMatrix<ValueType>::setIdentity( DistributionPtr dist )
 {
     allocate( dist, dist );
 
-    mLocalData->setIdentity( getDistributionPtr()->getLocalSize() );
-    mHaloData->clear();
-    mHalo.clear();
+    const IndexType localNumRows = getDistributionPtr()->getLocalSize();
+
+    mLocalData->setIdentity( localNumRows );
+    mHaloData->allocate( localNumRows, 0 );
+
+    mHalo.clear();  // no exchange needed
 
     LAMA_LOG_INFO( logger, *this << ": identity" )
+}
+
+/* ------------------------------------------------------------------------- */
+
+template<typename ValueType>
+void SparseMatrix<ValueType>::setDenseData( DistributionPtr rowDist, DistributionPtr colDist,
+                                            const _LAMAArray& values, const double eps )
+{
+    Matrix::setDistributedMatrix( rowDist, colDist ); 
+
+    IndexType localNumRows  = rowDist->getLocalSize();
+    IndexType globalNumCols = colDist->getGlobalSize();
+
+    mLocalData->setDenseData( localNumRows, globalNumCols, values, eps );
+
+    if ( !colDist->isReplicated() )
+    {
+        // localize the data according to row distribution, use splitHalo with replicated columns
+    
+        mLocalData->splitHalo( *mLocalData, *mHaloData, mHalo, getColDistribution(), NULL );
+    }
+    else
+    {
+        mHaloData->allocate( localNumRows, 0 );
+        mHalo.clear();
+    }
+
+    LAMA_LOG_INFO( logger, *this << ": filled by (local) dense data" )
 }
 
 /* ------------------------------------------------------------------------- */

@@ -520,6 +520,12 @@ public:
         const OtherValueType values[],
         const ValueType eps = 0.0 );
 
+    void setDenseData(
+        const IndexType numRows,
+        const IndexType numColumns,
+        const _LAMAArray& values,
+        const ValueType epsilon );
+
     /**
      * @brief fills matrix storage by csr sparse data.
      *

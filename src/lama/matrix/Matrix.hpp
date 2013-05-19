@@ -46,6 +46,7 @@
 #include <lama/Context.hpp>
 
 #include <lama/distribution/Distribution.hpp>
+#include <lama/distribution/NoDistribution.hpp>
 
 // logging
 #include <logging/logging.hpp>
@@ -166,6 +167,52 @@ public:
     /** Set matrix to a (replicated) identity matrix with same row and column distribution. */
 
     void setIdentity( const IndexType n );
+
+    /** This method sets a matrix with the values owned by this partition in dense format
+     *
+     *  @param[in] rowDist distributon of rows for the matrix
+     *  @param[in] colDist distributon of columns for the matrix
+     *  @param[in] values contains all values of the owned rows in row-major order (C-style)
+     *  @param[in] eps    threshold value for non-zero elements
+     *
+     *  Note: only the row distribution decides which data is owned by this processor
+     *
+     *  The following must be valid: values.size() == rowDist->getLocalSize() * colDist->getGlobalSize()
+     */
+    virtual void setDenseData( DistributionPtr rowDistribution, 
+                               DistributionPtr colDistribution, 
+                               const _LAMAArray& values,
+                               double eps = 0.0                ) = 0;
+
+    /*
+    virtual void setCSRData( DistributionPtr rowDistribution, DistributionPtr colDistribution, 
+                             const LAMAArray<IndexType>& ia, const LAMAArray<IndexType>& ja, 
+                             const _LAMAArray& ) = 0;
+    */
+
+    /** This method sets raw dense data in the same way as setDenseData but with raw value array */
+
+    template<typename ValueType>
+    void setRawDenseData( DistributionPtr rowDist, DistributionPtr colDist, const ValueType* values )
+    {
+        const IndexType n = rowDist->getLocalSize();
+        const IndexType m = colDist->getGlobalSize();
+
+        // use of LAMAArrayRef instead of LAMAArray avoids additional copying of values
+
+        const LAMAArrayRef<ValueType> valueArray( values, n * m );
+
+        setDenseData( rowDist, colDist, valueArray );
+    }
+
+    /** Setting raw dense data for a replicated matrix, used for convenience. */
+
+    template<typename ValueType>
+    void setRawDenseData( const IndexType n, const IndexType m, const ValueType* values )
+    {
+        setRawDenseData( DistributionPtr( new NoDistribution( n ) )
+                         DistributionPtr( new NoDistribution( m ) ), valueArray );
+    }
 
     /** @brief Assignment of a matrix to this matrix
      *

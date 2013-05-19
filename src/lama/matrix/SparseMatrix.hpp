@@ -250,20 +250,11 @@ public:
         return mLocalData->getContext();
     }
 
-    /**
-     * @brief Set sparse matrix with global dense data.
-     *
-     * @param[in] numRows      number of rows, must be non-negative.
-     * @param[in] numColumns   number of columns, must be non-negative.
-     * @param[in] values[]     TODO[doxy] Complete Description.
-     * @param[in] eps          TODO[doxy] Complete Description.
-     */
-    template<typename OtherValueType>
-    void setRawDenseData(
-        const IndexType numRows,
-        const IndexType numColumns,
-        const OtherValueType values[],
-        const OtherValueType eps = 0.0 );
+    /** Implementation for Matrix::setDenseData */
+
+    virtual void setDenseData( DistributionPtr rowDistribution, 
+                               DistributionPtr colDistribution,
+                               const _LAMAArray& values, const double eps );
 
     /* Implementation of pure method of class Matrix. */
 
@@ -638,23 +629,6 @@ private:
     mutable LAMAArray<ValueType> mTempSendValues;//!< temporary vector for halo comunications
 };
 
-/* ------------------------------------------------------------------------- */
-
-template<typename ValueType>
-template<typename OtherValueType>
-void SparseMatrix<ValueType>::setRawDenseData(
-    const IndexType numRows,
-    const IndexType numColumns,
-    const OtherValueType values[],
-    const OtherValueType eps )
-{
-    Matrix::setReplicatedMatrix( numRows, numColumns ); // sets global distributions
-
-    mLocalData->setRawDenseData( numRows, numColumns, values, eps );
-    mHaloData->allocate( numRows, 0 );
-    mHalo = Halo();
-}
-
-}
+} // namespace lama
 
 #endif // LAMA_SPARSE_MATRIX_HPP_
