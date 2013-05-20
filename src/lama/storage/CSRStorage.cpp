@@ -1570,8 +1570,18 @@ void CSRStorage<ValueType>::matrixAddMatrixCSR(
     LAMA_INTERFACE_FN( matrixAddSizes, loc, CSRUtils, Offsets )
     LAMA_INTERFACE_FN_T( matrixAdd, loc, CSRUtils, Mult, ValueType )
 
-    LAMA_ASSERT_ERROR( &a != this, "matrixAddMatrix: alias of a with this result matrix" )
-    LAMA_ASSERT_ERROR( &b != this, "matrixAddMatrix: alias of b with this result matrix" )
+    if ( &a == this || &b == this )
+    {
+        // due to alias we would get problems with Write/Read access, so use a temporary
+ 
+        CSRStorage<ValueType> tmp;
+
+        tmp.matrixAddMatrixCSR( alpha, a, beta, b, loc );
+
+        swap( tmp );  // safe as tmp will be destroyed afterwards
+
+        return;
+    }
 
     LAMA_REGION( "Storage.CSR.addMatrixCSR" )
 
