@@ -62,9 +62,11 @@ class LAMA_DLL_IMPORTEXPORT CSRSparseMatrix: public SparseMatrix<T>
 
 public:
 
-    /** type definition of the value type. */
+    /** Type definition of the value type for this sparse matrix. */
 
     typedef T ValueType;
+
+    /** Type definition of the storage type for this sparse matrix. */
 
     typedef CSRStorage<T> StorageType;
 
@@ -82,76 +84,29 @@ public:
 
     /** Constructor, creates a distributed zero-matrix by given row and column distribution */
 
-    CSRSparseMatrix( DistributionPtr rowDist, DistributionPtr colDist )
-
-        : SparseMatrix<ValueType>( createStorage( rowDist->getLocalSize(), colDist->getGlobalSize() ),
-                                   rowDist, colDist )
-    {
-        // Note: splitting of local rows to local + halo part is done by SparseMatrix constructor
-    }
+    CSRSparseMatrix( DistributionPtr rowDist, DistributionPtr colDist );
 
     /** Override default constructor, make sure that deep copies are created. */
 
-    CSRSparseMatrix( const CSRSparseMatrix& other )
+    CSRSparseMatrix( const CSRSparseMatrix& other );
 
-        : SparseMatrix<ValueType>( createStorage() )
+    /** Most general copy constrcuctor with possibility of transpose. */
 
-    {
-        this->setCommunicationKind( other.getCommunicationKind() );
-        this->setContext( other.getContextPtr() );
-        SparseMatrix<ValueType>::assign( other );
-    }
+    CSRSparseMatrix( const Matrix& other, bool transposeFlag = false );
 
-    CSRSparseMatrix( const Matrix& other, bool transposeFlag = false )
-
-        : SparseMatrix<ValueType>( createStorage() )
-
-    {
-        this->setCommunicationKind( other.getCommunicationKind() );
-
-        if ( transposeFlag )
-        {
-            SparseMatrix<ValueType>::assignTranspose( other );
-        }
-        else
-        {
-            SparseMatrix<ValueType>::assign( other );
-        }
-    }
-
-    /** Constructor of a sparse matrix by another input matrix.
+    /** Constructor of a sparse matrix by another input matrix with redistribution.
      *
      * @param[in] other     is the input matrix.
-     * @param[in] rowDist   TODO[doxy] Complete Description.
-     * @param[in] colDist   TODO[doxy] Complete Description.
+     * @param[in] rowDist   row distribution of the new matrix
+     * @param[in] colDist   column distribution of the new matrix
      */
-    CSRSparseMatrix( const Matrix& other, DistributionPtr rowDist, DistributionPtr colDist )
-
-        : SparseMatrix<ValueType>( createStorage() )
-
-    {
-        this->setCommunicationKind( other.getCommunicationKind() );
-
-        // ToDo: this could be done better to avoid intermediate copies
-
-        SparseMatrix<ValueType>::assign( other );
-        this->redistribute( rowDist, colDist );
-    }
+    CSRSparseMatrix( const Matrix& other, DistributionPtr rowDist, DistributionPtr colDist );
 
     /** Constructor of a (replicated) sparse matrix by global storage.
      *
      *  @param[in] globalData  contains local rows of the distributed matrix
      */
-    CSRSparseMatrix( const _MatrixStorage& globalData )
-
-        : SparseMatrix<ValueType>( createStorage() )
-
-    {
-        DistributionPtr rowDist( new NoDistribution( globalData.getNumRows() ) );
-        DistributionPtr colDist( new NoDistribution( globalData.getNumRows() ) );
-
-        SparseMatrix<ValueType>::assign( globalData, rowDist, colDist );
-    }
+    CSRSparseMatrix( const _MatrixStorage& globalData );
 
     /** Constructor of a sparse matrix by local storage.
      *
@@ -162,13 +117,7 @@ public:
      *  This constructor works also fine if localData is the full global matrix;
      *  in this case only local rows will be taken on this processor.
      */
-    CSRSparseMatrix( const _MatrixStorage& localData, DistributionPtr rowDist, DistributionPtr colDist )
-
-        : SparseMatrix<ValueType>( createStorage() )
-
-    {
-        SparseMatrix<ValueType>::assign( localData, rowDist, colDist );
-    }
+    CSRSparseMatrix( const _MatrixStorage& localData, DistributionPtr rowDist, DistributionPtr colDist );
 
     /** Constructor of a replicated sparse matrix by reading the matrix
      *  data from a file.
@@ -179,36 +128,15 @@ public:
      *  meantime this constructor should be used with a following call of
      *  the redistribute method.
      */
-    explicit CSRSparseMatrix( const std::string& filename )
-
-        : SparseMatrix<ValueType>( createStorage() )
-
-    {
-        this->readFromFile( filename );
-    }
+    explicit CSRSparseMatrix( const std::string& filename );
 
     // Expression constructors
 
-    explicit CSRSparseMatrix( const Expression<Matrix,Matrix,Times>& expression )
+    explicit CSRSparseMatrix( const Expression<Matrix, Matrix, Times>& expression );
 
-        : SparseMatrix<ValueType>( createStorage() )
-    {
-        Matrix::operator=( expression );
-    }
+    explicit CSRSparseMatrix( const Expression<Scalar, Matrix, Times>& expression );
 
-    explicit CSRSparseMatrix( const Expression<Scalar,Matrix,Times>& expression )
-
-        : SparseMatrix<ValueType>( createStorage() )
-    {
-        Matrix::operator=( expression );
-    }
-
-    explicit CSRSparseMatrix( const Expression<Scalar,Expression<Matrix,Matrix,Times>,Times>& expression )
-
-        : SparseMatrix<ValueType>( createStorage() )
-    {
-        Matrix::operator=( expression );
-    }
+    explicit CSRSparseMatrix( const Expression<Scalar, Expression<Matrix, Matrix, Times>, Times>& expression );
 
     /** @brief Constructor of CSRSparseMatrix by sum of two matrices.
      *
@@ -216,15 +144,9 @@ public:
      *
      */
     explicit CSRSparseMatrix(
-        const Expression<Expression<Scalar,Matrix,Times>,Expression<Scalar,Matrix,Times>,Plus> expression )
-
-        : SparseMatrix<ValueType>( createStorage() )
-    {
-        // inherit context from matA
-
-        SparseMatrix<ValueType>::setContext( expression.getArg1().getArg2().getContextPtr() );
-        Matrix::operator=( expression );
-    }
+        const Expression<Expression<Scalar, Matrix, Times>,
+                         Expression<Scalar, Matrix, Times>,
+                         Plus> expression );
 
     /** @brief Constructor of a CSR sparse matrix with distributed CSR storage data.
      *
@@ -252,29 +174,7 @@ public:
         const IndexType haloJA[],
         const HaloValueType haloValues[],
         const std::vector<IndexType>& ownedIndexes,
-        const CommunicatorPtr communicator )
-
-        : SparseMatrix<ValueType>( createStorage() )
-
-    {
-        LAMA_LOG_INFO( logger,
-                       communicator << ": construct distributed matrix " << numLocalRows << " by local and halo data + owned indexes" );
-
-        // For the distribution we need the global number of rows, not available as arg, so compute it
-
-        IndexType numGlobalRows = communicator->sum( numLocalRows );
-
-        mLocalData->setRawCSRData( numLocalRows, numLocalRows, numLocalNonZeros, localIA, localJA, localValues );
-        mHaloData->setRawCSRData( numLocalRows, numGlobalRows, numHaloNonZeros, haloIA, haloJA, haloValues );
-
-        DistributionPtr dist( new GeneralDistribution( numGlobalRows, ownedIndexes, communicator ) );
-
-        // Halo is already splitted, but still contains the global indexes
-
-        mHaloData->buildHalo( mHalo, *dist ); // build halo, maps global indexes to halo indexes
-
-        Matrix::setDistributedMatrix( dist, dist );
-    }
+        const CommunicatorPtr communicator );
 
     /**
      * @brief Destructor. Releases all allocated resources.
@@ -317,11 +217,19 @@ public:
 
     virtual void swapLocalStorage( StorageType& localStorage );
 
-    // TODO: create, copy with covariant return types
+    /* Implementation of pure method Matrix::create with covariant return type */
+
+    virtual CSRSparseMatrix<ValueType>* create() const;
+
+    /* Implementation of pure method Matrix::copy with covariant return type */
+
+    virtual CSRSparseMatrix<ValueType>* copy() const;
 
     /* Implementation of pure method of class Matrix. */
 
     virtual const char* getTypeName() const;
+
+    using SparseMatrix<ValueType>::setContext;
 
 protected:
 
@@ -333,20 +241,50 @@ private:
 
     /** This private routine provides empty CSR storage for a CSRSparseMatrix. */
 
-    boost::shared_ptr<MatrixStorage<ValueType> > createStorage()
-    {
-        return boost::shared_ptr<MatrixStorage<ValueType> >( new StorageType() );
-    }
+    boost::shared_ptr<MatrixStorage<ValueType> > createStorage();
 
-    boost::shared_ptr<MatrixStorage<ValueType> > createStorage( const IndexType numRows, const IndexType numColumns )
-    {
-        boost::shared_ptr<MatrixStorage<ValueType> > storage( new StorageType() );
-        storage->allocate( numRows, numColumns );
-        return storage;
-    }
+    boost::shared_ptr<MatrixStorage<ValueType> > createStorage( const IndexType numRows, const IndexType numColumns );
 
     LAMA_LOG_DECL_STATIC_LOGGER( logger )
 };
+
+template<typename ValueType>
+template<typename LocalValueType,typename HaloValueType>
+CSRSparseMatrix<ValueType>::CSRSparseMatrix(
+    const IndexType numLocalRows,
+    const IndexType numLocalNonZeros,
+    const IndexType numHaloNonZeros,
+    const IndexType localIA[],
+    const IndexType localJA[],
+    const LocalValueType localValues[],
+    const IndexType haloIA[],
+    const IndexType haloJA[],
+    const HaloValueType haloValues[],
+    const std::vector<IndexType>& ownedIndexes,
+    const CommunicatorPtr communicator )
+
+    : SparseMatrix<ValueType>( createStorage() )
+
+{
+    LAMA_LOG_INFO( logger,
+                   communicator << ": construct distributed matrix "
+                   << numLocalRows << " by local and halo data + owned indexes" );
+
+    // For the distribution we need the global number of rows, not available as arg, so compute it
+
+    IndexType numGlobalRows = communicator->sum( numLocalRows );
+
+    mLocalData->setRawCSRData( numLocalRows, numLocalRows, numLocalNonZeros, localIA, localJA, localValues );
+    mHaloData->setRawCSRData( numLocalRows, numGlobalRows, numHaloNonZeros, haloIA, haloJA, haloValues );
+
+    DistributionPtr dist( new GeneralDistribution( numGlobalRows, ownedIndexes, communicator ) );
+
+    // Halo is already splitted, but still contains the global indexes
+
+    mHaloData->buildHalo( mHalo, *dist ); // build halo, maps global indexes to halo indexes
+
+    Matrix::setDistributedMatrix( dist, dist );
+}
 
 } // namespace lama
 

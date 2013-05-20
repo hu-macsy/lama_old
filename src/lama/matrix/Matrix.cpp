@@ -296,19 +296,6 @@ void Matrix::writeAt( std::ostream& stream ) const
 
 /* ---------------------------------------------------------------------------------*/
 
-void Matrix::matrix2CSRGraph(
-    IndexType* /*xadj*/,
-    IndexType* /*adjncy*/,
-    IndexType* /*vwgt*/,
-    CommunicatorPtr /*comm*/,
-    const IndexType* /*globalRowIndices*/,
-    IndexType* /*vtxdist = NULL*/) const
-{
-    LAMA_THROWEXCEPTION( "Transformation of "<< *this << "to CSR Graph not specialized." )
-}
-
-/* ---------------------------------------------------------------------------------*/
-
 Matrix& Matrix::operator=( const Matrix& other )
 {
     // assignment operator is just implemented by the assign method
@@ -324,13 +311,9 @@ Matrix& Matrix::operator=( const Matrix& other )
 
 /* ---------------------------------------------------------------------------------*/
 
-/**
- * @brief the assignment operator for a scalar matrix multiplication.
- */
-Matrix& Matrix::operator=( Expression<Scalar,Matrix,Times> exp )
+Matrix& Matrix::operator=( Expression<Scalar, Matrix, Times> exp )
 {
-    //TODO Implement --> SCAL --> VectorInterface?
-    //LAMA_THROWEXCEPTION("Assignement operator for Scalar * Matrix is not yet implemented")
+    // exp is Expression object that stands for s * A 
 
     const Matrix& A = exp.getArg2();
     const Scalar& s = exp.getArg1();
@@ -338,17 +321,57 @@ Matrix& Matrix::operator=( Expression<Scalar,Matrix,Times> exp )
     return *this;
 }
 
-/**
- * @brief the assignment operator for a matrix matrix multiplication.
- */
-Matrix& Matrix::operator=( Expression<Matrix,Matrix,Times> exp )
+/* ---------------------------------------------------------------------------------*/
+
+Matrix& Matrix::operator+=( const Expression<Scalar, Matrix, Times>& exp )
 {
-    Scalar zero( 0 );
-    Scalar one( 1 );
-    Expression<Scalar,Expression<Matrix,Matrix,Times>,Times> exp1( one, exp );
-    Expression<Scalar,Matrix,Times> exp2( zero, exp.getArg1() );
-    *this = Expression<Expression<Scalar,Expression<Matrix,Matrix,Times>,Times>,Expression<Scalar,Matrix,Times>,Plus>(
-                exp1, exp2 );
+    // this += alpha * A  -> this = alpha * A + 1.0 * this
+
+    const Scalar one( 1 );
+
+    Expression<Scalar, Matrix, Times> exp2( one, *this );
+
+    *this =  Expression<Expression<Scalar, Matrix, Times>,
+                        Expression<Scalar, Matrix, Times>,
+                        Plus> ( exp, exp2 );
+
+    return *this;
+}
+
+/* ---------------------------------------------------------------------------------*/
+
+Matrix& Matrix::operator+=( const Matrix& exp )
+{
+    // this += A  -> this = 1.0 * A + 1.0 * this
+
+    const Scalar one( 1 );
+
+    Expression<Scalar, Matrix, Times> exp1( one, exp );
+    Expression<Scalar, Matrix, Times> exp2( one, *this );
+
+    *this =  Expression<Expression<Scalar, Matrix, Times>,
+                        Expression<Scalar, Matrix, Times>,
+                        Plus> ( exp1, exp2 );
+
+    return *this;
+}
+
+/* ---------------------------------------------------------------------------------*/
+
+Matrix& Matrix::operator=( Expression<Matrix, Matrix, Times> exp )
+{
+    // exp is Expression object that stands for A * B with matrices A * B
+    //   ->   1.0 * A * B + 0.0 * A
+
+    const Scalar zero( 0 );
+    const Scalar one( 1 );
+
+    Expression<Scalar, Expression<Matrix, Matrix, Times>, Times> exp1( one, exp );  // 1.0 * A * B
+    Expression<Scalar, Matrix, Times> exp2( zero, exp.getArg1() );
+
+    *this = Expression<Expression<Scalar,Expression<Matrix,Matrix,Times>,Times>,
+                       Expression<Scalar,Matrix,Times>,
+                       Plus>( exp1, exp2 );
     return *this;
 }
 
@@ -383,6 +406,78 @@ double Matrix::getSparsityRate() const
 
 /* ---------------------------------------------------------------------------------*/
 
+void Matrix::sanityCheck( const Expression<Matrix, Matrix, Times>& exp )
+{
+    // check sanity of matrix product exp = A * B 
+
+    const Matrix& A = exp.getArg1();
+    const Matrix& B = exp.getArg2();
+
+    const Distribution& colDistA = A.getColDistribution();
+    const Distribution& rowDistB = B.getDistribution();
+
+    if ( colDistA != rowDistB )
+    {
+        LAMA_THROWEXCEPTION(
+         "A * B with A = " << A << ", B = " << B << std::endl
+         << "col size/distribution of A  = " << A.getColDistribution() 
+         << " does not match row/size distribution of B = " << B.getDistribution() );
+    }
+}
+
+void Matrix::sanityCheck( const Expression<Matrix, Matrix, Times>& exp, const Matrix& C )
+{
+    sanityCheck( exp );   // verify the sanity of the matrix product
+
+    // verify that result of matrix multiplication and C are conform
+
+    const Matrix& A = exp.getArg1();
+    const Matrix& B = exp.getArg2();
+
+    const Distribution& rowDistA = A.getDistribution();
+    const Distribution& colDistB = B.getColDistribution();
+
+    const Distribution& rowDistC = C.getDistribution();
+    const Distribution& colDistC = C.getColDistribution();
+
+    if ( rowDistA != rowDistC )
+    {
+        LAMA_THROWEXCEPTION( "Size/distribution of rows do not match: " 
+                           << "ARG1 = " << A << ", ARG2 = " << C )
+    }
+
+    if ( colDistB != colDistC )
+    {
+        LAMA_THROWEXCEPTION( "Size/distribution of cols do not match: " 
+                           << "ARG1 = " << B << ", ARG2 = " << C )
+    }
+}
+
+void Matrix::sanityCheck( const Matrix& A, const Matrix& B )
+{
+    // verify that A and B are conform for addition
+
+    const Distribution& rowDistA = A.getDistribution();
+    const Distribution& colDistA = A.getColDistribution();
+
+    const Distribution& rowDistB = B.getDistribution();
+    const Distribution& colDistB = B.getColDistribution();
+
+    if ( rowDistA != rowDistB )
+    {
+        LAMA_THROWEXCEPTION( "Size/distribution of rows do not match: " 
+                           << "ARG1 = " << A << ", ARG2 = " << B )
+    }
+
+    if ( colDistA != colDistB )
+    {
+        LAMA_THROWEXCEPTION( "Size/distribution of cols do not match: " 
+                           << "ARG1 = " << A << ", ARG2 = " << B )
+    }
+}
+
+/* ---------------------------------------------------------------------------------*/
+
 /**
  * @brief the assignment operator for a GEMM expression.
  */
@@ -396,53 +491,16 @@ Matrix& Matrix::operator=(
     const Matrix& C = exp.getArg2().getArg2();
     const Scalar& alpha = exp.getArg1().getArg1();
     const Scalar& beta = exp.getArg2().getArg1();
-    const Scalar zero( 0.0 );
 
-    //Do sanity checks
+    const Scalar  zero( 0 );
 
-    const Distribution& rowDistA = A.getDistribution();
-    const Distribution& colDistA = A.getColDistribution();
-    const Distribution& rowDistB = B.getDistribution();
-    const Distribution& colDistB = B.getColDistribution();
-    const Distribution& rowDistC = C.getDistribution();
-    const Distribution& colDistC = C.getColDistribution();
-
-    if ( colDistA != rowDistB )
+    if ( beta == zero )
     {
-        LAMA_THROWEXCEPTION(
-            "Distribution of " << A << " = " << A.getColDistribution() << " does not match distribution of " << B << " = " << B.getDistribution() );
+        sanityCheck( exp.getArg1().getArg2() );
     }
-
-    if ( rowDistA != rowDistC && beta != zero )
+    else
     {
-        LAMA_THROWEXCEPTION(
-            "Distribution of " << A << " = " << A.getDistribution() << " does not match distribution of " << C << " = " << C.getDistribution() );
-    }
-
-    if ( colDistB != colDistC && beta != zero )
-    {
-        LAMA_THROWEXCEPTION(
-            "Distribution of " << B << " = " << B.getColDistribution() << " does not match distribution of " << C << " = " << C.getColDistribution() );
-    }
-
-    // lhs matrix will be allocated with ( rowDistA, colDistB )
-
-    //size checks are needed because NoDistribution does not compare sizes
-
-    if ( A.getNumColumns() != B.getNumRows() )
-    {
-        LAMA_THROWEXCEPTION(
-            "Number of rows of " << A << " = " << A.getNumRows() << " does not match the number of columns of " << B << " = " << B.getNumColumns() );
-    }
-    if ( A.getNumRows() != C.getNumRows() && beta != zero )
-    {
-        LAMA_THROWEXCEPTION(
-            "Number of rows of " << A << " = " << A.getNumRows() << " does not match the number of rows of " << C << " = " << C.getNumRows() );
-    }
-    if ( B.getNumColumns() != C.getNumColumns() && beta != zero )
-    {
-        LAMA_THROWEXCEPTION(
-            "Number of columns of " << B << " = " << B.getNumColumns() << " does not match the number of columns of " << C << " = " << C.getNumColumns() );
+        sanityCheck( exp.getArg1().getArg2(), exp.getArg2().getArg2() );
     }
 
     LAMA_LOG_INFO( logger, "Context of this before matrixTimesMatrix = " << this->getContext() )
@@ -473,34 +531,21 @@ Matrix& Matrix::operator=( Expression<Expression<Scalar,Matrix,Times>,Expression
 
     if ( beta == zero )
     {
+        // second summand not needed
         this->matrixTimesScalar( A, alpha );
         return *this;
     }
 
     if ( alpha == zero )
     {
+        // first summand not needed
         this->matrixTimesScalar( B, beta );
         return *this;
     }
 
     // Do sanity checks
 
-    const Distribution& rowDistA = A.getDistribution();
-    const Distribution& colDistA = A.getColDistribution();
-    const Distribution& rowDistB = B.getDistribution();
-    const Distribution& colDistB = B.getColDistribution();
-
-    if ( rowDistA != rowDistB )
-    {
-        LAMA_THROWEXCEPTION(
-            "Row distribution of " << A << " = " << rowDistA << " does not match distribution of " << B << " = " << rowDistB );
-    }
-
-    if ( colDistA != colDistB )
-    {
-        LAMA_THROWEXCEPTION(
-            "Column distribution of " << A << " = " << colDistA << " does not match distribution of " << B << " = " << colDistB );
-    }
+    sanityCheck( A, B );
 
     this->matrixPlusMatrix( alpha, A, beta, B );
 

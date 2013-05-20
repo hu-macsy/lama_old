@@ -473,27 +473,6 @@ public:
         const Scalar beta,
         const Matrix& C ) const = 0;
 
-    /**
-     * @brief Transformation from matrix type to a csr graph.
-     *
-     * transformation from matrix type to a csr graph,
-     * so that it (Par)Metis can work with it.
-     *
-     * @param[out]  xadj              the ia array of the csr graph
-     * @param[out]  adjncy            the ja array of the csr graph
-     * @param[out]  vwgt              TODO[doxy] Complete Description.
-     * @param[out]  comm              TODO[doxy] Complete Description.
-     * @param[out]  globalRowIndices  TODO[doxy] Complete Description.
-     * @param[out]  vtxdist           TODO[doxy] Complete Description.
-     */
-    virtual void matrix2CSRGraph(
-        IndexType* xadj,
-        IndexType* adjncy,
-        IndexType* vwgt,
-        CommunicatorPtr comm,
-        const IndexType* globalRowIndices = NULL,
-        IndexType* vtxdist = NULL ) const;
-
     /** Getter routine for the local number of stored values. */
 
     virtual IndexType getLocalNumValues() const = 0;
@@ -531,10 +510,10 @@ public:
     virtual void setContext( const ContextPtr context ) = 0;
 
     /**
-     * @brief TODO[doxy] Complete Description.
+     * @brief Set individual context for local and halo part of the matrix.
      *
-     * @param[in] localContext   TODO[doxy] Complete Description.
-     * @param[in] haloContext    TODO[doxy] Complete Description.
+     * @param[in] localContext   context for local part
+     * @param[in] haloContext    context for non-local part
      *
      *  Note: Only sparse matrices will override this method, others will ignore second argument.
      */
@@ -625,40 +604,57 @@ public:
     Matrix& operator=( const Matrix& other );
 
     /**
-     * @brief The assignment operator for a scalar matrix multiplication.
+     * @brief Assignment operator for alhpa * A
      *
-     * @param[in] exp   TODO[doxy] Complete Description.
+     * @param[in] exp   representation of alpha * A as Expression object
      */
-    Matrix& operator=( const Expression<Scalar,Matrix,Times> exp );
+    Matrix& operator=( const Expression<Scalar, Matrix, Times> exp );
 
     /**
-     * @brief The assignment operator for a matrix matrix multiplication.
+     * @brief Assignment operator for A * B with A and B matrices
      *
-     * @param[in] exp   TODO[doxy] Complete Description.
+     * @param[in] exp   representation of A * B as Expression object
      */
-    Matrix& operator=( const Expression<Matrix,Matrix,Times> exp );
+    Matrix& operator=( const Expression<Matrix, Matrix, Times> exp );
 
     /**
-     * @brief The assignment operator for a scalar matrix matrix multiplication.
+     * @brief Assignment operator for alhpa * A * B with A and B matrices and scalar alpha
      *
-     * @param[in] exp   TODO[doxy] Complete Description.
+     * @param[in] exp   representation of alpha * A * B as Expression object
      */
-    Matrix& operator=( const Expression<Scalar,Expression<Matrix,Matrix,Times>,Times> exp );
+    Matrix& operator=( const Expression<Scalar, Expression<Matrix, Matrix, Times>, Times> exp );
 
     /**
-     * @brief The assignment operator for a GEMM expression.
+     * @brief The assignment operator for a GEMM expression alpha * A * B + beta * C
      *
-     * @param[in] exp   TODO[doxy] Complete Description.
+     * @param[in] exp   representation of alpha * A * B + beta * C as Expression object
      */
     Matrix& operator=(
-        const Expression<Expression<Scalar,Expression<Matrix,Matrix,Times>,Times>,Expression<Scalar,Matrix,Times>,Plus> exp );
+        const Expression<Expression<Scalar, Expression<Matrix, Matrix, Times>, Times>,
+                         Expression<Scalar, Matrix, Times>,
+                         Plus> exp );
 
     /**
-     * @brief The assignment operator for a GEMM expression.
+     * @brief The assignment operator for alpha * A + beta * B
      *
      * @param[in] exp   expression of the form alpha * A + beta * B
      */
-    Matrix& operator=( const Expression<Expression<Scalar,Matrix,Times>,Expression<Scalar,Matrix,Times>,Plus> exp );
+    Matrix& operator=( const Expression<Expression<Scalar, Matrix, Times>,
+                                        Expression<Scalar, Matrix, Times>, Plus> exp );
+
+    /**
+     * @brief The assignment operator this += A
+     *
+     * @param[in] exp   Matrix to be added
+     */
+    Matrix& operator+=( const Matrix& exp );
+
+    /**
+     * @brief The assignment operator this += alpha * A
+     *
+     * @param[in] exp   representation of alpha * A as Expression object
+     */
+    Matrix& operator+=( const Expression<Scalar, Matrix, Times>& exp );
 
     /**
      * @brief Computes the inverse of a matrix.
@@ -726,7 +722,7 @@ public:
     /**
      * @brief Constructor creates a distributed zero matrix of same type as a given matrix.
      *
-     * @param[in] size   TODO[doxy] Complete Description.
+     * @param[in] size   number of rows and columns for the square matrix.
      */
     Matrix* create( const IndexType size ) const;
 
@@ -781,7 +777,12 @@ public:
     /**
      * @brief Rechecks the storages for their diagonal property.
      *
-     * TODO[doxy] Complete Description.
+     * Usually each matrix has a flag that indicates if the diagonal property is given.
+     * This makes the query hasDiagonalProperty very efficient. Therefore matrices
+     * keep track of this flag for all their operations and reset it if necessary.
+     *
+     * This routine is only available to have a workaround if matrix or storage data
+     * has been modified by the user outside of the class (NOT RECOMMENDED).
      */
 
     virtual void resetDiagonalProperty() = 0;
@@ -907,6 +908,12 @@ protected:
     LAMA_LOG_DECL_STATIC_LOGGER( logger )
 
 private:
+
+    void sanityCheck( const Expression<Matrix, Matrix, Times>& exp );
+
+    void sanityCheck( const Expression<Matrix, Matrix, Times>& exp, const Matrix& C );
+
+    void sanityCheck( const Matrix& A, const Matrix& B );
 
     void setDefaultKind(); // set default values for communication and compute kind
 

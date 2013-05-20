@@ -329,7 +329,7 @@ public:
      *  is updated each iteration. It is more convenient than a solution that
      *  is based on using pointers in the application.
      *
-     * @param[in] other   TODO[doxy] Complete Description.
+     * @param[in] other  other sparse matrix
      */
     void swap( SparseMatrix<ValueType>& other );
 
@@ -368,36 +368,14 @@ public:
      *  corresponding to the column distribution, builds new halo
      */
 
-    //TODO: implement or delete
-    //void setLocal( const MatrixStorage<ValueType>& newLocalData );
     /* Implemenation of pure method of class Matrix */
 
     virtual void matrixTimesScalar( const Matrix& other, const Scalar alpha );
 
     /**
-     * @brief Matrix times vector with same value types and correct distributions.
+     * @brief Same as matrixTimesVectorImpl but with multiple results and y
      *
-     * @param[out] result   TODO[doxy] Complete Description.
-     * @param[in]  alpha    TODO[doxy] Complete Description.
-     * @param[in]  x        TODO[doxy] Complete Description.
-     * @param[in]  beta     TODO[doxy] Complete Description.
-     * @param[in]  y        TODO[doxy] Complete Description.
-     */
-    void matrixTimesVectorImpl(
-        DenseVector<ValueType>& result,
-        const ValueType alpha,
-        const DenseVector<ValueType>& x,
-        const ValueType beta,
-        const DenseVector<ValueType>& y ) const;
-
-    /**
-     * @brief TODO[doxy] Complete Description.
-     *
-     * @param[out] result   TODO[doxy] Complete Description.
-     * @param[in]  alpha    TODO[doxy] Complete Description.
-     * @param[in]  x        TODO[doxy] Complete Description.
-     * @param[in]  beta     TODO[doxy] Complete Description.
-     * @param[in]  y        TODO[doxy] Complete Description.
+     * Note: result and y must have same shape
      */
     virtual void matrixTimesVectorNImpl(
         DenseMatrix<ValueType>& result,
@@ -414,6 +392,16 @@ public:
         const Vector& x,
         const Scalar beta,
         const Vector& y ) const;
+
+    /**
+     * @brief Same as matrixTimesVector but with vectors result, x, and y of same value type.
+     */
+    void matrixTimesVectorImpl(
+        DenseVector<ValueType>& result,
+        const ValueType alpha,
+        const DenseVector<ValueType>& x,
+        const ValueType beta,
+        const DenseVector<ValueType>& y ) const;
 
     /* Implemenation of pure method of class Matrix */
 
@@ -437,10 +425,7 @@ public:
     virtual Scalar maxDiffNorm( const Matrix& other ) const;
 
     /**
-     * @brief Get the maximal difference between two elements for sparse matrices of same type.
-     *
-     * @param[in]  other    TODO[doxy] Complete Description.
-     * @return              TODO[doxy] Complete Description.
+     * @brief Same as maxDiffNorm but with other as sparse matrix of same value type.
      */
     ValueType maxDiffNormImpl( const SparseMatrix<ValueType>& other ) const;
 
@@ -515,7 +500,7 @@ public:
     /**
      * @brief Assign another matrix transposed to this matrix.
      *
-     * @param[in] matrix   TODO[doxy] Complete Description.
+     * @param[in] matrix   input matrix that will be transposed
      */
     void assignTranspose( const Matrix& matrix );
 
@@ -582,10 +567,10 @@ protected:
     /**
      * @brief Set this matrix = alpha * A + beta * B
      *
-     * @param[in]  alpha    TODO[doxy] Complete Description.
-     * @param[in]  A        TODO[doxy] Complete Description.
-     * @param[in]  beta     TODO[doxy] Complete Description.
-     * @param[in]  B        TODO[doxy] Complete Description.
+     * @param[in]  alpha    scaling of input matrix A
+     * @param[in]  A        input matrix
+     * @param[in]  beta     scaling of input matrix B
+     * @param[in]  B        input matrix
      */
     void matrixPlusMatrixImpl(
         const ValueType alpha,
@@ -595,11 +580,11 @@ protected:
     /**
      * @brief Set this matrix = alpha * A * B + beta * C
      *
-     * @param[in]  alpha    TODO[doxy] Complete Description.
-     * @param[in]  A        TODO[doxy] Complete Description.
-     * @param[in]  B        TODO[doxy] Complete Description.
-     * @param[in]  beta     TODO[doxy] Complete Description.
-     * @param[in]  C        TODO[doxy] Complete Description.
+     * @param[in]  alpha    scaling of matrix product
+     * @param[in]  A        first matrix of matrix product
+     * @param[in]  B        second matrix of matrix product
+     * @param[in]  beta     scaling of matrix summand
+     * @param[in]  C        matrix to be added to the product
      */
     void matrixTimesMatrixImpl(
         const ValueType alpha,
@@ -632,13 +617,11 @@ private:
 
     void assignTransposeImpl ( const SparseMatrix<ValueType>& matrix );
 
-    /** Compute the halo. */
+    /** Get a complete row of local part only. */
 
-    //TODO: not implemented --> implement or delete
-    //void computeHalo( const MatrixStorage<T>& localData, const Distribution& rowDistribution );
     void getLocalRow( DenseVector<ValueType>& row, const IndexType iLocal ) const;
 
-    mutable LAMAArray<ValueType> mTempSendValues;//!< temporary vector for halo comunications
+    mutable LAMAArray<ValueType> mTempSendValues;//!< temporary vector for halo communications
 };
 
 } // namespace lama

@@ -34,12 +34,32 @@
 // hpp
 #include <lama/matrix/COOSparseMatrix.hpp>
 
+using boost::shared_ptr;
+
 namespace lama
 {
 
 /* -------------------------------------------------------------------------- */
 
 LAMA_LOG_DEF_TEMPLATE_LOGGER( template<typename T>, COOSparseMatrix<T>::logger, "Matrix.SparseMatrix.COOSparseMatrix" )
+
+/* -------------------------------------------------------------------------- */
+
+template<typename ValueType>
+boost::shared_ptr<MatrixStorage<ValueType> > COOSparseMatrix<ValueType>::createStorage()
+{
+    return shared_ptr<MatrixStorage<ValueType> >( new StorageType() );
+}
+
+template<typename ValueType>
+boost::shared_ptr<MatrixStorage<ValueType> > COOSparseMatrix<ValueType>::createStorage(
+    const IndexType numRows, 
+    const IndexType numColumns )
+{
+    shared_ptr<MatrixStorage<ValueType> > storage( new StorageType() );
+    storage->allocate( numRows, numColumns );
+    return storage;
+}
 
 /* -------------------------------------------------------------------------- */
 
@@ -52,6 +72,8 @@ COOSparseMatrix<ValueType>::COOSparseMatrix()
     LAMA_LOG_INFO( logger, "COOSpareMatrix()" )
 }
 
+/* -------------------------------------------------------------------------- */
+
 template<typename ValueType>
 COOSparseMatrix<ValueType>::COOSparseMatrix( const IndexType numRows, const IndexType numColumns )
 
@@ -59,6 +81,157 @@ COOSparseMatrix<ValueType>::COOSparseMatrix( const IndexType numRows, const Inde
 
 {
     LAMA_LOG_INFO( logger, "COOSpareMatrix( " << numRows << " x " << numColumns << " )" )
+}
+
+/* -------------------------------------------------------------------------- */
+
+template<typename ValueType>
+COOSparseMatrix<ValueType>::COOSparseMatrix( DistributionPtr rowDist, DistributionPtr colDist )
+
+    : SparseMatrix<ValueType>( createStorage( rowDist->getLocalSize(), colDist->getGlobalSize() ),
+                                   rowDist, colDist )
+{
+    // Note: splitting of local rows to local + halo part is done by SparseMatrix constructor
+}
+
+/* -------------------------------------------------------------------------- */
+
+template<typename ValueType>
+COOSparseMatrix<ValueType>::COOSparseMatrix( const COOSparseMatrix& other )
+
+    : SparseMatrix<ValueType>( createStorage() )
+
+{
+    this->setCommunicationKind( other.getCommunicationKind() );
+    this->setContext( other.getContextPtr() );
+    SparseMatrix<ValueType>::assign( other );
+}
+
+/* -------------------------------------------------------------------------- */
+
+template<typename ValueType>
+COOSparseMatrix<ValueType>::COOSparseMatrix( const Matrix& other, bool transposeFlag )
+
+    : SparseMatrix<ValueType>( createStorage() )
+
+{
+    this->setCommunicationKind( other.getCommunicationKind() );
+
+    if ( transposeFlag )
+    {
+        SparseMatrix<ValueType>::assignTranspose( other );
+    }
+    else
+    {
+        SparseMatrix<ValueType>::assign( other );
+    }
+}
+
+/* -------------------------------------------------------------------------- */
+
+template<typename ValueType>
+COOSparseMatrix<ValueType>::COOSparseMatrix(
+    const Matrix& other, 
+    DistributionPtr rowDist, 
+    DistributionPtr colDist )
+
+    : SparseMatrix<ValueType>( createStorage() )
+
+{
+    this->setCommunicationKind( other.getCommunicationKind() );
+
+    // this might be done more efficiently as assign introduces intermediate copy
+
+    SparseMatrix<ValueType>::assign( other );
+    this->redistribute( rowDist, colDist );
+}
+
+/* -------------------------------------------------------------------------- */
+
+template<typename ValueType>
+COOSparseMatrix<ValueType>::COOSparseMatrix( const _MatrixStorage& globalData )
+
+    : SparseMatrix<ValueType>( createStorage() )
+
+{
+    DistributionPtr rowDist( new NoDistribution( globalData.getNumRows() ) );
+    DistributionPtr colDist( new NoDistribution( globalData.getNumRows() ) );
+
+    SparseMatrix<ValueType>::assign( globalData, rowDist, colDist );
+}
+
+/* -------------------------------------------------------------------------- */
+
+template<typename ValueType>
+COOSparseMatrix<ValueType>::COOSparseMatrix(
+    const _MatrixStorage& localData, 
+    DistributionPtr rowDist, 
+    DistributionPtr colDist )
+
+    : SparseMatrix<ValueType>( createStorage() )
+
+{
+    SparseMatrix<ValueType>::assign( localData, rowDist, colDist );
+}
+
+/* -------------------------------------------------------------------------- */
+
+template<typename ValueType>
+COOSparseMatrix<ValueType>::COOSparseMatrix( const Expression<Matrix, Matrix, Times>& expression ) 
+
+    : SparseMatrix<ValueType>( createStorage() )
+
+{
+    Matrix::operator=( expression );
+}
+
+/* -------------------------------------------------------------------------- */
+
+template<typename ValueType>
+COOSparseMatrix<ValueType>::COOSparseMatrix( const Expression<Scalar, Matrix, Times>& expression ) 
+
+    : SparseMatrix<ValueType>( createStorage() )
+
+{
+    Matrix::operator=( expression );
+}
+
+/* -------------------------------------------------------------------------- */
+
+template<typename ValueType>
+COOSparseMatrix<ValueType>::COOSparseMatrix( 
+    const Expression<Scalar, Expression<Matrix, Matrix, Times>, Times>& expression )
+
+    : SparseMatrix<ValueType>( createStorage() )
+{
+    Matrix::operator=( expression );
+}
+
+/* -------------------------------------------------------------------------- */
+
+template<typename ValueType>
+COOSparseMatrix<ValueType>::COOSparseMatrix( 
+    const Expression<Expression<Scalar, Matrix, Times>,
+                     Expression<Scalar, Matrix, Times>,
+                     Plus> expression )
+
+    : SparseMatrix<ValueType>( createStorage() )
+{
+    // inherit context from matA in alpha * matA + beta * matB
+
+    SparseMatrix<ValueType>::setContext( expression.getArg1().getArg2().getContextPtr() );
+    Matrix::operator=( expression );
+}
+
+/* -------------------------------------------------------------------------- */
+
+template<typename ValueType>
+COOSparseMatrix<ValueType>::COOSparseMatrix(const std::string& filename )
+
+    : SparseMatrix<ValueType>( createStorage() )
+
+{
+    this->readFromFile( filename );
 }
 
 /* -------------------------------------------------------------------------- */
@@ -195,6 +368,36 @@ void COOSparseMatrix<ValueType>::swapLocalStorage( StorageType& localStorage )
     LAMA_ASSERT_ERROR( localData, *mLocalData << ": does not fit matrix type " << typeName() )
 
     localData->swap( localStorage );
+}
+
+/* -------------------------------------------------------------------------- */
+
+template<typename ValueType>
+COOSparseMatrix<ValueType>* COOSparseMatrix<ValueType>::create() const
+{
+    COOSparseMatrix<ValueType>* newSparseMatrix = new COOSparseMatrix<ValueType>();
+
+    // inherit the context of this matrix for the new matrix
+
+    newSparseMatrix->setContext( this->getContextPtr() );
+
+    LAMA_LOG_INFO( logger, "create is " << *newSparseMatrix )
+
+    return newSparseMatrix;
+}
+
+/* -------------------------------------------------------------------------- */
+
+template<typename ValueType>
+COOSparseMatrix<ValueType>* COOSparseMatrix<ValueType>::copy() const
+{
+    LAMA_LOG_INFO( logger, "copy of " << *this )
+
+    COOSparseMatrix<ValueType>* newSparseMatrix = new COOSparseMatrix<ValueType>( *this );
+
+    LAMA_LOG_INFO( logger, "copy is " << *newSparseMatrix )
+
+    return newSparseMatrix;
 }
 
 /* -------------------------------------------------------------------------- */
