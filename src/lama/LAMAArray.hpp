@@ -44,6 +44,7 @@
 // others
 #include <lama/LAMATypes.hpp>
 #include <lama/Context.hpp>
+#include <lama/SyncToken.hpp>
 #include <lama/Scalar.hpp>
 
 // boost
@@ -59,8 +60,6 @@
 
 namespace lama
 {
-
-class SyncToken;
 
 // Forward declaration of friend classes.
 

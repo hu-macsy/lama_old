@@ -572,8 +572,10 @@ void setCSRValuesTest( ContextPtr loc )
     LAMAArray<IndexType> csrJa( nCSRJa, valuesCSRJa );
     LAMAArray<IndexType> ellIa( nELLIa, valuesELLIa );
 
-    LAMAArray<OtherValueType> ellValues( nELLValues, 0.0 );
-    LAMAArray<IndexType> ellJa( nELLValues, 0.0 );
+    // initialization of ellValues and ellJA, even if not mandatory
+
+    LAMAArray<OtherValueType> ellValues( nELLValues, static_cast<OtherValueType>( 0 ) );
+    LAMAArray<IndexType> ellJa( nELLValues, 0 );
 
     {
         ReadAccess<ValueType> rCSRValues( csrValues, loc );

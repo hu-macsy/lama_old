@@ -73,6 +73,8 @@ LAMA_LOG_DEF_LOGGER( logger, "Test.P_NormTest" );
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( Norm, T, test_types ) 
 {
+    typedef T ValueType;
+
     CONTEXTLOOP()
     {
         GETCONTEXT( context );
@@ -81,11 +83,11 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( Norm, T, test_types )
         {
             DistributionPtr dist( new BlockDistribution( size, comm ) );
 
-            const double VAL = 1.0;
+            const ValueType VAL = 1.0;
 
-            DenseVector<T> repVector( size, VAL );
+            DenseVector<ValueType> repVector( size, VAL );
 
-            DenseVector<T> distVector;
+            DenseVector<ValueType> distVector;
 
             distVector.setContext( context );
 
@@ -95,27 +97,27 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( Norm, T, test_types )
     
             Scalar l1norm = distVector.l1Norm();
 
-            T expectedL1Norm = static_cast<T>( size );
+            ValueType expectedL1Norm = static_cast<ValueType>( size );
 
-            BOOST_CHECK_CLOSE( l1norm.getValue<T>(), expectedL1Norm, 1 );
+            BOOST_CHECK_CLOSE( l1norm.getValue<ValueType>(), expectedL1Norm, 1 );
     
             Scalar l2norm = distVector.l2Norm();
 
-            T expectedL2Norm = static_cast<T>( size );
-            expectedL2Norm = std::sqrt( size );
+            ValueType expectedL2Norm = static_cast<ValueType>( size );
+            expectedL2Norm = std::sqrt( expectedL2Norm );
     
-            BOOST_CHECK_CLOSE( l2norm.getValue<T>(), expectedL2Norm, 1 );
+            BOOST_CHECK_CLOSE( l2norm.getValue<ValueType>(), expectedL2Norm, 1 );
     
             Scalar maxNorm = distVector.maxNorm();
 
-            T expectedMaxNorm = static_cast<T>( VAL );
+            ValueType expectedMaxNorm = static_cast<ValueType>( VAL );
 
             if ( size == 0 )
             {
-                expectedMaxNorm = static_cast<T>( 0 );
+                expectedMaxNorm = static_cast<ValueType>( 0 );
             }
 
-            BOOST_CHECK_CLOSE( maxNorm.getValue<T>(), expectedMaxNorm, 1 );
+            BOOST_CHECK_CLOSE( maxNorm.getValue<ValueType>(), expectedMaxNorm, 1 );
         }
     }
 }
