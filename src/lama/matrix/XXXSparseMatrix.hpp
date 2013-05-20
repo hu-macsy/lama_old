@@ -146,7 +146,7 @@ public:
     explicit XXXSparseMatrix(
         const Expression<Expression<Scalar, Matrix, Times>,
                          Expression<Scalar, Matrix, Times>,
-                         Plus> expression );
+                         Plus>& expression );
 
     /** @brief Constructor of a XXX sparse matrix with distributed XXX storage data.
      *

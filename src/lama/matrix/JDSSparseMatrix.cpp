@@ -213,7 +213,7 @@ template<typename ValueType>
 JDSSparseMatrix<ValueType>::JDSSparseMatrix( 
     const Expression<Expression<Scalar, Matrix, Times>,
                      Expression<Scalar, Matrix, Times>,
-                     Plus> expression )
+                     Plus>& expression )
 
     : SparseMatrix<ValueType>( createStorage() )
 {
@@ -226,7 +226,7 @@ JDSSparseMatrix<ValueType>::JDSSparseMatrix(
 /* -------------------------------------------------------------------------- */
 
 template<typename ValueType>
-JDSSparseMatrix<ValueType>::JDSSparseMatrix(const std::string& filename )
+JDSSparseMatrix<ValueType>::JDSSparseMatrix( const std::string& filename )
 
     : SparseMatrix<ValueType>( createStorage() )
 

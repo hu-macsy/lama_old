@@ -311,7 +311,7 @@ Matrix& Matrix::operator=( const Matrix& other )
 
 /* ---------------------------------------------------------------------------------*/
 
-Matrix& Matrix::operator=( Expression<Scalar, Matrix, Times> exp )
+Matrix& Matrix::operator=( const Expression<Scalar, Matrix, Times>& exp )
 {
     // exp is Expression object that stands for s * A 
 
@@ -394,7 +394,7 @@ Matrix& Matrix::operator-=( const Matrix& exp )
 
 /* ---------------------------------------------------------------------------------*/
 
-Matrix& Matrix::operator=( Expression<Matrix, Matrix, Times> exp )
+Matrix& Matrix::operator=( const Expression<Matrix, Matrix, Times>& exp )
 {
     // exp is Expression object that stands for A * B with matrices A * B
     //   ->   1.0 * A * B + 0.0 * A
@@ -414,7 +414,7 @@ Matrix& Matrix::operator=( Expression<Matrix, Matrix, Times> exp )
 /**
  * @brief the assignment operator for a matrix matrix multiplication.
  */
-Matrix& Matrix::operator=( Expression<Scalar,Expression<Matrix,Matrix,Times>,Times> exp )
+Matrix& Matrix::operator=( const Expression<Scalar, Expression<Matrix, Matrix, Times>, Times>& exp )
 {
     Scalar zero( 0 );
     Expression<Scalar,Matrix,Times> exp1( zero, exp.getArg2().getArg1() );
@@ -518,7 +518,9 @@ void Matrix::sanityCheck( const Matrix& A, const Matrix& B )
  * @brief the assignment operator for a GEMM expression.
  */
 Matrix& Matrix::operator=(
-    Expression<Expression<Scalar,Expression<Matrix,Matrix,Times>,Times>,Expression<Scalar,Matrix,Times>,Plus> exp )
+    const Expression<Expression<Scalar,Expression<Matrix,Matrix,Times>,Times>,
+                     Expression<Scalar,Matrix,Times>,
+                     Plus>& exp )
 {
     LAMA_LOG_INFO( logger, "operator=:  A * B * alpha + C * beta " )
 
@@ -555,7 +557,10 @@ Matrix& Matrix::operator=(
 /**
  * @brief the assignment operator for a MM addition.
  */
-Matrix& Matrix::operator=( Expression<Expression<Scalar,Matrix,Times>,Expression<Scalar,Matrix,Times>,Plus> exp )
+Matrix& Matrix::operator=( 
+    const Expression<Expression<Scalar,Matrix,Times>,
+                     Expression<Scalar,Matrix,Times>,
+                     Plus>& exp )
 {
     LAMA_LOG_INFO( logger, "operator=:  A * alpha + B * beta " )
 

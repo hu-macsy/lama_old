@@ -146,7 +146,7 @@ public:
     explicit COOSparseMatrix(
         const Expression<Expression<Scalar, Matrix, Times>,
                          Expression<Scalar, Matrix, Times>,
-                         Plus> expression );
+                         Plus>& expression );
 
     /** @brief Constructor of a COO sparse matrix with distributed COO storage data.
      *

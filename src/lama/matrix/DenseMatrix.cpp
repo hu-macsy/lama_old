@@ -199,25 +199,28 @@ DenseMatrix<ValueType>::DenseMatrix(
 
 template<typename ValueType>
 DenseMatrix<ValueType>::DenseMatrix(
-    const Expression<Expression<Scalar,Expression<Matrix,Matrix,Times>,Times>,Expression<Scalar,Matrix,Times>,Plus> expression )
+    const Expression<Expression<Scalar, Expression<Matrix, Matrix, Times>, Times>,
+                     Expression<Scalar, Matrix, Times>,
+                     Plus>& expression )
 {
     Matrix::operator=( expression );
 }
 
 template<typename ValueType>
-DenseMatrix<ValueType>::DenseMatrix( const Expression<Scalar,Expression<Matrix,Matrix,Times>,Times> expression )
+DenseMatrix<ValueType>::DenseMatrix( 
+    const Expression<Scalar, Expression<Matrix, Matrix, Times>, Times>& expression )
 {
     Matrix::operator=( expression );
 }
 
 template<typename ValueType>
-DenseMatrix<ValueType>::DenseMatrix( const Expression<Matrix,Matrix,Times> expression )
+DenseMatrix<ValueType>::DenseMatrix( const Expression<Matrix, Matrix, Times>& expression )
 {
     Matrix::operator=( expression );
 }
 
 template<typename ValueType>
-DenseMatrix<ValueType>::DenseMatrix( const Expression<Scalar,Matrix,Times> expression )
+DenseMatrix<ValueType>::DenseMatrix( const Expression<Scalar, Matrix, Times>& expression )
 {
     Matrix::operator=( expression );
 }

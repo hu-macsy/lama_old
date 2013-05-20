@@ -213,7 +213,7 @@ template<typename ValueType>
 XXXSparseMatrix<ValueType>::XXXSparseMatrix( 
     const Expression<Expression<Scalar, Matrix, Times>,
                      Expression<Scalar, Matrix, Times>,
-                     Plus> expression )
+                     Plus>& expression )
 
     : SparseMatrix<ValueType>( createStorage() )
 {
@@ -226,7 +226,7 @@ XXXSparseMatrix<ValueType>::XXXSparseMatrix(
 /* -------------------------------------------------------------------------- */
 
 template<typename ValueType>
-XXXSparseMatrix<ValueType>::XXXSparseMatrix(const std::string& filename )
+XXXSparseMatrix<ValueType>::XXXSparseMatrix( const std::string& filename )
 
     : SparseMatrix<ValueType>( createStorage() )
 

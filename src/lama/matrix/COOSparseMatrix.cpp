@@ -213,7 +213,7 @@ template<typename ValueType>
 COOSparseMatrix<ValueType>::COOSparseMatrix( 
     const Expression<Expression<Scalar, Matrix, Times>,
                      Expression<Scalar, Matrix, Times>,
-                     Plus> expression )
+                     Plus>& expression )
 
     : SparseMatrix<ValueType>( createStorage() )
 {
@@ -226,7 +226,7 @@ COOSparseMatrix<ValueType>::COOSparseMatrix(
 /* -------------------------------------------------------------------------- */
 
 template<typename ValueType>
-COOSparseMatrix<ValueType>::COOSparseMatrix(const std::string& filename )
+COOSparseMatrix<ValueType>::COOSparseMatrix( const std::string& filename )
 
     : SparseMatrix<ValueType>( createStorage() )
 

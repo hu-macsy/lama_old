@@ -608,21 +608,21 @@ public:
      *
      * @param[in] exp   representation of alpha * A as Expression object
      */
-    Matrix& operator=( const Expression<Scalar, Matrix, Times> exp );
+    Matrix& operator=( const Expression<Scalar, Matrix, Times>& exp );
 
     /**
      * @brief Assignment operator for A * B with A and B matrices
      *
      * @param[in] exp   representation of A * B as Expression object
      */
-    Matrix& operator=( const Expression<Matrix, Matrix, Times> exp );
+    Matrix& operator=( const Expression<Matrix, Matrix, Times>& exp );
 
     /**
      * @brief Assignment operator for alhpa * A * B with A and B matrices and scalar alpha
      *
      * @param[in] exp   representation of alpha * A * B as Expression object
      */
-    Matrix& operator=( const Expression<Scalar, Expression<Matrix, Matrix, Times>, Times> exp );
+    Matrix& operator=( const Expression<Scalar, Expression<Matrix, Matrix, Times>, Times>& exp );
 
     /**
      * @brief The assignment operator for a GEMM expression alpha * A * B + beta * C
@@ -632,7 +632,7 @@ public:
     Matrix& operator=(
         const Expression<Expression<Scalar, Expression<Matrix, Matrix, Times>, Times>,
                          Expression<Scalar, Matrix, Times>,
-                         Plus> exp );
+                         Plus>& exp );
 
     /**
      * @brief The assignment operator for alpha * A + beta * B
@@ -640,7 +640,7 @@ public:
      * @param[in] exp   expression of the form alpha * A + beta * B
      */
     Matrix& operator=( const Expression<Expression<Scalar, Matrix, Times>,
-                                        Expression<Scalar, Matrix, Times>, Plus> exp );
+                                        Expression<Scalar, Matrix, Times>, Plus>& exp );
 
     /**
      * @brief The assignment operator this += A

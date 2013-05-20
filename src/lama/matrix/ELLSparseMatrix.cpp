@@ -213,7 +213,7 @@ template<typename ValueType>
 ELLSparseMatrix<ValueType>::ELLSparseMatrix( 
     const Expression<Expression<Scalar, Matrix, Times>,
                      Expression<Scalar, Matrix, Times>,
-                     Plus> expression )
+                     Plus>& expression )
 
     : SparseMatrix<ValueType>( createStorage() )
 {
@@ -226,7 +226,7 @@ ELLSparseMatrix<ValueType>::ELLSparseMatrix(
 /* -------------------------------------------------------------------------- */
 
 template<typename ValueType>
-ELLSparseMatrix<ValueType>::ELLSparseMatrix(const std::string& filename )
+ELLSparseMatrix<ValueType>::ELLSparseMatrix( const std::string& filename )
 
     : SparseMatrix<ValueType>( createStorage() )
 

@@ -213,7 +213,7 @@ template<typename ValueType>
 DIASparseMatrix<ValueType>::DIASparseMatrix( 
     const Expression<Expression<Scalar, Matrix, Times>,
                      Expression<Scalar, Matrix, Times>,
-                     Plus> expression )
+                     Plus>& expression )
 
     : SparseMatrix<ValueType>( createStorage() )
 {
@@ -226,7 +226,7 @@ DIASparseMatrix<ValueType>::DIASparseMatrix(
 /* -------------------------------------------------------------------------- */
 
 template<typename ValueType>
-DIASparseMatrix<ValueType>::DIASparseMatrix(const std::string& filename )
+DIASparseMatrix<ValueType>::DIASparseMatrix( const std::string& filename )
 
     : SparseMatrix<ValueType>( createStorage() )
 

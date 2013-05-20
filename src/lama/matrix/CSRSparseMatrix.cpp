@@ -213,7 +213,7 @@ template<typename ValueType>
 CSRSparseMatrix<ValueType>::CSRSparseMatrix( 
     const Expression<Expression<Scalar, Matrix, Times>,
                      Expression<Scalar, Matrix, Times>,
-                     Plus> expression )
+                     Plus>& expression )
 
     : SparseMatrix<ValueType>( createStorage() )
 {
@@ -226,7 +226,7 @@ CSRSparseMatrix<ValueType>::CSRSparseMatrix(
 /* -------------------------------------------------------------------------- */
 
 template<typename ValueType>
-CSRSparseMatrix<ValueType>::CSRSparseMatrix(const std::string& filename )
+CSRSparseMatrix<ValueType>::CSRSparseMatrix( const std::string& filename )
 
     : SparseMatrix<ValueType>( createStorage() )
 
