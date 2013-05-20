@@ -252,57 +252,6 @@ DIASparseMatrix<ValueType>& DIASparseMatrix<ValueType>::operator=( const DIASpar
     return *this;
 }
 
-template<typename ValueType>
-DIASparseMatrix<ValueType>& DIASparseMatrix<ValueType>::operator=( const Matrix& matrix )
-{
-    LAMA_LOG_INFO( logger, " = Matrix : " << matrix )
-    this->assign( matrix ); // matrix does not depend on template parameter, so this-> is needed.
-    return *this;
-}
-
-template<typename ValueType>
-DIASparseMatrix<ValueType>& DIASparseMatrix<ValueType>::operator=( const Expression<Matrix,Matrix,Times>& exp )
-{
-    LAMA_LOG_INFO( logger, " = A * B " )
-    Matrix::operator=( exp );
-    return *this;
-}
-
-template<typename ValueType>
-DIASparseMatrix<ValueType>& DIASparseMatrix<ValueType>::operator=( const Expression<Scalar,Matrix,Times>& exp )
-{
-    LAMA_LOG_INFO( logger, " = alpha * A " )
-    Matrix::operator=( exp );
-    return *this;
-}
-
-template<typename ValueType>
-DIASparseMatrix<ValueType>& DIASparseMatrix<ValueType>::operator=(
-    const Expression<Scalar,Expression<Matrix,Matrix,Times>,Times>& exp )
-{
-    LAMA_LOG_INFO( logger, " = alpha * A * B" )
-    Matrix::operator=( exp );
-    return *this;
-}
-
-template<typename ValueType>
-DIASparseMatrix<ValueType>& DIASparseMatrix<ValueType>::operator=(
-    const Expression<Expression<Scalar,Expression<Matrix,Matrix,Times>,Times>,Expression<Scalar,Matrix,Times>,Plus> exp )
-{
-    LAMA_LOG_INFO( logger, "DIASparseMatrix = alpha * A * B" )
-    Matrix::operator=( exp );
-    return *this;
-}
-
-template<typename ValueType>
-DIASparseMatrix<ValueType>& DIASparseMatrix<ValueType>::operator=(
-    const Expression<Expression<Scalar,Matrix,Times>,Expression<Scalar,Matrix,Times>,Plus> exp )
-{
-    LAMA_LOG_INFO( logger, "DIASparseMatrix = alpha * A + beta * B" )
-    Matrix::operator=( exp );
-    return *this;
-}
-
 /* -------------------------------------------------------------------------- */
 
 template<typename ValueType>

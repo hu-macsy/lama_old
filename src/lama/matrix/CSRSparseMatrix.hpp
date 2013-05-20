@@ -181,12 +181,17 @@ public:
      */
     ~CSRSparseMatrix();
 
+    // Make all assignment operators of base class visible before overwriting one
+
+    using SparseMatrix<ValueType>::operator=; 
+
     /** Override the default assignment operator that would not make deep copies. */
 
     CSRSparseMatrix& operator=( const CSRSparseMatrix& matrix );
 
     /** Redefine assignment operator to get the correct return value; implementation is same as for base classes. */
 
+    /*
     CSRSparseMatrix& operator=( const Matrix& matrix );
 
     CSRSparseMatrix& operator=( const Expression<Matrix,Matrix,Times>& expression );
@@ -200,6 +205,7 @@ public:
 
     CSRSparseMatrix& operator=(
         const Expression<Expression<Scalar,Matrix,Times>,Expression<Scalar,Matrix,Times>,Plus> exp );
+    */
 
     /** Override MatrixStorage<ValueType>::getLocalStorage with covariant return type. */
 

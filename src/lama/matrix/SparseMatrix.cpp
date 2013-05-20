@@ -176,54 +176,7 @@ SparseMatrix<ValueType>& SparseMatrix<ValueType>::operator=( const SparseMatrix&
     return *this;
 }
 
-template<typename ValueType>
-SparseMatrix<ValueType>& SparseMatrix<ValueType>::operator=( const Matrix& matrix )
-{
-    LAMA_LOG_INFO( logger, " = Matrix : " << matrix )
-    assign( matrix );
-    return *this;
-}
-
-template<typename ValueType>
-SparseMatrix<ValueType>& SparseMatrix<ValueType>::operator=( const Expression<Matrix,Matrix,Times>& exp )
-{
-    LAMA_LOG_INFO( logger, " = A * B " )
-    Matrix::operator=( exp );
-    return *this;
-}
-
-template<typename ValueType>
-SparseMatrix<ValueType>& SparseMatrix<ValueType>::operator=( const Expression<Scalar,Matrix,Times>& exp )
-{
-    LAMA_LOG_INFO( logger, " = alpha * A " )
-    Matrix::operator=( exp );
-    return *this;
-}
-
-template<typename ValueType>
-SparseMatrix<ValueType>& SparseMatrix<ValueType>::operator=(
-    const Expression<Scalar,Expression<Matrix,Matrix,Times>,Times>& exp )
-{
-    LAMA_LOG_INFO( logger, " = alpha * A * B" )
-    Matrix::operator=( exp );
-    return *this;
-}
-
-template<typename ValueType>
-SparseMatrix<ValueType>& SparseMatrix<ValueType>::operator=(
-    const Expression<Expression<Scalar,Expression<Matrix,Matrix,Times>,Times>,Expression<Scalar,Matrix,Times>,Plus> exp )
-{
-    Matrix::operator=( exp );
-    return *this;
-}
-
-template<typename ValueType>
-SparseMatrix<ValueType>& SparseMatrix<ValueType>::operator=(
-    const Expression<Expression<Scalar,Matrix,Times>,Expression<Scalar,Matrix,Times>,Plus> exp )
-{
-    Matrix::operator=( exp );
-    return *this;
-}
+/* ---------------------------------------------------------------------------------------*/
 
 template<typename ValueType>
 void SparseMatrix<ValueType>::checkSettings()

@@ -122,6 +122,8 @@ public:
     {
         return Matrix::SPARSE;
     }
+
+    using Matrix::operator=;
 };
 
 /**
@@ -532,25 +534,11 @@ public:
      */
     void readFromFile( const std::string& filename );
 
+    using _SparseMatrix::operator=;   // make overloaded routines visible before overwriting one
+
     /** Override the default assignment operator to guarantee deep copy. */
 
     SparseMatrix& operator=( const SparseMatrix& matrix );
-
-    /** Redefine assignment operator to get the correct return value; implementation is same as for base class. */
-
-    SparseMatrix& operator=( const Matrix& matrix );
-
-    SparseMatrix& operator=( const Expression<Matrix,Matrix,Times>& expression );
-
-    SparseMatrix& operator=( const Expression<Scalar,Matrix,Times>& expression );
-
-    SparseMatrix& operator=( const Expression<Scalar,Expression<Matrix,Matrix,Times>,Times>& expression );
-
-    SparseMatrix& operator=(
-        const Expression<Expression<Scalar,Expression<Matrix,Matrix,Times>,Times>,Expression<Scalar,Matrix,Times>,Plus> exp );
-
-    SparseMatrix& operator=(
-        const Expression<Expression<Scalar,Matrix,Times>,Expression<Scalar,Matrix,Times>,Plus> exp );
 
 protected:
 

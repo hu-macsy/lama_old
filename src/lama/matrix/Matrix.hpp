@@ -657,6 +657,20 @@ public:
     Matrix& operator+=( const Expression<Scalar, Matrix, Times>& exp );
 
     /**
+     * @brief The assignment operator this -= A
+     *
+     * @param[in] exp   Matrix to be added
+     */
+    Matrix& operator-=( const Matrix& exp );
+
+    /**
+     * @brief The assignment operator this -= alpha * A
+     *
+     * @param[in] exp   representation of alpha * A as Expression object
+     */
+    Matrix& operator-=( const Expression<Scalar, Matrix, Times>& exp );
+
+    /**
      * @brief Computes the inverse of a matrix.
      *
      * @param[in] other   another matrix with the same shape as this matrix

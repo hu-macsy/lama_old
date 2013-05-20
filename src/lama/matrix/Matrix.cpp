@@ -340,6 +340,23 @@ Matrix& Matrix::operator+=( const Expression<Scalar, Matrix, Times>& exp )
 
 /* ---------------------------------------------------------------------------------*/
 
+Matrix& Matrix::operator-=( const Expression<Scalar, Matrix, Times>& exp )
+{
+    // this += alpha * A  -> this = alpha * A - 1.0 * this
+
+    const Scalar minusOne( -1 );
+
+    Expression<Scalar, Matrix, Times> exp2( minusOne, *this );
+
+    *this =  Expression<Expression<Scalar, Matrix, Times>,
+                        Expression<Scalar, Matrix, Times>,
+                        Plus> ( exp, exp2 );
+
+    return *this;
+}
+
+/* ---------------------------------------------------------------------------------*/
+
 Matrix& Matrix::operator+=( const Matrix& exp )
 {
     // this += A  -> this = 1.0 * A + 1.0 * this
@@ -347,6 +364,25 @@ Matrix& Matrix::operator+=( const Matrix& exp )
     const Scalar one( 1 );
 
     Expression<Scalar, Matrix, Times> exp1( one, exp );
+    Expression<Scalar, Matrix, Times> exp2( one, *this );
+
+    *this =  Expression<Expression<Scalar, Matrix, Times>,
+                        Expression<Scalar, Matrix, Times>,
+                        Plus> ( exp1, exp2 );
+
+    return *this;
+}
+
+/* ---------------------------------------------------------------------------------*/
+
+Matrix& Matrix::operator-=( const Matrix& exp )
+{
+    // this -= A  -> this = -1.0 * A + 1.0 * this
+
+    const Scalar one( 1 );
+    const Scalar minusOne( -1 );
+
+    Expression<Scalar, Matrix, Times> exp1( minusOne, exp );
     Expression<Scalar, Matrix, Times> exp2( one, *this );
 
     *this =  Expression<Expression<Scalar, Matrix, Times>,

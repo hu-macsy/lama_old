@@ -282,44 +282,9 @@ void DenseMatrix<ValueType>::writeToFile(
 template<typename ValueType>
 DenseMatrix<ValueType>& DenseMatrix<ValueType>::operator=( const DenseMatrix<ValueType>& other )
 {
+    // override the default assignment operator
+
     assign( other );
-    return *this;
-}
-
-template<typename ValueType>
-DenseMatrix<ValueType>& DenseMatrix<ValueType>::operator=( const Matrix& other )
-{
-    assign( other );
-    return *this;
-}
-
-template<typename ValueType>
-DenseMatrix<ValueType>& DenseMatrix<ValueType>::operator=( const Expression<Scalar,Matrix,Times> expression )
-{
-    Matrix::operator=( expression );
-    return *this;
-}
-
-template<typename ValueType>
-DenseMatrix<ValueType>& DenseMatrix<ValueType>::operator=( const Expression<Matrix,Matrix,Times> expression )
-{
-    Matrix::operator=( expression );
-    return *this;
-}
-
-template<typename ValueType>
-DenseMatrix<ValueType>& DenseMatrix<ValueType>::operator=(
-    const Expression<Scalar,Expression<Matrix,Matrix,Times>,Times> expression )
-{
-    Matrix::operator=( expression );
-    return *this;
-}
-
-template<typename ValueType>
-DenseMatrix<ValueType>& DenseMatrix<ValueType>::operator=(
-    const Expression<Expression<Scalar,Expression<Matrix,Matrix,Times>,Times>,Expression<Scalar,Matrix,Times>,Plus> expression )
-{
-    Matrix::operator=( expression );
     return *this;
 }
 

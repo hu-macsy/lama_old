@@ -237,23 +237,13 @@ public:
 
     virtual bool isConsistent() const;
 
+    /** Make overloaded operator= available before overriding the default one. */
+
+    using Matrix::operator=;
+
     /** Overrides the default assignment operator to guarantee deep copy. */
 
     DenseMatrix& operator=( const DenseMatrix& matrix );
-
-    /** Redefines assignment operator to get the correct return value; implementation is same as for base classes. */
-
-    DenseMatrix& operator=( const Matrix& matrix );
-
-    DenseMatrix& operator=( const Expression<Scalar, Matrix, Times> expression );
-
-    DenseMatrix& operator=( const Expression<Matrix, Matrix, Times> expression );
-
-    DenseMatrix& operator=( const Expression<Scalar, Expression<Matrix, Matrix, Times>, Times> expression );
-
-    DenseMatrix& operator=( const Expression<Expression<Scalar, Expression<Matrix, Matrix, Times>, Times>,
-                                             Expression<Scalar, Matrix, Times>,
-                                             Plus> expression );
 
     /** Implementation for Matrix::getTypeName() */
 

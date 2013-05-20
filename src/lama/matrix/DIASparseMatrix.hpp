@@ -181,12 +181,17 @@ public:
      */
     ~DIASparseMatrix();
 
+    // Make all assignment operators of base class visible before overwriting one
+
+    using SparseMatrix<ValueType>::operator=; 
+
     /** Override the default assignment operator that would not make deep copies. */
 
     DIASparseMatrix& operator=( const DIASparseMatrix& matrix );
 
     /** Redefine assignment operator to get the correct return value; implementation is same as for base classes. */
 
+    /*
     DIASparseMatrix& operator=( const Matrix& matrix );
 
     DIASparseMatrix& operator=( const Expression<Matrix,Matrix,Times>& expression );
@@ -200,6 +205,7 @@ public:
 
     DIASparseMatrix& operator=(
         const Expression<Expression<Scalar,Matrix,Times>,Expression<Scalar,Matrix,Times>,Plus> exp );
+    */
 
     /** Override MatrixStorage<ValueType>::getLocalStorage with covariant return type. */
 
