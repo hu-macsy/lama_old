@@ -127,8 +127,8 @@ public:
     /** Constructs a dense matrix from any other matrix with new distributions.
      *
      *  @param[in] other             input matrix.
-     *  @param[in] rowDistribution   TODO[doxy] Complete Description.
-     *  @param[in] colDistribution   TODO[doxy] Complete Description.
+     *  @param[in] rowDistribution   new distribution of rows among processors
+     *  @param[in] colDistribution   new distribution of columns for blocking
      *
      *  The following codes are equivalent:
      *
@@ -147,8 +147,8 @@ public:
     /** Constructs a dense matrix from another dense matrix with new distributions.
      *
      *  @param[in] matrix            input matrix.
-     *  @param[in] rowDistribution   TODO[doxy] Complete Description.
-     *  @param[in] colDistribution   TODO[doxy] Complete Description.
+     *  @param[in] rowDistribution   new distribution of rows among processors
+     *  @param[in] colDistribution   new distribution of columns for blocking
      *
      */
     DenseMatrix(
@@ -187,38 +187,40 @@ public:
         const OtherValueType* const values );
 
     /**
-     * TODO[doxy] Complete Description.
+     * Contructor of a dense matrix by matrix expression alhpa * A * B + beta * C
      *
-     * @param[in] expression   TODO[doxy] Complete Description.
+     * @param[in] expression  matrix expression alhpa * A * B + beta * C
      */
     DenseMatrix(
-        const Expression<Expression<Scalar,Expression<Matrix,Matrix,Times>,Times>,Expression<Scalar,Matrix,Times>,Plus> expression );
+        const Expression<Expression<Scalar, Expression<Matrix, Matrix, Times>, Times>,
+                         Expression<Scalar, Matrix, Times>, 
+                         Plus> expression );
 
     /**
-     * TODO[doxy] Complete Description.
+     * Contructor of a dense matrix by matrix expression A * B 
      *
-     * @param[in] expression   TODO[doxy] Complete Description.
+     * @param[in] expression   matrix expression A * B
      */
-    DenseMatrix( const Expression<Matrix,Matrix,Times> expression );
+    DenseMatrix( const Expression<Matrix, Matrix, Times> expression );
 
     /**
-     * TODO[doxy] Complete Description.
+     * Constructor of a dense matrix by matrix espression alhpa * A * B
      *
-     * @param[in] expression   TODO[doxy] Complete Description.
+     * @param[in] expression   matrix espression alhpa * A * B
      */
-    DenseMatrix( const Expression<Scalar,Expression<Matrix,Matrix,Times>,Times> expression );
+    DenseMatrix( const Expression<Scalar, Expression<Matrix, Matrix, Times>, Times> expression );
 
     /**
-     * TODO[doxy] Complete Description.
+     * Constructor of a dense matrix by matrix expression alhpa * A
      *
-     * @param[in] expression   TODO[doxy] Complete Description.
+     * @param[in] expression   matrix expression alpha * A where alpha is a Scalar and A a matrix
      */
-    DenseMatrix( const Expression<Scalar,Matrix,Times> expression );
+    DenseMatrix( const Expression<Scalar, Matrix, Times> expression );
 
     /** Constructor of a replicated dense matrix by reading the matrix
      *  data from a file.
      *
-     *  @param[in] filename   TODO[doxy] Complete Description.
+     *  @param[in] filename   Name of the file with matrix data.
 
      *  Next releases will also support distributed/parallel I/O. In the
      *  meantime this constructor should be used with a following call of
@@ -243,14 +245,15 @@ public:
 
     DenseMatrix& operator=( const Matrix& matrix );
 
-    DenseMatrix& operator=( const Expression<Scalar,Matrix,Times> expression );
+    DenseMatrix& operator=( const Expression<Scalar, Matrix, Times> expression );
 
-    DenseMatrix& operator=( const Expression<Matrix,Matrix,Times> expression );
+    DenseMatrix& operator=( const Expression<Matrix, Matrix, Times> expression );
 
-    DenseMatrix& operator=( const Expression<Scalar,Expression<Matrix,Matrix,Times>,Times> expression );
+    DenseMatrix& operator=( const Expression<Scalar, Expression<Matrix, Matrix, Times>, Times> expression );
 
-    DenseMatrix& operator=(
-        const Expression<Expression<Scalar,Expression<Matrix,Matrix,Times>,Times>,Expression<Scalar,Matrix,Times>,Plus> expression );
+    DenseMatrix& operator=( const Expression<Expression<Scalar, Expression<Matrix, Matrix, Times>, Times>,
+                                             Expression<Scalar, Matrix, Times>,
+                                             Plus> expression );
 
     /** Implementation for Matrix::getTypeName() */
 
@@ -268,7 +271,7 @@ public:
 
     virtual void setContext( const ContextPtr context );
 
-    using CRTPMatrix<DenseMatrix<T>,T>::setContext; // setContext( localContext, haloContext )
+    using CRTPMatrix<DenseMatrix<T>, T>::setContext; // setContext( localContext, haloContext )
 
     /* Implementation of pure method of class Matrix. */
 
@@ -277,9 +280,11 @@ public:
         return mData[0]->getContextPtr();
     }
 
-    /* Implementation of pure method of class Matrix. */
+    /** Implementation of pure method Matrix::setIdentity. */
 
-    virtual void setIdentity();
+    virtual void setIdentity( DistributionPtr distribution );
+
+    using CRTPMatrix<DenseMatrix<T>, T>::setIdentity;  // setIdentity( const IndexType n )
 
     /** Set matrix with global dense data */
 
@@ -482,10 +487,6 @@ public:
     /* Implementation of pure method of class Matrix. */
 
     virtual IndexType getLocalNumColumns() const;
-
-    //TODO: no instantiation of these functions --> implement or delete
-    //IndexType getNumLocalChunks( ) const;
-    //IndexType getNumTotalChunks( ) const;
 
     /* Implementation of pure method of class Matrix. */
 

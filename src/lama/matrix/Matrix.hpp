@@ -78,81 +78,6 @@ public:
     typedef const Matrix& ExpressionMemberType;
 
     /**
-     * @brief Constructs a matrix by corresponding distributions.
-     *
-     * @param[in] rowDistribution   specifies number of rows and how the rows of the matrix are
-     *                              distributed among the available partitions.
-     * @param[in] colDistribution   specifies number of columns and the distribution of a vector
-     *                              when matrix is applied to a matrix-vector multiplication.
-     *
-     *  The colDstribution is used to setup a communication pattern (e.g. halo)
-     *  that can be reused for multiple matrix-vector operations. It might also be
-     *  used to split the matrix data on one partition into a local and non-local
-     *  part.
-     *
-     *  The number of rows and columns is given implicitly by the global sizes of the distributions.
-     */
-    Matrix( DistributionPtr rowDistribution, DistributionPtr colDistribution );
-
-    /**
-     * @brief Constructs a matrix of a given size replicated on each partition.
-     *
-     * @param[in] numRows      number of rows, must be non-negative.
-     * @param[in] numColumns   number of columns, must be non-negative.
-     *
-     * Same as Matrix( NoDistribution(numRows), NoDistribution(numColumns) )
-     */
-    Matrix( const IndexType numRows, const IndexType numColumns );
-
-    /**
-     * @brief Constructs a square matrix with the given size and the specified distribution.
-     *
-     * @param[in] distribution      specifies how the rows of the matrix are distributed among
-     *                              the available partitions.
-     *
-     * Same as Matrix( distribution, distribution ); column distribution will be same as that of rows.
-     */
-    Matrix( DistributionPtr distribution );
-
-    /**
-     * @brief Constructs a square matrix with a replicated distribution.
-     *
-     * @param[in] size              is the number of rows
-     *
-     * Same as Matrix(size, size ).
-     */
-    explicit Matrix( const IndexType size );
-
-    /**
-     * @brief Default constructor, creates a replicated matrix of size 0 x 0.
-     */
-    Matrix();
-
-    /**
-     * @brief Redistribute the given matrix with the specified distributions.
-     *
-     * @param[in] other            the matrix to redistribute
-     * @param[in] rowDistribution  specifies how the rows of the matrix are distributed among
-     *                             the available partitions.
-     * @param[in] colDistribution  specifies the distribution of a vector when matrix is
-     *                             applied to a matrix-vector multiplication.
-     *
-     * The following relations must hold:
-     *
-     *   - other.getNumRows() == distribution->getGlobalSize()
-     *   - other.getNumColumns() == colDistribution->getGlobalSize()
-     */
-    Matrix( const Matrix& other, DistributionPtr rowDistribution, DistributionPtr colDistribution );
-
-    /**
-     * @brief Copies a matrix to a new matrix with the same distribution.
-     *
-     * @param[in] other  the matrix to take a copy from
-     *
-     */
-    Matrix( const Matrix& other );
-
-    /**
      * @brief Destructor, releases all allocated resources.
      */
     virtual ~Matrix();
@@ -230,10 +155,17 @@ public:
      * void sub( ..., Matrix& a, ... )
      * ...
      * LAMA_ASSERT_EQUAL_DEBUG( a.getNumRows(), a.getNumColumns() )
-     * a.setIdentity();
+     * a.setIdentity( a.getRowDistribution() );
      * \endcode
      */
-    virtual void setIdentity() = 0;
+
+    /** Set matrix to a identity square matrix with same row and column distribution. */
+
+    virtual void setIdentity( DistributionPtr distribution ) = 0;
+
+    /** Set matrix to a (replicated) identity matrix with same row and column distribution. */
+
+    void setIdentity( const IndexType n );
 
     /** @brief Assignment of a matrix to this matrix
      *
@@ -261,7 +193,7 @@ public:
      *
      *  The columns of the local storage will be splitted according to the column distribution.
      *
-     *  @param[in] storage   TODO[doxy] Complete Description.
+     *  @param[in] storage   local part of the matrix on this processor
      *  @param[in] rowDist   the given row distribution.
      *  @param[in] colDist   storage will be splitted according to the column distribution.
      */
@@ -287,12 +219,11 @@ public:
     /** @brief This method returns one row of the matrix.
      *
      * @param[out] row              is a replicated vector with all values of the row
-     * @param[in]  globalRowIndex   TODO[doxy] Complete Description.
+     * @param[in]  globalRowIndex   global index of the row that should be extracted
      *
-     * Note: the value type of the vector should be the same type as the matrix (otherwise conversion)
-     *       and it should be a replicated vector (otherwise reallocation)
-     *
-     * Unclear: should the distribution always be unchanged ?
+     * - the vector row might be of any type but for efficiency it should have the same type as the matrix
+     *   (otherwise conversion)
+     * - the output vector will always be replicated
      */
     virtual void getRow( Vector& row, const IndexType globalRowIndex ) const = 0;
 
@@ -534,7 +465,8 @@ public:
      */
     typedef enum
     {
-        ASYNCHRONOUS, SYNCHRONOUS
+        ASYNCHRONOUS,   // asynchronous execution to overlap computations, communications
+        SYNCHRONOUS     // synchronous, operations will not overlap
     } SyncKind;
 
     /**
@@ -770,6 +702,82 @@ public:
 protected:
 
     /**
+     * @brief Constructs a matrix by corresponding distributions.
+     *
+     * @param[in] rowDistribution   specifies number of rows and how the rows of the matrix are
+     *                              distributed among the available partitions.
+     * @param[in] colDistribution   specifies number of columns and the distribution of a vector
+     *                              when matrix is applied to a matrix-vector multiplication.
+     *
+     *  The colDstribution is used to setup a communication pattern (e.g. halo)
+     *  that can be reused for multiple matrix-vector operations. It might also be
+     *  used to split the matrix data on one partition into a local and non-local
+     *  part.
+     *
+     *  The number of rows and columns is given implicitly by the global sizes of the distributions.
+     */
+    Matrix( DistributionPtr rowDistribution, DistributionPtr colDistribution );
+
+    /**
+     * @brief Constructs a matrix of a given size replicated on each partition.
+     *
+     * @param[in] numRows      number of rows, must be non-negative.
+     * @param[in] numColumns   number of columns, must be non-negative.
+     *
+     * Same as Matrix( NoDistribution(numRows), NoDistribution(numColumns) )
+     */
+    Matrix( const IndexType numRows, const IndexType numColumns );
+
+    /**
+     * @brief Constructs a square matrix with the given size and the specified distribution.
+     *
+     * @param[in] distribution      specifies how the rows of the matrix are distributed among
+     *                              the available partitions.
+     *
+     * Same as Matrix( distribution, distribution ); column distribution will be same as that of rows.
+     */
+    Matrix( DistributionPtr distribution );
+
+    /**
+     * @brief Constructs a square matrix with a replicated distribution.
+     *
+     * @param[in] size              is the number of rows
+     *
+     * Same as Matrix(size, size ).
+     */
+    explicit Matrix( const IndexType size );
+
+    /**
+     * @brief Default constructor, creates a replicated matrix of size 0 x 0.
+     */
+    Matrix();
+
+    /**
+     * @brief Redistribute the given matrix with the specified distributions.
+     *
+     * @param[in] other            the matrix to redistribute
+     * @param[in] rowDistribution  specifies how the rows of the matrix are distributed among
+     *                             the available partitions.
+     * @param[in] colDistribution  specifies the distribution of a vector when matrix is
+     *                             applied to a matrix-vector multiplication.
+     *
+     * The following relations must hold:
+     *
+     *   - other.getNumRows() == distribution->getGlobalSize()
+     *   - other.getNumColumns() == colDistribution->getGlobalSize()
+     */
+    Matrix( const Matrix& other, DistributionPtr rowDistribution, DistributionPtr colDistribution );
+
+    /**
+     * @brief Copies a matrix to a new matrix with the same distribution.
+     *
+     * @param[in] other  the matrix to take a copy from
+     *
+     */
+    Matrix( const Matrix& other );
+
+
+    /**
      * @brief Sets the global/local size of replicated matrix.
      *
      * @param[in] numRows      number of rows, must be non-negative.
@@ -863,6 +871,35 @@ inline std::ostream& operator<<( std::ostream& stream, const Matrix::SyncKind& k
     default:
     {
         stream << "<unknown sync kind>";
+        break;
+    }
+    }
+
+    return stream;
+}
+
+/** This function prints a MatrixKind on an output stream.
+ *
+ *  \param stream   is the reference to the output stream
+ *  \param kind      is the enum value that is printed
+ */
+inline std::ostream& operator<<( std::ostream& stream, const Matrix::MatrixKind& kind )
+{
+    switch ( kind )
+    {
+    case Matrix::DENSE:
+    {
+        stream << "DENSE";
+        break;
+    }
+    case Matrix::SPARSE:
+    {
+        stream << "SPARSE";
+        break;
+    }
+    default:
+    {
+        stream << "<unknown matrix kind>";
         break;
     }
     }

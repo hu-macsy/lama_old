@@ -368,8 +368,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( InvertTest, MatrixType, SparseMatrixTypes ) {
 
     LAMA_LOG_INFO( logger, "Result of matrix x inverse : " << mm );
 
-    MatrixType unity( bdist, bdist );
-    unity.setIdentity( );
+    MatrixType unity;
+    unity.setIdentity( bdist );
 
     LAMA_LOG_INFO( logger, "Distributed identity matrix: " << mm );
 

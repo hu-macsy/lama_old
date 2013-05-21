@@ -88,15 +88,9 @@ public:
 
     CSRStorage();
 
-    /**
-     * @brief Creates a sparse matrix with all values set to zero.
+    /** Constructor for CSR storage by corresponding arrays. 
      *
-     * @param[in] numRows       the number of rows of the matrix
-     * @param[in] numColumns    the number of columns of the matrix
      */
-    CSRStorage( const IndexType numRows, const IndexType numColumns );
-
-    /** Constructor for CSR storage by corresponding arrays. */
 
     CSRStorage(
         const IndexType numRows,
@@ -104,7 +98,7 @@ public:
         const IndexType numValues,
         const LAMAArray<IndexType>& ia,
         const LAMAArray<IndexType>& ja,
-        const LAMAArray<ValueType>& values );
+        const _LAMAArray& values );
 
     /** Copy constructor can take any matrix storage. */
 

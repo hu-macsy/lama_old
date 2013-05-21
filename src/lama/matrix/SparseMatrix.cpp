@@ -1735,18 +1735,15 @@ SparseMatrix<ValueType>* SparseMatrix<ValueType>::copy() const
 /* ------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void SparseMatrix<ValueType>::setIdentity()
+void SparseMatrix<ValueType>::setIdentity( DistributionPtr dist )
 {
-    if ( getDistribution() != getColDistribution() )
-    {
-        LAMA_THROWEXCEPTION( *this << ": setIdentity only supported for same row/col distribution" )
-    }
+    allocate( dist, dist );
 
     mLocalData->setIdentity( getDistributionPtr()->getLocalSize() );
     mHaloData->clear();
     mHalo.clear();
 
-    LAMA_LOG_INFO( logger, *this << ": is no identity" )
+    LAMA_LOG_INFO( logger, *this << ": identity" )
 }
 
 /* ------------------------------------------------------------------------- */

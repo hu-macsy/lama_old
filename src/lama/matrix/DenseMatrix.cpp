@@ -389,17 +389,16 @@ DenseMatrix<ValueType>::DenseMatrix( DistributionPtr distribution )
 /* ------------------------------------------------------------------ */
 
 template<typename ValueType>
-void DenseMatrix<ValueType>::setIdentity()
+void DenseMatrix<ValueType>::setIdentity( DistributionPtr dist )
 {
-    if ( getDistribution() != getColDistribution() )
-    {
-        LAMA_THROWEXCEPTION(
-            *this << ": setIdentity only for square matrices" << " with same row and column distribution" );
-    }
+    Matrix::setDistributedMatrix( dist, dist );
+
+    computeOwners();
+    allocateData();
 
     // Note: data is already allocated, so we just set it
 
-    const Communicator& comm = getColDistribution().getCommunicator();
+    const Communicator& comm = dist->getCommunicator();
 
     IndexType rank = comm.getRank();
     IndexType size = comm.getSize();

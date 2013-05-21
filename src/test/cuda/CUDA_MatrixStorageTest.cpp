@@ -136,7 +136,7 @@ template<typename st>
 void testSetMethod()
 {
     typedef st StorageType;
-    StorageType storage( 0, 0 );
+    StorageType storage;
     setCSRData( storage );
 
 }
