@@ -27,4 +27,17 @@ To build LAMAs doxygen API documentation call
 
    make doc
 
-in your build directory.
+in your build directory and find it in doc/system/html/index.html.
+
+User Documentation
+------------------
+
+To build LAMAs user documentation call
+
+.. code-block:: bash 
+
+   make userdoc
+
+in your build directory and find it in doc/user/html/index.html.
+
+
