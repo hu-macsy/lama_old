@@ -643,6 +643,13 @@ public:
                                         Expression<Scalar, Matrix, Times>, Plus>& exp );
 
     /**
+     * @brief The assignment operator this *= alpha
+     *
+     * @param[in] val   Factor used for scaling of the matrix
+     */
+    Matrix& operator*=( const Scalar val );
+
+    /**
      * @brief The assignment operator this += A
      *
      * @param[in] exp   Matrix to be added

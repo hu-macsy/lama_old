@@ -41,42 +41,46 @@ namespace lama
 {
 
 /**
- * @brief The times operator creates an expression that represents Scalar times Vector
+ * @brief Create a symbolic expression for the product alpha * vectorX                 
  *
  * @param[in] alpha     The scalar.
- * @param[in] x         The vector.
- * @return              The expression representing this product.
+ * @param[in] vectorX   The vector.
+ * @return              Symbolic expression alpha * vectorX        
  */
 
-inline Expression<Scalar,Vector,Times> operator*( const Scalar& alpha, const Vector& x )
+inline Expression<Scalar, Vector, Times> operator*( const Scalar& alpha, const Vector& vectorX )
 {
-    return Expression<Scalar,Vector,Times>( alpha, x );
+    return Expression<Scalar, Vector, Times>( alpha, vectorX );
 }
 
 /**
- * @brief The times operator creates an expression that represents Vector times Scalar
+ * @brief Create a symbolic expression for the product vectorX * alpha
  *
- * @param[in] x         The vector.
+ * @param[in] vectorX   The vector.
  * @param[in] alpha     The scalar.
- * @return              The expression representing this product.
+ * @return              Symbolic expression alpha * vectorX       
+ *
+ * Note: due to normalization the arguments are switched in the symbolic expression
  */
 
-inline Expression<Scalar,Vector,Times> operator*( const Vector& x, const Scalar& alpha )
+inline Expression<Scalar, Vector, Times> operator*( const Vector& vectorX, const Scalar& alpha )
 {
-    return Expression<Scalar,Vector,Times>( alpha, x );
+    return Expression<Scalar, Vector, Times>( alpha, vectorX );
 }
 
 /**
- * @brief The division operator creates an expression that represents Vector times 1.0 / Scalar
+ * @brief Create a symbolic expression for the division vectorX / alpha
  *
- * @param[in] x         The vector.
+ * @param[in] vectorX   The vector.
  * @param[in] alpha     The scalar.
- * @return              The expression representing this product.
+ * @return              Symbolic expression [1.0/alpha] * x      
  */
 
-inline Expression<Scalar,Vector,Times> operator/( const Vector& x, const Scalar& alpha )
+inline Expression<Scalar, Vector, Times> operator/( const Vector& x, const Scalar& alpha )
 {
-    return Expression<Scalar,Vector,Times>( Scalar( 1.0 ) / alpha, x );
+    // build 1.0/ alpha as new scalar for a symbolic expression Scalar * Vector 
+
+    return Expression<Scalar, Vector, Times>( Scalar( 1.0 ) / alpha, x );
 }
 
 /**
@@ -207,7 +211,7 @@ inline Expression<Expression<Scalar,Vector,Times>,Expression<Scalar,Vector,Times
  * @param[in] y     The second vector.
  * @return          The expression representing this difference.
  */
-inline Expression<Expression<Scalar,Vector,Times>,Expression<Scalar,Vector,Times>,Plus> operator-(
+inline Expression<Expression<Scalar, Vector, Times>, Expression<Scalar, Vector, Times>, Plus> operator-(
     const Vector& x,
     const Vector& y )
 {
@@ -216,6 +220,7 @@ inline Expression<Expression<Scalar,Vector,Times>,Expression<Scalar,Vector,Times
 
     Expression<Scalar,Vector,Times> exp1( alpha, x );
     Expression<Scalar,Vector,Times> exp2( beta, y );
+
     return Expression<Expression<Scalar,Vector,Times>,Expression<Scalar,Vector,Times>,Plus>( exp1, exp2 );
 }
 

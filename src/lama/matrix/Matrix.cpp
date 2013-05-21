@@ -47,31 +47,39 @@ namespace lama
 
 LAMA_LOG_DEF_LOGGER( Matrix::logger, "Matrix" )
 
-Matrix::Matrix( const Matrix& other )
-    : Distributed( other ), mColDistribution( other.mColDistribution ), mNumRows( other.mNumRows ), mNumColumns(
-        other.mNumColumns ), mCommunicationKind( other.mCommunicationKind )
+Matrix::Matrix( const Matrix& other ) :
+    Distributed( other ), 
+    mColDistribution( other.mColDistribution ), 
+    mNumRows( other.mNumRows ), 
+    mNumColumns( other.mNumColumns ), 
+    mCommunicationKind( other.mCommunicationKind )
 {
     LAMA_LOG_INFO( logger, "Creating copy of " << other << " with same distributions." )
 }
 
-Matrix::Matrix( const Matrix& other, DistributionPtr distribution, DistributionPtr colDistribution )
-    : Distributed( distribution ), mColDistribution( colDistribution ), mNumRows( other.mNumRows ), mNumColumns(
-        other.mNumColumns ), mCommunicationKind( other.mCommunicationKind )
+Matrix::Matrix( const Matrix& other, DistributionPtr rowDist, DistributionPtr colDist ) :
+    Distributed( rowDist ), 
+    mColDistribution( colDist ),
+    mNumRows( other.mNumRows ),
+    mNumColumns( other.mNumColumns ), 
+    mCommunicationKind( other.mCommunicationKind )
 {
     // Very important: here we check that new distributions fit the matrix
 
     checkSettings();
 
     LAMA_LOG_INFO( logger,
-                   "Creating copy of " << other << " with new distributions: " << "row = " << getDistribution() << ", col = " << getColDistribution() )
-
+                   "Creating copy of " << other << " with new distributions: " << 
+                   "row = " << getDistribution() << ", col = " << getColDistribution() )
 }
 
-Matrix::Matrix( const IndexType numRows, const IndexType numColumns )
+/* ----------------------------------------------------------------------- */
 
-    : Distributed( DistributionPtr( new NoDistribution( numRows ) ) ), mColDistribution(
-        DistributionPtr( new NoDistribution( numColumns ) ) ), mNumRows( numRows ), mNumColumns(
-            numColumns )
+Matrix::Matrix( const IndexType numRows, const IndexType numColumns ) : 
+    Distributed( DistributionPtr( new NoDistribution( numRows ) ) ), 
+    mColDistribution( DistributionPtr( new NoDistribution( numColumns ) ) ), 
+    mNumRows( numRows ), 
+    mNumColumns( numColumns )
 {
     setDefaultKind();
 
@@ -108,6 +116,8 @@ void Matrix::checkSettings() const
             "col distribution " << getColDistribution() << ": global size mismatches #columns = " << mNumColumns );
     }
 }
+
+/* ----------------------------------------------------------------------- */
 
 Matrix::Matrix( DistributionPtr rowDistribution, DistributionPtr colDistribution )
     : Distributed( rowDistribution )
@@ -318,6 +328,17 @@ Matrix& Matrix::operator=( const Expression<Scalar, Matrix, Times>& exp )
     const Matrix& A = exp.getArg2();
     const Scalar& s = exp.getArg1();
     this->matrixTimesScalar( A, s );
+    return *this;
+}
+
+/* ---------------------------------------------------------------------------------*/
+
+Matrix& Matrix::operator*=( const Scalar exp )
+{
+    // this *= alpha  -> this->scale( exp )
+
+    this->scale( exp );
+
     return *this;
 }
 
