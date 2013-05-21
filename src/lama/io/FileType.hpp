@@ -26,7 +26,7 @@
  * @endlicense
  *
  * @brief FileType.hpp
- * @author kbuschul
+ * @author Kai Buschulte
  * @date 12.05.2010
  * $Id$
  */

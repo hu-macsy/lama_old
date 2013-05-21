@@ -28,6 +28,7 @@
  # @brief Find CBE BLAS
  # @author
  # @date 25.04.2013
+ # $Id$
 ###
 
 # - Try to find CBE BLAS Implementation 

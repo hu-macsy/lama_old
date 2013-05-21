@@ -28,7 +28,7 @@
  * @brief Contains the implementation of the class CommunicatorTest
  * @author: Alexander Büchel, Thomas Brandes
  * @date 09.05.2012
- * $
+ * $Id$
  **/
 
 #include <test/distributed/CommunicatorTest.hpp>

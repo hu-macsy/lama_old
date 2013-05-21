@@ -26,7 +26,7 @@
  * @endlicense
  *
  * @brief GenLoggerCreator.hpp
- * @author brandes
+ * @author Thomas Brandes
  * @date 01.03.2011
  * $Id$
  */

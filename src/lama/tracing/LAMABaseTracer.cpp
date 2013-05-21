@@ -26,7 +26,7 @@
  * @endlicense
  *
  * @brief LAMABaseTracer.cpp
- * @author schubert
+ * @author Lauretta Schubert
  * @date 09.11.2011
  * $Id$
  */

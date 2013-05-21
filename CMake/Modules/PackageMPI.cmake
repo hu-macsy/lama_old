@@ -28,6 +28,7 @@
  # @brief findPackage and configuration of MPI
  # @author Jan Ecker
  # @date 25.04.2013
+ # $Id$
 ###
 
 # Look for MPI first to allow LAMA_BLAS to take the correct blacs implementation

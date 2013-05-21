@@ -26,7 +26,7 @@
  * @endlicense
  *
  * @brief Instantitions for template class COOStorage.
- * @author schubert
+ * @author Lauretta Schubert
  * @date 25.05.2011
  * $Id$
  */

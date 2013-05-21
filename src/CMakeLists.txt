@@ -28,6 +28,7 @@
  # @brief Main specification file for CMake
  # @author Thomas Brandes, Jiri Kraus
  # @date 29.03.2012
+ # $Id$
 ###
 
 ### Set required CMake version
@@ -112,25 +113,16 @@ if ( FOUND_BOOST_TEST AND LAMA_BUILD_TEST )
     add_subdirectory ( test )
 endif ( FOUND_BOOST_TEST AND LAMA_BUILD_TEST )
 
-
-############################################################################
-#   Examples
-############################################################################
-
-### copy examples in build directory + install it
-
+### Examples ###
+# copy examples in build directory + install it
 file ( COPY ${CMAKE_SOURCE_DIR}/examples DESTINATION ${CMAKE_BINARY_DIR} )
 install ( DIRECTORY ${CMAKE_SOURCE_DIR}/examples DESTINATION share/examples )
 
-### generate file make.inc + install it
-
+# generate file make.inc + install it
 configure_file ( "${CMAKE_SOURCE_DIR}/examples/make.inc.in" "${CMAKE_CURRENT_BINARY_DIR}/examples/make.inc" )
 install ( FILES "${CMAKE_CURRENT_BINARY_DIR}/examples/make.inc" DESTINATION share/examples )
 
-############################################################################
-#   Doxygen 
-############################################################################
-
+### Doxygen and Sphinx Configuration ###
 include ( PackageDoxygen )
 include ( PackageSphinx )
 

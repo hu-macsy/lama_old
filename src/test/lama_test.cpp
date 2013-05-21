@@ -28,7 +28,7 @@
  * @brief Contains the implementation of the class lama_test.
  * @author: Alexander Büchel
  * @date 31.01.2012
- * $
+ * $Id$
  **/
 
 #define BOOST_TEST_NO_MAIN

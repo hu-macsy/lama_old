@@ -26,7 +26,7 @@
  * @endlicense
  *
  * @brief XDRFileStream.cpp
- * @author kbuschul
+ * @author Kai Buschulte
  * @date 15.04.2010
  * $Id$
  */

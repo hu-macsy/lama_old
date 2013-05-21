@@ -28,7 +28,7 @@
  * @brief Test of access to the LAMAInterface for CUDA device.
  * @author: Thomas Brandes
  * @date 13.04.2013
- * $
+ * $Id$
  **/
 
 #include <boost/test/unit_test.hpp>

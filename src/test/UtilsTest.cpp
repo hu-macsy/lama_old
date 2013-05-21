@@ -28,7 +28,7 @@
  * @brief Contains tests for the class CUDAUtils and OpenMPUtils
  * @author: Jan Ecker
  * @date 19.11.2012
- * $
+ * $Id$
  **/
 
 // boost

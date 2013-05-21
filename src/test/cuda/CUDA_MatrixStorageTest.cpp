@@ -28,7 +28,7 @@
  * @brief Contains the implementation of the class CUDAMatrixStorageTest.cpp
  * @author: Alexander Büchel, Thomas Brandes, Bea Hornef
  * @date 02.05.2012
- * $
+ * $Id$
  **/
 
 #include <boost/test/unit_test.hpp>

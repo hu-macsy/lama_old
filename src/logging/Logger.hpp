@@ -26,7 +26,7 @@
  * @endlicense
  *
  * @brief Abstract logger class for a hierarchically organized logging system.
- * @author brandes
+ * @author Thomas Brandes
  * @date 01.03.2011
  * $Id$
  */

@@ -26,7 +26,7 @@
  * @endlicense
  *
  * @brief SparseMatrixHelper.hpp
- * @author lschubert
+ * @author Lauretta Schubert
  * @date 20.04.2012
  * $Id$
  */

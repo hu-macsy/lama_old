@@ -28,7 +28,7 @@
  * @brief Contains the implementation of the class IterationCountTest.
  * @author: Alexander Büchel, Matthias Makulla
  * @date 14.02.2012
- * $
+ * $Id$
  **/
 
 #include <boost/test/unit_test.hpp>

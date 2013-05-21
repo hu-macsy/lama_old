@@ -28,7 +28,7 @@
  * @brief Contains the implementation of the class CUDA_HostContextTest.
  * @author: Alexander Büchel, Lauretta Schubert
  * @date 26.04.2012
- * $
+ * $Id$
  **/
 
 #include <boost/test/unit_test.hpp>

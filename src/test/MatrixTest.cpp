@@ -28,7 +28,7 @@
  * @brief Contains the implementation of the class MatrixTest.
  * @author: Alexander Büchel
  * @date 01.02.2012
- * $
+ * $Id$
  **/
 
 #include <boost/test/unit_test.hpp>

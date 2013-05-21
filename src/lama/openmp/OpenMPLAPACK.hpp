@@ -26,7 +26,7 @@
  * @endlicense
  *
  * @brief OpenMPLAPACK.hpp
- * @author lschubert
+ * @author Lauretta Schubert
  * @date 02.07.2012
  * $Id$
  */

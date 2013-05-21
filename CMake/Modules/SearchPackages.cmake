@@ -28,6 +28,7 @@
  # @brief List of required and optional packages
  # @author Jan Ecker
  # @date 25.04.2013
+ # $Id$
 ###
 
 # Find required packages

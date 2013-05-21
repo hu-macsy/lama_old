@@ -26,7 +26,7 @@
  * @endlicense
  *
  * @brief Exception.cpp
- * @author jiri
+ * @author Jiri Kraus
  * @date 01.03.2011
  * $Id$
  */

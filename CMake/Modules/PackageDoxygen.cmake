@@ -28,6 +28,7 @@
  # @brief findPackage and configuration of doxygen
  # @author Jan Ecker
  # @date 25.04.2013
+ # $Id$
 ###
 
 ### DOXYGEN DOCUMENTATION ###

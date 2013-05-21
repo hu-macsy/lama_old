@@ -26,7 +26,7 @@
  * @endlicense
  *
  * @brief MatrixVectorExpressions.hpp
- * @author brandes
+ * @author Thomas Brandes
  * @date 28.03.2011
  * $Id$
  */

@@ -28,7 +28,7 @@
  * @brief Contains the implementation of the class JacobiTest.cpp
  * @author: Alexander Büchel, Matthias Makulla
  * @date 22.02.2012
- * $
+ * $Id$
  **/
 
 #include <boost/test/unit_test.hpp>

@@ -25,10 +25,10 @@
  * SOFTWARE.
  * @endlicense
  *
- * @file CUDAError.cpp
  * @brief Contains the implementation of the class CUDAError.
  * @author Thomas Brandes
- * Created on: 15.07.2011
+ * @date 15.07.2011
+ * $Id$
  */
 
 // hpp

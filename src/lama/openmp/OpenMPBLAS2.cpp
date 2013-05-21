@@ -26,7 +26,7 @@
  * @endlicense
  *
  * @brief OpenMPBLAS2.cpp
- * @author lschubert
+ * @author Lauretta Schubert
  * @date 05.07.2012
  * $Id$
  */
