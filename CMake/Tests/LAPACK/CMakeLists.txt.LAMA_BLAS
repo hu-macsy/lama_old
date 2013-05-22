@@ -1,0 +1,26 @@
+cmake_minimum_required (VERSION 2.8 )
+
+# Attention: project( GramSchmidt CXX ) does not work
+
+project( GramSchmidt )
+
+# make sure that the default is a RELEASE
+
+if (NOT CMAKE_BUILD_TYPE)
+   set(CMAKE_BUILD_TYPE RELEASE CACHE STRING
+      "Choose the type of build, options are: None Debug Release."
+      FORCE)
+endif (NOT CMAKE_BUILD_TYPE)
+
+set ( CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/../../Modules" )
+
+find_package ( LAMA_BLAS REQUIRED )
+
+if ( LAMA_BLAS_LIBRARIES )
+    message( STATUS "LAMA_BLAS found, LAMA_BLAS_LIBRARIES=${LAMA_BLAS_LIBRARIES}" )
+    add_executable( QR QR.cpp )
+    target_link_libraries( QR ${LAMA_BLAS_LIBRARIES} )
+else( LAMA_BLAS_LIBRARIES )
+    message( STATUS "LAMA_BLAS not found" )
+endif( LAMA_BLAS_LIBRARIES )
+

@@ -1,0 +1,36 @@
+#!/bin/sh
+
+ASTYLE=no
+if test x$ASTYLE = "xno"; then
+    ASTYLE=astyle
+fi
+
+OUTPUT=$($ASTYLE --version 2>&1 | cat)
+
+# deduce the version
+VERSION=${OUTPUT#Artistic Style Version }
+
+OPTIONS="--style=ansi \
+--indent=spaces=4 \
+--indent-preprocessor \
+--indent-switches \
+--break-blocks \
+--convert-tabs"
+
+case $VERSION in 
+    (2.01) 
+    OPTIONS="$OPTIONS \
+--pad-oper \
+--pad-header \
+--pad-paren-in \
+--delete-empty-lines \
+--add-brackets \
+--align-pointer=type";;
+    (*);;
+esac
+
+# --keep-one-line-statements \
+
+CMD="$ASTYLE $OPTIONS $@"
+echo $CMD
+exec $CMD
