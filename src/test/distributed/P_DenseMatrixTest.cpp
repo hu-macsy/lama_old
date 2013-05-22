@@ -26,9 +26,9 @@
  * @endlicense
  *
  * @brief Contains the implementation of the class P_DenseMatrixTest.
- * @author: Alexander Büchel, mdrost
+ * @author: Alexander Büchel, Michael Drost
  * @date 25.04.2012
- * $
+ * $Id$
  **/
 
 #include <boost/test/unit_test.hpp>

@@ -28,6 +28,7 @@
  # @brief Try to find Boost include dirs and libraries
  # @author
  # @date 25.04.2013
+ # $Id$
 ###
 
 # - Try to find Boost include dirs and libraries

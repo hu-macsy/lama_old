@@ -28,7 +28,7 @@
  * @brief Contains tests for the class CUDAJDSUtils and OpenMPJDSUtils
  * @author: Jan Ecker
  * @date 16.10.2012
- * $
+ * $Id$
  **/
 
 // boost

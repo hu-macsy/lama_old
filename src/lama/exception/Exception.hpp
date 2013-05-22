@@ -26,7 +26,7 @@
  * @endlicense
  *
  * @brief Interface of the class Exception.
- * @author jiri
+ * @author Jiri Kraus
  * @date 02.03.2011
  * $Id$
  */

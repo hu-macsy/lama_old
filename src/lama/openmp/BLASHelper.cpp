@@ -26,7 +26,7 @@
  * @endlicense
  *
  * @brief BLASHelper.cpp
- * @author lschubert
+ * @author Lauretta Schubert
  * @date 10.07.2012
  * $Id$
  */

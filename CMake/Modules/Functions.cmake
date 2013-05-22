@@ -28,6 +28,7 @@
  # @brief CMake functions and macros
  # @author Jan Ecker
  # @date 25.04.2013
+ # $Id$
 ###
 
 # defined functions:

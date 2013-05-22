@@ -26,12 +26,12 @@
  * @endlicense
  *
  * @brief Operators to form symbolic expressions Scalar * Matrix * Vector + Scalar * Vector
- * @author brandes
+ * @author Thomas Brandes
  * @date 28.03.2011
  * $Id$
  */
-#ifndef LAMA_MATRIX_VECTOREXPRESSIONS_HPP_
-#define LAMA_MATRIX_VECTOREXPRESSIONS_HPP_
+#ifndef LAMA_MATRIX_VECTOR_EXPRESSIONS_HPP_
+#define LAMA_MATRIX_VECTOR_EXPRESSIONS_HPP_
 
 #include <lama/matrix/Matrix.hpp>
 
@@ -219,4 +219,4 @@ inline Expression_SMV_SV operator+( const Expression_SMV& exp1, const Expression
 
 }
 
-#endif // LAMA_MATRIXVECTOREXPRESSIONS_HPP_
+#endif // LAMA_MATRIX_VECTOR_EXPRESSIONS_HPP_

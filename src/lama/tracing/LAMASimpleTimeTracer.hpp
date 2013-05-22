@@ -26,7 +26,7 @@
  * @endlicense
  *
  * @brief LAMASimpleTimeTracer.hpp
- * @author schubert
+ * @author Lauretta Schubert
  * @date 08.11.2011
  * $Id$
  */

@@ -43,6 +43,12 @@
 namespace lama
 {
 
+/* --------------------------------------------------------------- */
+/*                                                                 */
+/*  expressions:   Matrix +/- Matrix                               */
+/*                                                                 */
+/* --------------------------------------------------------------- */
+
 /**
  * @brief Expression object that stands for the sum of two matrices
  *
@@ -68,6 +74,12 @@ inline Expression_SM_SM operator-( const Matrix& matrixA, const Matrix& matrixB 
     return Expression_SM_SM( Expression_SM( Scalar( 1 ), matrixA ), 
                              Expression_SM( Scalar( -1 ), matrixB ) );
 }
+
+/* --------------------------------------------------------------- */
+/*                                                                 */
+/*  expressions:   Matrix * Scalar                                 */
+/*                                                                 */
+/* --------------------------------------------------------------- */
 
 /**
  * @brief This times operator creates an expression that represents the product
@@ -95,14 +107,34 @@ inline Expression_SM operator*( const Matrix& matrix, const Scalar& scalar )
     return Expression_SM( scalar, matrix );
 }
 
-//A*B
+/**
+ * @brief Create a symbolic expression 'Scalar * Matrix' for the division matrix / alpha
+ *
+ * @param[in] matrix   The matrix.
+ * @param[in] alpha    The scalar.
+ * @return             symbolic expression [1.0/alpha] *  matrixA     
+ */
+
+inline Expression_SM operator/( const Matrix& matrix, const Scalar& alpha )
+{
+    // build 1.0/ alpha as new scalar for a symbolic expression Scalar * Matrix 
+
+    return Expression_SM( Scalar( 1.0 ) / alpha, matrix );
+}
+
+/* --------------------------------------------------------------- */
+/*                                                                 */
+/*  expressions:   '[Scalar *] Matrix '  * Matrix                  */
+/*                                                                 */
+/* --------------------------------------------------------------- */
+
 /**
  * @brief This times operator creates an expression that represents the product
  *        of a Matrix and a Matrix.
  *
  * @param[in] m1      The first input matrix.
  * @param[in] m2      The second input matrix.
- * @return            The expression representing this product.
+ * @return            Symbolic expression representing the product 'm1 * m2'
  */
 inline Expression_SMM operator*( const Matrix& m1, const Matrix& m2 )
 {
@@ -135,12 +167,18 @@ inline Expression_SMM operator*( const Expression_SM& exp, const Matrix& m1 )
     return Expression_SMM( exp, m1 );
 }
 
+/* --------------------------------------------------------------- */
+/*                                                                 */
+/*  expressions:   'Scalar * Matrix * Matrix'  * Scalar            */
+/*                                                                 */
+/* --------------------------------------------------------------- */
+
 /**
  * @brief This times operator creates an expression that represents the product
  *        of Scalar times Matrix times Matrix.
  *
  * @param[in] s       The Scalar
- * @param[in] exp     The expression scalar times matrix.
+ * @param[in] exp     The expression 'Scalar * Matrix * Matrix'
  * @return            The expression representing this product.
  */
 inline Expression_SMM operator*( const Scalar& s, const Expression_SMM& exp )
@@ -167,11 +205,14 @@ inline Expression_SMM operator*( const Expression_SMM& exp, const Scalar& s )
                            exp.getArg2() );
 }
 
-//alpha*A*B + beta*C
+/* --------------------------------------------------------------- */
+/*                                                                 */
+/*  expressions:   Scalar * Matrix * Matrix +/- Scalar * Matrix    */
+/*                                                                 */
+/* --------------------------------------------------------------- */
 
 /**
- * @brief This plus operator creates an expression that represents the sum
- *        of Scalar times Matrix times Matrix plus Scalar times Matrix.
+ * @brief Build symbolic sum of 'Scalar * Matrix * Matrix' + 'Scalar * Matrix'
  *
  * @param[in] exp1    The expression Scalar times Matrix times Matrix.
  * @param[in] exp2    The expression Scalar times Matrix.
@@ -226,20 +267,71 @@ inline Expression_SMM_SM operator-( const Expression_SM& exp2, const Expression_
     return Expression_SMM_SM( minusExp1, exp2 );
 }
 
+/* --------------------------------------------------------------- */
+/*                                                                 */
+/*  expressions:   Scalar * Matrix * Matrix +/- Matrix             */
+/*                                                                 */
+/* --------------------------------------------------------------- */
+
 /**
- * @brief Create a symbolic expression 'Scalar * Matrix' for the division matrix / alpha
+ * @brief Build symbolic sum of 'Scalar * Matrix * Matrix' + 'Matrix'
  *
- * @param[in] matrix   The matrix.
- * @param[in] alpha    The scalar.
- * @return             symbolic expression [1.0/alpha] *  matrixA     
+ * @param[in] exp     The expression Scalar times Matrix times Matrix.
+ * @param[in] matrix  Matrix summand
+ * @return            The expression representing this sum.
  */
-
-inline Expression_SM operator/( const Matrix& matrix, const Scalar& alpha )
+inline Expression_SMM_SM operator+( const Expression_SMM& exp, const Matrix& matrix )
 {
-    // build 1.0/ alpha as new scalar for a symbolic expression Scalar * Matrix 
-
-    return Expression_SM( Scalar( 1.0 ) / alpha, matrix );
+    return Expression_SMM_SM( exp, Expression_SM( Scalar( 1 ), matrix ) );
 }
+
+/**
+ * @brief Build symbolic sum of 'Matrix' + 'Scalar * Matrix * Matrix'
+ *
+ * @param[in] matrix  Matrix summand
+ * @param[in] exp     The expression Scalar times Matrix times Matrix.
+ * @return            The expression representing this sum.
+ */
+inline Expression_SMM_SM operator+( const Matrix& matrix, const Expression_SMM& exp )
+{
+    return Expression_SMM_SM( exp, Expression_SM( Scalar( 1 ), matrix ) );
+}
+
+/**
+ * @brief Build symbolic difference of 'Scalar * Matrix * Matrix' - 'Matrix'
+ *
+ * @param[in] exp     The expression Scalar times Matrix times Matrix.
+ * @param[in] matrix  Matrix as subtrahend
+ * @return            The expression representing this sum.
+ */
+inline Expression_SMM_SM operator-( const Expression_SMM& exp, const Matrix& matrix )
+{
+    return Expression_SMM_SM( exp, Expression_SM( Scalar( -1 ), matrix ) );
+}
+
+/**
+ * @brief Build symbolic difference of 'Scalar * Matrix * Matrix' - 'Matrix'
+ *
+ * @param[in] matrix  Matrix as minuend
+ * @param[in] exp     The expression Scalar times Matrix times Matrix.
+ * @return            The expression representing this sum.
+ */
+inline Expression_SMM_SM operator-( const Matrix& matrix, const Expression_SMM& exp )
+{
+    // Build temporary expression for -exp 
+
+    Expression_SM expSM = exp.getArg1();
+
+    Expression_SMM minusExp( Expression_SM( -expSM.getArg1(), expSM.getArg2() ), exp.getArg2() );
+
+    return Expression_SMM_SM( minusExp, Expression_SM( Scalar( 1 ), matrix ) );
+}
+
+/* --------------------------------------------------------------- */
+/*                                                                 */
+/*  expressions:   Scalar * Matrix +/- Scalar * Matrix             */
+/*                                                                 */
+/* --------------------------------------------------------------- */
 
 /**
  * @brief Make a symbolic expression 'Scalar * Matrix + Scalar * Matrix' for the
@@ -272,6 +364,12 @@ inline Expression_SM_SM operator-( const Expression_SM& exp1, const Expression_S
 
     return Expression_SM_SM( exp1, minusExp2 );
 }
+
+/* --------------------------------------------------------------- */
+/*                                                                 */
+/*  expressions:   Scalar * Matrix +/- Matrix                      */
+/*                                                                 */
+/* --------------------------------------------------------------- */
 
 /**
  * @brief Make a symbolic expression 'Scalar * Matrix + Scalar * Matrix' for the

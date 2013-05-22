@@ -26,7 +26,7 @@
  * @endlicense
  *
  * @brief Definition of macro for unused arguemnts.
- * @author jiri
+ * @author Jiri Kraus
  * @date 06.04.2011
  * $Id$
  */

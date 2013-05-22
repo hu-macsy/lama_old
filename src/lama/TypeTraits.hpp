@@ -26,7 +26,7 @@
  * @endlicense
  *
  * @brief Contains the template TypeTraits and specializations.
- * @author jiri
+ * @author Jiri Kraus
  * @date 14.04.2010
  * $Id$
  */

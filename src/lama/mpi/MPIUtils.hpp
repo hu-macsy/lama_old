@@ -26,7 +26,7 @@
  * @endlicense
  *
  * @brief Utility macros for MPI calls
- * @author brandes
+ * @author Thomas Brandes
  * @date 23.03.2011
  * $Id$
  */

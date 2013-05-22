@@ -28,7 +28,7 @@
  * @brief Contains the implementation of the class P_SparseMatrixTest.
  * @author: Alexander Büchel, Thomas Brandes
  * @date 26.04.2012
- * $
+ * $Id$
  **/
 
 #include <test/distributed/P_SparseMatrixTest.hpp>

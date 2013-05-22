@@ -28,7 +28,7 @@
  * @brief Tests for all kind of distributed matrices
  * @author: Thomas Brandes
  * @date 26.04.2012
- * $
+ * $Id$
  **/
 
 #include <boost/test/unit_test.hpp>

@@ -28,6 +28,7 @@
  # @brief lama/task/CMakeLists.txt
  # @author Jan Ecker
  # @date 28.03.2013
+ # $Id$
 ###
 
 ### Add classes and header files ###

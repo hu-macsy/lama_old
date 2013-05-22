@@ -26,7 +26,7 @@
  * @endlicense
  *
  * @brief LAMAFile.hpp
- * @author brandes
+ * @author Thomas Brandes
  * @date 31.10.2011
  * $Id$
  */

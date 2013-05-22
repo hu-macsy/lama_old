@@ -26,7 +26,7 @@
  * @endlicense
  *
  * @brief HostWriteAccess.hpp
- * @author brandes
+ * @author Thomas Brandes
  * @date 02.05.2011
  * $Id$
  */

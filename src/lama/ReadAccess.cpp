@@ -26,7 +26,7 @@
  * @endlicense
  *
  * @brief Implementation and instantiation for template class ReadAccess.
- * @author lschubert
+ * @author Lauretta Schubert
  * @date 04.06.2011
  * $Id$
  */

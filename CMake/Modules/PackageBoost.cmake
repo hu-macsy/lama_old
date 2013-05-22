@@ -28,6 +28,7 @@
  # @brief findPackage and configuration of Boost
  # @author Jan Ecker
  # @date 25.04.2013
+ # $Id$
 ###
 
 ### Boost_USE_STATIC_LIBS  ( default is OFF )

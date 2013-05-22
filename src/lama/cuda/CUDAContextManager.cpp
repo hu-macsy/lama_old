@@ -27,7 +27,8 @@
  *
  * @brief Contains the implementation of the singleton class CUDAContextManager.
  * @author Thomas Brandes
- * Created on: 15.07.2011
+ * @date 15.07.2011
+ * $Id$
  */
 
 // hpp

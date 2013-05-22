@@ -28,7 +28,7 @@
  * @brief Contains the implementation of the class P_RedistributorTest.
  * @author: Alexander Büchel, Thomas Brandes
  * @date 14.02.2012
- * $
+ * $Id$
  **/
 
 #include <boost/test/unit_test.hpp>

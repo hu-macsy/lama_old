@@ -28,7 +28,7 @@
  * @brief Contains the implementation of the class CGTest.
  * @author: Alexander Büchel, Thomas Brandes
  * @date 21.02.2012
- * $
+ * $Id$
  **/
 
 #include <boost/test/unit_test.hpp>

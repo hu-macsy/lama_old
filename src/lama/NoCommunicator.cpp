@@ -26,7 +26,7 @@
  * @endlicense
  *
  * @brief NoCommunicator.cpp
- * @author brandes
+ * @author Thomas Brandes
  * @date 15.03.2011
  * $Id$
  */

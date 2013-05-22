@@ -28,6 +28,7 @@
  # @brief lama/CMakeLists.txt
  # @author Jan Ecker
  # @date 28.03.2013
+ # $Id$
 ###
 
 ### set this dir as lama source dir ###

@@ -26,7 +26,7 @@
  * @endlicense
  *
  * @brief Abstract class for logger creator.
- * @author brandes
+ * @author Thomas Brandes
  * @date 02.03.2011
  * $Id$
  */

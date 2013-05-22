@@ -26,7 +26,7 @@
  * @endlicense
  *
  * @brief Implementation and instantiation for template class WriteAccess.
- * @author lschubert
+ * @author Lauretta Schubert
  * @date 22.08.2012
  * $Id$
  */
