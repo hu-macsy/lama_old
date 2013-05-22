@@ -2,7 +2,7 @@
  * @file OpenMPLAPACKe.hpp
  *
  * @license
- * Copyright (c) 2012
+ * Copyright (c) 2009-2013
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -28,7 +28,7 @@
  * @brief Implemenation of LAMA LAPACK interface via LAPACKe
  * @author Thomas Brandes
  * @date 10.04.2013
- * $Id$
+ * @since 1.0.0
  */
 #ifndef LAMA_OPENMP_LAPACKE_HPP_
 #define LAMA_OPENMP_LAPACKE_HPP_

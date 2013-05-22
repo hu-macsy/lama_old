@@ -2,7 +2,7 @@
  * @file NoDistribution.hpp
  *
  * @license
- * Copyright (c) 2011
+ * Copyright (c) 2009-2013
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -28,7 +28,7 @@
  * @brief NoDistribution.hpp
  * @author brandes
  * @date 14.03.2011
- * $Id$
+ * @since 1.0.0
  */
 #ifndef LAMA_NODISTRIBUTION_HPP_
 #define LAMA_NODISTRIBUTION_HPP_

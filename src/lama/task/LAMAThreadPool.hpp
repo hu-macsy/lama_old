@@ -2,7 +2,7 @@
  * @file LAMAThreadPool.hpp
  *
  * @license
- * Copyright (c) 2011
+ * Copyright (c) 2009-2013
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -28,7 +28,7 @@
  * @brief Definition of class for a thread pool
  * @author Thomas Brandes
  * @date 27.12.2012
- * $Id$
+ * @since 1.0.0
  */
 #ifndef LAMA_THREAD_POOL_HPP_
 #define LAMA_THREAD_POOL_HPP_

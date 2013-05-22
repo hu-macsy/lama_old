@@ -2,7 +2,7 @@
  # @file PackageCodeCoverage.cmake
  #
  # @license
- # Copyright (c) 2013
+ # Copyright (c) 2009-2013
  # Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  # for Fraunhofer-Gesellschaft
  #
@@ -28,6 +28,7 @@
  # @brief Configuration for code coverage
  # @author Jan Ecker
  # @date 25.04.2013
+ # @since 1.0.0
 ###
 
 ###  Code coverage with gcov/lcov

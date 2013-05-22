@@ -2,7 +2,7 @@
  * @file AMGSetup.cpp
  *
  * @license
- * Copyright (c) 2011
+ * Copyright (c) 2009-2013
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -28,7 +28,7 @@
  * @brief AMGSetup.cpp
  * @author Jiri Kraus
  * @date 28.10.2011
- * $Id$
+ * @since 1.0.0
  */
 
 // hpp

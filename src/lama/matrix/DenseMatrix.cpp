@@ -2,7 +2,7 @@
  * @file DenseMatrix.cpp
  *
  * @license
- * Copyright (c) 2011
+ * Copyright (c) 2009-2013
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -28,7 +28,7 @@
  * @brief DenseMatrix.cpp
  * @author Michael Drost
  * @date 22.02.2011
- * $Id$
+ * @since 1.0.0
  */
 
 // hpp
@@ -198,26 +198,25 @@ DenseMatrix<ValueType>::DenseMatrix(
 }
 
 template<typename ValueType>
-DenseMatrix<ValueType>::DenseMatrix(
-    const Expression<Expression<Scalar,Expression<Matrix,Matrix,Times>,Times>,Expression<Scalar,Matrix,Times>,Plus> expression )
+DenseMatrix<ValueType>::DenseMatrix( const Expression_SMM_SM& expression )
 {
     Matrix::operator=( expression );
 }
 
 template<typename ValueType>
-DenseMatrix<ValueType>::DenseMatrix( const Expression<Scalar,Expression<Matrix,Matrix,Times>,Times> expression )
+DenseMatrix<ValueType>::DenseMatrix( const Expression_SMM& expression )
 {
     Matrix::operator=( expression );
 }
 
 template<typename ValueType>
-DenseMatrix<ValueType>::DenseMatrix( const Expression<Matrix,Matrix,Times> expression )
+DenseMatrix<ValueType>::DenseMatrix( const Expression_SM_SM& expression )
 {
     Matrix::operator=( expression );
 }
 
 template<typename ValueType>
-DenseMatrix<ValueType>::DenseMatrix( const Expression<Scalar,Matrix,Times> expression )
+DenseMatrix<ValueType>::DenseMatrix( const Expression_SM& expression )
 {
     Matrix::operator=( expression );
 }
@@ -282,44 +281,9 @@ void DenseMatrix<ValueType>::writeToFile(
 template<typename ValueType>
 DenseMatrix<ValueType>& DenseMatrix<ValueType>::operator=( const DenseMatrix<ValueType>& other )
 {
+    // override the default assignment operator
+
     assign( other );
-    return *this;
-}
-
-template<typename ValueType>
-DenseMatrix<ValueType>& DenseMatrix<ValueType>::operator=( const Matrix& other )
-{
-    assign( other );
-    return *this;
-}
-
-template<typename ValueType>
-DenseMatrix<ValueType>& DenseMatrix<ValueType>::operator=( const Expression<Scalar,Matrix,Times> expression )
-{
-    Matrix::operator=( expression );
-    return *this;
-}
-
-template<typename ValueType>
-DenseMatrix<ValueType>& DenseMatrix<ValueType>::operator=( const Expression<Matrix,Matrix,Times> expression )
-{
-    Matrix::operator=( expression );
-    return *this;
-}
-
-template<typename ValueType>
-DenseMatrix<ValueType>& DenseMatrix<ValueType>::operator=(
-    const Expression<Scalar,Expression<Matrix,Matrix,Times>,Times> expression )
-{
-    Matrix::operator=( expression );
-    return *this;
-}
-
-template<typename ValueType>
-DenseMatrix<ValueType>& DenseMatrix<ValueType>::operator=(
-    const Expression<Expression<Scalar,Expression<Matrix,Matrix,Times>,Times>,Expression<Scalar,Matrix,Times>,Plus> expression )
-{
-    Matrix::operator=( expression );
     return *this;
 }
 
@@ -389,17 +353,16 @@ DenseMatrix<ValueType>::DenseMatrix( DistributionPtr distribution )
 /* ------------------------------------------------------------------ */
 
 template<typename ValueType>
-void DenseMatrix<ValueType>::setIdentity()
+void DenseMatrix<ValueType>::setIdentity( DistributionPtr dist )
 {
-    if ( getDistribution() != getColDistribution() )
-    {
-        LAMA_THROWEXCEPTION(
-            *this << ": setIdentity only for square matrices" << " with same row and column distribution" );
-    }
+    Matrix::setDistributedMatrix( dist, dist );
+
+    computeOwners();
+    allocateData();
 
     // Note: data is already allocated, so we just set it
 
-    const Communicator& comm = getColDistribution().getCommunicator();
+    const Communicator& comm = dist->getCommunicator();
 
     IndexType rank = comm.getRank();
     IndexType size = comm.getSize();
@@ -408,6 +371,8 @@ void DenseMatrix<ValueType>::setIdentity()
 
     for ( IndexType i = 0; i < size; i++ )
     {
+        LAMA_LOG_INFO( logger, "identity, mData[" << i << "] = " << *mData[i] );
+
         if ( i == rank )
         {
             mData[i]->setIdentity();
@@ -416,6 +381,82 @@ void DenseMatrix<ValueType>::setIdentity()
         {
             mData[i]->setZero();
         }
+    }
+}
+
+/* ------------------------------------------------------------------------ */
+
+template<typename ValueType>
+void DenseMatrix<ValueType>::setDenseData(
+    DistributionPtr rowDist,
+    DistributionPtr colDist,
+    const _LAMAArray& values,
+    const double eps  )
+{
+    DistributionPtr tmpReplicatedColDistribution = colDist;
+
+    const IndexType n = rowDist->getLocalSize();
+    const IndexType m = colDist->getGlobalSize();
+
+    // splitting of the column data will be done after setting full column data
+
+    if ( !colDist->isReplicated() )
+    {
+        tmpReplicatedColDistribution.reset( new NoDistribution( m ) );
+    }
+
+    Matrix::setDistributedMatrix( rowDist, tmpReplicatedColDistribution );
+
+    // due to temporary replicated col distribution, mData has only one entry
+
+    mData[0]->setDenseData( n, m, values, eps );
+
+    LAMA_LOG_INFO( logger, "Dense matrix, row dist = " << *rowDist << " filled locally with "
+                            << ( n * m ) << " values, now split for col dist = " << *colDist );
+
+    if ( !colDist->isReplicated() )
+    {
+        splitColumns( colDist );
+
+        for ( int i = 0; i < colDist->getCommunicator().getSize(); ++i )
+        {
+            LAMA_LOG_DEBUG( logger, "mData[" << i << "] = " << *mData[i] );
+        }
+    }
+}
+
+/* ------------------------------------------------------------------------ */
+
+template<typename ValueType>
+void DenseMatrix<ValueType>::setCSRData(
+    DistributionPtr rowDist,
+    DistributionPtr colDist,
+    const IndexType numValues,
+    const LAMAArray<IndexType>& ia,
+    const LAMAArray<IndexType>& ja,
+    const _LAMAArray& values )
+{
+    DistributionPtr tmpReplicatedColDistribution = colDist;
+
+    const IndexType n = rowDist->getLocalSize();
+    const IndexType m = colDist->getGlobalSize();
+
+    // splitting of the column data will be done after setting full column data
+
+    if ( !colDist->isReplicated() )
+    {
+        tmpReplicatedColDistribution.reset( new NoDistribution( m ) );
+    }
+
+    Matrix::setDistributedMatrix( rowDist, tmpReplicatedColDistribution );
+
+    // due to temporary replicated col distribution, mData has only one entry
+
+    mData[0]->setCSRData( n, m, numValues, ia, ja, values );
+
+    if ( !colDist->isReplicated() )
+    {
+        splitColumns( colDist );
     }
 }
 
@@ -954,6 +995,8 @@ void DenseMatrix<ValueType>::allocateData()
 
     const IndexType numRows = getDistribution().getLocalSize();
 
+    LAMA_LOG_INFO( logger, "build " << numChunks << " data arrays for numRows = " << numRows );
+
     if ( numChunks == 1 )
     {
         // simple case, no need to count owners for each partition
@@ -963,6 +1006,11 @@ void DenseMatrix<ValueType>::allocateData()
     }
 
     boost::scoped_array<PartitionId> numColsPartition( new PartitionId[numChunks] );
+
+    for ( PartitionId p = 0; p < numChunks; ++p )
+    {
+        numColsPartition[ p ] = 0;
+    }
 
     for ( std::vector<PartitionId>::size_type i = 0; i < mOwners.size(); ++i )
     {
@@ -1564,7 +1612,12 @@ void DenseMatrix<ValueType>::matrixTimesVectorImpl(
 
     const LAMAArray<ValueType>& localX = denseX.getLocalValues();
 
-    LAMA_LOG_INFO( logger, comm << ": matrixTimesVector, localX = " << localX << ", localY = " << localY )
+    LAMA_LOG_INFO( logger, comm << ": matrixTimesVector"
+                           << ", alpha = " << alphaValue << ", localX = " << localX 
+                           << ", beta = " << betaValue << ", localY = " << localY )
+
+    LAMA_LOG_INFO( logger, "Aliasing: result = y : " << ( &denseResult == &denseY ) 
+                           << ", local = " << ( &localResult == &localY ) )
 
     if ( n == 1 )
     {
@@ -1610,16 +1663,20 @@ void DenseMatrix<ValueType>::matrixTimesVectorImpl(
         }
     }
 
+    const int COMM_DIRECTION = 1;  // shift buffer to next processor
+
     if ( Matrix::ASYNCHRONOUS == Matrix::getCommunicationKind() )
     {
         LAMA_LOG_INFO( logger, comm << ": asynchronous communication" )
 
-        // asynchronous communication always requires same sizes of arrays
+        // asynchronous communication always requires same sizes of arrays, might shift some more data
 
-        std::auto_ptr<SyncToken> st( comm.shiftAsync( *recvValues, *sendValues, 1 ) );
+        std::auto_ptr<SyncToken> st( comm.shiftAsync( *recvValues, *sendValues, COMM_DIRECTION ) );
 
         LAMA_LOG_INFO( logger,
                        comm << ": matrixTimesVector, my dense block = " << *mData[rank] << ", localX = " << localX << ", localY = " << localY << ", localResult = " << localResult )
+
+        // overlap communication with local computation 
 
         mData[rank]->matrixTimesVector( localResult, alphaValue, localX, betaValue, localY );
 
@@ -1637,14 +1694,16 @@ void DenseMatrix<ValueType>::matrixTimesVectorImpl(
 
             if ( p < ( n - 1 ) )
             {
-                st.reset( comm.shiftAsync( *recvValues, *sendValues, 1 ) );
+                st.reset( comm.shiftAsync( *recvValues, *sendValues, COMM_DIRECTION ) );
             }
             else
             {
                 st.reset( new NoSyncToken() );
             }
-            LAMA_LOG_INFO( logger,
-                           comm << ": matrixTimesVector, actual dense block [" << actualPartition << "] = " << *mData[actualPartition] << ", sendX = " << localX << ", localResult = " << localResult )
+
+            LAMA_LOG_INFO( logger, comm 
+                           << ": matrixTimesVector, actual dense block [" << actualPartition << "] = " 
+                           << *mData[actualPartition] << ", sendX = " << localX << ", localResult = " << localResult )
 
             // adapt the size of recvValues, that is now sendValues after swap
 
@@ -1666,22 +1725,31 @@ void DenseMatrix<ValueType>::matrixTimesVectorImpl(
 
         LAMA_LOG_INFO( logger, comm << ": synchronous communication" )
 
-        comm.shiftArray( *recvValues, *sendValues, 1 );
+        comm.shiftArray( *recvValues, *sendValues, COMM_DIRECTION );
 
         // For the synchronous shift we have no problems regarding the correct sizes
 
         LAMA_LOG_DEBUG( logger, comm << ": send " << *sendValues << ", recv " << *recvValues )
 
-        mData[rank]->matrixTimesVector( localResult, alphaValue, *sendValues, betaValue, localResult );
+        LAMA_LOG_INFO( logger, comm 
+                       << ": matrixTimesVector, actual dense block [" << rank << "] = " 
+                       << *mData[rank] << ", local X = " << localX << ", local Y = " << localY )
+
+        mData[rank]->matrixTimesVector( localResult, alphaValue, localX, betaValue, localY );
 
         std::swap( sendValues, recvValues );
 
         for ( PartitionId p = 1; p < n; ++p )
         {
             PartitionId actualPartition = comm.getNeighbor( -p );
-            comm.shiftArray( *recvValues, *sendValues, 1 );
+            comm.shiftArray( *recvValues, *sendValues, COMM_DIRECTION );
             LAMA_LOG_DEBUG( logger,
                             comm << ": send " << *sendValues << ", recv " << *recvValues << ", actual = " << actualPartition )
+
+            LAMA_LOG_INFO( logger, comm 
+                           << ": matrixTimesVector, actual dense block [" << actualPartition << "] = " 
+                           << *mData[actualPartition] << ", sendX = " << *sendValues << ", localResult = " << localResult )
+
             mData[actualPartition]->matrixTimesVector( localResult, alphaValue, *sendValues, one, localResult );
             std::swap( sendValues, recvValues );
         }

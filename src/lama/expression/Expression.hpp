@@ -2,7 +2,7 @@
  * @file Expression.hpp
  *
  * @license
- * Copyright (c) 2011
+ * Copyright (c) 2009-2013
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -28,7 +28,7 @@
  * @brief Expression.hpp
  * @author brandes
  * @date 28.03.2011
- * $Id$
+ * @since 1.0.0
  */
 #ifndef LAMA_EXPRESSION_HPP_
 #define LAMA_EXPRESSION_HPP_
@@ -130,6 +130,32 @@ public:
     }
     ;
 };
+
+class Scalar;
+class Vector;
+class Matrix;
+
+/** Symbolic expression 'Scalar * Vector' */
+
+typedef Expression<Scalar, Vector, Times> Expression_SV;
+
+/** Symbolic expression 'Scalar * Vector + Scalar * Vector' */
+
+typedef Expression<Expression_SV, Expression_SV, Plus> Expression_SV_SV;
+
+typedef Expression<Matrix, Vector, Times> Expression_MV;
+
+typedef Expression<Scalar, Expression<Matrix, Vector, Times>, Times> Expression_SMV;
+
+typedef Expression<Expression_SMV, Expression_SV, Plus> Expression_SMV_SV;
+
+typedef Expression<Scalar, Matrix, Times> Expression_SM;
+
+typedef Expression<Expression_SM, Matrix, Times> Expression_SMM;
+
+typedef Expression<Expression_SM, Expression_SM, Plus> Expression_SM_SM;
+
+typedef Expression<Expression_SMM, Expression_SM, Plus> Expression_SMM_SM;
 
 } //namespace lama
 

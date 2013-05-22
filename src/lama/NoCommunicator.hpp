@@ -2,7 +2,7 @@
  * @file NoCommunicator.hpp
  *
  * @license
- * Copyright (c) 2011
+ * Copyright (c) 2009-2013
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -28,7 +28,7 @@
  * @brief Implementation of a communicator class for non-distributed (replicated) objects.
  * @author Thomas Brandes
  * @date 15.03.2011
- * $Id$
+ * @since 1.0.0
  */
 #ifndef LAMA_NO_COMMUNICATOR_HPP_
 #define LAMA_NO_COMMUNICATOR_HPP_

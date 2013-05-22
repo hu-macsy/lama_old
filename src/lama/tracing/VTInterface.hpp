@@ -2,7 +2,7 @@
  * @file VTInterface.hpp
  *
  * @license
- * Copyright (c) 2011
+ * Copyright (c) 2009-2013
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -28,7 +28,7 @@
  * @brief Interface between LAMA and VampirTrace
  * @author Thomas Brandes
  * @date 14.02.2013
- * $Id$
+ * @since 1.0.0
  */
 #ifndef LAMA_VT_INTERFACE_HPP_
 #define LAMA_VT_INTERFACE_HPP_

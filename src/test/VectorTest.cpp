@@ -2,7 +2,7 @@
  * @file VectorTest.cpp
  *
  * @license
- * Copyright (c) 2011
+ * Copyright (c) 2009-2013
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -28,7 +28,7 @@
  * @brief Contains the implementation of the class VectorTest.
  * @author: Alexander Büchel, Lauretta Schubert
  * @date 06.02.2012
- * $
+ * @since 1.0.0
  **/
 
 #include <boost/test/unit_test.hpp>

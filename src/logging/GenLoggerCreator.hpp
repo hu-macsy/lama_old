@@ -2,7 +2,7 @@
  * @file GenLoggerCreator.hpp
  *
  * @license
- * Copyright (c) 2011
+ * Copyright (c) 2009-2013
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -26,9 +26,9 @@
  * @endlicense
  *
  * @brief GenLoggerCreator.hpp
- * @author brandes
+ * @author Thomas Brandes
  * @date 01.03.2011
- * $Id$
+ * @since 1.0.0
  */
 
 #ifndef LAMA_GEN_LOGGER_CREATOR_HPP_

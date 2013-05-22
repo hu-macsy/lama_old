@@ -2,7 +2,7 @@
  * @file MatrixStorage.hpp
  *
  * @license
- * Copyright (c) 2011
+ * Copyright (c) 2009-2013
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -28,7 +28,7 @@
  * @brief Definition of a common base class for all matrix storage formats.
  * @author Thomas Brandes
  * @date 27.04.2011
- * $Id$
+ * @since 1.0.0
  */
 
 #ifndef LAMA_MATRIX_STORAGE_HPP_
@@ -520,6 +520,12 @@ public:
         const OtherValueType values[],
         const ValueType eps = 0.0 );
 
+    void setDenseData(
+        const IndexType numRows,
+        const IndexType numColumns,
+        const _LAMAArray& values,
+        const ValueType eps = 0.0 );
+
     /**
      * @brief fills matrix storage by csr sparse data.
      *
@@ -885,6 +891,13 @@ public:
     using _MatrixStorage::getContext;
     using _MatrixStorage::getContextPtr;
 
+    // Use this method to change epsiolon temporarily  
+
+    void swapEpsilon( ValueType& epsilon ) const
+    {
+        std::swap( epsilon, mEpsilon );
+    }
+
 protected:
 
     /** The value mEpsilon is an individual value for each matrix storage that
@@ -893,7 +906,7 @@ protected:
      *  the storage data is compressed.
      */
 
-    ValueType mEpsilon;
+    mutable ValueType mEpsilon;
 
     /** Swap member variables of base class MatrixStorage<T>
      *

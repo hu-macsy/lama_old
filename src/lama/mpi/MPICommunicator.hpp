@@ -2,7 +2,7 @@
  * @file MPICommunicator.hpp
  *
  * @license
- * Copyright (c) 2011
+ * Copyright (c) 2009-2013
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -28,7 +28,7 @@
  * @brief MPICommunicator.hpp
  * @author Jiri Kraus, Thomas Brandes
  * @date 23.02.2011
- * $Id$
+ * @since 1.0.0
  */
 
 #ifndef LAMA_MPI_COMMUNICATOR_HPP_

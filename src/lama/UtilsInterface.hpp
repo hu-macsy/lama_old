@@ -2,7 +2,7 @@
  * @file UtilsInterface.hpp
  *
  * @license
- * Copyright (c) 2011
+ * Copyright (c) 2009-2013
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -28,7 +28,7 @@
  * @brief Interface classes for utilities and matrix storage routines
  * @author Thomas Brandes
  * @date 03.04.2013
- * $Id$
+ * @since 1.0.0
  */
 #ifndef LAMA_UTILS_INTERFACE_HPP_
 #define LAMA_UTILS_INTERFACE_HPP_

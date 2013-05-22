@@ -2,7 +2,7 @@
  * @file NoCommunicatorManager.hpp
  *
  * @license
- * Copyright (c) 2011
+ * Copyright (c) 2009-2013
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -28,7 +28,7 @@
  * @brief NoCommunicatorManager.hpp
  * @author Thomas Brandes
  * @date 15.03.2011
- * $Id$
+ * @since 1.0.0
  */
 #ifndef LAMA_NO_COMMUNICATOR_MANAGER_HPP_
 #define LAMA_NO_COMMUNICATOR_MANAGER_HPP_

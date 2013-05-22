@@ -2,7 +2,7 @@
  * @file FileLogger.cpp
  *
  * @license
- * Copyright (c) 2011
+ * Copyright (c) 2009-2013
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -28,7 +28,7 @@
  * @brief This file contains the implementation of the FileLogger.hpp file
  * @author Matthias Makulla
  * @date 06.04.2011
- * $Id$
+ * @since 1.0.0
  */
 
 // hpp

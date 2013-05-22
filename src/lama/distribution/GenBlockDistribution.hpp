@@ -2,7 +2,7 @@
  * @file GenBlockDistribution.hpp
  *
  * @license
- * Copyright (c) 2011
+ * Copyright (c) 2009-2013
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -28,7 +28,7 @@
  * @brief General block distribution where partitions might have different sizes.
  * @author Thomas Brandes
  * @date 18.03.2011
- * $Id$
+ * @since 1.0.0
  */
 #ifndef LAMA_GENBLOCKDISTRIBUTION_HPP_
 #define LAMA_GENBLOCKDISTRIBUTION_HPP_

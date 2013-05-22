@@ -2,7 +2,7 @@
  * @file CyclicDistribution.hpp
  *
  * @license
- * Copyright (c) 2011
+ * Copyright (c) 2009-2013
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -28,7 +28,7 @@
  * @brief Distribution class to support block-cyclic distributions.
  * @author Lauretta Schubert
  * @date 20.05.2011
- * $Id$
+ * @since 1.0.0
  */
 #ifndef LAMA_CYCLIC_DISTRIBUTION_HPP_
 #define LAMA_CYCLIC_DISTRIBUTION_HPP_

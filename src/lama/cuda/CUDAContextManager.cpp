@@ -2,7 +2,7 @@
  * @file CUDAContextManager.cpp
  *
  * @license
- * Copyright (c) 2011
+ * Copyright (c) 2009-2013
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -27,7 +27,8 @@
  *
  * @brief Contains the implementation of the singleton class CUDAContextManager.
  * @author Thomas Brandes
- * Created on: 15.07.2011
+ * @date 15.07.2011
+ * @since 1.0.0
  */
 
 // hpp
@@ -48,6 +49,7 @@ namespace lama
 /* ----------------------------------------------------------------------------- */
 
 // definition of array with weak pointers so that we can return shared pointers without allocating again
+
 boost::weak_ptr<CUDAContext> CUDAContextManager::mCUDAContext[LAMA_MAX_CUDA_DEVICES];
 
 CUDAContextManager CUDAContextManager::theInstance;
@@ -127,11 +129,15 @@ ContextPtr CUDAContextManager::getInstance( int deviceNr )
     if ( cudaDeviceNr == LAMA_DEFAULT_DEVICE_NUMBER )
     {
         cudaDeviceNr = getDefaultDeviceNr();
-    }
 
-    LAMA_ASSERT_ERROR(
-        0 <= cudaDeviceNr && cudaDeviceNr < LAMA_MAX_CUDA_DEVICES,
-        "device = " << cudaDeviceNr << " out of range, max supported device = " << LAMA_MAX_CUDA_DEVICES )
+        // no need here to check for a good value
+    }
+    else
+    {
+        LAMA_ASSERT_ERROR( 0 <= cudaDeviceNr && cudaDeviceNr < LAMA_MAX_CUDA_DEVICES,
+                           "device = " << cudaDeviceNr << " out of range"
+                           << ", max supported device = " << LAMA_MAX_CUDA_DEVICES )
+    }
 
     boost::shared_ptr<CUDAContext> context = boost::shared_ptr<CUDAContext>();
 

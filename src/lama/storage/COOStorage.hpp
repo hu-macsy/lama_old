@@ -2,7 +2,7 @@
  * @file COOStorage.hpp
  *
  * @license
- * Copyright (c) 2011
+ * Copyright (c) 2009-2013
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -29,7 +29,7 @@
  *        represented by coordinate lists.
  * @author Paul Börding, Thomas Brandes
  * @date 11.06.2011
- * $Id$
+ * @since 1.0.0
  */
 #ifndef LAMA_COOSTORAGE_HPP_
 #define LAMA_COOSTORAGE_HPP_

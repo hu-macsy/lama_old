@@ -2,7 +2,7 @@
  * @file lama.hpp
  *
  * @license
- * Copyright (c) 2011
+ * Copyright (c) 2009-2013
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -28,6 +28,7 @@
  * @brief lama.hpp
  * @author Jan Ecker
  * @date 27.03.2013
+ * @since 1.0.0
  */
 
 #include <boost/version.hpp>

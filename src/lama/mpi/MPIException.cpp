@@ -2,7 +2,7 @@
  * @file MPIException.cpp
  *
  * @license
- * Copyright (c) 2011
+ * Copyright (c) 2009-2013
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -26,9 +26,9 @@
  * @endlicense
  *
  * @brief MPIException.cpp
- * @author brandes
+ * @author Thomas Brandes
  * @date 01.03.2011
- * $Id$
+ * @since 1.0.0
  */
 
 #include <mpi.h> //Intel MPI need mpi.h to be included before stdio.h so this header comes first

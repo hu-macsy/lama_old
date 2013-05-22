@@ -2,7 +2,7 @@
  * @file CRTPMatrixStorage.hpp
  *
  * @license
- * Copyright (c) 2011
+ * Copyright (c) 2009-2013
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -28,7 +28,7 @@
  * @brief Definition of a common base class for all matrix storage formats.
  * @author Thomas Brandes
  * @date 27.04.2011
- * $Id$
+ * @since 1.0.0
  */
 
 #ifndef LAMA_CRTP_MATRIX_STORAGE_HPP_

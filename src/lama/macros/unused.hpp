@@ -2,7 +2,7 @@
  * @file unused.hpp
  *
  * @license
- * Copyright (c) 2011
+ * Copyright (c) 2009-2013
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -26,9 +26,9 @@
  * @endlicense
  *
  * @brief Definition of macro for unused arguemnts.
- * @author jiri
+ * @author Jiri Kraus
  * @date 06.04.2011
- * $Id$
+ * @since 1.0.0
  */
 
 #ifndef LAMA_UNUSED_HPP_

@@ -2,7 +2,7 @@
  * @file Configuration.hpp
  *
  * @license
- * Copyright (c) 2011
+ * Copyright (c) 2009-2013
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -28,7 +28,7 @@
  * @brief Configuration.hpp
  * @author Jiri Kraus
  * @date 22.02.2011
- * $Id$
+ * @since 1.0.0
  */
 #ifndef LAMA_CONFIGURATION_HPP_
 #define LAMA_CONFIGURATION_HPP_

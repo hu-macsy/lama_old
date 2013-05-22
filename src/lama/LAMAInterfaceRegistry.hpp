@@ -2,7 +2,7 @@
  * @file LAMAInterfaceRegistry.hpp
  *
  * @license
- * Copyright (c) 2011
+ * Copyright (c) 2009-2013
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -28,7 +28,7 @@
  * @brief LAMAInterfaceRegistry.hpp
  * @author Thomas Brandes
  * @date 12.04.2013
- * $Id$
+ * @since 1.0.0
  */
 
 #ifndef LAMA_LAMA_INTERFACE_REGISTRY_HPP_

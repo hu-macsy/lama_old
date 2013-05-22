@@ -2,7 +2,7 @@
  # @file FindFortranBLAS.cmake
  #
  # @license
- # Copyright (c) 2013
+ # Copyright (c) 2009-2013
  # Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  # for Fraunhofer-Gesellschaft
  #
@@ -28,6 +28,7 @@
  # @brief Find Fortran BLAS
  # @author
  # @date 25.04.2013
+ # @since 1.0.0
 ###
 
 #find_package( BLAS )

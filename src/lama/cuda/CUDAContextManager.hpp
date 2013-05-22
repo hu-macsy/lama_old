@@ -2,7 +2,7 @@
  * @file CUDAContextManager.hpp
  *
  * @license
- * Copyright (c) 2011
+ * Copyright (c) 2009-2013
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -28,7 +28,7 @@
  * @brief Definition of manager class to manage CUDA contexts.
  * @author Thomas Brandes, Jiri Kraus
  * @date 15.07.2011
- * $Id$
+ * @since 1.0.0
  */
 #ifndef LAMA_CUDA_CONTEXT_MANAGER_HPP_
 #define LAMA_CUDA_CONTEXT_MANAGER_HPP_
@@ -72,6 +72,8 @@ public:
         return getInstance( deviceNr );
     }
 
+    /** Destructor will free all managed contexts. */
+
     ~CUDAContextManager();
 
     /** Static version of the member method getContext. */
@@ -97,7 +99,7 @@ private:
 
     /** Getter for the default device number; it will be set if not available at first call. */
 
-    static int getDefaultDeviceNr();
+    static int getDefaultDeviceNr ();   // getter for defaultDeviceNr, might be set
 };
 
 }

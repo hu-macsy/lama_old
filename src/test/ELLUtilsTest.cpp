@@ -2,7 +2,7 @@
  * @file ELLUtilsTest.cpp
  *
  * @license
- * Copyright (c) 2011
+ * Copyright (c) 2009-2013
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -28,7 +28,7 @@
  * @brief Contains tests for the class CUDAELLUtils and OpenMPELLUtils
  * @author: Jan Ecker
  * @date 15.10.2012
- * $
+ * @since 1.0.0
  **/
 
 // boost
@@ -572,8 +572,10 @@ void setCSRValuesTest( ContextPtr loc )
     LAMAArray<IndexType> csrJa( nCSRJa, valuesCSRJa );
     LAMAArray<IndexType> ellIa( nELLIa, valuesELLIa );
 
-    LAMAArray<OtherValueType> ellValues( nELLValues, 0.0 );
-    LAMAArray<IndexType> ellJa( nELLValues, 0.0 );
+    // initialization of ellValues and ellJA, even if not mandatory
+
+    LAMAArray<OtherValueType> ellValues( nELLValues, static_cast<OtherValueType>( 0 ) );
+    LAMAArray<IndexType> ellJa( nELLValues, 0 );
 
     {
         ReadAccess<ValueType> rCSRValues( csrValues, loc );

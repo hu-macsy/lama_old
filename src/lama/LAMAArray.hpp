@@ -2,7 +2,7 @@
  * @file LAMAArray.hpp
  *
  * @license
- * Copyright (c) 2011
+ * Copyright (c) 2009-2013
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -30,7 +30,7 @@
  *        when corresponding read/write accesses are required
  * @author Thomas Brandes
  * @date 14.03.2011
- * $Id$
+ * @since 1.0.0
  */
 #ifndef LAMA_LAMA_ARRAY_HPP_
 #define LAMA_LAMA_ARRAY_HPP_
@@ -44,6 +44,7 @@
 // others
 #include <lama/LAMATypes.hpp>
 #include <lama/Context.hpp>
+#include <lama/SyncToken.hpp>
 #include <lama/Scalar.hpp>
 
 // boost
@@ -59,8 +60,6 @@
 
 namespace lama
 {
-
-class SyncToken;
 
 // Forward declaration of friend classes.
 
@@ -101,6 +100,8 @@ public:
      * @return the number of entries of the array.
      */
     inline IndexType size() const;
+
+    virtual ContextPtr getValidContext( const Context::ContextType preferredType = Context::Host ) const = 0;
 
 protected:
 

@@ -2,7 +2,7 @@
  * @file CUDAELLUtils.hpp
  *
  * @license
- * Copyright (c) 2011
+ * Copyright (c) 2009-2013
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -28,7 +28,7 @@
  * @brief General conversion routines for ELL sparse matrices.
  * @author Thomas Brandes
  * @date 03.07.2012
- * $Id$
+ * @since 1.0.0
  */
 #ifndef LAMA_CUDA_ELL_UTILS_HPP_
 #define LAMA_CUDA_ELL_UTILS_HPP_

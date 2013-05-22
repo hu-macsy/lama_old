@@ -2,7 +2,7 @@
  # @file PackageBoost.cmake
  #
  # @license
- # Copyright (c) 2013
+ # Copyright (c) 2009-2013
  # Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  # for Fraunhofer-Gesellschaft
  #
@@ -28,6 +28,7 @@
  # @brief findPackage and configuration of Boost
  # @author Jan Ecker
  # @date 25.04.2013
+ # @since 1.0.0
 ###
 
 ### Boost_USE_STATIC_LIBS  ( default is OFF )

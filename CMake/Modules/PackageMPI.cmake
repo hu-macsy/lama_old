@@ -2,7 +2,7 @@
  # @file PackageMPI.cmake
  #
  # @license
- # Copyright (c) 2013
+ # Copyright (c) 2009-2013
  # Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  # for Fraunhofer-Gesellschaft
  #
@@ -28,6 +28,7 @@
  # @brief findPackage and configuration of MPI
  # @author Jan Ecker
  # @date 25.04.2013
+ # @since 1.0.0
 ###
 
 # Look for MPI first to allow LAMA_BLAS to take the correct blacs implementation

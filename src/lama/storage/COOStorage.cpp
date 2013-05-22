@@ -2,7 +2,7 @@
  * @file COOStorage.cpp
  *
  * @license
- * Copyright (c) 2011
+ * Copyright (c) 2009-2013
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -26,9 +26,9 @@
  * @endlicense
  *
  * @brief Instantitions for template class COOStorage.
- * @author schubert
+ * @author Lauretta Schubert
  * @date 25.05.2011
- * $Id$
+ * @since 1.0.0
  */
 
 // hpp

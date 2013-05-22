@@ -2,7 +2,7 @@
  * @file Scalar.cpp
  *
  * @license
- * Copyright (c) 2011
+ * Copyright (c) 2009-2013
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -28,7 +28,7 @@
  * @brief Scalar.cpp
  * @author Jiri Kraus
  * @date 07.11.2011
- * $Id$
+ * @since 1.0.0
  */
 
 // hpp
@@ -36,6 +36,30 @@
 
 namespace lama
 {
+
+Scalar& Scalar::operator+=( Scalar& other )
+{
+    mValue += other.mValue;
+    return *this;
+}
+
+Scalar& Scalar::operator-=( Scalar& other )
+{
+    mValue -= other.mValue;
+    return *this;
+}
+
+Scalar& Scalar::operator*=( Scalar& other )
+{
+    mValue *= other.mValue;
+    return *this;
+}
+
+Scalar& Scalar::operator/=( Scalar& other )
+{
+    mValue /= other.mValue;
+    return *this;
+}
 
 std::ostream& operator<<( std::ostream& stream, const Scalar::ScalarType& object )
 {

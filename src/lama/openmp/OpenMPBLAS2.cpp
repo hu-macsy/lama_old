@@ -2,7 +2,7 @@
  * @file OpenMPBLAS2.cpp
  *
  * @license
- * Copyright (c) 2012
+ * Copyright (c) 2009-2013
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -26,9 +26,9 @@
  * @endlicense
  *
  * @brief OpenMPBLAS2.cpp
- * @author lschubert
+ * @author Lauretta Schubert
  * @date 05.07.2012
- * $Id$
+ * @since 1.0.0
  */
 
 // hpp
@@ -67,12 +67,12 @@ void OpenMPBLAS2::gemv(
                     << ", incX = " << incX << ", incY = " << incY 
                     << ", alpha = " << alpha << ", beta = " << beta )
 
-    if ( N == 0 )
+    if ( M == 0 )
     {
         return;   // empty X, Y, A  
     }
 
-    // M == 0: empty A, we can handle this here
+    // N == 0: empty A, but deal with X, Y, we can handle this here
 
     if ( syncToken )
     {
@@ -180,7 +180,7 @@ void OpenMPBLAS2::gemv(
                     << ", incX = " << incX << ", incY = " << incY 
                     << ", alpha = " << alpha << ", beta = " << beta )
 
-    if ( N == 0 )
+    if ( M == 0 )
     {
         return;   // empty X, Y, A  
     }

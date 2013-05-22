@@ -2,7 +2,7 @@
  # @file CMakeLists.txt
  #
  # @license
- # Copyright (c) 2011
+ # Copyright (c) 2009-2013
  # Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  # for Fraunhofer-Gesellschaft
  #
@@ -28,6 +28,7 @@
  # @brief Main specification file for CMake
  # @author Thomas Brandes, Jiri Kraus
  # @date 29.03.2012
+ # @since 1.0.0
 ###
 
 ### Set required CMake version
@@ -43,6 +44,8 @@ message ( STATUS "" )
 project ( LAMA CXX C )
 set ( CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/../CMake/Modules" )
 set ( LAMA_VERSION "1.0.0" )
+set ( LAMA_VERSION_NAME "Alpamayo" )
+set ( LAMA_COPYRIGHT_YEAR 2013 )
 set ( LAMA_VERSION_MAJOR 1 )
 set ( LAMA_VERSION_MINOR 0 )
 set ( LAMA_VERSION_PATCH 0 )
@@ -112,7 +115,18 @@ if ( FOUND_BOOST_TEST AND LAMA_BUILD_TEST )
     add_subdirectory ( test )
 endif ( FOUND_BOOST_TEST AND LAMA_BUILD_TEST )
 
+### Examples ###
+# copy examples in build directory + install it
+file ( COPY ${CMAKE_SOURCE_DIR}/examples DESTINATION ${CMAKE_BINARY_DIR} )
+install ( DIRECTORY ${CMAKE_SOURCE_DIR}/examples DESTINATION share/examples )
+
+# generate file make.inc + install it
+configure_file ( "${CMAKE_SOURCE_DIR}/examples/make.inc.in" "${CMAKE_CURRENT_BINARY_DIR}/examples/make.inc" )
+install ( FILES "${CMAKE_CURRENT_BINARY_DIR}/examples/make.inc" DESTINATION share/examples )
+
+### Doxygen and Sphinx Configuration ###
 include ( PackageDoxygen )
+include ( PackageSphinx )
 
 
 ### install ###
@@ -238,10 +252,17 @@ endif ( CUDA_FOUND )
 
 ## DOXYGEN
 if ( DOXYGEN_FOUND )
-    lama_status_message ( INFO "[FOUND]" "    DOXYGEN - 'make doc' to build documentation" )
+    lama_status_message ( INFO "[FOUND]" "    DOXYGEN - 'make doc' to build system documentation" )
 else ( DOXYGEN_FOUND )
     lama_status_message ( WARNING "[NOT FOUND]" "DOXYGEN" )
 endif ( DOXYGEN_FOUND )
+
+## SPHINX
+if ( SPHINX_FOUND )
+    lama_status_message ( INFO "[FOUND]" "    SPHINX - 'make userdoc' to build user documentation" )
+else ( SPHINX_FOUND )
+    lama_status_message ( WARNING "[NOT FOUND]" "SPHINX" )
+endif ( SPHINX_FOUND )
 
 ## Boost Unit Test Framework
 if ( Boost_UNIT_TEST_FRAMEWORK_FOUND )
@@ -263,7 +284,7 @@ message ( STATUS "" )
 
 
 lama_status_message ( HEADLINE "INFO:" )
-message ( STATUS "LAMA Version : ${LAMA_VERSION}" )
+message ( STATUS "LAMA Version : ${LAMA_VERSION} ${LAMA_VERSION_NAME}" )
 message ( STATUS "Build Type   : ${CMAKE_BUILD_TYPE}" )
 message ( STATUS "LOG Level    : ${LAMA_LOG_LEVEL}" )
 message ( STATUS "ASSERT Level : ${LAMA_ASSERT_LEVEL}" )

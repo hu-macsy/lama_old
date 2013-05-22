@@ -2,7 +2,7 @@
  * @file TraceConfig.cpp
  *
  * @license
- * Copyright (c) 2011
+ * Copyright (c) 2009-2013
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -28,7 +28,7 @@
  * @brief Implementation of class TraceConfig
  * @author: Thomas Brandes
  * @date 01.01.2012
- * $Id$
+ * @since 1.0.0
  */
 
 // hpp

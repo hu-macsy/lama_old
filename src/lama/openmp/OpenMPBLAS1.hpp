@@ -2,7 +2,7 @@
  * @file OpenMPBLAS1.hpp
  *
  * @license
- * Copyright (c) 2012
+ * Copyright (c) 2009-2013
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -26,9 +26,9 @@
  * @endlicense
  *
  * @brief OpenMPBLAS1.hpp
- * @author lschubert
+ * @author Lauretta Schubert
  * @date 05.07.2012
- * $Id$
+ * @since 1.0.0
  */
 #ifndef LAMA_OPENMPBLAS1_HPP_
 #define LAMA_OPENMPBLAS1_HPP_

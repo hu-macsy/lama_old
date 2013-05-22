@@ -1,11 +1,36 @@
-CMake (Generate Makefiles)
+##########################################################################
+        LAMA (Version 1.0.0 Alpamayo)
+##########################################################################
+
+For building LAMA on your system please consider the installation
+requirements below and install required packages. 
+
+A description on how to build LAMA is given afterwards or refer to our
+homepage www.libama.org --> Documentation --> Installation
+
+##########################################################################
+
+REQUIREMENTS
+ * CMake >= 2.8
+ * C/C++ compiler (optional: OpenMP 2.0)
+ * Boost-Library (common, thread, test and regex(optional for tests))
+ * BLAS-Library (Intel MKL, ATLAS, Fortran BLAS) (optional: ScaLAPack)
+ * CUDA (optional) (with cublas & thrust)
+ * MPI (optional)
+ * Vampir (optional)
+ * Documentation (optional):
+   - doxygen for generating the documentation
+   - sphinx for user documentation
+   - latex for pdf creation of user documentation
+
+##########################################################################
 
 create a build directory and change to it
- $ mkdir <build/dir>
- $ cd <build/dir>
+ $ mkdir <build>
+ $ cd <build>
 
 run cmake and point to the LAMA-src dir:
- $ cmake <src/dir>
+ $ cmake [options] <project-root>/src
 
 You can set environment variables in one of the following ways:
 
@@ -25,10 +50,10 @@ all required and optional packages:
 
 For MPI, you should have mpicc or mpicxx in your path. CMake will then
 identify the vendor and necessary link flags for MPI compilation.
+Find all CMake Variables online at Documentation --> Installation --> Configuration.
 
 For a Release build define -D CMAKE_BUILD_TYPE=Release.
-
-To install LAMA tell CMake the install dir by -D CMAKE_INSTALL_DIR=<path/to/lama/install/dir>
+To install LAMA tell CMake the install dir by -D CMAKE_INSTALL_PREFIX=<installation-dir>
 
 To build with the intel compiler execute
  $ export CC=<c/compiler>
@@ -36,25 +61,20 @@ To build with the intel compiler execute
 
 BUILD
 
- $ make
+ $ make [-j]
 
 INSTALL
 
  $ make install
 
-RUN DOXYGEN (GENERATE DOCUMENTATION)
+RUN DOXYGEN (GENERATE API DOCUMENTATION)
 
  $ make doc
+ 
+RUN SPHINX (GENERATE USER DOCUMENTATION)
 
-REQUIREMENTS
- * C/C++/Fortran compiler (optional: OpenMP 2.0)
- * CMake >= 2.8
- * Boost-Library (common, thread, test and regex(optional for tests), program-options (optional for converter), spirit (optinal for metasolver))
- * BLAS-Library (Intel MKL, Fortran BLAS)
- * MPI (optional)
- * Documentation (optional):
-   - doxygen for generating the documentation
-   - graphviz for UML-Graphs
-   
-   - sphinx for user documentation
-   - latex for pdf creation of user documentation
+ $ make userdoc
+ 
+INSTALLATION
+
+ $ make install

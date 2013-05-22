@@ -2,7 +2,7 @@
  * @file MatrixStorageConversionTest.cpp
  *
  * @license
- * Copyright (c) 2011
+ * Copyright (c) 2009-2013
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -28,7 +28,7 @@
  * @brief Test conversions between different matrix storage formats
  * @author Thomas Brandes
  * @date 15.07.2012
- * $Id$
+ * @since 1.0.0
  */
 
 #include <boost/test/unit_test.hpp>

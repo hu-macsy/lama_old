@@ -2,7 +2,7 @@
  * @file LAMASimpleTimeTracer.hpp
  *
  * @license
- * Copyright (c) 2011
+ * Copyright (c) 2009-2013
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -26,9 +26,9 @@
  * @endlicense
  *
  * @brief LAMASimpleTimeTracer.hpp
- * @author schubert
+ * @author Lauretta Schubert
  * @date 08.11.2011
- * $Id$
+ * @since 1.0.0
  */
 #ifndef LAMA_LAMASIMPLETIMETRACER_HPP_
 #define LAMA_LAMASIMPLETIMETRACER_HPP_

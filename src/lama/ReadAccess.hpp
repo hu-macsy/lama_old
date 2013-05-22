@@ -2,7 +2,7 @@
  * @file ReadAccess.hpp
  *
  * @license
- * Copyright (c) 2011
+ * Copyright (c) 2009-2013
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -28,7 +28,7 @@
  * @brief Definition of a template class ReadAccess for reading a LAMAArray.
  * @author Thomas Brandes, Jiri Kraus
  * @date 29.04.2011
- * $Id$
+ * @since 1.0.0
  */
 #ifndef LAMA_READ_ACCESS_HPP_
 #define LAMA_READ_ACCESS_HPP_

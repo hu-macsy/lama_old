@@ -2,7 +2,7 @@
  * @file LAMAArrayUtils.hpp
  *
  * @license
- * Copyright (c) 2011
+ * Copyright (c) 2009-2013
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -28,7 +28,7 @@
  * @brief Definition of class with utility routines.
  * @author Thomas Brandes
  * @date 10.10.2011
- * $Id$
+ * @since 1.0.0
  */
 #ifndef LAMA_LAMA_ARRAY_UTILS_HPP_
 #define LAMA_LAMA_ARRAY_UTILS_HPP_
@@ -64,10 +64,17 @@ public:
      *  assign( dvalues, fvalues );  // supported
      *  \endcode
      *  Size of target array will be the same as the source array.
-     *
-     *  @todo Exact specification at which context values will be copied or add context arg
      */
     static void assign( _LAMAArray& target, const _LAMAArray& source );
+
+    /** Same as assign but with specification of context for target array
+     *
+     *  @param[out] target   contains copy of source values
+     *  @param[in]  source   array with source values
+     *  @param[in]  context  context where target will have the valid copy
+     *
+     */
+    static void assign( _LAMAArray& target, const _LAMAArray& source, ContextPtr context );
 
     template<typename ValueType1,typename ValueType2>
     static void gather(
@@ -81,10 +88,10 @@ public:
 private:
 
     template<typename ValueType1,typename ValueType2>
-    static void assignImpl2( LAMAArray<ValueType1>& target, const LAMAArray<ValueType2>& source );
+    static void assignImpl2( LAMAArray<ValueType1>& target, const LAMAArray<ValueType2>& source, ContextPtr context );
 
     template<typename ValueType>
-    static void assignImpl1( LAMAArray<ValueType>& target, const _LAMAArray& source );
+    static void assignImpl1( LAMAArray<ValueType>& target, const _LAMAArray& source, ContextPtr context );
 
     LAMA_LOG_DECL_STATIC_LOGGER( logger )
 };

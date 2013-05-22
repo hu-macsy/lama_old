@@ -2,7 +2,7 @@
  * @file GenBlockDistributionTest.cpp
  *
  * @license
- * Copyright (c) 2011
+ * Copyright (c) 2009-2013
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -28,7 +28,7 @@
  * @brief Contains the implementation of the class GenBlockDistributionTest.
  * @author: Alexander Büchel, Thomas Brandes
  * @date 30.07.2012
- * $
+ * @since 1.0.0
  **/
 
 #include <boost/test/unit_test.hpp>

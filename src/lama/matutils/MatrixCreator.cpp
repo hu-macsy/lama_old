@@ -2,7 +2,7 @@
  * @file MatrixCreator.cpp
  *
  * @license
- * Copyright (c) 2011
+ * Copyright (c) 2009-2013
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -28,7 +28,7 @@
  * @brief MatrixCreator.cpp
  * @author Thomas Brandes
  * @date 01.02.2012
- * $Id$
+ * @since 1.0.0
  */
 
 // hpp
@@ -380,7 +380,8 @@ void MatrixCreator<ValueType>::buildPoisson(
 
     // create new local CSR data ( # local rows x # columns )
 
-    lama::CSRStorage<ValueType> localMatrix( localSize, globalSize );
+    lama::CSRStorage<ValueType> localMatrix;
+    localMatrix.allocate( localSize, globalSize );
 
     // Allocate local matrix with correct sizes and correct first touch in case of OpenMP
     // ToDo: localMatrix( localSize, numColumns, numNonZeros, &myIA[0] );

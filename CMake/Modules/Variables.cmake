@@ -2,7 +2,7 @@
  # @file Variables.cmake
  #
  # @license
- # Copyright (c) 2013
+ # Copyright (c) 2009-2013
  # Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  # for Fraunhofer-Gesellschaft
  #
@@ -28,7 +28,7 @@
  # @brief Important CMake variable definitions
  # @author Jan Ecker
  # @date 16.04.2013
- #
+ # @since 1.0.0
 ###
 
 # Check if verbose mode for CMAKE is selected

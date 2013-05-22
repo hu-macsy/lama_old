@@ -2,7 +2,7 @@
  * @file CUDA_InterfaceRegistry.cpp
  *
  * @license
- * Copyright (c) 2011
+ * Copyright (c) 2009-2013
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -28,7 +28,7 @@
  * @brief Test of access to the LAMAInterface for CUDA device.
  * @author: Thomas Brandes
  * @date 13.04.2013
- * $
+ * @since 1.0.0
  **/
 
 #include <boost/test/unit_test.hpp>

@@ -2,7 +2,7 @@
  * @file P_SparseMatrixTest.cpp
  *
  * @license
- * Copyright (c) 2011
+ * Copyright (c) 2009-2013
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -28,7 +28,7 @@
  * @brief Contains the implementation of the class P_SparseMatrixTest.
  * @author: Alexander Büchel, Thomas Brandes
  * @date 26.04.2012
- * $
+ * @since 1.0.0
  **/
 
 #include <test/distributed/P_SparseMatrixTest.hpp>

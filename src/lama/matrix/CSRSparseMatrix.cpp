@@ -2,7 +2,7 @@
  * @file CSRSparseMatrix.cpp
  *
  * @license
- * Copyright (c) 2011
+ * Copyright (c) 2009-2013
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -28,11 +28,13 @@
  * @brief Implementation of methods and constructors for template class CSRSparseMatrix.
  * @author Thomas Brandes
  * @date 04.08.2012
- * $Id$
+ * @since 1.0.0
  */
 
 // hpp
 #include <lama/matrix/CSRSparseMatrix.hpp>
+
+using boost::shared_ptr;
 
 namespace lama
 {
@@ -40,6 +42,24 @@ namespace lama
 /* -------------------------------------------------------------------------- */
 
 LAMA_LOG_DEF_TEMPLATE_LOGGER( template<typename T>, CSRSparseMatrix<T>::logger, "Matrix.SparseMatrix.CSRSparseMatrix" )
+
+/* -------------------------------------------------------------------------- */
+
+template<typename ValueType>
+boost::shared_ptr<MatrixStorage<ValueType> > CSRSparseMatrix<ValueType>::createStorage()
+{
+    return shared_ptr<MatrixStorage<ValueType> >( new StorageType() );
+}
+
+template<typename ValueType>
+boost::shared_ptr<MatrixStorage<ValueType> > CSRSparseMatrix<ValueType>::createStorage(
+    const IndexType numRows, 
+    const IndexType numColumns )
+{
+    shared_ptr<MatrixStorage<ValueType> > storage( new StorageType() );
+    storage->allocate( numRows, numColumns );
+    return storage;
+}
 
 /* -------------------------------------------------------------------------- */
 
@@ -52,6 +72,8 @@ CSRSparseMatrix<ValueType>::CSRSparseMatrix()
     LAMA_LOG_INFO( logger, "CSRSpareMatrix()" )
 }
 
+/* -------------------------------------------------------------------------- */
+
 template<typename ValueType>
 CSRSparseMatrix<ValueType>::CSRSparseMatrix( const IndexType numRows, const IndexType numColumns )
 
@@ -59,6 +81,143 @@ CSRSparseMatrix<ValueType>::CSRSparseMatrix( const IndexType numRows, const Inde
 
 {
     LAMA_LOG_INFO( logger, "CSRSpareMatrix( " << numRows << " x " << numColumns << " )" )
+}
+
+/* -------------------------------------------------------------------------- */
+
+template<typename ValueType>
+CSRSparseMatrix<ValueType>::CSRSparseMatrix( DistributionPtr rowDist, DistributionPtr colDist )
+
+    : SparseMatrix<ValueType>( createStorage( rowDist->getLocalSize(), colDist->getGlobalSize() ),
+                                   rowDist, colDist )
+{
+    // Note: splitting of local rows to local + halo part is done by SparseMatrix constructor
+}
+
+/* -------------------------------------------------------------------------- */
+
+template<typename ValueType>
+CSRSparseMatrix<ValueType>::CSRSparseMatrix( const CSRSparseMatrix& other )
+
+    : SparseMatrix<ValueType>( createStorage() )
+
+{
+    this->setCommunicationKind( other.getCommunicationKind() );
+    this->setContext( other.getContextPtr() );
+    SparseMatrix<ValueType>::assign( other );
+}
+
+/* -------------------------------------------------------------------------- */
+
+template<typename ValueType>
+CSRSparseMatrix<ValueType>::CSRSparseMatrix( const Matrix& other, bool transposeFlag )
+
+    : SparseMatrix<ValueType>( createStorage() )
+
+{
+    this->setCommunicationKind( other.getCommunicationKind() );
+
+    if ( transposeFlag )
+    {
+        SparseMatrix<ValueType>::assignTranspose( other );
+    }
+    else
+    {
+        SparseMatrix<ValueType>::assign( other );
+    }
+}
+
+/* -------------------------------------------------------------------------- */
+
+template<typename ValueType>
+CSRSparseMatrix<ValueType>::CSRSparseMatrix(
+    const Matrix& other, 
+    DistributionPtr rowDist, 
+    DistributionPtr colDist )
+
+    : SparseMatrix<ValueType>( createStorage() )
+
+{
+    this->setCommunicationKind( other.getCommunicationKind() );
+
+    // this might be done more efficiently as assign introduces intermediate copy
+
+    SparseMatrix<ValueType>::assign( other );
+    this->redistribute( rowDist, colDist );
+}
+
+/* -------------------------------------------------------------------------- */
+
+template<typename ValueType>
+CSRSparseMatrix<ValueType>::CSRSparseMatrix( const _MatrixStorage& globalData )
+
+    : SparseMatrix<ValueType>( createStorage() )
+
+{
+    DistributionPtr rowDist( new NoDistribution( globalData.getNumRows() ) );
+    DistributionPtr colDist( new NoDistribution( globalData.getNumRows() ) );
+
+    SparseMatrix<ValueType>::assign( globalData, rowDist, colDist );
+}
+
+/* -------------------------------------------------------------------------- */
+
+template<typename ValueType>
+CSRSparseMatrix<ValueType>::CSRSparseMatrix(
+    const _MatrixStorage& localData, 
+    DistributionPtr rowDist, 
+    DistributionPtr colDist )
+
+    : SparseMatrix<ValueType>( createStorage() )
+
+{
+    SparseMatrix<ValueType>::assign( localData, rowDist, colDist );
+}
+
+/* -------------------------------------------------------------------------- */
+
+template<typename ValueType>
+CSRSparseMatrix<ValueType>::CSRSparseMatrix( const Expression_SM& expression ) 
+
+    : SparseMatrix<ValueType>( createStorage() )
+
+{
+    Matrix::operator=( expression );
+}
+
+/* -------------------------------------------------------------------------- */
+
+template<typename ValueType>
+CSRSparseMatrix<ValueType>::CSRSparseMatrix( const Expression_SMM& expression ) 
+
+    : SparseMatrix<ValueType>( createStorage() )
+
+{
+    Matrix::operator=( expression );
+}
+
+/* -------------------------------------------------------------------------- */
+
+template<typename ValueType>
+CSRSparseMatrix<ValueType>::CSRSparseMatrix( const Expression_SM_SM& expression )
+
+    : SparseMatrix<ValueType>( createStorage() )
+{
+    // inherit context from matA in alpha * matA + beta * matB
+
+    SparseMatrix<ValueType>::setContext( expression.getArg1().getArg2().getContextPtr() );
+    Matrix::operator=( expression );
+}
+
+/* -------------------------------------------------------------------------- */
+
+template<typename ValueType>
+CSRSparseMatrix<ValueType>::CSRSparseMatrix( const std::string& filename )
+
+    : SparseMatrix<ValueType>( createStorage() )
+
+{
+    this->readFromFile( filename );
 }
 
 /* -------------------------------------------------------------------------- */
@@ -76,57 +235,6 @@ CSRSparseMatrix<ValueType>& CSRSparseMatrix<ValueType>::operator=( const CSRSpar
 {
     LAMA_LOG_INFO( logger, "CSRSparseMatrix = CSRSparseMatrix : " << matrix )
     assign( matrix );
-    return *this;
-}
-
-template<typename ValueType>
-CSRSparseMatrix<ValueType>& CSRSparseMatrix<ValueType>::operator=( const Matrix& matrix )
-{
-    LAMA_LOG_INFO( logger, " = Matrix : " << matrix )
-    this->assign( matrix ); // matrix does not depend on template parameter, so this-> is needed.
-    return *this;
-}
-
-template<typename ValueType>
-CSRSparseMatrix<ValueType>& CSRSparseMatrix<ValueType>::operator=( const Expression<Matrix,Matrix,Times>& exp )
-{
-    LAMA_LOG_INFO( logger, " = A * B " )
-    Matrix::operator=( exp );
-    return *this;
-}
-
-template<typename ValueType>
-CSRSparseMatrix<ValueType>& CSRSparseMatrix<ValueType>::operator=( const Expression<Scalar,Matrix,Times>& exp )
-{
-    LAMA_LOG_INFO( logger, " = alpha * A " )
-    Matrix::operator=( exp );
-    return *this;
-}
-
-template<typename ValueType>
-CSRSparseMatrix<ValueType>& CSRSparseMatrix<ValueType>::operator=(
-    const Expression<Scalar,Expression<Matrix,Matrix,Times>,Times>& exp )
-{
-    LAMA_LOG_INFO( logger, " = alpha * A * B" )
-    Matrix::operator=( exp );
-    return *this;
-}
-
-template<typename ValueType>
-CSRSparseMatrix<ValueType>& CSRSparseMatrix<ValueType>::operator=(
-    const Expression<Expression<Scalar,Expression<Matrix,Matrix,Times>,Times>,Expression<Scalar,Matrix,Times>,Plus> exp )
-{
-    LAMA_LOG_INFO( logger, "CSRSparseMatrix = alpha * A * B" )
-    Matrix::operator=( exp );
-    return *this;
-}
-
-template<typename ValueType>
-CSRSparseMatrix<ValueType>& CSRSparseMatrix<ValueType>::operator=(
-    const Expression<Expression<Scalar,Matrix,Times>,Expression<Scalar,Matrix,Times>,Plus> exp )
-{
-    LAMA_LOG_INFO( logger, "CSRSparseMatrix = alpha * A + beta * B" )
-    Matrix::operator=( exp );
     return *this;
 }
 
@@ -195,6 +303,36 @@ void CSRSparseMatrix<ValueType>::swapLocalStorage( StorageType& localStorage )
     LAMA_ASSERT_ERROR( localData, *mLocalData << ": does not fit matrix type " << typeName() )
 
     localData->swap( localStorage );
+}
+
+/* -------------------------------------------------------------------------- */
+
+template<typename ValueType>
+CSRSparseMatrix<ValueType>* CSRSparseMatrix<ValueType>::create() const
+{
+    CSRSparseMatrix<ValueType>* newSparseMatrix = new CSRSparseMatrix<ValueType>();
+
+    // inherit the context of this matrix for the new matrix
+
+    newSparseMatrix->setContext( this->getContextPtr() );
+
+    LAMA_LOG_INFO( logger, "create is " << *newSparseMatrix )
+
+    return newSparseMatrix;
+}
+
+/* -------------------------------------------------------------------------- */
+
+template<typename ValueType>
+CSRSparseMatrix<ValueType>* CSRSparseMatrix<ValueType>::copy() const
+{
+    LAMA_LOG_INFO( logger, "copy of " << *this )
+
+    CSRSparseMatrix<ValueType>* newSparseMatrix = new CSRSparseMatrix<ValueType>( *this );
+
+    LAMA_LOG_INFO( logger, "copy is " << *newSparseMatrix )
+
+    return newSparseMatrix;
 }
 
 /* -------------------------------------------------------------------------- */

@@ -2,7 +2,7 @@
 #  @file xmltest.sh
 # 
 #  @license
-#  Copyright (c) 2013
+#  Copyright (c) 2009-2013
 #  Fraunhofer Institute for Algorithms and Scientific Computing SCAI
 #  for Fraunhofer-Gesellschaft
 # 
@@ -29,6 +29,7 @@
 #         xml result files for further usage
 #  @author: Jan Ecker
 #  @date 08.05.2013
+#  @since 1.0.0
 #
 
 # Setting some enviroment variables

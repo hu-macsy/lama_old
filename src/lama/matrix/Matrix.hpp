@@ -2,7 +2,7 @@
  * @file Matrix.hpp
  *
  * @license
- * Copyright (c) 2011
+ * Copyright (c) 2009-2013
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -28,7 +28,7 @@
  * @brief Abstract base class for all matrices supported by LAMA.
  * @author Jiri Kraus, Thomas Brandes
  * @date 22.02.2011
- * $Id$
+ * @since 1.0.0
  */
 #ifndef LAMA_MATRIX_HPP_
 #define LAMA_MATRIX_HPP_
@@ -46,6 +46,7 @@
 #include <lama/Context.hpp>
 
 #include <lama/distribution/Distribution.hpp>
+#include <lama/distribution/NoDistribution.hpp>
 
 // logging
 #include <logging/logging.hpp>
@@ -60,6 +61,10 @@ class _MatrixStorage;
 /** Pointer class for a matrix, always use of a shared pointer. */
 
 typedef boost::shared_ptr<class Matrix> MatrixPtr;
+
+typedef Expression<class Matrix, Vector, Times> Expression_MV;
+typedef Expression<Scalar, Expression<class Matrix, Vector, Times>, Times> Expression_SMV;
+typedef Expression<Expression_SMV, Expression_SV, Plus> Expression_SMV_SV;
 
 /**
  * @brief The class Matrix is a abstract type that represents a distributed 2D real or complex matrix.
@@ -76,81 +81,6 @@ public:
      * @brief ExpressionMemberType is the type that is used the template Expression to store a Vector.
      */
     typedef const Matrix& ExpressionMemberType;
-
-    /**
-     * @brief Constructs a matrix by corresponding distributions.
-     *
-     * @param[in] rowDistribution   specifies number of rows and how the rows of the matrix are
-     *                              distributed among the available partitions.
-     * @param[in] colDistribution   specifies number of columns and the distribution of a vector
-     *                              when matrix is applied to a matrix-vector multiplication.
-     *
-     *  The colDstribution is used to setup a communication pattern (e.g. halo)
-     *  that can be reused for multiple matrix-vector operations. It might also be
-     *  used to split the matrix data on one partition into a local and non-local
-     *  part.
-     *
-     *  The number of rows and columns is given implicitly by the global sizes of the distributions.
-     */
-    Matrix( DistributionPtr rowDistribution, DistributionPtr colDistribution );
-
-    /**
-     * @brief Constructs a matrix of a given size replicated on each partition.
-     *
-     * @param[in] numRows      number of rows, must be non-negative.
-     * @param[in] numColumns   number of columns, must be non-negative.
-     *
-     * Same as Matrix( NoDistribution(numRows), NoDistribution(numColumns) )
-     */
-    Matrix( const IndexType numRows, const IndexType numColumns );
-
-    /**
-     * @brief Constructs a square matrix with the given size and the specified distribution.
-     *
-     * @param[in] distribution      specifies how the rows of the matrix are distributed among
-     *                              the available partitions.
-     *
-     * Same as Matrix( distribution, distribution ); column distribution will be same as that of rows.
-     */
-    Matrix( DistributionPtr distribution );
-
-    /**
-     * @brief Constructs a square matrix with a replicated distribution.
-     *
-     * @param[in] size              is the number of rows
-     *
-     * Same as Matrix(size, size ).
-     */
-    explicit Matrix( const IndexType size );
-
-    /**
-     * @brief Default constructor, creates a replicated matrix of size 0 x 0.
-     */
-    Matrix();
-
-    /**
-     * @brief Redistribute the given matrix with the specified distributions.
-     *
-     * @param[in] other            the matrix to redistribute
-     * @param[in] rowDistribution  specifies how the rows of the matrix are distributed among
-     *                             the available partitions.
-     * @param[in] colDistribution  specifies the distribution of a vector when matrix is
-     *                             applied to a matrix-vector multiplication.
-     *
-     * The following relations must hold:
-     *
-     *   - other.getNumRows() == distribution->getGlobalSize()
-     *   - other.getNumColumns() == colDistribution->getGlobalSize()
-     */
-    Matrix( const Matrix& other, DistributionPtr rowDistribution, DistributionPtr colDistribution );
-
-    /**
-     * @brief Copies a matrix to a new matrix with the same distribution.
-     *
-     * @param[in] other  the matrix to take a copy from
-     *
-     */
-    Matrix( const Matrix& other );
 
     /**
      * @brief Destructor, releases all allocated resources.
@@ -230,10 +160,113 @@ public:
      * void sub( ..., Matrix& a, ... )
      * ...
      * LAMA_ASSERT_EQUAL_DEBUG( a.getNumRows(), a.getNumColumns() )
-     * a.setIdentity();
+     * a.setIdentity( a.getRowDistribution() );
      * \endcode
      */
-    virtual void setIdentity() = 0;
+
+    /** Set matrix to a identity square matrix with same row and column distribution. */
+
+    virtual void setIdentity( DistributionPtr distribution ) = 0;
+
+    /** Set matrix to a (replicated) identity matrix with same row and column distribution. */
+
+    void setIdentity( const IndexType n );
+
+    /** This method sets a matrix with the values owned by this partition in dense format
+     *
+     *  @param[in] rowDist distributon of rows for the matrix
+     *  @param[in] colDist distributon of columns for the matrix
+     *  @param[in] values contains all values of the owned rows in row-major order (C-style)
+     *  @param[in] eps    threshold value for non-zero elements
+     *
+     *  Note: only the row distribution decides which data is owned by this processor
+     *
+     *  The following must be valid: values.size() == rowDist->getLocalSize() * colDist->getGlobalSize()
+     */
+    virtual void setDenseData( 
+        DistributionPtr rowDist,
+        DistributionPtr colDist, 
+        const _LAMAArray& values,
+        double eps = 0.0                ) = 0;
+
+    /** This method set a matrix with the values owned by this partition in CSR format 
+     *
+     *  @param[in] rowDist distributon of rows for the matrix
+     *  @param[in] colDist distributon of columns for the matrix
+     *  @param[in] numValues number of non-zero values 
+     *  @param[in] ia     is the offset array for number of elements in local rows
+     *  @param[in] ja     contains the (global) column indexes
+     *  @param[in] values contains the matrix values for the entries specified by ja
+     *
+     *  Note: only the row distribution decides which data is owned by this processor
+     *
+     *  - ja.size() == values.size() must be valid, stands for the number of non-zero values of this partition
+     *  - ia.size() == rowDistribution.getLocalSize() + 1 must be valid
+     */
+
+    virtual void setCSRData( 
+        DistributionPtr rowDist, 
+        DistributionPtr colDist, 
+        const IndexType numValues,
+        const LAMAArray<IndexType>& ia, 
+        const LAMAArray<IndexType>& ja, 
+        const _LAMAArray& values ) = 0;
+
+    /** This method sets raw dense data in the same way as setDenseData but with raw value array */
+
+    template<typename ValueType>
+    void setRawDenseData( 
+        DistributionPtr rowDist, 
+        DistributionPtr colDist, 
+        const ValueType* values,
+        const double eps = 0.0 )
+    {
+        const IndexType n = rowDist->getLocalSize();
+        const IndexType m = colDist->getGlobalSize();
+
+        // use of LAMAArrayRef instead of LAMAArray avoids additional copying of values
+
+        const LAMAArrayRef<ValueType> valueArray( values, n * m );
+
+        setDenseData( rowDist, colDist, valueArray, eps );
+    }
+
+    /** This method sets raw CSR data in the same way as setCSRData but with raw value array */
+
+    template<typename ValueType>
+    void setRawCSRData(
+        DistributionPtr rowDist,
+        DistributionPtr colDist,
+        const IndexType numValues,
+        const IndexType* ia,
+        const IndexType* ja,
+        const ValueType* values )
+    {
+        const IndexType n = rowDist->getLocalSize();
+
+        // use of LAMAArrayRef instead of LAMAArray avoids additional copying of values
+
+        const LAMAArrayRef<IndexType> iaArray( ia, n + 1 );
+        const LAMAArrayRef<IndexType> jaArray( ja, numValues );
+        const LAMAArrayRef<ValueType> valueArray( values, numValues );
+
+        setCSRData( rowDist, colDist, numValues, iaArray, jaArray, valueArray );
+    }
+
+    /** Setting raw dense data for a replicated matrix, only for convenience. */
+
+    template<typename ValueType>
+    void setRawDenseData( 
+        const IndexType n, 
+        const IndexType m, 
+        const ValueType* values,
+        const double eps = 0.0 )
+    {
+        setRawDenseData( DistributionPtr( new NoDistribution( n ) ),
+                         DistributionPtr( new NoDistribution( m ) ), 
+                         values,
+                         eps );
+    }
 
     /** @brief Assignment of a matrix to this matrix
      *
@@ -261,7 +294,7 @@ public:
      *
      *  The columns of the local storage will be splitted according to the column distribution.
      *
-     *  @param[in] storage   TODO[doxy] Complete Description.
+     *  @param[in] storage   local part of the matrix on this processor
      *  @param[in] rowDist   the given row distribution.
      *  @param[in] colDist   storage will be splitted according to the column distribution.
      */
@@ -287,12 +320,11 @@ public:
     /** @brief This method returns one row of the matrix.
      *
      * @param[out] row              is a replicated vector with all values of the row
-     * @param[in]  globalRowIndex   TODO[doxy] Complete Description.
+     * @param[in]  globalRowIndex   global index of the row that should be extracted
      *
-     * Note: the value type of the vector should be the same type as the matrix (otherwise conversion)
-     *       and it should be a replicated vector (otherwise reallocation)
-     *
-     * Unclear: should the distribution always be unchanged ?
+     * - the vector row might be of any type but for efficiency it should have the same type as the matrix
+     *   (otherwise conversion)
+     * - the output vector will always be replicated
      */
     virtual void getRow( Vector& row, const IndexType globalRowIndex ) const = 0;
 
@@ -445,27 +477,6 @@ public:
         const Scalar beta,
         const Matrix& C ) const = 0;
 
-    /**
-     * @brief Transformation from matrix type to a csr graph.
-     *
-     * transformation from matrix type to a csr graph,
-     * so that it (Par)Metis can work with it.
-     *
-     * @param[out]  xadj              the ia array of the csr graph
-     * @param[out]  adjncy            the ja array of the csr graph
-     * @param[out]  vwgt              TODO[doxy] Complete Description.
-     * @param[out]  comm              TODO[doxy] Complete Description.
-     * @param[out]  globalRowIndices  TODO[doxy] Complete Description.
-     * @param[out]  vtxdist           TODO[doxy] Complete Description.
-     */
-    virtual void matrix2CSRGraph(
-        IndexType* xadj,
-        IndexType* adjncy,
-        IndexType* vwgt,
-        CommunicatorPtr comm,
-        const IndexType* globalRowIndices = NULL,
-        IndexType* vtxdist = NULL ) const;
-
     /** Getter routine for the local number of stored values. */
 
     virtual IndexType getLocalNumValues() const = 0;
@@ -503,10 +514,10 @@ public:
     virtual void setContext( const ContextPtr context ) = 0;
 
     /**
-     * @brief TODO[doxy] Complete Description.
+     * @brief Set individual context for local and halo part of the matrix.
      *
-     * @param[in] localContext   TODO[doxy] Complete Description.
-     * @param[in] haloContext    TODO[doxy] Complete Description.
+     * @param[in] localContext   context for local part
+     * @param[in] haloContext    context for non-local part
      *
      *  Note: Only sparse matrices will override this method, others will ignore second argument.
      */
@@ -534,7 +545,8 @@ public:
      */
     typedef enum
     {
-        ASYNCHRONOUS, SYNCHRONOUS
+        ASYNCHRONOUS,   // asynchronous execution to overlap computations, communications
+        SYNCHRONOUS     // synchronous, operations will not overlap
     } SyncKind;
 
     /**
@@ -596,40 +608,67 @@ public:
     Matrix& operator=( const Matrix& other );
 
     /**
-     * @brief The assignment operator for a scalar matrix multiplication.
+     * @brief Assignment operator for alhpa * A
      *
-     * @param[in] exp   TODO[doxy] Complete Description.
+     * @param[in] exp   representation of alpha * A as Expression object
      */
-    Matrix& operator=( const Expression<Scalar,Matrix,Times> exp );
+    Matrix& operator=( const Expression_SM& exp );
 
     /**
-     * @brief The assignment operator for a matrix matrix multiplication.
+     * @brief Assignment operator for alhpa * A * B with A and B matrices and scalar alpha
      *
-     * @param[in] exp   TODO[doxy] Complete Description.
+     * @param[in] exp   representation of alpha * A * B as Expression object
      */
-    Matrix& operator=( const Expression<Matrix,Matrix,Times> exp );
+    Matrix& operator=( const Expression_SMM& exp );
 
     /**
-     * @brief The assignment operator for a scalar matrix matrix multiplication.
+     * @brief The assignment operator for a GEMM expression alpha * A * B + beta * C
      *
-     * @param[in] exp   TODO[doxy] Complete Description.
+     * @param[in] exp   representation of alpha * A * B + beta * C as Expression object
      */
-    Matrix& operator=( const Expression<Scalar,Expression<Matrix,Matrix,Times>,Times> exp );
+    Matrix& operator=( const Expression_SMM_SM& exp );
 
     /**
-     * @brief The assignment operator for a GEMM expression.
-     *
-     * @param[in] exp   TODO[doxy] Complete Description.
-     */
-    Matrix& operator=(
-        const Expression<Expression<Scalar,Expression<Matrix,Matrix,Times>,Times>,Expression<Scalar,Matrix,Times>,Plus> exp );
-
-    /**
-     * @brief The assignment operator for a GEMM expression.
+     * @brief The assignment operator for alpha * A + beta * B
      *
      * @param[in] exp   expression of the form alpha * A + beta * B
      */
-    Matrix& operator=( const Expression<Expression<Scalar,Matrix,Times>,Expression<Scalar,Matrix,Times>,Plus> exp );
+    Matrix& operator=( const Expression_SM_SM& exp );
+
+    /**
+     * @brief The assignment operator this *= alpha
+     *
+     * @param[in] val   Factor used for scaling of the matrix
+     */
+    Matrix& operator*=( const Scalar val );
+
+    /**
+     * @brief The assignment operator this += A
+     *
+     * @param[in] exp   Matrix to be added
+     */
+    Matrix& operator+=( const Matrix& exp );
+
+    /**
+     * @brief The assignment operator this += alpha * A
+     *
+     * @param[in] exp   representation of alpha * A as Expression object
+     */
+    Matrix& operator+=( const Expression_SM& exp );
+
+    /**
+     * @brief The assignment operator this -= A
+     *
+     * @param[in] exp   Matrix to be added
+     */
+    Matrix& operator-=( const Matrix& exp );
+
+    /**
+     * @brief The assignment operator this -= alpha * A
+     *
+     * @param[in] exp   representation of alpha * A as Expression object
+     */
+    Matrix& operator-=( const Expression_SM& exp );
 
     /**
      * @brief Computes the inverse of a matrix.
@@ -697,7 +736,7 @@ public:
     /**
      * @brief Constructor creates a distributed zero matrix of same type as a given matrix.
      *
-     * @param[in] size   TODO[doxy] Complete Description.
+     * @param[in] size   number of rows and columns for the square matrix.
      */
     Matrix* create( const IndexType size ) const;
 
@@ -752,7 +791,12 @@ public:
     /**
      * @brief Rechecks the storages for their diagonal property.
      *
-     * TODO[doxy] Complete Description.
+     * Usually each matrix has a flag that indicates if the diagonal property is given.
+     * This makes the query hasDiagonalProperty very efficient. Therefore matrices
+     * keep track of this flag for all their operations and reset it if necessary.
+     *
+     * This routine is only available to have a workaround if matrix or storage data
+     * has been modified by the user outside of the class (NOT RECOMMENDED).
      */
 
     virtual void resetDiagonalProperty() = 0;
@@ -768,6 +812,82 @@ public:
     virtual size_t getMemoryUsage() const = 0;
 
 protected:
+
+    /**
+     * @brief Constructs a matrix by corresponding distributions.
+     *
+     * @param[in] rowDistribution   specifies number of rows and how the rows of the matrix are
+     *                              distributed among the available partitions.
+     * @param[in] colDistribution   specifies number of columns and the distribution of a vector
+     *                              when matrix is applied to a matrix-vector multiplication.
+     *
+     *  The colDstribution is used to setup a communication pattern (e.g. halo)
+     *  that can be reused for multiple matrix-vector operations. It might also be
+     *  used to split the matrix data on one partition into a local and non-local
+     *  part.
+     *
+     *  The number of rows and columns is given implicitly by the global sizes of the distributions.
+     */
+    Matrix( DistributionPtr rowDistribution, DistributionPtr colDistribution );
+
+    /**
+     * @brief Constructs a matrix of a given size replicated on each partition.
+     *
+     * @param[in] numRows      number of rows, must be non-negative.
+     * @param[in] numColumns   number of columns, must be non-negative.
+     *
+     * Same as Matrix( NoDistribution(numRows), NoDistribution(numColumns) )
+     */
+    Matrix( const IndexType numRows, const IndexType numColumns );
+
+    /**
+     * @brief Constructs a square matrix with the given size and the specified distribution.
+     *
+     * @param[in] distribution      specifies how the rows of the matrix are distributed among
+     *                              the available partitions.
+     *
+     * Same as Matrix( distribution, distribution ); column distribution will be same as that of rows.
+     */
+    Matrix( DistributionPtr distribution );
+
+    /**
+     * @brief Constructs a square matrix with a replicated distribution.
+     *
+     * @param[in] size              is the number of rows
+     *
+     * Same as Matrix(size, size ).
+     */
+    explicit Matrix( const IndexType size );
+
+    /**
+     * @brief Default constructor, creates a replicated matrix of size 0 x 0.
+     */
+    Matrix();
+
+    /**
+     * @brief Redistribute the given matrix with the specified distributions.
+     *
+     * @param[in] other            the matrix to redistribute
+     * @param[in] rowDistribution  specifies how the rows of the matrix are distributed among
+     *                             the available partitions.
+     * @param[in] colDistribution  specifies the distribution of a vector when matrix is
+     *                             applied to a matrix-vector multiplication.
+     *
+     * The following relations must hold:
+     *
+     *   - other.getNumRows() == distribution->getGlobalSize()
+     *   - other.getNumColumns() == colDistribution->getGlobalSize()
+     */
+    Matrix( const Matrix& other, DistributionPtr rowDistribution, DistributionPtr colDistribution );
+
+    /**
+     * @brief Copies a matrix to a new matrix with the same distribution.
+     *
+     * @param[in] other  the matrix to take a copy from
+     *
+     */
+    Matrix( const Matrix& other );
+
 
     /**
      * @brief Sets the global/local size of replicated matrix.
@@ -802,6 +922,12 @@ protected:
     LAMA_LOG_DECL_STATIC_LOGGER( logger )
 
 private:
+
+    void sanityCheck( const Expression<Matrix, Matrix, Times>& exp );
+
+    void sanityCheck( const Expression<Matrix, Matrix, Times>& exp, const Matrix& C );
+
+    void sanityCheck( const Matrix& A, const Matrix& B );
 
     void setDefaultKind(); // set default values for communication and compute kind
 
@@ -863,6 +989,35 @@ inline std::ostream& operator<<( std::ostream& stream, const Matrix::SyncKind& k
     default:
     {
         stream << "<unknown sync kind>";
+        break;
+    }
+    }
+
+    return stream;
+}
+
+/** This function prints a MatrixKind on an output stream.
+ *
+ *  \param stream   is the reference to the output stream
+ *  \param kind      is the enum value that is printed
+ */
+inline std::ostream& operator<<( std::ostream& stream, const Matrix::MatrixKind& kind )
+{
+    switch ( kind )
+    {
+    case Matrix::DENSE:
+    {
+        stream << "DENSE";
+        break;
+    }
+    case Matrix::SPARSE:
+    {
+        stream << "SPARSE";
+        break;
+    }
+    default:
+    {
+        stream << "<unknown matrix kind>";
         break;
     }
     }

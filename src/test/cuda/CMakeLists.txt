@@ -2,7 +2,7 @@
  # @file CMakeLists.txt
  #
  # @license
- # Copyright (c) 2013
+ # Copyright (c) 2009-2013
  # Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  # for Fraunhofer-Gesellschaft
  #
@@ -28,6 +28,7 @@
  # @brief test/cuda/CMakeLists.txt
  # @author Jan Ecker
  # @date 03.04.2013
+ # @since 1.0.0
 ###
 
 ### set this dir as lama source dir ###

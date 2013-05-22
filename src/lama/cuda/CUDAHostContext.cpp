@@ -2,7 +2,7 @@
  * @file CUDAHostContext.cpp
  *
  * @license
- * Copyright (c) 2011
+ * Copyright (c) 2009-2013
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -29,7 +29,7 @@
  *        memory transfer for CUDA context is faster.
  * @author Thomas Brandes
  * @date 16.07.2011
- * $Id$
+ * @since 1.0.0
  */
 
 // hpp

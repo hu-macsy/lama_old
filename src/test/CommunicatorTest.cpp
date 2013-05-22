@@ -2,7 +2,7 @@
  * @file CommunicatorTest.cpp
  *
  * @license
- * Copyright (c) 2011
+ * Copyright (c) 2009-2013
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -28,7 +28,7 @@
  * @brief Contains the implementation of the class CommunicatorTest
  * @author: Alexander Büchel, Thomas Brandes
  * @date 09.05.2012
- * $
+ * @since 1.0.0
  **/
 
 #include <test/distributed/CommunicatorTest.hpp>

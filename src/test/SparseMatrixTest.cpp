@@ -2,7 +2,7 @@
  * @file SparseMatrixTest.cpp
  *
  * @license
- * Copyright (c) 2011
+ * Copyright (c) 2009-2013
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -28,7 +28,7 @@
  * @brief Contains the implementation of the class SparseMatrixTest
  * @author Alexander Büchel
  * @date 14.03.2012
- * $Id$
+ * @since 1.0.0
  */
 
 #include "SparseMatrixTest.hpp"
@@ -142,9 +142,9 @@ BOOST_CHECK_EQUAL( matrix3.getNumColumns() , 0 );
 
 LAMA_LOG_INFO( logger, "Matrix( bdist = " << *bdist << ", cdist = " << *cdist << ")" );
 
-MatrixType matrix4 ( bdist, cdist );
+MatrixType matrix4;
 
-matrix4.setIdentity();
+matrix4.setIdentity( bdist );
 
 LAMA_LOG_INFO( logger, "Matrix( " << matrix4 << " )" );
 

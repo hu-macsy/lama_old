@@ -2,7 +2,7 @@
  * @file Norm.hpp
  *
  * @license
- * Copyright (c) 2011
+ * Copyright (c) 2009-2013
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -28,7 +28,7 @@
  * @brief Norm.hpp
  * @author Jiri Kraus
  * @date 01.06.2011
- * $Id$
+ * @since 1.0.0
  */
 #ifndef LAMA_NORM_HPP_
 #define LAMA_NORM_HPP_

@@ -2,7 +2,7 @@
  * @file MatrixStorage.cpp
  *
  * @license
- * Copyright (c) 2011
+ * Copyright (c) 2009-2013
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -28,7 +28,7 @@
  * @brief Implementation of methods for common base class of all matrix storage formats.
  * @author Thomas Brandes
  * @date 27.04.2011
- * $Id$
+ * @since 1.0.0
  */
 
 // hpp
@@ -1257,6 +1257,43 @@ void MatrixStorage<ValueType>::setRawDenseData(
     assign( denseStorage ); // will internally use the value epsilon
 
     LAMA_LOG_INFO( logger, *this << ": have set dense data " << numRows << " x " << numColumns )
+}
+
+/* ------------------------------------------------------------------------- */
+
+template<typename ValueType>
+void MatrixStorage<ValueType>::setDenseData(
+    const IndexType numRows,
+    const IndexType numColumns,
+    const _LAMAArray& values,
+    const ValueType epsilon )
+{
+    mEpsilon = epsilon;
+
+    // const_cast required, is safe as we will create a const DenseStorageView
+
+    _LAMAArray& mValues = const_cast<_LAMAArray&>( values );
+
+    if ( values.getValueType() == Scalar::FLOAT )
+    {
+        LAMAArray<float>& floatValues = dynamic_cast<LAMAArray<float>&>( mValues );
+        const DenseStorageView<float> denseStorage( floatValues, numRows, numColumns );
+        float tmpEpsilon = epsilon;
+        denseStorage.swapEpsilon( tmpEpsilon );
+        assign( denseStorage );
+    }
+    else if ( values.getValueType() == Scalar::DOUBLE )
+    {
+        LAMAArray<double>& doubleValues = dynamic_cast<LAMAArray<double>&>( mValues );
+        const DenseStorageView<double> denseStorage( doubleValues, numRows, numColumns );
+        double tmpEpsilon = epsilon;
+        denseStorage.swapEpsilon( tmpEpsilon );
+        assign( denseStorage );
+    }
+    else
+    {
+        LAMA_THROWEXCEPTION( "Unsupported type for setting dense data: " << values.getValueType() )
+    }
 }
 
 /* ========================================================================= */

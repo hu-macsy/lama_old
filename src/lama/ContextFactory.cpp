@@ -2,7 +2,7 @@
  * @file ContextFactory.cpp
  *
  * @license
- * Copyright (c) 2011
+ * Copyright (c) 2009-2013
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -29,7 +29,7 @@
  *        device types via device manager.
  * @author Jiri Kraus
  * @date 10.07.2011
- * $Id$
+ * @since 1.0.0
  */
 
 // hpp

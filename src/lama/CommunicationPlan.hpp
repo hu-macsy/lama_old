@@ -2,7 +2,7 @@
  * @file CommunicationPlan.hpp
  *
  * @license
- * Copyright (c) 2011
+ * Copyright (c) 2009-2013
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -28,7 +28,7 @@
  * @brief Definition of a class that holds for each partition a quantity value.
  * @author Thomas Brandes, Jiri Kraus
  * @date 10.03.2011
- * $Id$
+ * @since 1.0.0
  */
 #ifndef LAMA_COMMUNICATION_PLAN_HPP_
 #define LAMA_COMMUNICATION_PLAN_HPP_

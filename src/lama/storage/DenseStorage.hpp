@@ -2,7 +2,7 @@
  * @file DenseStorage.hpp
  *
  * @license
- * Copyright (c) 2011
+ * Copyright (c) 2009-2013
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -28,7 +28,7 @@
  * @brief Definition of a structure for a dense matrix.
  * @author Michael Drost
  * @date 27.04.2011
- * $Id$
+ * @since 1.0.0
  */
 #ifndef LAMA_DENSESTORAGE_HPP_
 #define LAMA_DENSESTORAGE_HPP_

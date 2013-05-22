@@ -2,7 +2,7 @@
  * @file DenseVector.hpp
  *
  * @license
- * Copyright (c) 2011
+ * Copyright (c) 2009-2013
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -28,7 +28,7 @@
  * @brief DenseVector.hpp
  * @author Jiri Kraus
  * @date 22.02.2011
- * $Id$
+ * @since 1.0.0
  */
 
 // hpp
@@ -62,6 +62,11 @@ DenseVector<T>::DenseVector( ) : Vector( 0 ), mLocalValues()
 }
 
 template<typename T>
+DenseVector<T>::DenseVector( ContextPtr context ) : Vector( 0, context ), mLocalValues()
+{
+}
+
+template<typename T>
 DenseVector<T>::DenseVector( DistributionPtr distribution )
     : Vector( distribution ), mLocalValues( distribution->getLocalSize() )
 {
@@ -71,15 +76,16 @@ DenseVector<T>::DenseVector( DistributionPtr distribution )
 }
 
 template<typename T>
-DenseVector<T>::DenseVector( const IndexType size, const ValueType value )
-    : Vector( size ), mLocalValues( size, value )
+DenseVector<T>::DenseVector( const IndexType size, const ValueType value, ContextPtr context )
+    : Vector( size, context ), mLocalValues( size, value )
 {
     LAMA_LOG_INFO( logger, "Construct dense vector, size = " << size << ", init =" << value )
 }
 
 template<typename T>
-DenseVector<T>::DenseVector( DistributionPtr distribution, const ValueType value )
-    : Vector( distribution ), mLocalValues( distribution->getLocalSize(), value )
+DenseVector<T>::DenseVector( DistributionPtr distribution, const ValueType value, ContextPtr context )
+    : Vector( distribution, context ), 
+      mLocalValues( distribution->getLocalSize(), value )
 {
     LAMA_LOG_INFO( logger,
                    "Construct dense vector, size = " << distribution->getGlobalSize() << ", distribution = " << *distribution << ", local size = " << distribution->getLocalSize() << ", init = " << value )
@@ -289,23 +295,31 @@ void DenseVector<T>::setValues( const _LAMAArray& values )
 }
 
 template<typename T>
-Vector* DenseVector<T>::create() const
+DenseVector<T>* DenseVector<T>::create() const
 {
-    return create( getDistributionPtr() );
+    return new DenseVector<T>();
 }
 
 template<typename T>
-Vector* DenseVector<T>::create( DistributionPtr distribution ) const
+DenseVector<T>* DenseVector<T>::create( DistributionPtr distribution ) const
 {
     LAMA_LOG_INFO( logger, "DenseVector<T>::create" )
 
-    std::auto_ptr<Vector> newDenseVector( new DenseVector<T>( distribution ) );
+    std::auto_ptr<DenseVector<T> > newDenseVector( new DenseVector<T>( distribution ) );
 
     newDenseVector->setContext( mContext );
 
     // give back the new vector and its ownership
 
     return newDenseVector.release();
+}
+
+template<typename T>
+DenseVector<T>* DenseVector<T>::copy( ) const
+{
+    // create a new dense vector with the copy constructor
+
+    return new DenseVector<T>( *this );
 }
 
 template<typename T>

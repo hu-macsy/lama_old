@@ -2,7 +2,7 @@
  * @file JDSUtilsTest.cpp
  *
  * @license
- * Copyright (c) 2011
+ * Copyright (c) 2009-2013
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -28,7 +28,7 @@
  * @brief Contains tests for the class CUDAJDSUtils and OpenMPJDSUtils
  * @author: Jan Ecker
  * @date 16.10.2012
- * $
+ * @since 1.0.0
  **/
 
 // boost

@@ -2,7 +2,7 @@
  * @file CSRStorage.cpp
  *
  * @license
- * Copyright (c) 2011
+ * Copyright (c) 2009-2013
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -28,7 +28,7 @@
  * @brief Implementation and instantiation for template class CSRStorage.
  * @author Thomas Brandes
  * @date 04.06.2011
- * $Id$
+ * @since 1.0.0
  */
 
 // hpp
@@ -39,6 +39,8 @@
 #include <lama/ContextAccess.hpp>
 #include <lama/HostReadAccess.hpp>
 #include <lama/HostWriteAccess.hpp>
+
+#include <lama/LAMAArrayUtils.hpp>
 
 #include <lama/task/TaskSyncToken.hpp>
 
@@ -77,33 +79,17 @@ CSRStorage<ValueType>::CSRStorage() :
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-CSRStorage<ValueType>::CSRStorage( const IndexType numRows, const IndexType numColumns )
-    : CRTPMatrixStorage<CSRStorage<ValueType>,ValueType>( numRows, numColumns ), mNumValues( 0 ), mSortedRows(
-        false )
-{
-    LAMA_LOG_DEBUG( logger,
-                    "CSRStorage for matrix " << mNumRows << " x " << mNumColumns << ", numValues = " << mNumValues )
-
-    allocate( numRows, numColumns );
-}
-
-/* --------------------------------------------------------------------------- */
-
-template<typename ValueType>
 CSRStorage<ValueType>::CSRStorage(
     const IndexType numRows,
     const IndexType numColumns,
     const IndexType numValues,
     const LAMAArray<IndexType>& ia,
     const LAMAArray<IndexType>& ja,
-    const LAMAArray<ValueType>& values )
+    const _LAMAArray& values )
 
-    : CRTPMatrixStorage<CSRStorage<ValueType>,ValueType>( numRows, numColumns ), mNumValues( numValues ), mIa(
-        ia ), mJa( ja ), mValues( values ), mSortedRows( false )
+    : CRTPMatrixStorage<CSRStorage<ValueType>,ValueType>()
 {
-    mDiagonalProperty = checkDiagonalProperty();
-    check( "CSRStorage( ... )" );
-    LAMA_LOG_INFO( logger, *this << ": construcuted by input arrays" )
+    this->setCSRData( numRows, numColumns, numValues, ia, ja, values );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -264,25 +250,70 @@ void CSRStorage<ValueType>::setCSRDataImpl(
     const LAMAArray<OtherValueType>& values,
     const ContextPtr /* loc */)
 {
-    // not yet suppored on other devices
+    ContextPtr loc = this->getContextPtr();
 
-    ContextPtr loc = ContextFactory::getContext( Context::Host );
-
-    // no more error checks here on the sizes, but on the content
-
-    ReadAccess<IndexType> csrIA( ia, loc );
-    ReadAccess<IndexType> csrJA( ja, loc );
-    ReadAccess<OtherValueType> csrValues( values, loc );
-
-    if ( !OpenMPCSRUtils::validOffsets( csrIA.get(), numRows, numValues ) )
+    if ( ia.size() == numRows )
     {
-        LAMA_THROWEXCEPTION( "invalid offset array" )
+        // checking is done where ia is already valid, preferred is loc
+
+        ContextPtr loc1 = ia.getValidContext( loc->getType() );
+
+        // we assume that ia contains the sizes, verify it by summing up
+
+        LAMA_INTERFACE_FN_DEFAULT_T( sum, loc1, Utils, Reductions, IndexType )
+
+        ReadAccess<IndexType> csrIA( ia, loc1 );
+        
+        LAMA_CONTEXT_ACCESS( loc1 )
+        
+        IndexType n = sum( csrIA.get(), numRows );
+ 
+        if ( n != numValues )
+        {
+            LAMA_THROWEXCEPTION( "ia is invalid size array" )
+        }
+    }
+    else if ( ia.size() == numRows + 1 )
+    {
+        // checking is done where ia is already valid
+
+        ContextPtr loc1 = ia.getValidContext( loc->getType() );
+
+        LAMA_INTERFACE_FN_DEFAULT( validOffsets, loc1, CSRUtils, Offsets )
+
+        ReadAccess<IndexType> csrIA( ia, loc1 );
+    
+        LAMA_CONTEXT_ACCESS( loc1 )
+        
+        if ( !validOffsets( csrIA.get(), numRows, numValues ) )
+        {
+            LAMA_THROWEXCEPTION( "ia is invalid offset array" )
+        }
+    }
+    else
+    {
+        LAMA_THROWEXCEPTION( "ia array with size = " << ia.size() << " illegal, #rows = " << numRows )
     }
 
-    if ( !OpenMPUtils::validIndexes( csrJA.get(), numValues, numColumns ) )
+    LAMA_ASSERT_EQUAL_ERROR( numValues, ja.size() );
+    LAMA_ASSERT_EQUAL_ERROR( numValues, values.size() );
+
     {
-        LAMA_THROWEXCEPTION( "invalid column indexes in ja = " << ja << ", #columns = " << numColumns )
+        LAMA_INTERFACE_FN( validIndexes, loc, Utils, Indexes )
+
+        // make sure that column indexes in JA are all valid 
+
+        ReadAccess<IndexType> csrJA( ja, loc );
+
+        LAMA_CONTEXT_ACCESS( loc )
+
+        if ( !validIndexes( csrJA.get(), numValues, numColumns ) )
+        {
+            LAMA_THROWEXCEPTION( "invalid column indexes in ja = " << ja << ", #columns = " << numColumns )
+        }
     }
+
+    // now we can copy all data
 
     mNumRows = numRows;
     mNumColumns = numColumns;
@@ -292,17 +323,35 @@ void CSRStorage<ValueType>::setCSRDataImpl(
 
     // storage data will be directly allocated on the location
 
-    WriteOnlyAccess<IndexType> myIA( mIa, loc, mNumRows + 1 );
-    WriteOnlyAccess<IndexType> myJA( mJa, loc, mNumValues );
-    WriteOnlyAccess<ValueType> myValues( mValues, loc, mNumValues );
+    if ( ia.size() == numRows )
+    {
+        {
+            // reserve enough memory for mIa
 
-    // we can just copy the arrays
+            WriteOnlyAccess<IndexType> myIA( mIa, loc, mNumRows + 1 );
+        }
 
-    OpenMPUtils::set( myIA.get(), csrIA.get(), mNumRows + 1 );
-    OpenMPUtils::set( myJA.get(), csrJA.get(), mNumValues );
-    OpenMPUtils::set( myValues.get(), csrValues.get(), mNumValues );
+        LAMAArrayUtils::assign( mIa, ia, loc );
+            
+        {
+            ContextPtr loc1 = loc; // loc might change if sizes2offsets is not available
 
-    mDiagonalProperty = OpenMPCSRUtils::hasDiagonalProperty( mNumRows, myIA.get(), myJA.get() );
+            LAMA_INTERFACE_FN_DEFAULT( sizes2offsets, loc1, CSRUtils, Offsets )
+
+            WriteAccess<IndexType> myIA( mIa, loc1 );
+
+            myIA.resize( mNumRows + 1 );                  // no realloc as capacity is sufficient
+
+            sizes2offsets( myIA.get(), numRows );
+        }
+    }
+    else
+    {
+        LAMAArrayUtils::assign( mIa, ia, loc );
+    }
+
+    LAMAArrayUtils::assign( mValues, values, loc );
+    LAMAArrayUtils::assign( mJa, ja, loc );
 
     /* do not sort rows, destroys diagonal property during redistribute
 
@@ -311,7 +360,8 @@ void CSRStorage<ValueType>::setCSRDataImpl(
 
      */
 
-    myIA.release(); // release access to ia, array is read for building row indexes
+    mDiagonalProperty = checkDiagonalProperty();
+
     buildRowIndexes();
 }
 
@@ -327,7 +377,7 @@ void CSRStorage<ValueType>::setCSRDataSwap(
     LAMAArray<IndexType>& ia,
     LAMAArray<IndexType>& ja,
     LAMAArray<OtherValueType>& values,
-    const ContextPtr loc )
+    const ContextPtr /* loc */ )
 {
     //set necessary information
     mNumRows = numRows;
@@ -337,25 +387,16 @@ void CSRStorage<ValueType>::setCSRDataSwap(
     LAMA_LOG_DEBUG( logger, "fill " << *this << " with csr data, " << numValues << " non-zero values" )
 
     //swap arrays
+
     mIa.swap( ia );
     mJa.swap( ja );
     mValues.swap( values );
 
-    //check diagonal property
-    //get function pointer
-    LAMA_INTERFACE_FN( hasDiagonalProperty, loc, CSRUtils, Offsets )
+    mDiagonalProperty = checkDiagonalProperty();
 
-    //get read access
-    ReadAccess<IndexType> csrIA( mIa, loc );
-    ReadAccess<IndexType> csrJA( mJa, loc );
-    LAMA_CONTEXT_ACCESS( loc )
+    // this builds only row indices if context is on host
 
-    IndexType numDiagonals = std::min( mNumRows, mNumColumns );
-    mDiagonalProperty = hasDiagonalProperty( numDiagonals, csrIA.get(), csrJA.get() );
-
-    //this builds only row indices if context is on host
     buildRowIndexes();
-
 }
 
 //force instantiation for <double,double> and <float, float>
@@ -1529,8 +1570,18 @@ void CSRStorage<ValueType>::matrixAddMatrixCSR(
     LAMA_INTERFACE_FN( matrixAddSizes, loc, CSRUtils, Offsets )
     LAMA_INTERFACE_FN_T( matrixAdd, loc, CSRUtils, Mult, ValueType )
 
-    LAMA_ASSERT_ERROR( &a != this, "matrixAddMatrix: alias of a with this result matrix" )
-    LAMA_ASSERT_ERROR( &b != this, "matrixAddMatrix: alias of b with this result matrix" )
+    if ( &a == this || &b == this )
+    {
+        // due to alias we would get problems with Write/Read access, so use a temporary
+ 
+        CSRStorage<ValueType> tmp;
+
+        tmp.matrixAddMatrixCSR( alpha, a, beta, b, loc );
+
+        swap( tmp );  // safe as tmp will be destroyed afterwards
+
+        return;
+    }
 
     LAMA_REGION( "Storage.CSR.addMatrixCSR" )
 

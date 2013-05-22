@@ -2,7 +2,7 @@
  * @file TraceConfig.hpp
  *
  * @license
- * Copyright (c) 2011
+ * Copyright (c) 2009-2013
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -28,7 +28,7 @@
  * @brief Definition of class that specifies the runtime configuration for tracing.
  * @author: Thomas Brandes
  * @date 01.01.2012
- * $Id$
+ * @since 1.0.0
  */
 
 #ifndef LAMA_TRACING_TRACE_CONFIG_HPP_

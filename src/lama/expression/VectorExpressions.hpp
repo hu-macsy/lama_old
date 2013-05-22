@@ -2,7 +2,7 @@
  * @file VectorExpressions.hpp
  *
  * @license
- * Copyright (c) 2011
+ * Copyright (c) 2009-2013
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -28,7 +28,7 @@
  * @brief VectorExpressions.hpp
  * @author Jiri Kraus
  * @date 01.06.2011
- * $Id$
+ * @since 1.0.0
  */
 #ifndef LAMA_VECTOREXPRESSIONS_HPP_
 #define LAMA_VECTOREXPRESSIONS_HPP_
@@ -41,30 +41,51 @@ namespace lama
 {
 
 /**
- * @brief The times operator creates an expression that represents Scalar times Vector
+ * @brief Create a symbolic expression for the product alpha * vectorX                 
  *
  * @param[in] alpha     The scalar.
- * @param[in] x         The vector.
- * @return              The expression representing this difference.
+ * @param[in] vectorX   The vector.
+ * @return              Symbolic expression alpha * vectorX        
  */
 
-inline Expression<Scalar,Vector,Times> operator*( const Scalar& alpha, const Vector& x )
+inline Expression_SV operator*( const Scalar& alpha, const Vector& vectorX )
 {
-    return Expression<Scalar,Vector,Times>( alpha, x );
+    return Expression_SV( alpha, vectorX );
 }
 
 /**
- * @brief The times operator creates an expression that represents Vector times Scalar
+ * @brief Create a symbolic expression for the product vectorX * alpha
  *
- * @param[in] x         The vector.
+ * @param[in] vectorX   The vector.
  * @param[in] alpha     The scalar.
- * @return              The expression representing this difference.
+ * @return              Symbolic expression alpha * vectorX       
+ *
+ * Note: due to normalization the arguments are switched in the symbolic expression
  */
 
-inline Expression<Scalar,Vector,Times> operator*( const Vector& x, const Scalar& alpha )
+inline Expression_SV operator*( const Vector& vectorX, const Scalar& alpha )
 {
-    return Expression<Scalar,Vector,Times>( alpha, x );
+    return Expression_SV( alpha, vectorX );
 }
+
+/**
+ * @brief Create a symbolic expression for the division vector / alpha
+ *
+ * @param[in] vector   The vector.
+ * @param[in] alpha    The scalar.
+ * @return             Symbolic expression [1.0/alpha] * x      
+ */
+
+inline Expression_SV operator/( const Vector& vector, const Scalar& alpha )
+{
+    // build 1.0/ alpha as new scalar for a symbolic expression Scalar * Vector 
+
+    return Expression_SV( Scalar( 1 ) / alpha, vector );
+}
+
+/* ------------------------------------------------------------------------- */
+/*   operator+ to generate Expression_SV_SV                                  */
+/* ------------------------------------------------------------------------- */
 
 /**
  * @brief The plus operator creates an expression that represents the sum
@@ -74,32 +95,35 @@ inline Expression<Scalar,Vector,Times> operator*( const Vector& x, const Scalar&
  * @param[in] y     The second vector.
  * @return          The expression representing this sum.
  */
-inline Expression<Expression<Scalar,Vector,Times>,Expression<Scalar,Vector,Times>,Plus> operator+(
-    const Vector& x,
-    const Vector& y )
+inline Expression_SV_SV operator+( const Vector& x, const Vector& y )
 {
-    const Scalar alpha( 1.0 );
-    const Scalar beta( 1.0 );
-
-    Expression<Scalar,Vector,Times> exp1( alpha, x );
-    Expression<Scalar,Vector,Times> exp2( beta, y );
-    return Expression<Expression<Scalar,Vector,Times>,Expression<Scalar,Vector,Times>,Plus>( exp1, exp2 );
+    return Expression_SV_SV( Expression_SV( Scalar( 1 ), x ), Expression_SV( Scalar( 1 ), y ) );
 }
 
 /**
  * @brief The plus operator creates an expression that represents sum of Vector and Vector times Scalar
  *
- * @param[in] x         The vector.
- * @param[in] exp2      The Vector times Scalar.
+ * @param[in] vector    The vector.
+ * @param[in] exp       The Vector times Scalar.
  * @return              The expression representing this difference.
  */
 
-inline Expression<Expression<Scalar,Vector,Times>,Expression<Scalar,Vector,Times>,Plus> operator+(
-    const Vector& x,
-    const Expression<Scalar,Vector,Times>& exp2 )
+inline Expression_SV_SV operator+( const Vector& vector, const Expression_SV& exp )
 {
-    Expression<Scalar,Vector,Times> exp1( 1.0, x );
-    return Expression<Expression<Scalar,Vector,Times>,Expression<Scalar,Vector,Times>,Plus>( exp1, exp2 );
+    return Expression_SV_SV( Expression_SV( Scalar( 1 ), vector ), exp );
+}
+
+/**
+ * @brief The plus operator creates an expression that represents sum of Vector times Scalar plus Vector
+ *
+ * @param[in] vector    The vector.
+ * @param[in] exp       Expression of Scalar times Vector.
+ * @return              The expression representing this difference.
+ */
+
+inline Expression_SV_SV operator+( const Expression_SV& exp, const Vector& vector )
+{
+    return Expression_SV_SV( exp, Expression_SV( Scalar( 1 ), vector) );
 }
 
 /**
@@ -110,122 +134,72 @@ inline Expression<Expression<Scalar,Vector,Times>,Expression<Scalar,Vector,Times
  * @return              The expression representing this difference.
  */
 
-inline Expression<Expression<Scalar,Vector,Times>,Expression<Scalar,Vector,Times>,Plus> operator+(
-    const Expression<Scalar,Vector,Times>& exp1,
-    const Expression<Scalar,Vector,Times>& exp2 )
+inline Expression_SV_SV operator+( const Expression_SV& exp1, const Expression_SV& exp2 )
 {
-    return Expression<Expression<Scalar,Vector,Times>,Expression<Scalar,Vector,Times>,Plus>( exp1, exp2 );
-}
-
-/**
- * @brief The plus operator creates an expression that represents sum of Vector times Scalar plus Vector
- *
- * @param[in] x         The vector.
- * @param[in] exp2      Expression of Scalar times Vector.
- * @return              The expression representing this difference.
- */
-
-inline Expression<Expression<Scalar,Vector,Times>,Expression<Scalar,Vector,Times>,Plus> operator+(
-    const Expression<Scalar,Vector,Times>& exp2,
-    const Vector& x )
-{
-    Expression<Scalar,Vector,Times> exp1( 1.0, x );
-    return Expression<Expression<Scalar,Vector,Times>,Expression<Scalar,Vector,Times>,Plus>( exp1, exp2 );
-}
-
-/**
- * @brief The plus operator creates an expression that represents sum of Scalar times Vector plus Vector
- *
- * @param[in] x         The vector.
- * @param[in] exp2      Expression of Scalar times Vector.
- * @return              The expression representing this difference.
- */
-
-inline Expression<Expression<Scalar,Vector,Times>,Expression<Scalar,Vector,Times>,Plus> operator+(
-    const Expression<Vector,Scalar,Times>& exp2,
-    const Vector& x )
-{
-    Expression<Scalar,Vector,Times> exp( exp2.getArg2(), exp2.getArg1() );
-    Expression<Scalar,Vector,Times> exp1( 1.0, x );
-    return Expression<Expression<Scalar,Vector,Times>,Expression<Scalar,Vector,Times>,Plus>( exp, exp1 );
+    return Expression_SV_SV( exp1, exp2 );
 }
 
 /* ------------------------------------------------------------------------- */
+/*   operator- to generate Expression_SV_SV                                  */
+/* ------------------------------------------------------------------------- */
 
 /**
- * @brief The minus operator creates an expression that represents the difference of Vector and Vector times Scalar
+ * @brief The minus operator creates an expression that represents the difference
+ *        of two vectors.
  *
- * @param[in] x         The vector.
- * @param[in] exp2      Expression of Scalar times Vector.
+ * @param[in] x     The first vector as minuend
+ * @param[in] y     The second vector is subtrahend
+ * @return          Normalized symbolic expression ' 1 * x + (-1) * y'
+ */
+
+inline Expression_SV_SV operator-( const Vector& x, const Vector& y )
+{
+    return Expression_SV_SV( Expression_SV( Scalar( 1 ), x ), 
+                             Expression_SV( Scalar( -1 ), y ) );
+}
+
+/**
+ * @brief Build symbolic expression for 'Scalar * Vector' + Vector
+ *
+ * @param[in] exp       Expression of Scalar times Vector.
+ * @param[in] vector    The vector.
+ * @return              The expression representing this difference.
+ *
+ */
+
+inline Expression_SV_SV operator-( const Expression_SV& exp, const Vector& vector )
+{
+    return Expression_SV_SV( exp, Expression_SV( -1.0, vector  ));
+}
+
+/**
+ * @brief Build symbolic expression for Vector - 'Scalar * Vector'
+ *
+ * @param[in] vector    The vector.
+ * @param[in] exp       Expression of Scalar times Vector.
  * @return              The expression representing this difference.
  */
 
-inline Expression<Expression<Scalar,Vector,Times>,Expression<Scalar,Vector,Times>,Plus> operator-(
-    const Vector& x,
-    const Expression<Scalar,Vector,Times>& exp2 )
+inline Expression_SV_SV operator-( const Vector& vector, const Expression_SV& exp )
 {
-    Expression<Scalar,Vector,Times> exp1( 1.0, x );
-    Expression<Scalar,Vector,Times> tmpExp( -exp2.getArg1(), exp2.getArg2() );
-    return Expression<Expression<Scalar,Vector,Times>,Expression<Scalar,Vector,Times>,Plus>( exp1, tmpExp );
+    Expression_SV minusExp( -exp.getArg1(), exp.getArg2() );
+
+    return Expression_SV_SV( Expression_SV( 1.0, vector ) , minusExp );
 }
 
 /**
  * @brief The minus operator creates an expression that represents the difference
  *        of two scalar vector products.
  *
- * @param[in] exp1     The first expression.
- * @param[in] exp2     The second expression.
- * @return             The expression representing this difference.
+ * @param[in] exp1     the minuend as symbolic 'scalar * vector'
+ * @param[in] exp2     The subtranhend as symbolic 'scalar * vector'
+ * @return             symoblic expression for the difference normed as 'scalar * vector + scalar * vector'
  */
 
-inline Expression<Expression<Scalar,Vector,Times>,Expression<Scalar,Vector,Times>,Plus> operator-(
-    const Expression<Scalar,Vector,Times>& exp1,
-    const Expression<Scalar,Vector,Times>& exp2 )
+inline Expression_SV_SV operator-( const Expression_SV& exp1, const Expression_SV& exp2 )
 {
-    Expression<Scalar,Vector,Times> tmpExp( -exp2.getArg1(), exp2.getArg2() );
-    return Expression<Expression<Scalar,Vector,Times>,Expression<Scalar,Vector,Times>,Plus>( exp1, tmpExp );
-}
-
-/**
- * @brief The minus operator creates an expression that represents the difference
- *        of two vectors.
- *
- * @param[in] x     The first vector.
- * @param[in] y     The second vector.
- * @return          The expression representing this difference.
- */
-inline Expression<Expression<Scalar,Vector,Times>,Expression<Scalar,Vector,Times>,Plus> operator-(
-    const Vector& x,
-    const Vector& y )
-{
-    const Scalar alpha( 1.0 );
-    const Scalar beta( -1.0 );
-
-    Expression<Scalar,Vector,Times> exp1( alpha, x );
-    Expression<Scalar,Vector,Times> exp2( beta, y );
-    return Expression<Expression<Scalar,Vector,Times>,Expression<Scalar,Vector,Times>,Plus>( exp1, exp2 );
-}
-
-/**
- * @brief The minus operator creates an expression that represents the difference of Vector times Scalar and Vector
- *
- * @param[in] x         The vector.
- * @param[in] exp2      Expression of Scalar times Vector.
- * @return              The expression representing this difference.
- *
- * \code
- *       exp2             x                     return
- *   ( a * vector1 ) - vector1  ->  ( a * vector1 ) +  ( (-1.0) * vectorX )
- * \endcode
- */
-
-inline Expression<Expression<Scalar,Vector,Times>,Expression<Scalar,Vector,Times>,Plus> operator-(
-    const Expression<Scalar,Vector,Times>& exp2,
-    const Vector& x )
-{
-    Expression<Scalar,Vector,Times> tmpExp( exp2.getArg1(), exp2.getArg2() );
-    Expression<Scalar,Vector,Times> exp1( -1.0, x );
-    return Expression<Expression<Scalar,Vector,Times>,Expression<Scalar,Vector,Times>,Plus>( tmpExp, exp1 );
+    Expression_SV minusExp2( -exp2.getArg1(), exp2.getArg2() );
+    return Expression_SV_SV( exp1, minusExp2 );
 }
 
 }

@@ -2,7 +2,7 @@
  * @file lapack.cu
  *
  * @license
- * Copyright (c) 2012
+ * Copyright (c) 2009-2013
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -28,7 +28,7 @@
  * @brief lapack.cu
  * @author lschubert
  * @date 06.07.2012
- * $Id$
+ * @since 1.0.0
  */
 
 #include <lama/cuda/utils.cu.h>

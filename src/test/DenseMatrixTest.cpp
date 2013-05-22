@@ -2,7 +2,7 @@
  * @file DenseMatrixTest.cpp
  *
  * @license
- * Copyright (c) 2011
+ * Copyright (c) 2009-2013
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -28,7 +28,7 @@
  * @brief Contains the implementation of the class DenseMatrixTest
  * @author Alexander Büchel
  * @date 03.04.2012
- * $Id$
+ * @since 1.0.0
  */
 
 #include <boost/test/unit_test.hpp>
@@ -40,7 +40,10 @@
 #include <lama/matrix/CSRSparseMatrix.hpp>
 #include <lama/matrix/DenseMatrix.hpp>
 
+#include <lama/LAMAInterfaceRegistry.hpp>
+
 #include <lama/expression/MatrixExpressions.hpp>
+#include <lama/expression/all.hpp>
 
 using namespace boost;
 using namespace lama;
@@ -508,9 +511,9 @@ BOOST_AUTO_TEST_CASE( SetIdentityTest )
 
     CSRSparseMatrix<ValueType> n4m4SMatrixA = TestSparseMatrices::n4m4MatrixA1<ValueType>();
 
-    DenseMatrix<ValueType> matrixA( n4m4SMatrixA );
+    DenseMatrix<ValueType> matrixA;
 
-    matrixA.setIdentity();
+    matrixA.setIdentity( n4m4SMatrixA.getNumRows() );
 
     for ( IndexType i = 0; i < matrixA.getNumRows(); ++i )
     {
@@ -667,7 +670,118 @@ BOOST_AUTO_TEST_CASE( TypeNameTest )
 
 /* ------------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( SwapTest, T, test_types ) {
+template<typename T>
+void GEMMTestImpl( const int n, const int m, const int k, T eps )
+{
+    typedef T ValueType;
+
+    Scalar alpha( 1.0 );
+    Scalar beta( 3.0 );
+
+    int maxdim = std::max( n, m );
+
+    boost::scoped_array<ValueType> values( new ValueType[maxdim * k] );
+    for ( int i = 0; i < maxdim * k; i++ )
+    {
+        values[i] = i + 1;
+    }
+
+    boost::scoped_array<ValueType> valuesC( new ValueType[m * n] );
+
+    for ( int i = 0; i < m; i++ )
+    {
+        for ( int j = 0; j < n; j++ )
+        {
+            valuesC[i * n + j] = 42.0 / beta.getValue<ValueType>();
+            for ( int kk = 0; kk < k; kk++ )
+            {
+                valuesC[i * n + j] -= values[i * k + kk] * values[kk * n + j] / beta.getValue<ValueType>();
+            }
+        }
+    }
+
+    for ( ContextType computeLocation = Context::Host; 
+          computeLocation <= Context::CUDA; 
+          computeLocation = ContextType( computeLocation + 1 ) )
+    {
+        if ( !LAMAInterfaceRegistry::getRegistry().hasInterface( computeLocation ) )
+        {
+            LAMA_LOG_WARN( logger, "Skipping location: " << computeLocation << " no Interface found." );
+            continue;
+        }
+
+        ContextPtr computeContext = ContextFactory::getContext( computeLocation );
+
+        DenseMatrix<ValueType> A;
+        A.setContext( computeContext, computeContext );
+        A.setRawDenseData( m, k, values.get() );
+
+        DenseMatrix<ValueType> B;   // not possible: const B 
+        B.setRawDenseData( k, n, values.get() );
+        DenseMatrix<ValueType> C;
+        C.setRawDenseData( m, n, valuesC.get() );
+
+        C = alpha * A * B + beta * C;
+
+        for ( int i = 0; i < m; i++ )
+        {
+            for ( int j = 0; j < n; j++ )
+            {
+                Scalar expectedvalue( 42.0 );
+                Scalar value = C.getValue( i, j );
+                Scalar diff = expectedvalue - value;
+                LAMA_CHECK_SCALAR_SMALL( diff, ValueType, eps );
+            }
+        }
+
+        DenseMatrix<ValueType> C2;
+        C2.setRawDenseData( m, n, valuesC.get() );
+
+        DenseMatrix<ValueType> D ( alpha * A * B + beta * C2 );
+
+        for ( int i = 0; i < m; i++ )
+        {
+            for ( int j = 0; j < n; j++ )
+            {
+                Scalar expectedvalue( 42.0 );
+                Scalar value = D.getValue( i, j );
+                Scalar diff = expectedvalue - value;
+                LAMA_CHECK_SCALAR_SMALL( diff, ValueType, eps );
+            }
+        }
+    }
+}
+
+BOOST_AUTO_TEST_CASE( GEMMTest )
+{
+    // This test needs less precision eps for float
+
+    typedef double ValueType;
+
+    ValueType eps = static_cast<ValueType>( 1e-5 );
+
+    GEMMTestImpl<ValueType>( 5, 3, 4, eps );
+    GEMMTestImpl<ValueType>( 2, 2, 3, eps);
+    GEMMTestImpl<ValueType>( 16, 16, 16, eps);
+    GEMMTestImpl<ValueType>( 32, 16, 16, eps);
+    GEMMTestImpl<ValueType>( 2, 2, 4, eps);
+    GEMMTestImpl<ValueType>( 12, 12, 17, eps);
+
+    eps = static_cast<ValueType>( 1e-3 );
+
+    GEMMTestImpl<ValueType>( 32, 16, 32, eps);
+    GEMMTestImpl<ValueType>( 16, 32, 16, eps);
+    GEMMTestImpl<ValueType>( 32, 32, 16, eps);
+    GEMMTestImpl<ValueType>( 16, 32, 32, eps);
+    GEMMTestImpl<ValueType>( 32, 32, 256, eps);
+    GEMMTestImpl<ValueType>( 64, 64, 64, eps);
+    GEMMTestImpl<ValueType>( 128, 128, 256, eps);
+}
+
+/* ------------------------------------------------------------------------- */
+
+BOOST_AUTO_TEST_CASE_TEMPLATE( SwapTest, T, test_types ) 
+{
     typedef T ValueType;
 
     CSRSparseMatrix<ValueType> SMatrixA =

@@ -2,7 +2,7 @@
  * @file lama_test.cpp
  *
  * @license
- * Copyright (c) 2011
+ * Copyright (c) 2009-2013
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -28,7 +28,7 @@
  * @brief Contains the implementation of the class lama_test.
  * @author: Alexander Büchel
  * @date 31.01.2012
- * $
+ * @since 1.0.0
  **/
 
 #define BOOST_TEST_NO_MAIN

@@ -2,7 +2,7 @@
  * @file SyncToken.hpp
  *
  * @license
- * Copyright (c) 2011
+ * Copyright (c) 2009-2013
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -28,7 +28,7 @@
  * @brief Definition of a base class for synchronization of computations and communications.
  * @author Thomas Brandes, Jiri Kraus
  * @date 22.03.2011
- * $Id$
+ * @since 1.0.0
  */
 
 #ifndef LAMA_SYNC_TOKEN_HPP_
@@ -65,7 +65,7 @@ class _LAMAArray;
  * All started asynchronous operations in LAMA must be synchronized. This is
  * absolutely mandatory and can be done in the following ways:
  *
- * \begin
+ * \code 
  *    auto_ptr<SyncToken> token = new XXXSyncToken( ... )
  *    ! synchronization is alway done when object will be deleted at the end of the scope
  *    
@@ -75,7 +75,7 @@ class _LAMAArray;
  *    SyncToken* token = new XXXSyncToken( ... )
  *       ....
  *    delete token;   // easy to forget, token will never be synchronized
- * \end
+ * \endcode
  *
  */
 

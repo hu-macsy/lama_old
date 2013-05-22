@@ -2,7 +2,7 @@
  * @file utils.cu.h
  *
  * @license
- * Copyright (c) 2011
+ * Copyright (c) 2009-2013
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -28,7 +28,7 @@
  * @brief utils.cu.h
  * @author jiri
  * @date 15.06.2010
- * $Id$
+ * @since 1.0.0
  */
 
 #include <math.h>

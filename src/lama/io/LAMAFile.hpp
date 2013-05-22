@@ -2,7 +2,7 @@
  * @file LAMAFile.hpp
  *
  * @license
- * Copyright (c) 2011
+ * Copyright (c) 2009-2013
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -26,9 +26,9 @@
  * @endlicense
  *
  * @brief LAMAFile.hpp
- * @author brandes
+ * @author Thomas Brandes
  * @date 31.10.2011
- * $Id$
+ * @since 1.0.0
  */
 #ifndef LAMA_LAMAFILE_HPP_
 #define LAMA_LAMAFILE_HPP_

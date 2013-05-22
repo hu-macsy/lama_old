@@ -2,7 +2,7 @@
  * @file SparseMatrix.hpp
  *
  * @license
- * Copyright (c) 2011
+ * Copyright (c) 2009-2013
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -28,7 +28,7 @@
  * @brief Definition of class for distributed sparse matrices.
  * @author Jiri Kraus, Thomas Brandes
  * @date 06.06.2011
- * $Id$
+ * @since 1.0.0
  */
 #ifndef LAMA_SPARSE_MATRIX_HPP_
 #define LAMA_SPARSE_MATRIX_HPP_
@@ -122,6 +122,8 @@ public:
     {
         return Matrix::SPARSE;
     }
+
+    using Matrix::operator=;
 };
 
 /**
@@ -250,20 +252,23 @@ public:
         return mLocalData->getContext();
     }
 
-    /**
-     * @brief Set sparse matrix with global dense data.
-     *
-     * @param[in] numRows      number of rows, must be non-negative.
-     * @param[in] numColumns   number of columns, must be non-negative.
-     * @param[in] values[]     TODO[doxy] Complete Description.
-     * @param[in] eps          TODO[doxy] Complete Description.
-     */
-    template<typename OtherValueType>
-    void setRawDenseData(
-        const IndexType numRows,
-        const IndexType numColumns,
-        const OtherValueType values[],
-        const OtherValueType eps = 0.0 );
+    /** Implementation for Matrix::setDenseData */
+
+    virtual void setDenseData(
+        DistributionPtr rowDistribution,
+        DistributionPtr colDistribution,
+        const _LAMAArray& values,
+        double eps = 0.0 );
+
+    /** Implementation for pure method Matrix::setCSRData. */
+
+    virtual void setCSRData(
+        DistributionPtr rowDist,
+        DistributionPtr colDist,
+        const IndexType numValues,
+        const LAMAArray<IndexType>& ia,
+        const LAMAArray<IndexType>& ja,
+        const _LAMAArray& values );
 
     /* Implementation of pure method of class Matrix. */
 
@@ -277,9 +282,13 @@ public:
 
     virtual void allocate( DistributionPtr rowDistribution, DistributionPtr colDistribution );
 
-    /* Implementation of pure method of class Matrix. */
+    /* Before overriding the virtual function make the other routine setIdentity( int n ) visible */
 
-    virtual void setIdentity();
+    using _SparseMatrix::setIdentity;
+
+    /** Set matrix to a identity square matrix with same row and column distribution. */
+
+    virtual void setIdentity( DistributionPtr distribution );
 
     /* Implementation of pure method of class Matrix. */
 
@@ -322,7 +331,7 @@ public:
      *  is updated each iteration. It is more convenient than a solution that
      *  is based on using pointers in the application.
      *
-     * @param[in] other   TODO[doxy] Complete Description.
+     * @param[in] other  other sparse matrix
      */
     void swap( SparseMatrix<ValueType>& other );
 
@@ -361,36 +370,14 @@ public:
      *  corresponding to the column distribution, builds new halo
      */
 
-    //TODO: implement or delete
-    //void setLocal( const MatrixStorage<ValueType>& newLocalData );
     /* Implemenation of pure method of class Matrix */
 
     virtual void matrixTimesScalar( const Matrix& other, const Scalar alpha );
 
     /**
-     * @brief Matrix times vector with same value types and correct distributions.
+     * @brief Same as matrixTimesVectorImpl but with multiple results and y
      *
-     * @param[out] result   TODO[doxy] Complete Description.
-     * @param[in]  alpha    TODO[doxy] Complete Description.
-     * @param[in]  x        TODO[doxy] Complete Description.
-     * @param[in]  beta     TODO[doxy] Complete Description.
-     * @param[in]  y        TODO[doxy] Complete Description.
-     */
-    void matrixTimesVectorImpl(
-        DenseVector<ValueType>& result,
-        const ValueType alpha,
-        const DenseVector<ValueType>& x,
-        const ValueType beta,
-        const DenseVector<ValueType>& y ) const;
-
-    /**
-     * @brief TODO[doxy] Complete Description.
-     *
-     * @param[out] result   TODO[doxy] Complete Description.
-     * @param[in]  alpha    TODO[doxy] Complete Description.
-     * @param[in]  x        TODO[doxy] Complete Description.
-     * @param[in]  beta     TODO[doxy] Complete Description.
-     * @param[in]  y        TODO[doxy] Complete Description.
+     * Note: result and y must have same shape
      */
     virtual void matrixTimesVectorNImpl(
         DenseMatrix<ValueType>& result,
@@ -407,6 +394,16 @@ public:
         const Vector& x,
         const Scalar beta,
         const Vector& y ) const;
+
+    /**
+     * @brief Same as matrixTimesVector but with vectors result, x, and y of same value type.
+     */
+    void matrixTimesVectorImpl(
+        DenseVector<ValueType>& result,
+        const ValueType alpha,
+        const DenseVector<ValueType>& x,
+        const ValueType beta,
+        const DenseVector<ValueType>& y ) const;
 
     /* Implemenation of pure method of class Matrix */
 
@@ -430,10 +427,7 @@ public:
     virtual Scalar maxDiffNorm( const Matrix& other ) const;
 
     /**
-     * @brief Get the maximal difference between two elements for sparse matrices of same type.
-     *
-     * @param[in]  other    TODO[doxy] Complete Description.
-     * @return              TODO[doxy] Complete Description.
+     * @brief Same as maxDiffNorm but with other as sparse matrix of same value type.
      */
     ValueType maxDiffNormImpl( const SparseMatrix<ValueType>& other ) const;
 
@@ -508,7 +502,7 @@ public:
     /**
      * @brief Assign another matrix transposed to this matrix.
      *
-     * @param[in] matrix   TODO[doxy] Complete Description.
+     * @param[in] matrix   input matrix that will be transposed
      */
     void assignTranspose( const Matrix& matrix );
 
@@ -540,25 +534,11 @@ public:
      */
     void readFromFile( const std::string& filename );
 
+    using _SparseMatrix::operator=;   // make overloaded routines visible before overwriting one
+
     /** Override the default assignment operator to guarantee deep copy. */
 
     SparseMatrix& operator=( const SparseMatrix& matrix );
-
-    /** Redefine assignment operator to get the correct return value; implementation is same as for base class. */
-
-    SparseMatrix& operator=( const Matrix& matrix );
-
-    SparseMatrix& operator=( const Expression<Matrix,Matrix,Times>& expression );
-
-    SparseMatrix& operator=( const Expression<Scalar,Matrix,Times>& expression );
-
-    SparseMatrix& operator=( const Expression<Scalar,Expression<Matrix,Matrix,Times>,Times>& expression );
-
-    SparseMatrix& operator=(
-        const Expression<Expression<Scalar,Expression<Matrix,Matrix,Times>,Times>,Expression<Scalar,Matrix,Times>,Plus> exp );
-
-    SparseMatrix& operator=(
-        const Expression<Expression<Scalar,Matrix,Times>,Expression<Scalar,Matrix,Times>,Plus> exp );
 
 protected:
 
@@ -575,10 +555,10 @@ protected:
     /**
      * @brief Set this matrix = alpha * A + beta * B
      *
-     * @param[in]  alpha    TODO[doxy] Complete Description.
-     * @param[in]  A        TODO[doxy] Complete Description.
-     * @param[in]  beta     TODO[doxy] Complete Description.
-     * @param[in]  B        TODO[doxy] Complete Description.
+     * @param[in]  alpha    scaling of input matrix A
+     * @param[in]  A        input matrix
+     * @param[in]  beta     scaling of input matrix B
+     * @param[in]  B        input matrix
      */
     void matrixPlusMatrixImpl(
         const ValueType alpha,
@@ -588,11 +568,11 @@ protected:
     /**
      * @brief Set this matrix = alpha * A * B + beta * C
      *
-     * @param[in]  alpha    TODO[doxy] Complete Description.
-     * @param[in]  A        TODO[doxy] Complete Description.
-     * @param[in]  B        TODO[doxy] Complete Description.
-     * @param[in]  beta     TODO[doxy] Complete Description.
-     * @param[in]  C        TODO[doxy] Complete Description.
+     * @param[in]  alpha    scaling of matrix product
+     * @param[in]  A        first matrix of matrix product
+     * @param[in]  B        second matrix of matrix product
+     * @param[in]  beta     scaling of matrix summand
+     * @param[in]  C        matrix to be added to the product
      */
     void matrixTimesMatrixImpl(
         const ValueType alpha,
@@ -625,32 +605,13 @@ private:
 
     void assignTransposeImpl ( const SparseMatrix<ValueType>& matrix );
 
-    /** Compute the halo. */
+    /** Get a complete row of local part only. */
 
-    //TODO: not implemented --> implement or delete
-    //void computeHalo( const MatrixStorage<T>& localData, const Distribution& rowDistribution );
     void getLocalRow( DenseVector<ValueType>& row, const IndexType iLocal ) const;
 
-    mutable LAMAArray<ValueType> mTempSendValues;//!< temporary vector for halo comunications
+    mutable LAMAArray<ValueType> mTempSendValues;//!< temporary vector for halo communications
 };
 
-/* ------------------------------------------------------------------------- */
-
-template<typename ValueType>
-template<typename OtherValueType>
-void SparseMatrix<ValueType>::setRawDenseData(
-    const IndexType numRows,
-    const IndexType numColumns,
-    const OtherValueType values[],
-    const OtherValueType eps )
-{
-    Matrix::setReplicatedMatrix( numRows, numColumns ); // sets global distributions
-
-    mLocalData->setRawDenseData( numRows, numColumns, values, eps );
-    mHaloData->allocate( numRows, 0 );
-    mHalo = Halo();
-}
-
-}
+} // namespace lama
 
 #endif // LAMA_SPARSE_MATRIX_HPP_

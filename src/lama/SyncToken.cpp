@@ -2,7 +2,7 @@
  * @file SyncToken.cpp
  *
  * @license
- * Copyright (c) 2011
+ * Copyright (c) 2009-2013
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -28,7 +28,7 @@
  * @brief Implementation of non-pure methods of abstract class SyncToken.
  * @author Thomas Brandes, Jiri Kraus
  * @date 22.03.2011
- * $Id$
+ * @since 1.0.0
  */
 
 // hpp

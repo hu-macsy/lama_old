@@ -2,7 +2,7 @@
  * @file unique_name.hpp
  *
  * @license
- * Copyright (c) 2011
+ * Copyright (c) 2009-2013
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -28,7 +28,7 @@
  * @brief Some macro utilities for generating symbol names.
  * @author Jiri Kraus
  * @date 06.04.2011
- * $Id$
+ * @since 1.0.0
  */
 
 #ifndef LAMA_MACRO_UNIQUE_NAME_HPP_

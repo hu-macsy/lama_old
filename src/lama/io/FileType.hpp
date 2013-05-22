@@ -2,7 +2,7 @@
  * @file FileType.hpp
  *
  * @license
- * Copyright (c) 2011
+ * Copyright (c) 2009-2013
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -26,9 +26,9 @@
  * @endlicense
  *
  * @brief FileType.hpp
- * @author kbuschul
+ * @author Kai Buschulte
  * @date 12.05.2010
- * $Id$
+ * @since 1.0.0
  */
 
 #ifndef FILETYPE_HPP_

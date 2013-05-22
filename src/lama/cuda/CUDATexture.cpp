@@ -2,7 +2,7 @@
  * @file CUDATexture.cpp
  *
  * @license
- * Copyright (c) 2011
+ * Copyright (c) 2009-2013
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -28,7 +28,7 @@
  * @brief Implementation of utilties for CUDA Texture
  * @author Thomas Brandes
  * @date 04.05.2013
- * $Id$
+ * @since 1.0.0
  */
 
 #include <lama/cuda/CUDATexture.hpp>

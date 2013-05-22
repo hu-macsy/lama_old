@@ -2,7 +2,7 @@
  * @file TrivialPreconditioner.hpp
  *
  * @license
- * Copyright (c) 2011
+ * Copyright (c) 2009-2013
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -28,7 +28,7 @@
  * @brief TrivialPreconditioner.hpp
  * @author Matthias Makulla
  * @date 06.04.2011
- * $Id$
+ * @since 1.0.0
  */
 
 #ifndef LAMA_TRIVIALPRECONDITIONER_HPP_

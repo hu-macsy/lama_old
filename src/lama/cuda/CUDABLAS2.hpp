@@ -2,7 +2,7 @@
  * @file CUDABLAS2.hpp
  *
  * @license
- * Copyright (c) 2012
+ * Copyright (c) 2009-2013
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -28,7 +28,7 @@
  * @brief CUDABLAS2.hpp
  * @author lschubert
  * @date 05.07.2012
- * $Id$
+ * @since 1.0.0
  */
 #ifndef LAMA_CUDABLAS2_HPP_
 #define LAMA_CUDABLAS2_HPP_

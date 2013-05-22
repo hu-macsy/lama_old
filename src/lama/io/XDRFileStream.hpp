@@ -2,7 +2,7 @@
  * @file XDRFileStream.hpp
  *
  * @license
- * Copyright (c) 2011
+ * Copyright (c) 2009-2013
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -26,9 +26,9 @@
  * @endlicense
  *
  * @brief XDRFileStream.hpp
- * @author kbuschul
+ * @author Kai Buschulte
  * @date 15.04.2010
- * $Id$
+ * @since 1.0.0
  */
 
 #ifndef XDRFILESTREAM_HPP_

@@ -2,7 +2,7 @@
  * @file SameMatrixHelper.cpp
  *
  * @license
- * Copyright (c) 2012
+ * Copyright (c) 2009-2013
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -28,7 +28,7 @@
  * @brief Implementaton of methods to verify that two matrices have same values.
  * @author Thomas Brandes
  * @date 17.06.2012
- * $Id$
+ * @since 1.0.0
  */
 
 #include <test/SameMatrixHelper.hpp>

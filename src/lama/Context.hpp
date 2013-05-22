@@ -2,7 +2,7 @@
  * @file Context.hpp
  *
  * @license
- * Copyright (c) 2011
+ * Copyright (c) 2009-2013
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -30,7 +30,7 @@
  *
  * @author Thomas Brandes
  * @date 14.07.2011
- * $Id$
+ * @since 1.0.0
  */
 #ifndef LAMA_CONTEXT_HPP_
 #define LAMA_CONTEXT_HPP_

@@ -2,7 +2,7 @@
  * @file IterationCount.hpp
  *
  * @license
- * Copyright (c) 2011
+ * Copyright (c) 2009-2013
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -28,7 +28,7 @@
  * @brief IterationCount.hpp
  * @author Kai Buschulte
  * @date 21.07.2011
- * $Id$
+ * @since 1.0.0
  */
 
 #ifndef LAMA_ITERATIONCOUNT_HPP_

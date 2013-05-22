@@ -2,7 +2,7 @@
  * @file CUDAContext.hpp
  *
  * @license
- * Copyright (c) 2012
+ * Copyright (c) 2009-2013
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -28,7 +28,7 @@
  * @brief CUDAContext.hpp
  * @author Jiri Kraus
  * @date 05.04.2012
- * $Id$
+ * @since 1.0.0
  */
 #ifndef LAMA_BTEST_CUDACONTEXT_HPP_
 #define LAMA_BTEST_CUDACONTEXT_HPP_

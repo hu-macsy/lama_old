@@ -2,7 +2,7 @@
  * @file SingleGridSetup.hpp
  *
  * @license
- * Copyright (c) 2011
+ * Copyright (c) 2009-2013
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -28,7 +28,7 @@
  * @brief SingleGridSetup.hpp
  * @author Jiri Kraus
  * @date 27.10.2011
- * $Id$
+ * @since 1.0.0
  */
 
 // hpp
@@ -74,8 +74,7 @@ void SingleGridSetup::initialize( const Matrix& coefficients )
     mSolver->initialize( coefficients );
 
     mIdentity.reset( coefficients.create() );
-    mIdentity->allocate( coefficients.getDistributionPtr(), coefficients.getDistributionPtr() );
-    mIdentity->setIdentity();
+    mIdentity->setIdentity( coefficients.getDistributionPtr() );
 
     LAMA_LOG_DEBUG( logger, "Identity matrix = " << *mIdentity )
 

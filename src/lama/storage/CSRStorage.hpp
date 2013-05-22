@@ -2,7 +2,7 @@
  * @file CSRStorage.hpp
  *
  * @license
- * Copyright (c) 2011
+ * Copyright (c) 2009-2013
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -28,7 +28,7 @@
  * @brief Definition of a structure for a (non-distributed) CSR sparse matrix.
  * @author Thomas Brandes
  * @date 27.04.2011
- * $Id$
+ * @since 1.0.0
  */
 #ifndef LAMA_CSRSTORAGE_HPP_
 #define LAMA_CSRSTORAGE_HPP_
@@ -88,15 +88,9 @@ public:
 
     CSRStorage();
 
-    /**
-     * @brief Creates a sparse matrix with all values set to zero.
+    /** Constructor for CSR storage by corresponding arrays. 
      *
-     * @param[in] numRows       the number of rows of the matrix
-     * @param[in] numColumns    the number of columns of the matrix
      */
-    CSRStorage( const IndexType numRows, const IndexType numColumns );
-
-    /** Constructor for CSR storage by corresponding arrays. */
 
     CSRStorage(
         const IndexType numRows,
@@ -104,7 +98,7 @@ public:
         const IndexType numValues,
         const LAMAArray<IndexType>& ia,
         const LAMAArray<IndexType>& ja,
-        const LAMAArray<ValueType>& values );
+        const _LAMAArray& values );
 
     /** Copy constructor can take any matrix storage. */
 

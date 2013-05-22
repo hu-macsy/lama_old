@@ -2,7 +2,7 @@
  * @file HostWriteAccess.hpp
  *
  * @license
- * Copyright (c) 2011
+ * Copyright (c) 2009-2013
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -26,9 +26,9 @@
  * @endlicense
  *
  * @brief HostWriteAccess.hpp
- * @author brandes
+ * @author Thomas Brandes
  * @date 02.05.2011
- * $Id$
+ * @since 1.0.0
  */
 #ifndef LAMA_HOSTWRITEACCESS_HPP_
 #define LAMA_HOSTWRITEACCESS_HPP_

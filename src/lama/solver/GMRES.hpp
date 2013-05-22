@@ -2,7 +2,7 @@
  * @file GMRES.hpp
  *
  * @license
- * Copyright (c) 2011
+ * Copyright (c) 2009-2013
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -28,7 +28,7 @@
  * @brief GMRES.hpp
  * @author Malte Förster
  * @date 10.04.2012
- * $Id$
+ * @since 1.0.0
  */
 #ifndef LAMA_GMRES_HPP_
 #define LAMA_GMRES_HPP_

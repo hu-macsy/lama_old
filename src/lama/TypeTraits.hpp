@@ -2,7 +2,7 @@
  * @file TypeTraits.hpp
  *
  * @license
- * Copyright (c) 2011
+ * Copyright (c) 2009-2013
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -26,9 +26,9 @@
  * @endlicense
  *
  * @brief Contains the template TypeTraits and specializations.
- * @author jiri
+ * @author Jiri Kraus
  * @date 14.04.2010
- * $Id$
+ * @since 1.0.0
  */
 
 #ifndef TYPETRAITS_HPP_

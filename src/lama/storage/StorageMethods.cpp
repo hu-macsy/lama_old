@@ -2,7 +2,7 @@
  * @file StorageMethods.cpp
  *
  * @license
- * Copyright (c) 2011
+ * Copyright (c) 2009-2013
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -28,7 +28,7 @@
  * @brief Implementation of static routines for matrix storage
  * @author Thomas Brandes
  * @date 27.04.2011
- * $Id$
+ * @since 1.0.0
  */
 
 // hpp

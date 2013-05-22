@@ -2,7 +2,7 @@
  * @file OpenMPCOOUtils.hpp
  *
  * @license
- * Copyright (c) 2011
+ * Copyright (c) 2009-2013
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -28,7 +28,7 @@
  * @brief OpenMP implemenations for routines to be avaialble for COOUtilsInterface.
  * @author Thomas Brandes
  * @date 24.06.2012
- * $Id$
+ * @since 1.0.0
  */
 #ifndef LAMA_OPENMP_COO_UTILS_HPP_
 #define LAMA_OPENMP_COO_UTILS_HPP_

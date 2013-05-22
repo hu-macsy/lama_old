@@ -5,3 +5,4 @@ build/
 .settings/
 doc/doxygen
 src/lama/solver/amg
+src/doc/user/conf.py

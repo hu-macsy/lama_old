@@ -2,7 +2,7 @@
  * @file CUDAHostContext.hpp
  *
  * @license
- * Copyright (c) 2011
+ * Copyright (c) 2009-2013
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -28,7 +28,7 @@
  * @brief Host context where memory is pinned for fast transfer to CUDA device
  * @author Thomas Brandes, Jiri Kraus
  * @date 04.07.2011
- * $Id$
+ * @since 1.0.0
  */
 #ifndef LAMA_CUDA_HOST_CONTEXT_HPP_
 #define LAMA_CUDA_HOST_CONTEXT_HPP_

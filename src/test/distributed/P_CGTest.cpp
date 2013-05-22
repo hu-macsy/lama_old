@@ -2,7 +2,7 @@
  * @file P_CGTest.cpp
  *
  * @license
- * Copyright (c) 2011
+ * Copyright (c) 2009-2013
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -28,7 +28,7 @@
  * @brief Contains the implementation of the class P_CGTest.
  * @author: Alexander Büchel, Thomas Brandes
  * @date 27.02.2012
- * $
+ * @since 1.0.0
  **/
 
 #include <boost/test/unit_test.hpp>
@@ -37,6 +37,7 @@
 #include <lama/solver/CG.hpp>
 #include <lama/solver/criteria/IterationCount.hpp>
 #include <lama/solver/TrivialPreconditioner.hpp>
+#include <lama/solver/logger/CommonLogger.hpp>
 
 #include <lama/DenseVector.hpp>
 
@@ -147,6 +148,8 @@ void testSolveWithoutPreconditionmethod( ContextPtr loc )
     BOOST_CHECK( sval < 1E-6 );
 }
 
+/* ------------------------------------------------------------------------- */
+
 BOOST_AUTO_TEST_CASE_TEMPLATE( testSolveWithoutPreconditioning, T, test_types ) {
     typedef T ValueType;
 
@@ -173,22 +176,28 @@ void testSolveWithPreconditionmethod( ContextPtr loc )
 
     LAMA_LOG_INFO( logger, "testSolveWithPreconditionmethod<" << typeid( mt ).name() << "> on " << *loc );
 
-//    LoggerPtr slogger( new CommonLogger(
-//        "<SOR>: ",
-//        lama::LogLevel::solverInformation,
-//        lama::LoggerWriteBehaviour::toConsoleOnly,
-//        std::auto_ptr<Timer>( new Timer() ) ) );
+    CG cgSolver( "CGTestSolver" );
 
-    CG cgSolver( "CGTestSolver"/*, slogger */);
+    if ( LAMA_LOG_INFO_ON( logger ) ) 
+    {
+        LoggerPtr slogger( new CommonLogger(
+            "<SOR>: ",
+            lama::LogLevel::solverInformation,
+            lama::LoggerWriteBehaviour::toConsoleOnly,
+            std::auto_ptr<Timer>( new Timer() ) ) );
+  
+        cgSolver.setLogger( slogger );
+    }
 
     const IndexType N1 = 4;
     const IndexType N2 = 4;
 
     LAMA_LOG_INFO( logger, "Problem size = " << N1 << " x " << N2 );
 
-    CSRSparseMatrix<ValueType> coefficients;
-    MatrixCreator<ValueType>::buildPoisson2D( coefficients, 9, N1, N2 );
+    CSRSparseMatrix<ValueType> csrCoefficients;
+    MatrixCreator<ValueType>::buildPoisson2D( csrCoefficients, 9, N1, N2 );
 
+    MatrixType coefficients( csrCoefficients );
     DistributionPtr dist( new BlockDistribution( coefficients.getNumRows(), comm ) );
     coefficients.redistribute( dist, dist );
     coefficients.setContext( loc );
@@ -214,11 +223,20 @@ void testSolveWithPreconditionmethod( ContextPtr loc )
     DenseVector<ValueType> diff( solution - exactSolution );
     Scalar s = maxNorm( diff );
     LAMA_LOG_INFO( logger, "max norm ( solution - exactSolution ) = " << s );
-    BOOST_CHECK( s.getValue<ValueType>() < 1E-6 );
 
+    if ( s.getValue<ValueType>() >= 1E-6 )
+    {
+        LAMA_LOG_ERROR( logger, "cgSolver for " << coefficients 
+                         << ": max norm ( solution - exactSolution ) = " << s );
+    }
+
+    BOOST_CHECK( s.getValue<ValueType>() < 1E-6 );
 }
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( testSolveWithPrecondition, T, test_types ) {
+/* ------------------------------------------------------------------------- */
+
+BOOST_AUTO_TEST_CASE_TEMPLATE( testSolveWithPrecondition, T, test_types ) 
+{
     typedef T ValueType;
 
     CONTEXTLOOP()
@@ -229,7 +247,6 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( testSolveWithPrecondition, T, test_types ) {
         testSolveWithPreconditionmethod< COOSparseMatrix<ValueType> >( context );
         testSolveWithPreconditionmethod< DIASparseMatrix<ValueType> >( context );
         testSolveWithPreconditionmethod< JDSSparseMatrix<ValueType> >( context );
-        // @todo: does not work as DenseMatrix = SparseMatrix not supported yet
         testSolveWithPreconditionmethod< DenseMatrix<ValueType> >( context );
     }
 }

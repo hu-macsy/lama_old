@@ -2,7 +2,7 @@
  * @file Scalar.hpp
  *
  * @license
- * Copyright (c) 2011
+ * Copyright (c) 2009-2013
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -28,7 +28,7 @@
  * @brief Scalar.hpp
  * @author Jiri Kraus
  * @date 22.02.2011
- * $Id$
+ * @since 1.0.0
  */
 #ifndef LAMA_SCALAR_HPP_
 #define LAMA_SCALAR_HPP_
@@ -139,6 +139,14 @@ public:
      * @brief Unary minus operator for Scalar.
      */
     inline Scalar operator-() const;
+
+    /**
+     * @brief Binary operator
+     */
+    Scalar& operator+=( Scalar& other );
+    Scalar& operator-=( Scalar& other );
+    Scalar& operator*=( Scalar& other );
+    Scalar& operator/=( Scalar& other );
 
     /**
      *  @brief Query that scalar values has no imaginary part.

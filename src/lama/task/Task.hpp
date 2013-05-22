@@ -2,7 +2,7 @@
  * @file Task.hpp
  *
  * @license
- * Copyright (c) 2011
+ * Copyright (c) 2009-2013
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -28,7 +28,7 @@
  * @brief Declaration of the class Task for asynchronous function execution.
  * @author Thomas Brandes
  * @date 21.11.2011
- * $Id$
+ * @since 1.0.0
  */
 #ifndef LAMA_TASK_HPP_
 #define LAMA_TASK_HPP_

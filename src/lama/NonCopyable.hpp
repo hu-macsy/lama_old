@@ -2,7 +2,7 @@
  * @file lama/NonCopyable.hpp
  *
  * @license
- * Copyright (c) 2011
+ * Copyright (c) 2009-2013
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -28,7 +28,7 @@
  * @brief Definition of help class that disables default copy constructors.
  * @author Jiri Kraus
  * @date 04.04.2011
- * $Id$
+ * @since 1.0.0
  */
 #ifndef LAMA_NONCOPYABLE_HPP_
 #define LAMA_NONCOPYABLE_HPP_

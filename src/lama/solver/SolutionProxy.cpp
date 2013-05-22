@@ -2,7 +2,7 @@
  * @file SolutionProxy.cpp
  *
  * @license
- * Copyright (c) 2011
+ * Copyright (c) 2009-2013
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -28,7 +28,7 @@
  * @brief SolutionProxy.cpp
  * @author Jiri Kraus
  * @date 07.06.2011
- * $Id$
+ * @since 1.0.0
  */
 
 // hpp

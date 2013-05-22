@@ -2,7 +2,7 @@
  * @file SparseAssemblyStorageTest.cpp
  *
  * @license
- * Copyright (c) 2011
+ * Copyright (c) 2009-2013
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -28,7 +28,7 @@
  * @brief Contains the implementation of the class SparseAssemblyStorageTest
  * @author Alexander Büchel
  * @date 12.03.2012
- * $Id$
+ * @since 1.0.0
  */
 
 #include <boost/test/unit_test.hpp>

@@ -2,7 +2,7 @@
  * @file CUDAError.cpp
  *
  * @license
- * Copyright (c) 2011
+ * Copyright (c) 2009-2013
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -25,10 +25,10 @@
  * SOFTWARE.
  * @endlicense
  *
- * @file CUDAError.cpp
  * @brief Contains the implementation of the class CUDAError.
  * @author Thomas Brandes
- * Created on: 15.07.2011
+ * @date 15.07.2011
+ * @since 1.0.0
  */
 
 // hpp

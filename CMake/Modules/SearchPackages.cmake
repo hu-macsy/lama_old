@@ -2,7 +2,7 @@
  # @file SearchPackages.cmake
  #
  # @license
- # Copyright (c) 2013
+ # Copyright (c) 2009-2013
  # Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  # for Fraunhofer-Gesellschaft
  #
@@ -28,6 +28,7 @@
  # @brief List of required and optional packages
  # @author Jan Ecker
  # @date 25.04.2013
+ # @since 1.0.0
 ###
 
 # Find required packages
@@ -41,6 +42,7 @@ set ( REQUIRED_PACKAGES_TO_FIND
 set ( OPTIONAL_PACKAGES_TO_FIND
         Doxygen
         Threads
+        Sphinx
         #add optional packages here
     )
     

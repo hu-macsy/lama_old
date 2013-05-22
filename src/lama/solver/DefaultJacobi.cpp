@@ -2,7 +2,7 @@
  * @file DefaultJacobi.cpp
  *
  * @license
- * Copyright (c) 2011
+ * Copyright (c) 2009-2013
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -28,7 +28,7 @@
  * @brief DefaultJacobi.cpp
  * @author Kai Buschulte
  * @date 10.08.2011
- * $Id$
+ * @since 1.0.0
  */
 
 // hpp
@@ -118,9 +118,8 @@ void DefaultJacobi::initialize( const Matrix& coefficients )
 
     LAMA_LOG_DEBUG( logger, "Create diagonal matrix" )
     runtime.mDiagonalInverted.reset( coefficients.create() ); // zero matrix with same storage type
-    runtime.mDiagonalInverted->allocate( coefficients.getDistributionPtr(), coefficients.getDistributionPtr() );
-    LAMA_LOG_DEBUG( logger, "allocated diagonal matrix = " << *runtime.mDiagonalInverted )
-    runtime.mDiagonalInverted->setIdentity();
+    runtime.mDiagonalInverted->setIdentity( coefficients.getDistributionPtr() );
+    LAMA_LOG_DEBUG( logger, "identity diagonal matrix = " << *runtime.mDiagonalInverted )
     runtime.mDiagonalInverted->inheritAttributes( coefficients );
 
     LAMA_LOG_DEBUG( logger,

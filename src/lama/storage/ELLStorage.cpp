@@ -2,7 +2,7 @@
  * @file ELLStorage.cpp
  *
  * @license
- * Copyright (c) 2011
+ * Copyright (c) 2009-2013
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -28,7 +28,7 @@
  * @brief Instantitions for template class ELLStorage.
  * @author Lauretta Schubert
  * @date 25.05.2011
- * $Id$
+ * @since 1.0.0
  */
 
 // hpp
@@ -123,7 +123,7 @@ ELLStorage<ValueType>::ELLStorage(
 {
     check( "ELLStorage( ... )" );
     this->resetDiagonalProperty();
-    LAMA_LOG_INFO( logger, *this << ": construcuted by input arrays" )
+    LAMA_LOG_INFO( logger, *this << ": constructed by input arrays" )
 }
 
 /* --------------------------------------------------------------------------- */

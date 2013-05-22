@@ -2,7 +2,7 @@
  * @file OpenMPCSRUtils.cpp
  *
  * @license
- * Copyright (c) 2011
+ * Copyright (c) 2009-2013
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -28,7 +28,7 @@
  * @brief Implementation of CSR utilities with OpenMP
  * @author Thomas Brandes
  * @date 02.07.2012
- * $Id$
+ * @since 1.0.0
  */
 
 // for dll_import

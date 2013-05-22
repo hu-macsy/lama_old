@@ -2,7 +2,7 @@
  * @file CyclicDistributionManager.hpp
  *
  * @license
- * Copyright (c) 2011
+ * Copyright (c) 2009-2013
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -28,7 +28,7 @@
  * @brief Definition of manager class for block distributions.
  * @author Thomas Brandes
  * @date 20.10.2012
- * $Id$
+ * @since 1.0.0
  */
 
 #ifndef LAMA_CYCLIC_DISTRIBUTION_MANAGER_HPP_

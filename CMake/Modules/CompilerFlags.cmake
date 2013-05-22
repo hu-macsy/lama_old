@@ -2,7 +2,7 @@
  # @file CompilerFlags.cmake
  #
  # @license
- # Copyright (c) 2013
+ # Copyright (c) 2009-2013
  # Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  # for Fraunhofer-Gesellschaft
  #
@@ -28,6 +28,7 @@
  # @brief CompilerFlags for LAMA
  # @author Jan Ecker
  # @date 25.04.2013
+ # @since 1.0.0
 ###
 
 #### needed to find BLAS Libraries ####
@@ -73,26 +74,49 @@ endif ( MARCH_NATIVE_SUPPORT )
 
 # GNU
 if ( CMAKE_COMPILER_IS_GNUCXX )
-    set ( ADDITIONAL_CXX_FLAGS "-Wl,--no-as-needed " )
-    set ( ADDITIONAL_CXX_WARNING_FLAGS "-Wextra -Wall " ) # -pedantic -std=c++98 " ) # -march=core02
-    set ( ADDITIONAL_CXX_RELEASE_FLAGS "-ffast-math -msse4a " )
+    if ( NOT DEFINED ADDITIONAL_CXX_FLAGS )
+        set ( ADDITIONAL_CXX_FLAGS "-Wl,--no-as-needed " )
+    endif ( NOT DEFINED ADDITIONAL_CXX_FLAGS )
+    
+    if ( NOT DEFINED ADDITIONAL_CXX_WARNING_FLAGS )
+        set ( ADDITIONAL_CXX_WARNING_FLAGS "-Wextra -Wall " ) # -pedantic -std=c++98 " ) # -march=core02
+    endif ( NOT DEFINED ADDITIONAL_CXX_WARNING_FLAGS )
+    
+    if ( NOT DEFINED ADDITIONAL_CXX_RELEASE_FLAGS )
+        set ( ADDITIONAL_CXX_RELEASE_FLAGS "-ffast-math -msse4a " )
+    endif ( NOT DEFINED ADDITIONAL_CXX_RELEASE_FLAGS )
 endif ( CMAKE_COMPILER_IS_GNUCXX )
 
 
 # INTEL
 if ( CMAKE_CXX_COMPILER_ID MATCHES Intel )
-    set ( ADDITIONAL_CXX_FLAGS "-fPIC -std=c++0x -shared-intel -wd1478 " ) # suppress warning 1478: deprecated auto_ptr
-    set ( ADDITIONAL_CXX_WARNING_FLAGS "-w2 -Wall -Wcheck -Werror-all " ) # -Werror-all Warnings/Errors. No Remarks.
-    set ( ADDITIONAL_CXX_RELEASE_FLAGS "-ipo -no-prec-div -xHost " )
+    if ( NOT DEFINED ADDITIONAL_CXX_FLAGS )
+        set ( ADDITIONAL_CXX_FLAGS "-fPIC -std=c++0x -shared-intel -wd1478 " ) # suppress warning 1478: deprecated auto_ptr
+    endif ( NOT DEFINED ADDITIONAL_CXX_FLAGS )
+    
+    if ( NOT DEFINED ADDITIONAL_CXX_WARNING_FLAGS )
+        set ( ADDITIONAL_CXX_WARNING_FLAGS "-w2 -Wall -Wcheck -Werror-all " ) # -Werror-all Warnings/Errors. No Remarks.
+    endif ( NOT DEFINED ADDITIONAL_CXX_WARNING_FLAGS )
+    
+    if ( NOT DEFINED ADDITIONAL_CXX_RELEASE_FLAGS )
+        set ( ADDITIONAL_CXX_RELEASE_FLAGS "-ipo -no-prec-div -xHost " )
+    endif ( NOT DEFINED ADDITIONAL_CXX_RELEASE_FLAGS )
 endif ( CMAKE_CXX_COMPILER_ID MATCHES Intel )
 
 
 # PGI
 if ( CMAKE_CXX_COMPILER_ID MATCHES PGI )
-    set ( ADDITIONAL_CXX_FLAGS "-fPIC -Kieee -Mipa=libc -DBOOST_HAS_THREADS " ) # -std=c++0x 
-    # Disable warning 1097 to avoid warnings from openmpi headers with gcc specific attributes
-    set ( ADDITIONAL_CXX_WARNING_FLAGS "--display_error_number --diag_suppress1097 " )
-    set ( ADDITIONAL_CXX_RELEASE_FLAGS "-fast " )
+    if ( NOT DEFINED ADDITIONAL_CXX_FLAGS )
+        set ( ADDITIONAL_CXX_FLAGS "-fPIC -Kieee -Mipa=libc -DBOOST_HAS_THREADS " ) # -std=c++0x
+    endif ( NOT DEFINED ADDITIONAL_CXX_FLAGS )
+    if ( NOT DEFINED ADDITIONAL_CXX_WARNING_FLAGS )
+        # Disable warning 1097 to avoid warnings from openmpi headers with gcc specific attributes
+        set ( ADDITIONAL_CXX_WARNING_FLAGS "--display_error_number --diag_suppress1097 " )
+    endif ( NOT DEFINED ADDITIONAL_CXX_WARNING_FLAGS )
+    
+    if ( NOT DEFINED ADDITIONAL_CXX_RELEASE_FLAGS )
+        set ( ADDITIONAL_CXX_RELEASE_FLAGS "-fast " )
+    endif ( NOT DEFINED ADDITIONAL_CXX_RELEASE_FLAGS )
 endif ( CMAKE_CXX_COMPILER_ID MATCHES PGI )
 
 

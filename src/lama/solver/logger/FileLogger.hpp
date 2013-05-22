@@ -2,7 +2,7 @@
  * @file FileLogger.hpp
  *
  * @license
- * Copyright (c) 2011
+ * Copyright (c) 2009-2013
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -30,7 +30,7 @@
  * to make offer file logging.
  * @author Matthias Makulla
  * @date 06.04.2011
- * $Id$
+ * @since 1.0.0
  */
 #ifndef LAMA_FILELOGGER_HPP_
 #define LAMA_FILELOGGER_HPP_

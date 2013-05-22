@@ -2,7 +2,7 @@
  * @file CUDAContext.hpp
  *
  * @license
- * Copyright (c) 2011
+ * Copyright (c) 2009-2013
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -28,7 +28,7 @@
  * @brief Definition of context class for CUDA devices and a context manager class.
  * @author Thomas Brandes, Jiri Kraus
  * @date 15.07.2011
- * $Id$
+ * @since 1.0.0
  */
 #ifndef LAMA_CUDA_CONTEXT_HPP_
 #define LAMA_CUDA_CONTEXT_HPP_

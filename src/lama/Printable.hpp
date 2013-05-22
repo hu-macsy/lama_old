@@ -2,7 +2,7 @@
  * @file Printable.hpp
  *
  * @license
- * Copyright (c) 2011
+ * Copyright (c) 2009-2013
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -28,7 +28,7 @@
  * @brief Base class to be used for base classes that will output on a stream.
  * @author Jiri Kraus
  * @date 05.08.2011
- * $Id$
+ * @since 1.0.0
  */
 #ifndef LAMA_PRINTABLE_HPP_
 #define LAMA_PRINTABLE_HPP_

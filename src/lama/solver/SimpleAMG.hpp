@@ -2,7 +2,7 @@
  * @file SimpleAMG.hpp
  *
  * @license
- * Copyright (c) 2011
+ * Copyright (c) 2009-2013
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -28,7 +28,7 @@
  * @brief SimpleAMG.hpp
  * @author Jiri Kraus
  * @date 27.10.2011
- * $Id$
+ * @since 1.0.0
  */
 #ifndef LAMA_SIMPLEAMG_HPP_
 #define LAMA_SIMPLEAMG_HPP_

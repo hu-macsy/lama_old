@@ -2,7 +2,7 @@
  * @file SameMatrixHelper.hpp
  *
  * @license
- * Copyright (c) 2012
+ * Copyright (c) 2009-2013
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -28,7 +28,7 @@
  * @brief This file contains routines to check the equality of distributed matrices
  * @author Thomas Brandes
  * @date 18.06.2012
- * $Id$
+ * @since 1.0.0
  */
 #ifndef LAMA_SAME_MATRIX_HELPER_HPP_
 #define LAMA_SAME_MATRIX_HELPER_HPP_

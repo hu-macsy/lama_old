@@ -2,7 +2,7 @@
  * @file Printable.cpp
  *
  * @license
- * Copyright (c) 2011
+ * Copyright (c) 2009-2013
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -28,7 +28,7 @@
  * @brief Implementation of class Printable.
  * @author Jiri Kraus
  * @date 05.08.2011
- * $Id$
+ * @since 1.0.0
  */
 
 // hpp

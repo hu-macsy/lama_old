@@ -2,7 +2,7 @@
  * @file MatrixVectorExpressions.hpp
  *
  * @license
- * Copyright (c) 2011
+ * Copyright (c) 2009-2013
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -28,10 +28,10 @@
  * @brief MatrixVectorExpressions.hpp
  * @author brandes
  * @date 28.03.2011
- * $Id$
+ * @since 1.0.0
  */
-#ifndef LAMA_MATRIXEXPRESSIONS_HPP_
-#define LAMA_MATRIXEXPRESSIONS_HPP_
+#ifndef LAMA_MATRIX_EXPRESSIONS_HPP_
+#define LAMA_MATRIX_EXPRESSIONS_HPP_
 
 #include <lama/matrix/Matrix.hpp>
 
@@ -43,41 +43,43 @@
 namespace lama
 {
 
+/* --------------------------------------------------------------- */
+/*                                                                 */
+/*  expressions:   Matrix +/- Matrix                               */
+/*                                                                 */
+/* --------------------------------------------------------------- */
+
 /**
- * @brief The add operator to add two matrixes
+ * @brief Expression object that stands for the sum of two matrices
  *
  * @param[in] matrixA The first matrix.
  * @param[in] matrixB The second matrix.
- * @return            The sum of both matrices.
+ * @return            symbolic expression 1.0 * matrixA + 1.0 * matrixB
  */
-inline Expression<Expression<Scalar,Matrix,Times>,Expression<Scalar,Matrix,Times>,Plus> operator+(
-    const Matrix& matrixA,
-    const Matrix& matrixB )
+inline Expression_SM_SM operator+( const Matrix& matrixA, const Matrix& matrixB )
 {
-    const Scalar alpha( 1.0 );
-    const Scalar beta( 1.0 );
-    Expression<Scalar,Matrix,Times> exp1( alpha, matrixA );
-    Expression<Scalar,Matrix,Times> exp2( beta, matrixB );
-    return Expression<Expression<Scalar,Matrix,Times>,Expression<Scalar,Matrix,Times>,Plus>( exp1, exp2 );
+    return Expression_SM_SM( Expression_SM( Scalar( 1 ), matrixA ), 
+                             Expression_SM( Scalar( 1 ), matrixB ) );
 }
 
 /**
- * @brief The minus operator to sub two matrixes
+ * @brief Make symbolic expression for the difference of two matrices
  *
  * @param[in] matrixA The first matrix.
  * @param[in] matrixB The second matrix.
- * @return            The difference of both matrices.
+ * @return            symbolic expression 1.0 * matrixA - 1.0 * matrixB
  */
-inline Expression<Expression<Scalar,Matrix,Times>,Expression<Scalar,Matrix,Times>,Plus> operator-(
-    const Matrix& matrixA,
-    const Matrix& matrixB )
+inline Expression_SM_SM operator-( const Matrix& matrixA, const Matrix& matrixB )
 {
-    const Scalar alpha( 1.0 );
-    const Scalar beta( -1.0 );
-    Expression<Scalar,Matrix,Times> exp1( alpha, matrixA );
-    Expression<Scalar,Matrix,Times> exp2( beta, matrixB );
-    return Expression<Expression<Scalar,Matrix,Times>,Expression<Scalar,Matrix,Times>,Plus>( exp1, exp2 );
+    return Expression_SM_SM( Expression_SM( Scalar( 1 ), matrixA ), 
+                             Expression_SM( Scalar( -1 ), matrixB ) );
 }
+
+/* --------------------------------------------------------------- */
+/*                                                                 */
+/*  expressions:   Matrix * Scalar                                 */
+/*                                                                 */
+/* --------------------------------------------------------------- */
 
 /**
  * @brief This times operator creates an expression that represents the product
@@ -87,9 +89,9 @@ inline Expression<Expression<Scalar,Matrix,Times>,Expression<Scalar,Matrix,Times
  * @param[in] matrix  The input matrix.
  * @return            The expression representing this product.
  */
-inline Expression<Scalar,Matrix,Times> operator*( const Scalar& scalar, const Matrix& matrix )
+inline Expression_SM operator*( const Scalar& scalar, const Matrix& matrix )
 {
-    return Expression<Scalar,Matrix,Times>( scalar, matrix );
+    return Expression_SM( scalar, matrix );
 }
 
 /**
@@ -100,41 +102,56 @@ inline Expression<Scalar,Matrix,Times> operator*( const Scalar& scalar, const Ma
  * @param[in] scalar  The input scalar.
  * @return            The expression representing this product.
  */
-inline Expression<Scalar,Matrix,Times> operator*( const Matrix& matrix, const Scalar& scalar )
+inline Expression_SM operator*( const Matrix& matrix, const Scalar& scalar )
 {
-    return Expression<Scalar,Matrix,Times>( scalar, matrix );
+    return Expression_SM( scalar, matrix );
 }
 
-//A*B
+/**
+ * @brief Create a symbolic expression 'Scalar * Matrix' for the division matrix / alpha
+ *
+ * @param[in] matrix   The matrix.
+ * @param[in] alpha    The scalar.
+ * @return             symbolic expression [1.0/alpha] *  matrixA     
+ */
+
+inline Expression_SM operator/( const Matrix& matrix, const Scalar& alpha )
+{
+    // build 1.0/ alpha as new scalar for a symbolic expression Scalar * Matrix 
+
+    return Expression_SM( Scalar( 1.0 ) / alpha, matrix );
+}
+
+/* --------------------------------------------------------------- */
+/*                                                                 */
+/*  expressions:   '[Scalar *] Matrix '  * Matrix                  */
+/*                                                                 */
+/* --------------------------------------------------------------- */
+
 /**
  * @brief This times operator creates an expression that represents the product
  *        of a Matrix and a Matrix.
  *
  * @param[in] m1      The first input matrix.
  * @param[in] m2      The second input matrix.
- * @return            The expression representing this product.
+ * @return            Symbolic expression representing the product 'm1 * m2'
  */
-inline Expression<Matrix,Matrix,Times> operator*( const Matrix& m1, const Matrix& m2 )
+inline Expression_SMM operator*( const Matrix& m1, const Matrix& m2 )
 {
-    return Expression<Matrix,Matrix,Times>( m1, m2 );
+    return Expression_SMM( Expression_SM( Scalar( 1 ), m1 ), m2 );
 }
-
-//alpha times A times B
 
 /**
  * @brief This times operator creates an expression that represents the product
- *        of Scalar times Matrix times Matrix.
+ *        of Scalar times Matrix times Matrix, alpha * matrixA * matrixB
  *
  * @param[in] m1      The first input matrix.
  * @param[in] exp     The expression scalar times matrix.
  * @return            The expression representing this product.
  */
-inline Expression<Scalar,Expression<Matrix,Matrix,Times>,Times> operator*(
-    const Matrix& m1,
-    const Expression<Scalar,Matrix,Times>& exp )
+inline Expression_SMM operator*( const Matrix& m1, const Expression_SM& exp )
 {
-    return Expression<Scalar,Expression<Matrix,Matrix,Times>,Times>(
-               exp.getArg1(), Expression<Matrix,Matrix,Times>( m1, exp.getArg2() ) );
+    return Expression_SMM( Expression_SM( exp.getArg1(), m1 ), exp.getArg2() );
 }
 
 /**
@@ -145,60 +162,65 @@ inline Expression<Scalar,Expression<Matrix,Matrix,Times>,Times> operator*(
  * @param[in] m1      The first input matrix.
  * @return            The expression representing this product.
  */
-inline Expression<Scalar,Expression<Matrix,Matrix,Times>,Times> operator*(
-    const Expression<Scalar,Matrix,Times>& exp,
-    const Matrix& m1 )
+inline Expression_SMM operator*( const Expression_SM& exp, const Matrix& m1 )
 {
-    return Expression<Scalar,Expression<Matrix,Matrix,Times>,Times>(
-               exp.getArg1(), Expression<Matrix,Matrix,Times>( exp.getArg2(), m1 ) );
+    return Expression_SMM( exp, m1 );
+}
+
+/* --------------------------------------------------------------- */
+/*                                                                 */
+/*  expressions:   'Scalar * Matrix * Matrix'  * Scalar            */
+/*                                                                 */
+/* --------------------------------------------------------------- */
+
+/**
+ * @brief This times operator creates an expression that represents the product
+ *        of Scalar times Matrix times Matrix.
+ *
+ * @param[in] s       The Scalar
+ * @param[in] exp     The expression 'Scalar * Matrix * Matrix'
+ * @return            The expression representing this product.
+ */
+inline Expression_SMM operator*( const Scalar& s, const Expression_SMM& exp )
+{
+    const Expression_SM sm = exp.getArg1();
+
+    return Expression_SMM( Expression_SM( s * sm.getArg1(), sm.getArg2() ), 
+                           exp.getArg2() );
 }
 
 /**
  * @brief This times operator creates an expression that represents the product
  *        of Scalar times Matrix times Matrix.
  *
- * @param[in] s1      The Scalar
  * @param[in] exp     The expression scalar times matrix.
+ * @param[in] s       The Scalar
  * @return            The expression representing this product.
  */
-inline Expression<Scalar,Expression<Matrix,Matrix,Times>,Times> operator*(
-    const Scalar& s1,
-    const Expression<Matrix,Matrix,Times>& exp )
+inline Expression_SMM operator*( const Expression_SMM& exp, const Scalar& s )
 {
-    return Expression<Scalar,Expression<Matrix,Matrix,Times>,Times>( s1, exp );
+    const Expression_SM sm = exp.getArg1();
+
+    return Expression_SMM( Expression_SM( sm.getArg1() * s, sm.getArg2() ), 
+                           exp.getArg2() );
 }
 
-/**
- * @brief This times operator creates an expression that represents the product
- *        of Scalar times Matrix times Matrix.
- *
- * @param[in] exp     The expression scalar times matrix.
- * @param[in] s1      The Scalar
- * @return            The expression representing this product.
- */
-inline Expression<Scalar,Expression<Matrix,Matrix,Times>,Times> operator*(
-    const Expression<Matrix,Matrix,Times>& exp,
-    const Scalar& s1 )
-{
-    return Expression<Scalar,Expression<Matrix,Matrix,Times>,Times>( s1, exp );
-}
-
-//alpha*A*B + beta*C
+/* --------------------------------------------------------------- */
+/*                                                                 */
+/*  expressions:   Scalar * Matrix * Matrix +/- Scalar * Matrix    */
+/*                                                                 */
+/* --------------------------------------------------------------- */
 
 /**
- * @brief This plus operator creates an expression that represents the sum
- *        of Scalar times Matrix times Matrix plus Scalar times Matrix.
+ * @brief Build symbolic sum of 'Scalar * Matrix * Matrix' + 'Scalar * Matrix'
  *
  * @param[in] exp1    The expression Scalar times Matrix times Matrix.
  * @param[in] exp2    The expression Scalar times Matrix.
  * @return            The expression representing this sum.
  */
-inline Expression<Expression<Scalar,Expression<Matrix,Matrix,Times>,Times>,Expression<Scalar,Matrix,Times>,Plus> operator+(
-    const Expression<Scalar,Expression<Matrix,Matrix,Times>,Times>& exp1,
-    const Expression<Scalar,Matrix,Times>& exp2 )
+inline Expression_SMM_SM operator+( const Expression_SMM& exp1, const Expression_SM& exp2 )
 {
-    return Expression<Expression<Scalar,Expression<Matrix,Matrix,Times>,Times>,Expression<Scalar,Matrix,Times>,Plus>(
-               exp1, exp2 );
+    return Expression_SMM_SM( exp1, exp2 );
 }
 
 /**
@@ -209,12 +231,9 @@ inline Expression<Expression<Scalar,Expression<Matrix,Matrix,Times>,Times>,Expre
  * @param[in] exp1    The expression Scalar times Matrix times Matrix.
  * @return            The expression representing this sum.
  */
-inline Expression<Expression<Scalar,Expression<Matrix,Matrix,Times>,Times>,Expression<Scalar,Matrix,Times>,Plus> operator+(
-    const Expression<Scalar,Matrix,Times>& exp2,
-    const Expression<Scalar,Expression<Matrix,Matrix,Times>,Times>& exp1 )
+inline Expression_SMM_SM operator+( const Expression_SM& exp2, const Expression_SMM& exp1 )
 {
-    return Expression<Expression<Scalar,Expression<Matrix,Matrix,Times>,Times>,Expression<Scalar,Matrix,Times>,Plus>(
-               exp1, exp2 );
+    return Expression_SMM_SM( exp1, exp2 );
 }
 
 /**
@@ -225,12 +244,10 @@ inline Expression<Expression<Scalar,Expression<Matrix,Matrix,Times>,Times>,Expre
  * @param[in] exp2    The expression Scalar*Matrix.
  * @return            The expression representing this sum.
  */
-inline Expression<Expression<Scalar,Expression<Matrix,Matrix,Times>,Times>,Expression<Scalar,Matrix,Times>,Plus> operator-(
-    const Expression<Scalar,Expression<Matrix,Matrix,Times>,Times>& exp1,
-    const Expression<Scalar,Matrix,Times>& exp2 )
+inline Expression_SMM_SM operator-( const Expression_SMM& exp1, const Expression_SM& exp2 )
 {
-    return Expression<Expression<Scalar,Expression<Matrix,Matrix,Times>,Times>,Expression<Scalar,Matrix,Times>,Plus>(
-               exp1, Expression<Scalar,Matrix,Times>( exp2.getArg1() * -1.0, exp2.getArg2() ) );
+    Expression_SM minusExp2( - exp2.getArg1(), exp2.getArg2() );
+    return Expression_SMM_SM( exp1, minusExp2 );
 }
 
 /**
@@ -241,15 +258,176 @@ inline Expression<Expression<Scalar,Expression<Matrix,Matrix,Times>,Times>,Expre
  * @param[in] exp1    The expression Scalar*(Matrix*Matrix).
  * @return            The expression representing this sum.
  */
-inline Expression<Expression<Scalar,Expression<Matrix,Matrix,Times>,Times>,Expression<Scalar,Matrix,Times>,Plus> operator-(
-    const Expression<Scalar,Matrix,Times>& exp2,
-    const Expression<Scalar,Expression<Matrix,Matrix,Times>,Times>& exp1 )
+inline Expression_SMM_SM operator-( const Expression_SM& exp2, const Expression_SMM& exp1 )
 {
-    Expression<Scalar,Expression<Matrix,Matrix,Times>,Times> e( exp1.getArg1() * -1.0, exp1.getArg2() );
-    return Expression<Expression<Scalar,Expression<Matrix,Matrix,Times>,Times>,Expression<Scalar,Matrix,Times>,Plus>(
-               e, exp2 );
+    Expression_SM exp1SM = exp1.getArg1();
+
+    Expression_SMM minusExp1( Expression_SM( -exp1SM.getArg1(), exp1SM.getArg2() ), exp1.getArg2() );
+
+    return Expression_SMM_SM( minusExp1, exp2 );
 }
 
+/* --------------------------------------------------------------- */
+/*                                                                 */
+/*  expressions:   Scalar * Matrix * Matrix +/- Matrix             */
+/*                                                                 */
+/* --------------------------------------------------------------- */
+
+/**
+ * @brief Build symbolic sum of 'Scalar * Matrix * Matrix' + 'Matrix'
+ *
+ * @param[in] exp     The expression Scalar times Matrix times Matrix.
+ * @param[in] matrix  Matrix summand
+ * @return            The expression representing this sum.
+ */
+inline Expression_SMM_SM operator+( const Expression_SMM& exp, const Matrix& matrix )
+{
+    return Expression_SMM_SM( exp, Expression_SM( Scalar( 1 ), matrix ) );
 }
 
-#endif // LAMA_MATRIXEXPRESSIONS_HPP_
+/**
+ * @brief Build symbolic sum of 'Matrix' + 'Scalar * Matrix * Matrix'
+ *
+ * @param[in] matrix  Matrix summand
+ * @param[in] exp     The expression Scalar times Matrix times Matrix.
+ * @return            The expression representing this sum.
+ */
+inline Expression_SMM_SM operator+( const Matrix& matrix, const Expression_SMM& exp )
+{
+    return Expression_SMM_SM( exp, Expression_SM( Scalar( 1 ), matrix ) );
+}
+
+/**
+ * @brief Build symbolic difference of 'Scalar * Matrix * Matrix' - 'Matrix'
+ *
+ * @param[in] exp     The expression Scalar times Matrix times Matrix.
+ * @param[in] matrix  Matrix as subtrahend
+ * @return            The expression representing this sum.
+ */
+inline Expression_SMM_SM operator-( const Expression_SMM& exp, const Matrix& matrix )
+{
+    return Expression_SMM_SM( exp, Expression_SM( Scalar( -1 ), matrix ) );
+}
+
+/**
+ * @brief Build symbolic difference of 'Scalar * Matrix * Matrix' - 'Matrix'
+ *
+ * @param[in] matrix  Matrix as minuend
+ * @param[in] exp     The expression Scalar times Matrix times Matrix.
+ * @return            The expression representing this sum.
+ */
+inline Expression_SMM_SM operator-( const Matrix& matrix, const Expression_SMM& exp )
+{
+    // Build temporary expression for -exp 
+
+    Expression_SM expSM = exp.getArg1();
+
+    Expression_SMM minusExp( Expression_SM( -expSM.getArg1(), expSM.getArg2() ), exp.getArg2() );
+
+    return Expression_SMM_SM( minusExp, Expression_SM( Scalar( 1 ), matrix ) );
+}
+
+/* --------------------------------------------------------------- */
+/*                                                                 */
+/*  expressions:   Scalar * Matrix +/- Scalar * Matrix             */
+/*                                                                 */
+/* --------------------------------------------------------------- */
+
+/**
+ * @brief Make a symbolic expression 'Scalar * Matrix + Scalar * Matrix' for the
+ *        sum of two symbolic expressions 'Scalar * Matrix' + 'Scalar * Matrix'
+ *
+ * @param[in] exp1      The vector times Scalar
+ * @param[in] exp2      The vector times Scalar
+ * @return              Symbolic expression for the sum of the two expressions
+ */
+
+inline Expression_SM_SM operator+( const Expression_SM& exp1, const Expression_SM& exp2 )
+{
+    return Expression_SM_SM( exp1, exp2 );
+}
+
+/**
+ * @brief Make a symbolic expression 'Scalar * Matrix + Scalar * Matrix' for the
+ *        difference of two symbolic expressions 'Scalar * Matrix' - 'Scalar * Matrix'
+ *
+ * @param[in] exp1      symbolic expression alpha * matrixA
+ * @param[in] exp2      symbolic expression beta * matrixB
+ * @return              Symbolic expression for the difference of the two expressions
+ */
+
+inline Expression_SM_SM operator-( const Expression_SM& exp1, const Expression_SM& exp2 )
+{
+    Scalar minusBeta = - exp2.getArg1();
+
+    Expression_SM minusExp2( -exp2.getArg1(), exp2.getArg2() );
+
+    return Expression_SM_SM( exp1, minusExp2 );
+}
+
+/* --------------------------------------------------------------- */
+/*                                                                 */
+/*  expressions:   Scalar * Matrix +/- Matrix                      */
+/*                                                                 */
+/* --------------------------------------------------------------- */
+
+/**
+ * @brief Make a symbolic expression 'Scalar * Matrix + Scalar * Matrix' for the
+ *        sum of matrix + 'Scalar * Matrix'
+ *
+ * @param[in] matrix    first summand          
+ * @param[in] exp       symbolic expression 'Scalar * Matrix'
+ * @return              Symbolic expression for the sum of the two expressions
+ */
+
+inline Expression_SM_SM operator+( const Matrix& matrix, const Expression_SM& exp )
+{
+    return Expression_SM_SM( Expression_SM( Scalar( 1 ), matrix ), exp );
+}
+
+/**
+ * @brief Make a symbolic expression 'Scalar * Matrix + Scalar * Matrix' for the
+ *        difference of matrix - 'Scalar * Matrix'
+ *
+ * @param[in] matrix    first summand          
+ * @param[in] exp       symbolic expression 'Scalar * Matrix'
+ * @return              Symbolic expression for the difference of the two expressions
+ */
+
+inline Expression_SM_SM operator-( const Matrix& matrix, const Expression_SM& exp )
+{
+    Expression_SM minusExp( - exp.getArg1(), exp.getArg2() );
+    return Expression_SM_SM( Expression_SM( Scalar( 1 ), matrix), minusExp );
+}
+
+/**
+ * @brief Make a symbolic expression 'Scalar * Matrix + Scalar * Matrix' for the
+ *        sum of 'Scalar * Matrix' + matrix
+ *
+ * @param[in] exp       symbolic expression 'Scalar * Matrix'
+ * @param[in] matrix    second summand          
+ * @return              Symbolic expression for the sum of the two expressions
+ */
+
+inline Expression_SM_SM operator+( const Expression_SM& exp, const Matrix& matrix )
+{
+    return Expression_SM_SM( exp, Expression_SM( Scalar( 1 ), matrix ) );
+}
+
+/**
+ * @brief Make a symbolic expression 'Scalar * Matrix + Scalar * Matrix' for the
+ *        difference 'Scalar * Matrix' - matrix
+ *
+ * @param[in] exp       symbolic expression 'Scalar * Matrix' as minuend^
+ * @param[in] matrix    subtrahend
+ * @return              Symbolic expression for the difference of the two expressions
+ */
+
+inline Expression_SM_SM operator-( const Expression_SM& exp, const Matrix& matrix )
+{
+    return Expression_SM_SM( exp, Expression_SM( Scalar( -1 ), matrix ) );
+}
+
+} // namespace LAMA
+
+#endif // LAMA_MATRIX_EXPRESSIONS_HPP_

@@ -2,7 +2,7 @@
  * @file SparseMatrix.cpp
  *
  * @license
- * Copyright (c) 2011
+ * Copyright (c) 2009-2013
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -28,7 +28,7 @@
  * @brief Template specilization of the matrix template for distributed matrixes.
  * @author Jiri Kraus, Thomas Brandes
  * @date 02.04.2012
- * $Id$
+ * @since 1.0.0
  */
 
 // hpp
@@ -176,54 +176,7 @@ SparseMatrix<ValueType>& SparseMatrix<ValueType>::operator=( const SparseMatrix&
     return *this;
 }
 
-template<typename ValueType>
-SparseMatrix<ValueType>& SparseMatrix<ValueType>::operator=( const Matrix& matrix )
-{
-    LAMA_LOG_INFO( logger, " = Matrix : " << matrix )
-    assign( matrix );
-    return *this;
-}
-
-template<typename ValueType>
-SparseMatrix<ValueType>& SparseMatrix<ValueType>::operator=( const Expression<Matrix,Matrix,Times>& exp )
-{
-    LAMA_LOG_INFO( logger, " = A * B " )
-    Matrix::operator=( exp );
-    return *this;
-}
-
-template<typename ValueType>
-SparseMatrix<ValueType>& SparseMatrix<ValueType>::operator=( const Expression<Scalar,Matrix,Times>& exp )
-{
-    LAMA_LOG_INFO( logger, " = alpha * A " )
-    Matrix::operator=( exp );
-    return *this;
-}
-
-template<typename ValueType>
-SparseMatrix<ValueType>& SparseMatrix<ValueType>::operator=(
-    const Expression<Scalar,Expression<Matrix,Matrix,Times>,Times>& exp )
-{
-    LAMA_LOG_INFO( logger, " = alpha * A * B" )
-    Matrix::operator=( exp );
-    return *this;
-}
-
-template<typename ValueType>
-SparseMatrix<ValueType>& SparseMatrix<ValueType>::operator=(
-    const Expression<Expression<Scalar,Expression<Matrix,Matrix,Times>,Times>,Expression<Scalar,Matrix,Times>,Plus> exp )
-{
-    Matrix::operator=( exp );
-    return *this;
-}
-
-template<typename ValueType>
-SparseMatrix<ValueType>& SparseMatrix<ValueType>::operator=(
-    const Expression<Expression<Scalar,Matrix,Times>,Expression<Scalar,Matrix,Times>,Plus> exp )
-{
-    Matrix::operator=( exp );
-    return *this;
-}
+/* ---------------------------------------------------------------------------------------*/
 
 template<typename ValueType>
 void SparseMatrix<ValueType>::checkSettings()
@@ -1007,10 +960,12 @@ void SparseMatrix<ValueType>::scale( const Vector& scaling )
 template<typename ValueType>
 void SparseMatrix<ValueType>::scale( Scalar scaling )
 {
+    /* removed: not required
     if ( getDistribution() != getColDistribution() )
     {
         LAMA_THROWEXCEPTION( "Scale only for equal distributions." )
     }
+    */
 
     mLocalData->scale( scaling );
 
@@ -1169,8 +1124,8 @@ void SparseMatrix<ValueType>::matrixTimesMatrixImpl(
     {
         LAMA_ASSERT_ERROR( C.getDistribution() == A.getDistribution(),
                            "Row distribution must be " << A.getDistribution() << ": " << C )
-        LAMA_ASSERT_ERROR( C.getColDistribution() == A.getColDistribution(),
-                           "Col distribution must be " << A.getColDistribution() << ": " << C )
+        LAMA_ASSERT_ERROR( C.getColDistribution() == B.getColDistribution(),
+                           "Col distribution must be " << B.getColDistribution() << ": " << C )
     }
 
     // Now we can do it completly locally
@@ -1735,18 +1690,79 @@ SparseMatrix<ValueType>* SparseMatrix<ValueType>::copy() const
 /* ------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void SparseMatrix<ValueType>::setIdentity()
+void SparseMatrix<ValueType>::setIdentity( DistributionPtr dist )
 {
-    if ( getDistribution() != getColDistribution() )
+    allocate( dist, dist );
+
+    const IndexType localNumRows = getDistributionPtr()->getLocalSize();
+
+    mLocalData->setIdentity( localNumRows );
+    mHaloData->allocate( localNumRows, 0 );
+
+    mHalo.clear();  // no exchange needed
+
+    LAMA_LOG_INFO( logger, *this << ": identity" )
+}
+
+/* ------------------------------------------------------------------------- */
+
+template<typename ValueType>
+void SparseMatrix<ValueType>::setDenseData( DistributionPtr rowDist, DistributionPtr colDist,
+                                            const _LAMAArray& values, const double eps )
+{
+    Matrix::setDistributedMatrix( rowDist, colDist ); 
+
+    IndexType localNumRows  = rowDist->getLocalSize();
+    IndexType globalNumCols = colDist->getGlobalSize();
+
+    mLocalData->setDenseData( localNumRows, globalNumCols, values, eps );
+
+    if ( !colDist->isReplicated() )
     {
-        LAMA_THROWEXCEPTION( *this << ": setIdentity only supported for same row/col distribution" )
+        // localize the data according to row distribution, use splitHalo with replicated columns
+    
+        mLocalData->splitHalo( *mLocalData, *mHaloData, mHalo, getColDistribution(), NULL );
+    }
+    else
+    {
+        mHaloData->allocate( localNumRows, 0 );
+        mHalo.clear();
     }
 
-    mLocalData->setIdentity( getDistributionPtr()->getLocalSize() );
-    mHaloData->clear();
-    mHalo.clear();
+    LAMA_LOG_INFO( logger, *this << ": filled by (local) dense data" )
+}
 
-    LAMA_LOG_INFO( logger, *this << ": is no identity" )
+/* ------------------------------------------------------------------------- */
+
+template<typename ValueType>
+void SparseMatrix<ValueType>::setCSRData( 
+    DistributionPtr rowDist, 
+    DistributionPtr colDist,
+    const IndexType numValues,
+    const LAMAArray<IndexType>& ia, 
+    const LAMAArray<IndexType>& ja,
+    const _LAMAArray& values )
+{
+    Matrix::setDistributedMatrix( rowDist, colDist );
+
+    IndexType localNumRows   = rowDist->getLocalSize();
+    IndexType globalNumCols  = colDist->getGlobalSize();
+
+    mLocalData->setCSRData( localNumRows, globalNumCols, numValues, ia, ja, values );
+
+    if ( !colDist->isReplicated() )
+    {
+        // localize the data according to row distribution, use splitHalo with replicated columns
+
+        mLocalData->splitHalo( *mLocalData, *mHaloData, mHalo, getColDistribution(), NULL );
+    }
+    else
+    {
+        mHaloData->allocate( localNumRows, 0 );
+        mHalo.clear();
+    }
+
+    LAMA_LOG_INFO( logger, *this << ": filled by (local) dense data" )
 }
 
 /* ------------------------------------------------------------------------- */
