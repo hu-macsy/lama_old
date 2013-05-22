@@ -17,7 +17,6 @@ Contents:
    installation/index
    tutorial/index
    lecture/index
-   reference/index
    testing/index
    benchmarks/index
    developer/index

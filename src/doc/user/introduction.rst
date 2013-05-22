@@ -126,7 +126,7 @@ There are also a couple of features that are planned:
 Additionally to our open source implementation we also support a commercial version of the AMG method.
 If you are interested in this, please `contact`_ us. 
 
-.. _`contact`: mailto:lama@scai.fraunhofer.de
+.. _contact: http://www.libama.org/support.html
 
 Use Cases
 =========
