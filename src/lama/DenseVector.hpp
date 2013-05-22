@@ -89,6 +89,7 @@ public:
      *
      * @param[in] size  the size of the new DenseVector.
      * @param[in] value the value to assign to all elements of the new DenseVector.
+     * @param[in] context   specifies optionally the context where dense vector should reside
      */
     DenseVector( const IndexType size, const ValueType value, ContextPtr context = ContextPtr() );
 
@@ -97,6 +98,7 @@ public:
      *
      * @param[in] distribution  the distribution to use for the new vector.
      * @param[in] value         the value to assign to all elements of the new DenseVector.
+     * @param[in] context   specifies optionally the context where dense vector should reside
      */
     DenseVector( DistributionPtr distribution, const ValueType value, ContextPtr context = ContextPtr() );
 
@@ -107,6 +109,7 @@ public:
      *
      * @param[in] size      the size of the new DenseVector.
      * @param[in] values    the values to initialize the new DenseVector with.
+     * @param[in] context   specifies optionally the context where dense vector should reside
      */
     template<typename OtherValueType>
     DenseVector( const IndexType size, const OtherValueType* values, ContextPtr context = ContextPtr() );

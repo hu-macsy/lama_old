@@ -65,7 +65,6 @@ inline Expression_SMV operator*( const Matrix& matrix, const Vector& vector )
     return Expression_SMV( Scalar( 1 ), Expression_MV( matrix, vector ) );
 }
 
-// alpha*(A*x)
 /**
  * @brief This plus operator creates an expression that represents a * A * x, where
  *        x and y are vectors, A is a matrix and a and b are scalars

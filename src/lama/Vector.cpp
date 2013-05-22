@@ -178,13 +178,13 @@ Vector& Vector::operator=( const Expression_SMV& expression )
     return operator=( tmpExp );
 }
 
-Vector& Vector::operator=(
-    const Expression<Expression<Scalar,Expression<Matrix,Vector,Times>,Times>,Expression<Scalar,Vector,Times>,Plus>& expression )
+Vector& Vector::operator=( const Expression_SMV_SV& expression )
 {
-    LAMA_LOG_INFO( logger,
+    LAMA_LOG_INFO( logger, 
                    "Vector::operator=(const Expression<Expression<Scalar, Expression<Matrix, Vector, Times>, Times>," << "Expression<Scalar, Vector, Times>, Plus>& expression)" )
-    const Expression<Scalar,Expression<Matrix,Vector,Times>,Times>& exp1 = expression.getArg1();
-    const Expression<Scalar,Vector,Times>& exp2 = expression.getArg2();
+
+    const Expression_SMV& exp1 = expression.getArg1();
+    const Expression_SV&  exp2 = expression.getArg2();
     const Scalar& alpha = exp1.getArg1();
     const Expression<Matrix,Vector,Times>& matrixTimesVectorExp = exp1.getArg2();
     const Scalar& beta = exp2.getArg1();
@@ -216,12 +216,11 @@ Vector& Vector::operator=(
     return *this;
 }
 
-Vector& Vector::operator=( const Expression<Scalar,Vector,Times>& expression )
+Vector& Vector::operator=( const Expression_SV& expression )
 {
     LAMA_LOG_DEBUG( logger, "a * vector1 -> a * vector1 + 0.0 * vector1" )
 
-    Expression<Scalar,Vector,Times> exp1( 0.0, expression.getArg2() );
-    Expression<Expression<Scalar,Vector,Times>,Expression<Scalar,Vector,Times>,Plus> tmpExp( expression, exp1 );
+    Expression_SV_SV tmpExp ( expression, Expression_SV( Scalar( 0 ), expression.getArg2() ) );
 
     // calling operator=( tmpExp ) would imply unnecessary checks, so call assign directly
 
