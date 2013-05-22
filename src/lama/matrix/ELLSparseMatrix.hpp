@@ -132,21 +132,11 @@ public:
 
     // Expression constructors
 
-    explicit ELLSparseMatrix( const Expression<Matrix, Matrix, Times>& expression );
+    explicit ELLSparseMatrix( const Expression_SM& expression );
 
-    explicit ELLSparseMatrix( const Expression<Scalar, Matrix, Times>& expression );
+    explicit ELLSparseMatrix( const Expression_SMM& expression );
 
-    explicit ELLSparseMatrix( const Expression<Scalar, Expression<Matrix, Matrix, Times>, Times>& expression );
-
-    /** @brief Constructor of ELLSparseMatrix by sum of two matrices.
-     *
-     *  @param expression is alpha * matA + beta * matB
-     *
-     */
-    explicit ELLSparseMatrix(
-        const Expression<Expression<Scalar, Matrix, Times>,
-                         Expression<Scalar, Matrix, Times>,
-                         Plus>& expression );
+    explicit ELLSparseMatrix( const Expression_SM_SM& expression );
 
     /** @brief Constructor of a ELL sparse matrix with distributed ELL storage data.
      *

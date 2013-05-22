@@ -198,29 +198,25 @@ DenseMatrix<ValueType>::DenseMatrix(
 }
 
 template<typename ValueType>
-DenseMatrix<ValueType>::DenseMatrix(
-    const Expression<Expression<Scalar, Expression<Matrix, Matrix, Times>, Times>,
-                     Expression<Scalar, Matrix, Times>,
-                     Plus>& expression )
+DenseMatrix<ValueType>::DenseMatrix( const Expression_SMM_SM& expression )
 {
     Matrix::operator=( expression );
 }
 
 template<typename ValueType>
-DenseMatrix<ValueType>::DenseMatrix( 
-    const Expression<Scalar, Expression<Matrix, Matrix, Times>, Times>& expression )
+DenseMatrix<ValueType>::DenseMatrix( const Expression_SMM& expression )
 {
     Matrix::operator=( expression );
 }
 
 template<typename ValueType>
-DenseMatrix<ValueType>::DenseMatrix( const Expression<Matrix, Matrix, Times>& expression )
+DenseMatrix<ValueType>::DenseMatrix( const Expression_SM_SM& expression )
 {
     Matrix::operator=( expression );
 }
 
 template<typename ValueType>
-DenseMatrix<ValueType>::DenseMatrix( const Expression<Scalar, Matrix, Times>& expression )
+DenseMatrix<ValueType>::DenseMatrix( const Expression_SM& expression )
 {
     Matrix::operator=( expression );
 }

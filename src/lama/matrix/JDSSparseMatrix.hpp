@@ -132,21 +132,11 @@ public:
 
     // Expression constructors
 
-    explicit JDSSparseMatrix( const Expression<Matrix, Matrix, Times>& expression );
+    explicit JDSSparseMatrix( const Expression_SM& expression );
 
-    explicit JDSSparseMatrix( const Expression<Scalar, Matrix, Times>& expression );
+    explicit JDSSparseMatrix( const Expression_SMM& expression );
 
-    explicit JDSSparseMatrix( const Expression<Scalar, Expression<Matrix, Matrix, Times>, Times>& expression );
-
-    /** @brief Constructor of JDSSparseMatrix by sum of two matrices.
-     *
-     *  @param expression is alpha * matA + beta * matB
-     *
-     */
-    explicit JDSSparseMatrix(
-        const Expression<Expression<Scalar, Matrix, Times>,
-                         Expression<Scalar, Matrix, Times>,
-                         Plus>& expression );
+    explicit JDSSparseMatrix( const Expression_SM_SM& expression );
 
     /** @brief Constructor of a JDS sparse matrix with distributed JDS storage data.
      *

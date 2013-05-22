@@ -132,21 +132,11 @@ public:
 
     // Expression constructors
 
-    explicit CSRSparseMatrix( const Expression<Matrix, Matrix, Times>& expression );
+    explicit CSRSparseMatrix( const Expression_SM& expression );
 
-    explicit CSRSparseMatrix( const Expression<Scalar, Matrix, Times>& expression );
+    explicit CSRSparseMatrix( const Expression_SMM& expression );
 
-    explicit CSRSparseMatrix( const Expression<Scalar, Expression<Matrix, Matrix, Times>, Times>& expression );
-
-    /** @brief Constructor of CSRSparseMatrix by sum of two matrices.
-     *
-     *  @param expression is alpha * matA + beta * matB
-     *
-     */
-    explicit CSRSparseMatrix(
-        const Expression<Expression<Scalar, Matrix, Times>,
-                         Expression<Scalar, Matrix, Times>,
-                         Plus>& expression );
+    explicit CSRSparseMatrix( const Expression_SM_SM& expression );
 
     /** @brief Constructor of a CSR sparse matrix with distributed CSR storage data.
      *

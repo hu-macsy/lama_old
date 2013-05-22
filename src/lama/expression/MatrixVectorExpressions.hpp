@@ -25,13 +25,13 @@
  * SOFTWARE.
  * @endlicense
  *
- * @brief MatrixVectorExpressions.hpp
+ * @brief Operators to form symbolic expressions Scalar * Matrix * Vector + Scalar * Vector
  * @author brandes
  * @date 28.03.2011
  * $Id$
  */
-#ifndef LAMA_MATRIXVECTOREXPRESSIONS_HPP_
-#define LAMA_MATRIXVECTOREXPRESSIONS_HPP_
+#ifndef LAMA_MATRIX_VECTOREXPRESSIONS_HPP_
+#define LAMA_MATRIX_VECTOREXPRESSIONS_HPP_
 
 #include <lama/matrix/Matrix.hpp>
 
@@ -43,6 +43,8 @@
 namespace lama
 {
 
+/* ------------------------------------------------------------------------- */
+/*  Expressions return 'Scalar * Matrix * Vector'                            */
 /* ------------------------------------------------------------------------- */
 
 /**
@@ -58,9 +60,9 @@ namespace lama
  * @param[in] vector  The input vector.
  * @return            The expression representing this product.
  */
-inline Expression<Matrix,Vector,Times> operator*( const Matrix& matrix, const Vector& vector )
+inline Expression_SMV operator*( const Matrix& matrix, const Vector& vector )
 {
-    return Expression<Matrix,Vector,Times>( matrix, vector );
+    return Expression_SMV( Scalar( 1 ), Expression_MV( matrix, vector ) );
 }
 
 // alpha*(A*x)
@@ -72,27 +74,23 @@ inline Expression<Matrix,Vector,Times> operator*( const Matrix& matrix, const Ve
  * @param[in] exp     The Expression A*x
  * @return            The expression representing this product.
  */
-inline Expression<Scalar,Expression<Matrix,Vector,Times>,Times> operator*(
-    const Scalar& scalar,
-    const Expression<Matrix,Vector,Times>& exp )
+inline Expression_SMV operator*( const Scalar& scalar, const Expression_MV& exp )
 {
-    return Expression<Scalar,Expression<Matrix,Vector,Times>,Times>( scalar, exp );
+    return Expression_SMV( scalar, exp );
 }
 
-/**
- * @brief This times operator creates an expression that represents a * A * x, where
- *        x is vector, A is a matrix and a is a scalar
- *
- * @param[in] exp     The Expression A*x
- * @param[in] scalar  The Scalar.
- * @return            The expression representing this product.
- */
-inline Expression<Scalar,Expression<Matrix,Vector,Times>,Times> operator*(
-    const Expression<Matrix,Vector,Times>& exp,
-    const Scalar& scalar )
+inline Expression_SMV operator*( const Scalar& scalar, const Expression_SMV& exp )
 {
-    return Expression<Scalar,Expression<Matrix,Vector,Times>,Times>( scalar, exp );
+    const Expression_MV& mv = exp.getArg2();
+
+    return Expression_SMV( scalar * exp.getArg1(), mv );
 }
+
+inline Expression_SMV operator*( const Expression_SMV& exp, const Scalar& scalar )
+{
+    return Expression_SMV( exp.getArg1() * scalar, exp.getArg2() );
+}
+
 /**
  * @brief This times operator creates an expression that represents the product
  *        of a Matrix, Vector and Scalar.
@@ -101,12 +99,9 @@ inline Expression<Scalar,Expression<Matrix,Vector,Times>,Times> operator*(
  * @param[in] exp     The expression a*x
  * @return            The expression representing this product.
  */
-inline Expression<Scalar,Expression<Matrix,Vector,Times>,Times> operator*(
-    const Matrix& matrix,
-    const Expression<Scalar,Vector,Times>& exp )
+inline Expression_SMV operator*( const Matrix& matrix, const Expression_SV& exp )
 {
-    return Expression<Scalar,Expression<Matrix,Vector,Times>,Times>(
-               exp.getArg1(), Expression<Matrix,Vector,Times>( matrix, exp.getArg2() ) );
+    return Expression_SMV( exp.getArg1(), Expression_MV( matrix, exp.getArg2() ) );
 }
 
 /**
@@ -117,14 +112,13 @@ inline Expression<Scalar,Expression<Matrix,Vector,Times>,Times> operator*(
  * @param[in] vector  The Vector.
  * @return            The expression representing this product.
  */
-inline Expression<Scalar,Expression<Matrix,Vector,Times>,Times> operator*(
-    const Expression<Scalar,Matrix,Times>& exp,
-    const Vector& vector )
+inline Expression_SMV operator*( const Expression_SM exp, const Vector& vector )
 {
-    return Expression<Scalar,Expression<Matrix,Vector,Times>,Times>(
-               exp.getArg1(), Expression<Matrix,Vector,Times>( exp.getArg2(), vector ) );
+    return Expression_SMV( exp.getArg1(), Expression_MV( exp.getArg2(), vector ) );
 }
 
+/* ------------------------------------------------------------------------- */
+/*  Expressions 'Scalar * Matrix * Vector' +/- vector                        */
 /* ------------------------------------------------------------------------- */
 
 /**
@@ -135,68 +129,9 @@ inline Expression<Scalar,Expression<Matrix,Vector,Times>,Times> operator*(
  * @param[in] exp     The expression a * A * x.
  * @return            The expression representing this sum.
  */
-inline Expression<Expression<Scalar,Expression<Matrix,Vector,Times>,Times>,Expression<Scalar,Vector,Times>,Plus> operator-(
-    const Expression<Scalar,Expression<Matrix,Vector,Times>,Times>& exp,
-    const Vector& vector )
+inline Expression_SMV_SV operator-( const Expression_SMV exp, const Vector& vector )
 {
-    Expression<Scalar,Vector,Times> exp1( Scalar( -1.0 ), vector );
-
-    return Expression<Expression<Scalar,Expression<Matrix,Vector,Times>,Times>,Expression<Scalar,Vector,Times>,Plus>(
-               exp, exp1 );
-}
-
-/**
- * @brief This minus operator creates an expression that represents a * A * x + b * y, where
- *        x and y are vectors, A is a matrix and a and b are scalars
- *
- * @param[in] vector  The input vector y.
- * @param[in] exp     The expression A * x * a.
- * @return            The expression representing this sum.
- */
-inline Expression<Expression<Scalar,Expression<Matrix,Vector,Times>,Times>,Expression<Scalar,Vector,Times>,Plus> operator-(
-    const Expression<Matrix,Expression<Vector,Scalar,Times>,Times>& exp,
-    const Vector& vector )
-{
-    Expression<Scalar,Vector,Times> exp1( Scalar( -1.0 ), vector );
-
-    Expression<Matrix,Vector,Times> e( exp.getArg1(), exp.getArg2().getArg1() );
-    Expression<Scalar,Expression<Matrix,Vector,Times>,Times> exp2( exp.getArg2().getArg2(), e );
-    return Expression<Expression<Scalar,Expression<Matrix,Vector,Times>,Times>,Expression<Scalar,Vector,Times>,Plus>(
-               exp2, exp1 );
-}
-
-/**
- * @brief This minus operator creates an expression that represents a * A * x + b * y, where
- *        x and y are vectors, A is a matrix and a and b are scalars
- *
- * @param[in] exp1    The expression a*A*x
- * @param[in] exp2    The expression b*y
- * @return            The expression representing this sum.
- */
-inline Expression<Expression<Scalar,Expression<Matrix,Vector,Times>,Times>,Expression<Scalar,Vector,Times>,Plus> operator-(
-    const Expression<Scalar,Expression<Matrix,Vector,Times>,Times>& exp1,
-    const Expression<Scalar,Vector,Times>& exp2 )
-{
-    return Expression<Expression<Scalar,Expression<Matrix,Vector,Times>,Times>,Expression<Scalar,Vector,Times>,Plus>(
-               exp1, Expression<Scalar,Vector,Times>( exp2.getArg1() * -1.0, exp2.getArg2() ) );
-}
-
-/**
- * @brief This minus operator creates an expression that represents a * A * x + b * y, where
- *        x and y are vectors, A is a matrix and a and b are scalars
- *
- * @param[in] exp2    The expression a*x
- * @param[in] exp1    The expression b*A*y
- * @return            The expression representing this sum.
- */
-inline Expression<Expression<Scalar,Expression<Matrix,Vector,Times>,Times>,Expression<Scalar,Vector,Times>,Plus> operator-(
-    const Expression<Scalar,Vector,Times>& exp2,
-    const Expression<Scalar,Expression<Matrix,Vector,Times>,Times>& exp1 )
-{
-
-    return Expression<Expression<Scalar,Expression<Matrix,Vector,Times>,Times>,Expression<Scalar,Vector,Times>,Plus>(
-               Expression<Scalar,Expression<Matrix,Vector,Times>,Times>( exp1.getArg1() * -1.0, exp1.getArg2() ),
-               exp2 );
+    return Expression_SMV_SV( exp, Expression_SV( Scalar( -1 ), vector ) );
 }
 
 /**
@@ -207,57 +142,12 @@ inline Expression<Expression<Scalar,Expression<Matrix,Vector,Times>,Times>,Expre
  * @param[in] exp     The expression A * x.
  * @return            The expression representing this sum.
  */
-inline Expression<Expression<Scalar,Expression<Matrix,Vector,Times>,Times>,Expression<Scalar,Vector,Times>,Plus> operator-(
-    const Vector& vector,
-    const Expression<Matrix,Vector,Times>& exp )
+inline Expression_SMV_SV operator-( const Vector& vector, const Expression_SMV& exp )
 {
-    const Expression<Scalar,Vector,Times> exp1( Scalar( 1.0 ), vector );
-    const Expression<Scalar,Expression<Matrix,Vector,Times>,Times> exp2( Scalar( -1.0 ), exp );
+    Expression_SMV minusExp( -exp.getArg1(), exp.getArg2() );
 
-    return Expression<Expression<Scalar,Expression<Matrix,Vector,Times>,Times>,Expression<Scalar,Vector,Times>,Plus>(
-               exp2, exp1 );
+    return Expression_SMV_SV( minusExp, Expression_SV( Scalar( 1 ), vector ) );
 }
-
-/**
- * @brief This minus operator creates an expression that represents a * A * x + b * y, where
- *        x and y are vectors, A is a matrix and a and b are scalars
- *
- * @param[in] vector  The input vector y.
- * @param[in] exp     The expression A * x.
- * @return            The expression representing this sum.
- */
-inline Expression<Expression<Scalar,Expression<Matrix,Vector,Times>,Times>,Expression<Scalar,Vector,Times>,Plus> operator-(
-    const Expression<Matrix,Vector,Times>& exp,
-    const Vector& vector )
-{
-    const Expression<Scalar,Vector,Times> exp1( Scalar( -1.0 ), vector );
-    const Expression<Scalar,Expression<Matrix,Vector,Times>,Times> exp2( Scalar( 1.0 ), exp );
-
-    return Expression<Expression<Scalar,Expression<Matrix,Vector,Times>,Times>,Expression<Scalar,Vector,Times>,Plus>(
-               exp2, exp1 );
-}
-
-/**
- * @brief This minus operator creates an expression that represents a * A * x + b * y, where
- *        x and y are vectors, A is a matrix and a and b are scalars
- *
- * @param[in] vector  The input vector y.
- * @param[in] exp     The expression A * x.
- * @return            The expression representing this sum.
- */
-inline Expression<Expression<Scalar,Expression<Matrix,Vector,Times>,Times>,Expression<Scalar,Vector,Times>,Plus> operator-(
-    const Expression<Matrix,Expression<Scalar,Vector,Times>,Times>& exp,
-    const Vector& vector )
-{
-    const Expression<Scalar,Vector,Times> exp1( Scalar( -1.0 ), vector );
-    Expression<Matrix,Vector,Times> e( exp.getArg1(), exp.getArg2().getArg2() );
-    const Expression<Scalar,Expression<Matrix,Vector,Times>,Times> exp2( exp.getArg2().getArg1(), e );
-
-    return Expression<Expression<Scalar,Expression<Matrix,Vector,Times>,Times>,Expression<Scalar,Vector,Times>,Plus>(
-               exp2, exp1 );
-}
-
-/* ------------------------------------------------------------------------- */
 
 /**
  * @brief This plus operator creates an expression that represents a * A * x + b * y, where
@@ -267,14 +157,9 @@ inline Expression<Expression<Scalar,Expression<Matrix,Vector,Times>,Times>,Expre
  * @param[in] exp     The expression A * x.
  * @return            The expression representing this addition.
  */
-inline Expression<Expression<Scalar,Expression<Matrix,Vector,Times>,Times>,Expression<Scalar,Vector,Times>,Plus> operator+(
-    const Vector& vector,
-    const Expression<Matrix,Vector,Times>& exp )
+inline Expression_SMV_SV operator+( const Vector& vector, const Expression_SMV& exp )
 {
-    const Expression<Scalar,Vector,Times> exp1( Scalar( 1.0 ), vector );
-    const Expression<Scalar,Expression<Matrix,Vector,Times>,Times> exp2( Scalar( 1.0 ), exp );
-    return Expression<Expression<Scalar,Expression<Matrix,Vector,Times>,Times>,Expression<Scalar,Vector,Times>,Plus>(
-               exp2, exp1 );
+    return Expression_SMV_SV( exp, Expression_SV( Scalar( 1 ), vector ) );
 }
 
 /**
@@ -285,121 +170,51 @@ inline Expression<Expression<Scalar,Expression<Matrix,Vector,Times>,Times>,Expre
  * @param[in] exp     The expression a * A * y.
  * @return            The expression representing this addition.
  */
-inline Expression<Expression<Scalar,Expression<Matrix,Vector,Times>,Times>,Expression<Scalar,Vector,Times>,Plus> operator+(
-    const Expression<Scalar,Expression<Matrix,Vector,Times>,Times>& exp,
-    const Vector& vector )
+inline Expression_SMV_SV operator+( const Expression_SMV& exp, const Vector& vector )
 {
-    Expression<Scalar,Vector,Times> exp2( 1.0, vector );
-    return Expression<Expression<Scalar,Expression<Matrix,Vector,Times>,Times>,Expression<Scalar,Vector,Times>,Plus>(
-               exp, exp2 );
+    return Expression_SMV_SV( exp, Expression_SV( Scalar( 1 ), vector ) );
 }
 
-/**
- * @brief This plus operator creates an expression that represents a * A * x + b * y, where
- *        x and y are vectors, A is a matrix and a and b are scalars
- *
- * @param[in] vector  The input vector y.
- * @param[in] exp     The expression A * a * x.
- * @return            The expression representing this addition.
- */
-inline Expression<Expression<Scalar,Expression<Matrix,Vector,Times>,Times>,Expression<Scalar,Vector,Times>,Plus> operator+(
-    const Expression<Matrix,Expression<Scalar,Vector,Times>,Times>& exp,
-    const Vector& vector )
-{
-    Expression<Matrix,Vector,Times> exp1( exp.getArg1(), exp.getArg2().getArg2() );
-    Expression<Scalar,Expression<Matrix,Vector,Times>,Times> exp2( exp.getArg2().getArg1(), exp1 );
-    Expression<Scalar,Vector,Times> exp3( 1.0, vector );
-
-    return Expression<Expression<Scalar,Expression<Matrix,Vector,Times>,Times>,Expression<Scalar,Vector,Times>,Plus>(
-               exp2, exp3 );
-}
+/* ------------------------------------------------------------------------- */
+/*  Expressions 'Scalar * Matrix * Vector' +/- 'Scalar * Vector'             */
+/* ------------------------------------------------------------------------- */
 
 /**
- * @brief This plus operator creates an expression that represents a * A * x + b * y, where
- *        x and y are vectors, A is a matrix and a and b are scalars.
- *
- * @param[in] vector  The input vector y.
- * @param[in] exp     The expression A * x * a.
- * @return            The expression representing this addition.
- */
-inline Expression<Expression<Scalar,Expression<Matrix,Vector,Times>,Times>,Expression<Scalar,Vector,Times>,Plus> operator+(
-    const Expression<Matrix,Expression<Vector,Scalar,Times>,Times>& exp,
-    const Vector& vector )
-{
-    Expression<Matrix,Vector,Times> exp1( exp.getArg1(), exp.getArg2().getArg1() );
-    Expression<Scalar,Expression<Matrix,Vector,Times>,Times> exp2( exp.getArg2().getArg2(), exp1 );
-    Expression<Scalar,Vector,Times> exp3( 1.0, vector );
-
-    return Expression<Expression<Scalar,Expression<Matrix,Vector,Times>,Times>,Expression<Scalar,Vector,Times>,Plus>(
-               exp2, exp3 );
-}
-
-/**
- * @brief This plus operator creates an expression that represents a * A * x + b * y, where
- *        x and y are vectors, A is a matrix and a and b are scalars.
- *
- * @param[in] vector  The input vector y.
- * @param[in] exp     The expression A * x.
- * @return            The expression representing this addition.
- */
-inline Expression<Expression<Scalar,Expression<Matrix,Vector,Times>,Times>,Expression<Scalar,Vector,Times>,Plus> operator+(
-    const Expression<Matrix,Vector,Times>& exp,
-    const Vector& vector )
-{
-    Expression<Matrix,Vector,Times> exp1( exp.getArg1(), exp.getArg2() );
-    Expression<Scalar,Expression<Matrix,Vector,Times>,Times> exp2( 1.0, exp1 );
-    Expression<Scalar,Vector,Times> exp3( 1.0, vector );
-    return Expression<Expression<Scalar,Expression<Matrix,Vector,Times>,Times>,Expression<Scalar,Vector,Times>,Plus>(
-               exp2, exp3 );
-}
-
-/**
- * @brief This plus operator creates an expression that represents a * A * x + b * y, where
+ * @brief This minus operator creates an expression that represents a * A * x + b * y, where
  *        x and y are vectors, A is a matrix and a and b are scalars
  *
  * @param[in] exp1    The expression a*A*x
  * @param[in] exp2    The expression b*y
- * @return            The expression representing this product.
+ * @return            The expression representing this sum.
  */
-inline Expression<Expression<Scalar,Expression<Matrix,Vector,Times>,Times>,Expression<Scalar,Vector,Times>,Plus> operator+(
-    const Expression<Scalar,Expression<Matrix,Vector,Times>,Times>& exp1,
-    const Expression<Scalar,Vector,Times>& exp2 )
+inline Expression_SMV_SV operator-( const Expression_SMV& exp1, const Expression_SV& exp2 )
 {
-    return Expression<Expression<Scalar,Expression<Matrix,Vector,Times>,Times>,Expression<Scalar,Vector,Times>,Plus>(
-               exp1, exp2 );
+    Expression_SV minusExp2( -exp2.getArg1(), exp2.getArg2() );
+
+    return Expression_SMV_SV( exp1, minusExp2 );
 }
 
 /**
- * @brief This plus operator creates an expression that represents a * A * x + b * y, where
+ * @brief This minus operator creates an expression that represents a * A * x + b * y, where
  *        x and y are vectors, A is a matrix and a and b are scalars
  *
  * @param[in] exp2    The expression a*x
  * @param[in] exp1    The expression b*A*y
- * @return            The expression representing this product.
+ * @return            The expression representing this sum.
  */
-inline Expression<Expression<Scalar,Expression<Matrix,Vector,Times>,Times>,Expression<Scalar,Vector,Times>,Plus> operator+(
-    const Expression<Scalar,Vector,Times>& exp2,
-    const Expression<Scalar,Expression<Matrix,Vector,Times>,Times>& exp1 )
+inline Expression_SMV_SV operator-( Expression_SV& exp1, const Expression_SMV& exp2 )
 {
-    return Expression<Expression<Scalar,Expression<Matrix,Vector,Times>,Times>,Expression<Scalar,Vector,Times>,Plus>(
-               exp1, exp2 );
+    return Expression_SMV_SV( Expression_SMV( -exp2.getArg1(), exp2.getArg2()), exp1 );
 }
 
-/**
- * @brief This plus operator creates an expression that represents a * A * x + b * y, where
- *        x and y are vectors, A is a matrix and a and b are scalars
- *
- * @param[in] exp2    The expression a*x
- * @param[in] exp1    The expression b*A*y
- * @return            The expression representing this product.
- */
-inline Expression<Expression<Scalar,Expression<Matrix,Vector,Times>,Times>,Expression<Scalar,Vector,Times>,Plus> operator+(
-    const Expression<Matrix,Vector,Times>& exp2,
-    const Expression<Scalar,Vector,Times>& exp1 )
+inline Expression_SMV_SV operator+( const Expression_SV& exp1, const Expression_SMV& exp2 )
 {
-    Expression<Scalar,Expression<Matrix,Vector,Times>,Times> exp( 1.0, exp2 );
-    return Expression<Expression<Scalar,Expression<Matrix,Vector,Times>,Times>,Expression<Scalar,Vector,Times>,Plus>(
-               exp, exp1 );
+    return Expression_SMV_SV( exp2, exp1 );
+}
+
+inline Expression_SMV_SV operator+( const Expression_SMV& exp1, const Expression_SV& exp2 )
+{
+    return Expression_SMV_SV( exp1, exp2 );
 }
 
 }

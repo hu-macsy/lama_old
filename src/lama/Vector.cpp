@@ -111,7 +111,7 @@ Vector::~Vector()
     LAMA_LOG_INFO( logger, "~Vector(" << getDistribution().getGlobalSize() << ")" )
 }
 
-Vector& Vector::operator=( const Expression<Matrix,Vector,Times>& expression )
+Vector& Vector::operator=( const Expression_MV& expression )
 {
     LAMA_LOG_DEBUG( logger, "this = matrix * vector1 -> this = 1.0 * matrix * vector1 + 0.0 * this" )
 
@@ -132,28 +132,27 @@ Vector& Vector::operator=( const Expression<Matrix,Vector,Times>& expression )
     return *this = tempExpression;
 }
 
-Vector& Vector::operator=(
-    const Expression<Expression<Scalar,Vector,Times>,Expression<Scalar,Vector,Times>,Plus>& expression )
+Vector& Vector::operator=( const Expression_SV_SV& expression )
 {
     LAMA_LOG_DEBUG( logger, "this = a * vector1 + b * vector2, check vector1.size() == vector2.size()" )
 
-    if ( expression.getArg1().getArg2().size() != expression.getArg2().getArg2().size() )
-    {
-        LAMA_THROWEXCEPTION(
-            "size of input vector 1 " << expression.getArg1().getArg2().size() << " mismatches size of input vector 2 " << expression.getArg2().getArg2().size() )
-    }
+    const Vector& x = expression.getArg1().getArg2();
+    const Vector& y = expression.getArg2().getArg2();
+
+    LAMA_ASSERT_EQUAL( x.size(), y.size() );
 
     assign( expression );
+
     return *this;
 }
 
-Vector& Vector::operator=( const Expression<Scalar,Expression<Matrix,Vector,Times>,Times>& expression )
+Vector& Vector::operator=( const Expression_SMV& expression )
 {
     LAMA_LOG_INFO( logger, "this = alpha * matrix * vectorX -> this = alpha * matrix * vectorX + 0.0 * this" )
 
     const Scalar& beta = 0.0;
 
-    Expression<Scalar,Vector,Times> exp2( beta, *this );
+    Expression_SV exp2( beta, *this );
 
     Expression<Expression<Scalar,Expression<Matrix,Vector,Times>,Times>,Expression<Scalar,Vector,Times>,Plus> tmpExp(
         expression, exp2 );
@@ -230,19 +229,6 @@ Vector& Vector::operator=( const Expression<Scalar,Vector,Times>& expression )
     return *this;
 }
 
-Vector& Vector::operator=( const Expression<Vector,Vector,Plus>& expression )
-{
-    LAMA_LOG_DEBUG( logger, "vector1 + vector2 -> 1.0 * vector1 + 1.0 * vector2" )
-
-    Expression<Scalar,Vector,Times> exp1( 1.0, expression.getArg1() );
-    Expression<Scalar,Vector,Times> exp2( 1.0, expression.getArg2() );
-    Expression<Expression<Scalar,Vector,Times>,Expression<Scalar,Vector,Times>,Plus> tmpExp( exp1, exp2 );
-
-    // do not call assign( tmpExp ) here as it would skip size checks
-
-    return operator=( tmpExp );
-}
-
 Vector& Vector::operator=( const Vector& other )
 {
     Distributed::operator=( other );
@@ -270,89 +256,38 @@ Vector& Vector::operator/=( const Scalar value )
 
 Vector& Vector::operator+=( const Vector& other )
 {
-    Expression<Vector, Vector, Plus> exp1( other, *this );
-    return operator=( exp1 );
+    return operator=( Expression_SV_SV( Expression_SV( Scalar( 1 ), other ),
+                                        Expression_SV( Scalar( 1 ), *this ) ) );
 }
 
-Vector& Vector::operator+=( const Expression<Scalar, Vector, Times>& expression )
+Vector& Vector::operator+=( const Expression_SV& exp )
 {
-    Expression<Scalar, Vector, Times> exp1( 1.0, *this );
-    Expression<Expression<Scalar, Vector, Times>,
-               Expression<Scalar, Vector, Times>,
-               Plus> exp3( exp1, expression );
-    return operator=( exp3 );
+    return operator=( Expression_SV_SV( exp, Expression_SV( Scalar( 1 ), *this ) ) );
 }
 
-Vector& Vector::operator-=( const Expression<Scalar, Vector, Times>& expression )
+Vector& Vector::operator-=( const Expression_SV& exp )
 {
-    Expression<Scalar, Vector, Times> exp1( 1.0, *this );
-    Expression<Scalar, Vector, Times> exp2( - expression.getArg1(), expression.getArg2() );
-    Expression<Expression<Scalar, Vector, Times>,
-               Expression<Scalar, Vector, Times>,
-               Plus> exp3( exp1, exp2 );
+    Expression_SV minusExp( - exp.getArg1(), exp.getArg2() );
 
-    return operator=( exp3 );
+    return operator=( Expression_SV_SV( minusExp, Expression_SV( Scalar( 1 ), *this ) ) );
 }
 
-Vector& Vector::operator+=( const Expression<Matrix, Vector, Times>& expression )
+Vector& Vector::operator+=( const Expression_SMV& expression )
 {
-    // build exp3 = 1.0 * this + 1.0 * A * x
-
-    Expression<Scalar, Vector, Times> exp1( 1.0, *this );
-    Expression<Scalar, Expression<Matrix, Vector, Times>, Times> exp2 ( 1.0, expression );
-
-    Expression<Expression<Scalar, Expression<Matrix, Vector, Times>, Times>,
-               Expression<Scalar, Vector, Times>,
-               Plus> exp3( exp2, exp1 );
-
-    return operator=( exp3 );
+    return operator=( Expression_SMV_SV( expression, Expression_SV( Scalar( 1 ), *this ) ) );
 }
 
-Vector& Vector::operator-=( const Expression<Matrix, Vector, Times>& expression )
+Vector& Vector::operator-=( const Expression_SMV& exp )
 {
-    // build exp3 = 1.0 * this - 1.0 * A * x
+    Expression_SMV minusExp( - exp.getArg1(), exp.getArg2() );
 
-    Expression<Scalar, Vector, Times> exp1( 1.0, *this );
-    Expression<Scalar, Expression<Matrix, Vector, Times>, Times> exp2 ( -1.0, expression );
-
-    Expression<Expression<Scalar, Expression<Matrix, Vector, Times>, Times>,
-               Expression<Scalar, Vector, Times>,
-               Plus> exp3( exp2, exp1 );
-
-    return operator=( exp3 );
-}
-
-Vector& Vector::operator+=( const Expression<Scalar, Expression<Matrix, Vector, Times>, Times>& expression )
-{
-    // build exp3 = 1.0 * this + alpha * A * x
-
-    Expression<Scalar, Vector, Times> exp1( 1.0, *this );
-    Expression<Expression<Scalar, Expression<Matrix, Vector, Times>, Times>,
-               Expression<Scalar, Vector, Times>,
-               Plus> exp3( expression, exp1 );
-
-    return operator=( exp3 );
-}
-
-Vector& Vector::operator-=( const Expression<Scalar, Expression<Matrix, Vector, Times>, Times>& expression )
-{
-    Expression<Scalar, Vector, Times> exp1( 1.0, *this );
-    Expression<Scalar, Expression<Matrix, Vector, Times>, Times> exp2( - expression.getArg1(), expression.getArg2() );
-    Expression<Expression<Scalar, Expression<Matrix, Vector, Times>, Times>,
-               Expression<Scalar, Vector, Times>,
-               Plus> exp3( exp2, exp1 );
-
-    return operator=( exp3 );
+    return operator=( Expression_SMV_SV( minusExp, Expression_SV( Scalar( 1 ), *this ) ) );
 }
 
 Vector& Vector::operator-=( const Vector& other )
 {
-    Expression<Scalar,Vector,Times> exp1( 1.0, *this );
-    Expression<Scalar,Vector,Times> exp2( -1.0, other );
-
-    Expression<Expression<Scalar,Vector,Times>,Expression<Scalar,Vector,Times>,Plus> exp3( exp1, exp2 );
-
-    return operator=( exp3 );
+    return operator=( Expression_SV_SV( Expression_SV( Scalar( 1 ), *this ),
+                                        Expression_SV( Scalar( -1 ), other ) ) );
 }
 
 const Scalar Vector::operator()( const IndexType i ) const

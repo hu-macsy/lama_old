@@ -132,21 +132,11 @@ public:
 
     // Expression constructors
 
-    explicit COOSparseMatrix( const Expression<Matrix, Matrix, Times>& expression );
+    explicit COOSparseMatrix( const Expression_SM& expression );
 
-    explicit COOSparseMatrix( const Expression<Scalar, Matrix, Times>& expression );
+    explicit COOSparseMatrix( const Expression_SMM& expression );
 
-    explicit COOSparseMatrix( const Expression<Scalar, Expression<Matrix, Matrix, Times>, Times>& expression );
-
-    /** @brief Constructor of COOSparseMatrix by sum of two matrices.
-     *
-     *  @param expression is alpha * matA + beta * matB
-     *
-     */
-    explicit COOSparseMatrix(
-        const Expression<Expression<Scalar, Matrix, Times>,
-                         Expression<Scalar, Matrix, Times>,
-                         Plus>& expression );
+    explicit COOSparseMatrix( const Expression_SM_SM& expression );
 
     /** @brief Constructor of a COO sparse matrix with distributed COO storage data.
      *

@@ -132,21 +132,11 @@ public:
 
     // Expression constructors
 
-    explicit DIASparseMatrix( const Expression<Matrix, Matrix, Times>& expression );
+    explicit DIASparseMatrix( const Expression_SM& expression );
 
-    explicit DIASparseMatrix( const Expression<Scalar, Matrix, Times>& expression );
+    explicit DIASparseMatrix( const Expression_SMM& expression );
 
-    explicit DIASparseMatrix( const Expression<Scalar, Expression<Matrix, Matrix, Times>, Times>& expression );
-
-    /** @brief Constructor of DIASparseMatrix by sum of two matrices.
-     *
-     *  @param expression is alpha * matA + beta * matB
-     *
-     */
-    explicit DIASparseMatrix(
-        const Expression<Expression<Scalar, Matrix, Times>,
-                         Expression<Scalar, Matrix, Times>,
-                         Plus>& expression );
+    explicit DIASparseMatrix( const Expression_SM_SM& expression );
 
     /** @brief Constructor of a DIA sparse matrix with distributed DIA storage data.
      *

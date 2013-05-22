@@ -321,7 +321,7 @@ Matrix& Matrix::operator=( const Matrix& other )
 
 /* ---------------------------------------------------------------------------------*/
 
-Matrix& Matrix::operator=( const Expression<Scalar, Matrix, Times>& exp )
+Matrix& Matrix::operator=( const Expression_SM& exp )
 {
     // exp is Expression object that stands for s * A 
 
@@ -344,34 +344,24 @@ Matrix& Matrix::operator*=( const Scalar exp )
 
 /* ---------------------------------------------------------------------------------*/
 
-Matrix& Matrix::operator+=( const Expression<Scalar, Matrix, Times>& exp )
+Matrix& Matrix::operator+=( const Expression_SM& exp )
 {
     // this += alpha * A  -> this = alpha * A + 1.0 * this
 
-    const Scalar one( 1 );
-
-    Expression<Scalar, Matrix, Times> exp2( one, *this );
-
-    *this =  Expression<Expression<Scalar, Matrix, Times>,
-                        Expression<Scalar, Matrix, Times>,
-                        Plus> ( exp, exp2 );
+    *this = Expression_SM_SM( exp, Expression_SM( Scalar( 1 ), *this ) );
 
     return *this;
 }
 
 /* ---------------------------------------------------------------------------------*/
 
-Matrix& Matrix::operator-=( const Expression<Scalar, Matrix, Times>& exp )
+Matrix& Matrix::operator-=( const Expression_SM& exp )
 {
-    // this += alpha * A  -> this = alpha * A - 1.0 * this
+    // this -= alpha * A  -> this = 1.0 * this + ( - alpha ) * A 
 
-    const Scalar minusOne( -1 );
+    Expression_SM minusExp( -exp.getArg1(), exp.getArg2() );
 
-    Expression<Scalar, Matrix, Times> exp2( minusOne, *this );
-
-    *this =  Expression<Expression<Scalar, Matrix, Times>,
-                        Expression<Scalar, Matrix, Times>,
-                        Plus> ( exp, exp2 );
+    *this = Expression_SM_SM( Expression_SM( Scalar( 1 ), *this ), minusExp );
 
     return *this;
 }
@@ -382,14 +372,8 @@ Matrix& Matrix::operator+=( const Matrix& exp )
 {
     // this += A  -> this = 1.0 * A + 1.0 * this
 
-    const Scalar one( 1 );
-
-    Expression<Scalar, Matrix, Times> exp1( one, exp );
-    Expression<Scalar, Matrix, Times> exp2( one, *this );
-
-    *this =  Expression<Expression<Scalar, Matrix, Times>,
-                        Expression<Scalar, Matrix, Times>,
-                        Plus> ( exp1, exp2 );
+    *this = Expression_SM_SM( Expression_SM( Scalar( 1 ), *this ),
+                              Expression_SM( Scalar( 1 ), exp  ) );
 
     return *this;
 }
@@ -400,47 +384,23 @@ Matrix& Matrix::operator-=( const Matrix& exp )
 {
     // this -= A  -> this = -1.0 * A + 1.0 * this
 
-    const Scalar one( 1 );
-    const Scalar minusOne( -1 );
-
-    Expression<Scalar, Matrix, Times> exp1( minusOne, exp );
-    Expression<Scalar, Matrix, Times> exp2( one, *this );
-
-    *this =  Expression<Expression<Scalar, Matrix, Times>,
-                        Expression<Scalar, Matrix, Times>,
-                        Plus> ( exp1, exp2 );
+    *this = Expression_SM_SM( Expression_SM( Scalar( 1 ), *this ),
+                              Expression_SM( Scalar( -1 ), exp  ) );
 
     return *this;
 }
 
 /* ---------------------------------------------------------------------------------*/
 
-Matrix& Matrix::operator=( const Expression<Matrix, Matrix, Times>& exp )
+Matrix& Matrix::operator=( const Expression_SMM& exp )
 {
     // exp is Expression object that stands for A * B with matrices A * B
     //   ->   1.0 * A * B + 0.0 * A
 
-    const Scalar zero( 0 );
-    const Scalar one( 1 );
+    Expression_SM exp2( Scalar( 0 ), *this );
 
-    Expression<Scalar, Expression<Matrix, Matrix, Times>, Times> exp1( one, exp );  // 1.0 * A * B
-    Expression<Scalar, Matrix, Times> exp2( zero, exp.getArg1() );
+    *this = Expression_SMM_SM( exp, exp2 );
 
-    *this = Expression<Expression<Scalar,Expression<Matrix,Matrix,Times>,Times>,
-                       Expression<Scalar,Matrix,Times>,
-                       Plus>( exp1, exp2 );
-    return *this;
-}
-
-/**
- * @brief the assignment operator for a matrix matrix multiplication.
- */
-Matrix& Matrix::operator=( const Expression<Scalar, Expression<Matrix, Matrix, Times>, Times>& exp )
-{
-    Scalar zero( 0 );
-    Expression<Scalar,Matrix,Times> exp1( zero, exp.getArg2().getArg1() );
-    *this = Expression<Expression<Scalar,Expression<Matrix,Matrix,Times>,Times>,Expression<Scalar,Matrix,Times>,Plus>(
-                exp, exp1 );
     return *this;
 }
 
@@ -538,28 +498,30 @@ void Matrix::sanityCheck( const Matrix& A, const Matrix& B )
 /**
  * @brief the assignment operator for a GEMM expression.
  */
-Matrix& Matrix::operator=(
-    const Expression<Expression<Scalar,Expression<Matrix,Matrix,Times>,Times>,
-                     Expression<Scalar,Matrix,Times>,
-                     Plus>& exp )
+Matrix& Matrix::operator=( const Expression_SMM_SM& exp )
 {
-    LAMA_LOG_INFO( logger, "operator=:  A * B * alpha + C * beta " )
+    const Expression_SMM& arg1  = exp.getArg1();
+    const Expression_SM&  arg11 = arg1.getArg1();
+    const Expression_SM&  arg2  = exp.getArg2();
 
-    const Matrix& A = exp.getArg1().getArg2().getArg1();
-    const Matrix& B = exp.getArg1().getArg2().getArg2();
-    const Matrix& C = exp.getArg2().getArg2();
-    const Scalar& alpha = exp.getArg1().getArg1();
-    const Scalar& beta = exp.getArg2().getArg1();
+    const Matrix& A = arg11.getArg2();
+    const Matrix& B = arg1.getArg2();
+    const Matrix& C = arg2.getArg2();
+    const Scalar& alpha = arg11.getArg1();
+    const Scalar& beta = arg2.getArg1();
+
+    LAMA_LOG_INFO( logger, "operator=:  " << alpha << " * A * B  + " << beta << " * C" 
+                           " with A = " << A << ", B = " << B << ", C = " << C )
 
     const Scalar  zero( 0 );
 
     if ( beta == zero )
     {
-        sanityCheck( exp.getArg1().getArg2() );
+        sanityCheck( Expression<Matrix, Matrix, Times>( A, B ) );
     }
     else
     {
-        sanityCheck( exp.getArg1().getArg2(), exp.getArg2().getArg2() );
+        sanityCheck( Expression<Matrix, Matrix, Times>( A, B ), C );
     }
 
     LAMA_LOG_INFO( logger, "Context of this before matrixTimesMatrix = " << this->getContext() )
@@ -578,10 +540,7 @@ Matrix& Matrix::operator=(
 /**
  * @brief the assignment operator for a MM addition.
  */
-Matrix& Matrix::operator=( 
-    const Expression<Expression<Scalar,Matrix,Times>,
-                     Expression<Scalar,Matrix,Times>,
-                     Plus>& exp )
+Matrix& Matrix::operator=( const Expression_SM_SM& exp )
 {
     LAMA_LOG_INFO( logger, "operator=:  A * alpha + B * beta " )
 

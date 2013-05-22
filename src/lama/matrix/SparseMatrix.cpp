@@ -960,10 +960,12 @@ void SparseMatrix<ValueType>::scale( const Vector& scaling )
 template<typename ValueType>
 void SparseMatrix<ValueType>::scale( Scalar scaling )
 {
+    /* removed: not required
     if ( getDistribution() != getColDistribution() )
     {
         LAMA_THROWEXCEPTION( "Scale only for equal distributions." )
     }
+    */
 
     mLocalData->scale( scaling );
 
@@ -1122,8 +1124,8 @@ void SparseMatrix<ValueType>::matrixTimesMatrixImpl(
     {
         LAMA_ASSERT_ERROR( C.getDistribution() == A.getDistribution(),
                            "Row distribution must be " << A.getDistribution() << ": " << C )
-        LAMA_ASSERT_ERROR( C.getColDistribution() == A.getColDistribution(),
-                           "Col distribution must be " << A.getColDistribution() << ": " << C )
+        LAMA_ASSERT_ERROR( C.getColDistribution() == B.getColDistribution(),
+                           "Col distribution must be " << B.getColDistribution() << ": " << C )
     }
 
     // Now we can do it completly locally

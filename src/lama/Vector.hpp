@@ -104,55 +104,39 @@ public:
      * @return               a reference to this.
      * @throws               Exceptions thrown by the Allocator
      */
-    Vector& operator=( const Expression<Matrix, Vector, Times>& expression );
+    Vector& operator=( const Expression_MV& expression );
 
     /** this = alpha * A * x */
 
-    Vector& operator=( const Expression<Scalar, Expression<Matrix, Vector, Times>, Times>& expression );
+    Vector& operator=( const Expression_SMV& expression );
 
     /** this = alpha * x + beta * y */
 
-    Vector& operator=( const Expression<Expression<Scalar, Vector, Times>,
-                                        Expression<Scalar, Vector, Times>,
-                                        Plus>& expression );
+    Vector& operator=( const Expression_SV_SV& expression );
 
     /** this = alpha * A * x + beta * y */
 
-    Vector& operator=( const Expression<Expression<Scalar, Expression<Matrix, Vector, Times>, Times>,
-                                        Expression<Scalar, Vector, Times>,
-                                        Plus>& expression );
+    Vector& operator=( const Expression_SMV_SV& expression );
 
     /** this = alpha * x */
 
-    Vector& operator=( const Expression<Scalar, Vector, Times>& expression );
-
-    /** this =  x + y */
-
-    Vector& operator=( const Expression<Vector, Vector, Plus>& expression );
+    Vector& operator=( const Expression_SV& expression );
 
     /** this +=  alpha * A * x */
 
-    Vector& operator+=( const Expression<Scalar, Expression<Matrix, Vector, Times>, Times>& expression );
-
-    /** this +=  A * x */
-
-    Vector& operator+=( const Expression<Matrix, Vector, Times>& expression );
+    Vector& operator+=( const Expression_SMV& expression );
 
     /** this +=  alpha * x */
 
-    Vector& operator+=( const Expression<Scalar, Vector, Times>& expression );
+    Vector& operator+=( const Expression_SV& expression );
 
     /** this -=  alpha * A * x */
 
-    Vector& operator-=( const Expression<Scalar, Expression<Matrix, Vector, Times>, Times>& expression );
-
-    /** this -=  A * x */
-
-    Vector& operator-=( const Expression<Matrix, Vector, Times>& expression );
+    Vector& operator-=( const Expression_SMV& expression );
 
     /** this -=  alpha * x */
 
-    Vector& operator-=( const Expression<Scalar, Vector, Times>& expression );
+    Vector& operator-=( const Expression_SV& expression );
 
     /**
      * @brief Assigns the values of other to the elements of this.

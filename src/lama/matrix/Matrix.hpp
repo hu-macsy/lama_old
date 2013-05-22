@@ -62,6 +62,10 @@ class _MatrixStorage;
 
 typedef boost::shared_ptr<class Matrix> MatrixPtr;
 
+typedef Expression<class Matrix, Vector, Times> Expression_MV;
+typedef Expression<Scalar, Expression<class Matrix, Vector, Times>, Times> Expression_SMV;
+typedef Expression<Expression_SMV, Expression_SV, Plus> Expression_SMV_SV;
+
 /**
  * @brief The class Matrix is a abstract type that represents a distributed 2D real or complex matrix.
  *
@@ -608,39 +612,28 @@ public:
      *
      * @param[in] exp   representation of alpha * A as Expression object
      */
-    Matrix& operator=( const Expression<Scalar, Matrix, Times>& exp );
-
-    /**
-     * @brief Assignment operator for A * B with A and B matrices
-     *
-     * @param[in] exp   representation of A * B as Expression object
-     */
-    Matrix& operator=( const Expression<Matrix, Matrix, Times>& exp );
+    Matrix& operator=( const Expression_SM& exp );
 
     /**
      * @brief Assignment operator for alhpa * A * B with A and B matrices and scalar alpha
      *
      * @param[in] exp   representation of alpha * A * B as Expression object
      */
-    Matrix& operator=( const Expression<Scalar, Expression<Matrix, Matrix, Times>, Times>& exp );
+    Matrix& operator=( const Expression_SMM& exp );
 
     /**
      * @brief The assignment operator for a GEMM expression alpha * A * B + beta * C
      *
      * @param[in] exp   representation of alpha * A * B + beta * C as Expression object
      */
-    Matrix& operator=(
-        const Expression<Expression<Scalar, Expression<Matrix, Matrix, Times>, Times>,
-                         Expression<Scalar, Matrix, Times>,
-                         Plus>& exp );
+    Matrix& operator=( const Expression_SMM_SM& exp );
 
     /**
      * @brief The assignment operator for alpha * A + beta * B
      *
      * @param[in] exp   expression of the form alpha * A + beta * B
      */
-    Matrix& operator=( const Expression<Expression<Scalar, Matrix, Times>,
-                                        Expression<Scalar, Matrix, Times>, Plus>& exp );
+    Matrix& operator=( const Expression_SM_SM& exp );
 
     /**
      * @brief The assignment operator this *= alpha
@@ -661,7 +654,7 @@ public:
      *
      * @param[in] exp   representation of alpha * A as Expression object
      */
-    Matrix& operator+=( const Expression<Scalar, Matrix, Times>& exp );
+    Matrix& operator+=( const Expression_SM& exp );
 
     /**
      * @brief The assignment operator this -= A
@@ -675,7 +668,7 @@ public:
      *
      * @param[in] exp   representation of alpha * A as Expression object
      */
-    Matrix& operator-=( const Expression<Scalar, Matrix, Times>& exp );
+    Matrix& operator-=( const Expression_SM& exp );
 
     /**
      * @brief Computes the inverse of a matrix.

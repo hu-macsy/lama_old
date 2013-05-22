@@ -177,7 +177,7 @@ CSRSparseMatrix<ValueType>::CSRSparseMatrix(
 /* -------------------------------------------------------------------------- */
 
 template<typename ValueType>
-CSRSparseMatrix<ValueType>::CSRSparseMatrix( const Expression<Matrix, Matrix, Times>& expression ) 
+CSRSparseMatrix<ValueType>::CSRSparseMatrix( const Expression_SM& expression ) 
 
     : SparseMatrix<ValueType>( createStorage() )
 
@@ -188,7 +188,7 @@ CSRSparseMatrix<ValueType>::CSRSparseMatrix( const Expression<Matrix, Matrix, Ti
 /* -------------------------------------------------------------------------- */
 
 template<typename ValueType>
-CSRSparseMatrix<ValueType>::CSRSparseMatrix( const Expression<Scalar, Matrix, Times>& expression ) 
+CSRSparseMatrix<ValueType>::CSRSparseMatrix( const Expression_SMM& expression ) 
 
     : SparseMatrix<ValueType>( createStorage() )
 
@@ -199,21 +199,7 @@ CSRSparseMatrix<ValueType>::CSRSparseMatrix( const Expression<Scalar, Matrix, Ti
 /* -------------------------------------------------------------------------- */
 
 template<typename ValueType>
-CSRSparseMatrix<ValueType>::CSRSparseMatrix( 
-    const Expression<Scalar, Expression<Matrix, Matrix, Times>, Times>& expression )
-
-    : SparseMatrix<ValueType>( createStorage() )
-{
-    Matrix::operator=( expression );
-}
-
-/* -------------------------------------------------------------------------- */
-
-template<typename ValueType>
-CSRSparseMatrix<ValueType>::CSRSparseMatrix( 
-    const Expression<Expression<Scalar, Matrix, Times>,
-                     Expression<Scalar, Matrix, Times>,
-                     Plus>& expression )
+CSRSparseMatrix<ValueType>::CSRSparseMatrix( const Expression_SM_SM& expression )
 
     : SparseMatrix<ValueType>( createStorage() )
 {

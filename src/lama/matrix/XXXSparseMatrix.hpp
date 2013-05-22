@@ -132,21 +132,11 @@ public:
 
     // Expression constructors
 
-    explicit XXXSparseMatrix( const Expression<Matrix, Matrix, Times>& expression );
+    explicit XXXSparseMatrix( const Expression_SM& expression );
 
-    explicit XXXSparseMatrix( const Expression<Scalar, Matrix, Times>& expression );
+    explicit XXXSparseMatrix( const Expression_SMM& expression );
 
-    explicit XXXSparseMatrix( const Expression<Scalar, Expression<Matrix, Matrix, Times>, Times>& expression );
-
-    /** @brief Constructor of XXXSparseMatrix by sum of two matrices.
-     *
-     *  @param expression is alpha * matA + beta * matB
-     *
-     */
-    explicit XXXSparseMatrix(
-        const Expression<Expression<Scalar, Matrix, Times>,
-                         Expression<Scalar, Matrix, Times>,
-                         Plus>& expression );
+    explicit XXXSparseMatrix( const Expression_SM_SM& expression );
 
     /** @brief Constructor of a XXX sparse matrix with distributed XXX storage data.
      *

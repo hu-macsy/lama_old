@@ -191,31 +191,23 @@ public:
      *
      * @param[in] expression  matrix expression alhpa * A * B + beta * C
      */
-    DenseMatrix(
-        const Expression<Expression<Scalar, Expression<Matrix, Matrix, Times>, Times>,
-                         Expression<Scalar, Matrix, Times>, 
-                         Plus>& expression );
-
-    /**
-     * Contructor of a dense matrix by matrix expression A * B 
-     *
-     * @param[in] expression   matrix expression A * B
-     */
-    DenseMatrix( const Expression<Matrix, Matrix, Times>& expression );
+    DenseMatrix( const Expression_SMM_SM& expression );
 
     /**
      * Constructor of a dense matrix by matrix espression alhpa * A * B
      *
      * @param[in] expression   matrix espression alhpa * A * B
      */
-    DenseMatrix( const Expression<Scalar, Expression<Matrix, Matrix, Times>, Times>& expression );
+    DenseMatrix( const Expression_SMM& expression );
+
+    DenseMatrix( const Expression_SM_SM& expression );
 
     /**
      * Constructor of a dense matrix by matrix expression alhpa * A
      *
      * @param[in] expression   matrix expression alpha * A where alpha is a Scalar and A a matrix
      */
-    DenseMatrix( const Expression<Scalar, Matrix, Times>& expression );
+    DenseMatrix( const Expression_SM& expression );
 
     /** Constructor of a replicated dense matrix by reading the matrix
      *  data from a file.
