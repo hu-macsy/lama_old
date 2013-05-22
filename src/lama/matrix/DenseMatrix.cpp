@@ -371,6 +371,8 @@ void DenseMatrix<ValueType>::setIdentity( DistributionPtr dist )
 
     for ( IndexType i = 0; i < size; i++ )
     {
+        LAMA_LOG_INFO( logger, "identity, mData[" << i << "] = " << *mData[i] );
+
         if ( i == rank )
         {
             mData[i]->setIdentity();
@@ -409,9 +411,17 @@ void DenseMatrix<ValueType>::setDenseData(
 
     mData[0]->setDenseData( n, m, values, eps );
 
+    LAMA_LOG_INFO( logger, "Dense matrix, row dist = " << *rowDist << " filled locally with "
+                            << ( n * m ) << " values, now split for col dist = " << *colDist );
+
     if ( !colDist->isReplicated() )
     {
         splitColumns( colDist );
+
+        for ( int i = 0; i < colDist->getCommunicator().getSize(); ++i )
+        {
+            LAMA_LOG_DEBUG( logger, "mData[" << i << "] = " << *mData[i] );
+        }
     }
 }
 
@@ -985,6 +995,8 @@ void DenseMatrix<ValueType>::allocateData()
 
     const IndexType numRows = getDistribution().getLocalSize();
 
+    LAMA_LOG_INFO( logger, "build " << numChunks << " data arrays for numRows = " << numRows );
+
     if ( numChunks == 1 )
     {
         // simple case, no need to count owners for each partition
@@ -994,6 +1006,11 @@ void DenseMatrix<ValueType>::allocateData()
     }
 
     boost::scoped_array<PartitionId> numColsPartition( new PartitionId[numChunks] );
+
+    for ( PartitionId p = 0; p < numChunks; ++p )
+    {
+        numColsPartition[ p ] = 0;
+    }
 
     for ( std::vector<PartitionId>::size_type i = 0; i < mOwners.size(); ++i )
     {
