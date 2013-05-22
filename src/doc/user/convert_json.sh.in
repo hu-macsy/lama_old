@@ -30,16 +30,10 @@
 #  @date 16.05.2013
 #
 
+echo "Running convert_json.sh"
+
+cd ${SPHINX_BUILD_ROOT}/json
 
 find ./ -type f -exec sed -i 's/\.\.\/\_images/fileadmin\/LAMA\/json\/_images/g' {} \; \
-&& find ./ -type f -exec sed -i 's/<image/<image/g' {} \; \
 && find ./ -type f -exec sed -i 's/\.\.\/fileadmin/fileadmin/g' {} \; \
-&& find ./ -type f -exec sed -i 's/\\\"configuration\/\\\"/\\\"configuration\/index\/\\\"/g' {} \; \
-&& find ./ -type f -exec sed -i 's/\\\"installation\/\\\"/\\\"installation\/index\/\\\"/g' {} \; \
-&& find ./ -type f -exec sed -i 's/\\\"tutorial\/\\\"/\\\"tutorial\/index\/\\\"/g' {} \; \
-&& find ./ -type f -exec sed -i 's/\\\"lecture\/\\\"/\\\"lecture\/index\/\\\"/g' {} \; \
-&& find ./ -type f -exec sed -i 's/\\\"reference\/\\\"/\\\"reference\/index\/\\\"/g' {} \; \
-&& find ./ -type f -exec sed -i 's/\\\"testing\/\\\"/\\\"testing\/index\/\\\"/g' {} \; \
-&& find ./ -type f -exec sed -i 's/\\\"benchmarks\/\\\"/\\\"benchmarks\/index\/\\\"/g' {} \; \
-&& find ./ -type f -exec sed -i 's/\\\"developer\/\\\"/\\\"developer\/index\/\\\"/g' {} \;\
-&& find ./ -type f -exec sed -i 's/\\\"solver\/\\\"/\\\"solver\/index\/\\\"/g' {} \;
+&& find ./ -type f -exec sed -r -i 's/\\\"([./]*(configuration|installation|tutorial|lecture|reference|testing|benchmarks|developer|solver)\/)\\\"/\\\"\1index\/\\\"/g' {} \; \

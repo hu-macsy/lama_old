@@ -6,7 +6,7 @@ This documentation will give an overview of the features of the \Library of \Acc
 (\L\A\M\A) and will describe the general usage of these features.
 
 You will find concise :doc:`installation/index` instruction, an easy beginners guide with several short descriptions of
-our basic data structures, their behaviour as well as simple examples on how to use them (:doc:`tutorial/index`). An
+our basic data structures, their behavior as well as simple examples on how to use them (:doc:`tutorial/index`). An
 advanced :doc:`lecture/index` of our hands-on session follows before you get the chance to have a look at the
 :doc:`reference/index`. We close with informations about writing own tests (see :doc:`testing/index`) and 
 :doc:`benchmarks/index` and on special hints :doc:`developer/index`. 
