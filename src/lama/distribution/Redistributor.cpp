@@ -28,7 +28,7 @@
  * @brief Implementation of methods for Redistributor class.
  * @author Thomas Brandes
  * @date 08.10.2011
- * $Id$
+ * @since 1.0.0
  */
 
 // hpp

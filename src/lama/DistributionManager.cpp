@@ -28,7 +28,7 @@
  * @brief DistributionManager.cpp
  * @author Thomas Brandes
  * @date 20.12.2012
- * $Id$
+ * @since 1.0.0
  */
 
 // hpp

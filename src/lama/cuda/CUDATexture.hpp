@@ -28,7 +28,7 @@
  * @brief Using of Texture for CUDA
  * @author Thomas Brandes
  * @date 04.05.2013
- * $Id$
+ * @since 1.0.0
  */
 #ifndef LAMA_CUDA_TEXTURE_HPP_
 #define LAMA_CUDA_TEXTURE_HPP_

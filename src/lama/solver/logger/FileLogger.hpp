@@ -30,7 +30,7 @@
  * to make offer file logging.
  * @author Matthias Makulla
  * @date 06.04.2011
- * $Id$
+ * @since 1.0.0
  */
 #ifndef LAMA_FILELOGGER_HPP_
 #define LAMA_FILELOGGER_HPP_

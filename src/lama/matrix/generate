@@ -29,7 +29,7 @@
 #         explicit storage format types for local and halo data.
 #  @author: Thomas Brandes
 #  @date 21.05.2013
-#  $Id$
+#  @since 1.0.0
 #
 
 sed -e "s/XXX/CSR/g" < XXXSparseMatrix.hpp > CSRSparseMatrix.hpp

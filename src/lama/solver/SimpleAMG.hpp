@@ -28,7 +28,7 @@
  * @brief SimpleAMG.hpp
  * @author Jiri Kraus
  * @date 27.10.2011
- * $Id$
+ * @since 1.0.0
  */
 #ifndef LAMA_SIMPLEAMG_HPP_
 #define LAMA_SIMPLEAMG_HPP_

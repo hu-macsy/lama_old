@@ -28,7 +28,7 @@
  * @brief Implementation of non-pure methods of abstract class SyncToken.
  * @author Thomas Brandes, Jiri Kraus
  * @date 22.03.2011
- * $Id$
+ * @since 1.0.0
  */
 
 // hpp

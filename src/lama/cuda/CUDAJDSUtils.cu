@@ -28,7 +28,7 @@
  * @brief Implementation of JDS utilities with CUDA
  * @author Bea Hornef, Thomas Brandes
  * @date 04.07.2012
- * $Id$
+ * @since 1.0.0
  */
 
 // hpp

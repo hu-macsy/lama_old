@@ -28,7 +28,7 @@
  * @brief ResidualStagnation.hpp
  * @author Kai Buschulte
  * @date 25.07.2011
- * $Id$
+ * @since 1.0.0
  */
 
 #ifndef LAMA_RESIDUALSTAGNATION_HPP_

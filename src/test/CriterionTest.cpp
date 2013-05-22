@@ -28,7 +28,7 @@
  * @brief CriterionTest.hpp
  * @author Alexander Büchel, Kai Buschulte
  * @date 02.02.2012
- * $Id$
+ * @since 1.0.0
  */
 
 #include <boost/test/unit_test.hpp>

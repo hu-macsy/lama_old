@@ -28,7 +28,7 @@
  * @brief Declaration of the class Task for asynchronous function execution.
  * @author Thomas Brandes
  * @date 21.11.2011
- * $Id$
+ * @since 1.0.0
  */
 #ifndef LAMA_TASK_HPP_
 #define LAMA_TASK_HPP_

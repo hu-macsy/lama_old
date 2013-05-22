@@ -28,7 +28,7 @@
  * @brief Interface of the class Exception.
  * @author Jiri Kraus
  * @date 02.03.2011
- * $Id$
+ * @since 1.0.0
  */
 
 #ifndef LAMA_EXCEPTION_HPP_

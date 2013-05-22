@@ -28,7 +28,7 @@
  * @brief Test cases for JDSStorage( specific ones and all of MatrixStorageTest )
  * @author Thomas Brandes
  * @date 31.08.2012
- * $Id$
+ * @since 1.0.0
  */
 
 #include <boost/test/unit_test.hpp>

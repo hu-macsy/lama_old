@@ -28,7 +28,7 @@
  * @brief Level.hpp
  * @author Thomas Brandes
  * @date 01.03.2011
- * $Id$
+ * @since 1.0.0
  */
 #ifndef LAMA_LEVEL_HPP_
 #define LAMA_LEVEL_HPP_

@@ -28,7 +28,7 @@
  * @brief Definition of help class that disables default copy constructors.
  * @author Jiri Kraus
  * @date 04.04.2011
- * $Id$
+ * @since 1.0.0
  */
 #ifndef LAMA_NONCOPYABLE_HPP_
 #define LAMA_NONCOPYABLE_HPP_

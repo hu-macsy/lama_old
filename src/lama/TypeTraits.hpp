@@ -28,7 +28,7 @@
  * @brief Contains the template TypeTraits and specializations.
  * @author Jiri Kraus
  * @date 14.04.2010
- * $Id$
+ * @since 1.0.0
  */
 
 #ifndef TYPETRAITS_HPP_

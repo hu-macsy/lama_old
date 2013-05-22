@@ -28,7 +28,7 @@
  * @brief Implementation of TraceRegionRecord class.
  * @author Thomas Brandes
  * @date 01.09.2011
- * $Id$
+ * @since 1.0.0
  */
 
 // hpp

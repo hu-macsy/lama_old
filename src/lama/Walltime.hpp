@@ -28,7 +28,7 @@
  * @brief Class that gives back walltime
  * @author Thomas Brandes
  * @date 25.04.2013
- * $Id$
+ * @since 1.0.0
  */
 #ifndef LAMA_WALLTIME_HPP_
 #define LAMA_WALLTIME_HPP_

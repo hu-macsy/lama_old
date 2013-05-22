@@ -28,7 +28,7 @@
  * @brief solver.cpp
  * @author kbuschulte
  * @date 12.09.2012
- * $Id$
+ * @since 1.0.0
  */
 
 #include <lama.hpp>

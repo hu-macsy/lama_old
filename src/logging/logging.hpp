@@ -28,7 +28,7 @@
  * @brief Macro definitions for logging within LAMA
  * @author Thomas Brandes
  * @date 01.03.2011
- * $Id$
+ * @since 1.0.0
  */
 
 #ifndef LAMA_LOGGING_HPP_

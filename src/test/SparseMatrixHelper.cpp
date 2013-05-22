@@ -28,7 +28,7 @@
  * @brief SparseMatrixHelper.cpp
  * @author Lauretta Schubert
  * @date 20.04.2012
- * $Id$
+ * @since 1.0.0
  */
 
 #include <lama/matrix/CSRSparseMatrix.hpp>

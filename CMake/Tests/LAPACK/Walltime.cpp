@@ -28,7 +28,7 @@
  * @brief Implementation of method that delivers the walltime
  * @author Thomas Brandes
  * @date 25.04.2013
- * $Id$
+ * @since 1.0.0
  */
 
 // hpp

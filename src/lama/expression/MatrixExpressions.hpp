@@ -28,7 +28,7 @@
  * @brief MatrixVectorExpressions.hpp
  * @author brandes
  * @date 28.03.2011
- * $Id$
+ * @since 1.0.0
  */
 #ifndef LAMA_MATRIX_EXPRESSIONS_HPP_
 #define LAMA_MATRIX_EXPRESSIONS_HPP_

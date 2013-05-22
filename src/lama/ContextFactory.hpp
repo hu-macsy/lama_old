@@ -28,7 +28,7 @@
  * @brief ContextFactory.hpp
  * @author Thomas Brandes
  * @date 10.07.2011
- * $Id$
+ * @since 1.0.0
  */
 #ifndef LAMA_CONTEXT_FACTORY_HPP_
 #define LAMA_CONTEXT_FACTORY_HPP_

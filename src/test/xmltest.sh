@@ -29,7 +29,7 @@
 #         xml result files for further usage
 #  @author: Jan Ecker
 #  @date 08.05.2013
-#  $Id$
+#  @since 1.0.0
 #
 
 # Setting some enviroment variables

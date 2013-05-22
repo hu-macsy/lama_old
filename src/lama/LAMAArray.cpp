@@ -28,7 +28,7 @@
  * @brief Implementation of methods for class LAMAArray.
  * @author Thomas Brandes
  * @date 14.03.2011
- * $Id$
+ * @since 1.0.0
  */
 
 // hpp

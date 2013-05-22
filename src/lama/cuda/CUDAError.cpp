@@ -28,7 +28,7 @@
  * @brief Contains the implementation of the class CUDAError.
  * @author Thomas Brandes
  * @date 15.07.2011
- * $Id$
+ * @since 1.0.0
  */
 
 // hpp

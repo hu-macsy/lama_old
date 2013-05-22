@@ -28,7 +28,7 @@
  * @brief LAMAArrayView.hpp
  * @author Jiri Kraus
  * @date 05.08.2011
- * $Id$
+ * @since 1.0.0
  */
 #ifndef LAMA_LAMAARRAYVIEW_HPP_
 #define LAMA_LAMAARRAYVIEW_HPP_

@@ -28,7 +28,7 @@
  # @brief CompilerFlags for LAMA
  # @author Jan Ecker
  # @date 25.04.2013
- # $Id$
+ # @since 1.0.0
 ###
 
 #### needed to find BLAS Libraries ####

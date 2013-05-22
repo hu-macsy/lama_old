@@ -28,7 +28,7 @@
  * @brief emptyKernel.cpp
  * @author
  * @date 21.05.2013
- * $Id$
+ * @since 1.0.0
  */
 
 #include <lama/Walltime.hpp>

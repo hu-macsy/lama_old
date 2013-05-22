@@ -28,7 +28,7 @@
  # @brief lama/solver/logger/CMakeLists.txt
  # @author Jan Ecker
  # @date 02.04.2013
- # $Id$
+ # @since 1.0.0
 ###
 
 ### Add classes and header files ###

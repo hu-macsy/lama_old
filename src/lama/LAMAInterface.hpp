@@ -28,7 +28,7 @@
  * @brief Interface class for context dependent operations to be implemented.
  * @author Thomas Brandes
  * @date 27.04.2011
- * $Id$
+ * @since 1.0.0
  */
 #ifndef LAMA_LAMA_INTERFACE_HPP_
 #define LAMA_LAMA_INTERFACE_HPP_

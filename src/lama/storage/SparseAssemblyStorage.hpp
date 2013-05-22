@@ -28,7 +28,7 @@
  * @brief SparseAssemblyStorage.hpp
  * @author Jiri Kraus
  * @date 07.11.2011
- * $Id$
+ * @since 1.0.0
  */
 #ifndef LAMA_SPARSEASSEMBLYSTORAGE_HPP_
 #define LAMA_SPARSEASSEMBLYSTORAGE_HPP_

@@ -28,7 +28,7 @@
  * @brief TaskSyncToken.cpp
  * @author Thomas Brandes
  * @date 04.05.2011
- * $Id$
+ * @since 1.0.0
  */
 
 // hpp

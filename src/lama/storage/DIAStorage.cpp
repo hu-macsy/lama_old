@@ -28,7 +28,7 @@
  * @brief Instantiation for template class DIAStorage.
  * @author Thomas Brandes
  * @date 04.06.2011
- * $Id$
+ * @since 1.0.0
  */
 
 // hpp

@@ -28,7 +28,7 @@
  * @brief EquationHelper.h
  * @author Alexander Büchel, Matthias Makulla
  * @date 09.02.2012
- * $Id$
+ * @since 1.0.0
  */
 
 #ifndef LAMA_EQUATIONHELPER_H_

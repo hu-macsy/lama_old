@@ -28,7 +28,7 @@
  * @brief IterationCount.hpp
  * @author Kai Buschulte
  * @date 21.07.2011
- * $Id$
+ * @since 1.0.0
  */
 
 #ifndef LAMA_ITERATIONCOUNT_HPP_

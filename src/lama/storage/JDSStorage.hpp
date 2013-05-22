@@ -28,7 +28,7 @@
  * @brief Definition of a structure for a (non-distributed) JDS sparse matrix.
  * @author Thomas Brandes
  * @date 11.06.2011
- * $Id$
+ * @since 1.0.0
  */
 #ifndef LAMA_JDSSTORAGE_HPP_
 #define LAMA_JDSSTORAGE_HPP_

@@ -28,7 +28,7 @@
  * @brief BaseAccess.hpp
  * @author Jiri Kraus
  * @date 20.05.2011
- * $Id$
+ * @since 1.0.0
  */
 #ifndef LAMA_BASE_ACCESS_HPP_
 #define LAMA_BASE_ACCESS_HPP_

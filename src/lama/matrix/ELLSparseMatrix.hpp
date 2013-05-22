@@ -28,7 +28,7 @@
  * @brief Definition of matrix class for distributed sparse matrixes in ELL format.
  * @author Jiri Kraus, Thomas Brandes
  * @date 22.02.2011
- * $Id$
+ * @since 1.0.0
  */
 #ifndef LAMA_ELL_SPARSE_MATRIX_HPP_
 #define LAMA_ELL_SPARSE_MATRIX_HPP_

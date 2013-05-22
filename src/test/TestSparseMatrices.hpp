@@ -28,7 +28,7 @@
  * @brief TestSparseMatrices.hpp
  * @author Jiri Kraus
  * @date 06.04.2011
- * $Id$
+ * @since 1.0.0
  */
 
 #ifndef LAMA_TEST_SPARSE_MATRICES_HPP_

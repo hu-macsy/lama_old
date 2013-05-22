@@ -29,7 +29,7 @@
  *        device types via device manager.
  * @author Jiri Kraus
  * @date 10.07.2011
- * $Id$
+ * @since 1.0.0
  */
 
 // hpp

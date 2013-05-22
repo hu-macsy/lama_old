@@ -28,7 +28,7 @@
  * @brief Contains the implementation of the class SparseMatrixTest
  * @author Alexander Büchel
  * @date 14.03.2012
- * $Id$
+ * @since 1.0.0
  */
 
 #include "SparseMatrixTest.hpp"

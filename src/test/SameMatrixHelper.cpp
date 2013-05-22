@@ -28,7 +28,7 @@
  * @brief Implementaton of methods to verify that two matrices have same values.
  * @author Thomas Brandes
  * @date 17.06.2012
- * $Id$
+ * @since 1.0.0
  */
 
 #include <test/SameMatrixHelper.hpp>

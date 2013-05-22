@@ -28,7 +28,7 @@
  * @brief Instantitions for template class ELLStorage.
  * @author Lauretta Schubert
  * @date 25.05.2011
- * $Id$
+ * @since 1.0.0
  */
 
 // hpp

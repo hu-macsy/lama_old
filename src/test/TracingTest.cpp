@@ -28,7 +28,7 @@
  * @brief Test for multiple LAMA contexts and transfering context array data
  * @author Alexander Büchel, Thomas Brandes
  * @date 03.02.2012
- * $Id$
+ * @since 1.0.0
  */
 
 #include <boost/test/unit_test.hpp>

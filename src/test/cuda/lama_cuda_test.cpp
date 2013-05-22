@@ -28,7 +28,7 @@
  * @brief Contains the implementation of the class lama_cuda_test.
  * @author: Alexander Büchel
  * @date 31.01.2012
- * $Id$
+ * @since 1.0.0
  **/
 #ifndef WIN32
 #define BOOST_ALL_DYN_LINK

@@ -28,7 +28,7 @@
  * @brief Definition of a common base class for all matrix storage formats.
  * @author Thomas Brandes
  * @date 27.04.2011
- * $Id$
+ * @since 1.0.0
  */
 
 #ifndef LAMA_MATRIX_STORAGE_HPP_

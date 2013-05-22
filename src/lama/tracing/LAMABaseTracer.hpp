@@ -28,7 +28,7 @@
  * @brief LAMABaseTracer.hpp
  * @author Lauretta Schubert
  * @date 09.11.2011
- * $Id$
+ * @since 1.0.0
  */
 #ifndef LAMA_LAMABASETRACER_HPP_
 #define LAMA_LAMABASETRACER_HPP_

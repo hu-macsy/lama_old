@@ -28,7 +28,7 @@
  * @brief Contains the implementation of the class CUDA_ContextTest.
  * @author: Alexander Büchel, Thomas Brandes
  * @date 18.04.2012
- * $Id$
+ * @since 1.0.0
  **/
 
 #include <boost/test/unit_test.hpp>

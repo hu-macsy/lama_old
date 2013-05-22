@@ -28,7 +28,7 @@
  # @brief Main specification file for CMake
  # @author Thomas Brandes, Jiri Kraus
  # @date 29.03.2012
- # $Id$
+ # @since 1.0.0
 ###
 
 ### Set required CMake version

@@ -28,7 +28,7 @@
  * @brief Implementation of a class that handles redistribution of matrices and vectors
  * @author Thomas Brandes
  * @date 08.10.2011
- * $Id$
+ * @since 1.0.0
  */
 
 #ifndef LAMA_REDISTRIBUTOR_HPP_

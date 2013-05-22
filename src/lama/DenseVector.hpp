@@ -28,7 +28,7 @@
  * @brief DenseVector.hpp
  * @author Jiri Kraus
  * @date 22.02.2011
- * $Id$
+ * @since 1.0.0
  */
 #ifndef LAMA_DENSE_VECTOR_HPP_
 #define LAMA_DENSE_VECTOR_HPP_

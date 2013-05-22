@@ -28,7 +28,7 @@
  * @brief Implementation and instantiation for template class WriteAccess.
  * @author Lauretta Schubert
  * @date 22.08.2012
- * $Id$
+ * @since 1.0.0
  */
 
 // hpp

@@ -28,7 +28,7 @@
  # @brief configuration of sphinx
  # @author Jan Ecker
  # @date 15.05.2013
- # $Id$
+ # @since 1.0.0
 ###
 
 ### DOXYGEN DOCUMENTATION ###

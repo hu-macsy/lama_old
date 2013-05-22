@@ -28,7 +28,7 @@
  * @brief Contains the implementation of the class NormTest
  * @author Alexander Büchel, Micha
  * @date 03.02.2012
- * $Id$
+ * @since 1.0.0
  */
 
 #include <test/NormTest.hpp>

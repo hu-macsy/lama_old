@@ -28,7 +28,7 @@
  * @brief Criterion.hpp
  * @author Kai Buschulte
  * @date 21.07.2011
- * $Id$
+ * @since 1.0.0
  */
 
 #ifndef LAMA_BOOLEANCONDITION_HPP_

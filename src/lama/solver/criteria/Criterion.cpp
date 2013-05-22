@@ -28,7 +28,7 @@
  * @brief Criterion.cpp
  * @author Kai Buschulte
  * @date 25.07.2011
- * $Id$
+ * @since 1.0.0
  */
 
 // hpp

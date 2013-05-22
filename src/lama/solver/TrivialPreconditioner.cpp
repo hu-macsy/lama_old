@@ -28,7 +28,7 @@
  * @brief TrivialPreconditioner.cpp
  * @author Matthias Makulla
  * @date 06.04.2011
- * $Id$
+ * @since 1.0.0
  */
 
 // hpp

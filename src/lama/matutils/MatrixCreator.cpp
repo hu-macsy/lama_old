@@ -28,7 +28,7 @@
  * @brief MatrixCreator.cpp
  * @author Thomas Brandes
  * @date 01.02.2012
- * $Id$
+ * @since 1.0.0
  */
 
 // hpp

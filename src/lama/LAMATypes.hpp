@@ -28,7 +28,7 @@
  * @brief LAMATypes.hpp
  * @author Jiri Kraus
  * @date 23.02.2011
- * $Id$
+ * @since 1.0.0
  */
 #ifndef LAMA_LAMATYPES_HPP_
 #define LAMA_LAMATYPES_HPP_

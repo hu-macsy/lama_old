@@ -28,7 +28,7 @@
  * @brief MPIException.hpp
  * @author Thomas Brandes
  * @date 01.03.2011
- * $Id$
+ * @since 1.0.0
  */
 #ifndef LAMA_MPIEXCEPTION_HPP_
 #define LAMA_MPIEXCEPTION_HPP_

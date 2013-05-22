@@ -28,7 +28,7 @@
  * @brief AMGSetupManager.cpp
  * @author Thomas Brandes
  * @date 15.03.2013
- * $Id$
+ * @since 1.0.0
  */
 
 #include <lama/solver/AMGSetupManager.hpp>

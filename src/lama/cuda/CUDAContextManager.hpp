@@ -28,7 +28,7 @@
  * @brief Definition of manager class to manage CUDA contexts.
  * @author Thomas Brandes, Jiri Kraus
  * @date 15.07.2011
- * $Id$
+ * @since 1.0.0
  */
 #ifndef LAMA_CUDA_CONTEXT_MANAGER_HPP_
 #define LAMA_CUDA_CONTEXT_MANAGER_HPP_

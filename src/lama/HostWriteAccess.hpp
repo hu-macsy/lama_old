@@ -28,7 +28,7 @@
  * @brief HostWriteAccess.hpp
  * @author Thomas Brandes
  * @date 02.05.2011
- * $Id$
+ * @since 1.0.0
  */
 #ifndef LAMA_HOSTWRITEACCESS_HPP_
 #define LAMA_HOSTWRITEACCESS_HPP_

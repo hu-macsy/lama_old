@@ -28,7 +28,7 @@
  * @brief lama.hpp
  * @author Jan Ecker
  * @date 27.03.2013
- * $Id$
+ * @since 1.0.0
  */
 
 #include <boost/version.hpp>

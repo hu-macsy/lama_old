@@ -28,7 +28,7 @@
  * @brief NoCommunicator.cpp
  * @author Thomas Brandes
  * @date 15.03.2011
- * $Id$
+ * @since 1.0.0
  */
 
 // hpp

@@ -28,7 +28,7 @@
  * @brief Interface class for context dependent BLAS operations used in LAMA.
  * @author Thomas Brandes
  * @date 02.04.2013
- * $Id$
+ * @since 1.0.0
  */
 #ifndef LAMA_BLAS_INTERFACE_HPP_
 #define LAMA_BLAS_INTERFACE_HPP_

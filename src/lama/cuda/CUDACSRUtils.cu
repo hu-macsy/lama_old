@@ -28,7 +28,7 @@
  * @brief Implementation of CSR utilities with CUDA
  * @author Bea Hornef, Thomas Brandes, Jiri Kraus
  * @date 04.07.2012
- * $Id$
+ * @since 1.0.0
  */
 
 #include <lama/LAMAInterface.hpp>

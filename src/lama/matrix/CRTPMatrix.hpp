@@ -29,7 +29,7 @@
  *        to deal with polymorphism
  * @author Thomas Brandes
  * @date 09.08.2012
- * $Id$
+ * @since 1.0.0
  */
 #ifndef LAMA_CRTP_MATRIX_HPP_
 #define LAMA_CRTP_MATRIX_HPP_

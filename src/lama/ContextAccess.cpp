@@ -29,7 +29,7 @@
  *
  * @author Thomas Brandes
  * @date 14.07.2011
- * $Id$
+ * @since 1.0.0
  */
 
 // hpp

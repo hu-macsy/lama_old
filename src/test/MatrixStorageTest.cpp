@@ -28,7 +28,7 @@
  * @brief Contains the implementation of the class MatrixStorageTest
  * @author Thomas Brandes
  * @date 02.03.2012
- * $Id$
+ * @since 1.0.0
  */
 
 #include <test/MatrixStorageTest.hpp>

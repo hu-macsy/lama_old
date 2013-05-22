@@ -28,7 +28,7 @@
  * @brief Definition of the class Task for asynchronous function execution.
  * @author Thomas Brandes
  * @date 21.11.2011
- * $Id$
+ * @since 1.0.0
  */
 
 // hpp

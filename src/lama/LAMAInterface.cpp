@@ -28,7 +28,7 @@
  * @brief Default implementations for LAMA interface.
  * @author Thomas Brandes
  * @date 28.04.2011
- * $Id$
+ * @since 1.0.0
  */
 
 // hpp

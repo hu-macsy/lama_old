@@ -28,7 +28,7 @@
  * @brief Implemenation of class lama::NoDistributionManager
  * @author Thomas Brandes
  * @date 20.12.2012
- * $Id$
+ * @since 1.0.0
  */
 
 // hpp

@@ -28,7 +28,7 @@
  * @brief Implementation of class TraceConfig
  * @author: Thomas Brandes
  * @date 01.01.2012
- * $Id$
+ * @since 1.0.0
  */
 
 // hpp

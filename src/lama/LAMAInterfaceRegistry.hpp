@@ -28,7 +28,7 @@
  * @brief LAMAInterfaceRegistry.hpp
  * @author Thomas Brandes
  * @date 12.04.2013
- * $Id$
+ * @since 1.0.0
  */
 
 #ifndef LAMA_LAMA_INTERFACE_REGISTRY_HPP_

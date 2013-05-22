@@ -28,7 +28,7 @@
  * @brief FileType.hpp
  * @author Kai Buschulte
  * @date 12.05.2010
- * $Id$
+ * @since 1.0.0
  */
 
 #ifndef FILETYPE_HPP_

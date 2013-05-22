@@ -28,7 +28,7 @@
  * @brief This file contains routines to check the equality of distributed matrices
  * @author Thomas Brandes
  * @date 18.06.2012
- * $Id$
+ * @since 1.0.0
  */
 #ifndef LAMA_SAME_MATRIX_HELPER_HPP_
 #define LAMA_SAME_MATRIX_HELPER_HPP_

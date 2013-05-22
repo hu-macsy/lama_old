@@ -28,7 +28,7 @@
  * @brief BLASHelper.hpp
  * @author Lauretta Schubert
  * @date 04.07.2012
- * $Id$
+ * @since 1.0.0
  */
 #ifndef LAMA_BLASHELPER_HPP_
 #define LAMA_BLASHELPER_HPP_

@@ -28,7 +28,7 @@
  * @brief Implementation and instantiation for template class CSRStorage.
  * @author Thomas Brandes
  * @date 04.06.2011
- * $Id$
+ * @since 1.0.0
  */
 
 // hpp

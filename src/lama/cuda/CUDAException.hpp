@@ -28,7 +28,7 @@
  * @brief CUDAException.hpp
  * @author Jiri Kraus
  * @date 20.05.2011
- * $Id$
+ * @since 1.0.0
  */
 #ifndef LAMA_CUDAEXCEPTION_HPP_
 #define LAMA_CUDAEXCEPTION_HPP_

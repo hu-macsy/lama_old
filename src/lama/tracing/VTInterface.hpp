@@ -28,7 +28,7 @@
  * @brief Interface between LAMA and VampirTrace
  * @author Thomas Brandes
  * @date 14.02.2013
- * $Id$
+ * @since 1.0.0
  */
 #ifndef LAMA_VT_INTERFACE_HPP_
 #define LAMA_VT_INTERFACE_HPP_

@@ -28,7 +28,7 @@
  * @brief Halo.hpp
  * @author Thomas Brandes
  * @date 23.02.2011
- * $Id$
+ * @since 1.0.0
  */
 #ifndef LAMA_HALO_HPP_
 #define LAMA_HALO_HPP_

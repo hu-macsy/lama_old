@@ -28,7 +28,7 @@
  * @brief Definition of class with utility routines.
  * @author Thomas Brandes
  * @date 10.10.2011
- * $Id$
+ * @since 1.0.0
  */
 
 // hpp

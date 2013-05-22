@@ -28,7 +28,7 @@
  * @brief AMGSetupManager.hpp
  * @author Thomas Brandes
  * @date 15.03.2013
- * $Id$
+ * @since 1.0.0
  */
 
 #ifndef LAMA_AMG_SETUP_MANAGER_HPP_

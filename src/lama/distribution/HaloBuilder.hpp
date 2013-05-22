@@ -28,7 +28,7 @@
  * @brief HaloBuilder.hpp
  * @author Thomas Brandes, Jiri Kraus
  * @date 24.03.2011
- * $Id$
+ * @since 1.0.0
  */
 #ifndef LAMA_HALOBUILDER_HPP_
 #define LAMA_HALOBUILDER_HPP_

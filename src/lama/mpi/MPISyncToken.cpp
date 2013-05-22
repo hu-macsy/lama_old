@@ -28,7 +28,7 @@
  * @brief Implementation of methods for class MPISyncToken.
  * @author Thomas Brandes, Jiri Kraus
  * @date 23.03.2011
- * $Id$
+ * @since 1.0.0
  */
 
 // hpp

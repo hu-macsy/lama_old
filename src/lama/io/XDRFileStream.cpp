@@ -28,7 +28,7 @@
  * @brief XDRFileStream.cpp
  * @author Kai Buschulte
  * @date 15.04.2010
- * $Id$
+ * @since 1.0.0
  */
 
 // hpp

@@ -28,7 +28,7 @@
  * @brief Definition of class that contains all regions with their timings.
  * @author Thomas Brandes
  * @date 21.11.2011
- * $Id$
+ * @since 1.0.0
  */
 
 #ifndef LAMA_REGION_TABLE_HPP_

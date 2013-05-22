@@ -32,7 +32,7 @@
  * @brief ${file_name}
  * @author ${user}
  * @date ${date}
- * $$Id$$
+ * $@since 1.0.0$
  */</template><template autoinsert="false" context="org.eclipse.cdt.ui.text.codetemplates.typecomment_context" deleted="false" description="Comment for created classes" enabled="true" id="org.eclipse.cdt.ui.text.codetemplates.typecomment" name="typecomment">/**
  * @brief ${type_name}
  */</template><template autoinsert="false" context="org.eclipse.cdt.ui.text.codetemplates.fieldcomment_context" deleted="false" description="Comment for fields" enabled="true" id="org.eclipse.cdt.ui.text.codetemplates.fieldcomment" name="fieldcomment">/**

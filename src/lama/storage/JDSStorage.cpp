@@ -28,7 +28,7 @@
  * @brief Instantitions for template class JDSStorage.
  * @author Thomas Brandes
  * @date 24.06.2011
- * $Id$
+ * @since 1.0.0
  */
 
 // hpp

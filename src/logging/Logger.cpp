@@ -28,7 +28,7 @@
  * @brief Logger.cpp
  * @author Thomas Brandes
  * @date 01.03.2011
- * $Id$
+ * @since 1.0.0
  */
 
 // hpp

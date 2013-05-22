@@ -28,7 +28,7 @@
  # @brief Important CMake variable definitions
  # @author Jan Ecker
  # @date 16.04.2013
- # $Id$
+ # @since 1.0.0
 ###
 
 # Check if verbose mode for CMAKE is selected

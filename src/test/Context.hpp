@@ -28,7 +28,7 @@
  * @brief Context.hpp
  * @author Jiri Kraus
  * @date 12.04.2012
- * $Id$
+ * @since 1.0.0
  */
 #ifndef LAMA_BTEST_CONTEXT_HPP_
 #define LAMA_BTEST_CONTEXT_HPP_

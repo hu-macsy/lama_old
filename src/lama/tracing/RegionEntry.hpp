@@ -28,7 +28,7 @@
  * @brief Definition of struct that contains all relevant properties of a region
  * @author Thomas Brandes
  * @date 21.11.2011
- * $Id$
+ * @since 1.0.0
  */
 
 #ifndef LAMA_REGION_ENTRY_HPP_

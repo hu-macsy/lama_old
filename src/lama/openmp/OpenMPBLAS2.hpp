@@ -28,7 +28,7 @@
  * @brief OpenMPBLAS2.hpp
  * @author Lauretta Schubert
  * @date 05.07.2012
- * $Id$
+ * @since 1.0.0
  */
 #ifndef LAMA_OPENMPBLAS2_HPP_
 #define LAMA_OPENMPBLAS2_HPP_

@@ -28,7 +28,7 @@
  * @brief L1Norm.hpp
  * @author Jiri Kraus
  * @date 14.06.2011
- * $Id$
+ * @since 1.0.0
  */
 #ifndef LAMA_L1NORM_HPP_
 #define LAMA_L1NORM_HPP_

@@ -28,7 +28,7 @@
  * @brief Distribution class to support block-cyclic distributions.
  * @author Lauretta Schubert
  * @date 20.05.2011
- * $Id$
+ * @since 1.0.0
  */
 #ifndef LAMA_CYCLIC_DISTRIBUTION_HPP_
 #define LAMA_CYCLIC_DISTRIBUTION_HPP_

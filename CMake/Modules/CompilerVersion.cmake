@@ -28,7 +28,7 @@
  # @brief Version variable defintions for the used compilers
  # @author Jan Ecker
  # @date 25.04.2013
- # $Id$
+ # @since 1.0.0
 ###
 
 ### C Compiler

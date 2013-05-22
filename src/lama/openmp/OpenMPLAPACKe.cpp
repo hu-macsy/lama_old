@@ -28,7 +28,7 @@
  * @brief OpenMPLAPACKe.cpp
  * @author Lauretta Schubert
  * @date 02.07.2012
- * $Id$
+ * @since 1.0.0
  */
 
 // hpp

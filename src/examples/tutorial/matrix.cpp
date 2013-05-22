@@ -28,7 +28,7 @@
  * @brief matrix.cpp is an example matrix vector multiplication (CSR matrix format).
  * @author Bea Hornef
  * @date 16.05.2013
- * $Id$
+ * @since 1.0.0
  */
 
 #include <lama.hpp>

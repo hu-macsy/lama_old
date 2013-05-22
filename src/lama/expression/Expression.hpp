@@ -28,7 +28,7 @@
  * @brief Expression.hpp
  * @author brandes
  * @date 28.03.2011
- * $Id$
+ * @since 1.0.0
  */
 #ifndef LAMA_EXPRESSION_HPP_
 #define LAMA_EXPRESSION_HPP_

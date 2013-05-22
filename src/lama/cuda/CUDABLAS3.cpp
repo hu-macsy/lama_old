@@ -28,7 +28,7 @@
  * @brief CUDABLAS3.cpp
  * @author lschubert
  * @date 05.07.2012
- * $Id$
+ * @since 1.0.0
  */
 
 // hpp

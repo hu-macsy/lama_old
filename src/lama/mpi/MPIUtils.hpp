@@ -28,7 +28,7 @@
  * @brief Utility macros for MPI calls
  * @author Thomas Brandes
  * @date 23.03.2011
- * $Id$
+ * @since 1.0.0
  */
 #ifndef LAMA_MPIUTILS_HPP_
 #define LAMA_MPIUTILS_HPP_

@@ -28,7 +28,7 @@
  * @brief AMGSetup.cpp
  * @author Jiri Kraus
  * @date 28.10.2011
- * $Id$
+ * @since 1.0.0
  */
 
 // hpp

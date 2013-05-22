@@ -28,7 +28,7 @@
  * @brief Implementation of utilties for CUDA Texture
  * @author Thomas Brandes
  * @date 04.05.2013
- * $Id$
+ * @since 1.0.0
  */
 
 #include <lama/cuda/CUDATexture.hpp>

@@ -28,7 +28,7 @@
  * @brief blas1.cpp
  * @author lschubert
  * @date 17.05.2013
- * $Id$
+ * @since 1.0.0
  */
 
 /**

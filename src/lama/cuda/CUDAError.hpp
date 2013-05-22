@@ -28,7 +28,7 @@
  * @brief Error handling for CUDA ( runtime, api, cublas, cusparse )
  * @author Thomas Brandes
  * @date 15.07.2012
- * $Id$
+ * @since 1.0.0
  */
 #ifndef LAMA_CUDA_ERROR_HPP_
 #define LAMA_CUDA_ERROR_HPP_

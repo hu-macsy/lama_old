@@ -28,7 +28,7 @@
  * @brief Macros needed for Microsoft compiler
  * @author Jiri Kraus
  * @date 20.10.2011
- * $Id$
+ * @since 1.0.0
  */
 
 // No include header guards be cause we want to allow this header to be included multiple times

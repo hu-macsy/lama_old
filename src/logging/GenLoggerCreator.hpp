@@ -28,7 +28,7 @@
  * @brief GenLoggerCreator.hpp
  * @author Thomas Brandes
  * @date 01.03.2011
- * $Id$
+ * @since 1.0.0
  */
 
 #ifndef LAMA_GEN_LOGGER_CREATOR_HPP_

@@ -28,7 +28,7 @@
  * @brief Macro for static inline routines handled differently by compilers.
  * @author Jiri Kraus
  * @date 06.04.2011
- * $Id$
+ * @since 1.0.0
  */
 
 #ifndef LAMA_MACROS_INLINE_HPP_

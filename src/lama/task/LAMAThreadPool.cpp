@@ -28,7 +28,7 @@
  * @brief Implementation of class for a thread pool
  * @author Thomas Brandes
  * @date 27.12.2012
- * $Id$
+ * @since 1.0.0
  */
 
 // hpp

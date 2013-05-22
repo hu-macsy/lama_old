@@ -28,7 +28,7 @@
  * @brief BLASHelper.cpp
  * @author Lauretta Schubert
  * @date 10.07.2012
- * $Id$
+ * @since 1.0.0
  */
 
 // hpp

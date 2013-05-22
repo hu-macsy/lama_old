@@ -28,7 +28,7 @@
  * @brief Shared library load routines.
  * @author Jiri Kraus
  * @date 06.04.2011
- * $Id$
+ * @since 1.0.0
  */
 
 #ifndef LAMA_SHARED_LIB_HPP_

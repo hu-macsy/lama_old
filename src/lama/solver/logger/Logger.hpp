@@ -28,7 +28,7 @@
  * @brief contains the Logger header.
  * @author Matthias Makulla
  * @date 06.04.2011
- * $Id$
+ * @since 1.0.0
  */
 #ifndef LAMA_SOLVER_LOGGER_HPP_
 #define LAMA_SOLVER_LOGGER_HPP_

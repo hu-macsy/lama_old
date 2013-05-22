@@ -28,7 +28,7 @@
  * @brief Implementation of COO utilities with CUDA
  * @author Thomas Brandes
  * @date 05.07.2012
- * $Id$
+ * @since 1.0.0
  */
 #ifndef LAMA_CUDA_COO_UTILS_HPP_
 #define LAMA_CUDA_COO_UTILS_HPP_

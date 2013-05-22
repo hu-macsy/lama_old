@@ -28,7 +28,7 @@
  # @brief Find ACML
  # @author
  # @date 25.04.2013
- # $Id$
+ # @since 1.0.0
 ###
 
 # - Try to find ACML

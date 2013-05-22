@@ -28,7 +28,7 @@
  * @brief ResidualThreshold.cpp
  * @author Kai Buschulte
  * @date 21.07.2011
- * $Id$
+ * @since 1.0.0
  */
 
 // hpp

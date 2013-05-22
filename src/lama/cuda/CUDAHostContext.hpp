@@ -28,7 +28,7 @@
  * @brief Host context where memory is pinned for fast transfer to CUDA device
  * @author Thomas Brandes, Jiri Kraus
  * @date 04.07.2011
- * $Id$
+ * @since 1.0.0
  */
 #ifndef LAMA_CUDA_HOST_CONTEXT_HPP_
 #define LAMA_CUDA_HOST_CONTEXT_HPP_

@@ -29,7 +29,7 @@
 #         measure code coverage of LAMA.
 #  @author: Alexander Büchel, Lauretta Schubert
 #  @date 15.08.2012
-#  $Id$
+#  @since 1.0.0
 #
 
 # Setting some enviroment variables

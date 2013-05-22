@@ -28,7 +28,7 @@
  * @brief Implementation of static IO routines for matrix storage
  * @author Thomas Brandes
  * @date 27.07.2012
- * $Id$
+ * @since 1.0.0
  */
 
 // hpp

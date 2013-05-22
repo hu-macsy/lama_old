@@ -28,7 +28,7 @@
  * @brief Instantiation for template class DenseStorage.
  * @author Thomas Brandes, Michael Drost
  * @date 04.06.2011
- * $Id$
+ * @since 1.0.0
  */
 
 // hpp

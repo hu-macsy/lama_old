@@ -28,7 +28,7 @@
  * @brief Definition of the class Thread
  * @author Jiri Kraus
  * @date 30.03.2012
- * $Id$
+ * @since 1.0.0
  */
 #ifndef LAMA_THREAD_HPP_
 #define LAMA_THREAD_HPP_

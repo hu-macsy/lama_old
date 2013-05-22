@@ -28,7 +28,7 @@
  * @brief General conversion routines for CSR sparse matrices.
  * @author Thomas Brandes
  * @date 03.07.2012
- * $Id$
+ * @since 1.0.0
  */
 #ifndef LAMA_CUDA_CSR_UTILS_HPP_
 #define LAMA_CUDA_CSR_UTILS_HPP_

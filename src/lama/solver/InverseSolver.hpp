@@ -28,7 +28,7 @@
  * @brief Contains the class InversteSolver.
  * @author Thomas Brandes
  * @date 10.04.2013
- * $Id$
+ * @since 1.0.0
  */
 #ifndef LAMA_INVERSESOLVER_HPP_
 #define LAMA_INVERSESOLVER_HPP_

@@ -28,7 +28,7 @@
  * @brief OpenMPBLAS3.hpp
  * @author Lauretta Schubert
  * @date 05.07.2012
- * $Id$
+ * @since 1.0.0
  */
 #ifndef LAMA_OPENMPBLAS3_HPP_
 #define LAMA_OPENMPBLAS3_HPP_

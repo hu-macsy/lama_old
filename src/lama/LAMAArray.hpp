@@ -30,7 +30,7 @@
  *        when corresponding read/write accesses are required
  * @author Thomas Brandes
  * @date 14.03.2011
- * $Id$
+ * @since 1.0.0
  */
 #ifndef LAMA_LAMA_ARRAY_HPP_
 #define LAMA_LAMA_ARRAY_HPP_

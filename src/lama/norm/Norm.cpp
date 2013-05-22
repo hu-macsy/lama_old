@@ -28,7 +28,7 @@
  * @brief Norm.cpp
  * @author Jiri Kraus
  * @date 01.06.2011
- * $Id$
+ * @since 1.0.0
  */
 
 // hpp

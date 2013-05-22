@@ -28,7 +28,7 @@
  * @brief Class that provides a set of timers accessed by their ids.
  * @author Matthias Makulla
  * @date 06.04.2011
- * $Id$
+ * @since 1.0.0
  */
 #ifndef LAMA_TIMER_HPP_
 #define LAMA_TIMER_HPP_

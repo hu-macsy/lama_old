@@ -28,7 +28,7 @@
  * @brief SparseAssemblyStorage.cpp
  * @author Jiri Kraus, Thomas Brandes
  * @date 07.11.2011
- * $Id$
+ * @since 1.0.0
  */
 
 // hpp

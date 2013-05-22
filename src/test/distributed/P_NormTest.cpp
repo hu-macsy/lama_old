@@ -28,7 +28,7 @@
  * @brief Test norm for distributed vectors.
  * @author: Thomas Brandes
  * @date 10.05.2013
- * $Id$
+ * @since 1.0.0
  **/
 
 #include <boost/test/unit_test.hpp>

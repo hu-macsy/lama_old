@@ -28,7 +28,7 @@
  * @brief Implementation of CUDA host manager class methods.
  * @author Thomas Brandes
  * @date 16.07.2011
- * $Id$
+ * @since 1.0.0
  */
 
 // hpp

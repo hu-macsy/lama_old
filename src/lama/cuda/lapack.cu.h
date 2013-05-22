@@ -28,7 +28,7 @@
  * @brief lapack.cu.h
  * @author lschubert
  * @date 06.07.2012
- * $Id$
+ * @since 1.0.0
  */
 
 #include <cuda_runtime.h>

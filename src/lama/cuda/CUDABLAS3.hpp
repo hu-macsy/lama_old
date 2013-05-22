@@ -28,7 +28,7 @@
  * @brief CUDABLAS3.hpp
  * @author lschubert
  * @date 05.07.2012
- * $Id$
+ * @since 1.0.0
  */
 #ifndef LAMA_CUDABLAS3_HPP_
 #define LAMA_CUDABLAS3_HPP_

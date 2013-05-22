@@ -28,7 +28,7 @@
  * @brief General conversion routines for ELL sparse matrices.
  * @author Thomas Brandes
  * @date 03.07.2012
- * $Id$
+ * @since 1.0.0
  */
 #ifndef LAMA_OPENMP_ELL_UTILS_HPP_
 #define LAMA_OPENMP_ELL_UTILS_HPP_

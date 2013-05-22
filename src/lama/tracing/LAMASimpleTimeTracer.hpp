@@ -28,7 +28,7 @@
  * @brief LAMASimpleTimeTracer.hpp
  * @author Lauretta Schubert
  * @date 08.11.2011
- * $Id$
+ * @since 1.0.0
  */
 #ifndef LAMA_LAMASIMPLETIMETRACER_HPP_
 #define LAMA_LAMASIMPLETIMETRACER_HPP_

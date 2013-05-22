@@ -28,7 +28,7 @@
  * @brief Base class for a distribution manager that is used for the distribution factory.
  * @author Thomas Brandes
  * @date 23.02.2011
- * $Id$
+ * @since 1.0.0
  */
 
 #ifndef LAMA_DISTRIBUTION_MANAGER_HPP_

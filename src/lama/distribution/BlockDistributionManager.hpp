@@ -28,7 +28,7 @@
  * @brief Definition of manager class for block distributions.
  * @author Thomas Brandes
  * @date 20.10.2012
- * $Id$
+ * @since 1.0.0
  */
 
 #ifndef LAMA_BLOCK_DISTRIBUTION_MANAGER_HPP_

@@ -28,7 +28,7 @@
  * @brief Abstract logger class for a hierarchically organized logging system.
  * @author Thomas Brandes
  * @date 01.03.2011
- * $Id$
+ * @since 1.0.0
  */
 #ifndef LAMA_LOGGER_HPP_
 #define LAMA_LOGGER_HPP_

@@ -28,7 +28,7 @@
  # @brief logging/CMakeLists.txt
  # @author Jan Ecker
  # @date 03.04.2013
- # $Id$
+ # @since 1.0.0
 ###
 
 ### set this dir as lama source dir ###

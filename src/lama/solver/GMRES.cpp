@@ -28,7 +28,7 @@
  * @brief GMRES.cpp
  * @author Malte Förster
  * @date 10.04.2012
- * $Id$
+ * @since 1.0.0
  */
 
 // hpp

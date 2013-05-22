@@ -28,7 +28,7 @@
  * @brief Definition of class that can create loggers.
  * @author Thomas Brandes
  * @date 02.03.2011
- * $Id$
+ * @since 1.0.0
  */
 #ifndef LAMA_LOGGERPROVIDER_HPP_
 #define LAMA_LOGGERPROVIDER_HPP_

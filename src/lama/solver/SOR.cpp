@@ -28,7 +28,7 @@
  * @brief SOR.cpp
  * @author Martin Schenk
  * @date 29.08.2011
- * $Id$
+ * @since 1.0.0
  */
 
 // hpp

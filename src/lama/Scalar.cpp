@@ -28,7 +28,7 @@
  * @brief Scalar.cpp
  * @author Jiri Kraus
  * @date 07.11.2011
- * $Id$
+ * @since 1.0.0
  */
 
 // hpp

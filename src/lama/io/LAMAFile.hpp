@@ -28,7 +28,7 @@
  * @brief LAMAFile.hpp
  * @author Thomas Brandes
  * @date 31.10.2011
- * $Id$
+ * @since 1.0.0
  */
 #ifndef LAMA_LAMAFILE_HPP_
 #define LAMA_LAMAFILE_HPP_

@@ -28,7 +28,7 @@
  * @brief LAMAInterfaceRegistry.cpp
  * @author Thomas Brandes
  * @date 12.04.2013
- * $Id$
+ * @since 1.0.0
  */
 
 // hpp

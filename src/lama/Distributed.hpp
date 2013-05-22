@@ -28,7 +28,7 @@
  * @brief Distributed.hpp
  * @author Jiri Kraus
  * @date 22.02.2011
- * $Id$
+ * @since 1.0.0
  */
 #ifndef LAMA_DISTRIBUTED_HPP_
 #define LAMA_DISTRIBUTED_HPP_

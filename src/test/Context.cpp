@@ -28,7 +28,7 @@
  * @brief Context.cpp
  * @author Jiri Kraus
  * @date 12.04.2012
- * $Id$
+ * @since 1.0.0
  */
 #include <test/Context.hpp>
 

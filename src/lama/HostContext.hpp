@@ -28,7 +28,7 @@
  * @brief Definition of a class that defines a context for HOST computation/allocation.
  * @author Thomas Brandes
  * @date 14.07.2011
- * $Id$
+ * @since 1.0.0
  */
 #ifndef LAMA_HOSTCONTEXT_HPP_
 #define LAMA_HOSTCONTEXT_HPP_

@@ -28,7 +28,7 @@
  * @brief Definition of a class that starts new Task.
  * @author Thomas Brandes
  * @date 04.05.2011
- * $Id$
+ * @since 1.0.0
  */
 #ifndef LAMA_TASKSYNCTOKEN_HPP_
 #define LAMA_TASKSYNCTOKEN_HPP_

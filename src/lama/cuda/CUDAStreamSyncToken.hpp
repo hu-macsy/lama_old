@@ -28,7 +28,7 @@
  * @brief CUDAStreamSyncToken.hpp
  * @author Jiri Kraus, Thomas Brandes
  * @date 28.07.2011
- * $Id$
+ * @since 1.0.0
  */
 #ifndef LAMA_CUDA_STREAM_SYNC_TOKEN_HPP_
 #define LAMA_CUDA_STREAM_SYNC_TOKEN_HPP_

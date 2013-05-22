@@ -28,7 +28,7 @@
  * @brief DefaultJacobi.cpp
  * @author Kai Buschulte
  * @date 10.08.2011
- * $Id$
+ * @since 1.0.0
  */
 
 // hpp

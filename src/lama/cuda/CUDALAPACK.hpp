@@ -28,7 +28,7 @@
  * @brief CUDALAPACK.hpp
  * @author lschubert
  * @date 06.07.2012
- * $Id$
+ * @since 1.0.0
  */
 #ifndef LAMA_CUDALAPACK_HPP_
 #define LAMA_CUDALAPACK_HPP_

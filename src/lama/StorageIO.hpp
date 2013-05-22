@@ -28,7 +28,7 @@
  * @brief Class providing IO routines for matrix storage
  * @author Thomas Brandes
  * @date 31.07.2012
- * $Id$
+ * @since 1.0.0
  */
 #ifndef LAMA_STORAGE_IO_HPP_
 #define LAMA_STORAGE_IO_HPP_

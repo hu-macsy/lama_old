@@ -28,7 +28,7 @@
  * @brief OmegaSolver.hpp
  * @author Kai Buschulte
  * @date 10.08.2011
- * $Id$
+ * @since 1.0.0
  */
 
 #ifndef LAMA_OMEGASOLVER_HPP_

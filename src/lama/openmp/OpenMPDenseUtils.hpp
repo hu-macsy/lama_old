@@ -28,7 +28,7 @@
  * @brief Class defintion for OpenMP routines to be used for DenseUtilsInterface.
  * @author Thomas Brandes
  * @date 03.07.2012
- * $Id$
+ * @since 1.0.0
  */
 #ifndef LAMA_OPENMP_DENSE_UTILS_HPP_
 #define LAMA_OPENMP_DENSE_UTILS_HPP_

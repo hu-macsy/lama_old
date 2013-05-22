@@ -28,7 +28,7 @@
  # @brief Definitions for LAMA
  # @author Jan Ecker
  # @date 25.04.2013
- # $Id$
+ # @since 1.0.0
 ###
 
 ## LOGGING Level

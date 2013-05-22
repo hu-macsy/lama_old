@@ -28,7 +28,7 @@
  * @brief P_MatrixStorageTest.cpp
  * @author Thomas Brandes
  * @date 03.08.2012
- * $Id$
+ * @since 1.0.0
  */
 
 #include <boost/test/unit_test.hpp>

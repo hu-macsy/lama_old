@@ -28,7 +28,7 @@
  * @brief Operators to form symbolic expressions Scalar * Matrix * Vector + Scalar * Vector
  * @author Thomas Brandes
  * @date 28.03.2011
- * $Id$
+ * @since 1.0.0
  */
 #ifndef LAMA_MATRIX_VECTOR_EXPRESSIONS_HPP_
 #define LAMA_MATRIX_VECTOR_EXPRESSIONS_HPP_

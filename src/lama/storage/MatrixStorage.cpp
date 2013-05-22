@@ -28,7 +28,7 @@
  * @brief Implementation of methods for common base class of all matrix storage formats.
  * @author Thomas Brandes
  * @date 27.04.2011
- * $Id$
+ * @since 1.0.0
  */
 
 // hpp

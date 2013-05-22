@@ -28,7 +28,7 @@
  * @brief Implementation of JDS utilities with OpenMP
  * @author Thomas Brandes
  * @date 05.07.2012
- * $Id$
+ * @since 1.0.0
  */
 #ifndef LAMA_OPENMP_JDS_UTILS_HPP_
 #define LAMA_OPENMP_JDS_UTILS_HPP_

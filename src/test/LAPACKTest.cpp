@@ -28,7 +28,7 @@
  * @brief Test class for calling LAPACK routines via the LAMAInterface
  * @author Thomas Brandes
  * @date 10.04.2013
- * $Id$
+ * @since 1.0.0
  */
 
 #include <boost/test/unit_test.hpp>

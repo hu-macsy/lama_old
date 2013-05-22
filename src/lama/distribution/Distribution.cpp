@@ -28,7 +28,7 @@
  * @brief Implementation of methods for base class Distribution.
  * @author Jiri Kraus
  * @date 22.02.2011
- * $Id$
+ * @since 1.0.0
  */
 
 // hpp

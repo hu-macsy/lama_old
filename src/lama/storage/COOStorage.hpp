@@ -29,7 +29,7 @@
  *        represented by coordinate lists.
  * @author Paul Börding, Thomas Brandes
  * @date 11.06.2011
- * $Id$
+ * @since 1.0.0
  */
 #ifndef LAMA_COOSTORAGE_HPP_
 #define LAMA_COOSTORAGE_HPP_

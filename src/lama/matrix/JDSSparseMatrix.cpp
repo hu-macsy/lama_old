@@ -28,7 +28,7 @@
  * @brief Implementation of methods and constructors for template class JDSSparseMatrix.
  * @author Thomas Brandes
  * @date 04.08.2012
- * $Id$
+ * @since 1.0.0
  */
 
 // hpp

@@ -28,7 +28,7 @@
  * @brief Implementation of interface between LAMA and VampirTrace
  * @author Thomas Brandes
  * @date 14.02.2013
- * $Id$
+ * @since 1.0.0
  */
 
 // hpp

@@ -28,7 +28,7 @@
  * @brief WriteAccess.hpp
  * @author Thomas Brandes
  * @date 29.04.2011
- * $Id$
+ * @since 1.0.0
  */
 #ifndef LAMA_WRITE_ACCESS_HPP_
 #define LAMA_WRITE_ACCESS_HPP_

@@ -28,7 +28,7 @@
  * @brief IterativeSolver.cpp
  * @author Kai Buschulte
  * @date 19.07.2011
- * $Id$
+ * @since 1.0.0
  */
 
 // hpp

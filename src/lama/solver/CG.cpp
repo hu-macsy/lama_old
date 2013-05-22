@@ -28,7 +28,7 @@
  * @brief CG.cpp
  * @author Jiri Kraus
  * @date 24.08.2011
- * $Id$
+ * @since 1.0.0
  */
 
 // hpp

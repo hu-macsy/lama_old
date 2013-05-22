@@ -28,7 +28,7 @@
  * @brief MPIException.cpp
  * @author Thomas Brandes
  * @date 01.03.2011
- * $Id$
+ * @since 1.0.0
  */
 
 #include <mpi.h> //Intel MPI need mpi.h to be included before stdio.h so this header comes first

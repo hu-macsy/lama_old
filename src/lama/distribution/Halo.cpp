@@ -28,7 +28,7 @@
  * @brief Halo.cpp
  * @author Thomas Brandes
  * @date 23.02.2011
- * $Id$
+ * @since 1.0.0
  */
 
 // hpp

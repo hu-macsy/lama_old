@@ -28,7 +28,7 @@
  * @brief NoCommunicatorManager.hpp
  * @author Thomas Brandes
  * @date 15.03.2011
- * $Id$
+ * @since 1.0.0
  */
 #ifndef LAMA_NO_COMMUNICATOR_MANAGER_HPP_
 #define LAMA_NO_COMMUNICATOR_MANAGER_HPP_

@@ -28,7 +28,7 @@
  * @brief launchHelper.hpp
  * @author lschubert
  * @date 06.07.2012
- * $Id$
+ * @since 1.0.0
  */
 #ifndef LAMA_LAUNCHHELPER_HPP_
 #define LAMA_LAUNCHHELPER_HPP_

@@ -28,7 +28,7 @@
  * @brief Implementation of CSR utilities with OpenMP
  * @author Thomas Brandes
  * @date 02.07.2012
- * $Id$
+ * @since 1.0.0
  */
 #ifndef LAMA_OPENMP_CSR_UTILS_HPP_
 #define LAMA_OPENMP_CSR_UTILS_HPP_

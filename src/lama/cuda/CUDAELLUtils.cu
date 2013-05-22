@@ -28,7 +28,7 @@
  * @brief Implementation of ELL utilities with CUDA
  * @author Thomas Brandes
  * @date 04.07.2012
- * $Id$
+ * @since 1.0.0
  */
 
 // lama cuda

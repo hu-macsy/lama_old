@@ -28,7 +28,7 @@
  * @brief CUDAContext.cpp
  * @author Jiri Kraus
  * @date 05.04.2012
- * $Id$
+ * @since 1.0.0
  */
 #include <test/cuda/CUDAContext.hpp>
 

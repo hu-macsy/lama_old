@@ -28,7 +28,7 @@
  * @brief utils.cu.h
  * @author jiri
  * @date 15.06.2010
- * $Id$
+ * @since 1.0.0
  */
 
 #include <math.h>

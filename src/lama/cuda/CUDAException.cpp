@@ -28,7 +28,7 @@
  * @brief CUDAException.cpp
  * @author Jiri Kraus
  * @date 20.05.2011
- * $Id$
+ * @since 1.0.0
  */
 
 // hpp

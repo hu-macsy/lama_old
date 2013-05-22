@@ -28,7 +28,7 @@
  * @brief Definition of macros for tracing/profiling
  * @author Lauretta Schubert, Thomas Brandes
  * @date 12.08.2011
- * $Id$
+ * @since 1.0.0
  */
 #ifndef LAMA_TRACING_HPP_
 #define LAMA_TRACING_HPP_

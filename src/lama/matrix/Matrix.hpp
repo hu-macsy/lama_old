@@ -28,7 +28,7 @@
  * @brief Abstract base class for all matrices supported by LAMA.
  * @author Jiri Kraus, Thomas Brandes
  * @date 22.02.2011
- * $Id$
+ * @since 1.0.0
  */
 #ifndef LAMA_MATRIX_HPP_
 #define LAMA_MATRIX_HPP_

@@ -28,7 +28,7 @@
  * @brief Definition of a base class for synchronization of computations and communications.
  * @author Thomas Brandes, Jiri Kraus
  * @date 22.03.2011
- * $Id$
+ * @since 1.0.0
  */
 
 #ifndef LAMA_SYNC_TOKEN_HPP_

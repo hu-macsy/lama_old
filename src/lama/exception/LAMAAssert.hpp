@@ -28,7 +28,7 @@
  * @brief Contains error checking macros like ASSERT and LAMACALL.
  * @author Jiri Kraus
  * @date 02.03.2011
- * $Id$
+ * @since 1.0.0
  */
 
 #ifndef LAMA_ASSERT_HPP_

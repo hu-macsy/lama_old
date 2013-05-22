@@ -28,7 +28,7 @@
  * @brief BlockDistribution.hpp
  * @author thomas Brandes
  * @date 18.03.2011
- * $Id$
+ * @since 1.0.0
  */
 #ifndef LAMA_BLOCKDISTRIBUTION_HPP_
 #define LAMA_BLOCKDISTRIBUTION_HPP_

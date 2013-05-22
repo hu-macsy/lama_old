@@ -28,7 +28,7 @@
  * @brief MPISyncToken.hpp
  * @author Thomas Brandes, Jiri Kraus
  * @date 23.03.2011
- * $Id$
+ * @since 1.0.0
  */
 #ifndef LAMA_MPI_SYNC_TOKEN_HPP_
 #define LAMA_MPI_SYNC_TOKEN_HPP_

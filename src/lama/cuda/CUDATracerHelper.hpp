@@ -28,7 +28,7 @@
  * @brief CUDATracerHelper.hpp
  * @author schubert
  * @date 09.11.2011
- * $Id$
+ * @since 1.0.0
  */
 #ifndef LAMA_CUDATRACERHELPER_HPP_
 #define LAMA_CUDATRACERHELPER_HPP_

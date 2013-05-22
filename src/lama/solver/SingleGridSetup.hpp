@@ -28,7 +28,7 @@
  * @brief SingleGridSetup.hpp
  * @author Jiri Kraus
  * @date 27.10.2011
- * $Id$
+ * @since 1.0.0
  */
 #ifndef LAMA_SINGLEGRIDSETUP_HPP_
 #define LAMA_SINGLEGRIDSETUP_HPP_

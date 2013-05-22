@@ -28,7 +28,7 @@
  * @brief Manager for CUDA host context.
  * @author Thomas Brandes, Jiri Kraus
  * @date 04.07.2011
- * $Id$
+ * @since 1.0.0
  */
 #ifndef LAMA_CUDA_HOST_CONTEXT_MANAGER_HPP_
 #define LAMA_CUDA_HOST_CONTEXT_MANAGER_HPP_

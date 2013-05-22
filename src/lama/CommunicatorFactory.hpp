@@ -30,7 +30,7 @@
  *
  * @author Jiri Kraus, Thomas Brandes
  * @date 23.02.2011
- * $Id$
+ * @since 1.0.0
  */
 
 #ifndef LAMA_COMMUNICATOR_FACTORY_HPP_

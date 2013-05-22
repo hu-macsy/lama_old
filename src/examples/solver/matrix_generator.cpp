@@ -28,7 +28,7 @@
  * @brief Example program that generates matrices and writes them to a file
  * @author Thomas Brandes
  * @date 15.05.2013
- * $Id$
+ * @since 1.0.0
  */
 
 // Define levels for assertion, logging and tracing

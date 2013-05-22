@@ -28,7 +28,7 @@
  # @brief Configuration for code coverage
  # @author Jan Ecker
  # @date 25.04.2013
- # $Id$
+ # @since 1.0.0
 ###
 
 ###  Code coverage with gcov/lcov

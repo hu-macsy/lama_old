@@ -28,7 +28,7 @@
  * @brief Definition of class for distributed sparse matrices.
  * @author Jiri Kraus, Thomas Brandes
  * @date 06.06.2011
- * $Id$
+ * @since 1.0.0
  */
 #ifndef LAMA_SPARSE_MATRIX_HPP_
 #define LAMA_SPARSE_MATRIX_HPP_

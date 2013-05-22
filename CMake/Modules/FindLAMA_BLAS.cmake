@@ -28,7 +28,7 @@
  # @brief CMake functions and macros
  # @author
  # @date 25.04.2013
- # $Id$
+ # @since 1.0.0
 ###
 
 # - Try to find LAMA_BLAS

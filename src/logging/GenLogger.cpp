@@ -28,7 +28,7 @@
  * @brief Implementation of methods for generic logger.
  * @author Thomas Brandes
  * @date 01.03.2011
- * $Id$
+ * @since 1.0.0
  */
 #include <iostream>
 

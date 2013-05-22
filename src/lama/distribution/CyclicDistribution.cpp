@@ -28,7 +28,7 @@
  * @brief CyclicDistribution.cpp
  * @author schubert
  * @date 20.05.2011
- * $Id$
+ * @since 1.0.0
  */
 
 // hpp

@@ -28,7 +28,7 @@
  * @brief Additional Macros used for testing of LAMA with Boost Test.
  * @author Jiri Kraus
  * @date 06.04.2011
- * $Id$
+ * @since 1.0.0
  */
 
 #include <string>

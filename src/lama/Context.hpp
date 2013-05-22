@@ -30,7 +30,7 @@
  *
  * @author Thomas Brandes
  * @date 14.07.2011
- * $Id$
+ * @since 1.0.0
  */
 #ifndef LAMA_CONTEXT_HPP_
 #define LAMA_CONTEXT_HPP_

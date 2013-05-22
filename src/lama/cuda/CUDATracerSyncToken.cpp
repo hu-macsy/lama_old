@@ -28,7 +28,7 @@
  * @brief CUDATracerSyncToken.cpp
  * @author schubert
  * @date 09.11.2011
- * $Id$
+ * @since 1.0.0
  */
 
 // hpp

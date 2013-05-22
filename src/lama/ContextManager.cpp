@@ -28,7 +28,7 @@
  * @brief Implementation of methods for class ContextManager.
  * @author Thomas Brandes
  * @date 10.07.2011
- * $Id$
+ * @since 1.0.0
  */
 
 // hpp

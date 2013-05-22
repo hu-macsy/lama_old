@@ -28,7 +28,7 @@
  * @brief Abstract class for logger creator.
  * @author Thomas Brandes
  * @date 02.03.2011
- * $Id$
+ * @since 1.0.0
  */
 #ifndef LAMA_ABSTRACTLOGGERCREATER_HPP_
 #define LAMA_ABSTRACTLOGGERCREATER_HPP_

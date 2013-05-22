@@ -28,7 +28,7 @@
  * @brief Definition of matrix class for distributed matrixes in Dense format.
  * @author Michael Drost
  * @date 22.02.2011
- * $Id$
+ * @since 1.0.0
  */
 #ifndef LAMA_DENSEMATRIX_HPP_
 #define LAMA_DENSEMATRIX_HPP_

@@ -28,7 +28,7 @@
  * @brief Implementation of methods for block distribution class.
  * @author Thomas Brandes
  * @date 18.03.2011
- * $Id$
+ * @since 1.0.0
  */
 
 // hpp

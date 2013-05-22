@@ -28,7 +28,7 @@
  * @brief Definition of macro for unused arguemnts.
  * @author Jiri Kraus
  * @date 06.04.2011
- * $Id$
+ * @since 1.0.0
  */
 
 #ifndef LAMA_UNUSED_HPP_

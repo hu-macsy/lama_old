@@ -28,7 +28,7 @@
  * @brief General conversion routines for DIA sparse matrices.
  * @author Thomas Brandes
  * @date 15.07.2012
- * $Id$
+ * @since 1.0.0
  */
 #ifndef LAMA_OPENMP_DIA_UTILS_HPP_
 #define LAMA_OPENMP_DIA_UTILS_HPP_

@@ -28,7 +28,7 @@
  * @brief Contains tests for the class CUDAELLUtils and OpenMPELLUtils
  * @author: Jan Ecker
  * @date 15.10.2012
- * $Id$
+ * @since 1.0.0
  **/
 
 // boost

@@ -28,7 +28,7 @@
  * @brief Implementation of methods for class RegionTable.
  * @author Thomas Brandes
  * @date 21.11.2011
- * $Id$
+ * @since 1.0.0
  */
 
 // hpp

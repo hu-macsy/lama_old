@@ -28,7 +28,7 @@
  * @brief SOR.hpp
  * @author Martin Schenk
  * @date 29.08.2011
- * $Id$
+ * @since 1.0.0
  */
 #ifndef LAMA_SOR_HPP_
 #define LAMA_SOR_HPP_

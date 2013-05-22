@@ -29,7 +29,7 @@
  *        logs its messages to the console only or to a file and the console
  * @author Matthias Makulla
  * @date 06.04.2011
- * $Id$
+ * @since 1.0.0
  */
 #ifndef LAMA_LOGGERWRITERBEHAVIOUR_HPP_
 #define LAMA_LOGGERWRITERBEHAVIOUR_HPP_

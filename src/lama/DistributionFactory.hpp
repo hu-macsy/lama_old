@@ -30,7 +30,7 @@
  *
  * @author Thomas Brandes
  * @date 20.12.2012
- * $Id$
+ * @since 1.0.0
  */
 
 #ifndef LAMA_DISTRIBUTION_FACTORY_HPP_

@@ -28,7 +28,7 @@
  * @brief Macros used for LAMA interface
  * @author Thomas Brandes
  * @date 02.04.2013
- * $Id$
+ * @since 1.0.0
  */
 #ifndef LAMA_INTERFACE_MACROS_HPP_
 #define LAMA_INTERFACE_MACROS_HPP_

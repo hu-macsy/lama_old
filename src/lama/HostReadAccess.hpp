@@ -28,7 +28,7 @@
  * @brief HostReadAccess.hpp
  * @author Thomas Brandes
  * @date 02.05.2011
- * $Id$
+ * @since 1.0.0
  */
 #ifndef LAMA_HOSTREADACCESS_HPP_
 #define LAMA_HOSTREADACCESS_HPP_

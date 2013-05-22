@@ -28,7 +28,7 @@
  * @brief SparseMatrixHelper.hpp
  * @author Lauretta Schubert
  * @date 20.04.2012
- * $Id$
+ * @since 1.0.0
  */
 #ifndef LAMA_SPARSEMATRIXHELPER_HPP_
 #define LAMA_SPARSEMATRIXHELPER_HPP_

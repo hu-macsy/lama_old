@@ -28,7 +28,7 @@
  * @brief GeneralDistribution.cpp
  * @author brandes
  * @date 25.02.2011
- * $Id$
+ * @since 1.0.0
  */
 
 // hpp

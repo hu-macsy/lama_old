@@ -28,7 +28,7 @@
  * @brief Contains the logLevels for different loggers
  * @author Matthias Makulla
  * @date 06.04.2011
- * $Id$
+ * @since 1.0.0
  */
 #ifndef LAMA_LOGLEVEL_HPP_
 #define LAMA_LOGLEVEL_HPP_

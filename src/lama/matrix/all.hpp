@@ -28,7 +28,7 @@
  * @brief all.hpp
  * @author
  * @date 21.05.2013
- * $Id$
+ * @since 1.0.0
  */
 
 #include <lama/matrix/DenseMatrix.hpp>

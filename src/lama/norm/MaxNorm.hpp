@@ -28,7 +28,7 @@
  * @brief MaxNorm.hpp
  * @author Jiri Kraus
  * @date 14.06.2011
- * $Id$
+ * @since 1.0.0
  */
 #ifndef LAMA_MAXNORM_HPP_
 #define LAMA_MAXNORM_HPP_

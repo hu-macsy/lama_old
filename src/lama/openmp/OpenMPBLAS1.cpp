@@ -28,7 +28,7 @@
  * @brief OpenMPBLAS1.cpp
  * @author Lauretta Schubert
  * @date 05.07.2012
- * $Id$
+ * @since 1.0.0
  */
 
 // hpp

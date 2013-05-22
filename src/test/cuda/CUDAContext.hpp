@@ -28,7 +28,7 @@
  * @brief CUDAContext.hpp
  * @author Jiri Kraus
  * @date 05.04.2012
- * $Id$
+ * @since 1.0.0
  */
 #ifndef LAMA_BTEST_CUDACONTEXT_HPP_
 #define LAMA_BTEST_CUDACONTEXT_HPP_

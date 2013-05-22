@@ -28,7 +28,7 @@
  * @brief Test conversions between different matrix storage formats
  * @author Thomas Brandes
  * @date 15.07.2012
- * $Id$
+ * @since 1.0.0
  */
 
 #include <boost/test/unit_test.hpp>

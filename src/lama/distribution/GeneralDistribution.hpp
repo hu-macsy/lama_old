@@ -28,7 +28,7 @@
  * @brief GeneralDistribution.hpp
  * @author brandes
  * @date 25.02.2011
- * $Id$
+ * @since 1.0.0
  */
 #ifndef LAMA_GENERALDISTRIBUTION_HPP_
 #define LAMA_GENERALDISTRIBUTION_HPP_

@@ -28,7 +28,7 @@
  * @brief Template specilization of the matrix template for distributed matrixes.
  * @author Jiri Kraus, Thomas Brandes
  * @date 02.04.2012
- * $Id$
+ * @since 1.0.0
  */
 
 // hpp

@@ -28,7 +28,7 @@
  * @brief Definition of a structure for a (non-distributed) DIA sparse matrix.
  * @author Thomas Brandes
  * @date 11.06.2011
- * $Id$
+ * @since 1.0.0
  */
 #ifndef LAMA_DIASTORAGE_HPP_
 #define LAMA_DIASTORAGE_HPP_

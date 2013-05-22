@@ -28,7 +28,7 @@
  * @brief Definition of a structure for a (non-distributed) CSR sparse matrix.
  * @author Thomas Brandes
  * @date 27.04.2011
- * $Id$
+ * @since 1.0.0
  */
 #ifndef LAMA_CSRSTORAGE_HPP_
 #define LAMA_CSRSTORAGE_HPP_

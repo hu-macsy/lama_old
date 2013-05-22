@@ -28,7 +28,7 @@
  * @brief MPICommunicatorManager.cpp
  * @author Thomas Brandes, Jiri Kraus
  * @date 23.02.2011
- * $Id$
+ * @since 1.0.0
  */
 
 // hpp

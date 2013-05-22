@@ -28,7 +28,7 @@
  * @brief OpenMPLAPACK.hpp
  * @author Lauretta Schubert
  * @date 02.07.2012
- * $Id$
+ * @since 1.0.0
  */
 #ifndef LAMA_OPENMP_LAPACK_HPP_
 #define LAMA_OPENMP_LAPACK_HPP_

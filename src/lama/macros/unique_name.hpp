@@ -28,7 +28,7 @@
  * @brief Some macro utilities for generating symbol names.
  * @author Jiri Kraus
  * @date 06.04.2011
- * $Id$
+ * @since 1.0.0
  */
 
 #ifndef LAMA_MACRO_UNIQUE_NAME_HPP_

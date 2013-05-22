@@ -28,7 +28,7 @@
  * @brief Contains the implementation of the class ExceptionTest
  * @author Alexander Büchel
  * @date 28.06.2012
- * $Id$
+ * @since 1.0.0
  */
 
 #include <boost/test/unit_test.hpp>

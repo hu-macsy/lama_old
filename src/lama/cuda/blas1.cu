@@ -28,7 +28,7 @@
  * @brief blas1.cu
  * @author lschubert
  * @date 06.07.2012
- * $Id$
+ * @since 1.0.0
  */
 
 #include <lama/cuda/CUDABLAS1.hpp>
