@@ -66,7 +66,7 @@ endif( NOT DEFINED BUILD_SHARED_LIBS )
 # Choose Default CMAKE_BUILD_TYPE
 if ( NOT CMAKE_BUILD_TYPE )
   # Can be: (RelWithDebInfo)
-  set ( CMAKE_BUILD_TYPE Release CACHE STRING 
+  set ( CMAKE_BUILD_TYPE Debug CACHE STRING 
         "Choose the type of build, options are: None Debug Release RelWithDebInfo MinSizeRel." FORCE )
 endif ( NOT CMAKE_BUILD_TYPE )
 
