@@ -118,7 +118,7 @@ endif ( FOUND_BOOST_TEST AND LAMA_BUILD_TEST )
 ### Examples ###
 # copy examples in build directory + install it
 file ( COPY ${CMAKE_SOURCE_DIR}/examples DESTINATION ${CMAKE_BINARY_DIR} )
-install ( DIRECTORY ${CMAKE_SOURCE_DIR}/examples DESTINATION share )
+install ( DIRECTORY ${CMAKE_SOURCE_DIR}/examples DESTINATION share/examples )
 
 # generate file make.inc + install it
 configure_file ( "${CMAKE_SOURCE_DIR}/examples/make.inc.in" "${CMAKE_CURRENT_BINARY_DIR}/examples/make.inc" )
