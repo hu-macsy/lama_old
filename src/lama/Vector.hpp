@@ -2,7 +2,7 @@
  * @file Vector.hpp
  *
  * @license
- * Copyright (c) 2009-2013
+ * Copyright (c) 2011
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -28,7 +28,7 @@
  * @brief Vector.hpp
  * @author Jiri Kraus
  * @date 22.02.2011
- * @since 1.0.0
+ * $Id$
  */
 #ifndef LAMA_VECTOR_HPP_
 #define LAMA_VECTOR_HPP_
@@ -237,21 +237,21 @@ public:
      *
      * As this operation requires communication in SPMD mode it can be very inefficient in some situations.
      */
-    virtual Scalar getValue( IndexType globalIndex ) const =0;
+    virtual Scalar getValue( IndexType globalIndex ) const = 0;
 
     /**
      * @brief Returns the global minimum value of this.
      *
      * @return   the global minimum value of this vector.
      */
-    virtual Scalar min() const =0;
+    virtual Scalar min() const = 0;
 
     /**
      * @brief Returns the global maximum value of this.
      *
      * @return the global maximum value of this vector.
      */
-    virtual Scalar max() const =0;
+    virtual Scalar max() const = 0;
 
     /**
      * @brief Returns the L1 norm of this.
@@ -260,7 +260,7 @@ public:
      *
      * l1Norm computes the sum of the absolute values of this.
      */
-    virtual Scalar l1Norm() const =0;
+    virtual Scalar l1Norm() const = 0;
 
     /**
      * @brief Returns the L2 norm of this.
@@ -269,7 +269,7 @@ public:
      *
      * l2Norm computes the sum of the absolute values of this.
      */
-    virtual Scalar l2Norm() const =0;
+    virtual Scalar l2Norm() const = 0;
 
     /**
      * @brief Returns the max norm of this.
@@ -278,7 +278,7 @@ public:
      *
      * maxNorm computes the value of this with the largest magnitude.
      */
-    virtual Scalar maxNorm() const =0;
+    virtual Scalar maxNorm() const = 0;
 
     /**
      * @brief create is a virtual call of the default constructor of the derived classes
@@ -344,13 +344,12 @@ public:
      *
      * @param[in] value   the value to assign to all elements of this.
      */
-    virtual void assign( const Scalar value ) =0;
+    virtual void assign( const Scalar value ) = 0;
 
     /**
      * @brief Assignment of a 'full' vector expression.
      */
-    virtual void assign(
-        const Expression<Expression<Scalar,Vector,Times>,Expression<Scalar,Vector,Times>,Plus>& expression ) =0;
+    virtual void assign( const Expression_SV_SV& expression ) = 0;
 
     /**
      * @brief Returns the dot product of this and other.
@@ -400,7 +399,7 @@ public:
      *
      * @return the memory consumption of this vector.
      */
-    virtual size_t getMemoryUsage() const =0;
+    virtual size_t getMemoryUsage() const = 0;
 
     /**
      *  @brief Allocates this vector for a given distribution.
