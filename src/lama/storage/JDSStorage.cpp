@@ -668,6 +668,8 @@ void JDSStorage<ValueType>::setCSRDataImpl(
     sortRows( loc ); // sorts ilg and builds perm
     setupData( loc ); // sets dlg, allocates mValues, mJa
 
+    IndexType numDiagonals = mNumDiagonals;  // now available
+
     {
         ReadAccess<IndexType> rPerm( mPerm, loc );
         ReadAccess<IndexType> rIlg( mIlg, loc );
@@ -678,107 +680,12 @@ void JDSStorage<ValueType>::setCSRDataImpl(
 
         LAMA_CONTEXT_ACCESS( loc )
 
-        setCSRValues( wJa.get(), wValues.get(), numRows, rPerm.get(), rIlg.get(), rDlg.get(), rCsrIA.get(),
-                      rCsrJA.get(), rCsrValues.get() );
+        setCSRValues( wJa.get(), wValues.get(), numRows, rPerm.get(), rIlg.get(), 
+                      numDiagonals, rDlg.get(), rCsrIA.get(), rCsrJA.get(), rCsrValues.get() );
     }
 
     this->resetDiagonalProperty();
 }
-
-/* ------------------------------------------------------------------------------------------------------------------ */
-
-/*
- * NOT USED ANYMORE
- *
- template<typename ValueType>
- void JDSStorage<ValueType>::setCompressJDS( const JDSStorage<ValueType>& other )
- {
- LAMA_LOG_DEBUG( logger, "compress " << other )
-
- ContextPtr loc = ContextFactory::getContext( Context::Host );
-
- mNumRows    = other.mNumRows;
- mNumColumns = other.mNumColumns;
- mDiagonalProperty = other.mDiagonalProperty;  // just inherit property
- // get host read access to all arrays of the JDS storage to be compressed
- ReadAccess<IndexType> otherIlg( other.mIlg, loc );
- ReadAccess<IndexType> otherPerm( other.mPerm, loc );
- ReadAccess<IndexType> otherDlg( other.mDlg, loc );
- ReadAccess<IndexType> otherJa( other.mJa, loc );
- ReadAccess<ValueType> otherValues( other.mValues, loc );
- // Compress has to take into account that the rows might be resorted
- // So we build arrays ilg and perm
- {
- WriteOnlyAccess<IndexType> ilg( mIlg, loc, mNumRows );
- WriteOnlyAccess<IndexType> perm( mPerm, loc, mNumRows );
-
- for ( IndexType ii = 0; ii < mNumRows; ++ii )
- {
- // count valid column indexes
- IndexType offset = ii;
- IndexType cnt    = 0;
-
- for ( IndexType d = 0; d < otherIlg.get()[ii] ; d++ )
- {
- if ( otherJa.get()[offset] != nIndex )
- {
- cnt++;
- }
-
- offset += otherDlg.get()[d];
- }
-
- ilg.get()[ii]  = cnt;
- perm.get()[ii] = ii;    // Should be perm[ii] = otherPerm[ii], will be done later
- }
- }
- sortRows( loc );   // sorts ilg and builds perm, computes mNumDiagonals
- LAMA_LOG_INFO( logger, "initial setup with compressed JDS data, #values = " << mNumValues
- << ", #jagged diagonals = " << mNumDiagonals )
- ReadAccess<IndexType> ilg( mIlg, loc );
-
- if ( mNumRows )
- {
- ReadAccess<IndexType> perm( mPerm, loc );
- LAMA_LOG_DEBUG( logger, "sorted rows: max is row " << perm.get()[0] << " with "
- << ilg.get()[0] << " elements, min is row " <<  perm.get()[mNumRows - 1]
- << " with " << ilg.get()[mNumRows - 1] << " elements" )
- }
-
- setupData( loc );  // sets dlg, allocates mValues, mJa
- ReadAccess<IndexType> dlg( mDlg, loc );
- WriteAccess<IndexType> perm( mPerm, loc );
- WriteOnlyAccess<ValueType> values( mValues, loc, mNumValues );
- WriteOnlyAccess<IndexType> ja( mJa, loc, mNumValues );
-
- for ( IndexType ii = 0; ii < mNumRows; ++ii )
- {
- IndexType iiOld = perm.get()[ii];  // that was the trick to get row in old JDS
- IndexType offset = ii;
- IndexType offsetOld = iiOld;
- LAMA_LOG_DEBUG( logger, "compress JDS new row " << ii << "(was row " << iiOld
- << "), " << otherIlg.get()[iiOld] << " to " << ilg.get()[ii] << " values" )
- IndexType cnt = 0;
-
- for ( IndexType d = 0; d < otherIlg.get()[iiOld] ; d++ )
- {
- if ( otherJa.get()[offsetOld] != nIndex )
- {
- ja.get()[offset] = otherJa.get()[offsetOld];
- values.get()[offset] = otherValues.get()[offsetOld];
- offset += dlg.get()[cnt];
- cnt ++;
- }
-
- offsetOld += otherDlg.get()[d];
- }
-
- LAMA_ASSERT( cnt == ilg.get()[ii], "count mismatch in JDS row " << ii )
- perm.get()[ii] = otherPerm.get()[iiOld];  // that is now the correct value
- }
- }
-
- */
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 

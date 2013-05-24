@@ -1323,6 +1323,7 @@ struct JDSUtilsInterface
          *  @param[in]   numRows number of rows in matrix
          *  @param[in]   jdsPerm with jdsPerm[ii] is original index of row i
          *  @param[in]   jdsILG with size of entries in row i
+         *  @param[in]   numDiagonals size of array jdsDLG
          *  @param[in]   jdsDLG distances of columns
          *  @param[in]   csrIA is offset array (must be computed before)
          *  @param[in]   csrJA is array with column indexes
@@ -1334,6 +1335,7 @@ struct JDSUtilsInterface
                                         const IndexType numRows,
                                         const IndexType jdsPerm[],
                                         const IndexType jdsILG[],
+                                        const IndexType numDiagonals,
                                         const IndexType jdsDLG[],
                                         const IndexType csrIA[],
                                         const IndexType csrJA[],

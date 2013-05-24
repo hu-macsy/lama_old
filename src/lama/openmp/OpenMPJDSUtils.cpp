@@ -506,6 +506,7 @@ void OpenMPJDSUtils::setCSRValues(
     const IndexType numRows,
     const IndexType jdsPerm[],
     const IndexType jdsILG[],
+    const IndexType /* ndlg */,
     const IndexType jdsDLG[],
     const IndexType csrIA[],
     const IndexType csrJA[],

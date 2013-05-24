@@ -724,7 +724,8 @@ void setCSRValuesTest( ContextPtr loc )
 
         LAMA_CONTEXT_ACCESS( loc );
 
-        setCSRValues( wJDSJa.get(), wJDSValues.get(), numRows, rJDSPerm.get(), rJDSIlg.get(), rJDSDlg.get(),
+        setCSRValues( wJDSJa.get(), wJDSValues.get(), numRows, rJDSPerm.get(), rJDSIlg.get(), 
+                      nJDSDlg, rJDSDlg.get(),
                       rCSRIa.get(), rCSRJa.get(), rCSRValues.get() );
     }
 

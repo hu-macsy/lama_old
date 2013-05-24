@@ -579,12 +579,32 @@ void CUDAELLUtils::setCSRValues(
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */
-/*                                                  SPMV                                                              */
+/*      Using texture for rhs vector                                                                                  */
 /* ------------------------------------------------------------------------------------------------------------------ */
 
 texture<float,1> texELLSXref;
 
 texture<int2,1> texELLDXref;
+
+__inline__ void ellBindTexture( const float* vector )
+{
+    LAMA_CUDA_RT_CALL( cudaBindTexture( NULL, texELLSXref, vector ), "LAMA_STATUS_CUDA_BINDTEX_FAILED" )
+}
+
+__inline__ void ellBindTexture( const double* vector )
+{
+    LAMA_CUDA_RT_CALL( cudaBindTexture( NULL, texELLDXref, vector ), "LAMA_STATUS_CUDA_BINDTEX_FAILED" )
+}
+
+__inline__ void ellUnbindTexture( const float* )
+{
+    LAMA_CUDA_RT_CALL( cudaUnbindTexture( texELLSXref ), "LAMA_STATUS_CUDA_UNBINDTEX_FAILED" )
+}
+
+__inline__ void ellUnbindTexture( const double* )
+{
+    LAMA_CUDA_RT_CALL( cudaUnbindTexture( texELLDXref ), "LAMA_STATUS_CUDA_UNBINDTEX_FAILED" )
+}
 
 template<typename T,bool useTexture>
 __inline__     __device__ T fetch_ELLx( const T* const x, const int i )
@@ -607,9 +627,13 @@ double fetch_ELLx<double,true>( const double* const, const int i )
     return __hiloint2double( v.y, v.x );
 }
 
+/* ------------------------------------------------------------------------------------------------------------------ */
+/*    Kernel for  SMV + SV                                                                                            */
+/* ------------------------------------------------------------------------------------------------------------------ */
+
 template<typename T,bool useTexture>
 __global__
-void ell_agemvpbv_kernel(
+void ell_gemv_kernel(
     int n,
     T alpha,
     int ellNumValuesPerRow,
@@ -640,7 +664,6 @@ void ell_agemvpbv_kernel(
         }
         y_d[i] = alpha * value + summand;
     }
-
 }
 
 template<typename ValueType>
@@ -690,7 +713,8 @@ void CUDAELLUtils::normalGEMV(
     dim3 dimGrid = makeGrid( numRows, dimBlock.x );
 
     bool useTexture = CUDASettings::useTexture();
-    useTexture = false; // not yet supported
+
+    useTexture = false;
 
     if ( syncToken )
     {
@@ -699,63 +723,48 @@ void CUDAELLUtils::normalGEMV(
         useTexture = false;   
     }
 
-    if ( useTexture )
-    {
+    LAMA_LOG_INFO( logger, "Start ell_gemv_kernel<" << typeid( ValueType ).name()
+                           << ", useTexture = " << useTexture << ">" );
 
-        if ( sizeof(ValueType) == sizeof(float) )
-        {
-            LAMA_CUDA_RT_CALL( cudaBindTexture( NULL, texELLSXref, x ), "LAMA_STATUS_CUDA_BINDTEX_FAILED" )
-        }
-        else if ( sizeof(ValueType) == sizeof(double) )
-        {
-            LAMA_CUDA_RT_CALL( cudaBindTexture( NULL, texELLDXref, x ), "LAMA_STATUS_CUDA_BINDTEX_FAILED" )
-        }
-
-        LAMA_CUDA_RT_CALL( cudaFuncSetCacheConfig( ell_agemvpbv_kernel<ValueType, true>, cudaFuncCachePreferL1 ),
-                           "LAMA_STATUS_CUDA_FUNCSETCACHECONFIG_FAILED" )
-    }
-    else
-    {
-        LAMA_CUDA_RT_CALL( cudaFuncSetCacheConfig( ell_agemvpbv_kernel<ValueType, false>, cudaFuncCachePreferL1 ),
-                           "LAMA_STATUS_CUDA_FUNCSETCACHECONFIG_FAILED" )
-    }
+    // make sure that really two instances of the kernel will exist
 
     if ( useTexture )
     {
-        ell_agemvpbv_kernel<ValueType, true> <<<dimGrid, dimBlock, 0, stream>>>
-        ( numRows, alpha, numNonZerosPerRow, ellValues, ellJA, x, beta, y, result );
+        ellBindTexture( x );
+
+        LAMA_CUDA_RT_CALL( cudaFuncSetCacheConfig( ell_gemv_kernel<ValueType, true>, cudaFuncCachePreferL1 ),
+                           "LAMA_STATUS_CUDA_FUNCSETCACHECONFIG_FAILED" )
+     
+        ell_gemv_kernel<ValueType, true> <<<dimGrid, dimBlock, 0, stream>>> ( 
+            numRows, alpha, numNonZerosPerRow, ellValues, ellJA, x, beta, y, result );
     }
     else
     {
-        ell_agemvpbv_kernel<ValueType, false> <<<dimGrid, dimBlock, 0, stream>>>
-        ( numRows, alpha, numNonZerosPerRow, ellValues, ellJA, x, beta, y, result );
+        LAMA_CUDA_RT_CALL( cudaFuncSetCacheConfig( ell_gemv_kernel<ValueType, false>, cudaFuncCachePreferL1 ),
+                           "LAMA_STATUS_CUDA_FUNCSETCACHECONFIG_FAILED" )
+
+        ell_gemv_kernel<ValueType, false> <<<dimGrid, dimBlock, 0, stream>>> ( 
+            numRows, alpha, numNonZerosPerRow, ellValues, ellJA, x, beta, y, result );
     }
 
     LAMA_CUDA_RT_CALL( cudaGetLastError(), "LAMA_STATUS_SELLAGEMVPBV_CUDAKERNEL_FAILED" )
-
-    if ( !syncToken )
-    {
-        LAMA_CUDA_RT_CALL( cudaStreamSynchronize(0), "LAMA_STATUS_SELLAGEMVPBV_CUDAKERNEL_FAILED" )
-    }
 
     // ToDo: create a task for unbind in case of asynchronous execution 
 
     if ( useTexture )
     {
-        if ( sizeof(ValueType) == sizeof(float) )
-        {
-            LAMA_CUDA_RT_CALL( cudaUnbindTexture( texELLSXref ), "LAMA_STATUS_CUDA_UNBINDTEX_FAILED" )
-        }
-        else if ( sizeof(ValueType) == sizeof(double) )
-        {
-            LAMA_CUDA_RT_CALL( cudaUnbindTexture( texELLDXref ), "LAMA_STATUS_CUDA_UNBINDTEX_FAILED" )
-        }
+        ellUnbindTexture( x );
+    }
+
+    if ( !syncToken )
+    {
+        LAMA_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "sync for ell_gemv_kernel failed" )
     }
 }
 
 template<typename T,bool useTexture>
 __global__
-void ell_agemvpbsv_kernel(
+void ell_sparse_gemv_kernel(
     int n,
     T alpha,
     int nnr,
@@ -831,7 +840,7 @@ void CUDAELLUtils::sparseGEMV(
 
     bool useTexture = CUDASettings::useTexture();
 
-    useTexture = false; // not yet tested
+    // LAST DEL useTexture = false;
 
     if ( syncToken ) 
     {
@@ -840,53 +849,37 @@ void CUDAELLUtils::sparseGEMV(
 
     if ( useTexture )
     {
-        if ( sizeof(ValueType) == sizeof(float) )
-        {
-            LAMA_CUDA_RT_CALL( cudaBindTexture( NULL, texELLSXref, x ), "LAMA_STATUS_CUDA_BINDTEX_FAILED" )
-        }
-        else if ( sizeof(ValueType) == sizeof(double) )
-        {
-            LAMA_CUDA_RT_CALL( cudaBindTexture( NULL, texELLDXref, x ), "LAMA_STATUS_CUDA_BINDTEX_FAILED" )
-        }
-
-        LAMA_CUDA_RT_CALL( cudaFuncSetCacheConfig( ell_agemvpbv_kernel<ValueType, true>, cudaFuncCachePreferL1),
-                           "LAMA_STATUS_CUDA_FUNCSETCACHECONFIG_FAILED" )
-    }
-    else
-    {
-        LAMA_CUDA_RT_CALL( cudaFuncSetCacheConfig( ell_agemvpbv_kernel<ValueType, false>, cudaFuncCachePreferL1),
-                           "LAMA_STATUS_CUDA_FUNCSETCACHECONFIG_FAILED" )
+        ellBindTexture( x );
     }
 
-//    if ( *transa == 'N'|| *transa == 'n')
-//    {
+    LAMA_LOG_INFO( logger, "Start ell_sparse_gemv_kernel<" << typeid( ValueType ).name()
+                           << ", useTexture = " << useTexture << ">" );
+
     if ( useTexture )
     {
-        ell_agemvpbsv_kernel<ValueType, true>
-        <<<dimGrid, dimBlock, 0, stream>>>( numRows, alpha, numNonZerosPerRows, ellIA, ellValues,
-                                            ellJA, rowIndexes, numNonZeroRows, x, result );
+        LAMA_CUDA_RT_CALL( cudaFuncSetCacheConfig( ell_sparse_gemv_kernel<ValueType, true>, cudaFuncCachePreferL1),
+                           "LAMA_STATUS_CUDA_FUNCSETCACHECONFIG_FAILED" )
+
+        ell_sparse_gemv_kernel<ValueType, true> <<<dimGrid, dimBlock, 0, stream>>>( 
+            numRows, alpha, numNonZerosPerRows, ellIA, ellValues,
+            ellJA, rowIndexes, numNonZeroRows, x, result );
     }
     else
     {
-        ell_agemvpbsv_kernel<ValueType, false>
-        <<<dimGrid, dimBlock, 0, stream>>>( numRows, alpha, numNonZerosPerRows, ellIA, ellValues,
-                                            ellJA, rowIndexes, numNonZeroRows, x, result );
+        LAMA_CUDA_RT_CALL( cudaFuncSetCacheConfig( ell_sparse_gemv_kernel<ValueType, false>, cudaFuncCachePreferL1),
+                           "LAMA_STATUS_CUDA_FUNCSETCACHECONFIG_FAILED" )
+     
+        ell_sparse_gemv_kernel<ValueType, false> <<<dimGrid, dimBlock, 0, stream>>>(
+            numRows, alpha, numNonZerosPerRows, ellIA, ellValues,
+            ellJA, rowIndexes, numNonZeroRows, x, result );
     }
-//    }
-//    else if ( *transa == 'T' || *transa == 't' ||
-//              *transa == 'C' || *transa == 'c')
-//    {
-//        //TODO: Implement this.
-//        lama_setLastError( LAMA_STATUS_NOT_IMPLEMENTED );
-//        return;
-//    }
 
     LAMA_CUDA_RT_CALL( cudaGetLastError(), "LAMA_STATUS_SELLAGEMVPBV_CUDAKERNEL_FAILED" )
     LAMA_CUDA_RT_CALL( cudaStreamSynchronize(0), "LAMA_STATUS_SELLAGEMVPBV_CUDAKERNEL_FAILED" )
 
     if ( useTexture )
     {
-        LAMA_CUDA_RT_CALL( cudaUnbindTexture( texELLSXref ), "LAMA_STATUS_CUDA_UNBINDTEX_FAILED" )
+        ellUnbindTexture( x );
     }
 }
 
@@ -961,64 +954,55 @@ void CUDAELLUtils::jacobi(
 
     cudaStream_t stream = 0;
 
+    bool useTexture = CUDASettings::useTexture();
+
+    useTexture = false;
+
     if ( syncToken )
     {
         CUDAStreamSyncToken* cudaStreamSyncToken = dynamic_cast<CUDAStreamSyncToken*>( syncToken );
         LAMA_ASSERT_DEBUG( cudaStreamSyncToken, "no cuda stream sync token provided" )
         stream = cudaStreamSyncToken->getCUDAStream();
+        useTexture = false;
     }
 
     const int block_size = ( numRows > 8191 ? 256 : 128 );
     dim3 dimBlock( block_size, 1, 1 );
     dim3 dimGrid = makeGrid( numRows, dimBlock.x );
 
-    bool useTexture = CUDASettings::useTexture();
-
-    useTexture = false;
+    LAMA_LOG_INFO( logger, "Start ell_jacobi_kernel<" << typeid( ValueType ).name()
+                           << ", useTexture = " << useTexture << ">" );
 
     if ( useTexture )
     {
-
-        if ( sizeof(ValueType) == sizeof(double) )
-        {
-            LAMA_CUDA_RT_CALL( cudaBindTexture( NULL, texELLDXref, oldSolution ), "LAMA_STATUS_CUDA_BINDTEX_FAILED" )
-        }
-        else if ( sizeof(ValueType) == sizeof(float) )
-        {
-            LAMA_CUDA_RT_CALL( cudaBindTexture( NULL, texELLSXref, oldSolution ), "LAMA_STATUS_CUDA_BINDTEX_FAILED" )
-        }
+        ellBindTexture( oldSolution );
 
         LAMA_CUDA_RT_CALL( cudaFuncSetCacheConfig( ell_jacobi_kernel<ValueType, true>, cudaFuncCachePreferL1),
                            "LAMA_STATUS_CUDA_FUNCSETCACHECONFIG_FAILED" )
-    }
-    else
-    {
-        LAMA_CUDA_RT_CALL( cudaFuncSetCacheConfig( ell_jacobi_kernel<ValueType, false>, cudaFuncCachePreferL1 ),
-                           "LAMA_STATUS_CUDA_FUNCSETCACHECONFIG_FAILED" )
-    }
 
-    if ( useTexture )
-    {
         ell_jacobi_kernel<ValueType, true> <<<dimGrid, dimBlock, 0, stream>>>( ellNumValuesPerRow, ellJA, ellValues,
                 numRows, rhs, solution, oldSolution, omega );
     }
 
     else
     {
+        LAMA_CUDA_RT_CALL( cudaFuncSetCacheConfig( ell_jacobi_kernel<ValueType, false>, cudaFuncCachePreferL1 ),
+                           "LAMA_STATUS_CUDA_FUNCSETCACHECONFIG_FAILED" )
+
         ell_jacobi_kernel<ValueType, false> <<<dimGrid, dimBlock, 0, stream>>>( ellNumValuesPerRow, ellJA, ellValues,
                 numRows, rhs, solution, oldSolution, omega );
     }
 
     LAMA_CUDA_RT_CALL( cudaGetLastError(), "LAMA_STATUS_DCSRJACOBI_CUDAKERNEL_FAILED" )
 
-    if ( useTexture )
-    {
-        LAMA_CUDA_RT_CALL( cudaUnbindTexture(texELLSXref), "LAMA_STATUS_CUDA_UNBINDTEX_FAILED" )
-    }
-
     if ( !syncToken )
     {
         cudaStreamSynchronize( stream );
+    }
+
+    if ( useTexture )
+    {
+        ellUnbindTexture( oldSolution );
     }
 }
 
@@ -1093,37 +1077,24 @@ void CUDAELLUtils::jacobiHalo(
 
     bool useTexture = CUDASettings::useTexture();
 
-    useTexture = false;  // not yet tested
+    useTexture = false;
 
     if ( useTexture )
     {
-
-        if ( sizeof(ValueType) == sizeof(double) )
-        {
-            LAMA_CUDA_RT_CALL( cudaBindTexture( NULL, texELLDXref, oldSolution), "LAMA_STATUS_CUDA_BINDTEX_FAILED" )
-        }
-        else if ( sizeof(ValueType) == sizeof(float) )
-        {
-            LAMA_CUDA_RT_CALL( cudaBindTexture( NULL, texELLSXref, oldSolution), "LAMA_STATUS_CUDA_BINDTEX_FAILED" )
-        }
+        ellBindTexture( oldSolution );
 
         LAMA_CUDA_RT_CALL( cudaFuncSetCacheConfig( ell_jacobi_halo_kernel<ValueType, true>, cudaFuncCachePreferL1 ),
                            "LAMA_STATUS_CUDA_FUNCSETCACHECONFIG_FAILED" )
-    }
-    else
-    {
-        LAMA_CUDA_RT_CALL( cudaFuncSetCacheConfig( ell_jacobi_halo_kernel<ValueType, false>, cudaFuncCachePreferL1 ),
-                           "LAMA_STATUS_CUDA_FUNCSETCACHECONFIG_FAILED" )
-    }
 
-    if ( useTexture )
-    {
         ell_jacobi_halo_kernel<ValueType, true> <<<dimGrid, dimBlock>>>(
             solution, diagonal, ellSizes, ellJA, ellValues,
             rowIndexes, numNonEmptyRows, numRows, oldSolution, omega );
     }
     else
     {
+        LAMA_CUDA_RT_CALL( cudaFuncSetCacheConfig( ell_jacobi_halo_kernel<ValueType, false>, cudaFuncCachePreferL1 ),
+                           "LAMA_STATUS_CUDA_FUNCSETCACHECONFIG_FAILED" )
+
         ell_jacobi_halo_kernel<ValueType, false> <<<dimGrid, dimBlock>>>(
             solution, diagonal, ellSizes, ellJA, ellValues,
             rowIndexes, numNonEmptyRows, numRows, oldSolution, omega );
@@ -1134,14 +1105,7 @@ void CUDAELLUtils::jacobiHalo(
 
     if ( useTexture )
     {
-        if ( sizeof(ValueType) == sizeof(double) )
-        {
-            LAMA_CUDA_RT_CALL( cudaUnbindTexture(texELLDXref), "LAMA_STATUS_CUDA_UNBINDTEX_FAILED" )
-        }
-        else if ( sizeof(ValueType) == sizeof(float) )
-        {
-            LAMA_CUDA_RT_CALL( cudaUnbindTexture(texELLSXref), "LAMA_STATUS_CUDA_UNBINDTEX_FAILED" )
-        }
+        ellUnbindTexture( oldSolution );
     }
 }
 

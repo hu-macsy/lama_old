@@ -558,12 +558,13 @@ void CUDAJDSUtils::sortRows( IndexType array[], IndexType perm[], const IndexTyp
 /*                                                  setCSRValues                                                      */
 /* ------------------------------------------------------------------------------------------------------------------ */
 
-template<typename T1,typename T2>
+template<typename T1, typename T2, bool useSharedMem>
 __global__
 void csr2jdsKernel(
     int* jdsJa,
     T1* jdsValues,
     const int* const jdsDlg,
+    const int  ndlg,
     const int* const jdsIlg,
     const int* const jdsPerm,
     const int nrows,
@@ -571,28 +572,53 @@ void csr2jdsKernel(
     const int* const csrJa,
     const T2* const csrValues )
 {
-    const int index = threadId( gridDim, blockIdx, blockDim, threadIdx );
+    extern __shared__ int dlg[];
 
-    if ( index < nrows )
+    const int id = threadId( gridDim, blockIdx, blockDim, threadIdx );
+
+    if ( useSharedMem )
     {
-        int i = jdsPerm[index];
-        int offset = index;
-        for ( int jdsJJ = 0, csrJJ = csrIa[i]; jdsJJ < jdsIlg[index]; jdsJJ++, csrJJ++ )
+        int k = threadIdx.x;
+        while ( k < ndlg )
         {
-            jdsJa[offset] = csrJa[csrJJ];
-            jdsValues[offset] = csrValues[csrJJ];
-            offset += jdsDlg[jdsJJ]; // there is next value for row
+            dlg[k] = jdsDlg[k];
+            k += blockDim.x;
+        }
+        __syncthreads();
+    }
+
+    if ( id < nrows )
+    {
+        const int irow = jdsPerm[id];  // row index for CSR data
+
+        const int csrJJ = csrIa[irow];
+
+        // const int nRowEntries = jdsIlg[id];
+
+        int jdsOffset = id;
+
+        for ( int jj = 0; jj < ndlg; ++jj )
+        {
+            int k = useSharedMem ? dlg[jj] : jdsDlg[jj];
+
+            if ( id >= k ) break;
+
+            jdsJa[jdsOffset] = csrJa[csrJJ + jj];
+            jdsValues[jdsOffset] = csrValues[csrJJ + jj];
+
+            jdsOffset += k;
         }
     }
 }
 
-template<typename JDSValueType,typename CSRValueType>
+template<typename JDSValueType, typename CSRValueType>
 void CUDAJDSUtils::setCSRValues(
     IndexType jdsJA[],
     JDSValueType jdsValues[],
     const IndexType numRows,
     const IndexType jdsPerm[],
     const IndexType jdsILG[],
+    const IndexType ndlg,
     const IndexType jdsDLG[],
     const IndexType csrIA[],
     const IndexType csrJA[],
@@ -606,15 +632,43 @@ void CUDAJDSUtils::setCSRValues(
 
     LAMA_CHECK_CUDA_ACCESS
 
-    const int block_size = 256;
+    bool useTexture = CUDASettings::useTexture();
+    bool useSharedMem = CUDASettings::useSharedMem();
+
+    const int block_size = 128;
     dim3 dimBlock( block_size, 1, 1 );
     dim3 dimGrid = makeGrid( numRows, dimBlock.x );
 
-    csr2jdsKernel<<<dimGrid,dimBlock>>>( jdsJA, jdsValues, jdsDLG, jdsILG, jdsPerm, numRows, csrIA, csrJA, csrValues );
+    LAMA_LOG_INFO( logger, "Start csr2jds_kernel<" << typeid( JDSValueType ).name() 
+                           << ", " << typeid( CSRValueType ).name()
+                           << ", useTexture = " << useTexture << ", useSharedMem = " << useSharedMem 
+                           << "> ( nrows = " << numRows << ", ndiag = " << ndlg << " )" );
+
+    if ( useSharedMem )
+    {
+        LAMA_CUDA_RT_CALL( cudaFuncSetCacheConfig( csr2jdsKernel<JDSValueType, CSRValueType, true>, 
+                                                   cudaFuncCachePreferL1 ),
+                           "LAMA_STATUS_CUDA_FUNCSETCACHECONFIG_FAILED" );
+
+        const int sharedMemSize = ndlg * sizeof(int);
+
+        csr2jdsKernel<JDSValueType, CSRValueType, true><<<dimGrid, dimBlock, sharedMemSize>>>( 
+            jdsJA, jdsValues, jdsDLG, ndlg, jdsILG, jdsPerm, numRows, csrIA, csrJA, csrValues );
+    }
+    else
+    {
+        LAMA_CUDA_RT_CALL( cudaFuncSetCacheConfig( csr2jdsKernel<JDSValueType, CSRValueType, true>, 
+                                                   cudaFuncCachePreferL1 ),
+                           "LAMA_STATUS_CUDA_FUNCSETCACHECONFIG_FAILED" );
+
+        csr2jdsKernel<JDSValueType, CSRValueType, false><<<dimGrid, dimBlock, 0>>>( 
+            jdsJA, jdsValues, jdsDLG, ndlg, jdsILG, jdsPerm, numRows, csrIA, csrJA, csrValues );
+    }
 
     cudaStreamSynchronize( 0 );
 
-    LAMA_CHECK_CUDA_ERROR
+    LAMA_LOG_INFO( logger, "Ready csr2jds_kernel<" << typeid( JDSValueType ).name() 
+                           << ", " << typeid( CSRValueType ).name() <<  " )" )
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */
@@ -718,11 +772,32 @@ void CUDAJDSUtils::getCSRValues(
 /*                          Jacobi                                             */
 /* --------------------------------------------------------------------------- */
 
-texture<float,1> texJDSSXref;
+texture<float,1> textureJDSFloatXRef;
 
-texture<int2,1> texJDSDXref;
+texture<int2,1> textureJDSDoubleXRef;
 
 texture<int,1> texJDSdlgRef;
+
+__inline__ void jdsBindTexture( const float* vector )
+{
+    LAMA_CUDA_RT_CALL( cudaBindTexture( NULL, textureJDSFloatXRef, vector ), "LAMA_STATUS_CUDA_BINDTEX_FAILED" )
+}
+
+__inline__ void jdsBindTexture( const double* vector )
+{
+    LAMA_CUDA_RT_CALL( cudaBindTexture( NULL, textureJDSDoubleXRef, vector ), "LAMA_STATUS_CUDA_BINDTEX_FAILED" )
+}
+
+
+__inline__ void jdsUnbindTexture( const float* )
+{
+    LAMA_CUDA_RT_CALL( cudaUnbindTexture( textureJDSFloatXRef ), "LAMA_STATUS_CUDA_UNBINDTEX_FAILED" )
+}
+
+__inline__ void jdsUnbindTexture( const double* )
+{
+    LAMA_CUDA_RT_CALL( cudaUnbindTexture( textureJDSDoubleXRef ), "LAMA_STATUS_CUDA_UNBINDTEX_FAILED" )
+}
 
 /* --------------------------------------------------------------------------- */
 
@@ -743,14 +818,14 @@ template<>
 __inline__ __device__
 float fetch_JDSx<float,true>( const float* const, const int i )
 {
-    return tex1Dfetch( texJDSSXref, i );
+    return tex1Dfetch( textureJDSFloatXRef, i );
 }
 
 template<>
 __inline__ __device__
 double fetch_JDSx<double,true>( const double* const, const int i )
 {
-    int2 v = tex1Dfetch( texJDSDXref, i );
+    int2 v = tex1Dfetch( textureJDSDoubleXRef, i );
     return __hiloint2double( v.y, v.x );
 }
 
@@ -872,7 +947,6 @@ void CUDAJDSUtils::jacobi(
     dim3 dimGrid = makeGrid( numRows, dimBlock.x );
 
     bool useTexture = CUDASettings::useTexture();
-    useTexture = false; // not yet tested
 
     if ( syncToken )
     {
@@ -881,20 +955,13 @@ void CUDAJDSUtils::jacobi(
         useTexture = false;
     }
 
-    const bool useSharedMem = false; // maybe optimize later
+    const bool useSharedMem = CUDASettings::useSharedMem();
 
     LAMA_LOG_DEBUG( logger, "useTexture = " << useTexture << ", useSharedMem = " << useSharedMem )
 
     if ( useTexture )
     {
-        if ( sizeof(ValueType) == sizeof(double) )
-        {
-            LAMA_CUDA_RT_CALL( cudaBindTexture( NULL, texJDSDXref, oldSolution ), "LAMA_STATUS_CUDA_BINDTEX_FAILED" )
-        }
-        else if ( sizeof(ValueType) == sizeof(float) )
-        {
-            LAMA_CUDA_RT_CALL( cudaBindTexture( NULL, texJDSSXref, oldSolution ), "LAMA_STATUS_CUDA_BINDTEX_FAILED" );
-        }
+        jdsBindTexture( oldSolution );
 
         if ( !useSharedMem )
         {
@@ -925,57 +992,54 @@ void CUDAJDSUtils::jacobi(
         }
     }
 
+    LAMA_LOG_INFO( logger, "Start jds_jacobi_kernel<" << typeid( ValueType ).name() 
+                           << ", useTexture = " << useTexture << ", useSharedMem = " << useSharedMem << ">" );
+
     if ( useTexture )
     {
         if ( !useSharedMem )
         {
-            jds_jacobi_kernel<ValueType, true, false> <<<dimGrid, dimBlock, 0, stream>>>( jdsValues, jdsDlg, ndlg, jdsIlg, jdsJA, jdsPerm,
-                    numRows, rhs, solution, oldSolution, omega );
+            jds_jacobi_kernel<ValueType, true, false> <<<dimGrid, dimBlock, 0, stream>>>( 
+                jdsValues, jdsDlg, ndlg, jdsIlg, jdsJA, jdsPerm, numRows, rhs, solution, oldSolution, omega );
         }
         else
         {
             const int sharedMemSize = ndlg * sizeof(int);
-            jds_jacobi_kernel<ValueType, true, true> <<<dimGrid, dimBlock, sharedMemSize, stream>>>( jdsValues, jdsDlg, ndlg, jdsIlg,
-                    jdsJA, jdsPerm, numRows, rhs, solution, oldSolution, omega );
+            jds_jacobi_kernel<ValueType, true, true> <<<dimGrid, dimBlock, sharedMemSize, stream>>>( 
+                jdsValues, jdsDlg, ndlg, jdsIlg, jdsJA, jdsPerm, numRows, rhs, solution, oldSolution, omega );
         }
     }
     else
     {
         if ( !useSharedMem )
         {
-            jds_jacobi_kernel<ValueType, false, false> <<<dimGrid, dimBlock, 0, stream>>>( jdsValues, jdsDlg, ndlg, jdsIlg, jdsJA,
-                    jdsPerm, numRows, rhs, solution, oldSolution, omega );
+            jds_jacobi_kernel<ValueType, false, false> <<<dimGrid, dimBlock, 0, stream>>>( 
+                jdsValues, jdsDlg, ndlg, jdsIlg, jdsJA, jdsPerm, numRows, rhs, solution, oldSolution, omega );
         }
         else
         {
             const int sharedMemSize = ndlg * sizeof(int);
-            jds_jacobi_kernel<ValueType, false, true> <<<dimGrid, dimBlock, sharedMemSize, stream>>>( jdsValues, jdsDlg, ndlg, jdsIlg,
-                    jdsJA, jdsPerm, numRows, rhs, solution, oldSolution, omega);
+            jds_jacobi_kernel<ValueType, false, true> <<<dimGrid, dimBlock, sharedMemSize, stream>>>( 
+                jdsValues, jdsDlg, ndlg, jdsIlg, jdsJA, jdsPerm, numRows, rhs, solution, oldSolution, omega);
         }
     }
 
-    LAMA_CUDA_RT_CALL( cudaGetLastError(), "LAMA_STATUS_SJDSJACOBI_CUDAKERNEL_FAILED" );
+    LAMA_CUDA_RT_CALL( cudaGetLastError(), "jds_jacobi_kernel<" << typeid( ValueType ).name() 
+                                           << ", " << useTexture << ", " << useSharedMem << "> failed" );
+
+    if ( !syncToken )
+    {
+        cudaStreamSynchronize( stream );
+    }
 
     if ( useTexture )
     {
-        if ( sizeof(ValueType) == sizeof(double) )
-        {
-            LAMA_CUDA_RT_CALL( cudaUnbindTexture( texJDSDXref ), "LAMA_STATUS_CUDA_UNBINDTEX_FAILED" );
-        }
-        else if ( sizeof(ValueType) == sizeof(float) )
-        {
-            LAMA_CUDA_RT_CALL( cudaUnbindTexture( texJDSSXref ), "LAMA_STATUS_CUDA_UNBINDTEX_FAILED" );
-        }
+        jdsUnbindTexture( oldSolution );
 
         if ( !useSharedMem )
         {
             LAMA_CUDA_RT_CALL( cudaUnbindTexture( texJDSdlgRef ), "LAMA_STATUS_CUDA_UNBINDTEX_FAILED" );
         }
-    }
-
-    if ( !syncToken )
-    {
-        cudaStreamSynchronize( stream );
     }
 }
 
@@ -1046,8 +1110,8 @@ void CUDAJDSUtils::jacobiHalo(
 {
     LAMA_REGION( "CUDA.JDS.jacobiHalo" )
 
-    LAMA_LOG_INFO( logger,
-                   "jacobiHalo<" << typeid(ValueType).name() << ">" << ", #rows = " << numRows << ", omega = " << omega )
+    LAMA_LOG_INFO( logger, "jacobiHalo<" << typeid(ValueType).name() << ">" 
+                            << ", #rows = " << numRows << ", omega = " << omega )
 
     LAMA_CHECK_CUDA_ACCESS
 
@@ -1056,68 +1120,46 @@ void CUDAJDSUtils::jacobiHalo(
     dim3 dimGrid = makeGrid( numRows, dimBlock.x ); // TODO:numRows is too much...
 
     bool useTexture   = CUDASettings::useTexture();
-
-    useTexture = false; // not yet tested
-
-    const bool useSharedMem = false; // maybe optimize later
+    bool useSharedMem = CUDASettings::useSharedMem(); 
 
     LAMA_LOG_DEBUG( logger, "useTexture = " << useTexture << ", useSharedMem = " << useSharedMem )
 
     if ( useTexture )
     {
+        jdsBindTexture( oldSolutionHalo );
 
-        if ( sizeof(ValueType) == sizeof(double) )
-        {
-            LAMA_CUDA_RT_CALL( cudaBindTexture( NULL, texJDSDXref, oldSolutionHalo ), "LAMA_STATUS_CUDA_BINDTEX_FAILED" )
-        }
-        else if ( sizeof(ValueType) == sizeof(float) )
-        {
-            LAMA_CUDA_RT_CALL( cudaBindTexture( NULL, texJDSSXref, oldSolutionHalo ), "LAMA_STATUS_CUDA_BINDTEX_FAILED" );
-        }
         if ( !useSharedMem )
         {
             LAMA_CUDA_RT_CALL( cudaBindTexture( NULL, texJDSdlgRef, jdsDlgHalo ), "LAMA_STATUS_CUDA_BINDTEX_FAILED" );
-            LAMA_CUDA_RT_CALL( cudaFuncSetCacheConfig( jds_jacobi_halo_kernel<ValueType, true, false>, cudaFuncCachePreferL1),
-                               "LAMA_STATUS_CUDA_FUNCSETCACHECONFIG_FAILED" );
         }
-        else
-        {
-            LAMA_CUDA_RT_CALL( cudaFuncSetCacheConfig( jds_jacobi_halo_kernel<ValueType, true, true>,cudaFuncCachePreferL1 ),
-                               "LAMA_STATUS_CUDA_FUNCSETCACHECONFIG_FAILED" );
-        }
-
     }
-    else
-    {
-        if ( !useSharedMem )
-        {
-            LAMA_CUDA_RT_CALL( cudaFuncSetCacheConfig( jds_jacobi_halo_kernel<ValueType, false, false>, cudaFuncCachePreferL1),
-                               "LAMA_STATUS_CUDA_FUNCSETCACHECONFIG_FAILED" );
-        }
-        else
-        {
-            LAMA_CUDA_RT_CALL( cudaFuncSetCacheConfig( jds_jacobi_halo_kernel<ValueType, false, true>,cudaFuncCachePreferL1 ),
-                               "LAMA_STATUS_CUDA_FUNCSETCACHECONFIG_FAILED" );
-        }
 
-    }
+    LAMA_LOG_INFO( logger, "Start jds_jacobi_halo_kernel<" << typeid( ValueType ).name() 
+                           << ", useTexture = " << useTexture << ", useSharedMem = " << useSharedMem << ">" );
 
     if ( useTexture )
     {
         if ( !useSharedMem )
         {
-            jds_jacobi_halo_kernel<ValueType, true, false> <<<dimGrid,dimBlock,0>>>( diagonal, jdsValuesHalo, jdsDlgHalo,
-                    ndlg_halo, jdsIlgHalo, jdsJAHalo,
-                    jdsPermHalo,
-                    solutionLocal, oldSolutionHalo, omega);
+            LAMA_CUDA_RT_CALL( cudaFuncSetCacheConfig( jds_jacobi_halo_kernel<ValueType, true, false>, 
+                                                       cudaFuncCachePreferL1),
+                               "cudaFuncSetCacheConfig jds_jacobi_halo_kernel<ValueType, true, false> failed" )
+
+            jds_jacobi_halo_kernel<ValueType, true, false> <<<dimGrid, dimBlock, 0>>>( 
+                diagonal, jdsValuesHalo, jdsDlgHalo, ndlg_halo, jdsIlgHalo, jdsJAHalo,
+                jdsPermHalo, solutionLocal, oldSolutionHalo, omega);
         }
         else
         {
+            LAMA_CUDA_RT_CALL( cudaFuncSetCacheConfig( jds_jacobi_halo_kernel<ValueType, true, true>, 
+                                                       cudaFuncCachePreferL1),
+                               "cudaFuncSetCacheConfig jds_jacobi_halo_kernel<ValueType, true, true> failed" )
+
             const int sharedMemSize = ndlg_halo * sizeof(int);
-            jds_jacobi_halo_kernel<ValueType, true, true> <<<dimGrid,dimBlock,sharedMemSize>>>( diagonal, jdsValuesHalo, jdsDlgHalo,
-                    ndlg_halo, jdsIlgHalo, jdsJAHalo,
-                    jdsPermHalo,
-                    solutionLocal, oldSolutionHalo, omega);
+
+            jds_jacobi_halo_kernel<ValueType, true, true> <<<dimGrid, dimBlock, sharedMemSize>>>( 
+                diagonal, jdsValuesHalo, jdsDlgHalo, ndlg_halo, jdsIlgHalo, jdsJAHalo,
+                jdsPermHalo, solutionLocal, oldSolutionHalo, omega);
         }
 
     }
@@ -1125,18 +1167,25 @@ void CUDAJDSUtils::jacobiHalo(
     {
         if ( !useSharedMem )
         {
-            jds_jacobi_halo_kernel<ValueType, false, false> <<<dimGrid,dimBlock>>>( diagonal, jdsValuesHalo, jdsDlgHalo,
-                    ndlg_halo, jdsIlgHalo, jdsJAHalo,
-                    jdsPermHalo,
-                    solutionLocal, oldSolutionHalo, omega);
+            LAMA_CUDA_RT_CALL( cudaFuncSetCacheConfig( jds_jacobi_halo_kernel<ValueType, false, false>, 
+                                                       cudaFuncCachePreferL1),
+                               "cudaFuncSetCacheConfig jds_jacobi_halo_kernel<ValueType, false, false> failed" )
+
+            jds_jacobi_halo_kernel<ValueType, false, false> <<<dimGrid,dimBlock>>>( 
+                diagonal, jdsValuesHalo, jdsDlgHalo, ndlg_halo, jdsIlgHalo, jdsJAHalo,
+                jdsPermHalo, solutionLocal, oldSolutionHalo, omega);
         }
         else
         {
+            LAMA_CUDA_RT_CALL( cudaFuncSetCacheConfig( jds_jacobi_halo_kernel<ValueType, false, true>, 
+                                                       cudaFuncCachePreferL1),
+                               "cudaFuncSetCacheConfig jds_jacobi_halo_kernel<ValueType, false, true> failed" )
+
             const int sharedMemSize = ndlg_halo * sizeof(int);
-            jds_jacobi_halo_kernel<ValueType, false, true> <<<dimGrid,dimBlock,sharedMemSize>>>( diagonal, jdsValuesHalo, jdsDlgHalo,
-                    ndlg_halo, jdsIlgHalo, jdsJAHalo,
-                    jdsPermHalo,
-                    solutionLocal, oldSolutionHalo, omega);
+
+            jds_jacobi_halo_kernel<ValueType, false, true> <<<dimGrid, dimBlock, sharedMemSize>>>(
+                diagonal, jdsValuesHalo, jdsDlgHalo, ndlg_halo, jdsIlgHalo, jdsJAHalo,
+                jdsPermHalo, solutionLocal, oldSolutionHalo, omega);
         }
     }
 
@@ -1145,14 +1194,8 @@ void CUDAJDSUtils::jacobiHalo(
 
     if ( useTexture )
     {
-        if ( sizeof(ValueType) == sizeof(double) )
-        {
-            LAMA_CUDA_RT_CALL( cudaUnbindTexture( texJDSDXref ), "LAMA_STATUS_CUDA_UNBINDTEX_FAILED" );
-        }
-        else if ( sizeof(ValueType) == sizeof(float) )
-        {
-            LAMA_CUDA_RT_CALL( cudaUnbindTexture( texJDSSXref ), "LAMA_STATUS_CUDA_UNBINDTEX_FAILED" );
-        }
+        jdsUnbindTexture( oldSolutionHalo );
+
         if ( !useSharedMem )
         {
             LAMA_CUDA_RT_CALL( cudaUnbindTexture( texJDSdlgRef ), "LAMA_STATUS_CUDA_UNBINDTEX_FAILED" );
@@ -1209,20 +1252,6 @@ void jdsgemvKernel(
             value += jdsValues[k] * fetch_JDSx<ValueType,useTexture>( x_d, j );
             k += fetch_JDSdlg<useTexture,useSharedMem>( jdsDlg, dlg, jj );
         }
-//        for ( int jj = 0; jj < ndlg; ++jj )
-//        {
-//            const int incr = fetch_JDSdlg<useTexture,useSharedMem>( jdsDlg, dlg, jj );
-//            if ( i < incr )
-//            {
-//                IndexType j = jdsJA[k];
-//                value += jdsValues[k] * fetch_JDSx<ValueType,useTexture>( x_d, j );
-//                k += incr;
-//            }
-//            else
-//            {
-//                break;
-//            }
-//        }
         result_d[perm] = alpha * value + summand;
     }
 }
@@ -1252,9 +1281,8 @@ void CUDAJDSUtils::normalGEMV(
     LAMA_LOG_INFO(
         logger, "alpha = " << alpha << ", x = " << x << ", beta = " << beta << ", y = " << y << ", result = " << result )
 
-    const bool useTexture   = false; // still problems: CUDASettings::useTexture();
-
-    const bool useSharedMem = false; // maybe optimize later
+    const bool useTexture   = CUDASettings::useTexture();
+    const bool useSharedMem = CUDASettings::useSharedMem(); // maybe optimize later
 
     LAMA_LOG_DEBUG( logger, "useTexture = " << useTexture << ", useSharedMem = " << useSharedMem )
 
@@ -1265,16 +1293,13 @@ void CUDAJDSUtils::normalGEMV(
 
     LAMA_CHECK_CUDA_ACCESS
 
+    LAMA_LOG_INFO( logger, "Start jdsgemv_kernel<" << typeid( ValueType ).name() 
+                           << ", useTexture = " << useTexture << ", useSharedMem = " << useSharedMem << ">" );
+
     if ( useTexture )
     {
-        if ( sizeof(ValueType) == sizeof(double) )
-        {
-            LAMA_CUDA_RT_CALL( cudaBindTexture( NULL, texJDSDXref, x ), "LAMA_STATUS_CUDA_BINDTEX_FAILED" );
-        }
-        else if ( sizeof(ValueType) == sizeof(float) )
-        {
-            LAMA_CUDA_RT_CALL( cudaBindTexture( NULL, texJDSSXref, x ), "LAMA_STATUS_CUDA_BINDTEX_FAILED" );
-        }
+        jdsBindTexture( x );
+
         if ( useSharedMem )
         {
             const int sharedMemSize = ndlg * sizeof(int);
@@ -1299,14 +1324,7 @@ void CUDAJDSUtils::normalGEMV(
             LAMA_CUDA_RT_CALL( cudaUnbindTexture( texJDSdlgRef ), "LAMA_STATUS_CUDA_UNBINDTEX_FAILED" );
         }
 
-        if ( sizeof(ValueType) == sizeof(double) )
-        {
-            LAMA_CUDA_RT_CALL( cudaUnbindTexture( texJDSDXref ), "LAMA_STATUS_CUDA_UNBINDTEX_FAILED" );
-        }
-        else if ( sizeof(ValueType) == sizeof(float) )
-        {
-            LAMA_CUDA_RT_CALL( cudaUnbindTexture( texJDSSXref ), "LAMA_STATUS_CUDA_UNBINDTEX_FAILED" );
-        }
+        jdsUnbindTexture( x );
     }
     else // no Texture cache
     {
@@ -1323,11 +1341,9 @@ void CUDAJDSUtils::normalGEMV(
             jdsgemvKernel<ValueType, false, false><<<dimGrid,dimBlock>>>
             ( numRows, alpha, jdsValues, jdsDLG, ndlg, jdsILG, jdsJA, jdsPerm, x, beta, y, result);
         }
+
+        LAMA_CUDA_RT_CALL( cudaStreamSynchronize(0), "JDS: gemvKernel FAILED" )
     }
-
-    LAMA_CHECK_CUDA_ERROR
-
-    cudaStreamSynchronize( 0 );
 }
 
 /* --------------------------------------------------------------------------- */
