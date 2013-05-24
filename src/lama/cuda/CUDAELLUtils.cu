@@ -37,7 +37,7 @@
 #include <lama/cuda/CUDAError.hpp>
 #include <lama/cuda/CUDAELLUtils.hpp>
 #include <lama/cuda/CUDAUtils.hpp>
-#include <lama/cuda/CUDATexture.hpp>
+#include <lama/cuda/CUDASettings.hpp>
 
 // others
 #include <lama/LAMAInterface.hpp>
@@ -689,7 +689,7 @@ void CUDAELLUtils::normalGEMV(
     dim3 dimBlock( block_size, 1, 1 );
     dim3 dimGrid = makeGrid( numRows, dimBlock.x );
 
-    bool useTexture = CUDATexture::useTexture();
+    bool useTexture = CUDASettings::useTexture();
     useTexture = false; // not yet supported
 
     if ( syncToken )
@@ -829,7 +829,7 @@ void CUDAELLUtils::sparseGEMV(
     dim3 dimBlock( block_size, 1, 1 );
     dim3 dimGrid = makeGrid( numNonZeroRows, dimBlock.x );
 
-    bool useTexture = CUDATexture::useTexture();
+    bool useTexture = CUDASettings::useTexture();
 
     useTexture = false; // not yet tested
 
@@ -972,7 +972,7 @@ void CUDAELLUtils::jacobi(
     dim3 dimBlock( block_size, 1, 1 );
     dim3 dimGrid = makeGrid( numRows, dimBlock.x );
 
-    bool useTexture = CUDATexture::useTexture();
+    bool useTexture = CUDASettings::useTexture();
 
     useTexture = false;
 
@@ -1091,7 +1091,7 @@ void CUDAELLUtils::jacobiHalo(
     dim3 dimBlock( block_size, 1, 1 );
     dim3 dimGrid = makeGrid( numNonEmptyRows, dimBlock.x );
 
-    bool useTexture = CUDATexture::useTexture();
+    bool useTexture = CUDASettings::useTexture();
 
     useTexture = false;  // not yet tested
 

@@ -1,5 +1,5 @@
 /**
- * @file CUDATexture.hpp
+ * @file CUDASettings.hpp
  *
  * @license
  * Copyright (c) 2009-2013
@@ -25,24 +25,24 @@
  * SOFTWARE.
  * @endlicense
  *
- * @brief Using of Texture for CUDA
+ * @brief Managing some settings for CUDA specified by environment variables
  * @author Thomas Brandes
  * @date 04.05.2013
  * @since 1.0.0
  */
-#ifndef LAMA_CUDA_TEXTURE_HPP_
-#define LAMA_CUDA_TEXTURE_HPP_
+#ifndef LAMA_CUDA_SETTINGS_HPP_
+#define LAMA_CUDA_SETTINGS_HPP_
 
 #include <logging/logging.hpp>
 
 namespace lama
 {
 
-/** This class determines whether the texture on GPU device should be used or not.
- *
+/** This class determines whether the texture and or shared memory on a GPU 
+ *  device should be used or not.
  */
 
-class CUDATexture
+class CUDASettings
 {
 
 public:
@@ -50,6 +50,10 @@ public:
     /** Check whether textures should be used or not in kernel algorithms. */
 
     static bool useTexture();
+
+    /** Check wheter shared memory should be used or not in kernel algorithms. */
+
+    static bool useSharedMem();
 
 private:
 
@@ -59,20 +63,34 @@ private:
 
     static bool theUseTextureFlag; //!< result for useTexture if initialized is true
 
-    /** Set theUseTextureFlag by environment variable 
+    static bool theUseSharedMemFlag; //!< result for useTexture if initialized is true
+
+    /** convert the string value to a boolean value, name only used for messages. 
      *
-     *  @return true if environment variable was correctly set to yes or no or 0 or 1
-     *
+     *  @param[out]  flag is boolean variable that will be set
+     *  @param[in]   value is string to be converted
+     *  @return      true if string could be converted, false if no legal value has been found
      */
 
-    static bool getUseTextureByEnv();
+    static bool convertYesNoString( bool& var, const char* value );
 
-    /** Set the UseTextureFlag by device compute capability
+    /** Set a flag by value of its environment variable
      *
-     *  Note: can only be called if there is an active device
+     *  @param[out]  flag is boolean variable that will be set
+     *  @param[in]   value is name of the environment variable
+     *  @return      true if environment variable has been used to set flag
      */
+    static bool getEnvironmentSetting( bool& flag, const char* envVarName );
 
-    static void setUseTextureByDevice();
+    /**
+     *   Get the (major) compute capability for the current active device.
+     */
+    static int getComputeCapability();
+
+    /**
+     *   Initialization of flags.
+     */
+    static void initialize();
 };
 
 } // namespace

@@ -37,7 +37,7 @@
 // others
 #include <lama/cuda/CUDAStreamSyncToken.hpp>
 #include <lama/cuda/CUDAError.hpp>
-#include <lama/cuda/CUDATexture.hpp>
+#include <lama/cuda/CUDASettings.hpp>
 #include <lama/cuda/CUDAJDSUtils.hpp>
 #include <lama/cuda/CUDAUtils.hpp>
 
@@ -871,7 +871,7 @@ void CUDAJDSUtils::jacobi(
     dim3 dimBlock( block_size, 1, 1 );
     dim3 dimGrid = makeGrid( numRows, dimBlock.x );
 
-    bool useTexture = CUDATexture::useTexture();
+    bool useTexture = CUDASettings::useTexture();
     useTexture = false; // not yet tested
 
     if ( syncToken )
@@ -1055,7 +1055,7 @@ void CUDAJDSUtils::jacobiHalo(
     dim3 dimBlock( block_size, 1, 1 );
     dim3 dimGrid = makeGrid( numRows, dimBlock.x ); // TODO:numRows is too much...
 
-    bool useTexture   = CUDATexture::useTexture();
+    bool useTexture   = CUDASettings::useTexture();
 
     useTexture = false; // not yet tested
 
@@ -1252,7 +1252,8 @@ void CUDAJDSUtils::normalGEMV(
     LAMA_LOG_INFO(
         logger, "alpha = " << alpha << ", x = " << x << ", beta = " << beta << ", y = " << y << ", result = " << result )
 
-    const bool useTexture   = false; // still problems: CUDATexture::useTexture();
+    const bool useTexture   = false; // still problems: CUDASettings::useTexture();
+
     const bool useSharedMem = false; // maybe optimize later
 
     LAMA_LOG_DEBUG( logger, "useTexture = " << useTexture << ", useSharedMem = " << useSharedMem )
@@ -1293,7 +1294,7 @@ void CUDAJDSUtils::normalGEMV(
 
         LAMA_CUDA_RT_CALL( cudaStreamSynchronize(0), "JDS: gemvKernel FAILED" )
 
-        if ( useSharedMem )
+        if ( !useSharedMem )
         {
             LAMA_CUDA_RT_CALL( cudaUnbindTexture( texJDSdlgRef ), "LAMA_STATUS_CUDA_UNBINDTEX_FAILED" );
         }

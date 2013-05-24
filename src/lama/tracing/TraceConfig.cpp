@@ -354,9 +354,12 @@ RegionTable* TraceConfig::getRegionTable( Thread::Id threadId )
 {
     boost::shared_ptr<RegionTable> regionTable = mRegionTables[threadId];
 
+    // make sure that not two different threads try to allocate a table
+
+    boost::mutex::scoped_lock scoped_lock( mapMutex );
+
     if ( !regionTable )
     {
-        boost::mutex::scoped_lock scoped_lock( mapMutex );
 
         // this thread calls the first time a region
 

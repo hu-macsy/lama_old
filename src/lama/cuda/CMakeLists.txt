@@ -47,7 +47,7 @@ set ( CLASSES
         CUDAHostContextManager
         CUDALAPACK
         CUDAStreamSyncToken
-        CUDATexture
+        CUDASettings
     )
 
 lama_classes ( ${CLASSES} )
