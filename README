@@ -75,6 +75,3 @@ RUN SPHINX (GENERATE USER DOCUMENTATION)
 
  $ make userdoc
  
-INSTALLATION
-
- $ make install
