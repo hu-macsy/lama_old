@@ -155,21 +155,42 @@ void CSRStorage<ValueType>::check( const char* msg ) const
     LAMA_ASSERT_EQUAL_ERROR( mNumValues, mJa.size() )
     LAMA_ASSERT_EQUAL_ERROR( mNumValues, mValues.size() )
 
-    HostReadAccess<IndexType> csrIA( mIa );
-    HostReadAccess<IndexType> csrJA( mJa );
+    // check ascending values in offset array mIa
 
-    bool valid1 = OpenMPCSRUtils::validOffsets( csrIA.get(), mNumRows, mNumValues );
-
-    if ( !valid1 )
     {
-        LAMA_THROWEXCEPTION( "CSR::ia is invalid offset array, msg = " << msg )
+        ContextPtr loc = getContextPtr();
+
+        LAMA_INTERFACE_FN_DEFAULT_T( isSorted, loc, Utils, Reductions, IndexType )
+        LAMA_INTERFACE_FN_T( getValue, loc, Utils, Getter, IndexType )
+
+        ReadAccess<IndexType> csrIA( mIa, loc );
+
+        LAMA_CONTEXT_ACCESS( loc )
+
+        bool ascending = true;  // check for ascending
+
+        IndexType numValues = getValue( csrIA.get(), mNumRows );
+ 
+        LAMA_ASSERT_ERROR( numValues == mNumValues, "ia[" < mNumRows << "] = " << numValues <<
+                             ", expected " << mNumValues << ", msg = " << msg )
+
+        LAMA_ASSERT_ERROR( isSorted ( csrIA.get(), mNumRows + 1, ascending ),
+                           *this << " @ " << msg << ": IA is illegal offset array" )
     }
 
-    bool valid2 = OpenMPUtils::validIndexes( csrJA.get(), mNumValues, mNumColumns );
+    // check column indexes in JA
 
-    if ( !valid2 )
     {
-        LAMA_THROWEXCEPTION( "CSR::ja contains illegal column index, msg = " << msg )
+        ContextPtr loc = getContextPtr();
+
+        LAMA_INTERFACE_FN_DEFAULT( validIndexes, loc, Utils, Indexes )
+
+        ReadAccess<IndexType> rJA( mJa, loc );
+
+        LAMA_CONTEXT_ACCESS( loc )
+
+        LAMA_ASSERT_ERROR( validIndexes ( rJA.get(), mNumValues, mNumColumns ),
+                           *this << " @ " << msg << ": illegel indexes in JA" )
     }
 }
 #endif
