@@ -1380,16 +1380,6 @@ struct JDSUtilsInterface
 
     LAMA_INTERFACE_DEFINE_T( Mult, normalGEMV )
 
-    template<typename ValueType>
-    struct Operations
-    {
-        typedef void ( *setDiagonalWithScalar ) ( const IndexType numDiagonal,
-                                                  ValueType values[],
-                                                  Scalar scalar );
-    };
-
-    LAMA_INTERFACE_DEFINE_T( Operations, setDiagonalWithScalar )
-
     template<typename ValueType, typename OtherValueType>
     struct Getter
     {

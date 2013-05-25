@@ -60,37 +60,6 @@ namespace JDSUtilsTest
 {
 
 template<typename ValueType,typename OtherValueType>
-void setDiagonalWithScalarTest( ContextPtr loc )
-{
-    LAMA_INTERFACE_FN_T( setDiagonalWithScalar, loc, JDSUtils, Operations, ValueType );
-
-    ValueType valuesValues[] =
-    { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 };
-    const IndexType nValues = sizeof( valuesValues ) / sizeof(ValueType);
-    ValueType expectedValues[] =
-    { 5, 5, 5, 5, 4, 5, 6, 7, 8, 9 };
-    OtherValueType scalar = 5;
-    IndexType numDiagonal = 4;
-
-    LAMAArray<ValueType> values( nValues, valuesValues );
-
-    {
-        WriteOnlyAccess<ValueType> wValues( values, loc, numDiagonal );
-
-        LAMA_CONTEXT_ACCESS( loc );
-
-        setDiagonalWithScalar( numDiagonal, wValues.get(), scalar );
-    }
-
-    HostReadAccess<ValueType> rValues( values );
-
-    for ( IndexType i = 0; i < nValues; i++ )
-    {
-        BOOST_CHECK_EQUAL( expectedValues[i], rValues[i] );
-    }
-}
-
-template<typename ValueType,typename OtherValueType>
 void getRowTest( ContextPtr loc )
 {
     LAMA_INTERFACE_FN_TT( getRow, loc, JDSUtils, Getter, ValueType, OtherValueType );
@@ -830,7 +799,6 @@ LAMA_AUTO_TEST_CASE_TDUMMY( ilg2dlgTest, JDSUtilsTest );
 LAMA_AUTO_TEST_CASE_TDUMMY( sortRowsTest, JDSUtilsTest );
 LAMA_AUTO_TEST_CASE_TDUMMY( setInversePermTest, JDSUtilsTest );
 
-LAMA_AUTO_TEST_CASE_TT( setDiagonalWithScalarTest, JDSUtilsTest );
 LAMA_AUTO_TEST_CASE_TT( getRowTest, JDSUtilsTest );
 LAMA_AUTO_TEST_CASE_TT( getValueTest, JDSUtilsTest );
 LAMA_AUTO_TEST_CASE_TT( scaleValueTest, JDSUtilsTest );

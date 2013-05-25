@@ -194,6 +194,11 @@ public:
 
     void setDiagonal( const Scalar value )
     {
+        if ( !this->hasDiagonalProperty() )
+        {
+            LAMA_THROWEXCEPTION( *this << ": has not diagonal property, cannot set diagonal" )
+        }
+
         static_cast<Derived*>( this )->setDiagonalImpl( value );
     }
 

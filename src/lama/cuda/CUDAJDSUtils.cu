@@ -109,23 +109,6 @@ struct greaterThan
 };
 
 /* ------------------------------------------------------------------------------------------------------------------ */
-/*                                                  setDiagonalWithScalar                                             */
-/* ------------------------------------------------------------------------------------------------------------------ */
-
-template<typename ValueType>
-void CUDAJDSUtils::setDiagonalWithScalar( const IndexType numDiagonal, ValueType values[], Scalar scalar )
-{
-    LAMA_LOG_INFO( logger, "setDiagonalWithScalar with numDiagonal = " << numDiagonal << " and scalar = " << scalar )
-
-    LAMA_CHECK_CUDA_ACCESS
-
-    ValueType value = scalar.getValue<ValueType>();
-
-    thrust::device_ptr<ValueType> valuesPtr( const_cast<ValueType*>( values ) );
-    thrust::fill( valuesPtr, valuesPtr + numDiagonal, value );
-}
-
-/* ------------------------------------------------------------------------------------------------------------------ */
 /*                                                  getRow                                                            */
 /* ------------------------------------------------------------------------------------------------------------------ */
 
@@ -1357,9 +1340,6 @@ void CUDAJDSUtils::setInterface( JDSUtilsInterface& JDSUtils )
     LAMA_INTERFACE_REGISTER( JDSUtils, check )
     LAMA_INTERFACE_REGISTER( JDSUtils, ilg2dlg )
     LAMA_INTERFACE_REGISTER( JDSUtils, setInversePerm )
-
-    LAMA_INTERFACE_REGISTER_T( JDSUtils, setDiagonalWithScalar, float )
-    LAMA_INTERFACE_REGISTER_T( JDSUtils, setDiagonalWithScalar, double )
 
     LAMA_INTERFACE_REGISTER_TT( JDSUtils, scaleValue, float, float )
     LAMA_INTERFACE_REGISTER_TT( JDSUtils, scaleValue, float, double )

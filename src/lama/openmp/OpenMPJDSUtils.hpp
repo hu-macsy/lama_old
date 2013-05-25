@@ -53,11 +53,6 @@ class LAMA_DLL_IMPORTEXPORT OpenMPJDSUtils
 {
 public:
 
-    /** This method replaces the diagonal */
-
-    template<typename ValueType>
-    static void setDiagonalWithScalar( const IndexType numDiagonal, ValueType values[], Scalar scalar );
-
     /** This method scales the matrix using an value vector */
 
     template<typename ValueType,typename OtherValueType>

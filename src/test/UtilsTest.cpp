@@ -140,7 +140,6 @@ void sumTest( ContextPtr loc )
 template<typename ValueType>
 void setValTest( ContextPtr loc )
 {
-
     LAMA_INTERFACE_FN_T( setVal, loc, Utils, Setter, ValueType );
 
     {
@@ -149,18 +148,24 @@ void setValTest( ContextPtr loc )
         LAMAArray<ValueType> values;
 
         {
-            WriteOnlyAccess<ValueType> wValues( values, loc, n );
+            WriteOnlyAccess<ValueType> wValues( values, loc, 3 * n );
 
             LAMA_CONTEXT_ACCESS( loc );
 
-            setVal( wValues.get(), n, 7 );
+            setVal( wValues.get(), 3 * n, 0 );
+
+            // overwrite in the middle to check that there is no out-of-range set
+
+            setVal( wValues.get() + n, n, 10 );
         }
 
         HostReadAccess<ValueType> rValues( values );
 
         for ( IndexType i = 0; i < n; i++ )
         {
-            BOOST_CHECK_EQUAL( 7, rValues.get()[i] );
+            BOOST_CHECK_EQUAL(  0, rValues.get()[i + 0 * n] );
+            BOOST_CHECK_EQUAL( 10, rValues.get()[i + 1 * n] );
+            BOOST_CHECK_EQUAL(  0, rValues.get()[i + 2 * n] );
         }
     }
 

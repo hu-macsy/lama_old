@@ -63,24 +63,6 @@ LAMA_LOG_DEF_LOGGER( OpenMPJDSUtils::logger, "OpenMP.JDSUtils" )
 /*   Implementation of methods                                                 */
 /* --------------------------------------------------------------------------- */
 
-/* --------------------------------------------------------------------------- */
-
-/* ------------------------------------------------------------------------------------------------------------------ */
-
-template<typename ValueType>
-void OpenMPJDSUtils::setDiagonalWithScalar( const IndexType numDiagonal, ValueType values[], Scalar scalar )
-{
-    LAMA_LOG_INFO( logger, "setDiagonalWithScalar with numDiagonal = " << numDiagonal << " and scalar = " << scalar )
-
-    ValueType value = scalar.getValue<ValueType>();
-
-    // TODO: use OpenMP
-    for ( IndexType i = 0; i < numDiagonal; ++i )
-    {
-        values[i] = value;
-    }
-}
-
 /* ------------------------------------------------------------------------------------------------------------------ */
 
 template<typename ValueType,typename OtherValueType>
@@ -781,9 +763,6 @@ void OpenMPJDSUtils::setInterface( JDSUtilsInterface& JDSUtils )
     LAMA_INTERFACE_REGISTER( JDSUtils, ilg2dlg )
     LAMA_INTERFACE_REGISTER( JDSUtils, checkDiagonalProperty )
     LAMA_INTERFACE_REGISTER( JDSUtils, check )
-
-    LAMA_INTERFACE_REGISTER_T( JDSUtils, setDiagonalWithScalar, float )
-    LAMA_INTERFACE_REGISTER_T( JDSUtils, setDiagonalWithScalar, double )
 
     LAMA_INTERFACE_REGISTER_TT( JDSUtils, scaleValue, float, float )
     LAMA_INTERFACE_REGISTER_TT( JDSUtils, scaleValue, float, double )

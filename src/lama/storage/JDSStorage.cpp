@@ -221,20 +221,24 @@ IndexType JDSStorage<ValueType>::getNumDiagonals() const
 template<typename ValueType>
 void JDSStorage<ValueType>::setDiagonalImpl( const Scalar scalar )
 {
+    // diagonal property has already been checked
+
     LAMA_LOG_INFO( logger, "setDiagonalImpl with scalar = " << scalar )
-    // TODO: check diagonal property?
+
     ContextPtr loc = getContextPtr();
 
-    LAMA_INTERFACE_FN_T( setDiagonalWithScalar, loc, JDSUtils, Operations, ValueType )
+    LAMA_INTERFACE_FN_T( setVal, loc, Utils, Setter, ValueType )
 
-    IndexType numDiagonal = std::min( mNumColumns, mNumRows );
+    IndexType numDiagonalValues = std::min( mNumColumns, mNumRows );
 
-    WriteOnlyAccess<ValueType> wValues( mValues, loc, numDiagonal );
+    // Note: diagonal is first column in mValues ( stored column-wise )
+    // values[i] = scalar
+
+    WriteAccess<ValueType> wValues( mValues, loc );
 
     LAMA_CONTEXT_ACCESS( loc )
 
-    setDiagonalWithScalar( numDiagonal, wValues.get(), scalar );
-
+    setVal( wValues.get(), numDiagonalValues, scalar.getValue<ValueType>() );
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */
@@ -243,8 +247,10 @@ template<typename ValueType>
 template<typename OtherValueType>
 void JDSStorage<ValueType>::setDiagonalImpl( const LAMAArray<OtherValueType>& diagonal )
 {
+    // diagonal property has already been checked
+
     LAMA_LOG_INFO( logger, "setDiagonalImpl" )
-    // TODO: check diagonal property?
+
     ContextPtr loc = getContextPtr();
 
     LAMA_INTERFACE_FN_TT( setGather, loc, Utils, Copy, ValueType, OtherValueType )
