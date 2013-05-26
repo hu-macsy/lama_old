@@ -1428,17 +1428,9 @@ struct JDSUtilsInterface
                                                   const IndexType perm[],
                                                   const IndexType ja[],
                                                   const IndexType dlg[] );
-
-        typedef bool ( *check ) ( const IndexType numRows,
-                                  const IndexType numValues,
-                                  const IndexType numColumns,
-                                  const IndexType ja[],
-                                  const IndexType ilg[],
-                                  const IndexType dlg[] );
     };
 
     LAMA_INTERFACE_DEFINE( Helper, checkDiagonalProperty )
-    LAMA_INTERFACE_DEFINE( Helper, check )
 
     JDSUtilsInterface ();
 };

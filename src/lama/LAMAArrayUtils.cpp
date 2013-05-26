@@ -52,7 +52,7 @@ namespace lama
 LAMA_LOG_DEF_LOGGER( LAMAArrayUtils::logger, "LAMAArrayUtils" )
 
 template<typename ValueType1,typename ValueType2>
-void LAMAArrayUtils::assignImpl2( LAMAArray<ValueType1>& target, 
+void LAMAArrayUtils::assignImpl( LAMAArray<ValueType1>& target, 
                                   const LAMAArray<ValueType2>& source,
                                   const ContextPtr loc )
 {
@@ -100,13 +100,13 @@ void LAMAArrayUtils::assignImpl1( LAMAArray<ValueType>& target,
     switch ( sourceType )
     {
     case Scalar::FLOAT:
-        assignImpl2( target, dynamic_cast<const LAMAArray<float>&>( source ), loc );
+        assignImpl( target, dynamic_cast<const LAMAArray<float>&>( source ), loc );
         break;
     case Scalar::DOUBLE:
-        assignImpl2( target, dynamic_cast<const LAMAArray<double>&>( source ), loc );
+        assignImpl( target, dynamic_cast<const LAMAArray<double>&>( source ), loc );
         break;
     case Scalar::INDEX_TYPE:
-        assignImpl2( target, dynamic_cast<const LAMAArray< IndexType>& >( source ), loc );
+        assignImpl( target, dynamic_cast<const LAMAArray< IndexType>& >( source ), loc );
         break;
     default:
         LAMA_THROWEXCEPTION( "unsupported source type : " )
@@ -188,6 +188,20 @@ void LAMAArrayUtils::assign( LAMAArray<ValueType>& target, const Scalar& value, 
     setVal( values.get(), n, val );
 }
 
+template<typename ValueType>
+void LAMAArrayUtils::setVal( LAMAArray<ValueType>& target, const IndexType index, ValueType val )
+{
+    LAMA_ASSERT_DEBUG( index < target.size(), "index = " << index << " out of range for target = " << target );
+
+    ContextPtr loc = target.getValidContext();  // best position where to fill
+
+    WriteAccess<ValueType> wTarget( target, loc );
+    
+    LAMA_INTERFACE_FN_DEFAULT_T( setVal, loc, Utils, Setter, ValueType );
+
+    setVal( wTarget.get() + index, 1, val );
+}
+
 template
 void LAMAArrayUtils::gather(
     LAMAArray<int>& target,
@@ -227,4 +241,13 @@ void LAMAArrayUtils::assign( LAMAArray<double>& target, const Scalar& value, Con
 template
 void LAMAArrayUtils::assign( LAMAArray<IndexType>& target, const Scalar& value, ContextPtr context );
 
+template
+void LAMAArrayUtils::setVal( LAMAArray<IndexType>& target, const IndexType index, IndexType val );
+ 
+template
+void LAMAArrayUtils::setVal( LAMAArray<float>& target, const IndexType index, float val );
+ 
+template
+void LAMAArrayUtils::setVal( LAMAArray<double>& target, const IndexType index, double val );
+ 
 } // namespace

@@ -99,16 +99,6 @@ public:
         const IndexType ja[],
         const IndexType dlg[] );
 
-    /** This method checks if the matrix indexes are correct */
-
-    static bool check(
-        const IndexType numRows,
-        const IndexType numValues,
-        const IndexType numColumns,
-        const IndexType ja[],
-        const IndexType ilg[],
-        const IndexType dlg[] );
-
     /** Bucket sort for row sorting */
 
     static void sortRows( IndexType array[], IndexType perm[], const IndexType n );

@@ -42,6 +42,7 @@
 #include <lama/HostReadAccess.hpp>
 #include <lama/ReadAccess.hpp>
 #include <lama/WriteAccess.hpp>
+#include <lama/LAMAArrayUtils.hpp>
 
 // tracing
 #include <lama/tracing.hpp>
@@ -96,13 +97,57 @@ JDSStorage<ValueType>::JDSStorage(
     const LAMAArray<IndexType>& ja,
     const LAMAArray<ValueType>& values )
 
-    : CRTPMatrixStorage<JDSStorage<ValueType>,ValueType>( numRows, numColumns ), mNumDiagonals(
-        numDiagonals ), mNumValues( numValues ), mDlg( dlg ), mIlg( ilg ), mPerm( perm ), mJa(
-            ja ), mValues( values )
+    : CRTPMatrixStorage<JDSStorage<ValueType>,ValueType>( numRows, numColumns ), 
+      mNumDiagonals( numDiagonals ), 
+      mNumValues( numValues ), 
+      mDlg( dlg ), 
+      mIlg( ilg ), 
+      mPerm( perm ), 
+      mJa( ja ), 
+      mValues( values )
 {
     check( "JDSStorage( #row, #cols, #values, #diags, dlg, ilg, perm, ja, values" );
     this->resetDiagonalProperty();
     LAMA_LOG_INFO( logger, *this << ": constructed by JDS arrays dlg, ilg, .., values" )
+}
+
+/* ------------------------------------------------------------------------------------------------------------------ */
+
+template<typename ValueType>
+void JDSStorage<ValueType>::setJDSData(
+    const IndexType numRows,
+    const IndexType numColumns,
+    const IndexType numValues,
+    const IndexType numDiagonals,
+    const LAMAArray<IndexType>& dlg,
+    const LAMAArray<IndexType>& ilg,
+    const LAMAArray<IndexType>& perm,
+    const LAMAArray<IndexType>& ja,
+    const _LAMAArray& values )
+{
+    _MatrixStorage::init( numRows, numColumns );
+
+    mNumDiagonals = numDiagonals;
+    mNumValues    = numValues;
+
+    ContextPtr loc = getContextPtr();
+
+    LAMAArrayUtils::assignImpl( mDlg, dlg, loc );
+    LAMAArrayUtils::assignImpl( mIlg, ilg, loc );
+    LAMAArrayUtils::assignImpl( mPerm, perm, loc );
+    LAMAArrayUtils::assignImpl( mJa, ja, loc );
+
+    LAMAArrayUtils::assign( mValues, values, loc );  // supports type conversion
+
+    // check is expensive, so do it only if ASSERT_LEVEL is on DEBUG mode
+
+#ifdef LAMA_ASSERT_LEVEL_DEBUG
+    check( "JDSStorage( #row, #cols, #values, #diags, dlg, ilg, perm, ja, values" );
+#endif
+
+    this->resetDiagonalProperty();
+
+    LAMA_LOG_INFO( logger, *this << ": set JDS by arrays dlg, ilg, .., values" )
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */
@@ -471,6 +516,51 @@ void JDSStorage<ValueType>::check( const char* msg ) const
         LAMA_ASSERT_EQUAL_ERROR( sum( rIlg.get(), mNumRows ), mNumValues )
         LAMA_ASSERT_EQUAL_ERROR( sum( rDlg.get(), mNumDiagonals ), mNumValues )
     }
+
+    // check index values in Perm for out of range
+
+    {
+        ContextPtr loc = getContextPtr();
+
+        LAMA_INTERFACE_FN_DEFAULT( validIndexes, loc, Utils, Indexes )
+
+        ReadAccess<IndexType> rPerm( mPerm, loc );
+
+        LAMA_CONTEXT_ACCESS( loc )
+
+        LAMA_ASSERT_ERROR( validIndexes ( rPerm.get(), mNumRows, mNumRows ),
+                           *this << " @ " << msg << ": illegel indexes in Perm" )
+    }
+
+    // check perm: no values out of range, but make sure that it is permutation, e.g. [ 0, 0] is illegal
+
+    {
+        ContextPtr loc = getContextPtr();
+
+        // temporary array for inverse permutation, initialize with mNumRows
+
+        LAMAArray<IndexType> invPermArray( mNumRows, mNumRows );
+
+        LAMA_INTERFACE_FN_DEFAULT( setInversePerm, loc, JDSUtils, Sort )
+
+        LAMA_INTERFACE_FN( validIndexes, loc, Utils, Indexes )
+        LAMA_INTERFACE_FN_T( maxval, loc, Utils, Reductions, IndexType )
+
+        ReadAccess<IndexType> rPerm( mPerm, loc );
+        WriteAccess<IndexType> wInversePerm( invPermArray, loc );
+
+        LAMA_CONTEXT_ACCESS( loc )
+
+        // set inverse permutation, should overwrite all values 'mNumRows'
+
+        setInversePerm( wInversePerm.get(), rPerm.get(), mNumRows );
+
+        IndexType maxIndex = maxval( wInversePerm.get(), mNumRows );
+
+        LAMA_ASSERT_ERROR ( maxIndex < mNumRows, "Perm array does not cover all row indexes" );
+    }
+
+    // Note: check is not exhaustive, e.g. it does not check for same column index in one row
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */

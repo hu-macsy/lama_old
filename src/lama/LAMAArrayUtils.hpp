@@ -77,6 +77,9 @@ public:
     static void assign( _LAMAArray& target, const _LAMAArray& source, ContextPtr context );
 
     template<typename ValueType1,typename ValueType2>
+    static void assignImpl( LAMAArray<ValueType1>& target, const LAMAArray<ValueType2>& source, ContextPtr context );
+
+    template<typename ValueType1,typename ValueType2>
     static void gather(
         LAMAArray<ValueType1>& target,
         const LAMAArray<ValueType2>& source,
@@ -85,10 +88,17 @@ public:
     template<typename ValueType1>
     static void assign( LAMAArray<ValueType1>& target, const Scalar& value, ContextPtr context );
 
-private:
+    /** This method sets a single value in a LAMA array.
+     *
+     *  @param[in,out] target LAMA array where a value to set
+     *  @param[in]     index  position to set ( 0 <= index < target.size() )
+     *  @param[in]     val    value to set
+     */
 
-    template<typename ValueType1,typename ValueType2>
-    static void assignImpl2( LAMAArray<ValueType1>& target, const LAMAArray<ValueType2>& source, ContextPtr context );
+    template<typename ValueType>
+    static void setVal( LAMAArray<ValueType>& target, const IndexType index, ValueType val );
+
+private:
 
     template<typename ValueType>
     static void assignImpl1( LAMAArray<ValueType>& target, const _LAMAArray& source, ContextPtr context );

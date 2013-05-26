@@ -222,69 +222,6 @@ bool OpenMPJDSUtils::checkDiagonalProperty(
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 
-bool OpenMPJDSUtils::check(
-    const IndexType numRows,
-    const IndexType numValues,
-    const IndexType numColumns,
-    const IndexType ja[],
-    const IndexType ilg[],
-    const IndexType dlg[] )
-{
-    LAMA_LOG_INFO( logger, "check with numValues = " << numValues << ", numColumns = " << numColumns )
-
-    bool validFlag = true;
-
-    #pragma omp parallel for schedule(LAMA_OMP_SCHEDULE) reduction( & : validFlag )
-    for ( IndexType i = 0; i < numValues; i++ )
-    {
-        if ( numColumns <= ja[i] )
-        {
-            validFlag = false;
-        }
-    }
-
-    if ( !validFlag )
-    {
-        return false;
-    }
-
-    if ( numRows > 1 )
-    {
-        for ( IndexType i = 1; i < numRows; i++ )
-        {
-            if ( ilg[i] > ilg[i - 1] )
-            {
-                return false;
-            }
-        }
-    }
-    if ( numRows > 0 )
-    {
-        if ( ilg[0] > 1 )
-        {
-            for ( IndexType i = 1; i < ilg[0]; i++ )
-            {
-                if ( dlg[i] > dlg[i - 1] )
-                {
-                    return false;
-                }
-            }
-        }
-
-        IndexType sumDlg = OpenMPUtils::sum( dlg, ilg[0] );
-        IndexType sumIlg = OpenMPUtils::sum( ilg, numRows );
-
-        if ( sumDlg != sumIlg )
-        {
-            return false;
-        }
-    }
-
-    return validFlag;
-}
-
-/* ------------------------------------------------------------------------------------------------------------------ */
-
 void OpenMPJDSUtils::setInversePerm( IndexType inversePerm[], const IndexType perm[], const IndexType n )
 {
     LAMA_LOG_INFO( logger, "compute inverse perm, n = " << n )
@@ -762,7 +699,6 @@ void OpenMPJDSUtils::setInterface( JDSUtilsInterface& JDSUtils )
     LAMA_INTERFACE_REGISTER( JDSUtils, setInversePerm )
     LAMA_INTERFACE_REGISTER( JDSUtils, ilg2dlg )
     LAMA_INTERFACE_REGISTER( JDSUtils, checkDiagonalProperty )
-    LAMA_INTERFACE_REGISTER( JDSUtils, check )
 
     LAMA_INTERFACE_REGISTER_TT( JDSUtils, scaleValue, float, float )
     LAMA_INTERFACE_REGISTER_TT( JDSUtils, scaleValue, float, double )

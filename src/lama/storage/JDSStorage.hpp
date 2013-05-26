@@ -178,6 +178,17 @@ public:
         const LAMAArray<OtherValueType>& values,
         const ContextPtr loc );
 
+    void setJDSData(
+        const IndexType numRows,
+        const IndexType numColumns,
+        const IndexType numValues,
+        const IndexType numDiagonals,
+        const LAMAArray<IndexType>& dlg,
+        const LAMAArray<IndexType>& ilg,
+        const LAMAArray<IndexType>& perm,
+        const LAMAArray<IndexType>& ja,
+        const _LAMAArray& values );
+
     /** Implementation of MatrixStorage::matrixTimesVector for JDS */
 
     virtual void matrixTimesVector(
