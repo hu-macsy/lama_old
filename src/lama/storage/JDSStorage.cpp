@@ -519,6 +519,7 @@ void JDSStorage<ValueType>::check( const char* msg ) const
 
     // check index values in Perm for out of range
 
+    if ( mNumRows > 0 )
     {
         ContextPtr loc = getContextPtr();
 
@@ -534,6 +535,7 @@ void JDSStorage<ValueType>::check( const char* msg ) const
 
     // check perm: no values out of range, but make sure that it is permutation, e.g. [ 0, 0] is illegal
 
+    if ( mNumRows > 0 )   // very important as maxval would not work
     {
         ContextPtr loc = getContextPtr();
 
@@ -557,7 +559,7 @@ void JDSStorage<ValueType>::check( const char* msg ) const
 
         IndexType maxIndex = maxval( wInversePerm.get(), mNumRows );
 
-        LAMA_ASSERT_ERROR ( maxIndex < mNumRows, "Perm array does not cover all row indexes" );
+        LAMA_ASSERT_ERROR ( maxIndex < mNumRows, "Perm array does not cover all row indexes, #rows = " << mNumRows );
     }
 
     // Note: check is not exhaustive, e.g. it does not check for same column index in one row

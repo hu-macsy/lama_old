@@ -171,7 +171,7 @@ void CSRStorage<ValueType>::check( const char* msg ) const
 
         IndexType numValues = getValue( csrIA.get(), mNumRows );
  
-        LAMA_ASSERT_ERROR( numValues == mNumValues, "ia[" < mNumRows << "] = " << numValues <<
+        LAMA_ASSERT_ERROR( numValues == mNumValues, "ia[" << mNumRows << "] = " << numValues <<
                              ", expected " << mNumValues << ", msg = " << msg )
 
         LAMA_ASSERT_ERROR( isSorted ( csrIA.get(), mNumRows + 1, ascending ),
