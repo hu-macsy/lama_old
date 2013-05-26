@@ -320,13 +320,15 @@ protected:
 
     LAMA_LOG_DECL_STATIC_LOGGER( logger ) //!< logger for this matrix format
 
+    /** Override MatrixStorage::checkDiagonalProperty method. */
+
+    virtual bool checkDiagonalProperty() const;
+
 private:
 
     /** Disable default constructor. */
 
     DenseStorageView();  
-
-    virtual bool checkDiagonalProperty() const;
 
     template<typename OtherType>
     void assignDenseStorageImpl( const DenseStorageView<OtherType>& otherDenseStorage );

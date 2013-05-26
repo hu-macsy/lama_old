@@ -61,7 +61,7 @@ bool CUDASettings::theUseSharedMemFlag = false;  // good value available after i
 
 /* ----------------------------------------------------------------------------- */
 
-bool CUDASettings::convertYesNoString( bool& boolVal, const char* stringVal )
+bool CUDASettings::convertYesNoString( bool& flag, const char* stringVal )
 {
     char key = toupper( stringVal[0] );
 
@@ -71,34 +71,35 @@ bool CUDASettings::convertYesNoString( bool& boolVal, const char* stringVal )
 
     if ( key == '0' ) 
     {
-        boolVal = false;
+        flag = false;
     }
     else if ( key == '1' ) 
     {
-        boolVal = true;
+        flag = true;
     }
     else if ( key == 'J' ) 
     {
-        boolVal = true;
+        flag = true;
     }
     else if ( key == 'Y' ) 
     {
-        boolVal = true;
+        flag = true;
     }
     else if ( key == 'T' ) 
     {
-        boolVal = true;
+        flag = true;
     }
     else if ( key == 'N' ) 
     {
-        boolVal = false;
+        flag = false;
     }
     else if ( key == 'F' ) 
     {
-        boolVal = false;
+        flag = false;
     }
     else
     {
+        // could not identify meaning
         done = false;
     }
  

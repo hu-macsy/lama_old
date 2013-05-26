@@ -113,30 +113,34 @@ void LAMAArrayUtils::assignImpl1( LAMAArray<ValueType>& target,
     }
 }
 
-void LAMAArrayUtils::assign( _LAMAArray& target, const _LAMAArray& source, const ContextPtr loc )
+void LAMAArrayUtils::assign( 
+    _LAMAArray& target, 
+    const _LAMAArray& source, 
+    const ContextPtr loc /* = ContextPtr() */ )
 {
+    ContextPtr validLoc = loc;
+
+    if ( !validLoc )
+    {
+        // if no context is given we assign where source has a valid copy available
+
+        validLoc = source.getValidContext( );
+    }
+
     switch ( target.getValueType() )
     {
     case Scalar::FLOAT:
-        assignImpl1( dynamic_cast<LAMAArray<float>&>( target ), source, loc );
+        assignImpl1( dynamic_cast<LAMAArray<float>&>( target ), source, validLoc );
         break;
     case Scalar::DOUBLE:
-        assignImpl1( dynamic_cast<LAMAArray<double>&>( target ), source, loc );
+        assignImpl1( dynamic_cast<LAMAArray<double>&>( target ), source, validLoc );
         break;
     case Scalar::INDEX_TYPE:
-        assignImpl1( dynamic_cast<LAMAArray< IndexType>& >( target ), source, loc );
+        assignImpl1( dynamic_cast<LAMAArray< IndexType>& >( target ), source, validLoc );
         break;
     default:
         LAMA_THROWEXCEPTION( "unsupported target type : " )
     }
-}
-
-void LAMAArrayUtils::assign( _LAMAArray& target, const _LAMAArray& source )
-{
-    // if no context is given we assign where source has a valid copy available
-
-    ContextPtr loc = source.getValidContext( Context::Host );
-    assign( target, source, loc );
 }
 
 template<typename ValueType1,typename ValueType2>
@@ -195,9 +199,11 @@ void LAMAArrayUtils::setVal( LAMAArray<ValueType>& target, const IndexType index
 
     ContextPtr loc = target.getValidContext();  // best position where to fill
 
+    LAMA_INTERFACE_FN_DEFAULT_T( setVal, loc, Utils, Setter, ValueType );
+
     WriteAccess<ValueType> wTarget( target, loc );
     
-    LAMA_INTERFACE_FN_DEFAULT_T( setVal, loc, Utils, Setter, ValueType );
+    LAMA_CONTEXT_ACCESS( loc )
 
     setVal( wTarget.get() + index, 1, val );
 }

@@ -40,6 +40,8 @@ namespace lama
 
 /** This class determines whether the texture and or shared memory on a GPU 
  *  device should be used or not.
+ *
+ *  This class provides only static methods.
  */
 
 class CUDASettings
@@ -57,6 +59,8 @@ public:
 
 private:
 
+    CUDASettings();
+
     LAMA_LOG_DECL_STATIC_LOGGER( logger )
 
     static bool initialized;  //!< will be set true after determination of theUseTextureFlag
@@ -72,12 +76,12 @@ private:
      *  @return      true if string could be converted, false if no legal value has been found
      */
 
-    static bool convertYesNoString( bool& var, const char* value );
+    static bool convertYesNoString( bool& flag, const char* value );
 
     /** Set a flag by value of its environment variable
      *
      *  @param[out]  flag is boolean variable that will be set
-     *  @param[in]   value is name of the environment variable
+     *  @param[in]   envVarName is name of the environment variable
      *  @return      true if environment variable has been used to set flag
      */
     static bool getEnvironmentSetting( bool& flag, const char* envVarName );

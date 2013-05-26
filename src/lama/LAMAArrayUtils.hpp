@@ -55,6 +55,7 @@ public:
      *
      *  @param[out] target   contains copy of source values
      *  @param[in]  source   array with source values
+     *  @param[in]  context  specifies optionally at which context target will have valid values
      *
      *  \code
      *  LAMAArray<float> fvalues;
@@ -65,16 +66,7 @@ public:
      *  \endcode
      *  Size of target array will be the same as the source array.
      */
-    static void assign( _LAMAArray& target, const _LAMAArray& source );
-
-    /** Same as assign but with specification of context for target array
-     *
-     *  @param[out] target   contains copy of source values
-     *  @param[in]  source   array with source values
-     *  @param[in]  context  context where target will have the valid copy
-     *
-     */
-    static void assign( _LAMAArray& target, const _LAMAArray& source, ContextPtr context );
+    static void assign( _LAMAArray& target, const _LAMAArray& source, ContextPtr context = ContextPtr() );
 
     template<typename ValueType1,typename ValueType2>
     static void assignImpl( LAMAArray<ValueType1>& target, const LAMAArray<ValueType2>& source, ContextPtr context );

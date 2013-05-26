@@ -141,10 +141,18 @@ protected:
 
 private:
 
+    /** Helper class for a static object on which should be act at termination. */
+
     class CGuard
     {
     public:
+
+        /** Constructor. */
+
         CGuard();
+
+        /** Destructor. */
+
         ~CGuard();  
     };
 
@@ -152,7 +160,7 @@ private:
 
     static int countSyncToken;  
 
-    static CGuard cguard;
+    static CGuard cguard;  //!< required to call routine at its destructor
 
     /** Vector of accesses that will be freed after completion. */
 

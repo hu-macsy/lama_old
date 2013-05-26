@@ -120,6 +120,8 @@ ELLStorage<ValueType>::ELLStorage(
 
     : CRTPMatrixStorage<ELLStorage<ValueType>,ValueType>()
 {
+    LAMA_LOG_INFO( logger, "constructor with ELL data array" )
+
     setELLData( numRows, numColumns, numValuesPerRows, ia, ja, values );
 }
 
@@ -132,10 +134,37 @@ ELLStorage<ValueType>::ELLStorage( const ELLStorage<ValueType>& other )
 {
     LAMA_LOG_INFO( logger, "constructor # other = " << other )
 
-    // For optimization: fillValues, resetDiagonalProperty, check is not really needed
+    // call the assignment operator
 
-    setELLData( other.mNumRows, other.mNumColumns, other.mNumValuesPerRow,
-                other.mIA, other.mJA, other.mValues );
+    operator=( other );
+}
+
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType>
+ELLStorage<ValueType>& ELLStorage<ValueType>::operator=( const ELLStorage<ValueType>& other )
+{
+    // nothing to do for self assignments
+
+    if ( &other != this )
+    {
+        // For optimization: fillValues, resetDiagonalProperty, check is not really needed
+
+        setELLData( other.mNumRows, other.mNumColumns, other.mNumValuesPerRow,
+                    other.mIA, other.mJA, other.mValues );
+    }
+
+    return *this;
+}
+
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType>
+ELLStorage<ValueType>& ELLStorage<ValueType>::operator=( const _MatrixStorage& other )
+{
+    assign( other );   // calls virtual method of MatrixStorage
+
+    return *this;
 }
 
 /* --------------------------------------------------------------------------- */
@@ -519,7 +548,7 @@ void ELLStorage<ValueType>::setELLData(
     {
         ContextPtr loc = getContextPtr();
 
-        LAMA_INTERFACE_FN_T( fillELLValues, loc, ELLUtils, Solver, ValueType )
+        LAMA_INTERFACE_FN_DEFAULT_T( fillELLValues, loc, ELLUtils, Solver, ValueType )
 
         ReadAccess<IndexType> ellIA( mIA, loc );
         WriteAccess<IndexType> ellJA( mJA, loc );

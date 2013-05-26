@@ -1212,6 +1212,9 @@ void CUDAELLUtils::setInterface( ELLUtilsInterface& ELLUtils )
 
     LAMA_INTERFACE_REGISTER_T( ELLUtils, jacobiHalo, float )
     LAMA_INTERFACE_REGISTER_T( ELLUtils, jacobiHalo, double )
+
+    LAMA_INTERFACE_REGISTER_T( ELLUtils, fillELLValues, float )
+    LAMA_INTERFACE_REGISTER_T( ELLUtils, fillELLValues, double )
 }
 
 /* --------------------------------------------------------------------------- */

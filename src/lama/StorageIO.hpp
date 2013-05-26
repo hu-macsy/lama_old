@@ -110,7 +110,7 @@ protected:
 
 private:
 
-    static const int mIversion;
+    static const int mIversion; //<! unique identification for version
 };
 
 /** TODO[doxy] Complete Description.

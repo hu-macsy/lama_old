@@ -452,7 +452,7 @@ protected:
 
     ContextPtr mContext;//!< preferred context for the storage
 
-private:
+protected:
 
     /** checkDiagonalProperty checks if the diagonal property of this is full filled.
      *

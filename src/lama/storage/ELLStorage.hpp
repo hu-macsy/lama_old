@@ -47,22 +47,23 @@ namespace lama
  *
  *  The ELLPACK format has the following data:
  *
- *  - data is the array with all non-zero values
+ *  - values is the array with all non-zero values
  *  - ja is the array with the corresponding column indexes
  *  - ia contains the number of non-zeros in a row
  *
  *  In contrary to the CSR sparse format, the number of values per row
  *  is the same for all rows. So an offset array ia is no more needed.
- *  On the other hand, the arrays must be filled up completely with
- *  values. For ja the value nIndex is used, for data the value 0.0.
+ *
+ *  Therefore, the arrays ja and values might contain more values that
+ *  are not needed. These unused values will be set with default values
+ *  so that using these entries does not harm. The unused column indexes
+ *  should contain a legal column value, the unused entries in values
+ *  will be set to zero.
  *
  *  @tparam T is the value type of the matrix values.
- *
- *  Note: default copy constructor and assignment operator are enabled.
- *  Copies of LAMAArray will be deep copies.
  */
 template<typename T>
-class LAMA_DLL_IMPORTEXPORT ELLStorage: public CRTPMatrixStorage<ELLStorage<T>,T>
+class LAMA_DLL_IMPORTEXPORT ELLStorage: public CRTPMatrixStorage<ELLStorage<T>, T>
 {
 public:
 
@@ -103,9 +104,11 @@ public:
         const LAMAArray<IndexType>& ja,
         const LAMAArray<ValueType>& values );
 
-    /** Copy constructor can take any matrix storage. */
+    /** Override the default copy constructor */
 
     ELLStorage( const ELLStorage<ValueType>& other );
+
+    /** Copy constructor can take any matrix storage. */
 
     explicit ELLStorage( const _MatrixStorage& other )
     {
@@ -124,11 +127,19 @@ public:
 
     virtual ~ELLStorage();
 
-    ELLStorage<ValueType>& operator=( const _MatrixStorage& other )
-    {
-        assign( other );
-        return *this;
-    }
+    /** Override the default assignment operator */
+
+    ELLStorage<ValueType>& operator=( const ELLStorage<ValueType>& other );
+
+    /** The assignment operator can be used with any matrix storage.
+     *
+     *  @param[in] other is the matrix storage that will be assigned
+     *
+     *  The assignment operator will also carry out implicit type and
+     *  and format conversions.
+     */
+
+    ELLStorage<ValueType>& operator=( const _MatrixStorage& other );
 
     /** Implementation of MatrixStorage::copy for derived class. */
 
