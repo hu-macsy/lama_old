@@ -819,10 +819,29 @@ struct ELLUtilsInterface
                                       const ValueType oldSolution[],
                                       const ValueType omega,
                                       SyncToken* syncToken );
+
+        /**
+         *  This method fills up the arrays ja and values of the ELL format with
+         *  useful values to make matrix-vector multiplication efficient.
+         *
+         *  @param[in,out] ellJA is array with column indexes
+         *  @param[in,out] ellValues is array with non-zero matrix values
+         *  @param[in]  ellSizes array with number of entries for each row
+         *  @param[in]  numRows number of rows
+         *  @param[in]  numValuesPerRow number of values in each row
+         */
+        typedef void ( *fillELLValues ) (
+            IndexType ellJA[],
+            ValueType ellValues[],
+            const IndexType ellSizes[],
+            const IndexType numRows,
+            const IndexType numValuesPerRow );
+
     };
 
     LAMA_INTERFACE_DEFINE_T( Solver, jacobi )
     LAMA_INTERFACE_DEFINE_T( Solver, jacobiHalo )
+    LAMA_INTERFACE_DEFINE_T( Solver, fillELLValues )
 
     /** Conversion routines between ELL and CSR storage format. */
 

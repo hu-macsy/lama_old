@@ -1237,7 +1237,6 @@ void CUDAJDSUtils::setInterface( JDSUtilsInterface& JDSUtils )
 
     LAMA_INTERFACE_REGISTER( JDSUtils, sortRows )
     LAMA_INTERFACE_REGISTER( JDSUtils, checkDiagonalProperty )
-    LAMA_INTERFACE_REGISTER( JDSUtils, check )
     LAMA_INTERFACE_REGISTER( JDSUtils, ilg2dlg )
     LAMA_INTERFACE_REGISTER( JDSUtils, setInversePerm )
 

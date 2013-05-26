@@ -130,6 +130,14 @@ public:
         const IndexType ellJA[],
         const ELLValueType ellValues[] );
 
+     template<typename ValueType>
+     static void fillELLValues(
+        IndexType ellJA[],
+        ValueType ellValues[],
+        const IndexType ellSizes[],
+        const IndexType numRows,
+        const IndexType numValuesPerRow );
+
     /** Helper routine for conversion CSR to ELL format.  */
 
     template<typename ELLValueType,typename CSRValueType>

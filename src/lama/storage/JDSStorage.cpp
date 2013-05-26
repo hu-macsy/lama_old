@@ -125,6 +125,12 @@ void JDSStorage<ValueType>::setJDSData(
     const LAMAArray<IndexType>& ja,
     const _LAMAArray& values )
 {
+    LAMA_ASSERT_EQUAL_ERROR( numRows, ilg.size() )
+    LAMA_ASSERT_EQUAL_ERROR( numRows, perm.size() )
+    LAMA_ASSERT_EQUAL_ERROR( numValues, ja.size() )
+    LAMA_ASSERT_EQUAL_ERROR( numValues, values.size() )
+    LAMA_ASSERT_EQUAL_ERROR( numDiagonals, dlg.size() )
+
     _MatrixStorage::init( numRows, numColumns );
 
     mNumDiagonals = numDiagonals;

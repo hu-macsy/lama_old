@@ -118,12 +118,9 @@ ELLStorage<ValueType>::ELLStorage(
     const LAMAArray<IndexType>& ja,
     const LAMAArray<ValueType>& values )
 
-    : CRTPMatrixStorage<ELLStorage<ValueType>,ValueType>( numRows, numColumns ), mNumValuesPerRow(
-        numValuesPerRows ), mIA( ia ), mJA( ja ), mValues( values )
+    : CRTPMatrixStorage<ELLStorage<ValueType>,ValueType>()
 {
-    check( "ELLStorage( ... )" );
-    this->resetDiagonalProperty();
-    LAMA_LOG_INFO( logger, *this << ": constructed by input arrays" )
+    setELLData( numRows, numColumns, numValuesPerRows, ia, ja, values );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -131,13 +128,14 @@ ELLStorage<ValueType>::ELLStorage(
 template<typename ValueType>
 ELLStorage<ValueType>::ELLStorage( const ELLStorage<ValueType>& other )
 
-    : CRTPMatrixStorage<ELLStorage<ValueType>,ValueType>( 0, 0 )
+    : CRTPMatrixStorage<ELLStorage<ValueType>, ValueType>( 0, 0 )
 {
     LAMA_LOG_INFO( logger, "constructor # other = " << other )
 
-    // ToDo: copy of same storage format should be more efficient
+    // For optimization: fillValues, resetDiagonalProperty, check is not really needed
 
-    assign( other );
+    setELLData( other.mNumRows, other.mNumColumns, other.mNumValuesPerRow,
+                other.mIA, other.mJA, other.mValues );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -488,6 +486,62 @@ void ELLStorage<ValueType>::setCSRDataImpl(
     buildRowIndexes( loc );
 
     LAMA_LOG_DEBUG( logger, "convert CSR -> ELL done: " << *this )
+}
+
+/* ------------------------------------------------------------------------------------------------------------------ */
+
+template<typename ValueType>
+void ELLStorage<ValueType>::setELLData(
+    const IndexType numRows,
+    const IndexType numColumns,
+    const IndexType numValuesPerRow,
+    const LAMAArray<IndexType>& ia,
+    const LAMAArray<IndexType>& ja,
+    const _LAMAArray& values )
+{
+    LAMA_ASSERT_EQUAL_ERROR( numRows, ia.size() )
+    LAMA_ASSERT_EQUAL_ERROR( numRows * numValuesPerRow, ja.size() )
+    LAMA_ASSERT_EQUAL_ERROR( numRows * numValuesPerRow, values.size() )
+
+    _MatrixStorage::init( numRows, numColumns );
+
+    mNumValuesPerRow = numValuesPerRow;
+
+    ContextPtr loc = getContextPtr();
+
+    LAMAArrayUtils::assignImpl( mIA, ia, loc );
+    LAMAArrayUtils::assignImpl( mJA, ja, loc );
+
+    LAMAArrayUtils::assign( mValues, values, loc );  // supports type conversion
+
+    // fill up my arrays ja and values to make matrix-multiplication fast
+
+    {
+        ContextPtr loc = getContextPtr();
+
+        LAMA_INTERFACE_FN_T( fillELLValues, loc, ELLUtils, Solver, ValueType )
+
+        ReadAccess<IndexType> ellIA( mIA, loc );
+        WriteAccess<IndexType> ellJA( mJA, loc );
+        WriteAccess<ValueType> ellValues( mValues, loc );
+
+        LAMA_LOG_DEBUG( logger, "fill ELL data" )
+
+        LAMA_CONTEXT_ACCESS( loc )
+
+        fillELLValues( ellJA.get(), ellValues.get(),
+                       ellIA.get(), mNumRows, mNumValuesPerRow );
+    }
+
+    // check is expensive, so do it only if ASSERT_LEVEL is on DEBUG mode
+
+#ifdef LAMA_ASSERT_LEVEL_DEBUG
+    check( "ELLStorage( #row, #cols, #values, #diags, dlg, ilg, perm, ja, values" );
+#endif
+
+    this->resetDiagonalProperty();
+
+    LAMA_LOG_INFO( logger, *this << ": set ELLPACK by arrays ia, ja, values" )
 }
 
 /* --------------------------------------------------------------------------- */

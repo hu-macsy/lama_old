@@ -201,6 +201,14 @@ public:
         const LAMAArray<OtherValueType>& values,
         const ContextPtr loc );
 
+    void setELLData(
+        const IndexType numRows,
+        const IndexType numColumns,
+        const IndexType numValuesPerRow,
+        const LAMAArray<IndexType>& ia,
+        const LAMAArray<IndexType>& ja,
+        const _LAMAArray& values );
+
     /* Print relevant information about matrix storage format. */
 
     virtual void writeAt( std::ostream& stream ) const;

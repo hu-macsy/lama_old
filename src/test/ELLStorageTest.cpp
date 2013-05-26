@@ -37,6 +37,7 @@
 #include <test/MatrixStorageTest.hpp>
 #include <test/TestMacros.hpp>
 
+#include <lama/LAMAArrayUtils.hpp>
 #include <lama/storage/ELLStorage.hpp>
 
 using namespace boost;
@@ -153,13 +154,89 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( ConstructorTest1, T, ValueTypes ) {
 
         for ( IndexType i = 0; i < numRows; ++i )
         {
-            BOOST_CHECK_EQUAL( ia[i], ellIA[i] );
-        }
+            BOOST_REQUIRE_EQUAL( ia[i], ellIA[i] );
 
-        for ( IndexType i = 0; i < numValues; ++i )
+            for ( IndexType jj = 0; jj < ia[i]; ++jj )
+            {
+                IndexType pos = i + jj * numRows;
+                BOOST_CHECK_EQUAL( ja[pos], ellJA[pos] );
+                BOOST_CHECK_EQUAL( values[pos], ellValues[pos] );
+            }
+
+            // values must have been filled up with 0 outside legal part 
+
+            for ( IndexType jj = ia[i]; jj < numValuesPerRow; ++jj )
+            {
+                IndexType pos = i + jj * numRows;
+                BOOST_CHECK_EQUAL( static_cast<ValueType>( 0 ), ellValues[pos] );
+            }
+        }
+    }
+}
+
+/* ------------------------------------------------------------------------- */
+
+BOOST_AUTO_TEST_CASE_TEMPLATE( CheckTest, T, ValueTypes )
+{
+    // This routine tests the check method of ELLStorage, individually for this class
+
+    typedef T ValueType;
+
+    CONTEXTLOOP()
+    {
+        GETCONTEXT( context );
+
+        for ( int icase = 0; icase < 3; ++icase )
         {
-            BOOST_CHECK_EQUAL( ja[i], ellJA[i] );
-            BOOST_CHECK_EQUAL( values[i], ellValues[i] );
+            // build up a correct ELLPACK storage
+
+            const IndexType numRows = 3;
+            const IndexType numColumns = 3;
+            const IndexType numValuesPerRow = 2;
+
+            const IndexType numValues = numRows * numValuesPerRow;
+
+            const IndexType ia[] = {   1, 1, 2};
+
+            const IndexType ja[] =
+            {   0, 1, 2, 0, 0, 2};
+
+            // just make sure that ia and ja have correct sizes
+
+            BOOST_REQUIRE_EQUAL( numRows, sizeof( ia ) / sizeof( IndexType ) );
+            BOOST_REQUIRE_EQUAL( numValues, sizeof( ja ) / sizeof( IndexType ) );
+
+            LAMAArrayRef<IndexType> ellIA( ia, numRows );
+            LAMAArrayRef<IndexType> ellJA( ja, numValues );
+            LAMAArray<ValueType> ellValues( numValues, 1.0 );  // values needed, but do not matter here
+
+            ELLStorage<ValueType> ellStorage;
+
+            ellStorage.setContext( context );
+
+            ellStorage.setELLData( numRows, numColumns, numValuesPerRow, 
+                                   ellIA, ellJA, ellValues );
+
+            if ( icase == 0 )
+            {
+                ellStorage.check( "test with correct values" );
+            }
+            else if ( icase == 1 )
+            {
+                //  -> invalid ia     { 1, 1, 3 }
+
+                LAMAArray<IndexType>& ellIA = const_cast<LAMAArray<IndexType>&>( ellStorage.getIA() );
+                LAMAArrayUtils::setVal( ellIA, 2, 3 );
+                BOOST_CHECK_THROW( { ellStorage.check( "Expect illegal index in JA" ); }, Exception );
+            }
+            else if ( icase == 2 )
+            {
+                //  -> invalid ja     { 0, 1, 2, 0, 0, 2 }
+
+                LAMAArray<IndexType>& ellJA = const_cast<LAMAArray<IndexType>&>( ellStorage.getJA() );
+                LAMAArrayUtils::setVal( ellJA, 5, 15 );
+                BOOST_CHECK_THROW( { ellStorage.check( "Expect illegal index in JA" ); }, Exception );
+            }
         }
     }
 }

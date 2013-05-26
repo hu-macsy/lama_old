@@ -404,6 +404,45 @@ void OpenMPELLUtils::setCSRValues(
 /* ------------------------------------------------------------------------------------------------------------------ */
 
 template<typename ValueType>
+void OpenMPELLUtils::fillELLValues(
+    IndexType ellJA[],
+    ValueType ellValues[],
+    const IndexType ellSizes[],
+    const IndexType numRows,
+    const IndexType numValuesPerRow )
+{
+    LAMA_LOG_INFO( logger, "fill ELLValues<" << typeid( ValueType ).name() )
+
+    #pragma omp parallel 
+    {
+        #pragma omp for schedule( LAMA_OMP_SCHEDULE )
+        for ( IndexType i = 0; i < numRows; i++ )
+        {
+            IndexType rowSize = ellSizes[i];
+
+            IndexType j = 0; // will be last column index
+
+            if ( rowSize > 0 && rowSize < numValuesPerRow )
+            {
+                IndexType pos = ellindex( i, rowSize - 1, numRows );
+                j = ellJA[pos];
+            }
+          
+            // fill up the remaining entries with something useful
+
+            for ( IndexType jj = rowSize; jj < numValuesPerRow; ++jj )
+            {
+                IndexType pos = ellindex( i, jj, numRows );
+                ellJA[pos] = j; // last used column index
+                ellValues[pos] = 0.0; // zero entry
+            }
+        }
+    }
+}
+
+/* ------------------------------------------------------------------------------------------------------------------ */
+
+template<typename ValueType>
 void OpenMPELLUtils::compressIA(
     const IndexType IA[],
     const IndexType JA[],
@@ -1040,6 +1079,9 @@ void OpenMPELLUtils::setInterface( ELLUtilsInterface& ELLUtils )
 
     LAMA_INTERFACE_REGISTER_T( ELLUtils, jacobiHalo, float )
     LAMA_INTERFACE_REGISTER_T( ELLUtils, jacobiHalo, double )
+
+    LAMA_INTERFACE_REGISTER_T( ELLUtils, fillELLValues, float )
+    LAMA_INTERFACE_REGISTER_T( ELLUtils, fillELLValues, double )
 }
 
 /* --------------------------------------------------------------------------- */

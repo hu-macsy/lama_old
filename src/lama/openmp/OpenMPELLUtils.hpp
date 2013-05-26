@@ -168,6 +168,14 @@ private:
         const IndexType ellJA[],
         const ELLValueType ellValues[] );
 
+     template<typename ValueType>
+     static void fillELLValues(
+        IndexType ellJA[],
+        ValueType ellValues[],
+        const IndexType ellSizes[],
+        const IndexType numRows,
+        const IndexType numValuesPerRow );
+
     /** Implementation for ELLUtilsInterface::Conversions::setCSRValues */
 
     template<typename ELLValueType,typename CSRValueType>

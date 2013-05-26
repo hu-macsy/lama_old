@@ -572,10 +572,66 @@ void CUDAELLUtils::setCSRValues(
 
     csr2ellKernel<<<dimGrid, dimBlock>>>( ellJA, ellValues, ellSizes, numRows, numValuesPerRow,
                                           csrIA, csrJA, csrValues);
-    cudaStreamSynchronize( 0 );
-    LAMA_CHECK_CUDA_ERROR
+    
+    LAMA_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "csr2ellKernel" );
+}
 
-    // throw exception if ERROR
+/* ------------------------------------------------------------------------------------------------------------------ */
+
+template<typename ValueType>
+__global__
+void fillEllKernel(
+    int* ell_ja,
+    ValueType* ell_values,
+    const int* const ell_ia,
+    int n,
+    int ellNumValuesPerRow )
+{
+    const int i = threadId( gridDim, blockIdx, blockDim, threadIdx );
+
+    if ( i < n )
+    {
+        int lastJ = 0;
+
+        int pos = ell_ia[i];
+
+        int ellOffset = i + pos * n;
+
+        if ( pos > 0  && pos < ellNumValuesPerRow )
+        {
+            lastJ = ell_ja[ pos - n ];
+        }
+
+        // fill in useful values until length of line
+
+        for ( int jj = pos; jj < ellNumValuesPerRow; ++jj )
+        {
+            ell_ja[ellOffset] = lastJ;
+            ell_values[ellOffset] = static_cast<ValueType>( 0 );
+            ellOffset += n;
+        }
+    }
+}
+
+template<typename ValueType>
+void CUDAELLUtils::fillELLValues(
+    IndexType ellJA[],
+    ValueType ellValues[],
+    const IndexType ellSizes[],
+    const IndexType numRows,
+    const IndexType numValuesPerRow )
+{
+    LAMA_LOG_INFO( logger, "fill ELLValues<" << typeid( ValueType ).name() )
+
+    LAMA_CHECK_CUDA_ACCESS
+
+    const int block_size = 256;
+    dim3 dimBlock( block_size, 1, 1 );
+    dim3 dimGrid = makeGrid( numRows, dimBlock.x );
+
+    fillEllKernel<<<dimGrid, dimBlock>>>( ellJA, ellValues, ellSizes, numRows, numValuesPerRow );
+
+    LAMA_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "fillEllKernel" );
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */
