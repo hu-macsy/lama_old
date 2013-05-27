@@ -39,6 +39,7 @@
 
 #include <test/MatrixStorageTest.hpp>
 #include <test/TestMacros.hpp>
+#include <lama/LAMAArrayUtils.hpp>
 
 using namespace boost;
 using namespace lama;
@@ -139,6 +140,69 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( ConstructorTest1, T, ValueTypes ) {
             BOOST_CHECK_EQUAL( ia[i], cooIA[i] );
             BOOST_CHECK_EQUAL( ja[i], cooJA[i] );
             BOOST_CHECK_EQUAL( values[i], cooValues[i] );
+        }
+    }
+}
+
+/* ------------------------------------------------------------------------- */
+
+BOOST_AUTO_TEST_CASE_TEMPLATE( CheckTest, T, ValueTypes )
+{
+    // This routine tests the check method of ELLStorage, individually for this class
+
+    typedef T ValueType;
+
+    CONTEXTLOOP()
+    {
+        GETCONTEXT( context );
+
+        for ( int icase = 0; icase < 3; ++icase )
+        {
+            // build up a correct ELLPACK storage
+
+            const IndexType numRows = 4;
+            const IndexType numColumns = 4;
+            const IndexType numValues = 6;
+
+            const IndexType ia[] = {  0, 1, 1, 2, 2, 3 };
+            const IndexType ja[] = {  0, 0, 1, 1, 2, 3 };
+
+            // just make sure that ia and ja have correct sizes
+
+            BOOST_REQUIRE_EQUAL( numValues, sizeof( ia ) / sizeof( IndexType ) );
+            BOOST_REQUIRE_EQUAL( numValues, sizeof( ja ) / sizeof( IndexType ) );
+
+            LAMAArrayRef<IndexType> cooIA( ia, numValues );
+            LAMAArrayRef<IndexType> cooJA( ja, numValues );
+            LAMAArray<ValueType> cooValues( numValues, 1.0 );  // values needed, but do not matter here
+
+            COOStorage<ValueType> cooStorage;
+
+            cooStorage.setContext( context );
+
+            cooStorage.setCOOData( numRows, numColumns, numValues,
+                                   cooIA, cooJA, cooValues );
+
+            if ( icase == 0 )
+            {
+                cooStorage.check( "test with correct values" );
+            }
+            else if ( icase == 1 )
+            {
+                //  -> invalid ia     { 4, 1, 1, 2, 2, 3 }
+
+                LAMAArray<IndexType>& cooIA = const_cast<LAMAArray<IndexType>&>( cooStorage.getIA() );
+                LAMAArrayUtils::setVal( cooIA, 0, numRows );
+                BOOST_CHECK_THROW( { cooStorage.check( "Expect illegal index in IA" ); }, Exception );
+            }
+            else if ( icase == 2 )
+            {
+                //  -> invalid ja     { 0, 0, 1, 1, 4, 3 }
+
+                LAMAArray<IndexType>& cooJA = const_cast<LAMAArray<IndexType>&>( cooStorage.getJA() );
+                LAMAArrayUtils::setVal( cooJA, 4, numColumns );
+                BOOST_CHECK_THROW( { cooStorage.check( "Expect illegal index in JA" ); }, Exception );
+            }
         }
     }
 }

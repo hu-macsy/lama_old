@@ -41,6 +41,8 @@
 #include <lama/ContextAccess.hpp>
 #include <lama/LAMAInterface.hpp>
 
+#include <lama/LAMAArrayUtils.hpp>
+
 #include <lama/openmp/OpenMPUtils.hpp>
 #include <lama/openmp/OpenMPCOOUtils.hpp>
 #include <lama/openmp/OpenMPCSRUtils.hpp>
@@ -61,7 +63,8 @@ LAMA_LOG_DEF_TEMPLATE_LOGGER( template<typename ValueType>, COOStorage<ValueType
 
 template<typename ValueType>
 COOStorage<ValueType>::COOStorage(const IndexType numRows, const IndexType numColumns) :
-    CRTPMatrixStorage<COOStorage<ValueType>, ValueType> (numRows, numColumns),
+
+    CRTPMatrixStorage<COOStorage<ValueType>, ValueType> ( numRows, numColumns ),
     mNumValues(0)
 {
     LAMA_LOG_DEBUG( logger, "COOStorage for matrix " << mNumRows << " x " << mNumColumns
@@ -78,20 +81,13 @@ COOStorage<ValueType>::COOStorage(
     const LAMAArray<IndexType>& ja,
     const LAMAArray<ValueType>& values )
 
-    : CRTPMatrixStorage<COOStorage<ValueType>,ValueType>( numRows, numColumns )
+    : CRTPMatrixStorage<COOStorage<ValueType>,ValueType>( )
 {
     // all array must have the same size
 
-    const IndexType size = ia.size();
-    LAMA_ASSERT_EQUAL_ERROR( size, ja.size() )
-    LAMA_ASSERT_EQUAL_ERROR( size, values.size() )
+    IndexType numValues = ia.size();
 
-    mNumValues = size;
-    mIa = ia;
-    mJa = ja;
-    mValues = values;
-
-    mDiagonalProperty = checkDiagonalProperty();
+    setCOOData( numRows, numColumns, numValues, ia, ja, values );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -140,7 +136,7 @@ bool COOStorage<ValueType>::checkDiagonalProperty() const
 
         diagonalProperty = true;
     }
-    else if ( mIa.size() == 0 )
+    else if ( mIA.size() == 0 )
     {
         diagonalProperty = false;
     }
@@ -148,8 +144,8 @@ bool COOStorage<ValueType>::checkDiagonalProperty() const
     {
         diagonalProperty = true; // intialization for reduction
 
-        HostReadAccess<IndexType> ia( mIa );
-        HostReadAccess<IndexType> ja( mJa );
+        HostReadAccess<IndexType> ia( mIA );
+        HostReadAccess<IndexType> ja( mJA );
 
         // The diagonal property is given if the first numDiags entries
         // are the diagonal elements
@@ -183,8 +179,8 @@ void COOStorage<ValueType>::clear()
     mNumColumns = 0;
     mNumValues = 0;
 
-    mIa.clear();
-    mJa.clear();
+    mIA.clear();
+    mJA.clear();
     mValues.clear();
 
     mDiagonalProperty = checkDiagonalProperty();
@@ -195,9 +191,28 @@ void COOStorage<ValueType>::clear()
 template<typename ValueType>
 void COOStorage<ValueType>::check( const char* msg ) const
 {
-    LAMA_ASSERT_ERROR(
-        mNumValues == mIa.size(),
-        msg << ": mIa has illegal size: expected #nonzero-values = " << mNumValues << ", actual : " << mIa.size() );
+    LAMA_ASSERT_EQUAL_ERROR( mNumValues, mIA.size() )
+    LAMA_ASSERT_EQUAL_ERROR( mNumValues, mJA.size() )
+    LAMA_ASSERT_EQUAL_ERROR( mNumValues, mValues.size() )
+
+    // check row indexes in IA and column indexes in JA
+
+    {
+        ContextPtr loc = getContextPtr();
+
+        LAMA_INTERFACE_FN_DEFAULT( validIndexes, loc, Utils, Indexes )
+
+        ReadAccess<IndexType> rJA( mJA, loc );
+        ReadAccess<IndexType> rIA( mIA, loc );
+
+        LAMA_CONTEXT_ACCESS( loc )
+
+        LAMA_ASSERT_ERROR( validIndexes ( rIA.get(), mNumValues, mNumRows ),
+                           *this << " @ " << msg << ": illegel indexes in IA" )
+
+        LAMA_ASSERT_ERROR( validIndexes ( rJA.get(), mNumValues, mNumColumns ),
+                           *this << " @ " << msg << ": illegel indexes in JA" )
+    }
 }
 
 /* --------------------------------------------------------------------------- */
@@ -216,8 +231,8 @@ void COOStorage<ValueType>::setIdentity( const IndexType size )
     LAMA_INTERFACE_FN_T( setOrder, loc, Utils, Setter, IndexType )
     LAMA_INTERFACE_FN_T( setVal, loc, Utils, Setter, ValueType )
 
-    WriteOnlyAccess<IndexType> ia( mIa, loc, mNumValues );
-    WriteOnlyAccess<IndexType> ja( mJa, loc, mNumValues );
+    WriteOnlyAccess<IndexType> ia( mIA, loc, mNumValues );
+    WriteOnlyAccess<IndexType> ja( mJA, loc, mNumValues );
     WriteOnlyAccess<ValueType> values( mValues, loc, mNumValues );
 
     ValueType one = static_cast<ValueType>( 1.0 );
@@ -251,7 +266,7 @@ void COOStorage<ValueType>::buildCSR(
     LAMA_INTERFACE_FN_TT( getCSRValues, loc, COOUtils, Conversions, ValueType, OtherValueType )
 
     WriteOnlyAccess<IndexType> csrIA( ia, loc, mNumRows + 1 );
-    ReadAccess<IndexType> cooIA( mIa, loc );
+    ReadAccess<IndexType> cooIA( mIA, loc );
 
     getCSRSizes( csrIA.get(), mNumRows, mNumValues, cooIA.get() );
 
@@ -265,7 +280,7 @@ void COOStorage<ValueType>::buildCSR(
 
     LAMA_ASSERT_EQUAL_DEBUG( mNumValues, numValues )
 
-    ReadAccess<IndexType> cooJA( mJa, loc );
+    ReadAccess<IndexType> cooJA( mJA, loc );
     ReadAccess<ValueType> cooValues( mValues, loc );
 
     WriteOnlyAccess<IndexType> csrJA( *ja, loc, numValues );
@@ -273,6 +288,47 @@ void COOStorage<ValueType>::buildCSR(
 
     getCSRValues( csrJA.get(), csrValues.get(), csrIA.get(), mNumRows, mNumValues, cooIA.get(),
                   cooJA.get(), cooValues.get() );
+}
+
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType>
+void COOStorage<ValueType>::setCOOData(
+    const IndexType numRows,
+    const IndexType numColumns,
+    const IndexType numValues,
+    const LAMAArray<IndexType>& ia,
+    const LAMAArray<IndexType>& ja,
+    const _LAMAArray& values )
+{
+    // check the sizes of the arrays
+
+    LAMA_ASSERT_EQUAL_ERROR( numValues, ia.size() )
+    LAMA_ASSERT_EQUAL_ERROR( numValues, ja.size() )
+    LAMA_ASSERT_EQUAL_ERROR( numValues, values.size() )
+
+    _MatrixStorage::init( numRows, numColumns );
+
+    mNumValues = numValues;
+
+    ContextPtr loc = getContextPtr();
+
+    LAMAArrayUtils::assignImpl( mIA, ia, loc );
+    LAMAArrayUtils::assignImpl( mJA, ja, loc );
+
+    LAMAArrayUtils::assign( mValues, values, loc );  // supports type conversion
+
+    // check is expensive, so do it only if ASSERT_LEVEL is on DEBUG mode
+
+#ifdef LAMA_ASSERT_LEVEL_DEBUG
+    check( "COOStorage.setCOOData" );
+#endif
+
+    mDiagonalProperty = checkDiagonalProperty();
+
+    // Note: no support for row indexes in COO format
+
+    LAMA_LOG_INFO( logger, *this << ": set COO by arrays ia, ja, values" )
 }
 
 /* --------------------------------------------------------------------------- */
@@ -313,8 +369,8 @@ void COOStorage<ValueType>::setCSRDataImpl(
     LAMA_LOG_DEBUG( logger,
                     "input csr data with " << mNumValues << "entries,  has diagonal property = " << mDiagonalProperty )
 
-    WriteOnlyAccess<IndexType> cooIA( mIa, loc, mNumValues );
-    WriteOnlyAccess<IndexType> cooJA( mJa, loc, mNumValues );
+    WriteOnlyAccess<IndexType> cooIA( mIA, loc, mNumValues );
+    WriteOnlyAccess<IndexType> cooJA( mJA, loc, mNumValues );
     WriteOnlyAccess<ValueType> cooValues( mValues, loc, mNumValues );
 
     OpenMPCOOUtils::setCSRValues( cooIA.get(), cooJA.get(), cooValues.get(), mNumRows, numDiagonals, csrIA.get(),
@@ -338,8 +394,8 @@ void COOStorage<ValueType>::purge()
     mNumRows = 0;
     mNumValues = 0;
 
-    mIa.purge();
-    mJa.purge();
+    mIA.purge();
+    mJA.purge();
     mValues.purge();
 
     mDiagonalProperty = checkDiagonalProperty();
@@ -375,8 +431,8 @@ ValueType COOStorage<ValueType>::getValue( const IndexType i, const IndexType j 
 {
     // only supported on Host at this time
 
-    const HostReadAccess<IndexType> ia( mIa );
-    const HostReadAccess<IndexType> ja( mJa );
+    const HostReadAccess<IndexType> ia( mIA );
+    const HostReadAccess<IndexType> ja( mJA );
     const HostReadAccess<ValueType> values( mValues );
 
     LAMA_LOG_DEBUG( logger, "get value (" << i << ", " << j << ") from " << *this )
@@ -397,8 +453,8 @@ ValueType COOStorage<ValueType>::getValue( const IndexType i, const IndexType j 
 template<typename ValueType>
 void COOStorage<ValueType>::prefetch( const ContextPtr location ) const
 {
-    mIa.prefetch( location );
-    mJa.prefetch( location );
+    mIA.prefetch( location );
+    mJA.prefetch( location );
     mValues.prefetch( location );
 }
 
@@ -407,7 +463,7 @@ void COOStorage<ValueType>::prefetch( const ContextPtr location ) const
 template<typename ValueType>
 const LAMAArray<IndexType>& COOStorage<ValueType>::getIA() const
 {
-    return mIa;
+    return mIA;
 }
 
 /* --------------------------------------------------------------------------- */
@@ -415,7 +471,7 @@ const LAMAArray<IndexType>& COOStorage<ValueType>::getIA() const
 template<typename ValueType>
 const LAMAArray<IndexType>& COOStorage<ValueType>::getJA() const
 {
-    return mJa;
+    return mJA;
 }
 
 /* --------------------------------------------------------------------------- */
@@ -442,8 +498,8 @@ void COOStorage<ValueType>::setDiagonalImpl( const Scalar scalar )
     IndexType numDiagonalElements = std::min( mNumColumns, mNumRows );
 
     HostWriteAccess<ValueType> wValues( mValues );
-    HostReadAccess<IndexType> rJa( mJa );
-    HostReadAccess<IndexType> rIa( mIa );
+    HostReadAccess<IndexType> rJa( mJA );
+    HostReadAccess<IndexType> rIa( mIA );
     ValueType value = scalar.getValue<ValueType>();
 
     for ( IndexType i = 0; i < numDiagonalElements; ++i )
@@ -474,7 +530,7 @@ void COOStorage<ValueType>::scaleImpl( const LAMAArray<OtherType>& values )
 {
     HostReadAccess<OtherType> rValues( values );
     HostWriteAccess<ValueType> wValues( mValues );
-    HostReadAccess<IndexType> rIa( mIa );
+    HostReadAccess<IndexType> rIa( mIA );
 
     for ( IndexType i = 0; i < mNumValues; ++i )
     {
@@ -487,8 +543,8 @@ void COOStorage<ValueType>::scaleImpl( const LAMAArray<OtherType>& values )
 template<typename ValueType>
 void COOStorage<ValueType>::wait() const
 {
-    mIa.wait();
-    mJa.wait();
+    mIA.wait();
+    mJA.wait();
     mValues.wait();
 }
 
@@ -498,8 +554,8 @@ template<typename ValueType>
 void COOStorage<ValueType>::swap( COOStorage<ValueType>& other )
 {
     std::swap( mNumValues, other.mNumValues );
-    mIa.swap( other.mIa );
-    mJa.swap( other.mJa );
+    mIA.swap( other.mIA );
+    mJA.swap( other.mJA );
     mValues.swap( other.mValues );
 
     MatrixStorage<ValueType>::swap( other );
@@ -515,8 +571,8 @@ void COOStorage<ValueType>::getRowImpl( LAMAArray<OtherType>& row, const IndexTy
 
     HostWriteOnlyAccess<OtherType> wRow( row, mNumColumns );
 
-    const HostReadAccess<IndexType> ia( mIa );
-    const HostReadAccess<IndexType> ja( mJa );
+    const HostReadAccess<IndexType> ia( mIA );
+    const HostReadAccess<IndexType> ja( mJA );
     const HostReadAccess<ValueType> values( mValues );
 
     for ( IndexType j = 0; j < mNumColumns; ++j )
@@ -619,8 +675,8 @@ size_t COOStorage<ValueType>::getMemoryUsageImpl() const
 {
     size_t memoryUsage = 0;
     memoryUsage += sizeof(IndexType);
-    memoryUsage += sizeof(IndexType) * mIa.size();
-    memoryUsage += sizeof(IndexType) * mJa.size();
+    memoryUsage += sizeof(IndexType) * mIA.size();
+    memoryUsage += sizeof(IndexType) * mJA.size();
     memoryUsage += sizeof(ValueType) * mValues.size();
     return memoryUsage;
 }
@@ -653,8 +709,8 @@ void COOStorage<ValueType>::matrixTimesVector(
 
     LAMA_INTERFACE_FN_T( normalGEMV, loc, COOUtils, Mult, ValueType )
 
-    ReadAccess<IndexType> cooIA( mIa, loc );
-    ReadAccess<IndexType> cooJA( mJa, loc );
+    ReadAccess<IndexType> cooIA( mIA, loc );
+    ReadAccess<IndexType> cooJA( mJA, loc );
     ReadAccess<ValueType> cooValues( mValues, loc );
 
     ReadAccess<ValueType> rX( x, loc );
@@ -715,8 +771,8 @@ auto_ptr<SyncToken> COOStorage<ValueType>::matrixTimesVectorAsyncToDo(
     // all accesses will be pushed to the sync token as LAMA arrays have to be protected up
     // to the end of the computations.
 
-    shared_ptr<ReadAccess<IndexType> > cooIA( new ReadAccess<IndexType>( mIa, loc ) );
-    shared_ptr<ReadAccess<IndexType> > cooJA( new ReadAccess<IndexType>( mJa, loc ) );
+    shared_ptr<ReadAccess<IndexType> > cooIA( new ReadAccess<IndexType>( mIA, loc ) );
+    shared_ptr<ReadAccess<IndexType> > cooJA( new ReadAccess<IndexType>( mJA, loc ) );
     shared_ptr<ReadAccess<ValueType> > cooValues( new ReadAccess<ValueType>( mValues, loc ) );
     shared_ptr<ReadAccess<ValueType> > rX( new ReadAccess<ValueType>( x, loc ) );
 
@@ -791,8 +847,8 @@ void COOStorage<ValueType>::jacobiIterate(
     LAMA_INTERFACE_FN_DEFAULT_T( jacobi, loc, COOUtils, Solver, ValueType )
 
     WriteAccess<ValueType> wSolution( solution, loc );
-    ReadAccess<IndexType> cooIA( mIa, loc );
-    ReadAccess<IndexType> cooJA( mJa, loc );
+    ReadAccess<IndexType> cooIA( mIA, loc );
+    ReadAccess<IndexType> cooJA( mJA, loc );
     ReadAccess<ValueType> cooValues( mValues, loc );
     ReadAccess<ValueType> rOldSolution( oldSolution, loc );
     ReadAccess<ValueType> rRhs( rhs, loc );

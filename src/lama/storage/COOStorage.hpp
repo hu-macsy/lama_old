@@ -164,6 +164,24 @@ public:
         const ContextPtr /* loc */) const;
 
     /**
+     * @brief fills COO sparse matrix by coo sparse data.
+     *
+     * @param[in] numRows    number of rows
+     * @param[in] numColumns number of columns
+     * @param[in] numValues  the number of stored elements in the matrix
+     * @param[in] ia         row indexes for each value
+     * @param[in] ja         column indexes for each value
+     * @param[in] values     data values of the corresponding matrix elements
+     */
+    void setCOOData(
+        const IndexType numRows,
+        const IndexType numColumns,
+        const IndexType numValues,
+        const LAMAArray<IndexType>& ia,
+        const LAMAArray<IndexType>& ja,
+        const _LAMAArray& values );
+
+    /**
      * @brief fills COO sparse matrix by csr sparse data.
      *
      * @param[in] numRows    number of rows
@@ -319,8 +337,8 @@ public:
 
     IndexType mNumValues; //!< number of non-zero values (+ optionally zeros in diagonal)
 
-    LAMAArray<IndexType> mIa; //!< row indices, size is mNumValues
-    LAMAArray<IndexType> mJa; //!< column indices, size is mNumValues
+    LAMAArray<IndexType> mIA; //!< row indices, size is mNumValues
+    LAMAArray<IndexType> mJA; //!< column indices, size is mNumValues
     LAMAArray<ValueType> mValues; //!< non-zero values (+ optionally zeros in diagonal), size is mNumValues
 
 private:

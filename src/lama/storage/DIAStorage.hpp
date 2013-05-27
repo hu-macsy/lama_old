@@ -157,35 +157,9 @@ public:
 
     virtual void purge();
 
-//    /** Switches on/off the diagonal property of the DIA matrix. If on
-//     *  the first column index for each row is the row (diagonal element).
-//     *
-//     *  If matrix data is already available, the main diagonal elements will
-//     *  be shifted correspondingly.
-//     */
-//    void setDiagonalProperty( bool flag );
-
     /**  Implementation of pure method for DIA storage format.  */
 
     virtual void setIdentity( const IndexType size );
-
-    /**
-     * @brief Get sparse data in the general format (CSR, but numValues/row instead of offsets)
-     *
-     * @param[out] ia           number of stored values in each row, sums up to numValues
-     * @param[out] ja           column indexes, row-wise
-     * @param[out] values       data values, row-wise
-     * @param[in]  permutation  permutation vector that should applied to the rows before
-     *
-     * Note: size of ia and permutation must be getNumRows()
-     *       size of ja and values must be getNumValues()
-     */
-    template<typename OtherValueType>
-    void getSparseData(
-        IndexType* ia,
-        IndexType* ja,
-        OtherValueType* values,
-        const IndexType* permutation = NULL ) const;
 
     /** General routine to build any kind of CSR storage.
      *
