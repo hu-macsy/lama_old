@@ -32,10 +32,9 @@ Here is the solution of task 4. The code demonstrate a CG-Solver running with MP
       IndexType size = m.getNumRows();
    
       //TASK 4:
-
-      /*(1)*/     CommunicatorPtr comm( CommunicatorFactory::get( "MPI" ) );
-      /*(2)*/     DistributionPtr dist( new BlockDistribution( size, comm ) );
-      /*(3)*/     m.redistribute( dist, dist );
+      CommunicatorPtr comm( CommunicatorFactory::get( "MPI" ) ); /*(1)*/
+      DistributionPtr dist( new BlockDistribution( size, comm ) ); /*(2)*/
+      m.redistribute( dist, dist ); /*(3)*/
 
       //Creation of Vector (task 2):
       DenseVector<double> rhs( size, 0.0 );
@@ -47,7 +46,7 @@ Here is the solution of task 4. The code demonstrate a CG-Solver running with MP
       }
       hwarhs.release();
 
-      /*(4)*/     rhs.redistribute( dist );
+      rhs.redistribute( dist ); /*(4)*/
 
       DenseVector<double> solution( 0.0, dist );
 
@@ -64,7 +63,7 @@ Here is the solution of task 4. The code demonstrate a CG-Solver running with MP
 
 (1) Creating a CommunicationPointer to get access to a parallel environment.
 (2) Creating a DistributionPointer of a BlockDistribution.
-(3) Redistributing the matrix with row- and columndistribution. In this case it is a square matrix, so row- and columndistributions are equal. In a matrix vector multiplication the column distribution must match the distribution of the vector.
+(3) Redistributing the matrix with row and column distribution. In this case it is a square matrix, so row and column distributions are equal. In a matrix vector multiplication the column distribution must match the distribution of the vector.
 (4) Redistributing the rhs Vector.
 
 To execute task4 in parallel use mpirun

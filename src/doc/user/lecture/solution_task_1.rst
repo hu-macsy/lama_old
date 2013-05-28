@@ -15,11 +15,10 @@ Solution Task 1 (a)
    int main( int argc, char* argv[] ) 
    {
       CSRSparseMatrix<double> m( argv[1] ); /*(1)*/
-      IndexType size = m.getNumRows(); /*(2)*/
+      IndexType size = m.getNumRows(); /*(2)*/ 
    }
 
-(1) The filename is given as a command-line argument and is the argument of
-the SparseMatrix-Constructor.
+(1) The filename is given as a command-line argument and is the argument of the SparseMatrix-Constructor.
 (2) You can get the number of rows by using the method getNumRows().
 
 :download:`Download complete solution Task 1 (a) <../../../examples/lecture/task1a.cpp>`
@@ -35,10 +34,11 @@ line are listened below.
 .. code-block:: c++
    :emphasize-lines: 12,14,29
 
-   #include <lama++/SparseAssemblyStorage.hpp>
-   #include <lama++/CSRStorage.hpp>
-   #include <lama++/CSRSparseMatrix.hpp>
-   #include <lama++/DenseVector.hpp>
+   #include <lama.hpp>
+	
+   #include <lama/storage/SparseAssemblyStorage.hpp>
+   #include <lama/matrix/CSRSparseMatrix.hpp>
+   #include <lama/DenseVector.hpp>
 
    using namespace lama;
 
@@ -46,7 +46,7 @@ line are listened below.
    {
       IndexType size = 4;
 
-      SparseAssemblyStorage<double> sas( size, size ); /*(1)*/
+      SparseAssemblyStorage<double> sas( size, size, 10 ); /*(1)*/
 
       for ( IndexType i = 0; i < size; i++ ) /*(2)*/ 
       {

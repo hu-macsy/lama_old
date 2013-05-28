@@ -46,18 +46,18 @@ Here is the solution of task 2. The code demonstrate a self-provided CG-Solver.
       DenseVector<double> solution( size, 0.0 );
 
       //TASK 2
-      /*(1)*/     Scalar rNew;
+      Scalar rNew; /*(1)*/
       Scalar rOld;
       Scalar alpha;
       Scalar beta;
       Scalar eps = 0.00001;
 
-      /*(2)*/     DenseVector<double> r ( size, 0.0 );
+      DenseVector<double> r ( size, 0.0 ); /*(2)*/
       DenseVector<double> help ( size, 0.0 );
       DenseVector<double> d ( size, 0.0 );
       DenseVector<double> Ad( size, 0.0 );
 
-      /*(3)*/     //d = r = solution - m * rhs
+      //d = r = solution - m * rhs /*(3)*/
       help = m * solution;
       r = rhs - help;
       d = r;
@@ -100,15 +100,15 @@ Here is the solution of task 2. The code demonstrate a self-provided CG-Solver.
 
 :download:`Download complete solution Task 2 <../../../examples/lecture/task2.cpp>`
 
-A alternative solution for task 2 is the lama++-CG-class, which contains the same calculation.
+An alternative solution for task 2 is the CG-class of LAMA, which contains the same calculation.
 
 ::
 
    Scalar eps = 0.00001;
-   L2Norm norm;
-
+   NormPtr norm = NormPtr( new L2Norm() );
+   CriterionPtr rt( new ResidualThreshold( norm, eps, ResidualThreshold::Absolute ) );
+    
    CG cgSolver( "CGTestSolver" );
-   const ResidualThreshold rt( norm, eps, ResidualThreshold::Absolute );
    cgSolver.setStoppingCriterion( rt );
    cgSolver.initialize( m );
    cgSolver.solve( solution, rhs );
@@ -118,7 +118,7 @@ A alternative solution for task 2 is the lama++-CG-class, which contains the sam
 **Excursion:**
 
 To see results, it is possible to print out the values of vectors. By the way, an explicit function to print out results does not exist.
-But it is possile to use a HostReadAccess to get reading access to the values.
+But it is possible to use a HostReadAccess to get reading access to the values.
 
 ::
 
@@ -128,6 +128,7 @@ But it is possile to use a HostReadAccess to get reading access to the values.
     {
         std::cout << hra[i] << " ";
     }
+    hra.release();
     std::cout << std::endl;
 
 

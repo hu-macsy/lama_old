@@ -15,7 +15,7 @@ Setting a Context was realized as simple as possible:
    int main( int argc, char* argv[] )
    {
    
-      /*(1)*/     lama::ContextPtr cudaContext = ContextFactory::getContext( Context::CUDA, 0 ); 
+      lama::ContextPtr cudaContext = ContextFactory::getContext( Context::CUDA, 0 ); /*(1)*/     
 
       CSRSparseMatrix<double> m( argv[1] );
       IndexType size = m.getNumRows();
@@ -23,7 +23,7 @@ Setting a Context was realized as simple as possible:
       //Declaration of objects
       {...} 
 
-      /*(2)*/     m.setContext( cudaContext );
+      m.setContext( cudaContext ); /*(2)*/
       rhs.setContext( cudaContext );
       solution.setContext( cudaContext );
 

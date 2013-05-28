@@ -30,13 +30,13 @@ should be set via the environment variable **LAMA_ROOT**.
    export LAMA_ROOT=<path/to/lama/installation/directory>
 
 The installation directory should contain online documentation
-that is also available online `here`__.
+that is also available `here`__.
 
 __ http://libama.sourceforge.net/doc/index.html
 
 .. code-block:: bash
 
-   firefox <project-root>/doc/doxygen/html/index.html
+   firefox ${LAMA_ROOT}/share/doc/system/html/index.html
 
 The compilation of your LAMA application, e.g. 'simple.cpp' is usually done as
 follows:
