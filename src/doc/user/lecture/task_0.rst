@@ -15,9 +15,9 @@ first.
 
    // Always include lama.hpp first
    #include <lama.hpp>
-
-   #include <lama/matrix/CSRSparseMatrix.hpp>
+   
    #include <lama/DenseVector.hpp>
+   #include <lama/matrix/CSRSparseMatrix.hpp>
    
    // includes operators (+,*) for book syntax
    #include <lama/expression/all.hpp>

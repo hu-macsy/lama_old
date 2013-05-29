@@ -48,14 +48,14 @@ Solution Task 3
        //Compute the rhs that fits our solution to be able to calculate the error later
        rhs = m * solution;
    
-       //Reset soution to zero so that there is something to solve
+       //Reset solution to zero so that there is something to solve
        solution = 0.0;
    
-       /* 1 */      std::auto_ptr<Timer> timer( new Timer() );
-       /* 2 */      std::auto_ptr<Logger> logger( new CommonLogger("CGLogger", LogLevel::convergenceHistory, LoggerWriteBehaviour::toConsoleOnly, timer) );
+       std::auto_ptr<Timer> timer( new Timer() ); /* 1 */
+       std::auto_ptr<Logger> logger( new CommonLogger("CGLogger", LogLevel::convergenceHistory, LoggerWriteBehaviour::toConsoleOnly, timer) ); /* 2 */
 
        //Create a CG solver using the Constructor with logger as an argument
-       /* 3 */      CG cgSolver( "CGTestSolver", logger );
+       CG cgSolver( "CGTestSolver", logger ); /* 3 */
    
        //Create a stopping criterion for the iterative solver cgSolver
        NormPtr norm = NormPtr( new L2Norm() );
