@@ -258,7 +258,7 @@ BOOST_AUTO_TEST_CASE( testDefaultCriterionSet )
     MatrixCreator<ValueType>::buildPoisson2D( coefficients, 9, N1, N2 );
 
     DenseVector<ValueType> solution( coefficients.getColDistributionPtr(), 2.0 );
-    const DenseVector<ValueType> rhs( solution.getDistributionPtr() );
+    const DenseVector<ValueType> rhs( solution.getDistributionPtr(), 0.0 );
 
     cgSolver.initialize( coefficients );
 
