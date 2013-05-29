@@ -36,7 +36,7 @@ __ http://libama.sourceforge.net/doc/index.html
 
 .. code-block:: bash
 
-   firefox <project-root>/share/doc/doxygen/html/index.html
+   firefox ${LAMA_ROOT}/share/doc/system/html/index.html
 
 The compilation of your LAMA application, e.g. 'simple.cpp' is usually done as
 follows:
