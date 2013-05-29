@@ -43,12 +43,12 @@ message ( STATUS "" )
 ### Set PROJECT NAME / supported LANGUAGES and Module Path ###
 project ( LAMA CXX C )
 set ( CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/../CMake/Modules" )
-set ( LAMA_VERSION "1.0.0" )
+set ( LAMA_VERSION "1.0.1" )
 set ( LAMA_VERSION_NAME "Alpamayo" )
 set ( LAMA_COPYRIGHT_YEAR 2013 )
 set ( LAMA_VERSION_MAJOR 1 )
 set ( LAMA_VERSION_MINOR 0 )
-set ( LAMA_VERSION_PATCH 0 )
+set ( LAMA_VERSION_PATCH 1 )
 set ( LAMA_VERSION_COUNT 3 )
 
 
