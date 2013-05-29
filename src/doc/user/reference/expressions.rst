@@ -51,7 +51,7 @@ Unsupported expressions will already fail at compilation time.
    v = v1 + v2 + v3;   // ERROR, unsupported as too complex
 
 Size, Type, and Distribution Conformance
-------------------------------------------
+----------------------------------------
 
 When using matrix and vector expressions, the operands must be conform, i.e. corresponding
 sizes of rows and columns must fit with other ones. LAMA will check these conditions, but
@@ -281,6 +281,7 @@ as well.
 For the computation of the norm the Vector class provides corresponding methods.
 
 .. code-block:: c++
+
     ...
     alpha = v1.l1Norm();   // l1 Norm
     alpha = v1.l2Norm();   // l2 Norm of a vector

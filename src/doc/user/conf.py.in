@@ -179,7 +179,7 @@ htmlhelp_basename = 'LAMAdoc'
 # (source start file, target name, title, author, documentclass [howto/manual]).
 latex_documents = [
   ('index', 'LAMA.tex', u'LAMA Documentation',
-   u'Thomas Brandes, Lauretta Schubert, Malte Förster, Thomas Soddemann', 'manual'),
+   u'Fraunhofer Institute for Algorithms and Scientific Computing SCAI for Fraunhofer-Gesellschaft', 'manual'),
 ]
 
 # The name of an image file (relative to this directory) to place at the top of
@@ -214,5 +214,5 @@ highlight_language = 'c++'
 # (source start file, name, description, authors, manual section).
 man_pages = [
     ('index', 'lama', u'LAMA Documentation',
-     [u'Thomas Brandes, Lauretta Schubert, Malte Förster, Thomas Soddemann'], 1)
+     [u'Fraunhofer Institute for Algorithms and Scientific Computing SCAI for Fraunhofer-Gesellschaft'], 1)
 ]

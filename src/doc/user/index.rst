@@ -15,6 +15,7 @@ Contents:
    
    introduction
    installation/index
+   reference/index
    tutorial/index
    lecture/index
    testing/index

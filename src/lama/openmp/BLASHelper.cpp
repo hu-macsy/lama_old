@@ -37,6 +37,8 @@
 // macros
 #include <lama/macros/unused.hpp>
 
+#include <sstream>
+
 namespace lama
 {
 
