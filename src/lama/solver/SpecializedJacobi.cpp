@@ -72,7 +72,7 @@ SpecializedJacobi::SpecializedJacobi( const SpecializedJacobi& other )
 }
 
 SpecializedJacobi::SpecializedJacobiRuntime::SpecializedJacobiRuntime()
-    : OmegaSolverRuntime(), mOldSolution( NULL )
+    : OmegaSolverRuntime(), mOldSolution( NULL ), mDiagonal( NULL )
 {
 }
 
@@ -114,6 +114,32 @@ void SpecializedJacobi::initialize( const Matrix& coefficients )
         runtime.mOldSolution.reset( Vector::createVector( runtime.mCoefficients->getValueType(),
                                     runtime.mCoefficients->getDistributionPtr() ) );
     }
+
+    const SparseMatrix<double>* sparseDoubleCoefficients =
+        dynamic_cast<const SparseMatrix<double>*>( runtime.mCoefficients );
+    if ( sparseDoubleCoefficients )
+    {
+        LAMA_LOG_DEBUG( logger, "Creating double precison diagonal. " )
+        if ( !runtime.mDiagonal.get() )
+            runtime.mDiagonal.reset( _LAMAArray::create( Scalar::DOUBLE) );
+        sparseDoubleCoefficients->getLocalStorage().getDiagonal( *runtime.mDiagonal );
+        return;
+    }
+    const SparseMatrix<float>* sparseFloatCoefficients =
+      dynamic_cast<const SparseMatrix<float>*>( runtime.mCoefficients );
+    if ( sparseFloatCoefficients )
+    {
+        LAMA_LOG_DEBUG( logger, "Creating single precison diagonal. " )
+        if ( !runtime.mDiagonal.get() )
+            runtime.mDiagonal.reset( _LAMAArray::create( Scalar::FLOAT) );
+        sparseFloatCoefficients->getLocalStorage().getDiagonal( *runtime.mDiagonal );
+        return;
+    }
+
+    // has already been check in initialize, but in any case
+
+    LAMA_THROWEXCEPTION(
+        getConstRuntime().mCoefficients << ": unsupported matrix type (only SparseMatrix<T> supported)." )
 
 //    mPointerOldSolution = &mOldSolution; --> in every solve-call
 }
@@ -365,7 +391,8 @@ void SpecializedJacobi::iterateTyped( const SparseMatrix<ValueType>& coefficient
 
                 const ValueType omega = mOmega.getValue<ValueType>();
 
-                coefficients.getHaloStorage().jacobiIterateHalo( localSolution, coefficients.getLocalStorage(),
+                coefficients.getHaloStorage().jacobiIterateHalo( 
+                        localSolution, dynamic_cast<const LAMAArray<ValueType>*>(getRuntime().mDiagonal.get() ),
                         haloOldSolution, omega );
             }
         }
