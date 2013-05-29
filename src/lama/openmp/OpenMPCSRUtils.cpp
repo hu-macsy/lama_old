@@ -741,6 +741,58 @@ void OpenMPCSRUtils::jacobiHalo(
 
 /* --------------------------------------------------------------------------- */
 
+template<typename ValueType>
+void OpenMPCSRUtils::jacobiHaloWithDiag(
+    ValueType solution[],
+    const ValueType localDiagValues[],
+    const IndexType haloIA[],
+    const IndexType haloJA[],
+    const ValueType haloValues[],
+    const IndexType haloRowIndexes[],
+    const ValueType oldSolution[],
+    const ValueType omega,
+    const IndexType numNonEmptyRows )
+{
+    LAMA_LOG_INFO( logger, "jacobiHaloWithDiag<" << typeid(ValueType).name() << ">" 
+                   << ", #rows (not empty) = " << numNonEmptyRows << ", omega = " << omega );
+
+    #pragma omp parallel
+    {
+        LAMA_REGION( "OpenMP.CSR.jacabiHaloWithDiag" )
+
+        #pragma omp for schedule( LAMA_OMP_SCHEDULE )
+        for ( IndexType ii = 0; ii < numNonEmptyRows; ++ii )
+        {
+            IndexType i = ii; // default: rowIndexes == NULL stands for identity
+
+            if ( haloRowIndexes )
+            {
+                i = haloRowIndexes[ii];
+            }
+
+            ValueType temp = 0.0;
+
+            const ValueType diag = localDiagValues[i];
+
+            for ( IndexType j = haloIA[i]; j < haloIA[i + 1]; j++ )
+            {
+                temp += haloValues[j] * oldSolution[haloJA[j]];
+            }
+
+            if ( omega == 1.0 )
+            {
+                solution[i] -= temp / diag;
+            }
+            else
+            {
+                solution[i] -= omega * ( temp / diag );
+            }
+        }
+    }
+}
+
+/* --------------------------------------------------------------------------- */
+
 IndexType OpenMPCSRUtils::matrixAddSizes(
     IndexType cSizes[],
     const IndexType numRows,
@@ -1730,6 +1782,9 @@ void OpenMPCSRUtils::setInterface( CSRUtilsInterface& CSRUtils )
 
     LAMA_INTERFACE_REGISTER_T( CSRUtils, jacobiHalo, float )
     LAMA_INTERFACE_REGISTER_T( CSRUtils, jacobiHalo, double )
+
+    LAMA_INTERFACE_REGISTER_T( CSRUtils, jacobiHaloWithDiag, float )
+    LAMA_INTERFACE_REGISTER_T( CSRUtils, jacobiHaloWithDiag, double )
 
     LAMA_INTERFACE_REGISTER_T( CSRUtils, absMaxDiffVal, float )
     LAMA_INTERFACE_REGISTER_T( CSRUtils, absMaxDiffVal, double )

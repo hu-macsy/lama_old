@@ -266,10 +266,28 @@ struct CSRUtilsInterface
                                        const ValueType oldSolution[],
                                        const ValueType omega,
                                        const IndexType numNonEmptyRows );
+
+        /** Method to compute one iteration step in Jacobi method
+         *
+         *  solution -= omega * ( B(halo) * oldSolution) * dinv
+	 *
+         *  @since 1.1.0
+	 *
+         */
+        typedef void ( *jacobiHaloWithDiag ) ( ValueType solution[],
+					       const ValueType localDiagValues[],
+					       const IndexType haloIA[],
+					       const IndexType haloJA[],
+					       const ValueType haloValues[],
+					       const IndexType haloRowIndexes[],
+					       const ValueType oldSolution[],
+					       const ValueType omega,
+					       const IndexType numNonEmptyRows );
     };
 
     LAMA_INTERFACE_DEFINE_T( Solver, jacobi )
     LAMA_INTERFACE_DEFINE_T( Solver, jacobiHalo )
+    LAMA_INTERFACE_DEFINE_T( Solver, jacobiHaloWithDiag )
 
     /** Structure with type definitions for offset routines. */
 

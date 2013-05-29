@@ -133,6 +133,22 @@ public:
         const ValueType omega,
         const IndexType numNonEmptyRows );
 
+    /** Implementation for CSRUtilsInterface::Solver::jacobiHaloWithDiag 
+     *  @since 1.1.0
+     */
+
+    template<typename ValueType>
+    static void jacobiHaloWithDiag(
+        ValueType solution[],
+        const ValueType localDiagValues[],
+        const IndexType haloIA[],
+        const IndexType haloJA[],
+        const ValueType haloValues[],
+        const IndexType haloRowIndexes[],
+        const ValueType oldSolution[],
+        const ValueType omega,
+        const IndexType numNonEmptyRows );
+
     /** Implementation for CSRUtilsInterface::Offsets::matrixAddSizes  */
 
     static IndexType matrixAddSizes(

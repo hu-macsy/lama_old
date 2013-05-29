@@ -797,6 +797,126 @@ void CUDACSRUtils::jacobiHalo(
     }
 }
 
+/* --------------------------------------------------------------------------- */
+/*                          Jacobi halo with diagonal array                    */
+/* --------------------------------------------------------------------------- */
+
+
+template<typename ValueType,bool useTexture>
+__global__
+void csr_jacobiHaloWithDiag_kernel(
+    ValueType* const solution,
+    const ValueType* const localDiagValues,
+    const IndexType* const haloIA,
+    const IndexType* const haloJA,
+    const ValueType* const haloValues,
+    const IndexType* const rowIndexes,
+    const IndexType numNonEmptyRows,
+    const ValueType* const oldSolution,
+    const ValueType omega )
+{
+    const IndexType ii = threadId( gridDim, blockIdx, blockDim, threadIdx );
+
+    if ( ii < numNonEmptyRows )
+    {
+        IndexType i = ii; // default: rowIndexes is identity
+
+        if ( rowIndexes )
+        {
+            i = rowIndexes[ii];
+        }
+
+        ValueType temp = 0.0;
+
+        const IndexType rowStart = haloIA[i];
+        const IndexType rowEnd = haloIA[i + 1];
+
+        for ( IndexType jj = rowStart; jj < rowEnd; ++jj )
+        {
+            temp += haloValues[jj] * fetch_CSRJacobix<ValueType,useTexture>( oldSolution, haloJA[jj] );
+        }
+
+        const ValueType diag = localDiagValues[i];
+
+        solution[i] -= temp * ( omega / diag );
+    }
+}
+
+template<typename ValueType>
+void CUDACSRUtils::jacobiHaloWithDiag(
+    ValueType solution[],
+    const ValueType localDiagValues[],
+    const IndexType haloIA[],
+    const IndexType haloJA[],
+    const ValueType haloValues[],
+    const IndexType haloRowIndexes[],
+    const ValueType oldSolution[],
+    const ValueType omega,
+    const IndexType numNonEmptyRows )
+{
+    LAMA_LOG_INFO( logger, "jacobiHaloWithDiag, #non-empty rows = " << numNonEmptyRows )
+
+    LAMA_CHECK_CUDA_ACCESS
+
+    const int block_size = 128;
+    dim3 dimBlock( block_size, 1, 1 );
+    dim3 dimGrid = makeGrid( numNonEmptyRows, dimBlock.x );
+
+    bool useTexture = CUDATexture::useTexture();
+
+    useTexture = false;
+
+    if ( useTexture )
+    {
+
+        if ( sizeof(ValueType) == sizeof(double) )
+        {
+            LAMA_CUDA_RT_CALL( cudaBindTexture( NULL, texCSRJacobiDXref, oldSolution), "LAMA_STATUS_CUDA_BINDTEX_FAILED" )
+        }
+        else if ( sizeof(ValueType) == sizeof(float) )
+        {
+            LAMA_CUDA_RT_CALL( cudaBindTexture( NULL, texCSRJacobiSXref, oldSolution), "LAMA_STATUS_CUDA_BINDTEX_FAILED" )
+        }
+
+        LAMA_CUDA_RT_CALL( cudaFuncSetCacheConfig( csr_jacobiHaloWithDiag_kernel<ValueType, true>, cudaFuncCachePreferL1 ),
+                           "LAMA_STATUS_CUDA_FUNCSETCACHECONFIG_FAILED" )
+    }
+    else
+    {
+        LAMA_CUDA_RT_CALL( cudaFuncSetCacheConfig( csr_jacobiHaloWithDiag_kernel<ValueType, false>, cudaFuncCachePreferL1),
+                           "LAMA_STATUS_CUDA_FUNCSETCACHECONFIG_FAILED" )
+
+    }
+
+    if ( useTexture )
+    {
+        csr_jacobiHaloWithDiag_kernel <ValueType, true> <<<dimGrid, dimBlock>>>( solution, localDiagValues, haloIA,
+                haloJA, haloValues, haloRowIndexes,
+                numNonEmptyRows, oldSolution, omega );
+    }
+    else
+    {
+        csr_jacobiHaloWithDiag_kernel<ValueType, false> <<<dimGrid, dimBlock>>>( solution, localDiagValues, haloIA,
+                haloJA, haloValues, haloRowIndexes, numNonEmptyRows,
+                oldSolution, omega );
+    }
+
+    LAMA_CUDA_RT_CALL( cudaGetLastError(), "LAMA_STATUS_CSRJACOBIHALOWITHDIAG_CUDAKERNEL_FAILED" )
+    LAMA_CUDA_RT_CALL( cudaStreamSynchronize(0), "LAMA_STATUS_CSRJACOBIHALOWITHDIAG_CUDAKERNEL_FAILED" )
+
+    if ( useTexture )
+    {
+        if ( sizeof(ValueType) == sizeof(double) )
+        {
+            LAMA_CUDA_RT_CALL( cudaUnbindTexture(texCSRJacobiDXref), "LAMA_STATUS_CUDA_UNBINDTEX_FAILED" )
+        }
+        else if ( sizeof(ValueType) == sizeof(float) )
+        {
+            LAMA_CUDA_RT_CALL( cudaUnbindTexture(texCSRJacobiDXref), "LAMA_STATUS_CUDA_UNBINDTEX_FAILED" )
+        }
+    }
+}
+
 /* ------------------------------------------------------------------------------------------------------------------ */
 /*                                             helper                                                                 */
 /* ------------------------------------------------------------------------------------------------------------------ */
@@ -1815,6 +1935,9 @@ void CUDACSRUtils::setInterface( CSRUtilsInterface& CSRUtils )
 
     LAMA_INTERFACE_REGISTER_T( CSRUtils, jacobiHalo, float )
     LAMA_INTERFACE_REGISTER_T( CSRUtils, jacobiHalo, double )
+
+    LAMA_INTERFACE_REGISTER_T( CSRUtils, jacobiHaloWithDiag, float )
+    LAMA_INTERFACE_REGISTER_T( CSRUtils, jacobiHaloWithDiag, double )
 
     LAMA_INTERFACE_REGISTER_T( CSRUtils, matrixAdd, float )
     LAMA_INTERFACE_REGISTER_T( CSRUtils, matrixAdd, double )
