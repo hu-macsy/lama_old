@@ -52,7 +52,7 @@ Solution Task 3
        solution = 0.0;
    
        std::auto_ptr<Timer> timer( new Timer() ); /* 1 */
-       std::auto_ptr<Logger> logger( new CommonLogger("CGLogger", LogLevel::convergenceHistory, LoggerWriteBehaviour::toConsoleOnly, timer) ); /* 2 */
+       LoggerPtr logger( new CommonLogger("CGLogger", LogLevel::convergenceHistory, LoggerWriteBehaviour::toConsoleOnly, timer) ); /* 2 */
 
        //Create a CG solver using the Constructor with logger as an argument
        CG cgSolver( "CGTestSolver", logger ); /* 3 */

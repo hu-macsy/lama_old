@@ -349,8 +349,7 @@ public:
     /**
      * @brief Assignment of a 'full' vector expression.
      */
-    virtual void assign(
-        const Expression<Expression<Scalar,Vector,Times>,Expression<Scalar,Vector,Times>,Plus>& expression ) = 0;
+    virtual void assign( const Expression_SV_SV& expression ) = 0;
 
     /**
      * @brief Returns the dot product of this and other.
