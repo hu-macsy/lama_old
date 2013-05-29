@@ -1223,6 +1223,26 @@ void ELLStorage<ValueType>::jacobiIterateHalo(
         // Note: tmpLocalDiagonal will be freed at end of routine
     }
 
+    jacobiIterateHalo( localSolution, localDiagonal, oldHaloSolution, omega );
+
+}
+
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType>
+void ELLStorage<ValueType>::jacobiIterateHalo(
+    LAMAArrayView<ValueType> localSolution,
+    const LAMAArray<ValueType>* localDiagonal,
+    const LAMAArrayConstView<ValueType> oldHaloSolution,
+    const ValueType omega ) const
+{
+    LAMA_REGION( "Storage.ELL.jacobiIterateHalo" )
+
+    LAMA_LOG_INFO( logger, "HOST: Jacobi iteration on halo matrix data." )
+
+    LAMA_ASSERT_EQUAL_DEBUG( mNumRows, localSolution.size() )
+    LAMA_ASSERT_EQUAL_DEBUG( mNumColumns, oldHaloSolution.size() )
+
     ContextPtr loc = getContextPtr();
 
     LAMA_INTERFACE_FN_T( jacobiHalo, loc, ELLUtils, Solver, ValueType )

@@ -886,6 +886,24 @@ public:
         const LAMAArrayConstView<ValueType> haloOldSolution,
         const ValueType omega ) const;
 
+    /** Jacobi iteration step on a halo storage.
+     *
+     *  solution -= omega * ( B(halo) * oldSolution) * dinv
+     *
+     *  @param[in,out] localSolution is the solution vector that is updated
+     *  @param[in]     diagonal
+     *  @param[in]     haloOldSolution is the old solution vector of halo part
+     *  @param[in]     omega is the scaling factor.
+     *
+     *  @since 1.1.0
+     */
+
+    virtual void jacobiIterateHalo(
+        LAMAArrayView<ValueType> localSolution,
+        const LAMAArray<ValueType>* localDiagonal,
+        const LAMAArrayConstView<ValueType> haloOldSolution,
+        const ValueType omega ) const;
+
     // Note: Asynchronous version of jacobiIterateHalo not supported 
 
     using _MatrixStorage::getContext;

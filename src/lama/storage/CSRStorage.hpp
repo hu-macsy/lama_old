@@ -444,6 +444,14 @@ public:
         const LAMAArrayConstView<ValueType> haloOldSolution,
         const ValueType omega ) const;
 
+    /** @since 1.1.0 */
+
+    virtual void jacobiIterateHalo(
+        LAMAArrayView<ValueType> localSolution,
+        const LAMAArray<ValueType>* localDiagonal,
+        const LAMAArrayConstView<ValueType> haloOldSolution,
+        const ValueType omega ) const;
+
     /** Implementation for MatrixStorage::maxNorm */
 
     virtual ValueType maxNorm() const;

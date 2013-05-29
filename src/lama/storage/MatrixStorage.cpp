@@ -1065,6 +1065,22 @@ void MatrixStorage<ValueType>::jacobiIterateHalo(
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
+void MatrixStorage<ValueType>::jacobiIterateHalo(
+    LAMAArrayView<ValueType> localSolution,
+    const LAMAArray<ValueType>* localDiagonal,
+    const LAMAArrayConstView<ValueType> oldHaloSolution,
+    const ValueType omega ) const
+{
+    LAMA_UNSUPPORTED( *this << ": jacobiIterateHalo for this format NOT available, take CSR" )
+
+    CSRStorage<ValueType> tmpHalo( *this );
+
+    tmpHalo.jacobiIterateHalo( localSolution, localDiagonal, oldHaloSolution, omega );
+}
+
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType>
 void MatrixStorage<ValueType>::matrixTimesScalar( const ValueType alpha, const MatrixStorage<ValueType>& a )
 {
     LAMA_LOG_INFO( logger, *this << " = alpha( " << alpha << " ) x " << a )

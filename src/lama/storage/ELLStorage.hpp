@@ -336,6 +336,16 @@ public:
         const LAMAArrayConstView<ValueType> haloOldSolution,
         const ValueType omega ) const;
 
+    /** Implementation of MatrixStorage::jacobiIterateHalo for ELL 
+     *  @since 1.1.0
+     */
+
+    virtual void jacobiIterateHalo(
+        LAMAArrayView<ValueType> localSolution,
+        const LAMAArray<ValueType>* localDiagonal,
+        const LAMAArrayConstView<ValueType> haloOldSolution,
+        const ValueType omega ) const;
+
     /** Implementation of MatrixStorage::matrixTimesMatrix for ELL */
 
     virtual void matrixTimesMatrix(

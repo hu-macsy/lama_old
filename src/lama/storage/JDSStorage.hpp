@@ -214,6 +214,16 @@ public:
         const LAMAArrayConstView<ValueType> haloOldSolution,
         const ValueType omega ) const;
 
+    /** Implementation of MatrixStorage::jacobiIterateHalo for JDS 
+     *  @since 1.1.0
+     */
+
+    virtual void jacobiIterateHalo(
+        LAMAArrayView<ValueType> localSolution,
+        const LAMAArray<ValueType>*localDiagonal,
+        const LAMAArrayConstView<ValueType> haloOldSolution,
+        const ValueType omega ) const;
+
     /* Print relevant information about matrix storage format. */
 
     virtual void writeAt( std::ostream& stream ) const;

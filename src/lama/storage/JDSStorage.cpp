@@ -1017,11 +1017,6 @@ void JDSStorage<ValueType>::jacobiIterateHalo(
 
     LAMA_REGION( "Storage.JDS.jacobiIterateHalo" )
 
-    ContextPtr loc = getContextPtr();
-
-    LAMA_INTERFACE_FN_T( jacobiHalo, loc, JDSUtils, Solver, ValueType )
-    LAMA_INTERFACE_FN_T( invert, loc, Utils, Math, ValueType )
-
     LAMA_ASSERT_EQUAL_DEBUG( mNumRows, localSolution.size() )
     LAMA_ASSERT_EQUAL_DEBUG( mNumRows, localStorage.getNumRows() )
     LAMA_ASSERT_EQUAL_DEBUG( mNumRows, localStorage.getNumColumns() )
@@ -1034,6 +1029,30 @@ void JDSStorage<ValueType>::jacobiIterateHalo(
     tmpLocalDiagonal = boost::shared_ptr<LAMAArray<ValueType> >( new LAMAArray<ValueType>() );
     localStorage.getDiagonal( *tmpLocalDiagonal );
     localDiagonal = tmpLocalDiagonal.get();
+
+    jacobiIterateHalo( localSolution, localDiagonal, oldHaloSolution, omega );
+
+}
+
+/* ------------------------------------------------------------------------------------------------------------------ */
+template<typename ValueType>
+void JDSStorage<ValueType>::jacobiIterateHalo(
+    LAMAArrayView<ValueType> localSolution,
+    const LAMAArray<ValueType>* localDiagonal,
+    const LAMAArrayConstView<ValueType> oldHaloSolution,
+    const ValueType omega ) const
+{
+    LAMA_LOG_INFO( logger, *this << ": Jacobi iteration for halo matrix data." )
+
+    LAMA_REGION( "Storage.JDS.jacobiIterateHalo" )
+
+    ContextPtr loc = getContextPtr();
+
+    LAMA_INTERFACE_FN_T( jacobiHalo, loc, JDSUtils, Solver, ValueType )
+    LAMA_INTERFACE_FN_T( invert, loc, Utils, Math, ValueType )
+
+    LAMA_ASSERT_EQUAL_DEBUG( mNumRows, localSolution.size() )
+    LAMA_ASSERT_EQUAL_DEBUG( mNumColumns, oldHaloSolution.size() )
 
     WriteAccess<ValueType> wSolution( localSolution, loc ); // will be updated
     ReadAccess<ValueType> diagonal( *localDiagonal, loc );

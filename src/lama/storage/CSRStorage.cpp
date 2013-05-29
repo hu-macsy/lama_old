@@ -1424,6 +1424,57 @@ void CSRStorage<ValueType>::jacobiIterateHalo(
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
+void CSRStorage<ValueType>::jacobiIterateHalo(
+    LAMAArrayView<ValueType> localSolution,
+    const LAMAArray<ValueType>* localDiagonal,
+    const LAMAArrayConstView<ValueType> oldHaloSolution,
+    const ValueType omega ) const
+{
+    LAMA_REGION( "Storage.CSR.jacobiIterateHalo" )
+
+    LAMA_LOG_INFO( logger, *this << ": Jacobi iteration for halo matrix data." )
+
+    LAMA_ASSERT_EQUAL_DEBUG( mNumRows, localSolution.size() )
+    LAMA_ASSERT_EQUAL_DEBUG( mNumColumns, oldHaloSolution.size() )
+
+    ContextPtr loc = getContextPtr();
+
+    LAMA_INTERFACE_FN_T( jacobiHaloWithDiag, loc, CSRUtils, Solver, ValueType )
+
+    {
+        WriteAccess<ValueType> wSolution( localSolution, loc ); // will be updated
+        ReadAccess<ValueType> localDiagValues( *localDiagonal, loc );
+        ReadAccess<IndexType> haloIA( mIa, loc );
+        ReadAccess<IndexType> haloJA( mJa, loc );
+        ReadAccess<ValueType> haloValues( mValues, loc );
+        ReadAccess<ValueType> rOldHaloSolution( oldHaloSolution, loc );
+
+        const IndexType numNonEmptyRows = mRowIndexes.size();
+
+        LAMA_LOG_INFO( logger, "#row indexes = " << numNonEmptyRows )
+
+        if ( numNonEmptyRows != 0 )
+        {
+            ReadAccess<IndexType> haloRowIndexes( mRowIndexes, loc );
+
+            LAMA_CONTEXT_ACCESS( loc )
+
+            jacobiHaloWithDiag( wSolution.get(), localDiagValues.get(), haloIA.get(), haloJA.get(), haloValues.get(),
+				haloRowIndexes.get(), rOldHaloSolution.get(), omega, numNonEmptyRows );
+        }
+        else
+        {
+            LAMA_CONTEXT_ACCESS( loc )
+
+            jacobiHaloWithDiag( wSolution.get(), localDiagValues.get(), haloIA.get(), haloJA.get(), haloValues.get(),
+				NULL, rOldHaloSolution.get(), omega, mNumRows );
+        }
+    }
+}
+
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType>
 void CSRStorage<ValueType>::matrixPlusMatrix(
     const ValueType alpha,
     const MatrixStorage<ValueType>& a,
