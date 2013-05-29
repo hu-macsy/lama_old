@@ -118,12 +118,11 @@ Vector& Vector::operator=( const Expression_MV& expression )
     // expression = A * x, generalized to A * x * 1.0 + 0.0 * this
     // but be careful: this might not be resized correctly, so we do it here
 
-    const Expression<Scalar,Expression<Matrix,Vector,Times>,Times> exp1( Scalar( 1.0 ), expression );
+    const Expression_SMV exp1( Scalar( 1.0 ), expression );
 
-    const Expression<Scalar,Vector,Times> exp2( Scalar( 0.0 ), *this );
+    const Expression_SV exp2( Scalar( 0.0 ), *this );
 
-    Expression<Expression<Scalar,Expression<Matrix,Vector,Times>,Times>,Expression<Scalar,Vector,Times>,Plus> tempExpression(
-        exp1, exp2 );
+    const Expression_SMV_SV tempExpression( exp1, exp2 );
 
     // due to alias of result/vector2 resize already here
 
@@ -154,8 +153,7 @@ Vector& Vector::operator=( const Expression_SMV& expression )
 
     Expression_SV exp2( beta, *this );
 
-    Expression<Expression<Scalar,Expression<Matrix,Vector,Times>,Times>,Expression<Scalar,Vector,Times>,Plus> tmpExp(
-        expression, exp2 );
+    Expression_SMV_SV tmpExp( expression, exp2 );
 
     const Vector& vectorX = expression.getArg2().getArg2();
 
@@ -180,8 +178,7 @@ Vector& Vector::operator=( const Expression_SMV& expression )
 
 Vector& Vector::operator=( const Expression_SMV_SV& expression )
 {
-    LAMA_LOG_INFO( logger, 
-                   "Vector::operator=(const Expression<Expression<Scalar, Expression<Matrix, Vector, Times>, Times>," << "Expression<Scalar, Vector, Times>, Plus>& expression)" )
+    LAMA_LOG_INFO( logger, "Vector::operator=( Expression_SMV_SV )" )
 
     const Expression_SMV& exp1 = expression.getArg1();
     const Expression_SV&  exp2 = expression.getArg2();
@@ -243,8 +240,7 @@ Vector& Vector::operator=( const Scalar value )
 
 Vector& Vector::operator*=( const Scalar value )
 {
-    Expression<Scalar, Vector, Times> exp1( value, *this );
-    return operator=( exp1 );
+    return operator=( Expression_SV( value, *this ) );
 }
 
 Vector& Vector::operator/=( const Scalar value )
