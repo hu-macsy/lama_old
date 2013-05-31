@@ -234,7 +234,7 @@ template<typename ValueType>
 ELLSparseMatrix<ValueType>& ELLSparseMatrix<ValueType>::operator=( const ELLSparseMatrix& matrix )
 {
     LAMA_LOG_INFO( logger, "ELLSparseMatrix = ELLSparseMatrix : " << matrix )
-    assign( matrix );
+    this->assign( matrix );
     return *this;
 }
 

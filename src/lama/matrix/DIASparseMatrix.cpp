@@ -234,7 +234,7 @@ template<typename ValueType>
 DIASparseMatrix<ValueType>& DIASparseMatrix<ValueType>::operator=( const DIASparseMatrix& matrix )
 {
     LAMA_LOG_INFO( logger, "DIASparseMatrix = DIASparseMatrix : " << matrix )
-    assign( matrix );
+    this->assign( matrix );
     return *this;
 }
 

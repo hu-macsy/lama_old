@@ -234,7 +234,7 @@ template<typename ValueType>
 XXXSparseMatrix<ValueType>& XXXSparseMatrix<ValueType>::operator=( const XXXSparseMatrix& matrix )
 {
     LAMA_LOG_INFO( logger, "XXXSparseMatrix = XXXSparseMatrix : " << matrix )
-    assign( matrix );
+    this->assign( matrix );
     return *this;
 }
 
