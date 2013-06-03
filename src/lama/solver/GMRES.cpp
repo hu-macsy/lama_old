@@ -309,7 +309,7 @@ void GMRES::iterate()
     for ( unsigned int k = 0; k <= krylovIndex; ++k )
     {
         const Vector& Vk = *( ( *runtime.mV )[k] );
-        runtime.mH[hIdxStart + k] = ( w * Vk ).getValue<double>();
+        runtime.mH[hIdxStart + k] = ( w.dotProduct( Vk ) ).getValue<double>();
         w = w - runtime.mH[hIdxStart + k] * Vk;
     }
     runtime.mHd[krylovIndex] = w.l2Norm().getValue<double>();
