@@ -21,6 +21,6 @@ int main()
 
     sequenceOfValues = singleValue * sequenceOfValues;
 
-    sequenceOfValues.writeToFile( "vector.txt" , File::FORMATTED );
+    sequenceOfValues.writeToFile( "vector.txt", File::FORMATTED );
 }
 
