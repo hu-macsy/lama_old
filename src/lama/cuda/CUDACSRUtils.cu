@@ -833,7 +833,7 @@ void csr_jacobiHaloWithDiag_kernel(
 
         for ( IndexType jj = rowStart; jj < rowEnd; ++jj )
         {
-            temp += haloValues[jj] * fetch_CSRJacobix<ValueType,useTexture>( oldSolution, haloJA[jj] );
+            temp += haloValues[jj] * fetch_x_i<ValueType,useTexture>( oldSolution, haloJA[jj] );
         }
 
         const ValueType diag = localDiagValues[i];
@@ -862,21 +862,13 @@ void CUDACSRUtils::jacobiHaloWithDiag(
     dim3 dimBlock( block_size, 1, 1 );
     dim3 dimGrid = makeGrid( numNonEmptyRows, dimBlock.x );
 
-    bool useTexture = CUDATexture::useTexture();
+    bool useTexture = CUDASettings::useTexture();
 
     useTexture = false;
 
     if ( useTexture )
     {
-
-        if ( sizeof(ValueType) == sizeof(double) )
-        {
-            LAMA_CUDA_RT_CALL( cudaBindTexture( NULL, texCSRJacobiDXref, oldSolution), "LAMA_STATUS_CUDA_BINDTEX_FAILED" )
-        }
-        else if ( sizeof(ValueType) == sizeof(float) )
-        {
-            LAMA_CUDA_RT_CALL( cudaBindTexture( NULL, texCSRJacobiSXref, oldSolution), "LAMA_STATUS_CUDA_BINDTEX_FAILED" )
-        }
+        csrBindTexture( oldSolution );
 
         LAMA_CUDA_RT_CALL( cudaFuncSetCacheConfig( csr_jacobiHaloWithDiag_kernel<ValueType, true>, cudaFuncCachePreferL1 ),
                            "LAMA_STATUS_CUDA_FUNCSETCACHECONFIG_FAILED" )
@@ -906,14 +898,7 @@ void CUDACSRUtils::jacobiHaloWithDiag(
 
     if ( useTexture )
     {
-        if ( sizeof(ValueType) == sizeof(double) )
-        {
-            LAMA_CUDA_RT_CALL( cudaUnbindTexture(texCSRJacobiDXref), "LAMA_STATUS_CUDA_UNBINDTEX_FAILED" )
-        }
-        else if ( sizeof(ValueType) == sizeof(float) )
-        {
-            LAMA_CUDA_RT_CALL( cudaUnbindTexture(texCSRJacobiDXref), "LAMA_STATUS_CUDA_UNBINDTEX_FAILED" )
-        }
+        csrUnbindTexture( oldSolution );
     }
 }
 
