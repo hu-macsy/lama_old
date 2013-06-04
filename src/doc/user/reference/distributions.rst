@@ -1,6 +1,8 @@
 Distributions
 =============
 
+rowwise --> halo, local
+
 Distribution Typs
 -----------------
 

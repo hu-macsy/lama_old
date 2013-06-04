@@ -11,8 +11,9 @@ Contents:
    scalar
    vector
    matrix
-   solver/index
-   storage
    expressions
+   storage
+   context
    distributions
+   solver/index
    io

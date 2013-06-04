@@ -92,11 +92,11 @@ int main()
     DenseVector<ValueType> result( numRows, 0.0);
 
     // Distribution pointer are needed to construct a CSRSparseMatrix.
-    lama::DistributionPtr rowDist(new lama::NoDistribution(numRows));
-    lama::DistributionPtr colDist(new lama::NoDistribution(numColumns));
+    lama::DistributionPtr rowDist( new lama::NoDistribution( numRows ) );
+    lama::DistributionPtr colDist( new lama::NoDistribution( numColumns ) );
 
     // Allocation of the CSRSparseMatrix.
-    CSRSparseMatrix<ValueType> csrMatrix(*csrStorage, rowDist, colDist);
+    CSRSparseMatrix<ValueType> csrMatrix( *csrStorage, rowDist, colDist );
 
     // The multiplication itself.
     result = csrMatrix * vector;

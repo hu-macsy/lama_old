@@ -16,7 +16,7 @@ by passing the size and one value assigned to each entrie of the vector or by re
 
     DenseVector<ValueType> z( 4, 0.0 );
 
-Having vectors and scalars (as Scalar or value) you can perform vector addition, subtraction and scaling with a scalar
+Having vectors and scalars (as Scalar or value) you can perform vector addition, substraction and scaling with a scalar
 in text-book syntax:
 
 .. code-block:: c++
