@@ -1,5 +1,3 @@
-.. _configuration:
-
 Configuration
 =============
 
@@ -14,15 +12,15 @@ packages or which one to choose. For a specific package please refer to the belo
 .. toctree::
    :titlesonly:
 
-   c++
-   boost
-   blas
-   CUDA <cuda>
-   MPI <mpi>
-   Tracing <tracing>
+   configuration/c++
+   configuration/boost
+   configuration/blas
+   CUDA <configuration/cuda>
+   MPI <configuration/mpi>
+   Tracing <configuration/tracing>
 
 The following steps are for generating Makefiles under Linux. For the creation of a Visual Studio project under Windows
-see :doc:`here <../windowsTipps>`.
+see :doc:`here <windowsTipps>`.
 
 For its configuration LAMA uses the CMake utility. This utility is called in the build directory. Although in-source
 builds are supported we recommend an out-of-source build. So create a build directory and change to it.
@@ -81,7 +79,7 @@ have to give Cmake hints where to find the packages. For passing these hints you
 -D <VARIABLE_NAME>=<path/to/package/dir>. A summary of possible Build-Variables for the packages are given in the
 following table. For advanced help refer to the separate section.
 
-.. csv-table::
+.. csv-table:: CMake hint variables
    :header: "Package", "CMake variable", "Signification"
    
    "Boost", "BOOST_ROOT", "path to boost root dir"
@@ -99,7 +97,7 @@ following table. For advanced help refer to the separate section.
    "GASNet", "GASNET_LIBRARY_PATH", "path to GASNet library"
    "OpenShmem", "OSHMEM_INCLUDE_PATH and OSHMEM_LIBRARY_PATH", "paths to Open shared memory include and library dir"
 
-For changing the C compiler there is a different way for telling cmake. Please see :doc:`here <c++>`. 
+For changing the C compiler there is a different way for telling cmake. Please see :doc:`here <configuration/c++>`. 
 
 Your cmake-call may look like this then:
 

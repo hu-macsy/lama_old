@@ -5,18 +5,21 @@ Introduction
 This documentation will give an overview of the features of the \Library of \Accelerated \Math \Applications
 (\L\A\M\A) and will describe the general usage of these features.
 
-You will find concise :doc:`installation/index` instruction, an easy beginners guide with several short descriptions of
-our basic data structures, their behavior as well as simple examples on how to use them (:doc:`tutorial/index`). An
-advanced :doc:`lecture/index` of our hands-on session follows before you get the chance to have a look at the
-:doc:`reference/index`. We close with informations about writing own tests (see :doc:`testing/index`) and 
-:doc:`benchmarks/index` and on special hints :doc:`developer/index`. 
+You will find concise :doc:`installation` instruction, an easy beginners guide with several short descriptions of
+our basic data structures, their behavior as well as simple examples on how to use them (:doc:`tutorial`). An
+advanced :doc:`lecture` of our hands-on session follows before you get the chance to have a look at the
+:doc:`reference`. We close with informations about writing own tests (see :doc:`testing`) and 
+:doc:`benchmarks` and on special hints :doc:`developer`. 
 
 About LAMA
 ==========
 
-.. image:: _images/LAMA.png
-   :align: center
-   :alt: LAMA Design
+.. figure:: _images/LAMA.png
+    :width: 200px
+    :align: center
+    :height: 100px
+    :alt: alternate text
+    :figclass: align-center
 
 LAMA is an easy to use open source \Basic \Linear \Algebra \Subprogram (:doc:`\B\L\A\S <blas_explanation>`) Library with
 special focus on large sparse matrices. Its core is written in C++, so you have the comfort of writing your algorithms
@@ -95,7 +98,7 @@ The supported features of the actual release are listed below:
      
      - simple algebraic multigrid (SAMG) method
     
-Work in process that you can find in our feature branches and that will come with next releases are:
+Work in progress that you can find in our feature branches and that will come with next releases are:
  
  - OpenCL-Backend
 

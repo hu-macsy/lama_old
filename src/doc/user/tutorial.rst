@@ -13,8 +13,8 @@ Contents:
    :titlesonly:
    :maxdepth: 2
 
-   firstExample
-   firstCompile
-   example_vector
-   example_matrix
-   example_solver
+   tutorial/firstExample
+   tutorial/firstCompile
+   tutorial/example_vector
+   tutorial/example_matrix
+   tutorial/example_solver

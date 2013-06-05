@@ -16,7 +16,7 @@ LAMA preserves the following sparse matrix formats:
  - coordinate (COO)
  - diagonal (DIA)
  
-For a detailed description on the different storage types, see :doc:`storages`.
+For a detailed description on the different storage types, see :doc:`storage`.
 
 You can create the specific matrix types by the same constructor giving the number of rows and columns:
 

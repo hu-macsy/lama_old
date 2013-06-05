@@ -87,5 +87,5 @@ Solution Task 3
    :header: "back to this Task", "Index", "next Task"
    :widths: 330, 340, 330
 
-   ":doc:`task_3`", ":doc:`index`", ":doc:`task_4`"
+   ":doc:`task_3`", ":doc:`../lecture`", ":doc:`task_4`"
 

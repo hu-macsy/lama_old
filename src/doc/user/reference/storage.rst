@@ -29,7 +29,7 @@ first property would introduce a big overhead in this cases.
 ..
 .. Hint Array for zero rows
 .. ------------------------
-..
+
 Sparse Matrix Formats
 ---------------------
 

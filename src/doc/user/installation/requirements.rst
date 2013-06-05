@@ -100,7 +100,7 @@ We have tested the installation of LAMA with various versions of the required so
 Have a look at the following table whether your configuration is explicitly supported.
 All tests are configured as release build.
 
-.. csv-table:: 
+.. csv-table:: tested configuration settings
    :header: "compiler", "boost", "BLAS", "cuda", "communication", "build"
    :widths: 150, 100, 100, 100, 200, 100 
 

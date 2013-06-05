@@ -11,7 +11,7 @@ You can create a Scalar by delivering a value to the constructor. An empty const
    Scalar b( 2.5f ); // a scalar of type float 
    Scalar c();       // a scalar representing zero
 
-All common binary operators '+', '-', '*', '/' (also as '+=', '-=', '*=','/=') and the unary operator '-' are supported.
+All common binary operators '+', '-', '\*', '/' (also as '+=', '-=', '\*=','/=') and the unary operator '-' are supported.
 A mix of different template types is allowed.
 
 .. code-block:: c++

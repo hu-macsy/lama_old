@@ -16,15 +16,38 @@ the communication can be executed asynchronously to the calculation on the local
 Distribution Types
 ------------------
 
+
+
 Block Distribution
 ^^^^^^^^^^^^^^^^^^
 
-.. image:: fileadmin/LAMA/json/_images/blockweise.png
+.. figure:: _images/blockweise.png
+    :width: 200px
+    :align: center
+    :height: 100px
+    :alt: alternate text
+    :figclass: align-center
 
 Cyclic Distribution
 ^^^^^^^^^^^^^^^^^^^
 
-.. image:: fileadmin/LAMA/json/_images/cyclic.png
+.. figure:: _images/cyclic.png
+    :width: 200px
+    :align: center
+    :height: 100px
+    :alt: alternate text
+    :figclass: align-center
+
+General Block Distribution
+^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+GeneralDistribution
+^^^^^^^^^^^^^^^^^^^
+
+
+No Distribution
+^^^^^^^^^^^^^^^
+
 
 Redistribute
 ------------
