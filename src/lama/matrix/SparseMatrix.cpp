@@ -291,6 +291,21 @@ void SparseMatrix<ValueType>::clear()
 /* -------------------------------------------------------------------------- */
 
 template<typename ValueType>
+void SparseMatrix<ValueType>::purge()
+{
+    // Note: purge will free the memory and not only reset sizes
+
+    mNumRows = 0;
+    mNumColumns = 0;
+
+    mLocalData->purge();
+    mHaloData->purge();
+    mHalo.clear();
+}
+
+/* -------------------------------------------------------------------------- */
+
+template<typename ValueType>
 void SparseMatrix<ValueType>::allocate( DistributionPtr distribution, DistributionPtr colDistribution )
 {
     LAMA_LOG_DEBUG( logger,

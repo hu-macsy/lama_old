@@ -276,6 +276,10 @@ public:
 
     /* Implementation of pure method of class Matrix. */
 
+    virtual void purge();
+
+    /* Implementation of pure method of class Matrix. */
+
     virtual void allocate( const IndexType numRows, const IndexType numColumns );
 
     /* Implementation of pure method of class Matrix. */
