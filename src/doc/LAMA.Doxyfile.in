@@ -577,6 +577,7 @@ WARN_LOGFILE           =
 
 INPUT                  = ${LAMA_SOURCE_DIR}/doc/system \
                          ${LAMA_SOURCE_DIR}/lama  \
+                         ${LAMA_SOURCE_DIR}/lama/storage \
                          ${LAMA_SOURCE_DIR}/lama/openmp
 
 #                        add additional directories
@@ -1287,7 +1288,7 @@ SEARCH_INCLUDES        = YES
 # contain include files that are not input files but should be processed by
 # the preprocessor.
 
-INCLUDE_PATH           =
+INCLUDE_PATH           = /usr/include ${Boost_INCLUDE_DIR} 
 
 # You can use the INCLUDE_FILE_PATTERNS tag to specify one or more wildcard
 # patterns (like *.h and *.hpp) to filter out the header-files in the
