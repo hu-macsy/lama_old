@@ -25,7 +25,7 @@
  * SOFTWARE.
  * @endlicense
  *
- * @brief VectorExpressions.hpp
+ * @brief Operators to build symbolic expressions scalar1 * vector1 + scalar2 * vector2.
  * @author Jiri Kraus
  * @date 01.06.2011
  * @since 1.0.0

@@ -25,7 +25,7 @@
  * SOFTWARE.
  * @endlicense
  *
- * @brief Expression.hpp
+ * @brief Definition of template class Expression used for symbolic expressions.
  * @author brandes
  * @date 28.03.2011
  * @since 1.0.0
@@ -95,7 +95,6 @@ public:
     virtual ~Expression()
     {
     }
-    ;
 
     /**
      * @brief getExpressionType returns the expression type of this Expression.
@@ -106,7 +105,6 @@ public:
     {
         return mExpressionType;
     }
-    ;
 
     /**
      * @brief getArg1() returns a reference to the first operand of this Expression.
@@ -117,7 +115,6 @@ public:
     {
         return mArg1;
     }
-    ;
 
     /**
      * @brief getArg2() returns a reference to the second operand of this Expression.
@@ -128,7 +125,6 @@ public:
     {
         return mArg2;
     }
-    ;
 };
 
 class Scalar;

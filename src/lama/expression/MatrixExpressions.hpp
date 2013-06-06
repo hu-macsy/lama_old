@@ -1,5 +1,5 @@
 /**
- * @file MatrixVectorExpressions.hpp
+ * @file MatrixExpressions.hpp
  *
  * @license
  * Copyright (c) 2009-2013
@@ -25,7 +25,7 @@
  * SOFTWARE.
  * @endlicense
  *
- * @brief MatrixVectorExpressions.hpp
+ * @brief Operators to build symbolic matrix expressions for alpha * matrix + beta * matrix.
  * @author brandes
  * @date 28.03.2011
  * @since 1.0.0
@@ -145,13 +145,13 @@ inline Expression_SMM operator*( const Matrix& m1, const Matrix& m2 )
  * @brief This times operator creates an expression that represents the product
  *        of Scalar times Matrix times Matrix, alpha * matrixA * matrixB
  *
- * @param[in] m1      The first input matrix.
+ * @param[in] matrix  The first input matrix.
  * @param[in] exp     The expression scalar times matrix.
  * @return            The expression representing this product.
  */
-inline Expression_SMM operator*( const Matrix& m1, const Expression_SM& exp )
+inline Expression_SMM operator*( const Matrix& matrix, const Expression_SM& exp )
 {
-    return Expression_SMM( Expression_SM( exp.getArg1(), m1 ), exp.getArg2() );
+    return Expression_SMM( Expression_SM( exp.getArg1(), matrix ), exp.getArg2() );
 }
 
 /**
@@ -159,12 +159,12 @@ inline Expression_SMM operator*( const Matrix& m1, const Expression_SM& exp )
  *        of Scalar times Matrix times Matrix.
  *
  * @param[in] exp     The expression scalar times matrix.
- * @param[in] m1      The first input matrix.
+ * @param[in] matrix  The first input matrix.
  * @return            The expression representing this product.
  */
-inline Expression_SMM operator*( const Expression_SM& exp, const Matrix& m1 )
+inline Expression_SMM operator*( const Expression_SM& exp, const Matrix& matrix )
 {
-    return Expression_SMM( exp, m1 );
+    return Expression_SMM( exp, matrix );
 }
 
 /* --------------------------------------------------------------- */
@@ -177,15 +177,15 @@ inline Expression_SMM operator*( const Expression_SM& exp, const Matrix& m1 )
  * @brief This times operator creates an expression that represents the product
  *        of Scalar times Matrix times Matrix.
  *
- * @param[in] s       The Scalar
+ * @param[in] scalar  The Scalar
  * @param[in] exp     The expression 'Scalar * Matrix * Matrix'
  * @return            The expression representing this product.
  */
-inline Expression_SMM operator*( const Scalar& s, const Expression_SMM& exp )
+inline Expression_SMM operator*( const Scalar& scalar, const Expression_SMM& exp )
 {
     const Expression_SM sm = exp.getArg1();
 
-    return Expression_SMM( Expression_SM( s * sm.getArg1(), sm.getArg2() ), 
+    return Expression_SMM( Expression_SM( scalar * sm.getArg1(), sm.getArg2() ), 
                            exp.getArg2() );
 }
 
@@ -194,14 +194,14 @@ inline Expression_SMM operator*( const Scalar& s, const Expression_SMM& exp )
  *        of Scalar times Matrix times Matrix.
  *
  * @param[in] exp     The expression scalar times matrix.
- * @param[in] s       The Scalar
+ * @param[in] scalar  The Scalar
  * @return            The expression representing this product.
  */
-inline Expression_SMM operator*( const Expression_SMM& exp, const Scalar& s )
+inline Expression_SMM operator*( const Expression_SMM& exp, const Scalar& scalar )
 {
     const Expression_SM sm = exp.getArg1();
 
-    return Expression_SMM( Expression_SM( sm.getArg1() * s, sm.getArg2() ), 
+    return Expression_SMM( Expression_SM( sm.getArg1() * scalar, sm.getArg2() ), 
                            exp.getArg2() );
 }
 
