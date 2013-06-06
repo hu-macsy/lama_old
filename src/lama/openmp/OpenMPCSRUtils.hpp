@@ -256,8 +256,9 @@ public:
 
     static IndexType matrixMultiplySizes(
         IndexType cSizes[],
-        const IndexType numRows,
-        const IndexType numColumns,
+        const IndexType m,
+        const IndexType n,
+        const IndexType k,
         bool diagonalProperty,
         const IndexType aIA[],
         const IndexType aJA[],
@@ -303,8 +304,9 @@ public:
         const IndexType cIa[],
         IndexType cJA[],
         ValueType cValues[],
-        const IndexType numRows,
-        const IndexType numColumns,
+        const IndexType m,
+        const IndexType n,
+        const IndexType k,
         const ValueType alpha,
         bool diagonalProperty,
         const IndexType aIA[],

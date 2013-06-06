@@ -1730,6 +1730,8 @@ void CSRStorage<ValueType>::matrixTimesMatrixCSR(
 
     LAMA_ASSERT_EQUAL_ERROR( a.getNumColumns(), b.getNumRows() )
 
+    IndexType k = a.getNumColumns();
+
     LAMA_REGION( "Storage.CSR.timesMatrixCSR" )
 
     allocate( a.getNumRows(), b.getNumColumns() );
@@ -1749,13 +1751,14 @@ void CSRStorage<ValueType>::matrixTimesMatrixCSR(
 
         LAMA_CONTEXT_ACCESS( loc )
 
-        mNumValues = matrixMultiplySizes( cIA.get(), mNumRows, mNumColumns, mDiagonalProperty, aIA.get(), aJA.get(),
+        mNumValues = matrixMultiplySizes( cIA.get(), mNumRows, mNumColumns, k, mDiagonalProperty, aIA.get(), aJA.get(),
                                           bIA.get(), bJA.get() );
 
         WriteOnlyAccess<IndexType> cJa( mJa, loc, mNumValues );
         WriteOnlyAccess<ValueType> cValues( mValues, loc, mNumValues );
 
-        matrixMultiply( cIA.get(), cJa.get(), cValues.get(), mNumRows, mNumColumns, alpha, mDiagonalProperty, aIA.get(),
+        matrixMultiply( cIA.get(), cJa.get(), cValues.get(), 
+                        mNumRows, mNumColumns, k, alpha, mDiagonalProperty, aIA.get(),
                         aJA.get(), aValues.get(), bIA.get(), bJA.get(), bValues.get() );
     }
 

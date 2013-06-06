@@ -350,15 +350,19 @@ struct CSRUtilsInterface
         /** This method computes the row sizes for result matrix C of matrix multiplication A x B
          *
          *  @param[out] cSizes array of length numRows, will contain number of entries
-         *  @param[in]  numRows number of rows for matrix C and A
-         *  @param[in]  numColumns number of columns for matrix C and B
+         *  @param[in]  m number of rows for matrix C and A
+         *  @param[in]  n number of columns for matrix C and B
+         *  @param[in]  k number of columns for A and number of rows for B
          *  @param[in]  diagonalProperty if true, diagonal elements will count in any case
          *  @param[in]  aIA, aJA are the index arrays of matrix A
          *  @param[in]  bIA, bJA are the index arrays of matrix B
          */
 
-        typedef IndexType ( *matrixMultiplySizes ) ( IndexType cIa[], const IndexType numRows,
-                                                     const IndexType numColumns, bool diagonalProperty,
+        typedef IndexType ( *matrixMultiplySizes ) ( IndexType cIa[], 
+                                                     const IndexType m, 
+                                                     const IndexType n, 
+                                                     const IndexType k,
+                                                     bool diagonalProperty,
                                                      const IndexType aIA[], const IndexType aJA[],
                                                      const IndexType bIA[], const IndexType bJA[] );
 
@@ -588,7 +592,9 @@ struct CSRUtilsInterface
          *
          *  @param[out] cValues are the matrix values of output matrix
          *  @param[in]  cIA, cJA contain structure of output matrix
-         *  @param[in]  numRows is number of rows for matrix c and a
+         *  @param[in]  m number of rows for matrix c and a
+         *  @param[in]  n number of columns for matrix c and b
+         *  @param[in]  k number of columns for a and number of rows for b
          *  @param[in]  alpha is a scalar scaling factor
          *  @param[in]  aIA, aJA, aValues is input matrix a in CSR format
          *  @param[in]  bIA, bJA, bValues is input matrix b in CSR format
@@ -601,8 +607,9 @@ struct CSRUtilsInterface
         typedef void ( *matrixMultiply ) ( const IndexType cIa[],
                                            IndexType cJA[],
                                            ValueType cValues[],
-                                           const IndexType numRows,
-                                           const IndexType numColumns,
+                                           const IndexType m,
+                                           const IndexType n,
+                                           const IndexType k,
                                            const ValueType alpha,
                                            bool diagonalProperty,
                                            const IndexType aIA[],

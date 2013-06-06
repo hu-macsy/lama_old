@@ -915,8 +915,9 @@ IndexType OpenMPCSRUtils::matrixAddSizes(
 
 IndexType OpenMPCSRUtils::matrixMultiplySizes(
     IndexType cSizes[],
-    const IndexType numRows,
-    const IndexType numColumns,
+    const IndexType m,
+    const IndexType n,
+    const IndexType /* k */,
     bool diagonalProperty,
     const IndexType aIA[],
     const IndexType aJA[],
@@ -926,27 +927,27 @@ IndexType OpenMPCSRUtils::matrixMultiplySizes(
     LAMA_REGION( "OpenMP.CSR.matrixMultiplySizes" )
 
     LAMA_LOG_INFO( logger,
-                   "matrixMutliplySizes for " << numRows << " x " << numColumns << " matrix" << ", diagonalProperty = " << diagonalProperty )
+                   "matrixMutliplySizes for " << m << " x " << n << " matrix" << ", diagonalProperty = " << diagonalProperty )
 
     // determine the number of entries in output matrix
 
-    const IndexType NINIT = numColumns + 1; // marks unused colums
-    const IndexType END = numColumns + 2; // marks end of list
+    const IndexType NINIT = n + 1; // marks unused colums
+    const IndexType END = n + 2; // marks end of list
 
     IndexType newElemes = 0;
     IndexType doubleElems = 0;
 
     #pragma omp parallel
     {
-        boost::scoped_array<IndexType> indexList( new IndexType[numColumns] );
+        boost::scoped_array<IndexType> indexList( new IndexType[n] );
 
-        for ( IndexType j = 0; j < numColumns; j++ )
+        for ( IndexType j = 0; j < n; j++ )
         {
             indexList[j] = NINIT;
         }
 
         #pragma omp for
-        for ( IndexType i = 0; i < numRows; ++i )
+        for ( IndexType i = 0; i < m; ++i )
         {
             IndexType length = 0;
             IndexType firstCol = END;
@@ -973,7 +974,7 @@ IndexType OpenMPCSRUtils::matrixMultiplySizes(
 
                     IndexType k = bJA[kk];
 
-                    LAMA_ASSERT_DEBUG( 0 <= k && k < numColumns, "invalid k = " << k )
+                    LAMA_ASSERT_DEBUG( 0 <= k && k < n, "invalid k = " << k )
 
                     // element a(i,j) an b(j,k) will generate the output element c(i,k)
 
@@ -1032,8 +1033,9 @@ IndexType OpenMPCSRUtils::matrixMultiplySizes(
         } //end loop over all rows of input matrix
     }
 
-    sizes2offsets( cSizes, numRows );
-    return cSizes[numRows];
+    sizes2offsets( cSizes, m );
+
+    return cSizes[m];
 }
 
 /* --------------------------------------------------------------------------- */
@@ -1350,8 +1352,9 @@ void OpenMPCSRUtils::matrixMultiply(
     const IndexType cIa[],
     IndexType cJA[],
     ValueType cValues[],
-    const IndexType numRows,
-    const IndexType numColumns,
+    const IndexType m,
+    const IndexType n,
+    const IndexType /* k */,
     const ValueType alpha,
     bool diagonalProperty,
     const IndexType aIA[],
@@ -1364,21 +1367,21 @@ void OpenMPCSRUtils::matrixMultiply(
     LAMA_REGION( "OpenMP.CSR.matrixMultiply" )
 
     //TODO: Rewrite this!
-    const IndexType NINIT = numColumns + 1;
-    const IndexType END = numColumns + 2;
+    const IndexType NINIT = n + 1;
+    const IndexType END = n + 2;
 
     // determine the number of entries in output matrix
     #pragma omp parallel
     {
-        boost::scoped_array<IndexType> indexList( new IndexType[numColumns] );
+        boost::scoped_array<IndexType> indexList( new IndexType[n] );
 
-        for ( IndexType j = 0; j < numColumns; j++ )
+        for ( IndexType j = 0; j < n; j++ )
         {
             indexList[j] = NINIT;
         }
 
         #pragma omp for
-        for ( IndexType i = 0; i < numRows; ++i )
+        for ( IndexType i = 0; i < m; ++i )
         {
             IndexType length = 0;
             IndexType firstCol = END;
@@ -1457,7 +1460,7 @@ void OpenMPCSRUtils::matrixMultiply(
     }
 
     #pragma omp parallel for
-    for ( IndexType i = 0; i < numRows; ++i )
+    for ( IndexType i = 0; i < m; ++i )
     {
         //loop over all none zero elements of row i of output matrix c
         for ( IndexType jj = cIa[i]; jj < cIa[i + 1]; ++jj )
@@ -1497,7 +1500,6 @@ void OpenMPCSRUtils::matrixMultiply(
             LAMA_LOG_TRACE( logger, "Computed output Element ( " << i << ", " << j << " ) = " << cValues[jj] )
         }
     }
-
 }
 
 /* --------------------------------------------------------------------------- */

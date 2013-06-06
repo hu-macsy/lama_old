@@ -1234,6 +1234,7 @@ IndexType CUDACSRUtils::matrixMultiplySizes(
     IndexType cIa[],
     const IndexType numRows,
     const IndexType numColumns,
+    const IndexType /* k */,
     bool diagonalProperty,
     const IndexType aIa[],
     const IndexType aJa[],
@@ -1260,10 +1261,12 @@ IndexType CUDACSRUtils::matrixMultiplySizes(
 
     const unsigned int initialHashTableSize = 1024;
 
+    unsigned int hashTableAllocatedBytes = NUM_BLOCKS * initialHashTableSize * sizeof( IndexType );
+
 // Allocate hashTable and hashError Flag
     ContextPtr loc = ContextFactory::getContext( Context::CUDA );
 // TODO: be carefull with NUM_BLOCKS here!
-    IndexType* hashTable = (IndexType*) loc->allocate( NUM_BLOCKS * initialHashTableSize * sizeof(IndexType) );
+    IndexType* hashTable = ( IndexType* ) loc->allocate( hashTableAllocatedBytes );
     bool* hashError = (bool*) loc->allocate( sizeof(bool) );
 
 // Reset hashTable
@@ -1304,12 +1307,13 @@ IndexType CUDACSRUtils::matrixMultiplySizes(
             i--;
 
 // Free old hashTable
-            loc->free( (void*) hashTable, hashTableSize );
+            loc->free( (void*) hashTable, hashTableAllocatedBytes );
 
 // Resize hashTable
-            hashTableSize *= 2;
+            hashTableSize           *= 2;
+            hashTableAllocatedBytes *= 2;
 // TODO: be carefull with NUM_BLOCKS here!
-            hashTable = (IndexType*) loc->allocate( NUM_BLOCKS * hashTableSize * sizeof(IndexType) );
+            hashTable = (IndexType*) loc->allocate( hashTableAllocatedBytes );
 
 // Reset new hashTable
             thrust::device_ptr < IndexType > hashTablesPtr( hashTable );
@@ -1321,7 +1325,7 @@ IndexType CUDACSRUtils::matrixMultiplySizes(
     }
 
 // Free hashTable and hashError
-    loc->free( (void*) hashTable, hashTableSize );
+    loc->free( (void*) hashTable, hashTableAllocatedBytes );
     loc->free( (void*) hashError, sizeof(bool) );
 
 //    thrust::device_ptr<IndexType> iaPtr ( cIa );
@@ -1810,6 +1814,7 @@ void CUDACSRUtils::matrixMultiply(
     ValueType cValues[],
     const IndexType numRows,
     const IndexType numColumns,
+    const IndexType /* k */,
     const ValueType alpha,
     bool diagonalProperty,
     const IndexType aIa[],
@@ -1830,8 +1835,12 @@ void CUDACSRUtils::matrixMultiply(
 // Allocate hashTable and hashError Flag
     ContextPtr loc = ContextFactory::getContext( Context::CUDA );
 // TODO: be carefull with NUM_BLOCKS here!
-    IndexType* hashTable = (IndexType*) loc->allocate(
-                               NUM_BLOCKS * initialHashTableSize * sizeof(IndexType) + NUM_BLOCKS * initialHashTableSize * sizeof(ValueType) );
+
+    unsigned int hashTableAllocatedBytes = NUM_BLOCKS * initialHashTableSize * sizeof( IndexType ) +
+                                           NUM_BLOCKS * initialHashTableSize * sizeof( ValueType );
+
+    IndexType* hashTable = (IndexType*) loc->allocate( hashTableAllocatedBytes );
+
     bool* hashError = (bool*) loc->allocate( sizeof(bool) );
 
 // Reset hashTable
@@ -1868,13 +1877,14 @@ void CUDACSRUtils::matrixMultiply(
             i--;
 
 // Free old hashTable
-            loc->free( (void*) hashTable, hashTableSize );
+            loc->free( (void*) hashTable, hashTableAllocatedBytes );
 
 // Resize hashTable
             hashTableSize *= 2;
+            hashTableAllocatedBytes *= 2;
+
 // TODO: be carefull with NUM_BLOCKS here!
-            hashTable = (IndexType*) loc->allocate(
-                            NUM_BLOCKS * hashTableSize * sizeof(IndexType) + NUM_BLOCKS * hashTableSize * sizeof(ValueType) );
+            hashTable = (IndexType*) loc->allocate( hashTableAllocatedBytes );
 
 // Reset new hashTable
             thrust::device_ptr < IndexType > hashTablesPtr( hashTable );
@@ -1885,7 +1895,7 @@ void CUDACSRUtils::matrixMultiply(
     LAMA_CHECK_CUDA_ERROR
 
 // Free hashTable and hashError
-    loc->free( (void*) hashTable, hashTableSize );
+    loc->free( (void*) hashTable, hashTableAllocatedBytes );
     loc->free( (void*) hashError, sizeof(bool) );
 
     cudaStreamSynchronize( 0 );
