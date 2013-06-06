@@ -25,7 +25,7 @@
  * SOFTWARE.
  * @endlicense
  *
- * @brief BaseAccess.cpp
+ * @brief Implementations for class BaseAccess.
  * @author Jiri Kraus
  * @date 20.05.2011
  * @since 1.0.0
@@ -47,6 +47,8 @@ BaseAccess::~BaseAccess()
 
 void BaseAccess::writeAt( std::ostream& stream ) const
 {
+    // only default method, derived classes are expected to overwrite this method
+
     stream << "BaseAccess";
 }
 

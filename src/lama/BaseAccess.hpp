@@ -25,7 +25,7 @@
  * SOFTWARE.
  * @endlicense
  *
- * @brief BaseAccess.hpp
+ * @brief Definition of common base class for accesses to a LAMAArray to enforce consistency.
  * @author Jiri Kraus
  * @date 20.05.2011
  * @since 1.0.0

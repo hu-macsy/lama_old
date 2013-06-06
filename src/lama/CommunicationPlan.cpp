@@ -183,6 +183,17 @@ void CommunicationPlan::clear()
 
 /* ------------------------------------------------------------------------- */
 
+void CommunicationPlan::purge()
+{
+    mAllocated = false;
+    mQuantity = 0;
+    mCompressed = true; // does not matter, but no entry has quantity 0
+
+    std::vector<Entry>().swap( mEntries );   // clear mEntries reallocating 
+}
+
+/* ------------------------------------------------------------------------- */
+
 void CommunicationPlan::allocate( const LAMAArray<IndexType>& quantitiesArray, bool compressFlag )
 {
     LAMA_LOG_INFO( logger, "allocate plan for " << quantitiesArray.size() << " partitions from quantities" )

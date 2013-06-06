@@ -87,6 +87,8 @@ public:
 
     void clear();
 
+    void purge();
+
     /** Construct a communication plan by quantity for each partition
      *
      *  @param quantities vector of non-negative values, size is number of partitions
