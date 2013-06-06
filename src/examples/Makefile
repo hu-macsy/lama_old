@@ -4,6 +4,7 @@ clean: makeAllClean
 
 DIRS = lecture \
        tutorial \
+       bench \
        solver
 
 makeAll:
