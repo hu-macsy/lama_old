@@ -167,8 +167,7 @@ void CUDAJDSUtils::getRow(
     //TODO: find better CUDA / Thrust implementation
     getRowKernel<<<dimGrid, dimBlock>>>( row, ii, ilg, dlg, ja, values );
 
-    cudaStreamSynchronize( 0 );
-    LAMA_CHECK_CUDA_ERROR
+    LAMA_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "JDS:getRowKernel FAILED" )
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */
@@ -300,8 +299,7 @@ void CUDAJDSUtils::scaleValue(
 
     scaleValueKernel<<<dimGrid, dimBlock>>>( numRows, perm, ilg, dlg, mValues, values );
 
-    cudaStreamSynchronize( 0 );
-    LAMA_CHECK_CUDA_ERROR
+    LAMA_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "JDS:scaleValueKernel FAILED" )
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */
@@ -358,8 +356,7 @@ bool CUDAJDSUtils::checkDiagonalProperty(
 
     checkDiagonalPropertyKernel<<<dimGrid, dimBlock>>>( numRows, resultRawPtr, perm, ja );
 
-    cudaStreamSynchronize( 0 );
-    LAMA_CHECK_CUDA_ERROR
+    LAMA_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "JDS:checkDiagonalPropertyKernel FAILED" )
 
     return thrust::reduce( resultPtr, resultPtr + numRows, true, thrust::logical_and<bool>() );
 }
@@ -373,14 +370,19 @@ void ilg2dlgKernel( IndexType *dlg, const IndexType numDiagonals, const IndexTyp
 {
     const int i = threadId( gridDim, blockIdx, blockDim, threadIdx );
 
-    if ( i < numDiagonals )
+    if ( i < numRows )
     {
-        for ( IndexType j = 0; j < numRows; j++ )
+        IndexType nd1 = ilg[i];
+        IndexType nd2 = 0;
+ 
+        if ( i + 1 < numRows )
         {
-            if ( ilg[j] > i )
-            {
-                dlg[i]++;
-            }
+            nd2 = ilg[i + 1];
+        }
+
+        for ( IndexType j = nd2; j < nd1; j++ )
+        {
+            dlg[j] = i + 1;
         }
     }
 }
@@ -391,6 +393,8 @@ IndexType CUDAJDSUtils::ilg2dlg(
     const IndexType ilg[],
     const IndexType numRows )
 {
+    LAMA_REGION( "CUDA.JDS:dlg<-ilg" )
+
     LAMA_LOG_INFO( logger, "ilg2dlg with numDiagonals = " << numDiagonals << ", numRows = " << numRows )
 
     LAMA_CHECK_CUDA_ACCESS
@@ -409,11 +413,11 @@ IndexType CUDAJDSUtils::ilg2dlg(
 
     const int block_size = 256;
     dim3 dimBlock( block_size, 1, 1 );
-    dim3 dimGrid = makeGrid( numDiagonals, dimBlock.x );
+    dim3 dimGrid = makeGrid( numRows, dimBlock.x );
 
     ilg2dlgKernel<<<dimGrid, dimBlock>>>( dlg, numDiagonals, ilg, numRows );
 
-    LAMA_CHECK_CUDA_ERROR
+    LAMA_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "JDS: ilg2dlgKernel FAILED" )
 
     return sumIlg;
 }
@@ -424,6 +428,8 @@ IndexType CUDAJDSUtils::ilg2dlg(
 
 void CUDAJDSUtils::sortRows( IndexType array[], IndexType perm[], const IndexType n )
 {
+    LAMA_REGION( "CUDA.JDS:sortRows" )
+
     LAMA_LOG_INFO( logger, "sort " << n << " rows by sizes" )
 
     // Note: this solution does not work on Tesla cards (doesent it?)
@@ -434,62 +440,54 @@ void CUDAJDSUtils::sortRows( IndexType array[], IndexType perm[], const IndexTyp
 
     thrust::stable_sort_by_key( array_d, array_d + n, perm_d, thrust::greater<IndexType>() );
 
-    LAMA_CHECK_CUDA_ERROR
+    LAMA_CUDA_RT_CALL( cudaStreamSynchronize(0), "JDS: ilg2dlgKernel FAILED" )
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 /*                                                  setCSRValues                                                      */
 /* ------------------------------------------------------------------------------------------------------------------ */
 
-template<typename T1, typename T2, bool useSharedMem>
+template<typename JDSValueType, typename CSRValueType, bool useSharedMem>
 __global__
 void csr2jdsKernel(
-    int* jdsJa,
-    T1* jdsValues,
-    const int* const jdsDlg,
-    const int  ndlg,
-    const int* const jdsIlg,
-    const int* const jdsPerm,
-    const int nrows,
-    const int* const csrIa,
-    const int* const csrJa,
-    const T2* const csrValues )
+    IndexType* jdsJa,
+    JDSValueType* jdsValues,
+    const IndexType* const jdsDlg,
+    const IndexType  ndlg,
+    const IndexType* const jdsILG,
+    const IndexType* const jdsPerm,
+    const IndexType nrows,
+    const IndexType* const csrIa,
+    const IndexType* const csrJa,
+    const CSRValueType* const csrValues )
 {
     extern __shared__ int dlg[];
 
-    const int id = threadId( gridDim, blockIdx, blockDim, threadIdx );
+    const IndexType iJDS = threadId( gridDim, blockIdx, blockDim, threadIdx );
 
-    if ( useSharedMem )
+    if ( iJDS < nrows )
     {
-        int k = threadIdx.x;
-        while ( k < ndlg )
+        const IndexType iCSR = jdsPerm[iJDS];  // row index for CSR data
+
+        const IndexType csrOffset = csrIa[iCSR];
+
+        IndexType jdsOffset = iJDS;
+
+        const IndexType numValuesInRow = jdsILG[iJDS];
+
+        for ( IndexType jj = 0; jj < numValuesInRow; ++jj )
         {
-            dlg[k] = jdsDlg[k];
-            k += blockDim.x;
-        }
-        __syncthreads();
-    }
+            jdsJa[jdsOffset] = csrJa[csrOffset + jj];
+            jdsValues[jdsOffset] = static_cast<JDSValueType>( csrValues[csrOffset + jj] );
 
-    if ( id < nrows )
-    {
-        const int irow = jdsPerm[id];  // row index for CSR data
-
-        const int csrJJ = csrIa[irow];
-
-        // const int nRowEntries = jdsIlg[id];
-
-        int jdsOffset = id;
-
-        for ( int jj = 0; jj < ndlg; ++jj )
-        {
-            int k = useSharedMem ? dlg[jj] : jdsDlg[jj];
-
-            if ( id >= k ) break;
-
-            jdsJa[jdsOffset] = csrJa[csrJJ + jj];
-            jdsValues[jdsOffset] = csrValues[csrJJ + jj];
-
-            jdsOffset += k;
+            if ( useSharedMem ) 
+            {
+                jdsOffset += dlg[jj];
+            }
+            else
+            {
+                jdsOffset += jdsDlg[jj];
+            }
         }
     }
 }
@@ -515,40 +513,39 @@ void CUDAJDSUtils::setCSRValues(
 
     LAMA_CHECK_CUDA_ACCESS
 
-    bool useTexture = CUDASettings::useTexture();
     bool useSharedMem = CUDASettings::useSharedMem();
 
-    const int block_size = 128;
+    const int block_size = 256;
     dim3 dimBlock( block_size, 1, 1 );
     dim3 dimGrid = makeGrid( numRows, dimBlock.x );
 
-    LAMA_LOG_INFO( logger, "Start csr2jds_kernel<" << typeid( JDSValueType ).name() 
+    LAMA_LOG_INFO( logger, "Start csr2jds_kernel<" << typeid( JDSValueType ).name()
                            << ", " << typeid( CSRValueType ).name()
-                           << ", useTexture = " << useTexture << ", useSharedMem = " << useSharedMem 
+                           << ", useSharedMem = " << useSharedMem
                            << "> ( nrows = " << numRows << ", ndiag = " << ndlg << " )" );
 
     if ( useSharedMem )
     {
-        LAMA_CUDA_RT_CALL( cudaFuncSetCacheConfig( csr2jdsKernel<JDSValueType, CSRValueType, true>, 
+        LAMA_CUDA_RT_CALL( cudaFuncSetCacheConfig( csr2jdsKernel<JDSValueType, CSRValueType, true>,
                                                    cudaFuncCachePreferL1 ),
                            "LAMA_STATUS_CUDA_FUNCSETCACHECONFIG_FAILED" );
 
         const int sharedMemSize = ndlg * sizeof(int);
 
-        csr2jdsKernel<JDSValueType, CSRValueType, true><<<dimGrid, dimBlock, sharedMemSize>>>( 
+        csr2jdsKernel<JDSValueType, CSRValueType, true><<<dimGrid, dimBlock, sharedMemSize>>>(
             jdsJA, jdsValues, jdsDLG, ndlg, jdsILG, jdsPerm, numRows, csrIA, csrJA, csrValues );
     }
     else
     {
-        LAMA_CUDA_RT_CALL( cudaFuncSetCacheConfig( csr2jdsKernel<JDSValueType, CSRValueType, true>, 
+        LAMA_CUDA_RT_CALL( cudaFuncSetCacheConfig( csr2jdsKernel<JDSValueType, CSRValueType, false>,
                                                    cudaFuncCachePreferL1 ),
                            "LAMA_STATUS_CUDA_FUNCSETCACHECONFIG_FAILED" );
 
-        csr2jdsKernel<JDSValueType, CSRValueType, false><<<dimGrid, dimBlock, 0>>>( 
+        csr2jdsKernel<JDSValueType, CSRValueType, false><<<dimGrid, dimBlock, 0>>>(
             jdsJA, jdsValues, jdsDLG, ndlg, jdsILG, jdsPerm, numRows, csrIA, csrJA, csrValues );
     }
 
-    cudaStreamSynchronize( 0 );
+    LAMA_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "csr2jdsKernel failed" );
 
     LAMA_LOG_INFO( logger, "Ready csr2jds_kernel<" << typeid( JDSValueType ).name() 
                            << ", " << typeid( CSRValueType ).name() <<  " )" )
@@ -638,13 +635,10 @@ void CUDAJDSUtils::getCSRValues(
     dim3 dimBlock( block_size, 1, 1 );
     dim3 dimGrid = makeGrid( numRows, dimBlock.x );
 
-    cudaStreamSynchronize( 0 );
-    LAMA_CHECK_CUDA_ERROR
-
     jds2csrKernel<<<dimGrid,dimBlock>>>( csrJA, csrValues, csrIA, numRows, jdsInversePerm, jdsILG, jdsDLG, jdsJA,
                                          jdsValues );
-    cudaStreamSynchronize( 0 );
-    LAMA_CHECK_CUDA_ERROR
+
+    LAMA_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "JDS:jds2csrKernel FAILED" )
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */
@@ -908,11 +902,11 @@ void CUDAJDSUtils::jacobi(
     }
 
     LAMA_CUDA_RT_CALL( cudaGetLastError(), "jds_jacobi_kernel<" << typeid( ValueType ).name() 
-                                           << ", " << useTexture << ", " << useSharedMem << "> failed" );
+                                           << ", " << useTexture << ", " << useSharedMem << "> failed" )
 
     if ( !syncToken )
     {
-        cudaStreamSynchronize( stream );
+        LAMA_CUDA_RT_CALL( cudaStreamSynchronize( stream ), "JDS:jacobi_kernel failed" )
     }
 
     if ( useTexture )
@@ -921,7 +915,7 @@ void CUDAJDSUtils::jacobi(
 
         if ( !useSharedMem )
         {
-            LAMA_CUDA_RT_CALL( cudaUnbindTexture( texJDSdlgRef ), "LAMA_STATUS_CUDA_UNBINDTEX_FAILED" );
+            LAMA_CUDA_RT_CALL( cudaUnbindTexture( texJDSdlgRef ), "LAMA_STATUS_CUDA_UNBINDTEX_FAILED" )
         }
     }
 }
@@ -1072,8 +1066,7 @@ void CUDAJDSUtils::jacobiHalo(
         }
     }
 
-    LAMA_CUDA_RT_CALL( cudaGetLastError(), "LAMA_STATUS_CSRJACOBIHALO_CUDAKERNEL_FAILED" );
-    LAMA_CUDA_RT_CALL( cudaStreamSynchronize(0), "LAMA_STATUS_CSRJACOBIHALO_CUDAKERNEL_FAILED" );
+    LAMA_CUDA_RT_CALL( cudaStreamSynchronize(0), "jds_jacobi_halo_kernel" );
 
     if ( useTexture )
     {
@@ -1200,7 +1193,7 @@ void CUDAJDSUtils::normalGEMV(
 
         // skip the following in case of asynchronous execution 
 
-        LAMA_CUDA_RT_CALL( cudaStreamSynchronize(0), "JDS: gemvKernel FAILED" )
+        LAMA_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "JDS: gemvKernel FAILED" )
 
         if ( !useSharedMem )
         {
@@ -1225,7 +1218,7 @@ void CUDAJDSUtils::normalGEMV(
             ( numRows, alpha, jdsValues, jdsDLG, ndlg, jdsILG, jdsJA, jdsPerm, x, beta, y, result);
         }
 
-        LAMA_CUDA_RT_CALL( cudaStreamSynchronize(0), "JDS: gemvKernel FAILED" )
+        LAMA_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "JDS: gemvKernel FAILED" )
     }
 }
 
