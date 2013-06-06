@@ -489,7 +489,9 @@ private:
 
     void buildRowIndexes();
 
-    LAMA_LOG_DECL_STATIC_LOGGER( logger ) //!< logger for this matrix format
+    /** Logger for this class. */
+
+    LAMA_LOG_DECL_STATIC_LOGGER( logger ) 
 
     /** Matrix + Matrix for CSR only */
 

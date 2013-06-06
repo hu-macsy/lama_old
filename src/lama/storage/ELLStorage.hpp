@@ -428,18 +428,21 @@ private:
 
     void buildRowIndexes( const ContextPtr loc );
 
-    LAMA_LOG_DECL_STATIC_LOGGER( logger ) //!< logger for this matrix format
+    /** Logger for this class. */
 
-    /** Matrix times Matrix for ELL only */
-    void matrixTimesMatrixELL( const ValueType alpha,
-                               const ELLStorage<ValueType>& a,
-                               const ELLStorage<ValueType>& b );
+    LAMA_LOG_DECL_STATIC_LOGGER( logger )
 
     /** Matrix + Matrix for ELL only */
     void matrixAddMatrixELL( const ValueType alpha,
                              const ELLStorage<ValueType>& a,
                              const ValueType beta,
                              const ELLStorage<ValueType>& b );
+
+    /** Matrix times Matrix for ELL only */
+    void matrixTimesMatrixELL( const ValueType alpha,
+                               const ELLStorage<ValueType>& a,
+                               const ELLStorage<ValueType>& b );
+
 };
 
 } // namespace lama

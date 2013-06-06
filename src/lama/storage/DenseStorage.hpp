@@ -318,7 +318,9 @@ protected:
 
     LAMAArray<ValueType>& mData; //!<  Reference to the matrix value array
 
-    LAMA_LOG_DECL_STATIC_LOGGER( logger ) //!< logger for this matrix format
+    /** Logger just for this class / matrix format. */
+
+    LAMA_LOG_DECL_STATIC_LOGGER( logger )
 
     /** Override MatrixStorage::checkDiagonalProperty method. */
 
