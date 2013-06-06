@@ -792,7 +792,7 @@ void DenseVector<T>::assign( const Scalar value )
     LAMA_LOG_DEBUG( logger, *this << ": assign " << value )
 
     ContextPtr ctx = mLocalValues.getValidContext( mContext->getType() );
-    LAMAArrayUtils::assign( mLocalValues, value, ctx );
+    LAMAArrayUtils::assignScalar( mLocalValues, value, ctx );
 }
 
 template<typename T>

@@ -78,7 +78,9 @@ public:
         const LAMAArray<IndexType>& index );
 
     template<typename ValueType1>
-    static void assign( LAMAArray<ValueType1>& target, const Scalar& value, ContextPtr context );
+    static void assignScalar( LAMAArray<ValueType1>& target, const Scalar& value, ContextPtr context );
+
+    static void assignScalar( _LAMAArray& target, const Scalar& value, ContextPtr context );
 
     /** This method sets a single value in a LAMA array.
      *

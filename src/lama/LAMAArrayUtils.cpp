@@ -171,7 +171,7 @@ void LAMAArrayUtils::gather(
 }
 
 template<typename ValueType>
-void LAMAArrayUtils::assign( LAMAArray<ValueType>& target, const Scalar& value, ContextPtr context )
+void LAMAArrayUtils::assignScalar( LAMAArray<ValueType>& target, const Scalar& value, ContextPtr context )
 {
     LAMA_LOG_INFO( logger, target << " = " << value )
 
@@ -190,6 +190,31 @@ void LAMAArrayUtils::assign( LAMAArray<ValueType>& target, const Scalar& value, 
     // values[i] = val, i = 0, .., n-1
 
     setVal( values.get(), n, val );
+}
+
+void LAMAArrayUtils::assignScalar( _LAMAArray& target, const Scalar& value, ContextPtr context )
+{
+    Scalar::ScalarType arrayType = target.getValueType();
+
+    if ( arrayType == Scalar::DOUBLE )
+    {
+        LAMAArray<double>& typedTarget = dynamic_cast<LAMAArray<double>&>( target );
+        assignScalar( typedTarget, value, context );
+    }
+    else if ( arrayType == Scalar::FLOAT )
+    {
+        LAMAArray<float>& typedTarget = dynamic_cast<LAMAArray<float>&>( target );
+        assignScalar( typedTarget, value, context );
+    }
+    else if ( arrayType == Scalar::INDEX_TYPE )
+    {
+        LAMAArray<IndexType>& typedTarget = dynamic_cast<LAMAArray<IndexType>&>( target );
+        assignScalar( typedTarget, value, context );
+    }
+    else
+    {
+        LAMA_THROWEXCEPTION( target << ": assignScalar for value type " << arrayType << " not supported" )
+    }
 }
 
 template<typename ValueType>
@@ -237,15 +262,6 @@ void LAMAArrayUtils::gather(
     LAMAArray<double>& target,
     const LAMAArray<float>& source,
     const LAMAArray<IndexType>& indexes );
-
-template
-void LAMAArrayUtils::assign( LAMAArray<float>& target, const Scalar& value, ContextPtr context );
-
-template
-void LAMAArrayUtils::assign( LAMAArray<double>& target, const Scalar& value, ContextPtr context );
-
-template
-void LAMAArrayUtils::assign( LAMAArray<IndexType>& target, const Scalar& value, ContextPtr context );
 
 template
 void LAMAArrayUtils::setVal( LAMAArray<IndexType>& target, const IndexType index, IndexType val );
