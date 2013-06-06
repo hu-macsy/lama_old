@@ -1,5 +1,5 @@
 /**
- * @file all.hpp
+ * @file matrix/all.hpp
  *
  * @license
  * Copyright (c) 2009-2013
@@ -25,8 +25,8 @@
  * SOFTWARE.
  * @endlicense
  *
- * @brief all.hpp
- * @author
+ * @brief Include file for all matrix classes for more convenient use
+ * @author Thomas Brandes
  * @date 21.05.2013
  * @since 1.0.0
  */

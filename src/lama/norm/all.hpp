@@ -1,5 +1,5 @@
 /**
- * @file all.hpp
+ * @file norm/all.hpp
  *
  * @license
  * Copyright (c) 2009-2013
@@ -25,7 +25,7 @@
  * SOFTWARE.
  * @endlicense
  *
- * @brief all.hpp
+ * @brief Include file for all norm classes for more convenient use
  * @author
  * @date 21.05.2013
  * @since 1.0.0
