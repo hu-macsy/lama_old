@@ -63,6 +63,19 @@ void Halo::clear()
     mGlobal2Halo.clear();
 }
 
+void Halo::purge()
+{
+    mRequiredPlan.purge();
+    mProvidesPlan.purge();
+
+    mRequiredIndexes.purge();
+    mProvidesIndexes.purge();
+
+    // free memory of map by reallocation 
+
+    std::map<IndexType,IndexType>().swap( mGlobal2Halo );
+}
+
 Halo& Halo::operator=( const Halo& other )
 {
     if ( this != &other )

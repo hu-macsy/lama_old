@@ -78,6 +78,8 @@ public:
 
     void clear();
 
+    void purge();
+
     Halo& operator=( const Halo& other );
 
     inline const CommunicationPlan& getRequiredPlan() const;
