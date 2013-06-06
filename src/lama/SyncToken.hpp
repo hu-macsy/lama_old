@@ -137,7 +137,9 @@ protected:
 
     void setSynchronized();
 
-    LAMA_LOG_DECL_STATIC_LOGGER(logger) //!< logger for this class
+    /** Logger for this class. */
+
+    LAMA_LOG_DECL_STATIC_LOGGER(logger) 
 
 private:
 
