@@ -307,13 +307,39 @@ void CUDAJDSUtils::scaleValue(
 /* ------------------------------------------------------------------------------------------------------------------ */
 
 __global__
-void checkDiagonalPropertyKernel( const IndexType numRows, bool *result, const IndexType *perm, const IndexType *ja )
+void checkDiagonalPropertyKernel( 
+    bool *result, 
+    const IndexType numRows, 
+    const IndexType numColumns,
+    const IndexType nonEmptyRows,
+    const IndexType *perm, 
+    const IndexType *ja )
 {
     const int i = threadId( gridDim, blockIdx, blockDim, threadIdx );
 
-    if ( i < numRows )
+    if ( i >= numRows )
     {
-        result[i] = ( ja[i] == perm[i] );
+        return;
+    }
+
+    const IndexType iRow = perm[i];
+
+    if ( iRow >= numColumns )
+    {
+        // row does not count for diagonal
+
+        return;
+    }
+
+    if ( i >= nonEmptyRows )
+    {
+        // iRow has no entries at all, ilg[i] is 0
+
+        result[0] = false;
+    }
+    else if ( ja[i] != iRow )
+    {
+        result[0] = false;
     }
 }
 
@@ -335,30 +361,54 @@ bool CUDAJDSUtils::checkDiagonalProperty(
         return false;
     }
 
+    if ( numDiagonals <= 0 )
+    {
+        return false;
+    }
+
     // now it is sure that dlg, perm and ja are not empty
 
-    thrust::device_ptr<IndexType> dlgPtr( const_cast<IndexType*>( dlg ) );
-    thrust::host_vector<IndexType> firstDlg( dlgPtr, dlgPtr + 1 );
+    const IndexType diagSize = std::min( numRows, numColumns );
 
-    if ( firstDlg[0] < std::min( numDiagonals, numColumns ) )
+    IndexType nonEmptyRows = 0;
+
+    LAMA_CUDA_RT_CALL( cudaMemcpy( &nonEmptyRows, &dlg[0], sizeof( IndexType ), cudaMemcpyDeviceToHost ),
+                       "get number of non-zero rows from dlg" );
+
+    // Be careful: numDiagonals has nothing to do with size of diagonal
+
+    if ( nonEmptyRows < diagSize )
     {
          return false;
     }
 
-    thrust::device_ptr<bool> resultPtr = thrust::device_malloc<bool>( numRows );
-    thrust::fill( resultPtr, resultPtr + numRows, false );
+    bool* d_hasProperty;   // will be ptr to device version of hasProperty
 
-    bool *resultRawPtr = thrust::raw_pointer_cast( resultPtr );
+    bool hasProperty = true;
+
+    LAMA_CUDA_RT_CALL( cudaMalloc( (void**) &d_hasProperty, sizeof( bool ) ),
+                       "allocate 4 bytes on the device for the result of hasDiagonalProperty_kernel" )
+
+    LAMA_CUDA_RT_CALL( cudaMemcpy( d_hasProperty, &hasProperty, sizeof( bool ), cudaMemcpyHostToDevice ),
+                       "copy flag for diagonalProperty to device" )
 
     const int block_size = 256;
     dim3 dimBlock( block_size, 1, 1 );
     dim3 dimGrid = makeGrid( numRows, dimBlock.x );
 
-    checkDiagonalPropertyKernel<<<dimGrid, dimBlock>>>( numRows, resultRawPtr, perm, ja );
+    checkDiagonalPropertyKernel<<<dimGrid, dimBlock>>>( d_hasProperty,
+                                                        numRows, numColumns, nonEmptyRows,
+                                                        perm, ja );
 
     LAMA_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "JDS:checkDiagonalPropertyKernel FAILED" )
 
-    return thrust::reduce( resultPtr, resultPtr + numRows, true, thrust::logical_and<bool>() );
+    LAMA_CUDA_RT_CALL( cudaMemcpy( &hasProperty, d_hasProperty, sizeof( bool ), cudaMemcpyDeviceToHost ),
+                       "copy flag for diagonalProperty to host" )
+
+    LAMA_CUDA_RT_CALL( cudaFree( d_hasProperty ),
+                       "free result var for diagonal property" )
+
+    return hasProperty;
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */
