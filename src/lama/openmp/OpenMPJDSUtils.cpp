@@ -200,7 +200,7 @@ bool OpenMPJDSUtils::checkDiagonalProperty(
 
         #pragma omp parallel for schedule(LAMA_OMP_SCHEDULE)
 
-        for ( IndexType ii = 0; ii < std::min( numRows, numColumns ); ++ii )
+        for ( IndexType ii = 0; ii < numRows; ++ii )
         {
             if ( !diagonalProperty )
             {
@@ -209,7 +209,18 @@ bool OpenMPJDSUtils::checkDiagonalProperty(
 
             const IndexType i = perm[ii];
 
-            if ( ja[ii] != i )
+            if ( i >= numColumns )
+            {
+                continue;
+            }
+
+            if ( ii >= dlg[0] )
+            {
+                // ilg[ii] = 0, empty row
+                  
+                diagonalProperty = false;
+            }
+            else if ( ja[ii] != i )
             {
                 diagonalProperty = false;
             }
@@ -217,6 +228,7 @@ bool OpenMPJDSUtils::checkDiagonalProperty(
 
         return diagonalProperty;
     }
+
     return false;
 }
 
