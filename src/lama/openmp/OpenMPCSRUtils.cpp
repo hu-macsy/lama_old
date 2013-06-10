@@ -934,10 +934,10 @@ IndexType OpenMPCSRUtils::matrixMultiplySizes(
     const IndexType NINIT = n + 1; // marks unused colums
     const IndexType END = n + 2; // marks end of list
 
-    IndexType newElemes = 0;
+    IndexType newElems = 0;
     IndexType doubleElems = 0;
 
-    #pragma omp parallel
+    #pragma omp parallel reduction( + : newElems, doubleElems )
     {
         boost::scoped_array<IndexType> indexList( new IndexType[n] );
 
@@ -992,19 +992,11 @@ IndexType OpenMPCSRUtils::matrixMultiplySizes(
                         {
                             diagonal = true;
                         }
-                        #pragma omp critical
-                        {
-                            newElemes++;
-                        }
-
+                        newElems++;
                     }
                     else
                     {
-                        #pragma omp critical
-                        {
-                            doubleElems++;
-                        }
-
+                        doubleElems++;
                     }
                 }
             }
