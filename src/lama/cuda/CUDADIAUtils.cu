@@ -1,5 +1,5 @@
 /**
- * @file CUDADIAUtils.cpp
+ * @file CUDADIAUtils.cu
  *
  * @license
  * Copyright (c) 2009-2013
@@ -39,6 +39,7 @@
 #include <lama/cuda/utils.cu.h>
 #include <lama/cuda/CUDAError.hpp>
 #include <lama/cuda/CUDADIAUtils.hpp>
+#include <lama/cuda/CUDAStreamSyncToken.hpp>
 #include <lama/tracing.hpp>
 
 // thrust
@@ -52,16 +53,8 @@ LAMA_LOG_DEF_LOGGER( CUDADIAUtils::logger, "CUDA.DIAUtils" )
 
 /* --------------------------------------------------------------------------- */
 
-template<typename T,bool useTexture>
-__inline__    __device__ T fetch_DIAx( const T* const x, const IndexType i )
-{
-    return x[i];
-}
-
-/* --------------------------------------------------------------------------- */
-
 template<typename ValueType>
-__global__ void diagemvpbvKernelSmall(
+__global__ void diagemvKernel(
     ValueType* result,
     const IndexType numRows,
     const ValueType alpha,
@@ -73,16 +66,6 @@ __global__ void diagemvpbvKernelSmall(
     const ValueType beta,
     const ValueType* y )
 {
-    extern __shared__ IndexType diagonalOffsetsShared[];
-
-    // fill the shared array for diagonals
-
-    if ( threadIdx.x < numDiagonals )
-    {
-        diagonalOffsetsShared[threadIdx.x] = diagonalOffsets[threadIdx.x];
-    }
-
-    __syncthreads();
     IndexType i = threadId( gridDim, blockIdx, blockDim, threadIdx );
 
     if ( i < numRows )
@@ -98,12 +81,12 @@ __global__ void diagemvpbvKernelSmall(
 
         for ( IndexType idiag = 0; idiag < numDiagonals; idiag++ )
         {
-            IndexType j = i + diagonalOffsetsShared[idiag];
+            IndexType j = i + diagonalOffsets[idiag];
 
             if ( j >= 0 && j < numColumns )
             {
-                ValueType val = diagonalValues[numRows * idiag + i];
-                temp += val * fetch_DIAx<ValueType,true>( x, j );
+                ValueType val = diagonalValues[ numRows * idiag + i ];
+                temp += val * x[ j ];
             }
         }
 
@@ -125,23 +108,34 @@ void CUDADIAUtils::normalGEMV(
     const IndexType numDiagonals,
     const IndexType diaOffsets[],
     const ValueType diaValues[],
-    class SyncToken* /* syncToken */)
+    class SyncToken* syncToken )
 {
     LAMA_REGION( "CUDA.DIA.normalGEMV" )
+
+    LAMA_LOG_INFO( logger, "normalGEMV, #rows = " << numRows << ", #diags = " << numDiagonals )
 
     const IndexType block_size = 256;
     dim3 dimBlock( block_size, 1, 1 );
     dim3 dimGrid = makeGrid( numRows, dimBlock.x );
 
     LAMA_CHECK_CUDA_ACCESS
-    ;
-    diagemvpbvKernelSmall <<< dimGrid, dimBlock, block_size * sizeof( IndexType )>>>
-    ( result, numRows, alpha, x, numColumns, numDiagonals, diaOffsets, diaValues, beta, y );
 
-    LAMA_CHECK_CUDA_ERROR
-    ;
+    cudaStream_t stream = 0;
 
-    cudaStreamSynchronize( 0 );
+    if ( syncToken )
+    {
+        CUDAStreamSyncToken* cudaStreamSyncToken = dynamic_cast<CUDAStreamSyncToken*>( syncToken );
+        LAMA_ASSERT_DEBUG( cudaStreamSyncToken, "no cuda stream sync token provided" )
+        stream = cudaStreamSyncToken->getCUDAStream();
+    }
+
+    diagemvKernel <<< dimGrid, dimBlock, 0, stream >>>( 
+        result, numRows, alpha, x, numColumns, numDiagonals, diaOffsets, diaValues, beta, y );
+
+    if ( !syncToken )
+    {
+        LAMA_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "normalGEMV for DIA" )
+    }
 }
 
 /* --------------------------------------------------------------------------- */

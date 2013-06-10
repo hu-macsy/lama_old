@@ -597,6 +597,10 @@ void CUDAJDSUtils::setCSRValues(
 
     if ( useSharedMem )
     {
+        LAMA_CUDA_RT_CALL( cudaFuncSetCacheConfig( csr2jdsKernel<JDSValueType, CSRValueType, true>,
+                                                   cudaFuncCachePreferL1 ),
+                           "LAMA_STATUS_CUDA_FUNCSETCACHECONFIG_FAILED" );
+
         const int sharedMemSize = ndlg * sizeof(int);
 
         csr2jdsKernel<JDSValueType, CSRValueType, true><<<dimGrid, dimBlock, sharedMemSize>>>(
@@ -606,7 +610,7 @@ void CUDAJDSUtils::setCSRValues(
     {
         LAMA_CUDA_RT_CALL( cudaFuncSetCacheConfig( csr2jdsKernel<JDSValueType, CSRValueType, false>,
                                                    cudaFuncCachePreferL1 ),
-                           "prefer L1 for csr2jds kernel, no shared memory used" );
+                           "LAMA_STATUS_CUDA_FUNCSETCACHECONFIG_FAILED" );
 
         csr2jdsKernel<JDSValueType, CSRValueType, false><<<dimGrid, dimBlock, 0>>>(
             jdsJA, jdsValues, jdsDLG, ndlg, jdsILG, jdsPerm, numRows, csrIA, csrJA, csrValues );
