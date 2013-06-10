@@ -43,6 +43,9 @@
 // macros
 #include <lama/macros/unused.hpp>
 
+// tracing with LAMA_REGION
+#include <lama/tracing.hpp>
+
 namespace lama
 {
 
@@ -465,6 +468,8 @@ void CUDABLAS1::axpy(
     const IndexType incy,
     SyncToken* syncToken )
 {
+    LAMA_REGION( "CUDA.BLAS1.saxpy" )
+
     LAMA_CHECK_CUDA_ACCESS
 
     cudaStream_t stream = NULL;
@@ -503,6 +508,8 @@ void CUDABLAS1::axpy(
     const IndexType incy,
     SyncToken* syncToken )
 {
+    LAMA_REGION( "CUDA.BLAS1.daxpy" )
+
     LAMA_CHECK_CUDA_ACCESS
 
     cudaStream_t stream = NULL;
@@ -542,6 +549,8 @@ float CUDABLAS1::dot(
     IndexType incy,
     SyncToken* syncToken )
 {
+    LAMA_REGION( "CUDA.BLAS1.sdot" )
+
     LAMA_CHECK_CUDA_ACCESS
 
     cudaStream_t stream = NULL;
@@ -581,6 +590,8 @@ double CUDABLAS1::dot(
     IndexType incy,
     SyncToken* syncToken )
 {
+    LAMA_REGION( "CUDA.BLAS1.ddot" )
+
     LAMA_CHECK_CUDA_ACCESS
 
     cudaStream_t stream = NULL;

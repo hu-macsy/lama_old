@@ -293,7 +293,7 @@ bool CUDAContext::canUseData( const Context& other ) const
 
 void* CUDAContext::allocate( const size_t size ) const
 {
-    LAMA_REGION( "CUDAContext::allocate" )
+    LAMA_REGION( "CUDA.allocate" )
 
     LAMA_CONTEXT_ACCESS( shared_from_this() )
 
@@ -330,7 +330,7 @@ void CUDAContext::allocate( ContextData& contextData, const size_t size ) const
 
 void CUDAContext::free( void* pointer, const size_t size ) const
 {
-    LAMA_REGION( "CUDAContext::free" )
+    LAMA_REGION( "CUDA.free" )
 
     LAMA_CONTEXT_ACCESS( shared_from_this() )
 
@@ -407,7 +407,7 @@ void CUDAContext::memcpyFromHost( void* dst, const void* src, const size_t size 
 {
     LAMA_CONTEXT_ACCESS( shared_from_this() )
 
-    LAMA_REGION( "memcpyHost2Cuda" )
+    LAMA_REGION( "CUDA.memcpyHost->Dev" )
 
     LAMA_LOG_INFO( logger, "copy " << size << " bytes from " << src << " (host) to " << dst << " (device) " )
 
@@ -433,7 +433,7 @@ void CUDAContext::memcpyToHost( void* dst, const void* src, const size_t size ) 
 
     LAMA_CONTEXT_ACCESS( shared_from_this() )
 
-    LAMA_REGION( "CUDA.memcpyDtoH")
+    LAMA_REGION( "CUDA.memcpyDev->Host" )
 
     LAMA_LOG_INFO( logger, "copy " << size << " bytes from " << src << " (device) to " << dst << " (host) " )
 
@@ -456,7 +456,7 @@ SyncToken* CUDAContext::memcpyAsyncToHost( void* dst, const void* src, const siz
 
 void CUDAContext::memcpyFromCUDAHost( void* dst, const void* src, const size_t size ) const
 {
-    LAMA_REGION("memcpyCudaHost2CudaDev")
+    LAMA_REGION( "CUDA.memcpyCUDAHost->Dev")
 
     LAMA_CONTEXT_ACCESS( shared_from_this() )
 
@@ -487,7 +487,7 @@ SyncToken* CUDAContext::memcpyAsyncFromCUDAHost( void* dst, const void* src, con
 
 void CUDAContext::memcpyToCUDAHost( void* dst, const void* src, const size_t size ) const
 {
-    LAMA_REGION( "memcpyCudaDev2CudaHost" )
+    LAMA_REGION( "CUDA.memcpyDev->CUDAHost" )
 
     LAMA_CONTEXT_ACCESS( shared_from_this() )
 
@@ -641,7 +641,7 @@ SyncToken* CUDAContext::memcpyAsync( ContextData& dst, const ContextData& src, c
     {
         if ( !src.isPinned() && size > minPinnedSize )
         {
-            LAMA_REGION( "RegisterHostMemory" )
+            LAMA_REGION( "CUDA.RegisterHostMemory" )
             LAMA_CONTEXT_ACCESS( shared_from_this() )
             LAMA_LOG_DEBUG( logger, "register host memory, size = " << src.size )
             LAMA_CUDA_DRV_CALL( cuMemHostRegister( src.pointer, src.size,0),
@@ -663,7 +663,7 @@ SyncToken* CUDAContext::memcpyAsync( ContextData& dst, const ContextData& src, c
     {
         if ( !dst.isPinned() && size > minPinnedSize )
         {
-            LAMA_REGION( "RegisterHostMemory" )
+            LAMA_REGION( "CUDA.RegisterHostMemory" )
             LAMA_CONTEXT_ACCESS( shared_from_this() )
             LAMA_CUDA_DRV_CALL( cuMemHostRegister( dst.pointer, dst.size,0),
                                 "cuMemHostRegister( " << src.pointer << ", " << dst.size << ", " << 0 << ") failed " )

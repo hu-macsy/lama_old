@@ -821,35 +821,42 @@ void CUDAELLUtils::normalGEMV(
 template<typename T,bool useTexture>
 __global__
 void ell_sparse_gemv_kernel(
-    int n,
-    T alpha,
-    int nnr,
-    const int* const ia_d,
-    const T* ellValues,
-    const int* ellJA,
+    T* const result_d,
+    int numRows,
+    const T alpha,
+    int numValuesPerRow,
+    const int* const ellIA,
+    const T* const ellValues,
+    const int* const ellJA,
     const int* const rowIndexes,
-    const int nzr,
-    const T* const x_d,
-    T* y_d )
+    const int numNonZeroRows,
+    const T* const x_d )
 {
+    // each thread is assigned to one non-zero row
+
     const int id = threadId( gridDim, blockIdx, blockDim, threadIdx );
-    if ( id < nzr )
+
+    if ( id < numNonZeroRows )
     {
         const int i = rowIndexes[id];
 
-        ellValues += i;
-        ellJA += i;
+        int pos = i;
+
         T value = 0.0;
-        const int noneZeros = ellValues[i];
-        for ( int kk = 0; kk < noneZeros; ++kk )
+
+        const int nonZeros = ellIA[i];
+
+        for ( int kk = 0; kk < nonZeros; ++kk )
         {
-            const T aValue = *ellValues;
-            //if (aValue != 0.0) //compute capability >= 2.0  => disadvantage
-            value += aValue * fetch_ELLx<T,useTexture>( x_d, *ellJA );
-            ellValues += n;
-            ellJA += n;
+            const T aValue = ellValues[pos];
+
+            // compute capability >= 2.0: no benefits to mask with value != 0.0
+
+            value += aValue * fetch_ELLx<T,useTexture>( x_d, ellJA[pos] );
+            pos   += numRows;
         }
-        y_d[i] += alpha * value;
+
+        result_d[i] += alpha * value;
     }
 }
 
@@ -857,7 +864,7 @@ template<typename ValueType>
 void CUDAELLUtils::sparseGEMV(
     ValueType result[],
     const IndexType numRows,
-    const IndexType numNonZerosPerRows,
+    const IndexType numNonZerosPerRow,
     const ValueType alpha,
     const ValueType x[],
     const IndexType numNonZeroRows,
@@ -882,14 +889,6 @@ void CUDAELLUtils::sparseGEMV(
         stream = cudaStreamSyncToken->getCUDAStream();
     }
 
-//TODO read nnc
-//    if(nnc>134217728)//512MB * 1024 KB/MB * 1024 B/KB / (4 B/float) = 134217728
-//    {
-//        lama_setLastError(LAMA_STATUS_INPUTVECTOR_EXCEEDS_TEXTURESIZE);
-//        return;
-//    }
-//x_d and y_d need to be not aliased
-//TODO: assert(x_d != y_d);
     const int block_size = ( numNonZeroRows > 8191 ? 256 : 128 );
     dim3 dimBlock( block_size, 1, 1 );
     dim3 dimGrid = makeGrid( numNonZeroRows, dimBlock.x );
@@ -917,8 +916,8 @@ void CUDAELLUtils::sparseGEMV(
                            "LAMA_STATUS_CUDA_FUNCSETCACHECONFIG_FAILED" )
 
         ell_sparse_gemv_kernel<ValueType, true> <<<dimGrid, dimBlock, 0, stream>>>( 
-            numRows, alpha, numNonZerosPerRows, ellIA, ellValues,
-            ellJA, rowIndexes, numNonZeroRows, x, result );
+            result, numRows, alpha, numNonZerosPerRow, ellIA, ellValues,
+            ellJA, rowIndexes, numNonZeroRows, x );
     }
     else
     {
@@ -926,12 +925,11 @@ void CUDAELLUtils::sparseGEMV(
                            "LAMA_STATUS_CUDA_FUNCSETCACHECONFIG_FAILED" )
      
         ell_sparse_gemv_kernel<ValueType, false> <<<dimGrid, dimBlock, 0, stream>>>(
-            numRows, alpha, numNonZerosPerRows, ellIA, ellValues,
-            ellJA, rowIndexes, numNonZeroRows, x, result );
+            result, numRows, alpha, numNonZerosPerRow, ellIA, ellValues,
+            ellJA, rowIndexes, numNonZeroRows, x );
     }
 
-    LAMA_CUDA_RT_CALL( cudaGetLastError(), "LAMA_STATUS_SELLAGEMVPBV_CUDAKERNEL_FAILED" )
-    LAMA_CUDA_RT_CALL( cudaStreamSynchronize(0), "LAMA_STATUS_SELLAGEMVPBV_CUDAKERNEL_FAILED" )
+    LAMA_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "sparse GEMV kernel failed" )
 
     if ( useTexture )
     {
@@ -1171,6 +1169,8 @@ void CUDAELLUtils::jacobiHalo(
 
 void CUDAELLUtils::setInterface( ELLUtilsInterface& ELLUtils )
 {
+    LAMA_LOG_INFO( logger, "set ELL routines for CUDA in Interface" )
+
     LAMA_INTERFACE_REGISTER( ELLUtils, countNonEmptyRowsBySizes )
     LAMA_INTERFACE_REGISTER( ELLUtils, setNonEmptyRowsBySizes )
     LAMA_INTERFACE_REGISTER( ELLUtils, hasDiagonalProperty )

@@ -2449,6 +2449,8 @@ void CUDABLAS2::tpsv(
 
 void CUDABLAS2::setInterface( BLASInterface& BLAS )
 {
+    LAMA_LOG_INFO( logger, "set BLAS2 routines for CUDA in Interface" )
+
     LAMA_INTERFACE_REGISTER_T( BLAS, gemv, float )
     LAMA_INTERFACE_REGISTER_T( BLAS, gemv, double )
 
