@@ -297,7 +297,13 @@ void DenseVector<T>::setValues( const _LAMAArray& values )
 template<typename T>
 DenseVector<T>* DenseVector<T>::create() const
 {
-    return new DenseVector<T>();
+    LAMA_LOG_INFO( logger, "DenseVector<T>::create" )
+
+    DenseVector<T>* newDenseVector = new DenseVector<T>();
+
+    newDenseVector->setContext( mContext );
+
+    return newDenseVector;
 }
 
 template<typename T>
