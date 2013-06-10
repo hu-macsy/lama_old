@@ -35,7 +35,6 @@
 #include <lama/storage/DIAStorage.hpp>
 
 // others
-#include <lama/openmp/OpenMPUtils.hpp>
 #include <lama/openmp/OpenMPCSRUtils.hpp>
 #include <lama/openmp/OpenMPDIAUtils.hpp>
 #include <lama/tracing.hpp>
@@ -44,6 +43,7 @@
 #include <lama/HostWriteAccess.hpp>
 #include <lama/LAMAInterface.hpp>
 #include <lama/ContextAccess.hpp>
+#include <lama/task/TaskSyncToken.hpp>
 #include <lama/tracing.hpp>
 
 // macros
@@ -54,6 +54,10 @@
 
 namespace lama
 {
+
+// Allow for shared_ptr<T> instead of boost::shared_ptr<T>
+
+using boost::shared_ptr;
 
 /* --------------------------------------------------------------------------- */
 
@@ -198,13 +202,21 @@ void DIAStorage<ValueType>::setDiagonalImpl( const Scalar scalar )
 
     IndexType numDiagonalElements = std::min( mNumColumns, mNumRows );
 
+    ContextPtr loc = getContextPtr();   // take context of this storage to set
+
+    LAMA_INTERFACE_FN_T( setVal, loc, Utils, Setter, ValueType )
+
     {
-        HostWriteAccess<ValueType> wValues( mValues );
-        HostReadAccess<IndexType> rOffset( mOffset );
+        // not all values might be changed, so use WriteAccess instead of WriteOnlyAccess
+
+        WriteAccess<ValueType> wValues( mValues, loc );
+        ReadAccess<IndexType> rOffset( mOffset, loc );
 
         ValueType value = scalar.getValue<ValueType>();
 
-        OpenMPUtils::setVal( wValues.get(), numDiagonalElements, value );
+        LAMA_CONTEXT_ACCESS( loc )
+
+        setVal( wValues.get(), numDiagonalElements, value );
     }
 }
 
@@ -245,14 +257,20 @@ template<typename ValueType>
 template<typename OtherType>
 void DIAStorage<ValueType>::getDiagonalImpl( LAMAArray<OtherType>& diagonal ) const
 {
+    ContextPtr loc = getContextPtr();
+
+    LAMA_INTERFACE_FN_TT( set, loc, Utils, Copy, OtherType, ValueType )
+
     IndexType numDiagonalElements = std::min( mNumColumns, mNumRows );
 
-    HostWriteOnlyAccess<OtherType> wDiagonal( diagonal, numDiagonalElements );
-    HostReadAccess<ValueType> rValues( mValues );
+    WriteOnlyAccess<OtherType> wDiagonal( diagonal, loc, numDiagonalElements );
+    ReadAccess<ValueType> rValues( mValues, loc );
+
+    LAMA_CONTEXT_ACCESS( loc )
 
     // Diagonal is first column
 
-    OpenMPUtils::set( wDiagonal.get(), rValues.get(), numDiagonalElements );
+    set( wDiagonal.get(), rValues.get(), numDiagonalElements );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -261,21 +279,20 @@ template<typename ValueType>
 template<typename OtherType>
 void DIAStorage<ValueType>::setDiagonalImpl( const LAMAArray<OtherType>& diagonal )
 {
+    ContextPtr loc = getContextPtr();
+
     IndexType numDiagonalElements = std::min( mNumColumns, mNumRows );
+
     numDiagonalElements = std::min( numDiagonalElements, diagonal.size() );
 
-    {
-        HostReadAccess<OtherType> rDiagonal( diagonal );
-        HostWriteAccess<ValueType> wValues( mValues );
+    LAMA_INTERFACE_FN_TT( set, loc, Utils, Copy, ValueType, OtherType )
 
-        OpenMPUtils::set( wValues.get(), rDiagonal.get(), numDiagonalElements );
-    }
+    ReadAccess<OtherType> rDiagonal( diagonal, loc );
+    WriteAccess<ValueType> wValues( mValues, loc );
 
-    if ( LAMA_LOG_TRACE_ON( logger ) )
-    {
-        LAMA_LOG_TRACE( logger, "DIA after setDiagonal diagonal" )
-        print();
-    }
+    LAMA_CONTEXT_ACCESS( loc )
+
+    set( wValues.get(), rDiagonal.get(), numDiagonalElements );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -391,14 +408,30 @@ void DIAStorage<ValueType>::setIdentity( const IndexType size )
 
     mNumDiagonals = 1; // identity has exactly one diagonal
 
-    HostWriteOnlyAccess<IndexType> offset( mOffset, mNumDiagonals );
-    HostWriteOnlyAccess<ValueType> values( mValues, mNumRows );
+    ContextPtr loc = getContextPtr();
 
-    offset[0] = 0;
+    {
+        LAMA_INTERFACE_FN_T( setVal, loc, Utils, Setter, IndexType )
 
-    ValueType one = static_cast<ValueType>( 1.0 );
+        WriteOnlyAccess<IndexType> wOffset( mOffset, loc, mNumDiagonals );
 
-    OpenMPUtils::setVal( values.get(), mNumRows, one );
+        ValueType zero = static_cast<ValueType>( 0 );
+
+        LAMA_CONTEXT_ACCESS( loc )
+
+        setVal( wOffset.get(), 1, zero );
+    }
+
+    {
+        LAMA_INTERFACE_FN_T( setVal, loc, Utils, Setter, ValueType )
+        WriteOnlyAccess<ValueType> values( mValues, loc, mNumRows );
+
+        ValueType one = static_cast<ValueType>( 1 );
+
+        LAMA_CONTEXT_ACCESS( loc )
+
+        setVal( values.get(), mNumRows, one );
+    }
 
     mDiagonalProperty = true;
 }
@@ -449,7 +482,9 @@ void DIAStorage<ValueType>::buildCSR(
     // TODO all done on host, so loc is unused
 
     LAMA_LOG_INFO( logger,
-                   "buildTypedCSRData<" << Scalar::getType<OtherValueType>() << ">" << " from DIA<" << Scalar::getType<ValueType>() << "> = " << *this << ", diagonal property = " << mDiagonalProperty )
+                   "buildTypedCSRData<" << Scalar::getType<OtherValueType>() << ">" 
+                    << " from DIA<" << Scalar::getType<ValueType>() << "> = " << *this 
+                    << ", diagonal property = " << mDiagonalProperty )
 
     HostReadAccess<IndexType> diaOffsets( mOffset );
     HostReadAccess<ValueType> diaValues( mValues );
@@ -499,7 +534,7 @@ void DIAStorage<ValueType>::setCSRDataImpl(
     HostReadAccess<IndexType> csrJA( ja );
     HostReadAccess<OtherValueType> csrValues( values );
 
-    _MatrixStorage::init( numRows, numColumns );
+    _MatrixStorage::setDimension( numRows, numColumns );
 
     LAMA_LOG_DEBUG( logger, "fill DIA sparse maxtrix " << mNumRows << " x " << mNumColumns << " from csr data" )
 
@@ -813,30 +848,29 @@ void DIAStorage<ValueType>::matrixTimesVector(
 {
     LAMA_REGION( "Storage.DIA.timesVector" )
 
+    ContextPtr loc = getContextPtr();
+
     LAMA_LOG_INFO( logger,
-                   *this << ": matrixTimesVector, result = " << result << ", alpha = " << alpha << ", x = " << x << ", beta = " << beta << ", y = " << y )
+                   "Computing z = " << alpha << " * A * x + " << beta << " * y, with A = "
+                    << *this << ", x = " << x << ", y = " << y << ", z = " << result 
+                    << " on " << *loc )
 
     LAMA_ASSERT_EQUAL_ERROR( x.size(), mNumColumns )
     LAMA_ASSERT_EQUAL_ERROR( y.size(), mNumRows )
 
-    // @todo support on GPU for matrixTimesVector with DIA format
-
-    ContextPtr loc = ContextFactory::getContext( Context::Host );
-
-    LAMA_LOG_INFO( logger, *this << ": matrixTimesVector on " << *loc )
-
-    LAMA_INTERFACE_FN_T( normalGEMV, loc, DIAUtils, Mult, ValueType )
+    LAMA_INTERFACE_FN_DEFAULT_T( normalGEMV, loc, DIAUtils, Mult, ValueType )
 
     ReadAccess<IndexType> diaOffsets( mOffset, loc );
     ReadAccess<ValueType> diaValues( mValues, loc );
 
     ReadAccess<ValueType> rX( x, loc );
 
-    // Possible alias of result and y must be handled by coressponding accesses
+    // Possible alias of result and y is handled by coressponding accesses
 
     if ( result == y )
     {
-        LAMA_LOG_INFO( logger, "result == y" )
+        LAMA_LOG_DEBUG( logger, "result == y" )
+
         // only write access for y, no read access for result
 
         WriteAccess<ValueType> wResult( result, loc );
@@ -850,7 +884,8 @@ void DIAStorage<ValueType>::matrixTimesVector(
     }
     else
     {
-        LAMA_LOG_INFO( logger, "result != y" )
+        LAMA_LOG_DEBUG( logger, "result != y" )
+
         WriteOnlyAccess<ValueType> wResult( result, loc, mNumRows );
         ReadAccess<ValueType> rY( y, loc );
 
@@ -859,6 +894,100 @@ void DIAStorage<ValueType>::matrixTimesVector(
         normalGEMV( wResult.get(), alpha, rX.get(), beta, rY.get(), mNumRows, mNumColumns, mNumDiagonals,
                     diaOffsets.get(), diaValues.get(), NULL );
     }
+}
+
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType>
+SyncToken* DIAStorage<ValueType>::matrixTimesVectorAsync(
+
+    LAMAArrayView<ValueType> result,
+    const ValueType alpha,
+    const LAMAArrayConstView<ValueType> x,
+    const ValueType beta,
+    const LAMAArrayConstView<ValueType> y ) const
+
+{
+    ContextPtr loc = getContextPtr();
+
+    if ( loc->getType() == Context::Host )
+    {
+        // Start directly a task, avoids pushing of accesses
+
+        void ( DIAStorage::*mv )(
+            LAMAArrayView<ValueType>,
+            const ValueType,
+            const LAMAArrayConstView<ValueType>,
+            const ValueType,
+            const LAMAArrayConstView<ValueType> ) const
+
+        = &DIAStorage<ValueType>::matrixTimesVector;
+
+        return new TaskSyncToken( boost::bind( mv, this, result, alpha, x, beta, y ) );
+    }
+
+    LAMA_REGION( "Storage.DIA.timesVectorAsync" )
+
+    LAMA_LOG_INFO( logger,
+                   "Start z = " << alpha << " * A * x + " << beta << " * y, with A = "
+                    << *this << ", x = " << x << ", y = " << y << ", z = " << result 
+                    << " on " << *loc )
+
+    LAMA_ASSERT_EQUAL_ERROR( x.size(), mNumColumns )
+    LAMA_ASSERT_EQUAL_ERROR( y.size(), mNumRows )
+
+    LAMA_INTERFACE_FN_DEFAULT_T( normalGEMV, loc, DIAUtils, Mult, ValueType )
+
+    std::auto_ptr<SyncToken> syncToken( loc->getSyncToken() );
+
+    // all accesses will be pushed to the sync token as LAMA arrays have to be protected up
+    // to the end of the computations.
+
+    shared_ptr<ReadAccess<IndexType> > diaOffsets( new ReadAccess<IndexType>( mOffset, loc ) );
+    shared_ptr<ReadAccess<ValueType> > diaValues( new ReadAccess<ValueType>( mValues, loc ) );
+
+    shared_ptr<ReadAccess<ValueType> > rX( new ReadAccess<ValueType>( x, loc ) );
+
+    // Possible alias of result and y is handled by coressponding accesses
+
+    if ( result == y )
+    {
+        LAMA_LOG_DEBUG( logger, "result == y" )
+
+        // only write access for y, no read access for result
+
+        shared_ptr<WriteAccess<ValueType> > wResult( new WriteAccess<ValueType>( result, loc ) );
+
+        syncToken->pushAccess( wResult );
+
+        // we assume that normalGEMV can deal with the alias of result, y
+
+        LAMA_CONTEXT_ACCESS( loc )
+
+        normalGEMV( wResult->get(), alpha, rX->get(), beta, wResult->get(), mNumRows, mNumColumns, mNumDiagonals,
+                    diaOffsets->get(), diaValues->get(), syncToken.get() );
+    }
+    else
+    {
+        LAMA_LOG_DEBUG( logger, "result != y" )
+
+        shared_ptr<WriteOnlyAccess<ValueType> > wResult( new WriteOnlyAccess<ValueType>( result, loc, mNumRows ) );
+        shared_ptr<ReadAccess<ValueType> > rY( new ReadAccess<ValueType>( y, loc ) );
+
+        syncToken->pushAccess( rY );
+        syncToken->pushAccess( wResult );
+
+        LAMA_CONTEXT_ACCESS( loc )
+
+        normalGEMV( wResult->get(), alpha, rX->get(), beta, rY->get(), mNumRows, mNumColumns, mNumDiagonals,
+                    diaOffsets->get(), diaValues->get(), syncToken.get() );
+    }
+
+    syncToken->pushAccess( rX );
+    syncToken->pushAccess( diaValues );
+    syncToken->pushAccess( diaOffsets );
+
+    return syncToken.release();
 }
 
 /* --------------------------------------------------------------------------- */

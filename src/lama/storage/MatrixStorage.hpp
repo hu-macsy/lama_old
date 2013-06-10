@@ -76,10 +76,6 @@ class LAMA_DLL_IMPORTEXPORT _MatrixStorage: public Printable
 {
 public:
 
-    /** Constructor for storage of a matrix of size numRows x numColumns */
-
-    _MatrixStorage( const IndexType numRows, const IndexType numColumns );
-
     /** Default constructor */
 
     _MatrixStorage();
@@ -95,12 +91,12 @@ public:
 
     virtual const char* getTypeName() const = 0;
 
-    /** Initialization of base class due to a resize. 
+    /** Set the dimension of the storage.
      *
      *  @param numRows, numColumns specifiy the size of the matrix
      */
 
-    void init( const IndexType numRows, const IndexType numColumns );
+    void setDimension( const IndexType numRows, const IndexType numColumns );
 
     /** Objects of this class should give info about their value type. */
 

@@ -65,30 +65,31 @@ LAMA_LOG_DEF_LOGGER( _MatrixStorage::logger, "MatrixStorage" )
 
 _MatrixStorage::_MatrixStorage()
 
-    : mContext( ContextFactory::getContext( Context::Host ) )
+    : mNumRows( 0 ),
+      mNumColumns( 0 ),
+      mRowIndexes(),
+      mCompressThreshold( 0.0f ),
+      mDiagonalProperty( false ),
+      mContext( ContextFactory::getContext( Context::Host ) )
 {
-    init( 0, 0 );
     LAMA_LOG_DEBUG( logger, "constructed MatrixStorage()" )
-}
-
-_MatrixStorage::_MatrixStorage( const IndexType numRows, const IndexType numColumns )
-
-    : mContext( ContextFactory::getContext( Context::Host ) )
-{
-    init( numRows, numColumns );
-    LAMA_LOG_DEBUG( logger, "constructed MatrixStorage for matrix " << mNumRows << " x " << mNumColumns )
 }
 
 /* ---------------------------------------------------------------------------------- */
 
-void _MatrixStorage::init( const IndexType numRows, const IndexType numColumns )
+void _MatrixStorage::setDimension( const IndexType numRows, const IndexType numColumns )
 {
-    // one common initialization
+    // in any case set dimensions
 
     mNumRows = numRows;
     mNumColumns = numColumns;
-    mCompressThreshold = 0.0f;
+
+    // due to new settings assume that diagonalProperty, rowIndexes become invalid
+
     mDiagonalProperty = false;
+    mRowIndexes.clear();
+
+    // but do not reset threshold
 }
 
 /* ---------------------------------------------------------------------------------- */
@@ -115,6 +116,8 @@ void _MatrixStorage::setCompressThreshold( float ratio )
     }
 
     mCompressThreshold = ratio;
+
+    LAMA_LOG_INFO( logger, "set compress threshold, ratio = " << ratio << " : " << *this )
 }
 
 /* ---------------------------------------------------------------------------------- */
@@ -341,8 +344,12 @@ MatrixStorage<ValueType>::MatrixStorage()
 
 template<typename ValueType>
 MatrixStorage<ValueType>::MatrixStorage( const IndexType numRows, const IndexType numColumns )
-    : _MatrixStorage( numRows, numColumns ), mEpsilon( 0 )
+
+    : _MatrixStorage(), 
+       mEpsilon( 0 )
 {
+    setDimension ( numRows, numColumns );
+
     LAMA_LOG_DEBUG( logger,
                     "constructed MatrixStorage<ValueType> for " << numRows << " x " << numColumns << " matrix" )
 }
@@ -877,7 +884,9 @@ void MatrixStorage<ValueType>::splitHalo(
 
     localData.check( "local part after split" );
 
-    haloData.setCompressThreshold( 1.0 );
+    // halo data is expected to have many empty rows, so enable compressing with row indexes
+
+    haloData.setCompressThreshold( 0.5 );
 
     haloData.setCSRData( numRows, haloNumColumns, haloNumValues, haloIA, haloJA, haloValues );
 

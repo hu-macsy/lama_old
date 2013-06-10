@@ -143,11 +143,12 @@ void SparseAssemblyStorage<ValueType>::allocate( const IndexType numRows, const 
 {
     LAMA_LOG_INFO( logger, "allocate sparse assembly storage " << numRows << " x " << numColumns )
 
-    _MatrixStorage::init( numRows, numColumns );
+    _MatrixStorage::setDimension( numRows, numColumns );
 
     mNumValues = 0;
 
-    mRows.clear(), mRows.resize( numRows );
+    mRows.clear();
+    mRows.resize( numRows );
 }
 
 /* --------------------------------------------------------------------------- */

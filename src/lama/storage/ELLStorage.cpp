@@ -410,7 +410,8 @@ void ELLStorage<ValueType>::setCSRDataImpl(
 
     LAMA_LOG_INFO( logger, "set CSR data on " << *loc 
                             << ": numRows = " << numRows << ", numColumns = " << numColumns 
-                            << ", numValues = " << numValues )
+                            << ", numValues = " << numValues 
+                            << ", compress threshold = " << mCompressThreshold )
 
     if ( numRows == 0 )
     {
@@ -421,7 +422,7 @@ void ELLStorage<ValueType>::setCSRDataImpl(
         return;
     }
 
-    _MatrixStorage::init( numRows, numColumns );
+    _MatrixStorage::setDimension( numRows, numColumns );
 
     // Get function pointers for needed routines at the LAMA interface
 
@@ -532,7 +533,7 @@ void ELLStorage<ValueType>::setELLData(
     LAMA_ASSERT_EQUAL_ERROR( numRows * numValuesPerRow, ja.size() )
     LAMA_ASSERT_EQUAL_ERROR( numRows * numValuesPerRow, values.size() )
 
-    _MatrixStorage::init( numRows, numColumns );
+    _MatrixStorage::setDimension( numRows, numColumns );
 
     mNumValuesPerRow = numValuesPerRow;
 
@@ -813,7 +814,7 @@ template<typename ValueType>
 void ELLStorage<ValueType>::writeAt( std::ostream& stream ) const
 {
     stream << "ELLStorage<" << typeid(ValueType).name() << ">( rows=" << mNumRows << ", cols=" << mNumColumns
-           << ", nnr=" << mNumValuesPerRow << " )";
+           << ", nnr=" << mNumValuesPerRow << ", threshold = " << mCompressThreshold << " )";
 }
 
 /* --------------------------------------------------------------------------- */
@@ -892,7 +893,8 @@ void ELLStorage<ValueType>::buildRowIndexes( const ContextPtr loc )
 
     if ( usage >= mCompressThreshold )
     {
-        LAMA_LOG_INFO( logger, "ELLStorage: do not build row indexes, usage = " << usage )
+        LAMA_LOG_INFO( logger, "ELLStorage: do not build row indexes, usage = " << usage 
+                                << " >= " << mCompressThreshold << " ( threshold )" )
         return;
     }
 

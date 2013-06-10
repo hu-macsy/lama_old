@@ -307,7 +307,7 @@ void COOStorage<ValueType>::setCOOData(
     LAMA_ASSERT_EQUAL_ERROR( numValues, ja.size() )
     LAMA_ASSERT_EQUAL_ERROR( numValues, values.size() )
 
-    _MatrixStorage::init( numRows, numColumns );
+    _MatrixStorage::setDimension( numRows, numColumns );
 
     mNumValues = numValues;
 
@@ -701,13 +701,13 @@ void COOStorage<ValueType>::matrixTimesVector(
     LAMA_ASSERT_EQUAL_ERROR( x.size(), mNumColumns )
     LAMA_ASSERT_EQUAL_ERROR( y.size(), mNumRows )
 
-    // Method on CUDA is not safe duet to atomic
+    // Method on CUDA is not safe due to atomic
 
-    ContextPtr loc = ContextFactory::getContext( Context::Host );
+    ContextPtr loc = getContextPtr();
 
     LAMA_LOG_INFO( logger, *this << ": matrixTimesVector on " << *loc )
 
-    LAMA_INTERFACE_FN_T( normalGEMV, loc, COOUtils, Mult, ValueType )
+    LAMA_INTERFACE_FN_DEFAULT_T( normalGEMV, loc, COOUtils, Mult, ValueType )
 
     ReadAccess<IndexType> cooIA( mIA, loc );
     ReadAccess<IndexType> cooJA( mJA, loc );

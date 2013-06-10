@@ -50,6 +50,7 @@
 
 namespace lama
 {
+// Allow for shared_ptr<T> instead of boost::shared_ptr<T>
 
 using boost::shared_ptr;
 
@@ -134,7 +135,7 @@ void JDSStorage<ValueType>::setJDSData(
     LAMA_ASSERT_EQUAL_ERROR( numValues, values.size() )
     LAMA_ASSERT_EQUAL_ERROR( numDiagonals, dlg.size() )
 
-    _MatrixStorage::init( numRows, numColumns );
+    _MatrixStorage::setDimension( numRows, numColumns );
 
     mNumDiagonals = numDiagonals;
     mNumValues    = numValues;
@@ -751,7 +752,7 @@ void JDSStorage<ValueType>::setCSRDataImpl(
     ReadAccess<IndexType> rCsrJA( ja, loc );
     ReadAccess<OtherValueType> rCsrValues( values, loc );
 
-    _MatrixStorage::init( numRows, numColumns );
+    _MatrixStorage::setDimension( numRows, numColumns );
 
     mNumValues = numValues;
 
@@ -910,12 +911,11 @@ void JDSStorage<ValueType>::matrixTimesVector(
     const LAMAArrayConstView<ValueType> y ) const
 
 {
-    // TODO: check CUDA implementation
-
     LAMA_REGION( "Storage.JDS.timesVector" )
 
     LAMA_LOG_DEBUG( logger,
-                    "Computing z = alpha * A * x + beta * y, with A = " << *this << ", x = " << x << ", y = " << y << ", z = " << result )
+                    "Computing z = " << alpha << " * A * x + " << beta << " * y, with A = " 
+                     << *this << ", x = " << x << ", y = " << y << ", z = " << result )
 
     LAMA_ASSERT_EQUAL_ERROR( x.size(), mNumColumns )
     LAMA_ASSERT_EQUAL_ERROR( y.size(), mNumRows )
@@ -944,6 +944,8 @@ void JDSStorage<ValueType>::matrixTimesVector(
 
         LAMA_CONTEXT_ACCESS( loc )
 
+        // this call will finish the computation, syncToken == NULL
+
         normalGEMV( wResult.get(), alpha, rX.get(), beta, wResult.get(), mNumRows, jdsPerm.get(), jdsILG.get(),
                     mNumDiagonals, jdsDLG.get(), jdsJA.get(), jdsValues.get(), NULL );
     }
@@ -954,9 +956,113 @@ void JDSStorage<ValueType>::matrixTimesVector(
 
         LAMA_CONTEXT_ACCESS( loc )
 
+        // this call will finish the computation, syncToken == NULL
+
         normalGEMV( wResult.get(), alpha, rX.get(), beta, rY.get(), mNumRows, jdsPerm.get(), jdsILG.get(),
                     mNumDiagonals, jdsDLG.get(), jdsJA.get(), jdsValues.get(), NULL );
     }
+}
+
+/* ------------------------------------------------------------------------------------------------------------------ */
+
+template<typename ValueType>
+SyncToken* JDSStorage<ValueType>::matrixTimesVectorAsync(
+
+    LAMAArrayView<ValueType> result,
+    const ValueType alpha,
+    const LAMAArrayConstView<ValueType> x,
+    const ValueType beta,
+    const LAMAArrayConstView<ValueType> y ) const
+
+{
+    ContextPtr loc = getContextPtr();
+
+    if ( loc->getType() == Context::Host )
+    {
+        // workaround as boost::bind has limited number of arguments and cannot be
+        // used later in OpenMP to generate a TaskSyncToken
+
+        void ( JDSStorage::*mv )(
+            LAMAArrayView<ValueType>,
+            const ValueType,
+            const LAMAArrayConstView<ValueType>,
+            const ValueType,
+            const LAMAArrayConstView<ValueType> ) const
+
+        = &JDSStorage<ValueType>::matrixTimesVector;
+
+        return new TaskSyncToken( boost::bind( mv, this, result, alpha, x, beta, y ) );
+    }
+
+    // For CUDA a solution using stream synchronization is more efficient than using a task
+
+    LAMA_REGION( "Storage.JDS.timesVectorAsync" )
+
+    LAMA_LOG_INFO( logger,
+                   "Async start z = " << alpha << " * A * x + " << beta << " * y, with A = " 
+                    << *this << ", x = " << x << ", y = " << y << ", z = " << result )
+
+    LAMA_ASSERT_EQUAL_ERROR( x.size(), mNumColumns )
+    LAMA_ASSERT_EQUAL_ERROR( y.size(), mNumRows )
+
+    LAMA_LOG_INFO( logger, *this << ": matrixTimesVector on " << *loc )
+
+    LAMA_INTERFACE_FN_T( normalGEMV, loc, JDSUtils, Mult, ValueType )
+
+    std::auto_ptr<SyncToken> syncToken( loc->getSyncToken() );
+
+    // all accesses will be pushed to the sync token as LAMA arrays have to be protected up
+    // to the end of the computations.
+
+    shared_ptr<ReadAccess<IndexType> > jdsPerm( new ReadAccess<IndexType>( mPerm, loc ) );
+    shared_ptr<ReadAccess<IndexType> > jdsDLG( new ReadAccess<IndexType>( mDlg, loc ) );
+    shared_ptr<ReadAccess<IndexType> > jdsILG( new ReadAccess<IndexType>( mIlg, loc ) );
+    shared_ptr<ReadAccess<IndexType> > jdsJA( new ReadAccess<IndexType>( mJa, loc ) );
+    shared_ptr<ReadAccess<ValueType> > jdsValues( new ReadAccess<ValueType>( mValues, loc ) );
+
+    shared_ptr<ReadAccess<ValueType> > rX( new ReadAccess<ValueType>( x, loc ) );
+
+    // Possible alias of result and y must be handled by coressponding accesses
+
+    if ( result == y )
+    {
+        shared_ptr<WriteAccess<ValueType> > wResult( new WriteAccess<ValueType>( result, loc ) );
+
+        syncToken->pushAccess( wResult );
+
+        // we assume that normalGEMV can deal with the alias of result, y
+
+        LAMA_CONTEXT_ACCESS( loc )
+
+        // this call will only start the computation
+
+        normalGEMV( wResult->get(), alpha, rX->get(), beta, wResult->get(), mNumRows, jdsPerm->get(), jdsILG->get(),
+                    mNumDiagonals, jdsDLG->get(), jdsJA->get(), jdsValues->get(), syncToken.get() );
+    }
+    else
+    {
+        shared_ptr<WriteOnlyAccess<ValueType> > wResult( new WriteOnlyAccess<ValueType>( result, loc, mNumRows ) );
+        shared_ptr<ReadAccess<ValueType> > rY( new ReadAccess<ValueType>( y, loc ) );
+
+        syncToken->pushAccess( wResult );
+        syncToken->pushAccess( rY );
+
+        LAMA_CONTEXT_ACCESS( loc )
+
+        // this call will only start the computation
+
+        normalGEMV( wResult->get(), alpha, rX->get(), beta, rY->get(), mNumRows, jdsPerm->get(), jdsILG->get(),
+                    mNumDiagonals, jdsDLG->get(), jdsJA->get(), jdsValues->get(), syncToken.get() );
+    }
+
+    syncToken->pushAccess( jdsPerm );
+    syncToken->pushAccess( jdsDLG );
+    syncToken->pushAccess( jdsILG );
+    syncToken->pushAccess( jdsJA );
+    syncToken->pushAccess( jdsValues );
+    syncToken->pushAccess( rX );
+
+    return syncToken.release();
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */
@@ -1101,8 +1207,8 @@ void JDSStorage<ValueType>::jacobiIterateHalo(
 
     // need diagonal of local storage in *natural* order
     const LAMAArray<ValueType>* localDiagonal;
-    boost::shared_ptr<LAMAArray<ValueType> > tmpLocalDiagonal;
-    tmpLocalDiagonal = boost::shared_ptr<LAMAArray<ValueType> >( new LAMAArray<ValueType>() );
+    shared_ptr<LAMAArray<ValueType> > tmpLocalDiagonal;
+    tmpLocalDiagonal = shared_ptr<LAMAArray<ValueType> >( new LAMAArray<ValueType>() );
     localStorage.getDiagonal( *tmpLocalDiagonal );
     localDiagonal = tmpLocalDiagonal.get();
 

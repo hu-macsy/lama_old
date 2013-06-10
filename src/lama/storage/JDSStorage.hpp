@@ -198,6 +198,15 @@ public:
         const ValueType beta,
         const LAMAArrayConstView<ValueType> y ) const;
 
+    /** Implementation of MatrixStorage::matrixTimesVectorAsync for JDS */
+
+    virtual SyncToken* matrixTimesVectorAsync(
+        LAMAArrayView<ValueType> result,
+        const ValueType alpha,
+        const LAMAArrayConstView<ValueType> x,
+        const ValueType beta,
+        const LAMAArrayConstView<ValueType> y ) const;
+
     /** Implementation of MatrixStorage::jacobiIterate for JDS */
 
     virtual void jacobiIterate(

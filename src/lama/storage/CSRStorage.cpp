@@ -236,7 +236,7 @@ void CSRStorage<ValueType>::setIdentity( const IndexType size )
 {
     LAMA_LOG_DEBUG( logger, "set identity, size = " << size )
 
-    _MatrixStorage::init( size, size );
+    _MatrixStorage::setDimension( size, size );
 
     mNumValues = mNumRows;
 
@@ -520,7 +520,7 @@ void CSRStorage<ValueType>::allocate( IndexType numRows, IndexType numColumns )
     LAMA_LOG_INFO( logger,
                    "allocate CSR sparse matrix of size " << numRows << " x " << numColumns << ", numValues = 0" )
 
-    _MatrixStorage::init( numRows, numColumns );
+    _MatrixStorage::setDimension( numRows, numColumns );
 
     mNumValues = 0;
 
