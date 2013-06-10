@@ -43,12 +43,15 @@
 #include <lama/ReadAccess.hpp>
 #include <lama/WriteAccess.hpp>
 #include <lama/LAMAArrayUtils.hpp>
+#include <lama/task/TaskSyncToken.hpp>
 
 // tracing
 #include <lama/tracing.hpp>
 
 namespace lama
 {
+
+using boost::shared_ptr;
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 
@@ -1002,6 +1005,79 @@ void JDSStorage<ValueType>::jacobiIterate(
                 jdsValues.get(), rOldSolution.get(), rRhs.get(), omega, NULL );
     }
 
+}
+
+/* ------------------------------------------------------------------------------------------------------------------ */
+
+template<typename ValueType>
+SyncToken* JDSStorage<ValueType>::jacobiIterateAsync(
+    LAMAArrayView<ValueType> solution,
+    const LAMAArrayConstView<ValueType> oldSolution,
+    const LAMAArrayConstView<ValueType> rhs,
+    const ValueType omega ) const
+{
+    LAMA_REGION( "Storage.JDS.jacobiIterateAsync" )
+
+    ContextPtr loc = getContextPtr();
+
+    if ( loc->getType() == Context::Host )
+    {
+        // On host we start directly a new task, avoids pushing accesses
+
+        void ( JDSStorage::*jb )(
+            LAMAArrayView<ValueType>,
+            const LAMAArrayConstView<ValueType>,
+            const LAMAArrayConstView<ValueType>,
+            const ValueType omega ) const
+
+        = &JDSStorage<ValueType>::jacobiIterate;
+
+        return new TaskSyncToken( boost::bind( jb, this, solution, oldSolution, rhs, omega ) );
+    }
+
+    // For CUDA a solution using stream synchronization is more efficient than using a task
+
+    LAMA_LOG_INFO( logger, *this << ": Jacobi iteration for local matrix data." )
+
+    LAMA_INTERFACE_FN_T( jacobi, loc, JDSUtils, Solver, ValueType )
+
+    LAMA_ASSERT_ERROR( mDiagonalProperty, *this << ": jacobiIterate requires diagonal property" )
+
+    if ( solution == oldSolution )
+    {
+        LAMA_THROWEXCEPTION( "alias of solution and oldSolution unsupported" )
+    }
+
+    LAMA_ASSERT_EQUAL_DEBUG( mNumRows, oldSolution.size() )
+    LAMA_ASSERT_EQUAL_DEBUG( mNumRows, solution.size() )
+    LAMA_ASSERT_EQUAL_DEBUG( mNumRows, mNumColumns )
+    // matrix must be square
+
+    std::auto_ptr<SyncToken> syncToken( loc->getSyncToken() );
+
+    shared_ptr<WriteAccess<ValueType> > wSolution( new WriteAccess<ValueType>( solution, loc ) );
+    syncToken->pushAccess( wSolution );
+    shared_ptr<ReadAccess<IndexType> > jdsDLG( new ReadAccess<IndexType>( mDlg, loc ) );
+    syncToken->pushAccess( jdsDLG );
+    shared_ptr<ReadAccess<IndexType> > jdsILG( new ReadAccess<IndexType>( mIlg, loc ) );
+    syncToken->pushAccess( jdsILG );
+    shared_ptr<ReadAccess<IndexType> > jdsPerm( new ReadAccess<IndexType>( mPerm, loc ) );
+    syncToken->pushAccess( jdsPerm );
+    shared_ptr<ReadAccess<IndexType> > jdsJA( new ReadAccess<IndexType>( mJa, loc ) );
+    syncToken->pushAccess( jdsJA );
+    shared_ptr<ReadAccess<ValueType> > jdsValues( new ReadAccess<ValueType>( mValues, loc ) );
+    syncToken->pushAccess( jdsValues );
+    shared_ptr<ReadAccess<ValueType> > rOldSolution( new ReadAccess<ValueType>( oldSolution, loc ) );
+    syncToken->pushAccess( rOldSolution );
+    shared_ptr<ReadAccess<ValueType> > rRhs( new ReadAccess<ValueType>( rhs, loc ) );
+    syncToken->pushAccess( rRhs );
+
+    LAMA_CONTEXT_ACCESS( loc )
+
+    jacobi( wSolution->get(), mNumRows, jdsPerm->get(), jdsILG->get(), mNumDiagonals, jdsDLG->get(), jdsJA->get(),
+            jdsValues->get(), rOldSolution->get(), rRhs->get(), omega, syncToken.get() );
+
+    return syncToken.release();
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */

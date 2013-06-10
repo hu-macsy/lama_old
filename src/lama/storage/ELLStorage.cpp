@@ -39,7 +39,7 @@
 #include <lama/HostReadAccess.hpp>
 #include <lama/LAMAArrayUtils.hpp>
 #include <lama/LAMAInterface.hpp>
-#include <lama/SyncToken.hpp>
+#include <lama/task/TaskSyncToken.hpp>
 #include <lama/ReadAccess.hpp>
 #include <lama/WriteAccess.hpp>
 
@@ -1175,6 +1175,78 @@ void ELLStorage<ValueType>::jacobiIterate(
 
     jacobi( wSolution.get(), mNumRows, mNumValuesPerRow, ellSizes.get(), ellJA.get(), ellValues.get(),
             rOldSolution.get(), rRhs.get(), omega, NULL );
+}
+
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType>
+SyncToken* ELLStorage<ValueType>::jacobiIterateAsync(
+    LAMAArrayView<ValueType> solution,
+    const LAMAArrayConstView<ValueType> oldSolution,
+    const LAMAArrayConstView<ValueType> rhs,
+    const ValueType omega ) const
+{
+    LAMA_REGION( "Storage.ELL.jacobiIterateAsync" )
+
+    ContextPtr loc = getContextPtr();
+
+    if ( loc->getType() == Context::Host )
+    {
+        // used later in OpenMP to generate a TaskSyncToken
+
+        void ( ELLStorage::*jb )(
+            LAMAArrayView<ValueType>,
+            const LAMAArrayConstView<ValueType>,
+            const LAMAArrayConstView<ValueType>,
+            const ValueType omega ) const
+
+        = &ELLStorage<ValueType>::jacobiIterate;
+
+        return new TaskSyncToken( boost::bind( jb, this, solution, oldSolution, rhs, omega ) );
+    }
+
+    // For CUDA a solution using stream synchronization is more efficient than using a task
+
+    LAMA_LOG_INFO( logger, *this << ": Jacobi iteration for local matrix data." )
+
+    LAMA_ASSERT_ERROR( mDiagonalProperty, *this << ": jacobiIterate requires diagonal property" )
+
+    if ( solution == oldSolution )
+    {
+        LAMA_THROWEXCEPTION( "alias of solution and oldSolution unsupported" )
+    }
+
+    LAMA_ASSERT_EQUAL_DEBUG( mNumRows, oldSolution.size() )
+    LAMA_ASSERT_EQUAL_DEBUG( mNumRows, solution.size() )
+    LAMA_ASSERT_EQUAL_DEBUG( mNumRows, mNumColumns )
+    // matrix must be square
+
+    LAMA_INTERFACE_FN_T( jacobi, loc, ELLUtils, Solver, ValueType )
+
+    std::auto_ptr<SyncToken> syncToken( loc->getSyncToken() );
+
+    // make all needed data available at loc
+
+    shared_ptr<WriteAccess<ValueType> > wSolution( new WriteAccess<ValueType>( solution, loc ) );
+    shared_ptr<ReadAccess<IndexType> > ellSizes( new ReadAccess<IndexType>( mIA, loc ) );
+    shared_ptr<ReadAccess<IndexType> > ellJA( new ReadAccess<IndexType>( mJA, loc ) );
+    shared_ptr<ReadAccess<ValueType> > ellValues( new ReadAccess<ValueType>( mValues, loc ) );
+    shared_ptr<ReadAccess<ValueType> > rOldSolution( new ReadAccess<ValueType>( oldSolution, loc ) );
+    shared_ptr<ReadAccess<ValueType> > rRhs( new ReadAccess<ValueType>( rhs, loc ) );
+
+    LAMA_CONTEXT_ACCESS( loc )
+
+    jacobi( wSolution->get(), mNumRows, mNumValuesPerRow, ellSizes->get(), ellJA->get(), ellValues->get(),
+            rOldSolution->get(), rRhs->get(), omega, syncToken.get() );
+
+    syncToken->pushAccess( rRhs );
+    syncToken->pushAccess( rOldSolution );
+    syncToken->pushAccess( ellValues );
+    syncToken->pushAccess( ellJA );
+    syncToken->pushAccess( ellSizes );
+    syncToken->pushAccess( wSolution );
+
+    return syncToken.release();
 }
 
 /* --------------------------------------------------------------------------- */

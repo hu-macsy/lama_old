@@ -206,6 +206,14 @@ public:
         const LAMAArrayConstView<ValueType> rhs,
         const ValueType omega ) const;
 
+    /** Implementation of MatrixStorage::jacobiIterateAsync for JDS */
+
+    virtual SyncToken* jacobiIterateAsync(
+        LAMAArrayView<ValueType> solution,
+        const LAMAArrayConstView<ValueType> oldSolution,
+        const LAMAArrayConstView<ValueType> rhs,
+        const ValueType omega ) const;
+
     /** Implementation of MatrixStorage::jacobiIterateHalo for JDS */
 
     virtual void jacobiIterateHalo(
