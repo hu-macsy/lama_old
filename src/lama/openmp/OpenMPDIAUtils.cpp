@@ -303,7 +303,8 @@ void OpenMPDIAUtils::normalGEMV(
     const IndexType diaOffsets[],
     const ValueType diaValues[] )
 {
-    LAMA_LOG_INFO( logger, "normalGEMV<" << typeid(ValueType).name() << ">, n = " << numRows )
+    LAMA_LOG_INFO( logger, "normalGEMV<" << typeid(ValueType).name() << ">, n = " 
+                           << numRows << ", d = " << numDiagonals  )
 
     if ( beta == 0.0 )
     {

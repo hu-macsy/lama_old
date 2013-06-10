@@ -344,45 +344,40 @@ IndexType OpenMPJDSUtils::ilg2dlg(
 
     LAMA_ASSERT_EQUAL_DEBUG( numDiagonals, ilg[0] )
 
-    for ( IndexType d = 0; d < numDiagonals; d++ )
-    {
-        dlg[d] = 0;
-    }
+    // Entries in dlg filled every time there is a change in values of consecutive elements of ilg
+    //  
+    //   i:     0  1  2  3  4  5
+    // ilg:     5  5  3  3  3  1
+    // nd1:     5  5  3  3  3  1
+    // nd2:     5  3  3  3  1  0
+    //             x        x  x
+    //             |        |  |->    6 
+    //             |        |---->       5  5 
+    //             |------------->             2   2
+    // dlg:                           6  5  5  2   2
 
     IndexType numTotal = 0;
 
-    for ( IndexType i = 0; i < numRows; i++ )
+    #pragma omp parallel for schedule( LAMA_OMP_SCHEDULE ) reduction( +:numTotal )
+    for ( IndexType i = 0; i < numRows; ++i )
     {
-        IndexType k = ilg[i];
+        IndexType nd1 = ilg[i];
+        IndexType nd2 = 0;
 
-        if ( k == 0 )
+        if ( i + 1 < numRows )
         {
-            break;
+            nd2 = ilg[i + 1];
         }
 
-        numTotal += k;
+        // fill in dlg only if nd2 < nd1
 
-        LAMA_LOG_TRACE( logger, "ilg[" << i << "] = " << k )
+        for ( IndexType j = nd2; j < nd1; j++ )
+        {
+            dlg[j] = i + 1;
+        }
 
-        dlg[k - 1]++;
+        numTotal += nd1;
     }
-
-    // Do a sum scan backwards, dlg[ mNumDiagonals-1] is okay
-
-    IndexType proofTotal = dlg[numDiagonals - 1];
-
-    for ( IndexType d = numDiagonals - 1; d > 0; d-- )
-    {
-        LAMA_LOG_TRACE( logger, "dlg[" << d << "] = " << dlg[d] )
-
-        dlg[d - 1] += dlg[d];
-
-        proofTotal += dlg[d - 1];
-    }
-
-    // If sum does not fit, values were not descending in ilg
-
-    LAMA_ASSERT_EQUAL_DEBUG( numTotal, proofTotal )
 
     return numTotal;
 }

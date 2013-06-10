@@ -1023,6 +1023,8 @@ IndexType OpenMPCSRUtils::matrixMultiplySizes(
             }
 
         } //end loop over all rows of input matrix
+
+
     }
 
     sizes2offsets( cSizes, m );

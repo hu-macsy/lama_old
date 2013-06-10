@@ -42,6 +42,9 @@
 // macros
 #include <lama/macros/unused.hpp>
 
+// tracing with LAMA_REGION
+#include <lama/tracing.hpp>
+
 #include <cmath>
 
 namespace lama
@@ -418,6 +421,8 @@ void OpenMPBLAS1::axpy(
     const IndexType incY,
     SyncToken* syncToken )
 {
+    LAMA_REGION( "OpenMP.BLAS1.daxpy" )
+
     LAMA_LOG_DEBUG( logger,
                     "axpy<double>, n = " << n << ", alpha = " << alpha << ", x = " << x << ", incX = " << incX << ", y = " << y << ", incY = " << incY )
 
@@ -447,6 +452,8 @@ float OpenMPBLAS1::dot(
     const IndexType incY,
     SyncToken* syncToken )
 {
+    LAMA_REGION( "OpenMP.BLAS1.sdot" )
+
     LAMA_LOG_DEBUG( logger,
                     "dot<float>, n = " << n << ", x = " << x << ", incX = " << incX << ", y = " << y << ", incY = " << incY )
 
@@ -476,6 +483,8 @@ double OpenMPBLAS1::dot(
     const IndexType incY,
     SyncToken* syncToken )
 {
+    LAMA_REGION( "OpenMP.BLAS1.ddot" )
+
     LAMA_LOG_DEBUG( logger,
                     "dot<double>, n = " << n << ", x = " << x << ", incX = " << incX << ", y = " << y << ", incY = " << incY )
 
