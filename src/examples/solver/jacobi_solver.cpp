@@ -1,5 +1,5 @@
 /**
- * @file cg_solver.cpp
+ * @file jacobi_solver.cpp
  *
  * @license
  * Copyright (c) 2009-2013
@@ -41,9 +41,9 @@
 #include <lama/distribution/NoDistribution.hpp>
 
 #include <lama/solver/CG.hpp>
-#include <lama/solver/TrivialPreconditioner.hpp>
+#include <lama/solver/SpecializedJacobi.hpp>
 #include <lama/solver/logger/CommonLogger.hpp>
-#include <lama/solver/criteria/ResidualThreshold.hpp>
+#include <lama/solver/criteria/IterationCount.hpp>
 #include <lama/norm/L2Norm.hpp>
 
 #include <lama/Walltime.hpp>
@@ -200,16 +200,14 @@ int main( int argc, char* argv[] )
                    LoggerWriteBehaviour::toConsoleOnly,
                    std::auto_ptr<Timer>( new Timer() ) ) );
 
-    CG mySolver( "CGSolver", logger );
+    SpecializedJacobi mySolver( "CGSolver", logger );
 
     Scalar eps = 0.00001;
     NormPtr norm = NormPtr( new L2Norm() );
-    CriterionPtr rt( new ResidualThreshold( norm, eps, ResidualThreshold::Absolute ) );
+
+    CriterionPtr rt( new IterationCount( 100 ) );
 
     mySolver.setStoppingCriterion( rt );
-
-    // SolverPtr preconditioner( new TrivialPreconditioner( "Trivial preconditioner" ) );
-    // mySolver.setPreconditioner( preconditioner );
 
     start = Walltime::get();
 

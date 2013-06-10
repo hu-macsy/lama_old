@@ -4,7 +4,7 @@ INCLUDE_FLAGS = -I${BOOST_INCLUDE_DIR} -I${LAMA_ROOT}/include
 
 LD_FLAGS = -L${LAMA_ROOT}/lib -llama -Wl,-rpath=${LAMA_ROOT}/lib 
 
-EXECUTABLE: matrix_generator.exe cg_solver.exe
+EXECUTABLE: matrix_generator.exe cg_solver.exe jacobi_solver.exe
 
 .SUFFIXES:
 
