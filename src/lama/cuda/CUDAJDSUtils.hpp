@@ -178,7 +178,8 @@ public:
         const ValueType oldSolutionHalo[],
         const ValueType omega,
         SyncToken* syncToken );
-    /** Implementation for JDSUtilsInterface::Mult:normalGEMV with OpenMP on Host */
+
+    /** Implementation for JDSUtilsInterface::Mult:normalGEMV with CUDA on GPU */
 
     template<typename ValueType>
     static void normalGEMV(
@@ -187,6 +188,20 @@ public:
         const ValueType x[],
         const ValueType beta,
         const ValueType y[],
+        const IndexType numRows,
+        const IndexType perm[],
+        const IndexType jdsILG[],
+        const IndexType ndlg,
+        const IndexType jdsDLG[],
+        const IndexType jdsJA[],
+        const ValueType jdsValues[],
+        SyncToken* syncToken );
+
+    template<typename ValueType>
+    static void sparseGEMV(
+        ValueType result[],
+        const ValueType alpha,
+        const ValueType x[],
         const IndexType numRows,
         const IndexType perm[],
         const IndexType jdsILG[],
