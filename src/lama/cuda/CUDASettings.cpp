@@ -215,5 +215,18 @@ bool CUDASettings::useSharedMem()
 
 /* ----------------------------------------------------------------------------- */
 
+void CUDASettings::set( bool useSharedMemFlag, bool useTextureFlag )
+{
+    theUseTextureFlag   = useTextureFlag;
+    theUseSharedMemFlag = useSharedMemFlag;
+
+    initialized = true;
+
+    LAMA_LOG_INFO( logger, "set: useSharedMem = " << theUseSharedMemFlag 
+                           << ", useTexture = " << theUseTextureFlag )
+}
+
+/* ----------------------------------------------------------------------------- */
+
 }  // namespace
 

@@ -57,6 +57,10 @@ public:
 
     static bool useSharedMem();
 
+    /** Enable or disable texture and shared memory use explicitly. */
+
+    static void set( bool useSharedMemFlag, bool useTextureFlag );
+
 private:
 
     CUDASettings();
