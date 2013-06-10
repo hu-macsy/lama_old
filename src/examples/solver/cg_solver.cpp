@@ -44,6 +44,7 @@
 #include <lama/solver/TrivialPreconditioner.hpp>
 #include <lama/solver/logger/CommonLogger.hpp>
 #include <lama/solver/criteria/ResidualThreshold.hpp>
+#include <lama/solver/criteria/IterationCount.hpp>
 #include <lama/norm/L2Norm.hpp>
 
 #include <lama/Walltime.hpp>
@@ -55,30 +56,6 @@ using namespace lama;
 typedef double ValueType;
 
 typedef DenseVector<ValueType> VectorType;
-
-SparseMatrix<ValueType>* createMatrix( const char* type )
-{
-    if ( strcmp( type, "CSR" ) == 0 )
-    {
-        return new CSRSparseMatrix<ValueType>();
-    }
-    else if ( strcmp( type, "ELL" ) == 0 )
-    {
-        return new ELLSparseMatrix<ValueType>();
-    }
-    else if ( strcmp( type, "JDS" ) == 0 )
-    {
-        return new JDSSparseMatrix<ValueType>();
-    }
-    else if ( strcmp( type, "DIA" ) == 0 )
-    {
-        return new DIASparseMatrix<ValueType>();
-    }
-    else
-    {
-        return NULL;
-    }
-}
 
 int main( int argc, char* argv[] )
 {
@@ -113,13 +90,11 @@ int main( int argc, char* argv[] )
 
     // use auto pointer so that matrix will be deleted at program exit
 
-    auto_ptr<SparseMatrix<ValueType> > matrixPtr( createMatrix( lamaconf.getFormat() ) );
+    auto_ptr<SparseMatrix<ValueType> > matrixPtr( lamaconf.createSparseMatrix<ValueType>() );
 
-    if ( myRank == 0 )
-    {
-        cout << "mContext = " << *lamaconf.mContext << endl;
-        cout << lamaconf << endl;
-    }
+    // Each processor should print its configuration
+
+    cout << lamaconf << endl;
 
     double start = Walltime::get();   // start timing of reading
 
@@ -204,7 +179,17 @@ int main( int argc, char* argv[] )
 
     Scalar eps = 0.00001;
     NormPtr norm = NormPtr( new L2Norm() );
+
     CriterionPtr rt( new ResidualThreshold( norm, eps, ResidualThreshold::Absolute ) );
+
+    if ( lamaconf.hasMaxIter() )
+    {
+        CriterionPtr it( new IterationCount( lamaconf.getMaxIter() ) );
+ 
+        // stop if iteration count reached OR residual threshold is reached
+
+        rt.reset( new Criterion ( it, rt, Criterion::OR ) );
+    }
 
     mySolver.setStoppingCriterion( rt );
 
