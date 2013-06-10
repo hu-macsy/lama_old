@@ -71,6 +71,39 @@ __global__ void cooInitKernel( ValueType* result, const IndexType numRows, const
 
 /* --------------------------------------------------------------------------- */
 
+__device__ inline void atomicAddDouble( double* address, double val )
+{
+    unsigned long long int* address_as_ull =
+       (unsigned long long int*) address;
+
+    unsigned long long int old = *address_as_ull, assumed;
+
+    do 
+    {
+        assumed = old;
+        old = atomicCAS(address_as_ull, assumed,
+                        __double_as_longlong(val +
+                        __longlong_as_double(assumed)));
+    } while (assumed != old);
+}
+
+__device__ inline void atomicAddFloat( float* address, float val)
+
+{
+    int i_val = __float_as_int(val);
+
+    int tmp0 = 0;
+
+    int tmp1;
+
+    while( ( tmp1 = atomicCAS( ( int * ) address, tmp0, i_val ) ) != tmp0 )
+
+    {
+        tmp0 = tmp1;
+        i_val = __float_as_int(val + __int_as_float(tmp1));
+    }
+}
+
 template<typename ValueType>
 __global__ void cooGemvKernel(
     ValueType* result,
@@ -80,7 +113,18 @@ __global__ void cooGemvKernel(
     const IndexType numValues,
     const IndexType* cooIA,
     const IndexType* cooJA,
-    const ValueType* cooValues )
+    const ValueType* cooValues );
+
+template<>
+__global__ void cooGemvKernel(
+    double* result,
+    const IndexType numRows,
+    const double alpha,
+    const double* x,
+    const IndexType numValues,
+    const IndexType* cooIA,
+    const IndexType* cooJA,
+    const double* cooValues )
 {
     const int k = threadId( gridDim, blockIdx, blockDim, threadIdx );
 
@@ -91,10 +135,47 @@ __global__ void cooGemvKernel(
 
         // we must use atomic updates as different threads might update same row i
 
-        const ValueType resultUpdate = alpha * cooValues[k] * x[j];
+        const double resultUpdate = alpha * cooValues[k] * x[j];
 
-        // ToDo: make it atomic
-        result[i] += resultUpdate;
+        // This solution is very slow, but works
+
+        atomicAddDouble( &result[i], resultUpdate );
+    }
+}
+
+template<>
+__global__ void cooGemvKernel(
+    float* result,
+    const IndexType numRows,
+    const float alpha,
+    const float* x,
+    const IndexType numValues,
+    const IndexType* cooIA,
+    const IndexType* cooJA,
+    const float* cooValues )
+{
+    const int k = threadId( gridDim, blockIdx, blockDim, threadIdx );
+
+    if ( k < numValues )
+    {
+        IndexType i = cooIA[k];
+        IndexType j = cooJA[k];
+
+        // we must use atomic updates as different threads might update same row i
+
+        const float resultUpdate = alpha * cooValues[k] * x[j];
+
+#if !defined(__CUDA_ARCH__) || __CUDA_ARCH__ >= 200
+
+        // new fast solution
+
+        atomicAdd( &result[i], resultUpdate );
+#else
+        // old slow solution
+
+        atomicAddFloat( &result[i], resultUpdate );
+#endif
+
     }
 }
 
@@ -116,16 +197,22 @@ void CUDACOOUtils::normalGEMV(
 {
     LAMA_REGION( "CUDA.COO.normalGEMV" )
 
+    LAMA_LOG_INFO( logger, "normalGEMV, #rows = " << numRows << ", #vals = " << numValues )
+
     const IndexType block_size = 256;
     dim3 dimBlock( block_size, 1, 1 );
-    dim3 dimGrid = makeGrid( numRows, dimBlock.x );
+    dim3 dimGrid = makeGrid( numValues, dimBlock.x );
 
     LAMA_CHECK_CUDA_ACCESS
 
-    cooInitKernel<<< dimGrid, dimBlock, block_size * sizeof( IndexType )>>>
+    cooInitKernel<<< dimGrid, dimBlock>>>
     ( result, numRows, beta, y );
 
-    cooGemvKernel<<< dimGrid, dimBlock, block_size * sizeof( IndexType )>>>
+    cudaStreamSynchronize( 0 );
+
+    dim3 dimGrid1 = makeGrid( numValues, dimBlock.x );
+
+    cooGemvKernel<<< dimGrid1, dimBlock>>>
     ( result, numRows, alpha, x, numValues, cooIA, cooJA, cooValues );
 
     LAMA_CHECK_CUDA_ERROR
