@@ -44,6 +44,7 @@
 #include <lama/solver/SpecializedJacobi.hpp>
 #include <lama/solver/logger/CommonLogger.hpp>
 #include <lama/solver/criteria/IterationCount.hpp>
+#include <lama/solver/criteria/ResidualThreshold.hpp>
 #include <lama/norm/L2Norm.hpp>
 
 #include <lama/Walltime.hpp>
@@ -202,10 +203,19 @@ int main( int argc, char* argv[] )
 
     SpecializedJacobi mySolver( "CGSolver", logger );
 
-    Scalar eps = 0.00001;
+    Scalar eps = 0.01;
     NormPtr norm = NormPtr( new L2Norm() );
 
-    CriterionPtr rt( new IterationCount( 100 ) );
+    CriterionPtr rt( new ResidualThreshold( norm, eps, ResidualThreshold::Absolute ) );
+
+    if ( lamaconf.hasMaxIter() )
+    {
+        CriterionPtr it( new IterationCount( lamaconf.getMaxIter() ) );
+
+        // stop if iteration count reached OR residual threshold is reached
+
+        rt.reset( new Criterion ( it, rt, Criterion::OR ) );
+    }
 
     mySolver.setStoppingCriterion( rt );
 

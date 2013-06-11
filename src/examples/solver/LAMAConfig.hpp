@@ -111,9 +111,10 @@ public:
         return *mComm;
     }
 
-    std::string            mMatrixFormat;
-    lama::ContextPtr       mContext;
-    lama::Matrix::SyncKind mCommunicationKind;
+    std::string              mMatrixFormat;
+    lama::ContextPtr         mContext;
+    lama::Matrix::SyncKind   mCommunicationKind;
+    lama::Scalar::ScalarType mValueType;          // value type to use
 
     void writeAt( std::ostream& stream ) const
     {
@@ -123,6 +124,7 @@ public:
         stream << "Communicator  = " << *mComm << std::endl;
         stream << "Matrix format = " << getFormat() << std::endl;
         stream << "CommKind      = " << mCommunicationKind << std::endl;
+        stream << "ValueType     = " << mValueType << std::endl;
         if ( hasMaxIter () )
         {
             stream << "Max iter      = " << mMaxIter << std::endl;
@@ -168,8 +170,8 @@ LamaConfig::LamaConfig()
     mCommunicationKind = lama::Matrix::SYNCHRONOUS;
     mComm              = lama::CommunicatorFactory::get();
     mContext           = lama::ContextFactory::getContext( lama::Context::Host );
-
     mMaxIter           = lama::nIndex;
+    mValueType         = lama::Scalar::DOUBLE;
 }
 
 LamaConfig::~LamaConfig()
@@ -213,6 +215,14 @@ void LamaConfig::setArg( const char* arg )
     else if ( "ASYNC" == val )
     {
         mCommunicationKind = lama::Matrix::ASYNCHRONOUS;
+    }
+    else if ( ( "FLOAT" == val ) || ( "SP" == val ) )
+    {
+        mValueType = lama::Scalar::FLOAT;
+    }
+    else if ( ( "DOUBLE" == val ) || ( "DP" == val ) )
+    {
+        mValueType = lama::Scalar::DOUBLE;
     }
     else if ( isNumber( val.c_str() ) )
     {

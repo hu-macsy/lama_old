@@ -52,11 +52,6 @@
 using namespace std;
 using namespace lama;
 
-/** ValueType is the type used for matrix and vector elements. */
-typedef double ValueType;
-
-typedef DenseVector<ValueType> VectorType;
-
 int main( int argc, char* argv[] )
 {
     LamaConfig lamaconf;
@@ -90,7 +85,22 @@ int main( int argc, char* argv[] )
 
     // use auto pointer so that matrix will be deleted at program exit
 
-    auto_ptr<SparseMatrix<ValueType> > matrixPtr( lamaconf.createSparseMatrix<ValueType>() );
+    auto_ptr<Matrix> matrixPtr;
+    auto_ptr<Vector> rhsPtr;
+
+    if ( lamaconf.mValueType == Scalar::FLOAT )
+    {
+        matrixPtr.reset( lamaconf.createSparseMatrix<float>() );
+        rhsPtr.reset( new DenseVector<float>() );
+    }
+    else
+    {
+        matrixPtr.reset( lamaconf.createSparseMatrix<double>() );
+        rhsPtr.reset( new DenseVector<double>() );
+    }
+
+    Matrix& matrix = *matrixPtr;
+    Vector& rhs = *rhsPtr;
 
     // Each processor should print its configuration
 
@@ -98,13 +108,10 @@ int main( int argc, char* argv[] )
 
     double start = Walltime::get();   // start timing of reading
 
-    SparseMatrix<ValueType>& matrix = *matrixPtr;
-
     // read matrix + rhs from disk
 
     matrix.readFromFile( filename );
-
-    VectorType rhs( filename );
+    rhs.readFromFile( filename );
 
     // only square matrices are accetpted
 
@@ -112,7 +119,13 @@ int main( int argc, char* argv[] )
     LAMA_ASSERT_EQUAL( matrix.getNumRows(), rhs.size() )
 
     int numRows = matrix.getNumRows();
-    VectorType solution( numRows, 0.0 );
+
+    // for solutin create vector with same format/type as rhs, size = numRows, init = 0.0
+
+    auto_ptr<Vector> solutionPtr( rhs.create( rhs.getDistributionPtr() ) );
+    Vector& solution = *solutionPtr;
+
+    solution = 0.0;   // intialize of a vector
 
     double stop = Walltime::get();  // stop timing for reading
 
@@ -128,7 +141,6 @@ int main( int argc, char* argv[] )
     DistributionPtr dist( new BlockDistribution( numRows, lamaconf.getCommunicatorPtr() ) );
 
     matrix.redistribute( dist, dist );
-
     rhs.redistribute ( dist );
     solution.redistribute ( dist );
 
@@ -222,15 +234,18 @@ int main( int argc, char* argv[] )
         cout << "Solution phase took " << stop - start << " secs." << endl;
     }
 
-    start = Walltime::get();
+    bool writeFlag = false;
 
-    // solution.writeToFile( "CG_solution" );
-
-    stop = Walltime::get();
-
-    if ( myRank == 0 )
+    if ( writeFlag )
     {
-        cout << "Writing solution: " << stop - start << " secs." << endl;
+         start = Walltime::get();
+         solution.writeToFile( "CG_solution" );
+         stop = Walltime::get();
+
+         if ( myRank == 0 )
+         {
+             cout << "Writing solution: " << stop - start << " secs." << endl;
+         }
     }
 }
 
