@@ -34,6 +34,7 @@
 ### Add classes and header files ###
 set ( CLASSES
         mmio
+        FileIO
         XDRFileStream
     )
 
@@ -46,4 +47,6 @@ lama_classes ( ${CLASSES} )
 lama_headers ( ${HEADERS} )
 
 ### add sources and headers to parent scope ###
+
 lama_add ()
+

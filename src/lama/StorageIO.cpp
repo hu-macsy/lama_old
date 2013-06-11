@@ -35,6 +35,7 @@
 #include <lama/StorageIO.hpp>
 
 // others
+#include <lama/io/FileIO.hpp>
 #include <lama/io/XDRFileStream.hpp>
 #include <lama/io/mmio.hpp>
 
@@ -184,29 +185,24 @@ static void writeBinaryData( std::fstream& outFile, const DataType data[], const
     return;
 }
 
-/* -------------------------------------------------------------------------- */
+/** Help function to determine size of file with CSR data of certain value type
+ *
+ *  @tparam ValueType type of matrix value, i.e. float or double
+ *  @param[in] numRows  number of rows in CSR data
+ *  @param[in] numValues number of values in CSR data
+ *
+ *  @return number of bytes expected for a binary file containing CSR data of this type
+ */
 
-template<typename FileType,typename DataType,int offset>
-static void readBinaryData( std::fstream& inFile, DataType data[], const IndexType n )
+template<typename ValueType>
+static FileIO::file_size_t expectedCSRFileSize( const IndexType numRows, const IndexType numValues )
 {
-    if ( ( offset == 0 ) && ( typeid(FileType) == typeid(DataType) ) )
-    {
-        // no type conversion needed
+    FileIO::file_size_t size = sizeof( IndexType ) * ( numRows + 1 );  // size of csrIA
 
-        inFile.read( reinterpret_cast<char*>( data ), sizeof(DataType) * n );
-        return;
-    }
+    size += sizeof( IndexType ) * numValues;  // size of csrJA
+    size += sizeof( ValueType ) * numValues;  // size of csrValues
 
-    // allocate buffer for type conversion and/or adding offset
-
-    boost::scoped_array<FileType> buffer( new FileType[n] );
-
-    inFile.read( reinterpret_cast<char*>( buffer.get() ), sizeof(FileType) * n );
-
-    for ( IndexType i = 0; i < n; i++ )
-    {
-        data[i] = static_cast<DataType>( buffer[i] + offset );
-    }
+    return size;
 }
 
 /* -------------------------------------------------------------------------- */
@@ -219,9 +215,14 @@ void StorageIO<ValueType>::readCSRFromBinaryFile(
     const std::string& fileName,
     const IndexType numRows )
 {
-    LAMA_LOG_INFO( logger, "read CSR storage from binary file " << fileName << ", #rows = " << numRows )
+    LAMA_LOG_INFO( logger, "read CSR<" << typeid( ValueType ).name() <<
+                           "> storage from binary file " << fileName << ", #rows = " << numRows )
 
     LAMA_REGION( "StorageIO.readCSRFromBinaryFile" )
+
+    FileIO::file_size_t actualSize = FileIO::getFileSize( fileName.c_str() );
+
+    LAMA_LOG_INFO( logger, "CSR binary file " << fileName << " has size = " << actualSize )
 
     std::fstream inFile( fileName.c_str(), std::ios::in | std::ios::binary );
 
@@ -229,15 +230,43 @@ void StorageIO<ValueType>::readCSRFromBinaryFile(
 
     // read offset array IA
 
-    readBinaryData<IndexType,IndexType, -1>( inFile, ia.get(), numRows + 1 );
+    FileIO::readBinaryData<IndexType, IndexType, -1>( inFile, ia.get(), numRows + 1 );
 
     IndexType numValues = ia[numRows];
 
     HostWriteOnlyAccess<IndexType> ja( csrJA, numValues );
     HostWriteOnlyAccess<ValueType> values( csrValues, numValues );
 
-    readBinaryData<IndexType,IndexType, -1>( inFile, ja.get(), numValues );
-    readBinaryData<ValueType,ValueType,0>( inFile, values.get(), numValues );
+    FileIO::readBinaryData<IndexType, IndexType, -1>( inFile, ja.get(), numValues );
+    
+    // now we can calculate the expected size
+
+    FileIO::file_size_t expectedSize = expectedCSRFileSize<ValueType>( numRows, numValues );
+
+    if ( expectedSize == actualSize )
+    {
+        LAMA_LOG_INFO( logger, "read binary data of type " << csrValues.getValueType() 
+                               << ", no conversion" )
+        FileIO::readBinaryData<ValueType, ValueType, 0>( inFile, values.get(), numValues );
+    }
+    else if ( actualSize == expectedCSRFileSize<float>( numRows, numValues )  )
+    {
+        LAMA_LOG_WARN( logger, "read binary data of type float, conversion to " << csrValues.getValueType() )
+        FileIO::readBinaryData<float, ValueType, 0>( inFile, values.get(), numValues );
+    }
+    else if ( actualSize == expectedCSRFileSize<double>( numRows, numValues )  )
+    {
+        LAMA_LOG_WARN( logger, "read binary data of type double, conversion to " << csrValues.getValueType() )
+        FileIO::readBinaryData<double, ValueType, 0>( inFile, values.get(), numValues );
+    }
+    else
+    {
+        LAMA_THROWEXCEPTION( "File " << fileName << " has unexpected file size = " << actualSize 
+                             << ", #rows = " << numRows << ", #values = " << numValues  
+                             << ", expected for float = " << expectedCSRFileSize<float>( numRows, numValues )
+                             << ", or expected for double = " << expectedCSRFileSize<double>( numRows, numValues ) )
+    }
+        
     inFile.close();
 }
 
@@ -1153,6 +1182,18 @@ size_t StorageIO<ValueType>::getDataTypeSize( const File::DataType dataType )
 
 /* -------------------------------------------------------------------------- */
 
+static bool hasSuffix( const std::string& name, const char* suffix )
+{
+    size_t lenSuffix = strlen( suffix );
+
+    if ( name.size() >= lenSuffix )
+    {
+        return name.substr( name.size() - lenSuffix, lenSuffix ) == suffix;
+    }
+
+    return false;
+}
+
 template<typename ValueType>
 void StorageIO<ValueType>::writeCSRToFile(
     const PartitionId size,
@@ -1176,7 +1217,7 @@ void StorageIO<ValueType>::writeCSRToFile(
 
     std::string fileBaseName;
 
-    if ( fileName.substr( fileName.size() - 4, 4 ) == ".frm" )
+    if ( hasSuffix( fileName, ".frm" ) )
     {
         fileBaseName = fileName.substr( 0, fileName.size() - 4 ).c_str();
     }
