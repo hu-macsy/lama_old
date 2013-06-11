@@ -141,27 +141,11 @@ void SyncToken::pushArray( shared_ptr<_LAMAArray> array )
     }
 }
 
-/* ------------------------------------------------------------------------ */
+/* ----------------------------------------------------------------------- */
 
-void SyncToken::pushSyncToken( shared_ptr<SyncToken> syncToken )
+void SyncToken::pushRoutine( boost::function<void()> function )
 {
-    LAMA_ASSERT_ERROR( syncToken.get(), "NULL SyncToken cannot be pushed for synchronization." )
-
-    if ( mSynchronized )
-    {
-        LAMA_LOG_DEBUG( logger, *this << ": push SyncToken not done, already synchronized" )
-
-        // delete the pointer, do not push it anymore
-    }
-    else
-    {
-        LAMA_LOG_DEBUG( logger, *this << ": push SyncToken, will be synchronized after synchronization" )
-
-        // take ownership of the pointer, have to be deleted at synchronization
-
-        mChilds.push_back( syncToken );
-    }
-
+    mSynchronizedFunctions.push_back( function );
 }
 
 /* ----------------------------------------------------------------------- */
@@ -186,7 +170,11 @@ void SyncToken::setSynchronized()
 
     mAccesses.clear();
     mArrays.clear();
-    mChilds.clear();
+
+    for ( size_t i = 0; i < mSynchronizedFunctions.size(); ++i )
+    {
+        mSynchronizedFunctions[i]();
+    }
 }
 
 }

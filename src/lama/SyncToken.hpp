@@ -46,6 +46,7 @@
 
 #include <vector>
 #include <boost/shared_ptr.hpp>
+#include <boost/function.hpp>
 
 namespace lama
 {
@@ -123,9 +124,9 @@ public:
 
     void pushArray( boost::shared_ptr<_LAMAArray> array );
 
-    /** Add a Synctoken that will be synchronized after synchronization */
+    /** Add a routine to be called after synchronization. */
 
-    void pushSyncToken( boost::shared_ptr<SyncToken> syncToken );
+    void pushRoutine( boost::function<void()> function );
 
 protected:
 
@@ -170,9 +171,9 @@ private:
 
     std::vector< boost::shared_ptr<_LAMAArray> > mArrays;
 
-    std::vector< boost::shared_ptr<SyncToken> > mChilds;
-
     bool mSynchronized;
+
+    std::vector< boost::function<void()> > mSynchronizedFunctions;
 };
 
 }
