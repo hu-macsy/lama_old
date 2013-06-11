@@ -62,6 +62,8 @@
 #include <thrust/transform_reduce.h>
 #include <thrust/tuple.h>
 
+#include <boost/bind.hpp>
+
 //#include "cuPrintf.cuh"
 //#include "cuPrintf.cu"
 
@@ -386,10 +388,10 @@ void CUDACSRUtils::normalGEMV(
     const ValueType csrValues[],
     SyncToken* syncToken )
 {
-    LAMA_LOG_INFO( logger, "normalGEMV<" << typeid(ValueType).name() << ">" << ", #rows = " << numRows )
+    LAMA_LOG_INFO( logger, "normalGEMV<" << typeid(ValueType).name() << ">" << 
+                           " result[ " << numRows << "] = " << alpha << " * A(csr) * x + " << beta << " * y " )
 
-    LAMA_LOG_INFO( logger,
-                   "alpha = " << alpha << ", x = " << x << ", beta = " << beta << ", y = " << y << ", result = " << result )
+    LAMA_LOG_DEBUG( logger, "x = " << x << ", y = " << y << ", result = " << result )
 
     LAMA_CHECK_CUDA_ACCESS
 
@@ -408,7 +410,6 @@ void CUDACSRUtils::normalGEMV(
         CUDAStreamSyncToken* cudaStreamSyncToken = dynamic_cast<CUDAStreamSyncToken*>( syncToken );
         LAMA_ASSERT_DEBUG( cudaStreamSyncToken, "no cuda stream sync token provided" )
         stream = cudaStreamSyncToken->getCUDAStream();
-        useTexture = false;
     }
 
     LAMA_LOG_INFO( logger, "Start csr_normal_gemv_kernel<" << typeid( ValueType ).name()
@@ -433,18 +434,26 @@ void CUDACSRUtils::normalGEMV(
                     ( result, numRows, alpha, csrValues, csrIA, csrJA, x, beta, y );
     }
 
-    // ToDo: implement and choose more efficient variants for special
-    //       cases: alpha = 1.0, alpha = -1.0, beta = 1.0, beta = 0.0, beta = -1.0
-
     if ( !syncToken )
     {
         LAMA_CUDA_RT_CALL( cudaStreamSynchronize( stream ), "normalGEMV, stream = " << stream )
-        LAMA_LOG_INFO( logger, "normalGEMV<" << typeid(ValueType).name() << "> synchronized" )
+        LAMA_LOG_DEBUG( logger, "normalGEMV<" << typeid(ValueType).name() << "> synchronized" )
     }
 
     if ( useTexture )
     {
-        csrUnbindTexture( x );
+        if ( !syncToken )
+        {
+            csrUnbindTexture( x );
+        }
+        else
+        {
+             // get routine with the right signature
+             void ( *unbind ) ( const ValueType* ) = &csrUnbindTexture;
+
+             // delay unbind until synchroniziaton
+             syncToken->pushRoutine( boost::bind( unbind, x ) );
+        }
     }
 }
 
@@ -1910,6 +1919,8 @@ void CUDACSRUtils::matrixMultiply(
 
 void CUDACSRUtils::setInterface( CSRUtilsInterface& CSRUtils )
 {
+    LAMA_LOG_INFO( logger, "set CSR routines for CUDA in Interface" )
+
     LAMA_INTERFACE_REGISTER( CSRUtils, sizes2offsets )
     LAMA_INTERFACE_REGISTER( CSRUtils, offsets2sizes )
     LAMA_INTERFACE_REGISTER( CSRUtils, hasDiagonalProperty )

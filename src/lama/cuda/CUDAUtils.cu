@@ -492,6 +492,8 @@ void CUDAUtils::invert( ValueType array[], const IndexType n )
 
 void CUDAUtils::setInterface( UtilsInterface& Utils )
 {
+    LAMA_LOG_INFO( logger, "set general utilty routines for CUDA in Interface" )
+
     LAMA_INTERFACE_REGISTER( Utils, validIndexes )
 
     LAMA_INTERFACE_REGISTER_TT( Utils, scale, float, float )

@@ -64,6 +64,8 @@
 #include <thrust/transform.h>
 #include <thrust/transform_reduce.h>
 
+#include <boost/bind.hpp>
+
 namespace lama
 {
 
@@ -248,43 +250,39 @@ void checkKernel(
 }
 
 void CUDAELLUtils::check(
-    const IndexType mNumRows,
-    const IndexType mNumValuesPerRow,
-    const IndexType mNumColumns,
+    const IndexType numRows,
+    const IndexType numValuesPerRow,
+    const IndexType numColumns,
     const IndexType *ia,
     const IndexType *ja,
     const char* msg )
 {
     LAMA_LOG_INFO( logger,
-                   "check # mNumRows = " << mNumRows << ", mNumValuesPerRow = " << mNumValuesPerRow << ", mNumColumns = " << mNumColumns )
+                   "check # numRows = " << numRows << ", numValuesPerRow = " << numValuesPerRow << ", numColumns = " << numColumns )
 
     LAMA_CHECK_CUDA_ACCESS
 
-    if ( mNumRows > 0 )
+    if ( numRows > 0 )
     {
-        thrust::device_ptr<bool> resultPtr = thrust::device_malloc<bool>( mNumRows );
-        thrust::fill( resultPtr, resultPtr + mNumRows, false );
+        thrust::device_ptr<bool> resultPtr = thrust::device_malloc<bool>( numRows );
+        thrust::fill( resultPtr, resultPtr + numRows, false );
 
         bool *resultRawPtr = thrust::raw_pointer_cast( resultPtr );
 
-        const int block_size = 256;
-        dim3 dimBlock( block_size, 1, 1 );
-        dim3 dimGrid = makeGrid( mNumRows, dimBlock.x );
+        const int blockSize = CUDASettings::getBlockSize( numRows );
+        dim3 dimBlock( blockSize, 1, 1 );
+        dim3 dimGrid = makeGrid( numRows, dimBlock.x );
 
-        checkKernel<<<dimGrid, dimBlock>>>( mNumRows, mNumValuesPerRow, mNumColumns, ia, ja, resultRawPtr );
+        LAMA_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "fill result with false failed" )
 
-        cudaStreamSynchronize( 0 );
-        LAMA_CHECK_CUDA_ERROR
-
-        bool integrity = thrust::reduce( resultPtr, resultPtr + mNumRows, true, thrust::logical_and<bool>() );
+        bool integrity = thrust::reduce( resultPtr, resultPtr + numRows, true, thrust::logical_and<bool>() );
 
         LAMA_ASSERT_ERROR( integrity, msg << ": ia to large, or ja out of range" )
     }
     else
     {
-        LAMA_ASSERT_ERROR( mNumValuesPerRow == 0,
-                           msg << ": mNumValuesPerRow should be 0, but is: " << mNumValuesPerRow )
-        LAMA_ASSERT_ERROR( mNumColumns == 0, msg << ": mNumColumns should be 0, but is: " << mNumColumns )
+        LAMA_ASSERT_EQUAL_ERROR( 0, numValuesPerRow )
+        LAMA_ASSERT_EQUAL_ERROR( 0, numColumns )
     }
 }
 
@@ -332,8 +330,8 @@ void CUDAELLUtils::getRow(
     thrust::device_ptr<IndexType> iaPtr( const_cast<IndexType*>( ia ) );
     thrust::host_vector<IndexType> rowNumColumns( iaPtr + i, iaPtr + i + 1 );
 
-    const int block_size = 256;
-    dim3 dimBlock( block_size, 1, 1 );
+    const int blockSize = CUDASettings::getBlockSize( numRows );
+    dim3 dimBlock( blockSize, 1, 1 );
     dim3 dimGrid = makeGrid( rowNumColumns[0], dimBlock.x );
 
     //TODO: find better CUDA / Thrust implementation
@@ -395,8 +393,8 @@ OtherValueType CUDAELLUtils::getValue(
 
         ValueType *resultRawPtr = thrust::raw_pointer_cast( resultPtr );
 
-        const int block_size = 256;
-        dim3 dimBlock( block_size, 1, 1 );
+        const int blockSize = CUDASettings::getBlockSize();
+        dim3 dimBlock( blockSize, 1, 1 );
         dim3 dimGrid = makeGrid( rowNumColumns, dimBlock.x );
 
         getValueKernel<<<dimGrid, dimBlock>>>( i, j, numRows, rowNumColumns, ja, values, resultRawPtr );
@@ -491,8 +489,8 @@ void CUDAELLUtils::getCSRValues(
 
     LAMA_CHECK_CUDA_ACCESS
 
-    const int block_size = 256;
-    dim3 dimBlock( block_size, 1, 1 );
+    const int blockSize = CUDASettings::getBlockSize();
+    dim3 dimBlock( blockSize, 1, 1 );
     dim3 dimGrid = makeGrid( numRows, dimBlock.x );
 
     //TODO: find better CUDA / Thrust implementation
@@ -566,8 +564,8 @@ void CUDAELLUtils::setCSRValues(
 
     LAMA_CHECK_CUDA_ACCESS
 
-    const int block_size = 256;
-    dim3 dimBlock( block_size, 1, 1 );
+    const int blockSize = CUDASettings::getBlockSize();
+    dim3 dimBlock( blockSize, 1, 1 );
     dim3 dimGrid = makeGrid( numRows, dimBlock.x );
 
     csr2ellKernel<<<dimGrid, dimBlock>>>( ellJA, ellValues, ellSizes, numRows, numValuesPerRow,
@@ -625,8 +623,8 @@ void CUDAELLUtils::fillELLValues(
 
     LAMA_CHECK_CUDA_ACCESS
 
-    const int block_size = 256;
-    dim3 dimBlock( block_size, 1, 1 );
+    const int blockSize = CUDASettings::getBlockSize();
+    dim3 dimBlock( blockSize, 1, 1 );
     dim3 dimGrid = makeGrid( numRows, dimBlock.x );
 
     fillEllKernel<<<dimGrid, dimBlock>>>( ellJA, ellValues, ellSizes, numRows, numValuesPerRow );
@@ -644,22 +642,22 @@ texture<int2,1> texELLDXref;
 
 __inline__ void ellBindTexture( const float* vector )
 {
-    LAMA_CUDA_RT_CALL( cudaBindTexture( NULL, texELLSXref, vector ), "LAMA_STATUS_CUDA_BINDTEX_FAILED" )
+    LAMA_CUDA_RT_CALL( cudaBindTexture( NULL, texELLSXref, vector ), "bind float vector x to texture" )
 }
 
 __inline__ void ellBindTexture( const double* vector )
 {
-    LAMA_CUDA_RT_CALL( cudaBindTexture( NULL, texELLDXref, vector ), "LAMA_STATUS_CUDA_BINDTEX_FAILED" )
+    LAMA_CUDA_RT_CALL( cudaBindTexture( NULL, texELLDXref, vector ), "bind double vector x to texture" )
 }
 
 __inline__ void ellUnbindTexture( const float* )
 {
-    LAMA_CUDA_RT_CALL( cudaUnbindTexture( texELLSXref ), "LAMA_STATUS_CUDA_UNBINDTEX_FAILED" )
+    LAMA_CUDA_RT_CALL( cudaUnbindTexture( texELLSXref ), "unbind float vector x from texture" )
 }
 
 __inline__ void ellUnbindTexture( const double* )
 {
-    LAMA_CUDA_RT_CALL( cudaUnbindTexture( texELLDXref ), "LAMA_STATUS_CUDA_UNBINDTEX_FAILED" )
+    LAMA_CUDA_RT_CALL( cudaUnbindTexture( texELLDXref ), "unbind double vector x from texture" )
 }
 
 template<typename T,bool useTexture>
@@ -738,10 +736,10 @@ void CUDAELLUtils::normalGEMV(
 {
     LAMA_REGION( "CUDA.ELL.normalGEMV" )
 
-    LAMA_LOG_INFO( logger, "normalGEMV<" << typeid(ValueType).name() << ">" << ", #rows = " << numRows )
+    LAMA_LOG_INFO( logger, "normalGEMV<" << typeid(ValueType).name() << ">" <<
+                           " result[ " << numRows << "] = " << alpha << " * A(ell) * x + " << beta << " * y " )
 
-    LAMA_LOG_INFO( logger,
-                   "alpha = " << alpha << ", x = " << x << ", beta = " << beta << ", y = " << y << ", result = " << result )
+    LAMA_LOG_DEBUG( logger, "x = " << x << ", y = " << y << ", result = " << result )
 
     LAMA_CHECK_CUDA_ACCESS
 
@@ -752,37 +750,18 @@ void CUDAELLUtils::normalGEMV(
         CUDAStreamSyncToken* cudaStreamSyncToken = dynamic_cast<CUDAStreamSyncToken*>( syncToken );
         LAMA_ASSERT_DEBUG( cudaStreamSyncToken, "no cuda stream sync token provided" )
         stream = cudaStreamSyncToken->getCUDAStream();
+        LAMA_LOG_INFO( logger, "asyncronous execution on stream " << stream );
     }
 
-    // TODO read nnc ?? TB
-    //    if(nnc>134217728)//512MB * 1024 KB/MB * 1024 B/KB / (4 B/float) = 134217728
-    //    {
-    //        lama_setLastError(LAMA_STATUS_INPUTVECTOR_EXCEEDS_TEXTURESIZE);
-    //        return;
-    //    }
-
-    // x_d and y_d need to be not aliased
-    // TODO: assert( x_d != y_d );
-
-    const int block_size = ( numRows > 8191 ? 256 : 128 );
-    dim3 dimBlock( block_size, 1, 1 );
+    const int blockSize = CUDASettings::getBlockSize();
+    dim3 dimBlock( blockSize, 1, 1 );
     dim3 dimGrid = makeGrid( numRows, dimBlock.x );
 
     bool useTexture = CUDASettings::useTexture();
 
-    useTexture = false;
-
-    if ( syncToken )
-    {
-        // Not yet supported: unbind Texture after synchronization 
-
-        useTexture = false;   
-    }
-
     LAMA_LOG_INFO( logger, "Start ell_gemv_kernel<" << typeid( ValueType ).name()
-                           << ", useTexture = " << useTexture << ">" );
-
-    // make sure that really two instances of the kernel will exist
+                           << "> <<< blockSize = " << blockSize << ", stream = " << stream 
+                           << ", useTexture = " << useTexture << ">>>" )
 
     if ( useTexture )
     {
@@ -803,18 +782,25 @@ void CUDAELLUtils::normalGEMV(
             numRows, alpha, numNonZerosPerRow, ellValues, ellJA, x, beta, y, result );
     }
 
-    LAMA_CUDA_RT_CALL( cudaGetLastError(), "LAMA_STATUS_SELLAGEMVPBV_CUDAKERNEL_FAILED" )
-
-    // ToDo: create a task for unbind in case of asynchronous execution 
-
-    if ( useTexture )
-    {
-        ellUnbindTexture( x );
-    }
-
     if ( !syncToken )
     {
         LAMA_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "sync for ell_gemv_kernel failed" )
+
+        if ( useTexture )
+        {
+            ellUnbindTexture( x );
+        }
+    }
+    else
+    { 
+        // synchronization at SyncToken, delay unbind
+
+        if ( useTexture )
+        {
+            void ( *unbind ) ( const ValueType* ) = &ellUnbindTexture;
+
+            syncToken->pushRoutine( boost::bind( unbind, x ) );
+        }
     }
 }
 
@@ -889,18 +875,11 @@ void CUDAELLUtils::sparseGEMV(
         stream = cudaStreamSyncToken->getCUDAStream();
     }
 
-    const int block_size = ( numNonZeroRows > 8191 ? 256 : 128 );
-    dim3 dimBlock( block_size, 1, 1 );
+    const int blockSize = CUDASettings::getBlockSize( numNonZeroRows );
+    dim3 dimBlock( blockSize, 1, 1 );
     dim3 dimGrid = makeGrid( numNonZeroRows, dimBlock.x );
 
     bool useTexture = CUDASettings::useTexture();
-
-    // LAST DEL useTexture = false;
-
-    if ( syncToken ) 
-    {
-        useTexture = false;
-    }
 
     if ( useTexture )
     {
@@ -908,13 +887,14 @@ void CUDAELLUtils::sparseGEMV(
     }
 
     LAMA_LOG_INFO( logger, "Start ell_sparse_gemv_kernel<" << typeid( ValueType ).name()
-                           << ", useTexture = " << useTexture << ">" );
+                           << "> <<< blockSize = " << blockSize << ", stream = " << stream 
+                           << ", useTexture = " << useTexture << ">>>" );
 
     if ( useTexture )
     {
         LAMA_CUDA_RT_CALL( cudaFuncSetCacheConfig( ell_sparse_gemv_kernel<ValueType, true>, cudaFuncCachePreferL1),
-                           "LAMA_STATUS_CUDA_FUNCSETCACHECONFIG_FAILED" )
-
+                           "cudaFuncSetCacheConfig failed" )
+     
         ell_sparse_gemv_kernel<ValueType, true> <<<dimGrid, dimBlock, 0, stream>>>( 
             result, numRows, alpha, numNonZerosPerRow, ellIA, ellValues,
             ellJA, rowIndexes, numNonZeroRows, x );
@@ -922,18 +902,32 @@ void CUDAELLUtils::sparseGEMV(
     else
     {
         LAMA_CUDA_RT_CALL( cudaFuncSetCacheConfig( ell_sparse_gemv_kernel<ValueType, false>, cudaFuncCachePreferL1),
-                           "LAMA_STATUS_CUDA_FUNCSETCACHECONFIG_FAILED" )
+                           "cudaFuncSetCacheConfig failed" )
      
         ell_sparse_gemv_kernel<ValueType, false> <<<dimGrid, dimBlock, 0, stream>>>(
             result, numRows, alpha, numNonZerosPerRow, ellIA, ellValues,
             ellJA, rowIndexes, numNonZeroRows, x );
     }
 
-    LAMA_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "sparse GEMV kernel failed" )
-
-    if ( useTexture )
+    if ( !syncToken )
     {
-        ellUnbindTexture( x );
+        LAMA_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "sparse GEMV kernel failed" )
+
+        if ( useTexture )
+        {
+            ellUnbindTexture( x );
+        }
+    }
+    else
+    { 
+        // synchronization at SyncToken, delay unbind
+
+        if ( useTexture )
+        {
+            void ( *unbind ) ( const ValueType* ) = &ellUnbindTexture;
+
+            syncToken->pushRoutine( boost::bind( unbind, x ) );
+        }
     }
 }
 
@@ -1008,24 +1002,22 @@ void CUDAELLUtils::jacobi(
 
     cudaStream_t stream = 0;
 
-    bool useTexture = CUDASettings::useTexture();
-
-    useTexture = false;
+    const bool useTexture = CUDASettings::useTexture();
 
     if ( syncToken )
     {
         CUDAStreamSyncToken* cudaStreamSyncToken = dynamic_cast<CUDAStreamSyncToken*>( syncToken );
         LAMA_ASSERT_DEBUG( cudaStreamSyncToken, "no cuda stream sync token provided" )
         stream = cudaStreamSyncToken->getCUDAStream();
-        useTexture = false;
     }
 
-    const int block_size = ( numRows > 8191 ? 256 : 128 );
-    dim3 dimBlock( block_size, 1, 1 );
+    const int blockSize = CUDASettings::getBlockSize( numRows );
+    dim3 dimBlock( blockSize, 1, 1 );
     dim3 dimGrid = makeGrid( numRows, dimBlock.x );
 
     LAMA_LOG_INFO( logger, "Start ell_jacobi_kernel<" << typeid( ValueType ).name()
-                           << ", useTexture = " << useTexture << ">" );
+                           << "> <<< block size = " << blockSize << ", stream = " << stream
+                           << ", useTexture = " << useTexture << ">>>" );
 
     if ( useTexture )
     {
@@ -1051,12 +1043,23 @@ void CUDAELLUtils::jacobi(
 
     if ( !syncToken )
     {
-        cudaStreamSynchronize( stream );
-    }
+        // synchronize now and unbind texture if used
 
-    if ( useTexture )
+        LAMA_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "ELL: jacobiKernel FAILED" )
+
+        if ( useTexture )
+        {
+            ellUnbindTexture( oldSolution );
+        }
+    }
+    else
     {
-        ellUnbindTexture( oldSolution );
+        if ( useTexture )
+        {
+            void ( *unbind ) ( const ValueType* ) = &ellUnbindTexture;
+
+            syncToken->pushRoutine( boost::bind( unbind, oldSolution ) );
+        }
     }
 }
 
@@ -1064,23 +1067,23 @@ void CUDAELLUtils::jacobi(
 /*                                                  Jacobi halo                                                       */
 /* ------------------------------------------------------------------------------------------------------------------ */
 
-template<typename T,bool useTexture>
+template<typename ValueType, bool useTexture>
 __global__
 void ell_jacobi_halo_kernel(
-    T* const solution,
-    const T* const diagonal,
+    ValueType* const solution,
+    const ValueType* const diagonal,
     const int* const ellSizes,
     const int* const ellJA,
-    const T* const ellValues,
+    const ValueType* const ellvalues,
     const int* const rowIndexes,
-    const int numNonEmptyRows,
-    const int numRows,
-    const T* const oldSolution,
-    const T omega )
+    const int numnonemptyrows,
+    const int numrows,
+    const ValueType* const oldsolution,
+    const ValueType omega )
 {
     const int id = threadId( gridDim, blockIdx, blockDim, threadIdx );
 
-    if ( id < numNonEmptyRows )
+    if ( id < numnonemptyrows )
     {
         int i = id;
 
@@ -1089,17 +1092,18 @@ void ell_jacobi_halo_kernel(
             i = rowIndexes[id];
         }
 
-        T temp = 0.0;
+        ValueType temp = 0.0;
 
         int pos = i;
-        const int rowEnd = ellSizes[i];
-        for ( int jj = 0; jj < rowEnd; ++jj )
+        const int rowend = ellSizes[i];
+
+        for ( int jj = 0; jj < rowend; ++jj )
         {
-            temp += ellValues[pos] * fetch_ELLx<T,useTexture>( oldSolution, ellJA[pos] );
-            pos += numRows;
+            temp += ellvalues[pos] * fetch_ELLx<ValueType, useTexture>( oldsolution, ellJA[pos] );
+            pos += numrows;
         }
 
-        const T diag = diagonal[i];
+        const ValueType diag = diagonal[i];
         solution[i] -= temp * omega / diag;
     }
 }
@@ -1125,13 +1129,11 @@ void CUDAELLUtils::jacobiHalo(
 
     LAMA_CHECK_CUDA_ACCESS
 
-    const int block_size = ( numNonEmptyRows > 8191 ? 256 : 128 );
-    dim3 dimBlock( block_size, 1, 1 );
+    const int blockSize = CUDASettings::getBlockSize( numNonEmptyRows );
+    dim3 dimBlock( blockSize, 1, 1 );
     dim3 dimGrid = makeGrid( numNonEmptyRows, dimBlock.x );
 
     bool useTexture = CUDASettings::useTexture();
-
-    useTexture = false;
 
     if ( useTexture )
     {
