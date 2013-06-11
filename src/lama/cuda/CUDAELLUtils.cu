@@ -273,6 +273,8 @@ void CUDAELLUtils::check(
         dim3 dimBlock( blockSize, 1, 1 );
         dim3 dimGrid = makeGrid( numRows, dimBlock.x );
 
+        checkKernel<<<dimGrid, dimBlock>>>( numRows, numValuesPerRow, numColumns, ia, ja, resultRawPtr );
+
         LAMA_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "fill result with false failed" )
 
         bool integrity = thrust::reduce( resultPtr, resultPtr + numRows, true, thrust::logical_and<bool>() );
