@@ -61,6 +61,22 @@ bool CUDASettings::theUseSharedMemFlag = false;  // good value available after i
 
 /* ----------------------------------------------------------------------------- */
 
+int CUDASettings::theBlockSize = 128;  // good value available after initialized
+
+/* ----------------------------------------------------------------------------- */
+
+bool CUDASettings::convertValue( int& flag, const char* stringVal )
+{
+    int nread = sscanf( stringVal, "%d", &flag );
+
+    if ( nread == 1 )
+    {
+        return true;
+    }
+ 
+    return false;
+}
+
 bool CUDASettings::convertYesNoString( bool& flag, const char* stringVal )
 {
     char key = toupper( stringVal[0] );
@@ -154,16 +170,41 @@ bool CUDASettings::getEnvironmentSetting( bool& flag, const char* envVarName )
     return true;   // environment variable was available
 }
 
+bool CUDASettings::getEnvironmentSetting( int& val, const char* envVarName )
+{
+    const char* env = getenv ( envVarName );
+
+    if ( !env )
+    {
+        LAMA_LOG_INFO( logger, envVarName << " not set, will select by compute capability" )
+
+        return false;   // no initialization by environment
+    }
+
+    bool done = convertValue( val, env );
+
+    if ( !done )
+    {
+        LAMA_LOG_ERROR( logger, "Environment variable " << envVarName << "=" << env
+                                << ", is illegal setting, assume FALSE" )
+
+        return false;
+    }
+
+    return true;   // environment variable was available
+}
+
 /* ----------------------------------------------------------------------------- */
 
 void CUDASettings::initialize()
 {
     // check environment variables for settings
 
-    bool setTexture   = getEnvironmentSetting ( theUseTextureFlag, "LAMA_CUDA_USE_TEXTURE" );
-    bool setSharedMem = getEnvironmentSetting ( theUseSharedMemFlag, "LAMA_CUDA_USE_SHARED_MEM" );
+    bool setTexture   = getEnvironmentSetting( theUseTextureFlag, "LAMA_CUDA_USE_TEXTURE" );
+    bool setSharedMem = getEnvironmentSetting( theUseSharedMemFlag, "LAMA_CUDA_USE_SHARED_MEM" );
+    bool setBlockSize = getEnvironmentSetting( theBlockSize, "LAMA_CUDA_BLOCK_SIZE" );
 
-    if ( !setTexture || !setSharedMem )
+    if ( !setTexture || !setSharedMem || !setBlockSize )
     {
         // at least one environment variable not set, so define by compute capability
 
@@ -182,6 +223,21 @@ void CUDASettings::initialize()
             theUseSharedMemFlag = computeCapability == 1;
 
             LAMA_LOG_INFO( logger, "useSharedMem = " << theUseSharedMemFlag 
+                                   << ", due to compute capability = " << computeCapability );
+        }
+
+        if ( !setBlockSize )
+        {
+            if ( computeCapability == 1 )
+            {
+                theBlockSize = 128;
+            }
+            else
+            {
+                theBlockSize = 256;
+            }
+
+            LAMA_LOG_INFO( logger, "blockSize = " << theBlockSize
                                    << ", due to compute capability = " << computeCapability );
         }
     }
@@ -211,6 +267,41 @@ bool CUDASettings::useSharedMem()
     }
 
     return theUseSharedMemFlag;
+}
+
+/* ----------------------------------------------------------------------------- */
+
+int CUDASettings::getBlockSize()
+{
+    if ( !initialized )
+    {
+        initialize();
+    }
+
+    return theBlockSize;
+}
+
+/* ----------------------------------------------------------------------------- */
+
+int CUDASettings::getBlockSize( int n )
+{
+    if ( !initialized )
+    {
+        initialize();
+    }
+
+    static int mp = 8;  // multiprocessors available 
+
+    if ( n >= mp * theBlockSize )
+    {
+        return theBlockSize;
+    }
+    else
+    {
+        // take smaller block size to get all multiprocessors occupied
+
+        return theBlockSize > 1;   // mod 2
+    }
 }
 
 /* ----------------------------------------------------------------------------- */

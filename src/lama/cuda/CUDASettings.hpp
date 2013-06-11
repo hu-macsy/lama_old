@@ -57,6 +57,14 @@ public:
 
     static bool useSharedMem();
 
+    /** Get the block size, might be set by environment variable. */
+
+    static int getBlockSize();
+
+    /** Get the block size, n is the degree of parallelism */
+
+    static int getBlockSize( const int n );
+
     /** Enable or disable texture and shared memory use explicitly. */
 
     static void set( bool useSharedMemFlag, bool useTextureFlag );
@@ -73,6 +81,8 @@ private:
 
     static bool theUseSharedMemFlag; //!< result for useTexture if initialized is true
 
+    static int theBlockSize;   //!< result for blockSize if initialized is true
+
     /** convert the string value to a boolean value, name only used for messages. 
      *
      *  @param[out]  flag is boolean variable that will be set
@@ -82,6 +92,15 @@ private:
 
     static bool convertYesNoString( bool& flag, const char* value );
 
+    /** convert the string value to an int value
+     *
+     *  @param[out]  int is variable that will be set
+     *  @param[in]   value is string to be converted
+     *  @return      true if string could be converted, false if no legal value has been found
+     */
+
+    static bool convertValue( int& flag, const char* value );
+
     /** Set a flag by value of its environment variable
      *
      *  @param[out]  flag is boolean variable that will be set
@@ -89,6 +108,14 @@ private:
      *  @return      true if environment variable has been used to set flag
      */
     static bool getEnvironmentSetting( bool& flag, const char* envVarName );
+
+    /** Set a integer by value of its environment variable
+     *
+     *  @param[out]  val is integer variable that will be set
+     *  @param[in]   envVarName is name of the environment variable
+     *  @return      true if environment variable has been used to set flag
+     */
+    static bool getEnvironmentSetting( int& flag, const char* envVarName );
 
     /**
      *   Get the (major) compute capability for the current active device.
