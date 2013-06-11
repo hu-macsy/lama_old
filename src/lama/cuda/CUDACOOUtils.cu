@@ -167,7 +167,7 @@ __global__ void cooGemvKernel(
 
 #if !defined(__CUDA_ARCH__) || __CUDA_ARCH__ >= 200
 
-        // new fast solution
+        // CUDA runtime offers faster solution for capability >= 2.0
 
         atomicAdd( &result[i], resultUpdate );
 #else
@@ -201,6 +201,7 @@ void CUDACOOUtils::normalGEMV(
 
     const IndexType block_size = 256;
     dim3 dimBlock( block_size, 1, 1 );
+
     dim3 dimGrid = makeGrid( numValues, dimBlock.x );
 
     LAMA_CHECK_CUDA_ACCESS
@@ -208,16 +209,14 @@ void CUDACOOUtils::normalGEMV(
     cooInitKernel<<< dimGrid, dimBlock>>>
     ( result, numRows, beta, y );
 
-    cudaStreamSynchronize( 0 );
+    LAMA_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "COO: initGemvKernel FAILED" )
 
     dim3 dimGrid1 = makeGrid( numValues, dimBlock.x );
 
     cooGemvKernel<<< dimGrid1, dimBlock>>>
     ( result, numRows, alpha, x, numValues, cooIA, cooJA, cooValues );
 
-    LAMA_CHECK_CUDA_ERROR
-
-    cudaStreamSynchronize( 0 );
+    LAMA_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "COO: gemvKernel FAILED" )
 }
 
 /* --------------------------------------------------------------------------- */
