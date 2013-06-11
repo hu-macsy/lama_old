@@ -172,6 +172,16 @@ public:
 
     void setIdentity( const IndexType n );
 
+    /**
+     * This method sets a matrix by reading its values from a file.
+     *
+     * @param[in] filename      the filename to read from
+     *
+     * Each matrix class must provide an implementation of this method.
+     * The matrix might have any distribution.
+     */
+    virtual void readFromFile( const std::string& filename ) = 0;
+
     /** This method sets a matrix with the values owned by this partition in dense format
      *
      *  @param[in] rowDist distributon of rows for the matrix

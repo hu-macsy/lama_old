@@ -220,6 +220,16 @@ public:
 
     DenseVector& operator=( const Scalar );
 
+    /**
+     * This method implements Vector::readFromFile. 
+     *
+     * The distribution of the vector is CYCLIC(n) where n is the size of
+     * the vector. So only the first processor will hold all values.
+     *
+     * Note: Only the first processor will read the matrix file.
+     */
+    void readFromFile( const std::string& filename );
+
     virtual Scalar::ScalarType getValueType() const;
 
     /**

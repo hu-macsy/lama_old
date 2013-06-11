@@ -46,6 +46,7 @@
 #include <lama/LAMATypes.hpp>
 #include <lama/Scalar.hpp>
 #include <lama/Context.hpp>
+#include <lama/io/FileType.hpp>
 
 // logging
 #include <logging/logging.hpp>
@@ -223,6 +224,21 @@ public:
      *       the type of this vector.
      */
     virtual void setValues( const _LAMAArray& values ) = 0;
+
+    /**
+     * @brief Assign this vector with values stored the file with the given filename.
+     *
+     * @param[in] filename  the name of the file to be read containing vector data.
+     *
+     * The implementation of this method in derived classes can make its own
+     * decision what the distribtion of this vector will be.
+     */
+    virtual void readFromFile( const std::string& filename ) = 0;
+
+    virtual void writeToFile(
+        const std::string& fileBaseName,
+        const File::FileType fileType = File::XDR,
+        const File::DataType dataType = File::DOUBLE ) const = 0;
 
     /**
      * @brief Queries the value type of the vector elements, e.g. DOUBLE or FLOAT.

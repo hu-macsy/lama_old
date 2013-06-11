@@ -108,10 +108,22 @@ DenseVector<T>::DenseVector( const Vector& other, DistributionPtr distribution )
     redistribute( distribution );
 }
 
+/* ------------------------------------------------------------------------- */
+
 template<typename T>
 DenseVector<T>::DenseVector( const std::string& filename )
 {
     LAMA_LOG_INFO( logger, "Construct dense vector from file " << filename )
+
+    readFromFile( filename );
+}
+
+/* ------------------------------------------------------------------------- */
+
+template<typename T>
+void DenseVector<T>::readFromFile( const std::string& filename )
+{
+    LAMA_LOG_INFO( logger, "read dense vector from file " << filename )
 
     // Take the current default communicator
 

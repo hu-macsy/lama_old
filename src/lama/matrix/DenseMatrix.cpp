@@ -245,6 +245,27 @@ DenseMatrix<ValueType>::DenseMatrix( const std::string& fileName )
 /* ------------------------------------------------------------------------- */
 
 template<typename ValueType>
+void DenseMatrix<ValueType>::readFromFile( const std::string& fileName )
+{
+    LAMA_LOG_INFO( logger, "set dense matrix with values from input file " << fileName )
+
+    boost::shared_ptr<DenseStorage<ValueType> > denseStorage( new DenseStorage<ValueType>() );
+
+    denseStorage->readFromFile( fileName );
+
+    LAMA_LOG_INFO( logger, "read dense storage from file " << fileName << ": " << denseStorage )
+
+    mData.resize( 1 );
+    mData[0] = denseStorage;
+
+    Matrix::setReplicatedMatrix( denseStorage->getNumRows(), denseStorage->getNumColumns() );
+
+    computeOwners();
+}
+
+/* ------------------------------------------------------------------------- */
+
+template<typename ValueType>
 void DenseMatrix<ValueType>::writeToFile(
 
     const std::string& fileName,
