@@ -279,6 +279,9 @@ void Matrix::setCommunicationKind( SyncKind communicationKind )
 
 void Matrix::setContext( ContextPtr localContext, ContextPtr haloContext )
 {
+    LAMA_ASSERT_DEBUG( localContext, "localContext == NULL" )
+    LAMA_ASSERT_DEBUG( haloContext, "haloContext == NULL" )
+
     // default implementation for matrices that do not support halo context
 
     if ( *localContext != *haloContext )

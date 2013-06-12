@@ -1182,7 +1182,7 @@ void SparseMatrix<ValueType>::matrixTimesVectorImpl(
     const ValueType betaValue,
     const DenseVector<ValueType>& denseY ) const
 {
-    LAMA_REGION( "Mat.Sp.timesVectorImpl" )
+    LAMA_REGION( "Mat.Sp.timesVector" )
 
     ContextPtr localContext = mLocalData->getContextPtr();
 
@@ -1243,13 +1243,13 @@ void SparseMatrix<ValueType>::matrixTimesVectorImpl(
             //prefetch neede because if the copy is started after the computation the copy blocks
             mTempSendValues.prefetch( ContextFactory::getContext( Context::Host ) );
         }
-        LAMA_REGION( "Mat.Sp.timesVector::localAsync" )
+        LAMA_REGION( "Mat.Sp.timesVector::asyncLocal" )
         LAMA_LOG_INFO( logger, "Starting asynchronous computation of local values on " << *localContext )
         localComputation.reset( mLocalData->matrixTimesVectorAsync( localResult, alphaValue, localX, betaValue, localY ) );
     }
     else
     {
-        LAMA_REGION( "Mat.Sp.timesVector::localSync" )
+        LAMA_REGION( "Mat.Sp.timesVector::Local" )
         LAMA_LOG_INFO( logger, "Starting synchronous computation of local values on " << *localContext )
         mLocalData->matrixTimesVector( localResult, alphaValue, localX, betaValue, localY );
         localComputation.reset( new NoSyncToken() );
@@ -1266,54 +1266,37 @@ void SparseMatrix<ValueType>::matrixTimesVectorImpl(
 
     if ( ASYNCHRONOUS == getCommunicationKind() && !mHalo.isEmpty() )
     {
-        LAMA_REGION( "Mat.Sp.timesVector::updateHalo" )
-        //2. do exchange by plan
+        LAMA_REGION( "Mat.Sp.timesVector::exchangeHalo" )
+
         getColDistribution().getCommunicator().exchangeByPlan( denseX.getHaloValues(), mHalo.getRequiredPlan(),
                 mTempSendValues, mHalo.getProvidesPlan() );
-        //denseX.updateHalo( mHalo );
-        LAMA_LOG_INFO( logger, "Synchronous update of halo values parallel to asynchronous local computation done." )
-    }
 
-    LAMA_LOG_INFO( logger, "Halo available." )
+        LAMA_LOG_DEBUG( logger, "Exchange halo done." )
+    }
 
     if ( mHalo.getHaloSize() > 0 )
     {
-        /*  @todo: this check is only useful for CSR and ELL, not for DIA, COO, JDS
-         @todo: even for CSR and ELL the Halo is probably not always sparse
+        LAMA_LOG_DEBUG( logger, "Halo compute, size = " << mHalo.getHaloSize() )
 
-         if ( mHaloData->getRowIndexes().size() == 0 )
-         {
-         LAMA_LOG_FATAL( logger, "PERFORMANCE WARNING: mHaloData->mRowIndexes is not correctly initialized."
-         << " mHaloData = " << *mHaloData << " mHaloData->mRowIndexes.size() ==  "
-         << mHaloData->getRowIndexes().size() )
-         }
-         */
-
-        LAMA_REGION( "Mat.Sp.timesVector::computeHalo" )
-
-        LAMA_LOG_INFO( logger, "Halo compute, size = " << mHalo.getHaloSize() )
+        // start now transfer of the halo values of X to halo context where it is needed
 
         const LAMAArray<ValueType>& haloX = denseX.getHaloValues();
 
         ContextPtr haloLocation = mHaloData->getContextPtr();
 
-        haloX.prefetch( haloLocation );
+        haloX.prefetch( haloLocation );  // implicit wait at next access of haloX
 
         LAMA_LOG_INFO( logger, "Halo compute, haloX = " << haloX )
 
-        LAMA_LOG_DEBUG( logger,
-                        " Calling LAMAInterface for z += alpha * A * x + beta * y " << " with A = " << mHaloData << ", x = " << haloX << ", y = " << localY << ", z = " << localResult )
-
-        LAMA_LOG_INFO( logger, "Starting halo computation after the local computation on " << *haloLocation )
         {
-            LAMA_REGION( "Mat.Sp.timesVector::waitLocal")
+            LAMA_REGION( "Mat.Sp.timesVector::waitLocalWithHalo")
             localComputation->wait();
+            LAMA_LOG_INFO( logger, "Local computation done." )
         }
-        LAMA_LOG_INFO( logger, "Local computation done." )
         {
             // localResult += alpha * A_halo * halo_x
 
-            LAMA_REGION("Mat.Sp.timesVector::halo_timesVector")
+            LAMA_REGION("Mat.Sp.timesVector::Halo")
             mHaloData->matrixTimesVector( localResult, alphaValue, haloX, 1.0, localResult );
         }
     }
@@ -1376,8 +1359,6 @@ void SparseMatrix<ValueType>::matrixTimesVector(
     const Scalar beta,
     const Vector& y ) const
 {
-    LAMA_REGION( "Mat.Sp.timesVector" )
-
     LAMA_LOG_INFO( logger, result << " = " << alpha << " * " << *this << " * " << x << " + " << beta << " * " << y )
 
     if ( ( &result == &y ) && ( beta != Scalar( 0.0 ) ) )
