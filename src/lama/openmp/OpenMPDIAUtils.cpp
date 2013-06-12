@@ -36,9 +36,11 @@
 
 // others
 #include <lama/openmp/OpenMPDIAUtils.hpp>
+#include <lama/openmp/OpenMP.hpp>
 
 #include <lama/LAMAInterface.hpp>
 #include <lama/LAMAInterfaceRegistry.hpp>
+#include <lama/task/TaskSyncToken.hpp>
 #include <lama/tracing.hpp>
 
 // assert
@@ -49,6 +51,7 @@
 
 #include <cmath>
 #include <typeinfo>
+
 
 namespace lama
 {
@@ -303,6 +306,12 @@ void OpenMPDIAUtils::normalGEMV(
     const IndexType diaOffsets[],
     const ValueType diaValues[] )
 {
+    LAMA_LOG_INFO( logger,
+                   "normalGEMV<" << typeid(ValueType).name()
+                   << ", #threads = " << omp_get_max_threads()
+                   << ">, result[" << numRows << "] = " << alpha
+                   << " * A( dia, #diags = " << numDiagonals << " ) * x + " << beta << " * y " )
+
     LAMA_LOG_INFO( logger, "normalGEMV<" << typeid(ValueType).name() << ">, n = " 
                            << numRows << ", d = " << numDiagonals  )
 
@@ -318,6 +327,7 @@ void OpenMPDIAUtils::normalGEMV(
     {
         if ( result != y )
         {
+            #pragma omp parallel for
             for ( IndexType i = 0; i < numRows; ++i )
             {
                 result[i] = y[i];

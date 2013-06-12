@@ -46,6 +46,10 @@ set ( CLASSES
         OpenMPUtils
     )
 
+set ( HEADERS
+         OpenMP
+    )
+
 # OpenMPLAPACKe requires LAPACKe interface, is in MKL
 
 set ( LAPACKEeFound FALSE )
@@ -71,6 +75,7 @@ else()
 endif()
     
 lama_classes ( ${CLASSES} )
+lama_headers ( ${HEADERS} )
 
 ### add sources and headers to parent scope ###
 lama_add ()

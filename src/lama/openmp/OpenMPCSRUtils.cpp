@@ -33,6 +33,7 @@
 
 // for dll_import
 #include <lama/openmp/OpenMPCSRUtils.hpp>
+#include <lama/openmp/OpenMP.hpp>
 
 // others
 #include <lama/LAMAInterface.hpp>
@@ -47,13 +48,6 @@
 // boost
 #include <boost/bind.hpp>
 #include <boost/scoped_array.hpp>
-
-#ifdef _OPENMP
-    #include <omp.h>
-#else
-    #define omp_get_thread_num() 0
-    #define omp_get_num_threads() 1
-#endif
 
 #include <typeinfo>
 
@@ -483,7 +477,9 @@ void OpenMPCSRUtils::normalGEMV(
     SyncToken* syncToken )
 {
     LAMA_LOG_INFO( logger,
-                   "normalGEMV<" << typeid(ValueType).name() << ">, n = " << numRows << ", alpha = " << alpha << ", beta = " << beta )
+                   "normalGEMV<" << typeid(ValueType).name() 
+                   << ", #threads = " << omp_get_max_threads() 
+                   << ">, result[" << numRows << "] = " << alpha << " * A * x + " << beta << " * y " )
 
     if ( syncToken )
     {

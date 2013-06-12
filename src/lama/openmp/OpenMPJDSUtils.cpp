@@ -36,6 +36,7 @@
 
 // others
 #include <lama/openmp/OpenMPUtils.hpp>
+#include <lama/openmp/OpenMP.hpp>
 
 #include <lama/LAMAInterface.hpp>
 #include <lama/LAMAInterfaceRegistry.hpp>
@@ -481,7 +482,10 @@ void OpenMPJDSUtils::normalGEMV(
     class SyncToken* /* syncToken */)
 {
     LAMA_LOG_INFO( logger,
-                   "OpenMPJDS::normalGEMV<" << typeid(ValueType).name() << ">" << ", #rows = " << numRows << ", #diagonals = " << ndlg << ", alpha = " << alpha << ", beta = " << beta )
+                   "normalGEMV<" << typeid(ValueType).name()
+                   << ", #threads = " << omp_get_max_threads()
+                   << ">, result[" << numRows << "] = " << alpha 
+                   << " * A( jds, ndlg = " << ndlg << " ) * x + " << beta << " * y " )
 
     if ( beta == 0.0 )
     {

@@ -33,6 +33,7 @@
 
 // hpp
 #include <lama/openmp/OpenMPELLUtils.hpp>
+#include <lama/openmp/OpenMP.hpp>
 
 // others
 #include <lama/LAMAInterface.hpp>
@@ -48,13 +49,6 @@
 
 // boost
 #include <boost/bind.hpp>
-
-#ifdef _OPENMP
-    #include <omp.h>
-#else
-    #define omp_get_thread_num() 0
-    #define omp_get_num_threads() 1
-#endif
 
 // stl
 #include <set>
@@ -838,10 +832,7 @@ void OpenMPELLUtils::normalGEMV(
     const IndexType ellSizes[],
     const IndexType ellJA[],
     const ValueType ellValues[] )
-{
-    LAMA_LOG_INFO( logger,
-                   "normalGEMV<" << typeid(ValueType).name() << ">, n = " << numRows << ", alpha = " << alpha << ", beta = " << beta )
-
+{ 
     #pragma omp parallel
     {
         LAMA_REGION( "OpenMP.ELL.GEMV" )
@@ -891,12 +882,25 @@ void OpenMPELLUtils::normalGEMV(
     const ValueType beta,
     const ValueType y[],
     const IndexType numRows,
-    const IndexType UNUSED(numNonZerosPerRow),
+    const IndexType numNonZerosPerRow,
     const IndexType ellSizes[],
     const IndexType ellJA[],
     const ValueType ellValues[],
     SyncToken* syncToken )
 {
+    LAMA_LOG_INFO( logger,
+                   "normalGEMV<" << typeid(ValueType).name()
+                   << ", #threads = " << omp_get_max_threads()
+                   << ">, result[" << numRows << "] = " << alpha 
+                   << " * A( ell, #maxNZ/row = " << numNonZerosPerRow << " ) * x + " << beta << " * y " )
+
+    if ( numNonZerosPerRow == 0 )
+    {
+        LAMA_THROWEXCEPTION( "normalGEMV should not have been called, no entries" )
+
+        // only compute: result = beta * y
+    }
+
     if ( !syncToken )
     {
         normalGEMV( result, alpha, x, beta, y, numRows, ellSizes, ellJA, ellValues );

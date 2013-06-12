@@ -40,6 +40,7 @@
 #include <lama/tracing.hpp>
 
 #include <lama/task/TaskSyncToken.hpp>
+#include <lama/openmp/OpenMP.hpp>
 
 namespace lama
 {
@@ -235,7 +236,11 @@ void OpenMPCOOUtils::normalGEMV(
     const IndexType numValues,
     SyncToken* syncToken )
 {
-    LAMA_LOG_INFO( logger, "normalGEMV<" << typeid(ValueType).name() << ">, n = " << numRows )
+    LAMA_LOG_INFO( logger,
+                   "normalGEMV<" << typeid(ValueType).name()
+                   << ", #threads = " << omp_get_max_threads()
+                   << ">, result[" << numRows << "] = " << alpha
+                   << " * A( coo, #vals = " << numValues << " ) * x + " << beta << " * y " )
 
     if ( syncToken )
     {

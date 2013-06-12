@@ -39,11 +39,10 @@
 // others
 #include <lama/LAMATypes.hpp>
 #include <lama/SyncToken.hpp>
+#include <lama/openmp/OpenMP.hpp>
 
 // logging
 #include <logging/logging.hpp>
-
-#include <omp.h>
 
 namespace lama
 {

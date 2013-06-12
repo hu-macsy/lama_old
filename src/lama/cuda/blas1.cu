@@ -38,8 +38,6 @@
 
 #include <cuda_runtime.h>
 
-const int block_size = 512;
-
 namespace lama
 {
 
@@ -69,121 +67,6 @@ void sum_kernel( const int n, T alpha, const T* x, T beta, const T* y, T* z )
     }
 }
 
-/** vamax */
-template<typename T>
-__global__
-void vamax_kernel(
-    const int n,
-    const int numThreads,
-    const int numElemsperThread,
-    const T* x_d,
-    const int incx,
-    T* scratch_d )
-{
-    //TODO assert(blockDim.x%2 == 0)
-    int i = blockIdx.x * blockDim.x + threadIdx.x;
-    int tId = threadIdx.x;
-    int stride = blockDim.x / 2;
-    __shared__
-    T localMax[block_size];
-    if ( i < numThreads )
-    {
-        int idx = i;
-        T tmpMax = 0;
-        if ( idx % incx == 0 )
-        {
-            tmpMax = abs( x_d[idx] );
-        }
-        for ( int j = 1; j < numElemsperThread; ++j )
-        {
-            idx += numThreads;
-            if ( idx >= n )
-            {
-                break;
-            }
-            if ( idx % incx != 0 )
-            {
-                continue;
-            }
-            T value = abs( x_d[idx] );
-            if ( value > tmpMax )
-            {
-                tmpMax = value;
-            }
-        }
-
-        localMax[tId] = tmpMax;
-    }
-    else
-    {
-        localMax[tId] = 0;
-    }
-    __syncthreads();
-    while ( stride > 0 )
-    {
-        if ( tId < stride && localMax[tId + stride] > localMax[tId] )
-        {
-            localMax[tId] = localMax[tId + stride];
-        }
-        stride /= 2;
-        __syncthreads();
-    }
-    if ( tId == 0 )
-    {
-        atomicMax( scratch_d, localMax[tId] );
-    }
-}
-
-/** max */
-
-template<typename T>
-__global__
-void max_kernel( const int n, T* scratch_d )
-{
-    //TODO assert(blockDim.x%2 == 0)
-    int i = blockIdx.x * blockDim.x + threadIdx.x;
-    int tId = threadIdx.x;
-    int bId = blockIdx.x;
-    int stride = blockDim.x / 2;
-    __shared__
-    T localMax[block_size];
-    if ( i < n )
-    {
-        localMax[tId] = scratch_d[i];
-    }
-    else
-    {
-        localMax[tId] = 0;
-    }
-    __syncthreads();
-    while ( stride > 0 )
-    {
-        if ( tId < stride && localMax[tId + stride] > localMax[tId] )
-        {
-            localMax[tId] = localMax[tId + stride];
-        }
-        stride /= 2;
-        __syncthreads();
-    }
-    if ( tId == 0 )
-    {
-        scratch_d[bId] = localMax[tId];
-    }
-}
-
-/** gather */
-template<typename T1,typename T2,typename T3>
-__global__
-void gather_kernel( T1* dst_d, const T2* src_d, const T3* indexes_d, const int n )
-
-{
-    const int i = threadId( gridDim, blockIdx, blockDim, threadIdx );
-    if ( i < n )
-    {
-        dst_d[i] = src_d[indexes_d[i]];
-    }
-}
-
 /**
  * @brief Adds the stride to the value of the given array at the position of
  *        threadId, if the threadId is smaller than the given limit.
@@ -209,8 +92,8 @@ void CUDABLAS1::ass_launcher( const int n, const T value, T* x, cudaStream_t str
 {
     LAMA_CHECK_CUDA_ACCESS
 
-    const int block_size = 256;
-    dim3 dimBlock( block_size, 1, 1 );
+    const int blockSize = 256;
+    dim3 dimBlock( blockSize, 1, 1 );
     dim3 dimGrid = makeGrid( n, dimBlock.x );
 
     ass_kernel<<< dimGrid, dimBlock, 0, stream>>> ( n, x, value );
@@ -225,8 +108,8 @@ void CUDABLAS1::sum_launcher( const int n, T alpha, const T* x, T beta, const T*
 {
     LAMA_CHECK_CUDA_ACCESS
 
-    const int block_size = 256;
-    dim3 dimBlock( block_size, 1, 1 );
+    const int blockSize = 256;
+    dim3 dimBlock( blockSize, 1, 1 );
     dim3 dimGrid = makeGrid( n, dimBlock.x );
 
     sum_kernel<<< dimGrid, dimBlock, 0, stream>>> ( n, alpha, x, beta, y, z );
