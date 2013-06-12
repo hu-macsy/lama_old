@@ -18,7 +18,7 @@ using the LAMA library.
 
 The directory ``{LAMA_ROOT}/lib`` should contain the following libraries:
 
-- liblama.so  
+- libama.so  
 - liblog4lama.so
-- liblamacuda.so  (available if CUDA is available)
-- liblamampi.so   (available if MPI is available)
+- libamacuda.so  (available if CUDA is available)
+- libamampi.so   (available if MPI is available)
