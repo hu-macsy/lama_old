@@ -40,6 +40,8 @@
 #include <lama/Printable.hpp>
 #include <lama/matrix/all.hpp>
 #include <lama/CommunicatorFactory.hpp>
+#include <lama/solver/logger/LogLevel.hpp>
+#include <omp.h>
 
 #include <cstring>
 
@@ -115,19 +117,33 @@ public:
     lama::ContextPtr         mContext;
     lama::Matrix::SyncKind   mCommunicationKind;
     lama::Scalar::ScalarType mValueType;          // value type to use
+    int                      mNumThreads;         // value type to use
 
     void writeAt( std::ostream& stream ) const
     {
         stream << "LAMA configuration" << std::endl;
         stream << "==================" << std::endl;
-        stream << "Context       = " << *mContext << std::endl;
-        stream << "Communicator  = " << *mComm << std::endl;
-        stream << "Matrix format = " << getFormat() << std::endl;
-        stream << "CommKind      = " << mCommunicationKind << std::endl;
-        stream << "ValueType     = " << mValueType << std::endl;
+        stream << "Context           = " << *mContext << std::endl;
+        stream << "Communicator      = " << *mComm << std::endl;
+        stream << "Matrix format     = " << getFormat() << std::endl;
+        stream << "CommKind          = " << mCommunicationKind << std::endl;
+        stream << "ValueType         = " << mValueType << std::endl;
+        stream << "#Threads/CPU      = " << omp_get_max_threads() << std::endl;
+        if ( getenv( "LAMA_CUDA_USE_TEXTURE" ) )
+        {
+            stream << "useTexture(GPU)   = " << getenv( "LAMA_CUDA_USE_TEXTURE" ) << std::endl;
+        }
+        if ( getenv( "LAMA_CUDA_USE_SHARED_MEM" ) )
+        {
+            stream << "useSharedMem(GPU) = " << getenv( "LAMA_CUDA_USE_SHARED_MEM" ) << std::endl;
+        }
+        if ( getenv( "LAMA_CUDA_BLOCK_SIZE" ) )
+        {
+            stream << "BlockSize(GPU)    = " << getenv( "LAMA_CUDA_BLOCK_SIZE" ) << std::endl;
+        }
         if ( hasMaxIter () )
         {
-            stream << "Max iter      = " << mMaxIter << std::endl;
+            stream << "Max iter          = " << mMaxIter << std::endl;
         }
     }
 
@@ -141,11 +157,18 @@ public:
         return mMaxIter; 
     }
 
+    lama::LogLevel::LogLevel getLogLevel() const
+    {
+        return mLogLevel;
+    }
+
 private:
 
-    lama::CommunicatorPtr  mComm;
+    lama::CommunicatorPtr    mComm;
 
-    lama::IndexType        mMaxIter;
+    lama::IndexType          mMaxIter;
+
+    lama::LogLevel::LogLevel mLogLevel;
 
     inline bool isNumber( const char* arg )
     {
@@ -172,6 +195,7 @@ LamaConfig::LamaConfig()
     mContext           = lama::ContextFactory::getContext( lama::Context::Host );
     mMaxIter           = lama::nIndex;
     mValueType         = lama::Scalar::DOUBLE;
+    mLogLevel          = lama::LogLevel::noLogging;
 }
 
 LamaConfig::~LamaConfig()
@@ -201,10 +225,10 @@ void LamaConfig::setArg( const char* arg )
     }
     else if ( ( "CUDA" == val ) || ( "GPU" == val ) )
     { 
-        // int device = 0;
+        int device = 0;
         // adapt it for your node configuration
 
-        int device = mComm->getNodeRank();
+        // int device = mComm->getNodeRank();
 
         mContext = lama::ContextFactory::getContext( lama::Context::CUDA, device );
     }
@@ -223,6 +247,70 @@ void LamaConfig::setArg( const char* arg )
     else if ( ( "DOUBLE" == val ) || ( "DP" == val ) )
     {
         mValueType = lama::Scalar::DOUBLE;
+    }
+    else if ( "TEXTURE" == val )
+    {
+        putenv( const_cast<char*>( "LAMA_CUDA_USE_TEXTURE=1" ) );
+    }
+    else if ( "NOTEXTURE" == val )
+    {
+        putenv( const_cast<char*>( "LAMA_CUDA_USE_TEXTURE=0" ) );
+    }
+    else if ( ( "SHAREDMEM" == val ) || ( "SM" == val ) )
+    {
+        putenv( const_cast<char*>( "LAMA_CUDA_USE_SHARED_MEM=1" ) );
+    }
+    else if ( ( "NOSHAREDMEM" == val ) || ( "NOSM" == val ) )
+    {
+        putenv( const_cast<char*>( "LAMA_CUDA_USE_SHARED_MEM=0" ) );
+    }
+    else if ( "LOG_HISTORY" == val ) 
+    {
+        mLogLevel = lama::LogLevel::convergenceHistory;
+    }
+    else if ( "LOG_SOLVER" == val ) 
+    {
+        mLogLevel = lama::LogLevel::solverInformation;
+    }
+    else if ( "LOG_AVANCED" == val ) 
+    {
+        mLogLevel = lama::LogLevel::advancedInformation;
+    }
+    else if ( "LOG_COMPLETE" == val ) 
+    {
+        mLogLevel = lama::LogLevel::completeInformation;
+    }
+    else if ( "LOG_NO" == val ) 
+    {
+        mLogLevel = lama::LogLevel::noLogging;
+    }
+    else if ( ( 'T' == val[0] ) && isNumber( val.c_str() + 1 ) )
+    {
+        int numThreads;
+        int narg = sscanf( val.c_str() + 1, "%d", &numThreads );
+        if ( narg > 0 )
+        {
+            omp_set_num_threads( numThreads );
+        }
+        else
+        {
+            std::cout << "Illegal for number of threads: " << arg << std::endl;
+        }
+    }
+    else if ( ( 'B' == val[0] ) && isNumber( val.c_str() + 1 ) )
+    {
+        int numBlocks;
+        int narg = sscanf( val.c_str() + 1, "%d", &numBlocks );
+        if ( narg > 0 )
+        {
+            char envSetting[ 256 ];
+            sprintf( envSetting, "LAMA_CUDA_BLOCK_SIZE=%d", numBlocks );
+            putenv( envSetting );
+        }
+        else
+        {
+            std::cout << "Illegal for block size on CUDA: " << arg << std::endl;
+        }
     }
     else if ( isNumber( val.c_str() ) )
     {

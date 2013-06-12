@@ -183,7 +183,7 @@ int main( int argc, char* argv[] )
 
     loggerName << "<CG>, " << lamaconf.getCommunicator() << ": ";
 
-    LoggerPtr logger( new CommonLogger ( loggerName.str(), LogLevel::solverInformation,
+    LoggerPtr logger( new CommonLogger ( loggerName.str(), lamaconf.getLogLevel(),
                    LoggerWriteBehaviour::toConsoleOnly,
                    std::auto_ptr<Timer>( new Timer() ) ) );
 

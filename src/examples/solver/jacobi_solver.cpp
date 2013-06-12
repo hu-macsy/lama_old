@@ -1,5 +1,5 @@
 /**
- * @file jacobi_solver.cpp
+ * @file cg_solver.cpp
  *
  * @license
  * Copyright (c) 2009-2013
@@ -42,44 +42,16 @@
 
 #include <lama/solver/CG.hpp>
 #include <lama/solver/SpecializedJacobi.hpp>
+#include <lama/solver/TrivialPreconditioner.hpp>
 #include <lama/solver/logger/CommonLogger.hpp>
-#include <lama/solver/criteria/IterationCount.hpp>
 #include <lama/solver/criteria/ResidualThreshold.hpp>
+#include <lama/solver/criteria/IterationCount.hpp>
 #include <lama/norm/L2Norm.hpp>
 
 #include <lama/Walltime.hpp>
 
 using namespace std;
 using namespace lama;
-
-/** ValueType is the type used for matrix and vector elements. */
-typedef double ValueType;
-
-typedef DenseVector<ValueType> VectorType;
-
-SparseMatrix<ValueType>* createMatrix( const char* type )
-{
-    if ( strcmp( type, "CSR" ) == 0 )
-    {
-        return new CSRSparseMatrix<ValueType>();
-    }
-    else if ( strcmp( type, "ELL" ) == 0 )
-    {
-        return new ELLSparseMatrix<ValueType>();
-    }
-    else if ( strcmp( type, "JDS" ) == 0 )
-    {
-        return new JDSSparseMatrix<ValueType>();
-    }
-    else if ( strcmp( type, "DIA" ) == 0 )
-    {
-        return new DIASparseMatrix<ValueType>();
-    }
-    else
-    {
-        return NULL;
-    }
-}
 
 int main( int argc, char* argv[] )
 {
@@ -114,23 +86,33 @@ int main( int argc, char* argv[] )
 
     // use auto pointer so that matrix will be deleted at program exit
 
-    auto_ptr<SparseMatrix<ValueType> > matrixPtr( createMatrix( lamaconf.getFormat() ) );
+    auto_ptr<Matrix> matrixPtr;
+    auto_ptr<Vector> rhsPtr;
 
-    if ( myRank == 0 )
+    if ( lamaconf.mValueType == Scalar::FLOAT )
     {
-        cout << "mContext = " << *lamaconf.mContext << endl;
-        cout << lamaconf << endl;
+        matrixPtr.reset( lamaconf.createSparseMatrix<float>() );
+        rhsPtr.reset( new DenseVector<float>() );
+    }
+    else
+    {
+        matrixPtr.reset( lamaconf.createSparseMatrix<double>() );
+        rhsPtr.reset( new DenseVector<double>() );
     }
 
-    double start = Walltime::get();   // start timing of reading
+    Matrix& matrix = *matrixPtr;
+    Vector& rhs = *rhsPtr;
 
-    SparseMatrix<ValueType>& matrix = *matrixPtr;
+    // Each processor should print its configuration
+
+    cout << lamaconf << endl;
+
+    double start = Walltime::get();   // start timing of reading
 
     // read matrix + rhs from disk
 
     matrix.readFromFile( filename );
-
-    VectorType rhs( filename );
+    rhs.readFromFile( filename );
 
     // only square matrices are accetpted
 
@@ -138,7 +120,13 @@ int main( int argc, char* argv[] )
     LAMA_ASSERT_EQUAL( matrix.getNumRows(), rhs.size() )
 
     int numRows = matrix.getNumRows();
-    VectorType solution( numRows, 0.0 );
+
+    // for solutin create vector with same format/type as rhs, size = numRows, init = 0.0
+
+    auto_ptr<Vector> solutionPtr( rhs.create( rhs.getDistributionPtr() ) );
+    Vector& solution = *solutionPtr;
+
+    solution = 0.0;   // intialize of a vector
 
     double stop = Walltime::get();  // stop timing for reading
 
@@ -154,7 +142,6 @@ int main( int argc, char* argv[] )
     DistributionPtr dist( new BlockDistribution( numRows, lamaconf.getCommunicatorPtr() ) );
 
     matrix.redistribute( dist, dist );
-
     rhs.redistribute ( dist );
     solution.redistribute ( dist );
 
@@ -197,13 +184,14 @@ int main( int argc, char* argv[] )
 
     loggerName << "<CG>, " << lamaconf.getCommunicator() << ": ";
 
-    LoggerPtr logger( new CommonLogger ( loggerName.str(), LogLevel::solverInformation,
+    LoggerPtr logger( new CommonLogger ( loggerName.str(), lamaconf.getLogLevel(),
                    LoggerWriteBehaviour::toConsoleOnly,
                    std::auto_ptr<Timer>( new Timer() ) ) );
 
-    SpecializedJacobi mySolver( "CGSolver", logger );
+    SpecializedJacobi mySolver( "SpecializedJacobi", logger );
 
     Scalar eps = 0.01;
+
     NormPtr norm = NormPtr( new L2Norm() );
 
     CriterionPtr rt( new ResidualThreshold( norm, eps, ResidualThreshold::Absolute ) );
@@ -211,13 +199,16 @@ int main( int argc, char* argv[] )
     if ( lamaconf.hasMaxIter() )
     {
         CriterionPtr it( new IterationCount( lamaconf.getMaxIter() ) );
-
+ 
         // stop if iteration count reached OR residual threshold is reached
 
         rt.reset( new Criterion ( it, rt, Criterion::OR ) );
     }
 
     mySolver.setStoppingCriterion( rt );
+
+    // SolverPtr preconditioner( new TrivialPreconditioner( "Trivial preconditioner" ) );
+    // mySolver.setPreconditioner( preconditioner );
 
     start = Walltime::get();
 
@@ -245,15 +236,18 @@ int main( int argc, char* argv[] )
         cout << "Solution phase took " << stop - start << " secs." << endl;
     }
 
-    start = Walltime::get();
+    bool writeFlag = false;
 
-    // solution.writeToFile( "CG_solution" );
-
-    stop = Walltime::get();
-
-    if ( myRank == 0 )
+    if ( writeFlag )
     {
-        cout << "Writing solution: " << stop - start << " secs." << endl;
+         start = Walltime::get();
+         solution.writeToFile( "CG_solution" );
+         stop = Walltime::get();
+
+         if ( myRank == 0 )
+         {
+             cout << "Writing solution: " << stop - start << " secs." << endl;
+         }
     }
 }
 
