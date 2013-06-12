@@ -127,7 +127,7 @@ void CUDACSRUtils::offsets2sizes( IndexType sizes[], const IndexType offsets[], 
 
     LAMA_CHECK_CUDA_ACCESS
 
-    const int blockSize = 256;
+    const int blockSize = CUDASettings::getBlockSize();
     dim3 dimBlock( blockSize, 1, 1 );
     dim3 dimGrid = makeGrid( n, dimBlock.x );
 
@@ -182,7 +182,7 @@ bool CUDACSRUtils::hasDiagonalProperty( const IndexType numDiagonals, const Inde
     }
 
     //make grid
-    const int blockSize = 256;
+    const int blockSize = CUDASettings::getBlockSize();
     dim3 dimGrid( ( numDiagonals - 1 ) / blockSize + 1, 1, 1 ); // = makeGrid( numDiagonals, blockSize );
     dim3 dimBlock( blockSize, 1, 1 );
 
@@ -258,52 +258,70 @@ void CUDACSRUtils::convertCSR2CSC(
 }
 
 /* --------------------------------------------------------------------------- */
-/*     Using indirectly accessed vector in texture                             */
-/* --------------------------------------------------------------------------- */
 
-texture<float,1> textureFloatXRef;
+texture<float, 1> texCSRVectorSXref;
 
-texture<int2,1> textureDoubleXRef;
+texture<int2, 1> texCSRVectorDXref;
 
-__inline__ void csrBindTexture( const float* vector )
+texture<int, 1> texCSRVectorIref;
+
+__inline__ void vectorCSRBindTexture( const float* vector )
 {
-    LAMA_CUDA_RT_CALL( cudaBindTexture( NULL, textureFloatXRef, vector ), "LAMA_STATUS_CUDA_BINDTEX_FAILED" )
+    LAMA_CUDA_RT_CALL( cudaBindTexture( NULL, texCSRVectorSXref, vector ), "bind float vector x to texture" )
 }
 
-__inline__ void csrBindTexture( const double* vector )
+__inline__ void vectorCSRBindTexture( const double* vector )
 {
-    LAMA_CUDA_RT_CALL( cudaBindTexture( NULL, textureDoubleXRef, vector ), "LAMA_STATUS_CUDA_BINDTEX_FAILED" )
+    LAMA_CUDA_RT_CALL( cudaBindTexture( NULL, texCSRVectorDXref, vector ), "bind double vector x to texture" )
 }
 
-__inline__ void csrUnbindTexture( const float* )
+__inline__ void vectorCSRBindTexture( const int* vector )
 {
-    LAMA_CUDA_RT_CALL( cudaUnbindTexture( textureFloatXRef ), "LAMA_STATUS_CUDA_UNBINDTEX_FAILED" )
+    LAMA_CUDA_RT_CALL( cudaBindTexture( NULL, texCSRVectorIref, vector ), "bind int vector x to texture" )
 }
 
-__inline__ void csrUnbindTexture( const double* )
+__inline__ void vectorCSRUnbindTexture( const float* )
 {
-    LAMA_CUDA_RT_CALL( cudaUnbindTexture( textureDoubleXRef ), "LAMA_STATUS_CUDA_UNBINDTEX_FAILED" )
+    LAMA_CUDA_RT_CALL( cudaUnbindTexture( texCSRVectorSXref ), "unbind float vector x from texture" )
 }
 
-template<typename T, bool useTexture>
-__inline__  __device__ T fetch_x_i( const T* const x, const int i )
+__inline__ void vectorCSRUnbindTexture( const double* )
+{
+    LAMA_CUDA_RT_CALL( cudaUnbindTexture( texCSRVectorDXref ), "unbind double vector x from texture" )
+}
+
+__inline__ void vectorCSRUnbindTexture( const int* )
+{
+    LAMA_CUDA_RT_CALL( cudaUnbindTexture( texCSRVectorIref ), "unbind int vector x from texture" )
+}
+
+template<typename ValueType, bool useTexture>
+__inline__ __device__ 
+ValueType fetchCSRVectorX( const ValueType* const x, const int i )
 {
     return x[i];
 }
 
 template<>
 __inline__ __device__
-float fetch_x_i<float, true>( const float* const, const int i )
+float fetchCSRVectorX<float, true>( const float* const, const int i )
 {
-    return tex1Dfetch( textureFloatXRef, i );
+    return tex1Dfetch( texCSRVectorSXref, i );
 }
 
 template<>
 __inline__ __device__
-double fetch_x_i<double, true>( const double* const, const int i )
+double fetchCSRVectorX<double, true>( const double* const, const int i )
 {
-    int2 v = tex1Dfetch( textureDoubleXRef, i );
+    int2 v = tex1Dfetch( texCSRVectorDXref, i );
     return __hiloint2double( v.y, v.x );
+}
+
+template<>
+__inline__ __device__
+int fetchCSRVectorX<int, true>( const int* const, const int i )
+{
+    return tex1Dfetch( texCSRVectorIref, i );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -334,7 +352,7 @@ void normal_gemv_kernel(
 
         for ( int jj = rowStart; jj < rowEnd; ++jj )
         {
-            value += csrValues[jj] * fetch_x_i<T, useTexture>( x_d, csrJA[jj] );
+            value += csrValues[jj] * fetchCSRVectorX<T, useTexture>( x_d, csrJA[jj] );
         }
 
         result[i] = alpha * value + summand;
@@ -366,7 +384,7 @@ void sparse_gemv_kernel(
 
         for ( int jj = rowStart; jj < rowEnd; ++jj )
         {
-            value += csrValues[jj] * fetch_x_i<T, useTexture>( x_d, csrJA[jj] );
+            value += csrValues[jj] * fetchCSRVectorX<T, useTexture>( x_d, csrJA[jj] );
         }
 
         result[i] += alpha * value;
@@ -397,7 +415,7 @@ void CUDACSRUtils::normalGEMV(
 
     cudaStream_t stream = 0; // default stream if no syncToken is given
 
-    const int blockSize = 256;
+    const int blockSize = CUDASettings::getBlockSize();
 
     dim3 dimBlock( blockSize, 1, 1 );
 
@@ -417,7 +435,7 @@ void CUDACSRUtils::normalGEMV(
 
     if ( useTexture )
     {
-        csrBindTexture( x );
+        vectorCSRBindTexture( x );
 
         LAMA_CUDA_RT_CALL( cudaFuncSetCacheConfig( normal_gemv_kernel<ValueType, true>, cudaFuncCachePreferL1 ),
                            "LAMA_STATUS_CUDA_FUNCSETCACHECONFIG_FAILED" )
@@ -444,12 +462,12 @@ void CUDACSRUtils::normalGEMV(
     {
         if ( !syncToken )
         {
-            csrUnbindTexture( x );
+            vectorCSRUnbindTexture( x );
         }
         else
         {
              // get routine with the right signature
-             void ( *unbind ) ( const ValueType* ) = &csrUnbindTexture;
+             void ( *unbind ) ( const ValueType* ) = &vectorCSRUnbindTexture;
 
              // delay unbind until synchroniziaton
              syncToken->pushRoutine( boost::bind( unbind, x ) );
@@ -485,7 +503,7 @@ void CUDACSRUtils::sparseGEMV(
         stream = cudaStreamSyncToken->getCUDAStream();
     }
 
-    const int blockSize = 256;
+    const int blockSize = CUDASettings::getBlockSize( numNonZeroRows );
 
     dim3 dimBlock( blockSize, 1, 1 );
 
@@ -526,11 +544,11 @@ void csr_jacobi_kernel(
         const T diag = csrValues[rowStart];
         for ( int jj = rowStart + 1; jj < rowEnd; ++jj )
         {
-            temp -= csrValues[jj] * fetch_x_i<T,useTexture>( oldSolution, csrJA[jj] );
+            temp -= csrValues[jj] * fetchCSRVectorX<T,useTexture>( oldSolution, csrJA[jj] );
         }
         if ( omega == 0.5 )
         {
-            solution[i] = omega * ( fetch_x_i<T,useTexture>( oldSolution, i ) + temp / diag );
+            solution[i] = omega * ( fetchCSRVectorX<T,useTexture>( oldSolution, i ) + temp / diag );
         }
         else if ( omega == 1.0 )
         {
@@ -538,7 +556,7 @@ void csr_jacobi_kernel(
         }
         else
         {
-            solution[i] = omega * ( temp / diag ) + ( 1.0 - omega ) * fetch_x_i<T,useTexture>( oldSolution, i );
+            solution[i] = omega * ( temp / diag ) + ( 1.0 - omega ) * fetchCSRVectorX<T,useTexture>( oldSolution, i );
         }
     }
 }
@@ -669,7 +687,7 @@ void CUDACSRUtils::jacobi(
         useTexture = false;  // not yet supported
     }
 
-    const int blockSize = 256;
+    const int blockSize = CUDASettings::getBlockSize();
     dim3 dimBlock( blockSize, 1, 1 );
     dim3 dimGrid = makeGrid( numRows, dimBlock.x );
 
@@ -678,7 +696,7 @@ void CUDACSRUtils::jacobi(
 
     if ( useTexture )
     {
-        csrBindTexture( oldSolution);
+        vectorCSRBindTexture( oldSolution);
 
         LAMA_CUDA_RT_CALL( cudaFuncSetCacheConfig( csr_jacobi_kernel<ValueType, true>, cudaFuncCachePreferL1 ),
                            "LAMA_STATUS_CUDA_FUNCSETCACHECONFIG_FAILED" )
@@ -702,7 +720,7 @@ void CUDACSRUtils::jacobi(
 
     if ( useTexture )
     {
-        csrUnbindTexture( oldSolution );
+        vectorCSRUnbindTexture( oldSolution );
     }
 }
 
@@ -742,7 +760,7 @@ void csr_jacobiHalo_kernel(
 
         for ( IndexType jj = rowStart; jj < rowEnd; ++jj )
         {
-            temp += haloValues[jj] * fetch_x_i<ValueType, useTexture>( oldSolution, haloJA[jj] );
+            temp += haloValues[jj] * fetchCSRVectorX<ValueType, useTexture>( oldSolution, haloJA[jj] );
         }
 
         const ValueType diag = localValues[localIA[i]];
@@ -768,8 +786,8 @@ void CUDACSRUtils::jacobiHalo(
 
     LAMA_CHECK_CUDA_ACCESS
 
-    const int block_size = 128;
-    dim3 dimBlock( block_size, 1, 1 );
+    const int blockSize = CUDASettings::getBlockSize();
+    dim3 dimBlock( blockSize, 1, 1 );
     dim3 dimGrid = makeGrid( numNonEmptyRows, dimBlock.x );
 
     bool useTexture = CUDASettings::useTexture();
@@ -778,7 +796,7 @@ void CUDACSRUtils::jacobiHalo(
 
     if ( useTexture )
     {
-        csrBindTexture( oldSolution );
+        vectorCSRBindTexture( oldSolution );
 
         LAMA_CUDA_RT_CALL( cudaFuncSetCacheConfig( csr_jacobiHalo_kernel<ValueType, true>, cudaFuncCachePreferL1 ),
                            "LAMA_STATUS_CUDA_FUNCSETCACHECONFIG_FAILED" )
@@ -802,7 +820,7 @@ void CUDACSRUtils::jacobiHalo(
 
     if ( useTexture )
     {
-        csrUnbindTexture( oldSolution );
+        vectorCSRUnbindTexture( oldSolution );
     }
 }
 
@@ -842,7 +860,7 @@ void csr_jacobiHaloWithDiag_kernel(
 
         for ( IndexType jj = rowStart; jj < rowEnd; ++jj )
         {
-            temp += haloValues[jj] * fetch_x_i<ValueType,useTexture>( oldSolution, haloJA[jj] );
+            temp += haloValues[jj] * fetchCSRVectorX<ValueType,useTexture>( oldSolution, haloJA[jj] );
         }
 
         const ValueType diag = localDiagValues[i];
@@ -867,8 +885,8 @@ void CUDACSRUtils::jacobiHaloWithDiag(
 
     LAMA_CHECK_CUDA_ACCESS
 
-    const int block_size = 128;
-    dim3 dimBlock( block_size, 1, 1 );
+    const int blockSize = CUDASettings::getBlockSize();
+    dim3 dimBlock( blockSize, 1, 1 );
     dim3 dimGrid = makeGrid( numNonEmptyRows, dimBlock.x );
 
     bool useTexture = CUDASettings::useTexture();
@@ -877,7 +895,7 @@ void CUDACSRUtils::jacobiHaloWithDiag(
 
     if ( useTexture )
     {
-        csrBindTexture( oldSolution );
+        vectorCSRBindTexture( oldSolution );
 
         LAMA_CUDA_RT_CALL( cudaFuncSetCacheConfig( csr_jacobiHaloWithDiag_kernel<ValueType, true>, cudaFuncCachePreferL1 ),
                            "LAMA_STATUS_CUDA_FUNCSETCACHECONFIG_FAILED" )
@@ -907,7 +925,7 @@ void CUDACSRUtils::jacobiHaloWithDiag(
 
     if ( useTexture )
     {
-        csrUnbindTexture( oldSolution );
+        vectorCSRUnbindTexture( oldSolution );
     }
 }
 

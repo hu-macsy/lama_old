@@ -72,6 +72,73 @@ namespace lama
 LAMA_LOG_DEF_LOGGER( CUDAELLUtils::logger, "CUDA.ELLUtils" )
 
 /* ------------------------------------------------------------------------------------------------------------------ */
+
+texture<float, 1> texELLVectorSXref;
+
+texture<int2, 1> texELLVectorDXref;
+
+texture<int, 1> texELLVectorIref;
+
+__inline__ void vectorELLBindTexture( const float* vector )
+{
+    LAMA_CUDA_RT_CALL( cudaBindTexture( NULL, texELLVectorSXref, vector ), "bind float vector x to texture" )
+}
+
+__inline__ void vectorELLBindTexture( const double* vector )
+{
+    LAMA_CUDA_RT_CALL( cudaBindTexture( NULL, texELLVectorDXref, vector ), "bind double vector x to texture" )
+}
+
+__inline__ void vectorELLBindTexture( const int* vector )
+{
+    LAMA_CUDA_RT_CALL( cudaBindTexture( NULL, texELLVectorIref, vector ), "bind int vector x to texture" )
+}
+
+__inline__ void vectorELLUnbindTexture( const float* )
+{
+    LAMA_CUDA_RT_CALL( cudaUnbindTexture( texELLVectorSXref ), "unbind float vector x from texture" )
+}
+
+__inline__ void vectorELLUnbindTexture( const double* )
+{
+    LAMA_CUDA_RT_CALL( cudaUnbindTexture( texELLVectorDXref ), "unbind double vector x from texture" )
+}
+
+__inline__ void vectorELLUnbindTexture( const int* )
+{
+    LAMA_CUDA_RT_CALL( cudaUnbindTexture( texELLVectorIref ), "unbind int vector x from texture" )
+}
+
+template<typename ValueType, bool useTexture>
+__inline__ __device__ 
+ValueType fetchELLVectorX( const ValueType* const x, const int i )
+{
+    return x[i];
+}
+
+template<>
+__inline__ __device__
+float fetchELLVectorX<float, true>( const float* const, const int i )
+{
+    return tex1Dfetch( texELLVectorSXref, i );
+}
+
+template<>
+__inline__ __device__
+double fetchELLVectorX<double, true>( const double* const, const int i )
+{
+    int2 v = tex1Dfetch( texELLVectorDXref, i );
+    return __hiloint2double( v.y, v.x );
+}
+
+template<>
+__inline__ __device__
+int fetchELLVectorX<int, true>( const int* const, const int i )
+{
+    return tex1Dfetch( texELLVectorIref, i );
+}
+
+/* ------------------------------------------------------------------------------------------------------------------ */
 /*                                                  thrust functors                                                   */
 /* ------------------------------------------------------------------------------------------------------------------ */
 
@@ -635,61 +702,12 @@ void CUDAELLUtils::fillELLValues(
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */
-/*      Using texture for rhs vector                                                                                  */
-/* ------------------------------------------------------------------------------------------------------------------ */
-
-texture<float,1> texELLSXref;
-
-texture<int2,1> texELLDXref;
-
-__inline__ void ellBindTexture( const float* vector )
-{
-    LAMA_CUDA_RT_CALL( cudaBindTexture( NULL, texELLSXref, vector ), "bind float vector x to texture" )
-}
-
-__inline__ void ellBindTexture( const double* vector )
-{
-    LAMA_CUDA_RT_CALL( cudaBindTexture( NULL, texELLDXref, vector ), "bind double vector x to texture" )
-}
-
-__inline__ void ellUnbindTexture( const float* )
-{
-    LAMA_CUDA_RT_CALL( cudaUnbindTexture( texELLSXref ), "unbind float vector x from texture" )
-}
-
-__inline__ void ellUnbindTexture( const double* )
-{
-    LAMA_CUDA_RT_CALL( cudaUnbindTexture( texELLDXref ), "unbind double vector x from texture" )
-}
-
-template<typename T,bool useTexture>
-__inline__     __device__ T fetch_ELLx( const T* const x, const int i )
-{
-    return x[i];
-}
-
-template<>
-__inline__ __device__
-float fetch_ELLx<float,true>( const float* const, const int i )
-{
-    return tex1Dfetch( texELLSXref, i );
-}
-
-template<>
-__inline__ __device__
-double fetch_ELLx<double,true>( const double* const, const int i )
-{
-    int2 v = tex1Dfetch( texELLDXref, i );
-    return __hiloint2double( v.y, v.x );
-}
-
-/* ------------------------------------------------------------------------------------------------------------------ */
 /*    Kernel for  SMV + SV                                                                                            */
 /* ------------------------------------------------------------------------------------------------------------------ */
 
 template<typename T,bool useTexture>
 __global__
-void ell_gemv_kernel(
+void ellGemvKernel(
     int n,
     T alpha,
     int ellNumValuesPerRow,
@@ -715,7 +733,7 @@ void ell_gemv_kernel(
         for ( int kk = 0; kk < ellNumValuesPerRow; ++kk )
         {
             //if (aValue != 0.0) //compute capability >= 2.0  => disadvantage
-            value += ellValues[pos] * fetch_ELLx<T,useTexture>( x_d, ellJA[pos] );
+            value += ellValues[pos] * fetchELLVectorX<T, useTexture>( x_d, ellJA[pos] );
             pos += n;
         }
         y_d[i] = alpha * value + summand;
@@ -761,36 +779,36 @@ void CUDAELLUtils::normalGEMV(
 
     bool useTexture = CUDASettings::useTexture();
 
-    LAMA_LOG_INFO( logger, "Start ell_gemv_kernel<" << typeid( ValueType ).name()
+    LAMA_LOG_INFO( logger, "Start ellGemvKernel<" << typeid( ValueType ).name()
                            << "> <<< blockSize = " << blockSize << ", stream = " << stream 
                            << ", useTexture = " << useTexture << ">>>" )
 
     if ( useTexture )
     {
-        ellBindTexture( x );
+        vectorELLBindTexture( x );
 
-        LAMA_CUDA_RT_CALL( cudaFuncSetCacheConfig( ell_gemv_kernel<ValueType, true>, cudaFuncCachePreferL1 ),
+        LAMA_CUDA_RT_CALL( cudaFuncSetCacheConfig( ellGemvKernel<ValueType, true>, cudaFuncCachePreferL1 ),
                            "LAMA_STATUS_CUDA_FUNCSETCACHECONFIG_FAILED" )
      
-        ell_gemv_kernel<ValueType, true> <<<dimGrid, dimBlock, 0, stream>>> ( 
+        ellGemvKernel<ValueType, true> <<<dimGrid, dimBlock, 0, stream>>> ( 
             numRows, alpha, numNonZerosPerRow, ellValues, ellJA, x, beta, y, result );
     }
     else
     {
-        LAMA_CUDA_RT_CALL( cudaFuncSetCacheConfig( ell_gemv_kernel<ValueType, false>, cudaFuncCachePreferL1 ),
+        LAMA_CUDA_RT_CALL( cudaFuncSetCacheConfig( ellGemvKernel<ValueType, false>, cudaFuncCachePreferL1 ),
                            "LAMA_STATUS_CUDA_FUNCSETCACHECONFIG_FAILED" )
 
-        ell_gemv_kernel<ValueType, false> <<<dimGrid, dimBlock, 0, stream>>> ( 
+        ellGemvKernel<ValueType, false> <<<dimGrid, dimBlock, 0, stream>>> ( 
             numRows, alpha, numNonZerosPerRow, ellValues, ellJA, x, beta, y, result );
     }
 
     if ( !syncToken )
     {
-        LAMA_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "sync for ell_gemv_kernel failed" )
+        LAMA_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "sync for ellGemvKernel failed" )
 
         if ( useTexture )
         {
-            ellUnbindTexture( x );
+            vectorELLUnbindTexture( x );
         }
     }
     else
@@ -799,7 +817,7 @@ void CUDAELLUtils::normalGEMV(
 
         if ( useTexture )
         {
-            void ( *unbind ) ( const ValueType* ) = &ellUnbindTexture;
+            void ( *unbind ) ( const ValueType* ) = &vectorELLUnbindTexture;
 
             syncToken->pushRoutine( boost::bind( unbind, x ) );
         }
@@ -840,7 +858,7 @@ void ell_sparse_gemv_kernel(
 
             // compute capability >= 2.0: no benefits to mask with value != 0.0
 
-            value += aValue * fetch_ELLx<T,useTexture>( x_d, ellJA[pos] );
+            value += aValue * fetchELLVectorX<T, useTexture>( x_d, ellJA[pos] );
             pos   += numRows;
         }
 
@@ -885,7 +903,7 @@ void CUDAELLUtils::sparseGEMV(
 
     if ( useTexture )
     {
-        ellBindTexture( x );
+        vectorELLBindTexture( x );
     }
 
     LAMA_LOG_INFO( logger, "Start ell_sparse_gemv_kernel<" << typeid( ValueType ).name()
@@ -917,7 +935,7 @@ void CUDAELLUtils::sparseGEMV(
 
         if ( useTexture )
         {
-            ellUnbindTexture( x );
+            vectorELLUnbindTexture( x );
         }
     }
     else
@@ -926,7 +944,7 @@ void CUDAELLUtils::sparseGEMV(
 
         if ( useTexture )
         {
-            void ( *unbind ) ( const ValueType* ) = &ellUnbindTexture;
+            void ( *unbind ) ( const ValueType* ) = &vectorELLUnbindTexture;
 
             syncToken->pushRoutine( boost::bind( unbind, x ) );
         }
@@ -964,13 +982,13 @@ void ell_jacobi_kernel(
         for ( int kk = 1; kk < ellNumValuesPerRow; ++kk )
         {
             const T aValue = *ellValues;
-            temp -= aValue * fetch_ELLx<T,useTexture>( oldSolution, *ellJA );
+            temp -= aValue * fetchELLVectorX<T, useTexture>( oldSolution, *ellJA );
             ellValues += numRows;
             ellJA += numRows;
         }
         if ( omega == 0.5 )
         {
-            solution[i] = omega * ( fetch_ELLx<T,useTexture>( oldSolution, i ) + temp / diag );
+            solution[i] = omega * ( fetchELLVectorX<T, useTexture>( oldSolution, i ) + temp / diag );
         }
         else if ( omega == 1.0 )
         {
@@ -978,7 +996,7 @@ void ell_jacobi_kernel(
         }
         else
         {
-            solution[i] = omega * ( temp / diag ) + ( 1.0 - omega ) * fetch_ELLx<T,useTexture>( oldSolution, i );
+            solution[i] = omega * ( temp / diag ) + ( 1.0 - omega ) * fetchELLVectorX<T, useTexture>( oldSolution, i );
         }
     }
 }
@@ -1023,7 +1041,7 @@ void CUDAELLUtils::jacobi(
 
     if ( useTexture )
     {
-        ellBindTexture( oldSolution );
+        vectorELLBindTexture( oldSolution );
 
         LAMA_CUDA_RT_CALL( cudaFuncSetCacheConfig( ell_jacobi_kernel<ValueType, true>, cudaFuncCachePreferL1),
                            "LAMA_STATUS_CUDA_FUNCSETCACHECONFIG_FAILED" )
@@ -1051,14 +1069,14 @@ void CUDAELLUtils::jacobi(
 
         if ( useTexture )
         {
-            ellUnbindTexture( oldSolution );
+            vectorELLUnbindTexture( oldSolution );
         }
     }
     else
     {
         if ( useTexture )
         {
-            void ( *unbind ) ( const ValueType* ) = &ellUnbindTexture;
+            void ( *unbind ) ( const ValueType* ) = &vectorELLUnbindTexture;
 
             syncToken->pushRoutine( boost::bind( unbind, oldSolution ) );
         }
@@ -1101,7 +1119,7 @@ void ell_jacobi_halo_kernel(
 
         for ( int jj = 0; jj < rowend; ++jj )
         {
-            temp += ellvalues[pos] * fetch_ELLx<ValueType, useTexture>( oldsolution, ellJA[pos] );
+            temp += ellvalues[pos] * fetchELLVectorX<ValueType, useTexture>( oldsolution, ellJA[pos] );
             pos += numrows;
         }
 
@@ -1139,7 +1157,7 @@ void CUDAELLUtils::jacobiHalo(
 
     if ( useTexture )
     {
-        ellBindTexture( oldSolution );
+        vectorELLBindTexture( oldSolution );
 
         LAMA_CUDA_RT_CALL( cudaFuncSetCacheConfig( ell_jacobi_halo_kernel<ValueType, true>, cudaFuncCachePreferL1 ),
                            "LAMA_STATUS_CUDA_FUNCSETCACHECONFIG_FAILED" )
@@ -1163,7 +1181,7 @@ void CUDAELLUtils::jacobiHalo(
 
     if ( useTexture )
     {
-        ellUnbindTexture( oldSolution );
+        vectorELLUnbindTexture( oldSolution );
     }
 }
 

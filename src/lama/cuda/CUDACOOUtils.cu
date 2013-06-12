@@ -37,23 +37,88 @@
 #include <lama/cuda/utils.cu.h>
 #include <lama/cuda/CUDAError.hpp>
 #include <lama/cuda/CUDACOOUtils.hpp>
+#include <lama/cuda/CUDAStreamSyncToken.hpp>
+#include <lama/cuda/CUDASettings.hpp>
 #include <lama/tracing.hpp>
 
 // thrust
 #include <thrust/device_ptr.h>
 #include <thrust/sort.h>
 
+// boost
+#include <boost/bind.hpp>
+
 namespace lama
 {
 
 LAMA_LOG_DEF_LOGGER( CUDACOOUtils::logger, "CUDA.COOUtils" )
 
+
 /* --------------------------------------------------------------------------- */
 
-template<typename T,bool useTexture>
-__inline__     __device__ T fetch_COOx( const T* const x, const IndexType i )
+texture<float, 1> texCOOVectorSXref;
+
+texture<int2, 1> texCOOVectorDXref;
+
+texture<int, 1> texCOOVectorIref;
+
+__inline__ void vectorCOOBindTexture( const float* vector )
+{
+    LAMA_CUDA_RT_CALL( cudaBindTexture( NULL, texCOOVectorSXref, vector ), "bind float vector x to texture" )
+}
+
+__inline__ void vectorCOOBindTexture( const double* vector )
+{
+    LAMA_CUDA_RT_CALL( cudaBindTexture( NULL, texCOOVectorDXref, vector ), "bind double vector x to texture" )
+}
+
+__inline__ void vectorCOOBindTexture( const int* vector )
+{
+    LAMA_CUDA_RT_CALL( cudaBindTexture( NULL, texCOOVectorIref, vector ), "bind int vector x to texture" )
+}
+
+__inline__ void vectorCOOUnbindTexture( const float* )
+{
+    LAMA_CUDA_RT_CALL( cudaUnbindTexture( texCOOVectorSXref ), "unbind float vector x from texture" )
+}
+
+__inline__ void vectorCOOUnbindTexture( const double* )
+{
+    LAMA_CUDA_RT_CALL( cudaUnbindTexture( texCOOVectorDXref ), "unbind double vector x from texture" )
+}
+
+__inline__ void vectorCOOUnbindTexture( const int* )
+{
+    LAMA_CUDA_RT_CALL( cudaUnbindTexture( texCOOVectorIref ), "unbind int vector x from texture" )
+}
+
+template<typename ValueType, bool useTexture>
+__inline__ __device__ 
+ValueType fetchCOOVectorX( const ValueType* const x, const int i )
 {
     return x[i];
+}
+
+template<>
+__inline__ __device__
+float fetchCOOVectorX<float, true>( const float* const, const int i )
+{
+    return tex1Dfetch( texCOOVectorSXref, i );
+}
+
+template<>
+__inline__ __device__
+double fetchCOOVectorX<double, true>( const double* const, const int i )
+{
+    int2 v = tex1Dfetch( texCOOVectorDXref, i );
+    return __hiloint2double( v.y, v.x );
+}
+
+template<>
+__inline__ __device__
+int fetchCOOVectorX<int, true>( const int* const, const int i )
+{
+    return tex1Dfetch( texCOOVectorIref, i );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -71,7 +136,7 @@ __global__ void cooInitKernel( ValueType* result, const IndexType numRows, const
 
 /* --------------------------------------------------------------------------- */
 
-__device__ inline void atomicAddDouble( double* address, double val )
+__device__ inline void cooAtomicAdd( double* address, double val )
 {
     unsigned long long int* address_as_ull =
        (unsigned long long int*) address;
@@ -87,9 +152,19 @@ __device__ inline void atomicAddDouble( double* address, double val )
     } while (assumed != old);
 }
 
-__device__ inline void atomicAddFloat( float* address, float val)
+__device__ inline void cooAtomicAdd( float* address, float val)
 
 {
+#if !defined(__CUDA_ARCH__) || __CUDA_ARCH__ >= 200
+
+    // CUDA runtime offers faster solution for capability >= 2.0
+
+    atomicAdd( address, val );
+
+#else
+
+    // old slow solution
+
     int i_val = __float_as_int(val);
 
     int tmp0 = 0;
@@ -102,29 +177,18 @@ __device__ inline void atomicAddFloat( float* address, float val)
         tmp0 = tmp1;
         i_val = __float_as_int(val + __int_as_float(tmp1));
     }
+#endif
 }
 
-template<typename ValueType>
+template<typename ValueType, bool useTexture>
 __global__ void cooGemvKernel(
     ValueType* result,
-    const IndexType numRows,
     const ValueType alpha,
     const ValueType* x,
     const IndexType numValues,
     const IndexType* cooIA,
     const IndexType* cooJA,
-    const ValueType* cooValues );
-
-template<>
-__global__ void cooGemvKernel(
-    double* result,
-    const IndexType numRows,
-    const double alpha,
-    const double* x,
-    const IndexType numValues,
-    const IndexType* cooIA,
-    const IndexType* cooJA,
-    const double* cooValues )
+    const ValueType* cooValues )
 {
     const int k = threadId( gridDim, blockIdx, blockDim, threadIdx );
 
@@ -135,47 +199,11 @@ __global__ void cooGemvKernel(
 
         // we must use atomic updates as different threads might update same row i
 
-        const double resultUpdate = alpha * cooValues[k] * x[j];
+        const ValueType resultUpdate = alpha * cooValues[k] * fetchCOOVectorX<ValueType, useTexture>( x, j );
 
-        // This solution is very slow, but works
+        // atomic add required, solution above
 
-        atomicAddDouble( &result[i], resultUpdate );
-    }
-}
-
-template<>
-__global__ void cooGemvKernel(
-    float* result,
-    const IndexType numRows,
-    const float alpha,
-    const float* x,
-    const IndexType numValues,
-    const IndexType* cooIA,
-    const IndexType* cooJA,
-    const float* cooValues )
-{
-    const int k = threadId( gridDim, blockIdx, blockDim, threadIdx );
-
-    if ( k < numValues )
-    {
-        IndexType i = cooIA[k];
-        IndexType j = cooJA[k];
-
-        // we must use atomic updates as different threads might update same row i
-
-        const float resultUpdate = alpha * cooValues[k] * x[j];
-
-#if !defined(__CUDA_ARCH__) || __CUDA_ARCH__ >= 200
-
-        // CUDA runtime offers faster solution for capability >= 2.0
-
-        atomicAdd( &result[i], resultUpdate );
-#else
-        // old slow solution
-
-        atomicAddFloat( &result[i], resultUpdate );
-#endif
-
+        cooAtomicAdd( &result[i], resultUpdate );
     }
 }
 
@@ -193,30 +221,86 @@ void CUDACOOUtils::normalGEMV(
     const IndexType cooJA[],
     const ValueType cooValues[],
     const IndexType numValues,
-    class SyncToken* /* syncToken */)
+    class SyncToken* syncToken  )
 {
     LAMA_REGION( "CUDA.COO.normalGEMV" )
 
     LAMA_LOG_INFO( logger, "normalGEMV, #rows = " << numRows << ", #vals = " << numValues )
 
-    const IndexType block_size = 256;
-    dim3 dimBlock( block_size, 1, 1 );
+    cudaStream_t stream = 0;
 
+    if ( syncToken )
+    {
+        CUDAStreamSyncToken* cudaStreamSyncToken = dynamic_cast<CUDAStreamSyncToken*>( syncToken );
+        LAMA_ASSERT_DEBUG( cudaStreamSyncToken, "no cuda stream sync token provided" )
+        stream = cudaStreamSyncToken->getCUDAStream();
+        LAMA_LOG_INFO( logger, "asyncronous execution on stream " << stream );
+    }
+
+    bool useTexture = CUDASettings::useTexture();
+
+    IndexType blockSize = CUDASettings::getBlockSize();
+    dim3 dimBlock( blockSize, 1, 1 );
     dim3 dimGrid = makeGrid( numValues, dimBlock.x );
 
     LAMA_CHECK_CUDA_ACCESS
 
-    cooInitKernel<<< dimGrid, dimBlock>>>
-    ( result, numRows, beta, y );
+    // set result = beta * y, not needed if beta == 1 and y == result
+
+    if ( static_cast<ValueType>( 1 ) == beta && result == y )
+    {
+        LAMA_LOG_DEBUG( logger, "normalGEMV is sparse, no init of result needed" )
+    }
+    else
+    {
+        cooInitKernel<<< dimGrid, dimBlock>>> ( result, numRows, beta, y );
+    }
 
     LAMA_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "COO: initGemvKernel FAILED" )
 
-    dim3 dimGrid1 = makeGrid( numValues, dimBlock.x );
+    blockSize = CUDASettings::getBlockSize( numValues );
+    dimBlock  = dim3( blockSize, 1, 1 );
+    dimGrid   = makeGrid( numValues, dimBlock.x );
 
-    cooGemvKernel<<< dimGrid1, dimBlock>>>
-    ( result, numRows, alpha, x, numValues, cooIA, cooJA, cooValues );
+    LAMA_LOG_INFO( logger, "Start cooGemvKernel<" << typeid( ValueType ).name()
+                           << "> <<< blockSize = " << blockSize << ", stream = " << stream
+                           << ", useTexture = " << useTexture << ">>>" )
 
-    LAMA_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "COO: gemvKernel FAILED" )
+    if ( useTexture )
+    {
+        vectorCOOBindTexture( x );
+
+        cooGemvKernel<ValueType, true><<< dimGrid, dimBlock>>>
+            ( result, alpha, x, numValues, cooIA, cooJA, cooValues );
+    }
+    else
+    {
+        cooGemvKernel<ValueType, false><<< dimGrid, dimBlock>>>
+            ( result, alpha, x, numValues, cooIA, cooJA, cooValues );
+    }
+
+    if ( !syncToken )
+    {
+        // synchronization now, unbind texture if it has been used
+
+        LAMA_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "COO: gemvKernel FAILED" )
+
+        if ( useTexture )
+        {
+            vectorCOOUnbindTexture( x );
+        }
+    }
+    else
+    {
+        // synchronization at SyncToken, delay unbind
+
+        if ( useTexture )
+        {
+            void ( *unbind ) ( const ValueType* ) = &vectorCOOUnbindTexture;
+
+            syncToken->pushRoutine( boost::bind( unbind, x ) );
+        }
+    }
 }
 
 /* --------------------------------------------------------------------------- */
