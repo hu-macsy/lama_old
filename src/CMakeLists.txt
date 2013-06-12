@@ -51,8 +51,6 @@ set ( LAMA_VERSION_MINOR 0 )
 set ( LAMA_VERSION_PATCH 1 )
 set ( LAMA_VERSION_COUNT 3 )
 
-
-
 ### Variables / CMAKE Functions ###
 include ( Variables )
 include ( SearchPackages )
@@ -93,7 +91,6 @@ add_definitions ( -DLAMA_OMP_SCHEDULE=${LAMA_OMP_SCHEDULE} )
 if ( OPENMP_FOUND )
     set ( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}" )
 endif( OPENMP_FOUND )
-
 
 
 # LAMA irrelevant entries will be marked as advanced ( Remove them from default cmake GUI )
@@ -223,8 +220,6 @@ else ( OPENMP_FOUND )
     lama_status_message ( ERROR "[NOT FOUND]" "OpenMP" )
 endif ( OPENMP_FOUND )
 
-
-
 message ( STATUS "" )
 lama_status_message ( HEADLINE "OPTIONAL PACKAGES:" )
 
@@ -278,10 +273,7 @@ else ( Boost_REGEX_FOUND )
     lama_status_message ( WARNING "[NOT FOUND]" "Boost Regex" )
 endif ( Boost_REGEX_FOUND )
 
-
-
 message ( STATUS "" )
-
 
 lama_status_message ( HEADLINE "INFO:" )
 message ( STATUS "LAMA Version : ${LAMA_VERSION} ${LAMA_VERSION_NAME}" )
