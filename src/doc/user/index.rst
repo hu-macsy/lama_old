@@ -15,9 +15,9 @@ Contents:
    
    introduction
    installation
-   reference
    tutorial
    lecture
+   reference
    testing
    benchmarks
    developer

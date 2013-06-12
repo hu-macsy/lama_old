@@ -20,5 +20,4 @@ In this example we simply multiply a scalar with a dense vector.
 
     sequenceOfValues.writeToFile( "vector.txt" , File::FORMATTED );
 
-
 The full example program can be found here :download:`vector.cpp <../../../examples/tutorial/vector.cpp>`

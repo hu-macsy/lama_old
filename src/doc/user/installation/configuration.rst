@@ -57,8 +57,8 @@ All relevant LAMA options and their significations are listed in the table below
    "CMAKE_INSTALL_PREFIX", "Installation path of LAMA library"
    "LAMA_ADDITIONAL_LINK_LIBRARIES", "Paths to libraries that should be linked to lama, separated by ;"
    "LAMA_ADDITIONAL_LINK_FLAGS", "Additional linker Flags"
-   "LAMA_CMAKE_VERBOSE", "set to 1 or TRUE for more detailed infos about configuration"
    "LAMA_ASSERT_LEVEL", "ERROR recommended, DEBUG adds much more assertions into the code"
+   "LAMA_CMAKE_VERBOSE", "set to 1 or TRUE for more detailed infos about configuration"
    "LAMA_BLAS_LIBRARY", "Selected the used BLAS library: auto, MKL, ACML, GOTOBLAS, BLAS"
    "LAMA_BUILD_TEST", "ON or OFF, explicitly enable/disable building the tests"
    "LAMA_LOG", "INFO recommended, alternatively DEBUG or even more detailed TRACE"
@@ -82,20 +82,20 @@ following table. For advanced help refer to the separate section.
 .. csv-table:: CMake hint variables
    :header: "Package", "CMake variable", "Signification"
    
-   "Boost", "BOOST_ROOT", "path to boost root dir"
-   "MKL (for BLAS, LAPack and ScaLAPack)", "MKL_ROOT or MKL_INCLUDE_DIR and MKL_LIBRARY_PATH", "path to MKL root dir, or paths to MKL include and library dir"
    "ACML (for BLAS and LAPack)", "ACML_ROOT or ACML_INCLUDE_DIR and ACML_LIBRARY_PATH", "path to ACML root dir, or paths to MKL include and library dir"
-   "FortranBLAS (for BLAS and LAPack)", "", ""
-   "MPI", "MPI_ROOT", "path to MPI root dir"
+   "Boost", "BOOST_ROOT", "path to boost root dir"
    "CUDA", "CUDA_TOOLKIT_ROOT", "path to CUDA toolkit"
    "DOXYGEN", "DOXYGEN_EXECUTABLE", "path to doxygen binary dir"
+   "FortranBLAS (for BLAS and LAPack)", "", ""
+   "MKL (for BLAS, LAPack and ScaLAPack)", "MKL_ROOT or MKL_INCLUDE_DIR and MKL_LIBRARY_PATH", "path to MKL root dir, or paths to MKL include and library dir"
+   "MPI", "MPI_ROOT", "path to MPI root dir"
    "Vampir Trace", "VAMPIRTRACE_ROOT" or "VT_ROOT", "path to vampir root dir"
-   "------------", "--------------------------------------------------------------------------"
-   "OpenCL", "OPENCL_ROOT or OPENCL_INCLUDE_DIR and OPENCL_LIBRARY_PATH", "path to OpenCL root dir, or paths to OpenCL include and library dir"
-   "Metis", "METIS_ROOT or METIS_INCLUDE_DIR and METIS_LIBRARY_PATH", "path to Metis root dir, or paths to Metis include and library dir"
-   "ParMetis", "PARMETIS_ROOT or PARMETIS_INCLUDE_DIR and PARMETIS_LIBRARY_PATH", "path to ParMetis root dir, or paths to ParMetis include and library di"
+   "experimental", "------------------" "------------------"
    "GASNet", "GASNET_LIBRARY_PATH", "path to GASNet library"
+   "Metis", "METIS_ROOT or METIS_INCLUDE_DIR and METIS_LIBRARY_PATH", "path to Metis root dir, or paths to Metis include and library dir"
+   "OpenCL", "OPENCL_ROOT or OPENCL_INCLUDE_DIR and OPENCL_LIBRARY_PATH", "path to OpenCL root dir, or paths to OpenCL include and library dir"
    "OpenShmem", "OSHMEM_INCLUDE_PATH and OSHMEM_LIBRARY_PATH", "paths to Open shared memory include and library dir"
+   "ParMetis", "PARMETIS_ROOT or PARMETIS_INCLUDE_DIR and PARMETIS_LIBRARY_PATH", "path to ParMetis root dir, or paths to ParMetis include and library di"
 
 For changing the C compiler there is a different way for telling cmake. Please see :doc:`here <configuration/c++>`. 
 
@@ -134,4 +134,3 @@ In short:
    cd build
    #Call cmake
    cmake [-D MKL_ROOT=/opt/intel/mkl] [-D ... ] -D CMAKE_INSTALL_PREFIX=<path/to/install/dir> [-D CMAKE_BUILD_TYPE=Release] <project-root>/src
-

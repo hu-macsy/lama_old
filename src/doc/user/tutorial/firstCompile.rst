@@ -70,4 +70,3 @@ Now the output should be as follows::
 Congratulations, your first LAMA program is running.
 
 :download:`Download Linux Makefile <../../../examples/tutorial/Makefile>`
-

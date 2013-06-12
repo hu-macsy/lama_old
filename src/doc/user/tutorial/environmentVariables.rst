@@ -6,7 +6,7 @@ Environment variables
 This is a summary of environment variables that are currently used for LAMA.
 
 LAMA_LOG
----------
+--------
 
 The variable ``LAMA_LOG`` specifies the detail of logging or the logger configuration file.
 
@@ -44,7 +44,7 @@ or not in the desired matrix format (e.g. implicit conversion to CSR format and 
 * ``IGNORE`` will not give any information or action for such operations.
 
 LAMA_DEVICE
-------------
+-----------
 
 This variable specifies the default device for creation of a CUDA Context in case operations should be
 executed on a GPU.
@@ -84,4 +84,3 @@ best to the given problem size.
 
 Note: Please keep in mind that distributions of matrices are always one-dimensional row distributions and
 therefore the environment variable has no influence.
-

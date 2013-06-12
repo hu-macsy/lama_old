@@ -1,3 +1,5 @@
+.. no warning for not included in toc
+
 :orphan:
 
 Examples of Sphinx for User Guide

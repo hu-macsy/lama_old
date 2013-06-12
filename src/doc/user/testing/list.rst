@@ -6,7 +6,7 @@ List of Unit Tests
 ** WARNING: this list is deprecated: last update 5.5.2011-**
 
 CPU Tests
-----------
+---------
 - AMGTest
 - BCSRSparseMatrixTest
 - BlockDistributionTest
@@ -33,11 +33,6 @@ CPU Tests
 - StagnationTest
 - VectorTest
  
-Cell Tests
-----------
-- CellBaseTest
-- CellVectorTest
- 
 CUDA Tests
 ----------
 - CUDAAMGTest
@@ -53,7 +48,14 @@ CUDA Tests
 - CUDANormTest
 - CUDASparseVectorTest
 - CUDAVectorTest
- 
+
+experimental: 
+
+Cell Tests
+----------
+- CellBaseTest
+- CellVectorTest
+
 DirectX Tests
 -------------
 - DirectXCSRSparseMatrixTest
@@ -61,7 +63,7 @@ DirectX Tests
 - DirectXVectorTest
  
 OpenCL Tests
--------------
+------------
 - OpenCLAMGTest
 - OpenCLBaseTest
 - OpenCLCGTest
@@ -72,5 +74,3 @@ OpenCL Tests
 - OpenCLNormTest
 - OpenCLSparseVectorTest
 - OpenCLVectorTest
- 
-Latest Update: 5.5.2011
