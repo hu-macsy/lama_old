@@ -108,6 +108,8 @@ void TraceRegionRecord::stop( const char* regionName )
         return; // Tracing is disabled here
     }
 
+    // getCurrentRegionId very fast, matches name against call stack if available
+
     int regionId = regionTable->getCurrentRegionId( regionName );
 
     double stopTime = lama::Walltime::get();

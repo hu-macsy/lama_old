@@ -37,6 +37,7 @@
 // others
 #include <lama/tracing/VTInterface.hpp>
 #include <lama/Walltime.hpp>
+#include <lama/exception/LAMAAssert.hpp>
 
 #include <cstdio>
 
@@ -82,6 +83,8 @@ void RegionTable::init()
 
 void RegionTable::start( int regionId, double wallTime )
 {
+    LAMA_LOG_DEBUG( logger, "start region " << regionId << ", time = " << wallTime )
+
     callStack.push_back( CallEntry( regionId, wallTime ) );
 }
 
@@ -89,6 +92,14 @@ void RegionTable::start( int regionId, double wallTime )
 
 void RegionTable::stop( int regionId, double wallTime )
 {
+    LAMA_LOG_DEBUG( logger, "stop region " << regionId << ", time = " << wallTime )
+
+    if ( callStack.size() == 0 )
+    {
+        LAMA_LOG_ERROR( logger, "stop region on empty call region stack" )
+        return;
+    }
+
     CallEntry call = callStack.back();
 
     if ( ( call.mRegion >= 0 ) && ( call.mRegion != regionId ) )
@@ -117,19 +128,41 @@ void RegionTable::stop( int regionId, double wallTime )
 
 int RegionTable::getCurrentRegionId( const char* regionName )
 {
-    // check that regionName is the last region on the current call stack
-
-    const CallEntry& call = callStack.back();
-
-    const RegionEntry& callRegion = getRegion( call.mRegion );
-
-    if ( strcmp( callRegion.getRegionName(), regionName ) != 0 )
+    if ( callStack.size() )
     {
-        fprintf( stderr, "mismatch in call stack, stop %s but in %s\n", regionName, callRegion.getRegionName() );
-        return 0;
+        // check that regionName is the last region on the current call stack
+
+        const CallEntry& call = callStack.back();
+
+        const RegionEntry& callRegion = getRegion( call.mRegion );
+
+        if ( strcmp( callRegion.getRegionName(), regionName ) != 0 )
+        {
+            fprintf( stderr, "mismatch in call stack, stop %s but in %s\n", regionName, callRegion.getRegionName() );
+            return 0;
+        }
+
+        return call.mRegion;
+    }
+    else
+    {
+         // no callstack available, so we search it
+
+        std::map<const char*,int,CmpString>::iterator it = mapTimer.find( regionName );
+
+        if ( it == mapTimer.end() )
+        {
+            LAMA_THROWEXCEPTION( "Region " << regionName << " never defined" )
+        }
+        else
+        {
+            // alread defined
+
+            return it->second;
+        }
     }
 
-    return call.mRegion;
+    return 0;  // avoids warning
 }
 
 /* ---------------------------------------------------------------------- */
