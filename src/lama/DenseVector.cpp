@@ -38,7 +38,6 @@
 #include <lama/LAMAArrayUtils.hpp>
 #include <lama/LAMAInterface.hpp>
 #include <lama/ContextAccess.hpp>
-//#include <lama/LAMAInterfaceRegistry.hpp>
 
 #include <lama/CommunicatorFactory.hpp>
 
@@ -48,6 +47,9 @@
 
 #include <lama/matrix/Matrix.hpp>
 #include <lama/expression/Expression.hpp>
+#include <lama/io/FileIO.hpp>
+
+#include <lama/tracing.hpp>
 
 #include <boost/scoped_array.hpp>
 
@@ -323,13 +325,13 @@ DenseVector<T>* DenseVector<T>::create( DistributionPtr distribution ) const
 {
     LAMA_LOG_INFO( logger, "DenseVector<T>::create" )
 
-    std::auto_ptr<DenseVector<T> > newDenseVector( new DenseVector<T>( distribution ) );
+    DenseVector<T>* newDenseVector = new DenseVector<T>( distribution );
 
     newDenseVector->setContext( mContext );
 
     // give back the new vector and its ownership
 
-    return newDenseVector.release();
+    return newDenseVector;
 }
 
 template<typename T>
@@ -551,8 +553,10 @@ void DenseVector<T>::swap( Vector& other )
 template<typename T>
 void DenseVector<T>::writeAt( std::ostream& stream ) const
 {
-    stream << "DenseVector<" << getValueType() << ">(" << size() << ", local = " << mLocalValues.size() << ", dist = "
-           << getDistribution() << ")";
+    stream << "DenseVector<" << getValueType() << ">" 
+           << "( size = " << size() << ", local = " << mLocalValues.size() 
+           << ", dist = " << getDistribution() 
+           << ", loc  = " << *getContext() << " )";
 }
 
 template<typename T>
@@ -740,15 +744,23 @@ void DenseVector<T>::assign(
 template<typename T>
 Scalar DenseVector<T>::dotProduct( const Vector& other ) const
 {
+    LAMA_REGION( "Vector.Dense.dotP" )
+
     LAMA_LOG_INFO( logger, "Calculating dot product for " << *this << " * " << other )
-    if ( typeid( *this ) == typeid( other ) )
+
+    // add other->getVectorKind() == DENSE, if sparse is also supported
+
+    if ( this->getValueType() == other.getValueType() )
     {
         if ( getDistribution() != other.getDistribution() )
         {
             LAMA_THROWEXCEPTION(
                 "distribution do not match for this * other, this = "<< *this <<" , other = "<< other )
         }
-        const DenseVector<ValueType>& denseOther = dynamic_cast<const DenseVector<ValueType>&>( other );
+
+        const DenseVector<ValueType>* denseOther = dynamic_cast<const DenseVector<ValueType>*>( &other );
+
+        LAMA_ASSERT_DEBUG( denseOther, "dynamic_cast failed for other = " << other )
 
         LAMA_LOG_DEBUG( logger, "Calculating local dot product at " << *mContext )
 
@@ -759,7 +771,7 @@ Scalar DenseVector<T>::dotProduct( const Vector& other ) const
         // Now do the dot production at location loc ( might have been changed to other location  )
 
         ReadAccess<T> localRead( mLocalValues, loc );
-        ReadAccess<T> otherRead( denseOther.mLocalValues, loc );
+        ReadAccess<T> otherRead( denseOther->mLocalValues, loc );
 
         LAMA_CONTEXT_ACCESS( loc )
 
@@ -1261,19 +1273,20 @@ template<typename T>
 void DenseVector<T>::writeVectorDataToBinaryFile( std::fstream& outFile, const long dataTypeSize ) const
 {
     IndexType numRows = size();
+
     HostReadAccess<ValueType> dataRead( mLocalValues );
 
-    if ( sizeof(ValueType) == dataTypeSize )
+    if ( dataTypeSize == sizeof(ValueType) )
     {
-        writeBinaryData<ValueType,ValueType>( outFile, dataRead.get(), numRows );
+        writeBinaryData<ValueType, ValueType>( outFile, dataRead.get(), numRows );
     }
-    else if ( dataTypeSize == TypeTraits<double>::size )
+    else if ( dataTypeSize == sizeof( double) )
     {
-        writeBinaryData<double,ValueType>( outFile, dataRead.get(), numRows );
+        writeBinaryData<double, ValueType>( outFile, dataRead.get(), numRows );
     }
-    else if ( dataTypeSize == TypeTraits<float>::size )
+    else if ( dataTypeSize == sizeof( float ) )
     {
-        writeBinaryData<float,ValueType>( outFile, dataRead.get(), numRows );
+        writeBinaryData<float, ValueType>( outFile, dataRead.get(), numRows );
     }
     else
     {
@@ -1325,8 +1338,6 @@ void DenseVector<T>::readVectorFromBinaryFile( const std::string& fileName, cons
     {
         LAMA_THROWEXCEPTION( "Could not open binary vector file." )
     }
-
-//    m_data = m_allocator.allocate(m_capacity);
 
     readVectorDataFromBinaryFile( inFile, dataTypeSize );
 
@@ -1446,31 +1457,6 @@ void DenseVector<T>::readVectorFromXDRFile( const std::string& fileName, const l
 
 /* -------------------------------------------------------------------------- */
 
-template<typename FileType,typename DataType>
-static void readBinaryData( std::fstream& inFile, DataType data[], const IndexType n )
-{
-    if ( typeid(FileType) == typeid(DataType) )
-    {
-        // no type conversion needed
-
-        inFile.read( reinterpret_cast<char*>( data ), sizeof(DataType) * n );
-        return;
-    }
-
-    // allocate buffer for type conversion
-
-    boost::scoped_array<FileType> buffer( new FileType[n] );
-
-    inFile.read( reinterpret_cast<char*>( buffer.get() ), sizeof(FileType) * n );
-
-    for ( IndexType i = 0; i < n; i++ )
-    {
-        data[i] = static_cast<DataType>( buffer[i] );
-    }
-}
-
-/* -------------------------------------------------------------------------- */
-
 template<typename T>
 void DenseVector<T>::readVectorDataFromBinaryFile( std::fstream &inFile, const long dataTypeSize )
 {
@@ -1482,15 +1468,15 @@ void DenseVector<T>::readVectorDataFromBinaryFile( std::fstream &inFile, const l
 
     if ( dataTypeSize == sizeof(ValueType) )
     {
-        readBinaryData<ValueType,ValueType>( inFile, writeData.get(), n );
+        FileIO::readBinaryData<ValueType, ValueType>( inFile, writeData.get(), n );
     }
     else if ( dataTypeSize == TypeTraits<float>::size )
     {
-        readBinaryData<float,ValueType>( inFile, writeData.get(), n );
+        FileIO::readBinaryData<float, ValueType>( inFile, writeData.get(), n );
     }
     else if ( dataTypeSize == TypeTraits<double>::size )
     {
-        readBinaryData<double,ValueType>( inFile, writeData.get(), n );
+        FileIO::readBinaryData<double, ValueType>( inFile, writeData.get(), n );
     }
     else
     {

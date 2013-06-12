@@ -311,6 +311,8 @@ void Vector::writeAt( std::ostream& stream ) const
 
 void Vector::setContext( ContextPtr context )
 {
+    LAMA_ASSERT_DEBUG( context, "NULL context invalid" )
+
     if ( mContext->getType() != context->getType() )
     {
         LAMA_LOG_DEBUG( logger, *this << ": new context = " << *context << ", old context = " << *mContext )

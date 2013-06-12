@@ -80,6 +80,15 @@ class LAMA_DLL_IMPORTEXPORT Vector: public Distributed
 {
 public:
 
+    /**
+     * @brief VectorKind describes if a vector is dense or sparse.
+     */
+    typedef enum
+    {
+        DENSE, //!< vector kind for a dense vector
+        SPARSE //!< vector kind for a sparse vector, not supported yet
+    } VectorKind;
+
     static Vector* createVector( const Scalar::ScalarType valueType, DistributionPtr distribution );
 
     /**
