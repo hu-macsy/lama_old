@@ -89,7 +89,7 @@ void OpenMPUtils::setScale( ValueType outValues[],
     if ( value == static_cast<ValueType>( 0 ) )
     {
         // Important : inValues might be undefined
-        setVal( outValues, n, 0 );
+        setVal( outValues, n, value );
         return;
     }
 

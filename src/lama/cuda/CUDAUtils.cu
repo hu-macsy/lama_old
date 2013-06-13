@@ -91,9 +91,9 @@ void CUDAUtils::scale( ValueType *values, const ValueType scale, const IndexType
         return;
     }
 
-    if ( scale == 0 )
+    if ( scale == static_cast<ValueType>( 0 ) )
     {
-        setVal( values, n, 0 );
+        setVal( values, n, scale );  
     }
 
     LAMA_CHECK_CUDA_ACCESS
@@ -498,11 +498,11 @@ void CUDAUtils::setScale( ValueType1 out[],
         return;
     }
 
-    if ( beta == 0 )
+    if ( beta == static_cast<ValueType1>( 0 ) )
     {
         // in array might be undefined
 
-        setVal( out, beta, n );
+        setVal( out, n, beta );
         return;
     }
 
