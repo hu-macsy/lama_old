@@ -3,17 +3,23 @@
 #include <lama/Scalar.hpp>
 
 #include <iostream>
+#include <stdlib.h>
 
 using namespace lama;
 
 int main()
 
 {
-    Scalar a(1);    // a scalar of index type
-    Scalar b(2.5f); // a scalar of type float
-    Scalar c(0.0);  // a scalar representing zero
+    //
+    // Create scalars
+    //
+    Scalar a( 1 );    // a scalar of index type
+    Scalar b( 2.5f ); // a scalar of type float
+    Scalar c( 0.0 );  // a scalar representing zero
 
+    //
     // binary operators
+    //
     c = a + b;
     c = a - b;
     c = a * b;
@@ -24,10 +30,14 @@ int main()
     a *= b;
     a /= b;
 
+    //
     // unary operator '-'
+    //
     c = -c;
 
+    //
     //relational operators
+    //
     bool boolean = ( a == b );
     boolean = ( a != b );
     boolean = ( a < b );
@@ -35,17 +45,26 @@ int main()
     boolean = ( a <= b );
     boolean = ( a >= b );
 
+    //
     // math functions
+    //
     c = max( a, b );
     c = min( a, b );
     c = abs( a );
     c = sqrt( a );
 
+    //
     // output operator
+    //
     std::cout << "my Scalar is: " << a << std::endl;
 
-    // getValue
-    printf("my Scalar is: %d\n", a.getValue<int>() );
+    // alternative: getValue
+//    printf("my Scalar is: %d\n", a.getValue<int>() );
 
-    return 0;
+    //
+    //  That's it.
+    //
+    std::cout << "!!!! TUTORIAL COMPLETED SUCCESSFULLY !!!!" << std::endl;
+
+    return EXIT_SUCCESS;
 }
