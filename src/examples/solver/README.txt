@@ -1,11 +1,10 @@
 Examples for calls
 ==================
 
-matrix_generator.exe example 1 3 1000000
-matrix_generator.exe example 2 5 1000 1000
-matrix_generator.exe example 2 9 1000 1000
-matrix_generator.exe example 3 7 100 100 100
 matrix_generator.exe example 3 27 100 100 100
+
+creates a 3-dimensional 27-point poisson star with dimension 100 in every direction
+(supported poisson stars: 1D3P 2D5P 2D9P 3D7P 3D27P)
 
 1 CPU:   cg_solver.exe example [ Host CSR }
 1 GPU:   cg_solver.exe example CUDA [ ELL ]
