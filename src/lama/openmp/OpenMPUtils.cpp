@@ -56,10 +56,21 @@ void OpenMPUtils::scale( ValueType mValues[], const ValueType value, const Index
         return;
     }
 
-    #pragma omp parallel for schedule( LAMA_OMP_SCHEDULE )
-    for ( IndexType i = 0; i < n; i++ )
+    if ( value == 0 )
     {
-        mValues[i] *= value;
+        #pragma omp parallel for schedule( LAMA_OMP_SCHEDULE )
+        for ( IndexType i = 0; i < n; i++ )
+        {
+            mValues[i] = 0;
+        }
+    }
+    else
+    {
+        #pragma omp parallel for schedule( LAMA_OMP_SCHEDULE )
+        for ( IndexType i = 0; i < n; i++ )
+        {
+            mValues[i] *= value;
+        }
     }
 }
 
@@ -74,6 +85,13 @@ void OpenMPUtils::setScale( ValueType outValues[],
     LAMA_LOG_INFO( logger, "setScale, #n = " << n << ", value = " << value )
 
     // alias of outValues == inValues is no problem
+
+    if ( value == static_cast<ValueType>( 0 ) )
+    {
+        // Important : inValues might be undefined
+        setVal( outValues, n, 0 );
+        return;
+    }
 
     if ( value == static_cast<ValueType>( 1 ) )
     {

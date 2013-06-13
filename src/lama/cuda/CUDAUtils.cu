@@ -91,6 +91,11 @@ void CUDAUtils::scale( ValueType *values, const ValueType scale, const IndexType
         return;
     }
 
+    if ( scale == 0 )
+    {
+        setVal( values, n, 0 );
+    }
+
     LAMA_CHECK_CUDA_ACCESS
 
     const int blockSize = CUDASettings::getBlockSize( n );
@@ -490,6 +495,14 @@ void CUDAUtils::setScale( ValueType1 out[],
 
     if ( n <= 0 )
     {
+        return;
+    }
+
+    if ( beta == 0 )
+    {
+        // in array might be undefined
+
+        setVal( out, beta, n );
         return;
     }
 
