@@ -64,18 +64,18 @@ namespace UtilsTest
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 
-template<typename ValueType,typename OtherValueType>
+template<typename ValueType>
 void scaleTest( ContextPtr loc )
 {
-    LAMA_INTERFACE_FN_TT( scale, loc, Utils, Transform, ValueType, OtherValueType );
+    LAMA_INTERFACE_FN_T( scale, loc, Utils, Transform, ValueType );
 
     ValueType valuesValues[] =
     { 0, 1, 2, 3, 4, 0, 1, 2, 3, 4, 0, 1, 2, 3, 4 };
     const IndexType nValues = sizeof( valuesValues ) / sizeof(ValueType);
-    OtherValueType expectedValues[] =
+    ValueType expectedValues[] =
     { 0, 2, 4, 6, 8, 0, 2, 4, 6, 8, 0, 2, 4, 6, 8 };
 
-    const OtherValueType mult = 2.0;
+    const ValueType mult = 2.0;
 
     LAMAArray<ValueType> values( nValues, valuesValues );
     {
@@ -83,7 +83,7 @@ void scaleTest( ContextPtr loc )
 
         LAMA_CONTEXT_ACCESS( loc );
 
-        scale( wValues.get(), nValues, mult );
+        scale( wValues.get(), mult, nValues );
     }
 
     HostReadAccess<ValueType> rValues( values );
@@ -340,7 +340,7 @@ LAMA_AUTO_TEST_CASE_T( invertTest, UtilsTest );
 
 LAMA_AUTO_TEST_CASE_TDUMMY( setOrderTest, UtilsTest );
 
-LAMA_AUTO_TEST_CASE_TT( scaleTest, UtilsTest );
+LAMA_AUTO_TEST_CASE_T( scaleTest, UtilsTest );
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 

@@ -44,15 +44,47 @@ namespace lama
 
 LAMA_LOG_DEF_LOGGER( OpenMPUtils::logger, "OpenMP.Utils" )
 
-template<typename ValueType,typename OtherValueType>
-void OpenMPUtils::scale( ValueType mValues[], const IndexType n, const OtherValueType value )
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType>
+void OpenMPUtils::scale( ValueType mValues[], const ValueType value, const IndexType n )
 {
     LAMA_LOG_INFO( logger, "scale, #n = " << n << ", value = " << value )
+
+    if ( value == static_cast<ValueType>( 1 ) )
+    {
+        return;
+    }
 
     #pragma omp parallel for schedule( LAMA_OMP_SCHEDULE )
     for ( IndexType i = 0; i < n; i++ )
     {
-        mValues[i] *= static_cast<ValueType>( value );
+        mValues[i] *= value;
+    }
+}
+
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType,typename OtherValueType>
+void OpenMPUtils::setScale( ValueType outValues[], 
+                            const ValueType value,
+                            const OtherValueType inValues[], 
+                            const IndexType n )
+{
+    LAMA_LOG_INFO( logger, "setScale, #n = " << n << ", value = " << value )
+
+    // alias of outValues == inValues is no problem
+
+    if ( value == static_cast<ValueType>( 1 ) )
+    {
+        set( outValues, inValues, n );
+        return;
+    }
+
+    #pragma omp parallel for schedule( LAMA_OMP_SCHEDULE )
+    for ( IndexType i = 0; i < n; i++ )
+    {
+        outValues[i] = inValues[i] * static_cast<ValueType>( value );
     }
 }
 
@@ -350,20 +382,6 @@ void OpenMPUtils::invert( ValueType array[], const IndexType n )
 }
 
 /* --------------------------------------------------------------------------- */
-
-template<typename ValueType>
-void OpenMPUtils::scaleVal( ValueType array[], const IndexType n, const ValueType val )
-{
-    LAMA_LOG_INFO( logger, "scale array[ " << n << " ] with " << val )
-
-    #pragma omp parallel for schedule( LAMA_OMP_SCHEDULE )
-    for ( IndexType i = 0; i < n; ++i )
-    {
-        array[i] *= val;
-    }
-}
-
-/* --------------------------------------------------------------------------- */
 /*     Template instantiations via registration routine                        */
 /* --------------------------------------------------------------------------- */
 
@@ -371,10 +389,13 @@ void OpenMPUtils::setInterface( UtilsInterface& Utils )
 {
     LAMA_INTERFACE_REGISTER( Utils, validIndexes )
 
-    LAMA_INTERFACE_REGISTER_TT( Utils, scale, float, float )
-    LAMA_INTERFACE_REGISTER_TT( Utils, scale, double, float )
-    LAMA_INTERFACE_REGISTER_TT( Utils, scale, float, double )
-    LAMA_INTERFACE_REGISTER_TT( Utils, scale, double, double )
+    LAMA_INTERFACE_REGISTER_T( Utils, scale, float )
+    LAMA_INTERFACE_REGISTER_T( Utils, scale, double )
+
+    LAMA_INTERFACE_REGISTER_TT( Utils, setScale, float, float )
+    LAMA_INTERFACE_REGISTER_TT( Utils, setScale, double, float )
+    LAMA_INTERFACE_REGISTER_TT( Utils, setScale, float, double )
+    LAMA_INTERFACE_REGISTER_TT( Utils, setScale, double, double )
 
     LAMA_INTERFACE_REGISTER_T( Utils, sum, IndexType )
     LAMA_INTERFACE_REGISTER_T( Utils, sum, float )

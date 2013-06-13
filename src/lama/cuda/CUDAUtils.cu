@@ -37,6 +37,7 @@
 #include <lama/cuda/utils.cu.h>
 #include <lama/cuda/CUDAError.hpp>
 #include <lama/cuda/CUDAUtils.hpp>
+#include <lama/cuda/CUDASettings.hpp>
 
 #include <lama/exception/LAMAAssert.hpp>
 
@@ -59,22 +60,47 @@ namespace lama
 LAMA_LOG_DEF_LOGGER( CUDAUtils::logger, "CUDA.Utils" )
 
 /* ------------------------------------------------------------------------------------------------------------------ */
+/*   Kernel used for scale, set, setScale                                                                             */
+/* ------------------------------------------------------------------------------------------------------------------ */
+
+template<typename T1, typename T2>
+__global__
+void setScaleKernel( T1* out, const T1 beta, const T2* in, IndexType n )
+{
+    // Note: out == in does not harm, also not for performance
+
+    const IndexType i = threadId( gridDim, blockIdx, blockDim, threadIdx );
+
+    if ( i < n )
+    {
+        out[i] = static_cast<T1>( in[i] * beta );
+    }
+}
+
+/* ------------------------------------------------------------------------------------------------------------------ */
 /*                                                  scale                                                             */
 /* ------------------------------------------------------------------------------------------------------------------ */
 
-template<typename ValueType,typename OtherValueType>
-void CUDAUtils::scale( ValueType *mValues, const IndexType n, const OtherValueType value )
+template<typename ValueType>
+void CUDAUtils::scale( ValueType *values, const ValueType scale, const IndexType n )
 {
-    LAMA_LOG_INFO( logger, "scale, #n = " << n << ", value = " << value )
+    LAMA_LOG_INFO( logger, "scale, #n = " << n << ", scale = " << scale )
+
+    if ( n == 0 )
+    {
+        return;
+    }
 
     LAMA_CHECK_CUDA_ACCESS
 
-    ValueType castedValue = static_cast<ValueType>( value );
+    const int blockSize = CUDASettings::getBlockSize( n );
+    dim3 dimBlock( blockSize, 1, 1 );
+    dim3 dimGrid = makeGrid( n, dimBlock.x );
 
-    thrust::device_ptr<ValueType> mValuesPtr( const_cast<ValueType*>( mValues ) );
-    thrust::constant_iterator<ValueType> valueItr( castedValue );
+    // there is no performance loss in using same kernel as setScale
+    // kernel fits well even if in and out are aliased
 
-    thrust::transform( mValuesPtr, mValuesPtr + n, valueItr, mValuesPtr, thrust::multiplies<ValueType>() );
+    setScaleKernel<<<dimGrid, dimBlock>>>( values, scale, values, n );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -328,8 +354,8 @@ bool CUDAUtils::isSorted( const ValueType array[], const IndexType n, bool ascen
 
     bool* resultRawPtr = thrust::raw_pointer_cast( resultPtr );
 
-    const int block_size = 256;
-    dim3 dimBlock( block_size, 1, 1 );
+    const int blockSize = 256;
+    dim3 dimBlock( blockSize, 1, 1 );
     dim3 dimGrid = makeGrid( n - 1, dimBlock.x );
 
     if ( ascending )
@@ -372,11 +398,11 @@ void CUDAUtils::setGather( ValueType1 out[], const ValueType2 in[], const IndexT
 
     LAMA_CHECK_CUDA_ACCESS
 
-    const int block_size = 256;
-    dim3 dimBlock( block_size, 1, 1 );
+    const int blockSize = 256;
+    dim3 dimBlock( blockSize, 1, 1 );
     dim3 dimGrid = makeGrid( n, dimBlock.x );
 
-    gatherKernel<<<dimGrid,dimBlock>>>( out, in, indexes, n );
+    gatherKernel<<<dimGrid, dimBlock>>>( out, in, indexes, n );
 
     LAMA_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "cudaStreamSynchronize( 0 )" );
 }
@@ -403,11 +429,11 @@ void CUDAUtils::setScatter( ValueType1 out[], const IndexType indexes[], const V
 
     LAMA_CHECK_CUDA_ACCESS
 
-    const int block_size = 256;
-    dim3 dimBlock( block_size, 1, 1 );
+    const int blockSize = 256;
+    dim3 dimBlock( blockSize, 1, 1 );
     dim3 dimGrid = makeGrid( n, dimBlock.x );
 
-    scatter_kernel<<<dimGrid,dimBlock>>>( out, indexes, in, n );
+    scatter_kernel<<<dimGrid, dimBlock>>>( out, indexes, in, n );
 
     LAMA_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "cudaStreamSynchronize( 0 )" );
 }
@@ -434,19 +460,49 @@ void CUDAUtils::set( ValueType1 out[], const ValueType2 in[], const IndexType n 
 
     LAMA_LOG_DEBUG( logger, "out = " << out << ", in = " << in )
 
+    if ( n <= 0 )
+    {
+        return;
+    }
+
     LAMA_CHECK_CUDA_ACCESS
 
-    if ( n > 0 )
-    {
-        const int block_size = 256;
-        dim3 dimBlock( block_size, 1, 1 );
-        dim3 dimGrid = makeGrid( n, dimBlock.x );
+    const int blockSize = CUDASettings::getBlockSize( n );
+    dim3 dimBlock( blockSize, 1, 1 );
+    dim3 dimGrid = makeGrid( n, dimBlock.x );
 
-        setKernel<<<dimGrid,dimBlock>>>( out, in, n );
+    setKernel<<<dimGrid, dimBlock>>>( out, in, n );
 
-        LAMA_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "cudaStreamSynchronize( 0 )" );
-    }
+    LAMA_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "cudaStreamSynchronize( 0 )" );
 }
+
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType1,typename ValueType2>
+void CUDAUtils::setScale( ValueType1 out[], 
+                          const ValueType1 beta,
+                          const ValueType2 in[], const IndexType n )
+{
+    LAMA_LOG_INFO( logger,
+                   "set<" << typeid(ValueType1).name() << "," << typeid(ValueType2).name() << ">( ..., n = " << n << ")" )
+
+    LAMA_LOG_DEBUG( logger, "out = " << out << ", in = " << in )
+
+    if ( n <= 0 )
+    {
+        return;
+    }
+
+    LAMA_CHECK_CUDA_ACCESS
+
+    const int blockSize = CUDASettings::getBlockSize( n );
+    dim3 dimBlock( blockSize, 1, 1 );
+    dim3 dimGrid = makeGrid( n, dimBlock.x );
+
+    setScaleKernel<<<dimGrid, dimBlock>>>( out, beta, in, n );
+
+    LAMA_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "cudaStreamSynchronize( 0 )" );
+}   
 
 /* --------------------------------------------------------------------------- */
 
@@ -472,18 +528,20 @@ void CUDAUtils::invert( ValueType array[], const IndexType n )
     LAMA_LOG_INFO( logger,
                    "invert Vector components for vector of type " << typeid(ValueType).name() << " and size n = " << n << "." )
 
+    if ( n <= 0 )
+    {
+        return;
+    }
+
     LAMA_CHECK_CUDA_ACCESS
 
-    if ( n > 0 )
-    {
-        const int block_size = 256;
-        dim3 dimBlock( block_size, 1, 1 );
-        dim3 dimGrid = makeGrid( n, dimBlock.x );
+    const int blockSize = 256;
+    dim3 dimBlock( blockSize, 1, 1 );
+    dim3 dimGrid = makeGrid( n, dimBlock.x );
 
-        invertVectorComponents_kernel<<<dimGrid,dimBlock>>>( array, n );
-        cudaStreamSynchronize( 0 );
-        LAMA_CHECK_CUDA_ERROR
-    }
+    invertVectorComponents_kernel<<<dimGrid, dimBlock>>>( array, n );
+    cudaStreamSynchronize( 0 );
+    LAMA_CHECK_CUDA_ERROR
 }
 
 /* --------------------------------------------------------------------------- */
@@ -496,10 +554,13 @@ void CUDAUtils::setInterface( UtilsInterface& Utils )
 
     LAMA_INTERFACE_REGISTER( Utils, validIndexes )
 
-    LAMA_INTERFACE_REGISTER_TT( Utils, scale, float, float )
-    LAMA_INTERFACE_REGISTER_TT( Utils, scale, double, float )
-    LAMA_INTERFACE_REGISTER_TT( Utils, scale, float, double )
-    LAMA_INTERFACE_REGISTER_TT( Utils, scale, double, double )
+    LAMA_INTERFACE_REGISTER_T( Utils, scale, float )
+    LAMA_INTERFACE_REGISTER_T( Utils, scale, double )
+
+    LAMA_INTERFACE_REGISTER_TT( Utils, setScale, float, float )
+    LAMA_INTERFACE_REGISTER_TT( Utils, setScale, double, float )
+    LAMA_INTERFACE_REGISTER_TT( Utils, setScale, float, double )
+    LAMA_INTERFACE_REGISTER_TT( Utils, setScale, double, double )
 
     LAMA_INTERFACE_REGISTER_T( Utils, sum, IndexType )
     LAMA_INTERFACE_REGISTER_T( Utils, sum, float )

@@ -161,6 +161,20 @@ struct UtilsInterface
                                 const ValueType2 in[],
                                 const IndexType n );
 
+        /** @brief scaled array assignment, out = in * value
+         *
+         *  Set out[i] = scale * in[i],  0 <= i < n 
+         *
+         *  @param[in,out]  outValues  is the output array
+         *  @param[in]      scaleValue scaling factor
+         *  @param[in,out]  inValues   is the array with entries to scale
+         *  @param[in]      n          is the number of entries 
+         */
+        typedef void ( *setScale ) ( ValueType1 outValues[],
+                                     const ValueType1 scaleValue,
+                                     const ValueType2 inValues[],
+                                     const IndexType n );
+
         /** Set out[i] = in[ indexes[i] ],  \f$0 \le i < n\f$ */
 
         typedef void ( *setGather ) ( ValueType1 out[],
@@ -190,19 +204,26 @@ struct UtilsInterface
 
     LAMA_INTERFACE_DEFINE_T( Math, invert )
 
-    template<typename ValueType, typename OtherValueType>
+    template<typename ValueType>
     struct Transform
     {
+        /** @brief scale array of values with a value in place
+         *
+         *  @param[in,out]  values is the array with entries to scale
+         *  @param[in]      value  is the scaling factor
+         *  @param[in]      n      is the number of entries in values
+         */
         typedef void ( *scale ) ( ValueType values[],
-                                  const IndexType n,
-                                  const OtherValueType value );
+                                  const ValueType value,
+                                  const IndexType n );
     };
 
     LAMA_INTERFACE_DEFINE_TT( Copy, setGather )
     LAMA_INTERFACE_DEFINE_TT( Copy, setScatter )
     LAMA_INTERFACE_DEFINE_TT( Copy, set )
+    LAMA_INTERFACE_DEFINE_TT( Copy, setScale )
 
-    LAMA_INTERFACE_DEFINE_TT( Transform, scale )
+    LAMA_INTERFACE_DEFINE_T( Transform, scale )
 
     /** Constructor initializes all function pointers with nullPtr */
 

@@ -684,13 +684,15 @@ void DenseVector<T>::vectorPlusVector(
 }
 
 template<typename T>
-void DenseVector<T>::assign(
-    const Expression<Expression<Scalar,Vector,Times>,Expression<Scalar,Vector,Times>,Plus>& expression )
+void DenseVector<T>::assign( const Expression_SV_SV& expression )
 {
-    const ValueType alpha = expression.getArg1().getArg1().getValue<ValueType>();
-    const Vector& x = expression.getArg1().getArg2();
-    const ValueType beta = expression.getArg2().getArg1().getValue<ValueType>();
-    const Vector& y = expression.getArg2().getArg2();
+    const Expression_SV& exp1 = expression.getArg1();
+    const Expression_SV& exp2 = expression.getArg2();
+
+    const ValueType alpha = exp1.getArg1().getValue<ValueType>();
+    const Vector&   x     = exp1.getArg2();
+    const ValueType beta  = exp2.getArg1().getValue<ValueType>();
+    const Vector&   y     = exp2.getArg2();
 
     LAMA_LOG_DEBUG( logger, *this << ": assign" << alpha << " * x:" << x << " + " << beta << " * y:" << y )
 

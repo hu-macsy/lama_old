@@ -33,6 +33,7 @@
 
 // hpp
 #include <lama/openmp/OpenMPCOOUtils.hpp>
+#include <lama/openmp/OpenMPUtils.hpp>
 
 // others
 #include <lama/LAMAInterface.hpp>
@@ -247,32 +248,9 @@ void OpenMPCOOUtils::normalGEMV(
         LAMA_THROWEXCEPTION( "asynchronous execution not supported here, do it by a task" )
     }
 
-    if ( beta == 0.0 )
-    {
-        #pragma omp parallel for
-        for ( IndexType i = 0; i < numRows; ++i )
-        {
-            result[i] = 0.0;
-        }
-    }
-    else if ( beta == 1.0 )
-    {
-        if ( result != y )
-        {
-            for ( IndexType i = 0; i < numRows; ++i )
-            {
-                result[i] = y[i];
-            }
-        }
-    }
-    else
-    {
-        #pragma omp parallel for
-        for ( IndexType i = 0; i < numRows; ++i )
-        {
-            result[i] = beta * y[i];
-        }
-    }
+    // result := alpha * A * x + beta * y -> result:= beta * y; result += alpha * A
+
+    OpenMPUtils::setScale( result, beta, y, numRows );
 
     #pragma omp parallel
     {

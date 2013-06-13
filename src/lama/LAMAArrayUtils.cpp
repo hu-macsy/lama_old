@@ -233,6 +233,66 @@ void LAMAArrayUtils::setVal( LAMAArray<ValueType>& target, const IndexType index
     setVal( wTarget.get() + index, 1, val );
 }
 
+template<typename ValueType>
+void LAMAArrayUtils::assignScaled( LAMAArrayView<ValueType> result, 
+                                   const ValueType beta,
+                                   const LAMAArrayConstView<ValueType> y, 
+                                   ContextPtr loc )
+{
+    const IndexType n = result.size();
+
+    LAMA_ASSERT_EQUAL_ERROR( n, y.size() );
+
+    // beta = 0    : saves the need of a read access for y
+    // result == y : only one write access needed ( write + read not possible)
+
+    if ( beta == 0 )
+    {
+        // result := 0
+
+        LAMA_INTERFACE_FN_T( setVal, loc, Utils, Setter, ValueType )
+
+        WriteAccess<ValueType> wResult( result, loc );
+
+        LAMA_CONTEXT_ACCESS( loc )
+
+        setVal( wResult.get(), n, 0 );
+    }
+    else if ( result == y )
+    {
+        if ( beta == 1 )
+        {
+            return;
+        }
+
+        // result := beta * result, is result *= beta
+
+        LAMA_INTERFACE_FN_T( scale, loc, Utils, Transform, ValueType )
+
+        WriteAccess<ValueType> wResult( result, loc );
+
+        LAMA_CONTEXT_ACCESS( loc )
+
+        scale( wResult.get(), beta, n );
+    }
+    else 
+    {
+        // result := beta * y
+
+        // Note: we do not use BLAS1:axpy here to guarantee same LAMA OpenMP schedule
+        //       and to support type conversions in place for multiprecision support
+
+        LAMA_INTERFACE_FN_TT( setScale, loc, Utils, Copy, ValueType, ValueType )
+
+        WriteAccess<ValueType> wResult( result, loc );
+        ReadAccess<ValueType> rY( y, loc );
+
+        LAMA_CONTEXT_ACCESS( loc )
+    
+        setScale( wResult.get(), beta, rY.get(), n );
+    }
+}
+
 template
 void LAMAArrayUtils::gather(
     LAMAArray<int>& target,
@@ -272,4 +332,16 @@ void LAMAArrayUtils::setVal( LAMAArray<float>& target, const IndexType index, fl
 template
 void LAMAArrayUtils::setVal( LAMAArray<double>& target, const IndexType index, double val );
  
+template
+void LAMAArrayUtils::assignScaled( LAMAArrayView<float> result, 
+                                   const float beta,
+                                   const LAMAArrayConstView<float> y, 
+                                   ContextPtr loc );
+
+template
+void LAMAArrayUtils::assignScaled( LAMAArrayView<double> result, 
+                                   const double beta,
+                                   const LAMAArrayConstView<double> y, 
+                                   ContextPtr loc );
 } // namespace
+

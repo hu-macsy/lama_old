@@ -71,7 +71,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( getInterfaceTest, ValueType, ValueTypes )
 
     ContextPtr context = ContextFactory::getContext( Context::CUDA );
 
-    LAMA_INTERFACE_FN_TT( scale, context, Utils, Transform, ValueType, float );
+    LAMA_INTERFACE_FN_T( scale, context, Utils, Transform, ValueType );
 
     BOOST_CHECK( scale ); 
 

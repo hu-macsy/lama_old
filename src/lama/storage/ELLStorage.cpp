@@ -40,6 +40,7 @@
 #include <lama/LAMAArrayUtils.hpp>
 #include <lama/LAMAInterface.hpp>
 #include <lama/task/TaskSyncToken.hpp>
+#include <lama/NoSyncToken.hpp>
 #include <lama/ReadAccess.hpp>
 #include <lama/WriteAccess.hpp>
 
@@ -687,7 +688,7 @@ void ELLStorage<ValueType>::scaleImpl( const Scalar scalar )
 
     ContextPtr loc = getContextPtr();
 
-    LAMA_INTERFACE_FN_TT( scale, loc, Utils, Transform, ValueType, ValueType )
+    LAMA_INTERFACE_FN_T( scale, loc, Utils, Transform, ValueType )
 
     WriteAccess<ValueType> wValues( mValues, loc );
 
@@ -695,7 +696,7 @@ void ELLStorage<ValueType>::scaleImpl( const Scalar scalar )
 
     LAMA_CONTEXT_ACCESS( loc )
 
-    scale( wValues.get(), mValues.size(), value );
+    scale( wValues.get(), value, mValues.size() );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -992,9 +993,17 @@ void ELLStorage<ValueType>::matrixTimesVector(
     LAMA_ASSERT_EQUAL_ERROR( x.size(), mNumColumns )
     LAMA_ASSERT_EQUAL_ERROR( y.size(), mNumRows )
 
-    LAMA_REGION( "Storage.ELL.timesVector" )
-
     ContextPtr loc = getContextPtr();
+
+    if ( mNumValuesPerRow == 0 )
+    {
+        // this matrix is ZERO, so all to do is result = beta * y
+
+        LAMAArrayUtils::assignScaled( result, beta, y, loc );
+        return;
+    }
+
+    LAMA_REGION( "Storage.ELL.timesVector" )
 
     LAMA_LOG_INFO( logger, *this << ": matrixTimesVector on " << *loc )
 
@@ -1062,6 +1071,15 @@ SyncToken* ELLStorage<ValueType>::matrixTimesVectorAsync(
     LAMA_REGION( "Storage.ELL.timesVectorAsync" )
 
     ContextPtr loc = getContextPtr();
+
+    if ( mNumValuesPerRow == 0 )
+    {
+        // this matrix is ZERO, so all to do is result = beta * y
+        // that is already sychronized here
+
+        LAMAArrayUtils::assignScaled( result, beta, y, loc );
+        return new NoSyncToken();
+    }
 
     LAMA_LOG_INFO( logger, *this << ": matrixTimesVectorAsync on " << *loc )
 

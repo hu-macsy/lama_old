@@ -53,10 +53,19 @@ namespace lama
 class LAMA_DLL_IMPORTEXPORT OpenMPUtils
 {
 public:
-    /** Scales matrix using a scalar */
 
-    template<typename ValueType,typename OtherValueType>
-    static void scale( ValueType mValues[], const IndexType n, const OtherValueType value );
+    /** OpenMP implementation for UtilsInterface::Transform::scale */
+
+    template<typename ValueType>
+    static void scale( ValueType mValues[], const ValueType value, const IndexType n );
+
+    /** OpenMP implementation for UtilsInterface::Copy::setScale */
+
+    template<typename ValueType, typename OtherValueType>
+    static void setScale( ValueType outValues[], 
+                          const ValueType value, 
+                          const OtherValueType inValues[], 
+                          const IndexType n );
 
     /*  This method is an implementation of UtilsInterface::validIndexes */
 
@@ -71,9 +80,6 @@ public:
 
     template<typename ValueType>
     static void setVal( ValueType array[], const IndexType n, const ValueType val );
-
-    template<typename ValueType>
-    static void scaleVal( ValueType array[], const IndexType n, const ValueType val );
 
     /** OpenMP implementation for UtilsInterface::Setter::setOrder */
 
@@ -118,11 +124,6 @@ public:
 
     template<typename ValueType>
     static void invert( ValueType array[], const IndexType n );
-
-    /** OpenMP implementation for UtilsInterface::Math::scale */
-
-    template<typename ValueType>
-    static void scale( ValueType array[], const IndexType n, const ValueType val );
 
 private:
 

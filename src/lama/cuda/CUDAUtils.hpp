@@ -69,10 +69,16 @@ public:
     template<typename ValueType>
     static ValueType getValue( const ValueType* array, const IndexType i );
 
-    /** Scales matrix using a scalar */
+    /** CUDA implementation for UtilsInterface::Transform::scale. */
 
-    template<typename ValueType,typename OtherValueType>
-    static void scale( ValueType mValues[], const IndexType n, const OtherValueType value );
+    template<typename ValueType>
+    static void scale( ValueType values[], const ValueType value, const IndexType n );
+
+    /** CUDA implementation for UtilsInterface::Copy::setScale. */
+
+    template<typename ValueType1, typename ValueType2>
+    static void setScale( ValueType1 outValues[], const ValueType1 value,
+                          const ValueType2 inValues[], const IndexType n );
 
     /** CUDA function implements UtilsInterface::Reductions::maxval */
 

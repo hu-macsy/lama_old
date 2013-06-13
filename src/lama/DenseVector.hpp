@@ -165,16 +165,14 @@ public:
      *
      * @param[in] expression    alpha * x
      */
-    DenseVector( const Expression<Scalar, Vector, Times>& expression );
+    DenseVector( const Expression_SV& expression );
 
     /**
      * @brief creates a DenseVector with the Expression alpha * x + beta * y.
      *
-     * @param[in] expression     alpah * x + beta * y
+     * @param[in] expression  is alpha * x + beta * y
      */
-    DenseVector( const Expression<Expression<Scalar, Vector, Times>,
-                                  Expression<Scalar, Vector, Times>,
-                                  Plus>& expression );
+    DenseVector( const Expression_SV_SV& expression );
 
     /* --------------------------------------------------------------------- */
 
@@ -183,9 +181,7 @@ public:
      *
      * @param[in] expression     alpha * A * x + beta * y
      */
-    DenseVector( const Expression<Expression<Scalar, Expression<Matrix, Vector, Times>, Times>,
-                                  Expression<Scalar, Vector, Times>,
-                                  Plus>& expression );
+    DenseVector( const Expression_SMV_SV& expression );
     /**
      * @brief creates a DenseVector with the Expression alpha * A * x.
      *

@@ -315,33 +315,9 @@ void OpenMPDIAUtils::normalGEMV(
     LAMA_LOG_INFO( logger, "normalGEMV<" << typeid(ValueType).name() << ">, n = " 
                            << numRows << ", d = " << numDiagonals  )
 
-    if ( beta == 0.0 )
-    {
-        #pragma omp parallel for
-        for ( IndexType i = 0; i < numRows; ++i )
-        {
-            result[i] = 0.0;
-        }
-    }
-    else if ( beta == 1.0 )
-    {
-        if ( result != y )
-        {
-            #pragma omp parallel for
-            for ( IndexType i = 0; i < numRows; ++i )
-            {
-                result[i] = y[i];
-            }
-        }
-    }
-    else
-    {
-        #pragma omp parallel for
-        for ( IndexType i = 0; i < numRows; ++i )
-        {
-            result[i] = beta * y[i];
-        }
-    }
+    // result := alpha * A * x + beta * y -> result:= beta * y; result += alpha * A
+
+    OpenMPUtils::setScale( result, beta, y, numRows );
 
     #pragma omp parallel
     {

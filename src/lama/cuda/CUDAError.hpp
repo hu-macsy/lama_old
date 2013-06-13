@@ -136,12 +136,12 @@ const char* cublasErrorString( cublasStatus res );
         LAMA_ASSERT_ERROR( pctx, "No current context, forgotten LAMA_CONTEXT_ACCESS ?" ) \
     }
 
-#define LAMA_CHECK_CUDA_ERROR                                                     \
+#define LAMA_CHECK_CUDA_ERROR                                                         \
     {                                                                                 \
-        LAMA_CUDA_RT_CALL( cudaGetLastError(), "last error CUBLAS" )                  \
+        LAMA_CUDA_RT_CALL( cudaGetLastError(), "last CUDA error" )                    \
     }
 
-#define LAMA_CHECK_CUBLAS_ERROR                                                   \
+#define LAMA_CHECK_CUBLAS_ERROR                                                       \
     {                                                                                 \
         LAMA_CUBLAS_CALL( cublasGetError(), "last error CUBLAS" )                     \
     }

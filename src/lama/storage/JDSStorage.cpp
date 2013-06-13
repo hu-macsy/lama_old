@@ -384,7 +384,7 @@ void JDSStorage<ValueType>::scaleImpl( const Scalar scalar )
 
     ContextPtr loc = getContextPtr();
 
-    LAMA_INTERFACE_FN_TT( scale, loc, Utils, Transform, ValueType, ValueType )
+    LAMA_INTERFACE_FN_T( scale, loc, Utils, Transform, ValueType )
 
     IndexType size = mValues.size();
 
@@ -395,7 +395,7 @@ void JDSStorage<ValueType>::scaleImpl( const Scalar scalar )
 
     LAMA_CONTEXT_ACCESS( loc )
 
-    scale( wValues.get(), size, value );
+    scale( wValues.get(), value, size );
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */
