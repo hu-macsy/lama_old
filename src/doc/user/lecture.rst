@@ -9,7 +9,7 @@ practical parts of this lecture illustrate step by step how to create an equatio
 system, how to solve it and how to run it on different devices. The concepts of 
 logging and tracing in LAMA are introduced as well.
 
-Before you start, you should follow the :doc:`../installation/index`
+Before you start, you should follow the :doc:`installation`
 to obtain a working LAMA. With task 0 this lecture gives a step by step introduction 
 to the basic usage of LAMA. The following tasks are only giving hints which
 functions and classes you should use to complete them. Please consult the

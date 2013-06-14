@@ -14,7 +14,7 @@ advanced :doc:`lecture` of our hands-on session follows before you get the chanc
 About LAMA
 ==========
 
-.. figure:: _images/LAMA.png
+.. figure:: /_images/LAMA.png
     :width: 200px
     :align: center
     :height: 100px
