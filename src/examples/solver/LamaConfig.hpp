@@ -1,5 +1,5 @@
 /**
- * @file LAMAConfig.hpp
+ * @file LamaConfig.hpp
  *
  * @license
  * Copyright (c) 2009-2013
@@ -47,16 +47,23 @@
 
 /** Class that handles commonly used configuration values for LAMA
  *
+ *  - Communicator for distributions
+ *  - Context ( Host, GPU ) for matrices, vectors
+ *  - Sparse matrix format ( csr, ell, jds, dia, coo ) + creator for it
+ *  - Value type ( sp or float, dp or double )
+ *  - number of threads used for CPU computing
+ *  - block size: number of threads / block used for GPU computing
+ *
  *  Very important: DO NOT USE THIS CLASS for a GLOBAL variable
  *
  *  ( so its constructor might be called before LAMA factories are available )
  *
  *  \code
- *      LAMAConfig lamaconf;    // constructur might fail 
+ *      LamaConfig lamaconf;    // WRONG: constructur might fail 
  *
  *      int main () 
  *      {
- *          LAMAConfig lamaconf();   // that is the right use
+ *          LamaConfig lamaconf();   // RIGHT: lama has registered
  *      }
  *  \endcode
  */
@@ -85,10 +92,7 @@ public:
     /** Create a new sparse matrix of the desired matrix type. */
 
     template<typename ValueType>
-    lama::SparseMatrix<ValueType>* createSparseMatrix()
-    {
-        return createSparseMatrix<ValueType>( getFormat() );
-    }
+    lama::SparseMatrix<ValueType>* createSparseMatrix();
 
     template<typename ValueType>
     lama::SparseMatrix<ValueType>* createSparseMatrix( const char* format );
@@ -113,44 +117,25 @@ public:
         return *mComm;
     }
 
-    std::string              mMatrixFormat;
-    lama::ContextPtr         mContext;
-    lama::Matrix::SyncKind   mCommunicationKind;
-    lama::Scalar::ScalarType mValueType;          // value type to use
-    int                      mNumThreads;         // value type to use
+    /** Implements writeAt for class Printable so you can use it as follows:
+     *
+     *  \code
+     *  LamaConfig lamaconfig;
+     *  ...
+     *  std::cout << "Config = " << lamaconfig << std::endl;
+     *  \endcode
+     */
 
-    void writeAt( std::ostream& stream ) const
-    {
-        stream << "LAMA configuration" << std::endl;
-        stream << "==================" << std::endl;
-        stream << "Context           = " << *mContext << std::endl;
-        stream << "Communicator      = " << *mComm << std::endl;
-        stream << "Matrix format     = " << getFormat() << std::endl;
-        stream << "CommKind          = " << mCommunicationKind << std::endl;
-        stream << "ValueType         = " << mValueType << std::endl;
-        stream << "#Threads/CPU      = " << omp_get_max_threads() << std::endl;
-        if ( getenv( "LAMA_CUDA_USE_TEXTURE" ) )
-        {
-            stream << "useTexture(GPU)   = " << getenv( "LAMA_CUDA_USE_TEXTURE" ) << std::endl;
-        }
-        if ( getenv( "LAMA_CUDA_USE_SHARED_MEM" ) )
-        {
-            stream << "useSharedMem(GPU) = " << getenv( "LAMA_CUDA_USE_SHARED_MEM" ) << std::endl;
-        }
-        if ( getenv( "LAMA_CUDA_BLOCK_SIZE" ) )
-        {
-            stream << "BlockSize(GPU)    = " << getenv( "LAMA_CUDA_BLOCK_SIZE" ) << std::endl;
-        }
-        if ( hasMaxIter () )
-        {
-            stream << "Max iter          = " << mMaxIter << std::endl;
-        }
-    }
+    void writeAt( std::ostream& stream ) const;
+
+    /** Query if use has set maximal number of iterations. */
 
     bool hasMaxIter() const
     { 
         return mMaxIter != lama::nIndex; 
     }
+
+    /** Get the maximal number of iterations. */
 
     lama::IndexType getMaxIter() const
     { 
@@ -162,7 +147,25 @@ public:
         return mLogLevel;
     }
 
+    lama::Matrix::SyncKind getCommunicationKind() const
+    {
+        return mCommunicationKind;
+    }
+
+    lama::Scalar::ScalarType getValueType() const
+    {
+        return mValueType;
+    }
+
 private:
+
+    std::string              mMatrixFormat;
+
+    lama::ContextPtr         mContext;
+
+    lama::Matrix::SyncKind   mCommunicationKind;
+
+    lama::Scalar::ScalarType mValueType;          // value type to use
 
     lama::CommunicatorPtr    mComm;
 
@@ -170,20 +173,9 @@ private:
 
     lama::LogLevel::LogLevel mLogLevel;
 
-    inline bool isNumber( const char* arg )
-    {
-        int len = strlen( arg );
+    /** Help routine to query if argument has only digits. */
 
-        for ( int i = 0; i < len; ++i )
-        {
-            if ( !isdigit( arg[i] ) )
-            {
-                return false;
-            }
-        }
-
-        return true;
-    }
+    inline bool isNumber( const char* arg );
 };
 
 /* ---------------------------------------------------------------------------- */
@@ -195,11 +187,26 @@ LamaConfig::LamaConfig()
     mContext           = lama::ContextFactory::getContext( lama::Context::Host );
     mMaxIter           = lama::nIndex;
     mValueType         = lama::Scalar::DOUBLE;
-    mLogLevel          = lama::LogLevel::noLogging;
+    mLogLevel          = lama::LogLevel::convergenceHistory;
 }
 
 LamaConfig::~LamaConfig()
 {
+}
+
+bool LamaConfig::isNumber( const char* arg )
+{
+    int len = strlen( arg );
+
+    for ( int i = 0; i < len; ++i )
+    {
+        if ( !isdigit( arg[i] ) )
+        {
+            return false;
+        }
+    }
+
+    return true;
 }
 
 void LamaConfig::setArg( const char* arg )
@@ -320,6 +327,40 @@ void LamaConfig::setArg( const char* arg )
     {
         std::cout << "Illegal argument: " << arg << std::endl;
     }
+}
+
+void LamaConfig::writeAt( std::ostream& stream ) const
+{
+    stream << "LAMA configuration" << std::endl;
+    stream << "==================" << std::endl;
+    stream << "Context           = " << *mContext << std::endl;
+    stream << "Communicator      = " << *mComm << std::endl;
+    stream << "Matrix format     = " << getFormat() << std::endl;
+    stream << "CommKind          = " << mCommunicationKind << std::endl;
+    stream << "ValueType         = " << mValueType << std::endl;
+    stream << "#Threads/CPU      = " << omp_get_max_threads() << std::endl;
+    if ( getenv( "LAMA_CUDA_USE_TEXTURE" ) )
+    {
+        stream << "useTexture(GPU)   = " << getenv( "LAMA_CUDA_USE_TEXTURE" ) << std::endl;
+    }
+    if ( getenv( "LAMA_CUDA_USE_SHARED_MEM" ) )
+    {
+        stream << "useSharedMem(GPU) = " << getenv( "LAMA_CUDA_USE_SHARED_MEM" ) << std::endl;
+    }
+    if ( getenv( "LAMA_CUDA_BLOCK_SIZE" ) )
+    {
+        stream << "BlockSize(GPU)    = " << getenv( "LAMA_CUDA_BLOCK_SIZE" ) << std::endl;
+    }
+    if ( hasMaxIter () )
+    {
+        stream << "Max iter          = " << mMaxIter << std::endl;
+    }
+}
+
+template<typename ValueType>
+lama::SparseMatrix<ValueType>* LamaConfig::createSparseMatrix()
+{
+    return createSparseMatrix<ValueType>( getFormat() );
 }
 
 const char* LamaConfig::getFormat( ) const

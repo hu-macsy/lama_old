@@ -31,7 +31,7 @@
  * @since 1.0.0
  */
 
-#include "LAMAConfig.hpp"
+#include "LamaConfig.hpp"
 
 #include <lama/matrix/all.hpp>
 
@@ -89,7 +89,7 @@ int main( int argc, char* argv[] )
     auto_ptr<Matrix> matrixPtr;
     auto_ptr<Vector> rhsPtr;
 
-    if ( lamaconf.mValueType == Scalar::FLOAT )
+    if ( lamaconf.getValueType() == Scalar::FLOAT )
     {
         matrixPtr.reset( lamaconf.createSparseMatrix<float>() );
         rhsPtr.reset( new DenseVector<float>() );
@@ -161,10 +161,10 @@ int main( int argc, char* argv[] )
 
     start = Walltime::get();  // start time of data transfer
 
-    matrix.setCommunicationKind( lamaconf.mCommunicationKind );
-    matrix.setContext( lamaconf.mContext );
-    rhs.setContext( lamaconf.mContext );
-    solution.setContext( lamaconf.mContext );
+    matrix.setCommunicationKind( lamaconf.getCommunicationKind() );
+    matrix.setContext( lamaconf.getContextPtr() );
+    rhs.setContext( lamaconf.getContextPtr() );
+    solution.setContext( lamaconf.getContextPtr() );
 
     rhs.prefetch();
     matrix.prefetch();

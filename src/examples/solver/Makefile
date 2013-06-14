@@ -6,9 +6,9 @@ LD_FLAGS = -L${LAMA_ROOT}/lib -llama -Wl,-rpath=${LAMA_ROOT}/lib
 
 EXECUTABLE: matrix_generator.exe cg_solver.exe jacobi_solver.exe amg_solver.exe
 
-cg_solver.exe: LAMAConfig.hpp
-jacobi_solver.exe: LAMAConfig.hpp
-amg_solver.exe: LAMAConfig.hpp
+cg_solver.exe: LamaConfig.hpp
+jacobi_solver.exe: LamaConfig.hpp
+amg_solver.exe: LamaConfig.hpp
 
 .SUFFIXES:
 
