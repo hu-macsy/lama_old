@@ -57,10 +57,10 @@ if ( SPHINX_FOUND )
     add_custom_command (
         OUTPUT ${SPHINX_BUILD_ROOT}/json/index.html
         COMMAND ${Sphinx-build_EXECUTABLE} -b json -d ${SPHINX_BUILD_ROOT}/doctrees user ${SPHINX_BUILD_ROOT}/json
-        #COMMAND chmod +x ${SPHINX_BUILD_ROOT}/convert_json.sh
-        #COMMAND ${SPHINX_BUILD_ROOT}/convert_json.sh
+        COMMAND chmod +x ${SPHINX_BUILD_ROOT}/convert_json.sh
+        COMMAND ${SPHINX_BUILD_ROOT}/convert_json.sh
         DEPENDS ${CMAKE_SOURCE_DIR}/doc/user/conf.py
-        #DEPENDS ${SPHINX_BUILD_ROOT}/convert_json.sh
+        DEPENDS ${SPHINX_BUILD_ROOT}/convert_json.sh
         WORKING_DIRECTORY ${LAMA_DOC_DIR}
     )
    

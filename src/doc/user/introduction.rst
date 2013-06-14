@@ -15,12 +15,10 @@ About LAMA
 ==========
 
 .. figure:: /_images/LAMA.png
-    :width: 200px
+    :width: 500px
     :align: center
-    :height: 100px
-    :alt: alternate text
-    :figclass: align-center
-
+    :alt: LAMA architecture
+    
 LAMA is an easy to use open source \Basic \Linear \Algebra \Subprogram (:doc:`\B\L\A\S <blas_explanation>`) Library with
 special focus on large sparse matrices. Its core is written in C++, so you have the comfort of writing your algorithms
 in a text-book syntax because of expressions templates. Within the given backends there are optimized matrix-vector

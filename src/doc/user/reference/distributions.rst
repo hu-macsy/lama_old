@@ -25,11 +25,9 @@ The *BlockDistribution* creates continuous blocks of the same size (except from 
 assigned to the processes.
 
 .. figure:: ../_images/blockweise.png
-    :width: 200px
+    :width: 500px
     :align: center
-    :height: 100px
     :alt: blockDistribution
-    :figclass: align-center
     
 You create a BlockDistribution by just passing the global distribution size and a communicator:
 
@@ -45,11 +43,9 @@ Cyclic Distribution
 The *CyclicDistribution* creates stripes of the given chunk size and assigns them consistently.
 
 .. figure:: ../_images/cyclic.png
-    :width: 200px
+    :width: 500px
     :align: center
-    :height: 100px
     :alt: cyclicDistribution
-    :figclass: align-center
 
 You create a CyclicDistribution with the shown chunk size of '1' this way:
     
