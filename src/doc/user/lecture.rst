@@ -43,7 +43,7 @@ follows:
 
 .. code-block:: bash
 
-   g++ -I $LAMA_ROOT/include -L $LAMA_ROOT/lib -llama -llog4lama -o simple simple.cpp
+   g++ -I $LAMA_ROOT/include -L $LAMA_ROOT/lib -lama -llog4lama -o simple simple.cpp
 
 For running the executable, it is necessary to include the lib directory of LAMA
 into your library path.

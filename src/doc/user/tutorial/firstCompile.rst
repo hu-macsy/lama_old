@@ -1,18 +1,18 @@
 Compilation and Execution of LAMA Programs on Linux Systems
 ===========================================================
 
-The envrionment variable LAMA_ROOT refers the directory of your LAMA installation::
+The environment variable LAMA_ROOT refers the directory of your LAMA installation::
 
     export LAMA_ROOT=<installation/directory>
 
 The following command compiles and links your example program simple.cpp::
 
-    g++ -o simple simple.cpp -I${LAMA_ROOT}/include -L${LAMA_ROOT}/lib -llama 
+    g++ -o simple simple.cpp -I${LAMA_ROOT}/include -L${LAMA_ROOT}/lib -lama 
 
 If you have an own Boost installation, you have to add also the corresponding
 include directory to the include paths::
 
-    g++ -o simple simple.cpp -I${LAMA_ROOT}/include -I${BOOST_ROOT}/include -L${LAMA_ROOT}/lib -llama 
+    g++ -o simple simple.cpp -I${LAMA_ROOT}/include -I${BOOST_ROOT}/include -L${LAMA_ROOT}/lib -lama 
 
 If this step was successful, you can run the executable::
 
@@ -49,7 +49,7 @@ There are two solutions to solve this problem.
    You generate a link to the LAMA lib directory within the executable. This solution is the
    preferred solution if you want to share the executable with other users::
 
-      g++ -o simple simple.cpp -I${LAMA_ROOT}/include -L${LAMA_ROOT}/lib -llama -Wl,-rpath=${LAMA_ROOT}/lib
+      g++ -o simple simple.cpp -I${LAMA_ROOT}/include -L${LAMA_ROOT}/lib -lama -Wl,-rpath=${LAMA_ROOT}/lib
 
 Now it should be possible to run the executable. Beside the output it is very likely that you get
 the following warning message::

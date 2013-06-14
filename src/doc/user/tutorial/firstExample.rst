@@ -16,10 +16,14 @@ The following C++ program shows a very simple example program of how to use LAMA
 
     int main()
     {
+        typedef double ValueType;
+        
         IndexType size = 8;
-        DenseVector<double> v( size, 1.1 );
+        DenseVector<ValueType> v( size, 1.1 );
+        
         Scalar s = v.l1Norm();
-        std::cout << "L1 norm of v = " << s.getValue<double>() << std::endl;
+        std::cout << "L1 norm of v = " << s.getValue<ValueType>() << std::endl;
+        
         return 0;
     }
 
