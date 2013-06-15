@@ -2,28 +2,26 @@
 
 import MultiBench
 
-import os
+# Important: log_complete must be switched on for Logger fo Solver
 
-matrix1 = "matrix_generator.exe 2D9P 2 9 500 500"
-matrix2 = "matrix_generator.exe 3D27P 3 27 65 65 65"
+cmd     = "cg_solver.exe data/2D5P_500 %x %y log_complete"
 
-os.system( matrix1 )
-os.system( matrix2 )
-
-print 'Input sets generated'
-
-# Important: log_complete must be set
-
-cmd     = "cg_solver.exe %x cpu csr %y cpu log_complete gpu"
-
-xlabels = ( "2D9P", "3D27P" )
-ylabels = ( "csr", "dia", "ell", "jds" )
+xlabels = ( "csr", "dia", "ell", "jds" )
+ylabels = ( "cpu", "gpu" )
 
 # Just final results
-# MultiBench.MultiBench( cmd, xlabels, ylabels, 0 )
+
+# kind = 0
 
 # One figure for each x label, plot iterations
-# MultiBench.MultiBench( cmd, xlabels, ylabels, 1 )
+
+kind = 1
 
 # One figure for each x label, plot residual
-MultiBench.MultiBench( cmd, xlabels, ylabels, 2 )
+
+# kind = 2
+
+title = "CG solver of 2D5P stencil 500 x 500 - different sparse matrix formats"
+
+MultiBench.MultiBench( cmd, xlabels, ylabels, kind, title = title, save = "BenchFormat2D.png" )
+

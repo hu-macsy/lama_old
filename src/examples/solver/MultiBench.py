@@ -8,6 +8,7 @@
 
 import numpy as np
 import matplotlib.pyplot as plt
+import matplotlib.image as mpimg
 import subprocess
 
 ###########################################################################
@@ -30,7 +31,11 @@ doResidualPlot = True
 
 # interval time: after each this time a new point is written in the single plots
 
-SampleTime        = 0.5
+SampleTime        = 2.0
+
+# String that must appear in an out, e.g. for MPI: MPI(0:1), to select node
+
+selectOutput      = None
 
 ###########################################################################
 #                                                                         #
@@ -81,12 +86,12 @@ def buildCMD( cmd, x, y ):
 
     # Replace all %x with val of x and all %y with val of y
 
-    cmdX = cmd.replace( "%x", x )
+    cmdX = cmd.replace( "%x", str( x ) )
 
     if cmdX == cmd:
         print "Attention: cmd = %s does not contain %s"%( cmd, "%x" )
 
-    cmdXY = cmdX.replace( "%y", y )
+    cmdXY = cmdX.replace( "%y", str( y ) )
 
     if cmdXY == cmdX:
         print "Attention: cmd = %s does not contain %s"%( cmd, "%y" )
@@ -100,6 +105,11 @@ stime = 0.0
 def evalOutput( output ):
 
     global niter, fulltime, rtime, stime, x, y
+
+    if outputSelection != None:
+
+       if not outputSelection in output:
+          return
 
     if "Runtime" in output:
 
@@ -195,8 +205,6 @@ def setupSinglePlot( title ):
     
     # set up a new plot figure for  time / residual or  time / #iterations
 
-    plt.figure()
-    
     plt.xlabel( 'time(s)' )
     
     if doResidualPlot:
@@ -204,6 +212,9 @@ def setupSinglePlot( title ):
         plt.ylabel( 'Residual' )
     else:
         plt.ylabel( '#Iterations' )
+        plt.axis( [ 0, 1, 0, 10 ] )
+        ax = plt.gca()
+        ax.set_autoscale_on( True )
 
     plt.title( title )
     plt.grid( True )
@@ -212,13 +223,39 @@ def setupSinglePlot( title ):
 
 plotColor = 'g'
 
-def MultiBench( cmd, xlist, ylist, singleRunChoice ):
+def MultiBench( cmd, xlist, ylist, singleRunChoice, title = None, selection = None, save = None ):
 
     global plotColor
+    global outputSelection
 
     # make some global settings for single runs
 
     evalSingleRunChoice( singleRunChoice )
+
+    outputSelection = selection
+
+    fig = plt.figure( figsize = ( 24.0, 16.0 ) )
+
+    fig.canvas.set_window_title( 'LAMA : ' + str( title ) )
+
+    plt.suptitle( str( title ) )
+
+    plotid = 1
+    plotRows = 1
+    plotColumns = 1
+    plotN       = 1
+
+    if doSinglePlot:
+       plotN = 1 + len( xlist )
+       plotColumns = plotN
+
+    if plotColumns > 2:
+       plotRows = 2
+       plotColumns = ( plotColumns + 1 ) / 2
+
+    print "Plot grid = %d x %d, plots = %d"%( plotRows, plotColumns, plotN )
+
+    lamaImage = mpimg.imread( "lama.png" )
 
     results = []
     rects   = []
@@ -231,14 +268,16 @@ def MultiBench( cmd, xlist, ylist, singleRunChoice ):
         rects.append( [] )
 
         if title == "":
-           title = compVal
+           title = str( compVal )
         else:
-           title = title + " / " + compVal
+           title = title + " / " + str( compVal )
 
     for x in xlist:
     
         if doSinglePlot:
-    
+   
+            fig.add_subplot( plotRows, plotColumns, plotid )
+            plotid = plotid + 1 
             setupSinglePlot( x + " : " + title )
     
         for i in range( len( ylist ) ):
@@ -264,8 +303,8 @@ def MultiBench( cmd, xlist, ylist, singleRunChoice ):
 
     width = 0.9 / len( ylist )  # the width of the bars
     
-    fig = plt.figure()
-    ax = fig.add_subplot(111)
+    ax = fig.add_subplot( plotRows, plotColumns, plotid )
+    plotid = plotid + 1
 
     for i in range( len( ylist ) ):
         rects[i] = ax.bar( ind + i * width , results[i], width, color=colors[i] )
@@ -283,4 +322,15 @@ def MultiBench( cmd, xlist, ylist, singleRunChoice ):
     for rec in rects:
         autolabel( ax, rec )
     
+    if ( plotRows * plotColumns ) != plotN:
+       fig.add_subplot( plotRows, plotColumns, plotid )
+       plotid = plotid + 1 
+       plt.imshow( lamaImage )
+
+    if save != None:
+       plt.savefig( save )
+       print "Saved figure as %s"%save
+
+    plt.savefig( "lastPic.png", bbox_inches = 0 )
+
     plt.show()
