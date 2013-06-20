@@ -290,12 +290,6 @@ const Scalar Vector::operator()( const IndexType i ) const
     return getValue( i );
 }
 
-Scalar Vector::operator*( const Vector& other ) const
-{
-    LAMA_REGION( "Vector.dotP" )
-    return dotProduct( other );
-}
-
 void Vector::swapVector( Vector& other )
 {
     // swaps only on this base class, not whole vectors

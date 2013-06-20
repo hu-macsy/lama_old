@@ -1,7 +1,7 @@
 The LAMA Benchmark Framework
 ============================
 
-Before you start launching Benchmarks, you should have build LAMA as it is described in :doc:`../installation/index`.
+Before you start launching Benchmarks, you should have build LAMA as it is described in :doc:`../installation`.
 
 This page describes how to launch existing benchmarks.
 For creating entirely new Benchmarks please refer to :doc:`createBenchmark`

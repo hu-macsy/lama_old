@@ -306,7 +306,7 @@ BOOST_AUTO_TEST_CASE( dotProductTest )
     vec1.setContext( cuda );
     vec2.setContext( cuda );
 
-    Scalar result = vec1 * vec2;
+    Scalar result = vec1.dotProduct( vec2 );
 
     BOOST_CHECK( result == ( 2.0 * n ) );
 }

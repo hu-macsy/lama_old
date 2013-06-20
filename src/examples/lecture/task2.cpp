@@ -8,8 +8,7 @@
 #include <lama/DenseVector.hpp>
 #include <lama/tracing.hpp>
 
-#include <lama/expression/MatrixVectorExpressions.hpp>
-#include <lama/expression/VectorExpressions.hpp>
+#include <lama/expression/all.hpp>
 #include <lama/norm/L2Norm.hpp>
 
 #include <iostream>
@@ -52,7 +51,7 @@ int main( int argc, char* argv[] )
     help = m * solution;
     r = rhs - help;
     d = r;
-    rOld = r * r;
+    rOld = r.dotProduct( r );
     L2Norm norm;
 
     for ( int k = 1 ; k < 10 ; k++ )
@@ -68,10 +67,10 @@ int main( int argc, char* argv[] )
         else
         {
             Ad = m * d;
-            alpha = rOld / ( d * Ad );
+            alpha = rOld / ( d.dotProduct( Ad ) );
             solution = solution + ( alpha * d ) ;
             r = r - alpha * Ad;
-            rNew = r * r;
+            rNew = r.dotProduct( r );
             beta = rNew / rOld;
             d = r + beta * d;
             rOld = rNew;

@@ -27,4 +27,3 @@ directory from the installation directory; they are in the subdirectory ``share/
 
 Take a look at the README files where you can find some more information about how to
 run the example programs.
-

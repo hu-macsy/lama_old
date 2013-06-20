@@ -1,0 +1,26 @@
+##########################################################################
+        LAMA (Version 1.0.1 Alpamayo)
+##########################################################################
+
+2013-06-20    Fraunhofer SCAI
+
+VERSION 1.x.x:
+
+ * bug fixes, changes
+ * texture use
+ 
+ + additions
+ 
+ - removed
+
+VERSION 1.0.1:
+
+ * corrected libary name to libama, etc.
+ * examples install dir corrected
+ * check on matrix storage
+ 
+ + complete user doc
+ + added examples working with user doc
+ 
+ - dot product only available as vec.dotProduct() not as expression,
+ 	because of confusion of scaling a vector component-by-component

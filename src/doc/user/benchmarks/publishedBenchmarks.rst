@@ -41,5 +41,5 @@ options call
    BenchmarkRunner --help
 
 A description of the file **LAMAAMGSolution.beru** is provided with in line
-comments. A further Introduction to LAMA can be found in our :doc:`../tutorial/index`.
+comments. A further Introduction to LAMA can be found in our :doc:`../tutorial`.
 If there are any problems in executing the benchmarks please contact us.

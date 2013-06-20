@@ -144,7 +144,7 @@ void CG::iterate()
     }
 
     LAMA_LOG_INFO( logger, "Calculating pScalar." )
-    pScalar = residual * z;
+    pScalar = residual.dotProduct( z );
     LAMA_LOG_DEBUG( logger, "pScalar = " << pScalar )
     LAMA_LOG_INFO( logger, "Calculating p." )
 
@@ -174,7 +174,7 @@ void CG::iterate()
     }
 
     LAMA_LOG_INFO( logger, "Calculating pqProd." )
-    const Scalar pqProd = p * q;
+    const Scalar pqProd = p.dotProduct( q );
     LAMA_LOG_DEBUG( logger, "pqProd = " << pqProd )
 
     if ( pqProd.getValue<double>() == 0.0 )

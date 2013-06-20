@@ -68,24 +68,28 @@ set ( CUDA_SOURCES
 ### set include directories ### 
 include_directories ( . ${CUDA_INCLUDE_DIRS} )
 
-### Check for cuSPASE library, Version 2
+### Check for cuSPASE library, Version 2 (since CUDA 5.0)
 
-message( STATUS "Check for cuSPARSE V2 include file in ${CUDA_INCLUDE_DIRS}" )
+if ( CUDA_VERSION_MAJOR MATCHES "5" )
 
-set ( CUSPARSE_V2 false )
-
-foreach( dir "${CUDA_INCLUDE_DIRS}" )
-   if ( EXISTS "${dir}/cusparse_v2.h" )
-      set ( CUSPARSE_V2 true )
-   endif ()
-endforeach()
-
-if ( CUSPARSE_V2 )
-    message( STATUS "cuSPARSE Version 2 is supported and will be used" )
-    set ( CUDA_SOURCES ${CUDA_SOURCES} CUSparseCSRUtils.cu )
-else()
-    message( STATUS "cuSPARSE Version 2 not supported" )
-endif()
+    message( STATUS "Check for cuSPARSE V2 include file in ${CUDA_INCLUDE_DIRS}" )
+    
+    set ( CUSPARSE_V2 false )
+    
+    foreach( dir "${CUDA_INCLUDE_DIRS}" )
+       if ( EXISTS "${dir}/cusparse_v2.h" )
+          set ( CUSPARSE_V2 true )
+       endif ( EXISTS "${dir}/cusparse_v2.h" )
+    endforeach( dir "${CUDA_INCLUDE_DIRS}" )
+    
+    if ( CUSPARSE_V2 )
+        message( STATUS "cuSPARSE Version 2 is supported and will be used" )
+        set ( CUDA_SOURCES ${CUDA_SOURCES} CUSparseCSRUtils.cu )
+    else( CUSPARSE_V2 )
+        message( STATUS "cuSPARSE Version 2 not supported" )
+    endif( CUSPARSE_V2 )
+    
+endif ( CUDA_VERSION_MAJOR MATCHES "5" )
 
 ### add CUDA library ###
 
@@ -94,13 +98,13 @@ if ( NOT WIN32 )
     # Linux requires explicit CUDA compilation of *.cu files
 
     cuda_compile ( CUDA_FILES ${CUDA_SOURCES} )
-    add_library( lamacuda SHARED ${CXX_SOURCES} ${CUDA_FILES} )
+    add_library( amacuda SHARED ${CXX_SOURCES} ${CUDA_FILES} )
 
 else( NOT WIN32 )
 
     # Windows suports different compilation for *.cpp and *.cu files
 
-    cuda_add_library( lamacuda SHARED ${CXX_SOURCES} ${CUDA_SOURCES} )
+    cuda_add_library( amacuda SHARED ${CXX_SOURCES} ${CUDA_SOURCES} )
 
 endif( NOT WIN32 )
 
@@ -120,7 +124,7 @@ if ( NOT CUDA_cusparse_LIBRARY )
 endif ( NOT CUDA_cusparse_LIBRARY )
 
 ### target link libraries ###
-target_link_libraries( lamacuda
+target_link_libraries( amacuda
                         ${CUDA_cusparse_LIBRARY}
                         ${CUDA_cublas_LIBRARY} 
                         ${CUDA_CUDART_LIBRARY}
@@ -128,4 +132,4 @@ target_link_libraries( lamacuda
                      )
 
 ### install library
-install ( TARGETS lamacuda DESTINATION lib )
+install ( TARGETS amacuda DESTINATION lib )

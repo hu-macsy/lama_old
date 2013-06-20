@@ -58,4 +58,3 @@ environment variable, the SAMG library with its interface will be used:
 .. code-block:: bash 
 
    export LAMA_AMG_SETUP_LIBRARY=${LAMA_ROOT}/lib/libsamgplama.so
-

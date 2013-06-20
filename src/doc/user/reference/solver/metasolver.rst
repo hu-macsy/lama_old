@@ -3,16 +3,16 @@
 MetaSolver
 ----------
 
-The MetaSolver is a solver that creates solver instances and connects them, by a user defined 
-configuration file.
+The *MetaSolver* is a solver that creates solver instances and connects them, by a user defined configuration file.
+Your benefit is, that you can write one program using the metasolver, compile it once and switch between the solver and
+solver configurations in every run by just editing the configuration file.
 
 Writing a configuration
 .......................
 
-To create a configuration you define a text file with the content or hand it over to the 
-configure method as a std::string.
+To create a configuration you define a text file with the content or hand it over to the configure method as a std::string.
 
-code block::
+::
 
    CommonLogger loggerDef( <CGpre>, solverInformation, toConsoleOnly, Timer );
 
@@ -31,7 +31,7 @@ code block::
 Run a MetaSolver
 ................
 
-code block::
+::
 
    void userFunction( 
       const std::string& confgiuration, 

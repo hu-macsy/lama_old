@@ -39,5 +39,3 @@ To build LAMAs user documentation call
    make userdoc
 
 in your build directory and find it in doc/user/html/index.html.
-
-

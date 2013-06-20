@@ -24,14 +24,14 @@ is only applied to the local part of the matrix. If the diagonal first rule is a
 indicated by a boolean flag. Because the halo part of a matrix quite often has a lot of only zero rows, the diagonal
 first property would introduce a big overhead in this cases.
 
-Data Localit with OpenMP ( First Touch )
-----------------------------------------
-
-Hint Array for zero rows
-------------------------
+.. Data Locality with OpenMP ( First Touch )
+.. -----------------------------------------
+..
+.. Hint Array for zero rows
+.. ------------------------
 
 Sparse Matrix Formats
-----------------------
+---------------------
 
 This example matrix will show how the different storage formats are handled (the main diagonal will always be
 highlighted by **bold** print):
@@ -45,8 +45,6 @@ highlighted by **bold** print):
 0.0     0.0     0.0     0.0
 0.0     1.0     0.0     2.0
 ======= ======= ======= =======
-
-All the C++ code extractions are taken from the file *VectorExpressions.h*.
 
 Compressed Sparse Row Storage Format (CSR)
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^

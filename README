@@ -1,5 +1,5 @@
 ##########################################################################
-        LAMA (Version 1.0.0 Alpamayo)
+        LAMA (Version 1.0.1 Alpamayo)
 ##########################################################################
 
 For building LAMA on your system please consider the installation
@@ -73,5 +73,4 @@ RUN DOXYGEN (GENERATE API DOCUMENTATION)
  
 RUN SPHINX (GENERATE USER DOCUMENTATION)
 
- $ make userdoc
- 
+ $ make userdoc 

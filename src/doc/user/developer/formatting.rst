@@ -106,7 +106,4 @@ becomes
 	int* x;
 	int& a;
 
-Unsupported Features
---------------------
-
-
+.. Unsupported Features
