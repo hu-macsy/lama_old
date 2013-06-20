@@ -62,6 +62,7 @@ set ( CLASSES
         Printable
         ReadAccess
         Scalar
+        Settings
         StorageIO
         SyncToken
         Vector

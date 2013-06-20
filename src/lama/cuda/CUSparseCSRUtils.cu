@@ -38,6 +38,7 @@
 #include <lama/cuda/CUDAError.hpp>
 #include <lama/cuda/CUSparseCSRUtils.hpp>
 #include <lama/cuda/CUDAStreamSyncToken.hpp>
+#include <lama/Settings.hpp>
 
 #include <cuda.h>
 #include <cusparse_v2.h>
@@ -71,12 +72,11 @@ void CUSparseCSRUtils::convertCSR2CSC(
     const float csrValues[],
     int numRows,
     int numColumns,
-    int /* numValues */)
+    int numValues )
 {
     LAMA_LOG_INFO( logger,
-                   "convertCSR2CSC<float> -> cusparseScsr2csc" << ", matrix size = " << numRows << " x " << numColumns )
-
-    int numValues = 0;
+                   "convertCSR2CSC<float> -> cusparseScsr2csc" << ", matrix size = "
+                    << numRows << " x " << numColumns << ", nnz = " << numValues )
 
     LAMA_CUSPARSE_CALL(
         cusparseScsr2csc( CUDAContext_cusparseHandle, 
@@ -103,12 +103,11 @@ void CUSparseCSRUtils::convertCSR2CSC(
     const double csrValues[],
     int numRows,
     int numColumns,
-    int /* numValues */)
+    int numValues )
 {
     LAMA_LOG_INFO( logger,
-                   "convertCSR2CSC<double> -> cusparseDcsr2csc" << ", matrix size = " << numRows << " x " << numColumns )
-
-    int numValues = 0;
+                   "convertCSR2CSC<double> -> cusparseDcsr2csc" << ", matrix size = " 
+                    << numRows << " x " << numColumns << ", nnz = " << numValues )
 
     LAMA_CUSPARSE_CALL(
         cusparseDcsr2csc( CUDAContext_cusparseHandle, 
@@ -605,7 +604,16 @@ void CUSparseCSRUtils::setInterface( CSRUtilsInterface& CSRUtils )
 {
     LAMA_LOG_INFO( logger, "set CSR routines for CUSparse in Interface" )
 
-    // REGISTER1: overwrites default settings
+    bool useCUSparse = true;
+
+    Settings::getEnvironmentSetting( useCUSparse, "LAMA_USE_CUSPARSE" );
+
+    if ( !useCUSparse )
+    {
+        return;
+    }
+
+    // REGISTER1: overwrites previous settings
 
     LAMA_INTERFACE_REGISTER1_T( CSRUtils, normalGEMV, float )
     LAMA_INTERFACE_REGISTER1_T( CSRUtils, normalGEMV, double )

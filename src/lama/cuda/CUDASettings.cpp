@@ -30,6 +30,7 @@
  * @date 24.05.2013
  */
 
+#include <lama/Settings.hpp>
 #include <lama/cuda/CUDASettings.hpp>
 
 #include <lama/cuda/CUDAError.hpp>
@@ -65,65 +66,6 @@ int CUDASettings::theBlockSize = 128;  // good value available after initialized
 
 /* ----------------------------------------------------------------------------- */
 
-bool CUDASettings::convertValue( int& flag, const char* stringVal )
-{
-    int nread = sscanf( stringVal, "%d", &flag );
-
-    if ( nread == 1 )
-    {
-        return true;
-    }
- 
-    return false;
-}
-
-bool CUDASettings::convertYesNoString( bool& flag, const char* stringVal )
-{
-    char key = toupper( stringVal[0] );
-
-    bool done = true;  // becomes false if no legal value has been found
-
-    // to upper
-
-    if ( key == '0' ) 
-    {
-        flag = false;
-    }
-    else if ( key == '1' ) 
-    {
-        flag = true;
-    }
-    else if ( key == 'J' ) 
-    {
-        flag = true;
-    }
-    else if ( key == 'Y' ) 
-    {
-        flag = true;
-    }
-    else if ( key == 'T' ) 
-    {
-        flag = true;
-    }
-    else if ( key == 'N' ) 
-    {
-        flag = false;
-    }
-    else if ( key == 'F' ) 
-    {
-        flag = false;
-    }
-    else
-    {
-        // could not identify meaning
-        done = false;
-    }
- 
-    return done;
-}
-
-/* ----------------------------------------------------------------------------- */
-
 int CUDASettings::getComputeCapability()
 {
     CUdevice dev;   // curent device
@@ -146,63 +88,13 @@ int CUDASettings::getComputeCapability()
 
 /* ----------------------------------------------------------------------------- */
 
-bool CUDASettings::getEnvironmentSetting( bool& flag, const char* envVarName )
-{
-    const char* env = getenv ( envVarName );
-
-    if ( !env ) 
-    {
-        LAMA_LOG_INFO( logger, envVarName << " not set, will select by compute capability" )
-
-        return false;   // no initialization by environment
-    }
-
-    bool done = convertYesNoString( flag, env );
-
-    if ( !done )
-    {
-        LAMA_LOG_ERROR( logger, "Environment variable " << envVarName << "=" << env 
-                                << ", is illegal setting, assume FALSE" )
-
-        flag = false;
-    }
-
-    return true;   // environment variable was available
-}
-
-bool CUDASettings::getEnvironmentSetting( int& val, const char* envVarName )
-{
-    const char* env = getenv ( envVarName );
-
-    if ( !env )
-    {
-        LAMA_LOG_INFO( logger, envVarName << " not set, will select by compute capability" )
-
-        return false;   // no initialization by environment
-    }
-
-    bool done = convertValue( val, env );
-
-    if ( !done )
-    {
-        LAMA_LOG_ERROR( logger, "Environment variable " << envVarName << "=" << env
-                                << ", is illegal setting, assume FALSE" )
-
-        return false;
-    }
-
-    return true;   // environment variable was available
-}
-
-/* ----------------------------------------------------------------------------- */
-
 void CUDASettings::initialize()
 {
     // check environment variables for settings
 
-    bool setTexture   = getEnvironmentSetting( theUseTextureFlag, "LAMA_CUDA_USE_TEXTURE" );
-    bool setSharedMem = getEnvironmentSetting( theUseSharedMemFlag, "LAMA_CUDA_USE_SHARED_MEM" );
-    bool setBlockSize = getEnvironmentSetting( theBlockSize, "LAMA_CUDA_BLOCK_SIZE" );
+    bool setTexture   = Settings::getEnvironmentSetting( theUseTextureFlag, "LAMA_CUDA_USE_TEXTURE" );
+    bool setSharedMem = Settings::getEnvironmentSetting( theUseSharedMemFlag, "LAMA_CUDA_USE_SHARED_MEM" );
+    bool setBlockSize = Settings::getEnvironmentSetting( theBlockSize, "LAMA_CUDA_BLOCK_SIZE" );
 
     if ( !setTexture || !setSharedMem || !setBlockSize )
     {

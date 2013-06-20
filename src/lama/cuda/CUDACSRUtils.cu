@@ -1957,9 +1957,7 @@ void CUDACSRUtils::setInterface( CSRUtilsInterface& CSRUtils )
     LAMA_INTERFACE_REGISTER_T( CSRUtils, jacobiHaloWithDiag, float )
     LAMA_INTERFACE_REGISTER_T( CSRUtils, jacobiHaloWithDiag, double )
 
-#ifndef CUSPARSE_V2
-
-    // old versions, if cuSPARSE library is not available
+    // the following routines might be overwritten by CUSPASE interface
 
     LAMA_INTERFACE_REGISTER_T( CSRUtils, normalGEMV, float )
     LAMA_INTERFACE_REGISTER_T( CSRUtils, normalGEMV, double )
@@ -1975,9 +1973,6 @@ void CUDACSRUtils::setInterface( CSRUtilsInterface& CSRUtils )
 
     LAMA_INTERFACE_REGISTER_T( CSRUtils, matrixMultiply, float )
     LAMA_INTERFACE_REGISTER_T( CSRUtils, matrixMultiply, double )
-
-#endif
-
 }
 
 /* --------------------------------------------------------------------------- */
