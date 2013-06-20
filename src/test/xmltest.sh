@@ -32,10 +32,7 @@
 #  @since 1.0.0
 #
 
-# Setting some enviroment variables
-export LAMA_LOG=ERROR
-export LAMA_UNSUPPORTED=IGNORE
-export LAMA_DEVICE=0 #default
+#!/bin/bash
 
 # Creating dir named by YEAR_MONTH_DAY-HOURMINUTE
 dirname=xmlresult$(date +%y_%m_%d-%H%M)
@@ -51,8 +48,11 @@ then
     echo "Running distributed tests serial"
     distributed/lama_dist_test --output_format=XML --log_level=all --report_level=no 1>${dirname}/dist_tests.xml
 
-    echo "Running distributed tests with 2 processes"
-    mpirun -np 2 --output-filename ${dirname}/dist_tests_mpi.xml distributed/lama_dist_test --output_format=XML --log_level=all --report_level=no
+	for i in 2 3 4;
+	do
+    	echo "Running distributed tests with $i processes"
+    	mpirun -np $i --output-filename ${dirname}/dist_tests_mpi.xml distributed/lama_dist_test --output_format=XML --log_level=all --report_level=no
+    done
 fi
 
 if [ -d cuda ];

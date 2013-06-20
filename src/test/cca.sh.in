@@ -32,15 +32,10 @@
 #  @since 1.0.0
 #
 
-# Setting some enviroment variables
-export LAMA_LOG=ERROR
-export LAMA_UNSUPPORTED=IGNORE
-export LAMA_DEVICE=0 #default
+#!/bin/bash
 
-echo `pwd`
-
-path_lcov=lcov
-path_genhtml=genhtml
+path_lcov=$1
+path_genhtml=$2
 error_count=0
 
 # Creating dir named by YEAR_MONTH_DAY-HOURMINUTE
@@ -51,7 +46,7 @@ mkdir ${dirname}
 cd ${dirname}
 
 # Clearing up environment
-lcov --base-directory ../.. --directory ../.. --zerocounters
+${path_lcov} --base-directory ../.. --directory ../.. --zerocounters
 
 
 cd ..
@@ -69,9 +64,12 @@ then
 	./lama_dist_test
     error_count=$(($error_count + $?))
 
-	echo "Running distributed tests with 2 processes"
-	mpirun -np 2 ./lama_dist_test
-	error_count=$(($error_count + $?))
+	for i in 2 3 4;
+	do
+		echo "Running distributed tests with $i processes"
+		mpirun -np $i ./lama_dist_test
+		error_count=$(($error_count + $?))
+	done
 	cd ..
 fi
 
