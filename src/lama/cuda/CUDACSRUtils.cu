@@ -1942,11 +1942,6 @@ void CUDACSRUtils::setInterface( CSRUtilsInterface& CSRUtils )
     LAMA_INTERFACE_REGISTER( CSRUtils, sizes2offsets )
     LAMA_INTERFACE_REGISTER( CSRUtils, offsets2sizes )
     LAMA_INTERFACE_REGISTER( CSRUtils, hasDiagonalProperty )
-    LAMA_INTERFACE_REGISTER( CSRUtils, matrixAddSizes )
-    LAMA_INTERFACE_REGISTER( CSRUtils, matrixMultiplySizes )
-
-    LAMA_INTERFACE_REGISTER_T( CSRUtils, convertCSR2CSC, float )
-    LAMA_INTERFACE_REGISTER_T( CSRUtils, convertCSR2CSC, double )
 
     LAMA_INTERFACE_REGISTER_T( CSRUtils, normalGEMV, float )
     LAMA_INTERFACE_REGISTER_T( CSRUtils, normalGEMV, double )
@@ -1963,11 +1958,24 @@ void CUDACSRUtils::setInterface( CSRUtilsInterface& CSRUtils )
     LAMA_INTERFACE_REGISTER_T( CSRUtils, jacobiHaloWithDiag, float )
     LAMA_INTERFACE_REGISTER_T( CSRUtils, jacobiHaloWithDiag, double )
 
+#ifndef CUSPARSE_V2
+
+    // old versions, if cuSPARSE library is not available
+
+    LAMA_INTERFACE_REGISTER( CSRUtils, matrixAddSizes )
+    LAMA_INTERFACE_REGISTER( CSRUtils, matrixMultiplySizes )
+
+    LAMA_INTERFACE_REGISTER_T( CSRUtils, convertCSR2CSC, float )
+    LAMA_INTERFACE_REGISTER_T( CSRUtils, convertCSR2CSC, double )
+
     LAMA_INTERFACE_REGISTER_T( CSRUtils, matrixAdd, float )
     LAMA_INTERFACE_REGISTER_T( CSRUtils, matrixAdd, double )
 
     LAMA_INTERFACE_REGISTER_T( CSRUtils, matrixMultiply, float )
     LAMA_INTERFACE_REGISTER_T( CSRUtils, matrixMultiply, double )
+
+#endif
+
 }
 
 /* --------------------------------------------------------------------------- */
