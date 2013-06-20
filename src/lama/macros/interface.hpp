@@ -50,9 +50,13 @@
                                                                                               \
     /** Register a function pointer in the type table. */                                     \
                                                                                               \
-    void functionname##_add( structname::functionname functionPtr )                           \
+    void functionname##_add( structname::functionname functionPtr,                            \
+                             bool replace )                                                   \
     {                                                                                         \
-        functionname##_Table = functionPtr;                                                   \
+        if ( replace || !functionname##_Table )                                               \
+        {                                                                                     \
+            functionname##_Table = functionPtr;                                               \
+        }                                                                                     \
     }                                                                                         \
                                                                                               \
     structname::functionname functionname##_Table;
@@ -72,10 +76,14 @@
     /** Register a function pointer in the type table. */                                     \
                                                                                               \
     template<typename T>                                                                      \
-    void functionname##_add( typename structname<T>::functionname functionPtr )               \
+    void functionname##_add( typename structname<T>::functionname functionPtr,                \
+                             bool replace )                                                   \
     {                                                                                         \
-        functionname##_Table[ Scalar::getType<T>() ]                                          \
-         = ( void (*) () ) functionPtr;                                                       \
+        if ( replace || !functionname##_Table[ Scalar::getType<T>() ] )                       \
+        {                                                                                     \
+            functionname##_Table[ Scalar::getType<T>() ]                                      \
+             = ( void (*) () ) functionPtr;                                                   \
+        }                                                                                     \
     }                                                                                         \
                                                                                               \
     void ( *functionname##_Table[ Scalar::UNKNOWN ] ) ();
@@ -95,25 +103,42 @@
     /** Register a function pointer in the type table. */                                     \
                                                                                               \
     template<typename T1, typename T2>                                                        \
-    void functionname##_add( typename structname<T1, T2>::functionname functionPtr )          \
+    void functionname##_add( typename structname<T1, T2>::functionname functionPtr,           \
+                             bool replace )                                                   \
     {                                                                                         \
-        functionname##_Table[ Scalar::getType<T1>() ][ Scalar::getType<T2>() ]                \
-           = ( void (*) () ) functionPtr;                                                     \
+        if ( replace || !functionname##_Table[ Scalar::getType<T1>() ]                         \
+                                             [ Scalar::getType<T2>() ] )                       \
+        {                                                                                     \
+            functionname##_Table[ Scalar::getType<T1>() ][ Scalar::getType<T2>() ]            \
+               = ( void (*) () ) functionPtr;                                                 \
+        }                                                                                     \
     }                                                                                         \
                                                                                               \
     void ( *functionname##_Table[ Scalar::UNKNOWN ][ Scalar::UNKNOWN] ) ();
 
 /** This macro registers in an interface a function pointer variable 
  *  with a corresponding function.
+ *
+ *  REGISTER : will not overwrite existing entries
+ *  REGISTER1 : overwrites existing entries
  */
 
 #define LAMA_INTERFACE_REGISTER( interface, function )                                      \
-    interface.function##_add( function );
+    interface.function##_add( function,false );
+
+#define LAMA_INTERFACE_REGISTER1( interface, function )                                     \
+    interface.function##_add( function, true );
 
 #define LAMA_INTERFACE_REGISTER_T( interface, function, T )                                 \
-    interface.function##_add<T>( function<T> );
+    interface.function##_add<T>( function<T>, false );
+
+#define LAMA_INTERFACE_REGISTER1_T( interface, function, T )                                \
+    interface.function##_add<T>( function<T>, true );
 
 #define LAMA_INTERFACE_REGISTER_TT( interface, function, T1, T2 )                           \
-    interface.function##_add<T1,T2>( function<T1,T2> );
+    interface.function##_add<T1,T2>( function<T1,T2>, false );
+
+#define LAMA_INTERFACE_REGISTER1_TT( interface, function, T1, T2 )                          \
+    interface.function##_add<T1,T2>( function<T1,T2>, true );
 
 #endif // LAMA_INTERFACE_MACROS_HPP_

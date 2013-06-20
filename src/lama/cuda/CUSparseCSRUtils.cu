@@ -605,20 +605,22 @@ void CUSparseCSRUtils::setInterface( CSRUtilsInterface& CSRUtils )
 {
     LAMA_LOG_INFO( logger, "set CSR routines for CUSparse in Interface" )
 
-    LAMA_INTERFACE_REGISTER_T( CSRUtils, normalGEMV, float )
-    LAMA_INTERFACE_REGISTER_T( CSRUtils, normalGEMV, double )
+    // REGISTER1: overwrites default settings
 
-    LAMA_INTERFACE_REGISTER_T( CSRUtils, convertCSR2CSC, float )
-    LAMA_INTERFACE_REGISTER_T( CSRUtils, convertCSR2CSC, double )
+    LAMA_INTERFACE_REGISTER1_T( CSRUtils, normalGEMV, float )
+    LAMA_INTERFACE_REGISTER1_T( CSRUtils, normalGEMV, double )
 
-    LAMA_INTERFACE_REGISTER( CSRUtils, matrixAddSizes )
-    LAMA_INTERFACE_REGISTER( CSRUtils, matrixMultiplySizes )
+    LAMA_INTERFACE_REGISTER1_T( CSRUtils, convertCSR2CSC, float )
+    LAMA_INTERFACE_REGISTER1_T( CSRUtils, convertCSR2CSC, double )
 
-    LAMA_INTERFACE_REGISTER_T( CSRUtils, matrixAdd, float )
-    LAMA_INTERFACE_REGISTER_T( CSRUtils, matrixAdd, double )
+    LAMA_INTERFACE_REGISTER1( CSRUtils, matrixAddSizes )
+    LAMA_INTERFACE_REGISTER1( CSRUtils, matrixMultiplySizes )
 
-    LAMA_INTERFACE_REGISTER_T( CSRUtils, matrixMultiply, float )
-    LAMA_INTERFACE_REGISTER_T( CSRUtils, matrixMultiply, double )
+    LAMA_INTERFACE_REGISTER1_T( CSRUtils, matrixAdd, float )
+    LAMA_INTERFACE_REGISTER1_T( CSRUtils, matrixAdd, double )
+
+    LAMA_INTERFACE_REGISTER1_T( CSRUtils, matrixMultiply, float )
+    LAMA_INTERFACE_REGISTER1_T( CSRUtils, matrixMultiply, double )
 }
 
 /* --------------------------------------------------------------------------- */
