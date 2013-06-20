@@ -471,6 +471,8 @@ void OpenMPCSRUtils::normalGEMV(
     const ValueType beta,
     const ValueType y[],
     const IndexType numRows,
+    const IndexType /* numColumns */,
+    const IndexType /* nnz */,
     const IndexType csrIA[],
     const IndexType csrJA[],
     const ValueType csrValues[],
@@ -509,7 +511,7 @@ void OpenMPCSRUtils::normalGEMV(
                 IndexType j = csrJA[jj];
                 temp += csrValues[jj] * x[j];
             }
-            if ( 0.0 == beta )
+            if ( 0 == beta )
             {
                 result[i] = alpha * temp;
             }

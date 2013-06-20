@@ -26,9 +26,9 @@
  * @endlicense
  *
  * @brief Implementation of some CSR routines with CUSparse library 5.0
- * @author Bea Hornef, Thomas Brandes, Jiri Kraus
- * @date 04.07.2012
- * @since 1.0.0
+ * @author Thomas Brandes
+ * @date 11.06.2013
+ * @since 1.0.1
  */
 
 #include <lama/LAMAInterface.hpp>
@@ -37,6 +37,7 @@
 #include <lama/cuda/utils.cu.h>
 #include <lama/cuda/CUDAError.hpp>
 #include <lama/cuda/CUSparseCSRUtils.hpp>
+#include <lama/cuda/CUDAStreamSyncToken.hpp>
 
 #include <cuda.h>
 #include <cusparse_v2.h>
@@ -121,6 +122,148 @@ void CUSparseCSRUtils::convertCSR2CSC(
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */
+/*                                             normalGEMV                                                             */
+/* ------------------------------------------------------------------------------------------------------------------ */
+
+template<>
+void CUSparseCSRUtils::normalGEMV(
+    float result[],
+    const float alpha,
+    const float x[],
+    const float beta,
+    const float y[],
+    const IndexType numRows,
+    const IndexType numColumns,
+    const IndexType nnz,
+    const IndexType csrIA[],
+    const IndexType csrJA[],
+    const float csrValues[],
+    SyncToken* syncToken )
+{
+    LAMA_LOG_INFO( logger, "normalGEMV<float>" <<
+                           " result[ " << numRows << "] = " << alpha << " * A(csr) * x + " << beta << " * y " )
+
+    LAMA_LOG_DEBUG( logger, "x = " << x << ", y = " << y << ", result = " << result )
+
+    LAMA_CHECK_CUDA_ACCESS
+
+    cudaStream_t stream = 0; // default stream if no syncToken is given
+
+    cusparseMatDescr_t descrCSR;
+
+    LAMA_CUSPARSE_CALL( cusparseCreateMatDescr( &descrCSR ), "cusparseCreateMatDescr" )
+
+    cusparseSetMatType( descrCSR, CUSPARSE_MATRIX_TYPE_GENERAL );
+    cusparseSetMatIndexBase( descrCSR, CUSPARSE_INDEX_BASE_ZERO );  
+
+    if ( syncToken )
+    {
+        CUDAStreamSyncToken* cudaStreamSyncToken = dynamic_cast<CUDAStreamSyncToken*>( syncToken );
+        LAMA_ASSERT_DEBUG( cudaStreamSyncToken, "no cuda stream sync token provided" )
+        stream = cudaStreamSyncToken->getCUDAStream();
+        LAMA_CUSPARSE_CALL( cusparseSetStream( CUDAContext_cusparseHandle, stream ),
+                            "cusparseSetStream" )
+    }
+
+    if ( y != result && beta != 0 )
+    {
+        LAMA_CUDA_RT_CALL( cudaMemcpy( result, y, numRows * sizeof( float ), cudaMemcpyDeviceToDevice ),
+                           "cudaMemcpy for result = y" )
+    }
+
+    // call result = alpha * op(A) * x + beta * result of cusparse
+    // Note: alpha, beta are passed as pointers
+
+    LAMA_LOG_INFO( logger, "Start cusparseScsrmv, stream = " << stream )
+
+    LAMA_CUSPARSE_CALL( cusparseScsrmv( CUDAContext_cusparseHandle, CUSPARSE_OPERATION_NON_TRANSPOSE, 
+                                        numRows, numColumns, nnz, &alpha, descrCSR, 
+                                        csrValues, csrIA, csrJA, x, &beta, result ),
+                        "cusparseScsrmv" )
+
+    if ( syncToken )
+    {
+        // set back stream for cusparse
+
+        LAMA_CUSPARSE_CALL( cusparseSetStream( CUDAContext_cusparseHandle, 0 ),
+                            "cusparseSetStream" )
+    }
+    else
+    {
+        LAMA_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "cusparseXcsrgeamNnz" )
+    }
+}
+
+template<>
+void CUSparseCSRUtils::normalGEMV(
+    double result[],
+    const double alpha,
+    const double x[],
+    const double beta,
+    const double y[],
+    const IndexType numRows,
+    const IndexType numColumns,
+    const IndexType nnz,
+    const IndexType csrIA[],
+    const IndexType csrJA[],
+    const double csrValues[],
+    SyncToken* syncToken )
+{
+    LAMA_LOG_INFO( logger, "normalGEMV<double>" <<
+                           " result[ " << numRows << "] = " << alpha << " * A(csr) * x + " << beta << " * y " )
+
+    LAMA_LOG_DEBUG( logger, "x = " << x << ", y = " << y << ", result = " << result )
+
+    LAMA_CHECK_CUDA_ACCESS
+
+    cudaStream_t stream = 0; // default stream if no syncToken is given
+
+    cusparseMatDescr_t descrCSR;
+
+    LAMA_CUSPARSE_CALL( cusparseCreateMatDescr( &descrCSR ), "cusparseCreateMatDescr" )
+
+    cusparseSetMatType( descrCSR, CUSPARSE_MATRIX_TYPE_GENERAL );
+    cusparseSetMatIndexBase( descrCSR, CUSPARSE_INDEX_BASE_ZERO );  
+
+    if ( syncToken )
+    {
+        CUDAStreamSyncToken* cudaStreamSyncToken = dynamic_cast<CUDAStreamSyncToken*>( syncToken );
+        LAMA_ASSERT_DEBUG( cudaStreamSyncToken, "no cuda stream sync token provided" )
+        stream = cudaStreamSyncToken->getCUDAStream();
+        LAMA_CUSPARSE_CALL( cusparseSetStream( CUDAContext_cusparseHandle, stream ),
+                            "cusparseSetStream" )
+    }
+
+    if ( y != result && beta != 0 )
+    {
+        LAMA_CUDA_RT_CALL( cudaMemcpy( result, y, numRows * sizeof( double ), cudaMemcpyDeviceToDevice ),
+                           "cudaMemcpy for result = y" )
+    }
+
+    // call result = alpha * op(A) * x + beta * result of cusparse
+    // Note: alpha, beta are passed as pointers
+
+    LAMA_LOG_INFO( logger, "Start cusparseDcsrmv, stream = " << stream )
+
+    LAMA_CUSPARSE_CALL( cusparseDcsrmv( CUDAContext_cusparseHandle, CUSPARSE_OPERATION_NON_TRANSPOSE, 
+                                        numRows, numColumns, nnz, &alpha, descrCSR, 
+                                        csrValues, csrIA, csrJA, x, &beta, result ),
+                        "cusparseScsrmv" )
+
+    if ( syncToken )
+    {
+        // set back stream for cusparse
+
+        LAMA_CUSPARSE_CALL( cusparseSetStream( CUDAContext_cusparseHandle, 0 ),
+                            "cusparseSetStream" )
+    }
+    else
+    {
+        LAMA_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "cusparseXcsrgeamNnz" )
+    }
+}
+
+/* ------------------------------------------------------------------------------------------------------------------ */
 /*                                             matrixAddSizes                                                         */
 /* ------------------------------------------------------------------------------------------------------------------ */
 
@@ -154,8 +297,8 @@ IndexType CUSparseCSRUtils::matrixAddSizes(
 
     // we have not passed the values, so copy it from device to host
 
-    cudaMemcpy( &nnzA, &aIA[numRows], 1, cudaMemcpyDeviceToHost );
-    cudaMemcpy( &nnzB, &bIA[numRows], 1, cudaMemcpyDeviceToHost );
+    cudaMemcpy( &nnzA, &aIA[numRows], sizeof( IndexType ), cudaMemcpyDeviceToHost );
+    cudaMemcpy( &nnzB, &bIA[numRows], sizeof( IndexType ), cudaMemcpyDeviceToHost );
 
     int nnzC;
 
@@ -191,7 +334,7 @@ IndexType CUSparseCSRUtils::matrixMultiplySizes(
 {
     LAMA_REGION( "CUDA.CSR.matrixMultiplySizes" )
 
-    LAMA_LOG_ERROR(
+    LAMA_LOG_INFO(
         logger,
         "matrixMutliplySizes for " << m << " x " << n << " matrix" << ", diagonalProperty = " << diagonalProperty )
 
@@ -209,8 +352,8 @@ IndexType CUSparseCSRUtils::matrixMultiplySizes(
 
     // we have not passed the values, so copy it
 
-    cudaMemcpy( &nnzA, &aIA[m], 1, cudaMemcpyDeviceToHost );
-    cudaMemcpy( &nnzB, &bIA[k], 1, cudaMemcpyDeviceToHost );
+    cudaMemcpy( &nnzA, &aIA[m], sizeof( IndexType ), cudaMemcpyDeviceToHost );
+    cudaMemcpy( &nnzB, &bIA[k], sizeof( IndexType ), cudaMemcpyDeviceToHost );
 
     int nnzC;
 
@@ -269,8 +412,8 @@ void CUSparseCSRUtils::matrixAdd(
 
     // we have not passed the values, so copy it
 
-    cudaMemcpy( &nnzA, &aIA[numRows], 1, cudaMemcpyDeviceToHost );
-    cudaMemcpy( &nnzB, &bIA[numRows], 1, cudaMemcpyDeviceToHost );
+    cudaMemcpy( &nnzA, &aIA[numRows], sizeof( IndexType ), cudaMemcpyDeviceToHost );
+    cudaMemcpy( &nnzB, &bIA[numRows], sizeof( IndexType ), cudaMemcpyDeviceToHost );
 
     // cIA requires const_cast, but will not be modified
 
@@ -322,8 +465,8 @@ void CUSparseCSRUtils::matrixAdd(
 
     // we have not passed the number of non-zero values for A, B, so copy it
 
-    cudaMemcpy( &nnzA, &aIA[numRows], 1, cudaMemcpyDeviceToHost );
-    cudaMemcpy( &nnzB, &bIA[numRows], 1, cudaMemcpyDeviceToHost );
+    cudaMemcpy( &nnzA, &aIA[numRows], sizeof( IndexType ), cudaMemcpyDeviceToHost );
+    cudaMemcpy( &nnzB, &bIA[numRows], sizeof( IndexType ), cudaMemcpyDeviceToHost );
 
     // cIA requires const_cast, but will not be modified
 
@@ -379,8 +522,8 @@ void CUSparseCSRUtils::matrixMultiply(
 
     // we have not passed the number of non-zero values for A, B, so copy it
 
-    cudaMemcpy( &nnzA, &aIA[m], 1, cudaMemcpyDeviceToHost );
-    cudaMemcpy( &nnzB, &bIA[k], 1, cudaMemcpyDeviceToHost );
+    cudaMemcpy( &nnzA, &aIA[m], sizeof( IndexType ), cudaMemcpyDeviceToHost );
+    cudaMemcpy( &nnzB, &bIA[k], sizeof( IndexType ), cudaMemcpyDeviceToHost );
 
     LAMA_ASSERT_EQUAL_ERROR( static_cast<float>( 1 ), alpha );
 
@@ -433,8 +576,8 @@ void CUSparseCSRUtils::matrixMultiply(
 
     // we have not passed the number of non-zero values for A, B, so copy it
 
-    cudaMemcpy( &nnzA, &aIA[m], 1, cudaMemcpyDeviceToHost );
-    cudaMemcpy( &nnzB, &bIA[k], 1, cudaMemcpyDeviceToHost );
+    cudaMemcpy( &nnzA, &aIA[m], sizeof( IndexType ), cudaMemcpyDeviceToHost );
+    cudaMemcpy( &nnzB, &bIA[k], sizeof( IndexType ), cudaMemcpyDeviceToHost );
 
     LAMA_ASSERT_EQUAL_ERROR( static_cast<double>( 1 ), alpha );
 
@@ -461,6 +604,9 @@ void CUSparseCSRUtils::matrixMultiply(
 void CUSparseCSRUtils::setInterface( CSRUtilsInterface& CSRUtils )
 {
     LAMA_LOG_INFO( logger, "set CSR routines for CUSparse in Interface" )
+
+    LAMA_INTERFACE_REGISTER_T( CSRUtils, normalGEMV, float )
+    LAMA_INTERFACE_REGISTER_T( CSRUtils, normalGEMV, double )
 
     LAMA_INTERFACE_REGISTER_T( CSRUtils, convertCSR2CSC, float )
     LAMA_INTERFACE_REGISTER_T( CSRUtils, convertCSR2CSC, double )

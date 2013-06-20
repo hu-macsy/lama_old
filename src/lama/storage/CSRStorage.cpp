@@ -1108,8 +1108,8 @@ void CSRStorage<ValueType>::matrixTimesVector(
             // we assume that normalGEMV can deal with the alias of result, y
 
             LAMA_CONTEXT_ACCESS( loc )
-            normalGEMV( wResult.get(), alpha, rX.get(), beta, wResult.get(), mNumRows, csrIA.get(), csrJA.get(),
-                        csrValues.get(), NULL );
+            normalGEMV( wResult.get(), alpha, rX.get(), beta, wResult.get(), mNumRows, mNumColumns, mNumValues,
+                        csrIA.get(), csrJA.get(), csrValues.get(), NULL );
         }
     }
     else
@@ -1118,8 +1118,8 @@ void CSRStorage<ValueType>::matrixTimesVector(
         ReadAccess<ValueType> rY( y, loc );
 
         LAMA_CONTEXT_ACCESS( loc )
-        normalGEMV( wResult.get(), alpha, rX.get(), beta, rY.get(), mNumRows, csrIA.get(), csrJA.get(), csrValues.get(),
-                    NULL );
+        normalGEMV( wResult.get(), alpha, rX.get(), beta, rY.get(), mNumRows, mNumColumns, mNumValues,
+                    csrIA.get(), csrJA.get(), csrValues.get(), NULL );
     }
 }
 
@@ -1278,8 +1278,8 @@ SyncToken* CSRStorage<ValueType>::matrixTimesVectorAsync(
 
             LAMA_CONTEXT_ACCESS( loc )
 
-            normalGEMV( wResult->get(), alpha, rX->get(), beta, wResult->get(), mNumRows, csrIA->get(), csrJA->get(),
-                        csrValues->get(), syncToken.get() );
+            normalGEMV( wResult->get(), alpha, rX->get(), beta, wResult->get(), mNumRows, mNumColumns, mNumValues,
+                        csrIA->get(), csrJA->get(), csrValues->get(), syncToken.get() );
         }
 
         syncToken->pushAccess( wResult );
@@ -1291,8 +1291,8 @@ SyncToken* CSRStorage<ValueType>::matrixTimesVectorAsync(
 
         LAMA_CONTEXT_ACCESS( loc )
 
-        normalGEMV( wResult->get(), alpha, rX->get(), beta, rY->get(), mNumRows, csrIA->get(), csrJA->get(),
-                    csrValues->get(), syncToken.get() );
+        normalGEMV( wResult->get(), alpha, rX->get(), beta, rY->get(), mNumRows, mNumColumns, mNumValues,
+                    csrIA->get(), csrJA->get(), csrValues->get(), syncToken.get() );
 
         syncToken->pushAccess( wResult );
         syncToken->pushAccess( rY );

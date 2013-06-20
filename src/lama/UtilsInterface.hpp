@@ -513,8 +513,13 @@ struct CSRUtilsInterface
          *  @param beta is scaling factor for additional vector
          *  @param y is additional input vector to add
          *  @param numRows is number of elements for all vectors and rows of matrix
+         *  @param numColums is the number of columns of matrix
+         *  @param nnz number of nonZeros, same as csrIA[ numRows ]
          *  @param csrIA, csrJA, csrValues are arrays of CSR storage
          *  @param syncToken optional, if available starts asynchronous computation
+         *
+         *  The number of columns is not really needed to implement the operation but
+         *  might be helpful to choose between different implementations.
          */
 
         typedef void ( *normalGEMV ) ( ValueType result[],
@@ -523,6 +528,8 @@ struct CSRUtilsInterface
                                        const ValueType beta,
                                        const ValueType y[],
                                        const IndexType numRows,
+                                       const IndexType numColumns,
+                                       const IndexType nnz,
                                        const IndexType csrIA[],
                                        const IndexType csrJA[],
                                        const ValueType csrValues[],

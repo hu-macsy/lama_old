@@ -401,6 +401,8 @@ void CUDACSRUtils::normalGEMV(
     const ValueType beta,
     const ValueType y[],
     const IndexType numRows,
+    const IndexType numColumns,
+    const IndexType nnz,
     const IndexType csrIA[],
     const IndexType csrJA[],
     const ValueType csrValues[],
@@ -1943,9 +1945,6 @@ void CUDACSRUtils::setInterface( CSRUtilsInterface& CSRUtils )
     LAMA_INTERFACE_REGISTER( CSRUtils, offsets2sizes )
     LAMA_INTERFACE_REGISTER( CSRUtils, hasDiagonalProperty )
 
-    LAMA_INTERFACE_REGISTER_T( CSRUtils, normalGEMV, float )
-    LAMA_INTERFACE_REGISTER_T( CSRUtils, normalGEMV, double )
-
     LAMA_INTERFACE_REGISTER_T( CSRUtils, sparseGEMV, float )
     LAMA_INTERFACE_REGISTER_T( CSRUtils, sparseGEMV, double )
 
@@ -1961,6 +1960,9 @@ void CUDACSRUtils::setInterface( CSRUtilsInterface& CSRUtils )
 #ifndef CUSPARSE_V2
 
     // old versions, if cuSPARSE library is not available
+
+    LAMA_INTERFACE_REGISTER_T( CSRUtils, normalGEMV, float )
+    LAMA_INTERFACE_REGISTER_T( CSRUtils, normalGEMV, double )
 
     LAMA_INTERFACE_REGISTER( CSRUtils, matrixAddSizes )
     LAMA_INTERFACE_REGISTER( CSRUtils, matrixMultiplySizes )
