@@ -91,5 +91,5 @@ getValue(IndexType globalindex) to get a correct access with a global index.
    :header: "back to this Task", "Index", "next Task"
    :widths: 330, 340, 330
 
-   ":doc:`task_4`", ":doc:`index`", ":doc:`task_5`"
+   ":doc:`task_4`", ":doc:`../lecture`", ":doc:`task_5`"
    

@@ -23,5 +23,3 @@ The usage of this loop is shown here ( part of CGTest.cpp ):
 
 The makro GETCONTEXT(contextptr) creates the required contextpointer, which will be used for the setContext-method of the testobject (here CGSolver).
 The method testSolveWithoutPreconditionmethod contains the implementation of this test and will be invoked by the loop on all contexts.
-
-

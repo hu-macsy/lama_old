@@ -1,3 +1,5 @@
+.. no warning for not included in toc
+
 :orphan:
 
 Examples of Sphinx for User Guide
@@ -32,7 +34,7 @@ Lists
 Images
 ------
 
-.. image:: fileadmin/LAMA/json/_images/test.jpg
+.. image:: ../_images/test.jpg
 
 Links
 -----

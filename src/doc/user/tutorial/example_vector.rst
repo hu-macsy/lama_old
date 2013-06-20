@@ -18,7 +18,6 @@ In this example we simply multiply a scalar with a dense vector.
 
     sequenceOfValues = singleValue * sequenceOfValues;
 
-    sequenceOfValues.writeToFile( "vector.txt" , File::FORMATTED );
-
+    sequenceOfValues.writeToFile( "vector" , File::FORMATTED );
 
 The full example program can be found here :download:`vector.cpp <../../../examples/tutorial/vector.cpp>`

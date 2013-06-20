@@ -2,9 +2,9 @@ include ../make.inc
 
 INCLUDE_FLAGS = -I${BOOST_INCLUDE_DIR} -I${LAMA_ROOT}/include
 
-LD_FLAGS = -L${LAMA_ROOT}/lib -llama -Wl,-rpath=${LAMA_ROOT}/lib 
+LD_FLAGS = -L${LAMA_ROOT}/lib -lama -Wl,-rpath=${LAMA_ROOT}/lib 
 
-EXECUTABLE: simple.exe vector.exe solver.exe blas1.exe vector_exp.exe matrix.exe
+EXECUTABLE: simple.exe vector.exe solver.exe blas1.exe vector_exp.exe matrix.exe scalar.exe
 
 .SUFFIXES:
 

@@ -36,4 +36,5 @@ cd ${SPHINX_BUILD_ROOT}/json
 
 find ./ -type f -exec sed -i 's/\.\.\/\_images/fileadmin\/LAMA\/json\/_images/g' {} \; \
 && find ./ -type f -exec sed -i 's/\.\.\/fileadmin/fileadmin/g' {} \; \
-&& find ./ -type f -exec sed -r -i 's/\\\"([./]*(configuration|installation|tutorial|lecture|reference|testing|benchmarks|developer|solver)\/)\\\"/\\\"\1index\/\\\"/g' {} \; \
+&& find ./ -type f -exec sed -i 's/<img/<image/g' {} \; \
+#&& find ./ -type f -exec sed -r -i 's/\\\"([./]*(configuration|installation|tutorial|lecture|reference|testing|benchmarks|developer|solver)\/)\\\"/\\\"\1index\/\\\"/g' {} \; \

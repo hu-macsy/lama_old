@@ -7,11 +7,11 @@ You can create a Scalar by delivering a value to the constructor. An empty const
 
 .. code-block:: c++
 
-   Scalar a(1);    // a scalar of index type
-   Scalar b(2.5f); // a scalar of type float 
-   Scalar c();     // a scalar representing zero
+   Scalar a( 1 );    // a scalar of index type
+   Scalar b( 2.5f ); // a scalar of type float 
+   Scalar c();       // a scalar representing zero
 
-All common binary operators '+', '-', '*', '/' (also as '+=', '-=', '*=','/=') and the unary operator '-' are supported.
+All common binary operators '+', '-', '\*', '/' (also as '+=', '-=', '\*=','/=') and the unary operator '-' are supported.
 A mix of different template types is allowed.
 
 .. code-block:: c++
@@ -48,5 +48,15 @@ Also the relational operators '==', '!=', '<', '>', '<=', '>=' and the rudimenta
    c = min( a, b );
    c = abs( a );
    c = sqrt( a );
+
+For printing a Scalar value you can use the output operator ('<<') or 'getValue<ValueType>()' to print it on your own,
+e.g. in printf(). Using the output operator results in 'Scalar(<your_value>)' while you get the plain value with
+getValue<ValueType>.
+
+.. code-block:: c++
+
+   // output operator
+   std::cout << "my Scalar is: " << a << std::endl;
    
-For printing 
+   // getValue
+   printf("my Scalar is: %d\n", a.getValue<int>() );

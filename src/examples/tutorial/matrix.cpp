@@ -39,13 +39,25 @@
 #include <lama/matrix/CSRSparseMatrix.hpp>
 #include <lama/storage/CSRStorage.hpp>
 
+#include <iostream>
+#include <stdlib.h>
+
 using namespace lama;
 
+//
+// EXAMPLE multiplication of a dense vector with a sparse matrix in CSR format.
+//
 int main()
 {
-	// EXAMPLE multiplication of a dense vector with a sparse matrix in CSR format.
-
+    //
+    // Define the ValueType used for the vector
+    //
 	typedef float ValueType;
+
+	//
+	// initialize matrix and vector values
+	//
+
 	//    Our matrix:
 	//     6, 0,     0, 4,
 	//     7, 0,     0, 0,
@@ -69,8 +81,7 @@ int main()
     {   6.0f, 4.0f, 7.0f, -9.3f, 4.0f, 2.0f, 5.0f, 3.0f, 2.0f, 1.0f, 1.0f, 2.0f };
 
     // Vector values for our multiplication.
-    ValueType vectorValues[] =
-    {   6.0f, 4.0f, 7.0f, -9.3f};
+    ValueType vectorValues[] = {   6.0f, 4.0f, 7.0f, -9.3f };
 
     // All data has to be stored in LAMAArrays.
     const LAMAArray<IndexType> matrixIA = LAMAArray<IndexType>( numRows + 1, ia );
@@ -78,27 +89,43 @@ int main()
     const LAMAArray<ValueType> mValues  = LAMAArray<ValueType>( numValues, matrixValues );
     const LAMAArray<ValueType> vValues  = LAMAArray<ValueType>( numColumns, vectorValues );
 
-    //  Alternative code for the next 2 lines:
-    //  CSRStorage<ValueType>* csrStorage = new CSRStorage<ValueType>( numRows, numColumns, numValues, matrixIA, matrixJA, matrixValues );
-
     // Create a CSRStorage.
-    CSRStorage<ValueType>* csrStorage = new CSRStorage<ValueType>();
-    csrStorage->setCSRData( numRows, numColumns, numValues, matrixIA, matrixJA, mValues );
+    CSRStorage<ValueType>* csrStorage = new CSRStorage<ValueType>( numRows, numColumns, numValues,
+                                                                   matrixIA, matrixJA, mValues );
+
+    //  Alternative code for the last line
+//    CSRStorage<ValueType>* csrStorage = new CSRStorage<ValueType>();
+//    csrStorage->setCSRData( numRows, numColumns, numValues, matrixIA, matrixJA, mValues );
 
     // Allocate and fill vector for the multiplication.
     DenseVector<ValueType> vector( numColumns, 0.0 );
-    vector.setValues(vValues);
+    vector.setValues( vValues );
     // Allocation of the result vector.
-    DenseVector<ValueType> result( numRows, 0.0);
+    DenseVector<ValueType> result( numRows, 0.0 );
 
     // Distribution pointer are needed to construct a CSRSparseMatrix.
-    lama::DistributionPtr rowDist(new lama::NoDistribution(numRows));
-    lama::DistributionPtr colDist(new lama::NoDistribution(numColumns));
+    lama::DistributionPtr rowDist( new lama::NoDistribution( numRows ) );
+    lama::DistributionPtr colDist( new lama::NoDistribution( numColumns ) );
 
     // Allocation of the CSRSparseMatrix.
-    CSRSparseMatrix<ValueType> csrMatrix(*csrStorage, rowDist, colDist);
+    CSRSparseMatrix<ValueType> csrMatrix( *csrStorage, rowDist, colDist );
 
+    //
     // The multiplication itself.
+    //
     result = csrMatrix * vector;
-    result.writeToFile( "result.txt" , File::FORMATTED );
+
+    //
+    // print vector to file result.frm/.vec (SAMG format)
+    //
+    result.writeToFile( "result" , File::FORMATTED );
+
+    std::cout << "DenseVector is written to 'result.frm/.vec'" << std::endl;
+
+    //
+    //  That's it.
+    //
+    std::cout << "!!!! TUTORIAL COMPLETED SUCCESSFULLY !!!!" << std::endl;
+
+    return EXIT_SUCCESS;
 }

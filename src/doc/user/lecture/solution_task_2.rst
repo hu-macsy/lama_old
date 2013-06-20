@@ -136,4 +136,4 @@ But it is possible to use a HostReadAccess to get reading access to the values.
    :header: "back to this Task", "Index", "next Task"
    :widths: 330, 340, 330
 
-   ":doc:`task_2`", ":doc:`index`", ":doc:`task_3`"
+   ":doc:`task_2`", ":doc:`../lecture`", ":doc:`task_3`"

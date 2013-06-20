@@ -701,14 +701,14 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( operatorDotProductTest, T, test_types ) {
         v1.setContext( context );
         v2.setContext( context );
 
-        Scalar result = v1 * v2;
+        Scalar result = v1.dotProduct( v2 );
 
         BOOST_CHECK_EQUAL( 128.0, result );
 
         DenseVector<ValueType> v3( n, -2.0 );
         DenseVector<ValueType> v4( n, 14.0 );
 
-        result = v3 * v4;
+        result = v3.dotProduct( v4 );
 
         BOOST_CHECK_EQUAL( -112.0, result );
     }

@@ -66,16 +66,16 @@ endif ( LAMA_TRACE_LEVEL STREQUAL "VT" )
 ################################################################################
 
 ### add library ###
-add_library ( lamampi SHARED ${CXX_SOURCES} )
+add_library ( amampi SHARED ${CXX_SOURCES} )
 
 ### set target link libraries ###  
 ################################################################################
 #TODO: RECHECK!
 if ( LAMA_TRACE_LEVEL STREQUAL "VT" )
-    target_link_libraries ( lamampi ${VAMPIRTRACE_LIBRARIES} )
+    target_link_libraries ( amampi ${VAMPIRTRACE_LIBRARIES} )
 endif ( LAMA_TRACE_LEVEL STREQUAL "VT" )
 ################################################################################
-target_link_libraries ( lamampi ${MPI_LIBRARIES} )
+target_link_libraries ( amampi ${MPI_LIBRARIES} )
 
 ### add definitions ###
 if ( WIN32 )
@@ -83,4 +83,4 @@ if ( WIN32 )
 endif ( WIN32 )
 
 ### install ####
-install ( TARGETS lamampi DESTINATION lib )
+install ( TARGETS amampi DESTINATION lib )

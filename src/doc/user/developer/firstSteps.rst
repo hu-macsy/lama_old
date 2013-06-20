@@ -29,11 +29,12 @@ are comfortable with it and it offers a couple of nice features as there are plu
 	JAVA_HOME=<install/dir/java>/bin
 	
 We recommend Eclipse CDT `Indigo`_ now at least with the `EGit`_ plugin. Optional you can install the
-`CMake <http://www.cthing.com>`_ and `ReST`_ editor. 
+`CMake Plugin`_ and `ReST`_ editor. 
 
 .. _Indigo: http://www.eclipse.org/downloads/packages/eclipse-ide-cc-developers-includes-incubating-components/indigosr2
-.. _EGit: http://www.eclipse.org/egit/
-.. _ReST: http://resteditor.sourceforge.net/
+.. _EGit: http://www.eclipse.org/egit
+.. _CMake Plugin: http://www.cthing.com
+.. _ReST: http://resteditor.sourceforge.net
 
 GIT
 ^^^

@@ -72,7 +72,7 @@ add_executable ( lama_cuda_test lama_cuda_test.cpp ${CXX_SOURCES} )
 
 ### set target link libraries ###
 if ( WIN32 )
-    target_link_libraries ( lama_cuda_test lama )
+    target_link_libraries ( lama_cuda_test ama )
 else ( WIN32 )
-    target_link_libraries ( lama_cuda_test lama ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY} )
+    target_link_libraries ( lama_cuda_test ama ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY} )
 endif ( WIN32 )

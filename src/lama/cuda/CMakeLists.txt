@@ -95,13 +95,13 @@ if ( NOT WIN32 )
     # Linux requires explicit CUDA compilation of *.cu files
 
     cuda_compile ( CUDA_FILES ${CUDA_SOURCES} )
-    add_library( lamacuda SHARED ${CXX_SOURCES} ${CUDA_FILES} )
+    add_library( amacuda SHARED ${CXX_SOURCES} ${CUDA_FILES} )
 
 else( NOT WIN32 )
 
     # Windows suports different compilation for *.cpp and *.cu files
 
-    cuda_add_library( lamacuda SHARED ${CXX_SOURCES} ${CUDA_SOURCES} )
+    cuda_add_library( amacuda SHARED ${CXX_SOURCES} ${CUDA_SOURCES} )
 
 endif( NOT WIN32 )
 
@@ -121,7 +121,7 @@ if ( NOT CUDA_cusparse_LIBRARY )
 endif ( NOT CUDA_cusparse_LIBRARY )
 
 ### target link libraries ###
-target_link_libraries( lamacuda
+target_link_libraries( amacuda
                         ${CUDA_cusparse_LIBRARY}
                         ${CUDA_cublas_LIBRARY} 
                         ${CUDA_CUDART_LIBRARY}
@@ -129,4 +129,4 @@ target_link_libraries( lamacuda
                      )
 
 ### install library
-install ( TARGETS lamacuda DESTINATION lib )
+install ( TARGETS amacuda DESTINATION lib )

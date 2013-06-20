@@ -41,4 +41,4 @@ Setting a Context was realized as simple as possible:
    :header: "back to this Task", "Index", "next Task"
    :widths: 330, 340, 330
 
-   ":doc:`task_5`", ":doc:`index`", ":doc:`task_6`"
+   ":doc:`task_5`", ":doc:`../lecture`", ":doc:`task_6`"

@@ -23,8 +23,6 @@ Solution Task 1 (a)
 
 :download:`Download complete solution Task 1 (a) <../../../examples/lecture/task1a.cpp>`
 
-__ http://libama.sourceforge.net/tutorial/solutions/task1a.cpp
-
 Solution Task 1 (b)
 ===================
 
@@ -112,4 +110,4 @@ Setting the right hand side and the solution vector
    :header: "back to this Task", "Index", "next Task"
    :widths: 330, 340, 330
 
-   ":doc:`task_1`", ":doc:`index`", ":doc:`task_2`"
+   ":doc:`task_1`", ":doc:`../lecture`", ":doc:`task_2`"

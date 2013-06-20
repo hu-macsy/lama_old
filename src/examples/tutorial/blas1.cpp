@@ -63,7 +63,10 @@ int main()
 {
   srand( (unsigned int)time(NULL) );
 
-  //Change this type definition to double if your gpu supports that
+  //
+  // Define the ValueType used for the vector
+  // Change this type definition to double if your gpu supports that
+  //
   typedef float       ScalarType;
 
   /////////////////////////////////////////////////
@@ -101,7 +104,7 @@ int main()
   // Output stream is overloaded as well:
   //
 
-  std::cout << "scalar s3: " << s3 << std::endl;
+  std::cout << "Scalar s3: " << s3 << std::endl;
 
 
   /////////////////////////////////////////////////
@@ -127,6 +130,8 @@ int main()
   lama::DistributionPtr noDist( new lama::NoDistribution( 10 ) );
   lama::DenseVector<ScalarType> lama_vec3( lama_array1, noDist  );
 
+  std::cout << "DenseVector with rand values filled" << std::endl;
+
   //
   // Define the vectors to be used on GPU (CUDA context on device 0) and upload them
   //
@@ -138,11 +143,15 @@ int main()
 
   lama_vec3.prefetch( cudaContext );
 
+  std::cout << "vectors copied to CUDA context" << std::endl;
+
   //
   // Compute the inner product of two GPU vectors and write the result to either CPU or GPU
   //
 
   s1 = lama_vec1.dotProduct( lama_vec2 );
+
+  std::cout << "dot product calculated" << std::endl;
 
   //
   // Compute norms:
@@ -151,6 +160,8 @@ int main()
   s1 = lama_vec1.l1Norm();
   s2 = lama_vec2.l2Norm();
   s3 = lama_vec3.maxNorm();
+
+  std::cout << "norms calculated" << std::endl;
 
   //
   // Plane rotation of two vectors:
@@ -162,21 +173,15 @@ int main()
   lama_vec1 = alpha * lama_vec1 + beta * lama_vec2;
   lama_vec2 = -beta * lama_vec1 + alpha * lama_vec2;
 
-  //
-  // Use lama::vector via the overloaded operators just as you would write it on paper:
-  //
-
-  //simple expression:
-//  lama_vec1 = s1 * lama_vec2 / s3;
-
-  //more complicated expression:
-//  lama_vec1 = lama_vec2 / s3 + s2 * ( lama_vec1 - s2 * lama_vec2 );
+  std::cout << "plain rotation calculated" << std::endl;
 
   //
   // Swap the content of two vectors without a temporary vector:
   //
 
   lama_vec1.swap( lama_vec2 );  //swaps all entries in memory
+
+  std::cout << "vectors swapped" << std::endl;
 
   //
   //  That's it.

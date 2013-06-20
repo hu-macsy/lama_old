@@ -6,14 +6,21 @@
 #include <lama/expression/all.hpp>
 
 #include <iostream>
+#include <stdlib.h>
 
 using namespace lama;
 
 int main()
 
 {
+    //
+    // Define the ValueType used for the vector
+    //
     typedef double ValueType;
 
+    //
+    // Vector expressions
+    //
     DenseVector<ValueType> x, y, z;
 
     x = 1.0;
@@ -43,6 +50,9 @@ int main()
     DenseVector<ValueType> tmp6 ( y * 2.0 );
     DenseVector<ValueType> tmp7 ( y / 2.0 );
 
+    //
+    // Matrix vector expressions
+    //
     DenseMatrix<ValueType> A;
 
     z = A * x + 2.0 * y;
@@ -69,5 +79,12 @@ int main()
     z += 2.0 * A * x;
     z -= A * x;
     z -= 2.0 * A * x;
+
+    //
+    //  That's it.
+    //
+    std::cout << "!!!! TUTORIAL COMPLETED SUCCESSFULLY !!!!" << std::endl;
+
+    return EXIT_SUCCESS;
 }
 

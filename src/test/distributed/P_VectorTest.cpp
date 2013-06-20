@@ -925,7 +925,7 @@ BOOST_AUTO_TEST_CASE( dotProductTest )
     //vectors are distributed if np > 1
     if ( comm->getSize() > 1 )
     {
-        LAMA_CHECK_THROW( { result = v3 * v4; }, Exception );
+        LAMA_CHECK_THROW( { result = v3.dotProduct( v4 ); }, Exception );
     }
     else
     {

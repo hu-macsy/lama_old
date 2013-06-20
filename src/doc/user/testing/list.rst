@@ -1,76 +1,95 @@
-.. _testList:
+:orphan:
 
 List of Unit Tests
 ==================
 
-** WARNING: this list is deprecated: last update 5.5.2011-**
-
 CPU Tests
-----------
-- AMGTest
-- BCSRSparseMatrixTest
-- BlockDistributionTest
+---------
+
 - CGTest
 - CommonLoggerTest
+- COOSparseMatrixTest
+- COOStorageTest
+- CriterionTest
 - CSRSparseMatrixTest
+- CSRStorageTest
 - DenseMatrixTest
-- DiaSparseMatrixTest
+- DenseStorageTest
+- DerivedSparseMatrixTest
+- DIASparseMatrixTest
+- DIAStorageTest
 - ELLSparseMatrixTest
+- ELLStorageTest
+- ELLUtilsTest
+- ExceptionTest
 - FileLoggerTest
+- GMRESTest
+- HostReadAccessTest
+- HostWriteAccessTest
 - InverseSolverTest
 - IterationCountTest
 - JacobiTest
 - JDSSparseMatrixTest
+- JDSStorageTest
+- JDSUtilsTest
+- L1NormTest
 - L2NormTest
-- MPICommunicatorTest
-- NormTest
-- TimerTest
-- ResidualTest
+- LAMAArrayTest
+- LAPACKTest
+- MatrixStorageConversionTest
+- MatrixTest
+- MaxNormTest
+- NoCommunicatorTest
+- ResidualStagnationTest
+- ResidualThresholdTest
+- ScalarTest
 - SolutionProxyTest
-- SparseAssemblyMatrixTest
-- SparseMatrixBaseTest
-- SparseVectorTest
-- StagnationTest
+- SORTest
+- SparseAssemblyStorageTest
+- SpecializedJacobiTest
+- StorageIOTest
+- SimpleAMGTest
+- TaskSyncTokenTest
+- ThreadPoolTest
+- TimerTest
+- TracingTest
+- UtilsTest
 - VectorTest
- 
-Cell Tests
-----------
-- CellBaseTest
-- CellVectorTest
  
 CUDA Tests
 ----------
-- CUDAAMGTest
-- CUDABaseTest
-- CUDABCSRSparseMatrixTest
-- CUDACGTest
-- CUDACSRSparseMatrixTest
-- CUDADenseMatrixTest
-- CUDAELLSparseMatrixTest
-- CUDAInverseSolverTest
-- CUDAJacobiTest
-- CUDAJDSSparseMatrixTest
-- CUDANormTest
-- CUDASparseVectorTest
-- CUDAVectorTest
- 
-DirectX Tests
--------------
-- DirectXCSRSparseMatrixTest
-- DirectXJacobiTest
-- DirectXVectorTest
- 
-OpenCL Tests
--------------
-- OpenCLAMGTest
-- OpenCLBaseTest
-- OpenCLCGTest
-- OpenCLCSRSparseMatrixTest
-- OpenCLELLSparseMatrixTest
-- OpenCLInverseSolverTest
-- OpenCLJacobiTest
-- OpenCLNormTest
-- OpenCLSparseVectorTest
-- OpenCLVectorTest
- 
-Latest Update: 5.5.2011
+
+- CUDA_ContextTest
+- CUDA_HostContextTest
+- CUDA_InterfaceRegistry
+- CUDA_LAMAArrayTest
+- CUDA_MatrixStorageTest
+- CUDA_VectorTest
+
+Distributed Tests
+-----------------
+
+- BlockDistributionTest
+- CyclicDistributionTest
+- GenBlockDistributionTest
+- GeneralDistributionTest
+- NoDistributionTest
+
+- P_CGTest
+- P_COOSparseMatrixTest
+- P_CSRSparseMatrixTest
+- P_DenseMatrixTest
+- P_DIASparseMatrixTest
+- P_ELLSparseMatrixTest
+- P_InverseSolverTest
+- P_JacobiTest
+- P_JDSSparseMatrixTest
+- P_MatrixCreatorTest
+- P_MatrixStorageTest
+- P_MatrixTest
+- P_MPICommunicatorTest
+- P_RedistributorTest
+- P_SORTest
+- P_SpecializedJacobiTest
+- P_VectorTest
+- P_NormTest

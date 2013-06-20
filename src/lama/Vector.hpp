@@ -208,14 +208,6 @@ public:
     const Scalar operator()( const IndexType i ) const;
 
     /**
-     * @brief Returns the dot product of this and other.
-     *
-     * @param[in] other   the vector to calculate the dot product with.
-     * @return            the dot product of this and other
-     */
-    Scalar operator*( const Vector& other ) const;
-
-    /**
      * @brief Builds an array with local values of the vector.
      *
      * @param[in,out] values   LAMA array that will be filled with the local values.

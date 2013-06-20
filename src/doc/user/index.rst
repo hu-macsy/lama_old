@@ -14,11 +14,11 @@ Contents:
    :maxdepth: 1
    
    introduction
-   installation/index
-   reference/index
-   tutorial/index
-   lecture/index
-   testing/index
-   benchmarks/index
-   developer/index
+   installation
+   tutorial
+   lecture
+   reference
+   testing
+   benchmarks
+   developer
    relatedWork
