@@ -3,7 +3,18 @@
 ##########################################################################
 
 2013-06-20    Fraunhofer SCAI
+
+VERSION 1.x.x:
+
+ * bug fixes, changes
+ * texture use
  
+ + additions
+ 
+ - removed
+
+VERSION 1.0.1:
+
  * corrected libary name to libama, etc.
  * examples install dir corrected
  * check on matrix storage
