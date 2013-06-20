@@ -68,25 +68,29 @@ set ( CUDA_SOURCES
 ### set include directories ### 
 include_directories ( . ${CUDA_INCLUDE_DIRS} )
 
-### Check for cuSPASE library, Version 2
+### Check for cuSPASE library, Version 2 (since CUDA 5.0)
 
-message( STATUS "Check for cuSPARSE V2 include file in ${CUDA_INCLUDE_DIRS}" )
+if ( CUDA_VERSION_MAJOR MATCHES "5" )
 
-set ( CUSPARSE_V2 false )
-
-foreach( dir "${CUDA_INCLUDE_DIRS}" )
-   if ( EXISTS "${dir}/cusparse_v2.h" )
-      set ( CUSPARSE_V2 true )
-   endif ()
-endforeach()
-
-if ( CUSPARSE_V2 )
-    message( STATUS "cuSPARSE Version 2 is supported and will be used" )
-    set ( CUDA_SOURCES ${CUDA_SOURCES} CUSparseCSRUtils.cu )
-    add_definitions( -DCUSPARSE_V2 )
-else()
-    message( STATUS "cuSPARSE Version 2 not supported" )
-endif()
+    message( STATUS "Check for cuSPARSE V2 include file in ${CUDA_INCLUDE_DIRS}" )
+    
+    set ( CUSPARSE_V2 false )
+    
+    foreach( dir "${CUDA_INCLUDE_DIRS}" )
+       if ( EXISTS "${dir}/cusparse_v2.h" )
+          set ( CUSPARSE_V2 true )
+       endif ( EXISTS "${dir}/cusparse_v2.h" )
+    endforeach( dir "${CUDA_INCLUDE_DIRS}" )
+    
+    if ( CUSPARSE_V2 )
+        message( STATUS "cuSPARSE Version 2 is supported and will be used" )
+        set ( CUDA_SOURCES ${CUDA_SOURCES} CUSparseCSRUtils.cu )
+        add_definitions( -DCUSPARSE_V2 )
+    else( CUSPARSE_V2 )
+        message( STATUS "cuSPARSE Version 2 not supported" )
+    endif( CUSPARSE_V2 )
+    
+endif ( CUDA_VERSION_MAJOR MATCHES "5" )
 
 ### add CUDA library ###
 
