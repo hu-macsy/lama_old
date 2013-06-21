@@ -38,6 +38,8 @@
 namespace lama
 {
 
+class Communicator;
+
 /** 
  *  This singleton class provides methods to query environment variables.
  *
@@ -72,6 +74,15 @@ public:
      *  @return      true if environment variable has been used to set flag
      */
     static bool getEnvironment( std::string& flag, const char* envVarName );
+
+    /** Set a string by value of its environment variable
+     *
+     *  @param[out]  val is string that will be set
+     *  @param[in]   envVarName is name of the environment variable
+     *  @param[in]   comm is communicator used to bcast setting of environment variable
+     *  @return      true if environment variable has been used to set flag
+     */
+    static bool getEnvironment( std::string& flag, const char* envVarName, const Communicator& comm );
 
 private:
 

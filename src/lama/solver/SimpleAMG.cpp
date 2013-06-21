@@ -39,6 +39,7 @@
 #include <lama/solver/SingleGridSetup.hpp>
 
 #include <lama/expression/MatrixVectorExpressions.hpp>
+#include <lama/Settings.hpp>
 
 // tracing
 #include <lama/tracing.hpp>
@@ -130,15 +131,22 @@ void SimpleAMG::initialize( const Matrix& coefficients )
     if ( amgSetup.get() == 0 )
     {
         //try to load libAMGSetup.so
-        char* amgSetupLibrary = getenv( "LAMA_AMG_SETUP_LIBRARY" );
 
-        if ( amgSetupLibrary != 0 )
+        std::string amgSetupLibrary;
+
+        const Communicator& comm = coefficients.getDistribution().getCommunicator();
+
+        // comm: so it is sufficient if only root has set the environment variable
+
+        bool isSet = Settings::getEnvironment( amgSetupLibrary, "LAMA_AMG_SETUP_LIBRARY", comm );
+
+        if ( isSet )
         {
             typedef lama::AMGSetup* (*lama_createAMGSetup)();
             lama_createAMGSetup funcHandle = NULL;
 
             int error = loadLibAndGetFunctionHandle( funcHandle,
-                        reinterpret_cast<LAMA_LIB_HANDLE_TYPE&>( runtime.mLibHandle ), amgSetupLibrary, "lama_createAMGSetup" );
+                        reinterpret_cast<LAMA_LIB_HANDLE_TYPE&>( runtime.mLibHandle ), amgSetupLibrary.c_str(), "lama_createAMGSetup" );
 
             if ( error == 0 && runtime.mLibHandle != 0 && funcHandle != 0 )
             {
@@ -323,6 +331,7 @@ void SimpleAMG::cycle()
         LAMA_LOG_DEBUG( logger, "curTmpRhs=curRhs - curGalerkin * curSolution on level "<< runtime.mCurrentLevel )
         curTmpRhs = curRhs - curGalerkin * curSolution;
         LAMA_LOG_DEBUG( logger, "curCoarseRhs = curRestriction * curTmpRhs on level "<< runtime.mCurrentLevel )
+        LAMA_LOG_ERROR( logger, "curRestriction = " << curRestriction << ", kind = " << curRestriction.getCommunicationKind() );
         curCoarseRhs = curRestriction * curTmpRhs;
         curCoarseSolution = 0.0;
 

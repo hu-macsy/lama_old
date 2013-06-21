@@ -32,6 +32,7 @@
  */
 
 #include <lama/Settings.hpp>
+#include <lama/Communicator.hpp>
 
 #include <cstdio>
 #include <cstring>
@@ -155,8 +156,6 @@ bool Settings::getEnvironment( int& val, const char* envVarName )
 
 bool Settings::getEnvironment( std::string& val, const char* envVarName )
 {
-    // only first processor reads the environment variable and broadcast it
-        
     const char *env = getenv( envVarName );
 
     if ( env )
@@ -171,6 +170,55 @@ bool Settings::getEnvironment( std::string& val, const char* envVarName )
     LAMA_LOG_INFO( logger, envVarName << " not set" );
 
     return false;
+}
+
+bool Settings::getEnvironment( std::string& val, const char* envVarName, const Communicator& comm )
+{
+    bool isRoot = comm.getRank() == 0;
+
+    bool hasSet = false;
+
+    if ( isRoot )
+    {
+        hasSet = getEnvironment( val, envVarName );
+
+        if ( hasSet )
+        {
+            comm.bcast( val, 0 );
+        }
+        else
+        {
+            std::string dummy = "";
+            comm.bcast( dummy, 0 );
+        }
+    }
+    else
+    {
+        std::string rootVal;
+
+        comm.bcast( rootVal, 0 );
+ 
+        bool hasRootSet = rootVal.length() > 0;
+
+        if ( hasRootSet )
+        {
+            val = rootVal;
+
+            hasSet = true;
+
+            // if process has own environment variable, overwrite it
+
+            getEnvironment( val, envVarName );
+        }
+        else
+        {
+            hasSet = getEnvironment( val, envVarName );
+        }
+    }
+
+    LAMA_LOG_INFO( logger, comm << ": " << envVarName << "=" << val );
+
+    return hasSet;
 }
 
 bool Settings::init()
