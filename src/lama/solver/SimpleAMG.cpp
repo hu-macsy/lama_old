@@ -331,7 +331,6 @@ void SimpleAMG::cycle()
         LAMA_LOG_DEBUG( logger, "curTmpRhs=curRhs - curGalerkin * curSolution on level "<< runtime.mCurrentLevel )
         curTmpRhs = curRhs - curGalerkin * curSolution;
         LAMA_LOG_DEBUG( logger, "curCoarseRhs = curRestriction * curTmpRhs on level "<< runtime.mCurrentLevel )
-        LAMA_LOG_ERROR( logger, "curRestriction = " << curRestriction << ", kind = " << curRestriction.getCommunicationKind() );
         curCoarseRhs = curRestriction * curTmpRhs;
         curCoarseSolution = 0.0;
 
