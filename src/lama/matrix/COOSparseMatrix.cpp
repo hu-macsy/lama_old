@@ -104,6 +104,7 @@ COOSparseMatrix<ValueType>::COOSparseMatrix( const COOSparseMatrix& other )
 {
     this->setCommunicationKind( other.getCommunicationKind() );
     this->setContext( other.getContextPtr() );
+
     SparseMatrix<ValueType>::assign( other );
 }
 
@@ -115,6 +116,7 @@ COOSparseMatrix<ValueType>::COOSparseMatrix( const Matrix& other, bool transpose
     : SparseMatrix<ValueType>( createStorage() )
 
 {
+    this->setContext( other.getContextPtr() );
     this->setCommunicationKind( other.getCommunicationKind() );
 
     if ( transposeFlag )
@@ -138,6 +140,7 @@ COOSparseMatrix<ValueType>::COOSparseMatrix(
     : SparseMatrix<ValueType>( createStorage() )
 
 {
+    this->setContext( other.getContextPtr() );
     this->setCommunicationKind( other.getCommunicationKind() );
 
     // this might be done more efficiently as assign introduces intermediate copy
@@ -182,6 +185,11 @@ COOSparseMatrix<ValueType>::COOSparseMatrix( const Expression_SM& expression )
     : SparseMatrix<ValueType>( createStorage() )
 
 {
+    const Matrix& master = expression.getArg2(); 
+
+    SparseMatrix<ValueType>::setContext( master.getContextPtr() );
+    SparseMatrix<ValueType>::setCommunicationKind( master.getCommunicationKind() );
+
     Matrix::operator=( expression );
 }
 
@@ -193,6 +201,11 @@ COOSparseMatrix<ValueType>::COOSparseMatrix( const Expression_SMM& expression )
     : SparseMatrix<ValueType>( createStorage() )
 
 {
+    const Matrix& master = expression.getArg1().getArg2(); 
+
+    SparseMatrix<ValueType>::setContext( master.getContextPtr() );
+    SparseMatrix<ValueType>::setCommunicationKind( master.getCommunicationKind() );
+
     Matrix::operator=( expression );
 }
 
@@ -205,7 +218,11 @@ COOSparseMatrix<ValueType>::COOSparseMatrix( const Expression_SM_SM& expression 
 {
     // inherit context from matA in alpha * matA + beta * matB
 
-    SparseMatrix<ValueType>::setContext( expression.getArg1().getArg2().getContextPtr() );
+    const Matrix& master = expression.getArg1().getArg2();
+
+    SparseMatrix<ValueType>::setContext( master.getContextPtr() );
+    SparseMatrix<ValueType>::setCommunicationKind( master.getCommunicationKind() );
+
     Matrix::operator=( expression );
 }
 
@@ -312,9 +329,10 @@ COOSparseMatrix<ValueType>* COOSparseMatrix<ValueType>::create() const
 {
     COOSparseMatrix<ValueType>* newSparseMatrix = new COOSparseMatrix<ValueType>();
 
-    // inherit the context of this matrix for the new matrix
+    // inherit the context, communication kind of this matrix for the new matrix
 
     newSparseMatrix->setContext( this->getContextPtr() );
+    newSparseMatrix->setCommunicationKind( this->getCommunicationKind() );
 
     LAMA_LOG_INFO( logger, "create is " << *newSparseMatrix )
 

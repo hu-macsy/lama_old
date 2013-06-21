@@ -1658,6 +1658,9 @@ SparseMatrix<ValueType>* SparseMatrix<ValueType>::create() const
 
     newSparseMatrix->setCommunicationKind( this->getCommunicationKind() );
 
+    LAMA_LOG_INFO( logger, *this << ": create -> " << *newSparseMatrix << " @ " << newSparseMatrix->getContext()
+                                  << ", kind = " << newSparseMatrix->getCommunicationKind() );
+
     return newSparseMatrix.release();
 }
 
