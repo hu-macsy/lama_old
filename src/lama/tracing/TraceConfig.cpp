@@ -41,8 +41,8 @@
 #include <lama/CommunicatorFactory.hpp>
 #include <lama/ContextFactory.hpp>
 #include <lama/ContextAccess.hpp>
+#include <lama/Settings.hpp>
 
-#include <cstdlib>
 #include <iostream>
 
 using namespace lama;
@@ -188,10 +188,12 @@ TraceConfig::TraceConfig()
 
     // value of environmentvariable:  param1:param2=valx:param3:param4=valy
 
-    if ( getenv( LAMA_ENV_TRACE_CONFIG ) )
-    {
-        std::string params = getenv( LAMA_ENV_TRACE_CONFIG );
+    std::string params;
 
+    bool found = Settings::getEnvironment( params, LAMA_ENV_TRACE_CONFIG );
+
+    if ( found )
+    {
         std::vector<std::string> values = split( params, ':' );
 
         if ( values.size() != 1 || values[0] != "OFF" )
@@ -228,7 +230,8 @@ TraceConfig::TraceConfig()
     }
     else
     {
-        LAMA_LOG_WARN( logger, "LAMA_TRACE not set, tracing is disabled. Enable by LAMA_TRACE=time[:vt][:thread]" )
+        LAMA_LOG_WARN( logger, LAMA_ENV_TRACE_CONFIG << " not set, tracing is disabled."
+                       << " Enable by " << LAMA_ENV_TRACE_CONFIG << "=time[:vt][:thread]" )
     }
 
     // enable/disable VampirTrace, action needed now
@@ -239,14 +242,11 @@ TraceConfig::TraceConfig()
     {
         // no prefix specified, so take default
 
-        if ( getenv( "_" ) )
-        {
-            mTraceFilePrefix = getenv( "_" );
-        }
-        else
-        {
-            mTraceFilePrefix = "LAMA";
-        }
+        mTraceFilePrefix = "LAMA";
+
+        // environment variable "_" contains name of last command
+
+        Settings::getEnvironment( mTraceFilePrefix, "_" );
     }
     else
     {

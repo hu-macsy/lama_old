@@ -1,5 +1,5 @@
 /**
- * @file LAMASettings.hpp
+ * @file Settings.hpp
  *
  * @license
  * Copyright (c) 2009-2013
@@ -25,13 +25,13 @@
  * SOFTWARE.
  * @endlicense
  *
- * @brief Managing some settings for CUDA specified by environment variables
+ * @brief Utilities for LAMA settings                                       
  * @author Thomas Brandes
- * @date 04.05.2013
- * @since 1.0.0
+ * @date 19.06.2013
+ * @since 1.0.1
  */
-#ifndef LAMA_LAMA_SETTINGS_HPP_
-#define LAMA_LAMA_SETTINGS_HPP_
+#ifndef LAMA_SETTINGS_HPP_
+#define LAMA_SETTINGS_HPP_
 
 #include <logging/logging.hpp>
 
@@ -39,7 +39,10 @@ namespace lama
 {
 
 /** 
- *  This class provides only static methods.
+ *  This singleton class provides methods to query environment variables.
+ *
+ *  Note: This should be the only module to access environment variables
+ *        directly.
  */
 
 class Settings
@@ -52,7 +55,7 @@ public:
      *  @param[in]   envVarName is name of the environment variable
      *  @return      true if environment variable has been used to set flag
      */
-    static bool getEnvironmentSetting( bool& flag, const char* envVarName );
+    static bool getEnvironment( bool& flag, const char* envVarName );
 
     /** Set a integer by value of its environment variable
      *
@@ -60,7 +63,15 @@ public:
      *  @param[in]   envVarName is name of the environment variable
      *  @return      true if environment variable has been used to set flag
      */
-    static bool getEnvironmentSetting( int& flag, const char* envVarName );
+    static bool getEnvironment( int& flag, const char* envVarName );
+
+    /** Set a string by value of its environment variable
+     *
+     *  @param[out]  val is string that will be set
+     *  @param[in]   envVarName is name of the environment variable
+     *  @return      true if environment variable has been used to set flag
+     */
+    static bool getEnvironment( std::string& flag, const char* envVarName );
 
 private:
 
@@ -91,4 +102,4 @@ private:
 
 } // namespace
 
-#endif //  LAMA_LAMA_SETTINGS_HPP_
+#endif //  LAMA_SETTINGS_HPP_

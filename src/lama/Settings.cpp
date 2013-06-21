@@ -1,5 +1,5 @@
 /**
- * @file LAMASettings.cpp
+ * @file Settings.cpp
  *
  * @license
  * Copyright (c) 2009-2013
@@ -105,7 +105,7 @@ bool Settings::convertYesNoString( bool& flag, const char* stringVal )
 
 /* ----------------------------------------------------------------------------- */
 
-bool Settings::getEnvironmentSetting( bool& flag, const char* envVarName )
+bool Settings::getEnvironment( bool& flag, const char* envVarName )
 {
     const char* env = getenv ( envVarName );
 
@@ -129,7 +129,7 @@ bool Settings::getEnvironmentSetting( bool& flag, const char* envVarName )
     return true;   // environment variable was available
 }
 
-bool Settings::getEnvironmentSetting( int& val, const char* envVarName )
+bool Settings::getEnvironment( int& val, const char* envVarName )
 {
     const char* env = getenv ( envVarName );
 
@@ -153,6 +153,25 @@ bool Settings::getEnvironmentSetting( int& val, const char* envVarName )
     return true;   // environment variable was available
 }
 
+bool Settings::getEnvironment( std::string& val, const char* envVarName )
+{
+    // only first processor reads the environment variable and broadcast it
+        
+    const char *env = getenv( envVarName );
+
+    if ( env )
+    { 
+        val  = env;
+
+        LAMA_LOG_INFO( logger, envVarName << " = " << val );
+
+        return true;
+    }
+
+    LAMA_LOG_INFO( logger, envVarName << " not set" );
+
+    return false;
+}
 
 bool Settings::init()
 {

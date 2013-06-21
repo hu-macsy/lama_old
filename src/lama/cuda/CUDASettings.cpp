@@ -92,9 +92,9 @@ void CUDASettings::initialize()
 {
     // check environment variables for settings
 
-    bool setTexture   = Settings::getEnvironmentSetting( theUseTextureFlag, "LAMA_CUDA_USE_TEXTURE" );
-    bool setSharedMem = Settings::getEnvironmentSetting( theUseSharedMemFlag, "LAMA_CUDA_USE_SHARED_MEM" );
-    bool setBlockSize = Settings::getEnvironmentSetting( theBlockSize, "LAMA_CUDA_BLOCK_SIZE" );
+    bool setTexture   = Settings::getEnvironment( theUseTextureFlag, "LAMA_CUDA_USE_TEXTURE" );
+    bool setSharedMem = Settings::getEnvironment( theUseSharedMemFlag, "LAMA_CUDA_USE_SHARED_MEM" );
+    bool setBlockSize = Settings::getEnvironment( theBlockSize, "LAMA_CUDA_BLOCK_SIZE" );
 
     if ( !setTexture || !setSharedMem || !setBlockSize )
     {

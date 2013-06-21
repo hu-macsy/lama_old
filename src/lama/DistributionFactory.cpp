@@ -37,6 +37,7 @@
 // others
 #include <lama/DistributionManager.hpp>
 #include <lama/exception/Exception.hpp>
+#include <lama/Settings.hpp>
 
 // logging
 #include <logging/logging.hpp>
@@ -179,14 +180,13 @@ const std::string& DistributionFactory::getDefaultDistributionType() const
     {
         // default distribution has not been defined yet, so do it
 
-        if ( getenv( LAMA_ENV_FOR_DISTRIBUTION ) )
-        {
-            setDefaultDistributionType( getenv( LAMA_ENV_FOR_DISTRIBUTION ) );
-        }
-        else
-        {
-            setDefaultDistributionType( "NO" );
-        }
+        std::string defaultDistribution = "NO";
+
+        // defaultDistribution might be overwritten by environment variable
+
+        Settings::getEnvironment( defaultDistribution, LAMA_ENV_FOR_DISTRIBUTION );
+
+        setDefaultDistributionType( defaultDistribution );
     }
 
     return mDefaultDistributionType;

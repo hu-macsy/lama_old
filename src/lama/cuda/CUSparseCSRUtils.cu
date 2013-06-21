@@ -606,7 +606,9 @@ void CUSparseCSRUtils::setInterface( CSRUtilsInterface& CSRUtils )
 
     bool useCUSparse = true;
 
-    Settings::getEnvironmentSetting( useCUSparse, "LAMA_USE_CUSPARSE" );
+    // using CUSparse for CSR might be disabled explicitly by environment variable
+
+    Settings::getEnvironment( useCUSparse, "LAMA_USE_CUSPARSE" );
 
     if ( !useCUSparse )
     {
