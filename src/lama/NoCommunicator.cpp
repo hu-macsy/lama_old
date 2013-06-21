@@ -258,6 +258,11 @@ void NoCommunicator::bcast( int[], const IndexType, const PartitionId root ) con
     LAMA_ASSERT_EQUAL_ERROR( root, 0 )
 }
 
+void NoCommunicator::bcast( std::string&, const PartitionId root ) const
+{
+    LAMA_ASSERT_EQUAL_ERROR( root, 0 )
+}
+
 void NoCommunicator::scatter( double myvals[], const IndexType n, const PartitionId root, const double allvals[] ) const
 {
     LAMA_ASSERT_EQUAL_ERROR( root, 0 )

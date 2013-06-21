@@ -43,7 +43,7 @@ static std::string commtestclasses[] =
 { "NoCommunicatorTest" };
 static std::string commtestmethods[] =
 {   "swapTest", "gatherTest", "gatherVTest", "scatterTest", "scatterVTest", "bcastTest", "shiftASyncTest", "shiftTest",
-    "updateHaloTest", "buildHaloTest", "allocatePlanTest", "computeOwnersTest", "CommunicatorCtorTest"
+    "updateHaloTest", "bcastStringTest", "buildHaloTest", "allocatePlanTest", "computeOwnersTest", "CommunicatorCtorTest"
 };
 
 static std::string pcommtestclasses[] =
@@ -68,6 +68,7 @@ public:
     template<typename T> void shiftTest();
     template<typename T> void updateHaloTest();
 
+    void bcastStringTest();
     void buildHaloTest();
     void allocatePlanTest();
     void computeOwnersTest();
@@ -102,6 +103,7 @@ private:
         COMMONTESTCASEINVOKER_TEMPLATE( testinstance, shiftASyncTest, double );              \
         COMMONTESTCASEINVOKER_TEMPLATE( testinstance, shiftTest, double );                   \
         COMMONTESTCASEINVOKER_TEMPLATE( testinstance, updateHaloTest, double );              \
+        COMMONTESTCASEINVOKER( testinstance, bcastStringTest );                              \
         COMMONTESTCASEINVOKER( testinstance, buildHaloTest );                                \
         COMMONTESTCASEINVOKER( testinstance, allocatePlanTest );                             \
         COMMONTESTCASEINVOKER( testinstance, computeOwnersTest );                            \

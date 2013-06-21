@@ -370,6 +370,7 @@ public:
     virtual void bcast( double val[], const IndexType n, const PartitionId root ) const = 0;
     virtual void bcast( float val[], const IndexType n, const PartitionId root ) const = 0;
     virtual void bcast( int val[], const IndexType n, const PartitionId root ) const = 0;
+    virtual void bcast( std::string&, const PartitionId root ) const = 0;
 
     /** @brief Scatter of an array of values from root to all other processors.
      *

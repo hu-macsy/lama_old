@@ -229,6 +229,10 @@ public:
 
     virtual void bcast( float val[], const IndexType n, const PartitionId root ) const;
 
+    /** Broadcast of a string */
+
+    virtual void bcast( std::string& val, const PartitionId root ) const;
+
     /** scatter */
 
     virtual void scatter( double myvals[], const IndexType n, const PartitionId root, const double allvals[] ) const;

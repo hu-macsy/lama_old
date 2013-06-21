@@ -131,6 +131,7 @@ public:
     virtual void bcast( double val[], const IndexType n, const PartitionId root ) const;
     virtual void bcast( float val[], const IndexType n, const PartitionId root ) const;
     virtual void bcast( int val[], const IndexType n, const PartitionId root ) const;
+    virtual void bcast( std::string& val, const PartitionId root ) const;
 
     virtual void scatter( double myvals[], const IndexType n, const PartitionId root, const double allvals[] ) const;
     virtual void scatter( float myvals[], const IndexType n, const PartitionId root, const float allvals[] ) const;

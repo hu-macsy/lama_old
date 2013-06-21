@@ -910,6 +910,38 @@ void MPICommunicator::bcast( float val[], const IndexType n, const PartitionId r
     LAMA_MPICALL( logger, MPI_Bcast( val, n, MPI_FLOAT, root, selectMPIComm() ), "MPI_Bcast<float>" )
 }
 
+void MPICommunicator::bcast( std::string& val, const PartitionId root ) const
+{
+    int len = 0;
+
+    bool isRoot = getRank() == root;
+
+    if ( isRoot )
+    { 
+        len = val.length();
+    }
+
+    // step 1: broadcast length of string
+
+    LAMA_MPICALL( logger, MPI_Bcast( &len, 1, MPI_INT, root, selectMPIComm() ), "MPI_Bcast str length" )
+
+    boost::scoped_array<char> buffer( new char[len+1] ); 
+
+    char* strptr = buffer.get();
+
+    if ( isRoot )
+    {
+        strptr = const_cast<char *>( val.c_str() );
+    }
+
+    LAMA_MPICALL( logger, MPI_Bcast( strptr, len + 1, MPI_CHAR, root, selectMPIComm() ), "MPI_Bcast string" )
+
+    if ( !isRoot )
+    {
+        val = strptr;
+    }
+}
+
 /* ---------------------------------------------------------------------------------- */
 /*      scatter( myvals, n, root, allvals )                                           */
 /* ---------------------------------------------------------------------------------- */

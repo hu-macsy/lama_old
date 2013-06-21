@@ -185,6 +185,27 @@ LAMA_COMMON_TEST_CASE_END()
 
 /* --------------------------------------------------------------------- */
 
+LAMA_COMMON_TEST_CASE( CommunicatorTest, bcastStringTest );
+
+std::string val = "Dummy";
+
+if ( comm->getRank() == 0 )
+{
+    val = "Hello";
+}
+
+LAMA_LOG_ERROR( logger, *comm << ": val = " << val );
+
+comm->bcast( val, 0 );
+
+LAMA_LOG_ERROR( logger, *comm << ": val = " << val );
+
+BOOST_CHECK_EQUAL( "Hello", val );
+
+LAMA_COMMON_TEST_CASE_END();
+
+/* --------------------------------------------------------------------- */
+
 LAMA_COMMON_TEST_CASE( CommunicatorTest, buildHaloTest );
 IndexType vectorSize = size;
 BlockDistribution distribution( vectorSize, comm );
@@ -464,8 +485,11 @@ LAMA_COMMON_TEST_CASE_TM_END();
 
 /* --------------------------------------------------------------------- */
 
-LAMA_COMMON_TEST_CASE_TM( CommunicatorTest, T, bcastTest ) {
+LAMA_COMMON_TEST_CASE_TM( CommunicatorTest, T, bcastTest ) 
+{
     typedef T ValueType;
+
+    LAMA_LOG_INFO( logger, "bcastTest<" << typeid( T ).name() << ">" )
 
     IndexType N = 5;
     ValueType dummyVal = 13;
@@ -497,6 +521,7 @@ LAMA_COMMON_TEST_CASE_TM( CommunicatorTest, T, bcastTest ) {
         BOOST_CHECK_EQUAL( dummyVal, vector[N] );
     }
 }
+
 LAMA_COMMON_TEST_CASE_TM_END();
 
 /* --------------------------------------------------------------------- */
@@ -759,6 +784,7 @@ LAMA_COMMON_TEST_CASE_RUNNER( CommunicatorTest )
     updateHaloTest<float>();
     updateHaloTest<double>();
 
+    bcastStringTest();
     buildHaloTest();
     allocatePlanTest();
     computeOwnersTest();
