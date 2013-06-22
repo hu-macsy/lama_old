@@ -1282,11 +1282,12 @@ void SparseMatrix<ValueType>::matrixTimesVectorImpl(
 
     LAMA_REGION( "Mat.Sp.timesVectorAsync" )
 
-    // we run the local computation asynchronously 
+    // we run the local computation asynchronously with Halo update of X
 
     ContextPtr localContext = mLocalData->getContextPtr();
 
     const LAMAArray<ValueType>& localX = denseX.getLocalValues();
+    LAMAArray<ValueType>& haloX        = denseX.getHaloValues();
     const LAMAArray<ValueType>& localY = denseY.getLocalValues();
     LAMAArray<ValueType>& localResult = denseResult.getLocalValues();
 
@@ -1295,10 +1296,13 @@ void SparseMatrix<ValueType>::matrixTimesVectorImpl(
     if ( mHalo.getProvidesIndexes().size() > 0 )
     {
         // gather of halo data cannot be overlapped with local computations on a device
-
-        LAMAArrayUtils::gather( mTempSendValues, denseX.getLocalValues(), mHalo.getProvidesIndexes() );
-
         // Note: gather will be done where denseX is available
+
+        LAMAArrayUtils::gather( mTempSendValues, localX, mHalo.getProvidesIndexes() );
+
+        // prefetch needed otherwise sending will block until local computation has finished
+
+        mTempSendValues.prefetch( ContextFactory::getContext( Context::Host ) );
     }
  
     std::auto_ptr<SyncToken> localComputation;
@@ -1316,14 +1320,12 @@ void SparseMatrix<ValueType>::matrixTimesVectorImpl(
 
         const Communicator& comm = getColDistribution().getCommunicator();
 
-        comm.exchangeByPlan( denseX.getHaloValues(), mHalo.getRequiredPlan(), mTempSendValues, mHalo.getProvidesPlan() );
+        comm.exchangeByPlan( haloX, mHalo.getRequiredPlan(), mTempSendValues, mHalo.getProvidesPlan() );
 
         LAMA_LOG_DEBUG( logger, "Exchange halo done." )
     }
 
     // start now transfer of the halo values of X to halo context where it is needed
-
-    const LAMAArray<ValueType>& haloX = denseX.getHaloValues();
 
     {
         LAMA_REGION( "Mat.Sp.timesVectorAsync::prefetchHalo")
@@ -1334,7 +1336,7 @@ void SparseMatrix<ValueType>::matrixTimesVectorImpl(
     }
 
     {
-        LAMA_REGION( "Mat.Sp.timesVector::waitLocalWithHalo")
+        LAMA_REGION( "Mat.Sp.timesVector::waitLocal")
 
         // we must wait for local computation as halo computation updates localResult
 

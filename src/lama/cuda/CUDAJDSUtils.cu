@@ -906,20 +906,12 @@ void CUDAJDSUtils::jacobi(
         stream = cudaStreamSyncToken->getCUDAStream();
     }
 
-    const int blockSize = CUDASettings::getBlockSize( numRows );
+    const bool useTexture   = CUDASettings::useTexture();
+    const bool useSharedMem = CUDASettings::useSharedMem();
+    const int  blockSize    = CUDASettings::getBlockSize( numRows );
+
     dim3 dimBlock( blockSize, 1, 1 );
     dim3 dimGrid = makeGrid( numRows, dimBlock.x );
-
-    bool useTexture = CUDASettings::useTexture();
-
-    if ( syncToken )
-    {
-        // asycnronous operation not supported with textures ( free must be done dynamically )
-
-        useTexture = false;
-    }
-
-    const bool useSharedMem = CUDASettings::useSharedMem();
 
     LAMA_LOG_DEBUG( logger, "useTexture = " << useTexture << ", useSharedMem = " << useSharedMem )
 
@@ -998,11 +990,28 @@ void CUDAJDSUtils::jacobi(
 
     if ( useTexture )
     {
-        vectorJDSUnbindTexture( oldSolution );
-
-        if ( !useSharedMem )
+        if ( !syncToken )
         {
-            vectorJDSUnbindTexture( jdsDLG );
+            vectorJDSUnbindTexture( oldSolution );
+
+            if ( !useSharedMem )
+            {
+                vectorJDSUnbindTexture( jdsDLG );
+            }
+        }
+        else
+        {
+            // synchronize by syncToken, delay unbind texture 
+
+            void ( *unbindV ) ( const ValueType* ) = &vectorJDSUnbindTexture;
+            void ( *unbindI ) ( const IndexType* ) = &vectorJDSUnbindTexture;
+
+            syncToken->pushRoutine( boost::bind( unbindV, oldSolution ) );
+
+            if ( !useSharedMem )
+            {
+                syncToken->pushRoutine( boost::bind( unbindI, jdsDLG ) );
+            }
         }
     }
 }

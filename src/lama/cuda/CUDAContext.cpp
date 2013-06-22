@@ -39,6 +39,7 @@
 #include <lama/cuda/CUDAError.hpp>
 
 #include <lama/task/TaskSyncToken.hpp>
+#include <lama/NoSyncToken.hpp>
 #include <lama/task/Thread.hpp>
 
 #include <lama/ContextAccess.hpp>
@@ -56,6 +57,12 @@
 #include <cusparse.h>
 
 #include <memory>
+
+// set this define if memory transfers between Host and GPU should be done as a task
+// if the host memory is not pinned ( otherwise it is done in a CUDA stream )
+// Be careful: the memory transfer waits for unfinished GPU computations 
+
+#undef MEMCOPY_TASK
 
 namespace lama
 {
@@ -366,6 +373,8 @@ void CUDAContext::memcpy( void* dst, const void* src, const size_t size ) const
 
 SyncToken* CUDAContext::memcpyAsync( void* dst, const void* src, const size_t size ) const
 {
+    LAMA_REGION( "CUDA.memcpyDtoDAsync" )
+
     LAMA_CONTEXT_ACCESS( shared_from_this() )
 
     // use auto pointer so memory will be freed in case of exceptions
@@ -422,7 +431,13 @@ SyncToken* CUDAContext::memcpyAsyncFromHost( void* dst, const void* src, const s
     LAMA_LOG_INFO( logger, "async copy " << size << " bytes from " << src << " (host) to " << dst << " (device) " )
 
     // as current thread has disabled the context, another thread might use it
+
+#ifdef MEMCPY_TASK
     return new TaskSyncToken( boost::bind( &CUDAContext::memcpyFromHost, this, dst, src, size ) );
+#else
+    memcpyFromHost( dst, src, size );
+    return new NoSyncToken();
+#endif
 }
 
 /* ----------------------------------------------------------------------------- */
@@ -449,7 +464,13 @@ SyncToken* CUDAContext::memcpyAsyncToHost( void* dst, const void* src, const siz
 
     // as current thread has disabled the context, another thread might use it
 
+#ifdef MEMCPY_TASK
     return new TaskSyncToken( boost::bind( &CUDAContext::memcpyToHost, this, dst, src, size ) );
+#else
+    memcpyToHost( dst, src, size );
+    return new NoSyncToken();
+#endif
+
 }
 
 /* ----------------------------------------------------------------------------- */
@@ -470,8 +491,7 @@ void CUDAContext::memcpyFromCUDAHost( void* dst, const void* src, const size_t s
 
 SyncToken* CUDAContext::memcpyAsyncFromCUDAHost( void* dst, const void* src, const size_t size ) const
 {
-    // Alternative solution for comparison:
-    //   return std::auto_ptr<SyncToken>(new TaskSyncToken( boost::bind( &CUDAContext::memcpyFromCUDAHost, this, dst, src, size ) ) );
+    LAMA_REGION( "CUDA.memcpyHtoDAsync" )
 
     LAMA_CONTEXT_ACCESS( shared_from_this() )
 
@@ -501,6 +521,8 @@ void CUDAContext::memcpyToCUDAHost( void* dst, const void* src, const size_t siz
 
 SyncToken* CUDAContext::memcpyAsyncToCUDAHost( void* dst, const void* src, const size_t size ) const
 {
+    LAMA_REGION( "CUDA.memcpyDtoHAsync" )
+
     LAMA_CONTEXT_ACCESS( shared_from_this() )
 
     LAMA_LOG_INFO( logger, "copy async " << size << " bytes from " << src << " (device) to " << dst << " (host) " )

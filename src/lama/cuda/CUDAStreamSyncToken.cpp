@@ -88,9 +88,11 @@ void CUDAStreamSyncToken::wait()
             LAMA_CUDA_DRV_CALL( cuStreamSynchronize( mStream ), "cuStreamSynchronize( " << mStream <<" ) failed." );
             LAMA_LOG_DEBUG( logger, "synchronized with stream " << mStream );
         }
-    }
 
-    setSynchronized();
+        // // finally called functions might also need the context, e.g. unbindTexture
+
+        setSynchronized();
+    }
 }
 
 bool CUDAStreamSyncToken::probe() const
