@@ -337,8 +337,7 @@ public:
 
     virtual void writeAt( std::ostream& stream ) const;
 
-    virtual void assign(
-        const Expression<Expression<Scalar,Vector,Times>,Expression<Scalar,Vector,Times>,Plus>& expression );
+    virtual void assign( const Expression_SV_SV& expression );
 
     /** Assign this vector with a scalar values, does not change size, distribution. */
 

@@ -887,7 +887,7 @@ public:
      *  solution -= omega * ( B(halo) * oldSolution) * dinv
      *
      *  @param[in,out] localSolution is the solution vector that is updated
-     *  @param[in]     diagonal
+     *  @param[in]     localDiagonal pointer to the diagonal of local storage
      *  @param[in]     haloOldSolution is the old solution vector of halo part
      *  @param[in]     omega is the scaling factor.
      *

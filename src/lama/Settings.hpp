@@ -65,7 +65,7 @@ public:
      *  @param[in]   envVarName is name of the environment variable
      *  @return      true if environment variable has been used to set flag
      */
-    static bool getEnvironment( int& flag, const char* envVarName );
+    static bool getEnvironment( int& val, const char* envVarName );
 
     /** Set a string by value of its environment variable
      *
@@ -73,7 +73,7 @@ public:
      *  @param[in]   envVarName is name of the environment variable
      *  @return      true if environment variable has been used to set flag
      */
-    static bool getEnvironment( std::string& flag, const char* envVarName );
+    static bool getEnvironment( std::string& val, const char* envVarName );
 
     /** Set a string by value of its environment variable
      *
@@ -82,7 +82,7 @@ public:
      *  @param[in]   comm is communicator used to bcast setting of environment variable
      *  @return      true if environment variable has been used to set flag
      */
-    static bool getEnvironment( std::string& flag, const char* envVarName, const Communicator& comm );
+    static bool getEnvironment( std::string& val, const char* envVarName, const Communicator& comm );
 
 private:
 
@@ -101,12 +101,12 @@ private:
 
     /** convert the string value to an int value
      *
-     *  @param[out]  int is variable that will be set
+     *  @param[out]  number is variable that will be set
      *  @param[in]   value is string to be converted
      *  @return      true if string could be converted, false if no legal value has been found
      */
 
-    static bool convertValue( int& flag, const char* value );
+    static bool convertValue( int& number, const char* value );
 
     static bool init();
 };
