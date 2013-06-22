@@ -552,19 +552,26 @@ void OpenMPCSRUtils::sparseGEMV(
         LAMA_THROWEXCEPTION( "asynchronous execution should be done by LAMATask before" )
     }
 
-    #pragma omp parallel for schedule(LAMA_OMP_SCHEDULE)
-
-    for ( IndexType ii = 0; ii < numNonZeroRows; ++ii )
+    #pragma omp parallel
     {
-        ValueType temp = 0.0;
-        IndexType i = rowIndexes[ii];
+        // Note: region will be entered by each thread
 
-        for ( IndexType jj = csrIA[i]; jj < csrIA[i + 1]; ++jj )
+        LAMA_REGION( "OpenMP.CSR.sparseGEMV" )
+
+        #pragma omp for schedule(LAMA_OMP_SCHEDULE)
+
+        for ( IndexType ii = 0; ii < numNonZeroRows; ++ii )
         {
-            IndexType j = csrJA[jj];
-            temp += csrValues[jj] * x[j];
+            ValueType temp = 0.0;
+            IndexType i = rowIndexes[ii];
+
+            for ( IndexType jj = csrIA[i]; jj < csrIA[i + 1]; ++jj )
+            {
+                IndexType j = csrJA[jj];
+                temp += csrValues[jj] * x[j];
+            }
+            result[i] += alpha * temp;
         }
-        result[i] += alpha * temp;
     }
 
     if ( LAMA_LOG_TRACE_ON( logger ) )

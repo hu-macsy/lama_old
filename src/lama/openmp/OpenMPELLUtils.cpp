@@ -835,7 +835,7 @@ void OpenMPELLUtils::normalGEMV(
 { 
     #pragma omp parallel
     {
-        LAMA_REGION( "OpenMP.ELL.GEMV" )
+        LAMA_REGION( "OpenMP.ELL.normalGEMV" )
 
         #pragma omp for schedule(LAMA_OMP_SCHEDULE)
         for ( IndexType i = 0; i < numRows; ++i )
@@ -944,7 +944,7 @@ void OpenMPELLUtils::sparseGEMV(
 
     #pragma omp parallel
     {
-        LAMA_REGION( "OpenMP.ELL.spGEMV" )
+        LAMA_REGION( "OpenMP.ELL.sparseGEMV" )
 
         #pragma omp for schedule(LAMA_OMP_SCHEDULE)
         for ( IndexType ii = 0; ii < numNonZeroRows; ++ii )
@@ -956,17 +956,12 @@ void OpenMPELLUtils::sparseGEMV(
 
             for ( IndexType jj = 0; jj < ellSizes[i]; ++jj )
             {
-                IndexType j = ellJA[i + jj * numRows];
-                LAMA_LOG_TRACE( logger,
-                                "temp += dataAccess[i + jj * numRows] * xAccess[j];, jj = " << jj << ", j = " << j )
-                LAMA_LOG_TRACE( logger, ", dataAccess[i + jj * numRows] = " << ellValues[ i + jj * numRows ] )
-                LAMA_LOG_TRACE( logger, ", xAccess[j] = " << x[ j ] )
-                temp += ellValues[i + jj * numRows] * x[j];
+                IndexType pos = i + jj * numRows;
+                IndexType j = ellJA[pos];
+                temp += ellValues[pos] * x[j];
             }
 
-            LAMA_LOG_TRACE( logger, "row = " << i << ", temp = " << temp )
-
-            if ( alpha == 1.0 )
+            if ( 1 == alpha )
             {
                 result[i] += temp;
             }
