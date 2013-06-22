@@ -453,6 +453,8 @@ void MatrixStorage<ValueType>::assign( const _MatrixStorage& other )
         return;
     }
 
+    _MatrixStorage::_assign( other );
+
     LAMA_LOG_INFO( logger, *this << ": assign ( " << other << " )" )
 
     if ( other.getFormat() == CSR )

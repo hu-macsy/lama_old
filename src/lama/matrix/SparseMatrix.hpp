@@ -409,6 +409,16 @@ public:
         const ValueType beta,
         const DenseVector<ValueType>& y ) const;
 
+    /**
+     * @brief Same as matrixTimesVectorSync but only synchronous execution
+     */
+    void matrixTimesVectorSync(
+        DenseVector<ValueType>& result,
+        const ValueType alpha,
+        const DenseVector<ValueType>& x,
+        const ValueType beta,
+        const DenseVector<ValueType>& y ) const;
+
     /* Implemenation of pure method of class Matrix */
 
     virtual void matrixPlusMatrix( const Scalar alpha, const Matrix& A, const Scalar beta, const Matrix& B );

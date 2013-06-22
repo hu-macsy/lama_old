@@ -147,13 +147,15 @@ ELLStorage<ValueType>& ELLStorage<ValueType>::operator=( const ELLStorage<ValueT
 {
     // nothing to do for self assignments
 
-    if ( &other != this )
+    if ( &other == this )
     {
-        // For optimization: fillValues, resetDiagonalProperty, check is not really needed
-
-        setELLData( other.mNumRows, other.mNumColumns, other.mNumValuesPerRow,
-                    other.mIA, other.mJA, other.mValues );
+        return *this;
     }
+
+    // For optimization: fillValues, resetDiagonalProperty, check is not really needed
+
+    setELLData( other.mNumRows, other.mNumColumns, other.mNumValuesPerRow,
+                other.mIA, other.mJA, other.mValues );
 
     return *this;
 }

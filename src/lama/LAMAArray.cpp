@@ -417,7 +417,7 @@ void LAMAArray<ValueType>::prefetch( ContextPtr context ) const
     const ContextData& validEntry = *mContextData[validIndex];
     reserve( contextIndex, mSize, false ); //  take care for sufficient memory
     mSyncToken.reset( fetchAsync( contextEntry, validEntry ) );
-    mSyncToken->wait();  // To be deleted
+    // mSyncToken->wait();  // To be deleted
     contextEntry.valid = true;
 }
 
