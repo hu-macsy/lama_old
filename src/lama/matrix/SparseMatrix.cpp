@@ -53,6 +53,9 @@
 // tracing
 #include <lama/tracing.hpp>
 
+// tracing
+#include <boost/bind.hpp>
+
 namespace lama
 {
 
@@ -1175,66 +1178,54 @@ void SparseMatrix<ValueType>::matrixTimesMatrixImpl(
 /* -------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void SparseMatrix<ValueType>::matrixTimesVectorSync(
-    DenseVector<ValueType>& denseResult,
-    const ValueType alpha,
-    const DenseVector<ValueType>& denseX,
-    const ValueType beta,
-    const DenseVector<ValueType>& denseY ) const
+void SparseMatrix<ValueType>::haloOperationSync(
+    LAMAArray<ValueType>& localResult,
+    const LAMAArray<ValueType>& localX,
+    LAMAArray<ValueType>& haloX,
+    boost::function <void( const MatrixStorage<ValueType>* localMatrix, 
+                           LAMAArray<ValueType>& localResult,
+                           const LAMAArray<ValueType>& localX )> localF,
+    boost::function <void( const MatrixStorage<ValueType>* haloMatrix, 
+                           LAMAArray<ValueType>& localResult,
+                           const LAMAArray<ValueType>& haloX )> haloF ) const
 {
-    LAMA_REGION( "Mat.Sp.timesVectorSync" )
-
-    // result = alpha * localMatrix * x + beta * y + alpha * haloMatrix * x
-
-    ContextPtr localContext = mLocalData->getContextPtr();  // here we do it
-
-    const LAMAArray<ValueType>& localX = denseX.getLocalValues();
-    LAMAArray<ValueType>& haloX        = denseX.getHaloValues();
-    const LAMAArray<ValueType>& localY = denseY.getLocalValues();
-    LAMAArray<ValueType>& localResult  = denseResult.getLocalValues();
+    const Communicator& comm = getColDistribution().getCommunicator();
 
     if ( !mHalo.isEmpty() )
     {
-        LAMA_REGION( "Mat.Sp.timesVectorExchangeHalo" )
-
-        // prefetch localMatrix and y to local location while exchanging the halo of x
-        //see comment below why prefetch for halo location is not started here
-
-        LAMA_LOG_DEBUG( logger, "During halo update, prefetch localMatrix, y to: " << *localContext )
-
-        {
-            LAMA_REGION( "Mat.Sp.timesVectorSyncPrefetchLocal" )
-
-            mLocalData->prefetch();
-
-            if ( 0 != beta )
-            {
-                denseY.prefetch( localContext );
-            }
-        }
-
-        // gather halo data for other processors
-        // We might receive vaules but do not send them, so the halo might be none empty but provides indexes are.
+        // gather local values of X needed by other processors
 
         if ( mHalo.getProvidesIndexes().size() > 0 )
         {
+            // We might receive vaules but do not send them, so the halo might be none empty but provides indexes are.
+
+            LAMA_REGION( "Mat.Sp.syncGatherHalo" )
+
+            LAMA_LOG_INFO( logger, comm << ": gather " << mHalo.getProvidesIndexes().size() 
+                                   << " values of X to provide on "
+                                   <<  *localX.getValidContext( Context::Host ) );
+
             LAMAArrayUtils::gather( mTempSendValues, localX, mHalo.getProvidesIndexes() );
+
+            // Note: send values will be fetched to the host by halo exchange
         }
 
         {
-            const Communicator& comm = getColDistribution().getCommunicator();
-            comm.exchangeByPlan( denseX.getHaloValues(), mHalo.getRequiredPlan(), mTempSendValues, mHalo.getProvidesPlan() );
+            LAMA_REGION( "Mat.Sp.syncExchangeHalo" )
+
+            LAMA_LOG_INFO( logger, comm << ": halo exchange with : " << mHalo );
+
+            comm.exchangeByPlan( haloX, mHalo.getRequiredPlan(), mTempSendValues, mHalo.getProvidesPlan() );
         }
 
-        LAMA_LOG_INFO( logger, "Update of halo values done." )
-
-        if ( mHalo.getRequiredIndexes().size() > 0 )
+        if ( haloX.size() > 0 )
         {
-            LAMA_REGION( "Mat.Sp.timesVectorSyncPrefetchHalo" )
+            LAMA_REGION( "Mat.Sp.syncPrefetchHalo" )
 
-            // During the local computation we prefetch already halo data 
+            LAMA_LOG_INFO( logger, comm << ": prefetch " << haloX.size() << " halo values of X to : " 
+                                   << mHaloData->getContext() );
 
-            mHaloData->prefetch();
+            // During the local computation we prefetch already haloX where it is need
 
             haloX.prefetch( mHaloData->getContextPtr() );
         }
@@ -1242,26 +1233,131 @@ void SparseMatrix<ValueType>::matrixTimesVectorSync(
     else
     {
         LAMA_LOG_INFO( logger, "No halo update needed." )
+
+        haloX.clear();   // sets size to 0, but does not free allocated memory
     }
 
     {
-        LAMA_REGION( "Mat.Sp.timesVectorSync::Local" )
-        LAMA_LOG_INFO( logger, "Starting synchronous computation of local values on " << *localContext )
-        mLocalData->matrixTimesVector( localResult, alpha, localX, beta, localY );
+        LAMA_REGION( "Mat.Sp.syncLocal" )
+
+        LAMA_LOG_INFO( logger, comm << ": synchronous computation localResult[ " << localResult.size() 
+                               << "] = localF( localMatrix, localX[ " << localX.size() 
+                               << "] ) on " << mLocalData->getContext() )
+
+        localF( mLocalData.get(), localResult, localX );
     }
 
-    if ( !mHalo.isEmpty() && mHalo.getRequiredIndexes().size() > 0 )
+    if ( haloX.size() > 0 )
     {
-        LAMA_REGION( "Mat.Sp.timesVectorSync::Halo" )
+        LAMA_REGION( "Mat.Sp.syncHalo" )
 
-        LAMA_LOG_DEBUG( logger, "Halo compute, size = " << mHalo.getHaloSize() )
+        LAMA_LOG_INFO( logger, comm << ": compute with " << haloX.size() 
+                               << " halo values on " << mHaloData->getContext() );
 
-        // start now transfer of the halo values of X to halo context where it is needed
+        // now we can update the result with haloMatrix and halo values of X
 
-        mHaloData->matrixTimesVector( localResult, alpha, haloX, 1.0, localResult );
+        haloF( mHaloData.get(), localResult, haloX );
     }
 
-    LAMA_LOG_DEBUG( logger, "matrixTimesVectorSync done" )
+    LAMA_LOG_DEBUG( logger, "haloOpSync done" )
+}
+
+/* -------------------------------------------------------------------------- */
+
+template<typename ValueType>
+void SparseMatrix<ValueType>::haloOperationAsync(
+    LAMAArray<ValueType>& localResult,
+    const LAMAArray<ValueType>& localX,
+    LAMAArray<ValueType>& haloX,
+    boost::function <SyncToken*( const MatrixStorage<ValueType>* localMatrix, 
+                                 LAMAArray<ValueType>& localResult,
+                                 const LAMAArray<ValueType>& localX )> localAsyncF,
+    boost::function <void( const MatrixStorage<ValueType>* haloMatrix, 
+                           LAMAArray<ValueType>& localResult,
+                           const LAMAArray<ValueType>& haloX )> haloF ) const
+{
+    const Communicator& comm = getColDistribution().getCommunicator();
+
+    // We might receive vaules but do not send them, so the halo might be none empty but provides indexes are.
+
+    if ( mHalo.getProvidesIndexes().size() > 0 )
+    {
+        LAMA_REGION( "Mat.Sp.asyncGatherHalo" )
+
+        // gather of halo data cannot be overlapped with local computations on a device
+        // Note: gather will be done where denseX is available
+
+        LAMA_LOG_INFO( logger, comm << ": gather " << mHalo.getProvidesIndexes().size() 
+                               << " values of X to provide on "
+                               <<  *localX.getValidContext( Context::Host ) );
+
+        LAMAArrayUtils::gather( mTempSendValues, localX, mHalo.getProvidesIndexes() );
+
+        // prefetch needed otherwise sending will block until local computation has finished
+
+        mTempSendValues.prefetch( ContextFactory::getContext( Context::Host ) );
+    }
+ 
+    std::auto_ptr<SyncToken> localComputation;
+
+    {
+        LAMA_REGION( "Mat.Sp.asyncLocal" )
+
+        LAMA_LOG_INFO( logger, comm << ": start async computation localResult[ " << localResult.size() 
+                               << "] = localF( localMatrix, localX[ " << localX.size() 
+                               << "] ) on " << mLocalData->getContext() )
+
+        localComputation.reset( localAsyncF( mLocalData.get(), localResult, localX ) );
+    }
+
+    // during local computation we exchange halo and prefetch all needed halo data
+
+    {
+        LAMA_REGION( "Mat.Sp.asyncExchangeHalo" )
+
+        LAMA_LOG_INFO( logger, comm << ": halo exchange with : " << mHalo );
+
+        comm.exchangeByPlan( haloX, mHalo.getRequiredPlan(), mTempSendValues, mHalo.getProvidesPlan() );
+
+        LAMA_LOG_DEBUG( logger, "Exchange halo done." )
+    }
+
+    // start now transfer of the halo values of X to halo context where it is needed
+
+    if ( haloX.size() > 0 )
+
+    {
+        LAMA_REGION( "Mat.Sp.asyncPrefetchHalo")
+
+        ContextPtr haloLocation = mHaloData->getContextPtr();
+
+        LAMA_LOG_INFO( logger, comm << ": prefetch " << haloX.size() << " halo values of X to : " 
+                              << *haloLocation );
+
+        haloX.prefetch( haloLocation );  // implicit wait at next access of haloX
+    }
+
+    {
+        LAMA_REGION( "Mat.Sp.asyncWaitLocal")
+
+        // we must wait for local computation as halo computation updates localResult
+
+        localComputation->wait();
+
+        LAMA_LOG_INFO( logger, comm << ": local computation ready." )
+    }
+    {
+        // now we can update the result with haloMatrix and halo values of X
+
+        LAMA_REGION("Mat.Sp.asyncHalo")
+
+        LAMA_LOG_INFO( logger, comm << ": compute with " << haloX.size() 
+                               << " halo values on " << mHaloData->getContext() );
+
+        haloF( mHaloData.get(), localResult, haloX );
+    }
+
+    LAMA_LOG_DEBUG( logger, "matrixTimesVectorAsync done" )
 }
 
 /* -------------------------------------------------------------------------- */
@@ -1274,84 +1370,62 @@ void SparseMatrix<ValueType>::matrixTimesVectorImpl(
     const ValueType betaValue,
     const DenseVector<ValueType>& denseY ) const
 {
-    if ( SYNCHRONOUS == getCommunicationKind() || mHalo.isEmpty() )
-    {
-        matrixTimesVectorSync( denseResult, alphaValue, denseX, betaValue, denseY );
-        return;
-    }
-
-    LAMA_REGION( "Mat.Sp.timesVectorAsync" )
-
-    // we run the local computation asynchronously with Halo update of X
-
-    ContextPtr localContext = mLocalData->getContextPtr();
+    LAMAArray<ValueType>& localResult = denseResult.getLocalValues();
+    const LAMAArray<ValueType>& localY = denseY.getLocalValues();
 
     const LAMAArray<ValueType>& localX = denseX.getLocalValues();
     LAMAArray<ValueType>& haloX        = denseX.getHaloValues();
-    const LAMAArray<ValueType>& localY = denseY.getLocalValues();
-    LAMAArray<ValueType>& localResult = denseResult.getLocalValues();
 
-    // We might receive vaules but do not send them, so the halo might be none empty but provides indexes are.
+    // if halo is empty, asynchronous execution is not helpful
 
-    if ( mHalo.getProvidesIndexes().size() > 0 )
+    void ( lama::MatrixStorage<ValueType>::*timesVector ) (
+        LAMAArray<ValueType>& result,
+        const ValueType alpha,
+        const LAMAArray<ValueType>& x,
+        const ValueType beta,
+        const LAMAArray<ValueType>& y ) const = &MatrixStorage<ValueType>::timesVector;
+
+    SyncToken* ( lama::MatrixStorage<ValueType>::*timesVectorAsync ) (
+        LAMAArray<ValueType>& result,
+        const ValueType alpha,
+        const LAMAArray<ValueType>& x,
+        const ValueType beta,
+        const LAMAArray<ValueType>& y ) const = &MatrixStorage<ValueType>::timesVectorAsync;
+
+    ValueType one = 1;
+
+    // routine for halo matrix is same for sync and async version
+
+    boost::function <void( const MatrixStorage<ValueType>* haloMatrix, 
+                           LAMAArray<ValueType>& localResult,
+                           const LAMAArray<ValueType>& haloX )> haloF =
+
+        // boost::bind( timesVector, _1, _2, alphaValue, _3, one, boost::cref( localResult ) );
+
+        boost::bind( timesVector, _1, _2, alphaValue, _3, one, _2 );
+
+    // synchronous version is also called if no halo is available, no potential for overlap
+
+    if ( SYNCHRONOUS == getCommunicationKind() || mHalo.isEmpty() )
     {
-        // gather of halo data cannot be overlapped with local computations on a device
-        // Note: gather will be done where denseX is available
+        boost::function <void( const MatrixStorage<ValueType>* localMatrix, 
+				               LAMAArray<ValueType>& localResult,
+                               const LAMAArray<ValueType>& localX )> localF =
 
-        LAMAArrayUtils::gather( mTempSendValues, localX, mHalo.getProvidesIndexes() );
+           boost::bind( timesVector, _1, _2, alphaValue, _3, betaValue, boost::cref( localY ) );
 
-        // prefetch needed otherwise sending will block until local computation has finished
-
-        mTempSendValues.prefetch( ContextFactory::getContext( Context::Host ) );
+        haloOperationSync( localResult, localX, haloX, localF, haloF );
     }
- 
-    std::auto_ptr<SyncToken> localComputation;
-
+    else
     {
-        LAMA_REGION( "Mat.Sp.timesVector::asyncLocal" )
-        LAMA_LOG_INFO( logger, "Starting asynchronous computation of local values on " << *localContext )
-        localComputation.reset( mLocalData->matrixTimesVectorAsync( localResult, alphaValue, localX, betaValue, localY ) );
+        boost::function <SyncToken*( const MatrixStorage<ValueType>* localMatrix, 
+				                     LAMAArray<ValueType>& localResult,
+                                     const LAMAArray<ValueType>& localX )> localAsyncF =
+
+           boost::bind( timesVectorAsync, _1, _2, alphaValue, _3, betaValue, boost::cref( localY ) );
+
+        haloOperationAsync( localResult, localX, haloX, localAsyncF, haloF );
     }
-
-    // during local computation we exchange halo and prefetch all needed halo data
-
-    {
-        LAMA_REGION( "Mat.Sp.timesVector::exchangeHalo" )
-
-        const Communicator& comm = getColDistribution().getCommunicator();
-
-        comm.exchangeByPlan( haloX, mHalo.getRequiredPlan(), mTempSendValues, mHalo.getProvidesPlan() );
-
-        LAMA_LOG_DEBUG( logger, "Exchange halo done." )
-    }
-
-    // start now transfer of the halo values of X to halo context where it is needed
-
-    {
-        LAMA_REGION( "Mat.Sp.timesVectorAsync::prefetchHalo")
-
-        ContextPtr haloLocation = mHaloData->getContextPtr();
-
-        haloX.prefetch( haloLocation );  // implicit wait at next access of haloX
-    }
-
-    {
-        LAMA_REGION( "Mat.Sp.timesVector::waitLocal")
-
-        // we must wait for local computation as halo computation updates localResult
-
-        localComputation->wait();
-
-        LAMA_LOG_INFO( logger, "Local computation done." )
-    }
-    {
-        // localResult += alpha * A_halo * halo_x
-
-        LAMA_REGION("Mat.Sp.timesVector::Halo")
-        mHaloData->matrixTimesVector( localResult, alphaValue, haloX, 1.0, localResult );
-    }
-
-    LAMA_LOG_DEBUG( logger, "matrixTimesVectorAsync done" )
 }
 
 /* -------------------------------------------------------------------------- */

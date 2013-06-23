@@ -748,6 +748,16 @@ public:
         const ValueType beta,
         const LAMAArrayConstView<ValueType> y ) const;
 
+    virtual void timesVector(
+        LAMAArray<ValueType>& result,
+        const ValueType alpha,
+        const LAMAArray<ValueType>& x,
+        const ValueType beta,
+        const LAMAArray<ValueType>& y ) const
+    {
+        matrixTimesVector( result, alpha, x, beta, y );
+    }
+
     virtual void matrixTimesVectorN(
         LAMAArrayView<ValueType> result,
         const IndexType n,
@@ -771,6 +781,16 @@ public:
         const LAMAArrayConstView<ValueType> x,
         const ValueType beta,
         const LAMAArrayConstView<ValueType> y ) const;
+
+    SyncToken* timesVectorAsync(
+        LAMAArray<ValueType>& result,
+        const ValueType alpha,
+        const LAMAArray<ValueType>& x,
+        const ValueType beta,
+        const LAMAArray<ValueType>& y ) const
+    {
+        return matrixTimesVectorAsync( result, alpha, x, beta, y );
+    }
 
     /** Assign this = alpha * a
      *
@@ -855,6 +875,15 @@ public:
         const LAMAArrayConstView<ValueType> rhs,
         const ValueType omega ) const;
 
+    void jacobiStep(
+        LAMAArray<ValueType>& solution,
+        const LAMAArray<ValueType>& oldSolution,
+        const LAMAArray<ValueType>& rhs,
+        const ValueType omega ) const
+    {
+        jacobiIterate( solution, oldSolution, rhs, omega);
+    }
+
     /** Asynchrounous version of jacobiIterate */
 
     virtual SyncToken* jacobiIterateAsync(
@@ -863,6 +892,16 @@ public:
         const LAMAArrayConstView<ValueType> rhs,
         const ValueType omega ) const;
 
+    SyncToken* jacobiStepAsync(
+        LAMAArray<ValueType>& solution,
+        const LAMAArray<ValueType>& oldSolution,
+        const LAMAArray<ValueType>& rhs,
+        const ValueType omega ) const
+    {
+        return jacobiIterateAsync( solution, oldSolution, rhs, omega);
+    }
+
+    /** Asynchrounous version of jacobiIterate */
     /** Jacobi iteration step on a halo storage.
      *
      *  solution -= omega * ( B(halo) * oldSolution) * dinv
@@ -899,6 +938,15 @@ public:
         const LAMAArray<ValueType>* localDiagonal,
         const LAMAArrayConstView<ValueType> haloOldSolution,
         const ValueType omega ) const;
+
+    void jacobiStepHalo(
+        LAMAArray<ValueType>& localSolution,
+        const LAMAArray<ValueType>* localDiagonal,
+        const LAMAArray<ValueType>& haloOldSolution,
+        const ValueType omega ) const
+    {
+        jacobiIterateHalo( localSolution, localDiagonal, haloOldSolution, omega);
+    }
 
     // Note: Asynchronous version of jacobiIterateHalo not supported 
 

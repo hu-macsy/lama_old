@@ -43,6 +43,8 @@
 // tracing
 #include <lama/tracing.hpp>
 
+#include <boost/bind.hpp>
+
 namespace lama
 {
 
@@ -256,151 +258,72 @@ void SpecializedJacobi::iterateTyped( const SparseMatrix<ValueType>& coefficient
         const DenseVector<ValueType>& denseRhs = dynamic_cast<const DenseVector<ValueType>&>( *getRuntime().mRhs );
 
         ContextPtr localContext = coefficients.getLocalStorage().getContextPtr();
+
         if ( mContext )
         {
             localContext = mContext;
         }
 
-        //Prefetch matrix to local location while exchanging the halo
-        //see comment below why prefetch for halo location is not started here
-        LAMA_LOG_DEBUG( logger, "Starting prefetch of input data for local computation to: " << localContext )
+        const ValueType omega = mOmega.getValue<ValueType>();
 
-        coefficients.getLocalStorage().prefetch();
+        // from rhs and solution we need only the local parts as LAMA arrays
 
-        if ( Matrix::SYNCHRONOUS == coefficients.getCommunicationKind() && !coefficients.getHalo().isEmpty() )
-        {
-            LAMA_REGION( "Solver.SpJacobi.iterate:syncUpdateHalo" )
-            //1. gather
-            // We might receive vaules but do not send them, so the halo might be none empty but provides indexes are.
-            if ( coefficients.getHalo().getProvidesIndexes().size() > 0 )
-            {
-                LAMAArrayUtils::gather( coefficients.mTempSendValues, denseOldSolution.getLocalValues(),
-                                        coefficients.getHalo().getProvidesIndexes() );
-            }
-            //2. exchange by plan
-            coefficients.getColDistribution().getCommunicator().exchangeByPlan(
-                denseOldSolution.getHaloValues(), coefficients.getHalo().getRequiredPlan(),
-                coefficients.mTempSendValues, coefficients.getHalo().getProvidesPlan() );
-
-            LAMA_LOG_INFO( logger, "Synchronous update of halo values done." )
-        }
-        else
-        {
-            LAMA_LOG_INFO( logger, "No update for halo values necessary." )
-        }
-
+        const LAMAArray<ValueType>& localRhs  = denseRhs.getLocalValues();
+        LAMAArray<ValueType>& localSolution   = denseSolution.getLocalValues();
         const LAMAArray<ValueType>& localOldSolution = denseOldSolution.getLocalValues();
-        LAMAArray<ValueType>& localSolution = denseSolution.getLocalValues();
-        const LAMAArray<ValueType>& localRhs = denseRhs.getLocalValues();
+        LAMAArray<ValueType>&       haloOldSolution  = denseOldSolution.getHaloValues();
 
-        LAMA_LOG_INFO( logger, "Starting local computation." )
+        const LAMAArray<ValueType>* diagonal = dynamic_cast<const LAMAArray<ValueType>*>( getRuntime().mDiagonal.get() );
+ 
+        void ( lama::MatrixStorage<ValueType>::*jacobiIterateHalo ) ( 
+            LAMAArray<ValueType>& localSolution,
+            const LAMAArray<ValueType>* localDiagonal,
+            const LAMAArray<ValueType>& oldHaloSolution,
+            const ValueType omega ) const = &MatrixStorage<ValueType>::jacobiStepHalo;
 
-        //get best possible routine for computation of local matrix
+        // will call jacobiIterateHalo( haloMatrix, localSolution, diagonal, haloOldSolution, omega )
 
-//        const LAMAInterface* const lamaLocalInterface = LAMAInterfaceRegistry::getRegistry().getInterface( coefficients.getLocalStorage().getFormat(), localContext->getType() );
+        boost::function <void( const MatrixStorage<ValueType>* haloMatrix,
+                               LAMAArray<ValueType>& localResult,
+                               const LAMAArray<ValueType>& haloX )> haloF =
 
-        std::auto_ptr<SyncToken> localComputation;
+           boost::bind( jacobiIterateHalo, _1, _2, diagonal, _3, omega );
 
-        if ( Matrix::ASYNCHRONOUS == coefficients.getCommunicationKind() )
+        if ( Matrix::SYNCHRONOUS == coefficients.getCommunicationKind() || coefficients.getHalo().isEmpty() )
         {
-            //1. gather
-            // We might receive vaules but do not send them, so the halo might be none empty but provides indexes are.
-            if ( coefficients.getHalo().getProvidesIndexes().size() > 0 )
-            {
-                LAMAArrayUtils::gather( coefficients.mTempSendValues, denseOldSolution.getLocalValues(),
-                                        coefficients.getHalo().getProvidesIndexes() );
-                //prefetch neede because if the copy is started after the computation the copy blocks
-                coefficients.mTempSendValues.prefetch( ContextFactory::getContext( Context::Host ) );
-            }
-            LAMA_REGION( "Solver.SpJacobi.iterate:computeLocalAsync" )
-            LAMA_LOG_INFO( logger, "Starting asynchronous computation of local values on " << *localContext )
+            // For the local operation a jacobi step is done
 
-            const ValueType omega = mOmega.getValue<ValueType>();
+            void ( lama::MatrixStorage<ValueType>::*jacobiStep ) ( 
+                LAMAArray<ValueType>& solution,
+                const LAMAArray<ValueType>& oldSolution,
+                const LAMAArray<ValueType>& rhs,
+                const ValueType omega ) const = &MatrixStorage<ValueType>::jacobiStep;
 
-            const MatrixStorage<ValueType>& localStorage = coefficients.getLocalStorage();
+            // Bind the additional arguments like localRhs and omega
 
-            localComputation.reset( localStorage.jacobiIterateAsync( localSolution, localOldSolution,
-                                                                     localRhs, omega ) );
+            boost::function <void( const MatrixStorage<ValueType>* haloMatrix,
+                                   LAMAArray<ValueType>& localResult,
+                                   const LAMAArray<ValueType>& localX )> localF =
+
+                boost::bind( jacobiStep, _1, _2, _3, boost::cref( localRhs ), omega );
+
+            coefficients.haloOperationSync( localSolution, localOldSolution, haloOldSolution, localF, haloF );
         }
         else
         {
-            LAMA_REGION( "Solver.SpJacobi.iterate:computeLocalSync" )
-            LAMA_LOG_INFO( logger, "Starting synchronous computation of local values on " << *localContext )
+            SyncToken* ( lama::MatrixStorage<ValueType>::*jacobiStepAsync ) ( 
+                LAMAArray<ValueType>& solution,
+                const LAMAArray<ValueType>& oldSolution,
+                const LAMAArray<ValueType>& rhs,
+                const ValueType omega ) const = &MatrixStorage<ValueType>::jacobiStepAsync;
 
-            const ValueType omega = mOmega.getValue<ValueType>();
+            boost::function <SyncToken*( const MatrixStorage<ValueType>* haloMatrix,
+                                         LAMAArray<ValueType>& localResult,
+                                         const LAMAArray<ValueType>& localX )> localAsyncF =
 
-            coefficients.getLocalStorage().jacobiIterate( localSolution, localOldSolution, localRhs, omega );
+                boost::bind( jacobiStepAsync, _1, _2, _3, boost::cref( localRhs ), omega );
 
-            localComputation.reset( new NoSyncToken() );
-        }
-
-        //prefetch matrix to halo location while waiting for the halo exchange
-        //this prefetch is not started together with the local location prefetch because only on running
-        //prefetch is possible at any time. So
-        // pefetch( localContext, false );
-        // prefetch( mHaloLocation, false );
-        //would lead to an immeadiate synchronize for the local location prefetch
-
-        coefficients.getHaloStorage().prefetch();
-
-        if ( Matrix::ASYNCHRONOUS == coefficients.getCommunicationKind() && !coefficients.getHalo().isEmpty() )
-        {
-            LAMA_REGION( "Solver.SpJacobi.iterate:updateHalo" )
-            //2. exchange by plan
-            coefficients.getColDistribution().getCommunicator().exchangeByPlan(
-                denseOldSolution.getHaloValues(), coefficients.getHalo().getRequiredPlan(),
-                coefficients.mTempSendValues, coefficients.getHalo().getProvidesPlan() );
-            //denseOldSolution.updateHalo( coefficients.getHalo() );
-            LAMA_LOG_INFO( logger,
-                           "Synchronous update of halo values parallel to asynchronous local computation done." )
-        }
-
-        LAMA_LOG_INFO( logger, "Halo available. Size " << coefficients.getHalo().getHaloSize() )
-
-        if ( coefficients.getHalo().getHaloSize() > 0 )
-        {
-            LAMA_REGION( "Solver.SpJacobi.iterate:computeHalo" )
-
-            LAMA_LOG_INFO( logger, "Halo compute, size = " << coefficients.getHalo().getHaloSize() )
-
-            const LAMAArray<ValueType>& haloOldSolution = denseOldSolution.getHaloValues();
-
-            ContextPtr haloLocation = coefficients.getHaloStorage().getContextPtr();
-            if ( mContext.get() )
-            {
-                haloLocation = mContext;
-            }
-
-            haloOldSolution.prefetch( haloLocation );
-
-            LAMA_LOG_INFO( logger, "Halo compute, haloX = " << haloOldSolution )
-
-            LAMA_LOG_DEBUG( logger,
-                            " Calling LAMAInterface for z += alpha * A * x + beta * y " << " with A = " << coefficients.getHaloStorage() << ", x = " << haloOldSolution << ", z = " << localSolution )
-
-            LAMA_LOG_INFO( logger, "Starting halo computation after the local computation on " << *haloLocation )
-            {
-                LAMA_REGION( "Solver.SpJacobi.iterate:waitLocal" )
-                localComputation->wait();
-            }
-            LAMA_LOG_INFO( logger, "Local computation done." )
-            {
-                LAMA_REGION( "Solver.SpJacobi.iterate:halo" )
-
-                // local storage needed for the diagonal
-
-                const ValueType omega = mOmega.getValue<ValueType>();
-
-                coefficients.getHaloStorage().jacobiIterateHalo( 
-                        localSolution, dynamic_cast<const LAMAArray<ValueType>*>(getRuntime().mDiagonal.get() ),
-                        haloOldSolution, omega );
-            }
-        }
-
-        {
-            LAMA_REGION( "Solver.SpJacobi.iterate:waitLocal" )
-            // Need to synchronize the localComputation if halo is empty and we have async comp
-            localComputation->wait();
+            coefficients.haloOperationAsync( localSolution, localOldSolution, haloOldSolution, localAsyncF, haloF );
         }
     }
     else

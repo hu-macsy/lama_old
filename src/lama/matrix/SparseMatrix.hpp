@@ -44,6 +44,8 @@
 
 #include <lama/DenseVector.hpp>
 
+#include <boost/function.hpp>
+
 namespace lama
 
 {
@@ -410,14 +412,41 @@ public:
         const DenseVector<ValueType>& y ) const;
 
     /**
-     * @brief Same as matrixTimesVectorSync but only synchronous execution
+     * @brief Operation on distributed matrix with halo exchange, sync version
+     *
+     * @param[out]    localResult is the result array
+     * @param[in]     localX is the array with local values
+     * @param[in,out] haloX is a temporary array keeping the non-local halo values of X
+     * @param[in]     localF is the operation called with local matrix and localX
+     * @param[in]     haloF is the operation called with halo matrix and haloX
      */
-    void matrixTimesVectorSync(
-        DenseVector<ValueType>& result,
-        const ValueType alpha,
-        const DenseVector<ValueType>& x,
-        const ValueType beta,
-        const DenseVector<ValueType>& y ) const;
+    void haloOperationSync(
+        LAMAArray<ValueType>& localResult,
+        const LAMAArray<ValueType>& localX,
+        LAMAArray<ValueType>& haloX,
+        boost::function <void( const MatrixStorage<ValueType>* localMatrix, 
+                               LAMAArray<ValueType>& localResult,
+                               const LAMAArray<ValueType>& localX )> localF,
+        boost::function <void( const MatrixStorage<ValueType>* haloMatrix, 
+                               LAMAArray<ValueType>& localResult,
+                               const LAMAArray<ValueType>& haloX )> haloF ) const;
+
+    /**
+     * @brief Operation on distributed matrix with halo exchange, async version
+     *
+     * The asynchronous version starts the local computation asynchronously so it
+     * can overlap with the halo exchange.
+     */
+    void haloOperationAsync(
+        LAMAArray<ValueType>& localResult,
+        const LAMAArray<ValueType>& localX,
+        LAMAArray<ValueType>& haloX,
+        boost::function <SyncToken*( const MatrixStorage<ValueType>* localMatrix, 
+                                     LAMAArray<ValueType>& localResult,
+                                     const LAMAArray<ValueType>& localX )> localAsyncF,
+        boost::function <void( const MatrixStorage<ValueType>* haloMatrix, 
+                               LAMAArray<ValueType>& localResult,
+                               const LAMAArray<ValueType>& haloX )> haloF ) const;
 
     /* Implemenation of pure method of class Matrix */
 

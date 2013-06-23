@@ -101,6 +101,22 @@ protected:
 private:
     template<typename ValueType>
     void iterateTyped( const SparseMatrix<ValueType>& );
+
+    template<typename ValueType>
+    void iterateSync( LAMAArray<ValueType>& solution,
+        const SparseMatrix<ValueType>& coefficients,
+        const LAMAArray<ValueType>& localOldSolution,
+        LAMAArray<ValueType>& haloOldSolution,
+        const LAMAArray<ValueType>& rhs,
+        const ValueType omega );
+
+    template<typename ValueType>
+    void iterateAsync( LAMAArray<ValueType>& solution,
+        const SparseMatrix<ValueType>& coefficients,
+        const LAMAArray<ValueType>& localOldSolution,
+        LAMAArray<ValueType>& haloOldSolution,
+        const LAMAArray<ValueType>& rhs,
+        const ValueType omega );
 };
 
 } // namespace lama
