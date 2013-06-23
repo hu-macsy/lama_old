@@ -433,23 +433,23 @@ public:
     /** solution = xxx */
 
     virtual void jacobiIterate(
-        LAMAArrayView<ValueType> solution,
-        const LAMAArrayConstView<ValueType> oldSolution,
-        const LAMAArrayConstView<ValueType> rhs,
+        LAMAArray<ValueType>& solution,
+        const LAMAArray<ValueType>& oldSolution,
+        const LAMAArray<ValueType>& rhs,
         const ValueType omega ) const;
 
     virtual void jacobiIterateHalo(
-        LAMAArrayView<ValueType> localSolution,
+        LAMAArray<ValueType>& localSolution,
         const MatrixStorage<ValueType>& localStorage,
-        const LAMAArrayConstView<ValueType> haloOldSolution,
+        const LAMAArray<ValueType>& haloOldSolution,
         const ValueType omega ) const;
 
     /** @since 1.1.0 */
 
     virtual void jacobiIterateHalo(
-        LAMAArrayView<ValueType> localSolution,
+        LAMAArray<ValueType>& localSolution,
         const LAMAArray<ValueType>* localDiagonal,
-        const LAMAArrayConstView<ValueType> haloOldSolution,
+        const LAMAArray<ValueType>& haloOldSolution,
         const ValueType omega ) const;
 
     /** Implementation for MatrixStorage::maxNorm */

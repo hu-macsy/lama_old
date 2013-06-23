@@ -819,9 +819,9 @@ auto_ptr<SyncToken> COOStorage<ValueType>::matrixTimesVectorAsyncToDo(
 
 template<typename ValueType>
 void COOStorage<ValueType>::jacobiIterate(
-    LAMAArrayView<ValueType> solution,
-    const LAMAArrayConstView<ValueType> oldSolution,
-    const LAMAArrayConstView<ValueType> rhs,
+    LAMAArray<ValueType>& solution,
+    const LAMAArray<ValueType>& oldSolution,
+    const LAMAArray<ValueType>& rhs,
     const ValueType omega ) const
 {
     LAMA_REGION( "Storage.COO.jacobiIterate" )

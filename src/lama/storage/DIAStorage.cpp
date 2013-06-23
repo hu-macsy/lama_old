@@ -994,9 +994,9 @@ SyncToken* DIAStorage<ValueType>::matrixTimesVectorAsync(
 
 template<typename ValueType>
 void DIAStorage<ValueType>::jacobiIterate(
-    LAMAArrayView<ValueType> solution,
-    const LAMAArrayConstView<ValueType> oldSolution,
-    const LAMAArrayConstView<ValueType> rhs,
+    LAMAArray<ValueType>& solution,
+    const LAMAArray<ValueType>& oldSolution,
+    const LAMAArray<ValueType>& rhs,
     const ValueType omega ) const
 {
     LAMA_LOG_INFO( logger, *this << ": Jacobi iteration for local matrix data." )

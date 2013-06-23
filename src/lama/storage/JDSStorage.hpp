@@ -210,25 +210,25 @@ public:
     /** Implementation of MatrixStorage::jacobiIterate for JDS */
 
     virtual void jacobiIterate(
-        LAMAArrayView<ValueType> solution,
-        const LAMAArrayConstView<ValueType> oldSolution,
-        const LAMAArrayConstView<ValueType> rhs,
+        LAMAArray<ValueType>& solution,
+        const LAMAArray<ValueType>& oldSolution,
+        const LAMAArray<ValueType>& rhs,
         const ValueType omega ) const;
 
     /** Implementation of MatrixStorage::jacobiIterateAsync for JDS */
 
     virtual SyncToken* jacobiIterateAsync(
-        LAMAArrayView<ValueType> solution,
-        const LAMAArrayConstView<ValueType> oldSolution,
-        const LAMAArrayConstView<ValueType> rhs,
+        LAMAArray<ValueType>& solution,
+        const LAMAArray<ValueType>& oldSolution,
+        const LAMAArray<ValueType>& rhs,
         const ValueType omega ) const;
 
     /** Implementation of MatrixStorage::jacobiIterateHalo for JDS */
 
     virtual void jacobiIterateHalo(
-        LAMAArrayView<ValueType> localSolution,
+        LAMAArray<ValueType>& localSolution,
         const MatrixStorage<ValueType>& localStorage,
-        const LAMAArrayConstView<ValueType> haloOldSolution,
+        const LAMAArray<ValueType>& haloOldSolution,
         const ValueType omega ) const;
 
     /** Implementation of MatrixStorage::jacobiIterateHalo for JDS 
@@ -236,9 +236,9 @@ public:
      */
 
     virtual void jacobiIterateHalo(
-        LAMAArrayView<ValueType> localSolution,
+        LAMAArray<ValueType>& localSolution,
         const LAMAArray<ValueType>*localDiagonal,
-        const LAMAArrayConstView<ValueType> haloOldSolution,
+        const LAMAArray<ValueType>& haloOldSolution,
         const ValueType omega ) const;
 
     /* Print relevant information about matrix storage format. */

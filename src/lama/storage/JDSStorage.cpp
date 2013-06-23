@@ -1069,9 +1069,9 @@ SyncToken* JDSStorage<ValueType>::matrixTimesVectorAsync(
 
 template<typename ValueType>
 void JDSStorage<ValueType>::jacobiIterate(
-    LAMAArrayView<ValueType> solution,
-    const LAMAArrayConstView<ValueType> oldSolution,
-    const LAMAArrayConstView<ValueType> rhs,
+    LAMAArray<ValueType>& solution,
+    const LAMAArray<ValueType>& oldSolution,
+    const LAMAArray<ValueType>& rhs,
     const ValueType omega ) const
 {
     LAMA_REGION( "Storage.JDS.jacobiIterate" )
@@ -1117,9 +1117,9 @@ void JDSStorage<ValueType>::jacobiIterate(
 
 template<typename ValueType>
 SyncToken* JDSStorage<ValueType>::jacobiIterateAsync(
-    LAMAArrayView<ValueType> solution,
-    const LAMAArrayConstView<ValueType> oldSolution,
-    const LAMAArrayConstView<ValueType> rhs,
+    LAMAArray<ValueType>& solution,
+    const LAMAArray<ValueType>& oldSolution,
+    const LAMAArray<ValueType>& rhs,
     const ValueType omega ) const
 {
     LAMA_REGION( "Storage.JDS.jacobiIterateAsync" )
@@ -1131,14 +1131,16 @@ SyncToken* JDSStorage<ValueType>::jacobiIterateAsync(
         // On host we start directly a new task, avoids pushing accesses
 
         void ( JDSStorage::*jb )(
-            LAMAArrayView<ValueType>,
-            const LAMAArrayConstView<ValueType>,
-            const LAMAArrayConstView<ValueType>,
+            LAMAArray<ValueType>&,
+            const LAMAArray<ValueType>&,
+            const LAMAArray<ValueType>&,
             const ValueType omega ) const
 
         = &JDSStorage<ValueType>::jacobiIterate;
 
-        return new TaskSyncToken( boost::bind( jb, this, solution, oldSolution, rhs, omega ) );
+        using namespace boost;
+
+        return new TaskSyncToken( bind( jb, this, ref( solution ), cref( oldSolution ), cref( rhs ), omega ) );
     }
 
     // For CUDA a solution using stream synchronization is more efficient than using a task
@@ -1190,9 +1192,9 @@ SyncToken* JDSStorage<ValueType>::jacobiIterateAsync(
 
 template<typename ValueType>
 void JDSStorage<ValueType>::jacobiIterateHalo(
-    LAMAArrayView<ValueType> localSolution,
+    LAMAArray<ValueType>& localSolution,
     const MatrixStorage<ValueType>& localStorage,
-    const LAMAArrayConstView<ValueType> oldHaloSolution,
+    const LAMAArray<ValueType>& oldHaloSolution,
     const ValueType omega ) const
 {
     LAMA_LOG_INFO( logger, *this << ": Jacobi iteration for halo matrix data." )
@@ -1213,15 +1215,14 @@ void JDSStorage<ValueType>::jacobiIterateHalo(
     localDiagonal = tmpLocalDiagonal.get();
 
     jacobiIterateHalo( localSolution, localDiagonal, oldHaloSolution, omega );
-
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 template<typename ValueType>
 void JDSStorage<ValueType>::jacobiIterateHalo(
-    LAMAArrayView<ValueType> localSolution,
+    LAMAArray<ValueType>& localSolution,
     const LAMAArray<ValueType>* localDiagonal,
-    const LAMAArrayConstView<ValueType> oldHaloSolution,
+    const LAMAArray<ValueType>& oldHaloSolution,
     const ValueType omega ) const
 {
     LAMA_LOG_INFO( logger, *this << ": Jacobi iteration for halo matrix data." )

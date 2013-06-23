@@ -278,9 +278,9 @@ public:
     /** solution = xxx */
 
     virtual void jacobiIterate(
-        LAMAArrayView<ValueType> solution,
-        const LAMAArrayConstView<ValueType> oldSolution,
-        const LAMAArrayConstView<ValueType> rhs,
+        LAMAArray<ValueType>& solution,
+        const LAMAArray<ValueType>& oldSolution,
+        const LAMAArray<ValueType>& rhs,
         const ValueType omega ) const;
 
     /******************************************************************

@@ -25,7 +25,7 @@
  * SOFTWARE.
  * @endlicense
  *
- * @brief CPUCSRJacobi.cpp
+ * @brief Implementation of class SpecializedJacobi.
  * @author Matthias Makulla
  * @date 06.04.2011
  * @since 1.0.0
@@ -275,53 +275,56 @@ void SpecializedJacobi::iterateTyped( const SparseMatrix<ValueType>& coefficient
 
         const LAMAArray<ValueType>* diagonal = dynamic_cast<const LAMAArray<ValueType>*>( getRuntime().mDiagonal.get() );
  
+        using boost::function;
+        using boost::bind;
+
         void ( lama::MatrixStorage<ValueType>::*jacobiIterateHalo ) ( 
             LAMAArray<ValueType>& localSolution,
             const LAMAArray<ValueType>* localDiagonal,
             const LAMAArray<ValueType>& oldHaloSolution,
-            const ValueType omega ) const = &MatrixStorage<ValueType>::jacobiStepHalo;
+            const ValueType omega ) const = &MatrixStorage<ValueType>::jacobiIterateHalo;
 
         // will call jacobiIterateHalo( haloMatrix, localSolution, diagonal, haloOldSolution, omega )
 
-        boost::function <void( const MatrixStorage<ValueType>* haloMatrix,
-                               LAMAArray<ValueType>& localResult,
-                               const LAMAArray<ValueType>& haloX )> haloF =
+        function <void( const MatrixStorage<ValueType>* haloMatrix,
+                        LAMAArray<ValueType>& localResult,
+                        const LAMAArray<ValueType>& haloX )> haloF =
 
-           boost::bind( jacobiIterateHalo, _1, _2, diagonal, _3, omega );
+             bind( jacobiIterateHalo, _1, _2, diagonal, _3, omega );
 
         if ( Matrix::SYNCHRONOUS == coefficients.getCommunicationKind() )
         {
             // For the local operation a jacobi step is done
 
-            void ( lama::MatrixStorage<ValueType>::*jacobiStep ) ( 
+            void ( lama::MatrixStorage<ValueType>::*jacobiIterate ) ( 
                 LAMAArray<ValueType>& solution,
                 const LAMAArray<ValueType>& oldSolution,
                 const LAMAArray<ValueType>& rhs,
-                const ValueType omega ) const = &MatrixStorage<ValueType>::jacobiStep;
+                const ValueType omega ) const = &MatrixStorage<ValueType>::jacobiIterate;
 
             // Bind the additional arguments like localRhs and omega
 
-            boost::function <void( const MatrixStorage<ValueType>* haloMatrix,
-                                   LAMAArray<ValueType>& localResult,
-                                   const LAMAArray<ValueType>& localX )> localF =
+            function <void( const MatrixStorage<ValueType>* haloMatrix,
+                            LAMAArray<ValueType>& localResult,
+                            const LAMAArray<ValueType>& localX )> localF =
 
-                boost::bind( jacobiStep, _1, _2, _3, boost::cref( localRhs ), omega );
+                bind( jacobiIterate, _1, _2, _3, boost::cref( localRhs ), omega );
 
             coefficients.haloOperationSync( localSolution, localOldSolution, haloOldSolution, localF, haloF );
         }
         else
         {
-            SyncToken* ( lama::MatrixStorage<ValueType>::*jacobiStepAsync ) ( 
+            SyncToken* ( lama::MatrixStorage<ValueType>::*jacobiIterateAsync ) ( 
                 LAMAArray<ValueType>& solution,
                 const LAMAArray<ValueType>& oldSolution,
                 const LAMAArray<ValueType>& rhs,
-                const ValueType omega ) const = &MatrixStorage<ValueType>::jacobiStepAsync;
+                const ValueType omega ) const = &MatrixStorage<ValueType>::jacobiIterateAsync;
 
-            boost::function <SyncToken*( const MatrixStorage<ValueType>* haloMatrix,
-                                         LAMAArray<ValueType>& localResult,
-                                         const LAMAArray<ValueType>& localX )> localAsyncF =
+            function <SyncToken*( const MatrixStorage<ValueType>* haloMatrix,
+                                  LAMAArray<ValueType>& localResult,
+                                  const LAMAArray<ValueType>& localX )> localAsyncF =
 
-                boost::bind( jacobiStepAsync, _1, _2, _3, boost::cref( localRhs ), omega );
+                bind( jacobiIterateAsync, _1, _2, _3, boost::cref( localRhs ), omega );
 
             coefficients.haloOperationAsync( localSolution, localOldSolution, haloOldSolution, localAsyncF, haloF );
         }

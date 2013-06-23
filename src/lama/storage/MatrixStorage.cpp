@@ -1018,9 +1018,9 @@ SyncToken* MatrixStorage<ValueType>::matrixTimesVectorAsync(
 
 template<typename ValueType>
 void MatrixStorage<ValueType>::jacobiIterate(
-    LAMAArrayView<ValueType> solution,
-    const LAMAArrayConstView<ValueType> oldSolution,
-    const LAMAArrayConstView<ValueType> rhs,
+    LAMAArray<ValueType>& solution,
+    const LAMAArray<ValueType>& oldSolution,
+    const LAMAArray<ValueType>& rhs,
     const ValueType omega ) const
 {
     LAMA_UNSUPPORTED( *this << ": no jacobiIterate for this format available, take CSR" )
@@ -1033,33 +1033,35 @@ void MatrixStorage<ValueType>::jacobiIterate(
 
 template<typename ValueType>
 SyncToken* MatrixStorage<ValueType>::jacobiIterateAsync(
-    LAMAArrayView<ValueType> solution,
-    const LAMAArrayConstView<ValueType> oldSolution,
-    const LAMAArrayConstView<ValueType> rhs,
+    LAMAArray<ValueType>& solution,
+    const LAMAArray<ValueType>& oldSolution,
+    const LAMAArray<ValueType>& rhs,
     const ValueType omega ) const
 {
     // general default: asynchronous execution is done by a new thread
 
-    void (MatrixStorage::*pf)(
-        LAMAArrayView<ValueType>,
-        const LAMAArrayConstView<ValueType>,
-        const LAMAArrayConstView<ValueType>,
+    void ( MatrixStorage::*pf )(
+        LAMAArray<ValueType>&,
+        const LAMAArray<ValueType>&,
+        const LAMAArray<ValueType>&,
         const ValueType ) const
 
     = &MatrixStorage<ValueType>::jacobiIterate;
 
     using boost::bind;
+    using boost::cref;
+    using boost::ref;
 
-    return new TaskSyncToken( bind( pf, this, solution, oldSolution, rhs, omega ) );
+    return new TaskSyncToken( bind( pf, this, ref( solution ), cref( oldSolution ), cref( rhs ), omega ) );
 }
 
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
 void MatrixStorage<ValueType>::jacobiIterateHalo(
-    LAMAArrayView<ValueType> localSolution,
+    LAMAArray<ValueType>& localSolution,
     const MatrixStorage<ValueType>& localStorage,
-    const LAMAArrayConstView<ValueType> oldHaloSolution,
+    const LAMAArray<ValueType>& oldHaloSolution,
     const ValueType omega ) const
 {
     LAMA_UNSUPPORTED( *this << ": jacobiIterateHalo for this format NOT available, take CSR" )
@@ -1077,9 +1079,9 @@ void MatrixStorage<ValueType>::jacobiIterateHalo(
 
 template<typename ValueType>
 void MatrixStorage<ValueType>::jacobiIterateHalo(
-    LAMAArrayView<ValueType> localSolution,
+    LAMAArray<ValueType>& localSolution,
     const LAMAArray<ValueType>* localDiagonal,
-    const LAMAArrayConstView<ValueType> oldHaloSolution,
+    const LAMAArray<ValueType>& oldHaloSolution,
     const ValueType omega ) const
 {
     LAMA_UNSUPPORTED( *this << ": jacobiIterateHalo for this format NOT available, take CSR" )

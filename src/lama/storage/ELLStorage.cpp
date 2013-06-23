@@ -1159,9 +1159,9 @@ SyncToken* ELLStorage<ValueType>::matrixTimesVectorAsync(
 
 template<typename ValueType>
 void ELLStorage<ValueType>::jacobiIterate(
-    LAMAArrayView<ValueType> solution,
-    const LAMAArrayConstView<ValueType> oldSolution,
-    const LAMAArrayConstView<ValueType> rhs,
+    LAMAArray<ValueType>& solution,
+    const LAMAArray<ValueType>& oldSolution,
+    const LAMAArray<ValueType>& rhs,
     const ValueType omega ) const
 {
     LAMA_REGION( "Storage.ELL.jacobiIterate" )
@@ -1203,9 +1203,9 @@ void ELLStorage<ValueType>::jacobiIterate(
 
 template<typename ValueType>
 SyncToken* ELLStorage<ValueType>::jacobiIterateAsync(
-    LAMAArrayView<ValueType> solution,
-    const LAMAArrayConstView<ValueType> oldSolution,
-    const LAMAArrayConstView<ValueType> rhs,
+    LAMAArray<ValueType>& solution,
+    const LAMAArray<ValueType>& oldSolution,
+    const LAMAArray<ValueType>& rhs,
     const ValueType omega ) const
 {
     LAMA_REGION( "Storage.ELL.jacobiIterateAsync" )
@@ -1217,14 +1217,18 @@ SyncToken* ELLStorage<ValueType>::jacobiIterateAsync(
         // used later in OpenMP to generate a TaskSyncToken
 
         void ( ELLStorage::*jb )(
-            LAMAArrayView<ValueType>,
-            const LAMAArrayConstView<ValueType>,
-            const LAMAArrayConstView<ValueType>,
+            LAMAArray<ValueType>&,
+            const LAMAArray<ValueType>&,
+            const LAMAArray<ValueType>&,
             const ValueType omega ) const
 
         = &ELLStorage<ValueType>::jacobiIterate;
 
-        return new TaskSyncToken( boost::bind( jb, this, solution, oldSolution, rhs, omega ) );
+        using boost::bind;
+        using boost::cref;
+        using boost::ref;
+
+        return new TaskSyncToken( bind( jb, this, ref( solution ), cref( oldSolution ), cref( rhs ), omega ) );
     }
 
     // For CUDA a solution using stream synchronization is more efficient than using a task
@@ -1275,9 +1279,9 @@ SyncToken* ELLStorage<ValueType>::jacobiIterateAsync(
 
 template<typename ValueType>
 void ELLStorage<ValueType>::jacobiIterateHalo(
-    LAMAArrayView<ValueType> localSolution,
+    LAMAArray<ValueType>& localSolution,
     const MatrixStorage<ValueType>& localStorage,
-    const LAMAArrayConstView<ValueType> oldHaloSolution,
+    const LAMAArray<ValueType>& oldHaloSolution,
     const ValueType omega ) const
 {
     LAMA_REGION( "Storage.ELL.jacobiIterateHalo" )
@@ -1325,9 +1329,9 @@ void ELLStorage<ValueType>::jacobiIterateHalo(
 
 template<typename ValueType>
 void ELLStorage<ValueType>::jacobiIterateHalo(
-    LAMAArrayView<ValueType> localSolution,
+    LAMAArray<ValueType>& localSolution,
     const LAMAArray<ValueType>* localDiagonal,
-    const LAMAArrayConstView<ValueType> oldHaloSolution,
+    const LAMAArray<ValueType>& oldHaloSolution,
     const ValueType omega ) const
 {
     LAMA_REGION( "Storage.ELL.jacobiIterateHalo" )

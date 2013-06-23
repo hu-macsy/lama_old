@@ -1310,9 +1310,9 @@ SyncToken* CSRStorage<ValueType>::matrixTimesVectorAsync(
 
 template<typename ValueType>
 void CSRStorage<ValueType>::jacobiIterate(
-    LAMAArrayView<ValueType> solution,
-    const LAMAArrayConstView<ValueType> oldSolution,
-    const LAMAArrayConstView<ValueType> rhs,
+    LAMAArray<ValueType>& solution,
+    const LAMAArray<ValueType>& oldSolution,
+    const LAMAArray<ValueType>& rhs,
     const ValueType omega ) const
 {
     LAMA_REGION( "Storage.CSR.jacobiIterate" )
@@ -1356,9 +1356,9 @@ void CSRStorage<ValueType>::jacobiIterate(
 
 template<typename ValueType>
 void CSRStorage<ValueType>::jacobiIterateHalo(
-    LAMAArrayView<ValueType> localSolution,
+    LAMAArray<ValueType>& localSolution,
     const MatrixStorage<ValueType>& localStorage,
-    const LAMAArrayConstView<ValueType> oldHaloSolution,
+    const LAMAArray<ValueType>& oldHaloSolution,
     const ValueType omega ) const
 {
     LAMA_REGION( "Storage.CSR.jacobiIterateHalo" )
@@ -1425,9 +1425,9 @@ void CSRStorage<ValueType>::jacobiIterateHalo(
 
 template<typename ValueType>
 void CSRStorage<ValueType>::jacobiIterateHalo(
-    LAMAArrayView<ValueType> localSolution,
+    LAMAArray<ValueType>& localSolution,
     const LAMAArray<ValueType>* localDiagonal,
-    const LAMAArrayConstView<ValueType> oldHaloSolution,
+    const LAMAArray<ValueType>& oldHaloSolution,
     const ValueType omega ) const
 {
     LAMA_REGION( "Storage.CSR.jacobiIterateHalo" )

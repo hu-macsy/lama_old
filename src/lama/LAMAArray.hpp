@@ -199,6 +199,17 @@ public:
      */
     LAMAArray<ValueType>& operator=( const LAMAArray<ValueType>& other );
 
+    /*
+     * @brief Checks if the LAMAArray referenced by other is the same as the LAMAArray reference by this.
+     *
+     * @param[in]   other   the LAMAArrayC to compare this with.
+     * @return              if this and other are referencing the same LAMAArray.
+     */
+    bool operator==( const LAMAArray<T>& other ) const
+    {
+        return &other == this;
+    }
+
     /**
      * @brief Copies the passed LAMAArray into this.
      *
