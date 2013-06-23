@@ -1312,6 +1312,7 @@ void SparseMatrix<ValueType>::haloOperationAsync(
 
     // during local computation we exchange halo and prefetch all needed halo data
 
+    if ( !mHalo.isEmpty() )
     {
         LAMA_REGION( "Mat.Sp.asyncExchangeHalo" )
 
@@ -1346,6 +1347,8 @@ void SparseMatrix<ValueType>::haloOperationAsync(
 
         LAMA_LOG_INFO( logger, comm << ": local computation ready." )
     }
+
+    if ( haloX.size() > 0 )
     {
         // now we can update the result with haloMatrix and halo values of X
 
@@ -1404,9 +1407,7 @@ void SparseMatrix<ValueType>::matrixTimesVectorImpl(
 
         boost::bind( timesVector, _1, _2, alphaValue, _3, one, _2 );
 
-    // synchronous version is also called if no halo is available, no potential for overlap
-
-    if ( SYNCHRONOUS == getCommunicationKind() || mHalo.isEmpty() )
+    if ( SYNCHRONOUS == getCommunicationKind() )
     {
         boost::function <void( const MatrixStorage<ValueType>* localMatrix, 
 				               LAMAArray<ValueType>& localResult,

@@ -1437,7 +1437,7 @@ void ELLStorage<ValueType>::matrixTimesMatrix(
     }
     else
     {
-        LAMA_LOG_ERROR( logger, b << ": b not ELL format" )
+        LAMA_UNSUPPORTED( b << ": b not ELL format" )
     }
 
     if ( ellA == NULL || ellB == NULL )

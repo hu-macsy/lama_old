@@ -289,7 +289,7 @@ void SpecializedJacobi::iterateTyped( const SparseMatrix<ValueType>& coefficient
 
            boost::bind( jacobiIterateHalo, _1, _2, diagonal, _3, omega );
 
-        if ( Matrix::SYNCHRONOUS == coefficients.getCommunicationKind() || coefficients.getHalo().isEmpty() )
+        if ( Matrix::SYNCHRONOUS == coefficients.getCommunicationKind() )
         {
             // For the local operation a jacobi step is done
 

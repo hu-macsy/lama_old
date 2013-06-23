@@ -194,11 +194,11 @@ if ( comm->getRank() == 0 )
     val = "Hello";
 }
 
-LAMA_LOG_ERROR( logger, *comm << ": val = " << val );
+LAMA_LOG_INFO( logger, *comm << ": val = " << val );
 
 comm->bcast( val, 0 );
 
-LAMA_LOG_ERROR( logger, *comm << ": val = " << val );
+LAMA_LOG_INFO( logger, *comm << ": val = " << val );
 
 BOOST_CHECK_EQUAL( "Hello", val );
 
