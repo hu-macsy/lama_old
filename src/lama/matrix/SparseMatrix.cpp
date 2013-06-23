@@ -1373,6 +1373,8 @@ void SparseMatrix<ValueType>::matrixTimesVectorImpl(
     const ValueType betaValue,
     const DenseVector<ValueType>& denseY ) const
 {
+    LAMA_REGION( "Mat.Sp.timesVector" )
+
     LAMAArray<ValueType>& localResult = denseResult.getLocalValues();
     const LAMAArray<ValueType>& localY = denseY.getLocalValues();
 
