@@ -37,8 +37,10 @@
 
 #include <lama/DenseVector.hpp>
 #include <lama/CommunicatorFactory.hpp>
-#include <lama/distribution/BlockDistribution.hpp>
 #include <lama/distribution/NoDistribution.hpp>
+#include <lama/distribution/BlockDistribution.hpp>
+#include <lama/distribution/GeneralDistribution.hpp>
+#include <lama/expression/all.hpp>
 
 #include <lama/solver/CG.hpp>
 #include <lama/solver/SimpleAMG.hpp>
@@ -52,16 +54,67 @@
 using namespace std;
 using namespace lama;
 
+void dummy( const LamaConfig& lamaconf )
+{
+    CSRSparseMatrix<double> m;
+    m.setIdentity( 100 );
+    DenseVector<double> v1( 100, 1.0  );
+    m.setContext( lamaconf.getContextPtr() );
+    m.setCommunicationKind( lamaconf.getCommunicationKind() );
+    v1.setContext( lamaconf.getContextPtr() );
+    DenseVector<double> v2( m *  v1 );
+}
+
+/** Read in a partitioning file for the input data if available. */
+
+vector<IndexType>* readPartitionVector( const char* filename, int commSize, int expectedSize )
+{
+    // read in general distribution if available for number of processors
+
+    ostringstream partitionFileName;
+
+    partitionFileName << filename << "." << commSize ;
+
+    ifstream pfile ( partitionFileName.str().c_str() );
+
+    if ( pfile.is_open() )
+    {
+        vector<IndexType> *pvector = new vector<lama::IndexType>;
+
+        pvector->reserve( expectedSize );
+
+        lama::IndexType elem;
+
+        while ( pfile >> elem )
+        {
+            pvector->push_back (elem);
+        }
+
+        cout << "Read partitioning file " << partitionFileName.str()
+             << ", actual size = " << pvector->size() << ", expected = " << expectedSize << endl;
+
+        pfile.close();
+
+        return pvector;
+    }
+    else
+    {
+        cout << "Could not open any partitioning file " << partitionFileName.str() << endl;
+
+        return NULL;
+    }
+}
+
 int main( int argc, char* argv[] )
 {
     LamaConfig lamaconf;
 
     // Get (default) communicator, will be MPI if available
 
-    const Communicator& comm = lamaconf.getCommunicator();
+    const CommunicatorPtr& comm = lamaconf.getCommunicatorPtr();
 
-    int myRank   = comm.getRank();
-    int numProcs = comm.getSize();
+    int myRank   = comm->getRank();
+    int numProcs = comm->getSize();
 
     const char* filename;
 
@@ -134,11 +187,31 @@ int main( int argc, char* argv[] )
         cout << "loading data took " << stop - start << " secs." << endl;
     }
 
+    boost::shared_ptr<vector<IndexType> > mapVector;
+
+    if ( lamaconf.useMetis() )
+    {
+        mapVector.reset( readPartitionVector( filename, numProcs, numRows ) );
+    }
+
+    DistributionPtr dist;
+
+    if ( mapVector )
+    {
+        // general distribution
+
+        dist.reset( new GeneralDistribution( *mapVector, numRows, comm ) );
+
+        mapVector.reset(); // frees memory of it
+    }
+    else
+    {
+        // distribute data (trivial block partitioning)
+
+        dist.reset( new BlockDistribution( numRows, comm ) );
+    }
+
     start = Walltime::get();   // start timing of redistribution
-
-    // distribute data (trivial block partitioning)
-
-    DistributionPtr dist( new BlockDistribution( numRows, lamaconf.getCommunicatorPtr() ) );
 
     matrix.redistribute( dist, dist );
     rhs.redistribute ( dist );
@@ -159,6 +232,8 @@ int main( int argc, char* argv[] )
     }
 
     start = Walltime::get();  // start time of data transfer
+
+    dummy( lamaconf );
 
     matrix.setCommunicationKind( lamaconf.getCommunicationKind() );
     matrix.setContext( lamaconf.getContextPtr() );
@@ -183,16 +258,22 @@ int main( int argc, char* argv[] )
 
     loggerName << "<CG>, " << lamaconf.getCommunicator() << ": ";
 
-    LoggerPtr logger( new CommonLogger ( loggerName.str(), lamaconf.getLogLevel(),
+    LoggerPtr logger( new CommonLogger ( loggerName.str(), lama::LogLevel::advancedInformation,
                    LoggerWriteBehaviour::toConsoleOnly,
                    std::auto_ptr<Timer>( new Timer() ) ) );
 
     CG mySolver( "CGSolver", logger );
 
-    Scalar eps = 0.00001;
-    NormPtr norm = NormPtr( new L2Norm() );
+    Scalar relEps = 1e-14;
+    Scalar absEps = 1e-16;
 
-    CriterionPtr rt( new ResidualThreshold( norm, eps, ResidualThreshold::Absolute ) );
+    NormPtr relNorm = NormPtr( new L2Norm() );
+    NormPtr absNorm = NormPtr( new L2Norm() );
+
+    CriterionPtr relRT( new ResidualThreshold( relNorm, relEps, ResidualThreshold::Relative ) );
+    CriterionPtr absRT( new ResidualThreshold( absNorm, absEps, ResidualThreshold::Absolute ) );
+
+    CriterionPtr rt( new Criterion( relRT, absRT, Criterion::OR ) );
 
     if ( lamaconf.hasMaxIter() )
     {
@@ -205,14 +286,14 @@ int main( int argc, char* argv[] )
 
     mySolver.setStoppingCriterion( rt );
 
-    LoggerPtr amgLogger( new CommonLogger ( loggerName.str(), lamaconf.getLogLevel(),
+    LoggerPtr amgLogger( new CommonLogger ( loggerName.str(), lama::LogLevel::solverInformation,
                    LoggerWriteBehaviour::toConsoleOnly,
                    std::auto_ptr<Timer>( new Timer() ) ) );
 
     boost::shared_ptr<SimpleAMG> amgSolver( new SimpleAMG( "SimpleAMG solver", amgLogger ) );
  
-    amgSolver->setHostOnlyLevel( 5 );
-    amgSolver->setReplicatedLevel( 8 );
+    amgSolver->setHostOnlyLevel( 4 );
+    amgSolver->setReplicatedLevel( 5 );
     amgSolver->setMaxLevels( 25 );
     amgSolver->setMinVarsCoarseLevel( 200 );
 
@@ -230,6 +311,8 @@ int main( int argc, char* argv[] )
     {
         cout << "Solver setup took " << stop - start << " secs." << endl;
     }
+
+    dummy( lamaconf );
 
     // run solver
 

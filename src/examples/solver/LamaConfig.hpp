@@ -42,6 +42,7 @@
 #include <lama/CommunicatorFactory.hpp>
 #include <lama/solver/logger/LogLevel.hpp>
 #include <omp.h>
+#include <lama/cuda/CUDAHostContextManager.hpp>
 
 #include <cstring>
 
@@ -157,6 +158,11 @@ public:
         return mValueType;
     }
 
+    bool useMetis() const
+    {
+        return mUseMetis;
+    }
+
 private:
 
     std::string              mMatrixFormat;
@@ -173,6 +179,8 @@ private:
 
     lama::LogLevel::LogLevel mLogLevel;
 
+    bool                     mUseMetis;
+
     /** Help routine to query if argument has only digits. */
 
     inline bool isNumber( const char* arg );
@@ -188,6 +196,7 @@ LamaConfig::LamaConfig()
     mMaxIter           = lama::nIndex;
     mValueType         = lama::Scalar::DOUBLE;
     mLogLevel          = lama::LogLevel::convergenceHistory;
+    mUseMetis          = false;
 }
 
 LamaConfig::~LamaConfig()
@@ -232,12 +241,21 @@ void LamaConfig::setArg( const char* arg )
     }
     else if ( ( "CUDA" == val ) || ( "GPU" == val ) )
     { 
-        int device = 0;
         // adapt it for your node configuration
 
-        // int device = mComm->getNodeRank();
+        int device = 2 * mComm->getNodeRank();
 
         mContext = lama::ContextFactory::getContext( lama::Context::CUDA, device );
+    }
+    else if ( "PINNED" == val )
+    {
+        // support fast memory transfer Host->CUDA
+
+        lama::CUDAHostContextManager::setAsCurrent( mContext );
+    }
+    else if ( "METIS" == val )
+    {
+        mUseMetis = true;
     }
     else if ( "SYNC" == val )
     {
@@ -310,9 +328,10 @@ void LamaConfig::setArg( const char* arg )
         int narg = sscanf( val.c_str() + 1, "%d", &numBlocks );
         if ( narg > 0 )
         {
-            char envSetting[ 256 ];
+            static char envSetting[ 256 ];
             sprintf( envSetting, "LAMA_CUDA_BLOCK_SIZE=%d", numBlocks );
             putenv( envSetting );
+            std::cout << "Environment setting : " << envSetting << std::endl;
         }
         else
         {
