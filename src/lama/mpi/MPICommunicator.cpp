@@ -153,18 +153,22 @@ void MPICommunicator::setNodeData()
     int nodeNameLength;                     // lenght of node name for this processor
 
     char nodeName[MPI_MAX_PROCESSOR_NAME];  // name of node for this processor
+    memset( nodeName,'\0', MPI_MAX_PROCESSOR_NAME );
 
     LAMA_MPICALL( logger, MPI_Get_processor_name( nodeName, &nodeNameLength ), "MPI_Get_processor_name" )
 
     LAMA_LOG_INFO( logger, "Processor " << mRank << " runs on node " << nodeName )
 
-    // now gather names of all processors
-
     char* allNodeNames = (char*) malloc( MPI_MAX_PROCESSOR_NAME * mSize * sizeof(char) );
+    if( allNodeNames == NULL )
+    {
+        LAMA_THROWEXCEPTION( "Can't alloc enough memory for all node names." )
+    }
+    memset( allNodeNames,'\0', MPI_MAX_PROCESSOR_NAME * mSize );
 
     LAMA_MPICALL( logger, 
-                  MPI_Allgather( &nodeName, MPI_MAX_PROCESSOR_NAME, MPI_CHAR,
-                                 &allNodeNames, MPI_MAX_PROCESSOR_NAME, MPI_CHAR,
+                  MPI_Allgather( &nodeName[0], MPI_MAX_PROCESSOR_NAME, MPI_CHAR,
+                                 &allNodeNames[0], MPI_MAX_PROCESSOR_NAME, MPI_CHAR,
                                  mComm ), 
                   "MPI_Allgather( <node_names> )" )
 
