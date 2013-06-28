@@ -188,6 +188,8 @@ void MPICommunicator::setNodeData()
         ++mNodeSize;
     }
 
+    free( allNodeNames );
+
     LAMA_ASSERT_ERROR( mNodeSize > 0, "Serious problem encountered to get node size" )
 
     LAMA_ASSERT_ERROR( mNodeRank < mNodeSize, "Serious problem encountered to get node size" )
