@@ -14,7 +14,7 @@ REQUIREMENTS
  * CMake >= 2.8
  * C/C++ compiler (optional: OpenMP 2.0)
  * Boost-Library (common, thread, test and regex(optional for tests))
- * BLAS-Library (Intel MKL, ATLAS, Fortran BLAS) (optional: ScaLAPack)
+ * BLAS-Library (Intel MKL, ACML, Fortran BLAS) (optional: ScaLAPack)
  * CUDA (optional) (with cublas & thrust)
  * MPI (optional)
  * Vampir (optional)
