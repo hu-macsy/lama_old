@@ -160,7 +160,7 @@ void MPICommunicator::setNodeData()
 
     // now gather names of all processors
 
-    char allNodeNames[ MPI_MAX_PROCESSOR_NAME * mSize ];
+    char* allNodeNames = (char*) malloc( MPI_MAX_PROCESSOR_NAME * mSize * sizeof(char) );
 
     LAMA_MPICALL( logger, 
                   MPI_Allgather( &nodeName, MPI_MAX_PROCESSOR_NAME, MPI_CHAR,
