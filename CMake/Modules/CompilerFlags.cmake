@@ -95,7 +95,7 @@ if ( CMAKE_CXX_COMPILER_ID MATCHES Intel )
     endif ( NOT DEFINED ADDITIONAL_CXX_FLAGS )
     
     if ( NOT DEFINED ADDITIONAL_CXX_WARNING_FLAGS )
-        set ( ADDITIONAL_CXX_WARNING_FLAGS "-w2 -Wall -Wcheck -Werror-all " ) # -Werror-all Warnings/Errors. No Remarks.
+        set ( ADDITIONAL_CXX_WARNING_FLAGS "-w2 -Wall -Wcheck " ) # -Werror-all Warnings/Errors. No Remarks.
     endif ( NOT DEFINED ADDITIONAL_CXX_WARNING_FLAGS )
     
     if ( NOT DEFINED ADDITIONAL_CXX_RELEASE_FLAGS )

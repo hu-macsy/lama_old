@@ -279,7 +279,7 @@ public:
         DistributionPtr rowDistribution,
         DistributionPtr colDistribution,
         const _LAMAArray& values, 
-        const double eps );
+        const Scalar eps );
 
     /** Implementation for pure method Matrix::setCSRData. */
 

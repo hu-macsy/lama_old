@@ -117,7 +117,7 @@ inline std::string getEnvContext()
 
     for ( std::string::iterator p = context.begin(); context.end() != p; ++p )
     {
-        *p = toupper( *p );
+        *p = static_cast<char>( toupper( *p ) );
     }
 
     if ( context == "HOST" )

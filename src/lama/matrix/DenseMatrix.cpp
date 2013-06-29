@@ -412,7 +412,7 @@ void DenseMatrix<ValueType>::setDenseData(
     DistributionPtr rowDist,
     DistributionPtr colDist,
     const _LAMAArray& values,
-    const double eps  )
+    const Scalar eps  )
 {
     DistributionPtr tmpReplicatedColDistribution = colDist;
 
@@ -430,7 +430,7 @@ void DenseMatrix<ValueType>::setDenseData(
 
     // due to temporary replicated col distribution, mData has only one entry
 
-    mData[0]->setDenseData( n, m, values, eps );
+    mData[0]->setDenseData( n, m, values, eps.getValue<ValueType>() );
 
     LAMA_LOG_INFO( logger, "Dense matrix, row dist = " << *rowDist << " filled locally with "
                             << ( n * m ) << " values, now split for col dist = " << *colDist );

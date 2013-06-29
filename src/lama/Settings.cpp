@@ -61,7 +61,7 @@ bool Settings::convertValue( int& flag, const char* stringVal )
 
 bool Settings::convertYesNoString( bool& flag, const char* stringVal )
 {
-    char key = toupper( stringVal[0] );
+    char key = static_cast<char>( toupper( stringVal[0] ) );
 
     bool done = true;  // becomes false if no legal value has been found
 
