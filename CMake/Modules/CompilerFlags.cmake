@@ -79,7 +79,7 @@ if ( CMAKE_COMPILER_IS_GNUCXX )
     endif ( NOT DEFINED ADDITIONAL_CXX_FLAGS )
     
     if ( NOT DEFINED ADDITIONAL_CXX_WARNING_FLAGS )
-        set ( ADDITIONAL_CXX_WARNING_FLAGS "-Wextra -Wall " ) # -pedantic -std=c++98 " ) # -march=core02
+        set ( ADDITIONAL_CXX_WARNING_FLAGS "-Wextra -Wall -Werror" ) # -pedantic -std=c++98 " ) # -march=core02
     endif ( NOT DEFINED ADDITIONAL_CXX_WARNING_FLAGS )
     
     if ( NOT DEFINED ADDITIONAL_CXX_RELEASE_FLAGS )

@@ -32,7 +32,7 @@ First of all you need to install the following software for building LAMA:
 
 - :doc:`BLAS and LAPack <configuration/blas>`
 
-  - Needed for the implementation of the dense blas functions. LAMA only prepares own implementations for sparse blas routines, for dense matrices we rely on given implementations. Supported libraries are: Intel MKL, GOTO, ATLAS, FortranBLAS. 
+  - Needed for the implementation of the dense blas functions. LAMA only prepares own implementations for sparse blas routines, for dense matrices we rely on given implementations. Supported libraries are: Intel MKL, GOTO, ACML, FortranBLAS. 
 
 .. _recommended:
 
