@@ -197,7 +197,7 @@ public:
         DistributionPtr rowDist,
         DistributionPtr colDist, 
         const _LAMAArray& values,
-        double eps = 0.0                ) = 0;
+        Scalar eps = Scalar( 0 )        ) = 0;
 
     /** This method set a matrix with the values owned by this partition in CSR format 
      *
@@ -229,7 +229,7 @@ public:
         DistributionPtr rowDist, 
         DistributionPtr colDist, 
         const ValueType* values,
-        const double eps = 0.0 )
+        const ValueType eps = 0 )
     {
         const IndexType n = rowDist->getLocalSize();
         const IndexType m = colDist->getGlobalSize();
@@ -238,7 +238,7 @@ public:
 
         const LAMAArrayRef<ValueType> valueArray( values, n * m );
 
-        setDenseData( rowDist, colDist, valueArray, eps );
+        setDenseData( rowDist, colDist, valueArray, Scalar( eps ) );
     }
 
     /** This method sets raw CSR data in the same way as setCSRData but with raw value array */
@@ -270,7 +270,7 @@ public:
         const IndexType n, 
         const IndexType m, 
         const ValueType* values,
-        const double eps = 0.0 )
+        const ValueType eps = 0 )
     {
         setRawDenseData( DistributionPtr( new NoDistribution( n ) ),
                          DistributionPtr( new NoDistribution( m ) ), 

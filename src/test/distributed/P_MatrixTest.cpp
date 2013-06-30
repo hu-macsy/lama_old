@@ -193,7 +193,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( SetDenseDataTest, MatrixType, MatrixTypes )
 
         MatrixType m2;   // will be filled with dense data
 
-        double eps = 0.05;
+        ValueType eps = 0.05;
 
         // eps will only be used for sparse matrices
 

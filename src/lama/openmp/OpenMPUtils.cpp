@@ -102,7 +102,7 @@ void OpenMPUtils::setScale( ValueType outValues[],
     #pragma omp parallel for schedule( LAMA_OMP_SCHEDULE )
     for ( IndexType i = 0; i < n; i++ )
     {
-        outValues[i] = inValues[i] * static_cast<ValueType>( value );
+        outValues[i] = static_cast<ValueType>( inValues[i] ) * value;
     }
 }
 

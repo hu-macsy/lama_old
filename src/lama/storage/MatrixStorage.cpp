@@ -1307,7 +1307,7 @@ void MatrixStorage<ValueType>::setDenseData(
     {
         LAMAArray<float>& floatValues = dynamic_cast<LAMAArray<float>&>( mValues );
         const DenseStorageView<float> denseStorage( floatValues, numRows, numColumns );
-        float tmpEpsilon = epsilon;
+        float tmpEpsilon = static_cast<float>( epsilon );
         denseStorage.swapEpsilon( tmpEpsilon );
         assign( denseStorage );
     }
@@ -1315,7 +1315,7 @@ void MatrixStorage<ValueType>::setDenseData(
     {
         LAMAArray<double>& doubleValues = dynamic_cast<LAMAArray<double>&>( mValues );
         const DenseStorageView<double> denseStorage( doubleValues, numRows, numColumns );
-        double tmpEpsilon = epsilon;
+        double tmpEpsilon = static_cast<double>( epsilon );
         denseStorage.swapEpsilon( tmpEpsilon );
         assign( denseStorage );
     }

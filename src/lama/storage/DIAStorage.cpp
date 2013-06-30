@@ -415,7 +415,7 @@ void DIAStorage<ValueType>::setIdentity( const IndexType size )
 
         WriteOnlyAccess<IndexType> wOffset( mOffset, loc, mNumDiagonals );
 
-        ValueType zero = static_cast<ValueType>( 0 );
+        IndexType zero = 0;
 
         LAMA_CONTEXT_ACCESS( loc )
 
@@ -426,7 +426,7 @@ void DIAStorage<ValueType>::setIdentity( const IndexType size )
         LAMA_INTERFACE_FN_T( setVal, loc, Utils, Setter, ValueType )
         WriteOnlyAccess<ValueType> values( mValues, loc, mNumRows );
 
-        ValueType one = static_cast<ValueType>( 1 );
+        ValueType one = 1;
 
         LAMA_CONTEXT_ACCESS( loc )
 

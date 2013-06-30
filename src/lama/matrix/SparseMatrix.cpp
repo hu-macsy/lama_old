@@ -1828,14 +1828,14 @@ void SparseMatrix<ValueType>::setIdentity( DistributionPtr dist )
 
 template<typename ValueType>
 void SparseMatrix<ValueType>::setDenseData( DistributionPtr rowDist, DistributionPtr colDist,
-                                            const _LAMAArray& values, const double eps )
+                                            const _LAMAArray& values, const Scalar eps )
 {
     Matrix::setDistributedMatrix( rowDist, colDist ); 
 
     IndexType localNumRows  = rowDist->getLocalSize();
     IndexType globalNumCols = colDist->getGlobalSize();
 
-    mLocalData->setDenseData( localNumRows, globalNumCols, values, eps );
+    mLocalData->setDenseData( localNumRows, globalNumCols, values, eps.getValue<ValueType>() );
 
     if ( !colDist->isReplicated() )
     {

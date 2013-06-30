@@ -74,7 +74,7 @@ Exception::UnsupportedType Exception::getUnsupportedSetting()
 
         for ( std::string::iterator p = val.begin(); val.end() != p; ++p )
         {
-            *p = toupper( *p );
+            *p = static_cast<char>( toupper( *p ) );
         }
 
         LAMA_LOG_INFO( logger, "LAMA_UNSUPPORTED=" << val << ", setting used for LAMA" )
