@@ -197,52 +197,53 @@ _LAMAArray* Matrix::createArray() const
     return _LAMAArray::create( getValueType() );
 }
 
-/* ---------------------------------------------------------------------------------*/
-
-Matrix* Matrix::create( const IndexType numRows, const IndexType numColumns ) const
-{
-    // use auto pointer so new created matrix is freed in case of Exception
-
-    std::auto_ptr<Matrix> matrix( create() );
-
-    matrix->allocate( numRows, numColumns );
-
-    return matrix.release();
-}
-
-/* ---------------------------------------------------------------------------------*/
-
-Matrix* Matrix::create( const IndexType size ) const
-{
-    std::auto_ptr<Matrix> matrix ( create() );
-    DistributionPtr dist( new NoDistribution( size ) );
-    matrix->allocate( dist, dist );
-    return matrix.release();
-}
-
-/* ---------------------------------------------------------------------------------*/
-
-Matrix* Matrix::create( DistributionPtr rowDistribution, DistributionPtr colDistribution ) const
-{
-    std::auto_ptr<Matrix> matrix( create() );
-
-    matrix->allocate( rowDistribution, colDistribution );
-
-    return matrix.release();
-}
-
-/* ---------------------------------------------------------------------------------*/
-
-Matrix* Matrix::create( DistributionPtr distribution ) const
-{
-    std::auto_ptr<Matrix> matrix( create() );
-
-    matrix->allocate( distribution, distribution );
-
-    return matrix.release();
-}
-
-/* ---------------------------------------------------------------------------------*/
+//    TODO[code coverage] NOT used anywhere (to be removed).
+///* ---------------------------------------------------------------------------------*/
+//
+//Matrix* Matrix::create( const IndexType numRows, const IndexType numColumns ) const
+//{
+//    // use auto pointer so new created matrix is freed in case of Exception
+//
+//    std::auto_ptr<Matrix> matrix( create() );
+//
+//    matrix->allocate( numRows, numColumns );
+//
+//    return matrix.release();
+//}
+//
+///* ---------------------------------------------------------------------------------*/
+//
+//Matrix* Matrix::create( const IndexType size ) const
+//{
+//    std::auto_ptr<Matrix> matrix ( create() );
+//    DistributionPtr dist( new NoDistribution( size ) );
+//    matrix->allocate( dist, dist );
+//    return matrix.release();
+//}
+//
+///* ---------------------------------------------------------------------------------*/
+//
+//Matrix* Matrix::create( DistributionPtr rowDistribution, DistributionPtr colDistribution ) const
+//{
+//    std::auto_ptr<Matrix> matrix( create() );
+//
+//    matrix->allocate( rowDistribution, colDistribution );
+//
+//    return matrix.release();
+//}
+//
+///* ---------------------------------------------------------------------------------*/
+//
+//Matrix* Matrix::create( DistributionPtr distribution ) const
+//{
+//    std::auto_ptr<Matrix> matrix( create() );
+//
+//    matrix->allocate( distribution, distribution );
+//
+//    return matrix.release();
+//}
+//
+///* ---------------------------------------------------------------------------------*/
 
 Vector* Matrix::createDenseVector( DistributionPtr distribution, const Scalar value ) const
 {
