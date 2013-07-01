@@ -735,35 +735,36 @@ public:
      */
     virtual Matrix* create() const = 0;
 
-    /**
-     * @brief Constructor creates a replicated matrix of same type as a given matrix.
-     *
-     * @param[in] numRows      number of rows, must be non-negative.
-     * @param[in] numColumns   number of columns, must be non-negative.
-     */
-    Matrix* create( const IndexType numRows, const IndexType numColumns ) const;
-
-    /**
-     * @brief Constructor creates a distributed zero matrix of same type as a given matrix.
-     *
-     * @param[in] size   number of rows and columns for the square matrix.
-     */
-    Matrix* create( const IndexType size ) const;
-
-    /**
-     * @brief Constructor creates a distributed zero matrix of same type as a given matrix.
-     *
-     * @param[in] rowDistribution   TODO[doxy] Complete Description.
-     * @param[in] colDistribution   TODO[doxy] Complete Description.
-     */
-    Matrix* create( DistributionPtr rowDistribution, DistributionPtr colDistribution ) const;
-
-    /**
-     * @brief Constructor creates a distributed zero matrix of same type as a given matrix.
-     *
-     * @param[in] distribution   TODO[doxy] Complete Description.
-     */
-    Matrix* create( DistributionPtr distribution ) const;
+//    TODO[code coverage] NOT used anywhere (to be removed).
+//    /**
+//     * @brief Constructor creates a replicated matrix of same type as a given matrix.
+//     *
+//     * @param[in] numRows      number of rows, must be non-negative.
+//     * @param[in] numColumns   number of columns, must be non-negative.
+//     */
+//    Matrix* create( const IndexType numRows, const IndexType numColumns ) const;
+//
+//    /**
+//     * @brief Constructor creates a distributed zero matrix of same type as a given matrix.
+//     *
+//     * @param[in] size   number of rows and columns for the square matrix.
+//     */
+//    Matrix* create( const IndexType size ) const;
+//
+//    /**
+//     * @brief Constructor creates a distributed zero matrix of same type as a given matrix.
+//     *
+//     * @param[in] rowDistribution   TODO[doxy] Complete Description.
+//     * @param[in] colDistribution   TODO[doxy] Complete Description.
+//     */
+//    Matrix* create( DistributionPtr rowDistribution, DistributionPtr colDistribution ) const;
+//
+//    /**
+//     * @brief Constructor creates a distributed zero matrix of same type as a given matrix.
+//     *
+//     * @param[in] distribution   TODO[doxy] Complete Description.
+//     */
+//    Matrix* create( DistributionPtr distribution ) const;
 
     /**
      * @brief Constructor creates a distributed dense vector of same type as a given matrix.
