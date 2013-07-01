@@ -67,10 +67,9 @@ typedef boost::mpl::list<float,double> test_types;
 
 /* --------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_SUITE( CGTest )
-;
+BOOST_AUTO_TEST_SUITE( CGTest );
 
-LAMA_LOG_DEF_LOGGER( logger, "Test.CGTest" );
+LAMA_LOG_DEF_LOGGER( logger, "Test.CGTest" )
 
 /* --------------------------------------------------------------------- */
 
