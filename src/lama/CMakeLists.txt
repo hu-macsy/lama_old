@@ -79,6 +79,8 @@ set ( HEADERS
         NoSyncToken
         tracing
         TypeTraits
+        BLASInterface
+        UtilsInterface
     )
 
 lama_classes ( ${CLASSES} )
