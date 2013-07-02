@@ -343,7 +343,7 @@ void isSortedKernel( bool* result, const IndexType numValues, const ValueType* v
 template<typename ValueType>
 bool CUDAUtils::isSorted( const ValueType array[], const IndexType n, bool ascending )
 {
-    LAMA_LOG_INFO( logger, "isSorted<" << typeid( ValueType ).name() 
+    LAMA_LOG_INFO( logger, "isSorted<" << Scalar::getType<ValueType>() 
                            << ">, n = " << n << ", ascending = " << ascending )
 
     LAMA_CHECK_CUDA_ACCESS
@@ -399,7 +399,7 @@ template<typename ValueType1,typename ValueType2>
 void CUDAUtils::setGather( ValueType1 out[], const ValueType2 in[], const IndexType indexes[], const IndexType n )
 {
     LAMA_LOG_INFO( logger,
-                   "setGather<" << typeid(ValueType1).name() << "," << typeid(ValueType2).name() << ">( ..., n = " << n << ")" )
+                   "setGather<" << Scalar::getType<ValueType1>() << "," << Scalar::getType<ValueType2>() << ">( ..., n = " << n << ")" )
 
     LAMA_CHECK_CUDA_ACCESS
 
@@ -430,7 +430,7 @@ template<typename ValueType1,typename ValueType2>
 void CUDAUtils::setScatter( ValueType1 out[], const IndexType indexes[], const ValueType2 in[], const IndexType n )
 {
     LAMA_LOG_INFO( logger,
-                   "setScatter<" << typeid(ValueType1).name() << "," << typeid(ValueType2).name() << ">( ..., n = " << n << ")" )
+                   "setScatter<" << Scalar::getType<ValueType1>() << "," << Scalar::getType<ValueType2>() << ">( ..., n = " << n << ")" )
 
     LAMA_CHECK_CUDA_ACCESS
 
@@ -461,7 +461,7 @@ template<typename ValueType1,typename ValueType2>
 void CUDAUtils::set( ValueType1 out[], const ValueType2 in[], const IndexType n )
 {
     LAMA_LOG_INFO( logger,
-                   "set<" << typeid(ValueType1).name() << "," << typeid(ValueType2).name() << ">( ..., n = " << n << ")" )
+                   "set<" << Scalar::getType<ValueType1>() << "," << Scalar::getType<ValueType2>() << ">( ..., n = " << n << ")" )
 
     LAMA_LOG_DEBUG( logger, "out = " << out << ", in = " << in )
 
@@ -489,7 +489,7 @@ void CUDAUtils::setScale( ValueType1 out[],
                           const ValueType2 in[], const IndexType n )
 {
     LAMA_LOG_INFO( logger,
-                   "set<" << typeid(ValueType1).name() << "," << typeid(ValueType2).name() << ">( ..., n = " << n << ")" )
+                   "set<" << Scalar::getType<ValueType1>() << "," << Scalar::getType<ValueType2>() << ">( ..., n = " << n << ")" )
 
     LAMA_LOG_DEBUG( logger, "out = " << out << ", in = " << in )
 
@@ -539,7 +539,7 @@ template<typename ValueType>
 void CUDAUtils::invert( ValueType array[], const IndexType n )
 {
     LAMA_LOG_INFO( logger,
-                   "invert Vector components for vector of type " << typeid(ValueType).name() << " and size n = " << n << "." )
+                   "invert Vector components for vector of type " << Scalar::getType<ValueType>() << " and size n = " << n << "." )
 
     if ( n <= 0 )
     {

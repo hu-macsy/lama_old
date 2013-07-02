@@ -317,7 +317,7 @@ BOOST_AUTO_TEST_CASE( dotProductTest )
 //with different contexts (e.g. CUDA)
 BOOST_AUTO_TEST_CASE_TEMPLATE( scaleVectorTest, T, test_types ) 
 {
-    LAMA_LOG_INFO( logger, "scaleVectorTest<" << typeid(T).name() << ">" )
+    LAMA_LOG_INFO( logger, "scaleVectorTest<" << Scalar::getType<T>() << ">" )
 
     typedef T ValueType;
 

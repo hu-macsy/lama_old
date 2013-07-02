@@ -554,7 +554,7 @@ void CUDAELLUtils::getCSRValues(
     LAMA_REGION( "CUDA.ELL->CSR_values" )
 
     LAMA_LOG_INFO( logger,
-                   "get CSRValues<" << typeid( ELLValueType ).name() << ", " << typeid( CSRValueType ).name() << ">" << ", #rows = " << numRows )
+                   "get CSRValues<" << Scalar::getType<ELLValueType>() << ", " << Scalar::getType<CSRValueType>() << ">" << ", #rows = " << numRows )
 
     LAMA_CHECK_CUDA_ACCESS
 
@@ -626,7 +626,7 @@ void CUDAELLUtils::setCSRValues(
     LAMA_REGION( "CUDA.ELL<-CSR_values" )
 
     LAMA_LOG_INFO( logger,
-                   "set CSRValues<" << typeid( ELLValueType ).name() << ", " << typeid( CSRValueType ).name() << ">" << ", #rows = " << numRows << ", #values/row = " << numValuesPerRow )
+                   "set CSRValues<" << Scalar::getType<ELLValueType>() << ", " << Scalar::getType<CSRValueType>() << ">" << ", #rows = " << numRows << ", #values/row = " << numValuesPerRow )
 
     LAMA_LOG_DEBUG( logger,
                     "ellJA = " << ellJA << ", ellValues = " << ellValues << ", ellSizes = " << ellSizes << ", csrIA = " << csrIA << ", csrJA = " << csrJA << ", csrValues = " << csrValues )
@@ -688,7 +688,7 @@ void CUDAELLUtils::fillELLValues(
     const IndexType numRows,
     const IndexType numValuesPerRow )
 {
-    LAMA_LOG_INFO( logger, "fill ELLValues<" << typeid( ValueType ).name() )
+    LAMA_LOG_INFO( logger, "fill ELLValues<" << Scalar::getType<ValueType>() )
 
     LAMA_CHECK_CUDA_ACCESS
 
@@ -756,7 +756,7 @@ void CUDAELLUtils::normalGEMV(
 {
     LAMA_REGION( "CUDA.ELL.normalGEMV" )
 
-    LAMA_LOG_INFO( logger, "normalGEMV<" << typeid(ValueType).name() << ">" <<
+    LAMA_LOG_INFO( logger, "normalGEMV<" << Scalar::getType<ValueType>() << ">" <<
                            " result[ " << numRows << "] = " << alpha << " * A(ell) * x + " << beta << " * y " )
 
     LAMA_LOG_DEBUG( logger, "x = " << x << ", y = " << y << ", result = " << result )
@@ -779,7 +779,7 @@ void CUDAELLUtils::normalGEMV(
 
     bool useTexture = CUDASettings::useTexture();
 
-    LAMA_LOG_INFO( logger, "Start ellGemvKernel<" << typeid( ValueType ).name()
+    LAMA_LOG_INFO( logger, "Start ellGemvKernel<" << Scalar::getType<ValueType>()
                            << "> <<< blockSize = " << blockSize << ", stream = " << stream 
                            << ", useTexture = " << useTexture << ">>>" )
 
@@ -882,7 +882,7 @@ void CUDAELLUtils::sparseGEMV(
 {
     LAMA_REGION( "CUDA.ELL.sparseGEMV" )
 
-    LAMA_LOG_INFO( logger, "sparseGEMV<" << typeid(ValueType).name() << ">" << ", #non-zero rows = " << numNonZeroRows )
+    LAMA_LOG_INFO( logger, "sparseGEMV<" << Scalar::getType<ValueType>() << ">" << ", #non-zero rows = " << numNonZeroRows )
 
     LAMA_CHECK_CUDA_ACCESS
 
@@ -906,7 +906,7 @@ void CUDAELLUtils::sparseGEMV(
         vectorELLBindTexture( x );
     }
 
-    LAMA_LOG_INFO( logger, "Start ell_sparse_gemv_kernel<" << typeid( ValueType ).name()
+    LAMA_LOG_INFO( logger, "Start ell_sparse_gemv_kernel<" << Scalar::getType<ValueType>()
                            << "> <<< blockSize = " << blockSize << ", stream = " << stream 
                            << ", useTexture = " << useTexture << ">>>" );
 
@@ -1035,7 +1035,7 @@ void CUDAELLUtils::jacobi(
     dim3 dimBlock( blockSize, 1, 1 );
     dim3 dimGrid = makeGrid( numRows, dimBlock.x );
 
-    LAMA_LOG_INFO( logger, "Start ell_jacobi_kernel<" << typeid( ValueType ).name()
+    LAMA_LOG_INFO( logger, "Start ell_jacobi_kernel<" << Scalar::getType<ValueType>()
                            << "> <<< block size = " << blockSize << ", stream = " << stream
                            << ", useTexture = " << useTexture << ">>>" );
 

@@ -90,7 +90,7 @@ void OpenMPCOOUtils::getCSRValues( IndexType csrJA[], CSRValueType csrValues[], 
                                    const COOValueType cooValues[] )
 {
     LAMA_LOG_INFO( logger,
-                   "get CSRValues<" << typeid( COOValueType ).name() << ", " << typeid( CSRValueType ).name() << ">" << ", #rows = " << numRows << ", #values = " << numValues )
+                   "get CSRValues<" << Scalar::getType<COOValueType>() << ", " << Scalar::getType<CSRValueType>() << ">" << ", #rows = " << numRows << ", #values = " << numValues )
 
     // traverse the non-zero values and put data at the right places
 
@@ -135,7 +135,7 @@ void OpenMPCOOUtils::setCSRValues(
     const bool csrDiagonalProperty )
 {
     LAMA_LOG_INFO( logger,
-                   "set CSRValues<" << typeid( COOValueType ).name() << ", " << typeid( CSRValueType ).name() << ">" << ", #rows = " << numRows << ", #values = " << csrIA[numRows] )
+                   "set CSRValues<" << Scalar::getType<COOValueType>() << ", " << Scalar::getType<CSRValueType>() << ">" << ", #rows = " << numRows << ", #values = " << csrIA[numRows] )
 
     if ( numDiagonals == 0 || csrDiagonalProperty )
     {
@@ -238,7 +238,7 @@ void OpenMPCOOUtils::normalGEMV(
     SyncToken* syncToken )
 {
     LAMA_LOG_INFO( logger,
-                   "normalGEMV<" << typeid(ValueType).name()
+                   "normalGEMV<" << Scalar::getType<ValueType>()
                    << ", #threads = " << omp_get_max_threads()
                    << ">, result[" << numRows << "] = " << alpha
                    << " * A( coo, #vals = " << numValues << " ) * x + " << beta << " * y " )
@@ -288,7 +288,7 @@ void OpenMPCOOUtils::jacobi(
     class SyncToken* syncToken )
 {
     LAMA_LOG_INFO( logger,
-                   "jacobi<" << typeid(ValueType).name() << ">" << ", #rows = " << numRows << ", omega = " << omega )
+                   "jacobi<" << Scalar::getType<ValueType>() << ">" << ", #rows = " << numRows << ", omega = " << omega )
 
     if ( syncToken )
     {

@@ -398,7 +398,7 @@ void OpenMPJDSUtils::getCSRValues(
     const JDSValueType jdsValues[] )
 {
     LAMA_LOG_INFO( logger,
-                   "get CSRValues<" << typeid( JDSValueType ).name() << ", " << typeid( CSRValueType ).name() << ">" << ", #rows = " << numRows << ", #values = " << csrIA[numRows] )
+                   "get CSRValues<" << Scalar::getType<JDSValueType>() << ", " << Scalar::getType<CSRValueType>() << ">" << ", #rows = " << numRows << ", #values = " << csrIA[numRows] )
 
     #pragma omp parallel 
     {
@@ -440,7 +440,7 @@ void OpenMPJDSUtils::setCSRValues(
     const CSRValueType csrValues[] )
 {
     LAMA_LOG_INFO( logger,
-                   "set CSRValues<" << typeid( JDSValueType ).name() << ", " << typeid( CSRValueType ).name() << ">" << ", #rows = " << numRows << ", #values = " << csrIA[numRows] )
+                   "set CSRValues<" << Scalar::getType<JDSValueType>() << ", " << Scalar::getType<CSRValueType>() << ">" << ", #rows = " << numRows << ", #values = " << csrIA[numRows] )
 
     // parallelization possible as offset array csrIA is available
 
@@ -482,7 +482,7 @@ void OpenMPJDSUtils::normalGEMV(
     class SyncToken* /* syncToken */)
 {
     LAMA_LOG_INFO( logger,
-                   "normalGEMV<" << typeid(ValueType).name()
+                   "normalGEMV<" << Scalar::getType<ValueType>()
                    << ", #threads = " << omp_get_max_threads()
                    << ">, result[" << numRows << "] = " << alpha 
                    << " * A( jds, ndlg = " << ndlg << " ) * x + " << beta << " * y " )
@@ -583,7 +583,7 @@ void OpenMPJDSUtils::jacobi(
     class SyncToken* syncToken )
 {
     LAMA_LOG_INFO( logger,
-                   "jacobi<" << typeid(ValueType).name() << ">" << ", #rows = " << numRows << ", omega = " << omega )
+                   "jacobi<" << Scalar::getType<ValueType>() << ">" << ", #rows = " << numRows << ", omega = " << omega )
 
     if ( syncToken != NULL )
     {
@@ -646,7 +646,7 @@ void OpenMPJDSUtils::jacobiHalo(
     class SyncToken* syncToken )
 {
     LAMA_LOG_INFO( logger,
-                   "jacobiHalo<" << typeid(ValueType).name() << ">" << ", #rows = " << numRows << ", omega = " << omega )
+                   "jacobiHalo<" << Scalar::getType<ValueType>() << ">" << ", #rows = " << numRows << ", omega = " << omega )
 
     if ( syncToken != NULL )
     {

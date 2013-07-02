@@ -391,7 +391,7 @@ void MPICommunicator::exchangeByPlanImpl(
     LAMA_ASSERT_ERROR( sendPlan.allocated(), "sendPlan not allocated" )
     LAMA_ASSERT_ERROR( recvPlan.allocated(), "recvPlan not allocated" )
     LAMA_LOG_INFO( logger,
-                   *this << ": exchange for values of type " << typeid( T ).name() << ", send to " << sendPlan.size() << " processors, recv from " << recvPlan.size() )
+                   *this << ": exchange for values of type " << Scalar::getType<T>() << ", send to " << sendPlan.size() << " processors, recv from " << recvPlan.size() )
     int maxReceives = recvPlan.size();
     int noReceives = 0; // will be incremented
     T* recvDataForMe = NULL;
@@ -466,7 +466,7 @@ SyncToken* MPICommunicator::exchangeByPlanAsyncImpl(
     LAMA_ASSERT_ERROR( sendPlan.allocated(), "sendPlan not allocated" )
     LAMA_ASSERT_ERROR( recvPlan.allocated(), "recvPlan not allocated" )
     LAMA_LOG_INFO( logger,
-                   *this << ": exchange for values of type " << typeid( T ).name() << ", send to " << sendPlan.size() << " processors, recv from " << recvPlan.size() )
+                   *this << ": exchange for values of type " << Scalar::getType<T>() << ", send to " << sendPlan.size() << " processors, recv from " << recvPlan.size() )
     int noRequests = sendPlan.size() + recvPlan.size();
 
     // create MPIToken as auto_ptr, so it will be freed in case of exception
