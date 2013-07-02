@@ -44,11 +44,20 @@ set ( CLASSES
         OpenMPELLUtils
         OpenMPJDSUtils
         OpenMPUtils
+        MKLCSRUtils
     )
 
 set ( HEADERS
          OpenMP
     )
+
+if ( MKL_FOUND )
+# Use MKL sparse blas routines for CSR
+   set ( CLASSES
+            ${CLASSES} 
+            MKLCSRUtils
+       )
+endif ( MKL_FOUND )
 
 # OpenMPLAPACKe requires LAPACKe interface, is in MKL
 
