@@ -744,21 +744,23 @@ public:
 //     */
 //    Matrix* create( const IndexType numRows, const IndexType numColumns ) const;
 //
+//    TODO[code coverage] NOT used anywhere (to be removed).
 //    /**
 //     * @brief Constructor creates a distributed zero matrix of same type as a given matrix.
 //     *
 //     * @param[in] size   number of rows and columns for the square matrix.
 //     */
 //    Matrix* create( const IndexType size ) const;
-//
-//    /**
-//     * @brief Constructor creates a distributed zero matrix of same type as a given matrix.
-//     *
-//     * @param[in] rowDistribution   TODO[doxy] Complete Description.
-//     * @param[in] colDistribution   TODO[doxy] Complete Description.
-//     */
-//    Matrix* create( DistributionPtr rowDistribution, DistributionPtr colDistribution ) const;
-//
+
+    /**
+     * @brief Constructor creates a distributed zero matrix of same type as a given matrix.
+     *
+     * @param[in] rowDistribution   TODO[doxy] Complete Description.
+     * @param[in] colDistribution   TODO[doxy] Complete Description.
+     */
+    Matrix* create( DistributionPtr rowDistribution, DistributionPtr colDistribution ) const;
+
+//    TODO[code coverage] NOT used anywhere (to be removed).
 //    /**
 //     * @brief Constructor creates a distributed zero matrix of same type as a given matrix.
 //     *
