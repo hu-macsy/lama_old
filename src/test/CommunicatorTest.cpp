@@ -290,7 +290,7 @@ void CommunicatorTest::updateHaloTest()
 {
     typedef T ValueType;
 
-    LAMA_LOG_INFO( logger, "updateHaloTest<" << typeid( T ).name() << ">" );
+    LAMA_LOG_INFO( logger, "updateHaloTest<" << Scalar::getType<T>() << ">" );
 
     const IndexType factor = 4;
     const IndexType vectorSize = factor * size;
@@ -489,7 +489,7 @@ LAMA_COMMON_TEST_CASE_TM( CommunicatorTest, T, bcastTest )
 {
     typedef T ValueType;
 
-    LAMA_LOG_INFO( logger, "bcastTest<" << typeid( T ).name() << ">" )
+    LAMA_LOG_INFO( logger, "bcastTest<" << Scalar::getType<T>() << ">" )
 
     IndexType N = 5;
     ValueType dummyVal = 13;

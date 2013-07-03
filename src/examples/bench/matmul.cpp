@@ -105,14 +105,14 @@ static void bench( IndexType size, double fillRate )
         cout << "b = " << b << endl;
         cout << "c = " << c << endl;
 
-        cout << "time <" << typeid( ValueType ).name() << "> on " << *gpu 
+        cout << "time <" << Scalar::getType<ValueType>() << "> on " << *gpu
                  << ", size = " << size << ", rate = " << fillRate << " = " << time << endl;
     }
 
     const int precision = 1;
 
     cout << "Size = " << size << ", rate = " << ( fillRate * 100 )
-         << "%, type = " << typeid( ValueType ).name() << endl;
+         << "%, type = " << Scalar::getType<ValueType>() << endl;
     cout << "===================================" << endl;
     cout << setiosflags( std::ios::fixed ) << std::setprecision( precision );
     cout << "time host = " << setw(6) << timeHost * 1000.0 << endl;

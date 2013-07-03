@@ -121,12 +121,19 @@ DistributionPtr bdist( new BlockDistribution( n, comm ) );
 DistributionPtr cdist( new CyclicDistribution( n, 1, comm ) );
 DistributionPtr rdist( new NoDistribution( n ) );
 
+//LAMA_LOG_INFO( logger, "Matrix( bdist = " << *bdist << ")" );
+//
+//MatrixType matrix0( bdist );
+//
+//BOOST_CHECK_EQUAL( matrix0.getNumRows() , n );
+//BOOST_CHECK_EQUAL( matrix0.getNumColumns() , n );
+
 LAMA_LOG_INFO( logger, "Matrix( bdist = " << *bdist << ", bdist = " << *bdist << ")" );
 
-MatrixType matrix( bdist, bdist );
+MatrixType matrix1( bdist, bdist );
 
-BOOST_CHECK_EQUAL( matrix.getNumRows() , n );
-BOOST_CHECK_EQUAL( matrix.getNumColumns() , n );
+BOOST_CHECK_EQUAL( matrix1.getNumRows() , n );
+BOOST_CHECK_EQUAL( matrix1.getNumColumns() , n );
 
 LAMA_LOG_INFO( logger, "Matrix( bdist = " << *bdist << ", rdist = " << *bdist << ")" );
 
