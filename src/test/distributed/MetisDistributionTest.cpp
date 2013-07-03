@@ -26,9 +26,9 @@
  * @endlicense
  *
  * @brief MetisDistributionTest.cpp
- * @author lschubert
+ * @author Lauretta Schubert
  * @date 01.07.2013
- * $Id$
+ * since 1.1.0
  */
 
 #include <boost/test/unit_test.hpp>

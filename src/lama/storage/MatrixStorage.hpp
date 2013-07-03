@@ -639,6 +639,7 @@ public:
      *
      * @param[out]  xadj    the ia array of the csr graph
      * @param[out]  adjncy  the ja array of the csr graph
+     * @since 1.1.0
      */
     virtual void buildCSRGraph(
         IndexType* adjIA,
