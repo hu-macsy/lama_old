@@ -740,7 +740,7 @@ void JDSStorage<ValueType>::setCSRDataImpl(
     LAMA_REGION( "Storage.JDS<-CSR" )
 
     LAMA_LOG_INFO( logger,
-                   "setCSRDataImpl<" << typeid(ValueType).name() << "," << typeid(OtherValueType).name() << ">" << ", shape is " << numRows << " x " << numColumns << ", #values for CSR = " << numValues )
+                   "setCSRDataImpl<" << Scalar::getType<ValueType>() << "," << Scalar::getType<OtherValueType>() << ">" << ", shape is " << numRows << " x " << numColumns << ", #values for CSR = " << numValues )
 
     ContextPtr loc = getContextPtr();
 

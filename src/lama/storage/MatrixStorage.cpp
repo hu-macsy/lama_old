@@ -1391,6 +1391,82 @@ void MatrixStorage<ValueType>::readFromFile( const std::string& fileName )
     check( "read matrix" );
 }
 
+/*****************************************************************************/
+
+template<typename ValueType>
+void MatrixStorage<ValueType>::buildCSRGraph(
+                IndexType* adjIA,
+                IndexType* adjJA,
+                IndexType* vwgt,
+                CommunicatorPtr comm,
+                const IndexType* globalRowIndexes /* = NULL */,
+                IndexType* vtxdist /* = NULL */) const
+{
+        IndexType numLocalRows = mNumRows;
+
+        if ( vtxdist != NULL ) // parallel graph
+        {
+            const PartitionId MASTER = 0;
+
+            IndexType parts = comm->getSize();
+
+            // Is this valid ?
+    // LAMA_ASSERT_ERROR( getDistribution().getNumPartitions() == parts,
+    //              "mismatch number of partitions and communicator size" );
+
+            std::vector<IndexType> localNumRows( parts );
+
+            comm->gather( vtxdist, 1, MASTER, &numLocalRows );
+            comm->bcast( vtxdist, parts, MASTER );
+
+            vtxdist[parts] = OpenMPCSRUtils::scan( vtxdist, parts );
+        }
+
+        LAMAArray<IndexType> csrIA;
+        LAMAArray<IndexType> csrJA;
+        LAMAArray<ValueType> csrValues;
+
+        buildCSRData( csrIA, csrJA, csrValues );
+
+        LAMAArray<IndexType> rowSizes;
+        HostWriteOnlyAccess<IndexType> sizes( rowSizes, mNumRows );
+        HostReadAccess<IndexType> ia( csrIA );
+        OpenMPCSRUtils::offsets2sizes( sizes.get(), ia.get(), mNumRows );
+
+        HostReadAccess<IndexType> ja( csrJA );
+
+        IndexType offset = 0;  // runs through JA
+        IndexType newOffset = 0;  // runs through adjJA
+
+
+        for ( IndexType i = 0; i < numLocalRows; i++ )
+        {
+            IndexType rowIndex = i;
+
+            if ( globalRowIndexes != NULL )
+            {
+                 rowIndex = globalRowIndexes[ i ];
+            }
+
+            adjIA[ i ] = newOffset;
+            vwgt[ i ] = sizes[ i ];
+
+            for ( IndexType jj = 0; jj < sizes[ i ]; jj++ )
+            {
+               if ( rowIndex != ja[ offset ] ) // skip diagonal element
+                {
+                    adjJA[ newOffset++ ] = ja[ offset ];
+                }
+
+                offset++;
+           }
+        }
+
+        adjIA[ numLocalRows ] = newOffset;
+}
+
+/*****************************************************************************/
+
 /* ========================================================================= */
 /*       Template Instantiations                                             */
 /* ========================================================================= */

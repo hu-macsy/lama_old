@@ -262,7 +262,7 @@ void CUDACOOUtils::normalGEMV(
     dimBlock  = dim3( blockSize, 1, 1 );
     dimGrid   = makeGrid( numValues, dimBlock.x );
 
-    LAMA_LOG_INFO( logger, "Start cooGemvKernel<" << typeid( ValueType ).name()
+    LAMA_LOG_INFO( logger, "Start cooGemvKernel<" << Scalar::getType<ValueType>()
                            << "> <<< blockSize = " << blockSize << ", stream = " << stream
                            << ", useTexture = " << useTexture << ">>>" )
 

@@ -223,7 +223,7 @@ void CUDADIAUtils::normalGEMV(
 {
     LAMA_REGION( "CUDA.DIA.normalGEMV" )
 
-    LAMA_LOG_INFO( logger, "normalGEMV<" << typeid(ValueType).name() << ">"
+    LAMA_LOG_INFO( logger, "normalGEMV<" << Scalar::getType<ValueType>() << ">"
                             << " result[ " << numRows << "] = " << alpha
                             << " * A( #diags = " << numDiagonals << " ) * x + " << beta << " * y " )
 
@@ -245,7 +245,7 @@ void CUDADIAUtils::normalGEMV(
     const bool useSharedMem = CUDASettings::useSharedMem();
     const bool useTexture   = CUDASettings::useTexture();
 
-    LAMA_LOG_INFO( logger, "Start diaGemvKernel<" << typeid( ValueType ).name()
+    LAMA_LOG_INFO( logger, "Start diaGemvKernel<" << Scalar::getType<ValueType>()
                            << "> <<< blockSize = " << blockSize << ", stream = " << stream
                            << ", useTexture = " << useTexture << ", useSharedMem = " << useSharedMem << ">>>" );
 

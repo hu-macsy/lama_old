@@ -43,6 +43,7 @@ set ( OPTIONAL_PACKAGES_TO_FIND
         Doxygen
         Threads
         Sphinx
+        ParMetis REQUIRES Metis
         #add optional packages here
     )
     

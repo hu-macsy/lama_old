@@ -281,7 +281,7 @@ int XDRFileStream::getSize( const T )
     }
     else
     {
-        LAMA_THROWEXCEPTION( (std::string("XDRFileStream: Type not permitted: ") + typeid(T).name()).c_str() )
+    	LAMA_THROWEXCEPTION( "XDRFileStream: Type not permitted: " << typeid(T).name() )
     }
     return size;
 }

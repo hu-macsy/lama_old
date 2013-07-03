@@ -1,8 +1,8 @@
 /**
- * @file GeneralDistributionTest.cpp
+ * @file MetisDistributionTest.cpp
  *
  * @license
- * Copyright (c) 2009-2013
+ * Copyright (c) 2013
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -25,20 +25,30 @@
  * SOFTWARE.
  * @endlicense
  *
- * @brief Contains the implementation of the class GeneralDistributionTest.
- * @author: Alexander Büchel, Thomas Brandes
- * @date 30.07.2012
- * @since 1.0.0
- **/
+ * @brief MetisDistributionTest.cpp
+ * @author Lauretta Schubert
+ * @date 01.07.2013
+ * since 1.1.0
+ */
 
 #include <boost/test/unit_test.hpp>
 #include <boost/mpl/list.hpp>
 
 #include <lama/CommunicatorFactory.hpp>
-#include <lama/distribution/GeneralDistribution.hpp>
+#include <lama/distribution/MetisDistribution.hpp>
 
 #include <test/TestMacros.hpp>
+#include <test/Configuration.hpp>
 #include <test/distributed/DistributionTest.hpp>
+
+#include <lama/matrix/ELLSparseMatrix.hpp>
+#include <lama/matrix/JDSSparseMatrix.hpp>
+#include <lama/matrix/DIASparseMatrix.hpp>
+#include <lama/matrix/CSRSparseMatrix.hpp>
+#include <lama/matrix/COOSparseMatrix.hpp>
+#include <lama/matrix/DenseMatrix.hpp>
+
+#include <vector>
 
 using namespace lama;
 using namespace boost;
@@ -48,31 +58,42 @@ extern std::string testcase;
 
 /* --------------------------------------------------------------------- */
 
+typedef boost::mpl::list<CSRSparseMatrix<float>,ELLSparseMatrix<float>,COOSparseMatrix<float>,JDSSparseMatrix<float>,
+        DIASparseMatrix<float>,CSRSparseMatrix<double>,ELLSparseMatrix<double>,COOSparseMatrix<double>,
+        JDSSparseMatrix<double>,DIASparseMatrix<double> > MatrixTypes;
+
+/* --------------------------------------------------------------------- */
+
 static CommunicatorPtr comm;
 
-struct GeneralDistributionTestConfig
+struct MetisDistributionTestConfig
 {
-    GeneralDistributionTestConfig()
+    MetisDistributionTestConfig()
     {
         comm = CommunicatorFactory::get( "MPI" );
 
         rank = comm->getRank();
         size = comm->getSize();
 
-        elemsPerPartition = 10;
+        std::string prefix = Configuration::getInstance().getPath();
+        std::string formattedInputFile = prefix + "/bcspwr01.mtx";
+        matrix = CSRSparseMatrix<double>( formattedInputFile );
 
-        globalSize = elemsPerPartition * size;
+        globalSize = matrix.getNumRows();
 
-        for ( IndexType k = 0; k < elemsPerPartition; ++k )
+        // weights
+        float weight = 1.0 / size;
+        parts.reserve( size );
+        for ( int i = 0; i < size - 1; ++i )
         {
-            localIndexes.push_back( k * size + rank );
+            parts[i] = weight;
         }
+        parts[ size - 1 ] = 1.0 - (size - 1) * weight;
 
-        dist = DistributionPtr( new GeneralDistribution( globalSize, localIndexes, comm ) );
-
+        dist = DistributionPtr( new MetisDistribution<double>( comm, matrix, parts ) );
     }
 
-    ~GeneralDistributionTestConfig()
+    ~MetisDistributionTestConfig()
     {
         comm = CommunicatorPtr();
     }
@@ -80,28 +101,28 @@ struct GeneralDistributionTestConfig
     PartitionId rank;
     PartitionId size;
 
-    IndexType elemsPerPartition;
     IndexType globalSize;
 
-    std::vector<IndexType> localIndexes;
-
     DistributionPtr dist;
+
+    CSRSparseMatrix<double> matrix;
+
+    std::vector<float> parts;
 };
 
-BOOST_FIXTURE_TEST_SUITE( GeneralDistributionTest, GeneralDistributionTestConfig )
+BOOST_FIXTURE_TEST_SUITE( MetisDistributionTest, MetisDistributionTestConfig )
 
-LAMA_LOG_DEF_LOGGER( logger, "Test.GeneralDistributionTest" );
+LAMA_LOG_DEF_LOGGER( logger, "Test.MetisDistributionTest" );
 
 /* --------------------------------------------------------------------- */
 
 BOOST_AUTO_TEST_CASE( commonTestCases )
 {
-
     DistributionTest disttest( dist );
 
     if ( base_test_case )
     {
-        LAMA_LOG_INFO( logger, "Run test method " << testcase << " in GeneralDistributionTest." );
+        LAMA_LOG_INFO( logger, "Run test method " << testcase << " in MetisDistributionTest." );
         DISTRIBUTION_COMMONTESTCASES( disttest );
     }
     else
@@ -112,25 +133,18 @@ BOOST_AUTO_TEST_CASE( commonTestCases )
 
 /* --------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_CASE( generalSizeTest )
+BOOST_AUTO_TEST_CASE_TEMPLATE( isEqualTest, MatrixType, MatrixTypes )
 {
-    BOOST_CHECK( dist->getLocalSize() == elemsPerPartition );
-}
+    typedef typename MatrixType::ValueType ValueType;
 
-/* --------------------------------------------------------------------- */
+    MatrixType distMatrix( matrix );
 
-BOOST_AUTO_TEST_CASE( isEqualTest )
-{
-    std::vector<IndexType> localIndexes;
-
-    DistributionPtr generaldist1( new GeneralDistribution( 1, localIndexes, comm ) );
+    DistributionPtr generaldist1( new MetisDistribution<ValueType>( comm, distMatrix, parts ) );
     DistributionPtr generaldist2( generaldist1 );
-    DistributionPtr generaldist3( new GeneralDistribution( 1, localIndexes, comm ) );
-    DistributionPtr generaldist4( new GeneralDistribution( 3, localIndexes, comm ) );
+    DistributionPtr generaldist3( new MetisDistribution<ValueType>( comm, distMatrix, parts ) );
 
-    BOOST_CHECK( (*generaldist1).isEqual( *generaldist2 ) );
+    BOOST_CHECK(  (*generaldist1).isEqual( *generaldist2 ) );
     BOOST_CHECK( !(*generaldist1).isEqual( *generaldist3 ) );
-    BOOST_CHECK( !(*generaldist1).isEqual( *generaldist4 ) );
 }
 /* --------------------------------------------------------------------- */
 

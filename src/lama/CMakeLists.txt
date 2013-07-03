@@ -34,6 +34,11 @@
 ### set this dir as lama source dir ###
 lama_set_source_dir ()
 
+### include directories ###
+if ( METIS_FOUND OR PARMETIS_FOUND )
+    include_directories( ${PARMETIS_INCLUDE_DIR} ${METIS_INCLUDE_DIR} ) 
+endif ( METIS_FOUND OR PARMETIS_FOUND )
+
 ### Add classes and header files ###
 set ( CLASSES
         BaseAccess
@@ -120,14 +125,17 @@ add_library ( ama SHARED ${CXX_SOURCES} ${HEADERS} )
 ### set target link libraries ###
 set( LAMA_LINK_LIBRARIES log4lama )
 
+# amacuda
 if ( CUDA_FOUND AND LAMA_USE_CUDA )
     set ( LAMA_LINK_LIBRARIES ${LAMA_LINK_LIBRARIES} amacuda )
 endif ( CUDA_FOUND AND LAMA_USE_CUDA )
 
+# amampi
 if ( MPI_FOUND AND LAMA_USE_MPI )
     set ( LAMA_LINK_LIBRARIES ${LAMA_LINK_LIBRARIES} amampi )
 endif ( MPI_FOUND AND LAMA_USE_MPI )
 
+# blas lapack 
 if ( SCALAPACK_FOUND AND MPI_FOUND AND LAMA_USE_MPI )
     set ( LAMAPP_LINK_LIBRARIES ${LAMAPP_LINK_LIBRARIES} ${LAMA_PBLAS_LIBRARIES} ${LAMA_BLAS_LIBRARIES})
     add_definitions( -DLAMA_MKL_SCALAPACK )
@@ -135,9 +143,15 @@ else ( SCALAPACK_FOUND AND MPI_FOUND AND LAMA_USE_MPI )
     set ( LAMAPP_LINK_LIBRARIES ${LAMAPP_LINK_LIBRARIES} ${LAMA_BLAS_LIBRARIES} )
 endif ( SCALAPACK_FOUND AND MPI_FOUND AND LAMA_USE_MPI )
 
+# boost thread
 if ( NOT WIN32 )
     set ( LAMAPP_LINK_LIBRARIES ${LAMAPP_LINK_LIBRARIES} ${Boost_THREAD_LIBRARY} )
 endif ( NOT WIN32 )
+
+# Metis / ParMetis
+if ( METIS_FOUND OR PARMETIS_FOUND )
+    set( LAMA_LINK_LIBRARIES ${LAMA_LINK_LIBRARIES} ${PARMETIS_LIBRARY} ${METIS_LIBRARY} )
+endif ( METIS_FOUND OR PARMETIS_FOUND ) 
 
 if ( LAMA_BLAS_FOUND )
     set ( LAMA_LINK_LIBRARIES ${LAMA_LINK_LIBRARIES} ${LAMAPP_LINK_LIBRARIES} )

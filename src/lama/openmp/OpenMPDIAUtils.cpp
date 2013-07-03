@@ -130,7 +130,7 @@ void OpenMPDIAUtils::getCSRValues(
     const DIAValueType eps )
 {
     LAMA_LOG_INFO( logger,
-                   "get CSRValues<" << typeid( DIAValueType ).name() << ", " << typeid( CSRValueType ).name() << ">"
+                   "get CSRValues<" << Scalar::getType<DIAValueType>() << ", " << Scalar::getType<CSRValueType>() << ">"
                     << ", #rows = " << numRows << ", #diagonals = " << numDiagonals 
                     << ", #non-zero values = " << csrIA[numRows] << ", diagonalFlag = " << diagonalFlag )
 
@@ -246,7 +246,7 @@ void OpenMPDIAUtils::getCSRSizes(
     const DIAValueType eps )
 {
     LAMA_LOG_INFO( logger,
-                   "get CSRSizes<" << typeid( DIAValueType ).name() << "> for DIA matrix " << numRows << " x " << numColumns << ", #diagonals = " << numDiagonals << ", eps = " << eps << ", diagonalFlag = " << diagonalFlag )
+                   "get CSRSizes<" << Scalar::getType<DIAValueType>() << "> for DIA matrix " << numRows << " x " << numColumns << ", #diagonals = " << numDiagonals << ", eps = " << eps << ", diagonalFlag = " << diagonalFlag )
 
     #pragma omp parallel for schedule(LAMA_OMP_SCHEDULE)
     for ( IndexType i = 0; i < numRows; i++ )
@@ -307,12 +307,12 @@ void OpenMPDIAUtils::normalGEMV(
     const ValueType diaValues[] )
 {
     LAMA_LOG_INFO( logger,
-                   "normalGEMV<" << typeid(ValueType).name()
+                   "normalGEMV<" << Scalar::getType<ValueType>()
                    << ", #threads = " << omp_get_max_threads()
                    << ">, result[" << numRows << "] = " << alpha
                    << " * A( dia, #diags = " << numDiagonals << " ) * x + " << beta << " * y " )
 
-    LAMA_LOG_INFO( logger, "normalGEMV<" << typeid(ValueType).name() << ">, n = " 
+    LAMA_LOG_INFO( logger, "normalGEMV<" << Scalar::getType<ValueType>() << ">, n = "
                            << numRows << ", d = " << numDiagonals  )
 
     // result := alpha * A * x + beta * y -> result:= beta * y; result += alpha * A
@@ -402,7 +402,7 @@ void OpenMPDIAUtils::jacobi(
     class SyncToken* syncToken )
 {
     LAMA_LOG_INFO( logger,
-                   "jacobi<" << typeid(ValueType).name() << ">" 
+                   "jacobi<" << Scalar::getType<ValueType>() << ">"
                     << ", #rows = " << numRows << ", #cols = " << numColumns 
                     << ", #diagonals = " << numDiagonals << ", omega = " << omega )
 

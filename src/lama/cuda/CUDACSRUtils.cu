@@ -408,7 +408,7 @@ void CUDACSRUtils::normalGEMV(
     const ValueType csrValues[],
     SyncToken* syncToken )
 {
-    LAMA_LOG_INFO( logger, "normalGEMV<" << typeid(ValueType).name() << ">" << 
+    LAMA_LOG_INFO( logger, "normalGEMV<" << Scalar::getType<ValueType>() << ">" << 
                            " result[ " << numRows << "] = " << alpha << " * A(csr) * x + " << beta << " * y " )
 
     LAMA_LOG_DEBUG( logger, "x = " << x << ", y = " << y << ", result = " << result )
@@ -432,7 +432,7 @@ void CUDACSRUtils::normalGEMV(
         stream = cudaStreamSyncToken->getCUDAStream();
     }
 
-    LAMA_LOG_INFO( logger, "Start csr_normal_gemv_kernel<" << typeid( ValueType ).name()
+    LAMA_LOG_INFO( logger, "Start csr_normal_gemv_kernel<" << Scalar::getType<ValueType>()
                            << ", useTexture = " << useTexture << ">" );
 
     if ( useTexture )
@@ -457,7 +457,7 @@ void CUDACSRUtils::normalGEMV(
     if ( !syncToken )
     {
         LAMA_CUDA_RT_CALL( cudaStreamSynchronize( stream ), "normalGEMV, stream = " << stream )
-        LAMA_LOG_DEBUG( logger, "normalGEMV<" << typeid(ValueType).name() << "> synchronized" )
+        LAMA_LOG_DEBUG( logger, "normalGEMV<" << Scalar::getType<ValueType>() << "> synchronized" )
     }
 
     if ( useTexture )
@@ -492,7 +492,7 @@ void CUDACSRUtils::sparseGEMV(
     SyncToken* syncToken )
 {
     LAMA_LOG_INFO( logger,
-                   "sparseGEMV<" << typeid(ValueType).name() << ">" << ", #non-zero rows = " << numNonZeroRows )
+                   "sparseGEMV<" << Scalar::getType<ValueType>() << ">" << ", #non-zero rows = " << numNonZeroRows )
 
     LAMA_CHECK_CUDA_ACCESS
 
@@ -517,7 +517,7 @@ void CUDACSRUtils::sparseGEMV(
     if ( !syncToken )
     {
         LAMA_CUDA_RT_CALL( cudaStreamSynchronize( stream ), "sparseGEMV, stream = " << stream )
-        LAMA_LOG_INFO( logger, "sparseGEMV<" << typeid(ValueType).name() << "> synchronized" )
+        LAMA_LOG_INFO( logger, "sparseGEMV<" << Scalar::getType<ValueType>() << "> synchronized" )
     }
 }
 
@@ -693,7 +693,7 @@ void CUDACSRUtils::jacobi(
     dim3 dimBlock( blockSize, 1, 1 );
     dim3 dimGrid = makeGrid( numRows, dimBlock.x );
 
-    LAMA_LOG_INFO( logger, "Start csr_jacobi_kernel<" << typeid( ValueType ).name()
+    LAMA_LOG_INFO( logger, "Start csr_jacobi_kernel<" << Scalar::getType<ValueType>()
                            << ", useTexture = " << useTexture << ">" );
 
     if ( useTexture )
