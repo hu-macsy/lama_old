@@ -59,8 +59,8 @@ extern std::string testcase;
 /* --------------------------------------------------------------------- */
 
 typedef boost::mpl::list<CSRSparseMatrix<float>,ELLSparseMatrix<float>,COOSparseMatrix<float>,JDSSparseMatrix<float>,
-        DIASparseMatrix<float>,DenseMatrix<float>, CSRSparseMatrix<double>,ELLSparseMatrix<double>,COOSparseMatrix<double>,
-        JDSSparseMatrix<double>,DIASparseMatrix<double>,DenseMatrix<double> > MatrixTypes;
+        DIASparseMatrix<float>,CSRSparseMatrix<double>,ELLSparseMatrix<double>,COOSparseMatrix<double>,
+        JDSSparseMatrix<double>,DIASparseMatrix<double> > MatrixTypes;
 
 /* --------------------------------------------------------------------- */
 
@@ -90,7 +90,7 @@ struct MetisDistributionTestConfig
         }
         parts[ size - 1 ] = 1.0 - (size - 1) * weight;
 
-        dist = DistributionPtr( new MetisDistribution( comm, matrix, parts ) );
+        dist = DistributionPtr( new MetisDistribution<double>( comm, matrix, parts ) );
     }
 
     ~MetisDistributionTestConfig()
@@ -135,11 +135,13 @@ BOOST_AUTO_TEST_CASE( commonTestCases )
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( isEqualTest, MatrixType, MatrixTypes )
 {
+    typedef typename MatrixType::ValueType ValueType;
+
     MatrixType distMatrix( matrix );
 
-    DistributionPtr generaldist1( new MetisDistribution( comm, distMatrix, parts ) );
+    DistributionPtr generaldist1( new MetisDistribution<ValueType>( comm, distMatrix, parts ) );
     DistributionPtr generaldist2( generaldist1 );
-    DistributionPtr generaldist3( new MetisDistribution( comm, distMatrix, parts ) );
+    DistributionPtr generaldist3( new MetisDistribution<ValueType>( comm, distMatrix, parts ) );
 
     BOOST_CHECK(  (*generaldist1).isEqual( *generaldist2 ) );
     BOOST_CHECK( !(*generaldist1).isEqual( *generaldist3 ) );
