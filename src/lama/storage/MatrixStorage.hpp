@@ -38,6 +38,7 @@
 
 // others
 #include <lama/LAMAArray.hpp>
+#include <lama/Communicator.hpp>
 
 #include <lama/io/FileType.hpp>
 
@@ -630,6 +631,23 @@ public:
         LAMAArray<IndexType>& cscJA,
         LAMAArray<ValueType>& cscValues ) const;
 
+    /**
+     * @brief transformation from matrix type to a csr graph
+     *
+     * transformation from matrix type to a csr graph,
+     * so that it (Par)Metis can work with it.
+     *
+     * @param[out]  xadj    the ia array of the csr graph
+     * @param[out]  adjncy  the ja array of the csr graph
+     */
+    virtual void buildCSRGraph(
+        IndexType* adjIA,
+        IndexType* adjJA,
+        IndexType* vwgt,
+        CommunicatorPtr comm,
+        const IndexType* globalRowIndexes = NULL,
+        IndexType* vtxdist = NULL ) const;
+
     /** Format conversion of matrix storage. A default implementation is provided using CSR data.
      *  Derived clauses might override this method with more efficient solutions.
      */
@@ -931,6 +949,32 @@ public:
     {
         std::swap( epsilon, mEpsilon );
     }
+
+    /**
+     * This method extracts sparse data (column indexes and data values) for rows
+     *
+     * @param[out] ja column indexes for the rows
+     * @param[out] matrix values corresponding to the columns
+     */
+    virtual void buildSparseRowData( LAMAArray<IndexType>& ja,
+        LAMAArray<ValueType>& values ) const;
+
+    /** Method that builds an array with number of non-zero values for each row of the matrix.
+     *
+     * @param[out] numRowValues numRowValues[i] is number of stored values in row i
+     *
+     * The offset array as used in CSR format can be built by this array by
+     * summing up: ia[0] = 0, ia[i+1] = ia[i] + numRowValues[i], i = 0, ..., size-1
+     */
+
+    virtual void buildSparseRowSizes( LAMAArray<IndexType>& numRowValues ) const;
+
+    /** Method that returns an array with row-wise column indexes of stored elements.
+     *
+     *  @param[out] ja is the ja array as used in the CSR format.
+     */
+
+    virtual void buildSparseRowIndexes( LAMAArray<IndexType>& ja ) const;
 
 protected:
 

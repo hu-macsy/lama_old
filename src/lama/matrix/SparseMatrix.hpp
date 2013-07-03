@@ -168,16 +168,14 @@ public:
     const MatrixStorage<ValueType>& getLocalStorage() const
     {
         return *mLocalData;
-    }
-    ;
+    };
 
     /** Getter routine for halo part of the sparse matrix. */
 
     const MatrixStorage<ValueType>& getHaloStorage() const
     {
         return *mHaloData;
-    }
-    ;
+    };
 
     /**
      * @brief Constructor of a replicated sparse matrix with global storage.

@@ -39,7 +39,7 @@ using namespace lama;
 
 static std::string distclasses[] =
 {   "BlockDistributionTest", "GeneralDistributionTest", "NoDistributionTest", "CyclicDistributionTest",
-    "GenBlockDistributionTest"
+    "GenBlockDistributionTest", "MetisDistributionTest"
 };
 
 static std::string distmethods[] =

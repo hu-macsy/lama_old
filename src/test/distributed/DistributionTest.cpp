@@ -35,7 +35,7 @@
 
 #include <test/TestMacros.hpp>
 
-LAMA_COMMON_TEST_CASE( DistributionTest, localSizeTest );
+LAMA_COMMON_TEST_CASE( DistributionTest, localSizeTest )
 {
     // general test that must work for all distributions
     // the local sizes summed up over all partitions must be the global size
@@ -44,9 +44,9 @@ LAMA_COMMON_TEST_CASE( DistributionTest, localSizeTest );
     BOOST_CHECK_EQUAL( mDistributionPtr->getGlobalSize(), sumLocalSizes );
 }
 LAMA_COMMON_TEST_CASE_END()
-;
 
-LAMA_COMMON_TEST_CASE( DistributionTest, local2GlobalTest );
+
+LAMA_COMMON_TEST_CASE( DistributionTest, local2GlobalTest )
 {
     for ( IndexType i = 0; i < mDistributionPtr->getGlobalSize(); i++ )
     {
@@ -61,9 +61,9 @@ LAMA_COMMON_TEST_CASE( DistributionTest, local2GlobalTest );
     }
 }
 LAMA_COMMON_TEST_CASE_END()
-;
 
-LAMA_COMMON_TEST_CASE( DistributionTest, global2LocalTest );
+
+LAMA_COMMON_TEST_CASE( DistributionTest, global2LocalTest )
 {
     for ( IndexType i = 0; i < mDistributionPtr->getLocalSize(); i++ )
     {
@@ -71,16 +71,16 @@ LAMA_COMMON_TEST_CASE( DistributionTest, global2LocalTest );
     }
 }
 LAMA_COMMON_TEST_CASE_END()
-;
 
-LAMA_COMMON_TEST_CASE( DistributionTest, writeAtTest );
+
+LAMA_COMMON_TEST_CASE( DistributionTest, writeAtTest )
 {
-    LAMA_WRITEAT_PTR_TEST( mDistributionPtr );
+    LAMA_WRITEAT_PTR_TEST( mDistributionPtr )
 }
 LAMA_COMMON_TEST_CASE_END()
-;
 
-LAMA_COMMON_TEST_CASE( DistributionTest, printDistributionVector );
+
+LAMA_COMMON_TEST_CASE( DistributionTest, printDistributionVector )
 {
     //todo: does not test the content of these files
     std::string s;
@@ -89,7 +89,7 @@ LAMA_COMMON_TEST_CASE( DistributionTest, printDistributionVector );
     std::remove( ( s + ".part" ).c_str() );
 }
 LAMA_COMMON_TEST_CASE_END()
-;
+
 
 LAMA_COMMON_TEST_CASE_RUNNER( DistributionTest )
 {

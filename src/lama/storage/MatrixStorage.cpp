@@ -1391,6 +1391,109 @@ void MatrixStorage<ValueType>::readFromFile( const std::string& fileName )
     check( "read matrix" );
 }
 
+/*****************************************************************************/
+
+template<typename ValueType>
+void MatrixStorage<ValueType>::buildSparseRowSizes( LAMAArray<IndexType>& /*rowSizes*/ ) const
+{
+    LAMA_LOG_DEBUG( logger, "copy nnz for each row in LAMAArray" );
+
+    LAMA_THROWEXCEPTION( "cannot build sparse row sizes for this matrix storage" )
+}
+
+/*****************************************************************************/
+
+template<typename ValueType>
+void MatrixStorage<ValueType>::buildCSRGraph(
+                IndexType* adjIA,
+                IndexType* adjJA,
+                IndexType* vwgt,
+                CommunicatorPtr comm,
+                const IndexType* globalRowIndexes /* = NULL */,
+                IndexType* vtxdist /* = NULL */) const
+{
+        IndexType numLocalRows = mNumRows;
+
+        if ( vtxdist != NULL ) // parallel graph
+        {
+            const PartitionId MASTER = 0;
+
+            IndexType parts = comm->getSize();
+
+            // Is this valid ?
+    // LAMA_ASSERT_ERROR( getDistribution().getNumPartitions() == parts,
+    //              "mismatch number of partitions and communicator size" );
+
+            std::vector<IndexType> localNumRows( parts );
+
+            comm->gather( vtxdist, 1, MASTER, &numLocalRows );
+            comm->bcast( vtxdist, parts, MASTER );
+
+            vtxdist[parts] = OpenMPCSRUtils::scan( vtxdist, parts );
+        }
+
+        LAMAArray<IndexType> rowSizes;
+        LAMAArray<IndexType> localJA;
+
+        buildSparseRowSizes( rowSizes );
+        buildSparseRowIndexes( localJA );
+
+        HostReadAccess<IndexType> sizes( rowSizes );
+        HostReadAccess<IndexType> ja( localJA );
+
+        IndexType offset = 0;  // runs through JA
+        IndexType newOffset = 0;  // runs through adjJA
+
+
+        for ( IndexType i = 0; i < numLocalRows; i++ )
+        {
+            IndexType rowIndex = i;
+
+            if ( globalRowIndexes != NULL )
+            {
+                 rowIndex = globalRowIndexes[ i ];
+            }
+
+            adjIA[ i ] = newOffset;
+            vwgt[ i ] = sizes[ i ];
+
+            for ( IndexType jj = 0; jj < sizes[ i ]; jj++ )
+            {
+               if ( rowIndex != ja[ offset ] ) // skip diagonal element
+                {
+                    adjJA[ newOffset++ ] = ja[ offset ];
+                }
+
+                offset++;
+           }
+        }
+
+        adjIA[ numLocalRows ] = newOffset;
+}
+
+/*****************************************************************************/
+
+template<typename ValueType>
+void MatrixStorage<ValueType>::buildSparseRowIndexes( LAMAArray<IndexType>& ja ) const
+{
+    LAMA_LOG_WARN(logger, *this << ": use off inefficient method buildSparseRowIndexes");
+    LAMAArray<ValueType> values;
+    buildSparseRowData( ja, values);
+}
+
+/*****************************************************************************/
+
+template<typename ValueType>
+void MatrixStorage<ValueType>::buildSparseRowData( LAMAArray<IndexType>& /*sparseJA*/,
+                                                LAMAArray<ValueType>& /*sparseValues*/ ) const
+{
+    LAMA_LOG_INFO( logger, *this << ": build sparse row data" );
+
+    LAMA_THROWEXCEPTION( "buildSparseRowData not implemented for this storage type" )
+}
+
+/*****************************************************************************/
+
 /* ========================================================================= */
 /*       Template Instantiations                                             */
 /* ========================================================================= */
