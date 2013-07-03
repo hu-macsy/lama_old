@@ -1394,16 +1394,6 @@ void MatrixStorage<ValueType>::readFromFile( const std::string& fileName )
 /*****************************************************************************/
 
 template<typename ValueType>
-void MatrixStorage<ValueType>::buildSparseRowSizes( LAMAArray<IndexType>& /*rowSizes*/ ) const
-{
-    LAMA_LOG_DEBUG( logger, "copy nnz for each row in LAMAArray" );
-
-    LAMA_THROWEXCEPTION( "cannot build sparse row sizes for this matrix storage" )
-}
-
-/*****************************************************************************/
-
-template<typename ValueType>
 void MatrixStorage<ValueType>::buildCSRGraph(
                 IndexType* adjIA,
                 IndexType* adjJA,
@@ -1432,14 +1422,18 @@ void MatrixStorage<ValueType>::buildCSRGraph(
             vtxdist[parts] = OpenMPCSRUtils::scan( vtxdist, parts );
         }
 
+        LAMAArray<IndexType> csrIA;
+        LAMAArray<IndexType> csrJA;
+        LAMAArray<ValueType> csrValues;
+
+        buildCSRData( csrIA, csrJA, csrValues );
+
         LAMAArray<IndexType> rowSizes;
-        LAMAArray<IndexType> localJA;
+        HostWriteOnlyAccess<IndexType> sizes( rowSizes, mNumRows );
+        HostReadAccess<IndexType> ia( csrIA );
+        OpenMPCSRUtils::offsets2sizes( sizes.get(), ia.get(), mNumRows );
 
-        buildSparseRowSizes( rowSizes );
-        buildSparseRowIndexes( localJA );
-
-        HostReadAccess<IndexType> sizes( rowSizes );
-        HostReadAccess<IndexType> ja( localJA );
+        HostReadAccess<IndexType> ja( csrJA );
 
         IndexType offset = 0;  // runs through JA
         IndexType newOffset = 0;  // runs through adjJA
@@ -1469,27 +1463,6 @@ void MatrixStorage<ValueType>::buildCSRGraph(
         }
 
         adjIA[ numLocalRows ] = newOffset;
-}
-
-/*****************************************************************************/
-
-template<typename ValueType>
-void MatrixStorage<ValueType>::buildSparseRowIndexes( LAMAArray<IndexType>& ja ) const
-{
-    LAMA_LOG_WARN(logger, *this << ": use off inefficient method buildSparseRowIndexes");
-    LAMAArray<ValueType> values;
-    buildSparseRowData( ja, values);
-}
-
-/*****************************************************************************/
-
-template<typename ValueType>
-void MatrixStorage<ValueType>::buildSparseRowData( LAMAArray<IndexType>& /*sparseJA*/,
-                                                LAMAArray<ValueType>& /*sparseValues*/ ) const
-{
-    LAMA_LOG_INFO( logger, *this << ": build sparse row data" );
-
-    LAMA_THROWEXCEPTION( "buildSparseRowData not implemented for this storage type" )
 }
 
 /*****************************************************************************/
