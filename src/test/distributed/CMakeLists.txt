@@ -48,7 +48,6 @@ set ( SOURCE_FILES
         CyclicDistributionTest
         GenBlockDistributionTest
         GeneralDistributionTest
-        MetisDistributionTest
         NoDistributionTest
         P_CGTest
         P_COOSparseMatrixTest

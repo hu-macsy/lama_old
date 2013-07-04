@@ -379,7 +379,7 @@ struct CSRUtilsInterface
          *  @param[in]  bIA, bJA are the index arrays of matrix B
          */
 
-        typedef IndexType ( *matrixMultiplySizes ) ( IndexType cIa[], 
+        typedef IndexType ( *matrixMultiplySizes ) ( IndexType cSizes[], 
                                                      const IndexType m, 
                                                      const IndexType n, 
                                                      const IndexType k,
@@ -916,6 +916,7 @@ struct ELLUtilsInterface
                                          CSRValueType csrValues[],
                                          const IndexType csrIA[],
                                          const IndexType numRows,
+                                         const IndexType numValuesPerRow,
                                          const IndexType ellSizes[],
                                          const IndexType ellJA[],
                                          const ELLValueType ellValues[] );
@@ -950,10 +951,11 @@ struct ELLUtilsInterface
          * @param[out] new created IA
          */
 
-        typedef void ( *compressIA ) ( const IndexType IA[],
-                                       const IndexType JA[],
-                                       const ValueType values[],
+        typedef void ( *compressIA ) ( const IndexType ellSizes[],
+                                       const IndexType ellJA[],
+                                       const ValueType ellValues[],
                                        const IndexType numRows,
+                                       const IndexType numValuesPerRow,
                                        const ValueType eps,
                                        IndexType newIA[] );
 
@@ -968,11 +970,13 @@ struct ELLUtilsInterface
          * @param[out] new created values
          */
 
-        typedef void ( *compressValues ) ( const IndexType IA[],
-                                           const IndexType JA[],
-                                           const ValueType values[],
+        typedef void ( *compressValues ) ( const IndexType ellSizes[],
+                                           const IndexType ellJA[],
+                                           const ValueType ellValues[],
                                            const IndexType numRows,
+                                           const IndexType numValuesPerRow,
                                            const ValueType eps,
+                                           const IndexType newNumValuesPerRow,
                                            IndexType newJA[],
                                            ValueType newValues[] );
 
@@ -995,13 +999,14 @@ struct ELLUtilsInterface
          *  @param[in]  values is the ELL values array
          */
 
-        typedef void ( *getRow ) ( OtherValueType *row,
+        typedef void ( *getRow ) ( OtherValueType row[],
                                    const IndexType i,
                                    const IndexType numRows,
                                    const IndexType numColumns,
-                                   const IndexType *ia,
-                                   const IndexType *ja,
-                                   const ValueType *values );
+                                   const IndexType numValuesPerRow,
+                                   const IndexType ellSizes[],
+                                   const IndexType ellJA[],
+                                   const ValueType ellValues[] );
 
         /** Returns one element of the matrix
          *
@@ -1014,34 +1019,35 @@ struct ELLUtilsInterface
          */
 
         typedef OtherValueType ( *getValue ) ( const IndexType i,
-                                          const IndexType j,
-                                          const IndexType numRows,
-                                          const IndexType *ia,
-                                          const IndexType *ja,
-                                          const ValueType *values );
+                                               const IndexType j,
+                                               const IndexType numRows,
+                                               const IndexType numValuesPerRow,
+                                               const IndexType ellSizes[], 
+                                               const IndexType ellJA[],
+                                               const ValueType ellValues[] );
     };
 
-    LAMA_INTERFACE_DEFINE_TT( Getter , getRow )
+    LAMA_INTERFACE_DEFINE_TT( Getter, getRow )
     LAMA_INTERFACE_DEFINE_TT( Getter, getValue )
 
     struct Operations
     {
-        typedef IndexType ( *countNonEmptyRowsBySizes ) ( const IndexType sizes[],
+        typedef IndexType ( *countNonEmptyRowsBySizes ) ( const IndexType ellSizes[],
                                                           const IndexType numRows );
 
         typedef void ( *setNonEmptyRowsBySizes ) (  IndexType rowIndexes[],
                                                     const IndexType numNonEmptyRows,
-                                                    const IndexType sizes[],
+                                                    const IndexType ellSizes[],
                                                     const IndexType numRows );
 
         typedef bool ( *hasDiagonalProperty ) ( const IndexType numDiagonals,
-                                                        const IndexType ellJA[] );
+                                                const IndexType ellJA[] );
 
         typedef void ( *check ) ( const IndexType mNumRows,
                                   const IndexType mNumValuesPerRow,
                                   const IndexType mNumColumns,
-                                  const IndexType *ia,
-                                  const IndexType *ja,
+                                  const IndexType ellSizes[],
+                                  const IndexType ellJA[],
                                   const char* msg );
     };
 
@@ -1073,7 +1079,7 @@ struct ELLUtilsInterface
                                        const ValueType beta,
                                        const ValueType y[],
                                        const IndexType numRows,
-                                       const IndexType numNonZerosPerRows,
+                                       const IndexType numValuesPerRow,
                                        const IndexType ellIA[],
                                        const IndexType ellJA[],
                                        const ValueType ellValues[],
@@ -1095,7 +1101,7 @@ struct ELLUtilsInterface
 
         typedef void ( *sparseGEMV ) ( ValueType result[],
                                        const IndexType numRows,
-                                       const IndexType numNonZerosPerRows,
+                                       const IndexType numValuesPerRow,
                                        const ValueType alpha,
                                        const ValueType x[],
                                        const IndexType numNonZeroRows,
@@ -1117,8 +1123,8 @@ struct ELLUtilsInterface
          /** This method returns the maximal absolute value of an ELLPACK matrix. */
 
          typedef ValueType ( *absMaxVal ) ( const IndexType numRows,
-                                            const IndexType numNonZerosPerRow,
-                                            const IndexType ellIA[],
+                                            const IndexType numValuesPerRow,
+                                            const IndexType ellSizes[],
                                             const ValueType ellValues[]
                                           );
     };
@@ -1129,121 +1135,149 @@ struct ELLUtilsInterface
     struct Scale
     {
         typedef void ( *scaleValue ) ( const IndexType numRows,
-                                       const IndexType Ia[],
-                                       ValueType mValues[],
+                                       const IndexType numValuesPerRow,
+                                       const IndexType ellSizes[],
+                                       ValueType ellValues[],
                                        const OtherValueType values[] );
     };
 
     LAMA_INTERFACE_DEFINE_TT( Scale, scaleValue )
 
-    template<typename ValueType>
-    struct MatrixTimesMatrix
+    struct MatrixExpBuild
     {
-        /** Method to compute the resulting IA array of an matrix times matrix multiplication
+        /** @brief Compute the row sizes of result matrix C for matrix multiplication A x B
          *
-         *  @param IA array of the left hand matrix
-         *  @param JA array of the left hand matrix
-         *  @param number of rows of the left hand matrix
-         *  @param IA array of the right hand matrix
-         *  @param JA array of the right hand matrix
-         *  @param number of rows of the right hand matrix
-         *  @param resulting IA array
+         *  @param[out] cSizes array of length m, will contain number of entries
+         *  @param[in]  m number of rows for matrix C and A
+         *  @param[in]  n number of columns for matrix C and B
+         *  @param[in]  k number of columns for A and number of rows for B
+         *  @param[in]  diagonalProperty if true, diagonal elements will count in any case
+         *  @param[in]  aSizes, aJA are the index arrays of matrix A
+         *  @param[in]  aNumValuesPerRow multiplied with m is size of aJA
+         *  @param[in]  bSizes, bJA are the index arrays of matrix A
+         *  @param[in]  bNumValuesPerRow multiplied with k is size of bJA
          *
+         *  cNumValuesPerRow can be computed afterwards as maxval( cSizes[0:m-1] )
+         *
+         *  Note: this routines does not need any value array as only structure is computed
          */
 
-        typedef void ( *computeIA ) ( const IndexType aIA[],
-                                      const IndexType aJA[],
-                                      const IndexType aNumRows,
-                                      const IndexType bIA[],
-                                      const IndexType bJA[],
-                                      const IndexType bNumRows,
-                                      IndexType cIA[] );
+        typedef void ( *matrixMultiplySizes ) ( IndexType cSizes[],
+                                                const IndexType m, 
+                                                const IndexType n, 
+                                                const IndexType k,
+                                                const bool diagonalProperty,
+                                                const IndexType aSizes[],
+                                                const IndexType aJA[],
+                                                const IndexType aNumValuesPerRow,
+                                                const IndexType bSizes[],
+                                                const IndexType bJA[],
+                                                const IndexType bNumValuesPerRow );
 
-        /** Method to compute the resulting JA and Values arrays of the matrix times matrix multiplication
+        /** @brief Compute the row sizes of result matrix C for matrix addition A + B
          *
-         * @param IA array of the left hand matrix
-         * @param JA array of the left hand matrix
-         * @param values array of the left hand matrix
-         * @param number of rows of the left hand matrix
-         * @param IA array of the right hand matrix
-         * @param JA array of the right hand matrix
-         * @param values array of the right hand matrix
-         * @param number of rows of the right hand matrix
-         * @param alpha of the multiplication
-         * @param resulting JA array
-         * @param resulting values array
+         *  @param[out] cSizes array of length m, will contain number of entries
+         *  @param[in]  m number of rows for matrices A, B, and C
+         *  @param[in]  n number of columns for matrices A, B, and C
+         *  @param[in]  diagonalProperty if true, diagonal elements will count in any case
+         *  @param[in]  aSizes, aJA are the index arrays of matrix A
+         *  @param[in]  aNumValuesPerRow multiplied with m is size of aJA
+         *  @param[in]  bSizes, bJA are the index arrays of matrix A
+         *  @param[in]  bNumValuesPerRow multiplied with m is size of bJA
+         *
+         *  cNumValuesPerRow can be computed afterwards as maxval( cSizes[0:m-1] )
+         *
+         *  Note: this routines does not need any value array as only structure is computed
          */
-
-        typedef void ( *computeValues ) ( const IndexType aIA[],
-                                          const IndexType aJA[],
-                                          const ValueType aValues[],
-                                          const IndexType aNumRows,
-                                          const IndexType bIA[],
-                                          const IndexType bJA[],
-                                          const ValueType bValues[],
-                                          const IndexType bNumRows,
-                                          const ValueType alpha,
-                                          const IndexType cIA[],
-                                          IndexType cJA[],
-                                          ValueType cValues[] );
-
-        /** Method to compute the resulting IA array of an matrix adding
-         *
-         *  @param IA array of the left hand matrix
-         *  @param JA array of the left hand matrix
-         *  @param number of rows of the left hand matrix
-         *  @param IA array of the right hand matrix
-         *  @param JA array of the right hand matrix
-         *  @param number of rows of the right hand matrix
-         *  @param resulting IA array
-         *
-         */
-
-        typedef void ( *addComputeIA ) ( const IndexType aIA[],
-                                         const IndexType aJA[],
-                                         const IndexType aNumRows,
-                                         const IndexType bIA[],
-                                         const IndexType bJA[],
-                                         const IndexType bNumRows,
-                                         IndexType cIA[] );
-
-        /** Method to compute the resulting JA and Values arrays of the matrix adding
-         *
-         * @param IA array of the left hand matrix
-         * @param JA array of the left hand matrix
-         * @param values array of the left hand matrix
-         * @param number of rows of the left hand matrix
-         * @param IA array of the right hand matrix
-         * @param JA array of the right hand matrix
-         * @param values array of the right hand matrix
-         * @param number of rows of the right hand matrix
-         * @param beta of the adding
-         * @param resulting JA array
-         * @param resulting values array
-         */
-
-        typedef void ( *addComputeValues ) ( const IndexType aIA[],
-                                             const IndexType aJA[],
-                                             const ValueType aValues[],
-                                             const IndexType aNumRows,
-                                             const IndexType bIA[],
-                                             const IndexType bJA[],
-                                             const ValueType bValues[],
-                                             const IndexType bNumRows,
-                                             const ValueType beta,
-                                             const IndexType cIA[],
-                                             IndexType cJA[],
-                                             ValueType cValues[] );
-
+        typedef void ( *matrixAddSizes ) ( IndexType cSizes[],
+                                           const IndexType m,
+                                           const IndexType n,
+                                           const bool diagonalProperty,
+                                           const IndexType aSizes[],
+                                           const IndexType aJA[],
+                                           const IndexType aNumValuesPerRow,
+                                           const IndexType bSizes[],
+                                           const IndexType bJA[],
+                                           const IndexType bNumValuesPerRow );
     };
 
-    LAMA_INTERFACE_DEFINE_T( MatrixTimesMatrix, computeIA )
-    LAMA_INTERFACE_DEFINE_T( MatrixTimesMatrix, computeValues )
-    LAMA_INTERFACE_DEFINE_T( MatrixTimesMatrix, addComputeIA )
-    LAMA_INTERFACE_DEFINE_T( MatrixTimesMatrix, addComputeValues )
+    LAMA_INTERFACE_DEFINE( MatrixExpBuild, matrixAddSizes )
+    LAMA_INTERFACE_DEFINE( MatrixExpBuild, matrixMultiplySizes )
+
+    template<typename ValueType>
+    struct MatrixExp
+    {
+        /** @brief computes c = alpha * a + beta * b for ELL sparse matrices a, b, c
+         *
+         * @param[out] cJA is the column index array of c
+         * @param[out] cValues is the value array of c
+         * @param[in]  m number of rows for all matrices
+         * @param[in]  n number of columns for all matrices
+         * @param[in]  diagonalProperty if true result matrix c should have diagonal property
+         * @param[in]  alpha is scaling factor of the matrix expression
+         * @param[in]  aSizes, aJA, aValues, aNumValuesPerRow is data of input matrix a
+         * @param[in]  beta is scaling factor of the matrix expression
+         * @param[in]  bSizes, bJA, bValues, bNumValuesPerRow is data of input matrix b
+         *
+         * Note: the size array cValues and cNumValuePerRow must already be available.
+         */
+
+        typedef void ( *matrixAdd ) ( IndexType cJA[],
+                                      ValueType cValues[],
+                                      const IndexType cSizes[],
+                                      const IndexType cNumValuesPerRow,
+                                      const IndexType m,
+                                      const IndexType n,
+                                      const bool diagonalProperty,
+                                      const ValueType alpha,
+                                      const IndexType aSizes[],
+                                      const IndexType aJA[],
+                                      const ValueType aValues[],
+                                      const IndexType aNumValuesPerRow,
+                                      const ValueType beta,
+                                      const IndexType bSizes[],
+                                      const IndexType bJA[],
+                                      const ValueType bValues[],
+                                      const IndexType bNumValuesPerRow );
+
+        /** @brief computes c = alpha * a * b for ELL sparse matrices a, b, c
+         *
+         * @param[out] cJA is the column index array of c
+         * @param[out] cValues is the value array of c
+         * @param[in]  m number of rows for matrix c and a
+         * @param[in]  n number of columns for matrix c and b
+         * @param[in]  k number of columns for a and number of rows for b
+         * @param[in]  diagonalProperty if true result matrix c should have diagonal property
+         * @param[in]  alpha is scaling factor of the matrix expression
+         * @param[in]  aSizes, aJA, aValues, aNumValuesPerRow is data of input matrix a
+         * @param[in]  bSizes, bJA, bValues, bNumValuesPerRow is data of input matrix b
+         *
+         * Note: the size array cValues and cNumValuePerRow must already be available.
+         */
+
+        typedef void ( *matrixMultiply ) ( IndexType cJA[],
+                                           ValueType cValues[],
+                                           const IndexType cSizes[],
+                                           const IndexType cNumValuesPerRow,
+                                           const IndexType m,
+                                           const IndexType n,
+                                           const IndexType k,
+                                           const bool diagonalProperty,
+                                           const ValueType alpha,
+                                           const IndexType aSizes[],
+                                           const IndexType aJA[],
+                                           const ValueType aValues[],
+                                           const IndexType aNumValuesPerRow,
+                                           const IndexType bSizes[],
+                                           const IndexType bJA[],
+                                           const ValueType bValues[],
+                                           const IndexType bNumValuesPerRow );
+    };
+
+    LAMA_INTERFACE_DEFINE_T( MatrixExp, matrixAdd )
+    LAMA_INTERFACE_DEFINE_T( MatrixExp, matrixMultiply )
 
     ELLUtilsInterface ();
-
 };
 
 /** Interface for utility functions to be used in JDS storage.

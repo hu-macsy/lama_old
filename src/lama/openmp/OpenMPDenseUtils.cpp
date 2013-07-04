@@ -40,8 +40,6 @@
 
 #include <lama/openmp/OpenMP.hpp>
 
-#include <typeinfo>
-
 namespace lama
 {
 
