@@ -385,6 +385,7 @@ void CUDAELLUtils::getRow(
     const IndexType i,
     const IndexType numRows,
     const IndexType numColumns,
+    const IndexType UNUSED( numValuesPerRow ),
     const IndexType *ia,
     const IndexType *ja,
     const ValueType *values )
@@ -442,6 +443,7 @@ OtherValueType CUDAELLUtils::getValue(
     const IndexType i,
     const IndexType j,
     const IndexType numRows,
+    const IndexType UNUSED( numValuesPerRow ),
     const IndexType *ia,
     const IndexType *ja,
     const ValueType *values )
@@ -483,18 +485,19 @@ OtherValueType CUDAELLUtils::getValue(
 template<typename ValueType,typename OtherValueType>
 void CUDAELLUtils::scaleValue(
     const IndexType numRows,
+    const IndexType UNUSED( numValuesPerRow ),
     const IndexType ia[],
-    ValueType mValues[],
+    ValueType ellValues[],
     const OtherValueType values[] )
 {
 
     LAMA_LOG_INFO( logger,
-                   "scaleValue, #numRows = " << numRows << ", ia = " << ia << ", mValues = " << mValues << ", values = " << values )
+                   "scaleValue, #numRows = " << numRows << ", ia = " << ia << ", ellValues = " << ellValues << ", values = " << values )
 
     LAMA_CHECK_CUDA_ACCESS
 
     thrust::device_ptr<IndexType> ia_ptr( const_cast<IndexType*>( ia ) );
-    thrust::device_ptr<ValueType> mValues_ptr( const_cast<ValueType*>( mValues ) );
+    thrust::device_ptr<ValueType> ellValues_ptr( const_cast<ValueType*>( ellValues ) );
     thrust::device_ptr<OtherValueType> values_ptr( const_cast<OtherValueType*>( values ) );
 
     IndexType maxCols = CUDAUtils::maxval( ia, numRows );
@@ -502,8 +505,8 @@ void CUDAELLUtils::scaleValue(
     //TODO: maybe find better implementation
     for ( IndexType i = 0; i < maxCols; i++ )
     {
-        thrust::transform( mValues_ptr + i * numRows, mValues_ptr + i * numRows + numRows, values_ptr,
-                           mValues_ptr + i * numRows, multiply<ValueType,OtherValueType>() );
+        thrust::transform( ellValues_ptr + i * numRows, ellValues_ptr + i * numRows + numRows, values_ptr,
+                           ellValues_ptr + i * numRows, multiply<ValueType,OtherValueType>() );
     }
 
 }
@@ -547,6 +550,7 @@ void CUDAELLUtils::getCSRValues(
     CSRValueType csrValues[],
     const IndexType csrIA[],
     const IndexType numRows,
+    const IndexType UNUSED( numValuesPerRow ),
     const IndexType ellSizes[],
     const IndexType ellJA[],
     const ELLValueType ellValues[] )
@@ -554,7 +558,7 @@ void CUDAELLUtils::getCSRValues(
     LAMA_REGION( "CUDA.ELL->CSR_values" )
 
     LAMA_LOG_INFO( logger,
-                   "get CSRValues<" << typeid( ELLValueType ).name() << ", " << typeid( CSRValueType ).name() << ">" << ", #rows = " << numRows )
+                   "get CSRValues<" << Scalar::getType<ELLValueType>() << ", " << Scalar::getType<CSRValueType>() << ">" << ", #rows = " << numRows )
 
     LAMA_CHECK_CUDA_ACCESS
 
@@ -626,7 +630,7 @@ void CUDAELLUtils::setCSRValues(
     LAMA_REGION( "CUDA.ELL<-CSR_values" )
 
     LAMA_LOG_INFO( logger,
-                   "set CSRValues<" << typeid( ELLValueType ).name() << ", " << typeid( CSRValueType ).name() << ">" << ", #rows = " << numRows << ", #values/row = " << numValuesPerRow )
+                   "set CSRValues<" << Scalar::getType<ELLValueType>() << ", " << Scalar::getType<CSRValueType>() << ">" << ", #rows = " << numRows << ", #values/row = " << numValuesPerRow )
 
     LAMA_LOG_DEBUG( logger,
                     "ellJA = " << ellJA << ", ellValues = " << ellValues << ", ellSizes = " << ellSizes << ", csrIA = " << csrIA << ", csrJA = " << csrJA << ", csrValues = " << csrValues )
@@ -688,7 +692,7 @@ void CUDAELLUtils::fillELLValues(
     const IndexType numRows,
     const IndexType numValuesPerRow )
 {
-    LAMA_LOG_INFO( logger, "fill ELLValues<" << typeid( ValueType ).name() )
+    LAMA_LOG_INFO( logger, "fill ELLValues<" << Scalar::getType<ValueType>() )
 
     LAMA_CHECK_CUDA_ACCESS
 
@@ -756,7 +760,7 @@ void CUDAELLUtils::normalGEMV(
 {
     LAMA_REGION( "CUDA.ELL.normalGEMV" )
 
-    LAMA_LOG_INFO( logger, "normalGEMV<" << typeid(ValueType).name() << ">" <<
+    LAMA_LOG_INFO( logger, "normalGEMV<" << Scalar::getType<ValueType>() << ">" <<
                            " result[ " << numRows << "] = " << alpha << " * A(ell) * x + " << beta << " * y " )
 
     LAMA_LOG_DEBUG( logger, "x = " << x << ", y = " << y << ", result = " << result )
@@ -779,7 +783,7 @@ void CUDAELLUtils::normalGEMV(
 
     bool useTexture = CUDASettings::useTexture();
 
-    LAMA_LOG_INFO( logger, "Start ellGemvKernel<" << typeid( ValueType ).name()
+    LAMA_LOG_INFO( logger, "Start ellGemvKernel<" << Scalar::getType<ValueType>()
                            << "> <<< blockSize = " << blockSize << ", stream = " << stream 
                            << ", useTexture = " << useTexture << ">>>" )
 
@@ -882,7 +886,7 @@ void CUDAELLUtils::sparseGEMV(
 {
     LAMA_REGION( "CUDA.ELL.sparseGEMV" )
 
-    LAMA_LOG_INFO( logger, "sparseGEMV<" << typeid(ValueType).name() << ">" << ", #non-zero rows = " << numNonZeroRows )
+    LAMA_LOG_INFO( logger, "sparseGEMV<" << Scalar::getType<ValueType>() << ">" << ", #non-zero rows = " << numNonZeroRows )
 
     LAMA_CHECK_CUDA_ACCESS
 
@@ -906,7 +910,7 @@ void CUDAELLUtils::sparseGEMV(
         vectorELLBindTexture( x );
     }
 
-    LAMA_LOG_INFO( logger, "Start ell_sparse_gemv_kernel<" << typeid( ValueType ).name()
+    LAMA_LOG_INFO( logger, "Start ell_sparse_gemv_kernel<" << Scalar::getType<ValueType>()
                            << "> <<< blockSize = " << blockSize << ", stream = " << stream 
                            << ", useTexture = " << useTexture << ">>>" );
 
@@ -1035,7 +1039,7 @@ void CUDAELLUtils::jacobi(
     dim3 dimBlock( blockSize, 1, 1 );
     dim3 dimGrid = makeGrid( numRows, dimBlock.x );
 
-    LAMA_LOG_INFO( logger, "Start ell_jacobi_kernel<" << typeid( ValueType ).name()
+    LAMA_LOG_INFO( logger, "Start ell_jacobi_kernel<" << Scalar::getType<ValueType>()
                            << "> <<< block size = " << blockSize << ", stream = " << stream
                            << ", useTexture = " << useTexture << ">>>" );
 

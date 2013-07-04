@@ -955,7 +955,7 @@ template<typename ValueType>
 void LAMAArray<ValueType>::writeAt( std::ostream& stream ) const
 {
     stream << "LAMAArray<";
-    stream << typeid(ValueType).name();
+    stream << Scalar::getType<ValueType>();
     stream << ">(" << mSize;
 
     for ( size_t i = 0; i < mContextData.size(); ++i )

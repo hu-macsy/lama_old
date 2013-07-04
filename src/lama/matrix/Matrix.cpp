@@ -220,18 +220,18 @@ _LAMAArray* Matrix::createArray() const
 //    matrix->allocate( dist, dist );
 //    return matrix.release();
 //}
-//
-///* ---------------------------------------------------------------------------------*/
-//
-//Matrix* Matrix::create( DistributionPtr rowDistribution, DistributionPtr colDistribution ) const
-//{
-//    std::auto_ptr<Matrix> matrix( create() );
-//
-//    matrix->allocate( rowDistribution, colDistribution );
-//
-//    return matrix.release();
-//}
-//
+
+/* ---------------------------------------------------------------------------------*/
+
+Matrix* Matrix::create( DistributionPtr rowDistribution, DistributionPtr colDistribution ) const
+{
+    std::auto_ptr<Matrix> matrix( create() );
+
+    matrix->allocate( rowDistribution, colDistribution );
+
+    return matrix.release();
+}
+
 ///* ---------------------------------------------------------------------------------*/
 //
 //Matrix* Matrix::create( DistributionPtr distribution ) const

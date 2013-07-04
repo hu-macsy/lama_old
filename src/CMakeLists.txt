@@ -274,6 +274,20 @@ else ( Boost_REGEX_FOUND )
     lama_status_message ( WARNING "[NOT FOUND]" "Boost Regex" )
 endif ( Boost_REGEX_FOUND )
 
+## Metis
+if ( METIS_FOUND )
+    lama_status_message ( INFO "[FOUND]" "    Metis at ${METIS_INCLUDE_DIR}" )
+else( METIS_FOUND )
+    lama_status_message ( WARNING "[NOT FOUND]" "Metis" )
+endif( METIS_FOUND )
+
+# ParMetis
+if ( PARMETIS_FOUND )
+    lama_status_message ( INFO "[FOUND]" "    ParMetis at ${PARMETIS_INCLUDE_DIR}" )
+else( PARMETIS_FOUND )
+    lama_status_message ( WARNING "[NOT FOUND]" "ParMetis not found" )
+endif( PARMETIS_FOUND ) 
+
 message ( STATUS "" )
 
 lama_status_message ( HEADLINE "INFO:" )

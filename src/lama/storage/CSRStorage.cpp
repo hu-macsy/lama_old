@@ -1879,6 +1879,31 @@ CSRStorage<ValueType>* CSRStorage<ValueType>::copy() const
     return new CSRStorage<ValueType>( *this );
 }
 
+template<typename ValueType>
+void CSRStorage<ValueType>::buildSparseRowSizes( LAMAArray<IndexType>& rowSizes ) const
+{
+    LAMA_LOG_DEBUG( logger, "copy nnz for each row in LAMAArray" );
+
+    HostWriteOnlyAccess<IndexType> writeRowSizes( rowSizes, mNumRows );
+    HostReadAccess<IndexType> csrIA( mIa );
+
+    OpenMPCSRUtils::offsets2sizes( writeRowSizes.get(), csrIA.get(), mNumRows );
+}
+
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType>
+void CSRStorage<ValueType>::buildSparseRowData( LAMAArray<IndexType>& sparseJA,
+                                                LAMAArray<ValueType>& sparseValues ) const
+{
+    LAMA_LOG_INFO( logger, *this << ": build sparse row data" );
+
+    // for CSR format we can just copy arrays with column indexes and data values
+
+    sparseJA     = mJa;
+    sparseValues = mValues;
+}
+
 /* --------------------------------------------------------------------------- */
 
 // template instantiation for the supported data types

@@ -47,6 +47,10 @@ set ( CLASSES
         Redistributor
     )
 
+if ( METIS_FOUND OR PARMETIS_FOUND )
+    set ( CLASSES ${CLASSES} MetisDistribution )
+endif ( METIS_FOUND OR PARMETIS_FOUND )
+
 lama_classes ( ${CLASSES} )
 
 ### add sources and headers to parent scope ###

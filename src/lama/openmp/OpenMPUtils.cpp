@@ -37,8 +37,6 @@
 // others
 #include <lama/LAMAInterfaceRegistry.hpp>
 
-#include <typeinfo>
-
 namespace lama
 {
 
@@ -128,7 +126,7 @@ ValueType OpenMPUtils::sum( const ValueType array[], const IndexType n )
 template<typename ValueType>
 void OpenMPUtils::setVal( ValueType array[], const IndexType n, const ValueType val )
 {
-    LAMA_LOG_DEBUG( logger, "setVal<" << typeid(ValueType).name() << ">: " << "array[" << n << "] = " << val )
+    LAMA_LOG_DEBUG( logger, "setVal<" << Scalar::getType<ValueType>() << ">: " << "array[" << n << "] = " << val )
 
     #pragma omp parallel for schedule( LAMA_OMP_SCHEDULE )
     for ( IndexType i = 0; i < n; ++i )
@@ -143,7 +141,7 @@ template<typename ValueType>
 void OpenMPUtils::setOrder( ValueType array[], const IndexType n )
 {
     LAMA_LOG_DEBUG( logger,
-                    "setOrder<" << typeid(ValueType).name() << ">: " << "array[" << n << "] = 0, 1, 2, ..., " << ( n - 1 ) )
+                    "setOrder<" << Scalar::getType<ValueType>() << ">: " << "array[" << n << "] = 0, 1, 2, ..., " << ( n - 1 ) )
 
     #pragma omp parallel for schedule( LAMA_OMP_SCHEDULE )
     for ( IndexType i = 0; i < n; ++i )
@@ -157,7 +155,7 @@ void OpenMPUtils::setOrder( ValueType array[], const IndexType n )
 template<typename ValueType>
 ValueType OpenMPUtils::getValue( const ValueType* array, const IndexType i )
 {
-    LAMA_LOG_DEBUG( logger, "getValue<" << typeid(ValueType).name() << ">: i = " << i )
+    LAMA_LOG_DEBUG( logger, "getValue<" << Scalar::getType<ValueType>() << ">: i = " << i )
 
     return array[i];
 }
@@ -167,7 +165,7 @@ ValueType OpenMPUtils::getValue( const ValueType* array, const IndexType i )
 template<typename ValueType>
 ValueType OpenMPUtils::maxval( const ValueType array[], const IndexType n )
 {
-    LAMA_LOG_DEBUG( logger, "maxval<" << typeid(ValueType).name() << ">: " << "array[" << n << "]" )
+    LAMA_LOG_DEBUG( logger, "maxval<" << Scalar::getType<ValueType>() << ">: " << "array[" << n << "]" )
 
     ValueType val = static_cast<ValueType>( 0.0 );
 
@@ -203,7 +201,7 @@ ValueType OpenMPUtils::maxval( const ValueType array[], const IndexType n )
 template<typename ValueType>
 ValueType OpenMPUtils::absMaxVal( const ValueType array[], const IndexType n )
 {
-    LAMA_LOG_DEBUG( logger, "absMaxVal<" << typeid(ValueType).name() << ">: " << "array[" << n << "]" )
+    LAMA_LOG_DEBUG( logger, "absMaxVal<" << Scalar::getType<ValueType>() << ">: " << "array[" << n << "]" )
 
     ValueType val = static_cast<ValueType>( 0.0 );
 
@@ -241,7 +239,7 @@ ValueType OpenMPUtils::absMaxVal( const ValueType array[], const IndexType n )
 template<typename ValueType>
 ValueType OpenMPUtils::absMaxDiffVal( const ValueType array1[], const ValueType array2[], const IndexType n )
 {
-    LAMA_LOG_DEBUG( logger, "absMaxDiffVal<" << typeid(ValueType).name() << ">: " << "array[" << n << "]" )
+    LAMA_LOG_DEBUG( logger, "absMaxDiffVal<" << Scalar::getType<ValueType>() << ">: " << "array[" << n << "]" )
 
     ValueType val = static_cast<ValueType>( 0.0 );
 
@@ -279,7 +277,7 @@ ValueType OpenMPUtils::absMaxDiffVal( const ValueType array1[], const ValueType 
 template<typename ValueType>
 bool OpenMPUtils::isSorted( const ValueType array[], const IndexType n, bool ascending )
 {
-    LAMA_LOG_INFO( logger, "isSorted<" << typeid( ValueType ).name() 
+    LAMA_LOG_INFO( logger, "isSorted<" << Scalar::getType<ValueType>()
                            << ">, n = " << n << ", ascending = " << ascending )
 
     bool sorted = true;   //!< will be set to false at violations
@@ -316,7 +314,7 @@ template<typename ValueType1,typename ValueType2>
 void OpenMPUtils::set( ValueType1 out[], const ValueType2 in[], const IndexType n )
 {
     LAMA_LOG_DEBUG( logger,
-                    "set: out<" << typeid(ValueType1).name() << "[" << n << "]" << " = in<" << typeid(ValueType2).name() << ">[" << n << "]" )
+                    "set: out<" << Scalar::getType<ValueType1>() << "[" << n << "]" << " = in<" << Scalar::getType<ValueType2>() << ">[" << n << "]" )
 
     #pragma omp parallel for schedule(LAMA_OMP_SCHEDULE)
     for ( IndexType i = 0; i < n; i++ )
@@ -358,7 +356,7 @@ template<typename ValueType1,typename ValueType2>
 void OpenMPUtils::setGather( ValueType1 out[], const ValueType2 in[], const IndexType indexes[], const IndexType n )
 {
     LAMA_LOG_DEBUG( logger,
-                    "setGather: out<" << typeid(ValueType1).name() << ">[" << n << "]" << " = in<" << typeid(ValueType2).name() << ">[ indexes[" << n << "] ]" )
+                    "setGather: out<" << Scalar::getType<ValueType1>() << ">[" << n << "]" << " = in<" << Scalar::getType<ValueType2>() << ">[ indexes[" << n << "] ]" )
 
     #pragma omp parallel for schedule(LAMA_OMP_SCHEDULE)
     for ( IndexType i = 0; i < n; i++ )
@@ -373,8 +371,8 @@ template<typename ValueType1,typename ValueType2>
 void OpenMPUtils::setScatter( ValueType1 out[], const IndexType indexes[], const ValueType2 in[], const IndexType n )
 {
     LAMA_LOG_DEBUG( logger,
-                    "setScatter: out<" << typeid(ValueType1).name() << ">" 
-                     << "[ indexes[" << n << "] ]" << " = in<" << typeid(ValueType2).name() << ">[" << n << "]" )
+                    "setScatter: out<" << Scalar::getType<ValueType1>() << ">"
+                     << "[ indexes[" << n << "] ]" << " = in<" << Scalar::getType<ValueType2>() << ">[" << n << "]" )
 
     #pragma omp parallel for schedule(LAMA_OMP_SCHEDULE)
     for ( IndexType i = 0; i < n; i++ )

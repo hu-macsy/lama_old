@@ -468,6 +468,24 @@ public:
 
     void print() const;
 
+    /** Method that returns an array with number of values for each row.
+     *
+     * @param[out] numRowValues numRowValues[i] is number of stored values in row i
+     *
+     */
+
+    void buildSparseRowSizes( LAMAArray<IndexType>& numRowValues ) const;
+
+    /**
+     * This method extracts sparse data (column indexes and data values) for rows
+     *
+     * @param[out] ja column indexes for the rows
+     * @param[out] matrix values corresponding to the columns
+     */
+
+    void buildSparseRowData( LAMAArray<IndexType>& ja,
+        LAMAArray<ValueType>& values ) const;
+
 protected:
 
     using MatrixStorage<ValueType>::mNumRows;

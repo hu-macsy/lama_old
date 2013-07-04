@@ -38,6 +38,7 @@
 
 // others
 #include <lama/LAMAArray.hpp>
+#include <lama/Communicator.hpp>
 
 #include <lama/io/FileType.hpp>
 
@@ -629,6 +630,24 @@ public:
         LAMAArray<IndexType>& cscIA,
         LAMAArray<IndexType>& cscJA,
         LAMAArray<ValueType>& cscValues ) const;
+
+    /**
+     * @brief transformation from matrix type to a csr graph
+     *
+     * transformation from matrix type to a csr graph,
+     * so that it (Par)Metis can work with it.
+     *
+     * @param[out]  xadj    the ia array of the csr graph
+     * @param[out]  adjncy  the ja array of the csr graph
+     * @since 1.1.0
+     */
+    virtual void buildCSRGraph(
+        IndexType* adjIA,
+        IndexType* adjJA,
+        IndexType* vwgt,
+        CommunicatorPtr comm,
+        const IndexType* globalRowIndexes = NULL,
+        IndexType* vtxdist = NULL ) const;
 
     /** Format conversion of matrix storage. A default implementation is provided using CSR data.
      *  Derived clauses might override this method with more efficient solutions.

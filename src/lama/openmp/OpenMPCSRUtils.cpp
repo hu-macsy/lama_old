@@ -49,8 +49,6 @@
 #include <boost/bind.hpp>
 #include <boost/scoped_array.hpp>
 
-#include <typeinfo>
-
 namespace lama
 {
 
@@ -479,7 +477,7 @@ void OpenMPCSRUtils::normalGEMV(
     SyncToken* syncToken )
 {
     LAMA_LOG_INFO( logger,
-                   "normalGEMV<" << typeid(ValueType).name() 
+                   "normalGEMV<" << Scalar::getType<ValueType>()
                    << ", #threads = " << omp_get_max_threads() 
                    << ">, result[" << numRows << "] = " << alpha << " * A * x + " << beta << " * y " )
 
@@ -604,7 +602,7 @@ void OpenMPCSRUtils::gemm(
     SyncToken* syncToken )
 {
     LAMA_LOG_INFO( logger,
-                   "gemm<" << typeid(ValueType).name() << ">, " << " result " << m << " x " << n << " CSR " << m << " x " << p )
+                   "gemm<" << Scalar::getType<ValueType>() << ">, " << " result " << m << " x " << n << " CSR " << m << " x " << p )
 
     if ( syncToken )
     {
@@ -650,7 +648,7 @@ void OpenMPCSRUtils::jacobi(
     class SyncToken* syncToken )
 {
     LAMA_LOG_INFO( logger,
-                   "jacobi<" << typeid(ValueType).name() << ">" << ", #rows = " << numRows << ", omega = " << omega )
+                   "jacobi<" << Scalar::getType<ValueType>() << ">" << ", #rows = " << numRows << ", omega = " << omega )
 
     if ( syncToken )
     {
@@ -706,7 +704,7 @@ void OpenMPCSRUtils::jacobiHalo(
     const ValueType omega,
     const IndexType numNonEmptyRows )
 {
-    LAMA_LOG_INFO( logger, "jacobiHalo<" << typeid(ValueType).name() << ">" 
+    LAMA_LOG_INFO( logger, "jacobiHalo<" << Scalar::getType<ValueType>() << ">"
                    << ", #rows (not empty) = " << numNonEmptyRows << ", omega = " << omega );
 
     #pragma omp parallel
@@ -758,7 +756,7 @@ void OpenMPCSRUtils::jacobiHaloWithDiag(
     const ValueType omega,
     const IndexType numNonEmptyRows )
 {
-    LAMA_LOG_INFO( logger, "jacobiHaloWithDiag<" << typeid(ValueType).name() << ">" 
+    LAMA_LOG_INFO( logger, "jacobiHaloWithDiag<" << Scalar::getType<ValueType>() << ">"
                    << ", #rows (not empty) = " << numNonEmptyRows << ", omega = " << omega );
 
     #pragma omp parallel
@@ -1348,7 +1346,7 @@ void OpenMPCSRUtils::matrixMultiplyJA(
 
 template<typename ValueType>
 void OpenMPCSRUtils::matrixMultiply(
-    const IndexType cIa[],
+    const IndexType cIA[],
     IndexType cJA[],
     ValueType cValues[],
     const IndexType m,
@@ -1419,7 +1417,7 @@ void OpenMPCSRUtils::matrixMultiply(
                 }
             }
 
-            IndexType offset = cIa[i];
+            IndexType offset = cIA[i];
 
             if ( diagonalProperty )
             {
@@ -1462,7 +1460,7 @@ void OpenMPCSRUtils::matrixMultiply(
     for ( IndexType i = 0; i < m; ++i )
     {
         //loop over all none zero elements of row i of output matrix c
-        for ( IndexType jj = cIa[i]; jj < cIa[i + 1]; ++jj )
+        for ( IndexType jj = cIA[i]; jj < cIA[i + 1]; ++jj )
         {
             IndexType j = cJA[jj];
             cValues[jj] = 0.0;
@@ -1681,7 +1679,7 @@ ValueType OpenMPCSRUtils::absMaxDiffVal(
     const ValueType csrValues2[] )
 {
     LAMA_LOG_INFO( logger,
-                   "absMaxDiffVal<" << typeid(ValueType).name() << ">: " << "csr[" << numRows << "], sorted = " << sortedRows )
+                   "absMaxDiffVal<" << Scalar::getType<ValueType>() << ">: " << "csr[" << numRows << "], sorted = " << sortedRows )
 
     ValueType (*absMaxDiffRow)(
         const IndexType,

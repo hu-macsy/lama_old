@@ -53,8 +53,6 @@
 // boost
 #include <boost/scoped_array.hpp>
 
-#include <typeinfo>
-
 namespace lama
 {
 
@@ -398,7 +396,7 @@ void OpenMPJDSUtils::getCSRValues(
     const JDSValueType jdsValues[] )
 {
     LAMA_LOG_INFO( logger,
-                   "get CSRValues<" << typeid( JDSValueType ).name() << ", " << typeid( CSRValueType ).name() << ">" << ", #rows = " << numRows << ", #values = " << csrIA[numRows] )
+                   "get CSRValues<" << Scalar::getType<JDSValueType>() << ", " << Scalar::getType<CSRValueType>() << ">" << ", #rows = " << numRows << ", #values = " << csrIA[numRows] )
 
     #pragma omp parallel 
     {
@@ -440,7 +438,7 @@ void OpenMPJDSUtils::setCSRValues(
     const CSRValueType csrValues[] )
 {
     LAMA_LOG_INFO( logger,
-                   "set CSRValues<" << typeid( JDSValueType ).name() << ", " << typeid( CSRValueType ).name() << ">" << ", #rows = " << numRows << ", #values = " << csrIA[numRows] )
+                   "set CSRValues<" << Scalar::getType<JDSValueType>() << ", " << Scalar::getType<CSRValueType>() << ">" << ", #rows = " << numRows << ", #values = " << csrIA[numRows] )
 
     // parallelization possible as offset array csrIA is available
 
@@ -482,7 +480,7 @@ void OpenMPJDSUtils::normalGEMV(
     class SyncToken* /* syncToken */)
 {
     LAMA_LOG_INFO( logger,
-                   "normalGEMV<" << typeid(ValueType).name()
+                   "normalGEMV<" << Scalar::getType<ValueType>()
                    << ", #threads = " << omp_get_max_threads()
                    << ">, result[" << numRows << "] = " << alpha 
                    << " * A( jds, ndlg = " << ndlg << " ) * x + " << beta << " * y " )
@@ -572,9 +570,9 @@ void OpenMPJDSUtils::jacobi(
     ValueType solution[],
     const IndexType numRows,
     const IndexType jdsPerm[],
-    const IndexType jdsIlg[],
+    const IndexType jdsILG[],
     const IndexType UNUSED( jdsNumDiagonals ),
-    const IndexType jdsDlg[],
+    const IndexType jdsDLG[],
     const IndexType jdsJA[],
     const ValueType jdsValues[],
     const ValueType oldSolution[],
@@ -583,7 +581,7 @@ void OpenMPJDSUtils::jacobi(
     class SyncToken* syncToken )
 {
     LAMA_LOG_INFO( logger,
-                   "jacobi<" << typeid(ValueType).name() << ">" << ", #rows = " << numRows << ", omega = " << omega )
+                   "jacobi<" << Scalar::getType<ValueType>() << ">" << ", #rows = " << numRows << ", omega = " << omega )
 
     if ( syncToken != NULL )
     {
@@ -603,13 +601,13 @@ void OpenMPJDSUtils::jacobi(
             const IndexType i = jdsPerm[ii]; // original row index
 
             ValueType temp = rhs[i];
-            IndexType pos = jdsDlg[0] + ii; // index for jdsValues
+            IndexType pos = jdsDLG[0] + ii; // index for jdsValues
             ValueType diag = jdsValues[ii]; // diagonal element
 
-            for ( IndexType j = 1; j < jdsIlg[ii]; j++ )
+            for ( IndexType j = 1; j < jdsILG[ii]; j++ )
             {
                 temp -= jdsValues[pos] * oldSolution[jdsJA[pos]];
-                pos += jdsDlg[j];
+                pos += jdsDLG[j];
             }
 
             if ( 1.0 == omega )
@@ -637,8 +635,8 @@ void OpenMPJDSUtils::jacobiHalo(
     const ValueType localDiagonal[],
     const IndexType numDiagonals,
     const IndexType jdsHaloPerm[],
-    const IndexType jdsHaloIlg[],
-    const IndexType jdsHaloDlg[],
+    const IndexType jdsHaloILG[],
+    const IndexType jdsHaloDLG[],
     const IndexType jdsHaloJA[],
     const ValueType jdsHaloValues[],
     const ValueType oldSolution[],
@@ -646,7 +644,7 @@ void OpenMPJDSUtils::jacobiHalo(
     class SyncToken* syncToken )
 {
     LAMA_LOG_INFO( logger,
-                   "jacobiHalo<" << typeid(ValueType).name() << ">" << ", #rows = " << numRows << ", omega = " << omega )
+                   "jacobiHalo<" << Scalar::getType<ValueType>() << ">" << ", #rows = " << numRows << ", omega = " << omega )
 
     if ( syncToken != NULL )
     {
@@ -665,7 +663,7 @@ void OpenMPJDSUtils::jacobiHalo(
 
     // JDS has no row indexes, but number of non-zero rows is known
 
-    const IndexType numNonEmptyRows = jdsHaloDlg[0];
+    const IndexType numNonEmptyRows = jdsHaloDLG[0];
 
     LAMA_LOG_DEBUG( logger, "#non empty rows = " << numNonEmptyRows )
 
@@ -683,10 +681,10 @@ void OpenMPJDSUtils::jacobiHalo(
 
             IndexType pos = ii;
 
-            for ( IndexType j = 0; j < jdsHaloIlg[ii]; j++ )
+            for ( IndexType j = 0; j < jdsHaloILG[ii]; j++ )
             {
                 temp += jdsHaloValues[pos] * oldSolution[jdsHaloJA[pos]];
-                pos += jdsHaloDlg[j];
+                pos += jdsHaloDLG[j];
             }
 
             LAMA_LOG_TRACE( logger,

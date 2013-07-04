@@ -44,9 +44,8 @@ using namespace lama;
 /* --------------------------------------------------------------------- */
 
 BOOST_AUTO_TEST_SUITE( HostWriteAccessTest )
-;
 
-LAMA_LOG_DEF_LOGGER( logger, "Test.HostWriteAccessTest" );
+LAMA_LOG_DEF_LOGGER( logger, "Test.HostWriteAccessTest" )
 
 /* --------------------------------------------------------------------- */
 

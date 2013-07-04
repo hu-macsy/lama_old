@@ -40,8 +40,6 @@
 
 #include <lama/openmp/OpenMP.hpp>
 
-#include <typeinfo>
-
 namespace lama
 {
 
@@ -107,7 +105,7 @@ void OpenMPDenseUtils::getCSRValues(
     const DenseValueType eps )
 {
     LAMA_LOG_INFO( logger,
-                   "get CSRValues<" << typeid( DenseValueType ).name() << ", " << typeid( CSRValueType ).name() << ">" << ", size is " << numRows << " x " << numColumns )
+                   "get CSRValues<" << Scalar::getType<DenseValueType>() << ", " << Scalar::getType<CSRValueType>() << ">" << ", size is " << numRows << " x " << numColumns )
 
     #pragma omp parallel for schedule(LAMA_OMP_SCHEDULE)
     for ( IndexType i = 0; i < numRows; ++i )
@@ -161,7 +159,7 @@ void OpenMPDenseUtils::setCSRValues(
     const CSRValueType csrValues[] )
 {
     LAMA_LOG_INFO( logger,
-                   "set CSRValues<" << typeid( DenseValueType ).name() << ", " << typeid( CSRValueType ).name() << ">" << ", size is " << numRows << " x " << numColumns )
+                   "set CSRValues<" << Scalar::getType<DenseValueType>() << ", " << Scalar::getType<CSRValueType>() << ">" << ", size is " << numRows << " x " << numColumns )
 
     // parallelization possible as offset array csrIA is available
 

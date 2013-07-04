@@ -86,51 +86,54 @@ GeneralDistribution::GeneralDistribution(
     std::vector<IndexType> rows;
 
     if ( myRank == MASTER )
-      {
-	LAMA_ASSERT(mGlobalSize == partSize, 
-		    "partition size " << partSize << " is not equal to global size " << mGlobalSize)
+    {
+        LAMA_ASSERT(mGlobalSize == partSize,
+                    "partition size " << partSize << " is not equal to global size " << mGlobalSize)
         displ.resize( parts + 1 );
 
-	for ( IndexType i = 0; i < mGlobalSize; ++i )
-	  {
-	    LAMA_ASSERT( row2Partition[i] < parts, "invalid partition id at position" << i)
-	    displ[row2Partition[i]+1]++;
-	  }
-      }
+        for ( IndexType i = 0; i < mGlobalSize; ++i )
+        {
+            LAMA_ASSERT( row2Partition[i] < parts, "invalid partition id at position" << i)
+            displ[ row2Partition[i] + 1 ]++;
+        }
+    }
     else
-      displ.resize( 2 );
+    {
+        displ.resize( 2 );
+    }
 
     // scatter partition sizes
     mCommunicator->scatter( &numMyRows, 1, MASTER, &displ[1] );
 
-
     if  ( myRank == MASTER ) 
-      {
-	rows.resize( mGlobalSize );
-	curpos.resize( parts );
+    {
+        rows.resize( mGlobalSize );
+        curpos.resize( parts );
         for( IndexType i = 1; i < parts; i++ )
-	  {
-	    displ[i+1] += displ[i];
-	    curpos[i] = 0;
-	  }
+        {
+            displ[i+1] += displ[i];
+            curpos[i] = 0;
+        }
         LAMA_ASSERT( displ[ parts ] == mGlobalSize, "sum of local rows is not global size" )
-	
-	for ( IndexType i = 0; i < mGlobalSize; ++i )
-	  {
-	    IndexType partition = row2Partition[i];
-	    IndexType position = displ[partition] + curpos[partition]++;
-	    rows[position] = i;
-	  }
 
-	for ( IndexType i = 0; i < parts; ++i )
-	  LAMA_ASSERT( displ[i] + curpos[ i ] == displ[ i+1 ], 
-		       "partition "<< i <<"  size mismatch, expected " << displ[i+1] - displ[i] << " actual " << curpos[i])
-      }
+        for ( IndexType i = 0; i < mGlobalSize; ++i )
+        {
+            IndexType partition = row2Partition[i];
+            IndexType position = displ[partition] + curpos[partition]++;
+            rows[position] = i;
+        }
+
+        for ( IndexType i = 0; i < parts; ++i )
+        {
+          LAMA_ASSERT( displ[i] + curpos[ i ] == displ[ i+1 ],
+                   "partition "<< i <<"  size mismatch, expected " << displ[i+1] - displ[i] << " actual " << curpos[i])
+        }
+    }
     else
-      {
-	rows.resize ( 1 );
-	curpos.resize ( 1 );
-      }
+    {
+        rows.resize ( 1 );
+        curpos.resize ( 1 );
+    }
 
     // scatter global indices of local rows
     mLocal2Global.resize ( numMyRows );
