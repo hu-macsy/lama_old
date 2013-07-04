@@ -147,8 +147,9 @@ void OpenMPELLUtils::scaleValue(
     ValueType ellValues[],
     const OtherValueType values[] )
 {
-    LAMA_LOG_INFO( logger,
-                   "scaleValue, #numRows = " << numRows << ", ellSizes = " << ellSizes << ", ellValues = " << ellValues << ", values = " << values )
+    LAMA_LOG_INFO( logger, "scaleValue<" << Scalar::getType<ValueType>() << ", "
+                                         << Scalar::getType<OtherValueType>() << ">"
+                            << ", #numRows = " << numRows )
 
     #pragma omp parallel for schedule( LAMA_OMP_SCHEDULE )
     for ( IndexType i = 0; i < numRows; i++ ) //rows
@@ -258,14 +259,14 @@ ValueType OpenMPELLUtils::absMaxVal(
 
 template<typename ValueType,typename OtherValueType>
 void OpenMPELLUtils::getRow(
-    OtherValueType *row,
+    OtherValueType row[],
     const IndexType i,
     const IndexType numRows,
     const IndexType numColumns,
     const IndexType numValuesPerRow,
     const IndexType ellSizes[],
     const IndexType ellJA[],
-    const ValueType *values )
+    const ValueType values[] )
 {
     LAMA_LOG_DEBUG( logger, "get row #i = " << i )
 
