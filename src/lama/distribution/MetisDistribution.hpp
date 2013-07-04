@@ -28,7 +28,7 @@
  * @brief MetisDistribution.hpp
  * @author Lauretta Schubert
  * @date 01.07.2013
- * @since 1.0.1
+ * @since 1.1.0
  */
 #ifndef LAMA_METISDISTRIBUTION_HPP_
 #define LAMA_METISDISTRIBUTION_HPP_

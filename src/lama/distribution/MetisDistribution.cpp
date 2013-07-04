@@ -28,7 +28,7 @@
  * @brief MetisDistribution.cpp
  * @author Lauretta Schubert
  * @date 01.07.2013
- * @since 1.0.1
+ * @since 1.1.0
  */
 
 // hpp

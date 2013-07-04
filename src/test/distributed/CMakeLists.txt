@@ -73,6 +73,10 @@ set ( SOURCE_FILES
         ../SparseMatrixHelper
         ../CommunicatorTest
     )
+    
+if ( METIS_FOUND OR PARMETIS_FOUND )
+    set ( SOURCE_FILES ${SOURCE_FILES} MetisDistributionTest )
+endif ( METIS_FOUND OR PARMETIS_FOUND )
 
 lama_classes ( ${CLASSES} )
 lama_sources ( ${SOURCE_FILES} )
