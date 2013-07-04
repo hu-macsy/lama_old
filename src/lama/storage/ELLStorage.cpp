@@ -1067,12 +1067,34 @@ SyncToken* ELLStorage<ValueType>::matrixTimesVectorAsync(
     const ValueType beta,
     const LAMAArrayConstView<ValueType> y ) const
 {
-    LAMA_ASSERT_EQUAL_ERROR( x.size(), mNumColumns )
-    LAMA_ASSERT_EQUAL_ERROR( y.size(), mNumRows )
-
     LAMA_REGION( "Storage.ELL.timesVectorAsync" )
 
     ContextPtr loc = getContextPtr();
+
+    LAMA_LOG_INFO( logger, *this << ": matrixTimesVectorAsync on " << *loc )
+
+    if ( loc->getType() == Context::Host )
+    {
+        // execution as separate thread
+
+        void ( ELLStorage::*pf )(
+            LAMAArrayView<ValueType>,
+            const ValueType,
+            const LAMAArrayConstView<ValueType>,
+            const ValueType,
+            const LAMAArrayConstView<ValueType> ) const
+
+        = &ELLStorage<ValueType>::matrixTimesVector;
+
+        using boost::bind;
+
+        LAMA_LOG_INFO( logger, *this << ": matrixTimesVectorAsync on Host by own thread" )
+
+        return new TaskSyncToken( bind( pf, this, result, alpha, x, beta, y ) );
+    }
+
+    LAMA_ASSERT_EQUAL_ERROR( x.size(), mNumColumns )
+    LAMA_ASSERT_EQUAL_ERROR( y.size(), mNumRows )
 
     if ( mNumValuesPerRow == 0 )
     {
