@@ -39,8 +39,6 @@
 #include <lama/LAMAInterface.hpp>
 #include <lama/LAMAInterfaceRegistry.hpp>
 
-#include <lama/task/TaskSyncToken.hpp>
-
 // macros
 #include <lama/macros/unused.hpp>
 

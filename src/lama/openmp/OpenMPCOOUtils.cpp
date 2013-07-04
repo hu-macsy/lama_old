@@ -40,7 +40,6 @@
 #include <lama/LAMAInterfaceRegistry.hpp>
 #include <lama/tracing.hpp>
 
-#include <lama/task/TaskSyncToken.hpp>
 #include <lama/openmp/OpenMP.hpp>
 
 namespace lama
