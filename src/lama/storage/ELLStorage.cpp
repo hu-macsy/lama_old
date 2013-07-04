@@ -392,7 +392,7 @@ void ELLStorage<ValueType>::buildCSR(
     WriteOnlyAccess<IndexType> csrJA( *ja, loc, numValues );
     WriteOnlyAccess<OtherValueType> csrValues( *values, loc, numValues );
 
-    getCSRValues( csrJA.get(), csrValues.get(), csrIA.get(), mNumRows, ellSizes.get(), ellJA.get(), ellValues.get() );
+    getCSRValues( csrJA.get(), csrValues.get(), csrIA.get(), mNumRows, mNumValuesPerRow, ellSizes.get(), ellJA.get(), ellValues.get() );
 
 }
 
@@ -654,7 +654,7 @@ void ELLStorage<ValueType>::getRowImpl( LAMAArray<OtherType>& row, const IndexTy
 
     LAMA_CONTEXT_ACCESS( loc )
 
-    getRow( wRow.get(), i, mNumRows, mNumColumns, rIa.get(), rJa.get(), rValues.get() );
+    getRow( wRow.get(), i, mNumRows, mNumColumns, mNumValuesPerRow, rIa.get(), rJa.get(), rValues.get() );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -719,7 +719,7 @@ void ELLStorage<ValueType>::scaleImpl( const LAMAArray<OtherValueType>& values )
 
     LAMA_CONTEXT_ACCESS( loc )
 
-    scaleValue( mNumRows, rIa.get(), wValues.get(), rValues.get() );
+    scaleValue( mNumRows, mNumValuesPerRow, rIa.get(), wValues.get(), rValues.get() );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -838,7 +838,7 @@ ValueType ELLStorage<ValueType>::getValue( const IndexType i, const IndexType j 
 
     LAMA_CONTEXT_ACCESS( loc )
 
-    return getValue( i, j, mNumRows, rIa.get(), rJa.get(), rValues.get() );
+    return getValue( i, j, mNumRows, mNumValuesPerRow, rIa.get(), rJa.get(), rValues.get() );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -927,7 +927,7 @@ void ELLStorage<ValueType>::compress( const ValueType eps /* = 0.0 */)
     LAMAArray<IndexType> newIAArray;
     WriteOnlyAccess<IndexType> newIA( newIAArray, loc, mNumRows );
 
-    compressIA( IA.get(), JA.get(), values.get(), mNumRows, eps, newIA.get() );
+    compressIA( IA.get(), JA.get(), values.get(), mNumRows, mNumValuesPerRow, eps, newIA.get() );
 
     // 2. Step: compute length of longest row
     IndexType newNumValuesPerRow = maxval( IA.get(), mNumRows );
@@ -942,7 +942,7 @@ void ELLStorage<ValueType>::compress( const ValueType eps /* = 0.0 */)
         WriteOnlyAccess<IndexType> newJA( newJAArray, loc, mNumRows * newNumValuesPerRow );
 
         // 4. Step: Compute new JA and Values array
-        compressValues( IA.get(), JA.get(), values.get(), mNumRows, eps, newJA.get(), newValues.get() );
+        compressValues( IA.get(), JA.get(), values.get(), mNumRows, mNumValuesPerRow, eps, newNumValuesPerRow, newJA.get(), newValues.get() );
 
         mJA.swap( newJAArray );
         mValues.swap( newValuesArray );
@@ -1497,9 +1497,9 @@ void ELLStorage<ValueType>::matrixTimesMatrixELL(
     // TODO: Implement for CUDA
     ContextPtr loc = ContextFactory::getContext( Context::Host );
 
-    LAMA_INTERFACE_FN_T( computeIA, loc, ELLUtils, MatrixTimesMatrix, IndexType )
+    LAMA_INTERFACE_FN( matrixMultiplySizes, loc, ELLUtils, MatrixExpBuild )
     LAMA_INTERFACE_FN_T( maxval, loc, Utils, Reductions, IndexType )
-    LAMA_INTERFACE_FN_T( computeValues, loc, ELLUtils, MatrixTimesMatrix, ValueType )
+    LAMA_INTERFACE_FN_T( matrixMultiply, loc, ELLUtils, MatrixExp, ValueType )
 
     LAMA_ASSERT_ERROR( &a != this, "matrixTimesMatrix: alias of a with this result matrix" )
     LAMA_ASSERT_ERROR( &b != this, "matrixTimesMatrix: alias of b with this result matrix" )
@@ -1526,7 +1526,10 @@ void ELLStorage<ValueType>::matrixTimesMatrixELL(
         LAMA_CONTEXT_ACCESS( loc )
 
         // 1. Step: compute resulting IA array
-        computeIA( aIA.get(), aJA.get(), a.getNumRows(), bIA.get(), bJA.get(), b.getNumRows(), cIA.get() );
+        matrixMultiplySizes( cIA.get(),
+                             a.getNumRows(), a.getNumColumns(), b.getNumRows(), false,
+                             aIA.get(), aJA.get(), a.getNumValuesPerRow(),
+                             bIA.get(), bJA.get(), b.getNumValuesPerRow() );
 
         // 2. Step: compute length of longest row
         mNumValuesPerRow = maxval( cIA.get(), mNumRows );
@@ -1536,8 +1539,10 @@ void ELLStorage<ValueType>::matrixTimesMatrixELL(
         WriteOnlyAccess<ValueType> cValues( mValues, loc, mNumValuesPerRow * mNumRows );
 
         // 4. Step: Compute cJA and cValues
-        computeValues( aIA.get(), aJA.get(), aValues.get(), a.getNumRows(), bIA.get(), bJA.get(), bValues.get(),
-                       b.getNumRows(), alpha, cIA.get(), cJA.get(), cValues.get() );
+        matrixMultiply( cJA.get(), cValues.get(), cIA.get(), mNumValuesPerRow,
+                        mNumRows, mNumColumns, b.getNumRows(), false, alpha,
+                        aIA.get(), aJA.get(), aValues.get(), a.getNumValuesPerRow(),
+                        bIA.get(), bJA.get(), bValues.get(), b.getNumValuesPerRow() );
     }
 
     // 5. Step: Computation of C might have produced some zero elements
@@ -1557,9 +1562,9 @@ void ELLStorage<ValueType>::matrixAddMatrixELL(
     // TODO: Implement for CUDA
     ContextPtr loc = ContextFactory::getContext( Context::Host );
 
-    LAMA_INTERFACE_FN_T( addComputeIA, loc, ELLUtils, MatrixTimesMatrix, IndexType )
+    LAMA_INTERFACE_FN( matrixAddSizes, loc, ELLUtils, MatrixExpBuild )
     LAMA_INTERFACE_FN_T( maxval, loc, Utils, Reductions, IndexType )
-    LAMA_INTERFACE_FN_T( addComputeValues, loc, ELLUtils, MatrixTimesMatrix, ValueType )
+    LAMA_INTERFACE_FN_T( matrixAdd, loc, ELLUtils, MatrixExp, ValueType )
 
     LAMA_ASSERT_ERROR( &a != this, "matrixAddMatrix: alias of a with this result matrix" )
     LAMA_ASSERT_ERROR( &b != this, "matrixAddMatrix: alias of b with this result matrix" )
@@ -1585,7 +1590,9 @@ void ELLStorage<ValueType>::matrixAddMatrixELL(
         LAMA_CONTEXT_ACCESS( loc )
 
         // 1. Step: Compute IA array
-        addComputeIA( aIA.get(), aJA.get(), a.getNumRows(), bIA.get(), bJA.get(), b.getNumRows(), cIA.get() );
+        matrixAddSizes( cIA.get(), a.getNumRows(), a.getNumColumns(), false,
+                        aIA.get(), aJA.get(), a.getNumValuesPerRow(),
+                        bIA.get(), bJA.get(), b.getNumValuesPerRow() );
 
         // 2. Step: compute length of longest row
         mNumValuesPerRow = maxval( cIA.get(), mNumRows );
@@ -1595,8 +1602,11 @@ void ELLStorage<ValueType>::matrixAddMatrixELL(
         WriteOnlyAccess<ValueType> cValues( mValues, loc, mNumValuesPerRow * mNumRows );
 
         // 4. Step: Compute cJA and cValues
-        addComputeValues( aIA.get(), aJA.get(), aValues.get(), a.getNumRows(), bIA.get(), bJA.get(), bValues.get(),
-                          b.getNumRows(), beta, cIA.get(), cJA.get(), cValues.get() );
+        matrixAdd( cJA.get(), cValues.get(), cIA.get(), mNumValuesPerRow,
+                   mNumRows, mNumColumns, false,
+                   alpha, aIA.get(), aJA.get(), aValues.get(), a.getNumValuesPerRow(),
+                   beta, bIA.get(), bJA.get(), bValues.get(), b.getNumValuesPerRow() );
+
     }
 
     // 5. Step: Computation of C might have produced some zero elements

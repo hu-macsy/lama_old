@@ -50,8 +50,6 @@
 #include <boost/scoped_array.hpp>
 
 #include <cmath>
-#include <typeinfo>
-
 
 namespace lama
 {

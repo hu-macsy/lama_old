@@ -90,13 +90,14 @@ public:
 
     template<typename ValueType,typename OtherValueType>
     static void getRow(
-        OtherValueType *row,
+        OtherValueType row[],
         const IndexType i,
         const IndexType numRows,
         const IndexType numColumns,
-        const IndexType *ia,
-        const IndexType *ja,
-        const ValueType *values );
+        const IndexType numValuesPerRow,
+        const IndexType ellSizes[],
+        const IndexType ellJA[],
+        const ValueType ellValues[] );
 
     /** Returns one value of the matrix */
 
@@ -105,17 +106,19 @@ public:
         const IndexType i,
         const IndexType j,
         const IndexType numRows,
-        const IndexType *ia,
-        const IndexType *ja,
-        const ValueType *values );
+        const IndexType numValuesPerRow,
+        const IndexType ellSizes[],
+        const IndexType ellJA[],
+        const ValueType ellValues[] );
 
     /** Scales matrix using an vector */
 
     template<typename ValueType,typename OtherValueType>
     static void scaleValue(
         const IndexType numRows,
-        const IndexType Ia[],
-        ValueType mValues[],
+        const IndexType numValuesPerRow,
+        const IndexType ellSizes[],
+        ValueType ellValues[],
         const OtherValueType values[] );
 
     /** Implementation for ELLUtilsInterface::Conversions::getCSRValues */
@@ -126,6 +129,7 @@ public:
         CSRValueType csrValues[],
         const IndexType csrIA[],
         const IndexType numRows,
+        const IndexType numValuesPerRow,
         const IndexType ellSizes[],
         const IndexType ellJA[],
         const ELLValueType ellValues[] );
@@ -161,7 +165,7 @@ public:
         const ValueType beta,
         const ValueType y[],
         const IndexType numRows,
-        const IndexType numNonZerosPerRows,
+        const IndexType numValuesPerRow,
         const IndexType csrIA[],
         const IndexType csrJA[],
         const ValueType csrValues[],
@@ -173,7 +177,7 @@ public:
     static void sparseGEMV(
         ValueType result[],
         const IndexType numRows,
-        const IndexType numNonZerosPerRows,
+        const IndexType numValuesPerRow,
         const ValueType alpha,
         const ValueType x[],
         const IndexType numNonZeroRows,

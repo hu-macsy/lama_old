@@ -37,8 +37,6 @@
 // others
 #include <lama/LAMAInterfaceRegistry.hpp>
 
-#include <typeinfo>
-
 namespace lama
 {
 

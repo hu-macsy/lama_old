@@ -49,8 +49,6 @@
 #include <boost/bind.hpp>
 #include <boost/scoped_array.hpp>
 
-#include <typeinfo>
-
 namespace lama
 {
 
@@ -1348,7 +1346,7 @@ void OpenMPCSRUtils::matrixMultiplyJA(
 
 template<typename ValueType>
 void OpenMPCSRUtils::matrixMultiply(
-    const IndexType cIa[],
+    const IndexType cIA[],
     IndexType cJA[],
     ValueType cValues[],
     const IndexType m,
@@ -1419,7 +1417,7 @@ void OpenMPCSRUtils::matrixMultiply(
                 }
             }
 
-            IndexType offset = cIa[i];
+            IndexType offset = cIA[i];
 
             if ( diagonalProperty )
             {
@@ -1462,7 +1460,7 @@ void OpenMPCSRUtils::matrixMultiply(
     for ( IndexType i = 0; i < m; ++i )
     {
         //loop over all none zero elements of row i of output matrix c
-        for ( IndexType jj = cIa[i]; jj < cIa[i + 1]; ++jj )
+        for ( IndexType jj = cIA[i]; jj < cIA[i + 1]; ++jj )
         {
             IndexType j = cJA[jj];
             cValues[jj] = 0.0;
