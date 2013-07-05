@@ -91,7 +91,8 @@ public:
     {
         Host, //!< context for cpu + main memory
         CUDA, //!< CUDA GPU device
-        OpenCL, //!< OpenCL GPU device
+        MIC,    //!< Intel Many-Integrated-Core Architecture
+//      OpenCL, //!< OpenCL GPU device, currently not supported
 //                       NewContext,  //!< can be used for any new device
         MaxContext //!< used for dimension of ContextType arrays
     };

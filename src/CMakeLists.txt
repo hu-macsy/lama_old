@@ -246,6 +246,13 @@ else ( CUDA_FOUND )
     lama_status_message ( WARNING "[NOT FOUND]" "CUDA" )
 endif ( CUDA_FOUND )
 
+## MIC
+if ( LAMA_USE_MIC )
+    lama_status_message ( INFO "[ENABLED]" "    MIC (Many-Integrated-Core-Architecture)" )
+else ( LAMA_USE_MIC )
+    lama_status_message ( WARNING "[DISABLED]" " MIC (Many-Integrated-Core-Architecture)" )
+endif ( LAMA_USE_MIC )
+
 ## DOXYGEN
 if ( DOXYGEN_FOUND )
     lama_status_message ( INFO "[FOUND]" "    DOXYGEN - 'make doc' to build system documentation" )

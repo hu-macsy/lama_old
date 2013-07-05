@@ -71,6 +71,9 @@ std::ostream& operator<<( std::ostream& stream, const Scalar::ScalarType& object
     case Scalar::DOUBLE:
         stream << "double";
         break;
+    case Scalar::INDEX_TYPE:
+        stream << "IndexType";
+        break;
     case Scalar::LONG_DOUBLE:
         stream << "long double";
         break;

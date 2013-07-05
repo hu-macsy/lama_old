@@ -91,10 +91,17 @@ set ( HEADERS
 lama_classes ( ${CLASSES} )
 lama_headers ( ${HEADERS} )
 
+
 ### add subdirectories ###
+
 if ( CUDA_FOUND AND LAMA_USE_CUDA )
     add_subdirectory ( cuda )
 endif ( CUDA_FOUND AND LAMA_USE_CUDA )
+
+if ( LAMA_USE_MIC )
+    add_subdirectory ( mic )
+endif ( LAMA_USE_MIC )
+
 add_subdirectory ( distribution )
 add_subdirectory ( exception )
 add_subdirectory ( expression )
@@ -129,6 +136,11 @@ set( LAMA_LINK_LIBRARIES log4lama )
 if ( CUDA_FOUND AND LAMA_USE_CUDA )
     set ( LAMA_LINK_LIBRARIES ${LAMA_LINK_LIBRARIES} amacuda )
 endif ( CUDA_FOUND AND LAMA_USE_CUDA )
+
+# amamic
+if ( LAMA_USE_MIC )
+    set ( LAMA_LINK_LIBRARIES ${LAMA_LINK_LIBRARIES} amamic )
+endif ( LAMA_USE_MIC )
 
 # amampi
 if ( MPI_FOUND AND LAMA_USE_MPI )
