@@ -51,7 +51,7 @@ namespace lama
 /** Implementations of methods for lama::BLAS2Interface with OpenMP.
  *
  *  @todo Move all method documentations to LAMAInterface and make references here
- *  @todo Add information here about use of native BLAS1 libraries
+ *  @todo Add information here about use of native BLAS2 libraries
  */
 
 class LAMA_DLL_IMPORTEXPORT OpenMPBLAS2
@@ -343,7 +343,7 @@ public:
         double* y,
         SyncToken* syncToken );
 
-    /** Routine that sets functions pointers belonging to BLAS1 in a BLASInterface.
+    /** Routine that sets functions pointers belonging to BLAS2 in a BLASInterface.
      *
      *  param[inout] BLASInterface struct to register all routines implemented in CUDA
      *

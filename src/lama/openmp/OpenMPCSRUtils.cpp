@@ -1090,7 +1090,7 @@ void OpenMPCSRUtils::matrixAdd(
 
                 valueList[j] += alpha * aValues[jj];
 
-                LAMA_LOG_INFO( logger, "entry for [" << i << "," << j << "] by a" << ", new val = " << valueList[j] )
+                LAMA_LOG_TRACE( logger, "entry for [" << i << "," << j << "] by a" << ", new val = " << valueList[j] )
 
                 // element a(i,j) will generate an output element c(i,j)
 
