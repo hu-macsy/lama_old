@@ -757,36 +757,61 @@ LAMA_COMMON_TEST_CASE_END()
 
 LAMA_COMMON_TEST_CASE_RUNNER( CommunicatorTest )
 {
+    // disable inlining otherwise derived classes will not find it
+    
+    #pragma noinline
     swapTest<float>();
+    #pragma noinline
     swapTest<double>();
 
+    #pragma noinline
     gatherVTest<float>();
+    #pragma noinline
     gatherVTest<double>();
 
+    #pragma noinline
     gatherTest<float>();
+    #pragma noinline
     gatherTest<double>();
 
+    #pragma noinline
     scatterVTest<float>();
+    #pragma noinline
     scatterVTest<double>();
 
+    #pragma noinline
     scatterTest<float>();
+    #pragma noinline
     scatterTest<double>();
 
+    #pragma noinline
     bcastTest<float>();
+    #pragma noinline
     bcastTest<double>();
 
+    #pragma noinline
     shiftASyncTest<float>();
+    #pragma noinline
     shiftASyncTest<double>();
 
+    #pragma noinline
     shiftTest<float>();
+    #pragma noinline
     shiftTest<double>();
 
+    #pragma noinline
     updateHaloTest<float>();
+    #pragma noinline
     updateHaloTest<double>();
 
+    #pragma noinline
     bcastStringTest();
+    #pragma noinline
     buildHaloTest();
+    #pragma noinline
     allocatePlanTest();
+    #pragma noinline
     computeOwnersTest();
+    #pragma noinline
     CommunicatorCtrTest();
 }

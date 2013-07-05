@@ -37,6 +37,7 @@
 #include <lama/Scalar.hpp>
 #include <lama/Printable.hpp>
 #include <lama/Context.hpp>
+#include <lama/ContextFactory.hpp>
 
 #include <boost/assign/list_of.hpp>
 

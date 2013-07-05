@@ -60,6 +60,7 @@ set ( SOURCE_FILES
         CriterionTest
         CSRSparseMatrixTest
         CSRStorageTest
+        CSRUtilsTest
         DenseMatrixTest
         DenseMatrixTest1
         DenseStorageTest

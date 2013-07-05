@@ -46,7 +46,7 @@
 // trace
 #include <lama/tracing.hpp>
 
-#include <mkl.h>
+#include <mkl_spblas.h>
 
 namespace lama
 {

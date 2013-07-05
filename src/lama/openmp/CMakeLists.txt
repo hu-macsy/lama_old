@@ -52,11 +52,16 @@ set ( HEADERS
     )
 
 if ( MKL_FOUND )
-# Use MKL sparse blas routines for CSR
-   set ( CLASSES
-            ${CLASSES} 
-            MKLCSRUtils
-       )
+    # Use MKL sparse blas routines for CSR if available
+    if ( EXISTS "${MKL_INCLUDE_DIR}/mkl_spblas.h" )
+        set ( CLASSES
+                 ${CLASSES} 
+                 MKLCSRUtils
+            )
+        message( STATUS "MKL Sparse BLAS is supported and will be used" ) 
+    else ( EXISTS "${MKL_INCLUDE_DIR}/mkl_spblas.h" )
+        message( STATUS "MKL Sparse BLAS is not supported" )
+    endif ( EXISTS "${MKL_INCLUDE_DIR}/mkl_spblas.h" )
 endif ( MKL_FOUND )
 
 # OpenMPLAPACKe requires LAPACKe interface, is in MKL
