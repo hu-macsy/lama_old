@@ -1,7 +1,5 @@
 #!/usr/bin/env python
 
-import MultiBench
-
 import os
 
 directory = "data/"

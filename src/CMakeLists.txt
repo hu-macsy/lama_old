@@ -62,6 +62,7 @@ include ( CompilerVersion )
 ### PACKAGES ###
 include ( PackageMPI )
 include ( PackageBoost )
+include ( PackageMIC )
 include ( PackageCodeCoverage )
 
 # Find required packages
@@ -248,7 +249,7 @@ endif ( CUDA_FOUND )
 
 ## MIC
 if ( LAMA_USE_MIC )
-    lama_status_message ( INFO "[ENABLED]" "    MIC (Many-Integrated-Core-Architecture)" )
+    lama_status_message ( INFO "[ENABLED]" "  MIC (Many-Integrated-Core-Architecture)" )
 else ( LAMA_USE_MIC )
     lama_status_message ( WARNING "[DISABLED]" " MIC (Many-Integrated-Core-Architecture)" )
 endif ( LAMA_USE_MIC )
