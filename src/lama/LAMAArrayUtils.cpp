@@ -199,19 +199,16 @@ void LAMAArrayUtils::assignScalar( _LAMAArray& target, const Scalar& value, Cont
     if ( arrayType == Scalar::DOUBLE )
     {
         LAMAArray<double>& typedTarget = dynamic_cast<LAMAArray<double>&>( target );
-        #pragma noinline
         assignScalar( typedTarget, value, context );
     }
     else if ( arrayType == Scalar::FLOAT )
     {
         LAMAArray<float>& typedTarget = dynamic_cast<LAMAArray<float>&>( target );
-        #pragma noinline
         assignScalar( typedTarget, value, context );
     }
     else if ( arrayType == Scalar::INDEX_TYPE )
     {
         LAMAArray<IndexType>& typedTarget = dynamic_cast<LAMAArray<IndexType>&>( target );
-        #pragma noinline
         assignScalar( typedTarget, value, context );
     }
     else

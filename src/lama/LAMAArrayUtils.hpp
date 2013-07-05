@@ -78,7 +78,8 @@ public:
         const LAMAArray<IndexType>& index );
 
     template<typename ValueType1>
-    static void assignScalar( LAMAArray<ValueType1>& target, const Scalar& value, ContextPtr context );
+    static void assignScalar( LAMAArray<ValueType1>& target, const Scalar& value, ContextPtr context )
+    __attribute__( ( noinline ) );
 
     static void assignScalar( _LAMAArray& target, const Scalar& value, ContextPtr context );
 
