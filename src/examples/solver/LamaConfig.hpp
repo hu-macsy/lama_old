@@ -224,6 +224,29 @@ void LamaConfig::setArg( const char* arg )
 {
     std::string val = arg;
 
+    // check for multi option on a node, e.g. 'cpu,mic,gpu,gpu', each processor
+    // on a node gets its own argument
+
+    if ( strchr( arg, ',' ) )
+    {
+        std::vector<std::string> singleVals;
+
+        tokenize( singleVals, val, "," );
+
+        if ( singleVals.size() == mComm->getNodeSize() )
+        {
+            const std::string myVal = singleVals[ mComm->getNodeRank() ];
+
+            setArg( myVal.c_str() );
+        }
+        else
+        {
+            std::cerr << val << " cannot be tokenized, #items = " << singleVals.size()
+                      << " does not match node size = " << mComm->getNodeSize() << std::endl;
+        }
+        return;
+    }
+
     // make upper string for more convenience, e.g. Host is same as host or HOST
 
     for ( std::string::iterator p = val.begin(); val.end() != p; ++p )
