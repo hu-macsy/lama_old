@@ -756,7 +756,7 @@ void compressIATest( ContextPtr loc )
     }
     catch( Exception )
     {
-        std::cout <<  "ATTENTION: ELLUtils::compressIA not available on " << *loc << ", not tested" << std::endl;
+        std::cout <<  "WARN: ELLUtils::compressIA not available on " << *loc << ", not tested" << std::endl;
         return;
     }
 }
@@ -766,6 +766,8 @@ void compressIATest( ContextPtr loc )
 template<typename ValueType>
 void compressValuesTest( ContextPtr loc )
 {
+    try
+    {
     LAMA_INTERFACE_FN_T( compressValues, loc, ELLUtils, Helper, ValueType );
 
     // Check without epsilon
@@ -927,6 +929,12 @@ void compressValuesTest( ContextPtr loc )
             BOOST_CHECK_EQUAL( expectedELLJa[i], rNewELLJa[i] );
         }
     }
+    }
+    catch( Exception )
+    {
+        std::cout <<  "WARN: ELLUtils::compressValues not available on " << *loc << ", not tested" << std::endl;
+        return;
+    }
 }
 
 template<typename NoType>
@@ -1048,7 +1056,7 @@ void matrixMultiplySizesTest( ContextPtr loc )
     }
     catch( Exception )
     {
-        std::cout <<  "ATTENTION: ELLUtils::matrixMultiplySizes not available on " << *loc << ", not tested" << std::endl;
+        std::cout <<  "WARN: ELLUtils::matrixMultiplySizes not available on " << *loc << ", not tested" << std::endl;
         return;
     }
 }
@@ -1306,7 +1314,7 @@ void matrixMultiplyTest( ContextPtr loc )
     }
     catch( Exception )
     {
-        std::cout <<  "ATTENTION: ELLUtils::matrixMultiply not available on " << *loc << ", not tested" << std::endl;
+        std::cout <<  "WARN: ELLUtils::matrixMultiply not available on " << *loc << ", not tested" << std::endl;
         return;
     }
 }
@@ -1382,7 +1390,7 @@ void matrixAddSizesTest( ContextPtr loc )
     }
     catch( Exception )
     {
-        std::cout <<  "ATTENTION: ELLUtils::matrixAddSizes not available on " << *loc << ", not tested" << std::endl;
+        std::cout <<  "WARN: ELLUtils::matrixAddSizes not available on " << *loc << ", not tested" << std::endl;
         return;
     }
 }
@@ -1457,7 +1465,6 @@ void matrixAddTest( ContextPtr loc )
                 LAMA_CONTEXT_ACCESS( loc );
     
                 bool diagonalProperty = false;    // does not matter here
-                IndexType numColumns = aNumRows;
 
                 matrixAdd( wCJa.get(), wCValues.get(), rCIa.get(), cNumValuesPerRow,
                            aNumRows, numColumns, diagonalProperty, 
@@ -1486,9 +1493,6 @@ void matrixAddTest( ContextPtr loc )
             IndexType valuesAJa[] =
             { 1, 0, 1, 0, 0, 3, 3, 2, 2, 2, 0, 4, 0, 3, 3, 0, 0, 0, 0, 4 };
             const IndexType aNumValues = sizeof( valuesAJa ) / sizeof( IndexType );
-    
-            BOOST_REQUIRE_EQUAL( aNumValues, nAValues );
-    
             ValueType valuesBValues[] =
             { 3, 4, 9, 8, 3, 8, 8, 7, 9, 7, 0, 0, 0, 5, 0 };
             const IndexType nBValues = sizeof( valuesBValues ) / sizeof( ValueType );
@@ -1498,9 +1502,6 @@ void matrixAddTest( ContextPtr loc )
             IndexType valuesBJa[] =
             { 0, 0, 1, 0, 2, 2, 3, 3, 1, 3, 0, 0, 0, 2, 0 };
             const IndexType bNumValues = sizeof( valuesBJa ) / sizeof( IndexType );
-    
-            BOOST_REQUIRE_EQUAL( bNumValues, nBValues );
-    
             IndexType valuesCIa[] =
             { 4, 3, 3, 4, 4 };
             const IndexType cNumRows = sizeof( valuesCIa ) / sizeof( IndexType );
@@ -1510,6 +1511,7 @@ void matrixAddTest( ContextPtr loc )
             { 0, 0, 1, 0, 0, 1, 3, 2, 1, 2, 2, 4, 3, 2, 3, 3, 0, 0, 3, 4 };
     
             IndexType cNumValues = 20;
+            IndexType numColumns = 5;  // for convenience
             ValueType alpha = 1;
             ValueType beta = 2;
     
@@ -1520,13 +1522,17 @@ void matrixAddTest( ContextPtr loc )
             LAMAArray<IndexType> BIa( bNumRows, valuesBIa );
             LAMAArray<IndexType> BJa( bNumValues, valuesBJa );
             LAMAArray<IndexType> CIa( cNumRows, valuesCIa );
-    
-            LAMAArray<ValueType> CValues;
-            LAMAArray<IndexType> CJa;
-    
+
             IndexType aNumValuesPerRow = aNumValues / aNumRows;
             IndexType bNumValuesPerRow = bNumValues / bNumRows;
             IndexType cNumValuesPerRow = cNumValues / cNumRows;
+    
+            // This did no work but should
+            // LAMAArray<ValueType> CValues;
+            // LAMAArray<IndexType> CJa;
+    
+            LAMAArray<ValueType> CValues( cNumValues, 0.0 );
+            LAMAArray<IndexType> CJa( cNumValues, 0.0 );
     
             {
                 ReadAccess<IndexType> rAIa( AIa, loc );
@@ -1542,9 +1548,8 @@ void matrixAddTest( ContextPtr loc )
     
                 LAMA_CONTEXT_ACCESS( loc );
     
-                bool diagonalProperty = false;
-                IndexType numColumns  = aNumRows;
-    
+                bool diagonalProperty = false;    // does not matter here
+
                 matrixAdd( wCJa.get(), wCValues.get(), rCIa.get(), cNumValuesPerRow,
                            aNumRows, numColumns, diagonalProperty, 
                            alpha, rAIa.get(), rAJa.get(), rAValues.get(), aNumValuesPerRow,
@@ -1553,7 +1558,7 @@ void matrixAddTest( ContextPtr loc )
     
             HostReadAccess<ValueType> rCValues( CValues );
             HostReadAccess<IndexType> rCJa( CJa );
-    
+
             for ( IndexType i = 0; i < cNumValues; i++ )
             {
                 BOOST_CHECK_EQUAL( expectedCValues[i], rCValues[i] );
@@ -1563,7 +1568,7 @@ void matrixAddTest( ContextPtr loc )
     }
     catch( Exception )
     {
-        std::cout <<  "ATTENTION: ELLUtils::matrixAdd not available on " << *loc << ", not tested" << std::endl;
+        std::cout <<  "WARN: ELLUtils::matrixAdd not available on " << *loc << ", not tested" << std::endl;
         return;
     }
 }
@@ -1585,16 +1590,17 @@ LAMA_AUTO_TEST_CASE_TDUMMY( setNonEmptyRowsBySizesTest, ELLUtilsTest );
 LAMA_AUTO_TEST_CASE_TDUMMY( hasDiagonalPropertyTest, ELLUtilsTest );
 LAMA_AUTO_TEST_CASE_TDUMMY( checkTest, ELLUtilsTest );
 
-// TODO: uncomment after implementing this for CUDA!
-//
 LAMA_AUTO_TEST_CASE_TDUMMY( matrixMultiplySizesTest, ELLUtilsTest );
 LAMA_AUTO_TEST_CASE_TDUMMY( matrixAddSizesTest, ELLUtilsTest );
 
-//
-// LAMA_AUTO_TEST_CASE_T( compressIATest, ELLUtilsTest );
-// LAMA_AUTO_TEST_CASE_T( compressValuesTest, ELLUtilsTest );
-// LAMA_AUTO_TEST_CASE_T( matrixMultiplyTest, ELLUtilsTest );
-// LAMA_AUTO_TEST_CASE_T( matrixAddTest, ELLUtilsTest );
+
+LAMA_AUTO_TEST_CASE_T( compressIATest, ELLUtilsTest );
+LAMA_AUTO_TEST_CASE_T( compressValuesTest, ELLUtilsTest );
+
+LAMA_AUTO_TEST_CASE_T( matrixMultiplyTest, ELLUtilsTest );
+
+// ToDo: does not work
+LAMA_AUTO_TEST_CASE_T( matrixAddTest, ELLUtilsTest );
 
 LAMA_AUTO_TEST_CASE_TT( getRowTest, ELLUtilsTest );
 LAMA_AUTO_TEST_CASE_TT( getValueTest, ELLUtilsTest );

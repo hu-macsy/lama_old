@@ -121,7 +121,7 @@ void absMaxDiffValTest( ContextPtr loc )
     }
     catch( Exception )
     {
-        std::cout <<  "ATTENTION: CSRUtils::absMaxDiffVal not available on " << *loc << ", not tested" << std::endl;
+        std::cout <<  "WARN: CSRUtils::absMaxDiffVal not available on " << *loc << ", not tested" << std::endl;
         return;
     }
 

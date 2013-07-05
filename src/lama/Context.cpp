@@ -106,6 +106,10 @@ std::ostream& operator<<( std::ostream& stream, const ContextType type )
     {
         stream << "OpenCL";
     }
+    else if ( type == Context::MIC )
+    {
+        stream << "MIC";
+    }
     else
     {
         stream << (int) type;
