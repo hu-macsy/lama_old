@@ -42,7 +42,9 @@
 #include <lama/CommunicatorFactory.hpp>
 #include <lama/solver/logger/LogLevel.hpp>
 #include <omp.h>
+#ifdef CUDA
 #include <lama/cuda/CUDAHostContextManager.hpp>
+#endif
 
 #include <cstring>
 
@@ -235,9 +237,13 @@ void LamaConfig::setArg( const char* arg )
     { 
         mMatrixFormat = val;
     }
-    else if ( "HOST" == val )
+    else if ( ( "HOST" == val ) || ( "CPU" == val ) )
     { 
         mContext = lama::ContextFactory::getContext( lama::Context::Host );
+    }
+    else if ( ( "MIC" == val ) || ( "PHI" == val ) )
+    { 
+        mContext = lama::ContextFactory::getContext( lama::Context::MIC );
     }
     else if ( ( "CUDA" == val ) || ( "GPU" == val ) )
     { 
@@ -251,7 +257,9 @@ void LamaConfig::setArg( const char* arg )
     {
         // support fast memory transfer Host->CUDA
 
+#ifdef CUDA
         lama::CUDAHostContextManager::setAsCurrent( mContext );
+#endif
     }
     else if ( "METIS" == val )
     {
