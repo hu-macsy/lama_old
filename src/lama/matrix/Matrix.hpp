@@ -320,6 +320,13 @@ public:
      */
     virtual void buildLocalStorage( _MatrixStorage& storage ) const = 0;
 
+    /** @brief Get access to the local storage of this matrix according to row and column distribution.
+     *
+     *  Derived classes might return covariant types.
+     */
+
+    virtual const _MatrixStorage& getLocalStorage() const = 0;
+
     /** @brief This method allows any arbitrary redistribution of the matrix.
      *
      *  @param[in] rowDistribution is new distribution of rows, global size must be mNumRows
@@ -735,23 +742,6 @@ public:
      */
     virtual Matrix* create() const = 0;
 
-//    TODO[code coverage] NOT used anywhere (to be removed).
-//    /**
-//     * @brief Constructor creates a replicated matrix of same type as a given matrix.
-//     *
-//     * @param[in] numRows      number of rows, must be non-negative.
-//     * @param[in] numColumns   number of columns, must be non-negative.
-//     */
-//    Matrix* create( const IndexType numRows, const IndexType numColumns ) const;
-//
-//    TODO[code coverage] NOT used anywhere (to be removed).
-//    /**
-//     * @brief Constructor creates a distributed zero matrix of same type as a given matrix.
-//     *
-//     * @param[in] size   number of rows and columns for the square matrix.
-//     */
-//    Matrix* create( const IndexType size ) const;
-
     /**
      * @brief Constructor creates a distributed zero matrix of same type as a given matrix.
      *
@@ -759,14 +749,6 @@ public:
      * @param[in] colDistribution   TODO[doxy] Complete Description.
      */
     Matrix* create( DistributionPtr rowDistribution, DistributionPtr colDistribution ) const;
-
-//    TODO[code coverage] NOT used anywhere (to be removed).
-//    /**
-//     * @brief Constructor creates a distributed zero matrix of same type as a given matrix.
-//     *
-//     * @param[in] distribution   TODO[doxy] Complete Description.
-//     */
-//    Matrix* create( DistributionPtr distribution ) const;
 
     /**
      * @brief Constructor creates a distributed dense vector of same type as a given matrix.

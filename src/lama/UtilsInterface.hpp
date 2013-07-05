@@ -238,11 +238,23 @@ struct UtilsInterface
 
 struct CSRUtilsInterface
 {
-    /** Structure with type definitions for spmv */
+    /** Structure defining function types for operations on CSR data 
+     *
+     *  @tparam ValueType is the value type of the matrix element, e.g. float, double
+     */
 
     template<typename ValueType>
     struct Operations
     {
+        /** This metod sorts the elemnts of a row by increasing column indexes.
+         *
+         *  @param[in,out] csrJA, csrValues  the CSR matrix data and their column indexes
+         *  @param[in]     csrIA             row offsets
+         *  @param[in]     numRows           number of rows
+         *  @param[in]     diagonalFlag      if true first entry of each row will be the diagonal element if available
+         *
+         *  Note: This routine does not force the diagonal property, only if each diagonal element is already available
+         */
         typedef void ( *sortRowElements ) ( IndexType csrJA[],
                                             ValueType csrValues[],
                                             const IndexType csrIA[],
@@ -262,7 +274,7 @@ struct CSRUtilsInterface
         *  solution = omega * ( rhs + B * oldSolution) * dinv  + ( 1 - omega ) * oldSolution
         *
         */
-       typedef void ( *jacobi ) ( ValueType* const solution,
+       typedef void ( *jacobi ) ( ValueType solution[],
                                   const IndexType csrIA[],
                                   const IndexType csrJA[],
                                   const ValueType csrValues[],
@@ -291,19 +303,18 @@ struct CSRUtilsInterface
         /** Method to compute one iteration step in Jacobi method
          *
          *  solution -= omega * ( B(halo) * oldSolution) * dinv
-	 *
+         *
          *  @since 1.1.0
-	 *
          */
         typedef void ( *jacobiHaloWithDiag ) ( ValueType solution[],
-					       const ValueType localDiagValues[],
-					       const IndexType haloIA[],
-					       const IndexType haloJA[],
-					       const ValueType haloValues[],
-					       const IndexType haloRowIndexes[],
-					       const ValueType oldSolution[],
-					       const ValueType omega,
-					       const IndexType numNonEmptyRows );
+					                           const ValueType localDiagValues[],
+					                           const IndexType haloIA[],
+					                           const IndexType haloJA[],
+					                           const ValueType haloValues[],
+					                           const IndexType haloRowIndexes[],
+					                           const ValueType oldSolution[],
+					                           const ValueType omega,
+					                           const IndexType numNonEmptyRows );
     };
 
     LAMA_INTERFACE_DEFINE_T( Solver, jacobi )
@@ -346,7 +357,15 @@ struct CSRUtilsInterface
 
         typedef void ( *offsets2sizes ) ( IndexType sizes[], const IndexType offsets[], const IndexType n );
 
-        /** check for a legal offset array. */
+        /** Check for a legal offset array. 
+         *
+         *  @param[in] array is the array with offsets
+         *  @param[in] n array has n + 1 entries
+         *  @param[in] total must be last entry in array
+         *  @return    true if the array is legal
+         *
+         *  Means: array[0] <= array[1] <= array[2] <= ... <= array[n] (= total)
+         */
 
         typedef bool ( *validOffsets ) ( const IndexType array[], const IndexType n, const IndexType total );
 
@@ -404,6 +423,15 @@ struct CSRUtilsInterface
                                              const IndexType aIA[], const IndexType aJA[],
                                              const IndexType bIA[], const IndexType bJA[] );
 
+        /** This method checks whether the CSR structure data has the diagonal property.
+         *
+         *  @param[in] numDiagonals  number of first rows for which diagonal property is checked.
+         *  @param[in] csrIA         offset array for the rows
+         *  @param[in] csrJA         column indexes
+         *  @return                  true if diagonal property is given
+         *
+         *  The diagonal property is given if the first column index in the row is same as the row index.
+         */
         typedef bool ( *hasDiagonalProperty ) ( const IndexType numDiagonals,
                                                 const IndexType csrIA[],
                                                 const IndexType csrJA[] );
@@ -457,7 +485,14 @@ struct CSRUtilsInterface
 
         /** This operation multiplies each row with an own value.
          *
+         *  @param[in,out] csrValues matrix data that is scaled
+         *  @param[in]     csrIA offset array to identify which elements of csrValues belong to which row
+         *  @param[in]     numRows number of rows in matrix and also size of values
+         *  @param[in]     values array with element for each row used for scaling
+         *
          *  csr[i,j] *= values[i], for i = 0, ..., numRows-1
+         *
+         *  This routine supports different precision for matrix values and scale values.
          */
 
         typedef void ( *scaleRows ) ( ValueType1 csrValues[],
@@ -489,22 +524,14 @@ struct CSRUtilsInterface
 
     LAMA_INTERFACE_DEFINE_T( Reductions, absMaxDiffVal )
 
-    /** Define structure for multiplication routines.  */
+    /** Define structure for multiplication routines.
+     *
+     *  @tparam ValueType specifies the value type used in mutliplications.
+     */
 
     template<typename ValueType>
     struct Mult
     {
-
-        /** This operation multiplies each row with an own value.
-         *
-         *  csr[i,j] *= values[i], for i = 0, ..., numRows-1
-         */
-
-        typedef void ( *scaleRows ) ( ValueType csrValues[],
-                                      const IndexType csrIA[],
-                                      const IndexType numRows,
-                                      const ValueType values[] );
-
         /** result = alpha * CSR-Matrix * x + b * y.
          *
          *  @param result is the result vector
@@ -561,15 +588,15 @@ struct CSRUtilsInterface
 
         /**  This method computes result = alpha * CSR * x + beta * y  with dense result, x, y
          *
-         *   param[out] result  has size m x n
-         *   param[in]  alpha scaling factor
-         *   param[in]  x has size p x n
-         *   param[in]  beta scaling factor
-         *   param[in]  y has size m x n
-         *   param[in]  csrIA offset array of CSR matrix, has size m + 1
-         *   param[in]  csrJA has size csrIA[m], values between 0 and p-1
-         *   param[in]  csrVaues is value array of CSR matrix
-         *   param[in,out] syncToken might be used for asynchronous execution
+         *   @param[out] result  has size m x n
+         *   @param[in]  alpha scaling factor
+         *   @param[in]  x has size p x n
+         *   @param[in]  beta scaling factor
+         *   @param[in]  y has size m x n
+         *   @param[in]  csrIA offset array of CSR matrix, has size m + 1
+         *   @param[in]  csrJA has size csrIA[m], values between 0 and p-1
+         *   @param[in]  csrVaues is value array of CSR matrix
+         *   @param[in,out] syncToken might be used for asynchronous execution
          */
 
         typedef void ( *gemm ) ( ValueType result[],
