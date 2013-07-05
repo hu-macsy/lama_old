@@ -95,15 +95,18 @@ public:
     {
         Scalar::ScalarType arrayType = values.getValueType();
 
+        // pragma noinline required to guarantee that method setCSRDataImpl will always be instantiated 
         if ( arrayType == Scalar::DOUBLE )
         {
             const LAMAArray<double>& typedValues = dynamic_cast<const LAMAArray<double>&>( values );
+            #pragma noinline
             static_cast<Derived*>( this )->setCSRDataImpl( numRows, numColumns, numValues, ia, ja, typedValues,
                     this->getContextPtr() );
         }
         else if ( arrayType == Scalar::FLOAT )
         {
             const LAMAArray<float>& typedValues = dynamic_cast<const LAMAArray<float>&>( values );
+            #pragma noinline
             static_cast<Derived*>( this )->setCSRDataImpl( numRows, numColumns, numValues, ia, ja, typedValues,
                     this->getContextPtr() );
         }
@@ -132,11 +135,13 @@ public:
         if ( arrayType == Scalar::DOUBLE )
         {
             LAMAArray<double>& typedValues = dynamic_cast<LAMAArray<double>&>( values );
+            #pragma noinline
             static_cast<const Derived*>( this )->buildCSR( ia, &ja, &typedValues, this->getContextPtr() );
         }
         else if ( arrayType == Scalar::FLOAT )
         {
             LAMAArray<float>& typedValues = dynamic_cast<LAMAArray<float>&>( values );
+            #pragma noinline
             static_cast<const Derived*>( this )->buildCSR( ia, &ja, &typedValues, this->getContextPtr() );
         }
         else
@@ -154,11 +159,13 @@ public:
         if ( arrayType == Scalar::DOUBLE )
         {
             LAMAArray<double>& typedRow = dynamic_cast<LAMAArray<double>&>( row );
+            #pragma noinline
             static_cast<const Derived*>( this )->getRowImpl( typedRow, i );
         }
         else if ( arrayType == Scalar::FLOAT )
         {
             LAMAArray<float>& typedRow = dynamic_cast<LAMAArray<float>&>( row );
+            #pragma noinline
             static_cast<const Derived*>( this )->getRowImpl( typedRow, i );
         }
         else
@@ -179,11 +186,13 @@ public:
         if ( arrayType == Scalar::DOUBLE )
         {
             LAMAArray<double>& typedDiagonal = dynamic_cast<LAMAArray<double>&>( diagonal );
+            #pragma noinline
             static_cast<const Derived*>( this )->getDiagonalImpl( typedDiagonal );
         }
         else if ( arrayType == Scalar::FLOAT )
         {
             LAMAArray<float>& typedDiagonal = dynamic_cast<LAMAArray<float>&>( diagonal );
+            #pragma noinline
             static_cast<const Derived*>( this )->getDiagonalImpl( typedDiagonal );
         }
         else
@@ -221,11 +230,13 @@ public:
         if ( arrayType == Scalar::DOUBLE )
         {
             const LAMAArray<double>& typedDiagonal = dynamic_cast<const LAMAArray<double>&>( diagonal );
+            #pragma noinline
             static_cast<Derived*>( this )->setDiagonalImpl( typedDiagonal );
         }
         else if ( arrayType == Scalar::FLOAT )
         {
             const LAMAArray<float>& typedDiagonal = dynamic_cast<const LAMAArray<float>&>( diagonal );
+            #pragma noinline
             static_cast<Derived*>( this )->setDiagonalImpl( typedDiagonal );
         }
         else
@@ -250,11 +261,13 @@ public:
         if ( arrayType == Scalar::DOUBLE )
         {
             const LAMAArray<double>& typedDiagonal = dynamic_cast<const LAMAArray<double>&>( diagonal );
+            #pragma noinline
             static_cast<Derived*>( this )->scaleImpl( typedDiagonal );
         }
         else if ( arrayType == Scalar::FLOAT )
         {
             const LAMAArray<float>& typedDiagonal = dynamic_cast<const LAMAArray<float>&>( diagonal );
+            #pragma noinline
             static_cast<Derived*>( this )->scaleImpl( typedDiagonal );
         }
         else

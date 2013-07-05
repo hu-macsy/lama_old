@@ -908,7 +908,11 @@ SyncToken* DIAStorage<ValueType>::matrixTimesVectorAsync(
     const LAMAArrayConstView<ValueType> y ) const
 
 {
+    LAMA_REGION( "Storage.DIA.timesVectorAsync" )
+
     ContextPtr loc = getContextPtr();
+
+    LAMA_INTERFACE_FN_DEFAULT_T( normalGEMV, loc, DIAUtils, Mult, ValueType )
 
     if ( loc->getType() == Context::Host )
     {
@@ -926,8 +930,8 @@ SyncToken* DIAStorage<ValueType>::matrixTimesVectorAsync(
         return new TaskSyncToken( boost::bind( mv, this, result, alpha, x, beta, y ) );
     }
 
-    LAMA_REGION( "Storage.DIA.timesVectorAsync" )
-
+    // logging + checks not needed when started as a task
+    
     LAMA_LOG_INFO( logger,
                    "Start z = " << alpha << " * A * x + " << beta << " * y, with A = "
                     << *this << ", x = " << x << ", y = " << y << ", z = " << result 
@@ -935,8 +939,6 @@ SyncToken* DIAStorage<ValueType>::matrixTimesVectorAsync(
 
     LAMA_ASSERT_EQUAL_ERROR( x.size(), mNumColumns )
     LAMA_ASSERT_EQUAL_ERROR( y.size(), mNumRows )
-
-    LAMA_INTERFACE_FN_DEFAULT_T( normalGEMV, loc, DIAUtils, Mult, ValueType )
 
     std::auto_ptr<SyncToken> syncToken( loc->getSyncToken() );
 
