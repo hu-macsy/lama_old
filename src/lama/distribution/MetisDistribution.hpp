@@ -44,6 +44,11 @@
 
 #include <vector>
 
+extern "C"
+{
+#include <metis.h>
+}
+
 namespace lama
 {
 
@@ -82,12 +87,12 @@ private:
         std::vector<IndexType>& partition,
         IndexType& minConstraint,
         IndexType& parts,
-        std::vector<float>& tpwgts,
+        std::vector<real_t>& tpwgts,
         const CommunicatorPtr comm,
         const SparseMatrix<ValueType>& matrix ) const;
 
     void checkAndMapWeights(
-        std::vector<float>& tpwgts,
+        std::vector<real_t>& tpwgts,
         std::vector<IndexType>& mapping,
         IndexType& count,
         std::vector<float>& weights,

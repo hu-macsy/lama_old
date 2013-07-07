@@ -37,11 +37,6 @@
 // others
 #include <lama/tracing.hpp>
 
-extern "C"
-{
-#include <metis.h>
-}
-
 namespace lama
 {
 
@@ -72,7 +67,7 @@ MetisDistribution<ValueType>::MetisDistribution(
         // test weights (tpwgts)
         // note: no weight can be zero for metis call
         // so reduce number of partitions and map partition index to the right process
-        std::vector<float> tpwgts( size );
+        std::vector<real_t> tpwgts( size );
         std::vector<IndexType> mapping( size );
 
         IndexType count = 0;
@@ -171,7 +166,7 @@ void MetisDistribution<ValueType>::callPartitioning(
     std::vector<IndexType>& partition,
     IndexType& minConstraint,
     IndexType& parts,
-    std::vector<float>& tpwgts,
+    std::vector<real_t>& tpwgts,
     const CommunicatorPtr comm,
     const SparseMatrix<ValueType>& matrix ) const
 {
@@ -204,7 +199,7 @@ void MetisDistribution<ValueType>::callPartitioning(
 
 template<typename ValueType>
 void MetisDistribution<ValueType>::checkAndMapWeights(
-    std::vector<float>& tpwgts,
+    std::vector<real_t>& tpwgts,
     std::vector<IndexType>& mapping,
     IndexType& count,
     std::vector<float>& weights,
