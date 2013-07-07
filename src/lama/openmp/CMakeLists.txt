@@ -44,7 +44,6 @@ set ( CLASSES
         OpenMPELLUtils
         OpenMPJDSUtils
         OpenMPUtils
-        MKLCSRUtils
     )
 
 set ( HEADERS
