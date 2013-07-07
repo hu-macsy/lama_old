@@ -44,11 +44,6 @@
 
 #include <vector>
 
-extern "C"
-{
-#include <metis.h>
-}
-
 namespace lama
 {
 
@@ -83,16 +78,18 @@ private:
 
     MetisDistribution();
 
+    template<typename weightType>
     void callPartitioning(
         std::vector<IndexType>& partition,
         IndexType& minConstraint,
         IndexType& parts,
-        std::vector<real_t>& tpwgts,
+        std::vector<weightType>& tpwgts,
         const CommunicatorPtr comm,
         const SparseMatrix<ValueType>& matrix ) const;
 
+    template<typename weightType>
     void checkAndMapWeights(
-        std::vector<real_t>& tpwgts,
+        std::vector<weightType>& tpwgts,
         std::vector<IndexType>& mapping,
         IndexType& count,
         std::vector<float>& weights,

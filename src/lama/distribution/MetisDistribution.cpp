@@ -37,6 +37,11 @@
 // others
 #include <lama/tracing.hpp>
 
+extern "C"
+{
+#include <metis.h>
+}
+
 namespace lama
 {
 
@@ -162,11 +167,12 @@ void MetisDistribution<ValueType>::writeAt( std::ostream& stream ) const
 }
 
 template<typename ValueType>
+template<typename WeightType>
 void MetisDistribution<ValueType>::callPartitioning(
     std::vector<IndexType>& partition,
     IndexType& minConstraint,
     IndexType& parts,
-    std::vector<real_t>& tpwgts,
+    std::vector<WeightType>& tpwgts,
     const CommunicatorPtr comm,
     const SparseMatrix<ValueType>& matrix ) const
 {
@@ -198,8 +204,9 @@ void MetisDistribution<ValueType>::callPartitioning(
 }
 
 template<typename ValueType>
+template<typename WeightType>
 void MetisDistribution<ValueType>::checkAndMapWeights(
-    std::vector<real_t>& tpwgts,
+    std::vector<WeightType>& tpwgts,
     std::vector<IndexType>& mapping,
     IndexType& count,
     std::vector<float>& weights,
