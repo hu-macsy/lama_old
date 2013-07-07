@@ -134,12 +134,6 @@ public:
     template<typename T>
     static void sum( const IndexType n, T alpha, const T* x, T beta, const T* y, T* z, SyncToken* syncToken );
 
-    /**
-     * This function is the MIC implementation of lama::BLAS1Interface::ass
-     */
-    template<typename T>
-    static void ass( const IndexType n, const T value, T* x, SyncToken* syncToken );
-
     /** Routine that sets functions pointers belonging to BLAS1 in a BLASInterface.
      *
      *  param[inout] BLASInterface struct to register all routines implemented in CUDA

@@ -43,18 +43,6 @@ namespace lama
 
 /** kernel */
 
-/** assign */
-template<typename T1,typename T2>
-__global__
-void ass_kernel( const int n, T1* dst_d, const T2 value )
-{
-    const int i = threadId( gridDim, blockIdx, blockDim, threadIdx );
-    if ( i < n )
-    {
-        dst_d[i] = value;
-    }
-}
-
 /** sum */
 template<typename T>
 __global__
@@ -86,22 +74,6 @@ void limitedIntervalAdd( T* sum, const unsigned int threadId, const unsigned int
 }
 
 /** launcher */
-
-template<typename T>
-void CUDABLAS1::ass_launcher( const int n, const T value, T* x, cudaStream_t stream )
-{
-    LAMA_CHECK_CUDA_ACCESS
-
-    const int blockSize = 256;
-    dim3 dimBlock( blockSize, 1, 1 );
-    dim3 dimGrid = makeGrid( n, dimBlock.x );
-
-    ass_kernel<<< dimGrid, dimBlock, 0, stream>>> ( n, x, value );
-}
-
-// instantiation
-template void CUDABLAS1::ass_launcher<float>( const IndexType n, const float value, float* x, cudaStream_t stream );
-template void CUDABLAS1::ass_launcher<double>( const IndexType n, const double value, double* x, cudaStream_t stream );
 
 template<typename T>
 void CUDABLAS1::sum_launcher( const int n, T alpha, const T* x, T beta, const T* y, T* z, cudaStream_t stream )

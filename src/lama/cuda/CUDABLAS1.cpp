@@ -807,31 +807,6 @@ void CUDABLAS1::rotm(
 }
 
 template<typename T>
-void CUDABLAS1::ass( const IndexType n, const T value, T* x, SyncToken* syncToken )
-{
-    LAMA_CHECK_CUDA_ACCESS
-
-    cudaStream_t stream = 0; // default stream if no syncToken is given
-
-    if ( syncToken )
-    {
-        CUDAStreamSyncToken* cudaStreamSyncToken = dynamic_cast<CUDAStreamSyncToken*>( syncToken );
-        LAMA_ASSERT_DEBUG( cudaStreamSyncToken, "no cuda stream sync token provided" )
-        stream = cudaStreamSyncToken->getCUDAStream();
-    }
-
-    ass_launcher( n, value, x, stream );
-
-    // No error check here possible as kernel is started asynchronously
-
-    if ( !syncToken )
-    {
-        cudaStreamSynchronize( stream );
-        LAMA_CHECK_CUDA_ERROR
-    }
-}
-
-template<typename T>
 T CUDABLAS1::viamax( const IndexType n, const T* x, const IndexType incx, SyncToken* syncToken )
 {
     int maxIdx = iamax( n, x, incx, syncToken );
@@ -885,9 +860,6 @@ void CUDABLAS1::setInterface( BLASInterface& BLAS )
 
     LAMA_INTERFACE_REGISTER_T( BLAS, sum, float )
     LAMA_INTERFACE_REGISTER_T( BLAS, sum, double )
-
-    LAMA_INTERFACE_REGISTER_T( BLAS, ass, float )
-    LAMA_INTERFACE_REGISTER_T( BLAS, ass, double )
 }
 
 /* --------------------------------------------------------------------------- */

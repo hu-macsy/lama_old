@@ -173,12 +173,6 @@ public:
     template<typename T>
     static void rotmg( T* d1, T* d2, T* b1, const T b2, T* P, SyncToken* syncToken );
 
-    /**
-     * This function is the OpenMP implementation of lama::BLAS1Interface::ass
-     */
-    template<typename T>
-    static void ass( const IndexType n, const T value, T* x, SyncToken* syncToken );
-
     /** Routine that sets functions pointers belonging to BLAS1 in a BLASInterface.
      *
      *  param[inout] BLASInterface struct to register all routines implemented in CUDA

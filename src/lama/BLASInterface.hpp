@@ -225,16 +225,6 @@ struct BLASInterface
                                 const ValueType* y, 
                                 ValueType* z, 
                                 SyncToken* syncToken );
-    
-        /**
-         * @brief ass The function ass() assigns one scalar value to a vector of the given size.
-         *
-         * @param[in] n         size of the vector
-         * @param[in] value     scalar value, which should be assign to the whole vector
-         * @param[out] x        vector, the values should be assigned to
-         */
-         typedef void ( *ass ) ( const IndexType n, const ValueType value, ValueType *x, SyncToken* syncToken );
-    
     };
 
     // declare variables of function pointers, i.e. arrays indexed by each type

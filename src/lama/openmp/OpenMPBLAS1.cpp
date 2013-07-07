@@ -711,26 +711,6 @@ void OpenMPBLAS1::rotmg( double* d1, double* d2, double* b1, const double b2, do
     return;
 }
 
-/* ass */
-
-template<typename T>
-void OpenMPBLAS1::ass( const IndexType n, const T value, T* x, SyncToken* syncToken )
-{
-    LAMA_LOG_DEBUG( logger, "ass<float>, n = " << n << ", value = " << value << ", x = " << x )
-
-    if ( syncToken )
-    {
-        LAMA_LOG_WARN( logger, "no asynchronous execution for openmp possible at this level." )
-    }
-
-    #pragma omp parallel for
-    for ( int i = 0; i < n; i++ )
-    {
-        x[i] = value;
-    }
-    return;
-}
-
 /* --------------------------------------------------------------------------- */
 /*     Template instantiations via registration routine                        */
 /* --------------------------------------------------------------------------- */
@@ -769,9 +749,6 @@ void OpenMPBLAS1::setInterface( BLASInterface& BLAS )
 
     LAMA_INTERFACE_REGISTER_T( BLAS, sum, float )
     LAMA_INTERFACE_REGISTER_T( BLAS, sum, double )
-
-    LAMA_INTERFACE_REGISTER_T( BLAS, ass, float )
-    LAMA_INTERFACE_REGISTER_T( BLAS, ass, double )
 }
 
 /* --------------------------------------------------------------------------- */

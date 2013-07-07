@@ -169,21 +169,12 @@ private:
         SyncToken* syncToken );
 
     /**
-     * This function is the CUDA implementation of lama::BLAS1Interface::ass
-     */
-    template<typename T>
-    static void ass( const IndexType n, const T value, T* x, SyncToken* syncToken );
-
-    /**
      * This function is the CUDA implementation of lama::BLAS1Interface::viamax
      */
     template<typename T>
     static T viamax( const IndexType n, const T* x_d, const IndexType incx, SyncToken* syncToken );
 
 private:
-
-    template<typename T>
-    static void ass_launcher( const int n, const T value, T* x, cudaStream_t stream );
 
     template<typename T>
     static void sum_launcher( const int n, T alpha, const T* x, T beta, const T* y, T* z, cudaStream_t stream );
