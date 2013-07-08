@@ -45,23 +45,98 @@ extern "C"
 namespace lama
 {
 
-//LAMA_LOG_DEF_LOGGER( MetisDistribution::logger, "MetisDistribution" )
-LAMA_LOG_DEF_TEMPLATE_LOGGER( template<typename ValueType>, MetisDistribution<ValueType>::logger, "MetisDistribution" )
+LAMA_LOG_DEF_LOGGER( MetisDistribution::logger, "Distribution.MetisDistribution" )
 
 #define MASTER 0
 
-template<typename ValueType>
-MetisDistribution<ValueType>::MetisDistribution(
+MetisDistribution::MetisDistribution(
                    const CommunicatorPtr comm,
-                   SparseMatrix<ValueType>& matrix,
+                   Matrix& matrix,
                    std::vector<float>& weights )
-    :GeneralDistribution( matrix.getNumRows(), comm )
+
+    : GeneralDistribution( matrix.getNumRows(), comm )
+{
+    computeIt( comm, matrix, weights );
+}
+
+MetisDistribution::MetisDistribution(
+                   const CommunicatorPtr comm,
+                   Matrix& matrix,
+                   float weight )
+
+    : GeneralDistribution( matrix.getNumRows(), comm )
+{
+    LAMA_LOG_INFO( logger, "construct Metis distribution, weight at " << *comm << ": " << weight )
+
+    // collect weights from all processors
+
+    PartitionId numPartitions = comm->getSize();
+
+    std::vector<float> weights( numPartitions );
+
+    LAMA_LOG_INFO( logger, "#weights = " << weights.size() ) 
+
+    comm->gather( &weights[0], 1, MASTER, &weight );
+    comm->bcast( &weights[0], numPartitions, MASTER );
+
+    // norm weights so that sum gives exactly 1.0
+
+    normWeights( weights );
+
+    LAMA_LOG_INFO( logger, "#weights = " << weights.size() ) 
+
+    for ( size_t i = 0; i < weights.size(); ++i )
+    {
+       LAMA_LOG_INFO( logger, "weight[" << i << "] = " << weights[i] )
+    }
+
+    computeIt( comm, matrix, weights );
+}
+
+void MetisDistribution::normWeights( std::vector<float>& weights )
+{
+    const size_t numPartitions = weights.size();
+
+    // now each partition norms it
+
+    float sum = 0;
+
+    for ( size_t i = 0; i < numPartitions; ++i )
+    {
+        sum += weights[i];
+    }
+
+    float sumNorm = 0;
+
+    for ( size_t i = 0; i < numPartitions - 1; ++i )
+    {
+        weights[i] /= sum;
+        sumNorm += weights[i];
+    }
+
+    weights[ numPartitions - 1 ] = 1.0f - sumNorm;
+}
+
+void MetisDistribution::computeIt(
+                   const CommunicatorPtr comm,
+                   Matrix& matrix,
+                   std::vector<float>& weights )
 {
     // TODO check only for replicated matrix
+
+    const _MatrixStorage& localMatrix = matrix.getLocalStorage();
 
     IndexType size = comm->getSize();
     IndexType myRank = comm->getRank();
     IndexType totalRows = matrix.getNumRows();
+
+    if ( myRank == MASTER )
+    {
+        // MASTER must have all values of the matrix to build the graph
+
+        LAMA_ASSERT_EQUAL_ERROR( totalRows, localMatrix.getNumRows() )
+        LAMA_ASSERT_EQUAL_ERROR( matrix.getNumColumns(), localMatrix.getNumColumns() )
+    }
 
     std::vector<IndexType> numRowsPerOwner;
     std::vector<IndexType> distIA;
@@ -151,14 +226,12 @@ MetisDistribution<ValueType>::MetisDistribution(
     }
 }
 
-template<typename ValueType>
-MetisDistribution<ValueType>::~MetisDistribution()
+MetisDistribution::~MetisDistribution()
 {
     LAMA_LOG_INFO( logger, "~MetisDistribution" )
 }
 
-template<typename ValueType>
-void MetisDistribution<ValueType>::writeAt( std::ostream& stream ) const
+void MetisDistribution::writeAt( std::ostream& stream ) const
 {
     // write identification of this object
 
@@ -166,15 +239,14 @@ void MetisDistribution<ValueType>::writeAt( std::ostream& stream ) const
            << *mCommunicator << " )";
 }
 
-template<typename ValueType>
 template<typename WeightType>
-void MetisDistribution<ValueType>::callPartitioning(
+void MetisDistribution::callPartitioning(
     std::vector<IndexType>& partition,
     IndexType& minConstraint,
     IndexType& parts,
     std::vector<WeightType>& tpwgts,
     const CommunicatorPtr comm,
-    const SparseMatrix<ValueType>& matrix ) const
+    const Matrix& matrix ) const
 {
     LAMA_REGION( "METIScall" )
 
@@ -203,9 +275,8 @@ void MetisDistribution<ValueType>::callPartitioning(
     // NULL, &parts, &tpwgts[0], NULL, options, &minConstraint, &partition[0] );
 }
 
-template<typename ValueType>
 template<typename WeightType>
-void MetisDistribution<ValueType>::checkAndMapWeights(
+void MetisDistribution::checkAndMapWeights(
     std::vector<WeightType>& tpwgts,
     std::vector<IndexType>& mapping,
     IndexType& count,
@@ -222,8 +293,5 @@ void MetisDistribution<ValueType>::checkAndMapWeights(
         }
     }
 }
-
-template class LAMA_DLL_IMPORTEXPORT MetisDistribution<float> ;
-template class LAMA_DLL_IMPORTEXPORT MetisDistribution<double> ;
 
 } // namespace lama

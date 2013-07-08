@@ -54,7 +54,6 @@ namespace lama
  *
  */
 
-template<typename ValueType>
 class LAMA_DLL_IMPORTEXPORT MetisDistribution: public GeneralDistribution
 {
 public:
@@ -67,8 +66,14 @@ public:
      *  @param[in] weights      weights for the computational load to the processors
      */
     MetisDistribution( const CommunicatorPtr comm,
-                       SparseMatrix<ValueType>& matrix,
+                       Matrix& matrix,
                        std::vector<float>& weights );
+
+    /** Same as above but with individual weight of each processor. */
+
+    MetisDistribution( const CommunicatorPtr comm,
+                       Matrix& matrix,
+                       float weight );
 
     virtual ~MetisDistribution();
 
@@ -78,6 +83,10 @@ private:
 
     MetisDistribution();
 
+    void computeIt( const CommunicatorPtr comm,
+                    Matrix& matrix,
+                    std::vector<float>& weights );
+
     template<typename weightType>
     void callPartitioning(
         std::vector<IndexType>& partition,
@@ -85,7 +94,7 @@ private:
         IndexType& parts,
         std::vector<weightType>& tpwgts,
         const CommunicatorPtr comm,
-        const SparseMatrix<ValueType>& matrix ) const;
+        const Matrix& matrix ) const;
 
     template<typename weightType>
     void checkAndMapWeights(
@@ -98,6 +107,9 @@ private:
     LAMA_LOG_DECL_STATIC_LOGGER( logger )
 
     std::vector<float> mWeights;
+
+    void normWeights( std::vector<float>& weights );
+
 };
 
 } // namespace lama
