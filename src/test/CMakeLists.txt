@@ -52,6 +52,7 @@ set ( HEADERS
     )
 
 set ( SOURCE_FILES
+		BLAS1Test
         CGTest
         CommonLoggerTest
         CommunicatorTest
