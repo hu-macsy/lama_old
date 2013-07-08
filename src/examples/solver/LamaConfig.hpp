@@ -103,12 +103,19 @@ public:
 
     lama::ContextPtr getContextPtr() const
     {
+        // Create a new context if not done yet
+
+        if ( !mContext )
+        {
+            mContext = lama::ContextFactory::getContext( mContextType, mDevice );
+        }
+
         return mContext;
     }
 
     const lama::Context& getContext() const
     {
-        return *mContext;
+        return *getContextPtr();
     }
 
     lama::CommunicatorPtr getCommunicatorPtr() const
@@ -175,21 +182,25 @@ private:
 
     std::string              mMatrixFormat;
 
-    lama::ContextPtr         mContext;
+    lama::Context::ContextType mContextType;
 
-    lama::Matrix::SyncKind   mCommunicationKind;
+    mutable lama::ContextPtr   mContext;
 
-    lama::Scalar::ScalarType mValueType;          // value type to use
+    lama::Matrix::SyncKind     mCommunicationKind;
 
-    lama::CommunicatorPtr    mComm;
+    lama::Scalar::ScalarType   mValueType;          // value type to use
 
-    lama::IndexType          mMaxIter;
+    lama::CommunicatorPtr      mComm;
 
-    lama::LogLevel::LogLevel mLogLevel;
+    lama::IndexType            mMaxIter;
 
-    bool                     mUseMetis;
+    lama::LogLevel::LogLevel   mLogLevel;
 
-    float                    mWeight;
+    bool                       mUseMetis;
+
+    float                      mWeight;
+
+    int                        mDevice;
 
     /** Help routine to query if argument has only digits. */
 
@@ -204,12 +215,13 @@ LamaConfig::LamaConfig()
 {
     mCommunicationKind = lama::Matrix::SYNCHRONOUS;
     mComm              = lama::CommunicatorFactory::get();
-    mContext           = lama::ContextFactory::getContext( lama::Context::Host );
+    mContextType       = lama::Context::Host;
     mMaxIter           = lama::nIndex;
     mValueType         = lama::Scalar::DOUBLE;
     mLogLevel          = lama::LogLevel::convergenceHistory;
     mUseMetis          = false;
     mWeight            = 1.0f;
+    mDevice            = 0;
 }
 
 LamaConfig::~LamaConfig()
@@ -314,19 +326,17 @@ void LamaConfig::setArg( const char* arg )
     }
     else if ( ( "HOST" == val ) || ( "CPU" == val ) )
     { 
-        mContext = lama::ContextFactory::getContext( lama::Context::Host );
+        // Host does not require a device id
+
+        mContextType = lama::Context::Host;
     }
     else if ( ( "MIC" == val ) || ( "PHI" == val ) )
     { 
-        mContext = lama::ContextFactory::getContext( lama::Context::MIC );
+        mContextType = lama::Context::MIC;
     }
     else if ( ( "CUDA" == val ) || ( "GPU" == val ) )
     { 
-        // adapt it for your node configuration
-
-        int device = 2 * mComm->getNodeRank();
-
-        mContext = lama::ContextFactory::getContext( lama::Context::CUDA, device );
+        mContextType = lama::Context::CUDA;
     }
     else if ( "PINNED" == val )
     {
@@ -405,6 +415,20 @@ void LamaConfig::setArg( const char* arg )
             std::cout << "Illegal for number of threads: " << arg << std::endl;
         }
     }
+    else if ( ( 'D' == val[0] ) && isNumber( val.c_str() + 1 ) )
+    {
+        int deviceArg;
+
+        int narg = sscanf( val.c_str() + 1, "%d", &deviceArg );
+        if ( narg > 0 )
+        {
+            mDevice = deviceArg;
+        }
+        else
+        {
+            std::cout << "Illegal for number of device: " << arg << std::endl;
+        }
+    }
     else if ( ( 'B' == val[0] ) && isNumber( val.c_str() + 1 ) )
     {
         int numBlocks;
@@ -450,7 +474,7 @@ void LamaConfig::writeAt( std::ostream& stream ) const
 {
     stream << "LAMA configuration" << std::endl;
     stream << "==================" << std::endl;
-    stream << "Context           = " << *mContext << std::endl;
+    stream << "Context           = " << getContext() << std::endl;
     stream << "Communicator      = " << *mComm << std::endl;
     stream << "Matrix format     = " << getFormat() << std::endl;
     stream << "CommKind          = " << mCommunicationKind << std::endl;
@@ -488,7 +512,7 @@ const char* LamaConfig::getFormat( ) const
     {
         // choose default format by context: Host -> CSR, CUDA -> ELL
 
-        if ( mContext->getType() == lama::Context::CUDA )
+        if ( mContextType == lama::Context::CUDA )
         {
             return "ELL";
         }
