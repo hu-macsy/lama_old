@@ -37,8 +37,8 @@
 
 #include <lama/DenseVector.hpp>
 #include <lama/CommunicatorFactory.hpp>
-#include <lama/distribution/BlockDistribution.hpp>
-#include <lama/distribution/NoDistribution.hpp>
+#include <lama/distribution/GenBlockDistribution.hpp>
+#include <lama/distribution/MetisDistribution.hpp>
 
 #include <lama/solver/CG.hpp>
 #include <lama/solver/TrivialPreconditioner.hpp>
@@ -138,7 +138,20 @@ int main( int argc, char* argv[] )
 
     // distribute data (trivial block partitioning)
 
-    DistributionPtr dist( new BlockDistribution( numRows, lamaconf.getCommunicatorPtr() ) );
+    DistributionPtr dist;
+
+    if ( lamaconf.useMetis() )
+    {
+        SparseMatrix<double>& spMatrix = dynamic_cast<SparseMatrix<double>&>( matrix );
+
+        cout << "Metis distribution for " << spMatrix << endl;
+
+        dist.reset( new MetisDistribution<double>( lamaconf.getCommunicatorPtr(), spMatrix, lamaconf.getWeight() ) );
+    }
+    else
+    {
+        dist.reset( new GenBlockDistribution( numRows, lamaconf.getWeight(), lamaconf.getCommunicatorPtr() ) );
+    }
 
     matrix.redistribute( dist, dist );
     rhs.redistribute ( dist );

@@ -47,6 +47,7 @@
 #endif
 
 #include <cstring>
+#include <vector>
 
 /** Class that handles commonly used configuration values for LAMA
  *
@@ -165,6 +166,11 @@ public:
         return mUseMetis;
     }
 
+    float getWeight() const
+    {
+        return mWeight;
+    }
+
 private:
 
     std::string              mMatrixFormat;
@@ -183,9 +189,13 @@ private:
 
     bool                     mUseMetis;
 
+    float                    mWeight;
+
     /** Help routine to query if argument has only digits. */
 
     inline bool isNumber( const char* arg );
+
+    inline bool isReal( const char* arg );
 };
 
 /* ---------------------------------------------------------------------------- */
@@ -199,6 +209,7 @@ LamaConfig::LamaConfig()
     mValueType         = lama::Scalar::DOUBLE;
     mLogLevel          = lama::LogLevel::convergenceHistory;
     mUseMetis          = false;
+    mWeight            = 1.0f;
 }
 
 LamaConfig::~LamaConfig()
@@ -211,13 +222,54 @@ bool LamaConfig::isNumber( const char* arg )
 
     for ( int i = 0; i < len; ++i )
     {
-        if ( !isdigit( arg[i] ) )
+        if ( isdigit( arg[i] ) )
         {
-            return false;
+            continue;
         }
+        return false;
     }
 
     return true;
+}
+
+bool LamaConfig::isReal( const char* arg )
+{
+    int len = strlen( arg );
+
+    for ( int i = 0; i < len; ++i )
+    {
+        if ( isdigit( arg[i] ) )
+        {
+            continue;
+        }
+        if ( arg[i] == '.' )
+        {
+            continue;
+        }
+        return false;
+    }
+
+    return true;
+}
+
+static void tokenize( std::vector<std::string>& tokens,
+                      const std::string& str,
+                      const std::string& delimiters = " ")
+{
+    // Skip delimiters at beginning.
+    std::string::size_type lastPos = str.find_first_not_of( delimiters, 0 );
+    // Find first "non-delimiter".
+    std::string::size_type pos     = str.find_first_of( delimiters, lastPos );
+
+    while ( std::string::npos != pos || std::string::npos != lastPos )
+    {
+        // Found a token, add it to the vector.
+        tokens.push_back(str.substr( lastPos, pos - lastPos ) );
+        // Skip delimiters.  Note the "not_of"
+        lastPos = str.find_first_not_of( delimiters, pos );
+        // Find next "non-delimiter"
+        pos = str.find_first_of( delimiters, lastPos );
+    }
 }
 
 void LamaConfig::setArg( const char* arg )
@@ -369,6 +421,21 @@ void LamaConfig::setArg( const char* arg )
             std::cout << "Illegal for block size on CUDA: " << arg << std::endl;
         }
     }
+    else if ( ( 'W' == val[0] ) && isReal( val.c_str() + 1 ) )
+    {
+        float weight;
+
+        int narg = sscanf( val.c_str() + 1, "%f", &weight );
+
+        if ( narg > 0 && weight > 0.0f )
+        {
+            mWeight = weight;
+        }
+        else
+        {
+            std::cout << "Illegal weight: " << arg << std::endl;
+        }
+    }
     else if ( isNumber( val.c_str() ) )
     {
         sscanf( val.c_str(), "%d", &mMaxIter );
@@ -389,6 +456,8 @@ void LamaConfig::writeAt( std::ostream& stream ) const
     stream << "CommKind          = " << mCommunicationKind << std::endl;
     stream << "ValueType         = " << mValueType << std::endl;
     stream << "#Threads/CPU      = " << omp_get_max_threads() << std::endl;
+    stream << "weight            = " << mWeight << std::endl;
+
     if ( getenv( "LAMA_CUDA_USE_TEXTURE" ) )
     {
         stream << "useTexture(GPU)   = " << getenv( "LAMA_CUDA_USE_TEXTURE" ) << std::endl;
