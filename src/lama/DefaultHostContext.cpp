@@ -36,6 +36,7 @@
 
 // others
 #include <lama/exception/LAMAAssert.hpp>
+#include <lama/openmp/OpenMP.hpp>
 
 #include <lama/task/TaskSyncToken.hpp>
 
@@ -79,7 +80,18 @@ DefaultHostContext::~DefaultHostContext()
 void DefaultHostContext::writeAt( std::ostream& stream ) const
 {
     // write identification of this object
-    stream << "DefaultHostContext";
+
+    int nThreads = 1;
+
+    #pragma omp parallel
+    {
+        #pragma omp master
+        {
+            nThreads = omp_get_num_threads();
+        }
+    }
+
+    stream << "DefaultHostContext( #Threads = " << nThreads << " )";
 }
 
 void* DefaultHostContext::allocate( const size_t size ) const
