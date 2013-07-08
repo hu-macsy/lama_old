@@ -138,24 +138,29 @@ int main( int argc, char* argv[] )
 
     // distribute data (trivial block partitioning)
 
-    DistributionPtr dist;
-
-    if ( lamaconf.useMetis() )
+    if ( numProcs > 1 )
     {
-        SparseMatrix<double>& spMatrix = dynamic_cast<SparseMatrix<double>&>( matrix );
+        // determine a new distribution so that each processor gets part of the matrix according to its weight
 
-        cout << "Metis distribution for " << spMatrix << endl;
+        float weight = lamaconf.getWeight();
 
-        dist.reset( new MetisDistribution<double>( lamaconf.getCommunicatorPtr(), spMatrix, lamaconf.getWeight() ) );
+        DistributionPtr dist;
+
+        if ( lamaconf.useMetis() )
+        {
+            dist.reset( new MetisDistribution( lamaconf.getCommunicatorPtr(), matrix, weight ) );
+        }
+        else
+        {
+            dist.reset( new GenBlockDistribution( numRows, weight, lamaconf.getCommunicatorPtr() ) );
+        }
+
+        matrix.redistribute( dist, dist );
+        rhs.redistribute ( dist );
+        solution.redistribute ( dist );
+
+        cout << comm << ": matrix = " << matrix ;
     }
-    else
-    {
-        dist.reset( new GenBlockDistribution( numRows, lamaconf.getWeight(), lamaconf.getCommunicatorPtr() ) );
-    }
-
-    matrix.redistribute( dist, dist );
-    rhs.redistribute ( dist );
-    solution.redistribute ( dist );
 
     stop = Walltime::get();   // stop timing of redistribution
 

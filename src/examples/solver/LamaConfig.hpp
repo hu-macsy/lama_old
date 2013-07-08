@@ -427,7 +427,7 @@ void LamaConfig::setArg( const char* arg )
 
         int narg = sscanf( val.c_str() + 1, "%f", &weight );
 
-        if ( narg > 0 && weight > 0.0f )
+        if ( narg > 0 && weight >= 0.0f )
         {
             mWeight = weight;
         }
