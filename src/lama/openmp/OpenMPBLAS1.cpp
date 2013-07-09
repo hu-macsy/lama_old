@@ -57,6 +57,8 @@ LAMA_LOG_DEF_LOGGER( OpenMPBLAS1::logger, "OpenMP.BLAS1" )
 template<>
 void OpenMPBLAS1::scal( const IndexType n, const float alpha, float* x, const IndexType incX, SyncToken* syncToken )
 {
+    LAMA_REGION( "OpenMP.BLAS1.sscal" )
+
     LAMA_LOG_DEBUG( logger, "scal<float>, n = " << n << ", alpha = " << alpha << ", x = " << x << ", incX = " << incX )
 
     if ( syncToken )
@@ -76,6 +78,8 @@ void OpenMPBLAS1::scal( const IndexType n, const float alpha, float* x, const In
 template<>
 void OpenMPBLAS1::scal( const IndexType n, const double alpha, double* x, const IndexType incX, SyncToken* syncToken )
 {
+    LAMA_REGION( "OpenMP.BLAS1.dscal" )
+
     LAMA_LOG_DEBUG( logger,
                     "scal<double>, n = " << n << ", alpha = " << alpha << ", x = " << x << ", incX = " << incX )
 
