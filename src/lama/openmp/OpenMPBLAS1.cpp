@@ -739,8 +739,8 @@ void OpenMPBLAS1::setInterface( BLASInterface& BLAS )
     LAMA_INTERFACE_REGISTER_T( BLAS, viamax, float )
     LAMA_INTERFACE_REGISTER_T( BLAS, viamax, double )
 
-    // LAMA_INTERFACE_REGISTER_T( BLAS, swap, float )
-    // LAMA_INTERFACE_REGISTER_T( BLAS, swap, double )
+    LAMA_INTERFACE_REGISTER_T( BLAS, swap, float )
+    LAMA_INTERFACE_REGISTER_T( BLAS, swap, double )
 
     LAMA_INTERFACE_REGISTER_T( BLAS, copy, float )
     LAMA_INTERFACE_REGISTER_T( BLAS, copy, double )

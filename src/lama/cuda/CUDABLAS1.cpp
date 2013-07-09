@@ -811,8 +811,8 @@ T CUDABLAS1::viamax( const IndexType n, const T* x, const IndexType incx, SyncTo
 {
     int maxIdx = iamax( n, x, incx, syncToken );
 
-    float max = -1.0;
-    cudaMemcpy( &max, x + maxIdx, sizeof(T), cudaMemcpyDeviceToHost );
+    T max = -1.0;
+    cudaMemcpy( &max, x + maxIdx * incx, sizeof(T), cudaMemcpyDeviceToHost );
 
     LAMA_CHECK_CUDA_ERROR
 
@@ -843,11 +843,8 @@ void CUDABLAS1::setInterface( BLASInterface& BLAS )
     LAMA_INTERFACE_REGISTER_T( BLAS, viamax, float )
     LAMA_INTERFACE_REGISTER_T( BLAS, viamax, double )
 
-    /* not used in Interface yet:
-
-       LAMA_INTERFACE_REGISTER_T( BLAS, swap, float )
-       LAMA_INTERFACE_REGISTER_T( BLAS, swap, double )
-    */
+    LAMA_INTERFACE_REGISTER_T( BLAS, swap, float )
+    LAMA_INTERFACE_REGISTER_T( BLAS, swap, double )
 
     LAMA_INTERFACE_REGISTER_T( BLAS, copy, float )
     LAMA_INTERFACE_REGISTER_T( BLAS, copy, double )
