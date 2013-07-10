@@ -169,12 +169,12 @@ struct BLASInterface
          *
          *            y = x
          *
-         * @param[in] n      number of elements in input vectors.
-         * @param[in] x      vector with n elements
+         * @param[in] n      number of considered elements in input vectors.
+         * @param[in] x      vector with minimum (n - 1) * incX + 1 elements
          * @param[in] incX   storage spacing between elements of x
-         * @param[in] y      vector with n elements
+         * @param[in] y      vector with minimum (n - 1) * incY + 1 elements
          * @param[in] incY   storage spacing between elements of y
-         * @param[out] y     contains vector x
+         * @param[out] y     result (unchanged if n<=0)
          */
         typedef void ( *copy )( const IndexType n,
                                 const ValueType* x,
@@ -184,17 +184,17 @@ struct BLASInterface
                                 SyncToken* syncToken );
     
         /**
-         * @brief axpy multiplies vector x by scalar alpha and
+         * @brief axpy multiplies scalar alpha by vector x and
          * adds the result to vector y.
          *
-         *            y = alpha * y + beta * x
+         *            y = alpha * x + y
          *
-         * @param[in] n      number of elements in input vectors.
+         * @param[in] n      number of considered elements in input vectors.
          * @param[in] alpha  scalar multiplier
-         * @param[in] x      vector with n elements
+         * @param[in] x      vector with minimum (n - 1) * incX + 1 elements.
          * @param[in] incX   storage spacing between elements of x
-         * @param[in] y      vector with n elements
-         * @param[in] incY    storage spacing between elements of y
+         * @param[in] y      vector with minimum (n - 1) * incY + 1 elements.
+         * @param[in] incY   storage spacing between elements of y
          * @param[out] y     result (unchanged if n<=0)
          */
         typedef void ( *axpy )( const IndexType n,
@@ -211,14 +211,14 @@ struct BLASInterface
          * and 0.0 otherwise.
          * adds the result to vector y.
          *
-         *            dot = sum_{i = 1}^{n}( x_i * y_i )
+         *            dot = sum_{i = 0}^{n-1}( x_i * y_i )
          *
-         * @param[in] n      number of elements in input vectors.
-         * @param[in] x      vector with n elements
-         * @param[in] incX   storage spacing between elements of x
-         * @param[in] y      vector with n elements
-         * @param[in] incY   storage spacing between elements of y
-         * return            dot product (returns zero if n <= 0)
+         * @param[in] n      number of considered elements in input vectors.
+         * @param[in] x      vector with minimum (n - 1) * incX + 1 elements.
+         * @param[in] incX   storage spacing between elements of x.
+         * @param[in] y      vector with minimum (n - 1) * incY + 1 elements.
+         * @param[in] incY   storage spacing between elements of y.
+         * return            dot product (returns zero if n <= 0).
          */
         typedef ValueType ( *dot )( const IndexType n,
                                     const ValueType* x,
@@ -227,7 +227,19 @@ struct BLASInterface
                                     const IndexType inc,
                                     SyncToken* syncToken );
     
-        /**  sum: z = alpha * x + beta * y */
+        /**
+         * @brief sum adds the multiplication of scalar alpha by vector x and the multiplication of
+         * scalar beta by vector y into a new vector z.
+         *
+         *            z = alpha * x + beta * y
+         *
+         * @param[in] n      number of elements in input vectors.
+         * @param[in] alpha  scalar multiplier.
+         * @param[in] x      vector with n elements.
+         * @param[in] beta   scalar multiplier.
+         * @param[in] y      vector with n elements.
+         * @param[out] z     result of adding the 2 multiplications.
+         */
         typedef void ( *sum ) ( const IndexType n, 
                                 const ValueType alpha, 
                                 const ValueType* x, 

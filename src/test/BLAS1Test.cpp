@@ -90,35 +90,106 @@ void asumTest( ContextPtr loc )
 /* ------------------------------------------------------------------------------------------------------------------ */
 
 template<typename ValueType>
-void nrm2Test( ContextPtr loc )
+void axpyTest( ContextPtr loc )
 {
-    LAMA_INTERFACE_FN_T( nrm2, loc, BLAS, BLAS1, ValueType );
+    LAMA_INTERFACE_FN_T( axpy, loc, BLAS, BLAS1, ValueType );
 
     {
-        ValueType values[] =
-        { 1, 2, 3, 4, 5, 6 };
-        const IndexType nValues = sizeof( values ) / sizeof( ValueType );
-        const IndexType incX1 = 1;
-        const IndexType incX2 = 2;
-        const ValueType result1 = 91.0;
-        const ValueType result2 = 35.0;
+        ValueType x[] = { 1.0, 2.0, -3.0, 4.0, 5.0, -6.0 };
+        ValueType y[] = { 1.0, 2.0, -3.0, 4.0, 5.0, -6.0, 7.0, 8.0, -9.0};
+        ValueType yResult[] = { 6.0, 2.0, -3.0, -11.0, 5.0, -6.0, 32.0, 8.0, -9.0};
 
-        LAMAArray<ValueType> AValues( nValues, values );
+        const IndexType incX = 2;
+        const IndexType incY = 3;
+
+        LAMAArray<ValueType> Ax( 6, x );
+        LAMAArray<ValueType> Ay( 9, y );
 
         {
             LAMA_CONTEXT_ACCESS( loc );
 
-            // std::cout << "test 1 (incX = 1)" << std::endl;
-            ReadAccess<ValueType> rAValues( AValues, loc );
-        	ValueType euclideanNorm = nrm2( nValues / incX1, rAValues.get(), incX1, NULL );
-            BOOST_CHECK_CLOSE( euclideanNorm, ::sqrt(result1), 1e-4 );
+            ReadAccess<ValueType> wAx( Ax, loc );
+            WriteAccess<ValueType> wAy( Ay, loc );
 
-            // std::cout << "test 2 (incX = 2)" << std::endl;
-        	euclideanNorm = nrm2( nValues / incX2, rAValues.get(), incX2, NULL );
-        	BOOST_CHECK_CLOSE( euclideanNorm, ::sqrt(result2), 1e-4 );
+            axpy( 3, 5.0, wAx.get(), incX, wAy.get(), incY, NULL );
+        }
+
+        {
+            HostReadAccess<ValueType> rAy( Ay );
+            for ( int i = 0; i < 9; ++i )
+            {
+                BOOST_CHECK_EQUAL( yResult[i], rAy[i] );
+            }
+        }
+
+    }
+}  // axpyTest
+
+/* ------------------------------------------------------------------------------------------------------------------ */
+
+template<typename ValueType>
+void copyTest( ContextPtr loc )
+{
+    LAMA_INTERFACE_FN_T( copy, loc, BLAS, BLAS1, ValueType );
+
+    {
+        ValueType x[] = { 1.0, 2.0, -3.0, 4.0, 5.0, -6.0 };
+        ValueType y[] = { -9.0, 8.0, -7.0, 6.0, 5.0, -4.0, 3.0, 2.0, -1.0};
+        ValueType yResult[] = { 1.0, 8.0, -7.0, -3.0, 5.0, -4.0, 5.0, 2.0, -1.0};
+
+        const IndexType incX = 2;
+        const IndexType incY = 3;
+
+        LAMAArray<ValueType> Ax( 6, x );
+        LAMAArray<ValueType> Ay( 9, y );
+
+        {
+            LAMA_CONTEXT_ACCESS( loc );
+
+            ReadAccess<ValueType> wAx( Ax, loc );
+            WriteAccess<ValueType> wAy( Ay, loc );
+
+            copy( 3, wAx.get(), incX, wAy.get(), incY, NULL );
+        }
+
+        {
+            HostReadAccess<ValueType> rAy( Ay );
+            for ( int i = 0; i < 9; ++i )
+            {
+                BOOST_CHECK_EQUAL( yResult[i], rAy[i] );
+            }
+        }
+
+    }
+}  // copyTest
+
+/* ------------------------------------------------------------------------------------------------------------------ */
+template<typename ValueType>
+void dotTest( ContextPtr loc )
+{
+    LAMA_INTERFACE_FN_T( dot, loc, BLAS, BLAS1, ValueType );
+
+    {
+        ValueType x[] = { 1.0, 2.0, -3.0, 4.0, 5.0, -6.0 };
+        ValueType y[] = { 1.0, 2.0, -3.0, 4.0, 5.0, -6.0, 7.0, 8.0, -9.0};
+
+        const IndexType incX = 2;
+        const IndexType incY = 3;
+
+        LAMAArray<ValueType> Ax( 6, x );
+        LAMAArray<ValueType> Ay( 9, y );
+
+        {
+            LAMA_CONTEXT_ACCESS( loc );
+
+            ReadAccess<ValueType> wAx( Ax, loc );
+            WriteAccess<ValueType> wAy( Ay, loc );
+
+            ValueType result = dot( 3, wAx.get(), incX, wAy.get(), incY, NULL );
+            BOOST_CHECK_EQUAL( result, 24.0 );
         }
     }
-}  // nrm2Test
+}  // dotTest
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 
@@ -129,7 +200,7 @@ void iamaxTest( ContextPtr loc )
 
     {
         ValueType values[] =
-        { 1, 2, 3, 6, 5, 6 };
+        { 1.0, 2.0, 3.0, 6.0, 5.0, 6.0 };
         const IndexType nValues = sizeof( values ) / sizeof( ValueType );
         const IndexType incX1 = 1;
         const IndexType incX2 = 2; // { 1, 3, 5}
@@ -156,13 +227,113 @@ void iamaxTest( ContextPtr loc )
 /* ------------------------------------------------------------------------------------------------------------------ */
 
 template<typename ValueType>
+void nrm2Test( ContextPtr loc )
+{
+    LAMA_INTERFACE_FN_T( nrm2, loc, BLAS, BLAS1, ValueType );
+
+    {
+        ValueType values[] =
+        { 1.0, 2.0, 3.0, 4.0, 5.0, 6.0 };
+        const IndexType nValues = sizeof( values ) / sizeof( ValueType );
+        const IndexType incX1 = 1;
+        const IndexType incX2 = 2;
+        const ValueType result1 = 91.0;
+        const ValueType result2 = 35.0;
+
+        LAMAArray<ValueType> AValues( nValues, values );
+
+        {
+            LAMA_CONTEXT_ACCESS( loc );
+
+            // std::cout << "test 1 (incX = 1)" << std::endl;
+            ReadAccess<ValueType> rAValues( AValues, loc );
+        	ValueType euclideanNorm = nrm2( nValues / incX1, rAValues.get(), incX1, NULL );
+            BOOST_CHECK_CLOSE( euclideanNorm, ::sqrt(result1), 1e-4 );
+
+            // std::cout << "test 2 (incX = 2)" << std::endl;
+        	euclideanNorm = nrm2( nValues / incX2, rAValues.get(), incX2, NULL );
+        	BOOST_CHECK_CLOSE( euclideanNorm, ::sqrt(result2), 1e-4 );
+        }
+    }
+}  // nrm2Test
+
+/* ------------------------------------------------------------------------------------------------------------------ */
+
+template<typename ValueType>
+void scalTest( ContextPtr loc )
+{
+    LAMA_INTERFACE_FN_T( scal, loc, BLAS, BLAS1, ValueType );
+
+    {
+        ValueType values[] = { 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0 };
+        const IndexType incX = 3;
+
+        LAMAArray<ValueType> AValues( 8, values );
+
+        {
+            LAMA_CONTEXT_ACCESS( loc );
+
+            // std::cout << "test 1 (incX = 1)" << std::endl;
+            WriteAccess<ValueType> rAValues( AValues, loc );
+        	scal( 3, 2.4, rAValues.get(), incX, NULL );
+        }
+
+        {
+            HostReadAccess<ValueType> rAValues( AValues );
+            BOOST_CHECK_CLOSE(  2.4, rAValues[0], 1e-5 );
+            BOOST_CHECK_CLOSE(  9.6, rAValues[3], 1e-5 );
+            BOOST_CHECK_CLOSE( 16.8, rAValues[6], 1e-5 );
+        }
+    }
+}  // scalTest
+
+/* ------------------------------------------------------------------------------------------------------------------ */
+
+template<typename ValueType>
+void sumTest( ContextPtr loc )
+{
+    LAMA_INTERFACE_FN_T( sum, loc, BLAS, BLAS1, ValueType );
+
+    {
+        ValueType x[] = { 1.0, 2.0, 3.0, 4.0, 5.0};
+        ValueType y[] = { 7.0, 6.0, 5.0, 4.0, 3.0};
+
+        LAMAArray<ValueType> Ax( 5, x );
+        LAMAArray<ValueType> Ay( 5, y );
+        LAMAArray<ValueType> Az( 5);
+
+        {
+            LAMA_CONTEXT_ACCESS( loc );
+
+            ReadAccess<ValueType> rAx( Ax, loc );
+            ReadAccess<ValueType> rAy( Ay, loc );
+            WriteAccess<ValueType> wAz( Az, loc );
+
+            sum( 5, 3.0, rAx.get(), 4.0, rAy.get(), wAz.get(), NULL );
+        }
+
+        {
+            HostReadAccess<ValueType> rAValues1( Az );
+            BOOST_CHECK_EQUAL( 31.0, rAValues1[0] );
+            BOOST_CHECK_EQUAL( 30.0, rAValues1[1] );
+            BOOST_CHECK_EQUAL( 29.0, rAValues1[2] );
+            BOOST_CHECK_EQUAL( 28.0, rAValues1[3] );
+            BOOST_CHECK_EQUAL( 27.0, rAValues1[4] );
+        }
+
+    }
+}  // swapTest
+
+/* ------------------------------------------------------------------------------------------------------------------ */
+
+template<typename ValueType>
 void swapTest( ContextPtr loc )
 {
     LAMA_INTERFACE_FN_T( swap, loc, BLAS, BLAS1, ValueType );
 
     {
-        ValueType values1[] = { 1, 2, 3, 4, 5};
-        ValueType values2[] = { 7, 6, 5, 4, 3, 2, 1};
+        ValueType values1[] = { 1.0, 2.0, 3.0, 4.0, 5.0};
+        ValueType values2[] = { 7.0, 6.0, 5.0, 4.0, 3.0, 2.0, 1.0};
 
         const IndexType nValues = 3;
         const IndexType incX = 2;
@@ -203,8 +374,7 @@ void viamaxTest( ContextPtr loc )
     LAMA_INTERFACE_FN_T( viamax, loc, BLAS, BLAS1, ValueType );
 
     {
-        ValueType values[] =
-        { 1, 2, 3, 6, 5, 6, 10, 10, -10, -10 };
+        ValueType values[] = { 1.0, 2.0, 3.0, 6.0, 5.0, 6.0, 10.0, 10.0, -10.0, -10.0 };
         const IndexType incX1 = 1;
         const IndexType incX2 = 2;
         const ValueType result1 = 6.0;
@@ -237,8 +407,13 @@ BOOST_AUTO_TEST_SUITE( BLAS1Test );
 LAMA_LOG_DEF_LOGGER( logger, "Test.BLAS1Test" );
 
 LAMA_AUTO_TEST_CASE_T( asumTest, BLAS1Test );
-LAMA_AUTO_TEST_CASE_T( nrm2Test, BLAS1Test );
+LAMA_AUTO_TEST_CASE_T( axpyTest, BLAS1Test );
+LAMA_AUTO_TEST_CASE_T( copyTest, BLAS1Test );
+LAMA_AUTO_TEST_CASE_T( dotTest, BLAS1Test );
 LAMA_AUTO_TEST_CASE_T( iamaxTest, BLAS1Test );
+LAMA_AUTO_TEST_CASE_T( nrm2Test, BLAS1Test );
+LAMA_AUTO_TEST_CASE_T( scalTest, BLAS1Test );
+LAMA_AUTO_TEST_CASE_T( sumTest, BLAS1Test );
 LAMA_AUTO_TEST_CASE_T( swapTest, BLAS1Test );
 LAMA_AUTO_TEST_CASE_T( viamaxTest, BLAS1Test );
 
