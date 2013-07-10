@@ -57,6 +57,7 @@ LAMA_LOG_DEF_LOGGER( InverseSolver::logger, "Solver.InverseSolver" )
 InverseSolver::InverseSolver( const std::string & id )
     : Solver( id )
 {
+    LAMA_LOG_INFO( InverseSolver::logger, "InverseSolver, id = " << id )
 }
 
 InverseSolver::InverseSolver( const std::string & id, LoggerPtr logger )
@@ -133,7 +134,15 @@ void InverseSolver::solveImpl()
 void InverseSolver::setContext( ContextPtr context )
 {
     Solver::setContext( context );
-    getRuntime().mInverse->setContext( mContext );
+
+    if ( getRuntime().mInverse )
+    {
+        getRuntime().mInverse->setContext( mContext );
+    }
+    else
+    {
+        LAMA_LOG_WARN( logger, "setContext on uninitialized solver")
+    }
 }
 
 /* --------------------------------------------------------------------------- */

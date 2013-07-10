@@ -91,8 +91,12 @@ void testSolveMethod( ContextPtr loc )
 
     InverseSolver inverseSolver( "InverseTestSolver", loggerD );
 
+    LAMA_LOG_DEBUG( logger, "inverseSolver created" )
+
     CSRSparseMatrix<ValueType> helpcoefficients;
     MatrixCreator<ValueType>::buildPoisson2D( helpcoefficients, 9, N1, N2 );
+
+    LAMA_LOG_DEBUG( logger, "Poisson2D matrix created" << helpcoefficients )
 
     MatrixType coefficients( helpcoefficients );
 
@@ -108,9 +112,11 @@ void testSolveMethod( ContextPtr loc )
     DenseVector<ValueType> rhs( dist, 1.0 );
     rhs = coefficients * exactSolution;
 
+    LAMA_LOG_INFO( logger, "created all stuff for inverse solver" )
+
     //initialize
-    inverseSolver.setContext( loc );
     inverseSolver.initialize( coefficients );
+    inverseSolver.setContext( loc );
     inverseSolver.solve( solution, rhs );
 
     DenseVector<ValueType> diff( solution - exactSolution );
