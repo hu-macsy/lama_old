@@ -123,9 +123,9 @@ void maxRow(
     lama::IndexType longestRow = 0;
     for( int i = 0; i < matrix->getNumRows(); ++i )
     {
-        if ( ia[i+1]-ia[i] > longestRow ){
-            longestRow = ia[i+1]-ia[i];
-        }
+//        if ( ia[i+1]-ia[i] > longestRow ){
+//            longestRow = ia[i+1]-ia[i];
+//        }
     }
     if( !silentFlag )
     {
@@ -305,7 +305,7 @@ int main( int argc, char **argv )
         std::cout << "Size: \t\t" << matrixA.getNumRows() << "x" << matrixA.getNumColumns() << std::endl;
         std::cout << "NNZ: \t\t" << matrixA.getNumValues() << std::endl;
         std::cout << "NNZ/Row: \t" << matrixA.getNumValues() / matrixA.getNumRows() << std::endl;
-        std::cout << "Density: \t" << (float)matrixA.getNumValues() / (float)(matrixA.getNumRows() * matrixA.getNumRows()) << std::endl;
+        std::cout << "Density: \t" << (float)matrixA.getNumValues() / (float)matrixA.getNumRows() / (float)matrixA.getNumColumns() << std::endl;
         std::cout << "Filesize: \t" << ( ( matrixA.getMemoryUsage() / 1024.0 ) / 1024.0 ) << " MB" << std::endl
                   << std::endl;
 
@@ -313,7 +313,7 @@ int main( int argc, char **argv )
         std::cout << "Size: \t\t" << matrixB.getNumRows() << "x" << matrixB.getNumColumns() << std::endl;
         std::cout << "NNZ: \t\t" << matrixB.getNumValues() << std::endl;
         std::cout << "NNZ/Row: \t" << matrixB.getNumValues() / matrixB.getNumRows() << std::endl;
-        std::cout << "Density: \t" << (float)matrixB.getNumValues() / (float)(matrixB.getNumRows() * matrixB.getNumRows()) << std::endl;
+        std::cout << "Density: \t" << (float)matrixB.getNumValues() / (float)matrixB.getNumRows() / (float)matrixB.getNumColumns() << std::endl;
         std::cout << "Filesize: \t" << ( ( matrixB.getMemoryUsage() / 1024.0 ) / 1024.0 ) << " MB" << std::endl
                   << std::endl;
 
@@ -359,7 +359,7 @@ int main( int argc, char **argv )
 
         std::cout << "Abweichung: " << (1 - (float)matrixCCuda.getNumValues() / alloc) * 100 << "%" << std::endl;
 
-        maxRow ( &matrixCCuda, silentFlag );
+        //maxRow ( &matrixCCuda, silentFlag );
     }
 
     if( validateFlag )
