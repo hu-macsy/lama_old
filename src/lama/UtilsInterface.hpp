@@ -535,6 +535,19 @@ struct CSRUtilsInterface
                                        const ValueType csrValues[],
                                        SyncToken* syncToken );
 
+        typedef void ( *normalGEVM ) ( ValueType result[],
+                                       const ValueType alpha,
+                                       const ValueType x[],
+                                       const ValueType beta,
+                                       const ValueType y[],
+                                       const IndexType numRows,
+                                       const IndexType numColumns,
+                                       const IndexType nnz,
+                                       const IndexType csrIA[],
+                                       const IndexType csrJA[],
+                                       const ValueType csrValues[],
+                                       SyncToken* syncToken );
+
         /** result = alpha * CSR-Matrix * x, CSR matrix has only some non-zero rows
          *
          *  @param result is the result vector
@@ -552,6 +565,17 @@ struct CSRUtilsInterface
         typedef void ( *sparseGEMV ) ( ValueType result[],
                                        const ValueType alpha,
                                        const ValueType x[],
+                                       const IndexType numNonZeroRows,
+                                       const IndexType rowIndexes[],
+                                       const IndexType csrIA[],
+                                       const IndexType csrJA[],
+                                       const ValueType csrValues[],
+                                       SyncToken* syncToken );
+
+        typedef void ( *sparseGEVM ) ( ValueType result[],
+                                       const ValueType alpha,
+                                       const ValueType x[],
+                                       const IndexType numColumns,
                                        const IndexType numNonZeroRows,
                                        const IndexType rowIndexes[],
                                        const IndexType csrIA[],
@@ -649,8 +673,10 @@ struct CSRUtilsInterface
     };
 
     LAMA_INTERFACE_DEFINE_T( Mult, normalGEMV )
+    LAMA_INTERFACE_DEFINE_T( Mult, normalGEVM )
     LAMA_INTERFACE_DEFINE_T( Mult, gemm )
     LAMA_INTERFACE_DEFINE_T( Mult, sparseGEMV )
+    LAMA_INTERFACE_DEFINE_T( Mult, sparseGEVM )
     LAMA_INTERFACE_DEFINE_T( Mult, matrixAdd )
     LAMA_INTERFACE_DEFINE_T( Mult, matrixMultiply )
 

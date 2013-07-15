@@ -777,6 +777,13 @@ public:
         matrixTimesVector( result, alpha, x, beta, y );
     }
 
+    virtual void vectorTimesMatrix(
+        LAMAArray<ValueType>& result,
+        const ValueType alpha,
+        const LAMAArray<ValueType>& x,
+        const ValueType beta,
+        const LAMAArray<ValueType>& y ) const;
+
     virtual void matrixTimesVectorN(
         LAMAArrayView<ValueType> result,
         const IndexType n,
@@ -810,6 +817,13 @@ public:
     {
         return matrixTimesVectorAsync( result, alpha, x, beta, y );
     }
+
+    virtual SyncToken* vectorTimesMatrixAsync(
+        LAMAArray<ValueType>& result,
+        const ValueType alpha,
+        const LAMAArray<ValueType>& x,
+        const ValueType beta,
+        const LAMAArray<ValueType>& y ) const;
 
     /** Assign this = alpha * a
      *

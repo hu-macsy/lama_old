@@ -536,6 +536,83 @@ void OpenMPCSRUtils::normalGEMV(
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
+void OpenMPCSRUtils::normalGEVM(
+    ValueType result[],
+    const ValueType alpha,
+    const ValueType x[],
+    const ValueType beta,
+    const ValueType y[],
+    const IndexType numRows,
+    const IndexType numColumns,
+    const IndexType /* nnz */,
+    const IndexType csrIA[],
+    const IndexType csrJA[],
+    const ValueType csrValues[],
+    SyncToken* syncToken )
+{
+    LAMA_LOG_INFO( logger,
+                   "normalGEVM<" << Scalar::getType<ValueType>()
+                   << ", #threads = " << omp_get_max_threads()
+                   << ">, result[" << numColumns << "] = " << alpha << " * A * x + " << beta << " * y " )
+
+    if ( syncToken )
+    {
+        LAMA_THROWEXCEPTION( "asynchronous execution should be done by LAMATask before" )
+    }
+
+    // ToDo: for efficiency the cases of alpha and beta = 1.0 / 0.0 should be considered
+
+    // Note: for beta = 0.0, y could be uninitialized.
+    //       0.0 * undefined should deliver 0.0, but valgrind cannot deal with it
+
+    #pragma omp parallel
+    {
+        // Note: region will be entered by each thread
+
+        LAMA_REGION( "OpenMP.CSR.normalGEVM" )
+
+        #pragma omp for schedule(LAMA_OMP_SCHEDULE)
+        for ( IndexType i = 0; i < numColumns; ++i )
+        {
+            ValueType sum = 0.0;
+            for ( IndexType j = 0; j < numRows; ++j )
+            {
+                for ( IndexType k = csrIA[j]; k < csrIA[j + 1]; ++k )
+                {
+                    if( csrJA[k] == i )
+                    {
+                        sum += csrValues[k] * x[i];
+                        break;
+                    }
+                }
+            }
+            result[i] = alpha * sum;
+        }
+    }
+
+    if ( 0 != beta )
+    {
+        #pragma omp for schedule(LAMA_OMP_SCHEDULE)
+        for( IndexType i = 0; i < numColumns; ++i )
+        {
+            result[i] += beta * y[i];
+        }
+    }
+
+    if ( LAMA_LOG_TRACE_ON( logger ) )
+    {
+        std::cout << "NormalGEVM: result = ";
+        for ( IndexType i = 0; i < numColumns; ++i )
+        {
+            std::cout << " " << result[i];
+        }
+        std::cout << std::endl;
+    }
+}
+
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType>
 void OpenMPCSRUtils::sparseGEMV(
     ValueType result[],
     const ValueType alpha,
@@ -581,6 +658,63 @@ void OpenMPCSRUtils::sparseGEMV(
         {
             IndexType i = rowIndexes[ii];
             std::cout << " " << i << ":" << result[i];
+        }
+        std::cout << std::endl;
+    }
+}
+
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType>
+void OpenMPCSRUtils::sparseGEVM(
+    ValueType result[],
+    const ValueType alpha,
+    const ValueType x[],
+    const IndexType numColumns,
+    const IndexType numNonZeroRows,
+    const IndexType rowIndexes[],
+    const IndexType csrIA[],
+    const IndexType csrJA[],
+    const ValueType csrValues[],
+    SyncToken* syncToken )
+{
+    if ( syncToken )
+    {
+        LAMA_THROWEXCEPTION( "asynchronous execution should be done by LAMATask before" )
+    }
+
+    #pragma omp parallel
+    {
+        // Note: region will be entered by each thread
+
+        LAMA_REGION( "OpenMP.CSR.normalGEVM" )
+
+        #pragma omp for schedule(LAMA_OMP_SCHEDULE)
+        for ( IndexType i = 0; i < numColumns; ++i )
+        {
+            ValueType sum = 0.0;
+            for ( IndexType jj = 0; jj < numNonZeroRows; ++jj )
+            {
+                IndexType j = rowIndexes[jj];
+                for ( IndexType k = csrIA[j]; k < csrIA[j + 1]; ++k )
+                {
+                    if( csrJA[k] == i )
+                    {
+                        sum += csrValues[k] * x[i];
+                        break;
+                    }
+                }
+            }
+            result[i] = alpha * sum;
+        }
+    }
+
+    if ( LAMA_LOG_TRACE_ON( logger ) )
+    {
+        std::cout << "sparseGEMV: result = ";
+        for ( IndexType i = 0; i < numColumns; ++i )
+        {
+            std::cout << " " << result[i];
         }
         std::cout << std::endl;
     }
@@ -1769,6 +1903,12 @@ void OpenMPCSRUtils::setInterface( CSRUtilsInterface& CSRUtils )
 
     LAMA_INTERFACE_REGISTER_T( CSRUtils, sparseGEMV, float )
     LAMA_INTERFACE_REGISTER_T( CSRUtils, sparseGEMV, double )
+
+    LAMA_INTERFACE_REGISTER_T( CSRUtils, normalGEVM, float )
+    LAMA_INTERFACE_REGISTER_T( CSRUtils, normalGEVM, double )
+
+    LAMA_INTERFACE_REGISTER_T( CSRUtils, sparseGEVM, float )
+    LAMA_INTERFACE_REGISTER_T( CSRUtils, sparseGEVM, double )
 
     LAMA_INTERFACE_REGISTER_T( CSRUtils, gemm, float )
     LAMA_INTERFACE_REGISTER_T( CSRUtils, gemm, double )

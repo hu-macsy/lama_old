@@ -416,6 +416,13 @@ public:
         const ValueType betaValue,
         const DenseVector<ValueType>& denseY ) const;
 
+    void vectorTimesMatrix(
+            Vector& result,
+            const Scalar alpha,
+            const Vector& x,
+            const Scalar beta,
+            const Vector& y ) const;
+
     /* Implementation of pure method of class Matrix. */
 
     virtual void invert( const Matrix& other );

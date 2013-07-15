@@ -2121,6 +2121,17 @@ size_t DenseMatrix<ValueType>::getMemoryUsage() const
     return getDistribution().getCommunicator().sum( memoryUsage );
 }
 
+template<typename ValueType>
+void DenseMatrix<ValueType>::vectorTimesMatrix(
+        Vector& /*result*/,
+        const Scalar /*alpha*/,
+        const Vector& /*x*/,
+        const Scalar /*beta*/,
+        const Vector& /*y*/ ) const
+{
+    LAMA_THROWEXCEPTION( "not implemented" )
+}
+
 /* ========================================================================= */
 
 template<typename ValueType>

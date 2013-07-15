@@ -50,6 +50,9 @@
 #include <lama/distribution/CyclicDistribution.hpp>
 #include <lama/distribution/Redistributor.hpp>
 
+#include <lama/LAMAInterface.hpp>
+#include <lama/openmp/OpenMPCSRUtils.hpp>
+
 // tracing
 #include <lama/tracing.hpp>
 
@@ -1265,6 +1268,115 @@ void SparseMatrix<ValueType>::haloOperationSync(
 /* -------------------------------------------------------------------------- */
 
 template<typename ValueType>
+void SparseMatrix<ValueType>::vectorHaloOperationSync(
+                LAMAArray<ValueType>& localResult,
+                const LAMAArray<ValueType>& localX,
+                const LAMAArray<ValueType>& localY,
+                boost::function <void( const MatrixStorage<ValueType>* localMatrix,
+                                       LAMAArray<ValueType>& localResult,
+                                       const LAMAArray<ValueType>& localX )> calcF,
+                boost::function <void( LAMAArrayView<ValueType>& localResult,
+                                       const LAMAArrayConstView<ValueType>& localX,
+                                       const LAMAArrayConstView<ValueType>& localY )> addF ) const
+{
+    DistributionPtr rowDist = getDistributionPtr();
+    const Communicator& comm = rowDist->getCommunicator();
+    IndexType numParts = comm.getSize();
+    IndexType myPart = comm.getRank();
+
+    ContextPtr hostContext = ContextFactory::getContext( Context::Host );
+    ContextPtr localContext = mLocalData->getContextPtr();
+    ContextPtr haloContext = mLocalData->getContextPtr();
+
+    IndexType localSize = localResult.size();
+    LAMA_ASSERT( localSize == rowDist->getLocalSize(), "size mismatch " << localSize << " != " << rowDist->getLocalSize() )
+
+    LAMAArray<ValueType> toOthersResult( localX.size() - localSize );
+    LAMAArray<ValueType> fromOthersResult( localSize * numParts );
+
+    LAMA_INTERFACE_FN( sizes2offsets, hostContext, CSRUtils, Offsets );
+
+    std::vector<IndexType> sizes;
+    std::vector<IndexType> offsets;
+    comm.gather( sizes, localSize );
+    offsets = sizes;
+    offsets.resize( numParts + 1 );
+    sizes2offsets( &offsets[0], numParts );
+
+    if ( numParts != 1 )
+    {
+        // calc halo vector parts
+        {
+            LAMA_REGION( "Vec.Times.Mat.others" )
+
+            LAMA_LOG_INFO( logger, comm << ": synchronous computation othersResult[ " << toOthersResult.size()
+                                        << "] = localF( haloMatrix, localX[ " << localX.size()
+                                        << "] ) on " << haloContext )
+
+            calcF( mHaloData.get(), toOthersResult, localX);
+        }
+
+        // start vector part exchange
+        {
+            LAMA_REGION( "vector.swapping" )
+
+            HostReadAccess<ValueType> toOthers( toOthersResult );
+            HostWriteAccess<ValueType> fromOthers( fromOthersResult );
+
+            for( IndexType i = 0; i < numParts; ++i )
+            {
+                comm.gather( &fromOthers[ offsets[i] ], sizes[i], i, &toOthers[ offsets[i] ] );
+            }
+        }
+        toOthersResult.prefetch( localContext );
+    }
+
+    // calc local vector parts
+    {
+        LAMA_REGION( "Vec.Times.Mat.local" )
+
+        LAMA_LOG_INFO( logger, comm << ": synchronous computation localResult[ " << localResult.size()
+                                    << "] = localF( localMatrix, localX[ " << localX.size()
+                                    << "] ) on " << localContext )
+
+        calcF( mLocalData.get(), localResult, localX);
+    }
+
+    // alpha * ( sum up local vector parts with halo vector parts ) + beta * y
+    {
+        LAMA_REGION( "Vec.Vec.add" )
+
+        LAMA_LOG_INFO( logger, comm << ": synchronous computation localResult[ " << localResult.size()
+                                    << "] = localF( localMatrix, localX[ " << localX.size()
+                                    << "] ) on " << localContext )
+
+        if ( numParts != 1 )
+        {
+            HostWriteAccess<ValueType> localData ( localResult );
+            HostReadAccess<ValueType> otherData( fromOthersResult );
+            int count = 0;
+            for( IndexType i = 0; i < numParts && i != myPart ; ++i )
+            {
+                for( IndexType j = 0; j < localSize; ++j )
+                {
+                    localData[j] += otherData[ count * localSize + j ];
+                }
+                ++count;
+            }
+        }
+
+        LAMAArrayView<ValueType> locResult( localResult );
+
+        const LAMAArrayConstView<ValueType> locY( localY );
+        addF( locResult, locResult, locY );
+    }
+
+    LAMA_LOG_DEBUG( logger, "vectorHaloOperationSync done" )
+}
+
+/* -------------------------------------------------------------------------- */
+
+template<typename ValueType>
 void SparseMatrix<ValueType>::haloOperationAsync(
     LAMAArray<ValueType>& localResult,
     const LAMAArray<ValueType>& localX,
@@ -1366,6 +1478,123 @@ void SparseMatrix<ValueType>::haloOperationAsync(
 /* -------------------------------------------------------------------------- */
 
 template<typename ValueType>
+void SparseMatrix<ValueType>::vectorHaloOperationAsync(
+        LAMAArray<ValueType>& localResult,
+        const LAMAArray<ValueType>& localX,
+        const LAMAArray<ValueType>& localY,
+        boost::function <SyncToken*( const MatrixStorage<ValueType>* localMatrix,
+                        LAMAArray<ValueType>& localResult,
+                        const LAMAArray<ValueType>& localX )> calcF,
+        boost::function </*SyncToken**/void ( LAMAArrayView<ValueType>& localResult,
+                        const LAMAArrayConstView<ValueType>& localX,
+                        const LAMAArrayConstView<ValueType>& localY )> addF ) const
+{
+    DistributionPtr rowDist = getDistributionPtr();
+    const Communicator& comm = rowDist->getCommunicator();
+    IndexType numParts = comm.getSize();
+    IndexType myPart = comm.getRank();
+
+    ContextPtr hostContext = ContextFactory::getContext( Context::Host );
+    ContextPtr localContext = mLocalData->getContextPtr();
+    ContextPtr haloContext = mLocalData->getContextPtr();
+
+    IndexType localSize = localResult.size();
+    LAMA_ASSERT( localSize == rowDist->getLocalSize(), "size mismatch " << localSize << " != " << rowDist->getLocalSize() )
+
+    LAMAArray<ValueType> toOthersResult( localX.size() - localSize );
+    LAMAArray<ValueType> fromOthersResult( localSize * numParts );
+
+    LAMA_INTERFACE_FN( sizes2offsets, hostContext, CSRUtils, Offsets );
+
+    std::vector<IndexType> sizes;
+    std::vector<IndexType> offsets;
+    comm.gather( sizes, localSize );
+    offsets = sizes;
+    offsets.resize( numParts + 1 );
+    sizes2offsets( &offsets[0], numParts );
+
+    if ( numParts != 1 )
+    {
+        // calc halo vector parts
+        {
+            LAMA_REGION( "Vec.Times.Mat.others" )
+
+            LAMA_LOG_INFO( logger, comm << ": synchronous computation othersResult[ " << toOthersResult.size()
+                                        << "] = localF( haloMatrix, localX[ " << localSize
+                                        << "] ) on " << haloContext )
+
+            calcF( mHaloData.get(), toOthersResult, localX );
+
+            toOthersResult.prefetch( hostContext );
+        }
+    }
+
+    std::auto_ptr<SyncToken> localComputation;
+
+    // calc local vector parts
+    {
+        LAMA_REGION( "Vec.Times.Mat.local" )
+
+        LAMA_LOG_INFO( logger, comm << ": synchronous computation localResult[ " << localSize
+                                    << "] = localF( localMatrix, localX[ " << localX.size()
+                                    << "] ) on " << localContext )
+
+        localComputation.reset( calcF( mLocalData.get(), localResult, localX ) );
+    }
+
+    if ( numParts != 1 )
+    {
+        // start vector part exchange
+        {
+            LAMA_REGION( "vector.swapping" )
+
+            HostReadAccess<ValueType> toOthers( toOthersResult );
+            HostWriteAccess<ValueType> fromOthers( fromOthersResult );
+
+            for( IndexType i = 0; i < numParts; ++i )
+            {
+                comm.gather( &fromOthers[ offsets[i] ], sizes[i], i, &toOthers[ offsets[i] ] );
+            }
+        }
+        toOthersResult.prefetch( localContext );
+    }
+
+    localComputation->wait();
+
+    // alpha * ( sum up local vector parts with halo vector parts ) + beta * y
+    {
+        LAMA_REGION( "Vec.Vec.add" )
+
+        LAMA_LOG_INFO( logger, comm << ": synchronous computation localResult[ " << localSize
+                                    << "] = localF( localMatrix, localX[ " << localX.size()
+                                    << "] ) on " << localContext )
+
+        if ( numParts != 1 )
+        {
+            HostWriteAccess<ValueType> localData ( localResult );
+            HostReadAccess<ValueType> otherData( fromOthersResult );
+            int count = 0;
+            for( IndexType i = 0; i < numParts && i != myPart ; ++i )
+            {
+                for( IndexType j = 0; j < localSize; ++j )
+                {
+                    localData[j] += otherData[ count * localSize + j ];
+                }
+                ++count;
+            }
+        }
+
+        LAMAArrayView<ValueType> locResult( localResult );
+        const LAMAArrayConstView<ValueType> locY( localY );
+        addF( locResult, locResult, locY );
+    }
+
+    LAMA_LOG_DEBUG( logger, "vectorHaloOperationAsync done" )
+}
+
+/* -------------------------------------------------------------------------- */
+
+template<typename ValueType>
 void SparseMatrix<ValueType>::matrixTimesVectorImpl(
     DenseVector<ValueType>& denseResult,
     const ValueType alphaValue,
@@ -1428,6 +1657,95 @@ void SparseMatrix<ValueType>::matrixTimesVectorImpl(
            boost::bind( timesVectorAsync, _1, _2, alphaValue, _3, betaValue, boost::cref( localY ) );
 
         haloOperationAsync( localResult, localX, haloX, localAsyncF, haloF );
+    }
+}
+
+/* -------------------------------------------------------------------------- */
+
+template<typename ValueType>
+void SparseMatrix<ValueType>::vectorTimesMatrixImpl(
+    DenseVector<ValueType>& denseResult,
+    const ValueType alphaValue,
+    const DenseVector<ValueType>& denseX,
+    const ValueType betaValue,
+    const DenseVector<ValueType>& denseY ) const
+{
+    LAMA_REGION( "Vec.timesMat.Sp" )
+
+    LAMAArray<ValueType>& localResult = denseResult.getLocalValues();
+    const LAMAArray<ValueType>& localX = denseX.getLocalValues();
+    const LAMAArray<ValueType>& localY = denseY.getLocalValues();
+
+    // if halo is empty, asynchronous execution is not helpful
+
+    // vectorTimesMatrix: x^ = x * A
+
+    void ( MatrixStorage<ValueType>::*vectorTimesMatrix ) (
+        LAMAArray<ValueType>& result,
+        const ValueType alpha,
+        const LAMAArray<ValueType>& x,
+        const ValueType beta,
+        const LAMAArray<ValueType>& y ) const = &MatrixStorage<ValueType>::vectorTimesMatrix;
+
+    SyncToken* ( MatrixStorage<ValueType>::*vectorTimesMatrixAsync ) (
+        LAMAArray<ValueType>& result,
+        const ValueType alpha,
+        const LAMAArray<ValueType>& x,
+        const ValueType beta,
+        const LAMAArray<ValueType>& y ) const = &MatrixStorage<ValueType>::vectorTimesMatrixAsync;
+
+    // vectorPlusVector: result = alpha * x^ + beta * y
+
+    void ( *vPlusV ) (
+        ContextPtr context,
+        LAMAArrayView<ValueType> result,
+        const ValueType alpha,
+        const LAMAArrayConstView<ValueType> x,
+        const ValueType beta,
+        const LAMAArrayConstView<ValueType> y ) = &DenseVector<ValueType>::vectorPlusVector;
+
+    /*SyncToken**/void ( *vPlusVAsync ) (
+        ContextPtr context,
+        LAMAArrayView<ValueType> result,
+        const ValueType alpha,
+        const LAMAArrayConstView<ValueType> x,
+        const ValueType beta,
+        const LAMAArrayConstView<ValueType> y ) = &DenseVector<ValueType>::vectorPlusVector;//TODO use async: Exception not yet implemented
+
+    ValueType one = 1;
+    ValueType zero = 0;
+
+    // after gather of vector values x^ is on the host
+    // todo: think about this if its useful to upload the vector (again)
+    ContextPtr hostContext = ContextFactory::getContext( Context::Host );
+
+    if ( SYNCHRONOUS == getCommunicationKind() )
+    {
+        boost::function <void( const MatrixStorage<ValueType>* localMatrix,
+                               LAMAArray<ValueType>& localResult,
+                               const LAMAArray<ValueType>& localX )> calcF =
+           boost::bind( vectorTimesMatrix, _1, _2, one, _3, zero, _2 );
+
+        boost::function <void( LAMAArrayView<ValueType> localResult,
+                               const LAMAArrayConstView<ValueType> localX,
+                               const LAMAArrayConstView<ValueType> localY )> addF  =
+            boost::bind( vPlusV, hostContext, _1, alphaValue, _2, betaValue, _3 );
+
+        vectorHaloOperationSync( localResult, localX, localY, calcF, addF );
+    }
+    else
+    {
+        boost::function <SyncToken*( const MatrixStorage<ValueType>* localMatrix,
+                                     LAMAArray<ValueType>& localResult,
+                                     const LAMAArray<ValueType>& localX )> calcAsyncF =
+           boost::bind( vectorTimesMatrixAsync, _1, _2, one, _3, zero, _2 );
+
+        boost::function </*SyncToken**/void ( LAMAArrayView<ValueType> localResult,
+                        const LAMAArrayConstView<ValueType> localX,
+                        const LAMAArrayConstView<ValueType> localY )> addAsyncF =
+            boost::bind( vPlusVAsync, hostContext, _1, alphaValue, _2, betaValue, _3 );
+
+        vectorHaloOperationAsync( localResult, localX, localY, calcAsyncF, addAsyncF );
     }
 }
 
@@ -1515,6 +1833,53 @@ void SparseMatrix<ValueType>::matrixTimesVector(
     LAMA_ASSERT( denseResult, result << ": must be DenseVector<" << Scalar::getType<ValueType>() << ">" )
 
     matrixTimesVectorImpl( *denseResult, alpha.getValue<ValueType>(), *denseX, beta.getValue<ValueType>(), *denseY );
+}
+
+/* -------------------------------------------------------------------------- */
+
+template<typename ValueType>
+void SparseMatrix<ValueType>::vectorTimesMatrix(
+        Vector& result,
+        const Scalar alpha,
+        const Vector& x,
+        const Scalar beta,
+        const Vector& y ) const
+{
+    LAMA_LOG_INFO( logger, result << " = " << alpha << " * " << *this << " * " << x << " + " << beta << " * " << y )
+
+    if ( ( &result == &y ) && ( beta != Scalar( 0.0 ) ) )
+    {
+        LAMA_LOG_DEBUG( logger, "alias: result = y is well handled" )
+    }
+    else if ( &result == &x )
+    {
+        LAMA_THROWEXCEPTION( "alias: result = x is not handled, use temporary" )
+    }
+    else
+    {
+        // we inherit the column distribution of this matrix to result
+
+        result.resize( getColDistributionPtr() );
+
+        // no more to check: result.size() == mNumColumns, getDistribution() == result.getColDistribution()
+    }
+
+    LAMA_ASSERT_EQUAL( x.getDistribution(), getDistribution() )
+    LAMA_ASSERT_EQUAL( y.getDistribution(), getColDistribution() )
+
+    const DenseVector<ValueType>* denseX = dynamic_cast<const DenseVector<ValueType>*>( &x );
+    const DenseVector<ValueType>* denseY = dynamic_cast<const DenseVector<ValueType>*>( &y );
+    DenseVector<ValueType>* denseResult = dynamic_cast<DenseVector<ValueType>*>( &result );
+
+    LAMA_ASSERT( denseX, x << ": must be DenseVector<" << Scalar::getType<ValueType>() << ">" )
+
+    // Note: in case of beta == 0, we might skip this test
+
+    LAMA_ASSERT( denseY, y << ": must be DenseVector<" << Scalar::getType<ValueType>() << ">" )
+
+    LAMA_ASSERT( denseResult, result << ": must be DenseVector<" << Scalar::getType<ValueType>() << ">" )
+
+    vectorTimesMatrixImpl( *denseResult, alpha.getValue<ValueType>(), *denseX, beta.getValue<ValueType>(), *denseY );
 }
 
 /* ------------------------------------------------------------------------- */

@@ -971,6 +971,22 @@ void MatrixStorage<ValueType>::matrixTimesVector(
 /* ------------------------------------------------------------------------- */
 
 template<typename ValueType>
+void MatrixStorage<ValueType>::vectorTimesMatrix(
+    LAMAArray<ValueType>& result,
+    const ValueType alpha,
+    const LAMAArray<ValueType>& x,
+    const ValueType beta,
+    const LAMAArray<ValueType>& y ) const
+{
+    LAMA_UNSUPPORTED( *this << ": no vectorTimesMatrix for this format available, take CSR" )
+
+    CSRStorage<ValueType> tmp( *this );
+    tmp.vectorTimesMatrix( result, alpha, x, beta, y );
+}
+
+/* ------------------------------------------------------------------------- */
+
+template<typename ValueType>
 void MatrixStorage<ValueType>::matrixTimesVectorN(
     LAMAArrayView<ValueType> result,
     const IndexType n,
@@ -1012,6 +1028,36 @@ SyncToken* MatrixStorage<ValueType>::matrixTimesVectorAsync(
     using boost::bind;
 
     return new TaskSyncToken( bind( pf, this, result, alpha, x, beta, y ) );
+}
+
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType>
+SyncToken* MatrixStorage<ValueType>::vectorTimesMatrixAsync(
+    LAMAArray<ValueType>& result,
+    const ValueType alpha,
+    const LAMAArray<ValueType>& x,
+    const ValueType beta,
+    const LAMAArray<ValueType>& y ) const
+{
+    LAMA_LOG_INFO( logger, *this << ": asynchronous vectorTimesMatrix by new thread" )
+
+    // general default: asynchronous execution is done by a new thread
+
+    void (MatrixStorage::*pf)(
+        LAMAArray<ValueType>&,
+        const ValueType,
+        const LAMAArray<ValueType>&,
+        const ValueType,
+        const LAMAArray<ValueType>& ) const
+
+    = &MatrixStorage<ValueType>::vectorTimesMatrix;
+
+    using boost::bind;
+    using boost::ref;
+    using boost::cref;
+
+    return new TaskSyncToken( bind( pf, this, ref( result ), alpha, cref( x ), beta, cref( y ) ) );
 }
 
 /* --------------------------------------------------------------------------- */

@@ -399,6 +399,20 @@ public:
         const Scalar beta,
         const Vector& y ) const;
 
+    void vectorTimesMatrix(
+            Vector& result,
+            const Scalar alpha,
+            const Vector& x,
+            const Scalar beta,
+            const Vector& y ) const;
+
+    void vectorTimesMatrixImpl(
+        DenseVector<ValueType>& result,
+        const ValueType alpha,
+        const DenseVector<ValueType>& x,
+        const ValueType beta,
+        const DenseVector<ValueType>& y ) const;
+
     /**
      * @brief Same as matrixTimesVector but with vectors result, x, and y of same value type.
      */
@@ -445,6 +459,28 @@ public:
         boost::function <void( const MatrixStorage<ValueType>* haloMatrix, 
                                LAMAArray<ValueType>& localResult,
                                const LAMAArray<ValueType>& haloX )> haloF ) const;
+
+    void vectorHaloOperationSync(
+        LAMAArray<ValueType>& localResult,
+        const LAMAArray<ValueType>& localX,
+        const LAMAArray<ValueType>& localY,
+        boost::function <void( const MatrixStorage<ValueType>* localMatrix,
+                               LAMAArray<ValueType>& localResult,
+                               const LAMAArray<ValueType>& localX )> calcF,
+        boost::function <void( LAMAArrayView<ValueType>& localResult,
+                               const LAMAArrayConstView<ValueType>& localX,
+                               const LAMAArrayConstView<ValueType>& localY )> addF ) const;
+
+    void vectorHaloOperationAsync(
+        LAMAArray<ValueType>& localResult,
+        const LAMAArray<ValueType>& localX,
+        const LAMAArray<ValueType>& localY,
+        boost::function <SyncToken*( const MatrixStorage<ValueType>* localMatrix,
+                        LAMAArray<ValueType>& localResult,
+                        const LAMAArray<ValueType>& localX )> calcF,
+        boost::function </*SyncToken**/void ( LAMAArrayView<ValueType>& localResult,
+                        const LAMAArrayConstView<ValueType>& localX,
+                        const LAMAArrayConstView<ValueType>& localY )> addF ) const;
 
     /* Implemenation of pure method of class Matrix */
 
