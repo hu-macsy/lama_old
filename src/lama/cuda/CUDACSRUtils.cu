@@ -1276,27 +1276,28 @@ void matrixMultiplySizesKernel(
 
 
 
-//    for ( ; __any( aRowIt < numRows ); aRowIt += numWarpsGlobal )
-//    {
-//        if ( aRowIt < numRows )
-//        {
-
-
-    bool done = false;
-    while ( !done )
+    for ( ; __any( aRowIt < numRows ); aRowIt += numWarpsGlobal )
     {
-        if( laneId == 0 )
+        if ( aRowIt < numRows )
         {
-          sRowIt[localWarpId] = atomicAdd(rowCounter, 1);
-        }
-        aRowIt = sRowIt[localWarpId];
 
-        if ( aRowIt >= numRows )
-        {
-            done = true;
-        }
-        else
-        {
+
+
+//    bool done = false;
+//    while ( !done )
+//    {
+//        if( laneId == 0 )
+//        {
+//          sRowIt[localWarpId] = atomicAdd(rowCounter, 1);
+//        }
+//        aRowIt = sRowIt[localWarpId];
+//
+//        if ( aRowIt >= numRows )
+//        {
+//            done = true;
+//        }
+//        else
+//        {
 
             if ( diagonalProperty && aRowIt >= numColumns )
             {
@@ -1926,113 +1927,113 @@ void matrixMultiplyKernel(
             }
 
 
-            copyHashtable ( sColA[localWarpId],
-                            cIA,
-                            laneId,
-                            localWarpId,
-                            aRowIt,
-                            alpha,
-                            sHashTableJa,
-                            sHashTableValues,
-    #if CUDA_ARCH < 20
-                            sBallot,
-    #endif
-                            cJA,
-                            cValues,
-                            sGlobalHashTableAccessed,
-                            numElementsHashTable,
-                            hashTableIndexes,
-                            hashTableValues,
-                            hashTableOffset );
+//            copyHashtable ( sColA[localWarpId],
+//                            cIA,
+//                            laneId,
+//                            localWarpId,
+//                            aRowIt,
+//                            alpha,
+//                            sHashTableJa,
+//                            sHashTableValues,
+//    #if CUDA_ARCH < 20
+//                            sBallot,
+//    #endif
+//                            cJA,
+//                            cValues,
+//                            sGlobalHashTableAccessed,
+//                            numElementsHashTable,
+//                            hashTableIndexes,
+//                            hashTableValues,
+//                            hashTableOffset );
 
-//
-//            // TODO: rename sColA => destinationOffset!
-//           sColA[localWarpId] = 0;
-//           IndexType rowOffset = cIA[aRowIt];
-//           for ( IndexType offset = 0; offset < SIZE_LOCAL_HASHTABLE; offset += warpSize )
-//           {
-//               if ( offset + laneId < SIZE_LOCAL_HASHTABLE )
-//               {
-//                   IndexType hashCol = sHashTableJa[offset + laneId];
-//                   ValueType hashVal = sHashTableValues[offset + laneId];
-//
-//       #if CUDA_ARCH >= 20
-//                   // TODO: be carefull here, ballot is warpsize Bit's long!
-//                   IndexType ballot = __ballot ( hashCol != -1 );
-//       #else
-//                   if ( laneId == 0 )
-//                   {
-//                       sBallot[localWarpId] = 0;
-//                   }
-//
-//                   if ( hashCol != -1 )
-//                   {
-//                       atomicOr( (int*) &sBallot[localWarpId], (int) ( 1 << laneId ) );
-//                   }
-//                   IndexType ballot = sBallot[localWarpId];
-//       #endif
-//
-//                   IndexType localOffset = __popc( ballot << ( warpSize - laneId ) );
-//
-//                   if ( hashCol != -1 )
-//                   {
-//
-//                       cJA[rowOffset + sColA[localWarpId] + localOffset] = hashCol;
-//                       cValues[rowOffset + sColA[localWarpId] + localOffset] = hashVal * alpha;
-//                   }
-//
-//                   if ( laneId == 0 )
-//                   {
-//                       sColA[localWarpId] += __popc( ballot );
-//                   }
-//               }
-//           }
-//
-//       // copy global memory
-//                   if ( sGlobalHashTableAccessed[localWarpId] )
-//                   {
-//                       for ( IndexType offset = 0; offset < numElementsHashTable; offset += warpSize )
-//                       {
-//                           if ( offset + laneId < numElementsHashTable )
-//                           {
-//                               IndexType hashCol = hashTableIndexes[hashTableOffset + offset + laneId];
-//                               ValueType hashVal = hashTableValues[hashTableOffset + offset + laneId];
-//
-//                               // Clean hashTable!
-//                               hashTableIndexes[hashTableOffset + offset + laneId] = -1;
-//
-//       #if CUDA_ARCH >= 20
-//                               // TODO: be carefull here, ballot is warpsize Bit's long!
-//                               IndexType ballot = __ballot ( hashCol != -1 );
-//       #else
-//                               if ( laneId == 0 )
-//                               {
-//                                   sBallot[localWarpId] = 0;
-//                               }
-//
-//                               if ( hashCol != -1 )
-//                               {
-//                                   atomicOr( (int*) &sBallot[localWarpId], (int) ( 1 << laneId ) );
-//                               }
-//                               IndexType ballot = sBallot[localWarpId];
-//       #endif
-//
-//                               IndexType localOffset = __popc( ballot << ( warpSize - laneId ) );
-//
-//                               if ( hashCol != -1 )
-//                               {
-//
-//                                   cJA[rowOffset + sColA[localWarpId] + localOffset] = hashCol;
-//                                   cValues[rowOffset + sColA[localWarpId] + localOffset] = hashVal * alpha;
-//                               }
-//
-//                               if ( laneId == 0 )
-//                               {
-//                                   sColA[localWarpId] += __popc( ballot );
-//                               }
-//                           }
-//                       }
-//                   }
+
+            // TODO: rename sColA => destinationOffset!
+           sColA[localWarpId] = 0;
+           IndexType rowOffset = cIA[aRowIt];
+           for ( IndexType offset = 0; offset < SIZE_LOCAL_HASHTABLE; offset += warpSize )
+           {
+               if ( offset + laneId < SIZE_LOCAL_HASHTABLE )
+               {
+                   IndexType hashCol = sHashTableJa[offset + laneId];
+                   ValueType hashVal = sHashTableValues[offset + laneId];
+
+       #if CUDA_ARCH >= 20
+                   // TODO: be carefull here, ballot is warpsize Bit's long!
+                   IndexType ballot = __ballot ( hashCol != -1 );
+       #else
+                   if ( laneId == 0 )
+                   {
+                       sBallot[localWarpId] = 0;
+                   }
+
+                   if ( hashCol != -1 )
+                   {
+                       atomicOr( (int*) &sBallot[localWarpId], (int) ( 1 << laneId ) );
+                   }
+                   IndexType ballot = sBallot[localWarpId];
+       #endif
+
+                   IndexType localOffset = __popc( ballot << ( warpSize - laneId ) );
+
+                   if ( hashCol != -1 )
+                   {
+
+                       cJA[rowOffset + sColA[localWarpId] + localOffset] = hashCol;
+                       cValues[rowOffset + sColA[localWarpId] + localOffset] = hashVal * alpha;
+                   }
+
+                   if ( laneId == 0 )
+                   {
+                       sColA[localWarpId] += __popc( ballot );
+                   }
+               }
+           }
+
+       // copy global memory
+                   if ( sGlobalHashTableAccessed[localWarpId] )
+                   {
+                       for ( IndexType offset = 0; offset < numElementsHashTable; offset += warpSize )
+                       {
+                           if ( offset + laneId < numElementsHashTable )
+                           {
+                               IndexType hashCol = hashTableIndexes[hashTableOffset + offset + laneId];
+                               ValueType hashVal = hashTableValues[hashTableOffset + offset + laneId];
+
+                               // Clean hashTable!
+                               hashTableIndexes[hashTableOffset + offset + laneId] = -1;
+
+       #if CUDA_ARCH >= 20
+                               // TODO: be carefull here, ballot is warpsize Bit's long!
+                               IndexType ballot = __ballot ( hashCol != -1 );
+       #else
+                               if ( laneId == 0 )
+                               {
+                                   sBallot[localWarpId] = 0;
+                               }
+
+                               if ( hashCol != -1 )
+                               {
+                                   atomicOr( (int*) &sBallot[localWarpId], (int) ( 1 << laneId ) );
+                               }
+                               IndexType ballot = sBallot[localWarpId];
+       #endif
+
+                               IndexType localOffset = __popc( ballot << ( warpSize - laneId ) );
+
+                               if ( hashCol != -1 )
+                               {
+
+                                   cJA[rowOffset + sColA[localWarpId] + localOffset] = hashCol;
+                                   cValues[rowOffset + sColA[localWarpId] + localOffset] = hashVal * alpha;
+                               }
+
+                               if ( laneId == 0 )
+                               {
+                                   sColA[localWarpId] += __popc( ballot );
+                               }
+                           }
+                       }
+                   }
 
 
 
