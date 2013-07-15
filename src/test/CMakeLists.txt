@@ -52,6 +52,7 @@ set ( HEADERS
     )
 
 set ( SOURCE_FILES
+        BiCGTest
         CGTest
         CommonLoggerTest
         CommunicatorTest

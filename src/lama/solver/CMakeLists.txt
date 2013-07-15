@@ -48,6 +48,7 @@ set ( CLASSES
         AMGSetup
         AMGSetupFactory
         AMGSetupManager
+        BiCG
         CG
         DefaultJacobi
         GMRES
