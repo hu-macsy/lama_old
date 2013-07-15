@@ -77,8 +77,8 @@ struct BLASInterface
          * @param[in] n      number of considered elements in input vector.
          * @param[in] alpha  scalar multiplier.
          * @param[in] x      vector with minimum (n - 1) * incX + 1 elements.
-         * @param[in] incX   storage spacing between considered elements of x.
-         * @param[out] x     vector x (unchanged if n<=0 or incX <=0).
+         * @param[in] incX   abs(incX) storage spacing between considered elements of x.
+         * @param[out] x     vector x (unchanged if n<=0 or incX == 0 ).
          */
         typedef void ( *scal ) ( const IndexType n, 
                                  const ValueType alpha, 
@@ -94,9 +94,9 @@ struct BLASInterface
          *
          * @param[in] n      number of considered elements in input vector.
          * @param[in] x      vector with minimum (n - 1) * incX + 1 elements.
-         * @param[in] incX   storage spacing between considered elements of x.
+         * @param[in] incX   abs(incX) storage spacing between considered elements of x.
          * return            the Euclidian norm within considered elements
-         *                   of x (returns zero if n <=0, incX <=0).
+         *                   of x (returns zero if n <=0, incX == 0).
          */
         typedef ValueType ( *nrm2 ) ( const IndexType n, 
                                       const ValueType* x, 
@@ -111,9 +111,9 @@ struct BLASInterface
          *
          * @param[in] n      number of considered elements in input vectors.
          * @param[in] x      vector with minimum (n - 1) * incX + 1  elements.
-         * @param[in] incX   storage spacing between considered elements of x.
+         * @param[in] incX   abs(incX) storage spacing between considered elements of x.
          * return            the sum of absolute values within considered elements
-         *                   of x (returns zero if n<=0 or incX <=0).
+         *                   of x (returns zero if n<=0 or incX == 0).
          */
         typedef ValueType ( *asum ) ( const IndexType n, const ValueType* x, const IndexType incX, SyncToken* syncToken );
     
@@ -121,10 +121,11 @@ struct BLASInterface
     
         /**
          * @brief iamax finds the smallest index of the maximum magnitude
-         * element of vector x
+         * element of vector x.
          *
          * @param[in] n      number of considered elements in input vector.
-         * @param[in] x      vector with minimum (n - 1) * incX + 1 elements.
+         * @param[in] x      vector with minimum (n - 1) * incX + 1 elements.iama
+         *
          * @param[in] incX   storage spacing between considered elements of x.
          * return            the smallest index of the maximum magnitude
          *                   within considered elements of x (returns zero if n <=0 or incX <=0).
@@ -132,12 +133,13 @@ struct BLASInterface
         typedef IndexType (*iamax) ( const IndexType n, const ValueType* x, const IndexType incX, SyncToken* syncToken );
     
         /**
-         * @brief iamax finds the maximum magnitude element of vector x
+         * @brief iamax finds the maximum magnitude element of vector x.
          *
          * @param[in] n      number of considered elements in input vector.
          * @param[in] x      vector with minimum (n - 1) * incX + 1 elements.
          * @param[in] incX   storage spacing between considered elements of x.
-         * return            the maximum magnitude element within considered elements of vector x.
+         * return            the maximum magnitude element within considered elements of vector x
+         *                   (returns x[0] if n <=0 or incX <=0).
          */
         typedef ValueType (*viamax) ( const IndexType n,
         		                      const ValueType* x,
@@ -151,9 +153,9 @@ struct BLASInterface
          *
          * @param[in] n      number of considered elements in input vectors.
          * @param[in] x      vector with minimum (n - 1) * incX + 1 elements.
-         * @param[in] incX   storage spacing between considered elements of x.
+         * @param[in] incX   abs(incX) storage spacing between considered elements of x.
          * @param[in] y      vector with minimum (n - 1) * incY + 1 elements.
-         * @param[in] incY   storage spacing between considered elements of y.
+         * @param[in] incY   abs(incX) storage spacing between considered elements of y.
          * @param[out] x     vector x (unchanged if n<=0).
          * @param[out] y     vector y (unchanged if n<=0).
          */
@@ -171,10 +173,10 @@ struct BLASInterface
          *
          * @param[in] n      number of considered elements in input vectors.
          * @param[in] x      vector with minimum (n - 1) * incX + 1 elements
-         * @param[in] incX   storage spacing between elements of x
+         * @param[in] incX   abs(incX) storage spacing between elements of x
          * @param[in] y      vector with minimum (n - 1) * incY + 1 elements
-         * @param[in] incY   storage spacing between elements of y
-         * @param[out] y     result (unchanged if n<=0)
+         * @param[in] incY   abs(incX) storage spacing between elements of y
+         * @param[out] y     result (unchanged if n<=0 )
          */
         typedef void ( *copy )( const IndexType n,
                                 const ValueType* x,
@@ -215,9 +217,9 @@ struct BLASInterface
          *
          * @param[in] n      number of considered elements in input vectors.
          * @param[in] x      vector with minimum (n - 1) * incX + 1 elements.
-         * @param[in] incX   storage spacing between elements of x.
+         * @param[in] incX   abs(incX) storage spacing between elements of x.
          * @param[in] y      vector with minimum (n - 1) * incY + 1 elements.
-         * @param[in] incY   storage spacing between elements of y.
+         * @param[in] incY   abs(incY) storage spacing between elements of y.
          * return            dot product (returns zero if n <= 0).
          */
         typedef ValueType ( *dot )( const IndexType n,
