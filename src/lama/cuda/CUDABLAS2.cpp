@@ -144,7 +144,7 @@ void CUDABLAS2::gemv(
     IndexType order_n = n;
     char trans_char = ' ';
 
-    //switch stuff because columnmajor to rowmajor
+    // switch stuff dependent on column major or row major
     if ( order == CblasRowMajor )
     {
         if ( trans == CblasNoTrans )

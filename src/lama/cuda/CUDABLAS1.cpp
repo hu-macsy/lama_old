@@ -34,9 +34,6 @@
 // hpp
 #include <lama/cuda/CUDABLAS1.hpp>
 
-// math for abs
-#include <cmath>
-
 // others
 #include <lama/cuda/CUDAError.hpp>
 #include <lama/cuda/CUDAStreamSyncToken.hpp>
@@ -76,7 +73,7 @@ void CUDABLAS1::scal( IndexType n, const float alpha, float* x_d, const IndexTyp
     cublasSetKernelStream( stream );
     LAMA_CHECK_CUBLAS_ERROR
 
-    cublasSscal( n, alpha, x_d, ::abs(incx) );
+    cublasSscal( n, alpha, x_d, incx );
 
     // No error check here possible as kernel is started asynchronously
 
@@ -93,7 +90,7 @@ void CUDABLAS1::scal( IndexType n, const float alpha, float* x_d, const IndexTyp
 template<>
 void CUDABLAS1::scal( IndexType n, const double alpha, double* x_d, const IndexType incx, SyncToken* syncToken )
 {
-    if ( incx == 0 )
+    if ( incx <= 0 )
     {
     	return;
     }
@@ -112,7 +109,7 @@ void CUDABLAS1::scal( IndexType n, const double alpha, double* x_d, const IndexT
     cublasSetKernelStream( stream );
     LAMA_CHECK_CUBLAS_ERROR
 
-    cublasDscal( n, alpha, x_d, ::abs(incx) );
+    cublasDscal( n, alpha, x_d, incx );
 
     // No error check here possible as kernel is started asynchronously
 
@@ -131,7 +128,12 @@ void CUDABLAS1::scal( IndexType n, const double alpha, double* x_d, const IndexT
 template<>
 float CUDABLAS1::nrm2( IndexType n, const float* x_d, IndexType incx, SyncToken* syncToken )
 {
-    LAMA_CHECK_CUDA_ACCESS
+    if ( incx <= 0 )
+    {
+    	return 0.0;
+    }
+
+	LAMA_CHECK_CUDA_ACCESS
 
     cudaStream_t stream = NULL;
 
@@ -145,7 +147,7 @@ float CUDABLAS1::nrm2( IndexType n, const float* x_d, IndexType incx, SyncToken*
     cublasSetKernelStream( stream );
     LAMA_CHECK_CUBLAS_ERROR
 
-    float res = cublasSnrm2( n, x_d, ::abs(incx) );
+    float res = cublasSnrm2( n, x_d, incx );
 
     // No error check here possible as kernel is started asynchronously
 
@@ -164,6 +166,11 @@ float CUDABLAS1::nrm2( IndexType n, const float* x_d, IndexType incx, SyncToken*
 template<>
 double CUDABLAS1::nrm2( IndexType n, const double* x_d, IndexType incx, SyncToken* syncToken )
 {
+    if ( incx <= 0 )
+    {
+    	return 0.0;
+    }
+
     LAMA_CHECK_CUDA_ACCESS
 
     cudaStream_t stream = NULL;
@@ -178,7 +185,7 @@ double CUDABLAS1::nrm2( IndexType n, const double* x_d, IndexType incx, SyncToke
     cublasSetKernelStream( stream );
     LAMA_CHECK_CUBLAS_ERROR
 
-    double res = cublasDnrm2( n, x_d, ::abs(incx) );
+    double res = cublasDnrm2( n, x_d, incx );
 
     // No error check here possible as kernel is started asynchronously
 
@@ -198,6 +205,11 @@ double CUDABLAS1::nrm2( IndexType n, const double* x_d, IndexType incx, SyncToke
 template<>
 float CUDABLAS1::asum( const IndexType n, const float* x_d, const IndexType incX, SyncToken* syncToken )
 {
+    if ( incX <= 0 )
+    {
+    	return 0.0;
+    }
+
     LAMA_CHECK_CUDA_ACCESS
 
     cudaStream_t stream = NULL;
@@ -212,7 +224,7 @@ float CUDABLAS1::asum( const IndexType n, const float* x_d, const IndexType incX
     cublasSetKernelStream( stream );
     LAMA_CHECK_CUBLAS_ERROR
 
-    float res = cublasSasum( n, x_d, ::abs(incX) );
+    float res = cublasSasum( n, x_d, incX );
 
     // No error check here possible as kernel is started asynchronously
 
@@ -231,7 +243,12 @@ float CUDABLAS1::asum( const IndexType n, const float* x_d, const IndexType incX
 template<>
 double CUDABLAS1::asum( const IndexType n, const double* x_d, const IndexType incX, SyncToken* syncToken )
 {
-    LAMA_CHECK_CUDA_ACCESS
+    if ( incX <= 0 )
+    {
+    	return 0.0;
+    }
+
+	LAMA_CHECK_CUDA_ACCESS
 
     cudaStream_t stream = NULL;
 
@@ -245,7 +262,7 @@ double CUDABLAS1::asum( const IndexType n, const double* x_d, const IndexType in
     cublasSetKernelStream( stream );
     LAMA_CHECK_CUBLAS_ERROR
 
-    double res = cublasDasum( n, x_d, ::abs(incX) );
+    double res = cublasDasum( n, x_d, incX );
 
     // No error check here possible as kernel is started asynchronously
 
@@ -334,6 +351,11 @@ void CUDABLAS1::swap(
     const IndexType incY,
     SyncToken* syncToken )
 {
+    if ( (incX <= 0) || (incY <= 0) )
+    {
+    	return;
+    }
+
     LAMA_CHECK_CUDA_ACCESS
 
     cudaStream_t stream = NULL;
@@ -371,6 +393,11 @@ void CUDABLAS1::swap(
     const IndexType incY,
     SyncToken* syncToken )
 {
+    if ( (incX <= 0) || (incY <= 0) )
+    {
+    	return;
+    }
+
     LAMA_CHECK_CUDA_ACCESS
 
     cudaStream_t stream = NULL;
@@ -404,6 +431,11 @@ void CUDABLAS1::swap(
 template<>
 void CUDABLAS1::copy( IndexType n, const float* x_d, IndexType incx, float* y_d, IndexType incy, SyncToken* syncToken )
 {
+    if ( (incx <= 0) || (incy <= 0) )
+    {
+    	return;
+    }
+
     LAMA_CHECK_CUDA_ACCESS
 
     cudaStream_t stream = NULL;
@@ -441,6 +473,11 @@ void CUDABLAS1::copy(
     IndexType incy,
     SyncToken* syncToken )
 {
+    if ( (incx <= 0) || (incy <= 0) )
+    {
+    	return;
+    }
+
     LAMA_CHECK_CUDA_ACCESS
 
     cudaStream_t stream = NULL;
@@ -483,6 +520,11 @@ void CUDABLAS1::axpy(
 {
     LAMA_REGION( "CUDA.BLAS1.saxpy" )
 
+	if ( (incx <= 0) || (incy <= 0) )
+	{
+		return;
+	}
+
     LAMA_CHECK_CUDA_ACCESS
 
     cudaStream_t stream = NULL;
@@ -523,6 +565,11 @@ void CUDABLAS1::axpy(
 {
     LAMA_REGION( "CUDA.BLAS1.daxpy" )
 
+	if ( (incx <= 0) || (incy <= 0) )
+	{
+		return;
+	}
+
     LAMA_CHECK_CUDA_ACCESS
 
     cudaStream_t stream = NULL;
@@ -538,7 +585,7 @@ void CUDABLAS1::axpy(
 
     LAMA_CHECK_CUBLAS_ERROR
 
-    cublasDaxpy( n, alpha, x_d, ::abs(incx), y_d, ::abs(incy) );
+    cublasDaxpy( n, alpha, x_d, incx, y_d, incy );
 
     // No error check here possible as kernel is started asynchronously
 
@@ -565,6 +612,11 @@ float CUDABLAS1::dot(
 {
     LAMA_REGION( "CUDA.BLAS1.sdot" )
 
+	if ( (incx <= 0) || (incy <= 0) )
+	{
+		return 0.0;
+	}
+
     LAMA_CHECK_CUDA_ACCESS
 
     cudaStream_t stream = NULL;
@@ -579,7 +631,7 @@ float CUDABLAS1::dot(
     cublasSetKernelStream( stream );
     LAMA_CHECK_CUBLAS_ERROR
 
-    float res = cublasSdot( n, x_d, ::abs(incx), y_d, ::abs(incy) );
+    float res = cublasSdot( n, x_d, incx, y_d, incy );
 
     // No error check here possible as kernel is started asynchronously
 
@@ -605,6 +657,11 @@ double CUDABLAS1::dot(
     SyncToken* syncToken )
 {
     LAMA_REGION( "CUDA.BLAS1.ddot" )
+
+	if ( (incx <= 0) || (incy <= 0) )
+	{
+		return 0.0;
+	}
 
     LAMA_CHECK_CUDA_ACCESS
 
