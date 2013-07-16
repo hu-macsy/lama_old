@@ -581,7 +581,7 @@ void OpenMPCSRUtils::normalGEVM(
                 {
                     if( csrJA[k] == i )
                     {
-                        sum += csrValues[k] * x[i];
+                        sum += csrValues[k] * x[j];
                         break;
                     }
                 }

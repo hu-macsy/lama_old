@@ -940,6 +940,93 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( operatorMatrixTimeVectorTestold, T, test_types )
 
 /* --------------------------------------------------------------------- */
 
+template<typename mt>
+void operatorVectorTimesMatrixTestmethod()
+{
+    typedef mt MatrixType;
+    typedef typename mt::ValueType ValueType;
+
+    const IndexType n = 6;
+    const IndexType m = 4;
+
+    // Matrix Vector multiplication test 1 ValueType precision
+    LAMA_LOG_INFO( logger, "4x4 Matrix" )
+    MatrixType matrixA( TestSparseMatrices::n4m4MatrixA1<ValueType>() );
+
+    DenseVector<ValueType> vectorA( m, 0.0 );
+    DenseVector<ValueType> vectorAcalc( vectorA * matrixA );
+    DenseVector<ValueType> vectorErg0( m, 0.0 );
+    verifySameVector<ValueType>( vectorErg0, vectorAcalc );
+
+    // Matrix Vector multiplication test 2 ValueType precision
+    LAMA_LOG_INFO( logger, "6x4 Matrix" )
+    MatrixType matrixA1( TestSparseMatrices::n6m4MatrixD1<ValueType>() );
+
+    DenseVector<ValueType> vectorA1( n, 0.0 );
+    DenseVector<ValueType> vectorErg1( m, 0.0 );
+    DenseVector<ValueType> vectorA1calc( vectorA1 * matrixA1 );
+    verifySameVector<ValueType>( vectorErg1, vectorA1calc );
+
+    // Matrix Vector multiplication test 3 ValueType precision
+    LAMA_LOG_INFO( logger, "4x6 Matrix" )
+    MatrixType matrixB1( TestSparseMatrices::n4m6MatrixD2<ValueType>() );
+
+    DenseVector<ValueType> vectorA2( m, 0.0 );
+    DenseVector<ValueType> vectorErg2( n, 0.0 );
+    DenseVector<ValueType> vectorB1( vectorA2 * matrixB1 );
+    verifySameVector<ValueType>( vectorErg2, vectorB1 );
+
+    // Matrix Vector multiplication test 4 ValueType precision
+    LAMA_LOG_INFO( logger, "4x4 Matrix" )
+    ValueType vectorBvalues[] = { 1.5f, 0.9f, 0.9f, 1.1f };
+    DenseVector<ValueType> vectorB( m, vectorBvalues );
+    DenseVector<ValueType> vectorBinput( m, 1.0 );
+
+    DenseVector<ValueType> vectorBcalc( vectorBinput * matrixA );
+    verifySameVector<ValueType>( vectorB, vectorBcalc );
+
+    // Matrix Vector multiplication test 3 ValueType precision
+    LAMA_LOG_INFO( logger, "4x6 Matrix" )
+    DenseVector<ValueType> vectorErg3( n, 0.0 );
+    DenseVector<ValueType> vectorA3( m, 0.0 );
+    vectorA3 = vectorA3 * matrixA;
+    verifySameVector<ValueType>( vectorErg3, vectorB1 );
+
+    // Matrix Vector multiplication with non constant input vector
+    LAMA_LOG_INFO( logger, "6x4 Matrix" )
+    ValueType vectorAValues[] = { 1.0, 2.0, 3.0, 4.0, 5.0, 6.0 };
+    ValueType vectorErgValues[] = { 38.0, 34.0, 27.0, 45.0 };
+    DenseVector<ValueType> vectorErg4( m, vectorErgValues );
+    DenseVector<ValueType> vectorA4( n, vectorAValues );
+
+    DenseVector<ValueType> vectorB4( vectorA4 * matrixA1 );
+    verifySameVector<ValueType>( vectorErg4, vectorB4 );
+
+    MatrixType matrixZ1( TestSparseMatrices::n4m4MatrixA1<ValueType>() );
+
+    //Should throw Exception, because of different sizes of matrix and vector
+    // LAMA_CHECK_THROW( { DenseVector<ValueType> d( matrixZ1 * vectorA4 ); }, Exception );
+
+    LAMA_LOG_INFO( logger, "check for exception" );
+    DenseVector<ValueType> wrongVectorErg4( m + 1, 1.0 );
+    LAMA_CHECK_THROW( { vectorA4 = matrixZ1 * wrongVectorErg4; }, Exception );
+    LAMA_LOG_INFO( logger, "check for exception done" );
+}
+
+BOOST_AUTO_TEST_CASE_TEMPLATE( operatorVectorTimesMatrixTestold, T, test_types )
+{
+    typedef T ValueType;
+
+    operatorVectorTimesMatrixTestmethod< CSRSparseMatrix<ValueType> >();
+//    operatorVectorTimesMatrixTestmethod< ELLSparseMatrix<ValueType> >();
+//    operatorVectorTimesMatrixTestmethod< DIASparseMatrix<ValueType> >();
+//    operatorVectorTimesMatrixTestmethod< JDSSparseMatrix<ValueType> >();
+//    operatorVectorTimesMatrixTestmethod< COOSparseMatrix<ValueType> >();
+//    operatorVectorTimesMatrixTestmethod< DenseMatrix<ValueType> >();
+}
+
+/* --------------------------------------------------------------------- */
+
 BOOST_AUTO_TEST_CASE_TEMPLATE( operatorTest, T, test_types )
 {
     typedef T ValueType;

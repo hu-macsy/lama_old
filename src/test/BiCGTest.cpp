@@ -180,12 +180,12 @@ void testSolveWithoutPreconditionmethod( ContextPtr context )
     typedef mt MatrixType;
     typedef typename mt::ValueType ValueType;
 
-    const IndexType N1 = 100;
-    const IndexType N2 = 100;
+    const IndexType N1 = 4;
+    const IndexType N2 = 4;
 
     LAMA_LOG_INFO( logger, "Problem size = " << N1 << " x " << N2 );
 
-    BiCG cgSolver( "CGTestSolver" );
+    BiCG bicgSolver( "BiCGTestSolver" );
 
     CSRSparseMatrix<ValueType> helpcoefficients;
     MatrixCreator<ValueType>::buildPoisson2D( helpcoefficients, 9, N1, N2 );
@@ -206,14 +206,14 @@ void testSolveWithoutPreconditionmethod( ContextPtr context )
     LAMA_LOG_INFO( logger, "rhs = " << rhs );
 
     //initialize
-    IndexType expectedIterations = 50;
+    IndexType expectedIterations = 10;
     CriterionPtr criterion( new IterationCount( expectedIterations ) );
-    cgSolver.setStoppingCriterion( criterion );
-    cgSolver.initialize( coefficients );
+    bicgSolver.setStoppingCriterion( criterion );
+    bicgSolver.initialize( coefficients );
 
-    cgSolver.solve( solution, rhs );
+    bicgSolver.solve( solution, rhs );
 
-    BOOST_CHECK_EQUAL( expectedIterations, cgSolver.getIterationCount() );
+    BOOST_CHECK_EQUAL( expectedIterations, bicgSolver.getIterationCount() );
 
     DenseVector<ValueType> diff( solution - exactSolution );
     Scalar s = maxNorm( diff );
@@ -239,6 +239,57 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( testSolveWithoutPreconditioning, T, test_types ) 
         // ToDo: does not run for NP=2: testSolveWithoutPreconditionmethod< DenseMatrix<T> >();
         // ToDo: does not run for NP=2: testSolveWithoutPreconditionmethod< DIASparseMatrix<T> >();
     }
+}
+
+/* --------------------------------------------------------------------- */
+
+BOOST_AUTO_TEST_CASE_TEMPLATE ( simpleTest, T, test_types )
+{
+    typedef T ValueType;
+
+    const IndexType n = 3;
+    const IndexType numValues = 5;
+
+    IndexType ia[] = { 0, 2, 3, 5 };
+    IndexType ja[] = { 0, 2, 1, 1, 2 };
+    ValueType matrixValues[] = { 1.0, 2.0, 1.0, 2.0, 1.0 };
+
+    const LAMAArray<IndexType> matrixIA = LAMAArray<IndexType>( n + 1, ia );
+    const LAMAArray<IndexType> matrixJA = LAMAArray<IndexType>( numValues, ja );
+    const LAMAArray<ValueType> mValues  = LAMAArray<ValueType>( numValues, matrixValues );
+
+    CSRStorage<ValueType>* csrStorage = new CSRStorage<ValueType>( n, n, numValues, matrixIA, matrixJA, mValues );
+    lama::DistributionPtr dist( new lama::NoDistribution( n ) );
+    CSRSparseMatrix<ValueType> matrix( *csrStorage, dist, dist );
+
+    ValueType vectorValues[] = { 3.0f, 0.5f, 2.0f };
+    const LAMAArray<ValueType> vValues  = LAMAArray<ValueType>( n, vectorValues );
+    DenseVector<ValueType> rhs( n, 0.0 );
+    rhs.setValues( vValues );
+
+    ValueType vectorValues2[] = { 1.0f, 0.5f, 1.0f };
+    const LAMAArray<ValueType> vValues2  = LAMAArray<ValueType>( n, vectorValues2 );
+    DenseVector<ValueType> exactSolution( n, 0.0 );
+    exactSolution.setValues( vValues2 );
+
+    DenseVector<ValueType> solution(n, 0.0);
+
+    //initialize
+    IndexType expectedIterations = 10;
+    CriterionPtr criterion( new IterationCount( expectedIterations ) );
+
+    BiCG bicgSolver( "BiCGTestSolver" );
+    bicgSolver.setStoppingCriterion( criterion );
+    bicgSolver.initialize( matrix );
+
+    bicgSolver.solve( solution, rhs );
+
+    BOOST_CHECK_EQUAL( expectedIterations, bicgSolver.getIterationCount() );
+
+    DenseVector<ValueType> diff( solution - exactSolution );
+    Scalar s = maxNorm( diff );
+    LAMA_LOG_INFO( logger, "maxNorm of ( solution - exactSolution ) = " << s.getValue<ValueType>() );
+    BOOST_CHECK( s.getValue<ValueType>() < 1E-6 );
 }
 
 /* --------------------------------------------------------------------- */

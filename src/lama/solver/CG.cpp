@@ -61,12 +61,12 @@ CG::CG( const CG& other )
 {
 }
 
-CG::CGRuntime::CGRuntime()
-    : IterativeSolverRuntime(), mPScalar( 0.0 )
+CG::~CG()
 {
 }
 
-CG::~CG()
+CG::CGRuntime::CGRuntime()
+    : IterativeSolverRuntime(), mPScalar( 0.0 )
 {
 }
 

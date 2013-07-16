@@ -1280,6 +1280,7 @@ void SparseMatrix<ValueType>::vectorHaloOperationSync(
                                        const LAMAArrayConstView<ValueType>& localY )> addF ) const
 {
     DistributionPtr rowDist = getDistributionPtr();
+    DistributionPtr colDist = getColDistributionPtr();
     const Communicator& comm = rowDist->getCommunicator();
     IndexType numParts = comm.getSize();
     IndexType myPart = comm.getRank();
@@ -1288,8 +1289,10 @@ void SparseMatrix<ValueType>::vectorHaloOperationSync(
     ContextPtr localContext = mLocalData->getContextPtr();
     ContextPtr haloContext = mLocalData->getContextPtr();
 
+    LAMA_ASSERT( localX.size() == rowDist->getLocalSize(), "size mismatch " << localX.size() << " != " << rowDist->getLocalSize() )
+
     IndexType localSize = localResult.size();
-    LAMA_ASSERT( localSize == rowDist->getLocalSize(), "size mismatch " << localSize << " != " << rowDist->getLocalSize() )
+    LAMA_ASSERT( localSize == colDist->getLocalSize(), "size mismatch " << localSize << " != " << colDist->getLocalSize() )
 
     LAMAArray<ValueType> toOthersResult( localX.size() - localSize );
     LAMAArray<ValueType> fromOthersResult( localSize * numParts );
@@ -1490,6 +1493,7 @@ void SparseMatrix<ValueType>::vectorHaloOperationAsync(
                         const LAMAArrayConstView<ValueType>& localY )> addF ) const
 {
     DistributionPtr rowDist = getDistributionPtr();
+    DistributionPtr colDist = getColDistributionPtr();
     const Communicator& comm = rowDist->getCommunicator();
     IndexType numParts = comm.getSize();
     IndexType myPart = comm.getRank();
@@ -1498,8 +1502,10 @@ void SparseMatrix<ValueType>::vectorHaloOperationAsync(
     ContextPtr localContext = mLocalData->getContextPtr();
     ContextPtr haloContext = mLocalData->getContextPtr();
 
+    LAMA_ASSERT( localX.size() == rowDist->getLocalSize(), "size mismatch " << localX.size() << " != " << rowDist->getLocalSize() )
+
     IndexType localSize = localResult.size();
-    LAMA_ASSERT( localSize == rowDist->getLocalSize(), "size mismatch " << localSize << " != " << rowDist->getLocalSize() )
+    LAMA_ASSERT( localSize == colDist->getLocalSize(), "size mismatch " << localSize << " != " << colDist->getLocalSize() )
 
     LAMAArray<ValueType> toOthersResult( localX.size() - localSize );
     LAMAArray<ValueType> fromOthersResult( localSize * numParts );

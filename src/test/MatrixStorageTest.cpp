@@ -666,6 +666,61 @@ LAMA_COMMON_TEST_CASE_TEMPLATE( MatrixStorageTest, StorageType, vectorTimesMatri
         }
     }
 
+    {
+        IndexType n = mMatrixStorage.getNumRows();
+        ValueType* xValues = (ValueType*) malloc( n * sizeof(ValueType) );
+        for( IndexType i = 0; i < n; ++i )
+        {
+            xValues[i] = i+1;
+        }
+
+        IndexType m = mMatrixStorage.getNumColumns();
+        ValueType* yValues = (ValueType*) malloc( m * sizeof(ValueType) );
+        for( IndexType i = 0; i < m; ++i )
+        {
+            yValues[i] = m-i;
+        }
+
+        const ValueType alpha = 1.0;
+        const ValueType beta = 2.0;
+
+        LAMAArray<ValueType> x( mMatrixStorage.getNumRows(), xValues );
+        LAMAArray<ValueType> y( mMatrixStorage.getNumColumns(), yValues );
+        // due to use of LAMAArrayView we have to give result the correct size
+        LAMAArray<ValueType> result ( mMatrixStorage.getNumColumns() );
+
+        // asynchronous execution, only checks correct calling
+
+        {
+            std::auto_ptr<SyncToken> token ( mMatrixStorage.vectorTimesMatrixAsync( result, alpha, x, beta, y ) );
+
+            // free of token at end of this scope does the synchronization
+        }
+        LAMA_LOG_TRACE( logger, "vectorTimesMatrixAsync synchronized" )
+
+        BOOST_CHECK_EQUAL( result.size(), mMatrixStorage.getNumColumns() );
+
+        HostReadAccess<ValueType> values( orig.getData() );
+        HostReadAccess<ValueType> res( result );
+
+        int ncol = mMatrixStorage.getNumColumns();
+        int nrow = mMatrixStorage.getNumRows();
+
+        for ( IndexType j = 0; j < ncol; ++j )
+        {
+            ValueType sum = 0.0;
+
+            for ( IndexType i = 0; i < nrow; ++i )
+            {
+                sum += values[ i * ncol + j ] * alpha * xValues[i];
+            }
+
+            sum += beta * yValues[j];
+
+            BOOST_CHECK_CLOSE( sum, res[j], 0.1f );
+        }
+    }
+
 LAMA_COMMON_TEST_CASE_TEMPLATE_END();
 
 /* ------------------------------------------------------------------------- */

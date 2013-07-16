@@ -183,7 +183,7 @@ void BiCG::iterate()
         LAMA_REGION( "Solver.BiCG.calc_q" )
         LAMA_LOG_INFO( logger, "Calculating q." )
         q = A * p;
-        q2 = p2 * A; //p2.transpose() * A;
+        q2 = p2 * A;
     }
 
     LAMA_LOG_INFO( logger, "Calculating pqProd." )
@@ -210,8 +210,6 @@ void BiCG::iterate()
         LAMA_REGION( "Solver.BiCG.update_res" )
         residual = residual - alpha * q;
         residual2 = residual2 - alpha * q2;
-
-        std::cout << "resi1 " << residual.maxNorm() << " res2 " << residual2.maxNorm() << std::endl;
     }
     //BiCG implementation end
 
@@ -220,7 +218,7 @@ void BiCG::iterate()
 
 const Vector& BiCG::getResidual2() const
 {
-    LAMA_LOG_DEBUG( logger, "getResidual of solver " << mId )
+    LAMA_LOG_DEBUG( logger, "getResidual2 of solver " << mId )
 
     const BiCGRuntime& runtime = getConstRuntime();
     LAMA_ASSERT_DEBUG( runtime.mCoefficients, "mCoefficients == NULL" )
