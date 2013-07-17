@@ -81,7 +81,7 @@ private:
 
     ContextAccess(); // do not allow the default constructor
 
-    ContextPtr mContext;//!< Pointer to the accessed context.
+    const Context& mContext;  //!<  context that is accessed.
 
     bool mReleased;//!< true, if access has already been released
 
