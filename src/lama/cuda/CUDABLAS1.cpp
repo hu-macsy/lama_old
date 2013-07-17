@@ -54,6 +54,11 @@ namespace lama
 template<>
 void CUDABLAS1::scal( IndexType n, const float alpha, float* x_d, const IndexType incx, SyncToken* syncToken )
 {
+    if ( incx == 0 )
+    {
+    	return;
+    }
+
     LAMA_CHECK_CUDA_ACCESS
 
     cudaStream_t stream = NULL;
@@ -85,6 +90,11 @@ void CUDABLAS1::scal( IndexType n, const float alpha, float* x_d, const IndexTyp
 template<>
 void CUDABLAS1::scal( IndexType n, const double alpha, double* x_d, const IndexType incx, SyncToken* syncToken )
 {
+    if ( incx <= 0 )
+    {
+    	return;
+    }
+
     LAMA_CHECK_CUDA_ACCESS
 
     cudaStream_t stream = NULL;
@@ -118,7 +128,12 @@ void CUDABLAS1::scal( IndexType n, const double alpha, double* x_d, const IndexT
 template<>
 float CUDABLAS1::nrm2( IndexType n, const float* x_d, IndexType incx, SyncToken* syncToken )
 {
-    LAMA_CHECK_CUDA_ACCESS
+    if ( incx <= 0 )
+    {
+    	return 0.0;
+    }
+
+	LAMA_CHECK_CUDA_ACCESS
 
     cudaStream_t stream = NULL;
 
@@ -151,6 +166,11 @@ float CUDABLAS1::nrm2( IndexType n, const float* x_d, IndexType incx, SyncToken*
 template<>
 double CUDABLAS1::nrm2( IndexType n, const double* x_d, IndexType incx, SyncToken* syncToken )
 {
+    if ( incx <= 0 )
+    {
+    	return 0.0;
+    }
+
     LAMA_CHECK_CUDA_ACCESS
 
     cudaStream_t stream = NULL;
@@ -185,6 +205,11 @@ double CUDABLAS1::nrm2( IndexType n, const double* x_d, IndexType incx, SyncToke
 template<>
 float CUDABLAS1::asum( const IndexType n, const float* x_d, const IndexType incX, SyncToken* syncToken )
 {
+    if ( incX <= 0 )
+    {
+    	return 0.0;
+    }
+
     LAMA_CHECK_CUDA_ACCESS
 
     cudaStream_t stream = NULL;
@@ -218,7 +243,12 @@ float CUDABLAS1::asum( const IndexType n, const float* x_d, const IndexType incX
 template<>
 double CUDABLAS1::asum( const IndexType n, const double* x_d, const IndexType incX, SyncToken* syncToken )
 {
-    LAMA_CHECK_CUDA_ACCESS
+    if ( incX <= 0 )
+    {
+    	return 0.0;
+    }
+
+	LAMA_CHECK_CUDA_ACCESS
 
     cudaStream_t stream = NULL;
 
@@ -321,6 +351,11 @@ void CUDABLAS1::swap(
     const IndexType incY,
     SyncToken* syncToken )
 {
+    if ( (incX <= 0) || (incY <= 0) )
+    {
+    	return;
+    }
+
     LAMA_CHECK_CUDA_ACCESS
 
     cudaStream_t stream = NULL;
@@ -358,6 +393,11 @@ void CUDABLAS1::swap(
     const IndexType incY,
     SyncToken* syncToken )
 {
+    if ( (incX <= 0) || (incY <= 0) )
+    {
+    	return;
+    }
+
     LAMA_CHECK_CUDA_ACCESS
 
     cudaStream_t stream = NULL;
@@ -391,6 +431,11 @@ void CUDABLAS1::swap(
 template<>
 void CUDABLAS1::copy( IndexType n, const float* x_d, IndexType incx, float* y_d, IndexType incy, SyncToken* syncToken )
 {
+    if ( (incx <= 0) || (incy <= 0) )
+    {
+    	return;
+    }
+
     LAMA_CHECK_CUDA_ACCESS
 
     cudaStream_t stream = NULL;
@@ -428,6 +473,11 @@ void CUDABLAS1::copy(
     IndexType incy,
     SyncToken* syncToken )
 {
+    if ( (incx <= 0) || (incy <= 0) )
+    {
+    	return;
+    }
+
     LAMA_CHECK_CUDA_ACCESS
 
     cudaStream_t stream = NULL;
@@ -470,6 +520,11 @@ void CUDABLAS1::axpy(
 {
     LAMA_REGION( "CUDA.BLAS1.saxpy" )
 
+	if ( (incx <= 0) || (incy <= 0) )
+	{
+		return;
+	}
+
     LAMA_CHECK_CUDA_ACCESS
 
     cudaStream_t stream = NULL;
@@ -510,6 +565,11 @@ void CUDABLAS1::axpy(
 {
     LAMA_REGION( "CUDA.BLAS1.daxpy" )
 
+	if ( (incx <= 0) || (incy <= 0) )
+	{
+		return;
+	}
+
     LAMA_CHECK_CUDA_ACCESS
 
     cudaStream_t stream = NULL;
@@ -522,6 +582,7 @@ void CUDABLAS1::axpy(
     }
 
     cublasSetKernelStream( stream );
+
     LAMA_CHECK_CUBLAS_ERROR
 
     cublasDaxpy( n, alpha, x_d, incx, y_d, incy );
@@ -550,6 +611,11 @@ float CUDABLAS1::dot(
     SyncToken* syncToken )
 {
     LAMA_REGION( "CUDA.BLAS1.sdot" )
+
+	if ( (incx <= 0) || (incy <= 0) )
+	{
+		return 0.0;
+	}
 
     LAMA_CHECK_CUDA_ACCESS
 
@@ -592,6 +658,11 @@ double CUDABLAS1::dot(
 {
     LAMA_REGION( "CUDA.BLAS1.ddot" )
 
+	if ( (incx <= 0) || (incy <= 0) )
+	{
+		return 0.0;
+	}
+
     LAMA_CHECK_CUDA_ACCESS
 
     cudaStream_t stream = NULL;
@@ -626,6 +697,11 @@ double CUDABLAS1::dot(
 template<typename T>
 void CUDABLAS1::sum( const IndexType n, T alpha, const T* x, T beta, const T* y, T* z, SyncToken* syncToken )
 {
+    if ( n <= 0 )
+    {
+    	return;
+    }
+
     LAMA_CHECK_CUDA_ACCESS
 
     cudaStream_t stream = 0; // default stream if no syncToken is given
