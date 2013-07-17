@@ -49,15 +49,15 @@ extern std::string testcase;
 /* --------------------------------------------------------------------- */
 
 BOOST_AUTO_TEST_SUITE( ELLStorageTest )
-;
 
-LAMA_LOG_DEF_LOGGER( logger, "Test.ELLStorageTest" );
+LAMA_LOG_DEF_LOGGER( logger, "Test.ELLStorageTest" )
 
 typedef boost::mpl::list<float,double> ValueTypes;
 
 /* --------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( commonTestCases, T, ValueTypes ) {
+BOOST_AUTO_TEST_CASE_TEMPLATE( commonTestCases, T, ValueTypes )
+{
     typedef T ValueType;
 
     ELLStorage<ValueType> ellStorage;
@@ -82,7 +82,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( commonTestCases, T, ValueTypes ) {
 
 /* --------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( ConstructorTest, T, ValueTypes ) {
+BOOST_AUTO_TEST_CASE_TEMPLATE( ConstructorTest, T, ValueTypes )
+{
     typedef T ValueType;
 
     const IndexType numRows = 10;
@@ -109,7 +110,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( ConstructorTest, T, ValueTypes ) {
 
 /* --------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( ConstructorTest1, T, ValueTypes ) {
+BOOST_AUTO_TEST_CASE_TEMPLATE( ConstructorTest1, T, ValueTypes )
+{
     typedef T ValueType;
 
     const IndexType numRows = 3;
@@ -196,10 +198,9 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( CheckTest, T, ValueTypes )
 
             const IndexType numValues = numRows * numValuesPerRow;
 
-            const IndexType ia[] = {   1, 1, 2};
+            const IndexType ia[] = { 1, 1, 2 };
 
-            const IndexType ja[] =
-            {   0, 1, 2, 0, 0, 2};
+            const IndexType ja[] = { 0, 1, 2, 0, 0, 2 };
 
             // just make sure that ia and ja have correct sizes
 
@@ -253,4 +254,6 @@ BOOST_AUTO_TEST_CASE( typeNameTest )
     s = ellStoragef.typeName();
     BOOST_CHECK_EQUAL( s, "ELLStorage<float>" );
 }
-/* ------------------------------------------------------------------------- */BOOST_AUTO_TEST_SUITE_END();
+/* ------------------------------------------------------------------------- */
+
+BOOST_AUTO_TEST_SUITE_END();

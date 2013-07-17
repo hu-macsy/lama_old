@@ -553,7 +553,7 @@ void OpenMPCSRUtils::normalGEVM(
     LAMA_LOG_INFO( logger,
                    "normalGEVM<" << Scalar::getType<ValueType>()
                    << ", #threads = " << omp_get_max_threads()
-                   << ">, result[" << numColumns << "] = " << alpha << " * A * x + " << beta << " * y " )
+                   << ">, result[" << numColumns << "] = " << alpha << " * x * A + " << beta << " * y " )
 
     if ( syncToken )
     {

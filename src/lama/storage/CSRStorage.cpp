@@ -1390,7 +1390,7 @@ SyncToken* CSRStorage<ValueType>::vectorTimesMatrixAsync(
     LAMA_LOG_INFO( logger,
                    *this << ": vectorTimesMatrixAsync, result = " << result << ", alpha = " << alpha << ", x = " << x << ", beta = " << beta << ", y = " << y )
 
-    LAMA_REGION( "Storage.CSR.timesVectorAsync" )
+    LAMA_REGION( "Storage.CSR.vectorTimesMatrixAsync" )
 
     ContextPtr loc = getContextPtr();
 

@@ -1126,7 +1126,34 @@ struct ELLUtilsInterface
                                        const ValueType x[],
                                        const IndexType numNonZeroRows,
                                        const IndexType rowIndexes[],
-                                       const IndexType ellIA[],
+                                       const IndexType ellSizes[],
+                                       const IndexType ellJA[],
+                                       const ValueType ellValues[],
+                                       SyncToken* syncToken );
+
+        /** Implementation for CSRUtilsInterface::Mult::normalGEVM  */
+
+        typedef void ( *normalGEVM ) ( ValueType result[],
+                                       const ValueType alpha,
+                                       const ValueType x[],
+                                       const ValueType beta,
+                                       const ValueType y[],
+                                       const IndexType numRows,
+                                       const IndexType numColumns,
+                                       const IndexType ellSizes[],
+                                       const IndexType ellJA[],
+                                       const ValueType ellValues[],
+                                       SyncToken* syncToken );
+
+        /** Implementation for CSRUtilsInterface::Mult::sparseGEVM  */
+
+        typedef void ( *sparseGEVM ) ( ValueType result[],
+                                       const ValueType alpha,
+                                       const ValueType x[],
+                                       const IndexType numColumns,
+                                       const IndexType numNonZeroRows,
+                                       const IndexType rowIndexes[],
+                                       const IndexType ellSizes[],
                                        const IndexType ellJA[],
                                        const ValueType ellValues[],
                                        SyncToken* syncToken );
@@ -1134,6 +1161,8 @@ struct ELLUtilsInterface
 
     LAMA_INTERFACE_DEFINE_T( Mult, normalGEMV )
     LAMA_INTERFACE_DEFINE_T( Mult, sparseGEMV )
+    LAMA_INTERFACE_DEFINE_T( Mult, normalGEVM )
+    LAMA_INTERFACE_DEFINE_T( Mult, sparseGEVM )
 
     /** Structure with type definitions for reduction routines */
 

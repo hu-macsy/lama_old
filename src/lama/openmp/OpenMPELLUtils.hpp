@@ -335,6 +335,37 @@ private:
         const IndexType csrJA[],
         const ValueType csrValues[] );
 
+    /** Implementation for CSRUtilsInterface::Mult:normalGEVM */
+
+    template<typename ValueType>
+    static void normalGEVM(
+        ValueType result[],
+        const ValueType alpha,
+        const ValueType x[],
+        const ValueType beta,
+        const ValueType y[],
+        const IndexType numRows,
+        const IndexType numColumns,
+        const IndexType ellSizes[],
+        const IndexType ellJA[],
+        const ValueType ellValues[],
+        SyncToken* syncToken );
+
+    /** Implementation for CSRUtilsInterface::Mult::sparseGEVM  */
+
+    template<typename ValueType>
+    static void sparseGEVM(
+        ValueType result[],
+        const ValueType alpha,
+        const ValueType x[],
+        const IndexType numColumns,
+        const IndexType numNonZeroRows,
+        const IndexType rowIndexes[],
+        const IndexType ellSizes[],
+        const IndexType ellJA[],
+        const ValueType ellValues[],
+        SyncToken* syncToken );
+
     LAMA_LOG_DECL_STATIC_LOGGER( logger )
 
     static bool initialized;
