@@ -275,6 +275,57 @@ void OpenMPCOOUtils::normalGEMV(
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
+void OpenMPCOOUtils::normalGEVM(
+    ValueType result[],
+    const ValueType alpha,
+    const ValueType x[],
+    const ValueType beta,
+    const ValueType y[],
+    const IndexType numRows,
+    const IndexType cooIA[],
+    const IndexType cooJA[],
+    const ValueType cooValues[],
+    const IndexType numValues,
+    SyncToken* syncToken )
+{
+    LAMA_LOG_INFO( logger,
+                   "normalGEMV<" << Scalar::getType<ValueType>()
+                   << ", #threads = " << omp_get_max_threads()
+                   << ">, result[" << numRows << "] = " << alpha
+                   << " * A( coo, #vals = " << numValues << " ) * x + " << beta << " * y " )
+
+    if ( syncToken )
+    {
+        LAMA_THROWEXCEPTION( "asynchronous execution not supported here, do it by a task" )
+    }
+
+    // result := alpha * x * A + beta * y -> result:= beta * y; result += alpha * x * A
+
+    OpenMPUtils::setScale( result, beta, y, numRows );
+
+    #pragma omp parallel
+    {
+        LAMA_REGION( "OpenMP.COO.normalGEMV" )
+
+        #pragma omp for schedule( LAMA_OMP_SCHEDULE )
+        for ( IndexType k = 0; k < numValues; ++k )
+        {
+            IndexType i = cooIA[k];
+            IndexType j = cooJA[k];
+
+            // we must use atomic updates as different threads might update same row i
+
+            const ValueType resultUpdate = alpha * cooValues[k] * x[i];
+
+            #pragma omp atomic
+            result[j] += resultUpdate;
+        }
+    }
+}
+
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType>
 void OpenMPCOOUtils::jacobi(
     ValueType* solution,
     const IndexType cooNumValues,
@@ -348,6 +399,9 @@ void OpenMPCOOUtils::setInterface( COOUtilsInterface& COOUtils )
 
     LAMA_INTERFACE_REGISTER_T( COOUtils, normalGEMV, float )
     LAMA_INTERFACE_REGISTER_T( COOUtils, normalGEMV, double )
+
+    LAMA_INTERFACE_REGISTER_T( COOUtils, normalGEVM, float )
+    LAMA_INTERFACE_REGISTER_T( COOUtils, normalGEVM, double )
 
     LAMA_INTERFACE_REGISTER_T( COOUtils, jacobi, float )
     LAMA_INTERFACE_REGISTER_T( COOUtils, jacobi, double )

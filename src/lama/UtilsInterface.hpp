@@ -1818,9 +1818,22 @@ struct COOUtilsInterface
                                        const ValueType cooValues[],
                                        const IndexType numValues,
                                        SyncToken* syncToken );
+
+        typedef void ( *normalGEVM ) ( ValueType result[],
+                                       const ValueType alpha,
+                                       const ValueType x[],
+                                       const ValueType beta,
+                                       const ValueType y[],
+                                       const IndexType numRows,
+                                       const IndexType cooIA[],
+                                       const IndexType cooJA[],
+                                       const ValueType cooValues[],
+                                       const IndexType numValues,
+                                       SyncToken* syncToken );
     };
 
     LAMA_INTERFACE_DEFINE_T( Mult, normalGEMV )
+    LAMA_INTERFACE_DEFINE_T( Mult, normalGEVM )
 
     /** Structure with type definitions for solver routines */
     template<typename ValueType>

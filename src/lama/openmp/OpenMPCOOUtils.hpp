@@ -110,6 +110,22 @@ public:
         const IndexType numValues,
         SyncToken* syncToken );
 
+    /** Implementation for CSRUtilsInterface::Mult::normalGEVM  */
+
+    template<typename ValueType>
+    static void normalGEVM(
+        ValueType result[],
+        const ValueType alpha,
+        const ValueType x[],
+        const ValueType beta,
+        const ValueType y[],
+        const IndexType numRows,
+        const IndexType cooIA[],
+        const IndexType cooJA[],
+        const ValueType cooValues[],
+        const IndexType numValues,
+        SyncToken* syncToken );
+
     /** Implementation for COOUtilsInterface::Solver::jacobi  */
 
     template<typename ValueType>
