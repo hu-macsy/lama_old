@@ -672,23 +672,23 @@ void MICJDSUtils::normalGEMV(
 
     LAMA_REGION( "MIC.JDS.normalGEMV" )
 
-    const size_t resultPtr = ( size_t ) result;
-    const size_t xPtr = ( size_t ) x;
-    const size_t permPtr = ( size_t ) perm;
-    const size_t jdsILGPtr = ( size_t ) jdsILG;
-    const size_t jdsDLGPtr = ( size_t ) jdsDLG;
-    const size_t jdsJAPtr = ( size_t ) jdsJA;
-    const size_t jdsValuesPtr = ( size_t ) jdsValues;
+    void* resultPtr = result;
+    const void* xPtr = x;
+    const void* permPtr = perm;
+    const void* jdsILGPtr = jdsILG;
+    const void* jdsDLGPtr = jdsDLG;
+    const void* jdsJAPtr = jdsJA;
+    const void* jdsValuesPtr = jdsValues;
 
     #pragma offload target( mic ), in( resultPtr, xPtr, jdsDLGPtr, jdsILGPtr, jdsJAPtr, jdsValuesPtr, alpha )
     {
-        ValueType* result = ( ValueType* ) resultPtr;
-        const ValueType* x = ( ValueType* ) xPtr;
-        const IndexType* perm = ( IndexType* ) permPtr;
-        const IndexType* jdsILG = ( IndexType* ) jdsILGPtr;
-        const IndexType* jdsDLG = ( IndexType* ) jdsDLGPtr;
-        const IndexType* jdsJA = ( IndexType* ) jdsJAPtr;
-        const ValueType* jdsValues = ( ValueType* ) jdsValuesPtr;
+        ValueType* result = static_cast<ValueType*>( resultPtr );
+        const ValueType* x = static_cast<const ValueType*>( xPtr );
+        const IndexType* perm = static_cast<const IndexType*>( permPtr );
+        const IndexType* jdsILG = static_cast<const IndexType*>( jdsILGPtr );
+        const IndexType* jdsDLG = static_cast<const IndexType*>( jdsDLGPtr );
+        const IndexType* jdsJA = static_cast<const IndexType*>( jdsJAPtr );
+        const ValueType* jdsValues = static_cast<const ValueType*>( jdsValuesPtr );
 
         // dlg[0] stands exactly for number of non-empty rows
 
@@ -838,6 +838,7 @@ void MICJDSUtils::jacobiHalo(
     }
 
     void* solutionPtr = solution;
+
     const void* oldSolutionPtr = oldSolution;
     const void* localDiagonalPtr = localDiagonal;
     const void* jdsHaloPermPtr = jdsHaloPerm;
@@ -853,6 +854,7 @@ void MICJDSUtils::jacobiHalo(
                                                solutionPtr, oldSolutionPtr, omega )
     {
         ValueType* solution = static_cast<ValueType*>( solutionPtr );
+
         const ValueType* oldSolution = static_cast<const ValueType*>( oldSolutionPtr );
         const ValueType* localDiagonal = static_cast<const ValueType*>( localDiagonalPtr );
         const IndexType* jdsHaloPerm = static_cast<const IndexType*>( jdsHaloPermPtr );
@@ -890,6 +892,8 @@ void MICJDSUtils::jacobiHalo(
 
 void MICJDSUtils::setInterface( JDSUtilsInterface& JDSUtils )
 {
+    LAMA_LOG_INFO( logger, "set JDS routines for MIC in Interface" )
+
     // Register all MIC routines of this class for the LAMA interface
 
     LAMA_INTERFACE_REGISTER( JDSUtils, sortRows )
