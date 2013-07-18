@@ -416,12 +416,12 @@ public:
         const ValueType betaValue,
         const DenseVector<ValueType>& denseY ) const;
 
-    void vectorTimesMatrix(
-            Vector& result,
-            const Scalar alpha,
-            const Vector& x,
-            const Scalar beta,
-            const Vector& y ) const;
+    void vectorTimesMatrixImpl(
+        DenseVector<ValueType>& denseResult,
+        const ValueType alphaValue,
+        const DenseVector<ValueType>& denseX,
+        const ValueType betaValue,
+        const DenseVector<ValueType>& denseY ) const;
 
     /* Implementation of pure method of class Matrix. */
 

@@ -1780,6 +1780,51 @@ void DenseMatrix<ValueType>::matrixTimesVectorImpl(
 /* -------------------------------------------------------------------------- */
 
 template<typename ValueType>
+void DenseMatrix<ValueType>::vectorTimesMatrixImpl(
+        DenseVector<ValueType>& denseResult,
+        const ValueType alphaValue,
+        const DenseVector<ValueType>& denseX,
+        const ValueType betaValue,
+        const DenseVector<ValueType>& denseY ) const
+{
+    LAMA_REGION( "Mat.Dense.vectorTimesMatrix" )
+
+    const LAMAArray<ValueType>& localY = denseY.getLocalValues();
+
+    LAMAArray<ValueType>& localResult = denseResult.getLocalValues();
+
+    ContextPtr localContext = mData[0]->getContextPtr();
+    const Distribution& colDist = getColDistribution();
+    const Communicator& comm = colDist.getCommunicator();
+
+    mData[0]->prefetch();
+
+    //It makes no sense to prefetch denseX because, if a transfer is started
+    //the halo update needs to wait for this transfer to finish
+
+    if ( betaValue != zero )
+    {
+        denseY.prefetch( localContext );
+    }
+
+    const LAMAArray<ValueType>& localX = denseX.getLocalValues();
+
+    LAMA_LOG_INFO( logger, comm << ": vectorTimesMatrix"
+                           << ", alpha = " << alphaValue << ", localX = " << localX
+                           << ", beta = " << betaValue << ", localY = " << localY )
+
+    LAMA_LOG_INFO( logger, "Aliasing: result = y : " << ( &denseResult == &denseY )
+                           << ", local = " << ( &localResult == &localY ) )
+
+    const DenseStorage<ValueType>& dense = *mData[0];
+    LAMA_LOG_INFO( logger, comm << ": vectorTimesMatrix, singe dense block = " << dense )
+    dense.vectorTimesMatrix( localResult, alphaValue, localX, betaValue, localY );
+    return;
+}
+
+/* -------------------------------------------------------------------------- */
+
+template<typename ValueType>
 void DenseMatrix<ValueType>::matrixPlusMatrix(
     const Scalar alpha,
     const Matrix& matA,
@@ -2119,17 +2164,6 @@ size_t DenseMatrix<ValueType>::getMemoryUsage() const
     }
 
     return getDistribution().getCommunicator().sum( memoryUsage );
-}
-
-template<typename ValueType>
-void DenseMatrix<ValueType>::vectorTimesMatrix(
-        Vector& /*result*/,
-        const Scalar /*alpha*/,
-        const Vector& /*x*/,
-        const Scalar /*beta*/,
-        const Vector& /*y*/ ) const
-{
-    LAMA_THROWEXCEPTION( "not implemented" )
 }
 
 /* ========================================================================= */
