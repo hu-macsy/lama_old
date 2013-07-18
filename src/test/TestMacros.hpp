@@ -308,7 +308,7 @@ inline lama::ContextType mapEnvContexttoContextType( std::string contextname )
     }
 
 /*
- * @brief HelperMakro LAMA_AUTO_TEST_CASE_TT( name, classname )
+ * @brief HelperMakro LAMA_AUTO_TEST_CASE_T( name, classname )
  *
  * This makro creates a boost test auto case, which uses all possible contexts.
  * The test case name is based on the name of the given testmethod.
