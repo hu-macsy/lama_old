@@ -352,7 +352,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( CtorMatrixExpressionTest, T, test_types ) {
     CtorMatrixExpressionTestmethod< DIASparseMatrix<ValueType> >();
     CtorMatrixExpressionTestmethod< JDSSparseMatrix<ValueType> >();
     CtorMatrixExpressionTestmethod< COOSparseMatrix<ValueType> >();
-//    CtorMatrixExpressionTestmethod< DenseMatrix<ValueType> >();
+    CtorMatrixExpressionTestmethod< DenseMatrix<ValueType> >();
 }
 
 /* --------------------------------------------------------------------- */
@@ -584,7 +584,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( AssignmentOpMatrixExpressionTest, T, test_types )
         AssignmentOpMatrixExpressionTestmethod< DIASparseMatrix<ValueType> >( context );
         AssignmentOpMatrixExpressionTestmethod< JDSSparseMatrix<ValueType> >( context );
         AssignmentOpMatrixExpressionTestmethod< COOSparseMatrix<ValueType> >( context );
-//        AssignmentOpMatrixExpressionTestmethod< DenseMatrix<ValueType> >( context );
+        AssignmentOpMatrixExpressionTestmethod< DenseMatrix<ValueType> >( context );
     }
 }
 
@@ -1020,11 +1020,11 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( operatorVectorTimesMatrixTestold, T, test_types )
     typedef T ValueType;
 
     operatorVectorTimesMatrixTestmethod< CSRSparseMatrix<ValueType> >();
-//    operatorVectorTimesMatrixTestmethod< ELLSparseMatrix<ValueType> >();
-//    operatorVectorTimesMatrixTestmethod< DIASparseMatrix<ValueType> >();
-//    operatorVectorTimesMatrixTestmethod< JDSSparseMatrix<ValueType> >();
-//    operatorVectorTimesMatrixTestmethod< COOSparseMatrix<ValueType> >();
-//    operatorVectorTimesMatrixTestmethod< DenseMatrix<ValueType> >();
+    operatorVectorTimesMatrixTestmethod< ELLSparseMatrix<ValueType> >();
+    operatorVectorTimesMatrixTestmethod< DIASparseMatrix<ValueType> >();
+    operatorVectorTimesMatrixTestmethod< JDSSparseMatrix<ValueType> >();
+    operatorVectorTimesMatrixTestmethod< COOSparseMatrix<ValueType> >();
+    operatorVectorTimesMatrixTestmethod< DenseMatrix<ValueType> >();
 }
 
 /* --------------------------------------------------------------------- */
