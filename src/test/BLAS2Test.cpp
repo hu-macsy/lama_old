@@ -54,7 +54,7 @@ namespace BLAS2Test
 {
 
 template<typename ValueType>
-void gemvTest( ContextPtr loc )
+void gemvTest( ContextPtr loc, log4lama::Logger &logger )
 {
     try
     {
@@ -240,7 +240,7 @@ void gemvTest( ContextPtr loc )
     } // try
     catch( Exception )
     {
-        BOOST_TEST_MESSAGE("WARN: BLAS2::gemv not available on " << *loc << ", not tested" );
+        LAMA_LOG_WARN( logger, "BLAS2::gemv not available on " << *loc << ", not tested yet." )
         return;
     }
 
@@ -255,8 +255,8 @@ BOOST_AUTO_TEST_SUITE( BLAS2Test )
 
 LAMA_LOG_DEF_LOGGER( logger, "Test.BLAS2Test" )
 
-LAMA_AUTO_TEST_CASE_T( gemvTest, BLAS2Test )
+LAMA_AUTO_TEST_CASE_TL( gemvTest, BLAS2Test, logger )
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 
-BOOST_AUTO_TEST_SUITE_END();
+BOOST_AUTO_TEST_SUITE_END()
