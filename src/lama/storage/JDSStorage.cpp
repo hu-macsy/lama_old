@@ -979,8 +979,8 @@ void JDSStorage<ValueType>::vectorTimesMatrix(
                     "Computing z = " << alpha << " * x * A + " << beta << " * y, with A = "
                      << *this << ", x = " << x << ", y = " << y << ", z = " << result )
 
-    LAMA_ASSERT_EQUAL_ERROR( x.size(), mNumColumns )
-    LAMA_ASSERT_EQUAL_ERROR( y.size(), mNumRows )
+    LAMA_ASSERT_EQUAL_ERROR( x.size(), mNumRows )
+    LAMA_ASSERT_EQUAL_ERROR( y.size(), mNumColumns )
 
     ContextPtr loc = getContextPtr();
 
