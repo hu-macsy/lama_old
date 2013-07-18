@@ -1503,9 +1503,24 @@ struct JDSUtilsInterface
                                        const IndexType jdsJA[],
                                        const ValueType jdsValues[],
                                        SyncToken* syncToken );
+
+        typedef void ( *normalGEVM ) ( ValueType result[],
+                                       const ValueType alpha,
+                                       const ValueType x[],
+                                       const ValueType beta,
+                                       const ValueType y[],
+                                       const IndexType numRows,
+                                       const IndexType jdsPerm[],
+                                       const IndexType jdsILG[],
+                                       const IndexType ndlg,
+                                       const IndexType jdsDLG[],
+                                       const IndexType jdsJA[],
+                                       const ValueType jdsValues[],
+                                       SyncToken* syncToken );
     };
 
     LAMA_INTERFACE_DEFINE_T( Mult, normalGEMV )
+    LAMA_INTERFACE_DEFINE_T( Mult, normalGEVM )
 
     template<typename ValueType, typename OtherValueType>
     struct Getter

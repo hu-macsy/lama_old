@@ -348,10 +348,10 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( CtorMatrixExpressionTest, T, test_types ) {
     typedef T ValueType;
 
     CtorMatrixExpressionTestmethod< CSRSparseMatrix<ValueType> >();
-//    CtorMatrixExpressionTestmethod< ELLSparseMatrix<ValueType> >();
-//    CtorMatrixExpressionTestmethod< DIASparseMatrix<ValueType> >();
-//    CtorMatrixExpressionTestmethod< JDSSparseMatrix<ValueType> >();
-//    CtorMatrixExpressionTestmethod< COOSparseMatrix<ValueType> >();
+    CtorMatrixExpressionTestmethod< ELLSparseMatrix<ValueType> >();
+    CtorMatrixExpressionTestmethod< DIASparseMatrix<ValueType> >();
+    CtorMatrixExpressionTestmethod< JDSSparseMatrix<ValueType> >();
+    CtorMatrixExpressionTestmethod< COOSparseMatrix<ValueType> >();
 //    CtorMatrixExpressionTestmethod< DenseMatrix<ValueType> >();
 }
 
@@ -571,7 +571,8 @@ void AssignmentOpMatrixExpressionTestmethod( ContextPtr context )
     LAMA_CHECK_THROW( { vec2 = n4m4IdentityMatrix * vec1; }, Exception );
 }
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( AssignmentOpMatrixExpressionTest, T, test_types ) {
+BOOST_AUTO_TEST_CASE_TEMPLATE( AssignmentOpMatrixExpressionTest, T, test_types )
+{
     CONTEXTLOOP()
     {
         typedef T ValueType;
@@ -579,10 +580,10 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( AssignmentOpMatrixExpressionTest, T, test_types )
         GETCONTEXT( context );
 
         AssignmentOpMatrixExpressionTestmethod< CSRSparseMatrix<ValueType> >( context );
-//        AssignmentOpMatrixExpressionTestmethod< ELLSparseMatrix<ValueType> >( context );
-//        AssignmentOpMatrixExpressionTestmethod< DIASparseMatrix<ValueType> >( context );
-//        AssignmentOpMatrixExpressionTestmethod< JDSSparseMatrix<ValueType> >( context );
-//        AssignmentOpMatrixExpressionTestmethod< COOSparseMatrix<ValueType> >( context );
+        AssignmentOpMatrixExpressionTestmethod< ELLSparseMatrix<ValueType> >( context );
+        AssignmentOpMatrixExpressionTestmethod< DIASparseMatrix<ValueType> >( context );
+        AssignmentOpMatrixExpressionTestmethod< JDSSparseMatrix<ValueType> >( context );
+        AssignmentOpMatrixExpressionTestmethod< COOSparseMatrix<ValueType> >( context );
 //        AssignmentOpMatrixExpressionTestmethod< DenseMatrix<ValueType> >( context );
     }
 }
@@ -668,7 +669,8 @@ void AssignmentVectorExpressionTestmethod( ContextPtr context )
     LAMA_CHECK_THROW( { DenseVector<ValueType> vec4( vec1 + 2.0 * vec2 ) ; }, Exception );
 }
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( AssignmentVectorExpressionTest, T, test_types ) {
+BOOST_AUTO_TEST_CASE_TEMPLATE( AssignmentVectorExpressionTest, T, test_types )
+{
     typedef T ValueType;
 
     CONTEXTLOOP()

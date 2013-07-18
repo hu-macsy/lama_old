@@ -564,6 +564,111 @@ void OpenMPJDSUtils::normalGEMV(
 }
 
 /* --------------------------------------------------------------------------- */
+
+template<typename ValueType>
+void OpenMPJDSUtils::normalGEVM(
+    ValueType result[],
+    const ValueType alpha,
+    const ValueType x[],
+    const ValueType beta,
+    const ValueType y[],
+    const IndexType numColumns,
+    const IndexType perm[],
+    const IndexType jdsILG[],
+    const IndexType ndlg,
+    const IndexType jdsDLG[],
+    const IndexType jdsJA[],
+    const ValueType jdsValues[],
+    class SyncToken* /* syncToken */)
+{
+    LAMA_LOG_INFO( logger,
+                   "normalGEVM<" << Scalar::getType<ValueType>()
+                   << ", #threads = " << omp_get_max_threads()
+                   << ">, result[" << numColumns << "] = " << alpha
+                   << " * A( jds, ndlg = " << ndlg << " ) * x + " << beta << " * y " )
+
+    if ( beta == 0.0 )
+    {
+        LAMA_LOG_DEBUG( logger, "set result = 0.0" )
+
+        #pragma omp parallel for
+        for ( IndexType i = 0; i < numColumns; ++i )
+        {
+            result[i] = 0.0;
+        }
+    }
+    else if ( result == y )
+    {
+        // result = result * beta
+
+        if ( beta != 1.0 )
+        {
+            LAMA_LOG_DEBUG( logger, "set result *= beta" )
+
+            #pragma omp parallel for
+            for ( IndexType i = 0; i < numColumns; ++i )
+            {
+                result[i] *= beta;
+            }
+        }
+        else
+        {
+            LAMA_LOG_DEBUG( logger, "result remains unchanged" )
+        }
+    }
+    else
+    {
+        LAMA_LOG_DEBUG( logger, "set result = beta * y" )
+
+        #pragma omp parallel for
+        for ( IndexType i = 0; i < numColumns; ++i )
+        {
+            result[i] = beta * y[i];
+        }
+    }
+
+    if ( ndlg == 0 )
+    {
+        return; // definitively empty matrix
+    }
+
+    // dlg[0] stands exactly for number of non-empty rows
+
+    IndexType nonEmptyRows = jdsDLG[0];
+
+    LAMA_LOG_DEBUG( logger, "y += alpha * x * A, #non-empty row = " << nonEmptyRows )
+
+    #pragma omp parallel
+    {
+        LAMA_REGION( "OpenMP.JDS.normalGEVM" )
+
+        #pragma omp for schedule( LAMA_OMP_SCHEDULE )
+        for( IndexType k = 0; k < numColumns; ++k )
+        {
+            ValueType value = 0.0; // sums up final value
+
+            for ( IndexType ii = 0; ii < nonEmptyRows; ii++ )
+            {
+                IndexType offset = ii;
+                for ( IndexType jj = 0; jj < jdsILG[ii]; jj++ )
+                {
+                    IndexType j = jdsJA[offset];
+                    if( j == k )
+                    {
+                        LAMA_LOG_TRACE( logger,
+                                        "compute entry i = " << perm[ii] << ", j = " << j << ", matrix val = "
+                                        << jdsValues[offset] << ", vector val = " << x[ perm[ii] ] )
+                        value += jdsValues[offset] * x[ perm[ii] ];
+                    }
+                    offset += jdsDLG[jj]; // there is next value for this row
+                }
+            }
+            result[k] += alpha * value;
+        }
+    }
+}
+
+/* --------------------------------------------------------------------------- */
 /*     Jacobi                                                                  */
 /* --------------------------------------------------------------------------- */
 
@@ -738,6 +843,9 @@ void OpenMPJDSUtils::setInterface( JDSUtilsInterface& JDSUtils )
 
     LAMA_INTERFACE_REGISTER_T( JDSUtils, normalGEMV, float )
     LAMA_INTERFACE_REGISTER_T( JDSUtils, normalGEMV, double )
+
+    LAMA_INTERFACE_REGISTER_T( JDSUtils, normalGEVM, float )
+    LAMA_INTERFACE_REGISTER_T( JDSUtils, normalGEVM, double )
 
     LAMA_INTERFACE_REGISTER_T( JDSUtils, jacobi, float )
     LAMA_INTERFACE_REGISTER_T( JDSUtils, jacobi, double )
