@@ -45,7 +45,6 @@
 #include <lama/macros/unused.hpp>
 
 #include <cuda.h>
-#include <cusparse.h>
 #include <cuda_runtime.h>
 #include <cuda_runtime_api.h>
 
@@ -56,12 +55,17 @@
 // thrust
 #include <thrust/copy.h>
 #include <thrust/device_ptr.h>
+#include <thrust/device_vector.h>
 #include <thrust/fill.h>
 #include <thrust/functional.h>
 #include <thrust/host_vector.h>
 #include <thrust/scan.h>
+#include <thrust/sort.h>
 #include <thrust/transform_reduce.h>
 #include <thrust/tuple.h>
+#include <thrust/iterator/reverse_iterator.h>
+#include <thrust/iterator/zip_iterator.h>
+#include <thrust/reduce.h>
 
 #include <boost/bind.hpp>
 
@@ -96,7 +100,7 @@ IndexType CUDACSRUtils::sizes2offsets( IndexType array[], const IndexType n )
 
     LAMA_CHECK_CUDA_ACCESS
 
-    thrust::device_ptr<IndexType> array_ptr( const_cast<IndexType*>( array ) );
+    thrust::device_ptr<IndexType> array_ptr( array );
     thrust::exclusive_scan( array_ptr, array_ptr + n + 1, array_ptr );
     thrust::host_vector<IndexType> numValues( array_ptr + n, array_ptr + n + 1 );
 
@@ -135,10 +139,6 @@ void CUDACSRUtils::offsets2sizes( IndexType sizes[], const IndexType offsets[], 
     offsets2sizes_kernel<<<dimGrid, dimBlock>>>( sizes, offsets, n );
     LAMA_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "offsets2sizes" )
 }
-
-/** Correct handle for cusparse is set due to the context. */
-
-extern cusparseHandle_t CUDAContext_cusparseHandle;
 
 /* --------------------------------------------------------------------------- */
 /*     hasDiagonalProperty                                                     */
@@ -209,10 +209,10 @@ bool CUDACSRUtils::hasDiagonalProperty( const IndexType numDiagonals, const Inde
 /* --------------------------------------------------------------------------- */
 
 __global__
-static void count_csc_kernel(
-    IndexType* cscIA,
-    const IndexType* csrIA,
-    const IndexType* csrJA,
+static void build_ia_kernel(
+    IndexType* ia,
+    const IndexType nz,
+    const IndexType* offsets,
     const IndexType n )
 {
     const int i = threadId( gridDim, blockIdx, blockDim, threadIdx );
@@ -221,38 +221,53 @@ static void count_csc_kernel(
     {
         // loop over all none zero elements of column i
 
-        for ( IndexType jj = csrIA[i]; jj < csrIA[i + 1]; ++jj )
+        for ( IndexType ii = offsets[i]; ii < offsets[i + 1]; ++ii )
         {
-            IndexType j = csrJA[jj];
-            atomicAdd( &cscIA[j], 1 );
+            ia[ii] = i;
         }
     }
 }
 
 /* --------------------------------------------------------------------------- */
 
-template<typename ValueType>
 __global__
-static void csr2csc_kernel(
-    IndexType* cscIA,
-    IndexType* cscJA,
-    ValueType* cscValues,
-    const IndexType* csrIA,
-    const IndexType* csrJA,
-    const ValueType* csrValues,
-    const IndexType n )
+static void build_offset_kernel(
+    IndexType* offsets,
+    const IndexType n,
+    const IndexType* ia,
+    const IndexType nz )
 {
     const int i = threadId( gridDim, blockIdx, blockDim, threadIdx );
 
-    if ( i < n )
+    // Entries in offset filled every time there is a change in values of consecutive elements
+    //   i:     0  1  2  3  4  5
+    //  ia:     0  0  1  1  1  3
+    // nd1:     0  0  1  1  1  3
+    // nd2:     0  1  1  1  3  4
+    //             x        x  x
+    //             |        |  |->                  
+    //             |        |---->                
+    //             |------------->       2          
+    // offset:                        0  2  5  5  6
+
+    if ( i < nz )
     {
-        for ( IndexType jj = csrIA[i]; jj < csrIA[i + 1]; ++jj )
+        IndexType nd1 = ia[i];
+        IndexType nd2 = n;
+
+        if ( i + 1 < nz )
         {
-            IndexType j = csrJA[jj];
-            IndexType k = atomicAdd( &cscIA[j], 1 );  // k gets old value
-            cscJA[k] = i;
-            cscValues[k] = csrValues[jj];
+            nd2 = ia[i + 1];
         }
+
+        for ( IndexType j = nd1; j < nd2; j++ )
+        {
+            offsets[j+1] = i + 1;
+        }
+    }
+    if ( i == 0 )
+    {
+        offsets[0] = 0;
     }
 }
 
@@ -270,31 +285,47 @@ void CUDACSRUtils::convertCSR2CSC(
     int numColumns,
     int numValues )
 {
-    CUDAUtils::setVal( cscIA, numColumns, 0 );
+    LAMA_REGION( "CSR.convertCSR2CSC" )
+
+    LAMA_LOG_INFO( logger, "convertCSR2CSC of " << numRows << " x " << numColumns << ", nnz = " << numValues )
+
+    // Sort the csrJA ( same as cooJA ), apply it to cooIA and cooValues
+
+    IndexType* cooIA;
+
+    LAMA_CUDA_RT_CALL( cudaMalloc( &cooIA, sizeof( IndexType ) * numValues ),
+                       "allocate temp for cooIA" )
+
+    // Step 1 : build COO storage,  cooIA (to do), cooJA ( = csrJA ), cooValues ( = csrValues )
+    //          -> translate the csrIA offset array to a cooIA array
 
     const int blockSize = CUDASettings::getBlockSize();
-
     dim3 dimBlock( blockSize, 1, 1 );
     dim3 dimGrid = makeGrid( numRows, dimBlock.x );
 
-    count_csc_kernel<<<dimGrid, dimBlock>>>( cscIA, csrIA, csrJA, numRows );
+    build_ia_kernel<<<dimGrid, dimBlock>>>( cscJA, numValues, csrIA, numRows );
 
-    IndexType numValues1 = sizes2offsets( cscIA, numColumns );
+    // switch cooIA and cooJA, copy values and resort
 
-    LAMA_ASSERT_EQUAL_ERROR( numValues1, numValues )
+    CUDAUtils::set( cooIA, csrJA, numValues );
+    CUDAUtils::set( cscValues, csrValues, numValues );
 
-    // temporary copy neeeded of cscIA
+    thrust::device_ptr<IndexType> ja_d( cooIA );
+    thrust::device_ptr<ValueType> values_d( cscValues );
+    thrust::device_ptr<IndexType> ia_d( cscJA );
 
-    IndexType* cscIA1;
+    // sort by column indexes in ascending order
+    // zip_iterator used to resort cscValues and cscJA in one step
 
-    LAMA_CUDA_RT_CALL( cudaMalloc( &cscIA1, sizeof( IndexType ) * numColumns ),
-                       "allocate copy of cscIA" )
+    thrust::stable_sort_by_key( ja_d, ja_d + numValues, 
+                                thrust::make_zip_iterator( thrust::make_tuple( values_d, ia_d ) ) );
 
-    CUDAUtils::set( cscIA1, cscIA, numColumns );
+    // cscJA is now sorted, can become an offset array
 
-    csr2csc_kernel<<<dimGrid, dimBlock>>>( cscIA1, cscJA, cscValues, csrIA, csrJA, csrValues, numRows );
+    dimGrid = makeGrid( numValues, dimBlock.x );
+    build_offset_kernel<<<dimGrid, dimBlock>>>( cscIA, numRows, cooIA, numValues );
 
-    LAMA_CUDA_RT_CALL( cudaFree( cscIA1 ), "free copy of cscIA" )
+    LAMA_CUDA_RT_CALL( cudaFree( cooIA ), "free tmp cooIA" )
 }
 
 /* --------------------------------------------------------------------------- */
