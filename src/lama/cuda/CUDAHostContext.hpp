@@ -59,6 +59,8 @@ class LAMA_DLL_IMPORTEXPORT CUDAHostContext: public lama::HostContext
 {
     friend class CUDAHostContextManager; // can only create context
 
+    friend class CUDAContext; // can only create this host context
+
 public:
 
     virtual ~CUDAHostContext();

@@ -41,22 +41,11 @@ namespace lama
 LAMA_LOG_DEF_LOGGER( ContextAccess::logger, "ContextAccess" )
 
 ContextAccess::ContextAccess( ContextPtr context, const char* file, int line )
-    : mContext( context ), mReleased( false ), mFile( file ), mLine( line )
+    : mContext( *context ), mReleased( false ), mFile( file ), mLine( line )
 {
-    // Access to NULL context gives warning, and will be ignored
-
-    if ( !mContext )
-    {
-        // Might be useful to support NULL context, but give a warning
-
-        LAMA_LOG_WARN( logger, *this << " enabled" )
-        mReleased = true;
-        return;
-    }
-
     LAMA_LOG_INFO( logger, *this << " enabled" )
 
-    mContext->enable( mFile, mLine );
+    mContext.enable( mFile, mLine );
 }
 
 void ContextAccess::release()
@@ -68,7 +57,7 @@ void ContextAccess::release()
 
     LAMA_LOG_INFO( logger, *this << " released" )
 
-    mContext->disable( mFile, mLine );
+    mContext.disable( mFile, mLine );
     mReleased = false;
 }
 
@@ -79,18 +68,8 @@ ContextAccess::~ContextAccess()
 
 void ContextAccess::writeAt( std::ostream& stream ) const
 {
-    stream << "Access of ";
-
-    if ( !mContext )
-    {
-        stream << "NULL context";
-    }
-    else
-    {
-        stream << *mContext;
-    }
-
+    stream << "Access of " << mContext;
     stream << " at " << mFile << "( line = " << mLine << " )";
 }
 
-}
+} // namespace lama

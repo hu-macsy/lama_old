@@ -389,11 +389,16 @@ void OpenMPCSRUtils::scaleRows(
 
 /* --------------------------------------------------------------------------- */
 
+static inline IndexType atomicInc( IndexType& var )
+{
+    return __sync_fetch_and_add( &var, 1 );
+}
+
 template<typename ValueType>
 void OpenMPCSRUtils::convertCSR2CSC(
-    IndexType cIA[],
-    IndexType cJA[],
-    ValueType cValues[],
+    IndexType cscIA[],
+    IndexType cscJA[],
+    ValueType cscValues[],
     const IndexType rIA[],
     const IndexType rJA[],
     const ValueType rValues[],
@@ -401,19 +406,23 @@ void OpenMPCSRUtils::convertCSR2CSC(
     IndexType numColumns,
     IndexType numValues )
 {
+    LAMA_REGION( "OpenMP.CSR2CSC" )
+
     LAMA_LOG_INFO( logger, "convertCSR2CSC of matrix " << numRows << " x " << numColumns )
 
     LAMA_ASSERT_EQUAL_DEBUG( numValues, rIA[ numRows ] )
 
     // initialization of column counters with 0
 
+    #pragma omp parallel for
     for ( IndexType i = 0; i < numColumns; ++i )
     {
-        cIA[i] = 0;
+        cscIA[i] = 0;
     }
 
     // loop over all rows of the row matrix to count columns, not yet OpenMP parallelized
 
+    #pragma omp parallel for
     for ( IndexType i = 0; i < numRows; ++i )
     {
         // loop over all none zero elements of column i
@@ -421,42 +430,40 @@ void OpenMPCSRUtils::convertCSR2CSC(
         for ( IndexType jj = rIA[i]; jj < rIA[i + 1]; ++jj )
         {
             IndexType j = rJA[jj];
-            LAMA_ASSERT_DEBUG( j < numColumns, "column index " << j << " out of range, #cols = " << numColumns )
-            cIA[j]++;
+            #pragma omp atomic
+            cscIA[j]++;
         }
     }
 
-    sizes2offsets( cIA, numColumns );
+    sizes2offsets( cscIA, numColumns );
 
-    LAMA_LOG_INFO( logger, "convertCSR2CSC, #num values counted = " << cIA[ numColumns ] )
+    LAMA_LOG_INFO( logger, "convertCSR2CSC, #num values counted = " << cscIA[ numColumns ] )
 
-    LAMA_ASSERT_EQUAL_DEBUG( numValues, cIA[ numColumns ] )
+    LAMA_ASSERT_EQUAL_DEBUG( numValues, cscIA[ numColumns ] )
 
-    // fill in the array cJA and cValues
+    // temporary copy neeeded of cscIA
 
+    std::vector<IndexType> cscIA1( numColumns );
+
+    #pragma omp parallel for
+    for ( IndexType i = 0; i < numColumns; ++i )
+    {
+        cscIA1[i] = cscIA[i];
+    }
+
+    // fill in the array cscJA and cscValues
+
+    #pragma omp parallel for
     for ( IndexType i = 0; i < numRows; ++i )
     {
         for ( IndexType jj = rIA[i]; jj < rIA[i + 1]; ++jj )
         {
             IndexType j = rJA[jj];
-            cJA[cIA[j]] = i;
-            cValues[cIA[j]] = rValues[jj];
-            cIA[j]++;
+            IndexType k = atomicInc( cscIA1[j] );  // k keeps old value
+            cscJA[k] = i;
+            cscValues[k] = rValues[jj];
         }
     }
-
-    LAMA_LOG_INFO( logger, "convertCSR2CSC, #num values counted = " << cIA[ numColumns ] )
-
-    // set back the old offsets
-
-    for ( IndexType i = numColumns; i > 0; --i )
-    {
-        cIA[i] = cIA[i - 1];
-    }
-
-    cIA[0] = 0;
-
-    LAMA_ASSERT_EQUAL_DEBUG( cIA[numColumns], numValues )
 }
 
 /* --------------------------------------------------------------------------- */

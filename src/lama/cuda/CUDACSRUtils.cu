@@ -37,6 +37,7 @@
 #include <lama/cuda/utils.cu.h>
 #include <lama/cuda/CUDAError.hpp>
 #include <lama/cuda/CUDACSRUtils.hpp>
+#include <lama/cuda/CUDAUtils.hpp>
 #include <lama/cuda/CUDASettings.hpp>
 #include <lama/cuda/CUDAStreamSyncToken.hpp>
 
@@ -205,56 +206,95 @@ bool CUDACSRUtils::hasDiagonalProperty( const IndexType numDiagonals, const Inde
 }
 
 /* --------------------------------------------------------------------------- */
-/*     Template specialization convertCSR2CSC<float>                           */
 /* --------------------------------------------------------------------------- */
 
-template<>
-void CUDACSRUtils::convertCSR2CSC(
-    IndexType cscIA[],
-    IndexType cscJA[],
-    float cscValues[],
-    const IndexType csrIA[],
-    const IndexType csrJA[],
-    const float csrValues[],
-    int numRows,
-    int numColumns,
-    int /* numValues */)
+__global__
+static void count_csc_kernel(
+    IndexType* cscIA,
+    const IndexType* csrIA,
+    const IndexType* csrJA,
+    const IndexType n )
 {
-    LAMA_LOG_INFO( logger,
-                   "convertCSR2CSC<float> -> cusparseScsr2csc" << ", matrix size = " << numRows << " x " << numColumns )
+    const int i = threadId( gridDim, blockIdx, blockDim, threadIdx );
 
-    LAMA_CUSPARSE_CALL(
-        cusparseScsr2csc( CUDAContext_cusparseHandle, numRows, numColumns, csrValues, csrIA, csrJA, cscValues, cscJA, cscIA, 1, CUSPARSE_INDEX_BASE_ZERO ),
-        "convertCSR2SCC<float>" )
+    if ( i < n )
+    {
+        // loop over all none zero elements of column i
 
-    LAMA_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "convertCSR2CSC" )
+        for ( IndexType jj = csrIA[i]; jj < csrIA[i + 1]; ++jj )
+        {
+            IndexType j = csrJA[jj];
+            atomicAdd( &cscIA[j], 1 );
+        }
+    }
 }
 
 /* --------------------------------------------------------------------------- */
-/*     Template specialization convertCSR2CSC<double>                          */
+
+template<typename ValueType>
+__global__
+static void csr2csc_kernel(
+    IndexType* cscIA,
+    IndexType* cscJA,
+    ValueType* cscValues,
+    const IndexType* csrIA,
+    const IndexType* csrJA,
+    const ValueType* csrValues,
+    const IndexType n )
+{
+    const int i = threadId( gridDim, blockIdx, blockDim, threadIdx );
+
+    if ( i < n )
+    {
+        for ( IndexType jj = csrIA[i]; jj < csrIA[i + 1]; ++jj )
+        {
+            IndexType j = csrJA[jj];
+            IndexType k = atomicAdd( &cscIA[j], 1 );  // k gets old value
+            cscJA[k] = i;
+            cscValues[k] = csrValues[jj];
+        }
+    }
+}
+
 /* --------------------------------------------------------------------------- */
 
-template<>
+template<typename ValueType>
 void CUDACSRUtils::convertCSR2CSC(
     IndexType cscIA[],
     IndexType cscJA[],
-    double cscValues[],
+    ValueType cscValues[],
     const IndexType csrIA[],
     const IndexType csrJA[],
-    const double csrValues[],
+    const ValueType csrValues[],
     int numRows,
     int numColumns,
-    int /* numValues */)
+    int numValues )
 {
-    LAMA_LOG_INFO( logger,
-                   "convertCSR2CSC<double> -> cusparseDcsr2csc" << ", matrix size = " << numRows << " x " << numColumns )
+    CUDAUtils::setVal( cscIA, numColumns, 0 );
 
-    LAMA_CUSPARSE_CALL( cusparseDcsr2csc( CUDAContext_cusparseHandle, numRows, numColumns, 
-                                          csrValues, csrIA, csrJA, cscValues, cscJA, cscIA, 1, 
-                                          CUSPARSE_INDEX_BASE_ZERO ),
-                        "convertCSR2SCC<double>" )
+    const int blockSize = CUDASettings::getBlockSize();
 
-    LAMA_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "convertCSR2CSC" )
+    dim3 dimBlock( blockSize, 1, 1 );
+    dim3 dimGrid = makeGrid( numRows, dimBlock.x );
+
+    count_csc_kernel<<<dimGrid, dimBlock>>>( cscIA, csrIA, csrJA, numRows );
+
+    IndexType numValues1 = sizes2offsets( cscIA, numColumns );
+
+    LAMA_ASSERT_EQUAL_ERROR( numValues1, numValues )
+
+    // temporary copy neeeded of cscIA
+
+    IndexType* cscIA1;
+
+    LAMA_CUDA_RT_CALL( cudaMalloc( &cscIA1, sizeof( IndexType ) * numColumns ),
+                       "allocate copy of cscIA" )
+
+    CUDAUtils::set( cscIA1, cscIA, numColumns );
+
+    csr2csc_kernel<<<dimGrid, dimBlock>>>( cscIA1, cscJA, cscValues, csrIA, csrJA, csrValues, numRows );
+
+    LAMA_CUDA_RT_CALL( cudaFree( cscIA1 ), "free copy of cscIA" )
 }
 
 /* --------------------------------------------------------------------------- */

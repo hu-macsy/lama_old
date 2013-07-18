@@ -36,6 +36,7 @@
 
 // others
 #include <lama/cuda/CUDAStreamSyncToken.hpp>
+#include <lama/cuda/CUDAHostContext.hpp>
 #include <lama/cuda/CUDAError.hpp>
 
 #include <lama/task/TaskSyncToken.hpp>
@@ -227,6 +228,28 @@ CUDAContext::~CUDAContext()
     }
 
     LAMA_LOG_INFO( logger, "Max allocated device memory " << mMaxNumberOfAllocatedBytes << " bytes." )
+}
+
+/* ----------------------------------------------------------------------------- */
+
+ContextPtr CUDAContext::getHostContext() const
+{
+    ContextPtr context;
+
+    if ( mHostContext.expired() )
+    {
+        context = ContextPtr( new CUDAHostContext( shared_from_this() ) );
+
+        mHostContext = context;   // save it here as a weak pointer to avoid cycles
+    }
+    else
+    {
+        // the last host context instance is still valid, so we return just shared pointer to it
+
+        context = mHostContext.lock();
+    }
+
+    return context;
 }
 
 /* ----------------------------------------------------------------------------- */
@@ -444,11 +467,9 @@ SyncToken* CUDAContext::memcpyAsyncFromHost( void* dst, const void* src, const s
 
 void CUDAContext::memcpyToHost( void* dst, const void* src, const size_t size ) const
 {
-    //LAMA_THROWEXCEPTION("memcpyToHost is temporarily forbidden for tracking");
+    LAMA_REGION( "CUDA.memcpyDev->Host" )
 
     LAMA_CONTEXT_ACCESS( shared_from_this() )
-
-    LAMA_REGION( "CUDA.memcpyDev->Host" )
 
     LAMA_LOG_INFO( logger, "copy " << size << " bytes from " << src << " (device) to " << dst << " (host) " )
 
