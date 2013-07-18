@@ -1008,19 +1008,19 @@ void JDSStorage<ValueType>::vectorTimesMatrix(
 
         // this call will finish the computation, syncToken == NULL
 
-        normalGEVM( wResult.get(), alpha, rX.get(), beta, wResult.get(), mNumRows, jdsPerm.get(), jdsILG.get(),
+        normalGEVM( wResult.get(), alpha, rX.get(), beta, wResult.get(), mNumColumns, jdsPerm.get(), jdsILG.get(),
                     mNumDiagonals, jdsDLG.get(), jdsJA.get(), jdsValues.get(), NULL );
     }
     else
     {
-        WriteOnlyAccess<ValueType> wResult( result, loc, mNumRows );
+        WriteOnlyAccess<ValueType> wResult( result, loc, mNumColumns );
         ReadAccess<ValueType> rY( y, loc );
 
         LAMA_CONTEXT_ACCESS( loc )
 
         // this call will finish the computation, syncToken == NULL
 
-        normalGEVM( wResult.get(), alpha, rX.get(), beta, rY.get(), mNumRows, jdsPerm.get(), jdsILG.get(),
+        normalGEVM( wResult.get(), alpha, rX.get(), beta, rY.get(), mNumColumns, jdsPerm.get(), jdsILG.get(),
                     mNumDiagonals, jdsDLG.get(), jdsJA.get(), jdsValues.get(), NULL );
     }
 }
