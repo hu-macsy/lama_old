@@ -788,18 +788,18 @@ void COOStorage<ValueType>::vectorTimesMatrix(
         // we assume that normalGEMV can deal with the alias of result, y
 
         LAMA_CONTEXT_ACCESS( loc )
-        normalGEVM( wResult.get(), alpha, rX.get(), beta, wResult.get(), mNumRows, cooIA.get(), cooJA.get(),
+        normalGEVM( wResult.get(), alpha, rX.get(), beta, wResult.get(), mNumColumns, cooIA.get(), cooJA.get(),
                     cooValues.get(), mNumValues, NULL );
     }
     else
     {
         // make also sure that result will have the correct size
 
-        WriteOnlyAccess<ValueType> wResult( result, loc, mNumRows );
+        WriteOnlyAccess<ValueType> wResult( result, loc, mNumColumns );
         ReadAccess<ValueType> rY( y, loc );
 
         LAMA_CONTEXT_ACCESS( loc )
-        normalGEVM( wResult.get(), alpha, rX.get(), beta, rY.get(), mNumRows, cooIA.get(), cooJA.get(), cooValues.get(),
+        normalGEVM( wResult.get(), alpha, rX.get(), beta, rY.get(), mNumColumns, cooIA.get(), cooJA.get(), cooValues.get(),
                     mNumValues, NULL );
     }
 }

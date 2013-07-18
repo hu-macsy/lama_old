@@ -119,7 +119,7 @@ public:
         const ValueType x[],
         const ValueType beta,
         const ValueType y[],
-        const IndexType numRows,
+        const IndexType numColumns,
         const IndexType cooIA[],
         const IndexType cooJA[],
         const ValueType cooValues[],

@@ -281,7 +281,7 @@ void OpenMPCOOUtils::normalGEVM(
     const ValueType x[],
     const ValueType beta,
     const ValueType y[],
-    const IndexType numRows,
+    const IndexType numColumns,
     const IndexType cooIA[],
     const IndexType cooJA[],
     const ValueType cooValues[],
@@ -291,7 +291,7 @@ void OpenMPCOOUtils::normalGEVM(
     LAMA_LOG_INFO( logger,
                    "normalGEMV<" << Scalar::getType<ValueType>()
                    << ", #threads = " << omp_get_max_threads()
-                   << ">, result[" << numRows << "] = " << alpha
+                   << ">, result[" << numColumns << "] = " << alpha
                    << " * A( coo, #vals = " << numValues << " ) * x + " << beta << " * y " )
 
     if ( syncToken )
@@ -301,7 +301,7 @@ void OpenMPCOOUtils::normalGEVM(
 
     // result := alpha * x * A + beta * y -> result:= beta * y; result += alpha * x * A
 
-    OpenMPUtils::setScale( result, beta, y, numRows );
+    OpenMPUtils::setScale( result, beta, y, numColumns );
 
     #pragma omp parallel
     {
