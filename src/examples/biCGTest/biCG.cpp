@@ -1,0 +1,66 @@
+#include "Config.hpp"
+
+#include <lama/solver/GMRES.hpp>
+#include <lama/solver/criteria/IterationCount.hpp>
+#include <lama/solver/logger/CommonLogger.hpp>
+#include <lama/matrix/CSRSparseMatrix.hpp>
+#include <lama/DenseVector.hpp>
+
+#include <cstdio>
+#include <cstdlib>
+
+using namespace std;
+using namespace lama;
+
+/** ValueType is the type used for matrix and vector elements. */
+
+typedef float ValueType;
+
+int main( int argc, char* argv[] )
+{
+    // init
+
+    Config config;
+
+    const char* matrixFilename;
+    const char* rhsFilename;
+    const char* solutionFilename;
+    
+    if ( argc >= 4 )
+    {
+        matrixFilename = argv[1];
+        rhsFilename = argv[2];
+        solutionFilename = argv[3];
+
+        for ( int i = 4; i < argc; ++i )
+        {
+            config.setArg( argv[i] );
+        }
+    } 
+    else 
+    {
+        cout << "Usage: " << argv[0] << " <matrix.frm> <rhs.frv> <solution.frv>" << endl;
+        exit( 1 );
+    }
+
+    CSRSparseMatrix<ValueType> csrMatrix( matrixFilename );
+    DenseVector<ValueType> rhs( rhsFilename );
+    DenseVector<ValueType> solution( solutionFilename );
+
+    // bicg
+
+    LoggerPtr slogger(
+        new CommonLogger( "<GMRES>: ", LogLevel::completeInformation, LoggerWriteBehaviour::toConsoleOnly,
+                          std::auto_ptr<Timer>( new Timer() ) ) );
+
+    GMRES bicgSolver( "GMRESTestSolver", slogger );
+
+    IndexType expectedIterations = 10;
+    CriterionPtr criterion( new IterationCount( expectedIterations ) );
+
+    bicgSolver.setStoppingCriterion( criterion );
+    bicgSolver.initialize( csrMatrix );
+
+    bicgSolver.solve( solution, rhs );
+
+}
