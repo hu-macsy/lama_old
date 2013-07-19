@@ -1779,27 +1779,19 @@ struct COOUtilsInterface
                                         const IndexType cooJA[],
                                         const COOValueType cooValues[] );
 
-        /** Conversion of CSR data to COO data.
+        /** Conversion of CSR data (ja, values) to COO data.
          *
+         *  @param[out] cooValues is new COO data with diagonal elements at first
+         *  @param[in] csrValues is given CSR data with diagonal elements first in each row
+         *  @param[in] numValues is size of arrays cooValues and csrValues
+         *  @param[in] csrIA is CSR offset array
          *  @param[in] numRows is number of rows
          *  @param[in] numDiagonals is number of diagonal elements to be stored at the beginning
-         *  @param[in] csrIA is CSR offset array
-         *  @param[in] csrJA is CSR column indexes, size is csrIA[numRows]
-         *  @param[in] csrValues is CSR non-zero elements, size is csrIA[numRows]
          *  @param[in] csrDiagonalProperty is true if CSR data has diagonal property
          *
-         *  Be careful if COO data should have diagonal property, but CSR data has not
+         *  Note: Diagonal elements must be first in each row for CSR data, no resort done for this
+         *  Note: For numDiagonals == 0, this routine can be replaced with Utils::set.
          */
-
-        typedef void ( *setCSRValues ) ( IndexType cooIA[],
-                                         IndexType cooJA[],
-                                         COOValueType cooValues[],
-                                         const IndexType numRows,
-                                         const IndexType numDiagonals,
-                                         const IndexType csrIA[],
-                                         const IndexType csrJA[],
-                                         const CSRValueType csrValues[],
-                                         const bool csrDiagonalProperty );
 
         typedef void ( *setCSRData ) ( COOValueType cooValues[],
                                        const CSRValueType csrValues[],
@@ -1810,7 +1802,6 @@ struct COOUtilsInterface
     };
 
     LAMA_INTERFACE_DEFINE_TT( Conversions, getCSRValues )
-    LAMA_INTERFACE_DEFINE_TT( Conversions, setCSRValues )
     LAMA_INTERFACE_DEFINE_TT( Conversions, setCSRData )
 
     template<typename ValueType>

@@ -89,20 +89,6 @@ public:
         const IndexType cooJA[],
         const COOValueType cooValues[] );
 
-    /** OpenMP implementation for COOUtilsInterface::Conversions::setCSRValues */
-
-    template<typename COOValueType,typename CSRValueType>
-    static void setCSRValues(
-        IndexType cooIA[],
-        IndexType cooJA[],
-        COOValueType cooValues[],
-        const IndexType numRows,
-        const IndexType numDiagonals,
-        const IndexType csrIA[],
-        const IndexType csrJA[],
-        const CSRValueType csrValues[],
-        const bool csrDiagonalProperty );
-
     /** OpenMP implementation for COOUtilsInterface::Conversions::setCSRData */
 
     template<typename COOValueType,typename CSRValueType>
