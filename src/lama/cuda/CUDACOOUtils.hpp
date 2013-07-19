@@ -64,6 +64,17 @@ public:
         const IndexType numRows,
         const IndexType numDiagonals );
 
+    /** Implementation for COOUtilsInterface::Conversions::setCSRData with CUDA on GPUs */
+
+    template<typename COOValueType,typename CSRValueType>
+    static void setCSRData(
+        COOValueType cooValues[],
+        const CSRValueType csrValues[],
+        const IndexType numValues,
+        const IndexType csrIA[],
+        const IndexType numRows,
+        const IndexType numDiagonals );
+
     /** Implementation for COOUtilsInterface::Mult:normalGEMV with CUDA on GPUs */
 
     template<typename ValueType>
