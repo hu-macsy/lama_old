@@ -344,6 +344,12 @@ void COOStorage<ValueType>::setCSRDataImpl(
     const LAMAArray<OtherValueType>& values,
     const ContextPtr )
 {
+    LAMA_LOG_DEBUG( logger, "set CSR data " << numRows << " x " << numColumns << ", nnz = " << numValues  )
+
+    LAMA_ASSERT_EQUAL_DEBUG( numRows + 1, ia.size() )
+    LAMA_ASSERT_EQUAL_DEBUG( numValues, ja.size() )
+    LAMA_ASSERT_EQUAL_DEBUG( numValues, values.size() )
+
     ContextPtr loc = getContextPtr();
 
     ReadAccess<IndexType> csrJA( ja, loc );
@@ -357,6 +363,9 @@ void COOStorage<ValueType>::setCSRDataImpl(
     int numDiagonals = std::min( numRows, numColumns );
 
     {
+        LAMA_LOG_DEBUG( logger, "check CSR data " << numRows << " x " << numColumns << ", nnz = " << numValues 
+                                << " for diagonal property, #diagonals = " << numDiagonals )
+
         LAMA_INTERFACE_FN( hasDiagonalProperty, loc, CSRUtils, Offsets );
 
         ReadAccess<IndexType> csrIA( ia, loc );

@@ -170,8 +170,16 @@ __global__ void hasDiagonalProperty_kernel(
         return;
     }
 
-    //this is the actual check
-    if ( ja[ia[i]] != i )
+    if ( ! ( *hasProperty ) )
+    {
+        return;
+    }
+
+    if ( ia[i] == ia[i+1] )
+    {
+        *hasProperty = false;
+    }
+    else if ( ja[ia[i]] != i )
     {
         *hasProperty = false;
     }
@@ -183,7 +191,7 @@ bool CUDACSRUtils::hasDiagonalProperty( const IndexType numDiagonals, const Inde
 
     if ( numDiagonals == 0 )
     {
-        return false;
+        return true;
     }
 
     LAMA_CHECK_CUDA_ACCESS
@@ -196,7 +204,7 @@ bool CUDACSRUtils::hasDiagonalProperty( const IndexType numDiagonals, const Inde
     bool* d_hasProperty;
     bool hasProperty;
 
-    LAMA_CUDA_RT_CALL( cudaMalloc( (void**)&d_hasProperty, sizeof(bool) ),
+    LAMA_CUDA_RT_CALL( cudaMalloc( ( void** ) &d_hasProperty, sizeof( bool ) ),
                        "allocate 4 bytes on the device for the result of hasDiagonalProperty_kernel" )
     LAMA_CUDA_RT_CALL( cudaMemset( d_hasProperty, 1, sizeof(bool) ), "memset bool hasProperty = true" )
 
