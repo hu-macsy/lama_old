@@ -406,7 +406,7 @@ void OpenMPCSRUtils::convertCSR2CSC(
     IndexType numColumns,
     IndexType numValues )
 {
-    LAMA_REGION( "OpenMP.CSR2CSC" )
+    LAMA_REGION( "OpenMP.CSRUtils.CSR2CSC" )
 
     LAMA_LOG_INFO( logger, "convertCSR2CSC of matrix " << numRows << " x " << numColumns )
 

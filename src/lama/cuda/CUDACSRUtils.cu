@@ -128,6 +128,8 @@ static void offsets2sizes_kernel( IndexType sizes[], const IndexType offsets[], 
 
 void CUDACSRUtils::offsets2sizes( IndexType sizes[], const IndexType offsets[], const IndexType n )
 {
+    LAMA_REGION( "CUDA.CSRUtils.offsets2sizes" )
+
     LAMA_LOG_INFO( logger, "offsets2sizes " << " #n = " << n )
 
     LAMA_CHECK_CUDA_ACCESS
@@ -177,6 +179,8 @@ __global__ void hasDiagonalProperty_kernel(
 
 bool CUDACSRUtils::hasDiagonalProperty( const IndexType numDiagonals, const IndexType csrIA[], const IndexType csrJA[] )
 {
+    LAMA_REGION( "CUDA.CSRUtils.hasDiagonalProperty" )
+
     if ( numDiagonals == 0 )
     {
         return false;
@@ -264,10 +268,14 @@ static void build_offset_kernel(
         {
             offsets[j+1] = i + 1;
         }
-    }
-    if ( i == 0 )
-    {
-        offsets[0] = 0;
+
+        if ( i == 0 )
+        {
+            for ( IndexType i = 0; i <= nd1; i++ )
+            {
+                offsets[i] = 0;
+            }
+        }
     }
 }
 
@@ -285,7 +293,7 @@ void CUDACSRUtils::convertCSR2CSC(
     int numColumns,
     int numValues )
 {
-    LAMA_REGION( "CSR.convertCSR2CSC" )
+    LAMA_REGION( "CUDA.CSRUtils.CSR2CSC" )
 
     LAMA_LOG_INFO( logger, "convertCSR2CSC of " << numRows << " x " << numColumns << ", nnz = " << numValues )
 
@@ -323,7 +331,7 @@ void CUDACSRUtils::convertCSR2CSC(
     // cscJA is now sorted, can become an offset array
 
     dimGrid = makeGrid( numValues, dimBlock.x );
-    build_offset_kernel<<<dimGrid, dimBlock>>>( cscIA, numRows, cooIA, numValues );
+    build_offset_kernel<<<dimGrid, dimBlock>>>( cscIA, numColumns, cooIA, numValues );
 
     LAMA_CUDA_RT_CALL( cudaFree( cooIA ), "free tmp cooIA" )
 }
@@ -479,6 +487,8 @@ void CUDACSRUtils::normalGEMV(
     const ValueType csrValues[],
     SyncToken* syncToken )
 {
+    LAMA_REGION( "CUDA.CSRUtils.normalGEMV" )
+
     LAMA_LOG_INFO( logger, "normalGEMV<" << Scalar::getType<ValueType>() << ">" << 
                            " result[ " << numRows << "] = " << alpha << " * A(csr) * x + " << beta << " * y " )
 
@@ -562,6 +572,8 @@ void CUDACSRUtils::sparseGEMV(
     const ValueType csrValues[],
     SyncToken* syncToken )
 {
+    LAMA_REGION( "CUDA.CSRUtils.sparseGEMV" )
+
     LAMA_LOG_INFO( logger,
                    "sparseGEMV<" << Scalar::getType<ValueType>() << ">" << ", #non-zero rows = " << numNonZeroRows )
 
@@ -1109,7 +1121,7 @@ IndexType CUDACSRUtils::matrixAddSizes(
     const IndexType bIa[],
     const IndexType bJa[] )
 {
-    LAMA_REGION( "CUDA.CSR.matrixAddSizes" )
+    LAMA_REGION( "CUDA.CSRUtils.matrixAddSizes" )
 
     LAMA_LOG_INFO(
         logger,
@@ -1341,7 +1353,7 @@ IndexType CUDACSRUtils::matrixMultiplySizes(
     const IndexType bIa[],
     const IndexType bJa[] )
 {
-    LAMA_REGION( "CUDA.CSR.matrixMultiplySizes" )
+    LAMA_REGION( "CUDA.CSRUtils.matrixMultiplySizes" )
 
     LAMA_LOG_INFO(
         logger,
@@ -1580,7 +1592,7 @@ void CUDACSRUtils::matrixAdd(
     const IndexType bJA[],
     const ValueType bValues[] )
 {
-    LAMA_REGION( "CUDA.CSR.matrixAdd" )
+    LAMA_REGION( "CUDA.CSRUtils.matrixAdd" )
 
     LAMA_LOG_INFO( logger, "matrixAdd for " << numRows << "x" << numColumns << " matrix" )
 
@@ -1924,7 +1936,7 @@ void CUDACSRUtils::matrixMultiply(
     const IndexType bJa[],
     const ValueType bValues[] )
 {
-    LAMA_REGION( "CUDA.CSR.matrixMultiply" )
+    LAMA_REGION( "CUDA.CSRUtils.matrixMultiply" )
 
     LAMA_LOG_INFO( logger, "matrixMultiply for " << numRows << "x" << numColumns << " matrix" )
 
