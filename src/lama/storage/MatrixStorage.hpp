@@ -408,6 +408,28 @@ public:
 
     virtual _MatrixStorage* copy() const = 0;
 
+    /**
+     * @brief transformation from matrix type to a csr graph
+     *
+     * transformation from matrix type to a csr graph,
+     * so that (Par)Metis can work with it.
+     *
+     * @param[out]  adjIA   the ia array of the csr graph
+     * @param[out]  adjJA   the ja array of the csr graph
+     * @param[out]  vwgt    ToDo
+     * @param[in]   comm    Communicator is used to determine number of partitions
+     * @param[in]   globalRowIndexes ToDo
+     * @param[out]  vtxdist ToDo
+     * @since 1.1.0
+     */
+    virtual void buildCSRGraph(
+        IndexType* adjIA,
+        IndexType* adjJA,
+        IndexType* vwgt,
+        CommunicatorPtr comm,
+        const IndexType* globalRowIndexes = NULL,
+        IndexType* vtxdist = NULL ) const;
+
 protected:
 
     /** Swaps this with other.
@@ -630,24 +652,6 @@ public:
         LAMAArray<IndexType>& cscIA,
         LAMAArray<IndexType>& cscJA,
         LAMAArray<ValueType>& cscValues ) const;
-
-    /**
-     * @brief transformation from matrix type to a csr graph
-     *
-     * transformation from matrix type to a csr graph,
-     * so that it (Par)Metis can work with it.
-     *
-     * @param[out]  xadj    the ia array of the csr graph
-     * @param[out]  adjncy  the ja array of the csr graph
-     * @since 1.1.0
-     */
-    virtual void buildCSRGraph(
-        IndexType* adjIA,
-        IndexType* adjJA,
-        IndexType* vwgt,
-        CommunicatorPtr comm,
-        const IndexType* globalRowIndexes = NULL,
-        IndexType* vtxdist = NULL ) const;
 
     /** Format conversion of matrix storage. A default implementation is provided using CSR data.
      *  Derived clauses might override this method with more efficient solutions.

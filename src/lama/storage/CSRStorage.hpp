@@ -181,7 +181,7 @@ public:
         const LAMAArray<IndexType>& ia,
         const LAMAArray<IndexType>& ja,
         const LAMAArray<OtherValueType>& values,
-        const ContextPtr loc );
+        const ContextPtr loc ) __attribute__( ( noinline ) );
 
     /**
      * @brief fills CSR sparse matrix with csr sparse data without a copy operation
@@ -246,14 +246,14 @@ public:
      * @param[out] diagonal is the typed LAMA array for output
      */
     template<typename OtherValueType>
-    void getDiagonalImpl( LAMAArray<OtherValueType>& diagonal ) const;
+    void getDiagonalImpl( LAMAArray<OtherValueType>& diagonal ) const  __attribute__( ( noinline ) );
 
     /** Typed version of setDiagonal
      *
      * @param[in] diagonal is the typed LAMA array for input
      */
     template<typename OtherValueType>
-    void setDiagonalImpl( const LAMAArray<OtherValueType>& diagonal );
+    void setDiagonalImpl( const LAMAArray<OtherValueType>& diagonal ) __attribute__( ( noinline ) );
 
     /** Implementation of pure method. */
 
@@ -266,7 +266,7 @@ public:
     /** Template version used for virtual routine scale with known value type. */
 
     template<typename OtherType>
-    void scaleImpl( const LAMAArray<OtherType>& values );
+    void scaleImpl( const LAMAArray<OtherType>& values ) __attribute__( ( noinline ) );
 
     /** Implementation of pure method.  */
 
@@ -500,7 +500,7 @@ public:
      * This method extracts sparse data (column indexes and data values) for rows
      *
      * @param[out] ja column indexes for the rows
-     * @param[out] matrix values corresponding to the columns
+     * @param[out] values corresponding to the columns
      */
 
     void buildSparseRowData( LAMAArray<IndexType>& ja,

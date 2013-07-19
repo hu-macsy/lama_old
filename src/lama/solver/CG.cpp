@@ -135,10 +135,12 @@ void CG::iterate()
     //CG implementation start
     if ( !mPreconditioner )
     {
+        LAMA_REGION( "Solver.CG.setZ" )
         z = residual;
     }
     else
     {
+        LAMA_REGION( "Solver.CG.solvePreconditioner" )
         z = 0.0;
         mPreconditioner->solve( z, residual );
     }
@@ -154,6 +156,8 @@ void CG::iterate()
     }
     else
     {
+        LAMA_REGION( "Solver.CG.setP" )
+
         if ( lastPScalar.getValue<double>() == 0.0 )
         {
             beta = 0.0;

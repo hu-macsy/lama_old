@@ -40,7 +40,6 @@
 #include <lama/LAMAInterfaceRegistry.hpp>
 #include <lama/tracing.hpp>
 
-#include <lama/task/TaskSyncToken.hpp>
 #include <lama/openmp/OpenMP.hpp>
 
 namespace lama
@@ -122,101 +121,82 @@ void OpenMPCOOUtils::getCSRValues( IndexType csrJA[], CSRValueType csrValues[], 
 
 /* --------------------------------------------------------------------------- */
 
-template<typename COOValueType,typename CSRValueType>
-void OpenMPCOOUtils::setCSRValues(
+void OpenMPCOOUtils::offsets2ia(
     IndexType cooIA[],
-    IndexType cooJA[],
-    COOValueType cooValues[],
-    const IndexType numRows,
-    const IndexType numDiagonals,
+    const IndexType numValues,
     const IndexType csrIA[],
-    const IndexType csrJA[],
-    const CSRValueType csrValues[],
-    const bool csrDiagonalProperty )
+    const IndexType numRows,
+    const IndexType numDiagonals )
 {
     LAMA_LOG_INFO( logger,
-                   "set CSRValues<" << Scalar::getType<COOValueType>() << ", " << Scalar::getType<CSRValueType>() << ">" << ", #rows = " << numRows << ", #values = " << csrIA[numRows] )
-
-    if ( numDiagonals == 0 || csrDiagonalProperty )
+                   "build cooIA( " << numValues << " ) from csrIA( " << ( numRows + 1 ) 
+                    << " ), #diagonals = " << numDiagonals )
+ 
+    #pragma omp parallel for schedule( LAMA_OMP_SCHEDULE )
+    for ( IndexType i = 0; i < numRows; ++i )
     {
-        LAMA_LOG_INFO( logger, "parallel fill in possible, #diagonal elements = " << numDiagonals )
+        IndexType csrOffset = csrIA[i];
+        IndexType cooOffset = 0;        // additional offset due to diagonals
 
-        // parallel execution only possible if we have no separate diagonal elements
-        // or if CSR data has diagonal property
-
-        #pragma omp parallel for schedule(LAMA_OMP_SCHEDULE)
-        for ( IndexType i = 0; i < numRows; ++i )
+        if ( i < numDiagonals )
         {
-            IndexType csrOffset = csrIA[i];
-            IndexType cooOffset = csrOffset;
+            // make sure that we really have at least one element in this row
 
-            if ( i < numDiagonals )
-            {
-                // csr data must have the diagonal property, should have been checked before
+            LAMA_ASSERT_DEBUG( csrIA[i] < csrIA[i+1], "no elem in row " << i );
 
-                LAMA_ASSERT_DEBUG( csrOffset < csrIA[i+1],
-                                   "diagonal property requires at least one entry in row " << i )
-                LAMA_ASSERT_EQUAL_DEBUG( csrJA[csrOffset], i )
+            // diagonal elements will be the first nrows entries
 
-                // diagonal elements will be the first nrows entries
+            cooIA[i] = i;
+            csrOffset += 1;                   // do not fill diagonal element again
+            cooOffset = numDiagonals - i - 1; // offset in coo moves
+        }
 
-                cooIA[i] = i;
-                cooJA[i] = i;
-                cooValues[i] = static_cast<COOValueType>( csrValues[csrOffset] );
+        // now fill remaining part of row i
 
-                csrOffset += 1; // do not fill diagonal element again
-                cooOffset += numDiagonals - i; // offset in coo moves
-            }
-
-            // now fill remaining part of row i
-
-            for ( IndexType jj = csrOffset; jj < csrIA[i + 1]; ++jj )
-            {
-                cooIA[cooOffset] = i;
-                cooJA[cooOffset] = csrJA[jj];
-                cooValues[cooOffset] = static_cast<COOValueType>( csrValues[jj] );
-                cooOffset++;
-            }
+        for ( IndexType jj = csrOffset; jj < csrIA[i + 1]; ++jj )
+        {
+            LAMA_LOG_TRACE( logger, "cooIA[ " << ( jj + cooOffset ) << "] = " << i << ", jj = " << jj << ", cooOffset = " << cooOffset )
+            cooIA[ jj + cooOffset] = i;
         }
     }
-    else
-    {
-        // initialize diagonal elements in case of non-availablity
+}
 
-        #pragma omp parallel for schedule(LAMA_OMP_SCHEDULE)
-        for ( IndexType i = 0; i < numDiagonals; ++i )
+/* --------------------------------------------------------------------------- */
+
+template<typename COOValueType,typename CSRValueType>
+void OpenMPCOOUtils::setCSRData(
+    COOValueType cooValues[],
+    const CSRValueType csrValues[],
+    const IndexType numValues,
+    const IndexType csrIA[],
+    const IndexType numRows,
+    const IndexType numDiagonals )
+{
+    LAMA_LOG_INFO( logger,
+                   "build cooValues( << " << numValues << " from csrValues + csrIA( " << ( numRows + 1 ) 
+                    << " ), #diagonals = " << numDiagonals )
+ 
+    #pragma omp parallel for schedule(LAMA_OMP_SCHEDULE)
+    for ( IndexType i = 0; i < numRows; ++i )
+    {
+        IndexType csrOffset = csrIA[i];
+        IndexType cooOffset = 0;        // additional offset due to diagonals
+
+        if ( i < numDiagonals )
         {
-            cooIA[i] = i;
-            cooJA[i] = i;
-            cooValues[i] = 0.0;
+            // diagonal elements become the first 'numDiagonal' entries
+
+            cooValues[i] = csrValues[csrOffset];
+
+            csrOffset += 1;                   // do not fill diagonal element again
+            cooOffset = numDiagonals - i - 1; // offset in coo moves
         }
 
-        LAMA_LOG_INFO( logger, "serial fill in, #diagonal elements = " << numDiagonals )
+        // now fill remaining part of row i
 
-        // only serial fill-in possible as we do not now how many diagonal elements are available
-
-        int cooOffset = numDiagonals;
-
-        for ( IndexType i = 0; i < numRows; ++i )
+        for ( IndexType jj = csrOffset; jj < csrIA[i + 1]; ++jj )
         {
-            for ( IndexType jj = csrIA[i]; jj < csrIA[i + 1]; ++jj )
-            {
-                int j = csrJA[jj];
-
-                CSRValueType val = csrValues[jj];
-
-                if ( i == j && i < numDiagonals )
-                {
-                    cooValues[i] = static_cast<COOValueType>( val );
-                }
-                else
-                {
-                    cooIA[cooOffset] = i;
-                    cooJA[cooOffset] = j;
-                    cooValues[cooOffset] = static_cast<COOValueType>( val );
-                    cooOffset++;
-                }
-            }
+            cooValues[ jj + cooOffset] = static_cast<COOValueType>( csrValues[ jj ] );
         }
     }
 }
@@ -385,12 +365,16 @@ void OpenMPCOOUtils::jacobi(
 
 void OpenMPCOOUtils::setInterface( COOUtilsInterface& COOUtils )
 {
-    LAMA_INTERFACE_REGISTER( COOUtils, getCSRSizes )
+    LAMA_INTERFACE_REGISTER( COOUtils, offsets2ia )
 
-    LAMA_INTERFACE_REGISTER_TT( COOUtils, setCSRValues, float, float )
-    LAMA_INTERFACE_REGISTER_TT( COOUtils, setCSRValues, float, double )
-    LAMA_INTERFACE_REGISTER_TT( COOUtils, setCSRValues, double, float )
-    LAMA_INTERFACE_REGISTER_TT( COOUtils, setCSRValues, double, double )
+    LAMA_INTERFACE_REGISTER_TT( COOUtils, setCSRData, IndexType, IndexType )
+
+    LAMA_INTERFACE_REGISTER_TT( COOUtils, setCSRData, float, float )
+    LAMA_INTERFACE_REGISTER_TT( COOUtils, setCSRData, float, double )
+    LAMA_INTERFACE_REGISTER_TT( COOUtils, setCSRData, double, float )
+    LAMA_INTERFACE_REGISTER_TT( COOUtils, setCSRData, double, double )
+
+    LAMA_INTERFACE_REGISTER( COOUtils, getCSRSizes )
 
     LAMA_INTERFACE_REGISTER_TT( COOUtils, getCSRValues, float, float )
     LAMA_INTERFACE_REGISTER_TT( COOUtils, getCSRValues, float, double )

@@ -757,6 +757,8 @@ LAMA_COMMON_TEST_CASE_END()
 
 LAMA_COMMON_TEST_CASE_RUNNER( CommunicatorTest )
 {
+    // disable inlining otherwise derived classes will not find it
+    
     swapTest<float>();
     swapTest<double>();
 

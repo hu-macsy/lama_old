@@ -385,6 +385,7 @@ void CUDAELLUtils::getRow(
     const IndexType i,
     const IndexType numRows,
     const IndexType numColumns,
+    const IndexType UNUSED( numValuesPerRow ),
     const IndexType *ia,
     const IndexType *ja,
     const ValueType *values )
@@ -442,6 +443,7 @@ OtherValueType CUDAELLUtils::getValue(
     const IndexType i,
     const IndexType j,
     const IndexType numRows,
+    const IndexType UNUSED( numValuesPerRow ),
     const IndexType *ia,
     const IndexType *ja,
     const ValueType *values )
@@ -483,18 +485,19 @@ OtherValueType CUDAELLUtils::getValue(
 template<typename ValueType,typename OtherValueType>
 void CUDAELLUtils::scaleValue(
     const IndexType numRows,
+    const IndexType UNUSED( numValuesPerRow ),
     const IndexType ia[],
-    ValueType mValues[],
+    ValueType ellValues[],
     const OtherValueType values[] )
 {
 
     LAMA_LOG_INFO( logger,
-                   "scaleValue, #numRows = " << numRows << ", ia = " << ia << ", mValues = " << mValues << ", values = " << values )
+                   "scaleValue, #numRows = " << numRows << ", ia = " << ia << ", ellValues = " << ellValues << ", values = " << values )
 
     LAMA_CHECK_CUDA_ACCESS
 
     thrust::device_ptr<IndexType> ia_ptr( const_cast<IndexType*>( ia ) );
-    thrust::device_ptr<ValueType> mValues_ptr( const_cast<ValueType*>( mValues ) );
+    thrust::device_ptr<ValueType> ellValues_ptr( const_cast<ValueType*>( ellValues ) );
     thrust::device_ptr<OtherValueType> values_ptr( const_cast<OtherValueType*>( values ) );
 
     IndexType maxCols = CUDAUtils::maxval( ia, numRows );
@@ -502,8 +505,8 @@ void CUDAELLUtils::scaleValue(
     //TODO: maybe find better implementation
     for ( IndexType i = 0; i < maxCols; i++ )
     {
-        thrust::transform( mValues_ptr + i * numRows, mValues_ptr + i * numRows + numRows, values_ptr,
-                           mValues_ptr + i * numRows, multiply<ValueType,OtherValueType>() );
+        thrust::transform( ellValues_ptr + i * numRows, ellValues_ptr + i * numRows + numRows, values_ptr,
+                           ellValues_ptr + i * numRows, multiply<ValueType,OtherValueType>() );
     }
 
 }
@@ -547,6 +550,7 @@ void CUDAELLUtils::getCSRValues(
     CSRValueType csrValues[],
     const IndexType csrIA[],
     const IndexType numRows,
+    const IndexType UNUSED( numValuesPerRow ),
     const IndexType ellSizes[],
     const IndexType ellJA[],
     const ELLValueType ellValues[] )

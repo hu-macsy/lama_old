@@ -35,9 +35,13 @@
 lama_set_source_dir ()
 
 ### include directories ###
-if ( METIS_FOUND OR PARMETIS_FOUND )
-    include_directories( ${PARMETIS_INCLUDE_DIR} ${METIS_INCLUDE_DIR} ) 
-endif ( METIS_FOUND OR PARMETIS_FOUND )
+if ( METIS_FOUND )
+    include_directories( ${METIS_INCLUDE_DIR} ) 
+endif ( METIS_FOUND )
+
+if ( METIS_FOUND AND PARMETIS_FOUND )
+    include_directories( ${PARMETIS_INCLUDE_DIR} ) 
+endif ( METIS_FOUND AND PARMETIS_FOUND )
 
 ### Add classes and header files ###
 set ( CLASSES
@@ -91,10 +95,17 @@ set ( HEADERS
 lama_classes ( ${CLASSES} )
 lama_headers ( ${HEADERS} )
 
+
 ### add subdirectories ###
+
 if ( CUDA_FOUND AND LAMA_USE_CUDA )
     add_subdirectory ( cuda )
 endif ( CUDA_FOUND AND LAMA_USE_CUDA )
+
+if ( LAMA_USE_MIC )
+    add_subdirectory ( mic )
+endif ( LAMA_USE_MIC )
+
 add_subdirectory ( distribution )
 add_subdirectory ( exception )
 add_subdirectory ( expression )
@@ -130,6 +141,11 @@ if ( CUDA_FOUND AND LAMA_USE_CUDA )
     set ( LAMA_LINK_LIBRARIES ${LAMA_LINK_LIBRARIES} amacuda )
 endif ( CUDA_FOUND AND LAMA_USE_CUDA )
 
+# amamic
+if ( LAMA_USE_MIC )
+    set ( LAMA_LINK_LIBRARIES ${LAMA_LINK_LIBRARIES} amamic )
+endif ( LAMA_USE_MIC )
+
 # amampi
 if ( MPI_FOUND AND LAMA_USE_MPI )
     set ( LAMA_LINK_LIBRARIES ${LAMA_LINK_LIBRARIES} amampi )
@@ -149,9 +165,13 @@ if ( NOT WIN32 )
 endif ( NOT WIN32 )
 
 # Metis / ParMetis
-if ( METIS_FOUND OR PARMETIS_FOUND )
-    set( LAMA_LINK_LIBRARIES ${LAMA_LINK_LIBRARIES} ${PARMETIS_LIBRARY} ${METIS_LIBRARY} )
-endif ( METIS_FOUND OR PARMETIS_FOUND ) 
+if ( METIS_FOUND )
+    set( LAMA_LINK_LIBRARIES ${LAMA_LINK_LIBRARIES} ${METIS_LIBRARY} )
+endif ( METIS_FOUND ) 
+
+if ( METIS_FOUND AND PARMETIS_FOUND )
+    set( LAMA_LINK_LIBRARIES ${LAMA_LINK_LIBRARIES} ${PARMETIS_LIBRARY} )
+endif ( METIS_FOUND AND PARMETIS_FOUND ) 
 
 if ( LAMA_BLAS_FOUND )
     set ( LAMA_LINK_LIBRARIES ${LAMA_LINK_LIBRARIES} ${LAMAPP_LINK_LIBRARIES} )

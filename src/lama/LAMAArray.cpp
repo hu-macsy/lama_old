@@ -78,7 +78,16 @@ _LAMAArray* _LAMAArray::create( const Scalar::ScalarType valueType )
 
 LAMA_LOG_DEF_TEMPLATE_LOGGER( template<typename ValueType>, LAMAArray<ValueType>::logger, "LAMAArray" )
 
-size_t _LAMAArray::nContextIndex = std::numeric_limits<std::size_t>::max();
+// Help function needed due to bug in Intel compiler
+
+static size_t maxSize()
+{
+    return std::numeric_limits<size_t>::max();
+}
+
+size_t _LAMAArray::nContextIndex = maxSize();
+
+// size_t _LAMAArray::nContextIndex = std::numeric_limits<size_t>::max();
 
 /* ================================================================================= */
 
@@ -910,7 +919,7 @@ template<typename ValueType>
 int LAMAArray<ValueType>::acquireWriteAccess()
 {
     boost::recursive_mutex::scoped_lock scoped_lock( access_mutex );
-    size_t contextIndex = std::numeric_limits<size_t>::max();
+    size_t contextIndex = nContextIndex;
 
     for ( size_t i = 0; i < mContextData.size(); ++i )
     {

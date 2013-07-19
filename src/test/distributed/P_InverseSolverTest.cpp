@@ -35,6 +35,8 @@
 #include <boost/mpl/list.hpp>
 
 #include <lama/solver/InverseSolver.hpp>
+#include <lama/solver/logger/Timer.hpp>
+#include <lama/solver/logger/CommonLogger.hpp>
 
 #include <lama/DenseVector.hpp>
 
@@ -82,10 +84,19 @@ void testSolveMethod( ContextPtr loc )
 
     LAMA_LOG_INFO( logger, "Problem size = " << N1 << " x " << N2 );
 
-    InverseSolver inverseSolver( "InverseTestSolver" );
+    LoggerPtr loggerD(
+        new CommonLogger( "<InverseSolver>: ", LogLevel::completeInformation,
+                          LoggerWriteBehaviour::toConsoleOnly,
+                          std::auto_ptr<Timer>( new Timer() ) ) );
+
+    InverseSolver inverseSolver( "InverseTestSolver", loggerD );
+
+    LAMA_LOG_DEBUG( logger, "inverseSolver created" )
 
     CSRSparseMatrix<ValueType> helpcoefficients;
     MatrixCreator<ValueType>::buildPoisson2D( helpcoefficients, 9, N1, N2 );
+
+    LAMA_LOG_DEBUG( logger, "Poisson2D matrix created" << helpcoefficients )
 
     MatrixType coefficients( helpcoefficients );
 
@@ -101,8 +112,11 @@ void testSolveMethod( ContextPtr loc )
     DenseVector<ValueType> rhs( dist, 1.0 );
     rhs = coefficients * exactSolution;
 
+    LAMA_LOG_INFO( logger, "created all stuff for inverse solver" )
+
     //initialize
     inverseSolver.initialize( coefficients );
+    inverseSolver.setContext( loc );
     inverseSolver.solve( solution, rhs );
 
     DenseVector<ValueType> diff( solution - exactSolution );

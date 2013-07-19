@@ -40,7 +40,6 @@
 
 #include <lama/LAMAInterface.hpp>
 #include <lama/LAMAInterfaceRegistry.hpp>
-#include <lama/task/TaskSyncToken.hpp>
 #include <lama/tracing.hpp>
 
 // assert
@@ -50,8 +49,6 @@
 #include <boost/scoped_array.hpp>
 
 #include <cmath>
-#include <typeinfo>
-
 
 namespace lama
 {

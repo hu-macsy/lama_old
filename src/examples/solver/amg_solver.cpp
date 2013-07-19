@@ -38,8 +38,9 @@
 #include <lama/DenseVector.hpp>
 #include <lama/CommunicatorFactory.hpp>
 #include <lama/distribution/NoDistribution.hpp>
-#include <lama/distribution/BlockDistribution.hpp>
 #include <lama/distribution/GeneralDistribution.hpp>
+#include <lama/distribution/MetisDistribution.hpp>
+#include <lama/distribution/GenBlockDistribution.hpp>
 #include <lama/expression/all.hpp>
 
 #include <lama/solver/CG.hpp>
@@ -187,41 +188,59 @@ int main( int argc, char* argv[] )
         cout << "loading data took " << stop - start << " secs." << endl;
     }
 
-    boost::shared_ptr<vector<IndexType> > mapVector;
-
-    if ( lamaconf.useMetis() )
+    if ( numProcs > 1 )
     {
-        mapVector.reset( readPartitionVector( filename, numProcs, numRows ) );
-    }
+        // determine a new distribution so that each processor gets part of the matrix according to its weight
 
-    DistributionPtr dist;
+        float weight = lamaconf.getWeight();
 
-    if ( mapVector )
-    {
-        // general distribution
+        DistributionPtr dist;
 
-        dist.reset( new GeneralDistribution( *mapVector, numRows, comm ) );
+        if ( lamaconf.useMetis() )
+        {
+            // maybue there is already a partition vector storred as file
 
-        mapVector.reset(); // frees memory of it
-    }
-    else
-    {
-        // distribute data (trivial block partitioning)
+            boost::shared_ptr<vector<IndexType> > mapVector;
 
-        dist.reset( new BlockDistribution( numRows, comm ) );
-    }
+            mapVector.reset( readPartitionVector( filename, numProcs, numRows ) );
 
-    start = Walltime::get();   // start timing of redistribution
+            if ( mapVector )
+            {
+                dist.reset( new GeneralDistribution( *mapVector, numRows, comm ) );
+            }
+            else
+            {
+                start = Walltime::get();   // start timing of Metis
 
-    matrix.redistribute( dist, dist );
-    rhs.redistribute ( dist );
-    solution.redistribute ( dist );
+                dist.reset( new MetisDistribution( lamaconf.getCommunicatorPtr(), matrix, weight ) );
 
-    stop = Walltime::get();   // stop timing of redistribution
+                stop = Walltime::get();   // stop timing of Metis
 
-    if ( myRank == 0 )
-    {
-        cout << "redistributing data took " << stop - start << " secs." << endl;
+                if ( myRank == 0 )
+                {
+                    cout << "Metis call took " << stop - start << " secs." << endl;
+                }
+            }
+        }
+        else
+        {
+            dist.reset( new GenBlockDistribution( numRows, weight, lamaconf.getCommunicatorPtr() ) );
+        }
+
+        start = Walltime::get();   // start timing of redistribution
+
+        matrix.redistribute( dist, dist );
+        rhs.redistribute ( dist );
+        solution.redistribute ( dist );
+
+        cout << comm << ": matrix = " << matrix ;
+
+        stop = Walltime::get();   // stop timing of redistribution
+
+        if ( myRank == 0 )
+        {
+            cout << "redistributing data took " << stop - start << " secs." << endl;
+        }
     }
 
     double matrixSize  = matrix.getMemoryUsage() / 1024.0 / 1024.0;

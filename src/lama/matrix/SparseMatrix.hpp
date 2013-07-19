@@ -431,6 +431,12 @@ public:
      * @param[in,out] haloX is a temporary array keeping the non-local halo values of X
      * @param[in]     localF is the operation called with local matrix and localX
      * @param[in]     haloF is the operation called with halo matrix and haloX
+     *
+     * The synchronous version updates haloX by halo communication between the involved
+     * processors and calls the functions localF and haloF to build the result array.
+     *
+     *  - localResult is usually the local part of a distributed vector.
+     *  - localX is usually the local part of a distributed vector.
      */
     void haloOperationSync(
         LAMAArray<ValueType>& localResult,

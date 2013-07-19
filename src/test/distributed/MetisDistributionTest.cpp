@@ -90,7 +90,7 @@ struct MetisDistributionTestConfig
         }
         parts[ size - 1 ] = 1.0 - (size - 1) * weight;
 
-        dist = DistributionPtr( new MetisDistribution<double>( comm, matrix, parts ) );
+        dist = DistributionPtr( new MetisDistribution( comm, matrix, parts ) );
     }
 
     ~MetisDistributionTestConfig()
@@ -139,9 +139,9 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( isEqualTest, MatrixType, MatrixTypes )
 
     MatrixType distMatrix( matrix );
 
-    DistributionPtr generaldist1( new MetisDistribution<ValueType>( comm, distMatrix, parts ) );
+    DistributionPtr generaldist1( new MetisDistribution( comm, distMatrix, parts ) );
     DistributionPtr generaldist2( generaldist1 );
-    DistributionPtr generaldist3( new MetisDistribution<ValueType>( comm, distMatrix, parts ) );
+    DistributionPtr generaldist3( new MetisDistribution( comm, distMatrix, parts ) );
 
     BOOST_CHECK(  (*generaldist1).isEqual( *generaldist2 ) );
     BOOST_CHECK( !(*generaldist1).isEqual( *generaldist3 ) );

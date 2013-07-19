@@ -89,10 +89,10 @@ public:
      */
     enum ContextType
     {
-        Host, //!< context for cpu + main memory
-        CUDA, //!< CUDA GPU device
-        OpenCL, //!< OpenCL GPU device
-//                       NewContext,  //!< can be used for any new device
+        Host,      //!< context for cpu + main memory
+        CUDA,      //!< CUDA GPU device
+        MIC,       //!< Intel Many-Integrated-Core Architecture
+        OpenCL,    //!< OpenCL GPU device, currently not supported
         MaxContext //!< used for dimension of ContextType arrays
     };
 
@@ -243,7 +243,6 @@ public:
      * return new SyncToken object for the asynchronous operation.
      *
      * This memory copies size values.
-     *
      */
     virtual SyncToken* memcpyAsync( void* dst, const void* src, const size_t size ) const = 0;
 
@@ -294,9 +293,20 @@ public:
      */
     virtual void disable( const char* file, int line ) const;
 
-    /** This method returns interface for a given context. */
+    /** This method returns the LAMA interface for a given context. */
 
     const class LAMAInterface& getInterface() const;
+
+    /** Get the preferred host context for a context.
+     *
+     *  Depending on the device, the host data might be allocated
+     *  in such a way that faster and/or asynchronous memory transfer is supported.
+     *
+     *  As default, the default Host context is returned. Derived classes of
+     *  Context should override this method to provide more efficient solutions.
+     */
+
+    virtual ContextPtr getHostContext() const;
 
 protected:
 

@@ -35,6 +35,7 @@
 #include <lama/Context.hpp>
 
 // others
+#include <lama/ContextFactory.hpp>
 #include <lama/LAMAInterfaceRegistry.hpp>
 
 // assert
@@ -57,6 +58,13 @@ Context::Context( ContextType type )
 Context::~Context()
 {
     LAMA_LOG_DEBUG( logger, "~Context( type = " << mContextType << " )" )
+}
+
+ContextPtr Context::getHostContext() const
+{
+    // take the default host context of the context factory
+
+    return ContextFactory::getContext( Context::Host );
 }
 
 bool Context::operator==( const Context& other ) const
@@ -105,6 +113,10 @@ std::ostream& operator<<( std::ostream& stream, const ContextType type )
     else if ( type == Context::OpenCL )
     {
         stream << "OpenCL";
+    }
+    else if ( type == Context::MIC )
+    {
+        stream << "MIC";
     }
     else
     {

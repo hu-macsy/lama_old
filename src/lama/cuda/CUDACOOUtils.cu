@@ -180,6 +180,8 @@ __device__ inline void cooAtomicAdd( float* address, float val)
 #endif
 }
 
+/* --------------------------------------------------------------------------- */
+
 template<typename ValueType, bool useTexture>
 __global__ void cooGemvKernel(
     ValueType* result,
@@ -227,6 +229,8 @@ void CUDACOOUtils::normalGEMV(
 
     LAMA_LOG_INFO( logger, "normalGEMV, #rows = " << numRows << ", #vals = " << numValues )
 
+    LAMA_CHECK_CUDA_ACCESS
+
     cudaStream_t stream = 0;
 
     if ( syncToken )
@@ -242,8 +246,6 @@ void CUDACOOUtils::normalGEMV(
     IndexType blockSize = CUDASettings::getBlockSize();
     dim3 dimBlock( blockSize, 1, 1 );
     dim3 dimGrid = makeGrid( numValues, dimBlock.x );
-
-    LAMA_CHECK_CUDA_ACCESS
 
     // set result = beta * y, not needed if beta == 1 and y == result
 
@@ -305,12 +307,134 @@ void CUDACOOUtils::normalGEMV(
 
 /* --------------------------------------------------------------------------- */
 
+__global__
+static void offsets2ia_kernel( IndexType* cooIA, const IndexType* csrIA, const IndexType numRows, const IndexType numDiagonals )
+{
+    const int i = threadId( gridDim, blockIdx, blockDim, threadIdx );
+
+    if ( i < numRows )
+    {
+        IndexType csrOffset = csrIA[i];
+        IndexType cooOffset = 0;        // additional offset due to diagonals
+
+        if ( i < numDiagonals )
+        {
+            // diagonal elements will be the first nrows entries
+
+            cooIA[i] = i;
+            csrOffset += 1;                   // do not fill diagonal element again
+            cooOffset = numDiagonals - i - 1; // offset in coo moves
+        }
+
+        // now fill remaining part of row i
+    
+        for ( IndexType jj = csrOffset; jj < csrIA[i + 1]; ++jj )
+        {
+            cooIA[ jj + cooOffset] = i;
+        }
+    }
+}
+
+void CUDACOOUtils::offsets2ia(
+    IndexType cooIA[],
+    const IndexType numValues,
+    const IndexType csrIA[],
+    const IndexType numRows,
+    const IndexType numDiagonals )
+{
+    LAMA_LOG_INFO( logger,
+                   "build cooIA( " << numValues << " ) from csrIA( " << ( numRows + 1 )
+                    << " ), #diagonals = " << numDiagonals )
+
+    LAMA_CHECK_CUDA_ACCESS
+
+    // make grid
+
+    const int blockSize = CUDASettings::getBlockSize();
+    dim3 dimBlock( blockSize, 1, 1 );
+    dim3 dimGrid = makeGrid( numRows, dimBlock.x );
+
+    offsets2ia_kernel<<<dimGrid, dimBlock>>>( cooIA, csrIA, numRows, numDiagonals );
+
+    LAMA_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "sync for offsets2ia_kernel" )
+}
+
+/* --------------------------------------------------------------------------- */
+
+template<typename COOValueType,typename CSRValueType>
+__global__
+static void csr2coo_kernel( COOValueType* cooValues, const CSRValueType* csrValues,
+                            const IndexType* csrIA, const IndexType numRows, const IndexType numDiagonals )
+{
+    const int i = threadId( gridDim, blockIdx, blockDim, threadIdx );
+
+    if ( i < numRows )
+    {
+        IndexType csrOffset = csrIA[i];
+        IndexType cooOffset = 0;        // additional offset due to diagonals
+
+        if ( i < numDiagonals )
+        {
+            // diagonal elements will be the first nrows entries
+
+            cooValues[i] = csrValues[csrOffset];
+
+            csrOffset += 1;                   // do not fill diagonal element again
+            cooOffset = numDiagonals - i - 1; // offset in coo moves
+        }
+
+        // now fill remaining part of row i
+    
+        for ( IndexType jj = csrOffset; jj < csrIA[i + 1]; ++jj )
+        {
+            cooValues[ jj + cooOffset] = static_cast<COOValueType>( csrValues[ jj ] );
+        }
+    }
+}
+
+template<typename COOValueType,typename CSRValueType>
+void CUDACOOUtils::setCSRData(
+    COOValueType cooValues[],
+    const CSRValueType csrValues[],
+    const IndexType numValues,
+    const IndexType csrIA[],
+    const IndexType numRows,
+    const IndexType numDiagonals )
+{
+    LAMA_LOG_INFO( logger,
+                   "build cooValues( << " << numValues << " from csrValues + csrIA( " << ( numRows + 1 )
+                    << " ), #diagonals = " << numDiagonals )
+
+    LAMA_CHECK_CUDA_ACCESS
+
+    // make grid
+
+    const int blockSize = CUDASettings::getBlockSize();
+    dim3 dimBlock( blockSize, 1, 1 );
+    dim3 dimGrid = makeGrid( numRows, dimBlock.x );
+
+    csr2coo_kernel<<<dimGrid, dimBlock>>>( cooValues, csrValues, csrIA, numRows, numDiagonals );
+
+    LAMA_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "sync for csr2coo_kernel" )
+}
+
+/* --------------------------------------------------------------------------- */
+
 void CUDACOOUtils::setInterface( COOUtilsInterface& COOUtils )
 {
     LAMA_LOG_INFO( logger, "set COO routines for CUDA in Interface" )
 
+    LAMA_INTERFACE_REGISTER( COOUtils, offsets2ia )
+
     LAMA_INTERFACE_REGISTER_T( COOUtils, normalGEMV, float )
     LAMA_INTERFACE_REGISTER_T( COOUtils, normalGEMV, double )
+
+    LAMA_INTERFACE_REGISTER_TT( COOUtils, setCSRData, IndexType, IndexType )
+
+    LAMA_INTERFACE_REGISTER_TT( COOUtils, setCSRData, float, float )
+    LAMA_INTERFACE_REGISTER_TT( COOUtils, setCSRData, float, double )
+    LAMA_INTERFACE_REGISTER_TT( COOUtils, setCSRData, double, float )
+    LAMA_INTERFACE_REGISTER_TT( COOUtils, setCSRData, double, double )
 }
 
 /* --------------------------------------------------------------------------- */

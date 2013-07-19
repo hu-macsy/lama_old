@@ -75,41 +75,43 @@ private:
         const IndexType sizes[],
         const IndexType numRows );
 
-    /** Addressing function for the arrays ia and ja: column-wise */
+    /** Addressing function for the arrays ellJA[numRows*numValuesPerRow] and ellValues: column-major order */
 
-    static inline IndexType ellindex( const IndexType i, const IndexType jj, const IndexType numRows )
+    static inline IndexType ellindex( const IndexType i, const IndexType jj, const IndexType numRows, const IndexType /* numValuesPerRow */ )
     {
-        return jj * numRows + i;
+        return jj * numRows + i;            // column major-order
+        // return i * numValuesPerRow + jj;    // row major-order
     }
 
     /** Returns the maximal absolute value of the ELL storage. */
 
     template<typename ValueType>
     static ValueType absMaxVal(
-        const IndexType mNumRows,
-        const IndexType mNumValuesPerRow,
-        const IndexType ia[],
-        const ValueType values[] );
+        const IndexType numRows,
+        const IndexType numValuesPerRow,
+        const IndexType ellSizes[],
+        const ValueType ellValues[] );
 
     static void check(
-        const IndexType mNumRows,
-        const IndexType mNumValuesPerRow,
-        const IndexType mNumColumns,
-        const IndexType *ia,
-        const IndexType *ja,
+        const IndexType numRows,
+        const IndexType numValuesPerRow,
+        const IndexType numColumns,
+        const IndexType ellSizes[],
+        const IndexType ellJA[],
         const char* msg );
 
     /** Returns one row of the matrix */
 
     template<typename ValueType,typename OtherValueType>
     static void getRow(
-        OtherValueType *row,
+        OtherValueType row[],
         const IndexType i,
         const IndexType numRows,
         const IndexType numColumns,
-        const IndexType *ia,
-        const IndexType *ja,
-        const ValueType *values );
+        const IndexType numValuesPerRow,
+        const IndexType ellSizes[],
+        const IndexType ellJA[],
+        const ValueType ellValues[] );
 
     /** Returns one value of the matrix */
 
@@ -118,9 +120,10 @@ private:
         const IndexType i,
         const IndexType j,
         const IndexType numRows,
-        const IndexType *ia,
-        const IndexType *ja,
-        const ValueType *values );
+        const IndexType numValuesPerRow,
+        const IndexType ellSizes[],
+        const IndexType ellJA[],
+        const ValueType ellValues[] );
 
     /** check diagonal property */
 
@@ -129,18 +132,20 @@ private:
     template<typename ValueType,typename OtherValueType>
     static void scaleValue(
         const IndexType numRows,
-        const IndexType Ia[],
-        ValueType mValues[],
+        const IndexType numValuesPerRow,
+        const IndexType ellSizes[],
+        ValueType ellValues[],
         const OtherValueType values[] );
 
     /** Implementation for ELLUtilsInterface::Conversions::compressIA */
 
     template<typename ValueType>
     static void compressIA(
-        const IndexType IA[],
-        const IndexType JA[],
-        const ValueType values[],
+        const IndexType ellIA[],
+        const IndexType ellJA[],
+        const ValueType ellValues[],
         const IndexType numRows,
+        const IndexType numValuesPerRow,
         const ValueType eps,
         IndexType newIA[] );
 
@@ -148,11 +153,13 @@ private:
 
     template<typename ValueType>
     static void compressValues(
-        const IndexType IA[],
-        const IndexType JA[],
-        const ValueType values[],
+        const IndexType ellIA[],
+        const IndexType ellJA[],
+        const ValueType ellValues[],
         const IndexType numRows,
+        const IndexType numValuesPerRow,
         const ValueType eps,
+        const IndexType newNumValuesPerRow,
         IndexType newJA[],
         ValueType newValues[] );
 
@@ -164,6 +171,7 @@ private:
         CSRValueType csrValues[],
         const IndexType csrIA[],
         const IndexType numRows,
+        const IndexType numValuesPerRow,
         const IndexType ellSizes[],
         const IndexType ellJA[],
         const ELLValueType ellValues[] );
@@ -189,63 +197,78 @@ private:
         const IndexType csrJA[],
         const CSRValueType csrValues[] );
 
-    /** Implementation for ELLUtilsInterface::MatrixTimesMatrix::computeIA */
+    /** Implementation for ELLUtilsInterface::MatrixExpBuild::matrixMultiplySizes */
+
+    static void matrixMultiplySizes(
+        IndexType cSizes[],
+        const IndexType m,
+        const IndexType n,
+        const IndexType k,
+        const bool diagonalProperty,
+        const IndexType aSizes[],
+        const IndexType aJA[],
+        const IndexType aNumValuesPerRow,
+        const IndexType bSizes[],
+        const IndexType bJA[],
+        const IndexType bNumValuesPerRow );
+
+    /** Implementation for ELLUtilsInterface::MatrixExp::matrixMultiply */
 
     template<typename ValueType>
-    static void computeIA(
-        const IndexType aIA[],
-        const IndexType aJA[],
-        const IndexType aNumRows,
-        const IndexType bIA[],
-        const IndexType bJA[],
-        const IndexType bNumRows,
-        IndexType cIA[] );
-
-    /** Implementation for ELLUtilsInterface::MatrixTimesMatrix::computeValues */
-
-    template<typename ValueType>
-    static void computeValues(
-        const IndexType aIA[],
-        const IndexType aJA[],
-        const ValueType aValues[],
-        const IndexType aNumRows,
-        const IndexType bIA[],
-        const IndexType bJA[],
-        const ValueType bValues[],
-        const IndexType bNumRows,
+    static void matrixMultiply(
+        IndexType cJA[],
+        ValueType cValues[],
+        const IndexType cSizes[],
+        const IndexType cNumValuesPerRow,
+        const IndexType m,
+        const IndexType n,
+        const IndexType k,
+        const bool diagonalProperty,
         const ValueType alpha,
-        const IndexType cIA[],
-        IndexType cJA[],
-        ValueType cValues[] );
-
-    /** Implementation for ELLUtilsInterface::MatrixTimesMatrix::addComputeIA */
-
-    template<typename ValueType>
-    static void addComputeIA(
-        const IndexType aIA[],
-        const IndexType aJA[],
-        const IndexType aNumRows,
-        const IndexType bIA[],
-        const IndexType bJA[],
-        const IndexType bNumRows,
-        IndexType cIA[] );
-
-    /** Implementation for ELLUtilsInterface::MatrixTimesMatrix::addComputeValues */
-
-    template<typename ValueType>
-    static void addComputeValues(
-        const IndexType aIA[],
+        const IndexType aSizes[],
         const IndexType aJA[],
         const ValueType aValues[],
-        const IndexType aNumRows,
-        const IndexType bIA[],
+        const IndexType aNumValuesPerRow,
+        const IndexType bSizes[],
         const IndexType bJA[],
         const ValueType bValues[],
-        const IndexType bNumRows,
-        const ValueType beta,
-        const IndexType cIA[],
+        const IndexType bNumValuesPerRow );
+
+    /** Implementation for ELLUtilsInterface::MatrixExpBuild::matrixAddSizes */
+
+    static void matrixAddSizes(
+        IndexType csizes[],
+        const IndexType m,
+        const IndexType n,
+        const bool diagonalProperty,
+        const IndexType aSizes[],
+        const IndexType aJA[],
+        const IndexType aNumValuesPerRow,
+        const IndexType bSizes[],
+        const IndexType bJA[],
+        const IndexType bNumValuesPerRow );
+
+    /** Implementation for ELLUtilsInterface::MatrixExp::matrixAdd */
+
+    template<typename ValueType>
+    static void matrixAdd(
         IndexType cJA[],
-        ValueType cValues[] );
+        ValueType cValues[],
+        const IndexType cSizes[],
+        const IndexType cNumValuesPerRow,
+        const IndexType m,
+        const IndexType n,
+        const bool diagonalProperty,
+        const ValueType alpha,
+        const IndexType aSizes[],
+        const IndexType aJA[],
+        const ValueType aValues[],
+        const IndexType aNumValuesPerRow,
+        const ValueType beta,
+        const IndexType bSizes[],
+        const IndexType bJA[],
+        const ValueType bValues[],
+        const IndexType bNumValuesPerRow );
 
     /** Implementation for ELLUtilsInterface::Solver::jacobi */
 
@@ -310,30 +333,6 @@ private:
         const IndexType csrJA[],
         const ValueType csrValues[],
         SyncToken* syncToken );
-
-    template<typename ValueType>
-    static void normalGEMV(
-        ValueType result[],
-        const ValueType alpha,
-        const ValueType x[],
-        const ValueType beta,
-        const ValueType y[],
-        const IndexType numRows,
-        const IndexType csrIA[],
-        const IndexType csrJA[],
-        const ValueType csrValues[] );
-
-    template<typename ValueType>
-    static void sparseGEMV(
-        ValueType result[],
-        const IndexType numRows,
-        const ValueType alpha,
-        const ValueType x[],
-        const IndexType numNonZeroRows,
-        const IndexType rowIndexes[],
-        const IndexType csrIA[],
-        const IndexType csrJA[],
-        const ValueType csrValues[] );
 
     /** Implementation for CSRUtilsInterface::Mult:normalGEVM */
 

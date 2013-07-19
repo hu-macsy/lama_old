@@ -37,6 +37,7 @@
 #include <lama/Scalar.hpp>
 #include <lama/Printable.hpp>
 #include <lama/Context.hpp>
+#include <lama/ContextFactory.hpp>
 
 #include <boost/assign/list_of.hpp>
 
@@ -307,7 +308,31 @@ inline lama::ContextType mapEnvContexttoContextType( std::string contextname )
     }
 
 /*
- * @brief HelperMakro LAMA_AUTO_TEST_CASE_TT( name, classname )
+ * @brief HelperMacro LAMA_AUTO_TEST_CASE_TL( name, classname, logger )
+ *
+ * This macro creates a boost test auto case, which uses all possible contexts.
+ * The test case name is based on the name of the given test method.
+ *
+ * @param name          name of test method, which will invoke
+ * @param classname     name of the given test class
+ * @param logger        name of the given logger
+ */
+
+#define LAMA_AUTO_TEST_CASE_TL( name, classname, logger )                                                              \
+    BOOST_AUTO_TEST_CASE( name )                                                                                       \
+    {                                                                                                                  \
+        CONTEXTLOOP()                                                                                                  \
+        {                                                                                                              \
+            GETCONTEXT( context );                                                                                     \
+            if ( loglevel_argument == "test_suite" )                                                                   \
+                BOOST_TEST_MESSAGE( "    Entering context: " << context->getType() );                                  \
+            lama::classname::name<float>( context, logger );                                                           \
+            lama::classname::name<double>( context, logger );                                                          \
+        }                                                                                                              \
+    }
+
+/*
+ * @brief HelperMakro LAMA_AUTO_TEST_CASE_T( name, classname )
  *
  * This makro creates a boost test auto case, which uses all possible contexts.
  * The test case name is based on the name of the given testmethod.

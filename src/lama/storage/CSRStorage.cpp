@@ -225,7 +225,11 @@ bool CSRStorage<ValueType>::checkDiagonalProperty() const
     LAMA_CONTEXT_ACCESS( loc )
 
     IndexType numDiagonals = std::min( mNumRows, mNumColumns );
+
     bool diagonalProperty = hasDiagonalProperty( numDiagonals, csrIA.get(), csrJA.get() );
+
+    LAMA_LOG_DEBUG( logger, *this << ": diagonalProperty = " << diagonalProperty );
+
     return diagonalProperty;
 }
 
@@ -453,7 +457,6 @@ void CSRStorage<ValueType>::buildRowIndexes()
     if ( getContext().getType() != Context::Host )
     {
         LAMA_LOG_INFO( logger, "CSRStorage: build row indices is currently only implemented on host" )
-        return;
     }
 
     // This routine is only available on the Host
@@ -998,7 +1001,7 @@ void CSRStorage<ValueType>::buildCSR(
     //build number of values per row into ia
     if ( ja == NULL || values == NULL )
     {
-        WriteAccess<IndexType> csrIA( ia, loc, mNumRows, false );
+        WriteOnlyAccess<IndexType> csrIA( ia, loc, mNumRows );
 
         LAMA_INTERFACE_FN( offsets2sizes, loc, CSRUtils, Offsets )
         LAMA_CONTEXT_ACCESS( loc )
@@ -1010,8 +1013,8 @@ void CSRStorage<ValueType>::buildCSR(
     // copy the offset array ia and ja
     {
         ReadAccess<IndexType> inJA( mJa, loc );
-        WriteAccess<IndexType> csrIA( ia, loc, mNumRows + 1, false );
-        WriteAccess<IndexType> csrJA( *ja, loc, mNumValues, false );
+        WriteOnlyAccess<IndexType> csrIA( ia, loc, mNumRows + 1 );
+        WriteOnlyAccess<IndexType> csrJA( *ja, loc, mNumValues );
 
         LAMA_CONTEXT_ACCESS( loc )
         LAMA_INTERFACE_FN_TT( set, loc, Utils, Copy, IndexType, IndexType )
@@ -1022,7 +1025,7 @@ void CSRStorage<ValueType>::buildCSR(
     // copy values
     {
         ReadAccess<ValueType> inValues( mValues, loc );
-        WriteAccess<OtherValueType> csrValues( *values, loc, mNumValues, false );
+        WriteOnlyAccess<OtherValueType> csrValues( *values, loc, mNumValues );
 
         LAMA_CONTEXT_ACCESS( loc )
         LAMA_INTERFACE_FN_TT( set, loc, Utils, Copy, OtherValueType, ValueType )

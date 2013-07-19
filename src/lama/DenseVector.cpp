@@ -608,7 +608,8 @@ void DenseVector<T>::vectorPlusVector(
 
     // get function pointers, do not use fallbacks here
 
-    LAMA_INTERFACE_FN_T( scal, context, BLAS, BLAS1, T )
+    LAMA_INTERFACE_FN_T( scale, context, Utils, Transform, T )
+
     LAMA_INTERFACE_FN_T( axpy, context, BLAS, BLAS1, T )
     LAMA_INTERFACE_FN_T( sum, context, BLAS, BLAS1, T )
 
@@ -628,7 +629,7 @@ void DenseVector<T>::vectorPlusVector(
         WriteAccess<T> resultAccess( result, context, true );
 
         LAMA_CONTEXT_ACCESS( context )
-        scal( nnu, alpha + beta, resultAccess.get(), 1, NULL );
+        scale( resultAccess.get(), alpha + beta, nnu );
     }
     else if ( result == x ) //result = alpha * result + beta * y
     {
@@ -642,7 +643,7 @@ void DenseVector<T>::vectorPlusVector(
             if ( alpha != 1.0 ) // result *= alpha
             {
                 LAMA_CONTEXT_ACCESS( context )
-                scal( nnu, alpha, resultAccess.get(), 1, NULL );
+                scale( resultAccess.get(), alpha, nnu );
             }
             else
             {
@@ -657,7 +658,7 @@ void DenseVector<T>::vectorPlusVector(
             {
                 // result *= alpha
                 LAMA_CONTEXT_ACCESS( context )
-                scal( nnu, alpha, resultAccess.get(), 1, NULL );
+                scale( resultAccess.get(), alpha, nnu );
             }
             // result += y
             LAMA_CONTEXT_ACCESS( context )
@@ -671,7 +672,7 @@ void DenseVector<T>::vectorPlusVector(
             if ( alpha != 1.0 )
             {
                 LAMA_CONTEXT_ACCESS( context )
-                scal( nnu, alpha, resultAccess.get(), 1, NULL );
+                scale( resultAccess.get(), alpha, nnu );
             }
             LAMA_CONTEXT_ACCESS( context )
             axpy( nnu, beta, yAccess.get(), 1, resultAccess.get(), 1, NULL );
@@ -691,7 +692,7 @@ void DenseVector<T>::vectorPlusVector(
         {
             // result *= beta
             LAMA_CONTEXT_ACCESS( context )
-            scal( nnu, beta, resultAccess.get(), 1, NULL );
+            scale( resultAccess.get(), beta, nnu );
         }
 
         if ( alpha != 0.0 )

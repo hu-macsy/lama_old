@@ -1439,8 +1439,7 @@ void MatrixStorage<ValueType>::readFromFile( const std::string& fileName )
 
 /*****************************************************************************/
 
-template<typename ValueType>
-void MatrixStorage<ValueType>::buildCSRGraph(
+void _MatrixStorage::buildCSRGraph(
                 IndexType* adjIA,
                 IndexType* adjJA,
                 IndexType* vwgt,
@@ -1470,7 +1469,7 @@ void MatrixStorage<ValueType>::buildCSRGraph(
 
         LAMAArray<IndexType> csrIA;
         LAMAArray<IndexType> csrJA;
-        LAMAArray<ValueType> csrValues;
+        LAMAArray<float> csrValues;
 
         buildCSRData( csrIA, csrJA, csrValues );
 

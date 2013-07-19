@@ -171,8 +171,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( CheckTest, T, ValueTypes )
 
             // just make sure that ia and ja have correct sizes
 
-            BOOST_REQUIRE_EQUAL( numValues, sizeof( ia ) / sizeof( IndexType ) );
-            BOOST_REQUIRE_EQUAL( numValues, sizeof( ja ) / sizeof( IndexType ) );
+            BOOST_REQUIRE_EQUAL( numValues, static_cast<IndexType>( sizeof( ia ) / sizeof( IndexType ) ) );
+            BOOST_REQUIRE_EQUAL( numValues, static_cast<IndexType>( sizeof( ja ) / sizeof( IndexType ) ) );
 
             LAMAArrayRef<IndexType> cooIA( ia, numValues );
             LAMAArrayRef<IndexType> cooJA( ja, numValues );

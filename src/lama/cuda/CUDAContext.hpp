@@ -86,6 +86,13 @@ public:
      */
     virtual ~CUDAContext();
 
+    /**
+     *  Override Context::getHostContext
+     *
+     *  CUDAHostContext is used as host context to support faster and asynchronous memory transfer.
+     */
+    virtual ContextPtr getHostContext() const;
+
     int getDeviceNr() const
     {
         return mDeviceNr;
@@ -160,6 +167,8 @@ private:
     SyncToken* memcpyAsyncToHost( void* dst, const void* src, const size_t size ) const;
     SyncToken* memcpyAsyncFromCUDAHost( void* dst, const void* src, const size_t size ) const;
     SyncToken* memcpyAsyncToCUDAHost( void* dst, const void* src, const size_t size ) const;
+
+    mutable boost::weak_ptr<const class Context> mHostContext;  //!< preferred host context
 
     int mDeviceNr; //!< number of device for this context
 

@@ -74,11 +74,11 @@ struct BLASInterface
          *
          *        x = alpha * x
          *
-         * @param[in] n      number of elements in input vectors.
-         * @param[in] alpha  scalar multiplier
-         * @param[in] x      vector with n elements
-         * @param[in] incX   storage spacing between elements of x
-         * @param[out] x     vector x(unchanged if n<=0 or incX <=0)
+         * @param[in] n      number of considered elements in input vector.
+         * @param[in] alpha  scalar multiplier.
+         * @param[in] x      vector with minimum (n - 1) * incX + 1 elements.
+         * @param[in] incX   incX storage spacing between considered elements of x.
+         * @param[out] x     vector x (unchanged if n<=0 or incX <= 0 ).
          */
         typedef void ( *scal ) ( const IndexType n, 
                                  const ValueType alpha, 
@@ -92,10 +92,11 @@ struct BLASInterface
          *
          *         nrm2(x) = sqrt( sum_{i = 1}^{n}( x_i^2 ) )
          *
-         * @param[in] n      number of elements in input vectors.
-         * @param[in] x      vector with n elements
-         * @param[in] incX   storage spacing between elements of x
-         * return            the Euclidian norm (returns zero if n <=0, incX <=0)
+         * @param[in] n      number of considered elements in input vector.
+         * @param[in] x      vector with minimum (n - 1) * incX + 1 elements.
+         * @param[in] incX   incX storage spacing between considered elements of x.
+         * return            the Euclidian norm within considered elements
+         *                   of x (returns zero if n <=0, incX <= 0).
          */
         typedef ValueType ( *nrm2 ) ( const IndexType n, 
                                       const ValueType* x, 
@@ -108,10 +109,11 @@ struct BLASInterface
          *
          *          asum(x) = sum_{i = 1}^{n}( x_i )
          *
-         * @param[in] n      number of elements in input vectors.
-         * @param[in] x      vector with n elements
-         * @param[in] incX   storage spacing between elements of x
-         * return            the sum of absolute values (returns zero if n<=0 or incX <=0)
+         * @param[in] n      number of considered elements in input vectors.
+         * @param[in] x      vector with minimum (n - 1) * incX + 1  elements.
+         * @param[in] incX   incX storage spacing between considered elements of x.
+         * return            the sum of absolute values within considered elements
+         *                   of x (returns zero if n<=0 or incX <= 0).
          */
         typedef ValueType ( *asum ) ( const IndexType n, const ValueType* x, const IndexType incX, SyncToken* syncToken );
     
@@ -119,52 +121,62 @@ struct BLASInterface
     
         /**
          * @brief iamax finds the smallest index of the maximum magnitude
-         * element of vector x
+         * element of vector x.
          *
-         * @param[in] n      number of elements in input vectors.
-         * @param[in] x      vector with n elements
-         * @param[in] incX   storage spacing between elements of x
-         * return            the smallest index (returns zero if n <=0 or incX <=0)
+         * @param[in] n      number of considered elements in input vector.
+         * @param[in] x      vector with minimum (n - 1) * incX + 1 elements.iama
+         *
+         * @param[in] incX   storage spacing between considered elements of x.
+         * return            the smallest index of the maximum magnitude
+         *                   within considered elements of x (returns zero if n <=0 or incX <=0).
          */
         typedef IndexType (*iamax) ( const IndexType n, const ValueType* x, const IndexType incX, SyncToken* syncToken );
     
         /**
-         * @brief iamax finds the smallest index of the maximum magnitude
-         * element of vector x
+         * @brief iamax finds the maximum magnitude element of vector x.
          *
-         * @param[in] n      number of elements in input vectors.
-         * @param[in] x      vector with n elements
-         * @param[in] incX   storage spacing between elements of x
-         * return            the smallest index (returns zero if n <=0 or incX <=0)
+         * @param[in] n      number of considered elements in input vector.
+         * @param[in] x      vector with minimum (n - 1) * incX + 1 elements.
+         * @param[in] incX   storage spacing between considered elements of x.
+         * return            the maximum magnitude element within considered elements of vector x
+         *                   (returns x[0] if n <=0 or incX <=0).
          */
-        typedef ValueType (*viamax) ( const IndexType n, const ValueType* x, const IndexType incX, SyncToken* syncToken );
+        typedef ValueType (*viamax) ( const IndexType n,
+        		                      const ValueType* x,
+        		                      const IndexType incX,
+        		                      SyncToken* syncToken );
     
         /**
-         * @brief swap interchanges vector x with vector y.
+         * @brief swap interchanges considered elements of vector x with vector y.
          *
          *            x <-> y
          *
-         * @param[in] n      number of elements in input vectors.
-         * @param[in] x      vector with n elements
-         * @param[in] incX   storage spacing between elements of x
-         * @param[in] y      vector with n elements
-         * @param[in] incY   storage spacing between elements of y
-         * @param[out] x     vector x(unchanged if n<=0)
-         * @param[out] y     vector y(unchanged if n<=0)
+         * @param[in] n      number of considered elements in input vectors.
+         * @param[in] x      vector with minimum (n - 1) * incX + 1 elements.
+         * @param[in] incX   storage spacing between considered elements of x.
+         * @param[in] y      vector with minimum (n - 1) * incY + 1 elements.
+         * @param[in] incY   storage spacing between considered elements of y.
+         * @param[out] x     vector x (unchanged if n<=0, incX <=0 or or incY <=0).
+         * @param[out] y     vector y (unchanged if n<=0, incX <=0 or or incY <=0).
          */
-        typedef void (*swap) ( const IndexType n, ValueType* x, const IndexType incX, ValueType* y, const IndexType incY, SyncToken* syncToken );
+        typedef void (*swap) ( const IndexType n,
+        		               ValueType* x,
+        		               const IndexType incX,
+        		               ValueType* y,
+        		               const IndexType incY,
+        		               SyncToken* syncToken );
     
         /**
          * @brief copy copies the vector x to the vector y.
          *
          *            y = x
          *
-         * @param[in] n      number of elements in input vectors.
-         * @param[in] x      vector with n elements
+         * @param[in] n      number of considered elements in input vectors.
+         * @param[in] x      vector with minimum (n - 1) * incX + 1 elements
          * @param[in] incX   storage spacing between elements of x
-         * @param[in] y      vector with n elements
+         * @param[in] y      vector with minimum (n - 1) * incY + 1 elements
          * @param[in] incY   storage spacing between elements of y
-         * @param[out] y     contains vector x
+         * @param[out] y     result (unchanged if n<=0, incX <=0 or or incY <=0 )
          */
         typedef void ( *copy )( const IndexType n,
                                 const ValueType* x,
@@ -174,18 +186,18 @@ struct BLASInterface
                                 SyncToken* syncToken );
     
         /**
-         * @brief axpy multiplies vector x by scalar alpha and
+         * @brief axpy multiplies scalar alpha by vector x and
          * adds the result to vector y.
          *
-         *            y = alpha * y + beta * x
+         *            y = alpha * x + y
          *
-         * @param[in] n      number of elements in input vectors.
+         * @param[in] n      number of considered elements in input vectors.
          * @param[in] alpha  scalar multiplier
-         * @param[in] x      vector with n elements
+         * @param[in] x      vector with minimum (n - 1) * incX + 1 elements.
          * @param[in] incX   storage spacing between elements of x
-         * @param[in] y      vector with n elements
-         * @param[in] incY    storage spacing between elements of y
-         * @param[out] y     result (unchanged if n<=0)
+         * @param[in] y      vector with minimum (n - 1) * incY + 1 elements.
+         * @param[in] incY   storage spacing between elements of y
+         * @param[out] y     result (unchanged if n<=0, incX <=0 or or incY <=0)
          */
         typedef void ( *axpy )( const IndexType n,
                                 ValueType alpha,
@@ -199,16 +211,15 @@ struct BLASInterface
          * @brief dot computes the dot product of two vectors.
          * It returns the dot product of the vectors x and y if successfull,
          * and 0.0 otherwise.
-         * adds the result to vector y.
          *
-         *            dot = sum_{i = 1}^{n}( x_i * y_i )
+         *            dot = sum_{i = 0}^{n-1}( x_i * y_i )
          *
-         * @param[in] n      number of elements in input vectors.
-         * @param[in] x      vector with n elements
-         * @param[in] incX   storage spacing between elements of x
-         * @param[in] y      vector with n elements
-         * @param[in] incY   storage spacing between elements of y
-         * return            dot product (returns zero if n <= 0)
+         * @param[in] n      number of considered elements in input vectors.
+         * @param[in] x      vector with minimum (n - 1) * incX + 1 elements.
+         * @param[in] incX   storage spacing between elements of x.
+         * @param[in] y      vector with minimum (n - 1) * incY + 1 elements.
+         * @param[in] incY   storage spacing between elements of y.
+         * return            dot product (returns zero if n <= 0, incX <=0 or or incY <=0).
          */
         typedef ValueType ( *dot )( const IndexType n,
                                     const ValueType* x,
@@ -217,7 +228,19 @@ struct BLASInterface
                                     const IndexType inc,
                                     SyncToken* syncToken );
     
-        /**  sum: z = alpha * x + beta * y */
+        /**
+         * @brief sum adds the multiplication of scalar alpha by vector x and the multiplication of
+         * scalar beta by vector y into a new vector z.
+         *
+         *            z = alpha * x + beta * y
+         *
+         * @param[in] n      number of elements in input vectors.
+         * @param[in] alpha  scalar multiplier.
+         * @param[in] x      vector with n elements.
+         * @param[in] beta   scalar multiplier.
+         * @param[in] y      vector with n elements.
+         * @param[out] z     result of adding the 2 multiplications (unchanged if n <= 0).
+         */
         typedef void ( *sum ) ( const IndexType n, 
                                 const ValueType alpha, 
                                 const ValueType* x, 
@@ -225,16 +248,6 @@ struct BLASInterface
                                 const ValueType* y, 
                                 ValueType* z, 
                                 SyncToken* syncToken );
-    
-        /**
-         * @brief ass The function ass() assigns one scalar value to a vector of the given size.
-         *
-         * @param[in] n         size of the vector
-         * @param[in] value     scalar value, which should be assign to the whole vector
-         * @param[out] x        vector, the values should be assigned to
-         */
-         typedef void ( *ass ) ( const IndexType n, const ValueType value, ValueType *x, SyncToken* syncToken );
-    
     };
 
     // declare variables of function pointers, i.e. arrays indexed by each type
@@ -244,11 +257,11 @@ struct BLASInterface
     LAMA_INTERFACE_DEFINE_T( BLAS1, asum )
     LAMA_INTERFACE_DEFINE_T( BLAS1, iamax )
     LAMA_INTERFACE_DEFINE_T( BLAS1, viamax )
+    LAMA_INTERFACE_DEFINE_T( BLAS1, swap )
     LAMA_INTERFACE_DEFINE_T( BLAS1, copy )
     LAMA_INTERFACE_DEFINE_T( BLAS1, axpy )
     LAMA_INTERFACE_DEFINE_T( BLAS1, dot )
     LAMA_INTERFACE_DEFINE_T( BLAS1, sum )
-    LAMA_INTERFACE_DEFINE_T( BLAS1, ass )
 
     template<typename ValueType>
     struct BLAS2
@@ -264,25 +277,26 @@ struct BLASInterface
          * Matrix A is stored in column-major format, and lda is the
          * leading dimension of the two dimensional array in which A is stored.
          *
-         * @param[in] trans    specifies op(A). If trans == 'N' or 'n', op(A) = A
-         *                                      If trans == 'T','t','C','c', op(A) = AT
-         * @param[in] m        the number of rows of matrix A; m must be at least zero
-         * @param[in] n        the number of columns of matrix A; n must be at least zero
-         * @param[in] alpha    scalar multiplier applied to op(A)
-         * @param[in] A        array of dimensions (lda,n).
-         *                     If trans == 'N' or 'n', of dimensions (lda,m)
-         *                     otherwise; lda must be at least max(1,m) if trans == 'N' or 'n'
-         *                     and at least max(1,n) otherwise
-         * @param[in] lda      leading dimension of two-dimensional array used to store matrix A.
-         * @param[in] x        array of length at least (1 + (n - 1) * abs(incX))
-         *                     when trans == 'N' or 'n'
-         *                     else at least (1 + ( m - 1) * abs(incX))
-         * @param[in] incX      storage spacing between elements of x; incX must not be zero
-         * @param[in] beta      scalar multiplier applied to vector y. If beta is zero, y is not read
-         * @param[in] y         array of length at least (1 + (m - 1) * abs(incY))
+         * @param[in] order     specifies if row or col major.
+         * @param[in] trans     specifies op(A). If trans == 'N' or 'n', op(A) = A
+         *                                       If trans == 'T','t','C','c', op(A) = AT
+         * @param[in] m         the number of rows of matrix A; m must be at least zero
+         * @param[in] n         the number of columns of matrix A; n must be at least zero
+         * @param[in] alpha     scalar multiplier applied to op(A)
+         * @param[in] A         array of dimensions (lda,n).
+         *                      If trans == 'N' or 'n', of dimensions (lda,m)
+         *                      otherwise; lda must be at least max(1,m) if trans == 'N' or 'n'
+         *                      and at least max(1,n) otherwise
+         * @param[in] lda       leading dimension of two-dimensional array used to store matrix A.
+         * @param[in] x         array of length at least (1 + (n - 1) * incX)
          *                      when trans == 'N' or 'n'
-         *                      else at least (1 + ( n - 1) * abs(incY))
-         * @param[in] incY      the storage spacing between elements of y; incY must not be zero.
+         *                      else at least (1 + ( m - 1) * incX)
+         * @param[in] incX      storage spacing between elements of x; incX must be >= 0.
+         * @param[in] beta      scalar multiplier applied to vector y. If beta is zero, y is not read
+         * @param[in] y         array of length at least (1 + (m - 1) * incY)
+         *                      when trans == 'N' or 'n'
+         *                      else at least (1 + ( n - 1) * incY)
+         * @param[in] incY      the storage spacing between elements of y; incY must be >= 0.
          * @param[out] y        updated according to y = alpha * op(A) * x + beta * y
          * @param[in] syncToken allows to start asynchronous execution
          *

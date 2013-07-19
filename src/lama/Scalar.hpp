@@ -61,9 +61,29 @@ class LAMA_DLL_IMPORTEXPORT Scalar: public Printable
 {
 public:
 
+    /** Enumeration type for supported value types in LAMA.
+     *
+     *  This enumeration type is result of many query operations for LAMA classes
+     *  and avoids expensive calls of the typeid operator.
+     *
+     *  \code
+     *    CSRSparseMatrix<double> a;
+     *    a.getValueType()  // returns ScalarType::DOUBLE
+     *    Scalar::getType<double>()  // return ScalarType DOUBLE
+     *  \endcode
+     *
+     *  It is especially useful when casting variables of base classes to derived classes.
+     */
     enum ScalarType
     {
-        INDEX_TYPE, FLOAT, DOUBLE, LONG_DOUBLE, COMPLEX, DOUBLE_COMPLEX, LONG_DOUBLE_COMPLEX, UNKNOWN
+        INDEX_TYPE,           //!<  synonymous for IndexType
+        FLOAT,                //!<  synonymous for float
+        DOUBLE,               //!<  synonymous for double
+        LONG_DOUBLE,          //!<  synonymous for long double
+        COMPLEX,              //!<  synonymous for complex
+        DOUBLE_COMPLEX,       //!<  synonymous for double complex
+        LONG_DOUBLE_COMPLEX,  //!<  synonymous for long double complex
+        UNKNOWN
     };
 
     /**
@@ -81,7 +101,7 @@ public:
      *
      * The templated converstion constructor needs to be explicit, because the operator==(Scalar,Scalar) can lead to ambiguities.
      *
-     * @tparam T          TODO[doxy] Complete Description.
+     * @tparam T          type of the input argument value for constructor of Scalar
      * @param[in] value   the value this scalar should represent
      */
     template<typename T>
@@ -111,7 +131,7 @@ public:
     /**
      * @brief Constructs a scalar representing the passed complex value.
      *
-     * @tparam T    TODO[doxy] Complete Description.
+     * @tparam T    base type of the complex type, e.g. float, or double
      * @param[in]   value the value this scalar should represent
      */
     template<typename T>
@@ -125,7 +145,7 @@ public:
     /**
      * @brief Returns the value this Scalar represents as type T.
      *
-     * @tparam T    TODO[doxy] Complete Description.
+     * @tparam T    result type for this query operator.
      * @return      the value this Scalar represents.
      */
     template<typename T>
@@ -141,7 +161,7 @@ public:
     inline Scalar operator-() const;
 
     /**
-     * @brief Binary operator
+     * @brief Implementation for assignment operator+=.
      */
     Scalar& operator+=( Scalar& other );
     Scalar& operator-=( Scalar& other );
@@ -153,13 +173,16 @@ public:
      */
     inline bool isReal() const;
 
+    /**
+     *  @brief Overrides Printable::writeAt.
+     */
     inline virtual void writeAt( std::ostream& stream ) const;
 
     /**
-     * @brief Returns the type this Scalar represents.
+     * @brief Conversion of a C type into value of enum ScalarType.
      *
-     * @tparam T    TODO[doxy] Complete Description.
-     * @return      the ScalarType
+     * @tparam T    C++ type that should be converted
+     * @return      value of enum type ScalarType that represents the C++ type.
      */
     template<typename T>
     inline static ScalarType getType();
@@ -173,6 +196,8 @@ public:
     inline static size_t getTypeSize( const ScalarType type );
 
 protected:
+
+    /** Logger for this class. */
 
     LAMA_LOG_DECL_STATIC_LOGGER( logger )
 

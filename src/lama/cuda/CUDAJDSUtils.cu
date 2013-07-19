@@ -216,7 +216,7 @@ void CUDAJDSUtils::getRow(
 
     LAMA_CHECK_CUDA_ACCESS
 
-    thrust::device_ptr<OtherValueType> rowPtr( const_cast<OtherValueType*>( row ) );
+    thrust::device_ptr<OtherValueType> rowPtr( row );
     thrust::device_ptr<IndexType> permPtr( const_cast<IndexType*>( perm ) );
 
     thrust::fill( rowPtr, rowPtr + numColumns, static_cast<OtherValueType>( 0 ) );
@@ -563,12 +563,15 @@ void CUDAJDSUtils::sortRows( IndexType array[], IndexType perm[], const IndexTyp
     LAMA_LOG_INFO( logger, "sort " << n << " rows by sizes" )
 
     LAMA_CHECK_CUDA_ACCESS
-    thrust::device_ptr<IndexType> array_d( const_cast<IndexType*>( array ) );
-    thrust::device_ptr<IndexType> perm_d( const_cast<IndexType*>( perm ) );
+
+    thrust::device_ptr<IndexType> array_d( array );
+    thrust::device_ptr<IndexType> perm_d( perm );
+
+    // stable sort, descending order, so override default comparison
 
     thrust::stable_sort_by_key( array_d, array_d + n, perm_d, thrust::greater<IndexType>() );
 
-    LAMA_CUDA_RT_CALL( cudaStreamSynchronize(0), "JDS: ilg2dlgKernel FAILED" )
+    LAMA_CUDA_RT_CALL( cudaStreamSynchronize(0), "JDS: synchronize for sortRows FAILED" )
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */

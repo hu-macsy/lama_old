@@ -36,8 +36,7 @@
 
 // others
 #include <lama/LAMAInterfaceRegistry.hpp>
-
-#include <typeinfo>
+#include <lama/tracing.hpp>
 
 namespace lama
 {
@@ -49,6 +48,8 @@ LAMA_LOG_DEF_LOGGER( OpenMPUtils::logger, "OpenMP.Utils" )
 template<typename ValueType>
 void OpenMPUtils::scale( ValueType mValues[], const ValueType value, const IndexType n )
 {
+    LAMA_REGION( "OpenMP.Utils.scale" )
+
     LAMA_LOG_INFO( logger, "scale, #n = " << n << ", value = " << value )
 
     if ( value == static_cast<ValueType>( 1 ) )
@@ -82,6 +83,8 @@ void OpenMPUtils::setScale( ValueType outValues[],
                             const OtherValueType inValues[], 
                             const IndexType n )
 {
+    LAMA_REGION( "OpenMP.Utils.setScale" )
+
     LAMA_LOG_INFO( logger, "setScale, #n = " << n << ", value = " << value )
 
     // alias of outValues == inValues is no problem
@@ -111,6 +114,8 @@ void OpenMPUtils::setScale( ValueType outValues[],
 template<typename ValueType>
 ValueType OpenMPUtils::sum( const ValueType array[], const IndexType n )
 {
+    LAMA_REGION( "OpenMP.Utils.sum" )
+
     LAMA_LOG_INFO( logger, "sum # array = " << array << ", n = " << n )
     ValueType val = static_cast<ValueType>( 0.0 );
 
@@ -128,6 +133,8 @@ ValueType OpenMPUtils::sum( const ValueType array[], const IndexType n )
 template<typename ValueType>
 void OpenMPUtils::setVal( ValueType array[], const IndexType n, const ValueType val )
 {
+    LAMA_REGION( "OpenMP.Utils.setVal" )
+
     LAMA_LOG_DEBUG( logger, "setVal<" << Scalar::getType<ValueType>() << ">: " << "array[" << n << "] = " << val )
 
     #pragma omp parallel for schedule( LAMA_OMP_SCHEDULE )
@@ -142,6 +149,8 @@ void OpenMPUtils::setVal( ValueType array[], const IndexType n, const ValueType 
 template<typename ValueType>
 void OpenMPUtils::setOrder( ValueType array[], const IndexType n )
 {
+    LAMA_REGION( "OpenMP.Utils.setOrder" )
+
     LAMA_LOG_DEBUG( logger,
                     "setOrder<" << Scalar::getType<ValueType>() << ">: " << "array[" << n << "] = 0, 1, 2, ..., " << ( n - 1 ) )
 
@@ -167,6 +176,8 @@ ValueType OpenMPUtils::getValue( const ValueType* array, const IndexType i )
 template<typename ValueType>
 ValueType OpenMPUtils::maxval( const ValueType array[], const IndexType n )
 {
+    LAMA_REGION( "OpenMP.Utils.maxVal" )
+
     LAMA_LOG_DEBUG( logger, "maxval<" << Scalar::getType<ValueType>() << ">: " << "array[" << n << "]" )
 
     ValueType val = static_cast<ValueType>( 0.0 );
@@ -203,6 +214,8 @@ ValueType OpenMPUtils::maxval( const ValueType array[], const IndexType n )
 template<typename ValueType>
 ValueType OpenMPUtils::absMaxVal( const ValueType array[], const IndexType n )
 {
+    LAMA_REGION( "OpenMP.Utils.absMaxVal" )
+
     LAMA_LOG_DEBUG( logger, "absMaxVal<" << Scalar::getType<ValueType>() << ">: " << "array[" << n << "]" )
 
     ValueType val = static_cast<ValueType>( 0.0 );
@@ -241,6 +254,8 @@ ValueType OpenMPUtils::absMaxVal( const ValueType array[], const IndexType n )
 template<typename ValueType>
 ValueType OpenMPUtils::absMaxDiffVal( const ValueType array1[], const ValueType array2[], const IndexType n )
 {
+    LAMA_REGION( "OpenMP.Utils.absMaxDiffVal" )
+
     LAMA_LOG_DEBUG( logger, "absMaxDiffVal<" << Scalar::getType<ValueType>() << ">: " << "array[" << n << "]" )
 
     ValueType val = static_cast<ValueType>( 0.0 );
@@ -279,6 +294,8 @@ ValueType OpenMPUtils::absMaxDiffVal( const ValueType array1[], const ValueType 
 template<typename ValueType>
 bool OpenMPUtils::isSorted( const ValueType array[], const IndexType n, bool ascending )
 {
+    LAMA_REGION( "OpenMP.Utils.isSorted" )
+
     LAMA_LOG_INFO( logger, "isSorted<" << Scalar::getType<ValueType>()
                            << ">, n = " << n << ", ascending = " << ascending )
 
@@ -315,6 +332,8 @@ bool OpenMPUtils::isSorted( const ValueType array[], const IndexType n, bool asc
 template<typename ValueType1,typename ValueType2>
 void OpenMPUtils::set( ValueType1 out[], const ValueType2 in[], const IndexType n )
 {
+    LAMA_REGION( "OpenMP.Utils.set" )
+
     LAMA_LOG_DEBUG( logger,
                     "set: out<" << Scalar::getType<ValueType1>() << "[" << n << "]" << " = in<" << Scalar::getType<ValueType2>() << ">[" << n << "]" )
 
@@ -329,6 +348,8 @@ void OpenMPUtils::set( ValueType1 out[], const ValueType2 in[], const IndexType 
 
 bool OpenMPUtils::validIndexes( const IndexType array[], const IndexType n, const IndexType size )
 {
+    LAMA_REGION( "OpenMP.Utils.validIndexes" )
+
     LAMA_LOG_DEBUG( logger, "validIndexes: array[" << n << "], size " << size )
 
     bool validFlag = true;
@@ -357,6 +378,8 @@ bool OpenMPUtils::validIndexes( const IndexType array[], const IndexType n, cons
 template<typename ValueType1,typename ValueType2>
 void OpenMPUtils::setGather( ValueType1 out[], const ValueType2 in[], const IndexType indexes[], const IndexType n )
 {
+    LAMA_REGION( "OpenMP.Utils.setGather" )
+
     LAMA_LOG_DEBUG( logger,
                     "setGather: out<" << Scalar::getType<ValueType1>() << ">[" << n << "]" << " = in<" << Scalar::getType<ValueType2>() << ">[ indexes[" << n << "] ]" )
 
@@ -372,6 +395,8 @@ void OpenMPUtils::setGather( ValueType1 out[], const ValueType2 in[], const Inde
 template<typename ValueType1,typename ValueType2>
 void OpenMPUtils::setScatter( ValueType1 out[], const IndexType indexes[], const ValueType2 in[], const IndexType n )
 {
+    LAMA_REGION( "OpenMP.Utils.setScatter" )
+
     LAMA_LOG_DEBUG( logger,
                     "setScatter: out<" << Scalar::getType<ValueType1>() << ">"
                      << "[ indexes[" << n << "] ]" << " = in<" << Scalar::getType<ValueType2>() << ">[" << n << "]" )
@@ -388,6 +413,8 @@ void OpenMPUtils::setScatter( ValueType1 out[], const IndexType indexes[], const
 template<typename ValueType>
 void OpenMPUtils::invert( ValueType array[], const IndexType n )
 {
+    LAMA_REGION( "OpenMP.Utils.invert" )
+
     LAMA_LOG_INFO( logger, "invert array[ " << n << " ]" )
 
     ValueType one = static_cast<ValueType>( 1.0 );

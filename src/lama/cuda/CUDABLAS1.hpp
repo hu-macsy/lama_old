@@ -69,37 +69,37 @@ public:
 private:
 
     /**
-     * This function is the CUDA implementation of lama::BLAS1Interface::scal
+     * This function is the CUDA implementation of lama::BLASInterface::scal
      */
     template<typename T>
     static void scal( const IndexType n, const T alpha, T* x, const IndexType incX, SyncToken* syncToken );
 
     /**
-     * This function is the CUDA implementation of lama::BLAS1Interface::nrm2
+     * This function is the CUDA implementation of lama::BLASInterface::nrm2
      */
     template<typename T>
     static T nrm2( const IndexType n, const T* x, const IndexType incX, SyncToken* syncToken );
 
     /**
-     * This function is the CUDA implementation of lama::BLAS1Interface::asum
+     * This function is the CUDA implementation of lama::BLASInterface::asum
      */
     template<typename T>
     static T asum( const IndexType n, const T* x, const IndexType incX, SyncToken* syncToken );
 
     /**
-     * This function is the CUDA implementation of lama::BLAS1Interface::iamax
+     * This function is the CUDA implementation of lama::BLASInterface::iamax
      */
     template<typename T>
     static IndexType iamax( const IndexType n, const T* x, const IndexType incX, SyncToken* syncToken );
 
     /**
-     * This function is the CUDA implementation of lama::BLAS1Interface::swap
+     * This function is the CUDA implementation of lama::BLASInterface::swap
      */
     template<typename T>
     static void swap( const IndexType n, T* y, const IndexType incY, T* x, const IndexType incX, SyncToken* syncToken );
 
     /**
-     * This function is the CUDA implementation of lama::BLAS1Interface::copy
+     * This function is the CUDA implementation of lama::BLASInterface::copy
      */
     template<typename T>
     static void copy(
@@ -111,7 +111,7 @@ private:
         SyncToken* syncToken );
 
     /**
-     * This function is the CUDA implementation of lama::BLAS1Interface::axpy
+     * This function is the CUDA implementation of lama::BLASInterface::axpy
      */
     template<typename T>
     static void axpy(
@@ -124,7 +124,7 @@ private:
         SyncToken* syncToken );
 
     /**
-     * This function is the CUDA implementation of lama::BLAS1Interface::dot
+     * This function is the CUDA implementation of lama::BLASInterface::dot
      */
     template<typename T>
     static T dot(
@@ -136,13 +136,13 @@ private:
         SyncToken* syncToken );
 
     /**
-     * This function is the CUDA implementation of lama::BLAS1Interface::sum
+     * This function is the CUDA implementation of lama::BLASInterface::sum
      */
     template<typename T>
     static void sum( const IndexType n, T alpha, const T* x, T beta, const T* y, T* z, SyncToken* syncToken );
 
     /**
-     * This function is the CUDA implementation of lama::BLAS1Interface::rot
+     * This function is the CUDA implementation of lama::BLASInterface::rot
      */
     template<typename T>
     static void rot(
@@ -156,7 +156,7 @@ private:
         SyncToken* syncToken );
 
     /**
-     * This function is the CUDA implementation of lama::BLAS1Interface::rotm
+     * This function is the CUDA implementation of lama::BLASInterface::rotm
      */
     template<typename T>
     static void rotm(
@@ -169,21 +169,12 @@ private:
         SyncToken* syncToken );
 
     /**
-     * This function is the CUDA implementation of lama::BLAS1Interface::ass
-     */
-    template<typename T>
-    static void ass( const IndexType n, const T value, T* x, SyncToken* syncToken );
-
-    /**
-     * This function is the CUDA implementation of lama::BLAS1Interface::viamax
+     * This function is the CUDA implementation of lama::BLASInterface::viamax
      */
     template<typename T>
     static T viamax( const IndexType n, const T* x_d, const IndexType incx, SyncToken* syncToken );
 
 private:
-
-    template<typename T>
-    static void ass_launcher( const int n, const T value, T* x, cudaStream_t stream );
 
     template<typename T>
     static void sum_launcher( const int n, T alpha, const T* x, T beta, const T* y, T* z, cudaStream_t stream );

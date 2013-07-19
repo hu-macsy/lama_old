@@ -46,7 +46,7 @@
 namespace lama
 {
 
-/** Implementations of methods for lama::BLAS1Interface with OpenMP.
+/** Implementations of methods for lama::BLASInterface with OpenMP.
  *
  *  @todo Add information here about use of native BLAS1 libraries
  */
@@ -56,43 +56,43 @@ class LAMA_DLL_IMPORTEXPORT OpenMPBLAS1
 public:
 
     /**
-     * This function is the OpenMP implementation of lama::BLAS1Interface::BLAS1::scal
+     * This function is the OpenMP implementation of lama::BLASInterface::scal
      */
     template<typename T>
     static void scal( const IndexType n, const T alpha, T* x, const IndexType incX, SyncToken* syncToken );
 
     /**
-     * This function is the OpenMP implementation of lama::BLAS1Interface::nrm2
+     * This function is the OpenMP implementation of lama::BLASInterface::nrm2
      */
     template<typename T>
     static T nrm2( const IndexType n, const T* x, const IndexType incX, SyncToken* syncToken );
 
     /**
-     * This function is the OpenMP implementation of lama::BLAS1Interface::asum
+     * This function is the OpenMP implementation of lama::BLASInterface::asum
      */
     template<typename T>
     static T asum( const IndexType n, const T* x, const IndexType incX, SyncToken* syncToken );
 
     /**
-     * This function is the OpenMP implementation of lama::BLAS1Interface::iamax
+     * This function is the OpenMP implementation of lama::BLASInterface::iamax
      */
     template<typename T>
     static IndexType iamax( const IndexType n, const T* x, const IndexType incX, SyncToken* syncToken );
 
     /**
-     * This function is the OpenMP implementation of lama::BLAS1Interface::viamax
+     * This function is the OpenMP implementation of lama::BLASInterface::viamax
      */
     template<typename T>
     static T viamax( const IndexType n, const T* x, const IndexType incX, SyncToken* syncToken );
 
     /**
-     * This function is the OpenMP implementation of lama::BLAS1Interface::swap
+     * This function is the OpenMP implementation of lama::BLASInterface::swap
      */
     template<typename T>
     static void swap( const IndexType n, T* y, const IndexType incY, T* x, const IndexType incX, SyncToken* syncToken );
 
     /**
-     * This function is the OpenMP implementation of lama::BLAS1Interface::copy
+     * This function is the OpenMP implementation of lama::BLASInterface::copy
      */
     template<typename T>
     static void copy(
@@ -104,7 +104,7 @@ public:
         SyncToken* syncToken );
 
     /**
-     * This function is the OpenMP implementation of lama::BLAS1Interface::axpy
+     * This function is the OpenMP implementation of lama::BLASInterface::axpy
      */
     template<typename T>
     static void axpy(
@@ -117,7 +117,7 @@ public:
         SyncToken* syncToken );
 
     /**
-     * This function is the OpenMP implementation of lama::BLAS1Interface::dot
+     * This function is the OpenMP implementation of lama::BLASInterface::dot
      */
     template<typename T>
     static T dot(
@@ -129,13 +129,13 @@ public:
         SyncToken* syncToken );
 
     /**
-     * This function is the OpenMP implementation of lama::BLAS1Interface::sum
+     * This function is the OpenMP implementation of lama::BLASInterface::sum
      */
     template<typename T>
     static void sum( const IndexType n, T alpha, const T* x, T beta, const T* y, T* z, SyncToken* syncToken );
 
     /**
-     * This function is the OpenMP implementation of lama::BLAS1Interface::rot
+     * This function is the OpenMP implementation of lama::BLASInterface::rot
      */
     template<typename T>
     static void rot(
@@ -149,7 +149,7 @@ public:
         SyncToken* syncToken );
 
     /**
-     * This function is the OpenMP implementation of lama::BLAS1Interface::rotm
+     * This function is the OpenMP implementation of lama::BLASInterface::rotm
      */
     template<typename T>
     static void rotm(
@@ -162,22 +162,16 @@ public:
         SyncToken* syncToken );
 
     /**
-     * This function is the OpenMP implementation of lama::BLAS1Interface::rotg
+     * This function is the OpenMP implementation of lama::BLASInterface::rotg
      */
     template<typename T>
     static void rotg( T* a, T* b, T* c, T* s, SyncToken* syncToken );
 
     /**
-     * This function is the OpenMP implementation of lama::BLAS1Interface::rotmg
+     * This function is the OpenMP implementation of lama::BLASInterface::rotmg
      */
     template<typename T>
     static void rotmg( T* d1, T* d2, T* b1, const T b2, T* P, SyncToken* syncToken );
-
-    /**
-     * This function is the OpenMP implementation of lama::BLAS1Interface::ass
-     */
-    template<typename T>
-    static void ass( const IndexType n, const T value, T* x, SyncToken* syncToken );
 
     /** Routine that sets functions pointers belonging to BLAS1 in a BLASInterface.
      *

@@ -53,14 +53,19 @@ set ( HEADERS
 
 set ( SOURCE_FILES
         BiCGTest
+        BLAS1Test
+		BLAS2Test
+		BLAS3Test
         CGTest
         CommonLoggerTest
         CommunicatorTest
         COOSparseMatrixTest
         COOStorageTest
+        COOUtilsTest
         CriterionTest
         CSRSparseMatrixTest
         CSRStorageTest
+        CSRUtilsTest
         DenseMatrixTest
         DenseMatrixTest1
         DenseStorageTest

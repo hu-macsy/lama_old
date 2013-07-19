@@ -345,9 +345,14 @@ void COOStorage<ValueType>::setCSRDataImpl(
     const LAMAArray<OtherValueType>& values,
     const ContextPtr )
 {
-    ContextPtr loc = ContextFactory::getContext( Context::Host );
+    LAMA_LOG_DEBUG( logger, "set CSR data " << numRows << " x " << numColumns << ", nnz = " << numValues  )
 
-    ReadAccess<IndexType> csrIA( ia, loc );
+    LAMA_ASSERT_EQUAL_DEBUG( numRows + 1, ia.size() )
+    LAMA_ASSERT_EQUAL_DEBUG( numValues, ja.size() )
+    LAMA_ASSERT_EQUAL_DEBUG( numValues, values.size() )
+
+    ContextPtr loc = getContextPtr();
+
     ReadAccess<IndexType> csrJA( ja, loc );
     ReadAccess<OtherValueType> csrValues( values, loc );
 
@@ -358,11 +363,23 @@ void COOStorage<ValueType>::setCSRDataImpl(
 
     int numDiagonals = std::min( numRows, numColumns );
 
-    mDiagonalProperty = OpenMPCSRUtils::hasDiagonalProperty( numDiagonals, csrIA.get(), csrJA.get() );
+    {
+        LAMA_LOG_DEBUG( logger, "check CSR data " << numRows << " x " << numColumns << ", nnz = " << numValues 
+                                << " for diagonal property, #diagonals = " << numDiagonals )
+
+        LAMA_INTERFACE_FN( hasDiagonalProperty, loc, CSRUtils, Offsets );
+
+        ReadAccess<IndexType> csrIA( ia, loc );
+        ReadAccess<IndexType> csrJA( ja, loc );
+
+        LAMA_CONTEXT_ACCESS( loc )
+
+        mDiagonalProperty = hasDiagonalProperty( numDiagonals, csrIA.get(), csrJA.get() );
+    }
 
     if ( !mDiagonalProperty )
     {
-        numDiagonals = 0; // do not store diagonal data separately
+        numDiagonals = 0; // do not store diagonal data at the beginning in COO data
     }
 
     mNumValues = numValues;
@@ -370,12 +387,40 @@ void COOStorage<ValueType>::setCSRDataImpl(
     LAMA_LOG_DEBUG( logger,
                     "input csr data with " << mNumValues << "entries,  has diagonal property = " << mDiagonalProperty )
 
-    WriteOnlyAccess<IndexType> cooIA( mIA, loc, mNumValues );
-    WriteOnlyAccess<IndexType> cooJA( mJA, loc, mNumValues );
-    WriteOnlyAccess<ValueType> cooValues( mValues, loc, mNumValues );
+    {
+        LAMA_INTERFACE_FN( offsets2ia, loc, COOUtils, Counting );
 
-    OpenMPCOOUtils::setCSRValues( cooIA.get(), cooJA.get(), cooValues.get(), mNumRows, numDiagonals, csrIA.get(),
-                                  csrJA.get(), csrValues.get(), mDiagonalProperty );
+        ReadAccess<IndexType> csrIA( ia, loc );
+        WriteOnlyAccess<IndexType> cooIA( mIA, loc, mNumValues );
+
+        LAMA_CONTEXT_ACCESS( loc )
+
+        offsets2ia( cooIA.get(), mNumValues, csrIA.get(), mNumRows, numDiagonals );
+    }
+
+    {
+        LAMA_INTERFACE_FN_TT( setCSRData, loc, COOUtils, Conversions, IndexType, IndexType );
+
+        ReadAccess<IndexType> csrIA( ia, loc );
+        ReadAccess<IndexType> csrJA( ja, loc );
+        WriteOnlyAccess<IndexType> cooJA( mJA, loc, mNumValues );
+
+        LAMA_CONTEXT_ACCESS( loc )
+
+        setCSRData( cooJA.get(), csrJA.get(), numValues, csrIA.get(), mNumRows, numDiagonals );
+    }
+
+    {
+        LAMA_INTERFACE_FN_TT( setCSRData, loc, COOUtils, Conversions, ValueType, OtherValueType );
+
+        ReadAccess<IndexType> csrIA( ia, loc );
+        ReadAccess<OtherValueType> csrValues( values, loc );
+        WriteOnlyAccess<ValueType> cooValues( mValues, loc, mNumValues );
+
+        LAMA_CONTEXT_ACCESS( loc )
+
+        setCSRData( cooValues.get(), csrValues.get(), numValues, csrIA.get(), mNumRows, numDiagonals );
+    }
 }
 
 /* --------------------------------------------------------------------------- */

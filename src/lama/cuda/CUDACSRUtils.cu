@@ -37,6 +37,7 @@
 #include <lama/cuda/utils.cu.h>
 #include <lama/cuda/CUDAError.hpp>
 #include <lama/cuda/CUDACSRUtils.hpp>
+#include <lama/cuda/CUDAUtils.hpp>
 #include <lama/cuda/CUDASettings.hpp>
 #include <lama/cuda/CUDAStreamSyncToken.hpp>
 
@@ -44,7 +45,6 @@
 #include <lama/macros/unused.hpp>
 
 #include <cuda.h>
-#include <cusparse.h>
 #include <cuda_runtime.h>
 #include <cuda_runtime_api.h>
 
@@ -55,12 +55,17 @@
 // thrust
 #include <thrust/copy.h>
 #include <thrust/device_ptr.h>
+#include <thrust/device_vector.h>
 #include <thrust/fill.h>
 #include <thrust/functional.h>
 #include <thrust/host_vector.h>
 #include <thrust/scan.h>
+#include <thrust/sort.h>
 #include <thrust/transform_reduce.h>
 #include <thrust/tuple.h>
+#include <thrust/iterator/reverse_iterator.h>
+#include <thrust/iterator/zip_iterator.h>
+#include <thrust/reduce.h>
 
 #include <boost/bind.hpp>
 
@@ -95,7 +100,7 @@ IndexType CUDACSRUtils::sizes2offsets( IndexType array[], const IndexType n )
 
     LAMA_CHECK_CUDA_ACCESS
 
-    thrust::device_ptr<IndexType> array_ptr( const_cast<IndexType*>( array ) );
+    thrust::device_ptr<IndexType> array_ptr( array );
     thrust::exclusive_scan( array_ptr, array_ptr + n + 1, array_ptr );
     thrust::host_vector<IndexType> numValues( array_ptr + n, array_ptr + n + 1 );
 
@@ -123,6 +128,8 @@ static void offsets2sizes_kernel( IndexType sizes[], const IndexType offsets[], 
 
 void CUDACSRUtils::offsets2sizes( IndexType sizes[], const IndexType offsets[], const IndexType n )
 {
+    LAMA_REGION( "CUDA.CSRUtils.offsets2sizes" )
+
     LAMA_LOG_INFO( logger, "offsets2sizes " << " #n = " << n )
 
     LAMA_CHECK_CUDA_ACCESS
@@ -134,10 +141,6 @@ void CUDACSRUtils::offsets2sizes( IndexType sizes[], const IndexType offsets[], 
     offsets2sizes_kernel<<<dimGrid, dimBlock>>>( sizes, offsets, n );
     LAMA_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "offsets2sizes" )
 }
-
-/** Correct handle for cusparse is set due to the context. */
-
-extern cusparseHandle_t CUDAContext_cusparseHandle;
 
 /* --------------------------------------------------------------------------- */
 /*     hasDiagonalProperty                                                     */
@@ -167,8 +170,16 @@ __global__ void hasDiagonalProperty_kernel(
         return;
     }
 
-    //this is the actual check
-    if ( ja[ia[i]] != i )
+    if ( ! ( *hasProperty ) )
+    {
+        return;
+    }
+
+    if ( ia[i] == ia[i+1] )
+    {
+        *hasProperty = false;
+    }
+    else if ( ja[ia[i]] != i )
     {
         *hasProperty = false;
     }
@@ -176,22 +187,24 @@ __global__ void hasDiagonalProperty_kernel(
 
 bool CUDACSRUtils::hasDiagonalProperty( const IndexType numDiagonals, const IndexType csrIA[], const IndexType csrJA[] )
 {
+    LAMA_REGION( "CUDA.CSRUtils.hasDiagonalProperty" )
+
     if ( numDiagonals == 0 )
     {
-        return false;
+        return true;
     }
+
+    LAMA_CHECK_CUDA_ACCESS
 
     //make grid
     const int blockSize = CUDASettings::getBlockSize();
     dim3 dimGrid( ( numDiagonals - 1 ) / blockSize + 1, 1, 1 ); // = makeGrid( numDiagonals, blockSize );
     dim3 dimBlock( blockSize, 1, 1 );
 
-    LAMA_CHECK_CUDA_ACCESS
-
     bool* d_hasProperty;
     bool hasProperty;
 
-    LAMA_CUDA_RT_CALL( cudaMalloc( (void**)&d_hasProperty, sizeof(bool) ),
+    LAMA_CUDA_RT_CALL( cudaMalloc( ( void** ) &d_hasProperty, sizeof( bool ) ),
                        "allocate 4 bytes on the device for the result of hasDiagonalProperty_kernel" )
     LAMA_CUDA_RT_CALL( cudaMemset( d_hasProperty, 1, sizeof(bool) ), "memset bool hasProperty = true" )
 
@@ -205,56 +218,130 @@ bool CUDACSRUtils::hasDiagonalProperty( const IndexType numDiagonals, const Inde
 }
 
 /* --------------------------------------------------------------------------- */
-/*     Template specialization convertCSR2CSC<float>                           */
 /* --------------------------------------------------------------------------- */
 
-template<>
-void CUDACSRUtils::convertCSR2CSC(
-    IndexType cscIA[],
-    IndexType cscJA[],
-    float cscValues[],
-    const IndexType csrIA[],
-    const IndexType csrJA[],
-    const float csrValues[],
-    int numRows,
-    int numColumns,
-    int /* numValues */)
+__global__
+static void build_ia_kernel(
+    IndexType* ia,
+    const IndexType nz,
+    const IndexType* offsets,
+    const IndexType n )
 {
-    LAMA_LOG_INFO( logger,
-                   "convertCSR2CSC<float> -> cusparseScsr2csc" << ", matrix size = " << numRows << " x " << numColumns )
+    const int i = threadId( gridDim, blockIdx, blockDim, threadIdx );
 
-    LAMA_CUSPARSE_CALL(
-        cusparseScsr2csc( CUDAContext_cusparseHandle, numRows, numColumns, csrValues, csrIA, csrJA, cscValues, cscJA, cscIA, 1, CUSPARSE_INDEX_BASE_ZERO ),
-        "convertCSR2SCC<float>" )
+    if ( i < n )
+    {
+        // loop over all none zero elements of column i
 
-    LAMA_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "convertCSR2CSC" )
+        for ( IndexType ii = offsets[i]; ii < offsets[i + 1]; ++ii )
+        {
+            ia[ii] = i;
+        }
+    }
 }
 
 /* --------------------------------------------------------------------------- */
-/*     Template specialization convertCSR2CSC<double>                          */
+
+__global__
+static void build_offset_kernel(
+    IndexType* offsets,
+    const IndexType n,
+    const IndexType* ia,
+    const IndexType nz )
+{
+    const int i = threadId( gridDim, blockIdx, blockDim, threadIdx );
+
+    // Entries in offset filled every time there is a change in values of consecutive elements
+    //   i:     0  1  2  3  4  5
+    //  ia:     0  0  1  1  1  3
+    // nd1:     0  0  1  1  1  3
+    // nd2:     0  1  1  1  3  4
+    //             x        x  x
+    //             |        |  |->                  
+    //             |        |---->                
+    //             |------------->       2          
+    // offset:                        0  2  5  5  6
+
+    if ( i < nz )
+    {
+        IndexType nd1 = ia[i];
+        IndexType nd2 = n;
+
+        if ( i + 1 < nz )
+        {
+            nd2 = ia[i + 1];
+        }
+
+        for ( IndexType j = nd1; j < nd2; j++ )
+        {
+            offsets[j+1] = i + 1;
+        }
+
+        if ( i == 0 )
+        {
+            for ( IndexType i = 0; i <= nd1; i++ )
+            {
+                offsets[i] = 0;
+            }
+        }
+    }
+}
+
 /* --------------------------------------------------------------------------- */
 
-template<>
+template<typename ValueType>
 void CUDACSRUtils::convertCSR2CSC(
     IndexType cscIA[],
     IndexType cscJA[],
-    double cscValues[],
+    ValueType cscValues[],
     const IndexType csrIA[],
     const IndexType csrJA[],
-    const double csrValues[],
+    const ValueType csrValues[],
     int numRows,
     int numColumns,
-    int /* numValues */)
+    int numValues )
 {
-    LAMA_LOG_INFO( logger,
-                   "convertCSR2CSC<double> -> cusparseDcsr2csc" << ", matrix size = " << numRows << " x " << numColumns )
+    LAMA_REGION( "CUDA.CSRUtils.CSR2CSC" )
 
-    LAMA_CUSPARSE_CALL( cusparseDcsr2csc( CUDAContext_cusparseHandle, numRows, numColumns, 
-                                          csrValues, csrIA, csrJA, cscValues, cscJA, cscIA, 1, 
-                                          CUSPARSE_INDEX_BASE_ZERO ),
-                        "convertCSR2SCC<double>" )
+    LAMA_LOG_INFO( logger, "convertCSR2CSC of " << numRows << " x " << numColumns << ", nnz = " << numValues )
 
-    LAMA_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "convertCSR2CSC" )
+    // Sort the csrJA ( same as cooJA ), apply it to cooIA and cooValues
+
+    IndexType* cooIA;
+
+    LAMA_CUDA_RT_CALL( cudaMalloc( &cooIA, sizeof( IndexType ) * numValues ),
+                       "allocate temp for cooIA" )
+
+    // Step 1 : build COO storage,  cooIA (to do), cooJA ( = csrJA ), cooValues ( = csrValues )
+    //          -> translate the csrIA offset array to a cooIA array
+
+    const int blockSize = CUDASettings::getBlockSize();
+    dim3 dimBlock( blockSize, 1, 1 );
+    dim3 dimGrid = makeGrid( numRows, dimBlock.x );
+
+    build_ia_kernel<<<dimGrid, dimBlock>>>( cscJA, numValues, csrIA, numRows );
+
+    // switch cooIA and cooJA, copy values and resort
+
+    CUDAUtils::set( cooIA, csrJA, numValues );
+    CUDAUtils::set( cscValues, csrValues, numValues );
+
+    thrust::device_ptr<IndexType> ja_d( cooIA );
+    thrust::device_ptr<ValueType> values_d( cscValues );
+    thrust::device_ptr<IndexType> ia_d( cscJA );
+
+    // sort by column indexes in ascending order
+    // zip_iterator used to resort cscValues and cscJA in one step
+
+    thrust::stable_sort_by_key( ja_d, ja_d + numValues, 
+                                thrust::make_zip_iterator( thrust::make_tuple( values_d, ia_d ) ) );
+
+    // cscJA is now sorted, can become an offset array
+
+    dimGrid = makeGrid( numValues, dimBlock.x );
+    build_offset_kernel<<<dimGrid, dimBlock>>>( cscIA, numColumns, cooIA, numValues );
+
+    LAMA_CUDA_RT_CALL( cudaFree( cooIA ), "free tmp cooIA" )
 }
 
 /* --------------------------------------------------------------------------- */
@@ -492,6 +579,8 @@ void CUDACSRUtils::normalGEMV(
     const ValueType csrValues[],
     SyncToken* syncToken )
 {
+    LAMA_REGION( "CUDA.CSRUtils.normalGEMV" )
+
     LAMA_LOG_INFO( logger, "normalGEMV<" << Scalar::getType<ValueType>() << ">" << 
                            " result[ " << numRows << "] = " << alpha << " * A(csr) * x + " << beta << " * y " )
 
@@ -661,6 +750,8 @@ void CUDACSRUtils::sparseGEMV(
     const ValueType csrValues[],
     SyncToken* syncToken )
 {
+    LAMA_REGION( "CUDA.CSRUtils.sparseGEMV" )
+
     LAMA_LOG_INFO( logger,
                    "sparseGEMV<" << Scalar::getType<ValueType>() << ">" << ", #non-zero rows = " << numNonZeroRows )
 
@@ -1253,7 +1344,7 @@ IndexType CUDACSRUtils::matrixAddSizes(
     const IndexType bIa[],
     const IndexType bJa[] )
 {
-    LAMA_REGION( "CUDA.CSR.matrixAddSizes" )
+    LAMA_REGION( "CUDA.CSRUtils.matrixAddSizes" )
 
     LAMA_LOG_INFO(
         logger,
@@ -1485,7 +1576,7 @@ IndexType CUDACSRUtils::matrixMultiplySizes(
     const IndexType bIa[],
     const IndexType bJa[] )
 {
-    LAMA_REGION( "CUDA.CSR.matrixMultiplySizes" )
+    LAMA_REGION( "CUDA.CSRUtils.matrixMultiplySizes" )
 
     LAMA_LOG_INFO(
         logger,
@@ -1724,7 +1815,7 @@ void CUDACSRUtils::matrixAdd(
     const IndexType bJA[],
     const ValueType bValues[] )
 {
-    LAMA_REGION( "CUDA.CSR.matrixAdd" )
+    LAMA_REGION( "CUDA.CSRUtils.matrixAdd" )
 
     LAMA_LOG_INFO( logger, "matrixAdd for " << numRows << "x" << numColumns << " matrix" )
 
@@ -2068,7 +2159,7 @@ void CUDACSRUtils::matrixMultiply(
     const IndexType bJa[],
     const ValueType bValues[] )
 {
-    LAMA_REGION( "CUDA.CSR.matrixMultiply" )
+    LAMA_REGION( "CUDA.CSRUtils.matrixMultiply" )
 
     LAMA_LOG_INFO( logger, "matrixMultiply for " << numRows << "x" << numColumns << " matrix" )
 

@@ -32,13 +32,14 @@
  */
 
 #include "LamaConfig.hpp"
+#include "LamaTiming.hpp"
 
 #include <lama/matrix/all.hpp>
 
 #include <lama/DenseVector.hpp>
 #include <lama/CommunicatorFactory.hpp>
-#include <lama/distribution/BlockDistribution.hpp>
-#include <lama/distribution/NoDistribution.hpp>
+#include <lama/distribution/GenBlockDistribution.hpp>
+#include <lama/distribution/MetisDistribution.hpp>
 
 #include <lama/solver/CG.hpp>
 #include <lama/solver/TrivialPreconditioner.hpp>
@@ -46,8 +47,6 @@
 #include <lama/solver/criteria/ResidualThreshold.hpp>
 #include <lama/solver/criteria/IterationCount.hpp>
 #include <lama/norm/L2Norm.hpp>
-
-#include <lama/Walltime.hpp>
 
 using namespace std;
 using namespace lama;
@@ -106,49 +105,56 @@ int main( int argc, char* argv[] )
 
     cout << lamaconf << endl;
 
-    double start = Walltime::get();   // start timing of reading
+    {
+        LamaTiming timer( comm, "Loading data" );
 
-    // read matrix + rhs from disk
+        // read matrix + rhs from disk
 
-    matrix.readFromFile( filename );
-    rhs.readFromFile( filename );
+        matrix.readFromFile( filename );
+        rhs.readFromFile( filename );
 
-    // only square matrices are accetpted
+        // only square matrices are accetpted
 
-    LAMA_ASSERT_EQUAL( matrix.getNumRows(), matrix.getNumColumns() )
-    LAMA_ASSERT_EQUAL( matrix.getNumRows(), rhs.size() )
-
-    int numRows = matrix.getNumRows();
+        LAMA_ASSERT_EQUAL( matrix.getNumRows(), matrix.getNumColumns() )
+        LAMA_ASSERT_EQUAL( matrix.getNumRows(), rhs.size() )
+    }
 
     // for solutin create vector with same format/type as rhs, size = numRows, init = 0.0
 
     auto_ptr<Vector> solutionPtr( rhs.create( rhs.getDistributionPtr() ) );
     Vector& solution = *solutionPtr;
 
+    int numRows = matrix.getNumRows();
+
     solution = 0.0;   // intialize of a vector
-
-    double stop = Walltime::get();  // stop timing for reading
-
-    if ( myRank == 0 )
-    {
-        cout << "loading data took " << stop - start << " secs." << endl;
-    }
-
-    start = Walltime::get();   // start timing of redistribution
 
     // distribute data (trivial block partitioning)
 
-    DistributionPtr dist( new BlockDistribution( numRows, lamaconf.getCommunicatorPtr() ) );
-
-    matrix.redistribute( dist, dist );
-    rhs.redistribute ( dist );
-    solution.redistribute ( dist );
-
-    stop = Walltime::get();   // stop timing of redistribution
-
-    if ( myRank == 0 )
+    if ( numProcs > 1 )
     {
-        cout << "redistributing data took " << stop - start << " secs." << endl;
+        LamaTiming timer( comm, "Redistribution" );
+
+        // determine a new distribution so that each processor gets part of the matrix according to its weight
+
+        float weight = lamaconf.getWeight();
+
+        DistributionPtr dist;
+
+        if ( lamaconf.useMetis() )
+        {
+            LamaTiming timer( comm, "Metis" );
+            dist.reset( new MetisDistribution( lamaconf.getCommunicatorPtr(), matrix, weight ) );
+        }
+        else
+        {
+            dist.reset( new GenBlockDistribution( numRows, weight, lamaconf.getCommunicatorPtr() ) );
+        }
+
+        matrix.redistribute( dist, dist );
+        rhs.redistribute ( dist );
+        solution.redistribute ( dist );
+
+        cout << comm << ": matrix = " << matrix ;
     }
 
     double matrixSize  = matrix.getMemoryUsage() / 1024.0 / 1024.0;
@@ -158,23 +164,18 @@ int main( int argc, char* argv[] )
         cout << "Matrix Size = " << matrixSize << " MB" << endl;
     }
 
-    start = Walltime::get();  // start time of data transfer
-
-    matrix.setCommunicationKind( lamaconf.getCommunicationKind() );
-    matrix.setContext( lamaconf.getContextPtr() );
-    rhs.setContext( lamaconf.getContextPtr() );
-    solution.setContext( lamaconf.getContextPtr() );
-
-    rhs.prefetch();
-    matrix.prefetch();
-    matrix.wait();
-    rhs.wait();
-
-    stop = Walltime::get();
-
-    if ( myRank == 0 )
     {
-        cout << "prefetching data took " << stop - start << " secs." << endl;
+        LamaTiming timer( comm, "Prefetching" );
+
+        matrix.setCommunicationKind( lamaconf.getCommunicationKind() );
+        matrix.setContext( lamaconf.getContextPtr() );
+        rhs.setContext( lamaconf.getContextPtr() );
+        solution.setContext( lamaconf.getContextPtr() );
+
+        rhs.prefetch();
+        matrix.prefetch();
+        matrix.wait();
+        rhs.wait();
     }
 
     // setting up solver from file "solveconfig.txt"
@@ -208,44 +209,25 @@ int main( int argc, char* argv[] )
     // SolverPtr preconditioner( new TrivialPreconditioner( "Trivial preconditioner" ) );
     // mySolver.setPreconditioner( preconditioner );
 
-    start = Walltime::get();
-
-    // initialize solver
-
-    mySolver.initialize( matrix );
-
-    stop = Walltime::get();
-
-    if ( myRank == 0 )
     {
-        cout << "Solver setup took " << stop - start << " secs." << endl;
+        LamaTiming timer( comm, "Solver setup" );
+
+        mySolver.initialize( matrix );
     }
 
-    // run solver
-
-    start = Walltime::get();
-
-    mySolver.solve( solution, rhs );
-
-    stop = Walltime::get();
-
-    if ( myRank == 0 )
     {
-        cout << "Solution phase took " << stop - start << " secs." << endl;
+        LamaTiming timer( comm, "Solver solve" );
+
+        mySolver.solve( solution, rhs );
     }
 
     bool writeFlag = false;
 
     if ( writeFlag )
     {
-         start = Walltime::get();
-         solution.writeToFile( "CG_solution" );
-         stop = Walltime::get();
+        LamaTiming timer( comm, "Writing solution" );
 
-         if ( myRank == 0 )
-         {
-             cout << "Writing solution: " << stop - start << " secs." << endl;
-         }
+        solution.writeToFile( "CG_solution" );
     }
 }
 
