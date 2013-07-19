@@ -99,7 +99,7 @@ void countNonEmptyRowsBySizesTest( ContextPtr loc )
     }  // try
 	catch( Exception )
 	{
-		std::cout <<  "WARN: ELLUtils::countNonEmptyRowsBySizes not available on " << *loc << ", not tested" << std::endl;
+        BOOST_TEST_MESSAGE("WARN: ELLUtils::countNonEmptyRowsBySizes not available on " << *loc << ", not tested" );
 		return;
 	}
 }
@@ -142,7 +142,7 @@ void setNonEmptyRowsBySizesTest( ContextPtr loc )
     } // try
 	catch( Exception )
 	{
-		std::cout <<  "WARN: ELLUtils::setNonEmptyRowsBySizes not available on " << *loc << ", not tested" << std::endl;
+        BOOST_TEST_MESSAGE("WARN: ELLUtils::setNonEmptyRowsBySizes not available on " << *loc << ", not tested" );
 		return;
 	}
 }
@@ -206,7 +206,7 @@ void hasDiagonalPropertyTest( ContextPtr loc )
     } // try
 	catch( Exception )
 	{
-		std::cout <<  "WARN: ELLUtils::hasDiagonalProperty not available on " << *loc << ", not tested" << std::endl;
+        BOOST_TEST_MESSAGE("WARN: ELLUtils::hasDiagonalProperty not available on " << *loc << ", not tested" );
 		return;
 	}
 }
@@ -326,7 +326,7 @@ void checkTest( ContextPtr loc )
     }  // try
 	catch( Exception )
 	{
-		std::cout <<  "WARN: ELLUtils::check not available on " << *loc << ", not tested" << std::endl;
+        BOOST_TEST_MESSAGE("WARN: ELLUtils::check not available on " << *loc << ", not tested" );
 		return;
 	}
 }
@@ -428,7 +428,7 @@ void getRowTest( ContextPtr loc )
     } // try
 	catch( Exception )
 	{
-		std::cout <<  "WARN: ELLUtils::getRow not available on " << *loc << ", not tested" << std::endl;
+        BOOST_TEST_MESSAGE("WARN: ELLUtils::getRow not available on " << *loc << ", not tested" );
 		return;
 	}
 }
@@ -480,7 +480,7 @@ void getValueTest( ContextPtr loc )
     }  // try
 	catch( Exception )
 	{
-		std::cout <<  "WARN: ELLUtils::getValue not available on " << *loc << ", not tested" << std::endl;
+        BOOST_TEST_MESSAGE("WARN: ELLUtils::getValue not available on " << *loc << ", not tested" );
 		return;
 	}
 }
@@ -533,7 +533,7 @@ void scaleValueTest( ContextPtr loc )
     }  // try
 	catch( Exception )
 	{
-		std::cout <<  "WARN: ELLUtils::scaleValue not available on " << *loc << ", not tested" << std::endl;
+        BOOST_TEST_MESSAGE("WARN: ELLUtils::scaleValue not available on " << *loc << ", not tested" );
 		return;
 	}
 }
@@ -607,7 +607,7 @@ void getCSRValuesTest( ContextPtr loc )
     }  // try
 	catch( Exception )
 	{
-		std::cout <<  "WARN: ELLUtils::getCSRValues not available on " << *loc << ", not tested" << std::endl;
+        BOOST_TEST_MESSAGE("WARN: ELLUtils::getCSRValues not available on " << *loc << ", not tested" );
 		return;
 	}
 }
@@ -679,7 +679,7 @@ void setCSRValuesTest( ContextPtr loc )
     }  // try
     catch( Exception )
     {
-        std::cout <<  "WARN: ELLUtils::setCSRValues not available on " << *loc << ", not tested" << std::endl;
+        BOOST_TEST_MESSAGE("WARN: ELLUtils::setCSRValues not available on " << *loc << ", not tested" );
         return;
     }
 }
@@ -827,7 +827,7 @@ void compressIATest( ContextPtr loc )
     }  // try
     catch( Exception )
     {
-        std::cout <<  "WARN: ELLUtils::compressIA not available on " << *loc << ", not tested" << std::endl;
+        BOOST_TEST_MESSAGE("WARN: ELLUtils::compressIA not available on " << *loc << ", not tested" );
         return;
     }
 }
@@ -1003,7 +1003,7 @@ void compressValuesTest( ContextPtr loc )
     }  // try
     catch( Exception )
     {
-        std::cout <<  "WARN: ELLUtils::compressValues not available on " << *loc << ", not tested" << std::endl;
+        BOOST_TEST_MESSAGE("WARN: ELLUtils::compressValues not available on " << *loc << ", not tested" );
         return;
     }
 }
@@ -1127,7 +1127,7 @@ void matrixMultiplySizesTest( ContextPtr loc )
     }  // try
     catch( Exception )
     {
-        std::cout <<  "WARN: ELLUtils::matrixMultiplySizes not available on " << *loc << ", not tested" << std::endl;
+        BOOST_TEST_MESSAGE("WARN: ELLUtils::matrixMultiplySizes not available on " << *loc << ", not tested" );
         return;
     }
 }
@@ -1385,7 +1385,7 @@ void matrixMultiplyTest( ContextPtr loc )
     }  // try
     catch( Exception )
     {
-        std::cout <<  "WARN: ELLUtils::matrixMultiply not available on " << *loc << ", not tested" << std::endl;
+        BOOST_TEST_MESSAGE("WARN: ELLUtils::matrixMultiply not available on " << *loc << ", not tested" );
         return;
     }
 }
@@ -1461,7 +1461,7 @@ void matrixAddSizesTest( ContextPtr loc )
     }  // try
     catch( Exception )
     {
-        std::cout <<  "WARN: ELLUtils::matrixAddSizes not available on " << *loc << ", not tested" << std::endl;
+        BOOST_TEST_MESSAGE("WARN: ELLUtils::matrixAddSizes not available on " << *loc << ", not tested" );
         return;
     }
 }
@@ -1639,7 +1639,7 @@ void matrixAddTest( ContextPtr loc )
     }  // try
     catch( Exception )
     {
-        std::cout <<  "WARN: ELLUtils::matrixAdd not available on " << *loc << ", not tested" << std::endl;
+        BOOST_TEST_MESSAGE("WARN: ELLUtils::matrixAdd not available on " << *loc << ", not tested" );
         return;
     }
 }
