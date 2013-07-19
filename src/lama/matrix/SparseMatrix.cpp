@@ -1289,22 +1289,42 @@ void SparseMatrix<ValueType>::vectorHaloOperationSync(
     ContextPtr localContext = mLocalData->getContextPtr();
     ContextPtr haloContext = mLocalData->getContextPtr();
 
-    LAMA_ASSERT( localX.size() == rowDist->getLocalSize(), "size mismatch " << localX.size() << " != " << rowDist->getLocalSize() )
+    IndexType xSize = localX.size();
+    LAMA_ASSERT( xSize == rowDist->getLocalSize(), "size mismatch of localX and rowDistribution " << xSize << " != " << rowDist->getLocalSize() )
 
-    IndexType localSize = localResult.size();
-    LAMA_ASSERT( localSize == colDist->getLocalSize(), "size mismatch " << localSize << " != " << colDist->getLocalSize() )
-
-    LAMAArray<ValueType> toOthersResult( localX.size() - localSize );
-    LAMAArray<ValueType> fromOthersResult( localSize * numParts );
+    IndexType ySize = localY.size();
+    IndexType resultSize = localResult.size();
+    LAMA_ASSERT( ySize == resultSize, "size mismatch of localY and localResult" << ySize << " != " << resultSize )
+    LAMA_ASSERT( ySize == colDist->getLocalSize(), "size mismatch of localY and columnDistribution" << ySize << " != " << colDist->getLocalSize() )
 
     LAMA_INTERFACE_FN( sizes2offsets, hostContext, CSRUtils, Offsets );
 
     std::vector<IndexType> sizes;
     std::vector<IndexType> offsets;
-    comm.gather( sizes, localSize );
+    comm.gather( sizes, xSize );
     offsets = sizes;
     offsets.resize( numParts + 1 );
     sizes2offsets( &offsets[0], numParts );
+
+    LAMAArray<ValueType> toOthersResult( offsets[numParts] - xSize );
+    LAMAArray<ValueType> fromOthersResult( xSize * numParts );
+
+//    if ( myPart == 0 )
+//    {
+//        std::cout << "sizes: ";
+//        for( unsigned int i = 0; i < sizes.size(); ++i )
+//        {
+//            std::cout << sizes[i] << " ";
+//        }
+//        std::cout << std::endl;
+//
+//        std::cout << "offsets: ";
+//        for( unsigned int i = 0; i < offsets.size(); ++i )
+//        {
+//            std::cout << offsets[i] << " ";
+//        }
+//        std::cout << std::endl;
+//    }
 
     if ( numParts != 1 )
     {
@@ -1313,10 +1333,18 @@ void SparseMatrix<ValueType>::vectorHaloOperationSync(
             LAMA_REGION( "Vec.Times.Mat.others" )
 
             LAMA_LOG_INFO( logger, comm << ": synchronous computation othersResult[ " << toOthersResult.size()
-                                        << "] = localF( haloMatrix, localX[ " << localX.size()
+                                        << "] = localF( haloMatrix, localX[ " << xSize
                                         << "] ) on " << haloContext )
 
             calcF( mHaloData.get(), toOthersResult, localX);
+
+            HostReadAccess<ValueType> o( toOthersResult );
+            std::cout << myPart << " other ";
+            for(IndexType i = 0; i < toOthersResult.size(); ++i )
+            {
+                std::cout << o[i] << " ";
+            }
+            std::cout << std::endl;
         }
 
         // start vector part exchange
@@ -1330,6 +1358,13 @@ void SparseMatrix<ValueType>::vectorHaloOperationSync(
             {
                 comm.gather( &fromOthers[ offsets[i] ], sizes[i], i, &toOthers[ offsets[i] ] );
             }
+
+            std::cout << myPart << " fromOthers ";
+            for(IndexType i = 0; i < fromOthers.size(); ++i )
+            {
+                std::cout << fromOthers[i] << " ";
+            }
+            std::cout << std::endl;
         }
         toOthersResult.prefetch( localContext );
     }
@@ -1338,19 +1373,27 @@ void SparseMatrix<ValueType>::vectorHaloOperationSync(
     {
         LAMA_REGION( "Vec.Times.Mat.local" )
 
-        LAMA_LOG_INFO( logger, comm << ": synchronous computation localResult[ " << localResult.size()
-                                    << "] = localF( localMatrix, localX[ " << localX.size()
+        LAMA_LOG_INFO( logger, comm << ": synchronous computation localResult[ " << resultSize
+                                    << "] = localF( localMatrix, localX[ " << xSize
                                     << "] ) on " << localContext )
 
         calcF( mLocalData.get(), localResult, localX);
+
+        HostReadAccess<ValueType> l( localResult );
+        std::cout << myPart << " local ";
+        for(IndexType i = 0; i < localResult.size(); ++i )
+        {
+            std::cout << l[i] << " ";
+        }
+        std::cout << std::endl;
     }
 
     // alpha * ( sum up local vector parts with halo vector parts ) + beta * y
     {
         LAMA_REGION( "Vec.Vec.add" )
 
-        LAMA_LOG_INFO( logger, comm << ": synchronous computation localResult[ " << localResult.size()
-                                    << "] = localF( localMatrix, localX[ " << localX.size()
+        LAMA_LOG_INFO( logger, comm << ": synchronous computation localResult[ " << resultSize
+                                    << "] = localF( localMatrix, localX[ " << xSize
                                     << "] ) on " << localContext )
 
         if ( numParts != 1 )
@@ -1360,9 +1403,10 @@ void SparseMatrix<ValueType>::vectorHaloOperationSync(
             int count = 0;
             for( IndexType i = 0; i < numParts && i != myPart ; ++i )
             {
-                for( IndexType j = 0; j < localSize; ++j )
+                for( IndexType j = 0; j < xSize; ++j )
                 {
-                    localData[j] += otherData[ count * localSize + j ];
+                    std::cout << myPart << " " << localData[j] << " += " << otherData[ count * xSize + j ] << std::endl;
+                    localData[j] += otherData[ count * xSize + j ];
                 }
                 ++count;
             }
@@ -1502,22 +1546,42 @@ void SparseMatrix<ValueType>::vectorHaloOperationAsync(
     ContextPtr localContext = mLocalData->getContextPtr();
     ContextPtr haloContext = mLocalData->getContextPtr();
 
-    LAMA_ASSERT( localX.size() == rowDist->getLocalSize(), "size mismatch " << localX.size() << " != " << rowDist->getLocalSize() )
+    IndexType xSize = localX.size();
+    LAMA_ASSERT( xSize == rowDist->getLocalSize(), "size mismatch of localX and rowDistribution " << xSize << " != " << rowDist->getLocalSize() )
 
-    IndexType localSize = localResult.size();
-    LAMA_ASSERT( localSize == colDist->getLocalSize(), "size mismatch " << localSize << " != " << colDist->getLocalSize() )
-
-    LAMAArray<ValueType> toOthersResult( localX.size() - localSize );
-    LAMAArray<ValueType> fromOthersResult( localSize * numParts );
+    IndexType ySize = localY.size();
+    IndexType resultSize = localResult.size();
+    LAMA_ASSERT( ySize == resultSize, "size mismatch of localY and localResult" << ySize << " != " << resultSize )
+    LAMA_ASSERT( ySize == colDist->getLocalSize(), "size mismatch of localY and columnDistribution" << ySize << " != " << colDist->getLocalSize() )
 
     LAMA_INTERFACE_FN( sizes2offsets, hostContext, CSRUtils, Offsets );
 
     std::vector<IndexType> sizes;
     std::vector<IndexType> offsets;
-    comm.gather( sizes, localSize );
+    comm.gather( sizes, xSize );
     offsets = sizes;
     offsets.resize( numParts + 1 );
     sizes2offsets( &offsets[0], numParts );
+
+    LAMAArray<ValueType> toOthersResult( offsets[numParts] - xSize );
+    LAMAArray<ValueType> fromOthersResult( xSize * numParts );
+
+//    if ( myPart == 0 )
+//    {
+//        std::cout << "sizes: ";
+//        for( unsigned int i = 0; i < sizes.size(); ++i )
+//        {
+//            std::cout << sizes[i] << " ";
+//        }
+//        std::cout << std::endl;
+//
+//        std::cout << "offsets: ";
+//        for( unsigned int i = 0; i < offsets.size(); ++i )
+//        {
+//            std::cout << offsets[i] << " ";
+//        }
+//        std::cout << std::endl;
+//    }
 
     if ( numParts != 1 )
     {
@@ -1525,13 +1589,21 @@ void SparseMatrix<ValueType>::vectorHaloOperationAsync(
         {
             LAMA_REGION( "Vec.Times.Mat.others" )
 
-            LAMA_LOG_INFO( logger, comm << ": synchronous computation othersResult[ " << toOthersResult.size()
-                                        << "] = localF( haloMatrix, localX[ " << localSize
+            LAMA_LOG_INFO( logger, comm << ": asynchronous computation othersResult[ " << toOthersResult.size()
+                                        << "] = localF( haloMatrix, localX[ " << xSize
                                         << "] ) on " << haloContext )
 
             calcF( mHaloData.get(), toOthersResult, localX );
 
             toOthersResult.prefetch( hostContext );
+
+            HostReadAccess<ValueType> o( toOthersResult );
+            std::cout << myPart << " other ";
+            for(IndexType i = 0; i < toOthersResult.size(); ++i )
+            {
+                std::cout << o[i] << " ";
+            }
+            std::cout << std::endl;
         }
     }
 
@@ -1541,11 +1613,19 @@ void SparseMatrix<ValueType>::vectorHaloOperationAsync(
     {
         LAMA_REGION( "Vec.Times.Mat.local" )
 
-        LAMA_LOG_INFO( logger, comm << ": synchronous computation localResult[ " << localSize
-                                    << "] = localF( localMatrix, localX[ " << localX.size()
+        LAMA_LOG_INFO( logger, comm << ": asynchronous computation localResult[ " << resultSize
+                                    << "] = localF( localMatrix, localX[ " << xSize
                                     << "] ) on " << localContext )
 
         localComputation.reset( calcF( mLocalData.get(), localResult, localX ) );
+
+        HostReadAccess<ValueType> l( localResult );
+        std::cout << myPart << " local ";
+        for(IndexType i = 0; i < localResult.size(); ++i )
+        {
+            std::cout << l[i] << " ";
+        }
+        std::cout << std::endl;
     }
 
     if ( numParts != 1 )
@@ -1561,7 +1641,15 @@ void SparseMatrix<ValueType>::vectorHaloOperationAsync(
             {
                 comm.gather( &fromOthers[ offsets[i] ], sizes[i], i, &toOthers[ offsets[i] ] );
             }
+
+            std::cout << myPart << " fromOthers ";
+            for(IndexType i = 0; i < fromOthers.size(); ++i )
+            {
+                std::cout << fromOthers[i] << " ";
+            }
+            std::cout << std::endl;
         }
+
         toOthersResult.prefetch( localContext );
     }
 
@@ -1571,8 +1659,8 @@ void SparseMatrix<ValueType>::vectorHaloOperationAsync(
     {
         LAMA_REGION( "Vec.Vec.add" )
 
-        LAMA_LOG_INFO( logger, comm << ": synchronous computation localResult[ " << localSize
-                                    << "] = localF( localMatrix, localX[ " << localX.size()
+        LAMA_LOG_INFO( logger, comm << ": asynchronous computation localResult[ " << resultSize
+                                    << "] = localF( localMatrix, localX[ " << xSize
                                     << "] ) on " << localContext )
 
         if ( numParts != 1 )
@@ -1582,9 +1670,10 @@ void SparseMatrix<ValueType>::vectorHaloOperationAsync(
             int count = 0;
             for( IndexType i = 0; i < numParts && i != myPart ; ++i )
             {
-                for( IndexType j = 0; j < localSize; ++j )
+                for( IndexType j = 0; j < xSize; ++j )
                 {
-                    localData[j] += otherData[ count * localSize + j ];
+                    std::cout << myPart << " " << localData[j] << " += " << otherData[ count * xSize + j ] << std::endl;
+                    localData[j] += otherData[ count * xSize + j ];
                 }
                 ++count;
             }
@@ -1851,7 +1940,7 @@ void SparseMatrix<ValueType>::vectorTimesMatrix(
         const Scalar beta,
         const Vector& y ) const
 {
-    LAMA_LOG_INFO( logger, result << " = " << alpha << " * " << *this << " * " << x << " + " << beta << " * " << y )
+    LAMA_LOG_INFO( logger, result << " = " << alpha << " * " << x << " * " << *this << " + " << beta << " * " << y )
 
     if ( ( &result == &y ) && ( beta != Scalar( 0.0 ) ) )
     {
