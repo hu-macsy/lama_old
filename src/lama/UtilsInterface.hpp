@@ -1743,9 +1743,17 @@ struct COOUtilsInterface
                                        const IndexType numRows,
                                        const IndexType numValues,
                                        const IndexType cooIA[] );
+
+        typedef void ( *offsets2ia )( IndexType cooIA[],
+                                      const IndexType numValues,
+                                      const IndexType csrIA[],
+                                      const IndexType numRows,
+                                      const IndexType numDiagonals );
+
     };
 
     LAMA_INTERFACE_DEFINE( Counting, getCSRSizes )
+    LAMA_INTERFACE_DEFINE( Counting, offsets2ia )
 
     template<typename COOValueType, typename CSRValueType>
     struct Conversions
@@ -1792,10 +1800,18 @@ struct COOUtilsInterface
                                          const IndexType csrJA[],
                                          const CSRValueType csrValues[],
                                          const bool csrDiagonalProperty );
+
+        typedef void ( *setCSRData ) ( COOValueType cooValues[],
+                                       const CSRValueType csrValues[],
+                                       const IndexType numValues,
+                                       const IndexType csrIA[],
+                                       const IndexType numRows,
+                                       const IndexType numDiagonals );
     };
 
     LAMA_INTERFACE_DEFINE_TT( Conversions, getCSRValues )
     LAMA_INTERFACE_DEFINE_TT( Conversions, setCSRValues )
+    LAMA_INTERFACE_DEFINE_TT( Conversions, setCSRData )
 
     template<typename ValueType>
     struct Mult

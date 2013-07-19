@@ -59,6 +59,15 @@ class LAMA_DLL_IMPORTEXPORT OpenMPCOOUtils
 {
 public:
 
+    /** OpenMP implementation for COOUtilsInterface::Counting::offsets2ia */
+
+    static void offsets2ia(
+        IndexType cooIA[],
+        const IndexType numValues,
+        const IndexType csrIA[],
+        const IndexType numRows,
+        const IndexType numDiagonals );
+
     /** OpenMP implementation for COOUtilsInterface::Counting::getCSRSizes */
 
     static void getCSRSizes(
@@ -93,6 +102,17 @@ public:
         const IndexType csrJA[],
         const CSRValueType csrValues[],
         const bool csrDiagonalProperty );
+
+    /** OpenMP implementation for COOUtilsInterface::Conversions::setCSRData */
+
+    template<typename COOValueType,typename CSRValueType>
+    static void setCSRData(
+        COOValueType cooValues[],
+        const CSRValueType csrValues[],
+        const IndexType numValues,
+        const IndexType csrIA[],
+        const IndexType numRows,
+        const IndexType numDiagonals );
 
     /** Implementation for CSRUtilsInterface::Mult::normalGEMV  */
 
