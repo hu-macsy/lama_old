@@ -65,7 +65,7 @@ namespace CSRUtilsTest
 /* ------------------------------------------------------------------------------------------------------------------ */
 
 template<typename ValueType, typename OtherValueType>
-void absMaxDiffValTest( ContextPtr loc )
+void absMaxDiffValTest( ContextPtr loc, log4lama::Logger &logger )
 {
     try
     {
@@ -110,13 +110,13 @@ void absMaxDiffValTest( ContextPtr loc )
     }
     catch ( Exception )
     {
-        std::cout <<  "WARN: CSRUtils::absMaxDiffVal not available on " << *loc << ", not tested" << std::endl;
+        LAMA_LOG_WARN( logger, "CSRUtils::absMaxDiffVal not available on " << *loc << ", not tested yet." )
         return;
     }
 }
 
 template<typename ValueType>
-void transposeTestSquare( ContextPtr loc )
+void transposeTestSquare( ContextPtr loc, log4lama::Logger &logger )
 {
     //  input array           transpose
     //    1.0   -   2.0       1.0  0.5   -
@@ -158,7 +158,7 @@ void transposeTestSquare( ContextPtr loc )
     }
     catch ( Exception )
     {
-        std::cout <<  "WARN: CSRUtils::csr2csc not available on " << *loc << ", not tested" << std::endl;
+        LAMA_LOG_WARN( logger, "CSRUtils::convertCSR2CSC not available on " << *loc << ", not tested yet." )
         return;
     }
 
@@ -194,7 +194,7 @@ void transposeTestSquare( ContextPtr loc )
 }
 
 template<typename ValueType>
-void transposeTestNonSquare( ContextPtr loc )
+void transposeTestNonSquare( ContextPtr loc, log4lama::Logger &logger )
 {
     //  input array           transpose
     //    1.0   -   2.0       1.0  0.5   -    4.0
@@ -237,7 +237,7 @@ void transposeTestNonSquare( ContextPtr loc )
     }
     catch ( Exception )
     {
-        std::cout <<  "WARN: CSRUtils::csr2csc not available on " << *loc << ", not tested" << std::endl;
+        LAMA_LOG_WARN( logger, "CSRUtils::convertCSR2CSC not available on " << *loc << ", not tested yet." )
         return;
     }
 
@@ -277,15 +277,14 @@ void transposeTestNonSquare( ContextPtr loc )
 } //namespace lama
 
 /* ------------------------------------------------------------------------------------------ */
+BOOST_AUTO_TEST_SUITE( CSRUtilsTest )
 
-BOOST_AUTO_TEST_SUITE( CSRUtilsTest );
+LAMA_LOG_DEF_LOGGER( logger, "Test.CSRUtilsTest" )
 
-LAMA_LOG_DEF_LOGGER( logger, "Test.CSRUtilsTest" );
-
-LAMA_AUTO_TEST_CASE_TT( absMaxDiffValTest, CSRUtilsTest );
-LAMA_AUTO_TEST_CASE_T( transposeTestSquare, CSRUtilsTest );
-LAMA_AUTO_TEST_CASE_T( transposeTestNonSquare, CSRUtilsTest );
+LAMA_AUTO_TEST_CASE_TTL( absMaxDiffValTest, CSRUtilsTest, logger )
+LAMA_AUTO_TEST_CASE_TL( transposeTestSquare, CSRUtilsTest, logger )
+LAMA_AUTO_TEST_CASE_TL( transposeTestNonSquare, CSRUtilsTest, logger )
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 
-BOOST_AUTO_TEST_SUITE_END();
+BOOST_AUTO_TEST_SUITE_END()
