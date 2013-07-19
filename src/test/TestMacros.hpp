@@ -313,9 +313,9 @@ inline lama::ContextType mapEnvContexttoContextType( std::string contextname )
  * This macro creates a boost test auto case, which uses all possible contexts.
  * The test case name is based on the name of the given test method.
  *
- * @param name          name of test method, which will invoke
- * @param classname     name of the given test class
- * @param logger        name of the given logger
+ * @param name          name of test method, which will invoke.
+ * @param classname     name of the given test class.
+ * @param logger        the given logger.
  */
 
 #define LAMA_AUTO_TEST_CASE_TL( name, classname, logger )                                                              \
@@ -337,8 +337,8 @@ inline lama::ContextType mapEnvContexttoContextType( std::string contextname )
  * This makro creates a boost test auto case, which uses all possible contexts.
  * The test case name is based on the name of the given testmethod.
  *
- * @param name          Name of testmethod, which will invoke
- * @param classname     Name of the given Testclass
+ * @param name          name of test method, which will invoke.
+ * @param classname     name of the given test class.
  */
 
 #define LAMA_AUTO_TEST_CASE_T( name, classname )                                                                       \
@@ -355,13 +355,41 @@ inline lama::ContextType mapEnvContexttoContextType( std::string contextname )
     }
 
 /*
- * @brief HelperMakro LAMA_AUTO_TEST_CASE_TT( name )
+ * @brief HelperMacro LAMA_AUTO_TEST_CASE_TTL( name, classname, logger )
  *
- * This makro creates a boost test auto case, which uses all possible contexts.
+ * This macro creates a boost test auto case, which uses all possible contexts.
  * The test case name is based on the name of the given testmethod. All combinations
  * of ValueTypes (at the moment float and double) will be executed.
  *
- * @param name     Name of testmethod, which will invoke
+ * @param name       name of test method, which will invoke.
+ * @param classname  name of the given test class.
+ * @param logger     the given logger.
+ */
+
+#define LAMA_AUTO_TEST_CASE_TTL( name, classname, logger )                                                             \
+    BOOST_AUTO_TEST_CASE( name )                                                                                       \
+    {                                                                                                                  \
+        CONTEXTLOOP()                                                                                                  \
+        {                                                                                                              \
+            GETCONTEXT( context );                                                                                     \
+            if ( loglevel_argument == "test_suite" )                                                                   \
+                BOOST_TEST_MESSAGE( "    Entering context: " << context->getType() );                                  \
+            lama::classname::name<float, float>( context, logger );                                                    \
+            lama::classname::name<double, double>( context, logger );                                                  \
+            lama::classname::name<float, double>( context, logger );                                                   \
+            lama::classname::name<double, float>( context, logger );                                                   \
+        }                                                                                                              \
+    }
+
+/*
+ * @brief HelperMacro LAMA_AUTO_TEST_CASE_TT( name, classname )
+ *
+ * This macro creates a boost test auto case, which uses all possible contexts.
+ * The test case name is based on the name of the given testmethod. All combinations
+ * of ValueTypes (at the moment float and double) will be executed.
+ *
+ * @param name       name of test method, which will invoke.
+ * @param classname  name of the given test class.
  */
 
 #define LAMA_AUTO_TEST_CASE_TT( name, classname )                                                                      \
@@ -380,14 +408,38 @@ inline lama::ContextType mapEnvContexttoContextType( std::string contextname )
     }
 
 /*
+ * @brief HelperMakro LAMA_AUTO_TEST_CASE_TLDUMMY( name, classname, logger )
+ *
+ * This macro creates a boost test auto case, which uses all possible contexts. The test case name is based
+ * on the name of the given test method. Uses a dummy type to execute the test, that is needed for methods
+ * that needs templating for other reasons (usage of the lama interface).
+ *
+ * @param name          name of test method, which will invoke.
+ * @param classname     name of the given test class.
+ * @param logger        the given logger.
+ */
+
+#define LAMA_AUTO_TEST_CASE_TLDUMMY( name, classname, logger )                                                         \
+    BOOST_AUTO_TEST_CASE( name )                                                                                       \
+    {                                                                                                                  \
+        CONTEXTLOOP()                                                                                                  \
+        {                                                                                                              \
+            GETCONTEXT( context );                                                                                     \
+            if ( loglevel_argument == "test_suite" )                                                                   \
+                BOOST_TEST_MESSAGE( "    Entering context: " << context->getType() );                                  \
+            lama::classname::name<name>( context, logger );                                                            \
+        }                                                                                                              \
+    }
+
+/*
  * @brief HelperMakro LAMA_AUTO_TEST_CASE_TDUMMY( name, classname )
  *
- * This makro creates a boost test auto case, which uses all possible contexts. The test case name is based
- * on thename of the given testmethod. Uses a dummy type to execute the test, that is needed for methods
- * that needs templation for other reasons (usage of the lama interface)
+ * This macro creates a boost test auto case, which uses all possible contexts. The test case name is based
+ * on the name of the given test method. Uses a dummy type to execute the test, that is needed for methods
+ * that needs templating for other reasons (usage of the lama interface).
  *
- * @param name          Name of testmethod, which will invoke
- * @param classname     Name of the given Testclass
+ * @param name          name of test method, which will invoke.
+ * @param classname     name of the given test class.
  */
 
 #define LAMA_AUTO_TEST_CASE_TDUMMY( name, classname )                                                                  \
