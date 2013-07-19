@@ -59,6 +59,7 @@ set ( SOURCE_FILES
         CommunicatorTest
         COOSparseMatrixTest
         COOStorageTest
+        COOUtilsTest
         CriterionTest
         CSRSparseMatrixTest
         CSRStorageTest
