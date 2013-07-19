@@ -480,7 +480,7 @@ public:
      * This method extracts sparse data (column indexes and data values) for rows
      *
      * @param[out] ja column indexes for the rows
-     * @param[out] matrix values corresponding to the columns
+     * @param[out] values corresponding to the columns
      */
 
     void buildSparseRowData( LAMAArray<IndexType>& ja,

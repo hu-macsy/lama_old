@@ -1744,6 +1744,17 @@ struct COOUtilsInterface
                                        const IndexType numValues,
                                        const IndexType cooIA[] );
 
+        /** Routine for conversion of CSR offset array to COO ia array
+         *
+         *  @param[out] cooIA is the array with all row indexes
+         *  @param[in] numValues number of non-zero values, size of cooIA
+         *  @param[in] csrIA is the CSR row offset array, size is numRows+1
+         *  @param[in] numRows number of rows
+         *  @param[in] numDiagonals is number of diagonals
+         *
+         *  The diagonal values will be stored at the beginning of the array cooIA.
+         */
+
         typedef void ( *offsets2ia )( IndexType cooIA[],
                                       const IndexType numValues,
                                       const IndexType csrIA[],
