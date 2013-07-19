@@ -55,6 +55,15 @@ class LAMA_DLL_IMPORTEXPORT CUDACOOUtils
 {
 public:
 
+    /** Implementation for COOUtilsInterface::Counting::offsets2ia with CUDA on GPUs */
+
+    static void offsets2ia(
+        IndexType cooIA[],
+        const IndexType numValues,
+        const IndexType csrIA[],
+        const IndexType numRows,
+        const IndexType numDiagonals );
+
     /** Implementation for COOUtilsInterface::Mult:normalGEMV with CUDA on GPUs */
 
     template<typename ValueType>
