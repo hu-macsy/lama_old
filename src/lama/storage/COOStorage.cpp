@@ -344,7 +344,7 @@ void COOStorage<ValueType>::setCSRDataImpl(
     const LAMAArray<OtherValueType>& values,
     const ContextPtr )
 {
-    ContextPtr loc = ContextFactory::getContext( Context::Host );
+    ContextPtr loc = getContextPtr();
 
     ReadAccess<IndexType> csrJA( ja, loc );
     ReadAccess<OtherValueType> csrValues( values, loc );
@@ -357,9 +357,14 @@ void COOStorage<ValueType>::setCSRDataImpl(
     int numDiagonals = std::min( numRows, numColumns );
 
     {
+        LAMA_INTERFACE_FN( hasDiagonalProperty, loc, CSRUtils, Offsets );
+
         ReadAccess<IndexType> csrIA( ia, loc );
         ReadAccess<IndexType> csrJA( ja, loc );
-        mDiagonalProperty = OpenMPCSRUtils::hasDiagonalProperty( numDiagonals, csrIA.get(), csrJA.get() );
+
+        LAMA_CONTEXT_ACCESS( loc )
+
+        mDiagonalProperty = hasDiagonalProperty( numDiagonals, csrIA.get(), csrJA.get() );
     }
 
     if ( !mDiagonalProperty )
@@ -377,6 +382,9 @@ void COOStorage<ValueType>::setCSRDataImpl(
 
         ReadAccess<IndexType> csrIA( ia, loc );
         WriteOnlyAccess<IndexType> cooIA( mIA, loc, mNumValues );
+
+        LAMA_CONTEXT_ACCESS( loc )
+
         offsets2ia( cooIA.get(), mNumValues, csrIA.get(), mNumRows, numDiagonals );
     }
 
@@ -387,6 +395,8 @@ void COOStorage<ValueType>::setCSRDataImpl(
         ReadAccess<IndexType> csrJA( ja, loc );
         WriteOnlyAccess<IndexType> cooJA( mJA, loc, mNumValues );
 
+        LAMA_CONTEXT_ACCESS( loc )
+
         setCSRData( cooJA.get(), csrJA.get(), numValues, csrIA.get(), mNumRows, numDiagonals );
     }
 
@@ -396,6 +406,8 @@ void COOStorage<ValueType>::setCSRDataImpl(
         ReadAccess<IndexType> csrIA( ia, loc );
         ReadAccess<OtherValueType> csrValues( values, loc );
         WriteOnlyAccess<ValueType> cooValues( mValues, loc, mNumValues );
+
+        LAMA_CONTEXT_ACCESS( loc )
 
         setCSRData( cooValues.get(), csrValues.get(), numValues, csrIA.get(), mNumRows, numDiagonals );
     }

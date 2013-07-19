@@ -182,12 +182,12 @@ bool CUDACSRUtils::hasDiagonalProperty( const IndexType numDiagonals, const Inde
         return false;
     }
 
+    LAMA_CHECK_CUDA_ACCESS
+
     //make grid
     const int blockSize = CUDASettings::getBlockSize();
     dim3 dimGrid( ( numDiagonals - 1 ) / blockSize + 1, 1, 1 ); // = makeGrid( numDiagonals, blockSize );
     dim3 dimBlock( blockSize, 1, 1 );
-
-    LAMA_CHECK_CUDA_ACCESS
 
     bool* d_hasProperty;
     bool hasProperty;
