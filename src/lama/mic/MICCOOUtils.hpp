@@ -80,19 +80,25 @@ public:
         const IndexType cooJA[],
         const COOValueType cooValues[] );
 
-    /** MIC implementation for COOUtilsInterface::Conversions::setCSRValues */
+    /** MIC implementation for COOUtilsInterface::Counting::offsets2ia */
+
+    static void offsets2ia(
+        IndexType cooIA[],
+        const IndexType numValues,
+        const IndexType csrIA[],
+        const IndexType numRows,
+        const IndexType numDiagonals );
+
+    /** MIC implementation for COOUtilsInterface::Conversions::setCSRData */
 
     template<typename COOValueType,typename CSRValueType>
-    static void setCSRValues(
-        IndexType cooIA[],
-        IndexType cooJA[],
+    static void setCSRData(
         COOValueType cooValues[],
-        const IndexType numRows,
-        const IndexType numDiagonals,
-        const IndexType csrIA[],
-        const IndexType csrJA[],
         const CSRValueType csrValues[],
-        const bool csrDiagonalProperty );
+        const IndexType numValues,
+        const IndexType csrIA[],
+        const IndexType numRows,
+        const IndexType numDiagonals );
 
     /** Implementation for CSRUtilsInterface::Mult::normalGEMV  */
 
