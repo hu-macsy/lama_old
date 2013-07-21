@@ -150,6 +150,7 @@ inline lama::ContextType mapEnvContexttoContextType( std::string contextname )
        boost::assign::map_list_of ( "Host", lama::Context::Host )
                                   ( "CUDA", lama::Context::CUDA )
                                   ( "OPENCL", lama::Context::OpenCL )
+                                  ( "MIC", lama::Context::MIC )
                                   ( "MaxContext", lama::Context::MaxContext );
     myContext = contextmap[contextname];
     return myContext;
