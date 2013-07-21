@@ -125,7 +125,7 @@ inline std::string getEnvContext()
     { 
         context = "Host";    // set back 
     }
-    else if ( context == "CUDA" || context == "OPENCL" )
+    else if ( context == "CUDA" || context == "OPENCL" || context == "MIC" )
     {
         // good values
     }
