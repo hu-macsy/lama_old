@@ -217,7 +217,7 @@ double OpenMPBLAS1::asum( const IndexType n, const double* x, const IndexType in
 template<>
 IndexType OpenMPBLAS1::iamax( const IndexType n, const float* x, const IndexType incX, SyncToken* syncToken )
 {
-    LAMA_LOG_DEBUG( logger, "iamax<float>, n = " << n << ", x = " << x << ", incX = " << incX )
+    LAMA_LOG_INFO( logger, "iamax<float>, n = " << n << ", x = " << x << ", incX = " << incX )
 
     if ( syncToken )
     {
@@ -238,7 +238,7 @@ IndexType OpenMPBLAS1::iamax( const IndexType n, const float* x, const IndexType
 template<>
 IndexType OpenMPBLAS1::iamax( const IndexType n, const double* x, const IndexType incX, SyncToken* syncToken )
 {
-    LAMA_LOG_DEBUG( logger, "iamax<double>, n = " << n << ", x = " << x << ", incX = " << incX )
+    LAMA_LOG_INFO( logger, "iamax<double>, n = " << n << ", x = " << x << ", incX = " << incX )
 
     if ( syncToken )
     {
@@ -788,6 +788,8 @@ void OpenMPBLAS1::rotmg( double* d1, double* d2, double* b1, const double b2, do
 
 void OpenMPBLAS1::setInterface( BLASInterface& BLAS )
 {
+    LAMA_LOG_INFO( logger, "set BLAS1 routines for OpenMP in Interface" )
+
     // Note: macro takes advantage of same name for routines and type definitions 
     //       ( e.g. routine CUDABLAS1::sum<T> is set for BLAS::BLAS1::sum variable
 
