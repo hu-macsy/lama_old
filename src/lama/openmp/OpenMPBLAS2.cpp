@@ -3924,6 +3924,8 @@ void OpenMPBLAS2::tpsv(
 
 void OpenMPBLAS2::setInterface( BLASInterface& BLAS )
 {
+    LAMA_LOG_INFO( logger, "set BLAS2 routines for OpenMP in Interface" )
+
     // Note: macro takes advantage of same name for routines and type definitions 
     //       ( e.g. routine CUDABLAS1::sum<T> is set for BLAS::BLAS1::sum variable
 
