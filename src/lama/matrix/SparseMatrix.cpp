@@ -1306,25 +1306,9 @@ void SparseMatrix<ValueType>::vectorHaloOperationSync(
     offsets.resize( numParts + 1 );
     sizes2offsets( &offsets[0], numParts );
 
-    LAMAArray<ValueType> toOthersResult( offsets[numParts] - xSize );
+    LAMAArray<ValueType> haloResult( mHalo.getHaloSize() );
+    LAMAArray<ValueType> toOthersResult( xSize * numParts );
     LAMAArray<ValueType> fromOthersResult( xSize * numParts );
-
-//    if ( myPart == 0 )
-//    {
-//        std::cout << "sizes: ";
-//        for( unsigned int i = 0; i < sizes.size(); ++i )
-//        {
-//            std::cout << sizes[i] << " ";
-//        }
-//        std::cout << std::endl;
-//
-//        std::cout << "offsets: ";
-//        for( unsigned int i = 0; i < offsets.size(); ++i )
-//        {
-//            std::cout << offsets[i] << " ";
-//        }
-//        std::cout << std::endl;
-//    }
 
     if ( numParts != 1 )
     {
@@ -1336,15 +1320,25 @@ void SparseMatrix<ValueType>::vectorHaloOperationSync(
                                         << "] = localF( haloMatrix, localX[ " << xSize
                                         << "] ) on " << haloContext )
 
-            calcF( mHaloData.get(), toOthersResult, localX);
+            calcF( mHaloData.get(), haloResult, localX);
 
-            HostReadAccess<ValueType> o( toOthersResult );
-            std::cout << myPart << " other ";
-            for(IndexType i = 0; i < toOthersResult.size(); ++i )
+            // reassemble halo computation to global indices
             {
-                std::cout << o[i] << " ";
+                HostReadAccess<ValueType> h( haloResult );
+                HostWriteAccess<ValueType> o( toOthersResult );
+                for(IndexType i = 0; i < toOthersResult.size(); ++i )
+                {
+                    IndexType localIndex = mHalo.global2halo( i );
+                    if( localIndex != nIndex )
+                    {
+                        o[i] = h[ localIndex ];
+                    }
+                    else
+                    {
+                        o[i] = 0;
+                    }
+                }
             }
-            std::cout << std::endl;
         }
 
         // start vector part exchange
@@ -1356,15 +1350,8 @@ void SparseMatrix<ValueType>::vectorHaloOperationSync(
 
             for( IndexType i = 0; i < numParts; ++i )
             {
-                comm.gather( &fromOthers[ offsets[i] ], sizes[i], i, &toOthers[ offsets[i] ] );
+                comm.gather( &fromOthers[0], sizes[i], i, &toOthers[ offsets[i] ] );
             }
-
-            std::cout << myPart << " fromOthers ";
-            for(IndexType i = 0; i < fromOthers.size(); ++i )
-            {
-                std::cout << fromOthers[i] << " ";
-            }
-            std::cout << std::endl;
         }
         toOthersResult.prefetch( localContext );
     }
@@ -1377,15 +1364,7 @@ void SparseMatrix<ValueType>::vectorHaloOperationSync(
                                     << "] = localF( localMatrix, localX[ " << xSize
                                     << "] ) on " << localContext )
 
-        calcF( mLocalData.get(), localResult, localX);
-
-        HostReadAccess<ValueType> l( localResult );
-        std::cout << myPart << " local ";
-        for(IndexType i = 0; i < localResult.size(); ++i )
-        {
-            std::cout << l[i] << " ";
-        }
-        std::cout << std::endl;
+        calcF( mLocalData.get(), localResult, localX );
     }
 
     // alpha * ( sum up local vector parts with halo vector parts ) + beta * y
@@ -1398,14 +1377,19 @@ void SparseMatrix<ValueType>::vectorHaloOperationSync(
 
         if ( numParts != 1 )
         {
-            HostWriteAccess<ValueType> localData ( localResult );
+            HostWriteAccess<ValueType> localData( localResult );
             HostReadAccess<ValueType> otherData( fromOthersResult );
             int count = 0;
-            for( IndexType i = 0; i < numParts && i != myPart ; ++i )
+            for( IndexType i = 0; i < numParts; ++i )
             {
+                if ( i == myPart )
+                {
+                    ++count;
+                    continue;
+                }
+
                 for( IndexType j = 0; j < xSize; ++j )
                 {
-                    std::cout << myPart << " " << localData[j] << " += " << otherData[ count * xSize + j ] << std::endl;
                     localData[j] += otherData[ count * xSize + j ];
                 }
                 ++count;
@@ -1563,25 +1547,9 @@ void SparseMatrix<ValueType>::vectorHaloOperationAsync(
     offsets.resize( numParts + 1 );
     sizes2offsets( &offsets[0], numParts );
 
-    LAMAArray<ValueType> toOthersResult( offsets[numParts] - xSize );
+    LAMAArray<ValueType> haloResult( mHalo.getHaloSize() );
+    LAMAArray<ValueType> toOthersResult( xSize * numParts );
     LAMAArray<ValueType> fromOthersResult( xSize * numParts );
-
-//    if ( myPart == 0 )
-//    {
-//        std::cout << "sizes: ";
-//        for( unsigned int i = 0; i < sizes.size(); ++i )
-//        {
-//            std::cout << sizes[i] << " ";
-//        }
-//        std::cout << std::endl;
-//
-//        std::cout << "offsets: ";
-//        for( unsigned int i = 0; i < offsets.size(); ++i )
-//        {
-//            std::cout << offsets[i] << " ";
-//        }
-//        std::cout << std::endl;
-//    }
 
     if ( numParts != 1 )
     {
@@ -1593,17 +1561,24 @@ void SparseMatrix<ValueType>::vectorHaloOperationAsync(
                                         << "] = localF( haloMatrix, localX[ " << xSize
                                         << "] ) on " << haloContext )
 
-            calcF( mHaloData.get(), toOthersResult, localX );
+            calcF( mHaloData.get(), haloResult, localX );
 
             toOthersResult.prefetch( hostContext );
 
-            HostReadAccess<ValueType> o( toOthersResult );
-            std::cout << myPart << " other ";
+            HostReadAccess<ValueType> h( haloResult );
+            HostWriteAccess<ValueType> o( toOthersResult );
             for(IndexType i = 0; i < toOthersResult.size(); ++i )
             {
-                std::cout << o[i] << " ";
+                IndexType localIndex = mHalo.global2halo( i );
+                if( localIndex != nIndex )
+                {
+                    o[i] = h[ localIndex ];
+                }
+                else
+                {
+                    o[i] = 0;
+                }
             }
-            std::cout << std::endl;
         }
     }
 
@@ -1618,14 +1593,6 @@ void SparseMatrix<ValueType>::vectorHaloOperationAsync(
                                     << "] ) on " << localContext )
 
         localComputation.reset( calcF( mLocalData.get(), localResult, localX ) );
-
-        HostReadAccess<ValueType> l( localResult );
-        std::cout << myPart << " local ";
-        for(IndexType i = 0; i < localResult.size(); ++i )
-        {
-            std::cout << l[i] << " ";
-        }
-        std::cout << std::endl;
     }
 
     if ( numParts != 1 )
@@ -1639,15 +1606,8 @@ void SparseMatrix<ValueType>::vectorHaloOperationAsync(
 
             for( IndexType i = 0; i < numParts; ++i )
             {
-                comm.gather( &fromOthers[ offsets[i] ], sizes[i], i, &toOthers[ offsets[i] ] );
+                comm.gather( &fromOthers[0], sizes[i], i, &toOthers[ offsets[i] ] );
             }
-
-            std::cout << myPart << " fromOthers ";
-            for(IndexType i = 0; i < fromOthers.size(); ++i )
-            {
-                std::cout << fromOthers[i] << " ";
-            }
-            std::cout << std::endl;
         }
 
         toOthersResult.prefetch( localContext );
@@ -1665,14 +1625,19 @@ void SparseMatrix<ValueType>::vectorHaloOperationAsync(
 
         if ( numParts != 1 )
         {
-            HostWriteAccess<ValueType> localData ( localResult );
+            HostWriteAccess<ValueType> localData( localResult );
             HostReadAccess<ValueType> otherData( fromOthersResult );
             int count = 0;
-            for( IndexType i = 0; i < numParts && i != myPart ; ++i )
+            for( IndexType i = 0; i < numParts; ++i )
             {
+                if ( i == myPart )
+                {
+                    ++count;
+                    continue;
+                }
+
                 for( IndexType j = 0; j < xSize; ++j )
                 {
-                    std::cout << myPart << " " << localData[j] << " += " << otherData[ count * xSize + j ] << std::endl;
                     localData[j] += otherData[ count * xSize + j ];
                 }
                 ++count;
