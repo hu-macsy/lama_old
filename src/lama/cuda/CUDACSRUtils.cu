@@ -524,7 +524,7 @@ void sparse_gemv_kernel(
 template<typename T, bool useTexture>
 __global__
 void sparse_gevm_kernel(
-    int m,
+    int numRows,
     int nnz,
     const T alpha,
     const T* csrValues,
@@ -541,7 +541,7 @@ void sparse_gevm_kernel(
 
     const int i = threadId( gridDim, blockIdx, blockDim, threadIdx );
 
-    if ( i < m )
+    if ( i < numRows )
     {
         T value = 0.0;
 
@@ -798,7 +798,7 @@ void CUDACSRUtils::sparseGEVM(
     SyncToken* syncToken )
 {
     LAMA_LOG_INFO( logger,
-                   "sparseGEMV<" << Scalar::getType<ValueType>() << ">" << ", #non-zero rows = " << numNonZeroRows )
+                   "sparseGEVM<" << Scalar::getType<ValueType>() << ">" << ", #non-zero rows = " << numNonZeroRows )
 
     LAMA_CHECK_CUDA_ACCESS
 
@@ -2265,6 +2265,9 @@ void CUDACSRUtils::setInterface( CSRUtilsInterface& CSRUtils )
 
     LAMA_INTERFACE_REGISTER_T( CSRUtils, jacobiHaloWithDiag, float )
     LAMA_INTERFACE_REGISTER_T( CSRUtils, jacobiHaloWithDiag, double )
+
+    LAMA_INTERFACE_REGISTER_T( CSRUtils, normalGEVM, float )
+    LAMA_INTERFACE_REGISTER_T( CSRUtils, normalGEVM, double )
 
     // the following routines might be overwritten by CUSPASE interface
 
