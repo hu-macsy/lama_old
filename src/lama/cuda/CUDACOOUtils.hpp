@@ -91,6 +91,22 @@ public:
         const IndexType numValues,
         SyncToken* syncToken );
 
+    /** Implementation for COOUtilsInterface::Mult:normalGEMV with CUDA on GPUs */
+
+    template<typename ValueType>
+    static void normalGEVM(
+        ValueType result[],
+        const ValueType alpha,
+        const ValueType x[],
+        const ValueType beta,
+        const ValueType y[],
+        const IndexType numRows,
+        const IndexType cooIA[],
+        const IndexType cooJA[],
+        const ValueType cooValues[],
+        const IndexType numValues,
+        SyncToken* syncToken );
+
     /** Routine that registers all routines of this class at the LAMA interface. */
 
     static void setInterface( struct COOUtilsInterface& COOUtils );
