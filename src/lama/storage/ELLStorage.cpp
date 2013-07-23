@@ -1110,7 +1110,7 @@ void ELLStorage<ValueType>::vectorTimesMatrix(
             ReadAccess<IndexType> rows( mRowIndexes, loc );
 
             LAMA_CONTEXT_ACCESS( loc )
-            sparseGEVM( wResult.get(), alpha, rX.get(), mNumColumns, numNonZeroRows, rows.get(), ellSizes.get(), ellJA.get(),
+            sparseGEVM( wResult.get(), mNumRows, mNumColumns, mNumValuesPerRow, alpha, rX.get(), numNonZeroRows, rows.get(), ellSizes.get(), ellJA.get(),
                         ellValues.get(), NULL );
         }
         else
@@ -1118,7 +1118,7 @@ void ELLStorage<ValueType>::vectorTimesMatrix(
             // we assume that normalGEMV can deal with the alias of result, y
 
             LAMA_CONTEXT_ACCESS( loc )
-            normalGEVM( wResult.get(), alpha, rX.get(), beta, wResult.get(), mNumRows, mNumColumns,
+            normalGEVM( wResult.get(), alpha, rX.get(), beta, wResult.get(), mNumRows, mNumColumns, mNumValuesPerRow,
                         ellSizes.get(), ellJA.get(), ellValues.get(), NULL );
         }
     }
@@ -1128,7 +1128,7 @@ void ELLStorage<ValueType>::vectorTimesMatrix(
         ReadAccess<ValueType> rY( y, loc );
 
         LAMA_CONTEXT_ACCESS( loc )
-        normalGEVM( wResult.get(), alpha, rX.get(), beta, rY.get(), mNumRows, mNumColumns,
+        normalGEVM( wResult.get(), alpha, rX.get(), beta, rY.get(), mNumRows, mNumColumns, mNumValuesPerRow,
                     ellSizes.get(), ellJA.get(), ellValues.get(), NULL );
     }
 }
@@ -1338,7 +1338,7 @@ SyncToken* ELLStorage<ValueType>::vectorTimesMatrixAsync(
 
             LAMA_CONTEXT_ACCESS( loc )
 
-            sparseGEVM( wResult->get(), alpha, rX->get(), mNumColumns, numNonZeroRows, rows->get(),
+            sparseGEVM( wResult->get(), mNumRows, mNumColumns, mNumValuesPerRow, alpha, rX->get(), numNonZeroRows, rows->get(),
                         ellSizes->get(), ellJA->get(), ellValues->get(), syncToken.get() );
         }
         else
@@ -1347,7 +1347,7 @@ SyncToken* ELLStorage<ValueType>::vectorTimesMatrixAsync(
 
             LAMA_CONTEXT_ACCESS( loc )
 
-            normalGEVM( wResult->get(), alpha, rX->get(), beta, wResult->get(), mNumRows, mNumColumns,
+            normalGEVM( wResult->get(), alpha, rX->get(), beta, wResult->get(), mNumRows, mNumColumns, mNumValuesPerRow,
                         ellSizes->get(), ellJA->get(), ellValues->get(), syncToken.get() );
         }
 
@@ -1360,7 +1360,7 @@ SyncToken* ELLStorage<ValueType>::vectorTimesMatrixAsync(
 
         LAMA_CONTEXT_ACCESS( loc )
 
-        normalGEVM( wResult->get(), alpha, rX->get(), beta, rY->get(), mNumRows, mNumColumns,
+        normalGEVM( wResult->get(), alpha, rX->get(), beta, rY->get(), mNumRows, mNumColumns, mNumValuesPerRow,
                     ellSizes->get(), ellJA->get(), ellValues->get(), syncToken.get() );
 
         syncToken->pushAccess( wResult );

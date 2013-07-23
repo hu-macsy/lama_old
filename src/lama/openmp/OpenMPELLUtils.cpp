@@ -995,6 +995,7 @@ void OpenMPELLUtils::normalGEVM(
     const ValueType y[],
     const IndexType numRows,
     const IndexType numColumns,
+    const IndexType UNUSED(numValuesPerRow),
     const IndexType ellSizes[],
     const IndexType ellJA[],
     const ValueType ellValues[],
@@ -1070,9 +1071,11 @@ void OpenMPELLUtils::normalGEVM(
 template<typename ValueType>
 void OpenMPELLUtils::sparseGEVM(
     ValueType result[],
+    const IndexType UNUSED(numRows),
+    const IndexType numColumns,
+    const IndexType UNUSED(numValuesPerRow),
     const ValueType alpha,
     const ValueType x[],
-    const IndexType numColumns,
     const IndexType numNonZeroRows,
     const IndexType rowIndexes[],
     const IndexType ellSizes[],
