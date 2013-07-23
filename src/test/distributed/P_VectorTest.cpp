@@ -235,7 +235,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( vectorTimesMatrixTest, T, test_types )
 
     PartitionId size = comm->getSize();
 
-    const IndexType vectorSize = 4;//4 * size;
+    const IndexType vectorSize = 4 * size;
 
     shared_ptr<Distribution> dist( new BlockDistribution( vectorSize, comm ) );
     shared_ptr<Distribution> repdist( new NoDistribution( vectorSize ) );
@@ -246,14 +246,13 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( vectorTimesMatrixTest, T, test_types )
     DenseVector<ValueType> denseVector( dist, 1.0 );
     DenseVector<ValueType> denseResult( repdist, 0.0 );
 
-//    const Matrix& matrix = matrixTypeMatrix;
-//
-//    const Vector& vector = denseVector;
+    const Matrix& matrix = matrixTypeMatrix;
+
+    const Vector& vector = denseVector;
     Vector& result = denseResult;
 
-//    LAMA_LOG_INFO( logger, "Vector(NoDist) = Vector(BlockDist) * Matrix(BlockDist, NoDist)" )
-//    result = vector * matrix;
-//    std::cout << "computed" << std::endl;
+    LAMA_LOG_INFO( logger, "Vector(NoDist) = Vector(BlockDist) * Matrix(BlockDist, NoDist)" )
+    result = vector * matrix;
 
     ContextPtr host = ContextFactory::getContext( Context::Host );
 
@@ -265,79 +264,56 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( vectorTimesMatrixTest, T, test_types )
     }
 
     int numRows = 4 * size;
-//    int numCols = 4 * size;
+    int numCols = 4 * size;
 
     DenseVector<ValueType> denseCorrectResult2( dist, 0.0 );
 
     LAMAArray<ValueType>& localDenseCorrectResult2 =
                     denseCorrectResult2.getLocalValues();
 
-//    scoped_array<ValueType> values( new ValueType[ numRows * numCols ] );
-//
-//    {
-//        HostWriteAccess<ValueType> localDenseCorrectResult2Access ( localDenseCorrectResult2 );
-//
-//        for (IndexType j = 0; j < numCols; ++j)
-//        {
-//            ValueType columnSum = 0.0;
-//            for (IndexType i = 0; i < numRows; ++i)
-//            {
-//                ValueType value = 0.0;
-//                if ( j == i || j + size == i || j - size == i || j + 2 * size == i || j - 2 * size == i || j + ( numRows - 1 ) == i
-//                                || j - ( numRows - 1 ) == i )
-//                {
-//                    value = static_cast<ValueType>( 1000.0 * ( i + 1 ) + ( j + 1 ) );
-//                }
-//                values[ i * numCols + j ] = value;
-//                std::cout << "sum " << columnSum << " += " << value << std::endl;
-//                columnSum += value;
-//            }
-//            if ( dist->isLocal(j) )
-//            {
-//                std::cout << "result j" << j << " global " << dist->global2local(j) << " = " << columnSum << std::endl;
-//                localDenseCorrectResult2Access[ dist->global2local(j) ] = columnSum;
-//            }
-//        }
-//    }
-
-    numRows = 4;
-    const IndexType numColumns = 4;
-    static ValueType values[] = { 6, 0, 0, 4, 7, 0, 0, 0, 0, 0, -9.3f, 4, 2, 5, 0, 3 };
-
-    CSRSparseMatrix<ValueType> repM;
-//    repM.setRawDenseData( numRows, numCols, values.get() );
-    repM.setRawDenseData( numRows, numColumns, values );
-    repM.setCommunicationKind( Matrix::SYNCHRONOUS );
+    scoped_array<ValueType> values( new ValueType[ numRows * numCols ] );
 
     {
         HostWriteAccess<ValueType> localDenseCorrectResult2Access ( localDenseCorrectResult2 );
-        for( IndexType i = 0; i < numColumns; i++ )
+
+        for (IndexType j = 0; j < numCols; ++j)
         {
             ValueType columnSum = 0.0;
-            for( IndexType j = 0; j < numRows; j++ )
+            for (IndexType i = 0; i < numRows; ++i)
             {
-                columnSum += values[ j * numColumns + i ];
+                ValueType value = 0.0;
+                if ( j == i || j + size == i || j - size == i || j + 2 * size == i || j - 2 * size == i || j + ( numRows - 1 ) == i
+                                || j - ( numRows - 1 ) == i )
+                {
+                    value = static_cast<ValueType>( 1000.0 * ( i + 1 ) + ( j + 1 ) );
+                }
+                values[ i * numCols + j ] = value;
+                columnSum += value;
             }
-            if ( dist->isLocal(i) )
+            if ( dist->isLocal(j) )
             {
-                localDenseCorrectResult2Access[ dist->global2local(i) ] = columnSum;
+                localDenseCorrectResult2Access[ dist->global2local(j) ] = columnSum;
             }
         }
     }
-//    DenseVector<ValueType> denseVector0( vectorSize, 1.0 );
-//
-//    DenseVector<ValueType> denseResult0( vectorSize, 0.0 );
-//
-//    Vector& result0 = denseResult0;
-//
-//    LAMA_LOG_INFO( logger, "Vector(rep) = Vector(rep) * Matrix(rep)" )
-//    result0 = denseVector0 * repM;
-//    std::cout << "computed" << std::endl;
-//
-//    for (IndexType i = 0; i < result.size(); ++i)
-//    {
-//        BOOST_CHECK_EQUAL( denseCorrectResult2.getValue(i), denseResult0.getValue(i) );
-//    }
+
+    CSRSparseMatrix<ValueType> repM;
+    repM.setRawDenseData( numRows, numCols, values.get() );
+    repM.setCommunicationKind( Matrix::SYNCHRONOUS );
+
+    DenseVector<ValueType> denseVector0( vectorSize, 1.0 );
+
+    DenseVector<ValueType> denseResult0( vectorSize, 0.0 );
+
+    Vector& result0 = denseResult0;
+
+    LAMA_LOG_INFO( logger, "Vector(rep) = Vector(rep) * Matrix(rep)" )
+    result0 = denseVector0 * repM;
+
+    for (IndexType i = 0; i < result.size(); ++i)
+    {
+        BOOST_CHECK_EQUAL( denseCorrectResult2.getValue(i), denseResult0.getValue(i) );
+    }
 
     repM.setContext( host, host );
 
@@ -354,7 +330,6 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( vectorTimesMatrixTest, T, test_types )
     for (IndexType i = 0; i<result2.size(); ++i)
     {
         BOOST_CHECK_EQUAL( denseCorrectResult2.getValue(i), result2.getValue(i) );
-//        std::cout << "result(" << i << ") = " << denseCorrectResult2.getValue(i) << std::endl;
     }
 
     matrixTypeMatrix2.setContext( host, host );
