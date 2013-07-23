@@ -335,6 +335,8 @@ static void offsets2ia_kernel( IndexType* cooIA, const IndexType* csrIA, const I
     }
 }
 
+/* --------------------------------------------------------------------------- */
+
 void CUDACOOUtils::offsets2ia(
     IndexType cooIA[],
     const IndexType numValues,
@@ -357,6 +359,117 @@ void CUDACOOUtils::offsets2ia(
     offsets2ia_kernel<<<dimGrid, dimBlock>>>( cooIA, csrIA, numRows, numDiagonals );
 
     LAMA_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "sync for offsets2ia_kernel" )
+}
+
+/* --------------------------------------------------------------------------- */
+
+__global__
+static void build_offset_kernel(
+    IndexType* offsets,
+    const IndexType n,
+    const IndexType* ia,
+    const IndexType nz )
+{
+    const int i = threadId( gridDim, blockIdx, blockDim, threadIdx );
+
+    // Entries in offset filled every time there is a change in values of consecutive elements
+    //   i:     0  1  2  3  4  5
+    //  ia:     0  0  1  1  1  3
+    // nd1:     0  0  1  1  1  3
+    // nd2:     0  1  1  1  3  4
+    //             x        x  x
+    //             |        |  |->                6    
+    //             |        |---->          5  5
+    //             |------------->       2          
+    // offset:                        0  2  5  5  6
+
+    if ( i < nz )
+    {
+        IndexType nd1 = ia[i];
+        IndexType nd2 = n;
+
+        if ( i + 1 < nz )
+        {
+            nd2 = ia[i + 1];
+        }
+
+        for ( IndexType j = nd1; j < nd2; j++ )
+        {
+            offsets[j+1] = i + 1;
+        }
+
+        if ( i == 0 )
+        {
+            for ( IndexType i = 0; i <= nd1; i++ )
+            {
+                offsets[i] = 0;
+            }
+        }
+    }
+}
+
+__global__
+static void add_diagonals_kernel(
+    IndexType* offsets,
+    const IndexType numRows,
+    const IndexType numDiagonals )
+{
+    const int i = threadId( gridDim, blockIdx, blockDim, threadIdx );
+
+    //  #diagonals = 3               |
+    //  offsets( in ) :  0  3  4   7   9  10 
+    //  offsets( out ):  0  4  6  10  12  13
+    //  i                   0  1   2   3   4
+
+    if ( i < numRows )
+    {
+        if ( i < numDiagonals )
+        {
+            offsets[i+1] += i + 1;
+        }
+        else
+        {
+            offsets[i+1] += numDiagonals;
+        }
+    }
+}
+
+/* --------------------------------------------------------------------------- */
+
+void CUDACOOUtils::ia2offsets(
+    IndexType csrIA[],
+    const IndexType numRows,
+    const IndexType numDiagonals,
+    const IndexType cooIA[],
+    const IndexType numValues )
+{
+    LAMA_LOG_INFO( logger,
+                   "build csrIA( " << numRows + 1 << " ) from cooIA( " << ( numValues )
+                    << " ), #diagonals = " << numDiagonals )
+
+    // Note: the array cooIA is assumed to be sorted after the diagonal elements
+
+    LAMA_CHECK_CUDA_ACCESS
+
+    cudaStream_t stream = 0; // default stream, asynchronous execution not supported here
+
+    const int blockSize = CUDASettings::getBlockSize();
+    const dim3 dimBlock( blockSize, 1, 1 );
+    const dim3 dimGrid = makeGrid( numValues, dimBlock.x );
+
+    build_offset_kernel<<<dimGrid, dimBlock>>>( csrIA, numRows, 
+                                                cooIA + numDiagonals, numValues - numDiagonals );
+
+    // increment offsets for the diagonal elements
+
+    if ( numDiagonals > 0 )
+    {
+        const dim3 dimGrid = makeGrid( numRows, dimBlock.x );
+
+        add_diagonals_kernel<<<dimGrid, dimBlock>>>( csrIA, numRows, numDiagonals );
+    }
+
+    LAMA_CUDA_RT_CALL( cudaStreamSynchronize( stream ), "normalGEMV, stream = " << stream )
 }
 
 /* --------------------------------------------------------------------------- */
