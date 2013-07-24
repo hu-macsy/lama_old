@@ -67,20 +67,21 @@ void gemmTest( ContextPtr loc, log4lama::Logger &logger )
     {
 		LAMA_INTERFACE_FN_T( gemm, loc, BLAS, BLAS3, ValueType );
 
-		// CblasRowMajor and 2 x CblasNoTrans
+        const ValueType alpha = 17.0;
+        const ValueType beta = 13.0;
+        const ValueType resultRowMajor[] = { -9.0, -1.0, -6.0, 0.0 };
+        const ValueType resultColMajor[] = { -9.0, -6.0, -1.0, 0.0 };
+        const IndexType n = 2;
+        const IndexType m = 2;
+        const IndexType k = 3;
+
+        // CblasRowMajor and 2 x CblasNoTrans
 		{
 			const ValueType matrixA[] = { 1.0, 2.0, -3.0, 4.0, 5.0, -6.0 };
 			const ValueType matrixB[] = { 2.0, 3.0, -1.0, 1.0, 4.0, 5.0 };
-			ValueType matrixC[] = { 15.0, 13.0, 27.0, 17.0 };
+			ValueType matrixC[]       = { 15.0, 13.0, 27.0, 17.0 };
 
-			const ValueType result[] = { -9.0, -1.0, -6.0, 0.0 };
-
-			const IndexType n = 2;
-			const IndexType m = 2;
-			const IndexType k = 3;
-			const ValueType alpha = 17.0;
 			const IndexType lda = 3;
-			const ValueType beta = 13.0;
 			const IndexType ldb = 2;
 			const IndexType ldc = 2;
 
@@ -102,7 +103,7 @@ void gemmTest( ContextPtr loc, log4lama::Logger &logger )
 				HostReadAccess<ValueType> rAmC( AmC );
 				for ( int i = 0; i < 4; ++i )
 				{
-					BOOST_CHECK_EQUAL( result[i], rAmC[i] );
+					BOOST_CHECK_EQUAL( resultRowMajor[i], rAmC[i] );
 				}
 			}
 		}
@@ -111,16 +112,9 @@ void gemmTest( ContextPtr loc, log4lama::Logger &logger )
         {
             const ValueType matrixA[] = { 1.0, 4.0, 2.0, 5.0, -3.0, -6.0 };
             const ValueType matrixB[] = { 2.0, -1.0, 4.0, 3.0, 1.0, 5.0 };
-            ValueType matrixC[] = { 15.0, 27.0, 13.0, 17.0 };
+            ValueType matrixC[]       = { 15.0, 27.0, 13.0, 17.0 };
 
-            const ValueType result[] = { -9.0, -6.0, -1.0, 0.0 };
-
-            const IndexType n = 2;
-            const IndexType m = 2;
-            const IndexType k = 3;
-            const ValueType alpha = 17.0;
             const IndexType lda = 2;
-            const ValueType beta = 13.0;
             const IndexType ldb = 3;
             const IndexType ldc = 2;
 
@@ -142,7 +136,7 @@ void gemmTest( ContextPtr loc, log4lama::Logger &logger )
                 HostReadAccess<ValueType> rAmC( AmC );
                 for ( int i = 0; i < 4; ++i )
                 {
-                    BOOST_CHECK_EQUAL( result[i], rAmC[i] );
+                    BOOST_CHECK_EQUAL( resultColMajor[i], rAmC[i] );
                 }
             }
         }
@@ -151,16 +145,9 @@ void gemmTest( ContextPtr loc, log4lama::Logger &logger )
 		{
 			const ValueType matrixA[] = { 1.0, 2.0, -3.0, 4.0, 5.0, -6.0 };
 			const ValueType matrixB[] = { 2.0, -1.0, 4.0, 3.0, 1.0, 5.0 };
-			ValueType matrixC[] = { 15.0, 13.0, 27.0, 17.0 };
+			ValueType matrixC[]       = { 15.0, 13.0, 27.0, 17.0 };
 
-			const ValueType result[] = { -9.0, -1.0, -6.0, 0.0 };
-
-			const IndexType n = 2;
-			const IndexType m = 2;
-			const IndexType k = 3;
-			const ValueType alpha = 17.0;
 			const IndexType lda = 3;
-			const ValueType beta = 13.0;
 			const IndexType ldb = 3;
 			const IndexType ldc = 2;
 
@@ -182,25 +169,117 @@ void gemmTest( ContextPtr loc, log4lama::Logger &logger )
 				HostReadAccess<ValueType> rAmC( AmC );
 				for ( int i = 0; i < 4; ++i )
 				{
-					BOOST_CHECK_EQUAL( result[i], rAmC[i] );
+					BOOST_CHECK_EQUAL( resultRowMajor[i], rAmC[i] );
 				}
 			}
 		}
 
-		// CblasRowMajor, CblasTrans for A and CblasTrans for B
+        // CblasColMajor, CblasNoTrans for A and CblasTrans for B
+        {
+            const ValueType matrixA[] = { 1.0, 4.0, 2.0, 5.0, -3.0, -6.0 };
+            const ValueType matrixB[] = { 2.0, 3.0, -1.0, 1.0, 4.0, 5.0 };
+            ValueType matrixC[]       = { 15.0, 27.0, 13.0, 17.0 };
+
+            const IndexType lda = 2;
+            const IndexType ldb = 2;
+            const IndexType ldc = 2;
+
+            LAMAArray<ValueType> AmA( 6, matrixA );
+            LAMAArray<ValueType> AmB( 6, matrixB );
+            LAMAArray<ValueType> AmC( 4, matrixC );
+
+            {
+                LAMA_CONTEXT_ACCESS( loc );
+
+                ReadAccess<ValueType> rAmA( AmA, loc );
+                ReadAccess<ValueType> rAmB( AmB, loc );
+                WriteAccess<ValueType> wAmC( AmC, loc );
+
+                gemm(CblasColMajor, CblasNoTrans, CblasTrans, m, n, k, alpha, rAmA.get(), lda, rAmB.get(), ldb, beta, wAmC.get(), ldc, NULL);
+            }
+
+            {
+                HostReadAccess<ValueType> rAmC( AmC );
+                for ( int i = 0; i < 4; ++i )
+                {
+                    BOOST_CHECK_EQUAL( resultColMajor[i], rAmC[i] );
+                }
+            }
+        }
+
+        // CblasRowMajor, CblasTrans for A and CblasNoTrans for B
+        {
+            const ValueType matrixA[] = { 1.0, 4.0, 2.0, 5.0, -3.0, -6.0 };
+            const ValueType matrixB[] = { 2.0, 3.0, -1.0, 1.0, 4.0, 5.0 };
+            ValueType matrixC[]       = { 15.0, 13.0, 27.0, 17.0 };
+
+            const IndexType lda = 2;
+            const IndexType ldb = 2;
+            const IndexType ldc = 2;
+
+            LAMAArray<ValueType> AmA( 6, matrixA );
+            LAMAArray<ValueType> AmB( 6, matrixB );
+            LAMAArray<ValueType> AmC( 4, matrixC );
+
+            {
+                LAMA_CONTEXT_ACCESS( loc );
+
+                ReadAccess<ValueType> rAmA( AmA, loc );
+                ReadAccess<ValueType> rAmB( AmB, loc );
+                WriteAccess<ValueType> wAmC( AmC, loc );
+
+                gemm(CblasRowMajor, CblasTrans, CblasNoTrans, m, n, k, alpha, rAmA.get(), lda, rAmB.get(), ldb, beta, wAmC.get(), ldc, NULL);
+            }
+
+            {
+                HostReadAccess<ValueType> rAmC( AmC );
+                for ( int i = 0; i < 4; ++i )
+                {
+                    BOOST_CHECK_EQUAL( resultRowMajor[i], rAmC[i] );
+                }
+            }
+        }
+
+        // CblasColMajor, CblasTrans for A and CblasNoTrans for B
+        {
+            const ValueType matrixA[] = { 1.0, 2.0, -3.0, 4.0, 5.0, -6.0 };
+            const ValueType matrixB[] = { 2.0, -1.0, 4.0, 3.0, 1.0, 5.0 };
+            ValueType matrixC[]       = { 15.0, 27.0, 13.0, 17.0 };
+
+            const IndexType lda = 3;
+            const IndexType ldb = 3;
+            const IndexType ldc = 2;
+
+            LAMAArray<ValueType> AmA( 6, matrixA );
+            LAMAArray<ValueType> AmB( 6, matrixB );
+            LAMAArray<ValueType> AmC( 4, matrixC );
+
+            {
+                LAMA_CONTEXT_ACCESS( loc );
+
+                ReadAccess<ValueType> rAmA( AmA, loc );
+                ReadAccess<ValueType> rAmB( AmB, loc );
+                WriteAccess<ValueType> wAmC( AmC, loc );
+
+                gemm(CblasColMajor, CblasTrans, CblasNoTrans, m, n, k, alpha, rAmA.get(), lda, rAmB.get(), ldb, beta, wAmC.get(), ldc, NULL);
+            }
+
+            {
+                HostReadAccess<ValueType> rAmC( AmC );
+                for ( int i = 0; i < 4; ++i )
+                {
+                    BOOST_CHECK_EQUAL( resultColMajor[i], rAmC[i] );
+                }
+            }
+        }
+
+        // CblasRowMajor, CblasTrans for A and CblasTrans for B
 		{
-			const ValueType matrixA[] = { 1.0, 4.0, 2.0, 5.0, -3.0, -6.0 };
+            const ValueType matrixA[] = { 1.0, 4.0, 2.0, 5.0, -3.0, -6.0 };
 			const ValueType matrixB[] = { 2.0, -1.0, 4.0, 3.0, 1.0, 5.0 };
-			ValueType matrixC[] = { 15.0, 13.0, 27.0, 17.0 };
+			ValueType matrixC[]       = { 15.0, 13.0, 27.0, 17.0 };
 
-			const ValueType result[] = { -9.0, -1.0, -6.0, 0.0 };
-
-			const IndexType n = 2;
-			const IndexType m = 2;
-			const IndexType k = 3;
-			const ValueType alpha = 17.0;
 			const IndexType lda = 2;
-			const ValueType beta = 13.0;
 			const IndexType ldb = 3;
 			const IndexType ldc = 2;
 
@@ -222,10 +301,43 @@ void gemmTest( ContextPtr loc, log4lama::Logger &logger )
 				HostReadAccess<ValueType> rAmC( AmC );
 				for ( int i = 0; i < 4; ++i )
 				{
-					BOOST_CHECK_EQUAL( result[i], rAmC[i] );
+					BOOST_CHECK_EQUAL( resultRowMajor[i], rAmC[i] );
 				}
 			}
 		}
+
+        // CblasColMajor, CblasTrans for A and CblasTrans for B
+        {
+            const ValueType matrixA[] = { 1.0, 2.0, -3.0, 4.0, 5.0, -6.0 };
+            const ValueType matrixB[] = { 2.0, 3.0, -1.0, 1.0, 4.0, 5.0 };
+            ValueType matrixC[]       = { 15.0, 27.0, 13.0, 17.0 };
+
+            const IndexType lda = 3;
+            const IndexType ldb = 2;
+            const IndexType ldc = 2;
+
+            LAMAArray<ValueType> AmA( 6, matrixA );
+            LAMAArray<ValueType> AmB( 6, matrixB );
+            LAMAArray<ValueType> AmC( 4, matrixC );
+
+            {
+                LAMA_CONTEXT_ACCESS( loc );
+
+                ReadAccess<ValueType> rAmA( AmA, loc );
+                ReadAccess<ValueType> rAmB( AmB, loc );
+                WriteAccess<ValueType> wAmC( AmC, loc );
+
+                gemm(CblasColMajor, CblasTrans, CblasTrans, m, n, k, alpha, rAmA.get(), lda, rAmB.get(), ldb, beta, wAmC.get(), ldc, NULL);
+            }
+
+            {
+                HostReadAccess<ValueType> rAmC( AmC );
+                for ( int i = 0; i < 4; ++i )
+                {
+                    BOOST_CHECK_EQUAL( resultColMajor[i], rAmC[i] );
+                }
+            }
+        }
 
     } // try
 	catch( Exception )
