@@ -78,12 +78,14 @@ class LAMA_DLL_IMPORTEXPORT RegionTable
 
 public:
 
+    typedef lama::Thread::Id ThreadId;
+
     /** Constructor of a new region table.
      *
      *  @param[in] threadId  id of the thread to which region table belongs
      */
 
-    RegionTable( lama::Thread::Id threadId );
+    RegionTable( ThreadId threadId );
 
     /** Destructor. */
 
@@ -91,7 +93,7 @@ public:
 
     /** Query of the thread id to which thread table belongs. */
 
-    lama::Thread::Id getId() const
+    ThreadId getId() const
     {
         return mThreadId;
     }
@@ -180,7 +182,7 @@ private:
 
     std::vector<RegionEntry> array; //!<  Entries for all timers
 
-    lama::Thread::Id mThreadId;
+    ThreadId mThreadId;
 
     /** Map of region strings to region ids that are the indexes to array.
      *

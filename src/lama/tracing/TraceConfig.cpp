@@ -310,7 +310,7 @@ TraceConfig::~TraceConfig()
 
     // Now write each RegionTable in file
 
-    std::map<lama::Thread::Id,boost::shared_ptr<RegionTable> >::iterator it;
+    std::map<ThreadId, boost::shared_ptr<RegionTable> >::iterator it;
 
     for ( it = mRegionTables.begin(); it != mRegionTables.end(); it++ )
     {
@@ -336,7 +336,7 @@ RegionTable* TraceConfig::getRegionTable()
         return NULL;
     }
 
-    Thread::Id self = Thread::getSelf();
+    ThreadId self = Thread::getSelf();
 
     if ( mThreadEnabled || self == mMaster )
     {
@@ -350,7 +350,7 @@ RegionTable* TraceConfig::getRegionTable()
 
 /* -------------------------------------------------------------------------- */
 
-RegionTable* TraceConfig::getRegionTable( Thread::Id threadId )
+RegionTable* TraceConfig::getRegionTable( ThreadId threadId )
 {
     boost::shared_ptr<RegionTable> regionTable = mRegionTables[threadId];
 
