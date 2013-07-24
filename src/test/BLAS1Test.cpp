@@ -815,16 +815,16 @@ BOOST_AUTO_TEST_SUITE( BLAS1Test )
 
 LAMA_LOG_DEF_LOGGER( logger, "Test.BLAS1Test" );
 
-LAMA_AUTO_TEST_CASE_TL( asumTest, BLAS1Test, logger );
-LAMA_AUTO_TEST_CASE_TL( axpyTest, BLAS1Test, logger );
-LAMA_AUTO_TEST_CASE_TL( copyTest, BLAS1Test, logger );
-LAMA_AUTO_TEST_CASE_TL( dotTest, BLAS1Test, logger );
-LAMA_AUTO_TEST_CASE_TL( iamaxTest, BLAS1Test, logger );
-LAMA_AUTO_TEST_CASE_TL( nrm2Test, BLAS1Test, logger );
-LAMA_AUTO_TEST_CASE_TL( scalTest, BLAS1Test, logger );
-LAMA_AUTO_TEST_CASE_TL( sumTest, BLAS1Test, logger );
-LAMA_AUTO_TEST_CASE_TL( swapTest, BLAS1Test, logger );
-LAMA_AUTO_TEST_CASE_TL( viamaxTest, BLAS1Test, logger );
+LAMA_AUTO_TEST_CASE_T( asumTest, BLAS1Test, logger );
+LAMA_AUTO_TEST_CASE_T( axpyTest, BLAS1Test, logger );
+LAMA_AUTO_TEST_CASE_T( copyTest, BLAS1Test, logger );
+LAMA_AUTO_TEST_CASE_T( dotTest, BLAS1Test, logger );
+LAMA_AUTO_TEST_CASE_T( iamaxTest, BLAS1Test, logger );
+LAMA_AUTO_TEST_CASE_T( nrm2Test, BLAS1Test, logger );
+LAMA_AUTO_TEST_CASE_T( scalTest, BLAS1Test, logger );
+LAMA_AUTO_TEST_CASE_T( sumTest, BLAS1Test, logger );
+LAMA_AUTO_TEST_CASE_T( swapTest, BLAS1Test, logger );
+LAMA_AUTO_TEST_CASE_T( viamaxTest, BLAS1Test, logger );
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 

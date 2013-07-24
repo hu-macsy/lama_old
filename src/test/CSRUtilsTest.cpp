@@ -281,9 +281,9 @@ BOOST_AUTO_TEST_SUITE( CSRUtilsTest )
 
 LAMA_LOG_DEF_LOGGER( logger, "Test.CSRUtilsTest" )
 
-LAMA_AUTO_TEST_CASE_TTL( absMaxDiffValTest, CSRUtilsTest, logger )
-LAMA_AUTO_TEST_CASE_TL( transposeTestSquare, CSRUtilsTest, logger )
-LAMA_AUTO_TEST_CASE_TL( transposeTestNonSquare, CSRUtilsTest, logger )
+LAMA_AUTO_TEST_CASE_TT( absMaxDiffValTest, CSRUtilsTest, logger )
+LAMA_AUTO_TEST_CASE_T( transposeTestSquare, CSRUtilsTest, logger )
+LAMA_AUTO_TEST_CASE_T( transposeTestNonSquare, CSRUtilsTest, logger )
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 

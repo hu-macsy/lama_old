@@ -1656,28 +1656,28 @@ BOOST_AUTO_TEST_SUITE( ELLUtilsTest )
 
 LAMA_LOG_DEF_LOGGER( logger, "Test.ELLUtilsTest" );
 
-LAMA_AUTO_TEST_CASE_TLDUMMY( countNonEmptyRowsBySizesTest, ELLUtilsTest, logger );
-LAMA_AUTO_TEST_CASE_TLDUMMY( setNonEmptyRowsBySizesTest, ELLUtilsTest, logger );
-LAMA_AUTO_TEST_CASE_TLDUMMY( hasDiagonalPropertyTest, ELLUtilsTest, logger );
-LAMA_AUTO_TEST_CASE_TLDUMMY( checkTest, ELLUtilsTest, logger );
+LAMA_AUTO_TEST_CASE_TDUMMY( countNonEmptyRowsBySizesTest, ELLUtilsTest, logger );
+LAMA_AUTO_TEST_CASE_TDUMMY( setNonEmptyRowsBySizesTest, ELLUtilsTest, logger );
+LAMA_AUTO_TEST_CASE_TDUMMY( hasDiagonalPropertyTest, ELLUtilsTest, logger );
+LAMA_AUTO_TEST_CASE_TDUMMY( checkTest, ELLUtilsTest, logger );
 
-LAMA_AUTO_TEST_CASE_TLDUMMY( matrixMultiplySizesTest, ELLUtilsTest, logger );
-LAMA_AUTO_TEST_CASE_TLDUMMY( matrixAddSizesTest, ELLUtilsTest, logger );
+LAMA_AUTO_TEST_CASE_TDUMMY( matrixMultiplySizesTest, ELLUtilsTest, logger );
+LAMA_AUTO_TEST_CASE_TDUMMY( matrixAddSizesTest, ELLUtilsTest, logger );
 
 
-LAMA_AUTO_TEST_CASE_TL( compressIATest, ELLUtilsTest, logger );
-LAMA_AUTO_TEST_CASE_TL( compressValuesTest, ELLUtilsTest, logger );
+LAMA_AUTO_TEST_CASE_T( compressIATest, ELLUtilsTest, logger );
+LAMA_AUTO_TEST_CASE_T( compressValuesTest, ELLUtilsTest, logger );
 
-LAMA_AUTO_TEST_CASE_TL( matrixMultiplyTest, ELLUtilsTest, logger );
+LAMA_AUTO_TEST_CASE_T( matrixMultiplyTest, ELLUtilsTest, logger );
 
 // ToDo: does not work
-LAMA_AUTO_TEST_CASE_TL( matrixAddTest, ELLUtilsTest, logger );
+LAMA_AUTO_TEST_CASE_T( matrixAddTest, ELLUtilsTest, logger );
 
-LAMA_AUTO_TEST_CASE_TTL( getRowTest, ELLUtilsTest, logger );
-LAMA_AUTO_TEST_CASE_TTL( getValueTest, ELLUtilsTest, logger );
-LAMA_AUTO_TEST_CASE_TTL( scaleValueTest, ELLUtilsTest, logger );
-LAMA_AUTO_TEST_CASE_TTL( getCSRValuesTest, ELLUtilsTest, logger );
-LAMA_AUTO_TEST_CASE_TTL( setCSRValuesTest, ELLUtilsTest, logger );
+LAMA_AUTO_TEST_CASE_TT( getRowTest, ELLUtilsTest, logger );
+LAMA_AUTO_TEST_CASE_TT( getValueTest, ELLUtilsTest, logger );
+LAMA_AUTO_TEST_CASE_TT( scaleValueTest, ELLUtilsTest, logger );
+LAMA_AUTO_TEST_CASE_TT( getCSRValuesTest, ELLUtilsTest, logger );
+LAMA_AUTO_TEST_CASE_TT( setCSRValuesTest, ELLUtilsTest, logger );
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 
