@@ -125,7 +125,7 @@ inline std::string getEnvContext()
     { 
         context = "Host";    // set back 
     }
-    else if ( context == "CUDA" || context == "OPENCL" )
+    else if ( context == "CUDA" || context == "OPENCL" || context == "MIC" )
     {
         // good values
     }
@@ -150,6 +150,7 @@ inline lama::ContextType mapEnvContexttoContextType( std::string contextname )
        boost::assign::map_list_of ( "Host", lama::Context::Host )
                                   ( "CUDA", lama::Context::CUDA )
                                   ( "OPENCL", lama::Context::OpenCL )
+                                  ( "MIC", lama::Context::MIC )
                                   ( "MaxContext", lama::Context::MaxContext );
     myContext = contextmap[contextname];
     return myContext;
@@ -313,12 +314,12 @@ inline lama::ContextType mapEnvContexttoContextType( std::string contextname )
  * This macro creates a boost test auto case, which uses all possible contexts.
  * The test case name is based on the name of the given test method.
  *
- * @param name          name of test method, which will invoke
- * @param classname     name of the given test class
- * @param logger        name of the given logger
+ * @param name          name of test method, which will invoke.
+ * @param classname     name of the given test class.
+ * @param logger        the given logger.
  */
 
-#define LAMA_AUTO_TEST_CASE_TL( name, classname, logger )                                                              \
+#define LAMA_AUTO_TEST_CASE_T( name, classname, logger )                                                               \
     BOOST_AUTO_TEST_CASE( name )                                                                                       \
     {                                                                                                                  \
         CONTEXTLOOP()                                                                                                  \
@@ -332,39 +333,18 @@ inline lama::ContextType mapEnvContexttoContextType( std::string contextname )
     }
 
 /*
- * @brief HelperMakro LAMA_AUTO_TEST_CASE_T( name, classname )
+ * @brief HelperMacro LAMA_AUTO_TEST_CASE_TTL( name, classname, logger )
  *
- * This makro creates a boost test auto case, which uses all possible contexts.
- * The test case name is based on the name of the given testmethod.
- *
- * @param name          Name of testmethod, which will invoke
- * @param classname     Name of the given Testclass
- */
-
-#define LAMA_AUTO_TEST_CASE_T( name, classname )                                                                       \
-    BOOST_AUTO_TEST_CASE( name )                                                                                       \
-    {                                                                                                                  \
-        CONTEXTLOOP()                                                                                                  \
-        {                                                                                                              \
-            GETCONTEXT( context );                                                                                     \
-            if ( loglevel_argument == "test_suite" )                                                                   \
-                BOOST_TEST_MESSAGE( "    Entering context: " << context->getType() );                                  \
-            lama::classname::name<float>( context );                                                                   \
-            lama::classname::name<double>( context );                                                                  \
-        }                                                                                                              \
-    }
-
-/*
- * @brief HelperMakro LAMA_AUTO_TEST_CASE_TT( name )
- *
- * This makro creates a boost test auto case, which uses all possible contexts.
+ * This macro creates a boost test auto case, which uses all possible contexts.
  * The test case name is based on the name of the given testmethod. All combinations
  * of ValueTypes (at the moment float and double) will be executed.
  *
- * @param name     Name of testmethod, which will invoke
+ * @param name       name of test method, which will invoke.
+ * @param classname  name of the given test class.
+ * @param logger     the given logger.
  */
 
-#define LAMA_AUTO_TEST_CASE_TT( name, classname )                                                                      \
+#define LAMA_AUTO_TEST_CASE_TT( name, classname, logger )                                                              \
     BOOST_AUTO_TEST_CASE( name )                                                                                       \
     {                                                                                                                  \
         CONTEXTLOOP()                                                                                                  \
@@ -372,25 +352,26 @@ inline lama::ContextType mapEnvContexttoContextType( std::string contextname )
             GETCONTEXT( context );                                                                                     \
             if ( loglevel_argument == "test_suite" )                                                                   \
                 BOOST_TEST_MESSAGE( "    Entering context: " << context->getType() );                                  \
-            lama::classname::name<float, float>( context );                                                            \
-            lama::classname::name<double, double>( context );                                                          \
-            lama::classname::name<float, double>( context );                                                           \
-            lama::classname::name<double, float>( context );                                                           \
+            lama::classname::name<float, float>( context, logger );                                                    \
+            lama::classname::name<double, double>( context, logger );                                                  \
+            lama::classname::name<float, double>( context, logger );                                                   \
+            lama::classname::name<double, float>( context, logger );                                                   \
         }                                                                                                              \
     }
 
 /*
- * @brief HelperMakro LAMA_AUTO_TEST_CASE_TDUMMY( name, classname )
+ * @brief HelperMakro LAMA_AUTO_TEST_CASE_TLDUMMY( name, classname, logger )
  *
- * This makro creates a boost test auto case, which uses all possible contexts. The test case name is based
- * on thename of the given testmethod. Uses a dummy type to execute the test, that is needed for methods
- * that needs templation for other reasons (usage of the lama interface)
+ * This macro creates a boost test auto case, which uses all possible contexts. The test case name is based
+ * on the name of the given test method. Uses a dummy type to execute the test, that is needed for methods
+ * that needs templating for other reasons (usage of the lama interface).
  *
- * @param name          Name of testmethod, which will invoke
- * @param classname     Name of the given Testclass
+ * @param name          name of test method, which will invoke.
+ * @param classname     name of the given test class.
+ * @param logger        the given logger.
  */
 
-#define LAMA_AUTO_TEST_CASE_TDUMMY( name, classname )                                                                  \
+#define LAMA_AUTO_TEST_CASE_TDUMMY( name, classname, logger )                                                          \
     BOOST_AUTO_TEST_CASE( name )                                                                                       \
     {                                                                                                                  \
         CONTEXTLOOP()                                                                                                  \
@@ -398,7 +379,7 @@ inline lama::ContextType mapEnvContexttoContextType( std::string contextname )
             GETCONTEXT( context );                                                                                     \
             if ( loglevel_argument == "test_suite" )                                                                   \
                 BOOST_TEST_MESSAGE( "    Entering context: " << context->getType() );                                  \
-            lama::classname::name<name>( context );                                                                    \
+            lama::classname::name<name>( context, logger );                                                            \
         }                                                                                                              \
     }
 

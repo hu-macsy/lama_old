@@ -104,7 +104,7 @@ void gemvTest( ContextPtr loc, log4lama::Logger &logger )
             }
         }
 
-        // CblasColMajor and CblasTrans
+        // CblasColMajor and CblasNoTrans
         {
             ValueType matrix[] =
             { 1.0, 4.0, 2.0, 5.0, -3.0, -6.0 };
@@ -193,20 +193,20 @@ void gemvTest( ContextPtr loc, log4lama::Logger &logger )
             }
         }
 
-        // CblasColMajor and CblasNoTrans
+        // CblasColMajor and CblasTrans
         {
             ValueType matrix[] =
-            { 1.0, 2.0, -3.0, 4.0, 5.0, -6.0 };
+            { 1.0, 4.0, 2.0, 5.0, -3.0, -6.0 };
 
             ValueType x[] =
             { 2.0, -1.0, 4.0 };
             ValueType y[] =
             { 10.0, -20.0, 30.0 };
 
-            const IndexType m = 3;
-            const IndexType n = 2;
+            const IndexType m = 2;
+            const IndexType n = 3;
             const ValueType alpha = 17.0;
-            const IndexType lda = 3;
+            const IndexType lda = 2;
             const IndexType incX = 2;
             const ValueType beta = 13.0;
             const IndexType incY = 1;
@@ -225,7 +225,7 @@ void gemvTest( ContextPtr loc, log4lama::Logger &logger )
                 ReadAccess<ValueType> rAx( Ax, loc );
                 WriteAccess<ValueType> wAy( Ay, loc );
 
-                gemv( CblasColMajor, CblasNoTrans, m, n, alpha, rAm.get(), lda, rAx.get(), incX, beta, wAy.get(), incY,
+                gemv( CblasColMajor, CblasTrans, m, n, alpha, rAm.get(), lda, rAx.get(), incX, beta, wAy.get(), incY,
                       NULL );
             }
 
@@ -255,7 +255,7 @@ BOOST_AUTO_TEST_SUITE( BLAS2Test )
 
 LAMA_LOG_DEF_LOGGER( logger, "Test.BLAS2Test" )
 
-LAMA_AUTO_TEST_CASE_TL( gemvTest, BLAS2Test, logger )
+LAMA_AUTO_TEST_CASE_T( gemvTest, BLAS2Test, logger )
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 

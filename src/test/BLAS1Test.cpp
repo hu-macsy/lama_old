@@ -57,7 +57,7 @@ namespace BLAS1Test
 {
 
 template<typename ValueType>
-void asumTest( ContextPtr loc )
+void asumTest( ContextPtr loc, log4lama::Logger &logger )
 {
     try
     {
@@ -99,7 +99,7 @@ void asumTest( ContextPtr loc )
     } // try
     catch( Exception )
     {
-        BOOST_TEST_MESSAGE( "WARN: BLAS1::asum not available on " << *loc << ", not tested" );
+        LAMA_LOG_WARN( logger, "BLAS1::asum not available on " << *loc << ", not tested yet." )
         return;
     }
 } // asumTest
@@ -107,7 +107,7 @@ void asumTest( ContextPtr loc )
 /* ------------------------------------------------------------------------------------------------------------------ */
 
 template<typename ValueType>
-void axpyTest( ContextPtr loc )
+void axpyTest( ContextPtr loc, log4lama::Logger &logger )
 {
     try
     {
@@ -209,7 +209,7 @@ void axpyTest( ContextPtr loc )
     } // try
     catch( Exception )
     {
-        BOOST_TEST_MESSAGE( "WARN: BLAS1::axpy not available on " << *loc << ", not tested" );
+        LAMA_LOG_WARN( logger, "BLAS1::axpy not available on " << *loc << ", not tested yet." )
         return;
     }
 } // axpyTest
@@ -217,7 +217,7 @@ void axpyTest( ContextPtr loc )
 /* ------------------------------------------------------------------------------------------------------------------ */
 
 template<typename ValueType>
-void copyTest( ContextPtr loc )
+void copyTest( ContextPtr loc, log4lama::Logger &logger )
 {
     try
     {
@@ -322,14 +322,14 @@ void copyTest( ContextPtr loc )
     } // try
     catch( Exception )
     {
-        BOOST_TEST_MESSAGE( "WARN: BLAS1::copy not available on " << *loc << ", not tested" );
+        LAMA_LOG_WARN( logger, "BLAS1::copy not available on " << *loc << ", not tested yet." )
         return;
     }
 } // copyTest
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 template<typename ValueType>
-void dotTest( ContextPtr loc )
+void dotTest( ContextPtr loc, log4lama::Logger &logger )
 {
     try
     {
@@ -369,7 +369,7 @@ void dotTest( ContextPtr loc )
     } // try
     catch( Exception )
     {
-        BOOST_TEST_MESSAGE( "WARN: BLAS1::dot not available on " << *loc << ", not tested" );
+        LAMA_LOG_WARN( logger, "BLAS1::dot not available on " << *loc << ", not tested yet." )
         return;
     }
 } // dotTest
@@ -377,49 +377,57 @@ void dotTest( ContextPtr loc )
 /* ------------------------------------------------------------------------------------------------------------------ */
 
 template<typename ValueType>
-void iamaxTest( ContextPtr loc )
+void iamaxTest( ContextPtr loc, log4lama::Logger &logger )
 {
-    LAMA_INTERFACE_FN_T( iamax, loc, BLAS, BLAS1, ValueType );
-
+    try
     {
-        ValueType values[] =
-        { 1.0, 2.0, 3.0, 6.0, 5.0, 6.0 };
-        const IndexType nValues = sizeof( values ) / sizeof(ValueType);
-        const IndexType incX1 = 1;
-        const IndexType incX2 = 2; // { 1, 3, 5}
-        const IndexType result1 = 3;
-        const IndexType result2 = 2;
-
-        LAMAArray<ValueType> AValues( nValues, values );
+        LAMA_INTERFACE_FN_T( iamax, loc, BLAS, BLAS1, ValueType );
 
         {
-            LAMA_CONTEXT_ACCESS( loc );
+            ValueType values[] =
+            { 1.0, 2.0, 3.0, 6.0, 5.0, 6.0 };
+            const IndexType nValues = sizeof( values ) / sizeof(ValueType);
+            const IndexType incX1 = 1;
+            const IndexType incX2 = 2; // { 1, 3, 5}
+            const IndexType result1 = 3;
+            const IndexType result2 = 2;
 
-            ReadAccess<ValueType> rAValues( AValues, loc );
+            LAMAArray<ValueType> AValues( nValues, values );
 
-            // n <= 0
-            IndexType smallestIndexOfMax = iamax( 0, rAValues.get(), incX1, NULL );
-            BOOST_CHECK_EQUAL( smallestIndexOfMax, 0 );
+            {
+                LAMA_CONTEXT_ACCESS( loc );
 
-            // incX <= 0
-            smallestIndexOfMax = iamax( nValues / incX1, rAValues.get(), -incX2, NULL );
-            BOOST_CHECK_EQUAL( smallestIndexOfMax, 0 );
+                ReadAccess<ValueType> rAValues( AValues, loc );
 
-            // n > 0 and incX > 0
-            smallestIndexOfMax = iamax( nValues / incX1, rAValues.get(), incX1, NULL );
-            BOOST_CHECK_EQUAL( smallestIndexOfMax, result1 );
+                // n <= 0
+                IndexType smallestIndexOfMax = iamax( 0, rAValues.get(), incX1, NULL );
+                BOOST_CHECK_EQUAL( smallestIndexOfMax, 0 );
 
-            smallestIndexOfMax = iamax( nValues / incX2, rAValues.get(), incX2, NULL );
-            BOOST_CHECK_EQUAL( smallestIndexOfMax, result2 );
+                // incX <= 0
+                smallestIndexOfMax = iamax( nValues / incX1, rAValues.get(), -incX2, NULL );
+                BOOST_CHECK_EQUAL( smallestIndexOfMax, 0 );
 
+                // n > 0 and incX > 0
+                smallestIndexOfMax = iamax( nValues / incX1, rAValues.get(), incX1, NULL );
+                BOOST_CHECK_EQUAL( smallestIndexOfMax, result1 );
+
+                smallestIndexOfMax = iamax( nValues / incX2, rAValues.get(), incX2, NULL );
+                BOOST_CHECK_EQUAL( smallestIndexOfMax, result2 );
+
+            }
         }
+    } // try
+    catch( Exception )
+    {
+        LAMA_LOG_WARN( logger, "BLAS1::iamax not available on " << *loc << ", not tested yet." )
+        return;
     }
 } // iamaxTest
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 
 template<typename ValueType>
-void nrm2Test( ContextPtr loc )
+void nrm2Test( ContextPtr loc, log4lama::Logger &logger )
 {
     try
     {
@@ -460,7 +468,7 @@ void nrm2Test( ContextPtr loc )
     } // try
     catch( Exception )
     {
-        BOOST_TEST_MESSAGE( "WARN: BLAS1::nrm2 not available on " << *loc << ", not tested" );
+        LAMA_LOG_WARN( logger, "BLAS1::nrm2 not available on " << *loc << ", not tested yet." )
         return;
     }
 } // nrm2Test
@@ -468,7 +476,7 @@ void nrm2Test( ContextPtr loc )
 /* ------------------------------------------------------------------------------------------------------------------ */
 
 template<typename ValueType>
-void scalTest( ContextPtr loc )
+void scalTest( ContextPtr loc, log4lama::Logger &logger )
 {
     try
     {
@@ -543,7 +551,7 @@ void scalTest( ContextPtr loc )
     } // try
     catch( Exception )
     {
-        BOOST_TEST_MESSAGE( "WARN: BLAS1::scal not available on " << *loc << ", not tested" );
+        LAMA_LOG_WARN( logger, "BLAS1::scal not available on " << *loc << ", not tested yet." )
         return;
     }
 } // scalTest
@@ -551,7 +559,7 @@ void scalTest( ContextPtr loc )
 /* ------------------------------------------------------------------------------------------------------------------ */
 
 template<typename ValueType>
-void sumTest( ContextPtr loc )
+void sumTest( ContextPtr loc, log4lama::Logger &logger )
 {
     try
     {
@@ -625,7 +633,7 @@ void sumTest( ContextPtr loc )
     } // try
     catch( Exception )
     {
-        BOOST_TEST_MESSAGE( "WARN: BLAS1::sum not available on " << *loc << ", not tested" );
+        LAMA_LOG_WARN( logger, "BLAS1::sum not available on " << *loc << ", not tested yet." )
         return;
     }
 } // sumTest
@@ -633,7 +641,7 @@ void sumTest( ContextPtr loc )
 /* ------------------------------------------------------------------------------------------------------------------ */
 
 template<typename ValueType>
-void swapTest( ContextPtr loc )
+void swapTest( ContextPtr loc, log4lama::Logger &logger )
 {
     try
     {
@@ -744,7 +752,7 @@ void swapTest( ContextPtr loc )
     } // try
     catch( Exception )
     {
-        BOOST_TEST_MESSAGE( "WARN: BLAS1::swap not available on " << *loc << ", not tested" );
+        LAMA_LOG_WARN( logger, "BLAS1::swap not available on " << *loc << ", not tested yet." )
         return;
     }
 } // swapTest
@@ -752,40 +760,48 @@ void swapTest( ContextPtr loc )
 /* ------------------------------------------------------------------------------------------------------------------ */
 
 template<typename ValueType>
-void viamaxTest( ContextPtr loc )
+void viamaxTest( ContextPtr loc, log4lama::Logger &logger )
 {
-    LAMA_INTERFACE_FN_T( viamax, loc, BLAS, BLAS1, ValueType );
-
+    try
     {
-        ValueType values[] =
-        { 1.0, 2.0, 3.0, 6.0, 5.0, 6.0, 10.0, 10.0, -10.0, -10.0 };
-        const IndexType incX1 = 1;
-        const IndexType incX2 = 2;
-        const ValueType result1 = 6.0;
-        const ValueType result2 = 5.0;
-
-        LAMAArray<ValueType> AValues( 10, values );
+        LAMA_INTERFACE_FN_T( viamax, loc, BLAS, BLAS1, ValueType );
 
         {
-            LAMA_CONTEXT_ACCESS( loc );
+            ValueType values[] =
+            { 1.0, 2.0, 3.0, 6.0, 5.0, 6.0, 10.0, 10.0, -10.0, -10.0 };
+            const IndexType incX1 = 1;
+            const IndexType incX2 = 2;
+            const ValueType result1 = 6.0;
+            const ValueType result2 = 5.0;
 
-            ReadAccess<ValueType> rAValues( AValues, loc );
+            LAMAArray<ValueType> AValues( 10, values );
 
-            // check with incX <= 0
-            ValueType max = viamax( 6, rAValues.get(), -incX1, NULL );
-            BOOST_CHECK_EQUAL( max, 1.0 );
+            {
+                LAMA_CONTEXT_ACCESS( loc );
 
-            // check with n <= 0
-            max = viamax( -1, rAValues.get(), incX1, NULL );
-            BOOST_CHECK_EQUAL( max, 1.0 );
+                ReadAccess<ValueType> rAValues( AValues, loc );
 
-            // check with n > 0, incX > 0
-            max = viamax( 6, rAValues.get(), incX1, NULL );
-            BOOST_CHECK_EQUAL( max, result1 );
+                // check with incX <= 0
+                ValueType max = viamax( 6, rAValues.get(), -incX1, NULL );
+                BOOST_CHECK_EQUAL( max, 1.0 );
 
-            max = viamax( 3, rAValues.get(), incX2, NULL );
-            BOOST_CHECK_EQUAL( max, result2 );
+                // check with n <= 0
+                max = viamax( -1, rAValues.get(), incX1, NULL );
+                BOOST_CHECK_EQUAL( max, 1.0 );
+
+                // check with n > 0, incX > 0
+                max = viamax( 6, rAValues.get(), incX1, NULL );
+                BOOST_CHECK_EQUAL( max, result1 );
+
+                max = viamax( 3, rAValues.get(), incX2, NULL );
+                BOOST_CHECK_EQUAL( max, result2 );
+            }
         }
+    } // try
+    catch( Exception )
+    {
+        LAMA_LOG_WARN( logger, "BLAS1::viamax not available on " << *loc << ", not tested yet." )
+        return;
     }
 } // viamaxTest
 
@@ -799,16 +815,16 @@ BOOST_AUTO_TEST_SUITE( BLAS1Test )
 
 LAMA_LOG_DEF_LOGGER( logger, "Test.BLAS1Test" );
 
-LAMA_AUTO_TEST_CASE_T( asumTest, BLAS1Test );
-LAMA_AUTO_TEST_CASE_T( axpyTest, BLAS1Test );
-LAMA_AUTO_TEST_CASE_T( copyTest, BLAS1Test );
-LAMA_AUTO_TEST_CASE_T( dotTest, BLAS1Test );
-LAMA_AUTO_TEST_CASE_T( iamaxTest, BLAS1Test );
-LAMA_AUTO_TEST_CASE_T( nrm2Test, BLAS1Test );
-LAMA_AUTO_TEST_CASE_T( scalTest, BLAS1Test );
-LAMA_AUTO_TEST_CASE_T( sumTest, BLAS1Test );
-LAMA_AUTO_TEST_CASE_T( swapTest, BLAS1Test );
-LAMA_AUTO_TEST_CASE_T( viamaxTest, BLAS1Test );
+LAMA_AUTO_TEST_CASE_T( asumTest, BLAS1Test, logger );
+LAMA_AUTO_TEST_CASE_T( axpyTest, BLAS1Test, logger );
+LAMA_AUTO_TEST_CASE_T( copyTest, BLAS1Test, logger );
+LAMA_AUTO_TEST_CASE_T( dotTest, BLAS1Test, logger );
+LAMA_AUTO_TEST_CASE_T( iamaxTest, BLAS1Test, logger );
+LAMA_AUTO_TEST_CASE_T( nrm2Test, BLAS1Test, logger );
+LAMA_AUTO_TEST_CASE_T( scalTest, BLAS1Test, logger );
+LAMA_AUTO_TEST_CASE_T( sumTest, BLAS1Test, logger );
+LAMA_AUTO_TEST_CASE_T( swapTest, BLAS1Test, logger );
+LAMA_AUTO_TEST_CASE_T( viamaxTest, BLAS1Test, logger );
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 

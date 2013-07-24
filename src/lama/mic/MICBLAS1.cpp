@@ -40,6 +40,7 @@
 
 // tracing with LAMA_REGION
 #include <lama/tracing.hpp>
+#include <omp.h>
 
 #include <cmath>
 #include <cstdlib>
@@ -125,14 +126,15 @@ ValueType MICBLAS1::asum( const IndexType n, const ValueType* x, const IndexType
 template<typename ValueType>
 IndexType MICBLAS1::iamax( const IndexType n, const ValueType* x, const IndexType incX, SyncToken* syncToken )
 {
-    LAMA_LOG_INFO( logger, "iamax<" << Scalar::getType<ValueType>() << " >, n = " << n  )
+    LAMA_LOG_INFO( logger, "iamax<" << Scalar::getType<ValueType>() << " >, n = " << n 
+                            << ", x = " << x << ", incX = " << incX )
 
     if ( syncToken )
     {
         LAMA_LOG_WARN( logger, "no asynchronous execution for mic possible at this level." )
     }
 
-    IndexType maxIndex = -1;
+    IndexType maxIndex = 0;
 
     if ( n < 1 || incX < 1 )
     {
@@ -145,9 +147,9 @@ IndexType MICBLAS1::iamax( const IndexType n, const ValueType* x, const IndexTyp
     {
         const ValueType* x = static_cast<const ValueType*>( xPtr );
 
-        maxIndex = -1;
+        maxIndex = 0;
 
-        ValueType maxVal   = - std::numeric_limits<ValueType>::max();
+        ValueType maxVal = - std::numeric_limits<ValueType>::max();
 
         #pragma omp parallel
         {  
@@ -157,7 +159,7 @@ IndexType MICBLAS1::iamax( const IndexType n, const ValueType* x, const IndexTyp
             #pragma omp for 
             for ( int i = 0; i < n; ++i )
             {
-                const ValueType& val = x[ i + incX ];
+                const ValueType& val = x[ i * incX ];
 
                 if ( val > threadMaxVal )
                 {
@@ -166,12 +168,18 @@ IndexType MICBLAS1::iamax( const IndexType n, const ValueType* x, const IndexTyp
                 }
             }
 
-            #pragma omp critical
+            // ordered reduction needed to get smallest index
+            
+            #pragma omp for ordered
+            for ( int nt = 0; nt < omp_get_num_threads(); ++nt )
             {
-                if ( threadMaxVal > maxVal )
+                #pragma omp ordered
                 {
-                    maxVal = threadMaxVal;
-                    maxIndex = threadMaxIndex;
+                    if ( threadMaxVal > maxVal )
+                    {
+                        maxVal = threadMaxVal;
+                        maxIndex = threadMaxIndex;
+                    }
                 }
             }
         }
@@ -192,7 +200,7 @@ ValueType MICBLAS1::viamax( const IndexType n, const ValueType* x, const IndexTy
         LAMA_LOG_WARN( logger, "no asynchronous execution for mic possible at this level." )
     }
 
-    ValueType maxVal = - std::numeric_limits<ValueType>::max();
+    ValueType maxVal = 1;  // default value for error cases
 
     if ( n < 1 || incX < 1 )
     {

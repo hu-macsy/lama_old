@@ -60,7 +60,7 @@ namespace ELLUtilsTest
 {
 
 template<typename NoType>
-void countNonEmptyRowsBySizesTest( ContextPtr loc )
+void countNonEmptyRowsBySizesTest( ContextPtr loc, log4lama::Logger &logger )
 {
     try
     {
@@ -99,7 +99,7 @@ void countNonEmptyRowsBySizesTest( ContextPtr loc )
     }  // try
 	catch( Exception )
 	{
-        BOOST_TEST_MESSAGE("WARN: ELLUtils::countNonEmptyRowsBySizes not available on " << *loc << ", not tested" );
+        LAMA_LOG_WARN( logger, "ELLUtils::countNonEmptyRowsBySizes not available on " << *loc << ", not tested yet." )
 		return;
 	}
 }
@@ -107,7 +107,7 @@ void countNonEmptyRowsBySizesTest( ContextPtr loc )
 /* ------------------------------------------------------------------------------------------------------------------ */
 
 template<typename NoType>
-void setNonEmptyRowsBySizesTest( ContextPtr loc )
+void setNonEmptyRowsBySizesTest( ContextPtr loc, log4lama::Logger &logger )
 {
     try
     {
@@ -142,7 +142,7 @@ void setNonEmptyRowsBySizesTest( ContextPtr loc )
     } // try
 	catch( Exception )
 	{
-        BOOST_TEST_MESSAGE("WARN: ELLUtils::setNonEmptyRowsBySizes not available on " << *loc << ", not tested" );
+        LAMA_LOG_WARN( logger, "ELLUtils::setNonEmptyRowsBySizes not available on " << *loc << ", not tested yet." )
 		return;
 	}
 }
@@ -150,7 +150,7 @@ void setNonEmptyRowsBySizesTest( ContextPtr loc )
 /* ------------------------------------------------------------------------------------------------------------------ */
 
 template<typename NoType>
-void hasDiagonalPropertyTest( ContextPtr loc )
+void hasDiagonalPropertyTest( ContextPtr loc, log4lama::Logger &logger )
 {
     try
     {
@@ -206,7 +206,7 @@ void hasDiagonalPropertyTest( ContextPtr loc )
     } // try
 	catch( Exception )
 	{
-        BOOST_TEST_MESSAGE("WARN: ELLUtils::hasDiagonalProperty not available on " << *loc << ", not tested" );
+        LAMA_LOG_WARN( logger, "ELLUtils::hasDiagonalProperty not available on " << *loc << ", not tested yet." )
 		return;
 	}
 }
@@ -214,7 +214,7 @@ void hasDiagonalPropertyTest( ContextPtr loc )
 /* ------------------------------------------------------------------------------------------------------------------ */
 
 template<typename NoType>
-void checkTest( ContextPtr loc )
+void checkTest( ContextPtr loc, log4lama::Logger &logger )
 {
     try
     {
@@ -326,7 +326,7 @@ void checkTest( ContextPtr loc )
     }  // try
 	catch( Exception )
 	{
-        BOOST_TEST_MESSAGE("WARN: ELLUtils::check not available on " << *loc << ", not tested" );
+        LAMA_LOG_WARN( logger, "ELLUtils::check not available on " << *loc << ", not tested yet." )
 		return;
 	}
 }
@@ -334,7 +334,7 @@ void checkTest( ContextPtr loc )
 /* ------------------------------------------------------------------------------------------------------------------ */
 
 template<typename ValueType,typename OtherValueType>
-void getRowTest( ContextPtr loc )
+void getRowTest( ContextPtr loc, log4lama::Logger &logger )
 {
     try
     {
@@ -428,7 +428,7 @@ void getRowTest( ContextPtr loc )
     } // try
 	catch( Exception )
 	{
-        BOOST_TEST_MESSAGE("WARN: ELLUtils::getRow not available on " << *loc << ", not tested" );
+        LAMA_LOG_WARN( logger, "ELLUtils::getRow not available on " << *loc << ", not tested yet." )
 		return;
 	}
 }
@@ -436,7 +436,7 @@ void getRowTest( ContextPtr loc )
 /* ------------------------------------------------------------------------------------------------------------------ */
 
 template<typename ValueType,typename OtherValueType>
-void getValueTest( ContextPtr loc )
+void getValueTest( ContextPtr loc, log4lama::Logger &logger )
 {
     try
     {
@@ -480,7 +480,7 @@ void getValueTest( ContextPtr loc )
     }  // try
 	catch( Exception )
 	{
-        BOOST_TEST_MESSAGE("WARN: ELLUtils::getValue not available on " << *loc << ", not tested" );
+        LAMA_LOG_WARN( logger, "ELLUtils::getValue not available on " << *loc << ", not tested yet." )
 		return;
 	}
 }
@@ -488,7 +488,7 @@ void getValueTest( ContextPtr loc )
 /* ------------------------------------------------------------------------------------------------------------------ */
 
 template<typename ValueType,typename OtherValueType>
-void scaleValueTest( ContextPtr loc )
+void scaleValueTest( ContextPtr loc, log4lama::Logger &logger )
 {
     try
     {
@@ -533,7 +533,7 @@ void scaleValueTest( ContextPtr loc )
     }  // try
 	catch( Exception )
 	{
-        BOOST_TEST_MESSAGE("WARN: ELLUtils::scaleValue not available on " << *loc << ", not tested" );
+        LAMA_LOG_WARN( logger, "ELLUtils::scaleValue not available on " << *loc << ", not tested yet." )
 		return;
 	}
 }
@@ -541,7 +541,7 @@ void scaleValueTest( ContextPtr loc )
 /* ------------------------------------------------------------------------------------------------------------------ */
 
 template<typename ValueType,typename OtherValueType>
-void getCSRValuesTest( ContextPtr loc )
+void getCSRValuesTest( ContextPtr loc, log4lama::Logger &logger )
 {
     try
     {
@@ -607,7 +607,7 @@ void getCSRValuesTest( ContextPtr loc )
     }  // try
 	catch( Exception )
 	{
-        BOOST_TEST_MESSAGE("WARN: ELLUtils::getCSRValues not available on " << *loc << ", not tested" );
+        LAMA_LOG_WARN( logger, "ELLUtils::getCSRValues not available on " << *loc << ", not tested yet." )
 		return;
 	}
 }
@@ -615,7 +615,7 @@ void getCSRValuesTest( ContextPtr loc )
 /* ------------------------------------------------------------------------------------------------------------------ */
 
 template<typename ValueType,typename OtherValueType>
-void setCSRValuesTest( ContextPtr loc )
+void setCSRValuesTest( ContextPtr loc, log4lama::Logger &logger )
 {
     try
     {
@@ -679,7 +679,7 @@ void setCSRValuesTest( ContextPtr loc )
     }  // try
     catch( Exception )
     {
-        BOOST_TEST_MESSAGE("WARN: ELLUtils::setCSRValues not available on " << *loc << ", not tested" );
+        LAMA_LOG_WARN( logger, "ELLUtils::setCSRValues not available on " << *loc << ", not tested yet." )
         return;
     }
 }
@@ -687,7 +687,7 @@ void setCSRValuesTest( ContextPtr loc )
 /* ------------------------------------------------------------------------------------------------------------------ */
 
 template<typename ValueType>
-void compressIATest( ContextPtr loc )
+void compressIATest( ContextPtr loc, log4lama::Logger &logger )
 {
     try
     {
@@ -827,7 +827,7 @@ void compressIATest( ContextPtr loc )
     }  // try
     catch( Exception )
     {
-        BOOST_TEST_MESSAGE("WARN: ELLUtils::compressIA not available on " << *loc << ", not tested" );
+        LAMA_LOG_WARN( logger, "ELLUtils::compressIA not available on " << *loc << ", not tested yet." )
         return;
     }
 }
@@ -835,7 +835,7 @@ void compressIATest( ContextPtr loc )
 /* ------------------------------------------------------------------------------------------------------------------ */
 
 template<typename ValueType>
-void compressValuesTest( ContextPtr loc )
+void compressValuesTest( ContextPtr loc, log4lama::Logger &logger )
 {
     try
     {
@@ -1003,13 +1003,13 @@ void compressValuesTest( ContextPtr loc )
     }  // try
     catch( Exception )
     {
-        BOOST_TEST_MESSAGE("WARN: ELLUtils::compressValues not available on " << *loc << ", not tested" );
+        LAMA_LOG_WARN( logger, "ELLUtils::compressValues not available on " << *loc << ", not tested yet." )
         return;
     }
 }
 
 template<typename NoType>
-void matrixMultiplySizesTest( ContextPtr loc )
+void matrixMultiplySizesTest( ContextPtr loc, log4lama::Logger &logger )
 {
     try
     {
@@ -1127,13 +1127,13 @@ void matrixMultiplySizesTest( ContextPtr loc )
     }  // try
     catch( Exception )
     {
-        BOOST_TEST_MESSAGE("WARN: ELLUtils::matrixMultiplySizes not available on " << *loc << ", not tested" );
+        LAMA_LOG_WARN( logger, "ELLUtils::matrixMultiplySizes not available on " << *loc << ", not tested yet." )
         return;
     }
 }
 
 template<typename ValueType>
-void matrixMultiplyTest( ContextPtr loc )
+void matrixMultiplyTest( ContextPtr loc, log4lama::Logger &logger )
 {
     try
     {
@@ -1385,13 +1385,13 @@ void matrixMultiplyTest( ContextPtr loc )
     }  // try
     catch( Exception )
     {
-        BOOST_TEST_MESSAGE("WARN: ELLUtils::matrixMultiply not available on " << *loc << ", not tested" );
+        LAMA_LOG_WARN( logger, "ELLUtils::matrixMultiply not available on " << *loc << ", not tested yet." )
         return;
     }
 }
     
 template<typename NoType>
-void matrixAddSizesTest( ContextPtr loc )
+void matrixAddSizesTest( ContextPtr loc, log4lama::Logger &logger )
 {
     try
     {
@@ -1461,13 +1461,13 @@ void matrixAddSizesTest( ContextPtr loc )
     }  // try
     catch( Exception )
     {
-        BOOST_TEST_MESSAGE("WARN: ELLUtils::matrixAddSizes not available on " << *loc << ", not tested" );
+        LAMA_LOG_WARN( logger, "ELLUtils::matrixAddSizes not available on " << *loc << ", not tested yet." )
         return;
     }
 }
 
 template<typename ValueType>
-void matrixAddTest( ContextPtr loc )
+void matrixAddTest( ContextPtr loc, log4lama::Logger &logger )
 {
     try
     {
@@ -1639,7 +1639,7 @@ void matrixAddTest( ContextPtr loc )
     }  // try
     catch( Exception )
     {
-        BOOST_TEST_MESSAGE("WARN: ELLUtils::matrixAdd not available on " << *loc << ", not tested" );
+        LAMA_LOG_WARN( logger, "ELLUtils::matrixAdd not available on " << *loc << ", not tested yet." )
         return;
     }
 }
@@ -1656,28 +1656,28 @@ BOOST_AUTO_TEST_SUITE( ELLUtilsTest )
 
 LAMA_LOG_DEF_LOGGER( logger, "Test.ELLUtilsTest" );
 
-LAMA_AUTO_TEST_CASE_TDUMMY( countNonEmptyRowsBySizesTest, ELLUtilsTest );
-LAMA_AUTO_TEST_CASE_TDUMMY( setNonEmptyRowsBySizesTest, ELLUtilsTest );
-LAMA_AUTO_TEST_CASE_TDUMMY( hasDiagonalPropertyTest, ELLUtilsTest );
-LAMA_AUTO_TEST_CASE_TDUMMY( checkTest, ELLUtilsTest );
+LAMA_AUTO_TEST_CASE_TDUMMY( countNonEmptyRowsBySizesTest, ELLUtilsTest, logger );
+LAMA_AUTO_TEST_CASE_TDUMMY( setNonEmptyRowsBySizesTest, ELLUtilsTest, logger );
+LAMA_AUTO_TEST_CASE_TDUMMY( hasDiagonalPropertyTest, ELLUtilsTest, logger );
+LAMA_AUTO_TEST_CASE_TDUMMY( checkTest, ELLUtilsTest, logger );
 
-LAMA_AUTO_TEST_CASE_TDUMMY( matrixMultiplySizesTest, ELLUtilsTest );
-LAMA_AUTO_TEST_CASE_TDUMMY( matrixAddSizesTest, ELLUtilsTest );
+LAMA_AUTO_TEST_CASE_TDUMMY( matrixMultiplySizesTest, ELLUtilsTest, logger );
+LAMA_AUTO_TEST_CASE_TDUMMY( matrixAddSizesTest, ELLUtilsTest, logger );
 
 
-LAMA_AUTO_TEST_CASE_T( compressIATest, ELLUtilsTest );
-LAMA_AUTO_TEST_CASE_T( compressValuesTest, ELLUtilsTest );
+LAMA_AUTO_TEST_CASE_T( compressIATest, ELLUtilsTest, logger );
+LAMA_AUTO_TEST_CASE_T( compressValuesTest, ELLUtilsTest, logger );
 
-LAMA_AUTO_TEST_CASE_T( matrixMultiplyTest, ELLUtilsTest );
+LAMA_AUTO_TEST_CASE_T( matrixMultiplyTest, ELLUtilsTest, logger );
 
 // ToDo: does not work
-LAMA_AUTO_TEST_CASE_T( matrixAddTest, ELLUtilsTest );
+LAMA_AUTO_TEST_CASE_T( matrixAddTest, ELLUtilsTest, logger );
 
-LAMA_AUTO_TEST_CASE_TT( getRowTest, ELLUtilsTest );
-LAMA_AUTO_TEST_CASE_TT( getValueTest, ELLUtilsTest );
-LAMA_AUTO_TEST_CASE_TT( scaleValueTest, ELLUtilsTest );
-LAMA_AUTO_TEST_CASE_TT( getCSRValuesTest, ELLUtilsTest );
-LAMA_AUTO_TEST_CASE_TT( setCSRValuesTest, ELLUtilsTest );
+LAMA_AUTO_TEST_CASE_TT( getRowTest, ELLUtilsTest, logger );
+LAMA_AUTO_TEST_CASE_TT( getValueTest, ELLUtilsTest, logger );
+LAMA_AUTO_TEST_CASE_TT( scaleValueTest, ELLUtilsTest, logger );
+LAMA_AUTO_TEST_CASE_TT( getCSRValuesTest, ELLUtilsTest, logger );
+LAMA_AUTO_TEST_CASE_TT( setCSRValuesTest, ELLUtilsTest, logger );
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 
