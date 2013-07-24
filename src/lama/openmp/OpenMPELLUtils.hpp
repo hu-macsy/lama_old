@@ -323,10 +323,10 @@ private:
     template<typename ValueType>
     static void sparseGEMV(
         ValueType result[],
-        const IndexType numRows,
-        const IndexType numNonZerosPerRow,
         const ValueType alpha,
         const ValueType x[],
+        const IndexType numRows,
+        const IndexType numNonZerosPerRow,
         const IndexType numNonZeroRows,
         const IndexType rowIndexes[],
         const IndexType csrIA[],
@@ -356,11 +356,11 @@ private:
     template<typename ValueType>
     static void sparseGEVM(
         ValueType result[],
+        const ValueType alpha,
+        const ValueType x[],
         const IndexType numRows,
         const IndexType numColumns,
         const IndexType numValuesPerRow,
-        const ValueType alpha,
-        const ValueType x[],
         const IndexType numNonZeroRows,
         const IndexType rowIndexes[],
         const IndexType ellSizes[],

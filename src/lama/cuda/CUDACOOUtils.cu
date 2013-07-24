@@ -248,10 +248,10 @@ void CUDACOOUtils::normalGEMV(
     const ValueType beta,
     const ValueType y[],
     const IndexType numRows,
+    const IndexType numValues,
     const IndexType cooIA[],
     const IndexType cooJA[],
     const ValueType cooValues[],
-    const IndexType numValues,
     class SyncToken* syncToken  )
 {
     LAMA_REGION( "CUDA.COO.normalGEMV" )
@@ -344,10 +344,10 @@ void CUDACOOUtils::normalGEVM(
     const ValueType beta,
     const ValueType y[],
     const IndexType numRows,
+    const IndexType numValues,
     const IndexType cooIA[],
     const IndexType cooJA[],
     const ValueType cooValues[],
-    const IndexType numValues,
     class SyncToken* syncToken  )
 {
     LAMA_REGION( "CUDA.COO.normalGEVM" )

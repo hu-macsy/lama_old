@@ -772,8 +772,8 @@ void COOStorage<ValueType>::matrixTimesVector(
         // we assume that normalGEMV can deal with the alias of result, y
 
         LAMA_CONTEXT_ACCESS( loc )
-        normalGEMV( wResult.get(), alpha, rX.get(), beta, wResult.get(), mNumRows, cooIA.get(), cooJA.get(),
-                    cooValues.get(), mNumValues, NULL );
+        normalGEMV( wResult.get(), alpha, rX.get(), beta, wResult.get(), mNumRows, mNumValues, cooIA.get(), cooJA.get(),
+                    cooValues.get(), NULL );
     }
     else
     {
@@ -783,8 +783,8 @@ void COOStorage<ValueType>::matrixTimesVector(
         ReadAccess<ValueType> rY( y, loc );
 
         LAMA_CONTEXT_ACCESS( loc )
-        normalGEMV( wResult.get(), alpha, rX.get(), beta, rY.get(), mNumRows, cooIA.get(), cooJA.get(), cooValues.get(),
-                    mNumValues, NULL );
+        normalGEMV( wResult.get(), alpha, rX.get(), beta, rY.get(), mNumRows, mNumValues, cooIA.get(), cooJA.get(),
+                    cooValues.get(), NULL );
     }
 }
 /* --------------------------------------------------------------------------- */
@@ -830,11 +830,11 @@ void COOStorage<ValueType>::vectorTimesMatrix(
 
         WriteAccess<ValueType> wResult( result, loc );
 
-        // we assume that normalGEMV can deal with the alias of result, y
+        // we assume that normalGEVM can deal with the alias of result, y
 
         LAMA_CONTEXT_ACCESS( loc )
-        normalGEVM( wResult.get(), alpha, rX.get(), beta, wResult.get(), mNumColumns, cooIA.get(), cooJA.get(),
-                    cooValues.get(), mNumValues, NULL );
+        normalGEVM( wResult.get(), alpha, rX.get(), beta, wResult.get(), mNumColumns, mNumValues, cooIA.get(),
+                    cooJA.get(), cooValues.get(), NULL );
     }
     else
     {
@@ -844,8 +844,8 @@ void COOStorage<ValueType>::vectorTimesMatrix(
         ReadAccess<ValueType> rY( y, loc );
 
         LAMA_CONTEXT_ACCESS( loc )
-        normalGEVM( wResult.get(), alpha, rX.get(), beta, rY.get(), mNumColumns, cooIA.get(), cooJA.get(), cooValues.get(),
-                    mNumValues, NULL );
+        normalGEVM( wResult.get(), alpha, rX.get(), beta, rY.get(), mNumColumns, mNumValues, cooIA.get(), cooJA.get(),
+                    cooValues.get(), NULL );
     }
 }
 
@@ -895,8 +895,8 @@ auto_ptr<SyncToken> COOStorage<ValueType>::matrixTimesVectorAsyncToDo(
 
         LAMA_CONTEXT_ACCESS( loc )
 
-        normalGEMV( wResult->get(), alpha, rX->get(), beta, wResult->get(), mNumRows, cooIA->get(), cooJA->get(),
-                    cooValues->get(), mNumValues, syncToken.get() );
+        normalGEMV( wResult->get(), alpha, rX->get(), beta, wResult->get(), mNumRows, mNumValues, cooIA->get(),
+                    cooJA->get(), cooValues->get(), syncToken.get() );
 
         syncToken->pushAccess( wResult );
     }
@@ -907,8 +907,8 @@ auto_ptr<SyncToken> COOStorage<ValueType>::matrixTimesVectorAsyncToDo(
 
         LAMA_CONTEXT_ACCESS( loc )
 
-        normalGEMV( wResult->get(), alpha, rX->get(), beta, rY->get(), mNumRows, cooIA->get(), cooJA->get(),
-                    cooValues->get(), mNumValues, syncToken.get() );
+        normalGEMV( wResult->get(), alpha, rX->get(), beta, rY->get(), mNumRows, mNumValues, cooIA->get(), cooJA->get(),
+                    cooValues->get(), syncToken.get() );
 
         syncToken->pushAccess( shared_ptr<BaseAccess>( wResult ) );
         syncToken->pushAccess( shared_ptr<BaseAccess>( rY ) );
@@ -998,8 +998,8 @@ SyncToken* COOStorage<ValueType>::vectorTimesMatrixAsync(
 
         LAMA_CONTEXT_ACCESS( loc )
 
-        normalGEVM( wResult->get(), alpha, rX->get(), beta, wResult->get(), mNumRows, cooIA->get(), cooJA->get(),
-                    cooValues->get(), mNumValues, syncToken.get() );
+        normalGEVM( wResult->get(), alpha, rX->get(), beta, wResult->get(), mNumRows, mNumValues, cooIA->get(), cooJA->get(),
+                    cooValues->get(), syncToken.get() );
 
         syncToken->pushAccess( wResult );
     }
@@ -1010,8 +1010,8 @@ SyncToken* COOStorage<ValueType>::vectorTimesMatrixAsync(
 
         LAMA_CONTEXT_ACCESS( loc )
 
-        normalGEVM( wResult->get(), alpha, rX->get(), beta, rY->get(), mNumRows, cooIA->get(), cooJA->get(),
-                    cooValues->get(), mNumValues, syncToken.get() );
+        normalGEVM( wResult->get(), alpha, rX->get(), beta, rY->get(), mNumRows, mNumValues, cooIA->get(), cooJA->get(),
+                    cooValues->get(), syncToken.get() );
 
         syncToken->pushAccess( shared_ptr<BaseAccess>( wResult ) );
         syncToken->pushAccess( shared_ptr<BaseAccess>( rY ) );

@@ -1035,7 +1035,7 @@ void ELLStorage<ValueType>::matrixTimesVector(
             ReadAccess<IndexType> rows( mRowIndexes, loc );
 
             LAMA_CONTEXT_ACCESS( loc )
-            sparseGEMV( wResult.get(), mNumRows, mNumValuesPerRow, alpha, rX.get(), numNonZeroRows, rows.get(),
+            sparseGEMV( wResult.get(), alpha, rX.get(), mNumRows, mNumValuesPerRow, numNonZeroRows, rows.get(),
                         ellIA.get(), ellJA.get(), ellValues.get(), NULL );
         }
         else
@@ -1110,8 +1110,8 @@ void ELLStorage<ValueType>::vectorTimesMatrix(
             ReadAccess<IndexType> rows( mRowIndexes, loc );
 
             LAMA_CONTEXT_ACCESS( loc )
-            sparseGEVM( wResult.get(), mNumRows, mNumColumns, mNumValuesPerRow, alpha, rX.get(), numNonZeroRows, rows.get(), ellSizes.get(), ellJA.get(),
-                        ellValues.get(), NULL );
+            sparseGEVM( wResult.get(), alpha, rX.get(), mNumRows, mNumColumns, mNumValuesPerRow, numNonZeroRows,
+                        rows.get(), ellSizes.get(), ellJA.get(), ellValues.get(), NULL );
         }
         else
         {
@@ -1216,7 +1216,7 @@ SyncToken* ELLStorage<ValueType>::matrixTimesVectorAsync(
 
             LAMA_CONTEXT_ACCESS( loc )
 
-            sparseGEMV( wResult->get(), mNumRows, mNumValuesPerRow, alpha, rX->get(), numNonZeroRows, rRowIndexes->get(),
+            sparseGEMV( wResult->get(), alpha, rX->get(), mNumRows, mNumValuesPerRow, numNonZeroRows, rRowIndexes->get(),
                         ellIA->get(), ellJA->get(), ellValues->get(), syncToken.get() );
         }
         else
@@ -1338,8 +1338,8 @@ SyncToken* ELLStorage<ValueType>::vectorTimesMatrixAsync(
 
             LAMA_CONTEXT_ACCESS( loc )
 
-            sparseGEVM( wResult->get(), mNumRows, mNumColumns, mNumValuesPerRow, alpha, rX->get(), numNonZeroRows, rows->get(),
-                        ellSizes->get(), ellJA->get(), ellValues->get(), syncToken.get() );
+            sparseGEVM( wResult->get(), alpha, rX->get(), mNumRows, mNumColumns, mNumValuesPerRow, numNonZeroRows,
+                        rows->get(), ellSizes->get(), ellJA->get(), ellValues->get(), syncToken.get() );
         }
         else
         {

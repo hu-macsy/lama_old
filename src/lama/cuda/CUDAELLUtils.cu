@@ -1008,10 +1008,10 @@ void ell_sparse_gemv_kernel(
 template<typename ValueType>
 void CUDAELLUtils::sparseGEMV(
     ValueType result[],
-    const IndexType numRows,
-    const IndexType numNonZerosPerRow,
     const ValueType alpha,
     const ValueType x[],
+    const IndexType numRows,
+    const IndexType numNonZerosPerRow,
     const IndexType numNonZeroRows,
     const IndexType rowIndexes[],
     const IndexType ellSizes[],
@@ -1141,11 +1141,11 @@ void sparse_gevm_kernel(
 template<typename ValueType>
 void CUDAELLUtils::sparseGEVM(
     ValueType result[],
+    const ValueType alpha,
+    const ValueType x[],
     const IndexType numRows,
     const IndexType numColumns,
     const IndexType numNonZerosPerRow,
-    const ValueType alpha,
-    const ValueType x[],
     const IndexType numNonZeroRows,
     const IndexType rowIndexes[],
     const IndexType ellIA[],

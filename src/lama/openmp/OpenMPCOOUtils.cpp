@@ -211,10 +211,10 @@ void OpenMPCOOUtils::normalGEMV(
     const ValueType beta,
     const ValueType y[],
     const IndexType numRows,
+    const IndexType numValues,
     const IndexType cooIA[],
     const IndexType cooJA[],
     const ValueType cooValues[],
-    const IndexType numValues,
     SyncToken* syncToken )
 {
     LAMA_LOG_INFO( logger,
@@ -262,10 +262,10 @@ void OpenMPCOOUtils::normalGEVM(
     const ValueType beta,
     const ValueType y[],
     const IndexType numColumns,
+    const IndexType numValues,
     const IndexType cooIA[],
     const IndexType cooJA[],
     const ValueType cooValues[],
-    const IndexType numValues,
     SyncToken* syncToken )
 {
     LAMA_LOG_INFO( logger,

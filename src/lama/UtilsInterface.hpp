@@ -1153,10 +1153,10 @@ struct ELLUtilsInterface
          */
 
         typedef void ( *sparseGEMV ) ( ValueType result[],
-                                       const IndexType numRows,
-                                       const IndexType numValuesPerRow,
                                        const ValueType alpha,
                                        const ValueType x[],
+                                       const IndexType numRows,
+                                       const IndexType numValuesPerRow,
                                        const IndexType numNonZeroRows,
                                        const IndexType rowIndexes[],
                                        const IndexType ellSizes[],
@@ -1182,11 +1182,11 @@ struct ELLUtilsInterface
         /** Implementation for ELLUtilsInterface::Mult::sparseGEVM  */
 
         typedef void ( *sparseGEVM ) ( ValueType result[],
+                                       const ValueType alpha,
+                                       const ValueType x[],
                                        const IndexType numRows,
                                        const IndexType numColumns,
                                        const IndexType numValuesPerRow,
-                                       const ValueType alpha,
-                                       const ValueType x[],
                                        const IndexType numNonZeroRows,
                                        const IndexType rowIndexes[],
                                        const IndexType ellSizes[],
@@ -1936,10 +1936,10 @@ struct COOUtilsInterface
                                        const ValueType beta,
                                        const ValueType y[],
                                        const IndexType numRows,
+                                       const IndexType numValues,
                                        const IndexType cooIA[],
                                        const IndexType cooJA[],
                                        const ValueType cooValues[],
-                                       const IndexType numValues,
                                        SyncToken* syncToken );
 
         typedef void ( *normalGEVM ) ( ValueType result[],
@@ -1948,10 +1948,10 @@ struct COOUtilsInterface
                                        const ValueType beta,
                                        const ValueType y[],
                                        const IndexType numRows,
+                                       const IndexType numValues,
                                        const IndexType cooIA[],
                                        const IndexType cooJA[],
                                        const ValueType cooValues[],
-                                       const IndexType numValues,
                                        SyncToken* syncToken );
     };
 
