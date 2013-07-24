@@ -1573,7 +1573,7 @@ struct JDSUtilsInterface
                                        const ValueType x[],
                                        const ValueType beta,
                                        const ValueType y[],
-                                       const IndexType numRows,
+                                       const IndexType numColumns,
                                        const IndexType jdsPerm[],
                                        const IndexType jdsILG[],
                                        const IndexType ndlg,
@@ -1744,9 +1744,35 @@ struct DIAUtilsInterface
                                        const IndexType diaOffsets[],
                                        const ValueType diaValues[],
                                        SyncToken* syncToken );
+
+        /** result = alpha * x * CSR-Matrix + b * y.
+         *
+         *  @param result is the result vector
+         *  @param alpha is scaling factor for matrix x vector
+         *  @param x is input vector for matrix multiplication
+         *  @param beta is scaling factor for additional vector
+         *  @param y is additional input vector to add
+         *  @param numRows is number of elements for all vectors and rows of matrix
+         *  @param numValues is the number of diagonals in DIA storage
+         *  @param diaOffsets, diaValues are arrays of DIA storage
+         *  @param syncToken optional, if available starts asynchronous computation
+         */
+
+        typedef void ( *normalGEVM ) ( ValueType result[],
+                                       const ValueType alpha,
+                                       const ValueType x[],
+                                       const ValueType beta,
+                                       const ValueType y[],
+                                       const IndexType numRows,
+                                       const IndexType numColumns,
+                                       const IndexType numDiagonals,
+                                       const IndexType diaOffsets[],
+                                       const ValueType diaValues[],
+                                       SyncToken* syncToken );
     };
 
     LAMA_INTERFACE_DEFINE_T( Mult, normalGEMV )
+    LAMA_INTERFACE_DEFINE_T( Mult, normalGEVM )
 
     /** Structure with type definitions for solver routines */
 

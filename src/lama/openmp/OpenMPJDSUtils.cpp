@@ -577,7 +577,7 @@ void OpenMPJDSUtils::normalGEVM(
     const IndexType jdsDLG[],
     const IndexType jdsJA[],
     const ValueType jdsValues[],
-    class SyncToken* /* syncToken */)
+    class SyncToken* UNUSED( syncToken ) )
 {
     LAMA_LOG_INFO( logger,
                    "normalGEVM<" << Scalar::getType<ValueType>()
