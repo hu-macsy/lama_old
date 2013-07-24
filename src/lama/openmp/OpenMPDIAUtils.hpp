@@ -94,6 +94,22 @@ public:
         const ValueType diaValues[],
         SyncToken* syncToken );
 
+    /** Implementation for DIAUtilsInterface::Mult::normalGEVM  */
+
+    template<typename ValueType>
+    static void normalGEVM(
+        ValueType result[],
+        const ValueType alpha,
+        const ValueType x[],
+        const ValueType beta,
+        const ValueType y[],
+        const IndexType numRows,
+        const IndexType numColumns,
+        const IndexType numDiagonals,
+        const IndexType diaOffsets[],
+        const ValueType diaValues[],
+        SyncToken* syncToken );
+
     /** Implementation for DIAUtilsInterface::Solver::jacobi  */
 
     template<typename ValueType>
