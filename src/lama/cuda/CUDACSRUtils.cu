@@ -417,20 +417,20 @@ template<typename T, bool useTexture>
 __global__
 void normal_gemv_kernel(
     T* result,
-    int n,
+    const T* x_d,
+    const T* y_d,
     const T alpha,
+    const T beta,
     const T* csrValues,
     const int* csrIA,
     const int* csrJA,
-    const T* x_d,
-    const T beta,
-    const T* y_d )
+    int numRows )
 {
     // result = alpha * A * x_d + beta * y_d
 
     const int i = threadId( gridDim, blockIdx, blockDim, threadIdx );
 
-    if ( i < n )
+    if ( i < numRows )
     {
         T summand = beta * y_d[i];
         const int rowStart = csrIA[i];
@@ -452,26 +452,26 @@ template<typename T, bool useTexture>
 __global__
 void normal_gevm_kernel(
     T* result,
-    int n,
-    int m,
+    const T* x_d,
+    const T* y_d,
     const T alpha,
+    const T beta,
     const T* csrValues,
     const int* csrIA,
     const int* csrJA,
-    const T* x_d,
-    const T beta,
-    const T* y_d )
+    int numRows,
+    int numColumns )
 {
     // result = alpha * x_d * A + beta * y_d
 
     const int i = threadId( gridDim, blockIdx, blockDim, threadIdx );
 
-    if ( i < m )
+    if ( i < numColumns )
     {
         T summand = beta * y_d[i];
         T value = 0.0;
 
-        for( int j = 0; j < n; ++j )
+        for( int j = 0; j < numRows; ++j )
         {
             const int rowStart = csrIA[j];
             const int rowEnd = csrIA[j + 1];
@@ -492,20 +492,20 @@ void normal_gevm_kernel(
 template<typename T, bool useTexture>
 __global__
 void sparse_gemv_kernel(
-    int n,
+    T* result,
+    const T* x_d,
     const T alpha,
     const T* csrValues,
     const int* csrIA,
     const int* csrJA,
-    const T* x_d,
-    const IndexType* rows,
-    T* result )
+    const IndexType* rowIndexes,
+    int numRows )
 {
     const int ii = threadId( gridDim, blockIdx, blockDim, threadIdx );
 
-    if ( ii < n )
+    if ( ii < numRows )
     {
-        IndexType i = rows[ii];
+        IndexType i = rowIndexes[ii];
         const int rowStart = csrIA[i];
         const int rowEnd = csrIA[i + 1];
         T value = 0.0;
@@ -524,15 +524,15 @@ void sparse_gemv_kernel(
 template<typename T, bool useTexture>
 __global__
 void sparse_gevm_kernel(
-    int numRows,
-    int nnz,
+    T* result,
+    const T* x_d,
     const T alpha,
     const T* csrValues,
     const int* csrIA,
     const int* csrJA,
-    const T* x_d,
-    const IndexType* rows,
-    T* result )
+    const IndexType* rowIndexes,
+    int numColumns,
+    int numNonZeroRows )
 {
     const int ii = threadId( gridDim, blockIdx, blockDim, threadIdx );
 
@@ -541,13 +541,13 @@ void sparse_gevm_kernel(
 
     const int i = threadId( gridDim, blockIdx, blockDim, threadIdx );
 
-    if ( i < numRows )
+    if ( i < numColumns )
     {
         T value = 0.0;
 
-        for( int jj = 0; jj < nnz; ++jj )
+        for( int jj = 0; jj < numNonZeroRows; ++jj )
         {
-            int j = rows[jj];
+            int j = rowIndexes[jj];
             const int rowStart = csrIA[j];
             const int rowEnd = csrIA[j + 1];
             for( int k = rowStart; k < rowEnd; ++k )
@@ -605,7 +605,7 @@ void CUDACSRUtils::normalGEMV(
         stream = cudaStreamSyncToken->getCUDAStream();
     }
 
-    LAMA_LOG_INFO( logger, "Start csr_normal_gemv_kernel<" << Scalar::getType<ValueType>()
+    LAMA_LOG_INFO( logger, "Start normal_gemv_kernel<" << Scalar::getType<ValueType>()
                            << ", useTexture = " << useTexture << ">" );
 
     if ( useTexture )
@@ -616,7 +616,7 @@ void CUDACSRUtils::normalGEMV(
                            "LAMA_STATUS_CUDA_FUNCSETCACHECONFIG_FAILED" )
 
         normal_gemv_kernel<ValueType, true> <<< dimGrid, dimBlock, 0, stream >>>
-                    ( result, numRows, alpha, csrValues, csrIA, csrJA, x, beta, y );
+                    ( result, x, y, alpha, beta, csrValues, csrIA, csrJA, numRows );
     }
     else
     {
@@ -624,7 +624,7 @@ void CUDACSRUtils::normalGEMV(
                            "LAMA_STATUS_CUDA_FUNCSETCACHECONFIG_FAILED" )
 
         normal_gemv_kernel<ValueType, false> <<< dimGrid, dimBlock, 0, stream >>>
-                    ( result, numRows, alpha, csrValues, csrIA, csrJA, x, beta, y );
+                    ( result, x, y, alpha, beta, csrValues, csrIA, csrJA, numRows );
     }
 
     if ( !syncToken )
@@ -691,7 +691,7 @@ void CUDACSRUtils::normalGEVM(
         stream = cudaStreamSyncToken->getCUDAStream();
     }
 
-    LAMA_LOG_INFO( logger, "Start csr_normal_gevM_kernel<" << Scalar::getType<ValueType>()
+    LAMA_LOG_INFO( logger, "Start normal_gevm_kernel<" << Scalar::getType<ValueType>()
                            << ", useTexture = " << useTexture << ">" );
 
     if ( useTexture )
@@ -702,7 +702,7 @@ void CUDACSRUtils::normalGEVM(
                            "LAMA_STATUS_CUDA_FUNCSETCACHECONFIG_FAILED" )
 
         normal_gevm_kernel<ValueType, true> <<< dimGrid, dimBlock, 0, stream >>>
-                    ( result, numRows, numColumns, alpha, csrValues, csrIA, csrJA, x, beta, y );
+                    ( result, x, y, alpha, beta, csrValues, csrIA, csrJA, numRows, numColumns );
     }
     else
     {
@@ -710,7 +710,7 @@ void CUDACSRUtils::normalGEVM(
                            "LAMA_STATUS_CUDA_FUNCSETCACHECONFIG_FAILED" )
 
         normal_gevm_kernel<ValueType, false> <<< dimGrid, dimBlock, 0, stream >>>
-                    ( result, numRows, numColumns, alpha, csrValues, csrIA, csrJA, x, beta, y );
+                    ( result, x, y, alpha, beta, csrValues, csrIA, csrJA, numRows, numColumns );
     }
 
     if ( !syncToken )
@@ -773,7 +773,7 @@ void CUDACSRUtils::sparseGEMV(
     dim3 dimGrid = makeGrid( numNonZeroRows, dimBlock.x );
 
     sparse_gemv_kernel<ValueType, false> <<< dimGrid, dimBlock, 0, stream >>>
-                    ( numNonZeroRows, alpha, csrValues, csrIA, csrJA, x, rowIndexes, result );
+                    ( result, x, alpha, csrValues, csrIA, csrJA, rowIndexes, numNonZeroRows );
 
     if ( !syncToken )
     {
@@ -818,7 +818,7 @@ void CUDACSRUtils::sparseGEVM(
     dim3 dimGrid = makeGrid( numNonZeroRows, dimBlock.x );
 
     sparse_gevm_kernel<ValueType, false> <<< dimGrid, dimBlock, 0, stream >>>
-                    ( numColumns, numNonZeroRows, alpha, csrValues, csrIA, csrJA, x, rowIndexes, result );
+                    ( result, x, alpha, csrValues, csrIA, csrJA, rowIndexes, numColumns, numNonZeroRows );
 
     if ( !syncToken )
     {
