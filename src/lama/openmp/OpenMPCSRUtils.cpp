@@ -49,6 +49,8 @@
 #include <boost/bind.hpp>
 #include <boost/scoped_array.hpp>
 
+#include <lama/macros/unused.hpp>
+
 namespace lama
 {
 
