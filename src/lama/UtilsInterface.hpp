@@ -569,7 +569,6 @@ struct CSRUtilsInterface
                                        const ValueType y[],
                                        const IndexType numRows,
                                        const IndexType numColumns,
-                                       const IndexType nnz,
                                        const IndexType csrIA[],
                                        const IndexType csrJA[],
                                        const ValueType csrValues[],

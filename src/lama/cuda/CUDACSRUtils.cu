@@ -31,26 +31,29 @@
  * @since 1.0.0
  */
 
+// hpp
+#include <lama/cuda/CUDACSRUtils.hpp>
+
+// others
+
+#include <lama/ContextFactory.hpp>
 #include <lama/LAMAInterface.hpp>
 #include <lama/LAMAInterfaceRegistry.hpp>
+#include <lama/tracing.hpp>
 
+// others cuda
 #include <lama/cuda/utils.cu.h>
 #include <lama/cuda/CUDAError.hpp>
-#include <lama/cuda/CUDACSRUtils.hpp>
 #include <lama/cuda/CUDAUtils.hpp>
 #include <lama/cuda/CUDASettings.hpp>
 #include <lama/cuda/CUDAStreamSyncToken.hpp>
-
-// macros
-#include <lama/macros/unused.hpp>
 
 #include <cuda.h>
 #include <cuda_runtime.h>
 #include <cuda_runtime_api.h>
 
-#include <lama/tracing.hpp>
-
-#include <lama/ContextFactory.hpp>
+// macros
+#include <lama/macros/unused.hpp>
 
 // thrust
 #include <thrust/copy.h>
@@ -67,6 +70,7 @@
 #include <thrust/iterator/zip_iterator.h>
 #include <thrust/reduce.h>
 
+// boost
 #include <boost/bind.hpp>
 
 //#include "cuPrintf.cuh"
@@ -572,8 +576,8 @@ void CUDACSRUtils::normalGEMV(
     const ValueType beta,
     const ValueType y[],
     const IndexType numRows,
-    const IndexType numColumns,
-    const IndexType nnz,
+    const IndexType UNUSED( numColumns ),
+    const IndexType UNUSED( nnz ),
     const IndexType csrIA[],
     const IndexType csrJA[],
     const ValueType csrValues[],
@@ -661,7 +665,6 @@ void CUDACSRUtils::normalGEVM(
     const ValueType y[],
     const IndexType numRows,
     const IndexType numColumns,
-    const IndexType nnz,
     const IndexType csrIA[],
     const IndexType csrJA[],
     const ValueType csrValues[],

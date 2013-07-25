@@ -1184,7 +1184,7 @@ void CSRStorage<ValueType>::vectorTimesMatrix(
             // we assume that normalGEMV can deal with the alias of result, y
 
             LAMA_CONTEXT_ACCESS( loc )
-            normalGEVM( wResult.get(), alpha, rX.get(), beta, wResult.get(), mNumRows, mNumColumns, mNumValues,
+            normalGEVM( wResult.get(), alpha, rX.get(), beta, wResult.get(), mNumRows, mNumColumns,
                         csrIA.get(), csrJA.get(), csrValues.get(), NULL );
         }
     }
@@ -1194,7 +1194,7 @@ void CSRStorage<ValueType>::vectorTimesMatrix(
         ReadAccess<ValueType> rY( y, loc );
 
         LAMA_CONTEXT_ACCESS( loc )
-        normalGEVM( wResult.get(), alpha, rX.get(), beta, rY.get(), mNumRows, mNumColumns, mNumValues,
+        normalGEVM( wResult.get(), alpha, rX.get(), beta, rY.get(), mNumRows, mNumColumns,
                     csrIA.get(), csrJA.get(), csrValues.get(), NULL );
     }
 }
@@ -1474,7 +1474,7 @@ SyncToken* CSRStorage<ValueType>::vectorTimesMatrixAsync(
 
             LAMA_CONTEXT_ACCESS( loc )
 
-            normalGEVM( wResult->get(), alpha, rX->get(), beta, wResult->get(), mNumRows, mNumColumns, mNumValues,
+            normalGEVM( wResult->get(), alpha, rX->get(), beta, wResult->get(), mNumRows, mNumColumns,
                         csrIA->get(), csrJA->get(), csrValues->get(), syncToken.get() );
         }
 
@@ -1487,7 +1487,7 @@ SyncToken* CSRStorage<ValueType>::vectorTimesMatrixAsync(
 
         LAMA_CONTEXT_ACCESS( loc )
 
-        normalGEVM( wResult->get(), alpha, rX->get(), beta, rY->get(), mNumRows, mNumColumns, mNumValues,
+        normalGEVM( wResult->get(), alpha, rX->get(), beta, rY->get(), mNumRows, mNumColumns,
                     csrIA->get(), csrJA->get(), csrValues->get(), syncToken.get() );
 
         syncToken->pushAccess( wResult );
