@@ -247,286 +247,254 @@ void scaleValueTest( ContextPtr loc, log4lama::Logger &logger )
 }
 
 template<typename NoType>
-void checkDiagonalPropertyTest( ContextPtr loc, log4lama::Logger &logger )
+void checkDiagonalPropertyTest( ContextPtr loc )
 {
-    try
+    LAMA_INTERFACE_FN( checkDiagonalProperty, loc, JDSUtils, Helper );
+
+    // check with matrix without diagonal property
     {
-        LAMA_INTERFACE_FN( checkDiagonalProperty, loc, JDSUtils, Helper );
+        IndexType valuesJa[] =
+        { 0, 1, 5, 2, 3, 7, 4, 5, 12, 6, 7, 15, 8, 9, 10 };
+        const IndexType nJa = sizeof( valuesJa ) / sizeof(IndexType);
+        IndexType valuesDlg[] =
+        { 3, 3, 3, 3, 2, 1 };
+        const IndexType nDlg = sizeof( valuesDlg ) / sizeof(IndexType);
+        IndexType valuesIlg[] =
+        { 6, 5, 4 };
+        const IndexType nIlg = sizeof( valuesIlg ) / sizeof(IndexType);
+        IndexType valuesPerm[] =
+        { 1, 2, 0 };
+        const IndexType nPerm = sizeof( valuesPerm ) / sizeof(IndexType);
 
-        // check with matrix without diagonal property
-        {
-            IndexType valuesJa[] =
-            { 0, 1, 5, 2, 3, 7, 4, 5, 12, 6, 7, 15, 8, 9, 10 };
-            const IndexType nJa = sizeof( valuesJa ) / sizeof(IndexType);
-            IndexType valuesDlg[] =
-            { 3, 3, 3, 3, 2, 1 };
-            const IndexType nDlg = sizeof( valuesDlg ) / sizeof(IndexType);
-            IndexType valuesIlg[] =
-            { 6, 5, 4 };
-            const IndexType nIlg = sizeof( valuesIlg ) / sizeof(IndexType);
-            IndexType valuesPerm[] =
-            { 1, 2, 0 };
-            const IndexType nPerm = sizeof( valuesPerm ) / sizeof(IndexType);
+        const IndexType numRows = 3;
+        const IndexType numColumns = 16;
+        const IndexType numDiagonals = 3;
 
-            const IndexType numRows = 3;
-            const IndexType numColumns = 16;
-            const IndexType numDiagonals = 3;
+        LAMAArray<IndexType> ja( nJa, valuesJa );
+        LAMAArray<IndexType> dlg( nDlg, valuesDlg );
+        LAMAArray<IndexType> ilg( nIlg, valuesIlg );
+        LAMAArray<IndexType> perm( nPerm, valuesPerm );
 
-            LAMAArray<IndexType> ja( nJa, valuesJa );
-            LAMAArray<IndexType> dlg( nDlg, valuesDlg );
-            LAMAArray<IndexType> ilg( nIlg, valuesIlg );
-            LAMAArray<IndexType> perm( nPerm, valuesPerm );
+        ReadAccess<IndexType> rJa( ja, loc );
+        ReadAccess<IndexType> rDlg( dlg, loc );
+        ReadAccess<IndexType> rIlg( ilg, loc );
+        ReadAccess<IndexType> rPerm( perm, loc );
 
-            ReadAccess<IndexType> rJa( ja, loc );
-            ReadAccess<IndexType> rDlg( dlg, loc );
-            ReadAccess<IndexType> rIlg( ilg, loc );
-            ReadAccess<IndexType> rPerm( perm, loc );
+        LAMA_CONTEXT_ACCESS( loc );
 
-            LAMA_CONTEXT_ACCESS( loc );
+        bool diagonalProperty;
 
-            bool diagonalProperty;
+        diagonalProperty = checkDiagonalProperty( numDiagonals, numRows, numColumns, rPerm.get(), rJa.get(),
+                                                  rDlg.get() );
 
-            diagonalProperty = checkDiagonalProperty( numDiagonals, numRows, numColumns, rPerm.get(), rJa.get(),
-                                                      rDlg.get() );
+        BOOST_CHECK_EQUAL( false, diagonalProperty );
+    }
 
-            BOOST_CHECK_EQUAL( false, diagonalProperty );
-        }
-
-        // check with matrix with diagonal property
-        {
-            IndexType valuesJa[] =
-            { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 };
-            const IndexType nJa = sizeof( valuesJa ) / sizeof(IndexType);
-            IndexType valuesDlg[] =
-            { 3, 3, 3 };
-            const IndexType nDlg = sizeof( valuesDlg ) / sizeof(IndexType);
-            IndexType valuesIlg[] =
-            { 3, 3, 3 };
-            const IndexType nIlg = sizeof( valuesIlg ) / sizeof(IndexType);
-            IndexType valuesPerm[] =
-            { 0, 1, 2 };
-            const IndexType nPerm = sizeof( valuesPerm ) / sizeof(IndexType);
-
-            const IndexType numRows = 3;
-            const IndexType numColumns = 3;
-            const IndexType numDiagonals = 3;
-
-            LAMAArray<IndexType> ja( nJa, valuesJa );
-            LAMAArray<IndexType> dlg( nDlg, valuesDlg );
-            LAMAArray<IndexType> ilg( nIlg, valuesIlg );
-            LAMAArray<IndexType> perm( nPerm, valuesPerm );
-
-            ReadAccess<IndexType> rJa( ja, loc );
-            ReadAccess<IndexType> rDlg( dlg, loc );
-            ReadAccess<IndexType> rIlg( ilg, loc );
-            ReadAccess<IndexType> rPerm( perm, loc );
-
-            LAMA_CONTEXT_ACCESS( loc );
-
-            bool diagonalProperty;
-
-            diagonalProperty = checkDiagonalProperty( numDiagonals, numRows, numColumns, rPerm.get(), rJa.get(),
-                                                      rDlg.get() );
-
-            BOOST_CHECK_EQUAL( true, diagonalProperty );
-        }
-
-        // check with empty matrix
-        {
-            const IndexType numRows = 0;
-            const IndexType numColumns = 0;
-            const IndexType numDiagonals = 0;
-
-            LAMAArray<IndexType> ja;
-            LAMAArray<IndexType> dlg;
-            LAMAArray<IndexType> ilg;
-            LAMAArray<IndexType> perm;
-
-            ReadAccess<IndexType> rJa( ja, loc );
-            ReadAccess<IndexType> rDlg( dlg, loc );
-            ReadAccess<IndexType> rIlg( ilg, loc );
-            ReadAccess<IndexType> rPerm( perm, loc );
-
-            LAMA_CONTEXT_ACCESS( loc );
-
-            bool diagonalProperty;
-
-            diagonalProperty = checkDiagonalProperty( numDiagonals, numRows, numColumns, rPerm.get(), rJa.get(),
-                                                      rDlg.get() );
-
-            BOOST_CHECK_EQUAL( false, diagonalProperty );
-        }
-    } // try
-    catch( Exception )
+    // check with matrix with diagonal property
     {
-        LAMA_LOG_WARN( logger, "JDSUtils::checkDiagonalProperty not available on " << *loc << ", not tested yet." )
-        return;
+        IndexType valuesJa[] =
+        { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 };
+        const IndexType nJa = sizeof( valuesJa ) / sizeof(IndexType);
+        IndexType valuesDlg[] =
+        { 3, 3, 3 };
+        const IndexType nDlg = sizeof( valuesDlg ) / sizeof(IndexType);
+        IndexType valuesIlg[] =
+        { 3, 3, 3 };
+        const IndexType nIlg = sizeof( valuesIlg ) / sizeof(IndexType);
+        IndexType valuesPerm[] =
+        { 0, 1, 2 };
+        const IndexType nPerm = sizeof( valuesPerm ) / sizeof(IndexType);
+
+        const IndexType numRows = 3;
+        const IndexType numColumns = 3;
+        const IndexType numDiagonals = 3;
+
+        LAMAArray<IndexType> ja( nJa, valuesJa );
+        LAMAArray<IndexType> dlg( nDlg, valuesDlg );
+        LAMAArray<IndexType> ilg( nIlg, valuesIlg );
+        LAMAArray<IndexType> perm( nPerm, valuesPerm );
+
+        ReadAccess<IndexType> rJa( ja, loc );
+        ReadAccess<IndexType> rDlg( dlg, loc );
+        ReadAccess<IndexType> rIlg( ilg, loc );
+        ReadAccess<IndexType> rPerm( perm, loc );
+
+        LAMA_CONTEXT_ACCESS( loc );
+
+        bool diagonalProperty;
+
+        diagonalProperty = checkDiagonalProperty( numDiagonals, numRows, numColumns, rPerm.get(), rJa.get(),
+                                                  rDlg.get() );
+
+        BOOST_CHECK_EQUAL( true, diagonalProperty );
+    }
+
+    // check with empty matrix
+    {
+        const IndexType numRows = 0;
+        const IndexType numColumns = 0;
+        const IndexType numDiagonals = 0;
+
+        LAMAArray<IndexType> ja;
+        LAMAArray<IndexType> dlg;
+        LAMAArray<IndexType> ilg;
+        LAMAArray<IndexType> perm;
+
+        ReadAccess<IndexType> rJa( ja, loc );
+        ReadAccess<IndexType> rDlg( dlg, loc );
+        ReadAccess<IndexType> rIlg( ilg, loc );
+        ReadAccess<IndexType> rPerm( perm, loc );
+
+        LAMA_CONTEXT_ACCESS( loc );
+
+        bool diagonalProperty;
+
+        diagonalProperty = checkDiagonalProperty( numDiagonals, numRows, numColumns, rPerm.get(), rJa.get(),
+                                                  rDlg.get() );
+
+        BOOST_CHECK_EQUAL( false, diagonalProperty );
     }
 }
 
 template<typename NoType>
-void ilg2dlgTest( ContextPtr loc, log4lama::Logger &logger )
+void ilg2dlgTest( ContextPtr loc )
 {
-    try
+    LAMA_INTERFACE_FN( ilg2dlg, loc, JDSUtils, Sort );
+
     {
-        LAMA_INTERFACE_FN( ilg2dlg, loc, JDSUtils, Sort );
+        IndexType valuesIlg[] =
+        { 7, 7, 5, 4, 4, 1 };
+        const IndexType nIlg = sizeof( valuesIlg ) / sizeof(IndexType);
+        IndexType expectedValues[] =
+        { 6, 5, 5, 5, 3, 2, 2 };
+
+        const IndexType numRows = 6;
+        const IndexType numDiagonals = 7;
+
+        LAMAArray<IndexType> dlg( numDiagonals );
+        LAMAArray<IndexType> ilg( nIlg, valuesIlg );
 
         {
-            IndexType valuesIlg[] =
-            { 7, 7, 5, 4, 4, 1 };
-            const IndexType nIlg = sizeof( valuesIlg ) / sizeof(IndexType);
-            IndexType expectedValues[] =
-            { 6, 5, 5, 5, 3, 2, 2 };
+            WriteOnlyAccess<IndexType> wDlg( dlg, loc, numDiagonals );
+            ReadAccess<IndexType> rIlg( ilg, loc );
 
-            const IndexType numRows = 6;
-            const IndexType numDiagonals = 7;
+            LAMA_CONTEXT_ACCESS( loc );
 
-            LAMAArray<IndexType> dlg( numDiagonals );
-            LAMAArray<IndexType> ilg( nIlg, valuesIlg );
-
-            {
-                WriteOnlyAccess<IndexType> wDlg( dlg, loc, numDiagonals );
-                ReadAccess<IndexType> rIlg( ilg, loc );
-
-                LAMA_CONTEXT_ACCESS( loc );
-
-                ilg2dlg( wDlg.get(), numDiagonals, rIlg.get(), numRows );
-            }
-
-            HostReadAccess<IndexType> rDlg( dlg );
-            for( IndexType i = 0; i < numDiagonals; i++ )
-            {
-                BOOST_CHECK_EQUAL( expectedValues[i], rDlg.get()[i] );
-            }
+            ilg2dlg( wDlg.get(), numDiagonals, rIlg.get(), numRows );
         }
-    } // try
-    catch( Exception )
-    {
-        LAMA_LOG_WARN( logger, "JDSUtils::ilg2dlg not available on " << *loc << ", not tested yet." )
-        return;
+
+        HostReadAccess<IndexType> rDlg( dlg );
+        for( IndexType i = 0; i < numDiagonals; i++ )
+        {
+            BOOST_CHECK_EQUAL( expectedValues[i], rDlg.get()[i] );
+        }
     }
 }
 
 template<typename NoType>
-void sortRowsTest( ContextPtr loc, log4lama::Logger &logger )
+void sortRowsTest( ContextPtr loc )
 {
-    try
+    LAMA_INTERFACE_FN( sortRows, loc, JDSUtils, Sort );
+
     {
-        LAMA_INTERFACE_FN( sortRows, loc, JDSUtils, Sort );
+        IndexType valuesIlg[] =
+        { 5, 2, 4, 4, 2, 7 };
+        const IndexType nIlg = sizeof( valuesIlg ) / sizeof(IndexType);
+        IndexType valuesPerm[] =
+        { 0, 1, 2, 3, 4, 5 };
+        const IndexType nPerm = sizeof( valuesPerm ) / sizeof(IndexType);
+        IndexType expectedIlg[] =
+        { 7, 5, 4, 4, 2, 2 };
+        IndexType expectedPerm[] =
+        { 5, 0, 2, 3, 1, 4 };
+
+        const IndexType numRows = 6;
+
+        LAMAArray<IndexType> perm( nPerm, valuesPerm );
+        LAMAArray<IndexType> ilg( nIlg, valuesIlg );
 
         {
-            IndexType valuesIlg[] =
-            { 5, 2, 4, 4, 2, 7 };
-            const IndexType nIlg = sizeof( valuesIlg ) / sizeof(IndexType);
-            IndexType valuesPerm[] =
-            { 0, 1, 2, 3, 4, 5 };
-            const IndexType nPerm = sizeof( valuesPerm ) / sizeof(IndexType);
-            IndexType expectedIlg[] =
-            { 7, 5, 4, 4, 2, 2 };
-            IndexType expectedPerm[] =
-            { 5, 0, 2, 3, 1, 4 };
+            WriteAccess<IndexType> wPerm( perm, loc );
+            WriteAccess<IndexType> wIlg( ilg, loc );
 
-            const IndexType numRows = 6;
+            LAMA_CONTEXT_ACCESS( loc );
 
-            LAMAArray<IndexType> perm( nPerm, valuesPerm );
-            LAMAArray<IndexType> ilg( nIlg, valuesIlg );
-
-            {
-                WriteAccess<IndexType> wPerm( perm, loc );
-                WriteAccess<IndexType> wIlg( ilg, loc );
-
-                LAMA_CONTEXT_ACCESS( loc );
-
-                sortRows( wIlg.get(), wPerm.get(), numRows );
-            }
-
-            HostReadAccess<IndexType> rIlg( ilg );
-            HostReadAccess<IndexType> rPerm( perm );
-
-            for( IndexType i = 0; i < numRows; i++ )
-            {
-                BOOST_CHECK_EQUAL( expectedIlg[i], rIlg.get()[i] );
-                BOOST_CHECK_EQUAL( expectedPerm[i], rPerm.get()[i] );
-            }
+            sortRows( wIlg.get(), wPerm.get(), numRows );
         }
+
+        HostReadAccess<IndexType> rIlg( ilg );
+        HostReadAccess<IndexType> rPerm( perm );
+
+        for( IndexType i = 0; i < numRows; i++ )
         {
-            const IndexType numRows = 0;
-
-            LAMAArray<IndexType> perm( numRows );
-            LAMAArray<IndexType> ilg( numRows );
-
-            {
-                WriteOnlyAccess<IndexType> wPerm( perm, loc, numRows );
-                WriteOnlyAccess<IndexType> wIlg( ilg, loc, numRows );
-
-                LAMA_CONTEXT_ACCESS( loc );
-
-                sortRows( wIlg.get(), wPerm.get(), numRows );
-            }
+            BOOST_CHECK_EQUAL( expectedIlg[i], rIlg.get()[i] );
+            BOOST_CHECK_EQUAL( expectedPerm[i], rPerm.get()[i] );
         }
-    } // try
-    catch( Exception )
+    }
     {
-        LAMA_LOG_WARN( logger, "JDSUtils::sortRows not available on " << *loc << ", not tested yet." )
-        return;
+        const IndexType numRows = 0;
+
+        LAMAArray<IndexType> perm( numRows );
+        LAMAArray<IndexType> ilg( numRows );
+
+        {
+            WriteOnlyAccess<IndexType> wPerm( perm, loc, numRows );
+            WriteOnlyAccess<IndexType> wIlg( ilg, loc, numRows );
+
+            LAMA_CONTEXT_ACCESS( loc );
+
+            sortRows( wIlg.get(), wPerm.get(), numRows );
+        }
     }
 }
 
 template<typename NoType>
-void setInversePermTest( ContextPtr loc, log4lama::Logger &logger )
+void setInversePermTest( ContextPtr loc )
 {
-    try
+    LAMA_INTERFACE_FN( setInversePerm, loc, JDSUtils, Sort );
+
     {
-        LAMA_INTERFACE_FN( setInversePerm, loc, JDSUtils, Sort );
+        IndexType valuesPerm[] =
+        { 5, 0, 2, 3, 1, 4 };
+        const IndexType nPerm = sizeof( valuesPerm ) / sizeof(IndexType);
+        IndexType expectedPerm[] =
+        { 1, 4, 2, 3, 5, 0 };
+
+        const IndexType numRows = 6;
+
+        LAMAArray<IndexType> perm( nPerm, valuesPerm );
+        LAMAArray<IndexType> inversePerm( nPerm );
 
         {
-            IndexType valuesPerm[] =
-            { 5, 0, 2, 3, 1, 4 };
-            const IndexType nPerm = sizeof( valuesPerm ) / sizeof(IndexType);
-            IndexType expectedPerm[] =
-            { 1, 4, 2, 3, 5, 0 };
+            ReadAccess<IndexType> rPerm( perm, loc );
+            WriteOnlyAccess<IndexType> wInversePerm( inversePerm, loc, numRows );
 
-            const IndexType numRows = 6;
+            LAMA_CONTEXT_ACCESS( loc );
 
-            LAMAArray<IndexType> perm( nPerm, valuesPerm );
-            LAMAArray<IndexType> inversePerm( nPerm );
-
-            {
-                ReadAccess<IndexType> rPerm( perm, loc );
-                WriteOnlyAccess<IndexType> wInversePerm( inversePerm, loc, numRows );
-
-                LAMA_CONTEXT_ACCESS( loc );
-
-                setInversePerm( wInversePerm.get(), rPerm.get(), numRows );
-            }
-
-            HostReadAccess<IndexType> rInversePerm( inversePerm );
-
-            for( IndexType i = 0; i < numRows; i++ )
-            {
-                BOOST_CHECK_EQUAL( expectedPerm[i], rInversePerm.get()[i] );
-            }
+            setInversePerm( wInversePerm.get(), rPerm.get(), numRows );
         }
+
+        HostReadAccess<IndexType> rInversePerm( inversePerm );
+
+        for( IndexType i = 0; i < numRows; i++ )
         {
-            const IndexType numRows = 0;
-
-            LAMAArray<IndexType> perm( numRows );
-            LAMAArray<IndexType> inversePerm( numRows );
-
-            {
-                ReadAccess<IndexType> rPerm( perm, loc );
-                WriteOnlyAccess<IndexType> wInversePerm( inversePerm, loc, numRows );
-
-                LAMA_CONTEXT_ACCESS( loc );
-
-                setInversePerm( wInversePerm.get(), rPerm.get(), numRows );
-            }
+            BOOST_CHECK_EQUAL( expectedPerm[i], rInversePerm.get()[i] );
         }
-    } // try
-    catch( Exception )
+    }
     {
-        LAMA_LOG_WARN( logger, "JDSUtils::setInversePerm not available on " << *loc << ", not tested yet." )
-        return;
+        const IndexType numRows = 0;
+
+        LAMAArray<IndexType> perm( numRows );
+        LAMAArray<IndexType> inversePerm( numRows );
+
+        {
+            ReadAccess<IndexType> rPerm( perm, loc );
+            WriteOnlyAccess<IndexType> wInversePerm( inversePerm, loc, numRows );
+
+            LAMA_CONTEXT_ACCESS( loc );
+
+            setInversePerm( wInversePerm.get(), rPerm.get(), numRows );
+        }
     }
 }
 
@@ -705,10 +673,10 @@ BOOST_AUTO_TEST_SUITE( JDSUtilsTest )
 
 LAMA_LOG_DEF_LOGGER( logger, "Test.JDSUtilsTest" )
 
-LAMA_AUTO_TEST_CASE_TDUMMY( checkDiagonalPropertyTest, JDSUtilsTest, logger )
-LAMA_AUTO_TEST_CASE_TDUMMY( ilg2dlgTest, JDSUtilsTest, logger )
-LAMA_AUTO_TEST_CASE_TDUMMY( sortRowsTest, JDSUtilsTest, logger )
-LAMA_AUTO_TEST_CASE_TDUMMY( setInversePermTest, JDSUtilsTest, logger )
+LAMA_AUTO_TEST_CASE_TDUMMY( checkDiagonalPropertyTest, JDSUtilsTest )
+LAMA_AUTO_TEST_CASE_TDUMMY( ilg2dlgTest, JDSUtilsTest )
+LAMA_AUTO_TEST_CASE_TDUMMY( sortRowsTest, JDSUtilsTest )
+LAMA_AUTO_TEST_CASE_TDUMMY( setInversePermTest, JDSUtilsTest )
 
 LAMA_AUTO_TEST_CASE_TT( getRowTest, JDSUtilsTest, logger )
 LAMA_AUTO_TEST_CASE_TT( getValueTest, JDSUtilsTest, logger )

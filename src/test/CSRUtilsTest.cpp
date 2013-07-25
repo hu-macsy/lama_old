@@ -64,7 +64,7 @@ namespace CSRUtilsTest
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 
-template<typename ValueType, typename OtherValueType>
+template<typename ValueType,typename OtherValueType>
 void absMaxDiffValTest( ContextPtr loc, log4lama::Logger &logger )
 {
     try
@@ -75,16 +75,22 @@ void absMaxDiffValTest( ContextPtr loc, log4lama::Logger &logger )
         //
         //    1 2 3 0 0          1 2 0 0 0
         //    0 0 1 1 2          1 0 2 2 1
-        const IndexType ia1[] = { 0, 3, 6 };
-        const IndexType ja1[] = { 0, 1, 2, 2, 3, 4 };
-        const IndexType ia2[] = { 0, 2, 6 };
-        const IndexType ja2[] = { 0, 1, 0, 2, 3, 4 };
-        const ValueType values1[] = { 1, 2, 3, 1, 1, 2 };
-        const ValueType values2[] = { 1, 2, 1, 2, 2, 1 };
+        const IndexType ia1[] =
+        { 0, 3, 6 };
+        const IndexType ja1[] =
+        { 0, 1, 2, 2, 3, 4 };
+        const IndexType ia2[] =
+        { 0, 2, 6 };
+        const IndexType ja2[] =
+        { 0, 1, 0, 2, 3, 4 };
+        const ValueType values1[] =
+        { 1, 2, 3, 1, 1, 2 };
+        const ValueType values2[] =
+        { 1, 2, 1, 2, 2, 1 };
         const IndexType numRows = 2;
         // const IndexType numColumns = 5;
-        const IndexType numValues1 = sizeof( ja1 ) / sizeof( IndexType );
-        const IndexType numValues2 = sizeof( ja2 ) / sizeof( IndexType );
+        const IndexType numValues1 = sizeof( ja1 ) / sizeof(IndexType);
+        const IndexType numValues2 = sizeof( ja2 ) / sizeof(IndexType);
         LAMAArray<IndexType> csrIA1( numRows + 1, ia1 );
         LAMAArray<IndexType> csrJA1( numValues1, ja1 );
         LAMAArray<ValueType> csrValues1( numValues1, values1 );
@@ -98,17 +104,15 @@ void absMaxDiffValTest( ContextPtr loc, log4lama::Logger &logger )
         ReadAccess<IndexType> rCSRJA2( csrJA2, loc );
         ReadAccess<ValueType> rCSRValues2( csrValues2, loc );
         LAMA_CONTEXT_ACCESS( loc );
-        ValueType maxVal = absMaxDiffVal( numRows, false,
-                                          rCSRIA1.get(), rCSRJA1.get(), rCSRValues1.get(),
+        ValueType maxVal = absMaxDiffVal( numRows, false, rCSRIA1.get(), rCSRJA1.get(), rCSRValues1.get(),
                                           rCSRIA2.get(), rCSRJA2.get(), rCSRValues2.get() );
         BOOST_CHECK_EQUAL( 3, maxVal );
         // rows are sorted, so we can alsoy apply sortFlag = true
-        maxVal = absMaxDiffVal( numRows, true,
-                                rCSRIA1.get(), rCSRJA1.get(), rCSRValues1.get(),
-                                rCSRIA2.get(), rCSRJA2.get(), rCSRValues2.get() );
+        maxVal = absMaxDiffVal( numRows, true, rCSRIA1.get(), rCSRJA1.get(), rCSRValues1.get(), rCSRIA2.get(),
+                                rCSRJA2.get(), rCSRValues2.get() );
         BOOST_CHECK_EQUAL( 3, maxVal );
     }
-    catch ( Exception )
+    catch( Exception )
     {
         LAMA_LOG_WARN( logger, "CSRUtils::absMaxDiffVal not available on " << *loc << ", not tested yet." )
         return;
@@ -116,19 +120,25 @@ void absMaxDiffValTest( ContextPtr loc, log4lama::Logger &logger )
 }
 
 template<typename ValueType>
-void transposeTestSquare( ContextPtr loc, log4lama::Logger &logger )
+void transposeTestSquare( ContextPtr loc )
 {
     //  input array           transpose
     //    1.0   -   2.0       1.0  0.5   -
     //    0.5  0.3   -         -   0.3   - 
     //     -    -   3.0       2.0   -   3.0 
 
-    const IndexType ia1[] = { 0, 2, 4, 5 };
-    const IndexType ja1[] = { 0, 2, 0, 1, 2 };
-    const IndexType ia2[] = { 0, 2, 3, 5 };
-    const IndexType ja2[] = { 0, 1, 1, 0, 2 };
-    const ValueType values1[] = { 1.0, 2.0, 0.5, 0.3, 3.0 };
-    const ValueType values2[] = { 1.0, 0.5, 0.3, 2.0, 3.0 };
+    const IndexType ia1[] =
+    { 0, 2, 4, 5 };
+    const IndexType ja1[] =
+    { 0, 2, 0, 1, 2 };
+    const IndexType ia2[] =
+    { 0, 2, 3, 5 };
+    const IndexType ja2[] =
+    { 0, 1, 1, 0, 2 };
+    const ValueType values1[] =
+    { 1.0, 2.0, 0.5, 0.3, 3.0 };
+    const ValueType values2[] =
+    { 1.0, 0.5, 0.3, 2.0, 3.0 };
     const IndexType numRows = 3;
     const IndexType numColumns = 3;
     const IndexType numValues = 5;
@@ -139,36 +149,26 @@ void transposeTestSquare( ContextPtr loc, log4lama::Logger &logger )
     LAMAArray<IndexType> cscJA;
     LAMAArray<ValueType> cscValues;
 
-    try
-    {
-        LAMA_INTERFACE_FN_T( convertCSR2CSC, loc, CSRUtils, Transpose, ValueType );
+    LAMA_INTERFACE_FN_T( convertCSR2CSC, loc, CSRUtils, Transpose, ValueType );
 
-        ReadAccess<IndexType> rCSRIA( csrIA, loc );
-        ReadAccess<IndexType> rCSRJA( csrJA, loc );
-        ReadAccess<ValueType> rCSRValues( csrValues, loc );
-        WriteOnlyAccess<IndexType> wCSCIA( cscIA, loc, numColumns+1 );
-        WriteOnlyAccess<IndexType> wCSCJA( cscJA, loc, numValues );
-        WriteOnlyAccess<ValueType> wCSCValues( cscValues, loc, numValues );
+    ReadAccess<IndexType> rCSRIA( csrIA, loc );
+    ReadAccess<IndexType> rCSRJA( csrJA, loc );
+    ReadAccess<ValueType> rCSRValues( csrValues, loc );
+    WriteOnlyAccess<IndexType> wCSCIA( cscIA, loc, numColumns + 1 );
+    WriteOnlyAccess<IndexType> wCSCJA( cscJA, loc, numValues );
+    WriteOnlyAccess<ValueType> wCSCValues( cscValues, loc, numValues );
 
-        LAMA_CONTEXT_ACCESS( loc );
+    LAMA_CONTEXT_ACCESS( loc );
 
-        convertCSR2CSC( wCSCIA.get(), wCSCJA.get(), wCSCValues.get(),
-                        rCSRIA.get(), rCSRJA.get(), rCSRValues.get(),
-                        numRows, numColumns, numValues );
-    }
-    catch ( Exception )
-    {
-        LAMA_LOG_WARN( logger, "CSRUtils::convertCSR2CSC not available on " << *loc << ", not tested yet." )
-        return;
-    }
+    convertCSR2CSC( wCSCIA.get(), wCSCJA.get(), wCSCValues.get(), rCSRIA.get(), rCSRJA.get(), rCSRValues.get(), numRows,
+                    numColumns, numValues );
 
     {
         HostReadAccess<IndexType> rCSCIA( cscIA );
         HostWriteAccess<IndexType> wCSCJA( cscJA );
         HostWriteAccess<ValueType> wCSCValues( cscValues );
 
-
-        for ( int j = 0; j <= numColumns; ++j )
+        for( int j = 0; j <= numColumns; ++j )
         {
             BOOST_CHECK_EQUAL( rCSCIA[j], ia2[j] );
         }
@@ -177,16 +177,14 @@ void transposeTestSquare( ContextPtr loc, log4lama::Logger &logger )
 
         bool diagonalFlag = false;
 
-        OpenMPCSRUtils::sortRowElements( wCSCJA.get(), wCSCValues.get(), rCSCIA.get(),
-                                         numColumns, diagonalFlag );
+        OpenMPCSRUtils::sortRowElements( wCSCJA.get(), wCSCValues.get(), rCSCIA.get(), numColumns, diagonalFlag );
 
-        for ( int j = 0; j < numValues; ++j )
+        for( int j = 0; j < numValues; ++j )
         {
             BOOST_CHECK_EQUAL( wCSCJA[j], ja2[j] );
         }
 
-
-        for ( int j = 0; j < numValues; ++j )
+        for( int j = 0; j < numValues; ++j )
         {
             BOOST_CHECK_EQUAL( wCSCValues[j], values2[j] );
         }
@@ -194,7 +192,7 @@ void transposeTestSquare( ContextPtr loc, log4lama::Logger &logger )
 }
 
 template<typename ValueType>
-void transposeTestNonSquare( ContextPtr loc, log4lama::Logger &logger )
+void transposeTestNonSquare( ContextPtr loc )
 {
     //  input array           transpose
     //    1.0   -   2.0       1.0  0.5   -    4.0
@@ -202,12 +200,18 @@ void transposeTestNonSquare( ContextPtr loc, log4lama::Logger &logger )
     //     -    -   3.0       2.0   -   3.0    -
     //    4.0  1.5   -     
 
-    const IndexType ia1[] = { 0, 2, 4, 5, 7 };
-    const IndexType ja1[] = { 0, 2, 0, 1, 2, 0, 1 };
-    const IndexType ia2[] = { 0, 3, 5, 7 };
-    const IndexType ja2[] = { 0, 1, 3, 1, 3, 0, 2 };
-    const ValueType values1[] = { 1.0, 2.0, 0.5, 0.3, 3.0, 4.0, 1.5 };
-    const ValueType values2[] = { 1.0, 0.5, 4.0, 0.3, 1.5, 2.0, 3.0 };
+    const IndexType ia1[] =
+    { 0, 2, 4, 5, 7 };
+    const IndexType ja1[] =
+    { 0, 2, 0, 1, 2, 0, 1 };
+    const IndexType ia2[] =
+    { 0, 3, 5, 7 };
+    const IndexType ja2[] =
+    { 0, 1, 3, 1, 3, 0, 2 };
+    const ValueType values1[] =
+    { 1.0, 2.0, 0.5, 0.3, 3.0, 4.0, 1.5 };
+    const ValueType values2[] =
+    { 1.0, 0.5, 4.0, 0.3, 1.5, 2.0, 3.0 };
     const IndexType numRows = 4;
     const IndexType numColumns = 3;
     const IndexType numValues = 7;
@@ -218,36 +222,26 @@ void transposeTestNonSquare( ContextPtr loc, log4lama::Logger &logger )
     LAMAArray<IndexType> cscJA;
     LAMAArray<ValueType> cscValues;
 
-    try
-    {
-        LAMA_INTERFACE_FN_T( convertCSR2CSC, loc, CSRUtils, Transpose, ValueType );
+    LAMA_INTERFACE_FN_T( convertCSR2CSC, loc, CSRUtils, Transpose, ValueType );
 
-        ReadAccess<IndexType> rCSRIA( csrIA, loc );
-        ReadAccess<IndexType> rCSRJA( csrJA, loc );
-        ReadAccess<ValueType> rCSRValues( csrValues, loc );
-        WriteOnlyAccess<IndexType> wCSCIA( cscIA, loc, numColumns + 1 );
-        WriteOnlyAccess<IndexType> wCSCJA( cscJA, loc, numValues );
-        WriteOnlyAccess<ValueType> wCSCValues( cscValues, loc, numValues );
+    ReadAccess<IndexType> rCSRIA( csrIA, loc );
+    ReadAccess<IndexType> rCSRJA( csrJA, loc );
+    ReadAccess<ValueType> rCSRValues( csrValues, loc );
+    WriteOnlyAccess<IndexType> wCSCIA( cscIA, loc, numColumns + 1 );
+    WriteOnlyAccess<IndexType> wCSCJA( cscJA, loc, numValues );
+    WriteOnlyAccess<ValueType> wCSCValues( cscValues, loc, numValues );
 
-        LAMA_CONTEXT_ACCESS( loc );
+    LAMA_CONTEXT_ACCESS( loc );
 
-        convertCSR2CSC( wCSCIA.get(), wCSCJA.get(), wCSCValues.get(),
-                        rCSRIA.get(), rCSRJA.get(), rCSRValues.get(),
-                        numRows, numColumns, numValues );
-    }
-    catch ( Exception )
-    {
-        LAMA_LOG_WARN( logger, "CSRUtils::convertCSR2CSC not available on " << *loc << ", not tested yet." )
-        return;
-    }
+    convertCSR2CSC( wCSCIA.get(), wCSCJA.get(), wCSCValues.get(), rCSRIA.get(), rCSRJA.get(), rCSRValues.get(), numRows,
+                    numColumns, numValues );
 
     {
         HostReadAccess<IndexType> rCSCIA( cscIA );
         HostWriteAccess<IndexType> wCSCJA( cscJA );
         HostWriteAccess<ValueType> wCSCValues( cscValues );
 
-
-        for ( int j = 0; j <= numColumns; ++j )
+        for( int j = 0; j <= numColumns; ++j )
         {
             BOOST_CHECK_EQUAL( rCSCIA[j], ia2[j] );
         }
@@ -256,16 +250,14 @@ void transposeTestNonSquare( ContextPtr loc, log4lama::Logger &logger )
 
         bool diagonalFlag = false;
 
-        OpenMPCSRUtils::sortRowElements( wCSCJA.get(), wCSCValues.get(), rCSCIA.get(),
-                                         numColumns, diagonalFlag );
+        OpenMPCSRUtils::sortRowElements( wCSCJA.get(), wCSCValues.get(), rCSCIA.get(), numColumns, diagonalFlag );
 
-        for ( int j = 0; j < numValues; ++j )
+        for( int j = 0; j < numValues; ++j )
         {
             BOOST_CHECK_EQUAL( wCSCJA[j], ja2[j] );
         }
 
-
-        for ( int j = 0; j < numValues; ++j )
+        for( int j = 0; j < numValues; ++j )
         {
             BOOST_CHECK_EQUAL( wCSCValues[j], values2[j] );
         }
@@ -276,15 +268,11 @@ void transposeTestNonSquare( ContextPtr loc, log4lama::Logger &logger )
 
 } //namespace lama
 
-/* ------------------------------------------------------------------------------------------ */
-BOOST_AUTO_TEST_SUITE( CSRUtilsTest )
+/* ------------------------------------------------------------------------------------------ */BOOST_AUTO_TEST_SUITE( CSRUtilsTest )
 
 LAMA_LOG_DEF_LOGGER( logger, "Test.CSRUtilsTest" )
 
 LAMA_AUTO_TEST_CASE_TT( absMaxDiffValTest, CSRUtilsTest, logger )
-LAMA_AUTO_TEST_CASE_T( transposeTestSquare, CSRUtilsTest, logger )
-LAMA_AUTO_TEST_CASE_T( transposeTestNonSquare, CSRUtilsTest, logger )
-
-/* ------------------------------------------------------------------------------------------------------------------ */
-
-BOOST_AUTO_TEST_SUITE_END()
+LAMA_AUTO_TEST_CASE_T( transposeTestSquare, CSRUtilsTest )
+LAMA_AUTO_TEST_CASE_T( transposeTestNonSquare, CSRUtilsTest )
+/* ------------------------------------------------------------------------------------------------------------------ */BOOST_AUTO_TEST_SUITE_END()
