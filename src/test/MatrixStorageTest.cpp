@@ -666,6 +666,7 @@ LAMA_COMMON_TEST_CASE_TEMPLATE( MatrixStorageTest, StorageType, vectorTimesMatri
         }
     }
 
+    LAMA_LOG_INFO( logger, "Test vectorTimesMatrixAsync 2" );
     {
         IndexType n = mMatrixStorage.getNumRows();
         ValueType* xValues = (ValueType*) malloc( n * sizeof(ValueType) );
