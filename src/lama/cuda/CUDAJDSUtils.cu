@@ -1495,7 +1495,7 @@ void normal_gevm_kernel(
     extern __shared__ IndexType dlg[];
     const IndexType k = threadId( gridDim, blockIdx, blockDim, threadIdx );
 
-    /*if ( useSharedMem )
+    if ( useSharedMem )
     {
         int k = threadIdx.x;
         while ( k < ndlg )
@@ -1504,7 +1504,7 @@ void normal_gevm_kernel(
             k += blockDim.x;
         }
         __syncthreads();
-    }*/
+    }
 
     if ( k < numColumns )
     {
@@ -1534,8 +1534,7 @@ void normal_gevm_kernel(
 		            {
 		            	value += jdsValues[off] * fetchJDSVectorX<ValueType,useTexture>( x_d, i );
 		            }
-		            //off += fetch_JDSdlg<useTexture,useSharedMem>( jdsDLG, dlg, jj );
-		            off += jdsDLG[ jj ];
+		            off += fetch_JDSdlg<useTexture,useSharedMem>( jdsDLG, dlg, jj );
 		        }
 	        }
 	        
