@@ -116,6 +116,28 @@ void MatrixStorageTest<T>::setDenseData( MatrixStorage<T>& storage )
 /* ------------------------------------------------------------------------- */
 
 template<typename T>
+void MatrixStorageTest<T>::setDenseDataNotSquare( MatrixStorage<T>& storage )
+{
+    const IndexType numRows = 6;
+    const IndexType numColumns = 4;
+
+    static ValueType values[] =
+    { 6, 0, 0, 4, 7, 0, 0, 0, 0, 0, -9.3f, 4, 2, 5, 0, 3, 0, 1, 2, 0, 8, 0, 0, 1 };
+
+    // just make sure that number of entries in values matches the matrix size
+
+    BOOST_CHECK_EQUAL( numRows * numColumns, IndexType( sizeof(values) / sizeof (ValueType) ) );
+
+    ValueType eps = static_cast<ValueType>( 1E-5 );
+
+    // Note: diagonal property of sparse matrices will be set due to square matrix
+
+    storage.setRawDenseData( numRows, numColumns, values, eps );
+}
+
+/* ------------------------------------------------------------------------- */
+
+template<typename T>
 void MatrixStorageTest<T>::setDenseLocal( MatrixStorage<T>& storage )
 {
     const IndexType numRows = 4;
@@ -685,10 +707,71 @@ LAMA_COMMON_TEST_CASE_TEMPLATE( MatrixStorageTest, StorageType, vectorTimesMatri
         const ValueType alpha = 1.0;
         const ValueType beta = 2.0;
 
-        LAMAArray<ValueType> x( mMatrixStorage.getNumRows(), xValues );
-        LAMAArray<ValueType> y( mMatrixStorage.getNumColumns(), yValues );
+        LAMAArray<ValueType> x( n, xValues );
+        LAMAArray<ValueType> y( m, yValues );
         // due to use of LAMAArrayView we have to give result the correct size
-        LAMAArray<ValueType> result ( mMatrixStorage.getNumColumns() );
+        LAMAArray<ValueType> result ( m );
+
+        // asynchronous execution, only checks correct calling
+
+        {
+            std::auto_ptr<SyncToken> token ( mMatrixStorage.vectorTimesMatrixAsync( result, alpha, x, beta, y ) );
+
+            // free of token at end of this scope does the synchronization
+        }
+        LAMA_LOG_TRACE( logger, "vectorTimesMatrixAsync synchronized" )
+
+        BOOST_CHECK_EQUAL( result.size(), mMatrixStorage.getNumColumns() );
+
+        HostReadAccess<ValueType> values( orig.getData() );
+        HostReadAccess<ValueType> res( result );
+
+        int ncol = mMatrixStorage.getNumColumns();
+        int nrow = mMatrixStorage.getNumRows();
+
+        for ( IndexType j = 0; j < ncol; ++j )
+        {
+            ValueType sum = 0.0;
+
+            for ( IndexType i = 0; i < nrow; ++i )
+            {
+                sum += values[ i * ncol + j ] * alpha * xValues[i];
+            }
+
+            sum += beta * yValues[j];
+
+            BOOST_CHECK_CLOSE( sum, res[j], 0.1f );
+        }
+    }
+
+    setDenseDataNotSquare( mMatrixStorage );
+    setDenseDataNotSquare( orig );
+
+    LAMA_LOG_INFO( logger, "Test vectorTimesMatrixAsync 3" );
+    {
+        IndexType n = mMatrixStorage.getNumRows();
+        ValueType* xValues = (ValueType*) malloc( n * sizeof(ValueType) );
+        for( IndexType i = 0; i < n; ++i )
+        {
+            xValues[i] = i+1;
+        }
+
+        IndexType m = mMatrixStorage.getNumColumns();
+        ValueType* yValues = (ValueType*) malloc( m * sizeof(ValueType) );
+        for( IndexType i = 0; i < m; ++i )
+        {
+            yValues[i] = m-i;
+        }
+
+        const ValueType alpha = 1.0;
+        const ValueType beta = 2.0;
+
+        LAMAArray<ValueType> x( n, xValues );
+        LAMAArray<ValueType> y( m, yValues );
+        // due to use of LAMAArrayView we have to give result the correct size
+        LAMAArray<ValueType> result ( m );
+
+        std::cout << "result size vorher " << result.size() << std::endl;
 
         // asynchronous execution, only checks correct calling
 

@@ -158,6 +158,8 @@ private:
 
     static void setDenseData( lama::MatrixStorage<T>& storage );
 
+    static void setDenseDataNotSquare( lama::MatrixStorage<T>& storage );
+
     static void setDenseLocal( lama::MatrixStorage<T>& storage );
 
     static void setDenseHalo( lama::MatrixStorage<T>& storage );
