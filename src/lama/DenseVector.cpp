@@ -211,7 +211,7 @@ DenseVector<T>::DenseVector( const Expression<Scalar,Vector,Times>& expression )
 
 template<typename T>
 DenseVector<T>::DenseVector(
-    const Expression<Expression<Scalar,Vector,Times>,Expression<Scalar,Vector,Times>,Plus>& expression )
+    const Expression<Expression<Scalar,Vector,Times>,Expression<Scalar,Vector,Times>,Plus>& expression )//Expression_SV_SV
 
     : Vector( expression.getArg1().getArg2() )
 {
@@ -224,13 +224,26 @@ DenseVector<T>::DenseVector(
 
 template<typename T>
 DenseVector<T>::DenseVector(
-    const Expression<Expression<Scalar,Expression<Matrix,Vector,Times>,Times>,Expression<Scalar,Vector,Times>,Plus>& expression )
+    const Expression<Expression<Scalar,Expression<Matrix,Vector,Times>,Times>,Expression<Scalar,Vector,Times>,Plus>& expression )//Expression_SMV_SV
 
     : Vector( expression.getArg1().getArg2().getArg1().getDistributionPtr(),
               expression.getArg1().getArg2().getArg1().getContextPtr() )
 {
     allocate( getDistributionPtr() );
-    LAMA_LOG_INFO( logger, "Constructor( alhpa * A * x + b * y )" )
+    LAMA_LOG_INFO( logger, "Constructor( alpha * A * x + b * y )" )
+    Vector::operator=( expression );
+}
+
+// linear algebra expression: a*A*x+b*y, inherit distribution/context from matrix A
+
+template<typename T>
+DenseVector<T>::DenseVector(
+    const Expression<Expression<Scalar,Expression<Vector,Matrix,Times>,Times>,Expression<Scalar,Vector,Times>,Plus>& expression )//Expression_SVM_SV
+    : Vector( expression.getArg1().getArg2().getArg2().getColDistributionPtr(),
+              expression.getArg1().getArg2().getArg2().getContextPtr() )
+{
+    allocate( getDistributionPtr() );
+    LAMA_LOG_INFO( logger, "Constructor( alpha * x * A + b * y )" )
     Vector::operator=( expression );
 }
 
@@ -247,15 +260,37 @@ DenseVector<T>::DenseVector( const Expression<Scalar,Expression<Matrix,Vector,Ti
     Vector::operator=( expression );
 }
 
+// linear algebra expression: a*x*A, inherit distribution/context from matrix A
+
+template<typename T>
+DenseVector<T>::DenseVector( const Expression<Scalar,Expression<Vector,Matrix,Times>,Times>& expression )
+    : Vector( expression.getArg2().getArg2().getColDistributionPtr(),
+              expression.getArg2().getArg2().getContextPtr() )
+{
+    allocate( getDistributionPtr() );
+    LAMA_LOG_INFO( logger, "Constructor( alpha * x * A )" )
+    Vector::operator=( expression );
+}
+
 // linear algebra expression: A*x, inherit distribution/context from matrix A
 
 template<typename T>
 DenseVector<T>::DenseVector( const Expression<Matrix,Vector,Times>& expression )
-
     : Vector( expression.getArg1().getDistributionPtr(), expression.getArg1().getContextPtr() )
 {
     allocate( getDistributionPtr() );
     LAMA_LOG_INFO( logger, "Constructor( A * x )" )
+    Vector::operator=( expression );
+}
+
+// linear algebra expression: x*A, inherit distribution/context from matrix A
+
+template<typename T>
+DenseVector<T>::DenseVector( const Expression<Vector,Matrix,Times>& expression )
+    : Vector( expression.getArg2().getColDistributionPtr(), expression.getArg2().getContextPtr() )
+{
+    allocate( getDistributionPtr() );
+    LAMA_LOG_INFO( logger, "Constructor( x * A )" )
     Vector::operator=( expression );
 }
 
@@ -682,6 +717,18 @@ void DenseVector<T>::vectorPlusVector(
     }
 
     LAMA_LOG_INFO( logger, "vectorPlusVector done" )
+}
+
+template<typename T>
+SyncToken* DenseVector<T>::vectorPlusVectorAsync(
+    ContextPtr /*context*/,
+    LAMAArrayView<T> /*result*/,
+    const T /*alpha*/,
+    const LAMAArrayConstView<T> /*x*/,
+    const T /*beta*/,
+    const LAMAArrayConstView<T> /*y*/ )
+{
+    LAMA_THROWEXCEPTION( "vectorPlusVectorAsync not implemented yet" )
 }
 
 template<typename T>
@@ -1491,9 +1538,7 @@ void DenseVector<T>::readVectorDataFromBinaryFile( std::fstream &inFile, const l
 
 template<typename T>
 DenseVector<T>::DenseVector( const DenseVector<T>& other )
-
     : Vector( other )
-
 {
     // implementation here can be simpler as DenseVector( const Vector& other )
 
@@ -1504,7 +1549,6 @@ DenseVector<T>::DenseVector( const DenseVector<T>& other )
 }
 
 /* ---------------------------------------------------------------------------------*/
-
 
 // Template instantiation for all relevant types
 template class LAMA_DLL_IMPORTEXPORT DenseVector<float> ;

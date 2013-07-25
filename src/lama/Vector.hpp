@@ -116,9 +116,15 @@ public:
      */
     Vector& operator=( const Expression_MV& expression );
 
+    Vector& operator=( const Expression_VM& expression );
+
     /** this = alpha * A * x */
 
     Vector& operator=( const Expression_SMV& expression );
+
+    /** this = alpha * x * A */
+
+    Vector& operator=( const Expression_SVM& expression );
 
     /** this = alpha * x + beta * y */
 
@@ -128,6 +134,10 @@ public:
 
     Vector& operator=( const Expression_SMV_SV& expression );
 
+    /** this = alpha * x * A + beta * y */
+
+    Vector& operator=( const Expression_SVM_SV& expression );
+
     /** this = alpha * x */
 
     Vector& operator=( const Expression_SV& expression );
@@ -136,6 +146,8 @@ public:
 
     Vector& operator+=( const Expression_SMV& expression );
 
+    Vector& operator+=( const Expression_SVM& expression );
+
     /** this +=  alpha * x */
 
     Vector& operator+=( const Expression_SV& expression );
@@ -143,6 +155,8 @@ public:
     /** this -=  alpha * A * x */
 
     Vector& operator-=( const Expression_SMV& expression );
+
+    Vector& operator-=( const Expression_SVM& expression );
 
     /** this -=  alpha * x */
 

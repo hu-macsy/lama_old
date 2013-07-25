@@ -967,6 +967,68 @@ void JDSStorage<ValueType>::matrixTimesVector(
 /* ------------------------------------------------------------------------------------------------------------------ */
 
 template<typename ValueType>
+void JDSStorage<ValueType>::vectorTimesMatrix(
+        LAMAArray<ValueType>& result,
+        const ValueType alpha,
+        const LAMAArray<ValueType>& x,
+        const ValueType beta,
+        const LAMAArray<ValueType>& y ) const
+{
+    LAMA_REGION( "Storage.JDS.vectorTimesMatrix" )
+
+    LAMA_LOG_DEBUG( logger,
+                    "Computing z = " << alpha << " * x * A + " << beta << " * y, with A = "
+                     << *this << ", x = " << x << ", y = " << y << ", z = " << result )
+
+    LAMA_ASSERT_EQUAL_ERROR( x.size(), mNumRows )
+    LAMA_ASSERT_EQUAL_ERROR( y.size(), mNumColumns )
+
+    ContextPtr loc = getContextPtr();
+
+    LAMA_LOG_INFO( logger, *this << ": vectorTimesMatrix on " << *loc )
+
+    LAMA_INTERFACE_FN_T( normalGEVM, loc, JDSUtils, Mult, ValueType )
+
+    ReadAccess<IndexType> jdsPerm( mPerm, loc );
+    ReadAccess<IndexType> jdsDLG( mDlg, loc );
+    ReadAccess<IndexType> jdsILG( mIlg, loc );
+    ReadAccess<IndexType> jdsJA( mJa, loc );
+    ReadAccess<ValueType> jdsValues( mValues, loc );
+
+    ReadAccess<ValueType> rX( x, loc );
+
+    // Possible alias of result and y must be handled by coressponding accesses
+
+    if ( result == y )
+    {
+        WriteAccess<ValueType> wResult( result, loc );
+
+        // we assume that normalGEMV can deal with the alias of result, y
+
+        LAMA_CONTEXT_ACCESS( loc )
+
+        // this call will finish the computation, syncToken == NULL
+
+        normalGEVM( wResult.get(), alpha, rX.get(), beta, wResult.get(), mNumColumns, jdsPerm.get(), jdsILG.get(),
+                    mNumDiagonals, jdsDLG.get(), jdsJA.get(), jdsValues.get(), NULL );
+    }
+    else
+    {
+        WriteOnlyAccess<ValueType> wResult( result, loc, mNumColumns );
+        ReadAccess<ValueType> rY( y, loc );
+
+        LAMA_CONTEXT_ACCESS( loc )
+
+        // this call will finish the computation, syncToken == NULL
+
+        normalGEVM( wResult.get(), alpha, rX.get(), beta, rY.get(), mNumColumns, jdsPerm.get(), jdsILG.get(),
+                    mNumDiagonals, jdsDLG.get(), jdsJA.get(), jdsValues.get(), NULL );
+    }
+}
+
+/* ------------------------------------------------------------------------------------------------------------------ */
+
+template<typename ValueType>
 SyncToken* JDSStorage<ValueType>::matrixTimesVectorAsync(
 
     LAMAArrayView<ValueType> result,
@@ -1053,6 +1115,108 @@ SyncToken* JDSStorage<ValueType>::matrixTimesVectorAsync(
         // this call will only start the computation
 
         normalGEMV( wResult->get(), alpha, rX->get(), beta, rY->get(), mNumRows, jdsPerm->get(), jdsILG->get(),
+                    mNumDiagonals, jdsDLG->get(), jdsJA->get(), jdsValues->get(), syncToken.get() );
+    }
+
+    syncToken->pushAccess( jdsPerm );
+    syncToken->pushAccess( jdsDLG );
+    syncToken->pushAccess( jdsILG );
+    syncToken->pushAccess( jdsJA );
+    syncToken->pushAccess( jdsValues );
+    syncToken->pushAccess( rX );
+
+    return syncToken.release();
+}
+
+/* ------------------------------------------------------------------------------------------------------------------ */
+
+template<typename ValueType>
+SyncToken* JDSStorage<ValueType>::vectorTimesMatrixAsync(
+        LAMAArray<ValueType>& result,
+        const ValueType alpha,
+        const LAMAArray<ValueType>& x,
+        const ValueType beta,
+        const LAMAArray<ValueType>& y ) const
+{
+    ContextPtr loc = getContextPtr();
+
+    if ( loc->getType() == Context::Host )
+    {
+        // workaround as boost::bind has limited number of arguments and cannot be
+        // used later in OpenMP to generate a TaskSyncToken
+
+        void ( JDSStorage::*vm )(
+               LAMAArray<ValueType>& result,
+               const ValueType alpha,
+               const LAMAArray<ValueType>& x,
+               const ValueType beta,
+               const LAMAArray<ValueType>& y ) const
+
+        = &JDSStorage<ValueType>::vectorTimesMatrix;
+
+        using boost::ref;
+
+        return new TaskSyncToken( boost::bind( vm, this, ref( result ), alpha, ref( x ), beta, ref( y ) ) );
+    }
+
+    // For CUDA a solution using stream synchronization is more efficient than using a task
+
+    LAMA_REGION( "Storage.JDS.vectorTimesMatrixAsync" )
+
+    LAMA_LOG_INFO( logger,
+                   "Async start z = " << alpha << " * x * A + " << beta << " * y, with A = "
+                    << *this << ", x = " << x << ", y = " << y << ", z = " << result )
+
+    LAMA_ASSERT_EQUAL_ERROR( x.size(), mNumColumns )
+    LAMA_ASSERT_EQUAL_ERROR( y.size(), mNumRows )
+
+    LAMA_LOG_INFO( logger, *this << ": matrixTimesVector on " << *loc )
+
+    LAMA_INTERFACE_FN_T( normalGEVM, loc, JDSUtils, Mult, ValueType )
+
+    std::auto_ptr<SyncToken> syncToken( loc->getSyncToken() );
+
+    // all accesses will be pushed to the sync token as LAMA arrays have to be protected up
+    // to the end of the computations.
+
+    shared_ptr<ReadAccess<IndexType> > jdsPerm( new ReadAccess<IndexType>( mPerm, loc ) );
+    shared_ptr<ReadAccess<IndexType> > jdsDLG( new ReadAccess<IndexType>( mDlg, loc ) );
+    shared_ptr<ReadAccess<IndexType> > jdsILG( new ReadAccess<IndexType>( mIlg, loc ) );
+    shared_ptr<ReadAccess<IndexType> > jdsJA( new ReadAccess<IndexType>( mJa, loc ) );
+    shared_ptr<ReadAccess<ValueType> > jdsValues( new ReadAccess<ValueType>( mValues, loc ) );
+
+    shared_ptr<ReadAccess<ValueType> > rX( new ReadAccess<ValueType>( x, loc ) );
+
+    // Possible alias of result and y must be handled by coressponding accesses
+
+    if ( result == y )
+    {
+        shared_ptr<WriteAccess<ValueType> > wResult( new WriteAccess<ValueType>( result, loc ) );
+
+        syncToken->pushAccess( wResult );
+
+        // we assume that normalGEMV can deal with the alias of result, y
+
+        LAMA_CONTEXT_ACCESS( loc )
+
+        // this call will only start the computation
+
+        normalGEVM( wResult->get(), alpha, rX->get(), beta, wResult->get(), mNumColumns, jdsPerm->get(), jdsILG->get(),
+                    mNumDiagonals, jdsDLG->get(), jdsJA->get(), jdsValues->get(), syncToken.get() );
+    }
+    else
+    {
+        shared_ptr<WriteOnlyAccess<ValueType> > wResult( new WriteOnlyAccess<ValueType>( result, loc, mNumRows ) );
+        shared_ptr<ReadAccess<ValueType> > rY( new ReadAccess<ValueType>( y, loc ) );
+
+        syncToken->pushAccess( wResult );
+        syncToken->pushAccess( rY );
+
+        LAMA_CONTEXT_ACCESS( loc )
+
+        // this call will only start the computation
+
+        normalGEVM( wResult->get(), alpha, rX->get(), beta, rY->get(), mNumColumns, jdsPerm->get(), jdsILG->get(),
                     mNumDiagonals, jdsDLG->get(), jdsJA->get(), jdsValues->get(), syncToken.get() );
     }
 

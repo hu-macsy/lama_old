@@ -85,10 +85,26 @@ public:
         const ValueType beta,
         const ValueType y[],
         const IndexType numRows,
+        const IndexType numValues,
         const IndexType cooIA[],
         const IndexType cooJA[],
         const ValueType cooValues[],
+        SyncToken* syncToken );
+
+    /** Implementation for COOUtilsInterface::Mult:normalGEMV with CUDA on GPUs */
+
+    template<typename ValueType>
+    static void normalGEVM(
+        ValueType result[],
+        const ValueType alpha,
+        const ValueType x[],
+        const ValueType beta,
+        const ValueType y[],
+        const IndexType numRows,
         const IndexType numValues,
+        const IndexType cooIA[],
+        const IndexType cooJA[],
+        const ValueType cooValues[],
         SyncToken* syncToken );
 
     /** Routine that registers all routines of this class at the LAMA interface. */

@@ -562,6 +562,18 @@ struct CSRUtilsInterface
                                        const ValueType csrValues[],
                                        SyncToken* syncToken );
 
+        typedef void ( *normalGEVM ) ( ValueType result[],
+                                       const ValueType alpha,
+                                       const ValueType x[],
+                                       const ValueType beta,
+                                       const ValueType y[],
+                                       const IndexType numRows,
+                                       const IndexType numColumns,
+                                       const IndexType csrIA[],
+                                       const IndexType csrJA[],
+                                       const ValueType csrValues[],
+                                       SyncToken* syncToken );
+
         /** result = alpha * CSR-Matrix * x, CSR matrix has only some non-zero rows
          *
          *  @param result is the result vector
@@ -579,6 +591,17 @@ struct CSRUtilsInterface
         typedef void ( *sparseGEMV ) ( ValueType result[],
                                        const ValueType alpha,
                                        const ValueType x[],
+                                       const IndexType numNonZeroRows,
+                                       const IndexType rowIndexes[],
+                                       const IndexType csrIA[],
+                                       const IndexType csrJA[],
+                                       const ValueType csrValues[],
+                                       SyncToken* syncToken );
+
+        typedef void ( *sparseGEVM ) ( ValueType result[],
+                                       const ValueType alpha,
+                                       const ValueType x[],
+                                       const IndexType numColumns,
                                        const IndexType numNonZeroRows,
                                        const IndexType rowIndexes[],
                                        const IndexType csrIA[],
@@ -676,8 +699,10 @@ struct CSRUtilsInterface
     };
 
     LAMA_INTERFACE_DEFINE_T( Mult, normalGEMV )
+    LAMA_INTERFACE_DEFINE_T( Mult, normalGEVM )
     LAMA_INTERFACE_DEFINE_T( Mult, gemm )
     LAMA_INTERFACE_DEFINE_T( Mult, sparseGEMV )
+    LAMA_INTERFACE_DEFINE_T( Mult, sparseGEVM )
     LAMA_INTERFACE_DEFINE_T( Mult, matrixAdd )
     LAMA_INTERFACE_DEFINE_T( Mult, matrixMultiply )
 
@@ -1107,7 +1132,7 @@ struct ELLUtilsInterface
                                        const ValueType y[],
                                        const IndexType numRows,
                                        const IndexType numValuesPerRow,
-                                       const IndexType ellIA[],
+                                       const IndexType ellSizes[],
                                        const IndexType ellJA[],
                                        const ValueType ellValues[],
                                        SyncToken* syncToken );
@@ -1127,13 +1152,43 @@ struct ELLUtilsInterface
          */
 
         typedef void ( *sparseGEMV ) ( ValueType result[],
-                                       const IndexType numRows,
-                                       const IndexType numValuesPerRow,
                                        const ValueType alpha,
                                        const ValueType x[],
+                                       const IndexType numRows,
+                                       const IndexType numValuesPerRow,
                                        const IndexType numNonZeroRows,
                                        const IndexType rowIndexes[],
-                                       const IndexType ellIA[],
+                                       const IndexType ellSizes[],
+                                       const IndexType ellJA[],
+                                       const ValueType ellValues[],
+                                       SyncToken* syncToken );
+
+        /** Implementation for ELLUtilsInterface::Mult::normalGEVM  */
+
+        typedef void ( *normalGEVM ) ( ValueType result[],
+                                       const ValueType alpha,
+                                       const ValueType x[],
+                                       const ValueType beta,
+                                       const ValueType y[],
+                                       const IndexType numRows,
+                                       const IndexType numColumns,
+                                       const IndexType numValuesPerRow,
+                                       const IndexType ellSizes[],
+                                       const IndexType ellJA[],
+                                       const ValueType ellValues[],
+                                       SyncToken* syncToken );
+
+        /** Implementation for ELLUtilsInterface::Mult::sparseGEVM  */
+
+        typedef void ( *sparseGEVM ) ( ValueType result[],
+                                       const ValueType alpha,
+                                       const ValueType x[],
+                                       const IndexType numRows,
+                                       const IndexType numColumns,
+                                       const IndexType numValuesPerRow,
+                                       const IndexType numNonZeroRows,
+                                       const IndexType rowIndexes[],
+                                       const IndexType ellSizes[],
                                        const IndexType ellJA[],
                                        const ValueType ellValues[],
                                        SyncToken* syncToken );
@@ -1141,6 +1196,8 @@ struct ELLUtilsInterface
 
     LAMA_INTERFACE_DEFINE_T( Mult, normalGEMV )
     LAMA_INTERFACE_DEFINE_T( Mult, sparseGEMV )
+    LAMA_INTERFACE_DEFINE_T( Mult, normalGEVM )
+    LAMA_INTERFACE_DEFINE_T( Mult, sparseGEVM )
 
     /** Structure with type definitions for reduction routines */
 
@@ -1509,9 +1566,24 @@ struct JDSUtilsInterface
                                        const IndexType jdsJA[],
                                        const ValueType jdsValues[],
                                        SyncToken* syncToken );
+
+        typedef void ( *normalGEVM ) ( ValueType result[],
+                                       const ValueType alpha,
+                                       const ValueType x[],
+                                       const ValueType beta,
+                                       const ValueType y[],
+                                       const IndexType numColumns,
+                                       const IndexType jdsPerm[],
+                                       const IndexType jdsILG[],
+                                       const IndexType ndlg,
+                                       const IndexType jdsDLG[],
+                                       const IndexType jdsJA[],
+                                       const ValueType jdsValues[],
+                                       SyncToken* syncToken );
     };
 
     LAMA_INTERFACE_DEFINE_T( Mult, normalGEMV )
+    LAMA_INTERFACE_DEFINE_T( Mult, normalGEVM )
 
     template<typename ValueType, typename OtherValueType>
     struct Getter
@@ -1671,9 +1743,35 @@ struct DIAUtilsInterface
                                        const IndexType diaOffsets[],
                                        const ValueType diaValues[],
                                        SyncToken* syncToken );
+
+        /** result = alpha * x * CSR-Matrix + b * y.
+         *
+         *  @param result is the result vector
+         *  @param alpha is scaling factor for matrix x vector
+         *  @param x is input vector for matrix multiplication
+         *  @param beta is scaling factor for additional vector
+         *  @param y is additional input vector to add
+         *  @param numRows is number of elements for all vectors and rows of matrix
+         *  @param numValues is the number of diagonals in DIA storage
+         *  @param diaOffsets, diaValues are arrays of DIA storage
+         *  @param syncToken optional, if available starts asynchronous computation
+         */
+
+        typedef void ( *normalGEVM ) ( ValueType result[],
+                                       const ValueType alpha,
+                                       const ValueType x[],
+                                       const ValueType beta,
+                                       const ValueType y[],
+                                       const IndexType numRows,
+                                       const IndexType numColumns,
+                                       const IndexType numDiagonals,
+                                       const IndexType diaOffsets[],
+                                       const ValueType diaValues[],
+                                       SyncToken* syncToken );
     };
 
     LAMA_INTERFACE_DEFINE_T( Mult, normalGEMV )
+    LAMA_INTERFACE_DEFINE_T( Mult, normalGEVM )
 
     /** Structure with type definitions for solver routines */
 
@@ -1837,14 +1935,27 @@ struct COOUtilsInterface
                                        const ValueType beta,
                                        const ValueType y[],
                                        const IndexType numRows,
+                                       const IndexType nnz,
                                        const IndexType cooIA[],
                                        const IndexType cooJA[],
                                        const ValueType cooValues[],
-                                       const IndexType numValues,
+                                       SyncToken* syncToken );
+
+        typedef void ( *normalGEVM ) ( ValueType result[],
+                                       const ValueType alpha,
+                                       const ValueType x[],
+                                       const ValueType beta,
+                                       const ValueType y[],
+                                       const IndexType numRows,
+                                       const IndexType nnz,
+                                       const IndexType cooIA[],
+                                       const IndexType cooJA[],
+                                       const ValueType cooValues[],
                                        SyncToken* syncToken );
     };
 
     LAMA_INTERFACE_DEFINE_T( Mult, normalGEMV )
+    LAMA_INTERFACE_DEFINE_T( Mult, normalGEVM )
 
     /** Structure with type definitions for solver routines */
     template<typename ValueType>

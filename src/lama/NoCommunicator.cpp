@@ -484,6 +484,14 @@ int NoCommunicator::max( const int value ) const
     return value;
 }
 
+void NoCommunicator::gather( vector<IndexType>& values, IndexType value ) const
+{
+    // build a vector of just a single value
+
+    values.clear();
+    values.push_back( value );
+}
+
 void NoCommunicator::gather( vector<float>& values, float value ) const
 {
     // build a vector of just a single value

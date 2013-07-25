@@ -43,8 +43,7 @@ static std::string storagetestclasses[] =
 static std::string storagetestmethods[] =
 {   "purgeTest", "emptyTest", "setIdentityTest", "setCSRDataTest", "buildCSRDataTest", "diagonalTest", "scaleTest", "normTest",
     "vectorMultTest", "jacobiTest", "jacobiHaloTest", "matrixMultTest", "matrixMultTest1", "matrixAddTest"
-    "writeAtTest",
-    "inverseTest"
+    "writeAtTest", "inverseTest", "vectorTimesMatrixTest"
 };
 
 /** Test class for MatrixStorage<T>.
@@ -112,6 +111,8 @@ public:
 
     void vectorMultTest();
 
+    void vectorTimesMatrixTest();
+
     void jacobiTest();
 
     void jacobiHaloTest();
@@ -157,6 +158,8 @@ private:
 
     static void setDenseData( lama::MatrixStorage<T>& storage );
 
+    static void setDenseDataNotSquare( lama::MatrixStorage<T>& storage );
+
     static void setDenseLocal( lama::MatrixStorage<T>& storage );
 
     static void setDenseHalo( lama::MatrixStorage<T>& storage );
@@ -177,6 +180,7 @@ private:
         COMMONTESTCASEINVOKER( testinstance, scaleTest );                   \
         COMMONTESTCASEINVOKER( testinstance, normTest );                    \
         COMMONTESTCASEINVOKER( testinstance, vectorMultTest );              \
+        COMMONTESTCASEINVOKER( testinstance, vectorTimesMatrixTest );       \
         COMMONTESTCASEINVOKER( testinstance, jacobiTest );                  \
         COMMONTESTCASEINVOKER( testinstance, matrixMultTest );              \
         COMMONTESTCASEINVOKER( testinstance, matrixAddTest );               \

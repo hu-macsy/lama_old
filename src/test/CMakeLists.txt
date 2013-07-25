@@ -52,7 +52,8 @@ set ( HEADERS
     )
 
 set ( SOURCE_FILES
-		BLAS1Test
+        BiCGTest
+        BLAS1Test
 		BLAS2Test
 		BLAS3Test
         CGTest
