@@ -1,8 +1,8 @@
 /**
- * @file CGTest.cpp
+ * @file BiCGTest.cpp
  *
  * @license
- * Copyright (c) 2009-2013
+ * Copyright (c) 2013
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -25,16 +25,16 @@
  * SOFTWARE.
  * @endlicense
  *
- * @brief Contains the implementation of the class CGTest.
- * @author: Alexander Büchel, Thomas Brandes
- * @date 21.02.2012
- * @since 1.0.0
- **/
+ * @brief BiCGTest.cpp
+ * @author Lauretta Schubert
+ * @date 04.07.2013
+ * @since 1.1.0
+ */
 
 #include <boost/test/unit_test.hpp>
 #include <boost/mpl/list.hpp>
 
-#include <lama/solver/CG.hpp>
+#include <lama/solver/BiCG.hpp>
 #include <lama/solver/TrivialPreconditioner.hpp>
 #include <lama/solver/criteria/IterationCount.hpp>
 #include <lama/solver/criteria/ResidualThreshold.hpp>
@@ -67,9 +67,9 @@ typedef boost::mpl::list<float,double> test_types;
 
 /* --------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_SUITE( CGTest );
+BOOST_AUTO_TEST_SUITE( BiCGTest );
 
-LAMA_LOG_DEF_LOGGER( logger, "Test.CGTest" )
+LAMA_LOG_DEF_LOGGER( logger, "Test.BiCGTest" )
 
 /* --------------------------------------------------------------------- */
 
@@ -79,24 +79,24 @@ BOOST_AUTO_TEST_CASE( CtorTest )
         new CommonLogger( "<CG>: ", LogLevel::noLogging, LoggerWriteBehaviour::toConsoleOnly,
                           std::auto_ptr<Timer>( new Timer() ) ) );
 
-    CG cgSolver( "CGTestSolver", slogger );
-    BOOST_CHECK_EQUAL( cgSolver.getId(), "CGTestSolver" );
+    BiCG cgSolver( "BiCGTestSolver", slogger );
+    BOOST_CHECK_EQUAL( cgSolver.getId(), "BiCGTestSolver" );
 
-    CG cgSolver2( "CGTestSolver2" );
-    BOOST_CHECK_EQUAL( cgSolver2.getId(), "CGTestSolver2" );
+    BiCG cgSolver2( "BiCGTestSolver2" );
+    BOOST_CHECK_EQUAL( cgSolver2.getId(), "BiCGTestSolver2" );
 
-    CG cgSolver3( cgSolver2 );
-    BOOST_CHECK_EQUAL( cgSolver3.getId(), "CGTestSolver2" );
+    BiCG cgSolver3( cgSolver2 );
+    BOOST_CHECK_EQUAL( cgSolver3.getId(), "BiCGTestSolver2" );
     BOOST_CHECK( cgSolver3.getPreconditioner() == 0 );
 
-    CG cgSolver4( "cgSolver4" );
+    BiCG cgSolver4( "cgSolver4" );
     SolverPtr preconditioner( new TrivialPreconditioner( "Trivial preconditioner" ) );
     cgSolver4.setPreconditioner( preconditioner );
 
     CriterionPtr criterion( new IterationCount( 10 ) );
     cgSolver4.setStoppingCriterion( criterion );
 
-    CG cgSolver5( cgSolver4 );
+    BiCG cgSolver5( cgSolver4 );
     BOOST_CHECK_EQUAL( cgSolver5.getId(), cgSolver4.getId() );
     BOOST_CHECK_EQUAL( cgSolver5.getPreconditioner()->getId(), cgSolver4.getPreconditioner()->getId() );
 }
@@ -113,7 +113,7 @@ void testSolveWithPreconditionmethod( ContextPtr context )
         new CommonLogger( "<CG>: ", LogLevel::noLogging, LoggerWriteBehaviour::toConsoleOnly,
                           std::auto_ptr<Timer>( new Timer() ) ) );
 
-    CG cgSolver( "CGTestSolver", slogger );
+    BiCG cgSolver( "BiCGTestSolver", slogger );
 
     const IndexType N1 = 4;
     const IndexType N2 = 4;
@@ -165,7 +165,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( testSolveWithPrecondition, T, test_types ) {
         testSolveWithPreconditionmethod< COOSparseMatrix<ValueType> >( context );
         testSolveWithPreconditionmethod< JDSSparseMatrix<ValueType> >( context );
         testSolveWithPreconditionmethod< DIASparseMatrix<ValueType> >( context );
-        //testSolveWithPreconditionmethod< DenseMatrix<ValueType> >( context );
+        testSolveWithPreconditionmethod< DenseMatrix<ValueType> >( context );
 
         // ToDo: does not work with NP=2:    testSolveWithPreconditionmethod< DIASparseMatrix<ValueType> >();
         // ToDo: does not work with NP=2:    testSolveWithPreconditionmethod< DenseMatrix<ValueType> >();
@@ -185,7 +185,7 @@ void testSolveWithoutPreconditionmethod( ContextPtr context )
 
     LAMA_LOG_INFO( logger, "Problem size = " << N1 << " x " << N2 );
 
-    CG cgSolver( "CGTestSolver" );
+    BiCG bicgSolver( "BiCGTestSolver" );
 
     CSRSparseMatrix<ValueType> helpcoefficients;
     MatrixCreator<ValueType>::buildPoisson2D( helpcoefficients, 9, N1, N2 );
@@ -208,12 +208,12 @@ void testSolveWithoutPreconditionmethod( ContextPtr context )
     //initialize
     IndexType expectedIterations = 10;
     CriterionPtr criterion( new IterationCount( expectedIterations ) );
-    cgSolver.setStoppingCriterion( criterion );
-    cgSolver.initialize( coefficients );
+    bicgSolver.setStoppingCriterion( criterion );
+    bicgSolver.initialize( coefficients );
 
-    cgSolver.solve( solution, rhs );
+    bicgSolver.solve( solution, rhs );
 
-    BOOST_CHECK_EQUAL( expectedIterations, cgSolver.getIterationCount() );
+    BOOST_CHECK_EQUAL( expectedIterations, bicgSolver.getIterationCount() );
 
     DenseVector<ValueType> diff( solution - exactSolution );
     Scalar s = maxNorm( diff );
@@ -243,6 +243,57 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( testSolveWithoutPreconditioning, T, test_types ) 
 
 /* --------------------------------------------------------------------- */
 
+BOOST_AUTO_TEST_CASE_TEMPLATE ( simpleTest, T, test_types )
+{
+    typedef T ValueType;
+
+    const IndexType n = 3;
+    const IndexType numValues = 5;
+
+    IndexType ia[] = { 0, 2, 3, 5 };
+    IndexType ja[] = { 0, 2, 1, 1, 2 };
+    ValueType matrixValues[] = { 1.0, 2.0, 1.0, 2.0, 1.0 };
+
+    const LAMAArray<IndexType> matrixIA = LAMAArray<IndexType>( n + 1, ia );
+    const LAMAArray<IndexType> matrixJA = LAMAArray<IndexType>( numValues, ja );
+    const LAMAArray<ValueType> mValues  = LAMAArray<ValueType>( numValues, matrixValues );
+
+    CSRStorage<ValueType>* csrStorage = new CSRStorage<ValueType>( n, n, numValues, matrixIA, matrixJA, mValues );
+    lama::DistributionPtr dist( new lama::NoDistribution( n ) );
+    CSRSparseMatrix<ValueType> matrix( *csrStorage, dist, dist );
+
+    ValueType vectorValues[] = { 3.0f, 0.5f, 2.0f };
+    const LAMAArray<ValueType> vValues  = LAMAArray<ValueType>( n, vectorValues );
+    DenseVector<ValueType> rhs( n, 0.0 );
+    rhs.setValues( vValues );
+
+    ValueType vectorValues2[] = { 1.0f, 0.5f, 1.0f };
+    const LAMAArray<ValueType> vValues2  = LAMAArray<ValueType>( n, vectorValues2 );
+    DenseVector<ValueType> exactSolution( n, 0.0 );
+    exactSolution.setValues( vValues2 );
+
+    DenseVector<ValueType> solution(n, 0.0);
+
+    //initialize
+    IndexType expectedIterations = 10;
+    CriterionPtr criterion( new IterationCount( expectedIterations ) );
+
+    BiCG bicgSolver( "BiCGTestSolver" );
+    bicgSolver.setStoppingCriterion( criterion );
+    bicgSolver.initialize( matrix );
+
+    bicgSolver.solve( solution, rhs );
+
+    BOOST_CHECK_EQUAL( expectedIterations, bicgSolver.getIterationCount() );
+
+    DenseVector<ValueType> diff( solution - exactSolution );
+    Scalar s = maxNorm( diff );
+    LAMA_LOG_INFO( logger, "maxNorm of ( solution - exactSolution ) = " << s.getValue<ValueType>() );
+    BOOST_CHECK( s.getValue<ValueType>() < 1E-6 );
+}
+
+/* --------------------------------------------------------------------- */
+
 BOOST_AUTO_TEST_CASE( testDefaultCriterionSet )
 {
     typedef double ValueType;
@@ -251,7 +302,7 @@ BOOST_AUTO_TEST_CASE( testDefaultCriterionSet )
 
     LAMA_LOG_INFO( logger, "Problem size = " << N1 << " x " << N2 );
 
-    CG cgSolver( "CGTestSolver" );
+    BiCG cgSolver( "CGTestSolver" );
 
     CSRSparseMatrix<ValueType> coefficients;
     MatrixCreator<ValueType>::buildPoisson2D( coefficients, 9, N1, N2 );
@@ -270,7 +321,7 @@ BOOST_AUTO_TEST_CASE( testDefaultCriterionSet )
 
 BOOST_AUTO_TEST_CASE( writeAtTest )
 {
-    CG cgSolver( "CGTestSolver" );
+    BiCG cgSolver( "CGTestSolver" );
     LAMA_WRITEAT_TEST( cgSolver );
 }
 
@@ -278,7 +329,7 @@ BOOST_AUTO_TEST_CASE( writeAtTest )
 
 BOOST_AUTO_TEST_CASE( copyTest )
 {
-    CG cgSolver1( "CGTestSolver" );
+    BiCG cgSolver1( "CGTestSolver" );
 
     SolverPtr solverptr = cgSolver1.copy();
 

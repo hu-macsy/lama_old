@@ -152,17 +152,17 @@ int fetchOffset<false, true>( const int* const, int offset_sm[], const int i )
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType, bool useTexture, bool useSharedMem>
-__global__ void diagemvKernel(
+__global__ void normal_gemv_kernel(
     ValueType* result,
-    const IndexType numRows,
-    const ValueType alpha,
     const ValueType* x,
-    const IndexType numColumns,
-    const IndexType numDiagonals,
-    const IndexType* offsets_d,
-    const ValueType* diagonalValues,
+    const ValueType* y,
+    const ValueType alpha,
     const ValueType beta,
-    const ValueType* y )
+    const ValueType* diagonalValues,
+    const IndexType* offsets_d,
+    const IndexType numRows,
+    const IndexType numColumns,
+    const IndexType numDiagonals )
 {
     extern __shared__ IndexType offsets_sm[];
 
@@ -245,7 +245,7 @@ void CUDADIAUtils::normalGEMV(
     const bool useSharedMem = CUDASettings::useSharedMem();
     const bool useTexture   = CUDASettings::useTexture();
 
-    LAMA_LOG_INFO( logger, "Start diaGemvKernel<" << Scalar::getType<ValueType>()
+    LAMA_LOG_INFO( logger, "Start normal_gemv_kernel<" << Scalar::getType<ValueType>()
                            << "> <<< blockSize = " << blockSize << ", stream = " << stream
                            << ", useTexture = " << useTexture << ", useSharedMem = " << useSharedMem << ">>>" );
 
@@ -257,30 +257,30 @@ void CUDADIAUtils::normalGEMV(
         {
             vectorDIABindTexture( diaOffsets );
 
-            diagemvKernel<ValueType, true, false><<< dimGrid, dimBlock, 0, stream >>>( 
-                result, numRows, alpha, x, numColumns, numDiagonals, diaOffsets, diaValues, beta, y );
+            normal_gemv_kernel<ValueType, true, false><<< dimGrid, dimBlock, 0, stream >>>(
+                result, x, y, alpha, beta, diaValues, diaOffsets, numRows, numColumns, numDiagonals );
         }
         else
         {
             const int sharedMemSize = numDiagonals * sizeof(int);
 
-            diagemvKernel<ValueType, true, true><<< dimGrid, dimBlock, sharedMemSize, stream >>>( 
-                result, numRows, alpha, x, numColumns, numDiagonals, diaOffsets, diaValues, beta, y );
+            normal_gemv_kernel<ValueType, true, true><<< dimGrid, dimBlock, sharedMemSize, stream >>>(
+                result, x, y, alpha, beta, diaValues, diaOffsets, numRows, numColumns, numDiagonals );
         }
     }
     else
     {
         if ( !useSharedMem )
         {
-            diagemvKernel<ValueType, false, false><<< dimGrid, dimBlock, 0, stream >>>( 
-                result, numRows, alpha, x, numColumns, numDiagonals, diaOffsets, diaValues, beta, y );
+            normal_gemv_kernel<ValueType, false, false><<< dimGrid, dimBlock, 0, stream >>>(
+                result, x, y, alpha, beta, diaValues, diaOffsets, numRows, numColumns, numDiagonals );
         }
         else
         {
             const int sharedMemSize = numDiagonals * sizeof(int);
 
-            diagemvKernel<ValueType, false, true><<< dimGrid, dimBlock, sharedMemSize, stream >>>( 
-                result, numRows, alpha, x, numColumns, numDiagonals, diaOffsets, diaValues, beta, y );
+            normal_gemv_kernel<ValueType, false, true><<< dimGrid, dimBlock, sharedMemSize, stream >>>(
+                result, x, y, alpha, beta, diaValues, diaOffsets, numRows, numColumns, numDiagonals );
         }
     }
 
@@ -321,12 +321,191 @@ void CUDADIAUtils::normalGEMV(
 
 /* --------------------------------------------------------------------------- */
 
+template<typename ValueType, bool useTexture, bool useSharedMem>
+__global__ void normal_gevm_kernel(
+    ValueType* result,
+    const ValueType* x,
+    const ValueType* y,
+    const ValueType alpha,
+    const ValueType beta,
+    const ValueType* diagonalValues,
+    const IndexType* offsets_d,
+    const IndexType numRows,
+    const IndexType numColumns,
+    const IndexType numDiagonals )
+{
+    extern __shared__ IndexType offsets_sm[];
+
+    /*if ( useSharedMem )
+    {
+        int k = threadIdx.x;
+        while ( k < numDiagonals )
+        {
+            offsets_sm[k] = offsets_d[k];
+            k += blockDim.x;
+        }
+        __syncthreads();
+    }*/
+
+    IndexType k = threadId( gridDim, blockIdx, blockDim, threadIdx );
+
+    if ( k < numColumns )
+    {
+        ValueType summand = 0.0;
+
+        if ( beta != 0.0 )
+        {
+            summand = beta * y[k];
+        }
+
+        ValueType temp = 0.0;
+
+        for( IndexType i = 0; i < numRows; ++k )
+        {
+            for ( IndexType ii = 0; ii < numDiagonals; ii++ )
+            {
+                //IndexType j = k + fetchOffset<useTexture, useSharedMem>( offsets_d, offsets_sm, ii );
+                IndexType j = k + offsets_d[ ii ];
+
+                if ( j >= 0 && j < numColumns )
+                {
+                    if( j == k )
+                    {
+                        temp += diagonalValues[ numRows * ii + k ] * fetchDIAVectorX<ValueType, useTexture>( x, i );
+                    }
+                }
+            }
+        }
+
+        result[k] = alpha * temp + summand;
+    }
+}
+
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType>
+void CUDADIAUtils::normalGEVM(
+    ValueType result[],
+    const ValueType alpha,
+    const ValueType x[],
+    const ValueType beta,
+    const ValueType y[],
+    const IndexType numRows,
+    const IndexType numColumns,
+    const IndexType numDiagonals,
+    const IndexType diaOffsets[],
+    const ValueType diaValues[],
+    class SyncToken* syncToken )
+{
+    LAMA_REGION( "CUDA.DIA.normalGEVM" )
+
+    LAMA_LOG_INFO( logger, "normalGEVM<" << Scalar::getType<ValueType>() << ">"
+                            << " result[ " << numRows << "] = " << alpha
+                            << " * A( #diags = " << numDiagonals << " ) * x + " << beta << " * y " )
+
+    const IndexType blockSize = CUDASettings::getBlockSize();
+    dim3 dimBlock( blockSize, 1, 1 );
+    dim3 dimGrid = makeGrid( numRows, dimBlock.x );
+
+    LAMA_CHECK_CUDA_ACCESS
+
+    cudaStream_t stream = 0;
+
+    if ( syncToken )
+    {
+        CUDAStreamSyncToken* cudaStreamSyncToken = dynamic_cast<CUDAStreamSyncToken*>( syncToken );
+        LAMA_ASSERT_DEBUG( cudaStreamSyncToken, "no cuda stream sync token provided" )
+        stream = cudaStreamSyncToken->getCUDAStream();
+    }
+
+    const bool useSharedMem = CUDASettings::useSharedMem();
+    const bool useTexture   = CUDASettings::useTexture();
+
+    LAMA_LOG_INFO( logger, "Start normal_gevm_kernel<" << Scalar::getType<ValueType>()
+                           << "> <<< blockSize = " << blockSize << ", stream = " << stream
+                           << ", useTexture = " << useTexture << ", useSharedMem = " << useSharedMem << ">>>" );
+
+    if ( useTexture )
+    {
+        vectorDIABindTexture( x );
+
+        if ( !useSharedMem )
+        {
+            vectorDIABindTexture( diaOffsets );
+
+            normal_gevm_kernel<ValueType, true, false><<< dimGrid, dimBlock, 0, stream >>>(
+                result, x, y, alpha, beta, diaValues, diaOffsets, numRows, numColumns, numDiagonals );
+        }
+        else
+        {
+            const int sharedMemSize = numDiagonals * sizeof(int);
+
+            normal_gevm_kernel<ValueType, true, true><<< dimGrid, dimBlock, sharedMemSize, stream >>>(
+                result, x, y, alpha, beta, diaValues, diaOffsets, numRows, numColumns, numDiagonals );
+        }
+    }
+    else
+    {
+        if ( !useSharedMem )
+        {
+            normal_gevm_kernel<ValueType, false, false><<< dimGrid, dimBlock, 0, stream >>>(
+                result, x, y, alpha, beta, diaValues, diaOffsets, numRows, numColumns, numDiagonals );
+        }
+        else
+        {
+            const int sharedMemSize = numDiagonals * sizeof(int);
+
+            normal_gevm_kernel<ValueType, false, true><<< dimGrid, dimBlock, sharedMemSize, stream >>>(
+                result, x, y, alpha, beta, diaValues, diaOffsets, numRows, numColumns, numDiagonals );
+        }
+    }
+
+    if ( !syncToken )
+    {
+        // synchronize now, unbind used textures
+
+        LAMA_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "normalGEMV for DIA" )
+
+        if ( useTexture )
+        {
+            vectorDIAUnbindTexture( x );
+
+            if ( !useSharedMem )
+            {
+                vectorDIAUnbindTexture( diaOffsets );
+            }
+        }
+    }
+    else
+    {
+        // synchronize by syncToken, delay unbind texture
+
+        if ( useTexture )
+        {
+            void ( *unbindV ) ( const ValueType* ) = &vectorDIAUnbindTexture;
+            void ( *unbindI ) ( const IndexType* ) = &vectorDIAUnbindTexture;
+
+            syncToken->pushRoutine( boost::bind( unbindV, x ) );
+
+            if ( !useSharedMem )
+            {
+                syncToken->pushRoutine( boost::bind( unbindI, diaOffsets ) );
+            }
+        }
+    }
+}
+
+/* --------------------------------------------------------------------------- */
+
 void CUDADIAUtils::setInterface( DIAUtilsInterface& DIAUtils )
 {
     LAMA_LOG_INFO( logger, "set DIA routines for CUDA in Interface" )
 
     LAMA_INTERFACE_REGISTER_T( DIAUtils, normalGEMV, float )
     LAMA_INTERFACE_REGISTER_T( DIAUtils, normalGEMV, double )
+
+    LAMA_INTERFACE_REGISTER_T( DIAUtils, normalGEVM, float )
+    LAMA_INTERFACE_REGISTER_T( DIAUtils, normalGEVM, double )
 }
 
 /* --------------------------------------------------------------------------- */

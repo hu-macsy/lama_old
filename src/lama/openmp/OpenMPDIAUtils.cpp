@@ -382,6 +382,80 @@ void OpenMPDIAUtils::normalGEMV(
 }
 
 /* --------------------------------------------------------------------------- */
+
+template<typename ValueType>
+void OpenMPDIAUtils::normalGEVM(
+    ValueType result[],
+    const ValueType alpha,
+    const ValueType x[],
+    const ValueType beta,
+    const ValueType y[],
+    const IndexType numRows,
+    const IndexType numColumns,
+    const IndexType numDiagonals,
+    const IndexType diaOffsets[],
+    const ValueType diaValues[],
+    SyncToken* syncToken )
+{
+    LAMA_LOG_INFO( logger,
+                   "normalGEVM<" << Scalar::getType<ValueType>()
+                   << ", #threads = " << omp_get_max_threads()
+                   << ">, result[" << numRows << "] = " << alpha
+                   << " * A( dia, #diags = " << numDiagonals << " ) * x + " << beta << " * y " )
+
+    LAMA_LOG_INFO( logger, "normalGEVM<" << Scalar::getType<ValueType>() << ">, n = "
+                           << numRows << ", d = " << numDiagonals  )
+
+    if ( syncToken )
+    {
+        LAMA_THROWEXCEPTION( "asynchronous execution should be done by LAMATask before" )
+    }
+
+    // result := alpha * x * A + beta * y -> result:= beta * y; result += alpha * x * A
+
+    OpenMPUtils::setScale( result, beta, y, numColumns );
+
+    #pragma omp parallel
+    {
+        LAMA_REGION( "OpenMP.DIA.normalGEVM" )
+
+        #pragma omp for schedule ( LAMA_OMP_SCHEDULE )
+        for( IndexType k = 0; k < numColumns; ++k )
+        {
+            ValueType accu = 0.0;
+
+            for ( IndexType i = 0; i < numRows; i++ )
+            {
+                for ( IndexType ii = 0; ii < numDiagonals; ++ii )
+                {
+                    const IndexType j = i + diaOffsets[ii];
+
+                    if ( j >= numColumns )
+                    {
+                        break;
+                    }
+                    if ( j == k )
+                    {
+                        accu += diaValues[ii * numRows + i] * x[i];
+                    }
+                }
+            }
+            result[k] += alpha * accu;
+        }
+    }
+
+    if ( LAMA_LOG_TRACE_ON( logger ) )
+    {
+        std::cout << "NormalGEVM: result = ";
+        for ( IndexType i = 0; i < numRows; ++i )
+        {
+            std::cout << " " << result[i];
+        }
+        std::cout << std::endl;
+    }
+}
+
+/* --------------------------------------------------------------------------- */
 /*  Jacobi                                                                     */
 /* --------------------------------------------------------------------------- */
 
@@ -461,6 +535,9 @@ void OpenMPDIAUtils::setInterface( DIAUtilsInterface& DIAUtils )
 
     LAMA_INTERFACE_REGISTER_T( DIAUtils, normalGEMV, float )
     LAMA_INTERFACE_REGISTER_T( DIAUtils, normalGEMV, double )
+
+    LAMA_INTERFACE_REGISTER_T( DIAUtils, normalGEVM, float )
+    LAMA_INTERFACE_REGISTER_T( DIAUtils, normalGEVM, double )
 
     LAMA_INTERFACE_REGISTER_T( DIAUtils, jacobi, float )
     LAMA_INTERFACE_REGISTER_T( DIAUtils, jacobi, double )

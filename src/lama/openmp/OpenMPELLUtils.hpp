@@ -323,15 +323,49 @@ private:
     template<typename ValueType>
     static void sparseGEMV(
         ValueType result[],
-        const IndexType numRows,
-        const IndexType numNonZerosPerRow,
         const ValueType alpha,
         const ValueType x[],
+        const IndexType numRows,
+        const IndexType numNonZerosPerRow,
         const IndexType numNonZeroRows,
         const IndexType rowIndexes[],
         const IndexType csrIA[],
         const IndexType csrJA[],
         const ValueType csrValues[],
+        SyncToken* syncToken );
+
+    /** Implementation for CSRUtilsInterface::Mult:normalGEVM */
+
+    template<typename ValueType>
+    static void normalGEVM(
+        ValueType result[],
+        const ValueType alpha,
+        const ValueType x[],
+        const ValueType beta,
+        const ValueType y[],
+        const IndexType numRows,
+        const IndexType numColumns,
+        const IndexType numValuesPerRow,
+        const IndexType ellSizes[],
+        const IndexType ellJA[],
+        const ValueType ellValues[],
+        SyncToken* syncToken );
+
+    /** Implementation for CSRUtilsInterface::Mult::sparseGEVM  */
+
+    template<typename ValueType>
+    static void sparseGEVM(
+        ValueType result[],
+        const ValueType alpha,
+        const ValueType x[],
+        const IndexType numRows,
+        const IndexType numColumns,
+        const IndexType numValuesPerRow,
+        const IndexType numNonZeroRows,
+        const IndexType rowIndexes[],
+        const IndexType ellSizes[],
+        const IndexType ellJA[],
+        const ValueType ellValues[],
         SyncToken* syncToken );
 
     LAMA_LOG_DECL_STATIC_LOGGER( logger )

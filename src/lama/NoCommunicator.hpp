@@ -207,6 +207,8 @@ public:
     virtual void swap( float val[], const IndexType n, const PartitionId partner ) const;
     virtual void swap( int val[], const IndexType n, const PartitionId partner ) const;
 
+    virtual void gather( std::vector<IndexType>& values, IndexType value ) const;
+
     virtual void gather( std::vector<float>& values, float value ) const;
 
     virtual void synchronize() const;

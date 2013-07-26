@@ -31,9 +31,17 @@
  * @since 1.0.0
  */
 
+// hpp
+#include <lama/cuda/CUDACSRUtils.hpp>
+
+// others
+
+#include <lama/ContextFactory.hpp>
 #include <lama/LAMAInterface.hpp>
 #include <lama/LAMAInterfaceRegistry.hpp>
+#include <lama/tracing.hpp>
 
+// others cuda
 #include <lama/cuda/utils.cu.h>
 #include <lama/cuda/CUDAError.hpp>
 #include <lama/cuda/CUDACSRUtils.hpp>
@@ -42,16 +50,12 @@
 #include <lama/cuda/CUDASettings.hpp>
 #include <lama/cuda/CUDAStreamSyncToken.hpp>
 
-// macros
-#include <lama/macros/unused.hpp>
-
 #include <cuda.h>
 #include <cuda_runtime.h>
 #include <cuda_runtime_api.h>
 
-#include <lama/tracing.hpp>
-
-#include <lama/ContextFactory.hpp>
+// macros
+#include <lama/macros/unused.hpp>
 
 // thrust
 #include <thrust/copy.h>
@@ -68,6 +72,7 @@
 #include <thrust/iterator/zip_iterator.h>
 #include <thrust/reduce.h>
 
+// boost
 #include <boost/bind.hpp>
 
 //#include "cuPrintf.cuh"
@@ -345,20 +350,20 @@ template<typename T, bool useTexture>
 __global__
 void normal_gemv_kernel(
     T* result,
-    int n,
+    const T* x_d,
+    const T* y_d,
     const T alpha,
+    const T beta,
     const T* csrValues,
     const int* csrIA,
     const int* csrJA,
-    const T* x_d,
-    const T beta,
-    const T* y_d )
+    int numRows )
 {
     // result = alpha * A * x_d + beta * y_d
 
     const int i = threadId( gridDim, blockIdx, blockDim, threadIdx );
 
-    if ( i < n )
+    if ( i < numRows )
     {
         T summand = beta * y_d[i];
         const int rowStart = csrIA[i];
@@ -378,21 +383,62 @@ void normal_gemv_kernel(
 
 template<typename T, bool useTexture>
 __global__
+void normal_gevm_kernel(
+    T* result,
+    const T* x_d,
+    const T* y_d,
+    const T alpha,
+    const T beta,
+    const T* csrValues,
+    const int* csrIA,
+    const int* csrJA,
+    int numRows,
+    int numColumns )
+{
+    // result = alpha * x_d * A + beta * y_d
+
+    const int i = threadId( gridDim, blockIdx, blockDim, threadIdx );
+
+    if ( i < numColumns )
+    {
+        T summand = beta * y_d[i];
+        T value = 0.0;
+
+        for( int j = 0; j < numRows; ++j )
+        {
+            const int rowStart = csrIA[j];
+            const int rowEnd = csrIA[j + 1];
+            for( int k = rowStart; k < rowEnd; ++k )
+            {
+                if( csrJA[k] == i )
+                {
+                    value += csrValues[k] * fetchCSRVectorX<T, useTexture>( x_d, i );
+                }
+            }
+        }
+        result[i] = alpha * value + summand;
+    }
+}
+
+/* --------------------------------------------------------------------------- */
+
+template<typename T, bool useTexture>
+__global__
 void sparse_gemv_kernel(
-    int n,
+    T* result,
+    const T* x_d,
     const T alpha,
     const T* csrValues,
     const int* csrIA,
     const int* csrJA,
-    const T* x_d,
-    const IndexType* rows,
-    T* result )
+    const IndexType* rowIndexes,
+    int numRows )
 {
     const int ii = threadId( gridDim, blockIdx, blockDim, threadIdx );
 
-    if ( ii < n )
+    if ( ii < numRows )
     {
-        IndexType i = rows[ii];
+        IndexType i = rowIndexes[ii];
         const int rowStart = csrIA[i];
         const int rowEnd = csrIA[i + 1];
         T value = 0.0;
@@ -408,6 +454,49 @@ void sparse_gemv_kernel(
 
 /* --------------------------------------------------------------------------- */
 
+template<typename T, bool useTexture>
+__global__
+void sparse_gevm_kernel(
+    T* result,
+    const T* x_d,
+    const T alpha,
+    const T* csrValues,
+    const int* csrIA,
+    const int* csrJA,
+    const IndexType* rowIndexes,
+    int numColumns,
+    int numNonZeroRows )
+{
+    const int ii = threadId( gridDim, blockIdx, blockDim, threadIdx );
+
+    // TODO
+    // result = alpha * x_d * A + beta * y_d
+
+    const int i = threadId( gridDim, blockIdx, blockDim, threadIdx );
+
+    if ( i < numColumns )
+    {
+        T value = 0.0;
+
+        for( int jj = 0; jj < numNonZeroRows; ++jj )
+        {
+            int j = rowIndexes[jj];
+            const int rowStart = csrIA[j];
+            const int rowEnd = csrIA[j + 1];
+            for( int k = rowStart; k < rowEnd; ++k )
+            {
+                if( csrJA[k] == i )
+                {
+                    value += csrValues[k] * fetchCSRVectorX<T, useTexture>( x_d, i );
+                }
+            }
+        }
+        result[i] = alpha * value;
+    }
+}
+
+/* --------------------------------------------------------------------------- */
+
 template<typename ValueType>
 void CUDACSRUtils::normalGEMV(
     ValueType result[],
@@ -416,8 +505,8 @@ void CUDACSRUtils::normalGEMV(
     const ValueType beta,
     const ValueType y[],
     const IndexType numRows,
-    const IndexType numColumns,
-    const IndexType nnz,
+    const IndexType UNUSED( numColumns ),
+    const IndexType UNUSED( nnz ),
     const IndexType csrIA[],
     const IndexType csrJA[],
     const ValueType csrValues[],
@@ -449,7 +538,7 @@ void CUDACSRUtils::normalGEMV(
         stream = cudaStreamSyncToken->getCUDAStream();
     }
 
-    LAMA_LOG_INFO( logger, "Start csr_normal_gemv_kernel<" << Scalar::getType<ValueType>()
+    LAMA_LOG_INFO( logger, "Start normal_gemv_kernel<" << Scalar::getType<ValueType>()
                            << ", useTexture = " << useTexture << ">" );
 
     if ( useTexture )
@@ -460,7 +549,7 @@ void CUDACSRUtils::normalGEMV(
                            "LAMA_STATUS_CUDA_FUNCSETCACHECONFIG_FAILED" )
 
         normal_gemv_kernel<ValueType, true> <<< dimGrid, dimBlock, 0, stream >>>
-                    ( result, numRows, alpha, csrValues, csrIA, csrJA, x, beta, y );
+                    ( result, x, y, alpha, beta, csrValues, csrIA, csrJA, numRows );
     }
     else
     {
@@ -468,13 +557,98 @@ void CUDACSRUtils::normalGEMV(
                            "LAMA_STATUS_CUDA_FUNCSETCACHECONFIG_FAILED" )
 
         normal_gemv_kernel<ValueType, false> <<< dimGrid, dimBlock, 0, stream >>>
-                    ( result, numRows, alpha, csrValues, csrIA, csrJA, x, beta, y );
+                    ( result, x, y, alpha, beta, csrValues, csrIA, csrJA, numRows );
     }
 
     if ( !syncToken )
     {
         LAMA_CUDA_RT_CALL( cudaStreamSynchronize( stream ), "normalGEMV, stream = " << stream )
         LAMA_LOG_DEBUG( logger, "normalGEMV<" << Scalar::getType<ValueType>() << "> synchronized" )
+    }
+
+    if ( useTexture )
+    {
+        if ( !syncToken )
+        {
+            vectorCSRUnbindTexture( x );
+        }
+        else
+        {
+             // get routine with the right signature
+             void ( *unbind ) ( const ValueType* ) = &vectorCSRUnbindTexture;
+
+             // delay unbind until synchroniziaton
+             syncToken->pushRoutine( boost::bind( unbind, x ) );
+        }
+    }
+}
+
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType>
+void CUDACSRUtils::normalGEVM(
+    ValueType result[],
+    const ValueType alpha,
+    const ValueType x[],
+    const ValueType beta,
+    const ValueType y[],
+    const IndexType numRows,
+    const IndexType numColumns,
+    const IndexType csrIA[],
+    const IndexType csrJA[],
+    const ValueType csrValues[],
+    SyncToken* syncToken )
+{
+    LAMA_LOG_INFO( logger, "normalGEVM<" << Scalar::getType<ValueType>() << ">" <<
+                           " result[ " << numColumns << "] = " << alpha << " * A(csr) * x + " << beta << " * y " )
+
+    LAMA_LOG_DEBUG( logger, "x = " << x << ", y = " << y << ", result = " << result )
+
+    LAMA_CHECK_CUDA_ACCESS
+
+    cudaStream_t stream = 0; // default stream if no syncToken is given
+
+    const int blockSize = CUDASettings::getBlockSize();
+
+    dim3 dimBlock( blockSize, 1, 1 );
+
+    dim3 dimGrid = makeGrid( numRows, dimBlock.x );
+
+    bool useTexture = CUDASettings::useTexture();
+
+    if ( syncToken )
+    {
+        CUDAStreamSyncToken* cudaStreamSyncToken = dynamic_cast<CUDAStreamSyncToken*>( syncToken );
+        LAMA_ASSERT_DEBUG( cudaStreamSyncToken, "no cuda stream sync token provided" )
+        stream = cudaStreamSyncToken->getCUDAStream();
+    }
+
+    LAMA_LOG_INFO( logger, "Start normal_gevm_kernel<" << Scalar::getType<ValueType>()
+                           << ", useTexture = " << useTexture << ">" );
+
+    if ( useTexture )
+    {
+        vectorCSRBindTexture( x );
+
+        LAMA_CUDA_RT_CALL( cudaFuncSetCacheConfig( normal_gevm_kernel<ValueType, true>, cudaFuncCachePreferL1 ),
+                           "LAMA_STATUS_CUDA_FUNCSETCACHECONFIG_FAILED" )
+
+        normal_gevm_kernel<ValueType, true> <<< dimGrid, dimBlock, 0, stream >>>
+                    ( result, x, y, alpha, beta, csrValues, csrIA, csrJA, numRows, numColumns );
+    }
+    else
+    {
+        LAMA_CUDA_RT_CALL( cudaFuncSetCacheConfig( normal_gevm_kernel<ValueType, false>, cudaFuncCachePreferL1 ),
+                           "LAMA_STATUS_CUDA_FUNCSETCACHECONFIG_FAILED" )
+
+        normal_gevm_kernel<ValueType, false> <<< dimGrid, dimBlock, 0, stream >>>
+                    ( result, x, y, alpha, beta, csrValues, csrIA, csrJA, numRows, numColumns );
+    }
+
+    if ( !syncToken )
+    {
+        LAMA_CUDA_RT_CALL( cudaStreamSynchronize( stream ), "normalGEVM, stream = " << stream )
+        LAMA_LOG_DEBUG( logger, "normalGEVM<" << Scalar::getType<ValueType>() << "> synchronized" )
     }
 
     if ( useTexture )
@@ -531,12 +705,57 @@ void CUDACSRUtils::sparseGEMV(
     dim3 dimGrid = makeGrid( numNonZeroRows, dimBlock.x );
 
     sparse_gemv_kernel<ValueType, false> <<< dimGrid, dimBlock, 0, stream >>>
-                    ( numNonZeroRows, alpha, csrValues, csrIA, csrJA, x, rowIndexes, result );
+                    ( result, x, alpha, csrValues, csrIA, csrJA, rowIndexes, numNonZeroRows );
 
     if ( !syncToken )
     {
         LAMA_CUDA_RT_CALL( cudaStreamSynchronize( stream ), "sparseGEMV, stream = " << stream )
         LAMA_LOG_INFO( logger, "sparseGEMV<" << Scalar::getType<ValueType>() << "> synchronized" )
+    }
+}
+
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType>
+void CUDACSRUtils::sparseGEVM(
+    ValueType result[],
+    const ValueType alpha,
+    const ValueType x[],
+    const IndexType numColumns,
+    const IndexType numNonZeroRows,
+    const IndexType rowIndexes[],
+    const IndexType csrIA[],
+    const IndexType csrJA[],
+    const ValueType csrValues[],
+    SyncToken* syncToken )
+{
+    LAMA_LOG_INFO( logger,
+                   "sparseGEVM<" << Scalar::getType<ValueType>() << ">" << ", #non-zero rows = " << numNonZeroRows )
+
+    LAMA_CHECK_CUDA_ACCESS
+
+    cudaStream_t stream = 0;
+
+    if ( syncToken )
+    {
+        CUDAStreamSyncToken* cudaStreamSyncToken = dynamic_cast<CUDAStreamSyncToken*>( syncToken );
+        LAMA_ASSERT_DEBUG( cudaStreamSyncToken, "no cuda stream sync token provided" )
+        stream = cudaStreamSyncToken->getCUDAStream();
+    }
+
+    const int blockSize = CUDASettings::getBlockSize( numNonZeroRows );
+
+    dim3 dimBlock( blockSize, 1, 1 );
+
+    dim3 dimGrid = makeGrid( numNonZeroRows, dimBlock.x );
+
+    sparse_gevm_kernel<ValueType, false> <<< dimGrid, dimBlock, 0, stream >>>
+                    ( result, x, alpha, csrValues, csrIA, csrJA, rowIndexes, numColumns, numNonZeroRows );
+
+    if ( !syncToken )
+    {
+        LAMA_CUDA_RT_CALL( cudaStreamSynchronize( stream ), "sparseGEVM, stream = " << stream )
+        LAMA_LOG_INFO( logger, "sparseGEVM<" << Scalar::getType<ValueType>() << "> synchronized" )
     }
 }
 
@@ -1967,6 +2186,9 @@ void CUDACSRUtils::setInterface( CSRUtilsInterface& CSRUtils )
     LAMA_INTERFACE_REGISTER_T( CSRUtils, sparseGEMV, float )
     LAMA_INTERFACE_REGISTER_T( CSRUtils, sparseGEMV, double )
 
+    LAMA_INTERFACE_REGISTER_T( CSRUtils, sparseGEVM, float )
+    LAMA_INTERFACE_REGISTER_T( CSRUtils, sparseGEVM, double )
+
     LAMA_INTERFACE_REGISTER_T( CSRUtils, jacobi, float )
     LAMA_INTERFACE_REGISTER_T( CSRUtils, jacobi, double )
 
@@ -1975,6 +2197,9 @@ void CUDACSRUtils::setInterface( CSRUtilsInterface& CSRUtils )
 
     LAMA_INTERFACE_REGISTER_T( CSRUtils, jacobiHaloWithDiag, float )
     LAMA_INTERFACE_REGISTER_T( CSRUtils, jacobiHaloWithDiag, double )
+
+    LAMA_INTERFACE_REGISTER_T( CSRUtils, normalGEVM, float )
+    LAMA_INTERFACE_REGISTER_T( CSRUtils, normalGEVM, double )
 
     // the following routines might be overwritten by CUSPASE interface
 

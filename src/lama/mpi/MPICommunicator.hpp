@@ -174,6 +174,8 @@ public:
 
     virtual int max( const int value ) const;
 
+    virtual void gather( std::vector<IndexType>& values, IndexType value ) const;
+
     virtual void gather( std::vector<float>& values, float value ) const;
 
     virtual void synchronize() const;

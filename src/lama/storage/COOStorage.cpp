@@ -40,8 +40,9 @@
 #include <lama/ContextFactory.hpp>
 #include <lama/ContextAccess.hpp>
 #include <lama/LAMAInterface.hpp>
-
 #include <lama/LAMAArrayUtils.hpp>
+
+#include <lama/task/TaskSyncToken.hpp>
 
 #include <lama/openmp/OpenMPUtils.hpp>
 #include <lama/openmp/OpenMPCOOUtils.hpp>
@@ -771,8 +772,8 @@ void COOStorage<ValueType>::matrixTimesVector(
         // we assume that normalGEMV can deal with the alias of result, y
 
         LAMA_CONTEXT_ACCESS( loc )
-        normalGEMV( wResult.get(), alpha, rX.get(), beta, wResult.get(), mNumRows, cooIA.get(), cooJA.get(),
-                    cooValues.get(), mNumValues, NULL );
+        normalGEMV( wResult.get(), alpha, rX.get(), beta, wResult.get(), mNumRows, mNumValues, cooIA.get(), cooJA.get(),
+                    cooValues.get(), NULL );
     }
     else
     {
@@ -782,8 +783,69 @@ void COOStorage<ValueType>::matrixTimesVector(
         ReadAccess<ValueType> rY( y, loc );
 
         LAMA_CONTEXT_ACCESS( loc )
-        normalGEMV( wResult.get(), alpha, rX.get(), beta, rY.get(), mNumRows, cooIA.get(), cooJA.get(), cooValues.get(),
-                    mNumValues, NULL );
+        normalGEMV( wResult.get(), alpha, rX.get(), beta, rY.get(), mNumRows, mNumValues, cooIA.get(), cooJA.get(),
+                    cooValues.get(), NULL );
+    }
+}
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType>
+void COOStorage<ValueType>::vectorTimesMatrix(
+    LAMAArray<ValueType>& result,
+    const ValueType alpha,
+    const LAMAArray<ValueType>& x,
+    const ValueType beta,
+    const LAMAArray<ValueType>& y ) const
+{
+    LAMA_LOG_INFO( logger,
+                   *this << ": vectorTimesMatrix, result = " << result << ", alpha = " << alpha << ", x = " << x << ", beta = " << beta << ", y = " << y )
+
+    LAMA_REGION( "Storage.COO.VectorTimesMatrix" )
+
+    LAMA_ASSERT_EQUAL_ERROR( x.size(), mNumRows )
+    LAMA_ASSERT_EQUAL_ERROR( result.size(), mNumColumns )
+
+    if ( ( beta != 0.0 ) && ( result != y ) )
+    {
+        LAMA_ASSERT_EQUAL_ERROR( y.size(), mNumColumns )
+    }
+
+    ContextPtr loc = getContextPtr();
+
+    LAMA_LOG_INFO( logger, *this << ": vectorTimesMatrix on " << *loc )
+
+    LAMA_INTERFACE_FN_T( normalGEVM, loc, COOUtils, Mult, ValueType )
+
+    ReadAccess<IndexType> cooIA( mIA, loc );
+    ReadAccess<IndexType> cooJA( mJA, loc );
+    ReadAccess<ValueType> cooValues( mValues, loc );
+
+    ReadAccess<ValueType> rX( x, loc );
+
+    // Possible alias of result and y must be handled by coressponding accesses
+
+    if ( result == y )
+    {
+        // only write access for y, no read access for result
+
+        WriteAccess<ValueType> wResult( result, loc );
+
+        // we assume that normalGEVM can deal with the alias of result, y
+
+        LAMA_CONTEXT_ACCESS( loc )
+        normalGEVM( wResult.get(), alpha, rX.get(), beta, wResult.get(), mNumColumns, mNumValues, cooIA.get(),
+                    cooJA.get(), cooValues.get(), NULL );
+    }
+    else
+    {
+        // make also sure that result will have the correct size
+
+        WriteOnlyAccess<ValueType> wResult( result, loc, mNumColumns );
+        ReadAccess<ValueType> rY( y, loc );
+
+        LAMA_CONTEXT_ACCESS( loc )
+        normalGEVM( wResult.get(), alpha, rX.get(), beta, rY.get(), mNumColumns, mNumValues, cooIA.get(), cooJA.get(),
+                    cooValues.get(), NULL );
     }
 }
 
@@ -833,8 +895,8 @@ auto_ptr<SyncToken> COOStorage<ValueType>::matrixTimesVectorAsyncToDo(
 
         LAMA_CONTEXT_ACCESS( loc )
 
-        normalGEMV( wResult->get(), alpha, rX->get(), beta, wResult->get(), mNumRows, cooIA->get(), cooJA->get(),
-                    cooValues->get(), mNumValues, syncToken.get() );
+        normalGEMV( wResult->get(), alpha, rX->get(), beta, wResult->get(), mNumRows, mNumValues, cooIA->get(),
+                    cooJA->get(), cooValues->get(), syncToken.get() );
 
         syncToken->pushAccess( wResult );
     }
@@ -845,8 +907,8 @@ auto_ptr<SyncToken> COOStorage<ValueType>::matrixTimesVectorAsyncToDo(
 
         LAMA_CONTEXT_ACCESS( loc )
 
-        normalGEMV( wResult->get(), alpha, rX->get(), beta, rY->get(), mNumRows, cooIA->get(), cooJA->get(),
-                    cooValues->get(), mNumValues, syncToken.get() );
+        normalGEMV( wResult->get(), alpha, rX->get(), beta, rY->get(), mNumRows, mNumValues, cooIA->get(), cooJA->get(),
+                    cooValues->get(), syncToken.get() );
 
         syncToken->pushAccess( shared_ptr<BaseAccess>( wResult ) );
         syncToken->pushAccess( shared_ptr<BaseAccess>( rY ) );
@@ -858,6 +920,109 @@ auto_ptr<SyncToken> COOStorage<ValueType>::matrixTimesVectorAsyncToDo(
     syncToken->pushAccess( rX );
 
     return syncToken;
+}
+
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType>
+SyncToken* COOStorage<ValueType>::vectorTimesMatrixAsync(
+    LAMAArray<ValueType>& result,
+    const ValueType alpha,
+    const LAMAArray<ValueType>& x,
+    const ValueType beta,
+    const LAMAArray<ValueType>& y ) const
+{
+    LAMA_LOG_INFO( logger,
+                   *this << ": vectorTimesMatrixAsync, result = " << result << ", alpha = " << alpha << ", x = " << x << ", beta = " << beta << ", y = " << y )
+
+    LAMA_REGION( "Storage.COO.vectorTimesMatrixAsync" )
+
+    ContextPtr loc = getContextPtr();
+
+    // Note: checks will be done by asynchronous task in any case
+    //       and exception in tasks are handled correctly
+
+    LAMA_LOG_INFO( logger, *this << ": vectorTimesMatrixAsync on " << *loc )
+
+    if ( loc->getType() == Context::Host )
+    {
+        // execution as separate thread
+
+        void (COOStorage::*pf)(
+            LAMAArray<ValueType>&,
+            const ValueType,
+            const LAMAArray<ValueType>&,
+            const ValueType,
+            const LAMAArray<ValueType>& ) const
+
+        = &COOStorage<ValueType>::vectorTimesMatrix;
+
+        using boost::bind;
+
+        LAMA_LOG_INFO( logger, *this << ": vectorTimesMatrixAsync on Host by own thread" )
+
+        using boost::ref;
+
+        return new TaskSyncToken( bind( pf, this, ref( result ), alpha, ref( x ), beta, ref( y ) ) );
+    }
+
+    LAMA_ASSERT_EQUAL_ERROR( x.size(), mNumRows )
+    LAMA_ASSERT_EQUAL_ERROR( result.size(), mNumColumns )
+
+    if ( ( beta != 0.0 ) && ( result != y ) )
+    {
+        LAMA_ASSERT_EQUAL_ERROR( y.size(), mNumColumns )
+    }
+
+    LAMA_INTERFACE_FN_T( normalGEVM, loc, COOUtils, Mult, ValueType )
+
+    auto_ptr<SyncToken> syncToken( loc->getSyncToken() );
+
+    // all accesses will be pushed to the sync token as LAMA arrays have to be protected up
+    // to the end of the computations.
+
+    shared_ptr<ReadAccess<IndexType> > cooIA( new ReadAccess<IndexType>( mIA, loc ) );
+    shared_ptr<ReadAccess<IndexType> > cooJA( new ReadAccess<IndexType>( mJA, loc ) );
+    shared_ptr<ReadAccess<ValueType> > cooValues( new ReadAccess<ValueType>( mValues, loc ) );
+    shared_ptr<ReadAccess<ValueType> > rX( new ReadAccess<ValueType>( x, loc ) );
+
+    // Possible alias of result and y must be handled by coressponding accesses
+
+    if ( result == y )
+    {
+        // only write access for y, no read access for result
+
+        shared_ptr<WriteAccess<ValueType> > wResult( new WriteAccess<ValueType>( result, loc ) );
+
+        // we assume that normalGEMV can deal with the alias of result, y
+
+        LAMA_CONTEXT_ACCESS( loc )
+
+        normalGEVM( wResult->get(), alpha, rX->get(), beta, wResult->get(), mNumRows, mNumValues, cooIA->get(), cooJA->get(),
+                    cooValues->get(), syncToken.get() );
+
+        syncToken->pushAccess( wResult );
+    }
+    else
+    {
+        shared_ptr<WriteAccess<ValueType> > wResult( new WriteOnlyAccess<ValueType>( result, loc, mNumRows ) );
+        shared_ptr<ReadAccess<ValueType> > rY( new ReadAccess<ValueType>( y, loc ) );
+
+        LAMA_CONTEXT_ACCESS( loc )
+
+        normalGEVM( wResult->get(), alpha, rX->get(), beta, rY->get(), mNumRows, mNumValues, cooIA->get(), cooJA->get(),
+                    cooValues->get(), syncToken.get() );
+
+        syncToken->pushAccess( shared_ptr<BaseAccess>( wResult ) );
+        syncToken->pushAccess( shared_ptr<BaseAccess>( rY ) );
+    }
+
+    syncToken->pushAccess( cooIA );
+    syncToken->pushAccess( cooJA );
+    syncToken->pushAccess( cooValues );
+    syncToken->pushAccess( rX );
+
+    return syncToken.release();
 }
 
 /* --------------------------------------------------------------------------- */

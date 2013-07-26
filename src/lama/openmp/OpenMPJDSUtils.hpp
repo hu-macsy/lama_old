@@ -162,6 +162,24 @@ public:
         const ValueType jdsValues[],
         SyncToken* syncToken );
 
+    /** Implementation for JDSUtilsInterface::Mult:normalGEVM with OpenMP on Host */
+
+    template<typename ValueType>
+    static void normalGEVM(
+        ValueType result[],
+        const ValueType alpha,
+        const ValueType x[],
+        const ValueType beta,
+        const ValueType y[],
+        const IndexType numColumns,
+        const IndexType perm[],
+        const IndexType jdsILG[],
+        const IndexType ndlg,
+        const IndexType jdsDLG[],
+        const IndexType jdsJA[],
+        const ValueType jdsValues[],
+        SyncToken* syncToken );
+
     template<typename ValueType>
     static void jacobi(
         ValueType solution[],

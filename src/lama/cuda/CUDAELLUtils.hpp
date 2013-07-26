@@ -155,7 +155,7 @@ public:
         const IndexType csrJA[],
         const CSRValueType csrValues[] );
 
-    /** Implementation for CSRUtilsInterface::Mult::normalGEMV  */
+    /** Implementation for ELLUtilsInterface::Mult::normalGEMV  */
 
     template<typename ValueType>
     static void normalGEMV(
@@ -166,25 +166,59 @@ public:
         const ValueType y[],
         const IndexType numRows,
         const IndexType numValuesPerRow,
-        const IndexType csrIA[],
-        const IndexType csrJA[],
-        const ValueType csrValues[],
+        const IndexType ellIA[],
+        const IndexType ellJA[],
+        const ValueType ellValues[],
         SyncToken* syncToken );
 
-    /** Implementation for CSRUtilsInterface::Mult::sparseGEMV  */
+    /** Implementation for CSRUtilsInterface::Mult::normalGEVM  */
+
+    template<typename ValueType>
+    static void normalGEVM(
+        ValueType result[],
+        const ValueType alpha,
+        const ValueType x[],
+        const ValueType beta,
+        const ValueType y[],
+        const IndexType numRows,
+        const IndexType numColumns,
+        const IndexType numValuesPerRow,
+        const IndexType ellSizes[],
+        const IndexType ellJA[],
+        const ValueType ellValues[],
+        SyncToken* syncToken );
+
+    /** Implementation for ELLUtilsInterface::Mult::sparseGEMV  */
 
     template<typename ValueType>
     static void sparseGEMV(
         ValueType result[],
-        const IndexType numRows,
-        const IndexType numValuesPerRow,
         const ValueType alpha,
         const ValueType x[],
+        const IndexType numRows,
+        const IndexType numValuesPerRow,
         const IndexType numNonZeroRows,
         const IndexType rowIndexes[],
-        const IndexType csrIA[],
-        const IndexType csrJA[],
-        const ValueType csrValues[],
+        const IndexType ellSizes[],
+        const IndexType ellJA[],
+        const ValueType ellValues[],
+        SyncToken* syncToken );
+
+    /** Implementation for ELLUtilsInterface::Mult::sparseGEVM  */
+
+    template<typename ValueType>
+    static void sparseGEVM(
+        ValueType result[],
+        const ValueType alpha,
+        const ValueType x[],
+        const IndexType numRows,
+        const IndexType numColumns,
+        const IndexType numNonZerosPerRow,
+        const IndexType numNonZeroRows,
+        const IndexType rowIndexes[],
+        const IndexType ellIA[],
+        const IndexType ellJA[],
+        const ValueType ellValues[],
         SyncToken* syncToken );
 
     /** Implementation for ELLUtilsInterface::Solver::jacobi  */

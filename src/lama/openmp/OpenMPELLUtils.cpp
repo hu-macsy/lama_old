@@ -933,10 +933,10 @@ void OpenMPELLUtils::normalGEMV(
 template<typename ValueType>
 void OpenMPELLUtils::sparseGEMV(
     ValueType result[],
-    const IndexType numRows,
-    const IndexType numValuesPerRow,
     const ValueType alpha,
     const ValueType x[],
+    const IndexType numRows,
+    const IndexType numValuesPerRow,
     const IndexType numNonZeroRows,
     const IndexType rowIndexes[],
     const IndexType ellSizes[],
@@ -972,6 +972,154 @@ void OpenMPELLUtils::sparseGEMV(
                 temp += ellValues[pos] * x[j];
             }
 
+            if ( 1 == alpha )
+            {
+                result[i] += temp;
+            }
+            else
+            {
+                result[i] += alpha * temp;
+            }
+        }
+    }
+}
+
+/* ------------------------------------------------------------------------------------------------------------------ */
+
+template<typename ValueType>
+void OpenMPELLUtils::normalGEVM(
+    ValueType result[],
+    const ValueType alpha,
+    const ValueType x[],
+    const ValueType beta,
+    const ValueType y[],
+    const IndexType numRows,
+    const IndexType numColumns,
+    const IndexType UNUSED(numValuesPerRow),
+    const IndexType ellSizes[],
+    const IndexType ellJA[],
+    const ValueType ellValues[],
+    SyncToken* syncToken )
+{
+    LAMA_LOG_INFO( logger,
+                   "normalGEVM<" << Scalar::getType<ValueType>()
+                   << ", #threads = " << omp_get_max_threads()
+                   << ">, result[" << numColumns << "] = " << alpha << " * x * A + " << beta << " * y " )
+
+    if ( syncToken )
+    {
+        LAMA_THROWEXCEPTION( "asynchronous execution should be done by LAMATask before" )
+    }
+
+    //#pragma omp parallel
+    {
+        LAMA_REGION( "OpenMP.ELL.normalGEVM" )
+
+        //#pragma omp for schedule(LAMA_OMP_SCHEDULE)
+        for ( IndexType i = 0; i < numColumns; ++i )
+        {
+            ValueType temp = 0.0;
+
+            for ( IndexType j = 0; j < numRows; ++j )
+            {
+                for( IndexType k = 0; k < ellSizes[j]; ++k )
+                {
+                    if( ellJA[ k * numRows + j ] == i )
+                    {
+                        LAMA_LOG_TRACE( logger,
+                                        "temp += dataAccess[k * numRows + j] * xAccess[j]; j = " << j )
+                        LAMA_LOG_TRACE( logger, ", dataAccess[k * numRows + j] = " << ellValues[ k * numRows + j ] )
+                        LAMA_LOG_TRACE( logger, ", xAccess[j] = " << x[ j ] )
+
+                        temp += ellValues[ k * numRows + j ] * x[j];
+                    }
+                }
+            }
+
+            LAMA_LOG_TRACE( logger, "column = " << i << ", temp = " << temp )
+
+            if ( 0.0 == beta )
+            {
+                // must be handled separately as y[i] might be uninitialized
+
+                result[i] = alpha * temp;
+            }
+            else if ( 1.0 == alpha )
+            {
+                result[i] = temp + beta * y[i];
+            }
+            else
+            {
+                result[i] = alpha * temp + beta * y[i];
+            }
+        }
+    }
+
+    if ( LAMA_LOG_TRACE_ON( logger ) )
+    {
+        std::cout << "NormalGEVM: result = ";
+        for ( IndexType i = 0; i < numColumns; ++i )
+        {
+            std::cout << " " << result[i];
+        }
+        std::cout << std::endl;
+    }
+}
+
+/* ------------------------------------------------------------------------------------------------------------------ */
+
+template<typename ValueType>
+void OpenMPELLUtils::sparseGEVM(
+    ValueType result[],
+    const ValueType alpha,
+    const ValueType x[],
+    const IndexType UNUSED(numRows),
+    const IndexType numColumns,
+    const IndexType UNUSED(numValuesPerRow),
+    const IndexType numNonZeroRows,
+    const IndexType rowIndexes[],
+    const IndexType ellSizes[],
+    const IndexType ellJA[],
+    const ValueType ellValues[],
+    SyncToken* syncToken  )
+{
+    LAMA_LOG_INFO( logger,
+                   "sparseGEVM<" << Scalar::getType<ValueType>()
+                   << ", #threads = " << omp_get_max_threads()
+                   << ">, result[" << numColumns << "] = " << alpha << " * x * A " )
+
+    if ( syncToken )
+    {
+        LAMA_THROWEXCEPTION( "asynchronous execution should be done by LAMATask before" )
+    }
+
+    #pragma omp parallel
+    {
+        LAMA_REGION( "OpenMP.ELL.sparseGEVM" )
+
+        #pragma omp for schedule(LAMA_OMP_SCHEDULE)
+        for ( IndexType i = 0; i < numColumns; ++i )
+        {
+            ValueType temp = 0.0;
+
+            for ( IndexType jj = 0; jj < numNonZeroRows; ++jj )
+            {
+                IndexType j = rowIndexes[jj];
+
+                for( IndexType k = 0; k < ellSizes[j]; ++k )
+                {
+                    if( ellJA[ k * numNonZeroRows + j ] == i )
+                    {
+                        LAMA_LOG_TRACE( logger,
+                                        "temp += dataAccess[k * numNonZeroRows + j] * xAccess[j]; i = " << j )
+                        LAMA_LOG_TRACE( logger, ", dataAccess[k * numNonZeroRows + j] = " << ellValues[ k * numNonZeroRows + j ] )
+                        LAMA_LOG_TRACE( logger, ", xAccess[j] = " << x[ j ] )
+
+                        temp += ellValues[ k * numNonZeroRows + j ] * x[j];
+                    }
+                }
+
+            }
             if ( 1 == alpha )
             {
                 result[i] += temp;
@@ -1039,8 +1187,14 @@ void OpenMPELLUtils::setInterface( ELLUtilsInterface& ELLUtils )
     LAMA_INTERFACE_REGISTER_T( ELLUtils, normalGEMV, float )
     LAMA_INTERFACE_REGISTER_T( ELLUtils, normalGEMV, double )
 
+    LAMA_INTERFACE_REGISTER_T( ELLUtils, normalGEVM, float )
+    LAMA_INTERFACE_REGISTER_T( ELLUtils, normalGEVM, double )
+
     LAMA_INTERFACE_REGISTER_T( ELLUtils, sparseGEMV, float )
     LAMA_INTERFACE_REGISTER_T( ELLUtils, sparseGEMV, double )
+
+    LAMA_INTERFACE_REGISTER_T( ELLUtils, sparseGEVM, float )
+    LAMA_INTERFACE_REGISTER_T( ELLUtils, sparseGEVM, double )
 
     LAMA_INTERFACE_REGISTER_T( ELLUtils, jacobi, float )
     LAMA_INTERFACE_REGISTER_T( ELLUtils, jacobi, double )
