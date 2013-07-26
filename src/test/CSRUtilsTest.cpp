@@ -65,63 +65,62 @@ namespace CSRUtilsTest
 /* ------------------------------------------------------------------------------------------------------------------ */
 
 template<typename ValueType,typename OtherValueType>
-void absMaxDiffValTest( ContextPtr loc, log4lama::Logger &logger )
+void absMaxDiffValTest( ContextPtr loc )
 {
-    try
-    {
-        LAMA_INTERFACE_FN_T( absMaxDiffVal, loc, CSRUtils, Reductions, ValueType );
-        // input arrays
-        //    Array1             Array2
-        //
-        //    1 2 3 0 0          1 2 0 0 0
-        //    0 0 1 1 2          1 0 2 2 1
-        const IndexType ia1[] =
-        { 0, 3, 6 };
-        const IndexType ja1[] =
-        { 0, 1, 2, 2, 3, 4 };
-        const IndexType ia2[] =
-        { 0, 2, 6 };
-        const IndexType ja2[] =
-        { 0, 1, 0, 2, 3, 4 };
-        const ValueType values1[] =
-        { 1, 2, 3, 1, 1, 2 };
-        const ValueType values2[] =
-        { 1, 2, 1, 2, 2, 1 };
-        const IndexType numRows = 2;
-        // const IndexType numColumns = 5;
-        const IndexType numValues1 = sizeof( ja1 ) / sizeof(IndexType);
-        const IndexType numValues2 = sizeof( ja2 ) / sizeof(IndexType);
-        LAMAArray<IndexType> csrIA1( numRows + 1, ia1 );
-        LAMAArray<IndexType> csrJA1( numValues1, ja1 );
-        LAMAArray<ValueType> csrValues1( numValues1, values1 );
-        LAMAArray<IndexType> csrIA2( numRows + 1, ia2 );
-        LAMAArray<IndexType> csrJA2( numValues2, ja2 );
-        LAMAArray<ValueType> csrValues2( numValues2, values2 );
-        ReadAccess<IndexType> rCSRIA1( csrIA1, loc );
-        ReadAccess<IndexType> rCSRJA1( csrJA1, loc );
-        ReadAccess<ValueType> rCSRValues1( csrValues1, loc );
-        ReadAccess<IndexType> rCSRIA2( csrIA2, loc );
-        ReadAccess<IndexType> rCSRJA2( csrJA2, loc );
-        ReadAccess<ValueType> rCSRValues2( csrValues2, loc );
-        LAMA_CONTEXT_ACCESS( loc );
-        ValueType maxVal = absMaxDiffVal( numRows, false, rCSRIA1.get(), rCSRJA1.get(), rCSRValues1.get(),
-                                          rCSRIA2.get(), rCSRJA2.get(), rCSRValues2.get() );
-        BOOST_CHECK_EQUAL( 3, maxVal );
-        // rows are sorted, so we can alsoy apply sortFlag = true
-        maxVal = absMaxDiffVal( numRows, true, rCSRIA1.get(), rCSRJA1.get(), rCSRValues1.get(), rCSRIA2.get(),
-                                rCSRJA2.get(), rCSRValues2.get() );
-        BOOST_CHECK_EQUAL( 3, maxVal );
-    }
-    catch( Exception )
-    {
-        LAMA_LOG_WARN( logger, "CSRUtils::absMaxDiffVal not available on " << *loc << ", not tested yet." )
-        return;
-    }
+    LAMA_INTERFACE_FN_T( absMaxDiffVal, loc, CSRUtils, Reductions, ValueType );
+
+    // input arrays
+    //    Array1             Array2
+    //
+    //    1 2 3 0 0          1 2 0 0 0
+    //    0 0 1 1 2          1 0 2 2 1
+
+    const IndexType ia1[] =
+    { 0, 3, 6 };
+    const IndexType ja1[] =
+    { 0, 1, 2, 2, 3, 4 };
+    const IndexType ia2[] =
+    { 0, 2, 6 };
+    const IndexType ja2[] =
+    { 0, 1, 0, 2, 3, 4 };
+    const ValueType values1[] =
+    { 1, 2, 3, 1, 1, 2 };
+    const ValueType values2[] =
+    { 1, 2, 1, 2, 2, 1 };
+    const IndexType numRows = 2;
+    // const IndexType numColumns = 5;
+    const IndexType numValues1 = sizeof( ja1 ) / sizeof(IndexType);
+    const IndexType numValues2 = sizeof( ja2 ) / sizeof(IndexType);
+    LAMAArray<IndexType> csrIA1( numRows + 1, ia1 );
+    LAMAArray<IndexType> csrJA1( numValues1, ja1 );
+    LAMAArray<ValueType> csrValues1( numValues1, values1 );
+    LAMAArray<IndexType> csrIA2( numRows + 1, ia2 );
+    LAMAArray<IndexType> csrJA2( numValues2, ja2 );
+    LAMAArray<ValueType> csrValues2( numValues2, values2 );
+
+    ReadAccess<IndexType> rCSRIA1( csrIA1, loc );
+    ReadAccess<IndexType> rCSRJA1( csrJA1, loc );
+    ReadAccess<ValueType> rCSRValues1( csrValues1, loc );
+    ReadAccess<IndexType> rCSRIA2( csrIA2, loc );
+    ReadAccess<IndexType> rCSRJA2( csrJA2, loc );
+    ReadAccess<ValueType> rCSRValues2( csrValues2, loc );
+
+    LAMA_CONTEXT_ACCESS( loc );
+    ValueType maxVal = absMaxDiffVal( numRows, false, rCSRIA1.get(), rCSRJA1.get(), rCSRValues1.get(), rCSRIA2.get(),
+                                      rCSRJA2.get(), rCSRValues2.get() );
+    BOOST_CHECK_EQUAL( 3, maxVal );
+
+    // rows are sorted, so we can also apply sortFlag = true
+    maxVal = absMaxDiffVal( numRows, true, rCSRIA1.get(), rCSRJA1.get(), rCSRValues1.get(), rCSRIA2.get(),
+                            rCSRJA2.get(), rCSRValues2.get() );
+    BOOST_CHECK_EQUAL( 3, maxVal );
 }
 
 template<typename ValueType>
 void transposeTestSquare( ContextPtr loc )
 {
+    LAMA_INTERFACE_FN_T( convertCSR2CSC, loc, CSRUtils, Transpose, ValueType );
+
     //  input array           transpose
     //    1.0   -   2.0       1.0  0.5   -
     //    0.5  0.3   -         -   0.3   - 
@@ -148,8 +147,6 @@ void transposeTestSquare( ContextPtr loc )
     LAMAArray<IndexType> cscIA;
     LAMAArray<IndexType> cscJA;
     LAMAArray<ValueType> cscValues;
-
-    LAMA_INTERFACE_FN_T( convertCSR2CSC, loc, CSRUtils, Transpose, ValueType );
 
     ReadAccess<IndexType> rCSRIA( csrIA, loc );
     ReadAccess<IndexType> rCSRJA( csrJA, loc );
@@ -194,6 +191,8 @@ void transposeTestSquare( ContextPtr loc )
 template<typename ValueType>
 void transposeTestNonSquare( ContextPtr loc )
 {
+    LAMA_INTERFACE_FN_T( convertCSR2CSC, loc, CSRUtils, Transpose, ValueType );
+
     //  input array           transpose
     //    1.0   -   2.0       1.0  0.5   -    4.0
     //    0.5  0.3   -         -   0.3   -    1.5 
@@ -221,8 +220,6 @@ void transposeTestNonSquare( ContextPtr loc )
     LAMAArray<IndexType> cscIA;
     LAMAArray<IndexType> cscJA;
     LAMAArray<ValueType> cscValues;
-
-    LAMA_INTERFACE_FN_T( convertCSR2CSC, loc, CSRUtils, Transpose, ValueType );
 
     ReadAccess<IndexType> rCSRIA( csrIA, loc );
     ReadAccess<IndexType> rCSRJA( csrJA, loc );
@@ -272,7 +269,7 @@ void transposeTestNonSquare( ContextPtr loc )
 
 LAMA_LOG_DEF_LOGGER( logger, "Test.CSRUtilsTest" )
 
-LAMA_AUTO_TEST_CASE_TT( absMaxDiffValTest, CSRUtilsTest, logger )
+LAMA_AUTO_TEST_CASE_TT( absMaxDiffValTest, CSRUtilsTest )
 LAMA_AUTO_TEST_CASE_T( transposeTestSquare, CSRUtilsTest )
 LAMA_AUTO_TEST_CASE_T( transposeTestNonSquare, CSRUtilsTest )
 /* ------------------------------------------------------------------------------------------------------------------ */BOOST_AUTO_TEST_SUITE_END()
