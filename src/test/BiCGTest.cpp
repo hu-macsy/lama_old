@@ -76,29 +76,29 @@ LAMA_LOG_DEF_LOGGER( logger, "Test.BiCGTest" )
 BOOST_AUTO_TEST_CASE( CtorTest )
 {
     LoggerPtr slogger(
-        new CommonLogger( "<CG>: ", LogLevel::noLogging, LoggerWriteBehaviour::toConsoleOnly,
+        new CommonLogger( "<BiCG>: ", LogLevel::noLogging, LoggerWriteBehaviour::toConsoleOnly,
                           std::auto_ptr<Timer>( new Timer() ) ) );
 
-    BiCG cgSolver( "BiCGTestSolver", slogger );
-    BOOST_CHECK_EQUAL( cgSolver.getId(), "BiCGTestSolver" );
+    BiCG bicgSolver( "BiCGTestSolver", slogger );
+    BOOST_CHECK_EQUAL( bicgSolver.getId(), "BiCGTestSolver" );
 
-    BiCG cgSolver2( "BiCGTestSolver2" );
-    BOOST_CHECK_EQUAL( cgSolver2.getId(), "BiCGTestSolver2" );
+    BiCG bicgSolver2( "BiCGTestSolver2" );
+    BOOST_CHECK_EQUAL( bicgSolver2.getId(), "BiCGTestSolver2" );
 
-    BiCG cgSolver3( cgSolver2 );
-    BOOST_CHECK_EQUAL( cgSolver3.getId(), "BiCGTestSolver2" );
-    BOOST_CHECK( cgSolver3.getPreconditioner() == 0 );
+    BiCG bicgSolver3( bicgSolver2 );
+    BOOST_CHECK_EQUAL( bicgSolver3.getId(), "BiCGTestSolver2" );
+    BOOST_CHECK( bicgSolver3.getPreconditioner() == 0 );
 
-    BiCG cgSolver4( "cgSolver4" );
+    BiCG bicgSolver4( "BiCGTestSolver4" );
     SolverPtr preconditioner( new TrivialPreconditioner( "Trivial preconditioner" ) );
-    cgSolver4.setPreconditioner( preconditioner );
+    bicgSolver4.setPreconditioner( preconditioner );
 
     CriterionPtr criterion( new IterationCount( 10 ) );
-    cgSolver4.setStoppingCriterion( criterion );
+    bicgSolver4.setStoppingCriterion( criterion );
 
-    BiCG cgSolver5( cgSolver4 );
-    BOOST_CHECK_EQUAL( cgSolver5.getId(), cgSolver4.getId() );
-    BOOST_CHECK_EQUAL( cgSolver5.getPreconditioner()->getId(), cgSolver4.getPreconditioner()->getId() );
+    BiCG bicgSolver5( bicgSolver4 );
+    BOOST_CHECK_EQUAL( bicgSolver5.getId(), bicgSolver4.getId() );
+    BOOST_CHECK_EQUAL( bicgSolver5.getPreconditioner()->getId(), bicgSolver4.getPreconditioner()->getId() );
 }
 
 /* --------------------------------------------------------------------- */
@@ -110,10 +110,10 @@ void testSolveWithPreconditionmethod( ContextPtr context )
     typedef typename mt::ValueType ValueType;
 
     LoggerPtr slogger(
-        new CommonLogger( "<CG>: ", LogLevel::noLogging, LoggerWriteBehaviour::toConsoleOnly,
+        new CommonLogger( "<BiCG>: ", LogLevel::noLogging, LoggerWriteBehaviour::toConsoleOnly,
                           std::auto_ptr<Timer>( new Timer() ) ) );
 
-    BiCG cgSolver( "BiCGTestSolver", slogger );
+    BiCG bicgSolver( "BiCGTestSolver", slogger );
 
     const IndexType N1 = 4;
     const IndexType N2 = 4;
@@ -129,7 +129,7 @@ void testSolveWithPreconditionmethod( ContextPtr context )
     LAMA_LOG_INFO( logger, "coefficients matrix = " << coefficients );
 
     coefficients.setContext( context );
-    LAMA_LOG_INFO( logger, "CGTest uses context = " << context->getType() );
+    LAMA_LOG_INFO( logger, "BiCGTest uses context = " << context->getType() );
 
     DenseVector<ValueType> solution( coefficients.getDistributionPtr(), 1.0 );
     const DenseVector<ValueType> exactSolution( coefficients.getDistributionPtr(), 2.0 );
@@ -137,15 +137,15 @@ void testSolveWithPreconditionmethod( ContextPtr context )
 
     IndexType expectedIterations = 10;
     CriterionPtr criterion( new IterationCount( expectedIterations ) );
-    cgSolver.setStoppingCriterion( criterion );
+    bicgSolver.setStoppingCriterion( criterion );
 
     SolverPtr preconditioner( new TrivialPreconditioner( "Trivial preconditioner" ) );
-    cgSolver.setPreconditioner( preconditioner );
+    bicgSolver.setPreconditioner( preconditioner );
 
-    cgSolver.initialize( coefficients );
-    cgSolver.solve( solution, rhs );
+    bicgSolver.initialize( coefficients );
+    bicgSolver.solve( solution, rhs );
 
-    BOOST_CHECK_EQUAL( expectedIterations, cgSolver.getIterationCount() );
+    BOOST_CHECK_EQUAL( expectedIterations, bicgSolver.getIterationCount() );
 
     DenseVector<ValueType> diff( solution - exactSolution );
     Scalar s = maxNorm( diff );
@@ -194,7 +194,7 @@ void testSolveWithoutPreconditionmethod( ContextPtr context )
     LAMA_LOG_INFO( logger, "coefficient matrix = " << coefficients );
 
     coefficients.setContext( context );
-    LAMA_LOG_INFO( logger, "CGTest uses context = " << context->getType() );
+    LAMA_LOG_INFO( logger, "BiCGTest uses context = " << context->getType() );
 
     DenseVector<ValueType> solution( coefficients.getColDistributionPtr(), 2.0 );
     const DenseVector<ValueType> exactSolution( coefficients.getColDistributionPtr(), 1.0 );
@@ -302,7 +302,7 @@ BOOST_AUTO_TEST_CASE( testDefaultCriterionSet )
 
     LAMA_LOG_INFO( logger, "Problem size = " << N1 << " x " << N2 );
 
-    BiCG cgSolver( "CGTestSolver" );
+    BiCG bicgSolver( "BiCGTestSolver" );
 
     CSRSparseMatrix<ValueType> coefficients;
     MatrixCreator<ValueType>::buildPoisson2D( coefficients, 9, N1, N2 );
@@ -310,30 +310,30 @@ BOOST_AUTO_TEST_CASE( testDefaultCriterionSet )
     DenseVector<ValueType> solution( coefficients.getColDistributionPtr(), 2.0 );
     const DenseVector<ValueType> rhs( solution.getDistributionPtr(), 0.0 );
 
-    cgSolver.initialize( coefficients );
+    bicgSolver.initialize( coefficients );
 
-    cgSolver.solve( solution, rhs );
+    bicgSolver.solve( solution, rhs );
 
-    BOOST_CHECK_EQUAL( cgSolver.getIterationCount(), 1 );
+    BOOST_CHECK_EQUAL( bicgSolver.getIterationCount(), 1 );
 }
 
 /* --------------------------------------------------------------------- */
 
 BOOST_AUTO_TEST_CASE( writeAtTest )
 {
-    BiCG cgSolver( "CGTestSolver" );
-    LAMA_WRITEAT_TEST( cgSolver );
+    BiCG bicgSolver( "BiCGTestSolver" );
+    LAMA_WRITEAT_TEST( bicgSolver );
 }
 
 /* --------------------------------------------------------------------- */
 
 BOOST_AUTO_TEST_CASE( copyTest )
 {
-    BiCG cgSolver1( "CGTestSolver" );
+    BiCG bicgSolver1( "BiCGTestSolver" );
 
-    SolverPtr solverptr = cgSolver1.copy();
+    SolverPtr solverptr = bicgSolver1.copy();
 
-    BOOST_CHECK_EQUAL( solverptr->getId(), "CGTestSolver" );
+    BOOST_CHECK_EQUAL( solverptr->getId(), "BiCGTestSolver" );
 }
 /* --------------------------------------------------------------------- */
 
