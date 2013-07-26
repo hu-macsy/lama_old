@@ -37,6 +37,7 @@
 #include <lama/cuda/utils.cu.h>
 #include <lama/cuda/CUDAError.hpp>
 #include <lama/cuda/CUDACSRUtils.hpp>
+#include <lama/cuda/CUDACOOUtils.hpp>
 #include <lama/cuda/CUDAUtils.hpp>
 #include <lama/cuda/CUDASettings.hpp>
 #include <lama/cuda/CUDAStreamSyncToken.hpp>
@@ -218,76 +219,6 @@ bool CUDACSRUtils::hasDiagonalProperty( const IndexType numDiagonals, const Inde
 }
 
 /* --------------------------------------------------------------------------- */
-/* --------------------------------------------------------------------------- */
-
-__global__
-static void build_ia_kernel(
-    IndexType* ia,
-    const IndexType nz,
-    const IndexType* offsets,
-    const IndexType n )
-{
-    const int i = threadId( gridDim, blockIdx, blockDim, threadIdx );
-
-    if ( i < n )
-    {
-        // loop over all none zero elements of column i
-
-        for ( IndexType ii = offsets[i]; ii < offsets[i + 1]; ++ii )
-        {
-            ia[ii] = i;
-        }
-    }
-}
-
-/* --------------------------------------------------------------------------- */
-
-__global__
-static void build_offset_kernel(
-    IndexType* offsets,
-    const IndexType n,
-    const IndexType* ia,
-    const IndexType nz )
-{
-    const int i = threadId( gridDim, blockIdx, blockDim, threadIdx );
-
-    // Entries in offset filled every time there is a change in values of consecutive elements
-    //   i:     0  1  2  3  4  5
-    //  ia:     0  0  1  1  1  3
-    // nd1:     0  0  1  1  1  3
-    // nd2:     0  1  1  1  3  4
-    //             x        x  x
-    //             |        |  |->                  
-    //             |        |---->                
-    //             |------------->       2          
-    // offset:                        0  2  5  5  6
-
-    if ( i < nz )
-    {
-        IndexType nd1 = ia[i];
-        IndexType nd2 = n;
-
-        if ( i + 1 < nz )
-        {
-            nd2 = ia[i + 1];
-        }
-
-        for ( IndexType j = nd1; j < nd2; j++ )
-        {
-            offsets[j+1] = i + 1;
-        }
-
-        if ( i == 0 )
-        {
-            for ( IndexType i = 0; i <= nd1; i++ )
-            {
-                offsets[i] = 0;
-            }
-        }
-    }
-}
-
-/* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
 void CUDACSRUtils::convertCSR2CSC(
@@ -315,11 +246,9 @@ void CUDACSRUtils::convertCSR2CSC(
     // Step 1 : build COO storage,  cooIA (to do), cooJA ( = csrJA ), cooValues ( = csrValues )
     //          -> translate the csrIA offset array to a cooIA array
 
-    const int blockSize = CUDASettings::getBlockSize();
-    dim3 dimBlock( blockSize, 1, 1 );
-    dim3 dimGrid = makeGrid( numRows, dimBlock.x );
+    const IndexType numDiagonals = 0;  // not supported yet
 
-    build_ia_kernel<<<dimGrid, dimBlock>>>( cscJA, numValues, csrIA, numRows );
+    CUDACOOUtils::offsets2ia( cscJA, numValues, csrIA, numRows, numDiagonals );
 
     // switch cooIA and cooJA, copy values and resort
 
@@ -338,8 +267,7 @@ void CUDACSRUtils::convertCSR2CSC(
 
     // cscJA is now sorted, can become an offset array
 
-    dimGrid = makeGrid( numValues, dimBlock.x );
-    build_offset_kernel<<<dimGrid, dimBlock>>>( cscIA, numColumns, cooIA, numValues );
+    CUDACOOUtils::ia2offsets( cscIA, numColumns, numDiagonals, cooIA, numValues );
 
     LAMA_CUDA_RT_CALL( cudaFree( cooIA ), "free tmp cooIA" )
 }
