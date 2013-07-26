@@ -864,7 +864,7 @@ void normal_gevm_kernel(
             {
                 if( ellJA[pos] == i )
                 {
-                    value += ellValues[pos] * fetchELLVectorX<T, useTexture>( x_d, ellJA[pos] );
+                    value += ellValues[pos] * fetchELLVectorX<T, useTexture>( x_d, j );
                 }
                 pos += numRows;
             }

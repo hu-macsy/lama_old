@@ -483,7 +483,7 @@ void normal_gevm_kernel(
             {
                 if( csrJA[k] == i )
                 {
-                    value += csrValues[k] * fetchCSRVectorX<T, useTexture>( x_d, i );
+                    value += csrValues[k] * fetchCSRVectorX<T, useTexture>( x_d, j );
                 }
             }
         }
