@@ -903,7 +903,7 @@ void CUDAELLUtils::normalGEVM(
 
     dim3 dimBlock( blockSize, 1, 1 );
 
-    dim3 dimGrid = makeGrid( numRows, dimBlock.x );
+    dim3 dimGrid = makeGrid( numColumns, dimBlock.x );
 
     bool useTexture = CUDASettings::useTexture();
 

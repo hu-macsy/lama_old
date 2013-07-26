@@ -405,7 +405,7 @@ void CUDADIAUtils::normalGEVM(
 
     const IndexType blockSize = CUDASettings::getBlockSize();
     dim3 dimBlock( blockSize, 1, 1 );
-    dim3 dimGrid = makeGrid( numRows, dimBlock.x );
+    dim3 dimGrid = makeGrid( numColumns, dimBlock.x );
 
     LAMA_CHECK_CUDA_ACCESS
 
