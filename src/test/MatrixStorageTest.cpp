@@ -771,8 +771,6 @@ LAMA_COMMON_TEST_CASE_TEMPLATE( MatrixStorageTest, StorageType, vectorTimesMatri
         // due to use of LAMAArrayView we have to give result the correct size
         LAMAArray<ValueType> result ( m );
 
-        std::cout << "result size vorher " << result.size() << std::endl;
-
         // asynchronous execution, only checks correct calling
 
         {
