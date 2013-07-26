@@ -203,4 +203,7 @@ LAMA_LOG_DEF_LOGGER( logger, "Test.COOUtilsTest" )
 
 LAMA_AUTO_TEST_CASE_TDUMMY( offsets2iaTest, COOUtilsTest )
 LAMA_AUTO_TEST_CASE_TDUMMY( setCSRDataTest, COOUtilsTest )
-/* ------------------------------------------------------------------------------------------------------------------ */BOOST_AUTO_TEST_SUITE_END()
+
+/* ------------------------------------------------------------------------------------------------------------------ */
+
+BOOST_AUTO_TEST_SUITE_END()

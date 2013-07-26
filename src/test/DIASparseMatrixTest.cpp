@@ -48,15 +48,15 @@ extern std::string testcase;
 /* ------------------------------------------------------------------------- */
 
 BOOST_AUTO_TEST_SUITE( DIASparseMatrixTest )
-;
 
-LAMA_LOG_DEF_LOGGER( logger, "Test.DIASparseMatrixTest" );
+LAMA_LOG_DEF_LOGGER( logger, "Test.DIASparseMatrixTest" )
 
 typedef boost::mpl::list<float,double> test_types;
 
 /* ------------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( commonTestCases, T, test_types ) {
+BOOST_AUTO_TEST_CASE_TEMPLATE( commonTestCases, T, test_types )
+{
     typedef T ValueType;
 
     DIASparseMatrix<ValueType> diaMatrix;
@@ -91,4 +91,6 @@ BOOST_AUTO_TEST_CASE( typeNameTest )
     s = diaMatrixf.typeName();
     BOOST_CHECK_EQUAL( s, "DIASparseMatrix<float>" );
 }
-/* ------------------------------------------------------------------------- */BOOST_AUTO_TEST_SUITE_END();
+/* ------------------------------------------------------------------------- */
+
+BOOST_AUTO_TEST_SUITE_END();

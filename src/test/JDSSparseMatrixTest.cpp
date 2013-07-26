@@ -48,15 +48,15 @@ extern std::string testcase;
 /* ------------------------------------------------------------------------- */
 
 BOOST_AUTO_TEST_SUITE( JDSSparseMatrixTest )
-;
 
-LAMA_LOG_DEF_LOGGER( logger, "Test.SparseMatrixTest.JDSSparseMatrixTest" );
+LAMA_LOG_DEF_LOGGER( logger, "Test.SparseMatrixTest.JDSSparseMatrixTest" )
 
 typedef boost::mpl::list<float,double> test_types;
 
 /* ------------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( commonTestCases, T, test_types ) {
+BOOST_AUTO_TEST_CASE_TEMPLATE( commonTestCases, T, test_types )
+{
     typedef T ValueType;
 
     JDSSparseMatrix<ValueType> jdsMatrix;
@@ -91,4 +91,6 @@ BOOST_AUTO_TEST_CASE( typeNameTest )
     s = jdsMatrixf.typeName();
     BOOST_CHECK_EQUAL( s, "JDSSparseMatrix<float>" );
 }
-/* ------------------------------------------------------------------------- */BOOST_AUTO_TEST_SUITE_END();
+/* ------------------------------------------------------------------------- */
+
+BOOST_AUTO_TEST_SUITE_END();

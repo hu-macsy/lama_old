@@ -47,9 +47,8 @@ using namespace lama;
 /* --------------------------------------------------------------------- */
 
 BOOST_AUTO_TEST_SUITE( ThreadPoolTest )
-;
 
-LAMA_LOG_DEF_LOGGER( logger, "Test.ThreadPoolTest" );
+LAMA_LOG_DEF_LOGGER( logger, "Test.ThreadPoolTest" )
 
 lama::CommunicatorPtr mComm; //!< communicator used for distribution, parallel execution
 
@@ -219,4 +218,6 @@ BOOST_AUTO_TEST_CASE( singleTest )
         BOOST_CHECK_EQUAL( i, resultThread );
     }
 }
-/* --------------------------------------------------------------------- */BOOST_AUTO_TEST_SUITE_END();
+/* --------------------------------------------------------------------- */
+
+BOOST_AUTO_TEST_SUITE_END();

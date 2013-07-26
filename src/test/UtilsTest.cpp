@@ -342,4 +342,5 @@ LAMA_AUTO_TEST_CASE_T( invertTest, UtilsTest )
 LAMA_AUTO_TEST_CASE_TDUMMY( setOrderTest, UtilsTest )
 
 LAMA_AUTO_TEST_CASE_T( scaleTest, UtilsTest )
+
 /* ------------------------------------------------------------------------------------------------------------------ */BOOST_AUTO_TEST_SUITE_END()

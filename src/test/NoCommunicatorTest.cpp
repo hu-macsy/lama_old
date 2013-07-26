@@ -46,9 +46,8 @@ extern std::string testcase;
 /* --------------------------------------------------------------------- */
 
 BOOST_AUTO_TEST_SUITE( NoCommunicatorTest )
-;
 
-LAMA_LOG_DEF_LOGGER( logger, "Test.NoCommunicatorTest" );
+LAMA_LOG_DEF_LOGGER( logger, "Test.NoCommunicatorTest" )
 
 /* --------------------------------------------------------------------- */
 
@@ -66,4 +65,7 @@ BOOST_AUTO_TEST_CASE( commonTestCases )
         communicatorTest.runTests();
     }
 }
-/* --------------------------------------------------------------------- */BOOST_AUTO_TEST_SUITE_END();
+
+/* --------------------------------------------------------------------- */
+
+BOOST_AUTO_TEST_SUITE_END();

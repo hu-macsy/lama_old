@@ -246,4 +246,6 @@ BOOST_AUTO_TEST_SUITE( BLAS2Test )
 LAMA_LOG_DEF_LOGGER( logger, "Test.BLAS2Test" )
 
 LAMA_AUTO_TEST_CASE_T( gemvTest, BLAS2Test )
-/* ------------------------------------------------------------------------------------------------------------------ */BOOST_AUTO_TEST_SUITE_END()
+/* ------------------------------------------------------------------------------------------------------------------ */
+
+BOOST_AUTO_TEST_SUITE_END()

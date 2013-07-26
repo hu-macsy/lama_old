@@ -48,15 +48,15 @@ extern std::string testcase;
 /* ------------------------------------------------------------------------- */
 
 BOOST_AUTO_TEST_SUITE( DenseMatrixTest1 )
-;
 
-LAMA_LOG_DEF_LOGGER( logger, "Test.MatrixTest.DenseMatrixTest" );
+LAMA_LOG_DEF_LOGGER( logger, "Test.MatrixTest.DenseMatrixTest" )
 
 typedef boost::mpl::list<float,double> test_types;
 
 /* ------------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( commonTestCases, T, test_types ) {
+BOOST_AUTO_TEST_CASE_TEMPLATE( commonTestCases, T, test_types )
+{
 // Well done: the SparseMatrixTest works also fine for DenseMatrix
 // as DenseMatrix has same interfaces
 

@@ -48,15 +48,15 @@ extern std::string testcase;
 /* ------------------------------------------------------------------------- */
 
 BOOST_AUTO_TEST_SUITE( ELLSparseMatrixTest )
-;
 
-LAMA_LOG_DEF_LOGGER( logger, "Test.ELLSparseMatrixTest" );
+LAMA_LOG_DEF_LOGGER( logger, "Test.ELLSparseMatrixTest" )
 
 typedef boost::mpl::list<float,double> test_types;
 
 /* ------------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( commonTestCases, T, test_types ) {
+BOOST_AUTO_TEST_CASE_TEMPLATE( commonTestCases, T, test_types )
+{
     typedef T ValueType;
 
     ELLSparseMatrix<ValueType> ellMatrix;
@@ -91,4 +91,6 @@ BOOST_AUTO_TEST_CASE( typeNameTest )
     s = ellMatrixf.typeName();
     BOOST_CHECK_EQUAL( s, "ELLSparseMatrix<float>" );
 }
-/* ------------------------------------------------------------------------- */BOOST_AUTO_TEST_SUITE_END();
+/* ------------------------------------------------------------------------- */
+
+BOOST_AUTO_TEST_SUITE_END();

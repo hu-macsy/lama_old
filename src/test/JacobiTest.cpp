@@ -96,9 +96,8 @@ struct JacobiTestConfig
 };
 
 BOOST_FIXTURE_TEST_SUITE( JacobiTest, JacobiTestConfig )
-;
 
-LAMA_LOG_DEF_LOGGER( logger, "Test.JacobiTest" );
+LAMA_LOG_DEF_LOGGER( logger, "Test.JacobiTest" )
 
 /* --------------------------------------------------------------------- */
 
@@ -250,4 +249,6 @@ BOOST_AUTO_TEST_CASE( copyTest )
 
     BOOST_CHECK_EQUAL( solverptr->getId(), "JacobiTestSolver" );
 }
-/* ------------------------------------------------------------------------- */BOOST_AUTO_TEST_SUITE_END();
+/* ------------------------------------------------------------------------- */
+
+BOOST_AUTO_TEST_SUITE_END();

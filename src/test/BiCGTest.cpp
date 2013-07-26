@@ -335,6 +335,7 @@ BOOST_AUTO_TEST_CASE( copyTest )
 
     BOOST_CHECK_EQUAL( solverptr->getId(), "BiCGTestSolver" );
 }
+
 /* --------------------------------------------------------------------- */
 
 BOOST_AUTO_TEST_SUITE_END();

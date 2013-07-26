@@ -49,9 +49,8 @@ extern std::string testcase;
 /* ------------------------------------------------------------------------- */
 
 BOOST_AUTO_TEST_SUITE( JDSStorageTest )
-;
 
-LAMA_LOG_DEF_LOGGER( logger, "Test.JDSStorageTest" );
+LAMA_LOG_DEF_LOGGER( logger, "Test.JDSStorageTest" )
 
 typedef boost::mpl::list<float,double> ValueTypes;
 

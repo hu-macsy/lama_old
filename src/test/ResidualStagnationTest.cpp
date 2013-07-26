@@ -74,9 +74,8 @@ struct ResidualStagnationTestConfig
 };
 
 BOOST_FIXTURE_TEST_SUITE( ResidualStagnationTest, ResidualStagnationTestConfig )
-;
 
-LAMA_LOG_DEF_LOGGER( logger, "Test.ResidualStagnationTest" );
+LAMA_LOG_DEF_LOGGER( logger, "Test.ResidualStagnationTest" )
 
 /* --------------------------------------------------------------------- */
 
@@ -179,4 +178,6 @@ BOOST_AUTO_TEST_CASE( writeAtTest )
 
     LAMA_WRITEAT_PTR_TEST( testcriterion );
 }
-/* --------------------------------------------------------------------- */BOOST_AUTO_TEST_SUITE_END();
+/* --------------------------------------------------------------------- */
+
+BOOST_AUTO_TEST_SUITE_END();

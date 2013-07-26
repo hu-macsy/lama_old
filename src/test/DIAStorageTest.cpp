@@ -50,15 +50,15 @@ extern std::string testcase;
 /* ------------------------------------------------------------------------- */
 
 BOOST_AUTO_TEST_SUITE( DIAStorageTest )
-;
 
-LAMA_LOG_DEF_LOGGER( logger, "Test.DIAStorageTest" );
+LAMA_LOG_DEF_LOGGER( logger, "Test.DIAStorageTest" )
 
 typedef boost::mpl::list<float,double> ValueTypes;
 
 /* ------------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( commonTestCases, T, ValueTypes ) {
+BOOST_AUTO_TEST_CASE_TEMPLATE( commonTestCases, T, ValueTypes )
+{
     typedef T ValueType;
 
     DIAStorage<ValueType> diaStorage;
@@ -84,7 +84,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( commonTestCases, T, ValueTypes ) {
 
 /* ------------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( ConstructorTest, T, ValueTypes ) {
+BOOST_AUTO_TEST_CASE_TEMPLATE( ConstructorTest, T, ValueTypes )
+{
     const IndexType numRows = 10;
     const IndexType numColumns = 15;
 
@@ -107,7 +108,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( ConstructorTest, T, ValueTypes ) {
 
 /* ------------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( ConstructorTest1, ValueType, ValueTypes ) {
+BOOST_AUTO_TEST_CASE_TEMPLATE( ConstructorTest1, ValueType, ValueTypes )
+{
 // Test the full DIAStorge constructor and the individual getter routines of DIA storage
 
     const IndexType numRows = 3;
@@ -160,4 +162,6 @@ BOOST_AUTO_TEST_CASE( typeNameTest )
     s = diaStoragef.typeName();
     BOOST_CHECK_EQUAL( s, "DIAStorage<float>" );
 }
-/* ------------------------------------------------------------------------- */BOOST_AUTO_TEST_SUITE_END();
+/* ------------------------------------------------------------------------- */
+
+BOOST_AUTO_TEST_SUITE_END();

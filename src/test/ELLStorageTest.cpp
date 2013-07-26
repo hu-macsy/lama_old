@@ -254,6 +254,7 @@ BOOST_AUTO_TEST_CASE( typeNameTest )
     s = ellStoragef.typeName();
     BOOST_CHECK_EQUAL( s, "ELLStorage<float>" );
 }
+
 /* ------------------------------------------------------------------------- */
 
 BOOST_AUTO_TEST_SUITE_END();

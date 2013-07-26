@@ -741,4 +741,7 @@ LAMA_AUTO_TEST_CASE_T( scalTest, BLAS1Test )
 LAMA_AUTO_TEST_CASE_T( sumTest, BLAS1Test )
 LAMA_AUTO_TEST_CASE_T( swapTest, BLAS1Test )
 LAMA_AUTO_TEST_CASE_T( viamaxTest, BLAS1Test )
-/* ------------------------------------------------------------------------------------------------------------------ */BOOST_AUTO_TEST_SUITE_END()
+
+/* ------------------------------------------------------------------------------------------------------------------ */
+
+BOOST_AUTO_TEST_SUITE_END()

@@ -47,7 +47,7 @@ using namespace lama;
 
 /* ------------------------------------------------------------------------- */
 
-LAMA_LOG_DEF_TEMPLATE_LOGGER( template<typename T>, MatrixStorageTest<T>::logger, "Test.MatrixStorageTest" );
+LAMA_LOG_DEF_TEMPLATE_LOGGER( template<typename T>, MatrixStorageTest<T>::logger, "Test.MatrixStorageTest" )
 
 /* ========================================================================= */
 /* Implementations of some helpfunction                                      */
@@ -258,7 +258,7 @@ LAMA_COMMON_TEST_CASE_TEMPLATE( MatrixStorageTest, StorageType, emptyTest )
 
     BOOST_CHECK( mMatrixStorage.hasDiagonalProperty() );
 }
-LAMA_COMMON_TEST_CASE_TEMPLATE_END();
+LAMA_COMMON_TEST_CASE_TEMPLATE_END()
 
 /* ========================================================================= */
 
@@ -296,13 +296,13 @@ LAMA_COMMON_TEST_CASE_TEMPLATE( MatrixStorageTest, StorageType, setIdentityTest 
             }
         }
     }
-LAMA_COMMON_TEST_CASE_TEMPLATE_END();
+LAMA_COMMON_TEST_CASE_TEMPLATE_END()
 
 /* ------------------------------------------------------------------------- */
 
 LAMA_COMMON_TEST_CASE_TEMPLATE( MatrixStorageTest, StorageType, setCSRDataTest )
 {
-    LAMA_LOG_INFO( logger, "setCSRDataTest" );
+    LAMA_LOG_INFO( logger, "setCSRDataTest" )
 
     mMatrixStorage.clear();
 
@@ -325,7 +325,7 @@ LAMA_COMMON_TEST_CASE_TEMPLATE( MatrixStorageTest, StorageType, setCSRDataTest )
     mMatrixStorage.setCSRData( numRows, numColumns, numValues, matrixRowSizes, matrixJA, matrixValues );
 
     LAMA_LOG_INFO( logger, "set CSR data (" << numRows << " x " << numColumns
-                   << ", nnz = " << numValues << ") : matrix = " << mMatrixStorage );
+                   << ", nnz = " << numValues << ") : matrix = " << mMatrixStorage )
 
     mMatrixStorage.prefetch();
 
@@ -341,7 +341,7 @@ LAMA_COMMON_TEST_CASE_TEMPLATE( MatrixStorageTest, StorageType, setCSRDataTest )
 
     mMatrixStorage.wait();
 }
-LAMA_COMMON_TEST_CASE_TEMPLATE_END();
+LAMA_COMMON_TEST_CASE_TEMPLATE_END()
 
 /* ------------------------------------------------------------------------- */
 
@@ -378,7 +378,7 @@ LAMA_COMMON_TEST_CASE_TEMPLATE( MatrixStorageTest, StorageType, buildCSRDataTest
     BOOST_CHECK_EQUAL( numValues, mMatrixStorage.getNumValues() );
 
     LAMA_LOG_INFO( logger, "set CSR data (" << numRows << " x " << numColumns
-                   << ", nnz = " << numValues << ") : matrix = " << mMatrixStorage );
+                   << ", nnz = " << numValues << ") : matrix = " << mMatrixStorage )
 
     LAMAArray<IndexType> csrIA;
     LAMAArray<IndexType> csrJA;
@@ -403,13 +403,13 @@ LAMA_COMMON_TEST_CASE_TEMPLATE( MatrixStorageTest, StorageType, buildCSRDataTest
         BOOST_CHECK_EQUAL( values1[i], values2[i] );
     }
 }
-LAMA_COMMON_TEST_CASE_TEMPLATE_END();
+LAMA_COMMON_TEST_CASE_TEMPLATE_END()
 
 /* ------------------------------------------------------------------------- */
 
 LAMA_COMMON_TEST_CASE_TEMPLATE( MatrixStorageTest, StorageType, purgeTest )
 
-    LAMA_LOG_INFO( logger, "PurgeTest" );
+    LAMA_LOG_INFO( logger, "PurgeTest" )
 
     setDenseData( mMatrixStorage );
 
@@ -425,7 +425,7 @@ LAMA_COMMON_TEST_CASE_TEMPLATE( MatrixStorageTest, StorageType, purgeTest )
 
     BOOST_CHECK ( usedBytesPurged < usedBytes );
 
-LAMA_COMMON_TEST_CASE_TEMPLATE_END();
+LAMA_COMMON_TEST_CASE_TEMPLATE_END()
 
 /* ------------------------------------------------------------------------- */
 
@@ -433,14 +433,14 @@ LAMA_COMMON_TEST_CASE_TEMPLATE( MatrixStorageTest, StorageType, diagonalTest )
 
     setDenseData( mMatrixStorage );
 
-    LAMA_LOG_INFO( logger, "diagonalTest: matrix = " << mMatrixStorage );
+    LAMA_LOG_INFO( logger, "diagonalTest: matrix = " << mMatrixStorage )
 
     LAMAArray<ValueType> diag;
     mMatrixStorage.getDiagonal( diag );
 
     BOOST_CHECK_EQUAL( diag.size(), mMatrixStorage.getNumRows() ); // square matrix
 
-    LAMA_LOG_INFO( logger, "diagonalTest: get diagonal = " << diag );
+    LAMA_LOG_INFO( logger, "diagonalTest: get diagonal = " << diag )
 
     {
         HostReadAccess<ValueType> rDiag ( diag );
@@ -471,7 +471,7 @@ LAMA_COMMON_TEST_CASE_TEMPLATE( MatrixStorageTest, StorageType, diagonalTest )
             BOOST_CHECK_EQUAL( s.getValue<ValueType>(), rDiag[i] );
         }
     }
-LAMA_COMMON_TEST_CASE_TEMPLATE_END();
+LAMA_COMMON_TEST_CASE_TEMPLATE_END()
 
 /* ------------------------------------------------------------------------- */
 
@@ -494,7 +494,7 @@ LAMA_COMMON_TEST_CASE_TEMPLATE( MatrixStorageTest, StorageType, scaleTest )
         }
     }
 
-LAMA_COMMON_TEST_CASE_TEMPLATE_END();
+LAMA_COMMON_TEST_CASE_TEMPLATE_END()
 
 /* ------------------------------------------------------------------------- */
 
@@ -508,7 +508,7 @@ LAMA_COMMON_TEST_CASE_TEMPLATE( MatrixStorageTest, StorageType, normTest )
 
     BOOST_CHECK_CLOSE( maxNorm, expected, 1 );
 
-LAMA_COMMON_TEST_CASE_TEMPLATE_END();
+LAMA_COMMON_TEST_CASE_TEMPLATE_END()
 
 /* ------------------------------------------------------------------------- */
 
@@ -519,7 +519,7 @@ LAMA_COMMON_TEST_CASE_TEMPLATE( MatrixStorageTest, StorageType, vectorMultTest )
     DenseStorage<ValueType> orig; // used for comparing results
     setDenseData( orig );
 
-    LAMA_LOG_INFO( logger, "Test matrixTimesVector" );
+    LAMA_LOG_INFO( logger, "Test matrixTimesVector" )
     {
         const ValueType xVal = 1.0;
         const ValueType yVal = 1.0;
@@ -555,7 +555,7 @@ LAMA_COMMON_TEST_CASE_TEMPLATE( MatrixStorageTest, StorageType, vectorMultTest )
         }
     }
 
-    LAMA_LOG_INFO( logger, "Test " << mMatrixStorage.getTypeName() << "::matrixTimesVectorAsync" );
+    LAMA_LOG_INFO( logger, "Test " << mMatrixStorage.getTypeName() << "::matrixTimesVectorAsync" )
     {
         const ValueType xVal = static_cast<ValueType>( 1.5 );
         const ValueType yVal = static_cast<ValueType>( 2.0 );
@@ -597,7 +597,7 @@ LAMA_COMMON_TEST_CASE_TEMPLATE( MatrixStorageTest, StorageType, vectorMultTest )
         }
     }
 
-LAMA_COMMON_TEST_CASE_TEMPLATE_END();
+LAMA_COMMON_TEST_CASE_TEMPLATE_END()
 
 /* ------------------------------------------------------------------------- */
 
@@ -608,7 +608,7 @@ LAMA_COMMON_TEST_CASE_TEMPLATE( MatrixStorageTest, StorageType, vectorTimesMatri
     DenseStorage<ValueType> orig; // used for comparing results
     setDenseData( orig );
 
-    LAMA_LOG_INFO( logger, "Test vectorTimesMatrix" );
+    LAMA_LOG_INFO( logger, "Test vectorTimesMatrix" )
     {
         const ValueType xVal = 1.0;
         const ValueType yVal = 1.0;
@@ -644,7 +644,7 @@ LAMA_COMMON_TEST_CASE_TEMPLATE( MatrixStorageTest, StorageType, vectorTimesMatri
         }
     }
 
-    LAMA_LOG_INFO( logger, "Test vectorTimesMatrixAsync" );
+    LAMA_LOG_INFO( logger, "Test vectorTimesMatrixAsync" )
     {
         const ValueType xVal = 1.0;
         const ValueType yVal = 1.0;
@@ -688,7 +688,7 @@ LAMA_COMMON_TEST_CASE_TEMPLATE( MatrixStorageTest, StorageType, vectorTimesMatri
         }
     }
 
-    LAMA_LOG_INFO( logger, "Test vectorTimesMatrixAsync 2" );
+    LAMA_LOG_INFO( logger, "Test vectorTimesMatrixAsync 2" )
     {
         IndexType n = mMatrixStorage.getNumRows();
         ValueType* xValues = (ValueType*) malloc( n * sizeof(ValueType) );
@@ -747,7 +747,7 @@ LAMA_COMMON_TEST_CASE_TEMPLATE( MatrixStorageTest, StorageType, vectorTimesMatri
     setDenseDataNotSquare( mMatrixStorage );
     setDenseDataNotSquare( orig );
 
-    LAMA_LOG_INFO( logger, "Test vectorTimesMatrixAsync 3" );
+    LAMA_LOG_INFO( logger, "Test vectorTimesMatrixAsync 3" )
     {
         IndexType n = mMatrixStorage.getNumRows();
         ValueType* xValues = (ValueType*) malloc( n * sizeof(ValueType) );
@@ -803,13 +803,13 @@ LAMA_COMMON_TEST_CASE_TEMPLATE( MatrixStorageTest, StorageType, vectorTimesMatri
         }
     }
 
-LAMA_COMMON_TEST_CASE_TEMPLATE_END();
+LAMA_COMMON_TEST_CASE_TEMPLATE_END()
 
 /* ------------------------------------------------------------------------- */
 
 LAMA_COMMON_TEST_CASE_TEMPLATE( MatrixStorageTest, StorageType, matrixMultTest )
 
-    LAMA_LOG_INFO( logger, "Test " << typeid(StorageType).name() << "::matrixTimesMatrix" );
+    LAMA_LOG_INFO( logger, "Test " << typeid(StorageType).name() << "::matrixTimesMatrix" )
 
     const IndexType n = 3;
     const ValueType aValue = 2.0;
@@ -846,7 +846,7 @@ LAMA_COMMON_TEST_CASE_TEMPLATE( MatrixStorageTest, StorageType, matrixMultTest )
         }
     }
 
-LAMA_COMMON_TEST_CASE_TEMPLATE_END();
+LAMA_COMMON_TEST_CASE_TEMPLATE_END()
 
 /* ------------------------------------------------------------------------- */
 
@@ -916,13 +916,13 @@ LAMA_COMMON_TEST_CASE_TEMPLATE( MatrixStorageTest, StorageType, matrixAddTest )
         }
     }
 
-LAMA_COMMON_TEST_CASE_TEMPLATE_END();
+LAMA_COMMON_TEST_CASE_TEMPLATE_END()
 
 /* ------------------------------------------------------------------------- */
 
 LAMA_COMMON_TEST_CASE_TEMPLATE( MatrixStorageTest, StorageType, matrixMultTest1 )
 
-    LAMA_LOG_INFO( logger, "matrixMultTest1" );
+    LAMA_LOG_INFO( logger, "matrixMultTest1" )
 
     //TODO: USE TEMPLATED STORAGE!!!!!!
     ELLStorage<ValueType> a;
@@ -958,14 +958,14 @@ LAMA_COMMON_TEST_CASE_TEMPLATE( MatrixStorageTest, StorageType, matrixMultTest1 
         BOOST_CHECK_CLOSE( rY1[i], rY2[i], 1 );
     }
 
-LAMA_COMMON_TEST_CASE_TEMPLATE_END();
+LAMA_COMMON_TEST_CASE_TEMPLATE_END()
 
 /* ------------------------------------------------------------------------- */
 
 template<typename StorageType>
 void MatrixStorageTest<StorageType>::jacobiTest( const ValueType omega )
 {
-    LAMA_LOG_INFO( logger, "jacobiTest: matrix = " << mMatrixStorage << ", omega = " << omega );
+    LAMA_LOG_INFO( logger, "jacobiTest: matrix = " << mMatrixStorage << ", omega = " << omega )
 
     setDenseLocal( mMatrixStorage );
 
@@ -981,7 +981,7 @@ void MatrixStorageTest<StorageType>::jacobiTest( const ValueType omega )
     LAMAArray<ValueType> solution1( n );
     LAMAArray<ValueType> solution2( n );
 
-    LAMA_LOG_INFO( logger, "initialized: solution1 = " << solution1 );
+    LAMA_LOG_INFO( logger, "initialized: solution1 = " << solution1 )
 
     // jacobi:  solution1 = omega * ( rhs - B * oldSolution) * dinv  + ( 1 - omega ) * oldSolution
 
@@ -1035,7 +1035,7 @@ LAMA_COMMON_TEST_CASE_TEMPLATE( MatrixStorageTest, StorageType, jacobiTest )
     jacobiTest( 1.0f );
     jacobiTest( 0.8f );
     jacobiTest( 0.5f );
-LAMA_COMMON_TEST_CASE_TEMPLATE_END();
+LAMA_COMMON_TEST_CASE_TEMPLATE_END()
 
 /* ------------------------------------------------------------------------- */
 
@@ -1044,7 +1044,7 @@ LAMA_COMMON_TEST_CASE_TEMPLATE( MatrixStorageTest, StorageType, jacobiHaloTest )
     const ValueType omega = static_cast<ValueType> ( 0.35 );
 
     LAMA_LOG_INFO( logger, "jacobiHaloTest: matrix = " << mMatrixStorage
-                            << ", omega = " << omega );
+                            << ", omega = " << omega )
 
     setDenseHalo( mMatrixStorage );
 
@@ -1063,7 +1063,7 @@ LAMA_COMMON_TEST_CASE_TEMPLATE( MatrixStorageTest, StorageType, jacobiHaloTest )
     LAMAArray<ValueType> solution1( numRows, 2.0 );
     LAMAArray<ValueType> solution2( numRows, 2.0 );
 
-    LAMA_LOG_INFO( logger, "initialized: solution1 = " << solution1 );
+    LAMA_LOG_INFO( logger, "initialized: solution1 = " << solution1 )
 
     // jacobi:  solution1 -=  omega * ( B(halo) * oldSolution) * dinv
 
@@ -1102,13 +1102,13 @@ LAMA_COMMON_TEST_CASE_TEMPLATE( MatrixStorageTest, StorageType, jacobiHaloTest )
         }
     }
 
-LAMA_COMMON_TEST_CASE_TEMPLATE_END();
+LAMA_COMMON_TEST_CASE_TEMPLATE_END()
 
 /* ------------------------------------------------------------------------- */
 
 LAMA_COMMON_TEST_CASE_TEMPLATE( MatrixStorageTest, StorageType, inverseTest )
 
-    LAMA_LOG_INFO( logger, "inverseTest for " << mMatrixStorage.getTypeName() );
+    LAMA_LOG_INFO( logger, "inverseTest for " << mMatrixStorage.getTypeName() )
 
     setDenseRandom( mMatrixStorage );
 
@@ -1123,7 +1123,7 @@ LAMA_COMMON_TEST_CASE_TEMPLATE( MatrixStorageTest, StorageType, inverseTest )
 
     ValueType diff = compare->maxDiffNorm( *inverse );
 
-    LAMA_LOG_INFO( logger, "max diff " << diff );
+    LAMA_LOG_INFO( logger, "max diff " << diff )
 
     ValueType eps = static_cast<ValueType> ( 0.005 );
 
@@ -1135,19 +1135,19 @@ LAMA_COMMON_TEST_CASE_TEMPLATE( MatrixStorageTest, StorageType, inverseTest )
 
     diff = compare->maxDiffNorm( *inverse );
 
-    LAMA_LOG_INFO( logger, "max diff " << diff );
+    LAMA_LOG_INFO( logger, "max diff " << diff )
 
     BOOST_CHECK_SMALL( diff, eps );
 
-LAMA_COMMON_TEST_CASE_TEMPLATE_END();
+LAMA_COMMON_TEST_CASE_TEMPLATE_END()
 
 /* ------------------------------------------------------------------------- */
 
 LAMA_COMMON_TEST_CASE_TEMPLATE( MatrixStorageTest, StorageType, writeAtTest )
 
-    LAMA_WRITEAT_TEST( mMatrixStorage );
+    LAMA_WRITEAT_TEST( mMatrixStorage )
 
-LAMA_COMMON_TEST_CASE_TEMPLATE_END();
+LAMA_COMMON_TEST_CASE_TEMPLATE_END()
 
 /* ------------------------------------------------------------------------- */
 
