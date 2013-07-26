@@ -5,7 +5,6 @@ clean: makeAllClean
 DIRS = lecture \
        tutorial \
        bench \
-       biCGTest \
        solver
 
 makeAll:
