@@ -38,7 +38,7 @@
 #include <lama/HostReadAccess.hpp>
 #include <lama/storage/CSRStorage.hpp>
 #include <lama/matutils/MatrixCreator.hpp>
-#include <mpi.h>
+#include <omp.h>
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -84,11 +84,11 @@ double multiply(
                   << matrixB->getNumColumns() << std::endl;
     }
 
-    start = MPI_Wtime();
+    start = omp_get_wtime();
 
     *matrixC = 1.0 * *matrixA * *matrixB;
 
-    time = MPI_Wtime() - start;
+    time = omp_get_wtime() - start;
 
     if( !silentFlag )
     {
@@ -123,9 +123,9 @@ void maxRow(
     lama::IndexType longestRow = 0;
     for( int i = 0; i < matrix->getNumRows(); ++i )
     {
-//        if ( ia[i+1]-ia[i] > longestRow ){
-//            longestRow = ia[i+1]-ia[i];
-//        }
+        if ( ia[i+1]-ia[i] > longestRow ){
+            longestRow = ia[i+1]-ia[i];
+        }
     }
     if( !silentFlag )
     {
@@ -200,27 +200,27 @@ int main( int argc, char **argv )
     bool silentFlag = false;
     bool benchmarkFlag = false;
     bool randomFlag = false;
+    bool inputSet = false;
+    bool helpFlag = false;
     int size = 1000;
     float density = 1.0;
     std::string inputMatrix;
-    int matrix = -1;
     int parameter;
 
-    while( ( parameter = getopt( argc, argv, "vpm:i:sbrg:d:" ) ) != -1 )
+    while( ( parameter = getopt( argc, argv, "hvpi:sbrg:d:" ) ) != -1 )
     {
         switch( parameter )
         {
         case 'v':
             validateFlag = true;
+            benchmarkFlag = true;
             break;
         case 'p':
             prefetchFlag = true;
             break;
-        case 'm':
-            matrix = atoi( optarg );
-            break;
         case 'i':
             inputMatrix = optarg;
+            inputSet = true;
             break;
         case 's':
             silentFlag = true;
@@ -230,6 +230,7 @@ int main( int argc, char **argv )
             break;
         case 'r':
             randomFlag = true;
+            inputSet = true;
             break;
         case 'g':
             size = atoi( optarg );
@@ -237,135 +238,118 @@ int main( int argc, char **argv )
         case 'd':
             density = atof( optarg );
             break;
+        case 'h':
+        	helpFlag = true;
+        	break;
         default:
             abort();
             break;
         }
     }
 
-    std::string matrixFile;
-
-    switch( matrix )
+    // if no argument is given, display help
+    if( argc < 2 || helpFlag )
     {
-    case 0:
-        matrixFile = "../../../res/benchfiles/bcspwr01.mtx";
-        break;
-    case 1:
-        matrixFile = "../../../res/benchfiles/bcsstk01.mtx";
-        break;
-    case 2:
-        matrixFile = "../../../res/benchfiles/bcsstk18.mtx";
-        break;
-    case 3:
-        matrixFile = "../../../res/benchfiles/e40r5000.mtx";
-        break;
-    case 4:
-        matrixFile = "../../../res/benchfiles/impcol_b.mtx";
-        break;
-    case 5:
-        matrixFile = "../../../res/benchfiles/mc2depi.mtx";
-        break;
-    case 6:
-        matrixFile = "../../../res/benchfiles/s3dkt3m2.mtx";
-        break;
-    case 7:
-        matrixFile = "../../../res/benchfiles/tols90.mtx";
-        break;
-    case 8:
-        matrixFile = "../../../res/benchfiles/amazon-2008.mtx";
-        break;
-    default:
-        matrixFile = inputMatrix;
-        break;
-    }
+    	std::cout << "Options:" << std::endl;
+    	std::cout << "-i\t Specify input matrix" << std::endl;
+    	std::cout << "-p\t Prefetch matrices before multiplication" << std::endl;
+    	std::cout << "-s\t Disable verbose output, only output results" << std::endl;
+    	std::cout << "-b\t Enable Benchmarking, run multiplication on host and cuda and compare runtime" << std::endl;
+    	std::cout << "-v\t Validate matrices after multiplication (compare host with cuda matrix)" << std::endl;
+    	std::cout << "-r\t Generate random matrices for multiplication. Also see -g and -d" << std::endl;
+    	std::cout << "-g\t Num Rows/Columns of generated random matrices" << std::endl;
+    	std::cout << "-d\t Density of generated random matrices" << std::endl;
+    	std::cout << "-h\t Display this help" << std::endl;
 
-    if( !silentFlag )
-    {
-        std::cout << "matrixMultTest running" << std::endl << std::endl;
-        std::cout << "Loading matrix \"" << matrixFile << "\"... " << std::flush;
-    }
-
-    lama::CSRSparseMatrix<double> matrixA;
-    lama::CSRSparseMatrix<double> matrixB;
-    if ( randomFlag ) {
-        matrixA = lama::CSRSparseMatrix<double>( size, size );
-        matrixB = lama::CSRSparseMatrix<double>( size, size );
-        lama::MatrixCreator<double>::fillRandom( matrixA, density );
-        lama::MatrixCreator<double>::fillRandom( matrixB, density );
-    } else {
-        matrixA = lama::CSRSparseMatrix<double>( inputMatrix );
-        matrixB =  lama::CSRSparseMatrix<double>( matrixA );
-    }
-
-    float alloc;
-    if( !silentFlag )
-    {
-        std::cout << "done!" << std::endl << std::endl;
-        std::cout << "Matrix A info: " << std::endl;
-        std::cout << "Size: \t\t" << matrixA.getNumRows() << "x" << matrixA.getNumColumns() << std::endl;
-        std::cout << "NNZ: \t\t" << matrixA.getNumValues() << std::endl;
-        std::cout << "NNZ/Row: \t" << matrixA.getNumValues() / matrixA.getNumRows() << std::endl;
-        std::cout << "Density: \t" << (float)matrixA.getNumValues() / (float)matrixA.getNumRows() / (float)matrixA.getNumColumns() << std::endl;
-        std::cout << "Filesize: \t" << ( ( matrixA.getMemoryUsage() / 1024.0 ) / 1024.0 ) << " MB" << std::endl
-                  << std::endl;
-
-        std::cout << "Matrix B info: " << std::endl;
-        std::cout << "Size: \t\t" << matrixB.getNumRows() << "x" << matrixB.getNumColumns() << std::endl;
-        std::cout << "NNZ: \t\t" << matrixB.getNumValues() << std::endl;
-        std::cout << "NNZ/Row: \t" << matrixB.getNumValues() / matrixB.getNumRows() << std::endl;
-        std::cout << "Density: \t" << (float)matrixB.getNumValues() / (float)matrixB.getNumRows() / (float)matrixB.getNumColumns() << std::endl;
-        std::cout << "Filesize: \t" << ( ( matrixB.getMemoryUsage() / 1024.0 ) / 1024.0 ) << " MB" << std::endl
-                  << std::endl;
-
-        float density = (float)matrixA.getNumValues() / ( (float)matrixA.getNumRows() * (float)matrixA.getNumColumns() );
-        float prop    = 1.0 - pow( ( 1.0 - density ), 2 * matrixA.getNumColumns() );
-        alloc   = prop * matrixA.getNumRows() * matrixA.getNumColumns();
-        std::cout << "prop: " << prop << std::endl << std::endl;
-        std::cout << "Alloc: " << alloc << std::endl << std::endl;
-
-    }
-
-    lama::CSRSparseMatrix<double> matrixCHost;
-    lama::CSRSparseMatrix<double> matrixCCuda;
-
-    if( benchmarkFlag )
-    {
-        double time1 = multiply<double>( &matrixA, &matrixB, &matrixCCuda, lama::Context::CUDA, prefetchFlag,
-                                         silentFlag );
-        double time2 = multiply<double>( &matrixA, &matrixB, &matrixCHost, lama::Context::Host, prefetchFlag,
-                                         silentFlag );
-
-        if( !silentFlag )
-        {
-            std::cout << "Speedup: " << time2 / time1 << std::endl << std::endl;
-
-        }
+    	return 0;
     }
     else
     {
-        multiply<double>( &matrixA, &matrixB, &matrixCCuda, lama::Context::CUDA, prefetchFlag, silentFlag );
+    	if ( !inputSet )
+    	{
+			std::cout << "No input set, aborting..." << std::endl;
+			return 1;
+    	}
+
+		if( !silentFlag )
+		{
+			std::cout << "matrixMultTest running" << std::endl << std::endl;
+			std::cout << "Loading matrix \"" << inputMatrix << "\"... " << std::flush;
+		}
+
+		lama::CSRSparseMatrix<double> matrixA;
+		lama::CSRSparseMatrix<double> matrixB;
+		if ( randomFlag ) {
+			matrixA = lama::CSRSparseMatrix<double>( size, size );
+			matrixB = lama::CSRSparseMatrix<double>( size, size );
+			lama::MatrixCreator<double>::fillRandom( matrixA, density );
+			lama::MatrixCreator<double>::fillRandom( matrixB, density );
+		} else {
+			matrixA = lama::CSRSparseMatrix<double>( inputMatrix );
+			matrixB =  lama::CSRSparseMatrix<double>( matrixA );
+		}
+
+		if( !silentFlag )
+		{
+			std::cout << "done!" << std::endl << std::endl;
+			std::cout << "Matrix A info: " << std::endl;
+			std::cout << "Size: \t\t" << matrixA.getNumRows() << "x" << matrixA.getNumColumns() << std::endl;
+			std::cout << "NNZ: \t\t" << matrixA.getNumValues() << std::endl;
+			std::cout << "NNZ/Row: \t" << matrixA.getNumValues() / matrixA.getNumRows() << std::endl;
+			std::cout << "Density: \t" << (float)matrixA.getNumValues() / (float)matrixA.getNumRows() / (float)matrixA.getNumColumns() << std::endl;
+			std::cout << "Filesize: \t" << ( ( matrixA.getMemoryUsage() / 1024.0 ) / 1024.0 ) << " MB" << std::endl
+					  << std::endl;
+
+			std::cout << "Matrix B info: " << std::endl;
+			std::cout << "Size: \t\t" << matrixB.getNumRows() << "x" << matrixB.getNumColumns() << std::endl;
+			std::cout << "NNZ: \t\t" << matrixB.getNumValues() << std::endl;
+			std::cout << "NNZ/Row: \t" << matrixB.getNumValues() / matrixB.getNumRows() << std::endl;
+			std::cout << "Density: \t" << (float)matrixB.getNumValues() / (float)matrixB.getNumRows() / (float)matrixB.getNumColumns() << std::endl;
+			std::cout << "Filesize: \t" << ( ( matrixB.getMemoryUsage() / 1024.0 ) / 1024.0 ) << " MB" << std::endl
+					  << std::endl;
+
+		}
+
+		lama::CSRSparseMatrix<double> matrixCHost;
+		lama::CSRSparseMatrix<double> matrixCCuda;
+
+		if( benchmarkFlag )
+		{
+			double time1 = multiply<double>( &matrixA, &matrixB, &matrixCCuda, lama::Context::CUDA, prefetchFlag,
+											 silentFlag );
+			double time2 = multiply<double>( &matrixA, &matrixB, &matrixCHost, lama::Context::Host, prefetchFlag,
+											 silentFlag );
+
+			if( !silentFlag )
+			{
+				std::cout << "Speedup: " << time2 / time1 << std::endl << std::endl;
+
+			}
+		}
+		else
+		{
+			multiply<double>( &matrixA, &matrixB, &matrixCCuda, lama::Context::CUDA, prefetchFlag, silentFlag );
+		}
+
+		if( !silentFlag )
+		{
+			std::cout << "Done!" << std::endl << std::endl;
+
+			std::cout << "Matrix info: " << std::endl;
+			std::cout << "Size: \t\t" << matrixCCuda.getNumRows() << "x" << matrixCCuda.getNumColumns() << std::endl;
+			std::cout << "NNZ: \t\t" << matrixCCuda.getNumValues() << std::endl;
+			std::cout << "NNZ/Row: \t" << matrixCCuda.getNumValues() / matrixCCuda.getNumRows() << std::endl;
+			std::cout << "Filesize: \t" << ( ( matrixCCuda.getMemoryUsage() / 1024.0 ) / 1024.0 ) << " MB" << std::endl
+					  << std::endl;
+
+			maxRow ( &matrixCCuda, silentFlag );
+		}
+
+		if( validateFlag )
+		{
+			validate<double>( &matrixCCuda, &matrixCHost, silentFlag );
+		}
+
+		return 0;
     }
-
-    if( !silentFlag )
-    {
-        std::cout << "Done!" << std::endl << std::endl;
-
-        std::cout << "Matrix info: " << std::endl;
-        std::cout << "Size: \t\t" << matrixCCuda.getNumRows() << "x" << matrixCCuda.getNumColumns() << std::endl;
-        std::cout << "NNZ: \t\t" << matrixCCuda.getNumValues() << std::endl;
-        std::cout << "NNZ/Row: \t" << matrixCCuda.getNumValues() / matrixCCuda.getNumRows() << std::endl;
-        std::cout << "Filesize: \t" << ( ( matrixCCuda.getMemoryUsage() / 1024.0 ) / 1024.0 ) << " MB" << std::endl
-                  << std::endl;
-
-        std::cout << "Abweichung: " << (1 - (float)matrixCCuda.getNumValues() / alloc) * 100 << "%" << std::endl;
-
-        //maxRow ( &matrixCCuda, silentFlag );
-    }
-
-    if( validateFlag )
-    {
-        validate<double>( &matrixCCuda, &matrixCHost, silentFlag );
-    }
-
-    return 0;
 }

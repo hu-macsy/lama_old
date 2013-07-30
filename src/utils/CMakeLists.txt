@@ -1,7 +1,7 @@
 
 ### set include directories ###
 if ( MPI_FOUND )
-    include_directories ( ${MPI_INCLUDE_PATH} )
+   # include_directories ( ${MPI_INCLUDE_PATH} )
 endif ( MPI_FOUND )
 
 include_directories ( .. ../lama ${Boost_INCLUDE_DIRS} )
