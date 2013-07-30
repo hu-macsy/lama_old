@@ -1284,16 +1284,18 @@ void matrixMultiplySizesKernel(
         {
 
 
-
+//
 //    bool done = false;
 //    while ( !done )
 //    {
 //        if( laneId == 0 )
 //        {
-//          sRowIt[localWarpId] = atomicAdd(rowCounter, 1);
+//            sRowIt[localWarpId] = atomicAdd(rowCounter, 1);
 //        }
 //        aRowIt = sRowIt[localWarpId];
 //
+//
+//        //aRowIt = numRows;
 //        if ( aRowIt >= numRows )
 //        {
 //            done = true;
@@ -1449,12 +1451,17 @@ IndexType CUDACSRUtils::matrixMultiplySizes(
 
     bool hashErrorHost;
     unsigned int hashTableSize = initialHashTableSize;
+
+
     IndexType rowsPerLaunch = NUM_BLOCKS;
-    IndexType iterations = 90;
+    IndexType iterations = 1;
+    //IndexType iterations = 90;
     IndexType rows = std::ceil( std::ceil( numRows / (double) rowsPerLaunch ) / iterations );
 
     for ( IndexType i = 0; i < iterations; i++ )
     {
+        thrust::fill( rowCounterPtr, rowCounterPtr + 1, 0 );
+
         CUDACSRUtils::lastHashTableSize = hashTableSize;
         IndexType startRow = rows * i * rowsPerLaunch;
         IndexType endRow = std::min( rows * ( i + 1 ) * rowsPerLaunch, numRows );
@@ -2137,7 +2144,7 @@ void CUDACSRUtils::matrixMultiply(
     bool* hashError = (bool*) loc->allocate( sizeof(bool) );
     IndexType* rowCounter = (IndexType*) loc->allocate( sizeof(IndexType) );
     thrust::device_ptr<IndexType> rowCounterPtr( rowCounter );
-    thrust::fill( rowCounterPtr, rowCounterPtr + 1, 0 );
+
 
 // Reset hashTable
     thrust::device_ptr<IndexType> hashTablesPtr( hashTable );
@@ -2146,10 +2153,13 @@ void CUDACSRUtils::matrixMultiply(
     bool hashErrorHost;
     unsigned int hashTableSize = initialHashTableSize;
     IndexType rowsPerLaunch = NUM_BLOCKS;
-    IndexType iterations = 90;
+    //IndexType iterations = 90;
+    IndexType iterations = 1;
     IndexType rows = std::ceil( std::ceil( numRows / (double) rowsPerLaunch ) / iterations );
     for ( IndexType i = 0; i < iterations; i++ )
     {
+        thrust::fill( rowCounterPtr, rowCounterPtr + 1, 0 );
+
         IndexType startRow = rows * i * rowsPerLaunch;
         IndexType endRow = std::min( rows * ( i + 1 ) * rowsPerLaunch, numRows );
         if ( startRow >= numRows )
