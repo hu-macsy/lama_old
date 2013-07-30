@@ -105,7 +105,8 @@ double multiply(
 template<typename ValueType>
 void maxRow(
     lama::CSRSparseMatrix<ValueType> *matrix,
-    const bool silentFlag)
+    const bool silentFlag,
+    lama::ContextType context)
 {
     lama::ContextPtr locHost = lama::ContextFactory::getContext( lama::Context::Host );
 
@@ -121,15 +122,17 @@ void maxRow(
     lama::HostReadAccess<lama::IndexType> ia( localStorage.getIA() );
 
     lama::IndexType longestRow = 0;
+    lama::IndexType row = 0;
     for( int i = 0; i < matrix->getNumRows(); ++i )
     {
         if ( ia[i+1]-ia[i] > longestRow ){
             longestRow = ia[i+1]-ia[i];
+            row = i;
         }
     }
     if( !silentFlag )
     {
-        std::cout << std::endl << "finished, longest row has " << longestRow << " Elements!" << std::endl;
+        std::cout << "finished, longest row is row " << row << " with " << longestRow << " Elements! (" << context << ") " << std::endl;
     }
 }
 
@@ -138,7 +141,7 @@ void validate(
     lama::CSRSparseMatrix<ValueType> *matrixGiven,
     lama::CSRSparseMatrix<ValueType> *matrixCorrect,
     const bool silentFlag,
-    const double epsilon = 1e-100 )
+    const double epsilon = 1e-15 )
 {
     lama::ContextPtr locHost = lama::ContextFactory::getContext( lama::Context::Host );
 
@@ -149,7 +152,7 @@ void validate(
 
     if( !silentFlag )
     {
-        std::cout << "Running validation with epsilon = " << epsilon << std::flush;
+        std::cout << "Running validation with epsilon = " << epsilon << std::endl << std::flush;
     }
 
     lama::CSRStorage<ValueType> localStorage;
@@ -161,7 +164,8 @@ void validate(
     if( localStorage.getNumValues() != matrixGiven->getLocalStorage().getNumValues() )
     {
         std::cout << "numValues is different, is " << matrixGiven->getLocalStorage().getNumValues() << " but should "
-                  << localStorage.getNumValues() << std::flush;
+                  << localStorage.getNumValues() << " difference is " << matrixGiven->getLocalStorage().getNumValues() -
+                  localStorage.getNumValues() << std::endl << std::flush;
     }
 
 //#pragma omp parallel for
@@ -175,10 +179,13 @@ void validate(
             lama::Scalar valCorrect = matrixCorrect->getValue( i, j );
             lama::Scalar valGiven = matrixGiven->getValue( i, j );
 
-            if( abs( valGiven.getValue<ValueType>() ) - abs( valCorrect.getValue<ValueType>() ) > epsilon )
+            ValueType relativeDifference = abs( valGiven.getValue<ValueType>() - valCorrect.getValue<ValueType>() )
+                                           / valGiven.getValue<ValueType>();
+            if( relativeDifference  > epsilon )
             {
                 std::cout << "Error in Matrix on position (" << i << ", " << j << ") value is " << valGiven
-                          << " but should " << valCorrect << std::endl;
+                          << " but should " << valCorrect << " relative difference is "
+                          << relativeDifference << std::endl;
                 numErrors++;
             }
         }
@@ -341,15 +348,20 @@ int main( int argc, char **argv )
 			std::cout << "NNZ/Row: \t" << matrixCCuda.getNumValues() / matrixCCuda.getNumRows() << std::endl;
 			std::cout << "Filesize: \t" << ( ( matrixCCuda.getMemoryUsage() / 1024.0 ) / 1024.0 ) << " MB" << std::endl
 					  << std::endl;
-
-			maxRow ( &matrixCCuda, silentFlag );
 		}
 
 		if( validateFlag )
 		{
 			validate<double>( &matrixCCuda, &matrixCHost, silentFlag );
 		}
-
-		return 0;
+        if( benchmarkFlag ){
+            maxRow ( &matrixCHost, silentFlag, lama::Context::Host );
+            maxRow ( &matrixCCuda, silentFlag, lama::Context::CUDA );
+        }
+        else
+        {
+            maxRow ( &matrixCCuda, silentFlag, lama::Context::CUDA );
+        }
     }
+	return 0;
 }
