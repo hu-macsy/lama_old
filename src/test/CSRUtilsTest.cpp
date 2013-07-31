@@ -265,14 +265,16 @@ void transposeTestNonSquare( ContextPtr loc )
 
 } //namespace lama
 
-/* ------------------------------------------------------------------------------------------ */
+/* ------------------------------------------------------------------------------------------------------------------ */
 
 BOOST_AUTO_TEST_SUITE( CSRUtilsTest )
 
 LAMA_LOG_DEF_LOGGER( logger, "Test.CSRUtilsTest" )
 
-LAMA_AUTO_TEST_CASE_TT( absMaxDiffValTest, CSRUtilsTest )
-LAMA_AUTO_TEST_CASE_T( transposeTestSquare, CSRUtilsTest )
-LAMA_AUTO_TEST_CASE_T( transposeTestNonSquare, CSRUtilsTest )
+LAMA_AUTO_TEST_CASE_CTT( absMaxDiffValTest, CSRUtilsTest )
+LAMA_AUTO_TEST_CASE_CT( transposeTestSquare, CSRUtilsTest )
+LAMA_AUTO_TEST_CASE_CT( transposeTestNonSquare, CSRUtilsTest )
 
-/* ------------------------------------------------------------------------------------------------------------------ */BOOST_AUTO_TEST_SUITE_END()
+/* ------------------------------------------------------------------------------------------------------------------ */
+
+BOOST_AUTO_TEST_SUITE_END()

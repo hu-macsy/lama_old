@@ -1519,36 +1519,36 @@ void matrixAddTest( ContextPtr loc )
 
 // TODO: add SPMV tests
 
-}//namespace ELLUtilsTest
-} //namespace lama
+} // namespace ELLUtilsTest
+} // namespace lama
 
-/* ------------------------------------------------------------------------------------------ */
+/* ------------------------------------------------------------------------------------------------------------------ */
 
 BOOST_AUTO_TEST_SUITE( ELLUtilsTest )
 
 LAMA_LOG_DEF_LOGGER( logger, "Test.ELLUtilsTest" )
 
-LAMA_AUTO_TEST_CASE_TDUMMY( countNonEmptyRowsBySizesTest, ELLUtilsTest )
-LAMA_AUTO_TEST_CASE_TDUMMY( setNonEmptyRowsBySizesTest, ELLUtilsTest )
-LAMA_AUTO_TEST_CASE_TDUMMY( hasDiagonalPropertyTest, ELLUtilsTest )
-LAMA_AUTO_TEST_CASE_TDUMMY( checkTest, ELLUtilsTest )
+LAMA_AUTO_TEST_CASE_CTDUMMY( countNonEmptyRowsBySizesTest, ELLUtilsTest )
+LAMA_AUTO_TEST_CASE_CTDUMMY( setNonEmptyRowsBySizesTest, ELLUtilsTest )
+LAMA_AUTO_TEST_CASE_CTDUMMY( hasDiagonalPropertyTest, ELLUtilsTest )
+LAMA_AUTO_TEST_CASE_CTDUMMY( checkTest, ELLUtilsTest )
 
-LAMA_AUTO_TEST_CASE_TDUMMY( matrixMultiplySizesTest, ELLUtilsTest )
-LAMA_AUTO_TEST_CASE_TDUMMY( matrixAddSizesTest, ELLUtilsTest )
+LAMA_AUTO_TEST_CASE_CTDUMMY( matrixMultiplySizesTest, ELLUtilsTest )
+LAMA_AUTO_TEST_CASE_CTDUMMY( matrixAddSizesTest, ELLUtilsTest )
 
-LAMA_AUTO_TEST_CASE_T( compressIATest, ELLUtilsTest )
-LAMA_AUTO_TEST_CASE_T( compressValuesTest, ELLUtilsTest )
+LAMA_AUTO_TEST_CASE_CT( compressIATest, ELLUtilsTest )
+LAMA_AUTO_TEST_CASE_CT( compressValuesTest, ELLUtilsTest )
 
-LAMA_AUTO_TEST_CASE_T( matrixMultiplyTest, ELLUtilsTest )
+LAMA_AUTO_TEST_CASE_CT( matrixMultiplyTest, ELLUtilsTest )
 
 // ToDo: does not work
-LAMA_AUTO_TEST_CASE_T( matrixAddTest, ELLUtilsTest )
+LAMA_AUTO_TEST_CASE_CT( matrixAddTest, ELLUtilsTest )
 
-LAMA_AUTO_TEST_CASE_TT( getRowTest, ELLUtilsTest )
-LAMA_AUTO_TEST_CASE_TT( getValueTest, ELLUtilsTest )
-LAMA_AUTO_TEST_CASE_TT( scaleValueTest, ELLUtilsTest )
-LAMA_AUTO_TEST_CASE_TT( getCSRValuesTest, ELLUtilsTest )
-LAMA_AUTO_TEST_CASE_TT( setCSRValuesTest, ELLUtilsTest )
+LAMA_AUTO_TEST_CASE_CTT( getRowTest, ELLUtilsTest )
+LAMA_AUTO_TEST_CASE_CTT( getValueTest, ELLUtilsTest )
+LAMA_AUTO_TEST_CASE_CTT( scaleValueTest, ELLUtilsTest )
+LAMA_AUTO_TEST_CASE_CTT( getCSRValuesTest, ELLUtilsTest )
+LAMA_AUTO_TEST_CASE_CTT( setCSRValuesTest, ELLUtilsTest )
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 
