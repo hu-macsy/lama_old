@@ -1510,6 +1510,30 @@ void _MatrixStorage::buildCSRGraph(
         adjIA[ numLocalRows ] = newOffset;
 }
 
+template<typename ValueType>
+bool MatrixStorage<ValueType>::checkSymmetry() const
+{
+    // check symmetry of matrix
+    IndexType n = mNumRows;
+
+    if ( n != mNumColumns )
+    {
+        return false;
+    }
+
+    for( IndexType i = 0; i < n; ++i )
+    {
+        for( IndexType j = 0; j < i; ++j )
+        {
+            if( getValue( i, j ) != getValue( j, i ) )
+            {
+                return false;
+            }
+        }
+    }
+    return true;
+}
+
 /*****************************************************************************/
 
 /* ========================================================================= */

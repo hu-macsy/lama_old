@@ -969,6 +969,13 @@ public:
         std::swap( epsilon, mEpsilon );
     }
 
+    /**
+     * @brief Returns whether the matrix storage is symmetric or not.
+     *
+     * @return a boolean pointing out whether the matrix storage is symmetric or not.
+     */
+    bool checkSymmetry() const;
+
 protected:
 
     /** The value mEpsilon is an individual value for each matrix storage that

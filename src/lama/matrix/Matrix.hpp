@@ -439,6 +439,13 @@ public:
     double getSparsityRate() const;
 
     /**
+     * @brief Returns whether the matrix is symmetric or not.
+     *
+     * @return a boolean pointing out whether the matrix is symmetric or not.
+     */
+    bool checkSymmetry() const;
+
+    /**
      * @brief Computes result = alpha * this * x + beta * y.
      *
      * @param[out]  result  the Vector to store the result to

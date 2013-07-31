@@ -392,6 +392,31 @@ double Matrix::getSparsityRate() const
 
 /* ---------------------------------------------------------------------------------*/
 
+bool Matrix::checkSymmetry() const
+{
+    // check symmetry of matrix
+    IndexType n = getNumRows();
+
+    if ( n != getNumColumns() )
+    {
+        return false;
+    }
+
+    for( IndexType i = 0; i < n; ++i )
+    {
+        for( IndexType j = 0; j < i; ++j )
+        {
+            if( getValue( i, j ) != getValue( j, i ) )
+            {
+                return false;
+            }
+        }
+    }
+    return true;
+}
+
+/* ---------------------------------------------------------------------------------*/
+
 void Matrix::sanityCheck( const Expression<Matrix, Matrix, Times>& exp )
 {
     // check sanity of matrix product exp = A * B 
