@@ -273,34 +273,6 @@ inline lama::ContextType mapEnvContexttoContextType( std::string contextname )
     }                                                                                                                  \
     for ( Iter = listofcontexts.begin(); Iter != listofcontexts.end(); Iter++ )
 
-#define CALLTEST( name, classname )                                                                                    \
-    if ( loglevel_argument == "test_suite" )                                                                           \
-    {                                                                                                                  \
-        LAMA_LOG_INFO( logger, "    Entering context: " << context->getType() );                                       \
-    }                                                                                                                  \
-    const std::string lama_name = #name;                                                                               \
-    const std::string lama_classname = #classname;                                                                     \
-    try                                                                                                                \
-    {                                                                                                                  \
-       lama::classname::name<float>( context );                                                                        \
-    }                                                                                                                  \
-    catch( Exception )                                                                                                 \
-    {                                                                                                                  \
-        LAMA_LOG_WARN( logger, lama_classname << "::" << lama_name << "<float> cannot run on "                         \
-                       << context->getType() << ", corresponding function not implemented yet." );                     \
-        return;                                                                                                        \
-    }                                                                                                                  \
-    try                                                                                                                \
-    {                                                                                                                  \
-        lama::classname::name<double>( context );                                                                      \
-    }                                                                                                                  \
-    catch( Exception )                                                                                                 \
-    {                                                                                                                  \
-        LAMA_LOG_WARN( logger, lama_classname << "::" << lama_name << "<double> cannot run on "                        \
-                       << context->getType() << ", corresponding function not implemented yet." );                     \
-        return;                                                                                                        \
-    }
-
 /*
  * @brief HelperMacro GETCONTEXT( loc )
  *
@@ -368,7 +340,32 @@ inline lama::ContextType mapEnvContexttoContextType( std::string contextname )
         CONTEXTLOOP()                                                                                                  \
         {                                                                                                              \
             GETCONTEXT( context )                                                                                      \
-            CALLTEST( name, classname )                                                                                \
+            if ( loglevel_argument == "test_suite" )                                                                   \
+            {                                                                                                          \
+                LAMA_LOG_INFO( logger, "    Entering context: " << context->getType() );                               \
+            }                                                                                                          \
+            const std::string lama_name = #name;                                                                       \
+            const std::string lama_classname = #classname;                                                             \
+            try                                                                                                        \
+            {                                                                                                          \
+               lama::classname::name<float>( context );                                                                \
+            }                                                                                                          \
+            catch( Exception )                                                                                         \
+            {                                                                                                          \
+                LAMA_LOG_WARN( logger, lama_classname << "::" << lama_name << "<float> cannot run on "                 \
+                               << context->getType() << ", corresponding function not implemented yet." );             \
+                return;                                                                                                \
+            }                                                                                                          \
+            try                                                                                                        \
+            {                                                                                                          \
+                lama::classname::name<double>( context );                                                              \
+            }                                                                                                          \
+            catch( Exception )                                                                                         \
+            {                                                                                                          \
+                LAMA_LOG_WARN( logger, lama_classname << "::" << lama_name << "<double> cannot run on "                \
+                               << context->getType() << ", corresponding function not implemented yet." );             \
+                return;                                                                                                \
+            }                                                                                                          \
         }                                                                                                              \
     }
 
