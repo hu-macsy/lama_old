@@ -581,11 +581,17 @@ void OpenMPCSRUtils::normalGEVM(
         for ( IndexType i = 0; i < numColumns; ++i )
         {
             ValueType sum = 0.0;
+
+            if ( csrJA[ csrIA[i] ] == i )
+            {
+                sum += csrValues[ csrIA[i] ] * x[i];
+            }
+
             for ( IndexType j = 0; j < numRows; ++j )
             {
                 for ( IndexType k = csrIA[j]; k < csrIA[j + 1]; ++k )
                 {
-                    if( csrJA[k] == i )
+                    if( csrJA[k] == i && k != csrIA[i] )
                     {
                         sum += csrValues[k] * x[j];
                         break;
