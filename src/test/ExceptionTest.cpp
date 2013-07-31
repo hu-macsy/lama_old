@@ -41,9 +41,8 @@ using namespace lama;
 /* --------------------------------------------------------------------- */
 
 BOOST_AUTO_TEST_SUITE( ExceptionTest )
-;
 
-LAMA_LOG_DEF_LOGGER( logger, "Test.ExceptionTest" );
+LAMA_LOG_DEF_LOGGER( logger, "Test.ExceptionTest" )
 
 BOOST_AUTO_TEST_CASE( ConstructorTest )
 {
@@ -54,4 +53,5 @@ BOOST_AUTO_TEST_CASE( ConstructorTest )
     const char* c = exception2.what();
     BOOST_CHECK_EQUAL( c, "Exceptionmessage" );
 }
+
 BOOST_AUTO_TEST_SUITE_END();

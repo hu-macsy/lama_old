@@ -59,7 +59,7 @@ typedef boost::mpl::list<float,double> ValueTypes;
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( commonTestCases, T, ValueTypes )
 {
-//TODO: Undo to Template-Testcase
+    //TODO: Undo to Template-Testcase
     typedef T ValueType;
 
     COOStorage<ValueType> cooStorage;
@@ -221,6 +221,7 @@ BOOST_AUTO_TEST_CASE( typeNameTest )
     s = cooStoragef.typeName();
     BOOST_CHECK_EQUAL( s, "COOStorage<float>" );
 }
+
 /* ------------------------------------------------------------------------- */
 
 BOOST_AUTO_TEST_SUITE_END();

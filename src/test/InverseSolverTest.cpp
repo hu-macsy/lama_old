@@ -62,9 +62,8 @@ typedef boost::mpl::list<float,double> test_types;
 /* --------------------------------------------------------------------- */
 
 BOOST_AUTO_TEST_SUITE( InverseSolverTest )
-;
 
-LAMA_LOG_DEF_LOGGER( logger, "Test.InverseSolverTest" );
+LAMA_LOG_DEF_LOGGER( logger, "Test.InverseSolverTest" )
 
 /* --------------------------------------------------------------------- */
 
@@ -114,7 +113,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( InverseTest, T, test_types ) {
 
 /* ------------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( InverseTest2, T, test_types ) {
+BOOST_AUTO_TEST_CASE_TEMPLATE( InverseTest2, T, test_types )
+{
     typedef T ValueType;
 
     EquationHelper::EquationSystem<ValueType> system =
@@ -173,4 +173,6 @@ BOOST_AUTO_TEST_CASE( copyTest )
 
     BOOST_CHECK_EQUAL( solverptr->getId(), "InverseSolver" );
 }
-/* ------------------------------------------------------------------------- */BOOST_AUTO_TEST_SUITE_END();
+/* ------------------------------------------------------------------------- */
+
+BOOST_AUTO_TEST_SUITE_END();

@@ -41,7 +41,7 @@
 LAMA_LOG_DEF_LOGGER( Configuration::logger, "Configuration" );
 
 Configuration::Configuration()
-    : mPath( LAMA_TESTFILE_PATH ), mCommType( "none" )
+                : mPath( LAMA_TESTFILE_PATH ), mCommType( "none" )
 {
 }
 

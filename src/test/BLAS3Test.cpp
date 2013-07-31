@@ -376,12 +376,9 @@ void gemmTest( ContextPtr loc )
 
 /* ------------------------------------------------------------------------------------------ */
 
-BOOST_AUTO_TEST_SUITE( BLAS3Test )
+BOOST_AUTO_TEST_SUITE (BLAS3Test)
 
 LAMA_LOG_DEF_LOGGER( logger, "Test.BLAS3Test" )
 
 LAMA_AUTO_TEST_CASE_T( gemmTest, BLAS3Test )
-
-/* ------------------------------------------------------------------------------------------------------------------ */
-
-BOOST_AUTO_TEST_SUITE_END()
+/* ------------------------------------------------------------------------------------------------------------------ */BOOST_AUTO_TEST_SUITE_END()

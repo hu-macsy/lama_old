@@ -48,9 +48,8 @@ using namespace lama;
 /* ------------------------------------------------------------------------- */
 
 BOOST_AUTO_TEST_SUITE( DerivedSparseMatrixTest )
-;
 
-LAMA_LOG_DEF_LOGGER( logger, "Test.SparseMatrixTest.DerivedSparseMatrixTest" );
+LAMA_LOG_DEF_LOGGER( logger, "Test.SparseMatrixTest.DerivedSparseMatrixTest" )
 
 typedef boost::mpl::list<CSRSparseMatrix<float>,CSRSparseMatrix<double>,COOSparseMatrix<float>,COOSparseMatrix<double>,
         DIASparseMatrix<float>,DIASparseMatrix<double>,ELLSparseMatrix<float>,ELLSparseMatrix<double>,
@@ -58,7 +57,8 @@ typedef boost::mpl::list<CSRSparseMatrix<float>,CSRSparseMatrix<double>,COOSpars
 
 /* ------------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( clear, MatrixType, test_types ) {
+BOOST_AUTO_TEST_CASE_TEMPLATE( clear, MatrixType, test_types )
+{
     MatrixType matrix;
     SparseMatrixTest<MatrixType> sparseMatrixtest( matrix );
     sparseMatrixtest.clearTest();
@@ -66,7 +66,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( clear, MatrixType, test_types ) {
 
 /* ------------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( conversions, MatrixType, test_types ) {
+BOOST_AUTO_TEST_CASE_TEMPLATE( conversions, MatrixType, test_types )
+{
     MatrixType matrix;
     SparseMatrixTest<MatrixType> sparseMatrixtest( matrix );
     sparseMatrixtest.testConversions();

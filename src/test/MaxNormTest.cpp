@@ -58,7 +58,8 @@ typedef boost::mpl::list<float,double> test_types;
 
 /* --------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( MaxNormVectorTests, T, test_types ) {
+BOOST_AUTO_TEST_CASE_TEMPLATE( MaxNormVectorTests, T, test_types )
+{
     typedef T ValueType;
 
     IndexType n = 4;
@@ -110,4 +111,6 @@ BOOST_AUTO_TEST_CASE( commonTestCases )
         normtest.runTests();
     }
 }
-/* --------------------------------------------------------------------- */BOOST_AUTO_TEST_SUITE_END();
+/* --------------------------------------------------------------------- */
+
+BOOST_AUTO_TEST_SUITE_END();

@@ -51,9 +51,8 @@ using namespace lama;
 /* ------------------------------------------------------------------------- */
 
 BOOST_AUTO_TEST_SUITE( DenseMatrixTest )
-;
 
-LAMA_LOG_DEF_LOGGER( logger, "Test.DenseMatrixTest" );
+LAMA_LOG_DEF_LOGGER( logger, "Test.DenseMatrixTest" )
 
 typedef boost::mpl::list<float,double> test_types;
 
@@ -117,7 +116,8 @@ void verifySameMatrix( Matrix& m1, Matrix& m2, T eps )
 
 /* -------------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( AssignmentMultiplicationTest, T, test_types ) {
+BOOST_AUTO_TEST_CASE_TEMPLATE( AssignmentMultiplicationTest, T, test_types )
+{
     typedef T ValueType;
     IndexType n = 4;
 
@@ -293,7 +293,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( AssignmentMultiplicationTest, T, test_types ) {
 
 /* ------------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( XGEMMOperationTest, T, test_types) {
+BOOST_AUTO_TEST_CASE_TEMPLATE( XGEMMOperationTest, T, test_types)
+{
     typedef T ValueType;
 
 //alpha * A * B + beta * C
@@ -402,7 +403,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( XGEMMOperationTest, T, test_types) {
 
 /* ------------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( CtorTest, T, test_types ) {
+BOOST_AUTO_TEST_CASE_TEMPLATE( CtorTest, T, test_types )
+{
     typedef T ValueType;
 
 // C = A * B

@@ -864,7 +864,7 @@ void normal_gevm_kernel(
             {
                 if( ellJA[pos] == i )
                 {
-                    value += ellValues[pos] * fetchELLVectorX<T, useTexture>( x_d, ellJA[pos] );
+                    value += ellValues[pos] * fetchELLVectorX<T, useTexture>( x_d, j );
                 }
                 pos += numRows;
             }
@@ -903,7 +903,7 @@ void CUDAELLUtils::normalGEVM(
 
     dim3 dimBlock( blockSize, 1, 1 );
 
-    dim3 dimGrid = makeGrid( numRows, dimBlock.x );
+    dim3 dimGrid = makeGrid( numColumns, dimBlock.x );
 
     bool useTexture = CUDASettings::useTexture();
 

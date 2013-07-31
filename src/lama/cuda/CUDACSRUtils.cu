@@ -412,7 +412,7 @@ void normal_gevm_kernel(
             {
                 if( csrJA[k] == i )
                 {
-                    value += csrValues[k] * fetchCSRVectorX<T, useTexture>( x_d, i );
+                    value += csrValues[k] * fetchCSRVectorX<T, useTexture>( x_d, j );
                 }
             }
         }
@@ -612,7 +612,7 @@ void CUDACSRUtils::normalGEVM(
 
     dim3 dimBlock( blockSize, 1, 1 );
 
-    dim3 dimGrid = makeGrid( numRows, dimBlock.x );
+    dim3 dimGrid = makeGrid( numColumns, dimBlock.x );
 
     bool useTexture = CUDASettings::useTexture();
 

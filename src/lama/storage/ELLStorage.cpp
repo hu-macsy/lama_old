@@ -1124,7 +1124,7 @@ void ELLStorage<ValueType>::vectorTimesMatrix(
     }
     else
     {
-        WriteOnlyAccess<ValueType> wResult( result, loc, mNumRows );
+        WriteOnlyAccess<ValueType> wResult( result, loc, mNumColumns );
         ReadAccess<ValueType> rY( y, loc );
 
         LAMA_CONTEXT_ACCESS( loc )

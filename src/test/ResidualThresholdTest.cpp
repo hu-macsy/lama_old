@@ -76,9 +76,8 @@ struct ResidualThresholdTestConfig
 };
 
 BOOST_FIXTURE_TEST_SUITE( ResidualThresholdTest, ResidualThresholdTestConfig )
-;
 
-LAMA_LOG_DEF_LOGGER( logger, "Test.ResidualThresholdTest" );
+LAMA_LOG_DEF_LOGGER( logger, "Test.ResidualThresholdTest" )
 
 /* --------------------------------------------------------------------- */
 
@@ -106,7 +105,6 @@ BOOST_AUTO_TEST_CASE( ContstructorTest )
     BOOST_CHECK_EQUAL( testcriterion3->getFirstNormResult(), -1.0 );
     BOOST_CHECK_CLOSE( testcriterion3->getPrecision().getValue<float>(), 1.0e-5f, 1 );
     BOOST_CHECK_EQUAL( testcriterion3->getCheckMode(), ResidualThreshold::Relative );
-
 }
 
 /* --------------------------------------------------------------------- */
@@ -222,4 +220,6 @@ BOOST_AUTO_TEST_CASE( writeAtTest )
 
     LAMA_WRITEAT_PTR_TEST( testcriterion );
 }
-/* --------------------------------------------------------------------- */BOOST_AUTO_TEST_SUITE_END();
+/* --------------------------------------------------------------------- */
+
+BOOST_AUTO_TEST_SUITE_END();

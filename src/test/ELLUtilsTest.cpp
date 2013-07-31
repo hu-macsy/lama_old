@@ -62,7 +62,7 @@ namespace ELLUtilsTest
 template<typename NoType>
 void countNonEmptyRowsBySizesTest( ContextPtr loc )
 {
-    LAMA_INTERFACE_FN( countNonEmptyRowsBySizes, loc, ELLUtils, Operations );
+    LAMA_INTERFACE_FN( countNonEmptyRowsBySizes, loc, ELLUtils, Operations )
 
     // count valid array
     {
@@ -101,7 +101,7 @@ void countNonEmptyRowsBySizesTest( ContextPtr loc )
 template<typename NoType>
 void setNonEmptyRowsBySizesTest( ContextPtr loc )
 {
-    LAMA_INTERFACE_FN( setNonEmptyRowsBySizes, loc, ELLUtils, Operations );
+    LAMA_INTERFACE_FN( setNonEmptyRowsBySizes, loc, ELLUtils, Operations )
 
     const IndexType values[] =
     { 3, 0, 1, 0, 0, 1, 0, 4, 3, 0 };
@@ -136,7 +136,7 @@ void setNonEmptyRowsBySizesTest( ContextPtr loc )
 template<typename NoType>
 void hasDiagonalPropertyTest( ContextPtr loc )
 {
-    LAMA_INTERFACE_FN( hasDiagonalProperty, loc, ELLUtils, Operations );
+    LAMA_INTERFACE_FN( hasDiagonalProperty, loc, ELLUtils, Operations )
 
     // positive test
     {
@@ -192,7 +192,7 @@ void hasDiagonalPropertyTest( ContextPtr loc )
 template<typename NoType>
 void checkTest( ContextPtr loc )
 {
-    LAMA_INTERFACE_FN( check, loc, ELLUtils, Operations );
+    LAMA_INTERFACE_FN( check, loc, ELLUtils, Operations )
 
     // check with correct values
     {
@@ -302,114 +302,12 @@ void checkTest( ContextPtr loc )
 /* ------------------------------------------------------------------------------------------------------------------ */
 
 template<typename ValueType,typename OtherValueType>
-void getRowTest( ContextPtr loc, log4lama::Logger &logger )
+void getRowTest( ContextPtr loc )
 {
-    try
+    LAMA_INTERFACE_FN_TT( getRow, loc, ELLUtils, Getter, ValueType, OtherValueType );
+
+    // check with valid dense values
     {
-        LAMA_INTERFACE_FN_TT( getRow, loc, ELLUtils, Getter, ValueType, OtherValueType );
-
-        // check with valid dense values
-        {
-            ValueType valuesValues[] =
-            { 0, 0, 0, 1, 1, 1, 2, 2, 2, 3, 3, 3, 4, 4, 4 };
-            const IndexType nValues = sizeof( valuesValues ) / sizeof(ValueType);
-            IndexType valuesIa[] =
-            { 5, 5, 5 };
-            const IndexType nIa = sizeof( valuesIa ) / sizeof(IndexType);
-            IndexType valuesJa[] =
-            { 0, 0, 0, 1, 1, 1, 2, 2, 2, 3, 3, 3, 4, 4, 4 };
-            const IndexType nJa = sizeof( valuesJa ) / sizeof(IndexType);
-            OtherValueType expectedValues[] =
-            { 0, 1, 2, 3, 4 };
-
-            const IndexType i = 1;
-            const IndexType numRows = nIa;
-            const IndexType numValuesPerRow = nJa / nIa;
-            const IndexType numColumns = 5;
-
-            LAMAArray<ValueType> values( nValues, valuesValues );
-            LAMAArray<IndexType> ia( nIa, valuesIa );
-            LAMAArray<IndexType> ja( nJa, valuesJa );
-            LAMAArray<OtherValueType> row( numColumns, 0.0 );
-
-            {
-                ReadAccess<ValueType> rValues( values, loc );
-                ReadAccess<IndexType> rIa( ia, loc );
-                ReadAccess<IndexType> rJa( ja, loc );
-                WriteOnlyAccess<OtherValueType> wRow( row, loc, numColumns );
-
-                LAMA_CONTEXT_ACCESS( loc );
-
-                getRow( wRow.get(), i, numRows, numColumns, numValuesPerRow, rIa.get(), rJa.get(), rValues.get() );
-            }
-
-            HostReadAccess<OtherValueType> rRow( row );
-
-            for( IndexType i = 0; i < numColumns; i++ )
-            {
-                BOOST_CHECK_EQUAL( expectedValues[i], rRow[i] );
-            }
-        }
-
-        // check with valid sparse values
-        {
-            ValueType valuesValues[] =
-            { 0, 0, 0, 1, 1, 1, 2, 2, 2, 3, 3, 3, 4, 4, 4 };
-            const IndexType nValues = sizeof( valuesValues ) / sizeof(ValueType);
-            IndexType valuesIa[] =
-            { 5, 5, 5 };
-            const IndexType nIa = sizeof( valuesIa ) / sizeof(IndexType);
-            IndexType valuesJa[] =
-            { 0, 0, 0, 2, 2, 2, 4, 4, 4, 6, 6, 6, 10, 10, 10 };
-            const IndexType nJa = sizeof( valuesJa ) / sizeof(IndexType);
-            OtherValueType expectedValues[] =
-            { 0, 0, 1, 0, 2, 0, 3, 0, 0, 0, 4 };
-
-            const IndexType i = 1;
-            const IndexType numRows = nIa;
-            const IndexType numColumns = 11;
-            const IndexType numValuesPerRow = nJa / nIa;
-
-            LAMAArray<ValueType> values( nValues, valuesValues );
-            LAMAArray<IndexType> ia( nIa, valuesIa );
-            LAMAArray<IndexType> ja( nJa, valuesJa );
-            LAMAArray<OtherValueType> row( numColumns, 0.0 );
-
-            {
-                ReadAccess<ValueType> rValues( values, loc );
-                ReadAccess<IndexType> rIa( ia, loc );
-                ReadAccess<IndexType> rJa( ja, loc );
-                WriteOnlyAccess<OtherValueType> wRow( row, loc, numColumns );
-
-                LAMA_CONTEXT_ACCESS( loc );
-
-                getRow( wRow.get(), i, numRows, numColumns, numValuesPerRow, rIa.get(), rJa.get(), rValues.get() );
-            }
-
-            HostReadAccess<OtherValueType> rRow( row );
-
-            for( IndexType i = 0; i < numColumns; i++ )
-            {
-                BOOST_CHECK_EQUAL( expectedValues[i], rRow[i] );
-            }
-        }
-    } // try
-    catch( Exception )
-    {
-        LAMA_LOG_WARN( logger, "ELLUtils::getRow not available on " << *loc << ", not tested yet." )
-        return;
-    }
-}
-
-/* ------------------------------------------------------------------------------------------------------------------ */
-
-template<typename ValueType,typename OtherValueType>
-void getValueTest( ContextPtr loc, log4lama::Logger &logger )
-{
-    try
-    {
-        LAMA_INTERFACE_FN_TT( getValue, loc, ELLUtils, Getter, ValueType, OtherValueType );
-
         ValueType valuesValues[] =
         { 0, 0, 0, 1, 1, 1, 2, 2, 2, 3, 3, 3, 4, 4, 4 };
         const IndexType nValues = sizeof( valuesValues ) / sizeof(ValueType);
@@ -420,235 +318,297 @@ void getValueTest( ContextPtr loc, log4lama::Logger &logger )
         { 0, 0, 0, 1, 1, 1, 2, 2, 2, 3, 3, 3, 4, 4, 4 };
         const IndexType nJa = sizeof( valuesJa ) / sizeof(IndexType);
         OtherValueType expectedValues[] =
-        { 0, 0, 0, 1, 1, 1, 2, 2, 2, 3, 3, 3, 4, 4, 4 };
+        { 0, 1, 2, 3, 4 };
 
+        const IndexType i = 1;
         const IndexType numRows = nIa;
-        const IndexType numValuesPerRow = nValues / numRows;
-
-        BOOST_REQUIRE_EQUAL( numRows * numValuesPerRow, nValues );
+        const IndexType numValuesPerRow = nJa / nIa;
+        const IndexType numColumns = 5;
 
         LAMAArray<ValueType> values( nValues, valuesValues );
         LAMAArray<IndexType> ia( nIa, valuesIa );
         LAMAArray<IndexType> ja( nJa, valuesJa );
+        LAMAArray<OtherValueType> row( numColumns, 0.0 );
 
-        ReadAccess<ValueType> rValues( values, loc );
-        ReadAccess<IndexType> rIa( ia, loc );
-        ReadAccess<IndexType> rJa( ja, loc );
+        {
+            ReadAccess<ValueType> rValues( values, loc );
+            ReadAccess<IndexType> rIa( ia, loc );
+            ReadAccess<IndexType> rJa( ja, loc );
+            WriteOnlyAccess<OtherValueType> wRow( row, loc, numColumns );
+
+            LAMA_CONTEXT_ACCESS( loc );
+
+            getRow( wRow.get(), i, numRows, numColumns, numValuesPerRow, rIa.get(), rJa.get(), rValues.get() );
+        }
+
+        HostReadAccess<OtherValueType> rRow( row );
+
+        for( IndexType i = 0; i < numColumns; i++ )
+        {
+            BOOST_CHECK_EQUAL( expectedValues[i], rRow[i] );
+        }
+    }
+
+    // check with valid sparse values
+    {
+        ValueType valuesValues[] =
+        { 0, 0, 0, 1, 1, 1, 2, 2, 2, 3, 3, 3, 4, 4, 4 };
+        const IndexType nValues = sizeof( valuesValues ) / sizeof(ValueType);
+        IndexType valuesIa[] =
+        { 5, 5, 5 };
+        const IndexType nIa = sizeof( valuesIa ) / sizeof(IndexType);
+        IndexType valuesJa[] =
+        { 0, 0, 0, 2, 2, 2, 4, 4, 4, 6, 6, 6, 10, 10, 10 };
+        const IndexType nJa = sizeof( valuesJa ) / sizeof(IndexType);
+        OtherValueType expectedValues[] =
+        { 0, 0, 1, 0, 2, 0, 3, 0, 0, 0, 4 };
+
+        const IndexType i = 1;
+        const IndexType numRows = nIa;
+        const IndexType numColumns = 11;
+        const IndexType numValuesPerRow = nJa / nIa;
+
+        LAMAArray<ValueType> values( nValues, valuesValues );
+        LAMAArray<IndexType> ia( nIa, valuesIa );
+        LAMAArray<IndexType> ja( nJa, valuesJa );
+        LAMAArray<OtherValueType> row( numColumns, 0.0 );
+
+        {
+            ReadAccess<ValueType> rValues( values, loc );
+            ReadAccess<IndexType> rIa( ia, loc );
+            ReadAccess<IndexType> rJa( ja, loc );
+            WriteOnlyAccess<OtherValueType> wRow( row, loc, numColumns );
+
+            LAMA_CONTEXT_ACCESS( loc );
+
+            getRow( wRow.get(), i, numRows, numColumns, numValuesPerRow, rIa.get(), rJa.get(), rValues.get() );
+        }
+
+        HostReadAccess<OtherValueType> rRow( row );
+
+        for( IndexType i = 0; i < numColumns; i++ )
+        {
+            BOOST_CHECK_EQUAL( expectedValues[i], rRow[i] );
+        }
+    }
+}
+
+/* ------------------------------------------------------------------------------------------------------------------ */
+
+template<typename ValueType,typename OtherValueType>
+void getValueTest( ContextPtr loc )
+{
+    LAMA_INTERFACE_FN_TT( getValue, loc, ELLUtils, Getter, ValueType, OtherValueType );
+
+    ValueType valuesValues[] =
+    { 0, 0, 0, 1, 1, 1, 2, 2, 2, 3, 3, 3, 4, 4, 4 };
+    const IndexType nValues = sizeof( valuesValues ) / sizeof(ValueType);
+    IndexType valuesIa[] =
+    { 5, 5, 5 };
+    const IndexType nIa = sizeof( valuesIa ) / sizeof(IndexType);
+    IndexType valuesJa[] =
+    { 0, 0, 0, 1, 1, 1, 2, 2, 2, 3, 3, 3, 4, 4, 4 };
+    const IndexType nJa = sizeof( valuesJa ) / sizeof(IndexType);
+    OtherValueType expectedValues[] =
+    { 0, 0, 0, 1, 1, 1, 2, 2, 2, 3, 3, 3, 4, 4, 4 };
+
+    const IndexType numRows = nIa;
+    const IndexType numValuesPerRow = nValues / numRows;
+
+    BOOST_REQUIRE_EQUAL( numRows * numValuesPerRow, nValues );
+
+    LAMAArray<ValueType> values( nValues, valuesValues );
+    LAMAArray<IndexType> ia( nIa, valuesIa );
+    LAMAArray<IndexType> ja( nJa, valuesJa );
+
+    ReadAccess<ValueType> rValues( values, loc );
+    ReadAccess<IndexType> rIa( ia, loc );
+    ReadAccess<IndexType> rJa( ja, loc );
+
+    LAMA_CONTEXT_ACCESS( loc );
+
+    for( IndexType i = 0; i < numRows; i++ )
+    {
+        for( IndexType j = 0; j < valuesIa[i]; j++ )
+        {
+            OtherValueType result = getValue( i, j, numRows, numValuesPerRow, rIa.get(), rJa.get(), rValues.get() );
+            BOOST_CHECK_EQUAL( expectedValues[j * numRows + i], result );
+        }
+    }
+}
+
+/* ------------------------------------------------------------------------------------------------------------------ */
+
+template<typename ValueType,typename OtherValueType>
+void scaleValueTest( ContextPtr loc )
+{
+    LAMA_INTERFACE_FN_TT( scaleValue, loc, ELLUtils, Scale, ValueType, OtherValueType );
+
+    ValueType mValues[] =
+    { 1, 2, 3, 4, 5, 2, 2, 2, 2, 2, 4, 2, 0, 1, 3, 0, 0, 0, 0, 3 };
+    const IndexType nValues = sizeof( mValues ) / sizeof(ValueType);
+    const ValueType expectedValues[] =
+    { 2, 4, 15, 8, 10, 4, 4, 10, 4, 4, 8, 4, 0, 2, 6, 0, 0, 0, 0, 6 };
+
+    LAMAArray<ValueType> ellValues( nValues, mValues );
+
+    {
+        const IndexType numRows = 5;
+        const IndexType numValuesPerRow = nValues / numRows;
+        const IndexType ellIaValues[] =
+        { 3, 3, 3, 3, 4 };
+        const IndexType n = sizeof( ellIaValues ) / sizeof(IndexType);
+        const OtherValueType values[] =
+        { 2, 2, 5, 2, 2 };
+
+        LAMAArray<IndexType> ellIa( n, ellIaValues );
+
+        LAMAArray<OtherValueType> scaleValues( n, values );
+
+        ReadAccess<IndexType> rEllIa( ellIa, loc );
+        WriteAccess<ValueType> wEllValues( ellValues, loc );
+        ReadAccess<OtherValueType> rScaleValues( scaleValues, loc );
 
         LAMA_CONTEXT_ACCESS( loc );
 
-        for( IndexType i = 0; i < numRows; i++ )
-        {
-            for( IndexType j = 0; j < valuesIa[i]; j++ )
-            {
-                OtherValueType result = getValue( i, j, numRows, numValuesPerRow, rIa.get(), rJa.get(), rValues.get() );
-                BOOST_CHECK_EQUAL( expectedValues[j * numRows + i], result );
-            }
-        }
-    } // try
-    catch( Exception )
+        scaleValue( numRows, numValuesPerRow, rEllIa.get(), wEllValues.get(), rScaleValues.get() );
+    }
+
+    HostReadAccess<ValueType> rEllValues( ellValues );
+
+    for( IndexType i = 0; i < nValues; i++ )
     {
-        LAMA_LOG_WARN( logger, "ELLUtils::getValue not available on " << *loc << ", not tested yet." )
-        return;
+        BOOST_CHECK_EQUAL( expectedValues[i], rEllValues[i] );
     }
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 
 template<typename ValueType,typename OtherValueType>
-void scaleValueTest( ContextPtr loc, log4lama::Logger &logger )
+void getCSRValuesTest( ContextPtr loc )
 {
-    try
+    LAMA_INTERFACE_FN_TT( getCSRValues, loc, ELLUtils, Conversions, ValueType, OtherValueType );
+
+    ValueType valuesELLValues[] =
+    { 0, 0, 0, 1, 1, 1, 2, 2, 2, 3, 3, 3, 4, 4, 4 };
+
+    const IndexType nELLValues = sizeof( valuesELLValues ) / sizeof(ValueType);
+    IndexType valuesELLIa[] =
+    { 5, 5, 5 };
+    const IndexType nELLIa = sizeof( valuesELLIa ) / sizeof(IndexType);
+    IndexType valuesELLJa[] =
+    { 0, 0, 0, 1, 1, 1, 2, 2, 2, 3, 3, 3, 4, 4, 4 };
+    const IndexType nELLJa = sizeof( valuesELLJa ) / sizeof(IndexType);
+    IndexType valuesCSRIa[] =
+    { 0, 5, 10, 15 };
+    const IndexType nCSRIa = sizeof( valuesCSRIa ) / sizeof(IndexType);
+    OtherValueType expectedCSRValues[] =
+    { 0, 1, 2, 3, 4, 0, 1, 2, 3, 4, 0, 1, 2, 3, 4 };
+    IndexType expectedCSRJa[] =
+    { 0, 1, 2, 3, 4, 0, 1, 2, 3, 4, 0, 1, 2, 3, 4 };
+
+    const IndexType numRows = nELLIa;
+    const IndexType numValuesPerRow = nELLValues / numRows;
+
+    // make sure that division did fit
+    BOOST_REQUIRE_EQUAL( numValuesPerRow * numRows, nELLValues );
+
+    const IndexType nCSRValues = 15;
+
+    LAMAArray<ValueType> ellValues( nELLValues, valuesELLValues );
+    LAMAArray<IndexType> ellIa( nELLIa, valuesELLIa );
+    LAMAArray<IndexType> ellJa( nELLJa, valuesELLJa );
+    LAMAArray<IndexType> csrIa( nCSRIa, valuesCSRIa );
+
+    LAMAArray<OtherValueType> csrValues( nCSRValues, 0.0f );
+    LAMAArray<IndexType> csrJa( nCSRValues, 0 );
+
     {
-        LAMA_INTERFACE_FN_TT( scaleValue, loc, ELLUtils, Scale, ValueType, OtherValueType );
+        ReadAccess<ValueType> rELLValues( ellValues, loc );
+        ReadAccess<IndexType> rELLIa( ellIa, loc );
+        ReadAccess<IndexType> rELLJa( ellJa, loc );
+        ReadAccess<IndexType> rCSRIa( csrIa, loc );
 
-        ValueType mValues[] =
-        { 1, 2, 3, 4, 5, 2, 2, 2, 2, 2, 4, 2, 0, 1, 3, 0, 0, 0, 0, 3 };
-        const IndexType nValues = sizeof( mValues ) / sizeof(ValueType);
-        const ValueType expectedValues[] =
-        { 2, 4, 15, 8, 10, 4, 4, 10, 4, 4, 8, 4, 0, 2, 6, 0, 0, 0, 0, 6 };
+        WriteOnlyAccess<OtherValueType> wCSRValues( csrValues, loc, nCSRValues );
+        WriteOnlyAccess<IndexType> wCSRJa( csrJa, loc, nCSRValues );
 
-        LAMAArray<ValueType> ellValues( nValues, mValues );
+        LAMA_CONTEXT_ACCESS( loc );
 
-        {
-            const IndexType numRows = 5;
-            const IndexType numValuesPerRow = nValues / numRows;
-            const IndexType ellIaValues[] =
-            { 3, 3, 3, 3, 4 };
-            const IndexType n = sizeof( ellIaValues ) / sizeof(IndexType);
-            const OtherValueType values[] =
-            { 2, 2, 5, 2, 2 };
+        getCSRValues( wCSRJa.get(), wCSRValues.get(), rCSRIa.get(), numRows, numValuesPerRow, rELLIa.get(),
+                      rELLJa.get(), rELLValues.get() );
+    }
 
-            LAMAArray<IndexType> ellIa( n, ellIaValues );
+    HostReadAccess<IndexType> rCSRJa( csrJa );
+    HostReadAccess<OtherValueType> rCSRValues( csrValues );
 
-            LAMAArray<OtherValueType> scaleValues( n, values );
-
-            ReadAccess<IndexType> rEllIa( ellIa, loc );
-            WriteAccess<ValueType> wEllValues( ellValues, loc );
-            ReadAccess<OtherValueType> rScaleValues( scaleValues, loc );
-
-            LAMA_CONTEXT_ACCESS( loc );
-
-            scaleValue( numRows, numValuesPerRow, rEllIa.get(), wEllValues.get(), rScaleValues.get() );
-        }
-
-        HostReadAccess<ValueType> rEllValues( ellValues );
-
-        for( IndexType i = 0; i < nValues; i++ )
-        {
-            BOOST_CHECK_EQUAL( expectedValues[i], rEllValues[i] );
-        }
-    } // try
-    catch( Exception )
+    for( IndexType i = 0; i < nCSRValues; i++ )
     {
-        LAMA_LOG_WARN( logger, "ELLUtils::scaleValue not available on " << *loc << ", not tested yet." )
-        return;
+        BOOST_CHECK_EQUAL( expectedCSRJa[i], rCSRJa[i] );
+        BOOST_CHECK_EQUAL( expectedCSRValues[i], rCSRValues[i] );
     }
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 
 template<typename ValueType,typename OtherValueType>
-void getCSRValuesTest( ContextPtr loc, log4lama::Logger &logger )
+void setCSRValuesTest( ContextPtr loc )
 {
-    try
+    // TODO: Change to use both types
+    LAMA_INTERFACE_FN_TT( setCSRValues, loc, ELLUtils, Conversions, OtherValueType, ValueType );
+
+    ValueType valuesCSRValues[] =
+    { 0, 1, 2, 3, 4, 0, 1, 2, 3, 4, 0, 1, 2, 3, 4 };
+    const IndexType nCSRValues = sizeof( valuesCSRValues ) / sizeof(ValueType);
+    IndexType valuesCSRIa[] =
+    { 0, 5, 10, 15 };
+    const IndexType nCSRIa = sizeof( valuesCSRIa ) / sizeof(IndexType);
+    IndexType valuesCSRJa[] =
+    { 0, 1, 2, 3, 4, 0, 1, 2, 3, 4, 0, 1, 2, 3, 4 };
+    const IndexType nCSRJa = sizeof( valuesCSRJa ) / sizeof(IndexType);
+    IndexType valuesELLIa[] =
+    { 5, 5, 5 };
+    const IndexType nELLIa = sizeof( valuesELLIa ) / sizeof(IndexType);
+    OtherValueType expectedELLValues[] =
+    { 0, 0, 0, 1, 1, 1, 2, 2, 2, 3, 3, 3, 4, 4, 4 };
+    IndexType expectedELLJa[] =
+    { 0, 0, 0, 1, 1, 1, 2, 2, 2, 3, 3, 3, 4, 4, 4 };
+
+    const IndexType numRows = nELLIa;
+    const IndexType nELLValues = 15;
+    const IndexType numValuesPerRow = 5;
+
+    LAMAArray<ValueType> csrValues( nCSRValues, valuesCSRValues );
+    LAMAArray<IndexType> csrIa( nCSRIa, valuesCSRIa );
+    LAMAArray<IndexType> csrJa( nCSRJa, valuesCSRJa );
+    LAMAArray<IndexType> ellIa( nELLIa, valuesELLIa );
+
+    // initialization of ellValues and ellJA, even if not mandatory
+
+    LAMAArray<OtherValueType> ellValues( nELLValues, static_cast<OtherValueType>( 0 ) );
+    LAMAArray<IndexType> ellJa( nELLValues, 0 );
+
     {
-        LAMA_INTERFACE_FN_TT( getCSRValues, loc, ELLUtils, Conversions, ValueType, OtherValueType );
+        ReadAccess<ValueType> rCSRValues( csrValues, loc );
+        ReadAccess<IndexType> rCSRIa( csrIa, loc );
+        ReadAccess<IndexType> rCSRJa( csrJa, loc );
+        ReadAccess<IndexType> rELLIa( ellIa, loc );
 
-        ValueType valuesELLValues[] =
-        { 0, 0, 0, 1, 1, 1, 2, 2, 2, 3, 3, 3, 4, 4, 4 };
+        WriteOnlyAccess<OtherValueType> wELLValues( ellValues, loc, nELLValues );
+        WriteOnlyAccess<IndexType> wELLJa( ellJa, loc, nELLValues );
 
-        const IndexType nELLValues = sizeof( valuesELLValues ) / sizeof(ValueType);
-        IndexType valuesELLIa[] =
-        { 5, 5, 5 };
-        const IndexType nELLIa = sizeof( valuesELLIa ) / sizeof(IndexType);
-        IndexType valuesELLJa[] =
-        { 0, 0, 0, 1, 1, 1, 2, 2, 2, 3, 3, 3, 4, 4, 4 };
-        const IndexType nELLJa = sizeof( valuesELLJa ) / sizeof(IndexType);
-        IndexType valuesCSRIa[] =
-        { 0, 5, 10, 15 };
-        const IndexType nCSRIa = sizeof( valuesCSRIa ) / sizeof(IndexType);
-        OtherValueType expectedCSRValues[] =
-        { 0, 1, 2, 3, 4, 0, 1, 2, 3, 4, 0, 1, 2, 3, 4 };
-        IndexType expectedCSRJa[] =
-        { 0, 1, 2, 3, 4, 0, 1, 2, 3, 4, 0, 1, 2, 3, 4 };
+        LAMA_CONTEXT_ACCESS( loc );
 
-        const IndexType numRows = nELLIa;
-        const IndexType numValuesPerRow = nELLValues / numRows;
-
-        // make sure that division did fit
-        BOOST_REQUIRE_EQUAL( numValuesPerRow * numRows, nELLValues );
-
-        const IndexType nCSRValues = 15;
-
-        LAMAArray<ValueType> ellValues( nELLValues, valuesELLValues );
-        LAMAArray<IndexType> ellIa( nELLIa, valuesELLIa );
-        LAMAArray<IndexType> ellJa( nELLJa, valuesELLJa );
-        LAMAArray<IndexType> csrIa( nCSRIa, valuesCSRIa );
-
-        LAMAArray<OtherValueType> csrValues( nCSRValues, 0.0f );
-        LAMAArray<IndexType> csrJa( nCSRValues, 0 );
-
-        {
-            ReadAccess<ValueType> rELLValues( ellValues, loc );
-            ReadAccess<IndexType> rELLIa( ellIa, loc );
-            ReadAccess<IndexType> rELLJa( ellJa, loc );
-            ReadAccess<IndexType> rCSRIa( csrIa, loc );
-
-            WriteOnlyAccess<OtherValueType> wCSRValues( csrValues, loc, nCSRValues );
-            WriteOnlyAccess<IndexType> wCSRJa( csrJa, loc, nCSRValues );
-
-            LAMA_CONTEXT_ACCESS( loc );
-
-            getCSRValues( wCSRJa.get(), wCSRValues.get(), rCSRIa.get(), numRows, numValuesPerRow, rELLIa.get(),
-                          rELLJa.get(), rELLValues.get() );
-        }
-
-        HostReadAccess<IndexType> rCSRJa( csrJa );
-        HostReadAccess<OtherValueType> rCSRValues( csrValues );
-
-        for( IndexType i = 0; i < nCSRValues; i++ )
-        {
-            BOOST_CHECK_EQUAL( expectedCSRJa[i], rCSRJa[i] );
-            BOOST_CHECK_EQUAL( expectedCSRValues[i], rCSRValues[i] );
-        }
-    } // try
-    catch( Exception )
-    {
-        LAMA_LOG_WARN( logger, "ELLUtils::getCSRValues not available on " << *loc << ", not tested yet." )
-        return;
+        setCSRValues( wELLJa.get(), wELLValues.get(), rELLIa.get(), numRows, numValuesPerRow, rCSRIa.get(),
+                      rCSRJa.get(), rCSRValues.get() );
     }
-}
 
-/* ------------------------------------------------------------------------------------------------------------------ */
+    HostReadAccess<IndexType> rELLJa( ellJa );
+    HostReadAccess<OtherValueType> rELLValues( ellValues );
 
-template<typename ValueType,typename OtherValueType>
-void setCSRValuesTest( ContextPtr loc, log4lama::Logger &logger )
-{
-    try
+    for( IndexType i = 0; i < nELLValues; i++ )
     {
-        // TODO: Change to use both types
-        LAMA_INTERFACE_FN_TT( setCSRValues, loc, ELLUtils, Conversions, OtherValueType, ValueType );
-
-        ValueType valuesCSRValues[] =
-        { 0, 1, 2, 3, 4, 0, 1, 2, 3, 4, 0, 1, 2, 3, 4 };
-        const IndexType nCSRValues = sizeof( valuesCSRValues ) / sizeof(ValueType);
-        IndexType valuesCSRIa[] =
-        { 0, 5, 10, 15 };
-        const IndexType nCSRIa = sizeof( valuesCSRIa ) / sizeof(IndexType);
-        IndexType valuesCSRJa[] =
-        { 0, 1, 2, 3, 4, 0, 1, 2, 3, 4, 0, 1, 2, 3, 4 };
-        const IndexType nCSRJa = sizeof( valuesCSRJa ) / sizeof(IndexType);
-        IndexType valuesELLIa[] =
-        { 5, 5, 5 };
-        const IndexType nELLIa = sizeof( valuesELLIa ) / sizeof(IndexType);
-        OtherValueType expectedELLValues[] =
-        { 0, 0, 0, 1, 1, 1, 2, 2, 2, 3, 3, 3, 4, 4, 4 };
-        IndexType expectedELLJa[] =
-        { 0, 0, 0, 1, 1, 1, 2, 2, 2, 3, 3, 3, 4, 4, 4 };
-
-        const IndexType numRows = nELLIa;
-        const IndexType nELLValues = 15;
-        const IndexType numValuesPerRow = 5;
-
-        LAMAArray<ValueType> csrValues( nCSRValues, valuesCSRValues );
-        LAMAArray<IndexType> csrIa( nCSRIa, valuesCSRIa );
-        LAMAArray<IndexType> csrJa( nCSRJa, valuesCSRJa );
-        LAMAArray<IndexType> ellIa( nELLIa, valuesELLIa );
-
-        // initialization of ellValues and ellJA, even if not mandatory
-
-        LAMAArray<OtherValueType> ellValues( nELLValues, static_cast<OtherValueType>( 0 ) );
-        LAMAArray<IndexType> ellJa( nELLValues, 0 );
-
-        {
-            ReadAccess<ValueType> rCSRValues( csrValues, loc );
-            ReadAccess<IndexType> rCSRIa( csrIa, loc );
-            ReadAccess<IndexType> rCSRJa( csrJa, loc );
-            ReadAccess<IndexType> rELLIa( ellIa, loc );
-
-            WriteOnlyAccess<OtherValueType> wELLValues( ellValues, loc, nELLValues );
-            WriteOnlyAccess<IndexType> wELLJa( ellJa, loc, nELLValues );
-
-            LAMA_CONTEXT_ACCESS( loc );
-
-            setCSRValues( wELLJa.get(), wELLValues.get(), rELLIa.get(), numRows, numValuesPerRow, rCSRIa.get(),
-                          rCSRJa.get(), rCSRValues.get() );
-        }
-
-        HostReadAccess<IndexType> rELLJa( ellJa );
-        HostReadAccess<OtherValueType> rELLValues( ellValues );
-
-        for( IndexType i = 0; i < nELLValues; i++ )
-        {
-            BOOST_CHECK_EQUAL( expectedELLJa[i], rELLJa[i] );
-            BOOST_CHECK_EQUAL( expectedELLValues[i], rELLValues[i] );
-        }
-    } // try
-    catch( Exception )
-    {
-        LAMA_LOG_WARN( logger, "ELLUtils::setCSRValues not available on " << *loc << ", not tested yet." )
-        return;
+        BOOST_CHECK_EQUAL( expectedELLJa[i], rELLJa[i] );
+        BOOST_CHECK_EQUAL( expectedELLValues[i], rELLValues[i] );
     }
 }
 
@@ -657,7 +617,7 @@ void setCSRValuesTest( ContextPtr loc, log4lama::Logger &logger )
 template<typename ValueType>
 void compressIATest( ContextPtr loc )
 {
-    LAMA_INTERFACE_FN_T( compressIA, loc, ELLUtils, Helper, ValueType );
+    LAMA_INTERFACE_FN_T( compressIA, loc, ELLUtils, Helper, ValueType )
 
     // Check without epsilon
     {
@@ -797,7 +757,7 @@ void compressIATest( ContextPtr loc )
 template<typename ValueType>
 void compressValuesTest( ContextPtr loc )
 {
-    LAMA_INTERFACE_FN_T( compressValues, loc, ELLUtils, Helper, ValueType );
+    LAMA_INTERFACE_FN_T( compressValues, loc, ELLUtils, Helper, ValueType )
 
     // Check without epsilon
     {
@@ -963,7 +923,7 @@ void compressValuesTest( ContextPtr loc )
 template<typename NoType>
 void matrixMultiplySizesTest( ContextPtr loc )
 {
-    LAMA_INTERFACE_FN( matrixMultiplySizes, loc, ELLUtils, MatrixExpBuild );
+    LAMA_INTERFACE_FN( matrixMultiplySizes, loc, ELLUtils, MatrixExpBuild )
 
     // Check with symmetric matrix
     {
@@ -1078,7 +1038,7 @@ void matrixMultiplySizesTest( ContextPtr loc )
 template<typename ValueType>
 void matrixMultiplyTest( ContextPtr loc )
 {
-    LAMA_INTERFACE_FN_T( matrixMultiply, loc, ELLUtils, MatrixExp, ValueType );
+    LAMA_INTERFACE_FN_T( matrixMultiply, loc, ELLUtils, MatrixExp, ValueType )
 
     // Check with symmetric matrix
     {
@@ -1325,7 +1285,7 @@ void matrixMultiplyTest( ContextPtr loc )
 template<typename NoType>
 void matrixAddSizesTest( ContextPtr loc )
 {
-    LAMA_INTERFACE_FN( matrixAddSizes, loc, ELLUtils, MatrixExpBuild );
+    LAMA_INTERFACE_FN( matrixAddSizes, loc, ELLUtils, MatrixExpBuild )
 
     IndexType valuesAIa[] =
     { 2, 3, 2, 3, 4 };
@@ -1392,7 +1352,7 @@ void matrixAddSizesTest( ContextPtr loc )
 template<typename ValueType>
 void matrixAddTest( ContextPtr loc )
 {
-    LAMA_INTERFACE_FN_T( matrixAdd, loc, ELLUtils, MatrixExp, ValueType );
+    LAMA_INTERFACE_FN_T( matrixAdd, loc, ELLUtils, MatrixExp, ValueType )
 
     // Check with neutral beta
     {
@@ -1584,9 +1544,12 @@ LAMA_AUTO_TEST_CASE_T( matrixMultiplyTest, ELLUtilsTest )
 // ToDo: does not work
 LAMA_AUTO_TEST_CASE_T( matrixAddTest, ELLUtilsTest )
 
-LAMA_AUTO_TEST_CASE_TT( getRowTest, ELLUtilsTest, logger )
-LAMA_AUTO_TEST_CASE_TT( getValueTest, ELLUtilsTest, logger )
-LAMA_AUTO_TEST_CASE_TT( scaleValueTest, ELLUtilsTest, logger )
-LAMA_AUTO_TEST_CASE_TT( getCSRValuesTest, ELLUtilsTest, logger )
-LAMA_AUTO_TEST_CASE_TT( setCSRValuesTest, ELLUtilsTest, logger )
-/* ------------------------------------------------------------------------------------------------------------------ */BOOST_AUTO_TEST_SUITE_END()
+LAMA_AUTO_TEST_CASE_TT( getRowTest, ELLUtilsTest )
+LAMA_AUTO_TEST_CASE_TT( getValueTest, ELLUtilsTest )
+LAMA_AUTO_TEST_CASE_TT( scaleValueTest, ELLUtilsTest )
+LAMA_AUTO_TEST_CASE_TT( getCSRValuesTest, ELLUtilsTest )
+LAMA_AUTO_TEST_CASE_TT( setCSRValuesTest, ELLUtilsTest )
+
+/* ------------------------------------------------------------------------------------------------------------------ */
+
+BOOST_AUTO_TEST_SUITE_END()

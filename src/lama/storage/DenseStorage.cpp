@@ -617,7 +617,7 @@ void DenseStorageView<ValueType>::vectorTimesMatrix(
 
         LAMA_INTERFACE_FN_T( setVal, loc, Utils, Setter, ValueType )
 
-        WriteOnlyAccess<ValueType> wResult( result, loc, mNumRows );
+        WriteOnlyAccess<ValueType> wResult( result, loc, mNumColumns );
 
         LAMA_CONTEXT_ACCESS( loc )
 
@@ -629,7 +629,7 @@ void DenseStorageView<ValueType>::vectorTimesMatrix(
 
         LAMA_INTERFACE_FN_T( copy, loc, BLAS, BLAS1, ValueType )
 
-        WriteOnlyAccess<ValueType> wResult( result, loc, mNumRows );
+        WriteOnlyAccess<ValueType> wResult( result, loc, mNumColumns );
 
         // by setting result = y we get the correct results
 
