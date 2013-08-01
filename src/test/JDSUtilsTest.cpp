@@ -114,6 +114,8 @@ void getRowTest( ContextPtr loc )
     }
 }
 
+/* ------------------------------------------------------------------------------------------------------------------ */
+
 template<typename ValueType,typename OtherValueType>
 void getValueTest( ContextPtr loc )
 {
@@ -170,6 +172,8 @@ void getValueTest( ContextPtr loc )
     }
 }
 
+/* ------------------------------------------------------------------------------------------------------------------ */
+
 template<typename ValueType,typename OtherValueType>
 void scaleValueTest( ContextPtr loc )
 {
@@ -220,6 +224,8 @@ void scaleValueTest( ContextPtr loc )
         BOOST_CHECK_EQUAL( expectedValues[i], rValues[i] );
     }
 }
+
+/* ------------------------------------------------------------------------------------------------------------------ */
 
 template<typename NoType>
 void checkDiagonalPropertyTest( ContextPtr loc )
@@ -331,6 +337,8 @@ void checkDiagonalPropertyTest( ContextPtr loc )
     }
 }
 
+/* ------------------------------------------------------------------------------------------------------------------ */
+
 template<typename NoType>
 void ilg2dlgTest( ContextPtr loc )
 {
@@ -365,6 +373,8 @@ void ilg2dlgTest( ContextPtr loc )
         }
     }
 }
+
+/* ------------------------------------------------------------------------------------------------------------------ */
 
 template<typename NoType>
 void sortRowsTest( ContextPtr loc )
@@ -423,6 +433,8 @@ void sortRowsTest( ContextPtr loc )
     }
 }
 
+/* ------------------------------------------------------------------------------------------------------------------ */
+
 template<typename NoType>
 void setInversePermTest( ContextPtr loc )
 {
@@ -472,6 +484,8 @@ void setInversePermTest( ContextPtr loc )
         }
     }
 }
+
+/* ------------------------------------------------------------------------------------------------------------------ */
 
 template<typename ValueType,typename OtherValueType>
 void setCSRValuesTest( ContextPtr loc )
@@ -547,6 +561,8 @@ void setCSRValuesTest( ContextPtr loc )
         BOOST_CHECK_EQUAL( expectedJDSValues[i], rJDSValues.get()[i] );
     }
 }
+
+/* ------------------------------------------------------------------------------------------------------------------ */
 
 template<typename ValueType,typename OtherValueType>
 void getCSRValuesTest( ContextPtr loc )
