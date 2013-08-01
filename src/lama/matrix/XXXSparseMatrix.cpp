@@ -158,7 +158,7 @@ XXXSparseMatrix<ValueType>::XXXSparseMatrix( const _MatrixStorage& globalData )
 
 {
     DistributionPtr rowDist( new NoDistribution( globalData.getNumRows() ) );
-    DistributionPtr colDist( new NoDistribution( globalData.getNumRows() ) );
+    DistributionPtr colDist( new NoDistribution( globalData.getNumColumns() ) );
 
     SparseMatrix<ValueType>::assign( globalData, rowDist, colDist );
 }
