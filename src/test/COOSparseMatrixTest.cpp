@@ -32,10 +32,8 @@
  */
 
 #include <boost/test/unit_test.hpp>
-#include <boost/mpl/list.hpp>
 
 #include <lama/matrix/COOSparseMatrix.hpp>
-
 #include <test/SparseMatrixTest.hpp>
 #include <test/TestMacros.hpp>
 
@@ -45,52 +43,49 @@ using namespace lama;
 extern bool base_test_case;
 extern std::string testcase;
 
-/* ------------------------------------------------------------------------- */
+namespace lama
+{
+namespace COOSparseMatrixTest
+{
+
+template<typename ValueType>
+void commonTestCases( ContextPtr loc )
+{
+    COOSparseMatrix<ValueType> cooMatrix;
+    SparseMatrixTest< COOSparseMatrix<ValueType> > cooSparseMatrixTest( cooMatrix );
+
+    cooSparseMatrixTest.mMatrix.setContext( loc );
+
+    if ( base_test_case )
+    {
+        SPARSEMATRIX_COMMONTESTCASES( cooSparseMatrixTest );
+    }
+    else
+    {
+        cooSparseMatrixTest.runTests();
+    }
+}
+
+template<typename ValueType>
+void typeNameTest( )
+{
+    COOSparseMatrix<ValueType> cooMatrix;
+    std::string s = cooMatrix.typeName();
+
+    BOOST_CHECK( s.length() > 0);
+}
+
+} // namespace COOSparseMatrixTest
+} // namespace lama
+
+/* ------------------------------------------------------------------------------------------------------------------ */
 
 BOOST_AUTO_TEST_SUITE( COOSparseMatrixTest )
 
 LAMA_LOG_DEF_LOGGER( logger, "Test.SparseMatrixTest.COOSparseMatrixTest" )
 
-typedef boost::mpl::list<float,double> test_types;
+LAMA_AUTO_TEST_CASE_CT( commonTestCases, COOSparseMatrixTest )
+LAMA_AUTO_TEST_CASE_T( typeNameTest, COOSparseMatrixTest )
+/* -------------------------------------------------------------------------------------------------------------------*/
 
-/* ------------------------------------------------------------------------- */
-
-BOOST_AUTO_TEST_CASE_TEMPLATE( commonTestCases, T, test_types )
-{
-    typedef T ValueType;
-
-    COOSparseMatrix<ValueType> cooMatrix;
-    SparseMatrixTest< COOSparseMatrix<ValueType> > cooSparseMatrixtest( cooMatrix );
-
-    if ( base_test_case )
-    {
-        LAMA_LOG_INFO( logger, "Run method " << testcase << " in COOSparseMatrixTest." );
-        SPARSEMATRIX_COMMONTESTCASES( cooSparseMatrixtest );
-    }
-    else
-    {
-        CONTEXTLOOP()
-        {
-            GETCONTEXT( context );
-            cooSparseMatrixtest.mMatrix.setContext( context );
-            LAMA_LOG_INFO( logger, "Using context = " << cooSparseMatrixtest.mMatrix.getContext().getType() );
-            cooSparseMatrixtest.runTests();
-        }
-    }
-}
-
-/* ------------------------------------------------------------------------- */
-
-BOOST_AUTO_TEST_CASE( typeNameTest )
-{
-    COOSparseMatrix<double> cooMatrixd;
-    std::string s = cooMatrixd.typeName();
-    BOOST_CHECK_EQUAL( s, "COOSparseMatrix<double>" );
-
-    COOSparseMatrix<float> cooMatrixf;
-    s = cooMatrixf.typeName();
-    BOOST_CHECK_EQUAL( s, "COOSparseMatrix<float>" );
-}
-/* ------------------------------------------------------------------------- */
-
-BOOST_AUTO_TEST_SUITE_END();
+BOOST_AUTO_TEST_SUITE_END()

@@ -725,22 +725,22 @@ void viamaxTest( ContextPtr loc )
 } // namespace BLAS1Test
 } // namespace lama
 
-/* ------------------------------------------------------------------------------------------ */
+/* ------------------------------------------------------------------------------------------------------------------ */
 
 BOOST_AUTO_TEST_SUITE( BLAS1Test )
 
 LAMA_LOG_DEF_LOGGER( logger, "Test.BLAS1Test" )
 
-LAMA_AUTO_TEST_CASE_T( asumTest, BLAS1Test )
-LAMA_AUTO_TEST_CASE_T( axpyTest, BLAS1Test )
-LAMA_AUTO_TEST_CASE_T( copyTest, BLAS1Test )
-LAMA_AUTO_TEST_CASE_T( dotTest, BLAS1Test )
-LAMA_AUTO_TEST_CASE_T( iamaxTest, BLAS1Test )
-LAMA_AUTO_TEST_CASE_T( nrm2Test, BLAS1Test )
-LAMA_AUTO_TEST_CASE_T( scalTest, BLAS1Test )
-LAMA_AUTO_TEST_CASE_T( sumTest, BLAS1Test )
-LAMA_AUTO_TEST_CASE_T( swapTest, BLAS1Test )
-LAMA_AUTO_TEST_CASE_T( viamaxTest, BLAS1Test )
+LAMA_AUTO_TEST_CASE_CT( asumTest, BLAS1Test )
+LAMA_AUTO_TEST_CASE_CT( axpyTest, BLAS1Test )
+LAMA_AUTO_TEST_CASE_CT( copyTest, BLAS1Test )
+LAMA_AUTO_TEST_CASE_CT( dotTest, BLAS1Test )
+LAMA_AUTO_TEST_CASE_CT( iamaxTest, BLAS1Test )
+LAMA_AUTO_TEST_CASE_CT( nrm2Test, BLAS1Test )
+LAMA_AUTO_TEST_CASE_CT( scalTest, BLAS1Test )
+LAMA_AUTO_TEST_CASE_CT( sumTest, BLAS1Test )
+LAMA_AUTO_TEST_CASE_CT( swapTest, BLAS1Test )
+LAMA_AUTO_TEST_CASE_CT( viamaxTest, BLAS1Test )
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 
