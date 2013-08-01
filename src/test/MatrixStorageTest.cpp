@@ -42,6 +42,13 @@
 
 #include <test/TestMacros.hpp>
 
+#include <test/Configuration.hpp>
+#include <lama/matrix/CSRSparseMatrix.hpp>
+#include <lama/DenseVector.hpp>
+
+#include <iostream>
+#include <fstream>
+
 using namespace boost;
 using namespace lama;
 
@@ -123,6 +130,27 @@ void MatrixStorageTest<T>::setDenseDataNotSquare( MatrixStorage<T>& storage )
 
     static ValueType values[] =
     { 6, 0, 0, 4, 7, 0, 0, 0, 0, 0, -9.3f, 4, 2, 5, 0, 3, 0, 1, 2, 0, 8, 0, 0, 1 };
+
+    // just make sure that number of entries in values matches the matrix size
+
+    BOOST_CHECK_EQUAL( numRows * numColumns, IndexType( sizeof(values) / sizeof (ValueType) ) );
+
+    ValueType eps = static_cast<ValueType>( 1E-5 );
+
+    // Note: diagonal property of sparse matrices will be set due to square matrix
+
+    storage.setRawDenseData( numRows, numColumns, values, eps );
+}
+
+/* ------------------------------------------------------------------------- */
+
+template<typename T>
+void MatrixStorageTest<T>::setDenseDataSymmetric( MatrixStorage<T>& storage )
+{
+    const IndexType numRows = 4;
+    const IndexType numColumns = 4;
+
+    static ValueType values[] = { 1, 2, 0, 5, 2, 1, 3, 0, 0, 3, 1, 4, 5, 0, 4, 1 };
 
     // just make sure that number of entries in values matches the matrix size
 
@@ -805,6 +833,95 @@ LAMA_COMMON_TEST_CASE_TEMPLATE( MatrixStorageTest, StorageType, vectorTimesMatri
 
 LAMA_COMMON_TEST_CASE_TEMPLATE_END()
 
+LAMA_COMMON_TEST_CASE_TEMPLATE( MatrixStorageTest, StorageType, numericalTest )
+
+    std::string prefix = Configuration::getInstance().getPath();
+    CSRSparseMatrix<ValueType> symA( prefix + "/" + "nos6.mtx" );
+    mMatrixStorage = symA.getLocalStorage();
+
+    DenseStorage<ValueType> orig; // used for comparing results
+    orig = mMatrixStorage;
+
+    DenseVector<ValueType> vec( prefix + "/" + "p2" );
+
+    bool symmetry = symA.checkSymmetry();
+    BOOST_CHECK_EQUAL( symmetry, true );
+
+    IndexType m = mMatrixStorage.getNumColumns();
+
+    const ValueType alpha = 1.0;
+    const ValueType beta = 0.0;
+
+    LAMAArray<ValueType> x( vec.getLocalValues() );
+    LAMAArray<ValueType> y( m, 0.0 );
+    // due to use of LAMAArrayView we have to give result the correct size
+    LAMAArray<ValueType> result ( m );
+    LAMAArray<ValueType> result2 ( m );
+
+    DenseStorage<ValueType> denseStorage ( symA.getLocalStorage() ); //mMatrixStorage );
+    LAMAArray<ValueType> denseResult ( m );
+    LAMAArray<ValueType> denseResult2 ( m );
+
+    // asynchronous execution, only checks correct calling
+
+    {
+        std::auto_ptr<SyncToken> token ( mMatrixStorage.vectorTimesMatrixAsync( result, alpha, x, beta, y ) );
+        std::auto_ptr<SyncToken> token2 ( mMatrixStorage.matrixTimesVectorAsync( result2, alpha, x, beta, y ) );
+
+        std::auto_ptr<SyncToken> token3 ( denseStorage.vectorTimesMatrixAsync( denseResult, alpha, x, beta, y ) );
+        std::auto_ptr<SyncToken> token4 ( denseStorage.matrixTimesVectorAsync( denseResult2, alpha, x, beta, y ) );
+        // free of token at end of this scope does the synchronization
+    }
+    LAMA_LOG_TRACE( logger, "vectorTimesMatrixAsync and matrixTimesVectorAsync synchronized" )
+
+    BOOST_CHECK_EQUAL( result.size(), mMatrixStorage.getNumColumns() );
+
+    HostReadAccess<ValueType> xValues( x );
+    HostReadAccess<ValueType> values( orig.getData() );
+    HostReadAccess<ValueType> res( result );
+    HostReadAccess<ValueType> res2( result2 );
+    HostReadAccess<ValueType> resD( denseResult );
+    HostReadAccess<ValueType> res2D( denseResult2 );
+
+    int ncol = mMatrixStorage.getNumColumns();
+    int nrow = mMatrixStorage.getNumRows();
+
+    for ( IndexType j = 0; j < ncol; ++j )
+    {
+        ValueType sum = 0.0;
+
+        if ( symA.hasDiagonalProperty() )
+        {
+            sum += values[ j * ncol ] * xValues[j];
+
+            for ( IndexType i = 0; i < nrow; ++i )
+            {
+                if ( i != j )
+                {
+                    return;
+                }
+                sum += values[ i * ncol + j ] * xValues[i];
+            }
+        }
+        else
+        {
+            for ( IndexType i = 0; i < nrow; ++i )
+            {
+                sum += values[ i * ncol + j ] * xValues[i];
+            }
+        }
+
+        sum *= alpha;
+
+        BOOST_CHECK_CLOSE( sum, res[j], 0.1f );
+        BOOST_CHECK_CLOSE( res[j], res2[j], 0.1f );
+        BOOST_CHECK_CLOSE( resD[j], res2D[j], 0.1f );
+        BOOST_CHECK_CLOSE( resD[j], res[j], 0.1f );
+
+    }
+
+LAMA_COMMON_TEST_CASE_TEMPLATE_END()
+
 /* ------------------------------------------------------------------------- */
 
 LAMA_COMMON_TEST_CASE_TEMPLATE( MatrixStorageTest, StorageType, matrixMultTest )
@@ -1163,6 +1280,7 @@ LAMA_COMMON_TEST_CASE_RUNNER_TEMPLATE( MatrixStorageTest )
     normTest();
     vectorMultTest();
     vectorTimesMatrixTest();
+    numericalTest();
     jacobiTest();
     jacobiHaloTest();
     matrixMultTest();
