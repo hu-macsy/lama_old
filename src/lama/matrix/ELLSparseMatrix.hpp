@@ -106,7 +106,7 @@ public:
      *
      *  @param[in] globalData  contains local rows of the distributed matrix
      */
-    ELLSparseMatrix( const _MatrixStorage& globalData );
+    explicit ELLSparseMatrix( const _MatrixStorage& globalData );
 
     /** Constructor of a sparse matrix by local storage.
      *
