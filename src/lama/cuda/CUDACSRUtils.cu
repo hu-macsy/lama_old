@@ -71,7 +71,8 @@
 
 // TODO: defines for matrix multiplication, should be removed later!
 #define STEP 1
-#define NUM_BLOCKS 64
+//#define NUM_BLOCKS 64
+#define NUM_BLOCKS 512
 #define HASH_TABLE_SIZE 2048
 
 #define NUM_THREADS (STEP*32)
@@ -1076,6 +1077,49 @@ IndexType CUDACSRUtils::matrixAddSizes(
 /*                                             hashTable Methods                                                      */
 /* ------------------------------------------------------------------------------------------------------------------ */
 
+__device__
+inline unsigned int cuckooHash( int hashId, IndexType input, unsigned int range ){
+    unsigned int hash_a;
+    unsigned int hash_b;
+    unsigned int hash_p;
+    switch(hashId){
+        case 0:
+            hash_a = 375080;
+            hash_b = 656121;
+            hash_p = 743279;
+            break;
+        case 1:
+            hash_a = 925176;
+            hash_b = 620815;
+            hash_p = 998681;
+            break;
+        case 2:
+            hash_a = 356077;
+            hash_b = 143772;
+            hash_p = 988549;
+            break;
+        case 3:
+            hash_a = 245310;
+            hash_b = 709015;
+            hash_p = 235043;
+            break;
+    }
+
+    return ( ( hash_a * input + hash_b ) % hash_p ) % range;
+}
+
+__device__
+inline int cuckooHashId( unsigned int hash, IndexType input, unsigned int range ){
+    for ( int i = 0; i < 4; i++ )
+    {
+        if ( cuckooHash( i, input, range ) == hash ) {
+            return i;
+        }
+    }
+    return -1;
+}
+
+
 
 template <typename ValueType>
 __device__
@@ -1096,50 +1140,40 @@ inline bool insertHashTable(IndexType colB,
                             ValueType sHashTableValues[],
                             ValueType* hashTableValues){
 
-    return insertHashTable_quadraticProbing ( colB,diagonalProperty, sHashTableJa, aRowIt, numElementsHashTable,
-                                              hashTableIndexes, hashTableOffset, sGlobalHashTableAccessed, localWarpId,
-                                              useValues, cIA, valB, sValA, sHashTableValues, hashTableValues);
+//    return insertHashTable_openAddressing ( colB,diagonalProperty, sHashTableJa, aRowIt, numElementsHashTable,
+//                                            hashTableIndexes, hashTableOffset, sGlobalHashTableAccessed, localWarpId,
+//                                            useValues, cIA, valB, sValA, sHashTableValues, hashTableValues);
+
+    return insertHashTable_cuckoo ( colB,diagonalProperty, sHashTableJa, aRowIt, numElementsHashTable,
+                                    hashTableIndexes, hashTableOffset, sGlobalHashTableAccessed, localWarpId,
+                                    useValues, cIA, valB, sValA, sHashTableValues, hashTableValues);
+
+
+
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
 
 template <typename ValueType>
 __device__
-inline bool insertHashTable_quadraticProbing(IndexType colB,
-                                             bool diagonalProperty,
-                                             IndexType sHashTableJa[],
-                                             IndexType aRowIt,
-                                             IndexType numElementsHashTable,
-                                             IndexType* hashTableIndexes,
-                                             IndexType hashTableOffset,
-                                             volatile bool sGlobalHashTableAccessed[],
-                                             IndexType localWarpId,
+inline bool insertHashTable_openAddressing(IndexType colB,
+                                           bool diagonalProperty,
+                                           IndexType sHashTableJa[],
+                                           IndexType aRowIt,
+                                           IndexType numElementsHashTable,
+                                           IndexType* hashTableIndexes,
+                                           IndexType hashTableOffset,
+                                           volatile bool sGlobalHashTableAccessed[],
+                                           IndexType localWarpId,
 
-                                             bool useValues,
-                                             IndexType *cIA,
-                                             ValueType valB,
-                                             ValueType sValA,
-                                             ValueType sHashTableValues[],
-                                             ValueType* hashTableValues
-                                             ){
+                                           bool useValues,
+                                           IndexType *cIA,
+                                           ValueType valB,
+                                           ValueType sValA,
+                                           ValueType sHashTableValues[],
+                                           ValueType* hashTableValues )
+{
     bool inserted = false;
     unsigned int fx = HASH_A * colB;
     unsigned int gx = ( fx + HASH_B ) % HASH_P;
@@ -1219,6 +1253,143 @@ inline bool insertHashTable_quadraticProbing(IndexType colB,
     }
 
     return inserted;
+}
+
+template <typename ValueType>
+__device__
+inline bool insertHashTable_cuckoo( IndexType colB,
+                                    bool diagonalProperty,
+                                    IndexType sHashTableJa[],
+                                    IndexType aRowIt,
+                                    IndexType numElementsHashTable,
+                                    IndexType* hashTableIndexes,
+                                    IndexType hashTableOffset,
+                                    volatile bool sGlobalHashTableAccessed[],
+                                    IndexType localWarpId,
+
+                                    bool useValues,
+                                    IndexType *cIA,
+                                    ValueType valB,
+                                    ValueType sValA,
+                                    ValueType sHashTableValues[],
+                                    ValueType* hashTableValues )
+{
+    unsigned int hash;
+
+    // Step 1: Check if value exists in one of the hashTables
+    for ( int i = 0; i < 4; i++ ) {
+        hash = cuckooHash( i, colB, SIZE_LOCAL_HASHTABLE );
+        if ( sHashTableJa[hash] == colB ){
+            if ( useValues )
+            {
+                sHashTableValues[hash] += valB * sValA;
+            }
+            return true;
+        }
+    }
+    if ( sGlobalHashTableAccessed[localWarpId] )
+    {
+        for ( int i = 0; i < 4; i++ ) {
+            hash = cuckooHash( i, colB, numElementsHashTable );
+            if ( hashTableIndexes[hash] == colB ){
+                if ( useValues )
+                {
+                    sHashTableValues[hash] += valB * sValA;
+                }
+                return true;
+            }
+        }
+    }
+
+    // Step 2: Value not already inserted, try to insert it!
+    hash            = cuckooHash( 0, colB, SIZE_LOCAL_HASHTABLE );
+    ValueType value = valB * sValA;
+
+    for ( IndexType i = 0; i < MAX_HASH_TRIES; i++ )
+    {
+        // insert current element at hash position
+        ValueType oldValue;
+        IndexType oldIndex = atomicExch( &sHashTableJa[hash], colB );
+        if ( useValues )
+        {
+            oldValue = sHashTableValues[hash];
+            sHashTableValues[hash] = value;
+        }
+
+        if ( oldIndex == -1 ){
+            // Last insert was on empty slot, element inserted!
+            if ( !useValues )
+            {
+                atomicAdd( &cIA[aRowIt], 1 );
+            }
+            return true;
+        }
+        else
+        {
+            colB    = oldIndex;
+            value   = oldValue;
+            int lastHashId = cuckooHashId( hash, colB, SIZE_LOCAL_HASHTABLE );
+            if ( lastHashId == 3 )
+            {
+                // Element was on last position, Hashtable is full!
+                break;
+            }
+            else
+            {
+                hash = cuckooHash( lastHashId + 1, colB, SIZE_LOCAL_HASHTABLE );
+            }
+        }
+    }
+
+
+    // Step 3: The is an value that could not be inserted in shared table, try global
+    hash            = cuckooHash( 0, colB, numElementsHashTable );
+
+    for ( IndexType i = 0; i < MAX_HASH_TRIES; i++ )
+    {
+        // insert current element at hash position
+        ValueType oldValue;
+        IndexType oldIndex = atomicExch( &hashTableIndexes[hashTableOffset + hash], colB );
+        if ( useValues )
+        {
+            oldValue = hashTableValues[hashTableOffset + hash];
+            hashTableValues[hashTableOffset + hash] = value;
+        }
+
+        if ( oldIndex == -1 ){
+            // Last insert was on empty slot, element inserted!
+            if ( !useValues )
+            {
+                atomicAdd( &cIA[aRowIt], 1 );
+            }
+            return true;
+        }
+        else
+        {
+            colB    = oldIndex;
+            value   = oldValue;
+            int lastHashId = cuckooHashId( hash, colB, numElementsHashTable );
+            if ( lastHashId == 3 )
+            {
+                // Element was on last position, Hashtable is full!
+                return false;
+            }
+            else
+            {
+                hash = cuckooHash( lastHashId + 1, colB, numElementsHashTable );
+            }
+        }
+    }
+
+
+
+
+
+
+
+
+
+    return false;
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */
@@ -1703,9 +1874,48 @@ inline void copyHashtable ( volatile IndexType sColA[],
                             IndexType numElementsHashTable,
                             IndexType* hashTableIndexes,
                             ValueType* hashTableValues,
-                            IndexType hashTableOffset
+                            IndexType hashTableOffset )
+{
 
-                            ){
+    return copyHashtable_openAddressing ( sColA, cIA, laneId, localWarpId, aRowIt, alpha, sHashTableJa, sHashTableValues,
+#if CUDA_ARCH < 20
+                                          sBallot,
+#endif
+                                          cJA, cValues, sGlobalHashTableAccessed, numElementsHashTable, hashTableIndexes,
+                                          hashTableValues, hashTableOffset );
+
+
+
+
+
+}
+
+
+
+
+template <typename ValueType>
+__device__
+inline void copyHashtable_openAddressing ( volatile IndexType sColA[],
+                                           const IndexType* cIA,
+                                           IndexType laneId,
+                                           IndexType localWarpId,
+                                           IndexType aRowIt,
+                                           const ValueType alpha,
+                                           IndexType sHashTableJa[],
+                                           ValueType sHashTableValues[],
+#if CUDA_ARCH < 20
+                                           volatile IndexType sBallot[],
+#endif
+                                           IndexType* cJA,
+                                           ValueType* cValues,
+                                           volatile bool sGlobalHashTableAccessed[],
+                                           IndexType numElementsHashTable,
+                                           IndexType* hashTableIndexes,
+                                           ValueType* hashTableValues,
+                                           IndexType hashTableOffset )
+
+{
+
 
     // TODO: rename sColA => destinationOffset!
     sColA[localWarpId] = 0;
@@ -1795,7 +2005,7 @@ inline void copyHashtable ( volatile IndexType sColA[],
                 }
             }
 
-    }
+}
 
 
 template<typename ValueType,int nWarps>
