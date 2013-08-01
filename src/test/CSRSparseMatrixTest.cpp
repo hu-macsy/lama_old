@@ -32,10 +32,8 @@
  */
 
 #include <boost/test/unit_test.hpp>
-#include <boost/mpl/list.hpp>
 
 #include <lama/matrix/CSRSparseMatrix.hpp>
-
 #include <test/SparseMatrixTest.hpp>
 #include <test/TestMacros.hpp>
 
@@ -45,52 +43,50 @@ using namespace lama;
 extern bool base_test_case;
 extern std::string testcase;
 
-/* ------------------------------------------------------------------------- */
+namespace lama
+{
+namespace CSRSparseMatrixTest
+{
+
+template<typename ValueType>
+void commonTestCases( ContextPtr loc )
+{
+    CSRSparseMatrix<ValueType> csrMatrix;
+    SparseMatrixTest< CSRSparseMatrix<ValueType> > csrSparseMatrixTest( csrMatrix );
+
+    csrSparseMatrixTest.mMatrix.setContext( loc );
+
+    if ( base_test_case )
+    {
+        SPARSEMATRIX_COMMONTESTCASES( csrSparseMatrixTest );
+    }
+    else
+    {
+        csrSparseMatrixTest.runTests();
+    }
+}
+
+
+template<typename ValueType>
+void typeNameTest( )
+{
+    CSRSparseMatrix<ValueType> csrMatrix;
+    std::string s = csrMatrix.typeName();
+
+    BOOST_CHECK( s.length() > 0);
+}
+
+} // namespace CSRSparseMatrixTest
+} // namespace lama
+
+/* ------------------------------------------------------------------------------------------------------------------ */
 
 BOOST_AUTO_TEST_SUITE( CSRSparseMatrixTest )
 
 LAMA_LOG_DEF_LOGGER( logger, "Test.SparseMatrixTest.CSRSparseMatrixTest" )
 
-typedef boost::mpl::list<float,double> test_types;
+LAMA_AUTO_TEST_CASE_CT( commonTestCases, CSRSparseMatrixTest )
+LAMA_AUTO_TEST_CASE_T( typeNameTest, CSRSparseMatrixTest)
+/* ------------------------------------------------------------------------------------------------------------------ */
 
-/* ------------------------------------------------------------------------- */
-
-BOOST_AUTO_TEST_CASE_TEMPLATE( commonTestCases, T, test_types ) {
-    typedef T ValueType;
-
-    CSRSparseMatrix<ValueType> csrMatrix;
-    SparseMatrixTest< CSRSparseMatrix<ValueType> > csrSparseMatrixtest( csrMatrix );
-
-    if ( base_test_case )
-    {
-        LAMA_LOG_INFO( logger, "Run method " << testcase << " in CSRSparseMatrixTest." );
-        SPARSEMATRIX_COMMONTESTCASES( csrSparseMatrixtest );
-    }
-    else
-    {
-        CONTEXTLOOP()
-        {
-            GETCONTEXT( context );
-            csrSparseMatrixtest.mMatrix.setContext( context );
-            LAMA_LOG_INFO( logger, "Using context = " << csrSparseMatrixtest.mMatrix.getContext().getType() );
-            csrSparseMatrixtest.runTests();
-        }
-    }
-}
-
-/* ------------------------------------------------------------------------- */
-
-BOOST_AUTO_TEST_CASE( typeNameTest )
-{
-    CSRSparseMatrix<double> csrMatrixd;
-    std::string s = csrMatrixd.typeName();
-    BOOST_CHECK_EQUAL( s, "CSRSparseMatrix<double>" );
-
-    CSRSparseMatrix<float> csrMatrixf;
-    s = csrMatrixf.typeName();
-    BOOST_CHECK_EQUAL( s, "CSRSparseMatrix<float>" );
-}
-
-/* ------------------------------------------------------------------------- */
-
-BOOST_AUTO_TEST_SUITE_END();
+BOOST_AUTO_TEST_SUITE_END()

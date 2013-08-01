@@ -65,8 +65,8 @@ std::string loglevel_argument = "";
  */
 
 #define TC_REG( test_classes, test_methods )                                                         \
-    { for ( int i = 0; i < (int)( sizeof(test_classes) / sizeof(test_classes[0]) ); i++ )                \
-            for ( int j = 0; j < (int)( sizeof(test_methods) / sizeof(test_methods[0]) ); j++ )              \
+    { for ( int i = 0; i < (int)( sizeof(test_classes) / sizeof(test_classes[0]) ); i++ )            \
+            for ( int j = 0; j < (int)( sizeof(test_methods) / sizeof(test_methods[0]) ); j++ )      \
                 inherited_test_cases.push_back( test_classes[i]+"/"+test_methods[j] ); }
 
 int main( int argc, char* argv[] )
@@ -223,6 +223,7 @@ int main( int argc, char* argv[] )
             {
                 base_test_case = true;
             }
+
 
         if ( base_test_case )
         {

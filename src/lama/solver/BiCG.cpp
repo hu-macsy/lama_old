@@ -176,18 +176,22 @@ void BiCG::iterate()
 
         LAMA_LOG_DEBUG( logger, "beta = " << beta )
         p = z + beta * p;
+        LAMA_LOG_TRACE( logger, "l2Norm( p ) = " << p.l2Norm() )
         p2 = z2 + beta * p2;
+        LAMA_LOG_TRACE( logger, "l2Norm( p2 ) = " << p2.l2Norm() )
     }
 
     {
         LAMA_REGION( "Solver.BiCG.calc_q" )
         LAMA_LOG_INFO( logger, "Calculating q." )
         q = A * p;
+        LAMA_LOG_TRACE( logger, "l2Norm( q ) = " << q.l2Norm() )
         q2 = p2 * A;
+        LAMA_LOG_TRACE( logger, "l2Norm( q2 ) = " << q2.l2Norm() )
     }
 
     LAMA_LOG_INFO( logger, "Calculating pqProd." )
-    const Scalar pqProd = p.dotProduct( q );
+    const Scalar pqProd = p2.dotProduct( q );
     LAMA_LOG_DEBUG( logger, "pqProd = " << pqProd )
 
     if ( pqProd.getValue<double>() == 0.0 )
@@ -204,12 +208,15 @@ void BiCG::iterate()
         LAMA_LOG_INFO( logger, "Calculating x." )
         LAMA_REGION( "Solver.BiCG.update_x" )
         x = x + alpha * p;
+        LAMA_LOG_TRACE( logger, "l2Norm( x ) = " << x.l2Norm() )
     }
     {
         LAMA_LOG_INFO( logger, "Updating residual." )
         LAMA_REGION( "Solver.BiCG.update_res" )
         residual = residual - alpha * q;
+        LAMA_LOG_TRACE( logger, "l2Norm( residual ) = " << residual.l2Norm() )
         residual2 = residual2 - alpha * q2;
+        LAMA_LOG_TRACE( logger, "l2Norm( residual2 ) = " << residual.l2Norm() )
     }
     //BiCG implementation end
 

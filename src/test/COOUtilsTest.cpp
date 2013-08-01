@@ -195,14 +195,14 @@ void setCSRDataTest( ContextPtr loc )
 
 } //namespace lama
 
-/* ------------------------------------------------------------------------------------------ */
+/* ------------------------------------------------------------------------------------------------------------------ */
 
 BOOST_AUTO_TEST_SUITE( COOUtilsTest )
 
 LAMA_LOG_DEF_LOGGER( logger, "Test.COOUtilsTest" )
 
-LAMA_AUTO_TEST_CASE_TDUMMY( offsets2iaTest, COOUtilsTest )
-LAMA_AUTO_TEST_CASE_TDUMMY( setCSRDataTest, COOUtilsTest )
+LAMA_AUTO_TEST_CASE_CTDUMMY( offsets2iaTest, COOUtilsTest )
+LAMA_AUTO_TEST_CASE_CTDUMMY( setCSRDataTest, COOUtilsTest )
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 

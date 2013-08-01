@@ -81,7 +81,9 @@ void SparseMatrixTest<MatrixType>::setUp()
 
 /* ----------------------------------------------------------------------------- */
 
-LAMA_COMMON_TEST_CASE_TEMPLATE( SparseMatrixTest, TypeMatrix, clearTest )LAMA_LOG_INFO( logger, "clearTest" )
+LAMA_COMMON_TEST_CASE_TEMPLATE( SparseMatrixTest, TypeMatrix, clearTest )
+
+    LAMA_LOG_INFO( logger, "clearTest" )
 
     typedef TypeMatrix MatrixType;
     typedef typename MatrixType::ValueType ValueType;
@@ -290,6 +292,7 @@ void SparseMatrixTest<mt>::testConversionsImpl()
 }
 
 LAMA_COMMON_TEST_CASE_TEMPLATE( SparseMatrixTest, MatrixType, testConversions )
+
     LAMA_LOG_INFO( logger, "testConversions" );
 
     testConversionsImpl<CSRSparseMatrix<float> >();
@@ -336,6 +339,7 @@ void SparseMatrixTest<MatrixType>::matrixMultTestImpl( const Matrix& a, const Ma
 }
 
 LAMA_COMMON_TEST_CASE_TEMPLATE( SparseMatrixTest, MatrixType, testMultiplication )
+
     LAMA_LOG_INFO( logger, "testMultiplication" );
 
     typedef typename MatrixType::ValueType ValueType;

@@ -334,13 +334,13 @@ BOOST_AUTO_TEST_SUITE( UtilsTest )
 
 LAMA_LOG_DEF_LOGGER( logger, "Test.UtilsTest" )
 
-LAMA_AUTO_TEST_CASE_T( sumTest, UtilsTest )
-LAMA_AUTO_TEST_CASE_T( isSortedTest, UtilsTest )
-LAMA_AUTO_TEST_CASE_T( setValTest, UtilsTest )
-LAMA_AUTO_TEST_CASE_T( invertTest, UtilsTest )
+LAMA_AUTO_TEST_CASE_CT( sumTest, UtilsTest )
+LAMA_AUTO_TEST_CASE_CT( isSortedTest, UtilsTest )
+LAMA_AUTO_TEST_CASE_CT( setValTest, UtilsTest )
+LAMA_AUTO_TEST_CASE_CT( invertTest, UtilsTest )
 
-LAMA_AUTO_TEST_CASE_TDUMMY( setOrderTest, UtilsTest )
+LAMA_AUTO_TEST_CASE_CTDUMMY( setOrderTest, UtilsTest )
 
-LAMA_AUTO_TEST_CASE_T( scaleTest, UtilsTest )
+LAMA_AUTO_TEST_CASE_CT( scaleTest, UtilsTest )
 
 /* ------------------------------------------------------------------------------------------------------------------ */BOOST_AUTO_TEST_SUITE_END()

@@ -632,16 +632,17 @@ BOOST_AUTO_TEST_SUITE( JDSUtilsTest )
 
 LAMA_LOG_DEF_LOGGER( logger, "Test.JDSUtilsTest" )
 
-LAMA_AUTO_TEST_CASE_TDUMMY( checkDiagonalPropertyTest, JDSUtilsTest )
-LAMA_AUTO_TEST_CASE_TDUMMY( ilg2dlgTest, JDSUtilsTest )
-LAMA_AUTO_TEST_CASE_TDUMMY( sortRowsTest, JDSUtilsTest )
-LAMA_AUTO_TEST_CASE_TDUMMY( setInversePermTest, JDSUtilsTest )
+LAMA_AUTO_TEST_CASE_CTDUMMY( checkDiagonalPropertyTest, JDSUtilsTest )
+LAMA_AUTO_TEST_CASE_CTDUMMY( ilg2dlgTest, JDSUtilsTest )
+LAMA_AUTO_TEST_CASE_CTDUMMY( sortRowsTest, JDSUtilsTest )
+LAMA_AUTO_TEST_CASE_CTDUMMY( setInversePermTest, JDSUtilsTest )
 
-LAMA_AUTO_TEST_CASE_TT( getRowTest, JDSUtilsTest )
-LAMA_AUTO_TEST_CASE_TT( getValueTest, JDSUtilsTest )
-LAMA_AUTO_TEST_CASE_TT( scaleValueTest, JDSUtilsTest )
-LAMA_AUTO_TEST_CASE_TT( setCSRValuesTest, JDSUtilsTest )
-LAMA_AUTO_TEST_CASE_TT( getCSRValuesTest, JDSUtilsTest )
+LAMA_AUTO_TEST_CASE_CTT( getRowTest, JDSUtilsTest )
+LAMA_AUTO_TEST_CASE_CTT( getValueTest, JDSUtilsTest )
+LAMA_AUTO_TEST_CASE_CTT( scaleValueTest, JDSUtilsTest )
+LAMA_AUTO_TEST_CASE_CTT( setCSRValuesTest, JDSUtilsTest )
+LAMA_AUTO_TEST_CASE_CTT( getCSRValuesTest, JDSUtilsTest )
 
 // TODO: add jacobi tests etc.
-/* ------------------------------------------------------------------------------------------------------------------ */BOOST_AUTO_TEST_SUITE_END()
+/* ------------------------------------------------------------------------------------------------------------------ */
+BOOST_AUTO_TEST_SUITE_END()
