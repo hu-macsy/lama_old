@@ -198,15 +198,29 @@ void validate(
     {
         lama::Scalar valCorrect = matrixCorrect->getValue( i, j );
         lama::Scalar valGiven = matrixGiven->getValue( i, j );
-        ValueType relativeDifference = abs( valGiven.getValue<ValueType>() - valCorrect.getValue<ValueType>() )
-                                                   / valGiven.getValue<ValueType>();
 
-        if( relativeDifference  > epsilon )
+        if ( valGiven != 0.0 )
         {
-            std::cout << "Error in Matrix on position (" << i << ", " << j << ") value is " << valGiven
-                      << " but should " << valCorrect << " relative difference is "
-                      << relativeDifference << std::endl;
-            numErrors++;
+            ValueType relativeDifference = abs( ((ValueType)valGiven.getValue<ValueType>()
+                                                - (ValueType)valCorrect.getValue<ValueType>())
+                                                / (ValueType)valGiven.getValue<ValueType>());
+
+            if( relativeDifference  > epsilon )
+            {
+                std::cout << "Error in Matrix on position (" << i << ", " << j << ") value is " << valGiven
+                          << " but should " << valCorrect << " relative difference is "
+                          << relativeDifference << std::endl;
+                numErrors++;
+            }
+        }
+        else
+        {
+            if ( valCorrect != 0.0 )
+            {
+                std::cout << "Error in Matrix on position (" << i << ", " << j << ") value is " << valGiven
+                          << " but should " << valCorrect << " relative difference is " << std::endl;
+                numErrors++;
+            }
         }
 
         if( abs(valCorrect) > epsilon )

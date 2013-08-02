@@ -73,7 +73,7 @@
 #define STEP 1
 //#define NUM_BLOCKS 64
 #define NUM_BLOCKS 512
-#define HASH_TABLE_SIZE 2048
+#define HASH_TABLE_SIZE 32
 
 #define NUM_THREADS (STEP*32)
 #define NUM_WARPS NUM_THREADS/32
