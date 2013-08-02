@@ -1140,13 +1140,13 @@ inline bool insertHashTable(IndexType colB,
                             ValueType sHashTableValues[],
                             ValueType* hashTableValues){
 
-//    return insertHashTable_openAddressing ( colB,diagonalProperty, sHashTableJa, aRowIt, numElementsHashTable,
-//                                            hashTableIndexes, hashTableOffset, sGlobalHashTableAccessed, localWarpId,
-//                                            useValues, cIA, valB, sValA, sHashTableValues, hashTableValues);
+    return insertHashTable_openAddressing ( colB,diagonalProperty, sHashTableJa, aRowIt, numElementsHashTable,
+                                            hashTableIndexes, hashTableOffset, sGlobalHashTableAccessed, localWarpId,
+                                            useValues, cIA, valB, sValA, sHashTableValues, hashTableValues);
 
-    return insertHashTable_cuckoo ( colB,diagonalProperty, sHashTableJa, aRowIt, numElementsHashTable,
-                                    hashTableIndexes, hashTableOffset, sGlobalHashTableAccessed, localWarpId,
-                                    useValues, cIA, valB, sValA, sHashTableValues, hashTableValues);
+//    return insertHashTable_cuckoo ( colB,diagonalProperty, sHashTableJa, aRowIt, numElementsHashTable,
+//                                    hashTableIndexes, hashTableOffset, sGlobalHashTableAccessed, localWarpId,
+//                                    useValues, cIA, valB, sValA, sHashTableValues, hashTableValues);
 
 
 
@@ -1275,6 +1275,7 @@ inline bool insertHashTable_cuckoo( IndexType colB,
                                     ValueType* hashTableValues )
 {
     unsigned int hash;
+    int maxRetries = 1000;
 
     // Step 1: Check if value exists in one of the hashTables
     for ( int i = 0; i < 4; i++ ) {
@@ -1305,7 +1306,7 @@ inline bool insertHashTable_cuckoo( IndexType colB,
     hash            = cuckooHash( 0, colB, SIZE_LOCAL_HASHTABLE );
     ValueType value = valB * sValA;
 
-    for ( IndexType i = 0; i < MAX_HASH_TRIES; i++ )
+    for ( IndexType i = 0; i < maxRetries; i++ )
     {
         // insert current element at hash position
         ValueType oldValue;
@@ -1345,7 +1346,8 @@ inline bool insertHashTable_cuckoo( IndexType colB,
     // Step 3: The is an value that could not be inserted in shared table, try global
     hash            = cuckooHash( 0, colB, numElementsHashTable );
 
-    for ( IndexType i = 0; i < MAX_HASH_TRIES; i++ )
+    sGlobalHashTableAccessed[localWarpId] = true;
+    for ( IndexType i = 0; i < maxRetries; i++ )
     {
         // insert current element at hash position
         ValueType oldValue;

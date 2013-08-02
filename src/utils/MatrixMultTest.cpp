@@ -36,8 +36,10 @@
 #include <lama/matrix/CSRSparseMatrix.hpp>
 #include <lama/expression/MatrixExpressions.hpp>
 #include <lama/HostReadAccess.hpp>
+#include <lama/HostWriteAccess.hpp>
 #include <lama/storage/CSRStorage.hpp>
 #include <lama/matutils/MatrixCreator.hpp>
+#include <lama/openmp/OpenMPCSRUtils.hpp>
 #include <omp.h>
 
 #include <stdio.h>
@@ -138,6 +140,101 @@ void maxRow(
 
 template<typename ValueType>
 void validate(
+    lama::CSRSparseMatrix<ValueType> *matrixGiven,
+    lama::CSRSparseMatrix<ValueType> *matrixCorrect,
+    const bool silentFlag,
+    const double epsilon = 1e-16 )
+{
+    lama::ContextPtr locHost = lama::ContextFactory::getContext( lama::Context::Host );
+
+    matrixGiven->setContext( locHost );
+    matrixCorrect->setContext( locHost );
+
+    int numErrors = 0;
+
+    if( !silentFlag )
+    {
+        std::cout << "Running validation with epsilon = " << epsilon << std::endl << std::flush;
+    }
+
+    lama::CSRStorage<ValueType> localStorageCorrect;
+    localStorageCorrect = matrixCorrect->getLocalStorage();
+    lama::CSRStorage<ValueType> localStorageGiven;
+    localStorageGiven = matrixGiven->getLocalStorage();
+
+    lama::HostReadAccess<lama::IndexType> correctIa( localStorageCorrect.getIA() );
+    lama::HostWriteAccess<lama::IndexType> correctJA( localStorageCorrect.getJA() );
+    lama::HostWriteAccess<ValueType> correctValues( localStorageCorrect.getValues() );
+
+    lama::HostReadAccess<lama::IndexType> givenIa( localStorageGiven.getIA() );
+    lama::HostWriteAccess<lama::IndexType> givenJA( localStorageGiven.getJA() );
+    lama::HostWriteAccess<ValueType> givenValues( localStorageGiven.getValues() );
+
+//    lama::OpenMPCSRUtils::sortRowElements(correctJA.get(), correctValues.get(), correctIa.get(), localStorageCorrect.getNumRows(), true);
+//    lama::OpenMPCSRUtils::sortRowElements(givenJA.get(), givenValues.get(), givenIa.get(), localStorageGiven.getNumRows(), true);
+
+
+    if( localStorageCorrect.getNumValues() != localStorageGiven.getNumValues() )
+    {
+        std::cout << "numValues is different, is " << localStorageGiven.getNumValues() << " but should "
+                  << localStorageCorrect.getNumValues() << " difference is " << localStorageGiven.getNumValues() -
+                  localStorageCorrect.getNumValues() << std::endl << std::flush;
+    }
+
+    for( int i = 0; i < matrixCorrect->getNumRows(); i++ )
+    {
+        if( givenIa[i+1] - givenIa[i] != correctIa[i+1] - correctIa[i] )
+        {
+            std::cout << "Error in IA Array in row " << i << " value is " << givenIa[i+1] - givenIa[i] << " but should "
+                      << correctIa[i+1] - correctIa[i] << std::endl;
+            numErrors++;
+        }
+    }
+
+    lama::IndexType i = 121;
+    lama::IndexType numElementsCorrect = 0;
+    lama::IndexType numElementsGiven = 0;
+    for( int j = 0; j < matrixCorrect->getNumColumns(); ++j )
+    {
+        lama::Scalar valCorrect = matrixCorrect->getValue( i, j );
+        lama::Scalar valGiven = matrixGiven->getValue( i, j );
+        ValueType relativeDifference = abs( valGiven.getValue<ValueType>() - valCorrect.getValue<ValueType>() )
+                                                   / valGiven.getValue<ValueType>();
+
+        if( relativeDifference  > epsilon )
+        {
+            std::cout << "Error in Matrix on position (" << i << ", " << j << ") value is " << valGiven
+                      << " but should " << valCorrect << " relative difference is "
+                      << relativeDifference << std::endl;
+            numErrors++;
+        }
+
+        if( abs(valCorrect) > epsilon )
+        {
+            numElementsCorrect++;
+        }
+        if( abs(valGiven) > epsilon )
+        {
+            numElementsGiven++;
+        }
+    }
+
+
+    std::cout << "Num nnz in row " << i << " is " << numElementsCorrect << " (Host)" << std::endl;
+    std::cout << "Num nnz in row " << i << " is " << numElementsGiven << " (CUDA)" << std::endl;
+
+    if( numErrors > 0 )
+    {
+        std::cout << std::endl << "Validation finished, " << numErrors << " errors found!" << std::endl;
+    }
+    else
+    {
+        std::cout << std::endl << "Validation finished, no errors found!" << std::endl;
+    }
+}
+
+template<typename ValueType>
+void validateOld(
     lama::CSRSparseMatrix<ValueType> *matrixGiven,
     lama::CSRSparseMatrix<ValueType> *matrixCorrect,
     const bool silentFlag,
