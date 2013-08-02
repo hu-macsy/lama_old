@@ -574,24 +574,20 @@ void OpenMPCSRUtils::normalGEVM(
     #pragma omp parallel
     {
         // Note: region will be entered by each thread
-
         LAMA_REGION( "OpenMP.CSR.normalGEVM" )
-
         #pragma omp for schedule(LAMA_OMP_SCHEDULE)
         for ( IndexType i = 0; i < numColumns; ++i )
         {
             ValueType sum = 0.0;
-
-            if ( i < numRows && csrJA[ csrIA[i] ] == i )
+            if ( i < numRows && csrIA[i] != csrIA[i+1] && csrJA[ csrIA[i] ] == i )
             {
                 sum += csrValues[ csrIA[i] ] * x[i];
             }
-
             for ( IndexType j = 0; j < numRows; ++j )
             {
                 for ( IndexType k = csrIA[j]; k < csrIA[j + 1]; ++k )
                 {
-                    if( csrJA[k] == i && i < numRows && k != csrIA[i] )
+                    if( csrJA[k] == i && k != csrIA[i] && i < numRows )
                     {
                         sum += csrValues[k] * x[j];
                         break;
