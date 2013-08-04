@@ -159,6 +159,7 @@ void validate(
 
     lama::CSRStorage<ValueType> localStorageCorrect;
     localStorageCorrect = matrixCorrect->getLocalStorage();
+    std::cout << "assign given" << std::endl;
     lama::CSRStorage<ValueType> localStorageGiven;
     localStorageGiven = matrixGiven->getLocalStorage();
 
@@ -172,6 +173,9 @@ void validate(
 
 //    lama::OpenMPCSRUtils::sortRowElements(correctJA.get(), correctValues.get(), correctIa.get(), localStorageCorrect.getNumRows(), true);
 //    lama::OpenMPCSRUtils::sortRowElements(givenJA.get(), givenValues.get(), givenIa.get(), localStorageGiven.getNumRows(), true);
+
+
+
 
 
     if( localStorageCorrect.getNumValues() != localStorageGiven.getNumValues() )
@@ -191,51 +195,60 @@ void validate(
         }
     }
 
-    lama::IndexType i = 121;
-    lama::IndexType numElementsCorrect = 0;
-    lama::IndexType numElementsGiven = 0;
-    for( int j = 0; j < matrixCorrect->getNumColumns(); ++j )
+    for ( int i = 0; i < localStorageGiven.getNumValues(); ++i )
     {
-        lama::Scalar valCorrect = matrixCorrect->getValue( i, j );
-        lama::Scalar valGiven = matrixGiven->getValue( i, j );
-
-        if ( valGiven != 0.0 )
+        if ( givenJA[i] < 0 || givenJA[i] >= matrixGiven->getNumColumns())
         {
-            ValueType relativeDifference = abs( ((ValueType)valGiven.getValue<ValueType>()
-                                                - (ValueType)valCorrect.getValue<ValueType>())
-                                                / (ValueType)valGiven.getValue<ValueType>());
-
-            if( relativeDifference  > epsilon )
-            {
-                std::cout << "Error in Matrix on position (" << i << ", " << j << ") value is " << valGiven
-                          << " but should " << valCorrect << " relative difference is "
-                          << relativeDifference << std::endl;
-                numErrors++;
-            }
-        }
-        else
-        {
-            if ( valCorrect != 0.0 )
-            {
-                std::cout << "Error in Matrix on position (" << i << ", " << j << ") value is " << valGiven
-                          << " but should " << valCorrect << " relative difference is " << std::endl;
-                numErrors++;
-            }
+            std::cout << "Error in JA Array in entry " << i << " value is " << givenJA[i] << std::endl;
         }
 
-        if( abs(valCorrect) > epsilon )
-        {
-            numElementsCorrect++;
-        }
-        if( abs(valGiven) > epsilon )
-        {
-            numElementsGiven++;
-        }
     }
 
-
-    std::cout << "Num nnz in row " << i << " is " << numElementsCorrect << " (Host)" << std::endl;
-    std::cout << "Num nnz in row " << i << " is " << numElementsGiven << " (CUDA)" << std::endl;
+//    lama::IndexType i = 121;
+//    lama::IndexType numElementsCorrect = 0;
+//    lama::IndexType numElementsGiven = 0;
+//    for( int j = 0; j < matrixCorrect->getNumColumns(); ++j )
+//    {
+//        lama::Scalar valCorrect = matrixCorrect->getValue( i, j );
+//        lama::Scalar valGiven = matrixGiven->getValue( i, j );
+//
+//        if ( valGiven != 0.0 )
+//        {
+//            ValueType relativeDifference = abs( ((ValueType)valGiven.getValue<ValueType>()
+//                                                - (ValueType)valCorrect.getValue<ValueType>())
+//                                                / (ValueType)valGiven.getValue<ValueType>());
+//
+//            if( relativeDifference  > epsilon )
+//            {
+//                std::cout << "Error in Matrix on position (" << i << ", " << j << ") value is " << valGiven
+//                          << " but should " << valCorrect << " relative difference is "
+//                          << relativeDifference << std::endl;
+//                numErrors++;
+//            }
+//        }
+//        else
+//        {
+//            if ( valCorrect != 0.0 )
+//            {
+//                std::cout << "Error in Matrix on position (" << i << ", " << j << ") value is " << valGiven
+//                          << " but should " << valCorrect << " relative difference is " << std::endl;
+//                numErrors++;
+//            }
+//        }
+//
+//        if( abs(valCorrect) > epsilon )
+//        {
+//            numElementsCorrect++;
+//        }
+//        if( abs(valGiven) > epsilon )
+//        {
+//            numElementsGiven++;
+//        }
+//    }
+//
+//
+//    std::cout << "Num nnz in row " << i << " is " << numElementsCorrect << " (Host)" << std::endl;
+//    std::cout << "Num nnz in row " << i << " is " << numElementsGiven << " (CUDA)" << std::endl;
 
     if( numErrors > 0 )
     {

@@ -64,8 +64,8 @@
 
 #include <boost/bind.hpp>
 
-//#include "cuPrintf.cuh"
-//#include "cuPrintf.cu"
+#include "cuPrintf.cuh"
+#include "cuPrintf.cu"
 
 //#define CUDA_CAP_20
 
@@ -2205,94 +2205,96 @@ void matrixMultiplyKernel(
                             hashTableValues,
                             hashTableOffset );
 
-//
-//            // TODO: rename sColA => destinationOffset!
-//           sColA[localWarpId] = 0;
-//           IndexType rowOffset = cIA[aRowIt];
-//           for ( IndexType offset = 0; offset < SIZE_LOCAL_HASHTABLE; offset += warpSize )
-//           {
-//               if ( offset + laneId < SIZE_LOCAL_HASHTABLE )
-//               {
-//                   IndexType hashCol = sHashTableJa[offset + laneId];
-//                   ValueType hashVal = sHashTableValues[offset + laneId];
-//
-//       #if CUDA_ARCH >= 20
-//                   // TODO: be carefull here, ballot is warpsize Bit's long!
-//                   IndexType ballot = __ballot ( hashCol != -1 );
-//       #else
-//                   if ( laneId == 0 )
-//                   {
-//                       sBallot[localWarpId] = 0;
-//                   }
-//
-//                   if ( hashCol != -1 )
-//                   {
-//                       atomicOr( (int*) &sBallot[localWarpId], (int) ( 1 << laneId ) );
-//                   }
-//                   IndexType ballot = sBallot[localWarpId];
-//       #endif
-//
-//                   IndexType localOffset = __popc( ballot << ( warpSize - laneId ) );
-//
-//                   if ( hashCol != -1 )
-//                   {
-//
-//                       cJA[rowOffset + sColA[localWarpId] + localOffset] = hashCol;
-//                       cValues[rowOffset + sColA[localWarpId] + localOffset] = hashVal * alpha;
-//                   }
-//
-//                   if ( laneId == 0 )
-//                   {
-//                       sColA[localWarpId] += __popc( ballot );
-//                   }
-//               }
-//           }
-//
-//       // copy global memory
-//                   if ( sGlobalHashTableAccessed[localWarpId] )
-//                   {
-//                       for ( IndexType offset = 0; offset < numElementsHashTable; offset += warpSize )
-//                       {
-//                           if ( offset + laneId < numElementsHashTable )
-//                           {
-//                               IndexType hashCol = hashTableIndexes[hashTableOffset + offset + laneId];
-//                               ValueType hashVal = hashTableValues[hashTableOffset + offset + laneId];
-//
-//                               // Clean hashTable!
-//                               hashTableIndexes[hashTableOffset + offset + laneId] = -1;
-//
-//       #if CUDA_ARCH >= 20
-//                               // TODO: be carefull here, ballot is warpsize Bit's long!
-//                               IndexType ballot = __ballot ( hashCol != -1 );
-//       #else
-//                               if ( laneId == 0 )
-//                               {
-//                                   sBallot[localWarpId] = 0;
-//                               }
-//
-//                               if ( hashCol != -1 )
-//                               {
-//                                   atomicOr( (int*) &sBallot[localWarpId], (int) ( 1 << laneId ) );
-//                               }
-//                               IndexType ballot = sBallot[localWarpId];
-//       #endif
-//
-//                               IndexType localOffset = __popc( ballot << ( warpSize - laneId ) );
-//
-//                               if ( hashCol != -1 )
-//                               {
-//
-//                                   cJA[rowOffset + sColA[localWarpId] + localOffset] = hashCol;
-//                                   cValues[rowOffset + sColA[localWarpId] + localOffset] = hashVal * alpha;
-//                               }
-//
-//                               if ( laneId == 0 )
-//                               {
-//                                   sColA[localWarpId] += __popc( ballot );
-//                               }
-//                           }
-//                       }
-//                   }
+
+            // TODO: rename sColA => destinationOffset!
+           sColA[localWarpId] = 0;
+           IndexType rowOffset = cIA[aRowIt];
+           for ( IndexType offset = 0; offset < SIZE_LOCAL_HASHTABLE; offset += warpSize )
+           {
+               if ( offset + laneId < SIZE_LOCAL_HASHTABLE )
+               {
+                   IndexType hashCol = sHashTableJa[offset + laneId];
+                   ValueType hashVal = sHashTableValues[offset + laneId];
+
+       #if CUDA_ARCH >= 20
+                   // TODO: be carefull here, ballot is warpsize Bit's long!
+                   IndexType ballot = __ballot ( hashCol != -1 );
+       #else
+                   if ( laneId == 0 )
+                   {
+                       sBallot[localWarpId] = 0;
+                   }
+
+                   if ( hashCol != -1 )
+                   {
+                       atomicOr( (int*) &sBallot[localWarpId], (int) ( 1 << laneId ) );
+                   }
+                   IndexType ballot = sBallot[localWarpId];
+       #endif
+
+                   IndexType localOffset = __popc( ballot << ( warpSize - laneId ) );
+
+                   if ( hashCol != -1 )
+                   {
+                       if( aRowIt == 0){
+                           cuPrintf("Write at %i = %i\n", rowOffset + sColA[localWarpId] + localOffset, hashCol );
+                       }
+                       cJA[rowOffset + sColA[localWarpId] + localOffset] = hashCol;
+                       cValues[rowOffset + sColA[localWarpId] + localOffset] = hashVal * alpha;
+                   }
+
+                   if ( laneId == 0 )
+                   {
+                       sColA[localWarpId] += __popc( ballot );
+                   }
+               }
+           }
+
+       // copy global memory
+                   if ( sGlobalHashTableAccessed[localWarpId] )
+                   {
+                       for ( IndexType offset = 0; offset < numElementsHashTable; offset += warpSize )
+                       {
+                           if ( offset + laneId < numElementsHashTable )
+                           {
+                               IndexType hashCol = hashTableIndexes[hashTableOffset + offset + laneId];
+                               ValueType hashVal = hashTableValues[hashTableOffset + offset + laneId];
+
+                               // Clean hashTable!
+                               hashTableIndexes[hashTableOffset + offset + laneId] = -1;
+
+       #if CUDA_ARCH >= 20
+                               // TODO: be carefull here, ballot is warpsize Bit's long!
+                               IndexType ballot = __ballot ( hashCol != -1 );
+       #else
+                               if ( laneId == 0 )
+                               {
+                                   sBallot[localWarpId] = 0;
+                               }
+
+                               if ( hashCol != -1 )
+                               {
+                                   atomicOr( (int*) &sBallot[localWarpId], (int) ( 1 << laneId ) );
+                               }
+                               IndexType ballot = sBallot[localWarpId];
+       #endif
+
+                               IndexType localOffset = __popc( ballot << ( warpSize - laneId ) );
+
+                               if ( hashCol != -1 )
+                               {
+
+                                   cJA[rowOffset + sColA[localWarpId] + localOffset] = hashCol;
+                                   cValues[rowOffset + sColA[localWarpId] + localOffset] = hashVal * alpha;
+                               }
+
+                               if ( laneId == 0 )
+                               {
+                                   sColA[localWarpId] += __popc( ballot );
+                               }
+                           }
+                       }
+                   }
 
 
 
@@ -2379,14 +2381,14 @@ void CUDACSRUtils::matrixMultiply(
             break;
         }
 
-//        cudaPrintfInit();
+        cudaPrintfInit();
         matrixMultiplyKernel<ValueType, NUM_WARPS><<<NUM_BLOCKS, NUM_THREADS>>>( aIa, aJa, aValues, bIa, bJa, bValues, cIa,
                 alpha, cJa, cValues, endRow, numColumns, startRow, hashTable, hashTableSize,
                 hashError, diagonalProperty
                 , rowCounter
                 );
-//        cudaPrintfDisplay(stdout, true);
-//        cudaPrintfEnd();
+        cudaPrintfDisplay(stdout, true);
+        cudaPrintfEnd();
 
         cudaStreamSynchronize( 0 );
         cudaMemcpy( &hashErrorHost, hashError, sizeof(bool), cudaMemcpyDeviceToHost );
