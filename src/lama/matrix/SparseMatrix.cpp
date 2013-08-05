@@ -1320,7 +1320,7 @@ void SparseMatrix<ValueType>::vectorHaloOperationSync(
                                         << "] = localF( haloMatrix, localX[ " << xSize
                                         << "] ) on " << haloContext )
 
-            calcF( mHaloData.get(), haloResult, localX);
+            calcF( mHaloData.get(), haloResult, localX );
 
             // reassemble halo computation to global indices
             {
@@ -1379,20 +1379,17 @@ void SparseMatrix<ValueType>::vectorHaloOperationSync(
         {
             HostWriteAccess<ValueType> localData( localResult );
             HostReadAccess<ValueType> otherData( fromOthersResult );
-            int count = 0;
             for( IndexType i = 0; i < numParts; ++i )
             {
                 if ( i == myPart )
                 {
-                    ++count;
                     continue;
                 }
 
                 for( IndexType j = 0; j < xSize; ++j )
                 {
-                    localData[j] += otherData[ count * xSize + j ];
+                    localData[j] += otherData[ i * xSize + j ];
                 }
-                ++count;
             }
         }
 
@@ -1627,20 +1624,17 @@ void SparseMatrix<ValueType>::vectorHaloOperationAsync(
         {
             HostWriteAccess<ValueType> localData( localResult );
             HostReadAccess<ValueType> otherData( fromOthersResult );
-            int count = 0;
             for( IndexType i = 0; i < numParts; ++i )
             {
                 if ( i == myPart )
                 {
-                    ++count;
                     continue;
                 }
 
                 for( IndexType j = 0; j < xSize; ++j )
                 {
-                    localData[j] += otherData[ count * xSize + j ];
+                    localData[j] += otherData[ i * xSize + j ];
                 }
-                ++count;
             }
         }
 

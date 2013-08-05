@@ -236,6 +236,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( vectorTimesMatrixTest, T, test_types )
     PartitionId size = comm->getSize();
 
     const IndexType vectorSize = 4 * size;
+    LAMA_LOG_DEBUG( logger, "VectorSize is " << vectorSize )
 
     shared_ptr<Distribution> dist( new BlockDistribution( vectorSize, comm ) );
     shared_ptr<Distribution> repdist( new NoDistribution( vectorSize ) );
@@ -310,6 +311,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( vectorTimesMatrixTest, T, test_types )
     LAMA_LOG_INFO( logger, "Vector(rep) = Vector(rep) * Matrix(rep)" )
     result0 = denseVector0 * repM;
 
+    BOOST_CHECK_EQUAL( vectorSize, result.size() );
+
     for (IndexType i = 0; i < result.size(); ++i)
     {
         BOOST_CHECK_EQUAL( denseCorrectResult2.getValue(i), denseResult0.getValue(i) );
@@ -326,6 +329,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( vectorTimesMatrixTest, T, test_types )
 
     LAMA_LOG_INFO( logger, "Vector(BlockDist) = Vector(BlockDist) * Matrix(BlockDist, BlockDist)" )
     result2 = denseVector2 * matrix2;
+
+    BOOST_CHECK_EQUAL( vectorSize, result2.size() );
 
     for (IndexType i = 0; i<result2.size(); ++i)
     {
