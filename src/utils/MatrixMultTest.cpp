@@ -174,17 +174,18 @@ void validate(
 //    lama::OpenMPCSRUtils::sortRowElements(correctJA.get(), correctValues.get(), correctIa.get(), localStorageCorrect.getNumRows(), true);
 //    lama::OpenMPCSRUtils::sortRowElements(givenJA.get(), givenValues.get(), givenIa.get(), localStorageGiven.getNumRows(), true);
 
-
-
-
-
+    // Validate NNZ
     if( localStorageCorrect.getNumValues() != localStorageGiven.getNumValues() )
     {
-        std::cout << "numValues is different, is " << localStorageGiven.getNumValues() << " but should "
+        std::cout << "NNZ is different, is " << localStorageGiven.getNumValues() << " but should "
                   << localStorageCorrect.getNumValues() << " difference is " << localStorageGiven.getNumValues() -
                   localStorageCorrect.getNumValues() << std::endl << std::flush;
+    }else{
+        std::cout << "NNZ of both matrices is identic! (Both " << localStorageCorrect.getNumValues()
+                  << "Elements)" << std::endl;
     }
 
+    // Validate IA Array
     for( int i = 0; i < matrixCorrect->getNumRows(); i++ )
     {
         if( givenIa[i+1] - givenIa[i] != correctIa[i+1] - correctIa[i] )
@@ -195,14 +196,39 @@ void validate(
         }
     }
 
+    // Validate JA Array
     for ( int i = 0; i < localStorageGiven.getNumValues(); ++i )
     {
         if ( givenJA[i] < 0 || givenJA[i] >= matrixGiven->getNumColumns())
         {
             std::cout << "Error in JA Array in entry " << i << " value is " << givenJA[i] << std::endl;
         }
-
     }
+
+    // Validate Values
+    for( int i = 0; i < matrixCorrect->getNumRows(); i++ )
+    {
+        lama::IndexType start = correctIa[i];
+        lama::IndexType end = correctIa[i + 1];
+        for( lama::IndexType k = start; k < end; k++ )
+        {
+            lama::IndexType j = correctJA[k];
+            lama::Scalar valCorrect = matrixCorrect->getValue( i, j );
+            lama::Scalar valGiven = matrixGiven->getValue( i, j );
+
+            ValueType relativeDifference = abs( valGiven.getValue<ValueType>() - valCorrect.getValue<ValueType>() )
+                                           / valGiven.getValue<ValueType>();
+            if( relativeDifference  > epsilon )
+            {
+                std::cout << "Error in Matrix on position (" << i << ", " << j << ") value is " << valGiven
+                          << " but should " << valCorrect << " relative difference is "
+                          << relativeDifference << std::endl;
+                numErrors++;
+            }
+        }
+    }
+
+
 
 //    lama::IndexType i = 121;
 //    lama::IndexType numElementsCorrect = 0;
