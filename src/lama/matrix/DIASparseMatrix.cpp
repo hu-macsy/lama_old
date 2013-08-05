@@ -69,7 +69,7 @@ DIASparseMatrix<ValueType>::DIASparseMatrix()
     : SparseMatrix<ValueType>( createStorage() )
 
 {
-    LAMA_LOG_INFO( logger, "DIASpareMatrix()" )
+    LAMA_LOG_INFO( logger, "DIASparseMatrix()" )
 }
 
 /* -------------------------------------------------------------------------- */
@@ -80,7 +80,7 @@ DIASparseMatrix<ValueType>::DIASparseMatrix( const IndexType numRows, const Inde
     : SparseMatrix<ValueType>( createStorage( numRows, numColumns ) )
 
 {
-    LAMA_LOG_INFO( logger, "DIASpareMatrix( " << numRows << " x " << numColumns << " )" )
+    LAMA_LOG_INFO( logger, "DIASparseMatrix( " << numRows << " x " << numColumns << " )" )
 }
 
 /* -------------------------------------------------------------------------- */

@@ -69,7 +69,7 @@ ELLSparseMatrix<ValueType>::ELLSparseMatrix()
     : SparseMatrix<ValueType>( createStorage() )
 
 {
-    LAMA_LOG_INFO( logger, "ELLSpareMatrix()" )
+    LAMA_LOG_INFO( logger, "ELLSparseMatrix()" )
 }
 
 /* -------------------------------------------------------------------------- */
@@ -80,7 +80,7 @@ ELLSparseMatrix<ValueType>::ELLSparseMatrix( const IndexType numRows, const Inde
     : SparseMatrix<ValueType>( createStorage( numRows, numColumns ) )
 
 {
-    LAMA_LOG_INFO( logger, "ELLSpareMatrix( " << numRows << " x " << numColumns << " )" )
+    LAMA_LOG_INFO( logger, "ELLSparseMatrix( " << numRows << " x " << numColumns << " )" )
 }
 
 /* -------------------------------------------------------------------------- */

@@ -69,7 +69,7 @@ COOSparseMatrix<ValueType>::COOSparseMatrix()
     : SparseMatrix<ValueType>( createStorage() )
 
 {
-    LAMA_LOG_INFO( logger, "COOSpareMatrix()" )
+    LAMA_LOG_INFO( logger, "COOSparseMatrix()" )
 }
 
 /* -------------------------------------------------------------------------- */
@@ -80,7 +80,7 @@ COOSparseMatrix<ValueType>::COOSparseMatrix( const IndexType numRows, const Inde
     : SparseMatrix<ValueType>( createStorage( numRows, numColumns ) )
 
 {
-    LAMA_LOG_INFO( logger, "COOSpareMatrix( " << numRows << " x " << numColumns << " )" )
+    LAMA_LOG_INFO( logger, "COOSparseMatrix( " << numRows << " x " << numColumns << " )" )
 }
 
 /* -------------------------------------------------------------------------- */

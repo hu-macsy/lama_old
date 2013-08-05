@@ -69,7 +69,7 @@ JDSSparseMatrix<ValueType>::JDSSparseMatrix()
     : SparseMatrix<ValueType>( createStorage() )
 
 {
-    LAMA_LOG_INFO( logger, "JDSSpareMatrix()" )
+    LAMA_LOG_INFO( logger, "JDSSparseMatrix()" )
 }
 
 /* -------------------------------------------------------------------------- */
@@ -80,7 +80,7 @@ JDSSparseMatrix<ValueType>::JDSSparseMatrix( const IndexType numRows, const Inde
     : SparseMatrix<ValueType>( createStorage( numRows, numColumns ) )
 
 {
-    LAMA_LOG_INFO( logger, "JDSSpareMatrix( " << numRows << " x " << numColumns << " )" )
+    LAMA_LOG_INFO( logger, "JDSSparseMatrix( " << numRows << " x " << numColumns << " )" )
 }
 
 /* -------------------------------------------------------------------------- */
