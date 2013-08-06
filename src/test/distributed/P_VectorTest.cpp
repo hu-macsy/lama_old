@@ -669,7 +669,10 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( ExpressionCtorTest, T, test_types )
 {
     typedef T ValueType;
 
-    IndexType n = 4;
+	// TODO: detect error, when executing with n = 4; for vector times matrix expressions
+    PartitionId size = comm->getSize();
+
+    IndexType n = 4 * size;
 
     CSRSparseMatrix<ValueType> Id (
         TestSparseMatrices::nnIdentityMatrix<double>( n ) );
@@ -825,7 +828,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( ExpressionCtorTest, T, test_types )
     DenseVector<ValueType> d12( Id * testvector5 * s2 + testvector3);
     vectorCheck ( d12, resultvector13 );
 
-// MatrixVector Plus Vector Expressions:
+// VectorMatrix Plus Vector Expressions:
 
     LAMA_LOG_INFO( logger, "Ctor: vector( vector * matrix + vector )" );
 
@@ -933,7 +936,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( ExpressionCtorTest, T, test_types )
     DenseVector<ValueType> d28( Id * s2 * testvector5 - testvector3 );
     vectorCheck ( d28, resultvector7 );
 
-//MatrixVector Minus Vector Expressions:
+//VectorMatrix Minus Vector Expressions:
 
     LAMA_LOG_INFO( logger, "Ctor: vector( scalar * vector * matrix - scalar * vector )" );
 
@@ -976,7 +979,11 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( ExpressionCtorTest, T, test_types )
 BOOST_AUTO_TEST_CASE_TEMPLATE( ExpressionAssignmentOperatorTest, T, test_types )
 {
     typedef T ValueType;
-    IndexType n = 4;
+
+	// TODO: detect error, when executing with n = 4; for vector times matrix expressions
+    PartitionId size = comm->getSize();
+
+    IndexType n = 4 * size;
 
     CSRSparseMatrix<ValueType> Id (
 

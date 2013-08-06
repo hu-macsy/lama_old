@@ -1554,8 +1554,8 @@ void SparseMatrix<ValueType>::vectorHaloOperationAsync(
         {
             LAMA_REGION( "Vec.Times.Mat.others" )
 
-            LAMA_LOG_INFO( logger, comm << ": asynchronous computation othersResult[ " << toOthersResult.size()
-                                        << "] = localF( haloMatrix, localX[ " << xSize
+            LAMA_LOG_INFO( logger, comm << ": asynchronous computation othersResult[" << toOthersResult.size()
+                                        << "] = localF( haloMatrix, localX[" << xSize
                                         << "] ) on " << haloContext )
 
             calcF( mHaloData.get(), haloResult, localX );
@@ -1585,8 +1585,8 @@ void SparseMatrix<ValueType>::vectorHaloOperationAsync(
     {
         LAMA_REGION( "Vec.Times.Mat.local" )
 
-        LAMA_LOG_INFO( logger, comm << ": asynchronous computation localResult[ " << resultSize
-                                    << "] = localF( localMatrix, localX[ " << xSize
+        LAMA_LOG_INFO( logger, comm << ": asynchronous computation localResult[" << resultSize
+                                    << "] = localF( localMatrix, localX[" << xSize
                                     << "] ) on " << localContext )
 
         localComputation.reset( calcF( mLocalData.get(), localResult, localX ) );
@@ -1597,6 +1597,9 @@ void SparseMatrix<ValueType>::vectorHaloOperationAsync(
         // start vector part exchange
         {
             LAMA_REGION( "vector.swapping" )
+
+            LAMA_LOG_INFO( logger, comm << " vector swapping: toOthers[" << toOthersResult.size()
+                           << "], fromOthersResult[" << fromOthersResult.size() << "]" )
 
             HostReadAccess<ValueType> toOthers( toOthersResult );
             HostWriteAccess<ValueType> fromOthers( fromOthersResult );
