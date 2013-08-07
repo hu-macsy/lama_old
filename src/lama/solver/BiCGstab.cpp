@@ -28,7 +28,7 @@
  * @brief BiCGstab.cpp
  * @author lschubert
  * @date 06.08.2013
- * $Id$
+ * @since 1.1.0
  */
 
 // hpp
@@ -234,6 +234,7 @@ void BiCGstab::iterate()
         x = x + tmp;
         LAMA_LOG_TRACE( logger, "l2Norm( x ) = " << x.l2Norm() )
     }
+
     {
         LAMA_LOG_INFO( logger, "Updating residual." )
         LAMA_REGION( "Solver.BiCGstab.update_res" )

@@ -1,5 +1,5 @@
 /**
- * @file BiCGTest.cpp
+ * @file BiCGstabTest.cpp
  *
  * @license
  * Copyright (c) 2013
@@ -25,16 +25,16 @@
  * SOFTWARE.
  * @endlicense
  *
- * @brief BiCGTest.cpp
- * @author Lauretta Schubert
- * @date 04.07.2013
+ * @brief BiCGstabTest.cpp
+ * @author lschubert
+ * @date 07.08.2013
  * @since 1.1.0
  */
 
 #include <boost/test/unit_test.hpp>
 #include <boost/mpl/list.hpp>
 
-#include <lama/solver/BiCG.hpp>
+#include <lama/solver/BiCGstab.hpp>
 #include <lama/solver/TrivialPreconditioner.hpp>
 #include <lama/solver/criteria/IterationCount.hpp>
 #include <lama/solver/criteria/ResidualThreshold.hpp>
@@ -67,38 +67,38 @@ typedef boost::mpl::list<float,double> test_types;
 
 /* --------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_SUITE( BiCGTest );
+BOOST_AUTO_TEST_SUITE( BiCGstabTest );
 
-LAMA_LOG_DEF_LOGGER( logger, "Test.BiCGTest" )
+LAMA_LOG_DEF_LOGGER( logger, "Test.BiCGstabTest" )
 
 /* --------------------------------------------------------------------- */
 
 BOOST_AUTO_TEST_CASE( CtorTest )
 {
     LoggerPtr slogger(
-        new CommonLogger( "<BiCG>: ", LogLevel::noLogging, LoggerWriteBehaviour::toConsoleOnly,
+        new CommonLogger( "<BiCGstab>: ", LogLevel::noLogging, LoggerWriteBehaviour::toConsoleOnly,
                           std::auto_ptr<Timer>( new Timer() ) ) );
 
-    BiCG bicgSolver( "BiCGTestSolver", slogger );
-    BOOST_CHECK_EQUAL( bicgSolver.getId(), "BiCGTestSolver" );
+    BiCGstab bicgstabSolver( "BiCGstabTestSolver", slogger );
+    BOOST_CHECK_EQUAL( bicgstabSolver.getId(), "BiCGstabTestSolver" );
 
-    BiCG bicgSolver2( "BiCGTestSolver2" );
-    BOOST_CHECK_EQUAL( bicgSolver2.getId(), "BiCGTestSolver2" );
+    BiCGstab bicgstabSolver2( "BiCGstabTestSolver2" );
+    BOOST_CHECK_EQUAL( bicgstabSolver2.getId(), "BiCGstabTestSolver2" );
 
-    BiCG bicgSolver3( bicgSolver2 );
-    BOOST_CHECK_EQUAL( bicgSolver3.getId(), "BiCGTestSolver2" );
-    BOOST_CHECK( bicgSolver3.getPreconditioner() == 0 );
+    BiCGstab bicgstabSolver3( bicgstabSolver2 );
+    BOOST_CHECK_EQUAL( bicgstabSolver3.getId(), "BiCGstabTestSolver2" );
+    BOOST_CHECK( bicgstabSolver3.getPreconditioner() == 0 );
 
-    BiCG bicgSolver4( "BiCGTestSolver4" );
+    BiCGstab bicgstabSolver4( "BiCGstabTestSolver4" );
     SolverPtr preconditioner( new TrivialPreconditioner( "Trivial preconditioner" ) );
-    bicgSolver4.setPreconditioner( preconditioner );
+    bicgstabSolver4.setPreconditioner( preconditioner );
 
     CriterionPtr criterion( new IterationCount( 10 ) );
-    bicgSolver4.setStoppingCriterion( criterion );
+    bicgstabSolver4.setStoppingCriterion( criterion );
 
-    BiCG bicgSolver5( bicgSolver4 );
-    BOOST_CHECK_EQUAL( bicgSolver5.getId(), bicgSolver4.getId() );
-    BOOST_CHECK_EQUAL( bicgSolver5.getPreconditioner()->getId(), bicgSolver4.getPreconditioner()->getId() );
+    BiCGstab bicgstabSolver5( bicgstabSolver4 );
+    BOOST_CHECK_EQUAL( bicgstabSolver5.getId(), bicgstabSolver4.getId() );
+    BOOST_CHECK_EQUAL( bicgstabSolver5.getPreconditioner()->getId(), bicgstabSolver4.getPreconditioner()->getId() );
 }
 
 /* --------------------------------------------------------------------- */
@@ -110,10 +110,10 @@ void testSolveWithPreconditionmethod( ContextPtr context )
     typedef typename mt::ValueType ValueType;
 
     LoggerPtr slogger(
-        new CommonLogger( "<BiCG>: ", LogLevel::noLogging, LoggerWriteBehaviour::toConsoleOnly,
+        new CommonLogger( "<BiCGstab>: ", LogLevel::noLogging, LoggerWriteBehaviour::toConsoleOnly,
                           std::auto_ptr<Timer>( new Timer() ) ) );
 
-    BiCG bicgSolver( "BiCGTestSolver", slogger );
+    BiCGstab bicgstabSolver( "BiCGstabTestSolver", slogger );
 
     const IndexType N1 = 4;
     const IndexType N2 = 4;
@@ -129,7 +129,7 @@ void testSolveWithPreconditionmethod( ContextPtr context )
     LAMA_LOG_INFO( logger, "coefficients matrix = " << coefficients );
 
     coefficients.setContext( context );
-    LAMA_LOG_INFO( logger, "BiCGTest uses context = " << context->getType() );
+    LAMA_LOG_INFO( logger, "BiCGstabTest uses context = " << context->getType() );
 
     DenseVector<ValueType> solution( coefficients.getDistributionPtr(), 1.0 );
     const DenseVector<ValueType> exactSolution( coefficients.getDistributionPtr(), 2.0 );
@@ -137,15 +137,15 @@ void testSolveWithPreconditionmethod( ContextPtr context )
 
     IndexType expectedIterations = 10;
     CriterionPtr criterion( new IterationCount( expectedIterations ) );
-    bicgSolver.setStoppingCriterion( criterion );
+    bicgstabSolver.setStoppingCriterion( criterion );
 
     SolverPtr preconditioner( new TrivialPreconditioner( "Trivial preconditioner" ) );
-    bicgSolver.setPreconditioner( preconditioner );
+    bicgstabSolver.setPreconditioner( preconditioner );
 
-    bicgSolver.initialize( coefficients );
-    bicgSolver.solve( solution, rhs );
+    bicgstabSolver.initialize( coefficients );
+    bicgstabSolver.solve( solution, rhs );
 
-    BOOST_CHECK_EQUAL( expectedIterations, bicgSolver.getIterationCount() );
+    BOOST_CHECK_EQUAL( expectedIterations, bicgstabSolver.getIterationCount() );
 
     DenseVector<ValueType> diff( solution - exactSolution );
     Scalar s = maxNorm( diff );
@@ -154,23 +154,24 @@ void testSolveWithPreconditionmethod( ContextPtr context )
     BOOST_CHECK( s.getValue<ValueType>() < 1E-4 );
 }
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( testSolveWithPrecondition, T, test_types ) {
-    typedef T ValueType;
-
-    CONTEXTLOOP()
-    {
-        GETCONTEXT( context );
-        testSolveWithPreconditionmethod< CSRSparseMatrix<ValueType> >( context );
-        testSolveWithPreconditionmethod< ELLSparseMatrix<ValueType> >( context );
-        testSolveWithPreconditionmethod< COOSparseMatrix<ValueType> >( context );
-        testSolveWithPreconditionmethod< JDSSparseMatrix<ValueType> >( context );
-        testSolveWithPreconditionmethod< DIASparseMatrix<ValueType> >( context );
-        testSolveWithPreconditionmethod< DenseMatrix<ValueType> >( context );
-
-        // ToDo: does not work with NP=2:    testSolveWithPreconditionmethod< DIASparseMatrix<ValueType> >();
-        // ToDo: does not work with NP=2:    testSolveWithPreconditionmethod< DenseMatrix<ValueType> >();
-    }
-}
+// TODO: Preconditioning not implemented yet
+//BOOST_AUTO_TEST_CASE_TEMPLATE( testSolveWithPrecondition, T, test_types ) {
+//    typedef T ValueType;
+//
+//    CONTEXTLOOP()
+//    {
+//        GETCONTEXT( context );
+//        testSolveWithPreconditionmethod< CSRSparseMatrix<ValueType> >( context );
+//        testSolveWithPreconditionmethod< ELLSparseMatrix<ValueType> >( context );
+//        testSolveWithPreconditionmethod< COOSparseMatrix<ValueType> >( context );
+//        testSolveWithPreconditionmethod< JDSSparseMatrix<ValueType> >( context );
+//        testSolveWithPreconditionmethod< DIASparseMatrix<ValueType> >( context );
+//        testSolveWithPreconditionmethod< DenseMatrix<ValueType> >( context );
+//
+//        // ToDo: does not work with NP=2:    testSolveWithPreconditionmethod< DIASparseMatrix<ValueType> >();
+//        // ToDo: does not work with NP=2:    testSolveWithPreconditionmethod< DenseMatrix<ValueType> >();
+//    }
+//}
 
 /* --------------------------------------------------------------------- */
 
@@ -185,7 +186,7 @@ void testSolveWithoutPreconditionmethod( ContextPtr context )
 
     LAMA_LOG_INFO( logger, "Problem size = " << N1 << " x " << N2 );
 
-    BiCG bicgSolver( "BiCGTestSolver" );
+    BiCGstab bicgstabSolver( "BiCGstabTestSolver" );
 
     CSRSparseMatrix<ValueType> helpcoefficients;
     MatrixCreator<ValueType>::buildPoisson2D( helpcoefficients, 9, N1, N2 );
@@ -194,7 +195,7 @@ void testSolveWithoutPreconditionmethod( ContextPtr context )
     LAMA_LOG_INFO( logger, "coefficient matrix = " << coefficients );
 
     coefficients.setContext( context );
-    LAMA_LOG_INFO( logger, "BiCGTest uses context = " << context->getType() );
+    LAMA_LOG_INFO( logger, "BiCGstabTest uses context = " << context->getType() );
 
     DenseVector<ValueType> solution( coefficients.getColDistributionPtr(), 2.0 );
     const DenseVector<ValueType> exactSolution( coefficients.getColDistributionPtr(), 1.0 );
@@ -208,12 +209,12 @@ void testSolveWithoutPreconditionmethod( ContextPtr context )
     //initialize
     IndexType expectedIterations = 20;
     CriterionPtr criterion( new IterationCount( expectedIterations ) );
-    bicgSolver.setStoppingCriterion( criterion );
-    bicgSolver.initialize( coefficients );
+    bicgstabSolver.setStoppingCriterion( criterion );
+    bicgstabSolver.initialize( coefficients );
 
-    bicgSolver.solve( solution, rhs );
+    bicgstabSolver.solve( solution, rhs );
 
-    BOOST_CHECK_EQUAL( expectedIterations, bicgSolver.getIterationCount() );
+    BOOST_CHECK_EQUAL( expectedIterations, bicgstabSolver.getIterationCount() );
 
     DenseVector<ValueType> diff( solution - exactSolution );
     Scalar s = maxNorm( diff );
@@ -262,12 +263,12 @@ BOOST_AUTO_TEST_CASE_TEMPLATE ( simpleTest, T, test_types )
     lama::DistributionPtr dist( new lama::NoDistribution( n ) );
     CSRSparseMatrix<ValueType> matrix( *csrStorage, dist, dist );
 
-    ValueType vectorValues[] = { 3.0f, 0.5f, 2.0f };
+    ValueType vectorValues[] = { 0.3f, 0.7f, 3.1416f };
     const LAMAArray<ValueType> vValues  = LAMAArray<ValueType>( n, vectorValues );
     DenseVector<ValueType> rhs( n, 0.0 );
     rhs.setValues( vValues );
 
-    ValueType vectorValues2[] = { 1.0f, 0.5f, 1.0f };
+    ValueType vectorValues2[] = {  -3.183185307179586, 0.7, 1.741592653589793 };
     const LAMAArray<ValueType> vValues2  = LAMAArray<ValueType>( n, vectorValues2 );
     DenseVector<ValueType> exactSolution( n, 0.0 );
     exactSolution.setValues( vValues2 );
@@ -278,13 +279,13 @@ BOOST_AUTO_TEST_CASE_TEMPLATE ( simpleTest, T, test_types )
     IndexType expectedIterations = 10;
     CriterionPtr criterion( new IterationCount( expectedIterations ) );
 
-    BiCG bicgSolver( "BiCGTestSolver" );
-    bicgSolver.setStoppingCriterion( criterion );
-    bicgSolver.initialize( matrix );
+    BiCGstab bicgstabSolver( "BiCGstabTestSolver" );
+    bicgstabSolver.setStoppingCriterion( criterion );
+    bicgstabSolver.initialize( matrix );
 
-    bicgSolver.solve( solution, rhs );
+    bicgstabSolver.solve( solution, rhs );
 
-    BOOST_CHECK_EQUAL( expectedIterations, bicgSolver.getIterationCount() );
+    BOOST_CHECK_EQUAL( expectedIterations, bicgstabSolver.getIterationCount() );
 
     DenseVector<ValueType> diff( solution - exactSolution );
     Scalar s = maxNorm( diff );
@@ -302,7 +303,7 @@ BOOST_AUTO_TEST_CASE( testDefaultCriterionSet )
 
     LAMA_LOG_INFO( logger, "Problem size = " << N1 << " x " << N2 );
 
-    BiCG bicgSolver( "BiCGTestSolver" );
+    BiCGstab bicgstabSolver( "BiCGstabTestSolver" );
 
     CSRSparseMatrix<ValueType> coefficients;
     MatrixCreator<ValueType>::buildPoisson2D( coefficients, 9, N1, N2 );
@@ -310,30 +311,30 @@ BOOST_AUTO_TEST_CASE( testDefaultCriterionSet )
     DenseVector<ValueType> solution( coefficients.getColDistributionPtr(), 2.0 );
     const DenseVector<ValueType> rhs( solution.getDistributionPtr(), 0.0 );
 
-    bicgSolver.initialize( coefficients );
+    bicgstabSolver.initialize( coefficients );
 
-    bicgSolver.solve( solution, rhs );
+    bicgstabSolver.solve( solution, rhs );
 
-    BOOST_CHECK_EQUAL( bicgSolver.getIterationCount(), 1 );
+    BOOST_CHECK_EQUAL( bicgstabSolver.getIterationCount(), 1 );
 }
 
 /* --------------------------------------------------------------------- */
 
 BOOST_AUTO_TEST_CASE( writeAtTest )
 {
-    BiCG bicgSolver( "BiCGTestSolver" );
-    LAMA_WRITEAT_TEST( bicgSolver );
+    BiCGstab bicgstabSolver( "BiCGstabTestSolver" );
+    LAMA_WRITEAT_TEST( bicgstabSolver );
 }
 
 /* --------------------------------------------------------------------- */
 
 BOOST_AUTO_TEST_CASE( copyTest )
 {
-    BiCG bicgSolver1( "BiCGTestSolver" );
+    BiCGstab bicgstabSolver1( "BiCGstabTestSolver" );
 
-    SolverPtr solverptr = bicgSolver1.copy();
+    SolverPtr solverptr = bicgstabSolver1.copy();
 
-    BOOST_CHECK_EQUAL( solverptr->getId(), "BiCGTestSolver" );
+    BOOST_CHECK_EQUAL( solverptr->getId(), "BiCGstabTestSolver" );
 }
 
 /* --------------------------------------------------------------------- */
