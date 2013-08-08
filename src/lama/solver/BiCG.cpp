@@ -41,6 +41,13 @@
 #include <lama/expression/VectorExpressions.hpp>
 #include <lama/expression/MatrixVectorExpressions.hpp>
 
+#include <lama/storage/MatrixStorage.hpp>
+#include <lama/matrix/CSRSparseMatrix.hpp>
+#include <lama/matrix/ELLSparseMatrix.hpp>
+#include <lama/matrix/JDSSparseMatrix.hpp>
+#include <lama/matrix/DIASparseMatrix.hpp>
+#include <lama/matrix/COOSparseMatrix.hpp>
+
 namespace lama
 {
 
@@ -81,6 +88,7 @@ void BiCG::initialize( const Matrix& coefficients )
     BiCGRuntime& runtime = getRuntime();
 
     runtime.mPScalar2 = 0.0;
+    runtime.mTransposeA = coefficients.create();
 
     switch ( coefficients.getValueType() )
     {
@@ -89,6 +97,21 @@ void BiCG::initialize( const Matrix& coefficients )
         runtime.mP2.reset( new DenseVector<float>( coefficients.getDistributionPtr() ) );
         runtime.mQ2.reset( new DenseVector<float>( coefficients.getDistributionPtr() ) );
         runtime.mZ2.reset( new DenseVector<float>( coefficients.getDistributionPtr() ) );
+
+        if( runtime.mTransposeA->getMatrixKind() == Matrix::DENSE )
+        {
+            LAMA_THROWEXCEPTION( "Cannot transpose a dense matrix yet." )
+        }
+        else if( runtime.mTransposeA->getMatrixKind() == Matrix::SPARSE )
+        {
+            SparseMatrix<float>* m = dynamic_cast<SparseMatrix<float>* >( runtime.mTransposeA );
+            m->assignTranspose( coefficients );
+        }
+        else
+        {
+            LAMA_THROWEXCEPTION( "Internal error: matrix is not dense or sparse." )
+        }
+
         break;
     }
     case Scalar::DOUBLE:
@@ -96,6 +119,21 @@ void BiCG::initialize( const Matrix& coefficients )
         runtime.mP2.reset( new DenseVector<double>( coefficients.getDistributionPtr() ) );
         runtime.mQ2.reset( new DenseVector<double>( coefficients.getDistributionPtr() ) );
         runtime.mZ2.reset( new DenseVector<double>( coefficients.getDistributionPtr() ) );
+
+        if( runtime.mTransposeA->getMatrixKind() == Matrix::DENSE )
+        {
+            LAMA_THROWEXCEPTION( "Cannot transpose a dense matrix yet." )
+        }
+        else if( runtime.mTransposeA->getMatrixKind() == Matrix::SPARSE )
+        {
+            SparseMatrix<double>* m = dynamic_cast<SparseMatrix<double>* >( runtime.mTransposeA );
+            m->assignTranspose( coefficients );
+        }
+        else
+        {
+            LAMA_THROWEXCEPTION( "Internal error: matrix is not dense or sparse." )
+        }
+
         break;
     }
     default:
@@ -105,6 +143,7 @@ void BiCG::initialize( const Matrix& coefficients )
     }
 
     // 'force' vector operations to be computed at the same location where coefficients reside
+    runtime.mTransposeA->setContext( coefficients.getContextPtr() );
     runtime.mP2->setContext( coefficients.getContextPtr() );
     runtime.mQ2->setContext( coefficients.getContextPtr() );
     runtime.mZ2->setContext( coefficients.getContextPtr() );
@@ -129,6 +168,7 @@ void BiCG::iterate()
     Vector& residual = *runtime.mResidual;
     Vector& residual2 = *runtime.mResidual2;
     const Matrix& A = *runtime.mCoefficients;
+    const Matrix& transA = *runtime.mTransposeA;
     Vector& x = *runtime.mSolution;
     Vector& p = *runtime.mP;
     Vector& p2 = *runtime.mP2;
@@ -186,7 +226,7 @@ void BiCG::iterate()
         LAMA_LOG_INFO( logger, "Calculating q." )
         q = A * p;
         LAMA_LOG_TRACE( logger, "l2Norm( q ) = " << q.l2Norm() )
-        q2 = p2 * A;
+        q2 = transA * p2; //p2 * A;
         LAMA_LOG_TRACE( logger, "l2Norm( q2 ) = " << q2.l2Norm() )
     }
 
@@ -245,7 +285,8 @@ const Vector& BiCG::getResidual2() const
 
         mLogger->startTimer( "ResidualTimer" );
 
-        *runtime.mResidual2 = ( *runtime.mRhs ) - ( runtime.mSolution.getConstReference() * ( *runtime.mCoefficients ) ) ;
+        //*runtime.mResidual2 = ( *runtime.mRhs ) - ( runtime.mSolution.getConstReference() * ( *runtime.mCoefficients ) ) ;
+        *runtime.mResidual2 = ( *runtime.mRhs ) - ( ( *runtime.mTransposeA ) * runtime.mSolution.getConstReference()) ;
 
         mLogger->stopTimer( "ResidualTimer" );
         mLogger->logTime( "ResidualTimer", LogLevel::completeInformation, "Revaluation of residual took [s]: " );

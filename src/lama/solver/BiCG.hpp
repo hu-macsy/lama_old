@@ -35,6 +35,8 @@
 
 #include <lama/solver/CG.hpp>
 
+#include <lama/matrix/SparseMatrix.hpp>
+
 namespace lama
 {
 
@@ -83,6 +85,7 @@ public:
         BiCGRuntime();
         virtual ~BiCGRuntime();
 
+        Matrix* mTransposeA;
         boost::shared_ptr<Vector> mP2;
         boost::shared_ptr<Vector> mQ2;
         boost::shared_ptr<Vector> mZ2;
