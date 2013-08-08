@@ -48,21 +48,17 @@
 using namespace boost;
 using namespace lama;
 
-/* ------------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_SUITE( DenseMatrixTest )
+namespace lama
+{
+namespace DenseMatrixTest
+{
 
-LAMA_LOG_DEF_LOGGER( logger, "Test.DenseMatrixTest" )
+/* ----------------------------- help functions --------------------------------------------------------------------- */
 
-typedef boost::mpl::list<float,double> test_types;
-
-/* ------------------------------------------------------------------------- */
-
-template<typename T>
+template<typename ValueType>
 void verifyMatrixWithScalar( Matrix& m, Scalar& s )
 {
-    typedef T ValueType;
-
     for ( IndexType i = 0; i < m.getNumRows(); ++i )
     {
         for ( IndexType j = 0; j < m.getNumColumns(); ++j )
@@ -74,11 +70,9 @@ void verifyMatrixWithScalar( Matrix& m, Scalar& s )
     }
 }
 
-template<typename T>
+template<typename ValueType>
 void verifySameMatrix( Matrix& m1, Matrix& m2 )
 {
-    typedef T ValueType;
-
     BOOST_REQUIRE_EQUAL( m1.getNumRows(), m2.getNumRows() );
     BOOST_REQUIRE_EQUAL( m1.getNumColumns(), m2.getNumColumns() );
 
@@ -93,11 +87,9 @@ void verifySameMatrix( Matrix& m1, Matrix& m2 )
     }
 }
 
-template<typename T>
-void verifySameMatrix( Matrix& m1, Matrix& m2, T eps )
+template<typename ValueType>
+void verifySameMatrix( Matrix& m1, Matrix& m2, ValueType eps, log4lama::Logger& logger )
 {
-    typedef T ValueType;
-
     BOOST_REQUIRE_EQUAL( m1.getNumRows(), m2.getNumRows() );
     BOOST_REQUIRE_EQUAL( m1.getNumColumns(), m2.getNumColumns() );
 
@@ -114,14 +106,86 @@ void verifySameMatrix( Matrix& m1, Matrix& m2, T eps )
     }
 }
 
-/* -------------------------------------------------------------------------- */
-
-BOOST_AUTO_TEST_CASE_TEMPLATE( AssignmentMultiplicationTest, T, test_types )
+template<typename ValueType>
+void GEMMTestImpl( const int n, const int m, const int k, ValueType eps, ContextPtr loc )
 {
-    typedef T ValueType;
+    Scalar alpha( 2.0 );
+    Scalar beta( 3.0 );
+
+    int maxdim = std::max( n, m );
+
+    // mainly for the very big example matrices the single values have to be chosen small
+    // for the result not becoming too big for float!!!
+    boost::scoped_array<ValueType> values( new ValueType[maxdim * k] );
+    for( int i = 0; i < maxdim * k; i++ )
+    {
+        values[i] = i * 1e-5 + 1;
+    }
+
+    boost::scoped_array<ValueType> valuesC( new ValueType[m * n] );
+
+    ValueType help;
+    for( int i = 0; i < m; i++ )
+    {
+        for( int j = 0; j < n; j++ )
+        {
+            help = 0.0;
+            for( int kk = 0; kk < k; kk++ )
+            {
+                // stores row i (of data same like matrix A) times column k (of data same like matrix B)
+                help += values[i * k + kk] * values[kk * n + j];
+            }
+            valuesC[i * n + j] = (42.0 - alpha.getValue<ValueType>() * help) / beta.getValue<ValueType>();
+        }
+    }
+
+    DenseMatrix<ValueType> A;
+    A.setContext( loc, loc );
+    A.setRawDenseData( m, k, values.get() );
+
+    DenseMatrix<ValueType> B; // not possible: const B
+    B.setRawDenseData( k, n, values.get() );
+    DenseMatrix<ValueType> C;
+    C.setRawDenseData( m, n, valuesC.get() );
+
+    C = alpha * A * B + beta * C;
+
+    for( int i = 0; i < m; i++ )
+    {
+        for( int j = 0; j < n; j++ )
+        {
+            Scalar expectedValue( 42.0 );
+            Scalar value = C.getValue( i, j );
+            Scalar diff = expectedValue - value;
+            LAMA_CHECK_SCALAR_SMALL( diff, ValueType, eps );
+        }
+    }
+
+    DenseMatrix<ValueType> C2;
+    C2.setRawDenseData( m, n, valuesC.get() );
+
+    DenseMatrix<ValueType> D( alpha * A * B + beta * C2 );
+
+    for( int i = 0; i < m; i++ )
+    {
+        for( int j = 0; j < n; j++ )
+        {
+            Scalar expectedValue( 42.0 );
+            Scalar value = D.getValue( i, j );
+            Scalar diff = expectedValue - value;
+            LAMA_CHECK_SCALAR_SMALL( diff, ValueType, eps );
+        }
+    }
+}
+
+/* ----------------------------- test functions --------------------------------------------------------------------- */
+
+template<typename ValueType>
+void assignmentMultiplicationTest( log4lama::Logger& logger )
+{
     IndexType n = 4;
 
-//4x4 * 4x4
+    //4x4 * 4x4
     {
         const Scalar s = 2.0;
         const Scalar t = 1.0;
@@ -174,7 +238,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( AssignmentMultiplicationTest, T, test_types )
         matrixA = matrixAInv * matrixA;
         verifySameMatrix<ValueType>( matrixA, matrixIdent );
 
-        LAMA_LOG_INFO( logger, "selfassignment lhs and rhs - linear algebra expression: A=A*A" );
+        LAMA_LOG_INFO( logger, "self assignment lhs and rhs - linear algebra expression: A=A*A" );
         DenseMatrix<ValueType> matrixIdent2( identMatrix );
         matrixIdent = matrixIdent * matrixIdent;
         verifySameMatrix<ValueType>( matrixIdent2, matrixIdent );
@@ -200,9 +264,9 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( AssignmentMultiplicationTest, T, test_types )
         matrixD = s * matrixIdent;
         verifySameMatrix<ValueType>( matrixD, Diag2Matrix );
 
-    } //4x4 * 4x4
+    } // 4x4 * 4x4
 
-//6x4 * 4x6, Constructor Test
+    //6x4 * 4x6, Constructor Test
     {
         CSRSparseMatrix<ValueType> n4m6SparseMatrix =
             TestSparseMatrices::n4m6MatrixD2<ValueType>();
@@ -228,7 +292,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( AssignmentMultiplicationTest, T, test_types )
         BOOST_CHECK( !(computeMatrix.getNumColumns() == n6m4DMatrix.getNumColumns() ) );
     } //6x4 * 4x6
 
-//ScalarMatrixMatrix
+    //ScalarMatrixMatrix
     {
         ValueType values[] =
         {   1.0f, 1.0f, 1.0f, 1.0f,
@@ -291,13 +355,12 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( AssignmentMultiplicationTest, T, test_types )
 
 }
 
-/* ------------------------------------------------------------------------- */
+/* ------------------------------------------------------------------------------------------------------------------ */
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( XGEMMOperationTest, T, test_types)
+template<typename ValueType>
+void xGEMMOperationTest( log4lama::Logger& logger )
 {
-    typedef T ValueType;
-
-//alpha * A * B + beta * C
+    //alpha * A * B + beta * C
     {
         CSRSparseMatrix<ValueType> n4m4Matrix =
             TestSparseMatrices::n4m4TestMatrix1<ValueType>();
@@ -319,27 +382,27 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( XGEMMOperationTest, T, test_types)
 
         LAMA_LOG_INFO( logger, "matrixRes = j * matrixA * matrixAInv + j * matrixIdent" );
         matrixRes = j * matrixA * matrixAInv + j * matrixIdent;
-        verifySameMatrix<ValueType>( matrixTestRes, matrixRes, 1E-4f );
+        verifySameMatrix<ValueType>( matrixTestRes, matrixRes, 1E-4f, logger );
 
         matrixRes = matrixA;
         LAMA_LOG_INFO( logger, "matrixRes = j * matrixMatrixRes * matrixAInv + j * matrixIdent" );
         matrixRes = j * matrixRes * matrixAInv + j * matrixIdent;
-        verifySameMatrix<ValueType>( matrixTestRes, matrixRes, 1E-3f );
+        verifySameMatrix<ValueType>( matrixTestRes, matrixRes, 1E-3f, logger );
 
         matrixRes = matrixAInv;
         LAMA_LOG_INFO( logger, "matrixRes = j * matrixA * matrixRes + j * matrixIdent" );
         matrixRes = j * matrixA * matrixRes + j * matrixIdent;
-        verifySameMatrix<ValueType>( matrixTestRes, matrixRes, 1E-3f );
+        verifySameMatrix<ValueType>( matrixTestRes, matrixRes, 1E-3f, logger );
 
         matrixRes = matrixIdent;
         LAMA_LOG_INFO( logger, "matrixRes = j * matrixA * matrixAInv + j * matrixRes" );
         matrixRes = j * matrixA * matrixAInv + j * matrixRes;
-        verifySameMatrix<ValueType>( matrixTestRes, matrixRes, 1E-3f );
+        verifySameMatrix<ValueType>( matrixTestRes, matrixRes, 1E-3f, logger );
 
         matrixRes = matrixIdent;
         LAMA_LOG_INFO( logger, "matrixRes = j * matrixRes * matrixRes + j * matrixRes" );
         matrixRes = j * matrixRes * matrixRes + j * matrixRes;
-        verifySameMatrix<ValueType>( matrixTestRes, matrixRes, 1E-3f );
+        verifySameMatrix<ValueType>( matrixTestRes, matrixRes, 1E-3f, logger );
     }
 
     {
@@ -368,7 +431,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( XGEMMOperationTest, T, test_types)
         verifySameMatrix<ValueType>( ergDMatrix, resDMatrix );
     } //alpha * A * B + beta * C
 
-//alpha * A * B
+    //alpha * A * B
     {
         CSRSparseMatrix<ValueType> n4m4SMatrixA =
             TestSparseMatrices::n4m4MatrixA1<ValueType>();
@@ -401,14 +464,13 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( XGEMMOperationTest, T, test_types)
     }
 }
 
-/* ------------------------------------------------------------------------- */
+/* ------------------------------------------------------------------------------------------------------------------ */
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( CtorTest, T, test_types )
+template<typename ValueType>
+void cTorTest( )
 {
-    typedef T ValueType;
-
-// C = A * B
-//6x4 * 4x6, Constructor Test
+    // C = A * B
+    //6x4 * 4x6, Constructor Test
     {
         CSRSparseMatrix<ValueType> n4m6SparseMatrix =
             TestSparseMatrices::n4m6MatrixD2<ValueType>();
@@ -435,7 +497,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( CtorTest, T, test_types )
         BOOST_CHECK( !(computeMatrix.getNumColumns() == n6m4DMatrix.getNumColumns() ) );
     } //6x4 * 4x6
 
-//a*A & A*a
+    //a*A & A*a
     {
         Scalar j = 2.0;
 
@@ -454,10 +516,10 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( CtorTest, T, test_types )
         DenseMatrix<ValueType> matrixRes2( mat1 * j );
         verifyMatrixWithScalar<ValueType>( matrixRes2, j );
 
-    } //a*A & A*a
+    } // a*A & A*a
 
-//    alpha*A*B+beta*C
-//    XGEMM
+    //    alpha*A*B+beta*C
+    //    XGEMM
     {
         CSRSparseMatrix<ValueType> n6m4SparseMatrix =
             TestSparseMatrices::n6m4MatrixE1<ValueType>();
@@ -481,9 +543,9 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( CtorTest, T, test_types )
         ergDMatrix = j * n6m4DMatrix * n4m3DMatrix + j * cDMatrix;
         verifySameMatrix<ValueType>( ergDMatrix, resDMatrix );
 
-    } //alpha * A * B + beta * C
+    } // alpha * A * B + beta * C
 
-//alpha * A * B
+    // alpha * A * B
     {
         CSRSparseMatrix<ValueType> n4m4SMatrixA =
             TestSparseMatrices::n4m4MatrixA1<ValueType>();
@@ -502,17 +564,15 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( CtorTest, T, test_types )
 
         DenseMatrix<ValueType> matrixRes( j * matrixA * matrixB );
         verifySameMatrix<ValueType>( matrixTestRes, matrixRes );
-    } //alpha * A * B
+    } // alpha * A * B
 }
 
-/* ------------------------------------------------------------------------- */
+/* ------------------------------------------------------------------------------------------------------------------ */
 
-BOOST_AUTO_TEST_CASE( SetIdentityTest )
+template<typename ValueType>
+void setIdentityTest( )
 {
-    typedef double ValueType;
-
     CSRSparseMatrix<ValueType> n4m4SMatrixA = TestSparseMatrices::n4m4MatrixA1<ValueType>();
-
     DenseMatrix<ValueType> matrixA;
 
     matrixA.setIdentity( n4m4SMatrixA.getNumRows() );
@@ -533,12 +593,11 @@ BOOST_AUTO_TEST_CASE( SetIdentityTest )
     }
 }
 
-/* ------------------------------------------------------------------------- */
+/* ------------------------------------------------------------------------------------------------------------------ */
 
-BOOST_AUTO_TEST_CASE( SetDiagonalTest )
+template<typename ValueType>
+void setDiagonalTest( )
 {
-    typedef double ValueType;
-
     CSRSparseMatrix<ValueType> n4m4SMatrixA = TestSparseMatrices::n4m4MatrixA1<ValueType>();
 
     DenseMatrix<ValueType> matrixA( n4m4SMatrixA );
@@ -562,11 +621,11 @@ BOOST_AUTO_TEST_CASE( SetDiagonalTest )
     }
 }
 
-/* ------------------------------------------------------------------------- */
+/* ------------------------------------------------------------------------------------------------------------------ */
 
-BOOST_AUTO_TEST_CASE( GetRowTest )
+template<typename ValueType>
+void getRowTest( )
 {
-    typedef double ValueType;
 
     CSRSparseMatrix<ValueType> n4m4SMatrixA = TestSparseMatrices::n4m4MatrixA1<ValueType>();
 
@@ -587,12 +646,11 @@ BOOST_AUTO_TEST_CASE( GetRowTest )
     }
 }
 
-/* ------------------------------------------------------------------------- */
+/* ------------------------------------------------------------------------------------------------------------------ */
 
-BOOST_AUTO_TEST_CASE( GetNumValuesTest )
+template<typename ValueType>
+void getNumValuesTest( )
 {
-    typedef double ValueType;
-
     CSRSparseMatrix<ValueType> n4m4SMatrixA = TestSparseMatrices::n4m4MatrixA1<ValueType>();
 
     DenseMatrix<ValueType> matrixA( n4m4SMatrixA );
@@ -600,28 +658,35 @@ BOOST_AUTO_TEST_CASE( GetNumValuesTest )
     BOOST_CHECK_EQUAL( matrixA.getNumValues(), 9 );
 }
 
-/* ------------------------------------------------------------------------- */
+/* ------------------------------------------------------------------------------------------------------------------ */
 
-BOOST_AUTO_TEST_CASE( GetUsageMemoryTest )
+template<typename ValueType>
+void getMemoryUsageTest( )
 {
-    typedef double ValueType;
-
     CSRSparseMatrix<ValueType> n4m4SMatrixA = TestSparseMatrices::n4m4MatrixA1<ValueType>();
 
     DenseMatrix<ValueType> matrixA( n4m4SMatrixA );
 
-    size_t size = 141;
+    size_t size_float = 77;
+    size_t size_double = 141;
+    std::ostringstream omsg;
+    omsg << Scalar::getType<ValueType>();
 
-    BOOST_CHECK_EQUAL( matrixA.getMemoryUsage(), size );
-
+    if( std::string( "double" ).compare( omsg.str() ) == 0 )
+    {
+        BOOST_CHECK_EQUAL( matrixA.getMemoryUsage(), size_double );
+    }
+    else
+    {
+        BOOST_CHECK_EQUAL( matrixA.getMemoryUsage(), size_float );
+    }
 }
 
-/* ------------------------------------------------------------------------- */
+/* ------------------------------------------------------------------------------------------------------------------ */
 
-BOOST_AUTO_TEST_CASE( GetLocalValuesTest )
+template<typename ValueType>
+void getLocalValuesTest( )
 {
-    typedef double ValueType;
-
     CSRSparseMatrix<ValueType> n4m4SMatrixA = TestSparseMatrices::n4m4MatrixA1<ValueType>();
 
     DenseMatrix<ValueType> matrixA( n4m4SMatrixA );
@@ -629,15 +694,13 @@ BOOST_AUTO_TEST_CASE( GetLocalValuesTest )
     BOOST_CHECK_EQUAL( matrixA.getLocalNumValues(), 16 );
     BOOST_CHECK_EQUAL( matrixA.getLocalNumRows(), 4 );
     BOOST_CHECK_EQUAL( matrixA.getLocalNumRows(), 4 );
-
 }
 
-/* ------------------------------------------------------------------------- */
+/* ------------------------------------------------------------------------------------------------------------------ */
 
-BOOST_AUTO_TEST_CASE( ScaleTest )
+template<typename ValueType>
+void scaleTest( )
 {
-    typedef double ValueType;
-
     CSRSparseMatrix<ValueType> n4m4SMatrixA = TestSparseMatrices::n4m4MatrixA1<ValueType>();
 
     DenseMatrix<ValueType> matrixA( n4m4SMatrixA );
@@ -653,139 +716,69 @@ BOOST_AUTO_TEST_CASE( ScaleTest )
     }
 }
 
-/* ------------------------------------------------------------------------- */
+/* ------------------------------------------------------------------------------------------------------------------ */
 
-BOOST_AUTO_TEST_CASE( TypeNameTest )
+template<typename ValueType>
+void typeNameTest( )
 {
-    CSRSparseMatrix<float> n4m4SMatrixAf = TestSparseMatrices::n4m4MatrixA1<float>();
+    CSRSparseMatrix<ValueType> n4m4SMatrixAf = TestSparseMatrices::n4m4MatrixA1<float>();
 
-    DenseMatrix<float> matrixA( n4m4SMatrixAf );
-    const char* floatchar = matrixA.getTypeName();
-    BOOST_CHECK_EQUAL( floatchar, "DenseMatrix<float>" );
+    DenseMatrix<ValueType> matrixA( n4m4SMatrixAf );
+    std::string s = matrixA.typeName();
 
-    CSRSparseMatrix<double> n4m4SMatrixAd = TestSparseMatrices::n4m4MatrixA1<double>();
-
-    DenseMatrix<double> matrixB( n4m4SMatrixAd );
-    const char* doublechar = matrixB.getTypeName();
-    BOOST_CHECK_EQUAL( doublechar, "DenseMatrix<double>" );
+    BOOST_CHECK( s.length() > 0);
 }
 
-/* ------------------------------------------------------------------------- */
+/* ------------------------------------------------------------------------------------------------------------------ */
 
-template<typename T>
-void GEMMTestImpl( const int n, const int m, const int k, T eps )
+template<typename ValueType>
+void gemmTest( ContextPtr loc )
 {
-    typedef T ValueType;
+    // This test needs less precision eps for float than for double
+    ValueType eps;
+    std::ostringstream omsg;
+    omsg << Scalar::getType<ValueType>();
 
-    Scalar alpha( 1.0 );
-    Scalar beta( 3.0 );
-
-    int maxdim = std::max( n, m );
-
-    boost::scoped_array<ValueType> values( new ValueType[maxdim * k] );
-    for ( int i = 0; i < maxdim * k; i++ )
+    if( std::string( "double" ).compare( omsg.str() ) == 0 )
     {
-        values[i] = i + 1;
+        eps = static_cast<ValueType>( 1e-5 );
     }
-
-    boost::scoped_array<ValueType> valuesC( new ValueType[m * n] );
-
-    for ( int i = 0; i < m; i++ )
+    else
     {
-        for ( int j = 0; j < n; j++ )
-        {
-            valuesC[i * n + j] = 42.0 / beta.getValue<ValueType>();
-            for ( int kk = 0; kk < k; kk++ )
-            {
-                valuesC[i * n + j] -= values[i * k + kk] * values[kk * n + j] / beta.getValue<ValueType>();
-            }
-        }
+        eps = static_cast<ValueType>( 1e-4 );
     }
+    GEMMTestImpl<ValueType>( 5, 3, 4, eps, loc );
+    GEMMTestImpl<ValueType>( 2, 2, 3, eps, loc);
+    GEMMTestImpl<ValueType>( 16, 16, 16, eps, loc );
+    GEMMTestImpl<ValueType>( 32, 16, 16, eps, loc );
+    GEMMTestImpl<ValueType>( 2, 2, 4, eps, loc );
+    GEMMTestImpl<ValueType>( 12, 12, 17, eps, loc );
+    GEMMTestImpl<ValueType>( 32, 16, 32, eps, loc );
+    GEMMTestImpl<ValueType>( 16, 32, 16, eps, loc );
+    GEMMTestImpl<ValueType>( 32, 32, 16, eps, loc );
+    GEMMTestImpl<ValueType>( 16, 32, 32, eps, loc );
 
-    for ( ContextType computeLocation = Context::Host; 
-          computeLocation <= Context::CUDA; 
-          computeLocation = ContextType( computeLocation + 1 ) )
+
+    if( std::string( "double" ).compare( omsg.str() ) == 0 )
     {
-        if ( !LAMAInterfaceRegistry::getRegistry().hasInterface( computeLocation ) )
-        {
-            LAMA_LOG_WARN( logger, "Skipping location: " << computeLocation << " no Interface found." );
-            continue;
-        }
-
-        ContextPtr computeContext = ContextFactory::getContext( computeLocation );
-
-        DenseMatrix<ValueType> A;
-        A.setContext( computeContext, computeContext );
-        A.setRawDenseData( m, k, values.get() );
-
-        DenseMatrix<ValueType> B;   // not possible: const B 
-        B.setRawDenseData( k, n, values.get() );
-        DenseMatrix<ValueType> C;
-        C.setRawDenseData( m, n, valuesC.get() );
-
-        C = alpha * A * B + beta * C;
-
-        for ( int i = 0; i < m; i++ )
-        {
-            for ( int j = 0; j < n; j++ )
-            {
-                Scalar expectedvalue( 42.0 );
-                Scalar value = C.getValue( i, j );
-                Scalar diff = expectedvalue - value;
-                LAMA_CHECK_SCALAR_SMALL( diff, ValueType, eps );
-            }
-        }
-
-        DenseMatrix<ValueType> C2;
-        C2.setRawDenseData( m, n, valuesC.get() );
-
-        DenseMatrix<ValueType> D ( alpha * A * B + beta * C2 );
-
-        for ( int i = 0; i < m; i++ )
-        {
-            for ( int j = 0; j < n; j++ )
-            {
-                Scalar expectedvalue( 42.0 );
-                Scalar value = D.getValue( i, j );
-                Scalar diff = expectedvalue - value;
-                LAMA_CHECK_SCALAR_SMALL( diff, ValueType, eps );
-            }
-        }
+        eps = static_cast<ValueType>( 1e-4 );
     }
+    else
+    {
+        eps = static_cast<ValueType>( 1e-2 );
+    }
+    GEMMTestImpl<ValueType>( 31, 31, 1114, eps, loc );
+    GEMMTestImpl<ValueType>( 32, 32, 256, eps, loc );
+    GEMMTestImpl<ValueType>( 64, 64, 64, eps, loc );
+    GEMMTestImpl<ValueType>( 128, 128, 256, eps, loc );
+
 }
 
-BOOST_AUTO_TEST_CASE( GEMMTest )
+/* ------------------------------------------------------------------------------------------------------------------ */
+
+template<typename ValueType>
+void swapTest( )
 {
-    // This test needs less precision eps for float
-
-    typedef double ValueType;
-
-    ValueType eps = static_cast<ValueType>( 1e-5 );
-
-    GEMMTestImpl<ValueType>( 5, 3, 4, eps );
-    GEMMTestImpl<ValueType>( 2, 2, 3, eps);
-    GEMMTestImpl<ValueType>( 16, 16, 16, eps);
-    GEMMTestImpl<ValueType>( 32, 16, 16, eps);
-    GEMMTestImpl<ValueType>( 2, 2, 4, eps);
-    GEMMTestImpl<ValueType>( 12, 12, 17, eps);
-
-    eps = static_cast<ValueType>( 1e-3 );
-
-    GEMMTestImpl<ValueType>( 32, 16, 32, eps);
-    GEMMTestImpl<ValueType>( 16, 32, 16, eps);
-    GEMMTestImpl<ValueType>( 32, 32, 16, eps);
-    GEMMTestImpl<ValueType>( 16, 32, 32, eps);
-    GEMMTestImpl<ValueType>( 32, 32, 256, eps);
-    GEMMTestImpl<ValueType>( 64, 64, 64, eps);
-    GEMMTestImpl<ValueType>( 128, 128, 256, eps);
-}
-
-/* ------------------------------------------------------------------------- */
-
-BOOST_AUTO_TEST_CASE_TEMPLATE( SwapTest, T, test_types ) 
-{
-    typedef T ValueType;
-
     CSRSparseMatrix<ValueType> SMatrixA =
         TestSparseMatrices::n4m4MatrixA1<ValueType>();
 
@@ -804,6 +797,28 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( SwapTest, T, test_types )
     verifySameMatrix<ValueType>( matrixB1, matrixA2 );
 }
 
-/* ------------------------------------------------------------------------- */
+} // namespace DenseMatrixTest
+} // namespace lama
+
+/* ------------------------------------------------------------------------------------------------------------------ */
+
+BOOST_AUTO_TEST_SUITE( DenseMatrixTest )
+
+LAMA_LOG_DEF_LOGGER( logger, "Test.DenseMatrixTest" )
+
+LAMA_AUTO_TEST_CASE_TL( assignmentMultiplicationTest, DenseMatrixTest )
+LAMA_AUTO_TEST_CASE_TL( xGEMMOperationTest, DenseMatrixTest )
+LAMA_AUTO_TEST_CASE_T( cTorTest, DenseMatrixTest )
+LAMA_AUTO_TEST_CASE_T( getLocalValuesTest, DenseMatrixTest )
+LAMA_AUTO_TEST_CASE_T( getMemoryUsageTest, DenseMatrixTest )
+LAMA_AUTO_TEST_CASE_T( getNumValuesTest, DenseMatrixTest )
+LAMA_AUTO_TEST_CASE_T( getRowTest, DenseMatrixTest )
+LAMA_AUTO_TEST_CASE_CT( gemmTest, DenseMatrixTest )
+LAMA_AUTO_TEST_CASE_T( scaleTest, DenseMatrixTest )
+LAMA_AUTO_TEST_CASE_T( setDiagonalTest, DenseMatrixTest )
+LAMA_AUTO_TEST_CASE_T( setIdentityTest, DenseMatrixTest )
+LAMA_AUTO_TEST_CASE_T( swapTest, DenseMatrixTest )
+LAMA_AUTO_TEST_CASE_T( typeNameTest, DenseMatrixTest )
+/* ------------------------------------------------------------------------------------------------------------------ */
 
 BOOST_AUTO_TEST_SUITE_END();

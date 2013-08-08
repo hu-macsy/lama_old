@@ -302,7 +302,7 @@ inline lama::ContextType mapEnvContexttoContextType( std::string contextname )
         {                                                                                                              \
             GETCONTEXT( context );                                                                                     \
             if ( loglevel_argument == "test_suite" )                                                                   \
-                BOOST_TEST_MESSAGE( "    Entering context: " << context );                                             \
+                LAMA_LOG_INFO( logger, "    Entering context: " << context->getType() );                               \
             lama::classname::name( context );                                                                          \
         }                                                                                                              \
     }
@@ -323,6 +323,24 @@ inline lama::ContextType mapEnvContexttoContextType( std::string contextname )
         const std::string lama_classname = #classname;                                                                 \
         lama::classname::name<float>( );                                                                               \
         lama::classname::name<double>( );                                                                              \
+    }
+
+/*
+ * @brief HelperMacro LAMA_AUTO_TEST_CASE_T( name, classname )
+ *
+ * This macro creates a small boost test auto case for all value types (without context).
+ * The test case name is based on the name of the given test method.
+ *
+ * @param name          name of test method, which will invoke.
+ * @param classname     name of the given test class.
+ */
+#define LAMA_AUTO_TEST_CASE_TL( name, classname)                                                                       \
+    BOOST_AUTO_TEST_CASE( name )                                                                                       \
+    {                                                                                                                  \
+        const std::string lama_name = #name;                                                                           \
+        const std::string lama_classname = #classname;                                                                 \
+        lama::classname::name<float>( logger );                                                                        \
+        lama::classname::name<double>( logger );                                                                       \
     }
 
 /*
@@ -370,6 +388,50 @@ inline lama::ContextType mapEnvContexttoContextType( std::string contextname )
     }
 
 /*
+ * @brief HelperMacro LAMA_AUTO_TEST_CASE_CTL( name, classname )
+ *
+ * This macro creates a boost test auto case, which uses all possible contexts.
+ * The test case name is based on the name of the given test method.
+ *
+ * @param name          name of test method, which will invoke.
+ * @param classname     name of the given test class.
+ */
+#define LAMA_AUTO_TEST_CASE_CTL( name, classname )                                                                     \
+    BOOST_AUTO_TEST_CASE( name )                                                                                       \
+    {                                                                                                                  \
+        CONTEXTLOOP()                                                                                                  \
+        {                                                                                                              \
+            GETCONTEXT( context )                                                                                      \
+            if ( loglevel_argument == "test_suite" )                                                                   \
+            {                                                                                                          \
+                LAMA_LOG_INFO( logger, "    Entering context: " << context->getType() );                               \
+            }                                                                                                          \
+            const std::string lama_name = #name;                                                                       \
+            const std::string lama_classname = #classname;                                                             \
+            try                                                                                                        \
+            {                                                                                                          \
+               lama::classname::name<float>( context, logger );                                                        \
+            }                                                                                                          \
+            catch( Exception )                                                                                         \
+            {                                                                                                          \
+                LAMA_LOG_WARN( logger, lama_classname << "::" << lama_name << "<float> cannot run on "                 \
+                               << context->getType() << ", corresponding function not implemented yet." );             \
+                return;                                                                                                \
+            }                                                                                                          \
+            try                                                                                                        \
+            {                                                                                                          \
+                lama::classname::name<double>( context, logger );                                                      \
+            }                                                                                                          \
+            catch( Exception )                                                                                         \
+            {                                                                                                          \
+                LAMA_LOG_WARN( logger, lama_classname << "::" << lama_name << "<double> cannot run on "                \
+                               << context->getType() << ", corresponding function not implemented yet." );             \
+                return;                                                                                                \
+            }                                                                                                          \
+        }                                                                                                              \
+    }
+
+/*
  * @brief HelperMacro LAMA_AUTO_TEST_CASE_CTT( name, classname )
  *
  * This macro creates a boost test auto case, which uses all possible contexts.
@@ -388,7 +450,7 @@ inline lama::ContextType mapEnvContexttoContextType( std::string contextname )
             GETCONTEXT( context );                                                                                     \
             if ( loglevel_argument == "test_suite" )                                                                   \
             {                                                                                                          \
-                BOOST_TEST_MESSAGE( "    Entering context: " << context->getType() );                                  \
+                LAMA_LOG_INFO( logger, "    Entering context: " << context->getType() );                               \
             }                                                                                                          \
             const std::string lama_name = #name;                                                                       \
             const std::string lama_classname = #classname;                                                             \
@@ -454,7 +516,7 @@ inline lama::ContextType mapEnvContexttoContextType( std::string contextname )
             GETCONTEXT( context );                                                                                     \
             if ( loglevel_argument == "test_suite" )                                                                   \
             {                                                                                                          \
-                BOOST_TEST_MESSAGE( "    Entering context: " << context->getType() );                                  \
+                LAMA_LOG_INFO( logger, "    Entering context: " << context->getType() );                               \
             }                                                                                                          \
             const std::string lama_name = #name;                                                                       \
             const std::string lama_classname = #classname;                                                             \
@@ -464,7 +526,7 @@ inline lama::ContextType mapEnvContexttoContextType( std::string contextname )
             }                                                                                                          \
             catch( Exception )                                                                                         \
             {                                                                                                          \
-                LAMA_LOG_WARN( logger, lama_classname << "::" << lama_name << "<float> cannot run on  "                \
+                LAMA_LOG_WARN( logger, lama_classname << "::" << lama_name << " cannot run on  "                       \
                                << context->getType() << ", corresponding function not implemented yet." );             \
                 return;                                                                                                \
             }                                                                                                          \
@@ -564,11 +626,12 @@ inline lama::ContextType mapEnvContexttoContextType( std::string contextname )
     void classname::runTests()
 
 /*
- * @brief HelperMacro LAMA_COMMON_TEST_CASE( classname, methodname )
+ * @brief HelperMacro LAMA_COMMON_TEST_CASE( classname, templatename, methodname )
  *
  * This macro creates a test method, which is used by many test cases.
  *
  * @param classname       name of the test class.
+ * @param templatename    name of the template.
  * @param methodname      name of the test method, that will be created.
  */
 
@@ -578,8 +641,16 @@ inline lama::ContextType mapEnvContexttoContextType( std::string contextname )
     void classname<templatename>::methodname()                                                                         \
     {                                                                                                                  \
         std::string lama_common_testcase_method = #methodname;                                                         \
+        std::ostringstream omsg;                                                                                       \
+        omsg << Scalar::getType<templatename>();                                                                       \
+        std::string lama_common_testcase_template = omsg.str();                                                        \
         if ( loglevel_argument == "test_suite" )                                                                       \
-            BOOST_TEST_MESSAGE( "    Entering common test case \"" + lama_common_testcase_method + "\" " );
+        {                                                                                                              \
+            LAMA_LOG_INFO( logger, "    Entering common test case \"" + lama_common_testcase_method + "<" +            \
+                           lama_common_testcase_template + ">\" " );                                                   \
+        }
+
+
 
 /*
  * @brief HelperMacro LAMA_COMMON_TEST_CASE_END()
@@ -590,7 +661,7 @@ inline lama::ContextType mapEnvContexttoContextType( std::string contextname )
 
 #define LAMA_COMMON_TEST_CASE_TEMPLATE_END();                                                                          \
     if ( loglevel_argument == "test_suite" )                                                                           \
-        BOOST_TEST_MESSAGE( "    Leaving common test case \"" + lama_common_testcase_method  );                        \
+      LAMA_LOG_INFO( logger, "    Leaving common test case \"" + lama_common_testcase_method + "\" " );                \
     }
 
 /*
