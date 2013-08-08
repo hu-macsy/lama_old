@@ -64,8 +64,8 @@
 
 #include <boost/bind.hpp>
 
-//#include "cuPrintf.cuh"
-//#include "cuPrintf.cu"
+#include "cuPrintf.cuh"
+#include "cuPrintf.cu"
 
 //#define CUDA_CAP_20
 
@@ -73,7 +73,7 @@
 #define STEP 1
 //#define NUM_BLOCKS 64
 #define NUM_BLOCKS 512
-#define HASH_TABLE_SIZE 32
+//#define HASH_TABLE_SIZE 10000
 
 #define NUM_THREADS (STEP*32)
 #define NUM_WARPS NUM_THREADS/32
@@ -1216,19 +1216,14 @@ inline bool insertHashTable_openAddressing(IndexType colB,
         }
     }
 
+
     if ( !inserted )
     {
+//        cuPrintf("need global mem!\n");
         for ( IndexType i = 0; i < MAX_HASH_TRIES; i++ )
         {
             IndexType hash;
-            if ( diagonalProperty )
-            {
-                hash = ( ( gx + HASH_C0 * i + HASH_C1 * (IndexType) i * i ) % ( numElementsHashTable - 1 ) ) + 1;
-            }
-            else
-            {
-                hash = ( gx + HASH_C0 * i + HASH_C1 * (IndexType) i * i ) % ( numElementsHashTable );
-            }
+            hash = ( gx + HASH_C0 * i + HASH_C1 * (IndexType) i * i ) % ( numElementsHashTable );
             IndexType val = atomicCAS( &hashTableIndexes[hashTableOffset + hash], -1, colB );
 
             if ( val == -1 )
@@ -1384,14 +1379,6 @@ inline bool insertHashTable_cuckoo( IndexType colB,
         }
     }
 
-
-
-
-
-
-
-
-
     return false;
 }
 
@@ -1444,38 +1431,36 @@ void matrixMultiplySizesKernel(
     sGlobalHashTableAccessed[localWarpId] = true;
 
 // Reset hashError
-    *hashError = false;
+//    *hashError = false;
 
     IndexType* hashTableIndexes = ( (IndexType*) hashTables );
 
 
-
-
-    for ( ; __any( aRowIt < numRows ); aRowIt += numWarpsGlobal )
-    //for ( ; aRowIt < numRows; aRowIt += numWarpsGlobal )
-    {
-        if ( aRowIt < numRows )
-        {
-
-
-//
-//    bool done = false;
-//    while ( !done )
+//    for ( ; __any( aRowIt < numRows ); aRowIt += numWarpsGlobal )
+//    //for ( ; aRowIt < numRows; aRowIt += numWarpsGlobal )
 //    {
-//        if( laneId == 0 )
+//        if ( aRowIt < numRows )
 //        {
-//            sRowIt[localWarpId] = atomicAdd(rowCounter, 1);
-//        }
-//        aRowIt = sRowIt[localWarpId];
-//
-//
-//        //aRowIt = numRows;
-//        if ( aRowIt >= numRows )
-//        {
-//            done = true;
-//        }
-//        else
-//        {
+
+
+
+    bool done = false;
+    while ( !done )
+    {
+        if( laneId == 0 )
+        {
+            sRowIt[localWarpId] = atomicAdd(rowCounter, 1);
+        }
+        aRowIt = sRowIt[localWarpId];
+
+
+        //aRowIt = numRows;
+        if ( aRowIt >= numRows )
+        {
+            done = true;
+        }
+        else
+        {
 
 
 
@@ -1532,7 +1517,6 @@ void matrixMultiplySizesKernel(
 
                         if ( colB != -1 && ( !diagonalProperty || colB != aRowIt ) )
                         {
-
                             bool inserted = insertHashTable<float>(colB,
                                                             diagonalProperty,
                                                             sHashTableJa,
@@ -1592,14 +1576,14 @@ IndexType CUDACSRUtils::matrixMultiplySizes(
         "matrixMutliplySizes for " << numRows << " x " << numColumns << " matrix" << ", diagonalProperty = " << diagonalProperty )
 
     LAMA_CHECK_CUDA_ACCESS
-// Reset cIa
 
-    size_t free;
-    size_t total;
-    cuMemGetInfo( &free, &total );
 
+//    size_t free;
+//    size_t total;
+//    cuMemGetInfo( &free, &total );
 //    std::cout << "free memory: " << free / 1024 / 1024 << "mb, total memory: " << total / 1024 / 1024 << "mb" << std::endl;
 
+    // Reset cIa
     thrust::device_ptr<IndexType> cIaPtr( cIa );
     thrust::fill( cIaPtr, cIaPtr + numRows, 0 );
 
@@ -1611,7 +1595,11 @@ IndexType CUDACSRUtils::matrixMultiplySizes(
     ContextPtr loc = ContextFactory::getContext( Context::CUDA );
 // TODO: be carefull with NUM_BLOCKS here!
     IndexType* hashTable = ( IndexType* ) loc->allocate( hashTableAllocatedBytes );
+
+
     bool* hashError = (bool*) loc->allocate( sizeof(bool) );
+    bool hashErrorHost = false;
+    cudaMemcpy( hashError, &hashErrorHost, sizeof(bool), cudaMemcpyHostToDevice );
 
     // TMP row counter
     IndexType* rowCounter = (IndexType*) loc->allocate( sizeof(IndexType) );
@@ -1623,7 +1611,7 @@ IndexType CUDACSRUtils::matrixMultiplySizes(
     thrust::device_ptr<IndexType> hashTablesPtr( hashTable );
     thrust::fill( hashTablesPtr, hashTablesPtr + NUM_BLOCKS * initialHashTableSize, -1 );
 
-    bool hashErrorHost;
+//    bool hashErrorHost;
     unsigned int hashTableSize = initialHashTableSize;
 
 
@@ -1644,14 +1632,14 @@ IndexType CUDACSRUtils::matrixMultiplySizes(
             break;
         }
 
-//        cudaPrintfInit();
+        cudaPrintfInit();
         matrixMultiplySizesKernel<NUM_WARPS><<<NUM_BLOCKS, NUM_THREADS>>>( aIa, aJa, bIa, bJa, cIa, endRow, numColumns,
                 startRow, hashTable, hashTableSize,
                 hashError, diagonalProperty
                 , rowCounter
                 );
-//        cudaPrintfDisplay(stdout, true);
-//        cudaPrintfEnd();
+        cudaPrintfDisplay(stdout, true);
+        cudaPrintfEnd();
 
         cudaStreamSynchronize( 0 );
         LAMA_CHECK_CUDA_ERROR
@@ -1681,6 +1669,9 @@ IndexType CUDACSRUtils::matrixMultiplySizes(
 
 // We need to clean up cIA again (for the crashed rows!)
             thrust::fill( cIaPtr + startRow, cIaPtr + endRow, 0 );
+
+            hashErrorHost = false;
+            cudaMemcpy( hashError, &hashErrorHost, sizeof(bool), cudaMemcpyHostToDevice );
         }
     }
 
@@ -2066,30 +2057,30 @@ void matrixMultiplyKernel(
     IndexType* hashTableIndexes = ( (IndexType*) hashTables );
     ValueType* hashTableValues = (ValueType*) (hashTableIndexes + numWarpsGlobal * numElementsHashTable);
 
-// Loop over all rows
-    for ( ; __any( aRowIt < numRows); aRowIt += numWarpsGlobal )
-    {
-// Check if this warp is in valid row
-        if ( aRowIt < numRows )
-        {
-
-//    bool done = false;
-//    while ( !done )
+//// Loop over all rows
+//    for ( ; __any( aRowIt < numRows); aRowIt += numWarpsGlobal )
 //    {
-//        if( laneId == 0 )
+//// Check if this warp is in valid row
+//        if ( aRowIt < numRows )
 //        {
-//            sRowIt[localWarpId] = atomicAdd(rowCounter, 1);
-//        }
-//        aRowIt = sRowIt[localWarpId];
-//
-//
-//        //aRowIt = numRows;
-//        if ( aRowIt >= numRows )
-//        {
-//            done = true;
-//        }
-//        else
-//        {
+
+    bool done = false;
+    while ( !done )
+    {
+        if( laneId == 0 )
+        {
+            sRowIt[localWarpId] = atomicAdd(rowCounter, 1);
+        }
+        aRowIt = sRowIt[localWarpId];
+
+
+        //aRowIt = numRows;
+        if ( aRowIt >= numRows )
+        {
+            done = true;
+        }
+        else
+        {
 
 
 
@@ -2354,6 +2345,13 @@ void CUDACSRUtils::matrixMultiply(
     LAMA_LOG_INFO( logger, "matrixMultiply for " << numRows << "x" << numColumns << " matrix" )
 
     LAMA_CHECK_CUDA_ACCESS
+
+//    CUdevice dev;   // curent device
+//    LAMA_CUDA_DRV_CALL( cuCtxGetDevice( &dev ), "get current device" )
+//    cudaDeviceProp deviceProp;
+//    cudaGetDeviceProperties(&deviceProp, dev);
+////LAMA_CUDA_DRV_CALL( , "get current device" )
+//    std::cout << "Shared mem per block: " << deviceProp.sharedMemPerBlock / 1024 << "kb" << std::endl;
 
     const unsigned int initialHashTableSize = lastHashTableSize;
 
