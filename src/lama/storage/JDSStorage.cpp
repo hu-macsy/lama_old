@@ -1206,7 +1206,7 @@ SyncToken* JDSStorage<ValueType>::vectorTimesMatrixAsync(
     }
     else
     {
-        shared_ptr<WriteOnlyAccess<ValueType> > wResult( new WriteOnlyAccess<ValueType>( result, loc, mNumRows ) );
+        shared_ptr<WriteOnlyAccess<ValueType> > wResult( new WriteOnlyAccess<ValueType>( result, loc, mNumColumns ) );
         shared_ptr<ReadAccess<ValueType> > rY( new ReadAccess<ValueType>( y, loc ) );
 
         syncToken->pushAccess( wResult );
