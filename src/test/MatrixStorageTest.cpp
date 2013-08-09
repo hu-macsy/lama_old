@@ -643,27 +643,27 @@ LAMA_COMMON_TEST_CASE_TEMPLATE( MatrixStorageTest, StorageType, vectorTimesMatri
         const ValueType alpha = 1.5;
         const ValueType beta = 2.3;
 
-        LAMAArray<ValueType> x( mMatrixStorage.getNumRows(), xVal );
-        LAMAArray<ValueType> y( mMatrixStorage.getNumColumns(), yVal );
+        IndexType m = mMatrixStorage.getNumColumns();
+        IndexType n = mMatrixStorage.getNumRows();
+
+        LAMAArray<ValueType> x( n, xVal );
+        LAMAArray<ValueType> y( m, yVal );
         // due to use of LAMAArrayView we have to give result the correct size
-        LAMAArray<ValueType> result ( mMatrixStorage.getNumColumns() );
+        LAMAArray<ValueType> result ( m );
         mMatrixStorage.vectorTimesMatrix( result, alpha, x, beta, y );
 
-        BOOST_CHECK_EQUAL( result.size(), mMatrixStorage.getNumColumns() );
+        BOOST_CHECK_EQUAL( result.size(), m );
 
         HostReadAccess<ValueType> values( orig.getData() );
         HostReadAccess<ValueType> res( result );
 
-        int ncol = mMatrixStorage.getNumColumns();
-        int nrow = mMatrixStorage.getNumRows();
-
-        for ( IndexType j = 0; j < ncol; ++j )
+        for ( IndexType j = 0; j < m; ++j )
         {
             ValueType sum = 0.0;
 
-            for ( IndexType i = 0; i < nrow; ++i )
+            for ( IndexType i = 0; i < n; ++i )
             {
-                sum += values[ i * ncol + j ] * alpha * xVal;
+                sum += values[ i * m + j ] * alpha * xVal;
             }
 
             sum += beta * yVal;
@@ -679,10 +679,13 @@ LAMA_COMMON_TEST_CASE_TEMPLATE( MatrixStorageTest, StorageType, vectorTimesMatri
         const ValueType alpha = 1.0;
         const ValueType beta = 2.0;
 
-        LAMAArray<ValueType> x( mMatrixStorage.getNumRows(), xVal );
-        LAMAArray<ValueType> y( mMatrixStorage.getNumColumns(), yVal );
+        IndexType m = mMatrixStorage.getNumColumns();
+        IndexType n = mMatrixStorage.getNumRows();
+
+        LAMAArray<ValueType> x( n, xVal );
+        LAMAArray<ValueType> y( m, yVal );
         // due to use of LAMAArrayView we have to give result the correct size
-        LAMAArray<ValueType> result ( mMatrixStorage.getNumColumns() );
+        LAMAArray<ValueType> result ( m );
 
         // asynchronous execution, only checks correct calling
 
@@ -693,21 +696,18 @@ LAMA_COMMON_TEST_CASE_TEMPLATE( MatrixStorageTest, StorageType, vectorTimesMatri
         }
         LAMA_LOG_TRACE( logger, "vectorTimesMatrixAsync synchronized" )
 
-        BOOST_CHECK_EQUAL( result.size(), mMatrixStorage.getNumColumns() );
+        BOOST_CHECK_EQUAL( result.size(), m );
 
         HostReadAccess<ValueType> values( orig.getData() );
         HostReadAccess<ValueType> res( result );
 
-        int ncol = mMatrixStorage.getNumColumns();
-        int nrow = mMatrixStorage.getNumRows();
-
-        for ( IndexType j = 0; j < ncol; ++j )
+        for ( IndexType j = 0; j < m; ++j )
         {
             ValueType sum = 0.0;
 
-            for ( IndexType i = 0; i < nrow; ++i )
+            for ( IndexType i = 0; i < n; ++i )
             {
-                sum += values[ i * ncol + j ] * alpha * xVal;
+                sum += values[ i * m + j ] * alpha * xVal;
             }
 
             sum += beta * yVal;
@@ -749,21 +749,18 @@ LAMA_COMMON_TEST_CASE_TEMPLATE( MatrixStorageTest, StorageType, vectorTimesMatri
         }
         LAMA_LOG_TRACE( logger, "vectorTimesMatrixAsync synchronized" )
 
-        BOOST_CHECK_EQUAL( result.size(), mMatrixStorage.getNumColumns() );
+        BOOST_CHECK_EQUAL( result.size(), m );
 
         HostReadAccess<ValueType> values( orig.getData() );
         HostReadAccess<ValueType> res( result );
 
-        int ncol = mMatrixStorage.getNumColumns();
-        int nrow = mMatrixStorage.getNumRows();
-
-        for ( IndexType j = 0; j < ncol; ++j )
+        for ( IndexType j = 0; j < m; ++j )
         {
             ValueType sum = 0.0;
 
-            for ( IndexType i = 0; i < nrow; ++i )
+            for ( IndexType i = 0; i < n; ++i )
             {
-                sum += values[ i * ncol + j ] * alpha * xValues[i];
+                sum += values[ i * m + j ] * alpha * xValues[i];
             }
 
             sum += beta * yValues[j];
@@ -808,21 +805,18 @@ LAMA_COMMON_TEST_CASE_TEMPLATE( MatrixStorageTest, StorageType, vectorTimesMatri
         }
         LAMA_LOG_TRACE( logger, "vectorTimesMatrixAsync synchronized" )
 
-        BOOST_CHECK_EQUAL( result.size(), mMatrixStorage.getNumColumns() );
+        BOOST_CHECK_EQUAL( result.size(), m );
 
         HostReadAccess<ValueType> values( orig.getData() );
         HostReadAccess<ValueType> res( result );
 
-        int ncol = mMatrixStorage.getNumColumns();
-        int nrow = mMatrixStorage.getNumRows();
-
-        for ( IndexType j = 0; j < ncol; ++j )
+        for ( IndexType j = 0; j < m; ++j )
         {
             ValueType sum = 0.0;
 
-            for ( IndexType i = 0; i < nrow; ++i )
+            for ( IndexType i = 0; i < n; ++i )
             {
-                sum += values[ i * ncol + j ] * alpha * xValues[i];
+                sum += values[ i * m + j ] * alpha * xValues[i];
             }
 
             sum += beta * yValues[j];
