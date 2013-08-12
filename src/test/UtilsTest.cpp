@@ -36,9 +36,9 @@
 
 // others
 #include <lama/ContextAccess.hpp>
-#include <lama/HostReadAccess.hpp>
 #include <lama/LAMAArray.hpp>
 #include <lama/LAMAInterface.hpp>
+#include <lama/HostReadAccess.hpp>
 #include <lama/ReadAccess.hpp>
 #include <lama/WriteAccess.hpp>
 
@@ -88,11 +88,10 @@ void scaleTest( ContextPtr loc )
 
     HostReadAccess<ValueType> rValues( values );
 
-    for ( IndexType i = 0; i < nValues; i++ )
+    for( IndexType i = 0; i < nValues; i++ )
     {
         BOOST_CHECK_EQUAL( expectedValues[i], rValues[i] );
     }
-
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */
@@ -161,11 +160,11 @@ void setValTest( ContextPtr loc )
 
         HostReadAccess<ValueType> rValues( values );
 
-        for ( IndexType i = 0; i < n; i++ )
+        for( IndexType i = 0; i < n; i++ )
         {
-            BOOST_CHECK_EQUAL(  0, rValues.get()[i + 0 * n] );
+            BOOST_CHECK_EQUAL( 0, rValues.get()[i + 0 * n] );
             BOOST_CHECK_EQUAL( 10, rValues.get()[i + 1 * n] );
-            BOOST_CHECK_EQUAL(  0, rValues.get()[i + 2 * n] );
+            BOOST_CHECK_EQUAL( 0, rValues.get()[i + 2 * n] );
         }
     }
 
@@ -192,9 +191,12 @@ void isSortedTest( ContextPtr loc )
     LAMA_INTERFACE_FN_T( isSorted, loc, Utils, Reductions, ValueType );
 
     {
-        ValueType values1[] = { 1, 2, 2, 2, 5, 8 };
-        ValueType values2[] = { 2, 2, 1, 0 }; 
-        ValueType values3[] = { 1, 0, 1 };
+        ValueType values1[] =
+        { 1, 2, 2, 2, 5, 8 };
+        ValueType values2[] =
+        { 2, 2, 1, 0 };
+        ValueType values3[] =
+        { 1, 0, 1 };
 
         const IndexType nValues1 = sizeof( values1 ) / sizeof(ValueType);
         const IndexType nValues2 = sizeof( values2 ) / sizeof(ValueType);
@@ -212,22 +214,25 @@ void isSortedTest( ContextPtr loc )
 
         // values1 are sorted, ascending = true
 
-        BOOST_CHECK ( isSorted( rValues1.get(), nValues1, true ) );
-        BOOST_CHECK ( ! isSorted( rValues1.get(), nValues1, false ) );
+        BOOST_CHECK( isSorted( rValues1.get(), nValues1, true ) );
+        BOOST_CHECK( ! isSorted( rValues1.get(), nValues1, false ) );
 
-        // values2 are sorted, ascending = false 
+        // values2 are sorted, ascending = false
 
-        BOOST_CHECK ( isSorted( rValues2.get(), nValues2, false ) );
-        BOOST_CHECK ( ! isSorted( rValues2.get(), nValues2, true ) );
+        BOOST_CHECK( isSorted( rValues2.get(), nValues2, false ) );
+        BOOST_CHECK( ! isSorted( rValues2.get(), nValues2, true ) );
 
-        BOOST_CHECK ( isSorted( rValues2.get(), 0, true ) );   // only first two values are sorted
-        BOOST_CHECK ( isSorted( rValues2.get(), 1, true ) );   // only first two values are sorted
-        BOOST_CHECK ( isSorted( rValues2.get(), 2, true ) );   // only first two values are sorted
+        BOOST_CHECK( isSorted( rValues2.get(), 0, true ) );
+        // only first two values are sorted
+        BOOST_CHECK( isSorted( rValues2.get(), 1, true ) );
+        // only first two values are sorted
+        BOOST_CHECK( isSorted( rValues2.get(), 2, true ) );
+        // only first two values are sorted
 
         // values3 are not sorted, neither ascending nor descending
 
-        BOOST_CHECK ( ! isSorted( rValues3.get(), nValues3, false ) );
-        BOOST_CHECK ( ! isSorted( rValues3.get(), nValues3, true ) );
+        BOOST_CHECK( ! isSorted( rValues3.get(), nValues3, false ) );
+        BOOST_CHECK( ! isSorted( rValues3.get(), nValues3, true ) );
     }
 }
 
@@ -236,7 +241,6 @@ void isSortedTest( ContextPtr loc )
 template<typename NoType>
 void setOrderTest( ContextPtr loc )
 {
-
     LAMA_INTERFACE_FN_T( setOrder, loc, Utils, Setter, IndexType );
 
     {
@@ -254,7 +258,7 @@ void setOrderTest( ContextPtr loc )
 
         HostReadAccess<IndexType> rValues( values );
 
-        for ( IndexType i = 0; i < n; i++ )
+        for( IndexType i = 0; i < n; i++ )
         {
             BOOST_CHECK_EQUAL( i, rValues.get()[i] );
         }
@@ -273,7 +277,6 @@ void setOrderTest( ContextPtr loc )
             setOrder( wValues.get(), n );
         }
     }
-
 }
 
 template<typename ValueType>
@@ -299,7 +302,7 @@ void invertTest( ContextPtr loc )
 
         HostReadAccess<ValueType> rValues( values );
 
-        for ( IndexType i = 0; i < nValues; i++ )
+        for( IndexType i = 0; i < nValues; i++ )
         {
             BOOST_CHECK_CLOSE( 1 / valuesValues[i], rValues.get()[i], 1 );
         }
@@ -318,7 +321,6 @@ void invertTest( ContextPtr loc )
             invert( wValues.get(), n );
         }
     }
-
 }
 
 // TODO: add SPMV tests
@@ -329,19 +331,16 @@ void invertTest( ContextPtr loc )
 /* ------------------------------------------------------------------------------------------ */
 
 BOOST_AUTO_TEST_SUITE( UtilsTest )
-;
 
-LAMA_LOG_DEF_LOGGER( logger, "Test.UtilsTest" );
+LAMA_LOG_DEF_LOGGER( logger, "Test.UtilsTest" )
 
-LAMA_AUTO_TEST_CASE_T( sumTest, UtilsTest );
-LAMA_AUTO_TEST_CASE_T( isSortedTest, UtilsTest );
-LAMA_AUTO_TEST_CASE_T( setValTest, UtilsTest );
-LAMA_AUTO_TEST_CASE_T( invertTest, UtilsTest );
+LAMA_AUTO_TEST_CASE_CT( sumTest, UtilsTest )
+LAMA_AUTO_TEST_CASE_CT( isSortedTest, UtilsTest )
+LAMA_AUTO_TEST_CASE_CT( setValTest, UtilsTest )
+LAMA_AUTO_TEST_CASE_CT( invertTest, UtilsTest )
 
-LAMA_AUTO_TEST_CASE_TDUMMY( setOrderTest, UtilsTest );
+LAMA_AUTO_TEST_CASE_CTDUMMY( setOrderTest, UtilsTest )
 
-LAMA_AUTO_TEST_CASE_T( scaleTest, UtilsTest );
+LAMA_AUTO_TEST_CASE_CT( scaleTest, UtilsTest )
 
-/* ------------------------------------------------------------------------------------------------------------------ */
-
-BOOST_AUTO_TEST_SUITE_END();
+/* ------------------------------------------------------------------------------------------------------------------ */BOOST_AUTO_TEST_SUITE_END()

@@ -48,7 +48,6 @@ extern std::string testcase;
 /* ------------------------------------------------------------------------- */
 
 BOOST_AUTO_TEST_SUITE( CSRStorageTest )
-;
 
 LAMA_LOG_DEF_LOGGER( logger, "Test.CSRStorageTest" );
 
@@ -56,7 +55,8 @@ typedef boost::mpl::list<float,double> test_types;
 
 /* ------------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( commonTestCases, T, test_types ) {
+BOOST_AUTO_TEST_CASE_TEMPLATE( commonTestCases, T, test_types )
+{
     typedef T ValueType;
 
     CSRStorage<ValueType> csrStorage;
@@ -81,7 +81,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( commonTestCases, T, test_types ) {
 
 /* --------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( ConstructorTest, T, test_types ) {
+BOOST_AUTO_TEST_CASE_TEMPLATE( ConstructorTest, T, test_types )
+{
     const IndexType numRows = 10;
     const IndexType numColumns = 15;
 
@@ -105,19 +106,17 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( ConstructorTest, T, test_types ) {
 
 /* --------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( ConstructorTest1, ValueType, test_types ) {
+BOOST_AUTO_TEST_CASE_TEMPLATE( ConstructorTest1, ValueType, test_types )
+{
     const IndexType numRows = 3;
     const IndexType numColumns = 3;
 
-    const IndexType ia[] =
-    {   0, 1, 2, 4};
+    const IndexType ia[] = { 0, 1, 2, 4 };
 
 // Note: ja, values are stored column-major order
 
-    const IndexType ja[] =
-    {   0, 1, 2, 2};
-    const ValueType values[] =
-    {   0.5f, 0.5f, 0.3f, 0.2f};
+    const IndexType ja[] = { 0, 1, 2, 2 };
+    const ValueType values[] = { 0.5f, 0.5f, 0.3f, 0.2f };
 
     const IndexType numValues = ia[numRows];
     const IndexType sizeJA = sizeof( ja ) / sizeof( IndexType );
@@ -169,4 +168,6 @@ BOOST_AUTO_TEST_CASE( typeNameTest )
     s = csrStoragef.typeName();
     BOOST_CHECK_EQUAL( s, "CSRStorage<float>" );
 }
-/* ------------------------------------------------------------------------- */BOOST_AUTO_TEST_SUITE_END();
+/* ------------------------------------------------------------------------- */
+
+BOOST_AUTO_TEST_SUITE_END();

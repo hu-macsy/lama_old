@@ -75,6 +75,16 @@ public:
         const IndexType numRows,
         const IndexType numDiagonals );
 
+    /** Implementation for COOUtilsInterface::Counting::ia2offsets with CUDA on GPUs */
+
+    static void ia2offsets(
+        IndexType csrIA[],
+        const IndexType numRows,
+        const IndexType numDiagonals,
+        const IndexType cooIA[],
+        const IndexType numValues );
+
+    /** Implementation for COOUtilsInterface::Conversions::setCSRData with CUDA on GPUs */
     /** Implementation for COOUtilsInterface::Mult:normalGEMV with CUDA on GPUs */
 
     template<typename ValueType>
@@ -85,10 +95,26 @@ public:
         const ValueType beta,
         const ValueType y[],
         const IndexType numRows,
+        const IndexType numValues,
         const IndexType cooIA[],
         const IndexType cooJA[],
         const ValueType cooValues[],
+        SyncToken* syncToken );
+
+    /** Implementation for COOUtilsInterface::Mult:normalGEMV with CUDA on GPUs */
+
+    template<typename ValueType>
+    static void normalGEVM(
+        ValueType result[],
+        const ValueType alpha,
+        const ValueType x[],
+        const ValueType beta,
+        const ValueType y[],
+        const IndexType numRows,
         const IndexType numValues,
+        const IndexType cooIA[],
+        const IndexType cooJA[],
+        const ValueType cooValues[],
         SyncToken* syncToken );
 
     /** Routine that registers all routines of this class at the LAMA interface. */

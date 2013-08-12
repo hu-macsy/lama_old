@@ -61,12 +61,12 @@ CG::CG( const CG& other )
 {
 }
 
-CG::CGRuntime::CGRuntime()
-    : IterativeSolverRuntime(), mPScalar( 0.0 )
+CG::~CG()
 {
 }
 
-CG::~CG()
+CG::CGRuntime::CGRuntime()
+    : IterativeSolverRuntime(), mPScalar( 0.0 )
 {
 }
 
@@ -169,12 +169,14 @@ void CG::iterate()
 
         LAMA_LOG_DEBUG( logger, "beta = " << beta )
         p = z + beta * p;
+        LAMA_LOG_TRACE( logger, "l2Norm( p ) = " << p.l2Norm() )
     }
 
     {
         LAMA_REGION( "Solver.CG.calc_q" )
         LAMA_LOG_INFO( logger, "Calculating q." )
         q = A * p;
+        LAMA_LOG_TRACE( logger, "l2Norm( q ) = " << q.l2Norm() )
     }
 
     LAMA_LOG_INFO( logger, "Calculating pqProd." )
@@ -195,11 +197,13 @@ void CG::iterate()
         LAMA_LOG_INFO( logger, "Calculating x." )
         LAMA_REGION( "Solver.CG.update_x" )
         x = x + alpha * p;
+        LAMA_LOG_TRACE( logger, "l2Norm( x ) = " << x.l2Norm() )
     }
     {
         LAMA_LOG_INFO( logger, "Updating residual." )
         LAMA_REGION( "Solver.CG.update_res" )
         residual = residual - alpha * q;
+        LAMA_LOG_TRACE( logger, "l2Norm( residual ) = " << residual.l2Norm() )
     }
     //CG implementation end
     mCGRuntime.mSolution.setDirty( false );

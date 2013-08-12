@@ -131,6 +131,26 @@ Vector& Vector::operator=( const Expression_MV& expression )
     return *this = tempExpression;
 }
 
+Vector& Vector::operator=( const Expression_VM& expression )
+{
+    LAMA_LOG_DEBUG( logger, "this = matrix * vector1 -> this = 1.0 * vector1 * matrix + 0.0 * this" )
+
+    // expression = A * x, generalized to A * x * 1.0 + 0.0 * this
+    // but be careful: this might not be resized correctly, so we do it here
+
+    const Expression_SVM exp1( Scalar( 1.0 ), expression );
+
+    const Expression_SV exp2( Scalar( 0.0 ), *this );
+
+    const Expression_SVM_SV tempExpression( exp1, exp2 );
+
+    // due to alias of result/vector2 resize already here
+
+    resize( expression.getArg1().getDistributionPtr() );
+
+    return *this = tempExpression;
+}
+
 Vector& Vector::operator=( const Expression_SV_SV& expression )
 {
     LAMA_LOG_DEBUG( logger, "this = a * vector1 + b * vector2, check vector1.size() == vector2.size()" )
@@ -176,6 +196,38 @@ Vector& Vector::operator=( const Expression_SMV& expression )
     return operator=( tmpExp );
 }
 
+
+Vector& Vector::operator=( const Expression_SVM& expression )
+{
+    LAMA_LOG_INFO( logger, "this = alpha * vectorX * matrix -> this = alpha * vectorX * matrix + 0.0 * this" )
+
+    const Scalar& beta = 0.0;
+
+    Expression_SV exp2( beta, *this );
+
+    Expression_SVM_SV tmpExp( expression, exp2 );
+
+    const Vector& vectorX = expression.getArg2().getArg1();
+
+    if ( &vectorX != this )
+    {
+        // so this is not aliased to the vector on the rhs
+        // as this will be used on rhs we do allocate it here
+        // distribution is given by the row distribution of the matrix
+
+        const Matrix& matrix = expression.getArg2().getArg2();
+
+        DistributionPtr dist = matrix.getColDistributionPtr();
+
+        resize( dist );
+
+        // values remain uninitialized as we assume that 0.0 * this (undefined) will
+        // never be executed as an operation
+    }
+
+    return operator=( tmpExp );
+}
+
 Vector& Vector::operator=( const Expression_SMV_SV& expression )
 {
     LAMA_LOG_INFO( logger, "Vector::operator=( Expression_SMV_SV )" )
@@ -204,6 +256,43 @@ Vector& Vector::operator=( const Expression_SMV_SV& expression )
     LAMA_LOG_DEBUG( logger, "call matrixTimesVector with matrix = " << matrix )
 
     matrix.matrixTimesVector( *resultPtr, alpha, vectorX, beta, vectorY );
+
+    if ( resultPtr != this )
+    {
+        swap( *tmpResult );
+    }
+
+    return *this;
+}
+
+Vector& Vector::operator=( const Expression_SVM_SV& expression )
+{
+    LAMA_LOG_INFO( logger, "Vector::operator=( Expression_SVM_SV )" )
+
+    const Expression_SVM& exp1 = expression.getArg1();
+    const Expression_SV&  exp2 = expression.getArg2();
+    const Scalar& alpha = exp1.getArg1();
+    const Expression<Vector,Matrix,Times>& vectorTimesMatrixExp = exp1.getArg2();
+    const Scalar& beta = exp2.getArg1();
+    const Vector& vectorY = exp2.getArg2();
+
+    const Vector& vectorX = vectorTimesMatrixExp.getArg1();
+    const Matrix& matrix = vectorTimesMatrixExp.getArg2();
+
+    Vector* resultPtr = this;
+
+    boost::shared_ptr<Vector> tmpResult;
+
+    if ( &vectorX == this )
+    {
+        LAMA_LOG_DEBUG( logger, "Temporary for X required" )
+        tmpResult = boost::shared_ptr<Vector>( this->create( getDistributionPtr() ) );
+        resultPtr = tmpResult.get();
+    }
+
+    LAMA_LOG_DEBUG( logger, "call vectorTimesMatrix with matrix = " << matrix )
+
+    matrix.vectorTimesMatrix( *resultPtr, alpha, vectorX, beta, vectorY );
 
     if ( resultPtr != this )
     {
@@ -272,6 +361,11 @@ Vector& Vector::operator+=( const Expression_SMV& expression )
     return operator=( Expression_SMV_SV( expression, Expression_SV( Scalar( 1 ), *this ) ) );
 }
 
+Vector& Vector::operator+=( const Expression_SVM& expression )
+{
+    return operator=( Expression_SVM_SV( expression, Expression_SV( Scalar( 1 ), *this ) ) );
+}
+
 Vector& Vector::operator-=( const Expression_SMV& exp )
 {
     Expression_SMV minusExp( - exp.getArg1(), exp.getArg2() );
@@ -327,4 +421,3 @@ void Vector::resize( DistributionPtr distributionPtr )
 }
 
 }
-

@@ -883,6 +883,15 @@ int MPICommunicator::max( const int value ) const
     return maxval( value );
 }
 
+void MPICommunicator::gather( vector<IndexType>& values, IndexType value ) const
+{
+    // build a vector of just a single value
+    values.clear();
+    values.resize( mSize, 0.0 );
+    LAMA_MPICALL( logger, MPI_Allgather( &value, 1, MPI_INT, &values[0], 1, MPI_INT, selectMPIComm() ),
+                  "MPI_Allgather(MPI_INT,MPI_INT)" )
+}
+
 void MPICommunicator::gather( vector<float>& values, float value ) const
 {
     // build a vector of just a single value

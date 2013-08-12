@@ -109,6 +109,33 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( getInterfaceTest, ValueType, ValueTypes )
         BOOST_CHECK( gemv );
     }
 
+    // normalGEVM is vector-matrix multiplication and is supported for each sparse matrix type
+
+    {
+        LAMA_INTERFACE_FN_T( normalGEVM, context, CSRUtils, Mult, ValueType );
+        BOOST_CHECK( normalGEVM );
+    }
+
+    {
+        LAMA_INTERFACE_FN_T( normalGEVM, context, ELLUtils, Mult, ValueType );
+        BOOST_CHECK( normalGEVM );
+    }
+
+    {
+        LAMA_INTERFACE_FN_T( normalGEVM, context, JDSUtils, Mult, ValueType );
+        BOOST_CHECK( normalGEVM );
+    }
+
+    {
+        LAMA_INTERFACE_FN_T( normalGEVM, context, DIAUtils, Mult, ValueType );
+        BOOST_CHECK( normalGEVM );
+    }
+
+    {
+        LAMA_INTERFACE_FN_T( normalGEVM, context, COOUtils, Mult, ValueType );
+        BOOST_CHECK( normalGEVM );
+    }
+
     // BLAS.LAPACK<ValueType>.getrf is not availabe for CUDA
 
     BOOST_CHECK_THROW( { LAMA_INTERFACE_FN_T( getrf, context, BLAS, LAPACK, ValueType ) }, Exception )

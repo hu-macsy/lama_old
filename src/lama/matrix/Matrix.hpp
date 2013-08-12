@@ -47,6 +47,7 @@
 
 #include <lama/distribution/Distribution.hpp>
 #include <lama/distribution/NoDistribution.hpp>
+#include <lama/expression/Expression.hpp>
 
 // logging
 #include <logging/logging.hpp>
@@ -61,10 +62,6 @@ class _MatrixStorage;
 /** Pointer class for a matrix, always use of a shared pointer. */
 
 typedef boost::shared_ptr<class Matrix> MatrixPtr;
-
-typedef Expression<class Matrix, Vector, Times> Expression_MV;
-typedef Expression<Scalar, Expression<class Matrix, Vector, Times>, Times> Expression_SMV;
-typedef Expression<Expression_SMV, Expression_SV, Plus> Expression_SMV_SV;
 
 /**
  * @brief The class Matrix is a abstract type that represents a distributed 2D real or complex matrix.
@@ -442,6 +439,13 @@ public:
     double getSparsityRate() const;
 
     /**
+     * @brief Returns whether the matrix is symmetric or not.
+     *
+     * @return a boolean pointing out whether the matrix is symmetric or not.
+     */
+    bool checkSymmetry() const;
+
+    /**
      * @brief Computes result = alpha * this * x + beta * y.
      *
      * @param[out]  result  the Vector to store the result to
@@ -454,6 +458,13 @@ public:
      * result == x or result == y new storage is allocated to store the result.
      */
     virtual void matrixTimesVector(
+        Vector& result,
+        const Scalar alpha,
+        const Vector& x,
+        const Scalar beta,
+        const Vector& y ) const = 0;
+
+    virtual void vectorTimesMatrix(
         Vector& result,
         const Scalar alpha,
         const Vector& x,

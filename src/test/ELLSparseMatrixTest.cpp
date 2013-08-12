@@ -32,10 +32,8 @@
  */
 
 #include <boost/test/unit_test.hpp>
-#include <boost/mpl/list.hpp>
 
 #include <lama/matrix/ELLSparseMatrix.hpp>
-
 #include <test/SparseMatrixTest.hpp>
 #include <test/TestMacros.hpp>
 
@@ -45,50 +43,49 @@ using namespace lama;
 extern bool base_test_case;
 extern std::string testcase;
 
-/* ------------------------------------------------------------------------- */
+namespace lama
+{
+namespace ELLSparseMatrixTest
+{
 
-BOOST_AUTO_TEST_SUITE( ELLSparseMatrixTest )
-;
-
-LAMA_LOG_DEF_LOGGER( logger, "Test.ELLSparseMatrixTest" );
-
-typedef boost::mpl::list<float,double> test_types;
-
-/* ------------------------------------------------------------------------- */
-
-BOOST_AUTO_TEST_CASE_TEMPLATE( commonTestCases, T, test_types ) {
-    typedef T ValueType;
-
+template<typename ValueType>
+void commonTestCases( ContextPtr loc )
+{
     ELLSparseMatrix<ValueType> ellMatrix;
-    SparseMatrixTest< ELLSparseMatrix<ValueType> > ellSparseMatrixtest( ellMatrix );
+    SparseMatrixTest< ELLSparseMatrix<ValueType> > ellSparseMatrixTest( ellMatrix );
+
+    ellSparseMatrixTest.mMatrix.setContext( loc );
 
     if ( base_test_case )
     {
-        LAMA_LOG_INFO( logger, "Run method " << testcase << " in ELLSparseMatrixTest." );
-        SPARSEMATRIX_COMMONTESTCASES( ellSparseMatrixtest );
+        SPARSEMATRIX_COMMONTESTCASES( ellSparseMatrixTest );
     }
     else
     {
-        CONTEXTLOOP()
-        {
-            GETCONTEXT( context );
-            ellSparseMatrixtest.mMatrix.setContext( context );
-            LAMA_LOG_INFO( logger, "Using context = " << ellSparseMatrixtest.mMatrix.getContext().getType() );
-            ellSparseMatrixtest.runTests();
-        }
+        ellSparseMatrixTest.runTests();
     }
 }
 
-/* ------------------------------------------------------------------------- */
-
-BOOST_AUTO_TEST_CASE( typeNameTest )
+template<typename ValueType>
+void typeNameTest( )
 {
-    ELLSparseMatrix<double> ellMatrixd;
-    std::string s = ellMatrixd.typeName();
-    BOOST_CHECK_EQUAL( s, "ELLSparseMatrix<double>" );
+    ELLSparseMatrix<ValueType> ellMatrix;
+    std::string s = ellMatrix.typeName();
 
-    ELLSparseMatrix<float> ellMatrixf;
-    s = ellMatrixf.typeName();
-    BOOST_CHECK_EQUAL( s, "ELLSparseMatrix<float>" );
+    BOOST_CHECK( s.length() > 0);
 }
-/* ------------------------------------------------------------------------- */BOOST_AUTO_TEST_SUITE_END();
+
+} // namespace ELLSparseMatrixTest
+} // namespace lama
+
+/* ------------------------------------------------------------------------------------------------------------------ */
+
+BOOST_AUTO_TEST_SUITE( ELLSparseMatrixTest )
+
+LAMA_LOG_DEF_LOGGER( logger, "Test.ELLSparseMatrixTest" )
+
+LAMA_AUTO_TEST_CASE_CT( commonTestCases, ELLSparseMatrixTest )
+LAMA_AUTO_TEST_CASE_T( typeNameTest, ELLSparseMatrixTest )
+/* ------------------------------------------------------------------------------------------------------------------ */
+
+BOOST_AUTO_TEST_SUITE_END()

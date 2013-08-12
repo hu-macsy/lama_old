@@ -69,6 +69,22 @@ public:
         const ValueType diaValues[],
         class SyncToken* syncToken );
 
+    /** Implementation for DIAUtilsInterface::Mult:normalGEVM with CUDA on GPUs */
+
+    template<typename ValueType>
+    static void normalGEVM(
+        ValueType result[],
+        const ValueType alpha,
+        const ValueType x[],
+        const ValueType beta,
+        const ValueType y[],
+        const IndexType numRows,
+        const IndexType numColumns,
+        const IndexType numDiagonals,
+        const IndexType diaOffsets[],
+        const ValueType diaValues[],
+        class SyncToken* syncToken );
+
     /** Routine that registers all routines of this class at the LAMA interface. */
 
     static void setInterface( struct DIAUtilsInterface& DIAUtils );

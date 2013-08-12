@@ -1053,13 +1053,11 @@ void CSRStorage<ValueType>::buildCSCData(
 
 template<typename ValueType>
 void CSRStorage<ValueType>::matrixTimesVector(
-
     LAMAArrayView<ValueType> result,
     const ValueType alpha,
     const LAMAArrayConstView<ValueType> x,
     const ValueType beta,
     const LAMAArrayConstView<ValueType> y ) const
-
 {
     LAMA_LOG_INFO( logger,
                    *this << ": matrixTimesVector, result = " << result << ", alpha = " << alpha << ", x = " << x << ", beta = " << beta << ", y = " << y )
@@ -1129,15 +1127,88 @@ void CSRStorage<ValueType>::matrixTimesVector(
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void CSRStorage<ValueType>::matrixTimesVectorN(
+void CSRStorage<ValueType>::vectorTimesMatrix(
+    LAMAArray<ValueType>& result,
+    const ValueType alpha,
+    const LAMAArray<ValueType>& x,
+    const ValueType beta,
+    const LAMAArray<ValueType>& y ) const
+{
+    LAMA_LOG_INFO( logger,
+                   *this << ": vectorTimesMatrix, result = " << result << ", alpha = " << alpha << ", x = " << x << ", beta = " << beta << ", y = " << y )
 
+    LAMA_REGION( "Storage.CSR.VectorTimesMatrix" )
+
+    LAMA_ASSERT_EQUAL_ERROR( x.size(), mNumRows )
+    LAMA_ASSERT_EQUAL_ERROR( result.size(), mNumColumns )
+
+    if ( ( beta != 0.0 ) && ( result != y ) )
+    {
+        LAMA_ASSERT_EQUAL_ERROR( y.size(), mNumColumns )
+    }
+
+    ContextPtr loc = getContextPtr();
+
+    LAMA_LOG_INFO( logger, *this << ": vectorTimesMatrix on " << *loc )
+
+    LAMA_INTERFACE_FN_T( sparseGEVM, loc, CSRUtils, Mult, ValueType )
+    LAMA_INTERFACE_FN_T( normalGEVM, loc, CSRUtils, Mult, ValueType )
+
+    ReadAccess<IndexType> csrIA( mIa, loc );
+    ReadAccess<IndexType> csrJA( mJa, loc );
+    ReadAccess<ValueType> csrValues( mValues, loc );
+
+    ReadAccess<ValueType> rX( x, loc );
+
+    // Possible alias of result and y must be handled by coressponding accesses
+
+    if ( result == y )
+    {
+        // only write access for y, no read access for result
+
+        WriteAccess<ValueType> wResult( result, loc );
+
+        if ( mRowIndexes.size() > 0 && ( beta == 1.0 ) )
+        {
+            // y += alpha * thisMatrix * x, can take advantage of row indexes
+
+            IndexType numNonZeroRows = mRowIndexes.size();
+            ReadAccess<IndexType> rows( mRowIndexes, loc );
+
+            LAMA_CONTEXT_ACCESS( loc )
+            sparseGEVM( wResult.get(), alpha, rX.get(), mNumColumns, numNonZeroRows, rows.get(), csrIA.get(), csrJA.get(),
+                        csrValues.get(), NULL );
+        }
+        else
+        {
+            // we assume that normalGEMV can deal with the alias of result, y
+
+            LAMA_CONTEXT_ACCESS( loc )
+            normalGEVM( wResult.get(), alpha, rX.get(), beta, wResult.get(), mNumRows, mNumColumns,
+                        csrIA.get(), csrJA.get(), csrValues.get(), NULL );
+        }
+    }
+    else
+    {
+        WriteOnlyAccess<ValueType> wResult( result, loc, mNumColumns );
+        ReadAccess<ValueType> rY( y, loc );
+
+        LAMA_CONTEXT_ACCESS( loc )
+        normalGEVM( wResult.get(), alpha, rX.get(), beta, rY.get(), mNumRows, mNumColumns,
+                    csrIA.get(), csrJA.get(), csrValues.get(), NULL );
+    }
+}
+
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType>
+void CSRStorage<ValueType>::matrixTimesVectorN(
     LAMAArrayView<ValueType> result,
     const IndexType n,
     const ValueType alpha,
     const LAMAArrayConstView<ValueType> x,
     const ValueType beta,
     const LAMAArrayConstView<ValueType> y ) const
-
 {
     LAMA_LOG_INFO( logger,
                    *this << ": matrixTimesVector, result = " << result << ", alpha = " << alpha << ", x = " << x << ", beta = " << beta << ", y = " << y )
@@ -1295,6 +1366,128 @@ SyncToken* CSRStorage<ValueType>::matrixTimesVectorAsync(
         LAMA_CONTEXT_ACCESS( loc )
 
         normalGEMV( wResult->get(), alpha, rX->get(), beta, rY->get(), mNumRows, mNumColumns, mNumValues,
+                    csrIA->get(), csrJA->get(), csrValues->get(), syncToken.get() );
+
+        syncToken->pushAccess( wResult );
+        syncToken->pushAccess( rY );
+    }
+
+    syncToken->pushAccess( csrIA );
+    syncToken->pushAccess( csrJA );
+    syncToken->pushAccess( csrValues );
+    syncToken->pushAccess( rX );
+
+    return syncToken.release();
+}
+
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType>
+SyncToken* CSRStorage<ValueType>::vectorTimesMatrixAsync(
+    LAMAArray<ValueType>& result,
+    const ValueType alpha,
+    const LAMAArray<ValueType>& x,
+    const ValueType beta,
+    const LAMAArray<ValueType>& y ) const
+{
+    LAMA_LOG_INFO( logger,
+                   *this << ": vectorTimesMatrixAsync, result = " << result << ", alpha = " << alpha << ", x = " << x << ", beta = " << beta << ", y = " << y )
+
+    LAMA_REGION( "Storage.CSR.vectorTimesMatrixAsync" )
+
+    ContextPtr loc = getContextPtr();
+
+    // Note: checks will be done by asynchronous task in any case
+    //       and exception in tasks are handled correctly
+
+    LAMA_LOG_INFO( logger, *this << ": vectorTimesMatrixAsync on " << *loc )
+
+    if ( loc->getType() == Context::Host )
+    {
+        // execution as separate thread
+
+        void (CSRStorage::*pf)(
+            LAMAArray<ValueType>&,
+            const ValueType,
+            const LAMAArray<ValueType>&,
+            const ValueType,
+            const LAMAArray<ValueType>& ) const
+
+        = &CSRStorage<ValueType>::vectorTimesMatrix;
+
+        using boost::bind;
+
+        LAMA_LOG_INFO( logger, *this << ": vectorTimesMatrixAsync on Host by own thread" )
+
+        using boost::ref;
+
+        return new TaskSyncToken( bind( pf, this, ref( result ), alpha, ref( x ), beta, ref( y ) ) );
+    }
+
+    LAMA_ASSERT_EQUAL_ERROR( x.size(), mNumRows )
+    LAMA_ASSERT_EQUAL_ERROR( result.size(), mNumColumns )
+
+    if ( ( beta != 0.0 ) && ( result != y ) )
+    {
+        LAMA_ASSERT_EQUAL_ERROR( y.size(), mNumColumns )
+    }
+
+    LAMA_INTERFACE_FN_T( sparseGEVM, loc, CSRUtils, Mult, ValueType )
+    LAMA_INTERFACE_FN_T( normalGEVM, loc, CSRUtils, Mult, ValueType )
+
+    auto_ptr<SyncToken> syncToken( loc->getSyncToken() );
+
+    // all accesses will be pushed to the sync token as LAMA arrays have to be protected up
+    // to the end of the computations.
+
+    shared_ptr<ReadAccess<IndexType> > csrIA( new ReadAccess<IndexType>( mIa, loc ) );
+    shared_ptr<ReadAccess<IndexType> > csrJA( new ReadAccess<IndexType>( mJa, loc ) );
+    shared_ptr<ReadAccess<ValueType> > csrValues( new ReadAccess<ValueType>( mValues, loc ) );
+    shared_ptr<ReadAccess<ValueType> > rX( new ReadAccess<ValueType>( x, loc ) );
+
+    // Possible alias of result and y must be handled by coressponding accesses
+
+    if ( result == y )
+    {
+        // only write access for y, no read access for result
+
+        shared_ptr<WriteAccess<ValueType> > wResult( new WriteAccess<ValueType>( result, loc ) );
+
+        if ( mRowIndexes.size() > 0 && ( beta == 1.0 ) )
+        {
+            // y += alpha * thisMatrix * x, can take advantage of row indexes
+
+            IndexType numNonZeroRows = mRowIndexes.size();
+
+            shared_ptr<ReadAccess<IndexType> > rows( new ReadAccess<IndexType>( mRowIndexes, loc ) );
+
+            syncToken->pushAccess( rows );
+
+            LAMA_CONTEXT_ACCESS( loc )
+
+            sparseGEVM( wResult->get(), alpha, rX->get(), mNumColumns, numNonZeroRows, rows->get(), csrIA->get(), csrJA->get(),
+                        csrValues->get(), syncToken.get() );
+        }
+        else
+        {
+            // we assume that normalGEMV can deal with the alias of result, y
+
+            LAMA_CONTEXT_ACCESS( loc )
+
+            normalGEVM( wResult->get(), alpha, rX->get(), beta, wResult->get(), mNumRows, mNumColumns,
+                        csrIA->get(), csrJA->get(), csrValues->get(), syncToken.get() );
+        }
+
+        syncToken->pushAccess( wResult );
+    }
+    else
+    {
+        shared_ptr<WriteAccess<ValueType> > wResult( new WriteOnlyAccess<ValueType>( result, loc, mNumColumns ) );
+        shared_ptr<ReadAccess<ValueType> > rY( new ReadAccess<ValueType>( y, loc ) );
+
+        LAMA_CONTEXT_ACCESS( loc )
+
+        normalGEVM( wResult->get(), alpha, rX->get(), beta, rY->get(), mNumRows, mNumColumns,
                     csrIA->get(), csrJA->get(), csrValues->get(), syncToken.get() );
 
         syncToken->pushAccess( wResult );

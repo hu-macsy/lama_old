@@ -258,7 +258,8 @@ endif ( LAMA_USE_MIC )
 if ( DOXYGEN_FOUND )
     lama_status_message ( INFO "[FOUND]" "    DOXYGEN - 'make doc' to build system documentation" )
 else ( DOXYGEN_FOUND )
-    lama_status_message ( WARNING "[NOT FOUND]" "DOXYGEN" )
+    lama_status_message ( WARNING "[NOT FOUND]" "DOXYGEN " )
+    # appended blank in status message is workaround to fix output bug
 endif ( DOXYGEN_FOUND )
 
 ## SPHINX

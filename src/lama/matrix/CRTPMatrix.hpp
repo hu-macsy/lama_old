@@ -142,6 +142,54 @@ public:
                 beta.getValue<ValueType>(), *denseY );
     }
 
+    void vectorTimesMatrix(
+        Vector& result,
+        const Scalar alpha,
+        const Vector& x,
+        const Scalar beta,
+        const Vector& y ) const
+    {
+        LAMA_REGION( "VectorTimesMatrix" )
+
+        LAMA_LOG_INFO( logger,
+                       result << " = " << alpha << " * " << *this << " * " << x << " + " << beta << " * " << y )
+
+        if ( &result == &y )
+        {
+            LAMA_LOG_DEBUG( logger, "alias: result = y is well handled" )
+        }
+        else if ( &result == &x )
+        {
+            LAMA_THROWEXCEPTION( "alias: result = x is not handled, use temporary" )
+        }
+        else
+        {
+            // we inherit the row distribution of this matrix to result
+
+            result.resize( getDistributionPtr() );
+
+            // no more to check: result.size() == mNumRows, getDistirubtion() == result.getDistribution()
+        }
+
+        LAMA_ASSERT_EQUAL( x.getDistribution(), getDistribution() )
+        LAMA_ASSERT_EQUAL( y.getDistribution(), getColDistribution() )
+
+        const DenseVector<ValueType>* denseX = dynamic_cast<const DenseVector<ValueType>*>( &x );
+        const DenseVector<ValueType>* denseY = dynamic_cast<const DenseVector<ValueType>*>( &y );
+        DenseVector<ValueType>* denseResult = dynamic_cast<DenseVector<ValueType>*>( &result );
+
+        LAMA_ASSERT( denseX, x << ": must be DenseVector<" << Scalar::getType<ValueType>() << ">" )
+
+        // Note: in case of beta == 0, we might skip this test
+
+        LAMA_ASSERT( denseY, y << ": must be DenseVector<" << Scalar::getType<ValueType>() << ">" )
+
+        LAMA_ASSERT( denseResult, result << ": must be DenseVector<" << Scalar::getType<ValueType>() << ">" )
+
+        static_cast<const Derived*>( this )->vectorTimesMatrixImpl( *denseResult, alpha.getValue<ValueType>(), *denseX,
+                beta.getValue<ValueType>(), *denseY );
+    }
+
 protected:
 #ifndef LAMA_LOG_LEVEL_OFF
     using Matrix::logger;

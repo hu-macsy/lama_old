@@ -64,12 +64,12 @@ then
 	./lama_dist_test
     error_count=$(($error_count + $?))
 
-	for i in 2 3 4;
-	do
-		echo "Running distributed tests with $i processes"
-		mpirun -np $i ./lama_dist_test
-		error_count=$(($error_count + $?))
-	done
+	#for i in 2 3 4;
+	#do
+	#	echo "Running distributed tests with $i processes"
+	#	mpirun -np $i ./lama_dist_test
+	#	error_count=$(($error_count + $?))
+	#done
 	cd ..
 fi
 

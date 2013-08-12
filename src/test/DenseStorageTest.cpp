@@ -48,15 +48,15 @@ extern std::string testcase;
 /* ------------------------------------------------------------------------- */
 
 BOOST_AUTO_TEST_SUITE( DenseStorageTest )
-;
 
-LAMA_LOG_DEF_LOGGER( logger, "Test.DenseStorageTest" );
+LAMA_LOG_DEF_LOGGER( logger, "Test.DenseStorageTest" )
 
 typedef boost::mpl::list<float,double> test_types;
 
 /* ------------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( commonTestCases, T, test_types ) {
+BOOST_AUTO_TEST_CASE_TEMPLATE( commonTestCases, T, test_types )
+{
     typedef T ValueType;
 
     DenseStorage<ValueType> denseStorage;
@@ -94,7 +94,8 @@ BOOST_AUTO_TEST_CASE( typeNameTest )
 
 /* ------------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( setZeroTest, T, test_types ) {
+BOOST_AUTO_TEST_CASE_TEMPLATE( setZeroTest, T, test_types )
+{
     typedef T ValueType;
 
     const IndexType numRows = 4;

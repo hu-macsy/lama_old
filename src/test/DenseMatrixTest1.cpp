@@ -1,5 +1,5 @@
 /**
- * @file CSRSparseMatrixTest.cpp
+ * @file DenseMatrixTest1.cpp
  *
  * @license
  * Copyright (c) 2009-2013
@@ -45,42 +45,38 @@ using namespace lama;
 extern bool base_test_case;
 extern std::string testcase;
 
-/* ------------------------------------------------------------------------- */
+namespace lama
+{
+namespace DenseMatrixTest1
+{
 
-BOOST_AUTO_TEST_SUITE( DenseMatrixTest1 )
-;
-
-LAMA_LOG_DEF_LOGGER( logger, "Test.MatrixTest.DenseMatrixTest" );
-
-typedef boost::mpl::list<float,double> test_types;
-
-/* ------------------------------------------------------------------------- */
-
-BOOST_AUTO_TEST_CASE_TEMPLATE( commonTestCases, T, test_types ) {
-// Well done: the SparseMatrixTest works also fine for DenseMatrix
-// as DenseMatrix has same interfaces
-
-    typedef T ValueType;
+template<typename ValueType>
+void commonTestCases( ContextPtr loc )
+{
     DenseMatrix<ValueType> denseMatrix;
-    SparseMatrixTest< DenseMatrix<ValueType> > denseSparseMatrixtest( denseMatrix );
+    SparseMatrixTest< DenseMatrix<ValueType> > denseSparseMatrixTest( denseMatrix );
 
+    denseSparseMatrixTest.mMatrix.setContext( loc );
     if ( base_test_case )
     {
-        LAMA_LOG_INFO( logger, "Run Method " << testcase << " in DenseMatrixTest1." );
-        SPARSEMATRIX_COMMONTESTCASES( denseSparseMatrixtest );
+        SPARSEMATRIX_COMMONTESTCASES( denseSparseMatrixTest );
     }
     else
     {
-        CONTEXTLOOP()
-        {
-            GETCONTEXT( context );
-            denseSparseMatrixtest.mMatrix.setContext( context );
-            LAMA_LOG_INFO( logger, "Using context = " << denseSparseMatrixtest.mMatrix.getContext().getType() );
-            denseSparseMatrixtest.runTests();
-        }
+        denseSparseMatrixTest.runTests();
     }
 }
 
-/* ------------------------------------------------------------------------- */
+} // namespace DenseMatrixTest1
+} // namespace lama
 
-BOOST_AUTO_TEST_SUITE_END();
+/* ------------------------------------------------------------------------------------------------------------------ */
+
+BOOST_AUTO_TEST_SUITE( DenseMatrixTest1 )
+
+LAMA_LOG_DEF_LOGGER( logger, "Test.DenseMatrixTest1" )
+
+LAMA_AUTO_TEST_CASE_CT( commonTestCases, DenseMatrixTest1 )
+/* ------------------------------------------------------------------------------------------------------------------ */
+
+BOOST_AUTO_TEST_SUITE_END()

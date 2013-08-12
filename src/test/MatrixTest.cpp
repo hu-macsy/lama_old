@@ -61,11 +61,10 @@ using namespace boost;
 using namespace lama;
 
 BOOST_AUTO_TEST_SUITE( MatrixTest )
-;
 
 /* --------------------------------------------------------------------- */
 
-LAMA_LOG_DEF_LOGGER( logger, "Test.MatrixTest" );
+LAMA_LOG_DEF_LOGGER( logger, "Test.MatrixTest" )
 
 /* --------------------------------------------------------------------- */
 
@@ -74,7 +73,8 @@ typedef boost::mpl::list<CSRSparseMatrix<float>,ELLSparseMatrix<float>,COOSparse
 
 /* --------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( TypeNameTest, MatrixType, MatrixTypes ) {
+BOOST_AUTO_TEST_CASE_TEMPLATE( TypeNameTest, MatrixType, MatrixTypes )
+{
     const std::string classTypeName = MatrixType::typeName();
 
     MatrixType matrix;
@@ -90,7 +90,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( TypeNameTest, MatrixType, MatrixTypes ) {
 
 /* --------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( RandomTest, MatrixType, MatrixTypes ) {
+BOOST_AUTO_TEST_CASE_TEMPLATE( RandomTest, MatrixType, MatrixTypes )
+{
     typedef typename MatrixType::ValueType ValueType;
 
     const IndexType numRows = 150;
@@ -130,7 +131,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( RandomTest, MatrixType, MatrixTypes ) {
 /* --------------------------------------------------------------------- */
 
 // Test filename constructor and writing to file for each matrx type
-BOOST_AUTO_TEST_CASE_TEMPLATE( ReadWriteTest, MatrixType, MatrixTypes ) {
+BOOST_AUTO_TEST_CASE_TEMPLATE( ReadWriteTest, MatrixType, MatrixTypes )
+{
     CommunicatorPtr comm = CommunicatorFactory::get(); // get default, MPI or serial
 
     LAMA_LOG_INFO( logger, "ReadWriteTest for MatrixType = " << typeid( MatrixType ).name() );
@@ -197,7 +199,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( ReadWriteTest, MatrixType, MatrixTypes ) {
 
 /* --------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( DenseMatrixMultTest, MatrixType, MatrixTypes ) {
+BOOST_AUTO_TEST_CASE_TEMPLATE( DenseMatrixMultTest, MatrixType, MatrixTypes )
+{
 
     typedef typename MatrixType::ValueType ValueType;
 

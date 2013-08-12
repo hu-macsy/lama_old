@@ -137,9 +137,8 @@ static ContextPtr cuda =
 /* ------------------------------------------------------------------------- */
 
 BOOST_AUTO_TEST_SUITE( MatrixStorageConversionTest )
-;
 
-LAMA_LOG_DEF_LOGGER( logger, "Test.MatrixStorageConversionTest" );
+LAMA_LOG_DEF_LOGGER( logger, "Test.MatrixStorageConversionTest" )
 
 typedef boost::mpl::list<float,double> test_types;
 

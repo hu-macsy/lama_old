@@ -71,9 +71,8 @@ struct IterationCountTestConfig
 };
 
 BOOST_FIXTURE_TEST_SUITE( IterationCountTest, IterationCountTestConfig )
-;
 
-LAMA_LOG_DEF_LOGGER( logger, "Test.IterationCountTest" );
+LAMA_LOG_DEF_LOGGER( logger, "Test.IterationCountTest" )
 
 /* --------------------------------------------------------------------- */
 
@@ -152,4 +151,6 @@ BOOST_AUTO_TEST_CASE( writeAtTest )
     mString = mStream.str();
     BOOST_CHECK( mString.compare("Minimal") );
 }
-/* --------------------------------------------------------------------- */BOOST_AUTO_TEST_SUITE_END();
+/* --------------------------------------------------------------------- */
+
+BOOST_AUTO_TEST_SUITE_END();

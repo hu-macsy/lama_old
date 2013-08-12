@@ -66,7 +66,6 @@ struct CriterionTestConfig
 };
 
 BOOST_FIXTURE_TEST_SUITE( CriterionTest, CriterionTestConfig )
-;
 
 LAMA_LOG_DEF_LOGGER( logger, "Test.CriterionTest" );
 
@@ -162,4 +161,6 @@ BOOST_AUTO_TEST_CASE( writeAtTest )
     CriterionPtr testcriterion = CriterionPtr( boolcondition );
     LAMA_WRITEAT_PTR_TEST( testcriterion );
 }
-/* ---------------------------------------------------------------------- */BOOST_AUTO_TEST_SUITE_END();
+/* ---------------------------------------------------------------------- */
+
+BOOST_AUTO_TEST_SUITE_END();

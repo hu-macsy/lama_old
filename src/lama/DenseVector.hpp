@@ -182,6 +182,14 @@ public:
      * @param[in] expression     alpha * A * x + beta * y
      */
     DenseVector( const Expression_SMV_SV& expression );
+
+    /**
+     * @brief creates a DenseVector with the Expression alpha * x * A + beta * y.
+     *
+     * @param[in] expression     alpha * x * A + beta * y
+     */
+    DenseVector( const Expression_SVM_SV& expression );
+
     /**
      * @brief creates a DenseVector with the Expression alpha * A * x.
      *
@@ -190,11 +198,25 @@ public:
     DenseVector( const Expression<Scalar, Expression<Matrix, Vector, Times>, Times>& expression );
 
     /**
+     * @brief creates a DenseVector with the Expression alpha * x * A.
+     *
+     * @param[in] expression     alpha * x * A
+     */
+    DenseVector( const Expression<Scalar, Expression<Vector, Matrix, Times>, Times>& expression );
+
+    /**
      * @brief creates a DenseVector with the Expression A * x.
      *
      * @param[in] expression     A * x
      */
     DenseVector( const Expression<Matrix, Vector, Times>& expression );
+
+    /**
+     * @brief creates a DenseVector with the Expression x * A.
+     *
+     * @param[in] expression     x * A
+     */
+    DenseVector( const Expression<Vector, Matrix, Times>& expression );
 
     /**
      * @brief releases all allocated resources.
@@ -326,6 +348,14 @@ public:
     virtual Scalar maxNorm() const;
 
     static void vectorPlusVector(
+        ContextPtr context,
+        LAMAArrayView<T> result,
+        const T alpha,
+        const LAMAArrayConstView<T> x,
+        const T beta,
+        const LAMAArrayConstView<T> y );
+
+    static SyncToken* vectorPlusVectorAsync(
         ContextPtr context,
         LAMAArrayView<T> result,
         const T alpha,

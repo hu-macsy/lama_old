@@ -69,7 +69,7 @@ COOSparseMatrix<ValueType>::COOSparseMatrix()
     : SparseMatrix<ValueType>( createStorage() )
 
 {
-    LAMA_LOG_INFO( logger, "COOSpareMatrix()" )
+    LAMA_LOG_INFO( logger, "COOSparseMatrix()" )
 }
 
 /* -------------------------------------------------------------------------- */
@@ -80,7 +80,7 @@ COOSparseMatrix<ValueType>::COOSparseMatrix( const IndexType numRows, const Inde
     : SparseMatrix<ValueType>( createStorage( numRows, numColumns ) )
 
 {
-    LAMA_LOG_INFO( logger, "COOSpareMatrix( " << numRows << " x " << numColumns << " )" )
+    LAMA_LOG_INFO( logger, "COOSparseMatrix( " << numRows << " x " << numColumns << " )" )
 }
 
 /* -------------------------------------------------------------------------- */
@@ -158,7 +158,7 @@ COOSparseMatrix<ValueType>::COOSparseMatrix( const _MatrixStorage& globalData )
 
 {
     DistributionPtr rowDist( new NoDistribution( globalData.getNumRows() ) );
-    DistributionPtr colDist( new NoDistribution( globalData.getNumRows() ) );
+    DistributionPtr colDist( new NoDistribution( globalData.getNumColumns() ) );
 
     SparseMatrix<ValueType>::assign( globalData, rowDist, colDist );
 }

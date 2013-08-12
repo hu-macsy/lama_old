@@ -92,13 +92,12 @@ struct CUDA_VectorTestConfig
 };
 
 BOOST_FIXTURE_TEST_SUITE( CUDA_VectorTest, CUDA_VectorTestConfig )
-;
 
 LAMA_LOG_DEF_LOGGER( logger, "Test.CUDA_VectorTest" )
 
 /* ------------------------------------------------------------------------- */
 
-void doMatrixTimeVector( Vector& y, const Matrix& A, const Vector& x, const Vector& corResult )
+void doMatrixTimesVector( Vector& y, const Matrix& A, const Vector& x, const Vector& corResult )
 {
     y = 0.0;
 
@@ -112,26 +111,26 @@ void doMatrixTimeVector( Vector& y, const Matrix& A, const Vector& x, const Vect
     y = 0.0;
 }
 
-void doMatrixTimeVectorSyncAsyncTests( Vector& y, Matrix& A, const Vector& x, const Vector& corResult )
+void doMatrixTimesVectorSyncAsyncTests( Vector& y, Matrix& A, const Vector& x, const Vector& corResult )
 {
     Matrix::SyncKind saveSyncKind = A.getCommunicationKind();
 
     //1. Synchronous
     A.setCommunicationKind( Matrix::SYNCHRONOUS );
     LAMA_LOG_INFO( logger, "Communicate sync" )
-    doMatrixTimeVector( y, A, x, corResult );
+    doMatrixTimesVector( y, A, x, corResult );
 
     //2. Asynchronous
     A.setCommunicationKind( Matrix::ASYNCHRONOUS );
     LAMA_LOG_INFO( logger, "Communicate async" )
-    doMatrixTimeVector( y, A, x, corResult );
+    doMatrixTimesVector( y, A, x, corResult );
 
     //reset to original value
     A.setCommunicationKind( saveSyncKind );
 }
 
 template<typename MatrixType>
-void doMatrixTimeVectorLocationTests( Vector& y, MatrixType& A, const Vector& x, const Vector& corResult )
+void doMatrixTimesVectorLocationTests( Vector& y, MatrixType& A, const Vector& x, const Vector& corResult )
 {
     //1. Host, Host
     ContextPtr hostContext = ContextFactory::getContext( Context::Host );
@@ -139,24 +138,24 @@ void doMatrixTimeVectorLocationTests( Vector& y, MatrixType& A, const Vector& x,
     LAMA_LOG_INFO( logger, "Run local on Host, halo on Host" )
 
     A.setContext( hostContext, hostContext );
-    doMatrixTimeVectorSyncAsyncTests( y, A, x, corResult );
+    doMatrixTimesVectorSyncAsyncTests( y, A, x, corResult );
 
     ContextPtr cudaContext = lama_test::CUDAContext::getContext();
 
     //2. CUDA, Host
     LAMA_LOG_INFO( logger, "Run local on CUDA, halo on Host" )
     A.setContext( cudaContext, hostContext );
-    doMatrixTimeVectorSyncAsyncTests( y, A, x, corResult );
+    doMatrixTimesVectorSyncAsyncTests( y, A, x, corResult );
 
     //3. Host, CUDA
     LAMA_LOG_INFO( logger, "Run local on Host, halo on Cuda" )
     A.setContext( hostContext, cudaContext );
-    doMatrixTimeVectorSyncAsyncTests( y, A, x, corResult );
+    doMatrixTimesVectorSyncAsyncTests( y, A, x, corResult );
 
     //4. CUDA, CUDA
     LAMA_LOG_INFO( logger, "Run local on CUDA, halo on CUDA" )
     A.setContext( cudaContext, cudaContext );
-    doMatrixTimeVectorSyncAsyncTests( y, A, x, corResult );
+    doMatrixTimesVectorSyncAsyncTests( y, A, x, corResult );
 
     //reset to defaults
     A.setContext( hostContext, hostContext );
@@ -184,7 +183,7 @@ void matrixTimesVectorTestImpl()
 
     DenseVector<ValueType> denseTemp( dist, 0.0 );
 
-    doMatrixTimeVectorLocationTests( denseTemp, matrixTypeMatrix, denseVector, denseTemp );
+    doMatrixTimesVectorLocationTests( denseTemp, matrixTypeMatrix, denseVector, denseTemp );
 
     int numRows = 4 * size;
     int numCols = 4 * size;
@@ -225,11 +224,11 @@ void matrixTimesVectorTestImpl()
 
     DenseVector<ValueType> denseResult0( vectorSize, 0.0 );
 
-    doMatrixTimeVectorLocationTests( denseResult0, repM, denseVector0, denseCorrectResult2 );
+    doMatrixTimesVectorLocationTests( denseResult0, repM, denseVector0, denseCorrectResult2 );
 
     MatrixType matrixTypeMatrix2( repM, dist, dist );
 
-    doMatrixTimeVectorLocationTests( denseTemp, matrixTypeMatrix2, denseVector, denseCorrectResult2 );
+    doMatrixTimesVectorLocationTests( denseTemp, matrixTypeMatrix2, denseVector, denseCorrectResult2 );
 }
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( matrixTimesVectorTest, T, test_types ) 
@@ -252,6 +251,159 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( matrixTimesVectorTest, T, test_types )
 
 /* --------------------------------------------------------------------- */
 
+void doVectorTimesMatrix( Vector& y, const Matrix& A, const Vector& x, const Vector& corResult )
+{
+    y = 0.0;
+
+    y = x * A;
+
+    for ( IndexType i = 0; i < corResult.size(); ++i )
+    {
+        BOOST_CHECK_EQUAL( corResult.getValue(i), y.getValue(i) );
+    }
+
+    y = 0.0;
+}
+
+void doVectorTimesMatrixSyncAsyncTests( Vector& y, Matrix& A, const Vector& x, const Vector& corResult )
+{
+    Matrix::SyncKind saveSyncKind = A.getCommunicationKind();
+
+    //1. Synchronous
+    A.setCommunicationKind( Matrix::SYNCHRONOUS );
+    LAMA_LOG_INFO( logger, "Communicate sync" )
+    doVectorTimesMatrix( y, A, x, corResult );
+
+    //2. Asynchronous
+    A.setCommunicationKind( Matrix::ASYNCHRONOUS );
+    LAMA_LOG_INFO( logger, "Communicate async" )
+    doVectorTimesMatrix( y, A, x, corResult );
+
+    //reset to original value
+    A.setCommunicationKind( saveSyncKind );
+}
+
+template<typename MatrixType>
+void doVectorTimesMatrixLocationTests( Vector& y, MatrixType& A, const Vector& x, const Vector& corResult )
+{
+    //1. Host, Host
+    ContextPtr hostContext = ContextFactory::getContext( Context::Host );
+
+    LAMA_LOG_INFO( logger, "Run local on Host, halo on Host" )
+
+    A.setContext( hostContext, hostContext );
+    doVectorTimesMatrixSyncAsyncTests( y, A, x, corResult );
+
+    ContextPtr cudaContext = lama_test::CUDAContext::getContext();
+
+    //2. CUDA, Host
+    LAMA_LOG_INFO( logger, "Run local on CUDA, halo on Host" )
+    A.setContext( cudaContext, hostContext );
+    doVectorTimesMatrixSyncAsyncTests( y, A, x, corResult );
+
+    //3. Host, CUDA
+    LAMA_LOG_INFO( logger, "Run local on Host, halo on Cuda" )
+    A.setContext( hostContext, cudaContext );
+    doVectorTimesMatrixSyncAsyncTests( y, A, x, corResult );
+
+    //4. CUDA, CUDA
+    LAMA_LOG_INFO( logger, "Run local on CUDA, halo on CUDA" )
+    A.setContext( cudaContext, cudaContext );
+    doVectorTimesMatrixSyncAsyncTests( y, A, x, corResult );
+
+    //reset to defaults
+    A.setContext( hostContext, hostContext );
+}
+
+template<typename mt>
+void vectorTimesMatrixTestImpl()
+{
+    typedef mt MatrixType;
+    typedef typename mt::ValueType ValueType;
+
+    ContextPtr cuda = lama_test::CUDAContext::getContext();
+    CUDAHostContextManager::setAsCurrent( cuda );
+
+    LAMA_LOG_INFO( logger, "set CUDAHostContext as CUDAHostContextManager" )
+
+    PartitionId size = comm->getSize();
+    const IndexType vectorSize = 4 * size;
+
+    shared_ptr<Distribution> dist( new BlockDistribution( vectorSize, comm ) );
+
+    MatrixType matrixTypeMatrix( dist, dist );
+
+    DenseVector<ValueType> denseVector( dist, 1.0 );
+
+    DenseVector<ValueType> denseTemp( dist, 0.0 );
+
+    doMatrixTimesVectorLocationTests( denseTemp, matrixTypeMatrix, denseVector, denseTemp );
+
+    int numRows = 4 * size;
+    int numCols = 4 * size;
+
+    DenseVector<ValueType> denseCorrectResult2( dist, 0.0 );
+    LAMAArray<ValueType>& localDenseCorrectResult2 = denseCorrectResult2.getLocalValues();
+    scoped_array<ValueType> values( new ValueType[numRows * numCols] );
+
+    {
+        HostWriteAccess<ValueType> localDenseCorrectResult2Access( localDenseCorrectResult2 );
+
+        for ( IndexType j = 0; j < numCols; ++j )
+        {
+            ValueType colSum = 0.0;
+            for ( IndexType i = 0; i < numRows; ++i )
+            {
+                ValueType value = 0.0;
+                if ( j == i || j + size == i || j - size == i || j + 2 * size == i || j - 2 * size == i
+                        || j + ( numRows - 1 ) == i || j - ( numRows - 1 ) == i )
+                {
+                    value = 1000.0f * ( i + 1 ) + ( j + 1 );
+                }
+                values[i * numCols + j] = value;
+                colSum += value;
+            }
+
+            if ( dist->isLocal( j ) )
+            {
+                localDenseCorrectResult2Access[dist->global2local( j )] = colSum;
+            }
+        }
+    }
+
+    MatrixType repM;
+    repM.setRawDenseData( numRows, numCols, values.get() );
+
+    DenseVector<ValueType> denseVector0( vectorSize, 1.0 );
+
+    DenseVector<ValueType> denseResult0( vectorSize, 0.0 );
+
+    doVectorTimesMatrixLocationTests( denseResult0, repM, denseVector0, denseCorrectResult2 );
+
+    MatrixType matrixTypeMatrix2( repM, dist, dist );
+
+    doVectorTimesMatrixLocationTests( denseTemp, matrixTypeMatrix2, denseVector, denseCorrectResult2 );
+}
+
+BOOST_AUTO_TEST_CASE_TEMPLATE( vectorTimesMatrixTest, T, test_types )
+{
+    typedef T ValueType;
+
+    LAMA_LOG_INFO( logger, "vectorTimesMatrixTest: call implementation for CSR" )
+    vectorTimesMatrixTestImpl< CSRSparseMatrix<ValueType> >();
+    LAMA_LOG_INFO( logger, "vectorTimesMatrixTest: call implementation for ELL" )
+    vectorTimesMatrixTestImpl< ELLSparseMatrix<ValueType> >();
+    LAMA_LOG_INFO( logger, "vectorTimesMatrixTest: call implementation for JDS" )
+    vectorTimesMatrixTestImpl< JDSSparseMatrix<ValueType> >();
+    LAMA_LOG_INFO( logger, "vectorTimesMatrixTest: call implementation for COO" )
+    vectorTimesMatrixTestImpl< COOSparseMatrix<ValueType> >();
+    LAMA_LOG_INFO( logger, "vectorTimesMatrixTest: call implementation for DIA" )
+    vectorTimesMatrixTestImpl< DIASparseMatrix<ValueType> >();
+    LAMA_LOG_INFO( logger, "vectorTimesMatrixTest: call implementation for Dense" )
+    vectorTimesMatrixTestImpl< DenseMatrix<ValueType> >();
+}
+
+/* --------------------------------------------------------------------- */
 double randomNumber()
 {
     return rand() / static_cast<double>( RAND_MAX );
@@ -345,7 +497,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( scaleVectorTest, T, test_types )
 
 //TODO: Do we need this test? VectorTest/AssignmentVectorExpressionTest executes the same operations
 //with different contexts (e.g. CUDA)
-BOOST_AUTO_TEST_CASE_TEMPLATE( vectorDifferenceTest, T, test_types ) {
+BOOST_AUTO_TEST_CASE_TEMPLATE( vectorDifferenceTest, T, test_types )
+{
     typedef T ValueType;
 
     IndexType n = 4;
@@ -387,7 +540,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( vectorDifferenceTest, T, test_types ) {
 //TODO: Do we need this test? VectorTest/AssignmentVectorExpressionTest executes the same operations
 //with different contexts (e.g. CUDA)
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( scaledVectorsDifferenceTest, T, test_types ) {
+BOOST_AUTO_TEST_CASE_TEMPLATE( scaledVectorsDifferenceTest, T, test_types )
+{
     typedef T ValueType;
 
     Scalar alpha = 0.5;
@@ -506,7 +660,8 @@ void operatorMatrixTimeVectorTestMethod()
     }
 }
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( operatorSparseMatrixTimeVectorTest, T, test_types) {
+BOOST_AUTO_TEST_CASE_TEMPLATE( operatorSparseMatrixTimeVectorTest, T, test_types)
+{
     typedef T ValueType;
 
     operatorMatrixTimeVectorTestMethod< CSRSparseMatrix<ValueType> >();
@@ -621,7 +776,8 @@ void assignmentVectorSubtractExprMatrixTimeVectorTestMethod()
     }
 }
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( assignmentVectorSubtractExprSparseMatrixTimeVectorTest, T, test_types) {
+BOOST_AUTO_TEST_CASE_TEMPLATE( assignmentVectorSubtractExprSparseMatrixTimeVectorTest, T, test_types)
+{
     typedef T ValueType;
 
     assignmentVectorSubtractExprMatrixTimeVectorTestMethod< CSRSparseMatrix<ValueType> >();

@@ -141,9 +141,15 @@ typedef Expression<Expression_SV, Expression_SV, Plus> Expression_SV_SV;
 
 typedef Expression<Matrix, Vector, Times> Expression_MV;
 
+typedef Expression<Vector, Matrix, Times> Expression_VM;
+
 typedef Expression<Scalar, Expression<Matrix, Vector, Times>, Times> Expression_SMV;
 
+typedef Expression<Scalar, Expression<Vector, Matrix, Times>, Times> Expression_SVM;
+
 typedef Expression<Expression_SMV, Expression_SV, Plus> Expression_SMV_SV;
+
+typedef Expression<Expression_SVM, Expression_SV, Plus> Expression_SVM_SV;
 
 typedef Expression<Scalar, Matrix, Times> Expression_SM;
 

@@ -63,9 +63,8 @@ struct SolutionProxyTestConfig
 };
 
 BOOST_FIXTURE_TEST_SUITE( SolutionProxyTest , SolutionProxyTestConfig )
-;
 
-LAMA_LOG_DEF_LOGGER( logger, "Test.SolutionProxyTest" );
+LAMA_LOG_DEF_LOGGER( logger, "Test.SolutionProxyTest" )
 
 /* --------------------------------------------------------------------- */
 
@@ -119,4 +118,6 @@ BOOST_AUTO_TEST_CASE( testGetReference )
     BOOST_CHECK_EQUAL( Scalar( -5.0 ), vec( 1 ) );
     BOOST_CHECK_EQUAL( Scalar( -5.0 ), vec( 2 ) );
 }
-/* --------------------------------------------------------------------- */BOOST_AUTO_TEST_SUITE_END();
+/* --------------------------------------------------------------------- */
+
+BOOST_AUTO_TEST_SUITE_END();

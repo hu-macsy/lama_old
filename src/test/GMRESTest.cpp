@@ -70,9 +70,8 @@ typedef boost::mpl::list<float,double> test_types;
 /* --------------------------------------------------------------------- */
 
 BOOST_AUTO_TEST_SUITE( GMRESTest )
-;
 
-LAMA_LOG_DEF_LOGGER( logger, "Test.GMRESTest" );
+LAMA_LOG_DEF_LOGGER( logger, "Test.GMRESTest" )
 
 /* --------------------------------------------------------------------- */
 
@@ -233,4 +232,6 @@ BOOST_AUTO_TEST_CASE( writeAtTest )
     GMRES gmresSolver( "GMRESTestSolver" );
     LAMA_WRITEAT_TEST( gmresSolver );
 }
-/* --------------------------------------------------------------------- */BOOST_AUTO_TEST_SUITE_END();
+/* --------------------------------------------------------------------- */
+
+BOOST_AUTO_TEST_SUITE_END();

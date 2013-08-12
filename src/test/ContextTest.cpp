@@ -49,10 +49,9 @@ using namespace lama;
 
 /* --------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_SUITE( ContextTest )
-;
+BOOST_AUTO_TEST_SUITE (ContextTest)
 
-LAMA_LOG_DEF_LOGGER( logger, "Test.ContextTest" );
+LAMA_LOG_DEF_LOGGER( logger, "Test.ContextTest" )
 
 /* --------------------------------------------------------------------- */
 
@@ -105,21 +104,21 @@ public:
     }
 
     static std::auto_ptr<SyncToken> theMemcpyAsync( void* dst, const void* src, const size_t size )
-    {
-        return std::auto_ptr<SyncToken>( new TaskSyncToken( boost::bind( &::memcpy, dst, src, size ) ) );
-    }
+                    {
+        return std::auto_ptr < SyncToken > ( new TaskSyncToken( boost::bind( &::memcpy, dst, src, size ) ) );
+                    }
 
     virtual std::auto_ptr<SyncToken> memcpyAsync( void* dst, const void* src, const size_t size ) const
-    {
-        return std::auto_ptr<SyncToken>( new TaskSyncToken( boost::bind( &::memcpy, dst, src, size ) ) );
-    }
+                    {
+        return std::auto_ptr < SyncToken > ( new TaskSyncToken( boost::bind( &::memcpy, dst, src, size ) ) );
+                    }
 
     virtual bool cancpy( const ContextData& dst, const ContextData& src ) const
     {
         return ( dst.context->getType() == getType() && src.context->getType() == getType() )
-               || ( dst.context->getType() == Context::Host && src.context->getType() == getType() )
-               || ( dst.context->getType() == getType() && src.context->getType() == Context::Host )
-               || ( dst.context->getType() == Context::Host && src.context->getType() == Context::Host );
+                        || ( dst.context->getType() == Context::Host && src.context->getType() == getType() )
+                        || ( dst.context->getType() == getType() && src.context->getType() == Context::Host )
+                        || ( dst.context->getType() == Context::Host && src.context->getType() == Context::Host );
     }
 
     virtual void memcpy( ContextData& dst, const ContextData& src, const size_t size ) const
@@ -129,22 +128,22 @@ public:
     }
 
     virtual std::auto_ptr<SyncToken> memcpyAsync( ContextData& dst, const ContextData& src, const size_t size ) const
-    {
+                    {
         LAMA_ASSERT_ERROR( cancpy(dst,src), "Can not copy from "<< *(src.context) << " to " << *(dst.context) );
         return memcpyAsync( dst.pointer, src.pointer, size );
-    }
+                    }
 
     virtual std::auto_ptr<SyncToken> getSyncToken() const
-    {
-        return std::auto_ptr<SyncToken>( new TaskSyncToken() );
-    }
+                    {
+        return std::auto_ptr < SyncToken > ( new TaskSyncToken() );
+                    }
 
 private:
 
     // MockContext uses the type NewContext as its type
 
     MockContext()
-        : Context( NewContext )
+    : Context( NewContext )
     {
     }
 };
@@ -166,7 +165,7 @@ public:
 
     static ContextPtr getInstance()
     {
-        if ( !mMockContext )
+        if( !mMockContext )
         {
             mMockContext = ContextPtr( new MockContext() );
         }
@@ -177,7 +176,7 @@ public:
 private:
 
     MockContextManager()
-        : ContextManager( Context::NewContext )
+    : ContextManager( Context::NewContext )
     {
         registerFactory();
     }
@@ -379,7 +378,7 @@ const IndexType ITER = 10;
 
 void sumit( IndexType& sum, const LAMAArray<IndexType>& data )
 {
-    for ( IndexType i = 0; i < N; i++ )
+    for( IndexType i = 0; i < N; i++ )
     {
         HostReadAccess<IndexType> arr( data );
         sum += arr[i];
@@ -444,7 +443,7 @@ BOOST_AUTO_TEST_CASE( ompSafetyTest )
 
     omp_set_num_threads( 2 );
 
-    #pragma omp parallel
+#pragma omp parallel
     {
         IndexType sum = 0;
         for ( IndexType i = 0; i < N; i++ )
@@ -460,7 +459,7 @@ BOOST_AUTO_TEST_CASE( ompSafetyTest )
 
     data.swap( data1 );
 
-    #pragma omp parallel
+#pragma omp parallel
     {
         IndexType sum = 0;
         for ( IndexType i = 0; i < N; i++ )
@@ -491,6 +490,7 @@ BOOST_AUTO_TEST_CASE( EqualityTest )
 
     BOOST_CHECK( contextA == contextB );
     BOOST_CHECK( contextA != contextC );
-
 }
-/* ---------------------------------------------------------------------- */BOOST_AUTO_TEST_SUITE_END();
+/* ---------------------------------------------------------------------- */
+
+BOOST_AUTO_TEST_SUITE_END();

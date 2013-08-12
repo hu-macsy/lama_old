@@ -49,15 +49,15 @@ extern std::string testcase;
 /* --------------------------------------------------------------------- */
 
 BOOST_AUTO_TEST_SUITE( L2NormTest )
-;
 
-LAMA_LOG_DEF_LOGGER( logger, "Test.L2NormTest" );
+LAMA_LOG_DEF_LOGGER( logger, "Test.L2NormTest" )
 
 typedef boost::mpl::list<float,double> test_types;
 
 /* --------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( L2NormVectorTests, T, test_types ) {
+BOOST_AUTO_TEST_CASE_TEMPLATE( L2NormVectorTests, T, test_types )
+{
     typedef T ValueType;
 
     IndexType n = 4;
@@ -111,5 +111,6 @@ BOOST_AUTO_TEST_CASE( commonTestCases )
         normtest.runTests();
     }
 }
-/* --------------------------------------------------------------------- */BOOST_AUTO_TEST_SUITE_END();
+/* --------------------------------------------------------------------- */
 
+BOOST_AUTO_TEST_SUITE_END();

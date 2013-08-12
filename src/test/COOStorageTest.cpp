@@ -50,16 +50,16 @@ extern std::string testcase;
 /* ------------------------------------------------------------------------- */
 
 BOOST_AUTO_TEST_SUITE( COOStorageTest )
-;
 
-LAMA_LOG_DEF_LOGGER( logger, "Test.COOStorageTest" );
+LAMA_LOG_DEF_LOGGER( logger, "Test.COOStorageTest" )
 
 typedef boost::mpl::list<float,double> ValueTypes;
 
 /* ------------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( commonTestCases, T, ValueTypes ) {
-//TODO: Undo to Template-Testcase
+BOOST_AUTO_TEST_CASE_TEMPLATE( commonTestCases, T, ValueTypes )
+{
+    //TODO: Undo to Template-Testcase
     typedef T ValueType;
 
     COOStorage<ValueType> cooStorage;
@@ -82,7 +82,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( commonTestCases, T, ValueTypes ) {
     }
 }
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( ConstructorTest, T, ValueTypes ) {
+BOOST_AUTO_TEST_CASE_TEMPLATE( ConstructorTest, T, ValueTypes )
+{
     typedef T ValueType;
 
     const IndexType numRows = 10;
@@ -103,7 +104,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( ConstructorTest, T, ValueTypes ) {
     }
 }
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( ConstructorTest1, T, ValueTypes ) {
+BOOST_AUTO_TEST_CASE_TEMPLATE( ConstructorTest1, T, ValueTypes )
+{
     typedef T ValueType;
 
     const IndexType numRows = 3;
@@ -219,4 +221,7 @@ BOOST_AUTO_TEST_CASE( typeNameTest )
     s = cooStoragef.typeName();
     BOOST_CHECK_EQUAL( s, "COOStorage<float>" );
 }
-/* ------------------------------------------------------------------------- */BOOST_AUTO_TEST_SUITE_END();
+
+/* ------------------------------------------------------------------------- */
+
+BOOST_AUTO_TEST_SUITE_END();

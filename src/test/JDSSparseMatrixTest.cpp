@@ -45,50 +45,49 @@ using namespace lama;
 extern bool base_test_case;
 extern std::string testcase;
 
-/* ------------------------------------------------------------------------- */
+namespace lama
+{
+namespace JDSSparseMatrixTest
+{
 
-BOOST_AUTO_TEST_SUITE( JDSSparseMatrixTest )
-;
-
-LAMA_LOG_DEF_LOGGER( logger, "Test.SparseMatrixTest.JDSSparseMatrixTest" );
-
-typedef boost::mpl::list<float,double> test_types;
-
-/* ------------------------------------------------------------------------- */
-
-BOOST_AUTO_TEST_CASE_TEMPLATE( commonTestCases, T, test_types ) {
-    typedef T ValueType;
-
+template<typename ValueType>
+void commonTestCases( ContextPtr loc )
+{
     JDSSparseMatrix<ValueType> jdsMatrix;
-    SparseMatrixTest< JDSSparseMatrix<ValueType> > jdsSparseMatrixtest( jdsMatrix );
+    SparseMatrixTest< JDSSparseMatrix<ValueType> > jdsSparseMatrixTest( jdsMatrix );
+
+    jdsSparseMatrixTest.mMatrix.setContext( loc );
 
     if ( base_test_case )
     {
-        LAMA_LOG_INFO( logger, "Run method " << testcase << " in JDSSparseMatrixTest." );
-        SPARSEMATRIX_COMMONTESTCASES( jdsSparseMatrixtest );
+        SPARSEMATRIX_COMMONTESTCASES( jdsSparseMatrixTest );
     }
     else
     {
-        CONTEXTLOOP()
-        {
-            GETCONTEXT( context );
-            jdsSparseMatrixtest.mMatrix.setContext( context );
-            LAMA_LOG_INFO( logger, "Using context = " << jdsSparseMatrixtest.mMatrix.getContext().getType() );
-            jdsSparseMatrixtest.runTests();
-        }
+        jdsSparseMatrixTest.runTests();
     }
 }
 
-/* ------------------------------------------------------------------------- */
-
-BOOST_AUTO_TEST_CASE( typeNameTest )
+template<typename ValueType>
+void typeNameTest( )
 {
-    JDSSparseMatrix<double> jdsMatrixd;
-    std::string s = jdsMatrixd.typeName();
-    BOOST_CHECK_EQUAL( s, "JDSSparseMatrix<double>" );
+    JDSSparseMatrix<ValueType> jdsMatrix;
+    std::string s = jdsMatrix.typeName();
 
-    JDSSparseMatrix<float> jdsMatrixf;
-    s = jdsMatrixf.typeName();
-    BOOST_CHECK_EQUAL( s, "JDSSparseMatrix<float>" );
+    BOOST_CHECK( s.length() > 0);
 }
-/* ------------------------------------------------------------------------- */BOOST_AUTO_TEST_SUITE_END();
+
+} // namespace JDSSparseMatrixTest
+} // namespace lama
+
+/* ------------------------------------------------------------------------------------------------------------------ */
+
+BOOST_AUTO_TEST_SUITE( JDSSparseMatrixTest )
+
+LAMA_LOG_DEF_LOGGER( logger, "Test.SparseMatrixTest.JDSSparseMatrixTest" )
+
+LAMA_AUTO_TEST_CASE_CT( commonTestCases, JDSSparseMatrixTest )
+LAMA_AUTO_TEST_CASE_T( typeNameTest, JDSSparseMatrixTest )
+/* ------------------------------------------------------------------------------------------------------------------ */
+
+BOOST_AUTO_TEST_SUITE_END()

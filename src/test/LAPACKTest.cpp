@@ -59,7 +59,8 @@ typedef boost::mpl::list<float,double> test_types;
 
 /* ------------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( inverseTest, T, test_types ) {
+BOOST_AUTO_TEST_CASE_TEMPLATE( inverseTest, T, test_types )
+{
 
     typedef T ValueType;
 
@@ -95,7 +96,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( inverseTest, T, test_types ) {
 
 /* ------------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( getrifTest, T, test_types ) {
+BOOST_AUTO_TEST_CASE_TEMPLATE( getrifTest, T, test_types )
+{
 
     typedef T ValueType;
 
@@ -140,7 +142,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( getrifTest, T, test_types ) {
 
 /* ------------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( tptrsTest, T, test_types ) {
+BOOST_AUTO_TEST_CASE_TEMPLATE( tptrsTest, T, test_types )
+{
 
     typedef T ValueType;
 

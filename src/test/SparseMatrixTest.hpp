@@ -108,7 +108,7 @@ protected:
     LAMA_LOG_DECL_STATIC_LOGGER( logger )
 };
 
-#define SPARSEMATRIX_COMMONTESTCASES( testinstance )                    \
+#define SPARSEMATRIX_COMMONTESTCASES( testinstance )                        \
     {   COMMONTESTCASEINVOKER( testinstance, clearTest );                   \
         COMMONTESTCASEINVOKER( testinstance, cTorTest );                    \
         COMMONTESTCASEINVOKER( testinstance, testMultiplication );          \
@@ -116,5 +116,4 @@ protected:
         COMMONTESTCASEINVOKER( testinstance, MatrixCtorExpressionTest );    \
         COMMONTESTCASEINVOKER( testinstance, writeAtTest );                 \
         COMMONTESTCASEINVOKER( testinstance, scaleTest );                   \
-        COMMONTESTCASEINVOKER( testinstance, cTorTest );                    \
         COMMONTESTCASEINVOKER( testinstance, testConversions ); }

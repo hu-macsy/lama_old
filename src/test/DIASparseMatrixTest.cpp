@@ -32,10 +32,8 @@
  */
 
 #include <boost/test/unit_test.hpp>
-#include <boost/mpl/list.hpp>
 
 #include <lama/matrix/DIASparseMatrix.hpp>
-
 #include <test/SparseMatrixTest.hpp>
 #include <test/TestMacros.hpp>
 
@@ -45,50 +43,50 @@ using namespace lama;
 extern bool base_test_case;
 extern std::string testcase;
 
-/* ------------------------------------------------------------------------- */
+namespace lama
+{
+namespace DIASparseMatrixTest
+{
 
-BOOST_AUTO_TEST_SUITE( DIASparseMatrixTest )
-;
-
-LAMA_LOG_DEF_LOGGER( logger, "Test.DIASparseMatrixTest" );
-
-typedef boost::mpl::list<float,double> test_types;
-
-/* ------------------------------------------------------------------------- */
-
-BOOST_AUTO_TEST_CASE_TEMPLATE( commonTestCases, T, test_types ) {
-    typedef T ValueType;
-
+template<typename ValueType>
+void commonTestCases( ContextPtr loc )
+{
     DIASparseMatrix<ValueType> diaMatrix;
-    SparseMatrixTest< DIASparseMatrix<ValueType> > diaSparseMatrixtest( diaMatrix );
+    SparseMatrixTest< DIASparseMatrix<ValueType> > diaSparseMatrixTest( diaMatrix );
+
+    diaSparseMatrixTest.mMatrix.setContext( loc );
 
     if ( base_test_case )
     {
-        LAMA_LOG_INFO( logger, "Run method " << testcase << " in DIASparseMatrixTest." );
-        SPARSEMATRIX_COMMONTESTCASES( diaSparseMatrixtest );
+        SPARSEMATRIX_COMMONTESTCASES( diaSparseMatrixTest );
     }
     else
     {
-        CONTEXTLOOP()
-        {
-            GETCONTEXT( context );
-            diaSparseMatrixtest.mMatrix.setContext( context );
-            LAMA_LOG_INFO( logger, "Using context = " << diaSparseMatrixtest.mMatrix.getContext().getType() );
-            diaSparseMatrixtest.runTests();
-        }
+        diaSparseMatrixTest.runTests();
     }
 }
 
-/* ------------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_CASE( typeNameTest )
+template<typename ValueType>
+void typeNameTest( )
 {
-    DIASparseMatrix<double> diaMatrixd;
-    std::string s = diaMatrixd.typeName();
-    BOOST_CHECK_EQUAL( s, "DIASparseMatrix<double>" );
+    DIASparseMatrix<ValueType> diaMatrix;
+    std::string s = diaMatrix.typeName();
 
-    DIASparseMatrix<float> diaMatrixf;
-    s = diaMatrixf.typeName();
-    BOOST_CHECK_EQUAL( s, "DIASparseMatrix<float>" );
+    BOOST_CHECK( s.length() > 0);
 }
-/* ------------------------------------------------------------------------- */BOOST_AUTO_TEST_SUITE_END();
+
+} // namespace DIASparseMatrixTest
+} // namespace lama
+
+/* ------------------------------------------------------------------------------------------------------------------ */
+
+BOOST_AUTO_TEST_SUITE( DIASparseMatrixTest )
+
+LAMA_LOG_DEF_LOGGER( logger, "Test.DIASparseMatrixTest" )
+
+LAMA_AUTO_TEST_CASE_CT( commonTestCases, DIASparseMatrixTest )
+LAMA_AUTO_TEST_CASE_T( typeNameTest, DIASparseMatrixTest )
+/* ------------------------------------------------------------------------------------------------------------------ */
+
+BOOST_AUTO_TEST_SUITE_END()

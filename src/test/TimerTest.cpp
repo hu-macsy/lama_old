@@ -56,7 +56,7 @@ using namespace lama;
 
 BOOST_AUTO_TEST_SUITE( TimerTest )
 
-LAMA_LOG_DEF_LOGGER( logger, "Test.TimerTest" );
+LAMA_LOG_DEF_LOGGER( logger, "Test.TimerTest" )
 
 /* --------------------------------------------------------------------- */
 
@@ -220,4 +220,6 @@ BOOST_AUTO_TEST_CASE( ResetExceptionTest )
     Timer timer1;
     BOOST_CHECK_THROW( timer1.reset("TestTimer"), Exception );
 }
-/* --------------------------------------------------------------------- */BOOST_AUTO_TEST_SUITE_END();
+/* --------------------------------------------------------------------- */
+
+BOOST_AUTO_TEST_SUITE_END();
