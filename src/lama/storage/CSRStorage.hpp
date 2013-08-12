@@ -236,6 +236,17 @@ public:
 
     IndexType getNumValues() const;
 
+    /** This method sorts entries in each row by column indexes. 
+     *
+     *  @param[in] diagonalProperty if true first entry in a row is diagonal element if available
+     *
+     *  This method does not force diagonal property for the storage as it will not fill up 
+     *  a diagonal element if it is not available.
+     *
+     *  Note: matrix multiplication with CUSparse requires sorted rows, diagonalProperty = false
+     */
+    void sortRows( bool diagonalProperty );
+
     /** Template method for getting row. */
 
     template<typename OtherType>

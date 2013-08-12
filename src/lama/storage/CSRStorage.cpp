@@ -390,6 +390,23 @@ void CSRStorage<ValueType>::setCSRDataImpl(
     buildRowIndexes();
 }
 
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType>
+void CSRStorage<ValueType>::sortRows( bool diagonalProperty )
+{
+    {
+        HostReadAccess<IndexType> csrIA( mIa );
+        HostWriteAccess<IndexType> csrJA( mJa );
+        HostWriteAccess<ValueType> csrValues( mValues );
+
+        OpenMPCSRUtils::sortRowElements( csrJA.get(), csrValues.get(), csrIA.get(),
+                                         mNumRows, diagonalProperty );
+    }
+
+    mDiagonalProperty = checkDiagonalProperty();
+}
+
 //this version avoids copying the ia, ja, and value arrays, but instead swaps them
 //also it does not check their validity
 //this is much faster of course, but destroys the input ia, ja and value arrays
