@@ -72,7 +72,7 @@
 // TODO: defines for matrix multiplication, should be removed later!
 #define STEP 1
 //#define NUM_BLOCKS 64
-#define NUM_BLOCKS 1
+#define NUM_BLOCKS 10
 //#define HASH_TABLE_SIZE 10000
 
 #define NUM_THREADS (STEP*32)
@@ -1502,8 +1502,6 @@ void matrixMultiplySizesKernel(
 //        if ( aRowIt < numRows )
 //        {
 
-
-
     bool done = false;
     while ( !done )
     {
@@ -1620,7 +1618,7 @@ void matrixMultiplySizesKernel(
 
 
 __device__
-inline void reserveChunk( volatile int sChunkList[], int chunkList[], int n )
+inline bool reserveChunk( volatile int sChunkList[], int chunkList[], int n )
 {
     bool done = false;
     while( !done ){
@@ -1637,9 +1635,11 @@ inline void reserveChunk( volatile int sChunkList[], int chunkList[], int n )
         }
         else
         {
+            return false;
             // TODO: head item is -1, no more chunks are available, need to abort here!
         }
     };
+    return true;
 }
 __device__
 inline void releaseChunk( volatile int sChunkList[], int chunkList[], int n )
@@ -1688,8 +1688,6 @@ void matrixMultiplySizesKernel2(
     IndexType numWarpsGlobal = ( blockDim.x * gridDim.x ) / warpSize;
     IndexType colB;
     IndexType aRowIt;
-
-
 
     bool done = false;
     while ( !done )
@@ -1745,7 +1743,12 @@ void matrixMultiplySizesKernel2(
                         {
                             for ( int i = 0; i < sReservedChunks[localWarpId]; ++i )
                             {
-                                reserveChunk( sChunkList[localWarpId], chunkList, i );
+                                if ( !reserveChunk( sChunkList[localWarpId], chunkList, i ) )
+                                {
+                                    printf("cant reserve chunk");
+                                    //*hashError = true;
+                                    //return;
+                                }
                             }
                         }
                     }
@@ -2049,7 +2052,7 @@ IndexType CUDACSRUtils::matrixMultiplySizes(
     ContextPtr loc = ContextFactory::getContext( Context::CUDA );
 
 
-    int numChunks = 100;
+    int numChunks = 10;
     int numElementsPerChunk = 2048;
 
     unsigned int hashTableAllocatedBytes = numChunks * numElementsPerChunk * sizeof( IndexType );
@@ -2070,15 +2073,6 @@ IndexType CUDACSRUtils::matrixMultiplySizes(
                         chunkFill(numChunks + 1) );
 
 
-//    IndexType chunkListHost[numChunks+1];
-//    cudaMemcpy( &chunkListHost, chunkList, chunkListAllocatedBytes, cudaMemcpyDeviceToHost );
-//
-//    for ( int i = 0; i < numChunks+1; ++i )
-//    {
-//        std::cout << "chunkList[" << i << "] = " << chunkListHost[i] << std::endl;
-//    }
-
-
     IndexType* rowCounter = (IndexType*) loc->allocate( sizeof(IndexType) );
     thrust::device_ptr<IndexType> rowCounterPtr( rowCounter );
     thrust::fill( rowCounterPtr, rowCounterPtr + 1, 0 );
@@ -2089,7 +2083,20 @@ IndexType CUDACSRUtils::matrixMultiplySizes(
     cudaStreamSynchronize( 0 );
     LAMA_CHECK_CUDA_ERROR
 
+    IndexType chunkListHost[numChunks+1];
+    cudaMemcpy( &chunkListHost, chunkList, chunkListAllocatedBytes, cudaMemcpyDeviceToHost );
+
+    for ( int i = 0; i < numChunks+1; ++i )
+    {
+        std::cout << "chunkList[" << i << "] = " << chunkListHost[i] << std::endl;
+    }
+
     cudaMemcpy( &hashErrorHost, hashError, sizeof(bool), cudaMemcpyDeviceToHost );
+
+    if(hashErrorHost)
+    {
+        printf("Kernel failed!!\n");
+    }
 
 //    IndexType cIAHost[numRows+1];
 //    cudaMemcpy( &cIAHost, cIa, (numRows+1)*sizeof(IndexType), cudaMemcpyDeviceToHost );

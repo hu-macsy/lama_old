@@ -230,13 +230,14 @@ void validate(
 
 
 
-//    lama::IndexType i = 121;
+//    lama::IndexType i = 0;
 //    lama::IndexType numElementsCorrect = 0;
 //    lama::IndexType numElementsGiven = 0;
 //    for( int j = 0; j < matrixCorrect->getNumColumns(); ++j )
 //    {
 //        lama::Scalar valCorrect = matrixCorrect->getValue( i, j );
 //        lama::Scalar valGiven = matrixGiven->getValue( i, j );
+//
 //
 //        if ( valGiven != 0.0 )
 //        {
