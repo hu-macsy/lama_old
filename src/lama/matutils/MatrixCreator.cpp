@@ -510,7 +510,7 @@ void MatrixCreator<T>::buildPoisson3D(
 template<typename ValueType>
 void MatrixCreator<ValueType>::fillRandom( Matrix& matrix, double density )
 {
-    int seed = 15191;
+    int seed;
 
     timeval time;
     gettimeofday(&time, NULL);
@@ -554,7 +554,7 @@ void MatrixCreator<ValueType>::fillRandom( Matrix& matrix, double density )
     IndexType rowDensity = (IndexType)(localRowSize * density);
 
 
-#pragma omp parallel for
+//#pragma omp parallel for
     for ( int i = 0; i < localRowSize; ++i )
     {
         IndexType numValuesRow = 0;

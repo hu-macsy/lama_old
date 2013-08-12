@@ -1766,7 +1766,7 @@ void CSRStorage<ValueType>::matrixTimesMatrixCSR(
     }
 
     // TODO: check this!
-    compress();
+//    compress();
     buildRowIndexes();
 //    check( "result of matrix x matrix" ); // just verify for a correct matrix
 //    mDiagonalProperty = checkDiagonalProperty();
