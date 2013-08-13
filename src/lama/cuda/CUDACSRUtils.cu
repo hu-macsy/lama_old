@@ -75,9 +75,6 @@
 // boost
 #include <boost/bind.hpp>
 
-#include "cuPrintf.cuh"
-#include "cuPrintf.cu"
-
 //#define CUDA_CAP_20
 
 // TODO: defines for matrix multiplication, should be removed later!
@@ -95,6 +92,7 @@
 #define HASH_C0 1
 #define HASH_C1 1
 #define SIZE_LOCAL_HASHTABLE 1024
+#define NUM_CHUNKS_PER_WARP 100
 
 namespace lama
 {
@@ -1416,7 +1414,7 @@ inline bool insertHashTable2(IndexType colB,
     {
         for ( IndexType i = 0; i < MAX_HASH_TRIES; i++ )
         {
-            int globalHash = ( ( gx + HASH_C0 * i + HASH_C1 * (IndexType) i * i ) % ( numElementsPerChunk * numReservedChunks ) ) + 1;
+            int globalHash = ( gx + HASH_C0 * i + HASH_C1 * (IndexType) i * i ) % ( numElementsPerChunk * numReservedChunks );
             int localHash  = globalHash % numElementsPerChunk;
             int chunk      = globalHash / numElementsPerChunk;
 
@@ -1451,13 +1449,12 @@ inline bool insertHashTable2(IndexType colB,
     }
     else
     {
-
+        printf("test");
 
 
 
 
     }
-
     return false;
 }
 
@@ -1483,9 +1480,10 @@ inline bool insertHashTable3(IndexType colB,
     {
         for ( IndexType i = 0; i < MAX_HASH_TRIES; i++ )
         {
-            int globalHash = ( ( gx + HASH_C0 * i + HASH_C1 * (IndexType) i * i ) % ( numElementsPerChunk * numReservedChunks ) ) + 1;
+            int globalHash = ( gx + HASH_C0 * i + HASH_C1 * (IndexType) i * i ) % ( numElementsPerChunk * numReservedChunks );
             int localHash  = globalHash % numElementsPerChunk;
             int chunk      = globalHash / numElementsPerChunk;
+
 
 
             IndexType val = atomicCAS( &indexChunks[chunkList[chunk] * numElementsPerChunk + localHash], -1, colB );
@@ -1511,7 +1509,6 @@ inline bool insertHashTable3(IndexType colB,
 
 
     }
-
     return false;
 }
 
@@ -1979,7 +1976,7 @@ void matrixMultiplySizesKernel2(
     __shared__ volatile IndexType sColA[NUM_WARPS];
     __shared__ IndexType sHashTableJa[NUM_WARPS * SIZE_LOCAL_HASHTABLE];
     __shared__ volatile int sReservedChunks[NUM_WARPS];
-    __shared__ volatile int sChunkList[NUM_WARPS][10];
+    __shared__ volatile int sChunkList[NUM_WARPS][NUM_CHUNKS_PER_WARP];
     __shared__ volatile int sRowIt[NUM_WARPS];
     __shared__ volatile bool sInsertMiss[NUM_WARPS];
 
@@ -2014,6 +2011,13 @@ void matrixMultiplySizesKernel2(
             sReservedChunks[localWarpId] = 1;
             sInsertMiss[localWarpId] = false;
             do{
+                if( sReservedChunks[localWarpId] > NUM_CHUNKS_PER_WARP )
+                {
+
+                    printf("To many chunks in row %i, IA[i] = %i!\n", aRowIt, cIA[aRowIt]);
+                    return;
+                }
+
                 IndexType aColIt = aIA[aRowIt] + laneId;
                 IndexType aColEnd = aIA[aRowIt + 1];
 
@@ -2028,7 +2032,11 @@ void matrixMultiplySizesKernel2(
                 if ( laneId == 0 ){
                     if ( sInsertMiss[localWarpId] )
                     {
-                        reserveChunk( sChunkList[localWarpId], chunkList, sReservedChunks[localWarpId] );
+                        if ( !reserveChunk( sChunkList[localWarpId], chunkList, sReservedChunks[localWarpId] ) )
+                        {
+                            *hashError = true;
+                            localSystemError = true;
+                        }
                         sReservedChunks[localWarpId]++;
                         sInsertMiss[localWarpId] = false;
                     }
@@ -2341,7 +2349,7 @@ IndexType CUDACSRUtils::matrixMultiplySizes(
     ContextPtr loc = ContextFactory::getContext( Context::CUDA );
 
 
-    int numChunks = 1000;
+    int numChunks = 10000;
     int numElementsPerChunk = 2048;
 
     unsigned int hashTableAllocatedBytes = numChunks * numElementsPerChunk * sizeof( IndexType );
@@ -2932,7 +2940,6 @@ void matrixMultiplyKernel(
                             }
                             else
                             {
-
                                 bool inserted = insertHashTable(colB,
                                                                 diagonalProperty,
                                                                 sHashTableJa,
@@ -3136,7 +3143,7 @@ void matrixMultiplyKernel2(
     __shared__ volatile IndexType sColA[NUM_WARPS];
     __shared__ volatile ValueType sValA[NUM_WARPS];
     __shared__ volatile int sReservedChunks[NUM_WARPS];
-    __shared__ volatile int sChunkList[NUM_WARPS][10];
+    __shared__ volatile int sChunkList[NUM_WARPS][NUM_CHUNKS_PER_WARP];
     __shared__ volatile int sRowIt[NUM_WARPS];
     __shared__ volatile bool sInsertMiss[NUM_WARPS];
     __shared__ volatile ValueType diagonalElement[NUM_WARPS];
@@ -3175,6 +3182,12 @@ void matrixMultiplyKernel2(
             sReservedChunks[localWarpId] = ( ( (cIA[aRowIt+1] - cIA[aRowIt]) * 2 ) / numElementsPerChunk ) + 1;
             sInsertMiss[localWarpId] = false;
 
+            if( sReservedChunks[localWarpId] > NUM_CHUNKS_PER_WARP )
+            {
+                printf("To many chunks!\n");
+                return;
+            }
+
             do{
                 IndexType aColIt = aIA[aRowIt] + laneId;
                 IndexType aColEnd = aIA[aRowIt + 1];
@@ -3210,10 +3223,7 @@ void matrixMultiplyKernel2(
 
                 if ( __any(localSystemError ) )
                 {
-                   if( aRowIt == 2 )
-                   {
-                       printf("got no junk [multiply kernel]!\n");
-                   }
+                   printf("got no junk [multiply kernel]!\n");
                    return;
                 }
 
@@ -3255,6 +3265,11 @@ void matrixMultiplyKernel2(
                    {
                        if ( laneId == k )
                        {
+
+//                           if(aRowIt == 666 )
+//                           {
+//                               printf("my element is %i\n", colA);
+//                           }
                            sColA[localWarpId] = colA;
                            sValA[localWarpId] = valA;
                        }
@@ -3267,12 +3282,13 @@ void matrixMultiplyKernel2(
                            colB = bColIt < bColEnd ? bJA[bColIt] : -1;
                            ValueType valB = bColIt < bColEnd ? bValues[bColIt] : 0.0;
 
-                           if ( colB != -1 && diagonalProperty && colB == aRowIt )
+                           if ( diagonalProperty && colB == aRowIt )
                            {
                                diagonalElement[localWarpId] += sValA[localWarpId] * valB;
                            }
                            else
                            {
+
                                if ( colB != -1 && ( !diagonalProperty || colB != aRowIt ) )
                                {
 
@@ -3296,6 +3312,9 @@ void matrixMultiplyKernel2(
                    }
                 }
 
+
+                if ( !sInsertMiss[localWarpId] )
+                {
                 copyHashtable2 (sColA,
                                 cIA,
                                 laneId,
@@ -3314,6 +3333,9 @@ void matrixMultiplyKernel2(
                                 sReservedChunks[localWarpId],
                                 diagonalProperty,
                                 diagonalElement[localWarpId] );
+                }
+
+
 
 
                 // only release if insertion was ok, otherwire reserve some more
@@ -3328,10 +3350,6 @@ void matrixMultiplyKernel2(
                                releaseChunk( sChunkList[localWarpId], chunkList, i );
                            }
                        }
-                    }
-                    else
-                    {
-
                     }
                 }
 
@@ -3367,7 +3385,7 @@ void CUDACSRUtils::matrixMultiply(
 
     ContextPtr loc = ContextFactory::getContext( Context::CUDA );
 
-    int numChunks = 1000;
+    int numChunks = 10000;
     int numElementsPerChunk = 2048;
 
     unsigned int hashTableAllocatedBytes = numChunks * numElementsPerChunk * ( sizeof( IndexType ) + sizeof(ValueType));

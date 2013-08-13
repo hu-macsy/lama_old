@@ -562,12 +562,17 @@ void MatrixCreator<ValueType>::fillRandom( Matrix& matrix, double density )
         {
             IndexType randJ = rand() % colSize;
 
+            bool exists = false;
             for ( IndexType j = 0; j < numValuesRow; ++j )
             {
                 if ( csrJA[i*rowDensity+j] == randJ )
                 {
-                    continue;
+                    exists = true;
                 }
+            }
+            if ( exists )
+            {
+                continue;
             }
             ValueType value = static_cast<ValueType>( rand() ) / static_cast<ValueType>( RAND_MAX );
             csrJA.push_back( randJ );

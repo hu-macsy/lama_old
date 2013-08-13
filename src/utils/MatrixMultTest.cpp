@@ -40,6 +40,7 @@
 #include <lama/storage/CSRStorage.hpp>
 #include <lama/matutils/MatrixCreator.hpp>
 #include <lama/openmp/OpenMPCSRUtils.hpp>
+#include <lama/io/FileType.hpp>
 #include <omp.h>
 
 #include <stdio.h>
@@ -235,7 +236,6 @@ void validate(
     }
 
 
-
 //    lama::IndexType i = 0;
 //    lama::IndexType numElementsCorrect = 0;
 //    lama::IndexType numElementsGiven = 0;
@@ -367,12 +367,14 @@ int main( int argc, char **argv )
     bool inputSet = false;
     bool sortFlag = false;
     bool helpFlag = false;
+    bool outputFlag = false;
     int size = 1000;
     float density = 1.0;
     std::string inputMatrix;
+    std::string outputMatrix;
     int parameter;
 
-    while( ( parameter = getopt( argc, argv, "hvpi:sbrg:d:o" ) ) != -1 )
+    while( ( parameter = getopt( argc, argv, "hvpi:sbrg:d:of:" ) ) != -1 )
     {
         switch( parameter )
         {
@@ -409,6 +411,10 @@ int main( int argc, char **argv )
         case 'h':
         	helpFlag = true;
         	break;
+        case 'f':
+            outputFlag = true;
+            outputMatrix = optarg;
+            break;
         default:
             abort();
             break;
@@ -457,6 +463,45 @@ int main( int argc, char **argv )
 			matrixA = lama::CSRSparseMatrix<double>( inputMatrix );
 			matrixB =  lama::CSRSparseMatrix<double>( matrixA );
 		}
+
+		if( outputFlag )
+		{
+		    matrixA.writeToFile( outputMatrix, lama::File::MATRIX_MARKET );
+		}
+
+
+
+
+//		// TODO: Just temporary!
+//
+//	    lama::CSRStorage<double> localStorageA = matrixA.getLocalStorage();
+//
+//	    lama::HostReadAccess<lama::IndexType> aIA( localStorageA.getIA() );
+//	    lama::HostReadAccess<lama::IndexType> aJA( localStorageA.getJA() );
+//	    lama::HostReadAccess<double> aValues( localStorageA.getValues() );
+//
+//
+//	    int print_i = 3;
+//	    int print_j = 0;
+//
+//	    std::cout << "Zeile " << print_i << ":" << std::endl;
+//		for ( int i = aIA[print_i]; i < aIA[print_i+1]; ++i )
+//		{
+//		    std::cout << aJA[i] << ";" << aValues[i] << std::endl;
+//		}
+//		std::cout << std::endl;
+//
+//
+//		for ( int i = 0; i < localStorageA.getNumRows(); ++i )
+//        {
+//		    for ( int j = aIA[i]; j < aIA[i+1]; ++j )
+//		    {
+//		        if ( aJA[j] == print_j )
+//		        {
+//		            std::cout << i << ";" << aValues[j] << std::endl;
+//		        }
+//		    }
+//        }
 
 		if( !silentFlag )
 		{
