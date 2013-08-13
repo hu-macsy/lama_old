@@ -91,6 +91,22 @@ public:
         const ValueType csrValues[],
         SyncToken* syncToken );
 
+    /** Implementation for CSRUtilsInterface::Mult::normalGEVM  */
+
+    template<typename ValueType>
+    static void normalGEVM(
+        ValueType result[],
+        const ValueType alpha,
+        const ValueType x[],
+        const ValueType beta,
+        const ValueType y[],
+        const IndexType numRows,
+        const IndexType numColumns,
+        const IndexType csrIA[],
+        const IndexType csrJA[],
+        const ValueType csrValues[],
+        SyncToken* syncToken );
+
     /** Implementation for CSRUtilsInterface::Mult::sparseGEMV  */
 
     template<typename ValueType>
@@ -98,6 +114,21 @@ public:
         ValueType result[],
         const ValueType alpha,
         const ValueType x[],
+        const IndexType numNonZeroRows,
+        const IndexType rowIndexes[],
+        const IndexType csrIA[],
+        const IndexType csrJA[],
+        const ValueType csrValues[],
+        SyncToken* syncToken );
+
+    /** Implementation for CSRUtilsInterface::Mult::sparseGEVM  */
+
+    template<typename ValueType>
+    static void sparseGEVM(
+        ValueType result[],
+        const ValueType alpha,
+        const ValueType x[],
+        const IndexType numColumns,
         const IndexType numNonZeroRows,
         const IndexType rowIndexes[],
         const IndexType csrIA[],

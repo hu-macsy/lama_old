@@ -79,6 +79,10 @@ class LAMA_DLL_IMPORTEXPORT TraceConfig: private lama::NonCopyable
 {
 public:
 
+    /** Type definition for thread identification used in tracing. */
+
+    typedef lama::Thread::Id ThreadId;
+
     ~TraceConfig();
 
     /**
@@ -105,7 +109,7 @@ public:
         return mEnabled;
     }
 
-    bool isThreadEnabled( lama::Thread::Id threadId )
+    bool isThreadEnabled( ThreadId threadId )
     {
         return mThreadEnabled || threadId == mMaster;
     }
@@ -142,7 +146,7 @@ private:
 
     void setKey( const std::string& key, const std::string& value );
 
-    lama::Thread::Id mMaster; //!< id of mather thread
+    ThreadId mMaster; //!< id of mather thread
 
     bool mEnabled;
 
@@ -160,11 +164,11 @@ private:
      *  Use of shared pointer for entry in map
      */
 
-    std::map<lama::Thread::Id,boost::shared_ptr<RegionTable> > mRegionTables;
+    std::map<ThreadId, boost::shared_ptr<RegionTable> > mRegionTables;
 
-    /** Get the region table by the thread id. */
+    /** Get the region table by the id of a thread. */
 
-    RegionTable* getRegionTable( lama::Thread::Id );
+    RegionTable* getRegionTable( ThreadId threadId );
 
     lama::CommunicatorPtr mComm; //!< communicator used for distribution, parallel execution
 

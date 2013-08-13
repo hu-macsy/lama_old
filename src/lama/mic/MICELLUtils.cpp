@@ -69,7 +69,7 @@ IndexType MICELLUtils::countNonEmptyRowsBySizes( const IndexType sizes[], const 
 {
     IndexType counter = 0;
 
-    size_t sizesPtr = ( size_t ) sizes;
+    const void* sizesPtr = sizes;
 
     int device = MICContext::getCurrentDevice();
 
@@ -77,7 +77,7 @@ IndexType MICELLUtils::countNonEmptyRowsBySizes( const IndexType sizes[], const 
     {
         counter = 0;
 
-        const IndexType* sizes = ( IndexType* ) sizesPtr;
+        const IndexType* sizes = static_cast<const IndexType*>( sizesPtr );
 
         #pragma omp parallel for reduction( +:counter )
         for ( IndexType i = 0; i < numRows; ++i )
@@ -104,15 +104,15 @@ void MICELLUtils::setNonEmptyRowsBySizes(
 {
     IndexType counter = 0;
 
-    size_t sizesPtr = ( size_t ) sizes;
-    size_t rowIndexesPtr = ( size_t ) rowIndexes;
+    const void* sizesPtr = sizes;
+    void* rowIndexesPtr = rowIndexes;
 
     int device = MICContext::getCurrentDevice();
 
     #pragma offload target( mic : device ), in( rowIndexesPtr, sizesPtr, numRows ), out( counter )
     {
-        IndexType* rowIndexes = ( IndexType* ) rowIndexesPtr;
-        const IndexType* sizes = ( IndexType* ) sizesPtr;
+        IndexType* rowIndexes = static_cast<IndexType*>( rowIndexesPtr );
+        const IndexType* sizes = static_cast<const IndexType*>( sizesPtr );
 
         counter = 0;
 
@@ -146,11 +146,11 @@ bool MICELLUtils::hasDiagonalProperty( const IndexType numDiagonals, const Index
 
     bool diagonalProperty = true;
 
-    size_t ellJAPtr = ( size_t ) ellJA;
+    const void* ellJAPtr = ellJA;
 
     #pragma offload target( MIC ) in( ellJAPtr, numDiagonals ), out( diagonalProperty )
     {
-        IndexType* ellJA = ( IndexType* ) ellJAPtr;
+        const IndexType* ellJA = static_cast<const IndexType*>( ellJAPtr );
 
         diagonalProperty = true;
 
@@ -230,13 +230,13 @@ void MICELLUtils::check(
 
         int device = MICContext::getCurrentDevice();
 
-        size_t ellSizesPtr = ( size_t ) ellSizes;
-        size_t ellJAPtr = ( size_t ) ellJA;
+        const void* ellSizesPtr = ellSizes;
+        const void* ellJAPtr = ellJA;
 
         #pragma offload target( mic : device ) in( ellSizesPtr, ellJAPtr, numRows, numValuesPerRow, numColumns ), out( integrityIA, integrityJA )
         {
-            IndexType* ellSizes = ( IndexType* ) ellSizesPtr;
-            IndexType* ellJA    = ( IndexType* ) ellJAPtr;
+            const IndexType* ellSizes = static_cast<const IndexType*>( ellSizesPtr );
+            const IndexType* ellJA    = static_cast<const IndexType*>( ellJAPtr );
 
             integrityIA = true;
             integrityJA = true;
@@ -951,26 +951,28 @@ void MICELLUtils::jacobiHalo(
 
     LAMA_REGION( "MIC.ELL.jacobiHalo" )
 
-    const size_t solutionPtr = ( size_t ) solution;
-    const size_t oldSolutionPtr = ( size_t ) oldSolution;
-    const size_t diagonalPtr = ( size_t ) diagonal;
-    const size_t rowIndexesPtr = ( size_t ) rowIndexes;
-    const size_t ellSizesPtr = ( size_t ) ellSizes;
-    const size_t ellJAPtr = ( size_t ) ellJA;
-    const size_t ellValuesPtr = ( size_t ) ellValues;
+    void* solutionPtr = solution;
+
+    const void* oldSolutionPtr = oldSolution;
+    const void* diagonalPtr = diagonal;
+    const void* rowIndexesPtr = rowIndexes;
+    const void* ellSizesPtr = ellSizes;
+    const void* ellJAPtr = ellJA;
+    const void* ellValuesPtr = ellValues;
 
     int device = MICContext::getCurrentDevice();
 
     #pragma offload target( mic : device ), in( solutionPtr, oldSolutionPtr, diagonalPtr, rowIndexesPtr, \
                                             ellSizesPtr, ellJAPtr, ellValuesPtr, omega, numRows, numNonEmptyRows )
     {
-        ValueType* solution = ( ValueType* ) solutionPtr;
-        const ValueType* oldSolution = ( ValueType* ) oldSolutionPtr;
-        const ValueType* diagonal = ( ValueType* ) diagonalPtr;
-        const IndexType* rowIndexes = ( IndexType* ) rowIndexesPtr;
-        const IndexType* ellSizes = ( IndexType* ) ellSizesPtr;
-        const IndexType* ellJA = ( IndexType* ) ellJAPtr;
-        const ValueType* ellValues = ( ValueType* ) ellValuesPtr;
+        ValueType* solution = static_cast<ValueType*>( solutionPtr );
+
+        const ValueType* oldSolution = static_cast<const ValueType*>( oldSolutionPtr );
+        const ValueType* diagonal = static_cast<const ValueType*>( diagonalPtr );
+        const IndexType* rowIndexes = static_cast<const IndexType*>( rowIndexesPtr );
+        const IndexType* ellSizes = static_cast<const IndexType*>( ellSizesPtr );
+        const IndexType* ellJA = static_cast<const IndexType*>( ellJAPtr );
+        const ValueType* ellValues = static_cast<const ValueType*>( ellValuesPtr );
 
         #pragma omp parallel for 
         for ( IndexType ii = 0; ii < numNonEmptyRows; ++ii )
@@ -1037,28 +1039,29 @@ void MICELLUtils::normalGEMV(
 
     // conversion of pointer to size_t to cheat offload
 
-    const size_t resultPtr = ( size_t ) result;
-    const size_t xPtr = ( size_t ) x;
-    const size_t yPtr = ( size_t ) y;
-    const size_t ellSizesPtr = ( size_t ) ellSizes;
-    const size_t ellJAPtr = ( size_t ) ellJA;
-    const size_t ellValuesPtr = ( size_t ) ellValues;
+    void* resultPtr = result;
+    const void* xPtr = x;
+    const void* yPtr = y;
+    const void* ellSizesPtr = ellSizes;
+    const void* ellJAPtr = ellJA;
+    const void* ellValuesPtr = ellValues;
 
     int device = MICContext::getCurrentDevice();
 
     #pragma offload target( mic : device ), in( resultPtr, xPtr, yPtr, ellSizesPtr, ellJAPtr, ellValuesPtr, alpha, numRows )
     {
-        ValueType* result = ( ValueType* ) resultPtr;
-        const ValueType* x = ( ValueType* ) xPtr;
-        const ValueType* y = ( ValueType* ) yPtr;
-        const IndexType* ellSizes = ( IndexType* ) ellSizesPtr;
-        const IndexType* ellJA = ( IndexType* ) ellJAPtr;
-        const ValueType* ellValues = ( ValueType* ) ellValuesPtr;
+        ValueType* result = static_cast<ValueType*>( resultPtr );
+
+        const ValueType* x = static_cast<const ValueType*>( xPtr );
+        const ValueType* y = static_cast<const ValueType*>( yPtr );
+        const IndexType* ellSizes = static_cast<const IndexType*>( ellSizesPtr );
+        const IndexType* ellJA = static_cast<const IndexType*>( ellJAPtr );
+        const ValueType* ellValues = static_cast<const ValueType*>( ellValuesPtr );
 
         #pragma omp parallel for 
         for ( IndexType i = 0; i < numRows; ++i )
         {
-            ValueType temp = 0.0;
+            ValueType temp = 0;
 
             for ( IndexType jj = 0; jj < ellSizes[i]; ++jj )
             {
@@ -1066,13 +1069,13 @@ void MICELLUtils::normalGEMV(
                 temp += ellValues[i + jj * numRows] * x[j];
             }
 
-            if ( 0.0 == beta )
+            if ( 0 == beta )
             {
                 // must be handled separately as y[i] might be uninitialized
 
                 result[i] = alpha * temp;
             }
-            else if ( 1.0 == alpha )
+            else if ( 1 == alpha )
             {
                 result[i] = temp + beta * y[i];
             }
@@ -1112,25 +1115,28 @@ void MICELLUtils::sparseGEMV(
     LAMA_LOG_INFO( logger, "sparseGEMV<" << Scalar::getType<ValueType>() << ">, n = " << numRows 
                            << ", nonZeroRows = " << numNonZeroRows << ", alpha = " << alpha )
 
-    // conversion of pointer to size_t to cheat offload
+    // conversion of pointer to void* to cheat offload
 
-    const size_t resultPtr = ( size_t ) result;
-    const size_t xPtr = ( size_t ) x;
-    const size_t rowIndexesPtr = ( size_t ) rowIndexes;
-    const size_t ellSizesPtr = ( size_t ) ellSizes;
-    const size_t ellJAPtr = ( size_t ) ellJA;
-    const size_t ellValuesPtr = ( size_t ) ellValues;
+    void* resultPtr = result;
+
+    const void* xPtr = x;
+    const void* rowIndexesPtr = rowIndexes;
+    const void* ellSizesPtr = ellSizes;
+    const void* ellJAPtr = ellJA;
+    const void* ellValuesPtr = ellValues;
 
     int device = MICContext::getCurrentDevice();
 
-    #pragma offload target( mic : device ), in( resultPtr, xPtr, rowIndexesPtr, ellSizesPtr, ellJAPtr, ellValuesPtr, alpha, numRows, numNonZeroRows )
+    #pragma offload target( mic : device ), in( resultPtr, xPtr, rowIndexesPtr, ellSizesPtr, ellJAPtr, ellValuesPtr, \
+                                                alpha, numRows, numNonZeroRows )
     {
-        ValueType* result = ( ValueType* ) resultPtr;
-        const ValueType* x = ( ValueType* ) xPtr;
-        const IndexType* rowIndexes = ( IndexType* ) rowIndexesPtr;
-        const IndexType* ellSizes = ( IndexType* ) ellSizesPtr;
-        const IndexType* ellJA = ( IndexType* ) ellJAPtr;
-        const ValueType* ellValues = ( ValueType* ) ellValuesPtr;
+        ValueType* result = static_cast<ValueType*>( resultPtr );
+
+        const ValueType* x = static_cast<const ValueType*>( xPtr );
+        const IndexType* rowIndexes = static_cast<const IndexType*>( rowIndexesPtr );
+        const IndexType* ellSizes = static_cast<const IndexType*>( ellSizesPtr );
+        const IndexType* ellJA = static_cast<const IndexType*>( ellJAPtr );
+        const ValueType* ellValues = static_cast<const ValueType*>( ellValuesPtr );
 
         #pragma omp parallel
         {
@@ -1166,6 +1172,8 @@ void MICELLUtils::sparseGEMV(
 
 void MICELLUtils::setInterface( ELLUtilsInterface& ELLUtils )
 {
+    LAMA_LOG_INFO( logger, "set ELL routines for MIC in Interface" )
+
     LAMA_INTERFACE_REGISTER( ELLUtils, countNonEmptyRowsBySizes )
     LAMA_INTERFACE_REGISTER( ELLUtils, setNonEmptyRowsBySizes )
 

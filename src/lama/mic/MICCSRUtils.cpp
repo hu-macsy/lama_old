@@ -69,13 +69,13 @@ IndexType MICCSRUtils::scanSerial( IndexType array[], const IndexType numValues 
 
     IndexType runningSum = 0;
 
-    size_t arrayPtr = ( size_t ) array;
+    void* arrayPtr = array;
 
     int device = MICContext::getCurrentDevice();
 
     #pragma offload target( mic : device ), in( arrayPtr, numValues ), out( runningSum )
     {
-        IndexType* array = ( IndexType* ) arrayPtr;
+        IndexType* array = static_cast<IndexType*>( arrayPtr );
 
         runningSum = 0;
 
@@ -98,9 +98,9 @@ IndexType MICCSRUtils::scanParallel( PartitionId numThreads, IndexType array[], 
 
     LAMA_LOG_DEBUG( logger, "scanParallel: " << numValues << " entries for " << numThreads << " threads" )
 
-    size_t arrayPtr = ( size_t ) array;
+    void* arrayPtr = array;
 
-    size_t threadCounterPtr;   // temporary array on MIC device
+    void* threadCounterPtr;   // temporary array on MIC device
 
     #pragma offload target( mic ), in( arrayPtr, numValues, numThreads ), out( threadCounterPtr )
     {
@@ -121,10 +121,10 @@ IndexType MICCSRUtils::scanParallel( PartitionId numThreads, IndexType array[], 
             threadCounter[omp_get_thread_num()] = myCounter;
         }
 
-        threadCounterPtr = ( size_t ) threadCounter;
+        threadCounterPtr = threadCounter;
     }
 
-    IndexType* threadCounter = ( IndexType* ) threadCounterPtr;
+    IndexType* threadCounter = static_cast<IndexType*>( threadCounterPtr );
 
     IndexType runningSum = scanSerial( threadCounter, numThreads );
 
@@ -132,8 +132,8 @@ IndexType MICCSRUtils::scanParallel( PartitionId numThreads, IndexType array[], 
 
     #pragma offload target( mic ), in( threadCounterPtr, arrayPtr, numValues )
     {
-        IndexType* threadCounter = ( IndexType* ) threadCounterPtr;
-        IndexType* array = ( IndexType* ) arrayPtr;
+        IndexType* threadCounter = static_cast<IndexType*>( threadCounterPtr );
+        IndexType* array = static_cast<IndexType*>( arrayPtr );
 
         #pragma omp parallel
         {
@@ -223,13 +223,15 @@ IndexType MICCSRUtils::sizes2offsets( IndexType array[], const IndexType numValu
 {
     IndexType totalValues = scan( array, numValues );
 
-    size_t arrayPtr = ( size_t ) array;
+    // now we have to set array[numValues] = totalValues
+
+    void* arrayPtr = array;
 
     int device = MICContext::getCurrentDevice();
 
     #pragma offload target( mic : device ), in( arrayPtr, numValues, totalValues )
     {
-        IndexType* array = ( IndexType* ) arrayPtr;
+        IndexType* array = static_cast<IndexType*>( arrayPtr );
 
         array[numValues] = totalValues;
     }
@@ -243,15 +245,15 @@ IndexType MICCSRUtils::sizes2offsets( IndexType array[], const IndexType numValu
 
 void MICCSRUtils::offsets2sizes( IndexType sizes[], const IndexType offsets[], const IndexType numRows )
 {
-    size_t sizesPtr = ( size_t ) sizes;
-    size_t offsetsPtr = ( size_t ) offsets;
+    void* sizesPtr = sizes;
+    const void* offsetsPtr = offsets;
 
     #pragma offload target( MIC ), in( sizesPtr, offsetsPtr, numRows )
     {
-        IndexType* sizes = ( IndexType* ) sizesPtr;
-        IndexType* offsets = ( IndexType* ) offsetsPtr;
+        IndexType* sizes = static_cast<IndexType*>( sizesPtr );
+        const IndexType* offsets = static_cast<const IndexType*>( offsetsPtr );
 
-        #pragma omp parallel for schedule( LAMA_OMP_SCHEDULE )
+        #pragma omp parallel for
         for ( IndexType i = 0; i < numRows; i++ )
         {
             sizes[i] = offsets[i + 1] - offsets[i];

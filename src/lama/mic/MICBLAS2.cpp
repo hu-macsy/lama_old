@@ -115,6 +115,7 @@ void MICBLAS2::gemv(
 
         case CblasRowMajor:
             ta = trans2CT( transA );
+            std::swap( m, n );
             break;
 
         default:
@@ -178,6 +179,7 @@ void MICBLAS2::gemv(
 
         case CblasRowMajor:
             ta = trans2CT( transA );
+            std::swap( m, n );
             break;
 
         default:
@@ -204,6 +206,8 @@ void MICBLAS2::gemv(
 
 void MICBLAS2::setInterface( BLASInterface& BLAS )
 {
+    LAMA_LOG_INFO( logger, "set BLAS2 routines for MIC in Interface" )
+
     // Note: macro takes advantage of same name for routines and type definitions 
     //       ( e.g. routine CUDABLAS1::sum<T> is set for BLAS::BLAS1::sum variable
 

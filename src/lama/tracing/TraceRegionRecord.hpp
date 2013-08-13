@@ -37,9 +37,6 @@
 // for dll_import
 #include <lama/config.hpp>
 
-// base classes
-#include <lama/tracing/LAMABaseTracer.hpp>
-
 // logging
 #include <logging/logging.hpp>
 
@@ -56,7 +53,7 @@
 namespace tracing
 {
 
-class TraceRegionRecord: public LAMABaseTracer
+class TraceRegionRecord
 {
 
 public:

@@ -68,9 +68,8 @@ typedef boost::mpl::list<float,double> test_types;
 /* --------------------------------------------------------------------- */
 
 BOOST_AUTO_TEST_SUITE( SORTest )
-;
 
-LAMA_LOG_DEF_LOGGER( logger, "Test.SORTest" );
+LAMA_LOG_DEF_LOGGER( logger, "Test.SORTest" )
 
 /* --------------------------------------------------------------------- */
 
@@ -189,4 +188,6 @@ BOOST_AUTO_TEST_CASE( copyTest )
 
     BOOST_CHECK_EQUAL( solverptr->getId(), "SORTestSolver" );
 }
-/* --------------------------------------------------------------------- */BOOST_AUTO_TEST_SUITE_END();
+/* --------------------------------------------------------------------- */
+
+BOOST_AUTO_TEST_SUITE_END();

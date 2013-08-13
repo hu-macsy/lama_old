@@ -46,11 +46,10 @@ using namespace lama;
 /* --------------------------------------------------------------------- */
 
 BOOST_AUTO_TEST_SUITE( LAMAArrayTest )
-;
 
 /* --------------------------------------------------------------------- */
 
-LAMA_LOG_DEF_LOGGER( logger, "Test.LAMAArrayTest" );
+LAMA_LOG_DEF_LOGGER( logger, "Test.LAMAArrayTest" )
 
 typedef boost::mpl::list<float,double> test_types;
 
@@ -122,7 +121,8 @@ BOOST_AUTO_TEST_CASE( resizeTest )
 
 /* --------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( accessTest , T, test_types ) {
+BOOST_AUTO_TEST_CASE_TEMPLATE( accessTest , T, test_types )
+{
     typedef T ValueType;
 
     const IndexType n = 10;
@@ -166,7 +166,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( accessTest , T, test_types ) {
 
 /* --------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( refTest, T, test_types ) {
+BOOST_AUTO_TEST_CASE_TEMPLATE( refTest, T, test_types )
+{
     typedef T ValueType;
 
     const IndexType n = 10;
@@ -223,5 +224,6 @@ BOOST_AUTO_TEST_CASE( writeAtTest )
     LAMAArray<IndexType> lamaArray;
     LAMA_WRITEAT_TEST( lamaArray );
 }
-/* --------------------------------------------------------------------- */BOOST_AUTO_TEST_SUITE_END();
+/* --------------------------------------------------------------------- */
 
+BOOST_AUTO_TEST_SUITE_END();

@@ -69,7 +69,7 @@ XXXSparseMatrix<ValueType>::XXXSparseMatrix()
     : SparseMatrix<ValueType>( createStorage() )
 
 {
-    LAMA_LOG_INFO( logger, "XXXSpareMatrix()" )
+    LAMA_LOG_INFO( logger, "XXXSparseMatrix()" )
 }
 
 /* -------------------------------------------------------------------------- */
@@ -80,7 +80,7 @@ XXXSparseMatrix<ValueType>::XXXSparseMatrix( const IndexType numRows, const Inde
     : SparseMatrix<ValueType>( createStorage( numRows, numColumns ) )
 
 {
-    LAMA_LOG_INFO( logger, "XXXSpareMatrix( " << numRows << " x " << numColumns << " )" )
+    LAMA_LOG_INFO( logger, "XXXSparseMatrix( " << numRows << " x " << numColumns << " )" )
 }
 
 /* -------------------------------------------------------------------------- */
@@ -158,7 +158,7 @@ XXXSparseMatrix<ValueType>::XXXSparseMatrix( const _MatrixStorage& globalData )
 
 {
     DistributionPtr rowDist( new NoDistribution( globalData.getNumRows() ) );
-    DistributionPtr colDist( new NoDistribution( globalData.getNumRows() ) );
+    DistributionPtr colDist( new NoDistribution( globalData.getNumColumns() ) );
 
     SparseMatrix<ValueType>::assign( globalData, rowDist, colDist );
 }

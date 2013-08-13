@@ -46,9 +46,8 @@ typedef boost::mpl::list<float,double,long double> test_types;
 /* --------------------------------------------------------------------- */
 
 BOOST_AUTO_TEST_SUITE( ScalarTest )
-;
 
-LAMA_LOG_DEF_LOGGER( logger, "Test.ScalarTest" );
+LAMA_LOG_DEF_LOGGER( logger, "Test.ScalarTest" )
 
 /* --------------------------------------------------------------------- */
 
@@ -126,7 +125,8 @@ BOOST_AUTO_TEST_CASE( ScalarTypeSizeTest )
 
 /* --------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( AdditionTest, T, test_types ) {
+BOOST_AUTO_TEST_CASE_TEMPLATE( AdditionTest, T, test_types )
+{
     typedef T ValueType;
 
     Scalar s ( 2.0 );
@@ -141,7 +141,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( AdditionTest, T, test_types ) {
 
 /* --------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( MultiplicationTest, T, test_types ) {
+BOOST_AUTO_TEST_CASE_TEMPLATE( MultiplicationTest, T, test_types )
+{
     typedef T ValueType;
 
     Scalar s ( 2.0 );
@@ -156,7 +157,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( MultiplicationTest, T, test_types ) {
 
 /* --------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( SubtractionTest, T, test_types ) {
+BOOST_AUTO_TEST_CASE_TEMPLATE( SubtractionTest, T, test_types )
+{
     typedef T ValueType;
 
     Scalar s ( 2.0 );
@@ -171,7 +173,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( SubtractionTest, T, test_types ) {
 
 /* --------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( DivisionTest, T, test_types ) {
+BOOST_AUTO_TEST_CASE_TEMPLATE( DivisionTest, T, test_types )
+{
     typedef T ValueType;
 
     Scalar s ( 2.0 );
@@ -186,7 +189,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( DivisionTest, T, test_types ) {
 
 /* --------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( IsRealTest, T, test_types ) {
+BOOST_AUTO_TEST_CASE_TEMPLATE( IsRealTest, T, test_types )
+{
     typedef T ValueType;
 
     std::complex<ValueType> cvalue( 1.0, 2.0 );
@@ -203,7 +207,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( IsRealTest, T, test_types ) {
 
 /* --------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( NegativNumberTest, T, test_types ) {
+BOOST_AUTO_TEST_CASE_TEMPLATE( NegativNumberTest, T, test_types )
+{
     typedef T ValueType;
 
     Scalar s( 2.0 );
@@ -214,7 +219,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( NegativNumberTest, T, test_types ) {
 
 /* --------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( EqualityTest, T, test_types ) {
+BOOST_AUTO_TEST_CASE_TEMPLATE( EqualityTest, T, test_types )
+{
     typedef T ValueType;
 
     std::complex<ValueType> c_value( 1.0, 2.0 );
@@ -280,4 +286,6 @@ BOOST_AUTO_TEST_CASE( printTest )
     printtestmethod( "complex<double>", Scalar::DOUBLE_COMPLEX );
     printtestmethod( "complex<long double>", Scalar::LONG_DOUBLE_COMPLEX );
 }
-/* --------------------------------------------------------------------- */BOOST_AUTO_TEST_SUITE_END();
+/* --------------------------------------------------------------------- */
+
+BOOST_AUTO_TEST_SUITE_END();

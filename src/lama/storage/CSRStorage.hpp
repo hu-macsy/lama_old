@@ -236,6 +236,17 @@ public:
 
     IndexType getNumValues() const;
 
+    /** This method sorts entries in each row by column indexes. 
+     *
+     *  @param[in] diagonalProperty if true first entry in a row is diagonal element if available
+     *
+     *  This method does not force diagonal property for the storage as it will not fill up 
+     *  a diagonal element if it is not available.
+     *
+     *  Note: matrix multiplication with CUSparse requires sorted rows, diagonalProperty = false
+     */
+    void sortRows( bool diagonalProperty );
+
     /** Template method for getting row. */
 
     template<typename OtherType>
@@ -396,6 +407,16 @@ public:
         const ValueType beta,
         const LAMAArrayConstView<ValueType> y ) const;
 
+    /** Implementation of MatrixStorage::vectorTimesMatrix for CSR */
+    /** since 1.0.1 */
+
+    virtual void vectorTimesMatrix(
+        LAMAArray<ValueType>& result,
+        const ValueType alpha,
+        const LAMAArray<ValueType>& x,
+        const ValueType beta,
+        const LAMAArray<ValueType>& y ) const;
+
     virtual void matrixTimesVectorN(
         LAMAArrayView<ValueType> result,
         const IndexType n,
@@ -412,6 +433,16 @@ public:
         const LAMAArrayConstView<ValueType> x,
         const ValueType beta,
         const LAMAArrayConstView<ValueType> y ) const;
+
+    /** Implementation of MatrixStorage::vectorTimesMatrixAsync for CSR */
+    /** since 1.0.1 */
+
+    virtual SyncToken* vectorTimesMatrixAsync(
+        LAMAArray<ValueType>& result,
+        const ValueType alpha,
+        const LAMAArray<ValueType>& x,
+        const ValueType beta,
+        const LAMAArray<ValueType>& y ) const;
 
     /** Implementation of MatrixStorage::matrixPlusMatrix for CSR */
 
@@ -480,7 +511,7 @@ public:
      * This method extracts sparse data (column indexes and data values) for rows
      *
      * @param[out] ja column indexes for the rows
-     * @param[out] matrix values corresponding to the columns
+     * @param[out] values corresponding to the columns
      */
 
     void buildSparseRowData( LAMAArray<IndexType>& ja,

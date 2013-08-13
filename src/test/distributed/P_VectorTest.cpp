@@ -95,9 +95,8 @@ struct P_VectorTestConfig
 };
 
 BOOST_FIXTURE_TEST_SUITE( P_VectorTest, P_VectorTestConfig )
-;
 
-LAMA_LOG_DEF_LOGGER( logger, "Test.P_VectorTest" );
+LAMA_LOG_DEF_LOGGER( logger, "Test.P_VectorTest" )
 
 /* --------------------------------------------------------------------- */
 
@@ -230,7 +229,121 @@ BOOST_AUTO_TEST_CASE( buildTest )
 
 /* --------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( matrixTimesVectorTest, T, test_types ) {
+BOOST_AUTO_TEST_CASE_TEMPLATE( vectorTimesMatrixTest, T, test_types )
+{
+    typedef T ValueType;
+
+    PartitionId size = comm->getSize();
+
+    const IndexType vectorSize = 4 * size;
+    LAMA_LOG_DEBUG( logger, "VectorSize is " << vectorSize )
+
+    shared_ptr<Distribution> dist( new BlockDistribution( vectorSize, comm ) );
+    shared_ptr<Distribution> repdist( new NoDistribution( vectorSize ) );
+
+    CSRSparseMatrix<ValueType> matrixTypeMatrix( dist, repdist );
+    matrixTypeMatrix.setCommunicationKind( Matrix::SYNCHRONOUS );
+
+    DenseVector<ValueType> denseVector( dist, 1.0 );
+    DenseVector<ValueType> denseResult( repdist, 0.0 );
+
+    const Matrix& matrix = matrixTypeMatrix;
+
+    const Vector& vector = denseVector;
+    Vector& result = denseResult;
+
+    LAMA_LOG_INFO( logger, "Vector(NoDist) = Vector(BlockDist) * Matrix(BlockDist, NoDist)" )
+    result = vector * matrix;
+
+    ContextPtr host = ContextFactory::getContext( Context::Host );
+
+    matrixTypeMatrix.setContext( host, host );
+
+    for (IndexType i = 0; i < result.size(); ++i)
+    {
+        BOOST_CHECK_EQUAL( result.getValue(i), denseResult.getValue(i) );
+    }
+
+    int numRows = 4 * size;
+    int numCols = 4 * size;
+
+    DenseVector<ValueType> denseCorrectResult2( dist, 0.0 );
+
+    LAMAArray<ValueType>& localDenseCorrectResult2 =
+                    denseCorrectResult2.getLocalValues();
+
+    scoped_array<ValueType> values( new ValueType[ numRows * numCols ] );
+
+    {
+        HostWriteAccess<ValueType> localDenseCorrectResult2Access ( localDenseCorrectResult2 );
+
+        for (IndexType j = 0; j < numCols; ++j)
+        {
+            ValueType columnSum = 0.0;
+            for (IndexType i = 0; i < numRows; ++i)
+            {
+                ValueType value = 0.0;
+                if ( j == i || j + size == i || j - size == i || j + 2 * size == i || j - 2 * size == i || j + ( numRows - 1 ) == i
+                                || j - ( numRows - 1 ) == i )
+                {
+                    value = static_cast<ValueType>( 1000.0 * ( i + 1 ) + ( j + 1 ) );
+                }
+                values[ i * numCols + j ] = value;
+                columnSum += value;
+            }
+            if ( dist->isLocal(j) )
+            {
+                localDenseCorrectResult2Access[ dist->global2local(j) ] = columnSum;
+            }
+        }
+    }
+
+    CSRSparseMatrix<ValueType> repM;
+    repM.setRawDenseData( numRows, numCols, values.get() );
+    repM.setCommunicationKind( Matrix::SYNCHRONOUS );
+
+    DenseVector<ValueType> denseVector0( vectorSize, 1.0 );
+
+    DenseVector<ValueType> denseResult0( vectorSize, 0.0 );
+
+    Vector& result0 = denseResult0;
+
+    LAMA_LOG_INFO( logger, "Vector(rep) = Vector(rep) * Matrix(rep)" )
+    result0 = denseVector0 * repM;
+
+    BOOST_CHECK_EQUAL( vectorSize, result.size() );
+
+    for (IndexType i = 0; i < result.size(); ++i)
+    {
+        BOOST_CHECK_EQUAL( denseCorrectResult2.getValue(i), denseResult0.getValue(i) );
+    }
+
+    repM.setContext( host, host );
+
+    CSRSparseMatrix<ValueType> matrixTypeMatrix2( repM, dist, dist );
+
+    const Matrix& matrix2 = matrixTypeMatrix2;
+
+    DenseVector<ValueType> denseVector2( dist, 1.0 );
+    DenseVector<ValueType> result2( dist, 0.0 );
+
+    LAMA_LOG_INFO( logger, "Vector(BlockDist) = Vector(BlockDist) * Matrix(BlockDist, BlockDist)" )
+    result2 = denseVector2 * matrix2;
+
+    BOOST_CHECK_EQUAL( vectorSize, result2.size() );
+
+    for (IndexType i = 0; i<result2.size(); ++i)
+    {
+        BOOST_CHECK_EQUAL( denseCorrectResult2.getValue(i), result2.getValue(i) );
+    }
+
+    matrixTypeMatrix2.setContext( host, host );
+}
+
+/* --------------------------------------------------------------------- */
+
+BOOST_AUTO_TEST_CASE_TEMPLATE( matrixTimesVectorTest, T, test_types )
+{
     typedef T ValueType;
 
     PartitionId size = comm->getSize();
@@ -332,7 +445,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( matrixTimesVectorTest, T, test_types ) {
 
 /* ------------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( assignLocalTest, T, test_types ) {
+BOOST_AUTO_TEST_CASE_TEMPLATE( assignLocalTest, T, test_types )
+{
     typedef T ValueType;
 
     const IndexType vectorSize = 25;
@@ -392,7 +506,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( assignLocalTest, T, test_types ) {
 
 /* ------------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( assignValueTest, T, test_types ) {
+BOOST_AUTO_TEST_CASE_TEMPLATE( assignValueTest, T, test_types )
+{
     typedef T ValueType;
 
     PartitionId size = comm->getSize();
@@ -415,7 +530,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( assignValueTest, T, test_types ) {
 
 /* ------------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( redistributeTest, T, test_types ) {
+BOOST_AUTO_TEST_CASE_TEMPLATE( redistributeTest, T, test_types )
+{
     typedef T ValueType;
 
     const IndexType vectorSize = 100; // global vector size
@@ -509,7 +625,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( redistributeTest, T, test_types ) {
 
 /* ------------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( gatherTest, T, test_types ) {
+BOOST_AUTO_TEST_CASE_TEMPLATE( gatherTest, T, test_types )
+{
     typedef double ValueType;
 
     PartitionId size = comm->getSize();
@@ -548,10 +665,14 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( gatherTest, T, test_types ) {
 
 /* ------------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( ExpressionCtorTest, T, test_types ) {
+BOOST_AUTO_TEST_CASE_TEMPLATE( ExpressionCtorTest, T, test_types )
+{
     typedef T ValueType;
 
-    IndexType n = 4;
+	// TODO: detect error, when executing with n = 4; for vector times matrix expressions
+    PartitionId size = comm->getSize();
+
+    IndexType n = 4 * size;
 
     CSRSparseMatrix<ValueType> Id (
         TestSparseMatrices::nnIdentityMatrix<double>( n ) );
@@ -631,6 +752,33 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( ExpressionCtorTest, T, test_types ) {
     LAMA_LOG_DEBUG( logger, "dist = " << d2.getDistribution() );
     vectorCheck ( d2, resultvector10 );
 
+// VectorMatrix-Expressions here:
+// Note: the constructed vector inherits the column distribution of the matrix
+
+    LAMA_LOG_INFO( logger, "Ctor: vector( vector * matrix )" );
+
+    DenseVector<ValueType> dd1( testvector5 * Id );
+    LAMA_LOG_DEBUG( logger, "d1 = " << d1 );
+    vectorCheck( dd1, testvector5 );
+
+    LAMA_LOG_INFO( logger, "Ctor: vector( scalar * vector * matrix)" );
+    //A*a*x
+    DenseVector<ValueType> dd17( s2 * testvector5 * Id );
+    LAMA_LOG_DEBUG( logger, "dist = " << d17.getDistribution() );
+    vectorCheck ( dd17, resultvector10 );
+
+    LAMA_LOG_INFO( logger, "Ctor: vector( vector * matrix * scalar )" );
+
+    DenseVector<ValueType> dd16( testvector5 * Id * s2);
+    LAMA_LOG_DEBUG( logger, "dist = " << d16.getDistribution() );
+    vectorCheck ( dd16, resultvector10 );
+
+    LAMA_LOG_INFO( logger, "Ctor: vector( scalar * vector * matrix )" );
+
+    DenseVector<ValueType> dd2( s2 * testvector5 * Id );
+    LAMA_LOG_DEBUG( logger, "dist = " << d2.getDistribution() );
+    vectorCheck ( dd2, resultvector10 );
+
 // Plus-MatrixVectorExpressions:
 
     LAMA_LOG_INFO( logger, "Ctor: vector( matrix * vector + vector )" );
@@ -679,6 +827,55 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( ExpressionCtorTest, T, test_types ) {
 
     DenseVector<ValueType> d12( Id * testvector5 * s2 + testvector3);
     vectorCheck ( d12, resultvector13 );
+
+// VectorMatrix Plus Vector Expressions:
+
+    LAMA_LOG_INFO( logger, "Ctor: vector( vector * matrix + vector )" );
+
+    DenseVector<ValueType> d111( testvector5 * Id + testvector3);
+    LAMA_LOG_DEBUG( logger, "dist = " << d11.getDistribution() );
+    vectorCheck ( d111, resultvector8 );
+
+    LAMA_LOG_INFO( logger, "Ctor: vector( vector * matrix + scalar * vector )" );
+
+    DenseVector<ValueType> d71( testvector5 * Id + s2 * testvector3);
+    LAMA_LOG_DEBUG( logger, "dist = " << d7.getDistribution() );
+    vectorCheck ( d71, resultvector11 );
+
+    LAMA_LOG_INFO( logger, "Ctor: vector( vector * matrix + vector * scalar )" );
+
+    DenseVector<ValueType> d91( testvector5 * Id + testvector3 * s2 );
+    vectorCheck ( d91, resultvector11 );
+
+    LAMA_LOG_INFO( logger, "Ctor: vector( scalar * vector * matrix + scalar * vector )" );
+
+    DenseVector<ValueType> d81( s2 * testvector5 * Id + s2 * testvector3);
+    vectorCheck ( d81, resultvector16 );
+
+    LAMA_LOG_INFO( logger, "Ctor: vector( vector * matrix * scalar + scalar * vector )" );
+
+    DenseVector<ValueType> d101( testvector5 * Id * s2 + s2 * testvector3);
+    vectorCheck ( d101, resultvector16 );
+
+    LAMA_LOG_INFO( logger, "Ctor: vector( scalar * vector  * matrix+ vector )" );
+
+    DenseVector<ValueType> d131( s2 * testvector5 * Id + testvector3);
+    vectorCheck ( d131, resultvector13 );
+
+    LAMA_LOG_INFO( logger, "Ctor: vector( scalar * vector * matrix + vector )" );
+
+    DenseVector<ValueType> d141( s2 * testvector5 * Id + testvector3);
+    vectorCheck ( d141, resultvector13 );
+
+    LAMA_LOG_INFO( logger, "Ctor: vector( scalar * vector * matrix + scalar * vector )" );
+
+    DenseVector<ValueType> d151( s2 * testvector5 * Id + s3 * testvector3);
+    vectorCheck ( d151, resultvector19 );
+
+    LAMA_LOG_INFO( logger, "Ctor: vector( vector * matrix * scalar + vector )" );
+
+    DenseVector<ValueType> d121( testvector5 * Id * s2 + testvector3);
+    vectorCheck ( d121, resultvector13 );
 
 //Minus Vector Expressions:
 
@@ -738,13 +935,55 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( ExpressionCtorTest, T, test_types ) {
 
     DenseVector<ValueType> d28( Id * s2 * testvector5 - testvector3 );
     vectorCheck ( d28, resultvector7 );
+
+//VectorMatrix Minus Vector Expressions:
+
+    LAMA_LOG_INFO( logger, "Ctor: vector( scalar * vector * matrix - scalar * vector )" );
+
+    DenseVector<ValueType> d222( s2 * testvector5 * Id - s3 * testvector3 );
+    vectorCheck ( d222, resultvector1 );
+
+    LAMA_LOG_INFO( logger, "Ctor: vector( vector * matrix * scalar - scalar * vector )" );
+
+    DenseVector<ValueType> d232( testvector5 * Id * s2 - s3 * testvector3 );
+    vectorCheck ( d232, resultvector1 );
+
+    LAMA_LOG_INFO( logger, "Ctor: vector( scalar * vector * matrix - vector * scalar )" );
+
+    DenseVector<ValueType> d242( s2 * testvector5 * Id - testvector3 * s3 );
+    vectorCheck ( d242, resultvector1 );
+
+    LAMA_LOG_INFO( logger, "Ctor: vector( vector * matrix * scalar - vector * scalar )" );
+
+    DenseVector<ValueType> d252( testvector5 * Id * s2 - testvector3 * s3 );
+    vectorCheck ( d252, resultvector1 );
+
+    LAMA_LOG_INFO( logger, "Ctor: vector( vector * matrix - vector )" );
+
+    DenseVector<ValueType> d262( testvector5 * Id - testvector3 );
+    vectorCheck ( d262, resultvector2 );
+
+    LAMA_LOG_INFO( logger, "Ctor: vector( vector * matrix * scalar - scalar * vector )" );
+
+    DenseVector<ValueType> d272( testvector5 * Id * s2 - testvector3 );
+    vectorCheck ( d272, resultvector7 );
+
+    LAMA_LOG_INFO( logger, "Ctor: vector( scalar * vector * matrix - vector )" );
+
+    DenseVector<ValueType> d282( s2 * testvector5 * Id - testvector3 );
+    vectorCheck ( d282, resultvector7 );
 }
 
 /* ------------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( ExpressionAssignmentOperatorTest, T, test_types ) {
+BOOST_AUTO_TEST_CASE_TEMPLATE( ExpressionAssignmentOperatorTest, T, test_types )
+{
     typedef T ValueType;
-    IndexType n = 4;
+
+	// TODO: detect error, when executing with n = 4; for vector times matrix expressions
+    PartitionId size = comm->getSize();
+
+    IndexType n = 4 * size;
 
     CSRSparseMatrix<ValueType> Id (
 
@@ -814,7 +1053,25 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( ExpressionAssignmentOperatorTest, T, test_types )
     vector = s2 * Id * testvector5;
     vectorCheck ( vector, resultvector10 );
 
-//Plus-Matrix Expressions:
+//VectorMatrix-Expressions:
+
+    //x*A
+    vector = testvector5 * Id;
+    vectorCheck( vector, testvector5 );
+
+    //a*x*A
+    vector = s2 * testvector5 * Id;
+    vectorCheck ( vector, resultvector10 );
+
+    //x*a*A
+    vector = testvector5 * s2 * Id;
+    vectorCheck ( vector, resultvector10 );
+
+    //x*A*a
+    vector = testvector5 * Id * s2;
+    vectorCheck ( vector, resultvector10 );
+
+//MatrixVectorPlusVector Expressions:
 
 //A*x+y
     vector = Id * testvector5 + testvector3;
@@ -852,6 +1109,44 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( ExpressionAssignmentOperatorTest, T, test_types )
     vector = Id * testvector5 * s2 + testvector3;
     vectorCheck ( vector, resultvector13 );
 
+//VectorMatrixPlusVector Expressions:
+
+    //x*A+y
+    vector = testvector5 * Id + testvector3;
+    vectorCheck ( vector, resultvector8 );
+
+    //x*A+a*y
+    vector = testvector5 * Id + s2 * testvector3;
+    vectorCheck ( vector, resultvector11 );
+
+    //x*A+y*a
+    vector = testvector5 * Id + testvector3 * s2;
+    vectorCheck ( vector, resultvector11 );
+
+    //a*x*A+b*y
+    vector = s2 * testvector5 * Id + s2 * testvector3;
+    vectorCheck ( vector, resultvector16 );
+
+    //x*a*A+b*y
+    vector = testvector5 * s2 * Id + s2 * testvector3;
+    vectorCheck ( vector, resultvector16 );
+
+    //x*A*a+y
+    vector = testvector5 * Id * s2 + testvector3;
+    vectorCheck ( vector, resultvector13 );
+
+    //a*x*A+y
+    vector = s2 * testvector5 * Id + testvector3;
+    vectorCheck ( vector, resultvector13 );
+
+    //x*a*A+b*y
+    vector = testvector5 * s2 * Id + s3 * testvector3;
+    vectorCheck ( vector, resultvector19 );
+
+    //x*A*a+b*y
+    vector = testvector5 * Id * s2 + testvector3;
+    vectorCheck ( vector, resultvector13 );
+
 //Minus Vector Expressions:
 
 //x-y
@@ -870,7 +1165,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( ExpressionAssignmentOperatorTest, T, test_types )
     vector = s2 * testvector5 - s3 * testvector3;
     vectorCheck ( vector, resultvector1 );
 
-//Minus MatrixVector Expressions:
+//MatrixVector Minus Vector Expressions:
 
 //A*a*x-b*y
     vector = Id * s2 * testvector5 - s3 * testvector3;
@@ -898,6 +1193,36 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( ExpressionAssignmentOperatorTest, T, test_types )
 
 //A*a*x-y*b
     vector = Id * s2 * testvector5 - testvector3;
+    vectorCheck ( vector, resultvector7 );
+
+//VectorMatrix Minus Vector Expressions:
+
+    //a*x*A-b*y
+    vector = s2 * testvector5 * Id- s3 * testvector3;
+    vectorCheck ( vector, resultvector1 );
+
+    //x*a*A-b*y
+    vector = testvector5 * s2 * Id - s3 * testvector3;
+    vectorCheck ( vector, resultvector1 );
+
+    //x*A*a-y*b
+    vector = s2 * Id * testvector5 - testvector3 * s3;
+    vectorCheck ( vector, resultvector1 );
+
+    //a*x*A-y*b
+    vector = s2 * testvector5 * Id - testvector3 * s3;
+    vectorCheck ( vector, resultvector1 );
+
+    //x*A-y
+    vector = testvector5 * Id - testvector3;
+    vectorCheck ( vector, resultvector2 );
+
+    //x*A*a-y*b
+    vector = testvector5 * Id * s2 - testvector3;
+    vectorCheck ( vector, resultvector7 );
+
+    //a*A*x-y*b
+    vector = s2 * Id * testvector5 - testvector3;
     vectorCheck ( vector, resultvector7 );
 }
 

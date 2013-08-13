@@ -65,32 +65,8 @@ double multiply(
 
     if( sortFlag )
     {
-        lama::CSRStorage<ValueType> localStorageA = matrixA->getLocalStorage();
-        lama::CSRStorage<ValueType> localStorageB = matrixB->getLocalStorage();
-
-        lama::HostReadAccess<lama::IndexType> aIA( localStorageA.getIA() );
-        lama::HostWriteAccess<lama::IndexType> aJA( localStorageA.getJA() );
-        lama::HostWriteAccess<ValueType> aValues( localStorageA.getValues() );
-
-        lama::HostReadAccess<lama::IndexType> bIA( localStorageB.getIA() );
-        lama::HostWriteAccess<lama::IndexType> bJA( localStorageB.getJA() );
-        lama::HostWriteAccess<ValueType> bValues( localStorageB.getValues() );
-
-        lama::OpenMPCSRUtils::sortRowElements(aJA.get(), aValues.get(), aIA.get(), localStorageA.getNumRows(), false);
-        lama::OpenMPCSRUtils::sortRowElements(bJA.get(), bValues.get(), bIA.get(), localStorageB.getNumRows(), false);
-
-
-
-        for ( int i = 0; i < localStorageA.getNumRows(); ++i )
-        {
-            std::cout << "row " << i << ": ";
-            for ( int j = bIA[i]; j < bIA[i+1]; ++j )
-            {
-                std::cout << bJA.get()[j] << " ";
-            }
-            std::cout << std::endl;
-
-        }
+        matrixA->getLocalStorage().sortRows(false);
+        matrixB->getLocalStorage().sortRows(false);
     }
     if( prefetch )
     {

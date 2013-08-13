@@ -59,6 +59,15 @@ class LAMA_DLL_IMPORTEXPORT OpenMPCOOUtils
 {
 public:
 
+    /** OpenMP implementation for COOUtilsInterface::Counting::offsets2ia */
+
+    static void offsets2ia(
+        IndexType cooIA[],
+        const IndexType numValues,
+        const IndexType csrIA[],
+        const IndexType numRows,
+        const IndexType numDiagonals );
+
     /** OpenMP implementation for COOUtilsInterface::Counting::getCSRSizes */
 
     static void getCSRSizes(
@@ -80,19 +89,16 @@ public:
         const IndexType cooJA[],
         const COOValueType cooValues[] );
 
-    /** OpenMP implementation for COOUtilsInterface::Conversions::setCSRValues */
+    /** OpenMP implementation for COOUtilsInterface::Conversions::setCSRData */
 
     template<typename COOValueType,typename CSRValueType>
-    static void setCSRValues(
-        IndexType cooIA[],
-        IndexType cooJA[],
+    static void setCSRData(
         COOValueType cooValues[],
-        const IndexType numRows,
-        const IndexType numDiagonals,
-        const IndexType csrIA[],
-        const IndexType csrJA[],
         const CSRValueType csrValues[],
-        const bool csrDiagonalProperty );
+        const IndexType numValues,
+        const IndexType csrIA[],
+        const IndexType numRows,
+        const IndexType numDiagonals );
 
     /** Implementation for CSRUtilsInterface::Mult::normalGEMV  */
 
@@ -104,10 +110,26 @@ public:
         const ValueType beta,
         const ValueType y[],
         const IndexType numRows,
+        const IndexType numValues,
         const IndexType cooIA[],
         const IndexType cooJA[],
         const ValueType cooValues[],
+        SyncToken* syncToken );
+
+    /** Implementation for CSRUtilsInterface::Mult::normalGEVM  */
+
+    template<typename ValueType>
+    static void normalGEVM(
+        ValueType result[],
+        const ValueType alpha,
+        const ValueType x[],
+        const ValueType beta,
+        const ValueType y[],
+        const IndexType numColumns,
         const IndexType numValues,
+        const IndexType cooIA[],
+        const IndexType cooJA[],
+        const ValueType cooValues[],
         SyncToken* syncToken );
 
     /** Implementation for COOUtilsInterface::Solver::jacobi  */

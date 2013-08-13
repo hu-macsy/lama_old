@@ -82,13 +82,13 @@ struct MetisDistributionTestConfig
         globalSize = matrix.getNumRows();
 
         // weights
-        float weight = 1.0 / size;
+        float weight = static_cast<float>( 1.0 / size );
         parts.reserve( size );
         for ( int i = 0; i < size - 1; ++i )
         {
             parts[i] = weight;
         }
-        parts[ size - 1 ] = 1.0 - (size - 1) * weight;
+        parts[ size - 1 ] = 1.0f - (size - 1) * weight;
 
         dist = DistributionPtr( new MetisDistribution( comm, matrix, parts ) );
     }

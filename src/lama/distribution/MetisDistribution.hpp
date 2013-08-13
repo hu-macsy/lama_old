@@ -60,10 +60,9 @@ public:
 
     /** Construct a block distribution for a number of elements on to the partitions of the passed communicator.
      *
-     *  @param[in] globalSize   number of elements to distribute
-     *  @param[in] communicator used for the partitions onto which elements are distributed.
-     *  @param[in] matrix       the matrix the distribution is dedicated for
-     *  @param[in] weights      weights for the computational load to the processors
+     *  @param[in] comm  used for the partitions onto which elements are distributed.
+     *  @param[in] matrix  the matrix the distribution is dedicated for
+     *  @param[in] weights  weights for the computational load to the processors
      */
     MetisDistribution( const CommunicatorPtr comm,
                        Matrix& matrix,

@@ -43,9 +43,8 @@ using namespace lama;
 /* --------------------------------------------------------------------- */
 
 BOOST_AUTO_TEST_SUITE( HostReadAccessTest )
-;
 
-LAMA_LOG_DEF_LOGGER( logger, "Test.HostReadAccessTest" );
+LAMA_LOG_DEF_LOGGER( logger, "Test.HostReadAccessTest" )
 
 /* --------------------------------------------------------------------- */
 
@@ -79,4 +78,6 @@ BOOST_AUTO_TEST_CASE( writeAtTest )
 
     LAMA_WRITEAT_TEST( lamaArrayRAccess );
 }
-/* --------------------------------------------------------------------- */BOOST_AUTO_TEST_SUITE_END();
+/* --------------------------------------------------------------------- */
+
+BOOST_AUTO_TEST_SUITE_END();

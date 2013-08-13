@@ -96,6 +96,8 @@ void DefaultHostContext::writeAt( std::ostream& stream ) const
 
 void* DefaultHostContext::allocate( const size_t size ) const
 {
+    LAMA_REGION( "Host.allocate" )
+
     LAMA_ASSERT_ERROR( size > 0, "allocate with size = " << size << " should not be done" )
 
     void* pointer = malloc( size );
@@ -143,6 +145,8 @@ void DefaultHostContext::free( ContextData& contextData ) const
 
 void DefaultHostContext::memcpy( void* dst, const void* src, const size_t size ) const
 {
+    LAMA_REGION( "Host.memcpy" )
+
     LAMA_LOG_DEBUG( logger, "memcpy: " << dst << " <- " << src << ", size = " << size )
     ::memcpy( dst, src, size );
 }

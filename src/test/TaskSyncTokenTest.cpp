@@ -44,9 +44,8 @@ using namespace lama;
 /* --------------------------------------------------------------------- */
 
 BOOST_AUTO_TEST_SUITE( TaskSyncTokenTest )
-;
 
-LAMA_LOG_DEF_LOGGER( logger, "Test.TaskSyncTokenTest" );
+LAMA_LOG_DEF_LOGGER( logger, "Test.TaskSyncTokenTest" )
 
 /* ----------------------------------------------------------------------- */
 
@@ -81,4 +80,6 @@ BOOST_AUTO_TEST_CASE( writeAtTest )
     TaskSyncToken testToken( bind( &TaskSyncTokenTest::threadMethod, /*this,*/in, ref( out ) ) );
     LAMA_WRITEAT_TEST( testToken );
 }
-/* ----------------------------------------------------------------------- */BOOST_AUTO_TEST_SUITE_END();
+/* ----------------------------------------------------------------------- */
+
+BOOST_AUTO_TEST_SUITE_END();

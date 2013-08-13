@@ -40,31 +40,28 @@
 
 #include <lama/expression/VectorExpressions.hpp>
 
-LAMA_COMMON_TEST_CASE( NormTest, positiveHomogeneityTest );
-DenseVector<double> x( 4, 1.0 );
-Scalar s = 3.0;
+LAMA_COMMON_TEST_CASE( NormTest, positiveHomogeneityTest )
+    DenseVector<double> x( 4, 1.0 );
+    Scalar s = 3.0;
 
-DenseVector<double> tmp( s * x );
+    DenseVector<double> tmp( s * x );
 
-//Inequality test
-BOOST_CHECK_EQUAL( mNorm.apply ( tmp ), s * mNorm.apply( x ) );
+    //Inequality test
+    BOOST_CHECK_EQUAL( mNorm.apply ( tmp ), s * mNorm.apply( x ) );
 LAMA_COMMON_TEST_CASE_END()
-;
 
 LAMA_COMMON_TEST_CASE( NormTest, triangleInequalityTest );
-DenseVector<double> x( 2, 2.0 );
-DenseVector<double> y( 2, 2.0 );
-DenseVector<double> z( x + y );
+    DenseVector<double> x( 2, 2.0 );
+    DenseVector<double> y( 2, 2.0 );
+    DenseVector<double> z( x + y );
 
-BOOST_CHECK( mNorm.apply( z ) <= mNorm.apply( x ) + mNorm.apply( y ) );
+    BOOST_CHECK( mNorm.apply( z ) <= mNorm.apply( x ) + mNorm.apply( y ) );
 LAMA_COMMON_TEST_CASE_END()
-;
 
 LAMA_COMMON_TEST_CASE( NormTest, ZeroVectorTest );
-DenseVector<double> x( 4, 0.0 );
-BOOST_CHECK_EQUAL( mNorm.apply( x ), 0.0 );
+    DenseVector<double> x( 4, 0.0 );
+    BOOST_CHECK_EQUAL( mNorm.apply( x ), 0.0 );
 LAMA_COMMON_TEST_CASE_END()
-;
 
 LAMA_COMMON_TEST_CASE_RUNNER( NormTest )
 {

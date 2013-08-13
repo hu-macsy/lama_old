@@ -33,7 +33,6 @@
 
 ### Add classes and header files ###
 set ( CLASSES
-        LAMABaseTracer
         RegionTable
         TraceConfig
         TraceRegionRecord

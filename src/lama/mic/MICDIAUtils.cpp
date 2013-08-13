@@ -450,6 +450,8 @@ void MICDIAUtils::setInterface( DIAUtilsInterface& DIAUtils )
 {
     // Register all CUDA routines of this class for the LAMA interface
 
+    LAMA_LOG_INFO( logger, "set DIA routines for MIC in Interface" )
+
     /*
     LAMA_INTERFACE_REGISTER_T( DIAUtils, getCSRSizes, float )
     LAMA_INTERFACE_REGISTER_T( DIAUtils, getCSRSizes, double )

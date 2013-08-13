@@ -34,6 +34,7 @@
 // for dll_import
 #include <lama/openmp/MKLCSRUtils.hpp>
 #include <lama/openmp/OpenMPUtils.hpp>
+#include <lama/openmp/OpenMPCSRUtils.hpp>
 
 // others
 #include <lama/LAMAInterface.hpp>
@@ -45,6 +46,7 @@
 
 // trace
 #include <lama/tracing.hpp>
+#include <lama/macros/unused.hpp>
 
 #include <mkl_spblas.h>
 
@@ -176,6 +178,79 @@ void MKLCSRUtils::normalGEMV(
 }
 
 /* --------------------------------------------------------------------------- */
+
+template<>
+void MKLCSRUtils::convertCSR2CSC(
+    IndexType cscIA[],
+    IndexType cscJA[],
+    float cscValues[],
+    const IndexType csrIA[],
+    const IndexType csrJA[],
+    const float csrValues[],
+    IndexType numRows,
+    IndexType numColumns,
+    IndexType numValues )
+{
+    // Intel MKL supports csr to csc only for square matrices
+
+    if ( numRows == numColumns )
+    {
+        LAMA_REGION( "MKL.CSRUtils.convertCSR2CSC" )
+
+        LAMA_LOG_INFO( logger, "convertCSR2CSC of matrix " << numRows << " x " << numColumns )
+
+        int job[] = { 0, 0, 0, 0, 0, 1 };
+
+        int info = 0;  // not used yet
+
+        mkl_scsrcsc( job, &numRows, 
+                     const_cast<float*>( csrValues ), const_cast<IndexType*>( csrJA ), 
+                     const_cast<IndexType*>( csrIA ), cscValues, cscJA, cscIA, &info );
+    }
+    else
+    {
+        OpenMPCSRUtils::convertCSR2CSC( cscIA, cscJA, cscValues, csrIA, csrJA, csrValues, numRows, numColumns, numValues );
+    }
+}
+
+/* --------------------------------------------------------------------------- */
+
+template<>
+void MKLCSRUtils::convertCSR2CSC(
+    IndexType cscIA[],
+    IndexType cscJA[],
+    double cscValues[],
+    const IndexType csrIA[],
+    const IndexType csrJA[],
+    const double csrValues[],
+    IndexType numRows,
+    IndexType numColumns,
+    IndexType numValues )
+{
+    // Intel MKL supports csr to csc only for square matrices
+
+    if ( numRows == numColumns )
+    {
+        LAMA_REGION( "MKL.CSRUtils.convertCSR2CSC" )
+
+        LAMA_LOG_INFO( logger, "convertCSR2CSC of matrix " << numRows << " x " << numColumns )
+
+        int job[] = { 0, 0, 0, 0, 0, 1 };
+
+        int info = 0;  // not used yet
+
+        mkl_dcsrcsc( job, &numRows, const_cast<double*>( csrValues ), 
+                     const_cast<IndexType*>( csrJA ), 
+                     const_cast<IndexType*>( csrIA ), 
+                     cscValues, cscJA, cscIA, &info );
+    }
+    else
+    {
+        OpenMPCSRUtils::convertCSR2CSC( cscIA, cscJA, cscValues, csrIA, csrJA, csrValues, numRows, numColumns, numValues );
+    }
+}
+
+/* --------------------------------------------------------------------------- */
 /*     Template instantiations via registration routine                        */
 /* --------------------------------------------------------------------------- */
 
@@ -189,13 +264,22 @@ void MKLCSRUtils::setInterface( CSRUtilsInterface& CSRUtils )
 
     if ( !useMKL )
     {
+        LAMA_LOG_INFO( logger, "MKL routines for Host Interface are disabled" )
         return;
     }
 
-    // REGISTER1: overwrites previous settings
+    // REGISTER1: give these routines priority in case of overriding
 
-    LAMA_INTERFACE_REGISTER_T( CSRUtils, normalGEMV, float )
-    LAMA_INTERFACE_REGISTER_T( CSRUtils, normalGEMV, double )
+    LAMA_LOG_INFO( logger, "set CSR routines for MKL in Host Interface" )
+
+    LAMA_INTERFACE_REGISTER1_T( CSRUtils, normalGEMV, float )
+    LAMA_INTERFACE_REGISTER1_T( CSRUtils, normalGEMV, double )
+
+    // MKL conversion csr to csc has worse performance than our OpenMP Implementation
+    // so we do not use it here.
+
+    // LAMA_INTERFACE_REGISTER1_T( CSRUtils, convertCSR2CSC, float )
+    // LAMA_INTERFACE_REGISTER1_T( CSRUtils, convertCSR2CSC, double )
 }
 
 /* --------------------------------------------------------------------------- */

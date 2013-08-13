@@ -48,11 +48,11 @@ then
     echo "Running distributed tests serial"
     distributed/lama_dist_test --output_format=XML --log_level=all --report_level=no 1>${dirname}/dist_tests.xml
 
-	for i in 2 3 4;
-	do
-    	echo "Running distributed tests with $i processes"
-    	mpirun -np $i --output-filename ${dirname}/dist_tests_mpi.xml distributed/lama_dist_test --output_format=XML --log_level=all --report_level=no
-    done
+	#for i in 2 3 4;
+	#do
+    #	echo "Running distributed tests with $i processes"
+    #	mpirun -np $i --output-filename ${dirname}/dist_tests_mpi.xml distributed/lama_dist_test --output_format=XML --log_level=all --report_level=no
+    #done
 fi
 
 if [ -d cuda ];

@@ -85,9 +85,8 @@ struct VectorTestConfig
 };
 
 BOOST_FIXTURE_TEST_SUITE( VectorTest, VectorTestConfig )
-;
 
-LAMA_LOG_DEF_LOGGER( logger, "Test.VectorTest" );
+LAMA_LOG_DEF_LOGGER( logger, "Test.VectorTest" )
 
 /* --------------------------------------------------------------------- */
 
@@ -127,7 +126,8 @@ void verifyVectorWithScalar( Vector& v, Scalar s )
 
 /* --------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( cTorTest, T, test_types ) {
+BOOST_AUTO_TEST_CASE_TEMPLATE( cTorTest, T, test_types )
+{
     typedef T ValueType;
 
     IndexType n = 4;
@@ -220,9 +220,11 @@ void CtorMatrixExpressionTestmethod()
     LAMA_LOG_INFO( logger, "CtorMatrixExpressionTestmethod, MatrixType = " << typeid( mt ).name() );
 
     IndexType n = 4;
+    IndexType m = 4;
 
     DenseVector<ValueType> vectorA( n, 3.0 );
     DenseVector<ValueType> vectorB( n, 2.0 );
+    DenseVector<ValueType> vectorC( m, 3.0 );
 
     Scalar s = 2.0;
     Scalar t = 1.0;
@@ -236,6 +238,8 @@ void CtorMatrixExpressionTestmethod()
     DenseVector<ValueType> vectorResult4( n, 5.0 );
     DenseVector<ValueType> vectorResult5( n, 4.0 );
     DenseVector<ValueType> vectorResult6( n, 1.0 );
+    DenseVector<ValueType> vectorResult7( m, 6.0 );
+    DenseVector<ValueType> vectorResult8( m, 3.0 );
 
     LAMA_LOG_INFO( logger, "linear algebra expression: a*A*x" );
     DenseVector<ValueType> v1( s * n4m4IdentityMatrix * vectorA );
@@ -252,6 +256,24 @@ void CtorMatrixExpressionTestmethod()
     LAMA_LOG_INFO( logger, "linear algebra expression: A*x" );
     DenseVector<ValueType> v4( n4m4IdentityMatrix * vectorA );
     verifySameVector<ValueType>( v4, vectorResult3 );
+
+    /* ************************************************************ */
+
+    LAMA_LOG_INFO( logger, "linear algebra expression: a*x*A" );
+    DenseVector<ValueType> v19( s * vectorA * n4m4IdentityMatrix);
+    verifySameVector<ValueType>( v19, vectorResult7 );
+
+    LAMA_LOG_INFO( logger, "linear algebra expression: x*A*a" );
+    DenseVector<ValueType> v20( vectorA * n4m4IdentityMatrix * s );
+    verifySameVector<ValueType>( v20, vectorResult7 );
+
+    LAMA_LOG_INFO( logger, "linear algebra expression: x*a*A" );
+    DenseVector<ValueType> v21( vectorA * s * n4m4IdentityMatrix );
+    verifySameVector<ValueType>( v21, vectorResult7 );
+
+    LAMA_LOG_INFO( logger, "linear algebra expression: x*A" );
+    DenseVector<ValueType> v22( vectorC * n4m4IdentityMatrix );
+    verifySameVector<ValueType>( v22, vectorResult8 );
 
     //AdditionExpressionTest in Constructor
 
@@ -335,7 +357,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( CtorMatrixExpressionTest, T, test_types ) {
 
 /* --------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( CtorVectorExpressionTest, T, test_types ) {
+BOOST_AUTO_TEST_CASE_TEMPLATE( CtorVectorExpressionTest, T, test_types )
+{
     typedef T ValueType;
 
     IndexType n = 4;
@@ -403,10 +426,12 @@ void AssignmentOpMatrixExpressionTestmethod( ContextPtr context )
     typedef typename mt::ValueType ValueType;
 
     IndexType n = 4;
+    IndexType m = 4;
 
     DenseVector<ValueType> vectorA( n, 3.0 );
     DenseVector<ValueType> vectorB( n, 2.0 );
     DenseVector<ValueType> vector( n, 0.0 );
+    DenseVector<ValueType> vectorM( m, 0.0 );
 
     Scalar s = 2.0;
     Scalar t = 1.0;
@@ -433,21 +458,46 @@ void AssignmentOpMatrixExpressionTestmethod( ContextPtr context )
     verifySameVector<ValueType>( vector, vectorResult );
 
     // linear algebra expression: a*A*x
-
+    LAMA_LOG_INFO( logger, "linear algebra expression: a*A*x" );
     vector = s * n4m4IdentityMatrix * vectorA;
     verifySameVector<ValueType>( vector, vectorResult2 );
 
     // linear algebra expression: A*a*x
+    LAMA_LOG_INFO( logger, "linear algebra expression: A*a*x" );
     vector = n4m4IdentityMatrix * s * vectorA;
     verifySameVector<ValueType>( vector, vectorResult2 );
 
     // linear algebra expression: A*x*a
+    LAMA_LOG_INFO( logger, "linear algebra expression: A*x*a" );
     vector = n4m4IdentityMatrix * vectorA * s;
     verifySameVector<ValueType>( vector, vectorResult2 );
 
     // linear algebra expression: A*x
+    LAMA_LOG_INFO( logger, "linear algebra expression: A*x" );
     vector = n4m4IdentityMatrix * vectorA;
     verifySameVector<ValueType>( vector, vectorResult3 );
+
+    /* ************************************************** */
+
+    // linear algebra expression: a*x*A
+    LAMA_LOG_INFO( logger, "linear algebra expression: a*x*A" );
+    vectorM = s * vectorA * n4m4IdentityMatrix;
+    verifySameVector<ValueType>( vectorM, vectorResult2 );
+
+    // linear algebra expression: x*a*A
+    LAMA_LOG_INFO( logger, "linear algebra expression: x*a*A" );
+    vectorM = vectorA * s * n4m4IdentityMatrix;
+    verifySameVector<ValueType>( vectorM, vectorResult2 );
+
+    // linear algebra expression: x*A*a
+    LAMA_LOG_INFO( logger, "linear algebra expression: x*A*a" );
+    vectorM = vectorA * n4m4IdentityMatrix * s;
+    verifySameVector<ValueType>( vectorM, vectorResult2 );
+
+    // linear algebra expression: x*A
+    LAMA_LOG_INFO( logger, "linear algebra expression: x*A" );
+    vectorM = vectorA * n4m4IdentityMatrix;
+    verifySameVector<ValueType>( vectorM, vectorResult3 );
 
     //AdditionExpressionTest in Constructor
 
@@ -521,7 +571,8 @@ void AssignmentOpMatrixExpressionTestmethod( ContextPtr context )
     LAMA_CHECK_THROW( { vec2 = n4m4IdentityMatrix * vec1; }, Exception );
 }
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( AssignmentOpMatrixExpressionTest, T, test_types ) {
+BOOST_AUTO_TEST_CASE_TEMPLATE( AssignmentOpMatrixExpressionTest, T, test_types )
+{
     CONTEXTLOOP()
     {
         typedef T ValueType;
@@ -618,7 +669,8 @@ void AssignmentVectorExpressionTestmethod( ContextPtr context )
     LAMA_CHECK_THROW( { DenseVector<ValueType> vec4( vec1 + 2.0 * vec2 ) ; }, Exception );
 }
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( AssignmentVectorExpressionTest, T, test_types ) {
+BOOST_AUTO_TEST_CASE_TEMPLATE( AssignmentVectorExpressionTest, T, test_types )
+{
     typedef T ValueType;
 
     CONTEXTLOOP()
@@ -636,7 +688,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( AssignmentVectorExpressionTest, T, test_types ) {
 
 /* --------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( SpecialAssignmentTest, T, test_types ) {
+BOOST_AUTO_TEST_CASE_TEMPLATE( SpecialAssignmentTest, T, test_types )
+{
     CONTEXTLOOP()
     {
         typedef T ValueType;
@@ -686,7 +739,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( SpecialAssignmentTest, T, test_types ) {
 
 /* ------------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( operatorDotProductTest, T, test_types ) {
+BOOST_AUTO_TEST_CASE_TEMPLATE( operatorDotProductTest, T, test_types )
+{
     CONTEXTLOOP()
     {
         typedef T ValueType;
@@ -874,7 +928,8 @@ void operatorMatrixTimesVectorTestmethod()
     LAMA_LOG_INFO( logger, "check for exception done" );
 }
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( operatorMatrixTimeVectorTestold, T, test_types ) {
+BOOST_AUTO_TEST_CASE_TEMPLATE( operatorMatrixTimeVectorTestold, T, test_types )
+{
     typedef T ValueType;
 
     operatorMatrixTimesVectorTestmethod< CSRSparseMatrix<ValueType> >();
@@ -887,7 +942,95 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( operatorMatrixTimeVectorTestold, T, test_types ) 
 
 /* --------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( operatorTest, T, test_types ) {
+template<typename mt>
+void operatorVectorTimesMatrixTestmethod()
+{
+    typedef mt MatrixType;
+    typedef typename mt::ValueType ValueType;
+
+    const IndexType n = 6;
+    const IndexType m = 4;
+
+    // Matrix Vector multiplication test 1 ValueType precision
+    LAMA_LOG_INFO( logger, "4x4 Matrix" )
+    MatrixType matrixA( TestSparseMatrices::n4m4MatrixA1<ValueType>() );
+
+    DenseVector<ValueType> vectorA( m, 0.0 );
+    DenseVector<ValueType> vectorAcalc( vectorA * matrixA );
+    DenseVector<ValueType> vectorErg0( m, 0.0 );
+    verifySameVector<ValueType>( vectorErg0, vectorAcalc );
+
+    // Matrix Vector multiplication test 2 ValueType precision
+    LAMA_LOG_INFO( logger, "6x4 Matrix" )
+    MatrixType matrixA1( TestSparseMatrices::n6m4MatrixD1<ValueType>() );
+
+    DenseVector<ValueType> vectorA1( n, 0.0 );
+    DenseVector<ValueType> vectorErg1( m, 0.0 );
+    DenseVector<ValueType> vectorA1calc( vectorA1 * matrixA1 );
+    verifySameVector<ValueType>( vectorErg1, vectorA1calc );
+
+    // Matrix Vector multiplication test 3 ValueType precision
+    LAMA_LOG_INFO( logger, "4x6 Matrix" )
+    MatrixType matrixB1( TestSparseMatrices::n4m6MatrixD2<ValueType>() );
+
+    DenseVector<ValueType> vectorA2( m, 0.0 );
+    DenseVector<ValueType> vectorErg2( n, 0.0 );
+    DenseVector<ValueType> vectorB1( vectorA2 * matrixB1 );
+    verifySameVector<ValueType>( vectorErg2, vectorB1 );
+
+    // Matrix Vector multiplication test 4 ValueType precision
+    LAMA_LOG_INFO( logger, "4x4 Matrix" )
+    ValueType vectorBvalues[] = { 1.5f, 0.9f, 0.9f, 1.1f };
+    DenseVector<ValueType> vectorB( m, vectorBvalues );
+    DenseVector<ValueType> vectorBinput( m, 1.0 );
+
+    DenseVector<ValueType> vectorBcalc( vectorBinput * matrixA );
+    verifySameVector<ValueType>( vectorB, vectorBcalc );
+
+    // Matrix Vector multiplication test 3 ValueType precision
+    LAMA_LOG_INFO( logger, "4x6 Matrix" )
+    DenseVector<ValueType> vectorErg3( n, 0.0 );
+    DenseVector<ValueType> vectorA3( m, 0.0 );
+    vectorA3 = vectorA3 * matrixA;
+    verifySameVector<ValueType>( vectorErg3, vectorB1 );
+
+    // Matrix Vector multiplication with non constant input vector
+    LAMA_LOG_INFO( logger, "6x4 Matrix" )
+    ValueType vectorAValues[] = { 1.0, 2.0, 3.0, 4.0, 5.0, 6.0 };
+    ValueType vectorErgValues[] = { 38.0, 34.0, 27.0, 45.0 };
+    DenseVector<ValueType> vectorErg4( m, vectorErgValues );
+    DenseVector<ValueType> vectorA4( n, vectorAValues );
+
+    DenseVector<ValueType> vectorB4( vectorA4 * matrixA1 );
+    verifySameVector<ValueType>( vectorErg4, vectorB4 );
+
+    MatrixType matrixZ1( TestSparseMatrices::n4m4MatrixA1<ValueType>() );
+
+    //Should throw Exception, because of different sizes of matrix and vector
+    // LAMA_CHECK_THROW( { DenseVector<ValueType> d( matrixZ1 * vectorA4 ); }, Exception );
+
+    LAMA_LOG_INFO( logger, "check for exception" );
+    DenseVector<ValueType> wrongVectorErg4( m + 1, 1.0 );
+    LAMA_CHECK_THROW( { vectorA4 = matrixZ1 * wrongVectorErg4; }, Exception );
+    LAMA_LOG_INFO( logger, "check for exception done" );
+}
+
+BOOST_AUTO_TEST_CASE_TEMPLATE( operatorVectorTimesMatrixTestold, T, test_types )
+{
+    typedef T ValueType;
+
+    operatorVectorTimesMatrixTestmethod< CSRSparseMatrix<ValueType> >();
+    operatorVectorTimesMatrixTestmethod< ELLSparseMatrix<ValueType> >();
+    operatorVectorTimesMatrixTestmethod< DIASparseMatrix<ValueType> >();
+    operatorVectorTimesMatrixTestmethod< JDSSparseMatrix<ValueType> >();
+    operatorVectorTimesMatrixTestmethod< COOSparseMatrix<ValueType> >();
+    operatorVectorTimesMatrixTestmethod< DenseMatrix<ValueType> >();
+}
+
+/* --------------------------------------------------------------------- */
+
+BOOST_AUTO_TEST_CASE_TEMPLATE( operatorTest, T, test_types )
+{
     typedef T ValueType;
 
     IndexType n = 4;
@@ -910,7 +1053,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( operatorTest, T, test_types ) {
 
 /* --------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( xGEMVOperationTest, T, test_types ) {
+BOOST_AUTO_TEST_CASE_TEMPLATE( xGEMVOperationTest, T, test_types )
+{
     typedef T ValueType;
     {
         //y = alpha * A * x + 0 * y
@@ -993,7 +1137,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( xGEMVOperationTest, T, test_types ) {
 
 /* --------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( xAXPYTest, T, test_types) {
+BOOST_AUTO_TEST_CASE_TEMPLATE( xAXPYTest, T, test_types)
+{
     typedef T ValueType;
 
     const DenseMatrix<ValueType> A( TestSparseMatrices::n4m4IdentityMatrix<ValueType>() );
@@ -1028,4 +1173,6 @@ BOOST_AUTO_TEST_CASE( writeAtTest )
     DenseVector<double> vector( 4, 2.0 );
     LAMA_WRITEAT_TEST( vector );
 }
-/* --------------------------------------------------------------------- */BOOST_AUTO_TEST_SUITE_END();
+/* --------------------------------------------------------------------- */
+
+BOOST_AUTO_TEST_SUITE_END();

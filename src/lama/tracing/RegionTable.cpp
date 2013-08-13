@@ -54,7 +54,7 @@ LAMA_LOG_DEF_LOGGER( RegionTable::logger, "RegionTable" )
 
 /* ---------------------------------------------------------------------- */
 
-RegionTable::RegionTable( lama::Thread::Id threadId )
+RegionTable::RegionTable( ThreadId threadId )
     : mThreadId( threadId )
 {
     LAMA_LOG_DEBUG( logger, "Thread " << threadId << ": creates RegionTable" )

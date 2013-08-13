@@ -216,7 +216,7 @@ void CUDAJDSUtils::getRow(
 
     LAMA_CHECK_CUDA_ACCESS
 
-    thrust::device_ptr<OtherValueType> rowPtr( const_cast<OtherValueType*>( row ) );
+    thrust::device_ptr<OtherValueType> rowPtr( row );
     thrust::device_ptr<IndexType> permPtr( const_cast<IndexType*>( perm ) );
 
     thrust::fill( rowPtr, rowPtr + numColumns, static_cast<OtherValueType>( 0 ) );
@@ -563,12 +563,15 @@ void CUDAJDSUtils::sortRows( IndexType array[], IndexType perm[], const IndexTyp
     LAMA_LOG_INFO( logger, "sort " << n << " rows by sizes" )
 
     LAMA_CHECK_CUDA_ACCESS
-    thrust::device_ptr<IndexType> array_d( const_cast<IndexType*>( array ) );
-    thrust::device_ptr<IndexType> perm_d( const_cast<IndexType*>( perm ) );
+
+    thrust::device_ptr<IndexType> array_d( array );
+    thrust::device_ptr<IndexType> perm_d( perm );
+
+    // stable sort, descending order, so override default comparison
 
     thrust::stable_sort_by_key( array_d, array_d + n, perm_d, thrust::greater<IndexType>() );
 
-    LAMA_CUDA_RT_CALL( cudaStreamSynchronize(0), "JDS: ilg2dlgKernel FAILED" )
+    LAMA_CUDA_RT_CALL( cudaStreamSynchronize(0), "JDS: synchronize for sortRows FAILED" )
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */
@@ -1184,19 +1187,19 @@ void CUDAJDSUtils::jacobiHalo(
 
 template<typename ValueType,bool useTexture,bool useSharedMem>
 __global__
-void jdsgemvKernel(
-    IndexType n,
+void normal_gemv_kernel(
+    ValueType* const result_d,
+    const ValueType* x_d,
+    const ValueType* y_d,
     const ValueType alpha,
+    const ValueType beta,
     const ValueType* const jdsValues,
     const IndexType* const jdsDLG,
-    const IndexType ndlg,
-    const IndexType* const jdsIlg,
+    const IndexType* const jdsILG,
     const IndexType* jdsJA,
     const IndexType* jdsPerm,
-    const ValueType* x_d,
-    const ValueType beta,
-    const ValueType* y_d,
-    ValueType* const result_d )
+    IndexType numRows,
+    const IndexType ndlg )
 {
     extern __shared__ IndexType dlg[];
     const IndexType ii = threadId( gridDim, blockIdx, blockDim, threadIdx );
@@ -1212,7 +1215,7 @@ void jdsgemvKernel(
         __syncthreads();
     }
 
-    if ( ii < n )
+    if ( ii < numRows )
     {
         IndexType i = jdsPerm[ii];  // row in matrix
 
@@ -1227,7 +1230,7 @@ void jdsgemvKernel(
 
         int pos = ii;  // position in jdsJA, jdsValues
 
-        int ni  = jdsIlg[ii];  // number entries in row
+        int ni  = jdsILG[ii];  // number entries in row
 
         for ( int jj = 0; jj < ni; ++jj )
         {
@@ -1244,17 +1247,17 @@ void jdsgemvKernel(
 
 template<typename ValueType,bool useTexture,bool useSharedMem>
 __global__
-void jdsgemvSparseKernel(
-    IndexType numNonZeroRows,
+void sparse_gemv_kernel(
+    ValueType* const result_d,
+    const ValueType* x_d,
     const ValueType alpha,
     const ValueType* const jdsValues,
     const IndexType* const jdsDLG,
-    const IndexType ndlg,
-    const IndexType* const jdsIlg,
+    const IndexType* const jdsILG,
     const IndexType* jdsJA,
     const IndexType* jdsPerm,
-    const ValueType* x_d,
-    ValueType* const result_d )
+    IndexType numNonZeroRows,
+    const IndexType ndlg )
 {
     extern __shared__ IndexType dlg[];
 
@@ -1279,7 +1282,59 @@ void jdsgemvSparseKernel(
 
         int pos = ii;  // position in jdsJA, jdsValues
 
-        int ni  = jdsIlg[ii];  // number entries in row
+        int ni  = jdsILG[ii];  // number entries in row
+
+        for ( int jj = 0; jj < ni; ++jj )
+        {
+            IndexType j = jdsJA[pos];
+            value += jdsValues[pos] * fetchJDSVectorX<ValueType,useTexture>( x_d, j );
+            pos += fetch_JDSdlg<useTexture,useSharedMem>( jdsDLG, dlg, jj );
+        }
+
+        result_d[i] += alpha * value;
+    }
+}
+
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType,bool useTexture,bool useSharedMem>
+__global__
+void sparse_gevm_kernel(
+    ValueType* const result_d,
+    const ValueType* x_d,
+    const ValueType alpha,
+    const ValueType* const jdsValues,
+    const IndexType* const jdsDLG,
+    const IndexType* const jdsILG,
+    const IndexType* jdsJA,
+    const IndexType* jdsPerm,
+    IndexType numNonZeroRows,
+    const IndexType ndlg )
+{
+    extern __shared__ IndexType dlg[];
+
+    const IndexType ii = threadId( gridDim, blockIdx, blockDim, threadIdx );
+
+    if ( useSharedMem )
+    {
+        int k = threadIdx.x;
+        while ( k < ndlg )
+        {
+            dlg[k] = jdsDLG[k];
+            k += blockDim.x;
+        }
+        __syncthreads();
+    }
+
+    if ( ii < numNonZeroRows )
+    {
+        IndexType i = jdsPerm[ii];  // row in matrix
+
+        ValueType value = 0.0;
+
+        int pos = ii;  // position in jdsJA, jdsValues
+
+        int ni  = jdsILG[ii];  // number entries in row
 
         for ( int jj = 0; jj < ni; ++jj )
         {
@@ -1338,7 +1393,7 @@ void CUDAJDSUtils::normalGEMV(
 
     cudaStream_t stream = 0;  // default stream if no SyncToken is available
 
-    LAMA_LOG_INFO( logger, "Start jdsgemv_kernel<" << Scalar::getType<ValueType>() 
+    LAMA_LOG_INFO( logger, "Start normal_gemv_kernel<" << Scalar::getType<ValueType>()
                            << "> <<< blockSize = " << blockSize << ", stream = " << stream
                            << ", useTexture = " << useTexture << ", useSharedMem = " << useSharedMem << ">>>" );
 
@@ -1357,15 +1412,15 @@ void CUDAJDSUtils::normalGEMV(
         {
             const int sharedMemSize = ndlg * sizeof(int);
 
-            jdsgemvKernel<ValueType, true, true><<<dimGrid, dimBlock, sharedMemSize, stream>>>
-            ( numRows, alpha, jdsValues, jdsDLG, ndlg, jdsILG, jdsJA, jdsPerm, x, beta, y, result);
+            normal_gemv_kernel<ValueType, true, true><<<dimGrid, dimBlock, sharedMemSize, stream>>>
+            ( result, x, y, alpha, beta, jdsValues, jdsDLG, jdsILG, jdsJA, jdsPerm, numRows, ndlg );
         }
         else // no sharedMem
         {
             vectorJDSBindTexture( jdsDLG );
 
-            jdsgemvKernel<ValueType, true, false><<<dimGrid, dimBlock, 0, stream>>>
-            ( numRows, alpha, jdsValues, jdsDLG, ndlg, jdsILG, jdsJA, jdsPerm, x, beta, y, result);
+            normal_gemv_kernel<ValueType, true, false><<<dimGrid, dimBlock, 0, stream>>>
+            ( result, x, y, alpha, beta, jdsValues, jdsDLG, jdsILG, jdsJA, jdsPerm, numRows, ndlg );
         }
 
         if ( !syncToken )
@@ -1396,27 +1451,221 @@ void CUDAJDSUtils::normalGEMV(
             }
         }
     }
- 
     else  // no Texture cache
-
     {
         if ( useSharedMem )
         {
             const int sharedMemSize = ndlg * sizeof( int );
-            cudaFuncSetCacheConfig( jdsgemvKernel<ValueType, false, true>, cudaFuncCachePreferL1 );
-            jdsgemvKernel<ValueType, false, true><<<dimGrid, dimBlock, sharedMemSize, stream>>>
-            ( numRows, alpha, jdsValues, jdsDLG, ndlg, jdsILG, jdsJA, jdsPerm, x, beta, y, result);
+            cudaFuncSetCacheConfig( normal_gemv_kernel<ValueType, false, true>, cudaFuncCachePreferL1 );
+            normal_gemv_kernel<ValueType, false, true><<<dimGrid, dimBlock, sharedMemSize, stream>>>
+            ( result, x, y, alpha, beta, jdsValues, jdsDLG, jdsILG, jdsJA, jdsPerm, numRows, ndlg );
         }
         else // no sharedMem
         {
-            cudaFuncSetCacheConfig( jdsgemvKernel<ValueType, false, false>, cudaFuncCachePreferL1 );
-            jdsgemvKernel<ValueType, false, false><<<dimGrid, dimBlock, 0, stream>>>
-            ( numRows, alpha, jdsValues, jdsDLG, ndlg, jdsILG, jdsJA, jdsPerm, x, beta, y, result);
+            cudaFuncSetCacheConfig( normal_gemv_kernel<ValueType, false, false>, cudaFuncCachePreferL1 );
+            normal_gemv_kernel<ValueType, false, false><<<dimGrid, dimBlock, 0, stream>>>
+            ( result, x, y, alpha, beta, jdsValues, jdsDLG, jdsILG, jdsJA, jdsPerm, numRows, ndlg );
         }
 
         if ( !syncToken )
         {
             LAMA_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "JDS: gemvKernel FAILED" )
+        }
+    }
+}
+
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType,bool useTexture,bool useSharedMem>
+__global__
+void normal_gevm_kernel(
+    ValueType* const result_d,
+    const ValueType* x_d,
+    const ValueType* y_d,
+    const ValueType alpha,
+    const ValueType beta,
+    const ValueType* const jdsValues,
+    const IndexType* const jdsDLG,
+    const IndexType* const jdsILG,
+    const IndexType* jdsJA,
+    const IndexType* jdsPerm,
+    IndexType numColumns,
+    const IndexType ndlg )
+{
+    extern __shared__ IndexType dlg[];
+    const IndexType k = threadId( gridDim, blockIdx, blockDim, threadIdx );
+
+    if ( useSharedMem )
+    {
+        int k = threadIdx.x;
+        while ( k < ndlg )
+        {
+            dlg[k] = jdsDLG[k];
+            k += blockDim.x;
+        }
+        __syncthreads();
+    }
+
+    if ( k < numColumns )
+    {
+    	if( ndlg > 0 )
+    	{
+	        ValueType value = 0.0;
+	        ValueType summand = 0.0;
+		
+	        if ( beta != 0.0 )
+	        {
+	            summand = beta * y_d[k];
+	        }
+		    
+		    int nonEmptyRows = jdsDLG[0];
+    		for ( int ii = 0; ii < nonEmptyRows; ++ii ) // through the rows of the first diagonal
+    		{
+		        IndexType i = jdsPerm[ii];  // row in matrix
+		
+		        int off = ii;  // position in jdsJA, jdsValues
+		
+		        int ni  = jdsILG[ii];  // number entries in row
+		
+		        for ( int jj = 0; jj < ni; ++jj )
+		        {
+		            IndexType j = jdsJA[off];
+		            if ( j == k )
+		            {
+		            	value += jdsValues[off] * fetchJDSVectorX<ValueType,useTexture>( x_d, i );
+		            }
+		            off += fetch_JDSdlg<useTexture,useSharedMem>( jdsDLG, dlg, jj );
+		        }
+	        }
+	        
+	        result_d[k] = alpha * value + summand;
+		}
+    }
+}
+
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType>
+void CUDAJDSUtils::normalGEVM(
+    ValueType result[],
+    const ValueType alpha,
+    const ValueType x[],
+    const ValueType beta,
+    const ValueType y[],
+    const IndexType numColumns,
+    const IndexType jdsPerm[],
+    const IndexType jdsILG[],
+    const IndexType ndlg,
+    const IndexType jdsDLG[],
+    const IndexType jdsJA[],
+    const ValueType jdsValues[],
+    SyncToken* syncToken )
+{
+    if ( ( beta == static_cast<ValueType>( 1 ) ) && ( result == y ) )
+    {
+        // result = alpha * A * x + beta * y ->  result += alpha * A * x
+
+        sparseGEVM( result, alpha, x, numColumns, jdsPerm, jdsILG, ndlg, jdsDLG, jdsJA, jdsValues, syncToken );
+
+        return;
+    }
+
+    LAMA_REGION( "CUDA.JDS.normalGEVM" )
+
+    LAMA_LOG_INFO( logger, "normalGEVM<" << Scalar::getType<ValueType>() << ">"
+                            << " result[ " << numColumns << "] = " << alpha
+                            << " * A( #jds_diags = " << ndlg << " ) * x + " << beta << " * y " )
+
+    LAMA_LOG_DEBUG( logger, "x = " << x << ", y = " << y << ", result = " << result )
+
+    const bool useTexture   = CUDASettings::useTexture();
+    const bool useSharedMem = CUDASettings::useSharedMem();
+    const int  blockSize    = CUDASettings::getBlockSize( numColumns );
+
+    dim3 dimBlock( blockSize, 1, 1 );
+    dim3 dimGrid = makeGrid( numColumns, dimBlock.x );
+
+    LAMA_CHECK_CUDA_ACCESS
+
+    cudaStream_t stream = 0;  // default stream if no SyncToken is available
+
+    LAMA_LOG_INFO( logger, "Start normal_gevm_kernel<" << Scalar::getType<ValueType>()
+                           << "> <<< blockSize = " << blockSize << ", stream = " << stream
+                           << ", useTexture = " << useTexture << ", useSharedMem = " << useSharedMem << ">>>" );
+
+    if ( syncToken )
+    {
+        CUDAStreamSyncToken* cudaStreamSyncToken = dynamic_cast<CUDAStreamSyncToken*>( syncToken );
+        LAMA_ASSERT_DEBUG( cudaStreamSyncToken, "no cuda stream sync token provided" )
+        stream = cudaStreamSyncToken->getCUDAStream();
+    }
+
+    if ( useTexture )
+    {
+        vectorJDSBindTexture( x );
+
+        if ( useSharedMem )
+        {
+            const int sharedMemSize = ndlg * sizeof(int);
+
+            normal_gevm_kernel<ValueType, true, true><<<dimGrid, dimBlock, sharedMemSize, stream>>>
+            ( result, x, y, alpha, beta, jdsValues, jdsDLG, jdsILG, jdsJA, jdsPerm, numColumns, ndlg );
+        }
+        else // no sharedMem
+        {
+            vectorJDSBindTexture( jdsDLG );
+
+            normal_gevm_kernel<ValueType, true, false><<<dimGrid, dimBlock, 0, stream>>>
+            ( result, x, y, alpha, beta, jdsValues, jdsDLG, jdsILG, jdsJA, jdsPerm, numColumns, ndlg );
+        }
+
+        if ( !syncToken )
+        {
+            // synchronize here and unbind texture
+
+            LAMA_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "JDS: gemvKernel FAILED" )
+
+            vectorJDSUnbindTexture( x );
+
+            if ( !useSharedMem )
+            {
+                vectorJDSUnbindTexture( jdsDLG );
+            }
+        }
+        else
+        {
+            // synchronize by syncToken, delay unbind texture
+
+            void ( *unbindV ) ( const ValueType* ) = &vectorJDSUnbindTexture;
+            void ( *unbindI ) ( const IndexType* ) = &vectorJDSUnbindTexture;
+
+            syncToken->pushRoutine( boost::bind( unbindV, x ) );
+
+            if ( !useSharedMem )
+            {
+                syncToken->pushRoutine( boost::bind( unbindI, jdsDLG ) );
+            }
+        }
+    }
+    else  // no Texture cache
+    {
+        if ( useSharedMem )
+        {
+            const int sharedMemSize = ndlg * sizeof( int );
+            cudaFuncSetCacheConfig( normal_gevm_kernel<ValueType, false, true>, cudaFuncCachePreferL1 );
+            normal_gevm_kernel<ValueType, false, true><<<dimGrid, dimBlock, sharedMemSize, stream>>>
+            ( result, x, y, alpha, beta, jdsValues, jdsDLG, jdsILG, jdsJA, jdsPerm, numColumns, ndlg );
+        }
+        else // no sharedMem
+        {
+            cudaFuncSetCacheConfig( normal_gevm_kernel<ValueType, false, false>, cudaFuncCachePreferL1 );
+            normal_gevm_kernel<ValueType, false, false><<<dimGrid, dimBlock, 0, stream>>>
+            ( result, x, y, alpha, beta, jdsValues, jdsDLG, jdsILG, jdsJA, jdsPerm, numColumns, ndlg );
+        }
+
+        if ( !syncToken )
+        {
+            LAMA_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "JDS: normal_gevm_kernel FAILED" )
         }
     }
 }
@@ -1482,15 +1731,15 @@ void CUDAJDSUtils::sparseGEMV(
         {
             const int sharedMemSize = ndlg * sizeof(int);
 
-            jdsgemvSparseKernel<ValueType, true, true><<<dimGrid, dimBlock, sharedMemSize, stream>>>
-            ( numRows, alpha, jdsValues, jdsDLG, ndlg, jdsILG, jdsJA, jdsPerm, x, result);
+            sparse_gemv_kernel<ValueType, true, true><<<dimGrid, dimBlock, sharedMemSize, stream>>>
+            ( result, x, alpha, jdsValues, jdsDLG, jdsILG, jdsJA, jdsPerm, numRows, ndlg );
         }
         else // no sharedMem
         {
             vectorJDSBindTexture( jdsDLG );
 
-            jdsgemvSparseKernel<ValueType, true, false><<<dimGrid, dimBlock, 0, stream>>>
-            ( numRows, alpha, jdsValues, jdsDLG, ndlg, jdsILG, jdsJA, jdsPerm, x, result);
+            sparse_gemv_kernel<ValueType, true, false><<<dimGrid, dimBlock, 0, stream>>>
+            ( result, x, alpha, jdsValues, jdsDLG, jdsILG, jdsJA, jdsPerm, numRows, ndlg );
         }
 
         // skip the following in case of asynchronous execution 
@@ -1529,17 +1778,145 @@ void CUDAJDSUtils::sparseGEMV(
         {
             const int sharedMemSize = ndlg * sizeof( int );
 
-            cudaFuncSetCacheConfig( jdsgemvSparseKernel<ValueType, false, true>, cudaFuncCachePreferL1 );
+            cudaFuncSetCacheConfig( sparse_gemv_kernel<ValueType, false, true>, cudaFuncCachePreferL1 );
 
-            jdsgemvSparseKernel<ValueType, false, true><<<dimGrid, dimBlock, sharedMemSize, stream>>>
-            ( numRows, alpha, jdsValues, jdsDLG, ndlg, jdsILG, jdsJA, jdsPerm, x, result);
+            sparse_gemv_kernel<ValueType, false, true><<<dimGrid, dimBlock, sharedMemSize, stream>>>
+            ( result, x, alpha, jdsValues, jdsDLG, jdsILG, jdsJA, jdsPerm, numRows, ndlg );
         }
         else // no use of sharedMem
         {
-            cudaFuncSetCacheConfig( jdsgemvSparseKernel<ValueType, false, false>, cudaFuncCachePreferL1 );
+            cudaFuncSetCacheConfig( sparse_gemv_kernel<ValueType, false, false>, cudaFuncCachePreferL1 );
 
-            jdsgemvSparseKernel<ValueType, false, false><<<dimGrid, dimBlock, 0, stream>>>
-            ( numRows, alpha, jdsValues, jdsDLG, ndlg, jdsILG, jdsJA, jdsPerm, x, result);
+            sparse_gemv_kernel<ValueType, false, false><<<dimGrid, dimBlock, 0, stream>>>
+            ( result, x, alpha, jdsValues, jdsDLG, jdsILG, jdsJA, jdsPerm, numRows, ndlg );
+        }
+
+        if ( !syncToken )
+        {
+            LAMA_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "JDS: gemvSparseKernel FAILED" )
+        }
+    }
+}
+
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType>
+void CUDAJDSUtils::sparseGEVM(
+    ValueType result[],
+    const ValueType alpha,
+    const ValueType x[],
+    const IndexType numRows,
+    const IndexType jdsPerm[],
+    const IndexType jdsILG[],
+    const IndexType ndlg,
+    const IndexType jdsDLG[],
+    const IndexType jdsJA[],
+    const ValueType jdsValues[],
+    SyncToken* syncToken )
+{
+    LAMA_REGION( "CUDA.JDS.sparseGEVM" )
+
+    LAMA_LOG_INFO( logger, "sparseGEVM<" << Scalar::getType<ValueType>() << ">"
+                           << ", #rows = " << numRows << ", #diags = " << ndlg )
+
+    if ( ndlg == 0 )
+    {
+        return;    // nothing to do
+    }
+
+    IndexType nonEmptyRows = numRows;
+
+    LAMA_CUDA_RT_CALL( cudaMemcpy( &nonEmptyRows, &jdsDLG[0], sizeof( IndexType ), cudaMemcpyDeviceToHost ),
+                       "dlg[0] for number of non-empty rows" )
+
+    const bool useTexture = CUDASettings::useTexture();
+    const bool useSharedMem = CUDASettings::useSharedMem(); // maybe optimize later
+    const int  blockSize = CUDASettings::getBlockSize( nonEmptyRows );
+
+    dim3 dimBlock( blockSize, 1, 1 );
+    dim3 dimGrid = makeGrid( nonEmptyRows, dimBlock.x );
+
+    LAMA_CHECK_CUDA_ACCESS
+
+    cudaStream_t stream = 0;  // default stream if no SyncToken is available
+
+    if ( syncToken )
+    {
+        CUDAStreamSyncToken* cudaStreamSyncToken = dynamic_cast<CUDAStreamSyncToken*>( syncToken );
+        LAMA_ASSERT_DEBUG( cudaStreamSyncToken, "no cuda stream sync token provided" )
+        stream = cudaStreamSyncToken->getCUDAStream();
+    }
+
+    LAMA_LOG_INFO( logger, "Start jdsgevMSparseKernel<" << Scalar::getType<ValueType>()
+                           << "> <<< blockSize = " << blockSize << ", stream = " << stream
+                           << ", useTexture = " << useTexture << ", useSharedMem = " << useSharedMem << ">>>" );
+
+    if ( useTexture )
+    {
+        vectorJDSBindTexture( x );
+
+        if ( useSharedMem )
+        {
+            const int sharedMemSize = ndlg * sizeof(int);
+
+            sparse_gevm_kernel<ValueType, true, true><<<dimGrid, dimBlock, sharedMemSize, stream>>>
+            ( result, x, alpha, jdsValues, jdsDLG, jdsILG, jdsJA, jdsPerm, numRows, ndlg );
+        }
+        else // no sharedMem
+        {
+            vectorJDSBindTexture( jdsDLG );
+
+            sparse_gevm_kernel<ValueType, true, false><<<dimGrid, dimBlock, 0, stream>>>
+            ( result, x, alpha, jdsValues, jdsDLG, jdsILG, jdsJA, jdsPerm, numRows, ndlg );
+        }
+
+        // skip the following in case of asynchronous execution
+
+        if ( !syncToken )
+        {
+            // synchronize now, then unbind texture
+
+            LAMA_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "JDS: gemvSparseKernel FAILED" )
+
+            if ( !useSharedMem )
+            {
+                vectorJDSUnbindTexture( jdsDLG );
+            }
+
+            vectorJDSUnbindTexture( x );
+        }
+        else
+        {
+            // synchronize by syncToken, delay unbind texture
+
+            void ( *unbindV ) ( const ValueType* ) = &vectorJDSUnbindTexture;
+            void ( *unbindI ) ( const IndexType* ) = &vectorJDSUnbindTexture;
+
+            if ( !useSharedMem )
+            {
+                syncToken->pushRoutine( boost::bind( unbindI, jdsDLG ) );
+            }
+
+            syncToken->pushRoutine( boost::bind( unbindV, x ) );
+        }
+    }
+    else  // no use of Texture cache
+    {
+        if ( useSharedMem )
+        {
+            const int sharedMemSize = ndlg * sizeof( int );
+
+            cudaFuncSetCacheConfig( sparse_gevm_kernel<ValueType, false, true>, cudaFuncCachePreferL1 );
+
+            sparse_gevm_kernel<ValueType, false, true><<<dimGrid, dimBlock, sharedMemSize, stream>>>
+            ( result, x, alpha, jdsValues, jdsDLG, jdsILG, jdsJA, jdsPerm, numRows, ndlg );
+        }
+        else // no use of sharedMem
+        {
+            cudaFuncSetCacheConfig( sparse_gevm_kernel<ValueType, false, false>, cudaFuncCachePreferL1 );
+
+            sparse_gevm_kernel<ValueType, false, false><<<dimGrid, dimBlock, 0, stream>>>
+            ( result, x, alpha, jdsValues, jdsDLG, jdsILG, jdsJA, jdsPerm, numRows, ndlg );
         }
 
         if ( !syncToken )
@@ -1590,6 +1967,9 @@ void CUDAJDSUtils::setInterface( JDSUtilsInterface& JDSUtils )
 
     LAMA_INTERFACE_REGISTER_T( JDSUtils, normalGEMV, float )
     LAMA_INTERFACE_REGISTER_T( JDSUtils, normalGEMV, double )
+
+    LAMA_INTERFACE_REGISTER_T( JDSUtils, normalGEVM, float )
+    LAMA_INTERFACE_REGISTER_T( JDSUtils, normalGEVM, double )
 
     LAMA_INTERFACE_REGISTER_T( JDSUtils, jacobiHalo, float )
     LAMA_INTERFACE_REGISTER_T( JDSUtils, jacobiHalo, double )

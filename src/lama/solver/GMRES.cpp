@@ -226,7 +226,7 @@ void GMRES::setKrylovDim( unsigned int krylovDim )
 
 void GMRES::iterate()
 {
-    LAMA_REGION( "Solver.GMRES.initialize" )
+    LAMA_REGION( "Solver.GMRES.iterate" )
 
     GMRESRuntime& runtime = getRuntime();
 
@@ -240,6 +240,8 @@ void GMRES::iterate()
     // lazy allocation structure mV
     if ( !( *runtime.mV )[krylovIndex + 1] )
     {
+        LAMA_REGION( "Solver.GMRES.setMV" )
+
         switch ( A.getValueType() )
         {
         case Scalar::FLOAT:
@@ -262,6 +264,7 @@ void GMRES::iterate()
     // initialize in case of GMRES start/restart
     if ( krylovIndex == 0 )
     {
+    	LAMA_REGION( "Solver.GMRES.restartInit" )
         // Compute r0=b-Ax0
         this->getResidual();
         Vector& residual = ( *runtime.mResidual );
@@ -273,10 +276,12 @@ void GMRES::iterate()
         LAMA_LOG_INFO( logger, "Doing initial preconditioning." )
         if ( !mPreconditioner )
         {
+            LAMA_REGION( "Solver.GMRES.setVCurrent" )
             vCurrent = residual;
         }
         else
         {
+            LAMA_REGION( "Solver.GMRES.start.solvePreconditioner" )
             vCurrent = 0.0;
             mPreconditioner->solve( vCurrent, residual );
         }
@@ -299,6 +304,7 @@ void GMRES::iterate()
     }
     else
     {
+        LAMA_REGION( "Solver.GMRES.solvePreconditioner" )
         tmp = A * vCurrent;
         w = 0.0;
         mPreconditioner->solve( w, tmp );
@@ -308,6 +314,7 @@ void GMRES::iterate()
     LAMA_LOG_DEBUG( logger, "Orthogonalization of vCurrent." )
     for ( unsigned int k = 0; k <= krylovIndex; ++k )
     {
+        LAMA_REGION( "Solver.GMRES.orthogonalization" )
         const Vector& Vk = *( ( *runtime.mV )[k] );
         runtime.mH[hIdxStart + k] = ( w.dotProduct( Vk ) ).getValue<double>();
         w = w - runtime.mH[hIdxStart + k] * Vk;
@@ -324,6 +331,7 @@ void GMRES::iterate()
     LAMA_LOG_DEBUG( logger, "Apply Givens rotations." )
     for ( unsigned int k = 0; k < krylovIndex; ++k )
     {
+        LAMA_REGION( "Solver.GMRES.applyRotations" )
         double tmp1 = runtime.mH[hIdxStart + k];
         double tmp2 = runtime.mH[hIdxStart + k + 1];
         runtime.mH[hIdxStart + k] = runtime.mCC[k] * tmp1 + runtime.mSS[k] * tmp2;
@@ -332,6 +340,7 @@ void GMRES::iterate()
 
     // compute new rotation
     {
+        LAMA_REGION( "Solver.GMRES.computeNextRotation" )
         LAMA_LOG_DEBUG( logger, "Compute next plane rotation." )
         double tmp = std::sqrt(
                          runtime.mH[hIdxDiag] * runtime.mH[hIdxDiag]
@@ -342,6 +351,7 @@ void GMRES::iterate()
 
     // update Hessenberg-system
     {
+        LAMA_REGION( "Solver.GMRES.updateHessenbergSystem" )
         LAMA_LOG_DEBUG( logger, "Update Hessenberg-System." )
         runtime.mG[krylovIndex + 1] = -1.0 * runtime.mSS[krylovIndex] * runtime.mG[krylovIndex];
         runtime.mG[krylovIndex] = runtime.mCC[krylovIndex] * runtime.mG[krylovIndex];
@@ -359,6 +369,8 @@ void GMRES::iterate()
 
 void GMRES::updateX( unsigned int i )
 {
+    LAMA_REGION( "Solver.GMRES.updateX" )
+
     // back-substitution Hessenberg system H*y=g
     // H stored in column 'packed' order
     LAMA_LOG_DEBUG( logger, "Updating X within krylov dimensions i+1 = " << i+1 )

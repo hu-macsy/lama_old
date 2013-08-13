@@ -51,7 +51,7 @@ private:
 
     LAMA_LOG_DECL_STATIC_LOGGER( logger )
 
-    Configuration();
+Configuration    ();
     Configuration(const Configuration& cc);
     std::string mPath;
     std::string mCommType;

@@ -47,9 +47,8 @@ using namespace lama;
 /* --------------------------------------------------------------------- */
 
 BOOST_AUTO_TEST_SUITE( FileLoggerTest )
-;
 
-LAMA_LOG_DEF_LOGGER( logger, "Test.FileLoggerTest" );
+LAMA_LOG_DEF_LOGGER( logger, "Test.FileLoggerTest" )
 
 /* --------------------------------------------------------------------- */
 
@@ -85,4 +84,6 @@ BOOST_AUTO_TEST_CASE( LoggingTest )
 
     fileStream.close();
 }
-/* --------------------------------------------------------------------- */BOOST_AUTO_TEST_SUITE_END();
+/* --------------------------------------------------------------------- */
+
+BOOST_AUTO_TEST_SUITE_END();

@@ -247,7 +247,7 @@ void DIAStorage<ValueType>::getRowImpl( LAMAArray<OtherType>& row, const IndexTy
             continue;
         }
 
-        wRow[j] = static_cast<OtherType>( values[index( i, d )] );
+        wRow[j] = static_cast<OtherType>( values[diaindex( i, d, mNumRows, mNumDiagonals )] );
     }
 }
 
@@ -584,7 +584,7 @@ void DIAStorage<ValueType>::setCSRDataImpl(
                     continue;
                 }
 
-                ValueType& addrValue = myValues[index( i, d )];
+                ValueType& addrValue = myValues[diaindex( i, d, mNumRows, mNumDiagonals )];
 
                 // check for j >= 0 and j < mNumColumns not needed here
 
@@ -667,6 +667,8 @@ void DIAStorage<ValueType>::setOffsets(
                 wOffset[mNumDiagonals++] = i;
             }
         }
+
+        LAMA_LOG_INFO( logger, "lower + upper diagonals = " << mNumDiagonals )
     }
 
     LAMA_ASSERT_EQUAL_DEBUG( mNumDiagonals, wOffset.size() )
@@ -759,8 +761,9 @@ ValueType DIAStorage<ValueType>::getValue( const IndexType i, const IndexType j 
         {
             const HostReadAccess<ValueType> values( mValues );
             LAMA_LOG_DEBUG( logger,
-                            "get value (" << i << ", " << j << ") is diag = " << d << ", offset = " << offset[d] << ", index = " << index(i,d) )
-            myValue = values[index( i, d )];
+                            "get value (" << i << ", " << j << ") is diag = " << d << ", offset = " << offset[d] 
+                             << ", index = " << diaindex( i, d, mNumRows, mNumColumns ) )
+            myValue = values[diaindex( i, d, mNumRows, mNumDiagonals )];
             break;
         }
     }

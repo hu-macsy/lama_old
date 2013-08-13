@@ -124,4 +124,6 @@ BOOST_AUTO_TEST_CASE( pushbackTest )
 
     lamaArrayHostReadAccess.release();
 }
-/* --------------------------------------------------------------------- */BOOST_AUTO_TEST_SUITE_END();
+/* --------------------------------------------------------------------- */
+
+BOOST_AUTO_TEST_SUITE_END();

@@ -210,6 +210,11 @@ public:
         return &other == this;
     }
 
+    bool operator!=( const LAMAArray<T>& other ) const
+    {
+        return &other != this;
+    }
+
     /**
      * @brief Copies the passed LAMAArray into this.
      *

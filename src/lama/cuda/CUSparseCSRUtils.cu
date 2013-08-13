@@ -356,6 +356,10 @@ IndexType CUSparseCSRUtils::matrixMultiplySizes(
 
     int nnzC;
 
+    LAMA_LOG_DEBUG( logger, "multSizes, A is " << m << " x " << k << ", nnz = " << nnzA
+                            << ", B is " << k << " x " << n << ", nnz = " << nnzB 
+                            << ", C = " << m << " x " << n )
+
     LAMA_CUSPARSE_CALL(
         cusparseXcsrgemmNnz( CUDAContext_cusparseHandle, 
                              CUSPARSE_OPERATION_NON_TRANSPOSE, CUSPARSE_OPERATION_NON_TRANSPOSE, 
@@ -368,6 +372,8 @@ IndexType CUSparseCSRUtils::matrixMultiplySizes(
     // synchronization might be redundant due to the return value
 
     LAMA_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "convertCSR2CSC" )
+
+    LAMA_LOG_DEBUG( logger, "matrixMultiplySizes, nnzC = " << nnzC )
 
     return nnzC;
 }

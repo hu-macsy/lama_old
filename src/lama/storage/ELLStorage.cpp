@@ -50,6 +50,7 @@
 namespace lama
 {
 
+using std::auto_ptr;
 using boost::shared_ptr;
 
 /* --------------------------------------------------------------------------- */
@@ -1034,7 +1035,7 @@ void ELLStorage<ValueType>::matrixTimesVector(
             ReadAccess<IndexType> rows( mRowIndexes, loc );
 
             LAMA_CONTEXT_ACCESS( loc )
-            sparseGEMV( wResult.get(), mNumRows, mNumValuesPerRow, alpha, rX.get(), numNonZeroRows, rows.get(),
+            sparseGEMV( wResult.get(), alpha, rX.get(), mNumRows, mNumValuesPerRow, numNonZeroRows, rows.get(),
                         ellIA.get(), ellJA.get(), ellValues.get(), NULL );
         }
         else
@@ -1054,6 +1055,81 @@ void ELLStorage<ValueType>::matrixTimesVector(
         LAMA_CONTEXT_ACCESS( loc )
         normalGEMV( wResult.get(), alpha, rX.get(), beta, rY.get(), mNumRows, mNumValuesPerRow, ellIA.get(),
                     ellJA.get(), ellValues.get(), NULL );
+    }
+}
+
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType>
+void ELLStorage<ValueType>::vectorTimesMatrix(
+    LAMAArray<ValueType>& result,
+    const ValueType alpha,
+    const LAMAArray<ValueType>& x,
+    const ValueType beta,
+    const LAMAArray<ValueType>& y ) const
+{
+    LAMA_LOG_INFO( logger,
+                   *this << ": vectorTimesMatrix, result = " << result << ", alpha = " << alpha << ", x = " << x << ", beta = " << beta << ", y = " << y )
+
+    LAMA_REGION( "Storage.ELL.VectorTimesMatrix" )
+
+    LAMA_ASSERT_EQUAL_ERROR( x.size(), mNumRows )
+    LAMA_ASSERT_EQUAL_ERROR( result.size(), mNumColumns )
+
+    if ( ( beta != 0.0 ) && ( result != y ) )
+    {
+        LAMA_ASSERT_EQUAL_ERROR( y.size(), mNumColumns )
+    }
+
+    ContextPtr loc = getContextPtr();
+
+    LAMA_LOG_INFO( logger, *this << ": vectorTimesMatrix on " << *loc )
+
+    LAMA_INTERFACE_FN_T( sparseGEVM, loc, ELLUtils, Mult, ValueType )
+    LAMA_INTERFACE_FN_T( normalGEVM, loc, ELLUtils, Mult, ValueType )
+
+    ReadAccess<IndexType> ellSizes( mIA, loc );
+    ReadAccess<IndexType> ellJA( mJA, loc );
+    ReadAccess<ValueType> ellValues( mValues, loc );
+
+    ReadAccess<ValueType> rX( x, loc );
+
+    // Possible alias of result and y must be handled by coressponding accesses
+
+    if ( result == y )
+    {
+        // only write access for y, no read access for result
+
+        WriteAccess<ValueType> wResult( result, loc );
+
+        if ( mRowIndexes.size() > 0 && ( beta == 1.0 ) )
+        {
+            // y += alpha * thisMatrix * x, can take advantage of row indexes
+
+            IndexType numNonZeroRows = mRowIndexes.size();
+            ReadAccess<IndexType> rows( mRowIndexes, loc );
+
+            LAMA_CONTEXT_ACCESS( loc )
+            sparseGEVM( wResult.get(), alpha, rX.get(), mNumRows, mNumColumns, mNumValuesPerRow, numNonZeroRows,
+                        rows.get(), ellSizes.get(), ellJA.get(), ellValues.get(), NULL );
+        }
+        else
+        {
+            // we assume that normalGEMV can deal with the alias of result, y
+
+            LAMA_CONTEXT_ACCESS( loc )
+            normalGEVM( wResult.get(), alpha, rX.get(), beta, wResult.get(), mNumRows, mNumColumns, mNumValuesPerRow,
+                        ellSizes.get(), ellJA.get(), ellValues.get(), NULL );
+        }
+    }
+    else
+    {
+        WriteOnlyAccess<ValueType> wResult( result, loc, mNumColumns );
+        ReadAccess<ValueType> rY( y, loc );
+
+        LAMA_CONTEXT_ACCESS( loc )
+        normalGEVM( wResult.get(), alpha, rX.get(), beta, rY.get(), mNumRows, mNumColumns, mNumValuesPerRow,
+                    ellSizes.get(), ellJA.get(), ellValues.get(), NULL );
     }
 }
 
@@ -1140,7 +1216,7 @@ SyncToken* ELLStorage<ValueType>::matrixTimesVectorAsync(
 
             LAMA_CONTEXT_ACCESS( loc )
 
-            sparseGEMV( wResult->get(), mNumRows, mNumValuesPerRow, alpha, rX->get(), numNonZeroRows, rRowIndexes->get(),
+            sparseGEMV( wResult->get(), alpha, rX->get(), mNumRows, mNumValuesPerRow, numNonZeroRows, rRowIndexes->get(),
                         ellIA->get(), ellJA->get(), ellValues->get(), syncToken.get() );
         }
         else
@@ -1170,6 +1246,128 @@ SyncToken* ELLStorage<ValueType>::matrixTimesVectorAsync(
     }
 
     syncToken->pushAccess( ellIA );
+    syncToken->pushAccess( ellJA );
+    syncToken->pushAccess( ellValues );
+    syncToken->pushAccess( rX );
+
+    return syncToken.release();
+}
+
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType>
+SyncToken* ELLStorage<ValueType>::vectorTimesMatrixAsync(
+    LAMAArray<ValueType>& result,
+    const ValueType alpha,
+    const LAMAArray<ValueType>& x,
+    const ValueType beta,
+    const LAMAArray<ValueType>& y ) const
+{
+    LAMA_LOG_INFO( logger,
+                   *this << ": vectorTimesMatrixAsync, result = " << result << ", alpha = " << alpha << ", x = " << x << ", beta = " << beta << ", y = " << y )
+
+    LAMA_REGION( "Storage.ELL.vectorTimesMatrixAsync" )
+
+    ContextPtr loc = getContextPtr();
+
+    // Note: checks will be done by asynchronous task in any case
+    //       and exception in tasks are handled correctly
+
+    LAMA_LOG_INFO( logger, *this << ": vectorTimesMatrixAsync on " << *loc )
+
+    if ( loc->getType() == Context::Host )
+    {
+        // execution as separate thread
+
+        void (ELLStorage::*pf)(
+            LAMAArray<ValueType>&,
+            const ValueType,
+            const LAMAArray<ValueType>&,
+            const ValueType,
+            const LAMAArray<ValueType>& ) const
+
+        = &ELLStorage<ValueType>::vectorTimesMatrix;
+
+        using boost::bind;
+
+        LAMA_LOG_INFO( logger, *this << ": vectorTimesMatrixAsync on Host by own thread" )
+
+        using boost::ref;
+
+        return new TaskSyncToken( bind( pf, this, ref( result ), alpha, ref( x ), beta, ref( y ) ) );
+    }
+
+    LAMA_ASSERT_EQUAL_ERROR( x.size(), mNumRows )
+    LAMA_ASSERT_EQUAL_ERROR( result.size(), mNumColumns )
+
+    if ( ( beta != 0.0 ) && ( result != y ) )
+    {
+        LAMA_ASSERT_EQUAL_ERROR( y.size(), mNumColumns )
+    }
+
+    LAMA_INTERFACE_FN_T( sparseGEVM, loc, ELLUtils, Mult, ValueType )
+    LAMA_INTERFACE_FN_T( normalGEVM, loc, ELLUtils, Mult, ValueType )
+
+    auto_ptr<SyncToken> syncToken( loc->getSyncToken() );
+
+    // all accesses will be pushed to the sync token as LAMA arrays have to be protected up
+    // to the end of the computations.
+
+    shared_ptr<ReadAccess<IndexType> > ellSizes( new ReadAccess<IndexType>( mIA, loc ) );
+    shared_ptr<ReadAccess<IndexType> > ellJA( new ReadAccess<IndexType>( mJA, loc ) );
+    shared_ptr<ReadAccess<ValueType> > ellValues( new ReadAccess<ValueType>( mValues, loc ) );
+    shared_ptr<ReadAccess<ValueType> > rX( new ReadAccess<ValueType>( x, loc ) );
+
+    // Possible alias of result and y must be handled by coressponding accesses
+
+    if ( result == y )
+    {
+        // only write access for y, no read access for result
+
+        shared_ptr<WriteAccess<ValueType> > wResult( new WriteAccess<ValueType>( result, loc ) );
+
+        if ( mRowIndexes.size() > 0 && ( beta == 1.0 ) )
+        {
+            // y += alpha * thisMatrix * x, can take advantage of row indexes
+
+            IndexType numNonZeroRows = mRowIndexes.size();
+
+            shared_ptr<ReadAccess<IndexType> > rows( new ReadAccess<IndexType>( mRowIndexes, loc ) );
+
+            syncToken->pushAccess( rows );
+
+            LAMA_CONTEXT_ACCESS( loc )
+
+            sparseGEVM( wResult->get(), alpha, rX->get(), mNumRows, mNumColumns, mNumValuesPerRow, numNonZeroRows,
+                        rows->get(), ellSizes->get(), ellJA->get(), ellValues->get(), syncToken.get() );
+        }
+        else
+        {
+            // we assume that normalGEMV can deal with the alias of result, y
+
+            LAMA_CONTEXT_ACCESS( loc )
+
+            normalGEVM( wResult->get(), alpha, rX->get(), beta, wResult->get(), mNumRows, mNumColumns, mNumValuesPerRow,
+                        ellSizes->get(), ellJA->get(), ellValues->get(), syncToken.get() );
+        }
+
+        syncToken->pushAccess( wResult );
+    }
+    else
+    {
+        shared_ptr<WriteAccess<ValueType> > wResult( new WriteOnlyAccess<ValueType>( result, loc, mNumColumns ) );
+        shared_ptr<ReadAccess<ValueType> > rY( new ReadAccess<ValueType>( y, loc ) );
+
+        LAMA_CONTEXT_ACCESS( loc )
+
+        normalGEVM( wResult->get(), alpha, rX->get(), beta, rY->get(), mNumRows, mNumColumns, mNumValuesPerRow,
+                    ellSizes->get(), ellJA->get(), ellValues->get(), syncToken.get() );
+
+        syncToken->pushAccess( wResult );
+        syncToken->pushAccess( rY );
+    }
+
+    syncToken->pushAccess( ellSizes );
     syncToken->pushAccess( ellJA );
     syncToken->pushAccess( ellValues );
     syncToken->pushAccess( rX );

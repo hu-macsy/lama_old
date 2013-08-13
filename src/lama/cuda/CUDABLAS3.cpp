@@ -84,12 +84,24 @@ void CUDABLAS3::gemm(
 
     if ( transa == CblasTrans )
     {
-        transA_char = 'T';
+    	if ( order == CblasRowMajor )
+    	{
+    		transB_char = 'T';
+    	} else
+    	{
+    		transA_char = 'T';
+    	}
     }
 
     if ( transb == CblasTrans )
     {
-        transB_char = 'T';
+    	if ( order == CblasRowMajor )
+    	{
+    		transA_char = 'T';
+    	} else
+    	{
+    		transB_char = 'T';
+    	}
     }
 
     LAMA_CHECK_CUDA_ACCESS
@@ -147,17 +159,29 @@ void CUDABLAS3::gemm(
     const double* const A_call = ( order == CblasRowMajor ) ? B : A;
     const double* const B_call = ( order == CblasRowMajor ) ? A : B;
 
+    LAMA_LOG_INFO( logger, "gemm<double>( m = " << m << ", n = " << n << ", k = " << k )
+
     if ( transa == CblasTrans )
     {
-        transA_char = 'T';
+    	if ( order == CblasRowMajor )
+    	{
+    		transB_char = 'T';
+    	} else
+    	{
+    		transA_char = 'T';
+    	}
     }
 
     if ( transb == CblasTrans )
     {
-        transB_char = 'T';
+    	if ( order == CblasRowMajor )
+    	{
+    		transA_char = 'T';
+    	} else
+    	{
+    		transB_char = 'T';
+    	}
     }
-
-    LAMA_LOG_INFO( logger, "gemm<double>( m = " << m << ", n = " << n << ", k = " << k )
 
     LAMA_CHECK_CUDA_ACCESS
 

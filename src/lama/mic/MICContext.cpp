@@ -40,6 +40,7 @@
 
 #include <lama/tracing.hpp>
 #include <omp.h>
+#include <mkl.h>
 
 namespace lama
 {
@@ -176,16 +177,12 @@ void* MICContext::allocate( const size_t size ) const
 {
     void* pointer = NULL;
 
-    size_t ptr;
-
     LAMA_LOG_INFO( logger, "allocate, init pointer = " << pointer )
 
-    #pragma offload target( mic ), in( size ), out( ptr )
+    #pragma offload target( mic : mDeviceNr ), in( size ), out( pointer )
     {
-        ptr = (size_t) ::malloc( size );
+        pointer = ::malloc( size );
     }
-
-    pointer = (void *) ptr;
 
     LAMA_LOG_INFO( logger, "allocated " << size << " bytes on device, ptr = " << pointer )
 
@@ -206,11 +203,8 @@ void MICContext::free( void* pointer, const size_t size ) const
 {
     LAMA_LOG_INFO( logger, "free " << size << " bytes on MIC device, ptr = " << pointer )
 
-    size_t ptr = ( size_t ) pointer;
-
-    #pragma offload target( mic ), in( ptr )
+    #pragma offload target( mic : mDeviceNr ), in( pointer )
     {
-        void* pointer = ( void* ) ptr;
         ::free( pointer );
     }
 }
@@ -232,15 +226,11 @@ void MICContext::memcpy( void* dst, const void* src, const size_t size ) const
     const size_t dst_ptr = ( size_t ) dst;
     const size_t src_ptr = ( size_t ) src;
 
-    LAMA_LOG_INFO( logger, "size & 7 = " << ( size & 7 ) )
-    LAMA_LOG_INFO( logger, "dst_ptr & 7 = " << ( dst_ptr & 7 ) )
-    LAMA_LOG_INFO( logger, "src_ptr & 7 = " << ( src_ptr & 7 ) )
-
     if ( ( size & 7 ) == 0  && ( dst_ptr & 7 ) == 0 && ( src_ptr & 7 ) == 0 ) 
     {
         LAMA_REGION( "MIC.memcpy8" )
 
-        #pragma offload target( mic ) in( src_ptr, dst_ptr, size )
+        #pragma offload target( mic : mDeviceNr ) in( src_ptr, dst_ptr, size )
         {
             double* dst = ( double* ) dst_ptr;
             const double* src = ( const double* ) src_ptr;
@@ -256,7 +246,7 @@ void MICContext::memcpy( void* dst, const void* src, const size_t size ) const
     {
         LAMA_REGION( "MIC.memcpy4" )
 
-        #pragma offload target( mic ) in( src_ptr, dst_ptr, size )
+        #pragma offload target( mic : mDeviceNr ) in( src_ptr, dst_ptr, size )
         {
             float* dst = ( float* ) dst_ptr;
             const float* src = ( const float* ) src_ptr;
@@ -272,7 +262,7 @@ void MICContext::memcpy( void* dst, const void* src, const size_t size ) const
     {
         LAMA_REGION( "MIC.memcpy1" )
 
-        #pragma offload target( mic ) in( src_ptr, dst_ptr, size )
+        #pragma offload target( mic : mDeviceNr ) in( src_ptr, dst_ptr, size )
         {
             void* dst = ( void* ) dst_ptr;
             const void* src = ( const void* ) src_ptr;
@@ -286,19 +276,16 @@ void MICContext::memcpy( void* dst, const void* src, const size_t size ) const
 
 void MICContext::memcpyToHost( void* dst, const void* src, const size_t size ) const
 {
-    LAMA_REGION( "MIC.memcpyToHost" )
-
-    char* typedDst = ( char* ) dst;
-
-    size_t ptr = ( size_t ) src;
-
     LAMA_LOG_INFO( logger, "memcpy " << size << " bytes from MIC to Host" )
 
-    #pragma offload target( mic ) in( size ), in( ptr ), out( typedDst : length( size ) )
-    {
-        char* typedSrc = ( char* ) ptr;
+    LAMA_REGION( "MIC.memcpyToHost" )
+    
+    uint8_t* dst8 = ( uint8_t* ) dst;
 
-        ::memcpy( typedDst, typedSrc, size );
+    #pragma offload target( mic : mDeviceNr ) out( dst8 : length( size ) ), in( size ), in( src )
+    {
+        const uint8_t* src8 = ( const uint8_t* ) src;
+        ::memcpy( dst8, src8, size );
     }
 }
 
@@ -308,61 +295,14 @@ void MICContext::memcpyFromHost( void* dst, const void* src, const size_t size )
 {
     LAMA_LOG_INFO( logger, "memcpy " << size << " bytes on MIC device, dst = " << dst << ", src = " << src )
 
-    size_t dst_ptr = ( size_t ) dst ;
-    size_t src_ptr = ( size_t ) src ;
-
-    if ( ( size & 7 ) == 0  && ( dst_ptr & 7 ) == 0 && ( src_ptr & 7 ) == 0 ) 
-    {
-        // we can do 8 Byte or 64 bit transfer
-       
-        LAMA_REGION( "MIC.memcpyFromHost8" )
-
-        const uint64_t * src64 = ( const uint64_t * ) src;
-
-        size_t size8 = size >> 3;
-
-        #pragma offload target( mic ) in( src64 : length( size8 ) ), in( size8 ), in( dst_ptr )
-        {
-            uint64_t* dst64 = ( uint64_t* ) dst_ptr;
+    LAMA_REGION( "MIC.memcpyFromHost1" )
     
-            #pragma omp parallel for
-            for ( int i = 0; i < size8; ++ i )
-            {
-               dst64[i] = src64[i]; 
-            }
-        }
-    }
-    else if ( ( size & 3 ) == 0  && ( dst_ptr & 3 ) == 0 && ( src_ptr & 3 ) == 0 ) 
+    uint8_t* src8 = ( uint8_t* ) src;
+
+    #pragma offload target( mic : mDeviceNr ) in( src8 : length( size ) ), in( size ), in( dst )
     {
-        LAMA_REGION( "MIC.memcpyFromHost4" )
-
-        const uint32_t* src32 = ( const uint32_t* ) src;
-
-        size_t size4 = size >> 2;
-
-        #pragma offload target( mic ) in( src32 : length( size4 ) ), in( size4 ), in( dst_ptr )
-        {
-            uint32_t* dst32 = ( uint32_t* ) dst_ptr;
-    
-            #pragma omp parallel for
-            for ( int i = 0; i < size4; ++ i )
-            {
-               dst32[i] = src32[i]; 
-            }
-        }
-    }
-    else
-    {
-        LAMA_REGION( "MIC.memcpyFromHost1" )
-    
-        uint8_t* typedSrc = ( uint8_t* ) src;
-
-        #pragma offload target( mic ) in( typedSrc : length( size ) ), in( size ), in( dst_ptr )
-        {
-            uint8_t* typedDst = ( uint8_t* ) dst_ptr;
-
-            ::memcpy( typedDst, typedSrc, size );
-        }
+        uint8_t* dst8 = ( uint8_t* ) dst;
+        ::memcpy( dst8, src8, size );
     }
 }
 

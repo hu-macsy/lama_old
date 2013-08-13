@@ -46,47 +46,128 @@ using namespace lama;
 extern bool base_test_case;
 extern std::string testcase;
 
-/* ------------------------------------------------------------------------- */
-
-BOOST_AUTO_TEST_SUITE( JDSStorageTest )
-;
-
-LAMA_LOG_DEF_LOGGER( logger, "Test.JDSStorageTest" );
-
-typedef boost::mpl::list<float,double> ValueTypes;
-
-/* ------------------------------------------------------------------------- */
-
-BOOST_AUTO_TEST_CASE_TEMPLATE( commonTestCases, T, ValueTypes ) 
+namespace lama
 {
-    typedef T ValueType;
+namespace JDSStorageTest
+{
 
+/* ------------------------------------------------------------------------------------------------------------------ */
+
+template<typename ValueType>
+void checkTest( ContextPtr context )
+{
+    // This routine tests the check method of JDSStorage individually for this class
+
+    for( int icase = 0; icase < 6; ++icase )
+    {
+        // build up a correct JDS storage
+
+        IndexType valuesJa[] =
+        { 0, 1, 2, 3, 4, 5, 6, 7, 8 };
+        const IndexType nJa = sizeof( valuesJa ) / sizeof(IndexType);
+        IndexType valuesDlg[] =
+        { 3, 3, 3 };
+        const IndexType nDlg = sizeof( valuesDlg ) / sizeof(IndexType);
+        IndexType valuesIlg[] =
+        { 3, 3, 3 };
+        const IndexType nIlg = sizeof( valuesIlg ) / sizeof(IndexType);
+        IndexType valuesPerm[] =
+        { 2, 0, 1 };
+        const IndexType nPerm = sizeof( valuesPerm ) / sizeof(IndexType);
+
+        const IndexType numRows = nIlg;
+        const IndexType numValues = nJa;
+        const IndexType numColumns = 10;
+        const IndexType numDiagonals = nDlg;
+
+        LAMAArrayRef<IndexType> jdsJA( valuesJa, nJa );
+        LAMAArray<ValueType> jdsValues( nJa, 1.0 ); // only need to build JDS storage
+        LAMAArrayRef<IndexType> jdsDLG( valuesDlg, nDlg );
+        LAMAArrayRef<IndexType> jdsILG( valuesIlg, nIlg );
+        LAMAArrayRef<IndexType> jdsPerm( valuesPerm, nPerm );
+
+        JDSStorage<ValueType> jdsStorage;
+
+        jdsStorage.setContext( context );
+
+        // setJDSData will copy/convert values up to the needed context
+
+        jdsStorage.setJDSData( numRows, numColumns, numValues, numDiagonals, jdsDLG, jdsILG, jdsPerm, jdsJA,
+                               jdsValues );
+
+        if( icase == 0 )
+        {
+            jdsStorage.check( "test with correct values" );
+        }
+        else if( icase == 1 )
+        {
+            //  -> invalid ja     { 0, 1, 2, 3, 15, 5, 6, 7, 8 }
+
+            LAMAArray<IndexType>& jdsJA = const_cast<LAMAArray<IndexType>&>( jdsStorage.getJA() );
+            LAMAArrayUtils::setVal( jdsJA, 5, 15 );
+            BOOST_CHECK_THROW( { jdsStorage.check( "Expect illegal index in JA" ); }, Exception );
+        }
+        else if( icase == 2 )
+        {
+            //  -> invalid ilg    { 3, 3, 4 }
+
+            LAMAArray<IndexType>& jdsILG = const_cast<LAMAArray<IndexType>&>( jdsStorage.getIlg() );
+            LAMAArrayUtils::setVal( jdsILG, 2, 4 );
+            BOOST_CHECK_THROW( { jdsStorage.check( "Expect illegal ilg" ); }, Exception );
+        }
+        else if( icase == 3 )
+        {
+            //  -> invalid dlg    { 3, 3, 4 }
+
+            LAMAArray<IndexType>& jdsDLG = const_cast<LAMAArray<IndexType>&>( jdsStorage.getDlg() );
+            LAMAArrayUtils::setVal( jdsDLG, 2, 4 );
+            BOOST_CHECK_THROW( { jdsStorage.check( "Expect illegal dlg" ); }, Exception );
+        }
+        else if( icase == 4 )
+        {
+            //  -> invalid perm   { 5, 0, 2 }
+
+            LAMAArray<IndexType>& jdsPerm = const_cast<LAMAArray<IndexType>&>( jdsStorage.getPerm() );
+            LAMAArrayUtils::setVal( jdsPerm, 0, 5 );
+            BOOST_CHECK_THROW( { jdsStorage.check( "Expect illegal perm" ); }, Exception );
+        }
+        else if( icase == 5 )
+        {
+            //  -> invalid perm   { 0, 0, 2 }
+
+            LAMAArray<IndexType>& jdsPerm = const_cast<LAMAArray<IndexType>&>( jdsStorage.getPerm() );
+            LAMAArrayUtils::setVal( jdsPerm, 0, 0 );
+            BOOST_CHECK_THROW( { jdsStorage.check( "Expect illegal perm" ); }, Exception );
+        }
+
+    } // CASE_LOOP
+}
+
+/* ------------------------------------------------------------------------------------------------------------------ */
+
+template<typename ValueType>
+void commonTestCases( ContextPtr loc )
+{
     JDSStorage<ValueType> jdsStorage;
     MatrixStorageTest<ValueType> storageTest( jdsStorage );
 
+    storageTest.mMatrixStorage.setContext( loc );
+
     if ( base_test_case )
     {
-        LAMA_LOG_INFO( logger, "Run method " << testcase << " in JDSStorageTest." );
         MATRIXSTORAGE_COMMONTESTCASES( storageTest );
     }
     else
     {
-        CONTEXTLOOP()
-        {
-            GETCONTEXT( context );
-            storageTest.mMatrixStorage.setContext( context );
-            LAMA_LOG_INFO( logger, "Using context = " << storageTest.mMatrixStorage.getContext().getType() );
-            storageTest.runTests();
-        }
+       storageTest.runTests();
     }
 }
 
-/* --------------------------------------------------------------------- */
+/* ------------------------------------------------------------------------------------------------------------------ */
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( ConstructorTest, T, ValueTypes ) 
+template<typename ValueType>
+void constructorTest( )
 {
-    typedef T ValueType;
-
     const IndexType numRows = 10;
     const IndexType numColumns = 15;
 
@@ -106,11 +187,11 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( ConstructorTest, T, ValueTypes )
     }
 }
 
-/* ------------------------------------------------------------------------- */
+/* ------------------------------------------------------------------------------------------------------------------ */
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( ConstructorTest1, T, ValueTypes ) 
+template<typename ValueType>
+void constructorTest1( )
 {
-    typedef T ValueType;
 
     const IndexType numRows = 3;
     const IndexType numColumns = 3;
@@ -185,118 +266,32 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( ConstructorTest1, T, ValueTypes )
     }
 }
 
-/* ------------------------------------------------------------------------- */
+/* ------------------------------------------------------------------------------------------------------------------ */
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( CheckTest, T, ValueTypes ) 
+template<typename ValueType>
+void typeNameTest( )
 {
-    // This routine tests the check method of JDSStorage, individually for this class
+    JDSStorage<ValueType> jdsStorage;
+    std::string s = jdsStorage.typeName();
 
-    typedef T ValueType;
-
-    CONTEXTLOOP()
-    {
-        GETCONTEXT( context );
-
-        for ( int icase = 0; icase < 6; ++icase )
-        {
-            // build up a correct JDS storage
-
-            IndexType valuesJa[] =
-            { 0, 1, 2, 3, 4, 5, 6, 7, 8 };
-            const IndexType nJa = sizeof( valuesJa ) / sizeof( IndexType );
-            IndexType valuesDlg[] =
-            { 3, 3, 3 };
-            const IndexType nDlg = sizeof( valuesDlg ) / sizeof( IndexType );
-            IndexType valuesIlg[] =
-            { 3, 3, 3 };
-            const IndexType nIlg = sizeof( valuesIlg ) / sizeof( IndexType );
-            IndexType valuesPerm[] = 
-            { 2, 0, 1 };
-            const IndexType nPerm = sizeof( valuesPerm ) / sizeof( IndexType );
-
-            const IndexType numRows = nIlg;
-            const IndexType numValues = nJa;
-            const IndexType numColumns = 10;
-            const IndexType numDiagonals = nDlg;
-    
-            LAMAArrayRef<IndexType> jdsJA( valuesJa, nJa );
-            LAMAArray<ValueType> jdsValues( nJa, 1.0 );         // only need to build JDS storage
-            LAMAArrayRef<IndexType> jdsDLG( valuesDlg, nDlg );
-            LAMAArrayRef<IndexType> jdsILG( valuesIlg, nIlg );
-            LAMAArrayRef<IndexType> jdsPerm( valuesPerm, nPerm );
-    
-            JDSStorage<ValueType> jdsStorage;
-
-            jdsStorage.setContext( context );
-
-            // setJDSData will copy/convert values up to the needed context
-    
-            jdsStorage.setJDSData( numRows, numColumns, numValues, numDiagonals,
-                                   jdsDLG, jdsILG, jdsPerm, jdsJA, jdsValues );
-    
-            if ( icase == 0 )
-            {
-                jdsStorage.check( "test with correct values" );
-            }
-            else if ( icase == 1 )
-            {
-                //  -> invalid ja     { 0, 1, 2, 3, 15, 5, 6, 7, 8 }
-
-                LAMAArray<IndexType>& jdsJA = const_cast<LAMAArray<IndexType>&>( jdsStorage.getJA() );
-                LAMAArrayUtils::setVal( jdsJA, 5, 15 );
-                BOOST_CHECK_THROW( { jdsStorage.check( "Expect illegal index in JA" ); }, Exception );
-            }
-            else if ( icase == 2 )
-            {
-                //  -> invalid ilg    { 3, 3, 4 }
-    
-                LAMAArray<IndexType>& jdsILG = const_cast<LAMAArray<IndexType>&>( jdsStorage.getIlg() );
-                LAMAArrayUtils::setVal( jdsILG, 2, 4 );
-                BOOST_CHECK_THROW( { jdsStorage.check( "Expect illegal ilg" ); }, Exception );
-            }
-            else if ( icase == 3 )
-            {
-                //  -> invalid dlg    { 3, 3, 4 }
-    
-                LAMAArray<IndexType>& jdsDLG = const_cast<LAMAArray<IndexType>&>( jdsStorage.getDlg() );
-                LAMAArrayUtils::setVal( jdsDLG, 2, 4 );
-                BOOST_CHECK_THROW( { jdsStorage.check( "Expect illegal dlg" ); }, Exception );
-            }
-            else if ( icase == 4 )
-            {
-                //  -> invalid perm   { 5, 0, 2 }
-
-                LAMAArray<IndexType>& jdsPerm = const_cast<LAMAArray<IndexType>&>( jdsStorage.getPerm() );
-                LAMAArrayUtils::setVal( jdsPerm, 0, 5 );
-                BOOST_CHECK_THROW( { jdsStorage.check( "Expect illegal perm" ); }, Exception );
-            }
-            else if ( icase == 5 )
-            {
-                //  -> invalid perm   { 0, 0, 2 }
-    
-                LAMAArray<IndexType>& jdsPerm = const_cast<LAMAArray<IndexType>&>( jdsStorage.getPerm() );
-                LAMAArrayUtils::setVal( jdsPerm, 0, 0 );
-                BOOST_CHECK_THROW( { jdsStorage.check( "Expect illegal perm" ); }, Exception );
-            }
-
-        }  // CASE_LOOP
-
-    }  // CONTEXT_LOOP
+    BOOST_CHECK( s.length() > 0);
 }
+} // namespace JDSStorageTest
+} // namespace lama
 
-/* ------------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_CASE( typeNameTest )
-{
-    JDSStorage<double> jdsStoraged;
-    std::string s = jdsStoraged.typeName();
-    BOOST_CHECK_EQUAL( s, "JDSStorage<double>" );
+/* ------------------------------------------------------------------------------------------------------------------ */
 
-    JDSStorage<float> jdsStoragef;
-    s = jdsStoragef.typeName();
-    BOOST_CHECK_EQUAL( s, "JDSStorage<float>" );
-}
+BOOST_AUTO_TEST_SUITE( JDSStorageTest )
 
-/* ------------------------------------------------------------------------- */
+LAMA_LOG_DEF_LOGGER( logger, "Test.JDSStorageTest" )
+
+LAMA_AUTO_TEST_CASE_CT( checkTest, JDSStorageTest )
+LAMA_AUTO_TEST_CASE_CT( commonTestCases, JDSStorageTest )
+LAMA_AUTO_TEST_CASE_T( constructorTest, JDSStorageTest )
+LAMA_AUTO_TEST_CASE_T( constructorTest1, JDSStorageTest )
+LAMA_AUTO_TEST_CASE_T( typeNameTest, JDSStorageTest )
+
+/* ------------------------------------------------------------------------------------------------------------------ */
 
 BOOST_AUTO_TEST_SUITE_END();

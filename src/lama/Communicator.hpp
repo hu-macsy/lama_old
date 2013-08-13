@@ -547,7 +547,9 @@ public:
     virtual void swap( float val[], const IndexType n, const PartitionId partner ) const = 0;
     virtual void swap( int val[], const IndexType n, const PartitionId partner ) const = 0;
 
-    /** Gather single float value from each processor into a vector. */
+    /** Gather single value from each processor into a vector. */
+
+    virtual void gather( std::vector<IndexType>& values, IndexType value ) const = 0;
 
     virtual void gather( std::vector<float>& values, float value ) const = 0;
 

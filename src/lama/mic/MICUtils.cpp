@@ -64,13 +64,13 @@ void MICUtils::scale( ValueType array[], const ValueType value, const IndexType 
     }
     else
     {
-        size_t arrayPtr = ( size_t ) array;
+        void* arrayPtr = array;
 
         int device = MICContext::getCurrentDevice();
 
         #pragma offload target( mic : device ) in( arrayPtr, value, n )
         {
-           ValueType* array = ( ValueType* ) arrayPtr;
+           ValueType* array = static_cast<ValueType*>( arrayPtr );
 
            #pragma omp parallel for 
            for ( IndexType i = 0; i < n; i++ )
@@ -106,15 +106,15 @@ void MICUtils::setScale( ValueType outValues[],
         return;
     }
 
-    size_t outPtr = ( size_t ) outValues;
-    size_t inPtr = ( size_t ) inValues;
+    void* outPtr = outValues;
+    const void* inPtr = inValues;
 
     int device = MICContext::getCurrentDevice();
 
     #pragma offload target( mic : device ) in( outPtr, inPtr, value, n )
     {
-        ValueType* outValues = ( ValueType* ) outPtr;
-        const OtherValueType* inValues = ( OtherValueType* ) inPtr;
+        ValueType* outValues = static_cast<ValueType*>( outPtr );
+        const OtherValueType* inValues = static_cast<const OtherValueType*>( inPtr );
 
         #pragma omp parallel for 
         for ( IndexType i = 0; i < n; i++ )
@@ -133,7 +133,7 @@ ValueType MICUtils::sum( const ValueType array[], const IndexType n )
 
     ValueType val = 0;
 
-    size_t arrayPtr = ( size_t ) array;
+    const void* arrayPtr = array;
 
     int device = MICContext::getCurrentDevice();
 
@@ -141,7 +141,7 @@ ValueType MICUtils::sum( const ValueType array[], const IndexType n )
     { 
         val = 0;
 
-        const ValueType* array = ( ValueType* ) arrayPtr;
+        const ValueType* array = static_cast<const ValueType*>( arrayPtr );
 
         #pragma omp parallel for reduction( +:val )
         for ( IndexType i = 0; i < n; ++i )
@@ -160,13 +160,13 @@ void MICUtils::setVal( ValueType array[], const IndexType n, const ValueType val
 {
     LAMA_LOG_DEBUG( logger, "setVal<" << Scalar::getType<ValueType>() << ">: " << "array[" << n << "] = " << val )
 
-    size_t arrayPtr = ( size_t ) array;
-
     int device = MICContext::getCurrentDevice();
+
+    void* arrayPtr = array;
 
     #pragma offload target( mic : device ), in( arrayPtr, n, val )
     {
-        ValueType* array = ( ValueType* ) arrayPtr;
+        ValueType* array = static_cast<ValueType*>( arrayPtr );
 
         #pragma omp parallel for
         for ( IndexType i = 0; i < n; ++i )
@@ -231,7 +231,12 @@ ValueType MICUtils::maxval( const ValueType array[], const IndexType n )
 
     ValueType val = 0;
 
-    size_t arrayPtr = ( size_t ) array;
+    if ( n < 1 )
+    {
+        return val;
+    }
+
+    const void* arrayPtr = array;
 
     int device = MICContext::getCurrentDevice();
 
@@ -239,11 +244,10 @@ ValueType MICUtils::maxval( const ValueType array[], const IndexType n )
     { 
         val = 0;
 
-        ValueType* array = ( ValueType* ) arrayPtr;
+        const ValueType* array = static_cast<const ValueType*>( arrayPtr );
 
         #pragma omp parallel
         {
-    
             ValueType threadVal = 0;
 
             #pragma omp for 
@@ -276,21 +280,21 @@ ValueType MICUtils::absMaxVal( const ValueType array[], const IndexType n )
     LAMA_LOG_INFO( logger, "absMaxVal<" << Scalar::getType<ValueType>() << ">: " << "array[" << n << "]" )
     LAMA_LOG_INFO( logger, "array = " << array )
 
-    ValueType val = static_cast<ValueType>( 0.0 );
+    ValueType val = 0;
 
     // array is already on MIC device
 
-    size_t ptr = ( size_t ) array;
+    const void* ptr = array;
 
     int device = MICContext::getCurrentDevice();
 
     #pragma offload target( mic : device ) in( n, ptr ), inout( val )
     {
-        ValueType* array = ( ValueType* ) ptr;
+        const ValueType* array = static_cast<const ValueType*>( ptr );
 
         #pragma omp parallel
         {
-            ValueType threadVal = static_cast<ValueType>( 0.0 );
+            ValueType threadVal = 0;
 
             #pragma omp for 
             for ( IndexType i = 0; i < n; ++i )
@@ -323,11 +327,11 @@ ValueType MICUtils::absMaxDiffVal( const ValueType array1[], const ValueType arr
 {
     LAMA_LOG_DEBUG( logger, "absMaxDiffVal<" << Scalar::getType<ValueType>() << ">: " << "array[" << n << "]" )
 
-    ValueType val = static_cast<ValueType>( 0.0 );
+    ValueType val = 0;
 
     #pragma omp parallel
     {
-        ValueType threadVal = static_cast<ValueType>( 0.0 );
+        ValueType threadVal = 0;
 
         #pragma omp for 
         for ( IndexType i = 0; i < n; ++i )
@@ -379,7 +383,7 @@ bool MICUtils::isSorted( const ValueType array[], const IndexType n, bool ascend
             #pragma omp parallel for
             for ( IndexType i = 1; i < n; i++ )
             {
-                if ( array[i-1] > array[i] && sorted )
+                if ( sorted && ( array[i-1] > array[i] ) )
                 {
                     sorted = false;
                 }
@@ -390,7 +394,7 @@ bool MICUtils::isSorted( const ValueType array[], const IndexType n, bool ascend
             #pragma omp parallel for
             for ( IndexType i = 1; i < n; i++ )
             {
-                if ( array[i-1] < array[i] && sorted )
+                if ( sorted && ( array[i-1] < array[i] ) )
                 {
                     sorted = false;
                 }
@@ -435,13 +439,13 @@ bool MICUtils::validIndexes( const IndexType array[], const IndexType n, const I
 
     bool validFlag = true;
 
-    size_t arrayPtr = ( size_t ) array;
+    const void* arrayPtr = array;
 
     int device = MICContext::getCurrentDevice();
 
     #pragma offload target( mic : device ), in ( n, arrayPtr, size ), inout( validFlag )
     {
-        const IndexType* array = ( IndexType* ) arrayPtr;
+        const IndexType* array = static_cast<const IndexType*>( arrayPtr );
 
         #pragma omp parallel for reduction( & : validFlag )
         for ( IndexType i = 0; i < n; i++ )
@@ -464,17 +468,18 @@ void MICUtils::setGather( ValueType1 out[], const ValueType2 in[], const IndexTy
     LAMA_LOG_DEBUG( logger, "setGather: out<" << Scalar::getType<ValueType1>() << ">[" << n << "]" 
                         << " = in<" << Scalar::getType<ValueType2>() << ">[ indexes[" << n << "] ]" )
 
-    size_t outPtr = ( size_t ) out;
-    size_t inPtr = ( size_t ) in;
-    size_t indexesPtr = ( size_t ) indexes;
+    void* outPtr = out;
+    const void* inPtr = in;
+    const void* indexesPtr = indexes;
 
     int device = MICContext::getCurrentDevice();
 
     #pragma offload target( mic : device ) in( inPtr, outPtr, indexesPtr, n )
     {
-        ValueType1* out = ( ValueType1* ) outPtr;
-        const ValueType2* in = ( ValueType2* ) inPtr;
-        const IndexType* indexes = ( IndexType* ) indexesPtr;
+        ValueType1* out = static_cast<ValueType1*>( outPtr );
+
+        const ValueType2* in = static_cast<const ValueType2*>( inPtr );
+        const IndexType* indexes = static_cast<const IndexType*>( indexesPtr );
 
         #pragma omp parallel for 
         for ( IndexType i = 0; i < n; i++ )
@@ -522,13 +527,13 @@ void MICUtils::invert( ValueType array[], const IndexType n )
 
     LAMA_LOG_INFO( logger, "invert array[ " << n << " ]" )
 
-    size_t array_ptr = ( size_t ) array;
+    void* array_ptr = array;
 
     int device = MICContext::getCurrentDevice();
 
     #pragma offload target( MIC : device ), in ( n, array_ptr )
     {
-        ValueType* array = ( ValueType* ) array_ptr;
+        ValueType* array = static_cast<ValueType*>( array_ptr );
 
         ValueType one = 1;
 

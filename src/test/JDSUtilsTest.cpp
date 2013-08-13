@@ -62,7 +62,7 @@ namespace JDSUtilsTest
 template<typename ValueType,typename OtherValueType>
 void getRowTest( ContextPtr loc )
 {
-    LAMA_INTERFACE_FN_TT( getRow, loc, JDSUtils, Getter, ValueType, OtherValueType );
+    LAMA_INTERFACE_FN_TT( getRow, loc, JDSUtils, Getter, ValueType, OtherValueType )
 
     ValueType valuesValues[] =
     { 1, 7, 12, 2, 8, 13, 3, 9, 14, 4, 10, 15, 5, 11, 6 };
@@ -108,12 +108,13 @@ void getRowTest( ContextPtr loc )
     }
 
     HostReadAccess<OtherValueType> rRow( row );
-
-    for ( IndexType i = 0; i < numColumns; i++ )
+    for( IndexType i = 0; i < numColumns; i++ )
     {
         BOOST_CHECK_EQUAL( expectedValues[i], rRow[i] );
     }
 }
+
+/* ------------------------------------------------------------------------------------------------------------------ */
 
 template<typename ValueType,typename OtherValueType>
 void getValueTest( ContextPtr loc )
@@ -137,12 +138,11 @@ void getValueTest( ContextPtr loc )
     const IndexType nPerm = sizeof( valuesPerm ) / sizeof(IndexType);
     OtherValueType expectedValues[5][10] =
     {
-        { 1, 3, 0, 4, 0, 0, 7, 0, 0, 2 },
-        { 0, 0, 3, 0, 2, 0, 0, 0, 0, 0 },
-        { 5, 0, 0, 2, 0, 0, 0, 9, 0, 8 },
-        { 0, 0, 4, 0, 0, 2, 9, 0, 0, 7 },
-        { 1, 8, 0, 0, 0, 0, 0, 0, 0, 0 }
-    };
+    { 1, 3, 0, 4, 0, 0, 7, 0, 0, 2 },
+      { 0, 0, 3, 0, 2, 0, 0, 0, 0, 0 },
+      { 5, 0, 0, 2, 0, 0, 0, 9, 0, 8 },
+      { 0, 0, 4, 0, 0, 2, 9, 0, 0, 7 },
+      { 1, 8, 0, 0, 0, 0, 0, 0, 0, 0 } };
 
     const IndexType numColumns = 10;
     const IndexType numRows = 5;
@@ -160,9 +160,9 @@ void getValueTest( ContextPtr loc )
     ReadAccess<IndexType> rIlg( ilg, loc );
     ReadAccess<IndexType> rPerm( perm, loc );
 
-    for ( IndexType i = 0; i < numRows; i++ )
+    for( IndexType i = 0; i < numRows; i++ )
     {
-        for ( IndexType j = 0; j < numColumns; j++ )
+        for( IndexType j = 0; j < numColumns; j++ )
         {
             LAMA_CONTEXT_ACCESS( loc );
 
@@ -172,10 +172,12 @@ void getValueTest( ContextPtr loc )
     }
 }
 
+/* ------------------------------------------------------------------------------------------------------------------ */
+
 template<typename ValueType,typename OtherValueType>
 void scaleValueTest( ContextPtr loc )
 {
-    LAMA_INTERFACE_FN_TT( scaleValue, loc, JDSUtils, Scale, ValueType, OtherValueType );
+    LAMA_INTERFACE_FN_TT( scaleValue, loc, JDSUtils, Scale, ValueType, OtherValueType )
 
     ValueType valuesValues[] =
     { 1, 7, 12, 2, 8, 13, 3, 9, 14, 4, 10, 15, 5, 11, 6 };
@@ -217,17 +219,18 @@ void scaleValueTest( ContextPtr loc )
     }
 
     HostReadAccess<ValueType> rValues( values );
-
-    for ( IndexType i = 0; i < nValues; i++ )
+    for( IndexType i = 0; i < nValues; i++ )
     {
         BOOST_CHECK_EQUAL( expectedValues[i], rValues[i] );
     }
 }
 
+/* ------------------------------------------------------------------------------------------------------------------ */
+
 template<typename NoType>
 void checkDiagonalPropertyTest( ContextPtr loc )
 {
-    LAMA_INTERFACE_FN( checkDiagonalProperty, loc, JDSUtils, Helper );
+    LAMA_INTERFACE_FN( checkDiagonalProperty, loc, JDSUtils, Helper )
 
     // check with matrix without diagonal property
     {
@@ -263,7 +266,7 @@ void checkDiagonalPropertyTest( ContextPtr loc )
         bool diagonalProperty;
 
         diagonalProperty = checkDiagonalProperty( numDiagonals, numRows, numColumns, rPerm.get(), rJa.get(),
-                           rDlg.get() );
+                                                  rDlg.get() );
 
         BOOST_CHECK_EQUAL( false, diagonalProperty );
     }
@@ -302,7 +305,7 @@ void checkDiagonalPropertyTest( ContextPtr loc )
         bool diagonalProperty;
 
         diagonalProperty = checkDiagonalProperty( numDiagonals, numRows, numColumns, rPerm.get(), rJa.get(),
-                           rDlg.get() );
+                                                  rDlg.get() );
 
         BOOST_CHECK_EQUAL( true, diagonalProperty );
     }
@@ -328,16 +331,18 @@ void checkDiagonalPropertyTest( ContextPtr loc )
         bool diagonalProperty;
 
         diagonalProperty = checkDiagonalProperty( numDiagonals, numRows, numColumns, rPerm.get(), rJa.get(),
-                           rDlg.get() );
+                                                  rDlg.get() );
 
         BOOST_CHECK_EQUAL( false, diagonalProperty );
     }
 }
 
+/* ------------------------------------------------------------------------------------------------------------------ */
+
 template<typename NoType>
 void ilg2dlgTest( ContextPtr loc )
 {
-    LAMA_INTERFACE_FN( ilg2dlg, loc, JDSUtils, Sort );
+    LAMA_INTERFACE_FN( ilg2dlg, loc, JDSUtils, Sort )
 
     {
         IndexType valuesIlg[] =
@@ -362,18 +367,19 @@ void ilg2dlgTest( ContextPtr loc )
         }
 
         HostReadAccess<IndexType> rDlg( dlg );
-
-        for ( IndexType i = 0; i < numDiagonals; i++ )
+        for( IndexType i = 0; i < numDiagonals; i++ )
         {
             BOOST_CHECK_EQUAL( expectedValues[i], rDlg.get()[i] );
         }
     }
 }
 
+/* ------------------------------------------------------------------------------------------------------------------ */
+
 template<typename NoType>
 void sortRowsTest( ContextPtr loc )
 {
-    LAMA_INTERFACE_FN( sortRows, loc, JDSUtils, Sort );
+    LAMA_INTERFACE_FN( sortRows, loc, JDSUtils, Sort )
 
     {
         IndexType valuesIlg[] =
@@ -404,7 +410,7 @@ void sortRowsTest( ContextPtr loc )
         HostReadAccess<IndexType> rIlg( ilg );
         HostReadAccess<IndexType> rPerm( perm );
 
-        for ( IndexType i = 0; i < numRows; i++ )
+        for( IndexType i = 0; i < numRows; i++ )
         {
             BOOST_CHECK_EQUAL( expectedIlg[i], rIlg.get()[i] );
             BOOST_CHECK_EQUAL( expectedPerm[i], rPerm.get()[i] );
@@ -427,10 +433,12 @@ void sortRowsTest( ContextPtr loc )
     }
 }
 
+/* ------------------------------------------------------------------------------------------------------------------ */
+
 template<typename NoType>
 void setInversePermTest( ContextPtr loc )
 {
-    LAMA_INTERFACE_FN( setInversePerm, loc, JDSUtils, Sort );
+    LAMA_INTERFACE_FN( setInversePerm, loc, JDSUtils, Sort )
 
     {
         IndexType valuesPerm[] =
@@ -455,7 +463,7 @@ void setInversePermTest( ContextPtr loc )
 
         HostReadAccess<IndexType> rInversePerm( inversePerm );
 
-        for ( IndexType i = 0; i < numRows; i++ )
+        for( IndexType i = 0; i < numRows; i++ )
         {
             BOOST_CHECK_EQUAL( expectedPerm[i], rInversePerm.get()[i] );
         }
@@ -477,10 +485,12 @@ void setInversePermTest( ContextPtr loc )
     }
 }
 
+/* ------------------------------------------------------------------------------------------------------------------ */
+
 template<typename ValueType,typename OtherValueType>
 void setCSRValuesTest( ContextPtr loc )
 {
-    LAMA_INTERFACE_FN_TT( setCSRValues, loc, JDSUtils, Conversions, ValueType, OtherValueType );
+    LAMA_INTERFACE_FN_TT( setCSRValues, loc, JDSUtils, Conversions, ValueType, OtherValueType )
 
     /*
      * Testmatrix:
@@ -538,25 +548,26 @@ void setCSRValuesTest( ContextPtr loc )
 
         LAMA_CONTEXT_ACCESS( loc );
 
-        setCSRValues( wJDSJa.get(), wJDSValues.get(), numRows, rJDSPerm.get(), rJDSIlg.get(), 
-                      nJDSDlg, rJDSDlg.get(),
+        setCSRValues( wJDSJa.get(), wJDSValues.get(), numRows, rJDSPerm.get(), rJDSIlg.get(), nJDSDlg, rJDSDlg.get(),
                       rCSRIa.get(), rCSRJa.get(), rCSRValues.get() );
     }
 
     HostReadAccess<IndexType> rJDSJa( JDSJa );
     HostReadAccess<ValueType> rJDSValues( JDSValues );
 
-    for ( IndexType i = 0; i < nJDS; i++ )
+    for( IndexType i = 0; i < nJDS; i++ )
     {
         BOOST_CHECK_EQUAL( expectedJDSJa[i], rJDSJa.get()[i] );
         BOOST_CHECK_EQUAL( expectedJDSValues[i], rJDSValues.get()[i] );
     }
 }
 
+/* ------------------------------------------------------------------------------------------------------------------ */
+
 template<typename ValueType,typename OtherValueType>
 void getCSRValuesTest( ContextPtr loc )
 {
-    LAMA_INTERFACE_FN_TT( getCSRValues, loc, JDSUtils, Conversions, ValueType, OtherValueType );
+    LAMA_INTERFACE_FN_TT( getCSRValues, loc, JDSUtils, Conversions, ValueType, OtherValueType )
 
     /*
      * Testmatrix:
@@ -621,7 +632,7 @@ void getCSRValuesTest( ContextPtr loc )
     HostReadAccess<IndexType> rCSRJa( CSRJa );
     HostReadAccess<OtherValueType> rCSRValues( CSRValues );
 
-    for ( IndexType i = 0; i < nJDS; i++ )
+    for( IndexType i = 0; i < nJDS; i++ )
     {
         BOOST_CHECK_EQUAL( expectedCSRJa[i], rCSRJa.get()[i] );
         BOOST_CHECK_EQUAL( expectedCSRValues[i], rCSRValues.get()[i] );
@@ -634,23 +645,20 @@ void getCSRValuesTest( ContextPtr loc )
 /* ----------------------------------------------------------------------------------------------------------------- */
 
 BOOST_AUTO_TEST_SUITE( JDSUtilsTest )
-;
 
-LAMA_LOG_DEF_LOGGER( logger, "Test.JDSUtilsTest" );
+LAMA_LOG_DEF_LOGGER( logger, "Test.JDSUtilsTest" )
 
-LAMA_AUTO_TEST_CASE_TDUMMY( checkDiagonalPropertyTest, JDSUtilsTest );
-LAMA_AUTO_TEST_CASE_TDUMMY( ilg2dlgTest, JDSUtilsTest );
-LAMA_AUTO_TEST_CASE_TDUMMY( sortRowsTest, JDSUtilsTest );
-LAMA_AUTO_TEST_CASE_TDUMMY( setInversePermTest, JDSUtilsTest );
+LAMA_AUTO_TEST_CASE_CTDUMMY( checkDiagonalPropertyTest, JDSUtilsTest )
+LAMA_AUTO_TEST_CASE_CTDUMMY( ilg2dlgTest, JDSUtilsTest )
+LAMA_AUTO_TEST_CASE_CTDUMMY( sortRowsTest, JDSUtilsTest )
+LAMA_AUTO_TEST_CASE_CTDUMMY( setInversePermTest, JDSUtilsTest )
 
-LAMA_AUTO_TEST_CASE_TT( getRowTest, JDSUtilsTest );
-LAMA_AUTO_TEST_CASE_TT( getValueTest, JDSUtilsTest );
-LAMA_AUTO_TEST_CASE_TT( scaleValueTest, JDSUtilsTest );
-LAMA_AUTO_TEST_CASE_TT( setCSRValuesTest, JDSUtilsTest );
-LAMA_AUTO_TEST_CASE_TT( getCSRValuesTest, JDSUtilsTest );
+LAMA_AUTO_TEST_CASE_CTT( getRowTest, JDSUtilsTest )
+LAMA_AUTO_TEST_CASE_CTT( getValueTest, JDSUtilsTest )
+LAMA_AUTO_TEST_CASE_CTT( scaleValueTest, JDSUtilsTest )
+LAMA_AUTO_TEST_CASE_CTT( setCSRValuesTest, JDSUtilsTest )
+LAMA_AUTO_TEST_CASE_CTT( getCSRValuesTest, JDSUtilsTest )
 
 // TODO: add jacobi tests etc.
-
 /* ------------------------------------------------------------------------------------------------------------------ */
-
-BOOST_AUTO_TEST_SUITE_END();
+BOOST_AUTO_TEST_SUITE_END()

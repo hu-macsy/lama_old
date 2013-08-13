@@ -337,9 +337,17 @@ private:
 
     // take this one for diag-major order (fits best for GPUs)
 
-    inline IndexType index( IndexType irow, IndexType idiag ) const
+    static inline IndexType diaindex( const IndexType irow, 
+                                      const IndexType idiag, 
+                                      const IndexType numRows, 
+                                      const IndexType numDiagonals )
     {
-        return idiag * mNumRows + irow;
+        LAMA_ASSERT_ERROR( irow >= 0, "irow = " << irow );
+        LAMA_ASSERT_ERROR( idiag >= 0, "idiag = " << idiag );
+        LAMA_ASSERT_ERROR( irow < numRows, "irow = " << irow << " out of range, numRows = " << numRows );
+        LAMA_ASSERT_ERROR( idiag < numDiagonals, "idiag = " << idiag << " out of range, numDiagonals = " << numDiagonals );
+
+        return idiag * numRows + irow;
     }
 
     // Help routine to set offset from used diagonals

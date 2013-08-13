@@ -47,9 +47,8 @@ using namespace lama;
 /* --------------------------------------------------------------------- */
 
 BOOST_AUTO_TEST_SUITE( CommonLoggerTest )
-;
 
-LAMA_LOG_DEF_LOGGER( logger, "Test.CommonLoggerTest" );
+LAMA_LOG_DEF_LOGGER( logger, "Test.CommonLoggerTest" )
 
 /* --------------------------------------------------------------------- */
 
@@ -104,4 +103,6 @@ BOOST_AUTO_TEST_CASE( ConsoleAndFileLoggingTest )
     logMessageTest( logFileName, LoggerWriteBehaviour::toFileOnly );
     logMessageTest( logFileName, LoggerWriteBehaviour::toConsoleOnly );
 }
-/* --------------------------------------------------------------------- */BOOST_AUTO_TEST_SUITE_END();
+/* --------------------------------------------------------------------- */
+
+BOOST_AUTO_TEST_SUITE_END();

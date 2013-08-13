@@ -54,6 +54,20 @@ class LAMA_DLL_IMPORTEXPORT MKLCSRUtils
 {
 public:
 
+    /** Implementation for CSRUtilsInterface::Transpose::convertCSR2CSC using MKL */
+
+    template<typename ValueType>
+    static void convertCSR2CSC(
+        IndexType cscIA[],
+        IndexType cscJA[],
+        ValueType cscValues[],
+        const IndexType csrIA[],
+        const IndexType csrJA[],
+        const ValueType csrValues[],
+        IndexType numRows,
+        IndexType numColumns,
+        IndexType numValues );
+
     /** Implementation for CSRUtilsInterface::Mult::normalGEMV  */
 
     template<typename ValueType>

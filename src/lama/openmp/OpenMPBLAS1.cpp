@@ -58,7 +58,7 @@ template<>
 void OpenMPBLAS1::scal( const IndexType n, const float alpha, float* x, const IndexType incX, SyncToken* syncToken )
 {
 
-	if ( incX == 0 )
+	if ( incX <= 0 )
 	{
 		return;
 	}
@@ -115,6 +115,11 @@ float OpenMPBLAS1::nrm2( const IndexType n, const float* x, const IndexType incX
 {
     LAMA_LOG_DEBUG( logger, "nrm2<float>, n = " << n << ", x = " << x << ", incX = " << incX )
 
+    if ( incX <= 0 )
+    {
+    	return 0.0;
+    }
+
     if ( syncToken )
     {
         LAMA_LOG_WARN( logger, "no asynchronous execution for openmp possible at this level." )
@@ -135,6 +140,11 @@ template<>
 double OpenMPBLAS1::nrm2( const IndexType n, const double* x, const IndexType incX, SyncToken* syncToken )
 {
     LAMA_LOG_DEBUG( logger, "nrm2<double>, n = " << n << ", x = " << x << ", incX = " << incX )
+
+	if ( incX <= 0 )
+	{
+		return 0.0;
+	}
 
     if ( syncToken )
     {
@@ -165,7 +175,7 @@ float OpenMPBLAS1::asum( const IndexType n, const float* x, const IndexType incX
     }
 
     float asum = 0.0;
-    if (incX != 0)
+    if (incX > 0)
     {
 #ifdef F77_INT
     F77_INT F77_N = n, F77_incX = incX, F77_incY = incY;
@@ -189,7 +199,7 @@ double OpenMPBLAS1::asum( const IndexType n, const double* x, const IndexType in
     }
 
     double asum = 0.0;
-    if (incX != 0)
+    if (incX > 0)
     {
 #ifdef F77_INT
     F77_INT F77_N = n, F77_incX = incX, F77_incY = incY;
@@ -207,7 +217,7 @@ double OpenMPBLAS1::asum( const IndexType n, const double* x, const IndexType in
 template<>
 IndexType OpenMPBLAS1::iamax( const IndexType n, const float* x, const IndexType incX, SyncToken* syncToken )
 {
-    LAMA_LOG_DEBUG( logger, "iamax<float>, n = " << n << ", x = " << x << ", incX = " << incX )
+    LAMA_LOG_INFO( logger, "iamax<float>, n = " << n << ", x = " << x << ", incX = " << incX )
 
     if ( syncToken )
     {
@@ -228,7 +238,7 @@ IndexType OpenMPBLAS1::iamax( const IndexType n, const float* x, const IndexType
 template<>
 IndexType OpenMPBLAS1::iamax( const IndexType n, const double* x, const IndexType incX, SyncToken* syncToken )
 {
-    LAMA_LOG_DEBUG( logger, "iamax<double>, n = " << n << ", x = " << x << ", incX = " << incX )
+    LAMA_LOG_INFO( logger, "iamax<double>, n = " << n << ", x = " << x << ", incX = " << incX )
 
     if ( syncToken )
     {
@@ -304,6 +314,11 @@ void OpenMPBLAS1::swap(
     LAMA_LOG_DEBUG( logger,
                     "iamax<float>, n = " << n << ", x = " << x << ", incX = " << incX << ", y = " << y << ", incY = " << incY )
 
+	if ( (incX <= 0) || (incY <= 0) )
+	{
+		return;
+	}
+
     if ( syncToken )
     {
         LAMA_LOG_WARN( logger, "no asynchronous execution for openmp possible at this level." )
@@ -330,6 +345,11 @@ void OpenMPBLAS1::swap(
 {
     LAMA_LOG_DEBUG( logger,
                     "iamax<double>, n = " << n << ", x = " << x << ", incX = " << incX << ", y = " << y << ", incY = " << incY )
+
+	if ( (incX <= 0) || (incY <= 0) )
+	{
+		return;
+	}
 
     if ( syncToken )
     {
@@ -360,6 +380,11 @@ void OpenMPBLAS1::copy(
     LAMA_LOG_DEBUG( logger,
                     "copy<float>, n = " << n << ", x = " << x << ", incX = " << incX << ", y = " << y << ", incY = " << incY )
 
+	if ( (incX <= 0) || (incY <= 0) )
+	{
+		return;
+	}
+
     if ( syncToken )
     {
         LAMA_LOG_WARN( logger, "no asynchronous execution for openmp possible at this level." )
@@ -386,6 +411,11 @@ void OpenMPBLAS1::copy(
 {
     LAMA_LOG_DEBUG( logger,
                     "copy<double>, n = " << n << ", x = " << x << ", incX = " << incX << ", y = " << y << ", incY = " << incY )
+
+	if ( (incX <= 0) || (incY <= 0) )
+	{
+		return;
+	}
 
     if ( syncToken )
     {
@@ -417,6 +447,11 @@ void OpenMPBLAS1::axpy(
     LAMA_LOG_DEBUG( logger,
                     "axpy<float>, n = " << n << ", alpha = " << alpha << ", x = " << x << ", incX = " << incX << ", y = " << y << ", incY = " << incY )
 
+	if ( (incX <= 0) || (incY <= 0) )
+	{
+		return;
+	}
+
     if ( syncToken )
     {
         LAMA_LOG_WARN( logger, "no asynchronous execution for openmp possible at this level." )
@@ -447,6 +482,11 @@ void OpenMPBLAS1::axpy(
     LAMA_LOG_DEBUG( logger,
                     "axpy<double>, n = " << n << ", alpha = " << alpha << ", x = " << x << ", incX = " << incX << ", y = " << y << ", incY = " << incY )
 
+	if ( (incX <= 0) || (incY <= 0) )
+	{
+		return;
+	}
+
     if ( syncToken )
     {
         LAMA_LOG_WARN( logger, "no asynchronous execution for openmp possible at this level." )
@@ -475,8 +515,13 @@ float OpenMPBLAS1::dot(
 {
     LAMA_REGION( "OpenMP.BLAS1.sdot" )
 
-    LAMA_LOG_DEBUG( logger,
-                    "dot<float>, n = " << n << ", x = " << x << ", incX = " << incX << ", y = " << y << ", incY = " << incY )
+	LAMA_LOG_DEBUG( logger,
+					"dot<float>, n = " << n << ", x = " << x << ", incX = " << incX << ", y = " << y << ", incY = " << incY )
+
+	if ( (incX <= 0) || (incY <= 0) )
+	{
+		return 0.0;
+	}
 
     if ( syncToken )
     {
@@ -506,8 +551,13 @@ double OpenMPBLAS1::dot(
 {
     LAMA_REGION( "OpenMP.BLAS1.ddot" )
 
-    LAMA_LOG_DEBUG( logger,
-                    "dot<double>, n = " << n << ", x = " << x << ", incX = " << incX << ", y = " << y << ", incY = " << incY )
+	LAMA_LOG_DEBUG( logger,
+					"dot<double>, n = " << n << ", x = " << x << ", incX = " << incX << ", y = " << y << ", incY = " << incY )
+
+	if ( (incX <= 0) || (incY <= 0) )
+	{
+		return 0.0;
+	}
 
     if ( syncToken )
     {
@@ -738,6 +788,8 @@ void OpenMPBLAS1::rotmg( double* d1, double* d2, double* b1, const double b2, do
 
 void OpenMPBLAS1::setInterface( BLASInterface& BLAS )
 {
+    LAMA_LOG_INFO( logger, "set BLAS1 routines for OpenMP in Interface" )
+
     // Note: macro takes advantage of same name for routines and type definitions 
     //       ( e.g. routine CUDABLAS1::sum<T> is set for BLAS::BLAS1::sum variable
 

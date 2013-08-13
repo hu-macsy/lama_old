@@ -105,6 +105,8 @@ void MICBLAS3::gemm(
             LAMA_THROWEXCEPTION( "Illegal order setting " << order )
     }
 
+    LAMA_LOG_INFO( logger, "gemm, ta = " << ta << ", tb = " << tb << ", a has shape " << m << " x " << n )
+
     #pragma offload target( mic ), in( ta, tb, m, n, k, alpha, aPtr, lda, bPtr, ldb, beta, cPtr, ldc )
     {
         const float* a = static_cast<const float*>( aPtr );
@@ -162,6 +164,8 @@ void MICBLAS3::gemm(
             LAMA_THROWEXCEPTION( "Illegal order setting " << order )
     }
 
+    LAMA_LOG_INFO( logger, "gemm, ta = " << ta << ", tb = " << tb << ", a has shape " << m << " x " << n )
+
     #pragma offload target( mic ), in( ta, tb, m, n, k, alpha, aPtr, lda, bPtr, ldb, beta, cPtr, ldc )
     {
         const double* a = static_cast<const double*>( aPtr );
@@ -179,6 +183,8 @@ void MICBLAS3::gemm(
 
 void MICBLAS3::setInterface( BLASInterface& BLAS )
 {
+    LAMA_LOG_INFO( logger, "set BLAS3 routines for MIC in Interface" )
+
     // Note: macro takes advantage of same name for routines and type definitions 
     //       ( e.g. routine CUDABLAS1::sum<T> is set for BLAS::BLAS1::sum variable
 

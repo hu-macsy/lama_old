@@ -52,15 +52,15 @@ using namespace lama;
 /* --------------------------------------------------------------------- */
 
 BOOST_AUTO_TEST_SUITE( SparseAssemblyStorageTest )
-;
 
-LAMA_LOG_DEF_LOGGER( logger, "Test.SparseAssemblyStorageTest" );
+LAMA_LOG_DEF_LOGGER( logger, "Test.SparseAssemblyStorageTest" )
 
 typedef boost::mpl::list<float,double> ValueTypes;
 
 /* --------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( MatrixStorageTestWithSparseAssemblyStorage, T, ValueTypes ) {
+BOOST_AUTO_TEST_CASE_TEMPLATE( MatrixStorageTestWithSparseAssemblyStorage, T, ValueTypes )
+{
     SparseAssemblyStorage<T> assemblyStorage;
     MatrixStorageTest<T> storageTest( assemblyStorage );
     storageTest.runTests();
@@ -68,7 +68,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( MatrixStorageTestWithSparseAssemblyStorage, T, Va
 
 /* ------------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( ConstructorTest, T, ValueTypes ) {
+BOOST_AUTO_TEST_CASE_TEMPLATE( ConstructorTest, T, ValueTypes )
+{
     const IndexType numRows = 10;
     const IndexType numColumns = 15;
 
@@ -105,7 +106,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( ConstructorTest, T, ValueTypes ) {
 
 /* --------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( SetRowTest, T, ValueTypes ) {
+BOOST_AUTO_TEST_CASE_TEMPLATE( SetRowTest, T, ValueTypes )
+{
     const IndexType n = 10;
 
     CSRStorage<T> csrStorage;
@@ -152,4 +154,6 @@ BOOST_AUTO_TEST_CASE( typeNameTest )
     s = aStoragef.typeName();
     BOOST_CHECK_EQUAL( s, "SparseAssemblyStorage<float>" );
 }
-/* ------------------------------------------------------------------------- */BOOST_AUTO_TEST_SUITE_END();
+/* ------------------------------------------------------------------------- */
+
+BOOST_AUTO_TEST_SUITE_END();

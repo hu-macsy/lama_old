@@ -67,7 +67,6 @@ typedef boost::mpl::list<float,double> test_types;
 /* --------------------------------------------------------------------- */
 
 BOOST_AUTO_TEST_SUITE( P_InverseSolverTest )
-;
 
 LAMA_LOG_DEF_LOGGER( logger, "Test.P_InverseSolverTest" );
 
@@ -85,7 +84,7 @@ void testSolveMethod( ContextPtr loc )
     LAMA_LOG_INFO( logger, "Problem size = " << N1 << " x " << N2 );
 
     LoggerPtr loggerD(
-        new CommonLogger( "<InverseSolver>: ", LogLevel::completeInformation,
+        new CommonLogger( "<InverseSolver>: ", LogLevel::noLogging,
                           LoggerWriteBehaviour::toConsoleOnly,
                           std::auto_ptr<Timer>( new Timer() ) ) );
 
