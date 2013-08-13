@@ -55,13 +55,43 @@ double multiply(
     lama::CSRSparseMatrix<ValueType> *matrixC,
     lama::ContextType context,
     const bool prefetch,
-    const bool silentFlag )
+    const bool silentFlag,
+    const bool sortFlag )
 {
     lama::ContextPtr loc = lama::ContextFactory::getContext( context );
 
     matrixA->setContext( loc );
     matrixB->setContext( loc );
 
+    if( sortFlag )
+    {
+        lama::CSRStorage<ValueType> localStorageA = matrixA->getLocalStorage();
+        lama::CSRStorage<ValueType> localStorageB = matrixB->getLocalStorage();
+
+        lama::HostReadAccess<lama::IndexType> aIA( localStorageA.getIA() );
+        lama::HostWriteAccess<lama::IndexType> aJA( localStorageA.getJA() );
+        lama::HostWriteAccess<ValueType> aValues( localStorageA.getValues() );
+
+        lama::HostReadAccess<lama::IndexType> bIA( localStorageB.getIA() );
+        lama::HostWriteAccess<lama::IndexType> bJA( localStorageB.getJA() );
+        lama::HostWriteAccess<ValueType> bValues( localStorageB.getValues() );
+
+        lama::OpenMPCSRUtils::sortRowElements(aJA.get(), aValues.get(), aIA.get(), localStorageA.getNumRows(), false);
+        lama::OpenMPCSRUtils::sortRowElements(bJA.get(), bValues.get(), bIA.get(), localStorageB.getNumRows(), false);
+
+
+
+        for ( int i = 0; i < localStorageA.getNumRows(); ++i )
+        {
+            std::cout << "row " << i << ": ";
+            for ( int j = bIA[i]; j < bIA[i+1]; ++j )
+            {
+                std::cout << bJA.get()[j] << " ";
+            }
+            std::cout << std::endl;
+
+        }
+    }
     if( prefetch )
     {
         if( !silentFlag )
@@ -359,13 +389,14 @@ int main( int argc, char **argv )
     bool benchmarkFlag = false;
     bool randomFlag = false;
     bool inputSet = false;
+    bool sortFlag = false;
     bool helpFlag = false;
     int size = 1000;
     float density = 1.0;
     std::string inputMatrix;
     int parameter;
 
-    while( ( parameter = getopt( argc, argv, "hvpi:sbrg:d:" ) ) != -1 )
+    while( ( parameter = getopt( argc, argv, "hvpi:sbrg:d:o" ) ) != -1 )
     {
         switch( parameter )
         {
@@ -382,6 +413,9 @@ int main( int argc, char **argv )
             break;
         case 's':
             silentFlag = true;
+            break;
+        case 'o':
+            sortFlag = true;
             break;
         case 'b':
             benchmarkFlag = true;
@@ -417,6 +451,7 @@ int main( int argc, char **argv )
     	std::cout << "-r\t Generate random matrices for multiplication. Also see -g and -d" << std::endl;
     	std::cout << "-g\t Num Rows/Columns of generated random matrices" << std::endl;
     	std::cout << "-d\t Density of generated random matrices" << std::endl;
+    	std::cout << "-o\t Sorts the elements of the JA-Array, needed for multiplication using CUSPARSE" << std::endl;
     	std::cout << "-h\t Display this help" << std::endl;
 
     	return 0;
@@ -474,9 +509,9 @@ int main( int argc, char **argv )
 		if( benchmarkFlag )
 		{
 			double time1 = multiply<double>( &matrixA, &matrixB, &matrixCCuda, lama::Context::CUDA, prefetchFlag,
-											 silentFlag );
+											 silentFlag, sortFlag );
 			double time2 = multiply<double>( &matrixA, &matrixB, &matrixCHost, lama::Context::Host, prefetchFlag,
-											 silentFlag );
+											 silentFlag, sortFlag );
 
 			if( !silentFlag )
 			{
@@ -486,7 +521,7 @@ int main( int argc, char **argv )
 		}
 		else
 		{
-			multiply<double>( &matrixA, &matrixB, &matrixCCuda, lama::Context::CUDA, prefetchFlag, silentFlag );
+			multiply<double>( &matrixA, &matrixB, &matrixCCuda, lama::Context::CUDA, prefetchFlag, silentFlag, sortFlag );
 		}
 
 		if( !silentFlag )
