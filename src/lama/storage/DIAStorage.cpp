@@ -536,7 +536,7 @@ void DIAStorage<ValueType>::setCSRDataImpl(
 
     _MatrixStorage::setDimension( numRows, numColumns );
 
-    LAMA_LOG_DEBUG( logger, "fill DIA sparse maxtrix " << mNumRows << " x " << mNumColumns << " from csr data" )
+    LAMA_LOG_DEBUG( logger, "fill DIA sparse matrix " << mNumRows << " x " << mNumColumns << " from csr data" )
 
     // build a set of all used lower and upper diagonals
 

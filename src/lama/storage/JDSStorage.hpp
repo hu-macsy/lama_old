@@ -104,6 +104,14 @@ public:
 
     explicit JDSStorage( const _MatrixStorage& other );
 
+    /** Copy constructor can take any matrix storage or context. */
+
+    JDSStorage( const _MatrixStorage& other, const ContextPtr context )
+    {
+        setContext( context );
+        assign( other );
+    }
+
     /** Default assignment operator is overridden */
 
     JDSStorage<ValueType>& operator=( const JDSStorage<ValueType>& other );
@@ -352,6 +360,7 @@ public:
     using MatrixStorage<ValueType>::prefetch;
     using MatrixStorage<ValueType>::getContext;
     using MatrixStorage<ValueType>::getContextPtr;
+    using MatrixStorage<ValueType>::setContext;
 
 protected:
 

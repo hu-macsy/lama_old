@@ -301,20 +301,6 @@ public:
 
     void wait() const;
 
-    using MatrixStorage<ValueType>::mDiagonalProperty;
-    using MatrixStorage<ValueType>::mRowIndexes;
-    using MatrixStorage<ValueType>::mCompressThreshold;
-
-    using MatrixStorage<ValueType>::prefetch;
-    using MatrixStorage<ValueType>::getContext;
-    using MatrixStorage<ValueType>::getContextPtr;
-
-    IndexType mNumValues; //!< number of stored elements
-
-    LAMAArray<IndexType> mIa; //!< offsets for ja and data, size is numRows+1
-    LAMAArray<IndexType> mJa; //!< column indexes, size is mIa[ numRows ]
-    LAMAArray<ValueType> mValues; //!< non-zero values, size is equal to mJa
-
     /** Allocation of CSR storage with size numRows x numColumns
      *
      * @param[in] numRows    number of rows
@@ -517,10 +503,23 @@ public:
     void buildSparseRowData( LAMAArray<IndexType>& ja,
         LAMAArray<ValueType>& values ) const;
 
+    using MatrixStorage<ValueType>::prefetch;
+    using MatrixStorage<ValueType>::getContext;
+    using MatrixStorage<ValueType>::getContextPtr;
+
 protected:
 
     using MatrixStorage<ValueType>::mNumRows;
     using MatrixStorage<ValueType>::mNumColumns;
+    using MatrixStorage<ValueType>::mDiagonalProperty;
+    using MatrixStorage<ValueType>::mRowIndexes;
+    using MatrixStorage<ValueType>::mCompressThreshold;
+
+    IndexType mNumValues; //!< number of stored elements
+
+    LAMAArray<IndexType> mIa; //!< offsets for ja and data, size is numRows+1
+    LAMAArray<IndexType> mJa; //!< column indexes, size is mIa[ numRows ]
+    LAMAArray<ValueType> mValues; //!< non-zero values, size is equal to mJa
 
 private:
 

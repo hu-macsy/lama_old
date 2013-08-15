@@ -104,7 +104,7 @@ public:
         const LAMAArray<IndexType>& ja,
         const LAMAArray<ValueType>& values );
 
-    /** Override the default copy constructor */
+    /** Default copy constructor is overridden */
 
     ELLStorage( const ELLStorage<ValueType>& other );
 
@@ -410,12 +410,6 @@ public:
 
     virtual size_t getMemoryUsageImpl() const;
 
-    using MatrixStorage<ValueType>::mNumRows;
-    using MatrixStorage<ValueType>::mNumColumns;
-    using MatrixStorage<ValueType>::mDiagonalProperty;
-    using MatrixStorage<ValueType>::mRowIndexes;
-    using MatrixStorage<ValueType>::mCompressThreshold;
-
     using MatrixStorage<ValueType>::assign;
     using MatrixStorage<ValueType>::prefetch;
     using MatrixStorage<ValueType>::getContextPtr;
@@ -424,6 +418,14 @@ public:
     /** Print out the ELL storage on std::out, use only for debug. */
 
     void print() const;
+
+protected:
+
+    using MatrixStorage<ValueType>::mNumRows;
+    using MatrixStorage<ValueType>::mNumColumns;
+    using MatrixStorage<ValueType>::mDiagonalProperty;
+    using MatrixStorage<ValueType>::mRowIndexes;
+    using MatrixStorage<ValueType>::mCompressThreshold;
 
 private:
 

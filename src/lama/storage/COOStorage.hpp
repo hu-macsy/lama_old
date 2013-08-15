@@ -106,6 +106,14 @@ public:
         assign( other );
     }
 
+    /** Copy constructor can take any matrix storage or context. */
+
+    COOStorage( const _MatrixStorage& other, const ContextPtr context )
+    {
+        setContext( context );
+        assign( other );
+    }
+
     /** Default assignment operator is overridden */
 
     COOStorage<ValueType>& operator=( const COOStorage<ValueType>& other )
@@ -345,15 +353,18 @@ public:
 
     virtual size_t getMemoryUsageImpl() const;
 
+    using MatrixStorage<ValueType>::assign;
+    using MatrixStorage<ValueType>::prefetch;
+    using MatrixStorage<ValueType>::getContextPtr;
+    using MatrixStorage<ValueType>::setContext;
+
+protected:
+
     using MatrixStorage<ValueType>::mNumRows;
     using MatrixStorage<ValueType>::mNumColumns;
     using MatrixStorage<ValueType>::mDiagonalProperty;
     using MatrixStorage<ValueType>::mRowIndexes;
     using MatrixStorage<ValueType>::mCompressThreshold;
-
-    using MatrixStorage<ValueType>::assign;
-    using MatrixStorage<ValueType>::prefetch;
-    using MatrixStorage<ValueType>::getContextPtr;
 
     IndexType mNumValues; //!< number of non-zero values (+ optionally zeros in diagonal)
 

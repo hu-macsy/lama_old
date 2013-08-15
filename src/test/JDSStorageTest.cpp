@@ -91,7 +91,6 @@ void checkTest( ContextPtr context )
         jdsStorage.setContext( context );
 
         // setJDSData will copy/convert values up to the needed context
-
         jdsStorage.setJDSData( numRows, numColumns, numValues, numDiagonals, jdsDLG, jdsILG, jdsPerm, jdsJA,
                                jdsValues );
 
@@ -190,7 +189,7 @@ void constructorTest( )
 /* ------------------------------------------------------------------------------------------------------------------ */
 
 template<typename ValueType>
-void constructorTest1( )
+void constructorTest1(  ContextPtr context )
 {
 
     const IndexType numRows = 3;
@@ -230,8 +229,7 @@ void constructorTest1( )
     JDSStorage<ValueType> jdsStorage( numRows, numColumns, numValues, numDiagonals,
                                       jdsDLG, jdsILG, jdsPerm, jdsJA, jdsValues );
 
-// Test all the getter routines, includes the specific ones for JDSStorage
-
+    // Test all the getter routines, includes the specific ones for JDSStorage
     BOOST_REQUIRE_EQUAL( numRows, jdsStorage.getNumRows() );
     BOOST_REQUIRE_EQUAL( numColumns, jdsStorage.getNumColumns() );
     BOOST_REQUIRE_EQUAL( numDiagonals, jdsStorage.getNumDiagonals() );
@@ -264,6 +262,41 @@ void constructorTest1( )
             BOOST_CHECK_EQUAL( values[i], jdsValues[i] );
         }
     }
+
+    // copy constructor on all available locations
+    JDSStorage<ValueType> jdsStorageCopy( jdsStorage, context );
+    BOOST_REQUIRE_EQUAL( numRows, jdsStorageCopy.getNumRows() );
+    BOOST_REQUIRE_EQUAL( numColumns, jdsStorageCopy.getNumColumns() );
+    BOOST_REQUIRE_EQUAL( numDiagonals, jdsStorageCopy.getNumDiagonals() );
+
+    {
+        HostReadAccess<IndexType> jdsILG( jdsStorageCopy.getIlg() );
+        HostReadAccess<IndexType> jdsPerm( jdsStorageCopy.getPerm() );
+
+        for ( IndexType i = 0; i < numRows; ++i )
+        {
+            BOOST_CHECK_EQUAL( ilg[i], jdsILG[i] );
+            BOOST_CHECK_EQUAL( perm[i], jdsPerm[i] );
+        }
+
+        HostReadAccess<IndexType> jdsDLG( jdsStorageCopy.getDlg() );
+
+        for ( IndexType i = 0; i < numDiagonals; ++i)
+        {
+            BOOST_CHECK_EQUAL( dlg[i], jdsDLG[i] );
+        }
+
+        HostReadAccess<IndexType> jdsJA( jdsStorageCopy.getJA() );
+        HostReadAccess<ValueType> jdsValues( jdsStorageCopy.getValues() );
+
+        // JDS keeps values in same order
+
+        for ( IndexType i = 0; i < numValues; ++i )
+        {
+            BOOST_CHECK_EQUAL( ja[i], jdsJA[i] );
+            BOOST_CHECK_EQUAL( values[i], jdsValues[i] );
+        }
+    }
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */
@@ -276,6 +309,7 @@ void typeNameTest( )
 
     BOOST_CHECK( s.length() > 0);
 }
+
 } // namespace JDSStorageTest
 } // namespace lama
 
@@ -289,7 +323,7 @@ LAMA_LOG_DEF_LOGGER( logger, "Test.JDSStorageTest" )
 LAMA_AUTO_TEST_CASE_CT( checkTest, JDSStorageTest )
 LAMA_AUTO_TEST_CASE_CT( commonTestCases, JDSStorageTest )
 LAMA_AUTO_TEST_CASE_T( constructorTest, JDSStorageTest )
-LAMA_AUTO_TEST_CASE_T( constructorTest1, JDSStorageTest )
+LAMA_AUTO_TEST_CASE_CT( constructorTest1, JDSStorageTest )
 LAMA_AUTO_TEST_CASE_T( typeNameTest, JDSStorageTest )
 
 /* ------------------------------------------------------------------------------------------------------------------ */

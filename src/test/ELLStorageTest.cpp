@@ -46,92 +46,78 @@ using namespace lama;
 extern bool base_test_case;
 extern std::string testcase;
 
-/* --------------------------------------------------------------------- */
-
-BOOST_AUTO_TEST_SUITE( ELLStorageTest )
-
-LAMA_LOG_DEF_LOGGER( logger, "Test.ELLStorageTest" )
-
-typedef boost::mpl::list<float,double> ValueTypes;
-
-/* --------------------------------------------------------------------- */
-
-BOOST_AUTO_TEST_CASE_TEMPLATE( commonTestCases, T, ValueTypes )
+namespace lama
 {
-    typedef T ValueType;
+namespace ELLStorageTest
+{
+
+template<typename ValueType>
+void commonTestCases( ContextPtr loc )
+{
 
     ELLStorage<ValueType> ellStorage;
     MatrixStorageTest<ValueType> storageTest( ellStorage );
+    storageTest.mMatrixStorage.setContext( loc );
 
-    if ( base_test_case )
+    if( base_test_case )
     {
-        LAMA_LOG_INFO( logger, "Run method " << testcase << " in ELLStorageTest." );
         MATRIXSTORAGE_COMMONTESTCASES( storageTest );
     }
     else
     {
-        CONTEXTLOOP()
-        {
-            GETCONTEXT( context );
-            storageTest.mMatrixStorage.setContext( context );
-            LAMA_LOG_INFO( logger, "Using context = " << storageTest.mMatrixStorage.getContext().getType() );
-            storageTest.runTests();
-        }
+        storageTest.runTests();
     }
 }
 
-/* --------------------------------------------------------------------- */
+/* ------------------------------------------------------------------------------------------------------------------ */
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( ConstructorTest, T, ValueTypes )
+template<typename ValueType>
+void constructorTest( ContextPtr loc )
 {
-    typedef T ValueType;
 
     const IndexType numRows = 10;
     const IndexType numColumns = 15;
 
-    ELLStorage<ValueType> ellStorage( numRows, numColumns );
-
-// TODO: to check CUDA:
-// ELLStorage<T> ellStorage( numRows, numColumns, Context::CUDA );
+    ELLStorage<ValueType> ellStorage( numRows, numColumns, loc->getType() );
 
     BOOST_REQUIRE_EQUAL( numRows, ellStorage.getNumRows() );
     BOOST_REQUIRE_EQUAL( numColumns, ellStorage.getNumColumns() );
     BOOST_REQUIRE_EQUAL( 0, ellStorage.getNumValues() );
 
-    for ( IndexType i = 0; i < numRows; ++i )
+    for( IndexType i = 0; i < numRows; ++i )
     {
-        for ( IndexType j = 0; j < numColumns; ++j )
+        for( IndexType j = 0; j < numColumns; ++j )
         {
-            float v = static_cast<float> ( ellStorage.getValue( i, j ) );
-            BOOST_CHECK_SMALL( v , 1.0e-5f );
+            float v = static_cast<float>( ellStorage.getValue( i, j ) );
+            BOOST_CHECK_SMALL( v, 1.0e-5f );
         }
     }
 }
 
-/* --------------------------------------------------------------------- */
+/* ------------------------------------------------------------------------------------------------------------------ */
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( ConstructorTest1, T, ValueTypes )
+template<typename ValueType>
+void constructorTest1( ContextPtr loc )
 {
-    typedef T ValueType;
 
     const IndexType numRows = 3;
     const IndexType numColumns = 3;
 
     const IndexType ia[] =
-    {   1, 1, 2};
+    { 1, 1, 2 };
 
     const IndexType numValuesPerRow = 2;
 
-// Note: ja, values are stored column-major order
+    // Note: ja, values are stored column-major order
 
     const IndexType ja[] =
-    {   0, 1, 2, 0, 0, 2};
+    { 0, 1, 2, 0, 0, 2 };
     const ValueType values[] =
-    {   0.5f, 0.5f, 0.3f, 0.0f, 0.0f, 0.2f};
+    { 0.5f, 0.5f, 0.3f, 0.0f, 0.0f, 0.2f };
 
     const IndexType numValues = numRows * numValuesPerRow;
-    const IndexType sizeJA = sizeof( ja ) / sizeof( IndexType );
-    const IndexType sizeValues = sizeof( values ) / sizeof( ValueType );
+    const IndexType sizeJA = sizeof( ja ) / sizeof(IndexType);
+    const IndexType sizeValues = sizeof( values ) / sizeof(ValueType);
 
     BOOST_CHECK_EQUAL( numValues, sizeJA );
     BOOST_CHECK_EQUAL( numValues, sizeValues );
@@ -154,11 +140,11 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( ConstructorTest1, T, ValueTypes )
 
         // ELL keeps values in same order
 
-        for ( IndexType i = 0; i < numRows; ++i )
+        for( IndexType i = 0; i < numRows; ++i )
         {
             BOOST_REQUIRE_EQUAL( ia[i], ellIA[i] );
 
-            for ( IndexType jj = 0; jj < ia[i]; ++jj )
+            for( IndexType jj = 0; jj < ia[i]; ++jj )
             {
                 IndexType pos = i + jj * numRows;
                 BOOST_CHECK_EQUAL( ja[pos], ellJA[pos] );
@@ -167,94 +153,133 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( ConstructorTest1, T, ValueTypes )
 
             // values must have been filled up with 0 outside legal part 
 
-            for ( IndexType jj = ia[i]; jj < numValuesPerRow; ++jj )
+            for( IndexType jj = ia[i]; jj < numValuesPerRow; ++jj )
             {
                 IndexType pos = i + jj * numRows;
                 BOOST_CHECK_EQUAL( static_cast<ValueType>( 0 ), ellValues[pos] );
             }
         }
     }
-}
 
-/* ------------------------------------------------------------------------- */
+    // copy constructor on all available locations
+    ELLStorage<ValueType> ellStorageCopy( ellStorage, loc );
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( CheckTest, T, ValueTypes )
-{
-    // This routine tests the check method of ELLStorage, individually for this class
+    BOOST_REQUIRE_EQUAL( numRows, ellStorageCopy.getNumRows() );
+    BOOST_REQUIRE_EQUAL( numColumns, ellStorageCopy.getNumColumns() );
+    BOOST_REQUIRE_EQUAL( numValuesPerRow, ellStorageCopy.getNumValuesPerRow() );
+    BOOST_REQUIRE_EQUAL( ia[0] + ia[1] + ia[2], ellStorageCopy.getNumValues() );
 
-    typedef T ValueType;
-
-    CONTEXTLOOP()
     {
-        GETCONTEXT( context );
+        HostReadAccess<IndexType> ellIALocal( ellStorageCopy.getIA() );
+        HostReadAccess<IndexType> ellJALocal( ellStorageCopy.getJA() );
+        HostReadAccess<ValueType> ellValuesLocal( ellStorageCopy.getValues() );
 
-        for ( int icase = 0; icase < 3; ++icase )
+        // ELL keeps values in same order
+        for( IndexType i = 0; i < numRows; ++i )
         {
-            // build up a correct ELLPACK storage
+            BOOST_REQUIRE_EQUAL( ia[i], ellIALocal[i] );
 
-            const IndexType numRows = 3;
-            const IndexType numColumns = 3;
-            const IndexType numValuesPerRow = 2;
-
-            const IndexType numValues = numRows * numValuesPerRow;
-
-            const IndexType ia[] = { 1, 1, 2 };
-
-            const IndexType ja[] = { 0, 1, 2, 0, 0, 2 };
-
-            // just make sure that ia and ja have correct sizes
-
-            BOOST_REQUIRE_EQUAL( numRows, static_cast<IndexType>( sizeof( ia ) / sizeof( IndexType ) ) );
-            BOOST_REQUIRE_EQUAL( numValues, static_cast<IndexType>( sizeof( ja ) / sizeof( IndexType ) ) );
-
-            LAMAArrayRef<IndexType> ellIA( ia, numRows );
-            LAMAArrayRef<IndexType> ellJA( ja, numValues );
-            LAMAArray<ValueType> ellValues( numValues, 1.0 );  // values needed, but do not matter here
-
-            ELLStorage<ValueType> ellStorage;
-
-            ellStorage.setContext( context );
-
-            ellStorage.setELLData( numRows, numColumns, numValuesPerRow, 
-                                   ellIA, ellJA, ellValues );
-
-            if ( icase == 0 )
+            for( IndexType jj = 0; jj < ia[i]; ++jj )
             {
-                ellStorage.check( "test with correct values" );
+                IndexType pos = i + jj * numRows;
+                BOOST_CHECK_EQUAL( ja[pos], ellJALocal[pos] );
+                BOOST_CHECK_EQUAL( values[pos], ellValuesLocal[pos] );
             }
-            else if ( icase == 1 )
-            {
-                //  -> invalid ia     { 1, 1, 3 }
 
-                LAMAArray<IndexType>& ellIA = const_cast<LAMAArray<IndexType>&>( ellStorage.getIA() );
-                LAMAArrayUtils::setVal( ellIA, 2, 3 );
-                BOOST_CHECK_THROW( { ellStorage.check( "Expect illegal index in JA" ); }, Exception );
-            }
-            else if ( icase == 2 )
-            {
-                //  -> invalid ja     { 0, 1, 2, 0, 0, 2 }
+            // values must have been filled up with 0 outside legal part
 
-                LAMAArray<IndexType>& ellJA = const_cast<LAMAArray<IndexType>&>( ellStorage.getJA() );
-                LAMAArrayUtils::setVal( ellJA, 5, 15 );
-                BOOST_CHECK_THROW( { ellStorage.check( "Expect illegal index in JA" ); }, Exception );
+            for( IndexType jj = ia[i]; jj < numValuesPerRow; ++jj )
+            {
+                IndexType pos = i + jj * numRows;
+                BOOST_CHECK_EQUAL( static_cast<ValueType>( 0 ), ellValuesLocal[pos] );
             }
         }
     }
 }
 
-/* --------------------------------------------------------------------- */
+/* ------------------------------------------------------------------------------------------------------------------ */
 
-BOOST_AUTO_TEST_CASE( typeNameTest )
+template<typename ValueType>
+void checkTest( ContextPtr loc )
 {
-    ELLStorage<double> ellStoraged;
-    std::string s = ellStoraged.typeName();
-    BOOST_CHECK_EQUAL( s, "ELLStorage<double>" );
+    // This routine tests the check method of ELLStorage, individually for this class
+    for( int icase = 0; icase < 3; ++icase )
+    {
+        // build up a correct ELLPACK storage
 
-    ELLStorage<float> ellStoragef;
-    s = ellStoragef.typeName();
-    BOOST_CHECK_EQUAL( s, "ELLStorage<float>" );
+        const IndexType numRows = 3;
+        const IndexType numColumns = 3;
+        const IndexType numValuesPerRow = 2;
+
+        const IndexType numValues = numRows * numValuesPerRow;
+
+        const IndexType ia[] =
+        { 1, 1, 2 };
+
+        const IndexType ja[] =
+        { 0, 1, 2, 0, 0, 2 };
+
+        // just make sure that ia and ja have correct sizes
+
+        BOOST_REQUIRE_EQUAL( numRows, static_cast<IndexType>( sizeof( ia ) / sizeof( IndexType ) ) );
+        BOOST_REQUIRE_EQUAL( numValues, static_cast<IndexType>( sizeof( ja ) / sizeof( IndexType ) ) );
+
+        LAMAArrayRef<IndexType> ellIA( ia, numRows );
+        LAMAArrayRef<IndexType> ellJA( ja, numValues );
+        LAMAArray<ValueType> ellValues( numValues, 1.0 ); // values needed, but do not matter here
+
+        ELLStorage<ValueType> ellStorage;
+
+        ellStorage.setContext( loc );
+
+        ellStorage.setELLData( numRows, numColumns, numValuesPerRow, ellIA, ellJA, ellValues );
+
+        if( icase == 0 )
+        {
+            ellStorage.check( "test with correct values" );
+        }
+        else if( icase == 1 )
+        {
+            //  -> invalid ia     { 1, 1, 3 }
+
+            LAMAArray<IndexType>& ellIA = const_cast<LAMAArray<IndexType>&>( ellStorage.getIA() );
+            LAMAArrayUtils::setVal( ellIA, 2, 3 );
+            BOOST_CHECK_THROW( { ellStorage.check( "Expect illegal index in JA" ); }, Exception );
+        }
+        else if( icase == 2 )
+        {
+            //  -> invalid ja     { 0, 1, 2, 0, 0, 2 }
+
+            LAMAArray<IndexType>& ellJA = const_cast<LAMAArray<IndexType>&>( ellStorage.getJA() );
+            LAMAArrayUtils::setVal( ellJA, 5, 15 );
+            BOOST_CHECK_THROW( { ellStorage.check( "Expect illegal index in JA" ); }, Exception );
+        }
+    }
 }
 
-/* ------------------------------------------------------------------------- */
+/* ------------------------------------------------------------------------------------------------------------------ */
+
+template<typename ValueType>
+void typeNameTest()
+{
+    ELLStorage<ValueType> ellStorage;
+    std::string s = ellStorage.typeName();
+
+    BOOST_CHECK( s.length() > 0 );
+}
+
+} // namespace ELLStorageTest
+} // namespace lama
+
+/* ------------------------------------------------------------------------------------------------------------------ */
+
+BOOST_AUTO_TEST_SUITE( ELLStorageTest )
+
+LAMA_LOG_DEF_LOGGER( logger, "Test.ELLStorageTest" )
+LAMA_AUTO_TEST_CASE_CT( commonTestCases, ELLStorageTest )
+LAMA_AUTO_TEST_CASE_CT( constructorTest, ELLStorageTest )
+LAMA_AUTO_TEST_CASE_CT( constructorTest1, ELLStorageTest )
+LAMA_AUTO_TEST_CASE_T( typeNameTest, ELLStorageTest )
+/* ------------------------------------------------------------------------------------------------------------------ */
 
 BOOST_AUTO_TEST_SUITE_END();

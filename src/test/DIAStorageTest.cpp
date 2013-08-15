@@ -47,49 +47,40 @@ using namespace lama;
 extern bool base_test_case;
 extern std::string testcase;
 
-/* ------------------------------------------------------------------------- */
-
-BOOST_AUTO_TEST_SUITE( DIAStorageTest )
-
-LAMA_LOG_DEF_LOGGER( logger, "Test.DIAStorageTest" )
-
-typedef boost::mpl::list<float,double> ValueTypes;
-
-/* ------------------------------------------------------------------------- */
-
-BOOST_AUTO_TEST_CASE_TEMPLATE( commonTestCases, T, ValueTypes )
+namespace lama
 {
-    typedef T ValueType;
+namespace DIAStorageTest
+{
+
+template<typename ValueType>
+void commonTestCases( ContextPtr loc )
+{
 
     DIAStorage<ValueType> diaStorage;
     MatrixStorageTest<ValueType> storageTest( diaStorage );
+    storageTest.mMatrixStorage.setContext( loc );
 
     if ( base_test_case )
     {
-        LAMA_LOG_INFO( logger, "Run method " << testcase << " in DIAStorageTest." );
         MATRIXSTORAGE_COMMONTESTCASES( storageTest );
     }
     else
     {
-        CONTEXTLOOP()
-        {
-            GETCONTEXT( context );
-            storageTest.mMatrixStorage.setContext( context );
-            LAMA_LOG_INFO( logger, "Using context = " << storageTest.mMatrixStorage.getContext().getType() );
-            storageTest.runTests();
-        }
+        storageTest.runTests();
     }
 
 }
 
-/* ------------------------------------------------------------------------- */
+/* ------------------------------------------------------------------------------------------------------------------ */
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( ConstructorTest, T, ValueTypes )
+template<typename ValueType>
+void constructorTest()
 {
+
     const IndexType numRows = 10;
     const IndexType numColumns = 15;
 
-    DIAStorage<T> diaStorage( numRows, numColumns );
+    DIAStorage<ValueType> diaStorage( numRows, numColumns );
 
     BOOST_REQUIRE_EQUAL( numRows, diaStorage.getNumRows() );
     BOOST_REQUIRE_EQUAL( numColumns, diaStorage.getNumColumns() );
@@ -106,19 +97,19 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( ConstructorTest, T, ValueTypes )
     BOOST_CHECK_EQUAL( 0, diaStorage.getNumValues() );
 }
 
-/* ------------------------------------------------------------------------- */
+/* ------------------------------------------------------------------------------------------------------------------ */
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( ConstructorTest1, ValueType, ValueTypes )
+template<typename ValueType>
+void constructorTest1( log4lama::Logger& logger )
 {
-// Test the full DIAStorge constructor and the individual getter routines of DIA storage
-
+    // Test the full DIAStorge constructor and the individual getter routines of DIA storage
     const IndexType numRows = 3;
     const IndexType numColumns = 3;
 
     const IndexType offsets[] =
-    {   0, 1};
+    { 0, 1 };
     const ValueType values[] =
-    {   0.5f, 0.5f, 0.3f, 0.2f, 0.1f, 0.0f};
+    { 0.5f, 0.5f, 0.3f, 0.2f, 0.1f, 0.0f };
 
     const IndexType numValues = sizeof( values ) / sizeof( ValueType );
     const IndexType numDiagonals = sizeof( offsets ) / sizeof( IndexType );
@@ -143,25 +134,93 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( ConstructorTest1, ValueType, ValueTypes )
             BOOST_CHECK_EQUAL( offsets[i], diaOffsets[i] );
         }
 
-        for ( IndexType i = 0; i < numValues; ++i )
+        for( IndexType i = 0; i < numValues; ++i )
         {
             BOOST_CHECK_EQUAL( values[i], diaValues[i] );
         }
     }
+
+
+    // copy constructor (TODO Bea: on all available locations, after host runs without mistake
+    // DIAStorage<ValueType> diaStorageCopy( diaStorage, loc );
+
+//    TODO ThoBra: weiter unten die "Nachbildung" des Copy-Constructors laeuft fehlerfrei,
+//    hier knallt es beim letzten BOOST_CHECK_EQUAL
+
+//    DIAStorage<ValueType> diaStorageCopy( diaStorage );
+//    LAMA_LOG_INFO( logger, "copy constructor" );
+//
+//    BOOST_REQUIRE_EQUAL( numRows, diaStorageCopy.getNumRows() );
+//    BOOST_REQUIRE_EQUAL( numColumns, diaStorageCopy.getNumColumns() );
+//    BOOST_REQUIRE_EQUAL( numDiagonals, diaStorageCopy.getNumDiagonals() );
+//
+//    {
+//        HostReadAccess<ValueType> diaValues( diaStorageCopy.getValues() );
+//        BOOST_CHECK_EQUAL( diaValues.size(), numValues );
+//
+//        BOOST_CHECK_EQUAL( values[0], diaValues[0] );
+//        BOOST_CHECK_EQUAL( values[1], diaValues[1] );
+//        BOOST_CHECK_EQUAL( values[2], diaValues[2] );
+//        BOOST_CHECK_EQUAL( values[3], diaValues[3] );
+//        BOOST_CHECK_EQUAL( values[4], diaValues[4] );
+//        BOOST_CHECK_EQUAL( values[5], diaValues[5] );
+//    }
+
+    LAMAArray<IndexType> csrIa;
+    LAMAArray<IndexType> csrJa;
+    LAMAArray<ValueType> csrValues;
+
+    // const IndexType csrIaResult[] = { 0, 2, 4, 5 };
+    // const IndexType csrJaResult[] = { 0, 1, 1, 2, 2 };
+    // const ValueType csrValuesResult[] = { 0.5, 0.2, 0.5, 0.1, 0.3 };
+
+    diaStorage.buildCSRData( csrIa, csrJa, csrValues );
+
+    IndexType numRowsDia = diaStorage.getNumRows();
+    IndexType numColumnsDia = diaStorage.getNumColumns();
+    IndexType numValuesCSR = csrJa.size();
+
+    diaStorage.setCSRData( numRowsDia, numColumnsDia, numValuesCSR, csrIa, csrJa, csrValues );
+    {
+        HostReadAccess<ValueType> diaValues( diaStorage.getValues() );
+        LAMA_LOG_INFO( logger, "diaValues.size() = " << diaValues.size() );
+        BOOST_CHECK_EQUAL( diaValues.size(), numValues );
+        for( IndexType i = 0; i < numValues; ++i )
+        {
+            BOOST_CHECK_EQUAL( values[0], diaValues[0] );
+            BOOST_CHECK_EQUAL( values[1], diaValues[1] );
+            BOOST_CHECK_EQUAL( values[2], diaValues[2] );
+            BOOST_CHECK_EQUAL( values[3], diaValues[3] );
+            BOOST_CHECK_EQUAL( values[4], diaValues[4] );
+            BOOST_CHECK_EQUAL( values[5], diaValues[5] );
+        }
+    }
 }
+
+/* ------------------------------------------------------------------------------------------------------------------ */
+
+template<typename ValueType>
+void typeNameTest()
+{
+    DIAStorage<ValueType> diaStorage;
+    std::string s = diaStorage.typeName();
+
+    BOOST_CHECK( s.length() > 0 );
+}
+
+} // namespace DIAStorageTest
+} // namespace lama
 
 /* ------------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_CASE( typeNameTest )
-{
-    DIAStorage<double> diaStoraged;
-    std::string s = diaStoraged.typeName();
-    BOOST_CHECK_EQUAL( s, "DIAStorage<double>" );
+BOOST_AUTO_TEST_SUITE( DIAStorageTest )
 
-    DIAStorage<float> diaStoragef;
-    s = diaStoragef.typeName();
-    BOOST_CHECK_EQUAL( s, "DIAStorage<float>" );
-}
+LAMA_LOG_DEF_LOGGER( logger, "Test.DIAStorageTest" )
+LAMA_AUTO_TEST_CASE_CT( commonTestCases, DIAStorageTest )
+LAMA_AUTO_TEST_CASE_T( constructorTest, DIAStorageTest )
+LAMA_AUTO_TEST_CASE_TL( constructorTest1, DIAStorageTest )
+LAMA_AUTO_TEST_CASE_T( typeNameTest, DIAStorageTest )
+
 /* ------------------------------------------------------------------------- */
 
 BOOST_AUTO_TEST_SUITE_END();
