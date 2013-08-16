@@ -77,32 +77,49 @@
 
 //#define CUDA_CAP_20
 
+
+
+
+// Adjustable Parameters for Benchmarking
+
+#define NUM_HASH_RETRIES 96
+#define NUM_ELEMENTS_PER_CHUNK 2048
+#define NUM_ELEMENTS_IN_SHARED 1024
+
+
+#define USE_LOAD_BALANCING
+#define USE_QUADRATIC_GROWTH
+
+// Parameters for memory usage
+//#define USE_GLOBAL_MEMORY
+#define USE_SHARED_MEMORY
+
+#define NUM_BLOCKS 1024
+
+//#define USE_CUCKOO_HASHING
+
+
+
+
+// ====================================================================================================================
+
+
 // TODO: defines for matrix multiplication, should be removed later!
 #define STEP 1
-//#define NUM_BLOCKS 64
-#define NUM_BLOCKS 1024
-//#define HASH_TABLE_SIZE 10000
 
 // TODO: define this correct
 #define NUM_WARPS_GLOBAL NUM_BLOCKS
 
 #define NUM_THREADS (STEP*32)
 #define NUM_WARPS NUM_THREADS/32
-#define MAX_HASH_TRIES 96
+
 #define HASH_A 684
 #define HASH_B 46165
 #define HASH_P 88651
 #define HASH_C0 1
 #define HASH_C1 1
-#define SIZE_LOCAL_HASHTABLE 1024
+
 #define NUM_CHUNKS_PER_WARP 128 // shut be 2^N
-
-
-
-#define USE_LOAD_BALANCING
-#define USE_QUADRATIC_GROWTH
-//#define USE_SHARED_MEMORY
-
 
 
 namespace lama
@@ -1407,23 +1424,27 @@ inline bool insertHashTable2(IndexType colB,
                             IndexType sHashTableIndexes[],
 #endif
                             IndexType aRowIt,
+#ifdef USE_GLOBAL_MEMORY
                             IndexType numElementsPerChunk,
                             IndexType* chunkPtr,
                             volatile int chunkList[],
                             int numReservedChunks,
+#endif
                             IndexType localWarpId,
                             IndexType *cIA )
 {
+#ifndef USE_CUCKOO_HASHING
     unsigned int fx = HASH_A * colB;
     unsigned int gx = ( fx + HASH_B ) % HASH_P;
 
-
 #ifdef USE_SHARED_MEMORY
+#ifdef USE_GLOBAL_MEMORY
     if ( numReservedChunks == 0 )
     {
-        for ( IndexType i = 0; i < MAX_HASH_TRIES; i++ )
+#endif
+        for ( IndexType i = 0; i < NUM_HASH_RETRIES; i++ )
         {
-            int hash = ( gx + HASH_C0 * i + HASH_C1 * (IndexType) i * i ) % SIZE_LOCAL_HASHTABLE;
+            int hash = ( gx + HASH_C0 * i + HASH_C1 * (IndexType) i * i ) % NUM_ELEMENTS_IN_SHARED;
 
 
             IndexType val = atomicCAS( &sHashTableIndexes[hash], -1, colB );
@@ -1439,9 +1460,12 @@ inline bool insertHashTable2(IndexType colB,
             }
         }
         return false;
+#ifdef USE_GLOBAL_MEMORY
     }
 #endif
-    for ( IndexType i = 0; i < MAX_HASH_TRIES; i++ )
+#endif
+#ifdef USE_GLOBAL_MEMORY
+    for ( IndexType i = 0; i < NUM_HASH_RETRIES; i++ )
     {
         int globalHash = ( gx + HASH_C0 * i + HASH_C1 * (IndexType) i * i ) % ( numElementsPerChunk * numReservedChunks );
         int localHash  = globalHash % numElementsPerChunk;
@@ -1461,6 +1485,99 @@ inline bool insertHashTable2(IndexType colB,
         }
     }
     return false;
+#endif
+
+#else // ndef USE_CUCKOO_HASHING
+
+#ifdef USE_SHARED_MEMORY
+#ifdef USE_GLOBAL_MEMORY
+    if ( numReservedChunks == 0 )
+    {
+#endif
+        int hash;
+        for ( int i = 0; i < 4; i++ ) {
+            hash = cuckooHash( i, colB, NUM_ELEMENTS_IN_SHARED );
+            if ( sHashTableIndexes[hash] == colB ){
+                return true;
+            }
+        }
+
+        hash            = cuckooHash( 0, colB, NUM_ELEMENTS_IN_SHARED );
+        for ( IndexType i = 0; i < NUM_HASH_RETRIES; i++ )
+        {
+            // insert current element at hash position
+            IndexType oldIndex = atomicExch( &sHashTableIndexes[hash], colB );
+
+            if ( oldIndex == -1 ){
+                // Last insert was on empty slot, element inserted!
+                atomicAdd( &cIA[aRowIt], 1 );
+                return true;
+            }
+            else
+            {
+                colB    = oldIndex;
+                int lastHashId = cuckooHashId( hash, colB, NUM_ELEMENTS_IN_SHARED );
+                if ( lastHashId == 3 )
+                {
+                    return false;
+                }
+                else
+                {
+                    hash = cuckooHash( lastHashId + 1, colB, NUM_ELEMENTS_IN_SHARED );
+                }
+            }
+        }
+        return false;
+#ifdef USE_GLOBAL_MEMORY
+    }
+#endif
+#endif
+#ifdef USE_GLOBAL_MEMORY
+    int hash;
+    for ( int i = 0; i < 4; i++ ) {
+        hash = cuckooHash( i, colB, NUM_ELEMENTS_PER_CHUNK * numReservedChunks );
+        int localHash  = hash % NUM_ELEMENTS_PER_CHUNK;
+        int chunk      = hash / NUM_ELEMENTS_PER_CHUNK;
+
+        if ( chunkPtr[chunkList[chunk] * NUM_ELEMENTS_PER_CHUNK + localHash] == colB ){
+            return true;
+        }
+    }
+
+    hash            = cuckooHash( 0, colB, NUM_ELEMENTS_PER_CHUNK * numReservedChunks );
+    for ( IndexType i = 0; i < NUM_HASH_RETRIES; i++ )
+    {
+        int localHash  = hash % NUM_ELEMENTS_PER_CHUNK;
+        int chunk      = hash / NUM_ELEMENTS_PER_CHUNK;
+
+        // insert current element at hash position
+        IndexType oldIndex = atomicExch( &chunkPtr[chunkList[chunk] * NUM_ELEMENTS_PER_CHUNK + localHash], colB );
+
+        if ( oldIndex == -1 ){
+            // Last insert was on empty slot, element inserted!
+            atomicAdd( &cIA[aRowIt], 1 );
+            return true;
+        }
+        else
+        {
+            colB    = oldIndex;
+            int lastHashId = cuckooHashId( hash, colB, NUM_ELEMENTS_PER_CHUNK * numReservedChunks  );
+            if ( lastHashId == 3 )
+            {
+                return false;
+            }
+            else
+            {
+                hash = cuckooHash( lastHashId + 1, colB, NUM_ELEMENTS_PER_CHUNK * numReservedChunks  );
+            }
+        }
+    }
+    return false;
+#endif
+
+
+
+#endif // ndef USE_CUCKOO_HASHING
 }
 
 template <typename ValueType>
@@ -1470,27 +1587,37 @@ inline bool insertHashTable3(IndexType colB,
                             IndexType aRowIt,
                             IndexType numElementsPerChunk,
 #ifdef USE_SHARED_MEMORY
+#ifdef USE_CUCKOO_HASHING
+                            volatile IndexType* sHashTableIndexes,
+                            volatile ValueType* sHashTableValues,
+#else
                             IndexType* sHashTableIndexes,
                             ValueType* sHashTableValues,
 #endif
+#endif
+#ifdef USE_GLOBAL_MEMORY
                             IndexType* indexChunks,
                             ValueType* valueChunks,
                             volatile int chunkList[],
                             int numReservedChunks,
+#endif
                             IndexType localWarpId,
                             ValueType valB,
                             ValueType sValA)
 {
+
+#ifndef USE_CUCKOO_HASHING
     unsigned int fx = HASH_A * colB;
     unsigned int gx = ( fx + HASH_B ) % HASH_P;
 
-
 #ifdef USE_SHARED_MEMORY
+#ifdef USE_GLOBAL_MEMORY
     if ( numReservedChunks == 0 )
     {
-        for ( IndexType i = 0; i < MAX_HASH_TRIES; i++ )
+#endif
+        for ( IndexType i = 0; i < NUM_HASH_RETRIES; i++ )
         {
-            int hash = ( gx + HASH_C0 * i + HASH_C1 * (IndexType) i * i ) % SIZE_LOCAL_HASHTABLE;
+            int hash = ( gx + HASH_C0 * i + HASH_C1 * (IndexType) i * i ) % NUM_ELEMENTS_IN_SHARED;
 
 
             IndexType val = atomicCAS( &sHashTableIndexes[hash], -1, colB );
@@ -1507,9 +1634,12 @@ inline bool insertHashTable3(IndexType colB,
             }
         }
         return false;
+#ifdef USE_GLOBAL_MEMORY
     }
 #endif
-    for ( IndexType i = 0; i < MAX_HASH_TRIES; i++ )
+#endif
+#ifdef USE_GLOBAL_MEMORY
+    for ( IndexType i = 0; i < NUM_HASH_RETRIES; i++ )
     {
         int globalHash = ( gx + HASH_C0 * i + HASH_C1 * (IndexType) i * i ) % ( numElementsPerChunk * numReservedChunks );
         int localHash  = globalHash % numElementsPerChunk;
@@ -1530,6 +1660,173 @@ inline bool insertHashTable3(IndexType colB,
         }
     }
     return false;
+#endif
+
+
+
+
+#else // ndef USE_CUCKOO_HASHING
+
+#ifdef USE_SHARED_MEMORY
+#ifdef USE_GLOBAL_MEMORY
+    if ( numReservedChunks == 0 )
+    {
+#endif
+//        __shared__ volatile int helper;
+//        helper = 0;
+//
+//        IndexType laneId = ( blockIdx.x * blockDim.x + threadIdx.x ) % warpSize;
+//        if ( laneId == 26 )
+//        {
+//            helper = clock();
+//        }
+
+
+
+
+        int hash;
+//        if ( aRowIt == 2841 )
+//        {
+//            printf("value of hash 789: %i, lane: %i, helper: %i\n", sHashTableIndexes[789], laneId, helper );
+//        }
+
+
+        bool inserted = false;
+        for ( int i = 0; i < 4; i++ ) {
+            hash = cuckooHash( i, colB, NUM_ELEMENTS_IN_SHARED );
+            if ( sHashTableIndexes[hash] == colB ){
+                sHashTableValues[hash] += valB * sValA;
+//                if ( aRowIt == 2841 && hash == 789 )
+//                    printf("write on same element! adding: %f, colB: %i, lane: %i, helper: %i\n", valB * sValA, colB, laneId, helper );
+//                if ( colB == 2826 && aRowIt == 2841 )
+//                {
+//                        printf("exist value! adding: %f, new is %f\n", valB * sValA, sHashTableValues[hash] );
+//                }
+                inserted = true;
+            }
+        }
+
+        if ( ! inserted )
+        {
+            hash            = cuckooHash( 0, colB, NUM_ELEMENTS_IN_SHARED );
+            ValueType value = valB * sValA;
+
+    //        bool verbose = false;
+
+            for ( IndexType i = 0; i < NUM_HASH_RETRIES; i++ )
+            {
+                // insert current element at hash position
+                IndexType actualIndex = sHashTableIndexes[hash];
+                ValueType oldValue    = sHashTableValues[hash];
+                IndexType oldIndex    = atomicCAS( const_cast<IndexType*>(&sHashTableIndexes[hash]), actualIndex, colB );
+
+    //            if ( verbose )
+    //                printf(" value: %f, colB: %i\n", value, colB );
+
+
+                if ( actualIndex == oldIndex )
+                {
+                    // insert was succesfull
+//                    __syncthreads();
+//                    if ( aRowIt == 2841 && hash == 789 )
+//                        printf("write on same element! value: %f, lane: %i, helper: %i\n", value, laneId, helper );
+
+                    sHashTableValues[hash] = value;
+                    if ( oldIndex == -1 )
+                    {
+    //                    if ( verbose )
+    //                        printf("got inserted!\n");
+    //                    if ( colB == 2826 && aRowIt == 2841 )
+    //                    {
+    //                            printf("value: %f, inserted at: %i\n", value, hash );
+    //                    }
+
+                        return true;
+                    }
+                    else
+                    {
+    //                    if ( verbose )
+    //                        printf("missed! value: %f, colB: %i, hash: %i\n", sHashTableValues[hash], sHashTableIndexes[hash], hash );
+                        colB    = oldIndex;
+                        value   = oldValue;
+                    }
+                }
+
+    //            if ( verbose )
+    //                printf("new round!\n");
+    //            if ( colB == 2826 && aRowIt == 2841 )
+    //            {
+    //                    printf("Suf value: %f\n", value );
+    //                    verbose = true;
+    //            }
+
+                int lastHashId = cuckooHashId( hash, colB, NUM_ELEMENTS_IN_SHARED );
+                if ( lastHashId == 3 )
+                {
+                    return false;
+                }
+                else
+                {
+                    hash = cuckooHash( lastHashId + 1, colB, NUM_ELEMENTS_IN_SHARED );
+                }
+            }
+            return false;
+        }
+        else
+        {
+            return true;
+        }
+#ifdef USE_GLOBAL_MEMORY
+    }
+#endif
+#endif
+#ifdef USE_GLOBAL_MEMORY
+    int hash;
+    for ( int i = 0; i < 4; i++ ) {
+        hash = cuckooHash( i, colB, NUM_ELEMENTS_PER_CHUNK * numReservedChunks );
+        int localHash  = hash % NUM_ELEMENTS_PER_CHUNK;
+        int chunk      = hash / NUM_ELEMENTS_PER_CHUNK;
+
+        if ( chunkPtr[chunkList[chunk] * NUM_ELEMENTS_PER_CHUNK + localHash] == colB ){
+            return true;
+        }
+    }
+
+    hash            = cuckooHash( 0, colB, NUM_ELEMENTS_PER_CHUNK * numReservedChunks );
+    for ( IndexType i = 0; i < NUM_HASH_RETRIES; i++ )
+    {
+        int localHash  = hash % NUM_ELEMENTS_PER_CHUNK;
+        int chunk      = hash / NUM_ELEMENTS_PER_CHUNK;
+
+        // insert current element at hash position
+        IndexType oldIndex = atomicExch( &chunkPtr[chunkList[chunk] * NUM_ELEMENTS_PER_CHUNK + localHash], colB );
+
+        if ( oldIndex == -1 ){
+            // Last insert was on empty slot, element inserted!
+            atomicAdd( &cIA[aRowIt], 1 );
+            return true;
+        }
+        else
+        {
+            colB    = oldIndex;
+            int lastHashId = cuckooHashId( hash, colB, NUM_ELEMENTS_PER_CHUNK * numReservedChunks  );
+            if ( lastHashId == 3 )
+            {
+                return false;
+            }
+            else
+            {
+                hash = cuckooHash( lastHashId + 1, colB, NUM_ELEMENTS_PER_CHUNK * numReservedChunks  );
+            }
+        }
+    }
+    return false;
+#endif
+
+
+
+#endif // ndef USE_CUCKOO_HASHING
+
 }
 
 
@@ -1557,17 +1854,17 @@ inline bool insertHashTable_openAddressing(IndexType colB,
     unsigned int fx = HASH_A * colB;
     unsigned int gx = ( fx + HASH_B ) % HASH_P;
 
-    for ( IndexType i = 0; i < MAX_HASH_TRIES; i++ )
+    for ( IndexType i = 0; i < NUM_HASH_RETRIES; i++ )
     {
         //TODO: diagonal property
         IndexType hash;
         if ( diagonalProperty )
         {
-            hash = ( ( gx + HASH_C0 * i + HASH_C1 * (IndexType) i * i ) % ( SIZE_LOCAL_HASHTABLE - 1 ) ) + 1;
+            hash = ( ( gx + HASH_C0 * i + HASH_C1 * (IndexType) i * i ) % ( NUM_ELEMENTS_IN_SHARED - 1 ) ) + 1;
         }
         else
         {
-            hash = ( gx + HASH_C0 * i + HASH_C1 * (IndexType) i * i ) % SIZE_LOCAL_HASHTABLE;
+            hash = ( gx + HASH_C0 * i + HASH_C1 * (IndexType) i * i ) % NUM_ELEMENTS_IN_SHARED;
         }
 
         IndexType val = atomicCAS( &sHashTableJa[hash], -1, colB );
@@ -1599,7 +1896,7 @@ inline bool insertHashTable_openAddressing(IndexType colB,
     if ( !inserted )
     {
 //        cuPrintf("need global mem!\n");
-        for ( IndexType i = 0; i < MAX_HASH_TRIES; i++ )
+        for ( IndexType i = 0; i < NUM_HASH_RETRIES; i++ )
         {
             IndexType hash;
             hash = ( gx + HASH_C0 * i + HASH_C1 * (IndexType) i * i ) % ( numElementsHashTable );
@@ -1654,7 +1951,7 @@ inline bool insertHashTable_cuckoo( IndexType colB,
 
     // Step 1: Check if value exists in one of the hashTables
     for ( int i = 0; i < 4; i++ ) {
-        hash = cuckooHash( i, colB, SIZE_LOCAL_HASHTABLE );
+        hash = cuckooHash( i, colB, NUM_ELEMENTS_IN_SHARED );
         if ( sHashTableJa[hash] == colB ){
             if ( useValues )
             {
@@ -1678,7 +1975,7 @@ inline bool insertHashTable_cuckoo( IndexType colB,
     }
 
     // Step 2: Value not already inserted, try to insert it!
-    hash            = cuckooHash( 0, colB, SIZE_LOCAL_HASHTABLE );
+    hash            = cuckooHash( 0, colB, NUM_ELEMENTS_IN_SHARED );
     ValueType value = valB * sValA;
 
     for ( IndexType i = 0; i < maxRetries; i++ )
@@ -1704,7 +2001,7 @@ inline bool insertHashTable_cuckoo( IndexType colB,
         {
             colB    = oldIndex;
             value   = oldValue;
-            int lastHashId = cuckooHashId( hash, colB, SIZE_LOCAL_HASHTABLE );
+            int lastHashId = cuckooHashId( hash, colB, NUM_ELEMENTS_IN_SHARED );
             if ( lastHashId == 3 )
             {
                 // Element was on last position, Hashtable is full!
@@ -1712,7 +2009,7 @@ inline bool insertHashTable_cuckoo( IndexType colB,
             }
             else
             {
-                hash = cuckooHash( lastHashId + 1, colB, SIZE_LOCAL_HASHTABLE );
+                hash = cuckooHash( lastHashId + 1, colB, NUM_ELEMENTS_IN_SHARED );
             }
         }
     }
@@ -1787,7 +2084,7 @@ void matrixMultiplySizesKernel(
 //TODO: We need the numColumns of the matrix in the kernel to use diagonalProperty correct in cases of not square matrices
 
     __shared__ volatile IndexType sColA[nWarps];
-    __shared__ IndexType sHashTableJa[nWarps * SIZE_LOCAL_HASHTABLE];
+    __shared__ IndexType sHashTableJa[nWarps * NUM_ELEMENTS_IN_SHARED];
     __shared__ volatile bool sGlobalHashTableAccessed[nWarps];
 
     IndexType localWarpId = threadIdx.x / warpSize;
@@ -1857,9 +2154,9 @@ void matrixMultiplySizesKernel(
 
 // STEP 1: Set Initial data in hash tables
 // TODO: recheck loop condition
-            for ( IndexType i = 0; i < SIZE_LOCAL_HASHTABLE; i += warpSize )
+            for ( IndexType i = 0; i < NUM_ELEMENTS_IN_SHARED; i += warpSize )
             {
-                if ( i + laneId < SIZE_LOCAL_HASHTABLE )
+                if ( i + laneId < NUM_ELEMENTS_IN_SHARED )
                 {
                     sHashTableJa[i + laneId] = -1;
                 }
@@ -2106,29 +2403,41 @@ inline bool multHlp_reserveChunks( IndexType* chunkList,
 __device__
 inline void multHlp_initializeChunks (
 #ifdef USE_SHARED_MEMORY
-                                        IndexType* sHashTable,
+                                        IndexType* sHashTable
+#ifdef USE_GLOBAL_MEMORY
+                                        ,
 #endif
+#endif
+#ifdef USE_GLOBAL_MEMORY
                                         IndexType* chunks,
                                         const IndexType numElementsPerChunk,
                                         volatile IndexType* sChunkList,
-                                        volatile IndexType* sReservedChunks )
+                                        volatile IndexType* sReservedChunks
+#endif
+                                        )
 {
     IndexType laneId      = ( blockIdx.x * blockDim.x + threadIdx.x ) % warpSize;
     IndexType localWarpId = threadIdx.x / warpSize;
 
 #ifdef USE_SHARED_MEMORY
+#ifdef USE_GLOBAL_MEMORY
     if ( sReservedChunks[localWarpId] == 0 )
     {
-        for ( IndexType i = 0; i < SIZE_LOCAL_HASHTABLE; i += warpSize )
+#endif
+        for ( IndexType i = 0; i < NUM_ELEMENTS_IN_SHARED; i += warpSize )
         {
-            if ( i + laneId < SIZE_LOCAL_HASHTABLE )
+            if ( i + laneId < NUM_ELEMENTS_IN_SHARED )
             {
                 sHashTable[i + laneId] = -1;
             }
         }
         return;
+#ifdef USE_GLOBAL_MEMORY
     }
 #endif
+#endif
+
+#ifdef USE_GLOBAL_MEMORY
     for ( int i = 0; i < sReservedChunks[localWarpId]; ++i )
     {
         int chunkId = sChunkList[i];
@@ -2137,6 +2446,7 @@ inline void multHlp_initializeChunks (
             chunks[chunkId * numElementsPerChunk + j] = -1;
         }
     }
+#endif
 }
 
 __device__
@@ -2164,7 +2474,7 @@ inline IndexType multHlp_calcOptChunkCount ( IndexType row,
 {
 #ifdef USE_SHARED_MEMORY
     IndexType numElements = cIA[row+1] - cIA[row];
-    if( numElements * 2 < SIZE_LOCAL_HASHTABLE )
+    if( numElements * 2 < NUM_ELEMENTS_IN_SHARED )
     {
         return 0;
     }
@@ -2191,10 +2501,11 @@ void matrixMultiplySizesKernel2(
     IndexType *cIA,
     const IndexType numRows,
     const IndexType numColumns,
+#ifdef USE_GLOBAL_MEMORY
     IndexType *chunkPtr,
     IndexType *chunkList,
     IndexType numChunks,
-    IndexType numElementsPerChunk,
+#endif
     bool* hashError,
     bool diagonalProperty
 #ifdef USE_LOAD_BALANCING
@@ -2202,15 +2513,16 @@ void matrixMultiplySizesKernel2(
 #endif
     )
 {
-    __shared__ volatile IndexType sColA[NUM_WARPS];
-
 
 #ifdef USE_SHARED_MEMORY
-    __shared__ IndexType sHashTable[NUM_WARPS][SIZE_LOCAL_HASHTABLE];
+    __shared__ IndexType sHashTable[NUM_WARPS][NUM_ELEMENTS_IN_SHARED];
 #endif
-
+#ifdef USE_GLOBAL_MEMORY
     __shared__ volatile int sReservedChunks[NUM_WARPS];
     __shared__ volatile int sChunkList[NUM_WARPS][NUM_CHUNKS_PER_WARP];
+#endif
+
+    __shared__ volatile IndexType sColA[NUM_WARPS];
     __shared__ volatile int sRowIt[NUM_WARPS];
     __shared__ volatile bool sInsertMiss[NUM_WARPS];
 
@@ -2224,8 +2536,10 @@ void matrixMultiplySizesKernel2(
     bool localSystemError = false;
 
 
-
+#ifdef USE_GLOBAL_MEMORY
     sReservedChunks[localWarpId] = 0;
+#endif
+
     if ( aRowIt < numRows )
     {
         do
@@ -2256,15 +2570,20 @@ void matrixMultiplySizesKernel2(
                     cIA[aRowIt]++;
                 }
 
-
                 multHlp_initializeChunks(
 #ifdef USE_SHARED_MEMORY
-                                            sHashTable[localWarpId],
+                                            sHashTable[localWarpId]
+#ifdef USE_GLOBAL_MEMORY
+                                            ,
 #endif
+#endif
+#ifdef USE_GLOBAL_MEMORY
                                             chunkPtr,
-                                            numElementsPerChunk,
+                                            NUM_ELEMENTS_PER_CHUNK,
                                             sChunkList[localWarpId],
-                                            sReservedChunks );
+                                            sReservedChunks
+#endif
+                                            );
 
 
 
@@ -2296,13 +2615,16 @@ void matrixMultiplySizesKernel2(
                                                                   sHashTable[localWarpId],
 #endif
                                                                    aRowIt,
-                                                                   numElementsPerChunk,
+#ifdef USE_GLOBAL_MEMORY
+                                                                   NUM_ELEMENTS_PER_CHUNK,
                                                                    chunkPtr,
                                                                    sChunkList[localWarpId],
                                                                    sReservedChunks[localWarpId],
+#endif
                                                                    localWarpId,
                                                                    cIA );
                                 if (!inserted){
+//                                    printf("missed in row: %i, cIA[i] = %i\n", aRowIt, cIA[aRowIt] );
                                     sInsertMiss[localWarpId] = true;
                                 }
                             }
@@ -2317,13 +2639,19 @@ void matrixMultiplySizesKernel2(
                 if ( laneId == 0 ){
                     if( sInsertMiss[localWarpId] )
                     {
+#ifdef USE_GLOBAL_MEMORY
                         cIA[aRowIt] = 0;
                         if ( !multHlp_reserveChunks( chunkList, sChunkList[localWarpId], sReservedChunks, multHlp_growth( sReservedChunks[localWarpId] ) ) )
                         {
                             // ABORT KERNEL HERE;
                             localSystemError = true;
                         }
+#endif
+#ifndef USE_GLOBAL_MEMORY
+                        localSystemError = true;
+#endif
                     }
+
                 }
 
                 if ( __any(localSystemError ) )
@@ -2341,7 +2669,9 @@ void matrixMultiplySizesKernel2(
     }
 
     // release all remaining chunks
+#ifdef USE_GLOBAL_MEMORY
     multHlp_releaseChunks( chunkList, sChunkList[localWarpId], sReservedChunks, sReservedChunks[localWarpId] );
+#endif
 }
 
 
@@ -2374,139 +2704,7 @@ IndexType CUDACSRUtils::matrixMultiplySizes(
     const IndexType bIa[],
     const IndexType bJa[] )
 {
-//    LAMA_REGION( "CUDA.CSR.matrixMultiplySizes" )
-//
-//    LAMA_LOG_INFO(
-//        logger,
-//        "matrixMutliplySizes for " << numRows << " x " << numColumns << " matrix" << ", diagonalProperty = " << diagonalProperty )
-//
-//    LAMA_CHECK_CUDA_ACCESS
-//
-//
-//
-//
-//
-////    size_t free;
-////    size_t total;
-////    cuMemGetInfo( &free, &total );
-////    std::cout << "free memory: " << free / 1024 / 1024 << "mb, total memory: " << total / 1024 / 1024 << "mb" << std::endl;
-//
-//    // Reset cIa
-//    thrust::device_ptr<IndexType> cIaPtr( cIa );
-//    thrust::fill( cIaPtr, cIaPtr + numRows, 0 );
-//
-//    const unsigned int initialHashTableSize = 1024;
-//
-//    unsigned int hashTableAllocatedBytes = NUM_BLOCKS * initialHashTableSize * sizeof( IndexType );
-//
-//// Allocate hashTable and hashError Flag
-//    ContextPtr loc = ContextFactory::getContext( Context::CUDA );
-//// TODO: be carefull with NUM_BLOCKS here!
-//    IndexType* hashTable = ( IndexType* ) loc->allocate( hashTableAllocatedBytes );
-//
-//
-//    bool* hashError = (bool*) loc->allocate( sizeof(bool) );
-//    bool hashErrorHost = false;
-//    cudaMemcpy( hashError, &hashErrorHost, sizeof(bool), cudaMemcpyHostToDevice );
-//
-//    // TMP row counter
-//    IndexType* rowCounter = (IndexType*) loc->allocate( sizeof(IndexType) );
-//    thrust::device_ptr<IndexType> rowCounterPtr( rowCounter );
-//    thrust::fill( rowCounterPtr, rowCounterPtr + 1, 0 );
-//
-//
-//// Reset hashTable
-//    thrust::device_ptr<IndexType> hashTablesPtr( hashTable );
-//    thrust::fill( hashTablesPtr, hashTablesPtr + NUM_BLOCKS * initialHashTableSize, -1 );
-//
-////    bool hashErrorHost;
-//    unsigned int hashTableSize = initialHashTableSize;
-//
-//
-//    IndexType rowsPerLaunch = NUM_BLOCKS;
-//    IndexType iterations = 1;
-//    //IndexType iterations = 90;
-//    IndexType rows = std::ceil( std::ceil( numRows / (double) rowsPerLaunch ) / iterations );
-//
-//    for ( IndexType i = 0; i < iterations; i++ )
-//    {
-//        thrust::fill( rowCounterPtr, rowCounterPtr + 1, 0 );
-//
-//        CUDACSRUtils::lastHashTableSize = hashTableSize;
-//        IndexType startRow = rows * i * rowsPerLaunch;
-//        IndexType endRow = std::min( rows * ( i + 1 ) * rowsPerLaunch, numRows );
-//        if ( startRow >= numRows )
-//        {
-//            break;
-//        }
-//
-//        cudaPrintfInit();
-//        matrixMultiplySizesKernel<NUM_WARPS><<<NUM_BLOCKS, NUM_THREADS>>>( aIa, aJa, bIa, bJa, cIa, endRow, numColumns,
-//                startRow, hashTable, hashTableSize,
-//                hashError, diagonalProperty
-//                , rowCounter
-//                );
-//        cudaPrintfDisplay(stdout, true);
-//        cudaPrintfEnd();
-//
-//        cudaStreamSynchronize( 0 );
-//        LAMA_CHECK_CUDA_ERROR
-//        ;
-//
-//        cudaMemcpy( &hashErrorHost, hashError, sizeof(bool), cudaMemcpyDeviceToHost );
-//
-//        if ( hashErrorHost )
-//        {
-//// repeat iteration:
-//            i--;
-//
-//// Free old hashTable
-//            loc->free( (void*) hashTable, hashTableAllocatedBytes );
-//
-//// Resize hashTable
-//            hashTableSize           *= 2;
-//            hashTableAllocatedBytes *= 2;
-//// TODO: be carefull with NUM_BLOCKS here!
-//            hashTable = (IndexType*) loc->allocate( hashTableAllocatedBytes );
-//
-//            //TODO: REMOVE!
-//            std::cout << "Hashtable to small, resizing to: " << hashTableSize << std::endl;
-//// Reset new hashTable
-//            thrust::device_ptr < IndexType > hashTablesPtr( hashTable );
-//            thrust::fill( hashTablesPtr, hashTablesPtr + NUM_BLOCKS * hashTableSize, -1 );
-//
-//// We need to clean up cIA again (for the crashed rows!)
-//            thrust::fill( cIaPtr + startRow, cIaPtr + endRow, 0 );
-//
-//            hashErrorHost = false;
-//            cudaMemcpy( hashError, &hashErrorHost, sizeof(bool), cudaMemcpyHostToDevice );
-//        }
-//    }
-//
-//// Free hashTable and hashError
-//    loc->free( (void*) hashTable, hashTableAllocatedBytes );
-//    loc->free( (void*) hashError, sizeof(bool) );
-//    loc->free( (void*) rowCounter, sizeof(IndexType) );
-//
-////    thrust::device_ptr<IndexType> iaPtr ( cIa );
-////    thrust::host_vector<IndexType> values ( iaPtr, iaPtr + numRows + 1 );
-////    for(IndexType i = 0; i < numRows + 1; i++ )
-////    {
-////        std::cout << "cIA[" << i << "] = " << values[i] << std::endl;
-////    }
-//
-//// Convert sizes array to offset array
-//    thrust::exclusive_scan( cIaPtr, cIaPtr + numRows + 1, cIaPtr );
-//
-//// Copy numValues from cIa to Host
-//// TODO: use cuMem cpy
-//    thrust::device_ptr<IndexType> iaPtr( cIa );
-//    thrust::host_vector<IndexType> numValues( iaPtr + numRows, iaPtr + numRows + 1 );
-//
-//    cudaStreamSynchronize( 0 );
-//    LAMA_CHECK_CUDA_ERROR
-//
-//    return numValues[0];
+
 
     LAMA_REGION( "CUDA.CSR.matrixMultiplySizes" )
 
@@ -2530,27 +2728,25 @@ IndexType CUDACSRUtils::matrixMultiplySizes(
 
     ContextPtr loc = ContextFactory::getContext( Context::CUDA );
 
+    bool hashErrorHost = false;
+    bool* hashError = (bool*) loc->allocate( sizeof(bool) );
+    cudaMemcpy( hashError, &hashErrorHost, sizeof(bool), cudaMemcpyHostToDevice );
 
+#ifdef USE_GLOBAL_MEMORY
     int numChunks = 100000;
-    int numElementsPerChunk = 2048;
-
-    unsigned int hashTableAllocatedBytes = numChunks * numElementsPerChunk * sizeof( IndexType );
+    unsigned int hashTableAllocatedBytes = numChunks * NUM_ELEMENTS_PER_CHUNK * sizeof( IndexType );
     IndexType* hashTable = ( IndexType* ) loc->allocate( hashTableAllocatedBytes );
 
     // chunkList table needs one integers per chunk plus 1 start pointer
     unsigned int chunkListAllocatedBytes = numChunks * sizeof( IndexType ) + sizeof( IndexType );
     IndexType* chunkList = ( IndexType* ) loc->allocate( chunkListAllocatedBytes );
 
-    bool hashErrorHost = false;
-    bool* hashError = (bool*) loc->allocate( sizeof(bool) );
-    cudaMemcpy( hashError, &hashErrorHost, sizeof(bool), cudaMemcpyHostToDevice );
-
     thrust::device_ptr<IndexType> chunkListPtr( chunkList );
     thrust::transform(  thrust::make_counting_iterator(0),
                         thrust::make_counting_iterator(numChunks + 1),
                         chunkListPtr,
                         chunkFill(numChunks + 1) );
-
+#endif
 
 #ifdef USE_LOAD_BALANCING
     IndexType* rowCounter = (IndexType*) loc->allocate( sizeof(IndexType) );
@@ -2558,12 +2754,24 @@ IndexType CUDACSRUtils::matrixMultiplySizes(
     thrust::fill( rowCounterPtr, rowCounterPtr + 1, NUM_WARPS_GLOBAL );
 #endif
 
-    matrixMultiplySizesKernel2<<<NUM_BLOCKS, NUM_THREADS>>>( aIa, aJa, bIa, bJa, cIa, numRows, numColumns,
-            hashTable, chunkList, numChunks, numElementsPerChunk, hashError, diagonalProperty
-#ifdef USE_LOAD_BALANCING
-            , rowCounter
+    matrixMultiplySizesKernel2<<<NUM_BLOCKS, NUM_THREADS>>>(    aIa,
+                                                                aJa,
+                                                                bIa,
+                                                                bJa,
+                                                                cIa,
+                                                                numRows,
+                                                                numColumns,
+#ifdef USE_GLOBAL_MEMORY
+                                                                hashTable,
+                                                                chunkList,
+                                                                numChunks,
 #endif
-            );
+                                                                hashError,
+                                                                diagonalProperty
+#ifdef USE_LOAD_BALANCING
+                                                                , rowCounter
+#endif
+                                                            );
 
     cudaStreamSynchronize( 0 );
     LAMA_CHECK_CUDA_ERROR
@@ -2595,12 +2803,15 @@ IndexType CUDACSRUtils::matrixMultiplySizes(
 
 
     // Free hashTable and hashError
+    loc->free( (void*) hashError, sizeof(bool) );
+#ifdef USE_GLOBAL_MEMORY
     loc->free( (void*) hashTable, hashTableAllocatedBytes );
     loc->free( (void*) chunkList, chunkListAllocatedBytes );
-    loc->free( (void*) hashError, sizeof(bool) );
+#endif
 #ifdef USE_LOAD_BALANCING
     loc->free( (void*) rowCounter, sizeof(IndexType) );
 #endif
+
 
     // Convert sizes array to offset array
     thrust::exclusive_scan( cIaPtr, cIaPtr + numRows + 1, cIaPtr );
@@ -2616,6 +2827,142 @@ IndexType CUDACSRUtils::matrixMultiplySizes(
 
     std::cout << "first kernel done!" << std::endl;
     return numValues[0];
+
+
+
+    //    LAMA_REGION( "CUDA.CSR.matrixMultiplySizes" )
+    //
+    //    LAMA_LOG_INFO(
+    //        logger,
+    //        "matrixMutliplySizes for " << numRows << " x " << numColumns << " matrix" << ", diagonalProperty = " << diagonalProperty )
+    //
+    //    LAMA_CHECK_CUDA_ACCESS
+    //
+    //
+    //
+    //
+    //
+    ////    size_t free;
+    ////    size_t total;
+    ////    cuMemGetInfo( &free, &total );
+    ////    std::cout << "free memory: " << free / 1024 / 1024 << "mb, total memory: " << total / 1024 / 1024 << "mb" << std::endl;
+    //
+    //    // Reset cIa
+    //    thrust::device_ptr<IndexType> cIaPtr( cIa );
+    //    thrust::fill( cIaPtr, cIaPtr + numRows, 0 );
+    //
+    //    const unsigned int initialHashTableSize = 1024;
+    //
+    //    unsigned int hashTableAllocatedBytes = NUM_BLOCKS * initialHashTableSize * sizeof( IndexType );
+    //
+    //// Allocate hashTable and hashError Flag
+    //    ContextPtr loc = ContextFactory::getContext( Context::CUDA );
+    //// TODO: be carefull with NUM_BLOCKS here!
+    //    IndexType* hashTable = ( IndexType* ) loc->allocate( hashTableAllocatedBytes );
+    //
+    //
+    //    bool* hashError = (bool*) loc->allocate( sizeof(bool) );
+    //    bool hashErrorHost = false;
+    //    cudaMemcpy( hashError, &hashErrorHost, sizeof(bool), cudaMemcpyHostToDevice );
+    //
+    //    // TMP row counter
+    //    IndexType* rowCounter = (IndexType*) loc->allocate( sizeof(IndexType) );
+    //    thrust::device_ptr<IndexType> rowCounterPtr( rowCounter );
+    //    thrust::fill( rowCounterPtr, rowCounterPtr + 1, 0 );
+    //
+    //
+    //// Reset hashTable
+    //    thrust::device_ptr<IndexType> hashTablesPtr( hashTable );
+    //    thrust::fill( hashTablesPtr, hashTablesPtr + NUM_BLOCKS * initialHashTableSize, -1 );
+    //
+    ////    bool hashErrorHost;
+    //    unsigned int hashTableSize = initialHashTableSize;
+    //
+    //
+    //    IndexType rowsPerLaunch = NUM_BLOCKS;
+    //    IndexType iterations = 1;
+    //    //IndexType iterations = 90;
+    //    IndexType rows = std::ceil( std::ceil( numRows / (double) rowsPerLaunch ) / iterations );
+    //
+    //    for ( IndexType i = 0; i < iterations; i++ )
+    //    {
+    //        thrust::fill( rowCounterPtr, rowCounterPtr + 1, 0 );
+    //
+    //        CUDACSRUtils::lastHashTableSize = hashTableSize;
+    //        IndexType startRow = rows * i * rowsPerLaunch;
+    //        IndexType endRow = std::min( rows * ( i + 1 ) * rowsPerLaunch, numRows );
+    //        if ( startRow >= numRows )
+    //        {
+    //            break;
+    //        }
+    //
+    //        cudaPrintfInit();
+    //        matrixMultiplySizesKernel<NUM_WARPS><<<NUM_BLOCKS, NUM_THREADS>>>( aIa, aJa, bIa, bJa, cIa, endRow, numColumns,
+    //                startRow, hashTable, hashTableSize,
+    //                hashError, diagonalProperty
+    //                , rowCounter
+    //                );
+    //        cudaPrintfDisplay(stdout, true);
+    //        cudaPrintfEnd();
+    //
+    //        cudaStreamSynchronize( 0 );
+    //        LAMA_CHECK_CUDA_ERROR
+    //        ;
+    //
+    //        cudaMemcpy( &hashErrorHost, hashError, sizeof(bool), cudaMemcpyDeviceToHost );
+    //
+    //        if ( hashErrorHost )
+    //        {
+    //// repeat iteration:
+    //            i--;
+    //
+    //// Free old hashTable
+    //            loc->free( (void*) hashTable, hashTableAllocatedBytes );
+    //
+    //// Resize hashTable
+    //            hashTableSize           *= 2;
+    //            hashTableAllocatedBytes *= 2;
+    //// TODO: be carefull with NUM_BLOCKS here!
+    //            hashTable = (IndexType*) loc->allocate( hashTableAllocatedBytes );
+    //
+    //            //TODO: REMOVE!
+    //            std::cout << "Hashtable to small, resizing to: " << hashTableSize << std::endl;
+    //// Reset new hashTable
+    //            thrust::device_ptr < IndexType > hashTablesPtr( hashTable );
+    //            thrust::fill( hashTablesPtr, hashTablesPtr + NUM_BLOCKS * hashTableSize, -1 );
+    //
+    //// We need to clean up cIA again (for the crashed rows!)
+    //            thrust::fill( cIaPtr + startRow, cIaPtr + endRow, 0 );
+    //
+    //            hashErrorHost = false;
+    //            cudaMemcpy( hashError, &hashErrorHost, sizeof(bool), cudaMemcpyHostToDevice );
+    //        }
+    //    }
+    //
+    //// Free hashTable and hashError
+    //    loc->free( (void*) hashTable, hashTableAllocatedBytes );
+    //    loc->free( (void*) hashError, sizeof(bool) );
+    //    loc->free( (void*) rowCounter, sizeof(IndexType) );
+    //
+    ////    thrust::device_ptr<IndexType> iaPtr ( cIa );
+    ////    thrust::host_vector<IndexType> values ( iaPtr, iaPtr + numRows + 1 );
+    ////    for(IndexType i = 0; i < numRows + 1; i++ )
+    ////    {
+    ////        std::cout << "cIA[" << i << "] = " << values[i] << std::endl;
+    ////    }
+    //
+    //// Convert sizes array to offset array
+    //    thrust::exclusive_scan( cIaPtr, cIaPtr + numRows + 1, cIaPtr );
+    //
+    //// Copy numValues from cIa to Host
+    //// TODO: use cuMem cpy
+    //    thrust::device_ptr<IndexType> iaPtr( cIa );
+    //    thrust::host_vector<IndexType> numValues( iaPtr + numRows, iaPtr + numRows + 1 );
+    //
+    //    cudaStreamSynchronize( 0 );
+    //    LAMA_CHECK_CUDA_ERROR
+    //
+    //    return numValues[0];
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */
@@ -2831,9 +3178,9 @@ inline void copyHashtable_openAddressing ( volatile IndexType sColA[],
     // TODO: rename sColA => destinationOffset!
     sColA[localWarpId] = 0;
     IndexType rowOffset = cIA[aRowIt];
-    for ( IndexType offset = 0; offset < SIZE_LOCAL_HASHTABLE; offset += warpSize )
+    for ( IndexType offset = 0; offset < NUM_ELEMENTS_IN_SHARED; offset += warpSize )
     {
-        if ( offset + laneId < SIZE_LOCAL_HASHTABLE )
+        if ( offset + laneId < NUM_ELEMENTS_IN_SHARED )
         {
             IndexType hashCol = sHashTableJa[offset + laneId];
             ValueType hashVal = sHashTableValues[offset + laneId];
@@ -2932,13 +3279,20 @@ inline void copyHashtable2 ( volatile IndexType sColA[],
                            ValueType* cValues,
                            IndexType numElementsPerChunk,
 #ifdef USE_SHARED_MEMORY
+#ifdef USE_CUCKOO_HASHING
+                           volatile IndexType* sHashTableIndexes,
+                           volatile ValueType* sHashTableValues,
+#else
                            IndexType* sHashTableIndexes,
                            ValueType* sHashTableValues,
 #endif
+#endif
+#ifdef USE_GLOBAL_MEMORY
                            IndexType* indexChunks,
                            ValueType* valueChunks,
                            volatile int chunkList[],
                            int numReservedChunks,
+#endif
                            bool diagonalProperty,
                            ValueType diagonalElement )
 
@@ -2960,9 +3314,11 @@ inline void copyHashtable2 ( volatile IndexType sColA[],
 
 
 #ifdef USE_SHARED_MEMORY
+#ifdef USE_GLOBAL_MEMORY
     if ( numReservedChunks == 0 )
     {
-        for ( int j = laneId; j < SIZE_LOCAL_HASHTABLE; j += warpSize )
+#endif
+        for ( int j = laneId; j < NUM_ELEMENTS_IN_SHARED; j += warpSize )
         {
             hashCol = sHashTableIndexes[j];
             hashVal = sHashTableValues[j];
@@ -2984,9 +3340,11 @@ inline void copyHashtable2 ( volatile IndexType sColA[],
             }
         }
         return;
+#ifdef USE_GLOBAL_MEMORY
     }
 #endif
-
+#endif
+#ifdef USE_GLOBAL_MEMORY
     for ( int i = 0; i < numReservedChunks; ++i )
     {
         for ( int j = laneId; j < numElementsPerChunk; j += warpSize )
@@ -3011,6 +3369,7 @@ inline void copyHashtable2 ( volatile IndexType sColA[],
             }
         }
     }
+#endif
 }
 
 
@@ -3046,8 +3405,8 @@ void matrixMultiplyKernel(
     __shared__ volatile bool sGlobalHashTableAccessed[nWarps];
 
 // TODO: rename hash tables to names that correlate to shared and global memory!
-    __shared__ IndexType sHashTableJa[nWarps * SIZE_LOCAL_HASHTABLE];
-    __shared__ ValueType sHashTableValues[nWarps * SIZE_LOCAL_HASHTABLE];
+    __shared__ IndexType sHashTableJa[nWarps * NUM_ELEMENTS_IN_SHARED];
+    __shared__ ValueType sHashTableValues[nWarps * NUM_ELEMENTS_IN_SHARED];
 
 #if CUDA_ARCH < 20
     __shared__ volatile IndexType sBallot[nWarps];
@@ -3113,9 +3472,9 @@ void matrixMultiplyKernel(
 
 // STEP 1: Set Initial data in hash tables
 // TODO: recheck loop condition
-            for ( IndexType i = 0; i < SIZE_LOCAL_HASHTABLE; i += warpSize )
+            for ( IndexType i = 0; i < NUM_ELEMENTS_IN_SHARED; i += warpSize )
             {
-                if ( i + laneId < SIZE_LOCAL_HASHTABLE )
+                if ( i + laneId < NUM_ELEMENTS_IN_SHARED )
                 {
                     sHashTableJa[i + laneId] = -1;
                 }
@@ -3226,9 +3585,9 @@ void matrixMultiplyKernel(
 //            // TODO: rename sColA => destinationOffset!
 //           sColA[localWarpId] = 0;
 //           IndexType rowOffset = cIA[aRowIt];
-//           for ( IndexType offset = 0; offset < SIZE_LOCAL_HASHTABLE; offset += warpSize )
+//           for ( IndexType offset = 0; offset < NUM_ELEMENTS_IN_SHARED; offset += warpSize )
 //           {
-//               if ( offset + laneId < SIZE_LOCAL_HASHTABLE )
+//               if ( offset + laneId < NUM_ELEMENTS_IN_SHARED )
 //               {
 //                   IndexType hashCol = sHashTableJa[offset + laneId];
 //                   ValueType hashVal = sHashTableValues[offset + laneId];
@@ -3358,11 +3717,12 @@ void matrixMultiplyKernel2(
     ValueType *cValues,
     const IndexType numRows,
     const IndexType numColumns,
+#ifdef USE_GLOBAL_MEMORY
     IndexType *indexChunks,
     ValueType *valueChunks,
     IndexType *chunkList,
     const int numChunks,
-    const int numElementsPerChunk,
+#endif
     bool* hashError,
     bool diagonalProperty
 #ifdef USE_LOAD_BALANCING
@@ -3371,14 +3731,21 @@ void matrixMultiplyKernel2(
     )
 {
 #ifdef USE_SHARED_MEMORY
-    __shared__ IndexType sHashTableIndexes[NUM_WARPS][SIZE_LOCAL_HASHTABLE];
-    __shared__ ValueType sHashTableValues[NUM_WARPS][SIZE_LOCAL_HASHTABLE];
+#ifdef USE_CUCKOO_HASHING
+    __shared__ volatile IndexType sHashTableIndexes[NUM_ELEMENTS_IN_SHARED];
+    __shared__ volatile ValueType sHashTableValues[NUM_ELEMENTS_IN_SHARED];
+#else
+    __shared__ IndexType sHashTableIndexes[NUM_ELEMENTS_IN_SHARED];
+    __shared__ ValueType sHashTableValues[NUM_ELEMENTS_IN_SHARED];
+#endif
+#endif
+#ifdef USE_GLOBAL_MEMORY
+    __shared__ volatile int sReservedChunks[NUM_WARPS];
+    __shared__ volatile IndexType sChunkList[NUM_WARPS][NUM_CHUNKS_PER_WARP];
 #endif
 
     __shared__ volatile IndexType sColA[NUM_WARPS];
     __shared__ volatile ValueType sValA[NUM_WARPS];
-    __shared__ volatile int sReservedChunks[NUM_WARPS];
-    __shared__ volatile IndexType sChunkList[NUM_WARPS][NUM_CHUNKS_PER_WARP];
     __shared__ volatile int sRowIt[NUM_WARPS];
     __shared__ volatile bool sInsertMiss[NUM_WARPS];
     __shared__ volatile ValueType diagonalElement[NUM_WARPS];
@@ -3397,14 +3764,16 @@ void matrixMultiplyKernel2(
     IndexType aRowIt = globalWarpId;
     bool localSystemError = false;
 
+#ifdef USE_GLOBAL_MEMORY
     sReservedChunks[localWarpId] = 0;
+#endif
 
     if ( aRowIt < numRows )
     {
         do
         {
-            IndexType optimalChunkCount = multHlp_calcOptChunkCount ( aRowIt, cIA, numElementsPerChunk );
-
+#ifdef USE_GLOBAL_MEMORY
+            IndexType optimalChunkCount = multHlp_calcOptChunkCount ( aRowIt, cIA, NUM_ELEMENTS_PER_CHUNK );
 
             // reserve Chunks
             if ( !multHlp_reserveChunks( chunkList, sChunkList[localWarpId], sReservedChunks, optimalChunkCount ) )
@@ -3417,7 +3786,7 @@ void matrixMultiplyKernel2(
                 printf("got no junk [multiply sizes kernel] row:", aRowIt );
                 return;
             }
-
+#endif
             do
             {
                 sInsertMiss[localWarpId]    = false;
@@ -3431,12 +3800,22 @@ void matrixMultiplyKernel2(
 
                 multHlp_initializeChunks(
 #ifdef USE_SHARED_MEMORY
-                                          sHashTableIndexes[localWarpId],
+#ifdef USE_CUCKOO_HASHING
+                                          const_cast<IndexType*>(sHashTableIndexes)
+#else
+                                          sHashTableIndexes
 #endif
+#ifdef USE_GLOBAL_MEMORY
+                                                            ,
+#endif
+#endif
+#ifdef USE_GLOBAL_MEMORY
                                           indexChunks,
-                                          numElementsPerChunk,
+                                          NUM_ELEMENTS_PER_CHUNK,
                                           sChunkList[localWarpId],
-                                          sReservedChunks );
+                                          sReservedChunks
+#endif
+                                        );
 
                 for ( IndexType offset = 0; __any( aColIt < aColEnd ); aColIt += warpSize, offset += warpSize )
                 {
@@ -3473,15 +3852,17 @@ void matrixMultiplyKernel2(
                                    bool inserted = insertHashTable3(   colB,
                                                                        diagonalProperty,
                                                                        aRowIt,
-                                                                       numElementsPerChunk,
+                                                                       NUM_ELEMENTS_PER_CHUNK,
 #ifdef USE_SHARED_MEMORY
-                                                                       sHashTableIndexes[localWarpId],
-                                                                       sHashTableValues[localWarpId],
+                                                                       sHashTableIndexes,
+                                                                       sHashTableValues,
 #endif
+#ifdef USE_GLOBAL_MEMORY
                                                                        indexChunks,
                                                                        valueChunks,
                                                                        sChunkList[localWarpId],
                                                                        sReservedChunks[localWarpId],
+#endif
                                                                        localWarpId,
                                                                        valB,
                                                                        sValA[localWarpId] );
@@ -3507,26 +3888,32 @@ void matrixMultiplyKernel2(
             #endif
                                     cJA,
                                     cValues,
-                                    numElementsPerChunk,
+                                    NUM_ELEMENTS_PER_CHUNK,
 #ifdef USE_SHARED_MEMORY
-                                    sHashTableIndexes[localWarpId],
-                                    sHashTableValues[localWarpId],
+                                    sHashTableIndexes,
+                                    sHashTableValues,
 #endif
+#ifdef USE_GLOBAL_MEMORY
                                     indexChunks,
                                     valueChunks,
                                     sChunkList[localWarpId],
                                     sReservedChunks[localWarpId],
+#endif
                                     diagonalProperty,
                                     diagonalElement[localWarpId] );
                 }
                 else
                 {
-                    printf("resizing!");
+#ifdef USE_GLOBAL_MEMORY
                     if ( !multHlp_reserveChunks( chunkList, sChunkList[localWarpId], sReservedChunks, multHlp_growth( sReservedChunks[localWarpId] ) ) )
                     {
                         // ABORT KERNEL HERE;
                         localSystemError = true;
                     }
+#endif
+#ifndef USE_GLOBAL_MEMORY
+                    localSystemError = true;
+#endif
                     if ( __any(localSystemError ) )
                     {
                        printf("got no junk [multiply sizes kernel] row:", aRowIt );
@@ -3543,8 +3930,10 @@ void matrixMultiplyKernel2(
                                    ) );
     }
 
+#ifdef USE_GLOBAL_MEMORY
     // release all remaining chunks
     multHlp_releaseChunks( chunkList, sChunkList[localWarpId], sReservedChunks, sReservedChunks[localWarpId] );
+#endif
 }
 
 template<typename ValueType>
@@ -3573,29 +3962,28 @@ void CUDACSRUtils::matrixMultiply(
 
     ContextPtr loc = ContextFactory::getContext( Context::CUDA );
 
-    int numChunks = 10000;
-    int numElementsPerChunk = 2048;
+    bool hashErrorHost = false;
+    bool* hashError = (bool*) loc->allocate( sizeof(bool) );
+    cudaMemcpy( hashError, &hashErrorHost, sizeof(bool), cudaMemcpyHostToDevice );
 
-    unsigned int hashTableAllocatedBytes = numChunks * numElementsPerChunk * ( sizeof( IndexType ) + sizeof(ValueType));
+#ifdef USE_GLOBAL_MEMORY
+    int numChunks = 10000;
+    unsigned int hashTableAllocatedBytes = numChunks * NUM_ELEMENTS_PER_CHUNK * ( sizeof( IndexType ) + sizeof(ValueType));
     void* chunks = ( void* ) loc->allocate( hashTableAllocatedBytes );
 
     IndexType* indexChunks = ( IndexType* ) chunks;
-    ValueType* valueChunks = ( ValueType* ) ( indexChunks + numChunks * numElementsPerChunk );
-
+    ValueType* valueChunks = ( ValueType* ) ( indexChunks + numChunks * NUM_ELEMENTS_PER_CHUNK );
 
     // chunkList table needs one integers per chunk plus 1 start pointer
     unsigned int chunkListAllocatedBytes = numChunks * sizeof( IndexType ) + sizeof( IndexType );
     IndexType* chunkList = ( IndexType* ) loc->allocate( chunkListAllocatedBytes );
-
-    bool hashErrorHost = false;
-    bool* hashError = (bool*) loc->allocate( sizeof(bool) );
-    cudaMemcpy( hashError, &hashErrorHost, sizeof(bool), cudaMemcpyHostToDevice );
 
     thrust::device_ptr<IndexType> chunkListPtr( chunkList );
     thrust::transform(  thrust::make_counting_iterator(0),
                         thrust::make_counting_iterator(numChunks + 1),
                         chunkListPtr,
                         chunkFill(numChunks + 1) );
+#endif
 
 #ifdef USE_LOAD_BALANCING
     IndexType* rowCounter = (IndexType*) loc->allocate( sizeof(IndexType) );
@@ -3615,11 +4003,28 @@ void CUDACSRUtils::matrixMultiply(
 //    thrust::fill( cJaPtr, cJaPtr + numValues[0], -2 );
 
 
-    matrixMultiplyKernel2<<<NUM_BLOCKS, NUM_THREADS>>>( aIa, aJa, aValues, bIa, bJa, bValues, cIa, alpha, cJa, cValues,
-            numRows, numColumns, indexChunks, valueChunks, chunkList, numChunks, numElementsPerChunk, hashError,
-            diagonalProperty
+    matrixMultiplyKernel2<<<NUM_BLOCKS, NUM_THREADS>>>( aIa,
+                                                        aJa,
+                                                        aValues,
+                                                        bIa,
+                                                        bJa,
+                                                        bValues,
+                                                        cIa,
+                                                        alpha,
+                                                        cJa,
+                                                        cValues,
+                                                        numRows,
+                                                        numColumns,
+#ifdef USE_GLOBAL_MEMORY
+                                                        indexChunks,
+                                                        valueChunks,
+                                                        chunkList,
+                                                        numChunks,
+#endif
+                                                        hashError,
+                                                        diagonalProperty
 #ifdef USE_LOAD_BALANCING
-            , rowCounter
+                                                        , rowCounter
 #endif
             );
 
@@ -3654,9 +4059,11 @@ void CUDACSRUtils::matrixMultiply(
     }
 
     // Free hashTable and hashError
+    loc->free( (void*) hashError, sizeof(bool) );
+#ifdef USE_GLOBAL_MEMORY
     loc->free( (void*) chunks, hashTableAllocatedBytes );
     loc->free( (void*) chunkList, chunkListAllocatedBytes );
-    loc->free( (void*) hashError, sizeof(bool) );
+#endif
 #ifdef USE_LOAD_BALANCING
     loc->free( (void*) rowCounter, sizeof(IndexType) );
 #endif
