@@ -45,59 +45,47 @@ using namespace lama;
 extern bool base_test_case;
 extern std::string testcase;
 
-/* ------------------------------------------------------------------------- */
-
-BOOST_AUTO_TEST_SUITE( DenseStorageTest )
-
-LAMA_LOG_DEF_LOGGER( logger, "Test.DenseStorageTest" )
-
-typedef boost::mpl::list<float,double> test_types;
-
-/* ------------------------------------------------------------------------- */
-
-BOOST_AUTO_TEST_CASE_TEMPLATE( commonTestCases, T, test_types )
+namespace lama
 {
-    typedef T ValueType;
+namespace DenseStorageTest
+{
+
+/* ------------------------------------------------------------------------------------------------------------------ */
+
+template<typename ValueType>
+void commonTestCases( ContextPtr loc )
+{
 
     DenseStorage<ValueType> denseStorage;
     MatrixStorageTest<ValueType> storageTest( denseStorage );
 
+    storageTest.mMatrixStorage.setContext( loc );
     if ( base_test_case )
     {
-        LAMA_LOG_INFO( logger, "Run method " << testcase << " in DenseStorageTest." );
         MATRIXSTORAGE_COMMONTESTCASES( storageTest );
     }
     else
     {
-        CONTEXTLOOP()
-        {
-            GETCONTEXT( context );
-            storageTest.mMatrixStorage.setContext( context );
-            LAMA_LOG_INFO( logger, "Using context = " << storageTest.mMatrixStorage.getContext().getType() );
-            storageTest.runTests();
-        }
+        storageTest.runTests();
     }
 }
 
-/* ------------------------------------------------------------------------- */
+/* ------------------------------------------------------------------------------------------------------------------ */
 
-BOOST_AUTO_TEST_CASE( typeNameTest )
+template<typename ValueType>
+void typeNameTest()
 {
-    DenseStorage<double> denseStoraged;
-    std::string s = denseStoraged.typeName();
-    BOOST_CHECK_EQUAL( s, "DenseStorage<double>" );
+    DenseStorage<ValueType> denseStorage;
+    std::string s = denseStorage.typeName();
 
-    DenseStorage<float> denseStoragef;
-    s = denseStoragef.typeName();
-    BOOST_CHECK_EQUAL( s, "DenseStorage<float>" );
+    BOOST_CHECK( s.length() > 0 );
 }
 
 /* ------------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( setZeroTest, T, test_types )
+template<typename ValueType>
+void setZeroTest()
 {
-    typedef T ValueType;
-
     const IndexType numRows = 4;
     const IndexType numColumns = 4;
 
@@ -110,7 +98,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( setZeroTest, T, test_types )
 
     ValueType eps = static_cast<ValueType>( 1E-5 );
 
-    DenseStorage<double> denseStorage;
+    DenseStorage<ValueType> denseStorage;
     denseStorage.setRawDenseData( numRows, numColumns, values, eps );
 
     denseStorage.setZero();
@@ -124,6 +112,17 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( setZeroTest, T, test_types )
     }
 }
 
-/* ------------------------------------------------------------------------- */
+} // namespace DenseStorageTest
+} // namespace lama
+
+/* ------------------------------------------------------------------------------------------------------------------ */
+
+BOOST_AUTO_TEST_SUITE( DenseStorageTest )
+
+LAMA_LOG_DEF_LOGGER( logger, "Test.DenseStorageTest" )
+LAMA_AUTO_TEST_CASE_CT( commonTestCases, DenseStorageTest )
+LAMA_AUTO_TEST_CASE_T( setZeroTest, DenseStorageTest )
+LAMA_AUTO_TEST_CASE_T( typeNameTest, DenseStorageTest )
+/* ------------------------------------------------------------------------------------------------------------------ */
 
 BOOST_AUTO_TEST_SUITE_END();

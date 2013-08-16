@@ -312,19 +312,20 @@ public:
 
     void allocate( const IndexType numRows, const IndexType numColumns );
 
-    using MatrixStorage<ValueType>::mNumRows;
-    using MatrixStorage<ValueType>::mNumColumns;
-    using MatrixStorage<ValueType>::mDiagonalProperty;
-    using MatrixStorage<ValueType>::prefetch;
-    using MatrixStorage<ValueType>::assign;
-    using MatrixStorage<ValueType>::mContext;
-    using MatrixStorage<ValueType>::getTypeName;
-
     /** Print dense matrix on output; use it carefully */
 
     void print() const;
 
+    using MatrixStorage<ValueType>::prefetch;
+    using MatrixStorage<ValueType>::assign;
+    using MatrixStorage<ValueType>::getTypeName;
+
 protected:
+
+    using MatrixStorage<ValueType>::mNumRows;
+    using MatrixStorage<ValueType>::mNumColumns;
+    using MatrixStorage<ValueType>::mDiagonalProperty;
+    using MatrixStorage<ValueType>::mContext;
 
     LAMAArray<ValueType>& mData; //!<  Reference to the matrix value array
 

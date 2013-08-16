@@ -97,7 +97,7 @@ inline lama::Scalar scalarEps<double>()
  * @brief getEnvContext() returns the current context from enviroment variable LAMA_TEST_CONTEXT
  * If this variable is not set or contains a context, which is not available, all contexts will be used.
  *
- * @return the current context from enviroment variable LAMA_TEST_CONTEXT as a string
+ * @return the current context from environment variable LAMA_TEST_CONTEXT as a string
  */
 
 inline std::string getEnvContext()

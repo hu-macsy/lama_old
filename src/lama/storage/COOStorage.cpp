@@ -62,6 +62,20 @@ LAMA_LOG_DEF_TEMPLATE_LOGGER( template<typename ValueType>, COOStorage<ValueType
 
 /* --------------------------------------------------------------------------- */
 
+template<>
+const char* COOStorage<float>::typeName()
+{
+    return "COOStorage<float>";
+}
+
+template<>
+const char* COOStorage<double>::typeName()
+{
+    return "COOStorage<double>";
+}
+
+/* --------------------------------------------------------------------------- */
+
 template<typename ValueType>
 COOStorage<ValueType>::COOStorage(const IndexType numRows, const IndexType numColumns) :
 
@@ -1089,20 +1103,7 @@ COOStorage<ValueType>* COOStorage<ValueType>::copy() const
 
 /* --------------------------------------------------------------------------- */
 
-template<>
-const char* COOStorage<float>::typeName()
-{
-    return "COOStorage<float>";
-}
-
 template class LAMA_DLL_IMPORTEXPORT COOStorage<float> ;
-
-template<>
-const char* COOStorage<double>::typeName()
-{
-    return "COOStorage<double>";
-}
-
 template class LAMA_DLL_IMPORTEXPORT COOStorage<double> ;
 
 } // namespace lama

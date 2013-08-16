@@ -305,25 +305,27 @@ public:
 
     virtual size_t getMemoryUsageImpl() const;
 
-    using MatrixStorage<ValueType>::mNumRows;
-    using MatrixStorage<ValueType>::mNumColumns;
-    using MatrixStorage<ValueType>::mDiagonalProperty;
-    using MatrixStorage<ValueType>::mRowIndexes;
-    using MatrixStorage<ValueType>::mCompressThreshold;
+    /** print matrix on cout, helpful for debug. */
+
+    void print() const;
 
     using MatrixStorage<ValueType>::prefetch;
     using MatrixStorage<ValueType>::getContextPtr;
     using MatrixStorage<ValueType>::assign;
     using MatrixStorage<ValueType>::setContext;
 
+protected:
+
+    using MatrixStorage<ValueType>::mNumRows;
+    using MatrixStorage<ValueType>::mNumColumns;
+    using MatrixStorage<ValueType>::mDiagonalProperty;
+    using MatrixStorage<ValueType>::mRowIndexes;
+    using MatrixStorage<ValueType>::mCompressThreshold;
+
     IndexType mNumDiagonals; //!< number of diagonals with values
 
     LAMAArray<IndexType> mOffset; //!< size == mNumDiagonals, diagonal offsets
     LAMAArray<ValueType> mValues; //!< non-zero values, size is mNumValuesPerDiagonal * mNumDiagonals
-
-    /** print matrix on cout, helpful for debug. */
-
-    void print() const;
 
 private:
 

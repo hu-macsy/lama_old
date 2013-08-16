@@ -47,48 +47,40 @@ using namespace lama;
 extern bool base_test_case;
 extern std::string testcase;
 
-/* ------------------------------------------------------------------------- */
-
-BOOST_AUTO_TEST_SUITE( COOStorageTest )
-
-LAMA_LOG_DEF_LOGGER( logger, "Test.COOStorageTest" )
-
-typedef boost::mpl::list<float,double> ValueTypes;
-
-/* ------------------------------------------------------------------------- */
-
-BOOST_AUTO_TEST_CASE_TEMPLATE( commonTestCases, T, ValueTypes )
+namespace lama
 {
-    //TODO: Undo to Template-Testcase
-    typedef T ValueType;
+namespace COOStorageTest
+{
+
+template<typename ValueType>
+void commonTestCases( ContextPtr loc )
+{
 
     COOStorage<ValueType> cooStorage;
     MatrixStorageTest<ValueType> storageTest( cooStorage );
 
-    if ( base_test_case )
+    storageTest.mMatrixStorage.setContext( loc );
+
+    if( base_test_case )
     {
-        LAMA_LOG_INFO( logger, "Run method " << testcase << " in COOStorageTest." );
         MATRIXSTORAGE_COMMONTESTCASES( storageTest );
     }
     else
     {
-        CONTEXTLOOP()
-        {
-            GETCONTEXT( context );
-            storageTest.mMatrixStorage.setContext( context );
-            LAMA_LOG_INFO( logger, "Using context = " << storageTest.mMatrixStorage.getContext().getType() );
-            storageTest.runTests();
-        }
+        storageTest.runTests();
     }
 }
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( ConstructorTest, T, ValueTypes )
+/* ------------------------------------------------------------------------------------------------------------------ */
+
+template<typename ValueType>
+void constructorTest()
 {
-    typedef T ValueType;
 
     const IndexType numRows = 10;
     const IndexType numColumns = 15;
 
+    // constructor doesn't exist with other location
     COOStorage<ValueType> cooStorage( numRows, numColumns );
 
     BOOST_REQUIRE_EQUAL( numRows, cooStorage.getNumRows() );
@@ -104,9 +96,11 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( ConstructorTest, T, ValueTypes )
     }
 }
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( ConstructorTest1, T, ValueTypes )
+/* ------------------------------------------------------------------------------------------------------------------ */
+
+template<typename ValueType>
+void constructorTest1( ContextPtr loc )
 {
-    typedef T ValueType;
 
     const IndexType numRows = 3;
     const IndexType numColumns = 3;
@@ -136,7 +130,6 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( ConstructorTest1, T, ValueTypes )
         HostReadAccess<ValueType> cooValues( cooStorage.getValues() );
 
         // COO keeps values in same order
-
         for ( IndexType i = 0; i < numValues; ++i)
         {
             BOOST_CHECK_EQUAL( ia[i], cooIA[i] );
@@ -144,84 +137,113 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( ConstructorTest1, T, ValueTypes )
             BOOST_CHECK_EQUAL( values[i], cooValues[i] );
         }
     }
+
+    // copy constructor doesn't exist with other location
+    COOStorage<ValueType> cooStorageCopy( cooStorage, loc );
+
+    BOOST_REQUIRE_EQUAL( numRows, cooStorageCopy.getNumRows() );
+    BOOST_REQUIRE_EQUAL( numColumns, cooStorageCopy.getNumColumns() );
+    BOOST_REQUIRE_EQUAL( numValues, cooStorageCopy.getNumValues() );
+
+    {
+        HostReadAccess<IndexType> cooIA( cooStorageCopy.getIA() );
+        HostReadAccess<IndexType> cooJA( cooStorageCopy.getJA() );
+        HostReadAccess<ValueType> cooValues( cooStorageCopy.getValues() );
+
+        // COO keeps values in same order
+        for ( IndexType i = 0; i < numValues; ++i)
+        {
+            BOOST_CHECK_EQUAL( ia[i], cooIA[i] );
+            BOOST_CHECK_EQUAL( ja[i], cooJA[i] );
+            BOOST_CHECK_EQUAL( values[i], cooValues[i] );
+        }
+    }
+
 }
 
-/* ------------------------------------------------------------------------- */
+/* ------------------------------------------------------------------------------------------------------------------ */
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( CheckTest, T, ValueTypes )
+template<typename ValueType>
+void checkTest( ContextPtr loc )
 {
-    // This routine tests the check method of ELLStorage, individually for this class
 
-    typedef T ValueType;
-
-    CONTEXTLOOP()
+    // This routine tests the check method of COOStorage, individually for this class
+    for( int icase = 0; icase < 3; ++icase )
     {
-        GETCONTEXT( context );
+        // build up a correct COOStorage
 
-        for ( int icase = 0; icase < 3; ++icase )
+        const IndexType numRows = 4;
+        const IndexType numColumns = 4;
+        const IndexType numValues = 6;
+
+        const IndexType ia[] =
+        { 0, 1, 1, 2, 2, 3 };
+        const IndexType ja[] =
+        { 0, 0, 1, 1, 2, 3 };
+
+        // just make sure that ia and ja have correct sizes
+
+        BOOST_REQUIRE_EQUAL( numValues, static_cast<IndexType>( sizeof( ia ) / sizeof( IndexType ) ) );
+        BOOST_REQUIRE_EQUAL( numValues, static_cast<IndexType>( sizeof( ja ) / sizeof( IndexType ) ) );
+
+        LAMAArrayRef<IndexType> cooIA( ia, numValues );
+        LAMAArrayRef<IndexType> cooJA( ja, numValues );
+        LAMAArray<ValueType> cooValues( numValues, 1.0 ); // values needed, but do not matter here
+
+        COOStorage<ValueType> cooStorage;
+
+        cooStorage.setContext( loc );
+
+        cooStorage.setCOOData( numRows, numColumns, numValues, cooIA, cooJA, cooValues );
+
+        if( icase == 0 )
         {
-            // build up a correct ELLPACK storage
+            cooStorage.check( "test with correct values" );
+        }
+        else if( icase == 1 )
+        {
+            //  -> invalid ia     { 4, 1, 1, 2, 2, 3 }
 
-            const IndexType numRows = 4;
-            const IndexType numColumns = 4;
-            const IndexType numValues = 6;
+            LAMAArray<IndexType>& cooIA = const_cast<LAMAArray<IndexType>&>( cooStorage.getIA() );
+            LAMAArrayUtils::setVal( cooIA, 0, numRows );
+            BOOST_CHECK_THROW( { cooStorage.check( "Expect illegal index in IA" ); }, Exception );
+        }
+        else if( icase == 2 )
+        {
+            //  -> invalid ja     { 0, 0, 1, 1, 4, 3 }
 
-            const IndexType ia[] = {  0, 1, 1, 2, 2, 3 };
-            const IndexType ja[] = {  0, 0, 1, 1, 2, 3 };
-
-            // just make sure that ia and ja have correct sizes
-
-            BOOST_REQUIRE_EQUAL( numValues, static_cast<IndexType>( sizeof( ia ) / sizeof( IndexType ) ) );
-            BOOST_REQUIRE_EQUAL( numValues, static_cast<IndexType>( sizeof( ja ) / sizeof( IndexType ) ) );
-
-            LAMAArrayRef<IndexType> cooIA( ia, numValues );
-            LAMAArrayRef<IndexType> cooJA( ja, numValues );
-            LAMAArray<ValueType> cooValues( numValues, 1.0 );  // values needed, but do not matter here
-
-            COOStorage<ValueType> cooStorage;
-
-            cooStorage.setContext( context );
-
-            cooStorage.setCOOData( numRows, numColumns, numValues,
-                                   cooIA, cooJA, cooValues );
-
-            if ( icase == 0 )
-            {
-                cooStorage.check( "test with correct values" );
-            }
-            else if ( icase == 1 )
-            {
-                //  -> invalid ia     { 4, 1, 1, 2, 2, 3 }
-
-                LAMAArray<IndexType>& cooIA = const_cast<LAMAArray<IndexType>&>( cooStorage.getIA() );
-                LAMAArrayUtils::setVal( cooIA, 0, numRows );
-                BOOST_CHECK_THROW( { cooStorage.check( "Expect illegal index in IA" ); }, Exception );
-            }
-            else if ( icase == 2 )
-            {
-                //  -> invalid ja     { 0, 0, 1, 1, 4, 3 }
-
-                LAMAArray<IndexType>& cooJA = const_cast<LAMAArray<IndexType>&>( cooStorage.getJA() );
-                LAMAArrayUtils::setVal( cooJA, 4, numColumns );
-                BOOST_CHECK_THROW( { cooStorage.check( "Expect illegal index in JA" ); }, Exception );
-            }
+            LAMAArray<IndexType>& cooJA = const_cast<LAMAArray<IndexType>&>( cooStorage.getJA() );
+            LAMAArrayUtils::setVal( cooJA, 4, numColumns );
+            BOOST_CHECK_THROW( { cooStorage.check( "Expect illegal index in JA" ); }, Exception );
         }
     }
 }
 
-/* ------------------------------------------------------------------------- */
+/* ------------------------------------------------------------------------------------------------------------------ */
 
-BOOST_AUTO_TEST_CASE( typeNameTest )
+template<typename ValueType>
+void typeNameTest()
 {
-    COOStorage<double> cooStoraged;
-    std::string s = cooStoraged.typeName();
-    BOOST_CHECK_EQUAL( s, "COOStorage<double>" );
+    COOStorage<ValueType> cooStorage;
+    std::string s = cooStorage.typeName();
 
-    COOStorage<float> cooStoragef;
-    s = cooStoragef.typeName();
-    BOOST_CHECK_EQUAL( s, "COOStorage<float>" );
+    BOOST_CHECK( s.length() > 0 );
 }
 
-/* ------------------------------------------------------------------------- */
+} // namespace COOStorageTest
+} // namespace lama
+
+/* ------------------------------------------------------------------------------------------------------------------ */
+
+BOOST_AUTO_TEST_SUITE( COOStorageTest )
+
+LAMA_LOG_DEF_LOGGER( logger, "Test.COOStorageTest" )
+LAMA_AUTO_TEST_CASE_CT( checkTest, COOStorageTest )
+LAMA_AUTO_TEST_CASE_CT( commonTestCases, COOStorageTest )
+LAMA_AUTO_TEST_CASE_T( constructorTest, COOStorageTest )
+LAMA_AUTO_TEST_CASE_CT( constructorTest1, COOStorageTest )
+LAMA_AUTO_TEST_CASE_T( typeNameTest, COOStorageTest )
+
+/* ------------------------------------------------------------------------------------------------------------------ */
 
 BOOST_AUTO_TEST_SUITE_END();

@@ -45,48 +45,39 @@ using namespace lama;
 extern bool base_test_case;
 extern std::string testcase;
 
-/* ------------------------------------------------------------------------- */
-
-BOOST_AUTO_TEST_SUITE( CSRStorageTest )
-
-LAMA_LOG_DEF_LOGGER( logger, "Test.CSRStorageTest" );
-
-typedef boost::mpl::list<float,double> test_types;
-
-/* ------------------------------------------------------------------------- */
-
-BOOST_AUTO_TEST_CASE_TEMPLATE( commonTestCases, T, test_types )
+namespace lama
 {
-    typedef T ValueType;
+namespace CSRStorageTest
+{
+
+template<typename ValueType>
+void commonTestCases( ContextPtr loc )
+{
 
     CSRStorage<ValueType> csrStorage;
     MatrixStorageTest<ValueType> storageTest( csrStorage );
 
-    if ( base_test_case )
+    storageTest.mMatrixStorage.setContext( loc );
+
+    if( base_test_case )
     {
-        LAMA_LOG_INFO( logger, "Run method " << testcase << " in CSRStorageTest." );
         MATRIXSTORAGE_COMMONTESTCASES( storageTest );
     }
     else
     {
-        CONTEXTLOOP()
-        {
-            GETCONTEXT( context );
-            storageTest.mMatrixStorage.setContext( context );
-            LAMA_LOG_INFO( logger, "Using context = " << storageTest.mMatrixStorage.getContext().getType() );
-            storageTest.runTests();
-        }
+        storageTest.runTests();
     }
 }
 
-/* --------------------------------------------------------------------- */
+/* ------------------------------------------------------------------------------------------------------------------ */
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( ConstructorTest, T, test_types )
+template<typename ValueType>
+void constructorTest()
 {
     const IndexType numRows = 10;
     const IndexType numColumns = 15;
 
-    CSRStorage<T> csrStorage;
+    CSRStorage<ValueType> csrStorage;
 
     csrStorage.allocate( numRows, numColumns );
 
@@ -94,33 +85,36 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( ConstructorTest, T, test_types )
     BOOST_REQUIRE_EQUAL( numColumns, csrStorage.getNumColumns() );
     BOOST_REQUIRE_EQUAL( 0, csrStorage.getNumValues() );
 
-    for ( IndexType i = 0; i < numRows; ++i )
+    for( IndexType i = 0; i < numRows; ++i )
     {
-        for ( IndexType j = 0; j < numColumns; ++j )
+        for( IndexType j = 0; j < numColumns; ++j )
         {
-            float v = static_cast<float> ( csrStorage.getValue( i, j ) );
-            BOOST_CHECK_SMALL( v , 1.0e-5f );
+            float v = static_cast<ValueType>( csrStorage.getValue( i, j ) );
+            BOOST_CHECK_SMALL( v, 1.0e-5f );
         }
     }
 }
 
-/* --------------------------------------------------------------------- */
+/* ------------------------------------------------------------------------------------------------------------------ */
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( ConstructorTest1, ValueType, test_types )
+template<typename ValueType>
+void constructorTest1( ContextPtr loc )
 {
     const IndexType numRows = 3;
     const IndexType numColumns = 3;
 
-    const IndexType ia[] = { 0, 1, 2, 4 };
+    const IndexType ia[] =
+    { 0, 1, 2, 4 };
 
-// Note: ja, values are stored column-major order
-
-    const IndexType ja[] = { 0, 1, 2, 2 };
-    const ValueType values[] = { 0.5f, 0.5f, 0.3f, 0.2f };
+    // Note: ja, values are stored column-major order
+    const IndexType ja[] =
+    { 0, 1, 2, 2 };
+    const ValueType values[] =
+    { 0.5f, 0.5f, 0.3f, 0.2f };
 
     const IndexType numValues = ia[numRows];
-    const IndexType sizeJA = sizeof( ja ) / sizeof( IndexType );
-    const IndexType sizeValues = sizeof( values ) / sizeof( ValueType );
+    const IndexType sizeJA = sizeof( ja ) / sizeof(IndexType);
+    const IndexType sizeValues = sizeof( values ) / sizeof(ValueType);
 
     BOOST_CHECK_EQUAL( numValues, sizeJA );
     BOOST_CHECK_EQUAL( numValues, sizeValues );
@@ -143,31 +137,69 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( ConstructorTest1, ValueType, test_types )
 
         // CSR keeps values in same order
 
-        for ( IndexType i = 0; i < numRows + 1; ++i )
+        for( IndexType i = 0; i < numRows + 1; ++i )
         {
             BOOST_CHECK_EQUAL( ia[i], csrIA[i] );
         }
 
-        for ( IndexType i = 0; i < numValues; ++i )
+        for( IndexType i = 0; i < numValues; ++i )
         {
             BOOST_CHECK_EQUAL( ja[i], csrJA[i] );
             BOOST_CHECK_EQUAL( values[i], csrValues[i] );
         }
     }
+
+    // copy constructor on all available locations
+    CSRStorage<ValueType> csrStorageCopy( csrStorage, loc );
+
+    BOOST_REQUIRE_EQUAL( numRows, csrStorageCopy.getNumRows() );
+    BOOST_REQUIRE_EQUAL( numColumns, csrStorageCopy.getNumColumns() );
+    BOOST_REQUIRE_EQUAL( numValues, csrStorageCopy.getNumValues() );
+    BOOST_CHECK( csrStorageCopy.hasDiagonalProperty() );
+
+    {
+         HostReadAccess<IndexType> csrIA( csrStorageCopy.getIA() );
+         HostReadAccess<IndexType> csrJA( csrStorageCopy.getJA() );
+         HostReadAccess<ValueType> csrValues( csrStorageCopy.getValues() );
+
+         // CSR keeps values in same order
+
+         for( IndexType i = 0; i < numRows + 1; ++i )
+         {
+             BOOST_CHECK_EQUAL( ia[i], csrIA[i] );
+         }
+
+         for( IndexType i = 0; i < numValues; ++i )
+         {
+             BOOST_CHECK_EQUAL( ja[i], csrJA[i] );
+             BOOST_CHECK_EQUAL( values[i], csrValues[i] );
+         }
+     }
 }
 
-/* ------------------------------------------------------------------------- */
+/* ------------------------------------------------------------------------------------------------------------------ */
 
-BOOST_AUTO_TEST_CASE( typeNameTest )
+template<typename ValueType>
+void typeNameTest()
 {
-    CSRStorage<double> csrStoraged;
-    std::string s = csrStoraged.typeName();
-    BOOST_CHECK_EQUAL( s, "CSRStorage<double>" );
+    CSRStorage<ValueType> csrStorage;
+    std::string s = csrStorage.typeName();
 
-    CSRStorage<float> csrStoragef;
-    s = csrStoragef.typeName();
-    BOOST_CHECK_EQUAL( s, "CSRStorage<float>" );
+    BOOST_CHECK( s.length() > 0 );
 }
-/* ------------------------------------------------------------------------- */
+
+} // namespace CSRStorageTest
+} // namespace lama
+
+/* ------------------------------------------------------------------------------------------------------------------ */
+
+BOOST_AUTO_TEST_SUITE( CSRStorageTest )
+
+LAMA_LOG_DEF_LOGGER( logger, "Test.CSRStorageTest" );
+LAMA_AUTO_TEST_CASE_CT( commonTestCases, CSRStorageTest )
+LAMA_AUTO_TEST_CASE_T( constructorTest, CSRStorageTest )
+LAMA_AUTO_TEST_CASE_CT( constructorTest1, CSRStorageTest )
+LAMA_AUTO_TEST_CASE_T( typeNameTest, CSRStorageTest )
+/* ------------------------------------------------------------------------------------------------------------------ */
 
 BOOST_AUTO_TEST_SUITE_END();
