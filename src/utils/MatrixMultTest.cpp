@@ -105,7 +105,7 @@ double multiply(
     }
     else
     {
-        std::cout << time << std::endl;
+        std::cout << time;
     }
 
     return time;
@@ -359,7 +359,8 @@ void validateOld(
 
 
 template<typename ValueType>
-int mainMult ( bool inputSet,
+int mainMult (  bool hostFlag,
+                bool inputSet,
                 bool silentFlag,
                 bool randomFlag,
                 bool outputFlag,
@@ -367,6 +368,7 @@ int mainMult ( bool inputSet,
                 bool sortFlag,
                 bool prefetchFlag,
                 bool validateFlag,
+                bool doublePrecisionFlag,
                 std::string inputMatrix,
                 double density,
                 std::string outputMatrix,
@@ -402,40 +404,6 @@ int mainMult ( bool inputSet,
     {
         matrixA.writeToFile( outputMatrix, lama::File::MATRIX_MARKET );
     }
-
-
-
-
-//      // TODO: Just temporary!
-//
-//      lama::CSRStorage<double> localStorageA = matrixA.getLocalStorage();
-//
-//      lama::HostReadAccess<lama::IndexType> aIA( localStorageA.getIA() );
-//      lama::HostReadAccess<lama::IndexType> aJA( localStorageA.getJA() );
-//      lama::HostReadAccess<double> aValues( localStorageA.getValues() );
-//
-//
-//      int print_i = 3;
-//      int print_j = 0;
-//
-//      std::cout << "Zeile " << print_i << ":" << std::endl;
-//      for ( int i = aIA[print_i]; i < aIA[print_i+1]; ++i )
-//      {
-//          std::cout << aJA[i] << ";" << aValues[i] << std::endl;
-//      }
-//      std::cout << std::endl;
-//
-//
-//      for ( int i = 0; i < localStorageA.getNumRows(); ++i )
-//        {
-//          for ( int j = aIA[i]; j < aIA[i+1]; ++j )
-//          {
-//              if ( aJA[j] == print_j )
-//              {
-//                  std::cout << i << ";" << aValues[j] << std::endl;
-//              }
-//          }
-//        }
 
     if( !silentFlag )
     {
@@ -476,7 +444,14 @@ int mainMult ( bool inputSet,
     }
     else
     {
-        multiply<ValueType>( &matrixA, &matrixB, &matrixCCuda, lama::Context::CUDA, prefetchFlag, silentFlag, sortFlag );
+        if ( hostFlag )
+        {
+            multiply<ValueType>( &matrixA, &matrixB, &matrixCCuda, lama::Context::Host, prefetchFlag, silentFlag, sortFlag );
+        }
+        else
+        {
+            multiply<ValueType>( &matrixA, &matrixB, &matrixCCuda, lama::Context::CUDA, prefetchFlag, silentFlag, sortFlag );
+        }
     }
 
     if( !silentFlag )
@@ -493,7 +468,14 @@ int mainMult ( bool inputSet,
 
     if( validateFlag )
     {
-        validate<ValueType>( &matrixCCuda, &matrixCHost, silentFlag );
+        if ( doublePrecisionFlag )
+        {
+            validate<ValueType>( &matrixCCuda, &matrixCHost, silentFlag );
+        }
+        else
+        {
+            validate<ValueType>( &matrixCCuda, &matrixCHost, silentFlag, 1e-06 );
+        }
     }
     if( benchmarkFlag ){
         maxRow ( &matrixCHost, silentFlag, lama::Context::Host );
@@ -509,6 +491,7 @@ int mainMult ( bool inputSet,
 
 int main( int argc, char **argv )
 {
+    bool hostFlag = false;
     bool validateFlag = false;
     bool prefetchFlag = false;
     bool silentFlag = false;
@@ -525,10 +508,13 @@ int main( int argc, char **argv )
     std::string outputMatrix;
     int parameter;
 
-    while( ( parameter = getopt( argc, argv, "hvpi:sbrg:d:of:e" ) ) != -1 )
+    while( ( parameter = getopt( argc, argv, "ahvpi:sbrg:d:of:e" ) ) != -1 )
     {
         switch( parameter )
         {
+        case 'a':
+            hostFlag = true;
+            break;
         case 'v':
             validateFlag = true;
             benchmarkFlag = true;
@@ -579,6 +565,7 @@ int main( int argc, char **argv )
     if( argc < 2 || helpFlag )
     {
     	std::cout << "Options:" << std::endl;
+    	std::cout << "-a\t Run multiplication on host only!" << std::endl;
     	std::cout << "-i\t Specify input matrix" << std::endl;
     	std::cout << "-p\t Prefetch matrices before multiplication" << std::endl;
     	std::cout << "-s\t Disable verbose output, only output results" << std::endl;
@@ -598,13 +585,13 @@ int main( int argc, char **argv )
 
         if ( doublePrecisionFlag )
         {
-            return mainMult<double> ( inputSet, silentFlag, randomFlag, outputFlag, benchmarkFlag, sortFlag,
-                                      prefetchFlag, validateFlag, inputMatrix, density, outputMatrix, size );
+            return mainMult<double> ( hostFlag, inputSet, silentFlag, randomFlag, outputFlag, benchmarkFlag, sortFlag,
+                                      prefetchFlag, validateFlag, doublePrecisionFlag, inputMatrix, density, outputMatrix, size );
         }
         else
         {
-            return mainMult<float> ( inputSet, silentFlag, randomFlag, outputFlag, benchmarkFlag, sortFlag,
-                                      prefetchFlag, validateFlag, inputMatrix, density, outputMatrix, size );
+            return mainMult<float> ( hostFlag, inputSet, silentFlag, randomFlag, outputFlag, benchmarkFlag, sortFlag,
+                                      prefetchFlag, validateFlag, doublePrecisionFlag, inputMatrix, density, outputMatrix, size );
         }
     }
 	return 0;

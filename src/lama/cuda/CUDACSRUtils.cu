@@ -75,26 +75,21 @@
 // boost
 #include <boost/bind.hpp>
 
-//
-
-
-
-
 // Adjustable Parameters for Benchmarking
 
-#define NUM_HASH_RETRIES 96
-#define NUM_ELEMENTS_PER_CHUNK 2048
-#define NUM_ELEMENTS_IN_SHARED 1024
+#define NUM_HASH_RETRIES 16
+#define NUM_ELEMENTS_PER_CHUNK 512
+#define NUM_ELEMENTS_IN_SHARED 512
 
 
-#define USE_LOAD_BALANCING
+//#define USE_LOAD_BALANCING
 #define USE_QUADRATIC_GROWTH
 
 // Parameters for memory usage
-//#define USE_GLOBAL_MEMORY
+#define USE_GLOBAL_MEMORY
 #define USE_SHARED_MEMORY
 
-#define NUM_BLOCKS 1024
+#define NUM_BLOCKS 9216
 #define CUDA_ARCH 30
 
 
@@ -1936,14 +1931,32 @@ inline IndexType multHlp_growth ( IndexType numChunks )
 #ifdef USE_QUADRATIC_GROWTH
     if ( numChunks == 0 )
     {
+#ifdef USE_SHARED_MEMORY
+        return 2;
+#else
         return 1;
+#endif
     }
     else
     {
         return numChunks * 2;
     }
 #else
+
+#ifdef USE_SHARED_MEMORY
+    if ( numChunks == 0 )
+    {
+        return 2;
+    }
+    else
+    {
+        return numChunks+1;
+    }
+#else
     return numChunks+1;
+#endif
+
+
 #endif
 }
 
@@ -2193,13 +2206,6 @@ IndexType CUDACSRUtils::matrixMultiplySizes(
     LAMA_CHECK_CUDA_ACCESS
 
 
-//    size_t free;
-//    size_t total;
-//    cuMemGetInfo( &free, &total );
-//    std::cout << "free memory: " << free / 1024 / 1024 << "mb, total memory: " << total / 1024 / 1024 << "mb" << std::endl;
-
-
-
     // Reset cIa
     thrust::device_ptr<IndexType> cIaPtr( cIa );
     thrust::fill( cIaPtr, cIaPtr + numRows, 0 );
@@ -2211,7 +2217,32 @@ IndexType CUDACSRUtils::matrixMultiplySizes(
     cudaMemcpy( hashError, &hashErrorHost, sizeof(bool), cudaMemcpyHostToDevice );
 
 #ifdef USE_GLOBAL_MEMORY
-    int numChunks = 100000;
+    size_t free;
+    size_t total;
+    cuMemGetInfo( &free, &total );
+
+    int nnz_a;
+    int nnz_b;
+    cudaMemcpy( &nnz_a, &aIa[numRows], sizeof(IndexType), cudaMemcpyDeviceToHost );
+    cudaMemcpy( &nnz_b, &bIa[numColumns], sizeof(IndexType), cudaMemcpyDeviceToHost );
+    int avgDensity = ( nnz_a / numRows + nnz_b / numColumns ) / 2;
+
+    int numChunks;
+    int maxNumChunks  = ( free - (100 * 1024 * 1024 )) / ( NUM_ELEMENTS_PER_CHUNK * sizeof ( IndexType ) * 2 );
+    int chunksPerWarp = NUM_BLOCKS * (( avgDensity * 8 ) / NUM_ELEMENTS_PER_CHUNK + 1 );
+#ifndef USE_SHARED_MEMORY
+    chunksPerWarp += NUM_BLOCKS;
+#endif
+
+    if ( chunksPerWarp > maxNumChunks )
+    {
+        numChunks = maxNumChunks;
+    }
+    else
+    {
+        numChunks = chunksPerWarp;
+    }
+
     unsigned int hashTableAllocatedBytes = numChunks * NUM_ELEMENTS_PER_CHUNK * sizeof( IndexType );
     IndexType* hashTable = ( IndexType* ) loc->allocate( hashTableAllocatedBytes );
 
@@ -2934,7 +2965,32 @@ void CUDACSRUtils::matrixMultiply(
     cudaMemcpy( hashError, &hashErrorHost, sizeof(bool), cudaMemcpyHostToDevice );
 
 #ifdef USE_GLOBAL_MEMORY
-    int numChunks = 100000;
+    size_t free;
+    size_t total;
+    cuMemGetInfo( &free, &total );
+
+    int nnz_a;
+    int nnz_b;
+    cudaMemcpy( &nnz_a, &aIa[numRows], sizeof(IndexType), cudaMemcpyDeviceToHost );
+    cudaMemcpy( &nnz_b, &bIa[numColumns], sizeof(IndexType), cudaMemcpyDeviceToHost );
+    int avgDensity = ( nnz_a / numRows + nnz_b / numColumns ) / 2;
+
+    int numChunks;
+    int maxNumChunks  = ( free - (100 * 1024 * 1024 )) / ( NUM_ELEMENTS_PER_CHUNK * sizeof ( IndexType ) * 2 );
+    int chunksPerWarp = NUM_BLOCKS * (( avgDensity * 8 ) / NUM_ELEMENTS_PER_CHUNK + 1 );
+#ifndef USE_SHARED_MEMORY
+    chunksPerWarp += NUM_BLOCKS;
+#endif
+
+    if ( chunksPerWarp > maxNumChunks )
+    {
+        numChunks = maxNumChunks;
+    }
+    else
+    {
+        numChunks = chunksPerWarp;
+    }
+
     unsigned int hashTableAllocatedBytes = numChunks * NUM_ELEMENTS_PER_CHUNK * ( sizeof( IndexType ) + sizeof(ValueType));
     void* chunks = ( void* ) loc->allocate( hashTableAllocatedBytes );
 
