@@ -98,7 +98,7 @@ public:
         return mDeviceNr;
     }
 
-    /** Each host contxt can data of each other host contxt.  */
+    /** Each host context can use data of each other host context.  */
 
     virtual bool canUseData( const Context& other ) const;
 

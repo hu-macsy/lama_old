@@ -257,7 +257,7 @@ public:
     bool isAvailableAt( ContextPtr context ) const;
 
     /**
-     * @brief Gets the fist context where the data of this LAMAArray is available.
+     * @brief Gets the first context where the data of this LAMAArray is available.
      *
      * If possible a context of the passed preferred type is returned.
      *
