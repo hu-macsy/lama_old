@@ -1646,7 +1646,7 @@ void DenseMatrix<ValueType>::matrixTimesVectorImpl(
         // localResult = alpha * mData[0] * X + beta * localY
 
         const DenseStorage<ValueType>& dense = *mData[0];
-        LAMA_LOG_INFO( logger, comm << ": matrixTimesVector, singe dense block = " << dense )
+        LAMA_LOG_INFO( logger, comm << ": matrixTimesVector, single dense block = " << dense )
         dense.matrixTimesVector( localResult, alphaValue, localX, betaValue, localY );
         return;
     }
@@ -1862,12 +1862,12 @@ void DenseMatrix<ValueType>::matrixPlusMatrixImpl(
     LAMA_ASSERT_EQUAL_DEBUG( A.getDistribution(), B.getDistribution() )
     LAMA_ASSERT_EQUAL_DEBUG( A.getColDistribution(), B.getColDistribution() )
 
-    // Now we can do it completly locally
+    // Now we can do it completely local
 
     Matrix::setDistributedMatrix( A.getDistributionPtr(), A.getColDistributionPtr() );
 
     // Add matrices of each chunk
-
+    LAMA_LOG_INFO( logger, "Mat.plusMatrix, mDataSize = " << mData.size() );
     for ( size_t i = 0; i < mData.size(); ++i )
     {
         mData[i]->matrixPlusMatrix( alpha, *A.mData[i], beta, *B.mData[i] );
@@ -1971,7 +1971,12 @@ Scalar DenseMatrix<ValueType>::maxNorm() const
 template<typename ValueType>
 Scalar DenseMatrix<ValueType>::maxDiffNorm( const Matrix& other ) const
 {
-    // Implemenation works only for same distributions and same type
+    if ( !( ( mNumColumns == other.getNumColumns() ) && ( mNumRows == other.getNumRows() ) ) )
+    {
+        LAMA_THROWEXCEPTION( "maxDiffNorm requires matrices of same format" );
+    }
+
+    // Implementation works only for same distributions and same type
 
     if ( ( getDistribution() == other.getDistribution() ) && ( getColDistribution() == other.getColDistribution() )
             && ( getValueType() == other.getValueType() ) )

@@ -164,8 +164,8 @@ void Matrix::setDefaultKind()
 
 void Matrix::setDistributedMatrix( DistributionPtr rowDistribution, DistributionPtr colDistribution )
 {
-    LAMA_ASSERT_ERROR( rowDistribution, "NULL row distribution for matrix not allowd" )
-    LAMA_ASSERT_ERROR( colDistribution, "NULL column distribution for matrix not allowd" )
+    LAMA_ASSERT_ERROR( rowDistribution, "NULL row distribution for matrix not allowed" )
+    LAMA_ASSERT_ERROR( colDistribution, "NULL column distribution for matrix not allowed" )
     mNumRows = rowDistribution->getGlobalSize();
     setDistributionPtr( rowDistribution );
     mNumColumns = colDistribution->getGlobalSize();
