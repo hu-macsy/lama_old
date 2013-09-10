@@ -40,7 +40,11 @@
 #include <lama/HostReadAccess.hpp>
 #include <lama/HostWriteAccess.hpp>
 
+#include <lama/storage/StorageMethods.hpp>
+
 #include <lama/LAMAArrayUtils.hpp>
+
+#include <lama/distribution/Redistributor.hpp>
 
 #include <lama/task/TaskSyncToken.hpp>
 
@@ -497,6 +501,82 @@ void CSRStorage<ValueType>::buildRowIndexes()
     WriteOnlyAccess<IndexType> rowIndexes( mRowIndexes, loc, nonZeroRows );
 
     OpenMPCSRUtils::setNonEmptyRowsByOffsets( rowIndexes.get(), nonZeroRows, csrIA.get(), mNumRows );
+}
+
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType>
+void CSRStorage<ValueType>::redistributeCSR( const CSRStorage<ValueType>& other, const Redistributor& redistributor )
+{
+    LAMA_REGION( "Storage.redistributeCSR" )
+
+    const Distribution& sourceDistribution = *redistributor.getSourceDistributionPtr();
+    const Distribution& targetDistribution = *redistributor.getTargetDistributionPtr();
+
+    LAMA_LOG_INFO( logger, other << ": redistribute of CSR<" << other.getValueType()
+                           << "> to CSR<" << this->getValueType() << " via " << redistributor )
+
+    bool sameDist = false;
+
+    // check for same distribution, either equal or both replicated
+
+    if ( sourceDistribution.isReplicated() && targetDistribution.isReplicated() )
+    {
+        sameDist = true;
+    }
+    else if ( &sourceDistribution == &targetDistribution )
+    {
+        sameDist = true;
+    }
+
+    if ( sameDist )
+    {
+        LAMA_LOG_INFO( logger, "redistributor with same source/target distribution" )
+
+        assign( other );
+
+        return; // so we are done
+    }
+
+    // check that source distribution fits with storage
+
+    LAMA_ASSERT_EQUAL_ERROR( other.getNumRows(), sourceDistribution.getLocalSize() )
+
+    if ( &other == this )
+    {
+        // due to alias we need temporary array
+
+        LAMAArray<IndexType> targetIA;
+        LAMAArray<IndexType> targetJA;
+        LAMAArray<ValueType> targetValues;
+
+        StorageMethods<ValueType>::redistributeCSR( targetIA, targetJA, targetValues,
+                                                    other.getIA(), other.getJA(), other.getValues(),
+                                                    redistributor );
+
+        // we can swap the new arrays
+
+        mIa.swap( targetIA );
+        mJa.swap( targetJA );
+        mValues.swap( targetValues );
+    }
+    else
+    {
+        StorageMethods<ValueType>::redistributeCSR( mIa, mJa, mValues,
+                                                    other.getIA(), other.getJA(), other.getValues(),
+                                                    redistributor );
+    }
+
+    // it is not necessary to convert the other storage to CSR
+
+
+    mNumColumns = other.getNumColumns();
+    mNumRows = mIa.size() - 1;
+    mNumValues = mJa.size();
+
+    mDiagonalProperty = checkDiagonalProperty();
+
+    buildRowIndexes();
 }
 
 /* --------------------------------------------------------------------------- */
@@ -1064,6 +1144,99 @@ void CSRStorage<ValueType>::buildCSCData(
     // build the CSC data directly on the device where this matrix is located.
 
     this->convertCSR2CSC( colIA, colJA, colValues, mNumColumns, mIa, mJa, mValues, this->getContextPtr() );
+}
+
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType>
+void CSRStorage<ValueType>::splitHalo(
+    MatrixStorage<ValueType>& localData,
+    MatrixStorage<ValueType>& haloData,
+    Halo& halo,
+    const Distribution& colDist,
+    const Distribution* rowDist ) const
+{
+    LAMA_REGION( "Storage.splitHalo" )
+
+    LAMA_LOG_INFO( logger, *this << ": split CSR according to column distribution " << colDist )
+
+    LAMA_ASSERT_EQUAL( mNumColumns, colDist.getGlobalSize() )
+
+    if ( colDist.isReplicated() )
+    {
+        // if there is no column distribution, halo is not needed
+
+        if ( rowDist )
+        {
+            localData.localize( *this, *rowDist );
+        }
+        else
+        {
+            localData.assign( *this );
+        }
+
+        haloData.allocate( mNumRows, 0 );
+
+        halo = Halo(); // empty halo schedule
+
+        return;
+    }
+
+    IndexType numRows = mNumRows;
+
+    // check optional row distribution if specified
+
+    if ( rowDist )
+    {
+        LAMA_LOG_INFO( logger, *this << ": split also localizes for " << *rowDist )
+        LAMA_ASSERT_EQUAL( mNumRows, rowDist->getGlobalSize() )
+        numRows = rowDist->getLocalSize();
+    }
+
+    LAMAArray<IndexType> localIA;
+    LAMAArray<IndexType> localJA;
+    LAMAArray<ValueType> localValues;
+
+    LAMAArray<IndexType> haloIA;
+    LAMAArray<IndexType> haloJA;
+    LAMAArray<ValueType> haloValues;
+
+    StorageMethods<ValueType>::splitCSR( localIA, localJA, localValues, haloIA, haloJA, haloValues, 
+                                         mIa, mJa, mValues, colDist, rowDist );
+
+    LAMA_ASSERT_EQUAL_DEBUG( localIA.size(), numRows + 1 )
+    LAMA_ASSERT_EQUAL_DEBUG( haloIA.size(), numRows + 1 )
+
+    const IndexType haloNumValues = haloJA.size();
+    const IndexType localNumValues = localJA.size();
+
+    LAMA_LOG_INFO( logger, *this << ": split into " << localNumValues << " local non-zeros "
+                   " and " << haloNumValues << " halo non-zeros" )
+
+    const IndexType localNumColumns = colDist.getLocalSize();
+
+    IndexType haloNumColumns; // will be available after remap
+
+    // build the halo by the non-local indexes
+
+    _StorageMethods::buildHalo( halo, haloJA, haloNumColumns, colDist );
+
+    LAMA_LOG_INFO( logger, "build halo: " << halo )
+
+    localData.setCSRData( numRows, localNumColumns, localNumValues, localIA, localJA, localValues );
+
+    localData.check( "local part after split" );
+
+    // halo data is expected to have many empty rows, so enable compressing with row indexes
+
+    haloData.setCompressThreshold( 0.5 );
+
+    haloData.setCSRData( numRows, haloNumColumns, haloNumValues, haloIA, haloJA, haloValues );
+
+    haloData.check( "halo part after split" );
+
+    LAMA_LOG_INFO( logger,
+                   "Result of split: local storage = " << localData << ", halo storage = " << haloData << ", halo = " << halo )
 }
 
 /* --------------------------------------------------------------------------- */

@@ -48,6 +48,8 @@ namespace lama
 class Distribution;
 // Forward declaration
 
+template<typename ValueType> class CSRStorage;
+
 /** Enumeration type for different matrix storage formats. */
 
 typedef enum
@@ -678,6 +680,10 @@ public:
      */
 
     virtual void redistribute( const _MatrixStorage& other, const class Redistributor& redistributor );
+
+    /** Special case where other storage is CSR of same type avoids temporary CSR conversion. */
+
+    virtual void redistributeCSR( const CSRStorage<ValueType>& other, const class Redistributor& redistributor );
 
     /** Build a halo matrix with all rows of required indexes */
 

@@ -359,6 +359,18 @@ public:
      */
     virtual void copyTo( _MatrixStorage& other ) const;
 
+    /** Redistribution of CSR avoids unnecessary conversions. */
+
+    virtual void redistributeCSR( const CSRStorage<ValueType>& other, const class Redistributor& redistributor );
+
+    /** Override splitHalo with version that avoids unnecessary conversions. */
+
+    virtual void splitHalo( MatrixStorage<ValueType>& localData,
+                            MatrixStorage<ValueType>& haloData,
+                            Halo& halo,
+                            const Distribution& colDist,
+                            const Distribution* rowDist ) const;
+
     /** General routine to build any kind of CSR storage.
      *
      *  @param[out] ia is the CSR offset array

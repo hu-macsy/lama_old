@@ -1386,7 +1386,7 @@ void DenseVector<T>::readVectorFromBinaryFile( const std::string& fileName, cons
 
     if ( !inFile.is_open() )
     {
-        LAMA_THROWEXCEPTION( "Could not open binary vector file." )
+        LAMA_THROWEXCEPTION( "Could not open binary vector file " << fileName << "." )
     }
 
     readVectorDataFromBinaryFile( inFile, dataTypeSize );

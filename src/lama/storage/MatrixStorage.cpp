@@ -1247,6 +1247,16 @@ template<typename ValueType>
 void MatrixStorage<ValueType>::redistribute( const _MatrixStorage& other, const Redistributor& redistributor )
 
 {
+    if ( other.getFormat() == CSR && other.getValueType() == getValueType() )
+    {
+        // This special case avoids unnecssary CSR conversions
+
+        const CSRStorage<ValueType>* otherCSR = dynamic_cast<const CSRStorage<ValueType>* >( &other );
+        LAMA_ASSERT_DEBUG( otherCSR, "serious cast error" );
+        redistributeCSR( *otherCSR, redistributor );
+        return;
+    }
+
     LAMA_REGION( "Storage.redistribute" )
 
     // For the redistribution we use the CSR format on both sides
@@ -1297,6 +1307,62 @@ void MatrixStorage<ValueType>::redistribute( const _MatrixStorage& other, const 
     LAMAArray<ValueType> targetValues;
 
     StorageMethods<ValueType>::redistributeCSR( targetIA, targetJA, targetValues, sourceIA, sourceJA, sourceValues,
+            redistributor );
+
+    const IndexType targetNumRows = targetIA.size() - 1;
+    const IndexType targetNumValues = targetJA.size();
+
+    setCSRData( targetNumRows, numColumns, targetNumValues, targetIA, targetJA, targetValues );
+}
+
+/* ------------------------------------------------------------------------- */
+
+template<typename ValueType>
+void MatrixStorage<ValueType>::redistributeCSR( const CSRStorage<ValueType>& other, const Redistributor& redistributor )
+{
+    LAMA_REGION( "Storage.redistributeCSR" )
+
+    const Distribution& sourceDistribution = *redistributor.getSourceDistributionPtr();
+    const Distribution& targetDistribution = *redistributor.getTargetDistributionPtr();
+
+    LAMA_LOG_INFO( logger, other << ": redistribute rows via " << redistributor )
+
+    bool sameDist = false;
+
+    // check for same distribution, either equal or both replicated
+
+    if ( sourceDistribution.isReplicated() && targetDistribution.isReplicated() )
+    {
+        sameDist = true;
+    }
+    else if ( &sourceDistribution == &targetDistribution )
+    {
+        sameDist = true;
+    }
+
+    if ( sameDist )
+    {
+        LAMA_LOG_INFO( logger, "redistributor with same source/target distribution" )
+
+        assign( other );
+
+        return; // so we are done
+    }
+
+    const IndexType numColumns = other.getNumColumns(); // does not change
+
+    // check that source distribution fits with storage
+
+    LAMA_ASSERT_EQUAL_ERROR( other.getNumRows(), sourceDistribution.getLocalSize() )
+
+    // it is not necessary to convert the other storage to CSR
+
+    LAMAArray<IndexType> targetIA;
+    LAMAArray<IndexType> targetJA;
+    LAMAArray<ValueType> targetValues;
+
+    StorageMethods<ValueType>::redistributeCSR( targetIA, targetJA, targetValues, 
+                                                other.getIA(), other.getJA(), other.getValues(),
             redistributor );
 
     const IndexType targetNumRows = targetIA.size() - 1;
