@@ -131,17 +131,17 @@ private:
 #define LAMA_UNSUPPORTED( msg )                                                    \
     {                                                                              \
         if ( lama::Exception::getUnsupportedSetting() !=                           \
-                lama::Exception::UNSUPPORTED_IGNORE )                                 \
+                lama::Exception::UNSUPPORTED_IGNORE )                              \
         {                                                                          \
             std::ostringstream errorStr;                                           \
             errorStr << "Unsupported at line ";                                    \
             errorStr << __LINE__ << " of file " << __FILE__ << "\n";               \
             errorStr << "    Message: " << msg << std::endl;                       \
-            errorStr << "Use environenment variable LAMA_UNSUPPORTED";             \
+            errorStr << "Use environment variable LAMA_UNSUPPORTED";               \
             errorStr << " (WARN or IGNORE) to get rid of this message";            \
             errorStr << std::endl;                                                 \
             if ( lama::Exception::getUnsupportedSetting() ==                       \
-                    lama::Exception::UNSUPPORTED_ERROR )                              \
+                    lama::Exception::UNSUPPORTED_ERROR )                           \
             {                                                                      \
                 throw lama::Exception( errorStr.str() );                           \
             }                                                                      \

@@ -885,7 +885,7 @@ public:
 
     virtual ValueType maxNorm() const = 0;
 
-    /** Get the maximal absolue element-wise difference between two matrices
+    /** Gets the maximal absolute element-wise difference between two matrices
      *
      *  @param[in] other is the matrix for comparison
      *  @return ( this - other ).maxNorm()

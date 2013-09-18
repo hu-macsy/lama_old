@@ -1167,7 +1167,7 @@ void MatrixStorage<ValueType>::matrixPlusMatrix(
 
     CSRStorage<ValueType> tmp( *this );
 
-    tmp.check( "Temporary CSR storage for matrix multiplication" );
+    tmp.check( "Temporary CSR storage for matrix addition" );
 
     tmp.matrixPlusMatrix( alpha, a, beta, b );
     assign( tmp );
