@@ -36,6 +36,7 @@
 
 #include <test/TestSparseMatrices.hpp>
 #include <test/TestMacros.hpp>
+#include <test/SameMatrixHelper.hpp>
 
 #include <lama/matrix/CSRSparseMatrix.hpp>
 #include <lama/matrix/DenseMatrix.hpp>
@@ -47,7 +48,6 @@
 
 using namespace boost;
 using namespace lama;
-
 
 namespace lama
 {
@@ -732,6 +732,51 @@ void typeNameTest( )
 /* ------------------------------------------------------------------------------------------------------------------ */
 
 template<typename ValueType>
+void matrixAddMatrixTest( )
+{
+
+    DenseMatrix<ValueType> n6m4SMatrixA = TestSparseMatrices::n6m4MatrixE1<ValueType>();
+    DenseMatrix<ValueType> n6m4SMatrixB = TestSparseMatrices::n6m4MatrixE1<ValueType>();
+
+    // TODO ThoBra: Wenn man den Speicherplatz hier im Test nicht explizit alloziert, wird kein Speicherplatz
+    // für mData bereitgestellt und memory access violation ist die Folge.
+
+    DenseMatrix<ValueType> matrix( n6m4SMatrixA.getNumRows(), n6m4SMatrixA.getNumColumns() );
+    matrix = n6m4SMatrixA + n6m4SMatrixB;
+
+    DenseMatrix<ValueType> matrixResult = 2.0 * n6m4SMatrixA;
+
+    testSameMatrix( matrix, matrixResult );
+
+}
+
+/* ------------------------------------------------------------------------------------------------------------------ */
+
+/* ------------------------------------------------------------------------------------------------------------------ */
+
+template<typename ValueType>
+void maxNormTest( )
+{
+
+    DenseMatrix<ValueType> n6m4SMatrix = TestSparseMatrices::n6m4MatrixE1<ValueType>();
+
+    Scalar maxNorm = n6m4SMatrix.maxNorm();
+    BOOST_CHECK_EQUAL( maxNorm.getValue<ValueType>(), 9.0 );
+
+    DenseMatrix<ValueType> n6m6SMatrix = TestSparseMatrices::n6m6MatrixDRes<ValueType>();
+
+    maxNorm = n6m6SMatrix.maxNorm();
+    BOOST_CHECK_EQUAL( maxNorm.getValue<ValueType>(), 89.0 );
+
+    DenseMatrix<ValueType> n6m4SMatrix1 = 2.5 * n6m4SMatrix;
+    Scalar maxDiffNorm = n6m4SMatrix.maxDiffNorm(n6m4SMatrix1);
+    BOOST_CHECK_EQUAL( maxDiffNorm.getValue<ValueType>(), 13.5 );
+
+}
+
+/* ------------------------------------------------------------------------------------------------------------------ */
+
+template<typename ValueType>
 void gemmTest( ContextPtr loc )
 {
     // This test needs less precision eps for float than for double
@@ -814,6 +859,8 @@ LAMA_AUTO_TEST_CASE_T( getMemoryUsageTest, DenseMatrixTest )
 LAMA_AUTO_TEST_CASE_T( getNumValuesTest, DenseMatrixTest )
 LAMA_AUTO_TEST_CASE_T( getRowTest, DenseMatrixTest )
 LAMA_AUTO_TEST_CASE_CT( gemmTest, DenseMatrixTest )
+LAMA_AUTO_TEST_CASE_T( matrixAddMatrixTest, DenseMatrixTest )
+LAMA_AUTO_TEST_CASE_T( maxNormTest, DenseMatrixTest )
 LAMA_AUTO_TEST_CASE_T( scaleTest, DenseMatrixTest )
 LAMA_AUTO_TEST_CASE_T( setDiagonalTest, DenseMatrixTest )
 LAMA_AUTO_TEST_CASE_T( setIdentityTest, DenseMatrixTest )
