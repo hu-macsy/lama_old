@@ -218,5 +218,21 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( DenseMatrixMultTest, MatrixType, MatrixTypes )
 }
 
 /* --------------------------------------------------------------------- */
+// TODO Lauri (?) schlaegt fehl.
+//BOOST_AUTO_TEST_CASE_TEMPLATE( DenseMatrixAddTest, MatrixType, MatrixTypes )
+//{
+//
+//    typedef typename MatrixType::ValueType ValueType;
+//
+//    MatrixType matrix1 = TestSparseMatrices::n6m4MatrixE1<ValueType>();
+//
+//    DenseMatrix<ValueType> matrixP = matrix1 + matrix1;
+//
+//    DenseMatrix<ValueType> matrixR  = 2.0 * matrix1;
+//
+//    testSameMatrix( matrixR, matrixP );
+//}
+
+/* --------------------------------------------------------------------- */
 
 BOOST_AUTO_TEST_SUITE_END(); /* MatrixTest */
