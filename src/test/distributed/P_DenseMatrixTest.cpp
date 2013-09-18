@@ -50,6 +50,7 @@
 #include <lama/LAMAInterfaceRegistry.hpp>
 #include <lama/CommunicatorFactory.hpp>
 
+#include <test/TestSparseMatrices.hpp>
 #include <test/TestMacros.hpp>
 
 using namespace boost;
@@ -222,6 +223,26 @@ static Distribution* createDistribution( const IndexType n, CommunicatorPtr comm
     }
 
     return dist;
+}
+
+BOOST_AUTO_TEST_CASE_TEMPLATE( maxDiffNormTest, T, test_types )
+{
+    typedef T ValueType;
+
+    DenseMatrix<ValueType> n6m4SMatrix  = TestSparseMatrices::n6m4MatrixE1<ValueType>();
+    DenseMatrix<ValueType> n6m4SMatrix1 = 2.5 * n6m4SMatrix;
+
+    shared_ptr<Distribution> dist( new BlockDistribution(n6m4SMatrix1.getNumRows(), comm) );
+    shared_ptr<Distribution> distCol( new BlockDistribution(n6m4SMatrix1.getNumColumns(), comm) );
+
+    DenseMatrix<ValueType> distM( n6m4SMatrix1, dist, distCol );
+
+    // check matrices with different distributions
+    Scalar maxDiffNorm = n6m4SMatrix.maxDiffNorm(distM);
+    BOOST_CHECK_EQUAL( maxDiffNorm.getValue<ValueType>(), 13.5 );
+
+    maxDiffNorm = distM.maxDiffNorm(n6m4SMatrix);
+    BOOST_CHECK_EQUAL( maxDiffNorm.getValue<ValueType>(), 13.5 );
 }
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( multVectorTest, T, test_types ) 
