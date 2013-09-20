@@ -43,7 +43,7 @@ static std::string storagetestclasses[] =
 static std::string storagetestmethods[] =
 {   "purgeTest", "emptyTest", "setIdentityTest", "setCSRDataTest", "buildCSRDataTest", "diagonalTest", "scaleTest", "normTest",
     "vectorMultTest", "jacobiTest", "jacobiHaloTest", "matrixMultTest", "matrixMultTest1", "matrixAddTest"
-    "writeAtTest", "inverseTest", "vectorTimesMatrixTest", "numericalTest"
+    "writeAtTest", "inverseTest", "symmetryTest", "vectorTimesMatrixTest", "numericalTest"
 };
 
 /** Test class for MatrixStorage<T>.
@@ -139,6 +139,8 @@ public:
     //void redistributeTest( const lama::CommunicatorPtr comm );
 
     void inverseTest();
+
+    void symmetryTest();
 
     void runTests();
 

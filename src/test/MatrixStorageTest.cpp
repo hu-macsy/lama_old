@@ -1254,6 +1254,30 @@ LAMA_COMMON_TEST_CASE_TEMPLATE_END()
 
 /* ------------------------------------------------------------------------- */
 
+LAMA_COMMON_TEST_CASE_TEMPLATE( MatrixStorageTest, StorageType, symmetryTest )
+
+    std::string prefix = Configuration::getInstance().getPath();
+    CSRSparseMatrix<ValueType> sym( prefix + "/" + "nos6.mtx" );
+    mMatrixStorage = sym.getLocalStorage();
+
+    DenseStorage<ValueType> orig; // used for comparing results
+    orig = mMatrixStorage;
+
+    bool symmetry = sym.checkSymmetry();
+    BOOST_CHECK_EQUAL( symmetry, true );
+
+    CSRSparseMatrix<ValueType> asym( prefix + "/" + "impcol_b.mtx" );
+    mMatrixStorage = asym.getLocalStorage();
+
+    orig = mMatrixStorage;
+
+    symmetry = asym.checkSymmetry();
+    BOOST_CHECK_EQUAL( symmetry, false );
+
+LAMA_COMMON_TEST_CASE_TEMPLATE_END()
+
+/* ------------------------------------------------------------------------- */
+
 LAMA_COMMON_TEST_CASE_TEMPLATE( MatrixStorageTest, StorageType, writeAtTest )
 
     LAMA_WRITEAT_TEST( mMatrixStorage )
@@ -1281,6 +1305,7 @@ LAMA_COMMON_TEST_CASE_RUNNER_TEMPLATE( MatrixStorageTest )
     matrixAddTest();
     matrixMultTest1();
     inverseTest();
+    symmetryTest();
     writeAtTest();
 }
 

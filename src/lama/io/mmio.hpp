@@ -52,7 +52,7 @@ char* mm_typecode_to_str( MM_typecode matcode );
 
 int mm_read_banner( FILE* f, MM_typecode* matcode );
 int mm_read_mtx_crd_size( FILE* f, int* M, int* N, int* nz );
-int mm_read_mtx_array_size( FILE* f, int* M, int* N );
+//int mm_read_mtx_array_size( FILE* f, int* M, int* N );
 
 int mm_write_banner( FILE* f, MM_typecode matcode );
 int mm_write_mtx_crd_size( FILE* f, int M, int N, int nz );
@@ -77,7 +77,7 @@ int mm_write_mtx_array_size( FILE* f, int M, int N );
 #define mm_is_skew(typecode)    ((typecode)[3]=='K')
 #define mm_is_hermitian(typecode)((typecode)[3]=='H')
 
-int mm_is_valid( MM_typecode matcode ); /* too complex for a macro */
+//int mm_is_valid( MM_typecode matcode ); /* too complex for a macro */
 
 /********************* MM_typecode modify fucntions ***************************/
 
@@ -146,10 +146,10 @@ char* getErrorString( int error );
 
 /*  high level routines */
 
-int mm_write_mtx_crd( char fname[], int M, int N, int nz, int I[], int J[], double val[], MM_typecode matcode );
-int mm_read_mtx_crd_data( FILE* f, int M, int N, int nz, int I[], int J[], double val[], MM_typecode matcode );
-int mm_read_mtx_crd_entry( FILE* f, int* I, int* J, double* real, double* img, MM_typecode matcode );
+//int mm_write_mtx_crd( char fname[], int M, int N, int nz, int I[], int J[], double val[], MM_typecode matcode );
+//int mm_read_mtx_crd_data( FILE* f, int M, int N, int nz, int I[], int J[], double val[], MM_typecode matcode );
+//int mm_read_mtx_crd_entry( FILE* f, int* I, int* J, double* real, double* img, MM_typecode matcode );
 
-int mm_read_unsymmetric_sparse( const char* fname, int* M_, int* N_, int* nz_, double** val_, int** I_, int** J_ );
+//int mm_read_unsymmetric_sparse( const char* fname, int* M_, int* N_, int* nz_, double** val_, int** I_, int** J_ );
 
 #endif /** MM_IO_HPP */

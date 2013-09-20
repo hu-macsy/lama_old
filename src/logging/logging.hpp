@@ -188,7 +188,7 @@
 #include "logging/LoggerProvider.hpp"
 
 /*******************************************************
- *   Defintions for logging                             *
+ *   Definitions for logging                           *
  *******************************************************/
 
 #define LAMA_LOG_DECL_STATIC_LOGGER(aLogger) static class log4lama::Logger& aLogger;
@@ -201,7 +201,7 @@
 #include <sstream>
 
 /*******************************************************
- *   LAMA_LOG_XXXXX_ON : Predicates                          *
+ *   LAMA_LOG_XXXXX_ON : Predicates                    *
  *******************************************************/
 
 #define LAMA_LOG_TRACE_ON(logger) (logger.isTraceEnabled())
@@ -212,7 +212,7 @@
 #define LAMA_LOG_FATAL_ON(logger) (logger.isFatalEnabled())
 
 /*******************************************************
- *   LAMA_LOG_SET_XXXX                                       *
+ *   LAMA_LOG_SET_XXXX                                 *
  *******************************************************/
 
 #define LAMA_LOG_SET_TRACE(logger) { logger.setLevel(log4lama::TRACE, true); }
@@ -225,7 +225,7 @@
 #else
 
 /*******************************************************
- *   logging completely disabled                        *
+ *   logging completely disabled                       *
  *******************************************************/
 
 #define LAMA_LOG_DECL_STATIC_LOGGER( aLogger )
@@ -242,7 +242,7 @@
 
 #endif // LAMA_LOG_FATAL_ENABLED
 /*******************************************************
- *   LAMA_LOG_TRACE                                          *
+ *   LAMA_LOG_TRACE                                    *
  *******************************************************/
 
 #ifdef LAMA_LOG_TRACE_ENABLED
@@ -253,7 +253,7 @@
 #endif
 
 /*******************************************************
- *   LAMA_LOG_DEBUG                                          *
+ *   LAMA_LOG_DEBUG                                    *
  *******************************************************/
 
 #ifdef LAMA_LOG_DEBUG_ENABLED
@@ -264,7 +264,7 @@
 #endif
 
 /*******************************************************
- *   LAMA_LOG_INFO                                           *
+ *   LAMA_LOG_INFO                                     *
  *******************************************************/
 
 #ifdef LAMA_LOG_INFO_ENABLED
@@ -275,7 +275,7 @@
 #endif
 
 /*******************************************************
- *   LAMA_LOG_WARN                                           *
+ *   LAMA_LOG_WARN                                     *
  *******************************************************/
 
 #ifdef LAMA_LOG_WARN_ENABLED
@@ -286,7 +286,7 @@
 #endif
 
 /*******************************************************
- *   LAMA_LOG_ERROR                                          *
+ *   LAMA_LOG_ERROR                                    *
  *******************************************************/
 
 #ifdef LAMA_LOG_ERROR_ENABLED
@@ -297,7 +297,7 @@
 #endif
 
 /*******************************************************
- *   LAMA_LOG_FATAL                                          *
+ *   LAMA_LOG_FATAL                                    *
  *******************************************************/
 
 #ifdef LAMA_LOG_FATAL_ENABLED

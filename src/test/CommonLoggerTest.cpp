@@ -55,7 +55,7 @@ LAMA_LOG_DEF_LOGGER( logger, "Test.CommonLoggerTest" )
 BOOST_AUTO_TEST_CASE( LoggerIdTest )
 {
     CommonLogger consoleLogger( "<CommonLoggerTest>: ", LogLevel::convergenceHistory,
-                                LoggerWriteBehaviour::toConsoleOnly, std::auto_ptr<Timer>( new Timer() ) );
+                                LoggerWriteBehaviour::toConsoleOnly );
 
     std::string s = consoleLogger.id();
 
