@@ -48,6 +48,8 @@
 #define LAMA_TRACE_LEVEL_${LAMA_TRACE_LEVEL}
 #define LAMA_OMP_SCHEDULE ${LAMA_OMP_SCHEDULE}
 
+#define LAMA_CUDA_COMPUTE_CAPABILITY ${CUDA_COMPUTE_CAPABILITY}
+
 extern "C" inline int lama_getRevision()
 {
     return LAMA_REVISION;
