@@ -2084,7 +2084,7 @@ void CSRStorage<ValueType>::matrixAddMatrixCSR(
 
     // Computation of C might have produced some zero elements
 
-    compress();
+    //compress();
 
     check( "result of matrix + matrix" ); // just verify for a correct matrix
 }

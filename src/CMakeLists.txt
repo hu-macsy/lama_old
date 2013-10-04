@@ -113,6 +113,7 @@ add_subdirectory ( logging )
 if ( FOUND_BOOST_TEST AND LAMA_BUILD_TEST )
     add_subdirectory ( test )
 endif ( FOUND_BOOST_TEST AND LAMA_BUILD_TEST )
+add_subdirectory ( utils )
 
 ### Examples ###
 # copy examples in build directory + install it

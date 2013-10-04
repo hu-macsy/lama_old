@@ -52,7 +52,6 @@ namespace lama
 class LAMA_DLL_IMPORTEXPORT CUDACSRUtils
 {
 public:
-
     /** Helper routine for conversion CSR to CSR format.  */
 
     static IndexType sizes2offsets( IndexType sizes[], const IndexType numRows );
@@ -254,6 +253,8 @@ private:
     LAMA_LOG_DECL_STATIC_LOGGER( logger )
 
     static bool initialized;   //!< static initialization used for registration
+
+    static unsigned int lastHashTableSize; // local variable to handhover hash table size for multiply
 
     static bool registerInterface();  //!< registration
 };

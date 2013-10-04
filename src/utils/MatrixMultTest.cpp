@@ -1,0 +1,598 @@
+/**
+ * @file MatrixMultTest.cpp
+ *
+ * @license
+ * Copyright (c) 2011
+ * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
+ * for Fraunhofer-Gesellschaft
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ * @endlicense
+ *
+ * @brief MatrixMultTest.cpp
+ * @author Jan Ecker
+ * @date 03.01.2013
+ * $Id$
+ */
+
+#include <lama/Scalar.hpp>
+#include <lama/Context.hpp>
+#include <lama/matrix/CSRSparseMatrix.hpp>
+#include <lama/expression/MatrixExpressions.hpp>
+#include <lama/HostReadAccess.hpp>
+#include <lama/HostWriteAccess.hpp>
+#include <lama/storage/CSRStorage.hpp>
+#include <lama/matutils/MatrixCreator.hpp>
+#include <lama/openmp/OpenMPCSRUtils.hpp>
+#include <lama/io/FileType.hpp>
+#include <omp.h>
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
+
+//using namespace lama;
+
+template<typename ValueType>
+double multiply(
+    lama::CSRSparseMatrix<ValueType> *matrixA,
+    lama::CSRSparseMatrix<ValueType> *matrixB,
+    lama::CSRSparseMatrix<ValueType> *matrixC,
+    lama::ContextType context,
+    const bool prefetch,
+    const bool silentFlag,
+    const bool sortFlag )
+{
+    lama::ContextPtr loc = lama::ContextFactory::getContext( context );
+
+    matrixA->setContext( loc );
+    matrixB->setContext( loc );
+
+    if( sortFlag )
+    {
+        matrixA->getLocalStorage().sortRows(false);
+        matrixB->getLocalStorage().sortRows(false);
+    }
+    if( prefetch )
+    {
+        if( !silentFlag )
+        {
+            std::cout << "Prefetching matrices... " << std::flush;
+            matrixA->prefetch();
+            std::cout << "..." << std::flush;
+        }
+        matrixB->prefetch();
+        if( !silentFlag )
+        {
+            std::cout << "done!" << std::endl;
+        }
+    }
+
+    double time;
+    double start;
+
+    if( !silentFlag )
+    {
+        std::cout << "Starting multiplication on " << context << " Context with size " << matrixA->getNumRows() << "x"
+                  << matrixB->getNumColumns() << std::endl;
+    }
+
+    start = omp_get_wtime();
+
+    *matrixC = 1.0 * *matrixA * *matrixB;
+
+    time = omp_get_wtime() - start;
+
+    if( !silentFlag )
+    {
+        std::cout << "Multiplication finished, time: " << time << "s" << std::endl << std::endl;
+    }
+    else
+    {
+        std::cout << time;
+    }
+
+    return time;
+}
+
+template<typename ValueType>
+void maxRow(
+    lama::CSRSparseMatrix<ValueType> *matrix,
+    const bool silentFlag,
+    lama::ContextType context)
+{
+    lama::ContextPtr locHost = lama::ContextFactory::getContext( lama::Context::Host );
+
+    matrix->setContext( locHost );
+    if( !silentFlag )
+    {
+        std::cout << "Checking for longest row..." << std::flush;
+    }
+
+    lama::CSRStorage<ValueType> localStorage;
+    localStorage = matrix->getLocalStorage();
+
+    lama::HostReadAccess<lama::IndexType> ia( localStorage.getIA() );
+
+    lama::IndexType longestRow = 0;
+    lama::IndexType row = 0;
+    for( int i = 0; i < matrix->getNumRows(); ++i )
+    {
+        if ( ia[i+1]-ia[i] > longestRow ){
+            longestRow = ia[i+1]-ia[i];
+            row = i;
+        }
+    }
+    if( !silentFlag )
+    {
+        std::cout << "finished, longest row is row " << row << " with " << longestRow << " Elements! (" << context << ") " << std::endl;
+    }
+}
+
+template<typename ValueType>
+void validate(
+    lama::CSRSparseMatrix<ValueType> *matrixGiven,
+    lama::CSRSparseMatrix<ValueType> *matrixCorrect,
+    const bool silentFlag,
+    const double epsilon = 1e-15 )
+{
+    lama::ContextPtr locHost = lama::ContextFactory::getContext( lama::Context::Host );
+
+    matrixGiven->setContext( locHost );
+    matrixCorrect->setContext( locHost );
+
+    int numErrors = 0;
+
+    if( !silentFlag )
+    {
+        std::cout << "Running validation with epsilon = " << epsilon << std::endl << std::flush;
+    }
+
+    lama::CSRStorage<ValueType> localStorageCorrect;
+    localStorageCorrect = matrixCorrect->getLocalStorage();
+    std::cout << "assign given" << std::endl;
+    lama::CSRStorage<ValueType> localStorageGiven;
+    localStorageGiven = matrixGiven->getLocalStorage();
+
+    lama::HostReadAccess<lama::IndexType> correctIa( localStorageCorrect.getIA() );
+    lama::HostWriteAccess<lama::IndexType> correctJA( localStorageCorrect.getJA() );
+    lama::HostWriteAccess<ValueType> correctValues( localStorageCorrect.getValues() );
+
+    lama::HostReadAccess<lama::IndexType> givenIa( localStorageGiven.getIA() );
+    lama::HostWriteAccess<lama::IndexType> givenJA( localStorageGiven.getJA() );
+    lama::HostWriteAccess<ValueType> givenValues( localStorageGiven.getValues() );
+
+//    lama::OpenMPCSRUtils::sortRowElements(correctJA.get(), correctValues.get(), correctIa.get(), localStorageCorrect.getNumRows(), true);
+//    lama::OpenMPCSRUtils::sortRowElements(givenJA.get(), givenValues.get(), givenIa.get(), localStorageGiven.getNumRows(), true);
+
+    // Validate NNZ
+    if( localStorageCorrect.getNumValues() != localStorageGiven.getNumValues() )
+    {
+        std::cout << "NNZ is different, is " << localStorageGiven.getNumValues() << " but should "
+                  << localStorageCorrect.getNumValues() << " difference is " << localStorageGiven.getNumValues() -
+                  localStorageCorrect.getNumValues() << std::endl << std::flush;
+    }else{
+        std::cout << "NNZ of both matrices is identic! (Both " << localStorageCorrect.getNumValues()
+                  << "Elements)" << std::endl;
+    }
+
+    // Validate IA Array
+    for( int i = 0; i < matrixCorrect->getNumRows(); i++ )
+    {
+        if( givenIa[i+1] - givenIa[i] != correctIa[i+1] - correctIa[i] )
+        {
+            std::cout << "Error in IA Array in row " << i << " value is " << givenIa[i+1] - givenIa[i] << " but should "
+                      << correctIa[i+1] - correctIa[i] << std::endl;
+            numErrors++;
+        }
+    }
+
+    // Validate JA Array
+    for ( int i = 0; i < localStorageGiven.getNumValues(); ++i )
+    {
+        if ( givenJA[i] < 0 || givenJA[i] >= matrixGiven->getNumColumns())
+        {
+            std::cout << "Error in JA Array in entry " << i << " value is " << givenJA[i] << std::endl;
+        }
+    }
+
+    // Validate Values
+    for( int i = 0; i < matrixCorrect->getNumRows(); i++ )
+    {
+        lama::IndexType start = correctIa[i];
+        lama::IndexType end = correctIa[i + 1];
+        for( lama::IndexType k = start; k < end; k++ )
+        {
+            lama::IndexType j = correctJA[k];
+            lama::Scalar valCorrect = matrixCorrect->getValue( i, j );
+            lama::Scalar valGiven = matrixGiven->getValue( i, j );
+
+            ValueType relativeDifference = abs( valGiven.getValue<ValueType>() - valCorrect.getValue<ValueType>() )
+                                           / valGiven.getValue<ValueType>();
+            if( relativeDifference  > epsilon )
+            {
+                std::cout << "Error in Matrix on position (" << i << ", " << j << ") value is " << valGiven
+                          << " but should " << valCorrect << " relative difference is "
+                          << relativeDifference << std::endl;
+                numErrors++;
+            }
+        }
+    }
+
+
+//    lama::IndexType i = 0;
+//    lama::IndexType numElementsCorrect = 0;
+//    lama::IndexType numElementsGiven = 0;
+//    for( int j = 0; j < matrixCorrect->getNumColumns(); ++j )
+//    {
+//        lama::Scalar valCorrect = matrixCorrect->getValue( i, j );
+//        lama::Scalar valGiven = matrixGiven->getValue( i, j );
+//
+//
+//        if ( valGiven != 0.0 )
+//        {
+//            ValueType relativeDifference = abs( ((ValueType)valGiven.getValue<ValueType>()
+//                                                - (ValueType)valCorrect.getValue<ValueType>())
+//                                                / (ValueType)valGiven.getValue<ValueType>());
+//
+//            if( relativeDifference  > epsilon )
+//            {
+//                std::cout << "Error in Matrix on position (" << i << ", " << j << ") value is " << valGiven
+//                          << " but should " << valCorrect << " relative difference is "
+//                          << relativeDifference << std::endl;
+//                numErrors++;
+//            }
+//        }
+//        else
+//        {
+//            if ( valCorrect != 0.0 )
+//            {
+//                std::cout << "Error in Matrix on position (" << i << ", " << j << ") value is " << valGiven
+//                          << " but should " << valCorrect << " relative difference is " << std::endl;
+//                numErrors++;
+//            }
+//        }
+//
+//        if( abs(valCorrect) > epsilon )
+//        {
+//            numElementsCorrect++;
+//        }
+//        if( abs(valGiven) > epsilon )
+//        {
+//            numElementsGiven++;
+//        }
+//    }
+//
+//
+//    std::cout << "Num nnz in row " << i << " is " << numElementsCorrect << " (Host)" << std::endl;
+//    std::cout << "Num nnz in row " << i << " is " << numElementsGiven << " (CUDA)" << std::endl;
+
+    if( numErrors > 0 )
+    {
+        std::cout << std::endl << "Validation finished, " << numErrors << " errors found!" << std::endl;
+    }
+    else
+    {
+        std::cout << std::endl << "Validation finished, no errors found!" << std::endl;
+    }
+}
+
+template<typename ValueType>
+void validateOld(
+    lama::CSRSparseMatrix<ValueType> *matrixGiven,
+    lama::CSRSparseMatrix<ValueType> *matrixCorrect,
+    const bool silentFlag,
+    const double epsilon = 1e-15 )
+{
+    lama::ContextPtr locHost = lama::ContextFactory::getContext( lama::Context::Host );
+
+    matrixGiven->setContext( locHost );
+    matrixCorrect->setContext( locHost );
+
+    int numErrors = 0;
+
+    if( !silentFlag )
+    {
+        std::cout << "Running validation with epsilon = " << epsilon << std::endl << std::flush;
+    }
+
+    lama::CSRStorage<ValueType> localStorage;
+    localStorage = matrixCorrect->getLocalStorage();
+
+    lama::HostReadAccess<lama::IndexType> correctIa( localStorage.getIA() );
+    lama::HostReadAccess<lama::IndexType> correctJA( localStorage.getJA() );
+
+    if( localStorage.getNumValues() != matrixGiven->getLocalStorage().getNumValues() )
+    {
+        std::cout << "numValues is different, is " << matrixGiven->getLocalStorage().getNumValues() << " but should "
+                  << localStorage.getNumValues() << " difference is " << matrixGiven->getLocalStorage().getNumValues() -
+                  localStorage.getNumValues() << std::endl << std::flush;
+    }
+
+//#pragma omp parallel for
+    for( int i = 0; i < matrixCorrect->getNumRows(); i++ )
+    {
+        lama::IndexType start = correctIa[i];
+        lama::IndexType end = correctIa[i + 1];
+        for( lama::IndexType k = start; k < end; k++ )
+        {
+            lama::IndexType j = correctJA[k];
+            lama::Scalar valCorrect = matrixCorrect->getValue( i, j );
+            lama::Scalar valGiven = matrixGiven->getValue( i, j );
+
+            ValueType relativeDifference = abs( valGiven.getValue<ValueType>() - valCorrect.getValue<ValueType>() )
+                                           / valGiven.getValue<ValueType>();
+            if( relativeDifference  > epsilon )
+            {
+                std::cout << "Error in Matrix on position (" << i << ", " << j << ") value is " << valGiven
+                          << " but should " << valCorrect << " relative difference is "
+                          << relativeDifference << std::endl;
+                numErrors++;
+            }
+        }
+    }
+    if( numErrors > 0 )
+    {
+        std::cout << std::endl << "Validation finished, " << numErrors << " errors found!" << std::endl;
+    }
+    else
+    {
+        std::cout << std::endl << "Validation finished, no errors found!" << std::endl;
+    }
+}
+
+
+template<typename ValueType>
+int mainMult (  bool hostFlag,
+                bool inputSet,
+                bool silentFlag,
+                bool randomFlag,
+                bool outputFlag,
+                bool benchmarkFlag,
+                bool sortFlag,
+                bool prefetchFlag,
+                bool validateFlag,
+                bool doublePrecisionFlag,
+                std::string inputMatrix,
+                double density,
+                std::string outputMatrix,
+                int size )
+{
+    if ( !inputSet )
+    {
+        std::cout << "No input set, aborting..." << std::endl;
+        return 1;
+    }
+
+    if( !silentFlag )
+    {
+        std::cout << "matrixMultTest running" << std::endl << std::endl;
+        std::cout << "Loading matrix \"" << inputMatrix << "\"... " << std::flush;
+    }
+
+
+
+    lama::CSRSparseMatrix<ValueType> matrixA;
+    lama::CSRSparseMatrix<ValueType> matrixB;
+    if ( randomFlag ) {
+        matrixA = lama::CSRSparseMatrix<ValueType>( size, size );
+        matrixB = lama::CSRSparseMatrix<ValueType>( size, size );
+        lama::MatrixCreator<double>::fillRandom( matrixA, density );
+        lama::MatrixCreator<double>::fillRandom( matrixB, density );
+    } else {
+        matrixA = lama::CSRSparseMatrix<ValueType>( inputMatrix );
+        matrixB =  lama::CSRSparseMatrix<ValueType>( matrixA );
+    }
+
+    if( outputFlag )
+    {
+        matrixA.writeToFile( outputMatrix, lama::File::MATRIX_MARKET );
+    }
+
+    if( !silentFlag )
+    {
+        std::cout << "done!" << std::endl << std::endl;
+        std::cout << "Matrix A info: " << std::endl;
+        std::cout << "Size: \t\t" << matrixA.getNumRows() << "x" << matrixA.getNumColumns() << std::endl;
+        std::cout << "NNZ: \t\t" << matrixA.getNumValues() << std::endl;
+        std::cout << "NNZ/Row: \t" << matrixA.getNumValues() / matrixA.getNumRows() << std::endl;
+        std::cout << "Density: \t" << (float)matrixA.getNumValues() / (float)matrixA.getNumRows() / (float)matrixA.getNumColumns() << std::endl;
+        std::cout << "Filesize: \t" << ( ( matrixA.getMemoryUsage() / 1024.0 ) / 1024.0 ) << " MB" << std::endl
+                  << std::endl;
+
+        std::cout << "Matrix B info: " << std::endl;
+        std::cout << "Size: \t\t" << matrixB.getNumRows() << "x" << matrixB.getNumColumns() << std::endl;
+        std::cout << "NNZ: \t\t" << matrixB.getNumValues() << std::endl;
+        std::cout << "NNZ/Row: \t" << matrixB.getNumValues() / matrixB.getNumRows() << std::endl;
+        std::cout << "Density: \t" << (float)matrixB.getNumValues() / (float)matrixB.getNumRows() / (float)matrixB.getNumColumns() << std::endl;
+        std::cout << "Filesize: \t" << ( ( matrixB.getMemoryUsage() / 1024.0 ) / 1024.0 ) << " MB" << std::endl
+                  << std::endl;
+
+    }
+
+    lama::CSRSparseMatrix<ValueType> matrixCHost;
+    lama::CSRSparseMatrix<ValueType> matrixCCuda;
+
+    if( benchmarkFlag )
+    {
+        double time1 = multiply<ValueType>( &matrixA, &matrixB, &matrixCCuda, lama::Context::CUDA, prefetchFlag,
+                                         silentFlag, sortFlag );
+        double time2 = multiply<ValueType>( &matrixA, &matrixB, &matrixCHost, lama::Context::Host, prefetchFlag,
+                                         silentFlag, sortFlag );
+
+        if( !silentFlag )
+        {
+            std::cout << "Speedup: " << time2 / time1 << std::endl << std::endl;
+
+        }
+    }
+    else
+    {
+        if ( hostFlag )
+        {
+            multiply<ValueType>( &matrixA, &matrixB, &matrixCCuda, lama::Context::Host, prefetchFlag, silentFlag, sortFlag );
+        }
+        else
+        {
+            multiply<ValueType>( &matrixA, &matrixB, &matrixCCuda, lama::Context::CUDA, prefetchFlag, silentFlag, sortFlag );
+        }
+    }
+
+    if( !silentFlag )
+    {
+        std::cout << "Done!" << std::endl << std::endl;
+
+        std::cout << "Matrix info: " << std::endl;
+        std::cout << "Size: \t\t" << matrixCCuda.getNumRows() << "x" << matrixCCuda.getNumColumns() << std::endl;
+        std::cout << "NNZ: \t\t" << matrixCCuda.getNumValues() << std::endl;
+        std::cout << "NNZ/Row: \t" << matrixCCuda.getNumValues() / matrixCCuda.getNumRows() << std::endl;
+        std::cout << "Filesize: \t" << ( ( matrixCCuda.getMemoryUsage() / 1024.0 ) / 1024.0 ) << " MB" << std::endl
+                  << std::endl;
+    }
+
+    if( validateFlag )
+    {
+        if ( doublePrecisionFlag )
+        {
+            validate<ValueType>( &matrixCCuda, &matrixCHost, silentFlag );
+        }
+        else
+        {
+            validate<ValueType>( &matrixCCuda, &matrixCHost, silentFlag, 1e-06 );
+        }
+    }
+    if( benchmarkFlag ){
+        maxRow ( &matrixCHost, silentFlag, lama::Context::Host );
+        maxRow ( &matrixCCuda, silentFlag, lama::Context::CUDA );
+    }
+    else
+    {
+        maxRow ( &matrixCCuda, silentFlag, lama::Context::CUDA );
+    }
+    return 0;
+}
+
+
+int main( int argc, char **argv )
+{
+    bool hostFlag = false;
+    bool validateFlag = false;
+    bool prefetchFlag = false;
+    bool silentFlag = false;
+    bool benchmarkFlag = false;
+    bool randomFlag = false;
+    bool inputSet = false;
+    bool sortFlag = false;
+    bool helpFlag = false;
+    bool outputFlag = false;
+    bool doublePrecisionFlag = false;
+    int size = 1000;
+    float density = 1.0;
+    std::string inputMatrix;
+    std::string outputMatrix;
+    int parameter;
+
+    while( ( parameter = getopt( argc, argv, "ahvpi:sbrg:d:of:e" ) ) != -1 )
+    {
+        switch( parameter )
+        {
+        case 'a':
+            hostFlag = true;
+            break;
+        case 'v':
+            validateFlag = true;
+            benchmarkFlag = true;
+            break;
+        case 'p':
+            prefetchFlag = true;
+            break;
+        case 'i':
+            inputMatrix = optarg;
+            inputSet = true;
+            break;
+        case 's':
+            silentFlag = true;
+            break;
+        case 'o':
+            sortFlag = true;
+            break;
+        case 'b':
+            benchmarkFlag = true;
+            break;
+        case 'r':
+            randomFlag = true;
+            inputSet = true;
+            break;
+        case 'g':
+            size = atoi( optarg );
+            break;
+        case 'd':
+            density = atof( optarg );
+            break;
+        case 'h':
+        	helpFlag = true;
+        	break;
+        case 'f':
+            outputFlag = true;
+            outputMatrix = optarg;
+            break;
+        case 'e':
+            doublePrecisionFlag = true;
+            break;
+        default:
+            abort();
+            break;
+        }
+    }
+
+    // if no argument is given, display help
+    if( argc < 2 || helpFlag )
+    {
+    	std::cout << "Options:" << std::endl;
+    	std::cout << "-a\t Run multiplication on host only!" << std::endl;
+    	std::cout << "-i\t Specify input matrix" << std::endl;
+    	std::cout << "-p\t Prefetch matrices before multiplication" << std::endl;
+    	std::cout << "-s\t Disable verbose output, only output results" << std::endl;
+    	std::cout << "-b\t Enable Benchmarking, run multiplication on host and cuda and compare runtime" << std::endl;
+    	std::cout << "-v\t Validate matrices after multiplication (compare host with cuda matrix)" << std::endl;
+    	std::cout << "-r\t Generate random matrices for multiplication. Also see -g and -d" << std::endl;
+    	std::cout << "-g\t Num Rows/Columns of generated random matrices" << std::endl;
+    	std::cout << "-d\t Density of generated random matrices" << std::endl;
+    	std::cout << "-o\t Sorts the elements of the JA-Array, needed for multiplication using CUSPARSE" << std::endl;
+    	std::cout << "-e\t Use double precision" << std::endl;
+    	std::cout << "-h\t Display this help" << std::endl;
+
+    	return 0;
+    }
+    else
+    {
+
+        if ( doublePrecisionFlag )
+        {
+            return mainMult<double> ( hostFlag, inputSet, silentFlag, randomFlag, outputFlag, benchmarkFlag, sortFlag,
+                                      prefetchFlag, validateFlag, doublePrecisionFlag, inputMatrix, density, outputMatrix, size );
+        }
+        else
+        {
+            return mainMult<float> ( hostFlag, inputSet, silentFlag, randomFlag, outputFlag, benchmarkFlag, sortFlag,
+                                      prefetchFlag, validateFlag, doublePrecisionFlag, inputMatrix, density, outputMatrix, size );
+        }
+    }
+	return 0;
+}
