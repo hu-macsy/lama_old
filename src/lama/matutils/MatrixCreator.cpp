@@ -41,8 +41,6 @@
 #include <lama/distribution/BlockDistribution.hpp>
 #include <lama/distribution/GeneralDistribution.hpp>
 
-
-#include <sys/time.h>
 #include <cmath>
 
 namespace lama
@@ -510,11 +508,7 @@ void MatrixCreator<T>::buildPoisson3D(
 template<typename ValueType>
 void MatrixCreator<ValueType>::fillRandom( Matrix& matrix, double density )
 {
-    int seed;
-
-    timeval time;
-    gettimeofday(&time, NULL);
-    seed = ((unsigned long long)time.tv_sec * 1000000) + time.tv_usec;
+    int seed = 15191;
 
     // Shape and distribution of matrix is not changed
 
@@ -537,7 +531,7 @@ void MatrixCreator<ValueType>::fillRandom( Matrix& matrix, double density )
     const IndexType localRowSize = dist.getLocalSize();
     const IndexType colSize = matrix.getNumColumns();
 
-    const IndexType expectedEntries = static_cast<IndexType>( localRowSize * colSize * density );
+    const IndexType expectedEntries = static_cast<IndexType>( localRowSize * colSize * density + 30.0 );
 
     std::vector<IndexType> csrIA( localRowSize + 1 );
     std::vector<IndexType> csrJA;
@@ -550,43 +544,26 @@ void MatrixCreator<ValueType>::fillRandom( Matrix& matrix, double density )
 
     csrIA[0] = numValues;
 
-
-    IndexType rowDensity = (IndexType)(localRowSize * density);
-
-
-//#pragma omp parallel for
     for ( int i = 0; i < localRowSize; ++i )
     {
-        IndexType numValuesRow = 0;
-        while ( numValuesRow < rowDensity )
+        for ( int j = 0; j < colSize; ++j )
         {
-            IndexType randJ = rand() % colSize;
-
-            bool exists = false;
-            for ( IndexType j = 0; j < numValuesRow; ++j )
-            {
-                if ( csrJA[i*rowDensity+j] == randJ )
-                {
-                    exists = true;
-                }
-            }
-            if ( exists )
-            {
-                continue;
-            }
             ValueType value = static_cast<ValueType>( rand() ) / static_cast<ValueType>( RAND_MAX );
-            csrJA.push_back( randJ );
-            csrValues.push_back( value );
-            ++numValuesRow;
+
+            if ( value < density )
+            {
+                value = static_cast<ValueType>( rand() ) / static_cast<ValueType>( RAND_MAX );
+                csrJA.push_back( j );
+                csrValues.push_back( value );
+                ++numValues;
+            }
         }
-        csrIA[i + 1] = (i+1)*rowDensity;
+        csrIA[i + 1] = numValues;
     }
-
-
 
     CSRStorage<ValueType> localCSRStorage;
 
-    localCSRStorage.setRawCSRData( localRowSize, colSize, csrIA[localRowSize], &csrIA[0], &csrJA[0], &csrValues[0] );
+    localCSRStorage.setRawCSRData( localRowSize, colSize, numValues, &csrIA[0], &csrJA[0], &csrValues[0] );
 
     LAMA_LOG_DEBUG( logger, "replace owned data with " << localCSRStorage )
 
