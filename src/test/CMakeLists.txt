@@ -161,6 +161,7 @@ file ( COPY README DESTINATION ${CMAKE_BINARY_DIR}/test )
 file ( COPY xmltest.sh DESTINATION ${CMAKE_BINARY_DIR}/test ) 
 
 if ( LAMA_USE_CODE_COVERAGE )
-	### Copy the cca.sh file in build directory ###
+	### Copy the cca.sh and ccajen.sh file in build directory ###
 	configure_file( "${CMAKE_SOURCE_DIR}/test/cca.sh.in" "${CMAKE_CURRENT_BINARY_DIR}/cca.sh" @ONLY)
+	configure_file( "${CMAKE_SOURCE_DIR}/test/ccajen.sh.in" "${CMAKE_CURRENT_BINARY_DIR}/ccajen.sh" @ONLY)
 endif ( LAMA_USE_CODE_COVERAGE )
