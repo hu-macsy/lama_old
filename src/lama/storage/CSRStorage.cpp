@@ -1043,7 +1043,7 @@ void CSRStorage<ValueType>::buildCSCData(
 
     // build the CSC data directly on the device where this matrix is located.
 
-    convertCSR2CSC( colIA, colJA, colValues, mNumColumns, mIa, mJa, mValues, this->getContextPtr() );
+    this->convertCSR2CSC( colIA, colJA, colValues, mNumColumns, mIa, mJa, mValues, this->getContextPtr() );
 }
 
 /* --------------------------------------------------------------------------- */

@@ -234,7 +234,7 @@ template<typename ValueType>
 JDSSparseMatrix<ValueType>& JDSSparseMatrix<ValueType>::operator=( const JDSSparseMatrix& matrix )
 {
     LAMA_LOG_INFO( logger, "JDSSparseMatrix = JDSSparseMatrix : " << matrix )
-    assign( matrix );
+    this->assign( matrix );
     return *this;
 }
 
