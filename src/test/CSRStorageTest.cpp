@@ -89,7 +89,7 @@ void constructorTest()
     {
         for( IndexType j = 0; j < numColumns; ++j )
         {
-            float v = static_cast<ValueType>( csrStorage.getValue( i, j ) );
+            float v = static_cast<float>( csrStorage.getValue( i, j ) );
             BOOST_CHECK_SMALL( v, 1.0e-5f );
         }
     }

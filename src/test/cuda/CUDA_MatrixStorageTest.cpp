@@ -96,7 +96,7 @@ void setCSRData( StorageType& storage )
     for ( IndexType jj = 0; jj < numValues; jj++ )
     {
         myJa[jj] = ja[jj];
-        myData[jj] = values[jj];
+        myData[jj] = static_cast<ValueType>(values[jj]);
     }
 
     myIa.release();
