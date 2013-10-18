@@ -49,13 +49,8 @@ set ( OPTIONAL_PACKAGES_TO_FIND
     
 #CUDA Only works with GCC on Linux
 #TODO: This needs to be checked on windows
-if ( CMAKE_COMPILER_IS_GNUCC )
-
-###
-    set ( OPTIONAL_PACKAGES_TO_FIND
-          ${OPTIONAL_PACKAGES_TO_FIND}
-          CUDA
-    )
-    mark_as_advanced ( CUDA_TOOLKIT_ROOT_DIR )
-###    
-endif ( CMAKE_COMPILER_IS_GNUCC )
+set ( OPTIONAL_PACKAGES_TO_FIND
+      ${OPTIONAL_PACKAGES_TO_FIND}
+      CUDA
+)
+mark_as_advanced ( CUDA_TOOLKIT_ROOT_DIR )
