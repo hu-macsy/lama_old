@@ -2,9 +2,12 @@ include ../make.inc
 
 INCLUDE_FLAGS = -I${BOOST_INCLUDE_DIR} -I${LAMA_ROOT}/include
 
-LD_FLAGS = -L${LAMA_ROOT}/lib -llama -Wl,-rpath=${LAMA_ROOT}/lib -lpng
+LD_FLAGS = -L${LAMA_ROOT}/lib -lama -Wl,-rpath=${LAMA_ROOT}/lib -lpng
 
-EXECUTABLE: spy.exe
+EXECUTABLE: spy.exe amg_spy.exe
+
+spy.exe: Bitmap.hpp
+amg_spy.exe: Bitmap.hpp
 
 .SUFFIXES:
 
