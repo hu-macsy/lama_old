@@ -110,10 +110,10 @@ public:
         const ValueType beta,
         const ValueType y[],
         const IndexType numRows,
+        const IndexType numValues,
         const IndexType cooIA[],
         const IndexType cooJA[],
         const ValueType cooValues[],
-        const IndexType numValues,
         SyncToken* syncToken );
 
     /** Implementation for COOUtilsInterface::Solver::jacobi  */
