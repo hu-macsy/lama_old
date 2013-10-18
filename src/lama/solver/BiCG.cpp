@@ -42,11 +42,6 @@
 #include <lama/expression/MatrixVectorExpressions.hpp>
 
 #include <lama/storage/MatrixStorage.hpp>
-#include <lama/matrix/CSRSparseMatrix.hpp>
-#include <lama/matrix/ELLSparseMatrix.hpp>
-#include <lama/matrix/JDSSparseMatrix.hpp>
-#include <lama/matrix/DIASparseMatrix.hpp>
-#include <lama/matrix/COOSparseMatrix.hpp>
 
 namespace lama
 {
