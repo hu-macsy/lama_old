@@ -5,6 +5,7 @@ clean: makeAllClean
 DIRS = lecture \
        tutorial \
        bench \
+       spy \
        solver
 
 makeAll:

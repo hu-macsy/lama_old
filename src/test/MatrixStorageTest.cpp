@@ -722,14 +722,14 @@ LAMA_COMMON_TEST_CASE_TEMPLATE( MatrixStorageTest, StorageType, vectorTimesMatri
         ValueType* xValues = (ValueType*) malloc( n * sizeof(ValueType) );
         for( IndexType i = 0; i < n; ++i )
         {
-            xValues[i] = i+1;
+            xValues[i] = static_cast<ValueType>(i+1);
         }
 
         IndexType m = mMatrixStorage.getNumColumns();
         ValueType* yValues = (ValueType*) malloc( m * sizeof(ValueType) );
         for( IndexType i = 0; i < m; ++i )
         {
-            yValues[i] = m-i;
+            yValues[i] = static_cast<ValueType>(m-i);
         }
 
         const ValueType alpha = 1.0;
@@ -778,14 +778,14 @@ LAMA_COMMON_TEST_CASE_TEMPLATE( MatrixStorageTest, StorageType, vectorTimesMatri
         ValueType* xValues = (ValueType*) malloc( n * sizeof(ValueType) );
         for( IndexType i = 0; i < n; ++i )
         {
-            xValues[i] = i+1;
+            xValues[i] = static_cast<ValueType>(i+1);
         }
 
         IndexType m = mMatrixStorage.getNumColumns();
         ValueType* yValues = (ValueType*) malloc( m * sizeof(ValueType) );
         for( IndexType i = 0; i < m; ++i )
         {
-            yValues[i] = m-i;
+            yValues[i] = static_cast<ValueType>(m-i);
         }
 
         const ValueType alpha = 1.0;

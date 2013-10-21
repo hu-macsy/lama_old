@@ -279,10 +279,10 @@ void MICCOOUtils::normalGEMV(
     const ValueType beta,
     const ValueType y[],
     const IndexType numRows,
+    const IndexType numValues,
     const IndexType cooIA[],
     const IndexType cooJA[],
     const ValueType cooValues[],
-    const IndexType numValues,
     SyncToken* syncToken )
 {
     LAMA_REGION( "MIC.COO.normalGEMV" )

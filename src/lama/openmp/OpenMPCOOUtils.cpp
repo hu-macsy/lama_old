@@ -186,7 +186,7 @@ void OpenMPCOOUtils::setCSRData(
         {
             // diagonal elements become the first 'numDiagonal' entries
 
-            cooValues[i] = csrValues[csrOffset];
+            cooValues[i] = static_cast<COOValueType>(csrValues[csrOffset]);
 
             csrOffset += 1;                   // do not fill diagonal element again
             cooOffset = numDiagonals - i - 1; // offset in coo moves

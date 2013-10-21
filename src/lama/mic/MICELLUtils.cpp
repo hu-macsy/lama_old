@@ -1092,10 +1092,10 @@ void MICELLUtils::normalGEMV(
 template<typename ValueType>
 void MICELLUtils::sparseGEMV(
     ValueType result[],
-    const IndexType numRows,
-    const IndexType UNUSED(numNonZerosPerRow),
     const ValueType alpha,
     const ValueType x[],
+    const IndexType numRows,
+    const IndexType UNUSED(numNonZerosPerRow),
     const IndexType numNonZeroRows,
     const IndexType rowIndexes[],
     const IndexType ellSizes[],

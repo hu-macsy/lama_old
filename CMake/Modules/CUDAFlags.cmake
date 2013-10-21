@@ -67,7 +67,7 @@ else ( WIN32 )
     
     # Intel compiler
     if ( CMAKE_CXX_COMPILER_ID MATCHES Intel )
-        list ( APPEND ADDITIONAL_NVCC_FLAGS "---compiler-bindir ${CMAKE_CXX_COMPILER};" )  
+        list ( APPEND ADDITIONAL_NVCC_FLAGS "--compiler-bindir ${CMAKE_CXX_COMPILER};" )  
     endif ( CMAKE_CXX_COMPILER_ID MATCHES Intel )
         
     #-Xcompiler;-fno-inline is used because of compability issues of CUDA with gcc-4.4

@@ -119,7 +119,7 @@ void GEMMTestImpl( const int n, const int m, const int k, ValueType eps, Context
     boost::scoped_array<ValueType> values( new ValueType[maxdim * k] );
     for( int i = 0; i < maxdim * k; i++ )
     {
-        values[i] = i * 1e-5 + 1;
+        values[i] = i * static_cast<ValueType>(1e-5) + 1;
     }
 
     boost::scoped_array<ValueType> valuesC( new ValueType[m * n] );
@@ -135,7 +135,7 @@ void GEMMTestImpl( const int n, const int m, const int k, ValueType eps, Context
                 // stores row i (of data same like matrix A) times column k (of data same like matrix B)
                 help += values[i * k + kk] * values[kk * n + j];
             }
-            valuesC[i * n + j] = (42.0 - alpha.getValue<ValueType>() * help) / beta.getValue<ValueType>();
+            valuesC[i * n + j] = (static_cast<ValueType>(42.0) - alpha.getValue<ValueType>() * help) / beta.getValue<ValueType>();
         }
     }
 

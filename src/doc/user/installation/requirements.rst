@@ -111,10 +111,10 @@ All tests are configured as release build.
    "gcc 4.6.1 / 4.6.2", "1.49.0", "blas 3", "4.2 / 5.0", "mpich2 1.2.1p1 (Parastation 5.0.25-2)", "ok"
    "gcc 4.6.1 / 4.6.2", "1.49.0", "blas 3", "4.2", "mvapich2", "ok"
    "icc", "-----", "-----", "-----", "-----", "-----"
-   "icc 12.1.3/13.0.0", "1.46", "MKL composerxe-2011.2.137", "not supported", "OpenMPI 1.4.3", "ok"
+   "icc 12.1.0 / 13.0.0", "1.46", "MKL composerxe-2011.2.137 / MKL 10.3.1 / MKL 11.0.0", "5.0", "OpenMPI 1.4.3 / OpenMPI 1.6.1 / IntelMPI 4.0.3.008 / IntelMPI 4.1.0.024", "ok"
    "pgi", "-----", "-----", "-----", "-----", "-----"
    "pgcpp ", "1.46", "ACML", " not supported", "OpenMPI 1.4.3", "ok"
- 
+
 If you have problems with the installation of supported configuration, do not hesitate to `contact`_ us.
 If you have tested not listed configurations we are pleased to get new input for the list.
 
