@@ -26,7 +26,7 @@
  * @endlicense
  *
  * @brief OpenMPLAPACK.hpp
- * @author Lauretta Schubert
+ * @author Eric Schricker
  * @date 02.07.2012
  * @since 1.0.0
  */

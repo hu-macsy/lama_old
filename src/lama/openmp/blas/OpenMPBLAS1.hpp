@@ -26,7 +26,7 @@
  * @endlicense
  *
  * @brief OpenMPBLAS1.hpp
- * @author Lauretta Schubert
+ * @author Eric Schricker
  * @date 05.07.2012
  * @since 1.0.0
  */
