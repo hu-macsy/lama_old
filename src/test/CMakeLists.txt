@@ -152,7 +152,7 @@ add_executable ( lama_test lama_test.cpp ${CXX_SOURCES} )
 if ( WIN32 )
     target_link_libraries ( lama_test ama )
 else ( WIN32 )
-    target_link_libraries ( lama_test ama ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY} ${Boost_REGEX_LIBRARY} )
+    target_link_libraries ( lama_test ama ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY} ${Boost_REGEX_LIBRARY} ${Boost_THREAD_LIBRARY} )
 endif ( WIN32 )
 
 
@@ -161,6 +161,7 @@ file ( COPY README DESTINATION ${CMAKE_BINARY_DIR}/test )
 file ( COPY xmltest.sh DESTINATION ${CMAKE_BINARY_DIR}/test ) 
 
 if ( LAMA_USE_CODE_COVERAGE )
-	### Copy the cca.sh file in build directory ###
+	### Copy the cca.sh and ccajen.sh file in build directory ###
 	configure_file( "${CMAKE_SOURCE_DIR}/test/cca.sh.in" "${CMAKE_CURRENT_BINARY_DIR}/cca.sh" @ONLY)
+	configure_file( "${CMAKE_SOURCE_DIR}/test/ccajen.sh.in" "${CMAKE_CURRENT_BINARY_DIR}/ccajen.sh" @ONLY)
 endif ( LAMA_USE_CODE_COVERAGE )
