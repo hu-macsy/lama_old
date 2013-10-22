@@ -1,5 +1,5 @@
 ###
- # @file SearchPackages.cmake
+ # @file CMakeLists.txt
  #
  # @license
  # Copyright (c) 2009-2013
@@ -25,32 +25,20 @@
  # SOFTWARE.
  # @endlicense
  #
- # @brief List of required and optional packages
- # @author Jan Ecker
- # @date 25.04.2013
- # @since 1.0.0
+ # @brief lama/openmp/blas/CMakeLists.txt
+ # @author Eric Schricker
+ # @date 02.10.2013
+ # @since 1.1.0
 ###
 
-# Find required packages
-set ( REQUIRED_PACKAGES_TO_FIND
-        OpenMP
-        #add required packages here
+set ( CLASSES
+        OpenMPBLAS1
+        OpenMPBLAS2
+        OpenMPBLAS3
+        OpenMPLAPACK
     )
     
-# Find optional packages
-set ( OPTIONAL_PACKAGES_TO_FIND
-        LAMA_BLAS
-        Doxygen
-        Threads
-        Sphinx
-        ParMetis REQUIRES Metis
-        #add optional packages here
-    )
-    
-#CUDA Only works with GCC on Linux
-#TODO: This needs to be checked on windows
-set ( OPTIONAL_PACKAGES_TO_FIND
-      ${OPTIONAL_PACKAGES_TO_FIND}
-      CUDA
-)
-mark_as_advanced ( CUDA_TOOLKIT_ROOT_DIR )
+lama_classes ( ${CLASSES} )
+
+### add sources and headers to parent scope ###
+lama_add ()
