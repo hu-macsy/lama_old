@@ -83,6 +83,8 @@ public:
 
     void setHostOnlyLevel( IndexType hostOnlyLevel );
 
+    void setHostOnlyVars( IndexType hostOnlyVars );
+
     void setReplicatedLevel( IndexType replicatedLevel );
 
     void setCoarseLevelSolver( SolverPtr solver );
@@ -101,6 +103,7 @@ public:
         unsigned int mCurrentLevel;
         void* mLibHandle;
         IndexType mHostOnlyLevel;
+        IndexType mHostOnlyVars;
         IndexType mReplicatedLevel;
 
         LAMA_LOG_DECL_STATIC_LOGGER( logger )

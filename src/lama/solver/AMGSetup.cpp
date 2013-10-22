@@ -38,8 +38,9 @@ namespace lama
 {
 
 AMGSetup::AMGSetup()
-    : mHostOnlyLevel( std::numeric_limits<IndexType>::max() ), mReplicatedLevel(
-        std::numeric_limits<IndexType>::max() )
+    : mHostOnlyLevel( std::numeric_limits<IndexType>::max() ), 
+      mHostOnlyVars( 0 ), 
+      mReplicatedLevel( std::numeric_limits<IndexType>::max() )
 {
 }
 
@@ -50,6 +51,11 @@ AMGSetup::~AMGSetup()
 void AMGSetup::setHostOnlyLevel( IndexType hostOnlyLevel )
 {
     mHostOnlyLevel = hostOnlyLevel;
+}
+
+void AMGSetup::setHostOnlyVars( IndexType hostOnlyVars )
+{
+    mHostOnlyLevel = hostOnlyVars;
 }
 
 void AMGSetup::setReplicatedLevel( IndexType replicatedLevel )

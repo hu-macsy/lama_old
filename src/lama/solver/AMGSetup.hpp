@@ -96,6 +96,8 @@ public:
 
     virtual void setHostOnlyLevel( IndexType hostOnlyLevel );
 
+    virtual void setHostOnlyVars( IndexType hostOnlyVars );
+
     virtual void setReplicatedLevel( IndexType replicatedLevel );
 
     virtual void setCoarseLevelSolver( SolverPtr solver ) = 0;
@@ -108,6 +110,8 @@ public:
 protected:
 
     IndexType mHostOnlyLevel;
+
+    IndexType mHostOnlyVars;
 
     IndexType mReplicatedLevel;
 };

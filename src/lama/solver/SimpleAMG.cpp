@@ -74,9 +74,10 @@ SimpleAMG::SimpleAMG( const SimpleAMG& other )
 }
 
 SimpleAMG::SimpleAMGRuntime::SimpleAMGRuntime()
-    : IterativeSolverRuntime(), mSetup( 0 ), mCurrentLevel( 0 ), mLibHandle( 0 ), mHostOnlyLevel(
-        std::numeric_limits<IndexType>::max() ), mReplicatedLevel(
-            std::numeric_limits<IndexType>::max() )
+    : IterativeSolverRuntime(), mSetup( 0 ), mCurrentLevel( 0 ), mLibHandle( 0 ), 
+      mHostOnlyLevel( std::numeric_limits<IndexType>::max() ), 
+      mHostOnlyVars( 0 ), 
+      mReplicatedLevel( std::numeric_limits<IndexType>::max() )
 {
 }
 
@@ -172,6 +173,7 @@ void SimpleAMG::initialize( const Matrix& coefficients )
     amgSetup->setMaxLevels( mMaxLevels );
     amgSetup->setMinVarsCoarseLevel( mMinVarsCoarseLevel );
     amgSetup->setHostOnlyLevel( runtime.mHostOnlyLevel );
+    amgSetup->setHostOnlyVars( runtime.mHostOnlyVars );
     amgSetup->setReplicatedLevel( runtime.mReplicatedLevel );
     amgSetup->setCoarseLevelSolver( mCoarseLevelSolver );
     amgSetup->setSmoother( mSmoother );
@@ -257,6 +259,11 @@ void SimpleAMG::setSmootherContext( ContextPtr smootherContext )
 void SimpleAMG::setHostOnlyLevel( IndexType hostOnlyLevel )
 {
     getRuntime().mHostOnlyLevel = hostOnlyLevel;
+}
+
+void SimpleAMG::setHostOnlyVars( IndexType hostOnlyVars )
+{
+    getRuntime().mHostOnlyVars = hostOnlyVars;
 }
 
 void SimpleAMG::setReplicatedLevel( IndexType replicatedLevel )
