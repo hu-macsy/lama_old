@@ -50,6 +50,7 @@
 #include <boost/scoped_array.hpp>
 
 #include <lama/macros/unused.hpp>
+#include <vector>
 
 namespace lama
 {

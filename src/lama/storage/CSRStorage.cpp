@@ -468,6 +468,9 @@ template void CSRStorage<float>::setCSRDataSwap(
 template<typename ValueType>
 void CSRStorage<ValueType>::buildRowIndexes()
 {
+    LAMA_LOG_INFO( logger, "buildRowIndexes is temporarily disabled." );
+    return;
+
     mRowIndexes.clear();
 
     if ( mNumRows == 0 )
@@ -945,6 +948,19 @@ template<typename OtherValueType>
 void CSRStorage<ValueType>::getDiagonalImpl( LAMAArray<OtherValueType>& diagonal ) const
 {
     const IndexType numDiagonalElements = std::min( mNumColumns, mNumRows );
+   
+    ContextPtr loc = getContextPtr(); 
+    WriteAccess<OtherValueType> wDiagonal( diagonal, loc, numDiagonalElements, false );
+    ReadAccess<IndexType> csrIA( mIa, loc );
+    ReadAccess<ValueType> rValues( mValues, loc );
+
+    LAMA_CONTEXT_ACCESS( loc )
+    LAMA_INTERFACE_FN_TT( setGather, loc, Utils, Copy, OtherValueType, ValueType )
+
+    setGather( wDiagonal.get(), rValues.get(), csrIA.get(), numDiagonalElements );
+
+/*
+    const IndexType numDiagonalElements = std::min( mNumColumns, mNumRows );
 
     HostWriteOnlyAccess<OtherValueType> wDiagonal( diagonal, numDiagonalElements );
 
@@ -954,6 +970,7 @@ void CSRStorage<ValueType>::getDiagonalImpl( LAMAArray<OtherValueType>& diagonal
     //  diagonal[ i ] = rValues[ csrIA[ i ] ], diagonal values are at the offsets
 
     OpenMPUtils::setGather( wDiagonal.get(), rValues.get(), csrIA.get(), numDiagonalElements );
+*/
 }
 
 /* --------------------------------------------------------------------------- */
@@ -1092,7 +1109,6 @@ void CSRStorage<ValueType>::buildCSR(
     LAMAArray<OtherValueType>* values,
     const ContextPtr loc ) const
 {
-
     ReadAccess<IndexType> inIA( mIa, loc );
 
     //build number of values per row into ia
@@ -1128,7 +1144,6 @@ void CSRStorage<ValueType>::buildCSR(
         LAMA_INTERFACE_FN_TT( set, loc, Utils, Copy, OtherValueType, ValueType )
         set( csrValues.get(), inValues.get(), mNumValues );
     }
-
 }
 
 /* --------------------------------------------------------------------------- */
