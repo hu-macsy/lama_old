@@ -234,7 +234,7 @@ template<typename ValueType>
 COOSparseMatrix<ValueType>& COOSparseMatrix<ValueType>::operator=( const COOSparseMatrix& matrix )
 {
     LAMA_LOG_INFO( logger, "COOSparseMatrix = COOSparseMatrix : " << matrix )
-    this->assign( matrix );
+    assign( matrix );
     return *this;
 }
 

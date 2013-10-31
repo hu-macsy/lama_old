@@ -234,7 +234,7 @@ template<typename ValueType>
 CSRSparseMatrix<ValueType>& CSRSparseMatrix<ValueType>::operator=( const CSRSparseMatrix& matrix )
 {
     LAMA_LOG_INFO( logger, "CSRSparseMatrix = CSRSparseMatrix : " << matrix )
-    this->assign( matrix );
+    assign( matrix );
     return *this;
 }
 
