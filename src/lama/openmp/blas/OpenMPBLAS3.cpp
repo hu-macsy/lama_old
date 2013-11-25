@@ -56,12 +56,12 @@ void OpenMPBLAS3::gemm(
     const IndexType k,
     const T alpha,
     const T* A,
-    const IndexType UNUSED(lda),
+    const IndexType lda,
     const T* B,
-    const IndexType UNUSED(ldb),
+    const IndexType ldb,
     const T beta,
     T* C,
-    const IndexType UNUSED(ldc),
+    const IndexType ldc,
     SyncToken* syncToken )
 {
     if( syncToken )
@@ -88,15 +88,15 @@ void OpenMPBLAS3::gemm(
                         temp = 0.0;
                         for( int j = 0; j < k; j++ )
                         {
-                            temp += A[k * h + j] * B[k * i + j];
+                            temp += A[lda * h + j] * B[ldb * i + j];
                         }
-                        C[m * i + h] = alpha * temp + beta * C[m * i + h];
+                        C[ldc * i + h] = alpha * temp + beta * C[ldc * i + h];
                     }
                 }
             }
             else if( TransB == CblasConjTrans )
             {
-                LAMA_THROWEXCEPTION( "gemm for complexe matrix is not supported yet")
+                LAMA_THROWEXCEPTION( "gemm for complexe matrix is not supported yet" )
             }
             else if( TransB == CblasTrans )
             {
@@ -109,9 +109,9 @@ void OpenMPBLAS3::gemm(
                         temp = 0.0;
                         for( int j = 0; j < k; j++ )
                         {
-                            temp += A[k * h + j] * B[n * j + i];
+                            temp += A[lda * h + j] * B[ldb * j + i];
                         }
-                        C[m * i + h] = alpha * temp + beta * C[m * i + h];
+                        C[ldc * i + h] = alpha * temp + beta * C[ldc * i + h];
                     }
                 }
             }
@@ -124,7 +124,7 @@ void OpenMPBLAS3::gemm(
         }
         else if( TransA == CblasConjTrans )
         {
-            LAMA_THROWEXCEPTION( "gemm for complexe matrix is not supported yet")
+            LAMA_THROWEXCEPTION( "gemm for complexe matrix is not supported yet" )
             //'C'
             if( TransB == CblasNoTrans )
             {
@@ -158,15 +158,15 @@ void OpenMPBLAS3::gemm(
                         temp = 0.0;
                         for( int j = 0; j < k; j++ )
                         {
-                            temp += A[m * j + h] * B[k * i + j];
+                            temp += A[lda * j + h] * B[ldb * i + j];
                         }
-                        C[m * i + h] = alpha * temp + beta * C[m * i + h];
+                        C[ldc * i + h] = alpha * temp + beta * C[ldc * i + h];
                     }
                 }
             }
             else if( TransB == CblasConjTrans )
             {
-                LAMA_THROWEXCEPTION( "gemm for complexe matrix is not supported yet")
+                LAMA_THROWEXCEPTION( "gemm for complexe matrix is not supported yet" )
             }
             else if( TransB == CblasTrans )
             {
@@ -179,9 +179,9 @@ void OpenMPBLAS3::gemm(
                         temp = 0.0;
                         for( int j = 0; j < k; j++ )
                         {
-                            temp += A[m * j + h] * B[n * j + i];
+                            temp += A[lda * j + h] * B[ldb * j + i];
                         }
-                        C[m * i + h] = alpha * temp + beta * C[m * i + h];
+                        C[ldc * i + h] = alpha * temp + beta * C[ldc * i + h];
                     }
                 }
             }
@@ -216,15 +216,15 @@ void OpenMPBLAS3::gemm(
                         temp = 0.0;
                         for( int j = 0; j < k; j++ )
                         {
-                            temp += A[m * j + h] * B[n * j + i];
+                            temp += A[lda * j + i] * B[ldb * j + h];
                         }
-                        C[n * h + i] = alpha * temp + beta * C[n * h + i];
+                        C[ldc * i + h] = alpha * temp + beta * C[ldc * i + h];
                     }
                 }
             }
             else if( TransB == CblasConjTrans )
             {
-                LAMA_THROWEXCEPTION( "gemm for complexe matrix is not supported yet")
+                LAMA_THROWEXCEPTION( "gemm for complexe matrix is not supported yet" )
             }
             else if( TransB == CblasTrans )
             {
@@ -237,9 +237,9 @@ void OpenMPBLAS3::gemm(
                         temp = 0.0;
                         for( int j = 0; j < k; j++ )
                         {
-                            temp += A[m * j + h] * B[k * i + j];
+                            temp += A[lda * j + i] * B[ldb * h + j];
                         }
-                        C[n * h + i] = alpha * temp + beta * C[n * h + i];
+                        C[ldc * i + h] = alpha * temp + beta * C[ldc * i + h];
                     }
                 }
             }
@@ -256,6 +256,8 @@ void OpenMPBLAS3::gemm(
             {
                 //A = 'N'; B = 'N'
                 T temp = 0.0;
+                //std::cout << "lda:" << lda << ", ldb:" << ldb << ", ldc:" << ldc << "\n";
+                //std::cout << "n:" << n << ", m:" << m << ", k:" << k << "\n";
 #pragma omp parallel for collapse(2) private(temp)
                 for( int h = 0; h < n; h++ )
                 {
@@ -264,9 +266,9 @@ void OpenMPBLAS3::gemm(
                         temp = 0.0;
                         for( int j = 0; j < k; j++ )
                         {
-                            temp += A[k * h + j] * B[n * j + i];
+                            temp += A[lda * i + j] * B[ldb * j + h];
                         }
-                        C[n * h + i] = alpha * temp + beta * C[n * h + i];
+                        C[ldc * i + h] = alpha * temp + beta * C[ldc * i + h];
                     }
                 }
             }
@@ -281,15 +283,15 @@ void OpenMPBLAS3::gemm(
                         temp = 0.0;
                         for( int j = 0; j < k; j++ )
                         {
-                            temp += A[k * h + j] * B[k * i + j];
+                            temp += A[lda * i + j] * B[ldb * h + j];
                         }
-                        C[n * h + i] = alpha * temp + beta * C[n * h + i];
+                        C[ldc * i + h] = alpha * temp + beta * C[ldc * i + h];
                     }
                 }
             }
             else if( TransB == CblasConjTrans )
             {
-                LAMA_THROWEXCEPTION( "gemm for complexe matrix is not supported yet")
+                LAMA_THROWEXCEPTION( "gemm for complexe matrix is not supported yet" )
             }
             else
             {
@@ -300,7 +302,7 @@ void OpenMPBLAS3::gemm(
         }
         else if( TransA == CblasConjTrans )
         {
-            LAMA_THROWEXCEPTION( "gemm for complexe matrix is not supported yet")
+            LAMA_THROWEXCEPTION( "gemm for complexe matrix is not supported yet" )
             if( TransB == CblasNoTrans )
             {
 

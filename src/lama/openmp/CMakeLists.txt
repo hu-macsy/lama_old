@@ -32,11 +32,11 @@
 ###
 
 ### Add classes and header files ###
+
+
+
 set ( CLASSES
         BLASHelper
-        OpenMPBLAS1
-        OpenMPBLAS2
-        OpenMPBLAS3
         OpenMPCOOUtils
         OpenMPCSRUtils
         OpenMPDenseUtils
@@ -50,7 +50,7 @@ set ( HEADERS
          OpenMP
     )
 
-if ( MKL_FOUND )
+if ( LAMA_BLAS_LIBRARY STREQUAL "auto" AND MKL_FOUND )
     # Use MKL sparse blas routines for CSR if available
     if ( EXISTS "${MKL_INCLUDE_DIR}/mkl_spblas.h" )
         set ( CLASSES
@@ -61,7 +61,7 @@ if ( MKL_FOUND )
     else ( EXISTS "${MKL_INCLUDE_DIR}/mkl_spblas.h" )
         message( STATUS "MKL Sparse BLAS is not supported" )
     endif ( EXISTS "${MKL_INCLUDE_DIR}/mkl_spblas.h" )
-endif ( MKL_FOUND )
+endif ( LAMA_BLAS_LIBRARY STREQUAL "auto" AND MKL_FOUND )
 
 # OpenMPLAPACKe requires LAPACKe interface, is in MKL
 
@@ -80,12 +80,27 @@ if ( ${LAPACKeFound} )
             OpenMPLAPACKe
     )
 else()
-    message( STATUS "LAPACKe is not supported, will use LAPACK via Fortran interface" ) 
-    set ( CLASSES
-            ${CLASSES}
-            OpenMPLAPACK
-    )
+	if( NOT INTERNALBLAS_FOUND )
+	    message( STATUS "LAPACKe is not supported, will use LAPACK via Fortran interface" ) 
+	    set ( CLASSES
+	            ${CLASSES}
+	            OpenMPLAPACK
+	   		)
+    endif()
 endif()
+    
+if ( INTERNALBLAS_FOUND ) 
+	message( STATUS "Using internal Blas" )
+	add_subdirectory ( blas )
+	
+elseif( BLAS_FOUND )
+	set ( CLASSES
+		${CLASSES}
+		OpenMPBLAS1
+        OpenMPBLAS2
+        OpenMPBLAS3
+    	)
+endif() 
     
 lama_classes ( ${CLASSES} )
 lama_headers ( ${HEADERS} )

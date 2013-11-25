@@ -50,9 +50,11 @@ elseif ( GOTOBLAS_FOUND )
     set ( LAMA_BLAS_AUTO "GOTOBLAS" )
 elseif ( BLAS_FOUND )
     set ( LAMA_BLAS_AUTO "BLAS")
+else ()
+	set ( LAMA_BLAS_AUTO "INTERNALBLAS")
 endif ()
 
-LIST ( APPEND LIBRARY_CHOICES "auto" "MKL" "ACML" "GOTOBLAS" "BLAS" )
+LIST ( APPEND LIBRARY_CHOICES "auto" "MKL" "ACML" "GOTOBLAS" "BLAS" "INTERNALBLAS" )
 if ( NOT DEFINED LAMA_BLAS_LIBRARY )
     set ( LAMA_BLAS_LIBRARY "auto" CACHE STRING "Choose the used BLAS Library: ${LIBRARY_CHOICES}" )
 else ( NOT DEFINED LAMA_BLAS_LIBRARY )
@@ -104,6 +106,9 @@ elseif ( LAMA_BLAS_LIBRARY STREQUAL "BLAS" OR ( LAMA_BLAS_LIBRARY STREQUAL "auto
     else ()
         lama_status_message ( ERROR "BLAS library selected, but not found!" )
     endif ( BLAS_FOUND )
+#None found or INTERNALBLAS choosen
+else ()
+	set ( INTERNALBLAS_FOUND TRUE )
 endif ()
 
 include ( FindPackageHandleStandardArgs )

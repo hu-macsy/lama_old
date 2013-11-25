@@ -27,7 +27,7 @@
  *
  * @brief OpenMPBLAS1.cpp
  * @author Eric Schricker
- * @date 05.07.2012
+ * @date 02.10.2013
  * @since 1.0.0
  */
 

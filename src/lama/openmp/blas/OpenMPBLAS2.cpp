@@ -27,7 +27,7 @@
  *
  * @brief OpenMPBLAS2.cpp
  * @author Eric Schricker
- * @date 05.07.2012
+ * @date 09.10.2013
  * @since 1.0.0
  */
 
@@ -95,7 +95,7 @@ void OpenMPBLAS2::gemv(
                 Z = 0.0;
                 for( int j = 0; j < N; j++ )
                 {
-                    Z += A[M * j + i] * X[j * incX];
+                    Z += A[lda * j + i] * X[j * incX];
                 }
                 Y[i * incY] = Z * alpha + Y[i * incY] * beta;
             }
@@ -112,7 +112,7 @@ void OpenMPBLAS2::gemv(
                 Z = 0.0;
                 for( int j = 0; j < M; j++ )
                 {
-                    Z += A[M * i + j] * X[j * incX];
+                    Z += A[lda * i + j] * X[j * incX];
                 }
                 Y[i * incY] = Z * alpha + Y[i * incY] * beta;
             }
@@ -143,7 +143,7 @@ void OpenMPBLAS2::gemv(
                 Z = 0.0;
                 for( int j = 0; j < N; j++ )
                 {
-                    Z += A[N * i + j] * X[j * incX];
+                    Z += A[lda * i + j] * X[j * incX];
                 }
                 Y[i * incY] = Z * alpha + Y[i * incY] * beta;
             }
@@ -159,7 +159,7 @@ void OpenMPBLAS2::gemv(
                 Z = 0.0;
                 for( int j = 0; j < M; j++ )
                 {
-                    Z += A[N * j + i] * X[j * incX];
+                    Z += A[lda * j + i] * X[j * incX];
                 }
                 Y[i * incY] = Z * alpha + Y[i * incY] * beta;
             }
