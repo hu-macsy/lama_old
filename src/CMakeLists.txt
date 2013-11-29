@@ -177,125 +177,130 @@ message ( STATUS "Summary of LAMA Configuration:" )
 message ( STATUS "==============================" )
 message ( STATUS "" )
 
-lama_status_message ( HEADLINE "REQUIRED PACKAGES:" )
-## C++ Compiler
-if ( CMAKE_CXX_COMPILER )
-    lama_status_message ( INFO "[FOUND]" "    C++ Compiler - ${CMAKE_CXX_COMPILER_ID}"
-                               "${${CMAKE_CXX_COMPILER_ID}CXX_COMPILER_VERSION}" )
-else ( CMAKE_CXX_COMPILER )
-    lama_status_message ( ERROR "[NOT FOUND]" "C++ Compiler" )
-endif ( CMAKE_CXX_COMPILER )
+lama_status_message ( HEADLINE "Compiler:" )
+# C++ Compiler
+lama_summary_message ( "FOUND"
+                       "CMAKE_CXX_COMPILER"
+                       "C++ Compiler"
+                       "${CMAKE_CXX_COMPILER_ID} ${${CMAKE_CXX_COMPILER_ID}CXX_COMPILER_VERSION}" )
 
 # C Compiler
-if ( CMAKE_C_COMPILER )
-    lama_status_message ( INFO "[FOUND]" "    C Compiler - ${CMAKE_C_COMPILER_ID}" 
-                               "${${CMAKE_CXX_COMPILER_ID}CC_COMPILER_VERSION}" )
-else ( CMAKE_C_COMPILER )
-    lama_status_message ( ERROR "[NOT FOUND]" "C Compiler" )
-endif ( CMAKE_C_COMPILER )
+lama_summary_message ( "FOUND"
+                       "CMAKE_C_COMPILER"
+                       "C Compiler"
+                       "${CMAKE_C_COMPILER_ID} ${${CMAKE_CXX_COMPILER_ID}CC_COMPILER_VERSION}" )
 
-# Boost 
-if ( Boost_INCLUDE_DIR )
-    lama_status_message ( INFO "[FOUND]" "    Boost - Version"
-                               "${Boost_MAJOR_VERSION}.${Boost_MINOR_VERSION}.${Boost_SUBMINOR_VERSION}"
-                               "at ${Boost_INCLUDE_DIR}" )
-else ( Boost_INCLUDE_DIR )
-    lama_status_message ( ERROR "[NOT FOUND]" "Boost" )
-endif ( Boost_INCLUDE_DIR )
-
-# BLAS
-if ( LAMA_BLAS_LIBRARIES )
-    lama_status_message ( INFO "[FOUND]" "    BLAS (${LAMA_BLAS_NAME}) with libraries: ${LAMA_BLAS_LIBRARIES}" )
-    if ( LAPACK_FOUND ) 
-        lama_status_message ( INFO "[FOUND]" "    LAPACK" )
-    else ( LAPACK_FOUND )
-        lama_status_message ( ERROR "[NOT FOUND]" "LAPACK" )
-    endif ( LAPACK_FOUND )
-else ( LAMA_BLAS_LIBRARIES )
-    lama_status_message ( ERROR "[NOT FOUND]" "BLAS" )
-endif ( LAMA_BLAS_LIBRARIES )
-
-## OpenMP
-if( OPENMP_FOUND )
-    lama_status_message ( INFO "[FOUND]" "    OpenMP" )
-else ( OPENMP_FOUND )
-    lama_status_message ( ERROR "[NOT FOUND]" "OpenMP" )
-endif ( OPENMP_FOUND )
-
+# LAMA (core)
 message ( STATUS "" )
-lama_status_message ( HEADLINE "OPTIONAL PACKAGES:" )
+lama_status_message ( HEADLINE "LIBRARIES:" )
+lama_summary_message ( "STATIC"
+                       "OPENMP_FOUND AND LAMA_BLAS_LIBRARIES AND LAPACK_FOUND AND Boost_INCLUDE_DIR"
+                       "LAMA (core)"
+                       " " )
+    # OpenMP
+    lama_summary_message ( "FOUND"
+                           "OPENMP_FOUND"
+                           "OpenMP"
+                           "" )
+   # BLAS
+    lama_summary_message ( "FOUND"
+                           "LAMA_BLAS_LIBRARIES"
+                           "BLAS"
+                           "(${LAMA_BLAS_NAME}) with libraries: ${LAMA_BLAS_LIBRARIES}" )
+    if ( LAMA_BLAS_LIBRARIES )
+    lama_summary_message ( "FOUND"
+                           "LAPACK_FOUND"
+                           "LAPACK"
+                           "" )
+    endif ( LAMA_BLAS_LIBRARIES )
+    
+    # Boost
+    lama_summary_message ( "FOUND"
+                           "Boost_INCLUDE_DIR"
+                           "Boost"
+                           "Version ${Boost_MAJOR_VERSION}.${Boost_MINOR_VERSION}.${Boost_SUBMINOR_VERSION} at ${Boost_INCLUDE_DIR}" )
 
-## MPI
-if ( MPI_FOUND )
-    if ( LAMA_USE_MPI )
-        lama_status_message ( INFO "[FOUND]" "    MPI at ${MPI_INCLUDE_PATH}" )
-    else ( LAMA_USE_MPI )
-        lama_status_message ( WARNING "[DISABLED]" " MPI at ${MPI_INCLUDE_PATH}" )
-    endif ( LAMA_USE_MPI )
-else ( MPI_FOUND )
-    lama_status_message ( WARNING "[NOT FOUND]" "MPI not found" )
-endif ( MPI_FOUND )
+# LAMA MPI
+message ( STATUS "" )
+lama_summary_message ( "USE"
+                       "LAMA_USE_MPI"
+                       "LAMA MPI"
+                       "" )
 
-## CUDA
-if ( CUDA_FOUND )
-    if ( LAMA_USE_CUDA )
-        lama_status_message ( INFO "[FOUND]" "    CUDA ${CUDA_VERSION} at ${CUDA_INCLUDE_DIRS}" )
-    else ( LAMA_USE_CUDA )
-        lama_status_message ( WARNING "[DISABLED]" " CUDA ${CUDA_VERSION} at ${CUDA_INCLUDE_DIRS}" )
-    endif ( LAMA_USE_CUDA )
-else ( CUDA_FOUND )
-    lama_status_message ( WARNING "[NOT FOUND]" "CUDA" )
-endif ( CUDA_FOUND )
+    # Boost
+    lama_summary_message ( "FOUND"
+                           "MPI_FOUND"
+                           "MPI"
+                           "at ${MPI_INCLUDE_PATH}" )
 
-## MIC
-if ( LAMA_USE_MIC )
-    lama_status_message ( INFO "[ENABLED]" "  MIC (Many-Integrated-Core-Architecture)" )
-else ( LAMA_USE_MIC )
-    lama_status_message ( WARNING "[DISABLED]" " MIC (Many-Integrated-Core-Architecture)" )
-endif ( LAMA_USE_MIC )
+# LAMA CUDA
+message ( STATUS "" )
+lama_summary_message ( "USE"
+                       "LAMA_USE_CUDA"
+                       "LAMA CUDA"
+                       "" )
 
-## DOXYGEN
-if ( DOXYGEN_FOUND )
-    lama_status_message ( INFO "[FOUND]" "    DOXYGEN - 'make doc' to build system documentation" )
-else ( DOXYGEN_FOUND )
-    lama_status_message ( WARNING "[NOT FOUND]" "DOXYGEN " )
-    # appended blank in status message is workaround to fix output bug
-endif ( DOXYGEN_FOUND )
+    # Boost
+    lama_summary_message ( "FOUND"
+                           "CUDA_FOUND"
+                           "CUDA"
+                           "${CUDA_VERSION} at ${CUDA_INCLUDE_DIRS}" )
+                           
+# LAMA MIC
+message ( STATUS "" )
+lama_summary_message ( "USE"
+                       "LAMA_USE_MIC"
+                       "LAMA MIC"
+                       "" )
 
-## SPHINX
-if ( SPHINX_FOUND )
-    lama_status_message ( INFO "[FOUND]" "    SPHINX - 'make userdoc' to build user documentation" )
-else ( SPHINX_FOUND )
-    lama_status_message ( WARNING "[NOT FOUND]" "SPHINX" )
-endif ( SPHINX_FOUND )
+# LAMA TEST
+message ( STATUS "" )
+lama_summary_message ( "USE"
+                       "LAMA_USE_CUDA"
+                       "LAMA TEST"
+                       "" )
 
-## Boost Unit Test Framework
-if ( Boost_UNIT_TEST_FRAMEWORK_FOUND )
-    lama_status_message ( INFO "[FOUND]" "    Boost Unit Test Framework" )
-else ( Boost_UNIT_TEST_FRAMEWORK_FOUND )
-    lama_status_message ( WARNING "[NOT FOUND]" "Boost Unit Test Framework" )
-endif ( Boost_UNIT_TEST_FRAMEWORK_FOUND )
+    # Boost Test-Framework
+    lama_summary_message ( "FOUND"
+                           "Boost_UNIT_TEST_FRAMEWORK_FOUND"
+                           "Boost Unit Test"
+                           "" )
+                           
+    # Boost Regex
+    lama_summary_message ( "FOUND"
+                           "Boost_REGEX_FOUND"
+                           "Boost Regex"
+                           "" )
 
-## Boost regex
-if ( Boost_REGEX_FOUND )
-    lama_status_message ( INFO "[FOUND]" "    Boost Regex" )
-else ( Boost_REGEX_FOUND )
-    lama_status_message ( WARNING "[NOT FOUND]" "Boost Regex" )
-endif ( Boost_REGEX_FOUND )
+message ( STATUS "|" )
+lama_status_message ( HEADLINE "DOCUMENTATION:" )
+
+
+# DOXYGEN
+lama_summary_message ( "FOUND"
+                       "DOXYGEN_FOUND"
+                       "DOXYGEN "
+                       "'make doc' to build system documentation" )
+                       
+# DOXYGEN
+lama_summary_message ( "FOUND"
+                       "SPHINX_FOUND"
+                       "SPHINX"
+                       "'make userdoc' to build user documentation" )
 
 ## Metis
-if ( METIS_FOUND )
-    lama_status_message ( INFO "[FOUND]" "    Metis at ${METIS_INCLUDE_DIR}" )
-else( METIS_FOUND )
-    lama_status_message ( WARNING "[NOT FOUND]" "Metis" )
-endif( METIS_FOUND )
+#if ( METIS_FOUND )
+#    lama_status_message ( INFO "[FOUND]" "    Metis at ${METIS_INCLUDE_DIR}" )
+#else( METIS_FOUND )
+#    lama_status_message ( WARNING "[NOT FOUND]" "Metis" )
+#endif( METIS_FOUND )
 
 # ParMetis
-if ( PARMETIS_FOUND )
-    lama_status_message ( INFO "[FOUND]" "    ParMetis at ${PARMETIS_INCLUDE_DIR}" )
-else( PARMETIS_FOUND )
-    lama_status_message ( WARNING "[NOT FOUND]" "ParMetis not found" )
-endif( PARMETIS_FOUND ) 
+#if ( PARMETIS_FOUND )
+#    lama_status_message ( INFO "[FOUND]" "    ParMetis at ${PARMETIS_INCLUDE_DIR}" )
+#else( PARMETIS_FOUND )
+#    lama_status_message ( WARNING "[NOT FOUND]" "ParMetis not found" )
+#endif( PARMETIS_FOUND ) 
 
 message ( STATUS "" )
 
@@ -306,3 +311,31 @@ message ( STATUS "LOG Level    : ${LAMA_LOG_LEVEL}" )
 message ( STATUS "ASSERT Level : ${LAMA_ASSERT_LEVEL}" )
 message ( STATUS "TRACE Level  : ${LAMA_TRACE_LEVEL}" )
 message ( STATUS "" )
+
+
+
+# Check if all required packages are found
+# LAMA (core)
+if ( NOT ( OPENMP_FOUND AND LAMA_BLAS_LIBRARIES AND LAPACK_FOUND AND Boost_INCLUDE_DIR ) )
+    message( FATAL_ERROR "Configuration for LAMA (core) incomplete!")
+endif ( NOT ( OPENMP_FOUND AND LAMA_BLAS_LIBRARIES AND LAPACK_FOUND AND Boost_INCLUDE_DIR ) )
+
+# LAMA MPI
+if ( LAMA_USE_MPI AND NOT MPI_FOUND )
+    message( FATAL_ERROR "Configuration for LAMA MPI incomplete!")
+endif ( LAMA_USE_MPI AND NOT MPI_FOUND )
+
+# LAMA MPI
+if ( LAMA_USE_MPI AND NOT MPI_FOUND )
+    message( FATAL_ERROR "Build of LAMA MPI enabled, but configuration is incomplete!")
+endif ( LAMA_USE_MPI AND NOT MPI_FOUND )
+
+# LAMA Cuda
+if ( LAMA_USE_CUDA AND NOT CUDA_FOUND )
+    message( FATAL_ERROR "Build of LAMA Cuda enabled, but configuration is incomplete!")
+endif ( LAMA_USE_CUDA AND NOT CUDA_FOUND )
+
+# LAMA Test
+if ( LAMA_USE_CUDA AND NOT ( Boost_UNIT_TEST_FRAMEWORK_FOUND AND Boost_REGEX_FOUND ) )
+    message( FATAL_ERROR "Build of LAMA Test enabled, but configuration is incomplete!")
+endif ( LAMA_USE_CUDA AND NOT ( Boost_UNIT_TEST_FRAMEWORK_FOUND AND Boost_REGEX_FOUND ) )
