@@ -259,6 +259,7 @@ void GMRES::iterate()
             LAMA_THROWEXCEPTION( "Unsupported ValueType " << A.getValueType() )
         }
         }
+        ( *runtime.mV )[krylovIndex + 1]->setContext( A.getContextPtr() );
     }
 
     // initialize in case of GMRES start/restart
