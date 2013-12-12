@@ -27,7 +27,7 @@
  *
  * @brief OpenMPLAPACK.cpp
  * @author Eric Schricker
- * @date 02.07.2012
+ * @date 19.11.2013
  * @since 1.0.0
  */
 
@@ -50,8 +50,6 @@ extern "C"
 {
 #endif /*__cplusplus*/
 
-
-
 #ifdef __cplusplus
 } /*extern "C"*/
 #endif /*__cplusplus*/
@@ -69,255 +67,397 @@ LAMA_LOG_DEF_LOGGER( OpenMPLAPACK::logger, "OpenMP.LAPACK" )
 
 template<typename T>
 IndexType OpenMPLAPACK::getrf(
-    const enum CBLAS_ORDER UNUSED(order),
+    const enum CBLAS_ORDER order,
     const int m,
     const int n,
-    T* const UNUSED(A),
-    const int UNUSED(lda),
-    int* const UNUSED(ipiv) )
+    T* const a,
+    const int lda,
+    int* const ipiv )
 {
-    LAMA_REGION( "OpenMP.LAPACK.getrf<float>" )
+LAMA_REGION( "OpenMP.LAPACK.getrf<T>" )
 
-    LAMA_LOG_INFO( logger, "getrf<float> for A of size " << m << " x " << n )
+                                                                    LAMA_LOG_INFO( logger, "getrf<T> for A of size " << m << " x " << n )
 
     int info = 0;
-    LAMA_THROWEXCEPTION( "OpenMPLAPACK:getrf is not implemented yet")
-//#ifdef F77_INT
-//    F77_INT F77_M = M, F77_N = N, F77_lda = lda, F77_info = info;
-//#else
-//#define F77_M m
-//#define F77_N n
-//#define F77_lda lda
-//#define F77_info info
-//#endif
+    int index = 0;
+//    LAMA_THROWEXCEPTION( "OpenMPLAPACK:getrf is not implemented yet")
 
-//    if ( order == CblasColMajor )
-//    {
-//        F77_sgetrf( &F77_M, &F77_N, A, &F77_lda, ipiv, &F77_info );
-//    }
-//    else if ( m == n && n == lda )
-//    {
-//        for ( int i = 0; i < m; ++i )
-//        {
-//            for ( int j = i + 1; j < n; ++j )
-//            {
-//                std::swap( A[i * n + j], A[j * m + i] );
-//            }
-//        }
-//
-//        F77_sgetrf( &F77_M, &F77_N, A, &F77_lda, ipiv, &F77_info );
-//
-//        for ( int i = 0; i < m; ++i )
-//        {
-//            for ( int j = i + 1; j < n; ++j )
-//            {
-//                std::swap( A[i * n + j], A[j * m + i] );
-//            }
-//        }
-//    }
-//    else
-//    {
-//        LAMA_THROWEXCEPTION( "row major only supported for square matrices" );
-//    }
-//
-//    for ( int i = 0; i < m; ++i )
-//    {
-//        --ipiv[i];   // Fortran numbering from 1 to n ->  0 to n-1
-//    }
-//
-//    if ( info < 0 )
-//    {
-//        LAMA_THROWEXCEPTION( "illegal argument " << ( -info ) )
-//    }
-//    else if ( info > 0 )
-//    {
-//        LAMA_THROWEXCEPTION( "value(" << info << "," << info << ")" << " is exactly zero" )
-//    }
+    if( m != n || n != lda )
+    {
+        LAMA_THROWEXCEPTION( "OpenMPLAPACK:getrf only supported for square matrices" );
+    }
+
+    for( int i = 0; i < lda; i++ )
+    {
+        ipiv[i] = i;
+    }
+
+    if( order == CblasColMajor )
+    {
+        for( int i = 0; i < lda; i++ )
+        {
+            //pivoting
+            index = i;
+            for( int j = i; j < lda; j++ )
+            {
+                if( ::abs( a[lda * ipiv[i] + j] ) > ::abs( a[lda * ipiv[i] + index] ) )
+                {
+                    index = j;
+                }
+            }
+            int temp = ipiv[index];
+            ipiv[index] = ipiv[i];
+            ipiv[i] = temp;
+
+        }
+
+        for( int i = 0; i < lda; i++ )
+        {
+            for( int j = i + 1; j < lda; j++ )
+            {
+                a[lda * ipiv[i] + j] /= a[lda * ipiv[i] + i];
+                for( int k = i + 1; k < lda; k++ )
+                {
+                    a[lda * ipiv[k] + j] -= a[lda * ipiv[i] + j] * a[lda * ipiv[k] + i];
+                }
+            }
+
+        }
+
+    }
+    else if( order == CblasRowMajor )
+    {
+        for( int i = 0; i < lda; i++ )
+        {
+            //pivoting
+            index = i;
+            for( int j = i; j < lda; j++ )
+            {
+                if( ::abs( a[lda * ipiv[j] + i] ) > ::abs( a[lda * ipiv[index] + i] ) )
+                {
+                    index = j;
+                }
+            }
+            int temp = ipiv[index];
+            ipiv[index] = ipiv[i];
+            ipiv[i] = temp;
+
+        }
+
+        for( int i = 0; i < lda; i++ )
+        {
+            for( int j = i + 1; j < lda; j++ )
+            {
+                a[lda * ipiv[j] + i] /= a[lda * ipiv[i] + i];
+                for( int k = i + 1; k < lda; k++ )
+                {
+                    a[lda * ipiv[j] + k] -= a[lda * ipiv[j] + i] * a[lda * ipiv[i] + k];
+                }
+            }
+
+        }
+    }
 
     return info;
 }
-
 
 /* ------------------------------------------------------------------------- */
 /*      getinv<float>                                                        */
 /* ------------------------------------------------------------------------- */
 
 template<typename T>
-void OpenMPLAPACK::getinv( const IndexType n, T* UNUSED(a), const IndexType UNUSED(lda) )
+void OpenMPLAPACK::getinv( const IndexType n, T* a, const IndexType lda )
 {
-    LAMA_REGION( "OpenMP.LAPACK.getinv<float>" )
+LAMA_REGION( "OpenMP.LAPACK.getinv<T>" )
 
-//    int info = 0;
-    LAMA_THROWEXCEPTION( "OpenMPLAPACK:getinv is not implemented yet")
-    // scoped array, will also be freed in case of exception
+                                                                    LAMA_LOG_INFO( logger, "getinv<T> for " << n << " x " << n << " matrix, uses openmp" )
 
-    boost::scoped_array<IndexType> ipiv( new IndexType[n] );
-//
-//#ifdef F77_INT
-//    F77_INT F77_N = n, F77_lda = lda, F77_info = info;
-//#else
-//#define F77_N n
-//#define F77_lda lda
-//#define F77_info info
-//#endif
-//
-//    LAMA_LOG_INFO( logger, "getinv<float> for " << n << " x " << n << " matrix, uses Fortran interface" )
-//
-//    F77_sgetrf( &F77_N, &F77_N, a, &F77_lda, ipiv.get(), &F77_info );
-//
-//    if ( F77_info )
-//    {
-//        LAMA_THROWEXCEPTION( "LAPACK sgetrf failed, info = " << F77_info )
-//    }
-//
-//    boost::scoped_array<float> work( new float[n] );
-//
-//    F77_sgetri( &F77_N, a, &F77_lda, ipiv.get(), work.get(), &F77_N, &F77_info );
-//
-//    if ( F77_info )
-//    {
-//        LAMA_THROWEXCEPTION( "LAPACK sgetri failed, info = " << F77_info )
-//    }
+    //boost::scoped_array<IndexType> ipiv( new IndexType[n] );
+    int* ipiv;
+    ipiv = new int[n];
+    getrf( CblasRowMajor, n, n, a, lda, ipiv );
+
+    getri( CblasRowMajor, n, a, lda, ipiv );
+
+    delete[] ipiv;
 }
-
 
 /* ------------------------------------------------------------------------- */
 /*      getri<float>                                                         */
 /* ------------------------------------------------------------------------- */
 
 template<typename T>
-int OpenMPLAPACK::getri(
-    const enum CBLAS_ORDER UNUSED(order),
-    const int n,
-    T* const UNUSED(a),
-    const int UNUSED(lda),
-    int* const UNUSED(ipiv) )
+int OpenMPLAPACK::getri( const enum CBLAS_ORDER order, const int n, T* const A, const int lda, int* const ipiv )
 {
-    LAMA_REGION( "OpenMP.LAPACK.getri<float>" )
+LAMA_REGION( "OpenMP.LAPACK.getri<T>" )
 
-    LAMA_LOG_INFO( logger, "getri<float> for A of size " << n << " x " << n )
-
+                                                                                            LAMA_LOG_INFO( logger, "getri<float> for A of size " << n << " x " << n )
     int info = 0;
-    LAMA_THROWEXCEPTION( "OpenMPLAPACK:getri is not implemented yet")
-    // translate C indexes into  Fortran Indexes for ipiv
+//    LAMA_THROWEXCEPTION( "OpenMPLAPACK:getri is not implemented yet" )
+    T* A_inv = 0;
+    A_inv = new T[n * n];
 
-//    for ( int i = 0; i < n; ++i )
-//    {
-//        ++ipiv[i];
-//    }
-//
-//    // transpose if not column major order
-//
-//    if ( order != CblasColMajor )
-//    {
-//        LAMA_ASSERT_EQUAL_ERROR( lda, n )
-//
-//        for ( int i = 0; i < n; ++i )
-//        {
-//            // swap row and column
-//
-//            for ( int j = i + 1; j < n; ++j )
-//            {
-//                std::swap( a[ i * n + j], a[ j * n + i ] );
-//            }
-//        }
-//    }
-//
-//#ifdef F77_INT
-//    F77_INT F77_M = M, F77_N = N, F77_lda = lda, F77_info = info;
-//#else
-//#define F77_M m
-//#define F77_N n
-//#define F77_lda lda
-//#define F77_info info
-//#endif
-//
-//    boost::scoped_array<float> work( new float[n] );
-//
-//    F77_sgetri( &F77_N, a, &F77_lda, ipiv, work.get(), &F77_N, &F77_info );
-//
-//    if ( order != CblasColMajor )
-//    {
-//        // transpose back
-//
-//        for ( int i = 0; i < n; ++i )
-//        {
-//            for ( int j = i + 1; j < n; ++j )
-//            {
-//                std::swap( a[ i * n + j], a[ j * n + i ] );
-//            }
-//        }
-//    }
-//
-//    if ( info < 0 )
-//    {
-//        LAMA_THROWEXCEPTION( "illegal argument " << ( -info ) )
-//    }
-//    else if ( info > 0 )
-//    {
-//        LAMA_THROWEXCEPTION( "value(" << info << "," << info << ")" << " is exactly zero" )
-//    }
+    for( int i = 0; i < n * n; i++ )
+    {
+        A_inv[i] = 0;
+    }
 
+    if( order == CblasRowMajor )
+    {
+
+        for( int i = 0; i < n; i++ )
+        { //Emulation of an identity matrix
+            for( int h = 0; h < n; h++ )
+            {
+                A_inv[n * ipiv[h] + i] = 0;
+            }
+            A_inv[n * i + i] = 1;
+
+            //Forwared Elimination to solve Z, which is stored in A_inv
+            for( int j = 0; j < n; j++ )
+            {
+                for( int k = 0; k < j; k++ )
+                {
+                    A_inv[n * ipiv[j] + i] -= A[lda * ipiv[j] + k] * A_inv[n * ipiv[k] + i];
+                }
+            }
+
+            //Back Substitution to solve x, which is stored in A_inv
+            for( int j = n - 1; j >= 0; j-- )
+            {
+                for( int k = j + 1; k < n; k++ )
+                {
+                    A_inv[n * ipiv[j] + i] -= A[lda * ipiv[j] + k] * A_inv[n * ipiv[k] + i];
+                }
+                A_inv[n * ipiv[j] + i] = A_inv[n * ipiv[j] + i] /= A[n * ipiv[j] + j];
+            }
+        }
+
+        for( int i = 0; i < n; i++ )
+        { //Emulation of an identity matrix
+            for( int j = 0; j < n; j++ )
+            {
+                A[n * j + i] = A_inv[n * ipiv[j] + i];
+            }
+        }
+    }
+    else if( order == CblasColMajor )
+    {
+        for( int i = 0; i < n; i++ )
+        { //Spalten der Matrix A^-1
+            for( int h = 0; h < n; h++ )
+            {
+                A_inv[n * ipiv[i] + h] = 0;
+            }
+            A_inv[n * i + i] = 1;
+
+            //Forwared Elimination to solve Z, which is stored in A_inv
+            for( int j = 0; j < n; j++ )
+            {
+                for( int k = 0; k < j; k++ )
+                {
+                    A_inv[n * ipiv[i] + j] -= A[lda * ipiv[k] + j] * A_inv[n * ipiv[i] + k];
+                }
+            }
+
+            //Back Substitution to solve x, which is stored in A_inv
+            for( int j = n - 1; j >= 0; j-- )
+            {
+                for( int k = j + 1; k < n; k++ )
+                {
+                    A_inv[n * ipiv[i] + j] -= A[lda * ipiv[k] + j] * A_inv[n * ipiv[i] + k];
+                }
+                A_inv[n * ipiv[i] + j] = A_inv[n * ipiv[i] + j] /= A[n * ipiv[j] + j];
+            }
+        }
+
+        for( int i = 0; i < n; i++ )
+        { //Copy from A_inv to A
+            for( int j = 0; j < n; j++ )
+            {
+                A[n * i + j] = A_inv[n * ipiv[i] + j];
+            }
+        }
+    }
+
+    delete[] A_inv;
+
+    if( info < 0 )
+    {
+        LAMA_THROWEXCEPTION( "illegal argument " << ( -info ) )
+    }
+    else if( info > 0 )
+    {
+        LAMA_THROWEXCEPTION( "value(" << info << "," << info << ")" << " is exactly zero" )
+    }
     return info;
 }
-
 
 /* --------------------------------------------------------------------------- */
 
 template<typename T>
 int OpenMPLAPACK::tptrs(
-    const enum CBLAS_ORDER UNUSED(order),
-    const enum CBLAS_UPLO UNUSED(uplo),
-    const enum CBLAS_TRANSPOSE UNUSED(trans),
-    const enum CBLAS_DIAG UNUSED(diag),
-    const int UNUSED(n),
+    const enum CBLAS_ORDER order,
+    const enum CBLAS_UPLO uplo,
+    const enum CBLAS_TRANSPOSE trans,
+    const enum CBLAS_DIAG diag,
+    const int n,
     const int UNUSED(nrhs),
-    const T* UNUSED(AP),
-    T* UNUSED(B),
+    const T* AP,
+    T* B,
     const int UNUSED(ldb) )
 {
     LAMA_REGION( "OpenMP.LAPACK.tptrs<float>" )
 
     int info = 0;
-    LAMA_THROWEXCEPTION( "OpenMPLAPACK:tptrs is not implemented yet")
-//    char UL = BLASHelper::lapack_uplo( uplo );
-//    char TA = BLASHelper::lapack_transpose( trans );
-//    char DI = BLASHelper::lapack_diag( diag );
-//
-//#ifdef F77_CHAR
-//    F77_CHAR F77_UL, F77_TA, F77_DI;
-//#else
-//#   define F77_UL &UL
-//#   define F77_TA &TA
-//#   define F77_DI &DI
-//#endif
-//#ifdef F77_INT
-//    F77_INT F77_n = n, F77_nrhs = nrhs, F77_ldb = ldb;
-//#else
-//#   define F77_n n
-//#   define F77_nrhs nrhs
-//#   define F77_ldb ldb
-//#endif
-//
-//#ifdef F77_CHAR
-//    F77_UL = C2F_CHAR( &UL );
-//    F77_TA = C2F_CHAR( &TA );
-//    F77_DI = C2F_CHAR( &DI );
-//#endif
-//
-//    LAMA_LOG_INFO( logger, "tptrs<float>, n = " << n << ", nrhs = " << nrhs
-//                   << ", order = " << order << ", UL = " << UL
-//                   << ", TA = " << TA << ", DI = " << DI );
-//
-//    if ( order == CblasColMajor )
-//    {
-//        F77_stptrs( F77_UL, F77_TA, F77_DI, &F77_n, &F77_nrhs, AP, B, &F77_ldb, &info );
-//    }
-//    else if ( order == CblasRowMajor )
-//    {
-//        // TODO: transpose matrix.
-//        LAMA_THROWEXCEPTION( "row major order not supported for tptrs" );
-//    }
+
+    if( order == CblasColMajor )
+    {
+        if( trans == CblasNoTrans )
+        {
+            if( uplo == CblasUpper )
+            { // Back substituion
+                if( diag == CblasUnit )
+                {
+                    LAMA_THROWEXCEPTION( "OpenMPLAPACK:tptrs is not implemented for CblasUnit yet" )
+                }
+                else if( diag == CblasNonUnit )
+                {
+
+                    for( int i = n - 1; i >= 0; i-- )
+                    {
+                        for( int j = n - 1; j > i; j-- )
+                        {
+                            B[i] -= AP[( j * j + j ) / 2 + i] * B[j];
+                        }
+                        B[i] /= AP[( i * i + i ) / 2 + i];
+                    }
+                }
+            }
+            else if( uplo == CblasLower )
+            { //Forward Elimination
+                if( diag == CblasUnit )
+                {
+                    LAMA_THROWEXCEPTION( "OpenMPLAPACK:tptrs is not implemented for CblasUnit yet" )
+                }
+                else if( diag == CblasNonUnit )
+                {
+                    for( int i = 0; i < n; i++ )
+                    {
+                        for( int j = 0; j < i; j++ )
+                        {
+                            B[i] -= AP[i + ( ( ( 2 * n - j - 1 ) * j ) / 2 )] * B[j];
+                        }
+                        B[i] /= AP[i + ( ( ( 2 * n - i - 1 ) * i ) / 2 )];
+                    }
+                }
+            }
+        }
+        else if( trans == CblasTrans )
+        {
+            LAMA_THROWEXCEPTION( "OpenMPLAPACK:tptrs is not implemented for CblasTrans yet" )
+            if( uplo == CblasUpper )
+            {
+                if( diag == CblasUnit )
+                {
+
+                }
+                else if( diag == CblasNonUnit )
+                {
+
+                }
+            }
+            else if( uplo == CblasLower )
+            {
+                if( diag == CblasUnit )
+                {
+
+                }
+                else if( diag == CblasNonUnit )
+                {
+
+                }
+            }
+        }
+        else if( trans == CblasConjTrans )
+        {
+            LAMA_THROWEXCEPTION( "OpenMPLAPACK:tptrs - colmajor - conjtrans not implemented" );
+        }
+    }
+    else if( order == CblasRowMajor )
+    {
+        if( trans == CblasNoTrans )
+        {
+            if( uplo == CblasUpper )
+            {
+                if( diag == CblasUnit )
+                {
+                    LAMA_THROWEXCEPTION( "OpenMPLAPACK:tptrs is not implemented for CblasUnit yet" )
+                }
+                else if( diag == CblasNonUnit )
+                {
+                    //Back substition
+                    for( int i = n - 1; i >= 0; i-- )
+                    {
+                        for( int j = n - 1; j > i; j-- )
+                        {
+                            B[i] -= AP[( j + ( ( ( 2 * n - i - 1 ) * i ) / 2 ) )] * B[j];
+                        }
+                        B[i] /= AP[( i + ( ( ( 2 * n - i - 1 ) * i ) / 2 ) )];
+                    }
+                }
+            }
+            else if( uplo == CblasLower )
+            {
+                if( diag == CblasUnit )
+                {
+                    LAMA_THROWEXCEPTION( "OpenMPLAPACK:tptrs is not implemented for CblasUnit yet" )
+                }
+                else if( diag == CblasNonUnit )
+                {
+                    //Forward elimination
+                    for( int i = 0; i < n; i++ )
+                    {
+                        for( int j = 0; j < i; j++ )
+                        {
+                            B[i] -= AP[( ( i * i + i ) / 2 ) + j] * B[j];
+                        }
+                        B[i] /= AP[( ( i * i + i ) / 2 ) + i];
+                    }
+                }
+            }
+        }
+        else if( trans == CblasTrans )
+        {
+            LAMA_THROWEXCEPTION( "OpenMPLAPACK:tptrs - colmajor - conjtrans not implemented" );
+            if( uplo == CblasUpper )
+            {
+                if( diag == CblasUnit )
+                {
+
+                }
+                else if( diag == CblasNonUnit )
+                {
+
+                }
+            }
+            else if( uplo == CblasLower )
+            {
+                if( diag == CblasUnit )
+                {
+
+                }
+                else if( diag == CblasNonUnit )
+                {
+
+                }
+            }
+        }
+        else if( trans == CblasConjTrans )
+        {
+            LAMA_THROWEXCEPTION( "OpenMPLAPACK:tptrs - rowmajor - conjtrans not implemented" );
+        }
+    }
 
     return info;
 }
@@ -326,49 +466,43 @@ int OpenMPLAPACK::tptrs(
 
 template<typename T>
 void OpenMPLAPACK::laswp(
-    const enum CBLAS_ORDER UNUSED(order),
-    const int UNUSED(N),
-    T* UNUSED(A),
-    const int UNUSED(LDA),
-    const int UNUSED(K1),
-    const int UNUSED(K2),
-    const int* UNUSED(ipiv),
-    const int UNUSED(INCX),
-    SyncToken* UNUSED(syncToken) )
+    const enum CBLAS_ORDER order,
+    const int N,
+    T* A,
+    const int LDA,
+    const int K1,
+    const int K2,
+    const int* ipiv,
+    const int INCX,
+    SyncToken* syncToken )
 {
     LAMA_REGION( "OpenMP.LAPACK.laswp<float>" )
 
-    //int i = K1;
-    LAMA_THROWEXCEPTION( "OpenMPLAPACK:laswp is not implemented yet")
-    if ( order == CblasRowMajor )
+    int i = K1;
+//    LAMA_THROWEXCEPTION( "OpenMPLAPACK:laswp is not implemented yet")
+    if( order == CblasRowMajor )
     {
-        for ( i = K1; i < K2; ++i )
+        for( i = K1; i < K2; ++i )
         {
-            if ( ipiv[i * INCX] == i )
+            if( ipiv[i * INCX] == i )
             {
                 continue;
             }
 
-            OpenMPBLAS1::swap<float>( N, &A[ipiv[i * INCX] * LDA], INCX, &A[i * LDA], INCX, syncToken );
+            OpenMPBLAS1::swap<T>( N, &A[ipiv[i * INCX] * LDA], INCX, &A[i * LDA], INCX, syncToken );
         }
     }
-    else if ( order == CblasColMajor )
+    else if( order == CblasColMajor )
     {
-//#ifdef F77_INT
-//        F77_INT F77_N = N, F77_LDA = LDA, F77_K1 = K1, F77_K2 = K2, F77_INCX = INCX;
-//        F77_INT* F77_IPIV = ipiv;
-//#else
-//#   ifdef F77_N
-//#       undef F77_N
-//#   endif
-//#   define F77_N    N
-//#   define F77_LDA  LDA
-//#   define F77_K1   K1
-//#   define F77_K2   K2
-//#   define F77_INCX INCX
-//#   define F77_IPIV ipiv
-//#endif
-//        F77_slaswp( &F77_N, A, &F77_LDA, &F77_K1, &F77_K2, F77_IPIV, &F77_INCX );
+        for( i = K1; i < K2; ++i )
+        {
+            if( ipiv[i * INCX] == i )
+            {
+                continue;
+            }
+
+            OpenMPBLAS1::swap<T>( N, &A[ipiv[i * INCX] * LDA], INCX, &A[i * LDA], INCX, syncToken );
+        }
     }
     else
     {
@@ -385,11 +519,11 @@ void OpenMPLAPACK::setInterface( BLASInterface& BLAS )
     // Note: macro takes advantage of same name for routines and type definitions 
     //       ( e.g. routine CUDABLAS1::sum<T> is set for BLAS::BLAS1::sum variable
 
-//    LAMA_INTERFACE_REGISTER_T( BLAS, getrf, float )
-//    LAMA_INTERFACE_REGISTER_T( BLAS, getrf, double )
-//
-//    LAMA_INTERFACE_REGISTER_T( BLAS, getri, float )
-//    LAMA_INTERFACE_REGISTER_T( BLAS, getri, double )
+    LAMA_INTERFACE_REGISTER_T( BLAS, getrf, float )
+    LAMA_INTERFACE_REGISTER_T( BLAS, getrf, double )
+
+    LAMA_INTERFACE_REGISTER_T( BLAS, getri, float )
+    LAMA_INTERFACE_REGISTER_T( BLAS, getri, double )
 
     LAMA_INTERFACE_REGISTER_T( BLAS, getinv, float )
     LAMA_INTERFACE_REGISTER_T( BLAS, getinv, double )

@@ -75,7 +75,7 @@ if ( Boost_INCLUDE_DIR )
     #message ( STATUS "Boost_PATH = ${Boost_PATH}" )
     # Boost_PATH should be same as BOOST_ROOT
 else ( Boost_INCLUDE_DIR )
-    message ( FATAL_ERROR "Boost (include directory) not found: give hint by environment variable BOOST_ROOT" ) 
+    message ( STATUS "Boost (include directory) not found: give hint by environment variable BOOST_ROOT" ) 
 endif ( Boost_INCLUDE_DIR )
 
 # check status of each Boost component
@@ -125,7 +125,7 @@ if ( DEFINED LAMA_BUILD_TEST )
     if ( ${LAMA_BUILD_TEST} )
         if ( NOT ${FOUND_BOOST_TEST} )
             # if package is enabled, but not found: ERROR!
-            message ( FATAL_ERROR "Boost Test Framework or Bost Regex missing, but tests are enabled!" )
+            message ( STATUS "Boost Test Framework or Bost Regex missing, but tests are enabled!" )
         endif ( NOT ${FOUND_BOOST_TEST} )
     endif ( ${LAMA_BUILD_TEST} )
 
