@@ -148,7 +148,11 @@ else ( NOT EXISTS ${MKL_INCLUDE_DIR} )
             
         # search for gnu compiler libs
         if ( CMAKE_COMPILER_IS_GNUCC )
-            find_library ( MKL_LIBRARY_GNU mkl_gnu_thread PATHS ${MKL_LIBRARY_PATH} PATH_SUFFIXES ${MKL_LIBRARY_PATH_SUFFIXES} )
+            if ( OPENMP_FOUND )
+                find_library ( MKL_LIBRARY_GNU mkl_gnu_thread PATHS ${MKL_LIBRARY_PATH} PATH_SUFFIXES ${MKL_LIBRARY_PATH_SUFFIXES} )
+            else ( OPENMP_FOUND )
+                find_library ( MKL_LIBRARY_GNU mkl_sequential PATHS ${MKL_LIBRARY_PATH} PATH_SUFFIXES ${MKL_LIBRARY_PATH_SUFFIXES} )
+            endif ( OPENMP_FOUND )
             if ( NOT EXISTS ${MKL_LIBRARY_GNU} )
                 message ( STATUS "WARNING MKL library mkl_gnu_thread not found with MKL_LIBRARY_PATH=${MKL_LIBRARY_PATH}." )
             endif( NOT EXISTS ${MKL_LIBRARY_GNU} )

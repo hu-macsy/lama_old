@@ -82,6 +82,11 @@ if ( CMAKE_COMPILER_IS_GNUCXX )
         set ( ADDITIONAL_CXX_WARNING_FLAGS "-Wextra -Wall -Werror" ) # -pedantic -std=c++98 " ) # -march=core02
     endif ( NOT DEFINED ADDITIONAL_CXX_WARNING_FLAGS )
     
+    # Supress unknown pragma warnings if OpenMP is disabled
+    if ( NOT OPENMP_FOUND )
+        set ( ADDITIONAL_CXX_WARNING_FLAGS "${ADDITIONAL_CXX_WARNING_FLAGS} -Wno-unknown-pragmas" )
+    endif ( NOT OPENMP_FOUND )
+    
     if ( NOT DEFINED ADDITIONAL_CXX_RELEASE_FLAGS )
         set ( ADDITIONAL_CXX_RELEASE_FLAGS "-ffast-math -msse4a " )
     endif ( NOT DEFINED ADDITIONAL_CXX_RELEASE_FLAGS )
@@ -97,6 +102,11 @@ if ( CMAKE_CXX_COMPILER_ID MATCHES Intel )
     if ( NOT DEFINED ADDITIONAL_CXX_WARNING_FLAGS )
         set ( ADDITIONAL_CXX_WARNING_FLAGS "-w2 -Wall -Wcheck " ) # -Werror-all Warnings/Errors. No Remarks.
     endif ( NOT DEFINED ADDITIONAL_CXX_WARNING_FLAGS )
+    
+    # Supress unknown pragma warnings if OpenMP is disabled
+    if ( NOT OPENMP_FOUND )
+        set ( ADDITIONAL_CXX_WARNING_FLAGS "${ADDITIONAL_CXX_WARNING_FLAGS} -Wno-unknown-pragmas" )
+    endif ( NOT OPENMP_FOUND )
     
     if ( NOT DEFINED ADDITIONAL_CXX_RELEASE_FLAGS )
         set ( ADDITIONAL_CXX_RELEASE_FLAGS "-ipo -no-prec-div -xHost " )

@@ -194,14 +194,9 @@ lama_summary_message ( "FOUND"
 message ( STATUS "" )
 lama_status_message ( HEADLINE "LIBRARIES:" )
 lama_summary_message ( "STATIC"
-                       "OPENMP_FOUND AND LAMA_BLAS_LIBRARIES AND LAPACK_FOUND AND Boost_INCLUDE_DIR"
+                       "LAMA_BLAS_LIBRARIES AND LAPACK_FOUND AND Boost_INCLUDE_DIR"
                        "LAMA (core)"
                        " " )
-    # OpenMP
-    lama_summary_message ( "FOUND"
-                           "OPENMP_FOUND"
-                           "OpenMP"
-                           "" )
    # BLAS
     lama_summary_message ( "FOUND"
                            "LAMA_BLAS_LIBRARIES"
@@ -272,7 +267,7 @@ lama_summary_message ( "USE"
                            "Boost Regex"
                            "" )
 
-message ( STATUS "|" )
+message ( STATUS "" )
 lama_status_message ( HEADLINE "DOCUMENTATION:" )
 
 
@@ -316,9 +311,9 @@ message ( STATUS "" )
 
 # Check if all required packages are found
 # LAMA (core)
-if ( NOT ( OPENMP_FOUND AND LAMA_BLAS_LIBRARIES AND LAPACK_FOUND AND Boost_INCLUDE_DIR ) )
+if ( NOT ( LAMA_BLAS_LIBRARIES AND LAPACK_FOUND AND Boost_INCLUDE_DIR ) )
     message( FATAL_ERROR "Configuration for LAMA (core) incomplete!")
-endif ( NOT ( OPENMP_FOUND AND LAMA_BLAS_LIBRARIES AND LAPACK_FOUND AND Boost_INCLUDE_DIR ) )
+endif ( NOT ( LAMA_BLAS_LIBRARIES AND LAPACK_FOUND AND Boost_INCLUDE_DIR ) )
 
 # LAMA MPI
 if ( LAMA_USE_MPI AND NOT MPI_FOUND )

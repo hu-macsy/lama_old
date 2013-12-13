@@ -33,24 +33,18 @@
 
 # Find required packages
 set ( REQUIRED_PACKAGES_TO_FIND
-        OpenMP
         #add required packages here
     )
     
 # Find optional packages
 set ( OPTIONAL_PACKAGES_TO_FIND
+        OpenMP
         LAMA_BLAS
         Doxygen
         Threads
         Sphinx
         ParMetis REQUIRES Metis
+        CUDA # needs check on windows
         #add optional packages here
     )
-    
-#CUDA Only works with GCC on Linux
-#TODO: This needs to be checked on windows
-set ( OPTIONAL_PACKAGES_TO_FIND
-      ${OPTIONAL_PACKAGES_TO_FIND}
-      CUDA
-)
 mark_as_advanced ( CUDA_TOOLKIT_ROOT_DIR )
