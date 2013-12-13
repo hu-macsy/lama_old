@@ -161,7 +161,11 @@ else ( NOT EXISTS ${MKL_INCLUDE_DIR} )
         
          # search for intel compiler libs
          if ( CMAKE_C_COMPILER_ID MATCHES Intel )
-            find_library ( MKL_LIBRARY_INTEL mkl_intel_thread PATHS ${MKL_LIBRARY_PATH} PATH_SUFFIXES ${MKL_LIBRARY_PATH_SUFFIXES} )
+            if ( OPENMP_FOUND )
+                find_library ( MKL_LIBRARY_INTEL mkl_intel_thread PATHS ${MKL_LIBRARY_PATH} PATH_SUFFIXES ${MKL_LIBRARY_PATH_SUFFIXES} )
+            else ( OPENMP_FOUND )
+                find_library ( MKL_LIBRARY_INTEL mkl_sequential PATHS ${MKL_LIBRARY_PATH} PATH_SUFFIXES ${MKL_LIBRARY_PATH_SUFFIXES} )
+            endif ( OPENMP_FOUND )
             if ( NOT EXISTS ${MKL_LIBRARY_INTEL} )
                 message ( STATUS "WARNING MKL library mkl_intel_thread not found with MKL_LIBRARY_PATH=${MKL_LIBRARY_PATH}." )
             endif()
