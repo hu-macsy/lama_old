@@ -18,7 +18,7 @@ certain C and C++ compiler in the following way::
 
 or::
 
-  CC=/opt/intel/bin/icc;CXX=/opt/intel/bin/icpc cmake ...
+  CC=/opt/intel/bin/icc CXX=/opt/intel/bin/icpc cmake ...
 
 You can use directy the name of the compiler executable if it is in your path::
 
