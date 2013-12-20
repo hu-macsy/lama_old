@@ -66,6 +66,7 @@ checkValue( ${LAMA_BLAS_LIBRARY} "${LIBRARY_CHOICES}" )
 # load selected or auto BLAS Library and set blas style (default: LAMA_FORTRAN_BLAS_STYLE_LOWERCASE)
 if ( LAMA_BLAS_LIBRARY STREQUAL "MKL" OR ( LAMA_BLAS_LIBRARY STREQUAL "auto" AND MKL_FOUND ))
     if ( MKL_FOUND )
+        set ( LAMA_BLAS_FOUND TRUE )
         set ( LAMA_BLAS_NAME "MKL" )
     	set ( LAMA_BLAS_LIBRARIES ${MKL_LIBRARIES} )
     	set ( LAMA_PBLAS_LIBRARIES ${MKL_PLIBRARIES} )
@@ -75,6 +76,7 @@ if ( LAMA_BLAS_LIBRARY STREQUAL "MKL" OR ( LAMA_BLAS_LIBRARY STREQUAL "auto" AND
     endif ( MKL_FOUND )
 elseif ( LAMA_BLAS_LIBRARY STREQUAL "ACML" OR ( LAMA_BLAS_LIBRARY STREQUAL "auto" AND ACML_FOUND ))
     if ( ACML_FOUND )
+        set ( LAMA_BLAS_FOUND TRUE )
         set ( LAMA_BLAS_NAME "ACML" )
     	set ( LAMA_BLAS_LIBRARIES ${ACML_LIBRARIES} )
     	if ( WIN32 )
@@ -87,6 +89,7 @@ elseif ( LAMA_BLAS_LIBRARY STREQUAL "ACML" OR ( LAMA_BLAS_LIBRARY STREQUAL "auto
     endif ( ACML_FOUND )
 elseif ( LAMA_BLAS_LIBRARY STREQUAL "GOTOBLAS" OR ( LAMA_BLAS_LIBRARY STREQUAL "auto" AND GOTOBLAS_FOUND ))
     if ( GOTOBLAS_FOUND )
+        set ( LAMA_BLAS_FOUND TRUE )
         set ( LAMA_BLAS_NAME "GOTOBLAS" )
        	set ( LAMA_BLAS_LIBRARIES ${GOTOBLAS_LIBRARIES} )
        	add_definitions ( -DLAMA_FORTRAN_BLAS_STYLE_UNDERSCORE )
@@ -96,6 +99,7 @@ elseif ( LAMA_BLAS_LIBRARY STREQUAL "GOTOBLAS" OR ( LAMA_BLAS_LIBRARY STREQUAL "
 #BLAS AND LAPACK found for FortranBLAS
 elseif ( LAMA_BLAS_LIBRARY STREQUAL "BLAS" OR ( LAMA_BLAS_LIBRARY STREQUAL "auto" AND BLAS_FOUND ))
     if ( BLAS_FOUND )
+        set ( LAMA_BLAS_FOUND TRUE )
         set ( LAMA_BLAS_NAME "BLAS " )
         if ( LAPACK_LIBRARIES )
             set ( LAMA_BLAS_LIBRARIES ${LAPACK_LIBRARIES} )
@@ -108,12 +112,14 @@ elseif ( LAMA_BLAS_LIBRARY STREQUAL "BLAS" OR ( LAMA_BLAS_LIBRARY STREQUAL "auto
     endif ( BLAS_FOUND )
 #None found or INTERNALBLAS choosen
 else ()
+    set ( LAMA_BLAS_FOUND TRUE )
+    set ( LAMA_BLAS_NAME "Internal" )
 	set ( INTERNALBLAS_FOUND TRUE )
 endif ()
 
 include ( FindPackageHandleStandardArgs )
 # handle the QUIETLY and REQUIRED arguments and set LAMA_BLAS_FOUND to TRUE if all listed variables are TRUE
-find_package_handle_standard_args ( LAMA_BLAS DEFAULT_MSG LAMA_BLAS_LIBRARIES)
+#find_package_handle_standard_args ( LAMA_BLAS DEFAULT_MSG LAMA_BLAS_LIBRARIES)
 
 mark_as_advanced ( LAMA_BLAS_LIBRARIES )
 mark_as_advanced ( LAMA_PBLAS_LIBRARIES )

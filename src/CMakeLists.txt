@@ -194,20 +194,20 @@ lama_summary_message ( "FOUND"
 message ( STATUS "" )
 lama_status_message ( HEADLINE "LIBRARIES:" )
 lama_summary_message ( "STATIC"
-                       "LAMA_BLAS_LIBRARIES AND LAPACK_FOUND AND Boost_INCLUDE_DIR"
+                       "LAMA_BLAS_FOUND AND LAPACK_FOUND AND Boost_INCLUDE_DIR"
                        "LAMA (core)"
                        " " )
    # BLAS
     lama_summary_message ( "FOUND"
-                           "LAMA_BLAS_LIBRARIES"
+                           "LAMA_BLAS_FOUND"
                            "BLAS"
                            "(${LAMA_BLAS_NAME}) with libraries: ${LAMA_BLAS_LIBRARIES}" )
-    if ( LAMA_BLAS_LIBRARIES )
+    if ( LAMA_BLAS_NAME MATCHES "MKL" )
     lama_summary_message ( "FOUND"
                            "LAPACK_FOUND"
                            "LAPACK"
                            "" )
-    endif ( LAMA_BLAS_LIBRARIES )
+    endif ( LAMA_BLAS_NAME MATCHES "MKL" )
     
     # Boost
     lama_summary_message ( "FOUND"
@@ -311,9 +311,14 @@ message ( STATUS "" )
 
 # Check if all required packages are found
 # LAMA (core)
-if ( NOT ( LAMA_BLAS_LIBRARIES AND LAPACK_FOUND AND Boost_INCLUDE_DIR ) )
+
+
+
+
+
+if ( NOT ( LAMA_BLAS_FOUND AND Boost_INCLUDE_DIR  ) OR ( (LAMA_BLAS_NAME MATCHES "MKL") AND NOT LAPACK_FOUND )  )
     message( FATAL_ERROR "Configuration for LAMA (core) incomplete!")
-endif ( NOT ( LAMA_BLAS_LIBRARIES AND LAPACK_FOUND AND Boost_INCLUDE_DIR ) )
+endif ( NOT ( LAMA_BLAS_FOUND AND Boost_INCLUDE_DIR  ) OR ( (LAMA_BLAS_NAME MATCHES "MKL") AND NOT LAPACK_FOUND ) )
 
 # LAMA MPI
 if ( LAMA_USE_MPI AND NOT MPI_FOUND )
