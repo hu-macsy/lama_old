@@ -78,6 +78,8 @@ endforeach ( PACKAGE_TO_FIND ${OPTIONAL_PACKAGES_TO_FIND} )
 # ALLOW to switch off CUDA explicitly
 setAndCheckCache ( "CUDA" )
 
+include(CUDAComputeCapability)
+
 ### Include Compiler Flags, after all packages are found ###
 include ( CompilerFlags )
 

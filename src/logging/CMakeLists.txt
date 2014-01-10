@@ -63,7 +63,7 @@ if ( WIN32 )
 endif ( WIN32 )
 
 ### add library and put path to search path ###
-add_library ( log4lama SHARED ${CXX_SOURCES} )
+add_library ( log4lama ${LAMA_LIBRARY_TYPE} ${CXX_SOURCES} )
 include_directories ( . )
 
 ### install ###

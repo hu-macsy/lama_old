@@ -98,13 +98,13 @@ if ( NOT WIN32 )
     # Linux requires explicit CUDA compilation of *.cu files
 
     cuda_compile ( CUDA_FILES ${CUDA_SOURCES} )
-    add_library( amacuda SHARED ${CXX_SOURCES} ${CUDA_FILES} )
+    add_library( amacuda ${LAMA_LIBRARY_TYPE} ${CXX_SOURCES} ${CUDA_FILES} )
 
 else( NOT WIN32 )
 
     # Windows suports different compilation for *.cpp and *.cu files
 
-    cuda_add_library( amacuda SHARED ${CXX_SOURCES} ${CUDA_SOURCES} )
+    cuda_add_library( amacuda ${LAMA_LIBRARY_TYPE} ${CXX_SOURCES} ${CUDA_SOURCES} )
 
 endif( NOT WIN32 )
 

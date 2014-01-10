@@ -131,7 +131,8 @@ endif ( WIN32 )
 link_directories ( ${LAMAPP_LINK_DIRECTORIES} )
 
 ### add library ###
-add_library ( ama SHARED ${CXX_SOURCES} ${HEADERS} )
+add_library ( ama ${LAMA_LIBRARY_TYPE} ${CXX_SOURCES} ${HEADERS} )
+
 
 ### set target link libraries ###
 set( LAMA_LINK_LIBRARIES log4lama )
@@ -181,6 +182,8 @@ endif( LAMA_BLAS_FOUND )
 set ( LAMA_LINK_LIBRARIES ${LAMA_LINK_LIBRARIES} ${LAMA_ADDITIONAL_LINK_LIBRARIES} )
 
 target_link_libraries ( ama ${LAMA_LINK_LIBRARIES} )
+
+lama_status_message( INFO "libraries are: "${LAMA_LINK_LIBRARIES} )
 
 if ( LAMA_ADDITIONAL_LINK_FLAGS )
     set_target_properties ( ama PROPERTIES LINK_FLAGS ${LAMA_ADDITIONAL_LINK_FLAGS} )

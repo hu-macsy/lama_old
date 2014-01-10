@@ -152,7 +152,8 @@ add_executable ( lama_test lama_test.cpp ${CXX_SOURCES} )
 if ( WIN32 )
     target_link_libraries ( lama_test ama )
 else ( WIN32 )
-    target_link_libraries ( lama_test ama ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY} ${Boost_REGEX_LIBRARY} ${Boost_THREAD_LIBRARY} )
+    target_link_libraries ( lama_test "-Wl,--whole-archive" ama "-Wl,--no-whole-archive" ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY} ${Boost_REGEX_LIBRARY} ${Boost_THREAD_LIBRARY} )
+    #SET_TARGET_PROPERTIES ( lama_test PROPERTIES LINK_FLAGS "-Wl,--whole-archive -l../lama/libama.a -Wl,--no-whole-archive")
 endif ( WIN32 )
 
 

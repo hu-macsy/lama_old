@@ -53,7 +53,7 @@ set ( CLASSES
 
 lama_classes ( ${CLASSES} )
 
-add_library( amamic SHARED ${CXX_SOURCES} )
+add_library( amamic ${LAMA_LIBRARY_TYPE} ${CXX_SOURCES} )
 
 ### target link libraries ###
 
