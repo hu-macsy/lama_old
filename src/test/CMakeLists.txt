@@ -133,9 +133,9 @@ if ( MPI_FOUND AND LAMA_USE_MPI )
     add_subdirectory ( distributed )
 endif ( MPI_FOUND AND LAMA_USE_MPI )
 
-if ( CUDA_FOUND AND LAMA_USE_CUDA )
+if ( CUDA_FOUND AND LAMA_USE_CUDA AND CUDA_HAVE_GPU )
     add_subdirectory ( cuda )
-endif ( CUDA_FOUND AND LAMA_USE_CUDA )
+endif ( CUDA_FOUND AND LAMA_USE_CUDA AND CUDA_HAVE_GPU )
  
 ### add definitions ###
 add_definitions ( -DLAMA_TESTFILE_PATH="${CMAKE_SOURCE_DIR}/../res/testfiles" )

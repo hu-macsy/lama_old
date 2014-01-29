@@ -224,7 +224,7 @@ lama_summary_message ( "USE"
                        "LAMA MPI"
                        "" )
 
-    # Boost
+    # MPI
     lama_summary_message ( "FOUND"
                            "MPI_FOUND"
                            "MPI"
@@ -237,11 +237,17 @@ lama_summary_message ( "USE"
                        "LAMA CUDA"
                        "" )
 
-    # Boost
+    # CUDA
     lama_summary_message ( "FOUND"
                            "CUDA_FOUND"
                            "CUDA"
                            "${CUDA_VERSION} at ${CUDA_INCLUDE_DIRS}" )
+                           
+    # CUDA Compute Capability
+    lama_summary_message ( "FOUND"
+                           "CUDA_HAVE_GPU"
+                           "Compute Capability"
+                           "${CUDA_COMPUTE_CAPABILITY}" )
                            
 # LAMA MIC
 message ( STATUS "" )
