@@ -133,9 +133,9 @@ if ( MPI_FOUND AND LAMA_USE_MPI )
     add_subdirectory ( distributed )
 endif ( MPI_FOUND AND LAMA_USE_MPI )
 
-if ( CUDA_FOUND AND LAMA_USE_CUDA )
+if ( CUDA_FOUND AND LAMA_USE_CUDA AND CUDA_HAVE_GPU )
     add_subdirectory ( cuda )
-endif ( CUDA_FOUND AND LAMA_USE_CUDA )
+endif ( CUDA_FOUND AND LAMA_USE_CUDA AND CUDA_HAVE_GPU )
  
 ### add definitions ###
 add_definitions ( -DLAMA_TESTFILE_PATH="${CMAKE_SOURCE_DIR}/../res/testfiles" )
@@ -152,7 +152,8 @@ add_executable ( lama_test lama_test.cpp ${CXX_SOURCES} )
 if ( WIN32 )
     target_link_libraries ( lama_test ama )
 else ( WIN32 )
-    target_link_libraries ( lama_test ama ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY} ${Boost_REGEX_LIBRARY} ${Boost_THREAD_LIBRARY} )
+    target_link_libraries ( lama_test "-Wl,--whole-archive" ama "-Wl,--no-whole-archive" ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY} ${Boost_REGEX_LIBRARY} ${Boost_THREAD_LIBRARY} )
+    #SET_TARGET_PROPERTIES ( lama_test PROPERTIES LINK_FLAGS "-Wl,--whole-archive -l../lama/libama.a -Wl,--no-whole-archive")
 endif ( WIN32 )
 
 

@@ -217,7 +217,7 @@ endmacro ( lama_add )
 
 # generates messages for lama summary page
 macro ( lama_summary_message MESSAGE_TYPE EXPRESSION PACKAGE_NAME ADDITIONAL_INFO )
-    set ( LAMA_SUMMARY_PACKAGE_NAME_LENGTH 15 )
+    set ( LAMA_SUMMARY_PACKAGE_NAME_LENGTH 18 )
     if ( ${MESSAGE_TYPE} STREQUAL "FOUND" )
         set ( TYPE_TRUE "FOUND" )
         set ( TYPE_FALSE "NOT FOUND" )

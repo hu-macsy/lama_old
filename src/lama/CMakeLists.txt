@@ -98,9 +98,9 @@ lama_headers ( ${HEADERS} )
 
 ### add subdirectories ###
 
-if ( CUDA_FOUND AND LAMA_USE_CUDA )
+if ( CUDA_FOUND AND LAMA_USE_CUDA AND CUDA_HAVE_GPU )
     add_subdirectory ( cuda )
-endif ( CUDA_FOUND AND LAMA_USE_CUDA )
+endif ( CUDA_FOUND AND LAMA_USE_CUDA AND CUDA_HAVE_GPU )
 
 if ( LAMA_USE_MIC )
     add_subdirectory ( mic )
@@ -131,15 +131,16 @@ endif ( WIN32 )
 link_directories ( ${LAMAPP_LINK_DIRECTORIES} )
 
 ### add library ###
-add_library ( ama SHARED ${CXX_SOURCES} ${HEADERS} )
+add_library ( ama ${LAMA_LIBRARY_TYPE} ${CXX_SOURCES} ${HEADERS} )
+
 
 ### set target link libraries ###
 set( LAMA_LINK_LIBRARIES log4lama )
 
 # amacuda
-if ( CUDA_FOUND AND LAMA_USE_CUDA )
+if ( CUDA_FOUND AND LAMA_USE_CUDA AND CUDA_HAVE_GPU )
     set ( LAMA_LINK_LIBRARIES ${LAMA_LINK_LIBRARIES} amacuda )
-endif ( CUDA_FOUND AND LAMA_USE_CUDA )
+endif ( CUDA_FOUND AND LAMA_USE_CUDA AND CUDA_HAVE_GPU )
 
 # amamic
 if ( LAMA_USE_MIC )
@@ -181,6 +182,8 @@ endif( LAMA_BLAS_FOUND )
 set ( LAMA_LINK_LIBRARIES ${LAMA_LINK_LIBRARIES} ${LAMA_ADDITIONAL_LINK_LIBRARIES} )
 
 target_link_libraries ( ama ${LAMA_LINK_LIBRARIES} )
+
+lama_status_message( INFO "libraries are: "${LAMA_LINK_LIBRARIES} )
 
 if ( LAMA_ADDITIONAL_LINK_FLAGS )
     set_target_properties ( ama PROPERTIES LINK_FLAGS ${LAMA_ADDITIONAL_LINK_FLAGS} )
