@@ -44,13 +44,15 @@
 // tracing
 #include <lama/tracing.hpp>
 
+#include <omp.h>
+
 namespace lama
 {
 
 LAMA_LOG_DEF_LOGGER( GMRES::logger, "Solver.IterativeSolver.GMRES" )
 
 GMRES::GMRES( const std::string& id )
-    : IterativeSolver( id ), mKrylovDim( 10 )
+    : IterativeSolver( id ), mKrylovDim( 10 ), totalIterationTime( 0.0 ), totalPreconditionerTime( 0.0 )
 {
 }
 
@@ -74,6 +76,15 @@ GMRES::~GMRES()
 {
 }
 
+double GMRES::getAverageIterationTime( ) const
+{
+    return ( (this->totalIterationTime - this->totalPreconditionerTime) / this->getIterationCount() );
+}
+
+double GMRES::getAveragePreconditionerTime( ) const
+{
+    return (this->totalPreconditionerTime / this->getIterationCount() );
+}
 GMRES::GMRESRuntime::~GMRESRuntime()
 {
     if ( mV != 0 )
@@ -193,6 +204,9 @@ void GMRES::initialize( const Matrix& coefficients )
     runtime.mW->setContext( coefficients.getContextPtr() );
     runtime.mT->setContext( coefficients.getContextPtr() );
     runtime.mX0->setContext( coefficients.getContextPtr() );
+
+    totalIterationTime = 0.0;
+    totalPreconditionerTime = 0.0;
 }
 
 void GMRES::setKrylovDim( unsigned int krylovDim )
@@ -229,6 +243,8 @@ void GMRES::iterate()
     LAMA_REGION( "Solver.GMRES.iterate" )
 
     GMRESRuntime& runtime = getRuntime();
+
+    double iterationTimeStart = omp_get_wtime();
 
     unsigned int krylovIndex = this->getIterationCount() % mKrylovDim;
     unsigned int hIdxStart = krylovIndex * ( krylovIndex + 1 ) / 2;
@@ -284,7 +300,9 @@ void GMRES::iterate()
         {
             LAMA_REGION( "Solver.GMRES.start.solvePreconditioner" )
             vCurrent = 0.0;
+            double preconditionerTimeStart = omp_get_wtime();
             mPreconditioner->solve( vCurrent, residual );
+            totalPreconditionerTime += omp_get_wtime() - preconditionerTimeStart;
         }
 
         // normalize vCurrent
@@ -308,7 +326,9 @@ void GMRES::iterate()
         LAMA_REGION( "Solver.GMRES.solvePreconditioner" )
         tmp = A * vCurrent;
         w = 0.0;
+        double preconditionerTimeStart = omp_get_wtime();
         mPreconditioner->solve( w, tmp );
+        totalPreconditionerTime += omp_get_wtime() - preconditionerTimeStart;
     }
 
     // orthogonalization loop
@@ -366,6 +386,8 @@ void GMRES::iterate()
     // required or krylov-subspace completely filled
     //if (krylovIndex == mKrylovDim-1)
     updateX( krylovIndex );
+
+    totalIterationTime += omp_get_wtime() - iterationTimeStart;
 }
 
 void GMRES::updateX( unsigned int i )

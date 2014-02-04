@@ -37,6 +37,7 @@
 // others
 #include <lama/DenseVector.hpp>
 #include <lama/tracing.hpp>
+#include <omp.h>
 
 #include <lama/expression/VectorExpressions.hpp>
 #include <lama/expression/MatrixVectorExpressions.hpp>
@@ -108,10 +109,14 @@ void CG::initialize( const Matrix& coefficients )
     runtime.mP->setContext( coefficients.getContextPtr() );
     runtime.mQ->setContext( coefficients.getContextPtr() );
     runtime.mZ->setContext( coefficients.getContextPtr() );
+
+    totalIterationTime = 0.0;
+    totalPreconditionerTime = 0.0;
 }
 
 void CG::iterate()
 {
+    double iterationStartTime = omp_get_wtime();
     LAMA_REGION( "Solver.CG.iterate" )
     CGRuntime& runtime = getRuntime();
     Scalar lastPScalar( runtime.mPScalar );
@@ -142,7 +147,9 @@ void CG::iterate()
     {
         LAMA_REGION( "Solver.CG.solvePreconditioner" )
         z = 0.0;
+        double preconditionerStartTime = omp_get_wtime();
         mPreconditioner->solve( z, residual );
+        totalPreconditionerTime += omp_get_wtime() - preconditionerStartTime;
     }
 
     LAMA_LOG_INFO( logger, "Calculating pScalar." )
@@ -207,6 +214,17 @@ void CG::iterate()
     }
     //CG implementation end
     mCGRuntime.mSolution.setDirty( false );
+    totalIterationTime += omp_get_wtime() - iterationStartTime;
+}
+
+double CG::getAverageIterationTime() const
+{
+    return (totalIterationTime - totalPreconditionerTime) / this->getIterationCount();
+}
+
+double CG::getAveragePreconditionerTime() const
+{
+    return totalPreconditionerTime / this->getIterationCount();
 }
 
 SolverPtr CG::copy()
