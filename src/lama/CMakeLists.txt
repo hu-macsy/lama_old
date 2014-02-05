@@ -98,9 +98,9 @@ lama_headers ( ${HEADERS} )
 
 ### add subdirectories ###
 
-if ( CUDA_FOUND AND LAMA_USE_CUDA )
+if ( CUDA_FOUND AND LAMA_USE_CUDA AND CUDA_HAVE_GPU )
     add_subdirectory ( cuda )
-endif ( CUDA_FOUND AND LAMA_USE_CUDA )
+endif ( CUDA_FOUND AND LAMA_USE_CUDA AND CUDA_HAVE_GPU )
 
 if ( LAMA_USE_MIC )
     add_subdirectory ( mic )
@@ -138,9 +138,9 @@ add_library ( ama ${LAMA_LIBRARY_TYPE} ${CXX_SOURCES} ${HEADERS} )
 set( LAMA_LINK_LIBRARIES log4lama )
 
 # amacuda
-if ( CUDA_FOUND AND LAMA_USE_CUDA )
+if ( CUDA_FOUND AND LAMA_USE_CUDA AND CUDA_HAVE_GPU )
     set ( LAMA_LINK_LIBRARIES ${LAMA_LINK_LIBRARIES} amacuda )
-endif ( CUDA_FOUND AND LAMA_USE_CUDA )
+endif ( CUDA_FOUND AND LAMA_USE_CUDA AND CUDA_HAVE_GPU )
 
 # amamic
 if ( LAMA_USE_MIC )

@@ -129,6 +129,9 @@ public:
      */
     virtual const GMRESRuntime& getConstRuntime() const;
 
+    double getAverageIterationTime() const;
+    double getAveragePreconditionerTime() const;
+
 protected:
 
     virtual void iterate();
@@ -143,6 +146,9 @@ private:
 
     // krylov dimension
     unsigned int mKrylovDim;
+
+    double totalIterationTime;
+    double totalPreconditionerTime;
 };
 
 } // namespace lama

@@ -33,8 +33,6 @@
 
 ### Add classes and header files ###
 
-
-
 set ( CLASSES
         BLASHelper
         OpenMPCOOUtils
@@ -46,22 +44,17 @@ set ( CLASSES
         OpenMPUtils
     )
 
-set ( HEADERS
-         OpenMP
-    )
+set ( HEADERS OpenMP )
 
-if ( LAMA_BLAS_LIBRARY STREQUAL "auto" AND MKL_FOUND )
+if ( LAMA_BLAS_NAME STREQUAL "MKL" )
     # Use MKL sparse blas routines for CSR if available
     if ( EXISTS "${MKL_INCLUDE_DIR}/mkl_spblas.h" )
-        set ( CLASSES
-                 ${CLASSES} 
-                 MKLCSRUtils
-            )
+        set ( CLASSES ${CLASSES} MKLCSRUtils )
         message( STATUS "MKL Sparse BLAS is supported and will be used" ) 
     else ( EXISTS "${MKL_INCLUDE_DIR}/mkl_spblas.h" )
         message( STATUS "MKL Sparse BLAS is not supported" )
     endif ( EXISTS "${MKL_INCLUDE_DIR}/mkl_spblas.h" )
-endif ( LAMA_BLAS_LIBRARY STREQUAL "auto" AND MKL_FOUND )
+endif ( LAMA_BLAS_NAME STREQUAL "MKL" )
 
 # OpenMPLAPACKe requires LAPACKe interface, is in MKL
 
@@ -70,37 +63,30 @@ set ( LAPACKEeFound FALSE )
 if ( LAMA_BLAS_NAME STREQUAL "MKL" )
     if ( EXISTS "${MKL_INCLUDE_DIR}/mkl_lapacke.h" ) 
         set ( LAPACKeFound TRUE )
-    endif()
-endif()
+    endif ( EXISTS "${MKL_INCLUDE_DIR}/mkl_lapacke.h" )
+endif ( LAMA_BLAS_NAME STREQUAL "MKL" )
 
 if ( ${LAPACKeFound} )
-    message( STATUS "LAPACKe is supported and will be used" ) 
-    set ( CLASSES
-            ${CLASSES}
-            OpenMPLAPACKe
-    )
-else()
-	if( NOT INTERNALBLAS_FOUND )
-	    message( STATUS "LAPACKe is not supported, will use LAPACK via Fortran interface" ) 
-	    set ( CLASSES
-	            ${CLASSES}
-	            OpenMPLAPACK
-	   		)
-    endif()
-endif()
+    message ( STATUS "LAPACKe is supported and will be used" ) 
+    set ( CLASSES ${CLASSES} OpenMPLAPACKe )
+else ( ${LAPACKeFound} )
+	if ( NOT INTERNALBLAS_FOUND )
+	    message ( STATUS "LAPACKe is not supported, will use LAPACK via Fortran interface" ) 
+	    set ( CLASSES ${CLASSES} OpenMPLAPACK )
+    endif ( NOT INTERNALBLAS_FOUND )
+endif ( ${LAPACKeFound} )
     
-if ( INTERNALBLAS_FOUND ) 
-	message( STATUS "Using internal Blas" )
-	add_subdirectory ( blas )
-	
-elseif( BLAS_FOUND )
+if ( NOT INTERNALBLAS_FOUND ) 
 	set ( CLASSES
 		${CLASSES}
 		OpenMPBLAS1
         OpenMPBLAS2
         OpenMPBLAS3
     	)
-endif() 
+else ( NOT INTERNALBLAS_FOUND )
+	message ( STATUS "Using internal Blas" )
+	add_subdirectory ( blas )
+endif ( NOT INTERNALBLAS_FOUND ) 
     
 lama_classes ( ${CLASSES} )
 lama_headers ( ${HEADERS} )

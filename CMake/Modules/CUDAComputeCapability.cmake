@@ -34,8 +34,8 @@
  # http://www.cmake.org/Bug/print_bug_page.php?bug_id=11767
 ###
 
-if(CUDA_FOUND)
-    try_run(RUN_RESULT_VAR COMPILE_RESULT_VAR
+if ( CUDA_FOUND )
+    try_run ( RUN_RESULT_VAR COMPILE_RESULT_VAR
         ${CMAKE_BINARY_DIR}
         ${CMAKE_MODULE_PATH}/CudaComputeCapability.c
         CMAKE_FLAGS 
@@ -46,12 +46,14 @@ if(CUDA_FOUND)
         
     # COMPILE_RESULT_VAR is TRUE when compile succeeds
     # RUN_RESULT_VAR is zero when a GPU is found
-    if(COMPILE_RESULT_VAR AND NOT RUN_RESULT_VAR)
-        set(CUDA_HAVE_GPU TRUE CACHE BOOL "Whether CUDA-capable GPU is present")
-        set(CUDA_COMPUTE_CAPABILITY ${RUN_OUTPUT_VAR} CACHE STRING "CUDA compute capability (supported up from 13)")
-        set(CUDA_GENERATE_CODE "arch=compute_${CUDA_COMPUTE_CAPABILITY},code=sm_${CUDA_COMPUTE_CAPABILITY}" CACHE STRING "Which GPU architectures to generate code for (each arch/code pair will be passed as --generate-code option to nvcc, separate multiple pairs by ;)")
-        mark_as_advanced(CUDA_COMPUTE_CAPABILITY CUDA_GENERATE_CODE)
-    else()
-        set(CUDA_HAVE_GPU FALSE CACHE BOOL "Whether CUDA-capable GPU is present")
-    endif()
-endif(CUDA_FOUND)
+    if ( COMPILE_RESULT_VAR AND NOT RUN_RESULT_VAR )
+        set ( CUDA_HAVE_GPU TRUE CACHE BOOL "Whether CUDA-capable GPU is present" )
+        set ( CUDA_COMPUTE_CAPABILITY ${RUN_OUTPUT_VAR} CACHE STRING "CUDA compute capability (supported up from 13)")
+        set ( CUDA_GENERATE_CODE "arch=compute_${CUDA_COMPUTE_CAPABILITY},code=sm_${CUDA_COMPUTE_CAPABILITY}" CACHE STRING "Which GPU architectures to generate code for (each arch/code pair will be passed as --generate-code option to nvcc, separate multiple pairs by ;)" )
+        mark_as_advanced ( CUDA_COMPUTE_CAPABILITY CUDA_GENERATE_CODE )
+    else ( COMPILE_RESULT_VAR AND NOT RUN_RESULT_VAR )
+        set ( CUDA_HAVE_GPU FALSE CACHE BOOL "Whether CUDA-capable GPU is present")
+        set ( CUDA_COMPUTE_CAPABILITY "not-found" CACHE STRING "CUDA compute capability (supported up from 13)" )
+    endif ( COMPILE_RESULT_VAR AND NOT RUN_RESULT_VAR )
+    mark_as_advanced( CUDA_HAVE_GPU )
+endif ( CUDA_FOUND )

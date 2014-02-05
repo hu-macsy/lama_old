@@ -43,6 +43,7 @@
 
 // tracing
 #include <lama/tracing.hpp>
+#include <omp.h>
 
 #include <cstdlib>
 #include <iomanip>
@@ -197,6 +198,11 @@ void SimpleAMG::initialize( const Matrix& coefficients )
     }
 
     IterativeSolver::initialize( coefficients );
+
+    totalSmootherTime = 0.0;
+    totalTransferTime = 0.0;
+    totalResidualTime = 0.0;
+    totalIterations = 0;
 }
 
 void SimpleAMG::iterate()
@@ -204,6 +210,22 @@ void SimpleAMG::iterate()
     LAMA_REGION( "Solver.SimpleAMG.iterate" )
 
     cycle();
+    totalIterations++;
+}
+
+double SimpleAMG::getAverageSmootherTime() const
+{
+    return (totalSmootherTime / totalIterations);
+}
+
+double SimpleAMG::getAverageTransferTime() const
+{
+    return (totalTransferTime / totalIterations);
+}
+
+double SimpleAMG::getAverageResidualTime() const
+{
+    return (totalResidualTime / totalIterations);
 }
 
 void SimpleAMG::setMaxLevels( unsigned int levels )
@@ -331,15 +353,21 @@ void SimpleAMG::cycle()
 
         // PreSmoothing
         LAMA_LOG_DEBUG( logger, "Pre smoothing on level "<< runtime.mCurrentLevel )
+        double smootherStartTime = omp_get_wtime();
         curSmoother.solve( curSolution, curRhs );
+        totalSmootherTime += omp_get_wtime() - smootherStartTime;
 
         // Restrict residual to next coarser grid
         // and initialize solution
         LAMA_LOG_DEBUG( logger, "curTmpRhs=curRhs - curGalerkin * curSolution on level "<< runtime.mCurrentLevel )
+        double residualStartTime = omp_get_wtime();
         curTmpRhs = curRhs - curGalerkin * curSolution;
+        totalResidualTime += omp_get_wtime() - residualStartTime;
         LAMA_LOG_DEBUG( logger, "curCoarseRhs = curRestriction * curTmpRhs on level "<< runtime.mCurrentLevel )
+        double transferStartTime = omp_get_wtime();
         curCoarseRhs = curRestriction * curTmpRhs;
         curCoarseSolution = 0.0;
+        totalTransferTime += omp_get_wtime() - transferStartTime;
 
         ++runtime.mCurrentLevel;
 
@@ -349,10 +377,14 @@ void SimpleAMG::cycle()
 
         LAMA_LOG_DEBUG( logger,
                         "curSolution = curSolution + curInterpolation * curCoarseSolution on level "<< runtime.mCurrentLevel )
+        transferStartTime = omp_get_wtime();                        
         curSolution = curSolution + curInterpolation * curCoarseSolution;
+        totalTransferTime += omp_get_wtime() - transferStartTime;
 
         LAMA_LOG_DEBUG( logger, "Post smoothing on level "<< runtime.mCurrentLevel )
+        smootherStartTime = omp_get_wtime();
         curSmoother.solve( curSolution, curRhs );
+        totalSmootherTime += omp_get_wtime() - smootherStartTime;
     }
 }
 

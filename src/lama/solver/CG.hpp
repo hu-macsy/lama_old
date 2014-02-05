@@ -102,6 +102,9 @@ public:
      */
     virtual const CGRuntime& getConstRuntime() const;
 
+    double getAverageIterationTime() const;
+    double getAveragePreconditionerTime() const;
+
 protected:
 
     virtual void iterate();
@@ -111,6 +114,9 @@ protected:
     CGRuntime mCGRuntime;
 
 private:
+
+    double totalIterationTime;
+    double totalPreconditionerTime;
 };
 
 }

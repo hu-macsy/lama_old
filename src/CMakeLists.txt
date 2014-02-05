@@ -206,12 +206,12 @@ lama_summary_message ( "STATIC"
                            "LAMA_BLAS_FOUND"
                            "BLAS"
                            "(${LAMA_BLAS_NAME}) with libraries: ${LAMA_BLAS_LIBRARIES}" )
-    if ( LAMA_BLAS_NAME MATCHES "MKL" )
+    if ( LAMA_BLAS_NAME MATCHES "BLAS" )
     lama_summary_message ( "FOUND"
                            "LAPACK_FOUND"
                            "LAPACK"
                            "" )
-    endif ( LAMA_BLAS_NAME MATCHES "MKL" )
+    endif ( LAMA_BLAS_NAME MATCHES "BLAS" )
     
     # Boost
     lama_summary_message ( "FOUND"
@@ -226,7 +226,7 @@ lama_summary_message ( "USE"
                        "LAMA MPI"
                        "" )
 
-    # Boost
+    # MPI
     lama_summary_message ( "FOUND"
                            "MPI_FOUND"
                            "MPI"
@@ -239,11 +239,17 @@ lama_summary_message ( "USE"
                        "LAMA CUDA"
                        "" )
 
-    # Boost
+    # CUDA
     lama_summary_message ( "FOUND"
                            "CUDA_FOUND"
                            "CUDA"
                            "${CUDA_VERSION} at ${CUDA_INCLUDE_DIRS}" )
+                           
+    # CUDA Compute Capability
+    lama_summary_message ( "FOUND"
+                           "CUDA_HAVE_GPU"
+                           "Compute Capability"
+                           "${CUDA_COMPUTE_CAPABILITY}" )
                            
 # LAMA MIC
 message ( STATUS "" )
@@ -316,13 +322,9 @@ message ( STATUS "" )
 # Check if all required packages are found
 # LAMA (core)
 
-
-
-
-
-if ( NOT ( LAMA_BLAS_FOUND AND Boost_INCLUDE_DIR  ) OR ( (LAMA_BLAS_NAME MATCHES "MKL") AND NOT LAPACK_FOUND )  )
+if ( NOT ( LAMA_BLAS_FOUND AND Boost_INCLUDE_DIR  ) OR ( (LAMA_BLAS_NAME MATCHES "BLAS") AND NOT LAPACK_FOUND )  )
     message( FATAL_ERROR "Configuration for LAMA (core) incomplete!")
-endif ( NOT ( LAMA_BLAS_FOUND AND Boost_INCLUDE_DIR  ) OR ( (LAMA_BLAS_NAME MATCHES "MKL") AND NOT LAPACK_FOUND ) )
+endif ( NOT ( LAMA_BLAS_FOUND AND Boost_INCLUDE_DIR  ) OR ( (LAMA_BLAS_NAME MATCHES "BLAS") AND NOT LAPACK_FOUND ) )
 
 # LAMA MPI
 if ( LAMA_USE_MPI AND NOT MPI_FOUND )

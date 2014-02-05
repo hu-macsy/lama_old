@@ -149,10 +149,15 @@ if ( CUDA_FOUND AND LAMA_USE_CUDA )
     
     ### choosing the right compute capability
     ### we just start from version 1.3 ( 1.0 - 1.2 is not supported )
-    LIST ( APPEND CC_CHOICES "13" "20" "21" "30" "35" )
+    LIST ( APPEND CC_CHOICES "not-found" "13" "20" "21" "30" "35" )
     #set ( CUDA_COMPUTE_CAPABILITY "13" CACHE STRING "CUDA compute capability (supported up from 13)" )
 	set ( CACHE CUDA_COMPUTE_CAPABILITY PROPERTY STRINGS ${CC_CHOICES} )
     checkValue( ${CUDA_COMPUTE_CAPABILITY} "${CC_CHOICES}" )
+    if ( CUDA_COMPUTE_CAPABILITY STREQUAL "not-found" )
+        set ( CUDA_HAVE_GPU FALSE )
+    else ( CUDA_COMPUTE_CAPABILITY STREQUAL "not-found" )
+        set ( CUDA_HAVE_GPU TRUE )
+    endif ( CUDA_COMPUTE_CAPABILITY STREQUAL "not-found" )
 	mark_as_advanced ( CUDA_COMPUTE_CAPABILITY )
 
     set ( CUDA_VERBOSE_BUILD OFF )

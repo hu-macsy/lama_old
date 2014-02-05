@@ -127,6 +127,10 @@ public:
      */
     virtual SolverPtr copy();
 
+    double getAverageSmootherTime() const;
+    double getAverageTransferTime() const;
+    double getAverageResidualTime() const;
+
 protected:
 
     SimpleAMGRuntime mSimpleAMGRuntime;
@@ -147,6 +151,11 @@ private:
     LAMA_LOG_DECL_STATIC_LOGGER( logger )
 
     void cycle();
+
+    double totalSmootherTime;
+    double totalTransferTime;
+    double totalResidualTime;
+    int totalIterations;
 };
 
 }
