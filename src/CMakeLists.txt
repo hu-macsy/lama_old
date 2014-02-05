@@ -65,6 +65,8 @@ include ( PackageBoost )
 include ( PackageMIC )
 include ( PackageCodeCoverage )
 
+set ( LAMA_LIBRARY_TYPE STATIC )
+
 # Find required packages
 foreach ( PACKAGE_TO_FIND ${REQUIRED_PACKAGES_TO_FIND} )
     find_package ( ${PACKAGE_TO_FIND} ${LAMA_FIND_PACKAGE_FLAGS} REQUIRED )
