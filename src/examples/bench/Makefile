@@ -2,7 +2,7 @@ include ../make.inc
 
 INCLUDE_FLAGS = -I${BOOST_INCLUDE_DIR} -I${LAMA_ROOT}/include
 
-LD_FLAGS = -L${LAMA_ROOT}/lib -lama -Wl,-rpath=${LAMA_ROOT}/lib 
+LD_FLAGS = ${LAMA_LD_FLAGS} -Wl,-rpath=${LAMA_ROOT}/lib 
 
 EXECUTABLE: matmul.exe matadd.exe conversion.exe
 

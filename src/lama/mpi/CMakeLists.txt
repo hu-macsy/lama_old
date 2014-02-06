@@ -66,7 +66,7 @@ endif ( LAMA_TRACE_LEVEL STREQUAL "VT" )
 ################################################################################
 
 ### add library ###
-add_library ( amampi SHARED ${CXX_SOURCES} )
+add_library ( amampi ${LAMA_LIBRARY_TYPE} ${CXX_SOURCES} )
 
 ### set target link libraries ###  
 ################################################################################
@@ -75,6 +75,7 @@ if ( LAMA_TRACE_LEVEL STREQUAL "VT" )
     target_link_libraries ( amampi ${VAMPIRTRACE_LIBRARIES} )
 endif ( LAMA_TRACE_LEVEL STREQUAL "VT" )
 ################################################################################
+
 target_link_libraries ( amampi ${MPI_LIBRARIES} )
 
 ### add definitions ###

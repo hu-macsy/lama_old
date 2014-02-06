@@ -76,3 +76,19 @@ message ( STATUS "Build type is set to " ${CMAKE_BUILD_TYPE} )
 set ( LAMA_ADDITIONAL_LINK_LIBRARIES ${LAMA_ADDITIONAL_LINK_LIBRARIES} CACHE STRING "Additional libraries for linking, separated by ;" )
 set ( LAMA_ADDITIONAL_LINK_FLAGS ${LAMA_ADDITIONAL_LINK_FLAGS} CACHE STRING "Additional link flags, separated by ;" )
 mark_as_advanced ( LAMA_ADDITIONAL_LINK_LIBRARIES LAMA_ADDITIONAL_LINK_FLAGS )
+
+
+## Check if lama should be build static or shared
+# Check if cache variable is already set
+if ( DEFINED LAMA_BUILD_SHARED )
+    set ( LAMA_BUILD_SHARED ${LAMA_BUILD_SHARED} CACHE BOOL "Enable / Disable dynamic linking of libraries" )
+else ( DEFINED LAMA_BUILD_SHARED )
+    # Set cache variable
+    set ( LAMA_BUILD_SHARED TRUE CACHE BOOL "Enable / Disable dynamic linking of libraries" )
+endif ( DEFINED LAMA_BUILD_SHARED )
+
+if ( LAMA_BUILD_SHARED )
+    set ( LAMA_LIBRARY_TYPE SHARED )
+else ( LAMA_BUILD_SHARED )
+    set ( LAMA_LIBRARY_TYPE STATIC )
+endif ( LAMA_BUILD_SHARED )

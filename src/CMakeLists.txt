@@ -65,8 +65,6 @@ include ( PackageBoost )
 include ( PackageMIC )
 include ( PackageCodeCoverage )
 
-set ( LAMA_LIBRARY_TYPE STATIC )
-
 # Find required packages
 foreach ( PACKAGE_TO_FIND ${REQUIRED_PACKAGES_TO_FIND} )
     find_package ( ${PACKAGE_TO_FIND} ${LAMA_FIND_PACKAGE_FLAGS} REQUIRED )
@@ -122,10 +120,6 @@ endif ( FOUND_BOOST_TEST AND LAMA_BUILD_TEST )
 # copy examples in build directory + install it
 file ( COPY ${CMAKE_SOURCE_DIR}/examples DESTINATION ${CMAKE_BINARY_DIR} )
 install ( DIRECTORY ${CMAKE_SOURCE_DIR}/examples DESTINATION share )
-
-# generate file make.inc + install it
-configure_file ( "${CMAKE_SOURCE_DIR}/examples/make.inc.in" "${CMAKE_CURRENT_BINARY_DIR}/examples/make.inc" )
-install ( FILES "${CMAKE_CURRENT_BINARY_DIR}/examples/make.inc" DESTINATION share/examples )
 
 ### Doxygen and Sphinx Configuration ###
 include ( PackageDoxygen )
@@ -312,6 +306,7 @@ message ( STATUS "" )
 lama_status_message ( HEADLINE "INFO:" )
 message ( STATUS "LAMA Version : ${LAMA_VERSION} ${LAMA_VERSION_NAME}" )
 message ( STATUS "Build Type   : ${CMAKE_BUILD_TYPE}" )
+message ( STATUS "Library Type : ${LAMA_LIBRARY_TYPE}" )
 message ( STATUS "LOG Level    : ${LAMA_LOG_LEVEL}" )
 message ( STATUS "ASSERT Level : ${LAMA_ASSERT_LEVEL}" )
 message ( STATUS "TRACE Level  : ${LAMA_TRACE_LEVEL}" )

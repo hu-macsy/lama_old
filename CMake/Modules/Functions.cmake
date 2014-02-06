@@ -46,6 +46,7 @@
 #     lama_headers: Adds a list of classes to the target (the related *.cpp and *.hpp files) and configures # the installation of the header files
 #     lama_add: Publishes sources and headers in the parent scope
 #     lama_summary_message: generates messages for lama summary page
+#     list_contains: checks if value is part of a list
 
 # Function for setting LAMA_USE_{PACKAGE_NAME} variables depending on {PACKAGE_NAME}_FOUND.
 # Also sets cache Variables
@@ -244,3 +245,12 @@ macro ( lama_summary_message MESSAGE_TYPE EXPRESSION PACKAGE_NAME ADDITIONAL_INF
     endif ( ${EXPRESSION} )
 endmacro ( lama_summary_message )
 
+# checks if value is part of a list
+macro ( list_contains var value )
+    set ( ${var} )
+    foreach ( value2 ${ARGN} )
+        if ( ${value} STREQUAL ${value2} )
+            set ( ${var} TRUE )
+        endif ( ${value} STREQUAL ${value2} )
+    endforeach ( value2 )
+endmacro( list_contains )
