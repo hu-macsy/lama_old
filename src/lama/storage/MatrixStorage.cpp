@@ -813,6 +813,15 @@ void MatrixStorage<ValueType>::splitHalo(
 
     LAMA_ASSERT_EQUAL( mNumColumns, colDist.getGlobalSize() )
 
+    if ( getFormat() != CSR )
+    {
+        std::string MatrixStorageFormatNames[] =
+        {
+             "CSR", "ELL", "DIA", "JDS", "COO", "DENSE", "ASSEMBLY", "UNDEFINED"
+        };
+        LAMA_UNSUPPORTED("splitHalo is not supported for " + MatrixStorageFormatNames[getFormat()] + ", converting to CSR!");
+    }
+
     if ( colDist.isReplicated() )
     {
         // if there is no column distribution, halo is not needed
