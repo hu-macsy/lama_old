@@ -815,11 +815,7 @@ void MatrixStorage<ValueType>::splitHalo(
 
     if ( getFormat() != CSR )
     {
-        std::string MatrixStorageFormatNames[] =
-        {
-             "CSR", "ELL", "DIA", "JDS", "COO", "DENSE", "ASSEMBLY", "UNDEFINED"
-        };
-        LAMA_UNSUPPORTED("splitHalo is not supported for " + MatrixStorageFormatNames[getFormat()] + ", converting to CSR!");
+        LAMA_UNSUPPORTED("splitHalo is not supported for " << getFormat() << ", converting to CSR!");
     }
 
     if ( colDist.isReplicated() )
