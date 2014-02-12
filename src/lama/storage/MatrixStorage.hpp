@@ -45,16 +45,27 @@
 namespace lama
 {
 
-class Distribution;
 // Forward declaration
+
+class Distribution;
 
 template<typename ValueType> class CSRStorage;
 
-/** Enumeration type for different matrix storage formats. */
+/** Enumeration type for different matrix storage formats.
+ *
+ *  Note: operator<< is implemented for this type and should be adapted in case of modifications.
+ */
 
 typedef enum
 {
-    CSR, ELL, DIA, JDS, COO, DENSE, ASSEMBLY, UNDEFINED
+    CSR,      //!< Compressed Sparse Row
+    ELL,      //!< ELLPack
+    DIA,      //!< Diagonal
+    JDS,      //!< Jagged Diagonal Storage
+    COO,      //!< Coordinate list
+    DENSE,    //!< Dense, all elements are stored
+    ASSEMBLY, //!<  Matrix storage used for assembling of values
+    UNDEFINED //!<  Default value 
 } MatrixStorageFormat;
 
 LAMA_DLL_IMPORTEXPORT std::ostream& operator<<( std::ostream& stream, const MatrixStorageFormat storageFormat );

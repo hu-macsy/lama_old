@@ -251,6 +251,11 @@ std::ostream& operator<<( std::ostream& stream, const MatrixStorageFormat storag
         stream << "DENSE";
         break;
     }
+    case ASSEMBLY:
+    {
+        stream << "ASSEMBLY";
+        break;
+    }
     default:
     {
         stream << "Unknown matrix storage format";
