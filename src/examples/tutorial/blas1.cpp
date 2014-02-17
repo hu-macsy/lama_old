@@ -135,7 +135,15 @@ int main()
   //
   // Define the vectors to be used on GPU (CUDA context on device 0) and upload them
   //
-  lama::ContextPtr cudaContext = lama::ContextFactory::getContext( lama::Context::CUDA, 0 );
+  lama::ContextPtr cudaContext;
+  if ( lama::ContextFactory::hasContext( lama::Context::CUDA ) )
+  {
+      cudaContext = lama::ContextFactory::getContext( lama::Context::CUDA, 0 );
+  }
+  else
+  {
+      cudaContext = lama::ContextFactory::getContext( lama::Context::Host );
+  }
   lama_vec1.setContext( cudaContext );
   lama_vec2.setContext( cudaContext );
   lama_vec1.prefetch();
