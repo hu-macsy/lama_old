@@ -28,7 +28,7 @@
  * @brief OpenMPBLAS1.cpp
  * @author Eric Schricker
  * @date 02.10.2013
- * @since 1.0.0
+ * @since 1.1.0
  */
 
 // hpp
@@ -45,7 +45,7 @@
 // tracing with LAMA_REGION
 #include <lama/tracing.hpp>
 
-#include <cmath>
+//#include <cmath>
 
 namespace lama
 {
@@ -58,24 +58,35 @@ template<typename T>
 void OpenMPBLAS1::scal( const IndexType n, const T alpha, T* x, const IndexType incX, SyncToken* syncToken )
 {
 
-    if( incX <= 0 )
+    if ( incX <= 0 )
     {
         return;
     }
 
 LAMA_REGION( "OpenMP.BLAS1.sscal" )
 
-                            LAMA_LOG_DEBUG( logger, "scal<float>, n = " << n << ", alpha = " << alpha << ", x = " << x << ", incX = " << incX )
+LAMA_LOG_DEBUG( logger, "scal<" << Scalar::getType<T>()<< ">, n = " << n << ", alpha = " << alpha << ", x = " << x << ", incX = " << incX )
 
-    if( syncToken )
+    if ( syncToken )
     {
         LAMA_LOG_WARN( logger, "no asynchronous execution for openmp possible at this level." )
     }
 
-#pragma omp parallel for
-    for( int i = 0; i < n; i++ )
+    if ( incX == 1 )
     {
-        x[i * incX] = x[i * incX] * alpha;
+#pragma omp parallel for schedule( LAMA_OMP_SCHEDULE )
+        for ( int i = 0; i < n; i++ )
+        {
+            x[i] = x[i] * alpha;
+        }
+    }
+    else
+    { //incX != 1
+#pragma omp parallel for schedule( LAMA_OMP_SCHEDULE )
+        for ( int i = 0; i < n; i++ )
+        {
+            x[i * incX] = x[i * incX] * alpha;
+        }
     }
 }
 
@@ -84,27 +95,37 @@ LAMA_REGION( "OpenMP.BLAS1.sscal" )
 template<typename T>
 T OpenMPBLAS1::nrm2( const IndexType n, const T* x, const IndexType incX, SyncToken* syncToken )
 {
-    LAMA_LOG_DEBUG( logger, "nrm2<float>, n = " << n << ", x = " << x << ", incX = " << incX )
+    LAMA_LOG_DEBUG( logger, "nrm2<" << Scalar::getType<T>()<< ">, n = " << n << ", x = " << x << ", incX = " << incX )
 
-    if( incX <= 0 )
+    if ( incX <= 0 )
     {
         return 0.0;
     }
 
-    if( syncToken )
+    if ( syncToken )
     {
         LAMA_LOG_WARN( logger, "no asynchronous execution for openmp possible at this level." )
     }
 
     T sumOfSquares = 0.0;
-#pragma omp parallel for reduction(+:sumOfSquares)
-    for( int i = 0; i < n; i++ )
+//no use of reduction, because it doesn't work with complex numbers
+    if ( incX == 1 )
     {
-        sumOfSquares += ( x[i * incX] * x[i * incX] );
+#pragma omp parallel for reduction(+:sumOfSquares) schedule( LAMA_OMP_SCHEDULE )
+        for ( int i = 0; i < n; i++ )
+        {
+            sumOfSquares += ( x[i] * x[i] );
+        }
     }
-
-    T result = ::sqrt( sumOfSquares );
-    return result;
+    else
+    { //incX != 1
+#pragma omp parallel for reduction(+:sumOfSquares) schedule( LAMA_OMP_SCHEDULE )
+        for ( int i = 0; i < n; i++ )
+        {
+            sumOfSquares += ( x[i * incX] * x[i * incX] );
+        }
+    }
+    return ::sqrt( sumOfSquares );
 }
 
 /** asum (l1 norm) */
@@ -112,19 +133,33 @@ T OpenMPBLAS1::nrm2( const IndexType n, const T* x, const IndexType incX, SyncTo
 template<typename T>
 T OpenMPBLAS1::asum( const IndexType n, const T* x, const IndexType incX, SyncToken* syncToken )
 {
-    LAMA_LOG_DEBUG( logger, "asum<float>, n = " << n << ", x = " << x << ", incX = " << incX )
+    LAMA_LOG_DEBUG( logger, "asum<" << Scalar::getType<T>()<< ">, n = " << n << ", x = " << x << ", incX = " << incX )
 
-    if( syncToken )
+    if ( syncToken )
     {
         LAMA_LOG_WARN( logger, "no asynchronous execution for openmp possible at this level." )
     }
 
     T result = 0;
 
-    if( incX > 0 )
+    if ( incX <= 0 )
     {
-#pragma omp parallel for reduction(+:result)
-        for( int i = 0; i < n; i++ )
+        return result;
+    }
+
+    if( incX == 1 )
+    {
+//no use of reduction, because it doesn't work with complex
+#pragma omp parallel for reduction(+:result) schedule( LAMA_OMP_SCHEDULE )
+        for ( int i = 0; i < n; i++ )
+        {
+            result = result + ::abs( x[i] );
+        }
+    }
+    else
+    { //incX != 1
+#pragma omp parallel for reduction(+:result) schedule( LAMA_OMP_SCHEDULE )
+        for ( int i = 0; i < n; i++ )
         {
             result = result + ::abs( x[i * incX] );
         }
@@ -138,28 +173,65 @@ T OpenMPBLAS1::asum( const IndexType n, const T* x, const IndexType incX, SyncTo
 template<typename T>
 IndexType OpenMPBLAS1::iamax( const IndexType n, const T* x, const IndexType incX, SyncToken* syncToken )
 {
-    LAMA_LOG_INFO( logger, "iamax<float>, n = " << n << ", x = " << x << ", incX = " << incX )
+    LAMA_LOG_INFO( logger, "iamax<" << Scalar::getType<T>()<< ">, n = " << n << ", x = " << x << ", incX = " << incX )
 
-    if( syncToken )
+    if ( syncToken )
     {
         LAMA_LOG_WARN( logger, "no asynchronous execution for openmp possible at this level." )
     }
 
-    if( n <= 0 || incX <= 0 )
+    if ( n <= 0 || incX <= 0 )
     {
         return 0;
     }
 
     IndexType max_pos = 0;
 
-    //OpenMP 3.1 added min/max reduction operators (GCC >= 4.7)
-#pragma omp parallel shared(max_pos)
-    for( int i = 0; i < n; i++ )
+    if ( incX == 1 )
     {
-#pragma omp critical (OpenMPBLAS1_iamax)
-        if( ::abs( x[i * incX] ) > ::abs( x[max_pos * incX] ) )
+#pragma omp parallel shared(max_pos)
         {
-            max_pos = i;
+            IndexType priv_max_pos = 0;
+#pragma omp for schedule( LAMA_OMP_SCHEDULE )
+            for ( int i = 0; i < n; i++ )
+            {
+                if( ::abs( x[i] ) > ::abs( x[priv_max_pos] ) )
+                {
+                    priv_max_pos = i;
+                }
+            }
+#pragma omp critical
+            {
+                if ( ( ::abs( x[priv_max_pos] ) > ::abs( x[max_pos] ) )
+                                || ( ( ::abs( x[priv_max_pos] ) == ::abs( x[max_pos] ) ) && priv_max_pos < max_pos ) )
+                {
+                    max_pos = priv_max_pos;
+                }
+            }
+        }
+    }
+    else
+    { //incX != 1
+#pragma omp parallel shared(max_pos)
+        {
+            IndexType priv_max_pos = 0;
+#pragma omp for schedule( LAMA_OMP_SCHEDULE )
+            for ( int i = 0; i < n; i++ )
+            {
+                if ( ::abs( x[i * incX] ) > ::abs( x[priv_max_pos * incX] ) )
+                {
+                    priv_max_pos = i;
+                }
+            }
+#pragma omp critical
+            {
+                if ( ( ::abs( x[priv_max_pos * incX] ) > ::abs( x[max_pos * incX] ) )
+                                || ( ( ::abs( x[priv_max_pos * incX] ) == ::abs( x[max_pos * incX] ) )
+                                                && priv_max_pos < max_pos ) )
+                {
+                    max_pos = priv_max_pos;
+                }
+            }
         }
     }
 
@@ -171,14 +243,14 @@ IndexType OpenMPBLAS1::iamax( const IndexType n, const T* x, const IndexType inc
 template<typename T>
 T OpenMPBLAS1::viamax( const IndexType n, const T* x, const IndexType incX, SyncToken* syncToken )
 {
-    LAMA_LOG_DEBUG( logger, "viamax<float>, n = " << n << ", x = " << x << ", incX = " << incX )
+    LAMA_LOG_DEBUG( logger, "viamax<" << Scalar::getType<T>()<< ">, n = " << n << ", x = " << x << ", incX = " << incX )
 
-    if( syncToken )
+    if ( syncToken )
     {
         LAMA_LOG_WARN( logger, "no asynchronous execution for openmp possible at this level." )
     }
 
-    IndexType max_val = iamax(n,x,incX, syncToken);
+    IndexType max_val = iamax( n, x, incX, syncToken );
 
     return x[max_val * incX];
 }
@@ -195,14 +267,14 @@ void OpenMPBLAS1::swap(
     SyncToken* syncToken )
 {
     LAMA_LOG_DEBUG( logger,
-                    "iamax<float>, n = " << n << ", x = " << x << ", incX = " << incX << ", y = " << y << ", incY = " << incY )
+                    "iamax<" << Scalar::getType<T>()<< ">, n = " << n << ", x = " << x << ", incX = " << incX << ", y = " << y << ", incY = " << incY )
 
-    if( ( incX <= 0 ) || ( incY <= 0 ) )
+    if ( ( incX <= 0 ) || ( incY <= 0 ) )
     {
         return;
     }
 
-    if( syncToken )
+    if ( syncToken )
     {
         LAMA_LOG_WARN( logger, "no asynchronous execution for openmp possible at this level." )
     }
@@ -210,22 +282,46 @@ void OpenMPBLAS1::swap(
     T *temp = 0;
     temp = new T[n];
 
-#pragma omp parallel
+    if ( incX == 1 && incY == 1 )
     {
-#pragma omp for
-        for( int i = 0; i < n; i++ )
+#pragma omp parallel
         {
-            temp[i] = x[i * incX];
+#pragma omp for schedule( LAMA_OMP_SCHEDULE )
+            for ( int i = 0; i < n; i++ )
+            {
+                temp[i] = x[i];
+            }
+#pragma omp for schedule( LAMA_OMP_SCHEDULE )
+            for ( int i = 0; i < n; i++ )
+            {
+                x[i] = y[i];
+            }
+#pragma omp for schedule( LAMA_OMP_SCHEDULE )
+            for ( int i = 0; i < n; i++ )
+            {
+                y[i] = temp[i];
+            }
         }
-#pragma omp for
-        for( int i = 0; i < n; i++ )
+    }
+    else
+    { //incX != 1 || incY != 1
+#pragma omp parallel
         {
-            x[i * incX] = y[i * incY];
-        }
-#pragma omp for
-        for( int i = 0; i < n; i++ )
-        {
-            y[i * incY] = temp[i];
+#pragma omp for schedule( LAMA_OMP_SCHEDULE )
+            for ( int i = 0; i < n; i++ )
+            {
+                temp[i] = x[i * incX];
+            }
+#pragma omp for schedule( LAMA_OMP_SCHEDULE )
+            for ( int i = 0; i < n; i++ )
+            {
+                x[i * incX] = y[i * incY];
+            }
+#pragma omp for schedule( LAMA_OMP_SCHEDULE )
+            for ( int i = 0; i < n; i++ )
+            {
+                y[i * incY] = temp[i];
+            }
         }
     }
     delete[] temp;
@@ -243,17 +339,28 @@ void OpenMPBLAS1::copy(
     SyncToken* UNUSED(syncToken) )
 {
     LAMA_LOG_DEBUG( logger,
-                    "copy<float>, n = " << n << ", x = " << x << ", incX = " << incX << ", y = " << y << ", incY = " << incY )
+                    "copy<" << Scalar::getType<T>() << ">, n = " << n << ", x = " << x << ", incX = " << incX << ", y = " << y << ", incY = " << incY )
 
-    if( ( incX <= 0 ) || ( incY <= 0 ) )
+    if ( ( incX <= 0 ) || ( incY <= 0 ) )
     {
         return;
     }
 
-#pragma omp parallel for
-    for( int i = 0; i < n; i++ )
+    if ( incX == 1 && incY == 1 )
     {
-        y[i * incY] = x[i * incX];
+#pragma omp parallel for schedule( LAMA_OMP_SCHEDULE )
+        for ( int i = 0; i < n; i++ )
+        {
+            y[i] = x[i];
+        }
+    }
+    else
+    { //incX != 1 || incY != 1
+#pragma omp parallel for schedule( LAMA_OMP_SCHEDULE )
+        for ( int i = 0; i < n; i++ )
+        {
+            y[i * incY] = x[i * incX];
+        }
     }
 }
 
@@ -270,23 +377,35 @@ void OpenMPBLAS1::axpy(
     SyncToken* syncToken )
 {
     LAMA_LOG_DEBUG( logger,
-                    "axpy<float>, n = " << n << ", alpha = " << alpha << ", x = " << x << ", incX = " << incX << ", y = " << y << ", incY = " << incY )
+                    "axpy<" << Scalar::getType<T>() << ">, n = " << n << ", alpha = " << alpha << ", x = " << x << ", incX = " << incX << ", y = " << y << ", incY = " << incY )
 
-    if( ( incX <= 0 ) || ( incY <= 0 ) )
+    if ( ( incX <= 0 ) || ( incY <= 0 ) )
     {
         return;
     }
 
-    if( syncToken )
+    if ( syncToken )
     {
         LAMA_LOG_WARN( logger, "no asynchronous execution for openmp possible at this level." )
     }
 
-#pragma omp parallel for
-    for( int i = 0; i < n; i++ )
+    if ( incX == 1 && incY == 1 )
     {
-        y[i * incY] = alpha * x[i * incX] + y[i * incY];
+#pragma omp parallel for schedule( LAMA_OMP_SCHEDULE )
+        for ( int i = 0; i < n; i++ )
+        {
+            y[i] = alpha * x[i] + y[i];
+        }
     }
+    else
+    { //incX != 1 || incY != 1
+#pragma omp parallel for schedule( LAMA_OMP_SCHEDULE )
+        for ( int i = 0; i < n; i++ )
+        {
+            y[i * incY] = alpha * x[i * incX] + y[i * incY];
+        }
+    }
+
 }
 /** dot */
 
@@ -301,27 +420,37 @@ T OpenMPBLAS1::dot(
 {
 LAMA_REGION( "OpenMP.BLAS1.sdot" )
 
-	                            LAMA_LOG_DEBUG( logger,
-                    "dot<float>, n = " << n << ", x = " << x << ", incX = " << incX << ", y = " << y << ", incY = " << incY )
+        LAMA_LOG_DEBUG( logger,
+                    "dot<" << Scalar::getType<T>() << ">, n = " << n << ", x = " << x << ", incX = " << incX << ", y = " << y << ", incY = " << incY )
 
-    if( ( incX <= 0 ) || ( incY <= 0 ) )
+    if ( ( incX <= 0 ) || ( incY <= 0 ) )
     {
         return 0.0;
     }
 
-    if( syncToken )
+    if ( syncToken )
     {
         LAMA_LOG_WARN( logger, "no asynchronous execution for openmp possible at this level." )
     }
 
     T result = 0;
-
-#pragma omp parallel for reduction(+: result)
-    for( int i = 0; i < n; i++ )
+//no use of reduction, because it doesn't work with complex
+    if ( incX == 1 && incY == 1 )
     {
-        result += ( x[i * incX] * y[i * incY] );
+#pragma omp parallel for reduction(+: result) schedule( LAMA_OMP_SCHEDULE )
+        for ( int i = 0; i < n; i++ )
+        {
+            result += ( x[i * incX] * y[i * incY] );
+        }
     }
-
+    else
+    { //incX != 1 || incY != 1
+#pragma omp parallel for reduction(+: result) schedule( LAMA_OMP_SCHEDULE )
+        for ( int i = 0; i < n; i++ )
+        {
+            result += ( x[i * incX] * y[i * incY] );
+        }
+    }
     return result;
 }
 
@@ -331,15 +460,15 @@ template<typename T>
 void OpenMPBLAS1::sum( const IndexType n, T alpha, const T* x, T beta, const T* y, T* z, SyncToken* syncToken )
 {
     LAMA_LOG_DEBUG( logger,
-                    "sum<T>, n = " << n << ", alpha = " << alpha << ", x = " << x << ", beta = " << beta << ", y = " << y << ", z = " << z )
+                    "sum<" << Scalar::getType<T>() << ">, n = " << n << ", alpha = " << alpha << ", x = " << x << ", beta = " << beta << ", y = " << y << ", z = " << z )
 
-    if( syncToken )
+    if ( syncToken )
     {
         LAMA_LOG_WARN( logger, "no asynchronous execution for openmp possible at this level." )
     }
 
-#pragma omp parallel for
-    for( int i = 0; i < n; i++ )
+#pragma omp parallel for schedule( LAMA_OMP_SCHEDULE )
+    for ( int i = 0; i < n; i++ )
     {
         z[i] = alpha * x[i] + beta * y[i];
     }
@@ -354,8 +483,8 @@ void OpenMPBLAS1::setInterface( BLASInterface& BLAS )
 {
     LAMA_LOG_INFO( logger, "set BLAS1 routines for OpenMP in Interface" )
 
-    // Note: macro takes advantage of same name for routines and type definitions 
-    //       ( e.g. routine CUDABLAS1::sum<T> is set for BLAS::BLAS1::sum variable
+// Note: macro takes advantage of same name for routines and type definitions
+//       ( e.g. routine CUDABLAS1::sum<T> is set for BLAS::BLAS1::sum variable
 
     LAMA_INTERFACE_REGISTER_T( BLAS, scal, float )
     LAMA_INTERFACE_REGISTER_T( BLAS, scal, double )
