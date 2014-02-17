@@ -91,7 +91,6 @@ struct GenBlockDistributionTestConfig
 };
 
 BOOST_FIXTURE_TEST_SUITE( GenBlockDistributionTest, GenBlockDistributionTestConfig )
-;
 
 LAMA_LOG_DEF_LOGGER( logger, "Test.GenBlockDistributionTest" );
 
@@ -181,4 +180,6 @@ BOOST_AUTO_TEST_CASE( isEqualTest )
     BOOST_CHECK( (*genblockdist1).isEqual( *genblockdist3 ) );
     BOOST_CHECK( !(*genblockdist1).isEqual( *genblockdist4 ) );
 }
-/* --------------------------------------------------------------------- */BOOST_AUTO_TEST_SUITE_END();
+/* --------------------------------------------------------------------- */
+
+BOOST_AUTO_TEST_SUITE_END();

@@ -83,7 +83,6 @@ struct P_JacobiTestConfig
 };
 
 BOOST_FIXTURE_TEST_SUITE( P_JacobiTest, P_JacobiTestConfig )
-;
 
 LAMA_LOG_DEF_LOGGER( logger, "Test.P_JacobiTest" );
 
@@ -168,7 +167,6 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( testSolveWithoutPreconditioning, T, test_types ) 
 template<typename mt>
 void testSolveWithPreconditionMethod( ContextPtr loc )
 {
-    typedef mt MatrixType;
     typedef typename mt::ValueType ValueType;
 
 //    LoggerPtr slogger( new CommonLogger(

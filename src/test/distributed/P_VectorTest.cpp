@@ -1257,4 +1257,6 @@ BOOST_AUTO_TEST_CASE( dotProductTest )
         LAMA_LOG_INFO( logger, "dotProductTest did not run, because np = 1" );
     }
 }
-/* ------------------------------------------------------------------------- */BOOST_AUTO_TEST_SUITE_END();
+/* ------------------------------------------------------------------------- */
+
+BOOST_AUTO_TEST_SUITE_END();

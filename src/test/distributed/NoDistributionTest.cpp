@@ -80,7 +80,6 @@ struct NoDistributionTestConfig
 };
 
 BOOST_FIXTURE_TEST_SUITE( NoDistributionTest, NoDistributionTestConfig )
-;
 
 LAMA_LOG_DEF_LOGGER( logger, "Test.NoDistributionTest" );
 
@@ -99,8 +98,6 @@ BOOST_AUTO_TEST_CASE( CtorTest )
 
 BOOST_AUTO_TEST_CASE( commonTestCases )
 {
-    typedef double T;
-
     DistributionTest disttest( dist );
 
     if ( base_test_case )

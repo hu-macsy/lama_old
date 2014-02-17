@@ -104,7 +104,6 @@ struct P_SpecializedJacobiTestConfig
 };
 
 BOOST_FIXTURE_TEST_SUITE( P_SpecializedJacobiTest, P_SpecializedJacobiTestConfig )
-;
 
 LAMA_LOG_DEF_LOGGER( logger, "Test.P_SpecializedJacobi" );
 

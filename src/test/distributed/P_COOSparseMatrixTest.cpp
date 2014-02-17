@@ -48,7 +48,6 @@ extern std::string testcase;
 /* ------------------------------------------------------------------------- */
 
 BOOST_AUTO_TEST_SUITE( P_COOSparseMatrixTest )
-;
 
 LAMA_LOG_DEF_LOGGER( logger, "Test.SparseMatrixTest.P_COOSparseMatrixTest" );
 
@@ -72,4 +71,6 @@ BOOST_AUTO_TEST_CASE( commonTestCases )
         p_cooSparseMatrixtest.runTests();
     }
 }
-/* ------------------------------------------------------------------------- */BOOST_AUTO_TEST_SUITE_END();
+/* ------------------------------------------------------------------------- */
+
+BOOST_AUTO_TEST_SUITE_END();

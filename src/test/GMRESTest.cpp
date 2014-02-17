@@ -78,7 +78,6 @@ LAMA_LOG_DEF_LOGGER( logger, "Test.GMRESTest" )
 template<typename mt>
 void testSolveWithPreconditionmethod()
 {
-    typedef mt MatrixType;
     typedef typename mt::ValueType ValueType;
 
 //    LoggerPtr slogger( new CommonLogger(

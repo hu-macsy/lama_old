@@ -65,7 +65,6 @@ struct P_RedistributorTestConfig
 };
 
 BOOST_FIXTURE_TEST_SUITE( P_RedistributorTest, P_RedistributorTestConfig )
-;
 
 LAMA_LOG_DEF_LOGGER( logger, "Test.P_RedistributorTest" );
 
@@ -131,4 +130,6 @@ BOOST_AUTO_TEST_CASE( writeAtTest )
     Redistributor r( distCyclic, distBlock );
     LAMA_WRITEAT_TEST( r );
 }
-/* --------------------------------------------------------------------- */BOOST_AUTO_TEST_SUITE_END();
+/* --------------------------------------------------------------------- */
+
+BOOST_AUTO_TEST_SUITE_END();

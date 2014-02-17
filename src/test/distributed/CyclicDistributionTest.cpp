@@ -80,7 +80,6 @@ struct CyclicDistributionTestConfig
 };
 
 BOOST_FIXTURE_TEST_SUITE( CyclicDistributionTest, CyclicDistributionTestConfig )
-;
 
 LAMA_LOG_DEF_LOGGER( logger, "Test.CyclicDistributionTest" );
 
@@ -210,4 +209,6 @@ BOOST_AUTO_TEST_CASE( isEqualTest )
     BOOST_CHECK( (*cyclicdist1).isEqual( *cyclicdist3 ) );
     BOOST_CHECK( !(*cyclicdist1).isEqual( *cyclicdist4 ) );
 }
-/* --------------------------------------------------------------------- */BOOST_AUTO_TEST_SUITE_END();
+/* --------------------------------------------------------------------- */
+
+BOOST_AUTO_TEST_SUITE_END();

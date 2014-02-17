@@ -48,7 +48,6 @@ extern std::string testcase;
 /* ------------------------------------------------------------------------- */
 
 BOOST_AUTO_TEST_SUITE( P_JDSSparseMatrixTest )
-;
 
 LAMA_LOG_DEF_LOGGER( logger, "Test.SparseMatrixTest.P_JDSSparseMatrixTest" );
 
@@ -73,4 +72,6 @@ BOOST_AUTO_TEST_CASE( commonTestCases )
         p_jdsSparseMatrixtest.runTests();
     }
 }
-/* ------------------------------------------------------------------------- */BOOST_AUTO_TEST_SUITE_END();
+/* ------------------------------------------------------------------------- */
+
+BOOST_AUTO_TEST_SUITE_END();

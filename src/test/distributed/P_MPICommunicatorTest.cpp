@@ -46,7 +46,6 @@ extern std::string testcase;
 /* --------------------------------------------------------------------- */
 
 BOOST_AUTO_TEST_SUITE( P_MPICommunicatorTest )
-;
 
 LAMA_LOG_DEF_LOGGER( logger, "Test.P_MPICommunicatorTest" );
 
@@ -66,4 +65,6 @@ BOOST_AUTO_TEST_CASE( commonTestCases )
         communicatorTest.runTests();
     }
 }
-/* --------------------------------------------------------------------- */BOOST_AUTO_TEST_SUITE_END();
+/* --------------------------------------------------------------------- */
+
+BOOST_AUTO_TEST_SUITE_END();

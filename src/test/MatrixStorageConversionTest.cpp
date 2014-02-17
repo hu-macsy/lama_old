@@ -111,7 +111,6 @@ void conversion( ContextPtr loc )
     }
 
     typedef typename StorageType1::ValueType ValueType1;
-    typedef typename StorageType2::ValueType ValueType2;
 
     // test empty assignment
 

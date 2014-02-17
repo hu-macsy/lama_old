@@ -34,24 +34,24 @@
 #ifndef LAMA_LOGGING_HPP_
 #define LAMA_LOGGING_HPP_
 
-/************************************************************************
+/*************************************************************************
  *                                                                       *
  *  Compile time guards for LOGGING                                      *
  *                                                                       *
  *    make sure that the desired logging levels are enabled              *
  *                                                                       *
- *    LAMA_LOG_DEBUG_ENABLED  :  LAMA_LOG_DEBUG is done                            *
- *    LAMA_LOG_INFO_ENABLED   :  LAMA_LOG_INFO is done                             *
+ *    LAMA_LOG_DEBUG_ENABLED  :  LAMA_LOG_DEBUG is done                  *
+ *    LAMA_LOG_INFO_ENABLED   :  LAMA_LOG_INFO is done                   *
  *                                                                       *
  *  The compile time guards itself can be set by these macros:           *
  *                                                                       *
- *    LAMA_LOG_LEVEL_TRACE  - compile all                                     *
- *    LAMA_LOG_LEVEL_DEBUG  - compile debug and higher                        *
- *    LAMA_LOG_LEVEL_INFO   - compile info and higher                         *
- *    LAMA_LOG_LEVEL_WARN   - compile warn and higher                         *
- *    LAMA_LOG_LEVEL_ERROR  - compile error and higher                        *
- *    LAMA_LOG_LEVEL_FATAL  - compile fatal only                              *
- *    LAMA_LOG_LEVEL_OFF    - removes all LOG statements at compile time      *
+ *    LAMA_LOG_LEVEL_TRACE  - compile all                                *
+ *    LAMA_LOG_LEVEL_DEBUG  - compile debug and higher                   *
+ *    LAMA_LOG_LEVEL_INFO   - compile info and higher                    *
+ *    LAMA_LOG_LEVEL_WARN   - compile warn and higher                    *
+ *    LAMA_LOG_LEVEL_ERROR  - compile error and higher                   *
+ *    LAMA_LOG_LEVEL_FATAL  - compile fatal only                         *
+ *    LAMA_LOG_LEVEL_OFF    - removes all LOG statements at compile time *
  *                                                                       *
  *  Please note: These guards are only for compile time, so logging      *
  *               can still be switched off at runtime.                   *

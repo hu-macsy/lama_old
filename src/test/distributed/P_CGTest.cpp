@@ -83,7 +83,6 @@ struct P_CGTestConfig
 };
 
 BOOST_FIXTURE_TEST_SUITE( P_CGTest, P_CGTestConfig )
-;
 
 LAMA_LOG_DEF_LOGGER( logger, "Test.P_CGTest" );
 

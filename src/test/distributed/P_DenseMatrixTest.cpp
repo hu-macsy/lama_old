@@ -482,4 +482,6 @@ BOOST_AUTO_TEST_CASE( cyclicDistTest )
     n = size / 2 * chunkSize + chunkSize - 2;
     cyclicDistTestImpl( chunkSize, n );
 }
-/* --------------------------------------------------------------------- */BOOST_AUTO_TEST_SUITE_END();
+/* --------------------------------------------------------------------- */
+
+BOOST_AUTO_TEST_SUITE_END();

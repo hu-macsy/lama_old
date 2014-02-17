@@ -48,7 +48,6 @@ extern std::string testcase;
 /* ------------------------------------------------------------------------- */
 
 BOOST_AUTO_TEST_SUITE( P_CSRSparseMatrixTest )
-;
 
 LAMA_LOG_DEF_LOGGER( logger, "Test.SparseMatrixTest.P_CSRSparseMatrixTest" );
 

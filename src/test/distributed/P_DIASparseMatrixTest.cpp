@@ -48,7 +48,6 @@ extern std::string testcase;
 /* ------------------------------------------------------------------------- */
 
 BOOST_AUTO_TEST_SUITE( P_DIASparseMatrixTest )
-;
 
 LAMA_LOG_DEF_LOGGER( logger, "Test.SparseMatrixTest.P_DIASparseMatrixTest" );
 
@@ -72,4 +71,6 @@ BOOST_AUTO_TEST_CASE( commonTestCases )
         p_diaSparseMatrixtest.runTests();
     }
 }
-/* ------------------------------------------------------------------------- */BOOST_AUTO_TEST_SUITE_END();
+/* ------------------------------------------------------------------------- */
+
+BOOST_AUTO_TEST_SUITE_END();

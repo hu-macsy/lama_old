@@ -88,7 +88,6 @@ struct P_SORTestConfig
 /* --------------------------------------------------------------------- */
 
 BOOST_FIXTURE_TEST_SUITE( P_SORTest, P_SORTestConfig )
-;
 
 LAMA_LOG_DEF_LOGGER( logger, "Test.P_SORTest" );
 

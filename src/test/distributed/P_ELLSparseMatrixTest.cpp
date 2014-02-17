@@ -47,7 +47,6 @@ extern std::string testcase;
 /* ------------------------------------------------------------------------- */
 
 BOOST_AUTO_TEST_SUITE( P_ELLSparseMatrixTest )
-;
 
 LAMA_LOG_DEF_LOGGER( logger, "Test.SparseMatrixTest.P_ELLSparseMatrixTest" );
 
@@ -71,4 +70,6 @@ BOOST_AUTO_TEST_CASE( commonTestCases )
         p_ellSparseMatrixtest.runTests();
     }
 }
-/* ------------------------------------------------------------------------- */BOOST_AUTO_TEST_SUITE_END();
+/* ------------------------------------------------------------------------- */
+
+BOOST_AUTO_TEST_SUITE_END();

@@ -137,8 +137,6 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( ReadWriteTest, MatrixType, MatrixTypes )
 
     LAMA_LOG_INFO( logger, "ReadWriteTest for MatrixType = " << typeid( MatrixType ).name() );
 
-    typedef typename MatrixType::ValueType ValueType;
-
     std::string prefix = Configuration::getInstance().getPath();
 
     LAMA_LOG_INFO( logger, "prefix = " << prefix );
