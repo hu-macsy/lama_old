@@ -110,10 +110,40 @@ All tests are configured as release build.
    "gcc 4.6.0", "1.41", "blas 3", "5.0", "OpenMPI 1.4.3", "ok"
    "gcc 4.6.1 / 4.6.2", "1.49.0", "blas 3", "4.2 / 5.0", "mpich2 1.2.1p1 (Parastation 5.0.25-2)", "ok"
    "gcc 4.6.1 / 4.6.2", "1.49.0", "blas 3", "4.2", "mvapich2", "ok"
+   "gcc 4.8.2" "1.55.0", "MKL composer-xe-2013.1.117" "-" "OpenMPI 1.7.3" "(1)"
    "icc", "-----", "-----", "-----", "-----", "-----"
    "icc 12.1.0 / 13.0.0", "1.46", "MKL composerxe-2011.2.137 / MKL 10.3.1 / MKL 11.0.0", "5.0", "OpenMPI 1.4.3 / OpenMPI 1.6.1 / IntelMPI 4.0.3.008 / IntelMPI 4.1.0.024", "ok"
    "pgi", "-----", "-----", "-----", "-----", "-----"
    "pgcpp ", "1.46", "ACML", " not supported", "OpenMPI 1.4.3", "ok"
+
+(1) With new gcc-Versions we had problems with boost: for compiling with CUDA support you need a `nvcc-boost-patch`_.
+For the combination of gcc 4.8.2 and boost 1.55.0 we needed some more patches (see. `boost-patches`_)
+for known issues and needed to add the following to boost/tuple/detail/tuple_basic.hpp for suppression:
+
+.. code-block:: c++
+   :emphasize-lines: 1,2,3,4,5,14,15,16,17
+
+    +#if BOOST_GCC >= 40700
+    +#pragma GCC diagnostic push
+    +#pragma GCC diagnostic ignored "-Wunused-local-typedefs"
+    +#endif
+    +
+
+    namespace boost
+    {
+
+    ...
+
+    } // namespace boost
+ 
+    +#if BOOST_GCC >= 40700
+    +#pragma GCC diagnostic pop
+    +#endif
+    +
+
+.. _`nvvc-boost_patch`: https://svn.boost.org/trac/boost/ticket/9392
+.. _`boost-patches`: http://gcc.gnu.org/ml/gcc/2013-07/msg00237.html
+
 
 If you have problems with the installation of supported configuration, do not hesitate to `contact`_ us.
 If you have tested not listed configurations we are pleased to get new input for the list.
