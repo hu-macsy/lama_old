@@ -113,8 +113,6 @@ LAMA_COMMON_TEST_CASE_TEMPLATE( SparseMatrixTest, MatrixType, cTorTest )
     LAMA_LOG_INFO( logger, "cTorTest" );
 
     //TODO: to P_ test?
-    typedef typename MatrixType::ValueType ValueType;
-
     const IndexType n = 4;
 
     CommunicatorPtr comm = CommunicatorFactory::get( "MPI" );

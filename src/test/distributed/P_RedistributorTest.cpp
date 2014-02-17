@@ -121,8 +121,6 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( redistributeTest, T, test_types ) {
 
 BOOST_AUTO_TEST_CASE( writeAtTest )
 {
-    typedef double ValueType;
-
     IndexType size = 10;
 
     IndexType chunkSize = 1;
