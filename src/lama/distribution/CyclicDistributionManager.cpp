@@ -63,7 +63,7 @@ bool CyclicDistributionManager::init()
 {
     // logger should already be available as it is initialized before __init
 
-    LAMA_LOG_DEBUG( logger, "create NO communicator manager and add it to DistributionFactory" )
+    LAMA_LOG_DEBUG( logger, "create Cyclic distribution manager and add it to DistributionFactory" )
 
     boost::shared_ptr<DistributionManager> manager( new CyclicDistributionManager() );
     DistributionFactory::getFactory().addDistributionManager( DISTRIBUTION_TYPE, manager );
