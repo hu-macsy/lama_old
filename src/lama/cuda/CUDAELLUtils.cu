@@ -720,7 +720,7 @@ void normal_gemv_kernel(
     const T* ellValues,
     const int* ellJA,
     int numRows,
-    int numValuesPerRow )
+    const int * ellIA)
 {
     const int i = threadId( gridDim, blockIdx, blockDim, threadIdx );
 
@@ -734,7 +734,7 @@ void normal_gemv_kernel(
 
         T value = 0.0;
         int pos = i;
-        for ( int kk = 0; kk < numValuesPerRow; ++kk )
+        for ( int kk = 0; kk < ellIA[i]; ++kk )
         {
             //if (aValue != 0.0) //compute capability >= 2.0  => disadvantage
             value += ellValues[pos] * fetchELLVectorX<T, useTexture>( x_d, ellJA[pos] );
@@ -797,7 +797,7 @@ void CUDAELLUtils::normalGEMV(
                            "LAMA_STATUS_CUDA_FUNCSETCACHECONFIG_FAILED" )
      
         normal_gemv_kernel<ValueType, true> <<<dimGrid, dimBlock, 0, stream>>> (
-                        result, x, y, alpha, beta, ellValues, ellJA, numRows, numNonZerosPerRow );
+                        result, x, y, alpha, beta, ellValues, ellJA, numRows, ellIA );
     }
     else
     {
@@ -805,7 +805,7 @@ void CUDAELLUtils::normalGEMV(
                            "LAMA_STATUS_CUDA_FUNCSETCACHECONFIG_FAILED" )
 
         normal_gemv_kernel<ValueType, false> <<<dimGrid, dimBlock, 0, stream>>> (
-                        result, x, y, alpha, beta, ellValues, ellJA, numRows, numNonZerosPerRow );
+                        result, x, y, alpha, beta, ellValues, ellJA, numRows, ellIA );
     }
 
     if ( !syncToken )
@@ -846,7 +846,7 @@ void normal_gevm_kernel(
     const int* ellJA,
     int numRows,
     int numColumns,
-    int numValuesPerRow )
+    const int* ellIA )
 {
     // result = alpha * x_d * A + beta * y_d
 
@@ -860,7 +860,7 @@ void normal_gevm_kernel(
         for( int j = 0; j < numRows; ++j )
         {
             int pos = j;
-            for ( int kk = 0; kk < numValuesPerRow; ++kk )
+            for ( int kk = 0; kk < ellIA[j]; ++kk )
             {
                 if( ellJA[pos] == i )
                 {
@@ -925,7 +925,7 @@ void CUDAELLUtils::normalGEVM(
                            "LAMA_STATUS_CUDA_FUNCSETCACHECONFIG_FAILED" )
 
         normal_gevm_kernel<ValueType, true> <<< dimGrid, dimBlock, 0, stream >>>
-                    ( result, x, y, alpha, beta, ellValues, ellJA, numRows, numColumns, numValuesPerRow );
+                    ( result, x, y, alpha, beta, ellValues, ellJA, numRows, numColumns, ellSizes );
     }
     else
     {
@@ -933,7 +933,7 @@ void CUDAELLUtils::normalGEVM(
                            "LAMA_STATUS_CUDA_FUNCSETCACHECONFIG_FAILED" )
 
         normal_gevm_kernel<ValueType, false> <<< dimGrid, dimBlock, 0, stream >>>
-                    ( result, x, y, alpha, beta, ellValues, ellJA, numRows, numColumns, numValuesPerRow );
+                    ( result, x, y, alpha, beta, ellValues, ellJA, numRows, numColumns, ellSizes );
     }
 
     if ( !syncToken )
@@ -1188,7 +1188,7 @@ void CUDAELLUtils::sparseGEVM(
 template<typename T,bool useTexture>
 __global__
 void ell_jacobi_kernel(
-    const int ellNumValuesPerRow,
+    const int* ellIA,
     const int* ellJA,
     const T* ellValues,
     const int numRows,
@@ -1209,7 +1209,7 @@ void ell_jacobi_kernel(
         ellValues += numRows;
         ellJA += numRows;
 
-        for ( int kk = 1; kk < ellNumValuesPerRow; ++kk )
+        for ( int kk = 1; kk < ellIA[i]; ++kk )
         {
             const T aValue = *ellValues;
             temp -= aValue * fetchELLVectorX<T, useTexture>( oldSolution, *ellJA );
@@ -1235,8 +1235,8 @@ template<typename ValueType>
 void CUDAELLUtils::jacobi(
     ValueType solution[],
     const IndexType numRows,
-    const IndexType ellNumValuesPerRow,
-    const IndexType* UNUSED( ellSizes ),
+    const IndexType UNUSED(ellNumValuesPerRow),
+    const IndexType* ellSizes,
     const IndexType ellJA[],
     const ValueType ellValues[],
     const ValueType oldSolution[],
@@ -1276,7 +1276,7 @@ void CUDAELLUtils::jacobi(
         LAMA_CUDA_RT_CALL( cudaFuncSetCacheConfig( ell_jacobi_kernel<ValueType, true>, cudaFuncCachePreferL1),
                            "LAMA_STATUS_CUDA_FUNCSETCACHECONFIG_FAILED" )
 
-        ell_jacobi_kernel<ValueType, true> <<<dimGrid, dimBlock, 0, stream>>>( ellNumValuesPerRow, ellJA, ellValues,
+        ell_jacobi_kernel<ValueType, true> <<<dimGrid, dimBlock, 0, stream>>>( ellSizes, ellJA, ellValues,
                 numRows, rhs, solution, oldSolution, omega );
     }
 
@@ -1285,7 +1285,7 @@ void CUDAELLUtils::jacobi(
         LAMA_CUDA_RT_CALL( cudaFuncSetCacheConfig( ell_jacobi_kernel<ValueType, false>, cudaFuncCachePreferL1 ),
                            "LAMA_STATUS_CUDA_FUNCSETCACHECONFIG_FAILED" )
 
-        ell_jacobi_kernel<ValueType, false> <<<dimGrid, dimBlock, 0, stream>>>( ellNumValuesPerRow, ellJA, ellValues,
+        ell_jacobi_kernel<ValueType, false> <<<dimGrid, dimBlock, 0, stream>>>( ellSizes, ellJA, ellValues,
                 numRows, rhs, solution, oldSolution, omega );
     }
 
