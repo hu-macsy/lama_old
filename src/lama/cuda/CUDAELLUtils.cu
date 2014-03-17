@@ -726,11 +726,7 @@ void normal_gemv_kernel(
 
     if ( i < numRows )
     {
-        T summand = 0.0;
-        if ( beta != 0.0 )
-        {
-            summand = beta * y_d[i];
-        }
+        T summand = beta * y_d[i];
 
         T value = 0.0;
         int pos = i;
@@ -741,6 +737,196 @@ void normal_gemv_kernel(
             pos += numRows;
         }
         result[i] = alpha * value + summand;
+    }
+}
+
+/* ------------------------------------------------------------------------------------------------------------------ */
+
+template<typename T,bool useTexture>
+__global__
+void normal_gemv_kernel_alpha_one_beta_one(
+    T* result,
+    const T* const x_d,
+    const T* const y_d,
+    const T* ellValues,
+    const int* ellJA,
+    int numRows,
+    const int * ellIA)
+{
+    const int i = threadId( gridDim, blockIdx, blockDim, threadIdx );
+
+    if ( i < numRows )
+    {
+        T summand = 0.0;
+        summand = y_d[i];
+
+        T value = 0.0;
+        int pos = i;
+        for ( int kk = 0; kk < ellIA[i]; ++kk )
+        {
+            //if (aValue != 0.0) //compute capability >= 2.0  => disadvantage
+            value += ellValues[pos] * fetchELLVectorX<T, useTexture>( x_d, ellJA[pos] );
+            pos += numRows;
+        }
+        result[i] = value + summand;
+    }
+}
+
+/* ------------------------------------------------------------------------------------------------------------------ */
+
+template<typename T,bool useTexture>
+__global__
+void normal_gemv_kernel_alpha_one_beta_zero(
+    T* result,
+    const T* const x_d,
+    const T* const y_d,
+    const T* ellValues,
+    const int* ellJA,
+    int numRows,
+    const int * ellIA)
+{
+    const int i = threadId( gridDim, blockIdx, blockDim, threadIdx );
+
+    if ( i < numRows )
+    {
+        T value = 0.0;
+        int pos = i;
+        for ( int kk = 0; kk < ellIA[i]; ++kk )
+        {
+            //if (aValue != 0.0) //compute capability >= 2.0  => disadvantage
+            value += ellValues[pos] * fetchELLVectorX<T, useTexture>( x_d, ellJA[pos] );
+            pos += numRows;
+        }
+        result[i] = value;
+    }
+}
+
+/* ------------------------------------------------------------------------------------------------------------------ */
+
+template<typename T,bool useTexture>
+__global__
+void assign_kernel(
+    T* result,
+    const T* const y_d,
+    int numRows)
+{
+    const int i = threadId( gridDim, blockIdx, blockDim, threadIdx );
+
+    if ( i < numRows )
+    {
+        result[i] = y_d[i];
+    }
+}
+
+/* ------------------------------------------------------------------------------------------------------------------ */
+
+template<typename T,bool useTexture>
+__global__
+void normal_gemv_kernel_alpha_one(
+    T* result,
+    const T* const x_d,
+    const T* const y_d,
+    const T beta,
+    const T* ellValues,
+    const int* ellJA,
+    int numRows,
+    const int * ellIA)
+{
+    const int i = threadId( gridDim, blockIdx, blockDim, threadIdx );
+
+    if ( i < numRows )
+    {
+        T summand = beta * y_d[i];
+
+        T value = 0.0;
+        int pos = i;
+        for ( int kk = 0; kk < ellIA[i]; ++kk )
+        {
+            //if (aValue != 0.0) //compute capability >= 2.0  => disadvantage
+            value += ellValues[pos] * fetchELLVectorX<T, useTexture>( x_d, ellJA[pos] );
+            pos += numRows;
+        }
+        result[i] = value + summand;
+    }
+}
+
+/* ------------------------------------------------------------------------------------------------------------------ */
+
+template<typename T,bool useTexture>
+__global__
+void normal_gemv_kernel_beta_one(
+    T* result,
+    const T* const x_d,
+    const T* const y_d,
+    T alpha,
+    const T* ellValues,
+    const int* ellJA,
+    int numRows,
+    const int * ellIA)
+{
+    const int i = threadId( gridDim, blockIdx, blockDim, threadIdx );
+
+    if ( i < numRows )
+    {
+        T summand = y_d[i];
+
+        T value = 0.0;
+        int pos = i;
+        for ( int kk = 0; kk < ellIA[i]; ++kk )
+        {
+            //if (aValue != 0.0) //compute capability >= 2.0  => disadvantage
+            value += ellValues[pos] * fetchELLVectorX<T, useTexture>( x_d, ellJA[pos] );
+            pos += numRows;
+        }
+        result[i] = alpha * value + summand;
+    }
+}
+
+/* ------------------------------------------------------------------------------------------------------------------ */
+
+template<typename T,bool useTexture>
+__global__
+void scale_kernel(
+    T* result,
+    const T* const y_d,
+    const T beta,
+    int numRows)
+{
+    const int i = threadId( gridDim, blockIdx, blockDim, threadIdx );
+
+    if ( i < numRows )
+    {
+        result[i] = beta * y_d[i];
+    }
+}
+
+/* ------------------------------------------------------------------------------------------------------------------ */
+
+template<typename T,bool useTexture>
+__global__
+void normal_gemv_kernel_beta_zero(
+    T* result,
+    const T* const x_d,
+    const T* const y_d,
+    T alpha,
+    const T* ellValues,
+    const int* ellJA,
+    int numRows,
+    const int * ellIA)
+{
+    const int i = threadId( gridDim, blockIdx, blockDim, threadIdx );
+
+    if ( i < numRows )
+    {
+        T value = 0.0;
+        int pos = i;
+        for ( int kk = 0; kk < ellIA[i]; ++kk )
+        {
+            //if (aValue != 0.0) //compute capability >= 2.0  => disadvantage
+            value += ellValues[pos] * fetchELLVectorX<T, useTexture>( x_d, ellJA[pos] );
+            pos += numRows;
+        }
+        result[i] = alpha * value;
     }
 }
 
@@ -793,19 +979,133 @@ void CUDAELLUtils::normalGEMV(
     {
         vectorELLBindTexture( x );
 
-        LAMA_CUDA_RT_CALL( cudaFuncSetCacheConfig( normal_gemv_kernel<ValueType, true>, cudaFuncCachePreferL1 ),
-                           "LAMA_STATUS_CUDA_FUNCSETCACHECONFIG_FAILED" )
-     
-        normal_gemv_kernel<ValueType, true> <<<dimGrid, dimBlock, 0, stream>>> (
-                        result, x, y, alpha, beta, ellValues, ellJA, numRows, ellIA );
+        if( alpha == 1 && beta == 1 )
+        {
+            LAMA_CUDA_RT_CALL( cudaFuncSetCacheConfig( normal_gemv_kernel_alpha_one_beta_one<ValueType, true>, cudaFuncCachePreferL1 ),
+                               "LAMA_STATUS_CUDA_FUNCSETCACHECONFIG_FAILED" )
+
+            normal_gemv_kernel_alpha_one_beta_one<ValueType, true> <<<dimGrid, dimBlock, 0, stream>>> (
+                            result, x, y, ellValues, ellJA, numRows, ellIA );
+        }
+        else if ( alpha == 1 && beta == 0 )
+        {
+            LAMA_CUDA_RT_CALL( cudaFuncSetCacheConfig( normal_gemv_kernel_alpha_one_beta_zero<ValueType, true>, cudaFuncCachePreferL1 ),
+                               "LAMA_STATUS_CUDA_FUNCSETCACHECONFIG_FAILED" )
+
+            normal_gemv_kernel_alpha_one_beta_zero<ValueType, true> <<<dimGrid, dimBlock, 0, stream>>> (
+                            result, x, y, ellValues, ellJA, numRows, ellIA );
+        }
+        else if ( alpha == 0 && beta == 1 )
+        {
+            LAMA_CUDA_RT_CALL( cudaFuncSetCacheConfig( assign_kernel<ValueType, true>, cudaFuncCachePreferL1 ),
+                               "LAMA_STATUS_CUDA_FUNCSETCACHECONFIG_FAILED" )
+
+            assign_kernel<ValueType, true> <<<dimGrid, dimBlock, 0, stream>>> (result, y, numRows);
+        }
+        else if ( alpha == 1 )
+        {
+            LAMA_CUDA_RT_CALL( cudaFuncSetCacheConfig( normal_gemv_kernel_alpha_one<ValueType, true>, cudaFuncCachePreferL1 ),
+                               "LAMA_STATUS_CUDA_FUNCSETCACHECONFIG_FAILED" )
+
+            normal_gemv_kernel_alpha_one<ValueType, true> <<<dimGrid, dimBlock, 0, stream>>> (
+                            result, x, y, beta, ellValues, ellJA, numRows, ellIA );
+        }
+        else if ( alpha == 0 )
+        {
+            LAMA_CUDA_RT_CALL( cudaFuncSetCacheConfig( scale_kernel<ValueType, true>, cudaFuncCachePreferL1 ),
+                               "LAMA_STATUS_CUDA_FUNCSETCACHECONFIG_FAILED" )
+
+            scale_kernel<ValueType, true> <<<dimGrid, dimBlock, 0, stream>>> ( result, y, beta, numRows );
+        }
+        else if ( beta == 1 )
+        {
+            LAMA_CUDA_RT_CALL( cudaFuncSetCacheConfig( normal_gemv_kernel_beta_one<ValueType, true>, cudaFuncCachePreferL1 ),
+                               "LAMA_STATUS_CUDA_FUNCSETCACHECONFIG_FAILED" )
+
+            normal_gemv_kernel_beta_one<ValueType, true> <<<dimGrid, dimBlock, 0, stream>>> (
+                            result, x, y, alpha, ellValues, ellJA, numRows, ellIA );
+        }
+        else if ( beta == 0 )
+        {
+            LAMA_CUDA_RT_CALL( cudaFuncSetCacheConfig( normal_gemv_kernel_beta_zero<ValueType, true>, cudaFuncCachePreferL1 ),
+                               "LAMA_STATUS_CUDA_FUNCSETCACHECONFIG_FAILED" )
+
+            normal_gemv_kernel_beta_zero<ValueType, true> <<<dimGrid, dimBlock, 0, stream>>> (
+                            result, x, y, alpha, ellValues, ellJA, numRows, ellIA );
+        }
+        else
+        {
+            LAMA_CUDA_RT_CALL( cudaFuncSetCacheConfig( normal_gemv_kernel<ValueType, true>, cudaFuncCachePreferL1 ),
+                               "LAMA_STATUS_CUDA_FUNCSETCACHECONFIG_FAILED" )
+
+            normal_gemv_kernel<ValueType, true> <<<dimGrid, dimBlock, 0, stream>>> (
+                            result, x, y, alpha, beta, ellValues, ellJA, numRows, ellIA );
+        }
     }
     else
     {
-        LAMA_CUDA_RT_CALL( cudaFuncSetCacheConfig( normal_gemv_kernel<ValueType, false>, cudaFuncCachePreferL1 ),
-                           "LAMA_STATUS_CUDA_FUNCSETCACHECONFIG_FAILED" )
+        if( alpha == 1 && beta == 1 )
+        {
+            LAMA_CUDA_RT_CALL( cudaFuncSetCacheConfig( normal_gemv_kernel_alpha_one_beta_one<ValueType, false>, cudaFuncCachePreferL1 ),
+                               "LAMA_STATUS_CUDA_FUNCSETCACHECONFIG_FAILED" )
 
-        normal_gemv_kernel<ValueType, false> <<<dimGrid, dimBlock, 0, stream>>> (
-                        result, x, y, alpha, beta, ellValues, ellJA, numRows, ellIA );
+            normal_gemv_kernel_alpha_one_beta_one<ValueType, false> <<<dimGrid, dimBlock, 0, stream>>> (
+                            result, x, y, ellValues, ellJA, numRows, ellIA );
+        }
+        else if ( alpha == 1 && beta == 0 )
+        {
+            LAMA_CUDA_RT_CALL( cudaFuncSetCacheConfig( normal_gemv_kernel_alpha_one_beta_zero<ValueType, false>, cudaFuncCachePreferL1 ),
+                               "LAMA_STATUS_CUDA_FUNCSETCACHECONFIG_FAILED" )
+
+            normal_gemv_kernel_alpha_one_beta_zero<ValueType, false> <<<dimGrid, dimBlock, 0, stream>>> (
+                            result, x, y, ellValues, ellJA, numRows, ellIA );
+        }
+        else if ( alpha == 0 && beta == 1 )
+        {
+            LAMA_CUDA_RT_CALL( cudaFuncSetCacheConfig( assign_kernel<ValueType, false>, cudaFuncCachePreferL1 ),
+                               "LAMA_STATUS_CUDA_FUNCSETCACHECONFIG_FAILED" )
+
+            assign_kernel<ValueType, false> <<<dimGrid, dimBlock, 0, stream>>> (result, y, numRows );
+        }
+        else if ( alpha == 1 )
+        {
+            LAMA_CUDA_RT_CALL( cudaFuncSetCacheConfig( normal_gemv_kernel_alpha_one<ValueType, false>, cudaFuncCachePreferL1 ),
+                               "LAMA_STATUS_CUDA_FUNCSETCACHECONFIG_FAILED" )
+
+            normal_gemv_kernel_alpha_one<ValueType, false> <<<dimGrid, dimBlock, 0, stream>>> (
+                            result, x, y, beta, ellValues, ellJA, numRows, ellIA );
+        }
+        else if ( alpha == 0 )
+        {
+            LAMA_CUDA_RT_CALL( cudaFuncSetCacheConfig( scale_kernel<ValueType, false>, cudaFuncCachePreferL1 ),
+                               "LAMA_STATUS_CUDA_FUNCSETCACHECONFIG_FAILED" )
+
+            scale_kernel<ValueType, false> <<<dimGrid, dimBlock, 0, stream>>> (result, y, beta, numRows );
+        }
+        else if ( beta == 1 )
+        {
+            LAMA_CUDA_RT_CALL( cudaFuncSetCacheConfig( normal_gemv_kernel_beta_one<ValueType, false>, cudaFuncCachePreferL1 ),
+                               "LAMA_STATUS_CUDA_FUNCSETCACHECONFIG_FAILED" )
+
+            normal_gemv_kernel_beta_one<ValueType, false> <<<dimGrid, dimBlock, 0, stream>>> (
+                            result, x, y, alpha, ellValues, ellJA, numRows, ellIA );
+        }
+        else if ( beta == 0 )
+        {
+            LAMA_CUDA_RT_CALL( cudaFuncSetCacheConfig( normal_gemv_kernel_beta_zero<ValueType, false>, cudaFuncCachePreferL1 ),
+                                "LAMA_STATUS_CUDA_FUNCSETCACHECONFIG_FAILED" )
+
+            normal_gemv_kernel_beta_zero<ValueType, false> <<<dimGrid, dimBlock, 0, stream>>> (
+                            result, x, y, alpha, ellValues, ellJA, numRows, ellIA );
+        }
+        else
+        {
+            LAMA_CUDA_RT_CALL( cudaFuncSetCacheConfig( normal_gemv_kernel<ValueType, false>, cudaFuncCachePreferL1 ),
+                               "LAMA_STATUS_CUDA_FUNCSETCACHECONFIG_FAILED" )
+
+            normal_gemv_kernel<ValueType, false> <<<dimGrid, dimBlock, 0, stream>>> (
+                            result, x, y, alpha, beta, ellValues, ellJA, numRows, ellIA );
+        }
     }
 
     if ( !syncToken )
@@ -875,6 +1175,254 @@ void normal_gevm_kernel(
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 
+
+template<typename T, bool useTexture>
+__global__
+void normal_gevm_kernel_alpha_one_beta_one(
+    T* result,
+    const T* x_d,
+    const T* y_d,
+    const T* ellValues,
+    const int* ellJA,
+    int numRows,
+    int numColumns,
+    const int* ellIA )
+{
+    // result = x_d * A + y_d
+
+    const int i = threadId( gridDim, blockIdx, blockDim, threadIdx );
+
+    if ( i < numColumns )
+    {
+        T summand = y_d[i];
+        T value = 0.0;
+
+        for( int j = 0; j < numRows; ++j )
+        {
+            int pos = j;
+            for ( int kk = 0; kk < ellIA[j]; ++kk )
+            {
+                if( ellJA[pos] == i )
+                {
+                    value += ellValues[pos] * fetchELLVectorX<T, useTexture>( x_d, j );
+                }
+                pos += numRows;
+            }
+        }
+        result[i] = value + summand;
+    }
+}
+
+/* ------------------------------------------------------------------------------------------------------------------ */
+
+
+template<typename T, bool useTexture>
+__global__
+void normal_gevm_kernel_alpha_one_beta_zero(
+    T* result,
+    const T* x_d,
+    const T* y_d,
+    const T* ellValues,
+    const int* ellJA,
+    int numRows,
+    int numColumns,
+    const int* ellIA )
+{
+    // result = x_d * A
+
+    const int i = threadId( gridDim, blockIdx, blockDim, threadIdx );
+
+    if ( i < numColumns )
+    {
+        T value = 0.0;
+
+        for( int j = 0; j < numRows; ++j )
+        {
+            int pos = j;
+            for ( int kk = 0; kk < ellIA[j]; ++kk )
+            {
+                if( ellJA[pos] == i )
+                {
+                    value += ellValues[pos] * fetchELLVectorX<T, useTexture>( x_d, j );
+                }
+                pos += numRows;
+            }
+        }
+        result[i] = value;
+    }
+}
+
+/* ------------------------------------------------------------------------------------------------------------------ */
+
+
+template<typename T, bool useTexture>
+__global__
+void normal_gevm_kernel_alpha_zero_beta_one(
+    T* result,
+    const T* x_d,
+    const T* y_d,
+    const T* ellValues,
+    const int* ellJA,
+    int numRows,
+    int numColumns,
+    const int* ellIA )
+{
+    // result = y_d
+
+    const int i = threadId( gridDim, blockIdx, blockDim, threadIdx );
+
+    if ( i < numColumns )
+    {
+        result[i] = y_d[i];
+    }
+}
+
+/* ------------------------------------------------------------------------------------------------------------------ */
+
+template<typename T, bool useTexture>
+__global__
+void normal_gevm_kernel_alpha_one(
+    T* result,
+    const T* x_d,
+    const T* y_d,
+    const T beta,
+    const T* ellValues,
+    const int* ellJA,
+    int numRows,
+    int numColumns,
+    const int* ellIA )
+{
+    // result = x_d * A + beta * y_d
+
+    const int i = threadId( gridDim, blockIdx, blockDim, threadIdx );
+
+    if ( i < numColumns )
+    {
+        T summand = beta * y_d[i];
+        T value = 0.0;
+
+        for( int j = 0; j < numRows; ++j )
+        {
+            int pos = j;
+            for ( int kk = 0; kk < ellIA[j]; ++kk )
+            {
+                if( ellJA[pos] == i )
+                {
+                    value += ellValues[pos] * fetchELLVectorX<T, useTexture>( x_d, j );
+                }
+                pos += numRows;
+            }
+        }
+        result[i] = value + summand;
+    }
+}
+
+/* ------------------------------------------------------------------------------------------------------------------ */
+
+template<typename T, bool useTexture>
+__global__
+void normal_gevm_kernel_alpha_zero(
+    T* result,
+    const T* x_d,
+    const T* y_d,
+    const T beta,
+    const T* ellValues,
+    const int* ellJA,
+    int numRows,
+    int numColumns,
+    const int* ellIA )
+{
+    // result = beta * y_d
+
+    const int i = threadId( gridDim, blockIdx, blockDim, threadIdx );
+
+    if ( i < numColumns )
+    {
+        result[i] = beta * y_d[i];
+    }
+}
+
+/* ------------------------------------------------------------------------------------------------------------------ */
+
+template<typename T, bool useTexture>
+__global__
+void normal_gevm_kernel_beta_one(
+    T* result,
+    const T* x_d,
+    const T* y_d,
+    const T alpha,
+    const T* ellValues,
+    const int* ellJA,
+    int numRows,
+    int numColumns,
+    const int* ellIA )
+{
+    // result = alpha * x_d * A + y_d
+
+    const int i = threadId( gridDim, blockIdx, blockDim, threadIdx );
+
+    if ( i < numColumns )
+    {
+        T value = 0.0;
+
+        for( int j = 0; j < numRows; ++j )
+        {
+            int pos = j;
+            for ( int kk = 0; kk < ellIA[j]; ++kk )
+            {
+                if( ellJA[pos] == i )
+                {
+                    value += ellValues[pos] * fetchELLVectorX<T, useTexture>( x_d, j );
+                }
+                pos += numRows;
+            }
+        }
+        result[i] = alpha * value + y_d[i];
+    }
+}
+
+/* ------------------------------------------------------------------------------------------------------------------ */
+
+
+template<typename T, bool useTexture>
+__global__
+void normal_gevm_kernel_beta_zero(
+    T* result,
+    const T* x_d,
+    const T* y_d,
+    const T alpha,
+    const T* ellValues,
+    const int* ellJA,
+    int numRows,
+    int numColumns,
+    const int* ellIA )
+{
+    // result = alpha * x_d * A
+
+    const int i = threadId( gridDim, blockIdx, blockDim, threadIdx );
+
+    if ( i < numColumns )
+    {
+        T value = 0.0;
+
+        for( int j = 0; j < numRows; ++j )
+        {
+            int pos = j;
+            for ( int kk = 0; kk < ellIA[j]; ++kk )
+            {
+                if( ellJA[pos] == i )
+                {
+                    value += ellValues[pos] * fetchELLVectorX<T, useTexture>( x_d, j );
+                }
+                pos += numRows;
+            }
+        }
+        result[i] = alpha * value;
+    }
+}
+
+/* ------------------------------------------------------------------------------------------------------------------ */
+
 template<typename ValueType>
 void CUDAELLUtils::normalGEVM(
     ValueType result[],
@@ -921,19 +1469,137 @@ void CUDAELLUtils::normalGEVM(
     {
         vectorELLBindTexture( x );
 
-        LAMA_CUDA_RT_CALL( cudaFuncSetCacheConfig( normal_gevm_kernel<ValueType, true>, cudaFuncCachePreferL1 ),
-                           "LAMA_STATUS_CUDA_FUNCSETCACHECONFIG_FAILED" )
+        if( alpha == 1 && beta == 1 )
+        {
+            LAMA_CUDA_RT_CALL( cudaFuncSetCacheConfig( normal_gevm_kernel_alpha_one_beta_one<ValueType, true>, cudaFuncCachePreferL1 ),
+                               "LAMA_STATUS_CUDA_FUNCSETCACHECONFIG_FAILED" )
 
-        normal_gevm_kernel<ValueType, true> <<< dimGrid, dimBlock, 0, stream >>>
-                    ( result, x, y, alpha, beta, ellValues, ellJA, numRows, numColumns, ellSizes );
+            normal_gevm_kernel_alpha_one_beta_one<ValueType, true> <<<dimGrid, dimBlock, 0, stream>>> (
+                            result, x, y, ellValues, ellJA, numRows, numColumns, ellSizes );
+        }
+        else if ( alpha == 1 && beta == 0 )
+        {
+            LAMA_CUDA_RT_CALL( cudaFuncSetCacheConfig( normal_gevm_kernel_alpha_one_beta_zero<ValueType, true>, cudaFuncCachePreferL1 ),
+                               "LAMA_STATUS_CUDA_FUNCSETCACHECONFIG_FAILED" )
+
+            normal_gevm_kernel_alpha_one_beta_zero<ValueType, true> <<<dimGrid, dimBlock, 0, stream>>> (
+                            result, x, y, ellValues, ellJA, numRows, numColumns, ellSizes );
+        }
+        else if ( alpha == 0 && beta == 1 )
+        {
+            LAMA_CUDA_RT_CALL( cudaFuncSetCacheConfig( normal_gevm_kernel_alpha_zero_beta_one<ValueType, true>, cudaFuncCachePreferL1 ),
+                               "LAMA_STATUS_CUDA_FUNCSETCACHECONFIG_FAILED" )
+
+            normal_gevm_kernel_alpha_zero_beta_one<ValueType, true> <<<dimGrid, dimBlock, 0, stream>>> (
+                            result, x, y, ellValues, ellJA, numRows, numColumns, ellSizes );
+        }
+        else if ( alpha == 1 )
+        {
+            LAMA_CUDA_RT_CALL( cudaFuncSetCacheConfig( normal_gevm_kernel_alpha_one<ValueType, true>, cudaFuncCachePreferL1 ),
+                               "LAMA_STATUS_CUDA_FUNCSETCACHECONFIG_FAILED" )
+
+            normal_gevm_kernel_alpha_one<ValueType, true> <<<dimGrid, dimBlock, 0, stream>>> (
+                            result, x, y, beta, ellValues, ellJA, numRows, numColumns, ellSizes );
+        }
+        else if ( alpha == 0 )
+        {
+            LAMA_CUDA_RT_CALL( cudaFuncSetCacheConfig( normal_gevm_kernel_alpha_zero<ValueType, true>, cudaFuncCachePreferL1 ),
+                               "LAMA_STATUS_CUDA_FUNCSETCACHECONFIG_FAILED" )
+
+            normal_gevm_kernel_alpha_zero<ValueType, true> <<<dimGrid, dimBlock, 0, stream>>> (
+                            result, x, y, beta, ellValues, ellJA, numRows, numColumns, ellSizes );
+        }
+        else if ( beta == 1 )
+        {
+            LAMA_CUDA_RT_CALL( cudaFuncSetCacheConfig( normal_gevm_kernel_beta_one<ValueType, true>, cudaFuncCachePreferL1 ),
+                               "LAMA_STATUS_CUDA_FUNCSETCACHECONFIG_FAILED" )
+
+            normal_gevm_kernel_beta_one<ValueType, true> <<<dimGrid, dimBlock, 0, stream>>> (
+                            result, x, y, alpha, ellValues, ellJA, numRows, numColumns, ellSizes );
+        }
+        else if ( beta == 0 )
+        {
+            LAMA_CUDA_RT_CALL( cudaFuncSetCacheConfig( normal_gevm_kernel_beta_zero<ValueType, true>, cudaFuncCachePreferL1 ),
+                               "LAMA_STATUS_CUDA_FUNCSETCACHECONFIG_FAILED" )
+
+            normal_gevm_kernel_beta_zero<ValueType, true> <<<dimGrid, dimBlock, 0, stream>>> (
+                            result, x, y, alpha, ellValues, ellJA, numRows, numColumns, ellSizes );
+        }
+        else
+        {
+            LAMA_CUDA_RT_CALL( cudaFuncSetCacheConfig( normal_gevm_kernel<ValueType, true>, cudaFuncCachePreferL1 ),
+                               "LAMA_STATUS_CUDA_FUNCSETCACHECONFIG_FAILED" )
+
+            normal_gevm_kernel<ValueType, true> <<<dimGrid, dimBlock, 0, stream>>> (
+                            result, x, y, alpha, beta, ellValues, ellJA, numRows, numColumns, ellSizes );
+        }
     }
     else
     {
-        LAMA_CUDA_RT_CALL( cudaFuncSetCacheConfig( normal_gevm_kernel<ValueType, false>, cudaFuncCachePreferL1 ),
-                           "LAMA_STATUS_CUDA_FUNCSETCACHECONFIG_FAILED" )
+        if( alpha == 1 && beta == 1 )
+        {
+            LAMA_CUDA_RT_CALL( cudaFuncSetCacheConfig( normal_gevm_kernel_alpha_one_beta_one<ValueType, false>, cudaFuncCachePreferL1 ),
+                               "LAMA_STATUS_CUDA_FUNCSETCACHECONFIG_FAILED" )
 
-        normal_gevm_kernel<ValueType, false> <<< dimGrid, dimBlock, 0, stream >>>
-                    ( result, x, y, alpha, beta, ellValues, ellJA, numRows, numColumns, ellSizes );
+            normal_gevm_kernel_alpha_one_beta_one<ValueType, false> <<<dimGrid, dimBlock, 0, stream>>> (
+                            result, x, y, ellValues, ellJA, numRows, numColumns, ellSizes );
+        }
+        else if ( alpha == 1 && beta == 0 )
+        {
+            LAMA_CUDA_RT_CALL( cudaFuncSetCacheConfig( normal_gevm_kernel_alpha_one_beta_zero<ValueType, false>, cudaFuncCachePreferL1 ),
+                               "LAMA_STATUS_CUDA_FUNCSETCACHECONFIG_FAILED" )
+
+            normal_gevm_kernel_alpha_one_beta_zero<ValueType, false> <<<dimGrid, dimBlock, 0, stream>>> (
+                            result, x, y, ellValues, ellJA, numRows, numColumns, ellSizes );
+        }
+        else if ( alpha == 0 && beta == 1 )
+        {
+            LAMA_CUDA_RT_CALL( cudaFuncSetCacheConfig( normal_gevm_kernel_alpha_zero_beta_one<ValueType, false>, cudaFuncCachePreferL1 ),
+                               "LAMA_STATUS_CUDA_FUNCSETCACHECONFIG_FAILED" )
+
+            normal_gevm_kernel_alpha_zero_beta_one<ValueType, false> <<<dimGrid, dimBlock, 0, stream>>> (
+                            result, x, y, ellValues, ellJA, numRows, numColumns, ellSizes );
+        }
+        else if ( alpha == 1 )
+        {
+            LAMA_CUDA_RT_CALL( cudaFuncSetCacheConfig( normal_gevm_kernel_alpha_one<ValueType, false>, cudaFuncCachePreferL1 ),
+                               "LAMA_STATUS_CUDA_FUNCSETCACHECONFIG_FAILED" )
+
+            normal_gevm_kernel_alpha_one<ValueType, false> <<<dimGrid, dimBlock, 0, stream>>> (
+                            result, x, y, beta, ellValues, ellJA, numRows, numColumns, ellSizes );
+        }
+        else if ( alpha == 0 )
+        {
+            LAMA_CUDA_RT_CALL( cudaFuncSetCacheConfig( normal_gevm_kernel_alpha_zero<ValueType, false>, cudaFuncCachePreferL1 ),
+                               "LAMA_STATUS_CUDA_FUNCSETCACHECONFIG_FAILED" )
+
+            normal_gevm_kernel_alpha_zero<ValueType, false> <<<dimGrid, dimBlock, 0, stream>>> (
+                            result, x, y, beta, ellValues, ellJA, numRows, numColumns, ellSizes );
+        }
+        else if ( beta == 1 )
+        {
+            LAMA_CUDA_RT_CALL( cudaFuncSetCacheConfig( normal_gevm_kernel_beta_one<ValueType, false>, cudaFuncCachePreferL1 ),
+                               "LAMA_STATUS_CUDA_FUNCSETCACHECONFIG_FAILED" )
+
+            normal_gevm_kernel_beta_one<ValueType, false> <<<dimGrid, dimBlock, 0, stream>>> (
+                            result, x, y, alpha, ellValues, ellJA, numRows, numColumns, ellSizes );
+        }
+        else if ( beta == 0 )
+        {
+            LAMA_CUDA_RT_CALL( cudaFuncSetCacheConfig( normal_gevm_kernel_beta_zero<ValueType, false>, cudaFuncCachePreferL1 ),
+                               "LAMA_STATUS_CUDA_FUNCSETCACHECONFIG_FAILED" )
+
+            normal_gevm_kernel_beta_zero<ValueType, false> <<<dimGrid, dimBlock, 0, stream>>> (
+                            result, x, y, alpha, ellValues, ellJA, numRows, numColumns, ellSizes );
+        }
+        else
+        {
+            LAMA_CUDA_RT_CALL( cudaFuncSetCacheConfig( normal_gevm_kernel<ValueType, false>, cudaFuncCachePreferL1 ),
+                               "LAMA_STATUS_CUDA_FUNCSETCACHECONFIG_FAILED" )
+
+            normal_gevm_kernel<ValueType, false> <<<dimGrid, dimBlock, 0, stream>>> (
+                            result, x, y, alpha, beta, ellValues, ellJA, numRows, numColumns, ellSizes );
+        }
     }
 
     if ( !syncToken )
@@ -1005,6 +1671,49 @@ void sparse_gemv_kernel(
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 
+template<typename T,bool useTexture>
+__global__
+void sparse_gemv_kernel_alpha_one(
+    T* const result_d,
+    const T* const x_d,
+    const T* const ellValues,
+    const int* const ellIA,
+    const int* const ellJA,
+    const int* const rowIndexes,
+    const int numNonZeroRows,
+    int numRows,
+    int numValuesPerRow )
+{
+    // each thread is assigned to one non-zero row
+
+    const int id = threadId( gridDim, blockIdx, blockDim, threadIdx );
+
+    if ( id < numNonZeroRows )
+    {
+        const int i = rowIndexes[id];
+
+        int pos = i;
+
+        T value = 0.0;
+
+        const int nonZeros = ellIA[i];
+
+        for ( int kk = 0; kk < nonZeros; ++kk )
+        {
+            const T aValue = ellValues[pos];
+
+            // compute capability >= 2.0: no benefits to mask with value != 0.0
+
+            value += aValue * fetchELLVectorX<T, useTexture>( x_d, ellJA[pos] );
+            pos   += numRows;
+        }
+
+        result_d[i] += value;
+    }
+}
+
+/* ------------------------------------------------------------------------------------------------------------------ */
+
 template<typename ValueType>
 void CUDAELLUtils::sparseGEMV(
     ValueType result[],
@@ -1051,19 +1760,41 @@ void CUDAELLUtils::sparseGEMV(
 
     if ( useTexture )
     {
-        LAMA_CUDA_RT_CALL( cudaFuncSetCacheConfig( sparse_gemv_kernel<ValueType, true>, cudaFuncCachePreferL1),
-                           "cudaFuncSetCacheConfig failed" )
-     
-        sparse_gemv_kernel<ValueType, true> <<<dimGrid, dimBlock, 0, stream>>>(
-            result, x, alpha, ellValues, ellSizes, ellJA, rowIndexes, numNonZeroRows, numRows, numNonZerosPerRow );
+        if ( alpha == 1 )
+        {
+            LAMA_CUDA_RT_CALL( cudaFuncSetCacheConfig( sparse_gemv_kernel_alpha_one<ValueType, true>, cudaFuncCachePreferL1),
+                               "cudaFuncSetCacheConfig failed" )
+
+            sparse_gemv_kernel_alpha_one<ValueType, true> <<<dimGrid, dimBlock, 0, stream>>>(
+                result, x, ellValues, ellSizes, ellJA, rowIndexes, numNonZeroRows, numRows, numNonZerosPerRow );
+        }
+        else
+        {
+            LAMA_CUDA_RT_CALL( cudaFuncSetCacheConfig( sparse_gemv_kernel<ValueType, true>, cudaFuncCachePreferL1),
+                               "cudaFuncSetCacheConfig failed" )
+
+            sparse_gemv_kernel<ValueType, true> <<<dimGrid, dimBlock, 0, stream>>>(
+                result, x, alpha, ellValues, ellSizes, ellJA, rowIndexes, numNonZeroRows, numRows, numNonZerosPerRow );
+        }
     }
     else
     {
-        LAMA_CUDA_RT_CALL( cudaFuncSetCacheConfig( sparse_gemv_kernel<ValueType, false>, cudaFuncCachePreferL1),
+        if ( alpha == 1 )
+        {
+            LAMA_CUDA_RT_CALL( cudaFuncSetCacheConfig( sparse_gemv_kernel_alpha_one<ValueType, false>, cudaFuncCachePreferL1),
+                           "cudaFuncSetCacheConfig failed" )
+
+            sparse_gemv_kernel_alpha_one<ValueType, false> <<<dimGrid, dimBlock, 0, stream>>>(
+                result, x, ellValues, ellSizes, ellJA, rowIndexes, numNonZeroRows, numRows, numNonZerosPerRow );
+        }
+        else
+        {
+            LAMA_CUDA_RT_CALL( cudaFuncSetCacheConfig( sparse_gemv_kernel<ValueType, false>, cudaFuncCachePreferL1),
                            "cudaFuncSetCacheConfig failed" )
      
-        sparse_gemv_kernel<ValueType, false> <<<dimGrid, dimBlock, 0, stream>>>(
-            result, x, alpha, ellValues, ellSizes, ellJA, rowIndexes, numNonZeroRows, numRows, numNonZerosPerRow );
+            sparse_gemv_kernel<ValueType, false> <<<dimGrid, dimBlock, 0, stream>>>(
+                result, x, alpha, ellValues, ellSizes, ellJA, rowIndexes, numNonZeroRows, numRows, numNonZerosPerRow );
+        }
     }
 
     if ( !syncToken )
@@ -1136,6 +1867,51 @@ void sparse_gevm_kernel(
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 
+template<typename T,bool useTexture>
+__global__
+void sparse_gevm_kernel_alpha_one(
+    T* const result_d,
+    const T* const x_d,
+    const T* const ellValues,
+    const int* const ellSizes,
+    const int* const ellJA,
+    const int* const rowIndexes,
+    const int numNonZeroRows,
+    int numRows,
+    int numColumns )
+{
+    // each thread is assigned to one non-zero row
+
+    const int id = threadId( gridDim, blockIdx, blockDim, threadIdx );
+
+    if ( id < numColumns )
+    {
+        T value = 0.0;
+        for ( int i = 0; i < numNonZeroRows; ++i )
+        {
+            int pos = id;
+
+            const int nonZeros = ellSizes[pos];
+
+            for ( int kk = 0; kk < nonZeros; ++kk )
+            {
+                if( ellJA[pos] == id )
+                {
+                    const T aValue = ellValues[pos];
+
+                    // compute capability >= 2.0: no benefits to mask with value != 0.0
+
+                    value += aValue * fetchELLVectorX<T, useTexture>( x_d, ellJA[pos] );
+                }
+                pos   += numRows;
+            }
+        }
+        result_d[id] += value;
+    }
+}
+
+/* ------------------------------------------------------------------------------------------------------------------ */
+
 template<typename ValueType>
 void CUDAELLUtils::sparseGEVM(
     ValueType result[],
@@ -1171,8 +1947,34 @@ void CUDAELLUtils::sparseGEVM(
 
     dim3 dimGrid = makeGrid( numNonZeroRows, dimBlock.x );
 
-    sparse_gevm_kernel<ValueType, false> <<< dimGrid, dimBlock, 0, stream >>>
+    bool useTexture = CUDASettings::useTexture();
+
+    if ( useTexture )
+    {
+        if( alpha == 1 )
+        {
+            sparse_gevm_kernel_alpha_one<ValueType, true> <<< dimGrid, dimBlock, 0, stream >>>
+                    ( result, x, ellValues, ellSizes, ellJA, rowIndexes, numNonZeroRows, numRows, numColumns );
+        }
+        else
+        {
+            sparse_gevm_kernel<ValueType, false> <<< dimGrid, dimBlock, 0, stream >>>
                     ( result, x, alpha, ellValues, ellSizes, ellJA, rowIndexes, numNonZeroRows, numRows, numColumns );
+        }
+    }
+    else
+    {
+        if( alpha == 1 )
+        {
+            sparse_gevm_kernel_alpha_one<ValueType, false> <<< dimGrid, dimBlock, 0, stream >>>
+                    ( result, x, ellValues, ellSizes, ellJA, rowIndexes, numNonZeroRows, numRows, numColumns );
+        }
+        else
+        {
+            sparse_gevm_kernel<ValueType, false> <<< dimGrid, dimBlock, 0, stream >>>
+                    ( result, x, alpha, ellValues, ellSizes, ellJA, rowIndexes, numNonZeroRows, numRows, numColumns );
+        }
+    }
 
     if ( !syncToken )
     {

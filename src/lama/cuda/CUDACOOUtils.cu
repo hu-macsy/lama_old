@@ -212,6 +212,34 @@ __global__ void cooGemvKernel(
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType, bool useTexture>
+__global__ void cooGemvKernel_alpha_one(
+    ValueType* result,
+    const ValueType* x,
+    const IndexType numValues,
+    const IndexType* cooIA,
+    const IndexType* cooJA,
+    const ValueType* cooValues )
+{
+    const int k = threadId( gridDim, blockIdx, blockDim, threadIdx );
+
+    if ( k < numValues )
+    {
+        IndexType i = cooIA[k];
+        IndexType j = cooJA[k];
+
+        // we must use atomic updates as different threads might update same row i
+
+        const ValueType resultUpdate = cooValues[k] * fetchCOOVectorX<ValueType, useTexture>( x, j );
+
+        // atomic add required, solution above
+
+        cooAtomicAdd( &result[i], resultUpdate );
+    }
+}
+
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType, bool useTexture>
 __global__ void cooGevmKernel(
     ValueType* result,
     const ValueType alpha,
@@ -231,6 +259,34 @@ __global__ void cooGevmKernel(
         // we must use atomic updates as different threads might update same row i
 
         const ValueType resultUpdate = alpha * cooValues[k] * fetchCOOVectorX<ValueType, useTexture>( x, i );
+
+        // atomic add required, solution above
+
+        cooAtomicAdd( &result[j], resultUpdate );
+    }
+}
+
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType, bool useTexture>
+__global__ void cooGevmKernel_alpha_one(
+    ValueType* result,
+    const ValueType* x,
+    const IndexType numValues,
+    const IndexType* cooIA,
+    const IndexType* cooJA,
+    const ValueType* cooValues )
+{
+    const int k = threadId( gridDim, blockIdx, blockDim, threadIdx );
+
+    if ( k < numValues )
+    {
+        IndexType i = cooIA[k];
+        IndexType j = cooJA[k];
+
+        // we must use atomic updates as different threads might update same row i
+
+        const ValueType resultUpdate = cooValues[k] * fetchCOOVectorX<ValueType, useTexture>( x, i );
 
         // atomic add required, solution above
 
@@ -301,13 +357,29 @@ void CUDACOOUtils::normalGEMV(
     {
         vectorCOOBindTexture( x );
 
-        cooGemvKernel<ValueType, true><<< dimGrid, dimBlock>>>
-            ( result, alpha, x, numValues, cooIA, cooJA, cooValues );
+        if ( alpha == 1 )
+        {
+            cooGemvKernel_alpha_one<ValueType, true><<< dimGrid, dimBlock>>>
+                ( result, x, numValues, cooIA, cooJA, cooValues );
+        }
+        else
+        {
+            cooGemvKernel<ValueType, true><<< dimGrid, dimBlock>>>
+                ( result, alpha, x, numValues, cooIA, cooJA, cooValues );
+        }
     }
     else
     {
-        cooGemvKernel<ValueType, false><<< dimGrid, dimBlock>>>
-            ( result, alpha, x, numValues, cooIA, cooJA, cooValues );
+        if ( alpha == 1 )
+        {
+            cooGemvKernel_alpha_one<ValueType, false><<< dimGrid, dimBlock>>>
+                ( result, x, numValues, cooIA, cooJA, cooValues );
+        }
+        else
+        {
+            cooGemvKernel<ValueType, false><<< dimGrid, dimBlock>>>
+                ( result, alpha, x, numValues, cooIA, cooJA, cooValues );
+        }
     }
 
     if ( !syncToken )
@@ -397,13 +469,29 @@ void CUDACOOUtils::normalGEVM(
     {
         vectorCOOBindTexture( x );
 
-        cooGevmKernel<ValueType, true><<< dimGrid, dimBlock>>>
-            ( result, alpha, x, numValues, cooIA, cooJA, cooValues );
+        if ( alpha == 1 )
+        {
+            cooGevmKernel_alpha_one<ValueType, true><<< dimGrid, dimBlock>>>
+                ( result, x, numValues, cooIA, cooJA, cooValues );
+        }
+        else
+        {
+            cooGevmKernel<ValueType, true><<< dimGrid, dimBlock>>>
+                ( result, alpha, x, numValues, cooIA, cooJA, cooValues );
+        }
     }
     else
     {
-        cooGevmKernel<ValueType, false><<< dimGrid, dimBlock>>>
-            ( result, alpha, x, numValues, cooIA, cooJA, cooValues );
+        if ( alpha == 1 )
+        {
+            cooGevmKernel_alpha_one<ValueType, false><<< dimGrid, dimBlock>>>
+                ( result, x, numValues, cooIA, cooJA, cooValues );
+        }
+        else
+        {
+            cooGevmKernel<ValueType, false><<< dimGrid, dimBlock>>>
+                ( result, alpha, x, numValues, cooIA, cooJA, cooValues );
+        }
     }
 
     if ( !syncToken )

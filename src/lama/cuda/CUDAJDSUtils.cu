@@ -1219,12 +1219,7 @@ void normal_gemv_kernel(
     {
         IndexType i = jdsPerm[ii];  // row in matrix
 
-        ValueType summand = 0.0;
-
-        if ( beta != 0.0 )
-        {
-            summand = beta * y_d[i];
-        }
+        ValueType summand = beta * y_d[i];
 
         ValueType value = 0.0;
 
@@ -1240,6 +1235,309 @@ void normal_gemv_kernel(
         }
 
         result_d[i] = alpha * value + summand;
+    }
+}
+
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType,bool useTexture,bool useSharedMem>
+__global__
+void normal_gemv_kernel_alpha_one_beta_one(
+    ValueType* const result_d,
+    const ValueType* x_d,
+    const ValueType* y_d,
+    const ValueType* const jdsValues,
+    const IndexType* const jdsDLG,
+    const IndexType* const jdsILG,
+    const IndexType* jdsJA,
+    const IndexType* jdsPerm,
+    IndexType numRows,
+    const IndexType ndlg )
+{
+    extern __shared__ IndexType dlg[];
+    const IndexType ii = threadId( gridDim, blockIdx, blockDim, threadIdx );
+
+    if ( useSharedMem )
+    {
+        int k = threadIdx.x;
+        while ( k < ndlg )
+        {
+            dlg[k] = jdsDLG[k];
+            k += blockDim.x;
+        }
+        __syncthreads();
+    }
+
+    if ( ii < numRows )
+    {
+        IndexType i = jdsPerm[ii];  // row in matrix
+
+        ValueType summand = y_d[i];
+
+        ValueType value = 0.0;
+
+        int pos = ii;  // position in jdsJA, jdsValues
+
+        int ni  = jdsILG[ii];  // number entries in row
+
+        for ( int jj = 0; jj < ni; ++jj )
+        {
+            IndexType j = jdsJA[pos];
+            value += jdsValues[pos] * fetchJDSVectorX<ValueType,useTexture>( x_d, j );
+            pos += fetch_JDSdlg<useTexture,useSharedMem>( jdsDLG, dlg, jj );
+        }
+
+        result_d[i] = value + summand;
+    }
+}
+
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType,bool useTexture,bool useSharedMem>
+__global__
+void normal_gemv_kernel_alpha_one_beta_zero(
+    ValueType* const result_d,
+    const ValueType* x_d,
+    const ValueType* y_d,
+    const ValueType* const jdsValues,
+    const IndexType* const jdsDLG,
+    const IndexType* const jdsILG,
+    const IndexType* jdsJA,
+    const IndexType* jdsPerm,
+    IndexType numRows,
+    const IndexType ndlg )
+{
+    extern __shared__ IndexType dlg[];
+    const IndexType ii = threadId( gridDim, blockIdx, blockDim, threadIdx );
+
+    if ( useSharedMem )
+    {
+        int k = threadIdx.x;
+        while ( k < ndlg )
+        {
+            dlg[k] = jdsDLG[k];
+            k += blockDim.x;
+        }
+        __syncthreads();
+    }
+
+    if ( ii < numRows )
+    {
+        IndexType i = jdsPerm[ii];  // row in matrix
+
+        ValueType value = 0.0;
+
+        int pos = ii;  // position in jdsJA, jdsValues
+
+        int ni  = jdsILG[ii];  // number entries in row
+
+        for ( int jj = 0; jj < ni; ++jj )
+        {
+            IndexType j = jdsJA[pos];
+            value += jdsValues[pos] * fetchJDSVectorX<ValueType,useTexture>( x_d, j );
+            pos += fetch_JDSdlg<useTexture,useSharedMem>( jdsDLG, dlg, jj );
+        }
+
+        result_d[i] = value;
+    }
+}
+
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType,bool useTexture,bool useSharedMem>
+__global__
+void assign_kernel(
+    ValueType* const result_d,
+    const ValueType* y_d,
+    const IndexType* jdsPerm,
+    IndexType numRows)
+{
+    const IndexType ii = threadId( gridDim, blockIdx, blockDim, threadIdx );
+
+    if ( ii < numRows )
+    {
+        IndexType i = jdsPerm[ii];  // row in matrix
+        result_d[i] = y_d[i];
+    }
+}
+
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType,bool useTexture,bool useSharedMem>
+__global__
+void normal_gemv_kernel_alpha_one(
+    ValueType* const result_d,
+    const ValueType* x_d,
+    const ValueType* y_d,
+    const ValueType beta,
+    const ValueType* const jdsValues,
+    const IndexType* const jdsDLG,
+    const IndexType* const jdsILG,
+    const IndexType* jdsJA,
+    const IndexType* jdsPerm,
+    IndexType numRows,
+    const IndexType ndlg )
+{
+    extern __shared__ IndexType dlg[];
+    const IndexType ii = threadId( gridDim, blockIdx, blockDim, threadIdx );
+
+    if ( useSharedMem )
+    {
+        int k = threadIdx.x;
+        while ( k < ndlg )
+        {
+            dlg[k] = jdsDLG[k];
+            k += blockDim.x;
+        }
+        __syncthreads();
+    }
+
+    if ( ii < numRows )
+    {
+        IndexType i = jdsPerm[ii];  // row in matrix
+
+        ValueType summand = beta * y_d[i];
+
+        ValueType value = 0.0;
+
+        int pos = ii;  // position in jdsJA, jdsValues
+
+        int ni  = jdsILG[ii];  // number entries in row
+
+        for ( int jj = 0; jj < ni; ++jj )
+        {
+            IndexType j = jdsJA[pos];
+            value += jdsValues[pos] * fetchJDSVectorX<ValueType,useTexture>( x_d, j );
+            pos += fetch_JDSdlg<useTexture,useSharedMem>( jdsDLG, dlg, jj );
+        }
+
+        result_d[i] = value + summand;
+    }
+}
+
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType,bool useTexture,bool useSharedMem>
+__global__
+void scale_kernel(
+    ValueType* const result_d,
+    const ValueType* y_d,
+    const ValueType beta,
+    const IndexType* jdsPerm,
+    IndexType numRows )
+{
+    const IndexType ii = threadId( gridDim, blockIdx, blockDim, threadIdx );
+
+    if ( ii < numRows )
+    {
+        IndexType i = jdsPerm[ii];  // row in matrix
+        result_d[i] = beta * y_d[i];
+    }
+}
+
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType,bool useTexture,bool useSharedMem>
+__global__
+void normal_gemv_kernel_beta_one(
+    ValueType* const result_d,
+    const ValueType* x_d,
+    const ValueType* y_d,
+    const ValueType alpha,
+    const ValueType* const jdsValues,
+    const IndexType* const jdsDLG,
+    const IndexType* const jdsILG,
+    const IndexType* jdsJA,
+    const IndexType* jdsPerm,
+    IndexType numRows,
+    const IndexType ndlg )
+{
+    extern __shared__ IndexType dlg[];
+    const IndexType ii = threadId( gridDim, blockIdx, blockDim, threadIdx );
+
+    if ( useSharedMem )
+    {
+        int k = threadIdx.x;
+        while ( k < ndlg )
+        {
+            dlg[k] = jdsDLG[k];
+            k += blockDim.x;
+        }
+        __syncthreads();
+    }
+
+    if ( ii < numRows )
+    {
+        IndexType i = jdsPerm[ii];  // row in matrix
+
+        ValueType summand = y_d[i];
+
+        ValueType value = 0.0;
+
+        int pos = ii;  // position in jdsJA, jdsValues
+
+        int ni  = jdsILG[ii];  // number entries in row
+
+        for ( int jj = 0; jj < ni; ++jj )
+        {
+            IndexType j = jdsJA[pos];
+            value += jdsValues[pos] * fetchJDSVectorX<ValueType,useTexture>( x_d, j );
+            pos += fetch_JDSdlg<useTexture,useSharedMem>( jdsDLG, dlg, jj );
+        }
+
+        result_d[i] = alpha * value + summand;
+    }
+}
+
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType,bool useTexture,bool useSharedMem>
+__global__
+void normal_gemv_kernel_beta_zero(
+    ValueType* const result_d,
+    const ValueType* x_d,
+    const ValueType* y_d,
+    const ValueType alpha,
+    const ValueType* const jdsValues,
+    const IndexType* const jdsDLG,
+    const IndexType* const jdsILG,
+    const IndexType* jdsJA,
+    const IndexType* jdsPerm,
+    IndexType numRows,
+    const IndexType ndlg )
+{
+    extern __shared__ IndexType dlg[];
+    const IndexType ii = threadId( gridDim, blockIdx, blockDim, threadIdx );
+
+    if ( useSharedMem )
+    {
+        int k = threadIdx.x;
+        while ( k < ndlg )
+        {
+            dlg[k] = jdsDLG[k];
+            k += blockDim.x;
+        }
+        __syncthreads();
+    }
+
+    if ( ii < numRows )
+    {
+        IndexType i = jdsPerm[ii];  // row in matrix
+
+        ValueType value = 0.0;
+
+        int pos = ii;  // position in jdsJA, jdsValues
+
+        int ni  = jdsILG[ii];  // number entries in row
+
+        for ( int jj = 0; jj < ni; ++jj )
+        {
+            IndexType j = jdsJA[pos];
+            value += jdsValues[pos] * fetchJDSVectorX<ValueType,useTexture>( x_d, j );
+            pos += fetch_JDSdlg<useTexture,useSharedMem>( jdsDLG, dlg, jj );
+        }
+
+        result_d[i] = alpha * value;
     }
 }
 
@@ -1292,6 +1590,57 @@ void sparse_gemv_kernel(
         }
 
         result_d[i] += alpha * value;
+    }
+}
+
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType,bool useTexture,bool useSharedMem>
+__global__
+void sparse_gemv_kernel_alpha_one(
+    ValueType* const result_d,
+    const ValueType* x_d,
+    const ValueType* const jdsValues,
+    const IndexType* const jdsDLG,
+    const IndexType* const jdsILG,
+    const IndexType* jdsJA,
+    const IndexType* jdsPerm,
+    IndexType numNonZeroRows,
+    const IndexType ndlg )
+{
+    extern __shared__ IndexType dlg[];
+
+    const IndexType ii = threadId( gridDim, blockIdx, blockDim, threadIdx );
+
+    if ( useSharedMem )
+    {
+        int k = threadIdx.x;
+        while ( k < ndlg )
+        {
+            dlg[k] = jdsDLG[k];
+            k += blockDim.x;
+        }
+        __syncthreads();
+    }
+
+    if ( ii < numNonZeroRows )
+    {
+        IndexType i = jdsPerm[ii];  // row in matrix
+
+        ValueType value = 0.0;
+
+        int pos = ii;  // position in jdsJA, jdsValues
+
+        int ni  = jdsILG[ii];  // number entries in row
+
+        for ( int jj = 0; jj < ni; ++jj )
+        {
+            IndexType j = jdsJA[pos];
+            value += jdsValues[pos] * fetchJDSVectorX<ValueType,useTexture>( x_d, j );
+            pos += fetch_JDSdlg<useTexture,useSharedMem>( jdsDLG, dlg, jj );
+        }
+
+        result_d[i] += value;
     }
 }
 
@@ -1377,12 +1726,12 @@ void CUDAJDSUtils::normalGEMV(
     LAMA_REGION( "CUDA.JDS.normalGEMV" )
 
     LAMA_LOG_INFO( logger, "normalGEMV<" << Scalar::getType<ValueType>() << ">" 
-                            << " result[ " << numRows << "] = " << alpha 
-                            << " * A( #jds_diags = " << ndlg << " ) * x + " << beta << " * y " )
+                   << " result[ " << numRows << "] = " << alpha
+                   << " * A( #jds_diags = " << ndlg << " ) * x + " << beta << " * y " )
 
-    LAMA_LOG_DEBUG( logger, "x = " << x << ", y = " << y << ", result = " << result )
+                   LAMA_LOG_DEBUG( logger, "x = " << x << ", y = " << y << ", result = " << result )
 
-    const bool useTexture   = CUDASettings::useTexture();
+                   const bool useTexture   = CUDASettings::useTexture();
     const bool useSharedMem = CUDASettings::useSharedMem();
     const int  blockSize    = CUDASettings::getBlockSize( numRows );
 
@@ -1394,8 +1743,8 @@ void CUDAJDSUtils::normalGEMV(
     cudaStream_t stream = 0;  // default stream if no SyncToken is available
 
     LAMA_LOG_INFO( logger, "Start normal_gemv_kernel<" << Scalar::getType<ValueType>()
-                           << "> <<< blockSize = " << blockSize << ", stream = " << stream
-                           << ", useTexture = " << useTexture << ", useSharedMem = " << useSharedMem << ">>>" );
+        << "> <<< blockSize = " << blockSize << ", stream = " << stream
+        << ", useTexture = " << useTexture << ", useSharedMem = " << useSharedMem << ">>>" );
 
     if ( syncToken )
     {
@@ -1404,23 +1753,103 @@ void CUDAJDSUtils::normalGEMV(
         stream = cudaStreamSyncToken->getCUDAStream();
     }
 
+    int sharedMemSize = 0;
+    if ( useSharedMem )
+    {
+        sharedMemSize = ndlg * sizeof(int);
+    }
+
     if ( useTexture )
     {
         vectorJDSBindTexture( x );
 
         if ( useSharedMem )
         {
-            const int sharedMemSize = ndlg * sizeof(int);
-
-            normal_gemv_kernel<ValueType, true, true><<<dimGrid, dimBlock, sharedMemSize, stream>>>
-            ( result, x, y, alpha, beta, jdsValues, jdsDLG, jdsILG, jdsJA, jdsPerm, numRows, ndlg );
+            if( alpha == 1 && beta == 1 )
+            {
+                normal_gemv_kernel_alpha_one_beta_one<ValueType, true, true><<<dimGrid, dimBlock, sharedMemSize, stream>>>
+                                ( result, x, y, jdsValues, jdsDLG, jdsILG, jdsJA, jdsPerm, numRows, ndlg );
+            }
+            else if ( alpha == 1 && beta == 0 )
+            {
+                normal_gemv_kernel_alpha_one_beta_zero<ValueType, true, true><<<dimGrid, dimBlock, sharedMemSize, stream>>>
+                                ( result, x, y, jdsValues, jdsDLG, jdsILG, jdsJA, jdsPerm, numRows, ndlg );
+            }
+            else if ( alpha == 0 && beta == 1 )
+            {
+                assign_kernel<ValueType, true, true><<<dimGrid, dimBlock, sharedMemSize, stream>>>
+                                ( result, y, jdsPerm, numRows );
+            }
+            else if ( alpha == 1 )
+            {
+                normal_gemv_kernel_alpha_one<ValueType, true, true><<<dimGrid, dimBlock, sharedMemSize, stream>>>
+                                ( result, x, y, beta, jdsValues, jdsDLG, jdsILG, jdsJA, jdsPerm, numRows, ndlg );
+            }
+            else if ( alpha == 0 )
+            {
+                scale_kernel<ValueType, true, true><<<dimGrid, dimBlock, sharedMemSize, stream>>>
+                                ( result, y, beta, jdsPerm, numRows) ;
+            }
+            else if ( beta == 1 )
+            {
+                normal_gemv_kernel_beta_one<ValueType, true, true><<<dimGrid, dimBlock, sharedMemSize, stream>>>
+                                ( result, x, y, alpha, jdsValues, jdsDLG, jdsILG, jdsJA, jdsPerm, numRows, ndlg );
+            }
+            else if ( beta == 0 )
+            {
+                normal_gemv_kernel_beta_zero<ValueType, true, true><<<dimGrid, dimBlock, sharedMemSize, stream>>>
+                                ( result, x, y, alpha, jdsValues, jdsDLG, jdsILG, jdsJA, jdsPerm, numRows, ndlg );
+            }
+            else
+            {
+                normal_gemv_kernel<ValueType, true, true><<<dimGrid, dimBlock, sharedMemSize, stream>>>
+                                ( result, x, y, alpha, beta, jdsValues, jdsDLG, jdsILG, jdsJA, jdsPerm, numRows, ndlg );
+            }
         }
         else // no sharedMem
         {
             vectorJDSBindTexture( jdsDLG );
 
-            normal_gemv_kernel<ValueType, true, false><<<dimGrid, dimBlock, 0, stream>>>
-            ( result, x, y, alpha, beta, jdsValues, jdsDLG, jdsILG, jdsJA, jdsPerm, numRows, ndlg );
+            if( alpha == 1 && beta == 1 )
+            {
+                normal_gemv_kernel_alpha_one_beta_one<ValueType, true, false><<<dimGrid, dimBlock, sharedMemSize, stream>>>
+                                ( result, x, y, jdsValues, jdsDLG, jdsILG, jdsJA, jdsPerm, numRows, ndlg );
+            }
+            else if ( alpha == 1 && beta == 0 )
+            {
+                normal_gemv_kernel_alpha_one_beta_zero<ValueType, true, false><<<dimGrid, dimBlock, sharedMemSize, stream>>>
+                                ( result, x, y, jdsValues, jdsDLG, jdsILG, jdsJA, jdsPerm, numRows, ndlg );
+            }
+            else if ( alpha == 0 && beta == 1 )
+            {
+                assign_kernel<ValueType, true, false><<<dimGrid, dimBlock, sharedMemSize, stream>>>
+                                ( result, y, jdsPerm, numRows );
+            }
+            else if ( alpha == 1 )
+            {
+                normal_gemv_kernel_alpha_one<ValueType, true, false><<<dimGrid, dimBlock, sharedMemSize, stream>>>
+                                ( result, x, y, beta, jdsValues, jdsDLG, jdsILG, jdsJA, jdsPerm, numRows, ndlg );
+            }
+            else if ( alpha == 0 )
+            {
+                scale_kernel<ValueType, true, false><<<dimGrid, dimBlock, sharedMemSize, stream>>>
+                                ( result, y, beta, jdsPerm, numRows );
+            }
+            else if ( beta == 1 )
+            {
+                normal_gemv_kernel_beta_one<ValueType, true, false><<<dimGrid, dimBlock, sharedMemSize, stream>>>
+                                ( result, x, y, alpha, jdsValues, jdsDLG, jdsILG, jdsJA, jdsPerm, numRows, ndlg );
+            }
+            else if ( beta == 0 )
+            {
+                normal_gemv_kernel_beta_zero<ValueType, true, false><<<dimGrid, dimBlock, sharedMemSize, stream>>>
+                                ( result, x, y, alpha, jdsValues, jdsDLG, jdsILG, jdsJA, jdsPerm, numRows, ndlg );
+            }
+            else
+            {
+                normal_gemv_kernel<ValueType, true, false><<<dimGrid, dimBlock, sharedMemSize, stream>>>
+                                ( result, x, y, alpha, beta, jdsValues, jdsDLG, jdsILG, jdsJA, jdsPerm, numRows, ndlg );
+            }
         }
 
         if ( !syncToken )
@@ -1429,7 +1858,7 @@ void CUDAJDSUtils::normalGEMV(
 
             LAMA_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "JDS: gemvKernel FAILED" )
 
-            vectorJDSUnbindTexture( x );
+                            vectorJDSUnbindTexture( x );
 
             if ( !useSharedMem )
             {
@@ -1455,18 +1884,90 @@ void CUDAJDSUtils::normalGEMV(
     {
         if ( useSharedMem )
         {
-            const int sharedMemSize = ndlg * sizeof( int );
-            cudaFuncSetCacheConfig( normal_gemv_kernel<ValueType, false, true>, cudaFuncCachePreferL1 );
-            normal_gemv_kernel<ValueType, false, true><<<dimGrid, dimBlock, sharedMemSize, stream>>>
-            ( result, x, y, alpha, beta, jdsValues, jdsDLG, jdsILG, jdsJA, jdsPerm, numRows, ndlg );
+            if( alpha == 1 && beta == 1 )
+            {
+                normal_gemv_kernel_alpha_one_beta_one<ValueType, false, true><<<dimGrid, dimBlock, sharedMemSize, stream>>>
+                                ( result, x, y, jdsValues, jdsDLG, jdsILG, jdsJA, jdsPerm, numRows, ndlg );
+            }
+            else if ( alpha == 1 && beta == 0 )
+            {
+                normal_gemv_kernel_alpha_one_beta_zero<ValueType, false, true><<<dimGrid, dimBlock, sharedMemSize, stream>>>
+                                ( result, x, y, jdsValues, jdsDLG, jdsILG, jdsJA, jdsPerm, numRows, ndlg );
+            }
+            else if ( alpha == 0 && beta == 1 )
+            {
+                assign_kernel<ValueType, true, true><<<dimGrid, dimBlock, sharedMemSize, stream>>>
+                                ( result, y, jdsPerm, numRows );
+            }
+            else if ( alpha == 1 )
+            {
+                normal_gemv_kernel_alpha_one<ValueType, false, true><<<dimGrid, dimBlock, sharedMemSize, stream>>>
+                                ( result, x, y, beta, jdsValues, jdsDLG, jdsILG, jdsJA, jdsPerm, numRows, ndlg );
+            }
+            else if ( alpha == 0 )
+            {
+                scale_kernel<ValueType, false, true><<<dimGrid, dimBlock, sharedMemSize, stream>>>
+                                ( result, y, beta, jdsPerm, numRows );
+            }
+            else if ( beta == 1 )
+            {
+                normal_gemv_kernel_beta_one<ValueType, false, true><<<dimGrid, dimBlock, sharedMemSize, stream>>>
+                                ( result, x, y, alpha, jdsValues, jdsDLG, jdsILG, jdsJA, jdsPerm, numRows, ndlg );
+            }
+            else if ( beta == 0 )
+            {
+                normal_gemv_kernel_beta_zero<ValueType, false, true><<<dimGrid, dimBlock, sharedMemSize, stream>>>
+                                ( result, x, y, alpha, jdsValues, jdsDLG, jdsILG, jdsJA, jdsPerm, numRows, ndlg );
+            }
+            else
+            {
+                normal_gemv_kernel<ValueType, false, true><<<dimGrid, dimBlock, sharedMemSize, stream>>>
+                                ( result, x, y, alpha, beta, jdsValues, jdsDLG, jdsILG, jdsJA, jdsPerm, numRows, ndlg );
+            }
         }
         else // no sharedMem
         {
-            cudaFuncSetCacheConfig( normal_gemv_kernel<ValueType, false, false>, cudaFuncCachePreferL1 );
-            normal_gemv_kernel<ValueType, false, false><<<dimGrid, dimBlock, 0, stream>>>
-            ( result, x, y, alpha, beta, jdsValues, jdsDLG, jdsILG, jdsJA, jdsPerm, numRows, ndlg );
+            if( alpha == 1 && beta == 1 )
+            {
+                normal_gemv_kernel_alpha_one_beta_one<ValueType, false, false><<<dimGrid, dimBlock, sharedMemSize, stream>>>
+                                ( result, x, y, jdsValues, jdsDLG, jdsILG, jdsJA, jdsPerm, numRows, ndlg );
+            }
+            else if ( alpha == 1 && beta == 0 )
+            {
+                normal_gemv_kernel_alpha_one_beta_zero<ValueType, false, false><<<dimGrid, dimBlock, sharedMemSize, stream>>>
+                                ( result, x, y, jdsValues, jdsDLG, jdsILG, jdsJA, jdsPerm, numRows, ndlg );
+            }
+            else if ( alpha == 0 && beta == 1 )
+            {
+                assign_kernel<ValueType, false, false><<<dimGrid, dimBlock, sharedMemSize, stream>>>
+                                ( result, y, jdsPerm, numRows );
+            }
+            else if ( alpha == 1 )
+            {
+                normal_gemv_kernel_alpha_one<ValueType, false, false><<<dimGrid, dimBlock, sharedMemSize, stream>>>
+                                ( result, x, y, beta, jdsValues, jdsDLG, jdsILG, jdsJA, jdsPerm, numRows, ndlg );
+            }
+            else if ( alpha == 0 )
+            {
+                scale_kernel<ValueType, false, false><<<dimGrid, dimBlock, sharedMemSize, stream>>>
+                                ( result, y, beta, jdsPerm, numRows );
+            }
+            else if ( beta == 1 )
+            {
+                normal_gemv_kernel_beta_one<ValueType, false, false><<<dimGrid, dimBlock, sharedMemSize, stream>>>
+                                ( result, x, y, alpha, jdsValues, jdsDLG, jdsILG, jdsJA, jdsPerm, numRows, ndlg );
+            }
+            else if ( beta == 0 )
+            {
+                normal_gemv_kernel_beta_zero<ValueType, false, false><<<dimGrid, dimBlock, sharedMemSize, stream>>>
+                                ( result, x, y, alpha, jdsValues, jdsDLG, jdsILG, jdsJA, jdsPerm, numRows, ndlg );
+            }
+            else
+            {
+                normal_gemv_kernel<ValueType, false, false><<<dimGrid, dimBlock, sharedMemSize, stream>>>
+                                ( result, x, y, alpha, beta, jdsValues, jdsDLG, jdsILG, jdsJA, jdsPerm, numRows, ndlg );
+            }
         }
-
         if ( !syncToken )
         {
             LAMA_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "JDS: gemvKernel FAILED" )
@@ -1545,6 +2046,322 @@ void normal_gevm_kernel(
 
 /* --------------------------------------------------------------------------- */
 
+template<typename ValueType,bool useTexture,bool useSharedMem>
+__global__
+void normal_gevm_kernel_alpha_one_beta_one(
+    ValueType* const result_d,
+    const ValueType* x_d,
+    const ValueType* y_d,
+    const ValueType* const jdsValues,
+    const IndexType* const jdsDLG,
+    const IndexType* const jdsILG,
+    const IndexType* jdsJA,
+    const IndexType* jdsPerm,
+    IndexType numColumns,
+    const IndexType ndlg )
+{
+    extern __shared__ IndexType dlg[];
+    const IndexType k = threadId( gridDim, blockIdx, blockDim, threadIdx );
+
+    if ( useSharedMem )
+    {
+        int k = threadIdx.x;
+        while ( k < ndlg )
+        {
+            dlg[k] = jdsDLG[k];
+            k += blockDim.x;
+        }
+        __syncthreads();
+    }
+
+    if ( k < numColumns )
+    {
+        if( ndlg > 0 )
+        {
+            ValueType value = 0.0;
+            ValueType summand = y_d[k];
+
+            int nonEmptyRows = jdsDLG[0];
+            for ( int ii = 0; ii < nonEmptyRows; ++ii ) // through the rows of the first diagonal
+            {
+                IndexType i = jdsPerm[ii];  // row in matrix
+
+                int off = ii;  // position in jdsJA, jdsValues
+
+                int ni  = jdsILG[ii];  // number entries in row
+
+                for ( int jj = 0; jj < ni; ++jj )
+                {
+                    IndexType j = jdsJA[off];
+                    if ( j == k )
+                    {
+                        value += jdsValues[off] * fetchJDSVectorX<ValueType,useTexture>( x_d, i );
+                    }
+                    off += fetch_JDSdlg<useTexture,useSharedMem>( jdsDLG, dlg, jj );
+                }
+            }
+
+            result_d[k] = value + summand;
+        }
+    }
+}
+
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType,bool useTexture,bool useSharedMem>
+__global__
+void normal_gevm_kernel_alpha_one_beta_zero(
+    ValueType* const result_d,
+    const ValueType* x_d,
+    const ValueType* y_d,
+    const ValueType* const jdsValues,
+    const IndexType* const jdsDLG,
+    const IndexType* const jdsILG,
+    const IndexType* jdsJA,
+    const IndexType* jdsPerm,
+    IndexType numColumns,
+    const IndexType ndlg )
+{
+    extern __shared__ IndexType dlg[];
+    const IndexType k = threadId( gridDim, blockIdx, blockDim, threadIdx );
+
+    if ( useSharedMem )
+    {
+        int k = threadIdx.x;
+        while ( k < ndlg )
+        {
+            dlg[k] = jdsDLG[k];
+            k += blockDim.x;
+        }
+        __syncthreads();
+    }
+
+    if ( k < numColumns )
+    {
+        if( ndlg > 0 )
+        {
+            ValueType value = 0.0;
+
+            int nonEmptyRows = jdsDLG[0];
+            for ( int ii = 0; ii < nonEmptyRows; ++ii ) // through the rows of the first diagonal
+            {
+                IndexType i = jdsPerm[ii];  // row in matrix
+
+                int off = ii;  // position in jdsJA, jdsValues
+
+                int ni  = jdsILG[ii];  // number entries in row
+
+                for ( int jj = 0; jj < ni; ++jj )
+                {
+                    IndexType j = jdsJA[off];
+                    if ( j == k )
+                    {
+                        value += jdsValues[off] * fetchJDSVectorX<ValueType,useTexture>( x_d, i );
+                    }
+                    off += fetch_JDSdlg<useTexture,useSharedMem>( jdsDLG, dlg, jj );
+                }
+            }
+
+            result_d[k] = value;
+        }
+    }
+}
+
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType,bool useTexture,bool useSharedMem>
+__global__
+void normal_gevm_kernel_alpha_one(
+    ValueType* const result_d,
+    const ValueType* x_d,
+    const ValueType* y_d,
+    const ValueType beta,
+    const ValueType* const jdsValues,
+    const IndexType* const jdsDLG,
+    const IndexType* const jdsILG,
+    const IndexType* jdsJA,
+    const IndexType* jdsPerm,
+    IndexType numColumns,
+    const IndexType ndlg )
+{
+    extern __shared__ IndexType dlg[];
+    const IndexType k = threadId( gridDim, blockIdx, blockDim, threadIdx );
+
+    if ( useSharedMem )
+    {
+        int k = threadIdx.x;
+        while ( k < ndlg )
+        {
+            dlg[k] = jdsDLG[k];
+            k += blockDim.x;
+        }
+        __syncthreads();
+    }
+
+    if ( k < numColumns )
+    {
+        if( ndlg > 0 )
+        {
+            ValueType value = 0.0;
+            ValueType summand = 0.0;
+
+            if ( beta != 0.0 )
+            {
+                summand = beta * y_d[k];
+            }
+
+            int nonEmptyRows = jdsDLG[0];
+            for ( int ii = 0; ii < nonEmptyRows; ++ii ) // through the rows of the first diagonal
+            {
+                IndexType i = jdsPerm[ii];  // row in matrix
+
+                int off = ii;  // position in jdsJA, jdsValues
+
+                int ni  = jdsILG[ii];  // number entries in row
+
+                for ( int jj = 0; jj < ni; ++jj )
+                {
+                    IndexType j = jdsJA[off];
+                    if ( j == k )
+                    {
+                        value += jdsValues[off] * fetchJDSVectorX<ValueType,useTexture>( x_d, i );
+                    }
+                    off += fetch_JDSdlg<useTexture,useSharedMem>( jdsDLG, dlg, jj );
+                }
+            }
+
+            result_d[k] = value + summand;
+        }
+    }
+}
+
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType,bool useTexture,bool useSharedMem>
+__global__
+void normal_gevm_kernel_beta_one(
+    ValueType* const result_d,
+    const ValueType* x_d,
+    const ValueType* y_d,
+    const ValueType alpha,
+    const ValueType* const jdsValues,
+    const IndexType* const jdsDLG,
+    const IndexType* const jdsILG,
+    const IndexType* jdsJA,
+    const IndexType* jdsPerm,
+    IndexType numColumns,
+    const IndexType ndlg )
+{
+    extern __shared__ IndexType dlg[];
+    const IndexType k = threadId( gridDim, blockIdx, blockDim, threadIdx );
+
+    if ( useSharedMem )
+    {
+        int k = threadIdx.x;
+        while ( k < ndlg )
+        {
+            dlg[k] = jdsDLG[k];
+            k += blockDim.x;
+        }
+        __syncthreads();
+    }
+
+    if ( k < numColumns )
+    {
+        if( ndlg > 0 )
+        {
+            ValueType value = 0.0;
+            ValueType summand = y_d[k];
+
+            int nonEmptyRows = jdsDLG[0];
+            for ( int ii = 0; ii < nonEmptyRows; ++ii ) // through the rows of the first diagonal
+            {
+                IndexType i = jdsPerm[ii];  // row in matrix
+
+                int off = ii;  // position in jdsJA, jdsValues
+
+                int ni  = jdsILG[ii];  // number entries in row
+
+                for ( int jj = 0; jj < ni; ++jj )
+                {
+                    IndexType j = jdsJA[off];
+                    if ( j == k )
+                    {
+                        value += jdsValues[off] * fetchJDSVectorX<ValueType,useTexture>( x_d, i );
+                    }
+                    off += fetch_JDSdlg<useTexture,useSharedMem>( jdsDLG, dlg, jj );
+                }
+            }
+
+            result_d[k] = alpha * value + summand;
+        }
+    }
+}
+
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType,bool useTexture,bool useSharedMem>
+__global__
+void normal_gevm_kernel_beta_zero(
+    ValueType* const result_d,
+    const ValueType* x_d,
+    const ValueType* y_d,
+    const ValueType alpha,
+    const ValueType* const jdsValues,
+    const IndexType* const jdsDLG,
+    const IndexType* const jdsILG,
+    const IndexType* jdsJA,
+    const IndexType* jdsPerm,
+    IndexType numColumns,
+    const IndexType ndlg )
+{
+    extern __shared__ IndexType dlg[];
+    const IndexType k = threadId( gridDim, blockIdx, blockDim, threadIdx );
+
+    if ( useSharedMem )
+    {
+        int k = threadIdx.x;
+        while ( k < ndlg )
+        {
+            dlg[k] = jdsDLG[k];
+            k += blockDim.x;
+        }
+        __syncthreads();
+    }
+
+    if ( k < numColumns )
+    {
+        if( ndlg > 0 )
+        {
+            ValueType value = 0.0;
+
+            int nonEmptyRows = jdsDLG[0];
+            for ( int ii = 0; ii < nonEmptyRows; ++ii ) // through the rows of the first diagonal
+            {
+                IndexType i = jdsPerm[ii];  // row in matrix
+
+                int off = ii;  // position in jdsJA, jdsValues
+
+                int ni  = jdsILG[ii];  // number entries in row
+
+                for ( int jj = 0; jj < ni; ++jj )
+                {
+                    IndexType j = jdsJA[off];
+                    if ( j == k )
+                    {
+                        value += jdsValues[off] * fetchJDSVectorX<ValueType,useTexture>( x_d, i );
+                    }
+                    off += fetch_JDSdlg<useTexture,useSharedMem>( jdsDLG, dlg, jj );
+                }
+            }
+
+            result_d[k] = alpha * value;
+        }
+    }
+}
+
+/* --------------------------------------------------------------------------- */
+
 template<typename ValueType>
 void CUDAJDSUtils::normalGEVM(
     ValueType result[],
@@ -1600,32 +2417,112 @@ void CUDAJDSUtils::normalGEVM(
         stream = cudaStreamSyncToken->getCUDAStream();
     }
 
+    int sharedMemSize = 0;
+    if ( useSharedMem )
+    {
+        sharedMemSize = ndlg * sizeof(int);
+    }
+
     if ( useTexture )
     {
         vectorJDSBindTexture( x );
 
         if ( useSharedMem )
         {
-            const int sharedMemSize = ndlg * sizeof(int);
-
-            normal_gevm_kernel<ValueType, true, true><<<dimGrid, dimBlock, sharedMemSize, stream>>>
-            ( result, x, y, alpha, beta, jdsValues, jdsDLG, jdsILG, jdsJA, jdsPerm, numColumns, ndlg );
+            if( alpha == 1 && beta == 1 )
+            {
+                normal_gevm_kernel_alpha_one_beta_one<ValueType, true, true><<<dimGrid, dimBlock, sharedMemSize, stream>>>
+                                ( result, x, y, jdsValues, jdsDLG, jdsILG, jdsJA, jdsPerm, numColumns, ndlg );
+            }
+            else if ( alpha == 1 && beta == 0 )
+            {
+                normal_gevm_kernel_alpha_one_beta_zero<ValueType, true, true><<<dimGrid, dimBlock, sharedMemSize, stream>>>
+                                ( result, x, y, jdsValues, jdsDLG, jdsILG, jdsJA, jdsPerm, numColumns, ndlg );
+            }
+            else if ( alpha == 0 && beta == 1 )
+            {
+                assign_kernel<ValueType, true, true><<<dimGrid, dimBlock, sharedMemSize, stream>>>
+                                ( result, y, jdsPerm, numColumns );
+            }
+            else if ( alpha == 1 )
+            {
+                normal_gevm_kernel_alpha_one<ValueType, true, true><<<dimGrid, dimBlock, sharedMemSize, stream>>>
+                                ( result, x, y, beta, jdsValues, jdsDLG, jdsILG, jdsJA, jdsPerm, numColumns, ndlg );
+            }
+            else if ( alpha == 0 )
+            {
+                scale_kernel<ValueType, true, true><<<dimGrid, dimBlock, sharedMemSize, stream>>>
+                                ( result, y, beta, jdsPerm, numColumns );
+            }
+            else if ( beta == 1 )
+            {
+                normal_gevm_kernel_beta_one<ValueType, true, true><<<dimGrid, dimBlock, sharedMemSize, stream>>>
+                                ( result, x, y, alpha, jdsValues, jdsDLG, jdsILG, jdsJA, jdsPerm, numColumns, ndlg );
+            }
+            else if ( beta == 0 )
+            {
+                normal_gevm_kernel_beta_zero<ValueType, true, true><<<dimGrid, dimBlock, sharedMemSize, stream>>>
+                                ( result, x, y, alpha, jdsValues, jdsDLG, jdsILG, jdsJA, jdsPerm, numColumns, ndlg );
+            }
+            else
+            {
+                normal_gevm_kernel<ValueType, true, true><<<dimGrid, dimBlock, sharedMemSize, stream>>>
+                                ( result, x, y, alpha, beta, jdsValues, jdsDLG, jdsILG, jdsJA, jdsPerm, numColumns, ndlg );
+            }
         }
         else // no sharedMem
         {
             vectorJDSBindTexture( jdsDLG );
 
-            normal_gevm_kernel<ValueType, true, false><<<dimGrid, dimBlock, 0, stream>>>
-            ( result, x, y, alpha, beta, jdsValues, jdsDLG, jdsILG, jdsJA, jdsPerm, numColumns, ndlg );
+            if( alpha == 1 && beta == 1 )
+            {
+                normal_gevm_kernel_alpha_one_beta_one<ValueType, true, false><<<dimGrid, dimBlock, sharedMemSize, stream>>>
+                                ( result, x, y, jdsValues, jdsDLG, jdsILG, jdsJA, jdsPerm, numColumns, ndlg );
+            }
+            else if ( alpha == 1 && beta == 0 )
+            {
+                normal_gevm_kernel_alpha_one_beta_zero<ValueType, true, false><<<dimGrid, dimBlock, sharedMemSize, stream>>>
+                                ( result, x, y, jdsValues, jdsDLG, jdsILG, jdsJA, jdsPerm, numColumns, ndlg );
+            }
+            else if ( alpha == 0 && beta == 1 )
+            {
+                assign_kernel<ValueType, true, false><<<dimGrid, dimBlock, sharedMemSize, stream>>>
+                                ( result, y, jdsPerm, numColumns );
+            }
+            else if ( alpha == 1 )
+            {
+                normal_gevm_kernel_alpha_one<ValueType, true, false><<<dimGrid, dimBlock, sharedMemSize, stream>>>
+                                ( result, x, y, beta, jdsValues, jdsDLG, jdsILG, jdsJA, jdsPerm, numColumns, ndlg );
+            }
+            else if ( alpha == 0 )
+            {
+                scale_kernel<ValueType, true, false><<<dimGrid, dimBlock, sharedMemSize, stream>>>
+                                ( result, y, beta, jdsPerm, numColumns );
+            }
+            else if ( beta == 1 )
+            {
+                normal_gevm_kernel_beta_one<ValueType, true, false><<<dimGrid, dimBlock, sharedMemSize, stream>>>
+                                ( result, x, y, alpha, jdsValues, jdsDLG, jdsILG, jdsJA, jdsPerm, numColumns, ndlg );
+            }
+            else if ( beta == 0 )
+            {
+                normal_gevm_kernel_beta_zero<ValueType, true, false><<<dimGrid, dimBlock, sharedMemSize, stream>>>
+                                ( result, x, y, alpha, jdsValues, jdsDLG, jdsILG, jdsJA, jdsPerm, numColumns, ndlg );
+            }
+            else
+            {
+                normal_gevm_kernel<ValueType, true, false><<<dimGrid, dimBlock, sharedMemSize, stream>>>
+                                ( result, x, y, alpha, beta, jdsValues, jdsDLG, jdsILG, jdsJA, jdsPerm, numColumns, ndlg );
+            }
         }
 
         if ( !syncToken )
         {
             // synchronize here and unbind texture
 
-            LAMA_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "JDS: gemvKernel FAILED" )
+            LAMA_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "JDS: gevmKernel FAILED" )
 
-            vectorJDSUnbindTexture( x );
+                            vectorJDSUnbindTexture( x );
 
             if ( !useSharedMem )
             {
@@ -1651,18 +2548,90 @@ void CUDAJDSUtils::normalGEVM(
     {
         if ( useSharedMem )
         {
-            const int sharedMemSize = ndlg * sizeof( int );
-            cudaFuncSetCacheConfig( normal_gevm_kernel<ValueType, false, true>, cudaFuncCachePreferL1 );
-            normal_gevm_kernel<ValueType, false, true><<<dimGrid, dimBlock, sharedMemSize, stream>>>
-            ( result, x, y, alpha, beta, jdsValues, jdsDLG, jdsILG, jdsJA, jdsPerm, numColumns, ndlg );
+            if( alpha == 1 && beta == 1 )
+            {
+                normal_gevm_kernel_alpha_one_beta_one<ValueType, false, true><<<dimGrid, dimBlock, sharedMemSize, stream>>>
+                                ( result, x, y, jdsValues, jdsDLG, jdsILG, jdsJA, jdsPerm, numColumns, ndlg );
+            }
+            else if ( alpha == 1 && beta == 0 )
+            {
+                normal_gevm_kernel_alpha_one_beta_zero<ValueType, false, true><<<dimGrid, dimBlock, sharedMemSize, stream>>>
+                                ( result, x, y, jdsValues, jdsDLG, jdsILG, jdsJA, jdsPerm, numColumns, ndlg );
+            }
+            else if ( alpha == 0 && beta == 1 )
+            {
+                assign_kernel<ValueType, true, true><<<dimGrid, dimBlock, sharedMemSize, stream>>>
+                                ( result, y, jdsPerm, numColumns );
+            }
+            else if ( alpha == 1 )
+            {
+                normal_gevm_kernel_alpha_one<ValueType, false, true><<<dimGrid, dimBlock, sharedMemSize, stream>>>
+                                ( result, x, y, beta, jdsValues, jdsDLG, jdsILG, jdsJA, jdsPerm, numColumns, ndlg );
+            }
+            else if ( alpha == 0 )
+            {
+                scale_kernel<ValueType, false, true><<<dimGrid, dimBlock, sharedMemSize, stream>>>
+                                ( result, y, beta, jdsPerm, numColumns );
+            }
+            else if ( beta == 1 )
+            {
+                normal_gevm_kernel_beta_one<ValueType, false, true><<<dimGrid, dimBlock, sharedMemSize, stream>>>
+                                ( result, x, y, alpha, jdsValues, jdsDLG, jdsILG, jdsJA, jdsPerm, numColumns, ndlg );
+            }
+            else if ( beta == 0 )
+            {
+                normal_gevm_kernel_beta_zero<ValueType, false, true><<<dimGrid, dimBlock, sharedMemSize, stream>>>
+                                ( result, x, y, alpha, jdsValues, jdsDLG, jdsILG, jdsJA, jdsPerm, numColumns, ndlg );
+            }
+            else
+            {
+                normal_gevm_kernel<ValueType, false, true><<<dimGrid, dimBlock, sharedMemSize, stream>>>
+                                ( result, x, y, alpha, beta, jdsValues, jdsDLG, jdsILG, jdsJA, jdsPerm, numColumns, ndlg );
+            }
         }
         else // no sharedMem
         {
-            cudaFuncSetCacheConfig( normal_gevm_kernel<ValueType, false, false>, cudaFuncCachePreferL1 );
-            normal_gevm_kernel<ValueType, false, false><<<dimGrid, dimBlock, 0, stream>>>
-            ( result, x, y, alpha, beta, jdsValues, jdsDLG, jdsILG, jdsJA, jdsPerm, numColumns, ndlg );
+            if( alpha == 1 && beta == 1 )
+            {
+                normal_gevm_kernel_alpha_one_beta_one<ValueType, false, false><<<dimGrid, dimBlock, sharedMemSize, stream>>>
+                                ( result, x, y, jdsValues, jdsDLG, jdsILG, jdsJA, jdsPerm, numColumns, ndlg );
+            }
+            else if ( alpha == 1 && beta == 0 )
+            {
+                normal_gevm_kernel_alpha_one_beta_zero<ValueType, false, false><<<dimGrid, dimBlock, sharedMemSize, stream>>>
+                                ( result, x, y, jdsValues, jdsDLG, jdsILG, jdsJA, jdsPerm, numColumns, ndlg );
+            }
+            else if ( alpha == 0 && beta == 1 )
+            {
+                assign_kernel<ValueType, false, false><<<dimGrid, dimBlock, sharedMemSize, stream>>>
+                                ( result, y, jdsPerm, numColumns );
+            }
+            else if ( alpha == 1 )
+            {
+                normal_gevm_kernel_alpha_one<ValueType, false, false><<<dimGrid, dimBlock, sharedMemSize, stream>>>
+                                ( result, x, y, beta, jdsValues, jdsDLG, jdsILG, jdsJA, jdsPerm, numColumns, ndlg );
+            }
+            else if ( alpha == 0 )
+            {
+                scale_kernel<ValueType, false, false><<<dimGrid, dimBlock, sharedMemSize, stream>>>
+                                ( result, y, beta, jdsPerm, numColumns );
+            }
+            else if ( beta == 1 )
+            {
+                normal_gevm_kernel_beta_one<ValueType, false, false><<<dimGrid, dimBlock, sharedMemSize, stream>>>
+                                ( result, x, y, alpha, jdsValues, jdsDLG, jdsILG, jdsJA, jdsPerm, numColumns, ndlg );
+            }
+            else if ( beta == 0 )
+            {
+                normal_gevm_kernel_beta_zero<ValueType, false, false><<<dimGrid, dimBlock, sharedMemSize, stream>>>
+                                ( result, x, y, alpha, jdsValues, jdsDLG, jdsILG, jdsJA, jdsPerm, numColumns, ndlg );
+            }
+            else
+            {
+                normal_gevm_kernel<ValueType, false, false><<<dimGrid, dimBlock, sharedMemSize, stream>>>
+                                ( result, x, y, alpha, beta, jdsValues, jdsDLG, jdsILG, jdsJA, jdsPerm, numColumns, ndlg );
+            }
         }
-
         if ( !syncToken )
         {
             LAMA_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "JDS: normal_gevm_kernel FAILED" )

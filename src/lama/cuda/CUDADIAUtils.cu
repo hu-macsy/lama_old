@@ -181,6 +181,169 @@ __global__ void normal_gemv_kernel(
 
     if ( i < numRows )
     {
+        ValueType summand = beta * y[i];
+
+        ValueType temp = 0.0;
+
+        for ( IndexType idiag = 0; idiag < numDiagonals; idiag++ )
+        {
+            IndexType j = i + fetchOffset<useTexture, useSharedMem>( offsets_d, offsets_sm, idiag );
+
+            if ( j >= 0 && j < numColumns )
+            {
+                ValueType val = diagonalValues[ numRows * idiag + i ];
+                temp += val * fetchDIAVectorX<ValueType, useTexture>( x, j );
+            }
+        }
+
+        result[i] = alpha * temp + summand;
+    }
+}
+
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType, bool useTexture, bool useSharedMem>
+__global__ void normal_gemv_kernel_alpha_one_beta_one(
+    ValueType* result,
+    const ValueType* x,
+    const ValueType* y,
+    const ValueType* diagonalValues,
+    const IndexType* offsets_d,
+    const IndexType numRows,
+    const IndexType numColumns,
+    const IndexType numDiagonals )
+{
+    extern __shared__ IndexType offsets_sm[];
+
+    if ( useSharedMem )
+    {
+        int k = threadIdx.x;
+        while ( k < numDiagonals )
+        {
+            offsets_sm[k] = offsets_d[k];
+            k += blockDim.x;
+        }
+        __syncthreads();
+    }
+
+    IndexType i = threadId( gridDim, blockIdx, blockDim, threadIdx );
+
+    if ( i < numRows )
+    {
+        ValueType summand = y[i];
+
+        ValueType temp = 0.0;
+
+        for ( IndexType idiag = 0; idiag < numDiagonals; idiag++ )
+        {
+            IndexType j = i + fetchOffset<useTexture, useSharedMem>( offsets_d, offsets_sm, idiag );
+
+            if ( j >= 0 && j < numColumns )
+            {
+                ValueType val = diagonalValues[ numRows * idiag + i ];
+                temp += val * fetchDIAVectorX<ValueType, useTexture>( x, j );
+            }
+        }
+
+        result[i] = temp + summand;
+    }
+}
+
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType, bool useTexture, bool useSharedMem>
+__global__ void normal_gemv_kernel_alpha_one_beta_zero(
+    ValueType* result,
+    const ValueType* x,
+    const ValueType* y,
+    const ValueType* diagonalValues,
+    const IndexType* offsets_d,
+    const IndexType numRows,
+    const IndexType numColumns,
+    const IndexType numDiagonals )
+{
+    extern __shared__ IndexType offsets_sm[];
+
+    if ( useSharedMem )
+    {
+        int k = threadIdx.x;
+        while ( k < numDiagonals )
+        {
+            offsets_sm[k] = offsets_d[k];
+            k += blockDim.x;
+        }
+        __syncthreads();
+    }
+
+    IndexType i = threadId( gridDim, blockIdx, blockDim, threadIdx );
+
+    if ( i < numRows )
+    {
+        ValueType temp = 0.0;
+
+        for ( IndexType idiag = 0; idiag < numDiagonals; idiag++ )
+        {
+            IndexType j = i + fetchOffset<useTexture, useSharedMem>( offsets_d, offsets_sm, idiag );
+
+            if ( j >= 0 && j < numColumns )
+            {
+                ValueType val = diagonalValues[ numRows * idiag + i ];
+                temp += val * fetchDIAVectorX<ValueType, useTexture>( x, j );
+            }
+        }
+
+        result[i] = temp;
+    }
+}
+
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType, bool useTexture, bool useSharedMem>
+__global__
+void assign_kernel(
+    ValueType* result,
+    const ValueType* y,
+    const IndexType numRows )
+{
+    IndexType i = threadId( gridDim, blockIdx, blockDim, threadIdx );
+
+    if ( i < numRows )
+    {
+        result[i] = y[i];
+    }
+}
+
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType, bool useTexture, bool useSharedMem>
+__global__ void normal_gemv_kernel_alpha_one(
+    ValueType* result,
+    const ValueType* x,
+    const ValueType* y,
+    const ValueType beta,
+    const ValueType* diagonalValues,
+    const IndexType* offsets_d,
+    const IndexType numRows,
+    const IndexType numColumns,
+    const IndexType numDiagonals )
+{
+    extern __shared__ IndexType offsets_sm[];
+
+    if ( useSharedMem )
+    {
+        int k = threadIdx.x;
+        while ( k < numDiagonals )
+        {
+            offsets_sm[k] = offsets_d[k];
+            k += blockDim.x;
+        }
+        __syncthreads();
+    }
+
+    IndexType i = threadId( gridDim, blockIdx, blockDim, threadIdx );
+
+    if ( i < numRows )
+    {
         ValueType summand = 0.0;
 
         if ( beta != 0.0 )
@@ -201,7 +364,140 @@ __global__ void normal_gemv_kernel(
             }
         }
 
+        result[i] = temp + summand;
+    }
+}
+
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType, bool useTexture, bool useSharedMem>
+__global__ void normal_gemv_kernel_alpha_zero(
+    ValueType* result,
+    const ValueType* x,
+    const ValueType* y,
+    const ValueType beta,
+    const ValueType* diagonalValues,
+    const IndexType* offsets_d,
+    const IndexType numRows,
+    const IndexType numColumns,
+    const IndexType numDiagonals )
+{
+    extern __shared__ IndexType offsets_sm[];
+
+    if ( useSharedMem )
+    {
+        int k = threadIdx.x;
+        while ( k < numDiagonals )
+        {
+            offsets_sm[k] = offsets_d[k];
+            k += blockDim.x;
+        }
+        __syncthreads();
+    }
+
+    IndexType i = threadId( gridDim, blockIdx, blockDim, threadIdx );
+
+    if ( i < numRows )
+    {
+        result[i] = beta * y[i];
+    }
+}
+
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType, bool useTexture, bool useSharedMem>
+__global__ void normal_gemv_kernel_beta_one(
+    ValueType* result,
+    const ValueType* x,
+    const ValueType* y,
+    const ValueType alpha,
+    const ValueType* diagonalValues,
+    const IndexType* offsets_d,
+    const IndexType numRows,
+    const IndexType numColumns,
+    const IndexType numDiagonals )
+{
+    extern __shared__ IndexType offsets_sm[];
+
+    if ( useSharedMem )
+    {
+        int k = threadIdx.x;
+        while ( k < numDiagonals )
+        {
+            offsets_sm[k] = offsets_d[k];
+            k += blockDim.x;
+        }
+        __syncthreads();
+    }
+
+    IndexType i = threadId( gridDim, blockIdx, blockDim, threadIdx );
+
+    if ( i < numRows )
+    {
+        ValueType summand = y[i];
+
+        ValueType temp = 0.0;
+
+        for ( IndexType idiag = 0; idiag < numDiagonals; idiag++ )
+        {
+            IndexType j = i + fetchOffset<useTexture, useSharedMem>( offsets_d, offsets_sm, idiag );
+
+            if ( j >= 0 && j < numColumns )
+            {
+                ValueType val = diagonalValues[ numRows * idiag + i ];
+                temp += val * fetchDIAVectorX<ValueType, useTexture>( x, j );
+            }
+        }
+
         result[i] = alpha * temp + summand;
+    }
+}
+
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType, bool useTexture, bool useSharedMem>
+__global__ void normal_gemv_kernel_beta_zero(
+    ValueType* result,
+    const ValueType* x,
+    const ValueType* y,
+    const ValueType alpha,
+    const ValueType* diagonalValues,
+    const IndexType* offsets_d,
+    const IndexType numRows,
+    const IndexType numColumns,
+    const IndexType numDiagonals )
+{
+    extern __shared__ IndexType offsets_sm[];
+
+    if ( useSharedMem )
+    {
+        int k = threadIdx.x;
+        while ( k < numDiagonals )
+        {
+            offsets_sm[k] = offsets_d[k];
+            k += blockDim.x;
+        }
+        __syncthreads();
+    }
+
+    IndexType i = threadId( gridDim, blockIdx, blockDim, threadIdx );
+
+    if ( i < numRows )
+    {
+        ValueType temp = 0.0;
+
+        for ( IndexType idiag = 0; idiag < numDiagonals; idiag++ )
+        {
+            IndexType j = i + fetchOffset<useTexture, useSharedMem>( offsets_d, offsets_sm, idiag );
+
+            if ( j >= 0 && j < numColumns )
+            {
+                ValueType val = diagonalValues[ numRows * idiag + i ];
+                temp += val * fetchDIAVectorX<ValueType, useTexture>( x, j );
+            }
+        }
+
+        result[i] = alpha * temp;
     }
 }
 
@@ -249,6 +545,12 @@ void CUDADIAUtils::normalGEMV(
                            << "> <<< blockSize = " << blockSize << ", stream = " << stream
                            << ", useTexture = " << useTexture << ", useSharedMem = " << useSharedMem << ">>>" );
 
+    int sharedMemSize = 0;
+    if ( useSharedMem )
+    {
+        sharedMemSize = numDiagonals * sizeof(int);
+    }
+
     if ( useTexture )
     {
         vectorDIABindTexture( x );
@@ -256,31 +558,182 @@ void CUDADIAUtils::normalGEMV(
         if ( !useSharedMem )
         {
             vectorDIABindTexture( diaOffsets );
+        }
 
-            normal_gemv_kernel<ValueType, true, false><<< dimGrid, dimBlock, 0, stream >>>(
-                result, x, y, alpha, beta, diaValues, diaOffsets, numRows, numColumns, numDiagonals );
+        if( useSharedMem )
+        {
+            if( alpha == 1 && beta == 1 )
+            {
+                normal_gemv_kernel_alpha_one_beta_one<ValueType, true, true><<< dimGrid, dimBlock, sharedMemSize, stream >>>(
+                                result, x, y, diaValues, diaOffsets, numRows, numColumns, numDiagonals );
+            }
+            else if ( alpha == 1 && beta == 0 )
+            {
+                normal_gemv_kernel_alpha_one_beta_zero<ValueType, true, true><<< dimGrid, dimBlock, sharedMemSize, stream >>>(
+                                result, x, y, diaValues, diaOffsets, numRows, numColumns, numDiagonals );
+            }
+            else if ( alpha == 0 && beta == 1 )
+            {
+                assign_kernel<ValueType, true, true><<< dimGrid, dimBlock, sharedMemSize, stream >>>(
+                                result, y, numRows );
+            }
+            else if ( alpha == 1 )
+            {
+                normal_gemv_kernel_alpha_one<ValueType, true, true><<< dimGrid, dimBlock, sharedMemSize, stream >>>(
+                                result, x, y, beta, diaValues, diaOffsets, numRows, numColumns, numDiagonals );
+            }
+            else if ( alpha == 0 )
+            {
+                normal_gemv_kernel_alpha_zero<ValueType, true, true><<< dimGrid, dimBlock, sharedMemSize, stream >>>(
+                                result, x, y, beta, diaValues, diaOffsets, numRows, numColumns, numDiagonals );
+            }
+            else if ( beta == 1 )
+            {
+                normal_gemv_kernel_beta_one<ValueType, true, true><<< dimGrid, dimBlock, sharedMemSize, stream >>>(
+                                result, x, y, alpha, diaValues, diaOffsets, numRows, numColumns, numDiagonals );
+            }
+            else if ( beta == 0 )
+            {
+                normal_gemv_kernel_beta_zero<ValueType, true, true><<< dimGrid, dimBlock, sharedMemSize, stream >>>(
+                                result, x, y, alpha, diaValues, diaOffsets, numRows, numColumns, numDiagonals );
+            }
+            else
+            {
+                normal_gemv_kernel<ValueType, true, true><<< dimGrid, dimBlock, sharedMemSize, stream >>>(
+                                result, x, y, alpha, beta, diaValues, diaOffsets, numRows, numColumns, numDiagonals );
+            }
         }
         else
         {
-            const int sharedMemSize = numDiagonals * sizeof(int);
-
-            normal_gemv_kernel<ValueType, true, true><<< dimGrid, dimBlock, sharedMemSize, stream >>>(
-                result, x, y, alpha, beta, diaValues, diaOffsets, numRows, numColumns, numDiagonals );
+            if( alpha == 1 && beta == 1 )
+            {
+                normal_gemv_kernel_alpha_one_beta_one<ValueType, true, false><<< dimGrid, dimBlock, sharedMemSize, stream >>>(
+                                result, x, y, diaValues, diaOffsets, numRows, numColumns, numDiagonals );
+            }
+            else if ( alpha == 1 && beta == 0 )
+            {
+                normal_gemv_kernel_alpha_one_beta_zero<ValueType, true, false><<< dimGrid, dimBlock, sharedMemSize, stream >>>(
+                                result, x, y, diaValues, diaOffsets, numRows, numColumns, numDiagonals );
+            }
+            else if ( alpha == 0 && beta == 1 )
+            {
+                assign_kernel<ValueType, true, false><<< dimGrid, dimBlock, sharedMemSize, stream >>>(
+                                result, y, numRows );
+            }
+            else if ( alpha == 1 )
+            {
+                normal_gemv_kernel_alpha_one<ValueType, true, false><<< dimGrid, dimBlock, sharedMemSize, stream >>>(
+                                result, x, y, beta, diaValues, diaOffsets, numRows, numColumns, numDiagonals );
+            }
+            else if ( alpha == 0 )
+            {
+                normal_gemv_kernel_alpha_zero<ValueType, true, false><<< dimGrid, dimBlock, sharedMemSize, stream >>>(
+                                result, x, y, beta, diaValues, diaOffsets, numRows, numColumns, numDiagonals );
+            }
+            else if ( beta == 1 )
+            {
+                normal_gemv_kernel_beta_one<ValueType, true, false><<< dimGrid, dimBlock, sharedMemSize, stream >>>(
+                                result, x, y, alpha, diaValues, diaOffsets, numRows, numColumns, numDiagonals );
+            }
+            else if ( beta == 0 )
+            {
+                normal_gemv_kernel_beta_zero<ValueType, true, false><<< dimGrid, dimBlock, sharedMemSize, stream >>>(
+                                result, x, y, alpha, diaValues, diaOffsets, numRows, numColumns, numDiagonals );
+            }
+            else
+            {
+                normal_gemv_kernel<ValueType, true, false><<< dimGrid, dimBlock, sharedMemSize, stream >>>(
+                                result, x, y, alpha, beta, diaValues, diaOffsets, numRows, numColumns, numDiagonals );
+            }
         }
     }
     else
     {
-        if ( !useSharedMem )
+        if( useSharedMem )
         {
-            normal_gemv_kernel<ValueType, false, false><<< dimGrid, dimBlock, 0, stream >>>(
-                result, x, y, alpha, beta, diaValues, diaOffsets, numRows, numColumns, numDiagonals );
+            if( alpha == 1 && beta == 1 )
+            {
+                normal_gemv_kernel_alpha_one_beta_one<ValueType, false, true><<< dimGrid, dimBlock, sharedMemSize, stream >>>(
+                                result, x, y, diaValues, diaOffsets, numRows, numColumns, numDiagonals );
+            }
+            else if ( alpha == 1 && beta == 0 )
+            {
+                normal_gemv_kernel_alpha_one_beta_zero<ValueType, false, true><<< dimGrid, dimBlock, sharedMemSize, stream >>>(
+                                result, x, y, diaValues, diaOffsets, numRows, numColumns, numDiagonals );
+            }
+            else if ( alpha == 0 && beta == 1 )
+            {
+                assign_kernel<ValueType, false, true><<< dimGrid, dimBlock, sharedMemSize, stream >>>(
+                                result, y, numRows );
+            }
+            else if ( alpha == 1 )
+            {
+                normal_gemv_kernel_alpha_one<ValueType, false, true><<< dimGrid, dimBlock, sharedMemSize, stream >>>(
+                                result, x, y, beta, diaValues, diaOffsets, numRows, numColumns, numDiagonals );
+            }
+            else if ( alpha == 0 )
+            {
+                normal_gemv_kernel_alpha_zero<ValueType, false, true><<< dimGrid, dimBlock, sharedMemSize, stream >>>(
+                                result, x, y, beta, diaValues, diaOffsets, numRows, numColumns, numDiagonals );
+            }
+            else if ( beta == 1 )
+            {
+                normal_gemv_kernel_beta_one<ValueType, false, true><<< dimGrid, dimBlock, sharedMemSize, stream >>>(
+                                result, x, y, alpha, diaValues, diaOffsets, numRows, numColumns, numDiagonals );
+            }
+            else if ( beta == 0 )
+            {
+                normal_gemv_kernel_beta_zero<ValueType, false, true><<< dimGrid, dimBlock, sharedMemSize, stream >>>(
+                                result, x, y, alpha, diaValues, diaOffsets, numRows, numColumns, numDiagonals );
+            }
+            else
+            {
+                normal_gemv_kernel<ValueType, false, true><<< dimGrid, dimBlock, sharedMemSize, stream >>>(
+                                result, x, y, alpha, beta, diaValues, diaOffsets, numRows, numColumns, numDiagonals );
+            }
         }
         else
         {
-            const int sharedMemSize = numDiagonals * sizeof(int);
-
-            normal_gemv_kernel<ValueType, false, true><<< dimGrid, dimBlock, sharedMemSize, stream >>>(
-                result, x, y, alpha, beta, diaValues, diaOffsets, numRows, numColumns, numDiagonals );
+            if( alpha == 1 && beta == 1 )
+            {
+                normal_gemv_kernel_alpha_one_beta_one<ValueType, false, false><<< dimGrid, dimBlock, sharedMemSize, stream >>>(
+                                result, x, y, diaValues, diaOffsets, numRows, numColumns, numDiagonals );
+            }
+            else if ( alpha == 1 && beta == 0 )
+            {
+                normal_gemv_kernel_alpha_one_beta_zero<ValueType, false, false><<< dimGrid, dimBlock, sharedMemSize, stream >>>(
+                                result, x, y, diaValues, diaOffsets, numRows, numColumns, numDiagonals );
+            }
+            else if ( alpha == 0 && beta == 1 )
+            {
+                assign_kernel<ValueType, false, false><<< dimGrid, dimBlock, sharedMemSize, stream >>>(
+                                result, y, numRows );
+            }
+            else if ( alpha == 1 )
+            {
+                normal_gemv_kernel_alpha_one<ValueType, false, false><<< dimGrid, dimBlock, sharedMemSize, stream >>>(
+                                result, x, y, beta, diaValues, diaOffsets, numRows, numColumns, numDiagonals );
+            }
+            else if ( alpha == 0 )
+            {
+                normal_gemv_kernel_alpha_zero<ValueType, false, false><<< dimGrid, dimBlock, sharedMemSize, stream >>>(
+                                result, x, y, beta, diaValues, diaOffsets, numRows, numColumns, numDiagonals );
+            }
+            else if ( beta == 1 )
+            {
+                normal_gemv_kernel_beta_one<ValueType, false, false><<< dimGrid, dimBlock, sharedMemSize, stream >>>(
+                                result, x, y, alpha, diaValues, diaOffsets, numRows, numColumns, numDiagonals );
+            }
+            else if ( beta == 0 )
+            {
+                normal_gemv_kernel_beta_zero<ValueType, false, false><<< dimGrid, dimBlock, sharedMemSize, stream >>>(
+                                result, x, y, alpha, diaValues, diaOffsets, numRows, numColumns, numDiagonals );
+            }
+            else
+            {
+                normal_gemv_kernel<ValueType, false, false><<< dimGrid, dimBlock, sharedMemSize, stream >>>(
+                                result, x, y, alpha, beta, diaValues, diaOffsets, numRows, numColumns, numDiagonals );
+            }
         }
     }
 
@@ -351,12 +804,7 @@ __global__ void normal_gevm_kernel(
 
     if ( k < numColumns )
     {
-        ValueType summand = 0.0;
-
-        if ( beta != 0.0 )
-        {
-            summand = beta * y[k];
-        }
+        ValueType summand = beta * y[k];
 
         ValueType temp = 0.0;
 
@@ -378,6 +826,312 @@ __global__ void normal_gevm_kernel(
         }
 
         result[k] = alpha * temp + summand;
+    }
+}
+
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType, bool useTexture, bool useSharedMem>
+__global__ void normal_gevm_kernel_alpha_one_beta_one(
+    ValueType* result,
+    const ValueType* x,
+    const ValueType* y,
+    const ValueType* diagonalValues,
+    const IndexType* offsets_d,
+    const IndexType numRows,
+    const IndexType numColumns,
+    const IndexType numDiagonals )
+{
+    extern __shared__ IndexType offsets_sm[];
+
+    /*if ( useSharedMem )
+    {
+        int k = threadIdx.x;
+        while ( k < numDiagonals )
+        {
+            offsets_sm[k] = offsets_d[k];
+            k += blockDim.x;
+        }
+        __syncthreads();
+    }*/
+
+    IndexType k = threadId( gridDim, blockIdx, blockDim, threadIdx );
+
+    if ( k < numColumns )
+    {
+        ValueType temp = 0.0;
+
+        for( IndexType i = 0; i < numRows; ++k )
+        {
+            for ( IndexType ii = 0; ii < numDiagonals; ii++ )
+            {
+                //IndexType j = k + fetchOffset<useTexture, useSharedMem>( offsets_d, offsets_sm, ii );
+                IndexType j = k + offsets_d[ ii ];
+
+                if ( j >= 0 && j < numColumns )
+                {
+                    if( j == k )
+                    {
+                        temp += diagonalValues[ numRows * ii + k ] * fetchDIAVectorX<ValueType, useTexture>( x, i );
+                    }
+                }
+            }
+        }
+
+        result[k] = temp + y[k];
+    }
+}
+
+/* --------------------------------------------------------------------------- */
+
+
+template<typename ValueType, bool useTexture, bool useSharedMem>
+__global__ void normal_gevm_kernel_alpha_one_beta_zero(
+    ValueType* result,
+    const ValueType* x,
+    const ValueType* y,
+    const ValueType* diagonalValues,
+    const IndexType* offsets_d,
+    const IndexType numRows,
+    const IndexType numColumns,
+    const IndexType numDiagonals )
+{
+    extern __shared__ IndexType offsets_sm[];
+
+    /*if ( useSharedMem )
+    {
+        int k = threadIdx.x;
+        while ( k < numDiagonals )
+        {
+            offsets_sm[k] = offsets_d[k];
+            k += blockDim.x;
+        }
+        __syncthreads();
+    }*/
+
+    IndexType k = threadId( gridDim, blockIdx, blockDim, threadIdx );
+
+    if ( k < numColumns )
+    {
+        ValueType temp = 0.0;
+
+        for( IndexType i = 0; i < numRows; ++k )
+        {
+            for ( IndexType ii = 0; ii < numDiagonals; ii++ )
+            {
+                //IndexType j = k + fetchOffset<useTexture, useSharedMem>( offsets_d, offsets_sm, ii );
+                IndexType j = k + offsets_d[ ii ];
+
+                if ( j >= 0 && j < numColumns )
+                {
+                    if( j == k )
+                    {
+                        temp += diagonalValues[ numRows * ii + k ] * fetchDIAVectorX<ValueType, useTexture>( x, i );
+                    }
+                }
+            }
+        }
+
+        result[k] = temp;
+    }
+}
+
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType, bool useTexture, bool useSharedMem>
+__global__ void normal_gevm_kernel_alpha_one(
+    ValueType* result,
+    const ValueType* x,
+    const ValueType* y,
+    const ValueType beta,
+    const ValueType* diagonalValues,
+    const IndexType* offsets_d,
+    const IndexType numRows,
+    const IndexType numColumns,
+    const IndexType numDiagonals )
+{
+    extern __shared__ IndexType offsets_sm[];
+
+    /*if ( useSharedMem )
+    {
+        int k = threadIdx.x;
+        while ( k < numDiagonals )
+        {
+            offsets_sm[k] = offsets_d[k];
+            k += blockDim.x;
+        }
+        __syncthreads();
+    }*/
+
+    IndexType k = threadId( gridDim, blockIdx, blockDim, threadIdx );
+
+    if ( k < numColumns )
+    {
+        ValueType summand = beta * y[k];
+
+        ValueType temp = 0.0;
+
+        for( IndexType i = 0; i < numRows; ++k )
+        {
+            for ( IndexType ii = 0; ii < numDiagonals; ii++ )
+            {
+                //IndexType j = k + fetchOffset<useTexture, useSharedMem>( offsets_d, offsets_sm, ii );
+                IndexType j = k + offsets_d[ ii ];
+
+                if ( j >= 0 && j < numColumns )
+                {
+                    if( j == k )
+                    {
+                        temp += diagonalValues[ numRows * ii + k ] * fetchDIAVectorX<ValueType, useTexture>( x, i );
+                    }
+                }
+            }
+        }
+
+        result[k] = temp + summand;
+    }
+}
+
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType, bool useTexture, bool useSharedMem>
+__global__ void normal_gevm_kernel_alpha_zero(
+    ValueType* result,
+    const ValueType* x,
+    const ValueType* y,
+    const ValueType beta,
+    const ValueType* diagonalValues,
+    const IndexType* offsets_d,
+    const IndexType numRows,
+    const IndexType numColumns,
+    const IndexType numDiagonals )
+{
+    extern __shared__ IndexType offsets_sm[];
+
+    /*if ( useSharedMem )
+    {
+        int k = threadIdx.x;
+        while ( k < numDiagonals )
+        {
+            offsets_sm[k] = offsets_d[k];
+            k += blockDim.x;
+        }
+        __syncthreads();
+    }*/
+
+    IndexType k = threadId( gridDim, blockIdx, blockDim, threadIdx );
+
+    if ( k < numColumns )
+    {
+        result[k] = beta * y[k];
+    }
+}
+
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType, bool useTexture, bool useSharedMem>
+__global__ void normal_gevm_kernel_beta_one(
+    ValueType* result,
+    const ValueType* x,
+    const ValueType* y,
+    const ValueType alpha,
+    const ValueType* diagonalValues,
+    const IndexType* offsets_d,
+    const IndexType numRows,
+    const IndexType numColumns,
+    const IndexType numDiagonals )
+{
+    extern __shared__ IndexType offsets_sm[];
+
+    /*if ( useSharedMem )
+    {
+        int k = threadIdx.x;
+        while ( k < numDiagonals )
+        {
+            offsets_sm[k] = offsets_d[k];
+            k += blockDim.x;
+        }
+        __syncthreads();
+    }*/
+
+    IndexType k = threadId( gridDim, blockIdx, blockDim, threadIdx );
+
+    if ( k < numColumns )
+    {
+        ValueType temp = 0.0;
+
+        for( IndexType i = 0; i < numRows; ++k )
+        {
+            for ( IndexType ii = 0; ii < numDiagonals; ii++ )
+            {
+                //IndexType j = k + fetchOffset<useTexture, useSharedMem>( offsets_d, offsets_sm, ii );
+                IndexType j = k + offsets_d[ ii ];
+
+                if ( j >= 0 && j < numColumns )
+                {
+                    if( j == k )
+                    {
+                        temp += diagonalValues[ numRows * ii + k ] * fetchDIAVectorX<ValueType, useTexture>( x, i );
+                    }
+                }
+            }
+        }
+
+        result[k] = alpha * temp + y[k];
+    }
+}
+
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType, bool useTexture, bool useSharedMem>
+__global__ void normal_gevm_kernel_beta_zero(
+    ValueType* result,
+    const ValueType* x,
+    const ValueType* y,
+    const ValueType alpha,
+    const ValueType* diagonalValues,
+    const IndexType* offsets_d,
+    const IndexType numRows,
+    const IndexType numColumns,
+    const IndexType numDiagonals )
+{
+    extern __shared__ IndexType offsets_sm[];
+
+    /*if ( useSharedMem )
+    {
+        int k = threadIdx.x;
+        while ( k < numDiagonals )
+        {
+            offsets_sm[k] = offsets_d[k];
+            k += blockDim.x;
+        }
+        __syncthreads();
+    }*/
+
+    IndexType k = threadId( gridDim, blockIdx, blockDim, threadIdx );
+
+    if ( k < numColumns )
+    {
+        ValueType temp = 0.0;
+
+        for( IndexType i = 0; i < numRows; ++k )
+        {
+            for ( IndexType ii = 0; ii < numDiagonals; ii++ )
+            {
+                //IndexType j = k + fetchOffset<useTexture, useSharedMem>( offsets_d, offsets_sm, ii );
+                IndexType j = k + offsets_d[ ii ];
+
+                if ( j >= 0 && j < numColumns )
+                {
+                    if( j == k )
+                    {
+                        temp += diagonalValues[ numRows * ii + k ] * fetchDIAVectorX<ValueType, useTexture>( x, i );
+                    }
+                }
+            }
+        }
+
+        result[k] = alpha * temp;
     }
 }
 
@@ -425,6 +1179,12 @@ void CUDADIAUtils::normalGEVM(
                            << "> <<< blockSize = " << blockSize << ", stream = " << stream
                            << ", useTexture = " << useTexture << ", useSharedMem = " << useSharedMem << ">>>" );
 
+    int sharedMemSize = 0;
+    if ( useSharedMem )
+    {
+        sharedMemSize = numDiagonals * sizeof(int);
+    }
+
     if ( useTexture )
     {
         vectorDIABindTexture( x );
@@ -432,31 +1192,182 @@ void CUDADIAUtils::normalGEVM(
         if ( !useSharedMem )
         {
             vectorDIABindTexture( diaOffsets );
+        }
 
-            normal_gevm_kernel<ValueType, true, false><<< dimGrid, dimBlock, 0, stream >>>(
-                result, x, y, alpha, beta, diaValues, diaOffsets, numRows, numColumns, numDiagonals );
+        if( useSharedMem )
+        {
+            if( alpha == 1 && beta == 1 )
+            {
+                normal_gevm_kernel_alpha_one_beta_one<ValueType, true, true><<< dimGrid, dimBlock, sharedMemSize, stream >>>(
+                                result, x, y, diaValues, diaOffsets, numRows, numColumns, numDiagonals );
+            }
+            else if ( alpha == 1 && beta == 0 )
+            {
+                normal_gevm_kernel_alpha_one_beta_zero<ValueType, true, true><<< dimGrid, dimBlock, sharedMemSize, stream >>>(
+                                result, x, y, diaValues, diaOffsets, numRows, numColumns, numDiagonals );
+            }
+            else if ( alpha == 0 && beta == 1 )
+            {
+                assign_kernel<ValueType, true, true><<< dimGrid, dimBlock, sharedMemSize, stream >>>(
+                                result, y, numRows );
+            }
+            else if ( alpha == 1 )
+            {
+                normal_gevm_kernel_alpha_one<ValueType, true, true><<< dimGrid, dimBlock, sharedMemSize, stream >>>(
+                                result, x, y, beta, diaValues, diaOffsets, numRows, numColumns, numDiagonals );
+            }
+            else if ( alpha == 0 )
+            {
+                normal_gevm_kernel_alpha_zero<ValueType, true, true><<< dimGrid, dimBlock, sharedMemSize, stream >>>(
+                                result, x, y, beta, diaValues, diaOffsets, numRows, numColumns, numDiagonals );
+            }
+            else if ( beta == 1 )
+            {
+                normal_gevm_kernel_beta_one<ValueType, true, true><<< dimGrid, dimBlock, sharedMemSize, stream >>>(
+                                result, x, y, alpha, diaValues, diaOffsets, numRows, numColumns, numDiagonals );
+            }
+            else if ( beta == 0 )
+            {
+                normal_gevm_kernel_beta_zero<ValueType, true, true><<< dimGrid, dimBlock, sharedMemSize, stream >>>(
+                                result, x, y, alpha, diaValues, diaOffsets, numRows, numColumns, numDiagonals );
+            }
+            else
+            {
+                normal_gevm_kernel<ValueType, true, true><<< dimGrid, dimBlock, sharedMemSize, stream >>>(
+                                result, x, y, alpha, beta, diaValues, diaOffsets, numRows, numColumns, numDiagonals );
+            }
         }
         else
         {
-            const int sharedMemSize = numDiagonals * sizeof(int);
-
-            normal_gevm_kernel<ValueType, true, true><<< dimGrid, dimBlock, sharedMemSize, stream >>>(
-                result, x, y, alpha, beta, diaValues, diaOffsets, numRows, numColumns, numDiagonals );
+            if( alpha == 1 && beta == 1 )
+            {
+                normal_gevm_kernel_alpha_one_beta_one<ValueType, true, false><<< dimGrid, dimBlock, sharedMemSize, stream >>>(
+                                result, x, y, diaValues, diaOffsets, numRows, numColumns, numDiagonals );
+            }
+            else if ( alpha == 1 && beta == 0 )
+            {
+                normal_gevm_kernel_alpha_one_beta_zero<ValueType, true, false><<< dimGrid, dimBlock, sharedMemSize, stream >>>(
+                                result, x, y, diaValues, diaOffsets, numRows, numColumns, numDiagonals );
+            }
+            else if ( alpha == 0 && beta == 1 )
+            {
+                assign_kernel<ValueType, true, false><<< dimGrid, dimBlock, sharedMemSize, stream >>>(
+                                result, y, numRows );
+            }
+            else if ( alpha == 1 )
+            {
+                normal_gevm_kernel_alpha_one<ValueType, true, false><<< dimGrid, dimBlock, sharedMemSize, stream >>>(
+                                result, x, y, beta, diaValues, diaOffsets, numRows, numColumns, numDiagonals );
+            }
+            else if ( alpha == 0 )
+            {
+                normal_gevm_kernel_alpha_zero<ValueType, true, false><<< dimGrid, dimBlock, sharedMemSize, stream >>>(
+                                result, x, y, beta, diaValues, diaOffsets, numRows, numColumns, numDiagonals );
+            }
+            else if ( beta == 1 )
+            {
+                normal_gevm_kernel_beta_one<ValueType, true, false><<< dimGrid, dimBlock, sharedMemSize, stream >>>(
+                                result, x, y, alpha, diaValues, diaOffsets, numRows, numColumns, numDiagonals );
+            }
+            else if ( beta == 0 )
+            {
+                normal_gevm_kernel_beta_zero<ValueType, true, false><<< dimGrid, dimBlock, sharedMemSize, stream >>>(
+                                                result, x, y, alpha, diaValues, diaOffsets, numRows, numColumns, numDiagonals );
+            }
+            else
+            {
+                normal_gevm_kernel<ValueType, true, false><<< dimGrid, dimBlock, sharedMemSize, stream >>>(
+                                result, x, y, alpha, beta, diaValues, diaOffsets, numRows, numColumns, numDiagonals );
+            }
         }
     }
     else
     {
-        if ( !useSharedMem )
+        if( useSharedMem )
         {
-            normal_gevm_kernel<ValueType, false, false><<< dimGrid, dimBlock, 0, stream >>>(
-                result, x, y, alpha, beta, diaValues, diaOffsets, numRows, numColumns, numDiagonals );
+            if( alpha == 1 && beta == 1 )
+            {
+                normal_gevm_kernel_alpha_one_beta_one<ValueType, false, true><<< dimGrid, dimBlock, sharedMemSize, stream >>>(
+                                result, x, y, diaValues, diaOffsets, numRows, numColumns, numDiagonals );
+            }
+            else if ( alpha == 1 && beta == 0 )
+            {
+                normal_gevm_kernel_alpha_one_beta_zero<ValueType, false, true><<< dimGrid, dimBlock, sharedMemSize, stream >>>(
+                                result, x, y, diaValues, diaOffsets, numRows, numColumns, numDiagonals );
+            }
+            else if ( alpha == 0 && beta == 1 )
+            {
+                assign_kernel<ValueType, false, true><<< dimGrid, dimBlock, sharedMemSize, stream >>>(
+                                result, y, numRows );
+            }
+            else if ( alpha == 1 )
+            {
+                normal_gevm_kernel_alpha_one<ValueType, false, true><<< dimGrid, dimBlock, sharedMemSize, stream >>>(
+                                result, x, y, beta, diaValues, diaOffsets, numRows, numColumns, numDiagonals );
+            }
+            else if ( beta == 0 )
+            {
+                normal_gevm_kernel_alpha_zero<ValueType, false, true><<< dimGrid, dimBlock, sharedMemSize, stream >>>(
+                                result, x, y, beta, diaValues, diaOffsets, numRows, numColumns, numDiagonals );
+            }
+            else if ( beta == 1 )
+            {
+                normal_gevm_kernel_beta_one<ValueType, false, true><<< dimGrid, dimBlock, sharedMemSize, stream >>>(
+                                result, x, y, alpha, diaValues, diaOffsets, numRows, numColumns, numDiagonals );
+            }
+            else if ( beta == 0 )
+            {
+                normal_gevm_kernel_beta_zero<ValueType, false, true><<< dimGrid, dimBlock, sharedMemSize, stream >>>(
+                                result, x, y, alpha, diaValues, diaOffsets, numRows, numColumns, numDiagonals );
+            }
+            else
+            {
+                normal_gevm_kernel<ValueType, false, true><<< dimGrid, dimBlock, sharedMemSize, stream >>>(
+                                result, x, y, alpha, beta, diaValues, diaOffsets, numRows, numColumns, numDiagonals );
+            }
         }
         else
         {
-            const int sharedMemSize = numDiagonals * sizeof(int);
-
-            normal_gevm_kernel<ValueType, false, true><<< dimGrid, dimBlock, sharedMemSize, stream >>>(
-                result, x, y, alpha, beta, diaValues, diaOffsets, numRows, numColumns, numDiagonals );
+            if( alpha == 1 && beta == 1 )
+            {
+                normal_gevm_kernel_alpha_one_beta_one<ValueType, false, false><<< dimGrid, dimBlock, sharedMemSize, stream >>>(
+                                result, x, y, diaValues, diaOffsets, numRows, numColumns, numDiagonals );
+            }
+            else if ( alpha == 1 && beta == 0 )
+            {
+                normal_gevm_kernel_alpha_one_beta_zero<ValueType, false, false><<< dimGrid, dimBlock, sharedMemSize, stream >>>(
+                                result, x, y, diaValues, diaOffsets, numRows, numColumns, numDiagonals );
+            }
+            else if ( alpha == 0 && beta == 1 )
+            {
+                assign_kernel<ValueType, false, false><<< dimGrid, dimBlock, sharedMemSize, stream >>>(
+                                result, y, numRows );
+            }
+            else if ( alpha == 1 )
+            {
+                normal_gevm_kernel_alpha_one<ValueType, false, false><<< dimGrid, dimBlock, sharedMemSize, stream >>>(
+                                result, x, y, beta, diaValues, diaOffsets, numRows, numColumns, numDiagonals );
+            }
+            else if ( alpha == 0 )
+            {
+                normal_gevm_kernel_alpha_zero<ValueType, false, false><<< dimGrid, dimBlock, sharedMemSize, stream >>>(
+                                result, x, y, beta, diaValues, diaOffsets, numRows, numColumns, numDiagonals );
+            }
+            else if ( beta == 1 )
+            {
+                normal_gevm_kernel_beta_one<ValueType, false, false><<< dimGrid, dimBlock, sharedMemSize, stream >>>(
+                                result, x, y, alpha, diaValues, diaOffsets, numRows, numColumns, numDiagonals );
+            }
+            else if ( beta == 0 )
+            {
+                normal_gevm_kernel_beta_zero<ValueType, false, false><<< dimGrid, dimBlock, sharedMemSize, stream >>>(
+                                result, x, y, alpha, diaValues, diaOffsets, numRows, numColumns, numDiagonals );
+            }
+            else
+            {
+                normal_gevm_kernel<ValueType, false, false><<< dimGrid, dimBlock, sharedMemSize, stream >>>(
+                                result, x, y, alpha, beta, diaValues, diaOffsets, numRows, numColumns, numDiagonals );
+            }
         }
     }
 
