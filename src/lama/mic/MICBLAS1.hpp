@@ -80,12 +80,6 @@ public:
     static IndexType iamax( const IndexType n, const T* x, const IndexType incX, SyncToken* syncToken );
 
     /**
-     * This function is the MIC implementation of lama::BLAS1Interface::viamax
-     */
-    template<typename T>
-    static T viamax( const IndexType n, const T* x, const IndexType incX, SyncToken* syncToken );
-
-    /**
      * This function is the MIC implementation of lama::BLAS1Interface::swap
      */
     template<typename T>

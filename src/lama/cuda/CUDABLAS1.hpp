@@ -168,12 +168,6 @@ private:
         const T* P,
         SyncToken* syncToken );
 
-    /**
-     * This function is the CUDA implementation of lama::BLASInterface::viamax
-     */
-    template<typename T>
-    static T viamax( const IndexType n, const T* x_d, const IndexType incx, SyncToken* syncToken );
-
 private:
 
     template<typename T>

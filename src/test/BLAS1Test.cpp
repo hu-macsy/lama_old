@@ -684,44 +684,6 @@ void swapTest( ContextPtr loc )
     }
 } // swapTest
 
-/* ------------------------------------------------------------------------------------------------------------------ */
-
-template<typename ValueType>
-void viamaxTest( ContextPtr loc )
-{
-    LAMA_INTERFACE_FN_T( viamax, loc, BLAS, BLAS1, ValueType );
-
-    ValueType values[] =
-    {   1.0, 2.0, 3.0, 6.0, 5.0, 6.0, 10.0, 10.0, -10.0, -10.0};
-    const IndexType incX1 = 1;
-    const IndexType incX2 = 2;
-    const ValueType result1 = 6.0;
-    const ValueType result2 = 5.0;
-
-    LAMAArray<ValueType> AValues( 10, values );
-
-    {
-        LAMA_CONTEXT_ACCESS( loc );
-
-        ReadAccess<ValueType> rAValues( AValues, loc );
-
-        // check with incX <= 0
-        ValueType max = viamax( 6, rAValues.get(), -incX1, NULL );
-        BOOST_CHECK_EQUAL( max, 1.0 );
-
-        // check with n <= 0
-        max = viamax( -1, rAValues.get(), incX1, NULL );
-        BOOST_CHECK_EQUAL( max, 1.0 );
-
-        // check with n > 0, incX > 0
-        max = viamax( 6, rAValues.get(), incX1, NULL );
-        BOOST_CHECK_EQUAL( max, result1 );
-
-        max = viamax( 3, rAValues.get(), incX2, NULL );
-        BOOST_CHECK_EQUAL( max, result2 );
-    }
-} // viamaxTest
-
 } // namespace BLAS1Test
 } // namespace lama
 
@@ -740,7 +702,6 @@ LAMA_AUTO_TEST_CASE_CT( nrm2Test, BLAS1Test )
 LAMA_AUTO_TEST_CASE_CT( scalTest, BLAS1Test )
 LAMA_AUTO_TEST_CASE_CT( sumTest, BLAS1Test )
 LAMA_AUTO_TEST_CASE_CT( swapTest, BLAS1Test )
-LAMA_AUTO_TEST_CASE_CT( viamaxTest, BLAS1Test )
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 

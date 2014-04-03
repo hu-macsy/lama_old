@@ -256,50 +256,6 @@ IndexType OpenMPBLAS1::iamax( const IndexType n, const double* x, const IndexTyp
     return iamax ? iamax - 1 : 0;
 }
 
-/** viamax */
-
-template<>
-float OpenMPBLAS1::viamax( const IndexType n, const float* x, const IndexType incX, SyncToken* syncToken )
-{
-    LAMA_LOG_DEBUG( logger, "viamax<float>, n = " << n << ", x = " << x << ", incX = " << incX )
-
-    if ( syncToken )
-    {
-        LAMA_LOG_WARN( logger, "no asynchronous execution for openmp possible at this level." )
-    }
-
-    int iamax;
-#ifdef F77_INT
-    F77_INT F77_N = n, F77_incX = incX;
-#else
-#define F77_N n
-#define F77_incX incX
-#endif
-    iamax = F77_isamax( &F77_N, const_cast<float *>( x ), &F77_incX );
-    return iamax ? static_cast<float>( ::fabs( x[( iamax - 1 ) * incX] ) ) : x[0];
-}
-
-template<>
-double OpenMPBLAS1::viamax( const IndexType n, const double* x, const IndexType incX, SyncToken* syncToken )
-{
-    LAMA_LOG_DEBUG( logger, "viamax<double>, n = " << n << ", x = " << x << ", incX = " << incX )
-
-    if ( syncToken )
-    {
-        LAMA_LOG_WARN( logger, "no asynchronous execution for openmp possible at this level." )
-    }
-
-    int iamax;
-#ifdef F77_INT
-    F77_INT F77_N = n, F77_incX = incX;
-#else
-#define F77_N n
-#define F77_incX incX
-#endif
-    iamax = F77_idamax( &F77_N, const_cast<double *>( x ), &F77_incX );
-    return iamax ? ::fabs( x[( iamax - 1 ) * incX] ) : x[0];
-}
-
 /** swap */
 
 template<>
@@ -804,9 +760,6 @@ void OpenMPBLAS1::setInterface( BLASInterface& BLAS )
 
     LAMA_INTERFACE_REGISTER_T( BLAS, iamax, float )
     LAMA_INTERFACE_REGISTER_T( BLAS, iamax, double )
-
-    LAMA_INTERFACE_REGISTER_T( BLAS, viamax, float )
-    LAMA_INTERFACE_REGISTER_T( BLAS, viamax, double )
 
     LAMA_INTERFACE_REGISTER_T( BLAS, swap, float )
     LAMA_INTERFACE_REGISTER_T( BLAS, swap, double )

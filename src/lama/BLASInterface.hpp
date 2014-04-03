@@ -133,20 +133,6 @@ struct BLASInterface
         typedef IndexType (*iamax) ( const IndexType n, const ValueType* x, const IndexType incX, SyncToken* syncToken );
     
         /**
-         * @brief iamax finds the maximum magnitude element of vector x.
-         *
-         * @param[in] n      number of considered elements in input vector.
-         * @param[in] x      vector with minimum (n - 1) * incX + 1 elements.
-         * @param[in] incX   storage spacing between considered elements of x.
-         * return            the maximum magnitude element within considered elements of vector x
-         *                   (returns x[0] if n <=0 or incX <=0).
-         */
-        typedef ValueType (*viamax) ( const IndexType n,
-        		                      const ValueType* x,
-        		                      const IndexType incX,
-        		                      SyncToken* syncToken );
-    
-        /**
          * @brief swap interchanges considered elements of vector x with vector y.
          *
          *            x <-> y

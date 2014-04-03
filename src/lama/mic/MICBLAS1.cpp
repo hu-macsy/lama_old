@@ -191,59 +191,6 @@ IndexType MICBLAS1::iamax( const IndexType n, const ValueType* x, const IndexTyp
 /* ------------------------------------------------------------------------- */
 
 template<typename ValueType>
-ValueType MICBLAS1::viamax( const IndexType n, const ValueType* x, const IndexType incX, SyncToken* syncToken )
-{
-    LAMA_LOG_INFO( logger, "viamax<" << Scalar::getType<ValueType>() << " >, n = " << n  )
-
-    if ( syncToken )
-    {
-        LAMA_LOG_WARN( logger, "no asynchronous execution for mic possible at this level." )
-    }
-
-    ValueType maxVal = 1;  // default value for error cases
-
-    if ( n < 1 || incX < 1 )
-    {
-        return  maxVal;
-    }
-
-    const void* xPtr = x;
-
-    #pragma offload target( mic ) in( xPtr, n, incX ), inout( maxVal )
-    {
-        const ValueType* x = static_cast<const ValueType*>( xPtr );
-
-        #pragma omp parallel
-        {  
-            ValueType threadMaxVal   = - std::numeric_limits<ValueType>::max();
-
-            #pragma omp for 
-            for ( int i = 0; i < n; ++i )
-            {
-                const ValueType& val = x[ i * incX ];
-
-                if ( val > threadMaxVal )
-                {
-                    threadMaxVal   = val;
-                }
-            }
-
-            #pragma omp critical
-            {
-                if ( threadMaxVal > maxVal )
-                {
-                    maxVal = threadMaxVal;
-                }
-            }
-        }
-    }
-
-    return maxVal;
-}
-
-/* ------------------------------------------------------------------------- */
-
-template<typename ValueType>
 void MICBLAS1::swap(
     const IndexType n,
     ValueType* x,
@@ -518,9 +465,6 @@ void MICBLAS1::setInterface( BLASInterface& BLAS )
 
     LAMA_INTERFACE_REGISTER_T( BLAS, iamax, float )
     LAMA_INTERFACE_REGISTER_T( BLAS, iamax, double )
-
-    LAMA_INTERFACE_REGISTER_T( BLAS, viamax, float )
-    LAMA_INTERFACE_REGISTER_T( BLAS, viamax, double )
 
     LAMA_INTERFACE_REGISTER_T( BLAS, swap, float )
     LAMA_INTERFACE_REGISTER_T( BLAS, swap, double )

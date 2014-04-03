@@ -238,23 +238,6 @@ IndexType OpenMPBLAS1::iamax( const IndexType n, const T* x, const IndexType inc
     return max_pos;
 }
 
-/** viamax */
-
-template<typename T>
-T OpenMPBLAS1::viamax( const IndexType n, const T* x, const IndexType incX, SyncToken* syncToken )
-{
-    LAMA_LOG_DEBUG( logger, "viamax<" << Scalar::getType<T>()<< ">, n = " << n << ", x = " << x << ", incX = " << incX )
-
-    if ( syncToken )
-    {
-        LAMA_LOG_WARN( logger, "no asynchronous execution for openmp possible at this level." )
-    }
-
-    IndexType max_val = iamax( n, x, incX, syncToken );
-
-    return x[max_val * incX];
-}
-
 /** swap */
 
 template<typename T>
@@ -497,9 +480,6 @@ void OpenMPBLAS1::setInterface( BLASInterface& BLAS )
 
     LAMA_INTERFACE_REGISTER_T( BLAS, iamax, float )
     LAMA_INTERFACE_REGISTER_T( BLAS, iamax, double )
-
-    LAMA_INTERFACE_REGISTER_T( BLAS, viamax, float )
-    LAMA_INTERFACE_REGISTER_T( BLAS, viamax, double )
 
     LAMA_INTERFACE_REGISTER_T( BLAS, swap, float )
     LAMA_INTERFACE_REGISTER_T( BLAS, swap, double )
