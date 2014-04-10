@@ -191,8 +191,18 @@ lama_summary_message ( "FOUND"
 # LAMA (core)
 message ( STATUS "" )
 lama_status_message ( HEADLINE "LIBRARIES:" )
+
+if ( LAMA_BLAS_FOUND AND Boost_INCLUDE_DIR )
+    set( REQUIRED_FOUND TRUE )
+    if ( LAMA_BLAS_NAME MATCHES "BLAS" AND NOT LAPACK_FOUND )
+        set( REQUIRED_FOUND FALSE )
+    endif ( LAMA_BLAS_NAME MATCHES "BLAS" AND NOT LAPACK_FOUND )
+else()
+    set( REQUIRED_FOUND FALSE )
+endif ( LAMA_BLAS_FOUND AND Boost_INCLUDE_DIR ) 
+
 lama_summary_message ( "STATIC"
-                       "LAMA_BLAS_FOUND AND LAPACK_FOUND AND Boost_INCLUDE_DIR"
+                       "REQUIRED_FOUND"
                        "LAMA (core)"
                        " " )
    # BLAS
