@@ -313,8 +313,6 @@ private:
 
     MPICommunicator( int& argc, char** & argv );
 
-    void setNodeData();
-
     template<typename T>
     inline static MPI_Datatype getMPIType();
 
@@ -395,27 +393,32 @@ private:
         const T* const sendData,
         const CommunicationPlan& sendPlan ) const;
 
-    MPI_Comm mCommWorld;
-    MPI_Comm mComm;
-    MPI_Comm mCommTask;
+    void initialize( int& argc, char** & argv );
 
     const boost::thread mMainThread;
 
     inline MPI_Comm selectMPIComm() const;
 
-    Communicator::ThreadSafetyLevel mThreadSafetyLevel;
+    LAMA_LOG_DECL_STATIC_LOGGER( logger )
+
+    static const int defaultTag;
+protected:
+    MPICommunicator( int& argc, char** & argv, const std::string& type );
+
+    void setNodeData();
+
+    virtual ContextPtr getCommunicationContext() const;
 
     int mRank; // rank of this processor
     int mSize; // size of communicator
 
     bool mExternInitialization;
 
-    LAMA_LOG_DECL_STATIC_LOGGER( logger )
+    MPI_Comm mCommWorld;
+    MPI_Comm mComm;
+    MPI_Comm mCommTask;
 
-    static const int defaultTag;
-protected:
-    virtual ContextPtr getCommunicationContext() const;
-
+    Communicator::ThreadSafetyLevel mThreadSafetyLevel;
 };
 
 }

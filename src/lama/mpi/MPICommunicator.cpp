@@ -61,8 +61,20 @@ const int MPICommunicator::defaultTag = 1;
 
 LAMA_LOG_DEF_LOGGER( MPICommunicator::logger, "Communicator.MPICommunicator" )
 
+MPICommunicator::MPICommunicator( int& argc, char** & argv, const std::string& type )
+    : Communicator( type ), mThreadSafetyLevel( Communicator::Funneled )
+{
+    LAMA_LOG_DEBUG( logger, "Communicator constructed, type = " << type )
+    initialize( argc, argv );
+}
+
 MPICommunicator::MPICommunicator( int& argc, char** & argv )
     : Communicator( "MPI" ), mThreadSafetyLevel( Communicator::Funneled )
+{
+    initialize( argc, argv );
+}
+
+void MPICommunicator::initialize( int& argc, char** & argv )
 {
     int initialized = 0;
 
