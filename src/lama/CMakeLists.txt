@@ -116,6 +116,12 @@ add_subdirectory ( matutils )
 if ( MPI_FOUND AND LAMA_USE_MPI )
     add_subdirectory ( mpi )
 endif ( MPI_FOUND AND LAMA_USE_MPI )
+#if ( ( ( OSHMEM_FOUND AND GASNET_FOUND) OR GPI_FOUND ) AND LAMA_USE_PGAS )
+#    add_subdirectory( pgas )
+#endif ( ( ( OSHMEM_FOUND AND GASNET_FOUND) OR GPI_FOUND ) AND LAMA_USE_PGAS )
+if ( GPI2_FOUND AND IBVERBS_FOUND AND LAMA_USE_GPI2 )
+    add_subdirectory( gpi )
+endif ( GPI2_FOUND AND IBVERBS_FOUND AND LAMA_USE_GPI2 )
 add_subdirectory ( norm )
 add_subdirectory ( openmp )
 add_subdirectory ( solver )
@@ -160,6 +166,13 @@ if ( MPI_FOUND AND LAMA_USE_MPI )
     set ( ADDITIONAL_LINKER_FLAGS "${ADDITIONAL_LINKER_FLAGS} -lamampi" )
     set ( ADDITIONAL_EXTERNAL_LINKER_FLAGS ${ADDITIONAL_EXTERNAL_LINKER_FLAGS} ${MPI_LIBRARIES} )
 endif ( MPI_FOUND AND LAMA_USE_MPI )
+
+# amagpi
+if ( GPI2_FOUND AND IBVERBS_FOUND AND LAMA_USE_GPI2 )
+    set ( LAMA_LINK_LIBRARIES ${LAMA_LINK_LIBRARIES} amagpi )
+    set ( ADDITIONAL_LINKER_FLAGS "${ADDITIONAL_LINKER_FLAGS} -lamagpi" )
+    set ( ADDITIONAL_EXTERNAL_LINKER_FLAGS ${ADDITIONAL_EXTERNAL_LINKER_FLAGS} ${GPI2_LIBRARIES} ${IBVERBS_LIBRARIES} )
+endif ( GPI2_FOUND AND IBVERBS_FOUND AND LAMA_USE_GPI2 )
 
 set ( ADDITIONAL_LINKER_FLAGS "${ADDITIONAL_LINKER_FLAGS} -Wl,--no-whole-archive" )
 
@@ -216,15 +229,19 @@ foreach ( lib ${ADDITIONAL_EXTERNAL_LINKER_FLAGS} )
     endif ( "${libext}" STREQUAL "" )
 endforeach ( lib ${LAMAPP_LINK_LIBRARIES} )
 
+# override the linker flags if lama is build SHARED
+if ( NOT ${LAMA_LIBRARY_TYPE} STREQUAL STATIC )
+    set ( ADDITIONAL_LINKER_FLAGS "-ldl -L\${LAMA_ROOT}/lib -lama" )
+    # if boost system is found, add it to the linker flaggs
+    if ( Boost_SYSTEM_LIBRARY )
+        set ( ADDITIONAL_LINKER_FLAGS "${ADDITIONAL_LINKER_FLAGS} -L${Boost_LIBRARY_DIRS} -lboost_system" )
+    endif( Boost_SYSTEM_LIBRARY )  
+endif ( NOT ${LAMA_LIBRARY_TYPE} STREQUAL STATIC )
+
 # add openmp flag if openmp is available
 if ( OPENMP_FOUND )
     set ( ADDITIONAL_LINKER_FLAGS "${OpenMP_CXX_FLAGS} ${ADDITIONAL_LINKER_FLAGS}" )
 endif( OPENMP_FOUND )
-
-if ( NOT ${LAMA_LIBRARY_TYPE} STREQUAL STATIC )
-    set ( ADDITIONAL_LINKER_FLAGS "-L\${LAMA_ROOT}/lib -lama" )
-endif ( NOT ${LAMA_LIBRARY_TYPE} STREQUAL STATIC )
-
 
 # generate file make.inc + install it
 configure_file ( "${CMAKE_SOURCE_DIR}/examples/make.inc.in" "${PROJECT_BINARY_DIR}/examples/make.inc" )

@@ -48,7 +48,7 @@ endif ( WIN32 )
 
 # Finds packages with custom search options 
 
-set ( Boost_COMPONENTS thread unit_test_framework regex )
+set ( Boost_COMPONENTS thread unit_test_framework regex system )
 
 # FindBoost Debug options comment
 if ( LAMA_CMAKE_VERBOSE )
