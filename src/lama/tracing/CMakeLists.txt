@@ -46,14 +46,5 @@ set ( HEADERS
 lama_classes ( ${CLASSES} )
 lama_headers ( ${HEADERS} )
 
-# SimpleTimeTracer
-if ( LAMA_TRACE_LEVEL STREQUAL "SIMPLE" )
-    if ( Boost_THREAD_LIBRARY )
-        lama_classes ( LAMASimpleTimeTracer )
-    else ( Boost_THREAD_LIBRARY )
-        message ( FATAL_ERROR "SIMPLE timing can not be used without boost thread library." )
-    endif ( Boost_THREAD_LIBRARY )
-endif ( LAMA_TRACE_LEVEL STREQUAL "SIMPLE" )
-
 ### add sources and headers to parent scope ###
 lama_add ()
