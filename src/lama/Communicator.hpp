@@ -2,7 +2,7 @@
  * @file Communicator.hpp
  *
  * @license
- * Copyright (c) 2009-2013
+ * Copyright (c) 2009-2014
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -210,7 +210,7 @@ public:
      * recvValues and sendValues must both have a size of communicator size.
      * recvValues[i] on processor j contains sendValues[j] of processor i.
      */
-    virtual void all2all( int* recvValues, const int* sendValues ) const = 0;
+    virtual void all2all( int recvValues[], const int sendValues[] ) const = 0;
 
     /** @brief Exchange of data between all processors by communication plans.
      *
@@ -226,25 +226,25 @@ public:
      *  The size of sendData must be sendPlan.totalQuantity().
      */
     virtual void exchangeByPlan(
-        int* const recvData,
+        int recvData[],
         const CommunicationPlan& recvPlan,
-        const int* const sendData,
+        const int sendData[],
         const CommunicationPlan& sendPlan ) const = 0;
 
     /** Exchange of float values. */
 
     virtual void exchangeByPlan(
-        float* const recvData,
+        float recvData[],
         const CommunicationPlan& recvPlan,
-        const float* const sendData,
+        const float sendData[],
         const CommunicationPlan& sendPlan ) const = 0;
 
     /** Exchange of double values. */
 
     virtual void exchangeByPlan(
-        double* const recvData,
+        double recvData[],
         const CommunicationPlan& recvPlan,
-        const double* const sendData,
+        const double sendData[],
         const CommunicationPlan& sendPlan ) const = 0;
 
     /** Exchange of LAMAArrays. */
@@ -272,25 +272,25 @@ public:
      *  The size of sendData must be sendPlan.totalQuantity().
      */
     virtual SyncToken* exchangeByPlanAsync(
-        int* const recvData,
+        int recvData[],
         const CommunicationPlan& recvPlan,
-        const int* const sendData,
+        const int sendData[],
         const CommunicationPlan& sendPlan ) const = 0;
 
     /** Asynchronous exchange of float values. */
 
     virtual SyncToken* exchangeByPlanAsync(
-        float* const recvData,
+        float recvData[],
         const CommunicationPlan& recvPlan,
-        const float* const sendData,
+        const float sendData[],
         const CommunicationPlan& sendPlan ) const = 0;
 
     /** Asynchronous exchange of double values. */
 
     virtual SyncToken* exchangeByPlanAsync(
-        double* const recvData,
+        double recvData[],
         const CommunicationPlan& recvPlan,
-        const double* const sendData,
+        const double sendData[],
         const CommunicationPlan& sendPlan ) const = 0;
 
     /** Asynchronous exchange of LAMAArrays. */
@@ -357,9 +357,20 @@ public:
      * owner can be computed by a closed formula.
      */
     void computeOwners(
+        PartitionId owners[],
+        const Distribution& distribution,
+        const IndexType requiredIndexes[],
+        const IndexType n ) const;
+
+    void computeOwners(
         const std::vector<IndexType>& requiredIndexes,
         const Distribution& distribution,
-        std::vector<PartitionId>& owners ) const;
+        std::vector<PartitionId>& owners ) const
+    {
+        IndexType n = requiredIndexes.size();
+        owners.resize( n );
+        computeOwners( &owners[0], distribution, &requiredIndexes[0], n );
+    }
 
     /** @brief Broadcast a typed array from root to all other processors.
      *
@@ -395,19 +406,21 @@ public:
      *  @param[in]    allvals values for all processors (size must be sum(sizes) )
      *  @param[in]    sizes   number of total values for all processors
      */
-    virtual void scatter(
+    virtual void scatterV(
         double myvals[],
         const IndexType n,
         const PartitionId root,
         const double allvals[],
         const IndexType sizes[] ) const = 0;
-    virtual void scatter(
+
+    virtual void scatterV(
         float myvals[],
         const IndexType n,
         const PartitionId root,
         const float allvals[],
         const IndexType sizes[] ) const = 0;
-    virtual void scatter(
+
+    virtual void scatterV(
         int myvals[],
         const IndexType n,
         const PartitionId root,
@@ -419,85 +432,62 @@ public:
      *  @param[out]   allvals values that I receive (size must be n * size() )
      *  @param[in]    n      number of elements in vector val
      *  @param[in]    root   processor with values for all processors
-     *  @param[in]    myvals values for all processors
+     *  @param[in]    myvals values that this processor contributes
      */
     virtual void gather( double allvals[], const IndexType n, const PartitionId root, const double myvals[] ) const = 0;
+
     virtual void gather( float allvals[], const IndexType n, const PartitionId root, const float myvals[] ) const = 0;
+
     virtual void gather( int allvals[], const IndexType n, const PartitionId root, const int myvals[] ) const = 0;
 
-    /** @brief Gather of an array of values from all processors to root.
+    /** @brief allgather is combination of gather and broadcast
+     *
+     *  @param[out]  allvals result array with values from all processors ( allocated for at least n * getSize() )
+     *  @param[in]   n      number of elements in myvals
+     *  @param[in]   myvals array with n values that this processor contributes
+     */
+
+    template<typename T>
+    void allgather( T allvals[], const IndexType n, const T myvals[] ) const
+    {
+        int root = 0;
+        gather( allvals, n, root, myvals );
+        bcast ( allvals, n * getSize(), root );
+
+        // @ToDo: implement this by a circular shift
+    }
+
+    /** @brief Gather of an array of double values from all processors to root.
      *
      *  @param[out]   allvals values that I receive (size must be sum(sizes) )
-     *  @param[in]    n      number of elements in vector val
+     *  @param[in]    n      number of elements in myvals
      *  @param[in]    root   processor with values for all processors
-     *  @param[in]    myvals values for all processors
-     *  @param[in]    sizes   number of total values for all processors
+     *  @param[in]    myvals values on this processor
+     *  @param[in]    sizes  array with sizes from each processor
+     *
+     *  The array sizes must only be valid on the root processor. The
+     *  output array allvals will only be valid on the root processor.
      */
-    virtual void gather(
+    virtual void gatherV(
         double allvals[],
         const IndexType n,
         const PartitionId root,
         const double myvals[],
         const IndexType sizes[] ) const = 0;
-    virtual void gather(
+
+    virtual void gatherV(
         float allvals[],
         const IndexType n,
         const PartitionId root,
         const float myvals[],
         const IndexType sizes[] ) const = 0;
-    virtual void gather(
+
+    virtual void gatherV(
         int allvals[],
         const IndexType n,
         const PartitionId root,
         const int myvals[],
         const IndexType sizes[] ) const = 0;
-
-    /** @brief This routine shifts data between neighbored processors.
-     *
-     *  @param[out] newVals  array with data this partition get from neighbored partition
-     *  @param[in]  newSize  allocated size of array newVals
-     *  @param[in]  oldVals  array with data this partition sends to neighbored partition
-     *  @param[in]  oldSize  number of elements of array oldVals that will be sent
-     *  @param[in]  direction specifies the neighbored partitions to send and receive
-     *
-     *  @returns number of values received in newVals (newSize must have been larger before)
-     *
-     *  Each partition sends to rank() + direction and receives from rank() - direction.
-     *
-     */
-    template <typename T>
-    IndexType shiftData( T newVals[], const IndexType newSize,
-                         const T oldVals[], const IndexType oldSize,
-                         const int direction ) const
-    {
-        return shiftImpl( newVals, newSize, oldVals, oldSize, direction );
-    }
- 
-    /** @brief Asynchronous version of shift.
-     *
-     *  @param[out] newVals  array with data this partition get from neighbored partition
-     *  @param[in]  oldVals  array with data this partition sends to neighbored partition
-     *  @param[in]  size  number of elements of array oldVals to be sent andd newVals to receive
-     *  @param[in]  direction specifies the neighbored partitions to send and receive
-     *
-     *  As there is no information about the received size this routine can only be called for
-     *  arrays that have the same size on all partitions.
-     *
-     *  A default implementation is provided that returns a NoSyncToken. Derived classes
-     *  should override this method if there is a benefit of using asynchronous transfers.
-     */
-
-    template <typename T>
-    SyncToken* shiftDataAsync(
-        T newVals[],
-        const T oldVals[],
-        const IndexType size,
-        const int direction ) const
-    {
-        // call virtual implementation routine 
-
-        return shiftAsyncImpl( newVals, oldVals, size, direction );
-    }
 
     /** @brief Sum operations sum up one single value from each partition to a global value.
      *
@@ -547,12 +537,6 @@ public:
     virtual void swap( float val[], const IndexType n, const PartitionId partner ) const = 0;
     virtual void swap( int val[], const IndexType n, const PartitionId partner ) const = 0;
 
-    /** Gather single value from each processor into a vector. */
-
-    virtual void gather( std::vector<IndexType>& values, IndexType value ) const = 0;
-
-    virtual void gather( std::vector<float>& values, float value ) const = 0;
-
     /** @brief Barrier synchronization between all processors. */
 
     virtual void synchronize() const = 0;
@@ -565,6 +549,72 @@ public:
     {
         return mCommunicatorType;
     }
+
+    /** @brief This routine shifts data between neighbored processors.
+     *
+     *  @param[out] newVals  array with data this partition get from neighbored partition
+     *  @param[in]  newSize  allocated size of array newVals
+     *  @param[in]  oldVals  array with data this partition sends to neighbored partition
+     *  @param[in]  oldSize  number of elements of array oldVals that will be sent
+     *  @param[in]  direction specifies the neighbored partitions to send and receive
+     *
+     *  @returns number of values received in newVals (newSize must have been larger before)
+     *
+     *  Each partition sends to rank() + direction and receives from rank() - direction.
+     *
+     */
+    virtual IndexType shiftData(
+        double newVals[],
+        const IndexType newSize,
+        const double oldVals[],
+        const IndexType oldSize,
+        const int direction ) const = 0;
+
+    virtual IndexType shiftData(
+        float newVals[],
+        const IndexType newSize,
+        const float oldVals[],
+        const IndexType oldSize,
+        const int direction ) const = 0;
+
+    virtual IndexType shiftData(
+        int newVals[],
+        const IndexType newSize,
+        const int oldVals[],
+        const IndexType oldSize,
+        const int direction ) const = 0;
+
+    /** @brief Asynchronous version of shift.
+     *
+     *  @param[out] newVals  array with data this partition get from neighbored partition
+     *  @param[in]  oldVals  array with data this partition sends to neighbored partition
+     *  @param[in]  size  number of elements of array oldVals to be sent andd newVals to receive
+     *  @param[in]  direction specifies the neighbored partitions to send and receive
+     *
+     *  As there is no information about the received size this routine can only be called for
+     *  arrays that have the same size on all partitions.
+     *
+     *  A default implementation is provided that returns a NoSyncToken. Derived classes
+     *  should override this method if there is a benefit of using asynchronous transfers.
+     */
+
+    virtual SyncToken* shiftDataAsync(
+        double newVals[],
+        const double oldVals[],
+        const IndexType size,
+        const int direction ) const;
+
+    virtual SyncToken* shiftDataAsync(
+        float newVals[],
+        const float oldVals[],
+        const IndexType size,
+        const int direction ) const;
+
+    virtual SyncToken* shiftDataAsync(
+        int newVals[],
+        const int oldVals[],
+        const IndexType size,
+        const int direction ) const;
 
 protected:
 
@@ -604,56 +654,6 @@ protected:
      */
     virtual ContextPtr getCommunicationContext() const = 0;
 
-    /** Implemenation of shiftData for double, must be provided by derived classes. */
-
-    virtual IndexType shiftImpl(
-        double newVals[],
-        const IndexType newSize,
-        const double oldVals[],
-        const IndexType oldSize,
-        const int direction ) const = 0;
-
-    /** Implemenation of shiftData for float, must be provided by derived classes. */
-
-    virtual IndexType shiftImpl(
-        float newVals[],
-        const IndexType newSize,
-        const float oldVals[],
-        const IndexType oldSize,
-        const int direction ) const = 0;
-
-    /** Implemenation of shiftData for int, must be provided by derived classes. */
-
-    virtual IndexType shiftImpl(
-        int newVals[],
-        const IndexType newSize,
-        const int oldVals[],
-        const IndexType oldSize,
-        const int direction ) const = 0;
-
-    /** Implemenation of shiftDataAsync for int, can be overriden by derived classes. */
-
-    virtual SyncToken* shiftAsyncImpl(
-        double newVals[],
-        const double oldVals[],
-        const IndexType size,
-        const int direction ) const;
-
-    /** Implemenation of shiftDataAsync for float, can be overriden by derived classes. */
-
-    virtual SyncToken* shiftAsyncImpl(
-        float newVals[],
-        const float oldVals[],
-        const IndexType size,
-        const int direction ) const;
-
-    /** Implemenation of shiftDataAsync for double, can be overriden by derived classes. */
-
-    virtual SyncToken* shiftAsyncImpl(
-        int newVals[],
-        const int oldVals[],
-        const IndexType size,
-        const int direction ) const;
 };
 
 typedef boost::shared_ptr<const Communicator> CommunicatorPtr;

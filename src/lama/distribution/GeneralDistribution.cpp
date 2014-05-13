@@ -137,7 +137,7 @@ GeneralDistribution::GeneralDistribution(
 
     // scatter global indices of local rows
     mLocal2Global.resize ( numMyRows );
-    mCommunicator->scatter ( &mLocal2Global[0], numMyRows, MASTER, &rows[0], &curpos[0] );
+    mCommunicator->scatterV ( &mLocal2Global[0], numMyRows, MASTER, &rows[0], &curpos[0] );
 
     // Compute Global2Local
     std::vector<IndexType>::const_iterator end = mLocal2Global.end();
@@ -247,7 +247,7 @@ void GeneralDistribution::getDistributionVector( std::vector<IndexType>& row2Par
     // gather global indices of local rows
     std::vector<IndexType> rows( mGlobalSize );
 
-    mCommunicator->gather( &rows[0], numMyRows, MASTER, &mLocal2Global[0], &numRows[0] );
+    mCommunicator->gatherV( &rows[0], numMyRows, MASTER, &mLocal2Global[0], &numRows[0] );
 
     // build mapping row 2 partition
     if ( myRank == MASTER )
@@ -282,7 +282,7 @@ void GeneralDistribution::printDistributionVector( std::string /*name*/) const
     // gather global indices of local rows
     std::vector<IndexType> rows( mGlobalSize );
 
-    mCommunicator->gather( &rows[0], numMyRows, MASTER, &mLocal2Global[0], &numRows[0] );
+    mCommunicator->gatherV( &rows[0], numMyRows, MASTER, &mLocal2Global[0], &numRows[0] );
 
     std::vector<IndexType> row2Partition( mGlobalSize );
     getDistributionVector( row2Partition );

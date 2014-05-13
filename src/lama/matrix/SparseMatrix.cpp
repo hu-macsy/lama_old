@@ -1299,9 +1299,9 @@ void SparseMatrix<ValueType>::vectorHaloOperationSync(
 
     LAMA_INTERFACE_FN( sizes2offsets, hostContext, CSRUtils, Offsets );
 
-    std::vector<IndexType> sizes;
+    std::vector<IndexType> sizes( numParts );
     std::vector<IndexType> offsets;
-    comm.gather( sizes, xSize );
+    comm.allgather( &sizes[0], 1, &xSize );
     offsets = sizes;
     offsets.resize( numParts + 1 );
     sizes2offsets( &offsets[0], numParts );
@@ -1537,9 +1537,9 @@ void SparseMatrix<ValueType>::vectorHaloOperationAsync(
 
     LAMA_INTERFACE_FN( sizes2offsets, hostContext, CSRUtils, Offsets );
 
-    std::vector<IndexType> sizes;
+    std::vector<IndexType> sizes( numParts );
     std::vector<IndexType> offsets;
-    comm.gather( sizes, xSize );
+    comm.allgather( &sizes[0], 1, &xSize );
     offsets = sizes;
     offsets.resize( numParts + 1 );
     sizes2offsets( &offsets[0], numParts );
@@ -1633,7 +1633,6 @@ void SparseMatrix<ValueType>::vectorHaloOperationAsync(
                 {
                     continue;
                 }
-
                 for( IndexType j = 0; j < xSize; ++j )
                 {
                     localData[j] += otherData[ i * xSize + j ];

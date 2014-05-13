@@ -26,7 +26,7 @@
  * @endlicense
  *
  * @brief Communicator.cpp
- * @author Jiri Kraus
+ * @author Thomas Brandes, Jiri Kraus
  * @date 23.02.2011
  * @since 1.0.0
  */
@@ -312,14 +312,16 @@ SyncToken* Communicator::defaultShiftAsync(
     // This default implementation uses synchronous shift and returns a NoSyncToken.
 
     IndexType recvSize = -1;
-    recvSize = shiftImpl( targetVals, size, sourceVals, size, direction );
+    recvSize = shiftData( targetVals, size, sourceVals, size, direction );
 
     LAMA_ASSERT_ERROR( recvSize == size, "asynchronous shift with different sizes on partitions" )
 
     return new NoSyncToken();
 }
 
-SyncToken* Communicator::shiftAsyncImpl(
+/* -------------------------------------------------------------------------- */
+
+SyncToken* Communicator::shiftDataAsync(
     double newVals[],
     const double oldVals[],
     const IndexType size,
@@ -328,7 +330,7 @@ SyncToken* Communicator::shiftAsyncImpl(
     return defaultShiftAsync( newVals, oldVals, size, direction );
 }
 
-SyncToken* Communicator::shiftAsyncImpl(
+SyncToken* Communicator::shiftDataAsync(
     float newVals[],
     const float oldVals[],
     const IndexType size,
@@ -337,7 +339,7 @@ SyncToken* Communicator::shiftAsyncImpl(
     return defaultShiftAsync( newVals, oldVals, size, direction );
 }
 
-SyncToken* Communicator::shiftAsyncImpl(
+SyncToken* Communicator::shiftDataAsync(
     int newVals[],
     const int oldVals[],
     const IndexType size,
@@ -393,7 +395,7 @@ void Communicator::shiftArray( LAMAArray<T>& recvArray, const LAMAArray<T>& send
 
     // For shifting of data we use the pure virtual methods implemened by each communicator
 
-    IndexType numRecvElems = shiftImpl( recvData.get(), maxNumRecvElems, sendData.get(), numSendElems, direction );
+    IndexType numRecvElems = shiftData( recvData.get(), maxNumRecvElems, sendData.get(), numSendElems, direction );
 
     LAMA_LOG_INFO( logger,
                    "shift, direction = " << direction << ", sent " << numSendElems << ", recvd " << numRecvElems << "( max was " << maxNumRecvElems << ")" )
@@ -423,7 +425,7 @@ SyncToken* Communicator::shiftAsync(
     // For shifting of data we use the pure virtual methods implemened by each communicator
     // Note: get is the method of the accesses and not of the auto_ptr
 
-    SyncToken* syncToken = shiftAsyncImpl( recvData->get(), sendData->get(), numElems, direction );
+    SyncToken* syncToken = shiftDataAsync( recvData->get(), sendData->get(), numElems, direction );
 
     LAMA_ASSERT_DEBUG( syncToken, "NULL pointer for sync token" )
 
@@ -526,29 +528,29 @@ SyncToken* Communicator::updateHaloAsync(
 }
 
 /* -------------------------------------------------------------------------- */
+/*  computeOwners                                                             */
+/* -------------------------------------------------------------------------- */
 
 void Communicator::computeOwners(
-    const vector<IndexType>& requiredIndexes,
+    PartitionId owners[],
     const Distribution& distribution,
-    vector<PartitionId>& owners ) const
+    const IndexType requiredIndexes[],
+    const IndexType nIndexes ) const
 {
     PartitionId rank = getRank();
     PartitionId size = getSize();
 
-    const size_t requiredIndexesSize = requiredIndexes.size();
-
-    LAMA_LOG_DEBUG( logger, "need owners for " << requiredIndexesSize << " global indexes" )
+    LAMA_LOG_DEBUG( logger, "need owners for " << nIndexes << " global indexes" )
 
     if ( distribution.getCommunicator() != *this )
     {
         LAMA_THROWEXCEPTION( "The distribution has a different Communicator." )
     }
 
-    int n = 0;
-    owners.resize( requiredIndexesSize );
+    int nonLocal = 0;
 
-    //Check for own ownership. Mark needed Owners. Only exchange requests for unknown indexes.
-    for ( IndexType i = 0; i < static_cast<IndexType>( requiredIndexesSize ); ++i )
+    // Check for own ownership. Mark needed Owners. Only exchange requests for unknown indexes.
+    for ( IndexType i = 0; i < nIndexes; ++i )
     {
         if ( distribution.isLocal( requiredIndexes[i] ) )
         {
@@ -556,13 +558,13 @@ void Communicator::computeOwners(
         }
         else
         {
-            n++;
+            nonLocal++;
             owners[i] = -1;
         }
     }
 
-    LAMA_LOG_DEBUG( logger, requiredIndexesSize - n << " Indexes are local. Only need to send " << n << " values." )
-    IndexType receiveSize = max( n ); // --> pure method call
+    LAMA_LOG_DEBUG( logger, nIndexes - nonLocal << " Indexes are local. Only need to send " << nonLocal << " values." )
+    IndexType receiveSize = max( nonLocal ); // --> pure method call
     LAMA_LOG_DEBUG( logger, "max size of receive buffer is " << receiveSize )
 
     // Allocate the maxiamal needed size for the communication buffers
@@ -576,13 +578,13 @@ void Communicator::computeOwners(
         HostWriteAccess<IndexType> indexesReceive( indexesReceiveArray );
         HostWriteAccess<IndexType> ownersSend( ownersSendArray );
         HostWriteAccess<IndexType> ownersReceive( ownersReceiveArray );
-        n = 0; // reset, counted again
+        nonLocal = 0; // reset, counted again
 
-        for ( IndexType i = 0; i < static_cast<IndexType>( requiredIndexesSize ); ++i )
+        for ( IndexType i = 0; i < static_cast<IndexType>( nIndexes ); ++i )
         {
             if ( owners[i] == -1 )
             {
-                indexesSend[n++] = requiredIndexes[i];
+                indexesSend[nonLocal++] = requiredIndexes[i];
             }
         }
 
@@ -595,7 +597,7 @@ void Communicator::computeOwners(
     }
 
     int ownersSize = -1;
-    int currentSize = n;
+    int currentSize = nonLocal;
 
     const int direction = 1; // send to right, recv from left
     for ( int iProc = 0; iProc < size - 1; ++iProc )
@@ -609,7 +611,7 @@ void Communicator::computeOwners(
 
         // --->   Pure method call
 
-        currentSize = shiftImpl( indexesReceive.get(), receiveSize, indexesSend.get(), currentSize, direction );
+        currentSize = shiftData( indexesReceive.get(), receiveSize, indexesSend.get(), currentSize, direction );
 
         LAMA_ASSERT_ERROR( ownersSize == -1 || currentSize == ownersSize, "Communication corrupted." )
 
@@ -644,7 +646,7 @@ void Communicator::computeOwners(
         }
 
         // --->   Pure method call
-        ownersSize = shiftImpl( ownersReceive.get(), receiveSize, ownersSend.get(), currentSize, direction );
+        ownersSize = shiftData( ownersReceive.get(), receiveSize, ownersSend.get(), currentSize, direction );
 
         LAMA_LOG_DEBUG( logger, *this << ": recvd array with " << ownersSize << " owners from left" )
         for ( int i = 0; i < ownersSize; i++ )
@@ -659,23 +661,25 @@ void Communicator::computeOwners(
     }
 
     HostWriteAccess<IndexType> ownersSend( ownersSendArray );
-    for ( int i = 0; i < n; ++i )
+    for ( int i = 0; i < nonLocal; ++i )
     {
         LAMA_LOG_TRACE( logger,
-                        *this << ": final " << i << " of " << n << ": " << requiredIndexes[i] << ", owner = " << ownersSend[i] )
+                        *this << ": final " << i << " of " << nonLocal 
+                        << ": " << requiredIndexes[i] << ", owner = " << ownersSend[i] )
     }
 
     // The Owner Indexes are always passed in the same order, so we can insert them easily.
+
     int nn = 0;
 
-    for ( IndexType i = 0; i < static_cast<IndexType>( requiredIndexesSize ); ++i )
+    for ( IndexType i = 0; i < nIndexes; ++i )
     {
         if ( owners[i] == -1 )
         {
             owners[i] = ownersSend[nn++];
 
             //TODO is this usefull for the speed ?
-            if ( nn == n )
+            if ( nn == nonLocal )
             {
                 break;
             }
@@ -714,6 +718,7 @@ bool Communicator::any( const bool flag ) const
 /* -------------------------------------------------------------------------- */
 
 // Instantiation of template methods for the supported types
+
 template LAMA_DLL_IMPORTEXPORT
 IndexType Communicator::shift0(
     float targetVals[],

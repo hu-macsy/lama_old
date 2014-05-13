@@ -49,7 +49,7 @@ namespace lama
 LAMA_LOG_DEF_LOGGER( NoCommunicator::logger, "Communicator.NoCommunicator" )
 
 NoCommunicator::NoCommunicator()
-    : Communicator( "none" )
+    : CRTPCommunicator<NoCommunicator>( "none" )
 {
     LAMA_LOG_DEBUG( logger, "NoCommunicator()" )
 }
@@ -94,17 +94,21 @@ PartitionId NoCommunicator::getNodeRank() const
     return 0;
 }
 
-void NoCommunicator::all2all( int* recvValues, const int* sendValues ) const
+void NoCommunicator::all2all( int recvValues[], const int sendValues[] ) const
 {
     recvValues[0] = sendValues[0];
 }
 
+/* ---------------------------------------------------------------------------------- */
+/*      exchangeByPlan                                                                */
+/* ---------------------------------------------------------------------------------- */
+
+template<typename T>
 void NoCommunicator::exchangeByPlanImpl(
-    void* const recvData,
+    T recvData[],
     const CommunicationPlan& recvPlan,
-    const void* const sendData,
-    const CommunicationPlan& sendPlan,
-    int elemSize ) const
+    const T sendData[],
+    const CommunicationPlan& sendPlan ) const
 {
     LAMA_ASSERT_EQUAL_ERROR( recvPlan.size(), sendPlan.size() )
 
@@ -125,145 +129,62 @@ void NoCommunicator::exchangeByPlanImpl(
 
     // self copy of send data to recv data
 
-    memcpy( recvData, sendData, quantity * elemSize );
+    memcpy( recvData, sendData, quantity * sizeof( T ) );
 }
 
-void NoCommunicator::exchangeByPlan(
-    int* const recvData,
+template<typename T>
+SyncToken* NoCommunicator::exchangeByPlanAsyncImpl(
+    T recvData[],
     const CommunicationPlan& recvPlan,
-    const int* const sendData,
+    const T sendData[],
     const CommunicationPlan& sendPlan ) const
 {
-    exchangeByPlanImpl( recvData, recvPlan, sendData, sendPlan, sizeof(int) );
-}
-
-void NoCommunicator::exchangeByPlan(
-    float* const recvData,
-    const CommunicationPlan& recvPlan,
-    const float* const sendData,
-    const CommunicationPlan& sendPlan ) const
-{
-    exchangeByPlanImpl( recvData, recvPlan, sendData, sendPlan, sizeof(float) );
-}
-
-void NoCommunicator::exchangeByPlan(
-    double* const recvData,
-    const CommunicationPlan& recvPlan,
-    const double* const sendData,
-    const CommunicationPlan& sendPlan ) const
-{
-    exchangeByPlanImpl( recvData, recvPlan, sendData, sendPlan, sizeof(double) );
-}
-
-SyncToken* NoCommunicator::exchangeByPlanAsync(
-    int* const recvData,
-    const CommunicationPlan& recvPlan,
-    const int* const sendData,
-    const CommunicationPlan& sendPlan ) const
-{
-    exchangeByPlanImpl( recvData, recvPlan, sendData, sendPlan, sizeof(int) );
+    exchangeByPlanImpl( recvData, recvPlan, sendData, sendPlan );
     return new NoSyncToken();
 }
 
-SyncToken* NoCommunicator::exchangeByPlanAsync(
-    float* const recvData,
-    const CommunicationPlan& recvPlan,
-    const float* const sendData,
-    const CommunicationPlan& sendPlan ) const
-{
-    exchangeByPlanImpl( recvData, recvPlan, sendData, sendPlan, sizeof(float) );
-    return new NoSyncToken();
-}
+/* ---------------------------------------------------------------------------------- */
+/*              shift                                                                 */
+/* ---------------------------------------------------------------------------------- */
 
-SyncToken* NoCommunicator::exchangeByPlanAsync(
-    double* const recvData,
-    const CommunicationPlan& recvPlan,
-    const double* const sendData,
-    const CommunicationPlan& sendPlan ) const
-{
-    exchangeByPlanImpl( recvData, recvPlan, sendData, sendPlan, sizeof(double) );
-    return new NoSyncToken();
-}
-
+template<typename T>
 IndexType NoCommunicator::shiftImpl(
-    double targetVals[],
-    const IndexType targetSize,
-    const double sourceVals[],
-    const IndexType sourceSize,
-    const int direction ) const
+    T[],
+    const IndexType,
+    const PartitionId,
+    const T[],
+    const IndexType,
+    const PartitionId ) const
 {
-    if ( direction != 0 )
-    {
-        LAMA_LOG_WARN( logger, "shift<double> for NoCommunicator, dir = " << direction )
-    }
-
-    return Communicator::shift0( targetVals, targetSize, sourceVals, sourceSize );
+    LAMA_THROWEXCEPTION( "shiftImpl should never be called for NoCommunicator" )
 }
 
-IndexType NoCommunicator::shiftImpl(
-    float targetVals[],
-    const IndexType targetSize,
-    const float sourceVals[],
-    const IndexType sourceSize,
-    const int direction ) const
+template<typename T>
+SyncToken* NoCommunicator::shiftAsyncImpl(
+    T[],
+    const PartitionId,
+    const T[],
+    const PartitionId,
+    const IndexType ) const
 {
-    if ( direction != 0 )
-    {
-        LAMA_LOG_WARN( logger, "shift<float> for NoCommunicator, dir = " << direction )
-    }
-    return Communicator::shift0( targetVals, targetSize, sourceVals, sourceSize );
+    LAMA_THROWEXCEPTION( "shiftAsyncImpl should never be called for NoCommunicator" )
 }
 
-IndexType NoCommunicator::shiftImpl(
-    int targetVals[],
-    const IndexType targetSize,
-    const int sourceVals[],
-    const IndexType sourceSize,
-    const int direction ) const
+template<typename T>
+void NoCommunicator::maxlocImpl( T&, int&, const PartitionId root ) const
 {
-    if ( direction != 0 )
-    {
-        LAMA_LOG_WARN( logger, "shift<int> for NoCommunicator, dir = " << direction )
-    }
-    return Communicator::shift0( targetVals, targetSize, sourceVals, sourceSize );
+    // nothing to do
+    LAMA_ASSERT_EQUAL_ERROR( root, 0 )
 }
-
-void NoCommunicator::maxloc( double&, int&, const PartitionId root ) const
+ 
+template<typename T>
+void NoCommunicator::bcastImpl( T[], const IndexType, const PartitionId root ) const
 {
     LAMA_ASSERT_EQUAL_ERROR( root, 0 )
 }
 
-void NoCommunicator::maxloc( float&, int&, const PartitionId root ) const
-{
-    LAMA_ASSERT_EQUAL_ERROR( root, 0 )
-}
-
-void NoCommunicator::maxloc( int&, int&, const PartitionId root ) const
-{
-    LAMA_ASSERT_EQUAL_ERROR( root, 0 )
-}
-
-void NoCommunicator::bcast( double[], const IndexType, const PartitionId root ) const
-{
-    LAMA_ASSERT_EQUAL_ERROR( root, 0 )
-}
-
-void NoCommunicator::bcast( float[], const IndexType, const PartitionId root ) const
-{
-    LAMA_ASSERT_EQUAL_ERROR( root, 0 )
-}
-
-void NoCommunicator::bcast( int[], const IndexType, const PartitionId root ) const
-{
-    LAMA_ASSERT_EQUAL_ERROR( root, 0 )
-}
-
-void NoCommunicator::bcast( std::string&, const PartitionId root ) const
-{
-    LAMA_ASSERT_EQUAL_ERROR( root, 0 )
-}
-
-void NoCommunicator::scatter( double myvals[], const IndexType n, const PartitionId root, const double allvals[] ) const
+template<typename T>
+void NoCommunicator::scatterImpl( T myvals[], const IndexType n, const PartitionId root, const T allvals[] ) const
 {
     LAMA_ASSERT_EQUAL_ERROR( root, 0 )
 
@@ -273,31 +194,12 @@ void NoCommunicator::scatter( double myvals[], const IndexType n, const Partitio
     }
 }
 
-void NoCommunicator::scatter( float myvals[], const IndexType n, const PartitionId root, const float allvals[] ) const
-{
-    LAMA_ASSERT_EQUAL_ERROR( root, 0 )
-
-    for ( int i = 0; i < n; i++ )
-    {
-        myvals[i] = allvals[i];
-    }
-}
-
-void NoCommunicator::scatter( int myvals[], const IndexType n, const PartitionId root, const int allvals[] ) const
-{
-    LAMA_ASSERT_EQUAL_ERROR( root, 0 )
-
-    for ( int i = 0; i < n; i++ )
-    {
-        myvals[i] = allvals[i];
-    }
-}
-
-void NoCommunicator::scatter(
-    double myvals[],
+template<typename T>
+void NoCommunicator::scatterVImpl(
+    T myvals[],
     const IndexType n,
     const PartitionId root,
-    const double allvals[],
+    const T allvals[],
     const IndexType sizes[] ) const
 {
     LAMA_ASSERT_EQUAL_ERROR( root, 0 )
@@ -309,39 +211,8 @@ void NoCommunicator::scatter(
     }
 }
 
-void NoCommunicator::scatter(
-    float myvals[],
-    const IndexType n,
-    const PartitionId root,
-    const float allvals[],
-    const IndexType sizes[] ) const
-{
-    LAMA_ASSERT_EQUAL_ERROR( root, 0 )
-    LAMA_ASSERT_EQUAL_ERROR( sizes[0], n )
-
-    for ( int i = 0; i < n; i++ )
-    {
-        myvals[i] = allvals[i];
-    }
-}
-
-void NoCommunicator::scatter(
-    int myvals[],
-    const IndexType n,
-    const PartitionId root,
-    const int allvals[],
-    const IndexType sizes[] ) const
-{
-    LAMA_ASSERT_EQUAL_ERROR( root, 0 )
-    LAMA_ASSERT_EQUAL_ERROR( sizes[0], n )
-
-    for ( int i = 0; i < n; i++ )
-    {
-        myvals[i] = allvals[i];
-    }
-}
-
-void NoCommunicator::gather( double allvals[], const IndexType n, const PartitionId root, const double myvals[] ) const
+template<typename T>
+void NoCommunicator::gatherImpl( T allvals[], const IndexType n, const PartitionId root, const T myvals[] ) const
 {
     LAMA_ASSERT_EQUAL_ERROR( root, 0 )
 
@@ -351,31 +222,12 @@ void NoCommunicator::gather( double allvals[], const IndexType n, const Partitio
     }
 }
 
-void NoCommunicator::gather( float allvals[], const IndexType n, const PartitionId root, const float myvals[] ) const
-{
-    LAMA_ASSERT_EQUAL_ERROR( root, 0 )
-
-    for ( int i = 0; i < n; i++ )
-    {
-        allvals[i] = myvals[i];
-    }
-}
-
-void NoCommunicator::gather( int allvals[], const IndexType n, const PartitionId root, const int myvals[] ) const
-{
-    LAMA_ASSERT_EQUAL_ERROR( root, 0 )
-
-    for ( int i = 0; i < n; i++ )
-    {
-        allvals[i] = myvals[i];
-    }
-}
-
-void NoCommunicator::gather(
-    double allvals[],
+template<typename T>
+void NoCommunicator::gatherVImpl(
+    T allvals[],
     const IndexType n,
     const PartitionId root,
-    const double myvals[],
+    const T myvals[],
     const IndexType sizes[] ) const
 {
     LAMA_ASSERT_EQUAL_ERROR( root, 0 )
@@ -387,117 +239,28 @@ void NoCommunicator::gather(
     }
 }
 
-void NoCommunicator::gather(
-    float allvals[],
-    const IndexType n,
-    const PartitionId root,
-    const float myvals[],
-    const IndexType sizes[] ) const
-{
-    LAMA_ASSERT_EQUAL_ERROR( root, 0 )
-    LAMA_ASSERT_ERROR( sizes[0] == n, "illegal array sizes, sizes[0] = " << sizes[0] << ", expected = " << n )
-
-    for ( int i = 0; i < n; i++ )
-    {
-        allvals[i] = myvals[i];
-    }
-}
-
-void NoCommunicator::gather(
-    int allvals[],
-    const IndexType n,
-    const PartitionId root,
-    const int myvals[],
-    const IndexType sizes[] ) const
-{
-    LAMA_ASSERT_EQUAL_ERROR( root, 0 )
-    LAMA_ASSERT_ERROR( sizes[0] == n, "illegal array sizes, sizes[0] = " << sizes[0] << ", expected = " << n )
-
-    for ( int i = 0; i < n; i++ )
-    {
-        allvals[i] = myvals[i];
-    }
-}
-
-void NoCommunicator::swap( double[], const IndexType, const PartitionId partner ) const
+template<typename T>
+void NoCommunicator::swapImpl( T[], const IndexType, const PartitionId partner ) const
 {
     LAMA_ASSERT_EQUAL_ERROR( partner, 0 )
 }
 
-void NoCommunicator::swap( float[], const IndexType, const PartitionId partner ) const
-{
-    LAMA_ASSERT_EQUAL_ERROR( partner, 0 )
-}
-
-void NoCommunicator::swap( int[], const IndexType, const PartitionId partner ) const
-{
-    LAMA_ASSERT_EQUAL_ERROR( partner, 0 )
-}
-
-float NoCommunicator::sum( const float value ) const
+template<typename T>
+T NoCommunicator::sumImpl( const T value ) const
 {
     return value;
 }
 
-double NoCommunicator::sum( const double value ) const
+template<typename T>
+T NoCommunicator::minImpl( const T value ) const
 {
     return value;
 }
 
-int NoCommunicator::sum( const int value ) const
+template<typename T>
+T NoCommunicator::maxImpl( const T value ) const
 {
     return value;
-}
-
-size_t NoCommunicator::sum( const size_t value ) const
-{
-    return value;
-}
-
-float NoCommunicator::min( const float value ) const
-{
-    return value;
-}
-
-float NoCommunicator::max( const float value ) const
-{
-    return value;
-}
-
-double NoCommunicator::min( const double value ) const
-{
-    return value;
-}
-
-double NoCommunicator::max( const double value ) const
-{
-    return value;
-}
-
-int NoCommunicator::min( const int value ) const
-{
-    return value;
-}
-
-int NoCommunicator::max( const int value ) const
-{
-    return value;
-}
-
-void NoCommunicator::gather( vector<IndexType>& values, IndexType value ) const
-{
-    // build a vector of just a single value
-
-    values.clear();
-    values.push_back( value );
-}
-
-void NoCommunicator::gather( vector<float>& values, float value ) const
-{
-    // build a vector of just a single value
-
-    values.clear();
-    values.push_back( value );
 }
 
 /* --------------------------------------------------------------- */

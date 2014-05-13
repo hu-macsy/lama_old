@@ -597,7 +597,7 @@ LAMA_COMMON_TEST_CASE_TM( CommunicatorTest, T, scatterVTest )
         }
     }
 
-    comm->scatter( myvals.get(), n, root, allvals.get(), sizes.get() );
+    comm->scatterV( myvals.get(), n, root, allvals.get(), sizes.get() );
 
     // also verify that myvals has not been overwritten at end
     for ( int i = 0; i < n; i++ )
@@ -695,7 +695,7 @@ LAMA_COMMON_TEST_CASE_TM( CommunicatorTest, T, gatherVTest )
         }
     }
 
-    comm->gather( allvals.get(), n, root, myvals.get(), sizes.get() );
+    comm->gatherV( allvals.get(), n, root, myvals.get(), sizes.get() );
 
     if ( rank == root )
     {

@@ -37,10 +37,7 @@
 #include <lama/config.hpp>
 
 // base classes
-#include <lama/Communicator.hpp>
-
-// boost
-#include <boost/weak_ptr.hpp>
+#include <lama/CRTPCommunicator.hpp>
 
 namespace lama
 {
@@ -49,8 +46,11 @@ namespace lama
  *  partition or processor.
  */
 
-class LAMA_DLL_IMPORTEXPORT NoCommunicator: public Communicator
+class LAMA_DLL_IMPORTEXPORT NoCommunicator: public CRTPCommunicator<NoCommunicator>
 {
+
+    friend class CRTPCommunicator<NoCommunicator>;
+
 public:
 
     NoCommunicator();
@@ -69,166 +69,94 @@ public:
 
     virtual PartitionId getNodeRank() const;
 
-    virtual void all2all( int* recvValues, const int* sendValues ) const;
-
-    virtual void exchangeByPlan(
-        int* const recvData,
-        const CommunicationPlan& recvPlan,
-        const int* const sendData,
-        const CommunicationPlan& sendPlan ) const;
-
-    virtual void exchangeByPlan(
-        float* const recvData,
-        const CommunicationPlan& recvPlan,
-        const float* const sendData,
-        const CommunicationPlan& sendPlan ) const;
-
-    virtual void exchangeByPlan(
-        double* const recvData,
-        const CommunicationPlan& recvPlan,
-        const double* const sendData,
-        const CommunicationPlan& sendPlan ) const;
-
-    virtual SyncToken* exchangeByPlanAsync(
-        int* const recvData,
-        const CommunicationPlan& recvPlan,
-        const int* const sendData,
-        const CommunicationPlan& sendPlan ) const;
-
-    virtual SyncToken* exchangeByPlanAsync(
-        float* const recvData,
-        const CommunicationPlan& recvPlan,
-        const float* const sendData,
-        const CommunicationPlan& sendPlan ) const;
-
-    virtual SyncToken* exchangeByPlanAsync(
-        double* const recvData,
-        const CommunicationPlan& recvPlan,
-        const double* const sendData,
-        const CommunicationPlan& sendPlan ) const;
-
-    virtual IndexType shiftImpl(
-        double targetVals[],
-        const IndexType targetSize,
-        const double sourceVals[],
-        const IndexType oldSize,
-        const int direction ) const;
-
-    virtual IndexType shiftImpl(
-        float targetVals[],
-        const IndexType targetSize,
-        const float sourceVals[],
-        const IndexType oldSize,
-        const int direction ) const;
-
-    virtual IndexType shiftImpl(
-        int targetVals[],
-        const IndexType targetSize,
-        const int sourceVals[],
-        const IndexType oldSize,
-        const int direction ) const;
-
-    virtual void bcast( double val[], const IndexType n, const PartitionId root ) const;
-    virtual void bcast( float val[], const IndexType n, const PartitionId root ) const;
-    virtual void bcast( int val[], const IndexType n, const PartitionId root ) const;
-    virtual void bcast( std::string& val, const PartitionId root ) const;
-
-    virtual void scatter( double myvals[], const IndexType n, const PartitionId root, const double allvals[] ) const;
-    virtual void scatter( float myvals[], const IndexType n, const PartitionId root, const float allvals[] ) const;
-    virtual void scatter( int myvals[], const IndexType n, const PartitionId root, const int allvals[] ) const;
-
-    virtual void scatter(
-        double myvals[],
-        const IndexType n,
-        const PartitionId root,
-        const double allvals[],
-        const IndexType sizes[] ) const;
-    virtual void scatter(
-        float myvals[],
-        const IndexType n,
-        const PartitionId root,
-        const float allvals[],
-        const IndexType sizes[] ) const;
-    virtual void scatter(
-        int myvals[],
-        const IndexType n,
-        const PartitionId root,
-        const int allvals[],
-        const IndexType sizes[] ) const;
-
-    virtual void gather( double allvals[], const IndexType n, const PartitionId root, const double myvals[] ) const;
-    virtual void gather( float allvals[], const IndexType n, const PartitionId root, const float myvals[] ) const;
-    virtual void gather( int allvals[], const IndexType n, const PartitionId root, const int myvals[] ) const;
-
-    virtual void gather(
-        double allvals[],
-        const IndexType n,
-        const PartitionId root,
-        const double myvals[],
-        const IndexType sizes[] ) const;
-    virtual void gather(
-        float allvals[],
-        const IndexType n,
-        const PartitionId root,
-        const float myvals[],
-        const IndexType sizes[] ) const;
-    virtual void gather(
-        int allvals[],
-        const IndexType n,
-        const PartitionId root,
-        const int myvals[],
-        const IndexType sizes[] ) const;
-
-    virtual float sum( const float value ) const;
-
-    virtual double sum( const double value ) const;
-
-    virtual int sum( const int value ) const;
-
-    virtual size_t sum( const size_t value ) const;
-
-    virtual float min( const float value ) const;
-
-    virtual float max( const float value ) const;
-
-    virtual double min( const double value ) const;
-
-    virtual double max( const double value ) const;
-
-    virtual int min( const int value ) const;
-
-    virtual int max( const int value ) const;
-
-    virtual void maxloc( double& val, int& location, const PartitionId root ) const;
-    virtual void maxloc( float& val, int& location, const PartitionId root ) const;
-    virtual void maxloc( int& val, int& location, const PartitionId root ) const;
-
-    virtual void swap( double val[], const IndexType n, const PartitionId partner ) const;
-    virtual void swap( float val[], const IndexType n, const PartitionId partner ) const;
-    virtual void swap( int val[], const IndexType n, const PartitionId partner ) const;
-
-    virtual void gather( std::vector<IndexType>& values, IndexType value ) const;
-
-    virtual void gather( std::vector<float>& values, float value ) const;
+    virtual void all2all( int recvValues[], const int sendValues[] ) const;
 
     virtual void synchronize() const;
 
     virtual void writeAt( std::ostream& stream ) const;
 
+protected:
+
+    LAMA_LOG_DECL_STATIC_LOGGER( logger )
+
 private:
+
+    // Implementation methods are all private, but CRTPCommunicator is a friend class
+
+    template<typename T>
+    IndexType shiftImpl(
+        T newvals[],
+        const IndexType newSize,
+        const PartitionId source,
+        const T oldVals[],
+        const IndexType oldSize,
+        const PartitionId dest ) const;
+
+    template<typename T>
+    SyncToken* shiftAsyncImpl(
+        T newvals[],
+        const PartitionId source,
+        const T oldVals[],
+        const PartitionId dest,
+        const IndexType size ) const;
+
+    template<typename T>
+    void bcastImpl( T val[], const IndexType n, const PartitionId root ) const;
+
+    template<typename T>
+    void scatterImpl( T myvals[], const IndexType n, const PartitionId root, const T allvals[] ) const;
+
+    template<typename T>
+    void scatterVImpl(
+        T myvals[],
+        const IndexType n,
+        const PartitionId root,
+        const T allvals[],
+        const IndexType sizes[] ) const;
+
+    template<typename T>
+    void gatherImpl( T allvals[], const IndexType n, const PartitionId root, const T myvals[] ) const;
+
+    template<typename T>
+    void gatherVImpl(
+        T allvals[],
+        const IndexType n,
+        const PartitionId root,
+        const T myvals[],
+        const IndexType sizes[] ) const;
+
+    template<typename T>
+    T sumImpl( const T value ) const;
+
+    template<typename T>
+    T maxImpl( const T value ) const;
+
+    template<typename T>
+    T minImpl( const T value ) const;
+
+    template<typename T>
+    void maxlocImpl( T& val, int& location, const PartitionId root ) const;
+
+    template<typename T>
+    void swapImpl( T val[], const IndexType n, const PartitionId partner ) const;
 
     // common implementation for self exchange, uses size of datatype
 
+    template<typename T>
     void exchangeByPlanImpl(
-        void* const recvData,
+        T recvData[],
         const CommunicationPlan& recvPlan,
-        const void* const sendData,
-        const CommunicationPlan& sendPlan,
-        int elemSize ) const;
+        const T sendData[],
+        const CommunicationPlan& sendPlan ) const;
+
+    template<typename T>
+    SyncToken* exchangeByPlanAsyncImpl(
+        T recvData[],
+        const CommunicationPlan& recvPlan,
+        const T sendData[],
+        const CommunicationPlan& sendPlan ) const;
 
     virtual ContextPtr getCommunicationContext() const;
-
-    LAMA_LOG_DECL_STATIC_LOGGER( logger )
 };
 
 }

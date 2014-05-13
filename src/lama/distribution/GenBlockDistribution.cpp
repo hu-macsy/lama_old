@@ -144,8 +144,10 @@ GenBlockDistribution::GenBlockDistribution(
     LAMA_LOG_DEBUG( logger,
                     "GenBlockDistribution of " << getGlobalSize() << " elements" << ", my weight = " << weight )
 
-    std::vector<float> allWeights;
-    communicator->gather( allWeights, weight );
+    std::vector<float> allWeights( size );
+
+    communicator->allgather( &allWeights[0], 1, &weight );
+
     float totalWeight = 0;
 
     for ( PartitionId p = 0; p < size; p++ )

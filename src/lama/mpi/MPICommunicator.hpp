@@ -40,7 +40,7 @@
 #include <lama/config.hpp>
 
 // base classes
-#include <lama/Communicator.hpp>
+#include <lama/CRTPCommunicator.hpp>
 
 // others
 #include <lama/LAMATypes.hpp>
@@ -62,12 +62,13 @@ namespace lama
  *  MPI_Init is called in the constructor, MPI_Finalize is called in the destructor.
  */
 
-class LAMA_DLL_IMPORTEXPORT MPICommunicator: public Communicator
+class LAMA_DLL_IMPORTEXPORT MPICommunicator: public CRTPCommunicator<MPICommunicator>
 {
 
 // Only MPICommunicatorManager is allowed to create MPI communicator
 
     friend class MPICommunicatorManager;
+    friend class CRTPCommunicator<MPICommunicator>;
 
 public:
     virtual ~MPICommunicator();
@@ -102,210 +103,15 @@ public:
      * recvValues and sendValues must both have a size of communicator size.
      * recvValues[i] on processor j contains sendValues[j] of processor i.
      */
-    virtual void all2all( int* recvValues, const int* sendValues ) const;
-
-    /** Exchange data between all processors by communication plans.
-     *
-     *  @param[out] recvData  buffer for data received from other processors
-     *  @param[in]  recvPlan  number of elements and offsets for receiving
-     *  @param[in]  sendData  buffer for data to send to other processors
-     *  @param[in]  sendPlan  contains number of elements and offsets for sending data
-     */
-
-    virtual void exchangeByPlan(
-        int* const recvData,
-        const CommunicationPlan& recvPlan,
-        const int* const sendData,
-        const CommunicationPlan& sendPlan ) const;
-
-    virtual void exchangeByPlan(
-        float* const recvData,
-        const CommunicationPlan& recvPlan,
-        const float* const sendData,
-        const CommunicationPlan& sendPlan ) const;
-
-    virtual void exchangeByPlan(
-        double* const recvData,
-        const CommunicationPlan& recvPlan,
-        const double* const sendData,
-        const CommunicationPlan& sendPlan ) const;
-
-    virtual SyncToken* exchangeByPlanAsync(
-        int* const recvData,
-        const CommunicationPlan& recvPlan,
-        const int* const sendData,
-        const CommunicationPlan& sendPlan ) const;
-
-    virtual SyncToken* exchangeByPlanAsync(
-        float* const recvData,
-        const CommunicationPlan& recvPlan,
-        const float* const sendData,
-        const CommunicationPlan& sendPlan ) const;
-
-    virtual SyncToken* exchangeByPlanAsync(
-        double* const recvData,
-        const CommunicationPlan& recvPlan,
-        const double* const sendData,
-        const CommunicationPlan& sendPlan ) const;
+    virtual void all2all( int recvValues[], const int sendValues[] ) const;
 
     template<typename T>
     MPI_Request startrecv( T* buffer, int count, int source ) const;
 
     template<typename T>
-    MPI_Request startsend( const T* buffer, int count, int target ) const;
-
-    virtual float sum( const float value ) const;
-
-    virtual double sum( const double value ) const;
-
-    virtual int sum( const int value ) const;
-
-    virtual float min( const float value ) const;
-
-    virtual size_t sum( const size_t value ) const;
-
-    virtual float max( const float value ) const;
-
-    virtual double min( const double value ) const;
-
-    virtual double max( const double value ) const;
-
-    virtual int min( const int value ) const;
-
-    virtual int max( const int value ) const;
-
-    virtual void gather( std::vector<IndexType>& values, IndexType value ) const;
-
-    virtual void gather( std::vector<float>& values, float value ) const;
+    MPI_Request startsend( const T buffer[], int count, int target ) const;
 
     virtual void synchronize() const;
-
-    virtual IndexType shiftImpl(
-        double newVals[],
-        const IndexType newSize,
-        const double oldVals[],
-        const IndexType oldSize,
-        const int direction ) const;
-
-    virtual IndexType shiftImpl(
-        float newVals[],
-        const IndexType newSize,
-        const float oldVals[],
-        const IndexType oldSize,
-        const int direction ) const;
-
-    virtual IndexType shiftImpl(
-        int newVals[],
-        const IndexType newSize,
-        const int oldVals[],
-        const IndexType oldSize,
-        const int direction ) const;
-
-    virtual SyncToken* shiftAsyncImpl(
-        double newVals[],
-        const double oldVals[],
-        const IndexType size,
-        const int direction ) const;
-
-    virtual SyncToken* shiftAsyncImpl(
-        float newVals[],
-        const float oldVals[],
-        const IndexType size,
-        const int direction ) const;
-
-    virtual SyncToken* shiftAsyncImpl(
-        int newVals[],
-        const int oldVals[],
-        const IndexType size,
-        const int direction ) const;
-
-    /** Broadcast an array of doubles from root to all processors in simulation */
-
-    virtual void bcast( double val[], const IndexType n, const PartitionId root ) const;
-
-    /** Broadcast an array of int from root to all processors in simulation */
-
-    virtual void bcast( int val[], const IndexType n, const PartitionId root ) const;
-
-    /** Broadcast an array of float from root to all processors in simulation */
-
-    virtual void bcast( float val[], const IndexType n, const PartitionId root ) const;
-
-    /** Broadcast of a string */
-
-    virtual void bcast( std::string& val, const PartitionId root ) const;
-
-    /** scatter */
-
-    virtual void scatter( double myvals[], const IndexType n, const PartitionId root, const double allvals[] ) const;
-    virtual void scatter( float myvals[], const IndexType n, const PartitionId root, const float allvals[] ) const;
-    virtual void scatter( int myvals[], const IndexType n, const PartitionId root, const int allvals[] ) const;
-
-    virtual void scatter(
-        double myvals[],
-        const IndexType n,
-        const PartitionId root,
-        const double allvals[],
-        const IndexType sizes[] ) const;
-    virtual void scatter(
-        float myvals[],
-        const IndexType n,
-        const PartitionId root,
-        const float allvals[],
-        const IndexType sizes[] ) const;
-    virtual void scatter(
-        int myvals[],
-        const IndexType n,
-        const PartitionId root,
-        const int allvals[],
-        const IndexType sizes[] ) const;
-
-    /** gather */
-
-    virtual void gather( double allvals[], const IndexType n, const PartitionId root, const double myvals[] ) const;
-    virtual void gather( float allvals[], const IndexType n, const PartitionId root, const float myvals[] ) const;
-    virtual void gather( int allvals[], const IndexType n, const PartitionId root, const int myvals[] ) const;
-
-    virtual void gather(
-        double allvals[],
-        const IndexType n,
-        const PartitionId root,
-        const double myvals[],
-        const IndexType sizes[] ) const;
-    virtual void gather(
-        float allvals[],
-        const IndexType n,
-        const PartitionId root,
-        const float myvals[],
-        const IndexType sizes[] ) const;
-    virtual void gather(
-        int allvals[],
-        const IndexType n,
-        const PartitionId root,
-        const int myvals[],
-        const IndexType sizes[] ) const;
-
-    /** Maximal value combined with a location value where maximum was found
-     *
-     *  @param[in,out] val      is a value on each processor, only out for root with maximal value
-     *  @param[in,out] location is an additional int value, only out for root
-     *  @param[in]     root     TODO[doxy] Complete Description.
-     *
-     *  Only root processor will contain the maximal value and the location loc.
-     */
-    virtual void maxloc( double& val, int& location, const PartitionId root ) const;
-
-    virtual void maxloc( float& val, int& location, const PartitionId root ) const;
-
-    virtual void maxloc( int& val, int& location, const PartitionId root ) const;
-
-    /** This routine swaps an array with a partner processor. */
-
-    virtual void swap( double val[], const IndexType n, const PartitionId partner ) const;
-
-    virtual void swap( float val[], const IndexType n, const PartitionId partner ) const;
-
-    virtual void swap( int val[], const IndexType n, const PartitionId partner ) const;
 
     virtual void writeAt( std::ostream& stream ) const;
 
@@ -320,13 +126,16 @@ private:
     inline static MPI_Datatype getMPI2Type();
 
     template<typename T>
+    void bcastImpl( T val[], const IndexType n, const PartitionId root ) const;
+
+    template<typename T>
     T sumImpl( T myVal ) const;
 
     template<typename T>
-    T maxval( T myVal ) const;
+    T maxImpl( T myVal ) const;
 
     template<typename T>
-    T minval( T myVal ) const;
+    T minImpl( T myVal ) const;
 
     template<typename T>
     inline void send( const T* buffer, int count, int target ) const;
@@ -338,7 +147,7 @@ private:
     void scatterImpl( T myvals[], const IndexType n, const PartitionId root, const T allvals[] ) const;
 
     template<typename T>
-    void scatterImpl(
+    void scatterVImpl(
         T myvals[],
         const IndexType n,
         const PartitionId root,
@@ -349,7 +158,7 @@ private:
     void gatherImpl( T allvals[], const IndexType n, const PartitionId root, const T myvals[] ) const;
 
     template<typename T>
-    void gatherImpl(
+    void gatherVImpl(
         T allvals[],
         const IndexType n,
         const PartitionId root,
@@ -357,7 +166,7 @@ private:
         const IndexType sizes[] ) const;
 
     template<typename T>
-    IndexType shiftMPI(
+    IndexType shiftImpl(
         T newvals[],
         const IndexType newSize,
         const PartitionId source,
@@ -366,7 +175,7 @@ private:
         const PartitionId dest ) const;
 
     template<typename T>
-    SyncToken* shiftAsyncMPI(
+    SyncToken* shiftAsyncImpl(
         T newvals[],
         const PartitionId source,
         const T oldVals[],
@@ -381,16 +190,16 @@ private:
 
     template<typename T>
     void exchangeByPlanImpl(
-        T* const recvData,
+        T recvData[],
         const CommunicationPlan& recvPlan,
-        const T* const sendData,
+        const T sendData[],
         const CommunicationPlan& sendPlan ) const;
 
     template<typename T>
     SyncToken* exchangeByPlanAsyncImpl(
-        T* const recvData,
+        T recvData[],
         const CommunicationPlan& recvPlan,
-        const T* const sendData,
+        const T sendData[],
         const CommunicationPlan& sendPlan ) const;
 
     void initialize( int& argc, char** & argv );

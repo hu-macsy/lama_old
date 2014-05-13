@@ -196,7 +196,7 @@ void CUDAawareMPICommunicator::shiftArray( LAMAArray<T>& recvArray, const LAMAAr
 
     // For shifting of data we use the pure virtual methods implemened by each communicator
 
-    IndexType numRecvElems = shiftImpl( recvData.get(), maxNumRecvElems, sendData.get(), numSendElems, direction );
+    IndexType numRecvElems = shiftData( recvData.get(), maxNumRecvElems, sendData.get(), numSendElems, direction );
 
     LAMA_LOG_INFO( logger,
                    "shift, direction = " << direction << ", sent " << numSendElems << ", recvd " << numRecvElems << "( max was " << maxNumRecvElems << ")" )
@@ -235,7 +235,7 @@ SyncToken* CUDAawareMPICommunicator::shiftAsync(
     // For shifting of data we use the pure virtual methods implemened by each communicator
     // Note: get is the method of the accesses and not of the auto_ptr
 
-    SyncToken* syncToken = shiftAsyncImpl( recvData->get(), sendData->get(), numElems, direction );
+    SyncToken* syncToken = shiftAsyncData( recvData->get(), sendData->get(), numElems, direction );
 
     LAMA_ASSERT_DEBUG( syncToken, "NULL pointer for sync token" )
 

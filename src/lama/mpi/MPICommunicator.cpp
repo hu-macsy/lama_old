@@ -62,14 +62,14 @@ const int MPICommunicator::defaultTag = 1;
 LAMA_LOG_DEF_LOGGER( MPICommunicator::logger, "Communicator.MPICommunicator" )
 
 MPICommunicator::MPICommunicator( int& argc, char** & argv, const std::string& type )
-    : Communicator( type ), mThreadSafetyLevel( Communicator::Funneled )
+    : CRTPCommunicator<MPICommunicator>( type ), mThreadSafetyLevel( Communicator::Funneled )
 {
     LAMA_LOG_DEBUG( logger, "Communicator constructed, type = " << type )
     initialize( argc, argv );
 }
 
 MPICommunicator::MPICommunicator( int& argc, char** & argv )
-    : Communicator( "MPI" ), mThreadSafetyLevel( Communicator::Funneled )
+    : CRTPCommunicator<MPICommunicator>( "MPI" ), mThreadSafetyLevel( Communicator::Funneled )
 {
     initialize( argc, argv );
 }
@@ -317,7 +317,7 @@ int MPICommunicator::getCount( MPI_Status& mpiStatus ) const
 }
 
 template<typename T>
-void MPICommunicator::send( const T* buffer, int count, int target ) const
+void MPICommunicator::send( const T buffer[], int count, int target ) const
 {
     MPI_Datatype commType = getMPIType<T>();
     LAMA_MPICALL( logger, 
@@ -327,10 +327,13 @@ void MPICommunicator::send( const T* buffer, int count, int target ) const
 
 /* ---------------------------------------------------------------------------------- */
 
-void MPICommunicator::all2all( int* recvSizes, const int* sendSizes ) const
+void MPICommunicator::all2all( int recvSizes[], const int sendSizes[] ) const
 {
     LAMA_ASSERT_ERROR( sendSizes != 0, " invalid sendSizes " )
     LAMA_ASSERT_ERROR( recvSizes != 0, " invalid recvSizes " )
+
+    // MPI is not const-aware so we have to use a const_cast on sendSizes
+
     LAMA_MPICALL( logger,
                   MPI_Alltoall( const_cast<int*>( sendSizes ), 1, MPI_INT, recvSizes, 1, MPI_INT, selectMPIComm() ),
                   "MPI_Alltoall" )
@@ -338,72 +341,19 @@ void MPICommunicator::all2all( int* recvSizes, const int* sendSizes ) const
 
 /* ---------------------------------------------------------------------------------- */
 
-void MPICommunicator::exchangeByPlan(
-    int* const recvData,
-    const CommunicationPlan& recvPlan,
-    const int* const sendData,
-    const CommunicationPlan& sendPlan ) const
-{
-    exchangeByPlanImpl( recvData, recvPlan, sendData, sendPlan );
-}
-
-void MPICommunicator::exchangeByPlan(
-    float* const recvData,
-    const CommunicationPlan& recvPlan,
-    const float* const sendData,
-    const CommunicationPlan& sendPlan ) const
-{
-    exchangeByPlanImpl( recvData, recvPlan, sendData, sendPlan );
-}
-
-void MPICommunicator::exchangeByPlan(
-    double* const recvData,
-    const CommunicationPlan& recvPlan,
-    const double* const sendData,
-    const CommunicationPlan& sendPlan ) const
-{
-    exchangeByPlanImpl( recvData, recvPlan, sendData, sendPlan );
-}
-
-SyncToken* MPICommunicator::exchangeByPlanAsync(
-    int* const recvData,
-    const CommunicationPlan& recvPlan,
-    const int* const sendData,
-    const CommunicationPlan& sendPlan ) const
-{
-    return exchangeByPlanAsyncImpl( recvData, recvPlan, sendData, sendPlan );
-}
-
-SyncToken* MPICommunicator::exchangeByPlanAsync(
-    float* const recvData,
-    const CommunicationPlan& recvPlan,
-    const float* const sendData,
-    const CommunicationPlan& sendPlan ) const
-{
-    return exchangeByPlanAsyncImpl( recvData, recvPlan, sendData, sendPlan );
-}
-
-SyncToken* MPICommunicator::exchangeByPlanAsync(
-    double* const recvData,
-    const CommunicationPlan& recvPlan,
-    const double* const sendData,
-    const CommunicationPlan& sendPlan ) const
-{
-    return exchangeByPlanAsyncImpl( recvData, recvPlan, sendData, sendPlan );
-}
-
 template<typename T>
-void MPICommunicator::exchangeByPlanImpl(
-    T* const recvData,
-    const CommunicationPlan& recvPlan,
-    const T* const sendData,
-    const CommunicationPlan& sendPlan ) const
+void MPICommunicator::exchangeByPlanImpl( T recvData[], const CommunicationPlan& recvPlan,
+                                    const T sendData[], const CommunicationPlan& sendPlan ) const
 {
     LAMA_REGION( "Communicator.MPI.exchangeByPlan" )
+
     LAMA_ASSERT_ERROR( sendPlan.allocated(), "sendPlan not allocated" )
     LAMA_ASSERT_ERROR( recvPlan.allocated(), "recvPlan not allocated" )
+
     LAMA_LOG_INFO( logger,
-                   *this << ": exchange for values of type " << Scalar::getType<T>() << ", send to " << sendPlan.size() << " processors, recv from " << recvPlan.size() )
+                   *this << ": exchange for values of type " << Scalar::getType<T>() 
+                    << ", send to " << sendPlan.size() << " processors, recv from " << recvPlan.size() )
+
     int maxReceives = recvPlan.size();
     int noReceives = 0; // will be incremented
     T* recvDataForMe = NULL;
@@ -570,6 +520,12 @@ inline MPI_Datatype MPICommunicator::getMPIType<float>()
 }
 
 template<>
+inline MPI_Datatype MPICommunicator::getMPIType<char>()
+{
+    return MPI_CHAR;
+}
+
+template<>
 inline MPI_Datatype MPICommunicator::getMPIType<double>()
 {
     return MPI_DOUBLE;
@@ -617,11 +573,22 @@ inline MPI_Datatype MPICommunicator::getMPI2Type<int,int>()
 }
 
 /* ---------------------------------------------------------------------------------- */
+/*              bcast                                                                 */
+/* ---------------------------------------------------------------------------------- */
+
+template<typename T>
+void MPICommunicator::bcastImpl( T val[], const IndexType n, const PartitionId root ) const
+{
+    MPI_Datatype commType = getMPIType<T>();
+    LAMA_MPICALL( logger, MPI_Bcast( val, n, commType, root, selectMPIComm() ), "MPI_Bcast<T>" )
+}
+
+/* ---------------------------------------------------------------------------------- */
 /*              shift                                                                 */
 /* ---------------------------------------------------------------------------------- */
 
 template<typename T>
-IndexType MPICommunicator::shiftMPI(
+IndexType MPICommunicator::shiftImpl(
     T recvVals[],
     const IndexType recvSize,
     const PartitionId source,
@@ -655,72 +622,12 @@ IndexType MPICommunicator::shiftMPI(
     return count;
 }
 
-IndexType MPICommunicator::shiftImpl(
-    double recvData[],
-    const IndexType recvSize,
-    const double sendVals[],
-    const IndexType sendSize,
-    const int direction ) const
-{
-    LAMA_LOG_DEBUG( logger,
-                    *this << ": shift, direction = " << direction << ", sendsize = " << sendSize << ", recvsize = " << recvSize )
-
-    if ( direction % getSize() == 0 )
-    {
-        return shift0( recvData, recvSize, sendVals, sendSize );
-    }
-
-    PartitionId dest = getNeighbor( direction );
-    PartitionId source = getNeighbor( -direction );
-    return shiftMPI( recvData, recvSize, source, sendVals, sendSize, dest );
-}
-
-IndexType MPICommunicator::shiftImpl(
-    float recvData[],
-    const IndexType recvSize,
-    const float sendVals[],
-    const IndexType sendSize,
-    const int direction ) const
-{
-    LAMA_LOG_DEBUG( logger,
-                    *this << ": shift, direction = " << direction << ", sendsize = " << sendSize << ", recvsize = " << recvSize )
-
-    if ( direction % getSize() == 0 )
-    {
-        return shift0( recvData, recvSize, sendVals, sendSize );
-    }
-
-    PartitionId dest = getNeighbor( direction );
-    PartitionId source = getNeighbor( -direction );
-    return shiftMPI( recvData, recvSize, source, sendVals, sendSize, dest );
-}
-
-IndexType MPICommunicator::shiftImpl(
-    int recvData[],
-    const IndexType recvSize,
-    const int sendVals[],
-    const IndexType sendSize,
-    const int direction ) const
-{
-    LAMA_LOG_DEBUG( logger,
-                    *this << ": shift, direction = " << direction << ", sendsize = " << sendSize << ", recvsize = " << recvSize )
-
-    if ( direction % getSize() == 0 )
-    {
-        return shift0( recvData, recvSize, sendVals, sendSize );
-    }
-
-    PartitionId dest = getNeighbor( direction );
-    PartitionId source = getNeighbor( -direction );
-    return shiftMPI( recvData, recvSize, source, sendVals, sendSize, dest );
-}
-
 /* ---------------------------------------------------------------------------------- */
 /*              shiftAsync                                                            */
 /* ---------------------------------------------------------------------------------- */
 
 template<typename T>
-SyncToken* MPICommunicator::shiftAsyncMPI(
+SyncToken* MPICommunicator::shiftAsyncImpl(
     T recvVals[],
     const PartitionId source,
     const T sendVals[],
@@ -743,56 +650,6 @@ SyncToken* MPICommunicator::shiftAsyncMPI(
     return pSyncToken.release();
 }
 
-SyncToken* MPICommunicator::shiftAsyncImpl(
-    double recvVals[],
-    const double sendVals[],
-    const IndexType size,
-    const int direction ) const
-{
-    LAMA_LOG_DEBUG( logger, *this << ": shiftAsync size = " << size << ", direction = " << direction )
-
-    if ( direction % getSize() == 0 )
-    {
-        return defaultShiftAsync( recvVals, sendVals, size, 0 );
-    }
-
-    PartitionId dest = getNeighbor( direction );
-    PartitionId source = getNeighbor( -direction );
-    return shiftAsyncMPI( recvVals, source, sendVals, dest, size );
-}
-
-SyncToken* MPICommunicator::shiftAsyncImpl(
-    float recvVals[],
-    const float sendVals[],
-    const IndexType size,
-    const int direction ) const
-{
-    if ( direction % getSize() == 0 )
-    {
-        return defaultShiftAsync( recvVals, sendVals, size, 0 );
-    }
-
-    PartitionId dest = getNeighbor( direction );
-    PartitionId source = getNeighbor( -direction );
-    return shiftAsyncMPI( recvVals, source, sendVals, dest, size );
-}
-
-SyncToken* MPICommunicator::shiftAsyncImpl(
-    int recvVals[],
-    const int sendVals[],
-    const IndexType size,
-    const int direction ) const
-{
-    if ( direction % getSize() == 0 )
-    {
-        return defaultShiftAsync( recvVals, sendVals, size, 0 );
-    }
-
-    PartitionId dest = getNeighbor( direction );
-    PartitionId source = getNeighbor( -direction );
-    return shiftAsyncMPI( recvVals, source, sendVals, dest, size );
-}
-
 /* ---------------------------------------------------------------------------------- */
 /*              sum                                                                   */
 /* ---------------------------------------------------------------------------------- */
@@ -808,34 +665,12 @@ T MPICommunicator::sumImpl( const T value ) const
     return sum;
 }
 
-float MPICommunicator::sum( const float value ) const
-{
-    return sumImpl( value );
-}
-
-double MPICommunicator::sum( const double value ) const
-{
-    return sumImpl( value );
-}
-
-size_t MPICommunicator::sum( const size_t value ) const
-{
-    // conversion: size_t <-> unsigned long should always be okay
-
-    return sumImpl<unsigned long>( static_cast<unsigned long>( value ) );
-}
-
-int MPICommunicator::sum( const int value ) const
-{
-    return sumImpl( value );
-}
-
 /* ---------------------------------------------------------------------------------- */
 /*              min / max reduction                                                   */
 /* ---------------------------------------------------------------------------------- */
 
 template<typename T>
-T MPICommunicator::minval( const T value ) const
+T MPICommunicator::minImpl( const T value ) const
 {
     MPI_Datatype commType = getMPIType<T>();
 
@@ -848,125 +683,26 @@ T MPICommunicator::minval( const T value ) const
 }
 
 template<typename T>
-T MPICommunicator::maxval( const T value ) const
+T MPICommunicator::maxImpl( const T value ) const
 {
     MPI_Datatype commType = getMPIType<T>();
 
     T globalMax; // no initialization needed, done in MPI call
 
-    LAMA_LOG_DEBUG( logger, "maxval: local value = " << value )
+    LAMA_LOG_DEBUG( logger, "maxImpl: local value = " << value )
 
     LAMA_MPICALL( logger,
                   MPI_Allreduce( ( void* ) &value, ( void* ) &globalMax, 1, commType, MPI_MAX, selectMPIComm() ),
                   "MPI_Allreduce( MPI_MAX )" )
-
-    LAMA_LOG_DEBUG( logger, "maxval: global value = " << globalMax )
-
+                  
+    LAMA_LOG_DEBUG( logger, "maxImpl: global value = " << globalMax )
+                      
     return globalMax;
-}
-
-float MPICommunicator::min( const float value ) const
-{
-    return minval( value );
-}
-
-float MPICommunicator::max( const float value ) const
-{
-    return maxval( value );
-}
-
-double MPICommunicator::min( const double value ) const
-{
-    return minval( value );
-}
-
-double MPICommunicator::max( const double value ) const
-{
-    return maxval( value );
-}
-
-int MPICommunicator::min( const int value ) const
-{
-    return minval( value );
-}
-
-int MPICommunicator::max( const int value ) const
-{
-    return maxval( value );
-}
-
-void MPICommunicator::gather( vector<IndexType>& values, IndexType value ) const
-{
-    // build a vector of just a single value
-    values.clear();
-    values.resize( mSize, 0.0 );
-    LAMA_MPICALL( logger, MPI_Allgather( &value, 1, MPI_INT, &values[0], 1, MPI_INT, selectMPIComm() ),
-                  "MPI_Allgather(MPI_INT,MPI_INT)" )
-}
-
-void MPICommunicator::gather( vector<float>& values, float value ) const
-{
-    // build a vector of just a single value
-    values.clear();
-    values.resize( mSize, 0.0 );
-    LAMA_MPICALL( logger, MPI_Allgather( &value, 1, MPI_FLOAT, &values[0], 1, MPI_FLOAT, selectMPIComm() ),
-                  "MPI_Allgather(MPI_FLOAT,MPI_FLOAT)" )
 }
 
 void MPICommunicator::synchronize() const
 {
     LAMA_MPICALL( logger, MPI_Barrier( selectMPIComm() ), "MPI_Barrier()" )
-}
-
-/* ---------------------------------------------------------------------------------- */
-/*      bcast                                                                         */
-/* ---------------------------------------------------------------------------------- */
-
-void MPICommunicator::bcast( int val[], const IndexType n, const PartitionId root ) const
-{
-    LAMA_MPICALL( logger, MPI_Bcast( val, n, MPI_INT, root, selectMPIComm() ), "MPI_Bcast<int>" )
-}
-
-void MPICommunicator::bcast( double val[], const IndexType n, const PartitionId root ) const
-{
-    LAMA_MPICALL( logger, MPI_Bcast( val, n, MPI_DOUBLE, root, selectMPIComm() ), "MPI_Bcast<double>" )
-}
-
-void MPICommunicator::bcast( float val[], const IndexType n, const PartitionId root ) const
-{
-    LAMA_MPICALL( logger, MPI_Bcast( val, n, MPI_FLOAT, root, selectMPIComm() ), "MPI_Bcast<float>" )
-}
-
-void MPICommunicator::bcast( std::string& val, const PartitionId root ) const
-{
-    int len = 0;
-
-    bool isRoot = getRank() == root;
-
-    if ( isRoot )
-    { 
-        len = val.length();
-    }
-
-    // step 1: broadcast length of string
-
-    LAMA_MPICALL( logger, MPI_Bcast( &len, 1, MPI_INT, root, selectMPIComm() ), "MPI_Bcast str length" )
-
-    boost::scoped_array<char> buffer( new char[len+1] ); 
-
-    char* strptr = buffer.get();
-
-    if ( isRoot )
-    {
-        strptr = const_cast<char *>( val.c_str() );
-    }
-
-    LAMA_MPICALL( logger, MPI_Bcast( strptr, len + 1, MPI_CHAR, root, selectMPIComm() ), "MPI_Bcast string" )
-
-    if ( !isRoot )
-    {
-        val = strptr;
-    }
 }
 
 /* ---------------------------------------------------------------------------------- */
@@ -985,31 +721,12 @@ void MPICommunicator::scatterImpl( T myvals[], const IndexType n, const Partitio
                   "MPI_Scatter" )
 }
 
-void MPICommunicator::scatter( float myvals[], const IndexType n, const PartitionId root, const float allvals[] ) const
-{
-    scatterImpl( myvals, n, root, allvals );
-}
-
-void MPICommunicator::scatter(
-    double myvals[],
-    const IndexType n,
-    const PartitionId root,
-    const double allvals[] ) const
-{
-    scatterImpl( myvals, n, root, allvals );
-}
-
-void MPICommunicator::scatter( int myvals[], const IndexType n, const PartitionId root, const int allvals[] ) const
-{
-    scatterImpl( myvals, n, root, allvals );
-}
-
 /* ---------------------------------------------------------------------------------- */
 /*      scatter( myvals, n, root, allvals, sizes )                                    */
 /* ---------------------------------------------------------------------------------- */
 
 template<typename T>
-void MPICommunicator::scatterImpl(
+void MPICommunicator::scatterVImpl(
     T myvals[],
     const IndexType n,
     const PartitionId root,
@@ -1058,36 +775,6 @@ void MPICommunicator::scatterImpl(
     }
 }
 
-void MPICommunicator::scatter(
-    float myvals[],
-    const IndexType n,
-    const PartitionId root,
-    const float allvals[],
-    const IndexType sizes[] ) const
-{
-    scatterImpl( myvals, n, root, allvals, sizes );
-}
-
-void MPICommunicator::scatter(
-    double myvals[],
-    const IndexType n,
-    const PartitionId root,
-    const double allvals[],
-    const IndexType sizes[] ) const
-{
-    scatterImpl( myvals, n, root, allvals, sizes );
-}
-
-void MPICommunicator::scatter(
-    int myvals[],
-    const IndexType n,
-    const PartitionId root,
-    const int allvals[],
-    const IndexType sizes[] ) const
-{
-    scatterImpl( myvals, n, root, allvals, sizes );
-}
-
 /* ---------------------------------------------------------------------------------- */
 /*      gather( allvals, n, root, myvals )                                            */
 /* ---------------------------------------------------------------------------------- */
@@ -1105,27 +792,12 @@ void MPICommunicator::gatherImpl( T allvals[], const IndexType n, const Partitio
                   "MPI_Gather<T>" )
 }
 
-void MPICommunicator::gather( double allvals[], const IndexType n, const PartitionId root, const double myvals[] ) const
-{
-    gatherImpl( allvals, n, root, myvals );
-}
-
-void MPICommunicator::gather( float allvals[], const IndexType n, const PartitionId root, const float myvals[] ) const
-{
-    gatherImpl( allvals, n, root, myvals );
-}
-
-void MPICommunicator::gather( int allvals[], const IndexType n, const PartitionId root, const int myvals[] ) const
-{
-    gatherImpl( allvals, n, root, myvals );
-}
-
 /* ---------------------------------------------------------------------------------- */
-/*      gather( allvals, n, root, myvals, sizes )                                     */
+/*      gatherV( allvals, n, root, myvals, sizes )                                    */
 /* ---------------------------------------------------------------------------------- */
 
 template<typename T>
-void MPICommunicator::gatherImpl(
+void MPICommunicator::gatherVImpl(
     T allvals[],
     const IndexType n,
     const PartitionId root,
@@ -1174,36 +846,6 @@ void MPICommunicator::gatherImpl(
     }
 }
 
-void MPICommunicator::gather(
-    float allvals[],
-    const IndexType n,
-    const PartitionId root,
-    const float myvals[],
-    const IndexType sizes[] ) const
-{
-    gatherImpl( allvals, n, root, myvals, sizes );
-}
-
-void MPICommunicator::gather(
-    double allvals[],
-    const IndexType n,
-    const PartitionId root,
-    const double myvals[],
-    const IndexType sizes[] ) const
-{
-    gatherImpl( allvals, n, root, myvals, sizes );
-}
-
-void MPICommunicator::gather(
-    int allvals[],
-    const IndexType n,
-    const PartitionId root,
-    const int myvals[],
-    const IndexType sizes[] ) const
-{
-    gatherImpl( allvals, n, root, myvals, sizes );
-}
-
 /* ---------------------------------------------------------------------------------- */
 /*           maxloc                                                                   */
 /* ---------------------------------------------------------------------------------- */
@@ -1228,21 +870,6 @@ void MPICommunicator::maxlocImpl( T& val, int& location, PartitionId root ) cons
         val = out.val;
         location = out.location;
     }
-}
-
-void MPICommunicator::maxloc( float& val, int& location, PartitionId root ) const
-{
-    maxlocImpl( val, location, root );
-}
-
-void MPICommunicator::maxloc( double& val, int& location, PartitionId root ) const
-{
-    maxlocImpl( val, location, root );
-}
-
-void MPICommunicator::maxloc( int& val, int& location, PartitionId root ) const
-{
-    maxlocImpl( val, location, root );
 }
 
 /* ---------------------------------------------------------------------------------- */
@@ -1272,21 +899,6 @@ void MPICommunicator::swapImpl( T val[], const IndexType n, PartitionId partner 
                                 selectMPIComm(), &mpiStatus ),
                   "MPI_Sendrecv" )
     LAMA_ASSERT_ERROR( getCount<T>( mpiStatus ) == n, "size mismatch for swap" )
-}
-
-void MPICommunicator::swap( double val[], const IndexType n, PartitionId partner ) const
-{
-    swapImpl( val, n, partner );
-}
-
-void MPICommunicator::swap( float val[], const IndexType n, PartitionId partner ) const
-{
-    swapImpl( val, n, partner );
-}
-
-void MPICommunicator::swap( int val[], const IndexType n, PartitionId partner ) const
-{
-    swapImpl( val, n, partner );
 }
 
 ContextPtr MPICommunicator::getCommunicationContext() const
