@@ -103,7 +103,7 @@ public:
      * recvValues and sendValues must both have a size of communicator size.
      * recvValues[i] on processor j contains sendValues[j] of processor i.
      */
-    virtual void all2all( int recvValues[], const int sendValues[] ) const;
+    virtual void all2all( IndexType recvValues[], const IndexType sendValues[] ) const;
 
     template<typename T>
     MPI_Request startrecv( T* buffer, int count, int source ) const;
@@ -186,7 +186,7 @@ private:
     void swapImpl( T val[], const IndexType n, PartitionId partner ) const;
 
     template<typename T>
-    void maxlocImpl( T& val, int& location, PartitionId root ) const;
+    void maxlocImpl( T& val, IndexType& location, PartitionId root ) const;
 
     template<typename T>
     void exchangeByPlanImpl(

@@ -327,15 +327,17 @@ void MPICommunicator::send( const T buffer[], int count, int target ) const
 
 /* ---------------------------------------------------------------------------------- */
 
-void MPICommunicator::all2all( int recvSizes[], const int sendSizes[] ) const
+void MPICommunicator::all2all( IndexType recvSizes[], const IndexType sendSizes[] ) const
 {
     LAMA_ASSERT_ERROR( sendSizes != 0, " invalid sendSizes " )
     LAMA_ASSERT_ERROR( recvSizes != 0, " invalid recvSizes " )
 
     // MPI is not const-aware so we have to use a const_cast on sendSizes
 
+    MPI_Datatype commType = getMPIType<IndexType>();
+
     LAMA_MPICALL( logger,
-                  MPI_Alltoall( const_cast<int*>( sendSizes ), 1, MPI_INT, recvSizes, 1, MPI_INT, selectMPIComm() ),
+                  MPI_Alltoall( const_cast<IndexType*>( sendSizes ), 1, commType, recvSizes, 1, commType, selectMPIComm() ),
                   "MPI_Alltoall" )
 }
 
@@ -536,6 +538,24 @@ inline MPI_Datatype MPICommunicator::getMPIType<int>()
 {
     return MPI_INT;
 }
+
+#ifdef LAMA_USE_COMPLEX_FLOAT
+template<>
+inline MPI_Datatype MPICommunicator::getMPIType<ComplexFloat>()
+{
+    return MPI_COMPLEX;
+}
+#endif
+
+#ifdef LAMA_USE_COMPLEX_DOUBLE
+template<>
+inline MPI_Datatype MPICommunicator::getMPIType<ComplexDouble>()
+{
+    // Be careful: some MPI implementations do not provide MPI_DOUBLE_COMPLEX
+    // May be helpful: MPI::DOUBLE_COMPLEX
+    return MPI_DOUBLE_COMPLEX;
+}
+#endif 
 
 template<>
 inline MPI_Datatype MPICommunicator::getMPIType<unsigned long>()
@@ -851,7 +871,7 @@ void MPICommunicator::gatherVImpl(
 /* ---------------------------------------------------------------------------------- */
 
 template<typename T>
-void MPICommunicator::maxlocImpl( T& val, int& location, PartitionId root ) const
+void MPICommunicator::maxlocImpl( T& val, IndexType& location, PartitionId root ) const
 {
     struct ValAndLoc
     {
