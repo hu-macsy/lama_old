@@ -60,115 +60,37 @@ public:
        template<typename T>
        void swapImpl( T val[], const IndexType n, PartitionId partner ) const;
     
+       template<typename T>
+       T minImpl( const T value ) const
+
+       template<typename T>
+       T maxImpl( const T value ) const
+
+       template<typename T>
+       T sumImpl( const T value ) const
+
+       template<typename T>
+       void bcastImpl( T val[], const IndexType n, const PartitionId root ) const
+
+       template<typename T>
+       void gatherImpl( T allvals[], const IndexType n, const PartitionId root, const T myvals[] ) const;
+
+       template<typename T>
+       void gatherVImpl( T allvals[], const IndexType n, const PartitionId root,
+                         const T myvals[], const IndexType sizes[] ) const;
+
+       template<typename T>
+       void scatterImpl( T myvals[], const IndexType n, const PartitionId root, 
+                         const T allvals[] ) const;
+
+       template<typename T>
+       void scatterVImpl( T myvals[], const IndexType n, const PartitionId root, 
+                          const T allvals[], const IndexType sizes[] ) const;
     */
-
-    /** Implementation of pure routine Communicator::swap<double> */
-
-    virtual void swap( double val[], const IndexType n, PartitionId partner ) const
-    {
-        static_cast<const Derived*>( this )->swapImpl( val, n, partner );
-    }
-
-    /** Implementation of pure routine Communicator::swap<float> */
-
-    virtual void swap( float val[], const IndexType n, PartitionId partner ) const
-    {
-        static_cast<const Derived*>( this )->swapImpl( val, n, partner );
-    }
-
-    /** Implementation of pure routine Communicator::swap<IndexType> */
-
-    virtual void swap( IndexType val[], const IndexType n, PartitionId partner ) const
-    {
-        static_cast<const Derived*>( this )->swapImpl( val, n, partner );
-    }
-
-    /***************************************************************
-     *  min                                                        *
-     **************************************************************/
-
-    virtual IndexType min( const IndexType value ) const
-    {
-        return static_cast<const Derived*>( this )->minImpl( value );
-    }
     
-    virtual float min( const float value ) const
-    {
-        return static_cast<const Derived*>( this )->minImpl( value );
-    }
-    
-    virtual double min( const double value ) const
-    {
-        return static_cast<const Derived*>( this )->minImpl( value );
-    }
-
-    /***************************************************************
-     *  max                                                        *
-     **************************************************************/
-
-    virtual IndexType max( const IndexType value ) const
-    {
-        return static_cast<const Derived*>( this )->maxImpl( value );
-    }
-
-    virtual double max( const double value ) const
-    {
-        return static_cast<const Derived*>( this )->maxImpl( value );
-    }
-    
-    virtual float max( const float value ) const
-    {
-        return static_cast<const Derived*>( this )->maxImpl( value );
-    }
-    
-    /***************************************************************
-     *  sum                                                        *
-     **************************************************************/
-
-    virtual float sum( const float value ) const
-    {
-        return static_cast<const Derived*>( this )->sumImpl( value );
-    }
-
-    virtual double sum( const double value ) const
-    {
-        return static_cast<const Derived*>( this )->sumImpl( value );
-    }
-
-    virtual IndexType sum( const IndexType value ) const
-    {
-        return static_cast<const Derived*>( this )->sumImpl( value );
-    }
-
-    virtual size_t sum( const size_t value ) const
-    {
-        return static_cast<const Derived*>( this )->sumImpl( value );
-    }
-
     /***************************************************************
      *  bcast                                                      *
      **************************************************************/
-
-    /** Broadcast an array of doubles from root to all processors in simulation */
-
-    virtual void bcast( double val[], const IndexType n, const PartitionId root ) const
-    {
-        static_cast<const Derived*>( this )->bcastImpl( val, n, root);
-    }
-
-    /** Broadcast an array of IndexType from root to all processors in simulation */
-
-    virtual void bcast( IndexType val[], const IndexType n, const PartitionId root ) const
-    {
-        static_cast<const Derived*>( this )->bcastImpl( val, n, root);
-    }
-
-    /** Broadcast an array of float from root to all processors in simulation */
-
-    virtual void bcast( float val[], const IndexType n, const PartitionId root ) const
-    {
-        static_cast<const Derived*>( this )->bcastImpl( val, n, root);
-    }
 
     /** Broadcast of a string, done in two steps. */
 
@@ -204,309 +126,127 @@ public:
         }
     }
 
-    /***************************************************************
-     *  maxloc                                                     *
-     **************************************************************/
-
-    virtual void maxloc( IndexType& val, int& location, PartitionId root ) const
-    {
-        static_cast<const Derived*>( this )->maxlocImpl( val, location, root );
+#define CRTP_COMMUNICATOR_METHODS( TypeId )                                             \
+                                                                                        \
+    virtual TypeId min( const TypeId value ) const                                      \
+    {                                                                                   \
+        return static_cast<const Derived*>( this )->minImpl( value );                   \
+    }                                                                                   \
+                                                                                        \
+    virtual void swap( TypeId val[], const IndexType n, PartitionId partner ) const     \
+    {                                                                                   \
+        static_cast<const Derived*>( this )->swapImpl( val, n, partner );               \
+    }                                                                                   \
+                                                                                        \
+    virtual TypeId max( const TypeId value ) const                                      \
+    {                                                                                   \
+        return static_cast<const Derived*>( this )->maxImpl( value );                   \
+    }                                                                                   \
+                                                                                        \
+    virtual TypeId sum( const TypeId value ) const                                      \
+    {                                                                                   \
+        return static_cast<const Derived*>( this )->sumImpl( value );                   \
+    }                                                                                   \
+                                                                                        \
+    virtual void bcast( TypeId val[], const IndexType n, const PartitionId root ) const \
+    {                                                                                   \
+        static_cast<const Derived*>( this )->bcastImpl( val, n, root);                  \
+    }                                                                                   \
+                                                                                        \
+    virtual void maxloc( TypeId& val, IndexType& location, PartitionId root ) const     \
+    {                                                                                   \
+        static_cast<const Derived*>( this )->maxlocImpl( val, location, root );         \
+    }                                                                                   \
+                                                                                        \
+    /***************************************************************                    \
+     *  gather                                                     *                    \
+     **************************************************************/                    \
+                                                                                        \
+    virtual void gather( TypeId allvals[], const IndexType n,                           \
+                         const PartitionId root, const TypeId myvals[] ) const          \
+    {                                                                                   \
+        static_cast<const Derived*>( this )->gatherImpl( allvals, n, root, myvals );    \
+    }                                                                                   \
+                                                                                        \
+    virtual void gatherV( TypeId allvals[], const IndexType n, const PartitionId root,  \
+                          const TypeId myvals[], const IndexType sizes[] ) const        \
+    {                                                                                   \
+        static_cast<const Derived*>( this )->gatherVImpl( allvals, n, root,             \
+                                                          myvals, sizes );              \
+    }                                                                                   \
+                                                                                        \
+    virtual void scatter( TypeId myvals[], const IndexType n, const PartitionId root,   \
+                          const TypeId allvals[] ) const                                \
+    {                                                                                   \
+        static_cast<const Derived*>( this )->scatterImpl( myvals, n, root, allvals );   \
+    }                                                                                   \
+                                                                                        \
+    virtual void scatterV( TypeId myvals[], const IndexType n, const PartitionId root,  \
+                           const TypeId allvals[], const IndexType sizes[] ) const      \
+    {                                                                                   \
+        static_cast<const Derived*>( this )->scatterVImpl( myvals, n, root,             \
+                                                           allvals, sizes );            \
+    }                                                                                   \
+                                                                                        \
+    virtual IndexType shiftData(                                                        \
+        TypeId recvVals[],                                                              \
+        const IndexType recvSize,                                                       \
+        const TypeId sendVals[],                                                        \
+        const IndexType sendSize,                                                       \
+        const int direction ) const                                                     \
+    {                                                                                   \
+        return this->shiftDataT( recvVals, recvSize, sendVals, sendSize, direction );   \
+    }                                                                                   \
+                                                                                        \
+    virtual SyncToken* shiftAsyncData(                                                  \
+        TypeId recvVals[],                                                              \
+        const TypeId sendVals[],                                                        \
+        const IndexType size,                                                           \
+        const int direction ) const                                                     \
+    {                                                                                   \
+        return this->shiftAsyncDataT( recvVals, sendVals, size, direction );            \
+    }                                                                                   \
+                                                                                        \
+    virtual void exchangeByPlan( TypeId recvVals[],                                     \
+                                 const CommunicationPlan& recvPlan,                     \
+                                 const TypeId sendVals[],                               \
+                                 const CommunicationPlan& sendPlan ) const              \
+    {                                                                                   \
+        static_cast<const Derived*>( this )->exchangeByPlanImpl( recvVals, recvPlan,    \
+                                                                 sendVals, sendPlan );  \
+    }                                                                                   \
+                                                                                        \
+    /***************************************************************                    \
+     *  exchangeByPlanAsync                                        *                    \
+     **************************************************************/                    \
+                                                                                        \
+    virtual SyncToken* exchangeByPlanAsync(                                             \
+        TypeId recvVals[],                                                              \
+        const CommunicationPlan& recvPlan,                                              \
+        const TypeId sendVals[],                                                        \
+        const CommunicationPlan& sendPlan ) const                                       \
+    {                                                                                   \
+        return static_cast<const Derived*>( this )->exchangeByPlanAsyncImpl(            \
+                       recvVals, recvPlan, sendVals, sendPlan );                        \
     }
 
-    virtual void maxloc( float& val, int& location, PartitionId root ) const
+    CRTP_COMMUNICATOR_METHODS( int )
+    CRTP_COMMUNICATOR_METHODS( float )
+    CRTP_COMMUNICATOR_METHODS( double )
+
+#ifdef LAMA_USE_COMPLEX_FLOAT                   
+    CRTP_COMMUNICATOR_METHODS( ComplexFloat )
+#endif
+
+#ifdef LAMA_USE_COMPLEX_DOUBLE
+    CRTP_COMMUNICATOR_METHODS( ComplexDouble )
+#endif
+
+    /** Additional methods */
+
+    virtual size_t sum( const size_t value ) const
     {
-        static_cast<const Derived*>( this )->maxlocImpl( val, location, root );
-    }
-
-    virtual void maxloc( double& val, int& location, PartitionId root ) const
-    {
-        static_cast<const Derived*>( this )->maxlocImpl( val, location, root );
-    }
-
-    /***************************************************************
-     *  gather                                                     *
-     **************************************************************/
-
-    /* Derived classes must provide this routine:
-
-       template<typename T>
-       void gatherImpl( T allvals[], const IndexType n, const PartitionId root, const T myvals[] ) const;
-    */
-
-    virtual void gather( IndexType allvals[], const IndexType n, const PartitionId root, const IndexType myvals[] ) const
-    {
-        static_cast<const Derived*>( this )->gatherImpl( allvals, n, root, myvals );
-    }
-
-    virtual void gather( float allvals[], const IndexType n, const PartitionId root, const float myvals[] ) const
-    {
-        static_cast<const Derived*>( this )->gatherImpl( allvals, n, root, myvals );
-    }
-
-    virtual void gather( double allvals[], const IndexType n, const PartitionId root, const double myvals[] ) const
-    {
-        static_cast<const Derived*>( this )->gatherImpl( allvals, n, root, myvals );
-    }
-
-    /***************************************************************
-     *  gatherV                                                    *
-     **************************************************************/
-
-    /* Derived classes must provide this routine:
-
-       template<typename T>
-       void gatherImpl( T allvals[], const IndexType n, const PartitionId root,
-                        const T myvals[], const IndexType sizes[] ) const;
-    */
-
-    virtual void gatherV( IndexType allvals[], const IndexType n, const PartitionId root, 
-                          const IndexType myvals[], const IndexType sizes[] ) const
-    {
-        static_cast<const Derived*>( this )->gatherVImpl( allvals, n, root, myvals, sizes );
-    }
-
-    virtual void gatherV( float allvals[], const IndexType n, const PartitionId root, 
-                          const float myvals[], const IndexType sizes[] ) const
-    {
-        static_cast<const Derived*>( this )->gatherVImpl( allvals, n, root, myvals, sizes );
-    }
-
-    virtual void gatherV( double allvals[], const IndexType n, const PartitionId root, 
-                          const double myvals[], const IndexType sizes[] ) const
-    {
-        static_cast<const Derived*>( this )->gatherVImpl( allvals, n, root, myvals, sizes );
-    }
-
-    /***************************************************************
-     *  scatter                                                    *
-     **************************************************************/
-
-    /* Derived classes must provide this routine:
-
-       template<typename T>
-       void scatterImpl( T myvals[], const IndexType n, const PartitionId root, 
-                         const T allvals[] ) const;
-    */
-
-    virtual void scatter( float myvals[], const IndexType n, const PartitionId root, const float allvals[] ) const
-    {
-        static_cast<const Derived*>( this )->scatterImpl( myvals, n, root, allvals );
-    }
-
-    virtual void scatter( double myvals[], const IndexType n, const PartitionId root, const double allvals[] ) const
-    {
-        static_cast<const Derived*>( this )->scatterImpl( myvals, n, root, allvals );
-    }
-
-    virtual void scatter( IndexType myvals[], const IndexType n, const PartitionId root, const IndexType allvals[] ) const
-    {
-        static_cast<const Derived*>( this )->scatterImpl( myvals, n, root, allvals );
-    }
-
-    /***************************************************************
-     *  scatterV                                                   *
-     **************************************************************/
-
-    /* Derived classes must provide this routine:
-
-       template<typename T>
-       void scatterVImpl( T myvals[], const IndexType n, const PartitionId root, 
-                          const T allvals[], const IndexType sizes[] ) const;
-    */
-
-    virtual void scatterV( IndexType myvals[], const IndexType n, const PartitionId root,
-                           const IndexType allvals[], const IndexType sizes[] ) const
-    {
-        static_cast<const Derived*>( this )->scatterVImpl( myvals, n, root, allvals, sizes );
-    }
-
-    virtual void scatterV( float myvals[], const IndexType n, const PartitionId root,
-                           const float allvals[], const IndexType sizes[] ) const
-    {
-        static_cast<const Derived*>( this )->scatterVImpl( myvals, n, root, allvals, sizes );
-    }
-
-    virtual void scatterV( double myvals[], const IndexType n, const PartitionId root,
-                           const double allvals[], const IndexType sizes[] ) const
-    {
-        static_cast<const Derived*>( this )->scatterVImpl( myvals, n, root, allvals, sizes );
-    }
-
-    /***************************************************************
-     *  shift                                                      *
-     **************************************************************/
-
-    virtual IndexType shiftData( IndexType recvVals[], const IndexType recvSize,
-                                 const IndexType sendVals[], const IndexType sendSize, const int direction ) const
-    {
-        LAMA_LOG_DEBUG( Derived::logger, *this << ": shift, direction = " << direction 
-                                          << ", sendsize = " << sendSize << ", recvsize = " << recvSize )
-
-        if ( direction % getSize() == 0 )
-        {
-            return shift0( recvVals, recvSize, sendVals, sendSize );
-        }
-    
-        PartitionId dest = getNeighbor( direction );
-        PartitionId source = getNeighbor( -direction );
-        return static_cast<const Derived*>( this )->shiftImpl( recvVals, recvSize, source, sendVals, sendSize, dest );
-    }
- 
-    virtual IndexType shiftData(
-        float recvVals[],
-        const IndexType recvSize,
-        const float sendVals[],
-        const IndexType sendSize,
-        const int direction ) const
-    {
-        LAMA_LOG_DEBUG( Derived::logger, *this << ": shift, direction = " << direction 
-                                          << ", sendsize = " << sendSize << ", recvsize = " << recvSize )
-
-        if ( direction % getSize() == 0 )
-        {
-            return shift0( recvVals, recvSize, sendVals, sendSize );
-        }
-    
-        PartitionId dest = getNeighbor( direction );
-        PartitionId source = getNeighbor( -direction );
-        return static_cast<const Derived*>( this )->shiftImpl( recvVals, recvSize, source, sendVals, sendSize, dest );
-    }
- 
-    virtual IndexType shiftData(
-        double recvVals[],
-        const IndexType recvSize,
-        const double sendVals[],
-        const IndexType sendSize,
-        const int direction ) const
-    {
-        LAMA_LOG_DEBUG( Derived::logger, *this << ": shift, direction = " << direction 
-                                          << ", sendsize = " << sendSize << ", recvsize = " << recvSize )
-
-        if ( direction % getSize() == 0 )
-        {
-            return shift0( recvVals, recvSize, sendVals, sendSize );
-        }
-    
-        PartitionId dest = getNeighbor( direction );
-        PartitionId source = getNeighbor( -direction );
-        return static_cast<const Derived*>( this )->shiftImpl( recvVals, recvSize, source, sendVals, sendSize, dest );
-    }
-
-    /***************************************************************
-     *  shiftAsync                                                 *
-     **************************************************************/
-
-    virtual SyncToken* shiftAsyncData(
-        IndexType recvVals[],
-        const IndexType sendVals[],
-        const IndexType size,
-        const int direction ) const
-    {
-        if ( direction % getSize() == 0 )
-        {
-            return defaultShiftAsync( recvVals, sendVals, size, 0 );
-        }
-
-        PartitionId dest = getNeighbor( direction );
-        PartitionId source = getNeighbor( -direction );
-
-        LAMA_LOG_DEBUG( Derived::logger, "shiftAsyncData<IndexType>, dest = " << dest 
-                                         << ", source = " << source << ", size = " << size )
- 
-        return static_cast<const Derived*>( this )->shiftAsyncImpl( recvVals, source, sendVals, dest, size );
-    }
-
-    virtual SyncToken* shiftAsyncData(
-        float recvVals[],
-        const float sendVals[],
-        const IndexType size,
-        const int direction ) const
-    {
-        if ( direction % getSize() == 0 )
-        {
-            return defaultShiftAsync( recvVals, sendVals, size, 0 );
-        }
-
-        PartitionId dest = getNeighbor( direction );
-        PartitionId source = getNeighbor( -direction );
-
-        LAMA_LOG_DEBUG( Derived::logger, "shiftAsyncData<float>, dest = " << dest 
-                                         << ", source = " << source << ", size = " << size )
- 
-        return static_cast<const Derived*>( this )->shiftAsyncImpl( recvVals, source, sendVals, dest, size );
-    }
-
-    virtual SyncToken* shiftAsyncData(
-        double recvVals[],
-        const double sendVals[],
-        const IndexType size,
-        const int direction ) const
-    {
-        if ( direction % getSize() == 0 )
-        {
-            return defaultShiftAsync( recvVals, sendVals, size, 0 );
-        }
-
-        PartitionId dest = getNeighbor( direction );
-        PartitionId source = getNeighbor( -direction );
-
-        LAMA_LOG_DEBUG( Derived::logger, "shiftAsyncData<double>, dest = " << dest 
-                                         << ", source = " << source << ", size = " << size )
- 
-        return static_cast<const Derived*>( this )->shiftAsyncImpl( recvVals, source, sendVals, dest, size );
-    }
-
-    /***************************************************************
-     *  exchangeByPlan                                             *
-     **************************************************************/
-
-    virtual void exchangeByPlan( IndexType recvVals[], const CommunicationPlan& recvPlan,
-                                 const IndexType sendVals[], const CommunicationPlan& sendPlan ) const
-    {
-        static_cast<const Derived*>( this )->exchangeByPlanImpl( recvVals, recvPlan, sendVals, sendPlan );
-    }
-
-    virtual void exchangeByPlan( float recvVals[], const CommunicationPlan& recvPlan,
-                                 const float sendVals[], const CommunicationPlan& sendPlan ) const
-    {
-        static_cast<const Derived*>( this )->exchangeByPlanImpl( recvVals, recvPlan, sendVals, sendPlan );
-    }
-
-    virtual void exchangeByPlan( double recvVals[], const CommunicationPlan& recvPlan,
-                                 const double sendVals[], const CommunicationPlan& sendPlan ) const
-    {
-        static_cast<const Derived*>( this )->exchangeByPlanImpl( recvVals, recvPlan, sendVals, sendPlan );
-    }
-
-    /***************************************************************
-     *  exchangeByPlanAsync                                        *
-     **************************************************************/
-
-    virtual SyncToken* exchangeByPlanAsync(
-        IndexType recvVals[],
-        const CommunicationPlan& recvPlan,
-        const IndexType sendVals[],
-        const CommunicationPlan& sendPlan ) const
-    {
-        return static_cast<const Derived*>( this )->exchangeByPlanAsyncImpl( recvVals, recvPlan, sendVals, sendPlan );
-    }
-
-    virtual SyncToken* exchangeByPlanAsync(
-        float recvVals[],
-        const CommunicationPlan& recvPlan,
-        const float sendVals[],
-        const CommunicationPlan& sendPlan ) const
-    {
-        return static_cast<const Derived*>( this )->exchangeByPlanAsyncImpl( recvVals, recvPlan, sendVals, sendPlan );
-    }
-
-    virtual SyncToken* exchangeByPlanAsync(
-        double recvVals[],
-        const CommunicationPlan& recvPlan,
-        const double sendVals[],
-        const CommunicationPlan& sendPlan ) const
-    {
-        return static_cast<const Derived*>( this )->exchangeByPlanAsyncImpl( recvVals, recvPlan, sendVals, sendPlan );
+        return static_cast<const Derived*>( this )->sumImpl( value );
     }
 
 protected:
@@ -517,7 +257,45 @@ protected:
     {
     }
 
-};
+private:
+
+    template<typename T>
+    IndexType shiftDataT( T recvVals[], const IndexType recvSize,  
+                          const T sendVals[], const IndexType sendSize,
+                          const int direction ) const   
+    { 
+        LAMA_LOG_DEBUG( Derived::logger, *this << ": shift, direction = " << direction 
+                                          << ", sendsize = " << sendSize << ", recvsize = " << recvSize )
+
+        if ( direction % getSize() == 0 )
+        {
+            return shift0( recvVals, recvSize, sendVals, sendSize );
+        }
+    
+        PartitionId dest = getNeighbor( direction );
+        PartitionId source = getNeighbor( -direction );
+        return static_cast<const Derived*>( this )->shiftImpl( recvVals, recvSize, source, sendVals, sendSize, dest );
+    }
+ 
+    template<typename T>
+    SyncToken* shiftAsyncDataT( T recvVals[], const T sendVals[],
+                                const IndexType size, const int direction ) const
+    {
+        if ( direction % getSize() == 0 )
+        {
+            return defaultShiftAsync( recvVals, sendVals, size, 0 );
+        }
+
+        PartitionId dest = getNeighbor( direction );
+        PartitionId source = getNeighbor( -direction );
+
+        LAMA_LOG_DEBUG( Derived::logger, "shiftAsyncData<" << typeid(T).name() << ">, dest = " << dest 
+                                         << ", source = " << source << ", size = " << size )
+ 
+        return static_cast<const Derived*>( this )->shiftAsyncImpl( recvVals, source, sendVals, dest, size );
+    }
+
+    };
 
 } // namespace lama
 
