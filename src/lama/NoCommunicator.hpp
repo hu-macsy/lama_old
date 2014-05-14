@@ -69,7 +69,7 @@ public:
 
     virtual PartitionId getNodeRank() const;
 
-    virtual void all2all( int recvValues[], const int sendValues[] ) const;
+    virtual void all2all( IndexType recvValues[], const IndexType sendValues[] ) const;
 
     virtual void synchronize() const;
 
@@ -135,7 +135,7 @@ private:
     T minImpl( const T value ) const;
 
     template<typename T>
-    void maxlocImpl( T& val, int& location, const PartitionId root ) const;
+    void maxlocImpl( T& val, IndexType& location, const PartitionId root ) const;
 
     template<typename T>
     void swapImpl( T val[], const IndexType n, const PartitionId partner ) const;

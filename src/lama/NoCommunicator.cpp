@@ -94,7 +94,7 @@ PartitionId NoCommunicator::getNodeRank() const
     return 0;
 }
 
-void NoCommunicator::all2all( int recvValues[], const int sendValues[] ) const
+void NoCommunicator::all2all( IndexType recvValues[], const IndexType sendValues[] ) const
 {
     recvValues[0] = sendValues[0];
 }
@@ -171,7 +171,7 @@ SyncToken* NoCommunicator::shiftAsyncImpl(
 }
 
 template<typename T>
-void NoCommunicator::maxlocImpl( T&, int&, const PartitionId root ) const
+void NoCommunicator::maxlocImpl( T&, IndexType&, const PartitionId root ) const
 {
     // nothing to do
     LAMA_ASSERT_EQUAL_ERROR( root, 0 )
