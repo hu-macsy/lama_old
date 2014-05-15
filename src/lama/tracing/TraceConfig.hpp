@@ -138,6 +138,28 @@ public:
 
     void traceOff();
 
+    /** Helper class for setting global trace flag in a scope
+     *  (Constructor sets global flag, destructor resets it)
+     */
+    class TraceScope
+    {
+    public:
+
+        /** Constructor sets global trace flag and saves old state. */
+
+        TraceScope( bool flag );
+
+        /** Destructor resets saved state of global trace flag. */
+
+        ~TraceScope();
+
+    private:
+
+        bool saveFlag;   // used to save state of global trace flag
+    };
+
+    static bool globalTraceFlag;
+
 private:
 
     TraceConfig();

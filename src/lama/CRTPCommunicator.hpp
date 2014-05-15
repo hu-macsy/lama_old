@@ -40,6 +40,7 @@
 
 // base classes
 #include <lama/Communicator.hpp>
+#include <lama/NoSyncToken.hpp>
 #include <vector>
 
 namespace lama
@@ -88,44 +89,6 @@ public:
                           const T allvals[], const IndexType sizes[] ) const;
     */
     
-    /***************************************************************
-     *  bcast                                                      *
-     **************************************************************/
-
-    /** Broadcast of a string, done in two steps. */
-
-    virtual void bcast( std::string& val, const PartitionId root ) const
-    {
-        bool isRoot = getRank() == root;
-
-        int len = 0;
-
-        if ( isRoot )
-        {
-            len = val.length();
-        }
-
-        // step 1: broadcast length of string
-
-        static_cast<const Derived*>( this )->bcastImpl( &len, 1, root );
-
-        std::vector<char> buffer( len+1 );
-
-        char* strptr = buffer.data();
-
-        if ( isRoot )
-        {
-            strptr = const_cast<char *>( val.c_str() );
-        }
-
-        static_cast<const Derived*>( this )->bcastImpl( strptr, len + 1, root );
-
-        if ( !isRoot )
-        {
-            val = strptr;
-        }
-    }
-
 #define CRTP_COMMUNICATOR_METHODS( TypeId )                                             \
                                                                                         \
     virtual TypeId min( const TypeId value ) const                                      \
@@ -198,13 +161,13 @@ public:
         return this->shiftDataT( recvVals, recvSize, sendVals, sendSize, direction );   \
     }                                                                                   \
                                                                                         \
-    virtual SyncToken* shiftAsyncData(                                                  \
+    virtual SyncToken* shiftDataAsync(                                                  \
         TypeId recvVals[],                                                              \
         const TypeId sendVals[],                                                        \
         const IndexType size,                                                           \
         const int direction ) const                                                     \
     {                                                                                   \
-        return this->shiftAsyncDataT( recvVals, sendVals, size, direction );            \
+        return this->shiftDataAsyncT( recvVals, sendVals, size, direction );            \
     }                                                                                   \
                                                                                         \
     virtual void exchangeByPlan( TypeId recvVals[],                                     \
@@ -242,6 +205,11 @@ public:
     CRTP_COMMUNICATOR_METHODS( ComplexDouble )
 #endif
 
+    virtual void bcast( char val[], const IndexType n, const PartitionId root ) const
+    {
+        static_cast<const Derived*>( this )->bcastImpl( val, n, root); 
+    } 
+
     /** Additional methods */
 
     virtual size_t sum( const size_t value ) const
@@ -278,18 +246,19 @@ private:
     }
  
     template<typename T>
-    SyncToken* shiftAsyncDataT( T recvVals[], const T sendVals[],
+    SyncToken* shiftDataAsyncT( T recvVals[], const T sendVals[],
                                 const IndexType size, const int direction ) const
     {
         if ( direction % getSize() == 0 )
         {
-            return defaultShiftAsync( recvVals, sendVals, size, 0 );
+            shift0( recvVals, size, sendVals, size );
+            return new NoSyncToken();
         }
 
         PartitionId dest = getNeighbor( direction );
         PartitionId source = getNeighbor( -direction );
 
-        LAMA_LOG_DEBUG( Derived::logger, "shiftAsyncData<" << typeid(T).name() << ">, dest = " << dest 
+        LAMA_LOG_DEBUG( Derived::logger, "shiftDataAsync<" << typeid(T).name() << ">, dest = " << dest 
                                          << ", source = " << source << ", size = " << size )
  
         return static_cast<const Derived*>( this )->shiftAsyncImpl( recvVals, source, sendVals, dest, size );

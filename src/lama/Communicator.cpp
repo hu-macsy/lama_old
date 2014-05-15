@@ -219,7 +219,7 @@ void Communicator::factorize3(
 
 void Communicator::getGrid2Rank( PartitionId pos[2], const PartitionId procgrid[2] ) const
 {
-    LAMA_ASSERT_ERROR( getSize() == procgrid[0] * procgrid[1], "illegal procgrid" )
+    LAMA_ASSERT_EQUAL_ERROR( getSize(), procgrid[0] * procgrid[1] )
 
     PartitionId rank = getRank();
     PartitionId size = procgrid[0];
@@ -234,7 +234,7 @@ void Communicator::getGrid2Rank( PartitionId pos[2], const PartitionId procgrid[
 
 void Communicator::getGrid3Rank( PartitionId pos[3], const PartitionId procgrid[3] ) const
 {
-    LAMA_ASSERT_ERROR( getSize() == procgrid[0] * procgrid[1] * procgrid[2], "illegal procgrid" )
+    LAMA_ASSERT_EQUAL_ERROR( getSize(), procgrid[0] * procgrid[1] * procgrid[2] )
 
     PartitionId rank = getRank();
 
@@ -298,54 +298,6 @@ void Communicator::getUserProcArray( PartitionId userProcArray[3] )
     {
         LAMA_LOG_INFO( logger, "environment variable LAMA_NP no set" )
     }
-}
-
-/* -------------------------------------------------------------------------- */
-
-template<typename T>
-SyncToken* Communicator::defaultShiftAsync(
-    T targetVals[],
-    const T sourceVals[],
-    const IndexType size,
-    const int direction ) const
-{
-    // This default implementation uses synchronous shift and returns a NoSyncToken.
-
-    IndexType recvSize = -1;
-    recvSize = shiftData( targetVals, size, sourceVals, size, direction );
-
-    LAMA_ASSERT_ERROR( recvSize == size, "asynchronous shift with different sizes on partitions" )
-
-    return new NoSyncToken();
-}
-
-/* -------------------------------------------------------------------------- */
-
-SyncToken* Communicator::shiftDataAsync(
-    double newVals[],
-    const double oldVals[],
-    const IndexType size,
-    const int direction ) const
-{
-    return defaultShiftAsync( newVals, oldVals, size, direction );
-}
-
-SyncToken* Communicator::shiftDataAsync(
-    float newVals[],
-    const float oldVals[],
-    const IndexType size,
-    const int direction ) const
-{
-    return defaultShiftAsync( newVals, oldVals, size, direction );
-}
-
-SyncToken* Communicator::shiftDataAsync(
-    int newVals[],
-    const int oldVals[],
-    const IndexType size,
-    const int direction ) const
-{
-    return defaultShiftAsync( newVals, oldVals, size, direction );
 }
 
 /* -------------------------------------------------------------------------- */
@@ -717,108 +669,86 @@ bool Communicator::any( const bool flag ) const
 
 /* -------------------------------------------------------------------------- */
 
+void Communicator::bcast( std::string& val, const PartitionId root ) const
+{
+    /** Broadcast of a string, done in two steps. */
+
+    bool isRoot = getRank() == root;
+
+    int len = 0;
+
+    if ( isRoot )
+    {
+        len = val.length();
+    }
+
+    // step 1: broadcast length of string
+
+    bcast( &len, 1, root );
+
+    std::vector<char> buffer( len+1 );
+
+    char* strptr = buffer.data();
+
+    if ( isRoot )
+    {
+        strptr = const_cast<char *>( val.c_str() );
+    }
+
+    bcast( strptr, len + 1, root );
+
+    if ( !isRoot )
+    {
+        val = strptr;
+    }
+}
+
 // Instantiation of template methods for the supported types
 
-template LAMA_DLL_IMPORTEXPORT
-IndexType Communicator::shift0(
-    float targetVals[],
-    const IndexType maxTargetSize,
-    const float sourceVals[],
-    const IndexType sourceSize ) const;
+#define LAMA_COMMUNICATOR_INSTANTIATIONS( TypeId )          \
+                                                            \
+template LAMA_DLL_IMPORTEXPORT                              \
+IndexType Communicator::shift0(                             \
+    TypeId targetVals[],                                    \
+    const IndexType maxTargetSize,                          \
+    const TypeId sourceVals[],                              \
+    const IndexType sourceSize ) const;                     \
+                                                            \
+template LAMA_DLL_IMPORTEXPORT                              \
+void Communicator::shiftArray(                              \
+    LAMAArray<TypeId>& recvArray,                           \
+    const LAMAArray<TypeId>& sendArray,                     \
+    const int direction ) const;                            \
+                                                            \
+template LAMA_DLL_IMPORTEXPORT                              \
+SyncToken* Communicator::shiftAsync(                        \
+    LAMAArray<TypeId>& recvArray,                           \
+    const LAMAArray<TypeId>& sendArray,                     \
+    const int direction ) const;                            \
+                                                            \
+template LAMA_DLL_IMPORTEXPORT                              \
+void Communicator::updateHalo(                              \
+    LAMAArray<TypeId>& haloValues,                          \
+    const LAMAArray<TypeId>& localValues,                   \
+    const Halo& halo ) const;                               \
+                                                            \
+template LAMA_DLL_IMPORTEXPORT                              \
+SyncToken* Communicator::updateHaloAsync(                   \
+    LAMAArray<TypeId>& haloValues,                          \
+    const LAMAArray<TypeId>& localValues,                   \
+    const Halo& halo ) const;                               \
 
-template LAMA_DLL_IMPORTEXPORT
-IndexType Communicator::shift0(
-    double targetVals[],
-    const IndexType maxTargetSize,
-    const double sourceVals[],
-    const IndexType sourceSize ) const;
+LAMA_COMMUNICATOR_INSTANTIATIONS( int )
+LAMA_COMMUNICATOR_INSTANTIATIONS( float )
+LAMA_COMMUNICATOR_INSTANTIATIONS( double )
 
-template LAMA_DLL_IMPORTEXPORT
-IndexType Communicator::shift0(
-    int targetVals[],
-    const IndexType maxTargetSize,
-    const int sourceVals[],
-    const IndexType sourceSize ) const;
+#ifdef LAMA_USE_COMPLEX_FLOAT   
+LAMA_COMMUNICATOR_INSTANTIATIONS( ComplexFloat )
+#endif
 
-template LAMA_DLL_IMPORTEXPORT
-void Communicator::shiftArray( LAMAArray<float>& recvArray, const LAMAArray<float>& sendArray, const int direction ) const;
+#ifdef LAMA_USE_COMPLEX_DOUBLE
+LAMA_COMMUNICATOR_INSTANTIATIONS( ComplexDouble )
+#endif
 
-template LAMA_DLL_IMPORTEXPORT
-void Communicator::shiftArray( LAMAArray<double>& recvArray, const LAMAArray<double>& sendArray, const int direction ) const;
-
-template LAMA_DLL_IMPORTEXPORT
-void Communicator::shiftArray( LAMAArray<int>& recvArray, const LAMAArray<int>& sendArray, const int direction ) const;
-
-template LAMA_DLL_IMPORTEXPORT
-SyncToken* Communicator::defaultShiftAsync(
-    double targetVals[],
-    const double sourceVals[],
-    const IndexType size,
-    const int direction ) const;
-
-template LAMA_DLL_IMPORTEXPORT
-SyncToken* Communicator::defaultShiftAsync(
-    float targetVals[],
-    const float sourceVals[],
-    const IndexType size,
-    const int direction ) const;
-
-template LAMA_DLL_IMPORTEXPORT
-SyncToken* Communicator::defaultShiftAsync(
-    int targetVals[],
-    const int sourceVals[],
-    const IndexType size,
-    const int direction ) const;
-
-template LAMA_DLL_IMPORTEXPORT
-SyncToken* Communicator::shiftAsync(
-    LAMAArray<float>& recvArray,
-    const LAMAArray<float>& sendArray,
-    const int direction ) const;
-
-template LAMA_DLL_IMPORTEXPORT
-SyncToken* Communicator::shiftAsync(
-    LAMAArray<double>& recvArray,
-    const LAMAArray<double>& sendArray,
-    const int direction ) const;
-
-template LAMA_DLL_IMPORTEXPORT
-SyncToken* Communicator::shiftAsync(
-    LAMAArray<int>& recvArray,
-    const LAMAArray<int>& sendArray,
-    const int direction ) const;
-
-template LAMA_DLL_IMPORTEXPORT
-void Communicator::updateHalo(
-    LAMAArray<float>& haloValues,
-    const LAMAArray<float>& localValues,
-    const Halo& halo ) const;
-
-template LAMA_DLL_IMPORTEXPORT
-void Communicator::updateHalo(
-    LAMAArray<double>& haloValues,
-    const LAMAArray<double>& localValues,
-    const Halo& halo ) const;
-
-template LAMA_DLL_IMPORTEXPORT
-void Communicator::updateHalo( LAMAArray<int>& haloValues, const LAMAArray<int>& localValues, const Halo& halo ) const;
-
-template LAMA_DLL_IMPORTEXPORT
-SyncToken* Communicator::updateHaloAsync(
-    LAMAArray<float>& haloValues,
-    const LAMAArray<float>& localValues,
-    const Halo& halo ) const;
-
-template LAMA_DLL_IMPORTEXPORT
-SyncToken* Communicator::updateHaloAsync(
-    LAMAArray<double>& haloValues,
-    const LAMAArray<double>& localValues,
-    const Halo& halo ) const;
-
-template LAMA_DLL_IMPORTEXPORT
-SyncToken* Communicator::updateHaloAsync(
-    LAMAArray<int>& haloValues,
-    const LAMAArray<int>& localValues,
-    const Halo& halo ) const;
 
 }

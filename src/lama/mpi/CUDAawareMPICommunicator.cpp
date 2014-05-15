@@ -235,7 +235,7 @@ SyncToken* CUDAawareMPICommunicator::shiftAsync(
     // For shifting of data we use the pure virtual methods implemened by each communicator
     // Note: get is the method of the accesses and not of the auto_ptr
 
-    SyncToken* syncToken = shiftAsyncData( recvData->get(), sendData->get(), numElems, direction );
+    SyncToken* syncToken = shiftDataAsync( recvData->get(), sendData->get(), numElems, direction );
 
     LAMA_ASSERT_DEBUG( syncToken, "NULL pointer for sync token" )
 

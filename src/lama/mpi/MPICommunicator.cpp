@@ -71,6 +71,8 @@ MPICommunicator::MPICommunicator( int& argc, char** & argv, const std::string& t
 MPICommunicator::MPICommunicator( int& argc, char** & argv )
     : CRTPCommunicator<MPICommunicator>( "MPI" ), mThreadSafetyLevel( Communicator::Funneled )
 {
+    LAMA_TRACE_SCOPE( false )   // switch off tracing in this scope as it might call this constructor again
+
     initialize( argc, argv );
 }
 
@@ -411,6 +413,8 @@ void MPICommunicator::send( const T buffer[], int count, int target ) const
 
 void MPICommunicator::all2all( IndexType recvSizes[], const IndexType sendSizes[] ) const
 {
+    LAMA_REGION( "Communicator.MPI.all2all" )
+
     LAMA_ASSERT_ERROR( sendSizes != 0, " invalid sendSizes " )
     LAMA_ASSERT_ERROR( recvSizes != 0, " invalid recvSizes " )
 
@@ -509,6 +513,8 @@ SyncToken* MPICommunicator::exchangeByPlanAsyncImpl(
     const T* const sendData,
     const CommunicationPlan& sendPlan ) const
 {
+    LAMA_REGION( "Communicator.MPI.exchangeByPlanAsync" )
+
     LAMA_ASSERT_ERROR( sendPlan.allocated(), "sendPlan not allocated" )
     LAMA_ASSERT_ERROR( recvPlan.allocated(), "recvPlan not allocated" )
     LAMA_LOG_INFO( logger,
@@ -600,6 +606,8 @@ inline MPI_Comm MPICommunicator::selectMPIComm() const
 template<typename T>
 void MPICommunicator::bcastImpl( T val[], const IndexType n, const PartitionId root ) const
 {
+    LAMA_REGION( "Communicator.MPI.bcast" )
+
     MPI_Datatype commType = getMPIType<T>();
     LAMA_MPICALL( logger, MPI_Bcast( val, n, commType, root, selectMPIComm() ), "MPI_Bcast<T>" )
 }
@@ -617,6 +625,8 @@ IndexType MPICommunicator::shiftImpl(
     const IndexType sendSize,
     const PartitionId dest ) const
 {
+    LAMA_REGION( "Communicator.MPI.shift" )
+
     LAMA_ASSERT_ERROR( source != getRank(), "source must not be this partition" )
     LAMA_ASSERT_ERROR( dest != getRank(), "dest must not be this partition" )
 
@@ -678,6 +688,8 @@ SyncToken* MPICommunicator::shiftAsyncImpl(
 template<typename T>
 T MPICommunicator::sumImpl( const T value ) const
 {
+    LAMA_REGION( "Communicator.MPI.sum" )
+
     T sum;
     MPI_Datatype commType = getMPIType<T>();
     LAMA_MPICALL( logger, MPI_Allreduce( ( void* ) &value, ( void* ) &sum, 1, commType, MPI_SUM, selectMPIComm() ),
@@ -693,6 +705,8 @@ T MPICommunicator::sumImpl( const T value ) const
 template<typename T>
 T MPICommunicator::minImpl( const T value ) const
 {
+    LAMA_REGION( "Communicator.MPI.min" )
+
     MPI_Datatype commType = getMPIType<T>();
 
     T globalMin; // no initialization needed, done in MPI call
@@ -706,6 +720,8 @@ T MPICommunicator::minImpl( const T value ) const
 template<typename T>
 T MPICommunicator::maxImpl( const T value ) const
 {
+    LAMA_REGION( "Communicator.MPI.max" )
+
     MPI_Datatype commType = getMPIType<T>();
 
     T globalMax; // no initialization needed, done in MPI call
@@ -733,6 +749,8 @@ void MPICommunicator::synchronize() const
 template<typename T>
 void MPICommunicator::scatterImpl( T myvals[], const IndexType n, const PartitionId root, const T allvals[] ) const
 {
+    LAMA_REGION( "Communicator.MPI.scatter" )
+
     LAMA_ASSERT_DEBUG( root < getSize(), "illegal root, root = " << root )
     LAMA_LOG_DEBUG( logger, *this << ": scatter of " << n << " elements, root = " << root )
     MPI_Datatype commType = getMPIType<T>();
@@ -754,6 +772,8 @@ void MPICommunicator::scatterVImpl(
     const T allvals[],
     const IndexType sizes[] ) const
 {
+    LAMA_REGION( "Communicator.MPI.scatterV" )
+
     LAMA_ASSERT_ERROR( root < getSize(), "illegal root, root = " << root )
     MPI_Datatype commType = getMPIType<T>();
 
@@ -803,6 +823,8 @@ void MPICommunicator::scatterVImpl(
 template<typename T>
 void MPICommunicator::gatherImpl( T allvals[], const IndexType n, const PartitionId root, const T myvals[] ) const
 {
+    LAMA_REGION( "Communicator.MPI.gather" )
+
     LAMA_ASSERT_DEBUG( root < getSize(), "illegal root, root = " << root )
     LAMA_LOG_DEBUG( logger, *this << ": gather of " << n << " elements, root = " << root )
     MPI_Datatype commType = getMPIType<T>();
@@ -825,6 +847,8 @@ void MPICommunicator::gatherVImpl(
     const T myvals[],
     const IndexType sizes[] ) const
 {
+    LAMA_REGION( "Communicator.MPI.gatherV" )
+
     LAMA_ASSERT_ERROR( root < getSize(), "illegal root, root = " << root )
     void* sendbuf = const_cast<T*>( myvals );
     MPI_Datatype commType = getMPIType<T>();
@@ -874,6 +898,8 @@ void MPICommunicator::gatherVImpl(
 template<typename T>
 void MPICommunicator::maxlocImpl( T& val, IndexType& location, PartitionId root ) const
 {
+    LAMA_REGION( "Communicator.MPI.maxloc" )
+
     struct ValAndLoc
     {
         T val;
@@ -900,6 +926,8 @@ void MPICommunicator::maxlocImpl( T& val, IndexType& location, PartitionId root 
 template<typename T>
 void MPICommunicator::swapImpl( T val[], const IndexType n, PartitionId partner ) const
 {
+    LAMA_REGION( "Communicator.MPI.swap" )
+
     if ( partner == mRank )
     {
         return;
@@ -936,5 +964,14 @@ void MPICommunicator::writeAt( std::ostream& stream ) const
     // Info about rank and size of the communicator is very useful
     stream << "MPI(" << mRank << ":" << mSize << ")";
 }
+
+template LAMA_DLL_IMPORTEXPORT
+void MPICommunicator::maxlocImpl( double&, IndexType&, PartitionId) const;
+
+template LAMA_DLL_IMPORTEXPORT
+void MPICommunicator::maxlocImpl( float&, IndexType&, PartitionId) const;
+
+template LAMA_DLL_IMPORTEXPORT
+void MPICommunicator::maxlocImpl( int&, IndexType&, PartitionId) const;
 
 } // namespace lama

@@ -50,9 +50,13 @@ using namespace lama;
 namespace tracing
 {
 
-/* -------------------------------------------------------------------------- */
+/* -------------------------------------------------------------------------- *
+ *   Static class variables                                                   *
+ * -------------------------------------------------------------------------- */
 
 boost::shared_ptr<TraceConfig> TraceConfig::config;
+
+bool TraceConfig::globalTraceFlag = true;
 
 /* -------------------------------------------------------------------------- */
 
@@ -174,7 +178,8 @@ void TraceConfig::setParam( const std::string& param )
 
 TraceConfig::TraceConfig()
 {
-    mComm = CommunicatorFactory::get( "MPI" );
+    mComm = CommunicatorFactory::get();
+
     // mCUDAContext = ContextFactory::getContext( Context::CUDA );
 
     // should be done explicitly
@@ -369,6 +374,24 @@ RegionTable* TraceConfig::getRegionTable( ThreadId threadId )
     }
 
     return regionTable.get();
+}
+
+/* -------------------------------------------------------------------------- */
+
+TraceConfig::TraceScope::TraceScope( bool flag )
+{
+    std::cout << "TraceScope: set " << flag << std::endl;
+
+    saveFlag = TraceConfig::globalTraceFlag;
+    TraceConfig::globalTraceFlag = flag;
+}
+
+/** Destructor resets saved state of global trace flag. */
+
+TraceConfig::TraceScope::~TraceScope()
+{
+    std::cout << "TraceScope: reset " << saveFlag << std::endl;
+    TraceConfig::globalTraceFlag = saveFlag;
 }
 
 } // namespace tracing

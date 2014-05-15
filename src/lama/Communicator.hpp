@@ -212,6 +212,12 @@ public:
      */
     virtual void all2all( IndexType recvValues[], const IndexType sendValues[] ) const = 0;
 
+    /**************************************************************************************
+     *                                                                                    *
+     *  Virtual routines provided by derived class for each supported TypeID              *
+     *                                                                                    *
+     *************************************************************************************/
+
     /** @brief Exchange of data between all processors by communication plans.
      *
      *  @param[out] recvData   buffer for data received from other processors
@@ -224,21 +230,13 @@ public:
      *
      *  The size of recvData must be recvPlan.totalQuantity().
      *  The size of sendData must be sendPlan.totalQuantity().
+     *
+     *  virtual void exchangeByPlan(
+     *      TypeId recvData[],
+     *      const CommunicationPlan& recvPlan,
+     *      const TypeId sendData[],
+     *      const CommunicationPlan& sendPlan ) const = 0;
      */
-    virtual void exchangeByPlan(
-        int recvData[],
-        const CommunicationPlan& recvPlan,
-        const int sendData[],
-        const CommunicationPlan& sendPlan ) const = 0;
-
-    /** Exchange of LAMAArrays. */
-
-    template<typename T>
-    void exchangeByPlan(
-        LAMAArray<T>& recvArray,
-        const CommunicationPlan& recvPlan,
-        const LAMAArray<T>& sendArray,
-        const CommunicationPlan& sendPlan ) const;
 
     /** @brief Asynchronous exchange of data between all processors by communication plans.
      *
@@ -254,95 +252,22 @@ public:
      *
      *  The size of recvData must be recvPlan.totalQuantity().
      *  The size of sendData must be sendPlan.totalQuantity().
+     *
+     *  virtual SyncToken* exchangeByPlanAsync(
+     *      TypeId recvData[],
+     *      const CommunicationPlan& recvPlan,
+     *      const TypeId sendData[],
+     *      const CommunicationPlan& sendPlan ) const = 0;
      */
-    virtual SyncToken* exchangeByPlanAsync(
-        int recvData[],
-        const CommunicationPlan& recvPlan,
-        const int sendData[],
-        const CommunicationPlan& sendPlan ) const = 0;
-
-    /** Asynchronous exchange of LAMAArrays. */
-
-    template<typename T>
-    SyncToken* exchangeByPlanAsync(
-        LAMAArray<T>& recvArray,
-        const CommunicationPlan& recvPlan,
-        const LAMAArray<T>& sendArray,
-        const CommunicationPlan& sendPlan ) const;
-
-    /** @brief Update of halo array via Halo object.
-     *
-     *  @tparam     T             TODO[doxy] Complete Description.
-     *  @param[out] haloValues    will contain the non-local values from other processors
-     *  @param[in]  localValues   is the local part of the array on each processor
-     *  @param[in]  halo is the   Halo object containing all information about exchange
-     *
-     *  This method is not virtual but will use the pure virtual methods of base classes.
-     */
-    template<typename T>
-    void updateHalo( LAMAArray<T>& haloValues, const LAMAArray<T>& localValues, const Halo& halo ) const;
-
-    /** @brief Asynchronous update of halo array via Halo object. */
-
-    template<typename T>
-    SyncToken* updateHaloAsync( LAMAArray<T>& haloValues, const LAMAArray<T>& localValues, const Halo& halo ) const;
-
-    /** @brief Shift on LAMA arrays.
-     *
-     *  @tparam     T           type of data to be shifted       
-     *  @param[out] recv        array to receive  this partition
-     *  @param[in]  send        array to send from this partition
-     *  @param[in]  direction   number of positions to shift, e.g. 1 or -1
-     *
-     *  Note: The recv array must have a capacity that is sufficent to
-     *        receive all the data.
-     */
-    template<typename T>
-    void shiftArray( LAMAArray<T>& recv, const LAMAArray<T>& send, const int direction ) const;
-
-    /** @brief Asychronous shift on LAMA arrays.
-     *
-     *  @tparam     T           TODO[doxy] Complete Description.
-     *  @param[out] recvArray   array to receive for this partition
-     *  @param[in]  sendArray   array to send from this partition
-     *  @param[in]  direction   number of positions to shift, e.g. 1 or -1
-     *
-     *  Note: All partitions must have the same size for send/recv array
-     */
-    template<typename T>
-    SyncToken* shiftAsync( LAMAArray<T>& recvArray, const LAMAArray<T>& sendArray, const int direction ) const;
-
-    /** Ownership computation for indexes where only each partition
-     * individually can determine whether an index is local or not.
-     *
-     * This method should not be called for distributions where the
-     * owner can be computed by a closed formula.
-     */
-    void computeOwners(
-        PartitionId owners[],
-        const Distribution& distribution,
-        const IndexType requiredIndexes[],
-        const IndexType n ) const;
-
-    void computeOwners(
-        const std::vector<IndexType>& requiredIndexes,
-        const Distribution& distribution,
-        std::vector<PartitionId>& owners ) const
-    {
-        IndexType n = requiredIndexes.size();
-        owners.resize( n );
-        computeOwners( &owners[0], distribution, &requiredIndexes[0], n );
-    }
 
     /** @brief Broadcast a typed array from root to all other processors.
      *
      *  @param[in,out] val  in on root, out on all other processors
      *  @param[in]     n    number of elements in vector val
      *  @param[in]     root processor with correct values of val
+     *
+     *  virtual void bcast( TypeId val[], const IndexType n, const PartitionId root ) const = 0;
      */
-    virtual void bcast( int val[], const IndexType n, const PartitionId root ) const = 0;
-
-    virtual void bcast( std::string&, const PartitionId root ) const = 0;
 
     /** @brief Scatter of an array of values from root to all other processors.
      *
@@ -350,12 +275,13 @@ public:
      *  @param[in]    n      number of elements in vector val
      *  @param[in]    root   processor with values for all processors
      *  @param[in]    allvals values for all processors (size must be n * size() )
+     *
+     *  virtual void scatter( 
+     *      TypeId myvals[], 
+     *      const IndexType n, 
+     *      const PartitionId root, 
+     *      const TypeId allvals[] ) const = 0;
      */
-    virtual void scatter( 
-        int myvals[], 
-        const IndexType n, 
-        const PartitionId root, 
-        const int allvals[] ) const = 0;
 
     /** @brief Scatter of an array of values from root to all other processors.
      *
@@ -364,13 +290,14 @@ public:
      *  @param[in]    root   processor with values for all processors
      *  @param[in]    allvals values for all processors (size must be sum(sizes) )
      *  @param[in]    sizes   number of total values for all processors
+     *
+     *  virtual void scatterV(
+     *      int myvals[],
+     *      const IndexType n,
+     *      const PartitionId root,
+     *      const int allvals[],
+     *      const IndexType sizes[] ) const = 0;
      */
-    virtual void scatterV(
-        int myvals[],
-        const IndexType n,
-        const PartitionId root,
-        const int allvals[],
-        const IndexType sizes[] ) const = 0;
 
     /** @brief Gather of an array of values from all processors to root.
      *
@@ -378,29 +305,13 @@ public:
      *  @param[in]    n      number of elements in vector val
      *  @param[in]    root   processor with values for all processors
      *  @param[in]    myvals values that this processor contributes
-     */
-    virtual void gather( 
-        int allvals[], 
-        const IndexType n, 
-        const PartitionId root, 
-        const int myvals[] ) const = 0;
-
-    /** @brief allgather is combination of gather and broadcast
      *
-     *  @param[out]  allvals result array with values from all processors ( allocated for at least n * getSize() )
-     *  @param[in]   n      number of elements in myvals
-     *  @param[in]   myvals array with n values that this processor contributes
+     *  virtual void gather( 
+     *      TypeId allvals[], 
+     *      const IndexType n, 
+     *      const PartitionId root, 
+     *      const TypeId myvals[] ) const = 0;
      */
-
-    template<typename T>
-    void allgather( T allvals[], const IndexType n, const T myvals[] ) const
-    {
-        int root = 0;
-        gather( allvals, n, root, myvals );
-        bcast ( allvals, n * getSize(), root );
-
-        // @ToDo: implement this by a circular shift
-    }
 
     /** @brief Gather of an array of double values from all processors to root.
      *
@@ -412,39 +323,35 @@ public:
      *
      *  The array sizes must only be valid on the root processor. The
      *  output array allvals will only be valid on the root processor.
+     *
+     *  virtual void gatherV(
+     *      TypeId allvals[],
+     *      const IndexType n,
+     *      const PartitionId root,
+     *      const TypeId myvals[],
+     *      const IndexType sizes[] ) const = 0;
      */
-    virtual void gatherV(
-        int allvals[],
-        const IndexType n,
-        const PartitionId root,
-        const int myvals[],
-        const IndexType sizes[] ) const = 0;
 
     /** @brief Sum operations sum up one single value from each partition to a global value.
      *
      *  @param[in] value  value on the calling partition
      *  @returns   global value, available for all partitions.
+     *
+     *  virtual TypeId sum( const TypeId value ) const = 0;
+     *  virtual TypeId min( const TypeId value ) const = 0;
+     *  virtual TypeId max( const TypeId value ) const = 0;
      */
-    virtual int sum( const int value ) const = 0;
-    virtual size_t sum( const size_t value ) const = 0;
-
-    virtual int min( const int value ) const = 0;
-    virtual int max( const int value ) const = 0;
-
-    // Boolean reduction operations can be implemented by using the sum reduction.
-
-    virtual bool all( const bool flag ) const;
-    virtual bool any( const bool flag ) const;
 
     /** @brief Maximal value combined with a location value where maximum was found.
      *
      *  @param[in,out] val        is a value on each processor, only out for root with maximal value
      *  @param[in,out] location   is an additional int value, only out for root
-     *  @param[in]     root       TODO[doxy] Complete Description.
+     *  @param[in]     root       rank of processor that has valid results at end of the routine
      *
-     *  Only root processor will contain the maximal value and the location loc.
+     *  Only root processor will contain the maximal value and the location loc, 
+     *
+     * virtual void maxloc( TypeId& val, IndexType& location, const PartitionId root ) const = 0;
      */
-    virtual void maxloc( int& val, IndexType& location, const PartitionId root ) const = 0;
 
     /** @brief Swap of an array with another processor.
      *
@@ -453,21 +360,9 @@ public:
      * @param[in] partner is the rank of partition with which this partition swaps
      *
      * This method can also be used if partner is same as this processor.
+     *
+     * virtual void swap( TypeId val[], const IndexType n, const PartitionId partner ) const = 0;
      */
-    virtual void swap( int val[], const IndexType n, const PartitionId partner ) const = 0;
-
-    /** @brief Barrier synchronization between all processors. */
-
-    virtual void synchronize() const = 0;
-
-    virtual void writeAt( std::ostream& stream ) const;
-
-    /** @brief Getter for the type of a communicator. */
-
-    const std::string& getType() const
-    {
-        return mCommunicatorType;
-    }
 
     /** @brief This routine shifts data between neighbored processors.
      *
@@ -481,13 +376,13 @@ public:
      *
      *  Each partition sends to rank() + direction and receives from rank() - direction.
      *
+     *  virtual IndexType shiftData(
+     *      TypeId newVals[],
+     *      const IndexType newSize,
+     *      const TypeId oldVals[],
+     *      const IndexType oldSize,
+     *      const int direction ) const = 0;
      */
-    virtual IndexType shiftData(
-        int newVals[],
-        const IndexType newSize,
-        const int oldVals[],
-        const IndexType oldSize,
-        const int direction ) const = 0;
 
     /** @brief Asynchronous version of shift.
      *
@@ -501,12 +396,13 @@ public:
      *
      *  A default implementation is provided that returns a NoSyncToken. Derived classes
      *  should override this method if there is a benefit of using asynchronous transfers.
+     * 
+     *  virtual SyncToken* shiftDataAsync(
+     *      TypeId newVals[],
+     *      const TypeId oldVals[],
+     *      const IndexType size,
+     *      const int direction ) const = 0;
      */
-    virtual SyncToken* shiftDataAsync(
-        int newVals[],
-        const int oldVals[],
-        const IndexType size,
-        const int direction ) const;
 
     /** Macro defines all virtual routines for other types. */
 
@@ -582,9 +478,10 @@ public:
         TypeId newVals[],                                     \
         const TypeId oldVals[],                               \
         const IndexType size,                                 \
-        const int direction ) const;                          \
+        const int direction ) const = 0;                      \
 
 
+    COMMUNICATOR_METHODS( int )
     COMMUNICATOR_METHODS( float )
     COMMUNICATOR_METHODS( double )
 
@@ -595,6 +492,158 @@ public:
 #ifdef LAMA_USE_COMPLEX_DOUBLE
     COMMUNICATOR_METHODS( ComplexDouble )
 #endif
+
+    /**************************************************************************************
+     *                                                                                    *
+     *  Other Virtual routines provided by derived class                                  *
+     *                                                                                    *
+     *************************************************************************************/
+
+    // Sum of size_t values needed for large quantities like memory usage
+
+    virtual size_t sum( const size_t value ) const = 0;
+
+    // Broadcast of characters needed for strings
+
+    virtual void bcast( char val[], const IndexType n, const PartitionId root ) const = 0;
+
+    /** @brief Barrier synchronization between all processors. */
+
+    virtual void synchronize() const = 0;
+
+    /**************************************************************************************
+     *                                                                                    *
+     *  Communication routines provided by this base class using other routines           *
+     *                                                                                    *
+     *************************************************************************************/
+
+    // Boolean global reduction operations are implemented by using the sum reduction.
+
+    virtual bool all( const bool flag ) const;
+    virtual bool any( const bool flag ) const;
+
+    /** Broadcast of a string.
+     *
+     *  This class provides one implementation, but derived classes might override it.
+     */
+    virtual void bcast( std::string&, const PartitionId root ) const;
+
+    /** @brief allgather is combination of gather and broadcast
+     *
+     *  @param[out]  allvals result array with values from all processors ( allocated for at least n * getSize() )
+     *  @param[in]   n      number of elements in myvals
+     *  @param[in]   myvals array with n values that this processor contributes
+     *
+     *  This routine will be implemented by other available routines.
+     */
+    template<typename T>
+    void allgather( T allvals[], const IndexType n, const T myvals[] ) const
+    {
+        PartitionId root = 0;
+        gather( allvals, n, root, myvals );
+        bcast ( allvals, n * getSize(), root );
+
+        // @ToDo: implement this by a circular shift
+    }
+
+    /** Ownership computation for indexes where only each partition
+     * individually can determine whether an index is local or not.
+     *
+     * This method should not be called for distributions where the
+     * owner can be computed by a closed formula.
+     */
+    void computeOwners(
+        PartitionId owners[],
+        const Distribution& distribution,
+        const IndexType requiredIndexes[],
+        const IndexType n ) const;
+
+    void computeOwners(
+        const std::vector<IndexType>& requiredIndexes,
+        const Distribution& distribution,
+        std::vector<PartitionId>& owners ) const
+    {
+        IndexType n = requiredIndexes.size();
+        owners.resize( n );
+        computeOwners( &owners[0], distribution, &requiredIndexes[0], n );
+    }
+
+    /**************************************************************************************
+     *                                                                                    *
+     *  Communication routines for LAMAArrays for convenience                             *
+     *                                                                                    *
+     *************************************************************************************/
+
+    /** exchangeByPlan for LAMAArrays instead of usual array */
+
+    template<typename T>
+    void exchangeByPlan(
+        LAMAArray<T>& recvArray,
+        const CommunicationPlan& recvPlan,
+        const LAMAArray<T>& sendArray,
+        const CommunicationPlan& sendPlan ) const;
+
+    /** Asynchronous exchange of LAMAArrays. */
+
+    template<typename T>
+    SyncToken* exchangeByPlanAsync(
+        LAMAArray<T>& recvArray,
+        const CommunicationPlan& recvPlan,
+        const LAMAArray<T>& sendArray,
+        const CommunicationPlan& sendPlan ) const;
+
+    /** @brief Update of halo array via Halo object.
+     *
+     *  @tparam     T             TODO[doxy] Complete Description.
+     *  @param[out] haloValues    will contain the non-local values from other processors
+     *  @param[in]  localValues   is the local part of the array on each processor
+     *  @param[in]  halo is the   Halo object containing all information about exchange
+     *
+     *  This method is not virtual but will use the pure virtual methods of base classes.
+     */
+    template<typename T>
+    void updateHalo( LAMAArray<T>& haloValues, const LAMAArray<T>& localValues, const Halo& halo ) const;
+
+    /** @brief Asynchronous update of halo array via Halo object. */
+
+    template<typename T>
+    SyncToken* updateHaloAsync( LAMAArray<T>& haloValues, const LAMAArray<T>& localValues, const Halo& halo ) const;
+
+    /** @brief Shift on LAMA arrays.
+     *
+     *  @tparam     T           type of data to be shifted       
+     *  @param[out] recv        array to receive  this partition
+     *  @param[in]  send        array to send from this partition
+     *  @param[in]  direction   number of positions to shift, e.g. 1 or -1
+     *
+     *  Note: The recv array must have a capacity that is sufficent to
+     *        receive all the data.
+     */
+    template<typename T>
+    void shiftArray( LAMAArray<T>& recv, const LAMAArray<T>& send, const int direction ) const;
+
+    /** @brief Asychronous shift on LAMA arrays.
+     *
+     *  @tparam     T           TODO[doxy] Complete Description.
+     *  @param[out] recvArray   array to receive for this partition
+     *  @param[in]  sendArray   array to send from this partition
+     *  @param[in]  direction   number of positions to shift, e.g. 1 or -1
+     *
+     *  Note: All partitions must have the same size for send/recv array
+     */
+    template<typename T>
+    SyncToken* shiftAsync( LAMAArray<T>& recvArray, const LAMAArray<T>& sendArray, const int direction ) const;
+
+    /** Override routine of base class Printable. */
+
+    virtual void writeAt( std::ostream& stream ) const;
+
+    /** @brief Getter for the type of a communicator. */
+
+    const std::string& getType() const
+    {
+        return mCommunicatorType;
+    }
 
 protected:
 
@@ -621,12 +670,6 @@ static    void getUserProcArray( PartitionId userProcArray[3] );
     template<typename T>
     IndexType shift0( T newVals[], const IndexType newSize,
                     const T oldVals[], const IndexType oldSize ) const;
-
-    /** Default asynchronous shift uses synchronous shift. */
-
-    template<typename T>
-    SyncToken* defaultShiftAsync( T newVals[], const T oldVals[],
-                    const IndexType size, const int direction ) const;
 
     /** getter for Context needed for Communication
      *
@@ -659,9 +702,7 @@ void Communicator::exchangeByPlan(
     const LAMAArray<T>& sendArray,
     const CommunicationPlan& sendPlan ) const
 {
-    LAMA_ASSERT_ERROR(
-                    sendArray.size() == sendPlan.totalQuantity(),
-                    "Send array has size " << sendArray.size() << ", but send plan requires " << sendPlan.totalQuantity() << " entries" )
+    LAMA_ASSERT_EQUAL_ERROR( sendArray.size(), sendPlan.totalQuantity() )
 
     IndexType recvSize = recvPlan.totalQuantity();
 
@@ -685,9 +726,7 @@ SyncToken* Communicator::exchangeByPlanAsync(
     const LAMAArray<T>& sendArray,
     const CommunicationPlan& sendPlan ) const
 {
-    LAMA_ASSERT_ERROR(
-                    sendArray.size() == sendPlan.totalQuantity(),
-                    "Send array has size " << sendArray.size() << ", but send plan requires " << sendPlan.totalQuantity() << " entries" );
+    LAMA_ASSERT_EQUAL_ERROR( sendArray.size(), sendPlan.totalQuantity() )
 
     IndexType recvSize = recvPlan.totalQuantity();
 
