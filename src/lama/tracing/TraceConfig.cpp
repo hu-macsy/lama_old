@@ -380,8 +380,6 @@ RegionTable* TraceConfig::getRegionTable( ThreadId threadId )
 
 TraceConfig::TraceScope::TraceScope( bool flag )
 {
-    std::cout << "TraceScope: set " << flag << std::endl;
-
     saveFlag = TraceConfig::globalTraceFlag;
     TraceConfig::globalTraceFlag = flag;
 }
@@ -390,7 +388,6 @@ TraceConfig::TraceScope::TraceScope( bool flag )
 
 TraceConfig::TraceScope::~TraceScope()
 {
-    std::cout << "TraceScope: reset " << saveFlag << std::endl;
     TraceConfig::globalTraceFlag = saveFlag;
 }
 
