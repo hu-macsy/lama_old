@@ -1,5 +1,5 @@
 /**
- * @file OpenMPBLAS3.cpp
+ * @file blas/OpenMPBLAS3.cpp
  *
  * @license
  * Copyright (c) 2009-2013

@@ -208,16 +208,16 @@ public:
     /** Help routine to build any kind of CSR storage.
      *
      *
-     *  @param[out] ia is the CSR offset array
-     *  @param[out] ja is the array with the column indexes (optional)
-     *  @param[out] values is the array with the non-zero matrix values (optional)
+     *  @param[out] csrIA is the CSR offset array
+     *  @param[out] csrJA is the array with the column indexes (optional)
+     *  @param[out] csrValues is the array with the non-zero matrix values (optional)
      *  @param[in]  loc is the Context where conversion should be done
      */
     template<typename OtherValueType>
     void buildCSR(
-        LAMAArray<IndexType>& ia,
-        LAMAArray<IndexType>* ja,
-        LAMAArray<OtherValueType>* values,
+        LAMAArray<IndexType>& csrIA,
+        LAMAArray<IndexType>* csrJA,
+        LAMAArray<OtherValueType>* csrValues,
         const ContextPtr loc ) const;
 
     /******************************************************************

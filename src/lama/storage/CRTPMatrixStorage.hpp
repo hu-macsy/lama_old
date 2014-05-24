@@ -125,19 +125,19 @@ public:
         static_cast<const Derived*>( this )->buildCSR( ia, ja, values, this->getContextPtr() );
     }
 
-    void buildCSRData( LAMAArray<IndexType>& ia, LAMAArray<IndexType>& ja, _LAMAArray& values ) const
+    void buildCSRData( LAMAArray<IndexType>& csrIA, LAMAArray<IndexType>& csrJA, _LAMAArray& csrValues ) const
     {
-        Scalar::ScalarType arrayType = values.getValueType();
+        Scalar::ScalarType arrayType = csrValues.getValueType();
 
         if ( arrayType == Scalar::DOUBLE )
         {
-            LAMAArray<double>& typedValues = dynamic_cast<LAMAArray<double>&>( values );
-            static_cast<const Derived*>( this )->buildCSR( ia, &ja, &typedValues, this->getContextPtr() );
+            LAMAArray<double>& typedValues = dynamic_cast<LAMAArray<double>&>( csrValues );
+            static_cast<const Derived*>( this )->buildCSR( csrIA, &csrJA, &typedValues, this->getContextPtr() );
         }
         else if ( arrayType == Scalar::FLOAT )
         {
-            LAMAArray<float>& typedValues = dynamic_cast<LAMAArray<float>&>( values );
-            static_cast<const Derived*>( this )->buildCSR( ia, &ja, &typedValues, this->getContextPtr() );
+            LAMAArray<float>& typedValues = dynamic_cast<LAMAArray<float>&>( csrValues );
+            static_cast<const Derived*>( this )->buildCSR( csrIA, &csrJA, &typedValues, this->getContextPtr() );
         }
         else
         {

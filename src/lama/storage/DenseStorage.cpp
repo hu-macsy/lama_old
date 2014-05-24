@@ -334,37 +334,37 @@ void DenseStorageView<ValueType>::setZero()
 template<typename ValueType>
 template<typename OtherValueType>
 void DenseStorageView<ValueType>::buildCSR(
-    LAMAArray<IndexType>& ia,
-    LAMAArray<IndexType>* ja,
-    LAMAArray<OtherValueType>* values,
+    LAMAArray<IndexType>& csrIA,
+    LAMAArray<IndexType>* csrJA,
+    LAMAArray<OtherValueType>* csrValues,
     const ContextPtr /* loc */) const
 {
     // TODO all done on host, so loc is unused
 
     HostReadAccess<ValueType> denseValues( mData );
 
-    HostWriteOnlyAccess<IndexType> csrIA( ia, mNumRows + 1 );
+    HostWriteOnlyAccess<IndexType> wIA( csrIA, mNumRows + 1 );
 
     ValueType eps = this->mEpsilon;
 
     // Note: mDiagonalProperty == ( mNumRows == mNumColumns )
 
-    OpenMPDenseUtils::getCSRSizes( csrIA.get(), mDiagonalProperty, mNumRows, mNumColumns, denseValues.get(), eps );
+    OpenMPDenseUtils::getCSRSizes( wIA.get(), mDiagonalProperty, mNumRows, mNumColumns, denseValues.get(), eps );
 
-    if ( ja == NULL || values == NULL )
+    if ( csrJA == NULL || csrValues == NULL )
     {
-        csrIA.resize( mNumRows );
+        wIA.resize( mNumRows );
         return;
     }
 
     // build offset array, get number of non-zero values for size of ja, values
 
-    IndexType numValues = OpenMPCSRUtils::sizes2offsets( csrIA.get(), mNumRows );
+    IndexType numValues = OpenMPCSRUtils::sizes2offsets( wIA.get(), mNumRows );
 
-    HostWriteOnlyAccess<IndexType> csrJA( *ja, numValues );
-    HostWriteOnlyAccess<OtherValueType> csrValues( *values, numValues );
+    HostWriteOnlyAccess<IndexType> wJA( *csrJA, numValues );
+    HostWriteOnlyAccess<OtherValueType> wValues( *csrValues, numValues );
 
-    OpenMPDenseUtils::getCSRValues( csrJA.get(), csrValues.get(), csrIA.get(), mDiagonalProperty, mNumRows, mNumColumns,
+    OpenMPDenseUtils::getCSRValues( wJA.get(), wValues.get(), wIA.get(), mDiagonalProperty, mNumRows, mNumColumns,
                                     denseValues.get(), eps );
 }
 
