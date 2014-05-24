@@ -81,35 +81,52 @@ public:
         IndexType offset; //!< running sum for quantities of all entries
     };
 
+    /** @brief Default constructor creates an empty plan with allocated() returns false
+     */
     CommunicationPlan();
 
     /** Clear an existing object for communication plan. */
 
     void clear();
 
+    /** Clear an free allocated data. */
+
     void purge();
 
     /** Construct a communication plan by quantity for each partition
      *
-     *  @param quantities vector of non-negative values, size is number of partitions
-     *  @param compressFlag if true zero entries are removed
+     *  @param quantities array of non-negative values, size is noPartitions
+     *  @param noPartitions number of entries for quantities
+     *  @param compressFlag if true zero-entries are removed.
      *
      *  \code
-     *  std:vector<IndexType> quantities;
-     *  quantities.push_back(0);
-     *  quantities.push_back(3);
-     *  quantities.push_back(4);
-     *  CommunicationPlan plan( quantities );
+     *  IndexType quantities[] = { 0, 3, 4 };
+     *  PartitionId noPartitions = sizeof( quantities ) / sizeof ( IndexType );
+     *  CommunicationPlan plan( quantities, noPartitions );
      *  \endcode
      */
-    CommunicationPlan( const LAMAArray<IndexType>& quantities, bool compressFlag = true );
+    CommunicationPlan( const IndexType quantities[], const PartitionId noPartitions, bool compressFlag = true );
 
     /** Construct a communication plan by array of owners; quantity
      *  is computed by counting values for each partition.
+     *
+     *  @param[in] noPartitions  number of partitions that exist
+     *  @param[in] owners        array of owners, each owner must be a value from 0 to noPartitions - 1
+     *  @param[in] nOwners       number of entries in owners
+     *  @param[in] compressFlag  will compress the computed plan
+     *
+     *  Each partition id that appears in owners will be counted to get the number of entries to send or receive.
+     *
+     *  \code
+     *  PartitionId owners[] = { 2, 1, 2, 1, 2, 1, 2 };
+     *  PartitionId nOwners = sizeof( owners ) / sizeof ( PartitionId );
+     *  CommunicationPlan plan( 3, owners, nOwner );
+     *  \endcode
      */
     CommunicationPlan(
         const PartitionId noPartitions,
-        const std::vector<PartitionId>& owners,
+        const PartitionId owners[],
+        const IndexType nOwners,
         bool compressFlag = true );
 
     /** Construct a communication plan by an existing one */
@@ -132,27 +149,44 @@ public:
 
     /** Allocate a communication plan by quantity for each partition
      *
-     *  @param quantities vector of non-negative values, size is number of partitions
+     *  @param quantities array of non-negative values, size is number of partitions
+     *  @param noPartitions number of entries to take from quantities
      *  @param compressFlag if true zero-entries are removed.
      *
      *  \code
      *  CommunicationPlan plan;
-     *  std:vector<IndexType> quantities;
-     *  quantities.push_back( 0 );
-     *  quantities.push_back( 3 );
-     *  quantities.push_back( 4 );
-     *  plan.allocate( quantities );
+     *  IndexType quantities[] = { 0, 3, 4 };
+     *  PartitionId noPartitions = sizeof( quantities ) / sizeof ( IndexType );
+     *  plan.allocate( quantities, noPartitions );
      *  \endcode
      */
-    void allocate( const LAMAArray<IndexType>& quantities, bool compressFlag = true );
+    void allocate( const IndexType quantities[], const PartitionId noPartitions, bool compressFlag = true );
 
-    void allocate( const PartitionId noPartitions, const std::vector<PartitionId>& owners, bool compressFlag = true );
+    /** @brief Allocate communication plan by an array of owners.
+     *
+     *  @param[in] noPartitions  number of partitions that exist
+     *  @param[in] owners        array of owners, each owner must be a value from 0 to noPartitions - 1
+     *  @param[in] nOwners       number of entries in owners
+     *  @param[in] compressFlag  will compress the computed plan
+     *
+     *  Each partition id that appears in owners will be counted to get the number of entries to send or receive.
+     *
+     *  \code
+     *  CommunicationPlan plan;
+     *  PartitionId owners[] = { 2, 1, 2, 1, 2, 1, 2 };
+     *  PartitionId nOwners = sizeof( owners ) / sizeof ( PartitionId );
+     *  plan.allocate( 3, owners, nOwner );
+     *  \endcode
+     */
+    void allocate( const PartitionId noPartitions, const PartitionId owners[], IndexType nOwners, bool compressFlag = true );
 
     /** Allocate a communication plan as the transposed plan of another communication plan.
      *
      *  processor[p].plan->entry[q].quantity  = processor[q].entry[p].quantity
      */
     void allocateTranspose( const CommunicationPlan& plan, const Communicator& comm );
+
+    /** @brief Query whether this communication plan has already been allocated */
 
     bool allocated() const;
 
@@ -195,6 +229,8 @@ public:
      * the number of partitions involved.
      */
     inline const Entry& operator[]( const PartitionId index ) const;
+
+    /** @brief Overrides the routine of base class Printable. */
 
     void writeAt( std::ostream& stream ) const;
 

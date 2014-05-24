@@ -36,8 +36,6 @@
 
 // others
 #include <lama/Communicator.hpp>
-#include <lama/HostReadAccess.hpp>
-#include <lama/HostWriteAccess.hpp>
 
 #include <lama/exception/LAMAAssert.hpp>
 
@@ -60,19 +58,20 @@ CommunicationPlan::CommunicationPlan()
 
 CommunicationPlan::CommunicationPlan(
     const PartitionId noPartitions,
-    const std::vector<PartitionId>& owners,
+    const PartitionId owners[],
+    const IndexType   nOwners,
     const bool compressFlag )
     : mAllocated( false ), mQuantity( 0 )
 {
-    allocate( noPartitions, owners, compressFlag );
+    allocate( noPartitions, owners, nOwners, compressFlag );
 }
 
 /* ------------------------------------------------------------------------- */
 
-CommunicationPlan::CommunicationPlan( const LAMAArray<IndexType>& quantities, const bool compressFlag )
+CommunicationPlan::CommunicationPlan( const IndexType quantities[], const PartitionId noPartitions, const bool compressFlag )
     : mAllocated( false ), mQuantity( 0 )
 {
-    allocate( quantities, compressFlag );
+    allocate( quantities, noPartitions, compressFlag );
 }
 
 /* ------------------------------------------------------------------------- */
@@ -194,24 +193,20 @@ void CommunicationPlan::purge()
 
 /* ------------------------------------------------------------------------- */
 
-void CommunicationPlan::allocate( const LAMAArray<IndexType>& quantitiesArray, bool compressFlag )
+void CommunicationPlan::allocate( const IndexType quantities[], const PartitionId noPartitions, bool compressFlag )
 {
-    LAMA_LOG_INFO( logger, "allocate plan for " << quantitiesArray.size() << " partitions from quantities" )
+    LAMA_LOG_INFO( logger, "allocate plan for " << noPartitions << " partitions from quantities" )
 
-    mEntries.resize( quantitiesArray.size() );
+    mEntries.resize( noPartitions );
 
     mQuantity = 0; // counts total quantity
 
-    PartitionId nPartitions = quantitiesArray.size();
-
-    HostReadAccess<IndexType> quantitiesHRA( quantitiesArray );
-
-    for ( PartitionId i = 0; i < nPartitions; ++i )
+    for ( PartitionId i = 0; i < noPartitions; ++i )
     {
         Entry& entry = mEntries[i];
 
-        entry.quantity = quantitiesHRA[i];
-        entry.offset = mQuantity;
+        entry.quantity    = quantities[i];
+        entry.offset      = mQuantity;
         entry.partitionId = i;
 
         mQuantity += entry.quantity;
@@ -232,7 +227,8 @@ void CommunicationPlan::allocate( const LAMAArray<IndexType>& quantitiesArray, b
 
 void CommunicationPlan::allocate(
     const PartitionId noPartitions,
-    const std::vector<PartitionId>& owners,
+    const PartitionId owners[],
+    const IndexType nOwners,
     bool compressFlag )
 {
     mEntries.resize( noPartitions );
@@ -245,12 +241,11 @@ void CommunicationPlan::allocate(
         mEntries[p].partitionId = p;
     }
 
-    std::vector<PartitionId>::const_iterator end = owners.end();
-    for ( std::vector<PartitionId>::const_iterator it = owners.begin(); it != end; ++it )
+    for ( IndexType i = 0; i < nOwners; ++i )
     {
-        const PartitionId& p = *it;
+        const PartitionId& p = owners[i];
         LAMA_ASSERT( p >= 0 && p < noPartitions,
-                     "Illegal owner value: " << p << " at Position " << std::distance(owners.begin(),it) )
+                     "Illegal owner value: " << p << " at Position " << i )
         ++mEntries[p].quantity;
         LAMA_LOG_TRACE( logger, " entry for p = " << p << ", total = " << mEntries[p].quantity )
     }
@@ -263,7 +258,9 @@ void CommunicationPlan::allocate(
         mQuantity += mEntries[p].quantity;
     }
 
-    LAMA_ASSERT( mQuantity == (IndexType) owners.size(), "allocation mismatch" )
+    // this assertion should be valid by the above algorithm
+
+    LAMA_ASSERT_EQUAL_DEBUG( mQuantity, nOwners )
 
     mAllocated = true;
 
@@ -347,29 +344,23 @@ void CommunicationPlan::allocateTranspose( const CommunicationPlan& plan, const 
 
     // plan might be compressed, so build values again
 
-    LAMAArray<IndexType> sendSizesArray( size, 0 ); // quantity 0 as default
-    HostWriteAccess<IndexType> sendSizes( sendSizesArray );
+    std::vector<IndexType> sendSizes( size, 0 );
 
     for ( PartitionId i = 0; i < plan.size(); ++i )
     {
         sendSizes[plan[i].partitionId] = plan[i].quantity;
     }
 
-    LAMAArray<IndexType> recvSizesArray( size, 0 );
-
-    HostWriteAccess<IndexType> recvSizes( recvSizesArray );
+    std::vector<IndexType> recvSizes( size, 0 );
 
     // send each processor the number of indexes I require
     // and receive the number of indexes that I have to provide
 
-    comm.all2all( recvSizes.get(), sendSizes.get() );
+    comm.all2all( recvSizes.data(), sendSizes.data() );
 
     // now we can allocate by quantities
 
-    recvSizes.release();
-    sendSizes.release();
-
-    allocate( recvSizesArray );
+    allocate( recvSizes.data(), recvSizes.size() );
 }
 
 /* ----------------------------------------------------------------------- */

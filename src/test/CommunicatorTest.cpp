@@ -128,25 +128,23 @@ LAMA_COMMON_TEST_CASE_END()
 /* --------------------------------------------------------------------- */
 
 LAMA_COMMON_TEST_CASE( CommunicatorTest, allocatePlanTest )
-    LAMAArray<IndexType> reqQuantities( size );
 
+    std::vector<IndexType> reqQuantities( size );
+
+    for ( PartitionId p = 0; p < size; ++p )
     {
-        HostWriteAccess<IndexType> writeReqQuantities( reqQuantities );
-
-        for( PartitionId p = 0; p < size; ++p )
+        if ( p != rank )
         {
-            if( p != rank )
-            {
-                writeReqQuantities[p] = ( 2 * p + rank ) % 3;
-            }
-            else
-            {
-                writeReqQuantities[p] = 0;
-            }
+            reqQuantities[p] = ( 2 * p + rank ) % 3;
+        }
+        else
+        {
+            reqQuantities[p] = 0;
         }
     }
 
-    CommunicationPlan requiredPlan( reqQuantities );
+    CommunicationPlan requiredPlan( reqQuantities.data(), reqQuantities.size() );
+
     // verify that requiredPlan is correctly set up
     IndexType offsetCheck = 0;
 

@@ -147,7 +147,7 @@ public:
 
     /** Routine that sets functions pointers belonging to BLAS1 in a BLASInterface.
      *
-     *  param[inout] BLASInterface struct to register all routines implemented in CUDA
+     *  @param[inout] BLASInterface struct to register all routines implemented in CUDA
      *
      *  Note: this routine will make instantiations of the template routines.
      */

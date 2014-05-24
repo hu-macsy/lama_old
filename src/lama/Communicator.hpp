@@ -404,9 +404,28 @@ public:
      *      const int direction ) const = 0;
      */
 
-    /** Macro defines all virtual routines for other types. */
+    /** Macro defines all virtual routines for other types. 
+     * 
+     *  @param TypeId name of the C++ type for which routines are defined, e.g. float, double
+     * 
+     *  Note: this macro is needed as virtual routines must not be templates
+     */
 
-#define COMMUNICATOR_METHODS( TypeId )                        \
+#define COMMUNICATOR_METHODS( TypeId )                                                    \
+                                                                                          \
+    /** @brief Exchange of data between all processors by communication plans.
+     *  
+     *  @param[out] recvData   buffer for data received from other processors
+     *  @param[in]  recvPlan   number of elements and offsets for receiving
+     *  @param[in]  sendData   buffer for data to send to other processors
+     *  @param[in]  sendPlan   contains number of elements and offsets for sending data
+     *  
+     *  All send and receive data between each pair of processors must be a contiguous  
+     *  part of the sendData or recvData.                                              
+     *   
+     *  The size of recvData must be recvPlan.totalQuantity().  
+     *  The size of sendData must be sendPlan.totalQuantity(). 
+     */                                                       \
                                                               \
     virtual void exchangeByPlan(                              \
         TypeId* const recvData,                               \

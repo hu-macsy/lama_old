@@ -73,7 +73,7 @@ void HaloBuilder::build( const Distribution& distribution, const std::vector<Ind
     CommunicationPlan& requiredPlan = halo.mRequiredPlan;
 
     //allocate Required plan with the nodes, where we get data from
-    requiredPlan.allocate( noPartitions, owners );
+    requiredPlan.allocate( noPartitions, owners.data(), owners.size() );
 
     LAMA_LOG_INFO( logger,
                    communicator << ": allocated required plan for " << noPartitions << " partitions, size = " << requiredPlan.size() << ", total quantity = " << requiredPlan.totalQuantity() )
