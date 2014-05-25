@@ -1559,7 +1559,7 @@ void SparseMatrix<ValueType>::vectorHaloOperationAsync(
                                         << "] = localF( haloMatrix, localX[" << xSize
                                         << "] ) on " << haloContext )
 
-            calcF( mHaloData.get(), haloResult, localX );
+            delete calcF( mHaloData.get(), haloResult, localX );
 
             toOthersResult.prefetch( hostContext );
 
