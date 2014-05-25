@@ -57,6 +57,7 @@
 
 // boost
 #include <boost/bind.hpp>
+#include <boost/preprocessor.hpp>
 #include <lama/tracing.hpp>
 
 namespace lama
@@ -444,24 +445,6 @@ void CSRStorage<ValueType>::setCSRDataSwap(
 
     buildRowIndexes();
 }
-
-//force instantiation for <double,double> and <float, float>
-template void CSRStorage<double>::setCSRDataSwap(
-    const IndexType numRows,
-    const IndexType numColumns,
-    const IndexType numValues,
-    LAMAArray<IndexType>& ia,
-    LAMAArray<IndexType>& ja,
-    LAMAArray<double>& values,
-    const ContextPtr loc );
-template void CSRStorage<float>::setCSRDataSwap(
-    const IndexType numRows,
-    const IndexType numColumns,
-    const IndexType numValues,
-    LAMAArray<IndexType>& ia,
-    LAMAArray<IndexType>& ja,
-    LAMAArray<float>& values,
-    const ContextPtr loc );
 
 /* --------------------------------------------------------------------------- */
 
@@ -978,13 +961,15 @@ void CSRStorage<ValueType>::getDiagonalImpl( LAMAArray<OtherValueType>& diagonal
 template<typename ValueType>
 void CSRStorage<ValueType>::scaleImpl( const Scalar scalar )
 {
-    HostReadAccess<IndexType> csrIA( mIa );
-    HostReadAccess<IndexType> rJa( mJa );
-    HostWriteAccess<ValueType> csrValues( mValues );
+    ContextPtr loc = getContextPtr();
+
+    LAMA_INTERFACE_FN_DEFAULT_T( scale, loc, Utils, Transform, ValueType )
+
+    WriteAccess<ValueType> csrValues( mValues, loc );
 
     ValueType value = scalar.getValue<ValueType>();
 
-    OpenMPBLAS1::scal( mNumValues, value, csrValues.get(), 1, NULL );
+    scale( csrValues.get(), value, mNumValues );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -994,13 +979,17 @@ template<typename OtherValueType>
 void CSRStorage<ValueType>::scaleImpl( const LAMAArray<OtherValueType>& diagonal )
 {
     IndexType n = std::min( mNumRows, diagonal.size() );
+   
+    ContextPtr loc = getContextPtr();
+
+    LAMA_INTERFACE_FN_TT( scaleRows, loc, CSRUtils, Scale, ValueType, OtherValueType )
 
     {
-        HostReadAccess<OtherValueType> rDiagonal( diagonal );
-        HostReadAccess<IndexType> csrIA( mIa );
-        HostWriteAccess<ValueType> csrValues( mValues ); // updateAccess
+        ReadAccess<OtherValueType> rDiagonal( diagonal, loc );
+        ReadAccess<IndexType> csrIA( mIa, loc );
+        WriteAccess<ValueType> csrValues( mValues, loc ); // updateAccess
 
-        OpenMPCSRUtils::scaleRows( csrValues.get(), csrIA.get(), n, rDiagonal.get() );
+        scaleRows( csrValues.get(), csrIA.get(), n, rDiagonal.get() );
     }
 
     if ( LAMA_LOG_TRACE_ON( logger ) )
@@ -2305,23 +2294,30 @@ void CSRStorage<ValueType>::buildSparseRowData( LAMAArray<IndexType>& sparseJA,
     sparseValues = mValues;
 }
 
-/* --------------------------------------------------------------------------- */
+/* ========================================================================= */
+/*       Template Instantiations                                             */
+/* ========================================================================= */
 
-// template instantiation for the supported data types
-template<>
-const char* CSRStorage<float>::typeName()
-{
-    return "CSRStorage<float>";
-}
+#define LAMA_CSR_STORAGE_INSTANTIATE(z, I, _)                              \
+template<>                                                                 \
+const char* CSRStorage<ARITHMETIC_TYPE##I>::typeName()                     \
+{                                                                          \
+    return "CSRStorage<ARITHMETIC_TYPE##I>";                               \
+}                                                                          \
+                                                                           \
+template class LAMA_DLL_IMPORTEXPORT CSRStorage<ARITHMETIC_TYPE##I> ;      \
+                                                                           \
+template void CSRStorage<ARITHMETIC_TYPE##I>::setCSRDataSwap(              \
+    const IndexType numRows,                                               \
+    const IndexType numColumns,                                            \
+    const IndexType numValues,                                             \
+    LAMAArray<IndexType>& ia,                                              \
+    LAMAArray<IndexType>& ja,                                              \
+    LAMAArray<ARITHMETIC_TYPE##I>& values,                                \
+    const ContextPtr loc );                                                \
 
-template class LAMA_DLL_IMPORTEXPORT CSRStorage<float> ;
+BOOST_PP_REPEAT( ARITHMETIC_TYPE_CNT, LAMA_CSR_STORAGE_INSTANTIATE, _ )
 
-template<>
-const char* CSRStorage<double>::typeName()
-{
-    return "CSRStorage<double>";
-}
-
-template class LAMA_DLL_IMPORTEXPORT CSRStorage<double> ;
+#undef LAMA_CSR_STORAGE_INSTANTIATE
 
 }

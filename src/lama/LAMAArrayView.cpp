@@ -31,7 +31,11 @@
  * @since 1.0.0
  */
 
+// hpp
 #include <lama/LAMAArrayView.hpp>
+
+// boost
+#include <boost/preprocessor.hpp>
 
 namespace lama
 {
@@ -293,14 +297,15 @@ bool LAMAArrayView<T>::operator!=( const LAMAArrayConstView<T>& other ) const
 {
     return !( *this == other );
 }
+
 // template instantiation for the supported data types
 
-template class LAMA_DLL_IMPORTEXPORT LAMAArrayView<IndexType> ;
-template class LAMA_DLL_IMPORTEXPORT LAMAArrayView<float> ;
-template class LAMA_DLL_IMPORTEXPORT LAMAArrayView<double> ;
+#define LAMA_ARRAY_VIEW_INSTANTIATE(z, I, _)                                   \
+   template class LAMA_DLL_IMPORTEXPORT LAMAArrayView< ARRAY_TYPE##I >;        \
+   template class LAMA_DLL_IMPORTEXPORT LAMAArrayConstView< ARRAY_TYPE##I >;
 
-template class LAMA_DLL_IMPORTEXPORT LAMAArrayConstView<IndexType> ;
-template class LAMA_DLL_IMPORTEXPORT LAMAArrayConstView<float> ;
-template class LAMA_DLL_IMPORTEXPORT LAMAArrayConstView<double> ;
+BOOST_PP_REPEAT( ARRAY_TYPE_CNT, LAMA_ARRAY_VIEW_INSTANTIATE, _ )
+
+#undef LAMA_ARRAY_VIEW_INSTANTIATE
 
 } /* namespace lama */

@@ -46,6 +46,7 @@
 // boost
 #include <boost/scoped_array.hpp>
 #include <boost/bind.hpp>
+#include <boost/preprocessor.hpp>
 
 #include <iostream>
 #include <algorithm>
@@ -182,6 +183,12 @@ template<>
 inline MPI_Datatype MPICommunicator::getMPIType<int>()
 {
     return MPI_INT;
+}
+
+template<>
+inline MPI_Datatype MPICommunicator::getMPIType<long double>()
+{
+    return MPI_LONG_DOUBLE;
 }
 
 #ifdef LAMA_USE_COMPLEX_FLOAT
@@ -965,13 +972,15 @@ void MPICommunicator::writeAt( std::ostream& stream ) const
     stream << "MPI(" << mRank << ":" << mSize << ")";
 }
 
-template LAMA_DLL_IMPORTEXPORT
-void MPICommunicator::maxlocImpl( double&, IndexType&, PartitionId) const;
+// template instantiation for the supported array types
 
-template LAMA_DLL_IMPORTEXPORT
-void MPICommunicator::maxlocImpl( float&, IndexType&, PartitionId) const;
+#define LAMA_MPI_METHODS_INSTANTIATE(z, I, _)                         \
+    template LAMA_DLL_IMPORTEXPORT                                    \
+    void MPICommunicator::maxlocImpl(                                 \
+        ARRAY_TYPE##I &, IndexType&, PartitionId) const; 
 
-template LAMA_DLL_IMPORTEXPORT
-void MPICommunicator::maxlocImpl( int&, IndexType&, PartitionId) const;
+BOOST_PP_REPEAT( ARRAY_TYPE_CNT, LAMA_MPI_METHODS_INSTANTIATE, _ )
+
+#undef LAMA_MPI_METHODS_INSTANTIATE
 
 } // namespace lama

@@ -705,50 +705,44 @@ void Communicator::bcast( std::string& val, const PartitionId root ) const
 
 // Instantiation of template methods for the supported types
 
-#define LAMA_COMMUNICATOR_INSTANTIATIONS( TypeId )          \
+#define LAMA_COMMUNICATOR_INSTANTIATIONS( z, I, _ )         \
                                                             \
 template LAMA_DLL_IMPORTEXPORT                              \
 IndexType Communicator::shift0(                             \
-    TypeId targetVals[],                                    \
+    ARRAY_TYPE##I targetVals[],                             \
     const IndexType maxTargetSize,                          \
-    const TypeId sourceVals[],                              \
+    const ARRAY_TYPE##I sourceVals[],                       \
     const IndexType sourceSize ) const;                     \
                                                             \
 template LAMA_DLL_IMPORTEXPORT                              \
 void Communicator::shiftArray(                              \
-    LAMAArray<TypeId>& recvArray,                           \
-    const LAMAArray<TypeId>& sendArray,                     \
+    LAMAArray<ARRAY_TYPE##I>& recvArray,                    \
+    const LAMAArray<ARRAY_TYPE##I>& sendArray,              \
     const int direction ) const;                            \
                                                             \
 template LAMA_DLL_IMPORTEXPORT                              \
 SyncToken* Communicator::shiftAsync(                        \
-    LAMAArray<TypeId>& recvArray,                           \
-    const LAMAArray<TypeId>& sendArray,                     \
+    LAMAArray<ARRAY_TYPE##I>& recvArray,                    \
+    const LAMAArray<ARRAY_TYPE##I>& sendArray,              \
     const int direction ) const;                            \
                                                             \
 template LAMA_DLL_IMPORTEXPORT                              \
 void Communicator::updateHalo(                              \
-    LAMAArray<TypeId>& haloValues,                          \
-    const LAMAArray<TypeId>& localValues,                   \
+    LAMAArray<ARRAY_TYPE##I>& haloValues,                   \
+    const LAMAArray<ARRAY_TYPE##I>& localValues,            \
     const Halo& halo ) const;                               \
                                                             \
 template LAMA_DLL_IMPORTEXPORT                              \
 SyncToken* Communicator::updateHaloAsync(                   \
-    LAMAArray<TypeId>& haloValues,                          \
-    const LAMAArray<TypeId>& localValues,                   \
+    LAMAArray<ARRAY_TYPE##I>& haloValues,                   \
+    const LAMAArray<ARRAY_TYPE##I>& localValues,            \
     const Halo& halo ) const;                               \
 
-LAMA_COMMUNICATOR_INSTANTIATIONS( int )
-LAMA_COMMUNICATOR_INSTANTIATIONS( float )
-LAMA_COMMUNICATOR_INSTANTIATIONS( double )
 
-#ifdef LAMA_USE_COMPLEX_FLOAT   
-LAMA_COMMUNICATOR_INSTANTIATIONS( ComplexFloat )
-#endif
+// instantiate methods for all supported data types
 
-#ifdef LAMA_USE_COMPLEX_DOUBLE
-LAMA_COMMUNICATOR_INSTANTIATIONS( ComplexDouble )
-#endif
+BOOST_PP_REPEAT( ARRAY_TYPE_CNT, LAMA_COMMUNICATOR_INSTANTIATIONS, _ )
 
+#undef LAMA_COMMUNICATOR_INSTANTIATIONS
 
 }

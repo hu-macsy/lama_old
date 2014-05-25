@@ -411,7 +411,9 @@ public:
      *  Note: this macro is needed as virtual routines must not be templates
      */
 
-#define COMMUNICATOR_METHODS( TypeId )                                                    \
+#include <boost/preprocessor.hpp>
+
+#define COMMUNICATOR_METHODS( z, I, _)                                                    \
                                                                                           \
     /** @brief Exchange of data between all processors by communication plans.
      *  
@@ -425,92 +427,89 @@ public:
      *   
      *  The size of recvData must be recvPlan.totalQuantity().  
      *  The size of sendData must be sendPlan.totalQuantity(). 
-     */                                                       \
-                                                              \
-    virtual void exchangeByPlan(                              \
-        TypeId* const recvData,                               \
-        const CommunicationPlan& recvPlan,                    \
-        const TypeId* const sendData,                         \
-        const CommunicationPlan& sendPlan ) const = 0;        \
-                                                              \
-    virtual SyncToken* exchangeByPlanAsync(                   \
-        TypeId* const recvData,                               \
-        const CommunicationPlan& recvPlan,                    \
-        const TypeId* const sendData,                         \
-        const CommunicationPlan& sendPlan ) const = 0;        \
-                                                              \
-    virtual void bcast(                                       \
-        TypeId val[],                                         \
-        const IndexType n,                                    \
-        const PartitionId root ) const = 0;                   \
-                                                              \
-    virtual void scatter(                                     \
-        TypeId myvals[],                                      \
-        const IndexType n,                                    \
-        const PartitionId root,                               \
-        const TypeId allvals[] ) const = 0;                   \
-                                                              \
-    virtual void scatterV(                                    \
-        TypeId myvals[],                                      \
-        const IndexType n,                                    \
-        const PartitionId root,                               \
-        const TypeId allvals[],                               \
-        const IndexType sizes[] ) const = 0;                  \
-                                                              \
-    virtual void gather(                                      \
-        TypeId allvals[],                                     \
-        const IndexType n,                                    \
-        const PartitionId root,                               \
-        const TypeId myvals[] ) const = 0;                    \
-                                                              \
-    virtual void gatherV(                                     \
-        TypeId allvals[],                                     \
-        const IndexType n,                                    \
-        const PartitionId root,                               \
-        const TypeId myvals[],                                \
-        const IndexType sizes[] ) const = 0;                  \
-                                                              \
-    virtual void swap(                                        \
-        TypeId val[],                                         \
-        const IndexType n,                                    \
-        const PartitionId partner ) const = 0;                \
-                                                              \
-    virtual void maxloc(                                      \
-        TypeId& val,                                          \
-        IndexType& location,                                  \
-        const PartitionId root ) const = 0;                   \
-                                                              \
-    virtual TypeId min( const TypeId value ) const = 0;       \
-                                                              \
-    virtual TypeId sum( const TypeId value ) const = 0;       \
-                                                              \
-    virtual TypeId max( const TypeId value ) const = 0;       \
-                                                              \
-    virtual IndexType shiftData(                              \
-        TypeId newVals[],                                     \
-        const IndexType newSize,                              \
-        const TypeId oldVals[],                               \
-        const IndexType oldSize,                              \
-        const int direction ) const = 0;                      \
-                                                              \
-    virtual SyncToken* shiftDataAsync(                        \
-        TypeId newVals[],                                     \
-        const TypeId oldVals[],                               \
-        const IndexType size,                                 \
-        const int direction ) const = 0;                      \
+     */                                                                   \
+                                                                          \
+    virtual void exchangeByPlan(                                          \
+        ARRAY_TYPE##I* const recvData,                                    \
+        const CommunicationPlan& recvPlan,                                \
+        const ARRAY_TYPE##I* const sendData,                              \
+        const CommunicationPlan& sendPlan ) const = 0;                    \
+                                                                          \
+    virtual SyncToken* exchangeByPlanAsync(                               \
+        ARRAY_TYPE##I* const recvData,                                    \
+        const CommunicationPlan& recvPlan,                                \
+        const ARRAY_TYPE##I* const sendData,                              \
+        const CommunicationPlan& sendPlan ) const = 0;                    \
+                                                                          \
+    virtual void bcast(                                                   \
+        ARRAY_TYPE##I val[],                                              \
+        const IndexType n,                                                \
+        const PartitionId root ) const = 0;                               \
+                                                                          \
+    virtual void scatter(                                                 \
+        ARRAY_TYPE##I myvals[],                                           \
+        const IndexType n,                                                \
+        const PartitionId root,                                           \
+        const ARRAY_TYPE##I allvals[] ) const = 0;                        \
+                                                                          \
+    virtual void scatterV(                                                \
+        ARRAY_TYPE##I myvals[],                                           \
+        const IndexType n,                                                \
+        const PartitionId root,                                           \
+        const ARRAY_TYPE##I allvals[],                                    \
+        const IndexType sizes[] ) const = 0;                              \
+                                                                          \
+    virtual void gather(                                                  \
+        ARRAY_TYPE##I allvals[],                                          \
+        const IndexType n,                                                \
+        const PartitionId root,                                           \
+        const ARRAY_TYPE##I myvals[] ) const = 0;                         \
+                                                                          \
+    virtual void gatherV(                                                 \
+        ARRAY_TYPE##I allvals[],                                          \
+        const IndexType n,                                                \
+        const PartitionId root,                                           \
+        const ARRAY_TYPE##I myvals[],                                     \
+        const IndexType sizes[] ) const = 0;                              \
+                                                                          \
+    virtual void swap(                                                    \
+        ARRAY_TYPE##I val[],                                              \
+        const IndexType n,                                                \
+        const PartitionId partner ) const = 0;                            \
+                                                                          \
+    virtual void maxloc(                                                  \
+        ARRAY_TYPE##I& val,                                               \
+        IndexType& location,                                              \
+        const PartitionId root ) const = 0;                               \
+                                                                          \
+    virtual ARRAY_TYPE##I min(                                            \
+        const ARRAY_TYPE##I value ) const = 0;                            \
+                                                                          \
+    virtual ARRAY_TYPE##I sum(                                            \
+        const ARRAY_TYPE##I value ) const = 0;                            \
+                                                                          \
+    virtual ARRAY_TYPE##I max(                                            \
+        const ARRAY_TYPE##I value ) const = 0;                            \
+                                                                          \
+    virtual IndexType shiftData(                                          \
+        ARRAY_TYPE##I newVals[],                                          \
+        const IndexType newSize,                                          \
+        const ARRAY_TYPE##I oldVals[],                                    \
+        const IndexType oldSize,                                          \
+        const int direction ) const = 0;                                  \
+                                                                          \
+    virtual SyncToken* shiftDataAsync(                                    \
+        ARRAY_TYPE##I newVals[],                                          \
+        const ARRAY_TYPE##I oldVals[],                                    \
+        const IndexType size,                                             \
+        const int direction ) const = 0;                                  \
 
 
-    COMMUNICATOR_METHODS( int )
-    COMMUNICATOR_METHODS( float )
-    COMMUNICATOR_METHODS( double )
+    // define communicator methods for all supported data types
 
-#ifdef LAMA_USE_COMPLEX_FLOAT   
-    COMMUNICATOR_METHODS( ComplexFloat )
-#endif
+    BOOST_PP_REPEAT( ARRAY_TYPE_CNT, COMMUNICATOR_METHODS, _ )
 
-#ifdef LAMA_USE_COMPLEX_DOUBLE
-    COMMUNICATOR_METHODS( ComplexDouble )
-#endif
+#undef COMMUNICATOR_METHODS
 
     /**************************************************************************************
      *                                                                                    *
@@ -613,7 +612,7 @@ public:
 
     /** @brief Update of halo array via Halo object.
      *
-     *  @tparam     T             TODO[doxy] Complete Description.
+     *  @tparam     T             arithmetic type of involved arrays
      *  @param[out] haloValues    will contain the non-local values from other processors
      *  @param[in]  localValues   is the local part of the array on each processor
      *  @param[in]  halo is the   Halo object containing all information about exchange

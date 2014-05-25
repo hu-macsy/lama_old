@@ -286,6 +286,12 @@ public:
      */
     virtual void assign( const Matrix& other ) = 0;
 
+    /** @brief Assignment of a transposed matrix to this matrix
+     *
+     *  @param[in] other   the matrix to be assigned.
+     */
+    virtual void assignTranspose( const Matrix& other ) = 0;
+
     /**
      * @brief Setting (distributed) matrix with any replicated/global matrix storage data.
      *

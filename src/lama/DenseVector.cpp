@@ -52,6 +52,7 @@
 #include <lama/tracing.hpp>
 
 #include <boost/scoped_array.hpp>
+#include <boost/preprocessor.hpp>
 
 namespace lama
 {
@@ -1548,10 +1549,16 @@ DenseVector<T>::DenseVector( const DenseVector<T>& other )
     mLocalValues = other.getLocalValues();
 }
 
-/* ---------------------------------------------------------------------------------*/
+/* ========================================================================= */
+/*       Template instantiations                                             */
+/* ========================================================================= */
 
-// Template instantiation for all relevant types
-template class LAMA_DLL_IMPORTEXPORT DenseVector<float> ;
-template class LAMA_DLL_IMPORTEXPORT DenseVector<double> ;
+#define LAMA_DENSE_VECTOR_INSTANTIATE(z, I, _)                             \
+template class LAMA_DLL_IMPORTEXPORT DenseVector<ARITHMETIC_TYPE##I> ;  
+
+BOOST_PP_REPEAT( ARITHMETIC_TYPE_CNT, LAMA_DENSE_VECTOR_INSTANTIATE, _ )
+
+#undef LAMA_DENSE_VECTOR_INSTANTIATE
+
 
 } //namespace

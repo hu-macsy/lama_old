@@ -44,6 +44,7 @@
 #include <lama/tracing.hpp>
 
 #include <boost/bind.hpp>
+#include <boost/preprocessor.hpp>
 
 namespace lama
 {
@@ -117,26 +118,27 @@ void SpecializedJacobi::initialize( const Matrix& coefficients )
                                     runtime.mCoefficients->getDistributionPtr() ) );
     }
 
-    const SparseMatrix<double>* sparseDoubleCoefficients =
-        dynamic_cast<const SparseMatrix<double>*>( runtime.mCoefficients );
-    if ( sparseDoubleCoefficients )
-    {
-        LAMA_LOG_DEBUG( logger, "Creating double precison diagonal. " )
-        if ( !runtime.mDiagonal.get() )
-            runtime.mDiagonal.reset( _LAMAArray::create( Scalar::DOUBLE) );
-        sparseDoubleCoefficients->getLocalStorage().getDiagonal( *runtime.mDiagonal );
-        return;
-    }
-    const SparseMatrix<float>* sparseFloatCoefficients =
-      dynamic_cast<const SparseMatrix<float>*>( runtime.mCoefficients );
-    if ( sparseFloatCoefficients )
-    {
-        LAMA_LOG_DEBUG( logger, "Creating single precison diagonal. " )
-        if ( !runtime.mDiagonal.get() )
-            runtime.mDiagonal.reset( _LAMAArray::create( Scalar::FLOAT) );
-        sparseFloatCoefficients->getLocalStorage().getDiagonal( *runtime.mDiagonal );
-        return;
-    }
+    // try dynamic cast for all supported arithmetic types 
+
+#define LAMA_CONVERSION(z, I, _)                                                                              \
+    {                                                                                                         \
+        const SparseMatrix<ARITHMETIC_TYPE##I>* sparseTypeCoefficients =                                      \
+            dynamic_cast<const SparseMatrix<ARITHMETIC_TYPE##I>*>( runtime.mCoefficients );                   \
+        if ( sparseTypeCoefficients )                                                                         \
+        {                                                                                                     \
+            LAMA_LOG_DEBUG( logger, "Creating " << Scalar::getType<ARITHMETIC_TYPE##I>() << " diagonal. " )   \
+            if ( !runtime.mDiagonal.get() )                                                                   \
+            {                                                                                                 \
+                runtime.mDiagonal.reset( _LAMAArray::create( Scalar::getType<ARITHMETIC_TYPE##I>() ) );       \
+            }                                                                                                 \
+            sparseTypeCoefficients->getLocalStorage().getDiagonal( *runtime.mDiagonal );                      \
+            return;                                                                                           \
+        }                                                                                                     \
+    }                                                                                                         \
+
+BOOST_PP_REPEAT( ARITHMETIC_TYPE_CNT, LAMA_CONVERSION, _ )
+
+#undef LAMA_CONVERSION
 
     // has already been check in initialize, but in any case
 

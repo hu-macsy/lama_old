@@ -34,6 +34,9 @@
 // hpp
 #include <lama/matrix/JDSSparseMatrix.hpp>
 
+// boost
+#include <boost/preprocessor.hpp>
+
 using boost::shared_ptr;
 
 namespace lama
@@ -361,25 +364,22 @@ const char* JDSSparseMatrix<ValueType>::getTypeName() const
     return typeName();
 }
 
-/* -------------------------------------------------------------------------- */
+/* ========================================================================= */
+/*       Template specializations and nstantiations                          */
+/* ========================================================================= */
 
-template<>
-const char* JDSSparseMatrix<float>::typeName()
-{
-    return "JDSSparseMatrix<float>";
-}
+#define LAMA_JDS_SPARSE_MATRIX_INSTANTIATE(z, I, _)                        \
+                                                                           \
+template<>                                                                 \
+const char* JDSSparseMatrix<ARITHMETIC_TYPE##I>::typeName()                \
+{                                                                          \
+    return "JDSSparseMatrix<ARITHMETIC_TYPE##I>";                          \
+}                                                                          \
+                                                                           \
+template class LAMA_DLL_IMPORTEXPORT JDSSparseMatrix<ARITHMETIC_TYPE##I> ;  
 
-template<>
-const char* JDSSparseMatrix<double>::typeName()
-{
-    return "JDSSparseMatrix<double>";
-}
+BOOST_PP_REPEAT( ARITHMETIC_TYPE_CNT, LAMA_JDS_SPARSE_MATRIX_INSTANTIATE, _ )
 
-/* -------------------------------------------------------------------------- */
-/* Template instantiation for float and double                                */
-/* -------------------------------------------------------------------------- */
-
-template class LAMA_DLL_IMPORTEXPORT JDSSparseMatrix<float> ;
-template class LAMA_DLL_IMPORTEXPORT JDSSparseMatrix<double> ;
+#undef LAMA_JDS_SPARSE_MATRIX_INSTANTIATE
 
 }

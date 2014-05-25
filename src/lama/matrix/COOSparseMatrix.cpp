@@ -34,6 +34,9 @@
 // hpp
 #include <lama/matrix/COOSparseMatrix.hpp>
 
+// boost
+#include <boost/preprocessor.hpp>
+
 using boost::shared_ptr;
 
 namespace lama
@@ -361,25 +364,22 @@ const char* COOSparseMatrix<ValueType>::getTypeName() const
     return typeName();
 }
 
-/* -------------------------------------------------------------------------- */
+/* ========================================================================= */
+/*       Template specializations and nstantiations                          */
+/* ========================================================================= */
 
-template<>
-const char* COOSparseMatrix<float>::typeName()
-{
-    return "COOSparseMatrix<float>";
-}
+#define LAMA_COO_SPARSE_MATRIX_INSTANTIATE(z, I, _)                        \
+                                                                           \
+template<>                                                                 \
+const char* COOSparseMatrix<ARITHMETIC_TYPE##I>::typeName()                \
+{                                                                          \
+    return "COOSparseMatrix<ARITHMETIC_TYPE##I>";                          \
+}                                                                          \
+                                                                           \
+template class LAMA_DLL_IMPORTEXPORT COOSparseMatrix<ARITHMETIC_TYPE##I> ;  
 
-template<>
-const char* COOSparseMatrix<double>::typeName()
-{
-    return "COOSparseMatrix<double>";
-}
+BOOST_PP_REPEAT( ARITHMETIC_TYPE_CNT, LAMA_COO_SPARSE_MATRIX_INSTANTIATE, _ )
 
-/* -------------------------------------------------------------------------- */
-/* Template instantiation for float and double                                */
-/* -------------------------------------------------------------------------- */
-
-template class LAMA_DLL_IMPORTEXPORT COOSparseMatrix<float> ;
-template class LAMA_DLL_IMPORTEXPORT COOSparseMatrix<double> ;
+#undef LAMA_COO_SPARSE_MATRIX_INSTANTIATE
 
 }

@@ -83,29 +83,14 @@ void CG::initialize( const Matrix& coefficients )
 
     runtime.mPScalar = 0.0;
 
-    switch ( coefficients.getValueType() )
-    {
-    case Scalar::FLOAT:
-    {
-        runtime.mP.reset( new DenseVector<float>( coefficients.getDistributionPtr() ) );
-        runtime.mQ.reset( new DenseVector<float>( coefficients.getDistributionPtr() ) );
-        runtime.mZ.reset( new DenseVector<float>( coefficients.getDistributionPtr() ) );
-        break;
-    }
-    case Scalar::DOUBLE:
-    {
-        runtime.mP.reset( new DenseVector<double>( coefficients.getDistributionPtr() ) );
-        runtime.mQ.reset( new DenseVector<double>( coefficients.getDistributionPtr() ) );
-        runtime.mZ.reset( new DenseVector<double>( coefficients.getDistributionPtr() ) );
-        break;
-    }
-    default:
-    {
-        LAMA_THROWEXCEPTION( "Unsupported ValueType " << coefficients.getValueType() )
-    }
-    }
+    Scalar::ScalarType type = coefficients.getValueType();
+
+    runtime.mP.reset( Vector::createVector( type, coefficients.getDistributionPtr() ) );
+    runtime.mQ.reset( Vector::createVector( type, coefficients.getDistributionPtr() ) );
+    runtime.mZ.reset( Vector::createVector( type, coefficients.getDistributionPtr() ) );
 
     // 'force' vector operations to be computed at the same location where coefficients reside
+
     runtime.mP->setContext( coefficients.getContextPtr() );
     runtime.mQ->setContext( coefficients.getContextPtr() );
     runtime.mZ->setContext( coefficients.getContextPtr() );

@@ -327,6 +327,10 @@ public:
 
     virtual void assign( const Matrix& other );
 
+    /* Implementation of pure method of class Matrix. */
+
+    virtual void assignTranspose( const Matrix& other );
+
     /** @brief Swap will swap all member variables of the two dense matrices.
      *
      *  This operation might be useful in iteration loops where a dense matrix

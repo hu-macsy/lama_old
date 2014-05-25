@@ -46,6 +46,9 @@
 // tracing with LAMA_REGION
 #include <lama/tracing.hpp>
 
+// blas
+#include <boost/preprocessor.hpp>
+
 namespace lama
 {
 
@@ -888,35 +891,24 @@ void CUDABLAS1::rotm(
 
 void CUDABLAS1::setInterface( BLASInterface& BLAS )
 {
-    // Note: macro takes advantage of same name for routines and type definitions 
+   // Note: macro takes advantage of same name for routines and type definitions 
     //       ( e.g. routine CUDABLAS1::sum<T> is set for BLAS::BLAS1::sum variable
 
-    LAMA_INTERFACE_REGISTER_T( BLAS, scal, float )
-    LAMA_INTERFACE_REGISTER_T( BLAS, scal, double )
+#define LAMA_BLAS1_REGISTER(z, I, _)                                            \
+    LAMA_INTERFACE_REGISTER_T( BLAS, scal, ARITHMETIC_TYPE##I )                 \
+    LAMA_INTERFACE_REGISTER_T( BLAS, nrm2, ARITHMETIC_TYPE##I )                 \
+    LAMA_INTERFACE_REGISTER_T( BLAS, asum, ARITHMETIC_TYPE##I )                 \
+    LAMA_INTERFACE_REGISTER_T( BLAS, iamax, ARITHMETIC_TYPE##I )                \
+    LAMA_INTERFACE_REGISTER_T( BLAS, swap, ARITHMETIC_TYPE##I )                 \
+    LAMA_INTERFACE_REGISTER_T( BLAS, copy, ARITHMETIC_TYPE##I )                 \
+    LAMA_INTERFACE_REGISTER_T( BLAS, axpy, ARITHMETIC_TYPE##I )                 \
+    LAMA_INTERFACE_REGISTER_T( BLAS, dot, ARITHMETIC_TYPE##I )                  \
+    LAMA_INTERFACE_REGISTER_T( BLAS, sum, ARITHMETIC_TYPE##I )                  \
 
-    LAMA_INTERFACE_REGISTER_T( BLAS, nrm2, float )
-    LAMA_INTERFACE_REGISTER_T( BLAS, nrm2, double )
+    BOOST_PP_REPEAT( ARITHMETIC_TYPE_CNT, LAMA_BLAS1_REGISTER, _ )
 
-    LAMA_INTERFACE_REGISTER_T( BLAS, asum, float )
-    LAMA_INTERFACE_REGISTER_T( BLAS, asum, double )
+#undef LAMA_BLAS1_REGISTER
 
-    LAMA_INTERFACE_REGISTER_T( BLAS, iamax, float )
-    LAMA_INTERFACE_REGISTER_T( BLAS, iamax, double )
-
-    LAMA_INTERFACE_REGISTER_T( BLAS, swap, float )
-    LAMA_INTERFACE_REGISTER_T( BLAS, swap, double )
-
-    LAMA_INTERFACE_REGISTER_T( BLAS, copy, float )
-    LAMA_INTERFACE_REGISTER_T( BLAS, copy, double )
-
-    LAMA_INTERFACE_REGISTER_T( BLAS, axpy, float )
-    LAMA_INTERFACE_REGISTER_T( BLAS, axpy, double )
-
-    LAMA_INTERFACE_REGISTER_T( BLAS, dot, float )
-    LAMA_INTERFACE_REGISTER_T( BLAS, dot, double )
-
-    LAMA_INTERFACE_REGISTER_T( BLAS, sum, float )
-    LAMA_INTERFACE_REGISTER_T( BLAS, sum, double )
 }
 
 /* --------------------------------------------------------------------------- */

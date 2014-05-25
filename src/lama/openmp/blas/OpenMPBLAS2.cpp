@@ -39,6 +39,9 @@
 // macros
 #include <lama/macros/unused.hpp>
 
+// boost
+#include <boost/preprocessor.hpp>
+
 namespace lama
 {
 
@@ -256,11 +259,12 @@ void OpenMPBLAS2::setInterface( BLASInterface& BLAS )
 {
     LAMA_LOG_INFO( logger, "set BLAS2 routines for OpenMP in Interface" )
 
-    // Note: macro takes advantage of same name for routines and type definitions 
-    //       ( e.g. routine CUDABLAS1::sum<T> is set for BLAS::BLAS1::sum variable
+#define LAMA_BLAS2_REGISTER(z, I, _)                                            \
+    LAMA_INTERFACE_REGISTER_T( BLAS, gemv, ARITHMETIC_TYPE##I )                 \
 
-    LAMA_INTERFACE_REGISTER_T( BLAS, gemv, float )
-    LAMA_INTERFACE_REGISTER_T( BLAS, gemv, double )
+BOOST_PP_REPEAT( ARITHMETIC_TYPE_CNT, LAMA_BLAS2_REGISTER, _ )
+
+#undef LAMA_BLAS2_REGISTER
 
     // all other routines are not used in LAMA yet
 }

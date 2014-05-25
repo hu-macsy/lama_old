@@ -45,6 +45,7 @@
 
 // boost
 #include <boost/scoped_array.hpp>
+#include <boost/preprocessor.hpp>
 #include <boost/bind.hpp>
 
 #include <iostream>
@@ -204,15 +205,6 @@ void CUDAawareMPICommunicator::shiftArray( LAMAArray<T>& recvArray, const LAMAAr
     recvData.resize( numRecvElems ); // take over the size
 }
 
-template LAMA_DLL_IMPORTEXPORT
-void CUDAawareMPICommunicator::shiftArray( LAMAArray<float>& recvArray, const LAMAArray<float>& sendArray, const int direction ) const;
-
-template LAMA_DLL_IMPORTEXPORT
-void CUDAawareMPICommunicator::shiftArray( LAMAArray<double>& recvArray, const LAMAArray<double>& sendArray, const int direction ) const;
-
-template LAMA_DLL_IMPORTEXPORT
-void CUDAawareMPICommunicator::shiftArray( LAMAArray<int>& recvArray, const LAMAArray<int>& sendArray, const int direction ) const;
-
 /* -------------------------------------------------------------------------- */
 
 template<typename T>
@@ -247,23 +239,24 @@ SyncToken* CUDAawareMPICommunicator::shiftAsync(
     return syncToken;
 }
 
-template LAMA_DLL_IMPORTEXPORT
-SyncToken* CUDAawareMPICommunicator::shiftAsync(
-    LAMAArray<float>& recvArray,
-    const LAMAArray<float>& sendArray,
-    const int direction ) const;
+// template instantiation for the supported array types
 
-template LAMA_DLL_IMPORTEXPORT
-SyncToken* CUDAawareMPICommunicator::shiftAsync(
-    LAMAArray<double>& recvArray,
-    const LAMAArray<double>& sendArray,
-    const int direction ) const;
+#define LAMA_MPI_METHODS_INSTANTIATE(z, I, _)                       \
+template LAMA_DLL_IMPORTEXPORT                                      \
+void CUDAawareMPICommunicator::shiftArray(                          \
+    LAMAArray<ARRAY_TYPE##I>& recvArray,                            \
+    const LAMAArray<ARRAY_TYPE##I>& sendArray,                      \
+    const int direction ) const;                                    \
+                                                                    \
+template LAMA_DLL_IMPORTEXPORT                                      \
+SyncToken* CUDAawareMPICommunicator::shiftAsync(                    \
+    LAMAArray<ARRAY_TYPE##I>& recvArray,                            \
+    const LAMAArray<ARRAY_TYPE##I>& sendArray,                      \
+    const int direction ) const;                                    \
 
-template LAMA_DLL_IMPORTEXPORT
-SyncToken* CUDAawareMPICommunicator::shiftAsync(
-    LAMAArray<int>& recvArray,
-    const LAMAArray<int>& sendArray,
-    const int direction ) const;
+BOOST_PP_REPEAT( ARRAY_TYPE_CNT, LAMA_MPI_METHODS_INSTANTIATE, _ )
+
+#undef LAMA_MPI_METHODS_INSTANTIATE
 
 /* ---------------------------------------------------------------------------------- */
 /*           writeAt                                                                  */

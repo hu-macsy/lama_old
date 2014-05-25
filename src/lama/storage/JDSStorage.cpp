@@ -48,6 +48,9 @@
 // tracing
 #include <lama/tracing.hpp>
 
+// boost
+#include <boost/preprocessor.hpp>
+
 namespace lama
 {
 // Allow for shared_ptr<T> instead of boost::shared_ptr<T>
@@ -1600,24 +1603,21 @@ JDSStorage<ValueType>* JDSStorage<ValueType>::copy() const
     return new JDSStorage( *this );
 }
 
-/* ------------------------------------------------------------------------------------------------------------------ */
+/* ========================================================================= */
+/*       Template specializations and instantiations                         */
+/* ========================================================================= */
 
-template<>
-const char* JDSStorage<float>::typeName()
-{
-    return "JDSStorage<float>";
-}
+#define LAMA_JDS_STORAGE_INSTANTIATE(z, I, _)                              \
+template<>                                                                 \
+const char* JDSStorage<ARITHMETIC_TYPE##I>::typeName()                     \
+{                                                                          \
+    return "JDSStorage<ARITHMETIC_TYPE##I>";                               \
+}                                                                          \
+                                                                           \
+template class LAMA_DLL_IMPORTEXPORT JDSStorage<ARITHMETIC_TYPE##I> ;  
 
-/* ------------------------------------------------------------------------------------------------------------------ */
+BOOST_PP_REPEAT( ARITHMETIC_TYPE_CNT, LAMA_JDS_STORAGE_INSTANTIATE, _ )
 
-template class LAMA_DLL_IMPORTEXPORT JDSStorage<float> ;
-
-template<>
-const char* JDSStorage<double>::typeName()
-{
-    return "JDSStorage<double>";
-}
-
-template class LAMA_DLL_IMPORTEXPORT JDSStorage<double> ;
+#undef LAMA_JDS_STORAGE_INSTANTIATE
 
 }

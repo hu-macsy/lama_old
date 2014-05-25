@@ -49,6 +49,7 @@
 
 // boost
 #include <boost/scoped_array.hpp>
+#include <boost/preprocessor.hpp>
 
 namespace lama
 {
@@ -1354,10 +1355,16 @@ void StorageIO<ValueType>::readCSRFromFile(
     }
 }
 
-/* -------------------------------------------------------------------------- */
+/* ========================================================================= */
+/*       Template Instantiations                                             */
+/* ========================================================================= */
 
-template class LAMA_DLL_IMPORTEXPORT StorageIO<float> ;
-template class LAMA_DLL_IMPORTEXPORT StorageIO<double> ;
+#define LAMA_STORAGE_IO_INSTANTIATE(z, I, _)                              \
+template class LAMA_DLL_IMPORTEXPORT StorageIO<ARITHMETIC_TYPE##I> ;  
+
+BOOST_PP_REPEAT( ARITHMETIC_TYPE_CNT, LAMA_STORAGE_IO_INSTANTIATE, _ )
+
+#undef LAMA_STORAGE_IO_INSTANTIATE
 
 /* -------------------------------------------------------------------------- */
 

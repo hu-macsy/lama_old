@@ -366,29 +366,28 @@ void OpenMPCOOUtils::jacobi(
 void OpenMPCOOUtils::setInterface( COOUtilsInterface& COOUtils )
 {
     LAMA_INTERFACE_REGISTER( COOUtils, offsets2ia )
+    LAMA_INTERFACE_REGISTER( COOUtils, getCSRSizes )
 
     LAMA_INTERFACE_REGISTER_TT( COOUtils, setCSRData, IndexType, IndexType )
 
-    LAMA_INTERFACE_REGISTER_TT( COOUtils, setCSRData, float, float )
-    LAMA_INTERFACE_REGISTER_TT( COOUtils, setCSRData, float, double )
-    LAMA_INTERFACE_REGISTER_TT( COOUtils, setCSRData, double, float )
-    LAMA_INTERFACE_REGISTER_TT( COOUtils, setCSRData, double, double )
+#define LAMA_COO_UTILS2_REGISTER(z, J, TYPE )                                       \
+    LAMA_INTERFACE_REGISTER_TT( COOUtils, setCSRData, TYPE, ARITHMETIC_TYPE##J )    \
+    LAMA_INTERFACE_REGISTER_TT( COOUtils, getCSRValues, TYPE, ARITHMETIC_TYPE##J )  \
 
-    LAMA_INTERFACE_REGISTER( COOUtils, getCSRSizes )
+#define LAMA_COO_UTILS_REGISTER(z, I, _)                                            \
+    LAMA_INTERFACE_REGISTER_T( COOUtils, normalGEMV, ARITHMETIC_TYPE##I )           \
+    LAMA_INTERFACE_REGISTER_T( COOUtils, normalGEVM, ARITHMETIC_TYPE##I )           \
+    LAMA_INTERFACE_REGISTER_T( COOUtils, jacobi, ARITHMETIC_TYPE##I )               \
+                                                                                    \
+    BOOST_PP_REPEAT( ARITHMETIC_TYPE_CNT,                                           \
+                     LAMA_COO_UTILS2_REGISTER,                                      \
+                     ARITHMETIC_TYPE##I )                                           \
 
-    LAMA_INTERFACE_REGISTER_TT( COOUtils, getCSRValues, float, float )
-    LAMA_INTERFACE_REGISTER_TT( COOUtils, getCSRValues, float, double )
-    LAMA_INTERFACE_REGISTER_TT( COOUtils, getCSRValues, double, float )
-    LAMA_INTERFACE_REGISTER_TT( COOUtils, getCSRValues, double, double )
+BOOST_PP_REPEAT( ARITHMETIC_TYPE_CNT, LAMA_COO_UTILS_REGISTER, _ )
 
-    LAMA_INTERFACE_REGISTER_T( COOUtils, normalGEMV, float )
-    LAMA_INTERFACE_REGISTER_T( COOUtils, normalGEMV, double )
+#undef LAMA_COO_UTILS_REGISTER
+#undef LAMA_COO_UTILS2_REGISTER
 
-    LAMA_INTERFACE_REGISTER_T( COOUtils, normalGEVM, float )
-    LAMA_INTERFACE_REGISTER_T( COOUtils, normalGEVM, double )
-
-    LAMA_INTERFACE_REGISTER_T( COOUtils, jacobi, float )
-    LAMA_INTERFACE_REGISTER_T( COOUtils, jacobi, double )
 }
 
 /* --------------------------------------------------------------------------- */

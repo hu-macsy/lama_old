@@ -75,18 +75,11 @@ else ( ${LAPACKeFound} )
 	    set ( CLASSES ${CLASSES} OpenMPLAPACK )
     endif ( NOT INTERNALBLAS_FOUND )
 endif ( ${LAPACKeFound} )
-    
-if ( NOT INTERNALBLAS_FOUND ) 
-	set ( CLASSES
-		${CLASSES}
-		OpenMPBLAS1
-        OpenMPBLAS2
-        OpenMPBLAS3
-    	)
-else ( NOT INTERNALBLAS_FOUND )
-	message ( STATUS "Using internal Blas" )
-	add_subdirectory ( blas )
-endif ( NOT INTERNALBLAS_FOUND ) 
+
+# Do this due to long double
+
+message ( STATUS "Using internal Blas" )
+add_subdirectory ( blas )
     
 lama_classes ( ${CLASSES} )
 lama_headers ( ${HEADERS} )

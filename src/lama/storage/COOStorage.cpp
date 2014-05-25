@@ -49,6 +49,7 @@
 #include <lama/openmp/OpenMPCSRUtils.hpp>
 
 #include <lama/tracing.hpp>
+#include <boost/preprocessor.hpp>
 
 using std::auto_ptr;
 using boost::shared_ptr;
@@ -59,20 +60,6 @@ namespace lama
 /* --------------------------------------------------------------------------- */
 
 LAMA_LOG_DEF_TEMPLATE_LOGGER( template<typename ValueType>, COOStorage<ValueType>::logger, "MatrixStorage.COOStorage" )
-
-/* --------------------------------------------------------------------------- */
-
-template<>
-const char* COOStorage<float>::typeName()
-{
-    return "COOStorage<float>";
-}
-
-template<>
-const char* COOStorage<double>::typeName()
-{
-    return "COOStorage<double>";
-}
 
 /* --------------------------------------------------------------------------- */
 
@@ -653,7 +640,7 @@ void COOStorage<ValueType>::getRowImpl( LAMAArray<OtherType>& row, const IndexTy
 
 /* --------------------------------------------------------------------------- */
 
-// Note: template instantation of this method for OtherType=[double,float] is
+// Note: template instantation of this method for OtherType is
 //       done implicitly by getDiagonal method of CRTPMatrixStorage
 
 template<typename ValueType>
@@ -678,7 +665,7 @@ void COOStorage<ValueType>::getDiagonalImpl( LAMAArray<OtherType>& diagonal ) co
 
 /* --------------------------------------------------------------------------- */
 
-// Note: template instantation of this method for OtherType=[double,float] is
+// Note: template instantation of this method for OtherType is
 //       done implicitly by setDiagonal method of CRTPMatrixStorage
 
 template<typename ValueType>
@@ -1101,9 +1088,21 @@ COOStorage<ValueType>* COOStorage<ValueType>::copy() const
     return new COOStorage<ValueType>( *this );
 }
 
-/* --------------------------------------------------------------------------- */
+/* ========================================================================= */
+/*       Template specializations and instantiations                         */
+/* ========================================================================= */
 
-template class LAMA_DLL_IMPORTEXPORT COOStorage<float> ;
-template class LAMA_DLL_IMPORTEXPORT COOStorage<double> ;
+#define LAMA_COO_STORAGE_INSTANTIATE(z, I, _)                              \
+template<>                                                                 \
+const char* COOStorage<ARITHMETIC_TYPE##I>::typeName()                     \
+{                                                                          \
+    return "COOStorage<ARITHMETIC_TYPE##I>";                               \
+}                                                                          \
+                                                                           \
+template class LAMA_DLL_IMPORTEXPORT COOStorage<ARITHMETIC_TYPE##I> ;  
+
+BOOST_PP_REPEAT( ARITHMETIC_TYPE_CNT, LAMA_COO_STORAGE_INSTANTIATE, _ )
+
+#undef LAMA_COO_STORAGE_INSTANTIATE
 
 } // namespace lama

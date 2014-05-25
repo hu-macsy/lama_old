@@ -47,6 +47,9 @@
 // tracing
 #include <lama/tracing.hpp>
 
+// boost
+#include <boost/preprocessor.hpp>
+
 namespace lama
 {
 
@@ -56,20 +59,6 @@ using boost::shared_ptr;
 /* --------------------------------------------------------------------------- */
 
 LAMA_LOG_DEF_TEMPLATE_LOGGER( template<typename ValueType>, ELLStorage<ValueType>::logger, "MatrixStorage.ELLStorage" )
-
-/* --------------------------------------------------------------------------- */
-
-template<>
-const char* ELLStorage<float>::typeName()
-{
-    return "ELLStorage<float>";
-}
-
-template<>
-const char* ELLStorage<double>::typeName()
-{
-    return "ELLStorage<double>";
-}
 
 /* --------------------------------------------------------------------------- */
 
@@ -1855,9 +1844,23 @@ ELLStorage<ValueType>* ELLStorage<ValueType>::copy() const
     return new ELLStorage<ValueType>( *this );
 }
 
-/* --------------------------------------------------------------------------- */
+/* ========================================================================= */
+/*       Template Instantiations                                             */
+/* ========================================================================= */
 
-template class LAMA_DLL_IMPORTEXPORT ELLStorage<float> ;
-template class LAMA_DLL_IMPORTEXPORT ELLStorage<double> ;
+#define LAMA_ELL_STORAGE_INSTANTIATE(z, I, _)                              \
+                                                                           \
+template<>                                                                 \
+const char* ELLStorage<ARITHMETIC_TYPE##I>::typeName()                     \
+{                                                                          \
+    return "ELLStorage<ARITHMETIC_TYPE##I>";                               \
+}                                                                          \
+                                                                           \
+template class LAMA_DLL_IMPORTEXPORT ELLStorage<ARITHMETIC_TYPE##I> ;  
+
+BOOST_PP_REPEAT( ARITHMETIC_TYPE_CNT, LAMA_ELL_STORAGE_INSTANTIATE, _ )
+
+#undef LAMA_ELL_STORAGE_INSTANTIATE
+
 
 } // namespace LAMA

@@ -49,6 +49,7 @@
 
 // boost
 #include <boost/scoped_array.hpp>
+#include <boost/preprocessor.hpp>
 
 namespace lama
 {
@@ -755,6 +756,12 @@ void DenseMatrix<ValueType>::swap( DenseMatrix<ValueType>& other )
 }
 
 template<typename ValueType>
+void DenseMatrix<ValueType>::assignTranspose( const Matrix& /* other */ )
+{
+    LAMA_THROWEXCEPTION( "assignTranspose for dense matrices not supported yet" )
+}
+
+template<typename ValueType>
 void DenseMatrix<ValueType>::assign( const Matrix& other )
 {
     LAMA_LOG_INFO( logger, "assign " << &other << " to " << this )
@@ -776,15 +783,15 @@ void DenseMatrix<ValueType>::assign( const Matrix& other )
 
         switch ( other.getValueType() )
         {
-        case Scalar::FLOAT:
 
-            copyDenseMatrix( dynamic_cast<const DenseMatrix<float>&>( other ) );
-            break;
+#define LAMA_COPY_DENSE_CALL( z, I, _ )                                                        \
+        case Scalar::SCALAR_ARITHMETIC_TYPE##I:                                                \
+            copyDenseMatrix( dynamic_cast<const DenseMatrix<ARITHMETIC_TYPE##I>&>( other ) );  \
+            break;                                                                             \
+ 
+        BOOST_PP_REPEAT( ARITHMETIC_TYPE_CNT, LAMA_COPY_DENSE_CALL, _ ) 
 
-        case Scalar::DOUBLE:
-
-            copyDenseMatrix( dynamic_cast<const DenseMatrix<double>&>( other ) );
-            break;
+#undef LAMA_COPY_DENSE_CALL
 
         default:
             LAMA_THROWEXCEPTION( "type of dense matrix not supported for assignment: " << other )
@@ -1404,18 +1411,19 @@ void DenseMatrix<ValueType>::getDiagonal( Vector& diagonal ) const
     {
         // Dense vector with this row distribution, so we do not need a temporary array
 
-        if ( diagonal.getValueType() == Scalar::DOUBLE )
-        {
-            DenseVector<double>& denseDiagonal = dynamic_cast<DenseVector<double>&>( diagonal );
-            getDiagonalImpl( denseDiagonal );
-            return;
-        }
-        else if ( diagonal.getValueType() == Scalar::FLOAT )
-        {
-            DenseVector<float>& denseDiagonal = dynamic_cast<DenseVector<float>&>( diagonal );
-            getDiagonalImpl( denseDiagonal );
-            return;
-        }
+#define LAMA_GET_DIAGONAL_CALL( z, I, _ )                                          \
+        if ( diagonal.getValueType() == Scalar::SCALAR_ARITHMETIC_TYPE##I )        \
+        {                                                                          \
+            DenseVector<ARITHMETIC_TYPE##I>& denseDiagonal =                       \
+                dynamic_cast<DenseVector<ARITHMETIC_TYPE##I>&>( diagonal );        \
+            getDiagonalImpl( denseDiagonal );                                      \
+            return;                                                                \
+        }                                                                          \
+
+        BOOST_PP_REPEAT( ARITHMETIC_TYPE_CNT, LAMA_GET_DIAGONAL_CALL, _ ) 
+
+#undef LAMA_GET_DIAGONAL_CALL
+
     }
 
     // Fallback solution with temporary arrays
@@ -1433,34 +1441,12 @@ void DenseMatrix<ValueType>::setDiagonal( const Vector& diagonal )
         LAMA_THROWEXCEPTION( "Diagonal calculation only for equal distributions." )
     }
 
-    if ( getValueType() == Scalar::DOUBLE )
+    if ( getDistribution() != diagonal.getDistribution() )
     {
-        if ( typeid( diagonal ) == typeid(const DenseVector<double>&) )
-        {
-            const DenseVector<double>& denseDiagonal = dynamic_cast<const DenseVector<double>&>( diagonal );
-            getLocalStorage().setDiagonal( denseDiagonal.getLocalValues() );
-        }
-        else
-        {
-            LAMA_THROWEXCEPTION( "Unequal data type of diagonal vector and matrix storage." )
-        }
+        LAMA_THROWEXCEPTION( "Diagonal calculation only for equal distributions." )
     }
-    else if ( getValueType() == Scalar::FLOAT )
-    {
-        if ( typeid( diagonal ) == typeid(const DenseVector<float>&) )
-        {
-            const DenseVector<float>& denseDiagonal = dynamic_cast<const DenseVector<float>&>( diagonal );
-            getLocalStorage().setDiagonal( denseDiagonal.getLocalValues() );
-        }
-        else
-        {
-            LAMA_THROWEXCEPTION( "Unequal data type of diagonal vector and matrix storage." )
-        }
-    }
-    else
-    {
-        LAMA_THROWEXCEPTION( "Invalid value type of diagonal." )
-    }
+
+    getLocalStorage().setDiagonal( diagonal.getLocalValues() );
 }
 
 template<typename ValueType>
@@ -1482,34 +1468,7 @@ void DenseMatrix<ValueType>::scale( const Vector& vector )
         LAMA_THROWEXCEPTION( "Diagonal calculation only for equal distributions." )
     }
 
-    if ( getValueType() == Scalar::DOUBLE )
-    {
-        if ( typeid( vector ) == typeid(const DenseVector<double>&) )
-        {
-            const DenseVector<double>& denseVector = dynamic_cast<const DenseVector<double>&>( vector );
-            getLocalStorage().scale( denseVector.getLocalValues() );
-        }
-        else
-        {
-            LAMA_THROWEXCEPTION( "Unequal data type of diagonal vector and matrix storage." )
-        }
-    }
-    else if ( getValueType() == Scalar::FLOAT )
-    {
-        if ( typeid( vector ) == typeid(const DenseVector<float>&) )
-        {
-            const DenseVector<float>& denseVector = dynamic_cast<const DenseVector<float>&>( vector );
-            getLocalStorage().scale( denseVector.getLocalValues() );
-        }
-        else
-        {
-            LAMA_THROWEXCEPTION( "Unequal data type of diagonal vector and matrix storage." )
-        }
-    }
-    else
-    {
-        LAMA_THROWEXCEPTION( "Invalid value type of diagonal." )
-    }
+    getLocalStorage().scale( vector.getLocalValues() );
 }
 
 template<typename ValueType>
@@ -2180,24 +2139,21 @@ const char* DenseMatrix<ValueType>::getTypeName() const
 }
 
 /* ========================================================================= */
-
-template<>
-const char* DenseMatrix<float>::typeName()
-{
-    return "DenseMatrix<float>";
-}
-
-template<>
-const char* DenseMatrix<double>::typeName()
-{
-    return "DenseMatrix<double>";
-}
-
-/* ========================================================================= */
 /*       Template Instantiations                                             */
 /* ========================================================================= */
 
-template class LAMA_DLL_IMPORTEXPORT DenseMatrix<float> ;
-template class LAMA_DLL_IMPORTEXPORT DenseMatrix<double> ;
+#define LAMA_DENSE_MATRIX_INSTANTIATE(z, I, _)                              \
+template<>                                                                  \
+const char* DenseMatrix<ARITHMETIC_TYPE##I>::typeName()                     \
+{                                                                           \
+    return "DenseMatrix<ARITHMETIC_TYPE##I>";                               \
+}                                                                           \
+                                                                            \
+template class LAMA_DLL_IMPORTEXPORT DenseMatrix<ARITHMETIC_TYPE##I> ;  
+                                                                    
+BOOST_PP_REPEAT( ARITHMETIC_TYPE_CNT, LAMA_DENSE_MATRIX_INSTANTIATE, _ ) 
+
+#undef LAMA_DENSE_MATRIX_INSTANTIATE
+
 
 }

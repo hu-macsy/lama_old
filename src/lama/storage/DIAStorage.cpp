@@ -65,20 +65,6 @@ LAMA_LOG_DEF_TEMPLATE_LOGGER( template<typename ValueType>, DIAStorage<ValueType
 
 /* --------------------------------------------------------------------------- */
 
-template<>
-const char* DIAStorage<float>::typeName()
-{
-    return "DIAStorage<float>";
-}
-
-template<>
-const char* DIAStorage<double>::typeName()
-{
-    return "DIAStorage<double>";
-}
-
-/* --------------------------------------------------------------------------- */
-
 template<typename ValueType>
 DIAStorage<ValueType>::DIAStorage( const IndexType numRows, const IndexType numColumns )
 
@@ -1044,9 +1030,21 @@ DIAStorage<ValueType>* DIAStorage<ValueType>::copy() const
     return new DIAStorage<ValueType>( *this );
 }
 
-/* --------------------------------------------------------------------------- */
+/* ========================================================================= */
+/*       Template specializations and instantiations                         */
+/* ========================================================================= */
 
-template class LAMA_DLL_IMPORTEXPORT DIAStorage<float> ;
-template class LAMA_DLL_IMPORTEXPORT DIAStorage<double> ;
+#define LAMA_DIA_STORAGE_INSTANTIATE(z, I, _)                              \
+template<>                                                                 \
+const char* DIAStorage<ARITHMETIC_TYPE##I>::typeName()                     \
+{                                                                          \
+    return "DIAStorage<ARITHMETIC_TYPE##I>";                               \
+}                                                                          \
+                                                                           \
+template class LAMA_DLL_IMPORTEXPORT DIAStorage<ARITHMETIC_TYPE##I> ;  
+
+BOOST_PP_REPEAT( ARITHMETIC_TYPE_CNT, LAMA_DIA_STORAGE_INSTANTIATE, _ )
+
+#undef LAMA_DIA_STORAGE_INSTANTIATE
 
 }

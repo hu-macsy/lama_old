@@ -34,6 +34,10 @@
 // hpp
 #include <lama/ReadAccess.hpp>
 
+// boost
+#include <boost/preprocessor.hpp>
+
+
 namespace lama
 {
 
@@ -129,8 +133,11 @@ void ReadAccess<T>::writeAt( std::ostream& stream ) const
 
 // template instantiation for the supported data types
 
-template class LAMA_DLL_IMPORTEXPORT ReadAccess<IndexType> ;
-template class LAMA_DLL_IMPORTEXPORT ReadAccess<float> ;
-template class LAMA_DLL_IMPORTEXPORT ReadAccess<double> ;
+#define LAMA_READ_ACCESS_INSTANTIATE(z, I, _)                               \
+template class LAMA_DLL_IMPORTEXPORT ReadAccess< ARRAY_TYPE##I >;
+
+BOOST_PP_REPEAT( ARRAY_TYPE_CNT, LAMA_READ_ACCESS_INSTANTIATE, _ )
+
+#undef LAMA_READ_ACCESS_INSTANTIATE
 
 } /* namespace lama */

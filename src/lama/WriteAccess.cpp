@@ -34,6 +34,9 @@
 // hpp
 #include <lama/WriteAccess.hpp>
 
+// boost
+#include <boost/preprocessor.hpp>
+
 namespace lama
 {
 
@@ -239,8 +242,11 @@ void WriteAccess<T>::writeAt( std::ostream& stream ) const
 
 // template instantiation for the supported data types
 
-template class LAMA_DLL_IMPORTEXPORT WriteAccess<IndexType> ;
-template class LAMA_DLL_IMPORTEXPORT WriteAccess<float> ;
-template class LAMA_DLL_IMPORTEXPORT WriteAccess<double> ;
+#define LAMA_WRITE_ACCESS_INSTANTIATE(z, I, _)                           \
+template class LAMA_DLL_IMPORTEXPORT WriteAccess< ARRAY_TYPE##I >;
+
+BOOST_PP_REPEAT( ARRAY_TYPE_CNT, LAMA_WRITE_ACCESS_INSTANTIATE, _)
+
+#undef LAMA_WRITE_ACCESS_INSTANTIATE
 
 } /* namespace lama */

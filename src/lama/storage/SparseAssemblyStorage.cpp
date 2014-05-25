@@ -40,6 +40,8 @@
 #include <lama/HostReadAccess.hpp>
 #include <lama/HostWriteAccess.hpp>
 
+#include <boost/preprocessor.hpp>
+
 #include <cmath>
 
 namespace lama
@@ -790,27 +792,34 @@ void SparseAssemblyStorage<ValueType>::scaleImpl( const LAMAArray<OtherValueType
 template<typename ValueType>
 void SparseAssemblyStorage<ValueType>::writeAt( std::ostream& stream ) const
 {
-    stream << "SparseAssemblyStorage: (" << mNumRows << " x " << mNumColumns << ", #values = " << mNumValues
+    stream << "SparseAssemblyStorage<" << Scalar::getType<ValueType>() 
+           << ">: (" << mNumRows << " x " << mNumColumns << ", #values = " << mNumValues
            << ", diag = " << mDiagonalProperty << " )";
 }
 
 /* --------------------------------------------------------------------------- */
 
-template<>
-const char* SparseAssemblyStorage<float>::typeName()
+template<typename ValueType>
+const char* SparseAssemblyStorage<ValueType>::typeName()
 {
-    return "SparseAssemblyStorage<float>";
+    std::ostringstream name;
+    name << "SparseAssemblyStorage<" << Scalar::getType<ValueType>() << ">";
+
+    return name.str().c_str();
 }
 
-template class LAMA_DLL_IMPORTEXPORT SparseAssemblyStorage<float> ;
+/* ========================================================================= */
+/*       Template specializattions and instantiations                        */
+/* ========================================================================= */
 
-template<>
-const char* SparseAssemblyStorage<double>::typeName()
-{
-    return "SparseAssemblyStorage<double>";
-}
+#define LAMA_ASSEMBLY_STORAGE_INSTANTIATE(z, I, _)                                \
+                                                                                  \
+template class LAMA_DLL_IMPORTEXPORT SparseAssemblyStorage<ARITHMETIC_TYPE##I> ;  
 
-template class LAMA_DLL_IMPORTEXPORT SparseAssemblyStorage<double> ;
+BOOST_PP_REPEAT( ARITHMETIC_TYPE_CNT, LAMA_ASSEMBLY_STORAGE_INSTANTIATE, _ )
+
+#undef LAMA_ASSEMBLY_STORAGE_INSTANTIATE
+
 
 } //namespace lama
 

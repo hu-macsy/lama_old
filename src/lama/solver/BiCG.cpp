@@ -85,57 +85,13 @@ void BiCG::initialize( const Matrix& coefficients )
     runtime.mPScalar2 = 0.0;
     runtime.mTransposeA = coefficients.create();
 
-    switch ( coefficients.getValueType() )
-    {
-    case Scalar::FLOAT:
-    {
-        runtime.mP2.reset( new DenseVector<float>( coefficients.getDistributionPtr() ) );
-        runtime.mQ2.reset( new DenseVector<float>( coefficients.getDistributionPtr() ) );
-        runtime.mZ2.reset( new DenseVector<float>( coefficients.getDistributionPtr() ) );
+    Scalar::ScalarType type = coefficients.getValueType();
 
-        if( runtime.mTransposeA->getMatrixKind() == Matrix::DENSE )
-        {
-            LAMA_THROWEXCEPTION( "Cannot transpose a dense matrix yet." )
-        }
-        else if( runtime.mTransposeA->getMatrixKind() == Matrix::SPARSE )
-        {
-            SparseMatrix<float>* m = dynamic_cast<SparseMatrix<float>* >( runtime.mTransposeA );
-            m->assignTranspose( coefficients );
-        }
-        else
-        {
-            LAMA_THROWEXCEPTION( "Internal error: matrix is not dense or sparse." )
-        }
+    runtime.mP2.reset( Vector::createVector( type, coefficients.getDistributionPtr() ) );
+    runtime.mQ2.reset( Vector::createVector( type, coefficients.getDistributionPtr() ) );
+    runtime.mZ2.reset( Vector::createVector( type, coefficients.getDistributionPtr() ) );
 
-        break;
-    }
-    case Scalar::DOUBLE:
-    {
-        runtime.mP2.reset( new DenseVector<double>( coefficients.getDistributionPtr() ) );
-        runtime.mQ2.reset( new DenseVector<double>( coefficients.getDistributionPtr() ) );
-        runtime.mZ2.reset( new DenseVector<double>( coefficients.getDistributionPtr() ) );
-
-        if( runtime.mTransposeA->getMatrixKind() == Matrix::DENSE )
-        {
-            LAMA_THROWEXCEPTION( "Cannot transpose a dense matrix yet." )
-        }
-        else if( runtime.mTransposeA->getMatrixKind() == Matrix::SPARSE )
-        {
-            SparseMatrix<double>* m = dynamic_cast<SparseMatrix<double>* >( runtime.mTransposeA );
-            m->assignTranspose( coefficients );
-        }
-        else
-        {
-            LAMA_THROWEXCEPTION( "Internal error: matrix is not dense or sparse." )
-        }
-
-        break;
-    }
-    default:
-    {
-        LAMA_THROWEXCEPTION( "Unsupported ValueType " << coefficients.getValueType() )
-    }
-    }
+    runtime.mTransposeA->assignTranspose( coefficients );
 
     // 'force' vector operations to be computed at the same location where coefficients reside
     runtime.mTransposeA->setContext( coefficients.getContextPtr() );

@@ -95,21 +95,27 @@ public:
     {
         Scalar::ScalarType arrayType = values.getValueType();
 
-        if ( arrayType == Scalar::DOUBLE )
+        switch ( arrayType  )
         {
-            const LAMAArray<double>& typedValues = dynamic_cast<const LAMAArray<double>&>( values );
-            static_cast<Derived*>( this )->setCSRDataImpl( numRows, numColumns, numValues, ia, ja, typedValues,
-                    this->getContextPtr() );
-        }
-        else if ( arrayType == Scalar::FLOAT )
-        {
-            const LAMAArray<float>& typedValues = dynamic_cast<const LAMAArray<float>&>( values );
-            static_cast<Derived*>( this )->setCSRDataImpl( numRows, numColumns, numValues, ia, ja, typedValues,
-                    this->getContextPtr() );
-        }
-        else
+
+#define LAMA_SET_CSR_CALL( z, I, _ )                                                            \
+        case Scalar::SCALAR_ARITHMETIC_TYPE##I:                                                 \
+        {                                                                                       \
+            const LAMAArray<ARITHMETIC_TYPE##I>& typedValues =                                  \
+                dynamic_cast<const LAMAArray<ARITHMETIC_TYPE##I>&>( values );                   \
+            static_cast<Derived*>( this )->setCSRDataImpl(                                      \
+                numRows, numColumns, numValues, ia, ja, typedValues, this->getContextPtr() );   \
+            break;                                                                              \
+        }                                                                                       \
+
+        BOOST_PP_REPEAT( ARITHMETIC_TYPE_CNT, LAMA_SET_CSR_CALL, _ )
+
+#undef LAMA_SET_CSR_CALL
+
+        default:
         {
             LAMA_THROWEXCEPTION( *this << ": setCSRData with value type " << arrayType << " not supported" )
+        }
         }
     }
 
@@ -129,41 +135,57 @@ public:
     {
         Scalar::ScalarType arrayType = csrValues.getValueType();
 
-        if ( arrayType == Scalar::DOUBLE )
+        switch ( arrayType )
         {
-            LAMAArray<double>& typedValues = dynamic_cast<LAMAArray<double>&>( csrValues );
-            static_cast<const Derived*>( this )->buildCSR( csrIA, &csrJA, &typedValues, this->getContextPtr() );
-        }
-        else if ( arrayType == Scalar::FLOAT )
-        {
-            LAMAArray<float>& typedValues = dynamic_cast<LAMAArray<float>&>( csrValues );
-            static_cast<const Derived*>( this )->buildCSR( csrIA, &csrJA, &typedValues, this->getContextPtr() );
-        }
-        else
+#define LAMA_BUILD_CSR_CALL( z, I, _ )                                        \
+        case Scalar::SCALAR_ARITHMETIC_TYPE##I:                               \
+        {                                                                     \
+            LAMAArray<ARITHMETIC_TYPE##I>& typedValues =                      \
+                dynamic_cast<LAMAArray<ARITHMETIC_TYPE##I>&>( csrValues );    \
+            static_cast<const Derived*>( this )->buildCSR(                    \
+                csrIA, &csrJA, &typedValues, this->getContextPtr() );         \
+            break;                                                            \
+        }                                                                     \
+
+        BOOST_PP_REPEAT( ARITHMETIC_TYPE_CNT, LAMA_BUILD_CSR_CALL, _ )
+
+#undef LAMA_BUILD_CSR_CALL
+
+        default:
         {
             LAMA_THROWEXCEPTION( *this << ": build CSR with value type " << arrayType << " not supported" )
         }
+
+        }
+
     }
 
     /** Get the i-th row of a storage as LAMA array. */
 
-    void getRow( _LAMAArray& row, const IndexType i ) const
+    void getRow( _LAMAArray& row, const IndexType irow ) const
     {
         Scalar::ScalarType arrayType = row.getValueType();
 
-        if ( arrayType == Scalar::DOUBLE )
+        switch ( arrayType )
         {
-            LAMAArray<double>& typedRow = dynamic_cast<LAMAArray<double>&>( row );
-            static_cast<const Derived*>( this )->getRowImpl( typedRow, i );
-        }
-        else if ( arrayType == Scalar::FLOAT )
-        {
-            LAMAArray<float>& typedRow = dynamic_cast<LAMAArray<float>&>( row );
-            static_cast<const Derived*>( this )->getRowImpl( typedRow, i );
-        }
-        else
+#define LAMA_GET_ROW_CALL( z, I, _ )                                           \
+        case Scalar::SCALAR_ARITHMETIC_TYPE##I:                                \
+        {                                                                      \
+            LAMAArray<ARITHMETIC_TYPE##I>& typedRow =                          \
+                dynamic_cast<LAMAArray<ARITHMETIC_TYPE##I>&>( row );           \
+            static_cast<const Derived*>( this )->getRowImpl( typedRow, irow ); \
+            break;                                                             \
+        }                                                                      \
+
+        BOOST_PP_REPEAT( ARITHMETIC_TYPE_CNT, LAMA_GET_ROW_CALL, _ )
+
+#undef LAMA_GET_ROW_CALL
+
+        default:
         {
             LAMA_THROWEXCEPTION( "getRow for array of type " << arrayType << " not supported" )
+        }
+
         }
     }
 
@@ -176,19 +198,24 @@ public:
 
         Scalar::ScalarType arrayType = diagonal.getValueType();
 
-        if ( arrayType == Scalar::DOUBLE )
+        switch ( arrayType )
         {
-            LAMAArray<double>& typedDiagonal = dynamic_cast<LAMAArray<double>&>( diagonal );
-            static_cast<const Derived*>( this )->getDiagonalImpl( typedDiagonal );
-        }
-        else if ( arrayType == Scalar::FLOAT )
-        {
-            LAMAArray<float>& typedDiagonal = dynamic_cast<LAMAArray<float>&>( diagonal );
-            static_cast<const Derived*>( this )->getDiagonalImpl( typedDiagonal );
-        }
-        else
-        {
+#define LAMA_GET_DIAGONAL_CALL( z, I, _ )                                           \
+        case Scalar::SCALAR_ARITHMETIC_TYPE##I:                                     \
+        {                                                                           \
+            LAMAArray<ARITHMETIC_TYPE##I>& typedDiagonal =                          \
+                dynamic_cast<LAMAArray<ARITHMETIC_TYPE##I>&>( diagonal );           \
+            static_cast<const Derived*>( this )->getDiagonalImpl( typedDiagonal );  \
+            break;                                                             \
+        }                                                                           \
+
+        BOOST_PP_REPEAT( ARITHMETIC_TYPE_CNT, LAMA_GET_DIAGONAL_CALL, _ )
+
+#undef LAMA_GET_DIAGONAL_CALL
+
+        default:
             LAMA_THROWEXCEPTION( "getDiagonal for array of type " << arrayType << " not supported" )
+
         }
     }
 
@@ -218,18 +245,22 @@ public:
 
         Scalar::ScalarType arrayType = diagonal.getValueType();
 
-        if ( arrayType == Scalar::DOUBLE )
+        switch ( arrayType )
         {
-            const LAMAArray<double>& typedDiagonal = dynamic_cast<const LAMAArray<double>&>( diagonal );
-            static_cast<Derived*>( this )->setDiagonalImpl( typedDiagonal );
-        }
-        else if ( arrayType == Scalar::FLOAT )
-        {
-            const LAMAArray<float>& typedDiagonal = dynamic_cast<const LAMAArray<float>&>( diagonal );
-            static_cast<Derived*>( this )->setDiagonalImpl( typedDiagonal );
-        }
-        else
-        {
+#define LAMA_SET_DIAGONAL_CALL( z, I, _ )                                           \
+        case Scalar::SCALAR_ARITHMETIC_TYPE##I:                                     \
+        {                                                                           \
+            const LAMAArray<ARITHMETIC_TYPE##I>& typedDiagonal =                    \
+                dynamic_cast<const LAMAArray<ARITHMETIC_TYPE##I>&>( diagonal );     \
+            static_cast<Derived*>( this )->setDiagonalImpl( typedDiagonal );        \
+            break;                                                                  \
+        }                                                                           \
+
+        BOOST_PP_REPEAT( ARITHMETIC_TYPE_CNT, LAMA_SET_DIAGONAL_CALL, _ )
+
+#undef LAMA_SET_DIAGONAL_CALL
+
+        default:
             LAMA_THROWEXCEPTION( "setDiagonal to array of type " << arrayType << " not supported" )
         }
     }
@@ -247,18 +278,22 @@ public:
 
         Scalar::ScalarType arrayType = diagonal.getValueType();
 
-        if ( arrayType == Scalar::DOUBLE )
+        switch ( arrayType )
         {
-            const LAMAArray<double>& typedDiagonal = dynamic_cast<const LAMAArray<double>&>( diagonal );
-            static_cast<Derived*>( this )->scaleImpl( typedDiagonal );
-        }
-        else if ( arrayType == Scalar::FLOAT )
-        {
-            const LAMAArray<float>& typedDiagonal = dynamic_cast<const LAMAArray<float>&>( diagonal );
-            static_cast<Derived*>( this )->scaleImpl( typedDiagonal );
-        }
-        else
-        {
+#define LAMA_SCALE_CALL( z, I, _ )                                                  \
+        case Scalar::SCALAR_ARITHMETIC_TYPE##I:                                     \
+            {                                                                           \
+                const LAMAArray<ARITHMETIC_TYPE##I>& typedDiagonal =                    \
+                    dynamic_cast<const LAMAArray<ARITHMETIC_TYPE##I>&>( diagonal );     \
+                static_cast<Derived*>( this )->scaleImpl( typedDiagonal );              \
+                break;                                                                  \
+            }                                                                           \
+
+        BOOST_PP_REPEAT( ARITHMETIC_TYPE_CNT, LAMA_SCALE_CALL, _ )
+
+#undef LAMA_SCALE_CALL
+
+        default:
             LAMA_THROWEXCEPTION( "scale of type " << arrayType << " not supported" )
         }
     }

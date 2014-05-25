@@ -44,6 +44,9 @@
 // tracing
 #include <lama/tracing.hpp>
 
+// boost
+#include <boost/preprocessor.hpp>
+
 using namespace boost;
 
 namespace lama
@@ -55,22 +58,17 @@ Vector* Vector::createVector( const Scalar::ScalarType valueType, DistributionPt
 {
     switch ( valueType )
     {
-    case Scalar::FLOAT:
-        return new DenseVector<float>( distribution );
-    case Scalar::DOUBLE:
-        return new DenseVector<double>( distribution );
-//        case Scalar::LONG_DOUBLE:
-//            return std::auto_ptr<Vector>( new DenseVector<long double>( distribution) );
-//            break;
-//        case Scalar::COMPLEX:
-//            return std::auto_ptr<Vector>( new DenseVector<std::complex<float> >( distribution) );
-//            break;
-//        case Scalar::DOUBLE_COMPLEX:
-//            return std::auto_ptr<Vector>( new DenseVector<std::complex<double> >( distribution) );
-//            break;
-//        case Scalar::LONG_DOUBLE_COMPLEX:
-//            return std::auto_ptr<Vector>( new DenseVector<std::complex<long double> >( distribution) );
-//            break;
+
+#define LAMA_CREATE_VECTOR( z, I, _ )                                 \
+    case Scalar::SCALAR_ARITHMETIC_TYPE##I:                           \
+        return new DenseVector<ARITHMETIC_TYPE##I>( distribution );   \
+
+    // generate case entry for each supported arithmetic type
+
+    BOOST_PP_REPEAT( ARITHMETIC_TYPE_CNT, LAMA_CREATE_VECTOR, _ )
+
+#undef LAMA_CREATE_VECTOR
+
     default:
         LAMA_THROWEXCEPTION( "createVector does not support " << valueType )
     }

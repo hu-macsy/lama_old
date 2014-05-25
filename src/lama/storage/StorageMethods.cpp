@@ -47,6 +47,9 @@
 // tracing
 #include <lama/tracing.hpp>
 
+// boost
+#include <boost/preprocessor.hpp>
+
 namespace lama
 {
 
@@ -667,8 +670,12 @@ void StorageMethods<ValueType>::joinCSR(
 
 /* -------------------------------------------------------------------------- */
 
-template class LAMA_DLL_IMPORTEXPORT StorageMethods<float> ;
-template class LAMA_DLL_IMPORTEXPORT StorageMethods<double> ;
+#define LAMA_STORAGE_METHODS_INSTANTIATE(z, I, _)                              \
+template class LAMA_DLL_IMPORTEXPORT StorageMethods<ARITHMETIC_TYPE##I> ;  
+
+BOOST_PP_REPEAT( ARITHMETIC_TYPE_CNT, LAMA_STORAGE_METHODS_INSTANTIATE, _ )
+
+#undef LAMA_STORAGE_METHODS_INSTANTIATE
 
 /* -------------------------------------------------------------------------- */
 

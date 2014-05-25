@@ -58,6 +58,7 @@
 
 // tracing
 #include <boost/bind.hpp>
+#include <boost/preprocessor.hpp>
 
 namespace lama
 {
@@ -2420,22 +2421,21 @@ void SparseMatrix<ValueType>::readFromFile( const std::string& fileName )
 }
 
 /* ========================================================================= */
+/*       Template specializations and instantiations                         */
+/* ========================================================================= */
 
-template<>
-const char* SparseMatrix<float>::typeName()
-{
-    return "SparseMatrix<float>";
-}
+#define LAMA_SPARSE_MATRIX_INSTANTIATE(z, I, _)                            \
+template<>                                                                 \
+const char* SparseMatrix<ARITHMETIC_TYPE##I>::typeName()                   \
+{                                                                          \
+    return "SparseMatrix<ARITHMETIC_TYPE##I>";                             \
+}                                                                          \
+                                                                           \
+template class LAMA_DLL_IMPORTEXPORT SparseMatrix<ARITHMETIC_TYPE##I> ;  
 
-template<>
-const char* SparseMatrix<double>::typeName()
-{
-    return "SparseMatrix<double>";
-}
+BOOST_PP_REPEAT( ARITHMETIC_TYPE_CNT, LAMA_SPARSE_MATRIX_INSTANTIATE, _ )
 
-/* ------------------------------------------------------------------------- */
+#undef LAMA_SPARSE_MATRIX_INSTANTIATE
 
-template class LAMA_DLL_IMPORTEXPORT SparseMatrix<float> ;
-template class LAMA_DLL_IMPORTEXPORT SparseMatrix<double> ;
 
 } //namespace lama

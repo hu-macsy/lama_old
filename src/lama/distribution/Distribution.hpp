@@ -210,7 +210,7 @@ public:
      * The offset array is used like in CSR sparse matrix storage for offsets and number of values.
      */
     template<typename T>
-    void replicateRagged( T* allValues, const T* localValues, const IndexType* allOffsets ) const;
+    void replicateRagged( T allValues[], const T localValues[], const IndexType allOffsets[] ) const;
 
     /**
      * Master process prints out the distribution vector to file named "name.part".

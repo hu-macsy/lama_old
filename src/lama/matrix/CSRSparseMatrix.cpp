@@ -34,6 +34,9 @@
 // hpp
 #include <lama/matrix/CSRSparseMatrix.hpp>
 
+// boost
+#include <boost/preprocessor.hpp>
+
 using boost::shared_ptr;
 
 namespace lama
@@ -361,25 +364,22 @@ const char* CSRSparseMatrix<ValueType>::getTypeName() const
     return typeName();
 }
 
-/* -------------------------------------------------------------------------- */
+/* ========================================================================= */
+/*       Template specializations and nstantiations                          */
+/* ========================================================================= */
 
-template<>
-const char* CSRSparseMatrix<float>::typeName()
-{
-    return "CSRSparseMatrix<float>";
-}
+#define LAMA_CSR_SPARSE_MATRIX_INSTANTIATE(z, I, _)                        \
+                                                                           \
+template<>                                                                 \
+const char* CSRSparseMatrix<ARITHMETIC_TYPE##I>::typeName()                \
+{                                                                          \
+    return "CSRSparseMatrix<ARITHMETIC_TYPE##I>";                          \
+}                                                                          \
+                                                                           \
+template class LAMA_DLL_IMPORTEXPORT CSRSparseMatrix<ARITHMETIC_TYPE##I> ;  
 
-template<>
-const char* CSRSparseMatrix<double>::typeName()
-{
-    return "CSRSparseMatrix<double>";
-}
+BOOST_PP_REPEAT( ARITHMETIC_TYPE_CNT, LAMA_CSR_SPARSE_MATRIX_INSTANTIATE, _ )
 
-/* -------------------------------------------------------------------------- */
-/* Template instantiation for float and double                                */
-/* -------------------------------------------------------------------------- */
-
-template class LAMA_DLL_IMPORTEXPORT CSRSparseMatrix<float> ;
-template class LAMA_DLL_IMPORTEXPORT CSRSparseMatrix<double> ;
+#undef LAMA_CSR_SPARSE_MATRIX_INSTANTIATE
 
 }

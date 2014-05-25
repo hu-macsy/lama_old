@@ -42,6 +42,7 @@
 
 // boost
 #include <boost/scoped_array.hpp>
+#include <boost/preprocessor.hpp>
 
 namespace lama
 {
@@ -322,7 +323,7 @@ static IndexType fillGlobal(
 /* ---------------------------------------------------------------------- */
 
 template<typename T>
-void Distribution::replicateRagged( T* allValues, const T* localValues, const IndexType* allOffsets ) const
+void Distribution::replicateRagged( T allValues[], const T localValues[], const IndexType allOffsets[] ) const
 {
     IndexType currentElemSize = getLocalSize();
     const Communicator& comm = getCommunicator();
@@ -393,33 +394,36 @@ void Distribution::replicateRagged( T* allValues, const T* localValues, const In
 /* ---------------------------------------------------------------------- */
 
 // Instantiation of all relevant replicate routines
-template LAMA_DLL_IMPORTEXPORT void Distribution::replicate( double* allValues, const double* localValues ) const;
-template LAMA_DLL_IMPORTEXPORT void Distribution::replicate( double* allValues, const float* localValues ) const;
-template LAMA_DLL_IMPORTEXPORT void Distribution::replicate( float* allValues, const double* localValues ) const;
-template LAMA_DLL_IMPORTEXPORT void Distribution::replicate( float* allValues, const float* localValues ) const;
-template LAMA_DLL_IMPORTEXPORT void Distribution::replicate( IndexType* allValues, const IndexType* localValues ) const;
 
-template LAMA_DLL_IMPORTEXPORT void Distribution::replicateN(
-    double* allValues,
-    const double* localValues,
-    const IndexType n ) const;
-template LAMA_DLL_IMPORTEXPORT void Distribution::replicateN(
-    float* allValues,
-    const float* localValues,
-    const IndexType n ) const;
+// Macro to instantiate for type pair ARRAY_TYPE##I, ARRAY_TYPE##J
 
-template LAMA_DLL_IMPORTEXPORT void Distribution::replicateRagged(
-    double* allValues,
-    const double* localValues,
-    const IndexType* allOffsets ) const;
-template LAMA_DLL_IMPORTEXPORT void Distribution::replicateRagged(
-    float* allValues,
-    const float* localValues,
-    const IndexType* allOffsets ) const;
-template LAMA_DLL_IMPORTEXPORT void Distribution::replicateRagged(
-    IndexType* allValues,
-    const IndexType* localValues,
-    const IndexType* allOffsets ) const;
+#define LAMA_DISTRIBUTE2_INSTANTIATE(z, J, TYPE)                           \
+                                                                           \
+template LAMA_DLL_IMPORTEXPORT void Distribution::replicate(               \
+    TYPE allValues[],                                                      \
+    const ARRAY_TYPE##J localValues[] ) const;                             \
+
+
+#define LAMA_DISTRIBUTE_INSTANTIATE(z, I, _)                               \
+template LAMA_DLL_IMPORTEXPORT void Distribution::replicateRagged(         \
+    ARRAY_TYPE##I allValues[],                                             \
+    const ARRAY_TYPE##I localValues[],                                     \
+    const IndexType allOffsets[] ) const;                                  \
+                                                                           \
+template LAMA_DLL_IMPORTEXPORT void Distribution::replicateN(              \
+    ARRAY_TYPE##I allValues[],                                             \
+    const ARRAY_TYPE##I localValues[],                                     \
+    const IndexType n ) const;                                             \
+                                                                           \
+    BOOST_PP_REPEAT( ARRAY_TYPE_CNT,                                       \
+                     LAMA_DISTRIBUTE2_INSTANTIATE,                         \
+                     ARRAY_TYPE##I )                                       \
+
+// template instantiation for the supported data types
+
+BOOST_PP_REPEAT( ARRAY_TYPE_CNT, LAMA_DISTRIBUTE_INSTANTIATE, _ )
+
+#undef LAMA_DISTRIBUTE_INSTANTIATE
 
 /* ---------------------------------------------------------------------- */
 

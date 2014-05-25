@@ -256,6 +256,11 @@ public:
         const File::DataType dataType = File::DOUBLE ) const = 0;
 
     /**
+     * @brief get a vector with all local values
+     */
+    virtual const _LAMAArray& getLocalValues() const = 0;
+
+    /**
      * @brief Queries the value type of the vector elements, e.g. DOUBLE or FLOAT.
      */
     virtual Scalar::ScalarType getValueType() const = 0;

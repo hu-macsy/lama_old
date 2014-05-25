@@ -340,13 +340,13 @@ void OpenMPBLAS3::setInterface( BLASInterface& BLAS )
 {
     LAMA_LOG_INFO( logger, "set BLAS3 routines for OpenMP in Interface" )
 
-    // Note: macro takes advantage of same name for routines and type definitions
-    //       ( e.g. routine CUDABLAS1::sum<T> is set for BLAS::BLAS1::sum variable
+#define LAMA_BLAS3_REGISTER(z, I, _)                                            \
+    LAMA_INTERFACE_REGISTER_T( BLAS, gemm, ARITHMETIC_TYPE##I )                 \
 
-                    LAMA_INTERFACE_REGISTER_T( BLAS, gemm, float )
-                    LAMA_INTERFACE_REGISTER_T( BLAS, gemm, double )
+BOOST_PP_REPEAT( ARITHMETIC_TYPE_CNT, LAMA_BLAS3_REGISTER, _ )
 
-    // trsm routines are not used yet by LAMA
+#undef LAMA_BLAS3_REGISTER
+
 }
 
 /* --------------------------------------------------------------------------- */

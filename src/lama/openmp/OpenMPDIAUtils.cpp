@@ -47,6 +47,7 @@
 
 // boost
 #include <boost/scoped_array.hpp>
+#include <boost/preprocessor.hpp>
 
 #include <cmath>
 
@@ -520,27 +521,27 @@ void OpenMPDIAUtils::jacobi(
 
 void OpenMPDIAUtils::setInterface( DIAUtilsInterface& DIAUtils )
 {
-    // Register all CUDA routines of this class for the LAMA interface
 
-    LAMA_INTERFACE_REGISTER_T( DIAUtils, getCSRSizes, float )
-    LAMA_INTERFACE_REGISTER_T( DIAUtils, getCSRSizes, double )
+// use of nested BOOST_PP_REPEAT to get all conversions
 
-    LAMA_INTERFACE_REGISTER_TT( DIAUtils, getCSRValues, float, float )
-    LAMA_INTERFACE_REGISTER_TT( DIAUtils, getCSRValues, float, double )
-    LAMA_INTERFACE_REGISTER_TT( DIAUtils, getCSRValues, double, float )
-    LAMA_INTERFACE_REGISTER_TT( DIAUtils, getCSRValues, double, double )
+#define LAMA_DIA_UTILS2_REGISTER(z, J, TYPE )                                            \
+    LAMA_INTERFACE_REGISTER_TT( DIAUtils, getCSRValues, TYPE, ARITHMETIC_TYPE##J )       \
 
-    LAMA_INTERFACE_REGISTER_T( DIAUtils, absMaxVal, float )
-    LAMA_INTERFACE_REGISTER_T( DIAUtils, absMaxVal, double )
 
-    LAMA_INTERFACE_REGISTER_T( DIAUtils, normalGEMV, float )
-    LAMA_INTERFACE_REGISTER_T( DIAUtils, normalGEMV, double )
+#define LAMA_DIA_UTILS_REGISTER(z, I, _)                                                 \
+    LAMA_INTERFACE_REGISTER_T( DIAUtils, getCSRSizes, ARITHMETIC_TYPE##I )               \
+    LAMA_INTERFACE_REGISTER_T( DIAUtils, absMaxVal, ARITHMETIC_TYPE##I )                 \
+    LAMA_INTERFACE_REGISTER_T( DIAUtils, normalGEMV, ARITHMETIC_TYPE##I )                \
+    LAMA_INTERFACE_REGISTER_T( DIAUtils, normalGEVM, ARITHMETIC_TYPE##I )                \
+    LAMA_INTERFACE_REGISTER_T( DIAUtils, jacobi, ARITHMETIC_TYPE##I )                    \
+                                                                                         \
+    BOOST_PP_REPEAT( ARITHMETIC_TYPE_CNT, LAMA_DIA_UTILS2_REGISTER, ARITHMETIC_TYPE##I )  
 
-    LAMA_INTERFACE_REGISTER_T( DIAUtils, normalGEVM, float )
-    LAMA_INTERFACE_REGISTER_T( DIAUtils, normalGEVM, double )
+BOOST_PP_REPEAT( ARITHMETIC_TYPE_CNT, LAMA_DIA_UTILS_REGISTER, _ )
 
-    LAMA_INTERFACE_REGISTER_T( DIAUtils, jacobi, float )
-    LAMA_INTERFACE_REGISTER_T( DIAUtils, jacobi, double )
+#undef LAMA_DIA_UTILS_REGISTER
+#undef LAMA_DIA_UTILS2_REGISTER
+
 }
 
 /* --------------------------------------------------------------------------- */

@@ -43,6 +43,7 @@
 
 // boost
 #include <boost/thread/recursive_mutex.hpp>
+#include <boost/preprocessor.hpp>
 
 #include <memory>
 #include <limits>
@@ -1019,13 +1020,15 @@ LAMAArrayRef<ValueType>::LAMAArrayRef( const ValueType* pointer, IndexType size 
 
 /* ---------------------------------------------------------------------------------*/
 
-// Template instantiation for all relevant types
-template class LAMAArray<float> ;
-template class LAMAArray<double> ;
-template class LAMAArray<IndexType> ;
+#define LAMA_ARRAY_INSTANTIATE(z, I, _)                               \
+template class LAMA_DLL_IMPORTEXPORT LAMAArray<ARRAY_TYPE##I> ;       \
+template class LAMA_DLL_IMPORTEXPORT LAMAArrayRef<ARRAY_TYPE##I> ;
+ 
+// template instantiation for the supported data types
 
-template class LAMAArrayRef<float> ;
-template class LAMAArrayRef<double> ;
-template class LAMAArrayRef<IndexType> ;
+BOOST_PP_REPEAT( ARRAY_TYPE_CNT, LAMA_ARRAY_INSTANTIATE, _ )
+
+#undef LAMA_ARRAY_INSTANTIATE
+
 
 } // namespace LAMA

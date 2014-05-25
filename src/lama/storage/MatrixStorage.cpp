@@ -57,6 +57,7 @@
 
 // boost
 #include <boost/bind.hpp>
+#include <boost/preprocessor.hpp>
 
 namespace lama
 {
@@ -1425,24 +1426,27 @@ void MatrixStorage<ValueType>::setDenseData(
 
     _LAMAArray& mValues = const_cast<_LAMAArray&>( values );
 
-    if ( values.getValueType() == Scalar::FLOAT )
+    switch ( values.getValueType() )
     {
-        LAMAArray<float>& floatValues = dynamic_cast<LAMAArray<float>&>( mValues );
-        const DenseStorageView<float> denseStorage( floatValues, numRows, numColumns );
-        float tmpEpsilon = static_cast<float>( epsilon );
-        denseStorage.swapEpsilon( tmpEpsilon );
-        assign( denseStorage );
-    }
-    else if ( values.getValueType() == Scalar::DOUBLE )
-    {
-        LAMAArray<double>& doubleValues = dynamic_cast<LAMAArray<double>&>( mValues );
-        const DenseStorageView<double> denseStorage( doubleValues, numRows, numColumns );
-        double tmpEpsilon = static_cast<double>( epsilon );
-        denseStorage.swapEpsilon( tmpEpsilon );
-        assign( denseStorage );
-    }
-    else
-    {
+
+#define LAMA_DENSE_ASSIGN( z, I, _ )                                                                 \
+    case Scalar::SCALAR_ARITHMETIC_TYPE##I :                                                         \
+    {                                                                                                \
+        LAMAArray<ARITHMETIC_TYPE##I>& typedValues =                                                 \
+            dynamic_cast<LAMAArray<ARITHMETIC_TYPE##I>&>( mValues );                                 \
+        const DenseStorageView<ARITHMETIC_TYPE##I> denseStorage( typedValues, numRows, numColumns ); \
+        ARITHMETIC_TYPE##I tmpEpsilon = static_cast<ARITHMETIC_TYPE##I>( epsilon );                  \
+        denseStorage.swapEpsilon( tmpEpsilon );                                                      \
+        assign( denseStorage );                                                                      \
+        break;                                                                                       \
+    }                                                                                                \
+
+    BOOST_PP_REPEAT( ARITHMETIC_TYPE_CNT, LAMA_DENSE_ASSIGN, _ )
+ 
+#undef LAMA_DENSE_ASSIGN
+
+    default:
+
         LAMA_THROWEXCEPTION( "Unsupported type for setting dense data: " << values.getValueType() )
     }
 }
@@ -1610,46 +1614,32 @@ bool MatrixStorage<ValueType>::checkSymmetry() const
     return true;
 }
 
-/*****************************************************************************/
-
 /* ========================================================================= */
 /*       Template Instantiations                                             */
 /* ========================================================================= */
 
-template class LAMA_DLL_IMPORTEXPORT MatrixStorage<float> ;
-template class LAMA_DLL_IMPORTEXPORT MatrixStorage<double> ;
+#define LAMA_MATRIX_STORAGE2_INSTANTIATE(z, J, TYPE )      \
+template LAMA_DLL_IMPORTEXPORT                             \
+void MatrixStorage<TYPE>::setRawDenseData(                 \
+    const IndexType numRows,                               \
+    const IndexType numColumns,                            \
+    const ARITHMETIC_TYPE##J values[],                     \
+    const TYPE );                             
 
-/* ========================================================================= */
-/*       Template Instantiations                                             */
-/* ========================================================================= */
+#define LAMA_MATRIX_STORAGE_INSTANTIATE(z, I, _)                          \
+                                                                          \
+template class LAMA_DLL_IMPORTEXPORT MatrixStorage<ARITHMETIC_TYPE##I> ;  \
+                                                                          \
+    BOOST_PP_REPEAT( ARITHMETIC_TYPE_CNT,                                 \
+                     LAMA_MATRIX_STORAGE2_INSTANTIATE,                    \
+                     ARITHMETIC_TYPE##I )                                 \
 
-template LAMA_DLL_IMPORTEXPORT
-void MatrixStorage<double>::setRawDenseData(
-    const IndexType numRows,
-    const IndexType numColumns,
-    const float values[],
-    const double );
 
-template LAMA_DLL_IMPORTEXPORT
-void MatrixStorage<double>::setRawDenseData(
-    const IndexType numRows,
-    const IndexType numColumns,
-    const double values[],
-    const double );
+BOOST_PP_REPEAT( ARITHMETIC_TYPE_CNT, LAMA_MATRIX_STORAGE_INSTANTIATE, _ )
 
-template LAMA_DLL_IMPORTEXPORT
-void MatrixStorage<float>::setRawDenseData(
-    const IndexType numRows,
-    const IndexType numColumns,
-    const float values[],
-    const float );
-
-template LAMA_DLL_IMPORTEXPORT
-void MatrixStorage<float>::setRawDenseData(
-    const IndexType numRows,
-    const IndexType numColumns,
-    const double values[],
-    const float );
+#undef LAMA_MATRIX_STORAGE_INSTANTIATE
+#undef LAMA_MATRIX_STORAGE2_INSTANTIATE
 
 } // namespace LAMA
+
 

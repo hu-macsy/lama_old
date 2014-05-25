@@ -41,6 +41,8 @@
 #include <lama/distribution/BlockDistribution.hpp>
 #include <lama/distribution/GeneralDistribution.hpp>
 
+#include <boost/preprocessor.hpp>
+
 #include <cmath>
 
 namespace lama
@@ -588,11 +590,16 @@ void MatrixCreator<ValueType>::buildRandom(
     fillRandom( matrix, density );
 }
 
-/* ------------------------------------------------------------------------- */
+/* ========================================================================= */
+/*       Template Instantiations                                             */
+/* ========================================================================= */
 
-// Template instanstiations for float + double
-template class LAMA_DLL_IMPORTEXPORT MatrixCreator<float> ;
-template class LAMA_DLL_IMPORTEXPORT MatrixCreator<double> ;
+#define LAMA_MATRIX_CREATOR_INSTANTIATE(z, I, _)                           \
+template class LAMA_DLL_IMPORTEXPORT MatrixCreator<ARITHMETIC_TYPE##I> ;  
+
+BOOST_PP_REPEAT( ARITHMETIC_TYPE_CNT, LAMA_MATRIX_CREATOR_INSTANTIATE, _ )
+
+#undef LAMA_MATRIX_CREATOR_INSTANTIATE
 
 } // namespace lama
 

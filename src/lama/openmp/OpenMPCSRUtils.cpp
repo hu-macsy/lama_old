@@ -48,6 +48,7 @@
 // boost
 #include <boost/bind.hpp>
 #include <boost/scoped_array.hpp>
+#include <boost/preprocessor.hpp>
 
 #include <lama/macros/unused.hpp>
 #include <vector>
@@ -1898,48 +1899,33 @@ void OpenMPCSRUtils::setInterface( CSRUtilsInterface& CSRUtils )
     LAMA_INTERFACE_REGISTER( CSRUtils, matrixMultiplySizes )
     LAMA_INTERFACE_REGISTER( CSRUtils, matrixMultiplyJA )
 
-    LAMA_INTERFACE_REGISTER_T( CSRUtils, convertCSR2CSC, float )
-    LAMA_INTERFACE_REGISTER_T( CSRUtils, convertCSR2CSC, double )
+#define LAMA_CSR_UTILS2_REGISTER(z, J, TYPE )                                        \
+    LAMA_INTERFACE_REGISTER_TT( CSRUtils, scaleRows, TYPE, ARITHMETIC_TYPE##J )      \
 
-    LAMA_INTERFACE_REGISTER_T( CSRUtils, sortRowElements, float )
-    LAMA_INTERFACE_REGISTER_T( CSRUtils, sortRowElements, double )
+#define LAMA_CSR_UTILS_REGISTER(z, I, _)                                             \
+    LAMA_INTERFACE_REGISTER_T( CSRUtils, convertCSR2CSC, ARITHMETIC_TYPE##I )        \
+    LAMA_INTERFACE_REGISTER_T( CSRUtils, sortRowElements, ARITHMETIC_TYPE##I )       \
+    LAMA_INTERFACE_REGISTER_T( CSRUtils, normalGEMV, ARITHMETIC_TYPE##I )            \
+    LAMA_INTERFACE_REGISTER_T( CSRUtils, sparseGEMV, ARITHMETIC_TYPE##I )            \
+    LAMA_INTERFACE_REGISTER_T( CSRUtils, normalGEVM, ARITHMETIC_TYPE##I )            \
+    LAMA_INTERFACE_REGISTER_T( CSRUtils, sparseGEVM, ARITHMETIC_TYPE##I )            \
+    LAMA_INTERFACE_REGISTER_T( CSRUtils, gemm, ARITHMETIC_TYPE##I )                  \
+    LAMA_INTERFACE_REGISTER_T( CSRUtils, matrixAdd, ARITHMETIC_TYPE##I )             \
+    LAMA_INTERFACE_REGISTER_T( CSRUtils, matrixMultiply, ARITHMETIC_TYPE##I )        \
+    LAMA_INTERFACE_REGISTER_T( CSRUtils, jacobi, ARITHMETIC_TYPE##I )                \
+    LAMA_INTERFACE_REGISTER_T( CSRUtils, jacobiHalo, ARITHMETIC_TYPE##I )            \
+    LAMA_INTERFACE_REGISTER_T( CSRUtils, jacobiHaloWithDiag, ARITHMETIC_TYPE##I )    \
+    LAMA_INTERFACE_REGISTER_T( CSRUtils, absMaxDiffVal, ARITHMETIC_TYPE##I )         \
+                                                                                     \
+    BOOST_PP_REPEAT( ARITHMETIC_TYPE_CNT,                                            \
+                     LAMA_CSR_UTILS2_REGISTER,                                       \
+                     ARITHMETIC_TYPE##I )                                            \
 
-    LAMA_INTERFACE_REGISTER_TT( CSRUtils, scaleRows, float, float )
-    LAMA_INTERFACE_REGISTER_TT( CSRUtils, scaleRows, float, double )
-    LAMA_INTERFACE_REGISTER_TT( CSRUtils, scaleRows, double, float )
-    LAMA_INTERFACE_REGISTER_TT( CSRUtils, scaleRows, double, double )
+BOOST_PP_REPEAT( ARITHMETIC_TYPE_CNT, LAMA_CSR_UTILS_REGISTER, _ )
 
-    LAMA_INTERFACE_REGISTER_T( CSRUtils, normalGEMV, float )
-    LAMA_INTERFACE_REGISTER_T( CSRUtils, normalGEMV, double )
+#undef LAMA_CSR_UTILS_REGISTER
+#undef LAMA_CSR_UTILS2_REGISTER
 
-    LAMA_INTERFACE_REGISTER_T( CSRUtils, sparseGEMV, float )
-    LAMA_INTERFACE_REGISTER_T( CSRUtils, sparseGEMV, double )
-
-    LAMA_INTERFACE_REGISTER_T( CSRUtils, normalGEVM, float )
-    LAMA_INTERFACE_REGISTER_T( CSRUtils, normalGEVM, double )
-
-    LAMA_INTERFACE_REGISTER_T( CSRUtils, sparseGEVM, float )
-    LAMA_INTERFACE_REGISTER_T( CSRUtils, sparseGEVM, double )
-
-    LAMA_INTERFACE_REGISTER_T( CSRUtils, gemm, float )
-    LAMA_INTERFACE_REGISTER_T( CSRUtils, gemm, double )
-
-    LAMA_INTERFACE_REGISTER_T( CSRUtils, matrixAdd, float )
-    LAMA_INTERFACE_REGISTER_T( CSRUtils, matrixAdd, double )
-    LAMA_INTERFACE_REGISTER_T( CSRUtils, matrixMultiply, float )
-    LAMA_INTERFACE_REGISTER_T( CSRUtils, matrixMultiply, double )
-
-    LAMA_INTERFACE_REGISTER_T( CSRUtils, jacobi, float )
-    LAMA_INTERFACE_REGISTER_T( CSRUtils, jacobi, double )
-
-    LAMA_INTERFACE_REGISTER_T( CSRUtils, jacobiHalo, float )
-    LAMA_INTERFACE_REGISTER_T( CSRUtils, jacobiHalo, double )
-
-    LAMA_INTERFACE_REGISTER_T( CSRUtils, jacobiHaloWithDiag, float )
-    LAMA_INTERFACE_REGISTER_T( CSRUtils, jacobiHaloWithDiag, double )
-
-    LAMA_INTERFACE_REGISTER_T( CSRUtils, absMaxDiffVal, float )
-    LAMA_INTERFACE_REGISTER_T( CSRUtils, absMaxDiffVal, double )
 }
 
 /* --------------------------------------------------------------------------- */

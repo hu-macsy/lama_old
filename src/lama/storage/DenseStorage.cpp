@@ -57,32 +57,6 @@ LAMA_LOG_DEF_TEMPLATE_LOGGER( template<typename ValueType>, DenseStorageView<Val
 
 /* --------------------------------------------------------------------------- */
 
-template<>
-const char* DenseStorageView<float>::typeName()
-{
-    return "DenseStorageView<float>";
-}
-
-template<>
-const char* DenseStorageView<double>::typeName()
-{
-    return "DenseStorageView<double>";
-}
-
-template<>
-const char* DenseStorage<float>::typeName()
-{
-    return "DenseStorage<float>";
-}
-
-template<>
-const char* DenseStorage<double>::typeName()
-{
-    return "DenseStorage<double>";
-}
-
-/* --------------------------------------------------------------------------- */
-
 template<typename ValueType>
 DenseStorageView<ValueType>::DenseStorageView(
     LAMAArray<ValueType>& data,
@@ -1022,19 +996,30 @@ void DenseStorageView<ValueType>::assign( const _MatrixStorage& other )
     {
         // more efficient solution for assigment of dense storage
 
-        if ( other.getValueType() == Scalar::FLOAT )
+        Scalar::ScalarType arrayType = other.getValueType();
+
+        switch ( arrayType  )
         {
-            const DenseStorageView<float>* otherFloat = dynamic_cast<const DenseStorageView<float>*>( &other );
-            LAMA_ASSERT_DEBUG( otherFloat, other << ": dynamic cast failed, should not happen" )
-            assignDenseStorageImpl( *otherFloat );
-            return;
-        }
-        else if ( other.getValueType() == Scalar::DOUBLE )
-        {
-            const DenseStorageView<double>* otherDouble = dynamic_cast<const DenseStorageView<double>*>( &other );
-            LAMA_ASSERT_DEBUG( otherDouble, other << ": Dynamic cast failed, should not happen" )
-            assignDenseStorageImpl( *otherDouble );
-            return;
+
+#define LAMA_ASSIGN_DENSE_CALL( z, I, _ )                                                        \
+        case Scalar::SCALAR_ARITHMETIC_TYPE##I:                                                  \
+        {                                                                                        \
+            const DenseStorageView<ARITHMETIC_TYPE##I>* otherTyped =                             \
+                dynamic_cast<const DenseStorageView<ARITHMETIC_TYPE##I>*>( &other );             \
+            LAMA_ASSERT_DEBUG( otherTyped, other << ": dynamic cast failed, should not happen" ) \
+            assignDenseStorageImpl( *otherTyped );                                               \
+            return;                                                                              \
+        }                                                                                        \
+
+        BOOST_PP_REPEAT( ARITHMETIC_TYPE_CNT, LAMA_ASSIGN_DENSE_CALL, _ )
+
+#undef LAMA_ASSIGN_DENSE_CALL
+
+        default:
+
+            LAMA_LOG_INFO( logger, "unsupported  typed assign" )
+
+            // also take fallback call
         }
     }
 
@@ -1240,14 +1225,29 @@ DenseStorageView<ValueType>::copy() const
     return new DenseStorage<ValueType>( *this );
 }
 
-/* --------------------------------------------------------------------------- */
-/* template instantiation for the most important data types                    */
-/* --------------------------------------------------------------------------- */
+/* ========================================================================= */
+/*       Template Instantiations                                             */
+/* ========================================================================= */
 
-template class DenseStorageView<float> ;
-template class DenseStorageView<double> ;
+#define LAMA_DENSE_STORAGE_INSTANTIATE(z, I, _)                             \
+template<>                                                                  \
+const char* DenseStorage<ARITHMETIC_TYPE##I>::typeName()                    \
+{                                                                           \
+    return "DenseStorage<ARITHMETIC_TYPE##I>";                              \
+}                                                                           \
+                                                                            \
+template<>                                                                  \
+const char* DenseStorageView<ARITHMETIC_TYPE##I>::typeName()                \
+{                                                                           \
+    return "DenseStorageView<ARITHMETIC_TYPE##I>";                          \
+}                                                                           \
+                                                                            \
+template class LAMA_DLL_IMPORTEXPORT DenseStorage<ARITHMETIC_TYPE##I> ;     \
+template class LAMA_DLL_IMPORTEXPORT DenseStorageView<ARITHMETIC_TYPE##I> ;  
 
-template class DenseStorage<float> ;
-template class DenseStorage<double> ;
+BOOST_PP_REPEAT( ARITHMETIC_TYPE_CNT, LAMA_DENSE_STORAGE_INSTANTIATE, _ )
+
+#undef LAMA_DENSE_STORAGE_INSTANTIATE
+
 
 } // namespace lama

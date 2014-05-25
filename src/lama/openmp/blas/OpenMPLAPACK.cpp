@@ -474,7 +474,7 @@ void OpenMPLAPACK::laswp(
     const int INCX,
     SyncToken* syncToken )
 {
-    LAMA_REGION( "OpenMP.LAPACK.laswp<" << Scalar::getType<T>()<< ">" )
+    LAMA_REGION( "OpenMP.LAPACK.laswp" )
 
     int i = K1;
     if( order == CblasRowMajor )
@@ -516,20 +516,16 @@ void OpenMPLAPACK::setInterface( BLASInterface& BLAS )
     // Note: macro takes advantage of same name for routines and type definitions 
     //       ( e.g. routine CUDABLAS1::sum<T> is set for BLAS::BLAS1::sum variable
 
-    LAMA_INTERFACE_REGISTER_T( BLAS, getrf, float )
-    LAMA_INTERFACE_REGISTER_T( BLAS, getrf, double )
+#define LAMA_LAPACK_REGISTER(z, I, _)                                            \
+    LAMA_INTERFACE_REGISTER_T( BLAS, getrf, ARITHMETIC_TYPE##I )                 \
+    LAMA_INTERFACE_REGISTER_T( BLAS, getri, ARITHMETIC_TYPE##I )                 \
+    LAMA_INTERFACE_REGISTER_T( BLAS, getinv, ARITHMETIC_TYPE##I )                \
+    LAMA_INTERFACE_REGISTER_T( BLAS, tptrs, ARITHMETIC_TYPE##I )                 \
+    LAMA_INTERFACE_REGISTER_T( BLAS, laswp, ARITHMETIC_TYPE##I )                 \
 
-    LAMA_INTERFACE_REGISTER_T( BLAS, getri, float )
-    LAMA_INTERFACE_REGISTER_T( BLAS, getri, double )
+BOOST_PP_REPEAT( ARITHMETIC_TYPE_CNT, LAMA_LAPACK_REGISTER, _ )
 
-    LAMA_INTERFACE_REGISTER_T( BLAS, getinv, float )
-    LAMA_INTERFACE_REGISTER_T( BLAS, getinv, double )
-
-    LAMA_INTERFACE_REGISTER_T( BLAS, tptrs, float )
-    LAMA_INTERFACE_REGISTER_T( BLAS, tptrs, double )
-
-    LAMA_INTERFACE_REGISTER_T( BLAS, laswp, float )
-    LAMA_INTERFACE_REGISTER_T( BLAS, laswp, double )
+#undef LAMA_LAPACK_REGISTER
 
     // other routines are not used by LAMA yet
 }

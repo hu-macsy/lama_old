@@ -34,6 +34,9 @@
 // hpp
 #include <lama/matrix/DIASparseMatrix.hpp>
 
+// boost
+#include <boost/preprocessor.hpp>
+
 using boost::shared_ptr;
 
 namespace lama
@@ -361,25 +364,22 @@ const char* DIASparseMatrix<ValueType>::getTypeName() const
     return typeName();
 }
 
-/* -------------------------------------------------------------------------- */
+/* ========================================================================= */
+/*       Template specializations and nstantiations                          */
+/* ========================================================================= */
 
-template<>
-const char* DIASparseMatrix<float>::typeName()
-{
-    return "DIASparseMatrix<float>";
-}
+#define LAMA_DIA_SPARSE_MATRIX_INSTANTIATE(z, I, _)                        \
+                                                                           \
+template<>                                                                 \
+const char* DIASparseMatrix<ARITHMETIC_TYPE##I>::typeName()                \
+{                                                                          \
+    return "DIASparseMatrix<ARITHMETIC_TYPE##I>";                          \
+}                                                                          \
+                                                                           \
+template class LAMA_DLL_IMPORTEXPORT DIASparseMatrix<ARITHMETIC_TYPE##I> ;  
 
-template<>
-const char* DIASparseMatrix<double>::typeName()
-{
-    return "DIASparseMatrix<double>";
-}
+BOOST_PP_REPEAT( ARITHMETIC_TYPE_CNT, LAMA_DIA_SPARSE_MATRIX_INSTANTIATE, _ )
 
-/* -------------------------------------------------------------------------- */
-/* Template instantiation for float and double                                */
-/* -------------------------------------------------------------------------- */
-
-template class LAMA_DLL_IMPORTEXPORT DIASparseMatrix<float> ;
-template class LAMA_DLL_IMPORTEXPORT DIASparseMatrix<double> ;
+#undef LAMA_DIA_SPARSE_MATRIX_INSTANTIATE
 
 }
