@@ -62,7 +62,13 @@
 using namespace boost;
 using namespace lama;
 
-typedef boost::mpl::list<double,float> test_types;
+#if ARITHMETIC_TYPE_CNT == 1
+typedef boost::mpl::list<ARITHMETIC_TYPE0> test_types;
+#elif ARITHMETIC_TYPE_CNT == 2
+typedef boost::mpl::list<ARITHMETIC_TYPE0, ARITHMETIC_TYPE1> test_types;
+#else
+typedef boost::mpl::list<ARITHMETIC_TYPE0, ARITHMETIC_TYPE1, ARITHMETIC_TYPE2> test_types;
+#endif
 
 /* --------------------------------------------------------------------- */
 

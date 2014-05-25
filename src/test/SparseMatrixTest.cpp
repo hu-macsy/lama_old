@@ -303,6 +303,7 @@ LAMA_COMMON_TEST_CASE_TEMPLATE( SparseMatrixTest, MatrixType, testConversions )
     testConversionsImpl<DIASparseMatrix<double> >();
     testConversionsImpl<COOSparseMatrix<float> >();
     testConversionsImpl<COOSparseMatrix<double> >();
+
 LAMA_COMMON_TEST_CASE_TEMPLATE_END();
 
 template<typename MatrixType>
@@ -658,15 +659,15 @@ LAMA_COMMON_TEST_CASE_RUNNER_TEMPLATE( SparseMatrixTest ) {
 
 /* ----------------------------------------------------------------------------- */
 
-template class SparseMatrixTest<CSRSparseMatrix<double> > ;
-template class SparseMatrixTest<CSRSparseMatrix<float> > ;
-template class SparseMatrixTest<ELLSparseMatrix<double> > ;
-template class SparseMatrixTest<ELLSparseMatrix<float> > ;
-template class SparseMatrixTest<JDSSparseMatrix<double> > ;
-template class SparseMatrixTest<JDSSparseMatrix<float> > ;
-template class SparseMatrixTest<COOSparseMatrix<double> > ;
-template class SparseMatrixTest<COOSparseMatrix<float> > ;
-template class SparseMatrixTest<DIASparseMatrix<double> > ;
-template class SparseMatrixTest<DIASparseMatrix<float> > ;
-template class SparseMatrixTest<DenseMatrix<double> > ;
-template class SparseMatrixTest<DenseMatrix<float> > ;
+#define LAMA_SPARSE_TEST( z, I, _ )   \
+template class SparseMatrixTest<CSRSparseMatrix<ARITHMETIC_TYPE##I> > ;  \
+template class SparseMatrixTest<ELLSparseMatrix<ARITHMETIC_TYPE##I> > ;  \
+template class SparseMatrixTest<JDSSparseMatrix<ARITHMETIC_TYPE##I> > ;  \
+template class SparseMatrixTest<COOSparseMatrix<ARITHMETIC_TYPE##I> > ;  \
+template class SparseMatrixTest<DIASparseMatrix<ARITHMETIC_TYPE##I> > ;  \
+template class SparseMatrixTest<DenseMatrix<ARITHMETIC_TYPE##I> > ;  \
+
+BOOST_PP_REPEAT( ARITHMETIC_TYPE_CNT, LAMA_SPARSE_TEST, _ )
+
+#undef LAMA_SPARSE_TEST
+

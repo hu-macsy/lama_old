@@ -750,34 +750,24 @@ LAMA_COMMON_TEST_CASE_END()
 
 LAMA_COMMON_TEST_CASE_RUNNER( CommunicatorTest )
 {
-    // disable inlining otherwise derived classes will not find it
+// disable inlining otherwise derived classes will not find it
 
-    swapTest<float>();
-    swapTest<double>();
+#define LAMA_COMM_TEST( z, I, _ )           \
+    swapTest<ARRAY_TYPE##I>();              \
+    gatherTest<ARRAY_TYPE##I>();            \
+    gatherVTest<ARRAY_TYPE##I>();           \
+    scatterTest<ARRAY_TYPE##I>();           \
+    scatterVTest<ARRAY_TYPE##I>();          \
+    bcastTest<ARRAY_TYPE##I>();             \
+    shiftTest<ARRAY_TYPE##I>();             \
+    shiftASyncTest<ARRAY_TYPE##I>();        \
+    updateHaloTest<ARRAY_TYPE##I>();        \
 
-    gatherVTest<float>();
-    gatherVTest<double>();
+// instantiate methods for all supported data types
 
-    gatherTest<float>();
-    gatherTest<double>();
+BOOST_PP_REPEAT( ARRAY_TYPE_CNT, LAMA_COMM_TEST, _ )
 
-    scatterVTest<float>();
-    scatterVTest<double>();
-
-    scatterTest<float>();
-    scatterTest<double>();
-
-    bcastTest<float>();
-    bcastTest<double>();
-
-    shiftASyncTest<float>();
-    shiftASyncTest<double>();
-
-    shiftTest<float>();
-    shiftTest<double>();
-
-    updateHaloTest<float>();
-    updateHaloTest<double>();
+#undef LAMA_COMM_TEST
 
     bcastStringTest();
     buildHaloTest();

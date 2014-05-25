@@ -117,13 +117,12 @@ enum CBLAS_SIDE
 
 // Number of supported arithmetic types, maximal number is currently 4
 
-#define ARITHMETIC_TYPE_CNT 3
+#define ARITHMETIC_TYPE_CNT 2
 
 // List here all arithmetic types for which matrices, storages might be created
 
 #define ARITHMETIC_TYPE0        float
 #define ARITHMETIC_TYPE1        double
-#define ARITHMETIC_TYPE2        LongDouble
 
 // Define for the arithmetic types the counterparts of enum Scalar::Tyep
 
@@ -133,12 +132,11 @@ enum CBLAS_SIDE
 
 // For convenience we define ARRAY_TYPE
 
-#define ARRAY_TYPE_CNT 4
+#define ARRAY_TYPE_CNT 3
 
 #define ARRAY_TYPE0    int
 #define ARRAY_TYPE1    float
 #define ARRAY_TYPE2    double
-#define ARRAY_TYPE3    LongDouble
 
 
 #endif // LAMA_LAMATYPES_HPP_
