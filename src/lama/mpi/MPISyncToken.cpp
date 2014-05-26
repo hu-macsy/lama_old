@@ -35,6 +35,7 @@
 #include <lama/mpi/MPISyncToken.hpp>
 
 // others
+#include <lama/tracing.hpp>
 #include <lama/mpi/MPIUtils.hpp>
 
 #include <lama/exception/LAMAAssert.hpp>
@@ -65,6 +66,8 @@ void MPISyncToken::writeAt( std::ostream& stream ) const
 
 void MPISyncToken::wait()
 {
+    LAMA_REGION( "SyncToken.MPI.wait" )
+
     if ( isSynchronized() )
     {
         LAMA_LOG_WARN( logger, *this << ": waiting twice" )

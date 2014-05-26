@@ -334,12 +334,18 @@ void Communicator::shiftArray( LAMAArray<T>& recvArray, const LAMAArray<T>& send
         return;
     }
 
-    HostReadAccess<T> sendData( sendArray );
+    ContextPtr commContext = getCommunicationContext();
+
+    LAMA_LOG_DEBUG( logger, "shiftArray at this context " << *commContext 
+                            << ", sendArray = " << sendArray << ", recvArray = " << recvArray )
+
+    ReadAccess<T> sendData( sendArray, commContext );
+
     IndexType numSendElems = sendData.size();
 
     // make recv array large enough to fit for send data
 
-    HostWriteOnlyAccess<T> recvData( recvArray, numSendElems );
+    WriteOnlyAccess<T> recvData( recvArray, commContext, numSendElems );
 
     // but we are able to receive even more data if array is large enough
 
@@ -350,7 +356,8 @@ void Communicator::shiftArray( LAMAArray<T>& recvArray, const LAMAArray<T>& send
     IndexType numRecvElems = shiftData( recvData.get(), maxNumRecvElems, sendData.get(), numSendElems, direction );
 
     LAMA_LOG_INFO( logger,
-                   "shift, direction = " << direction << ", sent " << numSendElems << ", recvd " << numRecvElems << "( max was " << maxNumRecvElems << ")" )
+                   "shift, direction = " << direction << ", sent " << numSendElems 
+                   << ", recvd " << numRecvElems << "( max was " << maxNumRecvElems << ")" )
 
     recvData.resize( numRecvElems ); // take over the size
 }

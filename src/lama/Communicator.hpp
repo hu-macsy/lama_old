@@ -663,6 +663,13 @@ public:
         return mCommunicatorType;
     }
 
+    /** This routine provides a (Host-) Context that might be more efficient for 
+     *  the communication of data.
+     *
+     * @returns the ContextPtr
+     */
+    virtual ContextPtr getCommunicationContext() const = 0;
+
 protected:
 
     // Default constructor can only be called by base classes.
@@ -688,12 +695,6 @@ static    void getUserProcArray( PartitionId userProcArray[3] );
     template<typename T>
     IndexType shift0( T newVals[], const IndexType newSize,
                     const T oldVals[], const IndexType oldSize ) const;
-
-    /** getter for Context needed for Communication
-     *
-     * @returns the ContextPtr
-     */
-    virtual ContextPtr getCommunicationContext() const = 0;
 
 };
 

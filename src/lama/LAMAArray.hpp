@@ -292,6 +292,15 @@ public:
      */
     virtual Scalar::ScalarType getValueType() const;
 
+    /**
+     * @brief reserve a certain amount of data at a specific context 
+     *
+     * @param[in] context where a certain amount of data should be reserved
+     * @param[in] capacity amount of data to be allocated
+     *
+     */
+    void reserve( ContextPtr context, const IndexType capacity );
+
 protected:
 
     using _LAMAArray::mSize;

@@ -60,7 +60,11 @@ public:
 
     enum HostContextType
     {
-        DefaultHost, CUDAHost, OpenCLHost, PGAS, MaxHostContext
+        DefaultHost,    //!< stands for usual CPU memory 
+        CUDAHost,       //!< pinned memory that allows faster transfer to a certain CUDA Device
+        OpenCLHost,     //!< pinned memory that allows faster communication to OpenCL device
+        GASPIHost,      //!< pinned memory that allows faster communication in GASPI
+        MaxHostContext
     };
 
     virtual ~HostContext();

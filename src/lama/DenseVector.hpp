@@ -472,6 +472,7 @@ DenseVector<T>::DenseVector( const IndexType size, const OtherValueType* values,
     LAMAArrayUtils::assign( mLocalValues, valuesArrayRef, mContext );
 
     // Halo is not used yet
+
 }
 
 }
