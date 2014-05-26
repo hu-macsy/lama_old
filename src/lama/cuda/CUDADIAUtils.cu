@@ -1412,11 +1412,14 @@ void CUDADIAUtils::setInterface( DIAUtilsInterface& DIAUtils )
 {
     LAMA_LOG_INFO( logger, "set DIA routines for CUDA in Interface" )
 
-    LAMA_INTERFACE_REGISTER_T( DIAUtils, normalGEMV, float )
-    LAMA_INTERFACE_REGISTER_T( DIAUtils, normalGEMV, double )
+#define LAMA_DIA_UTILS_REGISTER(z, I, _)                                                 \
+    LAMA_INTERFACE_REGISTER_T( DIAUtils, normalGEMV, ARITHMETIC_TYPE##I )                \
+    LAMA_INTERFACE_REGISTER_T( DIAUtils, normalGEVM, ARITHMETIC_TYPE##I )                \
+                                                                                         
+    BOOST_PP_REPEAT( ARITHMETIC_TYPE_CNT, LAMA_DIA_UTILS_REGISTER, _ )
 
-    LAMA_INTERFACE_REGISTER_T( DIAUtils, normalGEVM, float )
-    LAMA_INTERFACE_REGISTER_T( DIAUtils, normalGEVM, double )
+#undef LAMA_DIA_UTILS_REGISTER
+
 }
 
 /* --------------------------------------------------------------------------- */

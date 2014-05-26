@@ -2230,51 +2230,31 @@ void CUDAELLUtils::setInterface( ELLUtilsInterface& ELLUtils )
     LAMA_INTERFACE_REGISTER( ELLUtils, hasDiagonalProperty )
     LAMA_INTERFACE_REGISTER( ELLUtils, check )
 
-    LAMA_INTERFACE_REGISTER_TT( ELLUtils, getRow, float, float )
-    LAMA_INTERFACE_REGISTER_TT( ELLUtils, getRow, float, double )
-    LAMA_INTERFACE_REGISTER_TT( ELLUtils, getRow, double, float )
-    LAMA_INTERFACE_REGISTER_TT( ELLUtils, getRow, double, double )
+#define LAMA_ELL_UTILS2_REGISTER(z, J, TYPE )                                       \
+    LAMA_INTERFACE_REGISTER_TT( ELLUtils, getRow, TYPE, ARITHMETIC_TYPE##J )        \
+    LAMA_INTERFACE_REGISTER_TT( ELLUtils, getValue, TYPE, ARITHMETIC_TYPE##J )      \
+    LAMA_INTERFACE_REGISTER_TT( ELLUtils, scaleValue, TYPE, ARITHMETIC_TYPE##J )    \
+    LAMA_INTERFACE_REGISTER_TT( ELLUtils, setCSRValues, TYPE, ARITHMETIC_TYPE##J )  \
+    LAMA_INTERFACE_REGISTER_TT( ELLUtils, getCSRValues, TYPE, ARITHMETIC_TYPE##J )  \
 
-    LAMA_INTERFACE_REGISTER_TT( ELLUtils, getValue, float, float )
-    LAMA_INTERFACE_REGISTER_TT( ELLUtils, getValue, float, double )
-    LAMA_INTERFACE_REGISTER_TT( ELLUtils, getValue, double, float )
-    LAMA_INTERFACE_REGISTER_TT( ELLUtils, getValue, double, double )
+#define LAMA_ELL_UTILS_REGISTER(z, I, _)                                            \
+    LAMA_INTERFACE_REGISTER_T( ELLUtils, normalGEMV, ARITHMETIC_TYPE##I )           \
+    LAMA_INTERFACE_REGISTER_T( ELLUtils, normalGEVM, ARITHMETIC_TYPE##I )           \
+    LAMA_INTERFACE_REGISTER_T( ELLUtils, sparseGEMV, ARITHMETIC_TYPE##I )           \
+    LAMA_INTERFACE_REGISTER_T( ELLUtils, sparseGEVM, ARITHMETIC_TYPE##I )           \
+    LAMA_INTERFACE_REGISTER_T( ELLUtils, jacobi, ARITHMETIC_TYPE##I )               \
+    LAMA_INTERFACE_REGISTER_T( ELLUtils, jacobiHalo, ARITHMETIC_TYPE##I )           \
+    LAMA_INTERFACE_REGISTER_T( ELLUtils, fillELLValues, ARITHMETIC_TYPE##I )        \
+                                                                                    \
+    BOOST_PP_REPEAT( ARITHMETIC_TYPE_CNT,                                           \
+                     LAMA_ELL_UTILS2_REGISTER,                                      \
+                     ARITHMETIC_TYPE##I )                                           \
 
-    LAMA_INTERFACE_REGISTER_TT( ELLUtils, scaleValue, float, float )
-    LAMA_INTERFACE_REGISTER_TT( ELLUtils, scaleValue, double, float )
-    LAMA_INTERFACE_REGISTER_TT( ELLUtils, scaleValue, float, double )
-    LAMA_INTERFACE_REGISTER_TT( ELLUtils, scaleValue, double, double )
+    BOOST_PP_REPEAT( ARITHMETIC_TYPE_CNT, LAMA_ELL_UTILS_REGISTER, _ )
 
-    LAMA_INTERFACE_REGISTER_TT( ELLUtils, setCSRValues, float, float )
-    LAMA_INTERFACE_REGISTER_TT( ELLUtils, setCSRValues, double, float )
-    LAMA_INTERFACE_REGISTER_TT( ELLUtils, setCSRValues, float, double )
-    LAMA_INTERFACE_REGISTER_TT( ELLUtils, setCSRValues, double, double )
+#undef LAMA_ELL_UTILS_REGISTER
+#undef LAMA_ELL_UTILS2_REGISTER
 
-    LAMA_INTERFACE_REGISTER_TT( ELLUtils, getCSRValues, float, float )
-    LAMA_INTERFACE_REGISTER_TT( ELLUtils, getCSRValues, float, double )
-    LAMA_INTERFACE_REGISTER_TT( ELLUtils, getCSRValues, double, float )
-    LAMA_INTERFACE_REGISTER_TT( ELLUtils, getCSRValues, double, double )
-
-    LAMA_INTERFACE_REGISTER_T( ELLUtils, normalGEMV, float )
-    LAMA_INTERFACE_REGISTER_T( ELLUtils, normalGEMV, double )
-
-    LAMA_INTERFACE_REGISTER_T( ELLUtils, sparseGEMV, float )
-    LAMA_INTERFACE_REGISTER_T( ELLUtils, sparseGEMV, double )
-
-    LAMA_INTERFACE_REGISTER_T( ELLUtils, normalGEVM, float )
-    LAMA_INTERFACE_REGISTER_T( ELLUtils, normalGEVM, double )
-
-    LAMA_INTERFACE_REGISTER_T( ELLUtils, sparseGEVM, float )
-    LAMA_INTERFACE_REGISTER_T( ELLUtils, sparseGEVM, double )
-
-    LAMA_INTERFACE_REGISTER_T( ELLUtils, jacobi, float )
-    LAMA_INTERFACE_REGISTER_T( ELLUtils, jacobi, double )
-
-    LAMA_INTERFACE_REGISTER_T( ELLUtils, jacobiHalo, float )
-    LAMA_INTERFACE_REGISTER_T( ELLUtils, jacobiHalo, double )
-
-    LAMA_INTERFACE_REGISTER_T( ELLUtils, fillELLValues, float )
-    LAMA_INTERFACE_REGISTER_T( ELLUtils, fillELLValues, double )
 }
 
 /* --------------------------------------------------------------------------- */

@@ -2906,42 +2906,28 @@ void CUDAJDSUtils::setInterface( JDSUtilsInterface& JDSUtils )
     LAMA_INTERFACE_REGISTER( JDSUtils, ilg2dlg )
     LAMA_INTERFACE_REGISTER( JDSUtils, setInversePerm )
 
-    LAMA_INTERFACE_REGISTER_TT( JDSUtils, scaleValue, float, float )
-    LAMA_INTERFACE_REGISTER_TT( JDSUtils, scaleValue, float, double )
-    LAMA_INTERFACE_REGISTER_TT( JDSUtils, scaleValue, double, float )
-    LAMA_INTERFACE_REGISTER_TT( JDSUtils, scaleValue, double, double )
+#define LAMA_JDS_UTILS2_REGISTER(z, J, TYPE )                                       \
+    LAMA_INTERFACE_REGISTER_TT( JDSUtils, getRow, TYPE, ARITHMETIC_TYPE##J )        \
+    LAMA_INTERFACE_REGISTER_TT( JDSUtils, getValue, TYPE, ARITHMETIC_TYPE##J )      \
+    LAMA_INTERFACE_REGISTER_TT( JDSUtils, scaleValue, TYPE, ARITHMETIC_TYPE##J )    \
+    LAMA_INTERFACE_REGISTER_TT( JDSUtils, setCSRValues, TYPE, ARITHMETIC_TYPE##J )  \
+    LAMA_INTERFACE_REGISTER_TT( JDSUtils, getCSRValues, TYPE, ARITHMETIC_TYPE##J )  \
 
-    LAMA_INTERFACE_REGISTER_TT( JDSUtils, getRow, float, float )
-    LAMA_INTERFACE_REGISTER_TT( JDSUtils, getRow, float, double )
-    LAMA_INTERFACE_REGISTER_TT( JDSUtils, getRow, double, float )
-    LAMA_INTERFACE_REGISTER_TT( JDSUtils, getRow, double, double )
+#define LAMA_JDS_UTILS_REGISTER(z, I, _)                                            \
+    LAMA_INTERFACE_REGISTER_T( JDSUtils, normalGEMV, ARITHMETIC_TYPE##I )           \
+    LAMA_INTERFACE_REGISTER_T( JDSUtils, normalGEVM, ARITHMETIC_TYPE##I )           \
+    LAMA_INTERFACE_REGISTER_T( JDSUtils, jacobi, ARITHMETIC_TYPE##I )               \
+    LAMA_INTERFACE_REGISTER_T( JDSUtils, jacobiHalo, ARITHMETIC_TYPE##I )           \
+                                                                                    \
+    BOOST_PP_REPEAT( ARITHMETIC_TYPE_CNT,                                           \
+                     LAMA_JDS_UTILS2_REGISTER,                                      \
+                     ARITHMETIC_TYPE##I )                                           \
 
-    LAMA_INTERFACE_REGISTER_TT( JDSUtils, getValue, float, float )
-    LAMA_INTERFACE_REGISTER_TT( JDSUtils, getValue, float, double )
-    LAMA_INTERFACE_REGISTER_TT( JDSUtils, getValue, double, float )
-    LAMA_INTERFACE_REGISTER_TT( JDSUtils, getValue, double, double )
+    BOOST_PP_REPEAT( ARITHMETIC_TYPE_CNT, LAMA_JDS_UTILS_REGISTER, _ )
 
-    LAMA_INTERFACE_REGISTER_TT( JDSUtils, getCSRValues, float, float )
-    LAMA_INTERFACE_REGISTER_TT( JDSUtils, getCSRValues, float, double )
-    LAMA_INTERFACE_REGISTER_TT( JDSUtils, getCSRValues, double, float )
-    LAMA_INTERFACE_REGISTER_TT( JDSUtils, getCSRValues, double, double )
+#undef LAMA_JDS_UTILS_REGISTER
+#undef LAMA_JDS_UTILS2_REGISTER
 
-    LAMA_INTERFACE_REGISTER_TT( JDSUtils, setCSRValues, float, float )
-    LAMA_INTERFACE_REGISTER_TT( JDSUtils, setCSRValues, float, double )
-    LAMA_INTERFACE_REGISTER_TT( JDSUtils, setCSRValues, double, float )
-    LAMA_INTERFACE_REGISTER_TT( JDSUtils, setCSRValues, double, double )
-
-    LAMA_INTERFACE_REGISTER_T( JDSUtils, jacobi, float )
-    LAMA_INTERFACE_REGISTER_T( JDSUtils, jacobi, double )
-
-    LAMA_INTERFACE_REGISTER_T( JDSUtils, normalGEMV, float )
-    LAMA_INTERFACE_REGISTER_T( JDSUtils, normalGEMV, double )
-
-    LAMA_INTERFACE_REGISTER_T( JDSUtils, normalGEVM, float )
-    LAMA_INTERFACE_REGISTER_T( JDSUtils, normalGEVM, double )
-
-    LAMA_INTERFACE_REGISTER_T( JDSUtils, jacobiHalo, float )
-    LAMA_INTERFACE_REGISTER_T( JDSUtils, jacobiHalo, double )
 }
 
 /* --------------------------------------------------------------------------- */
