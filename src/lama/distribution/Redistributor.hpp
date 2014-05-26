@@ -43,6 +43,7 @@
 // others
 #include <lama/distribution/Distribution.hpp>
 #include <lama/distribution/Halo.hpp>
+#include <lama/tracing.hpp>
 
 #include <lama/LAMAArray.hpp>
 #include <lama/HostReadAccess.hpp>
@@ -376,6 +377,8 @@ private:
 template<typename ValueType>
 void Redistributor::redistribute( LAMAArray<ValueType>& targetArray, const LAMAArray<ValueType>& sourceArray ) const
 {
+    LAMA_REGION( "Redistributor.redistribute" )
+
     {
         // make sure that target array has sufficient memory
 
@@ -410,6 +413,8 @@ void Redistributor::redistributeN(
     const LAMAArray<ValueType>& sourceArray,
     IndexType n ) const
 {
+    LAMA_REGION( "Redistributor.redistributeN" )
+
     {
         // make sure that target array has sufficient memory
 
@@ -446,6 +451,8 @@ void Redistributor::redistributeV(
     const LAMAArray<ValueType>& sourceArray,
     const LAMAArray<IndexType>& sourceOffsets ) const
 {
+    LAMA_REGION( "Redistributor.redistributeV" )
+
     // allocate memory for source (provides) and target (required) halo
 
     LAMAArray<ValueType> sourceHalo( getVHaloSourceSize() );
@@ -566,6 +573,8 @@ void Redistributor::copyV(
 template<typename ValueType>
 void Redistributor::exchangeHalo( LAMAArray<ValueType>& targetHalo, const LAMAArray<ValueType>& sourceHalo ) const
 {
+    LAMA_REGION( "Redistributor.exchangeHalo" )
+
     const Communicator& comm = mSourceDistribution->getCommunicator();
 
     // use asynchronous communication to avoid deadlocks
@@ -587,6 +596,8 @@ void Redistributor::exchangeHaloN(
     const LAMAArray<ValueType>& sourceHalo,
     const IndexType n ) const
 {
+    LAMA_REGION( "Redistributor.exchangeHaloN" )
+
     const Communicator& comm = mSourceDistribution->getCommunicator();
 
     // Communication plans are built by multiplication with n
@@ -609,6 +620,8 @@ void Redistributor::exchangeHaloN(
 template<typename ValueType>
 void Redistributor::exchangeVHalo( LAMAArray<ValueType>& targetHalo, const LAMAArray<ValueType>& sourceHalo ) const
 {
+    LAMA_REGION( "Redistributor.exchangeVHalo" )
+
     const Communicator& comm = mSourceDistribution->getCommunicator();
 
     LAMA_ASSERT_ERROR( mRequiredPlan.get(), "There was no previous call of buildVPlan" )

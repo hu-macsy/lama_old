@@ -1,8 +1,8 @@
 /**
- * @file emptyKernel.cu
+ * @file CUDATexture.hpp
  *
  * @license
- * Copyright (c) 2009-2013
+ * Copyright (c) 2011
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -25,28 +25,56 @@
  * SOFTWARE.
  * @endlicense
  *
- * @brief emptyKernel.cpp
- * @author Lauretta Schubert
- * @date 21.05.2013
- * @since 1.0.0
+ * @brief Using of Texture for CUDA
+ * @author Thomas Brandes
+ * @date 04.05.2013
+ * $Id$
+ */
+#ifndef LAMA_CUDA_TEXTURE_HPP_
+#define LAMA_CUDA_TEXTURE_HPP_
+
+#include <logging/logging.hpp>
+
+namespace lama
+{
+
+/** This class determines whether the texture on GPU device should be used or not.
+ *
  */
 
-#include <lama/Walltime.hpp>
-
-__global__
-void empty_kernel()
+class CUDATexture
 {
-}
 
-extern "C" double getKernelLaunchTime( int devNo )
-{
-    cudaSetDevice( devNo );
+public:
 
-    empty_kernel<<<1, 1>>>( );
+    /** Check whether textures should be used or not in kernel algorithms. */
 
-    double time = lama::Walltime::get();
-    cudaDeviceSynchronize();
-    empty_kernel<<<1, 1>>>();
-    cudaDeviceSynchronize();
-    return lama::Walltime::get() - time;
-}
+    static bool useTexture();
+
+private:
+
+    LAMA_LOG_DECL_STATIC_LOGGER( logger )
+
+    static bool initialized;  //!< will be set true after determination of theUseTextureFlag
+
+    static bool theUseTextureFlag; //!< result for useTexture if initialized is true
+
+    /** Set theUseTextureFlag by environment variable 
+     *
+     *  @return true if environment variable was correctly set to yes or no or 0 or 1
+     *
+     */
+
+    static bool getUseTextureByEnv();
+
+    /** Set the UseTextureFlag by device compute capability
+     *
+     *  Note: can only be called if there is an active device
+     */
+
+    static void setUseTextureByDevice();
+};
+
+} // namespace
+
+#endif //  LAMA_CUDA_TEXTURE_HPP_

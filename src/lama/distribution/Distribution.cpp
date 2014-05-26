@@ -40,6 +40,9 @@
 // assert
 #include <lama/exception/LAMAAssert.hpp>
 
+// tracing
+#include <lama/tracing.hpp>
+
 // boost
 #include <boost/scoped_array.hpp>
 #include <boost/preprocessor.hpp>
@@ -76,7 +79,7 @@ Distribution::Distribution( const IndexType globalSize, const CommunicatorPtr co
 
 Distribution::~Distribution()
 {
-    LAMA_LOG_INFO( logger, "~Distribution, global size " << mGlobalSize << ", communicator = " << mCommunicator )
+    LAMA_LOG_DEBUG( logger, "~Distribution, global size " << mGlobalSize << ", communicator = " << mCommunicator )
 }
 
 /* ---------------------------------------------------------------------- */
@@ -152,7 +155,9 @@ void Distribution::computeOwners(
 {
     LAMA_LOG_INFO( logger, "compute owners via communicator (default)" )
     // use communicator to compute ownership on each processor
-    mCommunicator->computeOwners( requiredIndexes, *this, owners );
+    IndexType n = requiredIndexes.size();
+    owners.resize( n );
+    mCommunicator->computeOwners( &owners[0], *this, &requiredIndexes[0], n );
 }
 
 /* ---------------------------------------------------------------------- */
@@ -168,27 +173,57 @@ std::ostream& operator<<( std::ostream& stream, Distribution const& dist )
 template<typename T1,typename T2>
 void Distribution::replicate( T1* allValues, const T2* localValues ) const
 {
+    LAMA_REGION( "Distribution.replicate" )
+
     const Communicator& comm = getCommunicator();
     IndexType currentSize = getLocalSize();
     // Implemenation via cyclic shifting of the vector data and distribution
     IndexType maxLocalSize = comm.max( currentSize );
     LAMA_LOG_DEBUG( logger, comm << ": local size = " << currentSize << ", maximal local size  = " << maxLocalSize )
+
     // Only allocate the needed size of the Arrays
-    boost::scoped_array<T1> valuesSend( new T1[maxLocalSize] );
-    boost::scoped_array<T1> valuesReceive( new T1[maxLocalSize] );
-    boost::scoped_array<IndexType> indexesSend( new IndexType[maxLocalSize] );
-    boost::scoped_array<IndexType> indexesReceive( new IndexType[maxLocalSize] );
+
+    LAMAArray<T1> valuesSend;
+    LAMAArray<T1> valuesReceive;
+    LAMAArray<IndexType> indexesSend;
+    LAMAArray<IndexType> indexesReceive;
+
     IndexType countValues = 0; // count values set in the global vector
 
     // set my owned indexes and my values
 
-    for ( IndexType i = 0; i < currentSize; i++ )
-    {
-        IndexType globalIndex = local2global( i );
-        indexesSend[i] = globalIndex;
-        valuesSend[i] = static_cast<T1>( localValues[i] ); // type conversion here
-        allValues[globalIndex] = static_cast<T1>( localValues[i] ); // type conversion here
+    ContextPtr commContext = comm.getCommunicationContext();
+
+    // capacity of send arrays should also be sufficient for receiving data
+
+    indexesSend.reserve( commContext, maxLocalSize );
+    valuesSend.reserve( commContext, maxLocalSize );
+
+    LAMA_LOG_INFO( logger, "replicate on this communication context: " << *commContext )
+
+    { 
+        WriteOnlyAccess<IndexType> writeIndexesSend( indexesSend, commContext, currentSize );
+        WriteOnlyAccess<T1> writeValuesSend( valuesSend, commContext, currentSize );
+
+        // current workaround as commContext works like HostContext
+
+        IndexType* wIndexesSend = writeIndexesSend.get();
+        T1* wValuesSend = writeValuesSend.get();
+
+        for ( IndexType i = 0; i < currentSize; i++ )
+        {
+            IndexType globalIndex = local2global( i );
+            LAMA_ASSERT_DEBUG( globalIndex < getGlobalSize(), *this << ": global index " << globalIndex << " illegal" )
+            wIndexesSend[i] = globalIndex;
+            wValuesSend[i] = static_cast<T1>( localValues[i] ); // type conversion here
+            allValues[globalIndex] = static_cast<T1>( localValues[i] ); // type conversion here
+        }
     }
+
+    // capacity of receive arrays should be sufficient for receiving data to avoid reallocations
+
+    indexesReceive.reserve( commContext, maxLocalSize );
+    valuesReceive.reserve( commContext, maxLocalSize );
 
     countValues += currentSize;
     // now nproc - 1 steps for cyclic shifting
@@ -196,19 +231,30 @@ void Distribution::replicate( T1* allValues, const T2* localValues ) const
 
     for ( PartitionId ip = 0; ip < np - 1; ++ip )
     {
-        IndexType newSize1 = 1;
-        newSize1 = comm.shiftData( indexesReceive.get(), maxLocalSize, indexesSend.get(), currentSize, 1 );
-        IndexType newSize2 = -1;
-        newSize2 = comm.shiftData( valuesReceive.get(), maxLocalSize, valuesSend.get(), currentSize, 1 );
-        LAMA_ASSERT_EQUAL_DEBUG( newSize1, newSize2 )
-        currentSize = newSize1;
+        comm.shiftArray( indexesReceive, indexesSend, 1);
+        comm.shiftArray( valuesReceive, valuesSend, 1);
+
+        LAMA_ASSERT_EQUAL_DEBUG( valuesReceive.size(), indexesReceive.size() )
+
+        currentSize = valuesReceive.size();
 
         // sort in the received values
 
-        for ( IndexType i = 0; i < currentSize; i++ )
-        {
-            const IndexType globalIndex = indexesReceive[i];
-            allValues[globalIndex] = valuesReceive[i]; // implicit type conversion done here
+        { 
+            ReadAccess<IndexType> readIndexesReceive( indexesReceive, commContext );
+            ReadAccess<T1> readValuesReceive( valuesReceive, commContext );
+
+            // current workaround as commContext works like HostContext
+
+            const IndexType* rIndexesReceive = readIndexesReceive.get();
+            const T1* rValuesReceive = readValuesReceive.get();
+        
+            for ( IndexType i = 0; i < currentSize; i++ )
+            {
+                const IndexType globalIndex = rIndexesReceive[i];
+                LAMA_ASSERT_DEBUG( globalIndex < getGlobalSize(), *this << ": global index " << globalIndex << " illegal" )
+                allValues[globalIndex] = rValuesReceive[i]; // implicit type conversion done here
+            }
         }
 
         countValues += currentSize;
@@ -225,6 +271,8 @@ void Distribution::replicate( T1* allValues, const T2* localValues ) const
 template<typename T1,typename T2>
 void Distribution::replicateN( T1* allValues, const T2* localValues, const IndexType n ) const
 {
+    LAMA_REGION( "Distribution.replicateN" )
+
     const Communicator& comm = getCommunicator();
     IndexType currentSize = getLocalSize();
     // Implemenation via cyclic shifting of the vector data and distribution

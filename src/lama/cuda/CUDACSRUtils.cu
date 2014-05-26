@@ -44,9 +44,10 @@
 // others cuda
 #include <lama/cuda/utils.cu.h>
 #include <lama/cuda/CUDAError.hpp>
+#include <lama/cuda/CUDAUtils.hpp>
 #include <lama/cuda/CUDACSRUtils.hpp>
 #include <lama/cuda/CUDACOOUtils.hpp>
-#include <lama/cuda/CUDAUtils.hpp>
+#include <lama/cuda/CUDATexture.hpp>
 #include <lama/cuda/CUDASettings.hpp>
 #include <lama/cuda/CUDAStreamSyncToken.hpp>
 

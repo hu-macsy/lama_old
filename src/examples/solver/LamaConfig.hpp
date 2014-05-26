@@ -366,6 +366,22 @@ void LamaConfig::setArg( const char* arg )
     {
         mValueType = lama::Scalar::DOUBLE;
     }
+    else if ( ( "LONGDOUBLE" == val ) || ( "LP" == val ) )
+    {
+        mValueType = lama::Scalar::LONG_DOUBLE;
+    }
+    else if ( ( "COMPLEX" == val ) || ( "CP" == val ) )
+    {
+        mValueType = lama::Scalar::COMPLEX;
+    }
+    else if ( ( "DOUBLECOMPLEX" == val ) || ( "COMPLEXDOUBLE" == val) || ( "ZP" == val ) )
+    {
+        mValueType = lama::Scalar::DOUBLE_COMPLEX;
+    }
+    else if ( ( "LONGCOMPLEX" == val ) || ( "COMPLEXLONG" == val) )
+    {
+        mValueType = lama::Scalar::LONG_DOUBLE_COMPLEX;
+    }
     else if ( "TEXTURE" == val )
     {
         putenv( const_cast<char*>( "LAMA_CUDA_USE_TEXTURE=1" ) );

@@ -56,12 +56,13 @@ void HaloBuilder::build( const Distribution& distribution, const std::vector<Ind
     LAMA_LOG_INFO( logger,
                    communicator << ": building halo for " << noPartitions << " partitions, # requiredIndexes = " << requiredIndexes.size() )
 
-    std::vector<PartitionId> owners;
-    owners.reserve( requiredIndexes.size() );
+    IndexType nIndexes = requiredIndexes.size();
+
+    std::vector<PartitionId> owners( nIndexes );
 
     {
         LAMA_REGION( "HaloBuilder.computeOwners" )
-        communicator.computeOwners( requiredIndexes, distribution, owners );
+        communicator.computeOwners( &owners[0], distribution, &requiredIndexes[0], nIndexes );
     }
 #ifdef LAMA_LOG_TRACE
     for ( unsigned int i = 0; i < requiredIndexes.size(); ++i )

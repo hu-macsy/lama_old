@@ -56,6 +56,11 @@ void TraceRegionRecord::start( const char* regionName, const char* file, int lno
 {
     // enter a region withtout using member variables
 
+    if ( !TraceConfig::globalTraceFlag )
+    {
+        return;
+    }
+
     boost::shared_ptr<TraceConfig> traceConfig = TraceConfig::getInstancePtr();
 
     if ( !traceConfig->isEnabled() )
@@ -93,6 +98,11 @@ void TraceRegionRecord::start( const char* regionName, const char* file, int lno
 void TraceRegionRecord::stop( const char* regionName )
 {
     // enter a region withtout using member variables
+
+    if ( !TraceConfig::globalTraceFlag )
+    {
+        return;
+    }
 
     boost::shared_ptr<TraceConfig> traceConfig = TraceConfig::getInstancePtr();
 
@@ -164,11 +174,18 @@ void TraceRegionRecord::enter( const char* regionName, const char* file, int lno
 
 TraceRegionRecord::TraceRegionRecord( const char* regionName, const char* file, int lno )
 {
+    mRegionTable = NULL;
+
+    if ( !TraceConfig::globalTraceFlag )
+    {
+        // tracing is switched off in source code
+        return;
+    }
+
     mTraceConfig = TraceConfig::getInstancePtr();
 
     if ( !mTraceConfig->isEnabled() )
     {
-        mRegionTable = NULL;
         return;
     }
 
@@ -178,14 +195,19 @@ TraceRegionRecord::TraceRegionRecord( const char* regionName, const char* file, 
 /* -------------------------------------------------------------------------- */
 
 TraceRegionRecord::TraceRegionRecord( const char* regionName, int n, const char* file, int lno )
-
 {
+    mRegionTable = NULL;
+
+    if ( !TraceConfig::globalTraceFlag )
+    {
+        // tracing is switched off in source code
+        return;
+    }
+
     mTraceConfig = TraceConfig::getInstancePtr();
 
     if ( !mTraceConfig->isEnabled() )
     {
-        mRegionTable = NULL;
-
         return;
     }
 

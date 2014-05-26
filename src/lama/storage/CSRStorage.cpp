@@ -1493,7 +1493,7 @@ SyncToken* CSRStorage<ValueType>::matrixTimesVectorAsync(
 
         LAMA_LOG_INFO( logger, *this << ": matrixTimesVectorAsync on Host by own thread" )
 
-        return new TaskSyncToken( bind( pf, this, result, alpha, x, beta, y ) );
+		return new TaskSyncToken( bind( pf, this, result, alpha, x, beta, y ) );
     }
 
     LAMA_ASSERT_EQUAL_ERROR( x.size(), mNumColumns )
