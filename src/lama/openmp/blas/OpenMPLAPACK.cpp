@@ -45,6 +45,9 @@
 // macros
 #include <lama/macros/unused.hpp>
 
+// C
+#include <cmath>
+
 #ifdef __cplusplus
 extern "C"
 {
@@ -99,7 +102,7 @@ LAMA_LOG_INFO( logger, "getrf<" << Scalar::getType<T>()<< "> for A of size " << 
             index = i;
             for ( int j = i; j < lda; j++ )
             {
-                if ( ::abs( a[lda * ipiv[i] + j] ) > ::abs( a[lda * ipiv[i] + index] ) )
+                if ( std::abs( a[lda * ipiv[i] + j] ) > std::abs( a[lda * ipiv[i] + index] ) )
                 {
                     index = j;
                 }
@@ -132,7 +135,7 @@ LAMA_LOG_INFO( logger, "getrf<" << Scalar::getType<T>()<< "> for A of size " << 
             index = i;
             for ( int j = i; j < lda; j++ )
             {
-                if ( ::abs( a[lda * ipiv[j] + i] ) > ::abs( a[lda * ipiv[index] + i] ) )
+                if ( std::abs( a[lda * ipiv[j] + i] ) > std::abs( a[lda * ipiv[index] + i] ) )
                 {
                     index = j;
                 }
