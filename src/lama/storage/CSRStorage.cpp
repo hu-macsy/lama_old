@@ -984,6 +984,8 @@ void CSRStorage<ValueType>::scaleImpl( const LAMAArray<OtherValueType>& diagonal
 
     LAMA_INTERFACE_FN_TT( scaleRows, loc, CSRUtils, Scale, ValueType, OtherValueType )
 
+    LAMA_CONTEXT_ACCESS( loc )
+
     {
         ReadAccess<OtherValueType> rDiagonal( diagonal, loc );
         ReadAccess<IndexType> csrIA( mIa, loc );

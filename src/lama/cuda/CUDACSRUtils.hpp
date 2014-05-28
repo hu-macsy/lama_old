@@ -74,6 +74,15 @@ public:
         int numColumns,
         int numValues );
 
+    /** Implementation for CSRUtilsInterface::Mult::scaleRows  */
+
+    template<typename ValueType1,typename ValueType2>
+    static void scaleRows(
+        ValueType1 csrValues[],
+        const IndexType csrIA[],
+        const IndexType numRows,
+        const ValueType2 values[] );
+
     /** Implementation for CSRUtilsInterface::Mult::normalGEMV  */
 
     template<typename ValueType>
