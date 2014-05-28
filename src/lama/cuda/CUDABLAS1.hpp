@@ -38,6 +38,7 @@
 
 // others
 #include <lama/LAMATypes.hpp>
+#include <logging/logging.hpp>
 
 #include <cublas.h>
 #include <cuda_runtime_api.h>
@@ -169,6 +170,8 @@ private:
         SyncToken* syncToken );
 
 private:
+
+    LAMA_LOG_DECL_STATIC_LOGGER( logger )
 
     template<typename T>
     static void sum_launcher( const int n, T alpha, const T* x, T beta, const T* y, T* z, cudaStream_t stream );

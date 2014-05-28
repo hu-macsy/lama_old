@@ -33,13 +33,15 @@
 #include <iostream>
 
 #include <logging.hpp>
-#include <cstdlib>         // import getenv
+#include <cstdlib>         // import getenv, putenv
 #include <cstdio>          // FILE
 #include <stdexcept>       // runtime_error
 #include <cstring>
 
 // hpp
 #include <logging/GenLogger.hpp>
+
+#include <boost/shared_ptr.hpp>
 
 #undef DEBUGGING
 
@@ -51,6 +53,8 @@ namespace log4lama
 // default is not to flush
 
 bool GenLogger::sFlush = false;
+
+void ( *GenLogger::myPrintf ) ( const char* format, ... ) = ( void (*) ( const char* format, ... ) ) &printf ;
 
 /********************************************************************
  *  Static variable: rootLogger for generic logging                  *
@@ -127,6 +131,10 @@ static bool string2bool( const std::string& value )
  *  help routine: evalEntry                                          *
  ********************************************************************/
 
+// Collect allocated memory for environment variables
+
+static vector<boost::shared_ptr<string> > environmentStack;
+
 static int evalEntry( char* line, int length, const char* /* filename */)
 {
     line[length] = '\0';
@@ -185,6 +193,24 @@ static int evalEntry( char* line, int length, const char* /* filename */)
     if ( name == "flush" )
     {
         GenLogger::setFlush( string2bool( value ) );
+        return 1;
+    }
+
+    // take entries of LAMA_xxx as environment variables
+
+    if ( strncmp( name.c_str(), "LAMA_", 5 ) == 0 )
+    {
+        // this is not a logging entry so take it as environment
+
+        string* env = new string( name + "=" + value );
+
+        // make shared pointer and push it on a stack to keep it for lifetime
+        // sothat memory will be deleted at the end of the run
+
+        environmentStack.push_back( boost::shared_ptr<string>( env ) );
+
+        putenv( const_cast< char*> ( env->c_str() ) );
+
         return 1;
     }
 
@@ -275,6 +301,8 @@ int GenLogger::readConfig( const char* fname )
 
 void GenLogger::configure()
 {
+    std::string configFileString;  // might be used
+
     if ( !rootLogger )
     {
         throw std::runtime_error( "configure: rootLogger not available yet" );
@@ -290,7 +318,28 @@ void GenLogger::configure()
 
     if ( configFile == NULL )
     {
-        LAMA_LOG_WARN( ( *rootLogger ), "LAMA_LOG not set, use default configuration" );
+        // environment variable not set, so we try it at $HOME/.log4lamarc
+
+        const char* home = getenv( "HOME" );
+
+        if ( home != NULL )
+        {
+            configFileString = home;
+            configFileString += "/.log4lamarc";
+
+            FILE* fp = fopen ( configFileString.c_str(), "r" );
+
+            if ( fp != NULL )
+            {
+                fclose( fp );
+                configFile = configFileString.c_str();
+            }
+        }
+    }
+
+    if ( configFile == NULL )
+    {
+        LAMA_LOG_WARN( ( *rootLogger ), "LAMA_LOG not set, no $HOME/.log4lamarc, so use default configuration" );
     }
     else if ( strlen( configFile ) == 0 )
     {
@@ -339,8 +388,8 @@ void GenLogger::configure()
 
 void GenLogger::log( const char* level, SourceLocation& loc, const string& msg )
 {
-    printf( "%s (%s::%d,func=%s) %s: %s\n", getFullName().c_str(), loc.mFileName, loc.mLine, loc.mFuncName, level,
-            msg.c_str() );
+    myPrintf( "%s (%s::%d,func=%s) %s: %s\n", getFullName().c_str(), loc.mFileName, loc.mLine, loc.mFuncName, level,
+              msg.c_str() );
 
     if ( sFlush )
     {

@@ -87,6 +87,8 @@ public:
 
     static void setFlush( bool flush );
 
+    static void ( *myPrintf ) ( const char* format, ... );
+
 private:
 
     static bool sFlush; //!< if true flush each loggging output
