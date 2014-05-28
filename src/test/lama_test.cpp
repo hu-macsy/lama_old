@@ -78,7 +78,8 @@ int main( int argc, char* argv[] )
     char* context = getenv( "LAMA_TEST_CONTEXT" );
     if ( context == NULL )
     {
-        putenv( const_cast<char*>( "LAMA_TEST_CONTEXT=*" ) );
+        int replace = 1;
+        setenv( "LAMA_TEST_CONTEXT", "*", replace );
     }
 
     if ( argc > 1 )
@@ -138,11 +139,8 @@ int main( int argc, char* argv[] )
         iterator = runtime_arguments.find( "--lama_test_context" );
         if ( iterator != runtime_arguments.end() )
         {
-            std::string s = ( "LAMA_TEST_CONTEXT=" + iterator->second );
-            char* buffer = new char[s.length()];
-            std::strcpy( buffer, s.c_str() );
-            /*int error = */
-            putenv( buffer );
+            int replace = 1;
+            setenv( "LAMA_TEST_CONTEXT", iterator->second.c_str(), replace );
         }
 
         //if a regular expression is used in a base test:

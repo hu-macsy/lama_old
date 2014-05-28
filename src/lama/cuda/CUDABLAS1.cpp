@@ -52,6 +52,8 @@
 namespace lama
 {
 
+LAMA_LOG_DEF_LOGGER( CUDABLAS1::logger, "CUDA.BLAS1" )
+
 /** scale */
 
 template<>
@@ -59,7 +61,7 @@ void CUDABLAS1::scal( IndexType n, const float alpha, float* x_d, const IndexTyp
 {
     if ( incx == 0 )
     {
-    	return;
+        return;
     }
 
     LAMA_CHECK_CUDA_ACCESS
@@ -95,7 +97,7 @@ void CUDABLAS1::scal( IndexType n, const double alpha, double* x_d, const IndexT
 {
     if ( incx <= 0 )
     {
-    	return;
+        return;
     }
 
     LAMA_CHECK_CUDA_ACCESS
@@ -133,10 +135,10 @@ float CUDABLAS1::nrm2( IndexType n, const float* x_d, IndexType incx, SyncToken*
 {
     if ( incx <= 0 )
     {
-    	return 0.0;
+        return 0.0;
     }
 
-	LAMA_CHECK_CUDA_ACCESS
+    LAMA_CHECK_CUDA_ACCESS
 
     cudaStream_t stream = NULL;
 
@@ -171,7 +173,7 @@ double CUDABLAS1::nrm2( IndexType n, const double* x_d, IndexType incx, SyncToke
 {
     if ( incx <= 0 )
     {
-    	return 0.0;
+        return 0.0;
     }
 
     LAMA_CHECK_CUDA_ACCESS
@@ -210,7 +212,7 @@ float CUDABLAS1::asum( const IndexType n, const float* x_d, const IndexType incX
 {
     if ( incX <= 0 )
     {
-    	return 0.0;
+        return 0.0;
     }
 
     LAMA_CHECK_CUDA_ACCESS
@@ -248,10 +250,10 @@ double CUDABLAS1::asum( const IndexType n, const double* x_d, const IndexType in
 {
     if ( incX <= 0 )
     {
-    	return 0.0;
+        return 0.0;
     }
 
-	LAMA_CHECK_CUDA_ACCESS
+    LAMA_CHECK_CUDA_ACCESS
 
     cudaStream_t stream = NULL;
 
@@ -356,7 +358,7 @@ void CUDABLAS1::swap(
 {
     if ( (incX <= 0) || (incY <= 0) )
     {
-    	return;
+        return;
     }
 
     LAMA_CHECK_CUDA_ACCESS
@@ -398,7 +400,7 @@ void CUDABLAS1::swap(
 {
     if ( (incX <= 0) || (incY <= 0) )
     {
-    	return;
+        return;
     }
 
     LAMA_CHECK_CUDA_ACCESS
@@ -436,7 +438,7 @@ void CUDABLAS1::copy( IndexType n, const float* x_d, IndexType incx, float* y_d,
 {
     if ( (incx <= 0) || (incy <= 0) )
     {
-    	return;
+        return;
     }
 
     LAMA_CHECK_CUDA_ACCESS
@@ -478,7 +480,7 @@ void CUDABLAS1::copy(
 {
     if ( (incx <= 0) || (incy <= 0) )
     {
-    	return;
+        return;
     }
 
     LAMA_CHECK_CUDA_ACCESS
@@ -523,10 +525,10 @@ void CUDABLAS1::axpy(
 {
     LAMA_REGION( "CUDA.BLAS1.saxpy" )
 
-	if ( (incx <= 0) || (incy <= 0) )
-	{
-		return;
-	}
+    if ( (incx <= 0) || (incy <= 0) )
+    {
+        return;
+    }
 
     LAMA_CHECK_CUDA_ACCESS
 
@@ -568,10 +570,10 @@ void CUDABLAS1::axpy(
 {
     LAMA_REGION( "CUDA.BLAS1.daxpy" )
 
-	if ( (incx <= 0) || (incy <= 0) )
-	{
-		return;
-	}
+    if ( (incx <= 0) || (incy <= 0) )
+    {
+        return;
+    }
 
     LAMA_CHECK_CUDA_ACCESS
 
@@ -615,10 +617,13 @@ float CUDABLAS1::dot(
 {
     LAMA_REGION( "CUDA.BLAS1.sdot" )
 
-	if ( (incx <= 0) || (incy <= 0) )
-	{
-		return 0.0;
-	}
+    LAMA_LOG_DEBUG( logger, "CUDABLAS1:sdot, n = " << n << ", incx = " << incx << ", incy = " << incy 
+                             << ", x_d = " << x_d << ", y_d = " << y_d )
+
+    if ( (incx <= 0) || (incy <= 0) )
+    {
+        return 0.0;
+    }
 
     LAMA_CHECK_CUDA_ACCESS
 
@@ -661,10 +666,13 @@ double CUDABLAS1::dot(
 {
     LAMA_REGION( "CUDA.BLAS1.ddot" )
 
-	if ( (incx <= 0) || (incy <= 0) )
-	{
-		return 0.0;
-	}
+    LAMA_LOG_DEBUG( logger, "CUDABLAS1:ddot, n = " << n << ", incx = " << incx << ", incy = " << incy 
+                            << ", x_d = " << x_d << ", y_d = " << y_d )
+
+    if ( (incx <= 0) || (incy <= 0) )
+    {
+        return 0.0;
+    }
 
     LAMA_CHECK_CUDA_ACCESS
 
@@ -702,7 +710,7 @@ void CUDABLAS1::sum( const IndexType n, T alpha, const T* x, T beta, const T* y,
 {
     if ( n <= 0 )
     {
-    	return;
+        return;
     }
 
     LAMA_CHECK_CUDA_ACCESS
