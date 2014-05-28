@@ -384,19 +384,23 @@ void LamaConfig::setArg( const char* arg )
     }
     else if ( "TEXTURE" == val )
     {
-        putenv( const_cast<char*>( "LAMA_CUDA_USE_TEXTURE=1" ) );
+        int replace = 1;
+        setenv( "LAMA_CUDA_USE_TEXTURE", "1", replace );
     }
     else if ( "NOTEXTURE" == val )
     {
-        putenv( const_cast<char*>( "LAMA_CUDA_USE_TEXTURE=0" ) );
+        int replace = 1;
+        setenv( "LAMA_CUDA_USE_TEXTURE", "0", replace );
     }
     else if ( ( "SHAREDMEM" == val ) || ( "SM" == val ) )
     {
-        putenv( const_cast<char*>( "LAMA_CUDA_USE_SHARED_MEM=1" ) );
+        int replace = 1;
+        setenv( "LAMA_CUDA_USE_SHARED_MEM", "1", replace );
     }
     else if ( ( "NOSHAREDMEM" == val ) || ( "NOSM" == val ) )
     {
-        putenv( const_cast<char*>( "LAMA_CUDA_USE_SHARED_MEM=0" ) );
+        int replace = 1;
+        setenv( "LAMA_CUDA_USE_SHARED_MEM", "0", replace );
     }
     else if ( "LOG_HISTORY" == val ) 
     {
@@ -451,10 +455,11 @@ void LamaConfig::setArg( const char* arg )
         int narg = sscanf( val.c_str() + 1, "%d", &numBlocks );
         if ( narg > 0 )
         {
-            static char envSetting[ 256 ];
+            char envSetting[ 256 ];
             sprintf( envSetting, "LAMA_CUDA_BLOCK_SIZE=%d", numBlocks );
-            putenv( envSetting );
-            std::cout << "Environment setting : " << envSetting << std::endl;
+            int replace = 1;
+            setenv( "LAMA_CUDA_BLOCK_SIZE", envSetting, replace );
+            std::cout << "Environment setting: LAMA_CUDA_BLOCK_SIZE = " << envSetting << std::endl;
         }
         else
         {

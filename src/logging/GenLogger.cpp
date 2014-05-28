@@ -33,7 +33,7 @@
 #include <iostream>
 
 #include <logging.hpp>
-#include <cstdlib>         // import getenv, putenv
+#include <cstdlib>         // import getenv, setenv
 #include <cstdio>          // FILE
 #include <stdexcept>       // runtime_error
 #include <cstring>
@@ -131,10 +131,6 @@ static bool string2bool( const std::string& value )
  *  help routine: evalEntry                                          *
  ********************************************************************/
 
-// Collect allocated memory for environment variables
-
-static vector<boost::shared_ptr<string> > environmentStack;
-
 static int evalEntry( char* line, int length, const char* /* filename */)
 {
     line[length] = '\0';
@@ -201,15 +197,17 @@ static int evalEntry( char* line, int length, const char* /* filename */)
     if ( strncmp( name.c_str(), "LAMA_", 5 ) == 0 )
     {
         // this is not a logging entry so take it as environment
+        // Note: use of putenv is unsafe for auto-strings
 
-        string* env = new string( name + "=" + value );
-
-        // make shared pointer and push it on a stack to keep it for lifetime
-        // sothat memory will be deleted at the end of the run
-
-        environmentStack.push_back( boost::shared_ptr<string>( env ) );
-
-        putenv( const_cast< char*> ( env->c_str() ) );
+#ifdef WIN32
+        if ( getenv( name.c_str() ) == 0 )
+        {
+            _putenv_s( name.c_str(), value.c_str() );
+        }
+#else
+        int replace = 0; // do not override if it has already been set by user
+        setenv( name.c_str(), value.c_str(), replace );
+#endif
 
         return 1;
     }
