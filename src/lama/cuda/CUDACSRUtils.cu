@@ -44,9 +44,10 @@
 // others cuda
 #include <lama/cuda/utils.cu.h>
 #include <lama/cuda/CUDAError.hpp>
+#include <lama/cuda/CUDAUtils.hpp>
 #include <lama/cuda/CUDACSRUtils.hpp>
 #include <lama/cuda/CUDACOOUtils.hpp>
-#include <lama/cuda/CUDAUtils.hpp>
+#include <lama/cuda/CUDATexture.hpp>
 #include <lama/cuda/CUDASettings.hpp>
 #include <lama/cuda/CUDAStreamSyncToken.hpp>
 
@@ -964,6 +965,57 @@ void sparse_gevm_kernel(
         }
         result[i] = alpha * value;
     }
+}
+
+/* ------------------------------------------------------------------------------------------------------------------ */
+/*                                                  scaleRows                                                         */
+/* ------------------------------------------------------------------------------------------------------------------ */
+
+template<typename ValueType,typename OtherValueType>
+__global__
+void scaleRowsKernel(
+    ValueType* values,
+    const IndexType* ia, 
+    const IndexType numRows,
+    const OtherValueType *diagonal )
+{
+    const int i = threadId( gridDim, blockIdx, blockDim, threadIdx );
+
+    if ( i < numRows )
+    {
+        ValueType tmp = static_cast<OtherValueType>( diagonal[i] );
+
+        for ( IndexType j = ia[i]; j < ia[i + 1]; ++j )
+        {
+            values[j] *= tmp;
+        }
+    }
+}
+
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType1,typename ValueType2>
+void CUDACSRUtils::scaleRows(
+    ValueType1 csrValues[],
+    const IndexType csrIA[],
+    const IndexType numRows,
+    const ValueType2 values[] )
+{
+    LAMA_REGION( "CUDA.CSRUtils.scaleRows" )
+
+    LAMA_LOG_INFO( logger, "scaleRows<" << Scalar::getType<ValueType1>() << ","
+                           << Scalar::getType<ValueType2>() << ">" 
+                           << ", numrows= " << numRows )
+
+    LAMA_CHECK_CUDA_ACCESS
+
+    const int blockSize = CUDASettings::getBlockSize();
+    dim3 dimBlock( blockSize, 1, 1 );
+    dim3 dimGrid = makeGrid( numRows, dimBlock.x );
+
+    scaleRowsKernel<<<dimGrid, dimBlock>>>( csrValues, csrIA, numRows, values );
+
+    LAMA_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "CSRUtils:scaleRowsKernel FAILED" )
 }
 
 /* --------------------------------------------------------------------------- */
@@ -3240,6 +3292,9 @@ void CUDACSRUtils::setInterface( CSRUtilsInterface& CSRUtils )
     LAMA_INTERFACE_REGISTER( CSRUtils, matrixAddSizes )
     LAMA_INTERFACE_REGISTER( CSRUtils, matrixMultiplySizes )
 
+#define LAMA_CSR_UTILS2_REGISTER(z, J, TYPE )                                        \
+    LAMA_INTERFACE_REGISTER_TT( CSRUtils, scaleRows, TYPE, ARITHMETIC_TYPE##J )      \
+
 #define LAMA_CSR_UTILS_REGISTER(z, I, _)                                             \
     LAMA_INTERFACE_REGISTER_T( CSRUtils, sparseGEMV, ARITHMETIC_TYPE##I )            \
     LAMA_INTERFACE_REGISTER_T( CSRUtils, sparseGEVM, ARITHMETIC_TYPE##I )            \
@@ -3251,6 +3306,10 @@ void CUDACSRUtils::setInterface( CSRUtilsInterface& CSRUtils )
     LAMA_INTERFACE_REGISTER_T( CSRUtils, convertCSR2CSC, ARITHMETIC_TYPE##I )        \
     LAMA_INTERFACE_REGISTER_T( CSRUtils, matrixAdd, ARITHMETIC_TYPE##I )             \
     LAMA_INTERFACE_REGISTER_T( CSRUtils, matrixMultiply, ARITHMETIC_TYPE##I )        \
+                                                                                     \
+    BOOST_PP_REPEAT( ARITHMETIC_TYPE_CNT,                                            \
+                     LAMA_CSR_UTILS2_REGISTER,                                       \
+                     ARITHMETIC_TYPE##I )                                            \
 
 BOOST_PP_REPEAT( ARITHMETIC_TYPE_CNT, LAMA_CSR_UTILS_REGISTER, _ )
 

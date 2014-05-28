@@ -66,7 +66,7 @@ typedef long double LongDouble;
 
 /** Definition for a constant value that indicates a non-available index.
  */
-const IndexType nIndex = std::numeric_limits<IndexType>::max();
+static const IndexType nIndex = std::numeric_limits<IndexType>::max();
 
 /** Data type that is used for numbering of partitions.
  *
@@ -75,7 +75,7 @@ typedef int PartitionId;
 
 /** Definition for a constant value that indicates a non-available partition.
  */
-const PartitionId nPartition = std::numeric_limits<PartitionId>::max();
+static const PartitionId nPartition = std::numeric_limits<PartitionId>::max();
 
 /** Enumeration type for storage order of two-dimensional arrays, taken
  *  over from cblas.

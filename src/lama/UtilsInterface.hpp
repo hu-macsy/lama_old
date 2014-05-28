@@ -924,8 +924,8 @@ struct ELLUtilsInterface
                                       const ValueType oldSolution[],
                                       const ValueType omega,
                                       SyncToken* syncToken );
-
-        /**
+                                      
+       /**
          *  This method fills up the arrays ja and values of the ELL format with
          *  useful values to make matrix-vector multiplication efficient.
          *
@@ -941,7 +941,6 @@ struct ELLUtilsInterface
             const IndexType ellSizes[],
             const IndexType numRows,
             const IndexType numValuesPerRow );
-
     };
 
     LAMA_INTERFACE_DEFINE_T( Solver, jacobi )

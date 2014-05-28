@@ -48,6 +48,7 @@ set ( CLASSES
         CUDALAPACK
         CUDAStreamSyncToken
         CUDASettings
+        CUDATexture
     )
 
 lama_classes ( ${CLASSES} )

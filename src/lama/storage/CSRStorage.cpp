@@ -984,6 +984,8 @@ void CSRStorage<ValueType>::scaleImpl( const LAMAArray<OtherValueType>& diagonal
 
     LAMA_INTERFACE_FN_TT( scaleRows, loc, CSRUtils, Scale, ValueType, OtherValueType )
 
+    LAMA_CONTEXT_ACCESS( loc )
+
     {
         ReadAccess<OtherValueType> rDiagonal( diagonal, loc );
         ReadAccess<IndexType> csrIA( mIa, loc );
@@ -1493,7 +1495,7 @@ SyncToken* CSRStorage<ValueType>::matrixTimesVectorAsync(
 
         LAMA_LOG_INFO( logger, *this << ": matrixTimesVectorAsync on Host by own thread" )
 
-        return new TaskSyncToken( bind( pf, this, result, alpha, x, beta, y ) );
+		return new TaskSyncToken( bind( pf, this, result, alpha, x, beta, y ) );
     }
 
     LAMA_ASSERT_EQUAL_ERROR( x.size(), mNumColumns )

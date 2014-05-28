@@ -474,6 +474,49 @@ ContextPtr LAMAArray<ValueType>::getValidContext( const Context::ContextType pre
 /* ---------------------------------------------------------------------------------*/
 
 template<typename ValueType>
+void LAMAArray<ValueType>::reserve( ContextPtr context, const IndexType capacity )
+{
+    size_t contextIndex = nContextIndex;
+
+    // search for an available entry
+
+    for ( size_t i = 0; i < mContextData.size(); ++i )
+    {
+        const ContextData& entry = *mContextData[i];
+
+        if ( *entry.context == *context )
+        {
+            contextIndex = i;
+        }
+        else if ( entry.lock[ContextData::Write] )
+        {
+            LAMA_THROWEXCEPTION( "no further access on write locked array " << *this )
+        }
+    }
+
+    // if context is used first time, make new entry for context data
+
+    if ( contextIndex == nContextIndex )
+    {
+        contextIndex = mContextData.size();
+        mContextData.push_back( new ContextData( context ) );
+        LAMA_LOG_DEBUG( logger, "new context data entry for " << *context << ", index = " << contextIndex )
+
+        // pointer = ..., size = , ... allocated, valid, lock ...
+    }
+
+    // Error if entry is locked
+
+    // now resize
+
+    bool copyFlag = mContextData[ contextIndex ]->valid;
+
+    reserve( contextIndex, capacity, copyFlag );
+}
+
+/* ---------------------------------------------------------------------------------*/
+
+template<typename ValueType>
 void LAMAArray<ValueType>::fetch( ContextData& target, const ContextData& source ) const
 {
     LAMA_LOG_INFO( logger,
