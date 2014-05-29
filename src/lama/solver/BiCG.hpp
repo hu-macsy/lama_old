@@ -85,7 +85,7 @@ public:
         BiCGRuntime();
         virtual ~BiCGRuntime();
 
-        Matrix* mTransposeA;
+        boost::shared_ptr<Matrix> mTransposeA;
         boost::shared_ptr<Vector> mP2;
         boost::shared_ptr<Vector> mQ2;
         boost::shared_ptr<Vector> mZ2;
