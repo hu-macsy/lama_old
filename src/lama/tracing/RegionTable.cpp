@@ -261,7 +261,7 @@ void RegionTable::printTimer()
 
 void RegionTable::printTimer( FILE* f )
 {
-    std::cout << "Summary of all timers for thread " << mThreadId << std::endl;
+    LAMA_LOG_INFO( logger, "Summary of all timers for thread " << mThreadId )
 
     std::ostringstream threadInfo; 
 
