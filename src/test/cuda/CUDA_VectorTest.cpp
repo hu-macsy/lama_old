@@ -183,6 +183,8 @@ void matrixTimesVectorTestImpl()
 
     DenseVector<ValueType> denseTemp( dist, 0.0 );
 
+    // Run matrix-vector multiplication with zero matrix
+
     doMatrixTimesVectorLocationTests( denseTemp, matrixTypeMatrix, denseVector, denseTemp );
 
     int numRows = 4 * size;
@@ -337,7 +339,9 @@ void vectorTimesMatrixTestImpl()
 
     DenseVector<ValueType> denseTemp( dist, 0.0 );
 
-    doMatrixTimesVectorLocationTests( denseTemp, matrixTypeMatrix, denseVector, denseTemp );
+    // Run vector-matrix multiplication with zero matrix
+
+    doVectorTimesMatrixLocationTests( denseTemp, matrixTypeMatrix, denseVector, denseTemp );
 
     int numRows = 4 * size;
     int numCols = 4 * size;
