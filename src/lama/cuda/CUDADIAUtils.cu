@@ -808,20 +808,13 @@ __global__ void normal_gevm_kernel(
 
         ValueType temp = 0.0;
 
-        for ( IndexType i = 0; i < numRows; ++i )
+        for ( IndexType ii = 0; ii < numDiagonals; ii++ )
         {
-            for ( IndexType ii = 0; ii < numDiagonals; ii++ )
-            {
-                // IndexType j = i + offsets_d[ ii ];
-                IndexType j = i + fetchOffset<useTexture, useSharedMem>( offsets_d, offsets_sm, ii );
+            IndexType i = k - fetchOffset<useTexture, useSharedMem>( offsets_d, offsets_sm, ii );
 
-                if ( j >= 0 && j < numColumns )
-                {
-                    if( j == k )
-                    {
-                        temp += diagonalValues[ numRows * ii + i ] * fetchDIAVectorX<ValueType, useTexture>( x, i );
-                    }
-                }
+            if ( i >= 0 && i < numRows )
+            {
+                temp += diagonalValues[ numRows * ii + i ] * fetchDIAVectorX<ValueType, useTexture>( x, i );
             }
         }
 
@@ -885,6 +878,7 @@ void CUDADIAUtils::normalGEVM(
 
         if ( !useSharedMem )
         {
+            // @ToDo: be careful, some CUDA devices do not support multiple bind textures, e.g. GeForce 460
             vectorDIABindTexture( diaOffsets );
         }
 
