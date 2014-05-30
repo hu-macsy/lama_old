@@ -888,6 +888,68 @@ void DIAStorage<ValueType>::matrixTimesVector(
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
+void DIAStorage<ValueType>::vectorTimesMatrix(
+    LAMAArray<ValueType>& result,
+    const ValueType alpha,
+    const LAMAArray<ValueType>& x,
+    const ValueType beta,
+    const LAMAArray<ValueType>& y ) const
+{
+    LAMA_LOG_INFO( logger,
+                   *this << ": vectorTimesMatrix, result = " << result << ", alpha = " << alpha << ", x = " << x 
+                    << ", beta = " << beta << ", y = " << y )
+
+    LAMA_REGION( "Storage.DIA.VectorTimesMatrix" )
+
+    LAMA_ASSERT_EQUAL_ERROR( x.size(), mNumRows )
+    LAMA_ASSERT_EQUAL_ERROR( result.size(), mNumColumns )
+
+    if ( ( beta != 0.0 ) && ( result != y ) )
+    {
+        LAMA_ASSERT_EQUAL_ERROR( y.size(), mNumColumns )
+    }
+
+    ContextPtr loc = getContextPtr();
+
+    LAMA_LOG_INFO( logger, *this << ": vectorTimesMatrix on " << *loc )
+
+    LAMA_INTERFACE_FN_DEFAULT_T( normalGEVM, loc, DIAUtils, Mult, ValueType )
+
+    ReadAccess<IndexType> diaOffsets( mOffset, loc );
+    ReadAccess<ValueType> diaValues( mValues, loc );
+
+    ReadAccess<ValueType> rX( x, loc );
+
+    // Possible alias of result and y must be handled by coressponding accesses
+
+    if ( result == y )
+    {
+        // only write access for y, no read access for result
+
+        WriteAccess<ValueType> wResult( result, loc );
+
+        // we assume that normalGEVM can deal with the alias of result, y
+
+        LAMA_CONTEXT_ACCESS( loc )
+
+        normalGEVM( wResult.get(), alpha, rX.get(), beta, wResult.get(), mNumRows, mNumColumns, mNumDiagonals,
+                    diaOffsets.get(), diaValues.get(), NULL );
+    }
+    else
+    {
+        WriteOnlyAccess<ValueType> wResult( result, loc, mNumColumns );
+        ReadAccess<ValueType> rY( y, loc );
+
+        LAMA_CONTEXT_ACCESS( loc )
+
+        normalGEVM( wResult.get(), alpha, rX.get(), beta, rY.get(), mNumRows, mNumColumns, mNumDiagonals,
+                    diaOffsets.get(), diaValues.get(), NULL );
+    }
+}
+
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType>
 SyncToken* DIAStorage<ValueType>::matrixTimesVectorAsync(
 
     LAMAArrayView<ValueType> result,
@@ -972,6 +1034,108 @@ SyncToken* DIAStorage<ValueType>::matrixTimesVectorAsync(
 
         normalGEMV( wResult->get(), alpha, rX->get(), beta, rY->get(), mNumRows, mNumColumns, mNumDiagonals,
                     diaOffsets->get(), diaValues->get(), syncToken.get() );
+    }
+
+    syncToken->pushAccess( rX );
+    syncToken->pushAccess( diaValues );
+    syncToken->pushAccess( diaOffsets );
+
+    return syncToken.release();
+}
+
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType>
+SyncToken* DIAStorage<ValueType>::vectorTimesMatrixAsync(
+    LAMAArray<ValueType>& result,
+    const ValueType alpha,
+    const LAMAArray<ValueType>& x,
+    const ValueType beta,
+    const LAMAArray<ValueType>& y ) const
+{
+    LAMA_LOG_INFO( logger,
+                   *this << ": vectorTimesMatrixAsync, result = " << result << ", alpha = " << alpha << ", x = " << x << ", beta = " << beta << ", y = " << y )
+
+    LAMA_REGION( "Storage.DIA.vectorTimesMatrixAsync" )
+
+    ContextPtr loc = getContextPtr();
+
+    // Note: checks will be done by asynchronous task in any case
+    //       and exception in tasks are handled correctly
+
+    LAMA_LOG_INFO( logger, *this << ": vectorTimesMatrixAsync on " << *loc )
+
+    if ( loc->getType() == Context::Host )
+    {
+        // execution as separate thread
+
+        void (DIAStorage::*pf)(
+            LAMAArray<ValueType>&,
+            const ValueType,
+            const LAMAArray<ValueType>&,
+            const ValueType,
+            const LAMAArray<ValueType>& ) const
+
+        = &DIAStorage<ValueType>::vectorTimesMatrix;
+
+        using boost::bind;
+
+        LAMA_LOG_INFO( logger, *this << ": vectorTimesMatrixAsync on Host by own thread" )
+
+        using boost::ref;
+
+        return new TaskSyncToken( bind( pf, this, ref( result ), alpha, ref( x ), beta, ref( y ) ) );
+    }
+
+    LAMA_ASSERT_EQUAL_ERROR( x.size(), mNumRows )
+    LAMA_ASSERT_EQUAL_ERROR( result.size(), mNumColumns )
+
+    if ( ( beta != 0.0 ) && ( result != y ) )
+    {
+        LAMA_ASSERT_EQUAL_ERROR( y.size(), mNumColumns )
+    }
+
+    LAMA_INTERFACE_FN_T( normalGEVM, loc, DIAUtils, Mult, ValueType )
+
+    std::auto_ptr<SyncToken> syncToken( loc->getSyncToken() );
+
+    // all accesses will be pushed to the sync token as LAMA arrays have to be protected up
+    // to the end of the computations.
+
+    shared_ptr<ReadAccess<IndexType> > diaOffsets( new ReadAccess<IndexType>( mOffset, loc ) );
+    shared_ptr<ReadAccess<ValueType> > diaValues( new ReadAccess<ValueType>( mValues, loc ) );
+
+    shared_ptr<ReadAccess<ValueType> > rX( new ReadAccess<ValueType>( x, loc ) );
+
+    // Possible alias of result and y must be handled by coressponding accesses
+
+    if ( result == y )
+    {
+        // only write access for y, no read access for result
+
+        shared_ptr<WriteAccess<ValueType> > wResult( new WriteAccess<ValueType>( result, loc ) );
+
+        // we assume that normalGEMV can deal with the alias of result, y
+
+        LAMA_CONTEXT_ACCESS( loc )
+
+        normalGEVM( wResult->get(), alpha, rX->get(), beta, wResult->get(), mNumRows, mNumColumns,
+                    mNumDiagonals, diaOffsets->get(), diaValues->get(), syncToken.get() );
+
+        syncToken->pushAccess( wResult );
+    }
+    else
+    {
+        shared_ptr<WriteAccess<ValueType> > wResult( new WriteOnlyAccess<ValueType>( result, loc, mNumColumns ) );
+        shared_ptr<ReadAccess<ValueType> > rY( new ReadAccess<ValueType>( y, loc ) );
+
+        LAMA_CONTEXT_ACCESS( loc )
+
+        normalGEVM( wResult->get(), alpha, rX->get(), beta, rY->get(), mNumRows, mNumColumns,
+                    mNumDiagonals, diaOffsets->get(), diaValues->get(), syncToken.get() );
+
+        syncToken->pushAccess( wResult );
+        syncToken->pushAccess( rY );
     }
 
     syncToken->pushAccess( rX );
