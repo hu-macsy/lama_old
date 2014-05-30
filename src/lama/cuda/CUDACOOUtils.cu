@@ -36,6 +36,7 @@
 
 #include <lama/cuda/utils.cu.h>
 #include <lama/cuda/CUDAError.hpp>
+#include <lama/cuda/CUDAUtils.hpp>
 #include <lama/cuda/CUDACOOUtils.hpp>
 #include <lama/cuda/CUDAStreamSyncToken.hpp>
 #include <lama/cuda/CUDASettings.hpp>
@@ -120,19 +121,6 @@ __inline__ __device__
 int fetchCOOVectorX<int, true>( const int* const, const int i )
 {
     return tex1Dfetch( texCOOVectorIref, i );
-}
-
-/* --------------------------------------------------------------------------- */
-
-template<typename ValueType>
-__global__ void cooInitKernel( ValueType* result, const IndexType numRows, const ValueType beta, const ValueType* y )
-{
-    const int i = threadId( gridDim, blockIdx, blockDim, threadIdx );
-
-    if ( i < numRows )
-    {
-        result[i] = beta * y[i];
-    }
 }
 
 /* --------------------------------------------------------------------------- */
@@ -313,7 +301,9 @@ void CUDACOOUtils::normalGEMV(
 {
     LAMA_REGION( "CUDA.COO.normalGEMV" )
 
-    LAMA_LOG_INFO( logger, "normalGEMV, #rows = " << numRows << ", #vals = " << numValues )
+    LAMA_LOG_INFO( logger, "normalGEMV<" << Scalar::getType<ValueType>() << ">, "
+                           << "result[ " << numRows << "] = " << alpha 
+                           << " COO( #vals = " << numValues << " ) * x + " << beta << " * y"  )
 
     LAMA_CHECK_CUDA_ACCESS
 
@@ -341,10 +331,17 @@ void CUDACOOUtils::normalGEMV(
     }
     else
     {
-        cooInitKernel<<< dimGrid, dimBlock>>> ( result, numRows, beta, y );
+        LAMA_LOG_DEBUG( logger, "normalGEMV, set result = " << beta << " * y " )
+        // setScale also deals with y undefined for beta == 0
+        CUDAUtils::setScale( result, beta, y, numRows );
     }
 
     LAMA_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "COO: initGemvKernel FAILED" )
+
+    if ( numValues == 0 )
+    {
+        return;
+    }
 
     blockSize = CUDASettings::getBlockSize( numValues );
     dimBlock  = dim3( blockSize, 1, 1 );
@@ -352,6 +349,7 @@ void CUDACOOUtils::normalGEMV(
 
     LAMA_LOG_INFO( logger, "Start cooGemvKernel<" << Scalar::getType<ValueType>()
                            << "> <<< blockSize = " << blockSize << ", stream = " << stream
+                           << ", alpha = " << alpha 
                            << ", useTexture = " << useTexture << ">>>" )
 
     if ( useTexture )
@@ -453,10 +451,16 @@ void CUDACOOUtils::normalGEVM(
     }
     else
     {
-        cooInitKernel<<< dimGrid, dimBlock>>> ( result, numRows, beta, y );
+        LAMA_LOG_DEBUG( logger, "normalGEMV, set result = " << beta << " * y " )
+        CUDAUtils::setScale( result, beta, y, numRows );
     }
 
     LAMA_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "COO: initGevmKernel FAILED" )
+
+    if ( numValues == 0 )
+    {
+        return;
+    }
 
     blockSize = CUDASettings::getBlockSize( numValues );
     dimBlock  = dim3( blockSize, 1, 1 );
