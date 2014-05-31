@@ -52,6 +52,9 @@
 namespace lama
 {
 
+using std::abs;   // used for float, double
+using std::sqrt;  // used for float, double
+
 LAMA_LOG_DEF_LOGGER( OpenMPBLAS1::logger, "OpenMP.BLAS1" )
 
 /** scal */
@@ -127,7 +130,7 @@ T OpenMPBLAS1::nrm2( const IndexType n, const T* x, const IndexType incX, SyncTo
             sumOfSquares += ( x[i * incX] * x[i * incX] );
         }
     }
-    return std::sqrt( sumOfSquares );
+    return sqrt( sumOfSquares );
 }
 
 /** asum (l1 norm) */
@@ -155,7 +158,7 @@ T OpenMPBLAS1::asum( const IndexType n, const T* x, const IndexType incX, SyncTo
 #pragma omp parallel for reduction(+:result) schedule( LAMA_OMP_SCHEDULE )
         for ( int i = 0; i < n; i++ )
         {
-            result = result + std::abs( x[i] );
+            result = result + abs( x[i] );
         }
     }
     else
@@ -163,7 +166,7 @@ T OpenMPBLAS1::asum( const IndexType n, const T* x, const IndexType incX, SyncTo
 #pragma omp parallel for reduction(+:result) schedule( LAMA_OMP_SCHEDULE )
         for ( int i = 0; i < n; i++ )
         {
-            result = result + std::abs( x[i * incX] );
+            result = result + abs( x[i * incX] );
         }
     }
     return result;
@@ -197,15 +200,15 @@ IndexType OpenMPBLAS1::iamax( const IndexType n, const T* x, const IndexType inc
 #pragma omp for schedule( LAMA_OMP_SCHEDULE )
             for ( int i = 0; i < n; i++ )
             {
-                if( std::abs( x[i] ) > std::abs( x[priv_max_pos] ) )
+                if( abs( x[i] ) > abs( x[priv_max_pos] ) )
                 {
                     priv_max_pos = i;
                 }
             }
 #pragma omp critical
             {
-                if ( ( std::abs( x[priv_max_pos] ) > std::abs( x[max_pos] ) )
-                                || ( ( std::abs( x[priv_max_pos] ) == std::abs( x[max_pos] ) ) && priv_max_pos < max_pos ) )
+                if ( ( abs( x[priv_max_pos] ) > abs( x[max_pos] ) )
+                                || ( ( abs( x[priv_max_pos] ) == abs( x[max_pos] ) ) && priv_max_pos < max_pos ) )
                 {
                     max_pos = priv_max_pos;
                 }
@@ -220,15 +223,15 @@ IndexType OpenMPBLAS1::iamax( const IndexType n, const T* x, const IndexType inc
 #pragma omp for schedule( LAMA_OMP_SCHEDULE )
             for ( int i = 0; i < n; i++ )
             {
-                if ( std::abs( x[i * incX] ) > std::abs( x[priv_max_pos * incX] ) )
+                if ( abs( x[i * incX] ) > abs( x[priv_max_pos * incX] ) )
                 {
                     priv_max_pos = i;
                 }
             }
 #pragma omp critical
             {
-                if ( ( std::abs( x[priv_max_pos * incX] ) > std::abs( x[max_pos * incX] ) )
-                                || ( ( std::abs( x[priv_max_pos * incX] ) == std::abs( x[max_pos * incX] ) )
+                if ( ( abs( x[priv_max_pos * incX] ) > abs( x[max_pos * incX] ) )
+                                || ( ( abs( x[priv_max_pos * incX] ) == abs( x[max_pos * incX] ) )
                                                 && priv_max_pos < max_pos ) )
                 {
                     max_pos = priv_max_pos;
