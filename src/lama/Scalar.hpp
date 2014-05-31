@@ -47,15 +47,22 @@
 // logging
 #include <logging/logging.hpp>
 
-#include <complex>
-#include <cmath>
 #include <cstdio>
+#include <lama/Complex.hpp>
 
 namespace lama
 {
 
 /**
  * @brief The class Scalar represents a multi precision scalar.
+ *
+ * An object of the class Scalar is used in LAMA in all code parts
+ * that are universal for all arithmetic types, especially for code
+ * parts that use book syntax.
+ *
+ * For a Scalar the arithmetic operations +, -, *, / etc. are 
+ * also supported to allow a high flexibility. But for efficiency
+ * these operations should be avoided in all critical code parts.
  */
 class LAMA_DLL_IMPORTEXPORT Scalar: public Printable
 {
@@ -99,7 +106,8 @@ public:
     /**
      * @brief Constructs a scalar representing the passed real value.
      *
-     * The templated converstion constructor needs to be explicit, because the operator==(Scalar,Scalar) can lead to ambiguities.
+     * The templated conversion constructor needs to be explicit, 
+     * because the operator==(Scalar,Scalar) can lead to ambiguities.
      *
      * @tparam T          type of the input argument value for constructor of Scalar
      * @param[in] value   the value this scalar should represent
@@ -115,6 +123,14 @@ public:
     inline Scalar( const float value );
 
     /**
+     * @brief Constructs a scalar representing the passed real and imaginary value.
+     *
+     * @param[in] real the real part this scalar should represent
+     * @param[in] imag the imaginary part this scalar should represent
+     */
+    inline Scalar( const float real, const float imag );
+
+    /**
      * @brief Constructs a scalar representing the passed real value.
      *
      * @param[in] value the value this scalar should represent
@@ -122,20 +138,36 @@ public:
     inline Scalar( const double value );
 
     /**
+     * @brief Constructs a scalar representing the passed real and imaginary value.
+     *
+     * @param[in] real the real part this scalar should represent
+     * @param[in] imag the imaginary part this scalar should represent
+     */
+    inline Scalar( const double real, const double imag );
+
+    /**
      * @brief Constructs a scalar representing the passed real value.
      *
      * @param[in] value the value this scalar should represent
      */
-    inline Scalar( const long double value );
+    inline Scalar( const LongDouble value );
+
+    /**
+     * @brief Constructs a scalar representing the passed real and imaginary value.
+     *
+     * @param[in] real the real part this scalar should represent
+     * @param[in] imag the imaginary part this scalar should represent
+     */
+    inline Scalar( const LongDouble real, const LongDouble imag );
 
     /**
      * @brief Constructs a scalar representing the passed complex value.
      *
-     * @tparam T    base type of the complex type, e.g. float, or double
+     * @tparam T    base type of the complex type, e.g. float, double or long double
      * @param[in]   value the value this scalar should represent
      */
     template<typename T>
-    inline Scalar( const std::complex<T> value );
+    inline Scalar( const Complex<T> value );
 
     /**
      * @brief Releases all allocated resources.
@@ -145,8 +177,8 @@ public:
     /**
      * @brief Returns the value this Scalar represents as type T.
      *
-     * @tparam T    result type for this query operator.
-     * @return      the value this Scalar represents.
+     * @tparam T    arithmetic type of the return argument
+     * @return      the value this Scalar represents as type T
      */
     template<typename T>
     inline T getValue() const;
@@ -161,7 +193,7 @@ public:
     inline Scalar operator-() const;
 
     /**
-     * @brief Implementation for assignment operator+=.
+     * @brief Binary operator
      */
     Scalar& operator+=( Scalar& other );
     Scalar& operator-=( Scalar& other );
@@ -173,9 +205,6 @@ public:
      */
     inline bool isReal() const;
 
-    /**
-     *  @brief Overrides Printable::writeAt.
-     */
     inline virtual void writeAt( std::ostream& stream ) const;
 
     /**
@@ -197,14 +226,15 @@ public:
 
 protected:
 
-    /** Logger for this class. */
-
     LAMA_LOG_DECL_STATIC_LOGGER( logger )
 
 private:
 
-    std::complex<long double> mValue;
+    ComplexLongDouble mValue;   //!< use highest precision for presentation
 };
+
+/** Output of ScalarType in stream is supported and very useful.
+ */
 
 LAMA_DLL_IMPORTEXPORT std::ostream& operator<<( std::ostream& stream, const Scalar::ScalarType& object );
 
@@ -237,18 +267,33 @@ inline Scalar::Scalar( const float value )
 {
 }
 
+inline Scalar::Scalar( const float real, const float imag )
+    : mValue( real, imag )
+{
+}
+
 inline Scalar::Scalar( const double value )
     : mValue( value, 0.0 )
 {
 }
 
-inline Scalar::Scalar( const long double value )
+inline Scalar::Scalar( const double real, const double imag )
+    : mValue( real, imag )
+{
+}
+
+inline Scalar::Scalar( const LongDouble value )
     : mValue( value, 0.0 )
 {
 }
 
+inline Scalar::Scalar( const LongDouble real, const LongDouble imag )
+    : mValue( real, imag )
+{
+}
+
 template<typename T>
-inline Scalar::Scalar( const std::complex<T> value )
+inline Scalar::Scalar( const Complex<T> value )
     : mValue( value.real(), value.imag() )
 {
 }
@@ -264,21 +309,21 @@ inline T Scalar::getValue() const
 }
 
 template<>
-inline std::complex<float> Scalar::getValue() const
+inline ComplexFloat Scalar::getValue() const
 {
-    return std::complex<float>( static_cast<float>( mValue.real() ), static_cast<float>( mValue.imag() ) );
+    return ComplexFloat( static_cast<float>( mValue.real() ), static_cast<float>( mValue.imag() ) );
 }
 
 template<>
-inline std::complex<double> Scalar::getValue() const
+inline ComplexDouble Scalar::getValue() const
 {
-    return std::complex<double>( static_cast<double>( mValue.real() ), static_cast<double>( mValue.imag() ) );
+    return ComplexDouble( static_cast<double>( mValue.real() ), static_cast<double>( mValue.imag() ) );
 }
 
 template<>
-inline std::complex<long double> Scalar::getValue() const
+inline ComplexLongDouble Scalar::getValue() const
 {
-    return std::complex<long double>( mValue.real(), mValue.imag() );
+    return ComplexLongDouble( mValue.real(), mValue.imag() );
 }
 
 inline Scalar Scalar::operator-() const
@@ -293,7 +338,12 @@ inline bool Scalar::isReal() const
 
 inline void Scalar::writeAt( std::ostream& stream ) const
 {
-    stream << "Scalar(" << mValue.real() << ")";
+    if ( isReal() )
+    {
+        stream << "Scalar(" << mValue.real() << ")";
+    } else {
+        stream << "Scalar(" << mValue.real() << "," << mValue.imag() << ")";
+    }
 }
 
 template<typename T>
@@ -321,25 +371,25 @@ inline Scalar::ScalarType Scalar::getType<double>()
 }
 
 template<>
-inline Scalar::ScalarType Scalar::getType<long double>()
+inline Scalar::ScalarType Scalar::getType<LongDouble>()
 {
     return LONG_DOUBLE;
 }
 
 template<>
-inline Scalar::ScalarType Scalar::getType<std::complex<float> >()
+inline Scalar::ScalarType Scalar::getType<ComplexFloat>()
 {
     return COMPLEX;
 }
 
 template<>
-inline Scalar::ScalarType Scalar::getType<std::complex<double> >()
+inline Scalar::ScalarType Scalar::getType<ComplexDouble>()
 {
     return DOUBLE_COMPLEX;
 }
 
 template<>
-inline Scalar::ScalarType Scalar::getType<std::complex<long double> >()
+inline Scalar::ScalarType Scalar::getType<ComplexLongDouble>()
 {
     return LONG_DOUBLE_COMPLEX;
 }
@@ -348,34 +398,34 @@ inline size_t Scalar::getTypeSize( const ScalarType type )
 {
     size_t typeSize = 0;
 
-    switch ( type )
+    switch( type )
     {
-    case FLOAT:
-        typeSize = 4;
-        break;
+        case FLOAT:
+            typeSize = sizeof( float );
+            break;
 
-    case DOUBLE:
-        typeSize = 8;
-        break;
+        case DOUBLE:
+            typeSize = sizeof( double );
+            break;
 
-    case LONG_DOUBLE:
-        typeSize = 16;
-        break;
+        case LONG_DOUBLE:
+            typeSize = sizeof( LongDouble );
+            break;
 
-    case COMPLEX:
-        typeSize = 8;
-        break;
+        case COMPLEX:
+            typeSize = sizeof( ComplexFloat );
+            break;
 
-    case DOUBLE_COMPLEX:
-        typeSize = 16;
-        break;
+        case DOUBLE_COMPLEX:
+            typeSize = sizeof( ComplexDouble );
+            break;
 
-    case LONG_DOUBLE_COMPLEX:
-        typeSize = 32;
-        break;
+        case LONG_DOUBLE_COMPLEX:
+            typeSize = sizeof( ComplexLongDouble );
+            break;
 
-    default:
-        typeSize = 0;
+        default:
+            typeSize = 0;
     }
 
     return typeSize;
@@ -390,7 +440,7 @@ inline size_t Scalar::getTypeSize( const ScalarType type )
  */
 inline Scalar operator+( const Scalar& a, const Scalar& b )
 {
-    return Scalar( a.getValue<long double>() + b.getValue<long double>() );
+    return Scalar( a.getValue<ComplexLongDouble>() + b.getValue<ComplexLongDouble>() );
 }
 
 /**
@@ -402,7 +452,7 @@ inline Scalar operator+( const Scalar& a, const Scalar& b )
  */
 inline Scalar operator-( const Scalar& a, const Scalar& b )
 {
-    return Scalar( a.getValue<long double>() - b.getValue<long double>() );
+    return Scalar( a.getValue<ComplexLongDouble>() - b.getValue<ComplexLongDouble>() );
 }
 
 /**
@@ -414,7 +464,7 @@ inline Scalar operator-( const Scalar& a, const Scalar& b )
  */
 inline Scalar operator*( const Scalar& a, const Scalar& b )
 {
-    return Scalar( a.getValue<long double>() * b.getValue<long double>() );
+    return Scalar( a.getValue<ComplexLongDouble>() * b.getValue<ComplexLongDouble>() );
 }
 
 /**
@@ -426,7 +476,7 @@ inline Scalar operator*( const Scalar& a, const Scalar& b )
  */
 inline Scalar operator/( const Scalar& a, const Scalar& b )
 {
-    return Scalar( a.getValue<long double>() / b.getValue<long double>() );
+    return Scalar( a.getValue<ComplexLongDouble>() / b.getValue<ComplexLongDouble>() );
 }
 
 /**
@@ -436,9 +486,10 @@ inline Scalar operator/( const Scalar& a, const Scalar& b )
  * @param[in] b     the 2nd Scalar to compare this to.
  * @return          if a is equal to b
  */
+
 inline bool operator==( const Scalar& a, const Scalar& b )
 {
-    return a.getValue<long double>() == b.getValue<long double>();
+    return a.getValue<ComplexLongDouble>() == b.getValue<ComplexLongDouble>();
 }
 
 /**
@@ -450,29 +501,17 @@ inline bool operator==( const Scalar& a, const Scalar& b )
  */
 inline bool operator!=( const Scalar& a, const Scalar& b )
 {
-    return !( a == b );
+    return a.getValue<ComplexLongDouble>() != b.getValue<ComplexLongDouble>();
 }
 
 inline bool operator<( const Scalar& a, const Scalar& b )
 {
-    if ( !a.isReal() || !b.isReal() )
-    {
-        LAMA_THROWEXCEPTION(
-            "Could not call operator< for Scalar a = " << a << ", b = " << b << ", because one of them is not real." );
-    }
-
-    return a.getValue<long double>() < b.getValue<long double>();
+    return a.getValue<ComplexLongDouble>() < b.getValue<ComplexLongDouble>();
 }
 
 inline bool operator>( const Scalar& a, const Scalar& b )
 {
-    if ( !a.isReal() || !b.isReal() )
-    {
-        LAMA_THROWEXCEPTION(
-            "Could not call operator> for Scalar a = " << a << ", b = " << b << ", because one of them is not real." );
-    }
-
-    return a.getValue<long double>() > b.getValue<long double>();
+    return a.getValue<ComplexLongDouble>() > b.getValue<ComplexLongDouble>();
 }
 
 inline bool operator<=( const Scalar& a, const Scalar& b )
@@ -487,28 +526,26 @@ inline bool operator>=( const Scalar& a, const Scalar& b )
 
 inline Scalar sqrt( const Scalar scalar )
 {
-    return std::sqrt( scalar.getValue<std::complex<long double> >() );
+    // note: uses sqrt for Complex<T> with T == long double
+    return Scalar( sqrt( scalar.getValue<ComplexLongDouble>() ) );
 }
 
 inline Scalar abs( const Scalar scalar )
 {
-    return std::abs( scalar.getValue<std::complex<long double> >() );
+    // note: uses abs for Complex<T> with T == long double
+    return Scalar( abs( scalar.getValue<ComplexLongDouble>() ) );
 }
 
 inline Scalar max( const Scalar a, const Scalar b )
 {
-    LAMA_ASSERT_DEBUG( a.isReal(), "Non-real value in max : " << a )
-    LAMA_ASSERT_DEBUG( b.isReal(), "Non-real value in max : " << b )
-
-    return std::max( a.getValue<long double>(), b.getValue<long double>() );
+    // note: must use std::max, otherwise infinite recursion
+    return Scalar( std::max( a.getValue<ComplexLongDouble>(), b.getValue<ComplexLongDouble>() ) );
 }
 
 inline Scalar min( const Scalar a, const Scalar b )
 {
-    LAMA_ASSERT_DEBUG( a.isReal(), "Non-real value in max : " << a )
-    LAMA_ASSERT_DEBUG( b.isReal(), "Non-real value in max : " << b )
-
-    return std::min( a.getValue<long double>(), b.getValue<long double>() );
+    // note: must use std::min, otherwise infinite recursion
+    return Scalar( std::min( a.getValue<ComplexLongDouble>(), b.getValue<ComplexLongDouble>() ) );
 }
 
 } //namespace lama

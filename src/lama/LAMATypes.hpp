@@ -33,6 +33,9 @@
 #ifndef LAMA_LAMATYPES_HPP_
 #define LAMA_LAMATYPES_HPP_
 
+// include LAMA
+#include <lama/Complex.hpp>
+
 #include <cstring>
 #include <limits>
 #include <stdint.h>
@@ -63,6 +66,21 @@ typedef int IndexType;
  *  might fail to work correctly.
  */
 typedef long double LongDouble;
+
+/** Data type for complex numbers in single precision.
+ *  LAMA uses its own data type instead of std::complex.
+ */
+typedef Complex<float> ComplexFloat;
+
+/** Data type for complex numbers in double precision.
+ *  LAMA uses its own data type instead of std::complex.
+ */
+typedef Complex<double> ComplexDouble;
+
+/** Data type for complex numbers in long double precision.
+ *  LAMA uses its own data type instead of std::complex.
+ */
+typedef Complex<long double> ComplexLongDouble;
 
 /** Definition for a constant value that indicates a non-available index.
  */
@@ -125,10 +143,10 @@ enum CBLAS_SIDE
 #define ARITHMETIC_TYPE1        double
 
 // Define for the arithmetic types the counterparts of enum Scalar::Tyep
+// Sorry, we cannot use the routine getType<ARITHMETIC_TYPE##I> in case stmt
 
 #define SCALAR_ARITHMETIC_TYPE0 FLOAT
 #define SCALAR_ARITHMETIC_TYPE1 DOUBLE
-#define SCALAR_ARITHMETIC_TYPE2 LONG_DOUBLE
 
 // For convenience we define ARRAY_TYPE
 
@@ -137,6 +155,5 @@ enum CBLAS_SIDE
 #define ARRAY_TYPE0    int
 #define ARRAY_TYPE1    float
 #define ARRAY_TYPE2    double
-
 
 #endif // LAMA_LAMATYPES_HPP_

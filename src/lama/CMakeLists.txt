@@ -50,6 +50,7 @@ set ( CLASSES
         Communicator
         CommunicatorFactory
         CommunicatorManager
+        Complex
         Context
         ContextAccess
         ContextFactory

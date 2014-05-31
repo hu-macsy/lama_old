@@ -1,5 +1,5 @@
-/**
- * @file Scalar.cpp
+/*
+ * @file Complex.cpp
  *
  * @license
  * Copyright (c) 2009-2013
@@ -25,71 +25,19 @@
  * SOFTWARE.
  * @endlicense
  *
- * @brief Scalar.cpp
- * @author Jiri Kraus
- * @date 07.11.2011
- * @since 1.0.0
+ * @brief Instantiations for complex types in LAMA
+ * @author Eric Schricker
+ * @date 09.12.2013
+ * @since 1.1.0
  */
 
-// hpp
-#include <lama/Scalar.hpp>
+#include <lama/Complex.hpp>
 
 namespace lama
 {
 
-Scalar& Scalar::operator+=( Scalar& other )
-{
-    mValue += other.mValue;
-    return *this;
-}
+template class LAMA_DLL_IMPORTEXPORT Complex<float> ;
+template class LAMA_DLL_IMPORTEXPORT Complex<double> ;
+template class LAMA_DLL_IMPORTEXPORT Complex<long double> ;
 
-Scalar& Scalar::operator-=( Scalar& other )
-{
-    mValue -= other.mValue;
-    return *this;
 }
-
-Scalar& Scalar::operator*=( Scalar& other )
-{
-    mValue *= other.mValue;
-    return *this;
-}
-
-Scalar& Scalar::operator/=( Scalar& other )
-{
-    mValue /= other.mValue;
-    return *this;
-}
-
-std::ostream& operator<<( std::ostream& stream, const Scalar::ScalarType& object )
-{
-    switch ( object )
-    {
-    case Scalar::FLOAT:
-        stream << "float";
-        break;
-    case Scalar::DOUBLE:
-        stream << "double";
-        break;
-    case Scalar::INDEX_TYPE:
-        stream << "IndexType";
-        break;
-    case Scalar::LONG_DOUBLE:
-        stream << "LongDouble";
-        break;
-    case Scalar::COMPLEX:
-        stream << "ComplexFloat";
-        break;
-    case Scalar::DOUBLE_COMPLEX:
-        stream << "ComplexDouble";
-        break;
-    case Scalar::LONG_DOUBLE_COMPLEX:
-        stream << "ComplexLongDouble";
-        break;
-    default:
-        stream << "Unknown";
-    }
-    return stream;
-}
-
-} //namespace lama
