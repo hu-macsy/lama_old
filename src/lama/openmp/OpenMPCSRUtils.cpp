@@ -56,6 +56,8 @@
 namespace lama
 {
 
+using std::abs;    // is used for abs( float ), abs( double )
+
 LAMA_LOG_DEF_LOGGER( OpenMPCSRUtils::logger, "OpenMP.CSRUtils" )
 
 /** Number of minimal threads for which parallelization is effective. */
@@ -1704,7 +1706,7 @@ ValueType OpenMPCSRUtils::absMaxDiffRowUnsorted(
             diff -= csrValues2[i2];
         }
 
-        diff = std::abs( diff );
+        diff = abs( diff );
 
         if ( diff > val )
         {
@@ -1726,7 +1728,7 @@ ValueType OpenMPCSRUtils::absMaxDiffRowUnsorted(
             continue; // already compare in first loop
         }
 
-        ValueType diff = std::abs( csrValues2[i2] );
+        ValueType diff = abs( csrValues2[i2] );
 
         if ( diff > val )
         {
@@ -1802,7 +1804,7 @@ ValueType OpenMPCSRUtils::absMaxDiffRowSorted(
             }
         }
 
-        diff = std::abs( diff );
+        diff = abs( diff );
 
         if ( diff > val )
         {

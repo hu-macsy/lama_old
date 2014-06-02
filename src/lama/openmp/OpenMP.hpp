@@ -41,4 +41,25 @@
     #define omp_get_max_threads() 1
 #endif
 
+template<typename T>
+inline void atomicAdd( T& sharedResult, const T& threadResult )
+{
+#pragma omp critical
+    sharedResult += threadResult;
+}
+
+template<>
+inline void atomicAdd( float& sharedResult, const float& threadResult )
+{
+#pragma omp atomic
+    sharedResult += threadResult;
+}
+
+template<>
+inline void atomicAdd( double& sharedResult, const double& threadResult )
+{
+#pragma omp atomic
+    sharedResult += threadResult;
+}
+
 #endif //  LAMA_OPENMP_HPP_

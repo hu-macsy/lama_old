@@ -46,6 +46,8 @@
 namespace lama
 {
 
+using std::abs;   // so we can use abs for float and double and abs for Complex<T>
+
 LAMA_LOG_DEF_LOGGER( OpenMPDenseUtils::logger, "OpenMP.DenseUtils" )
 
 /* --------------------------------------------------------------------------- */
@@ -80,7 +82,7 @@ void OpenMPDenseUtils::getCSRSizes(
         {
             const DenseValueType& value = denseValues[denseindex( i, j, numRows, numColumns )];
 
-            if ( std::abs( value ) > eps )
+            if ( abs( value ) > eps )
             {
                 ++nonZeros;
             }
@@ -135,7 +137,7 @@ void OpenMPDenseUtils::getCSRValues(
 
             const DenseValueType& value = denseValues[denseindex( i, j, numRows, numColumns )];
 
-            if ( std::abs( value ) > eps )
+            if ( abs( value ) > eps )
             {
                 csrValues[offset] = static_cast<CSRValueType>( value );
                 csrJA[offset] = j;

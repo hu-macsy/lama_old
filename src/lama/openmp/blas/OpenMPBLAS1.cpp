@@ -32,6 +32,7 @@
  */
 
 // hpp
+#include <lama/openmp/OpenMP.hpp>
 #include <lama/openmp/OpenMPBLAS1.hpp>
 
 // others
@@ -113,22 +114,31 @@ T OpenMPBLAS1::nrm2( const IndexType n, const T* x, const IndexType incX, SyncTo
     }
 
     T sumOfSquares = 0.0;
-//no use of reduction, because it doesn't work with complex numbers
-    if ( incX == 1 )
+
+// OpenMP reduction clause cannot be used as it doesn't support complex numbers
+
+#pragma omp parallel shared( sumOfSquares )
     {
-#pragma omp parallel for reduction(+:sumOfSquares) schedule( LAMA_OMP_SCHEDULE )
-        for ( int i = 0; i < n; i++ )
+        T tSumOfSquares = 0;  // private for each thread
+
+        if ( incX == 1 )
         {
-            sumOfSquares += ( x[i] * x[i] );
+            #pragma omp for  schedule( LAMA_OMP_SCHEDULE )
+            for ( int i = 0; i < n; i++ )
+            {
+                tSumOfSquares += x[i] * x[i];
+            }
         }
-    }
-    else
-    { //incX != 1
-#pragma omp parallel for reduction(+:sumOfSquares) schedule( LAMA_OMP_SCHEDULE )
-        for ( int i = 0; i < n; i++ )
+        else
         {
-            sumOfSquares += ( x[i * incX] * x[i * incX] );
+            #pragma omp for  schedule( LAMA_OMP_SCHEDULE )
+            for ( int i = 0; i < n; i++ )
+            {
+                tSumOfSquares += x[i * incX] * x[i * incX];
+            }
         }
+
+        atomicAdd( sumOfSquares, tSumOfSquares );
     }
     return sqrt( sumOfSquares );
 }
@@ -152,25 +162,33 @@ T OpenMPBLAS1::asum( const IndexType n, const T* x, const IndexType incX, SyncTo
         return result;
     }
 
-    if( incX == 1 )
-    {
-//no use of reduction, because it doesn't work with complex
-#pragma omp parallel for reduction(+:result) schedule( LAMA_OMP_SCHEDULE )
-        for ( int i = 0; i < n; i++ )
-        {
-            result = result + abs( x[i] );
-        }
-    }
-    else
-    { //incX != 1
-#pragma omp parallel for reduction(+:result) schedule( LAMA_OMP_SCHEDULE )
-        for ( int i = 0; i < n; i++ )
-        {
-            result = result + abs( x[i * incX] );
-        }
-    }
-    return result;
+// OpenMP reduction clause cannot be used as it doesn't support complex numbers
 
+#pragma omp parallel shared( result )
+    {
+        T tResult = 0;  // private for each thread
+
+        if ( incX == 1 )
+        {
+            #pragma omp for schedule( LAMA_OMP_SCHEDULE )
+            for ( int i = 0; i < n; i++ )
+            {
+                tResult += abs( x[i] );
+            }
+        }
+        else
+        {
+            #pragma omp for schedule( LAMA_OMP_SCHEDULE )
+            for ( int i = 0; i < n; i++ )
+            {
+                tResult += abs( x[i * incX] );
+            }
+        }
+
+        atomicAdd( result, tResult );
+    }
+
+    return result;
 }
 
 /** iamax */
@@ -190,57 +208,45 @@ IndexType OpenMPBLAS1::iamax( const IndexType n, const T* x, const IndexType inc
         return 0;
     }
 
-    IndexType max_pos = 0;
+    IndexType maxPos = 0;
 
-    if ( incX == 1 )
+#pragma omp parallel shared( maxPos )
     {
-#pragma omp parallel shared(max_pos)
+        IndexType tMaxPos = 0;
+
+        if ( incX == 1 )
         {
-            IndexType priv_max_pos = 0;
 #pragma omp for schedule( LAMA_OMP_SCHEDULE )
             for ( int i = 0; i < n; i++ )
             {
-                if( abs( x[i] ) > abs( x[priv_max_pos] ) )
+                if( abs( x[i] ) > abs( x[tMaxPos] ) )
                 {
-                    priv_max_pos = i;
+                    tMaxPos = i;
                 }
             }
-#pragma omp critical
+         }
+         else
+         {
+#pragma omp for schedule( LAMA_OMP_SCHEDULE )
+            for ( int i = 0; i < n; i++ )
             {
-                if ( ( abs( x[priv_max_pos] ) > abs( x[max_pos] ) )
-                                || ( ( abs( x[priv_max_pos] ) == abs( x[max_pos] ) ) && priv_max_pos < max_pos ) )
+                if ( abs( x[i * incX] ) > abs( x[tMaxPos * incX] ) )
                 {
-                    max_pos = priv_max_pos;
+                    tMaxPos = i;
                 }
             }
         }
-    }
-    else
-    { //incX != 1
-#pragma omp parallel shared(max_pos)
-        {
-            IndexType priv_max_pos = 0;
-#pragma omp for schedule( LAMA_OMP_SCHEDULE )
-            for ( int i = 0; i < n; i++ )
-            {
-                if ( abs( x[i * incX] ) > abs( x[priv_max_pos * incX] ) )
-                {
-                    priv_max_pos = i;
-                }
-            }
 #pragma omp critical
+        {
+            if (   ( abs( x[tMaxPos] ) > abs( x[maxPos] ) )
+                || ( ( abs( x[tMaxPos] ) == abs( x[maxPos] ) ) && tMaxPos < maxPos ) )
             {
-                if ( ( abs( x[priv_max_pos * incX] ) > abs( x[max_pos * incX] ) )
-                                || ( ( abs( x[priv_max_pos * incX] ) == abs( x[max_pos * incX] ) )
-                                                && priv_max_pos < max_pos ) )
-                {
-                    max_pos = priv_max_pos;
-                }
+                maxPos = tMaxPos;
             }
         }
     }
 
-    return max_pos;
+    return maxPos;
 }
 
 /** swap */
@@ -422,22 +428,29 @@ LAMA_REGION( "OpenMP.BLAS1.sdot" )
     }
 
     T result = 0;
-//no use of reduction, because it doesn't work with complex
-    if ( incX == 1 && incY == 1 )
+
+#pragma omp parallel shared( result )
     {
-#pragma omp parallel for reduction(+: result) schedule( LAMA_OMP_SCHEDULE )
-        for ( int i = 0; i < n; i++ )
+        T tResult = 0;
+
+        if ( incX == 1 && incY == 1 )
         {
-            result += ( x[i * incX] * y[i * incY] );
+#pragma omp for schedule( LAMA_OMP_SCHEDULE )
+            for ( int i = 0; i < n; i++ )
+            {
+                tResult += x[i] * y[i];
+            }
         }
-    }
-    else
-    { //incX != 1 || incY != 1
-#pragma omp parallel for reduction(+: result) schedule( LAMA_OMP_SCHEDULE )
-        for ( int i = 0; i < n; i++ )
-        {
-            result += ( x[i * incX] * y[i * incY] );
+        else
+        {   // incX != 1 || incY != 1
+#pragma omp for schedule( LAMA_OMP_SCHEDULE )
+            for ( int i = 0; i < n; i++ )
+            {
+                tResult += x[i * incX] * y[i * incY];
+            }
         }
+        
+        atomicAdd( result, tResult );
     }
     return result;
 }

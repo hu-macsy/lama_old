@@ -54,6 +54,8 @@
 namespace lama
 {
 
+using std::abs;   
+
 LAMA_LOG_DEF_LOGGER( OpenMPDIAUtils::logger, "OpenMP.DIAUtils" )
 
 /* --------------------------------------------------------------------------- */
@@ -89,7 +91,7 @@ ValueType OpenMPDIAUtils::absMaxVal(
                     continue;
                 }
 
-                const ValueType val = std::abs( diaValues[i + d * numRows] );
+                const ValueType val = abs( diaValues[i + d * numRows] );
 
                 if ( val > threadVal )
                 {
@@ -212,7 +214,7 @@ void OpenMPDIAUtils::getCSRValues(
 
                 const DIAValueType value = diaValues[i + ii * numRows];
 
-                bool nonZero = std::abs( value ) > eps;
+                bool nonZero = abs( value ) > eps;
 
                 if ( nonZero )
                 {
@@ -270,7 +272,7 @@ void OpenMPDIAUtils::getCSRSizes(
                 break;
             }
 
-            bool nonZero = std::abs( diaValues[i + ii * numRows] ) > eps;
+            bool nonZero = abs( diaValues[i + ii * numRows] ) > eps;
 
             if ( diagonalFlag && ( i == j ) )
             {

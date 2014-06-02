@@ -246,8 +246,7 @@ void OpenMPCOOUtils::normalGEMV(
 
             const ValueType resultUpdate = alpha * cooValues[k] * x[j];
 
-            #pragma omp atomic
-            result[i] += resultUpdate;
+            atomicAdd( result[i], resultUpdate );
         }
     }
 }
@@ -297,8 +296,9 @@ void OpenMPCOOUtils::normalGEVM(
 
             const ValueType resultUpdate = alpha * cooValues[k] * x[i];
 
-            #pragma omp atomic
-            result[j] += resultUpdate;
+            // thread-safe atomic update
+
+            atomicAdd( result[j], resultUpdate );
         }
     }
 }
@@ -351,10 +351,9 @@ void OpenMPCOOUtils::jacobi(
 
             // we must use atomic updates as different threads might update same row i
 
-            const ValueType update = omega * cooValues[k] * oldSolution[j] / cooValues[i];
+            const ValueType update = - omega * cooValues[k] * oldSolution[j] / cooValues[i];
 
-            #pragma omp atomic
-            solution[i] -= update;
+            atomicAdd( solution[i], update );
         }
     }
 }

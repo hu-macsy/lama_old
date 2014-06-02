@@ -57,6 +57,8 @@
 namespace lama
 {
 
+using std::abs;
+
 /* ------------------------------------------------------------------------------------------------------------------ */
 
 LAMA_LOG_DEF_LOGGER( OpenMPELLUtils::logger, "OpenMP.ELLUtils" )
@@ -227,7 +229,7 @@ ValueType OpenMPELLUtils::absMaxVal(
             for ( IndexType jj = 0; jj < ellSizes[i]; ++jj )
             {
                 IndexType pos = ellindex( i, jj, numRows, numValuesPerRow );
-                ValueType val = std::abs( values[pos] );
+                ValueType val = abs( values[pos] );
 
                 if ( val > threadVal )
                 {
@@ -467,7 +469,7 @@ void OpenMPELLUtils::compressIA(
                 {
                     continue;
                 }
-                if ( std::abs( ellValues[pos] ) <= eps )
+                if ( abs( ellValues[pos] ) <= eps )
                 {
                     length--;
                 }
@@ -502,7 +504,7 @@ void OpenMPELLUtils::compressValues(
             for ( IndexType j = 0; j < IA[i]; j++ )
             {
                 IndexType pos = ellindex( i, j, numRows, numValuesPerRow );
-                if ( std::abs( values[pos] ) <= eps && JA[pos] != i )
+                if ( abs( values[pos] ) <= eps && JA[pos] != i )
                 {
                     gap++;
                     continue;

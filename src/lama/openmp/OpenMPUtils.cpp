@@ -33,6 +33,7 @@
 
 // hpp
 #include <lama/openmp/OpenMPUtils.hpp>
+#include <lama/openmp/OpenMP.hpp>
 
 // others
 #include <lama/LAMAInterfaceRegistry.hpp>
@@ -43,6 +44,8 @@
 
 namespace lama
 {
+
+using std::abs;
 
 LAMA_LOG_DEF_LOGGER( OpenMPUtils::logger, "OpenMP.Utils" )
 
@@ -120,12 +123,19 @@ ValueType OpenMPUtils::sum( const ValueType array[], const IndexType n )
     LAMA_REGION( "OpenMP.Utils.sum" )
 
     LAMA_LOG_INFO( logger, "sum # array = " << array << ", n = " << n )
-    ValueType val = static_cast<ValueType>( 0.0 );
+    ValueType val = static_cast<ValueType>( 0 );
 
-    #pragma omp parallel for schedule( LAMA_OMP_SCHEDULE ) reduction( +:val )
-    for ( IndexType i = 0; i < n; ++i )
+#pragma omp parallel shared( val )
     {
-        val += array[i];
+        ValueType tVal = static_cast<ValueType>( 0 );
+
+#pragma omp for schedule( LAMA_OMP_SCHEDULE )
+        for ( IndexType i = 0; i < n; ++i )
+        {
+            tVal += array[i];
+        }
+        
+        atomicAdd( val, tVal );
     }
 
     return val;
@@ -230,7 +240,7 @@ ValueType OpenMPUtils::absMaxVal( const ValueType array[], const IndexType n )
         #pragma omp for schedule( LAMA_OMP_SCHEDULE )
         for ( IndexType i = 0; i < n; ++i )
         {
-            ValueType elem = std::abs( array[i] );
+            ValueType elem = abs( array[i] );
 
             if ( elem > threadVal )
             {
@@ -270,7 +280,7 @@ ValueType OpenMPUtils::absMaxDiffVal( const ValueType array1[], const ValueType 
         #pragma omp for schedule( LAMA_OMP_SCHEDULE )
         for ( IndexType i = 0; i < n; ++i )
         {
-            ValueType elem = std::abs( array1[i] - array2[i] );
+            ValueType elem = abs( array1[i] - array2[i] );
 
             if ( elem > threadVal )
             {
