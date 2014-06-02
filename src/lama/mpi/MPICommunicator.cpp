@@ -191,15 +191,12 @@ inline MPI_Datatype MPICommunicator::getMPIType<long double>()
     return MPI_LONG_DOUBLE;
 }
 
-#ifdef LAMA_USE_COMPLEX_FLOAT
 template<>
 inline MPI_Datatype MPICommunicator::getMPIType<ComplexFloat>()
 {
     return MPI_COMPLEX;
 }
-#endif
 
-#ifdef LAMA_USE_COMPLEX_DOUBLE
 template<>
 inline MPI_Datatype MPICommunicator::getMPIType<ComplexDouble>()
 {
@@ -207,7 +204,6 @@ inline MPI_Datatype MPICommunicator::getMPIType<ComplexDouble>()
     // May be helpful: MPI::DOUBLE_COMPLEX
     return MPI_DOUBLE_COMPLEX;
 }
-#endif 
 
 template<>
 inline MPI_Datatype MPICommunicator::getMPIType<unsigned long>()
