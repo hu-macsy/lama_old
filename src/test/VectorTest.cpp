@@ -111,7 +111,8 @@ void verifySameVector( Vector& v1, Vector& v2 )
 
     for ( IndexType i = 0; i < n; ++i )
     {
-        LAMA_CHECK_SCALAR_CLOSE( Scalar( v1.getValue( i ) ), Scalar( v2.getValue( i ) ), ValueType, 1 );
+        // BOOST_CHECK_CLOSE: cannot be used for Complex<T>
+        LAMA_CHECK_CLOSE( v1.getValue( i ), v2.getValue( i ), 1 );
     }
 }
 
@@ -126,7 +127,7 @@ void verifyVectorWithScalar( Vector& v, Scalar s )
 
     for ( IndexType i = 0; i < n; ++i )
     {
-        LAMA_CHECK_SCALAR_CLOSE( Scalar( v.getValue( i ) ), Scalar( s ), ValueType, 1 );
+        LAMA_CHECK_CLOSE( v.getValue( i ), s, 1 );
     }
 }
 

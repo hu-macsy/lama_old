@@ -170,10 +170,15 @@ inline lama::ContextType mapEnvContexttoContextType( std::string contextname )
  *
  */
 
-#define LAMA_CHECK_SCALAR_CLOSE( x, y, ValueType, tolerance )                                                          \
-    ValueType xHelper = x.getValue<ValueType>();                                                                       \
-    ValueType yHelper = y.getValue<ValueType>();                                                                       \
-    BOOST_CHECK_CLOSE( xHelper, yHelper, tolerance );
+#define LAMA_CHECK_CLOSE( x, y, tolerance )                         \
+    {                                                               \
+        Scalar xScalar = Scalar( x );                               \
+        Scalar yScalar = Scalar( y );                               \
+        ComplexDouble xVal = xScalar.getValue<ComplexDouble>();     \
+        ComplexDouble yVal = yScalar.getValue<ComplexDouble>();     \
+        BOOST_CHECK_CLOSE( xVal.real(), yVal.real(), tolerance );   \
+        BOOST_CHECK_CLOSE( xVal.imag(), yVal.imag(), tolerance );   \
+    }
 
 /*
  * @brief HelperMacro LAMA_CHECK_SCALAR_SMALL( x, ValueType, eps )

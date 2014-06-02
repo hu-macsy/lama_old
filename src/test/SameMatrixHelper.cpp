@@ -111,9 +111,7 @@ void assertSameMatrix( const Matrix& m1, const Matrix& m2 )
 
         for ( IndexType j = 0; j < n; j++ )
         {
-            Scalar s1 = ptrRow1->getValue( j );
-            Scalar s2 = ptrRow2->getValue( j );
-            LAMA_CHECK_SCALAR_CLOSE( s1, s2, double, 1 );
+            LAMA_CHECK_CLOSE( ptrRow1->getValue( j ), ptrRow2->getValue( j ), 1 )
         }
     }
 }

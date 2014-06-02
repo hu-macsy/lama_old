@@ -330,9 +330,7 @@ void SparseMatrixTest<MatrixType>::matrixMultTestImpl( const Matrix& a, const Ma
     {
         for ( IndexType j = 0; j < csrResult.getNumColumns(); ++j )
         {
-            Scalar s1 = csrResult.getValue( i, j );
-            Scalar s2 = res.getValue( i, j );
-            BOOST_CHECK_CLOSE( s1.getValue<ValueType>(), s2.getValue<ValueType>(), 1 );
+            LAMA_CHECK_CLOSE( csrResult.getValue( i, j ), res.getValue( i, j ), 1 );
         }
     }
 }
@@ -461,9 +459,7 @@ void SparseMatrixTest<MatrixType>::matrixEqualityCheck( const MatrixType& a, con
     {
         for ( IndexType j = 0; j < b.getNumColumns(); ++j )
         {
-            Scalar s1 = a.getValue( i, j );
-            Scalar s2 = b.getValue( i, j );
-            LAMA_CHECK_SCALAR_CLOSE( s1, s2, ValueType, 1 );
+            LAMA_CHECK_CLOSE( a.getValue( i, j ), b.getValue( i, j ), 1 );
         }
     }
 }

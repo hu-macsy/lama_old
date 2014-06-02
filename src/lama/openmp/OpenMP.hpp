@@ -41,6 +41,11 @@
     #define omp_get_max_threads() 1
 #endif
 
+/** atomicAdd used for reductions as reduction directive is unsupported for complex numbers.
+ *
+ *  Note: template specialization used for float and double
+ */
+
 template<typename T>
 inline void atomicAdd( T& sharedResult, const T& threadResult )
 {
