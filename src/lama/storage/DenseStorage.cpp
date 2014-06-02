@@ -48,6 +48,8 @@
 namespace lama
 {
 
+using std::abs;  // so we can use abs for float and double and own abs for Complex
+
 using boost::shared_ptr;
 
 /* --------------------------------------------------------------------------- */
@@ -107,7 +109,7 @@ IndexType DenseStorageView<ValueType>::getNumValues() const
     {
         for ( IndexType j = 0; j < mNumColumns; ++j )
         {
-            if ( std::abs( values[i * mNumColumns + j] ) > MatrixStorage<ValueType>::mEpsilon )
+            if ( abs( values[i * mNumColumns + j] ) > MatrixStorage<ValueType>::mEpsilon )
             {
                 count++;
             }

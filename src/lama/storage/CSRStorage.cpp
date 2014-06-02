@@ -60,9 +60,12 @@
 #include <boost/preprocessor.hpp>
 #include <lama/tracing.hpp>
 
+#include <cmath>
+
 namespace lama
 {
 
+using std::abs;
 using std::auto_ptr;
 using boost::shared_ptr;
 
@@ -642,7 +645,7 @@ void CSRStorage<ValueType>::compress( const ValueType eps /* = 0.0 */)
                 continue;
             }
 
-            if ( std::abs( values[jj] ) <= eps )
+            if ( abs( values[jj] ) <= eps )
             {
                 ++nonDiagZeros;
             }
@@ -670,7 +673,7 @@ void CSRStorage<ValueType>::compress( const ValueType eps /* = 0.0 */)
     {
         for ( IndexType jj = ia[i] + gap; jj < ia[i + 1]; ++jj )
         {
-            if ( std::abs( values[jj] ) <= eps && ja[jj] != i )
+            if ( abs( values[jj] ) <= eps && ja[jj] != i )
             {
                 ++gap;
                 continue;

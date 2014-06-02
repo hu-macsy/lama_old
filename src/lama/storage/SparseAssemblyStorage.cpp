@@ -47,6 +47,8 @@
 namespace lama
 {
 
+using std::abs;
+
 /* --------------------------------------------------------------------------- */
 
 LAMA_LOG_DEF_TEMPLATE_LOGGER( template<typename ValueType>, SparseAssemblyStorage<ValueType>::logger,
@@ -240,7 +242,7 @@ ValueType SparseAssemblyStorage<ValueType>::maxNorm() const
 
         for ( size_t jj = 0; jj < values.size(); ++jj )
         {
-            const ValueType val = std::abs( mRows[i].values[jj] );
+            const ValueType val = abs( mRows[i].values[jj] );
 
             if ( val > maxval )
             {
