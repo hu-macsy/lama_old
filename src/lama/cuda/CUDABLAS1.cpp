@@ -92,12 +92,16 @@ void wrapperScale( IndexType n, ComplexDouble alpha, ComplexDouble* x_d, IndexTy
 }
 
 template<typename T>
-void CUDABLAS1::scal( IndexType n, const T alpha, T* x_d, const IndexType incx, SyncToken* syncToken )
+void CUDABLAS1::scal( IndexType n, const T alpha, T* x_d, const IndexType incX, SyncToken* syncToken )
 {
-    if ( incx == 0 )
+    LAMA_REGION( "CUDA.BLAS1.scal" )
+
+    if ( incX == 0 )
     {
         return;
     }
+
+    LAMA_LOG_DEBUG( logger, "scal<" << Scalar::getType<T>() << "> of x[" << n << "], alpha = " << alpha )
 
     LAMA_CHECK_CUDA_ACCESS
 
@@ -113,7 +117,7 @@ void CUDABLAS1::scal( IndexType n, const T alpha, T* x_d, const IndexType incx, 
     cublasSetKernelStream( stream );
     LAMA_CHECK_CUBLAS_ERROR
 
-    wrapperScale( n, alpha, x_d, incx );
+    wrapperScale( n, alpha, x_d, incX );
 
     // No error check here possible as kernel is started asynchronously
 
@@ -171,10 +175,14 @@ ComplexDouble wrapperNrm2( IndexType n, const ComplexDouble* x_d, IndexType incX
 template<typename T>
 T CUDABLAS1::nrm2( IndexType n, const T* x_d, IndexType incX, SyncToken* syncToken )
 {
+    LAMA_REGION( "CUDA.BLAS1.nrm2" )
+
     if ( incX <= 0 )
     {
         return 0.0;
     }
+
+    LAMA_LOG_DEBUG( logger, "nrm2<" << Scalar::getType<T>() << "> of x[" << n << "]" )
 
     LAMA_CHECK_CUDA_ACCESS
 
@@ -248,10 +256,14 @@ ComplexDouble wrapperAsum( IndexType n, const ComplexDouble* x_d, IndexType incX
 template<typename T>
 T CUDABLAS1::asum( const IndexType n, const T* x_d, const IndexType incX, SyncToken* syncToken )
 {
+    LAMA_REGION( "CUDA.BLAS1.asum" )
+
     if ( incX <= 0 )
     {
         return 0.0;
     }
+
+    LAMA_LOG_DEBUG( logger, "asum<" << Scalar::getType<T>() << "> of x[" << n << "]" )
 
     LAMA_CHECK_CUDA_ACCESS
 
@@ -321,6 +333,10 @@ IndexType wrapperIamax( IndexType n, const ComplexDouble* x_d, IndexType incX )
 template<typename T>
 IndexType CUDABLAS1::iamax( const IndexType n, const T* x_d, const IndexType incX, SyncToken* syncToken )
 {
+    LAMA_REGION( "CUDA.BLAS1.iamax" )
+
+    LAMA_LOG_DEBUG( logger, "iamax<" << Scalar::getType<T>() << "> of x[" << n << "]" )
+
     LAMA_CHECK_CUDA_ACCESS
 
     cudaStream_t stream = NULL;
@@ -395,6 +411,8 @@ void CUDABLAS1::swap(
     const IndexType incY,
     SyncToken* syncToken )
 {
+    LAMA_REGION( "CUDA.BLAS1.swap" )
+
     if ( (incX <= 0) || (incY <= 0) )
     {
         return;
@@ -466,12 +484,16 @@ void wrapperCopy( IndexType n, const ComplexDouble* x_d, IndexType incX, Complex
 }
 
 template<typename T>
-void CUDABLAS1::copy( IndexType n, const T* x_d, IndexType incx, T* y_d, IndexType incy, SyncToken* syncToken )
+void CUDABLAS1::copy( IndexType n, const T* x_d, IndexType incX, T* y_d, IndexType incY, SyncToken* syncToken )
 {
-    if ( (incx <= 0) || (incy <= 0) )
+    LAMA_REGION( "CUDA.BLAS1.copy" )
+
+    if ( (incX <= 0) || (incY <= 0) )
     {
         return;
     }
+
+    LAMA_LOG_DEBUG( logger, "copy<" << Scalar::getType<T>() << "> of x, y, n = " << n )
 
     LAMA_CHECK_CUDA_ACCESS
 
@@ -487,7 +509,7 @@ void CUDABLAS1::copy( IndexType n, const T* x_d, IndexType incx, T* y_d, IndexTy
     cublasSetKernelStream( stream );
     LAMA_CHECK_CUBLAS_ERROR
 
-    wrapperCopy( n, x_d, incx, y_d, incy );
+    wrapperCopy( n, x_d, incX, y_d, incY );
 
     // No error check here possible as kernel is started asynchronously
 
@@ -544,16 +566,19 @@ void wrapperAxpy( IndexType n, ComplexDouble alpha, const ComplexDouble* x_d, In
 
 template<typename T>
 void CUDABLAS1::axpy( IndexType n, T alpha,
-                      const T* x_d, IndexType incx,
-                      T* y_d, const IndexType incy,
+                      const T* x_d, IndexType incX,
+                      T* y_d, const IndexType incY,
                       SyncToken* syncToken )
 {
     LAMA_REGION( "CUDA.BLAS1.axpy" )
 
-    if ( (incx <= 0) || (incy <= 0) )
+    if ( (incX <= 0) || (incY <= 0) )
     {
         return;
     }
+
+    LAMA_LOG_DEBUG( logger, "axpy<" << Scalar::getType<T>() << "> of x, y, n = " << n
+                            << ", alpha = " << alpha )
 
     LAMA_CHECK_CUDA_ACCESS
 
@@ -569,7 +594,7 @@ void CUDABLAS1::axpy( IndexType n, T alpha,
     cublasSetKernelStream( stream );
     LAMA_CHECK_CUBLAS_ERROR
 
-    wrapperAxpy( n, alpha, x_d, incx, y_d, incy );
+    wrapperAxpy( n, alpha, x_d, incX, y_d, incY );
 
     // No error check here possible as kernel is started asynchronously
 
@@ -628,18 +653,18 @@ template<typename T>
 T CUDABLAS1::dot(
     IndexType n,
     const T* x_d,
-    IndexType incx,
+    IndexType incX,
     const T* y_d,
-    IndexType incy,
+    IndexType incY,
     SyncToken* syncToken )
 {
     LAMA_REGION( "CUDA.BLAS1.dot" )
 
-    LAMA_LOG_DEBUG( logger, "CUDABLAS1:dot<" << Scalar::getType<T>() << ">, n = " << n 
-                             << ", incx = " << incx << ", incy = " << incy 
+    LAMA_LOG_DEBUG( logger, "dot<" << Scalar::getType<T>() << ">, n = " << n 
+                             << ", incX = " << incX << ", incY = " << incY 
                              << ", x_d = " << x_d << ", y_d = " << y_d )
 
-    if ( (incx <= 0) || (incy <= 0) )
+    if ( (incX <= 0) || (incY <= 0) )
     {
         return 0.0;
     }
@@ -658,7 +683,7 @@ T CUDABLAS1::dot(
     cublasSetKernelStream( stream );
     LAMA_CHECK_CUBLAS_ERROR
 
-    T res = wrapperDot( n, x_d, incx, y_d, incy );
+    T res = wrapperDot( n, x_d, incX, y_d, incY );
 
     // No error check here possible as kernel is started asynchronously
 
@@ -678,10 +703,15 @@ T CUDABLAS1::dot(
 template<typename T>
 void CUDABLAS1::sum( const IndexType n, T alpha, const T* x, T beta, const T* y, T* z, SyncToken* syncToken )
 {
+    LAMA_REGION( "CUDA.BLAS1.sum" )
+
     if ( n <= 0 )
     {
         return;
     }
+
+    LAMA_LOG_DEBUG( logger, "sum<" << Scalar::getType<T>() << ">, n = " << n 
+                            << ", " << alpha << " * x + " << beta << " * y " )
 
     LAMA_CHECK_CUDA_ACCESS
 
@@ -703,164 +733,6 @@ void CUDABLAS1::sum( const IndexType n, T alpha, const T* x, T beta, const T* y,
         cudaStreamSynchronize( stream );
         LAMA_CHECK_CUDA_ERROR
     }
-}
-
-/** rot */
-
-template<>
-void CUDABLAS1::rot(
-    const IndexType n,
-    float* x_d,
-    const IndexType incX,
-    float* y_d,
-    const IndexType incY,
-    const float c,
-    const float s,
-    SyncToken* syncToken )
-{
-    LAMA_CHECK_CUDA_ACCESS
-
-    cudaStream_t stream = NULL;
-
-    if ( syncToken )
-    {
-        CUDAStreamSyncToken* cudaStreamSyncToken = dynamic_cast<CUDAStreamSyncToken*>( syncToken );
-        LAMA_ASSERT_DEBUG( cudaStreamSyncToken, "no cuda stream sync token provided" )
-        stream = cudaStreamSyncToken->getCUDAStream();
-    }
-
-    cublasSetKernelStream( stream );
-    LAMA_CHECK_CUBLAS_ERROR
-
-    cublasSrot( n, x_d, incX, y_d, incY, c, s );
-
-    // No error check here possible as kernel is started asynchronously
-
-    if ( !syncToken )
-    {
-        cudaStreamSynchronize( 0 );
-        LAMA_CHECK_CUDA_ERROR
-    }
-
-    cublasSetKernelStream( NULL );
-    LAMA_CHECK_CUBLAS_ERROR
-}
-
-template<>
-void CUDABLAS1::rot(
-    const IndexType n,
-    double* x_d,
-    const IndexType incX,
-    double* y_d,
-    const IndexType incY,
-    const double c,
-    const double s,
-    SyncToken* syncToken )
-{
-    LAMA_CHECK_CUDA_ACCESS
-
-    cudaStream_t stream = NULL;
-
-    if ( syncToken )
-    {
-        CUDAStreamSyncToken* cudaStreamSyncToken = dynamic_cast<CUDAStreamSyncToken*>( syncToken );
-        LAMA_ASSERT_DEBUG( cudaStreamSyncToken, "no cuda stream sync token provided" )
-        stream = cudaStreamSyncToken->getCUDAStream();
-    }
-
-    cublasSetKernelStream( stream );
-    LAMA_CHECK_CUBLAS_ERROR
-
-    cublasDrot( n, x_d, incX, y_d, incY, c, s );
-
-    // No error check here possible as kernel is started asynchronously
-
-    if ( !syncToken )
-    {
-        cudaStreamSynchronize( 0 );
-        LAMA_CHECK_CUDA_ERROR
-    }
-
-    cublasSetKernelStream( NULL );
-    LAMA_CHECK_CUBLAS_ERROR
-}
-
-/** rotm */
-
-template<>
-void CUDABLAS1::rotm(
-    const IndexType n,
-    float* x_d,
-    const IndexType incX,
-    float* y_d,
-    const IndexType incY,
-    const float* p_d,
-    SyncToken* syncToken )
-{
-    LAMA_CHECK_CUDA_ACCESS
-
-    cudaStream_t stream = NULL;
-
-    if ( syncToken )
-    {
-        CUDAStreamSyncToken* cudaStreamSyncToken = dynamic_cast<CUDAStreamSyncToken*>( syncToken );
-        LAMA_ASSERT_DEBUG( cudaStreamSyncToken, "no cuda stream sync token provided" )
-        stream = cudaStreamSyncToken->getCUDAStream();
-    }
-
-    cublasSetKernelStream( stream );
-    LAMA_CHECK_CUBLAS_ERROR
-
-    cublasSrotm( n, x_d, incX, y_d, incY, p_d );
-
-    // No error check here possible as kernel is started asynchronously
-
-    if ( !syncToken )
-    {
-        cudaStreamSynchronize( 0 );
-        LAMA_CHECK_CUDA_ERROR
-    }
-
-    cublasSetKernelStream( NULL );
-    LAMA_CHECK_CUBLAS_ERROR
-}
-
-template<>
-void CUDABLAS1::rotm(
-    const IndexType n,
-    double* x_d,
-    const IndexType incX,
-    double* y_d,
-    const IndexType incY,
-    const double* p_d,
-    SyncToken* syncToken )
-{
-    LAMA_CHECK_CUDA_ACCESS
-
-    cudaStream_t stream = NULL;
-
-    if ( syncToken )
-    {
-        CUDAStreamSyncToken* cudaStreamSyncToken = dynamic_cast<CUDAStreamSyncToken*>( syncToken );
-        LAMA_ASSERT_DEBUG( cudaStreamSyncToken, "no cuda stream sync token provided" )
-        stream = cudaStreamSyncToken->getCUDAStream();
-    }
-
-    cublasSetKernelStream( stream );
-    LAMA_CHECK_CUBLAS_ERROR
-
-    cublasDrotm( n, x_d, incX, y_d, incY, p_d );
-
-    // No error check here possible as kernel is started asynchronously
-
-    if ( !syncToken )
-    {
-        cudaStreamSynchronize( 0 );
-        LAMA_CHECK_CUDA_ERROR
-    }
-
-    cublasSetKernelStream( NULL );
-    LAMA_CHECK_CUBLAS_ERROR
 }
 
 /* --------------------------------------------------------------------------- */

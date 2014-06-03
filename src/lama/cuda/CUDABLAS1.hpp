@@ -142,33 +142,6 @@ private:
     template<typename T>
     static void sum( const IndexType n, T alpha, const T* x, T beta, const T* y, T* z, SyncToken* syncToken );
 
-    /**
-     * This function is the CUDA implementation of lama::BLASInterface::rot
-     */
-    template<typename T>
-    static void rot(
-        const IndexType n,
-        T* x,
-        const IndexType incX,
-        T* y,
-        const IndexType incY,
-        const T c,
-        const T s,
-        SyncToken* syncToken );
-
-    /**
-     * This function is the CUDA implementation of lama::BLASInterface::rotm
-     */
-    template<typename T>
-    static void rotm(
-        const IndexType n,
-        T* x,
-        const IndexType incX,
-        T* y,
-        const IndexType incY,
-        const T* P,
-        SyncToken* syncToken );
-
 private:
 
     LAMA_LOG_DECL_STATIC_LOGGER( logger )
