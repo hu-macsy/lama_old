@@ -37,6 +37,8 @@
 #include <lama/cuda/CUDAError.hpp>
 
 #include <cuda_runtime.h>
+#include <boost/preprocessor.hpp>
+#include <lama/LAMATypes.hpp>
 
 namespace lama
 {
@@ -87,22 +89,24 @@ void CUDABLAS1::sum_launcher( const int n, T alpha, const T* x, T beta, const T*
     sum_kernel<<< dimGrid, dimBlock, 0, stream>>> ( n, alpha, x, beta, y, z );
 }
 
-// instantiation
-template void CUDABLAS1::sum_launcher<float>(
-    const int n,
-    float alpha,
-    const float* x,
-    float beta,
-    const float* y,
-    float* z,
-    cudaStream_t stream );
-template void CUDABLAS1::sum_launcher<double>(
-    const int n,
-    double alpha,
-    const double* x,
-    double beta,
-    const double* y,
-    double* z,
-    cudaStream_t stream );
+/* ========================================================================= */
+/*       Template Instantiations                                             */
+/* ========================================================================= */
+
+#define LAMA_CUDA_BLAS1_INSTANTIATE(z, I, _)                 \
+                                                             \
+template void CUDABLAS1::sum_launcher<ARITHMETIC_TYPE##I>(   \
+    const int,                                               \
+    ARITHMETIC_TYPE##I,                                      \
+    const ARITHMETIC_TYPE##I*,                               \
+    ARITHMETIC_TYPE##I,                                      \
+    const ARITHMETIC_TYPE##I*,                               \
+    ARITHMETIC_TYPE##I*,                                     \
+    cudaStream_t );   
+
+BOOST_PP_REPEAT( ARITHMETIC_TYPE_CNT, LAMA_CUDA_BLAS1_INSTANTIATE, _ )
+
+#undef LAMA_CUDA_BLAS1_INSTANTIATE
 
 } /* namespace lama */
+

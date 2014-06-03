@@ -56,70 +56,9 @@ LAMA_LOG_DEF_LOGGER( CUDADIAUtils::logger, "CUDA.DIAUtils" )
 
 /* --------------------------------------------------------------------------- */
 
-texture<float, 1> texDIAVectorSXref;
+#include <lama/cuda/CUDATexVector.hpp>
 
-texture<int2, 1> texDIAVectorDXref;
-
-texture<int, 1> texDIAVectorIref;
-
-__inline__ void vectorDIABindTexture( const float* vector )
-{
-    LAMA_CUDA_RT_CALL( cudaBindTexture( NULL, texDIAVectorSXref, vector ), "bind float vector x to texture" )
-}
-
-__inline__ void vectorDIABindTexture( const double* vector )
-{
-    LAMA_CUDA_RT_CALL( cudaBindTexture( NULL, texDIAVectorDXref, vector ), "bind double vector x to texture" )
-}
-
-__inline__ void vectorDIABindTexture( const int* vector )
-{
-    LAMA_CUDA_RT_CALL( cudaBindTexture( NULL, texDIAVectorIref, vector ), "bind int vector x to texture" )
-}
-
-__inline__ void vectorDIAUnbindTexture( const float* )
-{
-    LAMA_CUDA_RT_CALL( cudaUnbindTexture( texDIAVectorSXref ), "unbind float vector x from texture" )
-}
-
-__inline__ void vectorDIAUnbindTexture( const double* )
-{
-    LAMA_CUDA_RT_CALL( cudaUnbindTexture( texDIAVectorDXref ), "unbind double vector x from texture" )
-}
-
-__inline__ void vectorDIAUnbindTexture( const int* )
-{
-    LAMA_CUDA_RT_CALL( cudaUnbindTexture( texDIAVectorIref ), "unbind int vector x from texture" )
-}
-
-template<typename ValueType, bool useTexture>
-__inline__ __device__ 
-ValueType fetchDIAVectorX( const ValueType* const x, const int i )
-{
-    return x[i];
-}
-
-template<>
-__inline__ __device__
-float fetchDIAVectorX<float, true>( const float* const, const int i )
-{
-    return tex1Dfetch( texDIAVectorSXref, i );
-}
-
-template<>
-__inline__ __device__
-double fetchDIAVectorX<double, true>( const double* const, const int i )
-{
-    int2 v = tex1Dfetch( texDIAVectorDXref, i );
-    return __hiloint2double( v.y, v.x );
-}
-
-template<>
-__inline__ __device__
-int fetchDIAVectorX<int, true>( const int* const, const int i )
-{
-    return tex1Dfetch( texDIAVectorIref, i );
-}
+/* --------------------------------------------------------------------------- */
 
 template<bool useTexture, bool useSharedMemory>
 __inline__ __device__
@@ -132,7 +71,7 @@ template<>
 __inline__ __device__
 int fetchOffset<true, false>( const int* const offset_d, int[], const int i )
 {
-    return fetchDIAVectorX<int, true>( offset_d, i );
+    return fetchVectorX<int, true>( offset_d, i );
 }
 
 template<>
@@ -192,7 +131,7 @@ __global__ void normal_gemv_kernel(
             if ( j >= 0 && j < numColumns )
             {
                 ValueType val = diagonalValues[ numRows * idiag + i ];
-                temp += val * fetchDIAVectorX<ValueType, useTexture>( x, j );
+                temp += val * fetchVectorX<ValueType, useTexture>( x, j );
             }
         }
 
@@ -241,7 +180,7 @@ __global__ void normal_gemv_kernel_alpha_one_beta_one(
             if ( j >= 0 && j < numColumns )
             {
                 ValueType val = diagonalValues[ numRows * idiag + i ];
-                temp += val * fetchDIAVectorX<ValueType, useTexture>( x, j );
+                temp += val * fetchVectorX<ValueType, useTexture>( x, j );
             }
         }
 
@@ -288,7 +227,7 @@ __global__ void normal_gemv_kernel_alpha_one_beta_zero(
             if ( j >= 0 && j < numColumns )
             {
                 ValueType val = diagonalValues[ numRows * idiag + i ];
-                temp += val * fetchDIAVectorX<ValueType, useTexture>( x, j );
+                temp += val * fetchVectorX<ValueType, useTexture>( x, j );
             }
         }
 
@@ -360,7 +299,7 @@ __global__ void normal_gemv_kernel_alpha_one(
             if ( j >= 0 && j < numColumns )
             {
                 ValueType val = diagonalValues[ numRows * idiag + i ];
-                temp += val * fetchDIAVectorX<ValueType, useTexture>( x, j );
+                temp += val * fetchVectorX<ValueType, useTexture>( x, j );
             }
         }
 
@@ -445,7 +384,7 @@ __global__ void normal_gemv_kernel_beta_one(
             if ( j >= 0 && j < numColumns )
             {
                 ValueType val = diagonalValues[ numRows * idiag + i ];
-                temp += val * fetchDIAVectorX<ValueType, useTexture>( x, j );
+                temp += val * fetchVectorX<ValueType, useTexture>( x, j );
             }
         }
 
@@ -493,7 +432,7 @@ __global__ void normal_gemv_kernel_beta_zero(
             if ( j >= 0 && j < numColumns )
             {
                 ValueType val = diagonalValues[ numRows * idiag + i ];
-                temp += val * fetchDIAVectorX<ValueType, useTexture>( x, j );
+                temp += val * fetchVectorX<ValueType, useTexture>( x, j );
             }
         }
 
@@ -553,11 +492,11 @@ void CUDADIAUtils::normalGEMV(
 
     if ( useTexture )
     {
-        vectorDIABindTexture( x );
+        vectorBindTexture( x );
 
         if ( !useSharedMem )
         {
-            vectorDIABindTexture( diaOffsets );
+            vectorBindTexture( diaOffsets );
         }
 
         if( useSharedMem )
@@ -745,11 +684,11 @@ void CUDADIAUtils::normalGEMV(
 
         if ( useTexture )
         {
-            vectorDIAUnbindTexture( x );
+            vectorUnbindTexture( x );
 
             if ( !useSharedMem )
             {
-                vectorDIAUnbindTexture( diaOffsets );
+                vectorUnbindTexture( diaOffsets );
             }
         }
     }
@@ -759,8 +698,8 @@ void CUDADIAUtils::normalGEMV(
 
         if ( useTexture )
         {
-            void ( *unbindV ) ( const ValueType* ) = &vectorDIAUnbindTexture;
-            void ( *unbindI ) ( const IndexType* ) = &vectorDIAUnbindTexture;
+            void ( *unbindV ) ( const ValueType* ) = &vectorUnbindTexture;
+            void ( *unbindI ) ( const IndexType* ) = &vectorUnbindTexture;
     
             syncToken->pushRoutine( boost::bind( unbindV, x ) );
 
@@ -814,7 +753,7 @@ __global__ void normal_gevm_kernel(
 
             if ( i >= 0 && i < numRows )
             {
-                temp += diagonalValues[ numRows * ii + i ] * fetchDIAVectorX<ValueType, useTexture>( x, i );
+                temp += diagonalValues[ numRows * ii + i ] * fetchVectorX<ValueType, useTexture>( x, i );
             }
         }
 
@@ -874,12 +813,12 @@ void CUDADIAUtils::normalGEVM(
 
     if ( useTexture )
     {
-        vectorDIABindTexture( x );
+        vectorBindTexture( x );
 
         if ( !useSharedMem )
         {
             // @ToDo: be careful, some CUDA devices do not support multiple bind textures, e.g. GeForce 460
-            vectorDIABindTexture( diaOffsets );
+            vectorBindTexture( diaOffsets );
         }
 
         if( useSharedMem )
@@ -915,11 +854,11 @@ void CUDADIAUtils::normalGEVM(
 
         if ( useTexture )
         {
-            vectorDIAUnbindTexture( x );
+            vectorUnbindTexture( x );
 
             if ( !useSharedMem )
             {
-                vectorDIAUnbindTexture( diaOffsets );
+                vectorUnbindTexture( diaOffsets );
             }
         }
     }
@@ -929,8 +868,8 @@ void CUDADIAUtils::normalGEVM(
 
         if ( useTexture )
         {
-            void ( *unbindV ) ( const ValueType* ) = &vectorDIAUnbindTexture;
-            void ( *unbindI ) ( const IndexType* ) = &vectorDIAUnbindTexture;
+            void ( *unbindV ) ( const ValueType* ) = &vectorUnbindTexture;
+            void ( *unbindI ) ( const IndexType* ) = &vectorUnbindTexture;
 
             syncToken->pushRoutine( boost::bind( unbindV, x ) );
 

@@ -73,70 +73,7 @@ LAMA_LOG_DEF_LOGGER( CUDAJDSUtils::logger, "CUDA.JDSUtils" )
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 
-texture<float, 1> texJDSVectorSXref;
-
-texture<int2, 1> texJDSVectorDXref;
-
-texture<int, 1> texJDSVectorIref;
-
-__inline__ void vectorJDSBindTexture( const float* vector )
-{
-    LAMA_CUDA_RT_CALL( cudaBindTexture( NULL, texJDSVectorSXref, vector ), "bind float vector x to texture" )
-}
-
-__inline__ void vectorJDSBindTexture( const double* vector )
-{
-    LAMA_CUDA_RT_CALL( cudaBindTexture( NULL, texJDSVectorDXref, vector ), "bind double vector x to texture" )
-}
-
-__inline__ void vectorJDSBindTexture( const int* vector )
-{
-    LAMA_CUDA_RT_CALL( cudaBindTexture( NULL, texJDSVectorIref, vector ), "bind int vector x to texture" )
-}
-
-__inline__ void vectorJDSUnbindTexture( const float* )
-{
-    LAMA_CUDA_RT_CALL( cudaUnbindTexture( texJDSVectorSXref ), "unbind float vector x from texture" )
-}
-
-__inline__ void vectorJDSUnbindTexture( const double* )
-{
-    LAMA_CUDA_RT_CALL( cudaUnbindTexture( texJDSVectorDXref ), "unbind double vector x from texture" )
-}
-
-__inline__ void vectorJDSUnbindTexture( const int* )
-{
-    LAMA_CUDA_RT_CALL( cudaUnbindTexture( texJDSVectorIref ), "unbind int vector x from texture" )
-}
-
-template<typename ValueType, bool useTexture>
-__inline__ __device__ 
-ValueType fetchJDSVectorX( const ValueType* const x, const int i )
-{
-    return x[i];
-}
-
-template<>
-__inline__ __device__
-float fetchJDSVectorX<float, true>( const float* const, const int i )
-{
-    return tex1Dfetch( texJDSVectorSXref, i );
-}
-
-template<>
-__inline__ __device__
-double fetchJDSVectorX<double, true>( const double* const, const int i )
-{
-    int2 v = tex1Dfetch( texJDSVectorDXref, i );
-    return __hiloint2double( v.y, v.x );
-}
-
-template<>
-__inline__ __device__
-int fetchJDSVectorX<int, true>( const int* const, const int i )
-{
-    return tex1Dfetch( texJDSVectorIref, i );
-}
+#include<lama/cuda/CUDATexVector.hpp>
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 /*                                                  thrust functors                                                   */
@@ -800,7 +737,7 @@ template<>
 __inline__ __device__
 int fetch_JDSdlg<true, false>( const int* const dlg_d, int[], const int i )
 {
-    return fetchJDSVectorX<int, true>( dlg_d, i );
+    return fetchVectorX<int, true>( dlg_d, i );
 }
 
 template<>
@@ -858,13 +795,13 @@ void jds_jacobi_kernel(
         const int rowEnd = jdsIlg[i];
         for ( int jj = 1; jj < rowEnd; ++jj )
         {
-            temp -= jdsValues[pos] * fetchJDSVectorX<T,useTexture>( oldSolution, jdsJA[pos] );
+            temp -= jdsValues[pos] * fetchVectorX<T,useTexture>( oldSolution, jdsJA[pos] );
             pos += fetch_JDSdlg<useTexture,useSharedMem>( jdsDLG, dlg, jj );
         }
 
         if ( omega == 0.5 )
         {
-            solution[perm] = omega * ( fetchJDSVectorX<T,useTexture>( oldSolution, perm ) + temp / aDiag );
+            solution[perm] = omega * ( fetchVectorX<T,useTexture>( oldSolution, perm ) + temp / aDiag );
         }
         else if ( omega == 1.0 )
         {
@@ -872,7 +809,7 @@ void jds_jacobi_kernel(
         }
         else
         {
-            solution[perm] = omega * ( temp / aDiag ) + ( 1.0 - omega ) * fetchJDSVectorX<T,useTexture>( oldSolution, perm );
+            solution[perm] = omega * ( temp / aDiag ) + ( 1.0 - omega ) * fetchVectorX<T,useTexture>( oldSolution, perm );
         }
 
     }
@@ -920,11 +857,11 @@ void CUDAJDSUtils::jacobi(
 
     if ( useTexture )
     {
-        vectorJDSBindTexture( oldSolution );
+        vectorBindTexture( oldSolution );
 
         if ( !useSharedMem )
         {
-            vectorJDSBindTexture( jdsDLG );
+            vectorBindTexture( jdsDLG );
             LAMA_CUDA_RT_CALL(
                 cudaFuncSetCacheConfig( jds_jacobi_kernel<ValueType, true, false>, cudaFuncCachePreferL1 ),
                 "LAMA_STATUS_CUDA_FUNCSETCACHECONFIG_FAILED" );
@@ -995,19 +932,19 @@ void CUDAJDSUtils::jacobi(
     {
         if ( !syncToken )
         {
-            vectorJDSUnbindTexture( oldSolution );
+            vectorUnbindTexture( oldSolution );
 
             if ( !useSharedMem )
             {
-                vectorJDSUnbindTexture( jdsDLG );
+                vectorUnbindTexture( jdsDLG );
             }
         }
         else
         {
             // synchronize by syncToken, delay unbind texture 
 
-            void ( *unbindV ) ( const ValueType* ) = &vectorJDSUnbindTexture;
-            void ( *unbindI ) ( const IndexType* ) = &vectorJDSUnbindTexture;
+            void ( *unbindV ) ( const ValueType* ) = &vectorUnbindTexture;
+            void ( *unbindI ) ( const IndexType* ) = &vectorUnbindTexture;
 
             syncToken->pushRoutine( boost::bind( unbindV, oldSolution ) );
 
@@ -1060,7 +997,7 @@ void jds_jacobi_halo_kernel(
         const int perm = jdsPermHalo[id];
         for ( int jj = 0; jj < rowEnd; ++jj )
         {
-            temp += jdsValuesHalo[pos] * fetchJDSVectorX<T,useTexture>( oldSolutionHalo, jdsJAHalo[pos] );
+            temp += jdsValuesHalo[pos] * fetchVectorX<T,useTexture>( oldSolutionHalo, jdsJAHalo[pos] );
             pos += fetch_JDSdlg<useTexture,useSharedMem>( jdsDLGHalo, dlg, jj );
         }
 
@@ -1107,11 +1044,11 @@ void CUDAJDSUtils::jacobiHalo(
 
     if ( useTexture )
     {
-        vectorJDSBindTexture( oldSolutionHalo );
+        vectorBindTexture( oldSolutionHalo );
 
         if ( !useSharedMem )
         {
-            vectorJDSBindTexture( jdsDLGHalo );
+            vectorBindTexture( jdsDLGHalo );
         }
     }
 
@@ -1174,11 +1111,11 @@ void CUDAJDSUtils::jacobiHalo(
 
     if ( useTexture )
     {
-        vectorJDSUnbindTexture( oldSolutionHalo );
+        vectorUnbindTexture( oldSolutionHalo );
 
         if ( !useSharedMem )
         {
-            vectorJDSUnbindTexture( jdsDLGHalo );
+            vectorUnbindTexture( jdsDLGHalo );
         }
     }
 }
@@ -1230,7 +1167,7 @@ void normal_gemv_kernel(
         for ( int jj = 0; jj < ni; ++jj )
         {
             IndexType j = jdsJA[pos];
-            value += jdsValues[pos] * fetchJDSVectorX<ValueType,useTexture>( x_d, j );
+            value += jdsValues[pos] * fetchVectorX<ValueType,useTexture>( x_d, j );
             pos += fetch_JDSdlg<useTexture,useSharedMem>( jdsDLG, dlg, jj );
         }
 
@@ -1283,7 +1220,7 @@ void normal_gemv_kernel_alpha_one_beta_one(
         for ( int jj = 0; jj < ni; ++jj )
         {
             IndexType j = jdsJA[pos];
-            value += jdsValues[pos] * fetchJDSVectorX<ValueType,useTexture>( x_d, j );
+            value += jdsValues[pos] * fetchVectorX<ValueType,useTexture>( x_d, j );
             pos += fetch_JDSdlg<useTexture,useSharedMem>( jdsDLG, dlg, jj );
         }
 
@@ -1334,7 +1271,7 @@ void normal_gemv_kernel_alpha_one_beta_zero(
         for ( int jj = 0; jj < ni; ++jj )
         {
             IndexType j = jdsJA[pos];
-            value += jdsValues[pos] * fetchJDSVectorX<ValueType,useTexture>( x_d, j );
+            value += jdsValues[pos] * fetchVectorX<ValueType,useTexture>( x_d, j );
             pos += fetch_JDSdlg<useTexture,useSharedMem>( jdsDLG, dlg, jj );
         }
 
@@ -1407,7 +1344,7 @@ void normal_gemv_kernel_alpha_one(
         for ( int jj = 0; jj < ni; ++jj )
         {
             IndexType j = jdsJA[pos];
-            value += jdsValues[pos] * fetchJDSVectorX<ValueType,useTexture>( x_d, j );
+            value += jdsValues[pos] * fetchVectorX<ValueType,useTexture>( x_d, j );
             pos += fetch_JDSdlg<useTexture,useSharedMem>( jdsDLG, dlg, jj );
         }
 
@@ -1481,7 +1418,7 @@ void normal_gemv_kernel_beta_one(
         for ( int jj = 0; jj < ni; ++jj )
         {
             IndexType j = jdsJA[pos];
-            value += jdsValues[pos] * fetchJDSVectorX<ValueType,useTexture>( x_d, j );
+            value += jdsValues[pos] * fetchVectorX<ValueType,useTexture>( x_d, j );
             pos += fetch_JDSdlg<useTexture,useSharedMem>( jdsDLG, dlg, jj );
         }
 
@@ -1533,7 +1470,7 @@ void normal_gemv_kernel_beta_zero(
         for ( int jj = 0; jj < ni; ++jj )
         {
             IndexType j = jdsJA[pos];
-            value += jdsValues[pos] * fetchJDSVectorX<ValueType,useTexture>( x_d, j );
+            value += jdsValues[pos] * fetchVectorX<ValueType,useTexture>( x_d, j );
             pos += fetch_JDSdlg<useTexture,useSharedMem>( jdsDLG, dlg, jj );
         }
 
@@ -1585,7 +1522,7 @@ void sparse_gemv_kernel(
         for ( int jj = 0; jj < ni; ++jj )
         {
             IndexType j = jdsJA[pos];
-            value += jdsValues[pos] * fetchJDSVectorX<ValueType,useTexture>( x_d, j );
+            value += jdsValues[pos] * fetchVectorX<ValueType,useTexture>( x_d, j );
             pos += fetch_JDSdlg<useTexture,useSharedMem>( jdsDLG, dlg, jj );
         }
 
@@ -1636,7 +1573,7 @@ void sparse_gemv_kernel_alpha_one(
         for ( int jj = 0; jj < ni; ++jj )
         {
             IndexType j = jdsJA[pos];
-            value += jdsValues[pos] * fetchJDSVectorX<ValueType,useTexture>( x_d, j );
+            value += jdsValues[pos] * fetchVectorX<ValueType,useTexture>( x_d, j );
             pos += fetch_JDSdlg<useTexture,useSharedMem>( jdsDLG, dlg, jj );
         }
 
@@ -1688,7 +1625,7 @@ void sparse_gevm_kernel(
         for ( int jj = 0; jj < ni; ++jj )
         {
             IndexType j = jdsJA[pos];
-            value += jdsValues[pos] * fetchJDSVectorX<ValueType,useTexture>( x_d, j );
+            value += jdsValues[pos] * fetchVectorX<ValueType,useTexture>( x_d, j );
             pos += fetch_JDSdlg<useTexture,useSharedMem>( jdsDLG, dlg, jj );
         }
 
@@ -1761,7 +1698,7 @@ void CUDAJDSUtils::normalGEMV(
 
     if ( useTexture )
     {
-        vectorJDSBindTexture( x );
+        vectorBindTexture( x );
 
         if ( useSharedMem )
         {
@@ -1808,7 +1745,7 @@ void CUDAJDSUtils::normalGEMV(
         }
         else // no sharedMem
         {
-            vectorJDSBindTexture( jdsDLG );
+            vectorBindTexture( jdsDLG );
 
             if( alpha == 1 && beta == 1 )
             {
@@ -1858,19 +1795,19 @@ void CUDAJDSUtils::normalGEMV(
 
             LAMA_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "JDS: gemvKernel FAILED" )
 
-                            vectorJDSUnbindTexture( x );
+                            vectorUnbindTexture( x );
 
             if ( !useSharedMem )
             {
-                vectorJDSUnbindTexture( jdsDLG );
+                vectorUnbindTexture( jdsDLG );
             }
         }
         else
         {
             // synchronize by syncToken, delay unbind texture 
 
-            void ( *unbindV ) ( const ValueType* ) = &vectorJDSUnbindTexture;
-            void ( *unbindI ) ( const IndexType* ) = &vectorJDSUnbindTexture;
+            void ( *unbindV ) ( const ValueType* ) = &vectorUnbindTexture;
+            void ( *unbindI ) ( const IndexType* ) = &vectorUnbindTexture;
 
             syncToken->pushRoutine( boost::bind( unbindV, x ) );
 
@@ -2033,7 +1970,7 @@ void normal_gevm_kernel(
 		            IndexType j = jdsJA[off];
 		            if ( j == k )
 		            {
-		            	value += jdsValues[off] * fetchJDSVectorX<ValueType,useTexture>( x_d, i );
+		            	value += jdsValues[off] * fetchVectorX<ValueType,useTexture>( x_d, i );
 		            }
 		            off += fetch_JDSdlg<useTexture,useSharedMem>( jdsDLG, dlg, jj );
 		        }
@@ -2095,7 +2032,7 @@ void normal_gevm_kernel_alpha_one_beta_one(
                     IndexType j = jdsJA[off];
                     if ( j == k )
                     {
-                        value += jdsValues[off] * fetchJDSVectorX<ValueType,useTexture>( x_d, i );
+                        value += jdsValues[off] * fetchVectorX<ValueType,useTexture>( x_d, i );
                     }
                     off += fetch_JDSdlg<useTexture,useSharedMem>( jdsDLG, dlg, jj );
                 }
@@ -2156,7 +2093,7 @@ void normal_gevm_kernel_alpha_one_beta_zero(
                     IndexType j = jdsJA[off];
                     if ( j == k )
                     {
-                        value += jdsValues[off] * fetchJDSVectorX<ValueType,useTexture>( x_d, i );
+                        value += jdsValues[off] * fetchVectorX<ValueType,useTexture>( x_d, i );
                     }
                     off += fetch_JDSdlg<useTexture,useSharedMem>( jdsDLG, dlg, jj );
                 }
@@ -2224,7 +2161,7 @@ void normal_gevm_kernel_alpha_one(
                     IndexType j = jdsJA[off];
                     if ( j == k )
                     {
-                        value += jdsValues[off] * fetchJDSVectorX<ValueType,useTexture>( x_d, i );
+                        value += jdsValues[off] * fetchVectorX<ValueType,useTexture>( x_d, i );
                     }
                     off += fetch_JDSdlg<useTexture,useSharedMem>( jdsDLG, dlg, jj );
                 }
@@ -2287,7 +2224,7 @@ void normal_gevm_kernel_beta_one(
                     IndexType j = jdsJA[off];
                     if ( j == k )
                     {
-                        value += jdsValues[off] * fetchJDSVectorX<ValueType,useTexture>( x_d, i );
+                        value += jdsValues[off] * fetchVectorX<ValueType,useTexture>( x_d, i );
                     }
                     off += fetch_JDSdlg<useTexture,useSharedMem>( jdsDLG, dlg, jj );
                 }
@@ -2349,7 +2286,7 @@ void normal_gevm_kernel_beta_zero(
                     IndexType j = jdsJA[off];
                     if ( j == k )
                     {
-                        value += jdsValues[off] * fetchJDSVectorX<ValueType,useTexture>( x_d, i );
+                        value += jdsValues[off] * fetchVectorX<ValueType,useTexture>( x_d, i );
                     }
                     off += fetch_JDSdlg<useTexture,useSharedMem>( jdsDLG, dlg, jj );
                 }
@@ -2425,7 +2362,7 @@ void CUDAJDSUtils::normalGEVM(
 
     if ( useTexture )
     {
-        vectorJDSBindTexture( x );
+        vectorBindTexture( x );
 
         if ( useSharedMem )
         {
@@ -2472,7 +2409,7 @@ void CUDAJDSUtils::normalGEVM(
         }
         else // no sharedMem
         {
-            vectorJDSBindTexture( jdsDLG );
+            vectorBindTexture( jdsDLG );
 
             if( alpha == 1 && beta == 1 )
             {
@@ -2522,19 +2459,19 @@ void CUDAJDSUtils::normalGEVM(
 
             LAMA_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "JDS: gevmKernel FAILED" )
 
-                            vectorJDSUnbindTexture( x );
+                            vectorUnbindTexture( x );
 
             if ( !useSharedMem )
             {
-                vectorJDSUnbindTexture( jdsDLG );
+                vectorUnbindTexture( jdsDLG );
             }
         }
         else
         {
             // synchronize by syncToken, delay unbind texture
 
-            void ( *unbindV ) ( const ValueType* ) = &vectorJDSUnbindTexture;
-            void ( *unbindI ) ( const IndexType* ) = &vectorJDSUnbindTexture;
+            void ( *unbindV ) ( const ValueType* ) = &vectorUnbindTexture;
+            void ( *unbindI ) ( const IndexType* ) = &vectorUnbindTexture;
 
             syncToken->pushRoutine( boost::bind( unbindV, x ) );
 
@@ -2694,7 +2631,7 @@ void CUDAJDSUtils::sparseGEMV(
 
     if ( useTexture )
     {
-        vectorJDSBindTexture( x );
+        vectorBindTexture( x );
 
         if ( useSharedMem )
         {
@@ -2705,7 +2642,7 @@ void CUDAJDSUtils::sparseGEMV(
         }
         else // no sharedMem
         {
-            vectorJDSBindTexture( jdsDLG );
+            vectorBindTexture( jdsDLG );
 
             sparse_gemv_kernel<ValueType, true, false><<<dimGrid, dimBlock, 0, stream>>>
             ( result, x, alpha, jdsValues, jdsDLG, jdsILG, jdsJA, jdsPerm, numRows, ndlg );
@@ -2721,17 +2658,17 @@ void CUDAJDSUtils::sparseGEMV(
         
             if ( !useSharedMem )
             {
-                vectorJDSUnbindTexture( jdsDLG );
+                vectorUnbindTexture( jdsDLG );
             }
 
-            vectorJDSUnbindTexture( x );
+            vectorUnbindTexture( x );
         }
         else
         {
             // synchronize by syncToken, delay unbind texture 
 
-            void ( *unbindV ) ( const ValueType* ) = &vectorJDSUnbindTexture;
-            void ( *unbindI ) ( const IndexType* ) = &vectorJDSUnbindTexture;
+            void ( *unbindV ) ( const ValueType* ) = &vectorUnbindTexture;
+            void ( *unbindI ) ( const IndexType* ) = &vectorUnbindTexture;
 
             if ( !useSharedMem )
             {
@@ -2822,7 +2759,7 @@ void CUDAJDSUtils::sparseGEVM(
 
     if ( useTexture )
     {
-        vectorJDSBindTexture( x );
+        vectorBindTexture( x );
 
         if ( useSharedMem )
         {
@@ -2833,7 +2770,7 @@ void CUDAJDSUtils::sparseGEVM(
         }
         else // no sharedMem
         {
-            vectorJDSBindTexture( jdsDLG );
+            vectorBindTexture( jdsDLG );
 
             sparse_gevm_kernel<ValueType, true, false><<<dimGrid, dimBlock, 0, stream>>>
             ( result, x, alpha, jdsValues, jdsDLG, jdsILG, jdsJA, jdsPerm, numRows, ndlg );
@@ -2849,17 +2786,17 @@ void CUDAJDSUtils::sparseGEVM(
 
             if ( !useSharedMem )
             {
-                vectorJDSUnbindTexture( jdsDLG );
+                vectorUnbindTexture( jdsDLG );
             }
 
-            vectorJDSUnbindTexture( x );
+            vectorUnbindTexture( x );
         }
         else
         {
             // synchronize by syncToken, delay unbind texture
 
-            void ( *unbindV ) ( const ValueType* ) = &vectorJDSUnbindTexture;
-            void ( *unbindI ) ( const IndexType* ) = &vectorJDSUnbindTexture;
+            void ( *unbindV ) ( const ValueType* ) = &vectorUnbindTexture;
+            void ( *unbindI ) ( const IndexType* ) = &vectorUnbindTexture;
 
             if ( !useSharedMem )
             {

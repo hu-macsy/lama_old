@@ -564,64 +564,49 @@ void CUDAUtils::setInterface( UtilsInterface& Utils )
 
     LAMA_INTERFACE_REGISTER( Utils, validIndexes )
 
-    LAMA_INTERFACE_REGISTER_T( Utils, scale, float )
-    LAMA_INTERFACE_REGISTER_T( Utils, scale, double )
-
-    LAMA_INTERFACE_REGISTER_TT( Utils, setScale, float, float )
-    LAMA_INTERFACE_REGISTER_TT( Utils, setScale, double, float )
-    LAMA_INTERFACE_REGISTER_TT( Utils, setScale, float, double )
-    LAMA_INTERFACE_REGISTER_TT( Utils, setScale, double, double )
-
     LAMA_INTERFACE_REGISTER_T( Utils, sum, IndexType )
-    LAMA_INTERFACE_REGISTER_T( Utils, sum, float )
-    LAMA_INTERFACE_REGISTER_T( Utils, sum, double )
 
     LAMA_INTERFACE_REGISTER_T( Utils, setVal, IndexType )
-    LAMA_INTERFACE_REGISTER_T( Utils, setVal, float )
-    LAMA_INTERFACE_REGISTER_T( Utils, setVal, double )
-
     LAMA_INTERFACE_REGISTER_T( Utils, setOrder, IndexType )
 
     LAMA_INTERFACE_REGISTER_T( Utils, getValue, IndexType )
-    LAMA_INTERFACE_REGISTER_T( Utils, getValue, float )
-    LAMA_INTERFACE_REGISTER_T( Utils, getValue, double )
-
     LAMA_INTERFACE_REGISTER_T( Utils, maxval, IndexType )
-    LAMA_INTERFACE_REGISTER_T( Utils, maxval, float )
-    LAMA_INTERFACE_REGISTER_T( Utils, maxval, double )
-
     LAMA_INTERFACE_REGISTER_T( Utils, absMaxVal, IndexType )
-    LAMA_INTERFACE_REGISTER_T( Utils, absMaxVal, float )
-    LAMA_INTERFACE_REGISTER_T( Utils, absMaxVal, double )
-
     LAMA_INTERFACE_REGISTER_T( Utils, absMaxDiffVal, IndexType )
-    LAMA_INTERFACE_REGISTER_T( Utils, absMaxDiffVal, float )
-    LAMA_INTERFACE_REGISTER_T( Utils, absMaxDiffVal, double )
 
     LAMA_INTERFACE_REGISTER_T( Utils, isSorted, IndexType )
-    LAMA_INTERFACE_REGISTER_T( Utils, isSorted, float )
-    LAMA_INTERFACE_REGISTER_T( Utils, isSorted, double )
 
     LAMA_INTERFACE_REGISTER_TT( Utils, set, int, int )
-    LAMA_INTERFACE_REGISTER_TT( Utils, set, float, float )
-    LAMA_INTERFACE_REGISTER_TT( Utils, set, float, double )
-    LAMA_INTERFACE_REGISTER_TT( Utils, set, double, float )
-    LAMA_INTERFACE_REGISTER_TT( Utils, set, double, double )
 
     LAMA_INTERFACE_REGISTER_TT( Utils, setScatter, int, int )
-    LAMA_INTERFACE_REGISTER_TT( Utils, setScatter, float, float )
-    LAMA_INTERFACE_REGISTER_TT( Utils, setScatter, float, double )
-    LAMA_INTERFACE_REGISTER_TT( Utils, setScatter, double, float )
-    LAMA_INTERFACE_REGISTER_TT( Utils, setScatter, double, double )
-
     LAMA_INTERFACE_REGISTER_TT( Utils, setGather, int, int )
-    LAMA_INTERFACE_REGISTER_TT( Utils, setGather, float, float )
-    LAMA_INTERFACE_REGISTER_TT( Utils, setGather, float, double )
-    LAMA_INTERFACE_REGISTER_TT( Utils, setGather, double, float )
-    LAMA_INTERFACE_REGISTER_TT( Utils, setGather, double, double )
 
-    LAMA_INTERFACE_REGISTER_T( Utils, invert, float )
-    LAMA_INTERFACE_REGISTER_T( Utils, invert, double )
+
+#define LAMA_UTILS2_REGISTER(z, J, TYPE )                                            \
+    LAMA_INTERFACE_REGISTER_TT( Utils, setScale, TYPE, ARITHMETIC_TYPE##J )          \
+    LAMA_INTERFACE_REGISTER_TT( Utils, set, TYPE, ARITHMETIC_TYPE##J )               \
+    LAMA_INTERFACE_REGISTER_TT( Utils, setScatter, TYPE, ARITHMETIC_TYPE##J )        \
+    LAMA_INTERFACE_REGISTER_TT( Utils, setGather, TYPE, ARITHMETIC_TYPE##J )         \
+
+#define LAMA_UTILS_REGISTER(z, I, _)                                                 \
+    LAMA_INTERFACE_REGISTER_T( Utils, invert, ARITHMETIC_TYPE##I )                   \
+    LAMA_INTERFACE_REGISTER_T( Utils, isSorted, ARITHMETIC_TYPE##I )                 \
+    LAMA_INTERFACE_REGISTER_T( Utils, absMaxDiffVal, ARITHMETIC_TYPE##I )            \
+    LAMA_INTERFACE_REGISTER_T( Utils, absMaxVal, ARITHMETIC_TYPE##I )                \
+    LAMA_INTERFACE_REGISTER_T( Utils, maxval, ARITHMETIC_TYPE##I )                   \
+    LAMA_INTERFACE_REGISTER_T( Utils, sum, ARITHMETIC_TYPE##I )                      \
+    LAMA_INTERFACE_REGISTER_T( Utils, getValue, ARITHMETIC_TYPE##I )                 \
+    LAMA_INTERFACE_REGISTER_T( Utils, scale, ARITHMETIC_TYPE##I )                    \
+                                                                                     \
+    BOOST_PP_REPEAT( ARITHMETIC_TYPE_CNT,                                            \
+                     LAMA_UTILS2_REGISTER,                                           \
+                     ARITHMETIC_TYPE##I )                                            \
+
+BOOST_PP_REPEAT( ARITHMETIC_TYPE_CNT, LAMA_UTILS_REGISTER, _ )
+
+#undef LAMA_UTILS_REGISTER
+#undef LAMA_UTILS2_REGISTER
+
 }
 
 /* --------------------------------------------------------------------------- */

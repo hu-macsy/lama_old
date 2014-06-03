@@ -73,70 +73,7 @@ LAMA_LOG_DEF_LOGGER( CUDAELLUtils::logger, "CUDA.ELLUtils" )
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 
-texture<float, 1> texELLVectorSXref;
-
-texture<int2, 1> texELLVectorDXref;
-
-texture<int, 1> texELLVectorIref;
-
-__inline__ void vectorELLBindTexture( const float* vector )
-{
-    LAMA_CUDA_RT_CALL( cudaBindTexture( NULL, texELLVectorSXref, vector ), "bind float vector x to texture" )
-}
-
-__inline__ void vectorELLBindTexture( const double* vector )
-{
-    LAMA_CUDA_RT_CALL( cudaBindTexture( NULL, texELLVectorDXref, vector ), "bind double vector x to texture" )
-}
-
-__inline__ void vectorELLBindTexture( const int* vector )
-{
-    LAMA_CUDA_RT_CALL( cudaBindTexture( NULL, texELLVectorIref, vector ), "bind int vector x to texture" )
-}
-
-__inline__ void vectorELLUnbindTexture( const float* )
-{
-    LAMA_CUDA_RT_CALL( cudaUnbindTexture( texELLVectorSXref ), "unbind float vector x from texture" )
-}
-
-__inline__ void vectorELLUnbindTexture( const double* )
-{
-    LAMA_CUDA_RT_CALL( cudaUnbindTexture( texELLVectorDXref ), "unbind double vector x from texture" )
-}
-
-__inline__ void vectorELLUnbindTexture( const int* )
-{
-    LAMA_CUDA_RT_CALL( cudaUnbindTexture( texELLVectorIref ), "unbind int vector x from texture" )
-}
-
-template<typename ValueType, bool useTexture>
-__inline__ __device__ 
-ValueType fetchELLVectorX( const ValueType* const x, const int i )
-{
-    return x[i];
-}
-
-template<>
-__inline__ __device__
-float fetchELLVectorX<float, true>( const float* const, const int i )
-{
-    return tex1Dfetch( texELLVectorSXref, i );
-}
-
-template<>
-__inline__ __device__
-double fetchELLVectorX<double, true>( const double* const, const int i )
-{
-    int2 v = tex1Dfetch( texELLVectorDXref, i );
-    return __hiloint2double( v.y, v.x );
-}
-
-template<>
-__inline__ __device__
-int fetchELLVectorX<int, true>( const int* const, const int i )
-{
-    return tex1Dfetch( texELLVectorIref, i );
-}
+#include <lama/cuda/CUDATexVector.hpp>
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 /*                                                  thrust functors                                                   */
@@ -733,7 +670,7 @@ void normal_gemv_kernel(
         for ( int kk = 0; kk < ellIA[i]; ++kk )
         {
             //if (aValue != 0.0) //compute capability >= 2.0  => disadvantage
-            value += ellValues[pos] * fetchELLVectorX<T, useTexture>( x_d, ellJA[pos] );
+            value += ellValues[pos] * fetchVectorX<T, useTexture>( x_d, ellJA[pos] );
             pos += numRows;
         }
         result[i] = alpha * value + summand;
@@ -765,7 +702,7 @@ void normal_gemv_kernel_alpha_one_beta_one(
         for ( int kk = 0; kk < ellIA[i]; ++kk )
         {
             //if (aValue != 0.0) //compute capability >= 2.0  => disadvantage
-            value += ellValues[pos] * fetchELLVectorX<T, useTexture>( x_d, ellJA[pos] );
+            value += ellValues[pos] * fetchVectorX<T, useTexture>( x_d, ellJA[pos] );
             pos += numRows;
         }
         result[i] = value + summand;
@@ -794,7 +731,7 @@ void normal_gemv_kernel_alpha_one_beta_zero(
         for ( int kk = 0; kk < ellIA[i]; ++kk )
         {
             //if (aValue != 0.0) //compute capability >= 2.0  => disadvantage
-            value += ellValues[pos] * fetchELLVectorX<T, useTexture>( x_d, ellJA[pos] );
+            value += ellValues[pos] * fetchVectorX<T, useTexture>( x_d, ellJA[pos] );
             pos += numRows;
         }
         result[i] = value;
@@ -843,7 +780,7 @@ void normal_gemv_kernel_alpha_one(
         for ( int kk = 0; kk < ellIA[i]; ++kk )
         {
             //if (aValue != 0.0) //compute capability >= 2.0  => disadvantage
-            value += ellValues[pos] * fetchELLVectorX<T, useTexture>( x_d, ellJA[pos] );
+            value += ellValues[pos] * fetchVectorX<T, useTexture>( x_d, ellJA[pos] );
             pos += numRows;
         }
         result[i] = value + summand;
@@ -875,7 +812,7 @@ void normal_gemv_kernel_beta_one(
         for ( int kk = 0; kk < ellIA[i]; ++kk )
         {
             //if (aValue != 0.0) //compute capability >= 2.0  => disadvantage
-            value += ellValues[pos] * fetchELLVectorX<T, useTexture>( x_d, ellJA[pos] );
+            value += ellValues[pos] * fetchVectorX<T, useTexture>( x_d, ellJA[pos] );
             pos += numRows;
         }
         result[i] = alpha * value + summand;
@@ -923,7 +860,7 @@ void normal_gemv_kernel_beta_zero(
         for ( int kk = 0; kk < ellIA[i]; ++kk )
         {
             //if (aValue != 0.0) //compute capability >= 2.0  => disadvantage
-            value += ellValues[pos] * fetchELLVectorX<T, useTexture>( x_d, ellJA[pos] );
+            value += ellValues[pos] * fetchVectorX<T, useTexture>( x_d, ellJA[pos] );
             pos += numRows;
         }
         result[i] = alpha * value;
@@ -977,7 +914,7 @@ void CUDAELLUtils::normalGEMV(
 
     if ( useTexture )
     {
-        vectorELLBindTexture( x );
+        vectorBindTexture( x );
 
         if( alpha == 1 && beta == 1 )
         {
@@ -1114,7 +1051,7 @@ void CUDAELLUtils::normalGEMV(
 
         if ( useTexture )
         {
-            vectorELLUnbindTexture( x );
+            vectorUnbindTexture( x );
         }
     }
     else
@@ -1123,7 +1060,7 @@ void CUDAELLUtils::normalGEMV(
 
         if ( useTexture )
         {
-            void ( *unbind ) ( const ValueType* ) = &vectorELLUnbindTexture;
+            void ( *unbind ) ( const ValueType* ) = &vectorUnbindTexture;
 
             syncToken->pushRoutine( boost::bind( unbind, x ) );
         }
@@ -1164,7 +1101,7 @@ void normal_gevm_kernel(
             {
                 if( ellJA[pos] == i )
                 {
-                    value += ellValues[pos] * fetchELLVectorX<T, useTexture>( x_d, j );
+                    value += ellValues[pos] * fetchVectorX<T, useTexture>( x_d, j );
                 }
                 pos += numRows;
             }
@@ -1204,7 +1141,7 @@ void normal_gevm_kernel_alpha_one_beta_one(
             {
                 if( ellJA[pos] == i )
                 {
-                    value += ellValues[pos] * fetchELLVectorX<T, useTexture>( x_d, j );
+                    value += ellValues[pos] * fetchVectorX<T, useTexture>( x_d, j );
                 }
                 pos += numRows;
             }
@@ -1243,7 +1180,7 @@ void normal_gevm_kernel_alpha_one_beta_zero(
             {
                 if( ellJA[pos] == i )
                 {
-                    value += ellValues[pos] * fetchELLVectorX<T, useTexture>( x_d, j );
+                    value += ellValues[pos] * fetchVectorX<T, useTexture>( x_d, j );
                 }
                 pos += numRows;
             }
@@ -1308,7 +1245,7 @@ void normal_gevm_kernel_alpha_one(
             {
                 if( ellJA[pos] == i )
                 {
-                    value += ellValues[pos] * fetchELLVectorX<T, useTexture>( x_d, j );
+                    value += ellValues[pos] * fetchVectorX<T, useTexture>( x_d, j );
                 }
                 pos += numRows;
             }
@@ -1372,7 +1309,7 @@ void normal_gevm_kernel_beta_one(
             {
                 if( ellJA[pos] == i )
                 {
-                    value += ellValues[pos] * fetchELLVectorX<T, useTexture>( x_d, j );
+                    value += ellValues[pos] * fetchVectorX<T, useTexture>( x_d, j );
                 }
                 pos += numRows;
             }
@@ -1412,7 +1349,7 @@ void normal_gevm_kernel_beta_zero(
             {
                 if( ellJA[pos] == i )
                 {
-                    value += ellValues[pos] * fetchELLVectorX<T, useTexture>( x_d, j );
+                    value += ellValues[pos] * fetchVectorX<T, useTexture>( x_d, j );
                 }
                 pos += numRows;
             }
@@ -1467,7 +1404,7 @@ void CUDAELLUtils::normalGEVM(
 
     if ( useTexture )
     {
-        vectorELLBindTexture( x );
+        vectorBindTexture( x );
 
         if( alpha == 1 && beta == 1 )
         {
@@ -1612,12 +1549,12 @@ void CUDAELLUtils::normalGEVM(
     {
         if ( !syncToken )
         {
-            vectorELLUnbindTexture( x );
+            vectorUnbindTexture( x );
         }
         else
         {
              // get routine with the right signature
-             void ( *unbind ) ( const ValueType* ) = &vectorELLUnbindTexture;
+             void ( *unbind ) ( const ValueType* ) = &vectorUnbindTexture;
 
              // delay unbind until synchroniziaton
              syncToken->pushRoutine( boost::bind( unbind, x ) );
@@ -1661,7 +1598,7 @@ void sparse_gemv_kernel(
 
             // compute capability >= 2.0: no benefits to mask with value != 0.0
 
-            value += aValue * fetchELLVectorX<T, useTexture>( x_d, ellJA[pos] );
+            value += aValue * fetchVectorX<T, useTexture>( x_d, ellJA[pos] );
             pos   += numRows;
         }
 
@@ -1704,7 +1641,7 @@ void sparse_gemv_kernel_alpha_one(
 
             // compute capability >= 2.0: no benefits to mask with value != 0.0
 
-            value += aValue * fetchELLVectorX<T, useTexture>( x_d, ellJA[pos] );
+            value += aValue * fetchVectorX<T, useTexture>( x_d, ellJA[pos] );
             pos   += numRows;
         }
 
@@ -1751,7 +1688,7 @@ void CUDAELLUtils::sparseGEMV(
 
     if ( useTexture )
     {
-        vectorELLBindTexture( x );
+        vectorBindTexture( x );
     }
 
     LAMA_LOG_INFO( logger, "Start ell_sparse_gemv_kernel<" << Scalar::getType<ValueType>()
@@ -1803,7 +1740,7 @@ void CUDAELLUtils::sparseGEMV(
 
         if ( useTexture )
         {
-            vectorELLUnbindTexture( x );
+            vectorUnbindTexture( x );
         }
     }
     else
@@ -1812,7 +1749,7 @@ void CUDAELLUtils::sparseGEMV(
 
         if ( useTexture )
         {
-            void ( *unbind ) ( const ValueType* ) = &vectorELLUnbindTexture;
+            void ( *unbind ) ( const ValueType* ) = &vectorUnbindTexture;
 
             syncToken->pushRoutine( boost::bind( unbind, x ) );
         }
@@ -1856,7 +1793,7 @@ void sparse_gevm_kernel(
 
                     // compute capability >= 2.0: no benefits to mask with value != 0.0
 
-                    value += aValue * fetchELLVectorX<T, useTexture>( x_d, ellJA[pos] );
+                    value += aValue * fetchVectorX<T, useTexture>( x_d, ellJA[pos] );
                 }
                 pos   += numRows;
             }
@@ -1901,7 +1838,7 @@ void sparse_gevm_kernel_alpha_one(
 
                     // compute capability >= 2.0: no benefits to mask with value != 0.0
 
-                    value += aValue * fetchELLVectorX<T, useTexture>( x_d, ellJA[pos] );
+                    value += aValue * fetchVectorX<T, useTexture>( x_d, ellJA[pos] );
                 }
                 pos   += numRows;
             }
@@ -2014,13 +1951,13 @@ void ell_jacobi_kernel(
         for ( int kk = 1; kk < ellIA[i]; ++kk )
         {
             const T aValue = *ellValues;
-            temp -= aValue * fetchELLVectorX<T, useTexture>( oldSolution, *ellJA );
+            temp -= aValue * fetchVectorX<T, useTexture>( oldSolution, *ellJA );
             ellValues += numRows;
             ellJA += numRows;
         }
         if ( omega == 0.5 )
         {
-            solution[i] = omega * ( fetchELLVectorX<T, useTexture>( oldSolution, i ) + temp / diag );
+            solution[i] = omega * ( fetchVectorX<T, useTexture>( oldSolution, i ) + temp / diag );
         }
         else if ( omega == 1.0 )
         {
@@ -2028,7 +1965,7 @@ void ell_jacobi_kernel(
         }
         else
         {
-            solution[i] = omega * ( temp / diag ) + ( 1.0 - omega ) * fetchELLVectorX<T, useTexture>( oldSolution, i );
+            solution[i] = omega * ( temp / diag ) + ( 1.0 - omega ) * fetchVectorX<T, useTexture>( oldSolution, i );
         }
     }
 }
@@ -2073,7 +2010,7 @@ void CUDAELLUtils::jacobi(
 
     if ( useTexture )
     {
-        vectorELLBindTexture( oldSolution );
+        vectorBindTexture( oldSolution );
 
         LAMA_CUDA_RT_CALL( cudaFuncSetCacheConfig( ell_jacobi_kernel<ValueType, true>, cudaFuncCachePreferL1),
                            "LAMA_STATUS_CUDA_FUNCSETCACHECONFIG_FAILED" )
@@ -2101,14 +2038,14 @@ void CUDAELLUtils::jacobi(
 
         if ( useTexture )
         {
-            vectorELLUnbindTexture( oldSolution );
+            vectorUnbindTexture( oldSolution );
         }
     }
     else
     {
         if ( useTexture )
         {
-            void ( *unbind ) ( const ValueType* ) = &vectorELLUnbindTexture;
+            void ( *unbind ) ( const ValueType* ) = &vectorUnbindTexture;
 
             syncToken->pushRoutine( boost::bind( unbind, oldSolution ) );
         }
@@ -2151,7 +2088,7 @@ void ell_jacobi_halo_kernel(
 
         for ( int jj = 0; jj < rowend; ++jj )
         {
-            temp += ellvalues[pos] * fetchELLVectorX<ValueType, useTexture>( oldsolution, ellJA[pos] );
+            temp += ellvalues[pos] * fetchVectorX<ValueType, useTexture>( oldsolution, ellJA[pos] );
             pos += numrows;
         }
 
@@ -2189,7 +2126,7 @@ void CUDAELLUtils::jacobiHalo(
 
     if ( useTexture )
     {
-        vectorELLBindTexture( oldSolution );
+        vectorBindTexture( oldSolution );
 
         LAMA_CUDA_RT_CALL( cudaFuncSetCacheConfig( ell_jacobi_halo_kernel<ValueType, true>, cudaFuncCachePreferL1 ),
                            "LAMA_STATUS_CUDA_FUNCSETCACHECONFIG_FAILED" )
@@ -2213,7 +2150,7 @@ void CUDAELLUtils::jacobiHalo(
 
     if ( useTexture )
     {
-        vectorELLUnbindTexture( oldSolution );
+        vectorUnbindTexture( oldSolution );
     }
 }
 

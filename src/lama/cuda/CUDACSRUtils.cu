@@ -278,70 +278,7 @@ void CUDACSRUtils::convertCSR2CSC(
 
 /* --------------------------------------------------------------------------- */
 
-texture<float, 1> texCSRVectorSXref;
-
-texture<int2, 1> texCSRVectorDXref;
-
-texture<int, 1> texCSRVectorIref;
-
-__inline__ void vectorCSRBindTexture( const float* vector )
-{
-    LAMA_CUDA_RT_CALL( cudaBindTexture( NULL, texCSRVectorSXref, vector ), "bind float vector x to texture" )
-}
-
-__inline__ void vectorCSRBindTexture( const double* vector )
-{
-    LAMA_CUDA_RT_CALL( cudaBindTexture( NULL, texCSRVectorDXref, vector ), "bind double vector x to texture" )
-}
-
-__inline__ void vectorCSRBindTexture( const int* vector )
-{
-    LAMA_CUDA_RT_CALL( cudaBindTexture( NULL, texCSRVectorIref, vector ), "bind int vector x to texture" )
-}
-
-__inline__ void vectorCSRUnbindTexture( const float* )
-{
-    LAMA_CUDA_RT_CALL( cudaUnbindTexture( texCSRVectorSXref ), "unbind float vector x from texture" )
-}
-
-__inline__ void vectorCSRUnbindTexture( const double* )
-{
-    LAMA_CUDA_RT_CALL( cudaUnbindTexture( texCSRVectorDXref ), "unbind double vector x from texture" )
-}
-
-__inline__ void vectorCSRUnbindTexture( const int* )
-{
-    LAMA_CUDA_RT_CALL( cudaUnbindTexture( texCSRVectorIref ), "unbind int vector x from texture" )
-}
-
-template<typename ValueType, bool useTexture>
-__inline__ __device__ 
-ValueType fetchCSRVectorX( const ValueType* const x, const int i )
-{
-    return x[i];
-}
-
-template<>
-__inline__ __device__
-float fetchCSRVectorX<float, true>( const float* const, const int i )
-{
-    return tex1Dfetch( texCSRVectorSXref, i );
-}
-
-template<>
-__inline__ __device__
-double fetchCSRVectorX<double, true>( const double* const, const int i )
-{
-    int2 v = tex1Dfetch( texCSRVectorDXref, i );
-    return __hiloint2double( v.y, v.x );
-}
-
-template<>
-__inline__ __device__
-int fetchCSRVectorX<int, true>( const int* const, const int i )
-{
-    return tex1Dfetch( texCSRVectorIref, i );
-}
+#include <lama/cuda/CUDATexVector.hpp>
 
 /* --------------------------------------------------------------------------- */
 
@@ -389,7 +326,7 @@ void normal_gemv_kernel_beta_zero(
 
         for ( int jj = rowStart; jj < rowEnd; ++jj )
         {
-            value += csrValues[jj] * fetchCSRVectorX<T, useTexture>( x_d, csrJA[jj] );
+            value += csrValues[jj] * fetchVectorX<T, useTexture>( x_d, csrJA[jj] );
         }
 
         result[i] = alpha * value;
@@ -423,7 +360,7 @@ void normal_gemv_kernel_alpha_one(
 
         for ( int jj = rowStart; jj < rowEnd; ++jj )
         {
-            value += csrValues[jj] * fetchCSRVectorX<T, useTexture>( x_d, csrJA[jj] );
+            value += csrValues[jj] * fetchVectorX<T, useTexture>( x_d, csrJA[jj] );
         }
 
         result[i] = value + summand;
@@ -457,7 +394,7 @@ void normal_gemv_kernel_beta_one(
 
         for ( int jj = rowStart; jj < rowEnd; ++jj )
         {
-            value += csrValues[jj] * fetchCSRVectorX<T, useTexture>( x_d, csrJA[jj] );
+            value += csrValues[jj] * fetchVectorX<T, useTexture>( x_d, csrJA[jj] );
         }
 
         result[i] = alpha * value + summand;
@@ -489,7 +426,7 @@ void normal_gemv_kernel_alpha_one_beta_zero(
 
         for ( int jj = rowStart; jj < rowEnd; ++jj )
         {
-            value += csrValues[jj] * fetchCSRVectorX<T, useTexture>( x_d, csrJA[jj] );
+            value += csrValues[jj] * fetchVectorX<T, useTexture>( x_d, csrJA[jj] );
         }
 
         result[i] = value;
@@ -541,7 +478,7 @@ void normal_gemv_kernel_alpha_one_beta_one(
 
         for ( int jj = rowStart; jj < rowEnd; ++jj )
         {
-            value += csrValues[jj] * fetchCSRVectorX<T, useTexture>( x_d, csrJA[jj] );
+            value += csrValues[jj] * fetchVectorX<T, useTexture>( x_d, csrJA[jj] );
         }
 
         result[i] = value + summand;
@@ -576,7 +513,7 @@ void normal_gemv_kernel(
 
         for ( int jj = rowStart; jj < rowEnd; ++jj )
         {
-            value += csrValues[jj] * fetchCSRVectorX<T, useTexture>( x_d, csrJA[jj] );
+            value += csrValues[jj] * fetchVectorX<T, useTexture>( x_d, csrJA[jj] );
         }
 
         result[i] = alpha * value + summand;
@@ -614,7 +551,7 @@ void normal_gevm_kernel_alpha_one_beta_one(
             {
                 if( csrJA[k] == i )
                 {
-                    value += csrValues[k] * fetchCSRVectorX<T, useTexture>( x_d, j );
+                    value += csrValues[k] * fetchVectorX<T, useTexture>( x_d, j );
                 }
             }
         }
@@ -652,7 +589,7 @@ void normal_gevm_kernel_alpha_one_beta_zero(
             {
                 if( csrJA[k] == i )
                 {
-                    value += csrValues[k] * fetchCSRVectorX<T, useTexture>( x_d, j );
+                    value += csrValues[k] * fetchVectorX<T, useTexture>( x_d, j );
                 }
             }
         }
@@ -692,7 +629,7 @@ void normal_gevm_kernel_alpha_one(
             {
                 if( csrJA[k] == i )
                 {
-                    value += csrValues[k] * fetchCSRVectorX<T, useTexture>( x_d, j );
+                    value += csrValues[k] * fetchVectorX<T, useTexture>( x_d, j );
                 }
             }
         }
@@ -731,7 +668,7 @@ void normal_gevm_kernel_beta_one(
             {
                 if( csrJA[k] == i )
                 {
-                    value += csrValues[k] * fetchCSRVectorX<T, useTexture>( x_d, j );
+                    value += csrValues[k] * fetchVectorX<T, useTexture>( x_d, j );
                 }
             }
         }
@@ -770,7 +707,7 @@ void normal_gevm_kernel_beta_zero(
             {
                 if( csrJA[k] == i )
                 {
-                    value += csrValues[k] * fetchCSRVectorX<T, useTexture>( x_d, j );
+                    value += csrValues[k] * fetchVectorX<T, useTexture>( x_d, j );
                 }
             }
         }
@@ -811,7 +748,7 @@ void normal_gevm_kernel(
             {
                 if( csrJA[k] == i )
                 {
-                    value += csrValues[k] * fetchCSRVectorX<T, useTexture>( x_d, j );
+                    value += csrValues[k] * fetchVectorX<T, useTexture>( x_d, j );
                 }
             }
         }
@@ -846,7 +783,7 @@ void sparse_gemv_kernel_alpha_one(
 
         for ( int jj = rowStart; jj < rowEnd; ++jj )
         {
-            value += csrValues[jj] * fetchCSRVectorX<T, useTexture>( x_d, csrJA[jj] );
+            value += csrValues[jj] * fetchVectorX<T, useTexture>( x_d, csrJA[jj] );
         }
 
         result[i] += value;
@@ -880,7 +817,7 @@ void sparse_gemv_kernel(
 
         for ( int jj = rowStart; jj < rowEnd; ++jj )
         {
-            value += csrValues[jj] * fetchCSRVectorX<T, useTexture>( x_d, csrJA[jj] );
+            value += csrValues[jj] * fetchVectorX<T, useTexture>( x_d, csrJA[jj] );
         }
 
         result[i] += alpha * value;
@@ -918,7 +855,7 @@ void sparse_gevm_kernel_alpha_one(
             {
                 if( csrJA[k] == i )
                 {
-                    value += csrValues[k] * fetchCSRVectorX<T, useTexture>( x_d, i );
+                    value += csrValues[k] * fetchVectorX<T, useTexture>( x_d, i );
                 }
             }
         }
@@ -959,7 +896,7 @@ void sparse_gevm_kernel(
             {
                 if( csrJA[k] == i )
                 {
-                    value += csrValues[k] * fetchCSRVectorX<T, useTexture>( x_d, i );
+                    value += csrValues[k] * fetchVectorX<T, useTexture>( x_d, i );
                 }
             }
         }
@@ -1066,7 +1003,7 @@ void CUDACSRUtils::normalGEMV(
 
     if ( useTexture )
     {
-        vectorCSRBindTexture( x );
+        vectorBindTexture( x );
 
         if ( alpha == 1 && beta == 1 )
         {
@@ -1229,12 +1166,12 @@ void CUDACSRUtils::normalGEMV(
     {
         if ( !syncToken )
         {
-            vectorCSRUnbindTexture( x );
+            vectorUnbindTexture( x );
         }
         else
         {
              // get routine with the right signature
-             void ( *unbind ) ( const ValueType* ) = &vectorCSRUnbindTexture;
+             void ( *unbind ) ( const ValueType* ) = &vectorUnbindTexture;
 
              // delay unbind until synchroniziaton
              syncToken->pushRoutine( boost::bind( unbind, x ) );
@@ -1287,7 +1224,7 @@ void CUDACSRUtils::normalGEVM(
 
     if ( useTexture )
     {
-        vectorCSRBindTexture( x );
+        vectorBindTexture( x );
 
         if ( alpha == 1 && beta == 1 )
         {
@@ -1450,12 +1387,12 @@ void CUDACSRUtils::normalGEVM(
     {
         if ( !syncToken )
         {
-            vectorCSRUnbindTexture( x );
+            vectorUnbindTexture( x );
         }
         else
         {
              // get routine with the right signature
-             void ( *unbind ) ( const ValueType* ) = &vectorCSRUnbindTexture;
+             void ( *unbind ) ( const ValueType* ) = &vectorUnbindTexture;
 
              // delay unbind until synchroniziaton
              syncToken->pushRoutine( boost::bind( unbind, x ) );
@@ -1503,7 +1440,7 @@ void CUDACSRUtils::sparseGEMV(
 
     if ( useTexture )
     {
-        vectorCSRBindTexture( x );
+        vectorBindTexture( x );
 
         if ( alpha == 1 )
         {
@@ -1540,12 +1477,12 @@ void CUDACSRUtils::sparseGEMV(
     {
         if ( !syncToken )
         {
-            vectorCSRUnbindTexture( x );
+            vectorUnbindTexture( x );
         }
         else
         {
              // get routine with the right signature
-             void ( *unbind ) ( const ValueType* ) = &vectorCSRUnbindTexture;
+             void ( *unbind ) ( const ValueType* ) = &vectorUnbindTexture;
 
              // delay unbind until synchroniziaton
              syncToken->pushRoutine( boost::bind( unbind, x ) );
@@ -1592,7 +1529,7 @@ void CUDACSRUtils::sparseGEVM(
 
     if ( useTexture )
     {
-        vectorCSRBindTexture( x );
+        vectorBindTexture( x );
 
         if ( alpha == 1 )
         {
@@ -1629,12 +1566,12 @@ void CUDACSRUtils::sparseGEVM(
     {
         if ( !syncToken )
         {
-            vectorCSRUnbindTexture( x );
+            vectorUnbindTexture( x );
         }
         else
         {
              // get routine with the right signature
-             void ( *unbind ) ( const ValueType* ) = &vectorCSRUnbindTexture;
+             void ( *unbind ) ( const ValueType* ) = &vectorUnbindTexture;
 
              // delay unbind until synchroniziaton
              syncToken->pushRoutine( boost::bind( unbind, x ) );
@@ -1667,11 +1604,11 @@ void csr_jacobi_kernel(
         const T diag = csrValues[rowStart];
         for ( int jj = rowStart + 1; jj < rowEnd; ++jj )
         {
-            temp -= csrValues[jj] * fetchCSRVectorX<T,useTexture>( oldSolution, csrJA[jj] );
+            temp -= csrValues[jj] * fetchVectorX<T,useTexture>( oldSolution, csrJA[jj] );
         }
         if ( omega == 0.5 )
         {
-            solution[i] = omega * ( fetchCSRVectorX<T,useTexture>( oldSolution, i ) + temp / diag );
+            solution[i] = omega * ( fetchVectorX<T,useTexture>( oldSolution, i ) + temp / diag );
         }
         else if ( omega == 1.0 )
         {
@@ -1679,7 +1616,7 @@ void csr_jacobi_kernel(
         }
         else
         {
-            solution[i] = omega * ( temp / diag ) + ( 1.0 - omega ) * fetchCSRVectorX<T,useTexture>( oldSolution, i );
+            solution[i] = omega * ( temp / diag ) + ( 1.0 - omega ) * fetchVectorX<T,useTexture>( oldSolution, i );
         }
     }
 }
@@ -1819,7 +1756,7 @@ void CUDACSRUtils::jacobi(
 
     if ( useTexture )
     {
-        vectorCSRBindTexture( oldSolution);
+        vectorBindTexture( oldSolution);
 
         LAMA_CUDA_RT_CALL( cudaFuncSetCacheConfig( csr_jacobi_kernel<ValueType, true>, cudaFuncCachePreferL1 ),
                            "LAMA_STATUS_CUDA_FUNCSETCACHECONFIG_FAILED" )
@@ -1843,7 +1780,7 @@ void CUDACSRUtils::jacobi(
 
     if ( useTexture )
     {
-        vectorCSRUnbindTexture( oldSolution );
+        vectorUnbindTexture( oldSolution );
     }
 }
 
@@ -1883,7 +1820,7 @@ void csr_jacobiHalo_kernel(
 
         for ( IndexType jj = rowStart; jj < rowEnd; ++jj )
         {
-            temp += haloValues[jj] * fetchCSRVectorX<ValueType, useTexture>( oldSolution, haloJA[jj] );
+            temp += haloValues[jj] * fetchVectorX<ValueType, useTexture>( oldSolution, haloJA[jj] );
         }
 
         const ValueType diag = localValues[localIA[i]];
@@ -1919,7 +1856,7 @@ void CUDACSRUtils::jacobiHalo(
 
     if ( useTexture )
     {
-        vectorCSRBindTexture( oldSolution );
+        vectorBindTexture( oldSolution );
 
         LAMA_CUDA_RT_CALL( cudaFuncSetCacheConfig( csr_jacobiHalo_kernel<ValueType, true>, cudaFuncCachePreferL1 ),
                            "LAMA_STATUS_CUDA_FUNCSETCACHECONFIG_FAILED" )
@@ -1943,7 +1880,7 @@ void CUDACSRUtils::jacobiHalo(
 
     if ( useTexture )
     {
-        vectorCSRUnbindTexture( oldSolution );
+        vectorUnbindTexture( oldSolution );
     }
 }
 
@@ -1983,7 +1920,7 @@ void csr_jacobiHaloWithDiag_kernel(
 
         for ( IndexType jj = rowStart; jj < rowEnd; ++jj )
         {
-            temp += haloValues[jj] * fetchCSRVectorX<ValueType,useTexture>( oldSolution, haloJA[jj] );
+            temp += haloValues[jj] * fetchVectorX<ValueType,useTexture>( oldSolution, haloJA[jj] );
         }
 
         const ValueType diag = localDiagValues[i];
@@ -2018,7 +1955,7 @@ void CUDACSRUtils::jacobiHaloWithDiag(
 
     if ( useTexture )
     {
-        vectorCSRBindTexture( oldSolution );
+        vectorBindTexture( oldSolution );
 
         LAMA_CUDA_RT_CALL( cudaFuncSetCacheConfig( csr_jacobiHaloWithDiag_kernel<ValueType, true>, cudaFuncCachePreferL1 ),
                            "LAMA_STATUS_CUDA_FUNCSETCACHECONFIG_FAILED" )
@@ -2048,7 +1985,7 @@ void CUDACSRUtils::jacobiHaloWithDiag(
 
     if ( useTexture )
     {
-        vectorCSRUnbindTexture( oldSolution );
+        vectorUnbindTexture( oldSolution );
     }
 }
 
@@ -2805,7 +2742,7 @@ void matrixAddKernel(
             for ( IndexType bColOffset = 0; __any( ( bColIt + bColOffset ) < bColEnd ); bColOffset += warpSize )
             {
                 IndexType colB = ( bColIt + bColOffset ) < bColEnd ? bJA[bColIt + bColOffset] : -1;
-                ValueType valB = ( bColIt + bColOffset ) < bColEnd ? bValues[bColIt + bColOffset] : 0.0;
+                ValueType valB = ( bColIt + bColOffset ) < bColEnd ? bValues[bColIt + bColOffset] : static_cast<ValueType>( 0 );
                 if ( colB != -1 )
                 {
                     cJA[cColIt + bColOffset] = colB;
@@ -2820,7 +2757,7 @@ void matrixAddKernel(
             for ( IndexType aColItOffset = 0; __any( aColIt < aColEnd ); aColIt += warpSize, aColItOffset += warpSize )
             {
                 IndexType colA = aColIt < aColEnd ? aJA[aColIt] : -1;
-                ValueType valA = aColIt < aColEnd ? aValues[aColIt] : 0.0;
+                ValueType valA = aColIt < aColEnd ? aValues[aColIt] : static_cast<ValueType>( 0 );
                 IndexType end = multHlp_getNumActiveThreads( aColIt, aColEnd, aIA, rowIt, aColItOffset );
 
                 for ( IndexType k = 0; k < end && k < warpSize; k++ )
@@ -3080,7 +3017,7 @@ void matrixMultiplyKernel(
                 for ( IndexType offset = 0; __any( aColIt < aColEnd ); aColIt += warpSize, offset += warpSize )
                 {
                     IndexType colA = aColIt < aColEnd ? aJA[aColIt] : -1;
-                    ValueType valA = aColIt < aColEnd ? aValues[aColIt] : 0.0;
+                    ValueType valA = aColIt < aColEnd ? aValues[aColIt] : static_cast<ValueType>( 0 );
 
                     IndexType end = multHlp_getNumActiveThreads( aColIt, aColEnd, aIA, aRowIt, offset );
 
@@ -3098,7 +3035,7 @@ void matrixMultiplyKernel(
                         for ( ; __any( bColIt < bColEnd ); bColIt += warpSize )
                         {
                             colB = bColIt < bColEnd ? bJA[bColIt] : -1;
-                            ValueType valB = bColIt < bColEnd ? bValues[bColIt] : 0.0;
+                            ValueType valB = bColIt < bColEnd ? bValues[bColIt] : static_cast<ValueType>( 0 );
 
                             if ( diagonalProperty && colB == aRowIt )
                             {

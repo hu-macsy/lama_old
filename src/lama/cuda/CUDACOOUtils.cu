@@ -58,70 +58,7 @@ LAMA_LOG_DEF_LOGGER( CUDACOOUtils::logger, "CUDA.COOUtils" )
 
 /* --------------------------------------------------------------------------- */
 
-texture<float, 1> texCOOVectorSXref;
-
-texture<int2, 1> texCOOVectorDXref;
-
-texture<int, 1> texCOOVectorIref;
-
-__inline__ void vectorCOOBindTexture( const float* vector )
-{
-    LAMA_CUDA_RT_CALL( cudaBindTexture( NULL, texCOOVectorSXref, vector ), "bind float vector x to texture" )
-}
-
-__inline__ void vectorCOOBindTexture( const double* vector )
-{
-    LAMA_CUDA_RT_CALL( cudaBindTexture( NULL, texCOOVectorDXref, vector ), "bind double vector x to texture" )
-}
-
-__inline__ void vectorCOOBindTexture( const int* vector )
-{
-    LAMA_CUDA_RT_CALL( cudaBindTexture( NULL, texCOOVectorIref, vector ), "bind int vector x to texture" )
-}
-
-__inline__ void vectorCOOUnbindTexture( const float* )
-{
-    LAMA_CUDA_RT_CALL( cudaUnbindTexture( texCOOVectorSXref ), "unbind float vector x from texture" )
-}
-
-__inline__ void vectorCOOUnbindTexture( const double* )
-{
-    LAMA_CUDA_RT_CALL( cudaUnbindTexture( texCOOVectorDXref ), "unbind double vector x from texture" )
-}
-
-__inline__ void vectorCOOUnbindTexture( const int* )
-{
-    LAMA_CUDA_RT_CALL( cudaUnbindTexture( texCOOVectorIref ), "unbind int vector x from texture" )
-}
-
-template<typename ValueType, bool useTexture>
-__inline__ __device__ 
-ValueType fetchCOOVectorX( const ValueType* const x, const int i )
-{
-    return x[i];
-}
-
-template<>
-__inline__ __device__
-float fetchCOOVectorX<float, true>( const float* const, const int i )
-{
-    return tex1Dfetch( texCOOVectorSXref, i );
-}
-
-template<>
-__inline__ __device__
-double fetchCOOVectorX<double, true>( const double* const, const int i )
-{
-    int2 v = tex1Dfetch( texCOOVectorDXref, i );
-    return __hiloint2double( v.y, v.x );
-}
-
-template<>
-__inline__ __device__
-int fetchCOOVectorX<int, true>( const int* const, const int i )
-{
-    return tex1Dfetch( texCOOVectorIref, i );
-}
+#include <lama/cuda/CUDATexVector.hpp>
 
 /* --------------------------------------------------------------------------- */
 
@@ -169,6 +106,18 @@ __device__ inline void cooAtomicAdd( float* address, float val)
 #endif
 }
 
+__device__ inline void cooAtomicAdd( ComplexFloat* address, ComplexFloat val )
+{
+    cooAtomicAdd((float *)&address[0], val.real());
+    cooAtomicAdd((float *)&address[1], val.imag());
+}
+
+__device__ inline void cooAtomicAdd( ComplexDouble* address, ComplexDouble val )
+{
+    cooAtomicAdd((double *)&address[0], val.real());
+    cooAtomicAdd((double *)&address[1], val.imag());
+}
+
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType, bool useTexture>
@@ -190,7 +139,7 @@ __global__ void cooGemvKernel(
 
         // we must use atomic updates as different threads might update same row i
 
-        const ValueType resultUpdate = alpha * cooValues[k] * fetchCOOVectorX<ValueType, useTexture>( x, j );
+        const ValueType resultUpdate = alpha * cooValues[k] * fetchVectorX<ValueType, useTexture>( x, j );
 
         // atomic add required, solution above
 
@@ -218,7 +167,7 @@ __global__ void cooGemvKernel_alpha_one(
 
         // we must use atomic updates as different threads might update same row i
 
-        const ValueType resultUpdate = cooValues[k] * fetchCOOVectorX<ValueType, useTexture>( x, j );
+        const ValueType resultUpdate = cooValues[k] * fetchVectorX<ValueType, useTexture>( x, j );
 
         // atomic add required, solution above
 
@@ -247,7 +196,7 @@ __global__ void cooGevmKernel(
 
         // we must use atomic updates as different threads might update same row i
 
-        const ValueType resultUpdate = alpha * cooValues[k] * fetchCOOVectorX<ValueType, useTexture>( x, i );
+        const ValueType resultUpdate = alpha * cooValues[k] * fetchVectorX<ValueType, useTexture>( x, i );
 
         // atomic add required, solution above
 
@@ -275,7 +224,7 @@ __global__ void cooGevmKernel_alpha_one(
 
         // we must use atomic updates as different threads might update same row i
 
-        const ValueType resultUpdate = cooValues[k] * fetchCOOVectorX<ValueType, useTexture>( x, i );
+        const ValueType resultUpdate = cooValues[k] * fetchVectorX<ValueType, useTexture>( x, i );
 
         // atomic add required, solution above
 
@@ -354,7 +303,7 @@ void CUDACOOUtils::normalGEMV(
 
     if ( useTexture )
     {
-        vectorCOOBindTexture( x );
+        vectorBindTexture( x );
 
         if ( alpha == 1 )
         {
@@ -389,7 +338,7 @@ void CUDACOOUtils::normalGEMV(
 
         if ( useTexture )
         {
-            vectorCOOUnbindTexture( x );
+            vectorUnbindTexture( x );
         }
     }
     else
@@ -398,7 +347,7 @@ void CUDACOOUtils::normalGEMV(
 
         if ( useTexture )
         {
-            void ( *unbind ) ( const ValueType* ) = &vectorCOOUnbindTexture;
+            void ( *unbind ) ( const ValueType* ) = &vectorUnbindTexture;
 
             syncToken->pushRoutine( boost::bind( unbind, x ) );
         }
@@ -472,7 +421,7 @@ void CUDACOOUtils::normalGEVM(
 
     if ( useTexture )
     {
-        vectorCOOBindTexture( x );
+        vectorBindTexture( x );
 
         if ( alpha == 1 )
         {
@@ -507,7 +456,7 @@ void CUDACOOUtils::normalGEVM(
 
         if ( useTexture )
         {
-            vectorCOOUnbindTexture( x );
+            vectorUnbindTexture( x );
         }
     }
     else
@@ -516,7 +465,7 @@ void CUDACOOUtils::normalGEVM(
 
         if ( useTexture )
         {
-            void ( *unbind ) ( const ValueType* ) = &vectorCOOUnbindTexture;
+            void ( *unbind ) ( const ValueType* ) = &vectorUnbindTexture;
 
             syncToken->pushRoutine( boost::bind( unbind, x ) );
         }
