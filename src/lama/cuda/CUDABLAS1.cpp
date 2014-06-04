@@ -25,8 +25,8 @@
  * SOFTWARE.
  * @endlicense
  *
- * @brief CUDABLAS1.cpp
- * @author lschubert
+ * @brief Wrapper implementations for BLAS1 routines in CUDA using cuBLAS
+ * @author Lauretta Schubert, Thomas Brandes, Eric Stricker
  * @date 05.07.2012
  * @since 1.0.0
  */
@@ -54,7 +54,39 @@ namespace lama
 
 LAMA_LOG_DEF_LOGGER( CUDABLAS1::logger, "CUDA.BLAS1" )
 
-/** scale */
+/* ---------------------------------------------------------------------------------------*/
+
+/** cublasCast converts pointers to LAMA complex numbers to 
+ *  cuBlas pointers for complex numbers. This is safe as both
+ *  are internally represented in the same way.
+ */
+
+static inline cuFloatComplex* cublasCast( ComplexFloat* x )
+{
+    return reinterpret_cast<cuFloatComplex*>( x );
+}
+
+static inline cuDoubleComplex* cublasCast( ComplexDouble* x )
+{
+    return reinterpret_cast<cuDoubleComplex*>( x );
+}
+
+static inline const cuFloatComplex* cublasCast( const ComplexFloat* x )
+{
+    return reinterpret_cast<const cuFloatComplex*>( x );
+}
+
+static inline const cuDoubleComplex* cublasCast( const ComplexDouble* x )
+{
+    return reinterpret_cast<const cuDoubleComplex*>( x );
+}
+
+/* ---------------------------------------------------------------------------------------*/
+/*    scale                                                                               */
+/* ---------------------------------------------------------------------------------------*/
+
+// Note: the wrapper routines could be static routines on its own. But using
+//       a common template routine is helpful to guarantee correct syntax
 
 template<typename T>
 static inline void wrapperScale( IndexType n, T alpha, T* x_d, IndexType incX );
@@ -74,21 +106,13 @@ void wrapperScale( IndexType n, double alpha, double* x_d, IndexType incX )
 template<>
 void wrapperScale( IndexType n, ComplexFloat alpha, ComplexFloat* x_d, IndexType incX )
 {
-    cuFloatComplex* xc_d = reinterpret_cast<cuFloatComplex*>( x_d );
-
-    const cuFloatComplex* alphac = reinterpret_cast<const cuFloatComplex*>( &alpha );
-
-    cublasCscal( n, *alphac, xc_d, incX );
+    cublasCscal( n, *cublasCast( &alpha ), cublasCast( x_d ), incX );
 }
 
 template<>
 void wrapperScale( IndexType n, ComplexDouble alpha, ComplexDouble* x_d, IndexType incX )
 {
-    cuDoubleComplex* xc_d = reinterpret_cast<cuDoubleComplex*>( x_d );
-
-    const cuDoubleComplex* alphac = reinterpret_cast<const cuDoubleComplex*>( &alpha );
-
-    cublasZscal( n, *alphac, xc_d, incX );
+    cublasZscal( n, *cublasCast( &alpha ), cublasCast( x_d ), incX );
 }
 
 template<typename T>
@@ -131,7 +155,9 @@ void CUDABLAS1::scal( IndexType n, const T alpha, T* x_d, const IndexType incX, 
     LAMA_CHECK_CUBLAS_ERROR
 }
 
-/** nrm2 */
+/* ---------------------------------------------------------------------------------------*/
+/*    nrm2                                                                                */
+/* ---------------------------------------------------------------------------------------*/
 
 template<typename T>
 static inline T wrapperNrm2( IndexType n, const T* x_d, IndexType incX );
@@ -151,11 +177,9 @@ double wrapperNrm2( IndexType n, const double* x_d, IndexType incX )
 template<>
 ComplexFloat wrapperNrm2( IndexType n, const ComplexFloat* x_d, IndexType incX )
 {
-    const cuFloatComplex* xc_d = reinterpret_cast<const cuFloatComplex*>( x_d );
-
     // CUBLAS returns only float result so we convert it back to Complex
 
-    float res = ComplexFloat( cublasScnrm2( n, xc_d, incX ) );
+    float res = ComplexFloat( cublasScnrm2( n, cublasCast( x_d ), incX ) );
 
     return ComplexFloat( res, 0.0f );
 }
@@ -163,11 +187,9 @@ ComplexFloat wrapperNrm2( IndexType n, const ComplexFloat* x_d, IndexType incX )
 template<>
 ComplexDouble wrapperNrm2( IndexType n, const ComplexDouble* x_d, IndexType incX )
 {
-    const cuDoubleComplex* xc_d = reinterpret_cast<const cuDoubleComplex*>( x_d );
-
     // CUBLAS returns only double result so we convert it back to Complex
 
-    double res = ComplexFloat( cublasDznrm2( n, xc_d, incX ) );
+    double res = ComplexFloat( cublasDznrm2( n, cublasCast( x_d ), incX ) );
 
     return ComplexDouble( res, 0.0 );
 }
@@ -214,7 +236,9 @@ T CUDABLAS1::nrm2( IndexType n, const T* x_d, IndexType incX, SyncToken* syncTok
     return res;
 }
 
-/** asum */
+/* ---------------------------------------------------------------------------------------*/
+/*    asum                                                                                */
+/* ---------------------------------------------------------------------------------------*/
 
 template<typename T>
 static inline T wrapperAsum( IndexType n, const T* x_d, IndexType incX );
@@ -234,10 +258,9 @@ double wrapperAsum( IndexType n, const double* x_d, IndexType incX )
 template<>
 ComplexFloat wrapperAsum( IndexType n, const ComplexFloat* x_d, IndexType incX )
 {
-    const cuFloatComplex* xc_d = reinterpret_cast<const cuFloatComplex*>( x_d );
-
     // CUBLAS returns only float result so we convert it back to Complex
-    float res = ComplexFloat( cublasScasum( n, xc_d, incX ) );
+
+    float res = ComplexFloat( cublasScasum( n, cublasCast( x_d ), incX ) );
 
     return ComplexFloat( res );
 }
@@ -245,11 +268,10 @@ ComplexFloat wrapperAsum( IndexType n, const ComplexFloat* x_d, IndexType incX )
 template<>
 ComplexDouble wrapperAsum( IndexType n, const ComplexDouble* x_d, IndexType incX )
 {
-    const cuDoubleComplex* xc_d = reinterpret_cast<const cuDoubleComplex*>( x_d );
-
     // CUBLAS returns only double result so we convert it back to Complex
 
-    double res = ComplexFloat( cublasDzasum( n, xc_d, incX ) );
+    double res = ComplexFloat( cublasDzasum( n, cublasCast( x_d ), incX ) );
+
     return ComplexDouble( res );
 }
 
@@ -295,7 +317,9 @@ T CUDABLAS1::asum( const IndexType n, const T* x_d, const IndexType incX, SyncTo
     return res;
 }
 
-/** iamax */
+/* ---------------------------------------------------------------------------------------*/
+/*    iamax                                                                               */
+/* ---------------------------------------------------------------------------------------*/
 
 template<typename T>
 static IndexType wrapperIamax( IndexType n, const T* x_d, IndexType incX );
@@ -317,16 +341,14 @@ IndexType wrapperIamax( IndexType n, const double* x_d, IndexType incX )
 template<>
 IndexType wrapperIamax( IndexType n, const ComplexFloat* x_d, IndexType incX )
 {
-    const cuFloatComplex* xc_d = reinterpret_cast<const cuFloatComplex*>( x_d );
-    IndexType iamax = cublasIcamax( n, xc_d, incX );
+    IndexType iamax = cublasIcamax( n, cublasCast( x_d ), incX );
     return iamax;
 }
 
 template<>
 IndexType wrapperIamax( IndexType n, const ComplexDouble* x_d, IndexType incX )
 {
-    const cuDoubleComplex* xc_d = reinterpret_cast<const cuDoubleComplex*>( x_d );
-    IndexType iamax = cublasIzamax( n, xc_d, incX );
+    IndexType iamax = cublasIzamax( n, cublasCast( x_d ), incX );
     return iamax;
 }
 
@@ -367,7 +389,9 @@ IndexType CUDABLAS1::iamax( const IndexType n, const T* x_d, const IndexType inc
     return iamax ? iamax - 1 : 0;
 }
 
-/** swap */
+/* ---------------------------------------------------------------------------------------*/
+/*    swap                                                                                */
+/* ---------------------------------------------------------------------------------------*/
 
 template<typename T>
 static inline void wrapperSwap( IndexType n, T* x_d, IndexType incX, T* y_d, IndexType incY  );
@@ -387,19 +411,13 @@ void wrapperSwap( IndexType n, double* x_d, IndexType incX, double* y_d, IndexTy
 template<>
 void wrapperSwap( IndexType n, ComplexFloat* x_d, IndexType incX, ComplexFloat* y_d, IndexType incY )
 {
-    cuFloatComplex* xc_d = reinterpret_cast<cuFloatComplex*>( x_d );
-    cuFloatComplex* yc_d = reinterpret_cast<cuFloatComplex*>( y_d );
-
-    cublasCswap( n, xc_d, incX, yc_d, incY );
+    cublasCswap( n, cublasCast( x_d ), incX, cublasCast( y_d ), incY );
 }
 
 template<>
 void wrapperSwap( IndexType n, ComplexDouble* x_d, IndexType incX, ComplexDouble* y_d, IndexType incY )
 {
-    cuDoubleComplex* xc_d = reinterpret_cast<cuDoubleComplex*>( x_d );
-    cuDoubleComplex* yc_d = reinterpret_cast<cuDoubleComplex*>( y_d );
-
-    cublasZswap( n, xc_d, incX, yc_d, incY );
+    cublasZswap( n, cublasCast( x_d ), incX, cublasCast( y_d ), incY );
 }
 
 template<typename T>
@@ -413,7 +431,7 @@ void CUDABLAS1::swap(
 {
     LAMA_REGION( "CUDA.BLAS1.swap" )
 
-    if ( (incX <= 0) || (incY <= 0) )
+    if ( ( incX <= 0 ) || ( incY <= 0 ) )
     {
         return;
     }
@@ -448,7 +466,10 @@ void CUDABLAS1::swap(
     LAMA_CHECK_CUBLAS_ERROR
 }
 
-/** copy */
+/* ---------------------------------------------------------------------------------------*/
+/*    copy                                                                                */
+/* ---------------------------------------------------------------------------------------*/
+
 
 template<typename T>
 static inline void wrapperCopy( IndexType n, const T* x_d, IndexType incX, T* y_d, IndexType incY  );
@@ -468,19 +489,13 @@ void wrapperCopy( IndexType n, const double* x_d, IndexType incX, double* y_d, I
 template<>
 void wrapperCopy( IndexType n, const ComplexFloat* x_d, IndexType incX, ComplexFloat* y_d, IndexType incY )
 {
-    const cuFloatComplex* xc_d = reinterpret_cast<const cuFloatComplex*>( x_d );
-    cuFloatComplex* yc_d = reinterpret_cast<cuFloatComplex*>( y_d );
-
-    cublasCcopy( n, xc_d, incX, yc_d, incY );
+    cublasCcopy( n, cublasCast( x_d ), incX, cublasCast( y_d ), incY );
 }
 
 template<>
 void wrapperCopy( IndexType n, const ComplexDouble* x_d, IndexType incX, ComplexDouble* y_d, IndexType incY )
 {
-    const cuDoubleComplex* xc_d = reinterpret_cast<const cuDoubleComplex*>( x_d );
-    cuDoubleComplex* yc_d = reinterpret_cast<cuDoubleComplex*>( y_d );
-
-    cublasZcopy( n, xc_d, incX, yc_d, incY );
+    cublasZcopy( n, cublasCast( x_d ), incX, cublasCast( y_d ), incY );
 }
 
 template<typename T>
@@ -488,7 +503,7 @@ void CUDABLAS1::copy( IndexType n, const T* x_d, IndexType incX, T* y_d, IndexTy
 {
     LAMA_REGION( "CUDA.BLAS1.copy" )
 
-    if ( (incX <= 0) || (incY <= 0) )
+    if ( ( incX <= 0 ) || ( incY <= 0 ) )
     {
         return;
     }
@@ -523,7 +538,10 @@ void CUDABLAS1::copy( IndexType n, const T* x_d, IndexType incX, T* y_d, IndexTy
     LAMA_CHECK_CUBLAS_ERROR
 }
 
-/** axpy */
+/* ---------------------------------------------------------------------------------------*/
+/*    axpy                                                                                */
+/* ---------------------------------------------------------------------------------------*/
+
 
 template<typename T>
 static inline void wrapperAxpy( IndexType n, T alpha, const T* x_d, IndexType incX, T* y_d, IndexType incY  );
@@ -541,27 +559,19 @@ void wrapperAxpy( IndexType n, double alpha, const double* x_d, IndexType incX, 
 }
 
 template<>
-void wrapperAxpy( IndexType n, ComplexFloat alpha, const ComplexFloat* x_d, IndexType incX, 
-                                                   ComplexFloat* y_d, IndexType incY )
+void wrapperAxpy( IndexType n, ComplexFloat alpha, 
+                  const ComplexFloat* x_d, IndexType incX,
+                  ComplexFloat* y_d, IndexType incY )
 {
-    const cuFloatComplex* alphac = reinterpret_cast<const cuFloatComplex*>( &alpha );
-
-    const cuFloatComplex* xc_d = reinterpret_cast<const cuFloatComplex*>( x_d );
-    cuFloatComplex* yc_d = reinterpret_cast<cuFloatComplex*>( y_d );
-
-    cublasCaxpy( n, *alphac, xc_d, incX, yc_d, incY );
+    cublasCaxpy( n, *cublasCast( &alpha ), cublasCast( x_d ), incX, cublasCast( y_d ), incY );
 }
 
 template<>
-void wrapperAxpy( IndexType n, ComplexDouble alpha, const ComplexDouble* x_d, IndexType incX, 
-                                                   ComplexDouble* y_d, IndexType incY )
+void wrapperAxpy( IndexType n, ComplexDouble alpha, 
+                  const ComplexDouble* x_d, IndexType incX,
+                  ComplexDouble* y_d, IndexType incY )
 {
-    const cuDoubleComplex* alphac = reinterpret_cast<const cuDoubleComplex*>( &alpha );
-
-    const cuDoubleComplex* xc_d = reinterpret_cast<const cuDoubleComplex*>( x_d );
-    cuDoubleComplex* yc_d = reinterpret_cast<cuDoubleComplex*>( y_d );
-
-    cublasZaxpy( n, *alphac, xc_d, incX, yc_d, incY );
+    cublasZaxpy( n, *cublasCast( &alpha ), cublasCast( x_d ), incX, cublasCast( y_d ), incY );
 }
 
 template<typename T>
@@ -572,13 +582,13 @@ void CUDABLAS1::axpy( IndexType n, T alpha,
 {
     LAMA_REGION( "CUDA.BLAS1.axpy" )
 
-    if ( (incX <= 0) || (incY <= 0) )
+    if ( ( incX <= 0 ) || ( incY <= 0 ) )
     {
         return;
     }
 
     LAMA_LOG_DEBUG( logger, "axpy<" << Scalar::getType<T>() << "> of x, y, n = " << n
-                            << ", alpha = " << alpha )
+                    << ", alpha = " << alpha )
 
     LAMA_CHECK_CUDA_ACCESS
 
@@ -608,7 +618,9 @@ void CUDABLAS1::axpy( IndexType n, T alpha,
     LAMA_CHECK_CUBLAS_ERROR
 }
 
-/** dot */
+/* ---------------------------------------------------------------------------------------*/
+/*    dot                                                                                 */
+/* ---------------------------------------------------------------------------------------*/
 
 template<typename T>
 static inline T wrapperDot( IndexType n, const T* x_d, IndexType incX, const T* y_d, IndexType incY  );
@@ -626,25 +638,20 @@ double wrapperDot( IndexType n, const double* x_d, IndexType incX, const double*
 }
 
 template<>
-ComplexFloat wrapperDot( IndexType n, const ComplexFloat* x_d, IndexType incX, 
-                                      const ComplexFloat* y_d, IndexType incY )
+ComplexFloat wrapperDot( IndexType n, 
+                         const ComplexFloat* x_d, IndexType incX,
+                         const ComplexFloat* y_d, IndexType incY )
 {
-    const cuFloatComplex* xc_d = reinterpret_cast<const cuFloatComplex*>( x_d );
-    const cuFloatComplex* yc_d = reinterpret_cast<const cuFloatComplex*>( y_d );
-
-    cuFloatComplex dotResult = cublasCdotu ( n, xc_d, incX, yc_d, incY );
+    cuFloatComplex dotResult = cublasCdotu ( n, cublasCast( x_d ), incX, cublasCast( y_d ), incY );
 
     return ComplexFloat( dotResult.x, dotResult.y );
 }
 
 template<>
-ComplexDouble wrapperDot( IndexType n, const ComplexDouble* x_d, IndexType incX, 
-                                       const ComplexDouble* y_d, IndexType incY )
+ComplexDouble wrapperDot( IndexType n, const ComplexDouble* x_d, IndexType incX,
+                          const ComplexDouble* y_d, IndexType incY )
 {
-    const cuDoubleComplex* xc_d = reinterpret_cast<const cuDoubleComplex*>( x_d );
-    const cuDoubleComplex* yc_d = reinterpret_cast<const cuDoubleComplex*>( y_d );
-
-    cuDoubleComplex dotResult = cublasZdotu( n, xc_d, incX, yc_d, incY );
+    cuDoubleComplex dotResult = cublasZdotu( n, cublasCast( x_d ), incX, cublasCast( y_d ), incY );
 
     return ComplexDouble( dotResult.x, dotResult.y );
 }
@@ -660,11 +667,11 @@ T CUDABLAS1::dot(
 {
     LAMA_REGION( "CUDA.BLAS1.dot" )
 
-    LAMA_LOG_DEBUG( logger, "dot<" << Scalar::getType<T>() << ">, n = " << n 
-                             << ", incX = " << incX << ", incY = " << incY 
-                             << ", x_d = " << x_d << ", y_d = " << y_d )
+    LAMA_LOG_DEBUG( logger, "dot<" << Scalar::getType<T>() << ">, n = " << n
+                    << ", incX = " << incX << ", incY = " << incY
+                    << ", x_d = " << x_d << ", y_d = " << y_d )
 
-    if ( (incX <= 0) || (incY <= 0) )
+    if ( ( incX <= 0 ) || ( incY <= 0 ) )
     {
         return 0.0;
     }
@@ -699,7 +706,10 @@ T CUDABLAS1::dot(
     return res;
 }
 
-/** sum */
+/* ---------------------------------------------------------------------------------------*/
+/*    sum                                                                                 */
+/* ---------------------------------------------------------------------------------------*/
+
 template<typename T>
 void CUDABLAS1::sum( const IndexType n, T alpha, const T* x, T beta, const T* y, T* z, SyncToken* syncToken )
 {
@@ -710,8 +720,8 @@ void CUDABLAS1::sum( const IndexType n, T alpha, const T* x, T beta, const T* y,
         return;
     }
 
-    LAMA_LOG_DEBUG( logger, "sum<" << Scalar::getType<T>() << ">, n = " << n 
-                            << ", " << alpha << " * x + " << beta << " * y " )
+    LAMA_LOG_DEBUG( logger, "sum<" << Scalar::getType<T>() << ">, n = " << n
+                    << ", " << alpha << " * x + " << beta << " * y " )
 
     LAMA_CHECK_CUDA_ACCESS
 
@@ -741,7 +751,7 @@ void CUDABLAS1::sum( const IndexType n, T alpha, const T* x, T beta, const T* y,
 
 void CUDABLAS1::setInterface( BLASInterface& BLAS )
 {
-   // Note: macro takes advantage of same name for routines and type definitions 
+    // Note: macro takes advantage of same name for routines and type definitions
     //       ( e.g. routine CUDABLAS1::sum<T> is set for BLAS::BLAS1::sum variable
 
 #define LAMA_BLAS1_REGISTER(z, I, _)                                            \
@@ -754,7 +764,7 @@ void CUDABLAS1::setInterface( BLASInterface& BLAS )
     LAMA_INTERFACE_REGISTER_T( BLAS, axpy, ARITHMETIC_TYPE##I )                 \
     LAMA_INTERFACE_REGISTER_T( BLAS, dot, ARITHMETIC_TYPE##I )                  \
     LAMA_INTERFACE_REGISTER_T( BLAS, sum, ARITHMETIC_TYPE##I )                  \
-
+     
     BOOST_PP_REPEAT( ARITHMETIC_TYPE_CNT, LAMA_BLAS1_REGISTER, _ )
 
 #undef LAMA_BLAS1_REGISTER

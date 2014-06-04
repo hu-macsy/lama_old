@@ -595,6 +595,7 @@ void CUDAUtils::setInterface( UtilsInterface& Utils )
     LAMA_INTERFACE_REGISTER_T( Utils, absMaxVal, ARITHMETIC_TYPE##I )                \
     LAMA_INTERFACE_REGISTER_T( Utils, maxval, ARITHMETIC_TYPE##I )                   \
     LAMA_INTERFACE_REGISTER_T( Utils, sum, ARITHMETIC_TYPE##I )                      \
+    LAMA_INTERFACE_REGISTER_T( Utils, setVal, ARITHMETIC_TYPE##I )                   \
     LAMA_INTERFACE_REGISTER_T( Utils, getValue, ARITHMETIC_TYPE##I )                 \
     LAMA_INTERFACE_REGISTER_T( Utils, scale, ARITHMETIC_TYPE##I )                    \
                                                                                      \
