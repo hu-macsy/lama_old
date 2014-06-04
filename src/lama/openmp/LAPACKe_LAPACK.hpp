@@ -1,5 +1,5 @@
 /**
- * @file OpenMPLAPACKe.hpp
+ * @file LAPACKe_LAPACK.hpp
  *
  * @license
  * Copyright (c) 2009-2013
@@ -54,7 +54,7 @@ namespace lama
  *  but has the same functionality as OpenMPLAPACK using Fortran calling conventions.
  */
 
-class OpenMPLAPACKe
+class LAPACKe_LAPACK
 {
 public:
 
@@ -115,7 +115,7 @@ private:
 
     static bool registerInterface();
 
-}; /* OpenMPLAPACKe */
+}; /* LAPACKe_LAPACK */
 
 } /* namespace lama */
 

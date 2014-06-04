@@ -49,7 +49,6 @@
 #include <lama/task/TaskSyncToken.hpp>
 
 #include <lama/openmp/OpenMPUtils.hpp>
-#include <lama/openmp/OpenMPBLAS1.hpp>
 #include <lama/openmp/OpenMPCSRUtils.hpp>
 
 // assert

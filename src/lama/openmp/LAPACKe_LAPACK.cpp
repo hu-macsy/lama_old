@@ -1,5 +1,5 @@
 /**
- * @file OpenMPLAPACKe.cpp
+ * @file LAPACKe_LAPACK.cpp
  *
  * @license
  * Copyright (c) 2009-2013
@@ -25,17 +25,17 @@
  * SOFTWARE.
  * @endlicense
  *
- * @brief OpenMPLAPACKe.cpp
+ * @brief LAPACKe_LAPACK.cpp
  * @author Lauretta Schubert
  * @date 02.07.2012
  * @since 1.0.0
  */
 
 // hpp
-#include <lama/openmp/OpenMPLAPACKe.hpp>
+#include <lama/openmp/LAPACKe_LAPACK.hpp>
 
 // others
-#include <lama/openmp/OpenMPBLAS1.hpp>
+#include <lama/openmp/blas/OpenMPBLAS1.hpp>
 
 #include <lama/BLASInterface.hpp>
 #include <lama/LAMAInterfaceRegistry.hpp>
@@ -71,14 +71,14 @@ static int lapack_order( const enum CBLAS_ORDER order )
 
 /* ------------------------------------------------------------------------- */
 
-LAMA_LOG_DEF_LOGGER( OpenMPLAPACKe::logger, "OpenMP.LAPACKe" )
+LAMA_LOG_DEF_LOGGER( LAPACKe_LAPACK::logger, "LAPACKe.LAPACK" )
 
 /* ------------------------------------------------------------------------- */
 /*      getrf<float>                                                         */
 /* ------------------------------------------------------------------------- */
 
 template<>
-IndexType OpenMPLAPACKe::getrf(
+IndexType LAPACKe_LAPACK::getrf(
     const enum CBLAS_ORDER order,
     const int m,
     const int n,
@@ -107,7 +107,7 @@ IndexType OpenMPLAPACKe::getrf(
 /* ------------------------------------------------------------------------- */
 
 template<>
-IndexType OpenMPLAPACKe::getrf(
+IndexType LAPACKe_LAPACK::getrf(
     const enum CBLAS_ORDER order,
     const int m,
     const int n,
@@ -138,7 +138,7 @@ IndexType OpenMPLAPACKe::getrf(
 /* ------------------------------------------------------------------------- */
 
 template<>
-void OpenMPLAPACKe::getinv( const IndexType n, float* a, const IndexType lda )
+void LAPACKe_LAPACK::getinv( const IndexType n, float* a, const IndexType lda )
 {
     int info = 0;
 
@@ -170,7 +170,7 @@ void OpenMPLAPACKe::getinv( const IndexType n, float* a, const IndexType lda )
 /* ------------------------------------------------------------------------- */
 
 template<>
-void OpenMPLAPACKe::getinv( const IndexType n, double* a, const IndexType lda )
+void LAPACKe_LAPACK::getinv( const IndexType n, double* a, const IndexType lda )
 {
     int info = 0;
 
@@ -202,7 +202,7 @@ void OpenMPLAPACKe::getinv( const IndexType n, double* a, const IndexType lda )
 /* ------------------------------------------------------------------------- */
 
 template<>
-int OpenMPLAPACKe::getri(
+int LAPACKe_LAPACK::getri(
     const enum CBLAS_ORDER order,
     const int n,
     float* const a,
@@ -232,7 +232,7 @@ int OpenMPLAPACKe::getri(
 /* ------------------------------------------------------------------------- */
 
 template<>
-int OpenMPLAPACKe::getri(
+int LAPACKe_LAPACK::getri(
     const enum CBLAS_ORDER order,
     const int n,
     double* const a,
@@ -262,7 +262,7 @@ int OpenMPLAPACKe::getri(
 /* ------------------------------------------------------------------------- */
 
 template<>
-int OpenMPLAPACKe::tptrs(
+int LAPACKe_LAPACK::tptrs(
     const enum CBLAS_ORDER order,
     const enum CBLAS_UPLO uplo,
     const enum CBLAS_TRANSPOSE trans,
@@ -295,7 +295,7 @@ int OpenMPLAPACKe::tptrs(
 /* ------------------------------------------------------------------------- */
 
 template<>
-int OpenMPLAPACKe::tptrs(
+int LAPACKe_LAPACK::tptrs(
     const enum CBLAS_ORDER order,
     const enum CBLAS_UPLO uplo,
     const enum CBLAS_TRANSPOSE trans,
@@ -325,7 +325,7 @@ int OpenMPLAPACKe::tptrs(
 /*     Template instantiations via registration routine                        */
 /* --------------------------------------------------------------------------- */
 
-void OpenMPLAPACKe::setInterface( BLASInterface& BLAS )
+void LAPACKe_LAPACK::setInterface( BLASInterface& BLAS )
 {
     // Note: macro takes advantage of same name for routines and type definitions 
     //       ( e.g. routine CUDABLAS1::sum<T> is set for BLAS::BLAS1::sum variable
@@ -347,7 +347,7 @@ void OpenMPLAPACKe::setInterface( BLASInterface& BLAS )
 /*    Static registration of the LAPACK routines                               */
 /* --------------------------------------------------------------------------- */
 
-bool OpenMPLAPACKe::registerInterface()
+bool LAPACKe_LAPACK::registerInterface()
 {
     LAMAInterface& interface = LAMAInterfaceRegistry::getRegistry().modifyInterface( Context::Host );
     setInterface( interface.BLAS );
@@ -358,6 +358,6 @@ bool OpenMPLAPACKe::registerInterface()
 /*    Static initialiazion at program start                                    */
 /* --------------------------------------------------------------------------- */
 
-bool OpenMPLAPACKe::initialized = registerInterface();
+bool LAPACKe_LAPACK::initialized = registerInterface();
 
 } /* namespace lama */

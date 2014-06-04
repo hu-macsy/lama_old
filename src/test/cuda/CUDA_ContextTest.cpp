@@ -52,8 +52,6 @@
 #include <lama/cuda/CUDAError.hpp>
 
 #include <lama/cuda/CUDABLAS1.hpp>
-#include <lama/openmp/OpenMPBLAS1.hpp>
-
 #include <test/cuda/CUDAContext.hpp>
 
 using namespace boost;

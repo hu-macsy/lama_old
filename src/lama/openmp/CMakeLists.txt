@@ -68,11 +68,11 @@ endif ( LAMA_BLAS_NAME STREQUAL "MKL" )
 
 if ( ${LAPACKeFound} )
     message ( STATUS "LAPACKe is supported and will be used" ) 
-    set ( CLASSES ${CLASSES} OpenMPLAPACKe )
+    set ( CLASSES ${CLASSES} LAPACKe_LAPACK )
 else ( ${LAPACKeFound} )
 	if ( NOT INTERNALBLAS_FOUND )
 	    message ( STATUS "LAPACKe is not supported, will use LAPACK via Fortran interface" ) 
-	    set ( CLASSES ${CLASSES} OpenMPLAPACK )
+	    set ( CLASSES ${CLASSES} LAPACK_LAPACK )
     endif ( NOT INTERNALBLAS_FOUND )
 endif ( ${LAPACKeFound} )
 

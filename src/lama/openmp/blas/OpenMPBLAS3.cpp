@@ -32,7 +32,7 @@
  */
 
 // hpp
-#include <lama/openmp/OpenMPBLAS3.hpp>
+#include <lama/openmp/blas/OpenMPBLAS3.hpp>
 
 // others
 #include <lama/BLASInterface.hpp>

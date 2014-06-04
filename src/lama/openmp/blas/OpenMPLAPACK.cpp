@@ -32,10 +32,10 @@
  */
 
 // hpp
-#include <lama/openmp/OpenMPLAPACK.hpp>
+#include <lama/openmp/blas/OpenMPLAPACK.hpp>
 
 // others
-#include <lama/openmp/OpenMPBLAS1.hpp>
+#include <lama/openmp/blas/OpenMPBLAS1.hpp>
 
 #include <lama/LAMAInterfaceRegistry.hpp>
 #include <lama/BLASInterface.hpp>

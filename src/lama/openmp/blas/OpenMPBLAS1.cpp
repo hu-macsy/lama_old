@@ -33,7 +33,7 @@
 
 // hpp
 #include <lama/openmp/OpenMP.hpp>
-#include <lama/openmp/OpenMPBLAS1.hpp>
+#include <lama/openmp/blas/OpenMPBLAS1.hpp>
 
 // others
 #include <lama/openmp/BLASHelper.hpp>
