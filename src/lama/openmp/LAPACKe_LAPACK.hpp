@@ -30,8 +30,8 @@
  * @date 10.04.2013
  * @since 1.0.0
  */
-#ifndef LAMA_OPENMP_LAPACKE_HPP_
-#define LAMA_OPENMP_LAPACKE_HPP_
+#ifndef LAMA_LAPACKE_LAPACK_HPP_
+#define LAMA_LAPACKE_LAPACK_HPP_
 
 // for dll_import
 #include <lama/config.hpp>
@@ -40,6 +40,7 @@
 #include <lama/LAMATypes.hpp>
 #include <lama/SyncToken.hpp>
 #include <lama/openmp/OpenMP.hpp>
+#include <lama/cblas.hpp>
 
 // logging
 #include <logging/logging.hpp>
@@ -62,7 +63,7 @@ public:
 
     template<typename T>
     static IndexType getrf(
-        const enum CBLAS_ORDER order,
+        const CBLAS_ORDER order,
         const IndexType m,
         const IndexType n,
         T* const a,
@@ -73,7 +74,7 @@ public:
 
     template<typename T>
     static IndexType getri(
-        const enum CBLAS_ORDER order,
+        const CBLAS_ORDER order,
         const IndexType n,
         T* const A,
         const IndexType lda,
@@ -88,10 +89,10 @@ public:
 
     template<typename T>
     static IndexType tptrs(
-        const enum CBLAS_ORDER order,
-        const enum CBLAS_UPLO uplo,
-        const enum CBLAS_TRANSPOSE trans,
-        const enum CBLAS_DIAG diag,
+        const CBLAS_ORDER order,
+        const CBLAS_UPLO uplo,
+        const CBLAS_TRANSPOSE trans,
+        const CBLAS_DIAG diag,
         const IndexType n,
         const IndexType nrhs,
         const T* AP,
@@ -119,4 +120,4 @@ private:
 
 } /* namespace lama */
 
-#endif // LAMA_OPENMP_LAPACKE_HPP_
+#endif // LAMA_LAPACKE_LAPACK_HPP_

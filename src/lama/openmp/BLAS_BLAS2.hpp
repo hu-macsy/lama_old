@@ -1,5 +1,5 @@
 /**
- * @file OpenMPBLAS2.hpp
+ * @file BLAS_BLAS2.hpp
  *
  * @license
  * Copyright (c) 2009-2013
@@ -25,7 +25,7 @@
  * SOFTWARE.
  * @endlicense
  *
- * @brief OpenMPBLAS2.hpp
+ * @brief BLAS_BLAS2.hpp
  * @author Lauretta Schubert
  * @date 05.07.2012
  * @since 1.0.0
@@ -54,7 +54,7 @@ namespace lama
  *  @todo Add information here about use of native BLAS2 libraries
  */
 
-class LAMA_DLL_IMPORTEXPORT OpenMPBLAS2
+class LAMA_DLL_IMPORTEXPORT BLAS_BLAS2
 {
 public:
 
@@ -63,8 +63,8 @@ public:
      */
     template<typename T>
     static void gemv(
-        const enum CBLAS_ORDER order,
-        const enum CBLAS_TRANSPOSE trans,
+        const CBLAS_ORDER order,
+        const CBLAS_TRANSPOSE trans,
         const IndexType m,
         const IndexType n,
         const T alpha,
@@ -75,272 +75,6 @@ public:
         const T beta,
         T* y,
         const IndexType incY,
-        SyncToken* syncToken );
-
-    /**
-     * This function is the OpenMP implementation of lama::BLAS2Interface::symv
-     */
-    template<typename T>
-    static void symv(
-        const enum CBLAS_ORDER order,
-        const enum CBLAS_UPLO uplo,
-        const IndexType n,
-        const T alpha,
-        const T* A,
-        const IndexType lda,
-        const T* x,
-        const IndexType incX,
-        const T beta,
-        T* y,
-        const IndexType incY,
-        SyncToken* syncToken );
-
-    /**
-     * This function is the OpenMP implementation of lama::BLAS2Interface::trmv
-     */
-    template<typename T>
-    static void trmv(
-        const enum CBLAS_ORDER order,
-        const enum CBLAS_UPLO uplo,
-        const enum CBLAS_TRANSPOSE trans,
-        const enum CBLAS_DIAG diag,
-        const IndexType n,
-        const T* A,
-        const IndexType lda,
-        T* x,
-        const IndexType incX,
-        SyncToken* syncToken );
-
-    /**
-     * This function is the OpenMP implementation of lama::BLAS2Interface::trsv
-     */
-    template<typename T>
-    static void trsv(
-        const enum CBLAS_ORDER order,
-        const enum CBLAS_UPLO uplo,
-        const enum CBLAS_TRANSPOSE trans,
-        const enum CBLAS_DIAG diag,
-        const IndexType n,
-        const T* A,
-        const IndexType lda,
-        T* x,
-        const IndexType incX,
-        SyncToken* syncToken );
-
-    /**
-     * This function is the OpenMP implementation of lama::BLAS2Interface::gbmv
-     */
-    template<typename T>
-    static void gbmv(
-        const enum CBLAS_ORDER order,
-        const enum CBLAS_TRANSPOSE trans,
-        const IndexType m,
-        const IndexType n,
-        const IndexType kl,
-        const IndexType ku,
-        const T alpha,
-        const T* A,
-        const IndexType lda,
-        const T* x,
-        const IndexType incX,
-        const T beta,
-        T* y,
-        const IndexType incY,
-        SyncToken* syncToken );
-
-    /**
-     * This function is the OpenMP implementation of lama::BLAS2Interface::sbmv
-     */
-    template<typename T>
-    static void sbmv(
-        const enum CBLAS_ORDER order,
-        const enum CBLAS_UPLO uplo,
-        const IndexType n,
-        const IndexType k,
-        const T alpha,
-        const T* A,
-        const IndexType lda,
-        const T* x,
-        const IndexType incX,
-        const T beta,
-        T* y,
-        const IndexType incY,
-        SyncToken* syncToken );
-
-    /**
-     * This function is the OpenMP implementation of lama::BLAS2Interface::tbmv
-     */
-    template<typename T>
-    static void tbmv(
-        const enum CBLAS_ORDER order,
-        const enum CBLAS_UPLO uplo,
-        const enum CBLAS_TRANSPOSE trans,
-        const enum CBLAS_DIAG diag,
-        const IndexType n,
-        const IndexType k,
-        const T* A,
-        const IndexType lda,
-        T* x,
-        const IndexType incX,
-        SyncToken* syncToken );
-
-    /**
-     * This function is the OpenMP implementation of lama::BLAS2Interface::tbsv
-     */
-    template<typename T>
-    static void tbsv(
-        const enum CBLAS_ORDER order,
-        const enum CBLAS_UPLO uplo,
-        const enum CBLAS_TRANSPOSE trans,
-        const enum CBLAS_DIAG diag,
-        const IndexType n,
-        const IndexType k,
-        const T* A,
-        const IndexType lda,
-        T* x,
-        const IndexType incX,
-        SyncToken* syncToken );
-
-    /**
-     * This function is the OpenMP implementation of lama::BLAS2Interface::ger
-     */
-    template<typename T>
-    static void ger(
-        const enum CBLAS_ORDER order,
-        const IndexType m,
-        const IndexType n,
-        const T alpha,
-        const T* x,
-        const IndexType incX,
-        const T* y,
-        const IndexType incY,
-        T* A,
-        const IndexType lda,
-        SyncToken* syncToken );
-
-    /**
-     * This function is the OpenMP implementation of lama::BLAS2Interface::syr
-     */
-    template<typename T>
-    static void syr(
-        const enum CBLAS_ORDER order,
-        const enum CBLAS_UPLO uplo,
-        const IndexType n,
-        const T alpha,
-        const T* x,
-        const IndexType incX,
-        T* A,
-        const IndexType lda,
-        SyncToken* syncToken );
-
-    /**
-     * This function is the OpenMP implementation of lama::BLAS2Interface::syr2
-     */
-    template<typename T>
-    static void syr2(
-        const enum CBLAS_ORDER order,
-        const enum CBLAS_UPLO uplo,
-        const IndexType n,
-        const T alpha,
-        const T* x,
-        const IndexType incX,
-        const T* y,
-        const IndexType incY,
-        T* A,
-        const IndexType lda,
-        SyncToken* syncToken );
-
-    /**
-     * This function is the OpenMP implementation of lama::BLAS2Interface::spmv
-     */
-    template<typename T>
-    static void spmv(
-        const enum CBLAS_ORDER order,
-        const enum CBLAS_UPLO uplo,
-        const IndexType n,
-        const T alpha,
-        const T* AP,
-        const T* x,
-        const IndexType incX,
-        const T beta,
-        T* y,
-        const IndexType incY,
-        SyncToken* syncToken );
-
-    /**
-     * This function is the OpenMP implementation of lama::BLAS2Interface::spr
-     */
-    template<typename T>
-    static void spr(
-        const enum CBLAS_ORDER order,
-        const enum CBLAS_UPLO uplo,
-        const IndexType n,
-        const T alpha,
-        const T* x,
-        const IndexType incX,
-        T* AP,
-        SyncToken* syncToken );
-
-    /**
-     * This function is the OpenMP implementation of lama::BLAS2Interface::spr2
-     */
-    template<typename T>
-    static void spr2(
-        const enum CBLAS_ORDER order,
-        const enum CBLAS_UPLO uplo,
-        const IndexType n,
-        const T alpha,
-        const T* x,
-        const IndexType incX,
-        const T* y,
-        const IndexType incY,
-        T* AP,
-        SyncToken* syncToken );
-
-    /**
-     * This function is the OpenMP implementation of lama::BLAS2Interface::tpmv
-     */
-    template<typename T>
-    static void tpmv(
-        const enum CBLAS_ORDER order,
-        const enum CBLAS_UPLO uplo,
-        const enum CBLAS_TRANSPOSE trans,
-        const enum CBLAS_DIAG diag,
-        const IndexType n,
-        const T* AP,
-        T* x,
-        const IndexType incX,
-        SyncToken* syncToken );
-
-    /**
-     * This function is the OpenMP implementation of lama::BLAS2Interface::tpsv
-     */
-    template<typename T>
-    static void tpsv(
-        const enum CBLAS_ORDER order,
-        const enum CBLAS_UPLO uplo,
-        const enum CBLAS_TRANSPOSE trans,
-        const enum CBLAS_DIAG diag,
-        const IndexType n,
-        const T* Ap,
-        T* x,
-        const IndexType incX,
-        SyncToken* syncToken );
-
-    /**
-     * @todo add doxygen comment
-     * @todo clarify BLAS inteface
-     */
-    template<typename T>
-    static void agemvpbv(
-        int n,
-        const double alpha,
-        const double* const a,
-        int m,
-        const double* const x,
-        const double beta,
-        const double* const z,
-        double* y,
         SyncToken* syncToken );
 
     /** Routine that sets functions pointers belonging to BLAS2 in a BLASInterface.

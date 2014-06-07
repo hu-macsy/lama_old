@@ -40,13 +40,15 @@
 #include <lama/LAMATypes.hpp>
 #include <lama/SyncToken.hpp>
 
-#include <lama/openmp/BLASHelper.hpp>
+// CBLAS_ORDER, CBLAS_TRANSPOSE, ...
+#include <lama/cblas.hpp>
 
 // logging
 #include <logging/logging.hpp>
 
 #include <cublas.h>
 #include <cuda_runtime_api.h>
+
 
 namespace lama
 {
@@ -77,8 +79,8 @@ private:
      */
     template<typename T>
     static void gemv(
-        const enum CBLAS_ORDER order,
-        const enum CBLAS_TRANSPOSE trans,
+        const CBLAS_ORDER order,
+        const CBLAS_TRANSPOSE trans,
         const IndexType m,
         const IndexType n,
         const T alpha,
@@ -96,8 +98,8 @@ private:
      */
     template<typename T>
     static void symv(
-        const enum CBLAS_ORDER order,
-        const enum CBLAS_UPLO uplo,
+        const CBLAS_ORDER order,
+        const CBLAS_UPLO uplo,
         const IndexType n,
         const T alpha,
         const T* A,
@@ -114,10 +116,10 @@ private:
      */
     template<typename T>
     static void trmv(
-        const enum CBLAS_ORDER order,
-        const enum CBLAS_UPLO uplo,
-        const enum CBLAS_TRANSPOSE trans,
-        const enum CBLAS_DIAG diag,
+        const CBLAS_ORDER order,
+        const CBLAS_UPLO uplo,
+        const CBLAS_TRANSPOSE trans,
+        const CBLAS_DIAG diag,
         const IndexType n,
         const T* A,
         const IndexType lda,
@@ -130,10 +132,10 @@ private:
      */
     template<typename T>
     static void trsv(
-        const enum CBLAS_ORDER order,
-        const enum CBLAS_UPLO uplo,
-        const enum CBLAS_TRANSPOSE trans,
-        const enum CBLAS_DIAG diag,
+        const CBLAS_ORDER order,
+        const CBLAS_UPLO uplo,
+        const CBLAS_TRANSPOSE trans,
+        const CBLAS_DIAG diag,
         const IndexType n,
         const T* A,
         const IndexType lda,
@@ -146,8 +148,8 @@ private:
      */
     template<typename T>
     static void gbmv(
-        const enum CBLAS_ORDER order,
-        const enum CBLAS_TRANSPOSE trans,
+        const CBLAS_ORDER order,
+        const CBLAS_TRANSPOSE trans,
         const IndexType m,
         const IndexType n,
         const IndexType kl,
@@ -167,8 +169,8 @@ private:
      */
     template<typename T>
     static void sbmv(
-        const enum CBLAS_ORDER order,
-        const enum CBLAS_UPLO uplo,
+        const CBLAS_ORDER order,
+        const CBLAS_UPLO uplo,
         const IndexType n,
         const IndexType k,
         const T alpha,
@@ -186,10 +188,10 @@ private:
      */
     template<typename T>
     static void tbmv(
-        const enum CBLAS_ORDER order,
-        const enum CBLAS_UPLO uplo,
-        const enum CBLAS_TRANSPOSE trans,
-        const enum CBLAS_DIAG diag,
+        const CBLAS_ORDER order,
+        const CBLAS_UPLO uplo,
+        const CBLAS_TRANSPOSE trans,
+        const CBLAS_DIAG diag,
         const IndexType n,
         const IndexType k,
         const T* A,
@@ -203,10 +205,10 @@ private:
      */
     template<typename T>
     static void tbsv(
-        const enum CBLAS_ORDER order,
-        const enum CBLAS_UPLO uplo,
-        const enum CBLAS_TRANSPOSE trans,
-        const enum CBLAS_DIAG diag,
+        const CBLAS_ORDER order,
+        const CBLAS_UPLO uplo,
+        const CBLAS_TRANSPOSE trans,
+        const CBLAS_DIAG diag,
         const IndexType n,
         const IndexType k,
         const T* A,
@@ -220,7 +222,7 @@ private:
      */
     template<typename T>
     static void ger(
-        const enum CBLAS_ORDER order,
+        const CBLAS_ORDER order,
         const IndexType m,
         const IndexType n,
         const T alpha,
@@ -237,8 +239,8 @@ private:
      */
     template<typename T>
     static void syr(
-        const enum CBLAS_ORDER order,
-        const enum CBLAS_UPLO uplo,
+        const CBLAS_ORDER order,
+        const CBLAS_UPLO uplo,
         const IndexType n,
         const T alpha,
         const T* x,
@@ -252,8 +254,8 @@ private:
      */
     template<typename T>
     static void syr2(
-        const enum CBLAS_ORDER order,
-        const enum CBLAS_UPLO uplo,
+        const CBLAS_ORDER order,
+        const CBLAS_UPLO uplo,
         const IndexType n,
         const T alpha,
         const T* x,
@@ -265,29 +267,12 @@ private:
         SyncToken* syncToken );
 
     /**
-     * This function is the CUDA implementation of lama::BLAS2Interface::spmv
-     */
-    template<typename T>
-    static void spmv(
-        const enum CBLAS_ORDER order,
-        const enum CBLAS_UPLO uplo,
-        const IndexType n,
-        const T alpha,
-        const T* AP,
-        const T* x,
-        const IndexType incX,
-        const T beta,
-        T* y,
-        const IndexType incY,
-        SyncToken* syncToken );
-
-    /**
      * This function is the CUDA implementation of lama::BLAS2Interface::spr
      */
     template<typename T>
     static void spr(
-        const enum CBLAS_ORDER order,
-        const enum CBLAS_UPLO uplo,
+        const CBLAS_ORDER order,
+        const CBLAS_UPLO uplo,
         const IndexType n,
         const T alpha,
         const T* x,
@@ -300,8 +285,8 @@ private:
      */
     template<typename T>
     static void spr2(
-        const enum CBLAS_ORDER order,
-        const enum CBLAS_UPLO uplo,
+        const CBLAS_ORDER order,
+        const CBLAS_UPLO uplo,
         const IndexType n,
         const T alpha,
         const T* x,
@@ -309,36 +294,6 @@ private:
         const T* y,
         const IndexType incY,
         T* AP,
-        SyncToken* syncToken );
-
-    /**
-     * This function is the CUDA implementation of lama::BLAS2Interface::tpmv
-     */
-    template<typename T>
-    static void tpmv(
-        const enum CBLAS_ORDER order,
-        const enum CBLAS_UPLO uplo,
-        const enum CBLAS_TRANSPOSE trans,
-        const enum CBLAS_DIAG diag,
-        const IndexType n,
-        const T* AP,
-        T* x,
-        const IndexType incX,
-        SyncToken* syncToken );
-
-    /**
-     * This function is the CUDA implementation of lama::BLAS2Interface::tpsv
-     */
-    template<typename T>
-    static void tpsv(
-        const enum CBLAS_ORDER order,
-        const enum CBLAS_UPLO uplo,
-        const enum CBLAS_TRANSPOSE trans,
-        const enum CBLAS_DIAG diag,
-        const IndexType n,
-        const T* Ap,
-        T* x,
-        const IndexType incX,
         SyncToken* syncToken );
 
     LAMA_LOG_DECL_STATIC_LOGGER( logger )

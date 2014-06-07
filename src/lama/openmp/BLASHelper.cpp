@@ -44,7 +44,7 @@ namespace lama
 
 /* ------------------------------------------------------------------------- */
 
-char BLASHelper::lapack_uplo( const enum CBLAS_UPLO uplo )
+char BLASHelper::lapack_uplo( const CBLAS_UPLO uplo )
 {
     char UL = 'U';
 
@@ -66,7 +66,7 @@ char BLASHelper::lapack_uplo( const enum CBLAS_UPLO uplo )
 
 /* ------------------------------------------------------------------------- */
 
-char BLASHelper::lapack_transpose( const enum CBLAS_TRANSPOSE trans )
+char BLASHelper::lapack_transpose( const CBLAS_TRANSPOSE trans )
 {
     char TA = 'N';
 
@@ -92,7 +92,7 @@ char BLASHelper::lapack_transpose( const enum CBLAS_TRANSPOSE trans )
 
 /* ------------------------------------------------------------------------- */
 
-char BLASHelper::lapack_diag( const enum CBLAS_DIAG diag )
+char BLASHelper::lapack_diag( const CBLAS_DIAG diag )
 {
     char DI = 'N';
 

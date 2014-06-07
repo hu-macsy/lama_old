@@ -38,13 +38,14 @@
 
 // others
 #include <lama/LAMATypes.hpp>
-#include <lama/SyncToken.hpp>
 
 // logging
 #include <logging/logging.hpp>
 
 namespace lama
 {
+
+class SyncToken;
 
 /** Implementations of methods for lama::BLASInterface with OpenMP.
  *
@@ -121,12 +122,6 @@ public:
         const T* y,
         const IndexType incY,
         SyncToken* syncToken );
-
-    /**
-     * This function is the Host implementation of lama::BLASInterface::sum
-     */
-    template<typename T>
-    static void sum( const IndexType n, T alpha, const T* x, T beta, const T* y, T* z, SyncToken* syncToken );
 
     /** Routine that sets functions pointers belonging to BLAS1 in a BLASInterface.
      *

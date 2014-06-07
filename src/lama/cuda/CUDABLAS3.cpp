@@ -39,6 +39,7 @@
 #include <lama/LAMAInterfaceRegistry.hpp>
 #include <lama/cuda/CUDAError.hpp>
 #include <lama/cuda/CUDAStreamSyncToken.hpp>
+#include <lama/openmp/BLASHelper.hpp>
 
 // macros
 #include <lama/macros/unused.hpp>
@@ -48,23 +49,92 @@ namespace lama
 
 LAMA_LOG_DEF_LOGGER( CUDABLAS3::logger, "CUDA.BLAS3" )
 
-/** gemm */
+/* ---------------------------------------------------------------------------------------*/
+
+/** cublasCast converts pointers to LAMA complex numbers to 
+ *  cuBlas pointers for complex numbers. This is safe as both
+ *  are internally represented in the same way.
+ */
+
+static inline cuFloatComplex* cublasCast( ComplexFloat* x )
+{
+    return reinterpret_cast<cuFloatComplex*>( x );
+}
+
+static inline cuDoubleComplex* cublasCast( ComplexDouble* x )
+{
+    return reinterpret_cast<cuDoubleComplex*>( x );
+}
+
+static inline const cuFloatComplex* cublasCast( const ComplexFloat* x )
+{
+    return reinterpret_cast<const cuFloatComplex*>( x );
+}
+
+static inline const cuDoubleComplex* cublasCast( const ComplexDouble* x )
+{
+    return reinterpret_cast<const cuDoubleComplex*>( x );
+}
+
+/* ---------------------------------------------------------------------------------------*/
+/*    gemm                                                                                */
+/* ---------------------------------------------------------------------------------------*/
+
+template<typename T>
+static inline
+void wrapperGemm( char transA_char, char transB_char, IndexType m, IndexType n, IndexType k,
+                  T alpha, const T* a, IndexType lda, 
+                  const T* b, IndexType ldb, T beta, T* c, IndexType ldc );
 
 template<>
+void wrapperGemm( char transA_char, char transB_char, IndexType m, IndexType n, IndexType k,
+                  float alpha, const float* a, IndexType lda, 
+                  const float* b, IndexType ldb, float beta, float* c, IndexType ldc )
+{
+    cublasSgemm( transA_char, transB_char, m, n, k, alpha, a, lda, b, ldb, beta, c, ldc );
+}
+
+template<>
+void wrapperGemm( char transA_char, char transB_char, IndexType m, IndexType n, IndexType k,
+                  double alpha, const double* a, IndexType lda, 
+                  const double* b, IndexType ldb, double beta, double* c, IndexType ldc )
+{
+    cublasDgemm( transA_char, transB_char, m, n, k, alpha, a, lda, b, ldb, beta, c, ldc );
+}
+
+template<>
+void wrapperGemm( char transA_char, char transB_char, IndexType m, IndexType n, IndexType k,
+                  ComplexFloat alpha, const ComplexFloat* a, IndexType lda, 
+                  const ComplexFloat* b, IndexType ldb, ComplexFloat beta, ComplexFloat* c, IndexType ldc )
+{
+    cublasCgemm( transA_char, transB_char, m, n, k, *cublasCast( &alpha ), cublasCast( a ), lda, 
+                 cublasCast( b ), ldb, *cublasCast( &beta ), cublasCast( c ), ldc );
+}
+
+template<>
+void wrapperGemm( char transA_char, char transB_char, IndexType m, IndexType n, IndexType k,
+                  ComplexDouble alpha, const ComplexDouble* a, IndexType lda, 
+                  const ComplexDouble* b, IndexType ldb, ComplexDouble beta, ComplexDouble* c, IndexType ldc )
+{
+    cublasZgemm( transA_char, transB_char, m, n, k, *cublasCast( &alpha ), cublasCast( a ), lda, 
+                 cublasCast( b ), ldb, *cublasCast( &beta ), cublasCast( c ), ldc );
+}
+
+template<typename T>
 void CUDABLAS3::gemm(
-    const enum CBLAS_ORDER order,
-    const enum CBLAS_TRANSPOSE transa,
-    const enum CBLAS_TRANSPOSE transb,
+    const CBLAS_ORDER order,
+    const CBLAS_TRANSPOSE transa,
+    const CBLAS_TRANSPOSE transb,
     const IndexType m,
     const IndexType n,
     const IndexType k,
-    const float alpha,
-    const float* const A,
+    const T alpha,
+    const T* const A,
     const IndexType lda,
-    const float* const B,
+    const T* const B,
     const IndexType ldb,
-    const float beta,
-    float* const C,
+    const T beta,
+    T* const C,
     const IndexType ldc,
     SyncToken* syncToken )
 {
@@ -77,10 +147,10 @@ void CUDABLAS3::gemm(
     const int ldb_call = ( order == CblasRowMajor ) ? lda : ldb;
     const int m_call = ( order == CblasRowMajor ) ? n : m;
     const int n_call = ( order == CblasRowMajor ) ? m : n;
-    const float* const A_call = ( order == CblasRowMajor ) ? B : A;
-    const float* const B_call = ( order == CblasRowMajor ) ? A : B;
+    const T* const A_call = ( order == CblasRowMajor ) ? B : A;
+    const T* const B_call = ( order == CblasRowMajor ) ? A : B;
 
-    LAMA_LOG_INFO( logger, "gemm<float>( m = " << m << ", n = " << n << ", k = " << k )
+    LAMA_LOG_INFO( logger, "gemm<" << Scalar::getType<T>() << ">( m = " << m << ", n = " << n << ", k = " << k )
 
     if ( transa == CblasTrans )
     {
@@ -119,7 +189,7 @@ void CUDABLAS3::gemm(
 
     LAMA_LOG_INFO( logger, "cublasSgemm: m = " << m_call << " x " << n_call )
 
-    cublasSgemm( transA_char, transB_char, m_call, n_call, k, alpha, A_call, lda_call, B_call, ldb_call, beta, C, ldc );
+    wrapperGemm( transA_char, transB_char, m_call, n_call, k, alpha, A_call, lda_call, B_call, ldb_call, beta, C, ldc );
 
     // No error check here possible as kernel is started asynchronously in any case
 
@@ -128,105 +198,55 @@ void CUDABLAS3::gemm(
         LAMA_CUDA_RT_CALL( cudaStreamSynchronize( stream ), "stream = " << stream );
     }
 }
-
-template<>
-void CUDABLAS3::gemm(
-    const enum CBLAS_ORDER order,
-    const enum CBLAS_TRANSPOSE transa,
-    const enum CBLAS_TRANSPOSE transb,
-    const IndexType m,
-    const IndexType n,
-    const IndexType k,
-    const double alpha,
-    const double* const A,
-    const IndexType lda,
-    const double* const B,
-    const IndexType ldb,
-    const double beta,
-    double* const C,
-    const IndexType ldc,
-    SyncToken* syncToken )
-{
-    char transA_char = 'N';
-    char transB_char = 'N';
-
-    //Swap matrix if RowMajor Order
-
-    const int lda_call = ( order == CblasRowMajor ) ? ldb : lda;
-    const int ldb_call = ( order == CblasRowMajor ) ? lda : ldb;
-    const int m_call = ( order == CblasRowMajor ) ? n : m;
-    const int n_call = ( order == CblasRowMajor ) ? m : n;
-    const double* const A_call = ( order == CblasRowMajor ) ? B : A;
-    const double* const B_call = ( order == CblasRowMajor ) ? A : B;
-
-    LAMA_LOG_INFO( logger, "gemm<double>( m = " << m << ", n = " << n << ", k = " << k )
-
-    if ( transa == CblasTrans )
-    {
-    	if ( order == CblasRowMajor )
-    	{
-    		transB_char = 'T';
-    	} else
-    	{
-    		transA_char = 'T';
-    	}
-    }
-
-    if ( transb == CblasTrans )
-    {
-    	if ( order == CblasRowMajor )
-    	{
-    		transA_char = 'T';
-    	} else
-    	{
-    		transB_char = 'T';
-    	}
-    }
-
-    LAMA_CHECK_CUDA_ACCESS
-
-    cudaStream_t stream = 0; // default stream if no syncToken is given
-
-    if ( syncToken )
-    {
-        CUDAStreamSyncToken* cudaStreamSyncToken = dynamic_cast<CUDAStreamSyncToken*>( syncToken );
-        LAMA_ASSERT_DEBUG( cudaStreamSyncToken, "no cuda stream sync token provided" )
-        stream = cudaStreamSyncToken->getCUDAStream();
-    }
-
-    LAMA_CUBLAS_CALL( cublasSetKernelStream( stream ), "set cublas kernel stream = " << stream );
-
-    LAMA_LOG_INFO( logger, "cublasDgemm: m = " << m_call << " x " << n_call )
-
-    cublasDgemm( transA_char, transB_char, m_call, n_call, k, alpha, A_call, lda_call, B_call, ldb_call, beta, C, ldc );
-
-    // No error check here possible as kernel is started asynchronously in any case
-
-    if ( !syncToken )
-    {
-        LAMA_CUDA_RT_CALL( cudaStreamSynchronize( stream ), "stream = " << stream );
-    }
-}
-
-/** symm */
-
-/** trmm */
 
 /** trsm */
 
+template<typename T>
+static inline
+void wrapperTrsm( char side, char uplo, char transA, IndexType diag, IndexType m, IndexType n, 
+                  T alpha,  const T* a, IndexType lda, T* b, IndexType ldb );
+
 template<>
+void wrapperTrsm( char side, char uplo, char transA, IndexType diag, IndexType m, IndexType n, 
+                  float alpha, const float* a, IndexType lda, float* b, IndexType ldb )
+{
+    cublasStrsm( side, uplo, transA, diag, m, n, alpha, a, lda, b, ldb );
+}
+
+template<>
+void wrapperTrsm( char side, char uplo, char transA, IndexType diag, IndexType m, IndexType n, 
+                  double alpha, const double* a, IndexType lda, double* b, IndexType ldb )
+{
+    cublasDtrsm( side, uplo, transA, diag, m, n, alpha, a, lda, b, ldb );
+}
+
+template<>
+void wrapperTrsm( char side, char uplo, char transA, IndexType diag, IndexType m, IndexType n, 
+                  ComplexFloat alpha, const ComplexFloat* a, IndexType lda, ComplexFloat* b, IndexType ldb )
+{
+    cublasCtrsm( side, uplo, transA, diag, m, n, *cublasCast( &alpha ), cublasCast( a ), lda, cublasCast( b ), ldb );
+}
+
+template<>
+void wrapperTrsm( char side, char uplo, char transA, IndexType diag, IndexType m, IndexType n, 
+                  ComplexDouble alpha, const ComplexDouble* a, IndexType lda, ComplexDouble* b, IndexType ldb )
+{
+    cublasZtrsm( side, uplo, transA, diag, m, n, *cublasCast( &alpha ), cublasCast( a ), lda, cublasCast( b ), ldb );
+}
+
+template<typename T>
 void CUDABLAS3::trsm(
-    const enum CBLAS_ORDER Order,
-    const enum CBLAS_SIDE sidearg,
-    const enum CBLAS_UPLO uploarg,
-    const enum CBLAS_TRANSPOSE trans,
-    const enum CBLAS_DIAG diagarg,
+    const CBLAS_ORDER Order,
+    const CBLAS_SIDE sidearg,
+    const CBLAS_UPLO uploarg,
+    const CBLAS_TRANSPOSE trans,
+    const CBLAS_DIAG diagarg,
     const IndexType m,
     const IndexType n,
-    const float alpha,
-    const float* A,
+    const T alpha,
+    const T* A,
     const IndexType lda,
-    float* B,
+    T* B,
     const IndexType ldb,
     SyncToken* syncToken )
 {
@@ -356,114 +376,7 @@ void CUDABLAS3::trsm(
 
     LAMA_CUBLAS_CALL( cublasSetKernelStream( stream ), "set cublas kernel stream = " << stream );
 
-    cublasStrsm( side, uplo, transA, diag, m, n, alpha, A, lda, B, ldb );
-
-    // No error check here possible as kernel is started asynchronously in any case
-
-    if ( !syncToken )
-    {
-        LAMA_CUDA_RT_CALL( cudaStreamSynchronize( stream ), "stream = " << stream );
-    }
-}
-
-template<>
-void CUDABLAS3::trsm(
-    const enum CBLAS_ORDER Order,
-    const enum CBLAS_SIDE sidearg,
-    const enum CBLAS_UPLO uploarg,
-    const enum CBLAS_TRANSPOSE trans,
-    const enum CBLAS_DIAG diagarg,
-    const IndexType m,
-    const IndexType n,
-    const double alpha,
-    const double* A,
-    const IndexType lda,
-    double* B,
-    const IndexType ldb,
-    SyncToken* syncToken )
-{
-    char side = ' ';
-    char uplo = ' ';
-    char transA = ' ';
-    char diag = ' ';
-
-    if ( trans == CblasTrans )
-    {
-        transA = 'T';
-    }
-    else if ( trans == CblasConjTrans )
-    {
-        transA = 'C';
-    }
-    else if ( trans == CblasNoTrans )
-    {
-        transA = 'N';
-    }
-
-    if ( diagarg == CblasUnit )
-    {
-        diag = 'U';
-    }
-    else if ( diagarg == CblasNonUnit )
-    {
-        diag = 'N';
-    }
-
-    if ( Order == CblasColMajor )
-    {
-        if ( sidearg == CblasRight )
-        {
-            side = 'R';
-        }
-        else if ( sidearg == CblasLeft )
-        {
-            side = 'L';
-        }
-
-        if ( uploarg == CblasUpper )
-        {
-            uplo = 'U';
-        }
-        else if ( uploarg == CblasLower )
-        {
-            uplo = 'L';
-        }
-    }
-    else if ( Order == CblasRowMajor )
-    {
-        if ( sidearg == CblasRight )
-        {
-            side = 'L';
-        }
-        else if ( sidearg == CblasLeft )
-        {
-            side = 'R';
-        }
-
-        if ( uploarg == CblasUpper )
-        {
-            uplo = 'L';
-        }
-        else if ( uploarg == CblasLower )
-        {
-            uplo = 'U';
-        }
-    }
-
-    LAMA_CHECK_CUDA_ACCESS
-
-    cudaStream_t stream = 0; // default stream if no syncToken is given
-
-    if ( syncToken )
-    {
-        CUDAStreamSyncToken* cudaStreamSyncToken = dynamic_cast<CUDAStreamSyncToken*>( syncToken );
-        LAMA_ASSERT_DEBUG( cudaStreamSyncToken, "no cuda stream sync token provided" );
-        stream = cudaStreamSyncToken->getCUDAStream();
-    }
-
-    LAMA_CUBLAS_CALL( cublasSetKernelStream( stream ), "set cublas kernel stream = " << stream );
-
-    cublasDtrsm( side, uplo, transA, diag, m, n, alpha, A, lda, B, ldb );
+    wrapperTrsm( side, uplo, transA, diag, m, n, alpha, A, lda, B, ldb );
 
     // No error check here possible as kernel is started asynchronously in any case
 
@@ -484,8 +397,12 @@ void CUDABLAS3::setInterface( BLASInterface& BLAS )
     // Note: macro takes advantage of same name for routines and type definitions 
     //       ( e.g. routine CUDABLAS1::sum<T> is set for BLAS::BLAS1::sum variable
 
-    LAMA_INTERFACE_REGISTER_T( BLAS, gemm, float )
-    LAMA_INTERFACE_REGISTER_T( BLAS, gemm, double )
+#define LAMA_BLAS3_REGISTER(z, I, _)                                            \
+    LAMA_INTERFACE_REGISTER_T( BLAS, gemm, ARITHMETIC_TYPE##I )                 \
+     
+    BOOST_PP_REPEAT( ARITHMETIC_TYPE_CNT, LAMA_BLAS3_REGISTER, _ )
+
+#undef LAMA_BLAS3_REGISTER
 
     // trsm routines are not used yet by LAMA
 }

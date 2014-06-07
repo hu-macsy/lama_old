@@ -1,5 +1,5 @@
 /**
- * @file OpenMPBLAS3.hpp
+ * @file BLAS_BLAS3.hpp
  *
  * @license
  * Copyright (c) 2009-2013
@@ -25,7 +25,7 @@
  * SOFTWARE.
  * @endlicense
  *
- * @brief OpenMPBLAS3.hpp
+ * @brief BLAS_BLAS3.hpp
  * @author Lauretta Schubert
  * @date 05.07.2012
  * @since 1.0.0
@@ -51,7 +51,7 @@ namespace lama
  *  @todo Add information here about use of native BLAS1 libraries
  */
 
-class LAMA_DLL_IMPORTEXPORT OpenMPBLAS3
+class LAMA_DLL_IMPORTEXPORT BLAS_BLAS3
 {
 public:
 
@@ -59,9 +59,9 @@ public:
 
     template<typename T>
     static void gemm(
-        const enum CBLAS_ORDER order,
-        const enum CBLAS_TRANSPOSE TransA,
-        const enum CBLAS_TRANSPOSE TransB,
+        const CBLAS_ORDER order,
+        const CBLAS_TRANSPOSE TransA,
+        const CBLAS_TRANSPOSE TransB,
         const IndexType M,
         const IndexType N,
         const IndexType K,
@@ -146,9 +146,9 @@ public:
      */
     template<typename T>
     static void symm(
-        const enum CBLAS_ORDER order,
-        const enum CBLAS_SIDE side,
-        const enum CBLAS_UPLO uplo,
+        const CBLAS_ORDER order,
+        const CBLAS_SIDE side,
+        const CBLAS_UPLO uplo,
         const IndexType m,
         const IndexType n,
         const T alpha,
@@ -227,11 +227,11 @@ public:
      */
     template<typename T>
     static void trmm(
-        const enum CBLAS_ORDER order,
-        const enum CBLAS_SIDE side,
-        const enum CBLAS_UPLO uplo,
-        const enum CBLAS_TRANSPOSE transA,
-        const enum CBLAS_DIAG diag,
+        const CBLAS_ORDER order,
+        const CBLAS_SIDE side,
+        const CBLAS_UPLO uplo,
+        const CBLAS_TRANSPOSE transA,
+        const CBLAS_DIAG diag,
         const IndexType m,
         const IndexType n,
         const T alpha,
@@ -311,11 +311,11 @@ public:
      */
     template<typename T>
     static void trsm(
-        const enum CBLAS_ORDER order,
-        const enum CBLAS_SIDE side,
-        const enum CBLAS_UPLO uplo,
-        const enum CBLAS_TRANSPOSE transA,
-        const enum CBLAS_DIAG diag,
+        const CBLAS_ORDER order,
+        const CBLAS_SIDE side,
+        const CBLAS_UPLO uplo,
+        const CBLAS_TRANSPOSE transA,
+        const CBLAS_DIAG diag,
         const IndexType m,
         const IndexType n,
         const T alpha,
@@ -396,9 +396,9 @@ public:
      */
     template<typename T>
     static void syrk(
-        const enum CBLAS_ORDER order,
-        const enum CBLAS_UPLO uplo,
-        const enum CBLAS_TRANSPOSE trans,
+        const CBLAS_ORDER order,
+        const CBLAS_UPLO uplo,
+        const CBLAS_TRANSPOSE trans,
         const IndexType n,
         const IndexType k,
         const T alpha,
@@ -484,9 +484,9 @@ public:
      */
     template<typename T>
     static void syrk2(
-        const enum CBLAS_ORDER order,
-        const enum CBLAS_UPLO uplo,
-        const enum CBLAS_TRANSPOSE trans,
+        const CBLAS_ORDER order,
+        const CBLAS_UPLO uplo,
+        const CBLAS_TRANSPOSE trans,
         const IndexType n,
         const IndexType k,
         const T alpha,

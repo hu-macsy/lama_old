@@ -37,14 +37,12 @@
 #include <lama/config.hpp>
 
 // others
-#include <lama/openmp/BLASHelper.hpp>
 #include <lama/LAMATypes.hpp>
 
 // logging
 #include <logging/logging.hpp>
 
-#include <cublas.h>
-#include <cuda_runtime_api.h>
+#include <lama/cblas.hpp>
 
 namespace lama
 {
@@ -122,9 +120,9 @@ private:
      */
     template<typename T>
     static void gemm(
-        const enum CBLAS_ORDER order,
-        const enum CBLAS_TRANSPOSE transa,
-        const enum CBLAS_TRANSPOSE transb,
+        const CBLAS_ORDER order,
+        const CBLAS_TRANSPOSE transa,
+        const CBLAS_TRANSPOSE transb,
         const IndexType m,
         const IndexType n,
         const IndexType k,
@@ -208,11 +206,11 @@ private:
      */
     template<typename T>
     static void trsm(
-        const enum CBLAS_ORDER order,
-        const enum CBLAS_SIDE side,
-        const enum CBLAS_UPLO uplo,
-        const enum CBLAS_TRANSPOSE transa,
-        const enum CBLAS_DIAG diag,
+        const CBLAS_ORDER order,
+        const CBLAS_SIDE side,
+        const CBLAS_UPLO uplo,
+        const CBLAS_TRANSPOSE transa,
+        const CBLAS_DIAG diag,
         const IndexType m,
         const IndexType n,
         const T alpha,
@@ -229,23 +227,6 @@ private:
     static bool initialized;   //!< static initialization used for registration
 
     static bool registerInterface();  //!< registration
-
-    template <typename T>
-    void gemm_launcher(
-        const char transA_char,
-        const char transB_char,
-        const int m,
-        const int n,
-        const int k,
-        const T alpha,
-        const T* const A,
-        const int lda,
-        const T* const B,
-        const int ldb,
-        const T beta,
-        T* const C,
-        const int ldc,
-        cudaStream_t cs );
 };
 
 } /* namespace lama */

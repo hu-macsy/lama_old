@@ -517,8 +517,8 @@ LAMA_COMMON_TEST_CASE_TEMPLATE( MatrixStorageTest, StorageType, scaleTest )
     {
         for ( IndexType j = 0; j < mMatrixStorage.getNumColumns(); ++j )
         {
-            BOOST_CHECK_CLOSE( 2.0 * tmp.getValue( i, j ),
-                               mMatrixStorage.getValue( i, j ), 1 );
+            LAMA_CHECK_CLOSE( 2.0 * tmp.getValue( i, j ),
+                              mMatrixStorage.getValue( i, j ), 1 );
         }
     }
 
@@ -534,7 +534,7 @@ LAMA_COMMON_TEST_CASE_TEMPLATE( MatrixStorageTest, StorageType, normTest )
 
     ValueType expected = 9.3f; // maximal absolute value
 
-    BOOST_CHECK_CLOSE( maxNorm, expected, 1 );
+    LAMA_CHECK_CLOSE( maxNorm, expected, 1 );
 
 LAMA_COMMON_TEST_CASE_TEMPLATE_END()
 
@@ -579,7 +579,7 @@ LAMA_COMMON_TEST_CASE_TEMPLATE( MatrixStorageTest, StorageType, vectorMultTest )
 
             sum += beta * yVal;
 
-            BOOST_CHECK_CLOSE( sum, res[i], 0.1f );
+            LAMA_CHECK_CLOSE( sum, res[i], 0.1 );
         }
     }
 
@@ -621,7 +621,7 @@ LAMA_COMMON_TEST_CASE_TEMPLATE( MatrixStorageTest, StorageType, vectorMultTest )
 
             sum += beta * yVal;
 
-            BOOST_CHECK_CLOSE( sum, res[i], 0.1f );
+            LAMA_CHECK_CLOSE( sum, res[i], 0.1f );
         }
     }
 
@@ -668,7 +668,7 @@ LAMA_COMMON_TEST_CASE_TEMPLATE( MatrixStorageTest, StorageType, vectorTimesMatri
 
             sum += beta * yVal;
 
-            BOOST_CHECK_CLOSE( sum, res[j], 0.1f );
+            LAMA_CHECK_CLOSE( sum, res[j], 0.1f );
         }
     }
 
@@ -712,7 +712,7 @@ LAMA_COMMON_TEST_CASE_TEMPLATE( MatrixStorageTest, StorageType, vectorTimesMatri
 
             sum += beta * yVal;
 
-            BOOST_CHECK_CLOSE( sum, res[j], 0.1f );
+            LAMA_CHECK_CLOSE( sum, res[j], 0.1f );
         }
     }
 
@@ -765,7 +765,7 @@ LAMA_COMMON_TEST_CASE_TEMPLATE( MatrixStorageTest, StorageType, vectorTimesMatri
 
             sum += beta * yValues[j];
 
-            BOOST_CHECK_CLOSE( sum, res[j], 0.1f );
+            LAMA_CHECK_CLOSE( sum, res[j], 0.1f );
         }
     }
 
@@ -821,7 +821,7 @@ LAMA_COMMON_TEST_CASE_TEMPLATE( MatrixStorageTest, StorageType, vectorTimesMatri
 
             sum += beta * yValues[j];
 
-            BOOST_CHECK_CLOSE( sum, res[j], 0.1f );
+            LAMA_CHECK_CLOSE( sum, res[j], 0.1f );
         }
     }
 
@@ -907,10 +907,10 @@ LAMA_COMMON_TEST_CASE_TEMPLATE( MatrixStorageTest, StorageType, numericalTest )
 
         sum *= alpha;
 
-        BOOST_CHECK_CLOSE( sum, res[j], 0.1f );
-        BOOST_CHECK_CLOSE( res[j], res2[j], 0.1f );
-        BOOST_CHECK_CLOSE( resD[j], res2D[j], 0.1f );
-        BOOST_CHECK_CLOSE( resD[j], res[j], 0.1f );
+        LAMA_CHECK_CLOSE( sum, res[j], 0.1f );
+        LAMA_CHECK_CLOSE( res[j], res2[j], 0.1f );
+        LAMA_CHECK_CLOSE( resD[j], res2D[j], 0.1f );
+        LAMA_CHECK_CLOSE( resD[j], res[j], 0.1f );
 
     }
 
@@ -948,11 +948,11 @@ LAMA_COMMON_TEST_CASE_TEMPLATE( MatrixStorageTest, StorageType, matrixMultTest )
         {
             if ( i == j )
             {
-                BOOST_CHECK_CLOSE( mMatrixStorage.getValue( i, j ), aValue * bValue, 1 );
+                LAMA_CHECK_CLOSE( mMatrixStorage.getValue( i, j ), aValue * bValue, 1 );
             }
             else
             {
-                BOOST_CHECK_CLOSE( mMatrixStorage.getValue( i, j ), 0.0, 1 );
+                LAMA_CHECK_CLOSE( mMatrixStorage.getValue( i, j ), 0.0, 1 );
             }
         }
     }
@@ -996,11 +996,11 @@ LAMA_COMMON_TEST_CASE_TEMPLATE( MatrixStorageTest, StorageType, matrixAddTest )
         {
             if ( i == j )
             {
-                BOOST_CHECK_CLOSE( mMatrixStorage.getValue( i, j ), aValue * bValue + cValue, 1 );
+                LAMA_CHECK_CLOSE( mMatrixStorage.getValue( i, j ), aValue * bValue + cValue, 1 );
             }
             else
             {
-                BOOST_CHECK_CLOSE( mMatrixStorage.getValue( i, j ), 0.0, 1 );
+                LAMA_CHECK_CLOSE( mMatrixStorage.getValue( i, j ), 0.0, 1 );
             }
         }
     }
@@ -1023,7 +1023,7 @@ LAMA_COMMON_TEST_CASE_TEMPLATE( MatrixStorageTest, StorageType, matrixAddTest )
     {
         for ( IndexType j = 0; j < n; ++j )
         {
-            BOOST_CHECK_CLOSE( mMatrixStorage.getValue( i, j ), 0.0, 1 );
+            LAMA_CHECK_CLOSE( mMatrixStorage.getValue( i, j ), 0.0, 1 );
         }
     }
 
@@ -1066,7 +1066,7 @@ LAMA_COMMON_TEST_CASE_TEMPLATE( MatrixStorageTest, StorageType, matrixMultTest1 
 
     for ( IndexType i = 0; i < n; ++i )
     {
-        BOOST_CHECK_CLOSE( rY1[i], rY2[i], 1 );
+        LAMA_CHECK_CLOSE( rY1[i], rY2[i], 1 );
     }
 
 LAMA_COMMON_TEST_CASE_TEMPLATE_END()
@@ -1137,7 +1137,7 @@ void MatrixStorageTest<StorageType>::jacobiTest( const ValueType omega )
 
         for ( IndexType i = 0; i < n; ++i )
         {
-            BOOST_CHECK_CLOSE( rSolution1[i], rSolution2[i], 1 );
+            LAMA_CHECK_CLOSE( rSolution1[i], rSolution2[i], 1 );
         }
     }
 }
@@ -1209,7 +1209,7 @@ LAMA_COMMON_TEST_CASE_TEMPLATE( MatrixStorageTest, StorageType, jacobiHaloTest )
 
         for ( IndexType i = 0; i < numRows; ++i )
         {
-            BOOST_CHECK_CLOSE( rSolution1[i], rSolution2[i], 1 );
+            LAMA_CHECK_CLOSE( rSolution1[i], rSolution2[i], 1 );
         }
     }
 
@@ -1311,5 +1311,10 @@ LAMA_COMMON_TEST_CASE_RUNNER_TEMPLATE( MatrixStorageTest )
 
 /* ------------------------------------------------------------------------- */
 
-template class MatrixStorageTest<double> ;
-template class MatrixStorageTest<float> ;
+#define LAMA_MATRIX_STORAGE_TEST_INSTANTIATE(z, I, _)                      \
+template class MatrixStorageTest<ARITHMETIC_TYPE##I> ;
+
+BOOST_PP_REPEAT( ARITHMETIC_TYPE_CNT, LAMA_MATRIX_STORAGE_TEST_INSTANTIATE, _ )
+
+#undef LAMA_MATRIX_STORAGE_INSTANTIATE
+

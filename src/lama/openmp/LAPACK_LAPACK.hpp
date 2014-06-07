@@ -1,5 +1,5 @@
 /**
- * @file OpenMPLAPACK.hpp
+ * @file LAPACK_LAPACK.hpp
  *
  * @license
  * Copyright (c) 2009-2013
@@ -25,7 +25,7 @@
  * SOFTWARE.
  * @endlicense
  *
- * @brief OpenMPLAPACK.hpp
+ * @brief LAPACK_LAPACK.hpp
  * @author Lauretta Schubert
  * @date 02.07.2012
  * @since 1.0.0
@@ -48,7 +48,7 @@
 namespace lama
 {
 
-class OpenMPLAPACK
+class LAPACK_LAPACK
 {
 public:
 
@@ -56,7 +56,7 @@ public:
 
     template<typename T>
     static IndexType getrf(
-        const enum CBLAS_ORDER order,
+        const CBLAS_ORDER order,
         const IndexType m,
         const IndexType n,
         T* const a,
@@ -67,7 +67,7 @@ public:
 
     template<typename T>
     static IndexType getri(
-        const enum CBLAS_ORDER order,
+        const CBLAS_ORDER order,
         const IndexType n,
         T* const A,
         const IndexType lda,
@@ -82,10 +82,10 @@ public:
 
     template<typename T>
     static IndexType tptrs(
-        const enum CBLAS_ORDER order,
-        const enum CBLAS_UPLO uplo,
-        const enum CBLAS_TRANSPOSE trans,
-        const enum CBLAS_DIAG diag,
+        const CBLAS_ORDER order,
+        const CBLAS_UPLO uplo,
+        const CBLAS_TRANSPOSE trans,
+        const CBLAS_DIAG diag,
         const IndexType n,
         const IndexType nrhs,
         const T* AP,
@@ -96,7 +96,7 @@ public:
 
     template<typename T>
     static void laswp(
-        const enum CBLAS_ORDER order,
+        const CBLAS_ORDER order,
         const IndexType n,
         T* A,
         const IndexType lda,
@@ -123,7 +123,7 @@ private:
 
     static bool registerInterface();
 
-}; /* OpenMPLAPACK */
+}; /* LAPACK_LAPACK */
 
 } /* namespace lama */
 

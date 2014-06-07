@@ -124,8 +124,8 @@ void wrapperGemv( char trans, IndexType m, IndexType n, ComplexDouble alpha,
 
 template<typename T>
 void CUDABLAS2::gemv(
-    const enum CBLAS_ORDER order,
-    const enum CBLAS_TRANSPOSE trans,
+    const CBLAS_ORDER order,
+    const CBLAS_TRANSPOSE trans,
     const IndexType m,
     const IndexType n,
     const T alpha,
@@ -182,7 +182,7 @@ void CUDABLAS2::gemv(
 
     LAMA_CUBLAS_CALL( cublasSetKernelStream( stream ), "set cublas kernel stream = " << stream );
 
-    LAMA_LOG_INFO( logger, "cublasSgemv: m = " << order_m << " x " << order_n )
+    LAMA_LOG_INFO( logger, "gemv<" << Scalar::getType<T>() << "> with cuBLAS: m = " << order_m << " x " << order_n )
 
     wrapperGemv( trans_char, order_m, order_n, alpha, A, lda, x, incx, beta, y, incy );
 

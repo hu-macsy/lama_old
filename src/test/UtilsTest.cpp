@@ -304,7 +304,7 @@ void invertTest( ContextPtr loc )
 
         for( IndexType i = 0; i < nValues; i++ )
         {
-            BOOST_CHECK_CLOSE( 1 / valuesValues[i], rValues.get()[i], 1 );
+            LAMA_CHECK_CLOSE( 1 / valuesValues[i], rValues.get()[i], 1 );
         }
     }
 

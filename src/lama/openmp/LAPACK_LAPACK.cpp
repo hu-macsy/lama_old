@@ -1,5 +1,5 @@
 /**
- * @file OpenMPLAPACK.cpp
+ * @file LAPACK_LAPACK.cpp
  *
  * @license
  * Copyright (c) 2009-2013
@@ -25,17 +25,17 @@
  * SOFTWARE.
  * @endlicense
  *
- * @brief OpenMPLAPACK.cpp
+ * @brief LAPACK_LAPACK.cpp
  * @author lschubert
  * @date 02.07.2012
  * @since 1.0.0
  */
 
 // hpp
-#include <lama/openmp/OpenMPLAPACK.hpp>
+#include <lama/openmp/LAPACK_LAPACK.hpp>
 
 // others
-#include <lama/openmp/OpenMPBLAS1.hpp>
+#include <lama/openmp/BLAS_BLAS1.hpp>
 
 #include <lama/LAMAInterfaceRegistry.hpp>
 #include <lama/BLASInterface.hpp>
@@ -44,6 +44,17 @@
 
 // macros
 #include <lama/macros/unused.hpp>
+
+#include <lama/cblas.hpp>
+
+//fallback if nothing is set in cmake
+#if !defined(LAMA_FORTRAN_BLAS_STYLE_UNDERSCORE)
+#if !defined(LAMA_FORTRAN_BLAS_STYLE_UPCASE)
+#if !defined(LAMA_FORTRAN_BLAS_STYLE_LOWCASE)
+#define LAMA_FORTRAN_BLAS_STYLE_LOWCASE
+#endif
+#endif
+#endif
 
 #ifdef __cplusplus
 extern "C"
@@ -115,22 +126,22 @@ namespace lama
 
 /* ------------------------------------------------------------------------- */
 
-LAMA_LOG_DEF_LOGGER( OpenMPLAPACK::logger, "OpenMP.LAPACK" )
+LAMA_LOG_DEF_LOGGER( LAPACK_LAPACK::logger, "LAPACK.LAPACK" )
 
 /* ------------------------------------------------------------------------- */
 /*      getrf<float>                                                         */
 /* ------------------------------------------------------------------------- */
 
 template<>
-IndexType OpenMPLAPACK::getrf(
-    const enum CBLAS_ORDER order,
+IndexType LAPACK_LAPACK::getrf(
+    const CBLAS_ORDER order,
     const int m,
     const int n,
     float* const A,
     const int lda,
     int* const ipiv )
 {
-    LAMA_REGION( "OpenMP.LAPACK.getrf<float>" )
+    LAMA_REGION( "LAPACK.LAPACK.getrf<float>" )
 
     LAMA_LOG_INFO( logger, "getrf<float> for A of size " << m << " x " << n )
 
@@ -196,15 +207,15 @@ IndexType OpenMPLAPACK::getrf(
 /* ------------------------------------------------------------------------- */
 
 template<>
-IndexType OpenMPLAPACK::getrf(
-    const enum CBLAS_ORDER order,
+IndexType LAPACK_LAPACK::getrf(
+    const CBLAS_ORDER order,
     const int m,
     const int n,
     double* const A,
     const int lda,
     int* const ipiv )
 {
-    LAMA_REGION( "OpenMP.LAPACK.getrf<double>" )
+    LAMA_REGION( "LAPACK.LAPACK.getrf<double>" )
 
     LAMA_LOG_INFO( logger, "getrf<double> for A of size " << m << " x " << n )
 
@@ -270,9 +281,9 @@ IndexType OpenMPLAPACK::getrf(
 /* ------------------------------------------------------------------------- */
 
 template<>
-void OpenMPLAPACK::getinv( const IndexType n, float* a, const IndexType lda )
+void LAPACK_LAPACK::getinv( const IndexType n, float* a, const IndexType lda )
 {
-    LAMA_REGION( "OpenMP.LAPACK.getinv<float>" )
+    LAMA_REGION( "LAPACK.LAPACK.getinv<float>" )
 
     int info = 0;
 
@@ -312,9 +323,9 @@ void OpenMPLAPACK::getinv( const IndexType n, float* a, const IndexType lda )
 /* ------------------------------------------------------------------------- */
 
 template<>
-void OpenMPLAPACK::getinv( const IndexType n, double* a, const IndexType lda )
+void LAPACK_LAPACK::getinv( const IndexType n, double* a, const IndexType lda )
 {
-    LAMA_REGION( "OpenMP.LAPACK.getinv<double>" )
+    LAMA_REGION( "LAPACK.LAPACK.getinv<double>" )
 
     int info = 0;
 
@@ -352,14 +363,14 @@ void OpenMPLAPACK::getinv( const IndexType n, double* a, const IndexType lda )
 /* ------------------------------------------------------------------------- */
 
 template<>
-int OpenMPLAPACK::getri(
-    const enum CBLAS_ORDER order,
+int LAPACK_LAPACK::getri(
+    const CBLAS_ORDER order,
     const int n,
     float* const a,
     const int lda,
     int* const ipiv )
 {
-    LAMA_REGION( "OpenMP.LAPACK.getri<float>" )
+    LAMA_REGION( "LAPACK.LAPACK.getri<float>" )
 
     LAMA_LOG_INFO( logger, "getri<float> for A of size " << n << " x " << n )
 
@@ -432,14 +443,14 @@ int OpenMPLAPACK::getri(
 /* ------------------------------------------------------------------------- */
 
 template<>
-int OpenMPLAPACK::getri(
-    const enum CBLAS_ORDER order,
+int LAPACK_LAPACK::getri(
+    const CBLAS_ORDER order,
     const int n,
     double* const a,
     const int lda,
     int* const ipiv )
 {
-    LAMA_REGION( "OpenMP.LAPACK.getri<double>" )
+    LAMA_REGION( "LAPACK.LAPACK.getri<double>" )
 
     LAMA_LOG_INFO( logger, "getri<double> for A of size " << n << " x " << n )
 
@@ -510,18 +521,18 @@ int OpenMPLAPACK::getri(
 /* --------------------------------------------------------------------------- */
 
 template<>
-int OpenMPLAPACK::tptrs(
-    const enum CBLAS_ORDER order,
-    const enum CBLAS_UPLO uplo,
-    const enum CBLAS_TRANSPOSE trans,
-    const enum CBLAS_DIAG diag,
+int LAPACK_LAPACK::tptrs(
+    const CBLAS_ORDER order,
+    const CBLAS_UPLO uplo,
+    const CBLAS_TRANSPOSE trans,
+    const CBLAS_DIAG diag,
     const int n,
     const int nrhs,
     const float* AP,
     float* B,
     const int ldb )
 {
-    LAMA_REGION( "OpenMP.LAPACK.tptrs<float>" )
+    LAMA_REGION( "LAPACK.LAPACK.tptrs<float>" )
 
     int info = 0;
 
@@ -570,18 +581,18 @@ int OpenMPLAPACK::tptrs(
 /* --------------------------------------------------------------------------- */
 
 template<>
-int OpenMPLAPACK::tptrs(
-    const enum CBLAS_ORDER order,
-    const enum CBLAS_UPLO uplo,
-    const enum CBLAS_TRANSPOSE trans,
-    const enum CBLAS_DIAG diag,
+int LAPACK_LAPACK::tptrs(
+    const CBLAS_ORDER order,
+    const CBLAS_UPLO uplo,
+    const CBLAS_TRANSPOSE trans,
+    const CBLAS_DIAG diag,
     const int n,
     const int nrhs,
     const double* AP,
     double* B,
     const int ldb )
 {
-    LAMA_REGION( "OpenMP.LAPACK.tptrs<double>" )
+    LAMA_REGION( "LAPACK.LAPACK.tptrs<double>" )
 
     int info = 0;
 
@@ -630,8 +641,8 @@ int OpenMPLAPACK::tptrs(
 /* --------------------------------------------------------------------------- */
 
 template<>
-void OpenMPLAPACK::laswp(
-    const enum CBLAS_ORDER order,
+void LAPACK_LAPACK::laswp(
+    const CBLAS_ORDER order,
     const int N,
     float* A,
     const int LDA,
@@ -641,7 +652,7 @@ void OpenMPLAPACK::laswp(
     const int INCX,
     SyncToken* syncToken )
 {
-    LAMA_REGION( "OpenMP.LAPACK.laswp<float>" )
+    LAMA_REGION( "LAPACK.LAPACK.laswp<float>" )
 
     int i = K1;
 
@@ -654,7 +665,7 @@ void OpenMPLAPACK::laswp(
                 continue;
             }
 
-            OpenMPBLAS1::swap<float>( N, &A[ipiv[i * INCX] * LDA], INCX, &A[i * LDA], INCX, syncToken );
+            BLAS_BLAS1::swap<float>( N, &A[ipiv[i * INCX] * LDA], INCX, &A[i * LDA], INCX, syncToken );
         }
     }
     else if ( order == CblasColMajor )
@@ -684,8 +695,8 @@ void OpenMPLAPACK::laswp(
 /* --------------------------------------------------------------------------- */
 
 template<>
-void OpenMPLAPACK::laswp(
-    const enum CBLAS_ORDER order,
+void LAPACK_LAPACK::laswp(
+    const CBLAS_ORDER order,
     const int N,
     double* A,
     const int LDA,
@@ -695,7 +706,7 @@ void OpenMPLAPACK::laswp(
     const int INCX,
     SyncToken* syncToken )
 {
-    LAMA_REGION( "OpenMP.LAPACK.laswp<double>" )
+    LAMA_REGION( "LAPACK.LAPACK.laswp<double>" )
 
     int i = K1;
 
@@ -708,7 +719,7 @@ void OpenMPLAPACK::laswp(
                 continue;
             }
 
-            OpenMPBLAS1::swap<double>( N, &A[ipiv[i * INCX] * LDA], INCX, &A[i * LDA], INCX, syncToken );
+            BLAS_BLAS1::swap<double>( N, &A[ipiv[i * INCX] * LDA], INCX, &A[i * LDA], INCX, syncToken );
         }
     }
     else if ( order == CblasColMajor )
@@ -736,7 +747,7 @@ void OpenMPLAPACK::laswp(
 /*     Template instantiations via registration routine                        */
 /* --------------------------------------------------------------------------- */
 
-void OpenMPLAPACK::setInterface( BLASInterface& BLAS )
+void LAPACK_LAPACK::setInterface( BLASInterface& BLAS )
 {
     // Note: macro takes advantage of same name for routines and type definitions 
     //       ( e.g. routine CUDABLAS1::sum<T> is set for BLAS::BLAS1::sum variable
@@ -763,7 +774,7 @@ void OpenMPLAPACK::setInterface( BLASInterface& BLAS )
 /*    Static registration of the LAPACK routines                               */
 /* --------------------------------------------------------------------------- */
 
-bool OpenMPLAPACK::registerInterface()
+bool LAPACK_LAPACK::registerInterface()
 {
     LAMAInterface& interface = LAMAInterfaceRegistry::getRegistry().modifyInterface( Context::Host );
     setInterface( interface.BLAS );
@@ -774,6 +785,6 @@ bool OpenMPLAPACK::registerInterface()
 /*    Static initialiazion at program start                                    */
 /* --------------------------------------------------------------------------- */
 
-bool OpenMPLAPACK::initialized = registerInterface();
+bool LAPACK_LAPACK::initialized = registerInterface();
 
 } /* namespace lama */

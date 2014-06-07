@@ -40,6 +40,7 @@
 #include <lama/ContextFactory.hpp>
 
 #include <boost/assign/list_of.hpp>
+#include <boost/preprocessor.hpp>
 
 #ifndef LAMA_TESTMACROS_HPP_
 #define LAMA_TESTMACROS_HPP_
@@ -348,6 +349,24 @@ inline lama::ContextType mapEnvContexttoContextType( std::string contextname )
         lama::classname::name<double>( logger );                                                                       \
     }
 
+// we need the double trick, otherwise we just see ARITHMETIC_TYPE##I in output
+
+#define STR1( x ) #x
+#define STR( x ) STR1( x ) 
+
+#define LAMA_RUN_TEST(z, I, method )                                                             \
+try                                                                                              \
+{                                                                                                \
+   method<ARITHMETIC_TYPE##I>( context );                                                        \
+}                                                                                                \
+catch( Exception )                                                                               \
+{                                                                                                \
+    LAMA_LOG_WARN( logger, #method << "<" << STR( ARITHMETIC_TYPE##I ) << "> cannot run on "     \
+                   << context->getType() << ", corresponding function not implemented yet." );   \
+    return;                                                                                      \
+}                                                                                                \
+
+
 /*
  * @brief HelperMacro LAMA_AUTO_TEST_CASE_CT( name, classname )
  *
@@ -357,40 +376,34 @@ inline lama::ContextType mapEnvContexttoContextType( std::string contextname )
  * @param name          name of test method, which will invoke.
  * @param classname     name of the given test class.
  */
-#define LAMA_AUTO_TEST_CASE_CT( name, classname )                                                                      \
-    BOOST_AUTO_TEST_CASE( name )                                                                                       \
-    {                                                                                                                  \
-        CONTEXTLOOP()                                                                                                  \
-        {                                                                                                              \
-            GETCONTEXT( context )                                                                                      \
-            if ( loglevel_argument == "test_suite" )                                                                   \
-            {                                                                                                          \
-                LAMA_LOG_INFO( logger, "    Entering context: " << context->getType() );                               \
-            }                                                                                                          \
-            const std::string lama_name = #name;                                                                       \
-            const std::string lama_classname = #classname;                                                             \
-            try                                                                                                        \
-            {                                                                                                          \
-               lama::classname::name<float>( context );                                                                \
-            }                                                                                                          \
-            catch( Exception )                                                                                         \
-            {                                                                                                          \
-                LAMA_LOG_WARN( logger, lama_classname << "::" << lama_name << "<float> cannot run on "                 \
-                               << context->getType() << ", corresponding function not implemented yet." );             \
-                return;                                                                                                \
-            }                                                                                                          \
-            try                                                                                                        \
-            {                                                                                                          \
-                lama::classname::name<double>( context );                                                              \
-            }                                                                                                          \
-            catch( Exception )                                                                                         \
-            {                                                                                                          \
-                LAMA_LOG_WARN( logger, lama_classname << "::" << lama_name << "<double> cannot run on "                \
-                               << context->getType() << ", corresponding function not implemented yet." );             \
-                return;                                                                                                \
-            }                                                                                                          \
-        }                                                                                                              \
+#define LAMA_AUTO_TEST_CASE_CT( name, classname )                                             \
+                                                                                              \
+    BOOST_AUTO_TEST_CASE( name )                                                              \
+    {                                                                                         \
+        CONTEXTLOOP()                                                                         \
+        {                                                                                     \
+            GETCONTEXT( context )                                                             \
+            if ( loglevel_argument == "test_suite" )                                          \
+            {                                                                                 \
+                LAMA_LOG_INFO( logger, "    Entering context: " << context->getType() );      \
+            }                                                                                 \
+            const std::string lama_name = #name;                                              \
+            const std::string lama_classname = #classname;                                    \
+            BOOST_PP_REPEAT( ARITHMETIC_TYPE_CNT, LAMA_RUN_TEST, lama::classname::name )      \
+        }                                                                                     \
     }
+
+#define LAMA_RUN_TESTL(z, I, method )                                                            \
+try                                                                                              \
+{                                                                                                \
+   method<ARITHMETIC_TYPE##I>( context, logger );                                                \
+}                                                                                                \
+catch( Exception )                                                                               \
+{                                                                                                \
+    LAMA_LOG_WARN( logger, #method << "<" << STR( ARITHMETIC_TYPE##I ) << "> cannot run on "     \
+                   << context->getType() << ", corresponding function not implemented yet." );   \
+    return;                                                                                      \
+}                                                                                                \
 
 /*
  * @brief HelperMacro LAMA_AUTO_TEST_CASE_CTL( name, classname )
@@ -411,30 +424,10 @@ inline lama::ContextType mapEnvContexttoContextType( std::string contextname )
             {                                                                                                          \
                 LAMA_LOG_INFO( logger, "    Entering context: " << context->getType() );                               \
             }                                                                                                          \
-            const std::string lama_name = #name;                                                                       \
-            const std::string lama_classname = #classname;                                                             \
-            try                                                                                                        \
-            {                                                                                                          \
-               lama::classname::name<float>( context, logger );                                                        \
-            }                                                                                                          \
-            catch( Exception )                                                                                         \
-            {                                                                                                          \
-                LAMA_LOG_WARN( logger, lama_classname << "::" << lama_name << "<float> cannot run on "                 \
-                               << context->getType() << ", corresponding function not implemented yet." );             \
-                return;                                                                                                \
-            }                                                                                                          \
-            try                                                                                                        \
-            {                                                                                                          \
-                lama::classname::name<double>( context, logger );                                                      \
-            }                                                                                                          \
-            catch( Exception )                                                                                         \
-            {                                                                                                          \
-                LAMA_LOG_WARN( logger, lama_classname << "::" << lama_name << "<double> cannot run on "                \
-                               << context->getType() << ", corresponding function not implemented yet." );             \
-                return;                                                                                                \
-            }                                                                                                          \
+            BOOST_PP_REPEAT( ARITHMETIC_TYPE_CNT, LAMA_RUN_TESTL, lama::classname::name )      \
         }                                                                                                              \
     }
+
 
 /*
  * @brief HelperMacro LAMA_AUTO_TEST_CASE_CTT( name, classname )

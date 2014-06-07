@@ -66,7 +66,7 @@ private:
 
     template<typename T>
     static void laswp(
-        const enum CBLAS_ORDER order,
+        const CBLAS_ORDER order,
         const IndexType n,
         T* A,
         const IndexType lda,

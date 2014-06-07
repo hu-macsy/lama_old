@@ -417,10 +417,10 @@ void nrm2Test( ContextPtr loc )
 
             // n > 0 and incX > 0
             euclideanNorm = nrm2( nValues / incX1, rAValues.get(), incX1, NULL );
-            BOOST_CHECK_CLOSE( euclideanNorm, ::sqrt(result1), 1e-4 );
+            LAMA_CHECK_CLOSE( euclideanNorm, ::sqrt(result1), 1e-4 );
 
             euclideanNorm = nrm2( nValues / incX2, rAValues.get(), incX2, NULL );
-            BOOST_CHECK_CLOSE( euclideanNorm, ::sqrt(result2), 1e-4 );
+            LAMA_CHECK_CLOSE( euclideanNorm, ::sqrt(result2), 1e-4 );
         }
     }
 } // nrm2Test
@@ -493,9 +493,9 @@ void scalTest( ContextPtr loc )
 
         {
             HostReadAccess<ValueType> rAValues( AValues );
-            BOOST_CHECK_CLOSE( 2.4, rAValues[0], 1e-5 );
-            BOOST_CHECK_CLOSE( 9.6, rAValues[3], 1e-5 );
-            BOOST_CHECK_CLOSE( 16.8, rAValues[6], 1e-5 );
+            LAMA_CHECK_CLOSE( 2.4, rAValues[0], 1e-5 );
+            LAMA_CHECK_CLOSE( 9.6, rAValues[3], 1e-5 );
+            LAMA_CHECK_CLOSE( 16.8, rAValues[6], 1e-5 );
         }
     }
 } // scalTest

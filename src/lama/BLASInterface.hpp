@@ -40,6 +40,7 @@
 
 // C++
 #include <cstring>
+#include <lama/cblas.hpp>
 
 namespace lama
 {
@@ -287,8 +288,8 @@ struct BLASInterface
          * @param[in] syncToken allows to start asynchronous execution
          *
          */
-        typedef void ( *gemv ) ( const enum CBLAS_ORDER order,
-                                 const enum CBLAS_TRANSPOSE trans,
+        typedef void ( *gemv ) ( const CBLAS_ORDER order,
+                                 const CBLAS_TRANSPOSE trans,
                                  const IndexType m,
                                  const IndexType n,
                                  const ValueType alpha,
@@ -361,9 +362,9 @@ struct BLASInterface
          * @param[in,out] syncToken is optional synchronization taken that might be used for asynchronous execution
          */
     
-        typedef void ( *gemm ) ( const enum CBLAS_ORDER order, 
-                                 const enum CBLAS_TRANSPOSE transA, 
-                                 const enum CBLAS_TRANSPOSE transB,
+        typedef void ( *gemm ) ( const CBLAS_ORDER order, 
+                                 const CBLAS_TRANSPOSE transA, 
+                                 const CBLAS_TRANSPOSE transB,
                                  const IndexType m, 
                                  const IndexType n, 
                                  const IndexType k, 
@@ -430,7 +431,7 @@ struct BLASInterface
          *                       system of linear equations.
          */
 
-        typedef IndexType (*getrf) (const enum CBLAS_ORDER order, const IndexType m, const IndexType n, ValueType* a,
+        typedef IndexType (*getrf) (const CBLAS_ORDER order, const IndexType m, const IndexType n, ValueType* a,
                             const IndexType lda, IndexType* ipivot);
 
         /** Method computes the inverse of a matrix by using the LAPACK routines getrf and getri
@@ -446,7 +447,7 @@ struct BLASInterface
         typedef void (*getinv) ( const IndexType n, ValueType* a, const IndexType lda );
     
         /**  */
-        typedef IndexType (*getri) ( const enum CBLAS_ORDER , const IndexType n, ValueType* a,
+        typedef IndexType (*getri) ( const CBLAS_ORDER , const IndexType n, ValueType* a,
                             const IndexType lda, IndexType* ipivot);
 
         /**
@@ -482,10 +483,10 @@ struct BLASInterface
          *                     of B.
          */
 
-        typedef IndexType (*tptrs) ( const enum CBLAS_ORDER order, 
-                                     const enum CBLAS_UPLO uplo, 
-                                     const enum CBLAS_TRANSPOSE trans,
-                                     const enum CBLAS_DIAG diag, 
+        typedef IndexType (*tptrs) ( const CBLAS_ORDER order, 
+                                     const CBLAS_UPLO uplo, 
+                                     const CBLAS_TRANSPOSE trans,
+                                     const CBLAS_DIAG diag, 
                                      const IndexType n, 
                                      const IndexType nrhs, 
                                      const ValueType* AP, 
@@ -523,7 +524,7 @@ struct BLASInterface
          * @param[out] syncToken TODO[doxy] Complete Description.
          */
 
-        typedef void ( *laswp ) ( const enum CBLAS_ORDER order, 
+        typedef void ( *laswp ) ( const CBLAS_ORDER order, 
                                   const IndexType n, 
                                   ValueType* A, 
                                   const IndexType lda, 

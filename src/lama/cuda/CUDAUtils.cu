@@ -581,7 +581,6 @@ void CUDAUtils::setInterface( UtilsInterface& Utils )
     LAMA_INTERFACE_REGISTER_TT( Utils, setScatter, int, int )
     LAMA_INTERFACE_REGISTER_TT( Utils, setGather, int, int )
 
-
 #define LAMA_UTILS2_REGISTER(z, J, TYPE )                                            \
     LAMA_INTERFACE_REGISTER_TT( Utils, setScale, TYPE, ARITHMETIC_TYPE##J )          \
     LAMA_INTERFACE_REGISTER_TT( Utils, set, TYPE, ARITHMETIC_TYPE##J )               \

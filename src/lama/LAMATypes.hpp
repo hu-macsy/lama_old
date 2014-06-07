@@ -95,65 +95,35 @@ typedef int PartitionId;
  */
 static const PartitionId nPartition = std::numeric_limits<PartitionId>::max();
 
-/** Enumeration type for storage order of two-dimensional arrays, taken
- *  over from cblas.
- */
-
-enum CBLAS_ORDER
-{
-    CblasRowMajor = 101, CblasColMajor = 102
-};
-
-/** Enumeration type for transpose use of two-dimensional arrays, taken
- *  over from cblas.
- */
-
-enum CBLAS_TRANSPOSE
-{
-    CblasNoTrans = 111, CblasTrans = 112, CblasConjTrans = 113
-};
-
-/** Enumeration type for partial use of two-dimensional arrays, taken
- *  over from cblas.
- */
-enum CBLAS_UPLO
-{
-    CblasUpper = 121, CblasLower = 122
-};
-
-enum CBLAS_DIAG
-{
-    CblasNonUnit = 131, CblasUnit = 132
-};
-
-enum CBLAS_SIDE
-{
-    CblasLeft = 141, CblasRight = 142
-};
-
-}
+}  // namespace lama
 
 // Number of supported arithmetic types, maximal number is currently 4
 
-#define ARITHMETIC_TYPE_CNT 2
+#define ARITHMETIC_TYPE_CNT 4
 
 // List here all arithmetic types for which matrices, storages might be created
 
 #define ARITHMETIC_TYPE0        float
 #define ARITHMETIC_TYPE1        double
+#define ARITHMETIC_TYPE2        ComplexFloat
+#define ARITHMETIC_TYPE3        ComplexDouble
 
 // Define for the arithmetic types the counterparts of enum Scalar::Tyep
 // Sorry, we cannot use the routine getType<ARITHMETIC_TYPE##I> in case stmt
 
 #define SCALAR_ARITHMETIC_TYPE0 FLOAT
 #define SCALAR_ARITHMETIC_TYPE1 DOUBLE
+#define SCALAR_ARITHMETIC_TYPE2 COMPLEX
+#define SCALAR_ARITHMETIC_TYPE3 DOUBLE_COMPLEX
 
 // For convenience we define ARRAY_TYPE
 
-#define ARRAY_TYPE_CNT 3
+#define ARRAY_TYPE_CNT 5
 
 #define ARRAY_TYPE0    int
 #define ARRAY_TYPE1    float
 #define ARRAY_TYPE2    double
+#define ARRAY_TYPE3    ComplexFloat
+#define ARRAY_TYPE4    ComplexDouble
 
 #endif // LAMA_LAMATYPES_HPP_

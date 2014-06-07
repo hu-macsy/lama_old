@@ -79,8 +79,23 @@ endif ( ${LAPACKeFound} )
 # Do this due to long double
 
 message ( STATUS "Using internal Blas" )
-add_subdirectory ( blas )
     
+set ( CLASSES
+        ${CLASSES}
+        OpenMPBLAS1
+        OpenMPBLAS2
+        OpenMPBLAS3
+        OpenMPLAPACK
+    )
+
+set ( CLASSES
+        ${CLASSES}
+        BLAS_BLAS1
+        BLAS_BLAS2
+        BLAS_BLAS3
+        LAPACK_LAPACK
+    )
+
 lama_classes ( ${CLASSES} )
 lama_headers ( ${HEADERS} )
 

@@ -43,7 +43,7 @@ namespace lama
 
 template<>
 void CUDALAPACK::laswp(
-    const enum CBLAS_ORDER order,
+    const CBLAS_ORDER order,
     const IndexType n,
     float* A_d,
     const IndexType lda,
@@ -92,7 +92,7 @@ void CUDALAPACK::laswp(
 
 template<>
 void CUDALAPACK::laswp(
-    const enum CBLAS_ORDER order,
+    const CBLAS_ORDER order,
     const IndexType n,
     double* A_d,
     const IndexType lda,
