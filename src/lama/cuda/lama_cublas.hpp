@@ -41,29 +41,59 @@ namespace lama
 /*    cublasCast                                                                          */
 /* ---------------------------------------------------------------------------------------*/
 
-/** cublasCast converts pointers to LAMA complex numbers to 
+/*  cublasCast converts pointers to LAMA complex numbers to 
  *  cuBlas pointers for complex numbers. This is safe as both
  *  are internally represented in the same way.
+ *
+ *  Note: these routines are always called on the __host__ and never on __device__
  */
 
+/**
+ * @brief convert pointer to ComplexFloat to pointer cuFloatComplex
+ */
 static inline cuFloatComplex* cublasCast( ComplexFloat* x )
 {
     return reinterpret_cast<cuFloatComplex*>( x );
 }
 
+/**
+ * @brief convert pointer to ComplexDouble to pointer cuDoubleComplex
+ */
 static inline cuDoubleComplex* cublasCast( ComplexDouble* x )
 {
     return reinterpret_cast<cuDoubleComplex*>( x );
 }
 
+/**
+ * @brief convert const pointer to ComplexFloat to const pointer cuFloatComplex
+ */
 static inline const cuFloatComplex* cublasCast( const ComplexFloat* x )
 {
     return reinterpret_cast<const cuFloatComplex*>( x );
 }
 
+/**
+ * @brief convert const pointer to ComplexDouble to const pointer cuDoubleComplex
+ */
 static inline const cuDoubleComplex* cublasCast( const ComplexDouble* x )
 {
     return reinterpret_cast<const cuDoubleComplex*>( x );
+}
+
+/**
+ * @brief convert value ComplexFloat to value cuFloatComplex
+ */
+static inline cuFloatComplex cublasCast( ComplexFloat x )
+{
+    return *cublasCast( &x );
+}
+
+/**
+ * @brief convert value ComplexDouble to value cuDoubleComplex
+ */
+static inline cuDoubleComplex cublasCast( ComplexDouble x )
+{
+    return *cublasCast( &x );
 }
 
 } /* namespace lama */

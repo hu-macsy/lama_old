@@ -80,13 +80,15 @@ void wrapperScale( IndexType n, double alpha, double* x_d, IndexType incX )
 template<>
 void wrapperScale( IndexType n, ComplexFloat alpha, ComplexFloat* x_d, IndexType incX )
 {
-    cublasCscal( n, *cublasCast( &alpha ), cublasCast( x_d ), incX );
+    // use of cublasCast to convert ComplexFloat to cuFloatComplex via reinterpret_cast
+    cublasCscal( n, cublasCast( alpha ), cublasCast( x_d ), incX );
 }
 
 template<>
 void wrapperScale( IndexType n, ComplexDouble alpha, ComplexDouble* x_d, IndexType incX )
 {
-    cublasZscal( n, *cublasCast( &alpha ), cublasCast( x_d ), incX );
+    // use of cublasCast to convert ComplexDouble to cuDoubleComplex via reinterpret_cast
+    cublasZscal( n, cublasCast( alpha ), cublasCast( x_d ), incX );
 }
 
 template<typename T>
@@ -537,7 +539,7 @@ void wrapperAxpy( IndexType n, ComplexFloat alpha,
                   const ComplexFloat* x_d, IndexType incX,
                   ComplexFloat* y_d, IndexType incY )
 {
-    cublasCaxpy( n, *cublasCast( &alpha ), cublasCast( x_d ), incX, cublasCast( y_d ), incY );
+    cublasCaxpy( n, cublasCast( alpha ), cublasCast( x_d ), incX, cublasCast( y_d ), incY );
 }
 
 template<>
@@ -545,7 +547,7 @@ void wrapperAxpy( IndexType n, ComplexDouble alpha,
                   const ComplexDouble* x_d, IndexType incX,
                   ComplexDouble* y_d, IndexType incY )
 {
-    cublasZaxpy( n, *cublasCast( &alpha ), cublasCast( x_d ), incX, cublasCast( y_d ), incY );
+    cublasZaxpy( n, cublasCast( alpha ), cublasCast( x_d ), incX, cublasCast( y_d ), incY );
 }
 
 template<typename T>

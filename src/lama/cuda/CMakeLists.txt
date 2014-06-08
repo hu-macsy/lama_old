@@ -56,7 +56,6 @@ lama_classes ( ${CLASSES} )
 ### Add CUDA Sources ###
 set ( CUDA_SOURCES
         blas1.cu
-        emptyKernel.cu
         CUDAUtils.cu
         CUDACSRUtils.cu
         CUDAELLUtils.cu

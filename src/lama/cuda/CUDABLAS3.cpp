@@ -81,8 +81,8 @@ void wrapperGemm( char transA_char, char transB_char, IndexType m, IndexType n, 
                   ComplexFloat alpha, const ComplexFloat* a, IndexType lda, 
                   const ComplexFloat* b, IndexType ldb, ComplexFloat beta, ComplexFloat* c, IndexType ldc )
 {
-    cublasCgemm( transA_char, transB_char, m, n, k, *cublasCast( &alpha ), cublasCast( a ), lda, 
-                 cublasCast( b ), ldb, *cublasCast( &beta ), cublasCast( c ), ldc );
+    cublasCgemm( transA_char, transB_char, m, n, k, cublasCast( alpha ), cublasCast( a ), lda, 
+                 cublasCast( b ), ldb, cublasCast( beta ), cublasCast( c ), ldc );
 }
 
 template<>
@@ -90,8 +90,8 @@ void wrapperGemm( char transA_char, char transB_char, IndexType m, IndexType n, 
                   ComplexDouble alpha, const ComplexDouble* a, IndexType lda, 
                   const ComplexDouble* b, IndexType ldb, ComplexDouble beta, ComplexDouble* c, IndexType ldc )
 {
-    cublasZgemm( transA_char, transB_char, m, n, k, *cublasCast( &alpha ), cublasCast( a ), lda, 
-                 cublasCast( b ), ldb, *cublasCast( &beta ), cublasCast( c ), ldc );
+    cublasZgemm( transA_char, transB_char, m, n, k, cublasCast( alpha ), cublasCast( a ), lda, 
+                 cublasCast( b ), ldb, cublasCast( beta ), cublasCast( c ), ldc );
 }
 
 template<typename T>
@@ -198,14 +198,14 @@ template<>
 void wrapperTrsm( char side, char uplo, char transA, IndexType diag, IndexType m, IndexType n, 
                   ComplexFloat alpha, const ComplexFloat* a, IndexType lda, ComplexFloat* b, IndexType ldb )
 {
-    cublasCtrsm( side, uplo, transA, diag, m, n, *cublasCast( &alpha ), cublasCast( a ), lda, cublasCast( b ), ldb );
+    cublasCtrsm( side, uplo, transA, diag, m, n, cublasCast( alpha ), cublasCast( a ), lda, cublasCast( b ), ldb );
 }
 
 template<>
 void wrapperTrsm( char side, char uplo, char transA, IndexType diag, IndexType m, IndexType n, 
                   ComplexDouble alpha, const ComplexDouble* a, IndexType lda, ComplexDouble* b, IndexType ldb )
 {
-    cublasZtrsm( side, uplo, transA, diag, m, n, *cublasCast( &alpha ), cublasCast( a ), lda, cublasCast( b ), ldb );
+    cublasZtrsm( side, uplo, transA, diag, m, n, cublasCast( alpha ), cublasCast( a ), lda, cublasCast( b ), ldb );
 }
 
 template<typename T>

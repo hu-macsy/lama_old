@@ -25,7 +25,7 @@
  * SOFTWARE.
  * @endlicense
  *
- * @brief blas1.cu
+ * @brief Implementations of BLAS1 routines in CUDA itself, here sum
  * @author lschubert
  * @date 06.07.2012
  * @since 1.0.0
