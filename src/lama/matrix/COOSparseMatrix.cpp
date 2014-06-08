@@ -328,9 +328,18 @@ void COOSparseMatrix<ValueType>::swapLocalStorage( StorageType& localStorage )
 /* -------------------------------------------------------------------------- */
 
 template<typename ValueType>
-COOSparseMatrix<ValueType>* COOSparseMatrix<ValueType>::create() const
+COOSparseMatrix<ValueType>* COOSparseMatrix<ValueType>::createMatrix()
 {
     COOSparseMatrix<ValueType>* newSparseMatrix = new COOSparseMatrix<ValueType>();
+    return newSparseMatrix;
+}
+
+/* -------------------------------------------------------------------------- */
+
+template<typename ValueType>
+COOSparseMatrix<ValueType>* COOSparseMatrix<ValueType>::create() const
+{
+    COOSparseMatrix* newSparseMatrix = createMatrix();
 
     // inherit the context, communication kind of this matrix for the new matrix
 
@@ -364,6 +373,27 @@ const char* COOSparseMatrix<ValueType>::getTypeName() const
     return typeName();
 }
 
+/* -------------------------------------------------------------------------- */
+
+/* -------------------------------------------------------------------------- */
+
+template<typename ValueType>
+bool COOSparseMatrix<ValueType>::registerCreator()
+{
+    MatrixStorageFormat storageFormat = Format::COO;
+
+    // conversion needed even if createMatrix has only covariant return type 
+
+    Matrix::CreateFn create = ( Matrix::CreateFn ) ( &COOSparseMatrix<ValueType>::createMatrix );
+
+    Matrix::addCreator( storageFormat, Scalar::getType<ValueType>(), create );
+
+    return true;
+}
+
+template<typename ValueType>
+bool COOSparseMatrix<ValueType>::initialized = registerCreator();
+
 /* ========================================================================= */
 /*       Template specializations and nstantiations                          */
 /* ========================================================================= */
@@ -379,6 +409,7 @@ const char* COOSparseMatrix<ARITHMETIC_TYPE##I>::typeName()                \
 template class LAMA_DLL_IMPORTEXPORT COOSparseMatrix<ARITHMETIC_TYPE##I> ;  
 
 BOOST_PP_REPEAT( ARITHMETIC_TYPE_CNT, LAMA_COO_SPARSE_MATRIX_INSTANTIATE, _ )
+
 
 #undef LAMA_COO_SPARSE_MATRIX_INSTANTIATE
 

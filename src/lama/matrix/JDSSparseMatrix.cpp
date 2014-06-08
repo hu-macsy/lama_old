@@ -328,9 +328,18 @@ void JDSSparseMatrix<ValueType>::swapLocalStorage( StorageType& localStorage )
 /* -------------------------------------------------------------------------- */
 
 template<typename ValueType>
-JDSSparseMatrix<ValueType>* JDSSparseMatrix<ValueType>::create() const
+JDSSparseMatrix<ValueType>* JDSSparseMatrix<ValueType>::createMatrix()
 {
     JDSSparseMatrix<ValueType>* newSparseMatrix = new JDSSparseMatrix<ValueType>();
+    return newSparseMatrix;
+}
+
+/* -------------------------------------------------------------------------- */
+
+template<typename ValueType>
+JDSSparseMatrix<ValueType>* JDSSparseMatrix<ValueType>::create() const
+{
+    JDSSparseMatrix* newSparseMatrix = createMatrix();
 
     // inherit the context, communication kind of this matrix for the new matrix
 
@@ -364,6 +373,27 @@ const char* JDSSparseMatrix<ValueType>::getTypeName() const
     return typeName();
 }
 
+/* -------------------------------------------------------------------------- */
+
+/* -------------------------------------------------------------------------- */
+
+template<typename ValueType>
+bool JDSSparseMatrix<ValueType>::registerCreator()
+{
+    MatrixStorageFormat storageFormat = Format::JDS;
+
+    // conversion needed even if createMatrix has only covariant return type 
+
+    Matrix::CreateFn create = ( Matrix::CreateFn ) ( &JDSSparseMatrix<ValueType>::createMatrix );
+
+    Matrix::addCreator( storageFormat, Scalar::getType<ValueType>(), create );
+
+    return true;
+}
+
+template<typename ValueType>
+bool JDSSparseMatrix<ValueType>::initialized = registerCreator();
+
 /* ========================================================================= */
 /*       Template specializations and nstantiations                          */
 /* ========================================================================= */
@@ -379,6 +409,7 @@ const char* JDSSparseMatrix<ARITHMETIC_TYPE##I>::typeName()                \
 template class LAMA_DLL_IMPORTEXPORT JDSSparseMatrix<ARITHMETIC_TYPE##I> ;  
 
 BOOST_PP_REPEAT( ARITHMETIC_TYPE_CNT, LAMA_JDS_SPARSE_MATRIX_INSTANTIATE, _ )
+
 
 #undef LAMA_JDS_SPARSE_MATRIX_INSTANTIATE
 

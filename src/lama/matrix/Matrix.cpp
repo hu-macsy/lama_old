@@ -567,4 +567,62 @@ Matrix& Matrix::operator=( const Expression_SM_SM& exp )
     return *this;
 }
 
+/** The key for the matrix create routine is given by the pair of format and type. */
+
+typedef std::pair<MatrixStorageFormat, Scalar::ScalarType> CreatorKey;
+
+/** Map container to get for the key the create function. */
+
+typedef std::map< CreatorKey, Matrix::CreateFn > CreatorMap;
+
+/** Factory itself is given by a map container. */
+
+/**  
+ *  Getter method for the singleton factory.
+ *
+ *  Getter method instead of a variable guarantees that order of 
+ *  static intialization does not matter.
+ */
+static CreatorMap& getFactory()
+{
+    static std::auto_ptr< CreatorMap> factory;
+
+    if ( !factory.get() )
+    {
+        factory = std::auto_ptr<CreatorMap>( new CreatorMap() );
+    }
+
+    return *factory;
+}
+
+void Matrix::addCreator( const MatrixStorageFormat format, Scalar::ScalarType type, Matrix* ( *create ) () )
+{
+    CreatorMap& factory = getFactory();
+
+    // checks for multiple entries is not really necessary here, so just add entry in map container.
+
+    factory[ CreatorKey( format, type ) ] = create;
+}
+
+Matrix* Matrix::getMatrix( const MatrixStorageFormat format, Scalar::ScalarType type )
+{
+    Matrix* newMatrix = NULL;
+
+    CreatorMap& factory = getFactory();
+
+    CreatorMap::const_iterator fn = factory.find( CreatorKey( format, type ) );
+
+    if ( fn != factory.end() )
+    {
+        newMatrix = fn->second();
+    }
+    else
+    {
+        LAMA_LOG_WARN( logger, "getMatrix: no " << format << " matrix of type " << type << " not supported" )
+        return NULL;
+    }
+
+    return newMatrix;
+}
+
 }

@@ -122,7 +122,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( RandomTest, MatrixType, MatrixTypes )
     size_t memUsage = matrix.getMemoryUsage();
     size_t denseUsage = numRows * numColumns * sizeof( ValueType );
 
-    if ( matrix.getMatrixKind() == Matrix::SPARSE && matrix.getLocalStorage().getFormat() != DIA )
+    if ( matrix.getMatrixKind() == Matrix::SPARSE && matrix.getLocalStorage().getFormat() != Format::DIA )
     {
         BOOST_CHECK( memUsage * 2 < denseUsage );
     }

@@ -58,6 +58,8 @@
 // boost
 #include <boost/bind.hpp>
 #include <boost/preprocessor.hpp>
+#include <boost/assign/list_of.hpp>
+#include <boost/unordered_map.hpp>
 
 namespace lama
 {
@@ -218,51 +220,36 @@ IndexType _MatrixStorage::getNumValues() const
 
 /* ---------------------------------------------------------------------------------- */
 
+static const boost::unordered_map<MatrixStorageFormat,const char*> formatToString = boost::assign::map_list_of
+    ( Format::CSR, "CSR" )
+    ( Format::ELL, "ELL" )
+    ( Format::DIA, "DIA" )
+    ( Format::JDS, "JDS" )
+    ( Format::COO, "COO" )
+    ( Format::DENSE, "DENSE" )
+    ( Format::ASSEMBLY, "ASSEMBLY" )
+    ( Format::UNDEFINED, "UNDEFINED" );
+
+const char* format2Str( const MatrixStorageFormat storageFormat )
+{
+    return formatToString.at( storageFormat );
+}
+
+MatrixStorageFormat str2Format( const char* str )
+{
+    for ( int format = Format::CSR; format < Format::UNDEFINED; ++format )
+    {
+        if ( strcmp( formatToString.at( MatrixStorageFormat( format ) ), str ) == 0 )
+        {
+            return MatrixStorageFormat( format );
+        }
+    }
+    return Format::UNDEFINED;
+}
+
 std::ostream& operator<<( std::ostream& stream, const MatrixStorageFormat storageFormat )
 {
-    switch ( storageFormat )
-    {
-    case CSR:
-    {
-        stream << "CSR";
-        break;
-    }
-    case ELL:
-    {
-        stream << "ELL";
-        break;
-    }
-    case DIA:
-    {
-        stream << "DIA";
-        break;
-    }
-    case JDS:
-    {
-        stream << "JDS";
-        break;
-    }
-    case COO:
-    {
-        stream << "COO";
-        break;
-    }
-    case DENSE:
-    {
-        stream << "DENSE";
-        break;
-    }
-    case ASSEMBLY:
-    {
-        stream << "ASSEMBLY";
-        break;
-    }
-    default:
-    {
-        stream << "Unknown matrix storage format";
-        break;
-    }
-    }
+    stream << format2Str( storageFormat );
     return stream;
 }
 
@@ -463,7 +450,7 @@ void MatrixStorage<ValueType>::assign( const _MatrixStorage& other )
 
     LAMA_LOG_INFO( logger, *this << ": assign ( " << other << " )" )
 
-    if ( other.getFormat() == CSR )
+    if ( other.getFormat() == Format::CSR )
     {
         // CSR storage has more efficient solution: just set CSR data
 
@@ -819,7 +806,7 @@ void MatrixStorage<ValueType>::splitHalo(
 
     LAMA_ASSERT_EQUAL( mNumColumns, colDist.getGlobalSize() )
 
-    if ( getFormat() != CSR )
+    if ( getFormat() != Format::CSR )
     {
         LAMA_UNSUPPORTED("splitHalo is not supported for " << getFormat() << ", converting to CSR!");
     }
@@ -1258,7 +1245,7 @@ template<typename ValueType>
 void MatrixStorage<ValueType>::redistribute( const _MatrixStorage& other, const Redistributor& redistributor )
 
 {
-    if ( other.getFormat() == CSR && other.getValueType() == getValueType() )
+    if ( other.getFormat() == Format::CSR && other.getValueType() == getValueType() )
     {
         // This special case avoids unnecssary CSR conversions
 

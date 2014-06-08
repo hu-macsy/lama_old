@@ -89,6 +89,21 @@ public:
         SPARSE //!< vector kind for a sparse vector, not supported yet
     } VectorKind;
 
+    /**
+     * @brief Vector factory to get a matrix of a certain kind and a certain type
+     *
+     * @param[in] kind is either DENSE or SPARSE
+     * @param[in] type specifies the value type as the elements, e.g. FLOAT, DOUBLE
+     *
+     * This factory operation allows to create a vector at runtime of any format or any type.
+     * Internally, all vector classes must register their create operation.
+     */
+    static Vector* getVector( const VectorKind kind, const Scalar::ScalarType valueType );
+
+    /** @brief Create a dense vector of a certain value type and a given distribution.  
+     *
+     *  This method keeps compatibility with an older method that did know which vectors were supported.
+     */
     static Vector* createVector( const Scalar::ScalarType valueType, DistributionPtr distribution );
 
     /**
@@ -455,6 +470,10 @@ public:
      */
     virtual void redistribute( DistributionPtr distribution ) = 0;
 
+    /** Type definition of a argumentless function to create a vector. */
+
+    typedef Vector* ( *CreateFn ) ();
+
 protected:
 
     /**
@@ -488,6 +507,10 @@ protected:
      *  @brief TODO[doxy] Complete Description.
      */
     virtual void resizeImpl() = 0;
+
+    /** This method should be called by vector classes to register their create operation. */
+
+    static void addCreator( const VectorKind kind, Scalar::ScalarType type, CreateFn create );
 
     ContextPtr mContext; //!< decides about location of vector operations
 

@@ -242,6 +242,12 @@ private:
     boost::shared_ptr<MatrixStorage<ValueType> > createStorage( const IndexType numRows, const IndexType numColumns );
 
     LAMA_LOG_DECL_STATIC_LOGGER( logger )
+
+    static XXXSparseMatrix<ValueType>* createMatrix();
+
+    static bool registerCreator();   //!< used in static initialization for registration
+
+    static bool initialized;  //!< static initialization used for registration of create in matrix factory
 };
 
 template<typename ValueType>

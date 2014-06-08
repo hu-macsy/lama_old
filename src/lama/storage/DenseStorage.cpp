@@ -259,7 +259,7 @@ Scalar::ScalarType DenseStorageView<ValueType>::getValueType() const
 template<typename ValueType>
 MatrixStorageFormat DenseStorageView<ValueType>::getFormat() const
 {
-    return DENSE;
+    return Format::DENSE;
 }
 
 /* --------------------------------------------------------------------------- */
@@ -397,7 +397,7 @@ void DenseStorageView<ValueType>::invert( const MatrixStorage<ValueType>& other 
 {
     LAMA_LOG_INFO( logger, "invert( " << other << ") to a dense storage" )
 
-    if ( other.getFormat() == DENSE )
+    if ( other.getFormat() == Format::DENSE )
     {
         const DenseStorageView<ValueType>* otherDense = dynamic_cast<const DenseStorageView<ValueType>*>( &other );
 
@@ -716,7 +716,7 @@ void DenseStorageView<ValueType>::matrixTimesMatrix(
     shared_ptr<DenseStorage<ValueType> > tmpB;
     shared_ptr<DenseStorage<ValueType> > tmpC;
 
-    if ( a.getFormat() == DENSE )
+    if ( a.getFormat() == Format::DENSE )
     {
         denseA = dynamic_cast<const DenseStorageView<ValueType>*>( &a );
         LAMA_ASSERT_DEBUG( denseA, "could not cast to DenseStorage " << a )
@@ -728,7 +728,7 @@ void DenseStorageView<ValueType>::matrixTimesMatrix(
         denseA = tmpA.get();
     }
 
-    if ( b.getFormat() == DENSE )
+    if ( b.getFormat() == Format::DENSE )
     {
         denseB = dynamic_cast<const DenseStorageView<ValueType>*>( &b );
         LAMA_ASSERT_DEBUG( denseB, "could not cast to DenseStorage " << b )
@@ -740,7 +740,7 @@ void DenseStorageView<ValueType>::matrixTimesMatrix(
         denseB = tmpB.get();
     }
 
-    if ( c.getFormat() == DENSE )
+    if ( c.getFormat() == Format::DENSE )
     {
         denseC = dynamic_cast<const DenseStorageView<ValueType>*>( &c );
         LAMA_ASSERT_DEBUG( denseB, "could not cast to DenseStorage " << c )
@@ -916,7 +916,7 @@ ValueType DenseStorageView<ValueType>::maxDiffNorm( const MatrixStorage<ValueTyp
 
     const DenseStorageView<ValueType>* otherDense;
 
-    if ( other.getValueType() == getValueType() && ( other.getFormat() == DENSE ) )
+    if ( other.getValueType() == getValueType() && ( other.getFormat() == Format::DENSE ) )
     {
         otherDense = dynamic_cast<const DenseStorageView<ValueType>*>( &other );
         LAMA_ASSERT_ERROR( otherDense, other << ": could not cast to " << typeName() )
@@ -994,7 +994,7 @@ void DenseStorageView<ValueType>::assign( const _MatrixStorage& other )
         return;
     }
 
-    if ( other.getFormat() == DENSE )
+    if ( other.getFormat() == Format::DENSE )
     {
         // more efficient solution for assigment of dense storage
 

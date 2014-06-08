@@ -48,16 +48,13 @@
 #include <lama/distribution/Distribution.hpp>
 #include <lama/distribution/NoDistribution.hpp>
 #include <lama/expression/Expression.hpp>
+#include <lama/storage/MatrixStorage.hpp>
 
 // logging
 #include <logging/logging.hpp>
 
 namespace lama
 {
-
-// Forward declaration
-
-class _MatrixStorage;
 
 /** Pointer class for a matrix, always use of a shared pointer. */
 
@@ -83,6 +80,19 @@ public:
      * @brief Destructor, releases all allocated resources.
      */
     virtual ~Matrix();
+
+    /**
+     * @brief Matrix factory to get a matrix of a certain format and a certain type
+     *
+     * @param[in] format is the storage format, e.g. DENSE, CSR, etc
+     * @param[in] type specifies the value type as the elements, e.g. FLOAT, DOUBLE
+     *
+     * This factory operation allows to create a matrix at runtime of any format or any type.
+     * Internally, all matrix classes must register their create operation.
+     *
+     * Note: the format of the matrix decides whether the matrix will be DENSE or SPARSE.
+     */
+    static Matrix* getMatrix( const MatrixStorageFormat format, const Scalar::ScalarType type );
 
     /**
      * @brief Checks for a given matrix whether the content of its data is sound.
@@ -823,6 +833,10 @@ public:
      */
     virtual size_t getMemoryUsage() const = 0;
 
+    /** Type definition of a argumentless function to create a matrix. */
+
+    typedef Matrix* ( *CreateFn ) ();
+
 protected:
 
     /**
@@ -926,6 +940,10 @@ protected:
     IndexType mNumColumns;
 
 protected:
+
+    /** This method should be called by matrix classes to register their create operation. */
+
+    static void addCreator( const MatrixStorageFormat, Scalar::ScalarType type, CreateFn create );
 
     void checkSettings() const; // check valid member variables
 

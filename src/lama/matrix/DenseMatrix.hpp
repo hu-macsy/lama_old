@@ -667,6 +667,12 @@ private:
     void invertCyclic();
 
     void invertReplicated();
+
+    static DenseMatrix<ValueType>* createMatrix();
+
+    static bool registerCreator();   //!< used in static initialization for registration
+
+    static bool initialized;  //!< static initialization used for registration of create in matrix factory
 };
 
 /*  template methods implementations */

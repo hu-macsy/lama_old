@@ -194,8 +194,7 @@ void ELLStorage<ValueType>::print() const
 template<typename ValueType>
 MatrixStorageFormat ELLStorage<ValueType>::getFormat() const
 {
-    LAMA_LOG_INFO( logger, "getFormat" )
-    return ELL;
+    return Format::ELL;
 }
 
 /* --------------------------------------------------------------------------- */
@@ -1509,7 +1508,7 @@ void ELLStorage<ValueType>::jacobiIterateHalo(
 
     boost::shared_ptr<LAMAArray<ValueType> > tmpLocalDiagonal;
 
-    if ( localStorage.getFormat() == ELL )
+    if ( localStorage.getFormat() == Format::ELL )
     {
         const ELLStorage<ValueType>* ellLocal;
 
@@ -1634,7 +1633,7 @@ void ELLStorage<ValueType>::matrixTimesMatrix(
     //    boost::shared_ptr<CSRStorage<ValueType> > tmpB;
     boost::shared_ptr<ELLStorage<ValueType> > tmpC;
 
-    if ( a.getFormat() == ELL )
+    if ( a.getFormat() == Format::ELL )
     {
         ellA = dynamic_cast<const ELLStorage<ValueType>*>( &a );
         LAMA_ASSERT_DEBUG( ellA, "could not cast to ELLStorage " << a )
@@ -1643,7 +1642,7 @@ void ELLStorage<ValueType>::matrixTimesMatrix(
     {
         LAMA_LOG_ERROR( logger, a << ": a not ELL format" )
     }
-    if ( b.getFormat() == ELL )
+    if ( b.getFormat() == Format::ELL )
     {
         ellB = dynamic_cast<const ELLStorage<ValueType>*>( &b );
         LAMA_ASSERT_DEBUG( ellB, "could not cast to ELLStorage " << b )
@@ -1663,7 +1662,7 @@ void ELLStorage<ValueType>::matrixTimesMatrix(
 
     if ( beta != 0.0 )
     {
-        if ( ( c.getFormat() == ELL ) && ( &c != this ) )
+        if ( ( c.getFormat() == Format::ELL ) && ( &c != this ) )
         {
             ellC = dynamic_cast<const ELLStorage<ValueType>*>( &c );
             LAMA_ASSERT_DEBUG( ellC, "could not cast to ELLStorage " << c )

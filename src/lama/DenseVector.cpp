@@ -1537,6 +1537,33 @@ void DenseVector<T>::readVectorDataFromBinaryFile( std::fstream &inFile, const l
 
 /* ---------------------------------------------------------------------------------*/
 
+template<typename ValueType>
+DenseVector<ValueType>* DenseVector<ValueType>::createVector()
+{
+    return new DenseVector<ValueType>();
+}
+
+/* ---------------------------------------------------------------------------------*/
+
+template<typename ValueType>
+bool DenseVector<ValueType>::registerCreator()
+{
+    VectorKind kind = DENSE;
+
+    // conversion needed even if createVector has only covariant return type 
+
+    Vector::CreateFn create = ( Vector::CreateFn ) ( &DenseVector<ValueType>::createVector );
+
+    Vector::addCreator( kind, Scalar::getType<ValueType>(), create );
+
+    return true;
+}
+
+template<typename ValueType>
+bool DenseVector<ValueType>::initialized = registerCreator();
+
+/* ---------------------------------------------------------------------------------*/
+
 template<typename T>
 DenseVector<T>::DenseVector( const DenseVector<T>& other )
     : Vector( other )

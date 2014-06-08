@@ -271,7 +271,7 @@ LAMA_COMMON_TEST_CASE_TEMPLATE( MatrixStorageTest, StorageType, emptyTest )
 
     mMatrixStorage.allocate( 1, 1 );
 
-    if ( mMatrixStorage.getFormat() == DENSE )
+    if ( mMatrixStorage.getFormat() == Format::DENSE )
     {
         // only dense matrix keeps its diagonal property
 

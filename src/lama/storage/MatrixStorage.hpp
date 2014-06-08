@@ -55,20 +55,28 @@ template<typename ValueType> class CSRStorage;
  *
  *  Note: operator<< is implemented for this type and should be adapted in case of modifications.
  */
-
-typedef enum
+namespace Format
 {
-    CSR,      //!< Compressed Sparse Row
-    ELL,      //!< ELLPack
-    DIA,      //!< Diagonal
-    JDS,      //!< Jagged Diagonal Storage
-    COO,      //!< Coordinate list
-    DENSE,    //!< Dense, all elements are stored
-    ASSEMBLY, //!<  Matrix storage used for assembling of values
-    UNDEFINED //!<  Default value 
-} MatrixStorageFormat;
+    typedef enum
+    {
+        CSR,      //!< Compressed Sparse Row
+        ELL,      //!< ELLPack
+        DIA,      //!< Diagonal
+        JDS,      //!< Jagged Diagonal Storage
+        COO,      //!< Coordinate list
+        DENSE,    //!< Dense, all elements are stored
+        ASSEMBLY, //!<  Matrix storage used for assembling of values
+        UNDEFINED //!<  Default value 
+    } MatrixStorageFormat;
+};
+
+using Format::MatrixStorageFormat;  //!< useful abbreviation
 
 LAMA_DLL_IMPORTEXPORT std::ostream& operator<<( std::ostream& stream, const MatrixStorageFormat storageFormat );
+
+LAMA_DLL_IMPORTEXPORT const char* format2Str( const MatrixStorageFormat storageFormat );
+
+LAMA_DLL_IMPORTEXPORT MatrixStorageFormat str2Format( const char* str );
 
 /** The class _MatrixStorage is the base class for all matrix storage classes
  supported by LAMA.

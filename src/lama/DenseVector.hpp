@@ -454,6 +454,14 @@ private:
     LAMAArray<T> mLocalValues; //!< my local values of vector
 
     mutable LAMAArray<T> mHaloValues;//!< my halo values of vector
+
+    // static methods, variables to register create routine in Vector factory of base class.
+
+    static DenseVector<ValueType>* createVector();
+
+    static bool registerCreator();   //!< used in static initialization for registration
+
+    static bool initialized;  //!< static initialization used for registration of create in Vector factory
 };
 
 /* ------------------------------------------------------------------------- */

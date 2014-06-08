@@ -145,7 +145,7 @@ void CSRStorage<ValueType>::clear()
 template<typename ValueType>
 MatrixStorageFormat CSRStorage<ValueType>::getFormat() const
 {
-    return CSR;
+    return Format::CSR;
 }
 
 /* --------------------------------------------------------------------------- */
@@ -1767,7 +1767,7 @@ void CSRStorage<ValueType>::jacobiIterateHalo(
 
     const CSRStorage<ValueType>* csrLocal;
 
-    if ( localStorage.getFormat() == CSR )
+    if ( localStorage.getFormat() == Format::CSR )
     {
         csrLocal = dynamic_cast<const CSRStorage<ValueType>*>( &localStorage );
         LAMA_ASSERT_DEBUG( csrLocal, "could not cast to CSRStorage " << localStorage )
@@ -1889,7 +1889,7 @@ void CSRStorage<ValueType>::matrixPlusMatrix(
     boost::shared_ptr<CSRStorage<ValueType> > tmpA;
     boost::shared_ptr<CSRStorage<ValueType> > tmpB;
 
-    if ( a.getFormat() == CSR )
+    if ( a.getFormat() == Format::CSR )
     {
         csrA = dynamic_cast<const CSRStorage<ValueType>*>( &a );
         LAMA_ASSERT_DEBUG( csrA, "could not cast to CSRStorage " << a )
@@ -1901,7 +1901,7 @@ void CSRStorage<ValueType>::matrixPlusMatrix(
         csrA = tmpA.get();
     }
 
-    if ( b.getFormat() == CSR )
+    if ( b.getFormat() == Format::CSR )
     {
         csrB = dynamic_cast<const CSRStorage<ValueType>*>( &b );
         LAMA_ASSERT_DEBUG( csrB, "could not cast to CSRStorage " << b )
@@ -1947,7 +1947,7 @@ void CSRStorage<ValueType>::matrixTimesMatrix(
     boost::shared_ptr<CSRStorage<ValueType> > tmpB;
     boost::shared_ptr<CSRStorage<ValueType> > tmpC;
 
-    if ( a.getFormat() == CSR )
+    if ( a.getFormat() == Format::CSR )
     {
         csrA = dynamic_cast<const CSRStorage<ValueType>*>( &a );
         LAMA_ASSERT_DEBUG( csrA, "could not cast to CSRStorage " << a )
@@ -1959,7 +1959,7 @@ void CSRStorage<ValueType>::matrixTimesMatrix(
         csrA = tmpA.get();
     }
 
-    if ( b.getFormat() == CSR )
+    if ( b.getFormat() == Format::CSR )
     {
         csrB = dynamic_cast<const CSRStorage<ValueType>*>( &b );
         LAMA_ASSERT_DEBUG( csrB, "could not cast to CSRStorage " << b )
@@ -1975,7 +1975,7 @@ void CSRStorage<ValueType>::matrixTimesMatrix(
     {
         // c temporary needed if not correct format/type or aliased to this
 
-        if ( ( c.getFormat() == CSR ) && ( &c != this ) )
+        if ( ( c.getFormat() == Format::CSR ) && ( &c != this ) )
         {
             csrC = dynamic_cast<const CSRStorage<ValueType>*>( &c );
             LAMA_ASSERT_DEBUG( csrC, "could not cast to CSRStorage " << c )
@@ -2206,7 +2206,7 @@ ValueType CSRStorage<ValueType>::maxDiffNorm( const MatrixStorage<ValueType>& ot
 
     const CSRStorage<ValueType>* otherCSR;
 
-    if ( other.getValueType() == this->getValueType() && ( other.getFormat() == CSR ) )
+    if ( other.getValueType() == this->getValueType() && ( other.getFormat() == Format::CSR ) )
     {
         otherCSR = dynamic_cast<const CSRStorage<ValueType>*>( &other );
         LAMA_ASSERT_ERROR( otherCSR, other << ": could not cast to " << typeName() )

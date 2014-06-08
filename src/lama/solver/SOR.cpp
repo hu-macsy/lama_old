@@ -103,7 +103,7 @@ void SOR::initialize( const Matrix& coefficients )
 
     const _SparseMatrix* A = dynamic_cast<const _SparseMatrix*>( &coefficients );
 
-    if ( A && A->getLocalStorage().getFormat() == CSR && A->getHaloStorage().getFormat() == CSR )
+    if ( A && A->getLocalStorage().getFormat() == Format::CSR && A->getHaloStorage().getFormat() == Format::CSR )
     {
         // with ValueType == coefficients.getValueType() this will be okay :
         // const CSRStorage<ValueType> & csrA = dynamic_cast<const CSRStorage<ValueType>& >( A.getLocalStorage() );

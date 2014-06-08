@@ -47,6 +47,9 @@
 // boost
 #include <boost/preprocessor.hpp>
 
+// C++
+#include<map>
+
 using namespace boost;
 
 namespace lama
@@ -54,24 +57,69 @@ namespace lama
 
 LAMA_LOG_DEF_LOGGER( Vector::logger, "Vector" )
 
+/** The key for the matrix create routine is given by the pair of format and type. */
+
+typedef std::pair<Vector::VectorKind, Scalar::ScalarType> CreatorKey;
+
+/** Map container to get for the key the create function. */
+
+typedef std::map< CreatorKey, Vector::CreateFn > CreatorMap;
+
+/** Factory itself is given by a map container. */
+
+/**  
+ *  Getter method for the singleton factory.
+ *
+ *  Getter method instead of a variable guarantees that order of 
+ *  static intialization does not matter.
+ */
+static CreatorMap& getFactory()
+{
+    static std::auto_ptr< CreatorMap> factory;
+
+    if ( !factory.get() )
+    {
+        factory = std::auto_ptr<CreatorMap>( new CreatorMap() );
+    }
+
+    return *factory;
+}
+
+void Vector::addCreator( const VectorKind kind, Scalar::ScalarType type, Vector* ( *create ) () )
+{
+    CreatorMap& factory = getFactory();
+
+    // checks for multiple entries is not really necessary here, so just add entry in map container.
+
+    factory[ CreatorKey( kind, type ) ] = create;
+}
+
+Vector* Vector::getVector( const VectorKind kind, Scalar::ScalarType type )
+{
+    Vector* newVector = NULL;
+
+    CreatorMap& factory = getFactory();
+
+    CreatorMap::const_iterator fn = factory.find( CreatorKey( kind, type ) );
+
+    if ( fn != factory.end() )
+    {
+        newVector = fn->second();
+    }
+    else
+    {
+        LAMA_LOG_WARN( logger, "getVector: no " << kind << " vector of type " << type << " available" )
+        return NULL;
+    }
+
+    return newVector;
+}
+
 Vector* Vector::createVector( const Scalar::ScalarType valueType, DistributionPtr distribution )
 {
-    switch ( valueType )
-    {
-
-#define LAMA_CREATE_VECTOR( z, I, _ )                                 \
-    case Scalar::SCALAR_ARITHMETIC_TYPE##I:                           \
-        return new DenseVector<ARITHMETIC_TYPE##I>( distribution );   \
-
-    // generate case entry for each supported arithmetic type
-
-    BOOST_PP_REPEAT( ARITHMETIC_TYPE_CNT, LAMA_CREATE_VECTOR, _ )
-
-#undef LAMA_CREATE_VECTOR
-
-    default:
-        LAMA_THROWEXCEPTION( "createVector does not support " << valueType )
-    }
+    Vector* v = getVector( DENSE, valueType );
+    v->resize( distribution );
+    return v;
 }
 
 Vector::Vector( const IndexType size, ContextPtr context )

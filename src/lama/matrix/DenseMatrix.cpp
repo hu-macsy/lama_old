@@ -892,7 +892,7 @@ void DenseMatrix<ValueType>::assign( const _MatrixStorage& storage, Distribution
     {
         // only format conversion of the local storage, @todo avoid it if storage is DenseStorage<ValueType>
 
-        if ( storage.getFormat() == DENSE && storage.getValueType() == getValueType() )
+        if ( storage.getFormat() == Format::DENSE && storage.getValueType() == getValueType() )
         {
             const DenseStorage<ValueType>* localData = dynamic_cast<const DenseStorage<ValueType>*>( &storage );
             LAMA_ASSERT_ERROR( localData, "dynamic_cast<constDenseStorage<ValueType>*> failed: " << storage )
@@ -2129,6 +2129,33 @@ size_t DenseMatrix<ValueType>::getMemoryUsage() const
 
     return getDistribution().getCommunicator().sum( memoryUsage );
 }
+
+/* -------------------------------------------------------------------------- */
+
+template<typename ValueType>
+DenseMatrix<ValueType>* DenseMatrix<ValueType>::createMatrix()
+{
+    return new DenseMatrix<ValueType>();
+}
+
+/* -------------------------------------------------------------------------- */
+
+template<typename ValueType>
+bool DenseMatrix<ValueType>::registerCreator()
+{
+    MatrixStorageFormat storageFormat = Format::DENSE;
+
+    // conversion needed even if createMatrix has only covariant return type 
+
+    Matrix::CreateFn create = ( Matrix::CreateFn ) ( &DenseMatrix<ValueType>::createMatrix );
+
+    Matrix::addCreator( storageFormat, Scalar::getType<ValueType>(), create );
+
+    return true;
+}
+
+template<typename ValueType>
+bool DenseMatrix<ValueType>::initialized = registerCreator();
 
 /* ========================================================================= */
 
