@@ -1,5 +1,5 @@
 /**
- * @file emptyKernel.cu
+ * @file lama_cublas.hpp
  *
  * @license
  * Copyright (c) 2009-2013
@@ -25,28 +25,45 @@
  * SOFTWARE.
  * @endlicense
  *
- * @brief emptyKernel.cpp
- * @author Lauretta Schubert
- * @date 21.05.2013
- * @since 1.0.0
+ * @brief Help routines for interface from LAMA to cuBLAS
+ * @author Thomas Brandes
+ * @date 05.06.2014
+ * @since 1.1.0
  */
 
-#include <lama/Walltime.hpp>
+// hpp
+#include <cublas.h>
 
-__global__
-void empty_kernel()
+namespace lama
 {
+
+/* ---------------------------------------------------------------------------------------*/
+/*    cublasCast                                                                          */
+/* ---------------------------------------------------------------------------------------*/
+
+/** cublasCast converts pointers to LAMA complex numbers to 
+ *  cuBlas pointers for complex numbers. This is safe as both
+ *  are internally represented in the same way.
+ */
+
+static inline cuFloatComplex* cublasCast( ComplexFloat* x )
+{
+    return reinterpret_cast<cuFloatComplex*>( x );
 }
 
-extern "C" double getKernelLaunchTime( int devNo )
+static inline cuDoubleComplex* cublasCast( ComplexDouble* x )
 {
-    cudaSetDevice( devNo );
-
-    empty_kernel<<<1, 1>>>( );
-
-    double time = lama::Walltime::get();
-    cudaDeviceSynchronize();
-    empty_kernel<<<1, 1>>>();
-    cudaDeviceSynchronize();
-    return lama::Walltime::get() - time;
+    return reinterpret_cast<cuDoubleComplex*>( x );
 }
+
+static inline const cuFloatComplex* cublasCast( const ComplexFloat* x )
+{
+    return reinterpret_cast<const cuFloatComplex*>( x );
+}
+
+static inline const cuDoubleComplex* cublasCast( const ComplexDouble* x )
+{
+    return reinterpret_cast<const cuDoubleComplex*>( x );
+}
+
+} /* namespace lama */

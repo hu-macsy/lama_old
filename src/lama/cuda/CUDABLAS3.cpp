@@ -40,6 +40,7 @@
 #include <lama/cuda/CUDAError.hpp>
 #include <lama/cuda/CUDAStreamSyncToken.hpp>
 #include <lama/openmp/BLASHelper.hpp>
+#include <lama/cuda/lama_cublas.hpp>
 
 // macros
 #include <lama/macros/unused.hpp>
@@ -48,33 +49,6 @@ namespace lama
 {
 
 LAMA_LOG_DEF_LOGGER( CUDABLAS3::logger, "CUDA.BLAS3" )
-
-/* ---------------------------------------------------------------------------------------*/
-
-/** cublasCast converts pointers to LAMA complex numbers to 
- *  cuBlas pointers for complex numbers. This is safe as both
- *  are internally represented in the same way.
- */
-
-static inline cuFloatComplex* cublasCast( ComplexFloat* x )
-{
-    return reinterpret_cast<cuFloatComplex*>( x );
-}
-
-static inline cuDoubleComplex* cublasCast( ComplexDouble* x )
-{
-    return reinterpret_cast<cuDoubleComplex*>( x );
-}
-
-static inline const cuFloatComplex* cublasCast( const ComplexFloat* x )
-{
-    return reinterpret_cast<const cuFloatComplex*>( x );
-}
-
-static inline const cuDoubleComplex* cublasCast( const ComplexDouble* x )
-{
-    return reinterpret_cast<const cuDoubleComplex*>( x );
-}
 
 /* ---------------------------------------------------------------------------------------*/
 /*    gemm                                                                                */
