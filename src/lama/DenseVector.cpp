@@ -48,6 +48,7 @@
 #include <lama/matrix/Matrix.hpp>
 #include <lama/expression/Expression.hpp>
 #include <lama/io/FileIO.hpp>
+#include <lama/io/FileType.hpp>
 
 #include <lama/tracing.hpp>
 
@@ -152,6 +153,8 @@ void DenseVector<T>::readFromFile( const std::string& filename )
 
     comm->bcast( &numElements, 1, host );
 
+    File::DataType dataType = getDataType<ValueType>( dataTypeSize );
+
     // host gets all elements
 
     DistributionPtr dist( new CyclicDistribution( numElements, numElements, comm ) );
@@ -168,7 +171,7 @@ void DenseVector<T>::readFromFile( const std::string& filename )
             readVectorFromFormattedFile( vecFileName );
             break;
         case File::BINARY: //Binary without number of elements in the vector file
-            readVectorFromBinaryFile( vecFileName, dataTypeSize );
+            readVectorFromBinaryFile( vecFileName, dataType );
             break;
         case File::XDR: //XDR following the IEEE standard
             readVectorFromXDRFile( vecFileName, dataTypeSize );
@@ -1069,11 +1072,8 @@ void DenseVector<T>::writeToFile(
     const File::FileType fileType/*=XDR*/,
     const File::DataType dataType/*=DOUBLE*/) const
 {
-    long dataTypeSize;
     std::string file = fileBaseName.c_str();
     file += ".vec";
-
-    dataTypeSize = getDataTypeSize( dataType );
 
     switch ( fileType )
     {
@@ -1084,12 +1084,12 @@ void DenseVector<T>::writeToFile(
     }
     case File::BINARY:
     {
-        writeVectorToBinaryFile( file, dataTypeSize );
+        writeVectorToBinaryFile( file, dataType );
         break;
     }
     case File::XDR:
     {
-        writeVectorToXDRFile( file, dataTypeSize );
+        writeVectorToXDRFile( file, dataType );
         break;
     }
     case File::MATRIX_MARKET:
@@ -1100,6 +1100,8 @@ void DenseVector<T>::writeToFile(
     default:
         throw Exception( "Unknown file type definition." );
     } //switch(fileType)
+
+    long dataTypeSize = getDataTypeSize<T>( dataType );
 
     writeVectorHeader( fileBaseName + ".frv", fileType, dataTypeSize );
 }
@@ -1212,81 +1214,75 @@ void DenseVector<T>::writeVectorToMMFile( const std::string& filename, const Fil
 }
 
 template<typename T>
-long DenseVector<T>::getDataTypeSize( const File::DataType dataType ) const
-{
-    switch ( dataType )
-    {
-    case File::DOUBLE:
-        return TypeTraits<double>::size;
-    case File::FLOAT:
-        return TypeTraits<float>::size;
-    case File::INTERNAL:
-        if ( sizeof(ValueType) == TypeTraits<float>::size )
-        {
-            return TypeTraits<float>::size;
-        }
-        else if ( sizeof(ValueType) == TypeTraits<double>::size )
-        {
-            return TypeTraits<double>::size;
-        }
-        else
-        {
-            LAMA_THROWEXCEPTION( "Unknown vector value type size." )
-        }
-    default:
-        LAMA_THROWEXCEPTION( "Unknown vector data type for writing the XDR file." )
-    }
-}
-
-template<typename T>
-void DenseVector<T>::writeVectorToBinaryFile( const std::string& file, const long dataTypeSize ) const
+void DenseVector<T>::writeVectorToBinaryFile( const std::string& file, const File::DataType type ) const
 {
     std::fstream outFile( file.c_str(), std::ios::out | std::ios::binary );
 
-    writeVectorDataToBinaryFile( outFile, dataTypeSize );
+    writeVectorDataToBinaryFile( outFile, type );
 
     outFile.close();
 }
 
+template<typename FileType, typename DataType>
+static void writeDataToXDRFile( XDRFileStream& outFile, const DataType* data, const IndexType n )
+{
+    if ( typeid( FileType ) == typeid( DataType ) )
+    {
+        // no type conversion needed
+        outFile.write( data, n );
+        return;
+    }
+
+    FileType* buffer = new FileType[n];
+
+    for ( IndexType i = 0; i < n; i++ )
+    {
+        buffer[i] = data[i];
+    }
+    outFile.write( buffer, n );
+    delete[] buffer;
+}
+
 template<typename T>
-void DenseVector<T>::writeVectorToXDRFile( const std::string& file, const long dataTypeSize ) const
+void DenseVector<T>::writeVectorToXDRFile( const std::string& file, const File::DataType dataType ) const
 {
     XDRFileStream outFile( file.c_str(), std::ios::out );
 
     IndexType numRows = size();
 
     long nnu = static_cast<long>( numRows );
+
+    long dataTypeSize = getDataTypeSize<ValueType>( dataType );
+
     outFile.write( &nnu );
     outFile.write( &dataTypeSize );
 
     HostReadAccess<ValueType> dataRead( mLocalValues );
 
-    if ( dataTypeSize == sizeof(ValueType) )
+    switch ( dataType )
     {
-        outFile.write( dataRead.get(), numRows );
-    }
-    else if ( dataTypeSize == TypeTraits<double>::size )
-    {
-        double* buffer = new double[numRows];
-
-        for ( IndexType i = 0; i < numRows; i++ )
-        {
-            buffer[i] = dataRead[i];
-        }
-        outFile.write( buffer, numRows );
-        delete[] buffer;
-    }
-    else if ( dataTypeSize == TypeTraits<float>::size )
-    {
-        float* buffer = new float[numRows];
-
-        for ( IndexType i = 0; i < numRows; i++ )
-        {
-            buffer[i] = static_cast<float>( dataRead[i] );
-        }
-
-        outFile.write( buffer, numRows );
-        delete[] buffer;
+        case File::DOUBLE:
+            writeDataToXDRFile<double, ValueType>( outFile, dataRead.get(), numRows );
+            break;
+        case File::FLOAT:
+            writeDataToXDRFile<float, ValueType>( outFile, dataRead.get(), numRows );
+            break;
+        case File::LONG_DOUBLE:
+            writeDataToXDRFile<LongDouble, ValueType>( outFile, dataRead.get(), numRows );
+            break;
+        case File::COMPLEX:
+            writeDataToXDRFile<ComplexFloat, ValueType>( outFile, dataRead.get(), numRows );
+            break;
+        case File::DOUBLE_COMPLEX:
+            writeDataToXDRFile<ComplexDouble, ValueType>( outFile, dataRead.get(), numRows );
+            break;
+        case File::INTERNAL:
+            writeDataToXDRFile<ValueType, ValueType>( outFile, dataRead.get(), numRows );
+            break;
+        case File::PATTERN:
+            break;
+        default:
+            LAMA_THROWEXCEPTION( "unsupported file data type = " << dataType )
     }
 
     outFile.write( &nnu );
@@ -1321,27 +1317,34 @@ static void writeBinaryData( std::fstream& outFile, const DataType data[], const
 }
 
 template<typename T>
-void DenseVector<T>::writeVectorDataToBinaryFile( std::fstream& outFile, const long dataTypeSize ) const
+void DenseVector<T>::writeVectorDataToBinaryFile( std::fstream& outFile, const File::DataType type ) const
 {
     IndexType numRows = size();
 
     HostReadAccess<ValueType> dataRead( mLocalValues );
 
-    if ( dataTypeSize == sizeof(ValueType) )
+    switch( type )
     {
-        writeBinaryData<ValueType, ValueType>( outFile, dataRead.get(), numRows );
-    }
-    else if ( dataTypeSize == sizeof( double) )
-    {
-        writeBinaryData<double, ValueType>( outFile, dataRead.get(), numRows );
-    }
-    else if ( dataTypeSize == sizeof( float ) )
-    {
-        writeBinaryData<float, ValueType>( outFile, dataRead.get(), numRows );
-    }
-    else
-    {
-        LAMA_THROWEXCEPTION( "unsupported dataTypeSize = " << dataTypeSize )
+        case File::DOUBLE:
+            writeBinaryData<double, ValueType>( outFile, dataRead.get(), numRows );
+            break;
+        case File::FLOAT:
+            writeBinaryData<float, ValueType>( outFile, dataRead.get(), numRows );
+            break;
+        case File::LONG_DOUBLE:
+            writeBinaryData<LongDouble, ValueType>( outFile, dataRead.get(), numRows );
+            break;
+        case File::COMPLEX:
+            writeBinaryData<ComplexFloat, ValueType>( outFile, dataRead.get(), numRows );
+            break;
+        case File::DOUBLE_COMPLEX:
+            writeBinaryData<ComplexDouble, ValueType>( outFile, dataRead.get(), numRows );
+            break;
+        case File::INTERNAL:
+            writeBinaryData<ValueType, ValueType>( outFile, dataRead.get(), numRows );
+            break;
+        default:
+        LAMA_THROWEXCEPTION( "unsupported file data type = " << type )
     }
 }
 
@@ -1381,7 +1384,7 @@ void DenseVector<T>::readVectorFromFormattedFile( const std::string& fileName )
 }
 
 template<typename T>
-void DenseVector<T>::readVectorFromBinaryFile( const std::string& fileName, const long dataTypeSize )
+void DenseVector<T>::readVectorFromBinaryFile( const std::string& fileName, const File::DataType type )
 {
     std::fstream inFile( fileName.c_str(), std::ios::in | std::ios::binary );
 
@@ -1390,9 +1393,32 @@ void DenseVector<T>::readVectorFromBinaryFile( const std::string& fileName, cons
         LAMA_THROWEXCEPTION( "Could not open binary vector file " << fileName << "." )
     }
 
-    readVectorDataFromBinaryFile( inFile, dataTypeSize );
+    readVectorDataFromBinaryFile( inFile, type );
 
     inFile.close();
+}
+
+template<typename FileDataType,typename UserDataType>
+static void readXDRData( XDRFileStream& inFile, UserDataType data[], const IndexType n )
+{
+    if ( typeid( FileDataType ) == typeid( UserDataType ) )
+    {
+        // no type conversion needed
+
+        inFile.read( data, n );
+        return;
+    }
+
+    // allocate a temporary buffer for n values of FileDataType to read the data 
+
+    boost::scoped_array<FileDataType> buffer( new FileDataType[n] );
+
+    inFile.read( buffer.get(), n );
+
+    for ( IndexType i = 0; i < n; i++ )
+    {
+        data[i] = static_cast<UserDataType>( buffer[i] );
+    }
 }
 
 template<typename T>
@@ -1424,73 +1450,42 @@ void DenseVector<T>::readVectorFromXDRFile( const std::string& fileName, const l
         LAMA_THROWEXCEPTION( "Header file doesn't fit to vector data file. Unequal data type size." )
     }
 
-//    m_data = m_allocator.allocate( m_capacity )
+    // Attention: determination of file type by size is ambiguous, e.g. Complex and Double
+    //            have same size. If ambiguous, own ValueType is the preferred one
 
-    // read IEEE float
-    if ( dataTypeSize == TypeTraits<float>::size )
+    File::DataType fileType = getDataType<ValueType>( dataTypeSize ); 
+
+    HostWriteOnlyAccess<ValueType> writeData( mLocalValues, nnu );
+
+    switch ( fileType )
     {
-        if ( sizeof(ValueType) == TypeTraits<float>::size )
-        {   //read float
-
-            HostWriteAccess<ValueType> writeData( mLocalValues );
-
-            float *buffer = new float[nnu];
-            inFile.read( buffer, nnu );
-            for ( IndexType i = 0; i < nnu; i++ )
-            {
-                writeData[i] = buffer[i];
-            }
-            delete[] buffer;
-        }
-        else
-        {   //read float and cast to ValueType
-            HostWriteAccess<ValueType> writeData( mLocalValues );
-
-            float *buffer = new float[nnu];
-            inFile.read( buffer, nnu );
-            for ( IndexType i = 0; i < nnu; i++ )
-            {
-                writeData[i] = static_cast<ValueType>( buffer[i] );
-            }
-            delete[] buffer;
-        }
-    }
-    // read IEEE double
-
-    else if ( dataTypeSize == TypeTraits<double>::size )
-    {
-        if ( sizeof(ValueType) == TypeTraits<double>::size )
-        {   //read double
-            HostWriteAccess<ValueType> writeData( mLocalValues );
-            writeData.resize( size() );
-
-            double *buffer = new double[nnu];
-            inFile.read( buffer, nnu );
-            for ( IndexType i = 0; i < nnu; i++ )
-            {
-                writeData[i] = static_cast<ValueType>( buffer[i] );
-            }
-            delete[] buffer;
-        }
-        else
-        {   //read double and cast to ValueType
-            HostWriteAccess<ValueType> writeData( mLocalValues );
-
-            double *buffer = new double[nnu];
-            inFile.read( buffer, nnu );
-            for ( IndexType i = 0; i < nnu; i++ )
-            {
-                writeData[i] = static_cast<ValueType>( buffer[i] );
-            }
-            delete[] buffer;
-        }
-    }
-    else
-    {
-        LAMA_THROWEXCEPTION( "Invalid data type size of vector data." )
+        case File::INTERNAL:
+            readXDRData<ValueType, ValueType>( inFile, writeData.get(), nnu );
+            break;
+        case File::FLOAT:
+            readXDRData<float, ValueType>( inFile, writeData.get(), nnu );
+            break;
+        case File::DOUBLE:
+            readXDRData<double, ValueType>( inFile, writeData.get(), nnu );
+            break;
+        case File::COMPLEX:
+            readXDRData<ComplexFloat, ValueType>( inFile, writeData.get(), nnu );
+            break;
+        case File::DOUBLE_COMPLEX:
+            readXDRData<ComplexDouble, ValueType>( inFile, writeData.get(), nnu );
+            break;
+        case File::LONG_DOUBLE:
+            readXDRData<ComplexDouble, ValueType>( inFile, writeData.get(), nnu );
+            break;
+        case File::PATTERN:
+            // that might be okay
+            break;
+        default:
+            LAMA_THROWEXCEPTION( "Invalid data type size of vector data." )
     }
 
     // Validate Header
+
     nnuLong = 0;
     inFile.read( &nnuLong );
     if ( size() != static_cast<IndexType>( nnuLong ) )
@@ -1509,29 +1504,38 @@ void DenseVector<T>::readVectorFromXDRFile( const std::string& fileName, const l
 /* -------------------------------------------------------------------------- */
 
 template<typename T>
-void DenseVector<T>::readVectorDataFromBinaryFile( std::fstream &inFile, const long dataTypeSize )
+void DenseVector<T>::readVectorDataFromBinaryFile( std::fstream &inFile, const File::DataType type )
 {
-    LAMA_LOG_INFO( logger, "read vector from binary file, dataTypeSize = " << dataTypeSize )
-
     IndexType n = size();
+
+    LAMA_LOG_INFO( logger, "read DenseVector<" << Scalar::getType<T>() 
+                           << "> from binary file, size = " << n 
+                           << ", dataType = " << ( ( Scalar::ScalarType ) type ) )
 
     HostWriteOnlyAccess<ValueType> writeData( mLocalValues, n );
 
-    if ( dataTypeSize == sizeof(ValueType) )
+    switch( type )
     {
-        FileIO::readBinaryData<ValueType, ValueType>( inFile, writeData.get(), n );
-    }
-    else if ( dataTypeSize == TypeTraits<float>::size )
-    {
-        FileIO::readBinaryData<float, ValueType>( inFile, writeData.get(), n );
-    }
-    else if ( dataTypeSize == TypeTraits<double>::size )
-    {
-        FileIO::readBinaryData<double, ValueType>( inFile, writeData.get(), n );
-    }
-    else
-    {
-        LAMA_THROWEXCEPTION( "Invalid data type size of vector data: " << dataTypeSize )
+        case File::DOUBLE:
+            FileIO::readBinaryData<double, ValueType>( inFile, writeData.get(), n );
+            break;
+        case File::FLOAT:
+            FileIO::readBinaryData<float, ValueType>( inFile, writeData.get(), n );
+            break;
+        case File::LONG_DOUBLE:
+            FileIO::readBinaryData<LongDouble, ValueType>( inFile, writeData.get(), n );
+            break;
+        case File::COMPLEX:
+            FileIO::readBinaryData<ComplexFloat, ValueType>( inFile, writeData.get(), n );
+            break;
+        case File::DOUBLE_COMPLEX:
+            FileIO::readBinaryData<ComplexDouble, ValueType>( inFile, writeData.get(), n );
+            break;
+        case File::INTERNAL:
+            FileIO::readBinaryData<ValueType, ValueType>( inFile, writeData.get(), n );
+            break;
+        default:
+            LAMA_THROWEXCEPTION( "unsupported file data type = " << type )
     }
 }
 

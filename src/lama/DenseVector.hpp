@@ -397,8 +397,8 @@ public:
 
     void writeToFile(
         const std::string& fileBaseName,
-        const File::FileType fileType = File::XDR,
-        const File::DataType dataType = File::DOUBLE ) const;
+        const File::FileType fileType = File::BINARY,
+        const File::DataType dataType = File::INTERNAL ) const;
 
 protected:
 
@@ -410,21 +410,19 @@ protected:
 
 private:
 
-    long getDataTypeSize( const File::DataType dataType) const;
-
     void writeVectorToFormattedFile(const std::string& fileName) const;
 
     void writeVectorToBinaryFile(
         const std::string& fileName,
-        const long outputDataTypeSize ) const;
+        const File::DataType outputType ) const;
 
     void writeVectorToXDRFile(
         const std::string& fileName,
-        const long outputDataTypeSize ) const;
+        const File::DataType outputType ) const;
 
     void writeVectorDataToBinaryFile(
         std::fstream& outFile,
-        const long dataTypeSize ) const;
+        const File::DataType outputType ) const;
 
     void readVectorHeader( const std::string& filename, File::FileType& fileType, long& dataTypeSize );
 
@@ -441,7 +439,7 @@ private:
 
     void readVectorFromBinaryFile(
         const std::string& fileName,
-        const long dataTypeSize );
+        const File::DataType dataType );
 
     void readVectorFromXDRFile(
         const std::string& fileName,
@@ -449,7 +447,7 @@ private:
 
     void readVectorDataFromBinaryFile(
         std::fstream &inFile,
-        const long dataTypeSize );
+        const File::DataType dataType );
 
     LAMAArray<T> mLocalValues; //!< my local values of vector
 

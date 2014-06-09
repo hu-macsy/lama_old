@@ -100,7 +100,7 @@ public:
         std::string& baseFileName,
         const std::string& fileName );
 
-    static size_t getIndexDataTypeSize( const File::IndexDataType indexDataType );
+    /** Help routine that determines the availability of a given file by its name. */
 
     static bool fileExists( const std::string& fileName );
 
@@ -299,13 +299,6 @@ public:
         LAMAArray<IndexType>& csrJA,
         LAMAArray<ValueType>& csrValues,
         const std::string& fileName );
-
-    /** @brief TODO[doxy] Complete Description.
-     *
-     *  @param[in] dataType     TODO[doxy] Complete Description.
-     *  @return                 TODO[doxy] Complete Description.
-     */
-    static size_t getDataTypeSize( const File::DataType dataType );
 };
 
 /* -------------------------------------------------------------------------- */

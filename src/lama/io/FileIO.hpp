@@ -37,6 +37,7 @@
 #include <lama/config.hpp>
 
 #include <lama/LAMATypes.hpp>
+#include <lama/Scalar.hpp>
 
 #include <boost/scoped_array.hpp>
 #include <fstream>
@@ -81,18 +82,19 @@ void FileIO::readBinaryData( std::fstream& inFile, UserDataType data[], const In
         // no type conversion needed
 
         inFile.read( reinterpret_cast<char*>( data ), sizeof( UserDataType ) * n );
-        return;
     }
-
-    // allocate buffer with file data for type conversion
-
-    boost::scoped_array<FileDataType> buffer( new FileDataType[n] );
-
-    inFile.read( reinterpret_cast<char*>( buffer.get() ), sizeof( FileDataType ) * n );
-
-    for ( IndexType i = 0; i < n; i++ )
+    else
     {
-        data[i] = static_cast<UserDataType>( buffer[i] );
+        // allocate buffer with file data for type conversion
+
+        boost::scoped_array<FileDataType> buffer( new FileDataType[n] );
+
+        inFile.read( reinterpret_cast<char*>( buffer.get() ), sizeof( FileDataType ) * n );
+
+        for ( IndexType i = 0; i < n; i++ )
+        {
+            data[i] = static_cast<UserDataType>( buffer[i] );
+        }
     }
 }
 

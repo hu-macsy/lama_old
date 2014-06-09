@@ -106,7 +106,7 @@ static const PartitionId nPartition = std::numeric_limits<PartitionId>::max();
 #define ARITHMETIC_TYPE0        float
 #define ARITHMETIC_TYPE1        double
 #define ARITHMETIC_TYPE2        ComplexFloat
-#define ARITHMETIC_TYPE3        ComplexDouble
+#define ARITHMETIC_TYPE3        LongDouble
 
 // Define for the arithmetic types the counterparts of enum Scalar::Tyep
 // Sorry, we cannot use the routine getType<ARITHMETIC_TYPE##I> in case stmt
@@ -114,7 +114,7 @@ static const PartitionId nPartition = std::numeric_limits<PartitionId>::max();
 #define SCALAR_ARITHMETIC_TYPE0 FLOAT
 #define SCALAR_ARITHMETIC_TYPE1 DOUBLE
 #define SCALAR_ARITHMETIC_TYPE2 COMPLEX
-#define SCALAR_ARITHMETIC_TYPE3 DOUBLE_COMPLEX
+#define SCALAR_ARITHMETIC_TYPE3 LONG_DOUBLE
 
 // For convenience we define ARRAY_TYPE
 
@@ -124,6 +124,6 @@ static const PartitionId nPartition = std::numeric_limits<PartitionId>::max();
 #define ARRAY_TYPE1    float
 #define ARRAY_TYPE2    double
 #define ARRAY_TYPE3    ComplexFloat
-#define ARRAY_TYPE4    ComplexDouble
+#define ARRAY_TYPE4    LongDouble
 
 #endif // LAMA_LAMATYPES_HPP_

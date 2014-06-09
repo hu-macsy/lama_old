@@ -260,6 +260,16 @@ void StorageIO<ValueType>::readCSRFromBinaryFile(
         LAMA_LOG_WARN( logger, "read binary data of type double, conversion to " << csrValues.getValueType() )
         FileIO::readBinaryData<double, ValueType, 0>( inFile, values.get(), numValues );
     }
+    else if ( actualSize == expectedCSRFileSize<ComplexFloat>( numRows, numValues )  )
+    {
+        LAMA_LOG_WARN( logger, "read binary data of type double, conversion to " << csrValues.getValueType() )
+        FileIO::readBinaryData<ComplexFloat, ValueType, 0>( inFile, values.get(), numValues );
+    }
+    else if ( actualSize == expectedCSRFileSize<ComplexDouble>( numRows, numValues )  )
+    {
+        LAMA_LOG_WARN( logger, "read binary data of type double, conversion to " << csrValues.getValueType() )
+        FileIO::readBinaryData<ComplexDouble, ValueType, 0>( inFile, values.get(), numValues );
+    }
     else
     {
         LAMA_THROWEXCEPTION( "File " << fileName << " has unexpected file size = " << actualSize 
@@ -394,15 +404,23 @@ void StorageIO<ValueType>::writeCSRToXDRFile(
 
     if ( dataTypeSize == sizeof(ValueType) )
     {
-        writeData<ValueType,ValueType,0>( outFile, dataRead.get(), numValues );
+        writeData<ValueType, ValueType, 0>( outFile, dataRead.get(), numValues );
     }
     else if ( dataTypeSize == TypeTraits<double>::size )
     {
-        writeData<double,ValueType,0>( outFile, dataRead.get(), numValues );
+        writeData<double, ValueType, 0>( outFile, dataRead.get(), numValues );
     }
     else if ( dataTypeSize == TypeTraits<float>::size )
     {
-        writeData<float,ValueType,0>( outFile, dataRead.get(), numValues );
+        writeData<float, ValueType, 0>( outFile, dataRead.get(), numValues );
+    }
+    else if ( dataTypeSize == TypeTraits<ComplexFloat>::size )
+    {
+        writeData<ComplexFloat, ValueType, 0>( outFile, dataRead.get(), numValues );
+    }
+    else if ( dataTypeSize == TypeTraits<ComplexDouble>::size )
+    {
+        writeData<ComplexDouble, ValueType, 0>( outFile, dataRead.get(), numValues );
     }
 
     outFile.write( &dataTypeSize );
@@ -528,6 +546,14 @@ void StorageIO<ValueType>::readCSRFromXDRFile(
     {
         readData<float,ValueType,0>( xdrFile, m_data.get(), numValues );
     }
+    else if ( dataTypeSize == TypeTraits<ComplexFloat>::size )
+    {
+        readData<ComplexFloat,ValueType,0>( xdrFile, m_data.get(), numValues );
+    }
+    else if ( dataTypeSize == TypeTraits<ComplexDouble>::size )
+    {
+        readData<ComplexDouble,ValueType,0>( xdrFile, m_data.get(), numValues );
+    }
     else
     {
         LAMA_THROWEXCEPTION( "Invalid data type size in file " + fileName )
@@ -608,6 +634,14 @@ void StorageIO<ValueType>::writeCSRToBinaryFile(
     else if ( dataTypeSize == TypeTraits<float>::size )
     {
         writeBinaryData<float,ValueType,0>( outFile, dataRead.get(), numValues );
+    }
+    else if ( dataTypeSize == TypeTraits<ComplexFloat>::size )
+    {
+        writeBinaryData<ComplexFloat,ValueType,0>( outFile, dataRead.get(), numValues );
+    }
+    else if ( dataTypeSize == TypeTraits<ComplexDouble>::size )
+    {
+        writeBinaryData<ComplexDouble,ValueType,0>( outFile, dataRead.get(), numValues );
     }
     else
     {
@@ -1133,56 +1167,6 @@ void _StorageIO::readCSRHeader(
 
 /* -------------------------------------------------------------------------- */
 
-size_t _StorageIO::getIndexDataTypeSize( const File::IndexDataType indexDataType )
-{
-    switch ( indexDataType )
-    {
-    case File::LONG:
-        return TypeTraits<long>::size;
-    case File::INT:
-        return TypeTraits<int>::size;
-    default:
-        LAMA_THROWEXCEPTION( "Unknown matrix data type for writing the file." )
-    }
-}
-
-/* -------------------------------------------------------------------------- */
-
-template<typename ValueType>
-size_t StorageIO<ValueType>::getDataTypeSize( const File::DataType dataType )
-{
-    switch ( dataType )
-    {
-    case File::DOUBLE:
-        return TypeTraits<double>::size;
-    case File::FLOAT:
-        return TypeTraits<float>::size;
-    case File::INTEGER:
-        return TypeTraits<int>::size;
-    case File::COMPLEX:
-        return TypeTraits<long>::size * 2;
-    case File::PATTERN:
-        return 0;
-    case File::INTERNAL:
-        if ( sizeof(ValueType) == TypeTraits<float>::size )
-        {
-            return TypeTraits<float>::size;
-        }
-        else if ( sizeof(ValueType) == TypeTraits<double>::size )
-        {
-            return TypeTraits<double>::size;
-        }
-        else
-        {
-            LAMA_THROWEXCEPTION( "Unknown matrix value type size." )
-        }
-    default:
-        LAMA_THROWEXCEPTION( "Unknown matrix data type for writing the file." )
-    }
-}
-
-/* -------------------------------------------------------------------------- */
-
 static bool hasSuffix( const std::string& name, const char* suffix )
 {
     size_t lenSuffix = strlen( suffix );
@@ -1210,10 +1194,6 @@ void StorageIO<ValueType>::writeCSRToFile(
     const File::IndexDataType indexDataTypeJA /*=LONG*/
 )
 {
-    long dataTypeSize;
-    long indexDataTypeSizeIA;
-    long indexDataTypeSizeJA;
-
     LAMA_REGION( "StorageIO.writeCSRToFile " )
 
     std::string fileBaseName;
@@ -1236,9 +1216,13 @@ void StorageIO<ValueType>::writeCSRToFile(
         fileBaseName += rankstr;
     }
 
-    dataTypeSize = static_cast<long>( getDataTypeSize( dataType ) );
-    indexDataTypeSizeIA = static_cast<long>( getIndexDataTypeSize( indexDataTypeIA ) );
-    indexDataTypeSizeJA = static_cast<long>( getIndexDataTypeSize( indexDataTypeJA ) );
+    long dataTypeSize = getDataTypeSize<ValueType>( dataType );
+    long indexDataTypeSizeIA = getIndexDataTypeSize( indexDataTypeIA );
+    long indexDataTypeSizeJA = getIndexDataTypeSize( indexDataTypeJA );
+
+    LAMA_ASSERT_ERROR( indexDataTypeSizeIA > 0, "indexDataTypeIA = " << indexDataTypeIA << " unsupported" )
+    LAMA_ASSERT_ERROR( indexDataTypeSizeJA > 0, "indexDataTypeJA = " << indexDataTypeJA << " unsupported" )
+    LAMA_ASSERT_ERROR( dataTypeSize >= 0, "dataTypeSize = " << dataTypeSize << " unsupported" )
 
     switch ( fileType )
     {

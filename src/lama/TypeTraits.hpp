@@ -106,6 +106,36 @@ public:
     static const long size = sizeof(double);
 };
 
+template<>
+class TypeTraits<ComplexFloat>
+{
+public:
+    typedef int IndexType;
+    typedef ComplexFloat ValueType;
+    typedef const ComplexFloat ExpressionMemberType;
+    static const long size = sizeof(ComplexFloat);
+};
+
+template<>
+class TypeTraits<ComplexDouble>
+{
+public:
+    typedef int IndexType;
+    typedef ComplexDouble ValueType;
+    typedef const ComplexDouble ExpressionMemberType;
+    static const long size = sizeof(ComplexDouble);
+};
+
+template<>
+class TypeTraits<LongDouble>
+{
+public:
+    typedef int IndexType;
+    typedef LongDouble ValueType;
+    typedef const LongDouble ExpressionMemberType;
+    static const long size = sizeof(LongDouble);
+};
+
 } //namespace lama
 
 #endif // TYPETRAITS_HPP_
