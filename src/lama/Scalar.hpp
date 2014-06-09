@@ -90,6 +90,8 @@ public:
         COMPLEX,              //!<  synonymous for complex
         DOUBLE_COMPLEX,       //!<  synonymous for double complex
         LONG_DOUBLE_COMPLEX,  //!<  synonymous for long double complex
+        PATTERN,              //!<  dummy type of size 0
+        INTERNAL,             //!<  take the type currently in use, getType<ValueType>()
         UNKNOWN
     };
 

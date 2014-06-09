@@ -201,20 +201,22 @@ void SpecializedJacobi::iterate()
 {
     LAMA_REGION( "Solver.SpJacobi.iterate" )
 
-    const SparseMatrix<double>* sparseDoubleCoefficients =
-        dynamic_cast<const SparseMatrix<double>*>( getRuntime().mCoefficients );
-    if ( sparseDoubleCoefficients )
-    {
-        iterateTyped( *sparseDoubleCoefficients );
-        return;
+    // for each supported arithmetic type we have to dynamic cast and instatiate typed version
+
+#define LAMA_TYPE_CAST( z, I, _)                                                                  \
+    {                                                                                             \
+        const SparseMatrix<ARITHMETIC_TYPE##I>* sparseTypedCoefficients =                         \
+            dynamic_cast<const SparseMatrix<ARITHMETIC_TYPE##I>*>( getRuntime().mCoefficients );  \
+        if ( sparseTypedCoefficients )                                                            \
+        {                                                                                         \
+            iterateTyped( *sparseTypedCoefficients );                                             \
+            return;                                                                               \
+        }                                                                                         \
     }
-    const SparseMatrix<float>* sparseFloatCoefficients =
-        dynamic_cast<const SparseMatrix<float>*>( getRuntime().mCoefficients );
-    if ( sparseFloatCoefficients )
-    {
-        iterateTyped( *sparseFloatCoefficients );
-        return;
-    }
+
+    BOOST_PP_REPEAT( ARITHMETIC_TYPE_CNT, LAMA_TYPE_CAST, _ )
+
+#undef LAMA_TYPE_CAST
 
     // has already been check in initialize, but in any case
 
