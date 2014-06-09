@@ -57,13 +57,13 @@ template<typename T>
 static inline
 void wrapperGemm( const CBLAS_ORDER order, const CBLAS_TRANSPOSE transA,
                   const CBLAS_TRANSPOSE transB, const int m, const int n,
-                  const int k, const T alpha, const T *a, const int lda,
+                  const int k, const T alpha, const T* a, const int lda,
                   const T* b, const int ldb, const T beta, T* c, const int ldc );
 
 template<>
 void wrapperGemm( const CBLAS_ORDER order, const CBLAS_TRANSPOSE transA,
                   const CBLAS_TRANSPOSE transB, const int m, const int n,
-                  const int k, const float alpha, const float *a, const int lda,
+                  const int k, const float alpha, const float* a, const int lda,
                   const float* b, const int ldb, const float beta, float* c, const int ldc )
 {
     cblas_sgemm( order, transA, transB, m, n, k, alpha, a, lda, b, ldb, beta, c, ldc );
@@ -72,7 +72,7 @@ void wrapperGemm( const CBLAS_ORDER order, const CBLAS_TRANSPOSE transA,
 template<>
 void wrapperGemm( const CBLAS_ORDER order, const CBLAS_TRANSPOSE transA,
                   const CBLAS_TRANSPOSE transB, const int m, const int n,
-                  const int k, const double alpha, const double *a, const int lda,
+                  const int k, const double alpha, const double* a, const int lda,
                   const double* b, const int ldb, const double beta, double* c, const int ldc )
 {
     cblas_dgemm( order, transA, transB, m, n, k, alpha, a, lda, b, ldb, beta, c, ldc );
@@ -81,7 +81,7 @@ void wrapperGemm( const CBLAS_ORDER order, const CBLAS_TRANSPOSE transA,
 template<>
 void wrapperGemm( const CBLAS_ORDER order, const CBLAS_TRANSPOSE transA,
                   const CBLAS_TRANSPOSE transB, const int m, const int n,
-                  const int k, const ComplexFloat alpha, const ComplexFloat *a, const int lda,
+                  const int k, const ComplexFloat alpha, const ComplexFloat* a, const int lda,
                   const ComplexFloat* b, const int ldb, const ComplexFloat beta, ComplexFloat* c, const int ldc )
 {
     // Attention: alpha and beta are passed by a pointer
@@ -91,11 +91,20 @@ void wrapperGemm( const CBLAS_ORDER order, const CBLAS_TRANSPOSE transA,
 template<>
 void wrapperGemm( const CBLAS_ORDER order, const CBLAS_TRANSPOSE transA,
                   const CBLAS_TRANSPOSE transB, const int m, const int n,
-                  const int k, const ComplexDouble alpha, const ComplexDouble *a, const int lda,
+                  const int k, const ComplexDouble alpha, const ComplexDouble* a, const int lda,
                   const ComplexDouble* b, const int ldb, const ComplexDouble beta, ComplexDouble* c, const int ldc )
 {
     // Attention: alpha and beta are passed by a pointer
     cblas_zgemm( order, transA, transB, m, n, k, &alpha, a, lda, b, ldb, &beta, c, ldc );
+}
+
+template<>
+void wrapperGemm( const CBLAS_ORDER, const CBLAS_TRANSPOSE,
+                  const CBLAS_TRANSPOSE, const int, const int,
+                  const int, const LongDouble, const LongDouble*, const int,
+                  const LongDouble*, const int, const LongDouble, LongDouble*, const int )
+{
+    LAMA_THROWEXCEPTION( "LongDouble not supported by BLAS, please set LAMA_USE_BLAS=0" )
 }
 
 template<typename T>

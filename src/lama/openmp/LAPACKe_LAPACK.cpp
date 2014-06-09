@@ -219,6 +219,23 @@ IndexType LAPACKe_LAPACK::getrf(
 }
 
 /* ------------------------------------------------------------------------- */
+/*      getrf<LongDouble>                                                    */
+/* ------------------------------------------------------------------------- */
+
+template<>
+IndexType LAPACKe_LAPACK::getrf(
+    const CBLAS_ORDER,
+    const int,
+    const int,
+    LongDouble* const,
+    const int,
+    int* const )
+{
+    // LongDouble not supported by LAPACK, should give a serious runtime error
+    LAMA_THROWEXCEPTION( "getrf<LongDouble> unsupported" )
+}
+
+/* ------------------------------------------------------------------------- */
 /*      getinv<float>                                                        */
 /* ------------------------------------------------------------------------- */
 
@@ -312,6 +329,17 @@ void LAPACKe_LAPACK::getinv( const IndexType n, ComplexFloat* a, const IndexType
     {
         LAMA_THROWEXCEPTION( "MKL sgetri failed, info = " << info )
     }
+}
+
+/* ------------------------------------------------------------------------- */
+/*      getinv<LongDouble>                                                   */
+/* ------------------------------------------------------------------------- */
+
+template<>
+void LAPACKe_LAPACK::getinv( const IndexType, LongDouble*, const IndexType )
+{
+    // LongDouble not supported by LAPACK, should give a serious runtime error
+    LAMA_THROWEXCEPTION( "getinv<LongDouble> unsupported" )
 }
 
 /* ------------------------------------------------------------------------- */
@@ -467,6 +495,22 @@ int LAPACKe_LAPACK::getri(
 }
 
 /* ------------------------------------------------------------------------- */
+/*      getri<LongDouble>                                                    */
+/* ------------------------------------------------------------------------- */
+
+template<>
+IndexType LAPACKe_LAPACK::getri(
+    const CBLAS_ORDER,
+    const int,
+    LongDouble* const,
+    const int,
+    int* const )
+{
+    // LongDouble not supported by LAPACK, should give a serious runtime error
+    LAMA_THROWEXCEPTION( "getri<LongDouble> unsupported" )
+}
+
+/* ------------------------------------------------------------------------- */
 /*      tptrs<float>                                                         */
 /* ------------------------------------------------------------------------- */
 
@@ -594,6 +638,25 @@ int LAPACKe_LAPACK::tptrs(
     int info = LAPACKE_ztptrs( matrix_order, UL, TA, DI, n, nrhs, mklCast( AP ), mklCast( B ), ldb );
 
     return info;
+}
+
+/* ------------------------------------------------------------------------- */
+/*      tptrs<ComplexDouble>                                                 */
+/* ------------------------------------------------------------------------- */
+
+template<>
+int LAPACKe_LAPACK::tptrs(
+    const CBLAS_ORDER,
+    const CBLAS_UPLO,
+    const CBLAS_TRANSPOSE,
+    const CBLAS_DIAG,
+    const int,
+    const int,
+    const LongDouble*,
+    LongDouble*,
+    const int )
+{
+    LAMA_THROWEXCEPTION( "tptrs<LongDouble> unsupported" )
 }
 
 /* --------------------------------------------------------------------------- */

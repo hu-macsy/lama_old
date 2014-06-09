@@ -86,6 +86,12 @@ void wrapperScal( const int n, const ComplexDouble alpha, ComplexDouble* x, cons
     cblas_zscal( n, &alpha, x, incX );
 }
 
+template<>
+void wrapperScal( const int, const LongDouble, LongDouble*, const int )
+{
+    LAMA_THROWEXCEPTION( "LongDouble not supported by BLAS, please set LAMA_USE_BLAS=0" )
+}
+
 /* ---------------------------------------------------------------------------------------*/
 /*    scal                                                                                */
 /* ---------------------------------------------------------------------------------------*/
@@ -144,6 +150,13 @@ ComplexDouble wrapperNrm2( const int n, const ComplexDouble* x, const int incX )
     return ComplexDouble( res );
 }
 
+template<>
+LongDouble wrapperNrm2( const int, const LongDouble*, const int )
+{
+    LAMA_THROWEXCEPTION( "LongDouble not supported by BLAS, please set LAMA_USE_BLAS=0" )
+    return LongDouble( 0 );
+}
+
 template<typename T>
 T BLAS_BLAS1::nrm2( const IndexType n, const T* x, const IndexType incX, SyncToken* syncToken )
 {
@@ -196,6 +209,13 @@ ComplexDouble wrapperAsum( const int n, const ComplexDouble* x, const int incX )
 {
     double res = cblas_dzasum( n, x, incX );
     return ComplexDouble( res );
+}
+
+template<>
+LongDouble wrapperAsum( const int, const LongDouble*, const int )
+{
+    LAMA_THROWEXCEPTION( "LongDouble not supported by BLAS, please set LAMA_USE_BLAS=0" )
+    return 0;
 }
 
 template<typename T>
@@ -252,6 +272,13 @@ IndexType wrapperIamax( const int n, const ComplexDouble* x, const int incX )
     return cblas_izamax( n, x, incX );
 }
 
+template<>
+IndexType wrapperIamax( const int, const LongDouble*, const int )
+{
+    LAMA_THROWEXCEPTION( "LongDouble not supported by BLAS, please set LAMA_USE_BLAS=0" )
+    return 0;
+}
+
 template<typename T>
 IndexType BLAS_BLAS1::iamax( const IndexType n, const T* x, const IndexType incX, SyncToken* syncToken )
 {
@@ -297,6 +324,12 @@ template<>
 void wrapperSwap( const int n, ComplexDouble* x, const int incX, ComplexDouble* y, const int incY )
 {
     cblas_zswap( n, x, incX, y, incY );
+}
+
+template<>
+void wrapperSwap( const int, LongDouble*, const int, LongDouble*, const int )
+{
+    LAMA_THROWEXCEPTION( "LongDouble not supported by BLAS, please set LAMA_USE_BLAS=0" )
 }
 
 template<typename T>
@@ -356,6 +389,12 @@ template<>
 void wrapperCopy( const int n, const ComplexDouble* x, const int incX, ComplexDouble* y, const int incY )
 {
     cblas_zcopy( n, x, incX, y, incY );
+}
+
+template<>
+void wrapperCopy( const int, const LongDouble*, const int, LongDouble*, const int )
+{
+    LAMA_THROWEXCEPTION( "LongDouble not supported by BLAS, please set LAMA_USE_BLAS=0" )
 }
 
 template<typename T>
@@ -420,6 +459,12 @@ void wrapperAxpy( const int n, ComplexDouble alpha, const ComplexDouble* x, cons
     cblas_zaxpy( n, &alpha, x, incX, y, incY );
 }
 
+template<>
+void wrapperAxpy( const int, LongDouble, const LongDouble*, const int, LongDouble*, const int )
+{
+    LAMA_THROWEXCEPTION( "LongDouble not supported by BLAS, please set LAMA_USE_BLAS=0" )
+}
+
 template<typename T>
 void BLAS_BLAS1::axpy(
     const IndexType n,
@@ -482,6 +527,13 @@ ComplexDouble wrapperDot( const int n, const ComplexDouble* x, const int incX, c
     ComplexDouble dotu;
     cblas_zdotu_sub( n, x, incX, y, incY, &dotu );
     return dotu;
+}
+
+template<>
+LongDouble wrapperDot( const int, const LongDouble*, const int, const LongDouble*, const int )
+{
+    LAMA_THROWEXCEPTION( "LongDouble not supported by BLAS, please set LAMA_USE_BLAS=0" )
+    return 0;
 }
 
 template<typename T>

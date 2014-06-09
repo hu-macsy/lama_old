@@ -99,6 +99,15 @@ void wrapperGemv( const CBLAS_ORDER order, const CBLAS_TRANSPOSE transA,
     cblas_zgemv( order, transA, m, n, &alpha, a, lda, x, incX, &beta, y, incY );
 }
 
+template<>
+void wrapperGemv( const CBLAS_ORDER, const CBLAS_TRANSPOSE,
+                  const int, const int,
+                  LongDouble, const LongDouble*, const int, const LongDouble*, const int,
+                  LongDouble, LongDouble*, const int )
+{
+    LAMA_THROWEXCEPTION( "LongDouble not supported by BLAS, please set LAMA_USE_BLAS=0" )
+}
+
 template<typename T>
 void BLAS_BLAS2::gemv(
     const CBLAS_ORDER order,
