@@ -36,8 +36,6 @@ lama_set_source_dir ()
 
 ### Add classes and header files ###
 set ( CLASSES
-        CUDAawareMPICommunicator
-        CUDAawareMPICommunicatorManager
         MPICommunicator
         MPICommunicatorManager
         MPIException
