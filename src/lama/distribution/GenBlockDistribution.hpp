@@ -148,6 +148,10 @@ public:
 
     void printDistributionVector( std::string name ) const;
 
+    static GenBlockDistribution* create( const CommunicatorPtr communicator, const IndexType globalSize, const float weight = 1.0 );
+
+    static GenBlockDistribution* create( const CommunicatorPtr communicator, const Matrix& matrix, const float weight = 1.0 );
+
 protected:
 
     LAMA_LOG_DECL_STATIC_LOGGER( logger )
@@ -163,6 +167,8 @@ private:
     boost::scoped_array<IndexType> mOffsets;//!< offset for each partition
 
     IndexType mLB, mUB;//!< local range of full size in global values
+
+    static bool initialized;  //!< static initialization used for registration of create in Distribution factory
 };
 
 }

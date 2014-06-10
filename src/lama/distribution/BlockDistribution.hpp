@@ -96,11 +96,13 @@ public:
      */
     virtual void computeOwners( const std::vector<IndexType>& requiredIndexes, std::vector<PartitionId>& owners ) const;
 
-    /** Static method to construct a new block distribution. */
-
-    static DistributionPtr create( const IndexType globalSize, const CommunicatorPtr communicator );
-
     void printDistributionVector( std::string problem ) const;
+
+    /** Static methods to create a block distribution. */
+
+    static BlockDistribution* create( const CommunicatorPtr commPtr, const IndexType globalSize, const float weight = 1.0 );
+
+    static BlockDistribution* create( const CommunicatorPtr commPtr, const Matrix& matrix, const float weight = 1.0 );
 
 protected:
 
@@ -111,7 +113,11 @@ private:
     BlockDistribution(); // disable default constructor as it has no size
 
     IndexType mBlockSize;//!< block size of each partition
-    IndexType lb, ub;//!< local range of full size in global values
+    IndexType mLB;    //!< lower bound value of local range
+    IndexType mUB;    //!< upper bound value of local range
+
+    static bool initialized;  //!< static initialization used for registration of create in Distribution factory
+
 };
 
 }

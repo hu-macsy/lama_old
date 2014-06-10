@@ -55,6 +55,8 @@ namespace lama
 
 typedef boost::shared_ptr<const class Distribution> DistributionPtr;
 
+class Matrix;  // Forward declaration 
+
 /** Abstract base class for a one-dimensional distribution.
  *
  * A distribution specifies a mapping from a global range to the
@@ -64,7 +66,50 @@ typedef boost::shared_ptr<const class Distribution> DistributionPtr;
  */
 class LAMA_DLL_IMPORTEXPORT Distribution: public Printable, private NonCopyable
 {
+
 public:
+
+    /**
+     * @brief Distribution factory to get a distribution of a certain kind and a certain type
+     *
+     * @param[in] kind specfies the name of the distribution, e.g. BLOCK, CYCLIC, GEN_BLOCK, GENERAL, METIS
+     * @param[in] comm is the communicator used for the distribution
+     * @param[in] globalSize is the number of elements to distribute
+     * @param[in] weight is an individual weight for each partition of the communicator
+     *
+     * @returns pointer to a new distribution of the specified kind, NULL if kind is not supported
+     *
+     *  /code
+     *  // Using a MetisDistribution requires its availabilty
+     *  Distribution* dist = MetisDistribution( comm, size, weight )
+     *  // code using the factory does not require the availability
+     *  Distribution* dist = Distribution::getDistribution( "METIS", comm, size, weight )
+     *  if ( dist == NULL )
+     *  {
+     *      dist = Distribution::getDistribution( "GEN_BLOCK", comm, size, weight )
+     *  }
+     *  /endcode
+     *
+     *  Note: Internally, this routine requires that all derived classes implement a corresponding
+     *        create method that will be registered during static initialization.
+     */
+    static Distribution* getDistribution( const std::string& kind, const CommunicatorPtr comm, 
+                                          const IndexType globalSize, const float weight = 1.0 );
+
+    /**
+     * @brief Distribution factory to get a distribution of a certain kind and a certain type
+     *
+     * @param[in] kind specfies the name of the distribution, e.g. BLOCK, CYCLIC, GEN_BLOCK, GENERAL, METIS
+     * @param[in] comm is the communicator used for the distribution
+     * @param[in] matrix is the matrix for which a good row distribution is determined
+     * @param[in] weight is an individual weight for each partition of the communicator
+     *
+     * @returns pointer to a new distribution of the specified kind, NULL if kind is not supported
+     *
+     * Note: the current distribution of matrix does not matter.
+     */
+    static Distribution* getDistribution( const std::string& kind, const CommunicatorPtr comm, 
+                                          const Matrix& matrix, const float weight = 1.0 );
 
     /** Constructor for a distribution.
      *
@@ -225,7 +270,65 @@ protected:
     IndexType mGlobalSize;
     CommunicatorPtr mCommunicator;
 
+    /** Type definition of a function to create a distribution. 
+     *
+     *  @param[in] commPtr is the communicator
+     *  @param[in] globalSize number of elements to distribute
+     *  @param[in] weight  individual weight for each partition
+     *
+     *  The weight can be used to determine different load on the partitions depending on
+     *  their compute power. E.g. a partition with weight = 4 will get two times the load
+     *  of a partition with weight = 2 and four times the load of a partition with weigth = 1.
+     */
+    typedef Distribution* ( *CreateFn1 ) ( CommunicatorPtr commPtr, IndexType globalSize, float weight );
+
+    /** Type definition of a function to create a distribution with a connectivity matrix.
+     *
+     *  @param[in] commPtr is the communicator
+     *  @param[in] matrix  is a sparse matrix that provides the connectivity
+     *  @param[in] weight  individual weight for each partition
+     *
+     *  The weight can be used to determine different load on the partitions depending on
+     *  their compute power. E.g. a partition with weight = 4 will get two times the load
+     *  of a partition with weight = 2 and four times the load of a partition with weigth = 1.
+     */
+    typedef Distribution* ( *CreateFn2 ) ( CommunicatorPtr commPtr, const Matrix& matrix, float weight );
+
+    /** This method should be called by distribution classes to register their create operation. */
+
+    static void addCreator( const std::string& kind, CreateFn1 create1, CreateFn2 create2 );
+
+    /** Common helper function for derived classes to register their static create methods 
+     *
+     */
+    template<typename Derived>
+    static bool registerCreator( const std::string& kind )
+    {
+        // Due to overloading of create we have the create routines by their signature.
+
+        Derived* ( *der_create1 ) ( const CommunicatorPtr communicator,
+                                    const IndexType globalSize,
+                                    const float weight ) = &Derived::create;
+
+        Derived* ( *der_create2 ) ( const CommunicatorPtr communicator,
+                                    const Matrix& matrix,
+                                    const float weight ) = &Derived::create;
+
+        // Due to different covariant return type, casting is needed
+
+        CreateFn1 create1 = ( Distribution::CreateFn1 ) der_create1;
+        CreateFn2 create2 = ( Distribution::CreateFn2 ) der_create2;
+
+        Distribution::addCreator( kind, ( CreateFn1 ) create1, ( CreateFn2 ) create2 );
+
+        return true;
+    }
+
 private:
+
+    typedef std::map< std::string, std::pair< CreateFn1, CreateFn2 > > CreatorMap;
+
+    static CreatorMap& getFactory();
 
     Distribution(); // disable default constructor
 

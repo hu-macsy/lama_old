@@ -33,6 +33,7 @@
 
 // hpp
 #include <lama/distribution/NoDistribution.hpp>
+#include <lama/matrix/Matrix.hpp>
 
 #include <fstream>
 
@@ -93,5 +94,32 @@ void NoDistribution::printDistributionVector( std::string name ) const
         file.close();
     }
 }
+
+/* ---------------------------------------------------------------------------------* 
+ *   static create methods ( required for registration in distribution factory )    *
+ * ---------------------------------------------------------------------------------*/
+
+NoDistribution* NoDistribution::create(
+    const CommunicatorPtr,
+    const IndexType globalSize,
+    const float )
+{
+    // weight remains unused
+    return new NoDistribution( globalSize );
+}
+
+NoDistribution* NoDistribution::create(
+    const CommunicatorPtr,
+    const Matrix& matrix,
+    const float )
+{
+    // we only take the size of the matrix
+
+    return new NoDistribution( matrix.getNumRows() );
+}
+
+/* ---------------------------------------------------------------------------------*/
+
+bool NoDistribution::initialized = Distribution::registerCreator<NoDistribution>( "NO" );
 
 }

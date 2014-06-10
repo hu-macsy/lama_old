@@ -45,6 +45,16 @@
 namespace lama
 {
 
+/** Distribution class that stands for a replicated distribution.
+ *
+ *  With this distribution an object has an incarnation on each 
+ *  processor. 
+ *
+ *  Usually, methods should take care of consistency among 
+ *  all processors, i.e. writes and update operations must be
+ *  done on all partitions. But a replicated object can also be used
+ *  like a private incarnation on each processor.
+ */
 class LAMA_DLL_IMPORTEXPORT NoDistribution: public Distribution
 {
 public:
@@ -67,11 +77,19 @@ public:
 
     void printDistributionVector( std::string name ) const;
 
+    /** Static methods to create a NoDistribution. */
+
+    static NoDistribution* create( const CommunicatorPtr commPtr, const IndexType globalSize, const float weight = 1.0 );
+
+    static NoDistribution* create( const CommunicatorPtr commPtr, const Matrix& matrix, const float weight = 1.0 );
+
 private:
 
     NoDistribution(); // no default constructor as global size is not available
 
     LAMA_LOG_DECL_STATIC_LOGGER( logger )
+
+    static bool initialized;  //!< used for static registration
 };
 
 }

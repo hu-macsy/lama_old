@@ -59,8 +59,6 @@ set ( CLASSES
         DefaultHostContextManager
         DenseVector
         Distributed
-        DistributionFactory
-        DistributionManager
         HostContext
         LAMAArray
         LAMAArrayUtils

@@ -33,6 +33,7 @@
 
 // hpp
 #include <lama/distribution/BlockDistribution.hpp>
+#include <lama/matrix/Matrix.hpp>
 
 #include <fstream>
 
@@ -68,14 +69,14 @@ BlockDistribution::BlockDistribution( const IndexType globalSize, const Communic
     PartitionId rank = mCommunicator->getRank();
     LAMA_LOG_DEBUG( logger, "BlockDistribution of " << getGlobalSize() << " elements" )
     mBlockSize = ( globalSize + size - 1 ) / size;
-    getRange( lb, ub, globalSize, rank, size );
+    getRange( mLB, mUB, globalSize, rank, size );
     LAMA_LOG_INFO( logger,
-                   "BlockDistribution of " << getGlobalSize() << " elements" << ", me has " << lb << " : " << ub )
+                   "BlockDistribution of " << getGlobalSize() << " elements" << ", me has " << mLB << " : " << mUB )
 }
 
 bool BlockDistribution::isLocal( const IndexType globalIndex ) const
 {
-    return globalIndex >= lb && globalIndex <= ub;
+    return globalIndex >= mLB && globalIndex <= mUB;
 }
 
 PartitionId BlockDistribution::getOwner( const IndexType globalIndex ) const
@@ -87,9 +88,9 @@ IndexType BlockDistribution::getLocalSize() const
 {
     IndexType localSize = 0;
 
-    if ( lb <= ub )
+    if ( mLB <= mUB )
     {
-        localSize = ub - lb + 1;
+        localSize = mUB - mLB + 1;
     }
 
     return localSize;
@@ -97,16 +98,16 @@ IndexType BlockDistribution::getLocalSize() const
 
 IndexType BlockDistribution::local2global( const IndexType localIndex ) const
 {
-    return lb + localIndex;
+    return mLB + localIndex;
 }
 
 IndexType BlockDistribution::global2local( const IndexType globalIndex ) const
 {
     IndexType localIndex = nIndex;
 
-    if ( globalIndex >= lb && globalIndex <= ub )
+    if ( globalIndex >= mLB && globalIndex <= mUB )
     {
-        localIndex = globalIndex - lb;
+        localIndex = globalIndex - mLB;
     }
 
     return localIndex;
@@ -148,11 +149,6 @@ void BlockDistribution::writeAt( std::ostream& stream ) const
     stream << "BlockDistribution(gsize=" << mGlobalSize << ",bsize=" << mBlockSize << ")";
 }
 
-DistributionPtr BlockDistribution::create( const IndexType globalSize, const CommunicatorPtr communicator )
-{
-    return DistributionPtr( new BlockDistribution( globalSize, communicator ) );
-}
-
 void BlockDistribution::printDistributionVector( std::string name ) const
 {
     PartitionId myRank = mCommunicator->getRank();
@@ -179,4 +175,32 @@ void BlockDistribution::printDistributionVector( std::string name ) const
     }
 }
 
+/* ---------------------------------------------------------------------------------* 
+ *   static create methods ( required for registration in distribution factory )    *
+ * ---------------------------------------------------------------------------------*/
+
+BlockDistribution* BlockDistribution::create(
+    const CommunicatorPtr communicator,
+    const IndexType globalSize,
+    const float )
+{
+    // weight remains unused
+    return new BlockDistribution( globalSize, communicator );
 }
+
+BlockDistribution* BlockDistribution::create(
+    const CommunicatorPtr communicator,
+    const Matrix& matrix,
+    const float )
+{
+    // we only take the size of the matrix
+
+    return new BlockDistribution( matrix.getNumRows(), communicator );
+}
+
+/* ---------------------------------------------------------------------------------*/
+
+bool BlockDistribution::initialized = Distribution::registerCreator<BlockDistribution>( "BLOCK" );
+
+}
+

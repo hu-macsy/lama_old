@@ -33,6 +33,7 @@
 
 // hpp
 #include <lama/distribution/GenBlockDistribution.hpp>
+#include <lama/matrix/Matrix.hpp>
 
 #include <fstream>
 
@@ -343,5 +344,31 @@ void GenBlockDistribution::printDistributionVector( std::string name ) const
         file.close();
     }
 }
+
+/* ---------------------------------------------------------------------------------* 
+ *   static create methods ( required for registration in distribution factory )    *
+ * ---------------------------------------------------------------------------------*/
+
+GenBlockDistribution* GenBlockDistribution::create( 
+    const CommunicatorPtr communicator, 
+    const IndexType globalSize, 
+    const float weight )
+{
+    return new GenBlockDistribution( globalSize, weight, communicator );
+}
+
+GenBlockDistribution* GenBlockDistribution::create( 
+    const CommunicatorPtr communicator, 
+    const Matrix& matrix, 
+    const float weight )
+{
+    // we only take the size of the matrix
+
+    return new GenBlockDistribution( matrix.getNumRows(), weight, communicator );
+}
+
+/* ---------------------------------------------------------------------------------*/
+
+bool GenBlockDistribution::initialized = Distribution::registerCreator<GenBlockDistribution>( "GEN_BLOCK" );
 
 }

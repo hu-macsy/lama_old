@@ -33,6 +33,8 @@
 
 // hpp
 #include <lama/distribution/MetisDistribution.hpp>
+#include <lama/distribution/NoDistribution.hpp>
+#include <lama/matrix/CSRSparseMatrix.hpp>
 
 // others
 #include <lama/tracing.hpp>
@@ -51,7 +53,7 @@ LAMA_LOG_DEF_LOGGER( MetisDistribution::logger, "Distribution.MetisDistribution"
 
 MetisDistribution::MetisDistribution(
                    const CommunicatorPtr comm,
-                   Matrix& matrix,
+                   const Matrix& matrix,
                    std::vector<float>& weights )
 
     : GeneralDistribution( matrix.getNumRows(), comm )
@@ -61,7 +63,7 @@ MetisDistribution::MetisDistribution(
 
 MetisDistribution::MetisDistribution(
                    const CommunicatorPtr comm,
-                   Matrix& matrix,
+                   const Matrix& matrix,
                    float weight )
 
     : GeneralDistribution( matrix.getNumRows(), comm )
@@ -119,7 +121,7 @@ void MetisDistribution::normWeights( std::vector<float>& weights )
 
 void MetisDistribution::computeIt(
                    const CommunicatorPtr comm,
-                   Matrix& matrix,
+                   const Matrix& matrix,
                    std::vector<float>& weights )
 {
     // TODO check only for replicated matrix
@@ -213,7 +215,7 @@ void MetisDistribution::computeIt(
     int numMyRows = 0;
     comm->scatter( &numMyRows, 1, MASTER, &numRowsPerOwner[0] );
     mLocal2Global.resize( numMyRows );
-    comm->scatter( &mLocal2Global[0], numMyRows, MASTER, &rows[0], &numRowsPerOwner[0] );
+    comm->scatterV( &mLocal2Global[0], numMyRows, MASTER, &rows[0], &numRowsPerOwner[0] );
 
     std::vector<IndexType>::const_iterator end = mLocal2Global.end();
     std::vector<IndexType>::const_iterator begin = mLocal2Global.begin();
@@ -293,5 +295,33 @@ void MetisDistribution::checkAndMapWeights(
         }
     }
 }
+
+/* ---------------------------------------------------------------------------------* 
+ *   static create methods ( required for registration in distribution factory )    *
+ * ---------------------------------------------------------------------------------*/
+
+MetisDistribution* MetisDistribution::create(
+    const CommunicatorPtr commPtr,
+    const IndexType globalSize,
+    const float weight )
+{
+    // create an empty CSR sparse matrix
+    CSRSparseMatrix<float> matrix;
+    DistributionPtr dist( new NoDistribution( globalSize ) );
+    matrix.setIdentity( dist );
+    return new MetisDistribution( commPtr, matrix, weight );
+}
+
+MetisDistribution* MetisDistribution::create(
+    const CommunicatorPtr commPtr,
+    const Matrix& matrix,
+    const float weight )
+{
+    return new MetisDistribution( commPtr, matrix, weight );
+}
+
+/* ---------------------------------------------------------------------------------*/
+
+bool MetisDistribution::initialized = Distribution::registerCreator<MetisDistribution>( "NO" );
 
 } // namespace lama

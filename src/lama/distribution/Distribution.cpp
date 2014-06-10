@@ -537,6 +537,81 @@ void Distribution::replicateRagged( T allValues[], const T localValues[], const 
 
 /* ---------------------------------------------------------------------- */
 
+/**  
+ *  Getter method for the singleton map/factory.
+ *
+ *  Getter method instead of a variable guarantees that order of 
+ *  static intialization does not matter.
+ */
+Distribution::CreatorMap& Distribution::getFactory()
+{
+    static std::auto_ptr< CreatorMap> factory;
+
+    if ( !factory.get() )
+    {
+        factory = std::auto_ptr<CreatorMap>( new CreatorMap() );
+    }
+
+    return *factory;
+}
+
+void Distribution::addCreator( const std::string& kind, CreateFn1 create1, CreateFn2 create2 )
+{
+    CreatorMap& factory = getFactory();
+
+    // checks for multiple entries is not really necessary here, so just add entry in map container.
+
+    factory[ kind ] = std::pair<CreateFn1, CreateFn2>( create1, create2 );
+}
+
+Distribution* Distribution::getDistribution( const std::string& kind, CommunicatorPtr comm,
+                                             const IndexType globalSize, const float weight )
+{
+    Distribution* newDistribution = NULL;
+
+    CreatorMap& factory = getFactory();
+
+    CreatorMap::const_iterator fn = factory.find( kind );
+
+    if ( fn != factory.end() )
+    {
+        // use createFN1
+        newDistribution = fn->second.first( comm, globalSize, weight );
+    }
+    else
+    {
+        LAMA_LOG_WARN( logger, "getDistribution: distribution " << kind << " not available" )
+        return NULL;
+    }
+
+    return newDistribution;
+}
+
+Distribution* Distribution::getDistribution( const std::string& kind, CommunicatorPtr comm,
+                                             const Matrix& matrix, const float weight )
+{
+    Distribution* newDistribution = NULL;
+
+    CreatorMap& factory = getFactory();
+
+    CreatorMap::const_iterator fn = factory.find( kind );
+
+    if ( fn != factory.end() )
+    {
+        // use createFn2
+        newDistribution = fn->second.second( comm, matrix, weight );
+    }
+    else
+    {
+        LAMA_LOG_WARN( logger, "getDistribution: distribution " << kind << " not available" )
+        return NULL;
+    }
+
+    return newDistribution;
+}
+
+/* ---------------------------------------------------------------------- */
+
 // Instantiation of all relevant replicate routines
 
 // Macro to instantiate for type pair ARRAY_TYPE##I, ARRAY_TYPE##J

@@ -34,16 +34,13 @@
 ### Add classes and header files ###
 set ( CLASSES
         BlockDistribution
-        BlockDistributionManager
         CyclicDistribution
-        CyclicDistributionManager
         Distribution
         GenBlockDistribution
         GeneralDistribution
         Halo
         HaloBuilder
         NoDistribution
-        NoDistributionManager
         Redistributor
     )
 
