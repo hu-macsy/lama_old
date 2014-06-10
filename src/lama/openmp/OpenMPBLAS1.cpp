@@ -1,5 +1,5 @@
 /**
- * @file blas/OpenMPBLAS1.cpp
+ * @file OpenMPBLAS1.cpp
  *
  * @license
  * Copyright (c) 2009-2013
@@ -25,7 +25,7 @@
  * SOFTWARE.
  * @endlicense
  *
- * @brief OpenMPBLAS1.cpp
+ * @brief Implementation of used BLAS1 routines in C++ wtih OpenMP parallelization.
  * @author Eric Schricker
  * @date 02.10.2013
  * @since 1.1.0
@@ -52,6 +52,11 @@
 namespace lama
 {
 
+/** Template routines use abs and sqrt, once from cmath and also as routines
+ *  for complex numbers. To make this possible, all routines should be in
+ *  this namespace made availale.
+ */
+
 using std::abs;   // used for float, double
 using std::sqrt;  // used for float, double
 
@@ -62,15 +67,15 @@ LAMA_LOG_DEF_LOGGER( OpenMPBLAS1::logger, "OpenMP.BLAS1" )
 template<typename T>
 void OpenMPBLAS1::scal( const IndexType n, const T alpha, T* x, const IndexType incX, SyncToken* syncToken )
 {
-
     if ( incX <= 0 )
     {
         return;
     }
 
-LAMA_REGION( "OpenMP.BLAS1.sscal" )
+    LAMA_REGION( "OpenMP.BLAS1.scal" )
 
-LAMA_LOG_DEBUG( logger, "scal<" << Scalar::getType<T>()<< ">, n = " << n << ", alpha = " << alpha << ", x = " << x << ", incX = " << incX )
+    LAMA_LOG_DEBUG( logger, "scal<" << Scalar::getType<T>()<< ">, n = " << n 
+                    << ", alpha = " << alpha << ", x = " << x << ", incX = " << incX )
 
     if ( syncToken )
     {
@@ -100,6 +105,8 @@ LAMA_LOG_DEBUG( logger, "scal<" << Scalar::getType<T>()<< ">, n = " << n << ", a
 template<typename T>
 T OpenMPBLAS1::nrm2( const IndexType n, const T* x, const IndexType incX, SyncToken* syncToken )
 {
+    LAMA_REGION( "OpenMP.BLAS1.nrm2" )
+
     LAMA_LOG_DEBUG( logger, "nrm2<" << Scalar::getType<T>()<< ">, n = " << n << ", x = " << x << ", incX = " << incX )
 
     if ( incX <= 0 )
@@ -147,6 +154,8 @@ T OpenMPBLAS1::nrm2( const IndexType n, const T* x, const IndexType incX, SyncTo
 template<typename T>
 T OpenMPBLAS1::asum( const IndexType n, const T* x, const IndexType incX, SyncToken* syncToken )
 {
+    LAMA_REGION( "OpenMP.BLAS1.asum" )
+
     LAMA_LOG_DEBUG( logger, "asum<" << Scalar::getType<T>()<< ">, n = " << n << ", x = " << x << ", incX = " << incX )
 
     if ( syncToken )
@@ -195,6 +204,8 @@ T OpenMPBLAS1::asum( const IndexType n, const T* x, const IndexType incX, SyncTo
 template<typename T>
 IndexType OpenMPBLAS1::iamax( const IndexType n, const T* x, const IndexType incX, SyncToken* syncToken )
 {
+    LAMA_REGION( "OpenMP.BLAS1.iamax" )
+
     LAMA_LOG_INFO( logger, "iamax<" << Scalar::getType<T>()<< ">, n = " << n << ", x = " << x << ", incX = " << incX )
 
     if ( syncToken )
@@ -259,8 +270,10 @@ void OpenMPBLAS1::swap(
     const IndexType incY,
     SyncToken* syncToken )
 {
-    LAMA_LOG_DEBUG( logger,
-                    "iamax<" << Scalar::getType<T>()<< ">, n = " << n << ", x = " << x << ", incX = " << incX << ", y = " << y << ", incY = " << incY )
+    LAMA_REGION( "OpenMP.BLAS1.swap" )
+
+    LAMA_LOG_DEBUG( logger, "iamax<" << Scalar::getType<T>()<< ">, n = " << n 
+                    << ", x = " << x << ", incX = " << incX << ", y = " << y << ", incY = " << incY )
 
     if ( ( incX <= 0 ) || ( incY <= 0 ) )
     {
@@ -331,6 +344,8 @@ void OpenMPBLAS1::copy(
     const IndexType incY,
     SyncToken* UNUSED(syncToken) )
 {
+    LAMA_REGION( "OpenMP.BLAS1.copy" )
+
     LAMA_LOG_DEBUG( logger,
                     "copy<" << Scalar::getType<T>() << ">, n = " << n << ", x = " << x << ", incX = " << incX << ", y = " << y << ", incY = " << incY )
 
@@ -369,6 +384,8 @@ void OpenMPBLAS1::axpy(
     const IndexType incY,
     SyncToken* syncToken )
 {
+    LAMA_REGION( "OpenMP.BLAS1.axpy" )
+
     LAMA_LOG_DEBUG( logger,
                     "axpy<" << Scalar::getType<T>() << ">, n = " << n << ", alpha = " << alpha << ", x = " << x << ", incX = " << incX << ", y = " << y << ", incY = " << incY )
 
@@ -411,9 +428,9 @@ T OpenMPBLAS1::dot(
     const IndexType incY,
     SyncToken* syncToken )
 {
-LAMA_REGION( "OpenMP.BLAS1.sdot" )
+    LAMA_REGION( "OpenMP.BLAS1.sdot" )
 
-        LAMA_LOG_DEBUG( logger,
+    LAMA_LOG_DEBUG( logger,
                     "dot<" << Scalar::getType<T>() << ">, n = " << n << ", x = " << x << ", incX = " << incX << ", y = " << y << ", incY = " << incY )
 
     if ( ( incX <= 0 ) || ( incY <= 0 ) )
@@ -459,6 +476,8 @@ LAMA_REGION( "OpenMP.BLAS1.sdot" )
 template<typename T>
 void OpenMPBLAS1::sum( const IndexType n, T alpha, const T* x, T beta, const T* y, T* z, SyncToken* syncToken )
 {
+    LAMA_REGION( "OpenMP.BLAS1.dot" )
+
     LAMA_LOG_DEBUG( logger,
                     "sum<" << Scalar::getType<T>() << ">, n = " << n << ", alpha = " << alpha << ", x = " << x << ", beta = " << beta << ", y = " << y << ", z = " << z )
 
@@ -486,16 +505,16 @@ void OpenMPBLAS1::setInterface( BLASInterface& BLAS )
 // Note: macro takes advantage of same name for routines and type definitions
 //       ( e.g. routine CUDABLAS1::sum<T> is set for BLAS::BLAS1::sum variable
 
-#define LAMA_BLAS1_REGISTER(z, I, _)                                            \
-    LAMA_INTERFACE_REGISTER_T( BLAS, scal, ARITHMETIC_TYPE##I )                 \
-    LAMA_INTERFACE_REGISTER_T( BLAS, nrm2, ARITHMETIC_TYPE##I )                 \
-    LAMA_INTERFACE_REGISTER_T( BLAS, asum, ARITHMETIC_TYPE##I )                 \
-    LAMA_INTERFACE_REGISTER_T( BLAS, iamax, ARITHMETIC_TYPE##I )                \
-    LAMA_INTERFACE_REGISTER_T( BLAS, swap, ARITHMETIC_TYPE##I )                 \
-    LAMA_INTERFACE_REGISTER_T( BLAS, copy, ARITHMETIC_TYPE##I )                 \
-    LAMA_INTERFACE_REGISTER_T( BLAS, axpy, ARITHMETIC_TYPE##I )                 \
-    LAMA_INTERFACE_REGISTER_T( BLAS, dot, ARITHMETIC_TYPE##I )                  \
-    LAMA_INTERFACE_REGISTER_T( BLAS, sum, ARITHMETIC_TYPE##I )                  \
+#define LAMA_BLAS1_REGISTER(z, I, _)                                  \
+    LAMA_INTERFACE_REGISTER_T( BLAS, scal, ARITHMETIC_TYPE##I )       \
+    LAMA_INTERFACE_REGISTER_T( BLAS, nrm2, ARITHMETIC_TYPE##I )       \
+    LAMA_INTERFACE_REGISTER_T( BLAS, asum, ARITHMETIC_TYPE##I )       \
+    LAMA_INTERFACE_REGISTER_T( BLAS, iamax, ARITHMETIC_TYPE##I )      \
+    LAMA_INTERFACE_REGISTER_T( BLAS, swap, ARITHMETIC_TYPE##I )       \
+    LAMA_INTERFACE_REGISTER_T( BLAS, copy, ARITHMETIC_TYPE##I )       \
+    LAMA_INTERFACE_REGISTER_T( BLAS, axpy, ARITHMETIC_TYPE##I )       \
+    LAMA_INTERFACE_REGISTER_T( BLAS, dot, ARITHMETIC_TYPE##I )        \
+    LAMA_INTERFACE_REGISTER_T( BLAS, sum, ARITHMETIC_TYPE##I )        \
 
 BOOST_PP_REPEAT( ARITHMETIC_TYPE_CNT, LAMA_BLAS1_REGISTER, _ )
 

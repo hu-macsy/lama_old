@@ -1,5 +1,5 @@
 /**
- * @file blas/OpenMPBLAS2.hpp
+ * @file OpenMPBLAS2.hpp
  *
  * @license
  * Copyright (c) 2009-2013
@@ -30,7 +30,7 @@
  * @date 05.07.2012
  * @since 1.0.0
  */
-#ifndef LAMA_OPENMPBLAS2_HPP_
+#ifndef LAMA_OPENMP_BLAS2_HPP_
 #define LAMA_OPENMPBLAS2_HPP_
 
 // for dll_import
@@ -345,4 +345,4 @@ private:
 
 } /* namespace lama */
 
-#endif // LAMA_OPENMPBLAS2_HPP_
+#endif // LAMA_OPENMP_BLAS2_HPP_

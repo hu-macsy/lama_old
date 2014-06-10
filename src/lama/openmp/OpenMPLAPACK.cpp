@@ -1,5 +1,5 @@
 /**
- * @file blas/OpenMPLAPACK.cpp
+ * @file OpenMPLAPACK.cpp
  *
  * @license
  * Copyright (c) 2009-2013

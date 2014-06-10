@@ -1,5 +1,5 @@
 /**
- * @file blas/OpenMPBLAS1.hpp
+ * @file OpenMPBLAS1.hpp
  *
  * @license
  * Copyright (c) 2009-2013
@@ -25,13 +25,13 @@
  * SOFTWARE.
  * @endlicense
  *
- * @brief OpenMPBLAS1.hpp
+ * @brief Class with implementation of BLAS1 routines in C++ with OpenMP parallelization.
  * @author Eric Schricker
  * @date 05.07.2012
  * @since 1.0.0
  */
-#ifndef LAMA_OPENMPBLAS1_HPP_
-#define LAMA_OPENMPBLAS1_HPP_
+#ifndef LAMA_OPENMP_BLAS1_HPP_
+#define LAMA_OPENMP_BLAS1_HPP_
 
 // for dll_import
 #include <lama/config.hpp>
@@ -48,7 +48,10 @@ namespace lama
 
 /** Implementations of methods for lama::BLASInterface with OpenMP.
  *
- *  @todo Add information here about use of native BLAS1 libraries
+ *  Instead of using native BLAS1 libraries this class has own C++
+ *  implementation that are portable across all platforms.
+ *  Furthermore, due to OpenMP parallelization, these routines are
+ *  rather fast.
  */
 
 class LAMA_DLL_IMPORTEXPORT OpenMPBLAS1
@@ -141,4 +144,4 @@ private:
 
 } /* namespace lama */
 
-#endif // LAMA_OPENMPBLAS1_HPP_
+#endif // LAMA_OPENMP_BLAS1_HPP_

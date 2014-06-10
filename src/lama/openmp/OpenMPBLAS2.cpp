@@ -1,5 +1,5 @@
 /**
- * @file blas/OpenMPBLAS2.cpp
+ * @file OpenMPBLAS2.cpp
  *
  * @license
  * Copyright (c) 2009-2013
@@ -25,7 +25,7 @@
  * SOFTWARE.
  * @endlicense
  *
- * @brief OpenMPBLAS2.cpp
+ * @brief Implementation of BLAS2 routines used in LAMA with own C++/OpenMP implementations.
  * @author Eric Schricker
  * @date 09.10.2013
  * @since 1.1.0

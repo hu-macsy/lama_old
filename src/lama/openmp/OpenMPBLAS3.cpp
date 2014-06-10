@@ -1,5 +1,5 @@
 /**
- * @file blas/OpenMPBLAS3.cpp
+ * @file OpenMPBLAS3.cpp
  *
  * @license
  * Copyright (c) 2009-2013
@@ -25,7 +25,7 @@
  * SOFTWARE.
  * @endlicense
  *
- * @brief OpenMPBLAS3.cpp
+ * @brief Implementation of BLAS3 methods used in LAMA with own C++ implementation.
  * @author Eric Schricker
  * @date 15.10.2013
  * @since 1.1.0
@@ -259,16 +259,16 @@ void OpenMPBLAS3::gemm(
         {
             if ( TransB == CblasNoTrans )
             {
-                //A = 'N'; B = 'N'
-                T temp = 0.0;
+                // A = 'N'; B = 'N'
                 //std::cout << "lda:" << lda << ", ldb:" << ldb << ", ldc:" << ldc << "\n";
                 //std::cout << "n:" << n << ", m:" << m << ", k:" << k << "\n";
-#pragma omp parallel for collapse(2) private(temp) schedule( LAMA_OMP_SCHEDULE )
+
+#pragma omp parallel for collapse(2) schedule( LAMA_OMP_SCHEDULE )
                 for ( int h = 0; h < n; h++ )
                 {
                     for ( int i = 0; i < m; i++ )
                     {
-                        temp = 0.0;
+                        T temp = 0.0;
                         for ( int j = 0; j < k; j++ )
                         {
                             temp += A[lda * i + j] * B[ldb * j + h];
@@ -348,7 +348,7 @@ void OpenMPBLAS3::setInterface( BLASInterface& BLAS )
 #define LAMA_BLAS3_REGISTER(z, I, _)                                            \
     LAMA_INTERFACE_REGISTER_T( BLAS, gemm, ARITHMETIC_TYPE##I )                 \
 
-BOOST_PP_REPEAT( ARITHMETIC_TYPE_CNT, LAMA_BLAS3_REGISTER, _ )
+    BOOST_PP_REPEAT( ARITHMETIC_TYPE_CNT, LAMA_BLAS3_REGISTER, _ )
 
 #undef LAMA_BLAS3_REGISTER
 
