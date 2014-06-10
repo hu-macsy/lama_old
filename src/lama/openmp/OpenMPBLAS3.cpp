@@ -341,12 +341,12 @@ void OpenMPBLAS3::gemm(
 /*     Template instantiations via registration routine                        */
 /* --------------------------------------------------------------------------- */
 
-void OpenMPBLAS3::setInterface( BLASInterface& BLAS )
+void OpenMPBLAS3::setInterface( BLASInterface& blas )
 {
     LAMA_LOG_INFO( logger, "set BLAS3 routines for OpenMP in Interface" )
 
 #define LAMA_BLAS3_REGISTER(z, I, _)                                            \
-    LAMA_INTERFACE_REGISTER_T( BLAS, gemm, ARITHMETIC_TYPE##I )                 \
+    LAMA_INTERFACE_REGISTER_T( blas, gemm, ARITHMETIC_TYPE##I )                 \
 
     BOOST_PP_REPEAT( ARITHMETIC_TYPE_CNT, LAMA_BLAS3_REGISTER, _ )
 

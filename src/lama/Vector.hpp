@@ -93,7 +93,7 @@ public:
      * @brief Vector factory to get a matrix of a certain kind and a certain type
      *
      * @param[in] kind is either DENSE or SPARSE
-     * @param[in] type specifies the value type as the elements, e.g. FLOAT, DOUBLE
+     * @param[in] valueType specifies the value type as the elements, e.g. FLOAT, DOUBLE
      *
      * This factory operation allows to create a vector at runtime of any format or any type.
      * Internally, all vector classes must register their create operation.

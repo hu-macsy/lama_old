@@ -1,5 +1,5 @@
 /**
- * @file CommunicatorManager.cpp
+ * @file AMGSetupManager.cpp
  *
  * @license
  * Copyright (c) 2009-2013
