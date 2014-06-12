@@ -74,8 +74,8 @@ inline static char trans2CT( CBLAS_TRANSPOSE trans )
 
 template<>
 void MICBLAS2::gemv(
-    const enum CBLAS_ORDER order,
-    const enum CBLAS_TRANSPOSE transA,
+    const CBLAS_ORDER order,
+    const CBLAS_TRANSPOSE transA,
     const IndexType m,
     const IndexType n,
     const float alpha,
@@ -138,8 +138,8 @@ void MICBLAS2::gemv(
 
 template<>
 void MICBLAS2::gemv(
-    const enum CBLAS_ORDER order,
-    const enum CBLAS_TRANSPOSE transA,
+    const CBLAS_ORDER order,
+    const CBLAS_TRANSPOSE transA,
     const IndexType m,
     const IndexType n,
     const double alpha,

@@ -46,10 +46,14 @@ enum CBLAS_SIDE {CblasLeft=141, CblasRight=142};
 
 */
 
-/** Solution 1: recommended: use cblas interface of MKL */
+/** Solution 1: use cblas interface of MKL
+ *  
+ *  - recommended when using MKL
+ *  - mandatory when also using other MKL routines (e.g. for CSR matrices)
+ */
 
-// #include <mkl_cblas.h>
+#include <mkl_cblas.h>
 
-#include <lama/cblas/include/cblas.h>
+//  #include <lama/cblas/include/cblas.h>
 
 #endif //  LAMA_CBLAS_HPP_

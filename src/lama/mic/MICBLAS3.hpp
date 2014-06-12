@@ -57,9 +57,9 @@ public:
 
     template<typename T>
     static void gemm(
-        const enum CBLAS_ORDER order,
-        const enum CBLAS_TRANSPOSE TransA,
-        const enum CBLAS_TRANSPOSE TransB,
+        const CBLAS_ORDER order,
+        const CBLAS_TRANSPOSE TransA,
+        const CBLAS_TRANSPOSE TransB,
         const IndexType M,
         const IndexType N,
         const IndexType K,

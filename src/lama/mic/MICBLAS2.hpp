@@ -38,7 +38,7 @@
 
 // others
 #include <lama/LAMATypes.hpp>
-
+#include <lama/cblas.hpp>
 
 // logging
 #include <logging/logging.hpp>
@@ -63,8 +63,8 @@ public:
      */
     template<typename T>
     static void gemv(
-        const enum CBLAS_ORDER order,
-        const enum CBLAS_TRANSPOSE trans,
+        const CBLAS_ORDER order,
+        const CBLAS_TRANSPOSE trans,
         const IndexType m,
         const IndexType n,
         const T alpha,
