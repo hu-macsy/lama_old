@@ -99,7 +99,7 @@ static const PartitionId nPartition = std::numeric_limits<PartitionId>::max();
 
 // Number of supported arithmetic types, maximal number is currently 4
 
-#define ARITHMETIC_TYPE_CNT 4
+#define ARITHMETIC_TYPE_CNT 3
 
 // List here all arithmetic types for which matrices, storages might be created
 
@@ -118,7 +118,7 @@ static const PartitionId nPartition = std::numeric_limits<PartitionId>::max();
 
 // For convenience we define ARRAY_TYPE
 
-#define ARRAY_TYPE_CNT 5
+#define ARRAY_TYPE_CNT 4
 
 #define ARRAY_TYPE0    int
 #define ARRAY_TYPE1    float

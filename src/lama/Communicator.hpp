@@ -54,6 +54,7 @@
 
 // boost
 #include <boost/shared_ptr.hpp>
+#include <boost/preprocessor.hpp>
 
 #include <memory>
 #include <vector>
@@ -201,16 +202,6 @@ public:
      * This method assumes a circular ring formed by all processors.
      */
     inline PartitionId getNeighbor( int pos ) const;
-
-    /** All-to-all exchange of an IndexType value between all processors.
-     *
-     * @param[out] recvValues   will contain one value from each processor
-     * @param[in]  sendValues   must contain one value for each processor
-     *
-     * recvValues and sendValues must both have a size of communicator size.
-     * recvValues[i] on processor j contains sendValues[j] of processor i.
-     */
-    virtual void all2all( IndexType recvValues[], const IndexType sendValues[] ) const = 0;
 
     /**************************************************************************************
      *                                                                                    *
@@ -404,17 +395,6 @@ public:
      *      const int direction ) const = 0;
      */
 
-    /** Macro defines all virtual routines for other types. 
-     * 
-     *  @param TypeId name of the C++ type for which routines are defined, e.g. float, double
-     * 
-     *  Note: this macro is needed as virtual routines must not be templates
-     */
-
-#include <boost/preprocessor.hpp>
-
-#define COMMUNICATOR_METHODS( z, I, _)                                                    \
-                                                                                          \
     /** @brief Exchange of data between all processors by communication plans.
      *  
      *  @param[out] recvData   buffer for data received from other processors
@@ -427,7 +407,28 @@ public:
      *   
      *  The size of recvData must be recvPlan.totalQuantity().  
      *  The size of sendData must be sendPlan.totalQuantity(). 
-     */                                                                   \
+     */                                                                   
+
+    /** All-to-all exchange of an IndexType value between all processors.
+     *
+     * @param[out] recvValues   will contain one value from each processor
+     * @param[in]  sendValues   must contain one value for each processor
+     *
+     * recvValues and sendValues must both have a size of communicator size.
+     * recvValues[i] on processor j contains sendValues[j] of processor i.
+     */
+    virtual void all2all( IndexType recvValues[], const IndexType sendValues[] ) const = 0;
+
+    /** @brief Expanded macro by BOOST_PP_REPEAT that defines all virtual routines for one type.
+     * 
+     *  @param z next available repetition dimension
+     *  @param I is the actual instantation by BOOST_PP_REPEAT
+     *  @param _ remains unused here
+     * 
+     *  Note: this macro is needed as virtual routines must not be templates
+     */
+
+#define COMMUNICATOR_METHODS( z, I, _)                                    \
                                                                           \
     virtual void exchangeByPlan(                                          \
         ARRAY_TYPE##I* const recvData,                                    \

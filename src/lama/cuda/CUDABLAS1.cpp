@@ -59,33 +59,33 @@ LAMA_LOG_DEF_LOGGER( CUDABLAS1::logger, "CUDA.BLAS1" )
 /*    scale                                                                               */
 /* ---------------------------------------------------------------------------------------*/
 
-// Note: the wrapper routines could be static routines on its own. But using
+// Note: the cublasWrapper routines could be static routines on its own. But using
 //       a common template routine is helpful to guarantee correct syntax
 
 template<typename T>
-static inline void wrapperScale( IndexType n, T alpha, T* x_d, IndexType incX );
+static inline void cublasWrapperScale( int n, T alpha, T* x_d, int incX );
 
 template<>
-void wrapperScale( IndexType n, float alpha, float* x_d, IndexType incX )
+void cublasWrapperScale( int n, float alpha, float* x_d, int incX )
 {
     cublasSscal( n, alpha, x_d, incX );
 }
 
 template<>
-void wrapperScale( IndexType n, double alpha, double* x_d, IndexType incX )
+void cublasWrapperScale( int n, double alpha, double* x_d, int incX )
 {
     cublasDscal( n, alpha, x_d, incX );
 }
 
 template<>
-void wrapperScale( IndexType n, ComplexFloat alpha, ComplexFloat* x_d, IndexType incX )
+void cublasWrapperScale( int n, ComplexFloat alpha, ComplexFloat* x_d, int incX )
 {
     // use of cublasCast to convert ComplexFloat to cuFloatComplex via reinterpret_cast
     cublasCscal( n, cublasCast( alpha ), cublasCast( x_d ), incX );
 }
 
 template<>
-void wrapperScale( IndexType n, ComplexDouble alpha, ComplexDouble* x_d, IndexType incX )
+void cublasWrapperScale( int n, ComplexDouble alpha, ComplexDouble* x_d, int incX )
 {
     // use of cublasCast to convert ComplexDouble to cuDoubleComplex via reinterpret_cast
     cublasZscal( n, cublasCast( alpha ), cublasCast( x_d ), incX );
@@ -117,7 +117,7 @@ void CUDABLAS1::scal( IndexType n, const T alpha, T* x_d, const IndexType incX, 
     cublasSetKernelStream( stream );
     LAMA_CHECK_CUBLAS_ERROR
 
-    wrapperScale( n, alpha, x_d, incX );
+    cublasWrapperScale( static_cast<int>( n ), alpha, x_d, static_cast<int>( incX ) );
 
     // No error check here possible as kernel is started asynchronously
 
@@ -136,22 +136,22 @@ void CUDABLAS1::scal( IndexType n, const T alpha, T* x_d, const IndexType incX, 
 /* ---------------------------------------------------------------------------------------*/
 
 template<typename T>
-static inline T wrapperNrm2( IndexType n, const T* x_d, IndexType incX );
+static inline T cublasWrapperNrm2( int n, const T* x_d, int incX );
 
 template<>
-float wrapperNrm2( IndexType n, const float* x_d, IndexType incX )
+float cublasWrapperNrm2( int n, const float* x_d, int incX )
 {
     return cublasSnrm2( n, x_d, incX );
 }
 
 template<>
-double wrapperNrm2( IndexType n, const double* x_d, IndexType incX )
+double cublasWrapperNrm2( int n, const double* x_d, int incX )
 {
     return cublasDnrm2( n, x_d, incX );
 }
 
 template<>
-ComplexFloat wrapperNrm2( IndexType n, const ComplexFloat* x_d, IndexType incX )
+ComplexFloat cublasWrapperNrm2( int n, const ComplexFloat* x_d, int incX )
 {
     // CUBLAS returns only float result so we convert it back to Complex
 
@@ -161,7 +161,7 @@ ComplexFloat wrapperNrm2( IndexType n, const ComplexFloat* x_d, IndexType incX )
 }
 
 template<>
-ComplexDouble wrapperNrm2( IndexType n, const ComplexDouble* x_d, IndexType incX )
+ComplexDouble cublasWrapperNrm2( int n, const ComplexDouble* x_d, int incX )
 {
     // CUBLAS returns only double result so we convert it back to Complex
 
@@ -196,7 +196,7 @@ T CUDABLAS1::nrm2( IndexType n, const T* x_d, IndexType incX, SyncToken* syncTok
     cublasSetKernelStream( stream );
     LAMA_CHECK_CUBLAS_ERROR
 
-    T res = wrapperNrm2( n, x_d, incX );
+    T res = cublasWrapperNrm2( static_cast<int>( n ), x_d, static_cast<int>( incX ) );
 
     // No error check here possible as kernel is started asynchronously
 
@@ -217,22 +217,22 @@ T CUDABLAS1::nrm2( IndexType n, const T* x_d, IndexType incX, SyncToken* syncTok
 /* ---------------------------------------------------------------------------------------*/
 
 template<typename T>
-static inline T wrapperAsum( IndexType n, const T* x_d, IndexType incX );
+static inline T cublasWrapperAsum( int n, const T* x_d, int incX );
 
 template<>
-float wrapperAsum( IndexType n, const float* x_d, IndexType incX )
+float cublasWrapperAsum( int n, const float* x_d, int incX )
 {
     return cublasSasum( n, x_d, incX );
 }
 
 template<>
-double wrapperAsum( IndexType n, const double* x_d, IndexType incX )
+double cublasWrapperAsum( int n, const double* x_d, int incX )
 {
     return cublasDasum( n, x_d, incX );
 }
 
 template<>
-ComplexFloat wrapperAsum( IndexType n, const ComplexFloat* x_d, IndexType incX )
+ComplexFloat cublasWrapperAsum( int n, const ComplexFloat* x_d, int incX )
 {
     // CUBLAS returns only float result so we convert it back to Complex
 
@@ -242,7 +242,7 @@ ComplexFloat wrapperAsum( IndexType n, const ComplexFloat* x_d, IndexType incX )
 }
 
 template<>
-ComplexDouble wrapperAsum( IndexType n, const ComplexDouble* x_d, IndexType incX )
+ComplexDouble cublasWrapperAsum( int n, const ComplexDouble* x_d, int incX )
 {
     // CUBLAS returns only double result so we convert it back to Complex
 
@@ -277,7 +277,7 @@ T CUDABLAS1::asum( const IndexType n, const T* x_d, const IndexType incX, SyncTo
     cublasSetKernelStream( stream );
     LAMA_CHECK_CUBLAS_ERROR
 
-    T res = wrapperAsum( n, x_d, incX );
+    T res = cublasWrapperAsum( static_cast<int>( n ), x_d, static_cast<int>( incX ) );
 
     // No error check here possible as kernel is started asynchronously
 
@@ -298,33 +298,33 @@ T CUDABLAS1::asum( const IndexType n, const T* x_d, const IndexType incX, SyncTo
 /* ---------------------------------------------------------------------------------------*/
 
 template<typename T>
-static IndexType wrapperIamax( IndexType n, const T* x_d, IndexType incX );
+static int cublasWrapperIamax( int n, const T* x_d, int incX );
 
 template<>
-IndexType wrapperIamax( IndexType n, const float* x_d, IndexType incX )
+int cublasWrapperIamax( int n, const float* x_d, int incX )
 {
-    IndexType iamax = cublasIsamax( n, x_d, incX );
+    int iamax = cublasIsamax( n, x_d, incX );
     return iamax;
 }
 
 template<>
-IndexType wrapperIamax( IndexType n, const double* x_d, IndexType incX )
+int cublasWrapperIamax( int n, const double* x_d, int incX )
 {
-    IndexType iamax = cublasIdamax( n, x_d, incX );
+    int iamax = cublasIdamax( n, x_d, incX );
     return iamax;
 }
 
 template<>
-IndexType wrapperIamax( IndexType n, const ComplexFloat* x_d, IndexType incX )
+int cublasWrapperIamax( int n, const ComplexFloat* x_d, int incX )
 {
-    IndexType iamax = cublasIcamax( n, cublasCast( x_d ), incX );
+    int iamax = cublasIcamax( n, cublasCast( x_d ), incX );
     return iamax;
 }
 
 template<>
-IndexType wrapperIamax( IndexType n, const ComplexDouble* x_d, IndexType incX )
+int cublasWrapperIamax( int n, const ComplexDouble* x_d, int incX )
 {
-    IndexType iamax = cublasIzamax( n, cublasCast( x_d ), incX );
+    int iamax = cublasIzamax( n, cublasCast( x_d ), incX );
     return iamax;
 }
 
@@ -349,7 +349,7 @@ IndexType CUDABLAS1::iamax( const IndexType n, const T* x_d, const IndexType inc
     cublasSetKernelStream( stream );
     LAMA_CHECK_CUBLAS_ERROR
 
-    IndexType iamax = wrapperIamax( n, x_d, incX );
+    IndexType iamax = cublasWrapperIamax( n, x_d, incX );
 
     // No error check here possible as kernel is started asynchronously
 
@@ -370,28 +370,28 @@ IndexType CUDABLAS1::iamax( const IndexType n, const T* x_d, const IndexType inc
 /* ---------------------------------------------------------------------------------------*/
 
 template<typename T>
-static inline void wrapperSwap( IndexType n, T* x_d, IndexType incX, T* y_d, IndexType incY  );
+static inline void cublasWrapperSwap( IndexType n, T* x_d, IndexType incX, T* y_d, IndexType incY  );
 
 template<>
-void wrapperSwap( IndexType n, float* x_d, IndexType incX, float* y_d, IndexType incY )
+void cublasWrapperSwap( int n, float* x_d, int incX, float* y_d, int incY )
 {
     cublasSswap( n, x_d, incX, y_d, incY );
 }
 
 template<>
-void wrapperSwap( IndexType n, double* x_d, IndexType incX, double* y_d, IndexType incY )
+void cublasWrapperSwap( int n, double* x_d, int incX, double* y_d, int incY )
 {
     cublasDswap( n, x_d, incX, y_d, incY );
 }
 
 template<>
-void wrapperSwap( IndexType n, ComplexFloat* x_d, IndexType incX, ComplexFloat* y_d, IndexType incY )
+void cublasWrapperSwap( int n, ComplexFloat* x_d, int incX, ComplexFloat* y_d, int incY )
 {
     cublasCswap( n, cublasCast( x_d ), incX, cublasCast( y_d ), incY );
 }
 
 template<>
-void wrapperSwap( IndexType n, ComplexDouble* x_d, IndexType incX, ComplexDouble* y_d, IndexType incY )
+void cublasWrapperSwap( int n, ComplexDouble* x_d, int incX, ComplexDouble* y_d, int incY )
 {
     cublasZswap( n, cublasCast( x_d ), incX, cublasCast( y_d ), incY );
 }
@@ -428,7 +428,7 @@ void CUDABLAS1::swap(
     cublasSetKernelStream( stream );
     LAMA_CHECK_CUBLAS_ERROR
 
-    wrapperSwap( n, x_d, incX, y_d, incY );
+    cublasWrapperSwap( static_cast<int>( n ), x_d, static_cast<int>( incX ), y_d, static_cast<int>( incY ) );
 
     // No error check here possible as kernel is started asynchronously
 
@@ -448,28 +448,28 @@ void CUDABLAS1::swap(
 
 
 template<typename T>
-static inline void wrapperCopy( IndexType n, const T* x_d, IndexType incX, T* y_d, IndexType incY  );
+static inline void cublasWrapperCopy( int n, const T* x_d, int incX, T* y_d, int incY  );
 
 template<>
-void wrapperCopy( IndexType n, const float* x_d, IndexType incX, float* y_d, IndexType incY )
+void cublasWrapperCopy( int n, const float* x_d, int incX, float* y_d, int incY )
 {
     cublasScopy( n, x_d, incX, y_d, incY );
 }
 
 template<>
-void wrapperCopy( IndexType n, const double* x_d, IndexType incX, double* y_d, IndexType incY )
+void cublasWrapperCopy( int n, const double* x_d, int incX, double* y_d, int incY )
 {
     cublasDcopy( n, x_d, incX, y_d, incY );
 }
 
 template<>
-void wrapperCopy( IndexType n, const ComplexFloat* x_d, IndexType incX, ComplexFloat* y_d, IndexType incY )
+void cublasWrapperCopy( int n, const ComplexFloat* x_d, int incX, ComplexFloat* y_d, int incY )
 {
     cublasCcopy( n, cublasCast( x_d ), incX, cublasCast( y_d ), incY );
 }
 
 template<>
-void wrapperCopy( IndexType n, const ComplexDouble* x_d, IndexType incX, ComplexDouble* y_d, IndexType incY )
+void cublasWrapperCopy( int n, const ComplexDouble* x_d, int incX, ComplexDouble* y_d, int incY )
 {
     cublasZcopy( n, cublasCast( x_d ), incX, cublasCast( y_d ), incY );
 }
@@ -500,7 +500,7 @@ void CUDABLAS1::copy( IndexType n, const T* x_d, IndexType incX, T* y_d, IndexTy
     cublasSetKernelStream( stream );
     LAMA_CHECK_CUBLAS_ERROR
 
-    wrapperCopy( n, x_d, incX, y_d, incY );
+    cublasWrapperCopy( static_cast<int>( n ), x_d, static_cast<int>( incX ), y_d, static_cast<int>( incY ) );
 
     // No error check here possible as kernel is started asynchronously
 
@@ -520,40 +520,40 @@ void CUDABLAS1::copy( IndexType n, const T* x_d, IndexType incX, T* y_d, IndexTy
 
 
 template<typename T>
-static inline void wrapperAxpy( IndexType n, T alpha, const T* x_d, IndexType incX, T* y_d, IndexType incY  );
+static inline void cublasWrapperAxpy( int n, T alpha, const T* x_d, int incX, T* y_d, int incY  );
 
 template<>
-void wrapperAxpy( IndexType n, float alpha, const float* x_d, IndexType incX, float* y_d, IndexType incY )
+void cublasWrapperAxpy( int n, float alpha, const float* x_d, int incX, float* y_d, int incY )
 {
     cublasSaxpy( n, alpha, x_d, incX, y_d, incY );
 }
 
 template<>
-void wrapperAxpy( IndexType n, double alpha, const double* x_d, IndexType incX, double* y_d, IndexType incY )
+void cublasWrapperAxpy( int n, double alpha, const double* x_d, int incX, double* y_d, int incY )
 {
     cublasDaxpy( n, alpha, x_d, incX, y_d, incY );
 }
 
 template<>
-void wrapperAxpy( IndexType n, ComplexFloat alpha, 
-                  const ComplexFloat* x_d, IndexType incX,
-                  ComplexFloat* y_d, IndexType incY )
+void cublasWrapperAxpy( int n, ComplexFloat alpha, 
+                  const ComplexFloat* x_d, int incX,
+                  ComplexFloat* y_d, int incY )
 {
     cublasCaxpy( n, cublasCast( alpha ), cublasCast( x_d ), incX, cublasCast( y_d ), incY );
 }
 
 template<>
-void wrapperAxpy( IndexType n, ComplexDouble alpha, 
-                  const ComplexDouble* x_d, IndexType incX,
-                  ComplexDouble* y_d, IndexType incY )
+void cublasWrapperAxpy( int n, ComplexDouble alpha, 
+                  const ComplexDouble* x_d, int incX,
+                  ComplexDouble* y_d, int incY )
 {
     cublasZaxpy( n, cublasCast( alpha ), cublasCast( x_d ), incX, cublasCast( y_d ), incY );
 }
 
 template<typename T>
-void CUDABLAS1::axpy( IndexType n, T alpha,
-                      const T* x_d, IndexType incX,
-                      T* y_d, const IndexType incY,
+void CUDABLAS1::axpy( int n, T alpha,
+                      const T* x_d, int incX,
+                      T* y_d, const int incY,
                       SyncToken* syncToken )
 {
     LAMA_REGION( "CUDA.BLAS1.axpy" )
@@ -580,7 +580,7 @@ void CUDABLAS1::axpy( IndexType n, T alpha,
     cublasSetKernelStream( stream );
     LAMA_CHECK_CUBLAS_ERROR
 
-    wrapperAxpy( n, alpha, x_d, incX, y_d, incY );
+    cublasWrapperAxpy( n, alpha, x_d, incX, y_d, incY );
 
     // No error check here possible as kernel is started asynchronously
 
@@ -599,24 +599,24 @@ void CUDABLAS1::axpy( IndexType n, T alpha,
 /* ---------------------------------------------------------------------------------------*/
 
 template<typename T>
-static inline T wrapperDot( IndexType n, const T* x_d, IndexType incX, const T* y_d, IndexType incY  );
+static inline T cublasWrapperDot( int n, const T* x_d, int incX, const T* y_d, int incY  );
 
 template<>
-float wrapperDot( IndexType n, const float* x_d, IndexType incX, const float* y_d, IndexType incY )
+float cublasWrapperDot( int n, const float* x_d, int incX, const float* y_d, int incY )
 {
     return cublasSdot( n, x_d, incX, y_d, incY );
 }
 
 template<>
-double wrapperDot( IndexType n, const double* x_d, IndexType incX, const double* y_d, IndexType incY )
+double cublasWrapperDot( int n, const double* x_d, int incX, const double* y_d, int incY )
 {
     return cublasDdot( n, x_d, incX, y_d, incY );
 }
 
 template<>
-ComplexFloat wrapperDot( IndexType n, 
-                         const ComplexFloat* x_d, IndexType incX,
-                         const ComplexFloat* y_d, IndexType incY )
+ComplexFloat cublasWrapperDot( int n, 
+                         const ComplexFloat* x_d, int incX,
+                         const ComplexFloat* y_d, int incY )
 {
     cuFloatComplex dotResult = cublasCdotu ( n, cublasCast( x_d ), incX, cublasCast( y_d ), incY );
 
@@ -624,8 +624,8 @@ ComplexFloat wrapperDot( IndexType n,
 }
 
 template<>
-ComplexDouble wrapperDot( IndexType n, const ComplexDouble* x_d, IndexType incX,
-                          const ComplexDouble* y_d, IndexType incY )
+ComplexDouble cublasWrapperDot( int n, const ComplexDouble* x_d, int incX,
+                          const ComplexDouble* y_d, int incY )
 {
     cuDoubleComplex dotResult = cublasZdotu( n, cublasCast( x_d ), incX, cublasCast( y_d ), incY );
 
@@ -666,7 +666,7 @@ T CUDABLAS1::dot(
     cublasSetKernelStream( stream );
     LAMA_CHECK_CUBLAS_ERROR
 
-    T res = wrapperDot( n, x_d, incX, y_d, incY );
+    T res = cublasWrapperDot( static_cast<int>( n ), x_d, static_cast<int>( incX ), y_d, static_cast<int>( incY ) );
 
     // No error check here possible as kernel is started asynchronously
 
