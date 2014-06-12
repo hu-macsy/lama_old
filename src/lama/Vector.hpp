@@ -470,10 +470,6 @@ public:
      */
     virtual void redistribute( DistributionPtr distribution ) = 0;
 
-    /** Type definition of a argumentless function to create a vector. */
-
-    typedef Vector* ( *CreateFn ) ();
-
 protected:
 
     /**
@@ -508,13 +504,46 @@ protected:
      */
     virtual void resizeImpl() = 0;
 
+    ContextPtr mContext; //!< decides about location of vector operations
+
+    LAMA_LOG_DECL_STATIC_LOGGER( logger )
+
+    /* ---------------------------------------------------------------------------------------*/
+    /*   Factory to create Vector of derived type                                             */
+    /* ---------------------------------------------------------------------------------------*/
+
+    /** Type definition of a argumentless function to create a vector. 
+     *
+     *  @return new Vector object, calling routine takes over the ownership
+     */
+
+    typedef Vector* ( *CreateFn ) ();
+
     /** This method should be called by vector classes to register their create operation. */
 
     static void addCreator( const VectorKind kind, Scalar::ScalarType type, CreateFn create );
 
-    ContextPtr mContext; //!< decides about location of vector operations
+private:
 
-    LAMA_LOG_DECL_STATIC_LOGGER( logger )
+    /* ---------------------------------------------------------------------------------------*/
+    /*   Factory defintions                                                                   */
+    /* ---------------------------------------------------------------------------------------*/
+
+    /** Type defintition for the key arguments used to create a Vector. */
+
+    typedef std::pair<Vector::VectorKind, Scalar::ScalarType> CreatorKey;
+
+    /** Map container to get for the key the create function. */
+
+    typedef std::map< CreatorKey, Vector::CreateFn > CreatorMap;
+
+    /**  
+     *  Getter method for the singleton factory.
+     *
+     *  Getter method instead of a member variable guarantees that order of 
+     *  static intialization does not matter.
+     */
+    static CreatorMap& getFactory();
 };
 
 IndexType Vector::size() const

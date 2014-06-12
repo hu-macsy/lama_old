@@ -57,15 +57,9 @@ namespace lama
 
 LAMA_LOG_DEF_LOGGER( Vector::logger, "Vector" )
 
-/** The key for the matrix create routine is given by the pair of format and type. */
-
-typedef std::pair<Vector::VectorKind, Scalar::ScalarType> CreatorKey;
-
-/** Map container to get for the key the create function. */
-
-typedef std::map< CreatorKey, Vector::CreateFn > CreatorMap;
-
-/** Factory itself is given by a map container. */
+/* ---------------------------------------------------------------------------------------*/
+/*    Factory to create a vector                                                          */
+/* ---------------------------------------------------------------------------------------*/
 
 /**  
  *  Getter method for the singleton factory.
@@ -73,7 +67,7 @@ typedef std::map< CreatorKey, Vector::CreateFn > CreatorMap;
  *  Getter method instead of a variable guarantees that order of 
  *  static intialization does not matter.
  */
-static CreatorMap& getFactory()
+Vector::CreatorMap& Vector::getFactory()
 {
     static std::auto_ptr< CreatorMap> factory;
 
@@ -85,7 +79,7 @@ static CreatorMap& getFactory()
     return *factory;
 }
 
-void Vector::addCreator( const VectorKind kind, Scalar::ScalarType type, Vector* ( *create ) () )
+void Vector::addCreator( const VectorKind kind, Scalar::ScalarType type, CreateFn create )
 {
     CreatorMap& factory = getFactory();
 
@@ -122,6 +116,10 @@ Vector* Vector::createVector( const Scalar::ScalarType valueType, DistributionPt
     return v;
 }
 
+/* ---------------------------------------------------------------------------------------*/
+/*    Constructor / Destructor                                                            */
+/* ---------------------------------------------------------------------------------------*/
+
 Vector::Vector( const IndexType size, ContextPtr context )
     : Distributed( shared_ptr<Distribution>( new NoDistribution( size ) ) ), mContext( context )
 {
@@ -156,6 +154,10 @@ Vector::~Vector()
 {
     LAMA_LOG_INFO( logger, "~Vector(" << getDistribution().getGlobalSize() << ")" )
 }
+
+/* ---------------------------------------------------------------------------------------*/
+/*    Assignment operator                                                                 */
+/* ---------------------------------------------------------------------------------------*/
 
 Vector& Vector::operator=( const Expression_MV& expression )
 {
@@ -373,6 +375,10 @@ Vector& Vector::operator=( const Scalar value )
     return *this;
 }
 
+/* ---------------------------------------------------------------------------------------*/
+/*   Compound assignments                                                                 */
+/* ---------------------------------------------------------------------------------------*/
+
 Vector& Vector::operator*=( const Scalar value )
 {
     return operator=( Expression_SV( value, *this ) );
@@ -424,6 +430,10 @@ Vector& Vector::operator-=( const Vector& other )
     return operator=( Expression_SV_SV( Expression_SV( Scalar( 1 ), *this ),
                                         Expression_SV( Scalar( -1 ), other ) ) );
 }
+
+/* ---------------------------------------------------------------------------------------*/
+/*   Miscellaneous                                                                        */
+/* ---------------------------------------------------------------------------------------*/
 
 const Scalar Vector::operator()( const IndexType i ) const
 {
