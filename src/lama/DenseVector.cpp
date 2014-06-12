@@ -1228,19 +1228,20 @@ static void writeDataToXDRFile( XDRFileStream& outFile, const DataType* data, co
 {
     if ( typeid( FileType ) == typeid( DataType ) )
     {
-        // no type conversion needed
-        outFile.write( data, n );
+        outFile.write( data, n );  // no conversion needed
         return;
     }
 
-    FileType* buffer = new FileType[n];
+    // so user data has to be converted in file type data
+    
+    boost::scoped_array<FileType> buffer( new FileType[n] );
 
     for ( IndexType i = 0; i < n; i++ )
     {
-        buffer[i] = data[i];
+        buffer[i] = static_cast<FileType>( data[i] );
     }
-    outFile.write( buffer, n );
-    delete[] buffer;
+
+    outFile.write( buffer.get(), n );
 }
 
 template<typename T>
