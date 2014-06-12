@@ -61,9 +61,9 @@ inline static char trans2C( CBLAS_TRANSPOSE trans )
 
 template<>
 void MICBLAS3::gemm(
-    const enum CBLAS_ORDER order,
-    const enum CBLAS_TRANSPOSE transA,
-    const enum CBLAS_TRANSPOSE transB,
+    const CBLAS_ORDER order,
+    const CBLAS_TRANSPOSE transA,
+    const CBLAS_TRANSPOSE transB,
     const IndexType m,
     const IndexType n,
     const IndexType k,
@@ -120,9 +120,9 @@ void MICBLAS3::gemm(
 
 template<>
 void MICBLAS3::gemm(
-    const enum CBLAS_ORDER order,
-    const enum CBLAS_TRANSPOSE transA,
-    const enum CBLAS_TRANSPOSE transB,
+    const CBLAS_ORDER order,
+    const CBLAS_TRANSPOSE transA,
+    const CBLAS_TRANSPOSE transB,
     const IndexType m,
     const IndexType n,
     const IndexType k,
