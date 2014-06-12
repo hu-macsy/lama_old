@@ -560,7 +560,7 @@ T BLAS_BLAS1::dot(
         LAMA_LOG_WARN( logger, "no asynchronous execution for openmp possible at this level." )
     }
 
-    return wrapperDot( n, x, incX, y, incY );
+    return wrapperDot( static_cast<int>( n ), x, static_cast<int>( incX ), y, static_cast<int>( incY ) );
 }
 
 /* --------------------------------------------------------------------------- */
