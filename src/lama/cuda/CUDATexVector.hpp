@@ -53,73 +53,73 @@ static texture<int2, 1> texVectorDXref;
 
 static texture<int, 1> texVectorIref;
 
-__inline__ void vectorBindTexture( const float* vector )
+__inline__ static void vectorBindTexture( const float* vector )
 {
     LAMA_CUDA_RT_CALL( cudaBindTexture( NULL, texVectorSXref, vector ), "bind float vector x to texture" )
 }
 
-__inline__ void vectorBindTexture( const double* vector )
+__inline__ static void vectorBindTexture( const double* vector )
 {
     LAMA_CUDA_RT_CALL( cudaBindTexture( NULL, texVectorDXref, vector ), "bind double vector x to texture" )
 }
 
-__inline__ void vectorBindTexture( const ComplexFloat* vector )
+__inline__ static void vectorBindTexture( const ComplexFloat* vector )
 {
     LAMA_CUDA_RT_CALL( cudaBindTexture( NULL, texVectorCXref, vector ), "bind ComplexFloat vector x to texture" )
 }
 
-__inline__ void vectorBindTexture( const ComplexDouble* vector )
+__inline__ static void vectorBindTexture( const ComplexDouble* vector )
 {
     LAMA_CUDA_RT_CALL( cudaBindTexture( NULL, texVectorZXref, vector ), "bind ComplexDouble vector x to texture" )
 }
 
-__inline__ void vectorBindTexture( const int* vector )
+__inline__ static void vectorBindTexture( const int* vector )
 {
     LAMA_CUDA_RT_CALL( cudaBindTexture( NULL, texVectorIref, vector ), "bind int vector x to texture" )
 }
 
-__inline__ void vectorUnbindTexture( const float* )
+__inline__ static void vectorUnbindTexture( const float* )
 {
     LAMA_CUDA_RT_CALL( cudaUnbindTexture( texVectorSXref ), "unbind float vector x from texture" )
 }
 
-__inline__ void vectorUnbindTexture( const double* )
+__inline__ static void vectorUnbindTexture( const double* )
 {
     LAMA_CUDA_RT_CALL( cudaUnbindTexture( texVectorDXref ), "unbind double vector x from texture" )
 }
 
-__inline__ void vectorUnbindTexture( const ComplexFloat* )
+__inline__ static void vectorUnbindTexture( const ComplexFloat* )
 {
     LAMA_CUDA_RT_CALL( cudaUnbindTexture( texVectorCXref ), "unbind ComplexFloat vector x from texture" )
 }
 
-__inline__ void vectorUnbindTexture( const ComplexDouble* )
+__inline__ static void vectorUnbindTexture( const ComplexDouble* )
 {
     LAMA_CUDA_RT_CALL( cudaUnbindTexture( texVectorZXref ), "unbind ComplexDouble vector x from texture" )
 }
 
-__inline__ void vectorUnbindTexture( const int* )
+__inline__ static void vectorUnbindTexture( const int* )
 {
     LAMA_CUDA_RT_CALL( cudaUnbindTexture( texVectorIref ), "unbind int vector x from texture" )
 }
 
 template<typename ValueType, bool useTexture>
 __inline__ __device__
-ValueType fetchVectorX( const ValueType* const x, const int i )
+static ValueType fetchVectorX( const ValueType* const x, const int i )
 {
     return x[i];
 }
 
 template<>
 __inline__ __device__
-float fetchVectorX<float, true>( const float* const, const int i )
+static float fetchVectorX<float, true>( const float* const, const int i )
 {
     return tex1Dfetch( texVectorSXref, i );
 }
 
 template<>
 __inline__ __device__
-double fetchVectorX<double, true>( const double* const, const int i )
+static double fetchVectorX<double, true>( const double* const, const int i )
 {
     int2 v = tex1Dfetch( texVectorDXref, i );
     return __hiloint2double( v.y, v.x );
@@ -127,14 +127,14 @@ double fetchVectorX<double, true>( const double* const, const int i )
 
 template<>
 __inline__ __device__
-int fetchVectorX<int, true>( const int* const, const int i )
+static int fetchVectorX<int, true>( const int* const, const int i )
 {
     return tex1Dfetch( texVectorIref, i );
 }
 
 template<>
 __inline__ __device__
-ComplexFloat fetchVectorX<ComplexFloat, true>( const ComplexFloat* const, const int i )
+static ComplexFloat fetchVectorX<ComplexFloat, true>( const ComplexFloat* const, const int i )
 {
     float2 v = tex1Dfetch( texVectorCXref, i );
     return ComplexFloat(v.x, v.y);
@@ -142,7 +142,7 @@ ComplexFloat fetchVectorX<ComplexFloat, true>( const ComplexFloat* const, const 
 
 template<>
 __inline__ __device__
-ComplexDouble fetchVectorX<ComplexDouble, true>( const ComplexDouble* const, const int i )
+static ComplexDouble fetchVectorX<ComplexDouble, true>( const ComplexDouble* const, const int i )
 {
     int4 u = tex1Dfetch( texVectorZXref, i );
     return ComplexDouble( __hiloint2double( u.y, u.x ), __hiloint2double( u.w, u.z));
