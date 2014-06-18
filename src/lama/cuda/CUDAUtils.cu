@@ -250,7 +250,8 @@ struct absolute_value: public thrust::unary_function<T,T>
     __host__ __device__
     T operator()( const T &x ) const
     {
-        return x < T( 0 ) ? -x : x;
+        // return x < T( 0 ) ? -x : x;
+        return abs( x );
     }
 };
 

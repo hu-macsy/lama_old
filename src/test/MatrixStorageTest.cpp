@@ -530,6 +530,8 @@ LAMA_COMMON_TEST_CASE_TEMPLATE( MatrixStorageTest, StorageType, normTest )
 
     setDenseData( mMatrixStorage );
 
+    LAMA_LOG_INFO( logger, "maxNormTest, mMatrixStorage = " << mMatrixStorage )
+
     ValueType maxNorm = mMatrixStorage.maxNorm();
 
     ValueType expected = 9.3f; // maximal absolute value
