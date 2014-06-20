@@ -80,8 +80,8 @@ void wrapperGemv( char trans, IndexType m, IndexType n,
                   ComplexFloat alpha, const ComplexFloat* A, IndexType lda, const ComplexFloat* x, IndexType incX, 
                   ComplexFloat beta, ComplexFloat* y, IndexType incY )
 {
-    cublasCgemv( trans, m, n, *cublasCast( &alpha ), cublasCast( A ), lda, 
-                 cublasCast( x ), incX, *cublasCast( &beta ), cublasCast( y ), incY );
+    cublasCgemv( trans, m, n, cublasCast( alpha ), cublasCast( A ), lda, 
+                 cublasCast( x ), incX, cublasCast( beta ), cublasCast( y ), incY );
 }
 
 template<>
@@ -91,7 +91,7 @@ void wrapperGemv( char trans, IndexType m, IndexType n, ComplexDouble alpha,
                   ComplexDouble beta, ComplexDouble* y, IndexType incY )
 {
     cublasZgemv( trans, m, n, *cublasCast( &alpha ), cublasCast( A ), lda, 
-                 cublasCast( x ), incX, *cublasCast( &beta ), cublasCast( y ), incY );
+                 cublasCast( x ), incX, cublasCast( beta ), cublasCast( y ), incY );
 }
 
 /** gemv */

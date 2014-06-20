@@ -49,11 +49,11 @@ namespace lama
  */
 
 /**
- * @brief convert pointer to ComplexFloat to pointer cuFloatComplex
+ * @brief convert pointer to ComplexFloat to pointer cuComplex
  */
-static inline cuFloatComplex* cublasCast( ComplexFloat* x )
+static inline cuComplex* cublasCast( ComplexFloat* x )
 {
-    return reinterpret_cast<cuFloatComplex*>( x );
+    return reinterpret_cast<cuComplex*>( x );
 }
 
 /**
@@ -65,11 +65,11 @@ static inline cuDoubleComplex* cublasCast( ComplexDouble* x )
 }
 
 /**
- * @brief convert const pointer to ComplexFloat to const pointer cuFloatComplex
+ * @brief convert const pointer to ComplexFloat to const pointer cuComplex
  */
-static inline const cuFloatComplex* cublasCast( const ComplexFloat* x )
+static inline const cuComplex* cublasCast( const ComplexFloat* x )
 {
-    return reinterpret_cast<const cuFloatComplex*>( x );
+    return reinterpret_cast<const cuComplex*>( x );
 }
 
 /**
@@ -81,9 +81,9 @@ static inline const cuDoubleComplex* cublasCast( const ComplexDouble* x )
 }
 
 /**
- * @brief convert value ComplexFloat to value cuFloatComplex
+ * @brief convert value ComplexFloat to value cuComplex
  */
-static inline cuFloatComplex cublasCast( ComplexFloat x )
+static inline cuComplex cublasCast( ComplexFloat x )
 {
     return *cublasCast( &x );
 }

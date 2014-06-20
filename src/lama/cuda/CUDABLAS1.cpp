@@ -80,7 +80,7 @@ void cublasWrapperScale( int n, double alpha, double* x_d, int incX )
 template<>
 void cublasWrapperScale( int n, ComplexFloat alpha, ComplexFloat* x_d, int incX )
 {
-    // use of cublasCast to convert ComplexFloat to cuFloatComplex via reinterpret_cast
+    // use of cublasCast to convert ComplexFloat to cuComplex via reinterpret_cast
     cublasCscal( n, cublasCast( alpha ), cublasCast( x_d ), incX );
 }
 
@@ -618,7 +618,7 @@ ComplexFloat cublasWrapperDot( int n,
                          const ComplexFloat* x_d, int incX,
                          const ComplexFloat* y_d, int incY )
 {
-    cuFloatComplex dotResult = cublasCdotu ( n, cublasCast( x_d ), incX, cublasCast( y_d ), incY );
+    cuComplex dotResult = cublasCdotu ( n, cublasCast( x_d ), incX, cublasCast( y_d ), incY );
 
     return ComplexFloat( dotResult.x, dotResult.y );
 }
