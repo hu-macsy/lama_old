@@ -298,18 +298,18 @@ lama_summary_message ( "FOUND"
                        "'make userdoc' to build user documentation" )
 
 ## Metis
-#if ( METIS_FOUND )
-#    lama_status_message ( INFO "[FOUND]" "    Metis at ${METIS_INCLUDE_DIR}" )
-#else( METIS_FOUND )
-#    lama_status_message ( WARNING "[NOT FOUND]" "Metis" )
-#endif( METIS_FOUND )
+if ( METIS_FOUND )
+    lama_status_message ( INFO "[FOUND]" "    Metis at ${METIS_INCLUDE_DIR}" )
+else( METIS_FOUND )
+    lama_status_message ( WARNING "[NOT FOUND]" "Metis" )
+endif( METIS_FOUND )
 
 # ParMetis
-#if ( PARMETIS_FOUND )
-#    lama_status_message ( INFO "[FOUND]" "    ParMetis at ${PARMETIS_INCLUDE_DIR}" )
-#else( PARMETIS_FOUND )
-#    lama_status_message ( WARNING "[NOT FOUND]" "ParMetis not found" )
-#endif( PARMETIS_FOUND ) 
+if ( PARMETIS_FOUND )
+    lama_status_message ( INFO "[FOUND]" "    ParMetis at ${PARMETIS_INCLUDE_DIR}" )
+else( PARMETIS_FOUND )
+    lama_status_message ( WARNING "[NOT FOUND]" "ParMetis not found" )
+endif( PARMETIS_FOUND ) 
 
 message ( STATUS "" )
 
