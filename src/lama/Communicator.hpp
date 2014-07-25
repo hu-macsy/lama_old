@@ -664,12 +664,16 @@ public:
         return mCommunicatorType;
     }
 
-    /** This routine provides a (Host-) Context that might be more efficient for 
+    /** This routine provides a context that might be most efficient for 
      *  the communication of data.
      *
-     * @returns the ContextPtr
+     * @param[in] array is a LAMA array that is used for communication
+     * @returns a context pointer where data should be available for communication
+     *
+     * Note: this routine is mainly used for sending of values; in case of CUDA aware
+     *       communication it might return a CUDA context if the array has valid data there.
      */
-    virtual ContextPtr getCommunicationContext() const = 0;
+    virtual ContextPtr getCommunicationContext( const _LAMAArray& array ) const = 0;
 
 protected:
 
@@ -726,13 +730,19 @@ void Communicator::exchangeByPlan(
 
     IndexType recvSize = recvPlan.totalQuantity();
 
-    ContextPtr comCtx = getCommunicationContext();
+    // find a context where data of sendArray can be communicated
+    // if possible try to find a context where valid data is available
+    // CUDAaware MPI: might give GPU or Host context here
 
-    WriteAccess<T> recvData( recvArray, comCtx );
+    ContextPtr comCtx = getCommunicationContext( sendArray );
+
+    LAMA_LOG_DEBUG( logger, *this << ": exchangeByPlan, comCtx = " << *comCtx )
+
     ReadAccess<T> sendData( sendArray, comCtx );
 
-    recvData.clear();
-    recvData.resize( recvSize );
+    // Data will be received at the same context where send data is 
+
+    WriteOnlyAccess<T> recvData( recvArray, comCtx, recvSize );
 
     exchangeByPlan( recvData.get(), recvPlan, sendData.get(), sendPlan );
 }
@@ -752,11 +762,12 @@ SyncToken* Communicator::exchangeByPlanAsync(
 
     // allocate accesses, SyncToken will take ownership
 
-    boost::shared_ptr<HostWriteAccess<T> > recvData( new HostWriteAccess<T>( recvArray ) );
-    boost::shared_ptr<HostReadAccess<T> > sendData( new HostReadAccess<T>( sendArray ) );
+    ContextPtr comCtx = getCommunicationContext( sendArray );
 
-    recvData->clear();
-    recvData->resize( recvSize );
+    LAMA_LOG_DEBUG( logger, *this << ": exchangeByPlanAsync, comCtx = " << *comCtx )
+
+    boost::shared_ptr<ReadAccess<T> > sendData( new ReadAccess<T>( sendArray, comCtx ) );
+    boost::shared_ptr<WriteAccess<T> > recvData( new WriteOnlyAccess<T>( recvArray, comCtx, recvSize ) );
 
     SyncToken* token( exchangeByPlanAsync( recvData->get(), recvPlan, sendData->get(), sendPlan ) );
 

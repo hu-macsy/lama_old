@@ -322,6 +322,6 @@ MetisDistribution* MetisDistribution::create(
 
 /* ---------------------------------------------------------------------------------*/
 
-bool MetisDistribution::initialized = Distribution::registerCreator<MetisDistribution>( "NO" );
+bool MetisDistribution::initialized = Distribution::registerCreator<MetisDistribution>( "METIS" );
 
 } // namespace lama

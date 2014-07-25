@@ -38,6 +38,7 @@
 #include <lama/mpi/MPISyncToken.hpp>
 #include <lama/mpi/MPIUtils.hpp>
 
+#include <lama/Settings.hpp>
 #include <lama/exception/LAMAAssert.hpp>
 
 // tracing
@@ -145,6 +146,14 @@ void MPICommunicator::initialize( int& argc, char** & argv )
             LAMA_THROWEXCEPTION( "MPI which supports at leas thread level MPI_THREAD_FUNNELED is required." )
         }
 
+        isCUDAAware = false;
+
+        bool setCUDA = Settings::getEnvironment( isCUDAAware, "LAMA_MPI_CUDA" );
+
+        if ( setCUDA )
+        {
+            LAMA_LOG_ERROR( logger, "MPI isCUDAAware = " << isCUDAAware )
+        }
     }
 
     mCommWorld = MPI_COMM_WORLD;
@@ -953,8 +962,26 @@ void MPICommunicator::swapImpl( T val[], const IndexType n, PartitionId partner 
     LAMA_ASSERT_ERROR( getCount<T>( mpiStatus ) == n, "size mismatch for swap" )
 }
 
-ContextPtr MPICommunicator::getCommunicationContext() const
+ContextPtr MPICommunicator::getCommunicationContext( const _LAMAArray& array ) const
 {
+    // get a valid context, i.e. a context that contains valid data
+
+    ContextPtr validContext = array.getValidContext( Context::Host ); 
+
+    LAMA_LOG_DEBUG( logger, "CommunicationContext: valid context for " << array << ": " << *validContext )
+
+    if ( validContext->getType() == Context::Host )
+    {
+        return validContext;
+    }
+
+    // This can only be used for CUDAaware MPI
+
+    if ( isCUDAAware && ( validContext->getType() == Context::CUDA ) )
+    {
+        return validContext;
+    }
+
     return ContextFactory::getContext( Context::Host );
 }
 

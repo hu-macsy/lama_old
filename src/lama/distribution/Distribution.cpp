@@ -196,7 +196,7 @@ void Distribution::replicate( T1* allValues, const T2* localValues ) const
 
     // set my owned indexes and my values
 
-    ContextPtr commContext = comm.getCommunicationContext();
+    ContextPtr commContext = comm.getCommunicationContext( valuesSend );
 
     // capacity of send arrays should also be sufficient for receiving data
 
@@ -302,7 +302,7 @@ void Distribution::replicateN( T1* allValues, const T2* localValues, const Index
 
     // set my owned indexes and my values
 
-    ContextPtr commContext = comm.getCommunicationContext();
+    ContextPtr commContext = comm.getCommunicationContext( valuesSend );
 
     // capacity of send arrays should also be sufficient for receiving data
 
@@ -439,7 +439,7 @@ void Distribution::replicateRagged( T allValues[], const T localValues[], const 
     // boost::scoped_array<IndexType> indexesSend( new IndexType[maxLocalSize] );
     // boost::scoped_array<IndexType> indexesReceive( new IndexType[maxLocalElemSize] );
 
-    ContextPtr commContext = comm.getCommunicationContext();
+    ContextPtr commContext = comm.getCommunicationContext( indexesSend );
 
     indexesReceive.reserve( commContext, maxLocalSize );
     indexesSend.reserve( commContext, maxLocalSize );

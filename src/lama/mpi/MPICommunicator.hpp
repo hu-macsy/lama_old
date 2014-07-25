@@ -216,7 +216,7 @@ protected:
 
     void setNodeData();
 
-    virtual ContextPtr getCommunicationContext() const;
+    virtual ContextPtr getCommunicationContext( const _LAMAArray& array ) const;
 
     int mRank; // rank of this processor
     int mSize; // size of communicator
@@ -228,6 +228,8 @@ protected:
     MPI_Comm mCommTask;
 
     Communicator::ThreadSafetyLevel mThreadSafetyLevel;
+
+    bool isCUDAAware;   // if true data on CUDA context can be communicated
 };
 
 }

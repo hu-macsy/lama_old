@@ -334,7 +334,7 @@ void Communicator::shiftArray( LAMAArray<T>& recvArray, const LAMAArray<T>& send
         return;
     }
 
-    ContextPtr commContext = getCommunicationContext();
+    ContextPtr commContext = getCommunicationContext( sendArray );
 
     LAMA_LOG_DEBUG( logger, "shiftArray at this context " << *commContext 
                             << ", sendArray = " << sendArray << ", recvArray = " << recvArray )

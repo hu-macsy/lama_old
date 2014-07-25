@@ -1211,7 +1211,7 @@ void SparseMatrix<ValueType>::haloOperationSync(
 
             LAMAArrayUtils::gather( mTempSendValues, localX, mHalo.getProvidesIndexes() );
 
-            // Note: send values will be fetched to the host by halo exchange
+            // Note: send values might be fetched to the host by halo exchange
         }
 
         {
@@ -1436,7 +1436,7 @@ void SparseMatrix<ValueType>::haloOperationAsync(
 
         // prefetch needed otherwise sending will block until local computation has finished
 
-        mTempSendValues.prefetch( ContextFactory::getContext( Context::Host ) );
+        mTempSendValues.prefetch( comm.getCommunicationContext( mTempSendValues ) );
     }
  
     std::auto_ptr<SyncToken> localComputation;

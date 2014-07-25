@@ -59,7 +59,7 @@ NoCommunicator::~NoCommunicator()
     LAMA_LOG_DEBUG( logger, "~NoCommunicator()" )
 }
 
-ContextPtr NoCommunicator::getCommunicationContext() const
+ContextPtr NoCommunicator::getCommunicationContext( const _LAMAArray& ) const
 {
     return ContextFactory::getContext( Context::Host );
 }
