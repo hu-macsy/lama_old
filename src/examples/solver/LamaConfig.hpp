@@ -42,7 +42,7 @@
 #include <lama/CommunicatorFactory.hpp>
 #include <lama/solver/logger/LogLevel.hpp>
 #include <omp.h>
-#ifdef CUDA
+#ifdef USE_CUDA
 #include <lama/cuda/CUDAHostContextManager.hpp>
 #endif
 
@@ -342,8 +342,8 @@ void LamaConfig::setArg( const char* arg )
     {
         // support fast memory transfer Host->CUDA
 
-#ifdef CUDA
-        lama::CUDAHostContextManager::setAsCurrent( mContext );
+#ifdef USE_CUDA
+        lama::CUDAHostContextManager::setAsCurrent( getContextPtr() );
 #endif
     }
     else if ( "METIS" == val )

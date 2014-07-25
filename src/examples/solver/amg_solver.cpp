@@ -39,7 +39,6 @@
 #include <lama/CommunicatorFactory.hpp>
 #include <lama/distribution/NoDistribution.hpp>
 #include <lama/distribution/GeneralDistribution.hpp>
-#include <lama/distribution/MetisDistribution.hpp>
 #include <lama/distribution/GenBlockDistribution.hpp>
 #include <lama/expression/all.hpp>
 
@@ -212,8 +211,7 @@ int main( int argc, char* argv[] )
             {
                 start = Walltime::get();   // start timing of Metis
 
-                dist.reset( new MetisDistribution( lamaconf.getCommunicatorPtr(), matrix, weight ) );
-
+                dist.reset( Distribution::getDistribution( "METIS", lamaconf.getCommunicatorPtr(), matrix, weight ) );
                 stop = Walltime::get();   // stop timing of Metis
 
                 if ( myRank == 0 )
