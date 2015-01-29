@@ -99,8 +99,6 @@ LAMA_LOG_DEF_LOGGER( logger, "Test.VectorTest" )
 template<typename T>
 void verifySameVector( Vector& v1, Vector& v2 )
 {
-    typedef T ValueType;
-
     BOOST_CHECK_EQUAL( v1.getValueType(), v2.getValueType() );
 
     BOOST_CHECK_EQUAL( v1.size(), v2.size() );
@@ -121,8 +119,6 @@ void verifySameVector( Vector& v1, Vector& v2 )
 template<typename T>
 void verifyVectorWithScalar( Vector& v, Scalar s )
 {
-    typedef T ValueType;
-
     IndexType n = v.size();
 
     for ( IndexType i = 0; i < n; ++i )

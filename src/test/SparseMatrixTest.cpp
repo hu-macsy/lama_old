@@ -309,8 +309,6 @@ LAMA_COMMON_TEST_CASE_TEMPLATE_END();
 template<typename MatrixType>
 void SparseMatrixTest<MatrixType>::matrixMultTestImpl( const Matrix& a, const Matrix& b, const Matrix& result )
 {
-    typedef typename MatrixType::ValueType ValueType;
-
     LAMA_LOG_INFO( logger,
                    "matrixMultTestImpl: verify a * b = result, with a = " << a << ", b = " << b << ", result = " << result );
 
@@ -450,8 +448,6 @@ LAMA_COMMON_TEST_CASE_TEMPLATE_END();
 template<typename MatrixType>
 void SparseMatrixTest<MatrixType>::matrixEqualityCheck( const MatrixType& a, const MatrixType& b )
 {
-    typedef typename MatrixType::ValueType ValueType;
-
     BOOST_CHECK_EQUAL( a.getNumRows(), b.getNumRows() );
     BOOST_CHECK_EQUAL( a.getNumColumns(), b.getNumColumns() );
 

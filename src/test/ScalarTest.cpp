@@ -179,8 +179,6 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( SubtractionTest, T, test_types )
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( DivisionTest, T, test_types )
 {
-    typedef T ValueType;
-
     Scalar s ( 2.0 );
     Scalar t ( 3.0 );
 
