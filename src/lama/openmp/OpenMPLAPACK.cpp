@@ -232,7 +232,7 @@ LAMA_LOG_INFO( logger, "getri<" << Scalar::getType<T>()<< "> for A of size " << 
                 {
                     A_inv[n * ipiv[j] + i] -= A[lda * ipiv[j] + k] * A_inv[n * ipiv[k] + i];
                 }
-                A_inv[n * ipiv[j] + i] = A_inv[n * ipiv[j] + i] /= A[n * ipiv[j] + j];
+                A_inv[n * ipiv[j] + i] /= A[n * ipiv[j] + j];
             }
         }
 
@@ -270,7 +270,7 @@ LAMA_LOG_INFO( logger, "getri<" << Scalar::getType<T>()<< "> for A of size " << 
                 {
                     A_inv[n * ipiv[i] + j] -= A[lda * ipiv[k] + j] * A_inv[n * ipiv[i] + k];
                 }
-                A_inv[n * ipiv[i] + j] = A_inv[n * ipiv[i] + j] /= A[n * ipiv[j] + j];
+                A_inv[n * ipiv[i] + j] /= A[n * ipiv[j] + j];
             }
         }
 
