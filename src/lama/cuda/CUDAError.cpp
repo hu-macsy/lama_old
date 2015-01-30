@@ -136,7 +136,7 @@ const char* cudaDriverErrorString( CUresult res )
     return str;
 }
 
-const char* cublasErrorString( cublasStatus res )
+const char* cublasErrorString( cublasStatus_t res )
 {
     const char* str = "";
 

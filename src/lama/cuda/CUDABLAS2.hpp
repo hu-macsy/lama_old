@@ -46,7 +46,7 @@
 // logging
 #include <logging/logging.hpp>
 
-#include <cublas.h>
+#include <cublas_v2.h>
 #include <cuda_runtime_api.h>
 
 

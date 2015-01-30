@@ -53,7 +53,7 @@
 // boost
 #include <boost/bind.hpp>
 
-#include <cublas.h>
+#include <cublas_v2.h>
 #include <cuda.h>
 #include <cusparse.h>
 
@@ -81,6 +81,7 @@ int CUDAContext::numUsedDevices = 0;
 size_t CUDAContext::minPinnedSize = std::numeric_limits<size_t>::max();
 
 cusparseHandle_t CUDAContext_cusparseHandle = 0;
+cublasHandle_t CUDAContext_cublasHandle = 0;
 
 /**  constructor  *********************************************************/
 
@@ -120,10 +121,13 @@ CUDAContext::CUDAContext( int deviceNr )
     LAMA_CUDA_DRV_CALL( cuCtxCreate( &mCUcontext, CU_CTX_SCHED_SPIN | CU_CTX_MAP_HOST, mCUdevice ),
                         "cuCtxCreate for " << *this )
 
-    LAMA_CUBLAS_CALL( cublasInit(), "Initialization of CUBLAS library" );
+//    LAMA_CUBLAS_CALL( cublasInit(), "Initialization of CUBLAS library" );
 
     LAMA_CUSPARSE_CALL( cusparseCreate( &CUDAContext_cusparseHandle ),
                         "Initialization of CUSparse library: cusparseCreate" );
+
+    LAMA_CUBLAS_CALL( cublasCreate( &CUDAContext_cublasHandle ), 
+                        "Initialization of CUBlas library: cublasCreate" );
 
     LAMA_LOG_INFO( logger, "Initialized: CUBLAS, CuSparse" )
 
@@ -195,9 +199,21 @@ CUDAContext::~CUDAContext()
     {
         LAMA_LOG_DEBUG( logger, "no more devices in use -> shutdown cuda" )
 
-        cublasShutdown();
-        LAMA_CHECK_CUBLAS_ERROR
-        ;
+        if( CUDAContext_cublasHandle )
+        {
+            cublasStatus_t error = cublasDestroy( CUDAContext_cublasHandle );
+
+            if( error != CUBLAS_STATUS_SUCCESS )
+            {
+                LAMA_LOG_ERROR( logger, "Could not destroy cublas handle, status = " << error )
+            }
+
+            LAMA_LOG_INFO( logger, "cublas handle successfully destroyed" )
+
+            CUDAContext_cublasHandle = 0;
+        }
+
+//        cublasShutdown();
 
 //        lama_shutdown_cuda();
         if ( CUDAContext_cusparseHandle )

@@ -49,49 +49,51 @@ namespace lama
 
 LAMA_LOG_DEF_LOGGER( CUDABLAS2::logger, "CUDA.BLAS2" )
 
+extern cublasHandle_t CUDAContext_cublasHandle;
+
 /* ---------------------------------------------------------------------------------------*/
 /*    gemv                                                                                */
 /* ---------------------------------------------------------------------------------------*/
 
 template<typename T>
 static inline
-void wrapperGemv( char trans_char, IndexType m, IndexType n,
+void cublasWrapperGemv( cublasOperation_t trans_char, IndexType m, IndexType n,
                   T alpha, const T* A, IndexType lda, const T* x, IndexType incX, 
                   T beta, T* y, IndexType incY );
 
 template<>
-void wrapperGemv( char trans, IndexType m, IndexType n,
+void cublasWrapperGemv( cublasOperation_t trans, IndexType m, IndexType n,
                   float alpha, const float* A, IndexType lda, const float* x, IndexType incX, 
                   float beta, float* y, IndexType incY )
 {
-    cublasSgemv( trans, m, n, alpha, A, lda, x, incX, beta, y, incY );
+    LAMA_CUBLAS_CALL( cublasSgemv( CUDAContext_cublasHandle, trans, m, n, &alpha, A, lda, x, incX, &beta, y, incY ), "cublasWrapperGemv<float>" );
 }
 
 template<>
-void wrapperGemv( char trans, IndexType m, IndexType n,
+void cublasWrapperGemv( cublasOperation_t trans, IndexType m, IndexType n,
                   double alpha, const double* A, IndexType lda, const double* x, IndexType incX, 
                   double beta, double* y, IndexType incY )
 {
-    cublasDgemv( trans, m, n, alpha, A, lda, x, incX, beta, y, incY );
+    LAMA_CUBLAS_CALL( cublasDgemv( CUDAContext_cublasHandle, trans, m, n, &alpha, A, lda, x, incX, &beta, y, incY ), "cublasWrapperGemv<double>" );
 }
 
 template<>
-void wrapperGemv( char trans, IndexType m, IndexType n,
+void cublasWrapperGemv( cublasOperation_t trans, IndexType m, IndexType n,
                   ComplexFloat alpha, const ComplexFloat* A, IndexType lda, const ComplexFloat* x, IndexType incX, 
                   ComplexFloat beta, ComplexFloat* y, IndexType incY )
 {
-    cublasCgemv( trans, m, n, cublasCast( alpha ), cublasCast( A ), lda, 
-                 cublasCast( x ), incX, cublasCast( beta ), cublasCast( y ), incY );
+    LAMA_CUBLAS_CALL( cublasCgemv( CUDAContext_cublasHandle, trans, m, n, cublasCast( &alpha ), cublasCast( A ), lda, 
+                 cublasCast( x ), incX, cublasCast( &beta ), cublasCast( y ), incY ), "cublasWrapperGemv<ComplexFloat>" );
 }
 
 template<>
-void wrapperGemv( char trans, IndexType m, IndexType n, ComplexDouble alpha, 
+void cublasWrapperGemv( cublasOperation_t trans, IndexType m, IndexType n, ComplexDouble alpha, 
                   const ComplexDouble* A, IndexType lda, 
                   const ComplexDouble* x, IndexType incX, 
                   ComplexDouble beta, ComplexDouble* y, IndexType incY )
 {
-    cublasZgemv( trans, m, n, *cublasCast( &alpha ), cublasCast( A ), lda, 
-                 cublasCast( x ), incX, cublasCast( beta ), cublasCast( y ), incY );
+    LAMA_CUBLAS_CALL( cublasZgemv( CUDAContext_cublasHandle, trans, m, n, cublasCast( &alpha ), cublasCast( A ), lda, 
+                 cublasCast( x ), incX, cublasCast( &beta ), cublasCast( y ), incY ), "cublasWrapperGemv<ComplexDouble>" );
 }
 
 /** gemv */
@@ -114,18 +116,21 @@ void CUDABLAS2::gemv(
 {
     IndexType order_m = m;
     IndexType order_n = n;
-    char trans_char = ' ';
+//    char trans_char = ' ';
+    cublasOperation_t trans_char;
 
     //switch stuff because columnmajor to rowmajor
     if ( order == CblasRowMajor )
     {
         if ( trans == CblasNoTrans )
         {
-            trans_char = 'T';
+//            trans_char = 'T';
+            trans_char = CUBLAS_OP_T;
         }
         else
         {
-            trans_char = 'N';
+//            trans_char = 'N';
+            trans_char = CUBLAS_OP_N;
         }
 
         order_m = n;
@@ -135,17 +140,20 @@ void CUDABLAS2::gemv(
     {
         if ( trans == CblasNoTrans )
         {
-            trans_char = 'N';
+//            trans_char = 'N';
+            trans_char = CUBLAS_OP_N;
         }
         else
         {
-            trans_char = 'T';
+//            trans_char = 'T';
+            trans_char = CUBLAS_OP_T;
         }
     }
 
     LAMA_CHECK_CUDA_ACCESS
 
     cudaStream_t stream = 0; // default stream if no syncToken is given
+    
 
     if ( syncToken )
     {
@@ -154,11 +162,11 @@ void CUDABLAS2::gemv(
         stream = cudaStreamSyncToken->getCUDAStream();
     }
 
-    LAMA_CUBLAS_CALL( cublasSetKernelStream( stream ), "set cublas kernel stream = " << stream );
+    LAMA_CUBLAS_CALL( cublasSetStream( CUDAContext_cublasHandle, stream ), "CUDABLAS2::gemv set cublas kernel stream = " << stream );
 
     LAMA_LOG_INFO( logger, "gemv<" << Scalar::getType<T>() << "> with cuBLAS: m = " << order_m << " x " << order_n )
 
-    wrapperGemv( trans_char, order_m, order_n, alpha, A, lda, x, incx, beta, y, incy );
+    cublasWrapperGemv( trans_char, order_m, order_n, alpha, A, lda, x, incx, beta, y, incy );
 
     // No error check here possible as kernel is started asynchronously
 
@@ -166,6 +174,8 @@ void CUDABLAS2::gemv(
     {
         LAMA_CUDA_RT_CALL( cudaStreamSynchronize( stream ), "cudaStreamSynchronize( stream = " << stream << " )" );
     }
+
+    LAMA_CUBLAS_CALL( cublasSetStream( CUDAContext_cublasHandle, NULL ), "CUDABLAS2::gemv set stream NULL" );
 }
 
 /* --------------------------------------------------------------------------- */

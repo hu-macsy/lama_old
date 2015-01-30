@@ -32,7 +32,7 @@
  */
 
 // hpp
-#include <cublas.h>
+#include <cublas_v2.h>
 
 namespace lama
 {

@@ -50,48 +50,50 @@ namespace lama
 
 LAMA_LOG_DEF_LOGGER( CUDABLAS3::logger, "CUDA.BLAS3" )
 
+
+extern cublasHandle_t CUDAContext_cublasHandle;
 /* ---------------------------------------------------------------------------------------*/
 /*    gemm                                                                                */
 /* ---------------------------------------------------------------------------------------*/
 
 template<typename T>
 static inline
-void wrapperGemm( char transA_char, char transB_char, IndexType m, IndexType n, IndexType k,
+void cublasWrapperGemm( cublasOperation_t transA_char, cublasOperation_t transB_char, IndexType m, IndexType n, IndexType k,
                   T alpha, const T* a, IndexType lda, 
                   const T* b, IndexType ldb, T beta, T* c, IndexType ldc );
 
 template<>
-void wrapperGemm( char transA_char, char transB_char, IndexType m, IndexType n, IndexType k,
+void cublasWrapperGemm( cublasOperation_t transA_char, cublasOperation_t transB_char, IndexType m, IndexType n, IndexType k,
                   float alpha, const float* a, IndexType lda, 
                   const float* b, IndexType ldb, float beta, float* c, IndexType ldc )
 {
-    cublasSgemm( transA_char, transB_char, m, n, k, alpha, a, lda, b, ldb, beta, c, ldc );
+    cublasSgemm( CUDAContext_cublasHandle, transA_char, transB_char, m, n, k, &alpha, a, lda, b, ldb, &beta, c, ldc );
 }
 
 template<>
-void wrapperGemm( char transA_char, char transB_char, IndexType m, IndexType n, IndexType k,
+void cublasWrapperGemm( cublasOperation_t transA_char, cublasOperation_t transB_char, IndexType m, IndexType n, IndexType k,
                   double alpha, const double* a, IndexType lda, 
                   const double* b, IndexType ldb, double beta, double* c, IndexType ldc )
 {
-    cublasDgemm( transA_char, transB_char, m, n, k, alpha, a, lda, b, ldb, beta, c, ldc );
+    cublasDgemm( CUDAContext_cublasHandle, transA_char, transB_char, m, n, k, &alpha, a, lda, b, ldb, &beta, c, ldc );
 }
 
 template<>
-void wrapperGemm( char transA_char, char transB_char, IndexType m, IndexType n, IndexType k,
+void cublasWrapperGemm( cublasOperation_t transA_char, cublasOperation_t transB_char, IndexType m, IndexType n, IndexType k,
                   ComplexFloat alpha, const ComplexFloat* a, IndexType lda, 
                   const ComplexFloat* b, IndexType ldb, ComplexFloat beta, ComplexFloat* c, IndexType ldc )
 {
-    cublasCgemm( transA_char, transB_char, m, n, k, cublasCast( alpha ), cublasCast( a ), lda, 
-                 cublasCast( b ), ldb, cublasCast( beta ), cublasCast( c ), ldc );
+    cublasCgemm( CUDAContext_cublasHandle, transA_char, transB_char, m, n, k, cublasCast( &alpha ), cublasCast( a ), lda, 
+                 cublasCast( b ), ldb, cublasCast( &beta ), cublasCast( c ), ldc );
 }
 
 template<>
-void wrapperGemm( char transA_char, char transB_char, IndexType m, IndexType n, IndexType k,
+void cublasWrapperGemm( cublasOperation_t transA_char, cublasOperation_t transB_char, IndexType m, IndexType n, IndexType k,
                   ComplexDouble alpha, const ComplexDouble* a, IndexType lda, 
                   const ComplexDouble* b, IndexType ldb, ComplexDouble beta, ComplexDouble* c, IndexType ldc )
 {
-    cublasZgemm( transA_char, transB_char, m, n, k, cublasCast( alpha ), cublasCast( a ), lda, 
-                 cublasCast( b ), ldb, cublasCast( beta ), cublasCast( c ), ldc );
+    cublasZgemm( CUDAContext_cublasHandle, transA_char, transB_char, m, n, k, cublasCast( &alpha ), cublasCast( a ), lda, 
+                 cublasCast( b ), ldb, cublasCast( &beta ), cublasCast( c ), ldc );
 }
 
 template<typename T>
@@ -112,8 +114,8 @@ void CUDABLAS3::gemm(
     const IndexType ldc,
     SyncToken* syncToken )
 {
-    char transA_char = 'N';
-    char transB_char = 'N';
+    cublasOperation_t transA_char = CUBLAS_OP_N;
+    cublasOperation_t transB_char = CUBLAS_OP_N;
 
     //Swap matrix if RowMajor Order
 
@@ -130,10 +132,12 @@ void CUDABLAS3::gemm(
     {
     	if ( order == CblasRowMajor )
     	{
-    		transB_char = 'T';
+//    		transB_char = 'T';
+    		transB_char = CUBLAS_OP_T;
     	} else
     	{
-    		transA_char = 'T';
+//    		transA_char = 'T';
+    		transA_char = CUBLAS_OP_T;
     	}
     }
 
@@ -141,10 +145,12 @@ void CUDABLAS3::gemm(
     {
     	if ( order == CblasRowMajor )
     	{
-    		transA_char = 'T';
+//    		transA_char = 'T';
+    		transA_char = CUBLAS_OP_T;
     	} else
     	{
-    		transB_char = 'T';
+//    		transB_char = 'T';
+    		transB_char = CUBLAS_OP_T;
     	}
     }
 
@@ -159,11 +165,11 @@ void CUDABLAS3::gemm(
         stream = cudaStreamSyncToken->getCUDAStream();
     }
 
-    LAMA_CUBLAS_CALL( cublasSetKernelStream( stream ), "set cublas kernel stream = " << stream );
+    LAMA_CUBLAS_CALL( cublasSetStream( CUDAContext_cublasHandle, stream ), "CUDABLAS3::gemm set cublas kernel stream = " << stream );
 
     LAMA_LOG_INFO( logger, "cublasSgemm: m = " << m_call << " x " << n_call )
 
-    wrapperGemm( transA_char, transB_char, m_call, n_call, k, alpha, A_call, lda_call, B_call, ldb_call, beta, C, ldc );
+    cublasWrapperGemm( transA_char, transB_char, m_call, n_call, k, alpha, A_call, lda_call, B_call, ldb_call, beta, C, ldc );
 
     // No error check here possible as kernel is started asynchronously in any case
 
@@ -171,41 +177,43 @@ void CUDABLAS3::gemm(
     {
         LAMA_CUDA_RT_CALL( cudaStreamSynchronize( stream ), "stream = " << stream );
     }
+
+    LAMA_CUBLAS_CALL( cublasSetStream( CUDAContext_cublasHandle, NULL ), "CUDABLAS3::gemm set stream to NULL" );
 }
 
 /** trsm */
 
 template<typename T>
 static inline
-void wrapperTrsm( char side, char uplo, char transA, IndexType diag, IndexType m, IndexType n, 
+void cublasWrapperTrsm( cublasSideMode_t side, cublasFillMode_t uplo,  cublasOperation_t transA, cublasDiagType_t diag, IndexType m, IndexType n, 
                   T alpha,  const T* a, IndexType lda, T* b, IndexType ldb );
 
 template<>
-void wrapperTrsm( char side, char uplo, char transA, IndexType diag, IndexType m, IndexType n, 
+void cublasWrapperTrsm( cublasSideMode_t side, cublasFillMode_t uplo, cublasOperation_t transA, cublasDiagType_t diag, IndexType m, IndexType n, 
                   float alpha, const float* a, IndexType lda, float* b, IndexType ldb )
 {
-    cublasStrsm( side, uplo, transA, diag, m, n, alpha, a, lda, b, ldb );
+    cublasStrsm( CUDAContext_cublasHandle, side, uplo, transA, diag, m, n, &alpha, a, lda, b, ldb );
 }
 
 template<>
-void wrapperTrsm( char side, char uplo, char transA, IndexType diag, IndexType m, IndexType n, 
+void cublasWrapperTrsm( cublasSideMode_t side, cublasFillMode_t uplo, cublasOperation_t transA, cublasDiagType_t diag, IndexType m, IndexType n, 
                   double alpha, const double* a, IndexType lda, double* b, IndexType ldb )
 {
-    cublasDtrsm( side, uplo, transA, diag, m, n, alpha, a, lda, b, ldb );
+    cublasDtrsm( CUDAContext_cublasHandle, side, uplo, transA, diag, m, n, &alpha, a, lda, b, ldb );
 }
 
 template<>
-void wrapperTrsm( char side, char uplo, char transA, IndexType diag, IndexType m, IndexType n, 
+void cublasWrapperTrsm( cublasSideMode_t side, cublasFillMode_t uplo, cublasOperation_t transA, cublasDiagType_t diag, IndexType m, IndexType n, 
                   ComplexFloat alpha, const ComplexFloat* a, IndexType lda, ComplexFloat* b, IndexType ldb )
 {
-    cublasCtrsm( side, uplo, transA, diag, m, n, cublasCast( alpha ), cublasCast( a ), lda, cublasCast( b ), ldb );
+    cublasCtrsm( CUDAContext_cublasHandle, side, uplo, transA, diag, m, n, cublasCast( &alpha ), cublasCast( a ), lda, cublasCast( b ), ldb );
 }
 
 template<>
-void wrapperTrsm( char side, char uplo, char transA, IndexType diag, IndexType m, IndexType n, 
+void cublasWrapperTrsm( cublasSideMode_t side, cublasFillMode_t uplo, cublasOperation_t transA, cublasDiagType_t diag, IndexType m, IndexType n, 
                   ComplexDouble alpha, const ComplexDouble* a, IndexType lda, ComplexDouble* b, IndexType ldb )
 {
-    cublasZtrsm( side, uplo, transA, diag, m, n, cublasCast( alpha ), cublasCast( a ), lda, cublasCast( b ), ldb );
+    cublasZtrsm( CUDAContext_cublasHandle, side, uplo, transA, diag, m, n, cublasCast( &alpha ), cublasCast( a ), lda, cublasCast( b ), ldb );
 }
 
 template<typename T>
@@ -225,22 +233,25 @@ void CUDABLAS3::trsm(
     SyncToken* syncToken )
 {
     IndexType RowMajorStrg = 0;
-    char side = ' ';
-    char uplo = ' ';
-    char transA = ' ';
-    char diag = ' ';
+    cublasSideMode_t side = ' ';
+    cublasFillMode_t uplo = ' ';
+    cublasOperation_t transA = ' ';
+    cublasDiagType_t diag = ' ';
 
     if ( trans == CblasTrans )
     {
-        transA = 'T';
+//        transA = 'T';
+        transA = CUBLAS_OP_T;
     }
     else if ( trans == CblasConjTrans )
     {
-        transA = 'C';
+//        transA = 'C';
+        transA = CUBLAS_OP_C;
     }
     else if ( trans == CblasNoTrans )
     {
-        transA = 'N';
+//        transA = 'N';
+        transA = CUBLAS_OP_N;
     }
     else
     {
@@ -251,11 +262,13 @@ void CUDABLAS3::trsm(
 
     if ( diagarg == CblasUnit )
     {
-        diag = 'U';
+//        diag = 'U';
+        diag = CUBLAS_DIAG_UNIT;
     }
     else if ( diagarg == CblasNonUnit )
     {
-        diag = 'N';
+//        diag = 'N';
+        diag = CUBLAS_DIAG_NON_UNIT;
     }
     else
     {
@@ -268,11 +281,13 @@ void CUDABLAS3::trsm(
     {
         if ( sidearg == CblasRight )
         {
-            side = 'R';
+//            side = 'R';
+            side = CUBLAS_SIDE_RIGHT;
         }
         else if ( sidearg == CblasLeft )
         {
-            side = 'L';
+//            side = 'L';
+            side = CUBLAS_SIDE_LEFT;
         }
         else
         {
@@ -283,11 +298,13 @@ void CUDABLAS3::trsm(
 
         if ( uploarg == CblasUpper )
         {
-            uplo = 'U';
+//            uplo = 'U';
+            uplo = CUBLAS_FILL_MODE_UPPER;
         }
         else if ( uploarg == CblasLower )
         {
-            uplo = 'L';
+//            uplo = 'L';
+            uplo = CUBLAS_FILL_MODE_LOWER;
         }
         else
         {
@@ -302,11 +319,13 @@ void CUDABLAS3::trsm(
 
         if ( sidearg == CblasRight )
         {
-            side = 'L';
+//            side = 'L';
+            side = CUBLAS_SIDE_LEFT;
         }
         else if ( sidearg == CblasLeft )
         {
-            side = 'R';
+//            side = 'R';
+            side = CUBLAS_SIDE_RIGHT;
         }
         else
         {
@@ -317,11 +336,13 @@ void CUDABLAS3::trsm(
 
         if ( uploarg == CblasUpper )
         {
-            uplo = 'L';
+//            uplo = 'L';
+            uplo = CUBLAS_FILL_MODE_LOWER;
         }
         else if ( uploarg == CblasLower )
         {
-            uplo = 'U';
+//            uplo = 'U';
+            uplo = CUBLAS_FILL_MODE_UPPER;
         }
         else
         {
@@ -348,9 +369,9 @@ void CUDABLAS3::trsm(
         stream = cudaStreamSyncToken->getCUDAStream();
     }
 
-    LAMA_CUBLAS_CALL( cublasSetKernelStream( stream ), "set cublas kernel stream = " << stream );
+    LAMA_CUBLAS_CALL( cublasSetStream( CUDAContext_cublasHandle, stream ), "CUDABLAS3::trsm set cublas kernel stream = " << stream );
 
-    wrapperTrsm( side, uplo, transA, diag, m, n, alpha, A, lda, B, ldb );
+    cublasWrapperTrsm( side, uplo, transA, diag, m, n, alpha, A, lda, B, ldb );
 
     // No error check here possible as kernel is started asynchronously in any case
 
@@ -358,6 +379,8 @@ void CUDABLAS3::trsm(
     {
         LAMA_CUDA_RT_CALL( cudaStreamSynchronize( stream ), "stream = " << stream );
     }
+
+    LAMA_CUBLAS_CALL( cublasSetStream( CUDAContext_cublasHandle, NULL ), "CUDABLAS3::trsm set stream NULL" );
 }
 
 /* --------------------------------------------------------------------------- */

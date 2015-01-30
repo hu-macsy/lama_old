@@ -55,6 +55,8 @@ namespace lama
 
 LAMA_LOG_DEF_LOGGER( CUDABLAS1::logger, "CUDA.BLAS1" )
 
+extern cublasHandle_t CUDAContext_cublasHandle;
+
 /* ---------------------------------------------------------------------------------------*/
 /*    scale                                                                               */
 /* ---------------------------------------------------------------------------------------*/
@@ -68,27 +70,27 @@ static inline void cublasWrapperScale( int n, T alpha, T* x_d, int incX );
 template<>
 void cublasWrapperScale( int n, float alpha, float* x_d, int incX )
 {
-    cublasSscal( n, alpha, x_d, incX );
+    LAMA_CUBLAS_CALL(cublasSscal( CUDAContext_cublasHandle, n, &alpha, x_d, incX ), "cublasWrapperScale<float>");
 }
 
 template<>
 void cublasWrapperScale( int n, double alpha, double* x_d, int incX )
 {
-    cublasDscal( n, alpha, x_d, incX );
+    LAMA_CUBLAS_CALL(cublasDscal( CUDAContext_cublasHandle, n, &alpha, x_d, incX ), "cublasWrapperScale<double>");
 }
 
 template<>
 void cublasWrapperScale( int n, ComplexFloat alpha, ComplexFloat* x_d, int incX )
 {
     // use of cublasCast to convert ComplexFloat to cuComplex via reinterpret_cast
-    cublasCscal( n, cublasCast( alpha ), cublasCast( x_d ), incX );
+    LAMA_CUBLAS_CALL(cublasCscal( CUDAContext_cublasHandle, n, cublasCast( &alpha ), cublasCast( x_d ), incX ), "cublasWrapperScale<ComplexFloat>");
 }
 
 template<>
 void cublasWrapperScale( int n, ComplexDouble alpha, ComplexDouble* x_d, int incX )
 {
     // use of cublasCast to convert ComplexDouble to cuDoubleComplex via reinterpret_cast
-    cublasZscal( n, cublasCast( alpha ), cublasCast( x_d ), incX );
+    LAMA_CUBLAS_CALL(cublasZscal( CUDAContext_cublasHandle, n, cublasCast( &alpha ), cublasCast( x_d ), incX ), "cublasWrapperScale<ComplexDouble>");
 }
 
 template<typename T>
@@ -114,8 +116,7 @@ void CUDABLAS1::scal( IndexType n, const T alpha, T* x_d, const IndexType incX, 
         stream = cudaStreamSyncToken->getCUDAStream();
     }
 
-    cublasSetKernelStream( stream );
-    LAMA_CHECK_CUBLAS_ERROR
+    LAMA_CUBLAS_CALL(cublasSetStream( CUDAContext_cublasHandle, stream ), "CUDABLAS1::scal set stream");
 
     cublasWrapperScale( static_cast<int>( n ), alpha, x_d, static_cast<int>( incX ) );
 
@@ -127,8 +128,7 @@ void CUDABLAS1::scal( IndexType n, const T alpha, T* x_d, const IndexType incX, 
         LAMA_CHECK_CUDA_ERROR
     }
 
-    cublasSetKernelStream( NULL );
-    LAMA_CHECK_CUBLAS_ERROR
+    LAMA_CUBLAS_CALL( cublasSetStream( CUDAContext_cublasHandle, NULL ), "CUDABLAS1::scal set stream");
 }
 
 /* ---------------------------------------------------------------------------------------*/
@@ -141,33 +141,35 @@ static inline T cublasWrapperNrm2( int n, const T* x_d, int incX );
 template<>
 float cublasWrapperNrm2( int n, const float* x_d, int incX )
 {
-    return cublasSnrm2( n, x_d, incX );
+    float nrm2;
+    LAMA_CUBLAS_CALL( cublasSnrm2( CUDAContext_cublasHandle, n, x_d, incX, &nrm2 ), "cublasWrapperNrm2<float>");
+    return nrm2;
 }
 
 template<>
 double cublasWrapperNrm2( int n, const double* x_d, int incX )
 {
-    return cublasDnrm2( n, x_d, incX );
+    double nrm2;
+    LAMA_CUBLAS_CALL(cublasDnrm2( CUDAContext_cublasHandle, n, x_d, incX, &nrm2 ), "cublasWrapperNrm2<double>");
+    return nrm2;
 }
 
 template<>
 ComplexFloat cublasWrapperNrm2( int n, const ComplexFloat* x_d, int incX )
 {
     // CUBLAS returns only float result so we convert it back to Complex
-
-    float res = ComplexFloat( cublasScnrm2( n, cublasCast( x_d ), incX ) );
-
-    return ComplexFloat( res, 0.0f );
+    float nrm2;
+    LAMA_CUBLAS_CALL(cublasScnrm2( CUDAContext_cublasHandle, n, cublasCast( x_d ), incX, &nrm2 ), "cublasWrapperNrm2<ComplexFloat>" );
+    return ComplexFloat( nrm2, 0.0f );
 }
 
 template<>
 ComplexDouble cublasWrapperNrm2( int n, const ComplexDouble* x_d, int incX )
 {
     // CUBLAS returns only double result so we convert it back to Complex
-
-    double res = ComplexFloat( cublasDznrm2( n, cublasCast( x_d ), incX ) );
-
-    return ComplexDouble( res, 0.0 );
+    double nrm2;
+    LAMA_CUBLAS_CALL( cublasDznrm2( CUDAContext_cublasHandle, n, cublasCast( x_d ), incX, &nrm2 ), "cublasWrapperNrm2<ComplexDouble>" );
+    return ComplexDouble( nrm2, 0.0 );
 }
 
 template<typename T>
@@ -179,7 +181,7 @@ T CUDABLAS1::nrm2( IndexType n, const T* x_d, IndexType incX, SyncToken* syncTok
     {
         return 0.0;
     }
-
+ 
     LAMA_LOG_DEBUG( logger, "nrm2<" << Scalar::getType<T>() << "> of x[" << n << "]" )
 
     LAMA_CHECK_CUDA_ACCESS
@@ -193,8 +195,7 @@ T CUDABLAS1::nrm2( IndexType n, const T* x_d, IndexType incX, SyncToken* syncTok
         stream = cudaStreamSyncToken->getCUDAStream();
     }
 
-    cublasSetKernelStream( stream );
-    LAMA_CHECK_CUBLAS_ERROR
+    LAMA_CUBLAS_CALL( cublasSetStream( CUDAContext_cublasHandle, stream ), "CUDABLAS1::nrm2 set stream");
 
     T res = cublasWrapperNrm2( static_cast<int>( n ), x_d, static_cast<int>( incX ) );
 
@@ -206,9 +207,7 @@ T CUDABLAS1::nrm2( IndexType n, const T* x_d, IndexType incX, SyncToken* syncTok
         LAMA_CHECK_CUDA_ERROR
     }
 
-    cublasSetKernelStream( NULL );
-    LAMA_CHECK_CUBLAS_ERROR
-
+    LAMA_CUBLAS_CALL(cublasSetStream( CUDAContext_cublasHandle, NULL ), "CUDABLAS1::nrm2 set stream null");
     return res;
 }
 
@@ -222,33 +221,35 @@ static inline T cublasWrapperAsum( int n, const T* x_d, int incX );
 template<>
 float cublasWrapperAsum( int n, const float* x_d, int incX )
 {
-    return cublasSasum( n, x_d, incX );
+    float asum;
+    LAMA_CUBLAS_CALL(cublasSasum( CUDAContext_cublasHandle, n, x_d, incX, &asum ), "cublasWrapperAsum<float>");
+    return asum;
 }
 
 template<>
 double cublasWrapperAsum( int n, const double* x_d, int incX )
 {
-    return cublasDasum( n, x_d, incX );
+    double asum;
+    LAMA_CUBLAS_CALL(cublasDasum( CUDAContext_cublasHandle, n, x_d, incX, &asum ), "cublasWrapperAsum<double>");
+    return asum;
 }
 
 template<>
 ComplexFloat cublasWrapperAsum( int n, const ComplexFloat* x_d, int incX )
 {
     // CUBLAS returns only float result so we convert it back to Complex
-
-    float res = ComplexFloat( cublasScasum( n, cublasCast( x_d ), incX ) );
-
-    return ComplexFloat( res );
+    float asum;
+    LAMA_CUBLAS_CALL( cublasScasum( CUDAContext_cublasHandle, n, cublasCast( x_d ), incX, &asum ), "cublasWrapperAsum<ComplexFloat>" );
+    return ComplexFloat(asum, 0.0f);
 }
 
 template<>
 ComplexDouble cublasWrapperAsum( int n, const ComplexDouble* x_d, int incX )
 {
     // CUBLAS returns only double result so we convert it back to Complex
-
-    double res = ComplexFloat( cublasDzasum( n, cublasCast( x_d ), incX ) );
-
-    return ComplexDouble( res );
+    double asum;
+    LAMA_CUBLAS_CALL( cublasDzasum( CUDAContext_cublasHandle, n, cublasCast( x_d ), incX, &asum ) , "cublasWrapperAsum<ComplexDouble>");
+    return ComplexDouble( asum, 0.0 );
 }
 
 template<typename T>
@@ -274,8 +275,7 @@ T CUDABLAS1::asum( const IndexType n, const T* x_d, const IndexType incX, SyncTo
         stream = cudaStreamSyncToken->getCUDAStream();
     }
 
-    cublasSetKernelStream( stream );
-    LAMA_CHECK_CUBLAS_ERROR
+    LAMA_CUBLAS_CALL(cublasSetStream( CUDAContext_cublasHandle, stream ), "CUDABLAS1::asum set stream");
 
     T res = cublasWrapperAsum( static_cast<int>( n ), x_d, static_cast<int>( incX ) );
 
@@ -287,9 +287,7 @@ T CUDABLAS1::asum( const IndexType n, const T* x_d, const IndexType incX, SyncTo
         LAMA_CHECK_CUDA_ERROR
     }
 
-    cublasSetKernelStream( NULL );
-    LAMA_CHECK_CUBLAS_ERROR
-
+    LAMA_CUBLAS_CALL(cublasSetStream( CUDAContext_cublasHandle, NULL ), "CUDABLAS1::asum set stream NULL");
     return res;
 }
 
@@ -303,28 +301,32 @@ static int cublasWrapperIamax( int n, const T* x_d, int incX );
 template<>
 int cublasWrapperIamax( int n, const float* x_d, int incX )
 {
-    int iamax = cublasIsamax( n, x_d, incX );
+    int iamax;
+    LAMA_CUBLAS_CALL( cublasIsamax( CUDAContext_cublasHandle, n, x_d, incX, &iamax ), "cublasWrapperIamax<float>" );
     return iamax;
 }
 
 template<>
 int cublasWrapperIamax( int n, const double* x_d, int incX )
 {
-    int iamax = cublasIdamax( n, x_d, incX );
+    int iamax;
+    LAMA_CUBLAS_CALL( cublasIdamax( CUDAContext_cublasHandle, n, x_d, incX, &iamax ), "cublasWrapperIamax<double>" );
     return iamax;
 }
 
 template<>
 int cublasWrapperIamax( int n, const ComplexFloat* x_d, int incX )
 {
-    int iamax = cublasIcamax( n, cublasCast( x_d ), incX );
+    int iamax;
+    LAMA_CUBLAS_CALL(cublasIcamax( CUDAContext_cublasHandle, n, cublasCast( x_d ), incX, &iamax ), "cublasWrapperIamax<ComplexFloat>" );
     return iamax;
 }
 
 template<>
 int cublasWrapperIamax( int n, const ComplexDouble* x_d, int incX )
 {
-    int iamax = cublasIzamax( n, cublasCast( x_d ), incX );
+    int iamax;
+    LAMA_CUBLAS_CALL(cublasIzamax( CUDAContext_cublasHandle, n, cublasCast( x_d ), incX, &iamax ), "cublasWrapperIamax<ComplexDouble>" );
     return iamax;
 }
 
@@ -346,8 +348,7 @@ IndexType CUDABLAS1::iamax( const IndexType n, const T* x_d, const IndexType inc
         stream = cudaStreamSyncToken->getCUDAStream();
     }
 
-    cublasSetKernelStream( stream );
-    LAMA_CHECK_CUBLAS_ERROR
+    LAMA_CUBLAS_CALL(cublasSetStream( CUDAContext_cublasHandle, stream ), "CUABLAS1::iamax set stream");
 
     IndexType iamax = cublasWrapperIamax( n, x_d, incX );
 
@@ -359,9 +360,7 @@ IndexType CUDABLAS1::iamax( const IndexType n, const T* x_d, const IndexType inc
         LAMA_CHECK_CUDA_ERROR
     }
 
-    cublasSetKernelStream( NULL );
-    LAMA_CHECK_CUBLAS_ERROR
-
+    LAMA_CUBLAS_CALL(cublasSetStream( CUDAContext_cublasHandle, NULL ), "CUDABLAS1::iamax set stream NULL");
     return iamax ? iamax - 1 : 0;
 }
 
@@ -375,25 +374,25 @@ static inline void cublasWrapperSwap( IndexType n, T* x_d, IndexType incX, T* y_
 template<>
 void cublasWrapperSwap( int n, float* x_d, int incX, float* y_d, int incY )
 {
-    cublasSswap( n, x_d, incX, y_d, incY );
+    LAMA_CUBLAS_CALL(cublasSswap( CUDAContext_cublasHandle, n, x_d, incX, y_d, incY ), "cublasWrapperSwap<float>");
 }
 
 template<>
 void cublasWrapperSwap( int n, double* x_d, int incX, double* y_d, int incY )
 {
-    cublasDswap( n, x_d, incX, y_d, incY );
+    LAMA_CUBLAS_CALL(cublasDswap( CUDAContext_cublasHandle, n, x_d, incX, y_d, incY ), "cublasWrapperSwap<double>");
 }
 
 template<>
 void cublasWrapperSwap( int n, ComplexFloat* x_d, int incX, ComplexFloat* y_d, int incY )
 {
-    cublasCswap( n, cublasCast( x_d ), incX, cublasCast( y_d ), incY );
+    LAMA_CUBLAS_CALL(cublasCswap( CUDAContext_cublasHandle, n, cublasCast( x_d ), incX, cublasCast( y_d ), incY ), "cublasWrapperSwap<ComplexFloat>");
 }
 
 template<>
 void cublasWrapperSwap( int n, ComplexDouble* x_d, int incX, ComplexDouble* y_d, int incY )
 {
-    cublasZswap( n, cublasCast( x_d ), incX, cublasCast( y_d ), incY );
+    LAMA_CUBLAS_CALL(cublasZswap( CUDAContext_cublasHandle, n, cublasCast( x_d ), incX, cublasCast( y_d ), incY ), "cublasWrapperSwap<ComplexDouble>");
 }
 
 template<typename T>
@@ -425,8 +424,7 @@ void CUDABLAS1::swap(
         stream = cudaStreamSyncToken->getCUDAStream();
     }
 
-    cublasSetKernelStream( stream );
-    LAMA_CHECK_CUBLAS_ERROR
+    LAMA_CUBLAS_CALL( cublasSetStream( CUDAContext_cublasHandle, stream ), "CUDABLAS::swap set stream" );
 
     cublasWrapperSwap( static_cast<int>( n ), x_d, static_cast<int>( incX ), y_d, static_cast<int>( incY ) );
 
@@ -438,8 +436,7 @@ void CUDABLAS1::swap(
         LAMA_CHECK_CUDA_ERROR
     }
 
-    cublasSetKernelStream( NULL );
-    LAMA_CHECK_CUBLAS_ERROR
+    LAMA_CUBLAS_CALL( cublasSetStream( CUDAContext_cublasHandle, NULL ), "CUADABLAS1::swap set stream NULL");
 }
 
 /* ---------------------------------------------------------------------------------------*/
@@ -453,25 +450,25 @@ static inline void cublasWrapperCopy( int n, const T* x_d, int incX, T* y_d, int
 template<>
 void cublasWrapperCopy( int n, const float* x_d, int incX, float* y_d, int incY )
 {
-    cublasScopy( n, x_d, incX, y_d, incY );
+    LAMA_CUBLAS_CALL( cublasScopy( CUDAContext_cublasHandle, n, x_d, incX, y_d, incY ), "cublasWrapperCopy<float>" );
 }
 
 template<>
 void cublasWrapperCopy( int n, const double* x_d, int incX, double* y_d, int incY )
 {
-    cublasDcopy( n, x_d, incX, y_d, incY );
+    LAMA_CUBLAS_CALL( cublasDcopy( CUDAContext_cublasHandle, n, x_d, incX, y_d, incY ), "cublasWrapperCopy<double>" );
 }
 
 template<>
 void cublasWrapperCopy( int n, const ComplexFloat* x_d, int incX, ComplexFloat* y_d, int incY )
 {
-    cublasCcopy( n, cublasCast( x_d ), incX, cublasCast( y_d ), incY );
+    LAMA_CUBLAS_CALL( cublasCcopy( CUDAContext_cublasHandle, n, cublasCast( x_d ), incX, cublasCast( y_d ), incY ), "cublasWrapperCopy<ComplexFloat>" );
 }
 
 template<>
 void cublasWrapperCopy( int n, const ComplexDouble* x_d, int incX, ComplexDouble* y_d, int incY )
 {
-    cublasZcopy( n, cublasCast( x_d ), incX, cublasCast( y_d ), incY );
+    LAMA_CUBLAS_CALL( cublasZcopy( CUDAContext_cublasHandle, n, cublasCast( x_d ), incX, cublasCast( y_d ), incY ), "cublasWrapperCopy<ComplexDouble>" );
 }
 
 template<typename T>
@@ -497,8 +494,7 @@ void CUDABLAS1::copy( IndexType n, const T* x_d, IndexType incX, T* y_d, IndexTy
         stream = cudaStreamSyncToken->getCUDAStream();
     }
 
-    cublasSetKernelStream( stream );
-    LAMA_CHECK_CUBLAS_ERROR
+    LAMA_CUBLAS_CALL( cublasSetStream( CUDAContext_cublasHandle, stream ), "CUDABLAS1::copy set stream" );
 
     cublasWrapperCopy( static_cast<int>( n ), x_d, static_cast<int>( incX ), y_d, static_cast<int>( incY ) );
 
@@ -510,8 +506,7 @@ void CUDABLAS1::copy( IndexType n, const T* x_d, IndexType incX, T* y_d, IndexTy
         LAMA_CHECK_CUDA_ERROR
     }
 
-    cublasSetKernelStream( NULL );
-    LAMA_CHECK_CUBLAS_ERROR
+    LAMA_CUBLAS_CALL( cublasSetStream( CUDAContext_cublasHandle, NULL ), "CUDABLAS1::copy set stream NULL" );
 }
 
 /* ---------------------------------------------------------------------------------------*/
@@ -525,13 +520,13 @@ static inline void cublasWrapperAxpy( int n, T alpha, const T* x_d, int incX, T*
 template<>
 void cublasWrapperAxpy( int n, float alpha, const float* x_d, int incX, float* y_d, int incY )
 {
-    cublasSaxpy( n, alpha, x_d, incX, y_d, incY );
+    LAMA_CUBLAS_CALL( cublasSaxpy( CUDAContext_cublasHandle, n, &alpha, x_d, incX, y_d, incY ), "cublasWrapperAxpy<float>" );
 }
 
 template<>
 void cublasWrapperAxpy( int n, double alpha, const double* x_d, int incX, double* y_d, int incY )
 {
-    cublasDaxpy( n, alpha, x_d, incX, y_d, incY );
+    LAMA_CUBLAS_CALL( cublasDaxpy( CUDAContext_cublasHandle, n, &alpha, x_d, incX, y_d, incY ), "cublasWrapperAxpy<double>" );
 }
 
 template<>
@@ -539,7 +534,7 @@ void cublasWrapperAxpy( int n, ComplexFloat alpha,
                   const ComplexFloat* x_d, int incX,
                   ComplexFloat* y_d, int incY )
 {
-    cublasCaxpy( n, cublasCast( alpha ), cublasCast( x_d ), incX, cublasCast( y_d ), incY );
+    LAMA_CUBLAS_CALL( cublasCaxpy( CUDAContext_cublasHandle, n, cublasCast( &alpha ), cublasCast( x_d ), incX, cublasCast( y_d ), incY ), "cublasWrapperAxpy<ComplexFloat>" );
 }
 
 template<>
@@ -547,7 +542,7 @@ void cublasWrapperAxpy( int n, ComplexDouble alpha,
                   const ComplexDouble* x_d, int incX,
                   ComplexDouble* y_d, int incY )
 {
-    cublasZaxpy( n, cublasCast( alpha ), cublasCast( x_d ), incX, cublasCast( y_d ), incY );
+    LAMA_CUBLAS_CALL( cublasZaxpy( CUDAContext_cublasHandle, n, cublasCast( &alpha ), cublasCast( x_d ), incX, cublasCast( y_d ), incY ), "cublasWrapperAxpy<ComplexDouble>" );
 }
 
 template<typename T>
@@ -577,8 +572,7 @@ void CUDABLAS1::axpy( int n, T alpha,
         stream = cudaStreamSyncToken->getCUDAStream();
     }
 
-    cublasSetKernelStream( stream );
-    LAMA_CHECK_CUBLAS_ERROR
+    LAMA_CUBLAS_CALL( cublasSetStream( CUDAContext_cublasHandle, stream ), "CUDABLAS1::axpy set stream");
 
     cublasWrapperAxpy( n, alpha, x_d, incX, y_d, incY );
 
@@ -590,8 +584,7 @@ void CUDABLAS1::axpy( int n, T alpha,
         LAMA_CHECK_CUDA_ERROR
     }
 
-    cublasSetKernelStream( NULL );
-    LAMA_CHECK_CUBLAS_ERROR
+    LAMA_CUBLAS_CALL( cublasSetStream( CUDAContext_cublasHandle, NULL ), "CUDABLAS1::axpy set stream NULL" );
 }
 
 /* ---------------------------------------------------------------------------------------*/
@@ -604,13 +597,17 @@ static inline T cublasWrapperDot( int n, const T* x_d, int incX, const T* y_d, i
 template<>
 float cublasWrapperDot( int n, const float* x_d, int incX, const float* y_d, int incY )
 {
-    return cublasSdot( n, x_d, incX, y_d, incY );
+    float dot;
+    LAMA_CUBLAS_CALL( cublasSdot( CUDAContext_cublasHandle, n, x_d, incX, y_d, incY, &dot ), "cublasWrapperDot<float>" );
+    return dot;
 }
 
 template<>
 double cublasWrapperDot( int n, const double* x_d, int incX, const double* y_d, int incY )
 {
-    return cublasDdot( n, x_d, incX, y_d, incY );
+    double dot;
+    LAMA_CUBLAS_CALL( cublasDdot( CUDAContext_cublasHandle, n, x_d, incX, y_d, incY, &dot ), "cublasWrapperDot<double>" );
+    return dot;
 }
 
 template<>
@@ -618,18 +615,18 @@ ComplexFloat cublasWrapperDot( int n,
                          const ComplexFloat* x_d, int incX,
                          const ComplexFloat* y_d, int incY )
 {
-    cuComplex dotResult = cublasCdotu ( n, cublasCast( x_d ), incX, cublasCast( y_d ), incY );
-
-    return ComplexFloat( dotResult.x, dotResult.y );
+    ComplexFloat dot;
+    LAMA_CUBLAS_CALL( cublasCdotu ( CUDAContext_cublasHandle, n, cublasCast( x_d ), incX, cublasCast( y_d ), incY, cublasCast( &dot ) ), "cublasWrapperDot<ComplexFloat>" );
+    return dot;
 }
 
 template<>
 ComplexDouble cublasWrapperDot( int n, const ComplexDouble* x_d, int incX,
                           const ComplexDouble* y_d, int incY )
 {
-    cuDoubleComplex dotResult = cublasZdotu( n, cublasCast( x_d ), incX, cublasCast( y_d ), incY );
-
-    return ComplexDouble( dotResult.x, dotResult.y );
+    ComplexDouble dot;
+    LAMA_CUBLAS_CALL( cublasZdotu( CUDAContext_cublasHandle, n, cublasCast( x_d ), incX, cublasCast( y_d ), incY, cublasCast( &dot ) ), "cublasWrapperDot<ComplexDouble>" );
+    return dot;
 }
 
 template<typename T>
@@ -663,8 +660,7 @@ T CUDABLAS1::dot(
         stream = cudaStreamSyncToken->getCUDAStream();
     }
 
-    cublasSetKernelStream( stream );
-    LAMA_CHECK_CUBLAS_ERROR
+    LAMA_CUBLAS_CALL( cublasSetStream( CUDAContext_cublasHandle, stream ), "CUDABLAS1::dot set stream" );
 
     T res = cublasWrapperDot( static_cast<int>( n ), x_d, static_cast<int>( incX ), y_d, static_cast<int>( incY ) );
 
@@ -676,9 +672,7 @@ T CUDABLAS1::dot(
         LAMA_CHECK_CUDA_ERROR
     }
 
-    cublasSetKernelStream( NULL );
-    LAMA_CHECK_CUBLAS_ERROR
-
+    LAMA_CUBLAS_CALL( cublasSetStream( CUDAContext_cublasHandle, NULL ), "CUDABLAS1::dot set stream NULL" );
     return res;
 }
 

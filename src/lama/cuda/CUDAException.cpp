@@ -45,7 +45,7 @@
 #if __GNUC__ >= 4 &&  __GNUC_MINOR__ > 6
 #pragma GCC diagnostic pop
 #endif //__GNUC__ >= 4 &&  __GNUC_MINOR__ > 6
-#include <cublas.h>
+#include <cublas_v2.h>
 
 namespace lama
 {

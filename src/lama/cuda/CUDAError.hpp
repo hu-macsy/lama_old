@@ -37,7 +37,7 @@
 #include <lama/exception/LAMAAssert.hpp>
 
 #include <cuda.h>
-#include <cublas.h>
+#include <cublas_v2.h>
 
 namespace lama
 {
@@ -47,7 +47,7 @@ const char* cudaDriverErrorString( CUresult res );
 
 /** Function that translates enum cublasStatus to strings. */
 
-const char* cublasErrorString( cublasStatus res );
+const char* cublasErrorString( cublasStatus_t res );
 
 }
 
@@ -93,7 +93,7 @@ const char* cublasErrorString( cublasStatus res );
 
 #define LAMA_CUBLAS_CALL( call, msg )                                               \
     {                                                                                   \
-        cublasStatus res = call;                                                        \
+        cublasStatus_t res = call;                                                        \
         if ( CUBLAS_STATUS_SUCCESS != res )                                             \
         {                                                                               \
             std::ostringstream errorStr;                                                \
@@ -139,11 +139,6 @@ const char* cublasErrorString( cublasStatus res );
 #define LAMA_CHECK_CUDA_ERROR                                                         \
     {                                                                                 \
         LAMA_CUDA_RT_CALL( cudaGetLastError(), "last CUDA error" )                    \
-    }
-
-#define LAMA_CHECK_CUBLAS_ERROR                                                       \
-    {                                                                                 \
-        LAMA_CUBLAS_CALL( cublasGetError(), "last error CUBLAS" )                     \
     }
 
 //    #define LAMA_CHECK_CUDA_ERROR
