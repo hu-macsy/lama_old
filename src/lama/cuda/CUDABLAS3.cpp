@@ -67,7 +67,7 @@ void cublasWrapperGemm( cublasOperation_t transA_char, cublasOperation_t transB_
                   float alpha, const float* a, IndexType lda, 
                   const float* b, IndexType ldb, float beta, float* c, IndexType ldc )
 {
-    cublasSgemm( CUDAContext_cublasHandle, transA_char, transB_char, m, n, k, &alpha, a, lda, b, ldb, &beta, c, ldc );
+    LAMA_CUBLAS_CALL( cublasSgemm( CUDAContext_cublasHandle, transA_char, transB_char, m, n, k, &alpha, a, lda, b, ldb, &beta, c, ldc ), "cublasWrapperGemm<float>" );
 }
 
 template<>
@@ -75,7 +75,7 @@ void cublasWrapperGemm( cublasOperation_t transA_char, cublasOperation_t transB_
                   double alpha, const double* a, IndexType lda, 
                   const double* b, IndexType ldb, double beta, double* c, IndexType ldc )
 {
-    cublasDgemm( CUDAContext_cublasHandle, transA_char, transB_char, m, n, k, &alpha, a, lda, b, ldb, &beta, c, ldc );
+    LAMA_CUBLAS_CALL( cublasDgemm( CUDAContext_cublasHandle, transA_char, transB_char, m, n, k, &alpha, a, lda, b, ldb, &beta, c, ldc ), "cublasWrapperGemm<dobule>" );
 }
 
 template<>
@@ -83,8 +83,8 @@ void cublasWrapperGemm( cublasOperation_t transA_char, cublasOperation_t transB_
                   ComplexFloat alpha, const ComplexFloat* a, IndexType lda, 
                   const ComplexFloat* b, IndexType ldb, ComplexFloat beta, ComplexFloat* c, IndexType ldc )
 {
-    cublasCgemm( CUDAContext_cublasHandle, transA_char, transB_char, m, n, k, cublasCast( &alpha ), cublasCast( a ), lda, 
-                 cublasCast( b ), ldb, cublasCast( &beta ), cublasCast( c ), ldc );
+    LAMA_CUBLAS_CALL( cublasCgemm( CUDAContext_cublasHandle, transA_char, transB_char, m, n, k, cublasCast( &alpha ), cublasCast( a ), lda, 
+                 cublasCast( b ), ldb, cublasCast( &beta ), cublasCast( c ), ldc ), "cublasWrapperGemm<ComplexFloat>" );
 }
 
 template<>
@@ -92,8 +92,8 @@ void cublasWrapperGemm( cublasOperation_t transA_char, cublasOperation_t transB_
                   ComplexDouble alpha, const ComplexDouble* a, IndexType lda, 
                   const ComplexDouble* b, IndexType ldb, ComplexDouble beta, ComplexDouble* c, IndexType ldc )
 {
-    cublasZgemm( CUDAContext_cublasHandle, transA_char, transB_char, m, n, k, cublasCast( &alpha ), cublasCast( a ), lda, 
-                 cublasCast( b ), ldb, cublasCast( &beta ), cublasCast( c ), ldc );
+    LAMA_CUBLAS_CALL( cublasZgemm( CUDAContext_cublasHandle, transA_char, transB_char, m, n, k, cublasCast( &alpha ), cublasCast( a ), lda, 
+                 cublasCast( b ), ldb, cublasCast( &beta ), cublasCast( c ), ldc ), "cublasWrapperGemm<double>" );
 }
 
 template<typename T>
