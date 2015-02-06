@@ -38,6 +38,7 @@
 #define CUDA_CALLABLE_MEMBER __device__ __host__
 #include <cuComplex.h>
 #include <math.h>
+#include <thrust/device_reference.h>
 #else
 #define CUDA_CALLABLE_MEMBER
 #include <cmath>
@@ -418,6 +419,16 @@ public:
         this->real( static_cast<U>( value.real() ) );
         this->imag( static_cast<U>( value.imag() ) );
     }
+
+#ifdef __CUDACC__ 
+    template<typename T>
+    CUDA_CALLABLE_MEMBER inline Complex( const thrust::device_reference<Complex<T> >& value )
+    {
+	*this = static_cast<Complex<T> >(value);
+        //this->real( static_cast<U>( (value()).real() ) );
+        //this->imag( static_cast<U>( (value()).imag() ) );
+    }
+#endif 
 
     /**
      * @brief Constructs a scalar representing the passed complex value.

@@ -58,7 +58,7 @@ bool CUDATexture::getUseTextureByEnv()
 
     if ( !env ) return false;   // no initialization by environment
 
-    char key = toupper( env[0] );
+    char key = static_cast<char>(toupper( env[0] ));
 
     // to upper
 
