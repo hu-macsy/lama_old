@@ -112,14 +112,14 @@ static ValueType fetchVectorX( const ValueType* const x, const int i )
 
 template<>
 __inline__ __device__
-static float fetchVectorX<float, true>( const float* const, const int i )
+float fetchVectorX<float, true>( const float* const, const int i )
 {
     return tex1Dfetch( texVectorSXref, i );
 }
 
 template<>
 __inline__ __device__
-static double fetchVectorX<double, true>( const double* const, const int i )
+double fetchVectorX<double, true>( const double* const, const int i )
 {
     int2 v = tex1Dfetch( texVectorDXref, i );
     return __hiloint2double( v.y, v.x );
@@ -127,14 +127,14 @@ static double fetchVectorX<double, true>( const double* const, const int i )
 
 template<>
 __inline__ __device__
-static int fetchVectorX<int, true>( const int* const, const int i )
+int fetchVectorX<int, true>( const int* const, const int i )
 {
     return tex1Dfetch( texVectorIref, i );
 }
 
 template<>
 __inline__ __device__
-static ComplexFloat fetchVectorX<ComplexFloat, true>( const ComplexFloat* const, const int i )
+ComplexFloat fetchVectorX<ComplexFloat, true>( const ComplexFloat* const, const int i )
 {
     float2 v = tex1Dfetch( texVectorCXref, i );
     return ComplexFloat(v.x, v.y);
@@ -142,7 +142,7 @@ static ComplexFloat fetchVectorX<ComplexFloat, true>( const ComplexFloat* const,
 
 template<>
 __inline__ __device__
-static ComplexDouble fetchVectorX<ComplexDouble, true>( const ComplexDouble* const, const int i )
+ComplexDouble fetchVectorX<ComplexDouble, true>( const ComplexDouble* const, const int i )
 {
     int4 u = tex1Dfetch( texVectorZXref, i );
     return ComplexDouble( __hiloint2double( u.y, u.x ), __hiloint2double( u.w, u.z));
