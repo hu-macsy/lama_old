@@ -41,7 +41,7 @@ mkdir ${dirname}
 
 # Running tests serial
 echo "Running serial tests"
-./lama_test --output_format=XML --log_level=all --report_level=no 1>${dirname}/serial_tests.xml
+#./lama_test --output_format=XML --log_level=all --report_level=no 1>${dirname}/serial_tests.xml
 if [ -d distributed ];
 then
     # Running parallel tests serial and with two processes
