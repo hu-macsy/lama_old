@@ -41,12 +41,12 @@ mkdir ${dirname}
 
 # Running tests serial
 echo "Running serial tests"
-#./lama_test --output_format=XML --log_level=all --report_level=no 1>${dirname}/serial_tests.xml
+./lama_test --output_format=XML --log_level=error --report_level=no 1>${dirname}/serial_tests.xml
 if [ -d distributed ];
 then
     # Running parallel tests serial and with two processes
     echo "Running distributed tests serial"
-    distributed/lama_dist_test --output_format=XML --log_level=all --report_level=no 1>${dirname}/dist_tests.xml
+    distributed/lama_dist_test --output_format=XML --log_level=error --report_level=no 1>${dirname}/dist_tests.xml
 
 	#for i in 2 3 4;
 	#do
@@ -59,5 +59,5 @@ if [ -d cuda ];
 then
     #Running CUDA tests
     echo "Running cuda tests"
-    cuda/lama_cuda_test --output_format=XML --log_level=all --report_level=no 1>${dirname}/cuda_tests.xml
+    cuda/lama_cuda_test --output_format=XML --log_level=error --report_level=no 1>${dirname}/cuda_tests.xml
 fi
