@@ -47,6 +47,7 @@ set ( CLASSES
 set ( HEADERS OpenMP )
 
 if ( LAMA_BLAS_NAME STREQUAL "MKL" )
+
     # Use MKL sparse blas routines for CSR if available
     if ( EXISTS "${MKL_INCLUDE_DIR}/mkl_spblas.h" )
         set ( CLASSES ${CLASSES} MKLCSRUtils )
@@ -64,15 +65,17 @@ if ( LAMA_BLAS_NAME STREQUAL "MKL" )
     if ( EXISTS "${MKL_INCLUDE_DIR}/mkl_lapacke.h" ) 
         set ( LAPACKeFound TRUE )
     endif ( EXISTS "${MKL_INCLUDE_DIR}/mkl_lapacke.h" )
+endif ( LAMA_BLAS_NAME STREQUAL "MKL" )
+
+if ( NOT INTERNALBLAS_FOUND )
     set ( CLASSES
         ${CLASSES}
         BLAS_BLAS1
         BLAS_BLAS2
         BLAS_BLAS3
-        LAPACK_LAPACK
+#        LAPACK_LAPACK
     )
-
-endif ( LAMA_BLAS_NAME STREQUAL "MKL" )
+endif ( NOT INTERNALBLAS_FOUND )
 
 if ( ${LAPACKeFound} )
     message ( STATUS "LAPACKe is supported and will be used" ) 
@@ -84,10 +87,8 @@ else ( ${LAPACKeFound} )
     endif ( NOT INTERNALBLAS_FOUND )
 endif ( ${LAPACKeFound} )
 
-# Do this due to long double
-
-message ( STATUS "Using internal Blas" )
-    
+# Use internal BLAS for long double
+   
 set ( CLASSES
         ${CLASSES}
         OpenMPBLAS1

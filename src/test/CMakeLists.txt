@@ -128,6 +128,10 @@ endif ( NOT ( Boost_UNIT_TEST_FRAMEWORK_LIBRARY OR Boost_REGEX ) )
 ### set include directories ###
 include_directories ( .. ../lama ${Boost_INCLUDE_DIRS} )
 
+if ( LAMA_BLAS_NAME STREQUAL "MKL" )
+    include_directories ( ${MKL_INCLUDE_DIRS} )
+endif ( LAMA_BLAS_NAME STREQUAL "MKL" )
+
 ### add subdirectories ###
 if ( MPI_FOUND AND LAMA_USE_MPI )
     add_subdirectory ( distributed )

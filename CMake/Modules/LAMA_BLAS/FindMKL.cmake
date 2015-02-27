@@ -226,8 +226,3 @@ mark_as_advanced( MKL_INCLUDE_DIRS
                   MKL_LIBRARY_LP64
                   MKL_LIBRARY_GNU 
                   MKL_LIBRARY_INTEL )
-                  
-# if MKL is found, include directories    
-if ( MKL_FOUND )
-    include_directories ( ${MKL_INCLUDE_DIRS} )
-endif ( MKL_FOUND )

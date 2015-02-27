@@ -38,23 +38,15 @@
 
 #ifdef LAMA_MKL_BLAS
 
-/** Solution 1: use cblas interface of MKL
- *  *  
- *   *  - recommended when using MKL
- *    *  - mandatory when also using other MKL routines (e.g. for CSR matrices)
- *     */
-
 #include <mkl_cblas.h>
+
+#elif LAMA_INTERNAL_BLAS
+
+// nothing needed to be done
 
 #else
 
-#define LAMA_CBLAS_INDEX size_t  
-
-enum CBLAS_ORDER {CblasRowMajor=101, CblasColMajor=102};
-enum CBLAS_TRANSPOSE {CblasNoTrans=111, CblasTrans=112, CblasConjTrans=113};
-enum CBLAS_UPLO {CblasUpper=121, CblasLower=122};
-enum CBLAS_DIAG {CblasNonUnit=131, CblasUnit=132};
-enum CBLAS_SIDE {CblasLeft=141, CblasRight=142};
+#include "lama/cblas/include/cblas.h"
 
 #endif
 

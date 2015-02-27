@@ -97,9 +97,13 @@ if ( OPENMP_FOUND )
 endif( OPENMP_FOUND )
 
 # MKL FOUND
-if ( MKL_FOUND )
+if ( LAMA_BLAS_NAME STREQUAL "MKL" )
     add_definitions( -DLAMA_MKL_BLAS )
-endif ( MKL_FOUND )
+elseif ( INTERNALBLAS_FOUND )
+    add_definitions( -DLAMA_INTERNAL_BLAS )
+else ()
+    add_definitions( -DADD_ )
+endif ()
 
 # LAMA irrelevant entries will be marked as advanced ( Remove them from default cmake GUI )
 mark_as_advanced ( CUDA_BUILD_CUBIN CUDA_BUILD_EMULATION CUDA_SDK_ROOT_DIR CUDA_VERBOSE_BUILD )

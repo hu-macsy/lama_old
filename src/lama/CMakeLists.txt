@@ -43,6 +43,13 @@ if ( METIS_FOUND AND PARMETIS_FOUND )
     include_directories( ${PARMETIS_INCLUDE_DIR} ) 
 endif ( METIS_FOUND AND PARMETIS_FOUND )
 
+if ( LAMA_BLAS_NAME STREQUAL "MKL" )
+    include_directories ( ${MKL_INCLUDE_DIRS} )
+elseif ( NOT LAMA_BLAS_NAME STREQUAL "MKL" AND NOT INTERNALBLAS_FOUND )
+    include_directories( cblas/include )
+    add_subdirectory( cblas )
+endif ( LAMA_BLAS_NAME STREQUAL "MKL" )
+
 ### Add classes and header files ###
 set ( CLASSES
         BaseAccess
