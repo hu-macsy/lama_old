@@ -4,7 +4,7 @@ INCLUDE_FLAGS = -I${BOOST_INCLUDE_DIR} -I${LAMA_ROOT}/include
 
 LD_FLAGS = ${LAMA_LD_FLAGS} -Wl,-rpath=${LAMA_ROOT}/lib 
 
-EXECUTABLE: simple.exe vector.exe solver.exe blas1.exe vector_exp.exe matrix.exe scalar.exe
+EXECUTABLE: simple.exe vector.exe solver.exe blas1.exe vector_exp.exe matrix.exe scalar.exe spmvCPUCUDA.exe cgCPUCUDA.exe
 
 .SUFFIXES:
 

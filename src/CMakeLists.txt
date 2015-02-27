@@ -96,6 +96,10 @@ if ( OPENMP_FOUND )
     set ( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}" )
 endif( OPENMP_FOUND )
 
+# MKL FOUND
+if ( MKL_FOUND )
+    add_definitions( -DLAMA_MKL_BLAS )
+endif ( MKL_FOUND )
 
 # LAMA irrelevant entries will be marked as advanced ( Remove them from default cmake GUI )
 mark_as_advanced ( CUDA_BUILD_CUBIN CUDA_BUILD_EMULATION CUDA_SDK_ROOT_DIR CUDA_VERBOSE_BUILD )

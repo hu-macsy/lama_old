@@ -25,7 +25,7 @@
  * SOFTWARE.
  * @endlicense
  *
- * @brief C Inteface to BLAS routines
+ * @brief C Interface to BLAS routines
  * @author Thomas Brandes
  * @date 05.06.2014
  * @since 1.1.0
@@ -34,9 +34,21 @@
 #ifndef LAMA_CBLAS_HPP_
 #define LAMA_CBLAS_HPP_
 
-/* Note: LAMA uses these type definitions:
+// Note: LAMA uses these type definitions:
 
-#define CBLAS_INDEX size_t  
+#ifdef LAMA_MKL_BLAS
+
+/** Solution 1: use cblas interface of MKL
+ *  *  
+ *   *  - recommended when using MKL
+ *    *  - mandatory when also using other MKL routines (e.g. for CSR matrices)
+ *     */
+
+#include <mkl_cblas.h>
+
+#else
+
+#define LAMA_CBLAS_INDEX size_t  
 
 enum CBLAS_ORDER {CblasRowMajor=101, CblasColMajor=102};
 enum CBLAS_TRANSPOSE {CblasNoTrans=111, CblasTrans=112, CblasConjTrans=113};
@@ -44,16 +56,6 @@ enum CBLAS_UPLO {CblasUpper=121, CblasLower=122};
 enum CBLAS_DIAG {CblasNonUnit=131, CblasUnit=132};
 enum CBLAS_SIDE {CblasLeft=141, CblasRight=142};
 
-*/
+#endif
 
-/** Solution 1: use cblas interface of MKL
- *  
- *  - recommended when using MKL
- *  - mandatory when also using other MKL routines (e.g. for CSR matrices)
- */
-
-#include <mkl_cblas.h>
-
-//  #include <lama/cblas/include/cblas.h>
-
-#endif //  LAMA_CBLAS_HPP_
+#endif /* LAMA_CBLAS_HPP_ */

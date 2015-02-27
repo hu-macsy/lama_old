@@ -64,6 +64,14 @@ if ( LAMA_BLAS_NAME STREQUAL "MKL" )
     if ( EXISTS "${MKL_INCLUDE_DIR}/mkl_lapacke.h" ) 
         set ( LAPACKeFound TRUE )
     endif ( EXISTS "${MKL_INCLUDE_DIR}/mkl_lapacke.h" )
+    set ( CLASSES
+        ${CLASSES}
+        BLAS_BLAS1
+        BLAS_BLAS2
+        BLAS_BLAS3
+        LAPACK_LAPACK
+    )
+
 endif ( LAMA_BLAS_NAME STREQUAL "MKL" )
 
 if ( ${LAPACKeFound} )
@@ -86,14 +94,6 @@ set ( CLASSES
         OpenMPBLAS2
         OpenMPBLAS3
         OpenMPLAPACK
-    )
-
-set ( CLASSES
-        ${CLASSES}
-        BLAS_BLAS1
-        BLAS_BLAS2
-        BLAS_BLAS3
-        LAPACK_LAPACK
     )
 
 lama_classes ( ${CLASSES} )
