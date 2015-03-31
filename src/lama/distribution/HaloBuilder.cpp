@@ -96,7 +96,7 @@ void HaloBuilder::build( const Distribution& distribution, const std::vector<Ind
 
     requiredIndexesByOwner.resize( requiredPlan.totalQuantity() );
 
-    // Note: size of requiredIndexesByOnwer == requiredPlan.totalQuanitity()
+    // Note: size of requiredIndexesByOwner == requiredPlan.totalQuanitity()
 
     for ( IndexType jj = 0; jj < requiredPlan.totalQuantity(); ++jj )
     {

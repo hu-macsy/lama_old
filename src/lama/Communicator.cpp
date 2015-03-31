@@ -526,7 +526,7 @@ void Communicator::computeOwners(
     IndexType receiveSize = max( nonLocal ); // --> pure method call
     LAMA_LOG_DEBUG( logger, "max size of receive buffer is " << receiveSize )
 
-    // Allocate the maxiamal needed size for the communication buffers
+    // Allocate the maximal needed size for the communication buffers
 
     LAMAArray<IndexType> indexesSendArray( receiveSize );
     LAMAArray<IndexType> indexesReceiveArray( receiveSize );
@@ -534,9 +534,9 @@ void Communicator::computeOwners(
     LAMAArray<IndexType> ownersReceiveArray( receiveSize );
     {
         HostWriteAccess<IndexType> indexesSend( indexesSendArray );
-        HostWriteAccess<IndexType> indexesReceive( indexesReceiveArray );
+//        HostWriteAccess<IndexType> indexesReceive( indexesReceiveArray );
         HostWriteAccess<IndexType> ownersSend( ownersSendArray );
-        HostWriteAccess<IndexType> ownersReceive( ownersReceiveArray );
+//        HostWriteAccess<IndexType> ownersReceive( ownersReceiveArray );
         nonLocal = 0; // reset, counted again
 
         for ( IndexType i = 0; i < static_cast<IndexType>( nIndexes ); ++i )
