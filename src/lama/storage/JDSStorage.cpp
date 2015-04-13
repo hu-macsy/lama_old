@@ -907,13 +907,11 @@ ValueType JDSStorage<ValueType>::getValue( const IndexType i, const IndexType j 
 
 template<typename ValueType>
 void JDSStorage<ValueType>::matrixTimesVector(
-
-    LAMAArrayView<ValueType> result,
+	LAMAArray<ValueType>& result,
     const ValueType alpha,
-    const LAMAArrayConstView<ValueType> x,
+    const LAMAArray<ValueType>& x,
     const ValueType beta,
-    const LAMAArrayConstView<ValueType> y ) const
-
+    const LAMAArray<ValueType>& y ) const
 {
     LAMA_REGION( "Storage.JDS.timesVector" )
 
@@ -1033,13 +1031,11 @@ void JDSStorage<ValueType>::vectorTimesMatrix(
 
 template<typename ValueType>
 SyncToken* JDSStorage<ValueType>::matrixTimesVectorAsync(
-
-    LAMAArrayView<ValueType> result,
+	LAMAArray<ValueType>& result,
     const ValueType alpha,
-    const LAMAArrayConstView<ValueType> x,
+    const LAMAArray<ValueType>& x,
     const ValueType beta,
-    const LAMAArrayConstView<ValueType> y ) const
-
+    const LAMAArray<ValueType>& y ) const
 {
     ContextPtr loc = getContextPtr();
 
@@ -1049,15 +1045,19 @@ SyncToken* JDSStorage<ValueType>::matrixTimesVectorAsync(
         // used later in OpenMP to generate a TaskSyncToken
 
         void ( JDSStorage::*mv )(
-            LAMAArrayView<ValueType>,
+        	LAMAArray<ValueType>&,
             const ValueType,
-            const LAMAArrayConstView<ValueType>,
+            const LAMAArray<ValueType>&,
             const ValueType,
-            const LAMAArrayConstView<ValueType> ) const
+            const LAMAArray<ValueType>& ) const
 
         = &JDSStorage<ValueType>::matrixTimesVector;
 
-        return new TaskSyncToken( boost::bind( mv, this, result, alpha, x, beta, y ) );
+        using boost::bind;
+        using boost::ref;
+        using boost::cref;
+
+        return new TaskSyncToken( bind( mv, this, ref(result), alpha, cref(x), beta, cref(y) ) );
     }
 
     // For CUDA a solution using stream synchronization is more efficient than using a task
@@ -1157,9 +1157,11 @@ SyncToken* JDSStorage<ValueType>::vectorTimesMatrixAsync(
 
         = &JDSStorage<ValueType>::vectorTimesMatrix;
 
+        using boost::bind;
         using boost::ref;
+        using boost::cref;
 
-        return new TaskSyncToken( boost::bind( vm, this, ref( result ), alpha, ref( x ), beta, ref( y ) ) );
+        return new TaskSyncToken( bind( vm, this, ref( result ), alpha, cref( x ), beta, cref( y ) ) );
     }
 
     // For CUDA a solution using stream synchronization is more efficient than using a task
@@ -1306,7 +1308,9 @@ SyncToken* JDSStorage<ValueType>::jacobiIterateAsync(
 
         = &JDSStorage<ValueType>::jacobiIterate;
 
-        using namespace boost;
+        using boost::bind;
+        using boost::ref;
+        using boost::cref;
 
         return new TaskSyncToken( bind( jb, this, ref( solution ), cref( oldSolution ), cref( rhs ), omega ) );
     }

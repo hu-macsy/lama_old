@@ -64,10 +64,10 @@ namespace lama
 // Forward declaration of friend classes.
 
 template<typename T>
-class LAMAArrayView;
+class ReadAccess;
 
 template<typename T>
-class LAMAArrayConstView;
+class WriteAccess;
 
 /** Common base class for typed LAMAArray. */
 
@@ -129,8 +129,8 @@ protected:
 template<typename T>
 class LAMA_DLL_IMPORTEXPORT LAMAArray: public _LAMAArray
 {
-    friend class LAMAArrayView<T> ;
-    friend class LAMAArrayConstView<T> ;
+	friend class ReadAccess<T>;
+	friend class WriteAccess<T>;
 
 public:
 

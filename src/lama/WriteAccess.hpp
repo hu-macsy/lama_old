@@ -41,7 +41,6 @@
 
 // others
 #include <lama/LAMAArray.hpp>
-#include <lama/LAMAArrayView.hpp>
 #include <lama/Context.hpp>
 
 #include <lama/exception/Exception.hpp>
@@ -73,6 +72,7 @@ public:
      *
      * @param[in] array     the LAMAArray to acquire a WriteAccess for
      * @param[in] context   the context to acquire a WriteAccess for
+     * @param[in] keep      if false, implicit clear, old values of the array are no more needed
      * @throws Exception    if the WriteAccess can not be acquired, e.g. because another WriteAccess exists.
      *
      * This constructor acquires a WriteAccess to the passed LAMAArray for the passed location. Depending on the flag
@@ -80,7 +80,7 @@ public:
      * one want to write only to the passed wrapped LAMAArray. If the passed LAMAArray is not valid at location and keep
      * is true the LAMAArray will be made valid at location before this constructor returns.
      */
-    WriteAccess( LAMAArray<ValueType>& array, ContextPtr context );
+	WriteAccess( LAMAArray<ValueType>& array, ContextPtr context, const bool keep = true );
 
     /**
      * @brief Acquires a WriteAccess to the passed LAMAArray for the passed location with resize.
@@ -104,7 +104,7 @@ public:
      *
      * Attention: this kind of write access assumes that the array is completely new written.
      */
-    WriteAccess( LAMAArray<ValueType>& array, ContextPtr context, const IndexType size, const bool keep );
+	WriteAccess( LAMAArray<ValueType>& array, ContextPtr context, const IndexType size, const bool keep = true );
 
     /**
      * @brief Acquires a WriteAccess to the passed LAMAArray for a valid context.
@@ -120,28 +120,7 @@ public:
 
     //WriteAccess( LAMAArray<ValueType>& array, ContextType context, const bool keep = true );
 
-    /**
-     * @brief Acquires a WriteAccess to the passed LAMAArrayView for the passed location.
-     *
-     * @param[in] view      the LAMAArrayView to acquire a WriteAccess for
-     * @param[in] context   the context to acquire a WriteAccess for
-     * @param[in] keep      if false, implicit clear, old values of the array are no more needed
-     * @throws Exception    if the WriteAccess can not be acquired, e.g. because another WriteAccess exists.
-     */
-    WriteAccess( LAMAArrayView<ValueType>& view, ContextPtr context, const bool keep = true );
-
-    /**
-     * @brief Acquires a WriteAccess to the passed LAMAArrayView for the passed location with resize.
-     *
-     * @param[in] view      the LAMAArrayView to acquire a WriteAccess for
-     * @param[in] context   the context to acquire a WriteAccess for
-     * @param[in] size      the new size of the LAMA array
-     * @param[in] keep      if false, implicit clear, old values of the array are no more needed
-     * @throws Exception    if the WriteAccess can not be acquired, e.g. because another WriteAccess exists.
-     */
-    WriteAccess( LAMAArrayView<ValueType>& view, ContextPtr context, const IndexType size, const bool keep = true );
-
-    //WriteAccess( LAMAArrayView<ValueType>& view, ContextType context, const bool keep = true );
+    //WriteAccess( LAMAArray<ValueType>& view, ContextType context, const bool keep = true );
 
     /**
      * @brief Releases the WriteAccess on the associated LAMAArray.
@@ -220,7 +199,7 @@ protected:
 
     LAMA_LOG_DECL_STATIC_LOGGER( logger )
 
-    LAMAArrayView<ValueType>* mArrayView;
+    LAMAArray<ValueType>* mArrayView;
 
     size_t mIndex; // index for this context access
 };
@@ -245,27 +224,14 @@ public:
     /** Create a write access with keep flag = false. */
 
     WriteOnlyAccess( LAMAArray<ValueType>& array, ContextPtr context )
-
         : WriteAccess<ValueType>( array, context, false )
-
     {
     }
 
     /** Create a write access with keep flag = false and do also a resize. */
 
     WriteOnlyAccess( LAMAArray<ValueType>& array, ContextPtr context, const IndexType size )
-
         : WriteAccess<ValueType>( array, context, size, false )
-
-    {
-    }
-
-    /** Create a write access with keep flag = false and do also a resize. */
-
-    WriteOnlyAccess( LAMAArrayView<ValueType>& view, ContextPtr context, const IndexType size )
-
-        : WriteAccess<ValueType>( view, context, size, false )
-
     {
     }
 

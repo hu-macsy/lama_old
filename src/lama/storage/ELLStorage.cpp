@@ -972,11 +972,11 @@ size_t ELLStorage<ValueType>::getMemoryUsageImpl() const
 
 template<typename ValueType>
 void ELLStorage<ValueType>::matrixTimesVector(
-    LAMAArrayView<ValueType> result,
+	LAMAArray<ValueType>& result,
     const ValueType alpha,
-    const LAMAArrayConstView<ValueType> x,
+    const LAMAArray<ValueType>& x,
     const ValueType beta,
-    const LAMAArrayConstView<ValueType> y ) const
+    const LAMAArray<ValueType>& y ) const
 {
     LAMA_LOG_INFO( logger,
                    *this << ": matrixTimesVector, result = " << result << ", alpha = " << alpha << ", x = " << x << ", beta = " << beta << ", y = " << y )
@@ -1125,11 +1125,11 @@ void ELLStorage<ValueType>::vectorTimesMatrix(
 
 template<typename ValueType>
 SyncToken* ELLStorage<ValueType>::matrixTimesVectorAsync(
-    LAMAArrayView<ValueType> result,
+	LAMAArray<ValueType>& result,
     const ValueType alpha,
-    const LAMAArrayConstView<ValueType> x,
+    const LAMAArray<ValueType>& x,
     const ValueType beta,
-    const LAMAArrayConstView<ValueType> y ) const
+    const LAMAArray<ValueType>& y ) const
 {
     LAMA_REGION( "Storage.ELL.timesVectorAsync" )
 
@@ -1142,19 +1142,21 @@ SyncToken* ELLStorage<ValueType>::matrixTimesVectorAsync(
         // execution as separate thread
 
         void ( ELLStorage::*pf )(
-            LAMAArrayView<ValueType>,
+        	LAMAArray<ValueType>&,
             const ValueType,
-            const LAMAArrayConstView<ValueType>,
+            const LAMAArray<ValueType>&,
             const ValueType,
-            const LAMAArrayConstView<ValueType> ) const
+            const LAMAArray<ValueType>& ) const
 
         = &ELLStorage<ValueType>::matrixTimesVector;
 
         using boost::bind;
+        using boost::ref;
+        using boost::cref;
 
         LAMA_LOG_INFO( logger, *this << ": matrixTimesVectorAsync on Host by own thread" )
 
-        return new TaskSyncToken( bind( pf, this, result, alpha, x, beta, y ) );
+        return new TaskSyncToken( bind( pf, this, ref(result), alpha, cref(x), beta, cref(y) ) );
     }
 
     LAMA_ASSERT_EQUAL_ERROR( x.size(), mNumColumns )
@@ -1277,12 +1279,12 @@ SyncToken* ELLStorage<ValueType>::vectorTimesMatrixAsync(
         = &ELLStorage<ValueType>::vectorTimesMatrix;
 
         using boost::bind;
+        using boost::ref;
+        using boost::cref;
 
         LAMA_LOG_INFO( logger, *this << ": vectorTimesMatrixAsync on Host by own thread" )
 
-        using boost::ref;
-
-        return new TaskSyncToken( bind( pf, this, ref( result ), alpha, ref( x ), beta, ref( y ) ) );
+        return new TaskSyncToken( bind( pf, this, ref( result ), alpha, cref( x ), beta, cref( y ) ) );
     }
 
     LAMA_ASSERT_EQUAL_ERROR( x.size(), mNumRows )

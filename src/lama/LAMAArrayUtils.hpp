@@ -93,7 +93,7 @@ public:
     template<typename ValueType>
     static void setVal( LAMAArray<ValueType>& target, const IndexType index, ValueType val );
 
-    /** Scaled assignment on LAMAArrayView. 
+    /** Scaled assignment on LAMAArray.
      *
      *  @param[out] result  output array
      *  @param[in]  beta    scaling factor 
@@ -102,9 +102,9 @@ public:
      */
 
     template<typename ValueType>
-    static void assignScaled( LAMAArrayView<ValueType> result, 
+    static void assignScaled( LAMAArray<ValueType>& result,
                               const ValueType beta,
-                              const LAMAArrayConstView<ValueType> y,
+                              const LAMAArray<ValueType>& y,
                               ContextPtr context );
 
 private:

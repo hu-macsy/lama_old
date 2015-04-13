@@ -733,11 +733,11 @@ size_t COOStorage<ValueType>::getMemoryUsageImpl() const
 template<typename ValueType>
 void COOStorage<ValueType>::matrixTimesVector(
 
-    LAMAArrayView<ValueType> result,
+    LAMAArray<ValueType>& result,
     const ValueType alpha,
-    const LAMAArrayConstView<ValueType> x,
+    const LAMAArray<ValueType>&  x,
     const ValueType beta,
-    const LAMAArrayConstView<ValueType> y ) const
+    const LAMAArray<ValueType>&  y ) const
 
 {
     LAMA_REGION( "Storage.COO.timesVector" )
@@ -854,11 +854,11 @@ void COOStorage<ValueType>::vectorTimesMatrix(
 
 template<typename ValueType>
 auto_ptr<SyncToken> COOStorage<ValueType>::matrixTimesVectorAsyncToDo(
-    LAMAArrayView<ValueType> result,
+	LAMAArray<ValueType>& result,
     const ValueType alpha,
-    const LAMAArrayConstView<ValueType> x,
+    const LAMAArray<ValueType>& x,
     const ValueType beta,
-    const LAMAArrayConstView<ValueType> y ) const
+    const LAMAArray<ValueType>& y ) const
 {
     LAMA_LOG_DEBUG( logger,
                     "Computing z = alpha * A * x + beta * y, with A = " << *this << ", x = " << x << ", y = " << y << ", z = " << result )

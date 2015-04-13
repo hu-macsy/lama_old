@@ -1251,11 +1251,11 @@ void CSRStorage<ValueType>::splitHalo(
 
 template<typename ValueType>
 void CSRStorage<ValueType>::matrixTimesVector(
-    LAMAArrayView<ValueType> result,
+	LAMAArray<ValueType>& result,
     const ValueType alpha,
-    const LAMAArrayConstView<ValueType> x,
+    const LAMAArray<ValueType>& x,
     const ValueType beta,
-    const LAMAArrayConstView<ValueType> y ) const
+    const LAMAArray<ValueType>& y ) const
 {
     LAMA_LOG_INFO( logger,
                    *this << ": matrixTimesVector, result = " << result << ", alpha = " << alpha << ", x = " << x << ", beta = " << beta << ", y = " << y )
@@ -1401,12 +1401,12 @@ void CSRStorage<ValueType>::vectorTimesMatrix(
 
 template<typename ValueType>
 void CSRStorage<ValueType>::matrixTimesVectorN(
-    LAMAArrayView<ValueType> result,
+	LAMAArray<ValueType>& result,
     const IndexType n,
     const ValueType alpha,
-    const LAMAArrayConstView<ValueType> x,
+    const LAMAArray<ValueType>& x,
     const ValueType beta,
-    const LAMAArrayConstView<ValueType> y ) const
+    const LAMAArray<ValueType>& y ) const
 {
     LAMA_LOG_INFO( logger,
                    *this << ": matrixTimesVector, result = " << result << ", alpha = " << alpha << ", x = " << x << ", beta = " << beta << ", y = " << y )
@@ -1462,11 +1462,11 @@ void CSRStorage<ValueType>::matrixTimesVectorN(
 
 template<typename ValueType>
 SyncToken* CSRStorage<ValueType>::matrixTimesVectorAsync(
-    LAMAArrayView<ValueType> result,
+	LAMAArray<ValueType>& result,
     const ValueType alpha,
-    const LAMAArrayConstView<ValueType> x,
+    const LAMAArray<ValueType>& x,
     const ValueType beta,
-    const LAMAArrayConstView<ValueType> y ) const
+    const LAMAArray<ValueType>& y ) const
 {
     LAMA_LOG_INFO( logger,
                    *this << ": matrixTimesVectorAsync, result = " << result << ", alpha = " << alpha << ", x = " << x << ", beta = " << beta << ", y = " << y )
@@ -1485,19 +1485,21 @@ SyncToken* CSRStorage<ValueType>::matrixTimesVectorAsync(
         // execution as separate thread
 
         void (CSRStorage::*pf)(
-            LAMAArrayView<ValueType>,
+        	LAMAArray<ValueType>&,
             const ValueType,
-            const LAMAArrayConstView<ValueType>,
+            const LAMAArray<ValueType>&,
             const ValueType,
-            const LAMAArrayConstView<ValueType> ) const
+            const LAMAArray<ValueType>& ) const
 
         = &CSRStorage<ValueType>::matrixTimesVector;
 
         using boost::bind;
+        using boost::ref;
+        using boost::cref;
 
         LAMA_LOG_INFO( logger, *this << ": matrixTimesVectorAsync on Host by own thread" )
 
-		return new TaskSyncToken( bind( pf, this, result, alpha, x, beta, y ) );
+		return new TaskSyncToken( bind( pf, this, ref(result), alpha, cref(x), beta, cref(y) ) );
     }
 
     LAMA_ASSERT_EQUAL_ERROR( x.size(), mNumColumns )
@@ -1614,12 +1616,12 @@ SyncToken* CSRStorage<ValueType>::vectorTimesMatrixAsync(
         = &CSRStorage<ValueType>::vectorTimesMatrix;
 
         using boost::bind;
+        using boost::ref;
+        using boost::cref;
 
         LAMA_LOG_INFO( logger, *this << ": vectorTimesMatrixAsync on Host by own thread" )
 
-        using boost::ref;
-
-        return new TaskSyncToken( bind( pf, this, ref( result ), alpha, ref( x ), beta, ref( y ) ) );
+        return new TaskSyncToken( bind( pf, this, ref( result ), alpha, cref( x ), beta, cref( y ) ) );
     }
 
     LAMA_ASSERT_EQUAL_ERROR( x.size(), mNumRows )

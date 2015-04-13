@@ -1687,7 +1687,17 @@ void DenseMatrix<ValueType>::matrixTimesVectorImpl(
 
             // adapt the size of recvValues, that is now sendValues after swap
 
-            LAMAArrayConstView<ValueType> x( *sendValues, 0, mData[actualPartition]->getNumColumns() );
+            LAMAArray<ValueType> x( mData[actualPartition]->getNumColumns() );
+            {
+            	ContextPtr loc = getContextPtr();
+
+            	ReadAccess<ValueType> readSend( *sendValues, loc );
+            	WriteAccess<ValueType> writeX( x, loc );
+
+            	LAMA_INTERFACE_FN_DEFAULT_T( copy, loc, BLAS, BLAS1, ValueType );
+
+            	copy( mData[actualPartition]->getNumColumns(), readSend.get(), 1, writeX.get(), 1, NULL );
+            }
 
             mData[actualPartition]->matrixTimesVector( localResult, alphaValue, x, one, localResult );
             st->wait();

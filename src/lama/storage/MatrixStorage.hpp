@@ -790,21 +790,11 @@ public:
      */
 
     virtual void matrixTimesVector(
-        LAMAArrayView<ValueType> result,
-        const ValueType alpha,
-        const LAMAArrayConstView<ValueType> x,
-        const ValueType beta,
-        const LAMAArrayConstView<ValueType> y ) const;
-
-    virtual void timesVector(
-        LAMAArray<ValueType>& result,
+    	LAMAArray<ValueType>& result,
         const ValueType alpha,
         const LAMAArray<ValueType>& x,
         const ValueType beta,
-        const LAMAArray<ValueType>& y ) const
-    {
-        matrixTimesVector( result, alpha, x, beta, y );
-    }
+        const LAMAArray<ValueType>& y ) const;
 
     virtual void vectorTimesMatrix(
         LAMAArray<ValueType>& result,
@@ -814,12 +804,12 @@ public:
         const LAMAArray<ValueType>& y ) const;
 
     virtual void matrixTimesVectorN(
-        LAMAArrayView<ValueType> result,
+    	LAMAArray<ValueType>& result,
         const IndexType n,
         const ValueType alpha,
-        const LAMAArrayConstView<ValueType> x,
+        const LAMAArray<ValueType>& x,
         const ValueType beta,
-        const LAMAArrayConstView<ValueType> y ) const;
+        const LAMAArray<ValueType>& y ) const;
 
     /** This method implements result = alpha * thisMatrix * x + beta * y
      *  that is executed asynchronously.
@@ -831,21 +821,11 @@ public:
      */
 
     virtual SyncToken* matrixTimesVectorAsync(
-        LAMAArrayView<ValueType> result,
-        const ValueType alpha,
-        const LAMAArrayConstView<ValueType> x,
-        const ValueType beta,
-        const LAMAArrayConstView<ValueType> y ) const;
-
-    SyncToken* timesVectorAsync(
-        LAMAArray<ValueType>& result,
+    	LAMAArray<ValueType>& result,
         const ValueType alpha,
         const LAMAArray<ValueType>& x,
         const ValueType beta,
-        const LAMAArray<ValueType>& y ) const
-    {
-        return matrixTimesVectorAsync( result, alpha, x, beta, y );
-    }
+        const LAMAArray<ValueType>& y ) const;
 
     virtual SyncToken* vectorTimesMatrixAsync(
         LAMAArray<ValueType>& result,

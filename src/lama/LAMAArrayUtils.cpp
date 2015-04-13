@@ -253,9 +253,9 @@ void LAMAArrayUtils::setVal( LAMAArray<ValueType>& target, const IndexType index
 }
 
 template<typename ValueType>
-void LAMAArrayUtils::assignScaled( LAMAArrayView<ValueType> result, 
+void LAMAArrayUtils::assignScaled( LAMAArray<ValueType>& result,
                                    const ValueType beta,
-                                   const LAMAArrayConstView<ValueType> y, 
+                                   const LAMAArray<ValueType>& y,
                                    ContextPtr loc )
 {
     const IndexType n = result.size();
@@ -322,9 +322,9 @@ void LAMAArrayUtils::setVal(
 
 template
 void LAMAArrayUtils::assignScaled(
-    LAMAArrayView<IndexType> result,
+    LAMAArray<IndexType>& result,
     const IndexType beta,
-    const LAMAArrayConstView<IndexType> y,
+    const LAMAArray<IndexType>& y,
     ContextPtr loc );
 
 template
@@ -353,9 +353,9 @@ void LAMAArrayUtils::setVal(                                                \
                                                                             \
 template                                                                    \
 void LAMAArrayUtils::assignScaled(                                          \
-    LAMAArrayView<ARITHMETIC_TYPE##I> result,                               \
+    LAMAArray<ARITHMETIC_TYPE##I>& result,                                  \
     const ARITHMETIC_TYPE##I beta,                                          \
-    const LAMAArrayConstView<ARITHMETIC_TYPE##I> y,                         \
+    const LAMAArray<ARITHMETIC_TYPE##I>& y,                                 \
     ContextPtr loc );                                                       \
                                                                             \
 BOOST_PP_REPEAT( ARITHMETIC_TYPE_CNT,                                       \

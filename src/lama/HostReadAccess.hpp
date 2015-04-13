@@ -65,14 +65,6 @@ public:
     HostReadAccess( const LAMAArray<ValueType>& array );
 
     /**
-     * @brief Acquires a ReadAccess to the passed LAMAArrayConstView for the host location.
-     *
-     * @param[in] view      the LAMAArrayConstView to acquire a ReadAccess for
-     * @throws Exception    if the ReadAccess can not be acquired, e.g. because a WriteContext exists.
-     */
-    HostReadAccess( const LAMAArrayConstView<ValueType>& view );
-
-    /**
      * @brief Releases the ReadAccess on the associated LAMAArray.
      */
     virtual ~HostReadAccess();
@@ -106,17 +98,9 @@ LAMA_LOG_DEF_TEMPLATE_LOGGER( template<typename T>, HostReadAccess<T>::logger, "
 
 template<typename T>
 HostReadAccess<T>::HostReadAccess( const LAMAArray<ValueType>& array )
-    : ReadAccess<T>( array, ContextFactory::getContext( Context::Host ) ),
-      mData( get() )
+    : ReadAccess<T>( array, ContextFactory::getContext( Context::Host ) ), mData( get() )
 {
     LAMA_LOG_DEBUG(logger, "read access on host, mData = " << mData);
-}
-
-template<typename T>
-HostReadAccess<T>::HostReadAccess( const LAMAArrayConstView<ValueType>& view )
-    : ReadAccess<T>( view, ContextFactory::getContext( Context::Host ) ), mData( get() )
-{
-    LAMA_LOG_DEBUG( logger, "read access on host, mData = " << mData )
 }
 
 template<typename T>

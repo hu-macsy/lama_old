@@ -268,17 +268,17 @@ public:
     /** Implementation of MatrixStorage::matrixTimesVector for COO */
 
     virtual void matrixTimesVector(
-        LAMAArrayView<ValueType> result,
+    	LAMAArray<ValueType>& result,
         const ValueType alpha,
-        const LAMAArrayConstView<ValueType> x,
+        const LAMAArray<ValueType>& x,
         const ValueType beta,
-        const LAMAArrayConstView<ValueType> y ) const;
+        const LAMAArray<ValueType>& y ) const;
 
     /** Implementation of MatrixStorage::vectorTimesMatrix for COO */
     /** since 1.0.1 */
 
     virtual void vectorTimesMatrix(
-        LAMAArray<ValueType>& result,
+    	LAMAArray<ValueType>& result,
         const ValueType alpha,
         const LAMAArray<ValueType>& x,
         const ValueType beta,
@@ -287,11 +287,11 @@ public:
     /** Implementation of MatrixStorage::matrixTimesVectorAsync for COO */
 
     virtual std::auto_ptr<SyncToken> matrixTimesVectorAsyncToDo(
-        LAMAArrayView<ValueType> result,
+    	LAMAArray<ValueType>& result,
         const ValueType alpha,
-        const LAMAArrayConstView<ValueType> x,
+        const LAMAArray<ValueType>& x,
         const ValueType beta,
-        const LAMAArrayConstView<ValueType> y ) const;
+        const LAMAArray<ValueType>& y ) const;
 
     /** Implementation of MatrixStorage::vectorTimesMatrixAsync for CSR */
     /** since 1.0.1 */

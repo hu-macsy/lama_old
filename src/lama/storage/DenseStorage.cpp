@@ -450,12 +450,11 @@ void DenseStorageView<ValueType>::invertDense( const DenseStorageView<ValueType>
 
 template<typename ValueType>
 void DenseStorageView<ValueType>::matrixTimesVector(
-
-    LAMAArrayView<ValueType> result,
+	LAMAArray<ValueType>& result,
     const ValueType alpha,
-    const LAMAArrayConstView<ValueType> x,
+    const LAMAArray<ValueType>& x,
     const ValueType beta,
-    const LAMAArrayConstView<ValueType> y ) const
+    const LAMAArray<ValueType>& y ) const
 {
     LAMA_LOG_INFO( logger,
                    "Computing z = " << alpha << " * A * x + " << beta << " * y"

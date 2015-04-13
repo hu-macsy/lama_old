@@ -954,11 +954,11 @@ void MatrixStorage<ValueType>::invert( const MatrixStorage<ValueType>& other )
 
 template<typename ValueType>
 void MatrixStorage<ValueType>::matrixTimesVector(
-    LAMAArrayView<ValueType> result,
+	LAMAArray<ValueType>& result,
     const ValueType alpha,
-    const LAMAArrayConstView<ValueType> x,
+    const LAMAArray<ValueType>& x,
     const ValueType beta,
-    const LAMAArrayConstView<ValueType> y ) const
+    const LAMAArray<ValueType>& y ) const
 {
     LAMA_UNSUPPORTED( *this << ": no matrixTimesVector for this format available, take CSR" )
 
@@ -986,12 +986,12 @@ void MatrixStorage<ValueType>::vectorTimesMatrix(
 
 template<typename ValueType>
 void MatrixStorage<ValueType>::matrixTimesVectorN(
-    LAMAArrayView<ValueType> result,
+	LAMAArray<ValueType>& result,
     const IndexType n,
     const ValueType alpha,
-    const LAMAArrayConstView<ValueType> x,
+    const LAMAArray<ValueType>& x,
     const ValueType beta,
-    const LAMAArrayConstView<ValueType> y ) const
+    const LAMAArray<ValueType>& y ) const
 {
     LAMA_UNSUPPORTED(
         *this << ": no matrixTimesVectorN" << " ( denseStorage = anyStorage * denseStorage )" << " for this format available, take CSR" );
@@ -1004,28 +1004,30 @@ void MatrixStorage<ValueType>::matrixTimesVectorN(
 
 template<typename ValueType>
 SyncToken* MatrixStorage<ValueType>::matrixTimesVectorAsync(
-    LAMAArrayView<ValueType> result,
+	LAMAArray<ValueType>& result,
     const ValueType alpha,
-    const LAMAArrayConstView<ValueType> x,
+    const LAMAArray<ValueType>& x,
     const ValueType beta,
-    const LAMAArrayConstView<ValueType> y ) const
+    const LAMAArray<ValueType>& y ) const
 {
     LAMA_LOG_INFO( logger, *this << ": asynchronous matrixTimesVector by new thread" )
 
     // general default: asynchronous execution is done by a new thread
 
     void (MatrixStorage::*pf)(
-        LAMAArrayView<ValueType>,
+    	LAMAArray<ValueType>&,
         const ValueType,
-        const LAMAArrayConstView<ValueType>,
+        const LAMAArray<ValueType>&,
         const ValueType,
-        const LAMAArrayConstView<ValueType> ) const
+        const LAMAArray<ValueType>& ) const
 
     = &MatrixStorage<ValueType>::matrixTimesVector;
 
     using boost::bind;
+    using boost::ref;
+    using boost::cref;
 
-    return new TaskSyncToken( bind( pf, this, result, alpha, x, beta, y ) );
+    return new TaskSyncToken( bind( pf, this, ref(result), alpha, cref(x), beta, cref(y) ) );
 }
 
 /* --------------------------------------------------------------------------- */

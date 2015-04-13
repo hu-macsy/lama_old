@@ -213,7 +213,10 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( refTest, T, test_types )
         // Write access should not be allowed
 
         LAMA_CHECK_THROW(
-        {   HostWriteAccess<ValueType> lamaArrayWAccess( lamaArray );}, Exception );
+        		{
+        			HostWriteAccess<ValueType> lamaArrayWAccess( lamaArray );
+        		}
+        		, Exception );
     }
 }
 

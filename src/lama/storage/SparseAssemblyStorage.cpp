@@ -469,8 +469,8 @@ IndexType SparseAssemblyStorage<T>::getNumValues() const
 template<typename T>
 void SparseAssemblyStorage<T>::setRow(
     const IndexType i,
-    const LAMAArrayConstView<IndexType>& ja,
-    const LAMAArrayConstView<ValueType>& values )
+    const LAMAArray<IndexType>& ja,
+    const LAMAArray<ValueType>& values )
 {
     //LAMA_ASSERT_EQUAL_ERROR( ja.size(), values.size() )
 

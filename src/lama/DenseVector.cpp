@@ -601,11 +601,11 @@ void DenseVector<T>::writeAt( std::ostream& stream ) const
 template<typename T>
 void DenseVector<T>::vectorPlusVector(
     ContextPtr context,
-    LAMAArrayView<T> result,
+    LAMAArray<T>& result,
     const T alpha,
-    const LAMAArrayConstView<T> x,
+    const LAMAArray<T>& x,
     const T beta,
-    const LAMAArrayConstView<T> y )
+    const LAMAArray<T>& y )
 {
     LAMA_LOG_DEBUG( logger,
                     "vectorPlusVector: result:" << result << " = " << alpha << " * x:" << x << " + " << beta << " * y:" << y )
@@ -726,11 +726,11 @@ void DenseVector<T>::vectorPlusVector(
 template<typename T>
 SyncToken* DenseVector<T>::vectorPlusVectorAsync(
     ContextPtr /*context*/,
-    LAMAArrayView<T> /*result*/,
+    LAMAArray<T>& /*result*/,
     const T /*alpha*/,
-    const LAMAArrayConstView<T> /*x*/,
+    const LAMAArray<T>& /*x*/,
     const T /*beta*/,
-    const LAMAArrayConstView<T> /*y*/ )
+    const LAMAArray<T>& /*y*/ )
 {
     LAMA_THROWEXCEPTION( "vectorPlusVectorAsync not implemented yet" )
 }

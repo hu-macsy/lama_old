@@ -47,53 +47,14 @@ LAMA_LOG_DEF_TEMPLATE_LOGGER( template<typename ValueType>, WriteAccess<ValueTyp
 /* --------------------------------------------------------------------------- */
 
 template<typename T>
-WriteAccess<T>::WriteAccess( LAMAArray<ValueType>& array,
-                             ContextPtr context )
-    : mArrayView( new LAMAArrayView<ValueType>( array, 0, array.size() ) ), mIndex(std::numeric_limits<size_t>::max())
+WriteAccess<T>::WriteAccess( LAMAArray<ValueType>& view, ContextPtr context, const bool keep /* = true*/)
+    : mArrayView( &view ), mIndex( std::numeric_limits<size_t>::max() )
 {
-    const bool keep = true;
+	if( view.constFlag )
+	{
+		LAMA_THROWEXCEPTION( "write on const array not allowed" )
+	}
 
-    LAMA_LOG_DEBUG(logger, "acquire write access for " << *mArrayView << " at "
-                   << *context << ", keep = " << keep);
-
-    mIndex = mArrayView->acquireWriteAccess( context, keep );
-
-    mData = mArrayView->get( mIndex );
-
-    LAMA_LOG_TRACE(logger, "mData = " << mData << ", mIndex = " << mIndex);
-}
-
-template<typename T>
-WriteAccess<T>::WriteAccess(
-    LAMAArray<ValueType>& array,
-    ContextPtr context,
-    const IndexType size,
-    const bool keep /* = false */)
-
-    : mArrayView( new LAMAArrayView<ValueType>( array, 0, array.size() ) ), mIndex(
-        std::numeric_limits<size_t>::max() )
-{
-    LAMA_LOG_DEBUG( logger,
-                    "acquire write access for " << *mArrayView << " at " << *context << ", size = " << size << ", keep = " << keep )
-
-    mIndex = mArrayView->acquireWriteAccess( context, keep );
-
-    if ( !keep )
-    {
-        mArrayView->clear( mIndex );
-    }
-
-    mArrayView->resize( mIndex, size );
-
-    mData = mArrayView->get( mIndex );
-
-    LAMA_LOG_TRACE( logger, "mData = " << mData << ", mIndex = " << mIndex )
-}
-
-template<typename T>
-WriteAccess<T>::WriteAccess( LAMAArrayView<ValueType>& view, ContextPtr context, const bool keep /* = true*/)
-    : mArrayView( new LAMAArrayView<ValueType>( view ) ), mIndex( std::numeric_limits<size_t>::max() )
-{
     LAMA_LOG_DEBUG( logger, "acquire write access for " << *mArrayView << " at " << *context << ", keep = " << keep )
 
     mIndex = mArrayView->acquireWriteAccess( context, keep );
@@ -105,13 +66,16 @@ WriteAccess<T>::WriteAccess( LAMAArrayView<ValueType>& view, ContextPtr context,
 
 template<typename T>
 WriteAccess<T>::WriteAccess(
-    LAMAArrayView<ValueType>& view,
+    LAMAArray<ValueType>& array,
     ContextPtr context,
     const IndexType size,
     const bool keep /* = false */)
-
-    : mArrayView( new LAMAArrayView<ValueType>( view ) ), mIndex( std::numeric_limits<size_t>::max() )
+    : mArrayView( &array), mIndex( std::numeric_limits<size_t>::max() )
 {
+	if( array.constFlag )
+	{
+		LAMA_THROWEXCEPTION( "write on const array not allowed" )
+	}
     LAMA_LOG_DEBUG( logger,
                     "acquire write access for " << *mArrayView << " at " << *context << ", size = " << size << ", keep = " << keep )
 
@@ -131,9 +95,12 @@ WriteAccess<T>::WriteAccess(
 
 template<typename T>
 WriteAccess<T>::WriteAccess( LAMAArray<ValueType>& array )
-    : mArrayView( new LAMAArrayView<ValueType>( array, 0, array.size() ) ), mIndex(
-        std::numeric_limits<size_t>::max() )
+    : mArrayView( &array ), mIndex( std::numeric_limits<size_t>::max() )
 {
+	if( array.constFlag )
+	{
+		LAMA_THROWEXCEPTION( "write on const array not allowed" )
+	}
     LAMA_LOG_DEBUG( logger, "acquire write access for " << *mArrayView << " at first valid context " )
 
     mIndex = mArrayView->acquireWriteAccess();
@@ -215,11 +182,11 @@ void WriteAccess<T>::release()
         LAMA_LOG_DEBUG( logger, "release write access for " << *mArrayView )
         //LOG_DEBUG(logger, "release write access for " << *mArray << " at " << *mArray->mContextData[mIndex].context);
         mArrayView->releaseWriteAccess( mIndex );
-        delete mArrayView;
+        //delete mArrayView;
     }
     else
     {
-        LAMA_LOG_DEBUG( logger, "release write access for an already released LAMAArrayView" )
+        LAMA_LOG_DEBUG( logger, "release write access for an already released LAMAArray" )
     }
     mArrayView = 0;
     mData = 0;

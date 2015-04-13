@@ -827,13 +827,11 @@ size_t DIAStorage<ValueType>::getMemoryUsageImpl() const
 
 template<typename ValueType>
 void DIAStorage<ValueType>::matrixTimesVector(
-
-    LAMAArrayView<ValueType> result,
+	LAMAArray<ValueType>& result,
     const ValueType alpha,
-    const LAMAArrayConstView<ValueType> x,
+    const LAMAArray<ValueType>& x,
     const ValueType beta,
-    const LAMAArrayConstView<ValueType> y ) const
-
+    const LAMAArray<ValueType>& y ) const
 {
     LAMA_REGION( "Storage.DIA.timesVector" )
 
@@ -951,13 +949,11 @@ void DIAStorage<ValueType>::vectorTimesMatrix(
 
 template<typename ValueType>
 SyncToken* DIAStorage<ValueType>::matrixTimesVectorAsync(
-
-    LAMAArrayView<ValueType> result,
+	LAMAArray<ValueType>& result,
     const ValueType alpha,
-    const LAMAArrayConstView<ValueType> x,
+    const LAMAArray<ValueType>& x,
     const ValueType beta,
-    const LAMAArrayConstView<ValueType> y ) const
-
+    const LAMAArray<ValueType>& y ) const
 {
     LAMA_REGION( "Storage.DIA.timesVectorAsync" )
 
@@ -970,15 +966,19 @@ SyncToken* DIAStorage<ValueType>::matrixTimesVectorAsync(
         // Start directly a task, avoids pushing of accesses
 
         void ( DIAStorage::*mv )(
-            LAMAArrayView<ValueType>,
+        	LAMAArray<ValueType>&,
             const ValueType,
-            const LAMAArrayConstView<ValueType>,
+            const LAMAArray<ValueType>&,
             const ValueType,
-            const LAMAArrayConstView<ValueType> ) const
+            const LAMAArray<ValueType>& ) const
 
         = &DIAStorage<ValueType>::matrixTimesVector;
 
-        return new TaskSyncToken( boost::bind( mv, this, result, alpha, x, beta, y ) );
+        using boost::bind;
+        using boost::ref;
+        using boost::cref;
+
+        return new TaskSyncToken( bind( mv, this, ref(result), alpha, cref(x), beta, cref(y) ) );
     }
 
     // logging + checks not needed when started as a task
@@ -1079,12 +1079,12 @@ SyncToken* DIAStorage<ValueType>::vectorTimesMatrixAsync(
         = &DIAStorage<ValueType>::vectorTimesMatrix;
 
         using boost::bind;
+        using boost::ref;
+        using boost::cref;
 
         LAMA_LOG_INFO( logger, *this << ": vectorTimesMatrixAsync on Host by own thread" )
 
-        using boost::ref;
-
-        return new TaskSyncToken( bind( pf, this, ref( result ), alpha, ref( x ), beta, ref( y ) ) );
+        return new TaskSyncToken( bind( pf, this, ref( result ), alpha, cref( x ), beta, cref( y ) ) );
     }
 
     LAMA_ASSERT_EQUAL_ERROR( x.size(), mNumRows )

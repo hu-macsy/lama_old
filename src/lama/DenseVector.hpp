@@ -349,19 +349,19 @@ public:
 
     static void vectorPlusVector(
         ContextPtr context,
-        LAMAArrayView<T> result,
+        LAMAArray<T>& result,
         const T alpha,
-        const LAMAArrayConstView<T> x,
+        const LAMAArray<T>& x,
         const T beta,
-        const LAMAArrayConstView<T> y );
+        const LAMAArray<T>& y );
 
     static SyncToken* vectorPlusVectorAsync(
         ContextPtr context,
-        LAMAArrayView<T> result,
+        LAMAArray<T>& result,
         const T alpha,
-        const LAMAArrayConstView<T> x,
+        const LAMAArray<T>& x,
         const T beta,
-        const LAMAArrayConstView<T> y );
+        const LAMAArray<T>& y );
 
     virtual void swap( Vector& other );
 

@@ -49,31 +49,11 @@ LAMA_LOG_DEF_TEMPLATE_LOGGER( template<typename ValueType>, ReadAccess<ValueType
 
 template<typename T>
 ReadAccess<T>::ReadAccess( const LAMAArray<ValueType>& array, ContextPtr context )
-    : mArrayView( new LAMAArrayConstView<ValueType>(array,0,array.size() ) )
+    : mArrayView( &array )
 {
     LAMA_ASSERT_ERROR( context, "NULL context for read access");
     //LAMA_LOG_DEBUG(logger, "will acquire read access for " << *mArrayView << " at " << *context )
     mIndex = mArrayView->acquireReadAccess(context);
-    //LAMA_LOG_TRACE(logger, "acquired read access for " << *mArrayView << " at " << *context );
-}
-
-template<typename T>
-ReadAccess<T>::ReadAccess( const LAMAArrayView<ValueType>& view, ContextPtr context )
-    : mArrayView( new LAMAArrayConstView<ValueType>( view ) )
-{
-    LAMA_ASSERT_ERROR( context, "NULL context for read access" )
-    //LAMA_LOG_DEBUG(logger, "acquire read access for " << *mArrayView << " at " << *context);
-    mIndex = mArrayView->acquireReadAccess( context );
-    //LAMA_LOG_TRACE(logger, "acquired read access for " << *mArrayView << " at " << *context );
-}
-
-template<typename T>
-ReadAccess<T>::ReadAccess( const LAMAArrayConstView<ValueType>& view, ContextPtr context )
-    : mArrayView( new LAMAArrayConstView<ValueType>( view ) )
-{
-    LAMA_ASSERT_ERROR( context, "NULL context for read access" )
-    //LAMA_LOG_DEBUG(logger, "acquire read access for " << *mArrayView << " at " << *context);
-    mIndex = mArrayView->acquireReadAccess( context );
     //LAMA_LOG_TRACE(logger, "acquired read access for " << *mArrayView << " at " << *context );
 }
 
@@ -108,7 +88,7 @@ void ReadAccess<T>::release()
         //LAMA_LOG_DEBUG(logger, "release read access for " << *mArray
         //          << " at " << *mArray->mContextData[mIndex].context);
         mArrayView->releaseReadAccess( mIndex );
-        delete mArrayView;
+        //delete mArrayView;
     }
     else
     {

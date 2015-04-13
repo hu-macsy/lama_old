@@ -473,9 +473,9 @@ public:
         boost::function <void( const MatrixStorage<ValueType>* localMatrix,
                                LAMAArray<ValueType>& localResult,
                                const LAMAArray<ValueType>& localX )> calcF,
-        boost::function <void( LAMAArrayView<ValueType>& localResult,
-                               const LAMAArrayConstView<ValueType>& localX,
-                               const LAMAArrayConstView<ValueType>& localY )> addF ) const;
+        boost::function <void( LAMAArray<ValueType>& localResult,
+                               const LAMAArray<ValueType>& localX,
+                               const LAMAArray<ValueType>& localY )> addF ) const;
 
     void vectorHaloOperationAsync(
         LAMAArray<ValueType>& localResult,
@@ -484,9 +484,9 @@ public:
         boost::function <SyncToken*( const MatrixStorage<ValueType>* localMatrix,
                         LAMAArray<ValueType>& localResult,
                         const LAMAArray<ValueType>& localX )> calcF,
-        boost::function </*SyncToken**/void ( LAMAArrayView<ValueType>& localResult,
-                        const LAMAArrayConstView<ValueType>& localX,
-                        const LAMAArrayConstView<ValueType>& localY )> addF ) const;
+        boost::function </*SyncToken**/void ( LAMAArray<ValueType>& localResult,
+                        const LAMAArray<ValueType>& localX,
+                        const LAMAArray<ValueType>& localY )> addF ) const;
 
     /* Implemenation of pure method of class Matrix */
 

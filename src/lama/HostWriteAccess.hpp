@@ -60,12 +60,13 @@ public:
     /**
      * @brief acquire a WriteAccess to the passed LAMAArray for the host location
      *
-     * @param[in] array     the LAMAArray to acquire a WriteAccess for
+     * @param[in] view      the LAMAArray to acquire a WriteAccess for
+     * @param[in] keep      if the contents of the LAMAArray should be kept or not (default: true)
      * @throws Exception    if the WriteAccess can not be acquired, e.g. because another WriteAccess exists.
      *
      * @see WriteAccess for more details
      */
-    HostWriteAccess( LAMAArray<ValueType>& array );
+    HostWriteAccess( LAMAArray<ValueType>& view, const bool keep = true );
 
     /**
      * @brief acquire a WriteAccess to the passed LAMAArray for the host location
@@ -78,17 +79,6 @@ public:
      * @see WriteAccess for more details
      */
     HostWriteAccess( LAMAArray<ValueType>& array, const IndexType size, const bool keep );
-
-    /**
-     * @brief acquire a WriteAccess to the passed LAMAArray for the host location
-     *
-     * @param[in] view      the LAMAArrayView to acquire a WriteAccess for
-     * @param[in] keep      if the contents of the LAMAArray should be kept or not (default: true)
-     * @throws Exception    if the WriteAccess can not be acquired, e.g. because another WriteAccess exists.
-     *
-     * @see WriteAccess for more details
-     */
-    HostWriteAccess( LAMAArrayView<ValueType>& view, const bool keep = true );
 
     /**
      * @brief Releases the WriteAccess on the associated LAMAArray.
@@ -148,31 +138,21 @@ public:
     /** Creates a write access with keep flag = false. */
 
     HostWriteOnlyAccess( LAMAArray<ValueType>& array )
-
         : HostWriteAccess<ValueType>( array, false )
-
     {
     }
 
     /** Creates a write access with keep flag = false and do also a resize. */
 
     HostWriteOnlyAccess( LAMAArray<ValueType>& array, const IndexType size )
-
-        : HostWriteAccess<ValueType>( array, size, false )
-
-    {
-    }
+            : HostWriteAccess<ValueType>( array, size, false )
+	{
+	}
 
     ~HostWriteOnlyAccess()
     {
     }
 };
-
-template<typename T>
-HostWriteAccess<T>::HostWriteAccess( LAMAArray<ValueType>& array )
-    : WriteAccess<T>( array, ContextFactory::getContext( Context::Host ) )
-{
-}
 
 template<typename T>
 HostWriteAccess<T>::HostWriteAccess( LAMAArray<ValueType>& array, const IndexType size, const bool keep )
@@ -181,7 +161,7 @@ HostWriteAccess<T>::HostWriteAccess( LAMAArray<ValueType>& array, const IndexTyp
 }
 
 template<typename T>
-HostWriteAccess<T>::HostWriteAccess( LAMAArrayView<ValueType>& view, const bool keep /* = true */)
+HostWriteAccess<T>::HostWriteAccess( LAMAArray<ValueType>& view, const bool keep /* = true */)
     : WriteAccess<T>( view, ContextFactory::getContext( Context::Host ), keep )
 {
 }

@@ -69,7 +69,7 @@ set ( CLASSES
         HostContext
         LAMAArray
         LAMAArrayUtils
-        LAMAArrayView
+#        LAMAArrayView
         LAMAInterface
         LAMAInterfaceRegistry
         NoCommunicator

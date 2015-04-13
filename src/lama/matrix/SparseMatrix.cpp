@@ -1226,7 +1226,7 @@ void SparseMatrix<ValueType>::haloOperationSync(
         {
             LAMA_REGION( "Mat.Sp.syncPrefetchHalo" )
 
-            LAMA_LOG_INFO( logger, comm << ": prefetch " << haloX.size() << " halo values of X to : " 
+            LAMA_LOG_INFO( logger, comm << ": prefetch " << haloX.size() << " halo values of X to : "
                                    << mHaloData->getContext() );
 
             // During the local computation we prefetch already haloX where it is need
@@ -1244,8 +1244,8 @@ void SparseMatrix<ValueType>::haloOperationSync(
     {
         LAMA_REGION( "Mat.Sp.syncLocal" )
 
-        LAMA_LOG_INFO( logger, comm << ": synchronous computation localResult[ " << localResult.size() 
-                               << "] = localF( localMatrix, localX[ " << localX.size() 
+        LAMA_LOG_INFO( logger, comm << ": synchronous computation localResult[ " << localResult.size()
+                               << "] = localF( localMatrix, localX[ " << localX.size()
                                << "] ) on " << mLocalData->getContext() )
 
         localF( mLocalData.get(), localResult, localX );
@@ -1255,7 +1255,7 @@ void SparseMatrix<ValueType>::haloOperationSync(
     {
         LAMA_REGION( "Mat.Sp.syncHalo" )
 
-        LAMA_LOG_INFO( logger, comm << ": compute with " << haloX.size() 
+        LAMA_LOG_INFO( logger, comm << ": compute with " << haloX.size()
                                << " halo values on " << mHaloData->getContext() );
 
         // now we can update the result with haloMatrix and halo values of X
@@ -1276,9 +1276,9 @@ void SparseMatrix<ValueType>::vectorHaloOperationSync(
                 boost::function <void( const MatrixStorage<ValueType>* localMatrix,
                                        LAMAArray<ValueType>& localResult,
                                        const LAMAArray<ValueType>& localX )> calcF,
-                boost::function <void( LAMAArrayView<ValueType>& localResult,
-                                       const LAMAArrayConstView<ValueType>& localX,
-                                       const LAMAArrayConstView<ValueType>& localY )> addF ) const
+                boost::function <void( LAMAArray<ValueType>& localResult,
+                                       const LAMAArray<ValueType>& localX,
+                                       const LAMAArray<ValueType>& localY )> addF ) const
 {
     DistributionPtr rowDist = getDistributionPtr();
     DistributionPtr colDist = getColDistributionPtr();
@@ -1394,10 +1394,7 @@ void SparseMatrix<ValueType>::vectorHaloOperationSync(
             }
         }
 
-        LAMAArrayView<ValueType> locResult( localResult );
-
-        const LAMAArrayConstView<ValueType> locY( localY );
-        addF( locResult, locResult, locY );
+        addF( localResult, localResult, localY );
     }
 
     LAMA_LOG_DEBUG( logger, "vectorHaloOperationSync done" )
@@ -1444,8 +1441,8 @@ void SparseMatrix<ValueType>::haloOperationAsync(
     {
         LAMA_REGION( "Mat.Sp.asyncLocal" )
 
-        LAMA_LOG_INFO( logger, comm << ": start async computation localResult[ " << localResult.size() 
-                               << "] = localF( localMatrix, localX[ " << localX.size() 
+        LAMA_LOG_INFO( logger, comm << ": start async computation localResult[ " << localResult.size()
+                               << "] = localF( localMatrix, localX[ " << localX.size()
                                << "] ) on " << mLocalData->getContext() )
 
         localComputation.reset( localAsyncF( mLocalData.get(), localResult, localX ) );
@@ -1473,7 +1470,7 @@ void SparseMatrix<ValueType>::haloOperationAsync(
 
         ContextPtr haloLocation = mHaloData->getContextPtr();
 
-        LAMA_LOG_INFO( logger, comm << ": prefetch " << haloX.size() << " halo values of X to : " 
+        LAMA_LOG_INFO( logger, comm << ": prefetch " << haloX.size() << " halo values of X to : "
                               << *haloLocation );
 
         haloX.prefetch( haloLocation );  // implicit wait at next access of haloX
@@ -1495,7 +1492,7 @@ void SparseMatrix<ValueType>::haloOperationAsync(
 
         LAMA_REGION("Mat.Sp.asyncHalo")
 
-        LAMA_LOG_INFO( logger, comm << ": compute with " << haloX.size() 
+        LAMA_LOG_INFO( logger, comm << ": compute with " << haloX.size()
                                << " halo values on " << mHaloData->getContext() );
 
         haloF( mHaloData.get(), localResult, haloX );
@@ -1514,9 +1511,9 @@ void SparseMatrix<ValueType>::vectorHaloOperationAsync(
         boost::function <SyncToken*( const MatrixStorage<ValueType>* localMatrix,
                         LAMAArray<ValueType>& localResult,
                         const LAMAArray<ValueType>& localX )> calcF,
-        boost::function </*SyncToken**/void ( LAMAArrayView<ValueType>& localResult,
-                        const LAMAArrayConstView<ValueType>& localX,
-                        const LAMAArrayConstView<ValueType>& localY )> addF ) const
+        boost::function </*SyncToken**/void ( LAMAArray<ValueType>& localResult,
+                        const LAMAArray<ValueType>& localX,
+                        const LAMAArray<ValueType>& localY )> addF ) const
 {
     DistributionPtr rowDist = getDistributionPtr();
     DistributionPtr colDist = getColDistributionPtr();
@@ -1641,9 +1638,7 @@ void SparseMatrix<ValueType>::vectorHaloOperationAsync(
             }
         }
 
-        LAMAArrayView<ValueType> locResult( localResult );
-        const LAMAArrayConstView<ValueType> locY( localY );
-        addF( locResult, locResult, locY );
+        addF( localResult, localResult, localY );
     }
 
     LAMA_LOG_DEBUG( logger, "vectorHaloOperationAsync done" )
@@ -1669,19 +1664,19 @@ void SparseMatrix<ValueType>::matrixTimesVectorImpl(
 
     // if halo is empty, asynchronous execution is not helpful
 
-    void ( lama::MatrixStorage<ValueType>::*timesVector ) (
+    void ( lama::MatrixStorage<ValueType>::*matrixTimesVector ) (
         LAMAArray<ValueType>& result,
         const ValueType alpha,
         const LAMAArray<ValueType>& x,
         const ValueType beta,
-        const LAMAArray<ValueType>& y ) const = &MatrixStorage<ValueType>::timesVector;
+        const LAMAArray<ValueType>& y ) const = &MatrixStorage<ValueType>::matrixTimesVector;
 
-    SyncToken* ( lama::MatrixStorage<ValueType>::*timesVectorAsync ) (
+    SyncToken* ( lama::MatrixStorage<ValueType>::*matrixTimesVectorAsync ) (
         LAMAArray<ValueType>& result,
         const ValueType alpha,
         const LAMAArray<ValueType>& x,
         const ValueType beta,
-        const LAMAArray<ValueType>& y ) const = &MatrixStorage<ValueType>::timesVectorAsync;
+        const LAMAArray<ValueType>& y ) const = &MatrixStorage<ValueType>::matrixTimesVectorAsync;
 
     ValueType one = 1;
 
@@ -1691,9 +1686,9 @@ void SparseMatrix<ValueType>::matrixTimesVectorImpl(
                            LAMAArray<ValueType>& localResult,
                            const LAMAArray<ValueType>& haloX )> haloF =
 
-        // boost::bind( timesVector, _1, _2, alphaValue, _3, one, boost::cref( localResult ) );
+        // boost::bind( matrixTimesVector, _1, _2, alphaValue, _3, one, boost::cref( localResult ) );
 
-        boost::bind( timesVector, _1, _2, alphaValue, _3, one, _2 );
+        boost::bind( matrixTimesVector, _1, _2, alphaValue, _3, one, _2 );
 
     if ( SYNCHRONOUS == getCommunicationKind() )
     {
@@ -1701,7 +1696,7 @@ void SparseMatrix<ValueType>::matrixTimesVectorImpl(
 				               LAMAArray<ValueType>& localResult,
                                const LAMAArray<ValueType>& localX )> localF =
 
-           boost::bind( timesVector, _1, _2, alphaValue, _3, betaValue, boost::cref( localY ) );
+           boost::bind( matrixTimesVector, _1, _2, alphaValue, _3, betaValue, boost::cref( localY ) );
 
         haloOperationSync( localResult, localX, haloX, localF, haloF );
     }
@@ -1711,7 +1706,7 @@ void SparseMatrix<ValueType>::matrixTimesVectorImpl(
 				                     LAMAArray<ValueType>& localResult,
                                      const LAMAArray<ValueType>& localX )> localAsyncF =
 
-           boost::bind( timesVectorAsync, _1, _2, alphaValue, _3, betaValue, boost::cref( localY ) );
+           boost::bind( matrixTimesVectorAsync, _1, _2, alphaValue, _3, betaValue, boost::cref( localY ) );
 
         haloOperationAsync( localResult, localX, haloX, localAsyncF, haloF );
     }
@@ -1755,19 +1750,19 @@ void SparseMatrix<ValueType>::vectorTimesMatrixImpl(
 
     void ( *vPlusV ) (
         ContextPtr context,
-        LAMAArrayView<ValueType> result,
+        LAMAArray<ValueType>& result,
         const ValueType alpha,
-        const LAMAArrayConstView<ValueType> x,
+        const LAMAArray<ValueType>& x,
         const ValueType beta,
-        const LAMAArrayConstView<ValueType> y ) = &DenseVector<ValueType>::vectorPlusVector;
+        const LAMAArray<ValueType>& y ) = &DenseVector<ValueType>::vectorPlusVector;
 
     /*SyncToken**/void ( *vPlusVAsync ) (
         ContextPtr context,
-        LAMAArrayView<ValueType> result,
+        LAMAArray<ValueType>& result,
         const ValueType alpha,
-        const LAMAArrayConstView<ValueType> x,
+        const LAMAArray<ValueType>& x,
         const ValueType beta,
-        const LAMAArrayConstView<ValueType> y ) = &DenseVector<ValueType>::vectorPlusVector;//TODO use async: Exception not yet implemented
+        const LAMAArray<ValueType>& y ) = &DenseVector<ValueType>::vectorPlusVector;//TODO use async: Exception not yet implemented
 
     ValueType one = 1;
     ValueType zero = 0;
@@ -1783,9 +1778,9 @@ void SparseMatrix<ValueType>::vectorTimesMatrixImpl(
                                const LAMAArray<ValueType>& localX )> calcF =
            boost::bind( vectorTimesMatrix, _1, _2, one, _3, zero, _2 );
 
-        boost::function <void( LAMAArrayView<ValueType> localResult,
-                               const LAMAArrayConstView<ValueType> localX,
-                               const LAMAArrayConstView<ValueType> localY )> addF  =
+        boost::function <void( LAMAArray<ValueType>& localResult,
+                               const LAMAArray<ValueType>& localX,
+                               const LAMAArray<ValueType>& localY )> addF  =
             boost::bind( vPlusV, hostContext, _1, alphaValue, _2, betaValue, _3 );
 
         vectorHaloOperationSync( localResult, localX, localY, calcF, addF );
@@ -1797,9 +1792,9 @@ void SparseMatrix<ValueType>::vectorTimesMatrixImpl(
                                      const LAMAArray<ValueType>& localX )> calcAsyncF =
            boost::bind( vectorTimesMatrixAsync, _1, _2, one, _3, zero, _2 );
 
-        boost::function </*SyncToken**/void ( LAMAArrayView<ValueType> localResult,
-                        const LAMAArrayConstView<ValueType> localX,
-                        const LAMAArrayConstView<ValueType> localY )> addAsyncF =
+        boost::function </*SyncToken**/void ( LAMAArray<ValueType>& localResult,
+                        const LAMAArray<ValueType>& localX,
+                        const LAMAArray<ValueType>& localY )> addAsyncF =
             boost::bind( vPlusVAsync, hostContext, _1, alphaValue, _2, betaValue, _3 );
 
         vectorHaloOperationAsync( localResult, localX, localY, calcAsyncF, addAsyncF );

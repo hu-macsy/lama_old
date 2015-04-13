@@ -42,7 +42,7 @@
 // others
 #include <lama/LAMAArray.hpp>
 #include <lama/Context.hpp>
-#include <lama/LAMAArrayView.hpp>
+//#include <lama/LAMAArrayView.hpp>
 
 #include <lama/exception/Exception.hpp>
 
@@ -78,24 +78,6 @@ public:
     ReadAccess( const LAMAArray<ValueType>& array, ContextPtr context );
 
     /**
-     * @brief Acquires a ReadAccess to the passed LAMAArrayView for the passed context.
-     *
-     * @param[in] view      the LAMAArrayView to acquire a ReadAccess for
-     * @param[in] context   the context that needs a read acess
-     * @throws Exception    if the ReadAccess can not be acquired, e.g. because a WriteAccess exists.
-     */
-    ReadAccess( const LAMAArrayView<ValueType>& view, ContextPtr context );
-
-    /**
-     * @brief Acquires a ReadAccess to the passed LAMAArrayConstView for the passed context.
-     *
-     * @param[in] view      the LAMAArrayConstView to acquire a ReadAccess for
-     * @param[in] context   the context that needs a read acess
-     * @throws Exception    if the ReadAccess can not be acquired, e.g. because a WriteAccess exists.
-     */
-    ReadAccess( const LAMAArrayConstView<ValueType>& view, ContextPtr context );
-
-    /**
      * @brief Releases the ReadAccess on the associated LAMAArray.
      */
     virtual ~ReadAccess();
@@ -126,7 +108,7 @@ public:
 
 private:
 
-    const LAMAArrayConstView<ValueType>* mArrayView;
+    const LAMAArray<ValueType>* mArrayView;
 
     size_t mIndex;
 

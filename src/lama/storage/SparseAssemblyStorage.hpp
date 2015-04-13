@@ -239,7 +239,7 @@ public:
      * @param[in] ja    the column vector of row i.
      * @param[in] a     the values of row i.
      */
-    void setRow( const IndexType i, const LAMAArrayConstView<IndexType>& ja, const LAMAArrayConstView<ValueType>& a );
+    void setRow( const IndexType i, const LAMAArray<IndexType>& ja, const LAMAArray<ValueType>& a );
 
     /**
      * @brief fixDiagonalProperty fixes the diagonal property of row.
