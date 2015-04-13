@@ -343,7 +343,7 @@ public:
 
     /** Method that assigns a sparse matrix, specialization of assign( const Matrix& ) */
 
-    void assignSparse( const _SparseMatrix& other );
+    void assignSparse( const CRTPMatrix<SparseMatrix<T>, T >& other );
 
     /* Implementation of pure method of class Matrix. */
 

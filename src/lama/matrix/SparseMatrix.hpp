@@ -37,7 +37,7 @@
 #include <lama/config.hpp>
 
 // base classes
-#include <lama/matrix/Matrix.hpp>
+#include <lama/matrix/CRTPMatrix.hpp>
 
 // others
 #include <lama/storage/MatrixStorage.hpp>
@@ -55,79 +55,6 @@ namespace lama
 class Vector;
 template<typename > class DenseMatrix;
 
-/** Common base class for SparseMatrix that is independent of the value type
- *  used for the matrix values.
- */
-
-class LAMA_DLL_IMPORTEXPORT _SparseMatrix: public Matrix
-{
-public:
-
-    /** Getter routine for the local part of the matrix. */
-
-    virtual const _MatrixStorage& getLocalStorage() const = 0;
-
-    /** Getter routine for the halo part of the matrix. */
-
-    virtual const _MatrixStorage& getHaloStorage() const = 0;
-
-    /** Getter routine for the Halo object needed for exchange of non-local data. */
-
-    virtual const Halo& getHalo() const = 0;
-
-    /** Default constructor stands for a zero matrix of size 0 x 0. */
-
-    _SparseMatrix()
-        : Matrix()
-    {
-    }
-
-    /** Constructor of a replicated zero matrix of size numRows x numColumns. */
-
-    _SparseMatrix( const IndexType numRows, const IndexType numColumns )
-        :
-
-        Matrix( numRows, numColumns )
-    {
-    }
-
-    /** Constructor of a distributed zero matrix via row/column distribution. */
-
-    _SparseMatrix( DistributionPtr rowDistribution, DistributionPtr colDistribution )
-        :
-
-        Matrix( rowDistribution, colDistribution )
-    {
-    }
-
-    /** Constructor of a square distributed zero matrix. */
-
-    _SparseMatrix( DistributionPtr distribution )
-        :
-
-        Matrix( distribution )
-    {
-    }
-
-    /* Copy constructor of a matrix with a new row and column distribution.
-
-     _SparseMatrix( const Matrix& other, DistributionPtr distribution, DistributionPtr colDistribution ) :
-
-     Matrix( other, distribution, colDistribution )
-     {}
-     */
-
-    /**
-     * Gives info about the matrix kind (SPARSE).
-     */
-    virtual Matrix::MatrixKind getMatrixKind() const
-    {
-        return Matrix::SPARSE;
-    }
-
-    using Matrix::operator=;
-};
-
 /**
  * @brief A SparseMatrix represents a distributed 2D sparse matrix with elements of type ValueType.
  *
@@ -143,7 +70,7 @@ public:
  */
 
 template<typename T>
-class LAMA_DLL_IMPORTEXPORT SparseMatrix: public _SparseMatrix
+class LAMA_DLL_IMPORTEXPORT SparseMatrix: public CRTPMatrix<SparseMatrix<T>, T >
 {
 
     friend class SpecializedJacobi;
@@ -288,7 +215,7 @@ public:
 
     /* Before overriding the virtual function make the other routine setIdentity( int n ) visible */
 
-    using _SparseMatrix::setIdentity;
+    using CRTPMatrix<SparseMatrix<T>, T >::setIdentity;
 
     /** Set matrix to a identity square matrix with same row and column distribution. */
 
@@ -300,7 +227,7 @@ public:
 
     /** Method that assigns a sparse matrix, specialization of assign( const Matrix& ) */
 
-    void assign( const _SparseMatrix& matrix );
+    void assign( const SparseMatrix<T>& matrix );
 
     /* Implementation of pure method of class Matrix. */
 
@@ -617,11 +544,31 @@ public:
      */
     void readFromFile( const std::string& filename );
 
-    using _SparseMatrix::operator=;   // make overloaded routines visible before overwriting one
+    using CRTPMatrix<SparseMatrix<T>, T >::operator=;   // make overloaded routines visible before overwriting one
+
+    using CRTPMatrix<SparseMatrix<T>, T >::getColDistribution;
+    using CRTPMatrix<SparseMatrix<T>, T >::getColDistributionPtr;
+    using CRTPMatrix<SparseMatrix<T>, T >::getDistribution;
+    using CRTPMatrix<SparseMatrix<T>, T >::getDistributionPtr;
+    using CRTPMatrix<SparseMatrix<T>, T >::setDistributionPtr;
+
+    using CRTPMatrix<SparseMatrix<T>, T >::getCommunicationKind;
+
+    using CRTPMatrix<SparseMatrix<T>, T >::getNumColumns;
+    using CRTPMatrix<SparseMatrix<T>, T >::getNumRows;
 
     /** Override the default assignment operator to guarantee deep copy. */
 
-    SparseMatrix& operator=( const SparseMatrix& matrix );
+//    SparseMatrix& operator=( const SparseMatrix& matrix );
+    SparseMatrix<T>& operator=( const SparseMatrix<T>& matrix );
+
+    /**
+     * Gives info about the matrix kind (SPARSE).
+     */
+    virtual Matrix::MatrixKind getMatrixKind() const
+    {
+        return Matrix::SPARSE;
+    }
 
 protected:
 
@@ -663,6 +610,10 @@ protected:
         const SparseMatrix<ValueType>& B,
         const ValueType beta,
         const SparseMatrix<ValueType>& C );
+
+    using CRTPMatrix<SparseMatrix<T>, T >::mNumRows;
+    using CRTPMatrix<SparseMatrix<T>, T >::mNumColumns;
+    using CRTPMatrix<SparseMatrix<T>, T >::mColDistribution;
 private:
 
     /**

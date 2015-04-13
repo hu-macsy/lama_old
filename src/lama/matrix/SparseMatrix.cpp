@@ -72,7 +72,7 @@ LAMA_LOG_DEF_TEMPLATE_LOGGER( template<typename T>, SparseMatrix<T>::logger, "Ma
 template<typename T>
 SparseMatrix<T>::SparseMatrix( boost::shared_ptr<MatrixStorage<T> > storage ) :
 
-    _SparseMatrix( storage->getNumRows(), storage->getNumColumns() )
+    CRTPMatrix<SparseMatrix<T>, T >( storage->getNumRows(), storage->getNumColumns() )
 {
     mLocalData = storage;
     // create empty halo with same storage format
@@ -85,7 +85,7 @@ template<typename T>
 SparseMatrix<T>::SparseMatrix( boost::shared_ptr<MatrixStorage<T> > storage, DistributionPtr rowDist )
     :
 
-    _SparseMatrix( rowDist, DistributionPtr( new NoDistribution( storage->getNumColumns() ) ) )
+    CRTPMatrix<SparseMatrix<T>, T >( rowDist, DistributionPtr( new NoDistribution( storage->getNumColumns() ) ) )
 {
     mLocalData = storage;
     // create empty halo with same storage format
@@ -116,7 +116,7 @@ SparseMatrix<T>::SparseMatrix(
     DistributionPtr colDist )
     :
 
-    _SparseMatrix( rowDist, colDist )
+    CRTPMatrix<SparseMatrix<T>, T >( rowDist, colDist )
 {
     LAMA_ASSERT_EQUAL_ERROR( localData->getNumColumns(), colDist->getGlobalSize() )
 
@@ -154,7 +154,7 @@ SparseMatrix<T>::SparseMatrix(
     DistributionPtr colDist )
     :
 
-    _SparseMatrix( rowDist, colDist )
+    CRTPMatrix<SparseMatrix<T>, T >( rowDist, colDist )
 {
     LAMA_LOG_INFO( logger, "Construct sparse matrix with finalized local, halo storage + Halo" )
 
@@ -166,7 +166,7 @@ SparseMatrix<T>::SparseMatrix(
     LAMA_ASSERT_EQUAL_ERROR( haloData->getNumRows(), rowDist->getLocalSize() )
     LAMA_ASSERT_EQUAL_ERROR( haloData->getNumColumns(), halo.getHaloSize() )
 
-    // done by constructor for _SparseMatrix:  Matrix::setDistributedMatrix( rowDist, colDist );
+    // done by constructor for CRTPMatrix<SparseMatrix<T>, T >:  Matrix::setDistributedMatrix( rowDist, colDist );
 
     mLocalData = localData; // flat copy
     mHaloData = haloData; // flat copy
@@ -267,7 +267,7 @@ template<typename ValueType>
 SparseMatrix<ValueType>::SparseMatrix( const SparseMatrix<ValueType>& other )
     :
 
-    _SparseMatrix( other )
+    CRTPMatrix<SparseMatrix<ValueType>, ValueType >( other )
 
 {
     // instead of calling assign( other ), we copy directly to avoid type queries
@@ -349,7 +349,7 @@ void SparseMatrix<ValueType>::assign( const Matrix& matrix )
 
     this->setContext( matrix.getContextPtr() );
 
-    const _SparseMatrix* sparseMatrix = dynamic_cast<const _SparseMatrix*>( &matrix );
+    const SparseMatrix<ValueType>* sparseMatrix = dynamic_cast<const SparseMatrix<ValueType>*>( &matrix );
 
     if ( sparseMatrix )
     {
@@ -528,8 +528,7 @@ void SparseMatrix<ValueType>::assignTransposeImpl( const SparseMatrix<ValueType>
 /* -------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void SparseMatrix<ValueType>::assign( const _SparseMatrix& matrix )
-{
+void SparseMatrix<ValueType>::assign( const SparseMatrix<ValueType>& matrix ){
     if ( this == &matrix )
     {
         LAMA_LOG_INFO( logger, "self assign sparse matrix = " << matrix )
@@ -1690,7 +1689,7 @@ void SparseMatrix<ValueType>::matrixTimesVectorImpl(
 
         boost::bind( matrixTimesVector, _1, _2, alphaValue, _3, one, _2 );
 
-    if ( SYNCHRONOUS == getCommunicationKind() )
+    if ( Matrix::SYNCHRONOUS == getCommunicationKind() )
     {
         boost::function <void( const MatrixStorage<ValueType>* localMatrix, 
 				               LAMAArray<ValueType>& localResult,
@@ -1771,7 +1770,7 @@ void SparseMatrix<ValueType>::vectorTimesMatrixImpl(
     // todo: think about this if its useful to upload the vector (again)
     ContextPtr hostContext = ContextFactory::getContext( Context::Host );
 
-    if ( SYNCHRONOUS == getCommunicationKind() )
+    if ( Matrix::SYNCHRONOUS == getCommunicationKind() )
     {
         boost::function <void( const MatrixStorage<ValueType>* localMatrix,
                                LAMAArray<ValueType>& localResult,

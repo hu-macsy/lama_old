@@ -59,9 +59,12 @@ void SingleGridSetup::initialize( const Matrix& coefficients )
 {
     LAMA_REGION( "initialize_SingleGridSetup" )
 
+	LAMA_LOG_DEBUG( logger, "SingleGridSetup::initialize" )
+
     // set default solver
     if ( !mSolver )
     {
+    	LAMA_LOG_DEBUG( logger, "new sor" )
         SOR* sorSolver = new SOR( "10x SingleGridSetup SOR Solver" );
 
         CriterionPtr criterion( new IterationCount( 10 ) );
@@ -71,10 +74,15 @@ void SingleGridSetup::initialize( const Matrix& coefficients )
         mSolver.reset( sorSolver );
     }
 
+    LAMA_LOG_DEBUG( logger, "mSolver->initialize" )
     mSolver->initialize( coefficients );
 
+    LAMA_LOG_DEBUG( logger, "mIdentity.reset" )
     mIdentity.reset( coefficients.create() );
+
+    LAMA_LOG_DEBUG( logger, "before identity" )
     mIdentity->setIdentity( coefficients.getDistributionPtr() );
+    LAMA_LOG_DEBUG( logger, "after identity" )
 
     LAMA_LOG_DEBUG( logger, "Identity matrix = " << *mIdentity )
 

@@ -1386,14 +1386,14 @@ void JDSStorage<ValueType>::jacobiIterateHalo(
     localStorage.getDiagonal( *tmpLocalDiagonal );
     localDiagonal = tmpLocalDiagonal.get();
 
-    jacobiIterateHalo( localSolution, localDiagonal, oldHaloSolution, omega );
+    jacobiIterateHalo( localSolution, *localDiagonal, oldHaloSolution, omega );
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 template<typename ValueType>
 void JDSStorage<ValueType>::jacobiIterateHalo(
     LAMAArray<ValueType>& localSolution,
-    const LAMAArray<ValueType>* localDiagonal,
+    const LAMAArray<ValueType>& localDiagonal,
     const LAMAArray<ValueType>& oldHaloSolution,
     const ValueType omega ) const
 {
@@ -1410,7 +1410,7 @@ void JDSStorage<ValueType>::jacobiIterateHalo(
     LAMA_ASSERT_EQUAL_DEBUG( mNumColumns, oldHaloSolution.size() )
 
     WriteAccess<ValueType> wSolution( localSolution, loc ); // will be updated
-    ReadAccess<ValueType> diagonal( *localDiagonal, loc );
+    ReadAccess<ValueType> diagonal( localDiagonal, loc );
     ReadAccess<IndexType> jdsHaloPerm( mPerm, loc );
     ReadAccess<IndexType> jdsHaloIlg( mIlg, loc );
     ReadAccess<IndexType> jdsHaloDlg( mDlg, loc );

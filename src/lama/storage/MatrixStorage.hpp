@@ -958,7 +958,7 @@ public:
 
     virtual void jacobiIterateHalo(
         LAMAArray<ValueType>& localSolution,
-        const LAMAArray<ValueType>* localDiagonal,
+        const LAMAArray<ValueType>& localDiagonal,
         const LAMAArray<ValueType>& haloOldSolution,
         const ValueType omega ) const;
 

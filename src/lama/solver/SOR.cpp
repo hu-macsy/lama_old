@@ -101,27 +101,24 @@ void SOR::initialize( const Matrix& coefficients )
 
     // ToDo: handling with other matrix types
 
-    const _SparseMatrix* A = dynamic_cast<const _SparseMatrix*>( &coefficients );
-
-    if ( A && A->getLocalStorage().getFormat() == Format::CSR && A->getHaloStorage().getFormat() == Format::CSR )
-    {
-        // with ValueType == coefficients.getValueType() this will be okay :
-        // const CSRStorage<ValueType> & csrA = dynamic_cast<const CSRStorage<ValueType>& >( A.getLocalStorage() );
-        // const CSRStorage<ValueType> & csrAHalo = dynamic_cast<const CSRStorage<ValueType>& >( A.getHaloStorage() );
-
-        LAMA_LOG_INFO( logger, "No iteration matrix, coefficients is CSR: " << coefficients )
-
-        return; //use mCoefficients
-    }
-    else if ( coefficients.getValueType() == Scalar::DOUBLE )
-    {
-        mIterationMatrix.reset( new CSRSparseMatrix<double>( coefficients ) );
-        LAMA_LOG_INFO( logger, "conversion of iteration matrix to CSR: " << *mIterationMatrix )
-    }
-    else if ( coefficients.getValueType() == Scalar::FLOAT )
-    {
-        mIterationMatrix.reset( new CSRSparseMatrix<float>( coefficients ) );
-        LAMA_LOG_INFO( logger, "conversion of iteration matrix to CSR: " << *mIterationMatrix )
+    if( coefficients.getValueType() == Scalar::FLOAT ) {
+    	const SparseMatrix<float>* A = dynamic_cast<const SparseMatrix<float>*>( &coefficients );
+    	if( A && A->getLocalStorage().getFormat() == Format::CSR && A->getHaloStorage().getFormat() == Format::CSR )
+    	{
+    		return;
+    	} else {
+    		mIterationMatrix.reset( new CSRSparseMatrix<float>( coefficients ) );
+    		LAMA_LOG_INFO( logger, "conversion of iteration matrix to CSR: " << *mIterationMatrix )
+    	}
+    } else if( coefficients.getValueType() == Scalar::DOUBLE ) {
+    	const SparseMatrix<double>* A = dynamic_cast<const SparseMatrix<double>*>( &coefficients );
+    	if( A && A->getLocalStorage().getFormat() == Format::CSR && A->getHaloStorage().getFormat() == Format::CSR )
+    	{
+    		return;
+    	} else {
+    		mIterationMatrix.reset( new CSRSparseMatrix<double>( coefficients ) );
+    		LAMA_LOG_INFO( logger, "conversion of iteration matrix to CSR: " << *mIterationMatrix )
+    	}
     }
     else
     {

@@ -1822,7 +1822,7 @@ void CSRStorage<ValueType>::jacobiIterateHalo(
 template<typename ValueType>
 void CSRStorage<ValueType>::jacobiIterateHalo(
     LAMAArray<ValueType>& localSolution,
-    const LAMAArray<ValueType>* localDiagonal,
+    const LAMAArray<ValueType>& localDiagonal,
     const LAMAArray<ValueType>& oldHaloSolution,
     const ValueType omega ) const
 {
@@ -1839,7 +1839,7 @@ void CSRStorage<ValueType>::jacobiIterateHalo(
 
     {
         WriteAccess<ValueType> wSolution( localSolution, loc ); // will be updated
-        ReadAccess<ValueType> localDiagValues( *localDiagonal, loc );
+        ReadAccess<ValueType> localDiagValues( localDiagonal, loc );
         ReadAccess<IndexType> haloIA( mIa, loc );
         ReadAccess<IndexType> haloJA( mJa, loc );
         ReadAccess<ValueType> haloValues( mValues, loc );

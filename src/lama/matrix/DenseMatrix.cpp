@@ -799,7 +799,7 @@ void DenseMatrix<ValueType>::assign( const Matrix& other )
         return;
     }
 
-    const _SparseMatrix* sparseMatrix = dynamic_cast<const _SparseMatrix*>( &other );
+    const CRTPMatrix<SparseMatrix<ValueType>, ValueType >* sparseMatrix = dynamic_cast<const CRTPMatrix<SparseMatrix<ValueType>, ValueType >*>( &other );
 
     if ( sparseMatrix )
     {
@@ -813,7 +813,7 @@ void DenseMatrix<ValueType>::assign( const Matrix& other )
 /* ------------------------------------------------------------------ */
 
 template<typename ValueType>
-void DenseMatrix<ValueType>::assignSparse( const _SparseMatrix& other )
+void DenseMatrix<ValueType>::assignSparse( const CRTPMatrix<SparseMatrix<ValueType>, ValueType >& other )
 {
     // @todo: this routine needs some redesign
 

@@ -1126,7 +1126,7 @@ void MatrixStorage<ValueType>::jacobiIterateHalo(
 template<typename ValueType>
 void MatrixStorage<ValueType>::jacobiIterateHalo(
     LAMAArray<ValueType>& localSolution,
-    const LAMAArray<ValueType>* localDiagonal,
+    const LAMAArray<ValueType>& localDiagonal,
     const LAMAArray<ValueType>& oldHaloSolution,
     const ValueType omega ) const
 {

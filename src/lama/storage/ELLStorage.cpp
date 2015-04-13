@@ -1531,7 +1531,7 @@ void ELLStorage<ValueType>::jacobiIterateHalo(
         // Note: tmpLocalDiagonal will be freed at end of routine
     }
 
-    jacobiIterateHalo( localSolution, localDiagonal, oldHaloSolution, omega );
+    jacobiIterateHalo( localSolution, *localDiagonal, oldHaloSolution, omega );
 
 }
 
@@ -1540,7 +1540,7 @@ void ELLStorage<ValueType>::jacobiIterateHalo(
 template<typename ValueType>
 void ELLStorage<ValueType>::jacobiIterateHalo(
     LAMAArray<ValueType>& localSolution,
-    const LAMAArray<ValueType>* localDiagonal,
+    const LAMAArray<ValueType>& localDiagonal,
     const LAMAArray<ValueType>& oldHaloSolution,
     const ValueType omega ) const
 {
@@ -1557,7 +1557,7 @@ void ELLStorage<ValueType>::jacobiIterateHalo(
 
     {
         WriteAccess<ValueType> wSolution( localSolution, loc ); // will be updated
-        ReadAccess<ValueType> rLocalDiagonal( *localDiagonal, loc );
+        ReadAccess<ValueType> rLocalDiagonal( localDiagonal, loc );
         ReadAccess<IndexType> haloIA( mIA, loc );
         ReadAccess<IndexType> haloJA( mJA, loc );
         ReadAccess<ValueType> haloValues( mValues, loc );

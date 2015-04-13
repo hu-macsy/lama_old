@@ -115,7 +115,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( solverTest, T, test_types ) {
         solverTestMethod<JDSSparseMatrix<ValueType> >( context );
         solverTestMethod<COOSparseMatrix<ValueType> >( context );
         solverTestMethod<DIASparseMatrix<ValueType> >( context );
-        //solverTestMethod<DenseMatrix<ValueType> >( context );
+        solverTestMethod<DenseMatrix<ValueType> >( context );
     }
 }
 

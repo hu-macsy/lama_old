@@ -37,6 +37,8 @@
 // for dll_import
 #include <lama/config.hpp>
 
+#include <lama/expression/all.hpp>
+
 // base classes
 #include <lama/matrix/Matrix.hpp>
 
@@ -189,6 +191,9 @@ public:
         static_cast<const Derived*>( this )->vectorTimesMatrixImpl( *denseResult, alpha.getValue<ValueType>(), *denseX,
                 beta.getValue<ValueType>(), *denseY );
     }
+
+    using Matrix::setIdentity;
+    using Matrix::operator=;
 
 protected:
 #ifndef LAMA_LOG_LEVEL_OFF

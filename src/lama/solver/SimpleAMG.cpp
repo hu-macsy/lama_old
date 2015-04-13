@@ -176,7 +176,9 @@ void SimpleAMG::initialize( const Matrix& coefficients )
     amgSetup->setHostOnlyLevel( runtime.mHostOnlyLevel );
     amgSetup->setHostOnlyVars( runtime.mHostOnlyVars );
     amgSetup->setReplicatedLevel( runtime.mReplicatedLevel );
+    std::cout << std::endl << std::endl << &mCoarseLevelSolver << std::endl << std::endl;
     amgSetup->setCoarseLevelSolver( mCoarseLevelSolver );
+    std::cout << std::endl << std::endl << &mSmoother << std::endl << std::endl;
     amgSetup->setSmoother( mSmoother );
 
     logSetupSettings();

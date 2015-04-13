@@ -233,6 +233,7 @@ void CtorMatrixExpressionTestmethod()
     Scalar t = 1.0;
 
     const CSRSparseMatrix<ValueType> CSRn4m4IdentityMatrix( TestSparseMatrices::n4m4IdentityMatrix<ValueType>() );
+
     const MatrixType n4m4IdentityMatrix( CSRn4m4IdentityMatrix );
 
     DenseVector<ValueType> vectorResult( n, 8.0 );
@@ -262,21 +263,21 @@ void CtorMatrixExpressionTestmethod()
 
     /* ************************************************************ */
 
-    LAMA_LOG_INFO( logger, "linear algebra expression: a*x*A" );
-    DenseVector<ValueType> v19( s * vectorA * n4m4IdentityMatrix);
-    verifySameVector<ValueType>( v19, vectorResult7 );
+	LAMA_LOG_INFO( logger, "linear algebra expression: a*x*A" );
+	DenseVector<ValueType> v19( s * vectorA * n4m4IdentityMatrix);
+	verifySameVector<ValueType>( v19, vectorResult7 );
 
-    LAMA_LOG_INFO( logger, "linear algebra expression: x*A*a" );
-    DenseVector<ValueType> v20( vectorA * n4m4IdentityMatrix * s );
-    verifySameVector<ValueType>( v20, vectorResult7 );
+	LAMA_LOG_INFO( logger, "linear algebra expression: x*A*a" );
+	DenseVector<ValueType> v20( vectorA * n4m4IdentityMatrix * s );
+	verifySameVector<ValueType>( v20, vectorResult7 );
 
-    LAMA_LOG_INFO( logger, "linear algebra expression: x*a*A" );
-    DenseVector<ValueType> v21( vectorA * s * n4m4IdentityMatrix );
-    verifySameVector<ValueType>( v21, vectorResult7 );
+	LAMA_LOG_INFO( logger, "linear algebra expression: x*a*A" );
+	DenseVector<ValueType> v21( vectorA * s * n4m4IdentityMatrix );
+	verifySameVector<ValueType>( v21, vectorResult7 );
 
-    LAMA_LOG_INFO( logger, "linear algebra expression: x*A" );
-    DenseVector<ValueType> v22( vectorC * n4m4IdentityMatrix );
-    verifySameVector<ValueType>( v22, vectorResult8 );
+	LAMA_LOG_INFO( logger, "linear algebra expression: x*A" );
+	DenseVector<ValueType> v22( vectorC * n4m4IdentityMatrix );
+	verifySameVector<ValueType>( v22, vectorResult8 );
 
     //AdditionExpressionTest in Constructor
 

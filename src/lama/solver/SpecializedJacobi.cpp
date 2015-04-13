@@ -91,15 +91,20 @@ SpecializedJacobi::SpecializedJacobiRuntime::~SpecializedJacobiRuntime()
 
 void SpecializedJacobi::initialize( const Matrix& coefficients )
 {
-    {
-        const _SparseMatrix* sparseMatrix = dynamic_cast<const _SparseMatrix*>( &coefficients );
-
-        if ( !sparseMatrix )
-        {
-            LAMA_THROWEXCEPTION(
-                "Coefficients matrix " << typeid(coefficients).name() << "(" << coefficients << ") is of unsupported type for SpecializedJacobi specialization (must be SparseMatrix)." );
-        }
-    }
+//    {
+//        const _SparseMatrix* sparseMatrix = dynamic_cast<const _SparseMatrix*>( &coefficients );
+//
+//        if ( !sparseMatrix )
+//        {
+//            LAMA_THROWEXCEPTION(
+//                "Coefficients matrix " << typeid(coefficients).name() << "(" << coefficients << ") is of unsupported type for SpecializedJacobi specialization (must be SparseMatrix)." );
+//        }
+//    }
+	if( coefficients.getMatrixKind() == Matrix::DENSE )
+	{
+		LAMA_THROWEXCEPTION(
+				"Coefficients matrix " << typeid(coefficients).name() << "(" << coefficients << ") is of unsupported type for SpecializedJacobi specialization (must be SparseMatrix)." );
+	}
 
     OmegaSolver::initialize( coefficients );
 
@@ -281,27 +286,28 @@ void SpecializedJacobi::iterateTyped( const SparseMatrix<ValueType>& coefficient
  
         using boost::function;
         using boost::bind;
+        using boost::cref;
 
         void ( lama::MatrixStorage<ValueType>::*jacobiIterateHalo ) ( 
-            LAMAArray<ValueType>& localSolution,
-            const LAMAArray<ValueType>* localDiagonal,
+			LAMAArray<ValueType>& localSolution,
+            const LAMAArray<ValueType>& localDiagonal,
             const LAMAArray<ValueType>& oldHaloSolution,
             const ValueType omega ) const = &MatrixStorage<ValueType>::jacobiIterateHalo;
 
         // will call jacobiIterateHalo( haloMatrix, localSolution, diagonal, haloOldSolution, omega )
 
         function <void( const MatrixStorage<ValueType>* haloMatrix,
-                        LAMAArray<ValueType>& localResult,
-                        const LAMAArray<ValueType>& haloX )> haloF =
+        		LAMAArray<ValueType>& localResult,
+				const LAMAArray<ValueType>& haloX )> haloF =
 
-             bind( jacobiIterateHalo, _1, _2, diagonal, _3, omega );
+             bind( jacobiIterateHalo, _1, _2, cref(*diagonal), _3, omega );
 
         if ( Matrix::SYNCHRONOUS == coefficients.getCommunicationKind() )
         {
             // For the local operation a jacobi step is done
 
             void ( lama::MatrixStorage<ValueType>::*jacobiIterate ) ( 
-                LAMAArray<ValueType>& solution,
+				LAMAArray<ValueType>& solution,
                 const LAMAArray<ValueType>& oldSolution,
                 const LAMAArray<ValueType>& rhs,
                 const ValueType omega ) const = &MatrixStorage<ValueType>::jacobiIterate;
@@ -309,24 +315,24 @@ void SpecializedJacobi::iterateTyped( const SparseMatrix<ValueType>& coefficient
             // Bind the additional arguments like localRhs and omega
 
             function <void( const MatrixStorage<ValueType>* haloMatrix,
-                            LAMAArray<ValueType>& localResult,
+            				LAMAArray<ValueType>& localResult,
                             const LAMAArray<ValueType>& localX )> localF =
 
-                bind( jacobiIterate, _1, _2, _3, boost::cref( localRhs ), omega );
+                bind( jacobiIterate, _1, _2, _3, cref( localRhs ), omega );
 
             coefficients.haloOperationSync( localSolution, localOldSolution, haloOldSolution, localF, haloF );
         }
         else
         {
             SyncToken* ( lama::MatrixStorage<ValueType>::*jacobiIterateAsync ) ( 
-                LAMAArray<ValueType>& solution,
+				LAMAArray<ValueType>& solution,
                 const LAMAArray<ValueType>& oldSolution,
                 const LAMAArray<ValueType>& rhs,
                 const ValueType omega ) const = &MatrixStorage<ValueType>::jacobiIterateAsync;
 
             function <SyncToken*( const MatrixStorage<ValueType>* haloMatrix,
-                                  LAMAArray<ValueType>& localResult,
-                                  const LAMAArray<ValueType>& localX )> localAsyncF =
+					LAMAArray<ValueType>& localResult,
+					const LAMAArray<ValueType>& localX )> localAsyncF =
 
                 bind( jacobiIterateAsync, _1, _2, _3, boost::cref( localRhs ), omega );
 
