@@ -56,10 +56,8 @@ typedef boost::mpl::list<float,double> test_types;
 
 /* --------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( L2NormVectorTests, T, test_types )
+BOOST_AUTO_TEST_CASE_TEMPLATE( L2NormVectorTests, ValueType, test_types )
 {
-    typedef T ValueType;
-
     IndexType n = 4;
     ValueType val = 5.0;
 

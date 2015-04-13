@@ -103,11 +103,10 @@ BOOST_AUTO_TEST_CASE( CtorTest )
 
 /* --------------------------------------------------------------------- */
 
-template<typename mt>
+template<typename MatrixType>
 void testSolveWithPreconditionmethod( ContextPtr context )
 {
-    typedef mt MatrixType;
-    typedef typename mt::ValueType ValueType;
+    typedef typename MatrixType::ValueType ValueType;
 
     LoggerPtr slogger(
         new CommonLogger( "<BiCGstab>: ", LogLevel::noLogging, LoggerWriteBehaviour::toConsoleOnly,
@@ -155,9 +154,7 @@ void testSolveWithPreconditionmethod( ContextPtr context )
 }
 
 // TODO: Preconditioning not implemented yet
-//BOOST_AUTO_TEST_CASE_TEMPLATE( testSolveWithPrecondition, T, test_types ) {
-//    typedef T ValueType;
-//
+//BOOST_AUTO_TEST_CASE_TEMPLATE( testSolveWithPrecondition, ValueType, test_types ) {
 //    CONTEXTLOOP()
 //    {
 //        GETCONTEXT( context );
@@ -175,11 +172,10 @@ void testSolveWithPreconditionmethod( ContextPtr context )
 
 /* --------------------------------------------------------------------- */
 
-template<typename mt>
+template<typename MatrixType>
 void testSolveWithoutPreconditionmethod( ContextPtr context )
 {
-    typedef mt MatrixType;
-    typedef typename mt::ValueType ValueType;
+    typedef typename MatrixType::ValueType ValueType;
 
     const IndexType N1 = 4;
     const IndexType N2 = 4;
@@ -224,9 +220,7 @@ void testSolveWithoutPreconditionmethod( ContextPtr context )
 
 /* --------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( testSolveWithoutPreconditioning, T, test_types ) {
-    typedef T ValueType;
-
+BOOST_AUTO_TEST_CASE_TEMPLATE( testSolveWithoutPreconditioning, ValueType, test_types ) {
     CONTEXTLOOP()
     {
         GETCONTEXT( context );
@@ -244,10 +238,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( testSolveWithoutPreconditioning, T, test_types ) 
 
 /* --------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_CASE_TEMPLATE ( simpleTest, T, test_types )
+BOOST_AUTO_TEST_CASE_TEMPLATE ( simpleTest, ValueType, test_types )
 {
-    typedef T ValueType;
-
     const IndexType n = 3;
     const IndexType numValues = 5;
 
@@ -295,9 +287,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE ( simpleTest, T, test_types )
 
 /* --------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_CASE( testDefaultCriterionSet )
+BOOST_AUTO_TEST_CASE_TEMPLATE( testDefaultCriterionSet, ValueType, test_types )
 {
-    typedef double ValueType;
     const IndexType N1 = 4;
     const IndexType N2 = 4;
 

@@ -143,24 +143,24 @@ typedef boost::mpl::list<float,double> test_types;
 
 /* ------------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( CSR2ELLTest, T, test_types ) 
+BOOST_AUTO_TEST_CASE_TEMPLATE( CSR2ELLTest, ValueType, test_types )
 {
-    conversion< CSRStorage<T>, ELLStorage<float> >( cuda );
-    conversion< CSRStorage<T>, ELLStorage<double> >( cuda );
+    conversion< CSRStorage<ValueType>, ELLStorage<float> >( cuda );
+    conversion< CSRStorage<ValueType>, ELLStorage<double> >( cuda );
 }
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( CSR2DenseTest, T, test_types ) 
+BOOST_AUTO_TEST_CASE_TEMPLATE( CSR2DenseTest, ValueType, test_types )
 {
-    conversion< CSRStorage<T>, DenseStorage<float> >( host );
-    conversion< CSRStorage<T>, DenseStorage<double> >( host );
-    conversion< CSRStorage<T>, DenseStorage<float> >( cuda );
-    conversion< CSRStorage<T>, DenseStorage<double> >( cuda );
+    conversion< CSRStorage<ValueType>, DenseStorage<float> >( host );
+    conversion< CSRStorage<ValueType>, DenseStorage<double> >( host );
+    conversion< CSRStorage<ValueType>, DenseStorage<float> >( cuda );
+    conversion< CSRStorage<ValueType>, DenseStorage<double> >( cuda );
 }
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( Dense2CSRTest, T, test_types )
+BOOST_AUTO_TEST_CASE_TEMPLATE( Dense2CSRTest, ValueType, test_types )
 {
-    conversion< DenseStorage<T>, CSRStorage<float> >( host );
-    conversion< DenseStorage<T>, CSRStorage<double> >( cuda );
+    conversion< DenseStorage<ValueType>, CSRStorage<float> >( host );
+    conversion< DenseStorage<ValueType>, CSRStorage<double> >( cuda );
 }
 
 /* ------------------------------------------------------------------------- */

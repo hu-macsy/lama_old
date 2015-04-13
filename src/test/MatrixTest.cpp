@@ -199,7 +199,6 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( ReadWriteTest, MatrixType, MatrixTypes )
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( DenseMatrixMultTest, MatrixType, MatrixTypes )
 {
-
     typedef typename MatrixType::ValueType ValueType;
 
 // DenseMatrix = MatrixType * DenseMatrix

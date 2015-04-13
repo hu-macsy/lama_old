@@ -52,8 +52,7 @@ typedef boost::mpl::list<double,float> test_types;
 
 /* --------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_SUITE( CUDA_MatrixStorageTest )
-;
+BOOST_AUTO_TEST_SUITE( CUDA_MatrixStorageTest );
 
 LAMA_LOG_DEF_LOGGER( logger, "Test.CUDA_CUDAMatrixStorageTest" );
 
@@ -132,17 +131,15 @@ void setCSRData( StorageType& storage )
     }
 }
 
-template<typename st>
+template<typename StorageType>
 void testSetMethod()
 {
-    typedef st StorageType;
     StorageType storage;
     setCSRData( storage );
 
 }
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( setXToCSRData, T, test_types ) {
-    typedef T ValueType;
+BOOST_AUTO_TEST_CASE_TEMPLATE( setXToCSRData, ValueType, test_types ) {
 
     testSetMethod<ELLStorage<ValueType> >();
     testSetMethod<DenseStorage<ValueType> >();

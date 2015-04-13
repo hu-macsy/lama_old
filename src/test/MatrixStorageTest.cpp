@@ -54,7 +54,7 @@ using namespace lama;
 
 /* ------------------------------------------------------------------------- */
 
-LAMA_LOG_DEF_TEMPLATE_LOGGER( template<typename T>, MatrixStorageTest<T>::logger, "Test.MatrixStorageTest" )
+LAMA_LOG_DEF_TEMPLATE_LOGGER( template<typename ValueType>, MatrixStorageTest<ValueType>::logger, "Test.MatrixStorageTest" )
 
 /* ========================================================================= */
 /* Implementations of some helpfunction                                      */
@@ -100,8 +100,8 @@ void getMatrix_7_4 ( IndexType& numRows,
 
 /* ------------------------------------------------------------------------- */
 
-template<typename T>
-void MatrixStorageTest<T>::setDenseData( MatrixStorage<T>& storage )
+template<typename ValueType>
+void MatrixStorageTest<ValueType>::setDenseData( MatrixStorage<ValueType>& storage )
 {
     const IndexType numRows = 4;
     const IndexType numColumns = 4;
@@ -122,8 +122,8 @@ void MatrixStorageTest<T>::setDenseData( MatrixStorage<T>& storage )
 
 /* ------------------------------------------------------------------------- */
 
-template<typename T>
-void MatrixStorageTest<T>::setDenseDataNotSquare( MatrixStorage<T>& storage )
+template<typename ValueType>
+void MatrixStorageTest<ValueType>::setDenseDataNotSquare( MatrixStorage<ValueType>& storage )
 {
     const IndexType numRows = 6;
     const IndexType numColumns = 4;
@@ -144,8 +144,8 @@ void MatrixStorageTest<T>::setDenseDataNotSquare( MatrixStorage<T>& storage )
 
 /* ------------------------------------------------------------------------- */
 
-template<typename T>
-void MatrixStorageTest<T>::setDenseDataSymmetric( MatrixStorage<T>& storage )
+template<typename ValueType>
+void MatrixStorageTest<ValueType>::setDenseDataSymmetric( MatrixStorage<ValueType>& storage )
 {
     const IndexType numRows = 4;
     const IndexType numColumns = 4;
@@ -165,8 +165,8 @@ void MatrixStorageTest<T>::setDenseDataSymmetric( MatrixStorage<T>& storage )
 
 /* ------------------------------------------------------------------------- */
 
-template<typename T>
-void MatrixStorageTest<T>::setDenseLocal( MatrixStorage<T>& storage )
+template<typename ValueType>
+void MatrixStorageTest<ValueType>::setDenseLocal( MatrixStorage<ValueType>& storage )
 {
     const IndexType numRows = 4;
     const IndexType numColumns = 4;
@@ -187,8 +187,8 @@ void MatrixStorageTest<T>::setDenseLocal( MatrixStorage<T>& storage )
 
 /* ------------------------------------------------------------------------- */
 
-template<typename T>
-void MatrixStorageTest<T>::setDenseHalo( MatrixStorage<T>& storage )
+template<typename ValueType>
+void MatrixStorageTest<ValueType>::setDenseHalo( MatrixStorage<ValueType>& storage )
 {
     const IndexType numRows = 4;
     const IndexType numColumns = 3;
@@ -209,8 +209,8 @@ void MatrixStorageTest<T>::setDenseHalo( MatrixStorage<T>& storage )
 
 /* ------------------------------------------------------------------------- */
 
-template<typename T>
-void MatrixStorageTest<T>::setDenseRandom( MatrixStorage<T>& storage )
+template<typename ValueType>
+void MatrixStorageTest<ValueType>::setDenseRandom( MatrixStorage<ValueType>& storage )
 {
     const IndexType numRows = 4;
     const IndexType numColumns = 4;
@@ -235,8 +235,8 @@ void MatrixStorageTest<T>::setDenseRandom( MatrixStorage<T>& storage )
 
 /* ------------------------------------------------------------------------- */
 
-template<typename T>
-void MatrixStorageTest<T>::setDenseRandomInverse( MatrixStorage<T>& storage )
+template<typename ValueType>
+void MatrixStorageTest<ValueType>::setDenseRandomInverse( MatrixStorage<ValueType>& storage )
 {
     const IndexType numRows = 4;
     const IndexType numColumns = 4;
@@ -259,7 +259,7 @@ void MatrixStorageTest<T>::setDenseRandomInverse( MatrixStorage<T>& storage )
 
 /* ========================================================================= */
 
-LAMA_COMMON_TEST_CASE_TEMPLATE( MatrixStorageTest, StorageType, emptyTest )
+LAMA_COMMON_TEST_CASE_TEMPLATE( MatrixStorageTest, ValueType, emptyTest )
 {
     LAMA_LOG_INFO( logger, "emptyTest" );
 
@@ -290,7 +290,7 @@ LAMA_COMMON_TEST_CASE_TEMPLATE_END()
 
 /* ========================================================================= */
 
-LAMA_COMMON_TEST_CASE_TEMPLATE( MatrixStorageTest, StorageType, setIdentityTest )
+LAMA_COMMON_TEST_CASE_TEMPLATE( MatrixStorageTest, ValueType, setIdentityTest )
 
     const IndexType n = 15;
 
@@ -328,7 +328,7 @@ LAMA_COMMON_TEST_CASE_TEMPLATE_END()
 
 /* ------------------------------------------------------------------------- */
 
-LAMA_COMMON_TEST_CASE_TEMPLATE( MatrixStorageTest, StorageType, setCSRDataTest )
+LAMA_COMMON_TEST_CASE_TEMPLATE( MatrixStorageTest, ValueType, setCSRDataTest )
 {
     LAMA_LOG_INFO( logger, "setCSRDataTest" )
 
@@ -373,7 +373,7 @@ LAMA_COMMON_TEST_CASE_TEMPLATE_END()
 
 /* ------------------------------------------------------------------------- */
 
-LAMA_COMMON_TEST_CASE_TEMPLATE( MatrixStorageTest, StorageType, buildCSRDataTest )
+LAMA_COMMON_TEST_CASE_TEMPLATE( MatrixStorageTest, ValueType, buildCSRDataTest )
 {
     mMatrixStorage.clear();
 
@@ -435,7 +435,7 @@ LAMA_COMMON_TEST_CASE_TEMPLATE_END()
 
 /* ------------------------------------------------------------------------- */
 
-LAMA_COMMON_TEST_CASE_TEMPLATE( MatrixStorageTest, StorageType, purgeTest )
+LAMA_COMMON_TEST_CASE_TEMPLATE( MatrixStorageTest, ValueType, purgeTest )
 
     LAMA_LOG_INFO( logger, "PurgeTest" )
 
@@ -457,7 +457,7 @@ LAMA_COMMON_TEST_CASE_TEMPLATE_END()
 
 /* ------------------------------------------------------------------------- */
 
-LAMA_COMMON_TEST_CASE_TEMPLATE( MatrixStorageTest, StorageType, diagonalTest )
+LAMA_COMMON_TEST_CASE_TEMPLATE( MatrixStorageTest, ValueType, diagonalTest )
 
     setDenseData( mMatrixStorage );
 
@@ -503,7 +503,7 @@ LAMA_COMMON_TEST_CASE_TEMPLATE_END()
 
 /* ------------------------------------------------------------------------- */
 
-LAMA_COMMON_TEST_CASE_TEMPLATE( MatrixStorageTest, StorageType, scaleTest )
+LAMA_COMMON_TEST_CASE_TEMPLATE( MatrixStorageTest, ValueType, scaleTest )
 
     setDenseData( mMatrixStorage );
 
@@ -526,7 +526,7 @@ LAMA_COMMON_TEST_CASE_TEMPLATE_END()
 
 /* ------------------------------------------------------------------------- */
 
-LAMA_COMMON_TEST_CASE_TEMPLATE( MatrixStorageTest, StorageType, normTest )
+LAMA_COMMON_TEST_CASE_TEMPLATE( MatrixStorageTest, ValueType, normTest )
 
     setDenseData( mMatrixStorage );
 
@@ -542,7 +542,7 @@ LAMA_COMMON_TEST_CASE_TEMPLATE_END()
 
 /* ------------------------------------------------------------------------- */
 
-LAMA_COMMON_TEST_CASE_TEMPLATE( MatrixStorageTest, StorageType, vectorMultTest )
+LAMA_COMMON_TEST_CASE_TEMPLATE( MatrixStorageTest, ValueType, vectorMultTest )
 
     setDenseData( mMatrixStorage );
 
@@ -631,7 +631,7 @@ LAMA_COMMON_TEST_CASE_TEMPLATE_END()
 
 /* ------------------------------------------------------------------------- */
 
-LAMA_COMMON_TEST_CASE_TEMPLATE( MatrixStorageTest, StorageType, vectorTimesMatrixTest )
+LAMA_COMMON_TEST_CASE_TEMPLATE( MatrixStorageTest, ValueType, vectorTimesMatrixTest )
 
     setDenseData( mMatrixStorage );
 
@@ -829,7 +829,7 @@ LAMA_COMMON_TEST_CASE_TEMPLATE( MatrixStorageTest, StorageType, vectorTimesMatri
 
 LAMA_COMMON_TEST_CASE_TEMPLATE_END()
 
-LAMA_COMMON_TEST_CASE_TEMPLATE( MatrixStorageTest, StorageType, numericalTest )
+LAMA_COMMON_TEST_CASE_TEMPLATE( MatrixStorageTest, ValueType, numericalTest )
 
     std::string prefix = Configuration::getInstance().getPath();
     CSRSparseMatrix<ValueType> symA( prefix + "/" + "nos6.mtx" );
@@ -920,9 +920,9 @@ LAMA_COMMON_TEST_CASE_TEMPLATE_END()
 
 /* ------------------------------------------------------------------------- */
 
-LAMA_COMMON_TEST_CASE_TEMPLATE( MatrixStorageTest, StorageType, matrixMultTest )
+LAMA_COMMON_TEST_CASE_TEMPLATE( MatrixStorageTest, ValueType, matrixMultTest )
 
-    LAMA_LOG_INFO( logger, "Test " << typeid(StorageType).name() << "::matrixTimesMatrix" )
+    LAMA_LOG_INFO( logger, "Test " << typeid(ValueType).name() << "::matrixTimesMatrix" )
 
     const IndexType n = 3;
     const ValueType aValue = 2.0;
@@ -963,9 +963,9 @@ LAMA_COMMON_TEST_CASE_TEMPLATE_END()
 
 /* ------------------------------------------------------------------------- */
 
-LAMA_COMMON_TEST_CASE_TEMPLATE( MatrixStorageTest, StorageType, matrixAddTest )
+LAMA_COMMON_TEST_CASE_TEMPLATE( MatrixStorageTest, ValueType, matrixAddTest )
 
-    LAMA_LOG_INFO( logger, "Test " << typeid(StorageType).name() << "::matrixTimesMatrix" );
+    LAMA_LOG_INFO( logger, "Test " << typeid(ValueType).name() << "::matrixTimesMatrix" );
 
     IndexType n = 3;
     const ValueType aValue = 2.0;
@@ -1033,7 +1033,7 @@ LAMA_COMMON_TEST_CASE_TEMPLATE_END()
 
 /* ------------------------------------------------------------------------- */
 
-LAMA_COMMON_TEST_CASE_TEMPLATE( MatrixStorageTest, StorageType, matrixMultTest1 )
+LAMA_COMMON_TEST_CASE_TEMPLATE( MatrixStorageTest, ValueType, matrixMultTest1 )
 
     LAMA_LOG_INFO( logger, "matrixMultTest1" )
 
@@ -1075,8 +1075,8 @@ LAMA_COMMON_TEST_CASE_TEMPLATE_END()
 
 /* ------------------------------------------------------------------------- */
 
-template<typename StorageType>
-void MatrixStorageTest<StorageType>::jacobiTest( const ValueType omega )
+template<typename ValueType>
+void MatrixStorageTest<ValueType>::jacobiTest( const ValueType omega )
 {
     LAMA_LOG_INFO( logger, "jacobiTest: matrix = " << mMatrixStorage << ", omega = " << omega )
 
@@ -1144,7 +1144,7 @@ void MatrixStorageTest<StorageType>::jacobiTest( const ValueType omega )
     }
 }
 
-LAMA_COMMON_TEST_CASE_TEMPLATE( MatrixStorageTest, StorageType, jacobiTest )
+LAMA_COMMON_TEST_CASE_TEMPLATE( MatrixStorageTest, ValueType, jacobiTest )
     jacobiTest( 1.0f );
     jacobiTest( 0.8f );
     jacobiTest( 0.5f );
@@ -1152,7 +1152,7 @@ LAMA_COMMON_TEST_CASE_TEMPLATE_END()
 
 /* ------------------------------------------------------------------------- */
 
-LAMA_COMMON_TEST_CASE_TEMPLATE( MatrixStorageTest, StorageType, jacobiHaloTest )
+LAMA_COMMON_TEST_CASE_TEMPLATE( MatrixStorageTest, ValueType, jacobiHaloTest )
 
     const ValueType omega = static_cast<ValueType> ( 0.35 );
 
@@ -1219,7 +1219,7 @@ LAMA_COMMON_TEST_CASE_TEMPLATE_END()
 
 /* ------------------------------------------------------------------------- */
 
-LAMA_COMMON_TEST_CASE_TEMPLATE( MatrixStorageTest, StorageType, inverseTest )
+LAMA_COMMON_TEST_CASE_TEMPLATE( MatrixStorageTest, ValueType, inverseTest )
 
     LAMA_LOG_INFO( logger, "inverseTest for " << mMatrixStorage.getTypeName() )
 
@@ -1256,7 +1256,7 @@ LAMA_COMMON_TEST_CASE_TEMPLATE_END()
 
 /* ------------------------------------------------------------------------- */
 
-LAMA_COMMON_TEST_CASE_TEMPLATE( MatrixStorageTest, StorageType, symmetryTest )
+LAMA_COMMON_TEST_CASE_TEMPLATE( MatrixStorageTest, ValueType, symmetryTest )
 
     std::string prefix = Configuration::getInstance().getPath();
     CSRSparseMatrix<ValueType> sym( prefix + "/" + "nos6.mtx" );
@@ -1280,7 +1280,7 @@ LAMA_COMMON_TEST_CASE_TEMPLATE_END()
 
 /* ------------------------------------------------------------------------- */
 
-LAMA_COMMON_TEST_CASE_TEMPLATE( MatrixStorageTest, StorageType, writeAtTest )
+LAMA_COMMON_TEST_CASE_TEMPLATE( MatrixStorageTest, ValueType, writeAtTest )
 
     LAMA_WRITEAT_TEST( mMatrixStorage )
 

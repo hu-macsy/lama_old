@@ -121,10 +121,8 @@ BOOST_AUTO_TEST_CASE( resizeTest )
 
 /* --------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( accessTest , T, test_types )
+BOOST_AUTO_TEST_CASE_TEMPLATE( accessTest , ValueType, test_types )
 {
-    typedef T ValueType;
-
     const IndexType n = 10;
     const ValueType value = 1.0;
     const ValueType value2 = 2.0;
@@ -166,10 +164,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( accessTest , T, test_types )
 
 /* --------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( refTest, T, test_types )
+BOOST_AUTO_TEST_CASE_TEMPLATE( refTest, ValueType, test_types )
 {
-    typedef T ValueType;
-
     const IndexType n = 10;
     const ValueType value = 3.5;
 

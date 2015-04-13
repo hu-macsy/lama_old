@@ -53,8 +53,7 @@ typedef boost::mpl::list<double,float> test_types;
 
 /* --------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_SUITE( CUDA_HostContextTest )
-;
+BOOST_AUTO_TEST_SUITE( CUDA_HostContextTest );
 
 LAMA_LOG_DEF_LOGGER( logger, "Test.CUDA_HostContextTest" );
 
@@ -209,10 +208,8 @@ BOOST_AUTO_TEST_CASE( allocateTest )
 //}
 /* --------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_CASE( multiPrefetchTest )
+BOOST_AUTO_TEST_CASE_TEMPLATE( multiPrefetchTest, ValueType, test_types )
 {
-    typedef double ValueType;
-
     ContextPtr cudaContext = lama_test::CUDAContext::getContext();
 
     CUDAHostContextManager::setAsCurrent( cudaContext );
@@ -253,4 +250,7 @@ BOOST_AUTO_TEST_CASE( multiPrefetchTest )
     vector1.prefetch( cudaContext );
     vector2.prefetch( hostContext );
 }
-/* --------------------------------------------------------------------- */BOOST_AUTO_TEST_SUITE_END();
+
+/* --------------------------------------------------------------------- */
+
+BOOST_AUTO_TEST_SUITE_END();

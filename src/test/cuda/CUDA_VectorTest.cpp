@@ -161,11 +161,10 @@ void doMatrixTimesVectorLocationTests( Vector& y, MatrixType& A, const Vector& x
     A.setContext( hostContext, hostContext );
 }
 
-template<typename mt>
+template<typename MatrixType>
 void matrixTimesVectorTestImpl()
 {
-    typedef mt MatrixType;
-    typedef typename mt::ValueType ValueType;
+    typedef typename MatrixType::ValueType ValueType;
 
     ContextPtr cuda = lama_test::CUDAContext::getContext();
     CUDAHostContextManager::setAsCurrent( cuda );
@@ -233,10 +232,8 @@ void matrixTimesVectorTestImpl()
     doMatrixTimesVectorLocationTests( denseTemp, matrixTypeMatrix2, denseVector, denseCorrectResult2 );
 }
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( matrixTimesVectorTest, T, test_types ) 
+BOOST_AUTO_TEST_CASE_TEMPLATE( matrixTimesVectorTest, ValueType, test_types )
 {
-    typedef T ValueType;
-
     LAMA_LOG_INFO( logger, "matrixTimesVectorTest: call implementation for CSR" )
     matrixTimesVectorTestImpl< CSRSparseMatrix<ValueType> >();
     LAMA_LOG_INFO( logger, "matrixTimesVectorTest: call implementation for ELL" )
@@ -317,11 +314,10 @@ void doVectorTimesMatrixLocationTests( Vector& y, MatrixType& A, const Vector& x
     A.setContext( hostContext, hostContext );
 }
 
-template<typename mt>
+template<typename MatrixType>
 void vectorTimesMatrixTestImpl()
 {
-    typedef mt MatrixType;
-    typedef typename mt::ValueType ValueType;
+    typedef typename MatrixType::ValueType ValueType;
 
     ContextPtr cuda = lama_test::CUDAContext::getContext();
     CUDAHostContextManager::setAsCurrent( cuda );
@@ -389,10 +385,8 @@ void vectorTimesMatrixTestImpl()
     doVectorTimesMatrixLocationTests( denseTemp, matrixTypeMatrix2, denseVector, denseCorrectResult2 );
 }
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( vectorTimesMatrixTest, T, test_types )
+BOOST_AUTO_TEST_CASE_TEMPLATE( vectorTimesMatrixTest, ValueType, test_types )
 {
-    typedef T ValueType;
-
     LAMA_LOG_INFO( logger, "vectorTimesMatrixTest: call implementation for CSR" )
     vectorTimesMatrixTestImpl< CSRSparseMatrix<ValueType> >();
     LAMA_LOG_INFO( logger, "vectorTimesMatrixTest: call implementation for ELL" )
@@ -471,11 +465,9 @@ BOOST_AUTO_TEST_CASE( dotProductTest )
 
 //TODO: Do we need this test? VectorTest/SpecialAssignmentTest executes the same operations
 //with different contexts (e.g. CUDA)
-BOOST_AUTO_TEST_CASE_TEMPLATE( scaleVectorTest, T, test_types ) 
+BOOST_AUTO_TEST_CASE_TEMPLATE( scaleVectorTest, ValueType, test_types )
 {
-    LAMA_LOG_INFO( logger, "scaleVectorTest<" << Scalar::getType<T>() << ">" )
-
-    typedef T ValueType;
+    LAMA_LOG_INFO( logger, "scaleVectorTest<" << Scalar::getType<ValueType>() << ">" )
 
     IndexType n = 4;
 
@@ -501,10 +493,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( scaleVectorTest, T, test_types )
 
 //TODO: Do we need this test? VectorTest/AssignmentVectorExpressionTest executes the same operations
 //with different contexts (e.g. CUDA)
-BOOST_AUTO_TEST_CASE_TEMPLATE( vectorDifferenceTest, T, test_types )
+BOOST_AUTO_TEST_CASE_TEMPLATE( vectorDifferenceTest, ValueType, test_types )
 {
-    typedef T ValueType;
-
     IndexType n = 4;
 
     DenseVector<ValueType> vec1( n, 3.0 );
@@ -544,10 +534,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( vectorDifferenceTest, T, test_types )
 //TODO: Do we need this test? VectorTest/AssignmentVectorExpressionTest executes the same operations
 //with different contexts (e.g. CUDA)
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( scaledVectorsDifferenceTest, T, test_types )
+BOOST_AUTO_TEST_CASE_TEMPLATE( scaledVectorsDifferenceTest, ValueType, test_types )
 {
-    typedef T ValueType;
-
     Scalar alpha = 0.5;
     Scalar beta = 0.5;
 
@@ -780,10 +768,8 @@ void assignmentVectorSubtractExprMatrixTimeVectorTestMethod()
     }
 }
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( assignmentVectorSubtractExprSparseMatrixTimeVectorTest, T, test_types)
+BOOST_AUTO_TEST_CASE_TEMPLATE( assignmentVectorSubtractExprSparseMatrixTimeVectorTest, ValueType, test_types)
 {
-    typedef T ValueType;
-
     assignmentVectorSubtractExprMatrixTimeVectorTestMethod< CSRSparseMatrix<ValueType> >();
     assignmentVectorSubtractExprMatrixTimeVectorTestMethod< ELLSparseMatrix<ValueType> >();
     assignmentVectorSubtractExprMatrixTimeVectorTestMethod< DIASparseMatrix<ValueType> >();

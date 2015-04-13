@@ -52,8 +52,7 @@ typedef boost::mpl::list<double,float> test_types;
 
 /* --------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_SUITE( CUDA_LAMAArrayTest )
-;
+BOOST_AUTO_TEST_SUITE( CUDA_LAMAArrayTest );
 
 LAMA_LOG_DEF_LOGGER( logger, "Test.CUDA_LAMAArrayTest" );
 
@@ -98,9 +97,9 @@ BOOST_AUTO_TEST_CASE( baseTest )
 
 BOOST_AUTO_TEST_CASE( refTest1 )
 {
-    ContextPtr cuda = ContextFactory::getContext( Context::CUDA );
+	typedef float ValueType;
 
-    typedef float ValueType;
+    ContextPtr cuda = ContextFactory::getContext( Context::CUDA );
 
     const IndexType n = 10;
     const ValueType value = 3.5;
@@ -191,5 +190,7 @@ BOOST_AUTO_TEST_CASE( refTest1 )
 //        }
 //    }
 //}
-/* --------------------------------------------------------------------- */BOOST_AUTO_TEST_SUITE_END();
+/* --------------------------------------------------------------------- */
+
+BOOST_AUTO_TEST_SUITE_END();
 

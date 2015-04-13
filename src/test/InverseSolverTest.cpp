@@ -67,11 +67,10 @@ LAMA_LOG_DEF_LOGGER( logger, "Test.InverseSolverTest" )
 
 /* --------------------------------------------------------------------- */
 
-template<typename mt>
+template<typename MatrixType>
 void testSolveMethod( ContextPtr context )
 {
-    typedef mt MatrixType;
-    typedef typename mt::ValueType ValueType;
+    typedef typename MatrixType::ValueType ValueType;
 
     EquationHelper::EquationSystem<ValueType> system = EquationHelper::get8x8SystemA<ValueType>();
 
@@ -94,9 +93,7 @@ void testSolveMethod( ContextPtr context )
     BOOST_CHECK( maxDiff.getValue<ValueType>() < 1E-6 );
 }
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( InverseTest, T, test_types ) {
-    typedef T ValueType;
-
+BOOST_AUTO_TEST_CASE_TEMPLATE( InverseTest, ValueType, test_types ) {
     CONTEXTLOOP()
     {
         GETCONTEXT( context );
@@ -113,10 +110,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( InverseTest, T, test_types ) {
 
 /* ------------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( InverseTest2, T, test_types )
+BOOST_AUTO_TEST_CASE_TEMPLATE( InverseTest2, ValueType, test_types )
 {
-    typedef T ValueType;
-
     EquationHelper::EquationSystem<ValueType> system =
         EquationHelper::get4x4SystemA<ValueType>();
 

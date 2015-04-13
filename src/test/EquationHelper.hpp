@@ -44,33 +44,33 @@ class EquationHelper
 {
 public:
 
-    template<typename dataType>
+    template<typename ValueType>
     struct EquationSystem
     {
-        CSRSparseMatrix<dataType> coefficients;
-        DenseVector<dataType> rhs;
-        DenseVector<dataType> solution;
+        CSRSparseMatrix<ValueType> coefficients;
+        DenseVector<ValueType> rhs;
+        DenseVector<ValueType> solution;
     };
 
     typedef EquationSystem<float> (*ssystem)();
     typedef EquationSystem<double> (*dsystem)();
 
-    template<typename dataType>
-    static EquationSystem<dataType> get3x3SystemA();
-    template<typename dataType>
-    static EquationSystem<dataType> get4x4SystemA();
-    template<typename dataType>
-    static EquationSystem<dataType> get8x8SystemA();
-    template<typename dataType>
-    static EquationSystem<dataType> get4x4SystemB();
-    template<typename dataType>
-    static EquationSystem<dataType> get8x8SystemB();
-    template<typename dataType>
-    static EquationSystem<dataType> get8x8SystemC();
-    template<typename dataType>
-    static EquationSystem<dataType> get8x8SystemD();
-    template<typename dataType>
-    static EquationSystem<dataType> get8x8EmptyDiagonal();
+    template<typename ValueType>
+    static EquationSystem<ValueType> get3x3SystemA();
+    template<typename ValueType>
+    static EquationSystem<ValueType> get4x4SystemA();
+    template<typename ValueType>
+    static EquationSystem<ValueType> get8x8SystemA();
+    template<typename ValueType>
+    static EquationSystem<ValueType> get4x4SystemB();
+    template<typename ValueType>
+    static EquationSystem<ValueType> get8x8SystemB();
+    template<typename ValueType>
+    static EquationSystem<ValueType> get8x8SystemC();
+    template<typename ValueType>
+    static EquationSystem<ValueType> get8x8SystemD();
+    template<typename ValueType>
+    static EquationSystem<ValueType> get8x8EmptyDiagonal();
 
     template<typename T>
     static const std::vector<EquationSystem<T> (*)()>& getFunctions();
@@ -96,11 +96,9 @@ const std::vector<EquationHelper::EquationSystem<T> (*)()>& EquationHelper::getF
     return t_vec;
 }
 
-template<typename dataType>
-EquationHelper::EquationSystem<dataType> EquationHelper::get3x3SystemA()
+template<typename ValueType>
+EquationHelper::EquationSystem<ValueType> EquationHelper::get3x3SystemA()
 {
-    typedef dataType ValueType;
-
     IndexType dim = 3;
 
     ValueType coefficientValues[] =
@@ -123,11 +121,9 @@ EquationHelper::EquationSystem<dataType> EquationHelper::get3x3SystemA()
     return equationSystem;
 }
 
-template<typename dataType>
-EquationHelper::EquationSystem<dataType> EquationHelper::get4x4SystemA()
+template<typename ValueType>
+EquationHelper::EquationSystem<ValueType> EquationHelper::get4x4SystemA()
 {
-    typedef dataType ValueType;
-
     IndexType dim = 4;
 
     ValueType coefficientValues[] =
@@ -144,17 +140,15 @@ EquationHelper::EquationSystem<dataType> EquationHelper::get4x4SystemA()
     DenseVector<ValueType> rhs( dim, rhsValues );
     DenseVector<ValueType> solution( dim, solutionValues );
 
-    EquationSystem<dataType> equationSystem =
+    EquationSystem<ValueType> equationSystem =
     { coefficients, rhs, solution };
 
     return equationSystem;
 }
 
-template<typename dataType>
-EquationHelper::EquationSystem<dataType> EquationHelper::get8x8SystemA()
+template<typename ValueType>
+EquationHelper::EquationSystem<ValueType> EquationHelper::get8x8SystemA()
 {
-    typedef dataType ValueType;
-
     IndexType dim = 8;
 
     ValueType matrixValues[] =
@@ -181,11 +175,9 @@ EquationHelper::EquationSystem<dataType> EquationHelper::get8x8SystemA()
     return equationSystem;
 }
 
-template<typename dataType>
-EquationHelper::EquationSystem<dataType> EquationHelper::get8x8EmptyDiagonal()
+template<typename ValueType>
+EquationHelper::EquationSystem<ValueType> EquationHelper::get8x8EmptyDiagonal()
 {
-    typedef dataType ValueType;
-
     IndexType dim = 8;
 
     ValueType values[] =
@@ -210,11 +202,9 @@ EquationHelper::EquationSystem<dataType> EquationHelper::get8x8EmptyDiagonal()
     return equationSystem;
 }
 
-template<typename dataType>
-EquationHelper::EquationSystem<dataType> EquationHelper::get4x4SystemB()
+template<typename ValueType>
+EquationHelper::EquationSystem<ValueType> EquationHelper::get4x4SystemB()
 {
-    typedef dataType ValueType;
-
     IndexType dim = 4;
 
     ValueType values[] =
@@ -235,11 +225,9 @@ EquationHelper::EquationSystem<dataType> EquationHelper::get4x4SystemB()
     return equationSystem;
 }
 
-template<typename dataType>
-EquationHelper::EquationSystem<dataType> EquationHelper::get8x8SystemB()
+template<typename ValueType>
+EquationHelper::EquationSystem<ValueType> EquationHelper::get8x8SystemB()
 {
-    typedef dataType ValueType;
-
     IndexType dim = 8;
 
     ValueType values[] =
@@ -268,11 +256,9 @@ EquationHelper::EquationSystem<dataType> EquationHelper::get8x8SystemB()
     return equationSystem;
 }
 
-template<typename dataType>
-EquationHelper::EquationSystem<dataType> EquationHelper::get8x8SystemC()
+template<typename ValueType>
+EquationHelper::EquationSystem<ValueType> EquationHelper::get8x8SystemC()
 {
-    typedef dataType ValueType;
-
     IndexType dim = 8;
 
     ValueType values[] =
@@ -299,11 +285,9 @@ EquationHelper::EquationSystem<dataType> EquationHelper::get8x8SystemC()
     return equationSystem;
 }
 
-template<typename dataType>
-EquationHelper::EquationSystem<dataType> EquationHelper::get8x8SystemD()
+template<typename ValueType>
+EquationHelper::EquationSystem<ValueType> EquationHelper::get8x8SystemD()
 {
-    typedef dataType ValueType;
-
     IndexType dim = 8;
 
     ValueType values[] =

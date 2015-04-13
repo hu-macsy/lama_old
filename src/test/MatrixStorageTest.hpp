@@ -46,10 +46,10 @@ static std::string storagetestmethods[] =
     "writeAtTest", "inverseTest", "symmetryTest", "vectorTimesMatrixTest", "numericalTest"
 };
 
-/** Test class for MatrixStorage<T>.
+/** Test class for MatrixStorage<ValueType>.
  *
- *  LAMA supports different derived classes from MatrixStorage<T> like
- *  CSRStorage<T>, ELLStorage<T>, and so on.
+ *  LAMA supports different derived classes from MatrixStorage<ValueType> like
+ *  CSRStorage<ValueType>, ELLStorage<ValueType>, and so on.
  *
  *  This class tests all common routines for the matrix storages without
  *  taking any knowledge about specific implementation details.
@@ -59,51 +59,48 @@ static std::string storagetestmethods[] =
  *
  * @tparam T is the value type stored in the wrapped container.
  */
-template<typename T>
+template<typename ValueType>
 class MatrixStorageTest
 {
 public:
-
-    typedef T ValueType; //!< This is the type stored in the wrapped container.
-
     /** Constructor of the test.
      *
      *  @param[in] storage is an (derived) object of matrix storage.
      *
      */
-    MatrixStorageTest( lama::MatrixStorage<T>& storage )
+    MatrixStorageTest( lama::MatrixStorage<ValueType>& storage )
         : mMatrixStorage( storage )
     {
     }
     ;
 
-    /** Test for MatrixStorage<T>::purge and MatrixStorage<T>::getMemoryUsage */
+    /** Test for MatrixStorage<ValueType>::purge and MatrixStorage<ValueType>::getMemoryUsage */
 
     void purgeTest();
 
-    /** Test for MatrixStorage<T>::hasDiagonalProperty() on empty matrx. */
+    /** Test for MatrixStorage<ValueType>::hasDiagonalProperty() on empty matrx. */
 
     void emptyTest();
 
-    /** Test for MatrixStorage<T>::setIdentity. */
+    /** Test for MatrixStorage<ValueType>::setIdentity. */
 
     void setIdentityTest();
 
-    /** Test for virtual method MatrixStorage<T>::setCSRData. */
+    /** Test for virtual method MatrixStorage<ValueType>::setCSRData. */
 
     void setCSRDataTest();
 
-    /** Test for virtual method MatrixStorage<T>::buildCSRData. */
+    /** Test for virtual method MatrixStorage<ValueType>::buildCSRData. */
 
     void buildCSRDataTest();
 
-    /** Test for virtual methods MatrixStorage<T>::setDiagonal and
-     *  MatrixStorage<T>::getDiagonal.
+    /** Test for virtual methods MatrixStorage<ValueType>::setDiagonal and
+     *  MatrixStorage<ValueType>::getDiagonal.
      */
 
     void diagonalTest();
 
-    /** Test for virtual methods MatrixStorage<T>::scale */
+    /** Test for virtual methods MatrixStorage<ValueType>::scale */
 
     void scaleTest();
 
@@ -146,11 +143,11 @@ public:
 
     void writeAtTest();
 
-    lama::MatrixStorage<T>& mMatrixStorage;
+    lama::MatrixStorage<ValueType>& mMatrixStorage;
 
 private:
 
-    /** Test for virtual method MatrixStorage<T>::jacobiIterate.
+    /** Test for virtual method MatrixStorage<ValueType>::jacobiIterate.
      *
      *  @param[in] omega is the omega value for the Jacobi iteration.
      *
@@ -160,19 +157,19 @@ private:
      */
     void jacobiTest( ValueType omega );
 
-    static void setDenseData( lama::MatrixStorage<T>& storage );
+    static void setDenseData( lama::MatrixStorage<ValueType>& storage );
 
-    static void setDenseDataNotSquare( lama::MatrixStorage<T>& storage );
+    static void setDenseDataNotSquare( lama::MatrixStorage<ValueType>& storage );
 
-    static void setDenseDataSymmetric( lama::MatrixStorage<T>& storage );
+    static void setDenseDataSymmetric( lama::MatrixStorage<ValueType>& storage );
 
-    static void setDenseLocal( lama::MatrixStorage<T>& storage );
+    static void setDenseLocal( lama::MatrixStorage<ValueType>& storage );
 
-    static void setDenseHalo( lama::MatrixStorage<T>& storage );
+    static void setDenseHalo( lama::MatrixStorage<ValueType>& storage );
 
-    static void setDenseRandom( lama::MatrixStorage<T>& storage );
+    static void setDenseRandom( lama::MatrixStorage<ValueType>& storage );
 
-    static void setDenseRandomInverse( lama::MatrixStorage<T>& storage );
+    static void setDenseRandomInverse( lama::MatrixStorage<ValueType>& storage );
 
     LAMA_LOG_DECL_STATIC_LOGGER( logger );
 };

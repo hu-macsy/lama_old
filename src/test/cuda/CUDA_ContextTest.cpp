@@ -61,8 +61,7 @@ typedef boost::mpl::list<double,float> test_types;
 
 /* --------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_SUITE( CUDA_ContextTest )
-;
+BOOST_AUTO_TEST_SUITE( CUDA_ContextTest );
 
 LAMA_LOG_DEF_LOGGER( logger, "Test.CUDA_ContextTest" );
 
@@ -168,8 +167,9 @@ BOOST_AUTO_TEST_CASE( resizeTest )
 /* --------------------------------------------------------------------- */
 
 BOOST_AUTO_TEST_CASE( prefetchTest )
+//BOOST_AUTO_TEST_CASE_TEMPLATE( prefetchTest, ValueType, test_types )
 {
-    typedef double ValueType;
+	typedef double ValueType;
 
     ContextPtr cudaContext = lama_test::CUDAContext::getContext();
     ContextPtr hostContext = ContextFactory::getContext( Context::Host );
@@ -199,9 +199,9 @@ BOOST_AUTO_TEST_CASE( prefetchTest )
         ReadAccess<ValueType> v1( vector1, cudaContext );
         cudaContext->enable( __FILE__, __LINE__ );
         SyncToken* token = cudaContext->getSyncToken();
-        double norm = nrm2( n, v1.get(), 1, token );
+        ValueType norm = nrm2( n, v1.get(), 1, token );
         delete token;
-        double expNormSqr = n * ( value1 * value1 );
+        ValueType expNormSqr = n * ( value1 * value1 );
         cudaContext->disable( __FILE__, __LINE__ );
         BOOST_CHECK_CLOSE( expNormSqr, norm * norm, 1 );
 

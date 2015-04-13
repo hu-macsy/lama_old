@@ -69,11 +69,10 @@ LAMA_LOG_DEF_LOGGER( logger, "Test.SimpleAMGTest" )
 
 /* ------------------------------------------------------------------------- */
 
-template<typename mt>
+template<typename MatrixType>
 void solverTestMethod( ContextPtr context )
 {
-    typedef mt MatrixType;
-    typedef typename mt::ValueType ValueType;
+    typedef typename MatrixType::ValueType ValueType;
 
     LoggerPtr consoleLogger(
         new CommonLogger( "<SimpleAMG>: ", LogLevel::noLogging, LoggerWriteBehaviour::toConsoleOnly,
@@ -104,9 +103,7 @@ void solverTestMethod( ContextPtr context )
     BOOST_CHECK( maxDiff.getValue<ValueType>() < 1e-5 );
 }
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( solverTest, T, test_types ) {
-    typedef T ValueType;
-
+BOOST_AUTO_TEST_CASE_TEMPLATE( solverTest, ValueType, test_types ) {
     CONTEXTLOOP()
     {
         GETCONTEXT( context );
@@ -121,9 +118,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( solverTest, T, test_types ) {
 
 /* ------------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_CASE( testDefaultCriterionSet )
+BOOST_AUTO_TEST_CASE_TEMPLATE ( testDefaultCriterionSet, ValueType, test_types )
 {
-    typedef double ValueType;
     SimpleAMG amg( "SimpleAMG" );
 
     const IndexType N1 = 4;

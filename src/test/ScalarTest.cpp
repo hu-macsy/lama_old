@@ -129,10 +129,8 @@ BOOST_AUTO_TEST_CASE( ScalarTypeSizeTest )
 
 /* --------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( AdditionTest, T, test_types )
+BOOST_AUTO_TEST_CASE_TEMPLATE( AdditionTest, ValueType, test_types )
 {
-    typedef T ValueType;
-
     Scalar s ( 2.0 );
     Scalar t ( 3.0 );
 
@@ -145,10 +143,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( AdditionTest, T, test_types )
 
 /* --------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( MultiplicationTest, T, test_types )
+BOOST_AUTO_TEST_CASE_TEMPLATE( MultiplicationTest, ValueType, test_types )
 {
-    typedef T ValueType;
-
     Scalar s ( 2.0 );
     Scalar t ( 3.0 );
 
@@ -161,10 +157,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( MultiplicationTest, T, test_types )
 
 /* --------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( SubtractionTest, T, test_types )
+BOOST_AUTO_TEST_CASE_TEMPLATE( SubtractionTest, ValueType, test_types )
 {
-    typedef T ValueType;
-
     Scalar s ( 2.0 );
     Scalar t ( 3.0 );
 
@@ -177,7 +171,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( SubtractionTest, T, test_types )
 
 /* --------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( DivisionTest, T, test_types )
+BOOST_AUTO_TEST_CASE_TEMPLATE( DivisionTest, ValueType, test_types )
 {
     Scalar s ( 2.0 );
     Scalar t ( 3.0 );
@@ -185,7 +179,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( DivisionTest, T, test_types )
     Scalar u = s / t;
     s /= t;
 
-    BOOST_CHECK_CLOSE( u.getValue<float>(), 0.6666, 1 );
+    LAMA_CHECK_CLOSE( u.getValue<ValueType>(), 0.6666, 1 );
 }
 
 /* --------------------------------------------------------------------- */
@@ -201,10 +195,8 @@ BOOST_AUTO_TEST_CASE( IsRealTest )
 
 /* --------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( NegativNumberTest, T, test_types )
+BOOST_AUTO_TEST_CASE_TEMPLATE( NegativNumberTest, ValueType, test_types )
 {
-    typedef T ValueType;
-
     Scalar s( 2.0 );
     Scalar t( -s );
     BOOST_CHECK_EQUAL( s.getValue<ValueType>(), 2.0 );

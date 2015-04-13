@@ -170,11 +170,9 @@ BOOST_AUTO_TEST_CASE( NormPtrTest )
 
 /* --------------------------------------------------------------------- */
 
-template<typename DataType>
+template<typename ValueType>
 void testIsSatisfied( ResidualThreshold::ResidualThresholdCheckMode checkMode )
 {
-    typedef DataType ValueType;
-
     IndexType n = 3;
 
     EquationHelper::EquationSystem<ValueType> system = EquationHelper::get3x3SystemA<ValueType>();
@@ -205,9 +203,7 @@ void testIsSatisfied( ResidualThreshold::ResidualThresholdCheckMode checkMode )
     BOOST_CHECK( l2.getValue<ValueType>() <= 1e-5 );
 }
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( redistributeTest, T, test_types ) {
-    typedef T ValueType;
-
+BOOST_AUTO_TEST_CASE_TEMPLATE( redistributeTest, ValueType, test_types ) {
     testIsSatisfied<ValueType>( ResidualThreshold::Absolute );
     testIsSatisfied<ValueType>( ResidualThreshold::Relative );
 }

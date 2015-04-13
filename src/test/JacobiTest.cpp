@@ -101,9 +101,8 @@ LAMA_LOG_DEF_LOGGER( logger, "Test.JacobiTest" )
 
 /* --------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_CASE( testDefaultCriterionSet )
+BOOST_AUTO_TEST_CASE_TEMPLATE( testDefaultCriterionSet, ValueType, test_types )
 {
-    typedef double ValueType;
     DefaultJacobi jacobi( "TestJacobi" );
 
     const IndexType N1 = 4;
@@ -145,11 +144,10 @@ BOOST_AUTO_TEST_CASE( testGetId )
 
 /* ------------------------------------------------------------------------- */
 
-template<typename mt>
+template<typename MatrixType>
 void testSolveMethod( std::string solverId, ContextPtr context )
 {
-    typedef mt MatrixType;
-    typedef typename mt::ValueType ValueType;
+    typedef typename MatrixType::ValueType ValueType;
 
     std::string id = solverId;
 
@@ -216,9 +214,7 @@ void testSolveMethod( std::string solverId, ContextPtr context )
     BOOST_CHECK( l2norm.getValue<ValueType>() < 1e-5 );
 }
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( testSolve, T, test_types ) {
-    typedef T ValueType;
-
+BOOST_AUTO_TEST_CASE_TEMPLATE( testSolve, ValueType, test_types ) {
     CONTEXTLOOP()
     {
         GETCONTEXT( context );

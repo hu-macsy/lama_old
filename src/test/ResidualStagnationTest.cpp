@@ -146,9 +146,7 @@ BOOST_AUTO_TEST_CASE ( GetAndSetLookBackTest )
 
 /* --------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( IsSatisfiedTest, T, test_types ) {
-    typedef T ValueType;
-
+BOOST_AUTO_TEST_CASE_TEMPLATE( IsSatisfiedTest, ValueType, test_types ) {
     EquationHelper::EquationSystem<ValueType> system = EquationHelper::get8x8SystemA<ValueType>();
 
     const CSRSparseMatrix<ValueType> coefficients( system.coefficients );

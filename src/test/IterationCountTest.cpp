@@ -105,11 +105,9 @@ BOOST_AUTO_TEST_CASE( SetAndGetIterationCountTest )
 
 /* --------------------------------------------------------------------- */
 
-template<typename DataType>
+template<typename ValueType>
 void testIsSatisfiedmethod( IndexType expectedIterationCount )
 {
-    typedef DataType ValueType;
-
     DefaultJacobi jacobi( "IterationCountTest Jacobi" );
 
     EquationHelper::EquationSystem<ValueType> system = EquationHelper::get3x3SystemA<ValueType>();
@@ -128,9 +126,7 @@ void testIsSatisfiedmethod( IndexType expectedIterationCount )
 }
 ;
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( testIsSatisfied, T, test_types ) {
-    typedef T ValueType;
-
+BOOST_AUTO_TEST_CASE_TEMPLATE( testIsSatisfied, ValueType, test_types ) {
     testIsSatisfiedmethod<ValueType>( 10 );
 }
 

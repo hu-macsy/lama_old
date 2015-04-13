@@ -75,10 +75,10 @@ LAMA_LOG_DEF_LOGGER( logger, "Test.GMRESTest" )
 
 /* --------------------------------------------------------------------- */
 
-template<typename mt>
+template<typename MatrixType>
 void testSolveWithPreconditionmethod()
 {
-    typedef typename mt::ValueType ValueType;
+    typedef typename MatrixType::ValueType ValueType;
 
 //    LoggerPtr slogger( new CommonLogger(
 //        "<GMRES>: ",
@@ -118,9 +118,7 @@ void testSolveWithPreconditionmethod()
 
 }
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( testSolveWithPrecondition, T, test_types ) {
-    typedef T ValueType;
-
+BOOST_AUTO_TEST_CASE_TEMPLATE( testSolveWithPrecondition, ValueType, test_types ) {
     CommunicatorPtr comm = CommunicatorFactory::get(); // default communicator
 
     testSolveWithPreconditionmethod< CSRSparseMatrix<ValueType> >();
@@ -139,11 +137,10 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( testSolveWithPrecondition, T, test_types ) {
 
 /* --------------------------------------------------------------------- */
 
-template<typename mt>
+template<typename MatrixType>
 void testSolveWithoutPreconditionmethod()
 {
-    typedef mt MatrixType;
-    typedef typename mt::ValueType ValueType;
+    typedef typename MatrixType::ValueType ValueType;
 
     const IndexType N1 = 4;
     const IndexType N2 = 4;
@@ -182,9 +179,7 @@ void testSolveWithoutPreconditionmethod()
     BOOST_CHECK( s.getValue<ValueType>() < 1E-6 );
 }
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( testSolveWithoutPreconditioning, T, test_types ) {
-    typedef T ValueType;
-
+BOOST_AUTO_TEST_CASE_TEMPLATE( testSolveWithoutPreconditioning, ValueType, test_types ) {
     CommunicatorPtr comm = CommunicatorFactory::get(); // default one
 
     testSolveWithoutPreconditionmethod< CSRSparseMatrix<ValueType> >();
@@ -201,9 +196,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( testSolveWithoutPreconditioning, T, test_types ) 
     }
 }
 
-BOOST_AUTO_TEST_CASE( testDefaultCriterionSet )
+BOOST_AUTO_TEST_CASE_TEMPLATE( testDefaultCriterionSet, ValueType, test_types )
 {
-    typedef double ValueType;
     const IndexType N1 = 4;
     const IndexType N2 = 4;
 

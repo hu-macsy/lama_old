@@ -45,8 +45,7 @@ typedef boost::mpl::list<double,float> test_types;
 
 /* --------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_SUITE( CUDA_InterfaceRegistry )
-;
+BOOST_AUTO_TEST_SUITE( CUDA_InterfaceRegistry );
 
 LAMA_LOG_DEF_LOGGER( logger, "Test.CUDA_InterfaceRegistry" );
 
@@ -59,13 +58,9 @@ BOOST_AUTO_TEST_CASE( hasInterfaceTest )
     BOOST_CHECK( LAMAInterfaceRegistry::getRegistry().hasInterface( Context::CUDA ) );
 }
 
-/* --------------------------------------------------------------------- */
-
-typedef boost::mpl::list<float,double> ValueTypes;
-
 /* ------------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( getInterfaceTest, ValueType, ValueTypes )
+BOOST_AUTO_TEST_CASE_TEMPLATE( getInterfaceTest, ValueType, test_types )
 {
     // This test checks that CUDA routines have been registered correctly and are accessible
 

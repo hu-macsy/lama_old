@@ -275,12 +275,10 @@ LAMA_COMMON_TEST_CASE_END()
 
 /* --------------------------------------------------------------------- */
 
-template<typename T>
+template<typename ValueType>
 void CommunicatorTest::updateHaloTest()
 {
-    typedef T ValueType;
-
-    LAMA_LOG_INFO( logger, "updateHaloTest<" << Scalar::getType<T>() << ">" );
+    LAMA_LOG_INFO( logger, "updateHaloTest<" << Scalar::getType<ValueType>() << ">" );
 
     const IndexType factor = 4;
     const IndexType vectorSize = factor * size;
@@ -359,10 +357,9 @@ void CommunicatorTest::updateHaloTest()
 
 /* --------------------------------------------------------------------- */
 
-template<typename T>
+template<typename ValueType>
 void CommunicatorTest::shiftTest()
 {
-    typedef T ValueType;
     // Idea of this shift Test:
     // - allocate on each processor an array with one element for each processor
     // - shift this array around all processors and each processor writes one value at its rank
@@ -398,10 +395,8 @@ void CommunicatorTest::shiftTest()
 
 /* --------------------------------------------------------------------- */
 
-LAMA_COMMON_TEST_CASE_TM( CommunicatorTest, T, shiftASyncTest )
+LAMA_COMMON_TEST_CASE_TM( CommunicatorTest, ValueType, shiftASyncTest )
 {
-    typedef T ValueType;
-
     LAMAArray<ValueType> sendBuffer( 2, static_cast<ValueType>( rank ) );
     LAMAArray<ValueType> recvBuffer;
     {
@@ -475,11 +470,9 @@ LAMA_COMMON_TEST_CASE_TM_END();
 
 /* --------------------------------------------------------------------- */
 
-LAMA_COMMON_TEST_CASE_TM( CommunicatorTest, T, bcastTest )
+LAMA_COMMON_TEST_CASE_TM( CommunicatorTest, ValueType, bcastTest )
 {
-    typedef T ValueType;
-
-    LAMA_LOG_INFO( logger, "bcastTest<" << Scalar::getType<T>() << ">" )
+    LAMA_LOG_INFO( logger, "bcastTest<" << Scalar::getType<ValueType>() << ">" )
 
     IndexType N = 5;
     ValueType dummyVal = 13;
@@ -515,10 +508,8 @@ LAMA_COMMON_TEST_CASE_TM_END();
 
 /* --------------------------------------------------------------------- */
 
-LAMA_COMMON_TEST_CASE_TM( CommunicatorTest, T, scatterTest )
+LAMA_COMMON_TEST_CASE_TM( CommunicatorTest, ValueType, scatterTest )
 {
-    typedef T ValueType;
-
     const PartitionId root = 0;
     IndexType n = 2;
     IndexType allN = 0; // only root will have full size
@@ -555,10 +546,8 @@ LAMA_COMMON_TEST_CASE_TM_END();
 
 /* --------------------------------------------------------------------- */
 
-LAMA_COMMON_TEST_CASE_TM( CommunicatorTest, T, scatterVTest )
+LAMA_COMMON_TEST_CASE_TM( CommunicatorTest, ValueType, scatterVTest )
 {
-    typedef T ValueType;
-
     const PartitionId root = 0;
     IndexType n = rank; // number of elements I receive
     IndexType allN = 0;
@@ -609,10 +598,8 @@ LAMA_COMMON_TEST_CASE_TM_END();
 
 /* --------------------------------------------------------------------- */
 
-LAMA_COMMON_TEST_CASE_TM( CommunicatorTest, T, gatherTest )
+LAMA_COMMON_TEST_CASE_TM( CommunicatorTest, ValueType, gatherTest )
 {
-    typedef T ValueType;
-
     const PartitionId root = 0;
     IndexType allN = 0; // only root will have full size
 
@@ -651,10 +638,8 @@ LAMA_COMMON_TEST_CASE_TM_END();
 
 /* --------------------------------------------------------------------- */
 
-LAMA_COMMON_TEST_CASE_TM( CommunicatorTest, T, gatherVTest )
+LAMA_COMMON_TEST_CASE_TM( CommunicatorTest, ValueType, gatherVTest )
 {
-    typedef T ValueType;
-
     const PartitionId root = 0;
     IndexType n = rank; // number of elements I send
     IndexType allN = 0;
@@ -713,10 +698,8 @@ LAMA_COMMON_TEST_CASE_TM_END();
 
 /* --------------------------------------------------------------------- */
 
-LAMA_COMMON_TEST_CASE_TM( CommunicatorTest, T, swapTest )
+LAMA_COMMON_TEST_CASE_TM( CommunicatorTest, ValueType, swapTest )
 {
-    typedef T ValueType;
-
     int n = 10;
     boost::scoped_array<ValueType> vector( new ValueType[n] );
 

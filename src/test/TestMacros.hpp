@@ -531,6 +531,31 @@ catch( Exception )                                                              
         }                                                                                                              \
     }
 
+#define LAMA_AUTO_TEST_CASE_CDUMMY( name, classname )                                                                 \
+    BOOST_AUTO_TEST_CASE( name )                                                                                       \
+    {                                                                                                                  \
+        CONTEXTLOOP()                                                                                                  \
+        {                                                                                                              \
+            GETCONTEXT( context );                                                                                     \
+            if ( loglevel_argument == "test_suite" )                                                                   \
+            {                                                                                                          \
+                LAMA_LOG_INFO( logger, "    Entering context: " << context->getType() );                               \
+            }                                                                                                          \
+            const std::string lama_name = #name;                                                                       \
+            const std::string lama_classname = #classname;                                                             \
+            try                                                                                                        \
+            {                                                                                                          \
+                lama::classname::name( context );                                                                \
+            }                                                                                                          \
+            catch( Exception )                                                                                         \
+            {                                                                                                          \
+                LAMA_LOG_WARN( logger, lama_classname << "::" << lama_name << " cannot run on  "                       \
+                               << context->getType() << ", corresponding function not implemented yet." );             \
+                return;                                                                                                \
+            }                                                                                                          \
+        }                                                                                                              \
+    }
+
 /*
  * @brief HelperMacro COMMONTESTCASEINVOKER( object_name, method_name )
  *

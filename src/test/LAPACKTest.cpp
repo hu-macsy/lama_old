@@ -59,10 +59,7 @@ typedef boost::mpl::list<float,double> test_types;
 
 /* ------------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( inverseTest, T, test_types ){
-
-typedef T ValueType;
-
+BOOST_AUTO_TEST_CASE_TEMPLATE( inverseTest, ValueType, test_types ){
 const IndexType n = 3;
 
 // set up values for A and B with A * B = identiy
@@ -97,10 +94,7 @@ ContextPtr loc = ContextFactory::getContext( Context::Host );
 
 /* ------------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( getrifTest, T, test_types ){
-
-typedef T ValueType;
-
+BOOST_AUTO_TEST_CASE_TEMPLATE( getrifTest, ValueType, test_types ){
 const IndexType n = 3;
 
 // set up values for A and B with A * B = identiy
@@ -184,10 +178,7 @@ const IndexType n = 3;
 
 /* ------------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( tptrsTest, T, test_types ){
-
-typedef T ValueType;
-
+BOOST_AUTO_TEST_CASE_TEMPLATE( tptrsTest, ValueType, test_types ){
 {
     const IndexType n = 3;
     const IndexType ntri = n * ( n + 1 ) / 2;

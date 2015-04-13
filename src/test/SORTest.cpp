@@ -160,9 +160,7 @@ void testSolveOmegaMethod( Scalar omega )
     BOOST_CHECK( solutionPrecision.getValue<ValueType>() < 1E-5 );
 }
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( testSolveOmega, T, test_types ) {
-    typedef T ValueType;
-
+BOOST_AUTO_TEST_CASE_TEMPLATE( testSolveOmega, ValueType, test_types ) {
     testSolveOmegaMethod< CSRSparseMatrix<ValueType> >( 0.20 );
     testSolveOmegaMethod< ELLSparseMatrix<ValueType> >( 0.20 );
     testSolveOmegaMethod< JDSSparseMatrix<ValueType> >( 0.20 );
