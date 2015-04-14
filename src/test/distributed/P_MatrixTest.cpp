@@ -167,7 +167,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( LocalConstructorTest, MatrixType, MatrixTypes )
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( SetDenseDataTest, MatrixType, MatrixTypes ) 
 {
-    typedef typename MatrixType::ValueType ValueType;
+    typedef typename MatrixType::MatrixValueType ValueType;
 
     CommunicatorPtr comm = CommunicatorFactory::get();
 
@@ -231,7 +231,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( SetDenseDataTest, MatrixType, MatrixTypes )
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( SetCSRDataTest, MatrixType, MatrixTypes ) 
 {
-    typedef typename MatrixType::ValueType ValueType;
+    typedef typename MatrixType::MatrixValueType ValueType;
 
     CommunicatorPtr comm = CommunicatorFactory::get();
 
@@ -322,7 +322,7 @@ typedef boost::mpl::list<CSRSparseMatrix<float>,DIASparseMatrix<double>,JDSSpars
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( SwapTest, MatrixType, SparseMatrixTypes ) {
     typedef typename MatrixType::StorageType StorageType;
-    typedef typename MatrixType::ValueType ValueType;
+    typedef typename MatrixType::MatrixValueType ValueType;
 
     const IndexType globalSize = 100;
 
@@ -505,7 +505,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( InvertTest, MatrixType, SparseMatrixTypes ) {
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( MatrixMultTest, MatrixType, SparseMatrixTypes ) 
 {
-    typedef typename MatrixType::ValueType ValueType;
+    typedef typename MatrixType::MatrixValueType ValueType;
 
 // first we test for replicated matrices
 

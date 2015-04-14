@@ -245,7 +245,7 @@ public:
 
     /** Replication of distributed data, several entries for each element of the global range
      *
-     * @tparam     T             TODO[doxy] Complete Description.
+     * @tparam     ValueType             TODO[doxy] Complete Description.
      * @param[out] allValues     array with all values from all partitions
      * @param[in]  localValues   elements available on this partition
      * @param[in]  allOffsets    contains unique offset for each element of the global range
@@ -254,8 +254,8 @@ public:
      *
      * The offset array is used like in CSR sparse matrix storage for offsets and number of values.
      */
-    template<typename T>
-    void replicateRagged( T allValues[], const T localValues[], const IndexType allOffsets[] ) const;
+    template<typename ValueType>
+    void replicateRagged( ValueType allValues[], const ValueType localValues[], const IndexType allOffsets[] ) const;
 
     /**
      * Master process prints out the distribution vector to file named "name.part".

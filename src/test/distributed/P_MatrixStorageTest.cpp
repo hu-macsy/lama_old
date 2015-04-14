@@ -108,7 +108,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( buildHaloTest, StorageType, StorageTypes )
 {
     StorageType matrixStorage;
 
-    typedef typename StorageType::ValueType ValueType;
+    typedef typename StorageType::StorageValueType ValueType;
 
     CommunicatorPtr comm = CommunicatorFactory::get();
 
@@ -165,7 +165,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( buildHaloTest, StorageType, StorageTypes )
 /* ------------------------------------------------------------------------- */
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( replicateTest, StorageType, StorageTypes ) {
-    typedef typename StorageType::ValueType ValueType;
+    typedef typename StorageType::StorageValueType ValueType;
 
     StorageType matrixStorage;
 
@@ -215,7 +215,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( replicateTest, StorageType, StorageTypes ) {
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( redistributeTest, StorageType, StorageTypes ) 
 {
-    typedef typename StorageType::ValueType ValueType;
+    typedef typename StorageType::StorageValueType ValueType;
 
     StorageType matrixStorage;
 
@@ -276,7 +276,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( exchangeHaloTest, StorageType, StorageTypes )
 
     StorageType matrixStorage;
 
-    typedef typename StorageType::ValueType ValueType;
+    typedef typename StorageType::StorageValueType ValueType;
 
     CommunicatorPtr comm = CommunicatorFactory::get();
 

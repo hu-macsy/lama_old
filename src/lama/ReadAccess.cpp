@@ -47,8 +47,8 @@ LAMA_LOG_DEF_TEMPLATE_LOGGER( template<typename ValueType>, ReadAccess<ValueType
 
 /* --------------------------------------------------------------------------- */
 
-template<typename T>
-ReadAccess<T>::ReadAccess( const LAMAArray<ValueType>& array, ContextPtr context )
+template<typename ValueType>
+ReadAccess<ValueType>::ReadAccess( const LAMAArray<ValueType>& array, ContextPtr context )
     : mArrayView( &array )
 {
     LAMA_ASSERT_ERROR( context, "NULL context for read access");
@@ -57,30 +57,30 @@ ReadAccess<T>::ReadAccess( const LAMAArray<ValueType>& array, ContextPtr context
     //LAMA_LOG_TRACE(logger, "acquired read access for " << *mArrayView << " at " << *context );
 }
 
-template<typename T>
-ReadAccess<T>::~ReadAccess()
+template<typename ValueType>
+ReadAccess<ValueType>::~ReadAccess()
 {
     LAMA_LOG_TRACE( logger, "~ReadAccess: release" )
     release();
 }
 
-template<typename T>
-const T* ReadAccess<T>::get() const
+template<typename ValueType>
+const ValueType* ReadAccess<ValueType>::get() const
 {
     if ( mArrayView == 0 )
     {
         LAMA_THROWEXCEPTION( "ReadAccess::get fails, has already been released." )
     }
 
-    const T* ptr = mArrayView->get( mIndex );
+    const ValueType* ptr = mArrayView->get( mIndex );
 
     //LAMA_LOG_TRACE( logger, "mArray->get(" << mIndex<< ") with ptr = " << ptr )
     //*mArray->mContextData[mIndex].context << ", ptr = " << ptr )
     return ptr;
 }
 
-template<typename T>
-void ReadAccess<T>::release()
+template<typename ValueType>
+void ReadAccess<ValueType>::release()
 {
     if ( mArrayView )
     {
@@ -97,8 +97,8 @@ void ReadAccess<T>::release()
     mArrayView = 0;
 }
 
-template<typename T>
-void ReadAccess<T>::writeAt( std::ostream& stream ) const
+template<typename ValueType>
+void ReadAccess<ValueType>::writeAt( std::ostream& stream ) const
 {
     stream << "ReadAccess to ";
     if ( mArrayView )

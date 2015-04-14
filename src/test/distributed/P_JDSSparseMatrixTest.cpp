@@ -55,11 +55,9 @@ typedef boost::mpl::list<float,double> test_types;
 
 /* ------------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_CASE( commonTestCases )
+BOOST_AUTO_TEST_CASE_TEMPLATE( commonTestCases, ValueType, test_types )
 {
-    typedef double T;
-
-    P_SparseMatrixTest<JDSSparseMatrix<T> > p_jdsSparseMatrixtest;
+    P_SparseMatrixTest<JDSSparseMatrix<ValueType> > p_jdsSparseMatrixtest;
 
     if ( base_test_case )
     {

@@ -55,8 +55,8 @@
 template<typename MatrixType1,typename MatrixType2>
 void testSameMatrix( const MatrixType1& m1, const MatrixType2& m2 )
 {
-    typedef typename MatrixType1::ValueType ValueType1;
-    typedef typename MatrixType2::ValueType ValueType2;
+    typedef typename MatrixType1::MatrixValueType ValueType1;
+    typedef typename MatrixType2::MatrixValueType ValueType2;
 
     // Both matrices must be matrices of the same size
 

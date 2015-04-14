@@ -84,7 +84,7 @@ P_SparseMatrixTest<MatrixType>::~P_SparseMatrixTest()
 LAMA_COMMON_TEST_CASE_TEMPLATE( P_SparseMatrixTest, MatrixType, cTorTest ) {
     LAMA_LOG_INFO( logger, "cTorTest" );
 
-    typedef typename MatrixType::ValueType ValueType;
+    typedef typename MatrixType::MatrixValueType ValueType;
 
     const IndexType n = 4;
 
@@ -194,7 +194,7 @@ LAMA_COMMON_TEST_CASE_TEMPLATE_END();
 /* --------------------------------------------------------------------- */
 
 LAMA_COMMON_TEST_CASE_TEMPLATE( P_SparseMatrixTest, MatrixType, assignTest ) {
-    typedef typename MatrixType::ValueType ValueType;
+    typedef typename MatrixType::MatrixValueType ValueType;
 
     const IndexType N1 = 5;
     const IndexType N2 = 5;
@@ -231,7 +231,7 @@ LAMA_COMMON_TEST_CASE_TEMPLATE_END();
 /* --------------------------------------------------------------------- */
 
 LAMA_COMMON_TEST_CASE_TEMPLATE( P_SparseMatrixTest, MatrixType, transposeTest ) {
-    typedef typename MatrixType::ValueType ValueType;
+    typedef typename MatrixType::MatrixValueType ValueType;
 
     const IndexType N1 = 2;
     const IndexType N2 = 3;
@@ -363,7 +363,7 @@ static DistributionPtr makeDistribution( const IndexType n, CommunicatorPtr comm
 }
 
 LAMA_COMMON_TEST_CASE_TEMPLATE( P_SparseMatrixTest, MatrixType, createPoissonTest ) {
-    typedef typename MatrixType::ValueType ValueType;
+    typedef typename MatrixType::MatrixValueType ValueType;
 
     const IndexType N1 = 5;
     const IndexType N2 = 5;

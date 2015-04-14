@@ -65,7 +65,7 @@ namespace lama
 
 // Forward declaration of all classes that are used in the interface
 
-template<typename T> class LAMAArray;
+template<typename ValueType> class LAMAArray;
 
 class Distribution;
 
@@ -555,8 +555,8 @@ public:
      *
      *  This routine will be implemented by other available routines.
      */
-    template<typename T>
-    void allgather( T allvals[], const IndexType n, const T myvals[] ) const
+    template<typename ValueType>
+    void allgather( ValueType allvals[], const IndexType n, const ValueType myvals[] ) const
     {
         PartitionId root = 0;
         gather( allvals, n, root, myvals );
@@ -595,42 +595,42 @@ public:
 
     /** exchangeByPlan for LAMAArrays instead of usual array */
 
-    template<typename T>
+    template<typename ValueType>
     void exchangeByPlan(
-        LAMAArray<T>& recvArray,
+        LAMAArray<ValueType>& recvArray,
         const CommunicationPlan& recvPlan,
-        const LAMAArray<T>& sendArray,
+        const LAMAArray<ValueType>& sendArray,
         const CommunicationPlan& sendPlan ) const;
 
     /** Asynchronous exchange of LAMAArrays. */
 
-    template<typename T>
+    template<typename ValueType>
     SyncToken* exchangeByPlanAsync(
-        LAMAArray<T>& recvArray,
+        LAMAArray<ValueType>& recvArray,
         const CommunicationPlan& recvPlan,
-        const LAMAArray<T>& sendArray,
+        const LAMAArray<ValueType>& sendArray,
         const CommunicationPlan& sendPlan ) const;
 
     /** @brief Update of halo array via Halo object.
      *
-     *  @tparam     T             arithmetic type of involved arrays
+     *  @tparam     ValueType             arithmetic type of involved arrays
      *  @param[out] haloValues    will contain the non-local values from other processors
      *  @param[in]  localValues   is the local part of the array on each processor
      *  @param[in]  halo is the   Halo object containing all information about exchange
      *
      *  This method is not virtual but will use the pure virtual methods of base classes.
      */
-    template<typename T>
-    void updateHalo( LAMAArray<T>& haloValues, const LAMAArray<T>& localValues, const Halo& halo ) const;
+    template<typename ValueType>
+    void updateHalo( LAMAArray<ValueType>& haloValues, const LAMAArray<ValueType>& localValues, const Halo& halo ) const;
 
     /** @brief Asynchronous update of halo array via Halo object. */
 
-    template<typename T>
-    SyncToken* updateHaloAsync( LAMAArray<T>& haloValues, const LAMAArray<T>& localValues, const Halo& halo ) const;
+    template<typename ValueType>
+    SyncToken* updateHaloAsync( LAMAArray<ValueType>& haloValues, const LAMAArray<ValueType>& localValues, const Halo& halo ) const;
 
     /** @brief Shift on LAMA arrays.
      *
-     *  @tparam     T           type of data to be shifted       
+     *  @tparam     ValueType           type of data to be shifted
      *  @param[out] recv        array to receive  this partition
      *  @param[in]  send        array to send from this partition
      *  @param[in]  direction   number of positions to shift, e.g. 1 or -1
@@ -638,20 +638,20 @@ public:
      *  Note: The recv array must have a capacity that is sufficent to
      *        receive all the data.
      */
-    template<typename T>
-    void shiftArray( LAMAArray<T>& recv, const LAMAArray<T>& send, const int direction ) const;
+    template<typename ValueType>
+    void shiftArray( LAMAArray<ValueType>& recv, const LAMAArray<ValueType>& send, const int direction ) const;
 
     /** @brief Asychronous shift on LAMA arrays.
      *
-     *  @tparam     T           TODO[doxy] Complete Description.
+     *  @tparam     ValueType           TODO[doxy] Complete Description.
      *  @param[out] recvArray   array to receive for this partition
      *  @param[in]  sendArray   array to send from this partition
      *  @param[in]  direction   number of positions to shift, e.g. 1 or -1
      *
      *  Note: All partitions must have the same size for send/recv array
      */
-    template<typename T>
-    SyncToken* shiftAsync( LAMAArray<T>& recvArray, const LAMAArray<T>& sendArray, const int direction ) const;
+    template<typename ValueType>
+    SyncToken* shiftAsync( LAMAArray<ValueType>& recvArray, const LAMAArray<ValueType>& sendArray, const int direction ) const;
 
     /** Override routine of base class Printable. */
 
@@ -697,9 +697,9 @@ static    void getUserProcArray( PartitionId userProcArray[3] );
 
     /** Shift implementation for direction == 0, just copies values. */
 
-    template<typename T>
-    IndexType shift0( T newVals[], const IndexType newSize,
-                    const T oldVals[], const IndexType oldSize ) const;
+    template<typename ValueType>
+    IndexType shift0( ValueType newVals[], const IndexType newSize,
+                    const ValueType oldVals[], const IndexType oldSize ) const;
 
 };
 
@@ -719,11 +719,11 @@ PartitionId Communicator::getNeighbor( int pos ) const
 
 /* -------------------------------------------------------------------------- */
 
-template<typename T>
+template<typename ValueType>
 void Communicator::exchangeByPlan(
-    LAMAArray<T>& recvArray,
+    LAMAArray<ValueType>& recvArray,
     const CommunicationPlan& recvPlan,
-    const LAMAArray<T>& sendArray,
+    const LAMAArray<ValueType>& sendArray,
     const CommunicationPlan& sendPlan ) const
 {
     LAMA_ASSERT_EQUAL_ERROR( sendArray.size(), sendPlan.totalQuantity() )
@@ -738,22 +738,22 @@ void Communicator::exchangeByPlan(
 
     LAMA_LOG_DEBUG( logger, *this << ": exchangeByPlan, comCtx = " << *comCtx )
 
-    ReadAccess<T> sendData( sendArray, comCtx );
+    ReadAccess<ValueType> sendData( sendArray, comCtx );
 
     // Data will be received at the same context where send data is 
 
-    WriteOnlyAccess<T> recvData( recvArray, comCtx, recvSize );
+    WriteOnlyAccess<ValueType> recvData( recvArray, comCtx, recvSize );
 
     exchangeByPlan( recvData.get(), recvPlan, sendData.get(), sendPlan );
 }
 
 /* -------------------------------------------------------------------------- */
 
-template<typename T>
+template<typename ValueType>
 SyncToken* Communicator::exchangeByPlanAsync(
-    LAMAArray<T>& recvArray,
+    LAMAArray<ValueType>& recvArray,
     const CommunicationPlan& recvPlan,
-    const LAMAArray<T>& sendArray,
+    const LAMAArray<ValueType>& sendArray,
     const CommunicationPlan& sendPlan ) const
 {
     LAMA_ASSERT_EQUAL_ERROR( sendArray.size(), sendPlan.totalQuantity() )
@@ -766,13 +766,13 @@ SyncToken* Communicator::exchangeByPlanAsync(
 
     LAMA_LOG_DEBUG( logger, *this << ": exchangeByPlanAsync, comCtx = " << *comCtx )
 
-    boost::shared_ptr<ReadAccess<T> > sendData( new ReadAccess<T>( sendArray, comCtx ) );
-    boost::shared_ptr<WriteAccess<T> > recvData( new WriteOnlyAccess<T>( recvArray, comCtx, recvSize ) );
+    boost::shared_ptr<ReadAccess<ValueType> > sendData( new ReadAccess<ValueType>( sendArray, comCtx ) );
+    boost::shared_ptr<WriteAccess<ValueType> > recvData( new WriteOnlyAccess<ValueType>( recvArray, comCtx, recvSize ) );
 
     SyncToken* token( exchangeByPlanAsync( recvData->get(), recvPlan, sendData->get(), sendPlan ) );
 
     // Add the read and write access to the sync token to get it freed after successful wait
-    // conversion boost::shared_ptr<HostWriteAccess<T> > -> boost::shared_ptr<BaseAccess> supported
+    // conversion boost::shared_ptr<HostWriteAccess<ValueType> > -> boost::shared_ptr<BaseAccess> supported
 
     token->pushAccess( recvData );
     token->pushAccess( sendData );

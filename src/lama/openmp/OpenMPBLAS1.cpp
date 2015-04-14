@@ -64,8 +64,8 @@ LAMA_LOG_DEF_LOGGER( OpenMPBLAS1::logger, "OpenMP.BLAS1" )
 
 /** scal */
 
-template<typename T>
-void OpenMPBLAS1::scal( const IndexType n, const T alpha, T* x, const IndexType incX, SyncToken* syncToken )
+template<typename ValueType>
+void OpenMPBLAS1::scal( const IndexType n, const ValueType alpha, ValueType* x, const IndexType incX, SyncToken* syncToken )
 {
     if ( incX <= 0 )
     {
@@ -74,7 +74,7 @@ void OpenMPBLAS1::scal( const IndexType n, const T alpha, T* x, const IndexType 
 
     LAMA_REGION( "OpenMP.BLAS1.scal" )
 
-    LAMA_LOG_DEBUG( logger, "scal<" << Scalar::getType<T>()<< ">, n = " << n 
+    LAMA_LOG_DEBUG( logger, "scal<" << Scalar::getType<ValueType>()<< ">, n = " << n
                     << ", alpha = " << alpha << ", x = " << x << ", incX = " << incX )
 
     if ( syncToken )
@@ -102,12 +102,12 @@ void OpenMPBLAS1::scal( const IndexType n, const T alpha, T* x, const IndexType 
 
 /** nrm2 */
 
-template<typename T>
-T OpenMPBLAS1::nrm2( const IndexType n, const T* x, const IndexType incX, SyncToken* syncToken )
+template<typename ValueType>
+ValueType OpenMPBLAS1::nrm2( const IndexType n, const ValueType* x, const IndexType incX, SyncToken* syncToken )
 {
     LAMA_REGION( "OpenMP.BLAS1.nrm2" )
 
-    LAMA_LOG_DEBUG( logger, "nrm2<" << Scalar::getType<T>()<< ">, n = " << n << ", x = " << x << ", incX = " << incX )
+    LAMA_LOG_DEBUG( logger, "nrm2<" << Scalar::getType<ValueType>()<< ">, n = " << n << ", x = " << x << ", incX = " << incX )
 
     if ( incX <= 0 )
     {
@@ -119,13 +119,13 @@ T OpenMPBLAS1::nrm2( const IndexType n, const T* x, const IndexType incX, SyncTo
         LAMA_LOG_WARN( logger, "no asynchronous execution for openmp possible at this level." )
     }
 
-    T sumOfSquares = 0.0;
+    ValueType sumOfSquares = 0.0;
 
 // OpenMP reduction clause cannot be used as it doesn't support complex numbers
 
 #pragma omp parallel shared( sumOfSquares )
     {
-        T tSumOfSquares = 0;  // private for each thread
+        ValueType tSumOfSquares = 0;  // private for each thread
 
         if ( incX == 1 )
         {
@@ -151,19 +151,19 @@ T OpenMPBLAS1::nrm2( const IndexType n, const T* x, const IndexType incX, SyncTo
 
 /** asum (l1 norm) */
 
-template<typename T>
-T OpenMPBLAS1::asum( const IndexType n, const T* x, const IndexType incX, SyncToken* syncToken )
+template<typename ValueType>
+ValueType OpenMPBLAS1::asum( const IndexType n, const ValueType* x, const IndexType incX, SyncToken* syncToken )
 {
     LAMA_REGION( "OpenMP.BLAS1.asum" )
 
-    LAMA_LOG_DEBUG( logger, "asum<" << Scalar::getType<T>()<< ">, n = " << n << ", x = " << x << ", incX = " << incX )
+    LAMA_LOG_DEBUG( logger, "asum<" << Scalar::getType<ValueType>()<< ">, n = " << n << ", x = " << x << ", incX = " << incX )
 
     if ( syncToken )
     {
         LAMA_LOG_WARN( logger, "no asynchronous execution for openmp possible at this level." )
     }
 
-    T result = 0;
+    ValueType result = 0;
 
     if ( incX <= 0 )
     {
@@ -174,7 +174,7 @@ T OpenMPBLAS1::asum( const IndexType n, const T* x, const IndexType incX, SyncTo
 
 #pragma omp parallel shared( result )
     {
-        T tResult = 0;  // private for each thread
+        ValueType tResult = 0;  // private for each thread
 
         if ( incX == 1 )
         {
@@ -201,12 +201,12 @@ T OpenMPBLAS1::asum( const IndexType n, const T* x, const IndexType incX, SyncTo
 
 /** iamax */
 
-template<typename T>
-IndexType OpenMPBLAS1::iamax( const IndexType n, const T* x, const IndexType incX, SyncToken* syncToken )
+template<typename ValueType>
+IndexType OpenMPBLAS1::iamax( const IndexType n, const ValueType* x, const IndexType incX, SyncToken* syncToken )
 {
     LAMA_REGION( "OpenMP.BLAS1.iamax" )
 
-    LAMA_LOG_INFO( logger, "iamax<" << Scalar::getType<T>()<< ">, n = " << n << ", x = " << x << ", incX = " << incX )
+    LAMA_LOG_INFO( logger, "iamax<" << Scalar::getType<ValueType>()<< ">, n = " << n << ", x = " << x << ", incX = " << incX )
 
     if ( syncToken )
     {
@@ -261,18 +261,18 @@ IndexType OpenMPBLAS1::iamax( const IndexType n, const T* x, const IndexType inc
 
 /** swap */
 
-template<typename T>
+template<typename ValueType>
 void OpenMPBLAS1::swap(
     const IndexType n,
-    T* x,
+    ValueType* x,
     const IndexType incX,
-    T* y,
+    ValueType* y,
     const IndexType incY,
     SyncToken* syncToken )
 {
     LAMA_REGION( "OpenMP.BLAS1.swap" )
 
-    LAMA_LOG_DEBUG( logger, "iamax<" << Scalar::getType<T>()<< ">, n = " << n 
+    LAMA_LOG_DEBUG( logger, "iamax<" << Scalar::getType<ValueType>()<< ">, n = " << n
                     << ", x = " << x << ", incX = " << incX << ", y = " << y << ", incY = " << incY )
 
     if ( ( incX <= 0 ) || ( incY <= 0 ) )
@@ -285,8 +285,8 @@ void OpenMPBLAS1::swap(
         LAMA_LOG_WARN( logger, "no asynchronous execution for openmp possible at this level." )
     }
 
-    T *temp = 0;
-    temp = new T[n];
+    ValueType *temp = 0;
+    temp = new ValueType[n];
 
     if ( incX == 1 && incY == 1 )
     {
@@ -335,19 +335,19 @@ void OpenMPBLAS1::swap(
 
 /** copy */
 
-template<typename T>
+template<typename ValueType>
 void OpenMPBLAS1::copy(
     const IndexType n,
-    const T* x,
+    const ValueType* x,
     const IndexType incX,
-    T* y,
+    ValueType* y,
     const IndexType incY,
     SyncToken* UNUSED(syncToken) )
 {
     LAMA_REGION( "OpenMP.BLAS1.copy" )
 
     LAMA_LOG_DEBUG( logger,
-                    "copy<" << Scalar::getType<T>() << ">, n = " << n << ", x = " << x << ", incX = " << incX << ", y = " << y << ", incY = " << incY )
+                    "copy<" << Scalar::getType<ValueType>() << ">, n = " << n << ", x = " << x << ", incX = " << incX << ", y = " << y << ", incY = " << incY )
 
     if ( ( incX <= 0 ) || ( incY <= 0 ) )
     {
@@ -374,20 +374,20 @@ void OpenMPBLAS1::copy(
 
 /** axpy */
 
-template<typename T>
+template<typename ValueType>
 void OpenMPBLAS1::axpy(
     const IndexType n,
-    const T alpha,
-    const T* x,
+    const ValueType alpha,
+    const ValueType* x,
     const IndexType incX,
-    T* y,
+    ValueType* y,
     const IndexType incY,
     SyncToken* syncToken )
 {
     LAMA_REGION( "OpenMP.BLAS1.axpy" )
 
     LAMA_LOG_DEBUG( logger,
-                    "axpy<" << Scalar::getType<T>() << ">, n = " << n << ", alpha = " << alpha << ", x = " << x << ", incX = " << incX << ", y = " << y << ", incY = " << incY )
+                    "axpy<" << Scalar::getType<ValueType>() << ">, n = " << n << ", alpha = " << alpha << ", x = " << x << ", incX = " << incX << ", y = " << y << ", incY = " << incY )
 
     if ( ( incX <= 0 ) || ( incY <= 0 ) )
     {
@@ -419,19 +419,19 @@ void OpenMPBLAS1::axpy(
 }
 /** dot */
 
-template<typename T>
-T OpenMPBLAS1::dot(
+template<typename ValueType>
+ValueType OpenMPBLAS1::dot(
     const IndexType n,
-    const T* x,
+    const ValueType* x,
     const IndexType incX,
-    const T* y,
+    const ValueType* y,
     const IndexType incY,
     SyncToken* syncToken )
 {
     LAMA_REGION( "OpenMP.BLAS1.sdot" )
 
     LAMA_LOG_DEBUG( logger,
-                    "dot<" << Scalar::getType<T>() << ">, n = " << n << ", x = " << x << ", incX = " << incX << ", y = " << y << ", incY = " << incY )
+                    "dot<" << Scalar::getType<ValueType>() << ">, n = " << n << ", x = " << x << ", incX = " << incX << ", y = " << y << ", incY = " << incY )
 
     if ( ( incX <= 0 ) || ( incY <= 0 ) )
     {
@@ -443,11 +443,11 @@ T OpenMPBLAS1::dot(
         LAMA_LOG_WARN( logger, "no asynchronous execution for openmp possible at this level." )
     }
 
-    T result = 0;
+    ValueType result = 0;
 
 #pragma omp parallel shared( result )
     {
-        T tResult = 0;
+        ValueType tResult = 0;
 
         if ( incX == 1 && incY == 1 )
         {
@@ -473,13 +473,13 @@ T OpenMPBLAS1::dot(
 
 /** sum */
 
-template<typename T>
-void OpenMPBLAS1::sum( const IndexType n, T alpha, const T* x, T beta, const T* y, T* z, SyncToken* syncToken )
+template<typename ValueType>
+void OpenMPBLAS1::sum( const IndexType n, ValueType alpha, const ValueType* x, ValueType beta, const ValueType* y, ValueType* z, SyncToken* syncToken )
 {
     LAMA_REGION( "OpenMP.BLAS1.dot" )
 
     LAMA_LOG_DEBUG( logger,
-                    "sum<" << Scalar::getType<T>() << ">, n = " << n << ", alpha = " << alpha << ", x = " << x << ", beta = " << beta << ", y = " << y << ", z = " << z )
+                    "sum<" << Scalar::getType<ValueType>() << ">, n = " << n << ", alpha = " << alpha << ", x = " << x << ", beta = " << beta << ", y = " << y << ", z = " << z )
 
     if ( syncToken )
     {
@@ -503,7 +503,7 @@ void OpenMPBLAS1::setInterface( BLASInterface& BLAS )
     LAMA_LOG_INFO( logger, "set BLAS1 routines for OpenMP in Interface" )
 
 // Note: macro takes advantage of same name for routines and type definitions
-//       ( e.g. routine CUDABLAS1::sum<T> is set for BLAS::BLAS1::sum variable
+//       ( e.g. routine CUDABLAS1::sum<ValueType> is set for BLAS::BLAS1::sum variable
 
 #define LAMA_BLAS1_REGISTER(z, I, _)                                  \
     LAMA_INTERFACE_REGISTER_T( BLAS, scal, ARITHMETIC_TYPE##I )       \

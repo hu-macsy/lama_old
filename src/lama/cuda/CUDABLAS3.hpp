@@ -118,7 +118,7 @@ private:
      * TODO[doxy] Is the following description correct?
      * @param[out] syncToken updated based on C = alpha * op(A) * op(B) + beta * C
      */
-    template<typename T>
+    template<typename ValueType>
     static void gemm(
         const CBLAS_ORDER order,
         const CBLAS_TRANSPOSE transa,
@@ -126,13 +126,13 @@ private:
         const IndexType m,
         const IndexType n,
         const IndexType k,
-        const T alpha,
-        const T* A,
+        const ValueType alpha,
+        const ValueType* A,
         const IndexType lda,
-        const T* B,
+        const ValueType* B,
         const IndexType ldb,
-        const T beta,
-        T* C,
+        const ValueType beta,
+        ValueType* C,
         const IndexType ldc,
         SyncToken* syncToken );
 
@@ -193,7 +193,7 @@ private:
      *                    When side == 'L' or 'l', lda must be at least max(1, m).
      *                    When side == 'R' or 'r', lda must be at least max(1, n).
      * @param[in] B       array of dimensions (ldb, n);
-     *                    ldb must be at least max(1, m). T
+     *                    ldb must be at least max(1, m). ValueType
      *                    he leading m×n part of the array B must contain
      *                    the righthand side matrix B.
      *                    On exit B is overwritten by the solution matrix X.
@@ -204,7 +204,7 @@ private:
      *                              op(A) * X = alpha * B
      *                           or X * op(A) = alpha * B
      */
-    template<typename T>
+    template<typename ValueType>
     static void trsm(
         const CBLAS_ORDER order,
         const CBLAS_SIDE side,
@@ -213,10 +213,10 @@ private:
         const CBLAS_DIAG diag,
         const IndexType m,
         const IndexType n,
-        const T alpha,
-        const T* A,
+        const ValueType alpha,
+        const ValueType* A,
         const IndexType lda,
-        T* B,
+        ValueType* B,
         const IndexType ldb,
         SyncToken* syncToken );
 

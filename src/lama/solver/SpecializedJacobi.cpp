@@ -148,7 +148,7 @@ BOOST_PP_REPEAT( ARITHMETIC_TYPE_CNT, LAMA_CONVERSION, _ )
     // has already been check in initialize, but in any case
 
     LAMA_THROWEXCEPTION(
-        getConstRuntime().mCoefficients << ": unsupported matrix type (only SparseMatrix<T> supported)." )
+        getConstRuntime().mCoefficients << ": unsupported matrix type (only SparseMatrix<ValueType> supported)." )
 
 //    mPointerOldSolution = &mOldSolution; --> in every solve-call
 }
@@ -226,7 +226,7 @@ void SpecializedJacobi::iterate()
     // has already been check in initialize, but in any case
 
     LAMA_THROWEXCEPTION(
-        getConstRuntime().mCoefficients << ": unsupported matrix type (only SparseMatrix<T> supported)." )
+        getConstRuntime().mCoefficients << ": unsupported matrix type (only SparseMatrix<ValueType> supported)." )
 }
 
 template<typename ValueType>

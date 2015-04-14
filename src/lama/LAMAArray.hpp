@@ -63,10 +63,10 @@ namespace lama
 
 // Forward declaration of friend classes.
 
-template<typename T>
+template<typename ValueType>
 class ReadAccess;
 
-template<typename T>
+template<typename ValueType>
 class WriteAccess;
 
 /** Common base class for typed LAMAArray. */
@@ -120,21 +120,19 @@ protected:
 /**
  * @brief LAMAArray is the base array container for all compute relevant data within LAMA.
  *
- * @tparam T is the type stored in this container.
+ * @tparam ValueType is the type stored in this container.
  *
  * LAMAArray its contents on all supported locations, e.g. Host, CUDA and OpenCL. It transparently handles
  * synchronization between the locations. To enforce the consistency of the data a LAMAArray can be only
  * indirectly accessed via a ReadAccess or a WriteAccess.
  */
-template<typename T>
+template<typename ValueType>
 class LAMA_DLL_IMPORTEXPORT LAMAArray: public _LAMAArray
 {
-	friend class ReadAccess<T>;
-	friend class WriteAccess<T>;
+	friend class ReadAccess<ValueType>;
+	friend class WriteAccess<ValueType>;
 
 public:
-
-    typedef T ValueType;  //!< This is the type stored in this container.
 
     /**
      * @brief LAMAArray() creates an empty LAMAArray with size 0
@@ -205,12 +203,12 @@ public:
      * @param[in]   other   the LAMAArrayC to compare this with.
      * @return              if this and other are referencing the same LAMAArray.
      */
-    bool operator==( const LAMAArray<T>& other ) const
+    bool operator==( const LAMAArray<ValueType>& other ) const
     {
         return &other == this;
     }
 
-    bool operator!=( const LAMAArray<T>& other ) const
+    bool operator!=( const LAMAArray<ValueType>& other ) const
     {
         return &other != this;
     }
@@ -370,29 +368,29 @@ protected:
 /**
  * @brief LAMAArrayRef is a container that uses external data.
  *
- * @tparam T is the type stored in this container.
+ * @tparam ValueType is the type stored in this container.
  */
-template<typename T>
-class LAMA_DLL_IMPORTEXPORT LAMAArrayRef: public LAMAArray<T>
+template<typename ValueType>
+class LAMA_DLL_IMPORTEXPORT LAMAArrayRef: public LAMAArray<ValueType>
 {
 public:
 
     /** Contruct a container for a host array. */
 
-    LAMAArrayRef( T* pointer, IndexType size );
+    LAMAArrayRef( ValueType* pointer, IndexType size );
 
     /** Contruct a container for a const host array.
      *  Due to the const pointer it is guaranteed that the array cannot be modified
      */
 
-    LAMAArrayRef( const T* pointer, IndexType size );
+    LAMAArrayRef( const ValueType* pointer, IndexType size );
 
 protected:
 
-    using LAMAArray<T>::mSize;
+    using LAMAArray<ValueType>::mSize;
 
-    using LAMAArray<T>::mContextData;
-    using LAMAArray<T>::constFlag;
+    using LAMAArray<ValueType>::mContextData;
+    using LAMAArray<ValueType>::constFlag;
 };
 
 /* ---------------------------------------------------------------------------------*/

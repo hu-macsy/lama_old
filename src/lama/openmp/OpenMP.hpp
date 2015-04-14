@@ -46,8 +46,8 @@
  *  Note: template specialization used for float and double
  */
 
-template<typename T>
-inline void atomicAdd( T& sharedResult, const T& threadResult )
+template<typename ValueType>
+inline void atomicAdd( ValueType& sharedResult, const ValueType& threadResult )
 {
 #pragma omp critical
     sharedResult += threadResult;

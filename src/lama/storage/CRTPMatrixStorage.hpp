@@ -270,7 +270,7 @@ public:
         static_cast<Derived*>( this )->scaleImpl( value );
     }
 
-    /** Polymorph implementation for MatrixStorage<T>::scale */
+    /** Polymorph implementation for MatrixStorage<ValueType>::scale */
 
     void scale( const _LAMAArray& diagonal )
     {

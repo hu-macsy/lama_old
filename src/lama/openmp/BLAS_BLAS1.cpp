@@ -58,8 +58,8 @@ LAMA_LOG_DEF_LOGGER( BLAS_BLAS1::logger, "BLAS.BLAS1" )
 /*    scal wrapper for BLAS                                                               */
 /* ---------------------------------------------------------------------------------------*/
 
-template<typename T>
-static inline void wrapperScal( const int n, const T alpha, T* x, const int incX );
+template<typename ValueType>
+static inline void wrapperScal( const int n, const ValueType alpha, ValueType* x, const int incX );
 
 template<>
 void wrapperScal( const int n, const float alpha, float* x, const int incX )
@@ -96,8 +96,8 @@ void wrapperScal( const int, const LongDouble, LongDouble*, const int )
 /*    scal                                                                                */
 /* ---------------------------------------------------------------------------------------*/
 
-template<typename T>
-void BLAS_BLAS1::scal( const IndexType n, const T alpha, T* x, const IndexType incX, SyncToken* syncToken )
+template<typename ValueType>
+void BLAS_BLAS1::scal( const IndexType n, const ValueType alpha, ValueType* x, const IndexType incX, SyncToken* syncToken )
 {
 	if ( incX <= 0 )
 	{
@@ -106,7 +106,7 @@ void BLAS_BLAS1::scal( const IndexType n, const T alpha, T* x, const IndexType i
 
 	LAMA_REGION( "BLAS.BLAS1.scal" )
 
-    LAMA_LOG_DEBUG( logger, "scal<" << Scalar::getType<T>() << " n = " << n 
+    LAMA_LOG_DEBUG( logger, "scal<" << Scalar::getType<ValueType>() << " n = " << n
                     << ", alpha = " << alpha << ", x = " << x << ", incX = " << incX )
 
     if ( syncToken )
@@ -121,8 +121,8 @@ void BLAS_BLAS1::scal( const IndexType n, const T alpha, T* x, const IndexType i
 /*    nrm2                                                                                */
 /* ---------------------------------------------------------------------------------------*/
 
-template<typename T>
-static inline T wrapperNrm2( const int n, const T* x, const int incX );
+template<typename ValueType>
+static inline ValueType wrapperNrm2( const int n, const ValueType* x, const int incX );
 
 template<>
 float wrapperNrm2( const int n, const float* x, const int incX )
@@ -157,17 +157,17 @@ LongDouble wrapperNrm2( const int, const LongDouble*, const int )
     return LongDouble( 0 );
 }
 
-template<typename T>
-T BLAS_BLAS1::nrm2( const IndexType n, const T* x, const IndexType incX, SyncToken* syncToken )
+template<typename ValueType>
+ValueType BLAS_BLAS1::nrm2( const IndexType n, const ValueType* x, const IndexType incX, SyncToken* syncToken )
 {
     if ( incX <= 0 )
     {
-    	return static_cast<T>( 0 );
+    	return static_cast<ValueType>( 0 );
     }
 
     LAMA_REGION( "BLAS.BLAS1.nrm2" )
 
-    LAMA_LOG_DEBUG( logger, "nrm2<" << Scalar::getType<T>() << ">, n = " << n 
+    LAMA_LOG_DEBUG( logger, "nrm2<" << Scalar::getType<ValueType>() << ">, n = " << n
                     << ", x = " << x << ", incX = " << incX )
 
     if ( syncToken )
@@ -182,8 +182,8 @@ T BLAS_BLAS1::nrm2( const IndexType n, const T* x, const IndexType incX, SyncTok
 /*    asum                                                                                */
 /* ---------------------------------------------------------------------------------------*/
 
-template<typename T>
-static inline T wrapperAsum( const int n, const T* x, const int incX );
+template<typename ValueType>
+static inline ValueType wrapperAsum( const int n, const ValueType* x, const int incX );
 
 template<>
 float wrapperAsum( const int n, const float* x, const int incX )
@@ -218,12 +218,12 @@ LongDouble wrapperAsum( const int, const LongDouble*, const int )
     return 0;
 }
 
-template<typename T>
-T BLAS_BLAS1::asum( const IndexType n, const T* x, const IndexType incX, SyncToken* syncToken )
+template<typename ValueType>
+ValueType BLAS_BLAS1::asum( const IndexType n, const ValueType* x, const IndexType incX, SyncToken* syncToken )
 {
     LAMA_REGION( "BLAS.BLAS1.asum" )
 
-    LAMA_LOG_DEBUG( logger, "asum<" << Scalar::getType<T>() << ">,  n = " 
+    LAMA_LOG_DEBUG( logger, "asum<" << Scalar::getType<ValueType>() << ">,  n = "
                     << n << ", x = " << x << ", incX = " << incX )
 
     if ( syncToken )
@@ -233,7 +233,7 @@ T BLAS_BLAS1::asum( const IndexType n, const T* x, const IndexType incX, SyncTok
 
     if ( incX <= 0 )
     {
-        return static_cast<T>( 0 );
+        return static_cast<ValueType>( 0 );
     }
 
     return wrapperAsum( n, x, incX );
@@ -245,8 +245,8 @@ T BLAS_BLAS1::asum( const IndexType n, const T* x, const IndexType incX, SyncTok
 
 // Note: implicit conversion from int to IndexType and vice versa is done here
 
-template<typename T>
-static IndexType wrapperIamax( const int n, const T* x, const int incX );
+template<typename ValueType>
+static IndexType wrapperIamax( const int n, const ValueType* x, const int incX );
 
 template<>
 IndexType wrapperIamax( const int n, const float* x, const int incX )
@@ -279,12 +279,12 @@ IndexType wrapperIamax( const int, const LongDouble*, const int )
     return 0;
 }
 
-template<typename T>
-IndexType BLAS_BLAS1::iamax( const IndexType n, const T* x, const IndexType incX, SyncToken* syncToken )
+template<typename ValueType>
+IndexType BLAS_BLAS1::iamax( const IndexType n, const ValueType* x, const IndexType incX, SyncToken* syncToken )
 {
     LAMA_REGION( "BLAS.BLAS1.iamax" )
 
-    LAMA_LOG_INFO( logger, "iamax<" << Scalar::getType<T>() << ">, " 
+    LAMA_LOG_INFO( logger, "iamax<" << Scalar::getType<ValueType>() << ">, "
                    << "n = " << n << ", x = " << x << ", incX = " << incX )
 
     if ( syncToken )
@@ -299,8 +299,8 @@ IndexType BLAS_BLAS1::iamax( const IndexType n, const T* x, const IndexType incX
 /*    swap                                                                                */
 /* ---------------------------------------------------------------------------------------*/
 
-template<typename T>
-static inline void wrapperSwap( const int n, T* x, const int incX, T* y, const int incY  );
+template<typename ValueType>
+static inline void wrapperSwap( const int n, ValueType* x, const int incX, ValueType* y, const int incY  );
 
 template<>
 void wrapperSwap( const int n, float* x, const int incX, float* y, const int incY )
@@ -332,18 +332,18 @@ void wrapperSwap( const int, LongDouble*, const int, LongDouble*, const int )
     LAMA_THROWEXCEPTION( "LongDouble not supported by BLAS, please set LAMA_USE_BLAS=0" )
 }
 
-template<typename T>
+template<typename ValueType>
 void BLAS_BLAS1::swap(
     const IndexType n,
-    T* x,
+    ValueType* x,
     const IndexType incX,
-    T* y,
+    ValueType* y,
     const IndexType incY,
     SyncToken* syncToken )
 {
     LAMA_REGION( "BLAS.BLAS1.swap" )
 
-    LAMA_LOG_DEBUG( logger, "iamax<" << Scalar::getType<T>() << ">"
+    LAMA_LOG_DEBUG( logger, "iamax<" << Scalar::getType<ValueType>() << ">"
                     << ", n = " << n << ", x = " << x << ", incX = " << incX 
                     << ", y = " << y << ", incY = " << incY )
 
@@ -364,8 +364,8 @@ void BLAS_BLAS1::swap(
 /*    copy                                                                                */
 /* ---------------------------------------------------------------------------------------*/
 
-template<typename T>
-static inline void wrapperCopy( const int n, const T* x, const int incX, T* y, const int incY  );
+template<typename ValueType>
+static inline void wrapperCopy( const int n, const ValueType* x, const int incX, ValueType* y, const int incY  );
 
 template<>
 void wrapperCopy( const int n, const float* x, const int incX, float* y, const int incY )
@@ -397,18 +397,18 @@ void wrapperCopy( const int, const LongDouble*, const int, LongDouble*, const in
     LAMA_THROWEXCEPTION( "LongDouble not supported by BLAS, please set LAMA_USE_BLAS=0" )
 }
 
-template<typename T>
+template<typename ValueType>
 void BLAS_BLAS1::copy(
     const IndexType n,
-    const T* x,
+    const ValueType* x,
     const IndexType incX,
-    T* y,
+    ValueType* y,
     const IndexType incY,
     SyncToken* syncToken )
 {
     LAMA_REGION( "BLAS.BLAS1.copy" )
 
-    LAMA_LOG_DEBUG( logger, "copy<" << Scalar::getType<T>() << ">, "
+    LAMA_LOG_DEBUG( logger, "copy<" << Scalar::getType<ValueType>() << ">, "
                     << "n = " << n << ", x = " << x << ", incX = " << incX << ", y = " << y << ", incY = " << incY )
 
 	if ( (incX <= 0) || (incY <= 0) )
@@ -430,8 +430,8 @@ void BLAS_BLAS1::copy(
 /*    axpy                                                                                */
 /* ---------------------------------------------------------------------------------------*/
 
-template<typename T>
-static inline void wrapperAxpy( const int n, T alpha, const T* x, const int incX, T* y, const int incY  );
+template<typename ValueType>
+static inline void wrapperAxpy( const int n, ValueType alpha, const ValueType* x, const int incX, ValueType* y, const int incY  );
 
 template<>
 void wrapperAxpy( const int n, float alpha, const float* x, const int incX, float* y, const int incY )
@@ -465,19 +465,19 @@ void wrapperAxpy( const int, LongDouble, const LongDouble*, const int, LongDoubl
     LAMA_THROWEXCEPTION( "LongDouble not supported by BLAS, please set LAMA_USE_BLAS=0" )
 }
 
-template<typename T>
+template<typename ValueType>
 void BLAS_BLAS1::axpy(
     const IndexType n,
-    const T alpha,
-    const T* x,
+    const ValueType alpha,
+    const ValueType* x,
     const IndexType incX,
-    T* y,
+    ValueType* y,
     const IndexType incY,
     SyncToken* syncToken )
 {
     LAMA_REGION( "BLAS.BLAS1.axpy" )
 
-    LAMA_LOG_DEBUG( logger, "axpy<" << Scalar::getType<T>() << ">, " 
+    LAMA_LOG_DEBUG( logger, "axpy<" << Scalar::getType<ValueType>() << ">, "
                     << "n = " << n << ", alpha = " << alpha << ", x = " << x << ", incX = " 
                     << incX << ", y = " << y << ", incY = " << incY )
 
@@ -498,8 +498,8 @@ void BLAS_BLAS1::axpy(
 /*    dot                                                                                 */
 /* ---------------------------------------------------------------------------------------*/
 
-template<typename T>
-static inline T wrapperDot( const int n, const T* x, const int incX, const T* y, const int incY  );
+template<typename ValueType>
+static inline ValueType wrapperDot( const int n, const ValueType* x, const int incX, const ValueType* y, const int incY  );
 
 template<>
 float wrapperDot( const int n, const float* x, const int incX, const float* y, const int incY )
@@ -536,23 +536,23 @@ LongDouble wrapperDot( const int, const LongDouble*, const int, const LongDouble
     return 0;
 }
 
-template<typename T>
-T BLAS_BLAS1::dot(
+template<typename ValueType>
+ValueType BLAS_BLAS1::dot(
     const IndexType n,
-    const T* x,
+    const ValueType* x,
     const IndexType incX,
-    const T* y,
+    const ValueType* y,
     const IndexType incY,
     SyncToken* syncToken )
 {
     LAMA_REGION( "BLAS.BLAS1.dot" )
 
-	LAMA_LOG_DEBUG( logger, "dot<" << Scalar::getType<T>() << ">, "
+	LAMA_LOG_DEBUG( logger, "dot<" << Scalar::getType<ValueType>() << ">, "
                     << "n = " << n << ", x = " << x << ", incX = " << incX << ", y = " << y << ", incY = " << incY )
 
 	if ( (incX <= 0) || (incY <= 0) )
 	{
-		return static_cast<T>( 0 );
+		return static_cast<ValueType>( 0 );
 	}
 
     if ( syncToken )
@@ -591,7 +591,7 @@ void BLAS_BLAS1::setInterface( BLASInterface& BLAS )
     // REGISTER1: give these routines priority in case of overriding
 
     // Note: macro takes advantage of same name for routines and type definitions 
-    //       ( e.g. routine CUDABLAS1::sum<T> is set for BLAS::BLAS1::sum variable
+    //       ( e.g. routine CUDABLAS1::sum<ValueType> is set for BLAS::BLAS1::sum variable
 
 #define LAMA_BLAS1_REGISTER(z, I, _)                                    \
     LAMA_INTERFACE_REGISTER1_T( BLAS, scal, ARITHMETIC_TYPE##I )        \

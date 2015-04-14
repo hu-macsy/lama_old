@@ -68,14 +68,12 @@ protected:
  *  the local columns) and a halo part (for the non-local columns). Furthermore,
  *  it builds the halo for exchanging the non-local values between processors.
  *
- *  @tparam T is the value type of the matrix values.
+ *  @tparam ValueType is the value type of the matrix values.
  */
-template<typename T>
+template<typename ValueType>
 class LAMA_DLL_IMPORTEXPORT StorageMethods: public _StorageMethods
 {
 public:
-
-    typedef T ValueType; //!< This is the type of the matrix values.
 
     /** Localize CSR storage for row distribution.
      *

@@ -52,15 +52,14 @@ namespace lama
  *
  * Due to the use of std::vector, this storage will only reside on the host.
  *
- *  @tparam T is the value type of the matrix values.
+ *  @tparam ValueType is the value type of the matrix values.
  */
-template<typename T>
+template<typename ValueType>
 class LAMA_DLL_IMPORTEXPORT SparseAssemblyStorage:
 
-    public CRTPMatrixStorage<SparseAssemblyStorage<T>,T>
+    public CRTPMatrixStorage<SparseAssemblyStorage<ValueType>,ValueType>
 {
 public:
-    typedef T ValueType; //!< This is the type of the matrix values.
 
     /** Getter of the type name of the matrix storage format. */
 
@@ -137,11 +136,11 @@ public:
      * @param[in]   other the SparseAssemblyStorage to take a copy from.
      * @return      a reference to this.
      */
-    SparseAssemblyStorage<T>& operator=( const SparseAssemblyStorage<T>& other );
+    SparseAssemblyStorage<ValueType>& operator=( const SparseAssemblyStorage<ValueType>& other );
 
     /** Assignment operator for arbitrary storages. */
 
-    SparseAssemblyStorage<T>& operator=( const _MatrixStorage& other );
+    SparseAssemblyStorage<ValueType>& operator=( const _MatrixStorage& other );
 
     /**
      * @brief the access operator returns a copy of the element at the
@@ -358,16 +357,16 @@ private:
 
     void print() const;
 
-    using CRTPMatrixStorage<SparseAssemblyStorage<T>,T>::mDiagonalProperty;
-    using CRTPMatrixStorage<SparseAssemblyStorage<T>,T>::mNumRows;
-    using CRTPMatrixStorage<SparseAssemblyStorage<T>,T>::mNumColumns;
+    using CRTPMatrixStorage<SparseAssemblyStorage<ValueType>,ValueType>::mDiagonalProperty;
+    using CRTPMatrixStorage<SparseAssemblyStorage<ValueType>,ValueType>::mNumRows;
+    using CRTPMatrixStorage<SparseAssemblyStorage<ValueType>,ValueType>::mNumColumns;
 
     struct Row
     {
         std::vector<IndexType> ja;
         std::vector<ValueType> values;
         Row();
-        Row( const typename SparseAssemblyStorage<T>::Row& other );
+        Row( const typename SparseAssemblyStorage<ValueType>::Row& other );
         Row( const IndexType numValuesPerRow );
         Row& operator=( const Row& other );
         void reserve( const IndexType numValuesPerRow );

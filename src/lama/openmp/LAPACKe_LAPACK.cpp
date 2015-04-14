@@ -666,7 +666,7 @@ int LAPACKe_LAPACK::tptrs(
 void LAPACKe_LAPACK::setInterface( BLASInterface& BLAS )
 {
     // Note: macro takes advantage of same name for routines and type definitions 
-    //       ( e.g. routine CUDABLAS1::sum<T> is set for BLAS::BLAS1::sum variable
+    //       ( e.g. routine CUDABLAS1::sum<ValueType> is set for BLAS::BLAS1::sum variable
 
 #define LAMA_LAPACK_REGISTER(z, I, _)                                \
     LAMA_INTERFACE_REGISTER_T( BLAS, getrf, ARITHMETIC_TYPE##I )     \

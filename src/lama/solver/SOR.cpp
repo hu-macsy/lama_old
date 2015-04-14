@@ -152,10 +152,9 @@ void SOR::iterate()
     }
 }
 
-template<typename T>
+template<typename ValueType>
 void SOR::iterateImpl()
 {
-    typedef T ValueType;
     DenseVector<ValueType> & x = dynamic_cast<DenseVector<ValueType>&>( *getRuntime().mSolution );
     const DenseVector<ValueType> & b = dynamic_cast<const DenseVector<ValueType>&>( *getRuntime().mRhs );
     const Matrix* matrixPtr = getRuntime().mCoefficients;

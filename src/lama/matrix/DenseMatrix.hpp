@@ -55,7 +55,7 @@
 namespace lama
 {
 
-template<typename T> class DenseVector;
+template<typename ValueType> class DenseVector;
 // forward declaration
 
 /** Class for dense matrices where rows are distributed among rows and columns
@@ -66,18 +66,18 @@ template<typename T> class DenseVector;
  *  will not make deep copies of the blocks so default copy constructor and
  *  assignment operator must be overridden.
  *
- *  @tparam T is the value type of the matrix values.
+ *  @tparam ValueType is the value type of the matrix values.
  */
 
-template<typename T>
-class LAMA_DLL_IMPORTEXPORT DenseMatrix: public CRTPMatrix<DenseMatrix<T>,T>
+template<typename ValueType>
+class LAMA_DLL_IMPORTEXPORT DenseMatrix: public CRTPMatrix<DenseMatrix<ValueType>,ValueType>
 {
 
 public:
 
-    typedef T ValueType;
+typedef ValueType MatrixValueType; //!< This is the type of the matrix values.
 
-    typedef boost::shared_ptr<DenseStorage<T> > DenseStoragePtr;
+    typedef boost::shared_ptr<DenseStorage<ValueType> > DenseStoragePtr;
 
     /** Getter for the type name of the class. */
 
@@ -253,7 +253,7 @@ public:
 
     virtual void setContext( const ContextPtr context );
 
-    using CRTPMatrix<DenseMatrix<T>, T>::setContext; // setContext( localContext, haloContext )
+    using CRTPMatrix<DenseMatrix<ValueType>, ValueType>::setContext; // setContext( localContext, haloContext )
 
     /* Implementation of pure method of class Matrix. */
 
@@ -262,7 +262,7 @@ public:
         return mData[0]->getContextPtr();
     }
 
-    using CRTPMatrix<DenseMatrix<T>, T>::setIdentity;  // setIdentity( const IndexType n )
+    using CRTPMatrix<DenseMatrix<ValueType>, ValueType>::setIdentity;  // setIdentity( const IndexType n )
 
     /** Implementation of pure method Matrix::setIdentity. */
 
@@ -343,7 +343,7 @@ public:
 
     /** Method that assigns a sparse matrix, specialization of assign( const Matrix& ) */
 
-    void assignSparse( const CRTPMatrix<SparseMatrix<T>, T >& other );
+    void assignSparse( const CRTPMatrix<SparseMatrix<ValueType>, ValueType >& other );
 
     /* Implementation of pure method of class Matrix. */
 
@@ -548,13 +548,13 @@ public:
 
     std::vector<boost::shared_ptr<DenseStorage<ValueType> > > mData;
 
-    using CRTPMatrix<DenseMatrix<T>,T>::getNumRows;
-    using CRTPMatrix<DenseMatrix<T>,T>::getNumColumns;
+    using CRTPMatrix<DenseMatrix<ValueType>,ValueType>::getNumRows;
+    using CRTPMatrix<DenseMatrix<ValueType>,ValueType>::getNumColumns;
 
-    using CRTPMatrix<DenseMatrix<T>,T>::getDistribution;
-    using CRTPMatrix<DenseMatrix<T>,T>::getDistributionPtr;
-    using CRTPMatrix<DenseMatrix<T>,T>::getColDistribution;
-    using CRTPMatrix<DenseMatrix<T>,T>::getColDistributionPtr;
+    using CRTPMatrix<DenseMatrix<ValueType>,ValueType>::getDistribution;
+    using CRTPMatrix<DenseMatrix<ValueType>,ValueType>::getDistributionPtr;
+    using CRTPMatrix<DenseMatrix<ValueType>,ValueType>::getColDistribution;
+    using CRTPMatrix<DenseMatrix<ValueType>,ValueType>::getColDistributionPtr;
 
     const std::vector<PartitionId>& getOwners() const
     {
@@ -563,8 +563,8 @@ public:
 
 protected:
 
-    using CRTPMatrix<DenseMatrix<T>,T>::mNumRows;
-    using CRTPMatrix<DenseMatrix<T>,T>::mNumColumns;
+    using CRTPMatrix<DenseMatrix<ValueType>,ValueType>::mNumRows;
+    using CRTPMatrix<DenseMatrix<ValueType>,ValueType>::mNumColumns;
 
     std::vector<PartitionId> mOwners;
 

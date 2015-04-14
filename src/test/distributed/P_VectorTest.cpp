@@ -101,9 +101,8 @@ LAMA_LOG_DEF_LOGGER( logger, "Test.P_VectorTest" )
 /* --------------------------------------------------------------------- */
 
 //TODO: Decide if this test is neccessary
-//BOOST_AUTO_TEST_CASE_TEMPLATE( readWriteTest, T, test_types)
+//BOOST_AUTO_TEST_CASE_TEMPLATE( readWriteTest, ValueType, test_types)
 //{
-//    typedef T ValueType;
 //    if ( 0 != comm->getRank() )
 //        return;
 //
@@ -168,12 +167,10 @@ LAMA_LOG_DEF_LOGGER( logger, "Test.P_VectorTest" )
 //}
 /* ------------------------------------------------------------------------- */
 
-template<typename T>
-void vectorCheck( DenseVector<T>& v, DenseVector<T>& w )
+template<typename ValueType>
+void vectorCheck( DenseVector<ValueType>& v, DenseVector<ValueType>& w )
 {
     // check equality of two vectors with the same distribution
-
-    typedef T ValueType;
 
     IndexType vectorSize = v.size();
     IndexType localVectorSize = v.getLocalValues().size();
@@ -229,10 +226,8 @@ BOOST_AUTO_TEST_CASE( buildTest )
 
 /* --------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( vectorTimesMatrixTest, T, test_types )
+BOOST_AUTO_TEST_CASE_TEMPLATE( vectorTimesMatrixTest, ValueType, test_types )
 {
-    typedef T ValueType;
-
     PartitionId size = comm->getSize();
 
     const IndexType vectorSize = 4 * size;
@@ -342,10 +337,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( vectorTimesMatrixTest, T, test_types )
 
 /* --------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( matrixTimesVectorTest, T, test_types )
+BOOST_AUTO_TEST_CASE_TEMPLATE( matrixTimesVectorTest, ValueType, test_types )
 {
-    typedef T ValueType;
-
     PartitionId size = comm->getSize();
 
     const IndexType vectorSize = 4 * size;
@@ -445,10 +438,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( matrixTimesVectorTest, T, test_types )
 
 /* ------------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( assignLocalTest, T, test_types )
+BOOST_AUTO_TEST_CASE_TEMPLATE( assignLocalTest, ValueType, test_types )
 {
-    typedef T ValueType;
-
     const IndexType vectorSize = 25;
 
     shared_ptr<Distribution> dist( new CyclicDistribution( vectorSize, 2, comm ) );
@@ -460,7 +451,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( assignLocalTest, T, test_types )
 // Be careful: for more than 13 processors some of them do not throw exception
 
     LAMA_CHECK_THROW(
-    {   DenseVector<T> denseVector( localData, dist );}, Exception );
+    {   DenseVector<ValueType> denseVector( localData, dist );}, Exception );
 
     {
         HostWriteOnlyAccess<float> wLocalData( localData, localSize );
@@ -506,10 +497,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( assignLocalTest, T, test_types )
 
 /* ------------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( assignValueTest, T, test_types )
+BOOST_AUTO_TEST_CASE_TEMPLATE( assignValueTest, ValueType, test_types )
 {
-    typedef T ValueType;
-
     PartitionId size = comm->getSize();
 
     const IndexType vectorSize = 4 * size;
@@ -530,10 +519,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( assignValueTest, T, test_types )
 
 /* ------------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( redistributeTest, T, test_types )
+BOOST_AUTO_TEST_CASE_TEMPLATE( redistributeTest, ValueType, test_types )
 {
-    typedef T ValueType;
-
     const IndexType vectorSize = 100; // global vector size
     const IndexType chunkSize = 3;// used for cyclic distribution
 
@@ -625,10 +612,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( redistributeTest, T, test_types )
 
 /* ------------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( gatherTest, T, test_types )
+BOOST_AUTO_TEST_CASE_TEMPLATE( gatherTest, ValueType, test_types )
 {
-    typedef double ValueType;
-
     PartitionId size = comm->getSize();
 
     const IndexType vectorSize = 4 * size;
@@ -636,7 +621,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( gatherTest, T, test_types )
     shared_ptr<Distribution> dist ( new BlockDistribution(vectorSize, comm) );
     shared_ptr<Distribution> rep ( new NoDistribution(vectorSize) );
 
-    boost::scoped_array<ValueType> vectorData ( new double[vectorSize] );
+    boost::scoped_array<ValueType> vectorData ( new ValueType[vectorSize] );
 
     for ( IndexType i = 0; i < vectorSize; i++ )
     {
@@ -665,17 +650,15 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( gatherTest, T, test_types )
 
 /* ------------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( ExpressionCtorTest, T, test_types )
+BOOST_AUTO_TEST_CASE_TEMPLATE( ExpressionCtorTest, ValueType, test_types )
 {
-    typedef T ValueType;
-
 	// TODO: detect error, when executing with n = 4; for vector times matrix expressions
     PartitionId size = comm->getSize();
 
     IndexType n = 4 * size;
 
     CSRSparseMatrix<ValueType> Id (
-        TestSparseMatrices::nnIdentityMatrix<double>( n ) );
+        TestSparseMatrices::nnIdentityMatrix<ValueType>( n ) );
 
     DistributionPtr dist( new BlockDistribution( Id.getNumRows(), comm ) );
 
@@ -976,10 +959,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( ExpressionCtorTest, T, test_types )
 
 /* ------------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( ExpressionAssignmentOperatorTest, T, test_types )
+BOOST_AUTO_TEST_CASE_TEMPLATE( ExpressionAssignmentOperatorTest, ValueType, test_types )
 {
-    typedef T ValueType;
-
 	// TODO: detect error, when executing with n = 4; for vector times matrix expressions
     PartitionId size = comm->getSize();
 
@@ -987,7 +968,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( ExpressionAssignmentOperatorTest, T, test_types )
 
     CSRSparseMatrix<ValueType> Id (
 
-        TestSparseMatrices::nnIdentityMatrix<double>( n ) );
+        TestSparseMatrices::nnIdentityMatrix<ValueType>( n ) );
 
     DistributionPtr dist( new BlockDistribution( Id.getNumRows(), comm ) );
 
@@ -1228,10 +1209,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( ExpressionAssignmentOperatorTest, T, test_types )
 
 /* ------------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_CASE( dotProductTest )
+BOOST_AUTO_TEST_CASE_TEMPLATE( dotProductTest, ValueType, test_types )
 {
-    typedef double ValueType;
-
     const IndexType n = 8;
 
     DistributionPtr dist( new BlockDistribution( n, comm ) );

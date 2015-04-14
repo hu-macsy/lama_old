@@ -48,19 +48,19 @@
 namespace lama
 {
 
-template<typename T> class DenseStorage;
+template<typename ValueType> class DenseStorage;
 
 /**
  * Storage format for a Dense matrix.
  *
- *  @tparam T is the value type of the matrix values.
+ *  @tparam ValueType is the value type of the matrix values.
  */
-template<typename T>
-class LAMA_DLL_IMPORTEXPORT DenseStorageView: public CRTPMatrixStorage<DenseStorageView<T>,T>
+template<typename ValueType>
+class LAMA_DLL_IMPORTEXPORT DenseStorageView: public CRTPMatrixStorage<DenseStorageView<ValueType>,ValueType>
 {
 public:
 
-    typedef T ValueType; //!< This is the type of the matrix values.
+	typedef ValueType StorageValueType;
 
     /** get typename of the matrix storage format. */
 
@@ -363,14 +363,12 @@ private:
 
 /** DenseStorage is a DenseStorageView that manages its own data.
  *
- *  @tparam T is the value type of the matrix values.
+ *  @tparam ValueType is the value type of the matrix values.
  */
-template<typename T>
-class LAMA_DLL_IMPORTEXPORT DenseStorage: public DenseStorageView<T>
+template<typename ValueType>
+class LAMA_DLL_IMPORTEXPORT DenseStorage: public DenseStorageView<ValueType>
 {
 public:
-
-    typedef T ValueType; //!< This is the type of the matrix values.
 
     /** @brief Getter of type name of the matrix storage format. */
 

@@ -44,24 +44,24 @@ namespace lama
  * values in higher level types like CSRSparseMatrix. Its facilities are used by
  * the template function maxNorm (@see MaxNorm.hpp) among others.
  *
- * @tparam T The type for values and indices.
+ * @tparam ValueType The type for values and indices.
  */
-template<typename T>
+template<typename TypeTraitsType>
 class TypeTraits
 {
 public:
     /**
      * @brief The type for indices.
      */
-    typedef typename T::IndexType IndexType;
+    typedef typename TypeTraitsType::IndexType IndexType;
     /**
      * @brief The type for values.
      */
-    typedef typename T::ValueType ValueType;
+    typedef typename TypeTraitsType::ValueType ValueType;
 
-    typedef typename T::ExpressionMemberType ExpressionMemberType;
+    typedef typename TypeTraitsType::ExpressionMemberType ExpressionMemberType;
 
-    static const long size = sizeof(T);
+    static const long size = sizeof(ValueType);
 };
 
 template<>

@@ -60,16 +60,14 @@ namespace lama
 {
 
 /**
- * @brief The template DenseVector represents a distributed 1D Vector with elements of type T.
+ * @brief The template DenseVector represents a distributed 1D Vector with elements of type ValueType.
  *
- * @tparam T the value type for the vector values.
+ * @tparam ValueType the value type for the vector values.
  */
-template<typename T>
+template<typename ValueType>
 class LAMA_DLL_IMPORTEXPORT DenseVector: public Vector
 {
 public:
-
-    typedef T ValueType; //!< This is the type of the vector values.
 
     /** Default constructor, creates replicated 0 vector */
 
@@ -232,7 +230,7 @@ public:
      *  Note: all other assignment operators are inherited from class Vector.
      */
 
-    DenseVector& operator=( const DenseVector<T>& other );
+    DenseVector& operator=( const DenseVector<ValueType>& other );
 
     /** Reimplement scalar assignment as otherwise type conversion rules do not apply. */
 
@@ -293,7 +291,7 @@ public:
      * @return  a non constant reference to the local values of this.
      */
 
-    LAMAArray<T>& getLocalValues()
+    LAMAArray<ValueType>& getLocalValues()
     {
         return mLocalValues;
     }
@@ -303,7 +301,7 @@ public:
      *
      * @return  a constant reference to the local values of this.
      */
-    const LAMAArray<T>& getLocalValues() const
+    const LAMAArray<ValueType>& getLocalValues() const
     {
         return mLocalValues;
     }
@@ -315,7 +313,7 @@ public:
      *
      * Note: halo of a vector can also be used for writes in case of const vectors.
      */
-    LAMAArray<T>& getHaloValues() const
+    LAMAArray<ValueType>& getHaloValues() const
     {
         return mHaloValues;
     }
@@ -349,19 +347,19 @@ public:
 
     static void vectorPlusVector(
         ContextPtr context,
-        LAMAArray<T>& result,
-        const T alpha,
-        const LAMAArray<T>& x,
-        const T beta,
-        const LAMAArray<T>& y );
+        LAMAArray<ValueType>& result,
+        const ValueType alpha,
+        const LAMAArray<ValueType>& x,
+        const ValueType beta,
+        const LAMAArray<ValueType>& y );
 
     static SyncToken* vectorPlusVectorAsync(
         ContextPtr context,
-        LAMAArray<T>& result,
-        const T alpha,
-        const LAMAArray<T>& x,
-        const T beta,
-        const LAMAArray<T>& y );
+        LAMAArray<ValueType>& result,
+        const ValueType alpha,
+        const LAMAArray<ValueType>& x,
+        const ValueType beta,
+        const LAMAArray<ValueType>& y );
 
     virtual void swap( Vector& other );
 
@@ -449,9 +447,9 @@ private:
         std::fstream &inFile,
         const File::DataType dataType );
 
-    LAMAArray<T> mLocalValues; //!< my local values of vector
+    LAMAArray<ValueType> mLocalValues; //!< my local values of vector
 
-    mutable LAMAArray<T> mHaloValues;//!< my halo values of vector
+    mutable LAMAArray<ValueType> mHaloValues;//!< my halo values of vector
 
     // static methods, variables to register create routine in Vector factory of base class.
 
@@ -464,9 +462,9 @@ private:
 
 /* ------------------------------------------------------------------------- */
 
-template<typename T>
+template<typename ValueType>
 template<typename OtherValueType>
-DenseVector<T>::DenseVector( const IndexType size, const OtherValueType* values, ContextPtr context )
+DenseVector<ValueType>::DenseVector( const IndexType size, const OtherValueType* values, ContextPtr context )
     : Vector( size, context )
 {
     // use LAMA array reference to avoid copy of the raw data

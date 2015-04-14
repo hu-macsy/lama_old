@@ -452,7 +452,7 @@ void MICBLAS1::setInterface( BLASInterface& BLAS )
     LAMA_LOG_INFO( logger, "set BLAS1 routines for MIC in Interface" )
 
     // Note: macro takes advantage of same name for routines and type definitions 
-    //       ( e.g. routine CUDABLAS1::sum<T> is set for BLAS::BLAS1::sum variable
+    //       ( e.g. routine CUDABLAS1::sum<ValueType> is set for BLAS::BLAS1::sum variable
 
     LAMA_INTERFACE_REGISTER_T( BLAS, scal, float )
     LAMA_INTERFACE_REGISTER_T( BLAS, scal, double )

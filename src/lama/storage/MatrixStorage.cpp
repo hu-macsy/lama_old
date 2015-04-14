@@ -414,8 +414,8 @@ void MatrixStorage<ValueType>::convertCSR2CSC(
 
 /* --------------------------------------------------------------------------- */
 
-template<typename T>
-void MatrixStorage<T>::buildCSCData(
+template<typename ValueType>
+void MatrixStorage<ValueType>::buildCSCData(
     LAMAArray<IndexType>& colIA,
     LAMAArray<IndexType>& colJA,
     LAMAArray<ValueType>& colValues ) const

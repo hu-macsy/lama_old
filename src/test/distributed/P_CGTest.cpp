@@ -88,16 +88,15 @@ LAMA_LOG_DEF_LOGGER( logger, "Test.P_CGTest" );
 
 /* --------------------------------------------------------------------- */
 
-template<typename mt>
+template<typename MatrixType>
 void testSolveWithoutPreconditionmethod( ContextPtr loc )
 {
-    typedef mt MatrixType;
-    typedef typename mt::ValueType ValueType;
+    typedef typename MatrixType::MatrixValueType ValueType;
 
     const IndexType N1 = 4;
     const IndexType N2 = 4;
 
-    LAMA_LOG_INFO( logger, "testSolveWithoutPreconditionmethod<" << typeid( mt ).name() << " at " << *loc );
+    LAMA_LOG_INFO( logger, "testSolveWithoutPreconditionmethod<" << typeid( MatrixType ).name() << " at " << *loc );
 
     LAMA_LOG_INFO( logger, "Problem size = " << N1 << " x " << N2 );
 
@@ -149,8 +148,7 @@ void testSolveWithoutPreconditionmethod( ContextPtr loc )
 
 /* ------------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( testSolveWithoutPreconditioning, T, test_types ) {
-    typedef T ValueType;
+BOOST_AUTO_TEST_CASE_TEMPLATE( testSolveWithoutPreconditioning, ValueType, test_types ) {
 
     CONTEXTLOOP()
     {
@@ -167,13 +165,12 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( testSolveWithoutPreconditioning, T, test_types ) 
 
 /* ------------------------------------------------------------------------- */
 
-template<typename mt>
+template<typename MatrixType>
 void testSolveWithPreconditionmethod( ContextPtr loc )
 {
-    typedef mt MatrixType;
-    typedef typename mt::ValueType ValueType;
+    typedef typename MatrixType::MatrixValueType ValueType;
 
-    LAMA_LOG_INFO( logger, "testSolveWithPreconditionmethod<" << typeid( mt ).name() << "> on " << *loc );
+    LAMA_LOG_INFO( logger, "testSolveWithPreconditionmethod<" << typeid( MatrixType ).name() << "> on " << *loc );
 
     CG cgSolver( "CGTestSolver" );
 
@@ -234,9 +231,8 @@ void testSolveWithPreconditionmethod( ContextPtr loc )
 
 /* ------------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( testSolveWithPrecondition, T, test_types ) 
+BOOST_AUTO_TEST_CASE_TEMPLATE( testSolveWithPrecondition, ValueType, test_types )
 {
-    typedef T ValueType;
 
     CONTEXTLOOP()
     {

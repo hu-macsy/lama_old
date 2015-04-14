@@ -77,76 +77,76 @@ private:
     /**
      * This function is the CUDA implementation of lama::BLAS2Interface::gemv
      */
-    template<typename T>
+    template<typename ValueType>
     static void gemv(
         const CBLAS_ORDER order,
         const CBLAS_TRANSPOSE trans,
         const IndexType m,
         const IndexType n,
-        const T alpha,
-        const T* A,
+        const ValueType alpha,
+        const ValueType* A,
         const IndexType lda,
-        const T* x,
+        const ValueType* x,
         const IndexType incX,
-        const T beta,
-        T* y,
+        const ValueType beta,
+        ValueType* y,
         const IndexType incY,
         SyncToken* syncToken );
 
     /**
      * This function is the CUDA implementation of lama::BLAS2Interface::symv
      */
-    template<typename T>
+    template<typename ValueType>
     static void symv(
         const CBLAS_ORDER order,
         const CBLAS_UPLO uplo,
         const IndexType n,
-        const T alpha,
-        const T* A,
+        const ValueType alpha,
+        const ValueType* A,
         const IndexType lda,
-        const T* x,
+        const ValueType* x,
         const IndexType incX,
-        const T beta,
-        T* y,
+        const ValueType beta,
+        ValueType* y,
         const IndexType incY,
         SyncToken* syncToken );
 
     /**
      * This function is the CUDA implementation of lama::BLAS2Interface::trmv
      */
-    template<typename T>
+    template<typename ValueType>
     static void trmv(
         const CBLAS_ORDER order,
         const CBLAS_UPLO uplo,
         const CBLAS_TRANSPOSE trans,
         const CBLAS_DIAG diag,
         const IndexType n,
-        const T* A,
+        const ValueType* A,
         const IndexType lda,
-        T* x,
+        ValueType* x,
         const IndexType incX,
         SyncToken* syncToken );
 
     /**
      * This function is the CUDA implementation of lama::BLAS2Interface::trsv
      */
-    template<typename T>
+    template<typename ValueType>
     static void trsv(
         const CBLAS_ORDER order,
         const CBLAS_UPLO uplo,
         const CBLAS_TRANSPOSE trans,
         const CBLAS_DIAG diag,
         const IndexType n,
-        const T* A,
+        const ValueType* A,
         const IndexType lda,
-        T* x,
+        ValueType* x,
         const IndexType incX,
         SyncToken* syncToken );
 
     /**
      * This function is the CUDA implementation of lama::BLAS2Interface::gbmv
      */
-    template<typename T>
+    template<typename ValueType>
     static void gbmv(
         const CBLAS_ORDER order,
         const CBLAS_TRANSPOSE trans,
@@ -154,39 +154,39 @@ private:
         const IndexType n,
         const IndexType kl,
         const IndexType ku,
-        const T alpha,
-        const T* A,
+        const ValueType alpha,
+        const ValueType* A,
         const IndexType lda,
-        const T* x,
+        const ValueType* x,
         const IndexType incX,
-        const T beta,
-        T* y,
+        const ValueType beta,
+        ValueType* y,
         const IndexType incY,
         SyncToken* syncToken );
 
     /**
      * This function is the CUDA implementation of lama::BLAS2Interface::sbmv
      */
-    template<typename T>
+    template<typename ValueType>
     static void sbmv(
         const CBLAS_ORDER order,
         const CBLAS_UPLO uplo,
         const IndexType n,
         const IndexType k,
-        const T alpha,
-        const T* A,
+        const ValueType alpha,
+        const ValueType* A,
         const IndexType lda,
-        const T* x,
+        const ValueType* x,
         const IndexType incX,
-        const T beta,
-        T* y,
+        const ValueType beta,
+        ValueType* y,
         const IndexType incY,
         SyncToken* syncToken );
 
     /**
      * This function is the CUDA implementation of lama::BLAS2Interface::tbmv
      */
-    template<typename T>
+    template<typename ValueType>
     static void tbmv(
         const CBLAS_ORDER order,
         const CBLAS_UPLO uplo,
@@ -194,16 +194,16 @@ private:
         const CBLAS_DIAG diag,
         const IndexType n,
         const IndexType k,
-        const T* A,
+        const ValueType* A,
         const IndexType lda,
-        T* x,
+        ValueType* x,
         const IndexType incX,
         SyncToken* syncToken );
 
     /**
      * This function is the CUDA implementation of lama::BLAS2Interface::tbsv
      */
-    template<typename T>
+    template<typename ValueType>
     static void tbsv(
         const CBLAS_ORDER order,
         const CBLAS_UPLO uplo,
@@ -211,89 +211,89 @@ private:
         const CBLAS_DIAG diag,
         const IndexType n,
         const IndexType k,
-        const T* A,
+        const ValueType* A,
         const IndexType lda,
-        T* x,
+        ValueType* x,
         const IndexType incX,
         SyncToken* syncToken );
 
     /**
      * This function is the CUDA implementation of lama::BLAS2Interface::ger
      */
-    template<typename T>
+    template<typename ValueType>
     static void ger(
         const CBLAS_ORDER order,
         const IndexType m,
         const IndexType n,
-        const T alpha,
-        const T* x,
+        const ValueType alpha,
+        const ValueType* x,
         const IndexType incX,
-        const T* y,
+        const ValueType* y,
         const IndexType incY,
-        T* A,
+        ValueType* A,
         const IndexType lda,
         SyncToken* syncToken );
 
     /**
      * This function is the CUDA implementation of lama::BLAS2Interface::syr
      */
-    template<typename T>
+    template<typename ValueType>
     static void syr(
         const CBLAS_ORDER order,
         const CBLAS_UPLO uplo,
         const IndexType n,
-        const T alpha,
-        const T* x,
+        const ValueType alpha,
+        const ValueType* x,
         const IndexType incX,
-        T* A,
+        ValueType* A,
         const IndexType lda,
         SyncToken* syncToken );
 
     /**
      * This function is the CUDA implementation of lama::BLAS2Interface::syr2
      */
-    template<typename T>
+    template<typename ValueType>
     static void syr2(
         const CBLAS_ORDER order,
         const CBLAS_UPLO uplo,
         const IndexType n,
-        const T alpha,
-        const T* x,
+        const ValueType alpha,
+        const ValueType* x,
         const IndexType incX,
-        const T* y,
+        const ValueType* y,
         const IndexType incY,
-        T* A,
+        ValueType* A,
         const IndexType lda,
         SyncToken* syncToken );
 
     /**
      * This function is the CUDA implementation of lama::BLAS2Interface::spr
      */
-    template<typename T>
+    template<typename ValueType>
     static void spr(
         const CBLAS_ORDER order,
         const CBLAS_UPLO uplo,
         const IndexType n,
-        const T alpha,
-        const T* x,
+        const ValueType alpha,
+        const ValueType* x,
         const IndexType incX,
-        T* AP,
+        ValueType* AP,
         SyncToken* syncToken );
 
     /**
      * This function is the CUDA implementation of lama::BLAS2Interface::spr2
      */
-    template<typename T>
+    template<typename ValueType>
     static void spr2(
         const CBLAS_ORDER order,
         const CBLAS_UPLO uplo,
         const IndexType n,
-        const T alpha,
-        const T* x,
+        const ValueType alpha,
+        const ValueType* x,
         const IndexType incX,
-        const T* y,
+        const ValueType* y,
         const IndexType incY,
-        T* AP,
+        ValueType* AP,
         SyncToken* syncToken );
 
     LAMA_LOG_DECL_STATIC_LOGGER( logger )

@@ -66,18 +66,18 @@ template<typename > class DenseMatrix;
  * It is possible to use different storage formats for the local and halo part,
  * but both representations must have the same value type.
  *
- * @tparam T is the value type of the matrix values.
+ * @tparam ValueType is the value type of the matrix values.
  */
 
-template<typename T>
-class LAMA_DLL_IMPORTEXPORT SparseMatrix: public CRTPMatrix<SparseMatrix<T>, T >
+template<typename ValueType>
+class LAMA_DLL_IMPORTEXPORT SparseMatrix: public CRTPMatrix<SparseMatrix<ValueType>, ValueType >
 {
 
     friend class SpecializedJacobi;
 
 public:
 
-    typedef T ValueType; //!< This is the type of the matrix values.
+    typedef ValueType MatrixValueType; //!< This is the type of the matrix values.
 
     /** Getter for the type name of the class. */
 
@@ -115,17 +115,17 @@ public:
      * Note: this constructor will not create a copy of the storage data.
      *       but just join the ownership
      */
-    SparseMatrix( boost::shared_ptr<MatrixStorage<T> > storage );
+    SparseMatrix( boost::shared_ptr<MatrixStorage<ValueType> > storage );
 
-    SparseMatrix( boost::shared_ptr<MatrixStorage<T> > storage, DistributionPtr rowDist );
+    SparseMatrix( boost::shared_ptr<MatrixStorage<ValueType> > storage, DistributionPtr rowDist );
 
-    SparseMatrix( boost::shared_ptr<MatrixStorage<T> > storage, DistributionPtr rowDist, DistributionPtr colDist );
+    SparseMatrix( boost::shared_ptr<MatrixStorage<ValueType> > storage, DistributionPtr rowDist, DistributionPtr colDist );
 
     /** Constructor of a sparse matrix with local and halo data available. */
 
     SparseMatrix(
-        boost::shared_ptr<MatrixStorage<T> > localData,
-        boost::shared_ptr<MatrixStorage<T> > haloData,
+        boost::shared_ptr<MatrixStorage<ValueType> > localData,
+        boost::shared_ptr<MatrixStorage<ValueType> > haloData,
         const Halo& halo,
         DistributionPtr rowDist,
         DistributionPtr colDist );
@@ -215,7 +215,7 @@ public:
 
     /* Before overriding the virtual function make the other routine setIdentity( int n ) visible */
 
-    using CRTPMatrix<SparseMatrix<T>, T >::setIdentity;
+    using CRTPMatrix<SparseMatrix<ValueType>, ValueType >::setIdentity;
 
     /** Set matrix to a identity square matrix with same row and column distribution. */
 
@@ -227,7 +227,7 @@ public:
 
     /** Method that assigns a sparse matrix, specialization of assign( const Matrix& ) */
 
-    void assign( const SparseMatrix<T>& matrix );
+    void assign( const SparseMatrix<ValueType>& matrix );
 
     /* Implementation of pure method of class Matrix. */
 
@@ -544,23 +544,23 @@ public:
      */
     void readFromFile( const std::string& filename );
 
-    using CRTPMatrix<SparseMatrix<T>, T >::operator=;   // make overloaded routines visible before overwriting one
+    using CRTPMatrix<SparseMatrix<ValueType>, ValueType >::operator=;   // make overloaded routines visible before overwriting one
 
-    using CRTPMatrix<SparseMatrix<T>, T >::getColDistribution;
-    using CRTPMatrix<SparseMatrix<T>, T >::getColDistributionPtr;
-    using CRTPMatrix<SparseMatrix<T>, T >::getDistribution;
-    using CRTPMatrix<SparseMatrix<T>, T >::getDistributionPtr;
-    using CRTPMatrix<SparseMatrix<T>, T >::setDistributionPtr;
+    using CRTPMatrix<SparseMatrix<ValueType>, ValueType >::getColDistribution;
+    using CRTPMatrix<SparseMatrix<ValueType>, ValueType >::getColDistributionPtr;
+    using CRTPMatrix<SparseMatrix<ValueType>, ValueType >::getDistribution;
+    using CRTPMatrix<SparseMatrix<ValueType>, ValueType >::getDistributionPtr;
+    using CRTPMatrix<SparseMatrix<ValueType>, ValueType >::setDistributionPtr;
 
-    using CRTPMatrix<SparseMatrix<T>, T >::getCommunicationKind;
+    using CRTPMatrix<SparseMatrix<ValueType>, ValueType >::getCommunicationKind;
 
-    using CRTPMatrix<SparseMatrix<T>, T >::getNumColumns;
-    using CRTPMatrix<SparseMatrix<T>, T >::getNumRows;
+    using CRTPMatrix<SparseMatrix<ValueType>, ValueType >::getNumColumns;
+    using CRTPMatrix<SparseMatrix<ValueType>, ValueType >::getNumRows;
 
     /** Override the default assignment operator to guarantee deep copy. */
 
 //    SparseMatrix& operator=( const SparseMatrix& matrix );
-    SparseMatrix<T>& operator=( const SparseMatrix<T>& matrix );
+    SparseMatrix<ValueType>& operator=( const SparseMatrix<ValueType>& matrix );
 
     /**
      * Gives info about the matrix kind (SPARSE).
@@ -611,9 +611,9 @@ protected:
         const ValueType beta,
         const SparseMatrix<ValueType>& C );
 
-    using CRTPMatrix<SparseMatrix<T>, T >::mNumRows;
-    using CRTPMatrix<SparseMatrix<T>, T >::mNumColumns;
-    using CRTPMatrix<SparseMatrix<T>, T >::mColDistribution;
+    using CRTPMatrix<SparseMatrix<ValueType>, ValueType >::mNumRows;
+    using CRTPMatrix<SparseMatrix<ValueType>, ValueType >::mNumColumns;
+    using CRTPMatrix<SparseMatrix<ValueType>, ValueType >::mColDistribution;
 private:
 
     /**

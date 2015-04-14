@@ -46,7 +46,7 @@
 namespace lama
 {
 
-using std::abs;   // so we can use abs for float and double and abs for Complex<T>
+using std::abs;   // so we can use abs for float and double and abs for Complex<ValueType>
 
 LAMA_LOG_DEF_LOGGER( OpenMPDenseUtils::logger, "OpenMP.DenseUtils" )
 

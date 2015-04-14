@@ -54,33 +54,33 @@ public:
 
     /** Implementation of BLASInterface::LAPACK::getrf by LAPACK. */
 
-    template<typename T>
+    template<typename ValueType>
     static IndexType getrf(
         const CBLAS_ORDER order,
         const IndexType m,
         const IndexType n,
-        T* const a,
+        ValueType* const a,
         const IndexType lda,
         IndexType* const ipiv );
 
     /** Implementation of BLASInterface::LAPACK::getrf by LAPACK. */
 
-    template<typename T>
+    template<typename ValueType>
     static IndexType getri(
         const CBLAS_ORDER order,
         const IndexType n,
-        T* const A,
+        ValueType* const A,
         const IndexType lda,
         IndexType* const ipiv );
 
     /** Implementation of BLASInterface::LAPACK::getinv by LAPACK. */
 
-    template<typename T>
-    static void getinv( const IndexType n, T* a, const IndexType lda );
+    template<typename ValueType>
+    static void getinv( const IndexType n, ValueType* a, const IndexType lda );
 
     /** Implementation of BLASInterface::LAPACK::tptrs vi LAPACK. */
 
-    template<typename T>
+    template<typename ValueType>
     static IndexType tptrs(
         const CBLAS_ORDER order,
         const CBLAS_UPLO uplo,
@@ -88,17 +88,17 @@ public:
         const CBLAS_DIAG diag,
         const IndexType n,
         const IndexType nrhs,
-        const T* AP,
-        T* B,
+        const ValueType* AP,
+        ValueType* B,
         const IndexType ldb );
 
     /** OpenMP implementation for BLASInterface::LAPACK::laswp */
 
-    template<typename T>
+    template<typename ValueType>
     static void laswp(
         const CBLAS_ORDER order,
         const IndexType n,
-        T* A,
+        ValueType* A,
         const IndexType lda,
         const IndexType k1,
         const IndexType k2,

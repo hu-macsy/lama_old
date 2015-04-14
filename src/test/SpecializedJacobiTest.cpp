@@ -184,11 +184,10 @@ BOOST_AUTO_TEST_CASE( testDefaultCriterionSet )
 
 /* ------------------------------------------------------------------------- */
 
-template<typename mt>
+template<typename MatrixType>
 void testSolveMethod( std::string solverId, ContextPtr context )
 {
-    typedef mt MatrixType;
-    typedef typename mt::ValueType ValueType;
+    typedef typename MatrixType::MatrixValueType ValueType;
 
     std::string id = solverId;
 
@@ -254,9 +253,8 @@ void testSolveMethod( std::string solverId, ContextPtr context )
     BOOST_CHECK( l2norm.getValue<ValueType>() < 1e-5 );
 }
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( testSolve, T, test_types ) {
-    typedef T ValueType;
-
+BOOST_AUTO_TEST_CASE_TEMPLATE( testSolve, ValueType, test_types )
+{
     CONTEXTLOOP()
     {
         GETCONTEXT( context );

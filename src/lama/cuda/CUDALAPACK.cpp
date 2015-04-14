@@ -146,7 +146,7 @@ void CUDALAPACK::laswp(
 void CUDALAPACK::setInterface( BLASInterface& BLAS )
 {
     // Note: macro takes advantage of same name for routines and type definitions 
-    //       ( e.g. routine CUDABLAS1::sum<T> is set for BLAS::BLAS1::sum variable
+    //       ( e.g. routine CUDABLAS1::sum<ValueType> is set for BLAS::BLAS1::sum variable
 
     LAMA_INTERFACE_REGISTER_T( BLAS, laswp, float )
     LAMA_INTERFACE_REGISTER_T( BLAS, laswp, double )

@@ -117,14 +117,12 @@ private:
 
 /** TODO[doxy] Complete Description.
  *
- * @tparam T is the type of the matrix values.
+ * @tparam ValueType is the type of the matrix values.
  */
-template<typename T>
+template<typename ValueType>
 class LAMA_DLL_IMPORTEXPORT StorageIO: public _StorageIO
 {
 public:
-
-    typedef T ValueType; //!< This is the type of the matrix values.
 
     /** @brief General version of writing CSR storage to a file.
      *

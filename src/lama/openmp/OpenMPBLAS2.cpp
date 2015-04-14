@@ -49,24 +49,24 @@ LAMA_LOG_DEF_LOGGER( OpenMPBLAS2::logger, "OpenMP.BLAS2" )
 
 /** gemv */
 
-template<typename T>
+template<typename ValueType>
 void OpenMPBLAS2::gemv(
     const CBLAS_ORDER order,
     const CBLAS_TRANSPOSE TransA,
     const IndexType M,
     const IndexType N,
-    const T alpha,
-    const T* A,
+    const ValueType alpha,
+    const ValueType* A,
     const IndexType lda,
-    const T* X,
+    const ValueType* X,
     const IndexType incX,
-    const T beta,
-    T* Y,
+    const ValueType beta,
+    ValueType* Y,
     const IndexType incY,
     SyncToken* syncToken )
 {
     LAMA_LOG_INFO( logger,
-                   "gemv<" << Scalar::getType<T>()<< ">: M = " << M << ", N = " << N << ", LDA = " << lda << ", incX = " << incX << ", incY = " << incY << ", alpha = " << alpha << ", beta = " << beta )
+                   "gemv<" << Scalar::getType<ValueType>()<< ">: M = " << M << ", N = " << N << ", LDA = " << lda << ", incX = " << incX << ", incY = " << incY << ", alpha = " << alpha << ", beta = " << beta )
 
     if ( M == 0 )
     {
@@ -89,7 +89,7 @@ void OpenMPBLAS2::gemv(
         {
             //'N'
             // y = alpha * A * x + beta * y
-            T Z = 0.0;
+            ValueType Z = 0.0;
             if ( incX == 1 && incY == 1 )
             {
 #pragma omp parallel for private(Z) schedule( LAMA_OMP_SCHEDULE )
@@ -122,7 +122,7 @@ void OpenMPBLAS2::gemv(
         {
             //'T'
             // y = alpha * A^T * x + beta * y
-            T Z = 0.0;
+            ValueType Z = 0.0;
             if ( incX == 1 && incY == 1 )
             {
 #pragma omp parallel for private(Z) schedule( LAMA_OMP_SCHEDULE )
@@ -169,7 +169,7 @@ void OpenMPBLAS2::gemv(
         if ( TransA == CblasNoTrans )
         {
             //'T'
-            T Z = 0.0;
+            ValueType Z = 0.0;
             if ( incX == 1 && incY == 1 )
             {
 #pragma omp parallel for private(Z) schedule( LAMA_OMP_SCHEDULE )
@@ -201,7 +201,7 @@ void OpenMPBLAS2::gemv(
         else if ( TransA == CblasTrans )
         {
             //'N'
-            T Z = 0.0;
+            ValueType Z = 0.0;
 
             if ( incX == 1 && incY == 1 )
             {

@@ -389,13 +389,13 @@ void Distribution::replicateN( T1* allValues, const T2* localValues, const Index
 
 /* ---------------------------------------------------------------------- */
 
-template<typename T>
+template<typename ValueType>
 static IndexType fillGlobal(
-    T* allValues,
+    ValueType* allValues,
     const IndexType* allOffsets,
     const IndexType* indexes,
     const IndexType numIndexes,
-    const T* values )
+    const ValueType* values )
 {
     IndexType counter = 0; // traverses values, counts the number of filled values
 
@@ -424,8 +424,8 @@ static IndexType fillGlobal(
 
 /* ---------------------------------------------------------------------- */
 
-template<typename T>
-void Distribution::replicateRagged( T allValues[], const T localValues[], const IndexType allOffsets[] ) const
+template<typename ValueType>
+void Distribution::replicateRagged( ValueType allValues[], const ValueType localValues[], const IndexType allOffsets[] ) const
 {
     IndexType currentElemSize = getLocalSize();
     const Communicator& comm = getCommunicator();
@@ -471,20 +471,20 @@ void Distribution::replicateRagged( T allValues[], const T localValues[], const 
     // Implemenation via cyclic shifting of the vector data and distribution
     LAMA_LOG_DEBUG( logger, "maximal data size for exchange = " << maxLocalDataSize )
 
-    LAMA_LOG_INFO( logger, comm << ": replicateRagged<" << Scalar::getType<T>()
+    LAMA_LOG_INFO( logger, comm << ": replicateRagged<" << Scalar::getType<ValueType>()
                           << ">, localValues[ " << currentDataSize << ", max = " << maxLocalDataSize  << " ] "
                           << " to allValues [ allOffsets[ " << getGlobalSize() << " ] ]" )
 
-    LAMAArray<T> valuesSend;
-    LAMAArray<T> valuesReceive;
+    LAMAArray<ValueType> valuesSend;
+    LAMAArray<ValueType> valuesReceive;
 
     valuesSend.reserve( commContext, maxLocalDataSize );
     valuesReceive.reserve( commContext, maxLocalDataSize );
 
     {
-        WriteOnlyAccess<T> wValuesSend( valuesSend, commContext, currentDataSize );
+        WriteOnlyAccess<ValueType> wValuesSend( valuesSend, commContext, currentDataSize );
  
-        T* pValuesSend = wValuesSend.get();   
+        ValueType* pValuesSend = wValuesSend.get();
 
         // fill my local values in send buffer
 
@@ -512,7 +512,7 @@ void Distribution::replicateRagged( T allValues[], const T localValues[], const 
 
         {
             ReadAccess<IndexType> rIndexesReceive( indexesReceive, commContext );
-            ReadAccess<T> rValuesReceive( valuesReceive, commContext );
+            ReadAccess<ValueType> rValuesReceive( valuesReceive, commContext );
  
             IndexType size = -1;
             size = fillGlobal( allValues, allOffsets, rIndexesReceive.get(), newSize1, rValuesReceive.get() );

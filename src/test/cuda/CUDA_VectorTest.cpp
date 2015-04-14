@@ -164,7 +164,7 @@ void doMatrixTimesVectorLocationTests( Vector& y, MatrixType& A, const Vector& x
 template<typename MatrixType>
 void matrixTimesVectorTestImpl()
 {
-    typedef typename MatrixType::ValueType ValueType;
+    typedef typename MatrixType::MatrixValueType ValueType;
 
     ContextPtr cuda = lama_test::CUDAContext::getContext();
     CUDAHostContextManager::setAsCurrent( cuda );
@@ -317,7 +317,7 @@ void doVectorTimesMatrixLocationTests( Vector& y, MatrixType& A, const Vector& x
 template<typename MatrixType>
 void vectorTimesMatrixTestImpl()
 {
-    typedef typename MatrixType::ValueType ValueType;
+    typedef typename MatrixType::MatrixValueType ValueType;
 
     ContextPtr cuda = lama_test::CUDAContext::getContext();
     CUDAHostContextManager::setAsCurrent( cuda );
@@ -591,7 +591,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( scaledVectorsDifferenceTest, ValueType, test_type
 template<typename MatrixType>
 void operatorMatrixTimeVectorTestMethod()
 {
-    typedef typename MatrixType::ValueType ValueType;
+    typedef typename MatrixType::MatrixValueType ValueType;
 
     MaxNorm maxnorm;
 
@@ -671,7 +671,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( operatorSparseMatrixTimeVectorTest, T, test_types
 template<typename MatrixType>
 void assignmentVectorSubtractExprMatrixTimeVectorTestMethod()
 {
-    typedef typename MatrixType::ValueType ValueType;
+    typedef typename MatrixType::MatrixValueType ValueType;
 
     ContextPtr cuda = lama_test::CUDAContext::getContext();
 

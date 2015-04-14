@@ -58,8 +58,8 @@ public:
      *
      * @return the matrix
      */
-    template<typename T>
-    static CSRSparseMatrix<T> n4m4TestMatrix1();
+    template<typename ValueType>
+    static CSRSparseMatrix<ValueType> n4m4TestMatrix1();
 
     /**
      * @brief Creates the inverse of TestMatrix1.
@@ -68,32 +68,32 @@ public:
      *
      * @return the matrix
      */
-    template<typename T>
-    static CSRSparseMatrix<T> n4m4InverseTestMatrix1();
+    template<typename ValueType>
+    static CSRSparseMatrix<ValueType> n4m4InverseTestMatrix1();
 
     /**
      * @brief Creates a diagonal 4x4 matrix.
      *
      * @return the matrix
      */
-    template<typename T>
-    static CSRSparseMatrix<T> n4m4DiagonalMatrix();
+    template<typename ValueType>
+    static CSRSparseMatrix<ValueType> n4m4DiagonalMatrix();
 
     /**
      * @brief Creates a symmetric 4x4 matrix.
      *
      * @return the matrix
      */
-    template<typename T>
-    static CSRSparseMatrix<T> n4m4SymmetricMatrix();
+    template<typename ValueType>
+    static CSRSparseMatrix<ValueType> n4m4SymmetricMatrix();
 
     /**
      * @brief Creates 4x6 matrix.
      *
      * @return the matrix
      */
-    template<typename T>
-    static CSRSparseMatrix<T> n4m6NoneSquareMatrix();
+    template<typename ValueType>
+    static CSRSparseMatrix<ValueType> n4m6NoneSquareMatrix();
 
     /**
      * @brief Creates a 4x4 matrix.
@@ -104,8 +104,8 @@ public:
      *
      * @return the matrix
      */
-    template<typename T>
-    static CSRSparseMatrix<T> n4m4MatrixA1();
+    template<typename ValueType>
+    static CSRSparseMatrix<ValueType> n4m4MatrixA1();
 
     /**
      * @brief Creates a 4x4 matrix.
@@ -116,8 +116,8 @@ public:
      *
      * @return the matrix
      */
-    template<typename T>
-    static CSRSparseMatrix<T> n4m4MatrixA2();
+    template<typename ValueType>
+    static CSRSparseMatrix<ValueType> n4m4MatrixA2();
 
     /**
      * @brief Creates a 4x4 matrix.
@@ -128,8 +128,8 @@ public:
      *
      * @return the matrix
      */
-    template<typename T>
-    static CSRSparseMatrix<T> n4m4MatrixARes();
+    template<typename ValueType>
+    static CSRSparseMatrix<ValueType> n4m4MatrixARes();
 
     /**
      * @brief Creates a 4x4 matrix.
@@ -140,8 +140,8 @@ public:
      *
      * @return the matrix
      */
-    template<typename T>
-    static CSRSparseMatrix<T> n4m4MatrixB1();
+    template<typename ValueType>
+    static CSRSparseMatrix<ValueType> n4m4MatrixB1();
 
     /**
      * @brief Creates a 4x4 matrix.
@@ -152,8 +152,8 @@ public:
      *
      * @return the matrix
      */
-    template<typename T>
-    static CSRSparseMatrix<T> n4m4MatrixB2();
+    template<typename ValueType>
+    static CSRSparseMatrix<ValueType> n4m4MatrixB2();
 
     /**
      * @brief Creates a 4x4 matrix.
@@ -164,8 +164,8 @@ public:
      *
      * @return the matrix
      */
-    template<typename T>
-    static CSRSparseMatrix<T> n4m4MatrixBRes();
+    template<typename ValueType>
+    static CSRSparseMatrix<ValueType> n4m4MatrixBRes();
 
     /**
      * @brief Creates a 4x4 matrix.
@@ -176,8 +176,8 @@ public:
      *
      * @return the matrix
      */
-    template<typename T>
-    static CSRSparseMatrix<T> n4m4MatrixC1();
+    template<typename ValueType>
+    static CSRSparseMatrix<ValueType> n4m4MatrixC1();
     /**
      * @brief Creates a 4x4 matrix.
      *
@@ -187,8 +187,8 @@ public:
      *
      * @return the matrix
      */
-    template<typename T>
-    static CSRSparseMatrix<T> n4m4MatrixCRes();
+    template<typename ValueType>
+    static CSRSparseMatrix<ValueType> n4m4MatrixCRes();
 
     /**
      * @brief Creates a 6x4 matrix.
@@ -199,8 +199,8 @@ public:
      *
      * @return the matrix
      */
-    template<typename T>
-    static CSRSparseMatrix<T> n6m4MatrixD1();
+    template<typename ValueType>
+    static CSRSparseMatrix<ValueType> n6m4MatrixD1();
 
     /**
      * @brief Creates a 4x6 matrix.
@@ -211,8 +211,8 @@ public:
      *
      * @return the matrix
      */
-    template<typename T>
-    static CSRSparseMatrix<T> n4m6MatrixD2();
+    template<typename ValueType>
+    static CSRSparseMatrix<ValueType> n4m6MatrixD2();
 
     /**
      * @brief Creates a 6x6 matrix.
@@ -223,8 +223,8 @@ public:
      *
      * @return the matrix
      */
-    template<typename T>
-    static CSRSparseMatrix<T> n6m6MatrixDRes();
+    template<typename ValueType>
+    static CSRSparseMatrix<ValueType> n6m6MatrixDRes();
 
     /**
      * @brief Creates a 6x4 matrix.
@@ -235,8 +235,8 @@ public:
      *
      * @return the matrix
      */
-    template<typename T>
-    static CSRSparseMatrix<T> n6m4MatrixE1();
+    template<typename ValueType>
+    static CSRSparseMatrix<ValueType> n6m4MatrixE1();
 
     /**
      * @brief Creates a 4x3 matrix.
@@ -247,8 +247,8 @@ public:
      *
      * @return the matrix
      */
-    template<typename T>
-    static CSRSparseMatrix<T> n4m3MatrixE2();
+    template<typename ValueType>
+    static CSRSparseMatrix<ValueType> n4m3MatrixE2();
 
     /**
      * @brief Creates a 6x3 matrix.
@@ -259,8 +259,8 @@ public:
      *
      * @return the matrix
      */
-    template<typename T>
-    static CSRSparseMatrix<T> n6m3MatrixERes();
+    template<typename ValueType>
+    static CSRSparseMatrix<ValueType> n6m3MatrixERes();
 
     /**
      * @brief Creates a 8x4 matrix.
@@ -270,8 +270,8 @@ public:
      *
      * @return the matrix
      */
-    template<typename T>
-    static CSRSparseMatrix<T> n8m4Interpol();
+    template<typename ValueType>
+    static CSRSparseMatrix<ValueType> n8m4Interpol();
 
     /**
      * @brief Creates a 4x8 matrix.
@@ -281,8 +281,8 @@ public:
      *
      * @return the matrix
      */
-    template<typename T>
-    static CSRSparseMatrix<T> n4m8InterpolTranspose();
+    template<typename ValueType>
+    static CSRSparseMatrix<ValueType> n4m8InterpolTranspose();
 
     /**
      * @brief Creates a 8x8 matrix.
@@ -291,40 +291,38 @@ public:
      *
      * @return the matrix
      */
-    template<typename T>
-    static CSRSparseMatrix<T> n8m8Laplace1D();
+    template<typename ValueType>
+    static CSRSparseMatrix<ValueType> n8m8Laplace1D();
 
-    template<typename T>
-    static CSRSparseMatrix<T> n8m4GalerkinTemp();
+    template<typename ValueType>
+    static CSRSparseMatrix<ValueType> n8m4GalerkinTemp();
 
-    template<typename T>
-    static CSRSparseMatrix<T> n4m4Galerkin();
+    template<typename ValueType>
+    static CSRSparseMatrix<ValueType> n4m4Galerkin();
 
-    template<typename T>
-    static CSRSparseMatrix<T> nnIdentityMatrix( IndexType n );
+    template<typename ValueType>
+    static CSRSparseMatrix<ValueType> nnIdentityMatrix( IndexType n );
 
-    template<typename T>
-    static CSRSparseMatrix<T> n4m4IdentityMatrix();
+    template<typename ValueType>
+    static CSRSparseMatrix<ValueType> n4m4IdentityMatrix();
 
-    template<typename T>
-    static CSRSparseMatrix<T> n6m6TestMatrix();
+    template<typename ValueType>
+    static CSRSparseMatrix<ValueType> n6m6TestMatrix();
 
-//    template<typename T>
-//    static CSRSparseMatrix<T> n8m4MatrixF1();
+//    template<typename ValueType>
+//    static CSRSparseMatrix<ValueType> n8m4MatrixF1();
 //
-//    template<typename T>
-//    static CSRSparseMatrix<T> n4m6MatrixF2();
+//    template<typename ValueType>
+//    static CSRSparseMatrix<ValueType> n4m6MatrixF2();
 //
-//    template<typename T>
-//    static CSRSparseMatrix<T> n8m6MatrixFRes();
+//    template<typename ValueType>
+//    static CSRSparseMatrix<ValueType> n8m6MatrixFRes();
 //
 };
 
-template<typename T>
-CSRSparseMatrix<T> TestSparseMatrices::n4m4TestMatrix1()
+template<typename ValueType>
+CSRSparseMatrix<ValueType> TestSparseMatrices::n4m4TestMatrix1()
 {
-    typedef typename CSRSparseMatrix<T>::ValueType ValueType;
-
     const IndexType n = 4;
 
     ValueType randomValues[] =
@@ -332,17 +330,15 @@ CSRSparseMatrix<T> TestSparseMatrices::n4m4TestMatrix1()
         0.131853f, 0.820422f, 0.992481f, 0.202542f, 0.47369f, 0.947076f
     };
 
-    CSRSparseMatrix<T> randomMatrix;
+    CSRSparseMatrix<ValueType> randomMatrix;
     randomMatrix.setRawDenseData( n, n, randomValues );
 
     return randomMatrix;
 }
 
-template<typename T>
-CSRSparseMatrix<T> TestSparseMatrices::n4m4InverseTestMatrix1()
+template<typename ValueType>
+CSRSparseMatrix<ValueType> TestSparseMatrices::n4m4InverseTestMatrix1()
 {
-    typedef typename CSRSparseMatrix<T>::ValueType ValueType;
-
     const IndexType n = 4;
 
     ValueType randomValuesInverse[] =
@@ -350,33 +346,29 @@ CSRSparseMatrix<T> TestSparseMatrices::n4m4InverseTestMatrix1()
         -0.110096f, -0.605633f, -1.67664f, 0.591171f, 1.39484f, 0.283764f
     };
 
-    CSRSparseMatrix<T> randomMatrixInverse;
+    CSRSparseMatrix<ValueType> randomMatrixInverse;
     randomMatrixInverse.setRawDenseData( n, n, randomValuesInverse );
 
     return randomMatrixInverse;
 }
 
-template<typename T>
-CSRSparseMatrix<T> TestSparseMatrices::n4m4IdentityMatrix()
+template<typename ValueType>
+CSRSparseMatrix<ValueType> TestSparseMatrices::n4m4IdentityMatrix()
 {
-    typedef typename CSRSparseMatrix<T>::ValueType ValueType;
-
     const IndexType n = 4;
 
     ValueType identityValues[] =
     { 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f };
 
-    CSRSparseMatrix<T> n4m4IdentM;
+    CSRSparseMatrix<ValueType> n4m4IdentM;
     n4m4IdentM.setRawDenseData( n, n, identityValues );
 
     return n4m4IdentM;
 }
 
-template<typename T>
-CSRSparseMatrix<T> TestSparseMatrices::nnIdentityMatrix( IndexType n )
+template<typename ValueType>
+CSRSparseMatrix<ValueType> TestSparseMatrices::nnIdentityMatrix( IndexType n )
 {
-    typedef typename CSRSparseMatrix<T>::ValueType ValueType;
-
     boost::scoped_array<ValueType> identityValues( new ValueType[n * n] );
 
     for ( int i = 1; i <= n * n; ++i )
@@ -389,33 +381,29 @@ CSRSparseMatrix<T> TestSparseMatrices::nnIdentityMatrix( IndexType n )
         identityValues[i * n + i] = 1.0;
     }
 
-    CSRSparseMatrix<T> nnIdentM;
+    CSRSparseMatrix<ValueType> nnIdentM;
     nnIdentM.setRawDenseData( n, n, identityValues.get() );
 
     return nnIdentM;
 }
 
-template<typename T>
-CSRSparseMatrix<T> TestSparseMatrices::n4m4DiagonalMatrix()
+template<typename ValueType>
+CSRSparseMatrix<ValueType> TestSparseMatrices::n4m4DiagonalMatrix()
 {
-    typedef typename CSRSparseMatrix<T>::ValueType ValueType;
-
     const IndexType n = 4;
 
     ValueType values[] =
     { 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 2.0f, 0.0f, 0.0f, 0.0f, 0.0f, 3.0f, 0.0f, 0.0f, 0.0f, 0.0f, 4.0f };
 
-    CSRSparseMatrix<T> m;
+    CSRSparseMatrix<ValueType> m;
     m.setRawDenseData( n, n, values );
 
     return m;
 }
 
-template<typename T>
-CSRSparseMatrix<T> TestSparseMatrices::n6m6TestMatrix()
+template<typename ValueType>
+CSRSparseMatrix<ValueType> TestSparseMatrices::n6m6TestMatrix()
 {
-    typedef typename CSRSparseMatrix<T>::ValueType ValueType;
-
     const IndexType n = 6;
 
     ValueType values[] =
@@ -423,33 +411,29 @@ CSRSparseMatrix<T> TestSparseMatrices::n6m6TestMatrix()
         0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f
     };
 
-    CSRSparseMatrix<T> sparseM;
+    CSRSparseMatrix<ValueType> sparseM;
     sparseM.setRawDenseData( n, n, values );
 
     return sparseM;
 }
 
-template<typename T>
-CSRSparseMatrix<T> TestSparseMatrices::n4m4SymmetricMatrix()
+template<typename ValueType>
+CSRSparseMatrix<ValueType> TestSparseMatrices::n4m4SymmetricMatrix()
 {
-    typedef typename CSRSparseMatrix<T>::ValueType ValueType;
-
     const IndexType n = 4;
 
     ValueType values[] =
     { 1.0f, 0.0f, 0.0f, 5.0f, 0.0f, 2.0f, 0.0f, 0.0f, 0.0f, 0.0f, 3.0f, 0.0f, 5.0f, 0.0f, 0.0f, 4.0f };
 
-    CSRSparseMatrix<T> matrix;
+    CSRSparseMatrix<ValueType> matrix;
     matrix.setRawDenseData( n, n, values );
 
     return matrix;
 }
 
-template<typename T>
-CSRSparseMatrix<T> TestSparseMatrices::n4m6NoneSquareMatrix()
+template<typename ValueType>
+CSRSparseMatrix<ValueType> TestSparseMatrices::n4m6NoneSquareMatrix()
 {
-    typedef typename CSRSparseMatrix<T>::ValueType ValueType;
-
     const IndexType n = 4;
     const IndexType m = 6;
 
@@ -458,145 +442,127 @@ CSRSparseMatrix<T> TestSparseMatrices::n4m6NoneSquareMatrix()
         0.0f, 0.131853f, 0.820422f, 0.0f, 0.1f, 0.0f, 0.820422f, 0.0f, 0.202542f, 0.0f, 0.947076f
     };
 
-    CSRSparseMatrix<T> matrix;
+    CSRSparseMatrix<ValueType> matrix;
     matrix.setRawDenseData( n, m, values );
 
     return matrix;
 }
 
-template<typename T>
-CSRSparseMatrix<T> TestSparseMatrices::n4m4MatrixA1()
+template<typename ValueType>
+CSRSparseMatrix<ValueType> TestSparseMatrices::n4m4MatrixA1()
 {
-    typedef typename CSRSparseMatrix<T>::ValueType ValueType;
-
     const IndexType n = 4;
 
     ValueType values[] =
     { 0.6f, 0.0f, 0.0f, 0.4f, 0.7f, 0.4f, 0.0f, 0.0f, 0.0f, 0.0f, 0.9f, 0.4f, 0.2f, 0.5f, 0.0f, 0.3f };
 
-    CSRSparseMatrix<T> matrix;
+    CSRSparseMatrix<ValueType> matrix;
     matrix.setRawDenseData( n, n, values );
 
     return matrix;
 }
 
-template<typename T>
-CSRSparseMatrix<T> TestSparseMatrices::n4m4MatrixA2()
+template<typename ValueType>
+CSRSparseMatrix<ValueType> TestSparseMatrices::n4m4MatrixA2()
 {
-    typedef typename CSRSparseMatrix<T>::ValueType ValueType;
-
     const IndexType n = 4;
 
     ValueType values[] =
     { 0.1f, 0.4f, 0.0f, 0.0f, 0.0f, 0.1f, 0.0f, 0.0f, 0.9f, 0.0f, 0.9f, 0.0f, 0.0f, 0.0f, 0.2f, 0.1f };
 
-    CSRSparseMatrix<T> matrix;
+    CSRSparseMatrix<ValueType> matrix;
     matrix.setRawDenseData( n, n, values );
 
     return matrix;
 }
 
-template<typename T>
-CSRSparseMatrix<T> TestSparseMatrices::n4m4MatrixARes()
+template<typename ValueType>
+CSRSparseMatrix<ValueType> TestSparseMatrices::n4m4MatrixARes()
 {
-    typedef typename CSRSparseMatrix<T>::ValueType ValueType;
-
     const IndexType n = 4;
 
     ValueType values[] =
     { 0.06f, 0.24f, 0.08f, 0.04f, 0.07f, 0.32f, 0.0f, 0.0f, 0.81f, 0.0f, 0.89f, 0.04f, 0.02f, 0.13f, 0.06f, 0.03f };
 
-    CSRSparseMatrix<T> matrix;
+    CSRSparseMatrix<ValueType> matrix;
     matrix.setRawDenseData( n, n, values );
 
     return matrix;
 }
 
-template<typename T>
-CSRSparseMatrix<T> TestSparseMatrices::n4m4MatrixB1()
+template<typename ValueType>
+CSRSparseMatrix<ValueType> TestSparseMatrices::n4m4MatrixB1()
 {
-    typedef typename CSRSparseMatrix<T>::ValueType ValueType;
-
     const IndexType n = 4;
 
     ValueType values[] =
     { 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 2.0f, 0.0f, 0.0f, 0.0f, 0.0f, 3.0f, 0.0f, 0.0f, 0.0f, 0.0f, 4.0f };
 
-    CSRSparseMatrix<T> matrix;
+    CSRSparseMatrix<ValueType> matrix;
     matrix.setRawDenseData( n, n, values );
 
     return matrix;
 }
 
-template<typename T>
-CSRSparseMatrix<T> TestSparseMatrices::n4m4MatrixB2()
+template<typename ValueType>
+CSRSparseMatrix<ValueType> TestSparseMatrices::n4m4MatrixB2()
 {
-    typedef typename CSRSparseMatrix<T>::ValueType ValueType;
-
     const IndexType n = 4;
 
     ValueType values[] =
     { 4.0f, 0.0f, 0.0f, 0.0f, 0.0f, 3.0f, 0.0f, 0.0f, 0.0f, 0.0f, 2.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f };
 
-    CSRSparseMatrix<T> matrix;
+    CSRSparseMatrix<ValueType> matrix;
     matrix.setRawDenseData( n, n, values );
 
     return matrix;
 }
 
-template<typename T>
-CSRSparseMatrix<T> TestSparseMatrices::n4m4MatrixBRes()
+template<typename ValueType>
+CSRSparseMatrix<ValueType> TestSparseMatrices::n4m4MatrixBRes()
 {
-    typedef typename CSRSparseMatrix<T>::ValueType ValueType;
-
     const IndexType n = 4;
 
     ValueType values[] =
     { 4.0f, 0.0f, 0.0f, 0.0f, 0.0f, 6.0f, 0.0f, 0.0f, 0.0f, 0.0f, 6.0f, 0.0f, 0.0f, 0.0f, 0.0f, 4.0f };
 
-    CSRSparseMatrix<T> matrix;
+    CSRSparseMatrix<ValueType> matrix;
     matrix.setRawDenseData( n, n, values );
 
     return matrix;
 }
 
-template<typename T>
-CSRSparseMatrix<T> TestSparseMatrices::n4m4MatrixC1()
+template<typename ValueType>
+CSRSparseMatrix<ValueType> TestSparseMatrices::n4m4MatrixC1()
 {
-    typedef typename CSRSparseMatrix<T>::ValueType ValueType;
-
     const IndexType n = 4;
 
     ValueType values[] =
     { 2.0f, -1.0f, 0.0f, 0.0f, -1.0f, 2.0f, -1.0f, 0.0f, 0.0f, -1.0f, 2.0f, -1.0f, 0.0f, 0.0f, -1.0f, 2.0f };
 
-    CSRSparseMatrix<T> matrix;
+    CSRSparseMatrix<ValueType> matrix;
     matrix.setRawDenseData( n, n, values );
 
     return matrix;
 }
 
-template<typename T>
-CSRSparseMatrix<T> TestSparseMatrices::n4m4MatrixCRes()
+template<typename ValueType>
+CSRSparseMatrix<ValueType> TestSparseMatrices::n4m4MatrixCRes()
 {
-    typedef typename CSRSparseMatrix<T>::ValueType ValueType;
-
     const IndexType n = 4;
 
     ValueType values[] =
     { 5.0f, -4.0f, 1.0f, 0.0f, -4.0f, 6.0f, -4.0f, 1.0f, 1.0f, -4.0f, 6.0f, -4.0f, 0.0f, 1.0f, -4.0f, 5.0f };
 
-    CSRSparseMatrix<T> matrix;
+    CSRSparseMatrix<ValueType> matrix;
     matrix.setRawDenseData( n, n, values );
 
     return matrix;
 }
 
-template<typename T>
-CSRSparseMatrix<T> TestSparseMatrices::n6m4MatrixD1()
+template<typename ValueType>
+CSRSparseMatrix<ValueType> TestSparseMatrices::n6m4MatrixD1()
 {
-    typedef typename CSRSparseMatrix<T>::ValueType ValueType;
-
     const IndexType n = 6;
     const IndexType m = 4;
 
@@ -605,17 +571,15 @@ CSRSparseMatrix<T> TestSparseMatrices::n6m4MatrixD1()
         1.0f, 0.0f, 1.0f, 0.0f, 2.0f
     };
 
-    CSRSparseMatrix<T> matrix;
+    CSRSparseMatrix<ValueType> matrix;
     matrix.setRawDenseData( n, m, values );
 
     return matrix;
 }
 
-template<typename T>
-CSRSparseMatrix<T> TestSparseMatrices::n4m6MatrixD2()
+template<typename ValueType>
+CSRSparseMatrix<ValueType> TestSparseMatrices::n4m6MatrixD2()
 {
-    typedef typename CSRSparseMatrix<T>::ValueType ValueType;
-
     const IndexType n = 4;
     const IndexType m = 6;
 
@@ -624,17 +588,15 @@ CSRSparseMatrix<T> TestSparseMatrices::n4m6MatrixD2()
         0.0f, 2.0f, 1.0f, 0.0f, 3.0f
     };
 
-    CSRSparseMatrix<T> matrix;
+    CSRSparseMatrix<ValueType> matrix;
     matrix.setRawDenseData( n, m, values );
 
     return matrix;
 }
 
-template<typename T>
-CSRSparseMatrix<T> TestSparseMatrices::n6m6MatrixDRes()
+template<typename ValueType>
+CSRSparseMatrix<ValueType> TestSparseMatrices::n6m6MatrixDRes()
 {
-    typedef typename CSRSparseMatrix<T>::ValueType ValueType;
-
     const IndexType n = 6;
     const IndexType m = 6;
 
@@ -644,17 +606,15 @@ CSRSparseMatrix<T> TestSparseMatrices::n6m6MatrixDRes()
         7.0f
     };
 
-    CSRSparseMatrix<T> matrix;
+    CSRSparseMatrix<ValueType> matrix;
     matrix.setRawDenseData( n, m, values );
 
     return matrix;
 }
 
-template<typename T>
-CSRSparseMatrix<T> TestSparseMatrices::n6m4MatrixE1()
+template<typename ValueType>
+CSRSparseMatrix<ValueType> TestSparseMatrices::n6m4MatrixE1()
 {
-    typedef typename CSRSparseMatrix<T>::ValueType ValueType;
-
     const IndexType n = 6;
     const IndexType m = 4;
 
@@ -663,51 +623,45 @@ CSRSparseMatrix<T> TestSparseMatrices::n6m4MatrixE1()
         1.0f, 0.0f, 1.0f, 0.0f, 2.0f
     };
 
-    CSRSparseMatrix<T> matrix;
+    CSRSparseMatrix<ValueType> matrix;
     matrix.setRawDenseData( n, m, values );
 
     return matrix;
 }
 
-template<typename T>
-CSRSparseMatrix<T> TestSparseMatrices::n4m3MatrixE2()
+template<typename ValueType>
+CSRSparseMatrix<ValueType> TestSparseMatrices::n4m3MatrixE2()
 {
-    typedef typename CSRSparseMatrix<T>::ValueType ValueType;
-
     const IndexType n = 4;
     const IndexType m = 3;
 
     ValueType values[] =
     { 1.0f, 4.0f, 0.0f, 0.0f, 1.0f, 0.0f, 9.0f, 0.0f, 9.0f, 0.0f, 0.0f, 2.0f };
 
-    CSRSparseMatrix<T> matrix;
+    CSRSparseMatrix<ValueType> matrix;
     matrix.setRawDenseData( n, m, values );
 
     return matrix;
 }
 
-template<typename T>
-CSRSparseMatrix<T> TestSparseMatrices::n6m3MatrixERes()
+template<typename ValueType>
+CSRSparseMatrix<ValueType> TestSparseMatrices::n6m3MatrixERes()
 {
-    typedef typename CSRSparseMatrix<T>::ValueType ValueType;
-
     IndexType n = 6;
     IndexType m = 3;
 
     ValueType values[] =
     { 6.0f, 24.0f, 8.0f, 7.0f, 32.0f, 0.0f, 81.0f, 0.0f, 89.0f, 2.0f, 13.0f, 6.0f, 2.0f, 8.0f, 2.0f, 0.0f, 1.0f, 4.0f };
 
-    CSRSparseMatrix<T> matrix;
+    CSRSparseMatrix<ValueType> matrix;
     matrix.setRawDenseData( n, m, values );
 
     return matrix;
 }
 
-template<typename T>
-CSRSparseMatrix<T> TestSparseMatrices::n8m4Interpol()
+template<typename ValueType>
+CSRSparseMatrix<ValueType> TestSparseMatrices::n8m4Interpol()
 {
-    typedef typename CSRSparseMatrix<T>::ValueType ValueType;
-
     IndexType n = 8;
     IndexType m = 4;
 
@@ -716,18 +670,16 @@ CSRSparseMatrix<T> TestSparseMatrices::n8m4Interpol()
         0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.5f, 0.5f, 0.0f, 0.0f, 0.0f, 1.0f
     };
 
-    CSRSparseMatrix<T> matrix;
+    CSRSparseMatrix<ValueType> matrix;
     matrix.setRawDenseData( n, m, values );
 
     return matrix;
 
 }
 
-template<typename T>
-CSRSparseMatrix<T> TestSparseMatrices::n4m8InterpolTranspose()
+template<typename ValueType>
+CSRSparseMatrix<ValueType> TestSparseMatrices::n4m8InterpolTranspose()
 {
-    typedef typename CSRSparseMatrix<T>::ValueType ValueType;
-
     IndexType n = 4;
     IndexType m = 8;
 
@@ -736,18 +688,16 @@ CSRSparseMatrix<T> TestSparseMatrices::n4m8InterpolTranspose()
         0.0f, 0.5f, 1.0f, 0.5f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.5f, 1.0f
     };
 
-    CSRSparseMatrix<T> matrix;
+    CSRSparseMatrix<ValueType> matrix;
     matrix.setRawDenseData( n, m, values );
 
     return matrix;
 
 }
 
-template<typename T>
-CSRSparseMatrix<T> TestSparseMatrices::n8m8Laplace1D()
+template<typename ValueType>
+CSRSparseMatrix<ValueType> TestSparseMatrices::n8m8Laplace1D()
 {
-    typedef typename CSRSparseMatrix<T>::ValueType ValueType;
-
     IndexType n = 8;
     IndexType m = 8;
 
@@ -758,18 +708,16 @@ CSRSparseMatrix<T> TestSparseMatrices::n8m8Laplace1D()
         2.0f, -1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, -1.0f, 2.0f
     };
 
-    CSRSparseMatrix<T> matrix;
+    CSRSparseMatrix<ValueType> matrix;
     matrix.setRawDenseData( n, m, values );
 
     return matrix;
 
 }
 
-template<typename T>
-CSRSparseMatrix<T> TestSparseMatrices::n8m4GalerkinTemp()
+template<typename ValueType>
+CSRSparseMatrix<ValueType> TestSparseMatrices::n8m4GalerkinTemp()
 {
-    typedef typename CSRSparseMatrix<T>::ValueType ValueType;
-
     IndexType n = 8;
     IndexType m = 4;
 
@@ -778,24 +726,22 @@ CSRSparseMatrix<T> TestSparseMatrices::n8m4GalerkinTemp()
         0.0f, 0.0f, 0.0f, -0.5f, 1.0f, -0.5f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, -0.5f, 1.5f
     };
 
-    CSRSparseMatrix<T> matrix;
+    CSRSparseMatrix<ValueType> matrix;
     matrix.setRawDenseData( n, m, values );
 
     return matrix;
 }
 
-template<typename T>
-CSRSparseMatrix<T> TestSparseMatrices::n4m4Galerkin()
+template<typename ValueType>
+CSRSparseMatrix<ValueType> TestSparseMatrices::n4m4Galerkin()
 {
-    typedef typename CSRSparseMatrix<T>::ValueType ValueType;
-
     IndexType n = 4;
     IndexType m = 4;
 
     ValueType values[] =
     { 1.0f, -0.5f, 0.0f, 0.0f, -0.5f, 1.0f, -0.5f, 0.0f, 0.0f, -0.5f, 1.0f, -0.5f, 0.0f, 0.0f, -0.5f, 1.5f };
 
-    CSRSparseMatrix<T> matrix;
+    CSRSparseMatrix<ValueType> matrix;
     matrix.setRawDenseData( n, m, values );
 
     return matrix;

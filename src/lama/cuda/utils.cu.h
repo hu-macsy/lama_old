@@ -184,14 +184,14 @@ unsigned int halve( const int val )
     return div2( val ) + mod2( val );
 }
 
-template<typename T>
-__inline__     __device__ T lamaDeviceFMA( const T alpha, const T v1, const T beta, const T v2 )
+template<typename ValueType>
+__inline__     __device__ ValueType lamaDeviceFMA( const ValueType alpha, const ValueType v1, const ValueType beta, const ValueType v2 )
 {
     return alpha * v1 + beta * v2;
 }
 
-template<typename T,int beta>
-__inline__     __device__ T lamaDeviceFMA( const T alpha, const T v1, const T v2 )
+template<typename ValueType,int beta>
+__inline__     __device__ ValueType lamaDeviceFMA( const ValueType alpha, const ValueType v1, const ValueType v2 )
 {
     return alpha * v1 + beta * v2;
 }
@@ -238,8 +238,8 @@ double lamaDeviceFMA<double,0>( const double alpha, const double v1, const doubl
     return alpha * v1;
 }
 
-template<typename T,int alpha,int beta>
-__inline__     __device__ T lamaDeviceFMA( const T v1, const T v2 )
+template<typename ValueType,int alpha,int beta>
+__inline__     __device__ ValueType lamaDeviceFMA( const ValueType v1, const ValueType v2 )
 {
     return alpha * v1 + beta * v2;
 }

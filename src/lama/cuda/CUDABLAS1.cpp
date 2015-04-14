@@ -64,8 +64,8 @@ extern cublasHandle_t CUDAContext_cublasHandle;
 // Note: the cublasWrapper routines could be static routines on its own. But using
 //       a common template routine is helpful to guarantee correct syntax
 
-template<typename T>
-static inline void cublasWrapperScale( int n, T alpha, T* x_d, int incX );
+template<typename ValueType>
+static inline void cublasWrapperScale( int n, ValueType alpha, ValueType* x_d, int incX );
 
 template<>
 void cublasWrapperScale( int n, float alpha, float* x_d, int incX )
@@ -93,8 +93,8 @@ void cublasWrapperScale( int n, ComplexDouble alpha, ComplexDouble* x_d, int inc
     LAMA_CUBLAS_CALL(cublasZscal( CUDAContext_cublasHandle, n, cublasCast( &alpha ), cublasCast( x_d ), incX ), "cublasWrapperScale<ComplexDouble>");
 }
 
-template<typename T>
-void CUDABLAS1::scal( IndexType n, const T alpha, T* x_d, const IndexType incX, SyncToken* syncToken )
+template<typename ValueType>
+void CUDABLAS1::scal( IndexType n, const ValueType alpha, ValueType* x_d, const IndexType incX, SyncToken* syncToken )
 {
     LAMA_REGION( "CUDA.BLAS1.scal" )
 
@@ -103,7 +103,7 @@ void CUDABLAS1::scal( IndexType n, const T alpha, T* x_d, const IndexType incX, 
         return;
     }
 
-    LAMA_LOG_DEBUG( logger, "scal<" << Scalar::getType<T>() << "> of x[" << n << "], alpha = " << alpha )
+    LAMA_LOG_DEBUG( logger, "scal<" << Scalar::getType<ValueType>() << "> of x[" << n << "], alpha = " << alpha )
 
     LAMA_CHECK_CUDA_ACCESS
 
@@ -135,8 +135,8 @@ void CUDABLAS1::scal( IndexType n, const T alpha, T* x_d, const IndexType incX, 
 /*    nrm2                                                                                */
 /* ---------------------------------------------------------------------------------------*/
 
-template<typename T>
-static inline T cublasWrapperNrm2( int n, const T* x_d, int incX );
+template<typename ValueType>
+static inline ValueType cublasWrapperNrm2( int n, const ValueType* x_d, int incX );
 
 template<>
 float cublasWrapperNrm2( int n, const float* x_d, int incX )
@@ -172,8 +172,8 @@ ComplexDouble cublasWrapperNrm2( int n, const ComplexDouble* x_d, int incX )
     return ComplexDouble( nrm2, 0.0 );
 }
 
-template<typename T>
-T CUDABLAS1::nrm2( IndexType n, const T* x_d, IndexType incX, SyncToken* syncToken )
+template<typename ValueType>
+ValueType CUDABLAS1::nrm2( IndexType n, const ValueType* x_d, IndexType incX, SyncToken* syncToken )
 {
     LAMA_REGION( "CUDA.BLAS1.nrm2" )
 
@@ -182,7 +182,7 @@ T CUDABLAS1::nrm2( IndexType n, const T* x_d, IndexType incX, SyncToken* syncTok
         return 0.0;
     }
  
-    LAMA_LOG_DEBUG( logger, "nrm2<" << Scalar::getType<T>() << "> of x[" << n << "]" )
+    LAMA_LOG_DEBUG( logger, "nrm2<" << Scalar::getType<ValueType>() << "> of x[" << n << "]" )
 
     LAMA_CHECK_CUDA_ACCESS
 
@@ -197,7 +197,7 @@ T CUDABLAS1::nrm2( IndexType n, const T* x_d, IndexType incX, SyncToken* syncTok
 
     LAMA_CUBLAS_CALL( cublasSetStream( CUDAContext_cublasHandle, stream ), "CUDABLAS1::nrm2 set stream");
 
-    T res = cublasWrapperNrm2( static_cast<int>( n ), x_d, static_cast<int>( incX ) );
+    ValueType res = cublasWrapperNrm2( static_cast<int>( n ), x_d, static_cast<int>( incX ) );
 
     // No error check here possible as kernel is started asynchronously
 
@@ -215,8 +215,8 @@ T CUDABLAS1::nrm2( IndexType n, const T* x_d, IndexType incX, SyncToken* syncTok
 /*    asum                                                                                */
 /* ---------------------------------------------------------------------------------------*/
 
-template<typename T>
-static inline T cublasWrapperAsum( int n, const T* x_d, int incX );
+template<typename ValueType>
+static inline ValueType cublasWrapperAsum( int n, const ValueType* x_d, int incX );
 
 template<>
 float cublasWrapperAsum( int n, const float* x_d, int incX )
@@ -252,8 +252,8 @@ ComplexDouble cublasWrapperAsum( int n, const ComplexDouble* x_d, int incX )
     return ComplexDouble( asum, 0.0 );
 }
 
-template<typename T>
-T CUDABLAS1::asum( const IndexType n, const T* x_d, const IndexType incX, SyncToken* syncToken )
+template<typename ValueType>
+ValueType CUDABLAS1::asum( const IndexType n, const ValueType* x_d, const IndexType incX, SyncToken* syncToken )
 {
     LAMA_REGION( "CUDA.BLAS1.asum" )
 
@@ -262,7 +262,7 @@ T CUDABLAS1::asum( const IndexType n, const T* x_d, const IndexType incX, SyncTo
         return 0.0;
     }
 
-    LAMA_LOG_DEBUG( logger, "asum<" << Scalar::getType<T>() << "> of x[" << n << "]" )
+    LAMA_LOG_DEBUG( logger, "asum<" << Scalar::getType<ValueType>() << "> of x[" << n << "]" )
 
     LAMA_CHECK_CUDA_ACCESS
 
@@ -277,7 +277,7 @@ T CUDABLAS1::asum( const IndexType n, const T* x_d, const IndexType incX, SyncTo
 
     LAMA_CUBLAS_CALL(cublasSetStream( CUDAContext_cublasHandle, stream ), "CUDABLAS1::asum set stream");
 
-    T res = cublasWrapperAsum( static_cast<int>( n ), x_d, static_cast<int>( incX ) );
+    ValueType res = cublasWrapperAsum( static_cast<int>( n ), x_d, static_cast<int>( incX ) );
 
     // No error check here possible as kernel is started asynchronously
 
@@ -295,8 +295,8 @@ T CUDABLAS1::asum( const IndexType n, const T* x_d, const IndexType incX, SyncTo
 /*    iamax                                                                               */
 /* ---------------------------------------------------------------------------------------*/
 
-template<typename T>
-static int cublasWrapperIamax( int n, const T* x_d, int incX );
+template<typename ValueType>
+static int cublasWrapperIamax( int n, const ValueType* x_d, int incX );
 
 template<>
 int cublasWrapperIamax( int n, const float* x_d, int incX )
@@ -330,12 +330,12 @@ int cublasWrapperIamax( int n, const ComplexDouble* x_d, int incX )
     return iamax;
 }
 
-template<typename T>
-IndexType CUDABLAS1::iamax( const IndexType n, const T* x_d, const IndexType incX, SyncToken* syncToken )
+template<typename ValueType>
+IndexType CUDABLAS1::iamax( const IndexType n, const ValueType* x_d, const IndexType incX, SyncToken* syncToken )
 {
     LAMA_REGION( "CUDA.BLAS1.iamax" )
 
-    LAMA_LOG_DEBUG( logger, "iamax<" << Scalar::getType<T>() << "> of x[" << n << "]" )
+    LAMA_LOG_DEBUG( logger, "iamax<" << Scalar::getType<ValueType>() << "> of x[" << n << "]" )
 
     LAMA_CHECK_CUDA_ACCESS
 
@@ -368,8 +368,8 @@ IndexType CUDABLAS1::iamax( const IndexType n, const T* x_d, const IndexType inc
 /*    swap                                                                                */
 /* ---------------------------------------------------------------------------------------*/
 
-template<typename T>
-static inline void cublasWrapperSwap( IndexType n, T* x_d, IndexType incX, T* y_d, IndexType incY  );
+template<typename ValueType>
+static inline void cublasWrapperSwap( IndexType n, ValueType* x_d, IndexType incX, ValueType* y_d, IndexType incY  );
 
 template<>
 void cublasWrapperSwap( int n, float* x_d, int incX, float* y_d, int incY )
@@ -395,12 +395,12 @@ void cublasWrapperSwap( int n, ComplexDouble* x_d, int incX, ComplexDouble* y_d,
     LAMA_CUBLAS_CALL(cublasZswap( CUDAContext_cublasHandle, n, cublasCast( x_d ), incX, cublasCast( y_d ), incY ), "cublasWrapperSwap<ComplexDouble>");
 }
 
-template<typename T>
+template<typename ValueType>
 void CUDABLAS1::swap(
     const IndexType n,
-    T* x_d,
+    ValueType* x_d,
     const IndexType incX,
-    T* y_d,
+    ValueType* y_d,
     const IndexType incY,
     SyncToken* syncToken )
 {
@@ -411,7 +411,7 @@ void CUDABLAS1::swap(
         return;
     }
 
-    LAMA_LOG_DEBUG( logger, "swap<" << Scalar::getType<T>() << "> of x, y with size " << n )
+    LAMA_LOG_DEBUG( logger, "swap<" << Scalar::getType<ValueType>() << "> of x, y with size " << n )
 
     LAMA_CHECK_CUDA_ACCESS
 
@@ -444,8 +444,8 @@ void CUDABLAS1::swap(
 /* ---------------------------------------------------------------------------------------*/
 
 
-template<typename T>
-static inline void cublasWrapperCopy( int n, const T* x_d, int incX, T* y_d, int incY  );
+template<typename ValueType>
+static inline void cublasWrapperCopy( int n, const ValueType* x_d, int incX, ValueType* y_d, int incY  );
 
 template<>
 void cublasWrapperCopy( int n, const float* x_d, int incX, float* y_d, int incY )
@@ -471,8 +471,8 @@ void cublasWrapperCopy( int n, const ComplexDouble* x_d, int incX, ComplexDouble
     LAMA_CUBLAS_CALL( cublasZcopy( CUDAContext_cublasHandle, n, cublasCast( x_d ), incX, cublasCast( y_d ), incY ), "cublasWrapperCopy<ComplexDouble>" );
 }
 
-template<typename T>
-void CUDABLAS1::copy( IndexType n, const T* x_d, IndexType incX, T* y_d, IndexType incY, SyncToken* syncToken )
+template<typename ValueType>
+void CUDABLAS1::copy( IndexType n, const ValueType* x_d, IndexType incX, ValueType* y_d, IndexType incY, SyncToken* syncToken )
 {
     LAMA_REGION( "CUDA.BLAS1.copy" )
 
@@ -481,7 +481,7 @@ void CUDABLAS1::copy( IndexType n, const T* x_d, IndexType incX, T* y_d, IndexTy
         return;
     }
 
-    LAMA_LOG_DEBUG( logger, "copy<" << Scalar::getType<T>() << "> of x, y, n = " << n )
+    LAMA_LOG_DEBUG( logger, "copy<" << Scalar::getType<ValueType>() << "> of x, y, n = " << n )
 
     LAMA_CHECK_CUDA_ACCESS
 
@@ -514,8 +514,8 @@ void CUDABLAS1::copy( IndexType n, const T* x_d, IndexType incX, T* y_d, IndexTy
 /* ---------------------------------------------------------------------------------------*/
 
 
-template<typename T>
-static inline void cublasWrapperAxpy( int n, T alpha, const T* x_d, int incX, T* y_d, int incY  );
+template<typename ValueType>
+static inline void cublasWrapperAxpy( int n, ValueType alpha, const ValueType* x_d, int incX, ValueType* y_d, int incY  );
 
 template<>
 void cublasWrapperAxpy( int n, float alpha, const float* x_d, int incX, float* y_d, int incY )
@@ -545,10 +545,10 @@ void cublasWrapperAxpy( int n, ComplexDouble alpha,
     LAMA_CUBLAS_CALL( cublasZaxpy( CUDAContext_cublasHandle, n, cublasCast( &alpha ), cublasCast( x_d ), incX, cublasCast( y_d ), incY ), "cublasWrapperAxpy<ComplexDouble>" );
 }
 
-template<typename T>
-void CUDABLAS1::axpy( int n, T alpha,
-                      const T* x_d, int incX,
-                      T* y_d, const int incY,
+template<typename ValueType>
+void CUDABLAS1::axpy( int n, ValueType alpha,
+                      const ValueType* x_d, int incX,
+                      ValueType* y_d, const int incY,
                       SyncToken* syncToken )
 {
     LAMA_REGION( "CUDA.BLAS1.axpy" )
@@ -558,7 +558,7 @@ void CUDABLAS1::axpy( int n, T alpha,
         return;
     }
 
-    LAMA_LOG_DEBUG( logger, "axpy<" << Scalar::getType<T>() << "> of x, y, n = " << n
+    LAMA_LOG_DEBUG( logger, "axpy<" << Scalar::getType<ValueType>() << "> of x, y, n = " << n
                     << ", alpha = " << alpha )
 
     LAMA_CHECK_CUDA_ACCESS
@@ -591,8 +591,8 @@ void CUDABLAS1::axpy( int n, T alpha,
 /*    dot                                                                                 */
 /* ---------------------------------------------------------------------------------------*/
 
-template<typename T>
-static inline T cublasWrapperDot( int n, const T* x_d, int incX, const T* y_d, int incY  );
+template<typename ValueType>
+static inline ValueType cublasWrapperDot( int n, const ValueType* x_d, int incX, const ValueType* y_d, int incY  );
 
 template<>
 float cublasWrapperDot( int n, const float* x_d, int incX, const float* y_d, int incY )
@@ -629,18 +629,18 @@ ComplexDouble cublasWrapperDot( int n, const ComplexDouble* x_d, int incX,
     return dot;
 }
 
-template<typename T>
-T CUDABLAS1::dot(
+template<typename ValueType>
+ValueType CUDABLAS1::dot(
     IndexType n,
-    const T* x_d,
+    const ValueType* x_d,
     IndexType incX,
-    const T* y_d,
+    const ValueType* y_d,
     IndexType incY,
     SyncToken* syncToken )
 {
     LAMA_REGION( "CUDA.BLAS1.dot" )
 
-    LAMA_LOG_DEBUG( logger, "dot<" << Scalar::getType<T>() << ">, n = " << n
+    LAMA_LOG_DEBUG( logger, "dot<" << Scalar::getType<ValueType>() << ">, n = " << n
                     << ", incX = " << incX << ", incY = " << incY
                     << ", x_d = " << x_d << ", y_d = " << y_d )
 
@@ -662,7 +662,7 @@ T CUDABLAS1::dot(
 
     LAMA_CUBLAS_CALL( cublasSetStream( CUDAContext_cublasHandle, stream ), "CUDABLAS1::dot set stream" );
 
-    T res = cublasWrapperDot( static_cast<int>( n ), x_d, static_cast<int>( incX ), y_d, static_cast<int>( incY ) );
+    ValueType res = cublasWrapperDot( static_cast<int>( n ), x_d, static_cast<int>( incX ), y_d, static_cast<int>( incY ) );
 
     // No error check here possible as kernel is started asynchronously
 
@@ -680,8 +680,8 @@ T CUDABLAS1::dot(
 /*    sum                                                                                 */
 /* ---------------------------------------------------------------------------------------*/
 
-template<typename T>
-void CUDABLAS1::sum( const IndexType n, T alpha, const T* x, T beta, const T* y, T* z, SyncToken* syncToken )
+template<typename ValueType>
+void CUDABLAS1::sum( const IndexType n, ValueType alpha, const ValueType* x, ValueType beta, const ValueType* y, ValueType* z, SyncToken* syncToken )
 {
     LAMA_REGION( "CUDA.BLAS1.sum" )
 
@@ -690,7 +690,7 @@ void CUDABLAS1::sum( const IndexType n, T alpha, const T* x, T beta, const T* y,
         return;
     }
 
-    LAMA_LOG_DEBUG( logger, "sum<" << Scalar::getType<T>() << ">, n = " << n
+    LAMA_LOG_DEBUG( logger, "sum<" << Scalar::getType<ValueType>() << ">, n = " << n
                     << ", " << alpha << " * x + " << beta << " * y " )
 
     LAMA_CHECK_CUDA_ACCESS
@@ -722,7 +722,7 @@ void CUDABLAS1::sum( const IndexType n, T alpha, const T* x, T beta, const T* y,
 void CUDABLAS1::setInterface( BLASInterface& BLAS )
 {
     // Note: macro takes advantage of same name for routines and type definitions
-    //       ( e.g. routine CUDABLAS1::sum<T> is set for BLAS::BLAS1::sum variable
+    //       ( e.g. routine CUDABLAS1::sum<ValueType> is set for BLAS::BLAS1::sum variable
 
 #define LAMA_BLAS1_REGISTER(z, I, _)                                            \
     LAMA_INTERFACE_REGISTER_T( BLAS, scal, ARITHMETIC_TYPE##I )                 \

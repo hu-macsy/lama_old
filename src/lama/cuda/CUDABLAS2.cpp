@@ -55,11 +55,11 @@ extern cublasHandle_t CUDAContext_cublasHandle;
 /*    gemv                                                                                */
 /* ---------------------------------------------------------------------------------------*/
 
-template<typename T>
+template<typename ValueType>
 static inline
 void cublasWrapperGemv( cublasOperation_t trans_char, IndexType m, IndexType n,
-                  T alpha, const T* A, IndexType lda, const T* x, IndexType incX, 
-                  T beta, T* y, IndexType incY );
+                  ValueType alpha, const ValueType* A, IndexType lda, const ValueType* x, IndexType incX,
+                  ValueType beta, ValueType* y, IndexType incY );
 
 template<>
 void cublasWrapperGemv( cublasOperation_t trans, IndexType m, IndexType n,
@@ -98,19 +98,19 @@ void cublasWrapperGemv( cublasOperation_t trans, IndexType m, IndexType n, Compl
 
 /** gemv */
 
-template<typename T>
+template<typename ValueType>
 void CUDABLAS2::gemv(
     const CBLAS_ORDER order,
     const CBLAS_TRANSPOSE trans,
     const IndexType m,
     const IndexType n,
-    const T alpha,
-    const T* const A,
+    const ValueType alpha,
+    const ValueType* const A,
     const IndexType lda,
-    const T* const x,
+    const ValueType* const x,
     const IndexType incx,
-    const T beta,
-    T* const y,
+    const ValueType beta,
+    ValueType* const y,
     const IndexType incy,
     SyncToken* syncToken )
 {
@@ -164,7 +164,7 @@ void CUDABLAS2::gemv(
 
     LAMA_CUBLAS_CALL( cublasSetStream( CUDAContext_cublasHandle, stream ), "CUDABLAS2::gemv set cublas kernel stream = " << stream );
 
-    LAMA_LOG_INFO( logger, "gemv<" << Scalar::getType<T>() << "> with cuBLAS: m = " << order_m << " x " << order_n )
+    LAMA_LOG_INFO( logger, "gemv<" << Scalar::getType<ValueType>() << "> with cuBLAS: m = " << order_m << " x " << order_n )
 
     cublasWrapperGemv( trans_char, order_m, order_n, alpha, A, lda, x, incx, beta, y, incy );
 

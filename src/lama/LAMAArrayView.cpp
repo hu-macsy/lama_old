@@ -42,8 +42,8 @@ namespace lama
 
 /* LAMAArrayView */
 
-template<typename T>
-LAMAArrayView<T>::LAMAArrayView( LAMAArray<T>& array )
+template<typename ValueType>
+LAMAArrayView<ValueType>::LAMAArrayView( LAMAArray<ValueType>& array )
     : mArray( array ), mOffset( 0 ), mSize( mArray.size() )
 {
     if ( array.constFlag )
@@ -52,8 +52,8 @@ LAMAArrayView<T>::LAMAArrayView( LAMAArray<T>& array )
     }
 }
 
-template<typename T>
-LAMAArrayView<T>::LAMAArrayView( LAMAArray<T>& array, const IndexType offset, const IndexType size )
+template<typename ValueType>
+LAMAArrayView<ValueType>::LAMAArrayView( LAMAArray<ValueType>& array, const IndexType offset, const IndexType size )
     : mArray( array ), mOffset( offset ), mSize( size )
 {
     if ( mOffset < 0 )
@@ -75,67 +75,67 @@ LAMAArrayView<T>::LAMAArrayView( LAMAArray<T>& array, const IndexType offset, co
     }
 }
 
-template<typename T>
-LAMAArrayView<T>::LAMAArrayView( const LAMAArrayView<T>& other )
+template<typename ValueType>
+LAMAArrayView<ValueType>::LAMAArrayView( const LAMAArrayView<ValueType>& other )
     : Printable(), mArray( other.mArray ), mOffset( other.mOffset ), mSize( other.mSize )
 {
 }
 
-template<typename T>
-LAMAArrayView<T>::~LAMAArrayView()
+template<typename ValueType>
+LAMAArrayView<ValueType>::~LAMAArrayView()
 {
 }
 
-template<typename T>
-void LAMAArrayView<T>::writeAt( std::ostream& stream ) const
+template<typename ValueType>
+void LAMAArrayView<ValueType>::writeAt( std::ostream& stream ) const
 {
     mArray.writeAt( stream );
 }
 
-template<typename T>
-T* LAMAArrayView<T>::get( const size_t index )
+template<typename ValueType>
+ValueType* LAMAArrayView<ValueType>::get( const size_t index )
 {
     return mArray.get( index ) + mOffset;
 }
 
-template<typename T>
-const T* LAMAArrayView<T>::get( const size_t index ) const
+template<typename ValueType>
+const ValueType* LAMAArrayView<ValueType>::get( const size_t index ) const
 {
     return mArray.get( index ) + mOffset;
 }
 
-template<typename T>
-int LAMAArrayView<T>::acquireReadAccess( ContextPtr context ) const
+template<typename ValueType>
+int LAMAArrayView<ValueType>::acquireReadAccess( ContextPtr context ) const
 {
     return mArray.acquireReadAccess( context );
 }
 
-template<typename T>
-void LAMAArrayView<T>::releaseReadAccess( const size_t index ) const
+template<typename ValueType>
+void LAMAArrayView<ValueType>::releaseReadAccess( const size_t index ) const
 {
     mArray.releaseReadAccess( index );
 }
 
-template<typename T>
-int LAMAArrayView<T>::acquireWriteAccess( ContextPtr context, bool keepFlag )
+template<typename ValueType>
+int LAMAArrayView<ValueType>::acquireWriteAccess( ContextPtr context, bool keepFlag )
 {
     return mArray.acquireWriteAccess( context, keepFlag );
 }
 
-template<typename T>
-int LAMAArrayView<T>::acquireWriteAccess()
+template<typename ValueType>
+int LAMAArrayView<ValueType>::acquireWriteAccess()
 {
     return mArray.acquireWriteAccess();
 }
 
-template<typename T>
-void LAMAArrayView<T>::releaseWriteAccess( const size_t index )
+template<typename ValueType>
+void LAMAArrayView<ValueType>::releaseWriteAccess( const size_t index )
 {
     mArray.releaseWriteAccess( index );
 }
 
-template<typename T>
-void LAMAArrayView<T>::clear( const size_t index )
+template<typename ValueType>
+void LAMAArrayView<ValueType>::clear( const size_t index )
 {
     if ( mOffset != 0 || mSize != mArray.size() )
     {
@@ -146,8 +146,8 @@ void LAMAArrayView<T>::clear( const size_t index )
     mSize = 0;
 }
 
-template<typename T>
-void LAMAArrayView<T>::resize( const size_t index, const IndexType newSize )
+template<typename ValueType>
+void LAMAArrayView<ValueType>::resize( const size_t index, const IndexType newSize )
 {
     if ( mOffset != 0 || mSize != mArray.size() )
     {
@@ -158,8 +158,8 @@ void LAMAArrayView<T>::resize( const size_t index, const IndexType newSize )
     mSize = mArray.size();
 }
 
-template<typename T>
-void LAMAArrayView<T>::reserve( const size_t index, const IndexType capacity, const bool copyFlag )
+template<typename ValueType>
+void LAMAArrayView<ValueType>::reserve( const size_t index, const IndexType capacity, const bool copyFlag )
 {
     if ( mOffset != 0 || mSize != mArray.size() )
     {
@@ -169,8 +169,8 @@ void LAMAArrayView<T>::reserve( const size_t index, const IndexType capacity, co
     mArray.reserve( index, capacity, copyFlag );
 }
 
-template<typename T>
-IndexType LAMAArrayView<T>::capacity( const size_t index ) const
+template<typename ValueType>
+IndexType LAMAArrayView<ValueType>::capacity( const size_t index ) const
 {
     IndexType capacityValue = mArray.capacity( index );
 
@@ -184,26 +184,26 @@ IndexType LAMAArrayView<T>::capacity( const size_t index ) const
 
 /* LAMAArrayConstView */
 
-template<typename T>
-LAMAArrayConstView<T>::LAMAArrayConstView( const LAMAArrayConstView<T>& other )
+template<typename ValueType>
+LAMAArrayConstView<ValueType>::LAMAArrayConstView( const LAMAArrayConstView<ValueType>& other )
     : Printable(), mArray( other.mArray ), mOffset( other.mOffset ), mSize( other.mSize )
 {
 }
 
-template<typename T>
-LAMAArrayConstView<T>::LAMAArrayConstView( const LAMAArrayView<T>& view )
+template<typename ValueType>
+LAMAArrayConstView<ValueType>::LAMAArrayConstView( const LAMAArrayView<ValueType>& view )
     : mArray( view.mArray ), mOffset( view.mOffset ), mSize( view.mSize )
 {
 }
 
-template<typename T>
-LAMAArrayConstView<T>::LAMAArrayConstView( const LAMAArray<T>& array )
+template<typename ValueType>
+LAMAArrayConstView<ValueType>::LAMAArrayConstView( const LAMAArray<ValueType>& array )
     : mArray( array ), mOffset( 0 ), mSize( mArray.size() )
 {
 }
 
-template<typename T>
-LAMAArrayConstView<T>::LAMAArrayConstView( const LAMAArray<T>& array, const IndexType offset, const IndexType size )
+template<typename ValueType>
+LAMAArrayConstView<ValueType>::LAMAArrayConstView( const LAMAArray<ValueType>& array, const IndexType offset, const IndexType size )
     : mArray( array ), mOffset( offset ), mSize( size )
 {
     if ( mOffset < 0 )
@@ -221,79 +221,79 @@ LAMAArrayConstView<T>::LAMAArrayConstView( const LAMAArray<T>& array, const Inde
     }
 }
 
-template<typename T>
-LAMAArrayConstView<T>::~LAMAArrayConstView()
+template<typename ValueType>
+LAMAArrayConstView<ValueType>::~LAMAArrayConstView()
 {
 }
 
-template<typename T>
-void LAMAArrayConstView<T>::writeAt( std::ostream& stream ) const
+template<typename ValueType>
+void LAMAArrayConstView<ValueType>::writeAt( std::ostream& stream ) const
 {
     mArray.writeAt( stream );
 }
 
-template<typename T>
-const T* LAMAArrayConstView<T>::get( const size_t index ) const
+template<typename ValueType>
+const ValueType* LAMAArrayConstView<ValueType>::get( const size_t index ) const
 {
     return mArray.get( index ) + mOffset;
 }
 
-template<typename T>
-int LAMAArrayConstView<T>::acquireReadAccess( ContextPtr context ) const
+template<typename ValueType>
+int LAMAArrayConstView<ValueType>::acquireReadAccess( ContextPtr context ) const
 {
     return mArray.acquireReadAccess( context );
 }
 
-template<typename T>
-void LAMAArrayConstView<T>::releaseReadAccess( const size_t index ) const
+template<typename ValueType>
+void LAMAArrayConstView<ValueType>::releaseReadAccess( const size_t index ) const
 {
     mArray.releaseReadAccess( index );
 }
 
-template<typename T>
-bool LAMAArrayConstView<T>::operator==( const LAMAArrayConstView<T>& other ) const
+template<typename ValueType>
+bool LAMAArrayConstView<ValueType>::operator==( const LAMAArrayConstView<ValueType>& other ) const
 {
     return &( other.mArray ) == &mArray;
 }
 
-template<typename T>
-bool LAMAArrayConstView<T>::operator!=( const LAMAArrayConstView<T>& other ) const
+template<typename ValueType>
+bool LAMAArrayConstView<ValueType>::operator!=( const LAMAArrayConstView<ValueType>& other ) const
 {
     return !( *this == other );
 }
 
-template<typename T>
-bool LAMAArrayConstView<T>::operator==( const LAMAArrayView<T>& other ) const
+template<typename ValueType>
+bool LAMAArrayConstView<ValueType>::operator==( const LAMAArrayView<ValueType>& other ) const
 {
     return &( other.mArray ) == &mArray;
 }
 
-template<typename T>
-bool LAMAArrayConstView<T>::operator!=( const LAMAArrayView<T>& other ) const
+template<typename ValueType>
+bool LAMAArrayConstView<ValueType>::operator!=( const LAMAArrayView<ValueType>& other ) const
 {
     return !( *this == other );
 }
 
-template<typename T>
-bool LAMAArrayView<T>::operator==( const LAMAArrayView<T>& other ) const
+template<typename ValueType>
+bool LAMAArrayView<ValueType>::operator==( const LAMAArrayView<ValueType>& other ) const
 {
     return &( other.mArray ) == &mArray;
 }
 
-template<typename T>
-bool LAMAArrayView<T>::operator!=( const LAMAArrayView<T>& other ) const
+template<typename ValueType>
+bool LAMAArrayView<ValueType>::operator!=( const LAMAArrayView<ValueType>& other ) const
 {
     return !( *this == other );
 }
 
-template<typename T>
-bool LAMAArrayView<T>::operator==( const LAMAArrayConstView<T>& other ) const
+template<typename ValueType>
+bool LAMAArrayView<ValueType>::operator==( const LAMAArrayConstView<ValueType>& other ) const
 {
     return other == *this;
 }
 
-template<typename T>
-bool LAMAArrayView<T>::operator!=( const LAMAArrayConstView<T>& other ) const
+template<typename ValueType>
+bool LAMAArrayView<ValueType>::operator!=( const LAMAArrayConstView<ValueType>& other ) const
 {
     return !( *this == other );
 }

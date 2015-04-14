@@ -78,7 +78,7 @@ LAMA_LOG_DEF_LOGGER( logger, "Test.GMRESTest" )
 template<typename MatrixType>
 void testSolveWithPreconditionmethod()
 {
-    typedef typename MatrixType::ValueType ValueType;
+    typedef typename MatrixType::MatrixValueType ValueType;
 
 //    LoggerPtr slogger( new CommonLogger(
 //        "<GMRES>: ",
@@ -140,7 +140,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( testSolveWithPrecondition, ValueType, test_types 
 template<typename MatrixType>
 void testSolveWithoutPreconditionmethod()
 {
-    typedef typename MatrixType::ValueType ValueType;
+    typedef typename MatrixType::MatrixValueType ValueType;
 
     const IndexType N1 = 4;
     const IndexType N2 = 4;

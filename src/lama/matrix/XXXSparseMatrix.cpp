@@ -44,7 +44,7 @@ namespace lama
 
 /* -------------------------------------------------------------------------- */
 
-LAMA_LOG_DEF_TEMPLATE_LOGGER( template<typename T>, XXXSparseMatrix<T>::logger, "Matrix.SparseMatrix.XXXSparseMatrix" )
+LAMA_LOG_DEF_TEMPLATE_LOGGER( template<typename ValueType>, XXXSparseMatrix<ValueType>::logger, "Matrix.SparseMatrix.XXXSparseMatrix" )
 
 /* -------------------------------------------------------------------------- */
 

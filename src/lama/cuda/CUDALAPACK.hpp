@@ -64,11 +64,11 @@ private:
 
     static bool registerInterface();  //!< registration
 
-    template<typename T>
+    template<typename ValueType>
     static void laswp(
         const CBLAS_ORDER order,
         const IndexType n,
-        T* A,
+        ValueType* A,
         const IndexType lda,
         const IndexType k1,
         const IndexType k2,

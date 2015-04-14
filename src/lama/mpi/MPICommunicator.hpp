@@ -105,11 +105,11 @@ public:
      */
     virtual void all2all( IndexType recvValues[], const IndexType sendValues[] ) const;
 
-    template<typename T>
-    MPI_Request startrecv( T* buffer, int count, int source ) const;
+    template<typename ValueType>
+    MPI_Request startrecv( ValueType* buffer, int count, int source ) const;
 
-    template<typename T>
-    MPI_Request startsend( const T buffer[], int count, int target ) const;
+    template<typename ValueType>
+    MPI_Request startsend( const ValueType buffer[], int count, int target ) const;
 
     virtual void synchronize() const;
 
@@ -119,87 +119,87 @@ private:
 
     MPICommunicator( int& argc, char** & argv );
 
-    template<typename T>
+    template<typename ValueType>
     inline static MPI_Datatype getMPIType();
 
     template<typename T1,typename T2>
     inline static MPI_Datatype getMPI2Type();
 
-    template<typename T>
-    void bcastImpl( T val[], const IndexType n, const PartitionId root ) const;
+    template<typename ValueType>
+    void bcastImpl( ValueType val[], const IndexType n, const PartitionId root ) const;
 
-    template<typename T>
-    T sumImpl( T myVal ) const;
+    template<typename ValueType>
+    ValueType sumImpl( ValueType myVal ) const;
 
-    template<typename T>
-    T maxImpl( T myVal ) const;
+    template<typename ValueType>
+    ValueType maxImpl( ValueType myVal ) const;
 
-    template<typename T>
-    T minImpl( T myVal ) const;
+    template<typename ValueType>
+    ValueType minImpl( ValueType myVal ) const;
 
-    template<typename T>
-    inline void send( const T* buffer, int count, int target ) const;
+    template<typename ValueType>
+    inline void send( const ValueType* buffer, int count, int target ) const;
 
-    template<typename T>
+    template<typename ValueType>
     inline int getCount( MPI_Status& status ) const;
 
-    template<typename T>
-    void scatterImpl( T myvals[], const IndexType n, const PartitionId root, const T allvals[] ) const;
+    template<typename ValueType>
+    void scatterImpl( ValueType myvals[], const IndexType n, const PartitionId root, const ValueType allvals[] ) const;
 
-    template<typename T>
+    template<typename ValueType>
     void scatterVImpl(
-        T myvals[],
+        ValueType myvals[],
         const IndexType n,
         const PartitionId root,
-        const T allvals[],
+        const ValueType allvals[],
         const IndexType sizes[] ) const;
 
-    template<typename T>
-    void gatherImpl( T allvals[], const IndexType n, const PartitionId root, const T myvals[] ) const;
+    template<typename ValueType>
+    void gatherImpl( ValueType allvals[], const IndexType n, const PartitionId root, const ValueType myvals[] ) const;
 
-    template<typename T>
+    template<typename ValueType>
     void gatherVImpl(
-        T allvals[],
+        ValueType allvals[],
         const IndexType n,
         const PartitionId root,
-        const T myvals[],
+        const ValueType myvals[],
         const IndexType sizes[] ) const;
 
-    template<typename T>
+    template<typename ValueType>
     IndexType shiftImpl(
-        T newvals[],
+        ValueType newvals[],
         const IndexType newSize,
         const PartitionId source,
-        const T oldVals[],
+        const ValueType oldVals[],
         const IndexType oldSize,
         const PartitionId dest ) const;
 
-    template<typename T>
+    template<typename ValueType>
     SyncToken* shiftAsyncImpl(
-        T newvals[],
+        ValueType newvals[],
         const PartitionId source,
-        const T oldVals[],
+        const ValueType oldVals[],
         const PartitionId dest,
         const IndexType size ) const;
 
-    template<typename T>
-    void swapImpl( T val[], const IndexType n, PartitionId partner ) const;
+    template<typename ValueType>
+    void swapImpl( ValueType val[], const IndexType n, PartitionId partner ) const;
 
-    template<typename T>
-    void maxlocImpl( T& val, IndexType& location, PartitionId root ) const;
+    template<typename ValueType>
+    void maxlocImpl( ValueType& val, IndexType& location, PartitionId root ) const;
 
-    template<typename T>
+    template<typename ValueType>
     void exchangeByPlanImpl(
-        T recvData[],
+        ValueType recvData[],
         const CommunicationPlan& recvPlan,
-        const T sendData[],
+        const ValueType sendData[],
         const CommunicationPlan& sendPlan ) const;
 
-    template<typename T>
+    template<typename ValueType>
     SyncToken* exchangeByPlanAsyncImpl(
-        T recvData[],
+        ValueType recvData[],
         const CommunicationPlan& recvPlan,
-        const T sendData[],
+        const ValueType sendData[],
         const CommunicationPlan& sendPlan ) const;
 
     void initialize( int& argc, char** & argv );

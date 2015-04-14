@@ -70,18 +70,18 @@ LAMA_LOG_DEF_LOGGER( OpenMPLAPACK::logger, "OpenMP.LAPACK" )
 /*      getrf<float>                                                         */
 /* ------------------------------------------------------------------------- */
 
-template<typename T>
+template<typename ValueType>
 IndexType OpenMPLAPACK::getrf(
     const CBLAS_ORDER order,
     const int m,
     const int n,
-    T* const a,
+    ValueType* const a,
     const int lda,
     int* const ipiv )
 {
-LAMA_REGION( "OpenMP.LAPACK.getrf<T>" )
+LAMA_REGION( "OpenMP.LAPACK.getrf<ValueType>" )
 
-LAMA_LOG_INFO( logger, "getrf<" << Scalar::getType<T>()<< "> for A of size " << m << " x " << n )
+LAMA_LOG_INFO( logger, "getrf<" << Scalar::getType<ValueType>()<< "> for A of size " << m << " x " << n )
 
     int info = 0;
     int index = 0;
@@ -169,12 +169,12 @@ LAMA_LOG_INFO( logger, "getrf<" << Scalar::getType<T>()<< "> for A of size " << 
 /*      getinv<float>                                                        */
 /* ------------------------------------------------------------------------- */
 
-template<typename T>
-void OpenMPLAPACK::getinv( const IndexType n, T* a, const IndexType lda )
+template<typename ValueType>
+void OpenMPLAPACK::getinv( const IndexType n, ValueType* a, const IndexType lda )
 {
-LAMA_REGION( "OpenMP.LAPACK.getinv<T>" )
+LAMA_REGION( "OpenMP.LAPACK.getinv<ValueType>" )
 
-LAMA_LOG_INFO( logger, "getinv<" << Scalar::getType<T>()<< "> for " << n << " x " << n << " matrix, uses openmp" )
+LAMA_LOG_INFO( logger, "getinv<" << Scalar::getType<ValueType>()<< "> for " << n << " x " << n << " matrix, uses openmp" )
 
     //boost::scoped_array<IndexType> ipiv( new IndexType[n] );
     int* ipiv;
@@ -190,15 +190,15 @@ LAMA_LOG_INFO( logger, "getinv<" << Scalar::getType<T>()<< "> for " << n << " x 
 /*      getri<float>                                                         */
 /* ------------------------------------------------------------------------- */
 
-template<typename T>
-int OpenMPLAPACK::getri( const CBLAS_ORDER order, const int n, T* const A, const int lda, int* const ipiv )
+template<typename ValueType>
+int OpenMPLAPACK::getri( const CBLAS_ORDER order, const int n, ValueType* const A, const int lda, int* const ipiv )
 {
-LAMA_REGION( "OpenMP.LAPACK.getri<T>" )
+LAMA_REGION( "OpenMP.LAPACK.getri<ValueType>" )
 
-LAMA_LOG_INFO( logger, "getri<" << Scalar::getType<T>()<< "> for A of size " << n << " x " << n )
+LAMA_LOG_INFO( logger, "getri<" << Scalar::getType<ValueType>()<< "> for A of size " << n << " x " << n )
     int info = 0;
-    T* A_inv = 0;
-    A_inv = new T[n * n];
+    ValueType* A_inv = 0;
+    A_inv = new ValueType[n * n];
 
     for ( int i = 0; i < n * n; i++ )
     {
@@ -298,7 +298,7 @@ LAMA_LOG_INFO( logger, "getri<" << Scalar::getType<T>()<< "> for A of size " << 
 
 /* --------------------------------------------------------------------------- */
 
-template<typename T>
+template<typename ValueType>
 int OpenMPLAPACK::tptrs(
     const CBLAS_ORDER order,
     const CBLAS_UPLO uplo,
@@ -306,11 +306,11 @@ int OpenMPLAPACK::tptrs(
     const CBLAS_DIAG diag,
     const int n,
     const int UNUSED(nrhs),
-    const T* AP,
-    T* B,
+    const ValueType* AP,
+    ValueType* B,
     const int UNUSED(ldb) )
 {
-    LAMA_REGION( "OpenMP.LAPACK.tptrs<T>" )
+    LAMA_REGION( "OpenMP.LAPACK.tptrs<ValueType>" )
 
     int info = 0;
 
@@ -467,11 +467,11 @@ int OpenMPLAPACK::tptrs(
 
 /* --------------------------------------------------------------------------- */
 
-template<typename T>
+template<typename ValueType>
 void OpenMPLAPACK::laswp(
     const CBLAS_ORDER order,
     const int N,
-    T* A,
+    ValueType* A,
     const int LDA,
     const int K1,
     const int K2,
@@ -491,7 +491,7 @@ void OpenMPLAPACK::laswp(
                 continue;
             }
 
-            OpenMPBLAS1::swap<T>( N, &A[ipiv[i * INCX] * LDA], INCX, &A[i * LDA], INCX, syncToken );
+            OpenMPBLAS1::swap<ValueType>( N, &A[ipiv[i * INCX] * LDA], INCX, &A[i * LDA], INCX, syncToken );
         }
     }
     else if ( order == CblasColMajor )
@@ -503,7 +503,7 @@ void OpenMPLAPACK::laswp(
                 continue;
             }
 
-            OpenMPBLAS1::swap<T>( N, &A[ipiv[i * INCX] * LDA], INCX, &A[i * LDA], INCX, syncToken );
+            OpenMPBLAS1::swap<ValueType>( N, &A[ipiv[i * INCX] * LDA], INCX, &A[i * LDA], INCX, syncToken );
         }
     }
     else
@@ -519,7 +519,7 @@ void OpenMPLAPACK::laswp(
 void OpenMPLAPACK::setInterface( BLASInterface& BLAS )
 {
     // Note: macro takes advantage of same name for routines and type definitions 
-    //       ( e.g. routine CUDABLAS1::sum<T> is set for BLAS::BLAS1::sum variable
+    //       ( e.g. routine CUDABLAS1::sum<ValueType> is set for BLAS::BLAS1::sum variable
 
 #define LAMA_LAPACK_REGISTER(z, I, _)                                            \
     LAMA_INTERFACE_REGISTER_T( BLAS, getrf, ARITHMETIC_TYPE##I )                 \

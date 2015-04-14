@@ -54,12 +54,12 @@ LAMA_LOG_DEF_LOGGER( BLAS_BLAS2::logger, "BLAS.BLAS2" )
 /*    gemv                                                                                */
 /* ---------------------------------------------------------------------------------------*/
 
-template<typename T>
+template<typename ValueType>
 static inline
 void wrapperGemv( const CBLAS_ORDER order, const CBLAS_TRANSPOSE transA,
                   const int m, const int n,
-                  T alpha, const T* a, const int lda, const T* x, const int incX,
-                  T beta, T* y, const int incY );
+                  ValueType alpha, const ValueType* a, const int lda, const ValueType* x, const int incX,
+                  ValueType beta, ValueType* y, const int incY );
 
 template<>
 void wrapperGemv( const CBLAS_ORDER order, const CBLAS_TRANSPOSE transA,
@@ -108,25 +108,25 @@ void wrapperGemv( const CBLAS_ORDER, const CBLAS_TRANSPOSE,
     LAMA_THROWEXCEPTION( "LongDouble not supported by BLAS, please set LAMA_USE_BLAS=0" )
 }
 
-template<typename T>
+template<typename ValueType>
 void BLAS_BLAS2::gemv(
     const CBLAS_ORDER order,
     const CBLAS_TRANSPOSE transA,
     const IndexType m,
     const IndexType n,
-    const T alpha,
-    const T* a,
+    const ValueType alpha,
+    const ValueType* a,
     const IndexType lda,
-    const T* x,
+    const ValueType* x,
     const IndexType incX,
-    const T beta,
-    T* y,
+    const ValueType beta,
+    ValueType* y,
     const IndexType incY,
     SyncToken* syncToken )
 {
     LAMA_REGION( "BLAS.BLAS2.gemv" )
 
-    LAMA_LOG_INFO( logger, "gemv<" << Scalar::getType<T>() << ">: "
+    LAMA_LOG_INFO( logger, "gemv<" << Scalar::getType<ValueType>() << ">: "
                    << "m = " << m << ", n = " << n << ", LDA = " << lda 
                     << ", incX = " << incX << ", incY = " << incY 
                     << ", alpha = " << alpha << ", beta = " << beta )

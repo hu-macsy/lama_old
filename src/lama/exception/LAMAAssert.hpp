@@ -61,14 +61,14 @@
 #endif // NDEBUG
 /** Dummy function to avoid compiler warnings. */
 
-template<typename T>
-static inline void unused( T const )
+template<typename ValueType>
+static inline void unused( ValueType const )
 {
     // do nothing
 }
 
-template<typename T1,typename T2>
-static inline void unused( const T1&, const T2& )
+template<typename ValueType1,typename ValueType2>
+static inline void unused( const ValueType1&, const ValueType2& )
 {
     // do nothing
 }

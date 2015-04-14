@@ -72,7 +72,7 @@ LAMA_LOG_DEF_LOGGER( logger, "Test.SimpleAMGTest" )
 template<typename MatrixType>
 void solverTestMethod( ContextPtr context )
 {
-    typedef typename MatrixType::ValueType ValueType;
+    typedef typename MatrixType::MatrixValueType ValueType;
 
     LoggerPtr consoleLogger(
         new CommonLogger( "<SimpleAMG>: ", LogLevel::noLogging, LoggerWriteBehaviour::toConsoleOnly,

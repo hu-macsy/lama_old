@@ -107,15 +107,15 @@ void CUDAUtils::scale( ValueType *values, const ValueType scale, const IndexType
 
 /* --------------------------------------------------------------------------- */
 
-template<typename T>
+template<typename ValueType>
 struct InvalidIndex
 {
-    const T size;  //!< size of array for which index is checked
+    const ValueType size;  //!< size of array for which index is checked
 
-    InvalidIndex( T _size ) : size( _size ) {}
+    InvalidIndex( ValueType _size ) : size( _size ) {}
 
     __host__ __device__
-    bool operator()( T y )
+    bool operator()( ValueType y )
     {
         return y >= size || y < 0;
     }
@@ -244,13 +244,13 @@ ValueType CUDAUtils::maxval( const ValueType array[], const IndexType n )
 
 /* --------------------------------------------------------------------------- */
 
-template<typename T>
-struct absolute_value: public thrust::unary_function<T,T>
+template<typename ValueType>
+struct absolute_value: public thrust::unary_function<ValueType,ValueType>
 {
     __host__ __device__
-    T operator()( const T &x ) const
+    ValueType operator()( const ValueType &x ) const
     {
-        // return x < T( 0 ) ? -x : x;
+        // return x < ValueType( 0 ) ? -x : x;
         return abs( x );
     }
 };

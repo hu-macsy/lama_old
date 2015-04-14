@@ -92,11 +92,10 @@ BOOST_FIXTURE_TEST_SUITE( P_SORTest, P_SORTestConfig )
 LAMA_LOG_DEF_LOGGER( logger, "Test.P_SORTest" );
 
 /* --------------------------------------------------------------------- */
-template<typename mt>
+template<typename MatrixType>
 void testSolveMethod( ContextPtr loc )
 {
-    typedef mt MatrixType;
-    typedef typename mt::ValueType ValueType;
+    typedef typename MatrixType::MatrixValueType ValueType;
 
     SOR sor( "SORTestSolver" );
 
@@ -142,9 +141,8 @@ void testSolveMethod( ContextPtr loc )
     BOOST_CHECK( s.getValue<ValueType>() < 0.65 );
 }
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( solveTest, T, test_types ) {
-    typedef T ValueType;
-
+BOOST_AUTO_TEST_CASE_TEMPLATE( solveTest, ValueType, test_types )
+{
     CONTEXTLOOP()
     {
         GETCONTEXT( context );
@@ -161,11 +159,10 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( solveTest, T, test_types ) {
 
 /* --------------------------------------------------------------------- */
 
-template<typename mt>
+template<typename MatrixType>
 void testSolvePoissonMethod()
 {
-    typedef mt MatrixType;
-    typedef typename mt::ValueType ValueType;
+    typedef typename MatrixType::MatrixValueType ValueType;
 
     double omega;
     double omegaMin = 0.3;
@@ -234,22 +231,21 @@ void testSolvePoissonMethod()
     }
 }
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( testSolvePoisson, T, test_types ) {
+BOOST_AUTO_TEST_CASE_TEMPLATE( testSolvePoisson, ValueType, test_types ) {
 // @todo: Test does not work with general distribution
-// testSolvePoissonMethod< CSRSparseMatrix<T> >();
-// testSolvePoissonMethod< ELLSparseMatrix<T> >();
-// testSolvePoissonMethod< JDSSparseMatrix<T> >();
-// testSolvePoissonMethod< DIASparseMatrix<T> >();
-// testSolvePoissonMethod< COOSparseMatrix<T> >();
+// testSolvePoissonMethod< CSRSparseMatrix<ValueType> >();
+// testSolvePoissonMethod< ELLSparseMatrix<ValueType> >();
+// testSolvePoissonMethod< JDSSparseMatrix<ValueType> >();
+// testSolvePoissonMethod< DIASparseMatrix<ValueType> >();
+// testSolvePoissonMethod< COOSparseMatrix<ValueType> >();
 }
 
 ///* --------------------------------------------------------------------- */
 
-template<typename mt>
+template<typename MatrixType>
 void testSolve2Method( ContextPtr loc )
 {
-    typedef mt MatrixType;
-    typedef typename mt::ValueType ValueType;
+    typedef typename MatrixType::MatrixValueType ValueType;
 
     double omega;
     double omegaMin = 0.8;
@@ -317,9 +313,8 @@ void testSolve2Method( ContextPtr loc )
     }
 }
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( testSolve2, T, test_types ) {
-    typedef T ValueType;
-
+BOOST_AUTO_TEST_CASE_TEMPLATE( testSolve2, ValueType, test_types )
+{
     CONTEXTLOOP()
     {
         GETCONTEXT( context );

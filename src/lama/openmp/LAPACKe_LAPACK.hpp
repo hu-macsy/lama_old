@@ -61,33 +61,33 @@ public:
 
     /** Implementation of BLASInterface::LAPACK::getrf by LAPACKe. */
 
-    template<typename T>
+    template<typename ValueType>
     static IndexType getrf(
         const CBLAS_ORDER order,
         const IndexType m,
         const IndexType n,
-        T* const a,
+        ValueType* const a,
         const IndexType lda,
         IndexType* const ipiv );
 
     /** Implementation of BLASInterface::LAPACK::getri by LAPACKe. */
 
-    template<typename T>
+    template<typename ValueType>
     static IndexType getri(
         const CBLAS_ORDER order,
         const IndexType n,
-        T* const A,
+        ValueType* const A,
         const IndexType lda,
         IndexType* const ipiv );
 
     /** Implementation of BLASInterface::LAPACK::getinv by LAPACKe. */
 
-    template<typename T>
-    static void getinv( const IndexType n, T* a, const IndexType lda );
+    template<typename ValueType>
+    static void getinv( const IndexType n, ValueType* a, const IndexType lda );
 
     /** Implementation of BLASInterface::LAPACK::tptrs by LAPACKe. */
 
-    template<typename T>
+    template<typename ValueType>
     static IndexType tptrs(
         const CBLAS_ORDER order,
         const CBLAS_UPLO uplo,
@@ -95,8 +95,8 @@ public:
         const CBLAS_DIAG diag,
         const IndexType n,
         const IndexType nrhs,
-        const T* AP,
-        T* B,
+        const ValueType* AP,
+        ValueType* B,
         const IndexType ldb );
 
     /** Routine that sets functions pointers belonging to LAPACK in a BLASInterface.

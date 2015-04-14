@@ -124,30 +124,30 @@ protected:
         }                                                                                     \
     }
 
-#define LAMA_INTERFACE_FN_T( function, loc, module, structname, T )                           \
-    typename module##Interface::structname<T>::function function;                             \
-    function = loc->getInterface().module.function<T>();                                      \
+#define LAMA_INTERFACE_FN_T( function, loc, module, structname, ValueType )                   \
+    typename module##Interface::structname<ValueType>::function function;                     \
+    function = loc->getInterface().module.function<ValueType>();                              \
     if ( function == NULL )                                                                   \
     {                                                                                         \
         LAMA_THROWEXCEPTION( "Method " #module "::" #function " not available on " << *loc ); \
     }
 
-#define LAMA_INTERFACE_FN_t( function, loc, module, structname, T )                           \
-    module##Interface::structname<T>::function function;                                      \
-    function = loc->getInterface().module.function<T>();                                      \
+#define LAMA_INTERFACE_FN_t( function, loc, module, structname, ValueType )                   \
+    module##Interface::structname<ValueType>::function function;                              \
+    function = loc->getInterface().module.function<ValueType>();                              \
     if ( function == NULL )                                                                   \
     {                                                                                         \
         LAMA_THROWEXCEPTION( "Method " #module "::" #function " not available on " << *loc ); \
     }
 
-#define LAMA_INTERFACE_FN_DEFAULT_T( function, loc, module, structname, T )                   \
-    typename module##Interface::structname<T>::function function =                            \
-       loc->getInterface().module.function<T>();                                              \
+#define LAMA_INTERFACE_FN_DEFAULT_T( function, loc, module, structname, ValueType )           \
+    typename module##Interface::structname<ValueType>::function function =                    \
+       loc->getInterface().module.function<ValueType>();                                      \
     if ( function == NULL )                                                                   \
     {                                                                                         \
         LAMA_UNSUPPORTED( "Method " #module "::" #function " not available on " << *loc );    \
         loc = ContextFactory::getContext( Context::Host );                                    \
-        function = loc->getInterface().module.function<T>();                                  \
+        function = loc->getInterface().module.function<ValueType>();                          \
         if ( function == NULL )                                                               \
         {                                                                                     \
             LAMA_THROWEXCEPTION( "Method " #module "::" #function                             \

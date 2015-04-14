@@ -56,11 +56,11 @@ extern cublasHandle_t CUDAContext_cublasHandle;
 /*    gemm                                                                                */
 /* ---------------------------------------------------------------------------------------*/
 
-template<typename T>
+template<typename ValueType>
 static inline
 void cublasWrapperGemm( cublasOperation_t transA_char, cublasOperation_t transB_char, IndexType m, IndexType n, IndexType k,
-                  T alpha, const T* a, IndexType lda, 
-                  const T* b, IndexType ldb, T beta, T* c, IndexType ldc );
+                  ValueType alpha, const ValueType* a, IndexType lda,
+                  const ValueType* b, IndexType ldb, ValueType beta, ValueType* c, IndexType ldc );
 
 template<>
 void cublasWrapperGemm( cublasOperation_t transA_char, cublasOperation_t transB_char, IndexType m, IndexType n, IndexType k,
@@ -96,7 +96,7 @@ void cublasWrapperGemm( cublasOperation_t transA_char, cublasOperation_t transB_
                  cublasCast( b ), ldb, cublasCast( &beta ), cublasCast( c ), ldc ), "cublasWrapperGemm<double>" );
 }
 
-template<typename T>
+template<typename ValueType>
 void CUDABLAS3::gemm(
     const CBLAS_ORDER order,
     const CBLAS_TRANSPOSE transa,
@@ -104,13 +104,13 @@ void CUDABLAS3::gemm(
     const IndexType m,
     const IndexType n,
     const IndexType k,
-    const T alpha,
-    const T* const A,
+    const ValueType alpha,
+    const ValueType* const A,
     const IndexType lda,
-    const T* const B,
+    const ValueType* const B,
     const IndexType ldb,
-    const T beta,
-    T* const C,
+    const ValueType beta,
+    ValueType* const C,
     const IndexType ldc,
     SyncToken* syncToken )
 {
@@ -123,10 +123,10 @@ void CUDABLAS3::gemm(
     const int ldb_call = ( order == CblasRowMajor ) ? lda : ldb;
     const int m_call = ( order == CblasRowMajor ) ? n : m;
     const int n_call = ( order == CblasRowMajor ) ? m : n;
-    const T* const A_call = ( order == CblasRowMajor ) ? B : A;
-    const T* const B_call = ( order == CblasRowMajor ) ? A : B;
+    const ValueType* const A_call = ( order == CblasRowMajor ) ? B : A;
+    const ValueType* const B_call = ( order == CblasRowMajor ) ? A : B;
 
-    LAMA_LOG_INFO( logger, "gemm<" << Scalar::getType<T>() << ">( m = " << m << ", n = " << n << ", k = " << k )
+    LAMA_LOG_INFO( logger, "gemm<" << Scalar::getType<ValueType>() << ">( m = " << m << ", n = " << n << ", k = " << k )
 
     if ( transa == CblasTrans )
     {
@@ -183,10 +183,10 @@ void CUDABLAS3::gemm(
 
 /** trsm */
 
-template<typename T>
+template<typename ValueType>
 static inline
 void cublasWrapperTrsm( cublasSideMode_t side, cublasFillMode_t uplo,  cublasOperation_t transA, cublasDiagType_t diag, IndexType m, IndexType n, 
-                  T alpha,  const T* a, IndexType lda, T* b, IndexType ldb );
+                  ValueType alpha,  const ValueType* a, IndexType lda, ValueType* b, IndexType ldb );
 
 template<>
 void cublasWrapperTrsm( cublasSideMode_t side, cublasFillMode_t uplo, cublasOperation_t transA, cublasDiagType_t diag, IndexType m, IndexType n, 
@@ -216,7 +216,7 @@ void cublasWrapperTrsm( cublasSideMode_t side, cublasFillMode_t uplo, cublasOper
     cublasZtrsm( CUDAContext_cublasHandle, side, uplo, transA, diag, m, n, cublasCast( &alpha ), cublasCast( a ), lda, cublasCast( b ), ldb );
 }
 
-template<typename T>
+template<typename ValueType>
 void CUDABLAS3::trsm(
     const CBLAS_ORDER Order,
     const CBLAS_SIDE sidearg,
@@ -225,10 +225,10 @@ void CUDABLAS3::trsm(
     const CBLAS_DIAG diagarg,
     const IndexType m,
     const IndexType n,
-    const T alpha,
-    const T* A,
+    const ValueType alpha,
+    const ValueType* A,
     const IndexType lda,
-    T* B,
+    ValueType* B,
     const IndexType ldb,
     SyncToken* syncToken )
 {
@@ -392,7 +392,7 @@ void CUDABLAS3::setInterface( BLASInterface& BLAS )
     LAMA_LOG_INFO( logger, "set BLAS3 routines for CUDA in Interface" )
 
     // Note: macro takes advantage of same name for routines and type definitions 
-    //       ( e.g. routine CUDABLAS1::sum<T> is set for BLAS::BLAS1::sum variable
+    //       ( e.g. routine CUDABLAS1::sum<ValueType> is set for BLAS::BLAS1::sum variable
 
 #define LAMA_BLAS3_REGISTER(z, I, _)                                            \
     LAMA_INTERFACE_REGISTER_T( BLAS, gemm, ARITHMETIC_TYPE##I )                 \

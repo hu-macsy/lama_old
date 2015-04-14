@@ -56,19 +56,17 @@ namespace lama
  *  format is not fixed.
  */
 
-template<typename T>
-class LAMA_DLL_IMPORTEXPORT JDSSparseMatrix: public SparseMatrix<T>
+template<typename ValueType>
+class LAMA_DLL_IMPORTEXPORT JDSSparseMatrix: public SparseMatrix<ValueType>
 {
 
 public:
 
-    /** Type definition of the value type for this sparse matrix. */
-
-    typedef T ValueType;
+	typedef ValueType MatrixValueType; //!< This is the type of the matrix values.
 
     /** Type definition of the storage type for this sparse matrix. */
 
-    typedef JDSStorage<T> StorageType;
+    typedef JDSStorage<ValueType> StorageType;
 
     /** Static method that returns the name of the matrix class. */
 

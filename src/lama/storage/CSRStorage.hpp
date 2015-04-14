@@ -71,14 +71,14 @@ namespace lama
  *  Nevertheless some operations can benefit from it and so an internal flag
  *  is set if values of one row are sorted by column indexes.
  *
- *  @tparam T is the value type of the matrix values.
+ *  @tparam ValueType is the value type of the matrix values.
  */
-template<typename T>
-class LAMA_DLL_IMPORTEXPORT CSRStorage: public CRTPMatrixStorage<CSRStorage<T>,T>
+template<typename ValueType>
+class LAMA_DLL_IMPORTEXPORT CSRStorage: public CRTPMatrixStorage<CSRStorage<ValueType>,ValueType>
 {
 public:
 
-    typedef T ValueType; //!< This is the type of the matrix values.
+	typedef ValueType StorageValueType;
 
     /** get typename of the matrix storage format. */
 
@@ -291,7 +291,7 @@ public:
      * Out-of-range check is enabled for DEBUG version.
      */
 
-    T getValue( const IndexType i, const IndexType j ) const;
+    ValueType getValue( const IndexType i, const IndexType j ) const;
 
     /** Initiate an asynchronous data transfer to a specified location. */
 

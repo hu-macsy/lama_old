@@ -81,12 +81,11 @@ void SparseMatrixTest<MatrixType>::setUp()
 
 /* ----------------------------------------------------------------------------- */
 
-LAMA_COMMON_TEST_CASE_TEMPLATE( SparseMatrixTest, TypeMatrix, clearTest )
+LAMA_COMMON_TEST_CASE_TEMPLATE( SparseMatrixTest, MatrixType, clearTest )
 
     LAMA_LOG_INFO( logger, "clearTest" )
 
-    typedef TypeMatrix MatrixType;
-    typedef typename MatrixType::ValueType ValueType;
+    typedef typename MatrixType::MatrixValueType ValueType;
 
     const IndexType n = 4;
 
@@ -167,14 +166,14 @@ LAMA_COMMON_TEST_CASE_TEMPLATE_END();
 
 /* ----------------------------------------------------------------------------- */
 
-template<typename mt>
-template<typename mt2>
-void SparseMatrixTest<mt>::testConversionsImpl()
+template<typename MatrixType1>
+template<typename MatrixType2>
+void SparseMatrixTest<MatrixType1>::testConversionsImpl()
 {
-    LAMA_LOG_INFO( logger, "testConversionsImpl<" << typeid(mt).name() << "," << typeid(mt2).name() << ">" );
+    LAMA_LOG_INFO( logger, "testConversionsImpl<" << typeid(MatrixType1).name() << "," << typeid(MatrixType2).name() << ">" );
 
-    typedef mt2 MatrixType;
-    typedef typename mt2::ValueType ValueType;
+    typedef MatrixType2 MatrixType;
+    typedef typename MatrixType2::MatrixValueType ValueType;
 
     LAMA_LOG_DEBUG( logger, "conversion: n4m4" );
 
@@ -337,7 +336,7 @@ LAMA_COMMON_TEST_CASE_TEMPLATE( SparseMatrixTest, MatrixType, testMultiplication
 
     LAMA_LOG_INFO( logger, "testMultiplication" );
 
-    typedef typename MatrixType::ValueType ValueType;
+    typedef typename MatrixType::MatrixValueType ValueType;
 
     //TODO: crashes, because of missing Ctor in SparseMatrix with DenseMatrix as argument
     //    CSRSparseMatrix<double> randomMatrix =
@@ -465,7 +464,7 @@ LAMA_COMMON_TEST_CASE_TEMPLATE( SparseMatrixTest, MatrixType, MatrixExpressionTe
     LAMA_LOG_INFO( logger, "MatrixExpressionTest" )
 
     //Creating test objects
-    typedef typename MatrixType::ValueType ValueType;
+    typedef typename MatrixType::MatrixValueType ValueType;
 
     MatrixType testmatrix;
     const IndexType n = 4;
@@ -545,7 +544,7 @@ LAMA_COMMON_TEST_CASE_TEMPLATE( SparseMatrixTest, MatrixType, MatrixCtorExpressi
     LAMA_LOG_INFO( logger, "MatrixCtorExpressionTest" );
 
     //Creating test objects
-    typedef typename MatrixType::ValueType ValueType;
+    typedef typename MatrixType::MatrixValueType ValueType;
 
     const IndexType n = 4;
 

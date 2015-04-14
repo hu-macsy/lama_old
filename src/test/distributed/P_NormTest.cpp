@@ -71,10 +71,8 @@ LAMA_LOG_DEF_LOGGER( logger, "Test.P_NormTest" );
 
 /* --------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( Norm, T, test_types ) 
+BOOST_AUTO_TEST_CASE_TEMPLATE( Norm, ValueType, test_types )
 {
-    typedef T ValueType;
-
     CONTEXTLOOP()
     {
         GETCONTEXT( context );

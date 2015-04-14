@@ -44,7 +44,7 @@ namespace lama
 
 /* -------------------------------------------------------------------------- */
 
-LAMA_LOG_DEF_TEMPLATE_LOGGER( template<typename T>, CSRSparseMatrix<T>::logger, "Matrix.SparseMatrix.CSRSparseMatrix" )
+LAMA_LOG_DEF_TEMPLATE_LOGGER( template<typename ValueType>, CSRSparseMatrix<ValueType>::logger, "Matrix.SparseMatrix.CSRSparseMatrix" )
 
 /* -------------------------------------------------------------------------- */
 

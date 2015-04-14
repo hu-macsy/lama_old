@@ -106,7 +106,7 @@ BOOST_AUTO_TEST_CASE( CtorTest )
 template<typename MatrixType>
 void testSolveWithPreconditionmethod( ContextPtr context )
 {
-    typedef typename MatrixType::ValueType ValueType;
+    typedef typename MatrixType::MatrixValueType ValueType;
 
     LoggerPtr slogger(
         new CommonLogger( "<BiCG>: ", LogLevel::noLogging, LoggerWriteBehaviour::toConsoleOnly,
@@ -174,7 +174,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( testSolveWithPrecondition, ValueType, test_types 
 template<typename MatrixType>
 void testSolveWithoutPreconditionmethod( ContextPtr context )
 {
-    typedef typename MatrixType::ValueType ValueType;
+    typedef typename MatrixType::MatrixValueType ValueType;
 
     const IndexType N1 = 4;
     const IndexType N2 = 4;

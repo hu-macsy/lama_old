@@ -58,14 +58,12 @@ namespace lama
  * done by acquiring a write lock on a LAMAArray in the constructor and releasing this write lock in
  * the destructor. There for a WriteAccess should be only used as a stack object.
  *
- * @tparam T is the value type stored in the wrapped container.
+ * @tparam ValueType is the value type stored in the wrapped container.
  */
-template<typename T>
+template<typename ValueType>
 class LAMA_DLL_IMPORTEXPORT WriteAccess: public BaseAccess
 {
 public:
-
-	typedef T ValueType; //!< This is the type stored in the wrapped container.
 
     /**
      * @brief Acquires a WriteAccess to the passed LAMAArray for the passed location.
@@ -212,14 +210,12 @@ protected:
  * A WriteOnlyAccess should be used whenever possible. It avoids any memory transfer of no more
  * needed values between devices and in case of a reallocation it avoids copying of old values.
  *
- * @tparam T is the value type stored in the wrapped container.
+ * @tparam ValueType is the value type stored in the wrapped container.
  */
-template<typename T>
-class LAMA_DLL_IMPORTEXPORT WriteOnlyAccess: public WriteAccess<T>
+template<typename ValueType>
+class LAMA_DLL_IMPORTEXPORT WriteOnlyAccess: public WriteAccess<ValueType>
 {
 public:
-
-    typedef T ValueType; //!< This is the type stored in the wrapped container.
 
     /** Create a write access with keep flag = false. */
 
@@ -237,12 +233,12 @@ public:
 
     ~WriteOnlyAccess()
     {
-        LAMA_LOG_TRACE( WriteAccess<T>::logger, "~WriteOnlyAccess" )
+        LAMA_LOG_TRACE( WriteAccess<ValueType>::logger, "~WriteOnlyAccess" )
     }
 };
 
-template<typename T>
-inline IndexType WriteAccess<T>::size() const
+template<typename ValueType>
+inline IndexType WriteAccess<ValueType>::size() const
 {
     if ( mArrayView )
     {

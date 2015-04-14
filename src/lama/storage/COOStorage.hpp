@@ -56,18 +56,18 @@ namespace lama
  * If the diagonal property flag is set, the first numRows entries of the COO data will
  * contain the diagonal elements.
  *
- * @tparam T is the value type of the matrix values.
+ * @tparam ValueType is the value type of the matrix values.
  *
  * Note: Copy constructor and operator= are supported by default implementations,
  *       copies of LAMAArray will be deep copies.
  */
 
-template<typename T>
-class LAMA_DLL_IMPORTEXPORT COOStorage: public CRTPMatrixStorage<COOStorage<T>,T>
+template<typename ValueType>
+class LAMA_DLL_IMPORTEXPORT COOStorage: public CRTPMatrixStorage<COOStorage<ValueType>,ValueType>
 {
 public:
 
-    typedef T ValueType; //!< This is the type of the matrix values.
+	typedef ValueType StorageValueType;
 
     /** get typename of the matrix storage format. */
 

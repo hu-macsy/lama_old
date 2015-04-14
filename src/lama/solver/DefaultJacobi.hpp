@@ -126,10 +126,10 @@ protected:
 
 private:
 
-    template<typename T>
+    template<typename ValueType>
     void initialize(const Matrix& coefficients);
 
-    template<typename T>
+    template<typename ValueType>
     void iterate();
 };
 

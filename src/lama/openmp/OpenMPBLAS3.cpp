@@ -46,7 +46,7 @@ namespace lama
 
 LAMA_LOG_DEF_LOGGER( OpenMPBLAS3::logger, "OpenMP.BLAS3" )
 
-template<typename T>
+template<typename ValueType>
 void OpenMPBLAS3::gemm(
     const CBLAS_ORDER order,
     const CBLAS_TRANSPOSE TransA,
@@ -54,13 +54,13 @@ void OpenMPBLAS3::gemm(
     const IndexType m,
     const IndexType n,
     const IndexType k,
-    const T alpha,
-    const T* A,
+    const ValueType alpha,
+    const ValueType* A,
     const IndexType lda,
-    const T* B,
+    const ValueType* B,
     const IndexType ldb,
-    const T beta,
-    T* C,
+    const ValueType beta,
+    ValueType* C,
     const IndexType ldc,
     SyncToken* syncToken )
 {
@@ -69,7 +69,7 @@ void OpenMPBLAS3::gemm(
         LAMA_LOG_WARN( logger, "no asynchronous execution for openmp possible at this level." )
     }
 
-    LAMA_LOG_INFO( logger, "gemm<" << Scalar::getType<T>() << ">: "
+    LAMA_LOG_INFO( logger, "gemm<" << Scalar::getType<ValueType>() << ">: "
                    << "m = " << m << ", n = " << n << ", k = " << k
                     << ", lda = " << lda << ", ldb = " << ldb << ", ldc = " << ldc
                     << ", alpha = " << alpha << ", beta = " << beta )
@@ -84,7 +84,7 @@ void OpenMPBLAS3::gemm(
             //'T'
             if ( TransB == CblasNoTrans )
             {
-                T temp = 0.0;
+                ValueType temp = 0.0;
 #pragma omp parallel for collapse(2) private(temp) schedule( LAMA_OMP_SCHEDULE )
                 for ( int h = 0; h < n; h++ )
                 {
@@ -105,7 +105,7 @@ void OpenMPBLAS3::gemm(
             }
             else if ( TransB == CblasTrans )
             {
-                T temp = 0.0;
+                ValueType temp = 0.0;
 #pragma omp parallel for collapse(2) private(temp) schedule( LAMA_OMP_SCHEDULE )
                 for ( int h = 0; h < n; h++ )
                 {
@@ -154,7 +154,7 @@ void OpenMPBLAS3::gemm(
         {
             if ( TransB == CblasNoTrans )
             {
-                T temp = 0.0;
+                ValueType temp = 0.0;
 #pragma omp parallel for collapse(2) private(temp) schedule( LAMA_OMP_SCHEDULE )
                 for ( int h = 0; h < n; h++ )
                 {
@@ -175,7 +175,7 @@ void OpenMPBLAS3::gemm(
             }
             else if ( TransB == CblasTrans )
             {
-                T temp = 0.0;
+                ValueType temp = 0.0;
 #pragma omp parallel for collapse(2) private(temp) schedule( LAMA_OMP_SCHEDULE )
                 for ( int h = 0; h < n; h++ )
                 {
@@ -212,7 +212,7 @@ void OpenMPBLAS3::gemm(
         {
             if ( TransB == CblasNoTrans )
             {
-                T temp = 0.0;
+                ValueType temp = 0.0;
 #pragma omp parallel for collapse(2) private(temp) schedule( LAMA_OMP_SCHEDULE )
                 for ( int h = 0; h < n; h++ )
                 {
@@ -233,7 +233,7 @@ void OpenMPBLAS3::gemm(
             }
             else if ( TransB == CblasTrans )
             {
-                T temp = 0.0;
+                ValueType temp = 0.0;
 #pragma omp parallel for collapse(2) private(temp) schedule( LAMA_OMP_SCHEDULE )
                 for ( int h = 0; h < n; h++ )
                 {
@@ -268,7 +268,7 @@ void OpenMPBLAS3::gemm(
                 {
                     for ( int i = 0; i < m; i++ )
                     {
-                        T temp = 0.0;
+                        ValueType temp = 0.0;
                         for ( int j = 0; j < k; j++ )
                         {
                             temp += A[lda * i + j] * B[ldb * j + h];
@@ -279,7 +279,7 @@ void OpenMPBLAS3::gemm(
             }
             else if( TransB == CblasTrans )
             {
-                T temp = 0.0;
+                ValueType temp = 0.0;
 #pragma omp parallel for collapse(2) private(temp) schedule( LAMA_OMP_SCHEDULE )
                 for ( int h = 0; h < n; h++ )
                 {

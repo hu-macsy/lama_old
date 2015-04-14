@@ -1084,8 +1084,8 @@ void CSRStorage<ValueType>::assignTranspose( const MatrixStorage<ValueType>& oth
 
 /* --------------------------------------------------------------------------- */
 
-template<typename T>
-void CSRStorage<T>::copyTo( _MatrixStorage& other ) const
+template<typename ValueType>
+void CSRStorage<ValueType>::copyTo( _MatrixStorage& other ) const
 {
     // Compressed sparse column data can be set directly to other matrix
 

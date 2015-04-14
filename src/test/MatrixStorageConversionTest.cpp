@@ -110,7 +110,7 @@ void conversion( ContextPtr loc )
         return;
     }
 
-    typedef typename StorageType1::ValueType ValueType1;
+    typedef typename StorageType1::StorageValueType ValueType1;
 
     // test empty assignment
 
@@ -175,7 +175,7 @@ typedef boost::mpl::list< CSRStorage<double>,
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( CreateTest, StorageType, StorageTypes ) 
 {
-    typedef typename StorageType::ValueType ValueType;
+    typedef typename StorageType::StorageValueType ValueType;
 
     StorageType storage;
     setCSRStorage<ValueType>( storage );
@@ -195,7 +195,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( CreateTest, StorageType, StorageTypes )
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( CopyTest, StorageType, StorageTypes ) 
 {
-    typedef typename StorageType::ValueType ValueType;
+    typedef typename StorageType::StorageValueType ValueType;
 
     StorageType storage;
     setCSRStorage<ValueType>( storage );
@@ -214,7 +214,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( CopyTest, StorageType, StorageTypes )
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( DefaultConstructorTest, StorageType, StorageTypes ) 
 {
-    typedef typename StorageType::ValueType ValueType;
+    typedef typename StorageType::StorageValueType ValueType;
 
     StorageType storage;
     setCSRStorage<ValueType>( storage );
@@ -233,7 +233,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( DefaultConstructorTest, StorageType, StorageTypes
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( ConstructorTest, StorageType, StorageTypes ) 
 {
-    typedef typename StorageType::ValueType ValueType;
+    typedef typename StorageType::StorageValueType ValueType;
 
     DenseStorage<ValueType> dense;
     setCSRStorage<ValueType>( dense );
@@ -247,7 +247,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( ConstructorTest, StorageType, StorageTypes )
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( DefaultAssignmentTest, StorageType, StorageTypes ) 
 {
-    typedef typename StorageType::ValueType ValueType;
+    typedef typename StorageType::StorageValueType ValueType;
 
     StorageType storage;
     setCSRStorage<ValueType>( storage );
@@ -262,7 +262,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( DefaultAssignmentTest, StorageType, StorageTypes 
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( AssignmentTest, StorageType, StorageTypes ) 
 {
-    typedef typename StorageType::ValueType ValueType;
+    typedef typename StorageType::StorageValueType ValueType;
 
     CSRStorage<ValueType> csr;
     setCSRStorage<ValueType>( csr );
@@ -277,7 +277,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( AssignmentTest, StorageType, StorageTypes )
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( SwapTest, StorageType, StorageTypes ) 
 {
-    typedef typename StorageType::ValueType ValueType;
+    typedef typename StorageType::StorageValueType ValueType;
 
     StorageType storage, saveStorage;
     setCSRStorage<ValueType>( storage );

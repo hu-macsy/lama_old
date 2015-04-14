@@ -53,9 +53,9 @@ class LAMA_DLL_IMPORTEXPORT MICBLAS3
 {
 public:
 
-    /** MIC implementation for BLAS3Interface<T>::gemm */
+    /** MIC implementation for BLAS3Interface<ValueType>::gemm */
 
-    template<typename T>
+    template<typename ValueType>
     static void gemm(
         const CBLAS_ORDER order,
         const CBLAS_TRANSPOSE TransA,
@@ -63,13 +63,13 @@ public:
         const IndexType M,
         const IndexType N,
         const IndexType K,
-        const T alpha,
-        const T* A,
+        const ValueType alpha,
+        const ValueType* A,
         const IndexType lda,
-        const T* B,
+        const ValueType* B,
         const IndexType ldb,
-        const T beta,
-        T* C,
+        const ValueType beta,
+        ValueType* C,
         const IndexType ldc,
         SyncToken* syncToken );
 

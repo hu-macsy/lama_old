@@ -48,14 +48,12 @@ namespace lama
 /**
  * @brief HostReadAccess is a specialization of ReadAccess for a host context with an extended interface.
  *
- * @tparam T is the type stored in the wrapped container.
+ * @tparam ValueType is the type stored in the wrapped container.
  */
-template<typename T>
-class HostReadAccess: public ReadAccess<T>
+template<typename ValueType>
+class HostReadAccess: public ReadAccess<ValueType>
 {
 public:
-    typedef T ValueType; //!< This is the type stored in the wrapped container.
-
     /**
      * @brief Acquire a ReadAccess to the passed LAMAArray for the host location.
      *
@@ -82,7 +80,7 @@ public:
      *
      * @return  a constant pointer to the data of the wrapped LAMAArray
      */
-    inline operator const T*() const;
+    inline operator const ValueType*() const;
 
     using ReadAccess<ValueType>::get;
 
@@ -94,29 +92,29 @@ private:
     LAMA_LOG_DECL_STATIC_LOGGER( logger )
 };
 
-LAMA_LOG_DEF_TEMPLATE_LOGGER( template<typename T>, HostReadAccess<T>::logger, "ReadAccess.HostReadAccess" )
+LAMA_LOG_DEF_TEMPLATE_LOGGER( template<typename ValueType>, HostReadAccess<ValueType>::logger, "ReadAccess.HostReadAccess" )
 
-template<typename T>
-HostReadAccess<T>::HostReadAccess( const LAMAArray<ValueType>& array )
-    : ReadAccess<T>( array, ContextFactory::getContext( Context::Host ) ), mData( get() )
+template<typename ValueType>
+HostReadAccess<ValueType>::HostReadAccess( const LAMAArray<ValueType>& array )
+    : ReadAccess<ValueType>( array, ContextFactory::getContext( Context::Host ) ), mData( get() )
 {
     LAMA_LOG_DEBUG(logger, "read access on host, mData = " << mData);
 }
 
-template<typename T>
-HostReadAccess<T>::~HostReadAccess()
+template<typename ValueType>
+HostReadAccess<ValueType>::~HostReadAccess()
 {
     LAMA_LOG_DEBUG( logger, "~HostReadAccess" )
 }
 
-template<typename T>
-inline const T& HostReadAccess<T>::operator[]( const IndexType i ) const
+template<typename ValueType>
+inline const ValueType& HostReadAccess<ValueType>::operator[]( const IndexType i ) const
 {
     return mData[i];
 }
 
-template<typename T>
-inline HostReadAccess<T>::operator const T*() const
+template<typename ValueType>
+inline HostReadAccess<ValueType>::operator const ValueType*() const
 {
     LAMA_LOG_TRACE( logger, "mData = " << mData )
     return mData;

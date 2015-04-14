@@ -48,12 +48,12 @@
 extern std::string loglevel_argument;
 
 /**
- * @brief eps() returns the desired precision of calculations with T in tests.
+ * @brief eps() returns the desired precision of calculations with ValueType in tests.
  *
- * @return the desired precision for calculations with T in tests
+ * @return the desired precision for calculations with ValueType in tests
  */
-template<typename T>
-inline T eps();
+template<typename ValueType>
+inline ValueType eps();
 
 /**
  * @brief eps<double>() returns the desired precision of calculations in single
@@ -79,7 +79,7 @@ inline double eps<double>()
     return 1E-5f;
 }
 
-template<typename T>
+template<typename ValueType>
 inline lama::Scalar scalarEps();
 
 template<>

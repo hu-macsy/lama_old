@@ -96,7 +96,7 @@ LAMA_LOG_DEF_LOGGER( logger, "Test.VectorTest" )
 
 /* --------------------------------------------------------------------- */
 
-template<typename T>
+template<typename ValueType>
 void verifySameVector( Vector& v1, Vector& v2 )
 {
     BOOST_CHECK_EQUAL( v1.getValueType(), v2.getValueType() );
@@ -109,14 +109,14 @@ void verifySameVector( Vector& v1, Vector& v2 )
 
     for ( IndexType i = 0; i < n; ++i )
     {
-        // BOOST_CHECK_CLOSE: cannot be used for Complex<T>
+        // BOOST_CHECK_CLOSE: cannot be used for Complex<ValueType>
         LAMA_CHECK_CLOSE( v1.getValue( i ), v2.getValue( i ), 1 );
     }
 }
 
 /* --------------------------------------------------------------------- */
 
-template<typename T>
+template<typename ValueType>
 void verifyVectorWithScalar( Vector& v, Scalar s )
 {
     IndexType n = v.size();
@@ -129,10 +129,8 @@ void verifyVectorWithScalar( Vector& v, Scalar s )
 
 /* --------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( cTorTest, T, test_types )
+BOOST_AUTO_TEST_CASE_TEMPLATE( cTorTest, ValueType, test_types )
 {
-    typedef T ValueType;
-
     IndexType n = 4;
     DenseVector<ValueType> v( n, 1.0 );
     Scalar scalar = 2.0;
@@ -214,13 +212,12 @@ BOOST_AUTO_TEST_CASE( ReadAndWriteVectorTest )
 
 /* ------------------------------------------------------------------------- */
 
-template<typename mt>
+template<typename MatrixType>
 void CtorMatrixExpressionTestmethod()
 {
-    typedef mt MatrixType;
-    typedef typename mt::ValueType ValueType;
+    typedef typename MatrixType::MatrixValueType ValueType;
 
-    LAMA_LOG_INFO( logger, "CtorMatrixExpressionTestmethod, MatrixType = " << typeid( mt ).name() );
+    LAMA_LOG_INFO( logger, "CtorMatrixExpressionTestmethod, MatrixType = " << typeid( MatrixType ).name() );
 
     IndexType n = 4;
     IndexType m = 4;
@@ -348,9 +345,7 @@ void CtorMatrixExpressionTestmethod()
 
 }
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( CtorMatrixExpressionTest, T, test_types ) {
-    typedef T ValueType;
-
+BOOST_AUTO_TEST_CASE_TEMPLATE( CtorMatrixExpressionTest, ValueType, test_types ) {
     CtorMatrixExpressionTestmethod< CSRSparseMatrix<ValueType> >();
     CtorMatrixExpressionTestmethod< ELLSparseMatrix<ValueType> >();
     CtorMatrixExpressionTestmethod< DIASparseMatrix<ValueType> >();
@@ -361,10 +356,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( CtorMatrixExpressionTest, T, test_types ) {
 
 /* --------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( CtorVectorExpressionTest, T, test_types )
+BOOST_AUTO_TEST_CASE_TEMPLATE( CtorVectorExpressionTest, ValueType, test_types )
 {
-    typedef T ValueType;
-
     IndexType n = 4;
 
     DenseVector<ValueType> vectorA( n , 3.0 );
@@ -423,11 +416,10 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( CtorVectorExpressionTest, T, test_types )
 
 /* --------------------------------------------------------------------- */
 
-template<typename mt>
+template<typename MatrixType>
 void AssignmentOpMatrixExpressionTestmethod( ContextPtr context )
 {
-    typedef mt MatrixType;
-    typedef typename mt::ValueType ValueType;
+    typedef typename MatrixType::MatrixValueType ValueType;
 
     IndexType n = 4;
     IndexType m = 4;
@@ -575,12 +567,10 @@ void AssignmentOpMatrixExpressionTestmethod( ContextPtr context )
     LAMA_CHECK_THROW( { vec2 = n4m4IdentityMatrix * vec1; }, Exception );
 }
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( AssignmentOpMatrixExpressionTest, T, test_types )
+BOOST_AUTO_TEST_CASE_TEMPLATE( AssignmentOpMatrixExpressionTest, ValueType, test_types )
 {
     CONTEXTLOOP()
     {
-        typedef T ValueType;
-
         GETCONTEXT( context );
 
         AssignmentOpMatrixExpressionTestmethod< CSRSparseMatrix<ValueType> >( context );
@@ -594,11 +584,9 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( AssignmentOpMatrixExpressionTest, T, test_types )
 
 /* --------------------------------------------------------------------- */
 
-template<typename mt>
+template<typename ValueType>
 void AssignmentVectorExpressionTestmethod( ContextPtr context )
 {
-    typedef mt ValueType;
-
     IndexType n = 4;
 
     DenseVector<ValueType> vectorA( n, 3.0 );
@@ -673,10 +661,8 @@ void AssignmentVectorExpressionTestmethod( ContextPtr context )
     LAMA_CHECK_THROW( { DenseVector<ValueType> vec4( vec1 + 2.0 * vec2 ) ; }, Exception );
 }
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( AssignmentVectorExpressionTest, T, test_types )
+BOOST_AUTO_TEST_CASE_TEMPLATE( AssignmentVectorExpressionTest, ValueType, test_types )
 {
-    typedef T ValueType;
-
     CONTEXTLOOP()
     {
         GETCONTEXT( context );
@@ -692,12 +678,10 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( AssignmentVectorExpressionTest, T, test_types )
 
 /* --------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( SpecialAssignmentTest, T, test_types )
+BOOST_AUTO_TEST_CASE_TEMPLATE( SpecialAssignmentTest, ValueType, test_types )
 {
     CONTEXTLOOP()
     {
-        typedef T ValueType;
-
         GETCONTEXT( context );
 
         IndexType n = 4;
@@ -743,12 +727,10 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( SpecialAssignmentTest, T, test_types )
 
 /* ------------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( operatorDotProductTest, T, test_types )
+BOOST_AUTO_TEST_CASE_TEMPLATE( operatorDotProductTest, ValueType, test_types )
 {
     CONTEXTLOOP()
     {
-        typedef T ValueType;
-
         GETCONTEXT( context );
 
         IndexType n = 4;
@@ -860,11 +842,10 @@ BOOST_AUTO_TEST_CASE( WriteAtTest )
 
 /* --------------------------------------------------------------------- */
 
-template<typename mt>
+template<typename MatrixType>
 void operatorMatrixTimesVectorTestmethod()
 {
-    typedef mt MatrixType;
-    typedef typename mt::ValueType ValueType;
+    typedef typename MatrixType::MatrixValueType ValueType;
 
     const IndexType n = 6;
     const IndexType m = 4;
@@ -932,10 +913,8 @@ void operatorMatrixTimesVectorTestmethod()
     LAMA_LOG_INFO( logger, "check for exception done" );
 }
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( operatorMatrixTimeVectorTestold, T, test_types )
+BOOST_AUTO_TEST_CASE_TEMPLATE( operatorMatrixTimeVectorTestold, ValueType, test_types )
 {
-    typedef T ValueType;
-
     operatorMatrixTimesVectorTestmethod< CSRSparseMatrix<ValueType> >();
     operatorMatrixTimesVectorTestmethod< ELLSparseMatrix<ValueType> >();
     operatorMatrixTimesVectorTestmethod< DIASparseMatrix<ValueType> >();
@@ -946,11 +925,10 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( operatorMatrixTimeVectorTestold, T, test_types )
 
 /* --------------------------------------------------------------------- */
 
-template<typename mt>
+template<typename MatrixType>
 void operatorVectorTimesMatrixTestmethod()
 {
-    typedef mt MatrixType;
-    typedef typename mt::ValueType ValueType;
+    typedef typename MatrixType::MatrixValueType ValueType;
 
     const IndexType n = 6;
     const IndexType m = 4;
@@ -1019,10 +997,8 @@ void operatorVectorTimesMatrixTestmethod()
     LAMA_LOG_INFO( logger, "check for exception done" );
 }
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( operatorVectorTimesMatrixTestold, T, test_types )
+BOOST_AUTO_TEST_CASE_TEMPLATE( operatorVectorTimesMatrixTestold, ValueType, test_types )
 {
-    typedef T ValueType;
-
     operatorVectorTimesMatrixTestmethod< CSRSparseMatrix<ValueType> >();
     operatorVectorTimesMatrixTestmethod< ELLSparseMatrix<ValueType> >();
     operatorVectorTimesMatrixTestmethod< DIASparseMatrix<ValueType> >();
@@ -1033,10 +1009,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( operatorVectorTimesMatrixTestold, T, test_types )
 
 /* --------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( operatorTest, T, test_types )
+BOOST_AUTO_TEST_CASE_TEMPLATE( operatorTest, ValueType, test_types )
 {
-    typedef T ValueType;
-
     IndexType n = 4;
     DenseVector<ValueType> v( n, 1.0 );
 
@@ -1057,9 +1031,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( operatorTest, T, test_types )
 
 /* --------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( xGEMVOperationTest, T, test_types )
+BOOST_AUTO_TEST_CASE_TEMPLATE( xGEMVOperationTest, ValueType, test_types )
 {
-    typedef T ValueType;
     {
         //y = alpha * A * x + 0 * y
 
@@ -1141,10 +1114,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( xGEMVOperationTest, T, test_types )
 
 /* --------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( xAXPYTest, T, test_types)
+BOOST_AUTO_TEST_CASE_TEMPLATE( xAXPYTest, ValueType, test_types)
 {
-    typedef T ValueType;
-
     const DenseMatrix<ValueType> A( TestSparseMatrices::n4m4IdentityMatrix<ValueType>() );
 
     DenseVector<ValueType> x( 4, 1.0 );

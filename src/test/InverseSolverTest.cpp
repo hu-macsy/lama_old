@@ -70,7 +70,7 @@ LAMA_LOG_DEF_LOGGER( logger, "Test.InverseSolverTest" )
 template<typename MatrixType>
 void testSolveMethod( ContextPtr context )
 {
-    typedef typename MatrixType::ValueType ValueType;
+    typedef typename MatrixType::MatrixValueType ValueType;
 
     EquationHelper::EquationSystem<ValueType> system = EquationHelper::get8x8SystemA<ValueType>();
 

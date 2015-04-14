@@ -61,19 +61,19 @@ public:
     /**
      * This function is the OpenMP implementation of lama::BLAS2Interface::gemv
      */
-    template<typename T>
+    template<typename ValueType>
     static void gemv(
         const CBLAS_ORDER order,
         const CBLAS_TRANSPOSE trans,
         const IndexType m,
         const IndexType n,
-        const T alpha,
-        const T* A,
+        const ValueType alpha,
+        const ValueType* A,
         const IndexType lda,
-        const T* x,
+        const ValueType* x,
         const IndexType incX,
-        const T beta,
-        T* y,
+        const ValueType beta,
+        ValueType* y,
         const IndexType incY,
         SyncToken* syncToken );
 

@@ -121,10 +121,10 @@ BOOST_AUTO_TEST_CASE( SOROmegaSetandGetTest )
 /* --------------------------------------------------------------------- */
 
 //testsolve has stoppingCriterion ResidualThreshold
-template<typename Matrix>
+template<typename MatrixType>
 void testSolveOmegaMethod( Scalar omega )
 {
-    typedef typename Matrix::ValueType ValueType;
+    typedef typename MatrixType::MatrixValueType ValueType;
 
     Timer* timer = new Timer();
     std::auto_ptr<Timer> autoTimer( timer );

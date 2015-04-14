@@ -44,7 +44,7 @@ namespace lama
 
 /* -------------------------------------------------------------------------- */
 
-LAMA_LOG_DEF_TEMPLATE_LOGGER( template<typename T>, COOSparseMatrix<T>::logger, "Matrix.SparseMatrix.COOSparseMatrix" )
+LAMA_LOG_DEF_TEMPLATE_LOGGER( template<typename ValueType>, COOSparseMatrix<ValueType>::logger, "Matrix.SparseMatrix.COOSparseMatrix" )
 
 /* -------------------------------------------------------------------------- */
 

@@ -38,82 +38,82 @@
 /** Macro that creates for a function pointer type a table that contains pointer for each type.
  */
 
-#define LAMA_INTERFACE_DEFINE( structname, functionname )                                     \
-                                                                                              \
-    /** Method that returns the function pointer for the correspondingly typed version. */    \
-                                                                                              \
-    structname::functionname                                                                  \
-    functionname () const                                                                     \
-    {                                                                                         \
-        return functionname##_Table;                                                          \
-    }                                                                                         \
-                                                                                              \
-    /** Register a function pointer in the type table. */                                     \
-                                                                                              \
-    void functionname##_add( structname::functionname functionPtr,                            \
-                             bool replace )                                                   \
-    {                                                                                         \
-        if ( replace || !functionname##_Table )                                               \
-        {                                                                                     \
-            functionname##_Table = functionPtr;                                               \
-        }                                                                                     \
-    }                                                                                         \
-                                                                                              \
+#define LAMA_INTERFACE_DEFINE( structname, functionname )                                             \
+                                                                                                      \
+    /** Method that returns the function pointer for the correspondingly typed version. */            \
+                                                                                                      \
+    structname::functionname                                                                          \
+    functionname () const                                                                             \
+    {                                                                                                 \
+        return functionname##_Table;                                                                  \
+    }                                                                                                 \
+                                                                                                      \
+    /** Register a function pointer in the type table. */                                             \
+                                                                                                      \
+    void functionname##_add( structname::functionname functionPtr,                                    \
+                             bool replace )                                                           \
+    {                                                                                                 \
+        if ( replace || !functionname##_Table )                                                       \
+        {                                                                                             \
+            functionname##_Table = functionPtr;                                                       \
+        }                                                                                             \
+    }                                                                                                 \
+                                                                                                      \
     structname::functionname functionname##_Table;
 
-#define LAMA_INTERFACE_DEFINE_T( structname, functionname )                                   \
-                                                                                              \
-    /** Method that returns the function pointer for the correspondingly typed version. */    \
-                                                                                              \
-    template<typename T>                                                                      \
-    typename structname<T>::functionname                                                      \
-    functionname () const                                                                     \
-    {                                                                                         \
-        return ( typename structname<T>::functionname )                                       \
-               functionname##_Table[ Scalar::getType<T>() ];                                  \
-    }                                                                                         \
-                                                                                              \
-    /** Register a function pointer in the type table. */                                     \
-                                                                                              \
-    template<typename T>                                                                      \
-    void functionname##_add( typename structname<T>::functionname functionPtr,                \
-                             bool replace )                                                   \
-    {                                                                                         \
-        if ( replace || !functionname##_Table[ Scalar::getType<T>() ] )                       \
-        {                                                                                     \
-            functionname##_Table[ Scalar::getType<T>() ]                                      \
-             = ( void (*) () ) functionPtr;                                                   \
-        }                                                                                     \
-    }                                                                                         \
-                                                                                              \
+#define LAMA_INTERFACE_DEFINE_T( structname, functionname )                                           \
+                                                                                                      \
+    /** Method that returns the function pointer for the correspondingly typed version. */            \
+                                                                                                      \
+    template<typename ValueType>                                                                      \
+    typename structname<ValueType>::functionname                                                      \
+    functionname () const                                                                             \
+    {                                                                                                 \
+        return ( typename structname<ValueType>::functionname )                                       \
+               functionname##_Table[ Scalar::getType<ValueType>() ];                                  \
+    }                                                                                                 \
+                                                                                                      \
+    /** Register a function pointer in the type table. */                                             \
+                                                                                                      \
+    template<typename ValueType>                                                                      \
+    void functionname##_add( typename structname<ValueType>::functionname functionPtr,                \
+                             bool replace )                                                           \
+    {                                                                                                 \
+        if ( replace || !functionname##_Table[ Scalar::getType<ValueType>() ] )                       \
+        {                                                                                             \
+            functionname##_Table[ Scalar::getType<ValueType>() ]                                      \
+             = ( void (*) () ) functionPtr;                                                           \
+        }                                                                                             \
+    }                                                                                                 \
+                                                                                                      \
     void ( *functionname##_Table[ Scalar::UNKNOWN ] ) ();
 
-#define LAMA_INTERFACE_DEFINE_TT( structname, functionname )                                  \
-                                                                                              \
-    /** Method that returns the function pointer for the correspondingly typed version. */    \
-                                                                                              \
-    template<typename T1, typename T2>                                                        \
-    typename structname<T1, T2>::functionname                                                 \
-    functionname () const                                                                     \
-    {                                                                                         \
-        return ( typename structname<T1,T2>::functionname )                                   \
-               functionname##_Table[ Scalar::getType<T1>()][ Scalar::getType<T2>() ];         \
-    }                                                                                         \
-                                                                                              \
-    /** Register a function pointer in the type table. */                                     \
-                                                                                              \
-    template<typename T1, typename T2>                                                        \
-    void functionname##_add( typename structname<T1, T2>::functionname functionPtr,           \
-                             bool replace )                                                   \
-    {                                                                                         \
-        if ( replace || !functionname##_Table[ Scalar::getType<T1>() ]                         \
-                                             [ Scalar::getType<T2>() ] )                       \
-        {                                                                                     \
-            functionname##_Table[ Scalar::getType<T1>() ][ Scalar::getType<T2>() ]            \
-               = ( void (*) () ) functionPtr;                                                 \
-        }                                                                                     \
-    }                                                                                         \
-                                                                                              \
+#define LAMA_INTERFACE_DEFINE_TT( structname, functionname )                                          \
+                                                                                                      \
+    /** Method that returns the function pointer for the correspondingly typed version. */            \
+                                                                                                      \
+    template<typename ValueType1, typename ValueType2>                                                \
+    typename structname<ValueType1, ValueType2>::functionname                                         \
+    functionname () const                                                                             \
+    {                                                                                                 \
+        return ( typename structname<ValueType1,ValueType2>::functionname )                           \
+               functionname##_Table[ Scalar::getType<ValueType1>()][ Scalar::getType<ValueType2>() ]; \
+    }                                                                                                 \
+                                                                                                      \
+    /** Register a function pointer in the type table. */                                             \
+                                                                                                      \
+    template<typename ValueType1, typename ValueType2>                                                \
+    void functionname##_add( typename structname<ValueType1, ValueType2>::functionname functionPtr,   \
+                             bool replace )                                                           \
+    {                                                                                                 \
+        if ( replace || !functionname##_Table[ Scalar::getType<ValueType1>() ]                        \
+                                             [ Scalar::getType<ValueType2>() ] )                      \
+        {                                                                                             \
+            functionname##_Table[ Scalar::getType<ValueType1>() ][ Scalar::getType<ValueType2>() ]    \
+               = ( void (*) () ) functionPtr;                                                         \
+        }                                                                                             \
+    }                                                                                                 \
+                                                                                                      \
     void ( *functionname##_Table[ Scalar::UNKNOWN ][ Scalar::UNKNOWN] ) ();
 
 /** This macro registers in an interface a function pointer variable 
@@ -123,22 +123,22 @@
  *  REGISTER1 : overwrites existing entries
  */
 
-#define LAMA_INTERFACE_REGISTER( interface, function )                                      \
+#define LAMA_INTERFACE_REGISTER( interface, function )                                                \
     interface.function##_add( function,false );
 
-#define LAMA_INTERFACE_REGISTER1( interface, function )                                     \
+#define LAMA_INTERFACE_REGISTER1( interface, function )                                               \
     interface.function##_add( function, true );
 
-#define LAMA_INTERFACE_REGISTER_T( interface, function, T )                                 \
-    interface.function##_add<T>( function<T>, false );
+#define LAMA_INTERFACE_REGISTER_T( interface, function, ValueType )                                   \
+    interface.function##_add<ValueType>( function<ValueType>, false );
 
-#define LAMA_INTERFACE_REGISTER1_T( interface, function, T )                                \
-    interface.function##_add<T>( function<T>, true );
+#define LAMA_INTERFACE_REGISTER1_T( interface, function, ValueType )                                  \
+    interface.function##_add<ValueType>( function<ValueType>, true );
 
-#define LAMA_INTERFACE_REGISTER_TT( interface, function, T1, T2 )                           \
-    interface.function##_add<T1,T2>( function<T1,T2>, false );
+#define LAMA_INTERFACE_REGISTER_TT( interface, function, ValueType1, ValueType2 )                     \
+    interface.function##_add<ValueType1,ValueType2>( function<ValueType1,ValueType2>, false );
 
-#define LAMA_INTERFACE_REGISTER1_TT( interface, function, T1, T2 )                          \
-    interface.function##_add<T1,T2>( function<T1,T2>, true );
+#define LAMA_INTERFACE_REGISTER1_TT( interface, function, ValueType1, ValueType2 )                    \
+    interface.function##_add<ValueType1,ValueType2>( function<ValueType1,ValueType2>, true );
 
 #endif // LAMA_INTERFACE_MACROS_HPP_

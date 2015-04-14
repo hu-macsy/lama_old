@@ -45,37 +45,35 @@
 namespace lama
 {
 
-template<typename T>
+template<typename ValueType>
 class ReadAccess;
 
-template<typename T>
+template<typename ValueType>
 class WriteAccess;
 
-template<typename T>
+template<typename ValueType>
 class LAMAArrayConstView;
 
 /**
  * @brief LAMAArrayView is a proxy which gives a view to a sub range of a LAMAArray.
  *
- * @tparam T is the type stored in this container.
+ * @tparam ValueType is the type stored in this container.
  */
-template<typename T>
+template<typename ValueType>
 class LAMA_DLL_IMPORTEXPORT LAMAArrayView: public Printable
 {
-    friend class ReadAccess<T> ;
-    friend class WriteAccess<T> ;
-    friend class LAMAArrayConstView<T> ;
+    friend class ReadAccess<ValueType> ;
+    friend class WriteAccess<ValueType> ;
+    friend class LAMAArrayConstView<ValueType> ;
 
 public:
-
-    typedef T ValueType; //!< This is the type stored in this container.
 
     /**
      * @brief Constructs a view into the whole passed LAMAArray.
      *
      * @param[in,out] array the array to get a view into.
      */
-    LAMAArrayView( LAMAArray<T>& array );
+    LAMAArrayView( LAMAArray<ValueType>& array );
 
     /**
      * @brief Constructs a view of the passed size into the passed LAMAArray starting at the passed offset.
@@ -84,14 +82,14 @@ public:
      * @param[in]       offset  the index where the view into array should start.
      * @param[in]       size    the lenght of the subrange of array.
      */
-    LAMAArrayView( LAMAArray<T>& array, const IndexType offset, const IndexType size );
+    LAMAArrayView( LAMAArray<ValueType>& array, const IndexType offset, const IndexType size );
 
     /**
      * @brief Takes a copy of the passed LAMAArrayView.
      *
      * @param[in]   other   the LAMAArrayView to take a copy from.
      */
-    LAMAArrayView( const LAMAArrayView<T>& other );
+    LAMAArrayView( const LAMAArrayView<ValueType>& other );
 
     /**
      * @brief destroys this LAMAArrayView, the referenced LAMAArray is not touched.
@@ -114,7 +112,7 @@ public:
      * @param[in]   other   the LAMAArrayConstView to compare this with.
      * @return              if this and other are referencing the same LAMAArray.
      */
-    bool operator==( const LAMAArrayConstView<T>& other ) const;
+    bool operator==( const LAMAArrayConstView<ValueType>& other ) const;
 
     /**
      * @brief Checks if the LAMAArray referenced by other is not the same than the LAMAArray reference by this.
@@ -125,7 +123,7 @@ public:
      * @param[in]   other   the LAMAArrayConstView to compare this with.
      * @return              if this and other are referencing different LAMAArrays.
      */
-    bool operator!=( const LAMAArrayConstView<T>& other ) const;
+    bool operator!=( const LAMAArrayConstView<ValueType>& other ) const;
 
     /**
      * @brief Checks if the LAMAArray referenced by other is the same than the LAMAArray reference by this.
@@ -136,7 +134,7 @@ public:
      * @param[in]   other   the LAMAArrayView to compare this with.
      * @return              if this and other are referencing the same LAMAArray.
      */
-    bool operator==( const LAMAArrayView<T>& other ) const;
+    bool operator==( const LAMAArrayView<ValueType>& other ) const;
 
     /**
      * @brief Checks if the LAMAArray referenced by other is not the same than the LAMAArray reference by this.
@@ -147,11 +145,11 @@ public:
      * @param[in]   other   the LAMAArrayView to compare this with.
      * @return              if this and other are referencing different LAMAArrays.
      */
-    bool operator!=( const LAMAArrayView<T>& other ) const;
+    bool operator!=( const LAMAArrayView<ValueType>& other ) const;
 
 private:
     LAMAArrayView();
-    LAMAArrayView& operator=( const LAMAArrayView<T>& other );
+    LAMAArrayView& operator=( const LAMAArrayView<ValueType>& other );
 
     const ValueType* get( const size_t index ) const;
 
@@ -175,7 +173,7 @@ private:
 
     IndexType capacity( const size_t index ) const;
 
-    LAMAArray<T>& mArray;
+    LAMAArray<ValueType>& mArray;
     const IndexType mOffset;
     IndexType mSize;
 };
@@ -183,36 +181,35 @@ private:
 /**
  * @brief LAMAArrayConstView is a proxy which gives a constant view to a sub range of a LAMAArray.
  *
- * @tparam T the value type for the elements of this.
+ * @tparam ValueType the value type for the elements of this.
  */
-template<typename T>
+template<typename ValueType>
 class LAMAArrayConstView: public Printable
 {
-    friend class ReadAccess<T> ;
+    friend class ReadAccess<ValueType> ;
 
 public:
-    typedef T ValueType;  //!< This is the type stored in this container.
 
     /**
      * @brief Takes a copy of the passed LAMAArrayConstView.
      *
      * @param[in]   other   the LAMAArrayConstView to take a copy from.
      */
-    LAMAArrayConstView( const LAMAArrayConstView<T>& other );
+    LAMAArrayConstView( const LAMAArrayConstView<ValueType>& other );
 
     /**
      * @brief Takes a copy of the passed LAMAArrayView.
      *
      * @param[in]   view   the LAMAArrayView to take a copy from.
      */
-    LAMAArrayConstView( const LAMAArrayView<T>& view );
+    LAMAArrayConstView( const LAMAArrayView<ValueType>& view );
 
     /**
      * @brief Constructs a view into the whole passed LAMAArray.
      *
      * @param[in,out] array the array to get a view into.
      */
-    LAMAArrayConstView( const LAMAArray<T>& array );
+    LAMAArrayConstView( const LAMAArray<ValueType>& array );
 
     /**
      * @brief Constructs a view of the passed size into the passed LAMAArray starting at the passed offset.
@@ -221,7 +218,7 @@ public:
      * @param[in]       offset  the index where the view into array should start.
      * @param[in]       size    the lenght of the subrange of array.
      */
-    LAMAArrayConstView( const LAMAArray<T>& array, const IndexType offset, const IndexType size );
+    LAMAArrayConstView( const LAMAArray<ValueType>& array, const IndexType offset, const IndexType size );
 
     /**
      * @brief destroys this LAMAArrayView, the referenced LAMAArray is not touched.
@@ -244,7 +241,7 @@ public:
      * @param[in]   other   the LAMAArrayConstView to compare this with.
      * @return              if this and other are referencing the same LAMAArray.
      */
-    bool operator==( const LAMAArrayConstView<T>& other ) const;
+    bool operator==( const LAMAArrayConstView<ValueType>& other ) const;
 
     /**
      * @brief Checks if the LAMAArray referenced by other is not the same than the LAMAArray reference by this.
@@ -255,7 +252,7 @@ public:
      * @param[in]   other   the LAMAArrayConstView to compare this with.
      * @return              if this and other are referencing different LAMAArrays.
      */
-    bool operator!=( const LAMAArrayConstView<T>& other ) const;
+    bool operator!=( const LAMAArrayConstView<ValueType>& other ) const;
 
     /**
      * @brief Checks if the LAMAArray referenced by other is the same than the LAMAArray reference by this.
@@ -266,7 +263,7 @@ public:
      * @param[in]   other   the LAMAArrayView to compare this with.
      * @return              if this and other are referencing the same LAMAArray.
      */
-    bool operator==( const LAMAArrayView<T>& other ) const;
+    bool operator==( const LAMAArrayView<ValueType>& other ) const;
 
     /**
      * @brief Checks if the LAMAArray referenced by other is not the same than the LAMAArray reference by this.
@@ -277,11 +274,11 @@ public:
      * @param[in]   other   the LAMAArrayView to compare this with.
      * @return              if this and other are referencing different LAMAArrays.
      */
-    bool operator!=( const LAMAArrayView<T>& other ) const;
+    bool operator!=( const LAMAArrayView<ValueType>& other ) const;
 
 private:
     LAMAArrayConstView();
-    LAMAArrayConstView& operator=( const LAMAArrayConstView<T>& other );
+    LAMAArrayConstView& operator=( const LAMAArrayConstView<ValueType>& other );
 
     const ValueType* get( const size_t index ) const;
 
@@ -289,19 +286,19 @@ private:
 
     void releaseReadAccess( const size_t index ) const;
 
-    const LAMAArray<T>& mArray;
+    const LAMAArray<ValueType>& mArray;
     const IndexType mOffset;
     const IndexType mSize;
 };
 
-template<typename T>
-inline IndexType LAMAArrayView<T>::size() const
+template<typename ValueType>
+inline IndexType LAMAArrayView<ValueType>::size() const
 {
     return mSize;
 }
 
-template<typename T>
-inline IndexType LAMAArrayConstView<T>::size() const
+template<typename ValueType>
+inline IndexType LAMAArrayConstView<ValueType>::size() const
 {
     return mSize;
 }

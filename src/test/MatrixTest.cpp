@@ -92,7 +92,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( TypeNameTest, MatrixType, MatrixTypes )
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( RandomTest, MatrixType, MatrixTypes )
 {
-    typedef typename MatrixType::ValueType ValueType;
+    typedef typename MatrixType::MatrixValueType ValueType;
 
     const IndexType numRows = 150;
     const IndexType numColumns = 160;
@@ -199,7 +199,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( ReadWriteTest, MatrixType, MatrixTypes )
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( DenseMatrixMultTest, MatrixType, MatrixTypes )
 {
-    typedef typename MatrixType::ValueType ValueType;
+    typedef typename MatrixType::MatrixValueType ValueType;
 
 // DenseMatrix = MatrixType * DenseMatrix
 
@@ -219,7 +219,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( DenseMatrixMultTest, MatrixType, MatrixTypes )
 //BOOST_AUTO_TEST_CASE_TEMPLATE( DenseMatrixAddTest, MatrixType, MatrixTypes )
 //{
 //
-//    typedef typename MatrixType::ValueType ValueType;
+//    typedef typename MatrixType::MatrixValueType ValueType;
 //
 //    MatrixType matrix1 = TestSparseMatrices::n6m4MatrixE1<ValueType>();
 //

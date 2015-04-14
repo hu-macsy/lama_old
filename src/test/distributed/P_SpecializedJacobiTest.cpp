@@ -109,11 +109,10 @@ LAMA_LOG_DEF_LOGGER( logger, "Test.P_SpecializedJacobi" );
 
 /* ------------------------------------------------------------------------- */
 
-template<typename mt>
+template<typename MatrixType>
 void testSolveMethod( ContextPtr loc )
 {
-    typedef mt MatrixType;
-    typedef typename mt::ValueType ValueType;
+    typedef typename MatrixType::MatrixValueType ValueType;
 
     const IndexType N1 = 4;
     const IndexType N2 = 4;
@@ -165,9 +164,8 @@ void testSolveMethod( ContextPtr loc )
     //bad omega
 }
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( testSolve, T, test_types ) {
-    typedef T ValueType;
-
+BOOST_AUTO_TEST_CASE_TEMPLATE( testSolve, ValueType, test_types )
+{
     CONTEXTLOOP()
     {
         GETCONTEXT( context );

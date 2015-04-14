@@ -55,9 +55,9 @@ class LAMA_DLL_IMPORTEXPORT BLAS_BLAS3
 {
 public:
 
-    /** OpenMP implementation for BLAS3Interface<T>::gemm */
+    /** OpenMP implementation for BLAS3Interface<ValueType>::gemm */
 
-    template<typename T>
+    template<typename ValueType>
     static void gemm(
         const CBLAS_ORDER order,
         const CBLAS_TRANSPOSE TransA,
@@ -65,13 +65,13 @@ public:
         const IndexType M,
         const IndexType N,
         const IndexType K,
-        const T alpha,
-        const T* A,
+        const ValueType alpha,
+        const ValueType* A,
         const IndexType lda,
-        const T* B,
+        const ValueType* B,
         const IndexType ldb,
-        const T beta,
-        T* C,
+        const ValueType beta,
+        ValueType* C,
         const IndexType ldc,
         SyncToken* syncToken );
 
@@ -144,20 +144,20 @@ public:
      * @param[out] syncToken  updated according to C = alpha * A * B + beta * C
      *                                          or C = alpha * B * A + beta * C
      */
-    template<typename T>
+    template<typename ValueType>
     static void symm(
         const CBLAS_ORDER order,
         const CBLAS_SIDE side,
         const CBLAS_UPLO uplo,
         const IndexType m,
         const IndexType n,
-        const T alpha,
-        const T* A,
+        const ValueType alpha,
+        const ValueType* A,
         const IndexType lda,
-        const T* B,
+        const ValueType* B,
         const IndexType ldb,
-        const T beta,
-        T* C,
+        const ValueType beta,
+        ValueType* C,
         const IndexType ldc,
         SyncToken* syncToken );
 
@@ -225,7 +225,7 @@ public:
      * @param[out] syncToken      updated according to B = alpha * op(A) * B
      *                                              or B = alpha * B * op(A)
      */
-    template<typename T>
+    template<typename ValueType>
     static void trmm(
         const CBLAS_ORDER order,
         const CBLAS_SIDE side,
@@ -234,10 +234,10 @@ public:
         const CBLAS_DIAG diag,
         const IndexType m,
         const IndexType n,
-        const T alpha,
-        const T* A,
+        const ValueType alpha,
+        const ValueType* A,
         const IndexType lda,
-        T* B,
+        ValueType* B,
         const IndexType ldb,
         SyncToken* syncToken );
 
@@ -309,7 +309,7 @@ public:
      *                            op(A) * X = alpha * B
      *                         or X * op(A) = alpha * B
      */
-    template<typename T>
+    template<typename ValueType>
     static void trsm(
         const CBLAS_ORDER order,
         const CBLAS_SIDE side,
@@ -318,10 +318,10 @@ public:
         const CBLAS_DIAG diag,
         const IndexType m,
         const IndexType n,
-        const T alpha,
-        const T* A,
+        const ValueType alpha,
+        const ValueType* A,
         const IndexType lda,
-        T* B,
+        ValueType* B,
         const IndexType ldb,
         SyncToken* syncToken );
 
@@ -394,18 +394,18 @@ public:
      * @param[out] syncToken   updated according to C = alpha * A * AT + beta * C
      *                                           or C = alpha * AT * A + beta * C
      */
-    template<typename T>
+    template<typename ValueType>
     static void syrk(
         const CBLAS_ORDER order,
         const CBLAS_UPLO uplo,
         const CBLAS_TRANSPOSE trans,
         const IndexType n,
         const IndexType k,
-        const T alpha,
-        const T* A,
+        const ValueType alpha,
+        const ValueType* A,
         const IndexType lda,
-        const T beta,
-        T* C,
+        const ValueType beta,
+        ValueType* C,
         const IndexType ldc,
         SyncToken* syncToken );
 
@@ -482,20 +482,20 @@ public:
      * @param[out] syncToken updated according to C = alpha * A * BT + alpha * B * AT + beta * C
      *                                         or C = alpha * AT * B + alpha * BT * A + beta * C
      */
-    template<typename T>
+    template<typename ValueType>
     static void syrk2(
         const CBLAS_ORDER order,
         const CBLAS_UPLO uplo,
         const CBLAS_TRANSPOSE trans,
         const IndexType n,
         const IndexType k,
-        const T alpha,
-        const T* A,
+        const ValueType alpha,
+        const ValueType* A,
         const IndexType lda,
-        const T* B,
+        const ValueType* B,
         const IndexType ldb,
-        const T beta,
-        T* C,
+        const ValueType beta,
+        ValueType* C,
         const IndexType ldc,
         SyncToken* syncToken );
 

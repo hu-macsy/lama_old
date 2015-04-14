@@ -56,7 +56,7 @@ namespace lama
 
 /* ========================================================================= */
 
-LAMA_LOG_DEF_TEMPLATE_LOGGER( template<typename T>, DenseMatrix<T>::logger, "Matrix.DenseMatrix" )
+LAMA_LOG_DEF_TEMPLATE_LOGGER( template<typename ValueType>, DenseMatrix<ValueType>::logger, "Matrix.DenseMatrix" )
 
 /* ------------------------------------------------------------------------- */
 

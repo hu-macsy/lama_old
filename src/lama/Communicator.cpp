@@ -302,11 +302,11 @@ void Communicator::getUserProcArray( PartitionId userProcArray[3] )
 
 /* -------------------------------------------------------------------------- */
 
-template<typename T>
+template<typename ValueType>
 IndexType Communicator::shift0(
-    T targetVals[],
+    ValueType targetVals[],
     const IndexType maxTargetSize,
-    const T sourceVals[],
+    const ValueType sourceVals[],
     const IndexType sourceSize ) const
 {
     LAMA_ASSERT_ERROR( sourceSize <= maxTargetSize, "insufficient size for target array" )
@@ -321,8 +321,8 @@ IndexType Communicator::shift0(
 
 /* -------------------------------------------------------------------------- */
 
-template<typename T>
-void Communicator::shiftArray( LAMAArray<T>& recvArray, const LAMAArray<T>& sendArray, const int direction ) const
+template<typename ValueType>
+void Communicator::shiftArray( LAMAArray<ValueType>& recvArray, const LAMAArray<ValueType>& sendArray, const int direction ) const
 {
     LAMA_ASSERT_ERROR( &recvArray != &sendArray, "send and receive array are same, not allowed for shift" )
 
@@ -339,13 +339,13 @@ void Communicator::shiftArray( LAMAArray<T>& recvArray, const LAMAArray<T>& send
     LAMA_LOG_DEBUG( logger, "shiftArray at this context " << *commContext 
                             << ", sendArray = " << sendArray << ", recvArray = " << recvArray )
 
-    ReadAccess<T> sendData( sendArray, commContext );
+    ReadAccess<ValueType> sendData( sendArray, commContext );
 
     IndexType numSendElems = sendData.size();
 
     // make recv array large enough to fit for send data
 
-    WriteOnlyAccess<T> recvData( recvArray, commContext, numSendElems );
+    WriteOnlyAccess<ValueType> recvData( recvArray, commContext, numSendElems );
 
     // but we are able to receive even more data if array is large enough
 
@@ -364,18 +364,18 @@ void Communicator::shiftArray( LAMAArray<T>& recvArray, const LAMAArray<T>& send
 
 /* -------------------------------------------------------------------------- */
 
-template<typename T>
+template<typename ValueType>
 SyncToken* Communicator::shiftAsync(
-    LAMAArray<T>& recvArray,
-    const LAMAArray<T>& sendArray,
+    LAMAArray<ValueType>& recvArray,
+    const LAMAArray<ValueType>& sendArray,
     const int direction ) const
 {
     LAMA_ASSERT_ERROR( &recvArray != &sendArray, "send and receive array are same, not allowed for shift" )
 
     recvArray.clear(); // do not keep any old data, keep capacities
 
-    boost::shared_ptr<HostWriteAccess<T> > recvData( new HostWriteAccess<T>( recvArray ) );
-    boost::shared_ptr<HostReadAccess<T> > sendData( new HostReadAccess<T>( sendArray ) );
+    boost::shared_ptr<HostWriteAccess<ValueType> > recvData( new HostWriteAccess<ValueType>( recvArray ) );
+    boost::shared_ptr<HostReadAccess<ValueType> > sendData( new HostReadAccess<ValueType>( sendArray ) );
 
     IndexType numElems = sendData->size();
 
@@ -398,8 +398,8 @@ SyncToken* Communicator::shiftAsync(
 
 /* -------------------------------------------------------------------------- */
 
-template<typename T>
-void Communicator::updateHalo( LAMAArray<T> &haloValues, const LAMAArray<T>& localValues, const Halo& halo ) const
+template<typename ValueType>
+void Communicator::updateHalo( LAMAArray<ValueType> &haloValues, const LAMAArray<ValueType>& localValues, const Halo& halo ) const
 {
     LAMA_REGION( "Communicator.updateHalo" )
 
@@ -423,7 +423,7 @@ void Communicator::updateHalo( LAMAArray<T> &haloValues, const LAMAArray<T>& loc
 
     IndexType numSendValues = providesPlan.totalQuantity();
 
-    LAMAArray<T> sendValues( numSendValues ); //!< temporary array for send communication
+    LAMAArray<ValueType> sendValues( numSendValues ); //!< temporary array for send communication
 
     LAMAArrayUtils::gather( sendValues, localValues, halo.getProvidesIndexes() );
 
@@ -432,10 +432,10 @@ void Communicator::updateHalo( LAMAArray<T> &haloValues, const LAMAArray<T>& loc
 
 /* -------------------------------------------------------------------------- */
 
-template<typename T>
+template<typename ValueType>
 SyncToken* Communicator::updateHaloAsync(
-    LAMAArray<T>& haloValues,
-    const LAMAArray<T>& localValues,
+    LAMAArray<ValueType>& haloValues,
+    const LAMAArray<ValueType>& localValues,
     const Halo& halo ) const
 {
     LAMA_REGION( "Communicator.updateHaloAsync" )
@@ -460,13 +460,13 @@ SyncToken* Communicator::updateHaloAsync(
 
     IndexType numSendValues = providesPlan.totalQuantity();
 
-    boost::shared_ptr<LAMAArray<T> > sendValues( new LAMAArray<T>( numSendValues ) );
+    boost::shared_ptr<LAMAArray<ValueType> > sendValues( new LAMAArray<ValueType>( numSendValues ) );
 
     // put together the (send) values to provide for other partitions
 
     {
-        HostWriteAccess<T> sendData( *sendValues );
-        HostReadAccess<T> localData( localValues );
+        HostWriteAccess<ValueType> sendData( *sendValues );
+        HostReadAccess<ValueType> localData( localValues );
         HostReadAccess<IndexType> sendIndexes( halo.getProvidesIndexes() );
 
         for ( IndexType i = 0; i < numSendValues; i++ )

@@ -382,42 +382,42 @@ MPI_Comm MPICommunicator::getMPIComm() const
     return mComm;
 }
 
-template<typename T>
-MPI_Request MPICommunicator::startrecv( T* buffer, int count, int source ) const
+template<typename ValueType>
+MPI_Request MPICommunicator::startrecv( ValueType* buffer, int count, int source ) const
 {
     MPI_Request request;
-    MPI_Datatype commType = getMPIType<T>();
+    MPI_Datatype commType = getMPIType<ValueType>();
     LAMA_MPICALL( logger, MPI_Irecv( buffer, count, commType, source, defaultTag, selectMPIComm(), &request ),
                   "MPI_Irecv" )
     return request;
 }
 
-template<typename T>
-MPI_Request MPICommunicator::startsend( const T* buffer, int count, int target ) const
+template<typename ValueType>
+MPI_Request MPICommunicator::startsend( const ValueType* buffer, int count, int target ) const
 {
     MPI_Request request;
-    MPI_Datatype commType = getMPIType<T>();
+    MPI_Datatype commType = getMPIType<ValueType>();
     LAMA_MPICALL( logger,
-                  MPI_Isend( const_cast<T*>( buffer ), count, commType, target, defaultTag, selectMPIComm(), &request ),
+                  MPI_Isend( const_cast<ValueType*>( buffer ), count, commType, target, defaultTag, selectMPIComm(), &request ),
                   "MPI_Isend" )
     return request;
 }
 
-template<typename T>
+template<typename ValueType>
 int MPICommunicator::getCount( MPI_Status& mpiStatus ) const
 {
     int size = 0;
-    MPI_Datatype commType = getMPIType<T>();
+    MPI_Datatype commType = getMPIType<ValueType>();
     LAMA_MPICALL( logger, MPI_Get_count( &mpiStatus, commType, &size ), "MPI_Get_count" )
     return size;
 }
 
-template<typename T>
-void MPICommunicator::send( const T buffer[], int count, int target ) const
+template<typename ValueType>
+void MPICommunicator::send( const ValueType buffer[], int count, int target ) const
 {
-    MPI_Datatype commType = getMPIType<T>();
+    MPI_Datatype commType = getMPIType<ValueType>();
     LAMA_MPICALL( logger, 
-                  MPI_Send( const_cast<T*>( buffer ), count, commType, target, defaultTag, selectMPIComm() ),
+                  MPI_Send( const_cast<ValueType*>( buffer ), count, commType, target, defaultTag, selectMPIComm() ),
                   "MPI_Send" )
 }
 
@@ -441,9 +441,9 @@ void MPICommunicator::all2all( IndexType recvSizes[], const IndexType sendSizes[
 
 /* ---------------------------------------------------------------------------------- */
 
-template<typename T>
-void MPICommunicator::exchangeByPlanImpl( T recvData[], const CommunicationPlan& recvPlan,
-                                    const T sendData[], const CommunicationPlan& sendPlan ) const
+template<typename ValueType>
+void MPICommunicator::exchangeByPlanImpl( ValueType recvData[], const CommunicationPlan& recvPlan,
+                                    const ValueType sendData[], const CommunicationPlan& sendPlan ) const
 {
     LAMA_REGION( "Communicator.MPI.exchangeByPlan" )
 
@@ -451,12 +451,12 @@ void MPICommunicator::exchangeByPlanImpl( T recvData[], const CommunicationPlan&
     LAMA_ASSERT_ERROR( recvPlan.allocated(), "recvPlan not allocated" )
 
     LAMA_LOG_INFO( logger,
-                   *this << ": exchange for values of type " << Scalar::getType<T>() 
+                   *this << ": exchange for values of type " << Scalar::getType<ValueType>()
                     << ", send to " << sendPlan.size() << " processors, recv from " << recvPlan.size() )
 
     int maxReceives = recvPlan.size();
     int noReceives = 0; // will be incremented
-    T* recvDataForMe = NULL;
+    ValueType* recvDataForMe = NULL;
     IndexType recvDataForMeSize = 0;
     boost::scoped_array<MPI_Request> commRequest( new MPI_Request[maxReceives] );
 
@@ -466,7 +466,7 @@ void MPICommunicator::exchangeByPlanImpl( T recvData[], const CommunicationPlan&
     {
         IndexType quantity = recvPlan[i].quantity;
         IndexType offset = recvPlan[i].offset;
-        T* recvDataForI = recvData + offset;
+        ValueType* recvDataForI = recvData + offset;
         PartitionId p = recvPlan[i].partitionId;
         LAMA_LOG_DEBUG( logger,
                         *this << ": receive " << quantity << " elements" << " from processor " << p << " at offset " << offset )
@@ -489,7 +489,7 @@ void MPICommunicator::exchangeByPlanImpl( T recvData[], const CommunicationPlan&
     {
         IndexType quantity = sendPlan[i].quantity;
         IndexType offset = sendPlan[i].offset;
-        const T* sendDataForI = sendData + offset;
+        const ValueType* sendDataForI = sendData + offset;
         PartitionId p = sendPlan[i].partitionId;
         LAMA_LOG_DEBUG( logger,
                         *this << ": send " << quantity << " elements" << " to processor " << p << " at offset " << offset )
@@ -518,11 +518,11 @@ void MPICommunicator::exchangeByPlanImpl( T recvData[], const CommunicationPlan&
 
 /* ---------------------------------------------------------------------------------- */
 
-template<typename T>
+template<typename ValueType>
 SyncToken* MPICommunicator::exchangeByPlanAsyncImpl(
-    T* const recvData,
+    ValueType* const recvData,
     const CommunicationPlan& recvPlan,
-    const T* const sendData,
+    const ValueType* const sendData,
     const CommunicationPlan& sendPlan ) const
 {
     LAMA_REGION( "Communicator.MPI.exchangeByPlanAsync" )
@@ -530,7 +530,7 @@ SyncToken* MPICommunicator::exchangeByPlanAsyncImpl(
     LAMA_ASSERT_ERROR( sendPlan.allocated(), "sendPlan not allocated" )
     LAMA_ASSERT_ERROR( recvPlan.allocated(), "recvPlan not allocated" )
     LAMA_LOG_INFO( logger,
-                   *this << ": exchange for values of type " << Scalar::getType<T>() << ", send to " << sendPlan.size() << " processors, recv from " << recvPlan.size() )
+                   *this << ": exchange for values of type " << Scalar::getType<ValueType>() << ", send to " << sendPlan.size() << " processors, recv from " << recvPlan.size() )
     int noRequests = sendPlan.size() + recvPlan.size();
 
     // create MPIToken as auto_ptr, so it will be freed in case of exception
@@ -539,7 +539,7 @@ SyncToken* MPICommunicator::exchangeByPlanAsyncImpl(
 
     MPISyncToken& syncToken = *pSyncToken;
 
-    T* recvDataForMe = NULL;
+    ValueType* recvDataForMe = NULL;
     IndexType recvDataForMeSize = 0;
 
     // setup receives for each entry in receive plan
@@ -547,7 +547,7 @@ SyncToken* MPICommunicator::exchangeByPlanAsyncImpl(
     for ( PartitionId i = 0; i < recvPlan.size(); ++i )
     {
         IndexType quantity = recvPlan[i].quantity;
-        T* recvDataForI = recvData + recvPlan[i].offset;
+        ValueType* recvDataForI = recvData + recvPlan[i].offset;
         PartitionId p = recvPlan[i].partitionId;
         LAMA_LOG_DEBUG( logger, *this << ": receive " << quantity << " elements" << " from processor " << p )
 
@@ -567,7 +567,7 @@ SyncToken* MPICommunicator::exchangeByPlanAsyncImpl(
     for ( PartitionId i = 0; i < sendPlan.size(); ++i )
     {
         IndexType quantity = sendPlan[i].quantity;
-        const T* sendDataForI = sendData + sendPlan[i].offset;
+        const ValueType* sendDataForI = sendData + sendPlan[i].offset;
         PartitionId p = sendPlan[i].partitionId;
         LAMA_LOG_DEBUG( logger, *this << ": send " << quantity << " elements" << " to processor " << p )
 
@@ -615,25 +615,25 @@ inline MPI_Comm MPICommunicator::selectMPIComm() const
 /*              bcast                                                                 */
 /* ---------------------------------------------------------------------------------- */
 
-template<typename T>
-void MPICommunicator::bcastImpl( T val[], const IndexType n, const PartitionId root ) const
+template<typename ValueType>
+void MPICommunicator::bcastImpl( ValueType val[], const IndexType n, const PartitionId root ) const
 {
     LAMA_REGION( "Communicator.MPI.bcast" )
 
-    MPI_Datatype commType = getMPIType<T>();
-    LAMA_MPICALL( logger, MPI_Bcast( val, n, commType, root, selectMPIComm() ), "MPI_Bcast<T>" )
+    MPI_Datatype commType = getMPIType<ValueType>();
+    LAMA_MPICALL( logger, MPI_Bcast( val, n, commType, root, selectMPIComm() ), "MPI_Bcast<ValueType>" )
 }
 
 /* ---------------------------------------------------------------------------------- */
 /*              shift                                                                 */
 /* ---------------------------------------------------------------------------------- */
 
-template<typename T>
+template<typename ValueType>
 IndexType MPICommunicator::shiftImpl(
-    T recvVals[],
+    ValueType recvVals[],
     const IndexType recvSize,
     const PartitionId source,
-    const T sendVals[],
+    const ValueType sendVals[],
     const IndexType sendSize,
     const PartitionId dest ) const
 {
@@ -645,11 +645,11 @@ IndexType MPICommunicator::shiftImpl(
     LAMA_LOG_DEBUG( logger,
                     *this << ": recv from " << source << " max " << recvSize << " values " << ", send to " << dest << " " << sendSize << " values." )
 
-    MPI_Datatype commType = getMPIType<T>();
+    MPI_Datatype commType = getMPIType<ValueType>();
     MPI_Status mpiStatus;
 
     LAMA_MPICALL( logger,
-                  MPI_Sendrecv( const_cast<T*>( sendVals ), sendSize, commType, dest, 4711, 
+                  MPI_Sendrecv( const_cast<ValueType*>( sendVals ), sendSize, commType, dest, 4711,
                                 recvVals, recvSize, commType, source, 4711, 
                                 selectMPIComm(), &mpiStatus ),
                   "MPI_Sendrecv" )
@@ -658,7 +658,7 @@ IndexType MPICommunicator::shiftImpl(
 
     int count = 0;
 
-    LAMA_MPICALL( logger, MPI_Get_count( &mpiStatus, commType, &count ), "MPI_Get_count(T)" )
+    LAMA_MPICALL( logger, MPI_Get_count( &mpiStatus, commType, &count ), "MPI_Get_count(ValueType)" )
 
     LAMA_LOG_DEBUG( logger, "received from " << source << " #values = " << count << ", max was " << recvSize )
 
@@ -669,11 +669,11 @@ IndexType MPICommunicator::shiftImpl(
 /*              shiftAsync                                                            */
 /* ---------------------------------------------------------------------------------- */
 
-template<typename T>
+template<typename ValueType>
 SyncToken* MPICommunicator::shiftAsyncImpl(
-    T recvVals[],
+    ValueType recvVals[],
     const PartitionId source,
-    const T sendVals[],
+    const ValueType sendVals[],
     const PartitionId dest,
     const IndexType size ) const
 {
@@ -697,13 +697,13 @@ SyncToken* MPICommunicator::shiftAsyncImpl(
 /*              sum                                                                   */
 /* ---------------------------------------------------------------------------------- */
 
-template<typename T>
-T MPICommunicator::sumImpl( const T value ) const
+template<typename ValueType>
+ValueType MPICommunicator::sumImpl( const ValueType value ) const
 {
     LAMA_REGION( "Communicator.MPI.sum" )
 
-    T sum;
-    MPI_Datatype commType = getMPIType<T>();
+    ValueType sum;
+    MPI_Datatype commType = getMPIType<ValueType>();
     LAMA_MPICALL( logger, MPI_Allreduce( ( void* ) &value, ( void* ) &sum, 1, commType, MPI_SUM, selectMPIComm() ),
                   "MPI_Allreduce(MPI_SUM)" )
     LAMA_LOG_DEBUG( logger, "sum: my value = " << value << ", sum = " << sum )
@@ -714,14 +714,14 @@ T MPICommunicator::sumImpl( const T value ) const
 /*              min / max reduction                                                   */
 /* ---------------------------------------------------------------------------------- */
 
-template<typename T>
-T MPICommunicator::minImpl( const T value ) const
+template<typename ValueType>
+ValueType MPICommunicator::minImpl( const ValueType value ) const
 {
     LAMA_REGION( "Communicator.MPI.min" )
 
-    MPI_Datatype commType = getMPIType<T>();
+    MPI_Datatype commType = getMPIType<ValueType>();
 
-    T globalMin; // no initialization needed, done in MPI call
+    ValueType globalMin; // no initialization needed, done in MPI call
 
     LAMA_MPICALL( logger,
                   MPI_Allreduce( ( void* ) &value, ( void* ) &globalMin, 1, commType, MPI_MIN, selectMPIComm() ),
@@ -729,14 +729,14 @@ T MPICommunicator::minImpl( const T value ) const
     return globalMin;
 }
 
-template<typename T>
-T MPICommunicator::maxImpl( const T value ) const
+template<typename ValueType>
+ValueType MPICommunicator::maxImpl( const ValueType value ) const
 {
     LAMA_REGION( "Communicator.MPI.max" )
 
-    MPI_Datatype commType = getMPIType<T>();
+    MPI_Datatype commType = getMPIType<ValueType>();
 
-    T globalMax; // no initialization needed, done in MPI call
+    ValueType globalMax; // no initialization needed, done in MPI call
 
     LAMA_LOG_DEBUG( logger, "maxImpl: local value = " << value )
 
@@ -758,17 +758,17 @@ void MPICommunicator::synchronize() const
 /*      scatter( myvals, n, root, allvals )                                           */
 /* ---------------------------------------------------------------------------------- */
 
-template<typename T>
-void MPICommunicator::scatterImpl( T myvals[], const IndexType n, const PartitionId root, const T allvals[] ) const
+template<typename ValueType>
+void MPICommunicator::scatterImpl( ValueType myvals[], const IndexType n, const PartitionId root, const ValueType allvals[] ) const
 {
     LAMA_REGION( "Communicator.MPI.scatter" )
 
     LAMA_ASSERT_DEBUG( root < getSize(), "illegal root, root = " << root )
     LAMA_LOG_DEBUG( logger, *this << ": scatter of " << n << " elements, root = " << root )
-    MPI_Datatype commType = getMPIType<T>();
+    MPI_Datatype commType = getMPIType<ValueType>();
     // MPI interface is not aware of const, so const_cast is required
     LAMA_MPICALL( logger,
-                  MPI_Scatter( const_cast<T*>( allvals ), n, commType, myvals, n, commType, root, selectMPIComm() ),
+                  MPI_Scatter( const_cast<ValueType*>( allvals ), n, commType, myvals, n, commType, root, selectMPIComm() ),
                   "MPI_Scatter" )
 }
 
@@ -776,22 +776,22 @@ void MPICommunicator::scatterImpl( T myvals[], const IndexType n, const Partitio
 /*      scatter( myvals, n, root, allvals, sizes )                                    */
 /* ---------------------------------------------------------------------------------- */
 
-template<typename T>
+template<typename ValueType>
 void MPICommunicator::scatterVImpl(
-    T myvals[],
+    ValueType myvals[],
     const IndexType n,
     const PartitionId root,
-    const T allvals[],
+    const ValueType allvals[],
     const IndexType sizes[] ) const
 {
     LAMA_REGION( "Communicator.MPI.scatterV" )
 
     LAMA_ASSERT_ERROR( root < getSize(), "illegal root, root = " << root )
-    MPI_Datatype commType = getMPIType<T>();
+    MPI_Datatype commType = getMPIType<ValueType>();
 
     if ( root == getRank() )
     {
-        void* sendbuf = const_cast<T*>( allvals );
+        void* sendbuf = const_cast<ValueType*>( allvals );
         PartitionId np = getSize();
         boost::scoped_array<int> counts( new int[np] );
         boost::scoped_array<int> displs( new int[np] );
@@ -832,38 +832,38 @@ void MPICommunicator::scatterVImpl(
 /*      gather( allvals, n, root, myvals )                                            */
 /* ---------------------------------------------------------------------------------- */
 
-template<typename T>
-void MPICommunicator::gatherImpl( T allvals[], const IndexType n, const PartitionId root, const T myvals[] ) const
+template<typename ValueType>
+void MPICommunicator::gatherImpl( ValueType allvals[], const IndexType n, const PartitionId root, const ValueType myvals[] ) const
 {
     LAMA_REGION( "Communicator.MPI.gather" )
 
     LAMA_ASSERT_DEBUG( root < getSize(), "illegal root, root = " << root )
     LAMA_LOG_DEBUG( logger, *this << ": gather of " << n << " elements, root = " << root )
-    MPI_Datatype commType = getMPIType<T>();
+    MPI_Datatype commType = getMPIType<ValueType>();
     // MPI interface is not aware of const, so const_cast is required
-    void* sendbuf = const_cast<T*>( myvals );
+    void* sendbuf = const_cast<ValueType*>( myvals );
     LAMA_MPICALL( logger, 
                   MPI_Gather ( sendbuf, n, commType, allvals, n, commType, root, selectMPIComm() ),
-                  "MPI_Gather<T>" )
+                  "MPI_Gather<ValueType>" )
 }
 
 /* ---------------------------------------------------------------------------------- */
 /*      gatherV( allvals, n, root, myvals, sizes )                                    */
 /* ---------------------------------------------------------------------------------- */
 
-template<typename T>
+template<typename ValueType>
 void MPICommunicator::gatherVImpl(
-    T allvals[],
+    ValueType allvals[],
     const IndexType n,
     const PartitionId root,
-    const T myvals[],
+    const ValueType myvals[],
     const IndexType sizes[] ) const
 {
     LAMA_REGION( "Communicator.MPI.gatherV" )
 
     LAMA_ASSERT_ERROR( root < getSize(), "illegal root, root = " << root )
-    void* sendbuf = const_cast<T*>( myvals );
-    MPI_Datatype commType = getMPIType<T>();
+    void* sendbuf = const_cast<ValueType*>( myvals );
+    MPI_Datatype commType = getMPIType<ValueType>();
 
     if ( root == getRank() )
     {
@@ -883,7 +883,7 @@ void MPICommunicator::gatherVImpl(
                         *this << ": scatter of " << displacement << " elements, I receive " << n << " elements" )
         LAMA_MPICALL( logger,
                       MPI_Gatherv( sendbuf, n, commType, allvals, counts.get(), displs.get(), commType, root, selectMPIComm() ),
-                      "MPI_Gatherv<T>" )
+                      "MPI_Gatherv<ValueType>" )
     }
     else
     {
@@ -899,7 +899,7 @@ void MPICommunicator::gatherVImpl(
         LAMA_LOG_DEBUG( logger, *this << ": root = " << root << " scatters " << n << " elements to me" )
         LAMA_MPICALL( logger,
                       MPI_Gatherv( sendbuf, n, commType, NULL, counts.get(), NULL, commType, root, selectMPIComm() ),
-                      "MPI_Gatherv<T>" )
+                      "MPI_Gatherv<ValueType>" )
     }
 }
 
@@ -907,21 +907,21 @@ void MPICommunicator::gatherVImpl(
 /*           maxloc                                                                   */
 /* ---------------------------------------------------------------------------------- */
 
-template<typename T>
-void MPICommunicator::maxlocImpl( T& val, IndexType& location, PartitionId root ) const
+template<typename ValueType>
+void MPICommunicator::maxlocImpl( ValueType& val, IndexType& location, PartitionId root ) const
 {
     LAMA_REGION( "Communicator.MPI.maxloc" )
 
     struct ValAndLoc
     {
-        T val;
+        ValueType val;
         int location;
     };
     ValAndLoc in;
     in.val = val;
     in.location = location;
     ValAndLoc out;
-    MPI_Datatype commType = getMPI2Type<T,int>();
+    MPI_Datatype commType = getMPI2Type<ValueType,int>();
     MPI_Reduce( &in, &out, 1, commType, MPI_MAXLOC, root, selectMPIComm() );
 
     if ( mRank == root )
@@ -935,8 +935,8 @@ void MPICommunicator::maxlocImpl( T& val, IndexType& location, PartitionId root 
 /*           swap                                                                     */
 /* ---------------------------------------------------------------------------------- */
 
-template<typename T>
-void MPICommunicator::swapImpl( T val[], const IndexType n, PartitionId partner ) const
+template<typename ValueType>
+void MPICommunicator::swapImpl( ValueType val[], const IndexType n, PartitionId partner ) const
 {
     LAMA_REGION( "Communicator.MPI.swap" )
 
@@ -945,7 +945,7 @@ void MPICommunicator::swapImpl( T val[], const IndexType n, PartitionId partner 
         return;
     }
 
-    boost::scoped_array<T> tmp( new T[n] );
+    boost::scoped_array<ValueType> tmp( new ValueType[n] );
 
     for ( IndexType i = 0; i < n; i++ )
     {
@@ -953,13 +953,13 @@ void MPICommunicator::swapImpl( T val[], const IndexType n, PartitionId partner 
     }
 
     MPI_Status mpiStatus;
-    MPI_Datatype commType = getMPIType<T>();
+    MPI_Datatype commType = getMPIType<ValueType>();
     LAMA_MPICALL( logger,
                   MPI_Sendrecv( tmp.get(), n, commType, partner, defaultTag, 
                                 val, n, commType, partner, defaultTag, 
                                 selectMPIComm(), &mpiStatus ),
                   "MPI_Sendrecv" )
-    LAMA_ASSERT_ERROR( getCount<T>( mpiStatus ) == n, "size mismatch for swap" )
+    LAMA_ASSERT_ERROR( getCount<ValueType>( mpiStatus ) == n, "size mismatch for swap" )
 }
 
 ContextPtr MPICommunicator::getCommunicationContext( const _LAMAArray& array ) const

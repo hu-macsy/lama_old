@@ -58,15 +58,15 @@ public:
 
     void CommunicatorCtrTest();
 
-    template<typename T> void swapTest() __attribute__( ( noinline ) );
-    template<typename T> void gatherVTest() __attribute__( ( noinline ) );
-    template<typename T> void gatherTest() __attribute__( ( noinline ) );
-    template<typename T> void scatterVTest() __attribute__( ( noinline ) );
-    template<typename T> void scatterTest() __attribute__( ( noinline ) );
-    template<typename T> void bcastTest() __attribute__( ( noinline ) );
-    template<typename T> void shiftASyncTest() __attribute__( ( noinline ) );
-    template<typename T> void shiftTest() __attribute__( ( noinline ) );
-    template<typename T> void updateHaloTest() __attribute__( ( noinline ) );
+    template<typename ValueType> void swapTest() __attribute__( ( noinline ) );
+    template<typename ValueType> void gatherVTest() __attribute__( ( noinline ) );
+    template<typename ValueType> void gatherTest() __attribute__( ( noinline ) );
+    template<typename ValueType> void scatterVTest() __attribute__( ( noinline ) );
+    template<typename ValueType> void scatterTest() __attribute__( ( noinline ) );
+    template<typename ValueType> void bcastTest() __attribute__( ( noinline ) );
+    template<typename ValueType> void shiftASyncTest() __attribute__( ( noinline ) );
+    template<typename ValueType> void shiftTest() __attribute__( ( noinline ) );
+    template<typename ValueType> void updateHaloTest() __attribute__( ( noinline ) );
 
     void bcastStringTest();
     void buildHaloTest();

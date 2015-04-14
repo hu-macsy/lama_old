@@ -48,14 +48,12 @@ namespace lama
 /**
  * @brief HostWriteAccess is a specialization of WriteAccess for the Host Location with an extended interface.
  *
- * @tparam T is the type stored in the wrapped container.
+ * @tparam ValueType is the type stored in the wrapped container.
  */
-template<typename T>
-class HostWriteAccess: public WriteAccess<T>
+template<typename ValueType>
+class HostWriteAccess: public WriteAccess<ValueType>
 {
 public:
-
-    typedef T ValueType; //!< This is the type stored in the wrapped container.
 
     /**
      * @brief acquire a WriteAccess to the passed LAMAArray for the host location
@@ -126,14 +124,12 @@ protected:
  * A HostWriteOnlyAccess should be used whenever possible. It avoids any memory transfer of no more
  * needed values between devices and in case of a reallocation it avoids copying of old values.
  *
- * @tparam T is the value type for an element of this.
+ * @tparam ValueType is the value type for an element of this.
  */
-template<typename T>
-class HostWriteOnlyAccess: public HostWriteAccess<T>
+template<typename ValueType>
+class HostWriteOnlyAccess: public HostWriteAccess<ValueType>
 {
 public:
-
-    typedef T ValueType; //!< This is the type stored in the wrapped container.
 
     /** Creates a write access with keep flag = false. */
 
@@ -154,25 +150,25 @@ public:
     }
 };
 
-template<typename T>
-HostWriteAccess<T>::HostWriteAccess( LAMAArray<ValueType>& array, const IndexType size, const bool keep )
-    : WriteAccess<T>( array, ContextFactory::getContext( Context::Host ), size, keep )
+template<typename ValueType>
+HostWriteAccess<ValueType>::HostWriteAccess( LAMAArray<ValueType>& array, const IndexType size, const bool keep )
+    : WriteAccess<ValueType>( array, ContextFactory::getContext( Context::Host ), size, keep )
 {
 }
 
-template<typename T>
-HostWriteAccess<T>::HostWriteAccess( LAMAArray<ValueType>& view, const bool keep /* = true */)
-    : WriteAccess<T>( view, ContextFactory::getContext( Context::Host ), keep )
+template<typename ValueType>
+HostWriteAccess<ValueType>::HostWriteAccess( LAMAArray<ValueType>& view, const bool keep /* = true */)
+    : WriteAccess<ValueType>( view, ContextFactory::getContext( Context::Host ), keep )
 {
 }
 
-template<typename T>
-HostWriteAccess<T>::~HostWriteAccess()
+template<typename ValueType>
+HostWriteAccess<ValueType>::~HostWriteAccess()
 {
 }
 
-template<typename T>
-T& HostWriteAccess<T>::operator[]( const IndexType i )
+template<typename ValueType>
+ValueType& HostWriteAccess<ValueType>::operator[]( const IndexType i )
 {
     LAMA_ASSERT_ERROR( mData,
                        "[" << i << "]: HostWriteAccess has already been released or has not been allocated." )
@@ -180,14 +176,14 @@ T& HostWriteAccess<T>::operator[]( const IndexType i )
     return mData[i];
 }
 
-template<typename T>
-inline HostWriteAccess<T>::operator ValueType*()
+template<typename ValueType>
+inline HostWriteAccess<ValueType>::operator ValueType*()
 {
     return mData;
 }
 
-template<typename T>
-void HostWriteAccess<T>::push_back( const ValueType val )
+template<typename ValueType>
+void HostWriteAccess<ValueType>::push_back( const ValueType val )
 {
     const IndexType currentSize = size();
     resize( currentSize + 1 );

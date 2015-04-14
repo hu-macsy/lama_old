@@ -93,7 +93,7 @@ protected:
     SORRuntime mSORRuntime;
 
 private:
-    template<typename T>
+    template<typename ValueType>
     void iterateImpl();
 
     std::auto_ptr<const Matrix> mIterationMatrix;

@@ -44,7 +44,7 @@ namespace lama
 
 /* -------------------------------------------------------------------------- */
 
-LAMA_LOG_DEF_TEMPLATE_LOGGER( template<typename T>, JDSSparseMatrix<T>::logger, "Matrix.SparseMatrix.JDSSparseMatrix" )
+LAMA_LOG_DEF_TEMPLATE_LOGGER( template<typename ValueType>, JDSSparseMatrix<ValueType>::logger, "Matrix.SparseMatrix.JDSSparseMatrix" )
 
 /* -------------------------------------------------------------------------- */
 

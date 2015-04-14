@@ -25,7 +25,7 @@
  * SOFTWARE.
  * @endlicense
  *
- * @brief Template class for common methods of SparseMatrix<T> and DenseMatrix<T>
+ * @brief Template class for common methods of SparseMatrix<ValueType> and DenseMatrix<ValueType>
  *        to deal with polymorphism
  * @author Thomas Brandes
  * @date 09.08.2012
@@ -56,7 +56,7 @@ namespace lama
 {
 
 /** This template class supports static polymorphism to define
- *  common routines for base classes SparseMatrix<T> and DenseMatrix<T>.
+ *  common routines for base classes SparseMatrix<ValueType> and DenseMatrix<ValueType>.
  *
  *  Therefore it uses the Curiously Recurring Template Pattern (CRTP)
  *  as a C++ idiom where a class X derived from this template is
@@ -83,7 +83,6 @@ public:
     /** Constructor for a replicated zero-matrix of a given shape. */
 
     CRTPMatrix( const IndexType numRows, const IndexType numColumns )
-
         : Matrix( numRows, numColumns )
     {
     }
@@ -91,7 +90,6 @@ public:
     /** Constructor for a distributed matrix. */
 
     CRTPMatrix( DistributionPtr rowDistribution, DistributionPtr colDistribution )
-
         : Matrix( rowDistribution, colDistribution )
     {
     }

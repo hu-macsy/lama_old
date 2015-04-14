@@ -72,82 +72,82 @@ private:
     /**
      * This function is the CUDA implementation of lama::BLASInterface::scal
      */
-    template<typename T>
-    static void scal( const IndexType n, const T alpha, T* x, const IndexType incX, SyncToken* syncToken );
+    template<typename ValueType>
+    static void scal( const IndexType n, const ValueType alpha, ValueType* x, const IndexType incX, SyncToken* syncToken );
 
     /**
      * This function is the CUDA implementation of lama::BLASInterface::nrm2
      */
-    template<typename T>
-    static T nrm2( const IndexType n, const T* x, const IndexType incX, SyncToken* syncToken );
+    template<typename ValueType>
+    static ValueType nrm2( const IndexType n, const ValueType* x, const IndexType incX, SyncToken* syncToken );
 
     /**
      * This function is the CUDA implementation of lama::BLASInterface::asum
      */
-    template<typename T>
-    static T asum( const IndexType n, const T* x, const IndexType incX, SyncToken* syncToken );
+    template<typename ValueType>
+    static ValueType asum( const IndexType n, const ValueType* x, const IndexType incX, SyncToken* syncToken );
 
     /**
      * This function is the CUDA implementation of lama::BLASInterface::iamax
      */
-    template<typename T>
-    static IndexType iamax( const IndexType n, const T* x, const IndexType incX, SyncToken* syncToken );
+    template<typename ValueType>
+    static IndexType iamax( const IndexType n, const ValueType* x, const IndexType incX, SyncToken* syncToken );
 
     /**
      * This function is the CUDA implementation of lama::BLASInterface::swap
      */
-    template<typename T>
-    static void swap( const IndexType n, T* y, const IndexType incY, T* x, const IndexType incX, SyncToken* syncToken );
+    template<typename ValueType>
+    static void swap( const IndexType n, ValueType* y, const IndexType incY, ValueType* x, const IndexType incX, SyncToken* syncToken );
 
     /**
      * This function is the CUDA implementation of lama::BLASInterface::copy
      */
-    template<typename T>
+    template<typename ValueType>
     static void copy(
         const IndexType n,
-        const T* x,
+        const ValueType* x,
         const IndexType incX,
-        T* y,
+        ValueType* y,
         const IndexType incY,
         SyncToken* syncToken );
 
     /**
      * This function is the CUDA implementation of lama::BLASInterface::axpy
      */
-    template<typename T>
+    template<typename ValueType>
     static void axpy(
         const IndexType n,
-        const T alpha,
-        const T* x,
+        const ValueType alpha,
+        const ValueType* x,
         const IndexType incX,
-        T* y,
+        ValueType* y,
         const IndexType incY,
         SyncToken* syncToken );
 
     /**
      * This function is the CUDA implementation of lama::BLASInterface::dot
      */
-    template<typename T>
-    static T dot(
+    template<typename ValueType>
+    static ValueType dot(
         const IndexType n,
-        const T* x,
+        const ValueType* x,
         const IndexType incX,
-        const T* y,
+        const ValueType* y,
         const IndexType incY,
         SyncToken* syncToken );
 
     /**
      * This function is the CUDA implementation of lama::BLASInterface::sum
      */
-    template<typename T>
-    static void sum( const IndexType n, T alpha, const T* x, T beta, const T* y, T* z, SyncToken* syncToken );
+    template<typename ValueType>
+    static void sum( const IndexType n, ValueType alpha, const ValueType* x, ValueType beta, const ValueType* y, ValueType* z, SyncToken* syncToken );
 
 private:
 
     LAMA_LOG_DECL_STATIC_LOGGER( logger )
 
-    template<typename T>
-    static void sum_launcher( const int n, T alpha, const T* x, T beta, const T* y, T* z, cudaStream_t stream );
+    template<typename ValueType>
+    static void sum_launcher( const int n, ValueType alpha, const ValueType* x, ValueType beta, const ValueType* y, ValueType* z, cudaStream_t stream );
 
     static bool initialized;   //!< static initialization used for registration
 

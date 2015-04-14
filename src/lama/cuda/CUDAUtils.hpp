@@ -76,9 +76,9 @@ public:
 
     /** CUDA implementation for UtilsInterface::Copy::setScale. */
 
-    template<typename ValueType1, typename ValueType2>
-    static void setScale( ValueType1 outValues[], const ValueType1 value,
-                          const ValueType2 inValues[], const IndexType n );
+    template<typename ValueType, typename otherValueType>
+    static void setScale( ValueType outValues[], const ValueType value,
+                          const otherValueType inValues[], const IndexType n );
 
     /** CUDA function implements UtilsInterface::Reductions::maxval */
 
@@ -100,18 +100,18 @@ public:
     template<typename ValueType>
     static bool isSorted( const ValueType array[], const IndexType n, bool acending );
 
-    template<typename ValueType1,typename ValueType2>
-    static void set( ValueType1 out[], const ValueType2 in[], const IndexType n );
+    template<typename ValueType,typename otherValueType>
+    static void set( ValueType out[], const otherValueType in[], const IndexType n );
 
     /** Set out[i] = in[ indexes[i] ],  0 <= i < n */
 
-    template<typename ValueType1,typename ValueType2>
-    static void setGather( ValueType1 out[], const ValueType2 in[], const IndexType indexes[], const IndexType n );
+    template<typename ValueType,typename otherValueType>
+    static void setGather( ValueType out[], const otherValueType in[], const IndexType indexes[], const IndexType n );
 
     /** Set out[ indexes[i] ] = in [i] */
 
-    template<typename ValueType1,typename ValueType2>
-    static void setScatter( ValueType1 out[], const IndexType indexes[], const ValueType2 in[], const IndexType n );
+    template<typename ValueType,typename otherValueType>
+    static void setScatter( ValueType out[], const IndexType indexes[], const otherValueType in[], const IndexType n );
 
     /** CUDA implementation for UtilsInterface::Math::invert */
 

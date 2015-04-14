@@ -58,36 +58,36 @@
 namespace lama
 {
 
-LAMA_LOG_DEF_TEMPLATE_LOGGER( template<typename T>, DenseVector<T>::logger, "Vector.DenseVector" )
+LAMA_LOG_DEF_TEMPLATE_LOGGER( template<typename ValueType>, DenseVector<ValueType>::logger, "Vector.DenseVector" )
 
-template<typename T>
-DenseVector<T>::DenseVector( ) : Vector( 0 ), mLocalValues()
+template<typename ValueType>
+DenseVector<ValueType>::DenseVector( ) : Vector( 0 ), mLocalValues()
 {
 }
 
-template<typename T>
-DenseVector<T>::DenseVector( ContextPtr context ) : Vector( 0, context ), mLocalValues()
+template<typename ValueType>
+DenseVector<ValueType>::DenseVector( ContextPtr context ) : Vector( 0, context ), mLocalValues()
 {
 }
 
-template<typename T>
-DenseVector<T>::DenseVector( DistributionPtr distribution )
+template<typename ValueType>
+DenseVector<ValueType>::DenseVector( DistributionPtr distribution )
     : Vector( distribution ), mLocalValues( distribution->getLocalSize() )
 {
     LAMA_LOG_INFO( logger, "Construct dense vector, size = " << distribution->getGlobalSize()
-                   // << ", type = " << typename(T)
+                   // << ", type = " << typename(ValueType)
                    << ", distribution = " << *distribution << ", local size = " << distribution->getLocalSize() << ", no initialization" )
 }
 
-template<typename T>
-DenseVector<T>::DenseVector( const IndexType size, const ValueType value, ContextPtr context )
+template<typename ValueType>
+DenseVector<ValueType>::DenseVector( const IndexType size, const ValueType value, ContextPtr context )
     : Vector( size, context ), mLocalValues( size, value )
 {
     LAMA_LOG_INFO( logger, "Construct dense vector, size = " << size << ", init =" << value )
 }
 
-template<typename T>
-DenseVector<T>::DenseVector( DistributionPtr distribution, const ValueType value, ContextPtr context )
+template<typename ValueType>
+DenseVector<ValueType>::DenseVector( DistributionPtr distribution, const ValueType value, ContextPtr context )
     : Vector( distribution, context ), 
       mLocalValues( distribution->getLocalSize(), value )
 {
@@ -95,16 +95,16 @@ DenseVector<T>::DenseVector( DistributionPtr distribution, const ValueType value
                    "Construct dense vector, size = " << distribution->getGlobalSize() << ", distribution = " << *distribution << ", local size = " << distribution->getLocalSize() << ", init = " << value )
 }
 
-template<typename T>
-DenseVector<T>::DenseVector( const Vector& other )
+template<typename ValueType>
+DenseVector<ValueType>::DenseVector( const Vector& other )
     : Vector( other )
 {
     allocate( getDistributionPtr() );
     assign( other );
 }
 
-template<typename T>
-DenseVector<T>::DenseVector( const Vector& other, DistributionPtr distribution )
+template<typename ValueType>
+DenseVector<ValueType>::DenseVector( const Vector& other, DistributionPtr distribution )
 
     : Vector( other )
 {
@@ -114,8 +114,8 @@ DenseVector<T>::DenseVector( const Vector& other, DistributionPtr distribution )
 
 /* ------------------------------------------------------------------------- */
 
-template<typename T>
-DenseVector<T>::DenseVector( const std::string& filename )
+template<typename ValueType>
+DenseVector<ValueType>::DenseVector( const std::string& filename )
 {
     LAMA_LOG_INFO( logger, "Construct dense vector from file " << filename )
 
@@ -124,8 +124,8 @@ DenseVector<T>::DenseVector( const std::string& filename )
 
 /* ------------------------------------------------------------------------- */
 
-template<typename T>
-void DenseVector<T>::readFromFile( const std::string& filename )
+template<typename ValueType>
+void DenseVector<ValueType>::readFromFile( const std::string& filename )
 {
     LAMA_LOG_INFO( logger, "read dense vector from file " << filename )
 
@@ -186,8 +186,8 @@ void DenseVector<T>::readFromFile( const std::string& filename )
 
 /* ------------------------------------------------------------------------- */
 
-template<typename T>
-DenseVector<T>::DenseVector( const _LAMAArray& localValues, DistributionPtr distribution )
+template<typename ValueType>
+DenseVector<ValueType>::DenseVector( const _LAMAArray& localValues, DistributionPtr distribution )
     : Vector( distribution )
 {
     LAMA_ASSERT_EQUAL_ERROR( localValues.size(), distribution->getLocalSize() )
@@ -202,8 +202,8 @@ DenseVector<T>::DenseVector( const _LAMAArray& localValues, DistributionPtr dist
  */
 
 // linear algebra expression: a*x
-template<typename T>
-DenseVector<T>::DenseVector( const Expression<Scalar,Vector,Times>& expression )
+template<typename ValueType>
+DenseVector<ValueType>::DenseVector( const Expression<Scalar,Vector,Times>& expression )
 
     : Vector( expression.getArg2() )
 {
@@ -213,8 +213,8 @@ DenseVector<T>::DenseVector( const Expression<Scalar,Vector,Times>& expression )
 
 // linear algebra expression: a*x+b*y, inherit distribution/context from vector x
 
-template<typename T>
-DenseVector<T>::DenseVector(
+template<typename ValueType>
+DenseVector<ValueType>::DenseVector(
     const Expression<Expression<Scalar,Vector,Times>,Expression<Scalar,Vector,Times>,Plus>& expression )//Expression_SV_SV
 
     : Vector( expression.getArg1().getArg2() )
@@ -226,8 +226,8 @@ DenseVector<T>::DenseVector(
 
 // linear algebra expression: a*A*x+b*y, inherit distribution/context from matrix A
 
-template<typename T>
-DenseVector<T>::DenseVector(
+template<typename ValueType>
+DenseVector<ValueType>::DenseVector(
     const Expression<Expression<Scalar,Expression<Matrix,Vector,Times>,Times>,Expression<Scalar,Vector,Times>,Plus>& expression )//Expression_SMV_SV
 
     : Vector( expression.getArg1().getArg2().getArg1().getDistributionPtr(),
@@ -240,8 +240,8 @@ DenseVector<T>::DenseVector(
 
 // linear algebra expression: a*A*x+b*y, inherit distribution/context from matrix A
 
-template<typename T>
-DenseVector<T>::DenseVector(
+template<typename ValueType>
+DenseVector<ValueType>::DenseVector(
     const Expression<Expression<Scalar,Expression<Vector,Matrix,Times>,Times>,Expression<Scalar,Vector,Times>,Plus>& expression )//Expression_SVM_SV
     : Vector( expression.getArg1().getArg2().getArg2().getColDistributionPtr(),
               expression.getArg1().getArg2().getArg2().getContextPtr() )
@@ -253,8 +253,8 @@ DenseVector<T>::DenseVector(
 
 // linear algebra expression: a*A*x, inherit distribution/context from matrix A
 
-template<typename T>
-DenseVector<T>::DenseVector( const Expression<Scalar,Expression<Matrix,Vector,Times>,Times>& expression )
+template<typename ValueType>
+DenseVector<ValueType>::DenseVector( const Expression<Scalar,Expression<Matrix,Vector,Times>,Times>& expression )
 
     : Vector( expression.getArg2().getArg1().getDistributionPtr(),
               expression.getArg2().getArg1().getContextPtr() )
@@ -266,8 +266,8 @@ DenseVector<T>::DenseVector( const Expression<Scalar,Expression<Matrix,Vector,Ti
 
 // linear algebra expression: a*x*A, inherit distribution/context from matrix A
 
-template<typename T>
-DenseVector<T>::DenseVector( const Expression<Scalar,Expression<Vector,Matrix,Times>,Times>& expression )
+template<typename ValueType>
+DenseVector<ValueType>::DenseVector( const Expression<Scalar,Expression<Vector,Matrix,Times>,Times>& expression )
     : Vector( expression.getArg2().getArg2().getColDistributionPtr(),
               expression.getArg2().getArg2().getContextPtr() )
 {
@@ -278,8 +278,8 @@ DenseVector<T>::DenseVector( const Expression<Scalar,Expression<Vector,Matrix,Ti
 
 // linear algebra expression: A*x, inherit distribution/context from matrix A
 
-template<typename T>
-DenseVector<T>::DenseVector( const Expression<Matrix,Vector,Times>& expression )
+template<typename ValueType>
+DenseVector<ValueType>::DenseVector( const Expression<Matrix,Vector,Times>& expression )
     : Vector( expression.getArg1().getDistributionPtr(), expression.getArg1().getContextPtr() )
 {
     allocate( getDistributionPtr() );
@@ -289,8 +289,8 @@ DenseVector<T>::DenseVector( const Expression<Matrix,Vector,Times>& expression )
 
 // linear algebra expression: x*A, inherit distribution/context from matrix A
 
-template<typename T>
-DenseVector<T>::DenseVector( const Expression<Vector,Matrix,Times>& expression )
+template<typename ValueType>
+DenseVector<ValueType>::DenseVector( const Expression<Vector,Matrix,Times>& expression )
     : Vector( expression.getArg2().getColDistributionPtr(), expression.getArg2().getContextPtr() )
 {
     allocate( getDistributionPtr() );
@@ -300,22 +300,22 @@ DenseVector<T>::DenseVector( const Expression<Vector,Matrix,Times>& expression )
 
 /* ------------------------------------------------------------------------- */
 
-template<typename T>
-DenseVector<T>::~DenseVector()
+template<typename ValueType>
+DenseVector<ValueType>::~DenseVector()
 {
 }
 
 /* ------------------------------------------------------------------------- */
 
-template<typename T>
-DenseVector<T>& DenseVector<T>::operator=( const DenseVector<T>& other )
+template<typename ValueType>
+DenseVector<ValueType>& DenseVector<ValueType>::operator=( const DenseVector<ValueType>& other )
 {
     assign( other );
     return *this;
 }
 
-template<typename T>
-DenseVector<T>& DenseVector<T>::operator=( const Scalar value )
+template<typename ValueType>
+DenseVector<ValueType>& DenseVector<ValueType>::operator=( const Scalar value )
 {
     assign( value );
     return *this;
@@ -323,22 +323,22 @@ DenseVector<T>& DenseVector<T>::operator=( const Scalar value )
 
 /* ------------------------------------------------------------------------- */
 
-template<typename T>
-Scalar::ScalarType DenseVector<T>::getValueType() const
+template<typename ValueType>
+Scalar::ScalarType DenseVector<ValueType>::getValueType() const
 {
     return Scalar::getType<ValueType>();
 }
 
-template<typename T>
-void DenseVector<T>::buildValues( _LAMAArray& values ) const
+template<typename ValueType>
+void DenseVector<ValueType>::buildValues( _LAMAArray& values ) const
 {
     // size of values will be local size of vecotr
 
     LAMAArrayUtils::assign( values, mLocalValues );
 }
 
-template<typename T>
-void DenseVector<T>::setValues( const _LAMAArray& values )
+template<typename ValueType>
+void DenseVector<ValueType>::setValues( const _LAMAArray& values )
 {
     LAMA_ASSERT_ERROR(
         values.size() == mLocalValues.size(),
@@ -347,24 +347,24 @@ void DenseVector<T>::setValues( const _LAMAArray& values )
     LAMAArrayUtils::assign( mLocalValues, values );
 }
 
-template<typename T>
-DenseVector<T>* DenseVector<T>::create() const
+template<typename ValueType>
+DenseVector<ValueType>* DenseVector<ValueType>::create() const
 {
-    LAMA_LOG_INFO( logger, "DenseVector<T>::create" )
+    LAMA_LOG_INFO( logger, "DenseVector<ValueType>::create" )
 
-    DenseVector<T>* newDenseVector = new DenseVector<T>();
+    DenseVector<ValueType>* newDenseVector = new DenseVector<ValueType>();
 
     newDenseVector->setContext( mContext );
 
     return newDenseVector;
 }
 
-template<typename T>
-DenseVector<T>* DenseVector<T>::create( DistributionPtr distribution ) const
+template<typename ValueType>
+DenseVector<ValueType>* DenseVector<ValueType>::create( DistributionPtr distribution ) const
 {
-    LAMA_LOG_INFO( logger, "DenseVector<T>::create" )
+    LAMA_LOG_INFO( logger, "DenseVector<ValueType>::create" )
 
-    DenseVector<T>* newDenseVector = new DenseVector<T>( distribution );
+    DenseVector<ValueType>* newDenseVector = new DenseVector<ValueType>( distribution );
 
     newDenseVector->setContext( mContext );
 
@@ -373,23 +373,23 @@ DenseVector<T>* DenseVector<T>::create( DistributionPtr distribution ) const
     return newDenseVector;
 }
 
-template<typename T>
-DenseVector<T>* DenseVector<T>::copy( ) const
+template<typename ValueType>
+DenseVector<ValueType>* DenseVector<ValueType>::copy( ) const
 {
     // create a new dense vector with the copy constructor
 
-    return new DenseVector<T>( *this );
+    return new DenseVector<ValueType>( *this );
 }
 
-template<typename T>
-void DenseVector<T>::updateHalo( const Halo& halo ) const
+template<typename ValueType>
+void DenseVector<ValueType>::updateHalo( const Halo& halo ) const
 {
     const IndexType haloSize = halo.getHaloSize();
 
     LAMA_LOG_DEBUG( logger, "Acquiring halo write access on " << *mContext )
 
     mHaloValues.clear();
-    WriteAccess<T> haloAccess( mHaloValues, mContext );
+    WriteAccess<ValueType> haloAccess( mHaloValues, mContext );
 
     haloAccess.reserve( haloSize );
     haloAccess.release();
@@ -397,22 +397,22 @@ void DenseVector<T>::updateHalo( const Halo& halo ) const
     getDistribution().getCommunicator().updateHalo( mHaloValues, mLocalValues, halo );
 }
 
-template<typename T>
-SyncToken* DenseVector<T>::updateHaloAsync( const Halo& halo ) const
+template<typename ValueType>
+SyncToken* DenseVector<ValueType>::updateHaloAsync( const Halo& halo ) const
 {
     const IndexType haloSize = halo.getHaloSize();
 
     // create correct size of Halo
 
     {
-        WriteOnlyAccess<T> haloAccess( mHaloValues, mContext, haloSize );
+        WriteOnlyAccess<ValueType> haloAccess( mHaloValues, mContext, haloSize );
     }
 
     return getDistribution().getCommunicator().updateHaloAsync( mHaloValues, mLocalValues, halo );
 }
 
-template<typename T>
-Scalar DenseVector<T>::getValue( IndexType globalIndex ) const
+template<typename ValueType>
+Scalar DenseVector<ValueType>::getValue( IndexType globalIndex ) const
 {
     LAMA_LOG_TRACE( logger, *this << ": getValue( globalIndex = " << globalIndex << " )" )
     ValueType myValue = 0.0;
@@ -430,8 +430,8 @@ Scalar DenseVector<T>::getValue( IndexType globalIndex ) const
     return Scalar( allValue );
 }
 
-template<typename T>
-Scalar DenseVector<T>::min() const
+template<typename ValueType>
+Scalar DenseVector<ValueType>::min() const
 {
     //TODO: need a interface function for this
     HostReadAccess<ValueType> localValues( mLocalValues );
@@ -453,8 +453,8 @@ Scalar DenseVector<T>::min() const
     return getDistribution().getCommunicator().min( localMin );
 }
 
-template<typename T>
-Scalar DenseVector<T>::max() const
+template<typename ValueType>
+Scalar DenseVector<ValueType>::max() const
 {
     LAMA_ASSERT_ERROR( mLocalValues.size() > 0 , "no local values for max" )
 
@@ -480,8 +480,8 @@ Scalar DenseVector<T>::max() const
 
 /* ------------------------------------------------------------------------- */
 
-template<typename T>
-Scalar DenseVector<T>::l1Norm() const
+template<typename ValueType>
+Scalar DenseVector<ValueType>::l1Norm() const
 {
     IndexType nnu = mLocalValues.size();
 
@@ -493,11 +493,11 @@ Scalar DenseVector<T>::l1Norm() const
 
         ContextPtr loc = mContext;
 
-        // get function pointer BLAS::BLAS1<T>::asum in appropriate context
+        // get function pointer BLAS::BLAS1<ValueType>::asum in appropriate context
 
-        LAMA_INTERFACE_FN_DEFAULT_T( asum, loc, BLAS, BLAS1, T )
+        LAMA_INTERFACE_FN_DEFAULT_T( asum, loc, BLAS, BLAS1, ValueType )
 
-        ReadAccess<T> read( mLocalValues, loc );
+        ReadAccess<ValueType> read( mLocalValues, loc );
 
         LAMA_CONTEXT_ACCESS( loc )
 
@@ -509,8 +509,8 @@ Scalar DenseVector<T>::l1Norm() const
 
 /* ------------------------------------------------------------------------- */
 
-template<typename T>
-Scalar DenseVector<T>::l2Norm() const
+template<typename ValueType>
+Scalar DenseVector<ValueType>::l2Norm() const
 {
     IndexType nnu = mLocalValues.size();
     
@@ -522,11 +522,11 @@ Scalar DenseVector<T>::l2Norm() const
 
         ContextPtr loc = mContext;
 
-        // get function pointer BLAS::BLAS1<T>::dot in appropriate context
+        // get function pointer BLAS::BLAS1<ValueType>::dot in appropriate context
 
-        LAMA_INTERFACE_FN_DEFAULT_T( dot, loc, BLAS, BLAS1, T )
+        LAMA_INTERFACE_FN_DEFAULT_T( dot, loc, BLAS, BLAS1, ValueType )
 
-        ReadAccess<T> read( mLocalValues, loc );
+        ReadAccess<ValueType> read( mLocalValues, loc );
 
         LAMA_CONTEXT_ACCESS( mContext )
 
@@ -540,8 +540,8 @@ Scalar DenseVector<T>::l2Norm() const
 
 /* ------------------------------------------------------------------------- */
 
-template<typename T>
-Scalar DenseVector<T>::maxNorm() const
+template<typename ValueType>
+Scalar DenseVector<ValueType>::maxNorm() const
 {
     IndexType nnu = mLocalValues.size(); // number of local rows
 
@@ -553,7 +553,7 @@ Scalar DenseVector<T>::maxNorm() const
 
         LAMA_INTERFACE_FN_DEFAULT_T( absMaxVal, loc, Utils, Reductions, ValueType )
 
-        ReadAccess<T> read( mLocalValues, loc );
+        ReadAccess<ValueType> read( mLocalValues, loc );
 
         LAMA_CONTEXT_ACCESS( loc )
 
@@ -573,8 +573,8 @@ Scalar DenseVector<T>::maxNorm() const
 
 /* ------------------------------------------------------------------------- */
 
-template<typename T>
-void DenseVector<T>::swap( Vector& other )
+template<typename ValueType>
+void DenseVector<ValueType>::swap( Vector& other )
 {
     LAMA_LOG_DEBUG( logger, "swap:" << *this << " with " << other )
 
@@ -589,8 +589,8 @@ void DenseVector<T>::swap( Vector& other )
     mHaloValues.swap( otherPtr->mHaloValues );
 }
 
-template<typename T>
-void DenseVector<T>::writeAt( std::ostream& stream ) const
+template<typename ValueType>
+void DenseVector<ValueType>::writeAt( std::ostream& stream ) const
 {
     stream << "DenseVector<" << getValueType() << ">" 
            << "( size = " << size() << ", local = " << mLocalValues.size() 
@@ -598,24 +598,24 @@ void DenseVector<T>::writeAt( std::ostream& stream ) const
            << ", loc  = " << *getContext() << " )";
 }
 
-template<typename T>
-void DenseVector<T>::vectorPlusVector(
+template<typename ValueType>
+void DenseVector<ValueType>::vectorPlusVector(
     ContextPtr context,
-    LAMAArray<T>& result,
-    const T alpha,
-    const LAMAArray<T>& x,
-    const T beta,
-    const LAMAArray<T>& y )
+    LAMAArray<ValueType>& result,
+    const ValueType alpha,
+    const LAMAArray<ValueType>& x,
+    const ValueType beta,
+    const LAMAArray<ValueType>& y )
 {
     LAMA_LOG_DEBUG( logger,
                     "vectorPlusVector: result:" << result << " = " << alpha << " * x:" << x << " + " << beta << " * y:" << y )
 
     // get function pointers, do not use fallbacks here
 
-    LAMA_INTERFACE_FN_T( scale, context, Utils, Transform, T )
+    LAMA_INTERFACE_FN_T( scale, context, Utils, Transform, ValueType )
 
-    LAMA_INTERFACE_FN_T( axpy, context, BLAS, BLAS1, T )
-    LAMA_INTERFACE_FN_T( sum, context, BLAS, BLAS1, T )
+    LAMA_INTERFACE_FN_T( axpy, context, BLAS, BLAS1, ValueType )
+    LAMA_INTERFACE_FN_T( sum, context, BLAS, BLAS1, ValueType )
 
     const IndexType nnu = result.size();
 
@@ -630,15 +630,15 @@ void DenseVector<T>::vectorPlusVector(
         LAMA_LOG_DEBUG( logger,
                         "vectorPlusVector: x = y = result, result *= " << "alpha(" << alpha << ") + beta(" << beta << ")" )
 
-        WriteAccess<T> resultAccess( result, context, true );
+        WriteAccess<ValueType> resultAccess( result, context, true );
 
         LAMA_CONTEXT_ACCESS( context )
         scale( resultAccess.get(), alpha + beta, nnu );
     }
     else if ( result == x ) //result = alpha * result + beta * y
     {
-        ReadAccess<T> yAccess( y, context );
-        WriteAccess<T> resultAccess( result, context, true );
+        ReadAccess<ValueType> yAccess( y, context );
+        WriteAccess<ValueType> resultAccess( result, context, true );
 
         if ( beta == 0.0 )
         {
@@ -689,8 +689,8 @@ void DenseVector<T>::vectorPlusVector(
 
         // so we do here:  result = beta * result, result += alpha * x
 
-        ReadAccess<T> xAccess( x, context );
-        WriteAccess<T> resultAccess( result, context, true );
+        ReadAccess<ValueType> xAccess( x, context );
+        WriteAccess<ValueType> resultAccess( result, context, true );
 
         if ( beta != 1.0 ) // result = [alpha * x + ] beta * result
         {
@@ -711,10 +711,10 @@ void DenseVector<T>::vectorPlusVector(
         LAMA_LOG_DEBUG( logger,
                         "vectorPlusVector: result = alpha(" << alpha << ")" << " * x + beta(" << beta << ") * y" )
 
-        ReadAccess<T> xAccess( x, context );
-        ReadAccess<T> yAccess( y, context );
+        ReadAccess<ValueType> xAccess( x, context );
+        ReadAccess<ValueType> yAccess( y, context );
         // no need to keep old values of result
-        WriteAccess<T> resultAccess( result, context, false );
+        WriteAccess<ValueType> resultAccess( result, context, false );
 
         LAMA_CONTEXT_ACCESS( context )
         sum( nnu, alpha, xAccess.get(), beta, yAccess.get(), resultAccess.get(), NULL );
@@ -723,20 +723,20 @@ void DenseVector<T>::vectorPlusVector(
     LAMA_LOG_INFO( logger, "vectorPlusVector done" )
 }
 
-template<typename T>
-SyncToken* DenseVector<T>::vectorPlusVectorAsync(
+template<typename ValueType>
+SyncToken* DenseVector<ValueType>::vectorPlusVectorAsync(
     ContextPtr /*context*/,
-    LAMAArray<T>& /*result*/,
-    const T /*alpha*/,
-    const LAMAArray<T>& /*x*/,
-    const T /*beta*/,
-    const LAMAArray<T>& /*y*/ )
+    LAMAArray<ValueType>& /*result*/,
+    const ValueType /*alpha*/,
+    const LAMAArray<ValueType>& /*x*/,
+    const ValueType /*beta*/,
+    const LAMAArray<ValueType>& /*y*/ )
 {
     LAMA_THROWEXCEPTION( "vectorPlusVectorAsync not implemented yet" )
 }
 
-template<typename T>
-void DenseVector<T>::assign( const Expression_SV_SV& expression )
+template<typename ValueType>
+void DenseVector<ValueType>::assign( const Expression_SV_SV& expression )
 {
     const Expression_SV& exp1 = expression.getArg1();
     const Expression_SV& exp2 = expression.getArg2();
@@ -795,8 +795,8 @@ void DenseVector<T>::assign( const Expression_SV_SV& expression )
     }
 }
 
-template<typename T>
-Scalar DenseVector<T>::dotProduct( const Vector& other ) const
+template<typename ValueType>
+Scalar DenseVector<ValueType>::dotProduct( const Vector& other ) const
 {
     LAMA_REGION( "Vector.Dense.dotP" )
 
@@ -820,12 +820,12 @@ Scalar DenseVector<T>::dotProduct( const Vector& other ) const
 
         ContextPtr loc = mContext;   // prefered location is context of this vector
 
-        LAMA_INTERFACE_FN_DEFAULT_T( dot, loc, BLAS, BLAS1, T );
+        LAMA_INTERFACE_FN_DEFAULT_T( dot, loc, BLAS, BLAS1, ValueType );
 
         // Now do the dot production at location loc ( might have been changed to other location  )
 
-        ReadAccess<T> localRead( mLocalValues, loc );
-        ReadAccess<T> otherRead( denseOther->mLocalValues, loc );
+        ReadAccess<ValueType> localRead( mLocalValues, loc );
+        ReadAccess<ValueType> otherRead( denseOther->mLocalValues, loc );
 
         LAMA_CONTEXT_ACCESS( loc )
 
@@ -848,20 +848,20 @@ Scalar DenseVector<T>::dotProduct( const Vector& other ) const
         "Can not calculate a dot product of "<< typeid( *this ).name() <<" and "<< typeid( other ).name() )
 }
 
-template<typename T>
-void DenseVector<T>::allocate( DistributionPtr distribution )
+template<typename ValueType>
+void DenseVector<ValueType>::allocate( DistributionPtr distribution )
 {
     setDistributionPtr( distribution );
 
     // resize the local values at its context
 
-    WriteOnlyAccess<T> dummyWAccess( mLocalValues, mContext, getDistribution().getLocalSize() );
+    WriteOnlyAccess<ValueType> dummyWAccess( mLocalValues, mContext, getDistribution().getLocalSize() );
 
     // local values are likely to be uninitialized
 }
 
-template<typename T>
-void DenseVector<T>::assign( const Vector& other )
+template<typename ValueType>
+void DenseVector<ValueType>::assign( const Vector& other )
 {
     setDistributionPtr( other.getDistributionPtr() );
 
@@ -870,8 +870,8 @@ void DenseVector<T>::assign( const Vector& other )
     other.buildLocalValues( mLocalValues ); // but this works fine also for format conversion
 }
 
-template<typename T>
-void DenseVector<T>::assign( const Scalar value )
+template<typename ValueType>
+void DenseVector<ValueType>::assign( const Scalar value )
 {
     LAMA_LOG_DEBUG( logger, *this << ": assign " << value )
 
@@ -879,8 +879,8 @@ void DenseVector<T>::assign( const Scalar value )
     LAMAArrayUtils::assignScalar( mLocalValues, value, ctx );
 }
 
-template<typename T>
-void DenseVector<T>::assign( const _LAMAArray& localValues, DistributionPtr dist )
+template<typename ValueType>
+void DenseVector<ValueType>::assign( const _LAMAArray& localValues, DistributionPtr dist )
 {
     LAMA_LOG_INFO( logger, "assign vector with localValues = " << localValues << ", dist = " << *dist )
 
@@ -890,32 +890,32 @@ void DenseVector<T>::assign( const _LAMAArray& localValues, DistributionPtr dist
     LAMAArrayUtils::assign( mLocalValues, localValues );
 }
 
-template<typename T>
-void DenseVector<T>::buildLocalValues( _LAMAArray& localValues ) const
+template<typename ValueType>
+void DenseVector<ValueType>::buildLocalValues( _LAMAArray& localValues ) const
 {
     LAMAArrayUtils::assign( localValues, mLocalValues );
 }
 
-template<typename T>
-void DenseVector<T>::prefetch( const ContextPtr location ) const
+template<typename ValueType>
+void DenseVector<ValueType>::prefetch( const ContextPtr location ) const
 {
     mLocalValues.prefetch( location );
 }
 
-template<typename T>
-void DenseVector<T>::wait() const
+template<typename ValueType>
+void DenseVector<ValueType>::wait() const
 {
     mLocalValues.wait();
 }
 
-template<typename T>
-void DenseVector<T>::invert()
+template<typename ValueType>
+void DenseVector<ValueType>::invert()
 {
     const IndexType size = mLocalValues.size();
 
     const ContextPtr loc = getContext();
 
-    LAMA_INTERFACE_FN_T( invert, loc, Utils, Math, T )
+    LAMA_INTERFACE_FN_T( invert, loc, Utils, Math, ValueType )
 
     WriteAccess<ValueType> wValues( mLocalValues, loc );
 
@@ -924,19 +924,19 @@ void DenseVector<T>::invert()
     invert( wValues.get(), size );
 }
 
-template<typename T>
-size_t DenseVector<T>::getMemoryUsage() const
+template<typename ValueType>
+size_t DenseVector<ValueType>::getMemoryUsage() const
 {
     // Note: memory of mHaloValues is not counted, is just a temporary
 
-    size_t memoryUsage = sizeof(T) * mLocalValues.size();
+    size_t memoryUsage = sizeof(ValueType) * mLocalValues.size();
     return getDistribution().getCommunicator().sum( memoryUsage );
 }
 
 /* ------------------------------------------------------------------------ */
 
-template<typename T>
-void DenseVector<T>::redistribute( DistributionPtr distribution )
+template<typename ValueType>
+void DenseVector<ValueType>::redistribute( DistributionPtr distribution )
 {
     LAMA_ASSERT_EQUAL_ERROR( size(), distribution->getGlobalSize() )
 
@@ -954,13 +954,13 @@ void DenseVector<T>::redistribute( DistributionPtr distribution )
     {
         LAMA_LOG_INFO( logger, *this << ": replicated vector" << " will be localized to " << *distribution )
 
-        LAMAArray<T> newLocalValues;
+        LAMAArray<ValueType> newLocalValues;
 
         {
             const IndexType newSize = distribution->getLocalSize();
 
-            HostReadAccess<T> rLocalValues( mLocalValues );
-            HostWriteOnlyAccess<T> wNewLocalValues( newLocalValues, newSize );
+            HostReadAccess<ValueType> rLocalValues( mLocalValues );
+            HostWriteOnlyAccess<ValueType> wNewLocalValues( newLocalValues, newSize );
 
             #pragma omp parallel for
             for ( IndexType i = 0; i < size(); ++i )
@@ -1015,17 +1015,17 @@ void DenseVector<T>::redistribute( DistributionPtr distribution )
 
 /* ------------------------------------------------------------------------- */
 
-template<typename T>
-void DenseVector<T>::resizeImpl()
+template<typename ValueType>
+void DenseVector<ValueType>::resizeImpl()
 {
-    WriteAccess<T> wLocalValues( mLocalValues );
+    WriteAccess<ValueType> wLocalValues( mLocalValues );
     wLocalValues.resize( getDistribution().getLocalSize() );
 }
 
 /* -- IO ------------------------------------------------------------------- */
 
-template<typename T>
-void DenseVector<T>::readVectorHeader( const std::string& filename, File::FileType& fileType, long& dataTypeSize )
+template<typename ValueType>
+void DenseVector<ValueType>::readVectorHeader( const std::string& filename, File::FileType& fileType, long& dataTypeSize )
 {
     LAMA_LOG_INFO( logger, "Read Vector Header" )
 
@@ -1066,8 +1066,8 @@ void DenseVector<T>::readVectorHeader( const std::string& filename, File::FileTy
     LAMA_LOG_TRACE( logger, "Read Vector Header, size = " << size() )
 }
 
-template<typename T>
-void DenseVector<T>::writeToFile(
+template<typename ValueType>
+void DenseVector<ValueType>::writeToFile(
     const std::string& fileBaseName,
     const File::FileType fileType/*=XDR*/,
     const File::DataType dataType/*=DOUBLE*/) const
@@ -1101,13 +1101,13 @@ void DenseVector<T>::writeToFile(
         throw Exception( "Unknown file type definition." );
     } //switch(fileType)
 
-    long dataTypeSize = getDataTypeSize<T>( dataType );
+    long dataTypeSize = getDataTypeSize<ValueType>( dataType );
 
     writeVectorHeader( fileBaseName + ".frv", fileType, dataTypeSize );
 }
 
-template<typename T>
-void DenseVector<T>::writeVectorHeader(
+template<typename ValueType>
+void DenseVector<ValueType>::writeVectorHeader(
     const std::string& fileName,
     const File::FileType& fileType,
     const long dataTypeSize ) const
@@ -1145,8 +1145,8 @@ void DenseVector<T>::writeVectorHeader(
     outFile.close();
 }
 
-template<typename T>
-void DenseVector<T>::writeVectorToMMFile( const std::string& filename, const File::DataType& dataType ) const
+template<typename ValueType>
+void DenseVector<ValueType>::writeVectorToMMFile( const std::string& filename, const File::DataType& dataType ) const
 {
     MM_typecode veccode;
     mm_initialize_typecode( &veccode );
@@ -1170,14 +1170,14 @@ void DenseVector<T>::writeVectorToMMFile( const std::string& filename, const Fil
     }
     else
     {
-        LAMA_THROWEXCEPTION( "DenseVector<T>::writeVectorToMMFile: "
+        LAMA_THROWEXCEPTION( "DenseVector<ValueType>::writeVectorToMMFile: "
                              "Unknown datatype." )
     }
 
     std::FILE* file;
     if ( !( file = std::fopen( filename.c_str(), "w+" ) ) )
     {
-        LAMA_THROWEXCEPTION( "DenseVector<T>::writeVectorToMMFile: '" + filename + "' could not be opened." )
+        LAMA_THROWEXCEPTION( "DenseVector<ValueType>::writeVectorToMMFile: '" + filename + "' could not be opened." )
     }
 
     IndexType numRows = size();
@@ -1187,7 +1187,7 @@ void DenseVector<T>::writeVectorToMMFile( const std::string& filename, const Fil
 
     if ( std::fclose( file ) != 0 )
     {
-        LAMA_THROWEXCEPTION( "DenseVector<T>::writeVectorToMMFile: '" + filename + "' could not be closed." )
+        LAMA_THROWEXCEPTION( "DenseVector<ValueType>::writeVectorToMMFile: '" + filename + "' could not be closed." )
     }
     file = 0;
 
@@ -1196,7 +1196,7 @@ void DenseVector<T>::writeVectorToMMFile( const std::string& filename, const Fil
 
     if ( ofile.fail() )
     {
-        LAMA_THROWEXCEPTION( "DenseVector<T>::writeVectorToMMFile: '" + filename + "' could not be reopened." )
+        LAMA_THROWEXCEPTION( "DenseVector<ValueType>::writeVectorToMMFile: '" + filename + "' could not be reopened." )
     }
 
     HostReadAccess<ValueType> dataRead( mLocalValues );
@@ -1213,8 +1213,8 @@ void DenseVector<T>::writeVectorToMMFile( const std::string& filename, const Fil
     ofile.close();
 }
 
-template<typename T>
-void DenseVector<T>::writeVectorToBinaryFile( const std::string& file, const File::DataType type ) const
+template<typename ValueType>
+void DenseVector<ValueType>::writeVectorToBinaryFile( const std::string& file, const File::DataType type ) const
 {
     std::fstream outFile( file.c_str(), std::ios::out | std::ios::binary );
 
@@ -1244,8 +1244,8 @@ static void writeDataToXDRFile( XDRFileStream& outFile, const DataType* data, co
     outFile.write( buffer.get(), n );
 }
 
-template<typename T>
-void DenseVector<T>::writeVectorToXDRFile( const std::string& file, const File::DataType dataType ) const
+template<typename ValueType>
+void DenseVector<ValueType>::writeVectorToXDRFile( const std::string& file, const File::DataType dataType ) const
 {
     XDRFileStream outFile( file.c_str(), std::ios::out );
 
@@ -1317,8 +1317,8 @@ static void writeBinaryData( std::fstream& outFile, const DataType data[], const
     return;
 }
 
-template<typename T>
-void DenseVector<T>::writeVectorDataToBinaryFile( std::fstream& outFile, const File::DataType type ) const
+template<typename ValueType>
+void DenseVector<ValueType>::writeVectorDataToBinaryFile( std::fstream& outFile, const File::DataType type ) const
 {
     IndexType numRows = size();
 
@@ -1349,8 +1349,8 @@ void DenseVector<T>::writeVectorDataToBinaryFile( std::fstream& outFile, const F
     }
 }
 
-template<typename T>
-void DenseVector<T>::writeVectorToFormattedFile( const std::string& file ) const
+template<typename ValueType>
+void DenseVector<ValueType>::writeVectorToFormattedFile( const std::string& file ) const
 {
     std::fstream outFile( file.c_str(), std::ios::out );
     HostReadAccess<ValueType> dataRead( mLocalValues );
@@ -1362,8 +1362,8 @@ void DenseVector<T>::writeVectorToFormattedFile( const std::string& file ) const
     outFile.close();
 }
 
-template<typename T>
-void DenseVector<T>::readVectorFromFormattedFile( const std::string& fileName )
+template<typename ValueType>
+void DenseVector<ValueType>::readVectorFromFormattedFile( const std::string& fileName )
 {
     std::ifstream inFile( fileName.c_str(), std::ios::in );
 
@@ -1374,7 +1374,7 @@ void DenseVector<T>::readVectorFromFormattedFile( const std::string& fileName )
 
     const IndexType n = size();
 
-    HostWriteOnlyAccess<T> dataWrite( mLocalValues, n );
+    HostWriteOnlyAccess<ValueType> dataWrite( mLocalValues, n );
 
     for ( IndexType i = 0; i < n; ++i )
     {
@@ -1384,8 +1384,8 @@ void DenseVector<T>::readVectorFromFormattedFile( const std::string& fileName )
     LAMA_LOG_TRACE( logger, "read Vector From Formatted File, " << size() << " values" )
 }
 
-template<typename T>
-void DenseVector<T>::readVectorFromBinaryFile( const std::string& fileName, const File::DataType type )
+template<typename ValueType>
+void DenseVector<ValueType>::readVectorFromBinaryFile( const std::string& fileName, const File::DataType type )
 {
     std::fstream inFile( fileName.c_str(), std::ios::in | std::ios::binary );
 
@@ -1422,8 +1422,8 @@ static void readXDRData( XDRFileStream& inFile, UserDataType data[], const Index
     }
 }
 
-template<typename T>
-void DenseVector<T>::readVectorFromXDRFile( const std::string& fileName, const long dataTypeSizeHeader )
+template<typename ValueType>
+void DenseVector<ValueType>::readVectorFromXDRFile( const std::string& fileName, const long dataTypeSizeHeader )
 {
     XDRFileStream inFile( fileName.c_str(), std::ios::in | std::ios::binary );
 
@@ -1504,12 +1504,12 @@ void DenseVector<T>::readVectorFromXDRFile( const std::string& fileName, const l
 
 /* -------------------------------------------------------------------------- */
 
-template<typename T>
-void DenseVector<T>::readVectorDataFromBinaryFile( std::fstream &inFile, const File::DataType type )
+template<typename ValueType>
+void DenseVector<ValueType>::readVectorDataFromBinaryFile( std::fstream &inFile, const File::DataType type )
 {
     IndexType n = size();
 
-    LAMA_LOG_INFO( logger, "read DenseVector<" << Scalar::getType<T>() 
+    LAMA_LOG_INFO( logger, "read DenseVector<" << Scalar::getType<ValueType>()
                            << "> from binary file, size = " << n 
                            << ", dataType = " << ( ( Scalar::ScalarType ) type ) )
 
@@ -1569,8 +1569,8 @@ bool DenseVector<ValueType>::initialized = registerCreator();
 
 /* ---------------------------------------------------------------------------------*/
 
-template<typename T>
-DenseVector<T>::DenseVector( const DenseVector<T>& other )
+template<typename ValueType>
+DenseVector<ValueType>::DenseVector( const DenseVector<ValueType>& other )
     : Vector( other )
 {
     // implementation here can be simpler as DenseVector( const Vector& other )

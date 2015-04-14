@@ -78,10 +78,8 @@ static void setDenseData( MatrixStorage<ValueType>& storage )
 
 /* ------------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( StorageIOFormatted, T, test_types )
+BOOST_AUTO_TEST_CASE_TEMPLATE( StorageIOFormatted, ValueType, test_types )
 {
-    typedef T ValueType;
-
     CSRStorage<ValueType> csrMatrix;
     CSRStorage<ValueType> readMatrix;
 
@@ -111,10 +109,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( StorageIOFormatted, T, test_types )
 
 /* ------------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( StorageIOmatrixMarket, T, test_types )
+BOOST_AUTO_TEST_CASE_TEMPLATE( StorageIOmatrixMarket, ValueType, test_types )
 {
-    typedef T ValueType;
-
     CSRStorage<ValueType> csrMatrix;
     CSRStorage<ValueType> readMatrix;
 
@@ -143,10 +139,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( StorageIOmatrixMarket, T, test_types )
 
 /* ------------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( StorageIOBinary, T, test_types )
+BOOST_AUTO_TEST_CASE_TEMPLATE( StorageIOBinary, ValueType, test_types )
 {
-    typedef T ValueType;
-
     CSRStorage<ValueType> csrMatrix;
     CSRStorage<ValueType> readMatrix;
 
@@ -178,10 +172,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( StorageIOBinary, T, test_types )
 
 /* ------------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( StorageIOXDR, T, test_types )
+BOOST_AUTO_TEST_CASE_TEMPLATE( StorageIOXDR, ValueType, test_types )
 {
-    typedef T ValueType;
-
     CSRStorage<ValueType> csrMatrix;
     CSRStorage<ValueType> readMatrix;
 

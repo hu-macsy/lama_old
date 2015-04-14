@@ -147,7 +147,7 @@ BOOST_AUTO_TEST_CASE( testGetId )
 template<typename MatrixType>
 void testSolveMethod( std::string solverId, ContextPtr context )
 {
-    typedef typename MatrixType::ValueType ValueType;
+    typedef typename MatrixType::MatrixValueType ValueType;
 
     std::string id = solverId;
 

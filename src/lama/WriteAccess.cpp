@@ -46,8 +46,8 @@ LAMA_LOG_DEF_TEMPLATE_LOGGER( template<typename ValueType>, WriteAccess<ValueTyp
 
 /* --------------------------------------------------------------------------- */
 
-template<typename T>
-WriteAccess<T>::WriteAccess( LAMAArray<ValueType>& view, ContextPtr context, const bool keep /* = true*/)
+template<typename ValueType>
+WriteAccess<ValueType>::WriteAccess( LAMAArray<ValueType>& view, ContextPtr context, const bool keep /* = true*/)
     : mArrayView( &view ), mIndex( std::numeric_limits<size_t>::max() )
 {
 	if( view.constFlag )
@@ -64,8 +64,8 @@ WriteAccess<T>::WriteAccess( LAMAArray<ValueType>& view, ContextPtr context, con
     LAMA_LOG_TRACE( logger, "mData = " << mData << ", mIndex = " << mIndex )
 }
 
-template<typename T>
-WriteAccess<T>::WriteAccess(
+template<typename ValueType>
+WriteAccess<ValueType>::WriteAccess(
     LAMAArray<ValueType>& array,
     ContextPtr context,
     const IndexType size,
@@ -93,8 +93,8 @@ WriteAccess<T>::WriteAccess(
     LAMA_LOG_TRACE( logger, "mData = " << mData << ", mIndex = " << mIndex )
 }
 
-template<typename T>
-WriteAccess<T>::WriteAccess( LAMAArray<ValueType>& array )
+template<typename ValueType>
+WriteAccess<ValueType>::WriteAccess( LAMAArray<ValueType>& array )
     : mArrayView( &array ), mIndex( std::numeric_limits<size_t>::max() )
 {
 	if( array.constFlag )
@@ -110,15 +110,15 @@ WriteAccess<T>::WriteAccess( LAMAArray<ValueType>& array )
     LAMA_LOG_TRACE( logger, "mData = " << mData << ", mIndex = " << mIndex )
 }
 
-template<typename T>
-WriteAccess<T>::~WriteAccess()
+template<typename ValueType>
+WriteAccess<ValueType>::~WriteAccess()
 {
     LAMA_LOG_TRACE( logger, "~WriteAccess: release" )
     release();
 }
 
-template<typename T>
-T* WriteAccess<T>::get()
+template<typename ValueType>
+ValueType* WriteAccess<ValueType>::get()
 {
     if ( !mArrayView )
     {
@@ -130,8 +130,8 @@ T* WriteAccess<T>::get()
     return mData;
 }
 
-template<typename T>
-void WriteAccess<T>::clear()
+template<typename ValueType>
+void WriteAccess<ValueType>::clear()
 {
     LAMA_ASSERT_ERROR( mArrayView, "WriteAccess has already been released." )
 
@@ -140,8 +140,8 @@ void WriteAccess<T>::clear()
     LAMA_LOG_DEBUG( logger, "cleared " << *mArrayView )
 }
 
-template<typename T>
-void WriteAccess<T>::resize( const IndexType newSize )
+template<typename ValueType>
+void WriteAccess<ValueType>::resize( const IndexType newSize )
 {
     LAMA_ASSERT_ERROR( mArrayView, "WriteAccess has already been released." )
 
@@ -154,8 +154,8 @@ void WriteAccess<T>::resize( const IndexType newSize )
     LAMA_LOG_TRACE( logger, "mData = " << mData )
 }
 
-template<typename T>
-void WriteAccess<T>::reserve( const IndexType capacity )
+template<typename ValueType>
+void WriteAccess<ValueType>::reserve( const IndexType capacity )
 {
     LAMA_ASSERT_ERROR( mArrayView, "WriteAccess has already been released." )
 
@@ -166,16 +166,16 @@ void WriteAccess<T>::reserve( const IndexType capacity )
     LAMA_LOG_TRACE( logger, "mData = " << mData )
 }
 
-template<typename T>
-IndexType WriteAccess<T>::capacity() const
+template<typename ValueType>
+IndexType WriteAccess<ValueType>::capacity() const
 {
     LAMA_ASSERT_ERROR( mArrayView, "WriteAccess has already been released." )
 
     return mArrayView->capacity( mIndex );
 }
 
-template<typename T>
-void WriteAccess<T>::release()
+template<typename ValueType>
+void WriteAccess<ValueType>::release()
 {
     if ( mArrayView )
     {
@@ -193,8 +193,8 @@ void WriteAccess<T>::release()
     mIndex = std::numeric_limits<size_t>::max();
 }
 
-template<typename T>
-void WriteAccess<T>::writeAt( std::ostream& stream ) const
+template<typename ValueType>
+void WriteAccess<ValueType>::writeAt( std::ostream& stream ) const
 {
     stream << "WriteAccess to ";
     if ( mArrayView )

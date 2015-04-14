@@ -60,14 +60,14 @@ namespace lama
  *  should contain a legal column value, the unused entries in values
  *  will be set to zero.
  *
- *  @tparam T is the value type of the matrix values.
+ *  @tparam ValueType is the value type of the matrix values.
  */
-template<typename T>
-class LAMA_DLL_IMPORTEXPORT ELLStorage: public CRTPMatrixStorage<ELLStorage<T>, T>
+template<typename ValueType>
+class LAMA_DLL_IMPORTEXPORT ELLStorage: public CRTPMatrixStorage<ELLStorage<ValueType>, ValueType>
 {
 public:
 
-    typedef T ValueType; //!< This is the type of the matrix values.
+	typedef ValueType StorageValueType;
 
     /** get typename of the matrix storage format. */
 

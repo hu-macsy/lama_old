@@ -81,10 +81,8 @@ LAMA_LOG_DEF_LOGGER( logger, "Test.P_DenseMatrixTest" );
 
 /* --------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( buildTest, T, test_types ) 
+BOOST_AUTO_TEST_CASE_TEMPLATE( buildTest, ValueType, test_types )
 {
-    typedef T ValueType;
-
     PartitionId size = comm->getSize();
 
     int numRows = 3 * size;
@@ -225,10 +223,8 @@ static Distribution* createDistribution( const IndexType n, CommunicatorPtr comm
     return dist;
 }
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( maxDiffNormTest, T, test_types )
+BOOST_AUTO_TEST_CASE_TEMPLATE( maxDiffNormTest, ValueType, test_types )
 {
-    typedef T ValueType;
-
     DenseMatrix<ValueType> n6m4SMatrix  = TestSparseMatrices::n6m4MatrixE1<ValueType>();
     DenseMatrix<ValueType> n6m4SMatrix1 = 2.5 * n6m4SMatrix;
 
@@ -245,10 +241,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( maxDiffNormTest, T, test_types )
     BOOST_CHECK_EQUAL( maxDiffNorm.getValue<ValueType>(), 13.5 );
 }
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( multVectorTest, T, test_types ) 
+BOOST_AUTO_TEST_CASE_TEMPLATE( multVectorTest, ValueType, test_types )
 {
-    typedef T ValueType;
-
     int numRows = 20;
     int numCols = 31;
 

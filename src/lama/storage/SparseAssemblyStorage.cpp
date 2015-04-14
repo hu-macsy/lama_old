@@ -56,8 +56,8 @@ LAMA_LOG_DEF_TEMPLATE_LOGGER( template<typename ValueType>, SparseAssemblyStorag
 
 /* --------------------------------------------------------------------------- */
 
-template<typename T>
-SparseAssemblyStorage<T>::SparseAssemblyStorage()
+template<typename ValueType>
+SparseAssemblyStorage<ValueType>::SparseAssemblyStorage()
     : CRTPMatrixStorage<SparseAssemblyStorage<ValueType>, ValueType> (0, 0),
       mRows(0), mNumValues(0)
 {
@@ -65,8 +65,8 @@ SparseAssemblyStorage<T>::SparseAssemblyStorage()
 
 /* --------------------------------------------------------------------------- */
 
-template<typename T>
-SparseAssemblyStorage<T>::SparseAssemblyStorage( const SparseAssemblyStorage<ValueType>& other )
+template<typename ValueType>
+SparseAssemblyStorage<ValueType>::SparseAssemblyStorage( const SparseAssemblyStorage<ValueType>& other )
     : CRTPMatrixStorage<SparseAssemblyStorage<ValueType>,ValueType>( other.getNumRows(),
             other.getNumColumns() ), mRows(
                 other.mRows ), mNumValues( other.mNumValues )
@@ -75,8 +75,8 @@ SparseAssemblyStorage<T>::SparseAssemblyStorage( const SparseAssemblyStorage<Val
 
 /* --------------------------------------------------------------------------- */
 
-template<typename T>
-SparseAssemblyStorage<T>::SparseAssemblyStorage( const _MatrixStorage& other )
+template<typename ValueType>
+SparseAssemblyStorage<ValueType>::SparseAssemblyStorage( const _MatrixStorage& other )
     : CRTPMatrixStorage<SparseAssemblyStorage<ValueType>,ValueType>( other.getNumRows(),
             other.getNumColumns() )
 {
@@ -85,8 +85,8 @@ SparseAssemblyStorage<T>::SparseAssemblyStorage( const _MatrixStorage& other )
 
 /* --------------------------------------------------------------------------- */
 
-template<typename T>
-SparseAssemblyStorage<T>::SparseAssemblyStorage(
+template<typename ValueType>
+SparseAssemblyStorage<ValueType>::SparseAssemblyStorage(
     const IndexType numRows,
     const IndexType numColumns,
     const IndexType numValuesPerRow /* = 10*/)
@@ -103,15 +103,15 @@ SparseAssemblyStorage<T>::SparseAssemblyStorage(
     LAMA_LOG_DEBUG( logger, "Created." )
 }
 
-template<typename T>
-SparseAssemblyStorage<T>::~SparseAssemblyStorage()
+template<typename ValueType>
+SparseAssemblyStorage<ValueType>::~SparseAssemblyStorage()
 {
 }
 
 /* --------------------------------------------------------------------------- */
 
-template<typename T>
-SparseAssemblyStorage<T>& SparseAssemblyStorage<T>::operator=( const SparseAssemblyStorage<T>& other )
+template<typename ValueType>
+SparseAssemblyStorage<ValueType>& SparseAssemblyStorage<ValueType>::operator=( const SparseAssemblyStorage<ValueType>& other )
 {
     mNumRows = other.mNumRows;
     mNumColumns = other.mNumColumns;
@@ -133,8 +133,8 @@ void SparseAssemblyStorage<ValueType>::swap( SparseAssemblyStorage<ValueType>& o
 
 /* --------------------------------------------------------------------------- */
 
-template<typename T>
-SparseAssemblyStorage<T>& SparseAssemblyStorage<T>::operator=( const _MatrixStorage& other )
+template<typename ValueType>
+SparseAssemblyStorage<ValueType>& SparseAssemblyStorage<ValueType>::operator=( const _MatrixStorage& other )
 {
     assign( other );
     return *this;
@@ -296,42 +296,42 @@ bool SparseAssemblyStorage<ValueType>::checkDiagonalProperty() const
 
 /* --------------------------------------------------------------------------- */
 
-template<typename T>
-SparseAssemblyStorage<T>::Row::Row()
+template<typename ValueType>
+SparseAssemblyStorage<ValueType>::Row::Row()
 {
 }
 
-template<typename T>
-SparseAssemblyStorage<T>::Row::Row( const IndexType numValuesPerRow )
+template<typename ValueType>
+SparseAssemblyStorage<ValueType>::Row::Row( const IndexType numValuesPerRow )
 {
     ja.reserve( numValuesPerRow );
     values.reserve( numValuesPerRow );
 }
 
-template<typename T>
-SparseAssemblyStorage<T>::Row::Row( const typename SparseAssemblyStorage<T>::Row& other )
+template<typename ValueType>
+SparseAssemblyStorage<ValueType>::Row::Row( const typename SparseAssemblyStorage<ValueType>::Row& other )
     : ja( other.ja ), values( other.values )
 {
 }
 
-template<typename T>
-typename SparseAssemblyStorage<T>::Row& SparseAssemblyStorage<T>::Row::operator=(
-    const typename SparseAssemblyStorage<T>::Row& other )
+template<typename ValueType>
+typename SparseAssemblyStorage<ValueType>::Row& SparseAssemblyStorage<ValueType>::Row::operator=(
+    const typename SparseAssemblyStorage<ValueType>::Row& other )
 {
     ja = other.ja;
     values = other.values;
     return *this;
 }
 
-template<typename T>
-void SparseAssemblyStorage<T>::Row::reserve( const IndexType numValuesPerRow )
+template<typename ValueType>
+void SparseAssemblyStorage<ValueType>::Row::reserve( const IndexType numValuesPerRow )
 {
     ja.reserve( numValuesPerRow );
     values.reserve( numValuesPerRow );
 }
 
-template<typename T>
-void SparseAssemblyStorage<T>::Row::scale( const ValueType val )
+template<typename ValueType>
+void SparseAssemblyStorage<ValueType>::Row::scale( const ValueType val )
 {
     for ( size_t i = 0; i < values.size(); i++ )
     {
@@ -339,8 +339,8 @@ void SparseAssemblyStorage<T>::Row::scale( const ValueType val )
     }
 }
 
-template<typename T>
-typename SparseAssemblyStorage<T>::ValueType SparseAssemblyStorage<T>::operator()(
+template<typename ValueType>
+ValueType SparseAssemblyStorage<ValueType>::operator()(
     const IndexType i,
     const IndexType j ) const
 {
@@ -388,8 +388,8 @@ void SparseAssemblyStorage<ValueType>::print() const
 
 /* --------------------------------------------------------------------------- */
 
-template<typename T>
-void SparseAssemblyStorage<T>::set( const IndexType i, const IndexType j, const ValueType value )
+template<typename ValueType>
+void SparseAssemblyStorage<ValueType>::set( const IndexType i, const IndexType j, const ValueType value )
 {
     if ( i >= mNumRows )
     {
@@ -440,34 +440,33 @@ void SparseAssemblyStorage<T>::set( const IndexType i, const IndexType j, const 
     }
 }
 
-template<typename T>
+template<typename ValueType>
 const std::vector<IndexType>&
-SparseAssemblyStorage<T>::getJa( const IndexType i ) const
+SparseAssemblyStorage<ValueType>::getJa( const IndexType i ) const
 {
     return mRows[i].ja;
 }
 
-template<typename T>
-std::vector<IndexType>& SparseAssemblyStorage<T>::getJa( const IndexType i )
+template<typename ValueType>
+std::vector<IndexType>& SparseAssemblyStorage<ValueType>::getJa( const IndexType i )
 {
     return mRows[i].ja;
 }
 
-template<typename T>
-const std::vector<typename SparseAssemblyStorage<T>::ValueType>&
-SparseAssemblyStorage<T>::getValues( const IndexType i ) const
+template<typename ValueType>
+const std::vector<ValueType>& SparseAssemblyStorage<ValueType>::getValues( const IndexType i ) const
 {
     return mRows[i].values;
 }
 
-template<typename T>
-IndexType SparseAssemblyStorage<T>::getNumValues() const
+template<typename ValueType>
+IndexType SparseAssemblyStorage<ValueType>::getNumValues() const
 {
     return mNumValues;
 }
 
-template<typename T>
-void SparseAssemblyStorage<T>::setRow(
+template<typename ValueType>
+void SparseAssemblyStorage<ValueType>::setRow(
     const IndexType i,
     const LAMAArray<IndexType>& ja,
     const LAMAArray<ValueType>& values )
@@ -495,8 +494,8 @@ void SparseAssemblyStorage<T>::setRow(
 
 /* --------------------------------------------------------------------------- */
 
-template<typename T>
-void SparseAssemblyStorage<T>::fixDiagonalProperty( const IndexType i )
+template<typename ValueType>
+void SparseAssemblyStorage<ValueType>::fixDiagonalProperty( const IndexType i )
 
 {
     // fix diagonal property if necessary
@@ -548,8 +547,8 @@ void SparseAssemblyStorage<T>::fixDiagonalProperty( const IndexType i )
 
 /* --------------------------------------------------------------------------- */
 
-template<typename T>
-void SparseAssemblyStorage<T>::setNumColumns( const IndexType numColumns )
+template<typename ValueType>
+void SparseAssemblyStorage<ValueType>::setNumColumns( const IndexType numColumns )
 {
     mNumColumns = numColumns;
 }

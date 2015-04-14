@@ -151,11 +151,11 @@ void CUDACSRUtils::offsets2sizes( IndexType sizes[], const IndexType offsets[], 
 /*     hasDiagonalProperty                                                     */
 /* --------------------------------------------------------------------------- */
 
-template<typename T>
+template<typename ValueType>
 struct identic_functor
 {
     __host__ __device__
-    double operator()( thrust::tuple<T,T> x )
+    double operator()( thrust::tuple<ValueType,ValueType> x )
     {
         return thrust::get < 0 > ( x ) == thrust::get < 1 > ( x );
     }
@@ -282,12 +282,12 @@ void CUDACSRUtils::convertCSR2CSC(
 
 /* --------------------------------------------------------------------------- */
 
-template<typename T, bool useTexture>
+template<typename ValueType, bool useTexture>
 __global__
 void scale_kernel(
-    T* result,
-    const T* y_d,
-    const T beta,
+    ValueType* result,
+    const ValueType* y_d,
+    const ValueType beta,
     int numRows )
 {
     // result = beta * y_d
@@ -302,14 +302,14 @@ void scale_kernel(
 
 /* --------------------------------------------------------------------------- */
 
-template<typename T, bool useTexture>
+template<typename ValueType, bool useTexture>
 __global__
 void normal_gemv_kernel_beta_zero(
-    T* result,
-    const T* x_d,
-    const T* y_d,
-    const T alpha,
-    const T* csrValues,
+    ValueType* result,
+    const ValueType* x_d,
+    const ValueType* y_d,
+    const ValueType alpha,
+    const ValueType* csrValues,
     const int* csrIA,
     const int* csrJA,
     int numRows )
@@ -322,11 +322,11 @@ void normal_gemv_kernel_beta_zero(
     {
         const int rowStart = csrIA[i];
         const int rowEnd = csrIA[i + 1];
-        T value = 0.0;
+        ValueType value = 0.0;
 
         for ( int jj = rowStart; jj < rowEnd; ++jj )
         {
-            value += csrValues[jj] * fetchVectorX<T, useTexture>( x_d, csrJA[jj] );
+            value += csrValues[jj] * fetchVectorX<ValueType, useTexture>( x_d, csrJA[jj] );
         }
 
         result[i] = alpha * value;
@@ -335,14 +335,14 @@ void normal_gemv_kernel_beta_zero(
 
 /* --------------------------------------------------------------------------- */
 
-template<typename T, bool useTexture>
+template<typename ValueType, bool useTexture>
 __global__
 void normal_gemv_kernel_alpha_one(
-    T* result,
-    const T* x_d,
-    const T* y_d,
-    const T beta,
-    const T* csrValues,
+    ValueType* result,
+    const ValueType* x_d,
+    const ValueType* y_d,
+    const ValueType beta,
+    const ValueType* csrValues,
     const int* csrIA,
     const int* csrJA,
     int numRows )
@@ -353,14 +353,14 @@ void normal_gemv_kernel_alpha_one(
 
     if ( i < numRows )
     {
-        T summand = beta * y_d[i];
+        ValueType summand = beta * y_d[i];
         const int rowStart = csrIA[i];
         const int rowEnd = csrIA[i + 1];
-        T value = 0.0;
+        ValueType value = 0.0;
 
         for ( int jj = rowStart; jj < rowEnd; ++jj )
         {
-            value += csrValues[jj] * fetchVectorX<T, useTexture>( x_d, csrJA[jj] );
+            value += csrValues[jj] * fetchVectorX<ValueType, useTexture>( x_d, csrJA[jj] );
         }
 
         result[i] = value + summand;
@@ -369,14 +369,14 @@ void normal_gemv_kernel_alpha_one(
 
 /* --------------------------------------------------------------------------- */
 
-template<typename T, bool useTexture>
+template<typename ValueType, bool useTexture>
 __global__
 void normal_gemv_kernel_beta_one(
-    T* result,
-    const T* x_d,
-    const T* y_d,
-    const T alpha,
-    const T* csrValues,
+    ValueType* result,
+    const ValueType* x_d,
+    const ValueType* y_d,
+    const ValueType alpha,
+    const ValueType* csrValues,
     const int* csrIA,
     const int* csrJA,
     int numRows )
@@ -387,14 +387,14 @@ void normal_gemv_kernel_beta_one(
 
     if ( i < numRows )
     {
-        T summand = y_d[i];
+        ValueType summand = y_d[i];
         const int rowStart = csrIA[i];
         const int rowEnd = csrIA[i + 1];
-        T value = 0.0;
+        ValueType value = 0.0;
 
         for ( int jj = rowStart; jj < rowEnd; ++jj )
         {
-            value += csrValues[jj] * fetchVectorX<T, useTexture>( x_d, csrJA[jj] );
+            value += csrValues[jj] * fetchVectorX<ValueType, useTexture>( x_d, csrJA[jj] );
         }
 
         result[i] = alpha * value + summand;
@@ -403,13 +403,13 @@ void normal_gemv_kernel_beta_one(
 
 /* --------------------------------------------------------------------------- */
 
-template<typename T, bool useTexture>
+template<typename ValueType, bool useTexture>
 __global__
 void normal_gemv_kernel_alpha_one_beta_zero(
-    T* result,
-    const T* x_d,
-    const T* y_d,
-    const T* csrValues,
+    ValueType* result,
+    const ValueType* x_d,
+    const ValueType* y_d,
+    const ValueType* csrValues,
     const int* csrIA,
     const int* csrJA,
     int numRows )
@@ -422,11 +422,11 @@ void normal_gemv_kernel_alpha_one_beta_zero(
     {
         const int rowStart = csrIA[i];
         const int rowEnd = csrIA[i + 1];
-        T value = 0.0;
+        ValueType value = 0.0;
 
         for ( int jj = rowStart; jj < rowEnd; ++jj )
         {
-            value += csrValues[jj] * fetchVectorX<T, useTexture>( x_d, csrJA[jj] );
+            value += csrValues[jj] * fetchVectorX<ValueType, useTexture>( x_d, csrJA[jj] );
         }
 
         result[i] = value;
@@ -435,11 +435,11 @@ void normal_gemv_kernel_alpha_one_beta_zero(
 
 /* --------------------------------------------------------------------------- */
 
-template<typename T, bool useTexture>
+template<typename ValueType, bool useTexture>
 __global__
 void assign_kernel(
-    T* result,
-    const T* y_d,
+    ValueType* result,
+    const ValueType* y_d,
     int numRows )
 {
     // result = y_d
@@ -454,13 +454,13 @@ void assign_kernel(
 
 /* --------------------------------------------------------------------------- */
 
-template<typename T, bool useTexture>
+template<typename ValueType, bool useTexture>
 __global__
 void normal_gemv_kernel_alpha_one_beta_one(
-    T* result,
-    const T* x_d,
-    const T* y_d,
-    const T* csrValues,
+    ValueType* result,
+    const ValueType* x_d,
+    const ValueType* y_d,
+    const ValueType* csrValues,
     const int* csrIA,
     const int* csrJA,
     int numRows )
@@ -471,14 +471,14 @@ void normal_gemv_kernel_alpha_one_beta_one(
 
     if ( i < numRows )
     {
-        T summand = y_d[i];
+        ValueType summand = y_d[i];
         const int rowStart = csrIA[i];
         const int rowEnd = csrIA[i + 1];
-        T value = 0.0;
+        ValueType value = 0.0;
 
         for ( int jj = rowStart; jj < rowEnd; ++jj )
         {
-            value += csrValues[jj] * fetchVectorX<T, useTexture>( x_d, csrJA[jj] );
+            value += csrValues[jj] * fetchVectorX<ValueType, useTexture>( x_d, csrJA[jj] );
         }
 
         result[i] = value + summand;
@@ -487,15 +487,15 @@ void normal_gemv_kernel_alpha_one_beta_one(
 
 /* --------------------------------------------------------------------------- */
 
-template<typename T, bool useTexture>
+template<typename ValueType, bool useTexture>
 __global__
 void normal_gemv_kernel(
-    T* result,
-    const T* x_d,
-    const T* y_d,
-    const T alpha,
-    const T beta,
-    const T* csrValues,
+    ValueType* result,
+    const ValueType* x_d,
+    const ValueType* y_d,
+    const ValueType alpha,
+    const ValueType beta,
+    const ValueType* csrValues,
     const int* csrIA,
     const int* csrJA,
     int numRows )
@@ -506,14 +506,14 @@ void normal_gemv_kernel(
 
     if ( i < numRows )
     {
-        T summand = beta * y_d[i];
+        ValueType summand = beta * y_d[i];
         const int rowStart = csrIA[i];
         const int rowEnd = csrIA[i + 1];
-        T value = 0.0;
+        ValueType value = 0.0;
 
         for ( int jj = rowStart; jj < rowEnd; ++jj )
         {
-            value += csrValues[jj] * fetchVectorX<T, useTexture>( x_d, csrJA[jj] );
+            value += csrValues[jj] * fetchVectorX<ValueType, useTexture>( x_d, csrJA[jj] );
         }
 
         result[i] = alpha * value + summand;
@@ -522,13 +522,13 @@ void normal_gemv_kernel(
 
 /* --------------------------------------------------------------------------- */
 
-template<typename T, bool useTexture>
+template<typename ValueType, bool useTexture>
 __global__
 void normal_gevm_kernel_alpha_one_beta_one(
-    T* result,
-    const T* x_d,
-    const T* y_d,
-    const T* csrValues,
+    ValueType* result,
+    const ValueType* x_d,
+    const ValueType* y_d,
+    const ValueType* csrValues,
     const int* csrIA,
     const int* csrJA,
     int numRows,
@@ -540,8 +540,8 @@ void normal_gevm_kernel_alpha_one_beta_one(
 
     if ( i < numColumns )
     {
-        T summand = y_d[i];
-        T value = 0.0;
+        ValueType summand = y_d[i];
+        ValueType value = 0.0;
 
         for( int j = 0; j < numRows; ++j )
         {
@@ -551,7 +551,7 @@ void normal_gevm_kernel_alpha_one_beta_one(
             {
                 if( csrJA[k] == i )
                 {
-                    value += csrValues[k] * fetchVectorX<T, useTexture>( x_d, j );
+                    value += csrValues[k] * fetchVectorX<ValueType, useTexture>( x_d, j );
                 }
             }
         }
@@ -561,13 +561,13 @@ void normal_gevm_kernel_alpha_one_beta_one(
 
 /* --------------------------------------------------------------------------- */
 
-template<typename T, bool useTexture>
+template<typename ValueType, bool useTexture>
 __global__
 void normal_gevm_kernel_alpha_one_beta_zero(
-    T* result,
-    const T* x_d,
-    const T* y_d,
-    const T* csrValues,
+    ValueType* result,
+    const ValueType* x_d,
+    const ValueType* y_d,
+    const ValueType* csrValues,
     const int* csrIA,
     const int* csrJA,
     int numRows,
@@ -579,7 +579,7 @@ void normal_gevm_kernel_alpha_one_beta_zero(
 
     if ( i < numColumns )
     {
-        T value = 0.0;
+        ValueType value = 0.0;
 
         for( int j = 0; j < numRows; ++j )
         {
@@ -589,7 +589,7 @@ void normal_gevm_kernel_alpha_one_beta_zero(
             {
                 if( csrJA[k] == i )
                 {
-                    value += csrValues[k] * fetchVectorX<T, useTexture>( x_d, j );
+                    value += csrValues[k] * fetchVectorX<ValueType, useTexture>( x_d, j );
                 }
             }
         }
@@ -599,14 +599,14 @@ void normal_gevm_kernel_alpha_one_beta_zero(
 
 /* --------------------------------------------------------------------------- */
 
-template<typename T, bool useTexture>
+template<typename ValueType, bool useTexture>
 __global__
 void normal_gevm_kernel_alpha_one(
-    T* result,
-    const T* x_d,
-    const T* y_d,
-    const T beta,
-    const T* csrValues,
+    ValueType* result,
+    const ValueType* x_d,
+    const ValueType* y_d,
+    const ValueType beta,
+    const ValueType* csrValues,
     const int* csrIA,
     const int* csrJA,
     int numRows,
@@ -618,8 +618,8 @@ void normal_gevm_kernel_alpha_one(
 
     if ( i < numColumns )
     {
-        T summand = beta * y_d[i];
-        T value = 0.0;
+        ValueType summand = beta * y_d[i];
+        ValueType value = 0.0;
 
         for( int j = 0; j < numRows; ++j )
         {
@@ -629,7 +629,7 @@ void normal_gevm_kernel_alpha_one(
             {
                 if( csrJA[k] == i )
                 {
-                    value += csrValues[k] * fetchVectorX<T, useTexture>( x_d, j );
+                    value += csrValues[k] * fetchVectorX<ValueType, useTexture>( x_d, j );
                 }
             }
         }
@@ -639,14 +639,14 @@ void normal_gevm_kernel_alpha_one(
 
 /* --------------------------------------------------------------------------- */
 
-template<typename T, bool useTexture>
+template<typename ValueType, bool useTexture>
 __global__
 void normal_gevm_kernel_beta_one(
-    T* result,
-    const T* x_d,
-    const T* y_d,
-    const T alpha,
-    const T* csrValues,
+    ValueType* result,
+    const ValueType* x_d,
+    const ValueType* y_d,
+    const ValueType alpha,
+    const ValueType* csrValues,
     const int* csrIA,
     const int* csrJA,
     int numRows,
@@ -658,7 +658,7 @@ void normal_gevm_kernel_beta_one(
 
     if ( i < numColumns )
     {
-        T value = 0.0;
+        ValueType value = 0.0;
 
         for( int j = 0; j < numRows; ++j )
         {
@@ -668,7 +668,7 @@ void normal_gevm_kernel_beta_one(
             {
                 if( csrJA[k] == i )
                 {
-                    value += csrValues[k] * fetchVectorX<T, useTexture>( x_d, j );
+                    value += csrValues[k] * fetchVectorX<ValueType, useTexture>( x_d, j );
                 }
             }
         }
@@ -678,14 +678,14 @@ void normal_gevm_kernel_beta_one(
 
 /* --------------------------------------------------------------------------- */
 
-template<typename T, bool useTexture>
+template<typename ValueType, bool useTexture>
 __global__
 void normal_gevm_kernel_beta_zero(
-    T* result,
-    const T* x_d,
-    const T* y_d,
-    const T alpha,
-    const T* csrValues,
+    ValueType* result,
+    const ValueType* x_d,
+    const ValueType* y_d,
+    const ValueType alpha,
+    const ValueType* csrValues,
     const int* csrIA,
     const int* csrJA,
     int numRows,
@@ -697,7 +697,7 @@ void normal_gevm_kernel_beta_zero(
 
     if ( i < numColumns )
     {
-        T value = 0.0;
+        ValueType value = 0.0;
 
         for( int j = 0; j < numRows; ++j )
         {
@@ -707,7 +707,7 @@ void normal_gevm_kernel_beta_zero(
             {
                 if( csrJA[k] == i )
                 {
-                    value += csrValues[k] * fetchVectorX<T, useTexture>( x_d, j );
+                    value += csrValues[k] * fetchVectorX<ValueType, useTexture>( x_d, j );
                 }
             }
         }
@@ -717,15 +717,15 @@ void normal_gevm_kernel_beta_zero(
 
 /* --------------------------------------------------------------------------- */
 
-template<typename T, bool useTexture>
+template<typename ValueType, bool useTexture>
 __global__
 void normal_gevm_kernel(
-    T* result,
-    const T* x_d,
-    const T* y_d,
-    const T alpha,
-    const T beta,
-    const T* csrValues,
+    ValueType* result,
+    const ValueType* x_d,
+    const ValueType* y_d,
+    const ValueType alpha,
+    const ValueType beta,
+    const ValueType* csrValues,
     const int* csrIA,
     const int* csrJA,
     int numRows,
@@ -737,8 +737,8 @@ void normal_gevm_kernel(
 
     if ( i < numColumns )
     {
-        T summand = beta * y_d[i];
-        T value = 0.0;
+        ValueType summand = beta * y_d[i];
+        ValueType value = 0.0;
 
         for( int j = 0; j < numRows; ++j )
         {
@@ -748,7 +748,7 @@ void normal_gevm_kernel(
             {
                 if( csrJA[k] == i )
                 {
-                    value += csrValues[k] * fetchVectorX<T, useTexture>( x_d, j );
+                    value += csrValues[k] * fetchVectorX<ValueType, useTexture>( x_d, j );
                 }
             }
         }
@@ -758,13 +758,13 @@ void normal_gevm_kernel(
 
 /* --------------------------------------------------------------------------- */
 
-template<typename T, bool useTexture>
+template<typename ValueType, bool useTexture>
 __global__
 void sparse_gemv_kernel_alpha_one(
-    T* result,
-    const T* x_d,
-    const T alpha,
-    const T* csrValues,
+    ValueType* result,
+    const ValueType* x_d,
+    const ValueType alpha,
+    const ValueType* csrValues,
     const int* csrIA,
     const int* csrJA,
     const IndexType* rowIndexes,
@@ -779,11 +779,11 @@ void sparse_gemv_kernel_alpha_one(
         IndexType i = rowIndexes[ii];
         const int rowStart = csrIA[i];
         const int rowEnd = csrIA[i + 1];
-        T value = 0.0;
+        ValueType value = 0.0;
 
         for ( int jj = rowStart; jj < rowEnd; ++jj )
         {
-            value += csrValues[jj] * fetchVectorX<T, useTexture>( x_d, csrJA[jj] );
+            value += csrValues[jj] * fetchVectorX<ValueType, useTexture>( x_d, csrJA[jj] );
         }
 
         result[i] += value;
@@ -792,13 +792,13 @@ void sparse_gemv_kernel_alpha_one(
 
 /* --------------------------------------------------------------------------- */
 
-template<typename T, bool useTexture>
+template<typename ValueType, bool useTexture>
 __global__
 void sparse_gemv_kernel(
-    T* result,
-    const T* x_d,
-    const T alpha,
-    const T* csrValues,
+    ValueType* result,
+    const ValueType* x_d,
+    const ValueType alpha,
+    const ValueType* csrValues,
     const int* csrIA,
     const int* csrJA,
     const IndexType* rowIndexes,
@@ -813,11 +813,11 @@ void sparse_gemv_kernel(
         IndexType i = rowIndexes[ii];
         const int rowStart = csrIA[i];
         const int rowEnd = csrIA[i + 1];
-        T value = 0.0;
+        ValueType value = 0.0;
 
         for ( int jj = rowStart; jj < rowEnd; ++jj )
         {
-            value += csrValues[jj] * fetchVectorX<T, useTexture>( x_d, csrJA[jj] );
+            value += csrValues[jj] * fetchVectorX<ValueType, useTexture>( x_d, csrJA[jj] );
         }
 
         result[i] += alpha * value;
@@ -826,12 +826,12 @@ void sparse_gemv_kernel(
 
 /* --------------------------------------------------------------------------- */
 
-template<typename T, bool useTexture>
+template<typename ValueType, bool useTexture>
 __global__
 void sparse_gevm_kernel_alpha_one(
-    T* result,
-    const T* x_d,
-    const T* csrValues,
+    ValueType* result,
+    const ValueType* x_d,
+    const ValueType* csrValues,
     const int* csrIA,
     const int* csrJA,
     const IndexType* rowIndexes,
@@ -844,7 +844,7 @@ void sparse_gevm_kernel_alpha_one(
 
     if ( i < numColumns )
     {
-        T value = 0.0;
+        ValueType value = 0.0;
 
         for( int jj = 0; jj < numNonZeroRows; ++jj )
         {
@@ -855,7 +855,7 @@ void sparse_gevm_kernel_alpha_one(
             {
                 if( csrJA[k] == i )
                 {
-                    value += csrValues[k] * fetchVectorX<T, useTexture>( x_d, i );
+                    value += csrValues[k] * fetchVectorX<ValueType, useTexture>( x_d, i );
                 }
             }
         }
@@ -865,13 +865,13 @@ void sparse_gevm_kernel_alpha_one(
 
 /* --------------------------------------------------------------------------- */
 
-template<typename T, bool useTexture>
+template<typename ValueType, bool useTexture>
 __global__
 void sparse_gevm_kernel(
-    T* result,
-    const T* x_d,
-    const T alpha,
-    const T* csrValues,
+    ValueType* result,
+    const ValueType* x_d,
+    const ValueType alpha,
+    const ValueType* csrValues,
     const int* csrIA,
     const int* csrJA,
     const IndexType* rowIndexes,
@@ -885,7 +885,7 @@ void sparse_gevm_kernel(
 
     if ( i < numColumns )
     {
-        T value = 0.0;
+        ValueType value = 0.0;
 
         for( int jj = 0; jj < numNonZeroRows; ++jj )
         {
@@ -896,7 +896,7 @@ void sparse_gevm_kernel(
             {
                 if( csrJA[k] == i )
                 {
-                    value += csrValues[k] * fetchVectorX<T, useTexture>( x_d, i );
+                    value += csrValues[k] * fetchVectorX<ValueType, useTexture>( x_d, i );
                 }
             }
         }
@@ -1583,32 +1583,32 @@ void CUDACSRUtils::sparseGEVM(
 /*                          Jacobi                                             */
 /* --------------------------------------------------------------------------- */
 
-template<typename T,bool useTexture>
+template<typename ValueType,bool useTexture>
 __global__
 void csr_jacobi_kernel(
     const int* const csrIA,
     const int* const csrJA,
-    const T* const csrValues,
+    const ValueType* const csrValues,
     const int numRows,
-    const T* const rhs,
-    T* const solution,
-    const T* const oldSolution,
-    const T omega )
+    const ValueType* const rhs,
+    ValueType* const solution,
+    const ValueType* const oldSolution,
+    const ValueType omega )
 {
     const int i = threadId( gridDim, blockIdx, blockDim, threadIdx );
     if ( i < numRows )
     {
-        T temp = rhs[i];
+        ValueType temp = rhs[i];
         const int rowStart = csrIA[i];
         const int rowEnd = csrIA[i + 1];
-        const T diag = csrValues[rowStart];
+        const ValueType diag = csrValues[rowStart];
         for ( int jj = rowStart + 1; jj < rowEnd; ++jj )
         {
-            temp -= csrValues[jj] * fetchVectorX<T,useTexture>( oldSolution, csrJA[jj] );
+            temp -= csrValues[jj] * fetchVectorX<ValueType,useTexture>( oldSolution, csrJA[jj] );
         }
         if ( omega == 0.5 )
         {
-            solution[i] = omega * ( fetchVectorX<T,useTexture>( oldSolution, i ) + temp / diag );
+            solution[i] = omega * ( fetchVectorX<ValueType,useTexture>( oldSolution, i ) + temp / diag );
         }
         else if ( omega == 1.0 )
         {
@@ -1616,13 +1616,13 @@ void csr_jacobi_kernel(
         }
         else
         {
-            solution[i] = omega * ( temp / diag ) + ( 1.0 - omega ) * fetchVectorX<T,useTexture>( oldSolution, i );
+            solution[i] = omega * ( temp / diag ) + ( 1.0 - omega ) * fetchVectorX<ValueType,useTexture>( oldSolution, i );
         }
     }
 }
 
-template<typename T>
-__inline__  __device__ T getSharedValue( T* shared, const T* const value, const int index )
+template<typename ValueType>
+__inline__  __device__ ValueType getSharedValue( ValueType* shared, const ValueType* const value, const int index )
 {
     if ( index / blockDim.x == blockIdx.x )
     {
@@ -1635,17 +1635,17 @@ __inline__  __device__ T getSharedValue( T* shared, const T* const value, const 
 }
 
 //these templates allow to combine dynamic shared memory with templates
-template<typename T>
+template<typename ValueType>
 struct SharedMemory
 {
     //! @brief Return a pointer to the runtime-sized shared memory array.
     //! @returns Pointer to runtime-sized shared memory array
     __device__
-    T* getPointer()
+    ValueType* getPointer()
     {
         extern __device__ void Error_UnsupportedType(); // Ensure that we won't compile any un-specialized types
         Error_UnsupportedType();
-        return (T*) 0;
+        return (ValueType*) 0;
     }
 
 };
@@ -1674,38 +1674,38 @@ struct SharedMemory<double>
 
 //this is just like the other jacobi kernel, but it performs a coalesced prefetch of the old solution
 //instead of using the texture memory
-template<typename T>
+template<typename ValueType>
 __global__ void csr_alternate_jacobi_kernel(
     const int* const csrIA,
     const int* const csrJA,
-    const T* const csrValues,
+    const ValueType* const csrValues,
     const int numRows,
-    const T* const rhs,
-    T* const solution,
-    const T* const oldSolution,
-    const T omega )
+    const ValueType* const rhs,
+    ValueType* const solution,
+    const ValueType* const oldSolution,
+    const ValueType omega )
 {
     const int i = threadId( gridDim, blockIdx, blockDim, threadIdx );
 
-    SharedMemory<T> smem;
-    T* shared = smem.getPointer();
+    SharedMemory<ValueType> smem;
+    ValueType* shared = smem.getPointer();
     if ( i < numRows )
     {
         //this is the prefetch
         shared[threadIdx.x] = oldSolution[i];
         __syncthreads();
 
-        T temp = rhs[i];
+        ValueType temp = rhs[i];
         const int rowStart = csrIA[i];
         const int rowEnd = csrIA[i + 1];
-        const T diag = csrValues[rowStart];
+        const ValueType diag = csrValues[rowStart];
         for ( int jj = rowStart + 1; jj < rowEnd; ++jj )
         {
-            temp -= csrValues[jj] * getSharedValue<T>( shared, oldSolution, csrJA[jj] );
+            temp -= csrValues[jj] * getSharedValue<ValueType>( shared, oldSolution, csrJA[jj] );
         }
         if ( omega == 0.5 )
         {
-            solution[i] = omega * ( getSharedValue<T>( shared, oldSolution, i ) + temp / diag );
+            solution[i] = omega * ( getSharedValue<ValueType>( shared, oldSolution, i ) + temp / diag );
         }
         else if ( omega == 1.0 )
         {
@@ -1713,7 +1713,7 @@ __global__ void csr_alternate_jacobi_kernel(
         }
         else
         {
-            solution[i] = omega * ( temp / diag ) + ( 1.0 - omega ) * getSharedValue<T>( shared, oldSolution, i );
+            solution[i] = omega * ( temp / diag ) + ( 1.0 - omega ) * getSharedValue<ValueType>( shared, oldSolution, i );
         }
     }
 }

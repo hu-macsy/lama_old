@@ -88,11 +88,10 @@ LAMA_LOG_DEF_LOGGER( logger, "Test.P_JacobiTest" );
 
 /* --------------------------------------------------------------------- */
 
-template<typename mt>
+template<typename MatrixType>
 void testSolveWithoutPreconditionMethod( ContextPtr loc )
 {
-    typedef mt MatrixType;
-    typedef typename mt::ValueType ValueType;
+    typedef typename MatrixType::MatrixValueType ValueType;
 
     const IndexType N1 = 4;
     const IndexType N2 = 4;
@@ -147,8 +146,7 @@ void testSolveWithoutPreconditionMethod( ContextPtr loc )
     BOOST_CHECK( s.getValue<ValueType>() < 1E-6 );
 }
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( testSolveWithoutPreconditioning, T, test_types ) {
-    typedef T ValueType;
+BOOST_AUTO_TEST_CASE_TEMPLATE( testSolveWithoutPreconditioning, ValueType, test_types ) {
 
     CONTEXTLOOP()
     {
@@ -164,10 +162,10 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( testSolveWithoutPreconditioning, T, test_types ) 
 
 /* ------------------------------------------------------------------------- */
 
-template<typename mt>
+template<typename MatrixType>
 void testSolveWithPreconditionMethod( ContextPtr loc )
 {
-    typedef typename mt::ValueType ValueType;
+    typedef typename MatrixType::MatrixValueType ValueType;
 
 //    LoggerPtr slogger( new CommonLogger(
 //        "<SOR>: ",
@@ -212,8 +210,7 @@ void testSolveWithPreconditionMethod( ContextPtr loc )
 
 }
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( testSolveWithPrecondition, T, test_types ) {
-    typedef T ValueType;
+BOOST_AUTO_TEST_CASE_TEMPLATE( testSolveWithPrecondition, ValueType, test_types ) {
 
     CONTEXTLOOP()
     {

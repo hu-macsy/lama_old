@@ -53,12 +53,12 @@ LAMA_LOG_DEF_LOGGER( BLAS_BLAS3::logger, "BLAS.BLAS3" )
 
 typedef int F77Int;
 
-template<typename T>
+template<typename ValueType>
 static inline
 void wrapperGemm( const CBLAS_ORDER order, const CBLAS_TRANSPOSE transA,
                   const CBLAS_TRANSPOSE transB, const int m, const int n,
-                  const int k, const T alpha, const T* a, const int lda,
-                  const T* b, const int ldb, const T beta, T* c, const int ldc );
+                  const int k, const ValueType alpha, const ValueType* a, const int lda,
+                  const ValueType* b, const int ldb, const ValueType beta, ValueType* c, const int ldc );
 
 template<>
 void wrapperGemm( const CBLAS_ORDER order, const CBLAS_TRANSPOSE transA,
@@ -107,7 +107,7 @@ void wrapperGemm( const CBLAS_ORDER, const CBLAS_TRANSPOSE,
     LAMA_THROWEXCEPTION( "LongDouble not supported by BLAS, please set LAMA_USE_BLAS=0" )
 }
 
-template<typename T>
+template<typename ValueType>
 void BLAS_BLAS3::gemm(
     const CBLAS_ORDER order,
     const CBLAS_TRANSPOSE transA,
@@ -115,19 +115,19 @@ void BLAS_BLAS3::gemm(
     const IndexType m,
     const IndexType n,
     const IndexType k,
-    const T alpha,
-    const T* A,
+    const ValueType alpha,
+    const ValueType* A,
     const IndexType lda,
-    const T* B,
+    const ValueType* B,
     const IndexType ldb,
-    const T beta,
-    T* C,
+    const ValueType beta,
+    ValueType* C,
     const IndexType ldc,
     SyncToken* syncToken )
 {
     LAMA_REGION( "BLAS.BLAS3.gemm" )
 
-    LAMA_LOG_INFO( logger, "gemm<" << Scalar::getType<T>() << ">: "
+    LAMA_LOG_INFO( logger, "gemm<" << Scalar::getType<ValueType>() << ">: "
                    << "m = " << m << ", n = " << n << ", k = " << k 
                     << ", lda = " << lda << ", ldb = " << ldb << ", ldc = " << ldc 
                     << ", alpha = " << alpha << ", beta = " << beta )
@@ -167,7 +167,7 @@ void BLAS_BLAS3::setInterface( BLASInterface& BLAS )
 
 
     // Note: macro takes advantage of same name for routines and type definitions 
-    //       ( e.g. routine CUDABLAS1::sum<T> is set for BLAS::BLAS1::sum variable
+    //       ( e.g. routine CUDABLAS1::sum<ValueType> is set for BLAS::BLAS1::sum variable
 
 #define LAMA_BLAS3_REGISTER(z, I, _)                                            \
     LAMA_INTERFACE_REGISTER1_T( BLAS, gemm, ARITHMETIC_TYPE##I )                \

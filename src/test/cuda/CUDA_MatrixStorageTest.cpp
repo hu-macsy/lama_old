@@ -61,7 +61,7 @@ LAMA_LOG_DEF_LOGGER( logger, "Test.CUDA_CUDAMatrixStorageTest" );
 template<typename StorageType>
 void setCSRData( StorageType& storage )
 {
-    typedef typename StorageType::ValueType ValueType; //!< This is the type of the matrix values.
+    typedef typename StorageType::StorageValueType ValueType; //!< This is the type of the matrix values.
 
     const IndexType numValues = 12;
     const IndexType numRows = 7;

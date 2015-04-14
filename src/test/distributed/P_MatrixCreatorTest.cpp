@@ -68,9 +68,8 @@ LAMA_LOG_DEF_LOGGER( logger, "Test.P_MatrixCreatorTest" );
 
 /* ------------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( randomTest, T, test_types ) {
-    typedef T ValueType;
-
+BOOST_AUTO_TEST_CASE_TEMPLATE( randomTest, ValueType, test_types )
+{
     const IndexType globalSize = 100;
 
     DistributionPtr dist( new BlockDistribution( globalSize, comm ) );
@@ -86,13 +85,12 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( randomTest, T, test_types ) {
 
 /* ------------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( testPoisson, T, test_types ) {
-    typedef T ValueType;
-
+BOOST_AUTO_TEST_CASE_TEMPLATE( testPoisson, ValueType, test_types )
+{
     CSRSparseMatrix<ValueType> matrix;
 
     LAMA_CHECK_THROW(
-    {   MatrixCreator<T>::buildPoisson1D( matrix, 5, 100 );}, Exception );
+    {   MatrixCreator<ValueType>::buildPoisson1D( matrix, 5, 100 );}, Exception );
 
     MatrixCreator<ValueType>::buildPoisson1D( matrix, 3, 100 );
 

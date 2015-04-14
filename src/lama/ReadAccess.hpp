@@ -59,14 +59,12 @@ namespace lama
  * done by acquiring a read lock on a LAMAArray in the constructor and releasing this read lock in
  * the destructor. Therefore a ReadAccess should be only used as a stack object.
  *
- * @tparam T is the value type stored in the wrapped container.
+ * @tparam ValueType is the value type stored in the wrapped container.
  */
-template<typename T>
+template<typename ValueType>
 class LAMA_DLL_IMPORTEXPORT ReadAccess: public BaseAccess
 {
 public:
-
-	typedef T ValueType; //!< This is the type stored in the wrapped  container.
 
     /**
      * @brief Acquires a ReadAccess to the passed LAMAArray for the passed context.
@@ -115,8 +113,8 @@ private:
     LAMA_LOG_DECL_STATIC_LOGGER( logger )
 };
 
-template<typename T>
-inline IndexType ReadAccess<T>::size() const
+template<typename ValueType>
+inline IndexType ReadAccess<ValueType>::size() const
 {
     return mArrayView->size();
 }

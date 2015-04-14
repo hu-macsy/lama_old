@@ -70,9 +70,8 @@ LAMA_LOG_DEF_LOGGER( logger, "Test.P_RedistributorTest" );
 
 /* --------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( redistributeTest, T, test_types ) {
-    typedef T ValueType;
-
+BOOST_AUTO_TEST_CASE_TEMPLATE( redistributeTest, ValueType, test_types )
+{
     IndexType size = 10;
 
     IndexType chunkSize = 1;

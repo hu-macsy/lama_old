@@ -103,11 +103,11 @@ void NoCommunicator::all2all( IndexType recvValues[], const IndexType sendValues
 /*      exchangeByPlan                                                                */
 /* ---------------------------------------------------------------------------------- */
 
-template<typename T>
+template<typename ValueType>
 void NoCommunicator::exchangeByPlanImpl(
-    T recvData[],
+    ValueType recvData[],
     const CommunicationPlan& recvPlan,
-    const T sendData[],
+    const ValueType sendData[],
     const CommunicationPlan& sendPlan ) const
 {
     LAMA_ASSERT_EQUAL_ERROR( recvPlan.size(), sendPlan.size() )
@@ -129,14 +129,14 @@ void NoCommunicator::exchangeByPlanImpl(
 
     // self copy of send data to recv data
 
-    memcpy( recvData, sendData, quantity * sizeof( T ) );
+    memcpy( recvData, sendData, quantity * sizeof( ValueType ) );
 }
 
-template<typename T>
+template<typename ValueType>
 SyncToken* NoCommunicator::exchangeByPlanAsyncImpl(
-    T recvData[],
+    ValueType recvData[],
     const CommunicationPlan& recvPlan,
-    const T sendData[],
+    const ValueType sendData[],
     const CommunicationPlan& sendPlan ) const
 {
     exchangeByPlanImpl( recvData, recvPlan, sendData, sendPlan );
@@ -147,44 +147,44 @@ SyncToken* NoCommunicator::exchangeByPlanAsyncImpl(
 /*              shift                                                                 */
 /* ---------------------------------------------------------------------------------- */
 
-template<typename T>
+template<typename ValueType>
 IndexType NoCommunicator::shiftImpl(
-    T[],
+    ValueType[],
     const IndexType,
     const PartitionId,
-    const T[],
+    const ValueType[],
     const IndexType,
     const PartitionId ) const
 {
     LAMA_THROWEXCEPTION( "shiftImpl should never be called for NoCommunicator" )
 }
 
-template<typename T>
+template<typename ValueType>
 SyncToken* NoCommunicator::shiftAsyncImpl(
-    T[],
+    ValueType[],
     const PartitionId,
-    const T[],
+    const ValueType[],
     const PartitionId,
     const IndexType ) const
 {
     LAMA_THROWEXCEPTION( "shiftAsyncImpl should never be called for NoCommunicator" )
 }
 
-template<typename T>
-void NoCommunicator::maxlocImpl( T&, IndexType&, const PartitionId root ) const
+template<typename ValueType>
+void NoCommunicator::maxlocImpl( ValueType&, IndexType&, const PartitionId root ) const
 {
     // nothing to do
     LAMA_ASSERT_EQUAL_ERROR( root, 0 )
 }
  
-template<typename T>
-void NoCommunicator::bcastImpl( T[], const IndexType, const PartitionId root ) const
+template<typename ValueType>
+void NoCommunicator::bcastImpl( ValueType[], const IndexType, const PartitionId root ) const
 {
     LAMA_ASSERT_EQUAL_ERROR( root, 0 )
 }
 
-template<typename T>
-void NoCommunicator::scatterImpl( T myvals[], const IndexType n, const PartitionId root, const T allvals[] ) const
+template<typename ValueType>
+void NoCommunicator::scatterImpl( ValueType myvals[], const IndexType n, const PartitionId root, const ValueType allvals[] ) const
 {
     LAMA_ASSERT_EQUAL_ERROR( root, 0 )
 
@@ -194,12 +194,12 @@ void NoCommunicator::scatterImpl( T myvals[], const IndexType n, const Partition
     }
 }
 
-template<typename T>
+template<typename ValueType>
 void NoCommunicator::scatterVImpl(
-    T myvals[],
+    ValueType myvals[],
     const IndexType n,
     const PartitionId root,
-    const T allvals[],
+    const ValueType allvals[],
     const IndexType sizes[] ) const
 {
     LAMA_ASSERT_EQUAL_ERROR( root, 0 )
@@ -211,8 +211,8 @@ void NoCommunicator::scatterVImpl(
     }
 }
 
-template<typename T>
-void NoCommunicator::gatherImpl( T allvals[], const IndexType n, const PartitionId root, const T myvals[] ) const
+template<typename ValueType>
+void NoCommunicator::gatherImpl( ValueType allvals[], const IndexType n, const PartitionId root, const ValueType myvals[] ) const
 {
     LAMA_ASSERT_EQUAL_ERROR( root, 0 )
 
@@ -222,12 +222,12 @@ void NoCommunicator::gatherImpl( T allvals[], const IndexType n, const Partition
     }
 }
 
-template<typename T>
+template<typename ValueType>
 void NoCommunicator::gatherVImpl(
-    T allvals[],
+    ValueType allvals[],
     const IndexType n,
     const PartitionId root,
-    const T myvals[],
+    const ValueType myvals[],
     const IndexType sizes[] ) const
 {
     LAMA_ASSERT_EQUAL_ERROR( root, 0 )
@@ -239,26 +239,26 @@ void NoCommunicator::gatherVImpl(
     }
 }
 
-template<typename T>
-void NoCommunicator::swapImpl( T[], const IndexType, const PartitionId partner ) const
+template<typename ValueType>
+void NoCommunicator::swapImpl( ValueType[], const IndexType, const PartitionId partner ) const
 {
     LAMA_ASSERT_EQUAL_ERROR( partner, 0 )
 }
 
-template<typename T>
-T NoCommunicator::sumImpl( const T value ) const
+template<typename ValueType>
+ValueType NoCommunicator::sumImpl( const ValueType value ) const
 {
     return value;
 }
 
-template<typename T>
-T NoCommunicator::minImpl( const T value ) const
+template<typename ValueType>
+ValueType NoCommunicator::minImpl( const ValueType value ) const
 {
     return value;
 }
 
-template<typename T>
-T NoCommunicator::maxImpl( const T value ) const
+template<typename ValueType>
+ValueType NoCommunicator::maxImpl( const ValueType value ) const
 {
     return value;
 }

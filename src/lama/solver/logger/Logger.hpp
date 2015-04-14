@@ -262,8 +262,8 @@ public:
      * @param[in] arg       The argument which shall be logged after the message.
      *                      The << operator must be defined for it!
      */
-    template<typename T>
-    void logType( LogLevel::LogLevel level, const std::string& message, T arg );
+    template<typename ValueType>
+    void logType( LogLevel::LogLevel level, const std::string& message, ValueType arg );
 
 protected:
 
@@ -303,8 +303,8 @@ private:
     bool mIgnoreRank;
 };
 
-template<typename T>
-void Logger::logType( LogLevel::LogLevel level, const std::string& message, T arg )
+template<typename ValueType>
+void Logger::logType( LogLevel::LogLevel level, const std::string& message, ValueType arg )
 {
     if ( level <= mLogLevel )
     {

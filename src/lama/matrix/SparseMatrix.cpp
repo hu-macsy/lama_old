@@ -65,31 +65,31 @@ namespace lama
 
 using boost::shared_ptr;
 
-LAMA_LOG_DEF_TEMPLATE_LOGGER( template<typename T>, SparseMatrix<T>::logger, "Matrix.SparseMatrix" )
+LAMA_LOG_DEF_TEMPLATE_LOGGER( template<typename ValueType>, SparseMatrix<ValueType>::logger, "Matrix.SparseMatrix" )
 
 /* ---------------------------------------------------------------------------------------*/
 
-template<typename T>
-SparseMatrix<T>::SparseMatrix( boost::shared_ptr<MatrixStorage<T> > storage ) :
+template<typename ValueType>
+SparseMatrix<ValueType>::SparseMatrix( boost::shared_ptr<MatrixStorage<ValueType> > storage ) :
 
-    CRTPMatrix<SparseMatrix<T>, T >( storage->getNumRows(), storage->getNumColumns() )
+    CRTPMatrix<SparseMatrix<ValueType>, ValueType >( storage->getNumRows(), storage->getNumColumns() )
 {
     mLocalData = storage;
     // create empty halo with same storage format
-    mHaloData = shared_ptr<MatrixStorage<T> >( storage->create() );
+    mHaloData = shared_ptr<MatrixStorage<ValueType> >( storage->create() );
 }
 
 /* ---------------------------------------------------------------------------------------*/
 
-template<typename T>
-SparseMatrix<T>::SparseMatrix( boost::shared_ptr<MatrixStorage<T> > storage, DistributionPtr rowDist )
+template<typename ValueType>
+SparseMatrix<ValueType>::SparseMatrix( boost::shared_ptr<MatrixStorage<ValueType> > storage, DistributionPtr rowDist )
     :
 
-    CRTPMatrix<SparseMatrix<T>, T >( rowDist, DistributionPtr( new NoDistribution( storage->getNumColumns() ) ) )
+    CRTPMatrix<SparseMatrix<ValueType>, ValueType >( rowDist, DistributionPtr( new NoDistribution( storage->getNumColumns() ) ) )
 {
     mLocalData = storage;
     // create empty halo with same storage format
-    mHaloData = shared_ptr<MatrixStorage<T> >( storage->create() );
+    mHaloData = shared_ptr<MatrixStorage<ValueType> >( storage->create() );
 
     if ( storage->getNumRows() == rowDist->getLocalSize() )
     {
@@ -109,20 +109,20 @@ SparseMatrix<T>::SparseMatrix( boost::shared_ptr<MatrixStorage<T> > storage, Dis
 
 /* ---------------------------------------------------------------------------------------*/
 
-template<typename T>
-SparseMatrix<T>::SparseMatrix(
-    boost::shared_ptr<MatrixStorage<T> > localData,
+template<typename ValueType>
+SparseMatrix<ValueType>::SparseMatrix(
+    boost::shared_ptr<MatrixStorage<ValueType> > localData,
     DistributionPtr rowDist,
     DistributionPtr colDist )
     :
 
-    CRTPMatrix<SparseMatrix<T>, T >( rowDist, colDist )
+    CRTPMatrix<SparseMatrix<ValueType>, ValueType >( rowDist, colDist )
 {
     LAMA_ASSERT_EQUAL_ERROR( localData->getNumColumns(), colDist->getGlobalSize() )
 
     mLocalData = localData;
     // create empty halo with same storage format
-    mHaloData = shared_ptr<MatrixStorage<T> >( localData->create() );
+    mHaloData = shared_ptr<MatrixStorage<ValueType> >( localData->create() );
 
     if ( localData->getNumRows() == rowDist->getLocalSize() )
     {
@@ -145,16 +145,16 @@ SparseMatrix<T>::SparseMatrix(
 
 /* ---------------------------------------------------------------------------------------*/
 
-template<typename T>
-SparseMatrix<T>::SparseMatrix(
-    boost::shared_ptr<MatrixStorage<T> > localData,
-    boost::shared_ptr<MatrixStorage<T> > haloData,
+template<typename ValueType>
+SparseMatrix<ValueType>::SparseMatrix(
+    boost::shared_ptr<MatrixStorage<ValueType> > localData,
+    boost::shared_ptr<MatrixStorage<ValueType> > haloData,
     const Halo& halo,
     DistributionPtr rowDist,
     DistributionPtr colDist )
     :
 
-    CRTPMatrix<SparseMatrix<T>, T >( rowDist, colDist )
+    CRTPMatrix<SparseMatrix<ValueType>, ValueType >( rowDist, colDist )
 {
     LAMA_LOG_INFO( logger, "Construct sparse matrix with finalized local, halo storage + Halo" )
 
@@ -166,7 +166,7 @@ SparseMatrix<T>::SparseMatrix(
     LAMA_ASSERT_EQUAL_ERROR( haloData->getNumRows(), rowDist->getLocalSize() )
     LAMA_ASSERT_EQUAL_ERROR( haloData->getNumColumns(), halo.getHaloSize() )
 
-    // done by constructor for CRTPMatrix<SparseMatrix<T>, T >:  Matrix::setDistributedMatrix( rowDist, colDist );
+    // done by constructor for CRTPMatrix<SparseMatrix<ValueType>, ValueType >:  Matrix::setDistributedMatrix( rowDist, colDist );
 
     mLocalData = localData; // flat copy
     mHaloData = haloData; // flat copy

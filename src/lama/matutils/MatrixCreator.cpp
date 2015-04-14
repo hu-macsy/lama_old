@@ -468,8 +468,8 @@ void MatrixCreator<ValueType>::buildPoisson(
 
 /* ------------------------------------------------------------------------- */
 
-template<typename T>
-void MatrixCreator<T>::buildPoisson1D( CSRSparseMatrix<T>& matrix, const IndexType stencilType, const IndexType dim )
+template<typename ValueType>
+void MatrixCreator<ValueType>::buildPoisson1D( CSRSparseMatrix<ValueType>& matrix, const IndexType stencilType, const IndexType dim )
 {
     LAMA_LOG_INFO( logger, "build Poisson1D" << stencilType << "P( " << dim << ")" )
 
@@ -478,9 +478,9 @@ void MatrixCreator<T>::buildPoisson1D( CSRSparseMatrix<T>& matrix, const IndexTy
 
 /* ------------------------------------------------------------------------- */
 
-template<typename T>
-void MatrixCreator<T>::buildPoisson2D(
-    CSRSparseMatrix<T>& matrix,
+template<typename ValueType>
+void MatrixCreator<ValueType>::buildPoisson2D(
+    CSRSparseMatrix<ValueType>& matrix,
     const IndexType stencilType,
     const IndexType dim1,
     const IndexType dim2 )
@@ -492,9 +492,9 @@ void MatrixCreator<T>::buildPoisson2D(
 
 /* ------------------------------------------------------------------------- */
 
-template<typename T>
-void MatrixCreator<T>::buildPoisson3D(
-    CSRSparseMatrix<T>& matrix,
+template<typename ValueType>
+void MatrixCreator<ValueType>::buildPoisson3D(
+    CSRSparseMatrix<ValueType>& matrix,
     const IndexType stencilType,
     const IndexType dim1,
     const IndexType dim2,

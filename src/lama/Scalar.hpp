@@ -111,11 +111,11 @@ public:
      * The templated conversion constructor needs to be explicit, 
      * because the operator==(Scalar,Scalar) can lead to ambiguities.
      *
-     * @tparam T          type of the input argument value for constructor of Scalar
+     * @tparam ValueType          type of the input argument value for constructor of Scalar
      * @param[in] value   the value this scalar should represent
      */
-    template<typename T>
-    explicit inline Scalar( const T value );
+    template<typename ValueType>
+    explicit inline Scalar( const ValueType value );
 
     /**
      * @brief Constructs a scalar representing the passed real value.
@@ -165,11 +165,11 @@ public:
     /**
      * @brief Constructs a scalar representing the passed complex value.
      *
-     * @tparam T    base type of the complex type, e.g. float, double or long double
+     * @tparam ValueType    base type of the complex type, e.g. float, double or long double
      * @param[in]   value the value this scalar should represent
      */
-    template<typename T>
-    inline Scalar( const Complex<T> value );
+    template<typename ValueType>
+    inline Scalar( const Complex<ValueType> value );
 
     /**
      * @brief Releases all allocated resources.
@@ -177,17 +177,17 @@ public:
     inline virtual ~Scalar();
 
     /**
-     * @brief Returns the value this Scalar represents as type T.
+     * @brief Returns the value this Scalar represents as type ValueType.
      *
-     * @tparam T    arithmetic type of the return argument
-     * @return      the value this Scalar represents as type T
+     * @tparam ValueType    arithmetic type of the return argument
+     * @return      the value this Scalar represents as type ValueType
      */
-    template<typename T>
-    inline T getValue() const;
+    template<typename ValueType>
+    inline ValueType getValue() const;
 
-    // Removed: template<typename T> operator T () const  for type conversions
+    // Removed: template<typename ValueType> operator ValueType () const  for type conversions
     // Might cause problems due to implicit conversions, should only be used explicitly
-    // Now should be done as: cast<T>( scalar )
+    // Now should be done as: cast<ValueType>( scalar )
 
     /**
      * @brief Unary minus operator for Scalar.
@@ -212,10 +212,10 @@ public:
     /**
      * @brief Conversion of a C type into value of enum ScalarType.
      *
-     * @tparam T    C++ type that should be converted
+     * @tparam ValueType    C++ type that should be converted
      * @return      value of enum type ScalarType that represents the C++ type.
      */
-    template<typename T>
+    template<typename ValueType>
     inline static ScalarType getType();
 
     /**
@@ -245,10 +245,10 @@ LAMA_DLL_IMPORTEXPORT std::ostream& operator<<( std::ostream& stream, const Scal
  *  This solutions avoids an implicit conversion of a Scalar to a basic type.
  */
 
-template<typename T>
-T cast( const Scalar& scalar )
+template<typename ValueType>
+ValueType cast( const Scalar& scalar )
 {
-    return scalar.getValue<T>();
+    return scalar.getValue<ValueType>();
 }
 
 const Scalar zero;
@@ -258,8 +258,8 @@ inline Scalar::Scalar()
 {
 }
 
-template<typename T>
-inline Scalar::Scalar( const T value )
+template<typename ValueType>
+inline Scalar::Scalar( const ValueType value )
     : mValue( value, 0.0 )
 {
 }
@@ -294,8 +294,8 @@ inline Scalar::Scalar( const LongDouble real, const LongDouble imag )
 {
 }
 
-template<typename T>
-inline Scalar::Scalar( const Complex<T> value )
+template<typename ValueType>
+inline Scalar::Scalar( const Complex<ValueType> value )
     : mValue( value.real(), value.imag() )
 {
 }
@@ -304,10 +304,10 @@ inline Scalar::~Scalar()
 {
 }
 
-template<typename T>
-inline T Scalar::getValue() const
+template<typename ValueType>
+inline ValueType Scalar::getValue() const
 {
-    return static_cast<T>( mValue.real() );
+    return static_cast<ValueType>( mValue.real() );
 }
 
 template<>
@@ -348,7 +348,7 @@ inline void Scalar::writeAt( std::ostream& stream ) const
     }
 }
 
-template<typename T>
+template<typename ValueType>
 inline Scalar::ScalarType Scalar::getType()
 {
     return UNKNOWN;
@@ -528,13 +528,13 @@ inline bool operator>=( const Scalar& a, const Scalar& b )
 
 inline Scalar sqrt( const Scalar scalar )
 {
-    // note: uses sqrt for Complex<T> with T == long double
+    // note: uses sqrt for Complex<ValueType> with ValueType == long double
     return Scalar( sqrt( scalar.getValue<ComplexLongDouble>() ) );
 }
 
 inline Scalar abs( const Scalar scalar )
 {
-    // note: uses abs for Complex<T> with T == long double
+    // note: uses abs for Complex<ValueType> with ValueType == long double
     return Scalar( abs( scalar.getValue<ComplexLongDouble>() ) );
 }
 

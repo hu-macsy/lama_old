@@ -55,7 +55,7 @@
 namespace lama
 {
 
-// Allow for shared_ptr<T> instead of boost::shared_ptr<T>
+// Allow for shared_ptr<ValueType> instead of boost::shared_ptr<ValueType>
 
 using boost::shared_ptr;
 

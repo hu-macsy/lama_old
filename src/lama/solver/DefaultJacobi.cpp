@@ -181,11 +181,10 @@ void DefaultJacobi::solveFinalize()
     LAMA_LOG_DEBUG( logger, " end solve " )
 }
 
-template<typename T>
+template<typename ValueType>
 void DefaultJacobi::iterate()
 {
-    typedef T DataType;
-    DataType omega = mOmega.getValue<DataType>();
+    ValueType omega = mOmega.getValue<ValueType>();
 
     DefaultJacobiRuntime& runtime = getRuntime();
 
@@ -213,8 +212,8 @@ void DefaultJacobi::iterate()
     if ( LAMA_LOG_TRACE_ON( logger ) )
     {
         LAMA_LOG_TRACE( logger, "Solution " << *runtime.mSolution )
-        const DenseVector<T>& sol = dynamic_cast<const DenseVector<T>&>( *runtime.mSolution );
-        HostReadAccess<T> rsol( sol.getLocalValues() );
+        const DenseVector<ValueType>& sol = dynamic_cast<const DenseVector<ValueType>&>( *runtime.mSolution );
+        HostReadAccess<ValueType> rsol( sol.getLocalValues() );
         std::cout << "Solution: ";
         for ( IndexType i = 0; i < rsol.size(); ++i )
         {
