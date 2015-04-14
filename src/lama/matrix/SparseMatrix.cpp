@@ -1701,38 +1701,41 @@ void SparseMatrix<ValueType>::matrixTimesVectorImpl(
     ValueType one = 1;
 
     // routine for halo matrix is same for sync and async version
+    using boost::function;
+    using boost::bind;
+    using boost::cref;
 
-    boost::function<
+    function<
     void(
         const MatrixStorage<ValueType>* haloMatrix,
         LAMAArray<ValueType>& localResult,
         const LAMAArray<ValueType>& haloX )> haloF =
 
-            // boost::bind( matrixTimesVector, _1, _2, alphaValue, _3, one, boost::cref( localResult ) );
+            // bind( matrixTimesVector, _1, _2, alphaValue, _3, one, cref( localResult ) );
 
-            boost::bind( matrixTimesVector, _1, _2, alphaValue, _3, one, _2 );
+            bind( matrixTimesVector, _1, _2, alphaValue, _3, one, _2 );
 
     if( Matrix::SYNCHRONOUS == getCommunicationKind() )
     {
-        boost::function<
+        function<
         void(
             const MatrixStorage<ValueType>* localMatrix,
             LAMAArray<ValueType>& localResult,
             const LAMAArray<ValueType>& localX )> localF =
 
-                boost::bind( matrixTimesVector, _1, _2, alphaValue, _3, betaValue, boost::cref( localY ) );
+                bind( matrixTimesVector, _1, _2, alphaValue, _3, betaValue, cref( localY ) );
 
         haloOperationSync( localResult, localX, haloX, localF, haloF );
     }
     else
     {
-        boost::function<
+        function<
         SyncToken*(
             const MatrixStorage<ValueType>* localMatrix,
             LAMAArray<ValueType>& localResult,
             const LAMAArray<ValueType>& localX )> localAsyncF =
 
-                boost::bind( matrixTimesVectorAsync, _1, _2, alphaValue, _3, betaValue, boost::cref( localY ) );
+                bind( matrixTimesVectorAsync, _1, _2, alphaValue, _3, betaValue, cref( localY ) );
 
         haloOperationAsync( localResult, localX, haloX, localAsyncF, haloF );
     }
@@ -1797,38 +1800,41 @@ void SparseMatrix<ValueType>::vectorTimesMatrixImpl(
     // todo: think about this if its useful to upload the vector (again)
     ContextPtr hostContext = ContextFactory::getContext( Context::Host );
 
+    using boost::function;
+    using boost::bind;
+
     if( Matrix::SYNCHRONOUS == getCommunicationKind() )
     {
-        boost::function<
+        function<
         void(
             const MatrixStorage<ValueType>* localMatrix,
             LAMAArray<ValueType>& localResult,
-            const LAMAArray<ValueType>& localX )> calcF = boost::bind( vectorTimesMatrix, _1, _2, one,
+            const LAMAArray<ValueType>& localX )> calcF = bind( vectorTimesMatrix, _1, _2, one,
                     _3, zero, _2 );
 
-        boost::function<
+        function<
         void(
             LAMAArray<ValueType>& localResult,
             const LAMAArray<ValueType>& localX,
-            const LAMAArray<ValueType>& localY )> addF = boost::bind( vPlusV, hostContext, _1,
+            const LAMAArray<ValueType>& localY )> addF = bind( vPlusV, hostContext, _1,
                     alphaValue, _2, betaValue, _3 );
 
         vectorHaloOperationSync( localResult, localX, localY, calcF, addF );
     }
     else
     {
-        boost::function<
+        function<
         SyncToken*(
             const MatrixStorage<ValueType>* localMatrix,
             LAMAArray<ValueType>& localResult,
-            const LAMAArray<ValueType>& localX )> calcAsyncF = boost::bind( vectorTimesMatrixAsync, _1,
+            const LAMAArray<ValueType>& localX )> calcAsyncF = bind( vectorTimesMatrixAsync, _1,
                     _2, one, _3, zero, _2 );
 
-        boost::function<
+        function<
         /*SyncToken**/void(
             LAMAArray<ValueType>& localResult,
             const LAMAArray<ValueType>& localX,
-            const LAMAArray<ValueType>& localY )> addAsyncF = boost::bind( vPlusVAsync, hostContext, _1,
+            const LAMAArray<ValueType>& localY )> addAsyncF = bind( vPlusVAsync, hostContext, _1,
                     alphaValue, _2, betaValue,
                     _3 );
 

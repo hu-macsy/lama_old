@@ -342,7 +342,7 @@ void SpecializedJacobi::iterateTyped( const SparseMatrix<ValueType>& coefficient
                 LAMAArray<ValueType>& localResult,
                 const LAMAArray<ValueType>& localX )> localAsyncF =
 
-                    bind( jacobiIterateAsync, _1, _2, _3, boost::cref( localRhs ), omega );
+                    bind( jacobiIterateAsync, _1, _2, _3, cref( localRhs ), omega );
 
             coefficients.haloOperationAsync( localSolution, localOldSolution, haloOldSolution, localAsyncF, haloF );
         }
