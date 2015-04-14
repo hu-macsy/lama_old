@@ -132,7 +132,7 @@ BOOST_AUTO_TEST_CASE( commonTestCases )
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( isEqualTest, MatrixType, MatrixTypes )
 {
-    typedef typename MatrixType::ValueType ValueType;
+    typedef typename MatrixType::MatrixValueType ValueType;
     MatrixType distMatrix( matrix );
     DistributionPtr generaldist1( new MetisDistribution( comm, distMatrix, parts ) );
     DistributionPtr generaldist2( generaldist1 );

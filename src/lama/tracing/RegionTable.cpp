@@ -64,7 +64,7 @@ RegionTable::RegionTable( ThreadId threadId )
 
 RegionTable::~RegionTable()
 {
-    ifLAMA_LOG_INFO_ON( logger )
+    if( LAMA_LOG_INFO_ON( logger ) )
     {
         printTimer();
     }
