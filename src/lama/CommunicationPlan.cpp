@@ -2,7 +2,7 @@
  * @file CommunicationPlan.cpp
  *
  * @license
- * Copyright (c) 2009-2013
+ * Copyright (c) 2009-2015
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -49,7 +49,7 @@ LAMA_LOG_DEF_LOGGER( CommunicationPlan::logger, "CommunicationPlan" )
 /* ------------------------------------------------------------------------- */
 
 CommunicationPlan::CommunicationPlan()
-    : mAllocated( false ), mQuantity( 0 )
+                : mAllocated( false ), mQuantity( 0 )
 {
     LAMA_LOG_INFO( logger, "Communication plan constructed, not allocated" )
 }
@@ -59,17 +59,20 @@ CommunicationPlan::CommunicationPlan()
 CommunicationPlan::CommunicationPlan(
     const PartitionId noPartitions,
     const PartitionId owners[],
-    const IndexType   nOwners,
+    const IndexType nOwners,
     const bool compressFlag )
-    : mAllocated( false ), mQuantity( 0 )
+                : mAllocated( false ), mQuantity( 0 )
 {
     allocate( noPartitions, owners, nOwners, compressFlag );
 }
 
 /* ------------------------------------------------------------------------- */
 
-CommunicationPlan::CommunicationPlan( const IndexType quantities[], const PartitionId noPartitions, const bool compressFlag )
-    : mAllocated( false ), mQuantity( 0 )
+CommunicationPlan::CommunicationPlan(
+    const IndexType quantities[],
+    const PartitionId noPartitions,
+    const bool compressFlag )
+                : mAllocated( false ), mQuantity( 0 )
 {
     allocate( quantities, noPartitions, compressFlag );
 }
@@ -78,7 +81,7 @@ CommunicationPlan::CommunicationPlan( const IndexType quantities[], const Partit
 
 CommunicationPlan::CommunicationPlan( const CommunicationPlan& other, const IndexType quantities[] )
 
-    : mAllocated( false ), mQuantity( 0 )
+                : mAllocated( false ), mQuantity( 0 )
 {
     LAMA_LOG_INFO( logger, "extend plan for quantity of quantites: " << other )
 
@@ -92,7 +95,7 @@ CommunicationPlan::CommunicationPlan( const CommunicationPlan& other, const Inde
 
     IndexType offset = 0;
 
-    for ( size_t i = 0; i < mEntries.size(); i++ )
+    for( size_t i = 0; i < mEntries.size(); i++ )
     {
         Entry& entry = mEntries[i];
         LAMA_ASSERT_ERROR( entry.offset == offset, "illegal plan to extend for quantities" )
@@ -101,13 +104,13 @@ CommunicationPlan::CommunicationPlan( const CommunicationPlan& other, const Inde
 
     offset = 0; // running for new offsets
 
-    for ( size_t i = 0; i < mEntries.size(); i++ )
+    for( size_t i = 0; i < mEntries.size(); i++ )
     {
         Entry& entry = mEntries[i];
 
         IndexType newQuantity = 0;
 
-        for ( IndexType k = 0; k < entry.quantity; k++ )
+        for( IndexType k = 0; k < entry.quantity; k++ )
         {
             newQuantity += quantities[entry.offset + k];
         }
@@ -130,7 +133,7 @@ CommunicationPlan::CommunicationPlan( const CommunicationPlan& other, const Inde
 
 CommunicationPlan::CommunicationPlan( const CommunicationPlan& other, const IndexType n )
 
-    : mAllocated( false ), mQuantity( 0 )
+                : mAllocated( false ), mQuantity( 0 )
 {
     LAMA_LOG_INFO( logger, "Construct multiply plan: " << other << ", factor = " << n )
 
@@ -144,7 +147,7 @@ CommunicationPlan::CommunicationPlan( const CommunicationPlan& other, const Inde
 
     IndexType offset = 0; // running for new offsets
 
-    for ( size_t i = 0; i < mEntries.size(); i++ )
+    for( size_t i = 0; i < mEntries.size(); i++ )
     {
         Entry& entry = mEntries[i];
         LAMA_ASSERT_EQUAL_DEBUG( entry.offset * n, offset )
@@ -188,7 +191,7 @@ void CommunicationPlan::purge()
     mQuantity = 0;
     mCompressed = true; // does not matter, but no entry has quantity 0
 
-    std::vector<Entry>().swap( mEntries );   // clear mEntries reallocating 
+    std::vector<Entry>().swap( mEntries ); // clear mEntries reallocating
 }
 
 /* ------------------------------------------------------------------------- */
@@ -201,12 +204,12 @@ void CommunicationPlan::allocate( const IndexType quantities[], const PartitionI
 
     mQuantity = 0; // counts total quantity
 
-    for ( PartitionId i = 0; i < noPartitions; ++i )
+    for( PartitionId i = 0; i < noPartitions; ++i )
     {
         Entry& entry = mEntries[i];
 
-        entry.quantity    = quantities[i];
-        entry.offset      = mQuantity;
+        entry.quantity = quantities[i];
+        entry.offset = mQuantity;
         entry.partitionId = i;
 
         mQuantity += entry.quantity;
@@ -217,7 +220,7 @@ void CommunicationPlan::allocate( const IndexType quantities[], const PartitionI
 
     mAllocated = true;
 
-    if ( compressFlag )
+    if( compressFlag )
     {
         compress();
     }
@@ -235,24 +238,23 @@ void CommunicationPlan::allocate(
 
     LAMA_LOG_INFO( logger, "allocate plan for " << noPartitions << " partitions from owners" )
 
-    for ( PartitionId p = 0; p < noPartitions; ++p )
+    for( PartitionId p = 0; p < noPartitions; ++p )
     {
         mEntries[p].quantity = 0;
         mEntries[p].partitionId = p;
     }
 
-    for ( IndexType i = 0; i < nOwners; ++i )
+    for( IndexType i = 0; i < nOwners; ++i )
     {
         const PartitionId& p = owners[i];
-        LAMA_ASSERT( p >= 0 && p < noPartitions,
-                     "Illegal owner value: " << p << " at Position " << i )
+        LAMA_ASSERT( p >= 0 && p < noPartitions, "Illegal owner value: " << p << " at Position " << i )
         ++mEntries[p].quantity;
         LAMA_LOG_TRACE( logger, " entry for p = " << p << ", total = " << mEntries[p].quantity )
     }
 
     mQuantity = 0; // counts total quantity
 
-    for ( PartitionId p = 0; p < noPartitions; ++p )
+    for( PartitionId p = 0; p < noPartitions; ++p )
     {
         mEntries[p].offset = mQuantity;
         mQuantity += mEntries[p].quantity;
@@ -264,7 +266,7 @@ void CommunicationPlan::allocate(
 
     mAllocated = true;
 
-    if ( compressFlag )
+    if( compressFlag )
     {
         compress();
     }
@@ -280,10 +282,11 @@ IndexType CommunicationPlan::maxQuantity() const
 
     IndexType quantity = 0;
 
-    for ( PartitionId id = 0; id < size(); id++ )
+    for( PartitionId id = 0; id < size(); id++ )
     {
         quantity = std::max( quantity, mEntries[id].quantity );
     }
+
     return quantity;
 }
 
@@ -305,19 +308,21 @@ bool CommunicationPlan::compressed() const
 
 void CommunicationPlan::compress()
 
-{   // remove all entries with zero quantity
+{
+    // remove all entries with zero quantity
 
     PartitionId count = 0;
 
-    for ( PartitionId pid = 0; pid < size(); pid++ )
+    for( PartitionId pid = 0; pid < size(); pid++ )
     {
         LAMA_LOG_TRACE( logger, "Entries["<<pid<<"].quantity = "<<mEntries[pid].quantity )
-        if ( mEntries[pid].quantity == 0 )
+
+        if( mEntries[pid].quantity == 0 )
         {
             continue;
         }
 
-        if ( count != pid )
+        if( count != pid )
         {
             mEntries[count] = mEntries[pid];
         }
@@ -346,7 +351,7 @@ void CommunicationPlan::allocateTranspose( const CommunicationPlan& plan, const 
 
     std::vector<IndexType> sendSizes( size, 0 );
 
-    for ( PartitionId i = 0; i < plan.size(); ++i )
+    for( PartitionId i = 0; i < plan.size(); ++i )
     {
         sendSizes[plan[i].partitionId] = plan[i].quantity;
     }
@@ -371,10 +376,11 @@ void CommunicationPlan::writeAt( std::ostream& stream ) const
 
     stream << "CommunicationPlan(size=" << mEntries.size() << ",quantity=" << mQuantity;
 
-    for ( size_t i = 0; i < mEntries.size(); i++ )
+    for( size_t i = 0; i < mEntries.size(); i++ )
     {
         stream << ",->" << mEntries[i].partitionId << ":" << mEntries[i].quantity;
     }
+
     stream << ")";
 }
 

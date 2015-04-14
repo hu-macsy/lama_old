@@ -54,31 +54,32 @@ bool CUDATexture::theUseTextureFlag = getUseTextureByEnv();
 
 bool CUDATexture::getUseTextureByEnv()
 {
-    const char* env = getenv ( "LAMA_CUDA_USE_TEXTURE" );
+    const char* env = getenv( "LAMA_CUDA_USE_TEXTURE" );
 
-    if ( !env ) return false;   // no initialization by environment
+    if( !env )
+        return false; // no initialization by environment
 
-    char key = static_cast<char>(toupper( env[0] ));
+    char key = static_cast<char>( toupper( env[0] ) );
 
     // to upper
 
-    if ( key == '0' ) 
+    if( key == '0' )
     {
         theUseTextureFlag = false;
     }
-    else if ( key == '1' ) 
+    else if( key == '1' )
     {
         theUseTextureFlag = true;
     }
-    else if ( key == 'J' ) 
+    else if( key == 'J' )
     {
         theUseTextureFlag = true;
     }
-    else if ( key == 'Y' ) 
+    else if( key == 'Y' )
     {
         theUseTextureFlag = true;
     }
-    else if ( key == 'N' ) 
+    else if( key == 'N' )
     {
         theUseTextureFlag = false;
     }
@@ -86,15 +87,15 @@ bool CUDATexture::getUseTextureByEnv()
     {
         LAMA_LOG_ERROR( logger, "LAMA_CUDA_USE_TEXTURE = " << env << ", illegal setting" )
 
-        return false; 
+        return false;
     }
 
-    return true;   // intialization done 
+    return true; // intialization done
 }
 
 void CUDATexture::setUseTextureByDevice()
 {
-    CUdevice dev;   // curent device
+    CUdevice dev; // curent device
 
     LAMA_CUDA_DRV_CALL( cuCtxGetDevice( &dev ), "get current device" )
 
@@ -109,7 +110,7 @@ void CUDATexture::setUseTextureByDevice()
 
     LAMA_LOG_INFO( logger, "compute capabilty = " << major << "." << minor );
 
-    theUseTextureFlag = major == 1;   // use texture on devices with compute capability 1.x
+    theUseTextureFlag = major == 1; // use texture on devices with compute capability 1.x
 
     LAMA_LOG_INFO( logger, "useTexture = " << theUseTextureFlag );
 
@@ -118,7 +119,7 @@ void CUDATexture::setUseTextureByDevice()
 
 bool CUDATexture::useTexture()
 {
-    if ( !initialized )
+    if( !initialized )
     {
         // initialization not done by enviroment variable, so do it by device
 

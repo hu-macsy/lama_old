@@ -2,7 +2,7 @@
  * @file MICContext.hpp
  *
  * @license
- * Copyright (c) 2009-2013
+ * Copyright (c) 2009-2015
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -138,11 +138,12 @@ private:
 
     int mDeviceNr; //!< number of device for this context
 
-    int mNumThreads;  //!< number of threads used on this device
+    int mNumThreads; //!< number of threads used on this device
 
     LAMA_LOG_DECL_STATIC_LOGGER( logger )
 };
 
-} //namespace lama
+}
+//namespace lama
 
 #endif // LAMA_MIC_CONTEXT_HPP_

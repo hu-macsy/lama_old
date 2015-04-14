@@ -2,7 +2,7 @@
  * @file DenseMatrixTest1.cpp
  *
  * @license
- * Copyright (c) 2009-2013
+ * Copyright (c) 2009-2015
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -55,8 +55,8 @@ void commonTestCases( ContextPtr loc )
 {
     DenseMatrix<ValueType> denseMatrix;
     SparseMatrixTest< DenseMatrix<ValueType> > denseSparseMatrixTest( denseMatrix );
-
     denseSparseMatrixTest.mMatrix.setContext( loc );
+
     if ( base_test_case )
     {
         SPARSEMATRIX_COMMONTESTCASES( denseSparseMatrixTest );

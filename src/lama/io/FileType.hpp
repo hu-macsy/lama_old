@@ -2,7 +2,7 @@
  * @file FileType.hpp
  *
  * @license
- * Copyright (c) 2009-2013
+ * Copyright (c) 2009-2015
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -74,16 +74,16 @@ enum FileType
  */
 enum DataType
 {
-    INTEGER,                //!< synonymous for IndexType
-    FLOAT, 
-    DOUBLE, 
+    INTEGER, //!< synonymous for IndexType
+    FLOAT,
+    DOUBLE,
     LONG_DOUBLE,
-    COMPLEX, 
-    DOUBLE_COMPLEX, 
+    COMPLEX,
+    DOUBLE_COMPLEX,
     LONG_DOUBLE_COMPLEX,
-    PATTERN,                 //!< file for matrix does not contain values
-    INTERNAL,                //!< takes the internal data type currently used
-    UNKNOWN                  //!< not specified or identified
+    PATTERN, //!< file for matrix does not contain values
+    INTERNAL, //!< takes the internal data type currently used
+    UNKNOWN //!< not specified or identified
 };
 
 /**
@@ -94,9 +94,11 @@ enum IndexDataType
     LONG, INT
 };
 
-}; // namespace File
+}
+;
+// namespace File
 
-/** @brief Help routine to determine the size (in bytes) for the values in a file. 
+/** @brief Help routine to determine the size (in bytes) for the values in a file.
  *
  *  @tparam    ValueType specifies the internal data type take as decision for INTERNAL
  *  @param[in] dataType specifies the file type that is asked for
@@ -110,16 +112,22 @@ long getDataTypeSize( const File::DataType dataType )
     {
         case File::DOUBLE:
             return TypeTraits<double>::size;
+
         case File::FLOAT:
             return TypeTraits<float>::size;
+
         case File::COMPLEX:
             return TypeTraits<ComplexFloat>::size;
+
         case File::DOUBLE_COMPLEX:
             return TypeTraits<ComplexDouble>::size;
+
         case File::INTERNAL:
             return TypeTraits<ValueType>::size;
+
         case File::PATTERN:
             return 0;
+
         default:
             return -1;
     }
@@ -134,33 +142,33 @@ long getDataTypeSize( const File::DataType dataType )
 template<typename ValueType>
 File::DataType getDataType( const long dataTypeSize )
 {
-    if ( dataTypeSize == TypeTraits<ValueType>::size )
+    if( dataTypeSize == TypeTraits<ValueType>::size )
     {
         return File::INTERNAL;
     }
-    else if ( dataTypeSize == 0 )
+    else if( dataTypeSize == 0 )
     {
         return File::PATTERN;
     }
-    else if ( dataTypeSize == TypeTraits<float>::size )
+    else if( dataTypeSize == TypeTraits<float>::size )
     {
         return File::FLOAT;
     }
-    else if ( dataTypeSize == TypeTraits<double>::size )
+    else if( dataTypeSize == TypeTraits<double>::size )
     {
         return File::DOUBLE;
     }
-    else if ( dataTypeSize == TypeTraits<ComplexFloat>::size )
+    else if( dataTypeSize == TypeTraits<ComplexFloat>::size )
     {
         // never be here as: TypeTraits<double>::size == TypeTraits<ComplexFloat>::size
         // Complex files are only used by INTERNAL
         return File::COMPLEX;
     }
-    else if ( dataTypeSize == TypeTraits<ComplexDouble>::size )
+    else if( dataTypeSize == TypeTraits<ComplexDouble>::size )
     {
         return File::DOUBLE_COMPLEX;
     }
-    else if ( dataTypeSize == TypeTraits<LongDouble>::size )
+    else if( dataTypeSize == TypeTraits<LongDouble>::size )
     {
         // never be here as: TypeTraits<ComplexDouble>::size == TypeTraits<LongDouble>::size
         // LongDouble files are only used by INTERNAL
@@ -175,14 +183,16 @@ File::DataType getDataType( const long dataTypeSize )
 static inline
 long getIndexDataTypeSize( const File::IndexDataType indexDataType )
 {
-    switch ( indexDataType )
+    switch( indexDataType )
     {
-    case File::LONG:
-        return TypeTraits<long>::size;
-    case File::INT:
-        return TypeTraits<int>::size;
-    default:
-        return 0;
+        case File::LONG:
+            return TypeTraits<long>::size;
+
+        case File::INT:
+            return TypeTraits<int>::size;
+
+        default:
+            return 0;
     }
 }
 

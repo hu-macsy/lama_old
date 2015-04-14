@@ -2,7 +2,7 @@
  * @file CUDA_LAMAArrayTest.cpp
  *
  * @license
- * Copyright (c) 2009-2013
+ * Copyright (c) 2009-2015
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -48,7 +48,7 @@
 using namespace boost;
 using namespace lama;
 
-typedef boost::mpl::list<double,float> test_types;
+typedef boost::mpl::list<double, float> test_types;
 
 /* --------------------------------------------------------------------- */
 
@@ -62,28 +62,20 @@ BOOST_AUTO_TEST_CASE( baseTest )
 {
     const IndexType n = 10;
     const IndexType val = 5;
-
     LAMAArray<IndexType> array1( n ); // will already be allocated on host
     LAMAArray<IndexType> array2; // no size
-
     ContextPtr cuda = ContextFactory::getContext( Context::CUDA );
-
     {
         UtilsInterface::Setter<IndexType>::setVal setVal = cuda->getInterface().Utils.setVal<IndexType>();
-
         BOOST_REQUIRE( setVal );
-
         {
             WriteAccess<IndexType> wArray1( array1, cuda );
             WriteOnlyAccess<IndexType> wArray2( array2, cuda, n );
-
             LAMA_CONTEXT_ACCESS( cuda );
-
             setVal( wArray1.get(), n, val );
             setVal( wArray2.get(), n, val + 1 );
         }
     }
-
     HostReadAccess<IndexType> rArray1( array1 );
     HostReadAccess<IndexType> rArray2( array2 );
 
@@ -97,41 +89,27 @@ BOOST_AUTO_TEST_CASE( baseTest )
 
 BOOST_AUTO_TEST_CASE( refTest1 )
 {
-	typedef float ValueType;
-
+    typedef float ValueType;
     ContextPtr cuda = ContextFactory::getContext( Context::CUDA );
-
     const IndexType n = 10;
     const ValueType value = 3.5;
-
     ValueType myData[n] =
     { 1, 2, 3, 4, 5, 5, 4, 3, 2, 1 };
-
     {
         // use the existing host data as input for LAMA array
-
         // LAMA_INTERFACE_FN_T( setVal, loc, Utils, Setter, ValueType );
-
         UtilsInterface::Setter<ValueType>::setVal setVal = cuda->getInterface().Utils.setVal<ValueType>();
-
         BOOST_REQUIRE( setVal );
-
         LAMAArrayRef<ValueType> lamaArray( myData, n );
-
         {
             WriteAccess<ValueType> lamaArrayWAccess( lamaArray, cuda );
-
             LAMA_CONTEXT_ACCESS( cuda );
-
             setVal( lamaArrayWAccess.get(), n, value );
         }
-
         // This should become redundant by the destructor
-
         {
             HostWriteAccess<ValueType> lamaArrayWAccess( lamaArray );
         }
-
         // destructor of LAMAArrayRef will write back data to the valid location
     }
 

@@ -2,7 +2,7 @@
  * @file CommunicatorManager.cpp
  *
  * @license
- * Copyright (c) 2009-2013
+ * Copyright (c) 2009-2015
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -41,7 +41,7 @@ LAMA_LOG_DEF_LOGGER( CommunicatorManager::logger, "CommunicatorManager" )
 
 CommunicatorManager::CommunicatorManager( const char* type )
 
-    : mCommunicatorType( type )
+                : mCommunicatorType( type )
 {
     // do not log here as manager might be created during initialization
     // printf("CommunicatorManager (type = %d)\n", int(type) )

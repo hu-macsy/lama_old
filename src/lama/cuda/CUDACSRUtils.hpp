@@ -2,7 +2,7 @@
  * @file CUDACSRUtils.hpp
  *
  * @license
- * Copyright (c) 2009-2013
+ * Copyright (c) 2009-2015
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -174,7 +174,7 @@ public:
         const ValueType omega,
         const IndexType numNonEmptyRows );
 
-    /** Implementation for CSRUtilsInterface::Solver::jacobiHaloWithDiag 
+    /** Implementation for CSRUtilsInterface::Solver::jacobiHaloWithDiag
      *  @since 1.1.0
      */
 
@@ -261,15 +261,16 @@ private:
 
     LAMA_LOG_DECL_STATIC_LOGGER( logger )
 
-    static bool initialized;   //!< static initialization used for registration
+    static    bool initialized; //!< static initialization used for registration
 
-    static unsigned int lastHashTableSize; // local variable to handhover hash table size for multiply
+    static unsigned int lastHashTableSize;// local variable to handhover hash table size for multiply
 
-    static bool registerInterface();  //!< registration
+    static bool registerInterface();//!< registration
 };
 
 /* --------------------------------------------------------------------------- */
 
-} // namespace lama
+}
+// namespace lama
 
 #endif  //  LAMA_CUDA_CSR_UTILS_HPP_

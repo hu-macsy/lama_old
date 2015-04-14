@@ -2,7 +2,7 @@
  * @file CSRSparseMatrixTest.cpp
  *
  * @license
- * Copyright (c) 2009-2013
+ * Copyright (c) 2009-2015
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -51,9 +51,9 @@ BOOST_AUTO_TEST_SUITE( DerivedSparseMatrixTest )
 
 LAMA_LOG_DEF_LOGGER( logger, "Test.SparseMatrixTest.DerivedSparseMatrixTest" )
 
-typedef boost::mpl::list<CSRSparseMatrix<float>,CSRSparseMatrix<double>,COOSparseMatrix<float>,COOSparseMatrix<double>,
-        DIASparseMatrix<float>,DIASparseMatrix<double>,ELLSparseMatrix<float>,ELLSparseMatrix<double>,
-        JDSSparseMatrix<float>,JDSSparseMatrix<double> > test_types;
+typedef boost::mpl::list<CSRSparseMatrix<float>, CSRSparseMatrix<double>, COOSparseMatrix<float>, COOSparseMatrix<double>,
+        DIASparseMatrix<float>, DIASparseMatrix<double>, ELLSparseMatrix<float>, ELLSparseMatrix<double>,
+        JDSSparseMatrix<float>, JDSSparseMatrix<double> > test_types;
 
 /* ------------------------------------------------------------------------- */
 

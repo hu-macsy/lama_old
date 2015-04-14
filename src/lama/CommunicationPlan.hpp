@@ -2,7 +2,7 @@
  * @file CommunicationPlan.hpp
  *
  * @license
- * Copyright (c) 2009-2013
+ * Copyright (c) 2009-2015
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -178,7 +178,8 @@ public:
      *  plan.allocate( 3, owners, nOwner );
      *  \endcode
      */
-    void allocate( const PartitionId noPartitions, const PartitionId owners[], IndexType nOwners, bool compressFlag = true );
+    void allocate( const PartitionId noPartitions, const PartitionId owners[], IndexType nOwners, bool compressFlag =
+                    true );
 
     /** Allocate a communication plan as the transposed plan of another communication plan.
      *
@@ -244,10 +245,9 @@ private:
 
     IndexType mQuantity; //!< sum of quantities for all entries
 
-    LAMA_LOG_DECL_STATIC_LOGGER( logger )
-};
+    LAMA_LOG_DECL_STATIC_LOGGER( logger )};
 
-/* ----------------------------------------------------------------------*/
+    /* ----------------------------------------------------------------------*/
 
 PartitionId CommunicationPlan::size() const
 {

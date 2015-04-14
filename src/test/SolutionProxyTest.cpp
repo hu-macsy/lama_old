@@ -2,7 +2,7 @@
  * @file SolutionProxyTest.hpp
  *
  * @license
- * Copyright (c) 2009-2013
+ * Copyright (c) 2009-2015
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -72,11 +72,9 @@ BOOST_AUTO_TEST_CASE( testOperators )
 {
     BOOST_CHECK_EQUAL( true, mProxy.isDirty() );
     mProxy.setDirty( false );
-
-    BOOST_CHECK_EQUAL( Scalar( -5.0 ), (*mProxy)( 0 ) );
-    BOOST_CHECK_EQUAL( Scalar( -5.0 ), (*mProxy)( 1 ) );
-    BOOST_CHECK_EQUAL( Scalar( -5.0 ), (*mProxy)( 2 ) );
-
+    BOOST_CHECK_EQUAL( Scalar( -5.0 ), ( *mProxy )( 0 ) );
+    BOOST_CHECK_EQUAL( Scalar( -5.0 ), ( *mProxy )( 1 ) );
+    BOOST_CHECK_EQUAL( Scalar( -5.0 ), ( *mProxy )( 2 ) );
     BOOST_CHECK_EQUAL( true, mProxy.isDirty() );
 }
 
@@ -86,7 +84,6 @@ BOOST_AUTO_TEST_CASE( testSetAndIsDirty )
 {
     mProxy.setDirty( true );
     BOOST_CHECK_EQUAL( true, mProxy.isDirty() );
-
     mProxy.setDirty( false );
     BOOST_CHECK_EQUAL( false, mProxy.isDirty() );
 }
@@ -97,9 +94,7 @@ BOOST_AUTO_TEST_CASE( testGetConstReference )
 {
     mProxy.setDirty( false );
     const VectorType& vec = mProxy.getConstReference();
-
     BOOST_CHECK_EQUAL( false, mProxy.isDirty() );
-
     BOOST_CHECK_EQUAL( Scalar( -5.0 ), vec( 0 ) );
     BOOST_CHECK_EQUAL( Scalar( -5.0 ), vec( 1 ) );
     BOOST_CHECK_EQUAL( Scalar( -5.0 ), vec( 2 ) );
@@ -111,9 +106,7 @@ BOOST_AUTO_TEST_CASE( testGetReference )
 {
     mProxy.setDirty( false );
     VectorType& vec = mProxy.getReference();
-
     BOOST_CHECK_EQUAL( true, mProxy.isDirty() );
-
     BOOST_CHECK_EQUAL( Scalar( -5.0 ), vec( 0 ) );
     BOOST_CHECK_EQUAL( Scalar( -5.0 ), vec( 1 ) );
     BOOST_CHECK_EQUAL( Scalar( -5.0 ), vec( 2 ) );

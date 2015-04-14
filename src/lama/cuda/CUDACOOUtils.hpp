@@ -2,7 +2,7 @@
  * @file CUDACOOUtils.hpp
  *
  * @license
- * Copyright (c) 2009-2013
+ * Copyright (c) 2009-2015
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -125,13 +125,14 @@ private:
 
     LAMA_LOG_DECL_STATIC_LOGGER( logger )
 
-    static bool initialized;   //!< static initialization used for registration
+    static    bool initialized; //!< static initialization used for registration
 
-    static bool registerInterface();  //!< registration of methods at interface
+    static bool registerInterface();//!< registration of methods at interface
 };
 
 /* --------------------------------------------------------------------------- */
 
-} // namespace lama
+}
+// namespace lama
 
 #endif //  LAMA_CUDA_COO_UTILS_HPP_

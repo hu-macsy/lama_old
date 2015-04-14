@@ -2,7 +2,7 @@
  * @file Redistributor.hpp
  *
  * @license
- * Copyright (c) 2009-2013
+ * Copyright (c) 2009-2015
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -139,7 +139,7 @@ public:
         HostReadAccess<ValueType> source( sourceArray );
         HostReadAccess<IndexType> indexes( sourceIndexes );
 
-        for ( IndexType i = 0; i < indexes.size(); i++ )
+        for( IndexType i = 0; i < indexes.size(); i++ )
         {
             LAMA_LOG_DEBUG( logger, "target[" << i << "] = source[" << indexes[i] << "] = " << source[indexes[i]] )
 
@@ -159,12 +159,13 @@ public:
         HostReadAccess<IndexType> indexes( sourceIndexes );
 
         #pragma omp parallel for
-        for ( IndexType i = 0; i < indexes.size(); i++ )
+
+        for( IndexType i = 0; i < indexes.size(); i++ )
         {
             LAMA_LOG_DEBUG( logger,
                             "targetN[" << i << "] = sourceN[" << indexes[i] << "] = " << source[indexes[i] * n] << " ..." )
 
-            for ( IndexType j = 0; j < n; j++ )
+            for( IndexType j = 0; j < n; j++ )
             {
                 target[i * n + j] = source[indexes[i] * n + j];
             }
@@ -188,7 +189,7 @@ public:
         HostReadAccess<IndexType> indexes( targetIndexes );
         HostReadAccess<ValueType> source( sourceArray );
 
-        for ( IndexType i = 0; i < indexes.size(); i++ )
+        for( IndexType i = 0; i < indexes.size(); i++ )
         {
             LAMA_LOG_DEBUG( logger, "target[" << indexes[i] << "] = source[" << i << "] = " << source[i] )
 
@@ -208,12 +209,13 @@ public:
         HostReadAccess<ValueType> source( sourceArray );
 
         #pragma omp parallel for
-        for ( IndexType i = 0; i < indexes.size(); i++ )
+
+        for( IndexType i = 0; i < indexes.size(); i++ )
         {
             LAMA_LOG_DEBUG( logger,
                             "targetN[" << indexes[i] << "] = sourceN[" << i << "] = " << source[i * n] << " ..." )
 
-            for ( IndexType j = 0; j < n; j++ )
+            for( IndexType j = 0; j < n; j++ )
             {
                 target[indexes[i] * n + j] = source[i * n + j];
             }
@@ -241,7 +243,7 @@ public:
 
         LAMA_ASSERT_ERROR( tindexes.size() == sindexes.size(), "index size mismatch" )
 
-        for ( IndexType i = 0; i < tindexes.size(); i++ )
+        for( IndexType i = 0; i < tindexes.size(); i++ )
         {
             LAMA_LOG_DEBUG( logger,
                             "target[" << tindexes[i] << "] = source[" << sindexes[i] << "] = " << source[ sindexes[i] ] )
@@ -266,12 +268,13 @@ public:
         LAMA_ASSERT_ERROR( tindexes.size() == sindexes.size(), "index size mismatch" )
 
         #pragma omp parallel for
-        for ( IndexType i = 0; i < tindexes.size(); i++ )
+
+        for( IndexType i = 0; i < tindexes.size(); i++ )
         {
             LAMA_LOG_DEBUG( logger,
                             "targetN[" << tindexes[i] << "] = sourceN[" << sindexes[i] << "] = " << source[ sindexes[i] * n ] << " ..." )
 
-            for ( IndexType j = 0; j < n; j++ )
+            for( IndexType j = 0; j < n; j++ )
             {
                 target[tindexes[i] * n + j] = source[sindexes[i] * n + j];
             }
@@ -487,11 +490,11 @@ void Redistributor::gatherV(
 
     IndexType targetOffset = 0;
 
-    for ( IndexType ii = 0; ii < n; ii++ )
+    for( IndexType ii = 0; ii < n; ii++ )
     {
         IndexType i = rSourceIndexes[ii];
 
-        for ( IndexType j = rSourceOffsets[i]; j < rSourceOffsets[i + 1]; ++j )
+        for( IndexType j = rSourceOffsets[i]; j < rSourceOffsets[i + 1]; ++j )
         {
             wTargetArray[targetOffset++] = rSourceArray[j];
         }
@@ -518,11 +521,11 @@ void Redistributor::scatterV(
 
     IndexType sourceOffset = 0;
 
-    for ( IndexType ii = 0; ii < n; ii++ )
+    for( IndexType ii = 0; ii < n; ii++ )
     {
         IndexType i = rTargetIndexes[ii];
 
-        for ( IndexType j = rTargetOffsets[i]; j < rTargetOffsets[i + 1]; ++j )
+        for( IndexType j = rTargetOffsets[i]; j < rTargetOffsets[i + 1]; ++j )
         {
             wTargetArray[j] = rSourceArray[sourceOffset++];
         }
@@ -551,20 +554,20 @@ void Redistributor::copyV(
     HostReadAccess<IndexType> rSourceOffsets( sourceOffsets );
     HostReadAccess<IndexType> rSourceIndexes( sourceIndexes );
 
-    for ( IndexType ii = 0; ii < n; ii++ )
+    for( IndexType ii = 0; ii < n; ii++ )
     {
         IndexType sourceI = rSourceIndexes[ii];
         IndexType targetI = rTargetIndexes[ii];
 
         IndexType k = rTargetOffsets[targetI];
 
-        for ( IndexType j = rSourceOffsets[sourceI]; j < rSourceOffsets[sourceI + 1]; ++j )
+        for( IndexType j = rSourceOffsets[sourceI]; j < rSourceOffsets[sourceI + 1]; ++j )
         {
             wTargetArray[k] = rSourceArray[j];
             ++k;
         }
 
-        LAMA_ASSERT_EQUAL_DEBUG( k, rTargetOffsets[ targetI + 1 ] )
+        LAMA_ASSERT_EQUAL_DEBUG( k, rTargetOffsets[targetI + 1] )
     }
 }
 
@@ -579,7 +582,8 @@ void Redistributor::exchangeHalo( LAMAArray<ValueType>& targetHalo, const LAMAAr
 
     // use asynchronous communication to avoid deadlocks
 
-    SyncToken* token = comm.exchangeByPlanAsync( targetHalo, mHalo.getRequiredPlan(), sourceHalo, mHalo.getProvidesPlan() );
+    SyncToken* token = comm.exchangeByPlanAsync( targetHalo, mHalo.getRequiredPlan(), sourceHalo,
+                       mHalo.getProvidesPlan() );
 
     token->wait();
 

@@ -2,7 +2,7 @@
  * @file CUDABLAS2.hpp
  *
  * @license
- * Copyright (c) 2009-2013
+ * Copyright (c) 2009-2015
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -49,11 +49,10 @@
 #include <cublas_v2.h>
 #include <cuda_runtime_api.h>
 
-
 namespace lama
 {
 
-/** Static class that provides CUDA implementaions for the BLAS2 routines of the BLAS interface. 
+/** Static class that provides CUDA implementaions for the BLAS2 routines of the BLAS interface.
  *
  *  The BLAS2 routines are all private and can only be accessed via registration at an interface.
  *
@@ -298,11 +297,12 @@ private:
 
     LAMA_LOG_DECL_STATIC_LOGGER( logger )
 
-    static bool initialized;   //!< static initialization used for registration
+    static    bool initialized; //!< static initialization used for registration
 
-    static bool registerInterface();  //!< registration
+    static bool registerInterface();//!< registration
 };
 
-} /* namespace lama */
+}
+/* namespace lama */
 
 #endif // LAMA_CUDABLAS2_HPP_

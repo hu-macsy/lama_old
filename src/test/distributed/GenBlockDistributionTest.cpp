@@ -2,7 +2,7 @@
  * @file GenBlockDistributionTest.cpp
  *
  * @license
- * Copyright (c) 2009-2013
+ * Copyright (c) 2009-2015
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -62,7 +62,6 @@ struct GenBlockDistributionTestConfig
         for ( PartitionId p = 0; p < size; ++p )
         {
             IndexType localSize = 2 * ( p + 1 );
-
             localSizes.push_back( localSize );
 
             for ( IndexType i = 0; i < localSize; i++ )
@@ -124,7 +123,6 @@ BOOST_AUTO_TEST_CASE( genBlockComputeOwnersTest )
 
     std::vector<PartitionId> owners;
     dist->computeOwners( indexes, owners );
-
     BOOST_CHECK_EQUAL( globalSize, static_cast<IndexType>( owners.size() ) );
     BOOST_CHECK_EQUAL( globalSize, static_cast<IndexType>( theOwners.size() ) );
 
@@ -140,7 +138,6 @@ BOOST_AUTO_TEST_CASE( genBlockComputeOwnersTest )
 
 BOOST_AUTO_TEST_CASE( genBlockSizeTest )
 {
-
     // setup vector of sizes
     std::vector<IndexType> mlocalSizes; // block size for each partition
 
@@ -152,18 +149,14 @@ BOOST_AUTO_TEST_CASE( genBlockSizeTest )
 
     IndexType globalSize = size * ( size + 1 );
     GenBlockDistribution dist1( globalSize, mlocalSizes, comm );
-    BOOST_CHECK( dist1.getLocalSize() == 2 * (rank + 1) );
-
+    BOOST_CHECK( dist1.getLocalSize() == 2 * ( rank + 1 ) );
     IndexType lb1, ub1;
     dist1.getLocalRange( lb1, ub1 );
-
     GenBlockDistribution dist2( globalSize, 2 * ( rank + 1 ), comm );
-
     IndexType lb2, ub2;
     dist1.getLocalRange( lb2, ub2 );
     BOOST_CHECK( lb1 == lb2 );
     BOOST_CHECK( ub1 == ub2 );
-
     GenBlockDistribution dist3( globalSize, lb1, ub1, comm );
 }
 
@@ -175,10 +168,9 @@ BOOST_AUTO_TEST_CASE( isEqualTest )
     DistributionPtr genblockdist2( genblockdist1 );
     DistributionPtr genblockdist3( new GenBlockDistribution( comm->getSize(), 1, comm ) );
     DistributionPtr genblockdist4( new GenBlockDistribution( 2 * comm->getSize(), 2, comm ) );
-
-    BOOST_CHECK( (*genblockdist1).isEqual( *genblockdist2 ) );
-    BOOST_CHECK( (*genblockdist1).isEqual( *genblockdist3 ) );
-    BOOST_CHECK( !(*genblockdist1).isEqual( *genblockdist4 ) );
+    BOOST_CHECK( ( *genblockdist1 ).isEqual( *genblockdist2 ) );
+    BOOST_CHECK( ( *genblockdist1 ).isEqual( *genblockdist3 ) );
+    BOOST_CHECK( !( *genblockdist1 ).isEqual( *genblockdist4 ) );
 }
 /* --------------------------------------------------------------------- */
 

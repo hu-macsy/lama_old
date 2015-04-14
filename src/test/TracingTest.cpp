@@ -2,7 +2,7 @@
  * @file TracingTest.hpp
  *
  * @license
- * Copyright (c) 2009-2013
+ * Copyright (c) 2009-2015
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -36,7 +36,7 @@
 #include <lama/tracing.hpp>
 
 #ifdef _WIN32
-    #include <Windows.h>
+#include <Windows.h>
 #endif //WIN32
 /* --------------------------------------------------------------------- */
 
@@ -66,6 +66,7 @@ void foo( bool call )
 {
     LAMA_REGION( "foo" )
     work( 1 );
+
     if ( call )
     {
         bar();

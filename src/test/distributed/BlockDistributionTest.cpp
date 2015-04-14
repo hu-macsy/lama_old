@@ -2,7 +2,7 @@
  * @file BlockDistributionTest.cpp
  *
  * @license
- * Copyright (c) 2009-2013
+ * Copyright (c) 2009-2015
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -55,10 +55,8 @@ struct BlockDistributionTestConfig
     BlockDistributionTestConfig()
     {
         comm = CommunicatorFactory::get( "MPI" );
-
         rank = comm->getRank();
         size = comm->getSize();
-
         blockSize = 17;
         dist = DistributionPtr( new BlockDistribution( blockSize * size, comm ) );
     }
@@ -78,7 +76,7 @@ struct BlockDistributionTestConfig
     DistributionPtr dist;
 };
 
-typedef boost::mpl::list<double,float> test_types;
+typedef boost::mpl::list<double, float> test_types;
 
 BOOST_FIXTURE_TEST_SUITE( BlockDistributionTest, BlockDistributionTestConfig )
 ;
@@ -117,7 +115,6 @@ BOOST_AUTO_TEST_CASE( CreateTest )
 BOOST_AUTO_TEST_CASE( blockSizeTest )
 {
     // Test smaller sizes
-
     for ( IndexType n = 1; n <= size; n++ )
     {
         BlockDistribution small( n, comm );
@@ -139,7 +136,6 @@ BOOST_AUTO_TEST_CASE( blockSizeTest )
 
 BOOST_AUTO_TEST_CASE( blockComputeOwnersTest )
 {
-
     for ( PartitionId p = 0; p < size; ++p )
     {
         if ( p == rank )
@@ -187,9 +183,8 @@ BOOST_AUTO_TEST_CASE( isEqualTest )
     DistributionPtr blockdist2( blockdist1 );
     DistributionPtr blockdist3( new BlockDistribution( 1, comm ) );
     DistributionPtr blockdist4( new BlockDistribution( 2, comm ) );
-
-    BOOST_CHECK( (*blockdist1).isEqual( *blockdist2 ) );
-    BOOST_CHECK( (*blockdist1).isEqual( *blockdist3 ) );
-    BOOST_CHECK( !(*blockdist1).isEqual( *blockdist4 ) );
+    BOOST_CHECK( ( *blockdist1 ).isEqual( *blockdist2 ) );
+    BOOST_CHECK( ( *blockdist1 ).isEqual( *blockdist3 ) );
+    BOOST_CHECK( !( *blockdist1 ).isEqual( *blockdist4 ) );
 }
 /* --------------------------------------------------------------------- */BOOST_AUTO_TEST_SUITE_END();

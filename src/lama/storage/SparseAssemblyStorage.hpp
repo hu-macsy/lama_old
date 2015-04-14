@@ -2,7 +2,7 @@
  * @file SparseAssemblyStorage.hpp
  *
  * @license
- * Copyright (c) 2009-2013
+ * Copyright (c) 2009-2015
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -385,9 +385,10 @@ private:
 
     LAMA_LOG_DECL_STATIC_LOGGER( logger )
 
-    static std::string theTypeName;
+    static    std::string theTypeName;
 };
 
-} //namespace lama
+}
+//namespace lama
 
 #endif // LAMA_SPARSEASSEMBLYSTORAGE_HPP_

@@ -2,7 +2,7 @@
  * @file Logger.hpp
  *
  * @license
- * Copyright (c) 2009-2013
+ * Copyright (c) 2009-2015
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -297,7 +297,7 @@ protected:
 
     LAMA_LOG_DECL_STATIC_LOGGER( logger )
 
-private:
+private    :
     LogLevel::LogLevel mLogLevel;
     LoggerWriteBehaviour::LoggerWriteBehaviour mWriteBehaviour;
     bool mIgnoreRank;
@@ -306,7 +306,7 @@ private:
 template<typename ValueType>
 void Logger::logType( LogLevel::LogLevel level, const std::string& message, ValueType arg )
 {
-    if ( level <= mLogLevel )
+    if( level <= mLogLevel )
     {
         std::stringstream intStream;
         intStream << message;

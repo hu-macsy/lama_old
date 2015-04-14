@@ -2,7 +2,7 @@
  * @file VTInterface.cpp
  *
  * @license
- * Copyright (c) 2009-2013
+ * Copyright (c) 2009-2015
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -42,7 +42,7 @@
 namespace tracing
 {
 
-/** Macro that should be defined if a version of VampirTrace is available that also 
+/** Macro that should be defined if a version of VampirTrace is available that also
  *  supports the definition of a group for a region.
  */
 
@@ -89,6 +89,7 @@ void VTInterface::define( RegionEntry& region )
         std::string regionName = fullName.substr( pindex + 1 );
         region.mVTId = VT_User_def__( regionName.c_str(), groupName.c_str(), region.getFileName(), region.mLine );
     }
+
 #endif
 }
 

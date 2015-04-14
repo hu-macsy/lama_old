@@ -2,7 +2,7 @@
  * @file JDSStorage.cpp
  *
  * @license
- * Copyright (c) 2009-2013
+ * Copyright (c) 2009-2015
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -64,12 +64,10 @@ LAMA_LOG_DEF_TEMPLATE_LOGGER( template<typename ValueType>, JDSStorage<ValueType
 /* ------------------------------------------------------------------------------------------------------------------ */
 
 template<typename ValueType>
-JDSStorage<ValueType>::JDSStorage( const IndexType numRows,
-                                   const IndexType numColumns )
+JDSStorage<ValueType>::JDSStorage( const IndexType numRows, const IndexType numColumns )
 
-    : CRTPMatrixStorage<JDSStorage<ValueType>, ValueType>( numRows, numColumns ),
-      mNumDiagonals( 0 ),
-      mNumValues( 0 )
+    : CRTPMatrixStorage<JDSStorage<ValueType>,ValueType>( numRows, numColumns ), mNumDiagonals( 0 ), mNumValues(
+          0 )
 {
     LAMA_LOG_DEBUG( logger, "JDSStorage for matrix " << mNumRows << " x " << mNumColumns << ", no non-zero elements" )
 
@@ -78,7 +76,7 @@ JDSStorage<ValueType>::JDSStorage( const IndexType numRows,
     LAMA_INTERFACE_FN_T( setVal, loc, Utils, Setter, IndexType )
     LAMA_INTERFACE_FN_T( setOrder, loc, Utils, Setter, IndexType )
 
-    if ( numRows <= 0 )
+    if( numRows <= 0 )
     {
         return;
     }
@@ -104,14 +102,9 @@ JDSStorage<ValueType>::JDSStorage(
     const LAMAArray<IndexType>& ja,
     const LAMAArray<ValueType>& values )
 
-    : CRTPMatrixStorage<JDSStorage<ValueType>,ValueType>( numRows, numColumns ), 
-      mNumDiagonals( numDiagonals ), 
-      mNumValues( numValues ), 
-      mDlg( dlg ), 
-      mIlg( ilg ), 
-      mPerm( perm ), 
-      mJa( ja ), 
-      mValues( values )
+    : CRTPMatrixStorage<JDSStorage<ValueType>,ValueType>( numRows, numColumns ), mNumDiagonals(
+          numDiagonals ), mNumValues( numValues ), mDlg( dlg ), mIlg( ilg ), mPerm( perm ), mJa(
+          ja ), mValues( values )
 {
     check( "JDSStorage( #row, #cols, #values, #diags, dlg, ilg, perm, ja, values" );
     this->resetDiagonalProperty();
@@ -141,7 +134,7 @@ void JDSStorage<ValueType>::setJDSData(
     _MatrixStorage::setDimension( numRows, numColumns );
 
     mNumDiagonals = numDiagonals;
-    mNumValues    = numValues;
+    mNumValues = numValues;
 
     ContextPtr loc = getContextPtr();
 
@@ -150,7 +143,7 @@ void JDSStorage<ValueType>::setJDSData(
     LAMAArrayUtils::assignImpl( mPerm, perm, loc );
     LAMAArrayUtils::assignImpl( mJa, ja, loc );
 
-    LAMAArrayUtils::assign( mValues, values, loc );  // supports type conversion
+    LAMAArrayUtils::assign( mValues, values, loc ); // supports type conversion
 
     // check is expensive, so do it only if ASSERT_LEVEL is on DEBUG mode
 
@@ -433,13 +426,13 @@ bool JDSStorage<ValueType>::checkDiagonalProperty() const
 
     IndexType n = std::min( mNumRows, mNumColumns );
 
-    bool diagonalProperty = false;  // initialization just for safety
+    bool diagonalProperty = false; // initialization just for safety
 
-    if ( n == 0 ) 
+    if( n == 0 )
     {
         diagonalProperty = true;
     }
-    else if ( mNumDiagonals == 0 )
+    else if( mNumDiagonals == 0 )
     {
         // empty storage has no diagonal
 
@@ -457,7 +450,8 @@ bool JDSStorage<ValueType>::checkDiagonalProperty() const
 
         LAMA_CONTEXT_ACCESS( loc )
 
-        diagonalProperty = checkDiagonalProperty( mNumDiagonals, mNumRows, mNumColumns, rPerm.get(), rJa.get(), rDlg.get() );
+        diagonalProperty = checkDiagonalProperty( mNumDiagonals, mNumRows, mNumColumns, rPerm.get(), rJa.get(),
+                           rDlg.get() );
     }
 
     return diagonalProperty;
@@ -487,7 +481,7 @@ void JDSStorage<ValueType>::check( const char* msg ) const
 
         LAMA_CONTEXT_ACCESS( loc )
 
-        LAMA_ASSERT_ERROR( validIndexes ( rJA.get(), mNumValues, mNumColumns ),
+        LAMA_ASSERT_ERROR( validIndexes( rJA.get(), mNumValues, mNumColumns ),
                            *this << " @ " << msg << ": illegel indexes in JA" )
     }
 
@@ -505,12 +499,12 @@ void JDSStorage<ValueType>::check( const char* msg ) const
 
         LAMA_CONTEXT_ACCESS( loc )
 
-        bool ascending = false;  // check for descending
+        bool ascending = false; // check for descending
 
-        LAMA_ASSERT_ERROR( isSorted ( rIlg.get(), mNumRows, ascending ),
+        LAMA_ASSERT_ERROR( isSorted( rIlg.get(), mNumRows, ascending ),
                            *this << " @ " << msg << ": not descending values in ILG" )
 
-        LAMA_ASSERT_ERROR( isSorted ( rDlg.get(), mNumDiagonals, ascending ),
+        LAMA_ASSERT_ERROR( isSorted( rDlg.get(), mNumDiagonals, ascending ),
                            *this << " @ " << msg << ": not descending values in DLG" )
     }
 
@@ -532,7 +526,7 @@ void JDSStorage<ValueType>::check( const char* msg ) const
 
     // check index values in Perm for out of range
 
-    if ( mNumRows > 0 )
+    if( mNumRows > 0 )
     {
         ContextPtr loc = getContextPtr();
 
@@ -542,13 +536,13 @@ void JDSStorage<ValueType>::check( const char* msg ) const
 
         LAMA_CONTEXT_ACCESS( loc )
 
-        LAMA_ASSERT_ERROR( validIndexes ( rPerm.get(), mNumRows, mNumRows ),
+        LAMA_ASSERT_ERROR( validIndexes( rPerm.get(), mNumRows, mNumRows ),
                            *this << " @ " << msg << ": illegel indexes in Perm" )
     }
 
     // check perm: no values out of range, but make sure that it is permutation, e.g. [ 0, 0] is illegal
 
-    if ( mNumRows > 0 )   // very important as maxval would not work
+    if( mNumRows > 0 ) // very important as maxval would not work
     {
         ContextPtr loc = getContextPtr();
 
@@ -572,7 +566,7 @@ void JDSStorage<ValueType>::check( const char* msg ) const
 
         IndexType maxIndex = maxval( wInversePerm.get(), mNumRows );
 
-        LAMA_ASSERT_ERROR ( maxIndex < mNumRows, "Perm array does not cover all row indexes, #rows = " << mNumRows );
+        LAMA_ASSERT_ERROR( maxIndex < mNumRows, "Perm array does not cover all row indexes, #rows = " << mNumRows );
     }
 
     // Note: check is not exhaustive, e.g. it does not check for same column index in one row
@@ -639,7 +633,7 @@ void JDSStorage<ValueType>::setupData( ContextPtr loc )
 
     LAMA_CONTEXT_ACCESS( loc )
 
-    if ( mNumRows )
+    if( mNumRows )
     {
         mNumDiagonals = getValue( ilg.get(), 0 );
     }
@@ -697,7 +691,7 @@ void JDSStorage<ValueType>::buildCSR(
     // rowValues[ perm[i] ] = ilg[i]
     setScatter( wCsrIA.get(), rJdsPerm.get(), rJdsILG.get(), mNumRows );
 
-    if ( ja == NULL || values == NULL )
+    if( ja == NULL || values == NULL )
     {
         wCsrIA.resize( mNumRows );
         return;
@@ -743,8 +737,7 @@ void JDSStorage<ValueType>::setCSRDataImpl(
     LAMA_REGION( "Storage.JDS<-CSR" )
 
     LAMA_LOG_INFO( logger,
-                   "setCSRDataImpl<" << Scalar::getType<ValueType>() << "," << Scalar::getType<OtherValueType>() << ">" 
-                   << ", shape is " << numRows << " x " << numColumns << ", #values for CSR = " << numValues )
+                   "setCSRDataImpl<" << Scalar::getType<ValueType>() << "," << Scalar::getType<OtherValueType>() << ">" << ", shape is " << numRows << " x " << numColumns << ", #values for CSR = " << numValues )
 
     ContextPtr loc = getContextPtr();
 
@@ -780,7 +773,7 @@ void JDSStorage<ValueType>::setCSRDataImpl(
     sortRows( loc ); // sorts ilg and builds perm
     setupData( loc ); // sets dlg, allocates mValues, mJa
 
-    IndexType numDiagonals = mNumDiagonals;  // now available
+    IndexType numDiagonals = mNumDiagonals; // now available
 
     {
         ReadAccess<IndexType> rPerm( mPerm, loc );
@@ -792,8 +785,8 @@ void JDSStorage<ValueType>::setCSRDataImpl(
 
         LAMA_CONTEXT_ACCESS( loc )
 
-        setCSRValues( wJa.get(), wValues.get(), numRows, rPerm.get(), rIlg.get(), 
-                      numDiagonals, rDlg.get(), rCsrIA.get(), rCsrJA.get(), rCsrValues.get() );
+        setCSRValues( wJa.get(), wValues.get(), numRows, rPerm.get(), rIlg.get(), numDiagonals, rDlg.get(),
+                      rCsrIA.get(), rCsrJA.get(), rCsrValues.get() );
     }
 
     this->resetDiagonalProperty();
@@ -835,10 +828,10 @@ void JDSStorage<ValueType>::allocate( IndexType numRows, IndexType numColumns )
 
     clear();
 
-    mNumRows    = numRows;
+    mNumRows = numRows;
     mNumColumns = numColumns;
 
-    if ( mNumRows >  0 )
+    if( mNumRows > 0 )
     {
         // the arrays mIlg and mPerm need initialization
 
@@ -872,7 +865,7 @@ void JDSStorage<ValueType>::writeAt( std::ostream& stream ) const
     stream << "JDS( rows = " << mNumRows << ", cols = " << mNumColumns << ", jd = " << mNumDiagonals << ", values = "
            << mNumValues;
 
-    if ( Printable::extended )
+    if( Printable::extended )
     {
         stream << ", context = " << getContext() << ", dlg = " << mDlg << ", ilg = " << mIlg << ", perm = " << mPerm
                << ", ja = " << mJa << ", vales = " << mValues;
@@ -907,7 +900,7 @@ ValueType JDSStorage<ValueType>::getValue( const IndexType i, const IndexType j 
 
 template<typename ValueType>
 void JDSStorage<ValueType>::matrixTimesVector(
-	LAMAArray<ValueType>& result,
+    LAMAArray<ValueType>& result,
     const ValueType alpha,
     const LAMAArray<ValueType>& x,
     const ValueType beta,
@@ -916,8 +909,7 @@ void JDSStorage<ValueType>::matrixTimesVector(
     LAMA_REGION( "Storage.JDS.timesVector" )
 
     LAMA_LOG_DEBUG( logger,
-                    "Computing z = " << alpha << " * A * x + " << beta << " * y, with A = " 
-                     << *this << ", x = " << x << ", y = " << y << ", z = " << result )
+                    "Computing z = " << alpha << " * A * x + " << beta << " * y, with A = " << *this << ", x = " << x << ", y = " << y << ", z = " << result )
 
     LAMA_ASSERT_EQUAL_ERROR( x.size(), mNumColumns )
     LAMA_ASSERT_EQUAL_ERROR( y.size(), mNumRows )
@@ -938,7 +930,7 @@ void JDSStorage<ValueType>::matrixTimesVector(
 
     // Possible alias of result and y must be handled by coressponding accesses
 
-    if ( result == y )
+    if( result == y )
     {
         WriteAccess<ValueType> wResult( result, loc );
 
@@ -969,17 +961,16 @@ void JDSStorage<ValueType>::matrixTimesVector(
 
 template<typename ValueType>
 void JDSStorage<ValueType>::vectorTimesMatrix(
-        LAMAArray<ValueType>& result,
-        const ValueType alpha,
-        const LAMAArray<ValueType>& x,
-        const ValueType beta,
-        const LAMAArray<ValueType>& y ) const
+    LAMAArray<ValueType>& result,
+    const ValueType alpha,
+    const LAMAArray<ValueType>& x,
+    const ValueType beta,
+    const LAMAArray<ValueType>& y ) const
 {
     LAMA_REGION( "Storage.JDS.vectorTimesMatrix" )
 
     LAMA_LOG_DEBUG( logger,
-                    "Computing z = " << alpha << " * x * A + " << beta << " * y, with A = "
-                     << *this << ", x = " << x << ", y = " << y << ", z = " << result )
+                    "Computing z = " << alpha << " * x * A + " << beta << " * y, with A = " << *this << ", x = " << x << ", y = " << y << ", z = " << result )
 
     LAMA_ASSERT_EQUAL_ERROR( x.size(), mNumRows )
     LAMA_ASSERT_EQUAL_ERROR( y.size(), mNumColumns )
@@ -1000,7 +991,7 @@ void JDSStorage<ValueType>::vectorTimesMatrix(
 
     // Possible alias of result and y must be handled by coressponding accesses
 
-    if ( result == y )
+    if( result == y )
     {
         WriteAccess<ValueType> wResult( result, loc );
 
@@ -1031,7 +1022,7 @@ void JDSStorage<ValueType>::vectorTimesMatrix(
 
 template<typename ValueType>
 SyncToken* JDSStorage<ValueType>::matrixTimesVectorAsync(
-	LAMAArray<ValueType>& result,
+    LAMAArray<ValueType>& result,
     const ValueType alpha,
     const LAMAArray<ValueType>& x,
     const ValueType beta,
@@ -1039,25 +1030,25 @@ SyncToken* JDSStorage<ValueType>::matrixTimesVectorAsync(
 {
     ContextPtr loc = getContextPtr();
 
-    if ( loc->getType() == Context::Host )
+    if( loc->getType() == Context::Host )
     {
         // workaround as boost::bind has limited number of arguments and cannot be
         // used later in OpenMP to generate a TaskSyncToken
 
-        void ( JDSStorage::*mv )(
-        	LAMAArray<ValueType>&,
+        void (JDSStorage::*mv)(
+            LAMAArray<ValueType>&,
             const ValueType,
             const LAMAArray<ValueType>&,
             const ValueType,
             const LAMAArray<ValueType>& ) const
 
-        = &JDSStorage<ValueType>::matrixTimesVector;
+            = &JDSStorage<ValueType>::matrixTimesVector;
 
         using boost::bind;
         using boost::ref;
         using boost::cref;
 
-        return new TaskSyncToken( bind( mv, this, ref(result), alpha, cref(x), beta, cref(y) ) );
+        return new TaskSyncToken( bind( mv, this, ref( result ), alpha, cref( x ), beta, cref( y ) ) );
     }
 
     // For CUDA a solution using stream synchronization is more efficient than using a task
@@ -1065,8 +1056,7 @@ SyncToken* JDSStorage<ValueType>::matrixTimesVectorAsync(
     LAMA_REGION( "Storage.JDS.timesVectorAsync" )
 
     LAMA_LOG_INFO( logger,
-                   "Async start z = " << alpha << " * A * x + " << beta << " * y, with A = " 
-                    << *this << ", x = " << x << ", y = " << y << ", z = " << result )
+                   "Async start z = " << alpha << " * A * x + " << beta << " * y, with A = " << *this << ", x = " << x << ", y = " << y << ", z = " << result )
 
     LAMA_ASSERT_EQUAL_ERROR( x.size(), mNumColumns )
     LAMA_ASSERT_EQUAL_ERROR( y.size(), mNumRows )
@@ -1090,7 +1080,7 @@ SyncToken* JDSStorage<ValueType>::matrixTimesVectorAsync(
 
     // Possible alias of result and y must be handled by coressponding accesses
 
-    if ( result == y )
+    if( result == y )
     {
         shared_ptr<WriteAccess<ValueType> > wResult( new WriteAccess<ValueType>( result, loc ) );
 
@@ -1135,27 +1125,27 @@ SyncToken* JDSStorage<ValueType>::matrixTimesVectorAsync(
 
 template<typename ValueType>
 SyncToken* JDSStorage<ValueType>::vectorTimesMatrixAsync(
-        LAMAArray<ValueType>& result,
-        const ValueType alpha,
-        const LAMAArray<ValueType>& x,
-        const ValueType beta,
-        const LAMAArray<ValueType>& y ) const
+    LAMAArray<ValueType>& result,
+    const ValueType alpha,
+    const LAMAArray<ValueType>& x,
+    const ValueType beta,
+    const LAMAArray<ValueType>& y ) const
 {
     ContextPtr loc = getContextPtr();
 
-    if ( loc->getType() == Context::Host )
+    if( loc->getType() == Context::Host )
     {
         // workaround as boost::bind has limited number of arguments and cannot be
         // used later in OpenMP to generate a TaskSyncToken
 
-        void ( JDSStorage::*vm )(
-               LAMAArray<ValueType>& result,
-               const ValueType alpha,
-               const LAMAArray<ValueType>& x,
-               const ValueType beta,
-               const LAMAArray<ValueType>& y ) const
+        void (JDSStorage::*vm)(
+            LAMAArray<ValueType>& result,
+            const ValueType alpha,
+            const LAMAArray<ValueType>& x,
+            const ValueType beta,
+            const LAMAArray<ValueType>& y ) const
 
-        = &JDSStorage<ValueType>::vectorTimesMatrix;
+            = &JDSStorage<ValueType>::vectorTimesMatrix;
 
         using boost::bind;
         using boost::ref;
@@ -1169,8 +1159,7 @@ SyncToken* JDSStorage<ValueType>::vectorTimesMatrixAsync(
     LAMA_REGION( "Storage.JDS.vectorTimesMatrixAsync" )
 
     LAMA_LOG_INFO( logger,
-                   "Async start z = " << alpha << " * x * A + " << beta << " * y, with A = "
-                    << *this << ", x = " << x << ", y = " << y << ", z = " << result )
+                   "Async start z = " << alpha << " * x * A + " << beta << " * y, with A = " << *this << ", x = " << x << ", y = " << y << ", z = " << result )
 
     LAMA_ASSERT_EQUAL_ERROR( x.size(), mNumRows )
     LAMA_ASSERT_EQUAL_ERROR( y.size(), mNumColumns )
@@ -1194,7 +1183,7 @@ SyncToken* JDSStorage<ValueType>::vectorTimesMatrixAsync(
 
     // Possible alias of result and y must be handled by coressponding accesses
 
-    if ( result == y )
+    if( result == y )
     {
         shared_ptr<WriteAccess<ValueType> > wResult( new WriteAccess<ValueType>( result, loc ) );
 
@@ -1254,7 +1243,7 @@ void JDSStorage<ValueType>::jacobiIterate(
 
     LAMA_ASSERT_ERROR( mDiagonalProperty, *this << ": jacobiIterate requires diagonal property" )
 
-    if ( solution == oldSolution )
+    if( solution == oldSolution )
     {
         LAMA_THROWEXCEPTION( "alias of solution and oldSolution unsupported" )
     }
@@ -1296,17 +1285,17 @@ SyncToken* JDSStorage<ValueType>::jacobiIterateAsync(
 
     ContextPtr loc = getContextPtr();
 
-    if ( loc->getType() == Context::Host )
+    if( loc->getType() == Context::Host )
     {
         // On host we start directly a new task, avoids pushing accesses
 
-        void ( JDSStorage::*jb )(
+        void (JDSStorage::*jb)(
             LAMAArray<ValueType>&,
             const LAMAArray<ValueType>&,
             const LAMAArray<ValueType>&,
             const ValueType omega ) const
 
-        = &JDSStorage<ValueType>::jacobiIterate;
+            = &JDSStorage<ValueType>::jacobiIterate;
 
         using boost::bind;
         using boost::ref;
@@ -1323,7 +1312,7 @@ SyncToken* JDSStorage<ValueType>::jacobiIterateAsync(
 
     LAMA_ASSERT_ERROR( mDiagonalProperty, *this << ": jacobiIterate requires diagonal property" )
 
-    if ( solution == oldSolution )
+    if( solution == oldSolution )
     {
         LAMA_THROWEXCEPTION( "alias of solution and oldSolution unsupported" )
     }
@@ -1434,7 +1423,7 @@ ValueType JDSStorage<ValueType>::maxNorm() const
 
     const IndexType n = mNumValues;
 
-    if ( n == 0 )
+    if( n == 0 )
     {
         return 0.0f;
     }
@@ -1468,24 +1457,25 @@ void JDSStorage<ValueType>::print() const
     HostReadAccess<IndexType> ja( mJa );
     HostReadAccess<ValueType> values( mValues );
 
-    for ( IndexType ii = 0; ii < mNumRows; ii++ )
+    for( IndexType ii = 0; ii < mNumRows; ii++ )
     {
         cout << "   row " << ii << " is original row " << perm[ii];
         cout << ", #non-zero values = " << ilg[ii] << endl;
         IndexType offset = ii;
         cout << "     column indexes = ";
 
-        for ( IndexType d = 0; d < ilg[ii]; d++ )
+        for( IndexType d = 0; d < ilg[ii]; d++ )
         {
             cout << " " << ja[offset];
             offset += dlg[d];
         }
+
         cout << endl;
 
         offset = ii;
         cout << "     values   = ";
 
-        for ( IndexType d = 0; d < ilg[ii]; d++ )
+        for( IndexType d = 0; d < ilg[ii]; d++ )
         {
             cout << " " << values[offset];
             offset += dlg[d];
@@ -1612,13 +1602,13 @@ JDSStorage<ValueType>* JDSStorage<ValueType>::copy() const
 /* ========================================================================= */
 
 #define LAMA_JDS_STORAGE_INSTANTIATE(z, I, _)                              \
-template<>                                                                 \
-const char* JDSStorage<ARITHMETIC_TYPE##I>::typeName()                     \
-{                                                                          \
-    return "JDSStorage<ARITHMETIC_TYPE##I>";                               \
-}                                                                          \
-                                                                           \
-template class LAMA_DLL_IMPORTEXPORT JDSStorage<ARITHMETIC_TYPE##I> ;  
+    template<>                                                                 \
+    const char* JDSStorage<ARITHMETIC_TYPE##I>::typeName()                     \
+    {                                                                          \
+        return "JDSStorage<ARITHMETIC_TYPE##I>";                               \
+    }                                                                          \
+    \
+    template class LAMA_DLL_IMPORTEXPORT JDSStorage<ARITHMETIC_TYPE##I> ;
 
 BOOST_PP_REPEAT( ARITHMETIC_TYPE_CNT, LAMA_JDS_STORAGE_INSTANTIATE, _ )
 

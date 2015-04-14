@@ -2,7 +2,7 @@
  * @file P_InverseSolverTest.cpp
  *
  * @license
- * Copyright (c) 2009-2013
+ * Copyright (c) 2009-2015
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -62,7 +62,7 @@
 using namespace boost;
 using namespace lama;
 
-typedef boost::mpl::list<float,double> test_types;
+typedef boost::mpl::list<float, double> test_types;
 
 /* --------------------------------------------------------------------- */
 
@@ -76,47 +76,32 @@ template<typename MatrixType>
 void testSolveMethod( ContextPtr loc )
 {
     typedef typename MatrixType::MatrixValueType ValueType;
-
     const IndexType N1 = 4;
     const IndexType N2 = 4;
-
     LAMA_LOG_INFO( logger, "Problem size = " << N1 << " x " << N2 );
-
     LoggerPtr loggerD(
         new CommonLogger( "<InverseSolver>: ", LogLevel::noLogging,
                           LoggerWriteBehaviour::toConsoleOnly,
                           std::auto_ptr<Timer>( new Timer() ) ) );
-
     InverseSolver inverseSolver( "InverseTestSolver", loggerD );
-
     LAMA_LOG_DEBUG( logger, "inverseSolver created" )
-
     CSRSparseMatrix<ValueType> helpcoefficients;
     MatrixCreator<ValueType>::buildPoisson2D( helpcoefficients, 9, N1, N2 );
-
     LAMA_LOG_DEBUG( logger, "Poisson2D matrix created" << helpcoefficients )
-
     MatrixType coefficients( helpcoefficients );
-
     CommunicatorPtr comm = CommunicatorFactory::get();
-
     DistributionPtr dist( new BlockDistribution( coefficients.getNumRows(), comm ) );
     coefficients.redistribute( dist, dist );
     coefficients.setContext( loc );
-
     DenseVector<ValueType> solution( dist, 2.0 );
-
     const DenseVector<ValueType> exactSolution( dist, 1.0 );
     DenseVector<ValueType> rhs( dist, 1.0 );
     rhs = coefficients * exactSolution;
-
     LAMA_LOG_INFO( logger, "created all stuff for inverse solver" )
-
     //initialize
     inverseSolver.initialize( coefficients );
     inverseSolver.setContext( loc );
     inverseSolver.solve( solution, rhs );
-
     DenseVector<ValueType> diff( solution - exactSolution );
     Scalar s = maxNorm( diff );
     BOOST_CHECK( s.getValue<ValueType>() < 1E-6 );
@@ -124,7 +109,6 @@ void testSolveMethod( ContextPtr loc )
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( testSolve, ValueType, test_types )
 {
-
     CONTEXTLOOP()
     {
         GETCONTEXT( context );

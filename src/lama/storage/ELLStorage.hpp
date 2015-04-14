@@ -2,7 +2,7 @@
  * @file ELLStorage.hpp
  *
  * @license
- * Copyright (c) 2009-2013
+ * Copyright (c) 2009-2015
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -63,11 +63,11 @@ namespace lama
  *  @tparam ValueType is the value type of the matrix values.
  */
 template<typename ValueType>
-class LAMA_DLL_IMPORTEXPORT ELLStorage: public CRTPMatrixStorage<ELLStorage<ValueType>, ValueType>
+class LAMA_DLL_IMPORTEXPORT ELLStorage: public CRTPMatrixStorage<ELLStorage<ValueType>,ValueType>
 {
 public:
 
-	typedef ValueType StorageValueType;
+    typedef ValueType StorageValueType;
 
     /** get typename of the matrix storage format. */
 
@@ -305,7 +305,7 @@ public:
     /** Implementation of MatrixStorage::matrixTimesVector for ELL */
 
     virtual void matrixTimesVector(
-    	LAMAArray<ValueType>& result,
+        LAMAArray<ValueType>& result,
         const ValueType alpha,
         const LAMAArray<ValueType>& x,
         const ValueType beta,
@@ -324,7 +324,7 @@ public:
     /** Implementation of MatrixStorage::matrixTimesVectorAsync for ELL */
 
     virtual SyncToken* matrixTimesVectorAsync(
-    	LAMAArray<ValueType>& result,
+        LAMAArray<ValueType>& result,
         const ValueType alpha,
         const LAMAArray<ValueType>& x,
         const ValueType beta,
@@ -364,7 +364,7 @@ public:
         const LAMAArray<ValueType>& haloOldSolution,
         const ValueType omega ) const;
 
-    /** Implementation of MatrixStorage::jacobiIterateHalo for ELL 
+    /** Implementation of MatrixStorage::jacobiIterateHalo for ELL
      *  @since 1.1.0
      */
 
@@ -463,10 +463,10 @@ private:
     LAMA_LOG_DECL_STATIC_LOGGER( logger )
 
     /** Matrix + Matrix for ELL only */
-    void matrixAddMatrixELL( const ValueType alpha,
-                             const ELLStorage<ValueType>& a,
-                             const ValueType beta,
-                             const ELLStorage<ValueType>& b );
+    void    matrixAddMatrixELL( const ValueType alpha,
+                                const ELLStorage<ValueType>& a,
+                                const ValueType beta,
+                                const ELLStorage<ValueType>& b );
 
     /** Matrix times Matrix for ELL only */
     void matrixTimesMatrixELL( const ValueType alpha,
@@ -475,6 +475,7 @@ private:
 
 };
 
-} // namespace lama
+}
+// namespace lama
 
 #endif // LAMA_ELLSTORAGE_HPP_

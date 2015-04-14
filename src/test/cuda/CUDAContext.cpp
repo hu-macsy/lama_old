@@ -2,7 +2,7 @@
  * @file CUDAContext.cpp
  *
  * @license
- * Copyright (c) 2009-2013
+ * Copyright (c) 2009-2015
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -45,6 +45,7 @@ lama::ContextPtr CUDAContext::getContext()
     {
         cudaContext = lama::ContextFactory::getContext( lama::Context::CUDA, 0 );
     }
+
     return cudaContext;
 }
 

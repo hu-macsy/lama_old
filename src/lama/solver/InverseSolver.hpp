@@ -2,7 +2,7 @@
  * @file InverseSolver.hpp
  *
  * @license
- * Copyright (c) 2009-2013
+ * Copyright (c) 2009-2015
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -93,7 +93,7 @@ public:
 
     virtual void setContext( ContextPtr context );
 
-    /** This method returns the inverse of the coefficient matrix. 
+    /** This method returns the inverse of the coefficient matrix.
      *
      *  This routine must not be called before having called 'initialize'.
      */

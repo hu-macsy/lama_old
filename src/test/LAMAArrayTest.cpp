@@ -2,7 +2,7 @@
  * @file LAMAArrayTest.cpp
  *
  * @license
- * Copyright (c) 2009-2013
+ * Copyright (c) 2009-2015
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -51,26 +51,19 @@ BOOST_AUTO_TEST_SUITE( LAMAArrayTest )
 
 LAMA_LOG_DEF_LOGGER( logger, "Test.LAMAArrayTest" )
 
-typedef boost::mpl::list<float,double> test_types;
+typedef boost::mpl::list<float, double> test_types;
 
 /* --------------------------------------------------------------------- */
 
 BOOST_AUTO_TEST_CASE( releaseTest )
 {
     LAMAArray<IndexType> lamaArray; // default, not allocated at all
-
     LAMA_LOG_INFO( logger, "make read test access on empty array\n" );
-
     HostReadAccess<IndexType> readTestAccess( lamaArray );
-
     LAMA_LOG_INFO( logger, "release read on empty array\n" );
-
     readTestAccess.release();
-
     LAMA_LOG_INFO( logger, "make write test access on empty array\n" );
-
     HostWriteAccess<IndexType> writeAccess( lamaArray );
-
     writeAccess.resize( 10 );
 
     for ( IndexType i = 0; i < 10; i++ )
@@ -79,11 +72,8 @@ BOOST_AUTO_TEST_CASE( releaseTest )
     }
 
     writeAccess.release();
-
     LAMA_CHECK_THROW( { writeAccess.resize( 20 ); }, Exception );
-
     LAMA_CHECK_THROW( { writeAccess[0] = static_cast<IndexType> ( 5.0 ); }, Exception );
-
     HostReadAccess<IndexType> readAccess( lamaArray );
 
     for ( IndexType i = 0; i < 5; i++ )
@@ -109,9 +99,7 @@ BOOST_AUTO_TEST_CASE( resizeTest )
             writeAccess[i] = static_cast<IndexType>( 3.0 );
         }
     }
-
     lamaArray.purge();
-
     {
         HostWriteAccess<IndexType> writeAccess( lamaArray );
         // Possible problem: fetch from any location not possible
@@ -126,7 +114,6 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( accessTest , ValueType, test_types )
     const IndexType n = 10;
     const ValueType value = 1.0;
     const ValueType value2 = 2.0;
-
     LAMAArray<ValueType> lamaArray( n, value );
     {
         HostReadAccess<ValueType> lamaArrayRAccess( lamaArray );
@@ -139,7 +126,6 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( accessTest , ValueType, test_types )
         LAMA_CHECK_THROW(
         {   HostWriteAccess<ValueType> tmpWriteAccess( lamaArray );}, Exception );
     }
-
     {
         HostWriteAccess<ValueType> lamaArrayWAccess( lamaArray );
 
@@ -150,9 +136,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( accessTest , ValueType, test_types )
 
         LAMA_CHECK_THROW(
         {   HostReadAccess<ValueType> tmpReadAccess( lamaArray );}, Exception );
-
         lamaArrayWAccess.release();
-
         HostReadAccess<ValueType> lamaArrayRAccess( lamaArray );
 
         for ( IndexType i = 0; i < n; ++i )
@@ -168,19 +152,13 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( refTest, ValueType, test_types )
 {
     const IndexType n = 10;
     const ValueType value = 3.5;
-
     ValueType myData[10] =
     {   1, 2, 3, 4, 5, 5, 4, 3, 2, 1};
-
     const ValueType* myData1 = myData;
-
     {
         LAMAArrayRef<ValueType> lamaArray( myData, 10 );
-
         HostWriteAccess<ValueType> lamaArrayWAccess( lamaArray );
-
         // resize of a LAMA array with referenced data is not possible
-
         LAMA_CHECK_THROW(
         {   lamaArrayWAccess.resize( 20 );}, Exception );
 
@@ -201,18 +179,14 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( refTest, ValueType, test_types )
 
     {
         // this will create a LAMA array with a const reference,
-
         LAMAArrayRef<ValueType> lamaArray( myData1, 10 );
-
         BOOST_CHECK_EQUAL( 10, lamaArray.size() );
-
         // Write access should not be allowed
-
         LAMA_CHECK_THROW(
-        		{
-        			HostWriteAccess<ValueType> lamaArrayWAccess( lamaArray );
-        		}
-        		, Exception );
+        {
+            HostWriteAccess<ValueType> lamaArrayWAccess( lamaArray );
+        }
+        , Exception );
     }
 }
 

@@ -2,7 +2,7 @@
  * @file TaskSyncToken.cpp
  *
  * @license
- * Copyright (c) 2009-2013
+ * Copyright (c) 2009-2015
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -77,7 +77,7 @@ void TaskSyncToken::wait()
 {
     LAMA_REGION( "TaskSyncToken.wait" )
 
-    if ( isSynchronized() )
+    if( isSynchronized() )
     {
         return;
     }
@@ -86,7 +86,7 @@ void TaskSyncToken::wait()
 
     setSynchronized();
 
-    if ( mTask ) // might be running task
+    if( mTask ) // might be running task
     {
         LAMA_LOG_DEBUG( logger, "Waiting for thread " << mTask )
 
@@ -98,7 +98,7 @@ void TaskSyncToken::wait()
 
 bool TaskSyncToken::probe() const
 {
-    if ( !mTask )
+    if( !mTask )
     {
         return true;
     }
@@ -109,7 +109,8 @@ bool TaskSyncToken::probe() const
 void TaskSyncToken::writeAt( std::ostream& stream ) const
 {
     stream << "TaskSyncToken( ";
-    if ( mTask )
+
+    if( mTask )
     {
         stream << *mTask;
     }
@@ -117,6 +118,7 @@ void TaskSyncToken::writeAt( std::ostream& stream ) const
     {
         stream << "NULL";
     }
+
     stream << ", synchronized = " << isSynchronized() << ")";
 }
 

@@ -2,7 +2,7 @@
  * @file OpenMPBLAS2.cpp
  *
  * @license
- * Copyright (c) 2009-2013
+ * Copyright (c) 2009-2015
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -68,14 +68,14 @@ void OpenMPBLAS2::gemv(
     LAMA_LOG_INFO( logger,
                    "gemv<" << Scalar::getType<ValueType>()<< ">: M = " << M << ", N = " << N << ", LDA = " << lda << ", incX = " << incX << ", incY = " << incY << ", alpha = " << alpha << ", beta = " << beta )
 
-    if ( M == 0 )
+    if( M == 0 )
     {
         return; // empty X, Y, A
     }
 
     // N == 0: empty A, but deal with X, Y, we can handle this here
 
-    if ( syncToken )
+    if( syncToken )
     {
         LAMA_LOG_WARN( logger, "no asynchronous execution for openmp possible at this level." )
     }
@@ -83,75 +83,89 @@ void OpenMPBLAS2::gemv(
     IndexType RowMajorStrg;
     RowMajorStrg = 0;
 
-    if ( order == CblasColMajor )
+    if( order == CblasColMajor )
     {
-        if ( TransA == CblasNoTrans )
+        if( TransA == CblasNoTrans )
         {
             //'N'
             // y = alpha * A * x + beta * y
             ValueType Z = 0.0;
-            if ( incX == 1 && incY == 1 )
+
+            if( incX == 1 && incY == 1 )
             {
-#pragma omp parallel for private(Z) schedule( LAMA_OMP_SCHEDULE )
-                for ( int i = 0; i < M; i++ )
+                #pragma omp parallel for private(Z) schedule( LAMA_OMP_SCHEDULE )
+
+                for( int i = 0; i < M; i++ )
                 {
                     Z = 0.0;
-                    for ( int j = 0; j < N; j++ )
+
+                    for( int j = 0; j < N; j++ )
                     {
                         Z += A[lda * j + i] * X[j];
                     }
+
                     Y[i] = Z * alpha + Y[i] * beta;
                 }
             }
             else
-            { //incX != 1 || incY != 1
-#pragma omp parallel for private(Z) schedule( LAMA_OMP_SCHEDULE )
-                for ( int i = 0; i < M; i++ )
+            {
+                //incX != 1 || incY != 1
+                #pragma omp parallel for private(Z) schedule( LAMA_OMP_SCHEDULE )
+                for( int i = 0; i < M; i++ )
                 {
                     Z = 0.0;
-                    for ( int j = 0; j < N; j++ )
+
+                    for( int j = 0; j < N; j++ )
                     {
                         Z += A[lda * j + i] * X[j * incX];
                     }
+
                     Y[i * incY] = Z * alpha + Y[i * incY] * beta;
                 }
             }
 
         }
-        else if ( TransA == CblasTrans )
+        else if( TransA == CblasTrans )
         {
             //'T'
             // y = alpha * A^T * x + beta * y
             ValueType Z = 0.0;
-            if ( incX == 1 && incY == 1 )
+
+            if( incX == 1 && incY == 1 )
             {
-#pragma omp parallel for private(Z) schedule( LAMA_OMP_SCHEDULE )
-                for ( int i = 0; i < N; i++ )
+                #pragma omp parallel for private(Z) schedule( LAMA_OMP_SCHEDULE )
+
+                for( int i = 0; i < N; i++ )
                 {
                     Z = 0.0;
-                    for ( int j = 0; j < M; j++ )
+
+                    for( int j = 0; j < M; j++ )
                     {
                         Z += A[lda * i + j] * X[j];
                     }
+
                     Y[i] = Z * alpha + Y[i] * beta;
                 }
             }
             else
-            { //incX != 1 || incY != 1
-#pragma omp parallel for private(Z) schedule( LAMA_OMP_SCHEDULE )
-                for ( int i = 0; i < N; i++ )
+            {
+                //incX != 1 || incY != 1
+                #pragma omp parallel for private(Z) schedule( LAMA_OMP_SCHEDULE )
+                for( int i = 0; i < N; i++ )
                 {
                     Z = 0.0;
-                    for ( int j = 0; j < M; j++ )
+
+                    for( int j = 0; j < M; j++ )
                     {
                         Z += A[lda * i + j] * X[j * incX];
                     }
+
                     Y[i * incY] = Z * alpha + Y[i * incY] * beta;
                 }
             }
 
         }
-        else if ( TransA == CblasConjTrans )
+        else if( TransA == CblasConjTrans )
         {
             //'C'
         }
@@ -162,75 +176,88 @@ void OpenMPBLAS2::gemv(
         }
 
     }
-    else if ( order == CblasRowMajor )
+    else if( order == CblasRowMajor )
     {
         RowMajorStrg = 1;
 
-        if ( TransA == CblasNoTrans )
+        if( TransA == CblasNoTrans )
         {
             //'T'
             ValueType Z = 0.0;
-            if ( incX == 1 && incY == 1 )
+
+            if( incX == 1 && incY == 1 )
             {
-#pragma omp parallel for private(Z) schedule( LAMA_OMP_SCHEDULE )
-                for ( int i = 0; i < M; i++ )
+                #pragma omp parallel for private(Z) schedule( LAMA_OMP_SCHEDULE )
+
+                for( int i = 0; i < M; i++ )
                 {
                     Z = 0.0;
-                    for ( int j = 0; j < N; j++ )
+
+                    for( int j = 0; j < N; j++ )
                     {
                         Z += A[lda * i + j] * X[j];
                     }
+
                     Y[i] = Z * alpha + Y[i] * beta;
                 }
             }
             else
-            { //incX != 1 || incY != 1
-#pragma omp parallel for private(Z) schedule( LAMA_OMP_SCHEDULE )
-                for ( int i = 0; i < M; i++ )
+            {
+                //incX != 1 || incY != 1
+                #pragma omp parallel for private(Z) schedule( LAMA_OMP_SCHEDULE )
+                for( int i = 0; i < M; i++ )
                 {
                     Z = 0.0;
-                    for ( int j = 0; j < N; j++ )
+
+                    for( int j = 0; j < N; j++ )
                     {
                         Z += A[lda * i + j] * X[j * incX];
                     }
+
                     Y[i * incY] = Z * alpha + Y[i * incY] * beta;
                 }
             }
 
         }
-        else if ( TransA == CblasTrans )
+        else if( TransA == CblasTrans )
         {
             //'N'
             ValueType Z = 0.0;
 
-            if ( incX == 1 && incY == 1 )
+            if( incX == 1 && incY == 1 )
             {
-#pragma omp parallel for private(Z) schedule( LAMA_OMP_SCHEDULE )
-                for ( int i = 0; i < N; i++ )
+                #pragma omp parallel for private(Z) schedule( LAMA_OMP_SCHEDULE )
+
+                for( int i = 0; i < N; i++ )
                 {
                     Z = 0.0;
-                    for ( int j = 0; j < M; j++ )
+
+                    for( int j = 0; j < M; j++ )
                     {
                         Z += A[lda * j + i] * X[j];
                     }
+
                     Y[i] = Z * alpha + Y[i] * beta;
                 }
             }
             else
-            {//incX != 1 || incY != 1
-#pragma omp parallel for private(Z) schedule( LAMA_OMP_SCHEDULE )
-                for ( int i = 0; i < N; i++ )
+            {
+                //incX != 1 || incY != 1
+                #pragma omp parallel for private(Z) schedule( LAMA_OMP_SCHEDULE )
+                for( int i = 0; i < N; i++ )
                 {
                     Z = 0.0;
-                    for ( int j = 0; j < M; j++ )
+
+                    for( int j = 0; j < M; j++ )
                     {
                         Z += A[lda * j + i] * X[j * incX];
                     }
+
                     Y[i * incY] = Z * alpha + Y[i * incY] * beta;
                 }
             }
         }
-        else if ( TransA == CblasConjTrans )
+        else if( TransA == CblasConjTrans )
         {
             //TA = 'N'
         }
@@ -262,7 +289,7 @@ void OpenMPBLAS2::setInterface( BLASInterface& BLAS )
 #define LAMA_BLAS2_REGISTER(z, I, _)                                            \
     LAMA_INTERFACE_REGISTER_T( BLAS, gemv, ARITHMETIC_TYPE##I )                 \
 
-BOOST_PP_REPEAT( ARITHMETIC_TYPE_CNT, LAMA_BLAS2_REGISTER, _ )
+    BOOST_PP_REPEAT( ARITHMETIC_TYPE_CNT, LAMA_BLAS2_REGISTER, _ )
 
 #undef LAMA_BLAS2_REGISTER
 

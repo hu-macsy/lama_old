@@ -2,7 +2,7 @@
  * @file Context.hpp
  *
  * @license
- * Copyright (c) 2009-2013
+ * Copyright (c) 2009-2015
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -46,7 +46,7 @@ private:
     Context();
     virtual ~Context();
 
-    static std::map<lama::ContextType,lama::ContextPtr> contexts;
+    static std::map<lama::ContextType, lama::ContextPtr> contexts;
 };
 
 } //namespace lama_test

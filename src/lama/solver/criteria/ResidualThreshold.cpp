@@ -2,7 +2,7 @@
  * @file ResidualThreshold.cpp
  *
  * @license
- * Copyright (c) 2009-2013
+ * Copyright (c) 2009-2015
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -44,13 +44,13 @@ namespace lama
 
 ResidualThreshold::ResidualThreshold()
     : Criterion(), mNorm( NormPtr( new L2Norm() ) ), mCheckMode( Relative ), mPrecision( Scalar( 1e-5 ) ), mFirstNormResult(
-        -1.0 )
+          -1.0 )
 {
 }
 
 ResidualThreshold::ResidualThreshold( const NormPtr norm )
     : Criterion(), mNorm( norm ), mCheckMode( Relative ), mPrecision( Scalar( 1e-5 ) ), mFirstNormResult(
-        -1.0 )
+          -1.0 )
 {
 }
 
@@ -62,7 +62,7 @@ ResidualThreshold::ResidualThreshold( const NormPtr norm, Scalar precision, Resi
 
 ResidualThreshold::ResidualThreshold( const ResidualThreshold& other )
     : Criterion(), mNorm( other.mNorm ), mCheckMode( other.mCheckMode ), mPrecision( other.mPrecision ), mFirstNormResult(
-        other.mFirstNormResult )
+          other.mFirstNormResult )
 {
 }
 
@@ -80,23 +80,26 @@ inline bool ResidualThreshold::isSatisfied( const IterativeSolver& solver )
     Scalar normResult = ( *mNorm )( solver.getResidual() );
     LAMA_ASSERT( normResult >= 0.0, "A norm should be always positive but is " << normResult );
 
-    switch ( mCheckMode )
+    switch( mCheckMode )
     {
-    case ResidualThreshold::Absolute:
-        LAMA_LOG_DEBUG( logger,
-                        "Absolute residual in iteration " << solver.getIterationCount() << " is " << normResult << " should become smaller than precision " << mPrecision );
-        return normResult < mPrecision;
-    case ResidualThreshold::Relative:
-    {
-        if ( mFirstNormResult == -1.0 )
+        case ResidualThreshold::Absolute:
+            LAMA_LOG_DEBUG( logger,
+                            "Absolute residual in iteration " << solver.getIterationCount() << " is " << normResult << " should become smaller than precision " << mPrecision )
+            ;
+            return normResult < mPrecision;
+
+        case ResidualThreshold::Relative:
         {
-            //TODO define member variable for solver with getInitialResidual function
-            mFirstNormResult = normResult;
+            if( mFirstNormResult == -1.0 )
+            {
+                //TODO define member variable for solver with getInitialResidual function
+                mFirstNormResult = normResult;
+            }
+
+            LAMA_LOG_DEBUG( logger,
+                            "Relative residual in iteration " << solver.getIterationCount() << " is " << normResult << " divided by firstNormResult " << mFirstNormResult << " is " << normResult/mFirstNormResult << " should become smaller than precision " << mPrecision );
+            return ( normResult / mFirstNormResult ) < mPrecision;
         }
-        LAMA_LOG_DEBUG( logger,
-                        "Relative residual in iteration " << solver.getIterationCount() << " is " << normResult << " divided by firstNormResult " << mFirstNormResult << " is " << normResult/mFirstNormResult << " should become smaller than precision " << mPrecision );
-        return ( normResult / mFirstNormResult ) < mPrecision;
-    }
     }
 
     return false;

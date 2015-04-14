@@ -2,7 +2,7 @@
  * @file OpenMPCSRUtils.hpp
  *
  * @license
- * Copyright (c) 2009-2013
+ * Copyright (c) 2009-2015
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -45,7 +45,8 @@
 namespace lama
 {
 
-class SyncToken;   // forward declaration 
+class SyncToken;
+// forward declaration
 
 /** This class provides routines on compressed sparse row data
  */
@@ -370,7 +371,7 @@ protected:
 
     LAMA_LOG_DECL_STATIC_LOGGER( logger )
 
-private:
+private    :
 
     static bool initialized;
 
@@ -412,6 +413,7 @@ private:
         const IndexType n2, const IndexType csrJA2[], const ValueType csrValues2[] );
 };
 
-} // namespace lama
+}
+// namespace lama
 
 #endif //  LAMA_OPENMP_CSR_UTILS_HPP_

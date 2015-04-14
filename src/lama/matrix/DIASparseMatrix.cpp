@@ -2,7 +2,7 @@
  * @file DIASparseMatrix.cpp
  *
  * @license
- * Copyright (c) 2009-2013
+ * Copyright (c) 2009-2015
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -44,7 +44,8 @@ namespace lama
 
 /* -------------------------------------------------------------------------- */
 
-LAMA_LOG_DEF_TEMPLATE_LOGGER( template<typename ValueType>, DIASparseMatrix<ValueType>::logger, "Matrix.SparseMatrix.DIASparseMatrix" )
+LAMA_LOG_DEF_TEMPLATE_LOGGER( template<typename ValueType>, DIASparseMatrix<ValueType>::logger,
+                              "Matrix.SparseMatrix.DIASparseMatrix" )
 
 /* -------------------------------------------------------------------------- */
 
@@ -56,7 +57,7 @@ boost::shared_ptr<MatrixStorage<ValueType> > DIASparseMatrix<ValueType>::createS
 
 template<typename ValueType>
 boost::shared_ptr<MatrixStorage<ValueType> > DIASparseMatrix<ValueType>::createStorage(
-    const IndexType numRows, 
+    const IndexType numRows,
     const IndexType numColumns )
 {
     shared_ptr<MatrixStorage<ValueType> > storage( new StorageType() );
@@ -91,8 +92,8 @@ DIASparseMatrix<ValueType>::DIASparseMatrix( const IndexType numRows, const Inde
 template<typename ValueType>
 DIASparseMatrix<ValueType>::DIASparseMatrix( DistributionPtr rowDist, DistributionPtr colDist )
 
-    : SparseMatrix<ValueType>( createStorage( rowDist->getLocalSize(), colDist->getGlobalSize() ),
-                                   rowDist, colDist )
+    : SparseMatrix<ValueType>( createStorage( rowDist->getLocalSize(), colDist->getGlobalSize() ), rowDist,
+                               colDist )
 {
     // Note: splitting of local rows to local + halo part is done by SparseMatrix constructor
 }
@@ -122,7 +123,7 @@ DIASparseMatrix<ValueType>::DIASparseMatrix( const Matrix& other, bool transpose
     this->setContext( other.getContextPtr() );
     this->setCommunicationKind( other.getCommunicationKind() );
 
-    if ( transposeFlag )
+    if( transposeFlag )
     {
         SparseMatrix<ValueType>::assignTranspose( other );
     }
@@ -135,10 +136,7 @@ DIASparseMatrix<ValueType>::DIASparseMatrix( const Matrix& other, bool transpose
 /* -------------------------------------------------------------------------- */
 
 template<typename ValueType>
-DIASparseMatrix<ValueType>::DIASparseMatrix(
-    const Matrix& other, 
-    DistributionPtr rowDist, 
-    DistributionPtr colDist )
+DIASparseMatrix<ValueType>::DIASparseMatrix( const Matrix& other, DistributionPtr rowDist, DistributionPtr colDist )
 
     : SparseMatrix<ValueType>( createStorage() )
 
@@ -170,8 +168,8 @@ DIASparseMatrix<ValueType>::DIASparseMatrix( const _MatrixStorage& globalData )
 
 template<typename ValueType>
 DIASparseMatrix<ValueType>::DIASparseMatrix(
-    const _MatrixStorage& localData, 
-    DistributionPtr rowDist, 
+    const _MatrixStorage& localData,
+    DistributionPtr rowDist,
     DistributionPtr colDist )
 
     : SparseMatrix<ValueType>( createStorage() )
@@ -183,12 +181,12 @@ DIASparseMatrix<ValueType>::DIASparseMatrix(
 /* -------------------------------------------------------------------------- */
 
 template<typename ValueType>
-DIASparseMatrix<ValueType>::DIASparseMatrix( const Expression_SM& expression ) 
+DIASparseMatrix<ValueType>::DIASparseMatrix( const Expression_SM& expression )
 
     : SparseMatrix<ValueType>( createStorage() )
 
 {
-    const Matrix& master = expression.getArg2(); 
+    const Matrix& master = expression.getArg2();
 
     SparseMatrix<ValueType>::setContext( master.getContextPtr() );
     SparseMatrix<ValueType>::setCommunicationKind( master.getCommunicationKind() );
@@ -199,12 +197,12 @@ DIASparseMatrix<ValueType>::DIASparseMatrix( const Expression_SM& expression )
 /* -------------------------------------------------------------------------- */
 
 template<typename ValueType>
-DIASparseMatrix<ValueType>::DIASparseMatrix( const Expression_SMM& expression ) 
+DIASparseMatrix<ValueType>::DIASparseMatrix( const Expression_SMM& expression )
 
     : SparseMatrix<ValueType>( createStorage() )
 
 {
-    const Matrix& master = expression.getArg1().getArg2(); 
+    const Matrix& master = expression.getArg1().getArg2();
 
     SparseMatrix<ValueType>::setContext( master.getContextPtr() );
     SparseMatrix<ValueType>::setCommunicationKind( master.getCommunicationKind() );
@@ -382,9 +380,9 @@ bool DIASparseMatrix<ValueType>::registerCreator()
 {
     MatrixStorageFormat storageFormat = Format::DIA;
 
-    // conversion needed even if createMatrix has only covariant return type 
+    // conversion needed even if createMatrix has only covariant return type
 
-    Matrix::CreateFn create = ( Matrix::CreateFn ) ( &DIASparseMatrix<ValueType>::createMatrix );
+    Matrix::CreateFn create = (Matrix::CreateFn) ( &DIASparseMatrix<ValueType>::createMatrix );
 
     Matrix::addCreator( storageFormat, Scalar::getType<ValueType>(), create );
 
@@ -399,17 +397,16 @@ bool DIASparseMatrix<ValueType>::initialized = registerCreator();
 /* ========================================================================= */
 
 #define LAMA_DIA_SPARSE_MATRIX_INSTANTIATE(z, I, _)                        \
-                                                                           \
-template<>                                                                 \
-const char* DIASparseMatrix<ARITHMETIC_TYPE##I>::typeName()                \
-{                                                                          \
-    return "DIASparseMatrix<ARITHMETIC_TYPE##I>";                          \
-}                                                                          \
-                                                                           \
-template class LAMA_DLL_IMPORTEXPORT DIASparseMatrix<ARITHMETIC_TYPE##I> ;  
+    \
+    template<>                                                                 \
+    const char* DIASparseMatrix<ARITHMETIC_TYPE##I>::typeName()                \
+    {                                                                          \
+        return "DIASparseMatrix<ARITHMETIC_TYPE##I>";                          \
+    }                                                                          \
+    \
+    template class LAMA_DLL_IMPORTEXPORT DIASparseMatrix<ARITHMETIC_TYPE##I> ;
 
 BOOST_PP_REPEAT( ARITHMETIC_TYPE_CNT, LAMA_DIA_SPARSE_MATRIX_INSTANTIATE, _ )
-
 
 #undef LAMA_DIA_SPARSE_MATRIX_INSTANTIATE
 

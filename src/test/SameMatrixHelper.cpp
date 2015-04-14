@@ -2,7 +2,7 @@
  * @file SameMatrixHelper.cpp
  *
  * @license
- * Copyright (c) 2009-2013
+ * Copyright (c) 2009-2015
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -43,17 +43,13 @@ using namespace lama;
 void verifySameMatrixAll( const Matrix& m1, const Matrix& m2 )
 {
     const IndexType n = m1.getNumRows();
-
     BOOST_CHECK_EQUAL( n, m1.getNumColumns() );
     BOOST_CHECK_EQUAL( n, m2.getNumRows() );
     BOOST_CHECK_EQUAL( n, m2.getNumColumns() );
-
     VectorPtr ptrX1( m1.createDenseVector( m1.getColDistributionPtr(), 1.0 ) );
     VectorPtr ptrX2( m2.createDenseVector( m2.getColDistributionPtr(), 1.0 ) );
-
     VectorPtr ptrY1( m1.createDenseVector( m1.getDistributionPtr(), 0.0 ) );
     VectorPtr ptrY2( m2.createDenseVector( m2.getDistributionPtr(), 0.0 ) );
-
 //    Vector& x1 = *ptrX1;
 //    Vector& x2 = *ptrX2;
     Vector& y1 = *ptrY1;
@@ -78,19 +74,13 @@ void verifySameMatrixAll( const Matrix& m1, const Matrix& m2 )
 void assertSameMatrix( const Matrix& m1, const Matrix& m2 )
 {
     std::cout << "compare m1 = " << m1 << " with m2 = " << m2 << std::endl;
-
     const IndexType m = m1.getNumRows();
     const IndexType n = m1.getNumColumns();
-
     // require for same sizes, otherwise it is illegal to access elements
-
     BOOST_REQUIRE_EQUAL( m, m2.getNumRows() );
     BOOST_REQUIRE_EQUAL( n, m2.getNumColumns() );
-
     DistributionPtr replicated( DistributionPtr( new NoDistribution( m ) ) );
-
     // create replicated vectors for the rows with the same value type
-
     VectorPtr ptrRow1( m1.createDenseVector( replicated, 0.0 ) );
     VectorPtr ptrRow2( m2.createDenseVector( replicated, 0.0 ) );
 
@@ -99,12 +89,9 @@ void assertSameMatrix( const Matrix& m1, const Matrix& m2 )
     for ( IndexType i = 0; i < m; ++i )
     {
         // Note: rows will be broadcast in case of distributed matrices
-
         std::cout << "compare row " << i << std::endl;
-
         m1.getRow( *ptrRow1, i );
         m2.getRow( *ptrRow2, i );
-
         std::cout << "compare row element-wise: " << i << std::endl;
 
         // compare the two vectors element-wise

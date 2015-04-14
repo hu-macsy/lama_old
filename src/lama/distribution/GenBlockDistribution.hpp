@@ -2,7 +2,7 @@
  * @file GenBlockDistribution.hpp
  *
  * @license
- * Copyright (c) 2009-2013
+ * Copyright (c) 2009-2015
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -148,15 +148,19 @@ public:
 
     void printDistributionVector( std::string name ) const;
 
-    static GenBlockDistribution* create( const CommunicatorPtr communicator, const IndexType globalSize, const float weight = 1.0 );
+    static GenBlockDistribution* create(
+        const CommunicatorPtr communicator,
+        const IndexType globalSize,
+        const float weight = 1.0 );
 
-    static GenBlockDistribution* create( const CommunicatorPtr communicator, const Matrix& matrix, const float weight = 1.0 );
+    static GenBlockDistribution* create( const CommunicatorPtr communicator, const Matrix& matrix, const float weight =
+            1.0 );
 
 protected:
 
     LAMA_LOG_DECL_STATIC_LOGGER( logger )
 
-private:
+private    :
 
     void setOffsets( const IndexType rank, const IndexType numPartitions, const IndexType localSizes[] );
 
@@ -168,7 +172,7 @@ private:
 
     IndexType mLB, mUB;//!< local range of full size in global values
 
-    static bool initialized;  //!< static initialization used for registration of create in Distribution factory
+    static bool initialized;//!< static initialization used for registration of create in Distribution factory
 };
 
 }

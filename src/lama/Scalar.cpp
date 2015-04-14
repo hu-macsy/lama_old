@@ -2,7 +2,7 @@
  * @file Scalar.cpp
  *
  * @license
- * Copyright (c) 2009-2013
+ * Copyright (c) 2009-2015
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -63,38 +63,48 @@ Scalar& Scalar::operator/=( Scalar& other )
 
 std::ostream& operator<<( std::ostream& stream, const Scalar::ScalarType& object )
 {
-    switch ( object )
+    switch( object )
     {
         case Scalar::FLOAT:
             stream << "float";
             break;
+
         case Scalar::DOUBLE:
             stream << "double";
             break;
+
         case Scalar::INDEX_TYPE:
             stream << "IndexType";
             break;
+
         case Scalar::LONG_DOUBLE:
             stream << "LongDouble";
             break;
+
         case Scalar::COMPLEX:
             stream << "ComplexFloat";
             break;
+
         case Scalar::DOUBLE_COMPLEX:
             stream << "ComplexDouble";
             break;
+
         case Scalar::LONG_DOUBLE_COMPLEX:
             stream << "ComplexLongDouble";
             break;
+
         case Scalar::INTERNAL:
             stream << "_Internal";
             break;
+
         case Scalar::PATTERN:
             stream << "_Pattern";
             break;
+
         default:
             stream << "Unknown";
     }
+
     return stream;
 }
 

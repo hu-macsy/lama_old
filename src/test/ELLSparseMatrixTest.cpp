@@ -2,7 +2,7 @@
  * @file ELLSparseMatrixTest.cpp
  *
  * @license
- * Copyright (c) 2009-2013
+ * Copyright (c) 2009-2015
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -53,7 +53,6 @@ void commonTestCases( ContextPtr loc )
 {
     ELLSparseMatrix<ValueType> ellMatrix;
     SparseMatrixTest< ELLSparseMatrix<ValueType> > ellSparseMatrixTest( ellMatrix );
-
     ellSparseMatrixTest.mMatrix.setContext( loc );
 
     if ( base_test_case )
@@ -71,8 +70,7 @@ void typeNameTest( )
 {
     ELLSparseMatrix<ValueType> ellMatrix;
     std::string s = ellMatrix.typeName();
-
-    BOOST_CHECK( s.length() > 0);
+    BOOST_CHECK( s.length() > 0 );
 }
 
 } // namespace ELLSparseMatrixTest

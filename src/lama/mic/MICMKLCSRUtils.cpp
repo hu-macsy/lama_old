@@ -2,7 +2,7 @@
  * @file MICMKLCSRUtils.cpp
  *
  * @license
- * Copyright (c) 2009-2013
+ * Copyright (c) 2009-2015
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -75,12 +75,12 @@ void MICMKLCSRUtils::normalGEMV(
     LAMA_LOG_INFO( logger,
                    "normalGEMV<float>, result[" << numRows << "] = " << alpha << " * A * x + " << beta << " * y " )
 
-    if ( syncToken )
+    if( syncToken )
     {
         LAMA_THROWEXCEPTION( "asynchronous execution should be done by LAMATask before" )
     }
 
-    if ( y != result && beta != 0 )
+    if( y != result && beta != 0 )
     {
         MICUtils::set( result, y, numRows );
     }
@@ -89,7 +89,7 @@ void MICMKLCSRUtils::normalGEMV(
 
     char transa = 'n';
 
-    // General, - triangular, Non-Unit, C for zero-indexing 
+    // General, - triangular, Non-Unit, C for zero-indexing
 
     char matdescra[6];
 
@@ -100,18 +100,10 @@ void MICMKLCSRUtils::normalGEMV(
 
     // const_cast needed, MICMKL interface does not support it
 
-    mkl_scsrmv( &transa, 
-                const_cast<IndexType*>( &numRows ), 
-                const_cast<IndexType*>( &numColumns ), 
-                const_cast<float*>( &alpha ),
-                matdescra, 
-                const_cast<float*>( csrValues ), 
-                const_cast<IndexType*>( csrJA ), 
-                const_cast<IndexType*>( csrIA ), 
-                const_cast<IndexType*>( csrIA + 1 ),
-                const_cast<float*>( x ), 
-                const_cast<float*>( &beta ), 
-                result );
+    mkl_scsrmv( &transa, const_cast<IndexType*>( &numRows ), const_cast<IndexType*>( &numColumns ),
+                const_cast<float*>( &alpha ), matdescra, const_cast<float*>( csrValues ),
+                const_cast<IndexType*>( csrJA ), const_cast<IndexType*>( csrIA ), const_cast<IndexType*>( csrIA + 1 ),
+                const_cast<float*>( x ), const_cast<float*>( &beta ), result );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -136,51 +128,42 @@ void MICMKLCSRUtils::normalGEMV(
     LAMA_LOG_INFO( logger,
                    "normalGEMV<double>, result[" << numRows << "] = " << alpha << " * A * x + " << beta << " * y " )
 
-    if ( y != result && beta != 0 )
+    if( y != result && beta != 0 )
     {
         MICUtils::set( result, y, numRows );
     }
 
     // performs y = alpha * A * x + beta * y
 
-    size_t csrIAPtr = ( size_t ) csrIA;
-    size_t csrJAPtr = ( size_t ) csrJA;
-    size_t csrValuesPtr = ( size_t ) csrValues;
-    size_t xPtr = ( size_t ) x;
-    size_t resultPtr = ( size_t ) result;
+    size_t csrIAPtr = (size_t) csrIA;
+    size_t csrJAPtr = (size_t) csrJA;
+    size_t csrValuesPtr = (size_t) csrValues;
+    size_t xPtr = (size_t) x;
+    size_t resultPtr = (size_t) result;
 
-    #pragma offload target( mic ), in( numRows, numColumns, alpha, xPtr, beta, resultPtr, \
+#pragma offload target( mic ), in( numRows, numColumns, alpha, xPtr, beta, resultPtr, \
                                        csrValuesPtr, csrJAPtr, csrIAPtr )
     {
         char transa = 'n';
 
-        // General, - triangular, Non-Unit, C for zero-indexing 
+        // General, - triangular, Non-Unit, C for zero-indexing
 
         char matdescra[6];
-    
+
         matdescra[0] = 'g';
         matdescra[1] = ' ';
         matdescra[2] = 'n';
         matdescra[3] = 'c';
 
-        IndexType* csrIA  = ( IndexType* ) csrIAPtr;
-        IndexType* csrJA  = ( IndexType* ) csrJAPtr;
-        double* csrValues = ( double* ) csrValuesPtr;
-        double* x         = ( double* ) xPtr;
-        double* result    = ( double* ) resultPtr;
+        IndexType* csrIA = (IndexType*) csrIAPtr;
+        IndexType* csrJA = (IndexType*) csrJAPtr;
+        double* csrValues = (double*) csrValuesPtr;
+        double* x = (double*) xPtr;
+        double* result = (double*) resultPtr;
 
-        mkl_dcsrmv( &transa, 
-                    const_cast<IndexType*>( &numRows ), 
-                    const_cast<IndexType*>( &numColumns ), 
-                    const_cast<double*>( &alpha ),
-                    matdescra, 
-                    csrValues, 
-                    csrJA,
-                    csrIA,
-                    csrIA + 1,
-                    x, 
-                    const_cast<double*>( &beta ), 
-                    result );
+        mkl_dcsrmv( &transa, const_cast<IndexType*>( &numRows ), const_cast<IndexType*>( &numColumns ),
+                    const_cast<double*>( &alpha ), matdescra, csrValues, csrJA, csrIA, csrIA + 1, x,
+                    const_cast<double*>( &beta ), result );
     }
 }
 
@@ -196,7 +179,7 @@ void MICMKLCSRUtils::setInterface( CSRUtilsInterface& CSRUtils )
 
     Settings::getEnvironment( useMKL, "LAMA_USE_MKL" );
 
-    if ( !useMKL )
+    if( !useMKL )
     {
         return;
     }
@@ -204,7 +187,7 @@ void MICMKLCSRUtils::setInterface( CSRUtilsInterface& CSRUtils )
     // REGISTER1: overwrites previous settings
 
     // LAMA_INTERFACE_REGISTER_T( CSRUtils, normalGEMV, float )
-    
+
     LAMA_INTERFACE_REGISTER_T( CSRUtils, normalGEMV, double )
 }
 

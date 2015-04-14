@@ -2,7 +2,7 @@
  * @file MICBLAS2.hpp
  *
  * @license
- * Copyright (c) 2009-2013
+ * Copyright (c) 2009-2015
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -26,7 +26,7 @@
  * @endlicense
  *
  * @brief MICBLAS2.hpp
- * @author Thomas Brandes     
+ * @author Thomas Brandes
  * @date 05.07.2013
  * @since 1.1.0
  */
@@ -95,6 +95,7 @@ private:
     LAMA_LOG_DECL_STATIC_LOGGER( logger )
 };
 
-} /* namespace lama */
+}
+/* namespace lama */
 
 #endif // LAMA_MIC_BLAS2_HPP_

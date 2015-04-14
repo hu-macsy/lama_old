@@ -2,7 +2,7 @@
  * @file MatrixStorageTest.hpp
  *
  * @license
- * Copyright (c) 2009-2013
+ * Copyright (c) 2009-2015
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -41,7 +41,8 @@ static std::string storagetestclasses[] =
 { "CSRStorageTest", "COOStorageTest", "DIAStorageTest", "ELLStorageTest", "JDSStorageTest", "DenseStorageTest" };
 
 static std::string storagetestmethods[] =
-{   "purgeTest", "emptyTest", "setIdentityTest", "setCSRDataTest", "buildCSRDataTest", "diagonalTest", "scaleTest", "normTest",
+{
+    "purgeTest", "emptyTest", "setIdentityTest", "setCSRDataTest", "buildCSRDataTest", "diagonalTest", "scaleTest", "normTest",
     "vectorMultTest", "jacobiTest", "jacobiHaloTest", "matrixMultTest", "matrixMultTest1", "matrixAddTest"
     "writeAtTest", "inverseTest", "symmetryTest", "vectorTimesMatrixTest", "numericalTest"
 };

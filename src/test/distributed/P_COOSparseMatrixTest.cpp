@@ -2,7 +2,7 @@
  * @file P_COOSparseMatrixTest.cpp
  *
  * @license
- * Copyright (c) 2009-2013
+ * Copyright (c) 2009-2015
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -51,7 +51,7 @@ BOOST_AUTO_TEST_SUITE( P_COOSparseMatrixTest )
 
 LAMA_LOG_DEF_LOGGER( logger, "Test.SparseMatrixTest.P_COOSparseMatrixTest" );
 
-typedef boost::mpl::list<float,double> test_types;
+typedef boost::mpl::list<float, double> test_types;
 
 /* ------------------------------------------------------------------------- */
 

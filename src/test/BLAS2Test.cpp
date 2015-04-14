@@ -2,7 +2,7 @@
  * @file BLAS2Test.cpp
  *
  * @license
- * Copyright (c) 2009-2013
+ * Copyright (c) 2009-2015
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -57,18 +57,14 @@ template<typename ValueType>
 void gemvTest( ContextPtr loc )
 {
     LAMA_INTERFACE_FN_T( gemv, loc, BLAS, BLAS2, ValueType );
-
     // CblasRowMajor and CblasNoTrans
     {
         ValueType matrix[] =
         { 1.0, 2.0, -3.0, 4.0, 5.0, -6.0 };
-
         ValueType x[] =
         { 2.0, -1.0, 4.0 };
-
         ValueType y[] =
         { 10.0, -20.0, 30.0 };
-
         const IndexType m = 2;
         const IndexType n = 3;
         const ValueType alpha = 17.0;
@@ -76,43 +72,33 @@ void gemvTest( ContextPtr loc )
         const IndexType incX = 1;
         const ValueType beta = 13.0;
         const IndexType incY = 2;
-
         const ValueType result[] =
         { -74.0, 33.0 };
-
         LAMAArray<ValueType> Am( 6, matrix );
         LAMAArray<ValueType> Ax( 3, x );
         LAMAArray<ValueType> Ay( 3, y );
-
         {
             LAMA_CONTEXT_ACCESS( loc );
-
             ReadAccess<ValueType> rAm( Am, loc );
             ReadAccess<ValueType> rAx( Ax, loc );
             WriteAccess<ValueType> wAy( Ay, loc );
-
             gemv( CblasRowMajor, CblasNoTrans, m, n, alpha, rAm.get(), lda, rAx.get(), incX, beta, wAy.get(), incY,
                   NULL );
         }
-
         {
             HostReadAccess<ValueType> rAy( Ay );
             BOOST_CHECK_EQUAL( result[0], rAy[0] );
             BOOST_CHECK_EQUAL( result[1], rAy[2] );
         }
     }
-
     // CblasColMajor and CblasNoTrans
     {
         ValueType matrix[] =
         { 1.0, 4.0, 2.0, 5.0, -3.0, -6.0 };
-
         ValueType x[] =
         { 2.0, -1.0, 4.0 };
-
         ValueType y[] =
         { 10.0, -20.0, 30.0 };
-
         const IndexType m = 2;
         const IndexType n = 3;
         const ValueType alpha = 17.0;
@@ -120,43 +106,33 @@ void gemvTest( ContextPtr loc )
         const IndexType incX = 1;
         const ValueType beta = 13.0;
         const IndexType incY = 2;
-
         const ValueType result[] =
         { -74.0, 33.0 };
-
         LAMAArray<ValueType> Am( 6, matrix );
         LAMAArray<ValueType> Ax( 3, x );
         LAMAArray<ValueType> Ay( 3, y );
-
         {
             LAMA_CONTEXT_ACCESS( loc );
-
             ReadAccess<ValueType> rAm( Am, loc );
             ReadAccess<ValueType> rAx( Ax, loc );
             WriteAccess<ValueType> wAy( Ay, loc );
-
             gemv( CblasColMajor, CblasNoTrans, m, n, alpha, rAm.get(), lda, rAx.get(), incX, beta, wAy.get(), incY,
                   NULL );
         }
-
         {
             HostReadAccess<ValueType> rAy( Ay );
             BOOST_CHECK_EQUAL( result[0], rAy[0] );
             BOOST_CHECK_EQUAL( result[1], rAy[2] );
         }
     }
-
     // CblasRowMajor and CblasTrans
     {
         ValueType matrix[] =
         { 1.0, 2.0, -3.0, 4.0, 5.0, -6.0 };
-
         ValueType x[] =
         { 2.0, -1.0, 4.0 };
-
         ValueType y[] =
         { 10.0, -20.0, 30.0 };
-
         const IndexType m = 2;
         const IndexType n = 3;
         const ValueType alpha = 17.0;
@@ -164,25 +140,19 @@ void gemvTest( ContextPtr loc )
         const IndexType incX = 2;
         const ValueType beta = 13.0;
         const IndexType incY = 1;
-
         const ValueType result[] =
         { 436.0, 148.0, -120.0 };
-
         LAMAArray<ValueType> Am( 6, matrix );
         LAMAArray<ValueType> Ax( 3, x );
         LAMAArray<ValueType> Ay( 3, y );
-
         {
             LAMA_CONTEXT_ACCESS( loc );
-
             ReadAccess<ValueType> rAm( Am, loc );
             ReadAccess<ValueType> rAx( Ax, loc );
             WriteAccess<ValueType> wAy( Ay, loc );
-
             gemv( CblasRowMajor, CblasTrans, m, n, alpha, rAm.get(), lda, rAx.get(), incX, beta, wAy.get(), incY,
                   NULL );
         }
-
         {
             HostReadAccess<ValueType> rAy( Ay );
             BOOST_CHECK_EQUAL( result[0], rAy[0] );
@@ -190,17 +160,14 @@ void gemvTest( ContextPtr loc )
             BOOST_CHECK_EQUAL( result[2], rAy[2] );
         }
     }
-
     // CblasColMajor and CblasTrans
     {
         ValueType matrix[] =
         { 1.0, 4.0, 2.0, 5.0, -3.0, -6.0 };
-
         ValueType x[] =
         { 2.0, -1.0, 4.0 };
         ValueType y[] =
         { 10.0, -20.0, 30.0 };
-
         const IndexType m = 2;
         const IndexType n = 3;
         const ValueType alpha = 17.0;
@@ -208,25 +175,19 @@ void gemvTest( ContextPtr loc )
         const IndexType incX = 2;
         const ValueType beta = 13.0;
         const IndexType incY = 1;
-
         const ValueType result[] =
         { 436.0, 148.0, -120.0 };
-
         LAMAArray<ValueType> Am( 6, matrix );
         LAMAArray<ValueType> Ax( 3, x );
         LAMAArray<ValueType> Ay( 3, y );
-
         {
             LAMA_CONTEXT_ACCESS( loc );
-
             ReadAccess<ValueType> rAm( Am, loc );
             ReadAccess<ValueType> rAx( Ax, loc );
             WriteAccess<ValueType> wAy( Ay, loc );
-
             gemv( CblasColMajor, CblasTrans, m, n, alpha, rAm.get(), lda, rAx.get(), incX, beta, wAy.get(), incY,
                   NULL );
         }
-
         {
             HostReadAccess<ValueType> rAy( Ay );
             BOOST_CHECK_EQUAL( result[0], rAy[0] );

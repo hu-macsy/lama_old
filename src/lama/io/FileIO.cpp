@@ -2,7 +2,7 @@
  * @file FileIO.cpp
  *
  * @license
- * Copyright (c) 2009-2013
+ * Copyright (c) 2009-2015
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -47,15 +47,15 @@ FileIO::file_size_t FileIO::getFileSize( const char* filename )
 
     file_size_t size = 0;
 
-    if ( pFile == NULL)
+    if( pFile == NULL )
     {
         LAMA_THROWEXCEPTION( "File " << filename << " could not be opened" )
     }
     else
     {
-        fseek ( pFile, 0, SEEK_END);   // non-portable
+        fseek( pFile, 0, SEEK_END ); // non-portable
         size = ftell( pFile );
-        fclose ( pFile );
+        fclose( pFile );
     }
 
     return size;

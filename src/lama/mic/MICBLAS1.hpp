@@ -2,7 +2,7 @@
  * @file MICBLAS1.hpp
  *
  * @license
- * Copyright (c) 2009-2013
+ * Copyright (c) 2009-2015
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -59,7 +59,12 @@ public:
      * This function is the MIC implementation of lama::BLAS1Interface::BLAS1::scal
      */
     template<typename ValueType>
-    static void scal( const IndexType n, const ValueType alpha, ValueType* x, const IndexType incX, SyncToken* syncToken );
+    static void scal(
+        const IndexType n,
+        const ValueType alpha,
+        ValueType* x,
+        const IndexType incX,
+        SyncToken* syncToken );
 
     /**
      * This function is the MIC implementation of lama::BLAS1Interface::nrm2
@@ -83,7 +88,13 @@ public:
      * This function is the MIC implementation of lama::BLAS1Interface::swap
      */
     template<typename ValueType>
-    static void swap( const IndexType n, ValueType* y, const IndexType incY, ValueType* x, const IndexType incX, SyncToken* syncToken );
+    static void swap(
+        const IndexType n,
+        ValueType* y,
+        const IndexType incY,
+        ValueType* x,
+        const IndexType incX,
+        SyncToken* syncToken );
 
     /**
      * This function is the MIC implementation of lama::BLAS1Interface::copy
@@ -126,7 +137,14 @@ public:
      * This function is the MIC implementation of lama::BLAS1Interface::sum
      */
     template<typename ValueType>
-    static void sum( const IndexType n, ValueType alpha, const ValueType* x, ValueType beta, const ValueType* y, ValueType* z, SyncToken* syncToken );
+    static void sum(
+        const IndexType n,
+        ValueType alpha,
+        const ValueType* x,
+        ValueType beta,
+        const ValueType* y,
+        ValueType* z,
+        SyncToken* syncToken );
 
     /** Routine that sets functions pointers belonging to BLAS1 in a BLASInterface.
      *
@@ -146,6 +164,7 @@ private:
     LAMA_LOG_DECL_STATIC_LOGGER( logger )
 };
 
-} /* namespace lama */
+}
+/* namespace lama */
 
 #endif // LAMA_MICBLAS1_HPP_

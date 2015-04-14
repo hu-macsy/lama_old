@@ -2,7 +2,7 @@
  * @file MICBLAS2.cpp
  *
  * @license
- * Copyright (c) 2009-2013
+ * Copyright (c) 2009-2015
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -48,12 +48,19 @@ inline static char trans2C( CBLAS_TRANSPOSE trans )
 {
     // Code-Style C Dehning
 
-    switch ( trans )
+    switch( trans )
     {
-        case CblasNoTrans  : return 'N';
-        case CblasTrans    : return 'T';
-        case CblasConjTrans: return 'C';
-        default:             return ' ';
+        case CblasNoTrans:
+            return 'N';
+
+        case CblasTrans:
+            return 'T';
+
+        case CblasConjTrans:
+            return 'C';
+
+        default:
+            return ' ';
     }
 }
 
@@ -61,12 +68,19 @@ inline static char trans2CT( CBLAS_TRANSPOSE trans )
 {
     // Code-Style C Dehning
 
-    switch ( trans )
+    switch( trans )
     {
-        case CblasNoTrans  : return 'T';
-        case CblasTrans    : return 'N';
-        case CblasConjTrans: return 'N';
-        default:             return ' ';
+        case CblasNoTrans:
+            return 'T';
+
+        case CblasTrans:
+            return 'N';
+
+        case CblasConjTrans:
+            return 'N';
+
+        default:
+            return ' ';
     }
 }
 
@@ -89,25 +103,23 @@ void MICBLAS2::gemv(
     SyncToken* syncToken )
 {
     LAMA_LOG_INFO( logger,
-                   "gemv<float>: m = " << m << ", n = " << n << ", lda = " << lda 
-                    << ", incX = " << incX << ", incY = " << incY 
-                    << ", alpha = " << alpha << ", beta = " << beta )
+                   "gemv<float>: m = " << m << ", n = " << n << ", lda = " << lda << ", incX = " << incX << ", incY = " << incY << ", alpha = " << alpha << ", beta = " << beta )
 
-    if ( m == 0 )
+    if( m == 0 )
     {
-        return;   // empty X, Y, A  
+        return; // empty X, Y, A
     }
 
     // n == 0: empty A, but deal with X, Y, we can handle this here
 
-    if ( syncToken )
+    if( syncToken )
     {
         LAMA_LOG_WARN( logger, "asynchronous execution for MIC not supported yet." )
     }
 
     char ta = ' ';
 
-    switch ( order )
+    switch( order )
     {
         case CblasColMajor:
             ta = trans2C( transA );
@@ -126,7 +138,7 @@ void MICBLAS2::gemv(
     const void* xPtr = x;
     const void* aPtr = a;
 
-    #pragma offload target( mic ), in( ta, m, n, alpha, aPtr, lda, xPtr, incX, beta, yPtr, incY )
+#pragma offload target( mic ), in( ta, m, n, alpha, aPtr, lda, xPtr, incX, beta, yPtr, incY )
     {
         const float* x = static_cast<const float*>( xPtr );
         const float* a = static_cast<const float*>( aPtr );
@@ -153,25 +165,23 @@ void MICBLAS2::gemv(
     SyncToken* syncToken )
 {
     LAMA_LOG_INFO( logger,
-                   "gemv<double>: m = " << m << ", n = " << n << ", lda = " << lda 
-                    << ", incX = " << incX << ", incY = " << incY 
-                    << ", alpha = " << alpha << ", beta = " << beta )
+                   "gemv<double>: m = " << m << ", n = " << n << ", lda = " << lda << ", incX = " << incX << ", incY = " << incY << ", alpha = " << alpha << ", beta = " << beta )
 
-    if ( m == 0 )
+    if( m == 0 )
     {
-        return;   // empty X, Y, A  
+        return; // empty X, Y, A
     }
 
     // n == 0: empty A, but deal with X, Y, we can handle this here
 
-    if ( syncToken )
+    if( syncToken )
     {
         LAMA_LOG_WARN( logger, "asynchronous execution for MIC not supported yet." )
     }
 
     char ta = ' ';
 
-    switch ( order )
+    switch( order )
     {
         case CblasColMajor:
             ta = trans2C( transA );
@@ -190,7 +200,7 @@ void MICBLAS2::gemv(
     const void* xPtr = x;
     const void* aPtr = a;
 
-    #pragma offload target( mic ), in( ta, m, n, alpha, aPtr, lda, xPtr, incX, beta, yPtr, incY )
+#pragma offload target( mic ), in( ta, m, n, alpha, aPtr, lda, xPtr, incX, beta, yPtr, incY )
     {
         const double* x = static_cast<const double*>( xPtr );
         const double* a = static_cast<const double*>( aPtr );
@@ -208,7 +218,7 @@ void MICBLAS2::setInterface( BLASInterface& BLAS )
 {
     LAMA_LOG_INFO( logger, "set BLAS2 routines for MIC in Interface" )
 
-    // Note: macro takes advantage of same name for routines and type definitions 
+    // Note: macro takes advantage of same name for routines and type definitions
     //       ( e.g. routine CUDABLAS1::sum<ValueType> is set for BLAS::BLAS1::sum variable
 
     LAMA_INTERFACE_REGISTER_T( BLAS, gemv, float )

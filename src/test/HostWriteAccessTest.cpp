@@ -2,7 +2,7 @@
  * @file HostWriteAccessTest.cpp
  *
  * @license
- * Copyright (c) 2009-2013
+ * Copyright (c) 2009-2015
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -52,9 +52,7 @@ LAMA_LOG_DEF_LOGGER( logger, "Test.HostWriteAccessTest" )
 BOOST_AUTO_TEST_CASE( CtorTest )
 {
     const IndexType n = 10;
-
     LAMAArray<double> lamaArray( n, 1.0 );
-
     HostWriteAccess<double> lamaArrayWriteAccess( lamaArray );
 
     for ( IndexType i = 0; i < n; ++i )
@@ -63,7 +61,6 @@ BOOST_AUTO_TEST_CASE( CtorTest )
     }
 
     lamaArrayWriteAccess.release();
-
     HostReadAccess<double> lamaArrayHostAccess( lamaArray );
 
     for ( IndexType i = 0; i < n; ++i )
@@ -79,17 +76,11 @@ BOOST_AUTO_TEST_CASE( CtorTest )
 BOOST_AUTO_TEST_CASE( writeAtTest )
 {
     const IndexType n = 10;
-
     LAMAArray<double> lamaArray( n, 1.0 );
-
     HostWriteAccess<double> lamaArrayWriteAccess( lamaArray );
-
     LAMA_WRITEAT_TEST( lamaArrayWriteAccess );
-
     lamaArrayWriteAccess.release();
-
     LAMA_WRITEAT_TEST( lamaArrayWriteAccess );
-
     //Should throw exception, because HostWriteAcces was already been released.
     LAMA_CHECK_THROW( { lamaArrayWriteAccess.size(); }, Exception );
 }
@@ -99,9 +90,7 @@ BOOST_AUTO_TEST_CASE( writeAtTest )
 BOOST_AUTO_TEST_CASE( pushbackTest )
 {
     const IndexType n = 10;
-
     LAMAArray<double> lamaArray( n, 1.0 );
-
     HostWriteAccess<double> lamaArrayWriteAccess( lamaArray );
 
     for ( IndexType i = 0; i < n; ++i )
@@ -110,9 +99,7 @@ BOOST_AUTO_TEST_CASE( pushbackTest )
     }
 
     lamaArrayWriteAccess.push_back( 3.0 );
-
     lamaArrayWriteAccess.release();
-
     HostReadAccess<double> lamaArrayHostReadAccess( lamaArray );
 
     for ( IndexType i = 0; i < ( lamaArray.size() - 1 ); ++i )
@@ -121,7 +108,6 @@ BOOST_AUTO_TEST_CASE( pushbackTest )
     }
 
     BOOST_CHECK_EQUAL( 3.0, lamaArrayHostReadAccess[ lamaArray.size() - 1 ] );
-
     lamaArrayHostReadAccess.release();
 }
 /* --------------------------------------------------------------------- */

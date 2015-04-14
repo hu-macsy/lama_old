@@ -2,7 +2,7 @@
  * @file ContextTest.cpp
  *
  * @license
- * Copyright (c) 2009-2013
+ * Copyright (c) 2009-2015
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -49,7 +49,7 @@ using namespace lama;
 
 /* --------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_SUITE (ContextTest)
+BOOST_AUTO_TEST_SUITE ( ContextTest )
 
 LAMA_LOG_DEF_LOGGER( logger, "Test.ContextTest" )
 
@@ -104,46 +104,46 @@ public:
     }
 
     static std::auto_ptr<SyncToken> theMemcpyAsync( void* dst, const void* src, const size_t size )
-                    {
+    {
         return std::auto_ptr < SyncToken > ( new TaskSyncToken( boost::bind( &::memcpy, dst, src, size ) ) );
-                    }
+    }
 
     virtual std::auto_ptr<SyncToken> memcpyAsync( void* dst, const void* src, const size_t size ) const
-                    {
+    {
         return std::auto_ptr < SyncToken > ( new TaskSyncToken( boost::bind( &::memcpy, dst, src, size ) ) );
-                    }
+    }
 
     virtual bool cancpy( const ContextData& dst, const ContextData& src ) const
     {
         return ( dst.context->getType() == getType() && src.context->getType() == getType() )
-                        || ( dst.context->getType() == Context::Host && src.context->getType() == getType() )
-                        || ( dst.context->getType() == getType() && src.context->getType() == Context::Host )
-                        || ( dst.context->getType() == Context::Host && src.context->getType() == Context::Host );
+               || ( dst.context->getType() == Context::Host && src.context->getType() == getType() )
+               || ( dst.context->getType() == getType() && src.context->getType() == Context::Host )
+               || ( dst.context->getType() == Context::Host && src.context->getType() == Context::Host );
     }
 
     virtual void memcpy( ContextData& dst, const ContextData& src, const size_t size ) const
     {
-        LAMA_ASSERT_ERROR( cancpy(dst,src), "Can not copy from "<< *(src.context) << " to " << *(dst.context) );
+        LAMA_ASSERT_ERROR( cancpy( dst, src ), "Can not copy from " << * ( src.context ) << " to " << * ( dst.context ) );
         memcpy( dst.pointer, src.pointer, size );
     }
 
     virtual std::auto_ptr<SyncToken> memcpyAsync( ContextData& dst, const ContextData& src, const size_t size ) const
-                    {
-        LAMA_ASSERT_ERROR( cancpy(dst,src), "Can not copy from "<< *(src.context) << " to " << *(dst.context) );
+    {
+        LAMA_ASSERT_ERROR( cancpy( dst, src ), "Can not copy from " << * ( src.context ) << " to " << * ( dst.context ) );
         return memcpyAsync( dst.pointer, src.pointer, size );
-                    }
+    }
 
     virtual std::auto_ptr<SyncToken> getSyncToken() const
-                    {
+    {
         return std::auto_ptr < SyncToken > ( new TaskSyncToken() );
-                    }
+    }
 
 private:
 
     // MockContext uses the type NewContext as its type
 
     MockContext()
-    : Context( NewContext )
+        : Context( NewContext )
     {
     }
 };
@@ -154,7 +154,7 @@ class MockContextManager: public ContextManager
 {
 public:
 
-    ContextPtr getContext( int /* context */)
+    ContextPtr getContext( int /* context */ )
     {
         return getInstance();
     }
@@ -165,7 +165,7 @@ public:
 
     static ContextPtr getInstance()
     {
-        if( !mMockContext )
+        if ( !mMockContext )
         {
             mMockContext = ContextPtr( new MockContext() );
         }
@@ -176,7 +176,7 @@ public:
 private:
 
     MockContextManager()
-    : ContextManager( Context::NewContext )
+        : ContextManager( Context::NewContext )
     {
         registerFactory();
     }
@@ -195,19 +195,12 @@ MockContextManager MockContextManager::theInstance;
 BOOST_AUTO_TEST_CASE( releaseTest )
 {
     LAMAArray<IndexType> lamaArray; // default, not allocated at all
-
     // read access on empty array should work even if not useful
-
     HostReadAccess<IndexType> readTestAccess( lamaArray );
-
     // release read on empty array
-
     readTestAccess.release();
-
     // get write access on empty array
-
     HostWriteAccess<IndexType> writeAccess( lamaArray );
-
     writeAccess.resize( 10 );
 
     for ( IndexType i = 0; i < 10; i++ )
@@ -216,13 +209,9 @@ BOOST_AUTO_TEST_CASE( releaseTest )
     }
 
     writeAccess.release();
-
     // working on a released array should give an exception
-
-    LAMA_CHECK_THROW( { writeAccess.resize(20); }, Exception );
-
+    LAMA_CHECK_THROW( { writeAccess.resize( 20 ); }, Exception );
     // This is not checked:  writeAccess[0] = 5.0; -> crashes
-
     HostReadAccess<IndexType> readAccess( lamaArray );
 
     for ( IndexType i = 0; i < 5; i++ )
@@ -238,13 +227,12 @@ BOOST_AUTO_TEST_CASE( releaseTest )
 BOOST_AUTO_TEST_CASE( allocateTest )
 {
     LAMAArray<IndexType> data; // default, not allocated at all
-
     ContextPtr context = ContextFactory::getContext( Context::NewContext );
-
     {
         WriteAccess<IndexType> arr( data, context );
         arr.resize( 10 );
         IndexType* idata = arr.get();
+
         for ( IndexType i = 0; i < 10; i++ )
         {
             idata[i] = 23;
@@ -271,25 +259,20 @@ BOOST_AUTO_TEST_CASE( allocateTest )
 BOOST_AUTO_TEST_CASE( copyTest )
 {
     LAMAArray<IndexType> data; // default, not allocated at all
-
     ContextPtr context = ContextFactory::getContext( Context::NewContext );
-
     WriteAccess<IndexType> arr( data, context );
     arr.resize( 10 );
     IndexType* idata = arr.get();
+
     for ( IndexType i = 0; i < 10; i++ )
     {
         idata[i] = 23;
     }
 
     // the copy operator should also work on a write-locked array
-
     LAMAArray<IndexType> data1( data );
-
     BOOST_CHECK_EQUAL( data.size(), data1.size() );
-
     // check that copied array has valid data
-
     {
         HostReadAccess<IndexType> arr( data1 );
         BOOST_CHECK_EQUAL( 23, arr[8] );
@@ -301,23 +284,20 @@ BOOST_AUTO_TEST_CASE( copyTest )
 BOOST_AUTO_TEST_CASE( prefetchTest )
 {
     LAMAArray<IndexType> data;
-
     ContextPtr context = ContextFactory::getContext( Context::NewContext );
-
     {
         HostWriteAccess<IndexType> arr( data );
         arr.resize( 10 );
+
         for ( IndexType i = 0; i < 10; i++ )
         {
             arr[i] = 10 + i;
         }
     }
-
     data.prefetch( context );
-
     {
         ReadAccess<IndexType> arr( data, context );
-        const IndexType *data = arr.get();
+        const IndexType* data = arr.get();
         BOOST_CHECK_EQUAL( 12, data[2] );
         BOOST_CHECK_EQUAL( 19, data[9] );
     }
@@ -329,13 +309,12 @@ BOOST_AUTO_TEST_CASE( swapTest )
 {
     LAMAArray<IndexType> data1;
     LAMAArray<IndexType> data2;
-
     ContextPtr context = ContextFactory::getContext( Context::NewContext );
-
     {
         WriteAccess<IndexType> arr( data1, context );
         arr.resize( 10 );
         IndexType* idata = arr.get(); // no indexing allowed for arbitrary write context
+
         for ( IndexType i = 0; i < 10; i++ )
         {
             idata[i] = 10 + i;
@@ -350,20 +329,15 @@ BOOST_AUTO_TEST_CASE( swapTest )
         }
 
         // swapping of arrays not allowed with any access
-
         LAMA_CHECK_THROW( data1.swap( data2 ), Exception );
     }
-
     data1.swap( data2 );
-
     {
         // data1 contains now original data2
-
         HostReadAccess<IndexType> arr( data1 );
         BOOST_CHECK_EQUAL( 100, arr[0] );
         BOOST_CHECK_EQUAL( 91, arr[9] );
     }
-
     {
         HostReadAccess<IndexType> arr( data2 );
         BOOST_CHECK_EQUAL( 12, arr[2] );
@@ -378,7 +352,7 @@ const IndexType ITER = 10;
 
 void sumit( IndexType& sum, const LAMAArray<IndexType>& data )
 {
-    for( IndexType i = 0; i < N; i++ )
+    for ( IndexType i = 0; i < N; i++ )
     {
         HostReadAccess<IndexType> arr( data );
         sum += arr[i];
@@ -388,18 +362,16 @@ void sumit( IndexType& sum, const LAMAArray<IndexType>& data )
 BOOST_AUTO_TEST_CASE( threadSafetyTest )
 {
     LAMAArray<IndexType> data;
-
     // define the array with some data
-
     {
         HostWriteAccess<IndexType> arr( data );
         arr.resize( N );
+
         for ( IndexType i = 0; i < N; i++ )
         {
             arr[i] = 1;
         }
     }
-
     IndexType sum1 = 0;
     IndexType sum2 = 0;
     IndexType sum3 = 0;
@@ -427,25 +399,22 @@ BOOST_AUTO_TEST_CASE( ompSafetyTest )
 {
     LAMAArray<IndexType> data;
     LAMAArray<IndexType> data1;
-
     // define the array with some data
-
     {
         HostWriteAccess<IndexType> arr( data );
         arr.resize( N );
+
         for ( IndexType i = 0; i < N; i++ )
         {
             arr[i] = 1;
         }
     }
-
     // now create some OpenMP threads that take read access
-
     omp_set_num_threads( 2 );
-
-#pragma omp parallel
+    #pragma omp parallel
     {
         IndexType sum = 0;
+
         for ( IndexType i = 0; i < N; i++ )
         {
             HostReadAccess<IndexType> arr( data );
@@ -454,14 +423,12 @@ BOOST_AUTO_TEST_CASE( ompSafetyTest )
 
         BOOST_CHECK_EQUAL( N, sum );
     }
-
     // no more access, so we can swap
-
     data.swap( data1 );
-
-#pragma omp parallel
+    #pragma omp parallel
     {
         IndexType sum = 0;
+
         for ( IndexType i = 0; i < N; i++ )
         {
             HostReadAccess<IndexType> arr( data1 );
@@ -487,7 +454,6 @@ BOOST_AUTO_TEST_CASE( EqualityTest )
     ContextPtr contextA = ContextFactory::getContext( Context::Host );
     ContextPtr contextB = ContextFactory::getContext( Context::Host );
     ContextPtr contextC = ContextFactory::getContext( Context::NewContext );
-
     BOOST_CHECK( contextA == contextB );
     BOOST_CHECK( contextA != contextC );
 }

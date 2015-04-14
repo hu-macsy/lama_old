@@ -106,9 +106,10 @@ protected:
 
     LAMA_LOG_DECL_STATIC_LOGGER( logger )
 
-    BiCGstabRuntime mBiCGstabRuntime;
+    BiCGstabRuntime    mBiCGstabRuntime;
 };
 
-} // namespace lama
+}
+// namespace lama
 
 #endif // LAMA_BICGSTAB_HPP_

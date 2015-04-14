@@ -2,7 +2,7 @@
  * @file MICContextManager.hpp
  *
  * @license
- * Copyright (c) 2009-2013
+ * Copyright (c) 2009-2015
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -96,11 +96,11 @@ private:
 
     static MICContextManager theInstance; //!< singleton instance of this class
 
-    static int defaultDeviceNr;  //!< will be set to the default device
+    static int defaultDeviceNr; //!< will be set to the default device
 
     /** Getter for the default device number; it will be set if not available at first call. */
 
-    static int getDefaultDeviceNr ();   // getter for defaultDeviceNr, might be set
+    static int getDefaultDeviceNr(); // getter for defaultDeviceNr, might be set
 };
 
 }

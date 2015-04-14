@@ -2,7 +2,7 @@
  * @file Configuration.cpp
  *
  * @license
- * Copyright (c) 2009-2013
+ * Copyright (c) 2009-2015
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -41,7 +41,7 @@
 LAMA_LOG_DEF_LOGGER( Configuration::logger, "Configuration" );
 
 Configuration::Configuration()
-                : mPath( LAMA_TESTFILE_PATH ), mCommType( "none" )
+    : mPath( LAMA_TESTFILE_PATH ), mCommType( "none" )
 {
 }
 

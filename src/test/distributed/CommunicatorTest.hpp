@@ -2,7 +2,7 @@
  * @file CommunicatorTest.hpp
  *
  * @license
- * Copyright (c) 2009-2013
+ * Copyright (c) 2009-2015
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -42,7 +42,8 @@ using namespace lama;
 static std::string commtestclasses[] =
 { "NoCommunicatorTest" };
 static std::string commtestmethods[] =
-{   "swapTest", "gatherTest", "gatherVTest", "scatterTest", "scatterVTest", "bcastTest", "shiftASyncTest", "shiftTest",
+{
+    "swapTest", "gatherTest", "gatherVTest", "scatterTest", "scatterVTest", "bcastTest", "shiftASyncTest", "shiftTest",
     "updateHaloTest", "bcastStringTest", "buildHaloTest", "allocatePlanTest", "computeOwnersTest", "CommunicatorCtorTest"
 };
 

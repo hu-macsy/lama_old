@@ -2,7 +2,7 @@
  * @file OpenMP.hpp
  *
  * @license
- * Copyright (c) 2009-2013
+ * Copyright (c) 2009-2015
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -34,11 +34,11 @@
 #define LAMA_OPENMP_HPP_
 
 #ifdef _OPENMP
-    #include <omp.h>
+#include <omp.h>
 #else
-    #define omp_get_thread_num() 0
-    #define omp_get_num_threads() 1
-    #define omp_get_max_threads() 1
+#define omp_get_thread_num() 0
+#define omp_get_num_threads() 1
+#define omp_get_max_threads() 1
 #endif
 
 /** atomicAdd used for reductions as reduction directive is unsupported for complex numbers.
@@ -49,21 +49,21 @@
 template<typename ValueType>
 inline void atomicAdd( ValueType& sharedResult, const ValueType& threadResult )
 {
-#pragma omp critical
+    #pragma omp critical
     sharedResult += threadResult;
 }
 
 template<>
 inline void atomicAdd( float& sharedResult, const float& threadResult )
 {
-#pragma omp atomic
+    #pragma omp atomic
     sharedResult += threadResult;
 }
 
 template<>
 inline void atomicAdd( double& sharedResult, const double& threadResult )
 {
-#pragma omp atomic
+    #pragma omp atomic
     sharedResult += threadResult;
 }
 

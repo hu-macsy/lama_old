@@ -2,7 +2,7 @@
  * @file ResidualStagnation.hpp
  *
  * @license
- * Copyright (c) 2009-2013
+ * Copyright (c) 2009-2015
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -50,14 +50,14 @@ ResidualStagnation::ResidualStagnation( NormPtr norm )
 
 ResidualStagnation::ResidualStagnation( NormPtr norm, IndexType lookback, Scalar precision )
     : Criterion(), mNorm( norm ), mLookback( lookback ), mLastResidualNorms( lookback ), mNextEntry( 0 ), mEntriesReady(
-        false ), mPrecision( precision )
+          false ), mPrecision( precision )
 {
 }
 
 ResidualStagnation::ResidualStagnation( const ResidualStagnation &other )
     : Criterion(), mNorm( other.mNorm ), mLookback( other.mLookback ), mLastResidualNorms(
-        other.mLastResidualNorms ), mNextEntry( other.mNextEntry ), mEntriesReady(
-            other.mEntriesReady ), mPrecision( other.mPrecision )
+          other.mLastResidualNorms ), mNextEntry( other.mNextEntry ), mEntriesReady(
+          other.mEntriesReady ), mPrecision( other.mPrecision )
 {
 }
 
@@ -76,12 +76,12 @@ bool ResidualStagnation::isSatisfied( const IterativeSolver& solver )
 
     mNextEntry = ( mNextEntry + 1 ) % mLookback;
 
-    if ( mNextEntry == 0 )
+    if( mNextEntry == 0 )
     {
         mEntriesReady = true;
     }
 
-    if ( mEntriesReady )
+    if( mEntriesReady )
     {
         Scalar min = *std::min_element( mLastResidualNorms.begin(), mLastResidualNorms.end() );
         Scalar max = *std::max_element( mLastResidualNorms.begin(), mLastResidualNorms.end() );

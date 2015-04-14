@@ -2,7 +2,7 @@
  *  * @file ThreadPoolTest.hpp
  *
  * @license
- * Copyright (c) 2009-2013
+ * Copyright (c) 2009-2015
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -68,11 +68,8 @@ const int LAMA_WORKLOAD = 1000000;
 void work( const int in, int& out )
 {
     out = in;
-
     int factor = in % 4 + 1;
-
     std::ostringstream regionName;
-
     regionName << "work_" << factor;
     LAMA_REGION( regionName.str().c_str() )
 
@@ -81,6 +78,7 @@ void work( const int in, int& out )
     for ( int i = 0; i < LAMA_WORKLOAD * factor; i++ )
     {
         int dir = i & 1;
+
         if ( dir )
         {
             out += 13;
@@ -90,6 +88,7 @@ void work( const int in, int& out )
             out -= 13;
         }
     }
+
     out = in;
 }
 
@@ -98,14 +97,11 @@ void work( const int in, int& out )
 BOOST_AUTO_TEST_CASE( runTest )
 {
     LAMA_LOG_INFO( logger, "runTest" );
-
     LAMA_REGION( "runTest" )
-
     IndexType thread_sizes[] = LAMA_THREADS;
-    IndexType thread_configs = sizeof( thread_sizes ) / sizeof(IndexType);
-
+    IndexType thread_configs = sizeof( thread_sizes ) / sizeof( IndexType );
     IndexType task_sizes[] = LAMA_TASKS;
-    IndexType task_configs = sizeof( task_sizes ) / sizeof(IndexType);
+    IndexType task_configs = sizeof( task_sizes ) / sizeof( IndexType );
 
     for ( IndexType i = 0; i < task_configs; ++i )
     {
@@ -114,9 +110,7 @@ BOOST_AUTO_TEST_CASE( runTest )
         for ( IndexType j = 0; j < thread_configs; ++j )
         {
             LAMA_REGION_N( "PoolRun", thread_sizes[j] * 100 + ntasks )
-
             scoped_array<IndexType> x( new IndexType[ntasks] );
-
             {
                 LAMAThreadPool pool( thread_sizes[j] );
 
@@ -144,14 +138,11 @@ BOOST_AUTO_TEST_CASE( runTest )
 BOOST_AUTO_TEST_CASE( waitTest )
 {
     LAMA_LOG_INFO( logger, "waitTest" );
-
     LAMA_REGION( "waitTest" )
-
     IndexType thread_sizes[] = LAMA_THREADS;
-    IndexType thread_configs = sizeof( thread_sizes ) / sizeof(IndexType);
-
+    IndexType thread_configs = sizeof( thread_sizes ) / sizeof( IndexType );
     IndexType task_sizes[] = LAMA_TASKS;
-    IndexType task_configs = sizeof( task_sizes ) / sizeof(IndexType);
+    IndexType task_configs = sizeof( task_sizes ) / sizeof( IndexType );
 
     for ( IndexType i = 0; i < task_configs; ++i )
     {
@@ -160,11 +151,8 @@ BOOST_AUTO_TEST_CASE( waitTest )
         for ( IndexType j = 0; j < thread_configs; ++j )
         {
             LAMA_REGION_N( "PoolWait", thread_sizes[j] * 100 + ntasks )
-
             scoped_array<IndexType> x( new IndexType[ntasks] ); // array with result for each task
-
             scoped_array<shared_ptr<LAMAThreadTask> > tasks( new shared_ptr<LAMAThreadTask> [ntasks] );
-
             LAMAThreadPool pool( thread_sizes[j] );
 
             for ( IndexType i = 0; i < ntasks; i++ )
@@ -187,34 +175,23 @@ BOOST_AUTO_TEST_CASE( waitTest )
 BOOST_AUTO_TEST_CASE( singleTest )
 {
     LAMA_REGION( "singleTest" )
-
     LAMA_LOG_INFO( logger, "singleTest" );
-
     // Extensive test of a thread pool with one thread
     // Should verify that master never misses a notify at wait
-
     LAMAThreadPool pool( 1 );
-
     IndexType rnd = 15;
 
     for ( IndexType i = 0; i < 100; ++i )
     {
         IndexType resultThread;
         IndexType resultMaster;
-
         boost::shared_ptr<LAMAThreadTask> task = pool.schedule(
                     boost::bind( &ThreadPoolTest::work, i, ref( resultThread ) ) );
-
         // Master thread does something and then waits
-
         rnd = ( rnd + 19 ) % 17;
-
         work( i + rnd, ref( resultMaster ) );
-
         BOOST_CHECK_EQUAL( i + rnd, resultMaster );
-
         pool.wait( task );
-
         BOOST_CHECK_EQUAL( i, resultThread );
     }
 }

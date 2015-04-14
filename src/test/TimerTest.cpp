@@ -2,7 +2,7 @@
  * @file TimerTest.cpp
  *
  * @license
- * Copyright (c) 2009-2013
+ * Copyright (c) 2009-2015
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -41,9 +41,9 @@
 //Adding support for Timers under Windows
 #ifdef _WIN32
 #include <windows.h>
-inline void usleep(int t)
+inline void usleep( int t )
 {
-    Sleep(t/1000);
+    Sleep( t / 1000 );
 }
 #elif _WIN32
 #include <unistd.h>
@@ -64,16 +64,11 @@ BOOST_AUTO_TEST_CASE( ConstructorTest )
 {
     Timer timer;
     timer.start( "Solver" );
-
     // cannot start timer twice
-
     LAMA_CHECK_THROW( { timer.start( "Solver" ); }, Exception );
-
     // cannot stop non-existing timer
     LAMA_CHECK_THROW( { timer.stop( "Solver1" ); }, Exception );
-
     timer.stop( "Solver" );
-
     // cannot stop timer twice
     LAMA_CHECK_THROW( { timer.stop( "Solver" ); }, Exception );
 }
@@ -83,21 +78,16 @@ BOOST_AUTO_TEST_CASE( ConstructorTest )
 BOOST_AUTO_TEST_CASE( ResetTest )
 {
     Timer timer;
-    LAMA_CHECK_THROW( { timer.reset("Timer") ; }, Exception );
-
+    LAMA_CHECK_THROW( { timer.reset( "Timer" ) ; }, Exception );
     timer.start( "Timer" );
     usleep( 100000 );
-
     double time1 = timer.getTime( "Timer" );
     BOOST_CHECK( 0.0 < timer.getTime( "Timer" ) );
-
     //Call reset, but do not stop the timer
     timer.reset( "Timer" );
     usleep( 10000 );
-
     double time2 = timer.getTime( "Timer" );
     timer.stop( "Timer" );
-
     BOOST_CHECK( time2 < time1 );
     BOOST_CHECK_CLOSE( time1, 0.1, 2 );
     BOOST_CHECK_CLOSE( time2, 0.01, 2 );
@@ -108,7 +98,6 @@ BOOST_AUTO_TEST_CASE( ResetTest )
 BOOST_AUTO_TEST_CASE( StartAndStopTimerTest )
 {
     Timer timer;
-
     timer.start( "TestTimer" );
     usleep( 100000 );
     timer.stop( "TestTimer" );
@@ -120,26 +109,21 @@ BOOST_AUTO_TEST_CASE( StartAndStopTimerTest )
 BOOST_AUTO_TEST_CASE( ResumeTimerTest )
 {
     Timer timer;
-
     timer.start( "TestTimer2" );
-
     timer.start( "TestTimer" );
     usleep( 100000 );
     timer.stop( "TestTimer" );
     BOOST_CHECK_CLOSE( 0.1, timer.getTime( "TestTimer" ), 2 );
-
     usleep( 100000 );
     timer.start( "TestTimer" );
     usleep( 100000 );
     timer.stop( "TestTimer" );
     BOOST_CHECK_CLOSE( 0.2, timer.getTime( "TestTimer" ), 2 );
-
     usleep( 100000 );
     timer.start( "TestTimer" );
     usleep( 100000 );
     timer.stop( "TestTimer" );
     BOOST_CHECK_CLOSE( 0.3, timer.getTime( "TestTimer" ), 2 );
-
     timer.stop( "TestTimer2" );
     BOOST_CHECK_CLOSE( 0.5, timer.getTime( "TestTimer2" ), 2 );
 }
@@ -149,13 +133,11 @@ BOOST_AUTO_TEST_CASE( ResumeTimerTest )
 BOOST_AUTO_TEST_CASE( ResetTimerTest )
 {
     Timer timer;
-
     timer.start( "TestTimer" );
     usleep( 100000 );
     timer.stop( "TestTimer" );
     BOOST_CHECK_CLOSE( 0.1, timer.getTime( "TestTimer" ), 2 );
     timer.stopAndReset( "TestTimer" );
-
     timer.start( "TestTimer" );
     usleep( 100000 );
     timer.stop( "TestTimer" );
@@ -168,17 +150,12 @@ BOOST_AUTO_TEST_CASE( ResetTimerTest )
 BOOST_AUTO_TEST_CASE( GetTimeTest )
 {
     Timer timer;
-
     timer.start( "TestTimer" );
     timer.start( "TestTimer2" );
-
     usleep( 100000 );
     BOOST_CHECK_CLOSE( 0.1, timer.getTime( "TestTimer" ), 2 );
-
     usleep( 100000 );
-
-    BOOST_CHECK_CLOSE( 0.2, timer.getTime( "TestTimer"), 2 );
-
+    BOOST_CHECK_CLOSE( 0.2, timer.getTime( "TestTimer" ), 2 );
     BOOST_CHECK_CLOSE( 0.2, timer.getTime( "TestTimer2" ), 2 );
 }
 
@@ -215,10 +192,9 @@ BOOST_AUTO_TEST_CASE( GetTimeExceptionTest )
 BOOST_AUTO_TEST_CASE( ResetExceptionTest )
 {
     Timer timer;
-    BOOST_CHECK_THROW( timer.stopAndReset("TestTimer"), Exception );
-
+    BOOST_CHECK_THROW( timer.stopAndReset( "TestTimer" ), Exception );
     Timer timer1;
-    BOOST_CHECK_THROW( timer1.reset("TestTimer"), Exception );
+    BOOST_CHECK_THROW( timer1.reset( "TestTimer" ), Exception );
 }
 /* --------------------------------------------------------------------- */
 

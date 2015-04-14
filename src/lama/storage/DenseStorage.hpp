@@ -2,7 +2,7 @@
  * @file DenseStorage.hpp
  *
  * @license
- * Copyright (c) 2009-2013
+ * Copyright (c) 2009-2015
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -60,7 +60,7 @@ class LAMA_DLL_IMPORTEXPORT DenseStorageView: public CRTPMatrixStorage<DenseStor
 {
 public:
 
-	typedef ValueType StorageValueType;
+    typedef ValueType StorageValueType;
 
     /** get typename of the matrix storage format. */
 
@@ -233,7 +233,7 @@ public:
     /** Implementation of MatrixStorage::matrixTimesVector for Dense */
 
     virtual void matrixTimesVector(
-    	LAMAArray<ValueType>& result,
+        LAMAArray<ValueType>& result,
         const ValueType alpha,
         const LAMAArray<ValueType>& x,
         const ValueType beta,
@@ -335,13 +335,13 @@ protected:
 
     /** Override MatrixStorage::checkDiagonalProperty method. */
 
-    virtual bool checkDiagonalProperty() const;
+    virtual    bool checkDiagonalProperty() const;
 
 private:
 
     /** Disable default constructor. */
 
-    DenseStorageView();  
+    DenseStorageView();
 
     template<typename OtherType>
     void assignDenseStorageImpl( const DenseStorageView<OtherType>& otherDenseStorage );

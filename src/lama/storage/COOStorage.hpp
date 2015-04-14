@@ -2,7 +2,7 @@
  * @file COOStorage.hpp
  *
  * @license
- * Copyright (c) 2009-2013
+ * Copyright (c) 2009-2015
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -67,7 +67,7 @@ class LAMA_DLL_IMPORTEXPORT COOStorage: public CRTPMatrixStorage<COOStorage<Valu
 {
 public:
 
-	typedef ValueType StorageValueType;
+    typedef ValueType StorageValueType;
 
     /** get typename of the matrix storage format. */
 
@@ -268,7 +268,7 @@ public:
     /** Implementation of MatrixStorage::matrixTimesVector for COO */
 
     virtual void matrixTimesVector(
-    	LAMAArray<ValueType>& result,
+        LAMAArray<ValueType>& result,
         const ValueType alpha,
         const LAMAArray<ValueType>& x,
         const ValueType beta,
@@ -278,7 +278,7 @@ public:
     /** since 1.0.1 */
 
     virtual void vectorTimesMatrix(
-    	LAMAArray<ValueType>& result,
+        LAMAArray<ValueType>& result,
         const ValueType alpha,
         const LAMAArray<ValueType>& x,
         const ValueType beta,
@@ -287,7 +287,7 @@ public:
     /** Implementation of MatrixStorage::matrixTimesVectorAsync for COO */
 
     virtual std::auto_ptr<SyncToken> matrixTimesVectorAsyncToDo(
-    	LAMAArray<ValueType>& result,
+        LAMAArray<ValueType>& result,
         const ValueType alpha,
         const LAMAArray<ValueType>& x,
         const ValueType beta,
@@ -388,6 +388,7 @@ private:
     LAMA_LOG_DECL_STATIC_LOGGER( logger )
 };
 
-} // namespace lama
+}
+// namespace lama
 
 #endif // LAMA_COOSTORAGE_HPP_

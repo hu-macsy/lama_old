@@ -2,7 +2,7 @@
  * @file Context.cpp
  *
  * @license
- * Copyright (c) 2009-2013
+ * Copyright (c) 2009-2015
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -50,7 +50,7 @@ namespace lama
 LAMA_LOG_DEF_LOGGER( Context::logger, "Context" )
 
 Context::Context( ContextType type )
-    : mContextType( type ), mEnabled( false ), mFile( NULL ), mLine( 0 )
+                : mContextType( type ), mEnabled( false ), mFile( NULL ), mLine( 0 )
 {
     LAMA_LOG_DEBUG( logger, "Context( type = " << mContextType << " )" )
 }
@@ -75,11 +75,11 @@ bool Context::operator==( const Context& other ) const
 
     // otherwise: both contexts must have same type and can use data of each other
 
-    if ( !same )
+    if( !same )
     {
         same = mContextType == other.mContextType;
 
-        LAMA_ASSERT_EQUAL_DEBUG( canUseData( other), other.canUseData( *this ) )
+        LAMA_ASSERT_EQUAL_DEBUG( canUseData( other ), other.canUseData( *this ) )
 
         same = same && canUseData( other ) && other.canUseData( *this );
     }
@@ -102,19 +102,19 @@ void Context::writeAt( std::ostream& stream ) const
 
 std::ostream& operator<<( std::ostream& stream, const ContextType type )
 {
-    if ( type == Context::Host )
+    if( type == Context::Host )
     {
         stream << "Host";
     }
-    else if ( type == Context::CUDA )
+    else if( type == Context::CUDA )
     {
         stream << "CUDA";
     }
-    else if ( type == Context::OpenCL )
+    else if( type == Context::OpenCL )
     {
         stream << "OpenCL";
     }
-    else if ( type == Context::MIC )
+    else if( type == Context::MIC )
     {
         stream << "MIC";
     }
@@ -122,6 +122,7 @@ std::ostream& operator<<( std::ostream& stream, const ContextType type )
     {
         stream << (int) type;
     }
+
     return stream;
 }
 
@@ -144,7 +145,7 @@ void Context::enable( const char* file, int line ) const
 {
     LAMA_LOG_INFO( logger, file << "( line = " << line << ") : enable " << *this )
 
-    if ( mEnabled )
+    if( mEnabled )
     {
         LAMA_LOG_INFO( logger,
                        "Enable " << *this << " at " << file << " ( line = " << line << " )" << ", already enabled at " << mFile << " ( line = " << mLine << " )" )
@@ -161,7 +162,7 @@ void Context::disable( const char* file, int line ) const
 {
     LAMA_LOG_INFO( logger, file << "( line = " << line << ") : disable " << *this )
 
-    if ( !mEnabled )
+    if( !mEnabled )
     {
         LAMA_LOG_INFO( logger,
                        "Disable " << *this << " at " << file << " ( line = " << line << " )" << ", context was not enabled before" )
@@ -175,8 +176,8 @@ void Context::disable( const char* file, int line ) const
 /* ---------------------------------------------------------------------------------*/
 
 Context::ContextData::ContextData( ContextPtr d )
-    : context( d ), pointer( 0 ), size( 0 ), allocated( false ), valid( false ), pinned( false ), mCleanFunktion(
-        0 )
+                : context( d ), pointer( 0 ), size( 0 ), allocated( false ), valid( false ), pinned( false ), mCleanFunktion(
+                                0 )
 {
     // there a no read/write locks on the context
 
@@ -203,7 +204,7 @@ void Context::ContextData::allocate( const size_t size )
 
     context->allocate( *this, size );
 
-    if ( !pointer )
+    if( !pointer )
     {
         LAMA_THROWEXCEPTION( "Could not allocate ContextData of size = " << size << " on " << *context )
     }
@@ -225,7 +226,7 @@ void Context::ContextData::setRef( void* reference, const size_t size )
 
     allocated = false;
 
-    if ( !pointer && size )
+    if( !pointer && size )
     {
         LAMA_THROWEXCEPTION( "NULL pointer cannot set be as reference, size = " << size )
     }
@@ -244,16 +245,16 @@ void Context::ContextData::free()
     LAMA_ASSERT_DEBUG( 0 == lock[Read], "cannot free read locked data on " << *context )
     LAMA_ASSERT_DEBUG( 0 == lock[Write], "cannot free write locked data on " << *context )
 
-    if ( context && pointer )
+    if( context && pointer )
     {
-        if ( mCleanFunktion )
+        if( mCleanFunktion )
         {
             mCleanFunktion( pointer );
         }
 
         pinned = false;
 
-        if ( allocated )
+        if( allocated )
         {
             context->free( pointer, size );
         }
@@ -299,7 +300,7 @@ void Context::ContextData::realloc( const size_t newSize, const size_t saveSize 
     void* oldPointer = pointer;
     size_t oldSize = size;
 
-    if ( saveSize <= 0 )
+    if( saveSize <= 0 )
     {
         context->free( pointer, size );
     }
@@ -308,7 +309,7 @@ void Context::ContextData::realloc( const size_t newSize, const size_t saveSize 
     context->allocate( *this, newSize );
     size = newSize;
 
-    if ( saveSize > 0 )
+    if( saveSize > 0 )
     {
         // copy the old entries in the new memory befree free of old memory
         context->memcpy( pointer, oldPointer, saveSize );

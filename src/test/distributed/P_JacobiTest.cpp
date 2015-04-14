@@ -2,7 +2,7 @@
  * @file P_JacobiTest.cpp
  *
  * @license
- * Copyright (c) 2009-2013
+ * Copyright (c) 2009-2015
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -62,7 +62,7 @@
 using namespace boost;
 using namespace lama;
 
-typedef boost::mpl::list<float,double> test_types;
+typedef boost::mpl::list<float, double> test_types;
 
 /* --------------------------------------------------------------------- */
 
@@ -73,7 +73,6 @@ struct P_JacobiTestConfig
     P_JacobiTestConfig()
     {
         mComm = CommunicatorFactory::get( "MPI" );
-
     }
 
     ~P_JacobiTestConfig()
@@ -92,62 +91,42 @@ template<typename MatrixType>
 void testSolveWithoutPreconditionMethod( ContextPtr loc )
 {
     typedef typename MatrixType::MatrixValueType ValueType;
-
     const IndexType N1 = 4;
     const IndexType N2 = 4;
-
     LAMA_LOG_INFO( logger, "Problem size = " << N1 << " x " << N2 );
-
     DefaultJacobi jacobiSolver( "JacobiTestSolver" );
-
     CSRSparseMatrix<ValueType> helpcoefficients;
     MatrixCreator<ValueType>::buildPoisson2D( helpcoefficients, 9, N1, N2 );
-
     // created matrix must have diagonal property
-
     BOOST_REQUIRE( helpcoefficients.hasDiagonalProperty() );
-
     MatrixType coefficients( helpcoefficients );
-
     // converted matrix must have diagonal property
-
     BOOST_REQUIRE( coefficients.hasDiagonalProperty() );
-
     DistributionPtr dist( new BlockDistribution( coefficients.getNumRows(), mComm ) );
     coefficients.redistribute( dist, dist );
-
     // converted redistributed matrix must have kept the diagonal property
-
     BOOST_REQUIRE( coefficients.hasDiagonalProperty() );
-
     coefficients.setContext( loc );
-
     DenseVector<ValueType> solution( dist, 2.0 );
-
     const DenseVector<ValueType> exactSolution( dist, 1.0 );
     DenseVector<ValueType> rhs( dist, 1.0 );
     rhs = coefficients * exactSolution;
-
     //initialize
     IndexType expectedIterations = 100;
     CriterionPtr criterion( new IterationCount( expectedIterations ) );
     jacobiSolver.setStoppingCriterion( criterion );
     jacobiSolver.initialize( coefficients );
-
     LAMA_LOG_INFO( logger, "jacobiSolver::coefficients = " << coefficients );
-
     jacobiSolver.solve( solution, rhs );
-
     BOOST_CHECK_EQUAL( expectedIterations, jacobiSolver.getIterationCount() );
-
     DenseVector<ValueType> diff( solution - exactSolution );
     Scalar s = maxNorm( diff );
     LAMA_LOG_INFO( logger, "max norm ( solution - exactSolution ) = " << s.getValue<ValueType>() );
     BOOST_CHECK( s.getValue<ValueType>() < 1E-6 );
 }
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( testSolveWithoutPreconditioning, ValueType, test_types ) {
-
+BOOST_AUTO_TEST_CASE_TEMPLATE( testSolveWithoutPreconditioning, ValueType, test_types )
+{
     CONTEXTLOOP()
     {
         GETCONTEXT( context );
@@ -166,52 +145,39 @@ template<typename MatrixType>
 void testSolveWithPreconditionMethod( ContextPtr loc )
 {
     typedef typename MatrixType::MatrixValueType ValueType;
-
 //    LoggerPtr slogger( new CommonLogger(
 //        "<SOR>: ",
 //        lama::LogLevel::solverInformation,
 //        lama::LoggerWriteBehaviour::toConsoleOnly,
 //        std::auto_ptr<Timer>( new Timer() ) ) );
-
-    DefaultJacobi jacobiSolver( "JacobiTestSolver"/*, slogger */);
-
+    DefaultJacobi jacobiSolver( "JacobiTestSolver"/*, slogger */ );
     const IndexType N1 = 4;
     const IndexType N2 = 4;
-
     LAMA_LOG_INFO( logger, "Problem size = " << N1 << " x " << N2 );
-
     CSRSparseMatrix<ValueType> coefficients;
     MatrixCreator<ValueType>::buildPoisson2D( coefficients, 9, N1, N2 );
-
     DistributionPtr dist( new BlockDistribution( coefficients.getNumRows(), mComm ) );
     coefficients.redistribute( dist, dist );
     coefficients.setContext( loc );
-
     DenseVector<ValueType> solution( dist, 1.0 );
     const DenseVector<ValueType> exactSolution( dist, 2.0 );
     DenseVector<ValueType> rhs( dist, 0.0 );
     rhs = coefficients * exactSolution;
-
     IndexType expectedIterations = 100;
     CriterionPtr criterion( new IterationCount( expectedIterations ) );
     jacobiSolver.setStoppingCriterion( criterion );
-
     SolverPtr preconditioner( new TrivialPreconditioner( "Trivial preconditioner" ) );
     jacobiSolver.setPreconditioner( preconditioner );
-
     jacobiSolver.initialize( coefficients );
     jacobiSolver.solve( solution, rhs );
-
     BOOST_CHECK_EQUAL( expectedIterations, jacobiSolver.getIterationCount() );
-
     DenseVector<ValueType> diff( solution - exactSolution );
     Scalar s = maxNorm( diff );
     BOOST_CHECK( s.getValue<ValueType>() < 1E-6 );
-
 }
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( testSolveWithPrecondition, ValueType, test_types ) {
-
+BOOST_AUTO_TEST_CASE_TEMPLATE( testSolveWithPrecondition, ValueType, test_types )
+{
     CONTEXTLOOP()
     {
         GETCONTEXT( context );

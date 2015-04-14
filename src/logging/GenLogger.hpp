@@ -2,7 +2,7 @@
  * @file GenLogger.hpp
  *
  * @license
- * Copyright (c) 2009-2013
+ * Copyright (c) 2009-2015
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -125,7 +125,7 @@ private:
      \return number of evaluated entries in the file.
      */
 
-    static int readConfig( const char *filename );
+    static int readConfig( const char* filename );
 
     static GenLogger* rootLogger; //!< pointer to root logger for all GenLoggers
 

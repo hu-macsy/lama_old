@@ -2,7 +2,7 @@
  * @file P_SORTest.cpp
  *
  * @license
- * Copyright (c) 2009-2013
+ * Copyright (c) 2009-2015
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -65,7 +65,7 @@
 using namespace boost;
 using namespace lama;
 
-typedef boost::mpl::list<float,double> test_types;
+typedef boost::mpl::list<float, double> test_types;
 //typedef boost::mpl::list<float>  test_types;
 
 /* --------------------------------------------------------------------- */
@@ -96,47 +96,33 @@ template<typename MatrixType>
 void testSolveMethod( ContextPtr loc )
 {
     typedef typename MatrixType::MatrixValueType ValueType;
-
     SOR sor( "SORTestSolver" );
-
     const IndexType N1 = 8;
     const IndexType N2 = 8;
-
     LAMA_LOG_INFO( logger, "Problem size = " << N1 << " x " << N2 );
-
     CSRSparseMatrix<ValueType> helpcoefficients;
     MatrixCreator<ValueType>::buildPoisson2D( helpcoefficients, 9, N1, N2 );
-
     LAMA_LOG_INFO( logger, "Poisson 2D CSR matrix = " << helpcoefficients );
-
     MatrixType coefficients( helpcoefficients );
-
     // redistribution of coefficient: does not keep diagonal property for DIA
-
     DistributionPtr dist( new BlockDistribution( helpcoefficients.getNumRows(), comm ) );
     coefficients.redistribute( dist, dist );
     coefficients.setContext( loc );
-
     LAMA_LOG_INFO( logger, "SOR: coefficients = " << coefficients );
-
     const DenseVector<ValueType> exactSolution( dist, static_cast<ValueType>( 1.1 ) );
     DenseVector<ValueType> rhs( dist );
     rhs = coefficients * exactSolution;
     DenseVector<ValueType> solution( dist, 3.0 );
-
     sor.initialize( coefficients );
-
     IndexType expectedIterations = 120;
     CriterionPtr criterion( new IterationCount( expectedIterations ) );
     sor.setStoppingCriterion( criterion );
     sor.solve( solution, rhs );
     BOOST_CHECK_EQUAL( expectedIterations, sor.getIterationCount() );
-
     DenseVector<ValueType> diff( exactSolution );
     diff = solution - exactSolution;
     Scalar s = maxNorm( diff );
     LAMA_LOG_INFO( logger, "maxNorm ( solution - exactSolutino ) = " << s );
-
     //TODO: Check bad value of MaxNorm 0.65
     BOOST_CHECK( s.getValue<ValueType>() < 0.65 );
 }
@@ -163,75 +149,55 @@ template<typename MatrixType>
 void testSolvePoissonMethod()
 {
     typedef typename MatrixType::MatrixValueType ValueType;
-
     double omega;
     double omegaMin = 0.3;
     double omegaMax = 0.7;
     double omegaStep = 0.1;
-
     const IndexType N1 = 4;
     const IndexType N2 = 4;
-
     LAMA_LOG_INFO( logger, "Problem size = " << N1 << " x " << N2 );
-
     int n = static_cast<int>( ( omegaMax - omegaMin ) / omegaStep + 1 );
-
     n = 1;
 
     for ( int i = 0; i < n; i++ )
     {
         omega = omegaMin + omegaStep * i;
-
         LAMA_LOG_INFO( logger, "run with omega = " << omega );
-
         //Optional Logger; deactivated for testruns
 //        LoggerPtr slogger( new CommonLogger(
 //            "<SOR>: ",
 //            lama::LogLevel::solverInformation,
 //            lama::LoggerWriteBehaviour::toConsoleOnly,
 //            std::auto_ptr<Timer>( new Timer() ) ) );
-
-        SOR sor( "SORTest", omega /*, slogger*/);
-
+        SOR sor( "SORTest", omega /*, slogger*/ );
         // create Poisson2D matrix, only for CSR format available
-
         CSRSparseMatrix<ValueType> csrCoefficients;
         MatrixCreator<ValueType>::buildPoisson2D( csrCoefficients, 9, N1, N2 );
-
         // copy constructur, converts to format of MatrixType
-
         MatrixType coefficients( csrCoefficients );
-
         LAMA_LOG_INFO( logger, "coefficients for SOR: " << csrCoefficients );
-
         // DistributionPtr dist( new BlockDistribution( coefficients.getNumRows(), comm) );
         // coefficients.redistribute( dist, dist );
-
         DenseVector<ValueType> solution( coefficients.getDistributionPtr(), 3.0 );
         DenseVector<ValueType> exactSolution( coefficients.getDistributionPtr(), 1.0 );
-
         DenseVector<ValueType> rhs( coefficients.getDistributionPtr(), 1.0 );
-
         rhs = coefficients * exactSolution;
         sor.initialize( coefficients );
-
         //IterationCount
         IndexType expectedIterations = 100;
         CriterionPtr criterion( new IterationCount( expectedIterations ) );
         sor.setStoppingCriterion( criterion ); //what kind of criterion is possible? How can I implement it?
-
         sor.solve( solution, rhs );
-
         BOOST_CHECK_EQUAL( expectedIterations, sor.getIterationCount() );
         //Asserts that expectedIterations and made iterations are equals.
-
         DenseVector<ValueType> diff = solution - exactSolution;
         Scalar solutionPrecision = maxNorm( diff );
         BOOST_CHECK( solutionPrecision.getValue<ValueType>() < 1E-2 );
     }
 }
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( testSolvePoisson, ValueType, test_types ) {
+BOOST_AUTO_TEST_CASE_TEMPLATE( testSolvePoisson, ValueType, test_types )
+{
 // @todo: Test does not work with general distribution
 // testSolvePoissonMethod< CSRSparseMatrix<ValueType> >();
 // testSolvePoissonMethod< ELLSparseMatrix<ValueType> >();
@@ -246,69 +212,50 @@ template<typename MatrixType>
 void testSolve2Method( ContextPtr loc )
 {
     typedef typename MatrixType::MatrixValueType ValueType;
-
     double omega;
     double omegaMin = 0.8;
     double omegaMax = 1.0;
     double omegaStep = 0.05;
-
     int n = static_cast<int>( std::floor( ( omegaMax - omegaMin ) / omegaStep + 1 ) );
-
     const IndexType N1 = 4;
     const IndexType N2 = 4;
-
     LAMA_LOG_INFO( logger, "Problem size = " << N1 << " x " << N2 );
 
     for ( int i = 0; i < n; i++ )
     {
         omega = omegaMin + omegaStep * i;
-
         LAMA_LOG_INFO( logger, "iterate i = " << i << " of " << n << " iterations" << ", omega = " << omega );
-
 //        LoggerPtr slogger( new CommonLogger(
 //            "<SOR>: ",
 //            lama::LogLevel::solverInformation,
 //            lama::LoggerWriteBehaviour::toConsoleOnly,
 //            std::auto_ptr<Timer>( new Timer() ) ) );
-
-        SOR sor( "SORTest", omega/*, slogger */);
-
+        SOR sor( "SORTest", omega/*, slogger */ );
         CSRSparseMatrix<ValueType> csrCoefficients;
         MatrixCreator<ValueType>::buildPoisson2D( csrCoefficients, 9, N1, N2 );
         DistributionPtr dist( new BlockDistribution( csrCoefficients.getNumRows(), comm ) );
         csrCoefficients.redistribute( dist, dist );
-
         // Attention: csrCoefficients has a general distribution, so redistribution to
         // block distribution is not really necessary, but more efficient.
         // Nevertheless: hangs with 3 processors if we do not redistribute
-
         // Attention2: we could apply redistrubte only to coefficients and not to
         // to csrCoefficients. But then the DIA format has problems as it does
         // not keep the diagonal property.
-
         MatrixType coefficients( csrCoefficients );
         coefficients.setContext( loc );
-
         DenseVector<ValueType> rhs( dist );
         DenseVector<ValueType> exactSolution( dist, 1.0 );
         DenseVector<ValueType> solution( dist, 2.0 );
-
         rhs = coefficients * exactSolution;
-
         sor.initialize( coefficients );
-
         IndexType expectedIterations = 25;
         CriterionPtr criterion( new IterationCount( expectedIterations ) );
         sor.setStoppingCriterion( criterion );
-
         //SOLVING
         sor.solve( solution, rhs );
         BOOST_CHECK_EQUAL( expectedIterations, sor.getIterationCount() );
-
         DenseVector<ValueType> diff = solution - exactSolution;
-
         Scalar solutionPrecision = maxNorm( diff );
-
         BOOST_CHECK( solutionPrecision.getValue<ValueType>() < 0.01 );
     }
 }

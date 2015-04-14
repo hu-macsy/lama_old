@@ -2,7 +2,7 @@
  * @file HostContext.cpp
  *
  * @license
- * Copyright (c) 2009-2013
+ * Copyright (c) 2009-2015
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -49,7 +49,7 @@ namespace lama
 /* ------------------------------------------------------------------------- */
 
 HostContext::HostContext()
-    : Context( Host )
+                : Context( Host )
 {
 }
 
@@ -63,14 +63,14 @@ bool HostContext::canUseData( const Context& other ) const
 {
     // same object by pointer can always use same data.
 
-    if ( this == &other )
+    if( this == &other )
     {
         return true;
     }
 
     // different Host devices can use same data
 
-    if ( other.getType() == Host )
+    if( other.getType() == Host )
     {
         return true;
         // equal if other is HostContext and has same host type

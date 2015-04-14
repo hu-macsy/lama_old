@@ -2,7 +2,7 @@
  * @file BLAS_BLAS1.cpp
  *
  * @license
- * Copyright (c) 2009-2013
+ * Copyright (c) 2009-2015
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -97,19 +97,24 @@ void wrapperScal( const int, const LongDouble, LongDouble*, const int )
 /* ---------------------------------------------------------------------------------------*/
 
 template<typename ValueType>
-void BLAS_BLAS1::scal( const IndexType n, const ValueType alpha, ValueType* x, const IndexType incX, SyncToken* syncToken )
+void BLAS_BLAS1::scal(
+    const IndexType n,
+    const ValueType alpha,
+    ValueType* x,
+    const IndexType incX,
+    SyncToken* syncToken )
 {
-	if ( incX <= 0 )
-	{
-		return;
-	}
+    if( incX <= 0 )
+    {
+        return;
+    }
 
-	LAMA_REGION( "BLAS.BLAS1.scal" )
+    LAMA_REGION( "BLAS.BLAS1.scal" )
 
-    LAMA_LOG_DEBUG( logger, "scal<" << Scalar::getType<ValueType>() << " n = " << n
-                    << ", alpha = " << alpha << ", x = " << x << ", incX = " << incX )
+    LAMA_LOG_DEBUG( logger,
+                    "scal<" << Scalar::getType<ValueType>() << " n = " << n << ", alpha = " << alpha << ", x = " << x << ", incX = " << incX )
 
-    if ( syncToken )
+    if( syncToken )
     {
         LAMA_LOG_WARN( logger, "no asynchronous execution for openmp possible at this level." )
     }
@@ -160,22 +165,22 @@ LongDouble wrapperNrm2( const int, const LongDouble*, const int )
 template<typename ValueType>
 ValueType BLAS_BLAS1::nrm2( const IndexType n, const ValueType* x, const IndexType incX, SyncToken* syncToken )
 {
-    if ( incX <= 0 )
+    if( incX <= 0 )
     {
-    	return static_cast<ValueType>( 0 );
+        return static_cast<ValueType>( 0 );
     }
 
     LAMA_REGION( "BLAS.BLAS1.nrm2" )
 
-    LAMA_LOG_DEBUG( logger, "nrm2<" << Scalar::getType<ValueType>() << ">, n = " << n
-                    << ", x = " << x << ", incX = " << incX )
+    LAMA_LOG_DEBUG( logger,
+                    "nrm2<" << Scalar::getType<ValueType>() << ">, n = " << n << ", x = " << x << ", incX = " << incX )
 
-    if ( syncToken )
+    if( syncToken )
     {
         LAMA_LOG_WARN( logger, "no asynchronous execution for openmp possible at this level." )
     }
 
-    return wrapperNrm2( n, x, incX);
+    return wrapperNrm2( n, x, incX );
 }
 
 /* ---------------------------------------------------------------------------------------*/
@@ -223,15 +228,15 @@ ValueType BLAS_BLAS1::asum( const IndexType n, const ValueType* x, const IndexTy
 {
     LAMA_REGION( "BLAS.BLAS1.asum" )
 
-    LAMA_LOG_DEBUG( logger, "asum<" << Scalar::getType<ValueType>() << ">,  n = "
-                    << n << ", x = " << x << ", incX = " << incX )
+    LAMA_LOG_DEBUG( logger,
+                    "asum<" << Scalar::getType<ValueType>() << ">,  n = " << n << ", x = " << x << ", incX = " << incX )
 
-    if ( syncToken )
+    if( syncToken )
     {
         LAMA_LOG_WARN( logger, "asynchronous execution of BLAS1:asum not supported, do it synchronously." )
     }
 
-    if ( incX <= 0 )
+    if( incX <= 0 )
     {
         return static_cast<ValueType>( 0 );
     }
@@ -244,7 +249,6 @@ ValueType BLAS_BLAS1::asum( const IndexType n, const ValueType* x, const IndexTy
 /* ---------------------------------------------------------------------------------------*/
 
 // Note: implicit conversion from int to IndexType and vice versa is done here
-
 template<typename ValueType>
 static IndexType wrapperIamax( const int n, const ValueType* x, const int incX );
 
@@ -284,10 +288,10 @@ IndexType BLAS_BLAS1::iamax( const IndexType n, const ValueType* x, const IndexT
 {
     LAMA_REGION( "BLAS.BLAS1.iamax" )
 
-    LAMA_LOG_INFO( logger, "iamax<" << Scalar::getType<ValueType>() << ">, "
-                   << "n = " << n << ", x = " << x << ", incX = " << incX )
+    LAMA_LOG_INFO( logger,
+                   "iamax<" << Scalar::getType<ValueType>() << ">, " << "n = " << n << ", x = " << x << ", incX = " << incX )
 
-    if ( syncToken )
+    if( syncToken )
     {
         LAMA_LOG_WARN( logger, "no asynchronous execution for openmp possible at this level." )
     }
@@ -300,7 +304,7 @@ IndexType BLAS_BLAS1::iamax( const IndexType n, const ValueType* x, const IndexT
 /* ---------------------------------------------------------------------------------------*/
 
 template<typename ValueType>
-static inline void wrapperSwap( const int n, ValueType* x, const int incX, ValueType* y, const int incY  );
+static inline void wrapperSwap( const int n, ValueType* x, const int incX, ValueType* y, const int incY );
 
 template<>
 void wrapperSwap( const int n, float* x, const int incX, float* y, const int incY )
@@ -343,16 +347,15 @@ void BLAS_BLAS1::swap(
 {
     LAMA_REGION( "BLAS.BLAS1.swap" )
 
-    LAMA_LOG_DEBUG( logger, "iamax<" << Scalar::getType<ValueType>() << ">"
-                    << ", n = " << n << ", x = " << x << ", incX = " << incX 
-                    << ", y = " << y << ", incY = " << incY )
+    LAMA_LOG_DEBUG( logger,
+                    "iamax<" << Scalar::getType<ValueType>() << ">" << ", n = " << n << ", x = " << x << ", incX = " << incX << ", y = " << y << ", incY = " << incY )
 
-	if ( (incX <= 0) || (incY <= 0) )
-	{
-		return;
-	}
+    if( ( incX <= 0 ) || ( incY <= 0 ) )
+    {
+        return;
+    }
 
-    if ( syncToken )
+    if( syncToken )
     {
         LAMA_LOG_WARN( logger, "no asynchronous execution for openmp possible at this level." )
     }
@@ -365,7 +368,7 @@ void BLAS_BLAS1::swap(
 /* ---------------------------------------------------------------------------------------*/
 
 template<typename ValueType>
-static inline void wrapperCopy( const int n, const ValueType* x, const int incX, ValueType* y, const int incY  );
+static inline void wrapperCopy( const int n, const ValueType* x, const int incX, ValueType* y, const int incY );
 
 template<>
 void wrapperCopy( const int n, const float* x, const int incX, float* y, const int incY )
@@ -408,15 +411,15 @@ void BLAS_BLAS1::copy(
 {
     LAMA_REGION( "BLAS.BLAS1.copy" )
 
-    LAMA_LOG_DEBUG( logger, "copy<" << Scalar::getType<ValueType>() << ">, "
-                    << "n = " << n << ", x = " << x << ", incX = " << incX << ", y = " << y << ", incY = " << incY )
+    LAMA_LOG_DEBUG( logger,
+                    "copy<" << Scalar::getType<ValueType>() << ">, " << "n = " << n << ", x = " << x << ", incX = " << incX << ", y = " << y << ", incY = " << incY )
 
-	if ( (incX <= 0) || (incY <= 0) )
-	{
-		return;
-	}
+    if( ( incX <= 0 ) || ( incY <= 0 ) )
+    {
+        return;
+    }
 
-    if ( syncToken )
+    if( syncToken )
     {
         LAMA_LOG_WARN( logger, "no asynchronous execution for openmp possible at this level." )
     }
@@ -431,7 +434,13 @@ void BLAS_BLAS1::copy(
 /* ---------------------------------------------------------------------------------------*/
 
 template<typename ValueType>
-static inline void wrapperAxpy( const int n, ValueType alpha, const ValueType* x, const int incX, ValueType* y, const int incY  );
+static inline void wrapperAxpy(
+    const int n,
+    ValueType alpha,
+    const ValueType* x,
+    const int incX,
+    ValueType* y,
+    const int incY );
 
 template<>
 void wrapperAxpy( const int n, float alpha, const float* x, const int incX, float* y, const int incY )
@@ -446,14 +455,26 @@ void wrapperAxpy( const int n, double alpha, const double* x, const int incX, do
 }
 
 template<>
-void wrapperAxpy( const int n, ComplexFloat alpha, const ComplexFloat* x, const int incX, ComplexFloat* y, const int incY )
+void wrapperAxpy(
+    const int n,
+    ComplexFloat alpha,
+    const ComplexFloat* x,
+    const int incX,
+    ComplexFloat* y,
+    const int incY )
 {
     // Attention: alpha is here passed by a pointer
     cblas_caxpy( n, &alpha, x, incX, y, incY );
 }
 
 template<>
-void wrapperAxpy( const int n, ComplexDouble alpha, const ComplexDouble* x, const int incX, ComplexDouble* y, const int incY )
+void wrapperAxpy(
+    const int n,
+    ComplexDouble alpha,
+    const ComplexDouble* x,
+    const int incX,
+    ComplexDouble* y,
+    const int incY )
 {
     // Attention: alpha is here passed by a pointer
     cblas_zaxpy( n, &alpha, x, incX, y, incY );
@@ -477,16 +498,15 @@ void BLAS_BLAS1::axpy(
 {
     LAMA_REGION( "BLAS.BLAS1.axpy" )
 
-    LAMA_LOG_DEBUG( logger, "axpy<" << Scalar::getType<ValueType>() << ">, "
-                    << "n = " << n << ", alpha = " << alpha << ", x = " << x << ", incX = " 
-                    << incX << ", y = " << y << ", incY = " << incY )
+    LAMA_LOG_DEBUG( logger,
+                    "axpy<" << Scalar::getType<ValueType>() << ">, " << "n = " << n << ", alpha = " << alpha << ", x = " << x << ", incX = " << incX << ", y = " << y << ", incY = " << incY )
 
-	if ( (incX <= 0) || (incY <= 0) )
-	{
-		return;
-	}
+    if( ( incX <= 0 ) || ( incY <= 0 ) )
+    {
+        return;
+    }
 
-    if ( syncToken )
+    if( syncToken )
     {
         LAMA_LOG_WARN( logger, "no asynchronous execution for openmp possible at this level." )
     }
@@ -499,7 +519,12 @@ void BLAS_BLAS1::axpy(
 /* ---------------------------------------------------------------------------------------*/
 
 template<typename ValueType>
-static inline ValueType wrapperDot( const int n, const ValueType* x, const int incX, const ValueType* y, const int incY  );
+static inline ValueType wrapperDot(
+    const int n,
+    const ValueType* x,
+    const int incX,
+    const ValueType* y,
+    const int incY );
 
 template<>
 float wrapperDot( const int n, const float* x, const int incX, const float* y, const int incY )
@@ -547,15 +572,15 @@ ValueType BLAS_BLAS1::dot(
 {
     LAMA_REGION( "BLAS.BLAS1.dot" )
 
-	LAMA_LOG_DEBUG( logger, "dot<" << Scalar::getType<ValueType>() << ">, "
-                    << "n = " << n << ", x = " << x << ", incX = " << incX << ", y = " << y << ", incY = " << incY )
+    LAMA_LOG_DEBUG( logger,
+                    "dot<" << Scalar::getType<ValueType>() << ">, " << "n = " << n << ", x = " << x << ", incX = " << incX << ", y = " << y << ", incY = " << incY )
 
-	if ( (incX <= 0) || (incY <= 0) )
-	{
-		return static_cast<ValueType>( 0 );
-	}
+    if( ( incX <= 0 ) || ( incY <= 0 ) )
+    {
+        return static_cast<ValueType>( 0 );
+    }
 
-    if ( syncToken )
+    if( syncToken )
     {
         LAMA_LOG_WARN( logger, "no asynchronous execution for openmp possible at this level." )
     }
@@ -570,19 +595,20 @@ ValueType BLAS_BLAS1::dot(
 void BLAS_BLAS1::setInterface( BLASInterface& BLAS )
 {
     bool useBLAS = false;
-    int  level   = 0;
+    int level = 0;
 
     useBLAS = Settings::getEnvironment( level, "LAMA_USE_BLAS" );
 
-    if ( !useBLAS || ( level <= 0 ) )
+    if( !useBLAS || ( level <= 0 ) )
     {
         LAMA_LOG_INFO( logger, "BLAS1 wrapper routines for Host Interface are disabled (LAMA_USE_BLAS not set or 0)" )
         return;
     }
-    else if ( level > 1 )
+    else if( level > 1 )
     {
         // only level 2 or level 3 wrappers might be used
-        LAMA_LOG_INFO( logger, "BLAS1 wrapper routines for Host Interface are disabled (LAMA_USE_BLAS = " << level << ")" )
+        LAMA_LOG_INFO( logger,
+                       "BLAS1 wrapper routines for Host Interface are disabled (LAMA_USE_BLAS = " << level << ")" )
         return;
     }
 
@@ -590,7 +616,7 @@ void BLAS_BLAS1::setInterface( BLASInterface& BLAS )
 
     // REGISTER1: give these routines priority in case of overriding
 
-    // Note: macro takes advantage of same name for routines and type definitions 
+    // Note: macro takes advantage of same name for routines and type definitions
     //       ( e.g. routine CUDABLAS1::sum<ValueType> is set for BLAS::BLAS1::sum variable
 
 #define LAMA_BLAS1_REGISTER(z, I, _)                                    \
@@ -602,7 +628,7 @@ void BLAS_BLAS1::setInterface( BLASInterface& BLAS )
     LAMA_INTERFACE_REGISTER1_T( BLAS, copy, ARITHMETIC_TYPE##I )        \
     LAMA_INTERFACE_REGISTER1_T( BLAS, axpy, ARITHMETIC_TYPE##I )        \
     LAMA_INTERFACE_REGISTER1_T( BLAS, dot, ARITHMETIC_TYPE##I )         \
-     
+
     BOOST_PP_REPEAT( ARITHMETIC_TYPE_CNT, LAMA_BLAS1_REGISTER, _ )
 
 #undef LAMA_BLAS1_REGISTER

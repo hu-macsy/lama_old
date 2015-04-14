@@ -2,7 +2,7 @@
  * @file CSRStorage.cpp
  *
  * @license
- * Copyright (c) 2009-2013
+ * Copyright (c) 2009-2015
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -48,19 +48,16 @@ LAMA_LOG_DEF_TEMPLATE_LOGGER( template<typename ValueType>, WriteAccess<ValueTyp
 
 template<typename ValueType>
 WriteAccess<ValueType>::WriteAccess( LAMAArray<ValueType>& view, ContextPtr context, const bool keep /* = true*/)
-    : mArrayView( &view ), mIndex( std::numeric_limits<size_t>::max() )
+                : mArrayView( &view ), mIndex( std::numeric_limits<size_t>::max() )
 {
-	if( view.constFlag )
-	{
-		LAMA_THROWEXCEPTION( "write on const array not allowed" )
-	}
+    if( view.constFlag )
+    {
+        LAMA_THROWEXCEPTION( "write on const array not allowed" )
+    }
 
     LAMA_LOG_DEBUG( logger, "acquire write access for " << *mArrayView << " at " << *context << ", keep = " << keep )
-
     mIndex = mArrayView->acquireWriteAccess( context, keep );
-
     mData = mArrayView->get( mIndex );
-
     LAMA_LOG_TRACE( logger, "mData = " << mData << ", mIndex = " << mIndex )
 }
 
@@ -70,43 +67,41 @@ WriteAccess<ValueType>::WriteAccess(
     ContextPtr context,
     const IndexType size,
     const bool keep /* = false */)
-    : mArrayView( &array), mIndex( std::numeric_limits<size_t>::max() )
+
+                : mArrayView( &array ), mIndex( std::numeric_limits<size_t>::max() )
+
 {
-	if( array.constFlag )
-	{
-		LAMA_THROWEXCEPTION( "write on const array not allowed" )
-	}
+    if( array.constFlag )
+    {
+        LAMA_THROWEXCEPTION( "write on const array not allowed" )
+    }
+
     LAMA_LOG_DEBUG( logger,
                     "acquire write access for " << *mArrayView << " at " << *context << ", size = " << size << ", keep = " << keep )
-
     mIndex = mArrayView->acquireWriteAccess( context, keep );
 
-    if ( !keep )
+    if( !keep )
     {
         mArrayView->clear( mIndex );
     }
 
     mArrayView->resize( mIndex, size );
-
     mData = mArrayView->get( mIndex );
-
     LAMA_LOG_TRACE( logger, "mData = " << mData << ", mIndex = " << mIndex )
 }
 
 template<typename ValueType>
 WriteAccess<ValueType>::WriteAccess( LAMAArray<ValueType>& array )
-    : mArrayView( &array ), mIndex( std::numeric_limits<size_t>::max() )
+                : mArrayView( &array ), mIndex( std::numeric_limits<size_t>::max() )
 {
-	if( array.constFlag )
-	{
-		LAMA_THROWEXCEPTION( "write on const array not allowed" )
-	}
+    if( array.constFlag )
+    {
+        LAMA_THROWEXCEPTION( "write on const array not allowed" )
+    }
+
     LAMA_LOG_DEBUG( logger, "acquire write access for " << *mArrayView << " at first valid context " )
-
     mIndex = mArrayView->acquireWriteAccess();
-
     mData = mArrayView->get( mIndex );
-
     LAMA_LOG_TRACE( logger, "mData = " << mData << ", mIndex = " << mIndex )
 }
 
@@ -120,13 +115,12 @@ WriteAccess<ValueType>::~WriteAccess()
 template<typename ValueType>
 ValueType* WriteAccess<ValueType>::get()
 {
-    if ( !mArrayView )
+    if( !mArrayView )
     {
         LAMA_THROWEXCEPTION( "illegal get(): access has already been released." )
     }
 
     LAMA_LOG_TRACE( logger, "mData = " << mData )
-
     return mData;
 }
 
@@ -134,7 +128,6 @@ template<typename ValueType>
 void WriteAccess<ValueType>::clear()
 {
     LAMA_ASSERT_ERROR( mArrayView, "WriteAccess has already been released." )
-
     mArrayView->clear( mIndex );
     mData = 0;
     LAMA_LOG_DEBUG( logger, "cleared " << *mArrayView )
@@ -144,11 +137,8 @@ template<typename ValueType>
 void WriteAccess<ValueType>::resize( const IndexType newSize )
 {
     LAMA_ASSERT_ERROR( mArrayView, "WriteAccess has already been released." )
-
     // do not log before check of mArrayView
-
     LAMA_LOG_DEBUG( logger, "resize " << *mArrayView << " to new size " << newSize )
-
     mArrayView->resize( mIndex, newSize );
     mData = mArrayView->get( mIndex );
     LAMA_LOG_TRACE( logger, "mData = " << mData )
@@ -158,9 +148,7 @@ template<typename ValueType>
 void WriteAccess<ValueType>::reserve( const IndexType capacity )
 {
     LAMA_ASSERT_ERROR( mArrayView, "WriteAccess has already been released." )
-
     LAMA_LOG_DEBUG( logger, "reserve " << *mArrayView << " to new capacity " << capacity )
-
     mArrayView->reserve( mIndex, capacity, true ); // copy = true for old data
     mData = mArrayView->get( mIndex );
     LAMA_LOG_TRACE( logger, "mData = " << mData )
@@ -170,24 +158,25 @@ template<typename ValueType>
 IndexType WriteAccess<ValueType>::capacity() const
 {
     LAMA_ASSERT_ERROR( mArrayView, "WriteAccess has already been released." )
-
     return mArrayView->capacity( mIndex );
 }
 
 template<typename ValueType>
 void WriteAccess<ValueType>::release()
 {
-    if ( mArrayView )
+    if( mArrayView )
     {
         LAMA_LOG_DEBUG( logger, "release write access for " << *mArrayView )
         //LOG_DEBUG(logger, "release write access for " << *mArray << " at " << *mArray->mContextData[mIndex].context);
         mArrayView->releaseWriteAccess( mIndex );
         //delete mArrayView;
     }
+
     else
     {
         LAMA_LOG_DEBUG( logger, "release write access for an already released LAMAArray" )
     }
+
     mArrayView = 0;
     mData = 0;
     mIndex = std::numeric_limits<size_t>::max();
@@ -197,10 +186,12 @@ template<typename ValueType>
 void WriteAccess<ValueType>::writeAt( std::ostream& stream ) const
 {
     stream << "WriteAccess to ";
-    if ( mArrayView )
+
+    if( mArrayView )
     {
         stream << *mArrayView;
     }
+
     else
     {
         stream << "already releases array view.";
@@ -210,9 +201,9 @@ void WriteAccess<ValueType>::writeAt( std::ostream& stream ) const
 // template instantiation for the supported data types
 
 #define LAMA_WRITE_ACCESS_INSTANTIATE(z, I, _)                           \
-template class LAMA_DLL_IMPORTEXPORT WriteAccess< ARRAY_TYPE##I >;
+    template class LAMA_DLL_IMPORTEXPORT WriteAccess< ARRAY_TYPE##I >;
 
-BOOST_PP_REPEAT( ARRAY_TYPE_CNT, LAMA_WRITE_ACCESS_INSTANTIATE, _)
+BOOST_PP_REPEAT( ARRAY_TYPE_CNT, LAMA_WRITE_ACCESS_INSTANTIATE, _ )
 
 #undef LAMA_WRITE_ACCESS_INSTANTIATE
 

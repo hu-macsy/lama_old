@@ -2,7 +2,7 @@
  * @file SparseMatrixTest.hpp
  *
  * @license
- * Copyright (c) 2009-2013
+ * Copyright (c) 2009-2015
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -40,12 +40,14 @@
 using namespace lama;
 
 static std::string sparsematrixtestclasses[] =
-{   "CSRSparseMatrixTest", "ELLSparseMatrixTest", "DIASparseMatrixTest", "JDSSParseMatrixTest", "COOSparseMatrixTest",
+{
+    "CSRSparseMatrixTest", "ELLSparseMatrixTest", "DIASparseMatrixTest", "JDSSParseMatrixTest", "COOSparseMatrixTest",
     "DenseMatrixTest1"
 };
 
 static std::string sparsematrixtestmethods[] =
-{   "clearTest", "cTorTest", "testConversions", "testMultiplication", "MatrixExpressionTest", "MatrixCtorExpressionTest",
+{
+    "clearTest", "cTorTest", "testConversions", "testMultiplication", "MatrixExpressionTest", "MatrixCtorExpressionTest",
     "writeAtTest", "scaleTest"
 };
 

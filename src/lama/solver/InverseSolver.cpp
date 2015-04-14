@@ -2,7 +2,7 @@
  * @file InverseSolver.cpp
  *
  * @license
- * Copyright (c) 2009-2013
+ * Copyright (c) 2009-2015
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -110,7 +110,7 @@ void InverseSolver::initialize( const Matrix& coefficients )
 const Matrix& InverseSolver::getInverse() const
 {
     LAMA_ASSERT_ERROR( getConstRuntime().mInverse, "inverse not available (no call of initialize before)" );
- 
+
     return *getConstRuntime().mInverse;
 }
 
@@ -135,13 +135,13 @@ void InverseSolver::setContext( ContextPtr context )
 {
     Solver::setContext( context );
 
-    if ( getRuntime().mInverse )
+    if( getRuntime().mInverse )
     {
         getRuntime().mInverse->setContext( mContext );
     }
     else
     {
-        LAMA_LOG_WARN( logger, "setContext on uninitialized solver")
+        LAMA_LOG_WARN( logger, "setContext on uninitialized solver" )
     }
 }
 

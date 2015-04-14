@@ -2,7 +2,7 @@
  * @file TraceRegionRecord.hpp
  *
  * @license
- * Copyright (c) 2009-2013
+ * Copyright (c) 2009-2015
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -101,7 +101,7 @@ private:
 
     /** Common routine used in all constructors. */
 
-    void enter( const char* regionName, const char* file, int lno );
+    void    enter( const char* regionName, const char* file, int lno );
 
     /** Each region timing keeps a shared pointer to the configuration.
      *  By this way it is guaranteed that timer information is only printed
@@ -120,6 +120,7 @@ private:
     double mStartTime;//!< walltime of region start
 };
 
-} // namespace
+}
+// namespace
 
 #endif // LAMA_TRACING_TRACE_REGION_RECORD_HPP_

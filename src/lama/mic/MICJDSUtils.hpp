@@ -2,7 +2,7 @@
  * @file MICJDSUtils.hpp
  *
  * @license
- * Copyright (c) 2009-2013
+ * Copyright (c) 2009-2015
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -200,13 +200,14 @@ private:
 
     LAMA_LOG_DECL_STATIC_LOGGER( logger )
 
-    static bool initialized;
+    static    bool initialized;
 
     static bool registerInterface();
 };
 
 /* --------------------------------------------------------------------------- */
 
-} // namespace lama
+}
+// namespace lama
 
 #endif //  LAMA_MIC_JDS_UTILS_HPP_

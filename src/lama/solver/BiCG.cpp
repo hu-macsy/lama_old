@@ -49,17 +49,17 @@ namespace lama
 LAMA_LOG_DEF_LOGGER( BiCG::logger, "Solver.IterativeSolver.BiCG" )
 
 BiCG::BiCG( const std::string& id )
-: CG( id )
+    : CG( id )
 {
 }
 
 BiCG::BiCG( const std::string& id, LoggerPtr logger )
-: CG( id, logger )
+    : CG( id, logger )
 {
 }
 
 BiCG::BiCG( const BiCG& other )
-: CG( other )
+    : CG( other )
 {
 }
 
@@ -110,7 +110,7 @@ void BiCG::iterate()
     Scalar alpha;
     Scalar beta;
 
-    if ( this->getIterationCount() == 0 )
+    if( this->getIterationCount() == 0 )
     {
         this->getResidual();
         this->getResidual2();
@@ -131,7 +131,7 @@ void BiCG::iterate()
     LAMA_LOG_INFO( logger, "Doing preconditioning." )
 
     //BiCG implementation start
-    if ( !mPreconditioner )
+    if( !mPreconditioner )
     {
         z = residual;
         z2 = residual2;
@@ -149,14 +149,14 @@ void BiCG::iterate()
     LAMA_LOG_DEBUG( logger, "pScalar = " << pScalar )
     LAMA_LOG_INFO( logger, "Calculating p." )
 
-    if ( this->getIterationCount() == 0 )
+    if( this->getIterationCount() == 0 )
     {
         p = z;
         p2 = z2;
     }
     else
     {
-        if ( lastPScalar.getValue<double>() == 0.0 )
+        if( lastPScalar.getValue<double>() == 0.0 )
         {
             beta = 0.0;
         }
@@ -185,7 +185,7 @@ void BiCG::iterate()
     const Scalar pqProd = p2.dotProduct( q );
     LAMA_LOG_DEBUG( logger, "pqProd = " << pqProd )
 
-    if ( pqProd.getValue<double>() == 0.0 )
+    if( pqProd.getValue<double>() == 0.0 )
     {
         alpha = 0.0;
     }
@@ -224,10 +224,11 @@ const Vector& BiCG::getResidual2() const
 
     //mLogger->logMessage(LogLevel::completeInformation,"Request for residual received.\n");
 
-    if ( runtime.mSolution.isDirty() || !runtime.mResidual2.get() )
+    if( runtime.mSolution.isDirty() || !runtime.mResidual2.get() )
     {
         LAMA_LOG_DEBUG( logger, "calculating residual of = " << &(runtime.mSolution.getConstReference()) )
-        if ( !runtime.mResidual2.get() )
+
+        if( !runtime.mResidual2.get() )
         {
             runtime.mResidual2.reset( runtime.mRhs->create() );
         }
@@ -237,7 +238,7 @@ const Vector& BiCG::getResidual2() const
         mLogger->startTimer( "ResidualTimer" );
 
         //*runtime.mResidual2 = ( *runtime.mRhs ) - ( runtime.mSolution.getConstReference() * ( *runtime.mCoefficients ) ) ;
-        *runtime.mResidual2 = ( *runtime.mRhs ) - ( ( *runtime.mTransposeA ) * runtime.mSolution.getConstReference()) ;
+        *runtime.mResidual2 = ( *runtime.mRhs ) - ( ( *runtime.mTransposeA ) * runtime.mSolution.getConstReference() );
 
         mLogger->stopTimer( "ResidualTimer" );
         mLogger->logTime( "ResidualTimer", LogLevel::completeInformation, "Revaluation of residual took [s]: " );

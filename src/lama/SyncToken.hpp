@@ -2,7 +2,7 @@
  * @file SyncToken.hpp
  *
  * @license
- * Copyright (c) 2009-2013
+ * Copyright (c) 2009-2015
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -61,15 +61,15 @@ class _LAMAArray;
  *
  * This class also supports the possibility to push LAMA array accesses and LAMA arrays
  * to a token. After successful synchronization, the accesses/arrays are release and
- * the arrays can be accesses for other purposes. 
+ * the arrays can be accesses for other purposes.
  *
  * All started asynchronous operations in LAMA must be synchronized. This is
  * absolutely mandatory and can be done in the following ways:
  *
- * \code 
+ * \code
  *    auto_ptr<SyncToken> token = new XXXSyncToken( ... )
  *    ! synchronization is alway done when object will be deleted at the end of the scope
- *    
+ *
  *    token->wait();     // explicit wait
  *
  *    !  This is not recommened but works
@@ -117,7 +117,7 @@ public:
 
     void pushAccess( boost::shared_ptr<BaseAccess> access );
 
-    /** Add a LAMA array that will be free after synchronization 
+    /** Add a LAMA array that will be free after synchronization
      *
      *  @param array shared pointer to an array
      */
@@ -140,9 +140,9 @@ protected:
 
     /** Logger for this class. */
 
-    LAMA_LOG_DECL_STATIC_LOGGER(logger) 
+    LAMA_LOG_DECL_STATIC_LOGGER(logger)
 
-private:
+private    :
 
     /** Helper class for a static object on which should be act at termination. */
 
@@ -156,14 +156,14 @@ private:
 
         /** Destructor. */
 
-        ~CGuard();  
+        ~CGuard();
     };
 
     // counts allocated - freed sync tokens, verify for 0 at then end
 
-    static int countSyncToken;  
+    static int countSyncToken;
 
-    static CGuard cguard;  //!< required to call routine at its destructor
+    static CGuard cguard;//!< required to call routine at its destructor
 
     /** Vector of accesses that will be freed after completion. */
 

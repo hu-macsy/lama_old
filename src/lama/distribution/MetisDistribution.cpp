@@ -51,20 +51,14 @@ LAMA_LOG_DEF_LOGGER( MetisDistribution::logger, "Distribution.MetisDistribution"
 
 #define MASTER 0
 
-MetisDistribution::MetisDistribution(
-                   const CommunicatorPtr comm,
-                   const Matrix& matrix,
-                   std::vector<float>& weights )
+MetisDistribution::MetisDistribution( const CommunicatorPtr comm, const Matrix& matrix, std::vector<float>& weights )
 
     : GeneralDistribution( matrix.getNumRows(), comm )
 {
     computeIt( comm, matrix, weights );
 }
 
-MetisDistribution::MetisDistribution(
-                   const CommunicatorPtr comm,
-                   const Matrix& matrix,
-                   float weight )
+MetisDistribution::MetisDistribution( const CommunicatorPtr comm, const Matrix& matrix, float weight )
 
     : GeneralDistribution( matrix.getNumRows(), comm )
 {
@@ -76,7 +70,7 @@ MetisDistribution::MetisDistribution(
 
     std::vector<float> weights( numPartitions );
 
-    LAMA_LOG_INFO( logger, "#weights = " << weights.size() ) 
+    LAMA_LOG_INFO( logger, "#weights = " << weights.size() )
 
     comm->gather( &weights[0], 1, MASTER, &weight );
     comm->bcast( &weights[0], numPartitions, MASTER );
@@ -85,11 +79,11 @@ MetisDistribution::MetisDistribution(
 
     normWeights( weights );
 
-    LAMA_LOG_INFO( logger, "#weights = " << weights.size() ) 
+    LAMA_LOG_INFO( logger, "#weights = " << weights.size() )
 
-    for ( size_t i = 0; i < weights.size(); ++i )
+    for( size_t i = 0; i < weights.size(); ++i )
     {
-       LAMA_LOG_INFO( logger, "weight[" << i << "] = " << weights[i] )
+        LAMA_LOG_INFO( logger, "weight[" << i << "] = " << weights[i] )
     }
 
     computeIt( comm, matrix, weights );
@@ -103,26 +97,23 @@ void MetisDistribution::normWeights( std::vector<float>& weights )
 
     float sum = 0;
 
-    for ( size_t i = 0; i < numPartitions; ++i )
+    for( size_t i = 0; i < numPartitions; ++i )
     {
         sum += weights[i];
     }
 
     float sumNorm = 0;
 
-    for ( size_t i = 0; i < numPartitions - 1; ++i )
+    for( size_t i = 0; i < numPartitions - 1; ++i )
     {
         weights[i] /= sum;
         sumNorm += weights[i];
     }
 
-    weights[ numPartitions - 1 ] = 1.0f - sumNorm;
+    weights[numPartitions - 1] = 1.0f - sumNorm;
 }
 
-void MetisDistribution::computeIt(
-                   const CommunicatorPtr comm,
-                   const Matrix& matrix,
-                   std::vector<float>& weights )
+void MetisDistribution::computeIt( const CommunicatorPtr comm, const Matrix& matrix, std::vector<float>& weights )
 {
     // TODO check only for replicated matrix
 
@@ -132,7 +123,7 @@ void MetisDistribution::computeIt(
     IndexType myRank = comm->getRank();
     IndexType totalRows = matrix.getNumRows();
 
-    if ( myRank == MASTER )
+    if( myRank == MASTER )
     {
         // MASTER must have all values of the matrix to build the graph
 
@@ -167,6 +158,7 @@ void MetisDistribution::computeIt(
             callPartitioning( partition, minConstraint, count, tpwgts, comm, matrix );
 
             IndexType offsetCounter[size];
+
             // init
             for( IndexType i = 0; i < size; i++ )
             {
@@ -177,32 +169,35 @@ void MetisDistribution::computeIt(
             //count rows per owner
             for( IndexType i = 0; i < totalRows; i++ )
             {
-                ++numRowsPerOwner[ mapping[ partition[i] ] ];
+                ++numRowsPerOwner[mapping[partition[i]]];
             }
 
             // build "ia" array (running sums) for rows per owner
             distIA[0] = 0;
+
             for( IndexType i = 1; i < size + 1; i++ )
             {
-                distIA[i] = distIA[ i - 1 ] + numRowsPerOwner[ i - 1 ];
+                distIA[i] = distIA[i - 1] + numRowsPerOwner[i - 1];
             }
 
             // sort rows after owner
             for( IndexType i = 0; i < totalRows; i++ )
             {
-                IndexType index = mapping[ partition[i] ];
-                rows[ distIA[ index ] + offsetCounter[ index ] ] = i;
-                ++offsetCounter[ index ];
+                IndexType index = mapping[partition[i]];
+                rows[distIA[index] + offsetCounter[index]] = i;
+                ++offsetCounter[index];
             }
         }
         else
         {
-            LAMA_LOG_WARN( logger, "MetisDistribution called with 1 processor/1 weight, which is the same as NoDistribution." )
+            LAMA_LOG_WARN( logger,
+                           "MetisDistribution called with 1 processor/1 weight, which is the same as NoDistribution." )
 
             for( IndexType i = 0; i < size; i++ )
             {
                 numRowsPerOwner[i] = 0;
             }
+
             numRowsPerOwner[mapping[0]] = totalRows;
 
             for( IndexType i = 0; i < totalRows; i++ )
@@ -211,6 +206,7 @@ void MetisDistribution::computeIt(
             }
         }
     }
+
     // scatter local rows
     int numMyRows = 0;
     comm->scatter( &numMyRows, 1, MASTER, &numRowsPerOwner[0] );
@@ -219,7 +215,8 @@ void MetisDistribution::computeIt(
 
     std::vector<IndexType>::const_iterator end = mLocal2Global.end();
     std::vector<IndexType>::const_iterator begin = mLocal2Global.begin();
-    for ( std::vector<IndexType>::const_iterator it = begin; it != end; ++it )
+
+    for( std::vector<IndexType>::const_iterator it = begin; it != end; ++it )
     {
         IndexType i = static_cast<IndexType>( std::distance( begin, it ) );
         LAMA_ASSERT( 0 <= *it && *it < mGlobalSize,
@@ -270,7 +267,7 @@ void MetisDistribution::callPartitioning(
     // options[ METIS_OPTION_DBGLVL ] = METIS_DBG_TIME;
     // recursive bisection
     METIS_PartGraphRecursive( &totalRows, &ncon, &csrXadj[0], &csrAdjncy[0], &csrVwgt[0], NULL, NULL, &parts,
-        &tpwgts[0], NULL, options, &minConstraint, &partition[0] );
+                              &tpwgts[0], NULL, options, &minConstraint, &partition[0] );
 
     // multilevel k-way partitioning (used in ParMetis)
     // METIS_PartGraphKway( &totalRows, &ncon, &csrXadj[0], &csrAdjncy[0], &csrVwgt[0], NULL,
@@ -296,7 +293,7 @@ void MetisDistribution::checkAndMapWeights(
     }
 }
 
-/* ---------------------------------------------------------------------------------* 
+/* ---------------------------------------------------------------------------------*
  *   static create methods ( required for registration in distribution factory )    *
  * ---------------------------------------------------------------------------------*/
 
@@ -312,10 +309,7 @@ MetisDistribution* MetisDistribution::create(
     return new MetisDistribution( commPtr, matrix, weight );
 }
 
-MetisDistribution* MetisDistribution::create(
-    const CommunicatorPtr commPtr,
-    const Matrix& matrix,
-    const float weight )
+MetisDistribution* MetisDistribution::create( const CommunicatorPtr commPtr, const Matrix& matrix, const float weight )
 {
     return new MetisDistribution( commPtr, matrix, weight );
 }

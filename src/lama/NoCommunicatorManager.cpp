@@ -2,7 +2,7 @@
  * @file NoCommunicatorManager.cpp
  *
  * @license
- * Copyright (c) 2009-2013
+ * Copyright (c) 2009-2015
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -62,7 +62,7 @@ bool NoCommunicatorManager::init()
 }
 
 NoCommunicatorManager::NoCommunicatorManager()
-    : CommunicatorManager( "none" )
+                : CommunicatorManager( "none" )
 {
 }
 
@@ -76,7 +76,7 @@ CommunicatorPtr NoCommunicatorManager::getCommunicator( int& /* argc */, char** 
 
     // use the last communicatorInstance if it is still valid
 
-    if ( mCommunicatorInstance.expired() )
+    if( mCommunicatorInstance.expired() )
     {
         // create a new instance of NoCommunicator and keep it for further uses
 

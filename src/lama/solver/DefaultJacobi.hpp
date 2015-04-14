@@ -2,7 +2,7 @@
  * @file DefaultJacobi.hpp
  *
  * @license
- * Copyright (c) 2009-2013
+ * Copyright (c) 2009-2015
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -124,7 +124,7 @@ protected:
 
     LAMA_LOG_DECL_STATIC_LOGGER( logger )
 
-private:
+private    :
 
     template<typename ValueType>
     void initialize(const Matrix& coefficients);
@@ -133,6 +133,7 @@ private:
     void iterate();
 };
 
-} // namespace lama
+}
+// namespace lama
 
 #endif // LAMA_DEFAULTJACOBI_HPP_

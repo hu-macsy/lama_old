@@ -2,7 +2,7 @@
  * @file BLAS_BLAS2.cpp
  *
  * @license
- * Copyright (c) 2009-2013
+ * Copyright (c) 2009-2015
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -56,54 +56,108 @@ LAMA_LOG_DEF_LOGGER( BLAS_BLAS2::logger, "BLAS.BLAS2" )
 
 template<typename ValueType>
 static inline
-void wrapperGemv( const CBLAS_ORDER order, const CBLAS_TRANSPOSE transA,
-                  const int m, const int n,
-                  ValueType alpha, const ValueType* a, const int lda, const ValueType* x, const int incX,
-                  ValueType beta, ValueType* y, const int incY );
+void wrapperGemv(
+    const CBLAS_ORDER order,
+    const CBLAS_TRANSPOSE transA,
+    const int m,
+    const int n,
+    ValueType alpha,
+    const ValueType* a,
+    const int lda,
+    const ValueType* x,
+    const int incX,
+    ValueType beta,
+    ValueType* y,
+    const int incY );
 
 template<>
-void wrapperGemv( const CBLAS_ORDER order, const CBLAS_TRANSPOSE transA,
-                  const int m, const int n,
-                  float alpha, const float* a, const int lda, const float* x, const int incX,
-                  float beta, float* y, const int incY )
+void wrapperGemv(
+    const CBLAS_ORDER order,
+    const CBLAS_TRANSPOSE transA,
+    const int m,
+    const int n,
+    float alpha,
+    const float* a,
+    const int lda,
+    const float* x,
+    const int incX,
+    float beta,
+    float* y,
+    const int incY )
 {
     cblas_sgemv( order, transA, m, n, alpha, a, lda, x, incX, beta, y, incY );
 }
 
 template<>
-void wrapperGemv( const CBLAS_ORDER order, const CBLAS_TRANSPOSE transA,
-                  const int m, const int n,
-                  double alpha, const double* a, const int lda, const double* x, const int incX,
-                  double beta, double* y, const int incY )
+void wrapperGemv(
+    const CBLAS_ORDER order,
+    const CBLAS_TRANSPOSE transA,
+    const int m,
+    const int n,
+    double alpha,
+    const double* a,
+    const int lda,
+    const double* x,
+    const int incX,
+    double beta,
+    double* y,
+    const int incY )
 {
     cblas_dgemv( order, transA, m, n, alpha, a, lda, x, incX, beta, y, incY );
 }
 
 template<>
-void wrapperGemv( const CBLAS_ORDER order, const CBLAS_TRANSPOSE transA,
-                  const int m, const int n,
-                  ComplexFloat alpha, const ComplexFloat* a, const int lda, const ComplexFloat* x, const int incX,
-                  ComplexFloat beta, ComplexFloat* y, const int incY )
+void wrapperGemv(
+    const CBLAS_ORDER order,
+    const CBLAS_TRANSPOSE transA,
+    const int m,
+    const int n,
+    ComplexFloat alpha,
+    const ComplexFloat* a,
+    const int lda,
+    const ComplexFloat* x,
+    const int incX,
+    ComplexFloat beta,
+    ComplexFloat* y,
+    const int incY )
 {
     // Attention: alpha, beta must be passed here as a pointer
     cblas_cgemv( order, transA, m, n, &alpha, a, lda, x, incX, &beta, y, incY );
 }
 
 template<>
-void wrapperGemv( const CBLAS_ORDER order, const CBLAS_TRANSPOSE transA,
-                  const int m, const int n,
-                  ComplexDouble alpha, const ComplexDouble* a, const int lda, const ComplexDouble* x, const int incX,
-                  ComplexDouble beta, ComplexDouble* y, const int incY )
+void wrapperGemv(
+    const CBLAS_ORDER order,
+    const CBLAS_TRANSPOSE transA,
+    const int m,
+    const int n,
+    ComplexDouble alpha,
+    const ComplexDouble* a,
+    const int lda,
+    const ComplexDouble* x,
+    const int incX,
+    ComplexDouble beta,
+    ComplexDouble* y,
+    const int incY )
 {
     // Attention: alpha, beta must be passed here as a pointer
     cblas_zgemv( order, transA, m, n, &alpha, a, lda, x, incX, &beta, y, incY );
 }
 
 template<>
-void wrapperGemv( const CBLAS_ORDER, const CBLAS_TRANSPOSE,
-                  const int, const int,
-                  LongDouble, const LongDouble*, const int, const LongDouble*, const int,
-                  LongDouble, LongDouble*, const int )
+void wrapperGemv(
+    const CBLAS_ORDER,
+    const CBLAS_TRANSPOSE,
+    const int,
+    const int,
+    LongDouble,
+    const LongDouble*,
+    const int,
+    const LongDouble*,
+    const int,
+    LongDouble,
+    LongDouble*,
+    const int )
 {
     LAMA_THROWEXCEPTION( "LongDouble not supported by BLAS, please set LAMA_USE_BLAS=0" )
 }
@@ -126,19 +180,17 @@ void BLAS_BLAS2::gemv(
 {
     LAMA_REGION( "BLAS.BLAS2.gemv" )
 
-    LAMA_LOG_INFO( logger, "gemv<" << Scalar::getType<ValueType>() << ">: "
-                   << "m = " << m << ", n = " << n << ", LDA = " << lda 
-                    << ", incX = " << incX << ", incY = " << incY 
-                    << ", alpha = " << alpha << ", beta = " << beta )
+    LAMA_LOG_INFO( logger,
+                   "gemv<" << Scalar::getType<ValueType>() << ">: " << "m = " << m << ", n = " << n << ", LDA = " << lda << ", incX = " << incX << ", incY = " << incY << ", alpha = " << alpha << ", beta = " << beta )
 
-    if ( m == 0 )
+    if( m == 0 )
     {
-        return;   // empty X, Y, A  
+        return; // empty X, Y, A
     }
 
     // N == 0: empty A, but deal with X, Y, we can handle this here
 
-    if ( syncToken )
+    if( syncToken )
     {
         LAMA_LOG_WARN( logger, "no asynchronous execution for openmp possible at this level." )
     }
@@ -158,18 +210,19 @@ void BLAS_BLAS2::setInterface( BLASInterface& BLAS )
 {
     // using BLAS wrappers might be disabled explicitly by environment variable
 
-    int  level   = 0;
+    int level = 0;
 
     bool useBLAS = Settings::getEnvironment( level, "LAMA_USE_BLAS" );
 
-    if ( !useBLAS || ( level <= 0 ) )
+    if( !useBLAS || ( level <= 0 ) )
     {
         LAMA_LOG_INFO( logger, "BLAS2 wrapper routines for Host Interface are disabled (LAMA_USE_BLAS not set or 0)" )
         return;
     }
-    else if ( level > 2 )
+    else if( level > 2 )
     {
-        LAMA_LOG_INFO( logger, "BLAS2 wrapper routines for Host Interface are disabled (LAMA_USE_BLAS = " << level << ")" )
+        LAMA_LOG_INFO( logger,
+                       "BLAS2 wrapper routines for Host Interface are disabled (LAMA_USE_BLAS = " << level << ")" )
         return;
     }
 
@@ -179,7 +232,7 @@ void BLAS_BLAS2::setInterface( BLASInterface& BLAS )
 
 #define LAMA_BLAS2_REGISTER(z, I, _)                                             \
     LAMA_INTERFACE_REGISTER1_T( BLAS, gemv, ARITHMETIC_TYPE##I )                 \
-     
+
     BOOST_PP_REPEAT( ARITHMETIC_TYPE_CNT, LAMA_BLAS2_REGISTER, _ )
 
 #undef LAMA_BLAS2_REGISTER

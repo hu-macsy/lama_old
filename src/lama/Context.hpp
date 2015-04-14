@@ -2,7 +2,7 @@
  * @file Context.hpp
  *
  * @license
- * Copyright (c) 2009-2013
+ * Copyright (c) 2009-2015
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -89,10 +89,10 @@ public:
      */
     enum ContextType
     {
-        Host,      //!< context for cpu + main memory
-        CUDA,      //!< CUDA GPU device
-        MIC,       //!< Intel Many-Integrated-Core Architecture
-        OpenCL,    //!< OpenCL GPU device, currently not supported
+        Host, //!< context for cpu + main memory
+        CUDA, //!< CUDA GPU device
+        MIC, //!< Intel Many-Integrated-Core Architecture
+        OpenCL, //!< OpenCL GPU device, currently not supported
         MaxContext //!< used for dimension of ContextType arrays
     };
 
@@ -273,7 +273,7 @@ public:
 
     /** Getter routine for a new sync token that allows to asynchronous computations on the context.
      *
-     *  @returns new SyncToken object 
+     *  @returns new SyncToken object
      */
 
     virtual SyncToken* getSyncToken() const = 0;
@@ -316,7 +316,7 @@ protected:
 
     LAMA_LOG_DECL_STATIC_LOGGER( logger )
 
-    ContextType mContextType;
+ContextType    mContextType;
 
     mutable bool mEnabled; //!<  if true the context is currently accessed
 

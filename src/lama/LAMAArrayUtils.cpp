@@ -2,7 +2,7 @@
  * @file LAMAArrayUtils.cpp
  *
  * @license
- * Copyright (c) 2009-2013
+ * Copyright (c) 2009-2015
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -52,9 +52,10 @@ namespace lama
 LAMA_LOG_DEF_LOGGER( LAMAArrayUtils::logger, "LAMAArrayUtils" )
 
 template<typename ValueType1,typename ValueType2>
-void LAMAArrayUtils::assignImpl( LAMAArray<ValueType1>& target, 
-                                  const LAMAArray<ValueType2>& source,
-                                  const ContextPtr loc )
+void LAMAArrayUtils::assignImpl(
+    LAMAArray<ValueType1>& target,
+    const LAMAArray<ValueType2>& source,
+    const ContextPtr loc )
 {
     // verify that dynamic cast operations went okay before
 
@@ -76,13 +77,11 @@ void LAMAArrayUtils::assignImpl( LAMAArray<ValueType1>& target,
 }
 
 template<typename ValueType>
-void LAMAArrayUtils::assignImpl1( LAMAArray<ValueType>& target, 
-                                  const _LAMAArray& source,
-                                  const ContextPtr loc )
+void LAMAArrayUtils::assignImpl1( LAMAArray<ValueType>& target, const _LAMAArray& source, const ContextPtr loc )
 {
     Scalar::ScalarType sourceType = source.getValueType();
 
-    if ( sourceType == target.getValueType() )
+    if( sourceType == target.getValueType() )
     {
         // dynamic cast is absolutely safe
 
@@ -97,57 +96,54 @@ void LAMAArrayUtils::assignImpl1( LAMAArray<ValueType>& target,
 
     // Different types -> select for corresponding template routine
 
-    switch ( sourceType )
+    switch( sourceType )
     {
 
-    case Scalar::INDEX_TYPE:
-        assignImpl( target, dynamic_cast<const LAMAArray<IndexType>& >( source ), loc );
-        break;
+        case Scalar::INDEX_TYPE:
+            assignImpl( target, dynamic_cast<const LAMAArray<IndexType>&>( source ), loc );
+            break;
 
 #define LAMA_ARRAY_ASSIGN( z, I, _ )                                                                \
-    case Scalar::SCALAR_ARITHMETIC_TYPE##I:                                                         \
-        assignImpl( target, dynamic_cast<const LAMAArray<ARITHMETIC_TYPE##I>& >( source ), loc );   \
-        break;                                                                                      \
+case Scalar::SCALAR_ARITHMETIC_TYPE##I:                                                         \
+    assignImpl( target, dynamic_cast<const LAMAArray<ARITHMETIC_TYPE##I>& >( source ), loc );   \
+    break;                                                                                      \
 
-    BOOST_PP_REPEAT( ARITHMETIC_TYPE_CNT, LAMA_ARRAY_ASSIGN, _ )
+        BOOST_PP_REPEAT( ARITHMETIC_TYPE_CNT, LAMA_ARRAY_ASSIGN, _ )
 
 #undef LAMA_ARRAY_ASSIGN
 
-    default:
+default        :
         LAMA_THROWEXCEPTION( "unsupported source type : " )
     }
 }
 
-void LAMAArrayUtils::assign( 
-    _LAMAArray& target, 
-    const _LAMAArray& source, 
-    const ContextPtr loc /* = ContextPtr() */ )
+void LAMAArrayUtils::assign( _LAMAArray& target, const _LAMAArray& source, const ContextPtr loc /* = ContextPtr() */)
 {
     ContextPtr validLoc = loc;
 
-    if ( !validLoc )
+    if( !validLoc )
     {
-        // if no context is given we assign where source has a valid copy available
+// if no context is given we assign where source has a valid copy available
 
-        validLoc = source.getValidContext( );
+        validLoc = source.getValidContext();
     }
 
-    switch ( target.getValueType() )
+    switch( target.getValueType() )
     {
-    case Scalar::INDEX_TYPE:
-        assignImpl1( dynamic_cast<LAMAArray< IndexType>& >( target ), source, validLoc );
-        break;
+        case Scalar::INDEX_TYPE:
+            assignImpl1( dynamic_cast<LAMAArray<IndexType>&>( target ), source, validLoc );
+            break;
 
 #define LAMA_ARRAY_ASSIGN1( z, I, _ )                                                              \
-    case Scalar::SCALAR_ARITHMETIC_TYPE##I:                                                        \
-        assignImpl1( dynamic_cast<LAMAArray< ARITHMETIC_TYPE##I>& >( target ), source, validLoc ); \
-        break;
+case Scalar::SCALAR_ARITHMETIC_TYPE##I:                                                        \
+    assignImpl1( dynamic_cast<LAMAArray< ARITHMETIC_TYPE##I>& >( target ), source, validLoc ); \
+    break;
 
-    BOOST_PP_REPEAT( ARITHMETIC_TYPE_CNT, LAMA_ARRAY_ASSIGN1, _ )
+        BOOST_PP_REPEAT( ARITHMETIC_TYPE_CNT, LAMA_ARRAY_ASSIGN1, _ )
 
 #undef LAMA_ARRAY_ASSIGN1
 
-    default:
+default        :
         LAMA_THROWEXCEPTION( "unsupported target type : " )
     }
 }
@@ -160,7 +156,7 @@ void LAMAArrayUtils::gather(
 {
     LAMA_REGION( "LAMAArray.gather" )
 
-    // choose location for the operation where source array is currently valid
+// choose location for the operation where source array is currently valid
 
     ContextPtr context = source.getValidContext( Context::Host );
 
@@ -175,7 +171,7 @@ void LAMAArrayUtils::gather(
 
     LAMA_CONTEXT_ACCESS( context )
 
-    // target[i] = source[ indexes[i] ]
+// target[i] = source[ indexes[i] ]
     setGather( wTarget.get(), rSource.get(), rIndexes.get(), n );
 }
 
@@ -184,7 +180,7 @@ void LAMAArrayUtils::assignScalar( LAMAArray<ValueType>& target, const Scalar& v
 {
     LAMA_LOG_INFO( logger, target << " = " << value )
 
-    // assignment takes place at the given context
+// assignment takes place at the given context
 
     LAMA_INTERFACE_FN_T( setVal, context, Utils, Setter, ValueType )
 
@@ -196,7 +192,7 @@ void LAMAArrayUtils::assignScalar( LAMAArray<ValueType>& target, const Scalar& v
 
     LAMA_CONTEXT_ACCESS( context )
 
-    // values[i] = val, i = 0, .., n-1
+// values[i] = val, i = 0, .., n-1
 
     setVal( values.get(), n, val );
 }
@@ -205,31 +201,31 @@ void LAMAArrayUtils::assignScalar( _LAMAArray& target, const Scalar& value, Cont
 {
     Scalar::ScalarType arrayType = target.getValueType();
 
-    switch ( arrayType )
+    switch( arrayType )
     {
-    case Scalar::INDEX_TYPE:
+        case Scalar::INDEX_TYPE:
         {
             LAMAArray<IndexType>& typedTarget = dynamic_cast<LAMAArray<IndexType>&>( target );
             assignScalar( typedTarget, value, context );
             break;
         }
 
-    // for all supported arithmetic types generate it
+            // for all supported arithmetic types generate it
 
 #define LAMA_ARRAY_ASSIGN_SCALAR( z, I, _ )          \
-    case Scalar::SCALAR_ARITHMETIC_TYPE##I:          \
-        {          \
-            LAMAArray<ARITHMETIC_TYPE##I>& typedTarget =          \
-                dynamic_cast<LAMAArray<ARITHMETIC_TYPE##I>&>( target );          \
-            assignScalar( typedTarget, value, context );          \
-            break;          \
-        }          \
+case Scalar::SCALAR_ARITHMETIC_TYPE##I:          \
+{          \
+    LAMAArray<ARITHMETIC_TYPE##I>& typedTarget =          \
+            dynamic_cast<LAMAArray<ARITHMETIC_TYPE##I>&>( target );          \
+    assignScalar( typedTarget, value, context );          \
+    break;          \
+}          \
 
-    BOOST_PP_REPEAT( ARITHMETIC_TYPE_CNT, LAMA_ARRAY_ASSIGN_SCALAR, _ )
+        BOOST_PP_REPEAT( ARITHMETIC_TYPE_CNT, LAMA_ARRAY_ASSIGN_SCALAR, _ )
 
 #undef LAMA_ARRAY_ASSIGN_SCALAR
 
-    default:
+default        :
         {
             LAMA_THROWEXCEPTION( target << ": assignScalar for value type " << arrayType << " not supported" )
         }
@@ -241,33 +237,34 @@ void LAMAArrayUtils::setVal( LAMAArray<ValueType>& target, const IndexType index
 {
     LAMA_ASSERT_DEBUG( index < target.size(), "index = " << index << " out of range for target = " << target );
 
-    ContextPtr loc = target.getValidContext();  // best position where to fill
+    ContextPtr loc = target.getValidContext(); // best position where to fill
 
     LAMA_INTERFACE_FN_DEFAULT_T( setVal, loc, Utils, Setter, ValueType );
 
     WriteAccess<ValueType> wTarget( target, loc );
-    
+
     LAMA_CONTEXT_ACCESS( loc )
 
     setVal( wTarget.get() + index, 1, val );
 }
 
 template<typename ValueType>
-void LAMAArrayUtils::assignScaled( LAMAArray<ValueType>& result,
-                                   const ValueType beta,
-                                   const LAMAArray<ValueType>& y,
-                                   ContextPtr loc )
+void LAMAArrayUtils::assignScaled(
+    LAMAArray<ValueType>& result,
+    const ValueType beta,
+    const LAMAArray<ValueType>& y,
+    ContextPtr loc )
 {
     const IndexType n = result.size();
 
     LAMA_ASSERT_EQUAL_ERROR( n, y.size() );
 
-    // beta = 0    : saves the need of a read access for y
-    // result == y : only one write access needed ( write + read not possible)
+// beta = 0    : saves the need of a read access for y
+// result == y : only one write access needed ( write + read not possible)
 
-    if ( beta == 0 )
+    if( beta == 0 )
     {
-        // result := 0
+// result := 0
 
         LAMA_INTERFACE_FN_T( setVal, loc, Utils, Setter, ValueType )
 
@@ -277,14 +274,14 @@ void LAMAArrayUtils::assignScaled( LAMAArray<ValueType>& result,
 
         setVal( wResult.get(), n, 0 );
     }
-    else if ( result == y )
+    else if( result == y )
     {
-        if ( beta == 1 )
+        if( beta == 1 )
         {
             return;
         }
 
-        // result := beta * result, is result *= beta
+// result := beta * result, is result *= beta
 
         LAMA_INTERFACE_FN_T( scale, loc, Utils, Transform, ValueType )
 
@@ -294,12 +291,12 @@ void LAMAArrayUtils::assignScaled( LAMAArray<ValueType>& result,
 
         scale( wResult.get(), beta, n );
     }
-    else 
+    else
     {
-        // result := beta * y
+// result := beta * y
 
-        // Note: we do not use BLAS1:axpy here to guarantee same LAMA OpenMP schedule
-        //       and to support type conversions in place for multiprecision support
+// Note: we do not use BLAS1:axpy here to guarantee same LAMA OpenMP schedule
+//       and to support type conversions in place for multiprecision support
 
         LAMA_INTERFACE_FN_TT( setScale, loc, Utils, Copy, ValueType, ValueType )
 
@@ -307,7 +304,7 @@ void LAMAArrayUtils::assignScaled( LAMAArray<ValueType>& result,
         ReadAccess<ValueType> rY( y, loc );
 
         LAMA_CONTEXT_ACCESS( loc )
-    
+
         setScale( wResult.get(), beta, rY.get(), n );
     }
 }
@@ -315,10 +312,7 @@ void LAMAArrayUtils::assignScaled( LAMAArray<ValueType>& result,
 // template instantiation for the supported data types
 
 template
-void LAMAArrayUtils::setVal(
-    LAMAArray<IndexType>& target,
-    const IndexType index,
-    IndexType val );
+void LAMAArrayUtils::setVal( LAMAArray<IndexType>& target, const IndexType index, IndexType val );
 
 template
 void LAMAArrayUtils::assignScaled(
@@ -336,36 +330,35 @@ void LAMAArrayUtils::gather(
 /** Macro instantiates operations that have also type conversion */
 
 #define LAMA_ARRAY_UTILS2_INSTANTIATE(z, J, TYPE)                               \
-template                                                                        \
-void LAMAArrayUtils::gather(                                                    \
-    LAMAArray<TYPE>& target,                                                    \
-    const LAMAArray<ARITHMETIC_TYPE##J>& source,                                \
-    const LAMAArray<IndexType>& indexes );                                      \
+    template                                                                        \
+    void LAMAArrayUtils::gather(                                                    \
+            LAMAArray<TYPE>& target,                                                    \
+            const LAMAArray<ARITHMETIC_TYPE##J>& source,                                \
+            const LAMAArray<IndexType>& indexes );                                      \
 
 /** Macro instantiates operations for supported arithmetic types */
 
 #define LAMA_ARRAY_UTILS_INSTANTIATE(z, I, _)                               \
-template                                                                    \
-void LAMAArrayUtils::setVal(                                                \
-    LAMAArray<ARITHMETIC_TYPE##I>& target,                                  \
-    const IndexType index,                                                  \
-    ARITHMETIC_TYPE##I val );                                               \
-                                                                            \
-template                                                                    \
-void LAMAArrayUtils::assignScaled(                                          \
-    LAMAArray<ARITHMETIC_TYPE##I>& result,                                  \
-    const ARITHMETIC_TYPE##I beta,                                          \
-    const LAMAArray<ARITHMETIC_TYPE##I>& y,                                 \
-    ContextPtr loc );                                                       \
-                                                                            \
-BOOST_PP_REPEAT( ARITHMETIC_TYPE_CNT,                                       \
-                 LAMA_ARRAY_UTILS2_INSTANTIATE, ARITHMETIC_TYPE##I )
-                                                                        \
+    template                                                                    \
+    void LAMAArrayUtils::setVal(                                                \
+            LAMAArray<ARITHMETIC_TYPE##I>& target,                                  \
+            const IndexType index,                                                  \
+            ARITHMETIC_TYPE##I val );                                               \
+    \
+    template                                                                    \
+    void LAMAArrayUtils::assignScaled(                                          \
+            LAMAArray<ARITHMETIC_TYPE##I>& result,                                  \
+            const ARITHMETIC_TYPE##I beta,                                          \
+            const LAMAArray<ARITHMETIC_TYPE##I>& y,                                 \
+            ContextPtr loc );                                                       \
+    \
+    BOOST_PP_REPEAT( ARITHMETIC_TYPE_CNT,                                       \
+                     LAMA_ARRAY_UTILS2_INSTANTIATE, ARITHMETIC_TYPE##I )
+
 BOOST_PP_REPEAT( ARITHMETIC_TYPE_CNT, LAMA_ARRAY_UTILS_INSTANTIATE, _ )
 
 #undef LAMA_ARRAY_UTILS2_INSTANTIATE
 #undef LAMA_ARRAY_UTILS_INSTANTIATE
-
 
 } // namespace
 

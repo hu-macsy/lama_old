@@ -2,7 +2,7 @@
  * @file P_SpecializedJacobi.cpp
  *
  * @license
- * Copyright (c) 2009-2013
+ * Copyright (c) 2009-2015
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -63,7 +63,7 @@
 using namespace boost;
 using namespace lama;
 
-typedef boost::mpl::list<float,double> test_types;
+typedef boost::mpl::list<float, double> test_types;
 
 /* ------------------------------------------------------------------------- */
 
@@ -75,19 +75,14 @@ struct P_SpecializedJacobiTestConfig
     {
         Timer* timerD = new Timer();
         std::auto_ptr<Timer> autoTimerD( timerD );
-
         Timer* timerF = new Timer();
         std::auto_ptr<Timer> autoTimerF( timerF );
-
         LoggerPtr loggerD(
             new CommonLogger( "<Jacobi>: ", lama::LogLevel::completeInformation,
                               lama::LoggerWriteBehaviour::toConsoleOnly,
                               std::auto_ptr<Timer>( new Timer() ) ) );
-
         mJacobiDouble = new SpecializedJacobi( "SpecializedJacobiTest double solver", loggerD );
-
         mJacobiFloat = new SpecializedJacobi( "SpecializedJacobiTest float solver", loggerD );
-
         comm = CommunicatorFactory::get( "MPI" );
     }
 
@@ -113,53 +108,36 @@ template<typename MatrixType>
 void testSolveMethod( ContextPtr loc )
 {
     typedef typename MatrixType::MatrixValueType ValueType;
-
     const IndexType N1 = 4;
     const IndexType N2 = 4;
-
     CSRSparseMatrix<ValueType> helpcoefficients;
     MatrixCreator<ValueType>::buildPoisson2D( helpcoefficients, 9, N1, N2 );
-
     DistributionPtr dist( new BlockDistribution( helpcoefficients.getNumRows(), comm ) );
     helpcoefficients.redistribute( dist, dist );
     MatrixType coefficients( helpcoefficients );
     coefficients.setContext( loc );
     std::stringstream loggerName;
-    loggerName << " <SpecializedJacobi<" << typeid(coefficients).name() << ">> ";
-
+    loggerName << " <SpecializedJacobi<" << typeid( coefficients ).name() << ">> ";
 //    LoggerPtr slogger( new CommonLogger(
 //                        loggerName.str(),
 //                        LogLevel::solverInformation, //solverInformation, //noLogging,
 //                        LoggerWriteBehaviour::toConsoleOnly,
 //                        std::auto_ptr<Timer>( new Timer() ) ) );
-
-    SpecializedJacobi jacobiSolver( "SpecializedJacobiTest"/*, slogger */);
-
+    SpecializedJacobi jacobiSolver( "SpecializedJacobiTest"/*, slogger */ );
     DenseVector<ValueType> solution( dist, 1.0 );
     DenseVector<ValueType> exactSolution( solution );
-
     DenseVector<ValueType> rhs( coefficients * solution );
-
     LAMA_LOG_INFO( logger, "Matrix for solver: " << coefficients )
-
     jacobiSolver.initialize( coefficients );
-
     CriterionPtr criterion( new IterationCount( 40 ) );
     jacobiSolver.setStoppingCriterion( criterion );
-
     solution = 0.0;
-
     LAMA_LOG_INFO( logger, "Specialized Jacobi Solver:solve" )
-
     jacobiSolver.solve( solution, rhs );
-
     LAMA_LOG_INFO( logger, "l2norm( compute solution - exactSolution )" )
-
     DenseVector<ValueType> diff( solution - exactSolution );
-
     L2Norm l2Norm;
     Scalar norm = l2Norm( diff );
-
     BOOST_CHECK( norm < 1e-1 );
     //bad omega
 }

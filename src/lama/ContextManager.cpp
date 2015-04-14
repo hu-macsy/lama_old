@@ -2,7 +2,7 @@
  * @file ContextManager.cpp
  *
  * @license
- * Copyright (c) 2009-2013
+ * Copyright (c) 2009-2015
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -46,7 +46,7 @@ LAMA_LOG_DEF_LOGGER( ContextManager::logger, "ContextManager" )
 /* -------------------------------------------------------------------------- */
 
 ContextManager::ContextManager( ContextType type )
-    : mContextType( type )
+                : mContextType( type )
 {
     // Derived classes must call explicitly registerFactory
 }
@@ -66,7 +66,7 @@ void ContextManager::registerFactory()
 
     ContextFactory::getFactory().addContextManager( mContextType, *this );
 }
- 
+
 /* -------------------------------------------------------------------------- */
 
 void ContextManager::writeAt( std::ostream& stream ) const
@@ -78,4 +78,4 @@ void ContextManager::writeAt( std::ostream& stream ) const
 
 /* -------------------------------------------------------------------------- */
 
-}  // namespace lama
+} // namespace lama

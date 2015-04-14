@@ -2,7 +2,7 @@
  * @file MatrixVectorExpressions.hpp
  *
  * @license
- * Copyright (c) 2009-2013
+ * Copyright (c) 2009-2015
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -320,7 +320,7 @@ inline Expression_SVM_SV operator-( const Expression_SVM& exp1, const Expression
  */
 inline Expression_SMV_SV operator-( Expression_SV& exp1, const Expression_SMV& exp2 )
 {
-    return Expression_SMV_SV( Expression_SMV( -exp2.getArg1(), exp2.getArg2()), exp1 );
+    return Expression_SMV_SV( Expression_SMV( -exp2.getArg1(), exp2.getArg2() ), exp1 );
 }
 
 inline Expression_SMV_SV operator+( const Expression_SV& exp1, const Expression_SMV& exp2 )
@@ -343,7 +343,7 @@ inline Expression_SMV_SV operator+( const Expression_SMV& exp1, const Expression
  */
 inline Expression_SVM_SV operator-( Expression_SV& exp1, const Expression_SVM& exp2 )
 {
-    return Expression_SVM_SV( Expression_SVM( -exp2.getArg1(), exp2.getArg2()), exp1 );
+    return Expression_SVM_SV( Expression_SVM( -exp2.getArg1(), exp2.getArg2() ), exp1 );
 }
 
 inline Expression_SVM_SV operator+( const Expression_SV& exp1, const Expression_SVM& exp2 )

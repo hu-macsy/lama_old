@@ -2,7 +2,7 @@
  * @file MICSyncToken.cpp
  *
  * @license
- * Copyright (c) 2009-2013
+ * Copyright (c) 2009-2015
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -42,8 +42,7 @@ namespace lama
 {
 
 MICSyncToken::MICSyncToken( MICContextPtr micContext )
-    : mMICContext( micContext ),
-      mSignal( -1 )
+    : mMICContext( micContext ), mSignal( -1 )
 {
     LAMA_LOG_DEBUG( logger, "MICSyncToken for " << *micContext << " generated" )
 }
@@ -55,18 +54,18 @@ MICSyncToken::~MICSyncToken()
 
 void MICSyncToken::wait()
 {
-    if ( isSynchronized() )
+    if( isSynchronized() )
     {
         return;
     }
 
     LAMA_LOG_DEBUG( logger, "wait for offload computation by signal" )
 
-    if ( mSignal >= 0 )
+    if( mSignal >= 0 )
     {
         LAMA_REGION( "MIC.offloadSynchronize" )
 
-        #pragma offload target( mic : 0 ), wait( mSignal )
+#pragma offload target( mic : 0 ), wait( mSignal )
         {
         }
 
@@ -84,17 +83,17 @@ void MICSyncToken::setSignal( int signal )
     LAMA_ASSERT_ERROR( mSignal < 0, "signal already set, cannot handle multiple signals" )
 
     // this signal will be used to wait for synchronization
-    
+
     mSignal = signal;
 }
 
 bool MICSyncToken::probe() const
 {
     // No idea what to do so wait
-    
+
     // wait();
 
-    if ( isSynchronized() )
+    if( isSynchronized() )
     {
         return true;
     }

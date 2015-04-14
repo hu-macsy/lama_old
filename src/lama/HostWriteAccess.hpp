@@ -2,7 +2,7 @@
  * @file HostWriteAccess.hpp
  *
  * @license
- * Copyright (c) 2009-2013
+ * Copyright (c) 2009-2015
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -134,16 +134,16 @@ public:
     /** Creates a write access with keep flag = false. */
 
     HostWriteOnlyAccess( LAMAArray<ValueType>& array )
-        : HostWriteAccess<ValueType>( array, false )
+                    : HostWriteAccess<ValueType>( array, false )
     {
     }
 
     /** Creates a write access with keep flag = false and do also a resize. */
 
     HostWriteOnlyAccess( LAMAArray<ValueType>& array, const IndexType size )
-            : HostWriteAccess<ValueType>( array, size, false )
-	{
-	}
+                    : HostWriteAccess<ValueType>( array, size, false )
+    {
+    }
 
     ~HostWriteOnlyAccess()
     {
@@ -152,13 +152,13 @@ public:
 
 template<typename ValueType>
 HostWriteAccess<ValueType>::HostWriteAccess( LAMAArray<ValueType>& array, const IndexType size, const bool keep )
-    : WriteAccess<ValueType>( array, ContextFactory::getContext( Context::Host ), size, keep )
+                : WriteAccess<ValueType>( array, ContextFactory::getContext( Context::Host ), size, keep )
 {
 }
 
 template<typename ValueType>
 HostWriteAccess<ValueType>::HostWriteAccess( LAMAArray<ValueType>& view, const bool keep /* = true */)
-    : WriteAccess<ValueType>( view, ContextFactory::getContext( Context::Host ), keep )
+                : WriteAccess<ValueType>( view, ContextFactory::getContext( Context::Host ), keep )
 {
 }
 
@@ -170,8 +170,7 @@ HostWriteAccess<ValueType>::~HostWriteAccess()
 template<typename ValueType>
 ValueType& HostWriteAccess<ValueType>::operator[]( const IndexType i )
 {
-    LAMA_ASSERT_ERROR( mData,
-                       "[" << i << "]: HostWriteAccess has already been released or has not been allocated." )
+    LAMA_ASSERT_ERROR( mData, "[" << i << "]: HostWriteAccess has already been released or has not been allocated." )
 
     return mData[i];
 }

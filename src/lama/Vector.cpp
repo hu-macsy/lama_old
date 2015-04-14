@@ -61,17 +61,17 @@ LAMA_LOG_DEF_LOGGER( Vector::logger, "Vector" )
 /*    Factory to create a vector                                                          */
 /* ---------------------------------------------------------------------------------------*/
 
-/**  
+/**
  *  Getter method for the singleton factory.
  *
- *  Getter method instead of a variable guarantees that order of 
+ *  Getter method instead of a variable guarantees that order of
  *  static intialization does not matter.
  */
 Vector::CreatorMap& Vector::getFactory()
 {
-    static std::auto_ptr< CreatorMap> factory;
+    static std::auto_ptr<CreatorMap> factory;
 
-    if ( !factory.get() )
+    if( !factory.get() )
     {
         factory = std::auto_ptr<CreatorMap>( new CreatorMap() );
     }
@@ -85,7 +85,7 @@ void Vector::addCreator( const VectorKind kind, Scalar::ScalarType type, CreateF
 
     // checks for multiple entries is not really necessary here, so just add entry in map container.
 
-    factory[ CreatorKey( kind, type ) ] = create;
+    factory[CreatorKey( kind, type )] = create;
 }
 
 Vector* Vector::getVector( const VectorKind kind, Scalar::ScalarType type )
@@ -96,7 +96,7 @@ Vector* Vector::getVector( const VectorKind kind, Scalar::ScalarType type )
 
     CreatorMap::const_iterator fn = factory.find( CreatorKey( kind, type ) );
 
-    if ( fn != factory.end() )
+    if( fn != factory.end() )
     {
         newVector = fn->second();
     }
@@ -121,9 +121,9 @@ Vector* Vector::createVector( const Scalar::ScalarType valueType, DistributionPt
 /* ---------------------------------------------------------------------------------------*/
 
 Vector::Vector( const IndexType size, ContextPtr context )
-    : Distributed( shared_ptr<Distribution>( new NoDistribution( size ) ) ), mContext( context )
+                : Distributed( shared_ptr<Distribution>( new NoDistribution( size ) ) ), mContext( context )
 {
-    if ( !mContext )
+    if( !mContext )
     {
         mContext = ContextFactory::getContext( Context::Host );
     }
@@ -132,9 +132,9 @@ Vector::Vector( const IndexType size, ContextPtr context )
 }
 
 Vector::Vector( DistributionPtr distribution, ContextPtr context )
-    : Distributed( distribution ), mContext( context )
+                : Distributed( distribution ), mContext( context )
 {
-    if ( !mContext )
+    if( !mContext )
     {
         mContext = ContextFactory::getContext( Context::Host );
     }
@@ -144,7 +144,7 @@ Vector::Vector( DistributionPtr distribution, ContextPtr context )
 }
 
 Vector::Vector( const Vector& other )
-    : Distributed( other ), mContext( other.getContext() )
+                : Distributed( other ), mContext( other.getContext() )
 {
     LAMA_ASSERT_ERROR( mContext, "NULL context not allowed" )
     LAMA_LOG_INFO( logger, "Vector(" << other.getDistribution().getGlobalSize() << "), distributed, copied" )
@@ -225,7 +225,7 @@ Vector& Vector::operator=( const Expression_SMV& expression )
 
     const Vector& vectorX = expression.getArg2().getArg2();
 
-    if ( &vectorX != this )
+    if( &vectorX != this )
     {
         // so this is not aliased to the vector on the rhs
         // as this will be used on rhs we do allocate it here
@@ -244,7 +244,6 @@ Vector& Vector::operator=( const Expression_SMV& expression )
     return operator=( tmpExp );
 }
 
-
 Vector& Vector::operator=( const Expression_SVM& expression )
 {
     LAMA_LOG_INFO( logger, "this = alpha * vectorX * matrix -> this = alpha * vectorX * matrix + 0.0 * this" )
@@ -257,7 +256,7 @@ Vector& Vector::operator=( const Expression_SVM& expression )
 
     const Vector& vectorX = expression.getArg2().getArg1();
 
-    if ( &vectorX != this )
+    if( &vectorX != this )
     {
         // so this is not aliased to the vector on the rhs
         // as this will be used on rhs we do allocate it here
@@ -281,7 +280,7 @@ Vector& Vector::operator=( const Expression_SMV_SV& expression )
     LAMA_LOG_INFO( logger, "Vector::operator=( Expression_SMV_SV )" )
 
     const Expression_SMV& exp1 = expression.getArg1();
-    const Expression_SV&  exp2 = expression.getArg2();
+    const Expression_SV& exp2 = expression.getArg2();
     const Scalar& alpha = exp1.getArg1();
     const Expression<Matrix,Vector,Times>& matrixTimesVectorExp = exp1.getArg2();
     const Scalar& beta = exp2.getArg1();
@@ -294,7 +293,7 @@ Vector& Vector::operator=( const Expression_SMV_SV& expression )
 
     boost::shared_ptr<Vector> tmpResult;
 
-    if ( &vectorX == this )
+    if( &vectorX == this )
     {
         LAMA_LOG_DEBUG( logger, "Temporary for X required" )
         tmpResult = boost::shared_ptr<Vector>( this->create( getDistributionPtr() ) );
@@ -305,7 +304,7 @@ Vector& Vector::operator=( const Expression_SMV_SV& expression )
 
     matrix.matrixTimesVector( *resultPtr, alpha, vectorX, beta, vectorY );
 
-    if ( resultPtr != this )
+    if( resultPtr != this )
     {
         swap( *tmpResult );
     }
@@ -318,7 +317,7 @@ Vector& Vector::operator=( const Expression_SVM_SV& expression )
     LAMA_LOG_INFO( logger, "Vector::operator=( Expression_SVM_SV )" )
 
     const Expression_SVM& exp1 = expression.getArg1();
-    const Expression_SV&  exp2 = expression.getArg2();
+    const Expression_SV& exp2 = expression.getArg2();
     const Scalar& alpha = exp1.getArg1();
     const Expression<Vector,Matrix,Times>& vectorTimesMatrixExp = exp1.getArg2();
     const Scalar& beta = exp2.getArg1();
@@ -331,7 +330,7 @@ Vector& Vector::operator=( const Expression_SVM_SV& expression )
 
     boost::shared_ptr<Vector> tmpResult;
 
-    if ( &vectorX == this )
+    if( &vectorX == this )
     {
         LAMA_LOG_DEBUG( logger, "Temporary for X required" )
         tmpResult = boost::shared_ptr<Vector>( this->create( getDistributionPtr() ) );
@@ -342,7 +341,7 @@ Vector& Vector::operator=( const Expression_SVM_SV& expression )
 
     matrix.vectorTimesMatrix( *resultPtr, alpha, vectorX, beta, vectorY );
 
-    if ( resultPtr != this )
+    if( resultPtr != this )
     {
         swap( *tmpResult );
     }
@@ -354,7 +353,7 @@ Vector& Vector::operator=( const Expression_SV& expression )
 {
     LAMA_LOG_DEBUG( logger, "a * vector1 -> a * vector1 + 0.0 * vector1" )
 
-    Expression_SV_SV tmpExp ( expression, Expression_SV( Scalar( 0 ), expression.getArg2() ) );
+    Expression_SV_SV tmpExp( expression, Expression_SV( Scalar( 0 ), expression.getArg2() ) );
 
     // calling operator=( tmpExp ) would imply unnecessary checks, so call assign directly
 
@@ -386,14 +385,13 @@ Vector& Vector::operator*=( const Scalar value )
 
 Vector& Vector::operator/=( const Scalar value )
 {
-    Expression<Scalar, Vector, Times> exp1( Scalar( 1.0 ) / value , *this );
+    Expression<Scalar,Vector,Times> exp1( Scalar( 1.0 ) / value, *this );
     return operator=( exp1 );
 }
 
 Vector& Vector::operator+=( const Vector& other )
 {
-    return operator=( Expression_SV_SV( Expression_SV( Scalar( 1 ), other ),
-                                        Expression_SV( Scalar( 1 ), *this ) ) );
+    return operator=( Expression_SV_SV( Expression_SV( Scalar( 1 ), other ), Expression_SV( Scalar( 1 ), *this ) ) );
 }
 
 Vector& Vector::operator+=( const Expression_SV& exp )
@@ -403,7 +401,7 @@ Vector& Vector::operator+=( const Expression_SV& exp )
 
 Vector& Vector::operator-=( const Expression_SV& exp )
 {
-    Expression_SV minusExp( - exp.getArg1(), exp.getArg2() );
+    Expression_SV minusExp( -exp.getArg1(), exp.getArg2() );
 
     return operator=( Expression_SV_SV( minusExp, Expression_SV( Scalar( 1 ), *this ) ) );
 }
@@ -420,15 +418,14 @@ Vector& Vector::operator+=( const Expression_SVM& expression )
 
 Vector& Vector::operator-=( const Expression_SMV& exp )
 {
-    Expression_SMV minusExp( - exp.getArg1(), exp.getArg2() );
+    Expression_SMV minusExp( -exp.getArg1(), exp.getArg2() );
 
     return operator=( Expression_SMV_SV( minusExp, Expression_SV( Scalar( 1 ), *this ) ) );
 }
 
 Vector& Vector::operator-=( const Vector& other )
 {
-    return operator=( Expression_SV_SV( Expression_SV( Scalar( 1 ), *this ),
-                                        Expression_SV( Scalar( -1 ), other ) ) );
+    return operator=( Expression_SV_SV( Expression_SV( Scalar( 1 ), *this ), Expression_SV( Scalar( -1 ), other ) ) );
 }
 
 /* ---------------------------------------------------------------------------------------*/
@@ -457,7 +454,7 @@ void Vector::setContext( ContextPtr context )
 {
     LAMA_ASSERT_DEBUG( context, "NULL context invalid" )
 
-    if ( mContext->getType() != context->getType() )
+    if( mContext->getType() != context->getType() )
     {
         LAMA_LOG_DEBUG( logger, *this << ": new context = " << *context << ", old context = " << *mContext )
     }

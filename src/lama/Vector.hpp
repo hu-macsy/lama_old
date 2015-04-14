@@ -100,7 +100,7 @@ public:
      */
     static Vector* getVector( const VectorKind kind, const Scalar::ScalarType valueType );
 
-    /** @brief Create a dense vector of a certain value type and a given distribution.  
+    /** @brief Create a dense vector of a certain value type and a given distribution.
      *
      *  This method keeps compatibility with an older method that did know which vectors were supported.
      */
@@ -208,7 +208,6 @@ public:
      * @return          a reference to this.
      */
     Vector& operator+=( const Vector& other );
-
 
     /**
      * @brief Returns the subtraction of this and other.
@@ -512,12 +511,12 @@ protected:
     /*   Factory to create Vector of derived type                                             */
     /* ---------------------------------------------------------------------------------------*/
 
-    /** Type definition of a argumentless function to create a vector. 
+    /** Type definition of a argumentless function to create a vector.
      *
      *  @return new Vector object, calling routine takes over the ownership
      */
 
-    typedef Vector* ( *CreateFn ) ();
+typedef    Vector* ( *CreateFn ) ();
 
     /** This method should be called by vector classes to register their create operation. */
 
@@ -537,10 +536,10 @@ private:
 
     typedef std::map< CreatorKey, Vector::CreateFn > CreatorMap;
 
-    /**  
+    /**
      *  Getter method for the singleton factory.
      *
-     *  Getter method instead of a member variable guarantees that order of 
+     *  Getter method instead of a member variable guarantees that order of
      *  static intialization does not matter.
      */
     static CreatorMap& getFactory();

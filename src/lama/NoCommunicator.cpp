@@ -2,7 +2,7 @@
  * @file NoCommunicator.cpp
  *
  * @license
- * Copyright (c) 2009-2013
+ * Copyright (c) 2009-2015
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -49,7 +49,7 @@ namespace lama
 LAMA_LOG_DEF_LOGGER( NoCommunicator::logger, "Communicator.NoCommunicator" )
 
 NoCommunicator::NoCommunicator()
-    : CRTPCommunicator<NoCommunicator>( "none" )
+                : CRTPCommunicator<NoCommunicator>( "none" )
 {
     LAMA_LOG_DEBUG( logger, "NoCommunicator()" )
 }
@@ -112,12 +112,12 @@ void NoCommunicator::exchangeByPlanImpl(
 {
     LAMA_ASSERT_EQUAL_ERROR( recvPlan.size(), sendPlan.size() )
 
-    if ( 0 == recvPlan.size() && 0 == sendPlan.size() )
+    if( 0 == recvPlan.size() && 0 == sendPlan.size() )
     {
         return;
     }
 
-    // send / recv plan have maximal one value 
+    // send / recv plan have maximal one value
 
     LAMA_ASSERT_EQUAL_ERROR( 1, recvPlan.size() )
 
@@ -129,7 +129,7 @@ void NoCommunicator::exchangeByPlanImpl(
 
     // self copy of send data to recv data
 
-    memcpy( recvData, sendData, quantity * sizeof( ValueType ) );
+    memcpy( recvData, sendData, quantity * sizeof(ValueType) );
 }
 
 template<typename ValueType>
@@ -176,7 +176,7 @@ void NoCommunicator::maxlocImpl( ValueType&, IndexType&, const PartitionId root 
     // nothing to do
     LAMA_ASSERT_EQUAL_ERROR( root, 0 )
 }
- 
+
 template<typename ValueType>
 void NoCommunicator::bcastImpl( ValueType[], const IndexType, const PartitionId root ) const
 {
@@ -184,11 +184,15 @@ void NoCommunicator::bcastImpl( ValueType[], const IndexType, const PartitionId 
 }
 
 template<typename ValueType>
-void NoCommunicator::scatterImpl( ValueType myvals[], const IndexType n, const PartitionId root, const ValueType allvals[] ) const
+void NoCommunicator::scatterImpl(
+    ValueType myvals[],
+    const IndexType n,
+    const PartitionId root,
+    const ValueType allvals[] ) const
 {
     LAMA_ASSERT_EQUAL_ERROR( root, 0 )
 
-    for ( int i = 0; i < n; i++ )
+    for( int i = 0; i < n; i++ )
     {
         myvals[i] = allvals[i];
     }
@@ -205,18 +209,22 @@ void NoCommunicator::scatterVImpl(
     LAMA_ASSERT_EQUAL_ERROR( root, 0 )
     LAMA_ASSERT_EQUAL_ERROR( sizes[0], n )
 
-    for ( int i = 0; i < n; i++ )
+    for( int i = 0; i < n; i++ )
     {
         myvals[i] = allvals[i];
     }
 }
 
 template<typename ValueType>
-void NoCommunicator::gatherImpl( ValueType allvals[], const IndexType n, const PartitionId root, const ValueType myvals[] ) const
+void NoCommunicator::gatherImpl(
+    ValueType allvals[],
+    const IndexType n,
+    const PartitionId root,
+    const ValueType myvals[] ) const
 {
     LAMA_ASSERT_EQUAL_ERROR( root, 0 )
 
-    for ( int i = 0; i < n; i++ )
+    for( int i = 0; i < n; i++ )
     {
         allvals[i] = myvals[i];
     }
@@ -233,7 +241,7 @@ void NoCommunicator::gatherVImpl(
     LAMA_ASSERT_EQUAL_ERROR( root, 0 )
     LAMA_ASSERT_EQUAL_ERROR( sizes[0], n )
 
-    for ( int i = 0; i < n; i++ )
+    for( int i = 0; i < n; i++ )
     {
         allvals[i] = myvals[i];
     }

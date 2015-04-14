@@ -2,7 +2,7 @@
  * @file Logger.cpp
  *
  * @license
- * Copyright (c) 2009-2013
+ * Copyright (c) 2009-2015
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -71,7 +71,7 @@ Logger::Logger(
     std::auto_ptr<Timer> timer,
     bool ignoreRank )
     : mTimer( timer ), mId( id ), mLogLevel( level ), mWriteBehaviour( writeBehaviour ), mIgnoreRank(
-        ignoreRank )
+          ignoreRank )
 {
 }
 
@@ -83,7 +83,7 @@ Logger::Logger(
     std::auto_ptr<Timer> timer,
     bool ignoreRank )
     : mTimer( timer ), mId( id ), mLogLevel( level ), mWriteBehaviour( writeBehaviour ), mIgnoreRank(
-        ignoreRank )
+          ignoreRank )
 {
     FileLogger::getFileLogger().setLogFile( logFileName );
 }
@@ -106,30 +106,32 @@ void Logger::logString( const std::string& message )
 {
     std::string logMessage = this->createPrefix() + message;
 
-    switch ( mWriteBehaviour )
+    switch( mWriteBehaviour )
     {
-    case LoggerWriteBehaviour::toFileAndConsole:
-    {
-        FileLogger::getFileLogger().logMessage( logMessage );
-        std::cout << logMessage;
-    }
-    break;
-    case LoggerWriteBehaviour::toConsoleOnly:
-    {
-        std::cout << logMessage;
-    }
-    break;
-    case LoggerWriteBehaviour::toFileOnly:
-    {
-        FileLogger::getFileLogger().logMessage( logMessage );
-    }
-    break;
+        case LoggerWriteBehaviour::toFileAndConsole:
+        {
+            FileLogger::getFileLogger().logMessage( logMessage );
+            std::cout << logMessage;
+        }
+        break;
+
+        case LoggerWriteBehaviour::toConsoleOnly:
+        {
+            std::cout << logMessage;
+        }
+        break;
+
+        case LoggerWriteBehaviour::toFileOnly:
+        {
+            FileLogger::getFileLogger().logMessage( logMessage );
+        }
+        break;
     }
 }
 
 void Logger::logString( LogLevel::LogLevel level, const std::string& message )
 {
-    if ( level <= mLogLevel && !mIgnoreRank )
+    if( level <= mLogLevel && !mIgnoreRank )
     {
         logString( message );
     }
@@ -151,7 +153,7 @@ void Logger::logResidual(
     const Norm& norm,
     const std::string iterationPrefix )
 {
-    if ( level <= mLogLevel )
+    if( level <= mLogLevel )
     {
         std::stringstream residualStream;
         residualStream << iterationPrefix;
@@ -168,7 +170,7 @@ void Logger::logTime( const std::string& timerId, LogLevel::LogLevel level, cons
 
     double time = mTimer->getTime( timerId );
 
-    if ( level <= mLogLevel )
+    if( level <= mLogLevel )
     {
         std::stringstream timeStringStream;
         timeStringStream << message;

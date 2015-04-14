@@ -2,7 +2,7 @@
  * @file Halo.cpp
  *
  * @license
- * Copyright (c) 2009-2013
+ * Copyright (c) 2009-2015
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -71,14 +71,14 @@ void Halo::purge()
     mRequiredIndexes.purge();
     mProvidesIndexes.purge();
 
-    // free memory of map by reallocation 
+    // free memory of map by reallocation
 
     std::map<IndexType,IndexType>().swap( mGlobal2Halo );
 }
 
 Halo& Halo::operator=( const Halo& other )
 {
-    if ( this != &other )
+    if( this != &other )
     {
         LAMA_LOG_DEBUG( logger, "make deep copy of Halo" )
 

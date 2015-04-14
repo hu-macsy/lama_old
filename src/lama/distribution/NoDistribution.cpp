@@ -2,7 +2,7 @@
  * @file NoDistribution.cpp
  *
  * @license
- * Copyright (c) 2009-2013
+ * Copyright (c) 2009-2015
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -85,7 +85,7 @@ void NoDistribution::writeAt( std::ostream& stream ) const
 
 void NoDistribution::printDistributionVector( std::string name ) const
 {
-    if ( mCommunicator->getRank() == 0 ) // process 0 ist MASTER process
+    if( mCommunicator->getRank() == 0 ) // process 0 ist MASTER process
     {
         std::ofstream file;
         file.open( ( name + ".part" ).c_str() );
@@ -95,23 +95,17 @@ void NoDistribution::printDistributionVector( std::string name ) const
     }
 }
 
-/* ---------------------------------------------------------------------------------* 
+/* ---------------------------------------------------------------------------------*
  *   static create methods ( required for registration in distribution factory )    *
  * ---------------------------------------------------------------------------------*/
 
-NoDistribution* NoDistribution::create(
-    const CommunicatorPtr,
-    const IndexType globalSize,
-    const float )
+NoDistribution* NoDistribution::create( const CommunicatorPtr, const IndexType globalSize, const float )
 {
     // weight remains unused
     return new NoDistribution( globalSize );
 }
 
-NoDistribution* NoDistribution::create(
-    const CommunicatorPtr,
-    const Matrix& matrix,
-    const float )
+NoDistribution* NoDistribution::create( const CommunicatorPtr, const Matrix& matrix, const float )
 {
     // we only take the size of the matrix
 

@@ -2,7 +2,7 @@
  * @file shared_lib.hpp
  *
  * @license
- * Copyright (c) 2009-2013
+ * Copyright (c) 2009-2015
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -35,14 +35,14 @@
 #define LAMA_SHARED_LIB_HPP_
 
 #ifdef _WIN32
-    #include <Windows.h>
-    #define LAMA_LIB_HANDLE_TYPE HINSTANCE
-    #ifdef max
-        #undef max
-    #endif
+#include <Windows.h>
+#define LAMA_LIB_HANDLE_TYPE HINSTANCE
+#ifdef max
+#undef max
+#endif
 #else
-    #include <dlfcn.h>
-    #define LAMA_LIB_HANDLE_TYPE void*
+#include <dlfcn.h>
+#define LAMA_LIB_HANDLE_TYPE void*
 #endif // _WIN32
 
 #include <string>
@@ -55,6 +55,7 @@ int loadLibAndGetFunctionHandle( FunctionHandleType& functionHandle, LAMA_LIB_HA
 {
 #ifdef _WIN32
     handle = LoadLibrary( filename );
+
     if( !handle )
     {
         std::stringstream message;
@@ -74,9 +75,11 @@ int loadLibAndGetFunctionHandle( FunctionHandleType& functionHandle, LAMA_LIB_HA
         FreeLibrary( handle );
         return 1;
     }
+
 #else
     // load library
     handle = dlopen( filename,RTLD_LAZY|RTLD_GLOBAL );
+
     if( !handle )
     {
         std::stringstream message;
@@ -84,12 +87,14 @@ int loadLibAndGetFunctionHandle( FunctionHandleType& functionHandle, LAMA_LIB_HA
         std::cout << message.str( );
         return 1;
     }
+
     dlerror( );
 
     // getting function getInputSetRegistry( ) from loaded library.
     functionHandle = ( FunctionHandleType ) dlsym( handle,functionName );
 
     char* dlsym_error = NULL;
+
     if( ( dlsym_error=dlerror( ) )!=NULL )
     {
         std::stringstream message;
@@ -99,6 +104,7 @@ int loadLibAndGetFunctionHandle( FunctionHandleType& functionHandle, LAMA_LIB_HA
         dlclose( handle );
         return 1;
     }
+
 #endif //WIN32
     return 0;
 }
@@ -117,11 +123,13 @@ int getFunctionHandle( FunctionHandleType& functionHandle, LAMA_LIB_HANDLE_TYPE&
         FreeLibrary( handle );
         return 1;
     }
+
 #else
     // getting function getInputSetRegistry( ) from loaded library.
     functionHandle = ( FunctionHandleType ) dlsym( handle,functionName );
 
     char* dlsym_error = NULL;
+
     if( ( dlsym_error=dlerror( ) )!=NULL )
     {
         std::stringstream message;
@@ -130,6 +138,7 @@ int getFunctionHandle( FunctionHandleType& functionHandle, LAMA_LIB_HANDLE_TYPE&
         dlclose( handle );
         return 1;
     }
+
 #endif //WIN32
     return 0;
 

@@ -2,7 +2,7 @@
  * @file Task.cpp
  *
  * @license
- * Copyright (c) 2009-2013
+ * Copyright (c) 2009-2015
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -53,7 +53,7 @@ boost::shared_ptr<LAMAThreadPool> Task::theThreadPool;
 
 LAMAThreadPool& Task::getThreadPool()
 {
-    if ( !theThreadPool )
+    if( !theThreadPool )
     {
         theThreadPool.reset( new LAMAThreadPool( 1 ) );
     }
@@ -88,7 +88,7 @@ Task::~Task()
 
 void Task::synchronize()
 {
-    if ( !mTask )
+    if( !mTask )
     {
         return;
     }
@@ -99,7 +99,7 @@ void Task::synchronize()
 
     LAMA_LOG_DEBUG( logger, "Task = " << mTask->mTaskId << " finished" << ", exception = " << mTask->mException )
 
-    if ( mTask->mException )
+    if( mTask->mException )
     {
         LAMA_THROWEXCEPTION( "Task got exception" )
     }
@@ -123,7 +123,7 @@ void Task::writeAt( std::ostream& stream ) const
 
 Task::Id Task::getId() const
 {
-    if ( mTask )
+    if( mTask )
     {
         return mTask->mTaskId;
     }

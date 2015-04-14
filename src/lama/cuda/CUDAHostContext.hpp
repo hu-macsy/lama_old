@@ -2,7 +2,7 @@
  * @file CUDAHostContext.hpp
  *
  * @license
- * Copyright (c) 2009-2013
+ * Copyright (c) 2009-2015
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -89,7 +89,7 @@ private:
 
     LAMA_LOG_DECL_STATIC_LOGGER( logger )
 
-    CUDAHostContext( boost::shared_ptr<const CUDAContext> cudaContext );
+    CUDAHostContext    ( boost::shared_ptr<const CUDAContext> cudaContext );
 
     virtual void writeAt( std::ostream& stream ) const;
 

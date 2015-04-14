@@ -2,7 +2,7 @@
  * @file Distribution.cpp
  *
  * @license
- * Copyright (c) 2009-2013
+ * Copyright (c) 2009-2015
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -67,7 +67,7 @@ Distribution::Distribution( const IndexType globalSize )
 Distribution::Distribution( const IndexType globalSize, const CommunicatorPtr communicator )
     : mGlobalSize( globalSize ), mCommunicator( communicator )
 {
-    if ( !mCommunicator )
+    if( !mCommunicator )
     {
         LAMA_THROWEXCEPTION( "Distribution without a Communicator is not allowed" )
     }
@@ -90,12 +90,12 @@ bool Distribution::operator==( const Distribution& other ) const
     LAMA_LOG_TRACE( logger, "check " << *this << " == " << other )
     bool isSame = false;
 
-    if ( this == &other )
+    if( this == &other )
     {
         isSame = true;
         LAMA_LOG_DEBUG( logger, *this << " == " << other << ": pointer equal" )
     }
-    else if ( isReplicated() && other.isReplicated() )
+    else if( isReplicated() && other.isReplicated() )
     {
         isSame = getGlobalSize() == other.getGlobalSize();
         LAMA_LOG_DEBUG( logger, *this << " == " << other << ": both are replicated, same size" )
@@ -180,10 +180,8 @@ void Distribution::replicate( T1* allValues, const T2* localValues ) const
     // Implemenation via cyclic shifting of the vector data and distribution
     IndexType maxLocalSize = comm.max( currentSize );
 
-    LAMA_LOG_INFO( logger, comm << ": replicate localValues<" << Scalar::getType<T2>()
-                          << ">[ " << currentSize << ", max = " << maxLocalSize  << " ] "
-                          << " to allValues<" << Scalar::getType<T1>() 
-                          << ">[ " << getGlobalSize() << " ]" )
+    LAMA_LOG_INFO( logger,
+                   comm << ": replicate localValues<" << Scalar::getType<T2>() << ">[ " << currentSize << ", max = " << maxLocalSize << " ] " << " to allValues<" << Scalar::getType<T1>() << ">[ " << getGlobalSize() << " ]" )
 
     // Only allocate the needed size of the Arrays
 
@@ -205,7 +203,7 @@ void Distribution::replicate( T1* allValues, const T2* localValues ) const
 
     LAMA_LOG_INFO( logger, "replicate on this communication context: " << *commContext )
 
-    { 
+    {
         WriteOnlyAccess<IndexType> wIndexesSend( indexesSend, commContext, currentSize );
         WriteOnlyAccess<T1> wValuesSend( valuesSend, commContext, currentSize );
 
@@ -214,7 +212,7 @@ void Distribution::replicate( T1* allValues, const T2* localValues ) const
         IndexType* pIndexesSend = wIndexesSend.get();
         T1* pValuesSend = wValuesSend.get();
 
-        for ( IndexType i = 0; i < currentSize; i++ )
+        for( IndexType i = 0; i < currentSize; i++ )
         {
             IndexType globalIndex = local2global( i );
             LAMA_ASSERT_DEBUG( globalIndex < getGlobalSize(), *this << ": global index " << globalIndex << " illegal" )
@@ -233,10 +231,10 @@ void Distribution::replicate( T1* allValues, const T2* localValues ) const
     // now nproc - 1 steps for cyclic shifting
     PartitionId np = comm.getSize(); // number partitions
 
-    for ( PartitionId ip = 0; ip < np - 1; ++ip )
+    for( PartitionId ip = 0; ip < np - 1; ++ip )
     {
-        comm.shiftArray( indexesReceive, indexesSend, 1);
-        comm.shiftArray( valuesReceive, valuesSend, 1);
+        comm.shiftArray( indexesReceive, indexesSend, 1 );
+        comm.shiftArray( valuesReceive, valuesSend, 1 );
 
         LAMA_ASSERT_EQUAL_DEBUG( valuesReceive.size(), indexesReceive.size() )
 
@@ -244,7 +242,7 @@ void Distribution::replicate( T1* allValues, const T2* localValues ) const
 
         // sort in the received values
 
-        { 
+        {
             ReadAccess<IndexType> readIndexesReceive( indexesReceive, commContext );
             ReadAccess<T1> readValuesReceive( valuesReceive, commContext );
 
@@ -252,11 +250,12 @@ void Distribution::replicate( T1* allValues, const T2* localValues ) const
 
             const IndexType* rIndexesReceive = readIndexesReceive.get();
             const T1* rValuesReceive = readValuesReceive.get();
-        
-            for ( IndexType i = 0; i < currentSize; i++ )
+
+            for( IndexType i = 0; i < currentSize; i++ )
             {
                 const IndexType globalIndex = rIndexesReceive[i];
-                LAMA_ASSERT_DEBUG( globalIndex < getGlobalSize(), *this << ": global index " << globalIndex << " illegal" )
+                LAMA_ASSERT_DEBUG( globalIndex < getGlobalSize(),
+                                   *this << ": global index " << globalIndex << " illegal" )
                 allValues[globalIndex] = rValuesReceive[i]; // implicit type conversion done here
             }
         }
@@ -288,10 +287,8 @@ void Distribution::replicateN( T1* allValues, const T2* localValues, const Index
     IndexType currentSize = getLocalSize();
     IndexType maxLocalSize = comm.max( currentSize );
 
-    LAMA_LOG_INFO( logger, comm << ": replicateN, n = " << n << ", localValues<" << Scalar::getType<T2>()
-                          << ">[ " << currentSize << ", max = " << maxLocalSize  << " ] "
-                          << " to allValues<" << Scalar::getType<T1>() 
-                          << ">[ " << getGlobalSize() << " ]" )
+    LAMA_LOG_INFO( logger,
+                   comm << ": replicateN, n = " << n << ", localValues<" << Scalar::getType<T2>() << ">[ " << currentSize << ", max = " << maxLocalSize << " ] " << " to allValues<" << Scalar::getType<T1>() << ">[ " << getGlobalSize() << " ]" )
 
     // Only allocate the needed size of the Arrays
 
@@ -320,22 +317,24 @@ void Distribution::replicateN( T1* allValues, const T2* localValues, const Index
         IndexType* pIndexesSend = wIndexesSend.get();
         T1* pValuesSend = wValuesSend.get();
 
-        for ( IndexType i = 0; i < currentSize; i++ )
+        for( IndexType i = 0; i < currentSize; i++ )
         {
             IndexType globalIndex = local2global( i );
             LAMA_ASSERT_DEBUG( globalIndex < getGlobalSize(), *this << ": global index " << globalIndex << " illegal" )
             pIndexesSend[i] = globalIndex;
-            for ( IndexType j = 0; j < n; j++ )
+
+            for( IndexType j = 0; j < n; j++ )
             {
-                pValuesSend[i * n + j] = static_cast<T1>( localValues[i * n + j] );         // type conversion here
+                pValuesSend[i * n + j] = static_cast<T1>( localValues[i * n + j] ); // type conversion here
                 allValues[globalIndex * n + j] = static_cast<T1>( localValues[i * n + j] ); // type conversion here
             }
+
             pValuesSend[i] = static_cast<T1>( localValues[i] ); // type conversion here
             allValues[globalIndex] = static_cast<T1>( localValues[i] ); // type conversion here
         }
     }
 
-    IndexType countLines = currentSize;   // count values set in the global vector, currentSize has been done
+    IndexType countLines = currentSize; // count values set in the global vector, currentSize has been done
 
     // capacity of receive arrays should be sufficient for receiving data to avoid reallocations
 
@@ -346,10 +345,10 @@ void Distribution::replicateN( T1* allValues, const T2* localValues, const Index
 
     PartitionId np = comm.getSize(); // number partitions
 
-    for ( PartitionId ip = 0; ip < np - 1; ++ip )
+    for( PartitionId ip = 0; ip < np - 1; ++ip )
     {
         comm.shiftArray( indexesReceive, indexesSend, 1 );
-        currentSize = indexesReceive.size();               // next numbe of lines to deal with
+        currentSize = indexesReceive.size(); // next numbe of lines to deal with
 
         comm.shiftArray( valuesReceive, valuesSend, 1 );
 
@@ -366,12 +365,13 @@ void Distribution::replicateN( T1* allValues, const T2* localValues, const Index
             const IndexType* rIndexesReceive = readIndexesReceive.get();
             const T1* rValuesReceive = readValuesReceive.get();
 
-            for ( IndexType i = 0; i < currentSize; i++ )
+            for( IndexType i = 0; i < currentSize; i++ )
             {
                 const IndexType globalIndex = rIndexesReceive[i];
-                LAMA_ASSERT_DEBUG( globalIndex < getGlobalSize(), *this << ": global index " << globalIndex << " illegal" )
+                LAMA_ASSERT_DEBUG( globalIndex < getGlobalSize(),
+                                   *this << ": global index " << globalIndex << " illegal" )
 
-                for ( IndexType j = 0; j < n; j++ )
+                for( IndexType j = 0; j < n; j++ )
                 {
                     allValues[globalIndex * n + j] = rValuesReceive[i * n + j];
                 }
@@ -399,7 +399,7 @@ static IndexType fillGlobal(
 {
     IndexType counter = 0; // traverses values, counts the number of filled values
 
-    for ( IndexType i = 0; i < numIndexes; i++ )
+    for( IndexType i = 0; i < numIndexes; i++ )
     {
         const IndexType allIndex = indexes[i];
         const IndexType offset = allOffsets[allIndex];
@@ -411,7 +411,7 @@ static IndexType fillGlobal(
          << allIndex << ", size = " << size << ", offset = " << offset  << std::endl;
          */
 
-        for ( IndexType j = 0; j < size; j++ )
+        for( IndexType j = 0; j < size; j++ )
         {
             allValues[offset + j] = values[counter + j];
         }
@@ -425,7 +425,10 @@ static IndexType fillGlobal(
 /* ---------------------------------------------------------------------- */
 
 template<typename ValueType>
-void Distribution::replicateRagged( ValueType allValues[], const ValueType localValues[], const IndexType allOffsets[] ) const
+void Distribution::replicateRagged(
+    ValueType allValues[],
+    const ValueType localValues[],
+    const IndexType allOffsets[] ) const
 {
     IndexType currentElemSize = getLocalSize();
     const Communicator& comm = getCommunicator();
@@ -451,11 +454,11 @@ void Distribution::replicateRagged( ValueType allValues[], const ValueType local
 
         WriteOnlyAccess<IndexType> wIndexesSend( indexesSend, commContext, currentElemSize );
 
-        IndexType* pIndexesSend = wIndexesSend.get();  // is a HostContext
+        IndexType* pIndexesSend = wIndexesSend.get(); // is a HostContext
 
         // pack my indexes, work as global indexes for allValues
 
-        for ( IndexType i = 0; i < currentElemSize; i++ )
+        for( IndexType i = 0; i < currentElemSize; i++ )
         {
             pIndexesSend[i] = local2global( i );
         }
@@ -471,9 +474,8 @@ void Distribution::replicateRagged( ValueType allValues[], const ValueType local
     // Implemenation via cyclic shifting of the vector data and distribution
     LAMA_LOG_DEBUG( logger, "maximal data size for exchange = " << maxLocalDataSize )
 
-    LAMA_LOG_INFO( logger, comm << ": replicateRagged<" << Scalar::getType<ValueType>()
-                          << ">, localValues[ " << currentDataSize << ", max = " << maxLocalDataSize  << " ] "
-                          << " to allValues [ allOffsets[ " << getGlobalSize() << " ] ]" )
+    LAMA_LOG_INFO( logger,
+                   comm << ": replicateRagged<" << Scalar::getType<ValueType>() << ">, localValues[ " << currentDataSize << ", max = " << maxLocalDataSize << " ] " << " to allValues [ allOffsets[ " << getGlobalSize() << " ] ]" )
 
     LAMAArray<ValueType> valuesSend;
     LAMAArray<ValueType> valuesReceive;
@@ -483,12 +485,12 @@ void Distribution::replicateRagged( ValueType allValues[], const ValueType local
 
     {
         WriteOnlyAccess<ValueType> wValuesSend( valuesSend, commContext, currentDataSize );
- 
+
         ValueType* pValuesSend = wValuesSend.get();
 
         // fill my local values in send buffer
 
-        for ( IndexType i = 0; i < currentDataSize; i++ )
+        for( IndexType i = 0; i < currentDataSize; i++ )
         {
             pValuesSend[i] = localValues[i];
         }
@@ -500,10 +502,10 @@ void Distribution::replicateRagged( ValueType allValues[], const ValueType local
     // now nproc - 1 steps for cyclic shifting
     PartitionId np = comm.getSize(); // number partitions
 
-    for ( PartitionId ip = 0; ip < np - 1; ++ip )
+    for( PartitionId ip = 0; ip < np - 1; ++ip )
     {
-        comm.shiftArray( indexesReceive, indexesSend, 1);
-        comm.shiftArray( valuesReceive, valuesSend, 1);
+        comm.shiftArray( indexesReceive, indexesSend, 1 );
+        comm.shiftArray( valuesReceive, valuesSend, 1 );
 
         IndexType newSize1 = indexesReceive.size();
         IndexType newSize2 = valuesReceive.size();
@@ -513,7 +515,7 @@ void Distribution::replicateRagged( ValueType allValues[], const ValueType local
         {
             ReadAccess<IndexType> rIndexesReceive( indexesReceive, commContext );
             ReadAccess<ValueType> rValuesReceive( valuesReceive, commContext );
- 
+
             IndexType size = -1;
             size = fillGlobal( allValues, allOffsets, rIndexesReceive.get(), newSize1, rValuesReceive.get() );
             LAMA_LOG_DEBUG( logger,
@@ -537,17 +539,17 @@ void Distribution::replicateRagged( ValueType allValues[], const ValueType local
 
 /* ---------------------------------------------------------------------- */
 
-/**  
+/**
  *  Getter method for the singleton map/factory.
  *
- *  Getter method instead of a variable guarantees that order of 
+ *  Getter method instead of a variable guarantees that order of
  *  static intialization does not matter.
  */
 Distribution::CreatorMap& Distribution::getFactory()
 {
-    static std::auto_ptr< CreatorMap> factory;
+    static std::auto_ptr<CreatorMap> factory;
 
-    if ( !factory.get() )
+    if( !factory.get() )
     {
         factory = std::auto_ptr<CreatorMap>( new CreatorMap() );
     }
@@ -561,11 +563,14 @@ void Distribution::addCreator( const std::string& kind, CreateFn1 create1, Creat
 
     // checks for multiple entries is not really necessary here, so just add entry in map container.
 
-    factory[ kind ] = std::pair<CreateFn1, CreateFn2>( create1, create2 );
+    factory[kind] = std::pair<CreateFn1,CreateFn2>( create1, create2 );
 }
 
-Distribution* Distribution::getDistribution( const std::string& kind, CommunicatorPtr comm,
-                                             const IndexType globalSize, const float weight )
+Distribution* Distribution::getDistribution(
+    const std::string& kind,
+    CommunicatorPtr comm,
+    const IndexType globalSize,
+    const float weight )
 {
     Distribution* newDistribution = NULL;
 
@@ -573,7 +578,7 @@ Distribution* Distribution::getDistribution( const std::string& kind, Communicat
 
     CreatorMap::const_iterator fn = factory.find( kind );
 
-    if ( fn != factory.end() )
+    if( fn != factory.end() )
     {
         // use createFN1
         newDistribution = fn->second.first( comm, globalSize, weight );
@@ -587,8 +592,11 @@ Distribution* Distribution::getDistribution( const std::string& kind, Communicat
     return newDistribution;
 }
 
-Distribution* Distribution::getDistribution( const std::string& kind, CommunicatorPtr comm,
-                                             const Matrix& matrix, const float weight )
+Distribution* Distribution::getDistribution(
+    const std::string& kind,
+    CommunicatorPtr comm,
+    const Matrix& matrix,
+    const float weight )
 {
     Distribution* newDistribution = NULL;
 
@@ -596,7 +604,7 @@ Distribution* Distribution::getDistribution( const std::string& kind, Communicat
 
     CreatorMap::const_iterator fn = factory.find( kind );
 
-    if ( fn != factory.end() )
+    if( fn != factory.end() )
     {
         // use createFn2
         newDistribution = fn->second.second( comm, matrix, weight );
@@ -613,37 +621,35 @@ Distribution* Distribution::getDistribution( const std::string& kind, Communicat
 /* ---------------------------------------------------------------------- */
 
 // Instantiation of all relevant replicate routines
-
 // Macro to instantiate for type pair ARRAY_TYPE##I, ARRAY_TYPE##J
-
 #define LAMA_DISTRIBUTE2_INSTANTIATE(z, J, TYPE)                           \
-                                                                           \
-template LAMA_DLL_IMPORTEXPORT void Distribution::replicate(               \
-    TYPE allValues[],                                                      \
-    const ARRAY_TYPE##J localValues[] ) const;                             \
+    \
+    template LAMA_DLL_IMPORTEXPORT void Distribution::replicate(               \
+            TYPE allValues[],                                                      \
+            const ARRAY_TYPE##J localValues[] ) const;                             \
 
 
 #define LAMA_DISTRIBUTE_INSTANTIATE(z, I, _)                               \
-template LAMA_DLL_IMPORTEXPORT void Distribution::replicateRagged(         \
-    ARRAY_TYPE##I allValues[],                                             \
-    const ARRAY_TYPE##I localValues[],                                     \
-    const IndexType allOffsets[] ) const;                                  \
-                                                                           \
-template LAMA_DLL_IMPORTEXPORT void Distribution::replicateN(              \
-    ARRAY_TYPE##I allValues[],                                             \
-    const ARRAY_TYPE##I localValues[],                                     \
-    const IndexType n ) const;                                             \
-                                                                           \
+    template LAMA_DLL_IMPORTEXPORT void Distribution::replicateRagged(         \
+            ARRAY_TYPE##I allValues[],                                             \
+            const ARRAY_TYPE##I localValues[],                                     \
+            const IndexType allOffsets[] ) const;                                  \
+    \
+    template LAMA_DLL_IMPORTEXPORT void Distribution::replicateN(              \
+            ARRAY_TYPE##I allValues[],                                             \
+            const ARRAY_TYPE##I localValues[],                                     \
+            const IndexType n ) const;                                             \
+    \
     BOOST_PP_REPEAT( ARRAY_TYPE_CNT,                                       \
                      LAMA_DISTRIBUTE2_INSTANTIATE,                         \
                      ARRAY_TYPE##I )                                       \
 
 // template instantiation for the supported data types
 
-BOOST_PP_REPEAT( ARRAY_TYPE_CNT, LAMA_DISTRIBUTE_INSTANTIATE, _ )
+    BOOST_PP_REPEAT( ARRAY_TYPE_CNT, LAMA_DISTRIBUTE_INSTANTIATE, _ )
 
 #undef LAMA_DISTRIBUTE_INSTANTIATE
 
-/* ---------------------------------------------------------------------- */
+    /* ---------------------------------------------------------------------- */
 
-}
+    }

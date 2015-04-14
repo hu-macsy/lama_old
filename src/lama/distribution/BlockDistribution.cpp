@@ -2,7 +2,7 @@
  * @file BlockDistribution.cpp
  *
  * @license
- * Copyright (c) 2009-2013
+ * Copyright (c) 2009-2015
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -88,7 +88,7 @@ IndexType BlockDistribution::getLocalSize() const
 {
     IndexType localSize = 0;
 
-    if ( mLB <= mUB )
+    if( mLB <= mUB )
     {
         localSize = mUB - mLB + 1;
     }
@@ -105,7 +105,7 @@ IndexType BlockDistribution::global2local( const IndexType globalIndex ) const
 {
     IndexType localIndex = nIndex;
 
-    if ( globalIndex >= mLB && globalIndex <= mUB )
+    if( globalIndex >= mLB && globalIndex <= mUB )
     {
         localIndex = globalIndex - mLB;
     }
@@ -121,7 +121,7 @@ void BlockDistribution::computeOwners(
     owners.reserve( requiredIndexes.size() );
     LAMA_LOG_INFO( logger, "compute " << requiredIndexes.size() << " owners for " << *this )
 
-    for ( size_t i = 0; i < requiredIndexes.size(); i++ )
+    for( size_t i = 0; i < requiredIndexes.size(); i++ )
     {
         PartitionId owner = getOwner( requiredIndexes[i] );
         owners.push_back( owner );
@@ -130,12 +130,12 @@ void BlockDistribution::computeOwners(
 
 bool BlockDistribution::isEqual( const Distribution& other ) const
 {
-    if ( this == &other )
+    if( this == &other )
     {
         return true;
     }
 
-    if ( dynamic_cast<const BlockDistribution*>( &other ) )
+    if( dynamic_cast<const BlockDistribution*>( &other ) )
     {
         return mGlobalSize == other.getGlobalSize();
     }
@@ -157,15 +157,15 @@ void BlockDistribution::printDistributionVector( std::string name ) const
     std::vector<IndexType> localSizes( parts );
     mCommunicator->gather( &localSizes[0], 1, 0/*MASTER*/, &myLocalSize );
 
-    if ( myRank == 0 ) // process 0 is MASTER process
+    if( myRank == 0 ) // process 0 is MASTER process
     {
         std::ofstream file;
         file.open( ( name + ".part" ).c_str() );
 
         // print row - partition mapping
-        for ( IndexType i = 0; i < parts; ++i )
+        for( IndexType i = 0; i < parts; ++i )
         {
-            for ( IndexType j = 0; j < localSizes[i]; j++ )
+            for( IndexType j = 0; j < localSizes[i]; j++ )
             {
                 file << i << std::endl;
             }
@@ -175,7 +175,7 @@ void BlockDistribution::printDistributionVector( std::string name ) const
     }
 }
 
-/* ---------------------------------------------------------------------------------* 
+/* ---------------------------------------------------------------------------------*
  *   static create methods ( required for registration in distribution factory )    *
  * ---------------------------------------------------------------------------------*/
 
@@ -188,10 +188,7 @@ BlockDistribution* BlockDistribution::create(
     return new BlockDistribution( globalSize, communicator );
 }
 
-BlockDistribution* BlockDistribution::create(
-    const CommunicatorPtr communicator,
-    const Matrix& matrix,
-    const float )
+BlockDistribution* BlockDistribution::create( const CommunicatorPtr communicator, const Matrix& matrix, const float )
 {
     // we only take the size of the matrix
 

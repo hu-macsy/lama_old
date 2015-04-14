@@ -2,7 +2,7 @@
  * @file CUDAELLUtils.hpp
  *
  * @license
- * Copyright (c) 2009-2013
+ * Copyright (c) 2009-2015
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -134,8 +134,8 @@ public:
         const IndexType ellJA[],
         const ELLValueType ellValues[] );
 
-     template<typename ValueType>
-     static void fillELLValues(
+    template<typename ValueType>
+    static void fillELLValues(
         IndexType ellJA[],
         ValueType ellValues[],
         const IndexType ellSizes[],
@@ -261,13 +261,14 @@ private:
 
     LAMA_LOG_DECL_STATIC_LOGGER( logger )
 
-    static bool initialized;   //!< static initialization used for registration
+    static    bool initialized; //!< static initialization used for registration
 
-    static bool registerInterface();  //!< registration
+    static bool registerInterface();//!< registration
 };
 
 /* --------------------------------------------------------------------------- */
 
-} // namespace lama
+}
+// namespace lama
 
 #endif  //  LAMA_CUDA_ELL_UTILS_HPP_

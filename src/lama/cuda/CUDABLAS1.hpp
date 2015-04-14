@@ -2,7 +2,7 @@
  * @file CUDABLAS1.hpp
  *
  * @license
- * Copyright (c) 2009-2013
+ * Copyright (c) 2009-2015
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -46,7 +46,8 @@
 namespace lama
 {
 
-class SyncToken;    // forward declaration
+class SyncToken;
+// forward declaration
 
 class LAMA_DLL_IMPORTEXPORT CUDABLAS1
 {
@@ -54,7 +55,7 @@ class LAMA_DLL_IMPORTEXPORT CUDABLAS1
 // Higher level CUDA BLAS routines of CUDA are allowed to use the private routines
 // but routines must not be used directly in LAMA without using the interface
 
-friend class CUDALAPACK;
+    friend class CUDALAPACK;
 
 public:
 
@@ -73,7 +74,12 @@ private:
      * This function is the CUDA implementation of lama::BLASInterface::scal
      */
     template<typename ValueType>
-    static void scal( const IndexType n, const ValueType alpha, ValueType* x, const IndexType incX, SyncToken* syncToken );
+    static void scal(
+        const IndexType n,
+        const ValueType alpha,
+        ValueType* x,
+        const IndexType incX,
+        SyncToken* syncToken );
 
     /**
      * This function is the CUDA implementation of lama::BLASInterface::nrm2
@@ -97,7 +103,13 @@ private:
      * This function is the CUDA implementation of lama::BLASInterface::swap
      */
     template<typename ValueType>
-    static void swap( const IndexType n, ValueType* y, const IndexType incY, ValueType* x, const IndexType incX, SyncToken* syncToken );
+    static void swap(
+        const IndexType n,
+        ValueType* y,
+        const IndexType incY,
+        ValueType* x,
+        const IndexType incX,
+        SyncToken* syncToken );
 
     /**
      * This function is the CUDA implementation of lama::BLASInterface::copy
@@ -140,20 +152,28 @@ private:
      * This function is the CUDA implementation of lama::BLASInterface::sum
      */
     template<typename ValueType>
-    static void sum( const IndexType n, ValueType alpha, const ValueType* x, ValueType beta, const ValueType* y, ValueType* z, SyncToken* syncToken );
+    static void sum(
+        const IndexType n,
+        ValueType alpha,
+        const ValueType* x,
+        ValueType beta,
+        const ValueType* y,
+        ValueType* z,
+        SyncToken* syncToken );
 
 private:
 
     LAMA_LOG_DECL_STATIC_LOGGER( logger )
 
-    template<typename ValueType>
+    template    <typename ValueType>
     static void sum_launcher( const int n, ValueType alpha, const ValueType* x, ValueType beta, const ValueType* y, ValueType* z, cudaStream_t stream );
 
-    static bool initialized;   //!< static initialization used for registration
+    static bool initialized; //!< static initialization used for registration
 
-    static bool registerInterface();  //!< registration
+    static bool registerInterface();//!< registration
 };
 
-} /* namespace lama */
+}
+/* namespace lama */
 
 #endif // LAMA_CUDA_BLAS1_HPP_

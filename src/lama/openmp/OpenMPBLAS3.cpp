@@ -2,7 +2,7 @@
  * @file OpenMPBLAS3.cpp
  *
  * @license
- * Copyright (c) 2009-2013
+ * Copyright (c) 2009-2015
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -64,58 +64,62 @@ void OpenMPBLAS3::gemm(
     const IndexType ldc,
     SyncToken* syncToken )
 {
-    if ( syncToken )
+    if( syncToken )
     {
         LAMA_LOG_WARN( logger, "no asynchronous execution for openmp possible at this level." )
     }
 
-    LAMA_LOG_INFO( logger, "gemm<" << Scalar::getType<ValueType>() << ">: "
-                   << "m = " << m << ", n = " << n << ", k = " << k
-                    << ", lda = " << lda << ", ldb = " << ldb << ", ldc = " << ldc
-                    << ", alpha = " << alpha << ", beta = " << beta )
+    LAMA_LOG_INFO( logger,
+                   "gemm<" << Scalar::getType<ValueType>() << ">: " << "m = " << m << ", n = " << n << ", k = " << k << ", lda = " << lda << ", ldb = " << ldb << ", ldc = " << ldc << ", alpha = " << alpha << ", beta = " << beta )
 
     IndexType RowMajorStrg;
     RowMajorStrg = 0;
 
-    if ( order == CblasColMajor )
+    if( order == CblasColMajor )
     {
-        if ( TransA == CblasTrans )
+        if( TransA == CblasTrans )
         {
             //'T'
-            if ( TransB == CblasNoTrans )
+            if( TransB == CblasNoTrans )
             {
                 ValueType temp = 0.0;
-#pragma omp parallel for collapse(2) private(temp) schedule( LAMA_OMP_SCHEDULE )
-                for ( int h = 0; h < n; h++ )
+                #pragma omp parallel for collapse(2) private(temp) schedule( LAMA_OMP_SCHEDULE )
+
+                for( int h = 0; h < n; h++ )
                 {
-                    for ( int i = 0; i < m; i++ )
+                    for( int i = 0; i < m; i++ )
                     {
                         temp = 0.0;
-                        for ( int j = 0; j < k; j++ )
+
+                        for( int j = 0; j < k; j++ )
                         {
                             temp += A[lda * h + j] * B[ldb * i + j];
                         }
+
                         C[ldc * i + h] = alpha * temp + beta * C[ldc * i + h];
                     }
                 }
             }
-            else if ( TransB == CblasConjTrans )
+            else if( TransB == CblasConjTrans )
             {
                 LAMA_THROWEXCEPTION( "gemm for complexe matrix is not supported yet" )
             }
-            else if ( TransB == CblasTrans )
+            else if( TransB == CblasTrans )
             {
                 ValueType temp = 0.0;
-#pragma omp parallel for collapse(2) private(temp) schedule( LAMA_OMP_SCHEDULE )
-                for ( int h = 0; h < n; h++ )
+                #pragma omp parallel for collapse(2) private(temp) schedule( LAMA_OMP_SCHEDULE )
+
+                for( int h = 0; h < n; h++ )
                 {
-                    for ( int i = 0; i < m; i++ )
+                    for( int i = 0; i < m; i++ )
                     {
                         temp = 0.0;
-                        for ( int j = 0; j < k; j++ )
+
+                        for( int j = 0; j < k; j++ )
                         {
                             temp += A[lda * h + j] * B[ldb * j + i];
                         }
+
                         C[ldc * i + h] = alpha * temp + beta * C[ldc * i + h];
                     }
                 }
@@ -127,19 +131,20 @@ void OpenMPBLAS3::gemm(
                 return;
             }
         }
-        else if ( TransA == CblasConjTrans )
+        else if( TransA == CblasConjTrans )
         {
             LAMA_THROWEXCEPTION( "gemm for complexe matrix is not supported yet" )
+
             //'C'
-            if ( TransB == CblasNoTrans )
+            if( TransB == CblasNoTrans )
             {
 
             }
-            else if ( TransB == CblasConjTrans )
+            else if( TransB == CblasConjTrans )
             {
 
             }
-            else if ( TransB == CblasTrans )
+            else if( TransB == CblasTrans )
             {
 
             }
@@ -150,42 +155,48 @@ void OpenMPBLAS3::gemm(
                 return;
             }
         }
-        else if ( TransA == CblasNoTrans )
+        else if( TransA == CblasNoTrans )
         {
-            if ( TransB == CblasNoTrans )
+            if( TransB == CblasNoTrans )
             {
                 ValueType temp = 0.0;
-#pragma omp parallel for collapse(2) private(temp) schedule( LAMA_OMP_SCHEDULE )
-                for ( int h = 0; h < n; h++ )
+                #pragma omp parallel for collapse(2) private(temp) schedule( LAMA_OMP_SCHEDULE )
+
+                for( int h = 0; h < n; h++ )
                 {
-                    for ( int i = 0; i < m; i++ )
+                    for( int i = 0; i < m; i++ )
                     {
                         temp = 0.0;
-                        for ( int j = 0; j < k; j++ )
+
+                        for( int j = 0; j < k; j++ )
                         {
                             temp += A[lda * j + h] * B[ldb * i + j];
                         }
+
                         C[ldc * i + h] = alpha * temp + beta * C[ldc * i + h];
                     }
                 }
             }
-            else if ( TransB == CblasConjTrans )
+            else if( TransB == CblasConjTrans )
             {
                 LAMA_THROWEXCEPTION( "gemm for complexe matrix is not supported yet" )
             }
-            else if ( TransB == CblasTrans )
+            else if( TransB == CblasTrans )
             {
                 ValueType temp = 0.0;
-#pragma omp parallel for collapse(2) private(temp) schedule( LAMA_OMP_SCHEDULE )
-                for ( int h = 0; h < n; h++ )
+                #pragma omp parallel for collapse(2) private(temp) schedule( LAMA_OMP_SCHEDULE )
+
+                for( int h = 0; h < n; h++ )
                 {
-                    for ( int i = 0; i < m; i++ )
+                    for( int i = 0; i < m; i++ )
                     {
                         temp = 0.0;
-                        for ( int j = 0; j < k; j++ )
+
+                        for( int j = 0; j < k; j++ )
                         {
                             temp += A[lda * j + h] * B[ldb * j + i];
                         }
+
                         C[ldc * i + h] = alpha * temp + beta * C[ldc * i + h];
                     }
                 }
@@ -204,46 +215,52 @@ void OpenMPBLAS3::gemm(
             return;
         }
     }
-    else if ( order == CblasRowMajor )
+    else if( order == CblasRowMajor )
     {
         RowMajorStrg = 1;
 
-        if ( TransA == CblasTrans )
+        if( TransA == CblasTrans )
         {
-            if ( TransB == CblasNoTrans )
+            if( TransB == CblasNoTrans )
             {
                 ValueType temp = 0.0;
-#pragma omp parallel for collapse(2) private(temp) schedule( LAMA_OMP_SCHEDULE )
-                for ( int h = 0; h < n; h++ )
+                #pragma omp parallel for collapse(2) private(temp) schedule( LAMA_OMP_SCHEDULE )
+
+                for( int h = 0; h < n; h++ )
                 {
-                    for ( int i = 0; i < m; i++ )
+                    for( int i = 0; i < m; i++ )
                     {
                         temp = 0.0;
-                        for ( int j = 0; j < k; j++ )
+
+                        for( int j = 0; j < k; j++ )
                         {
                             temp += A[lda * j + i] * B[ldb * j + h];
                         }
+
                         C[ldc * i + h] = alpha * temp + beta * C[ldc * i + h];
                     }
                 }
             }
-            else if ( TransB == CblasConjTrans )
+            else if( TransB == CblasConjTrans )
             {
                 LAMA_THROWEXCEPTION( "gemm for complexe matrix is not supported yet" )
             }
-            else if ( TransB == CblasTrans )
+            else if( TransB == CblasTrans )
             {
                 ValueType temp = 0.0;
-#pragma omp parallel for collapse(2) private(temp) schedule( LAMA_OMP_SCHEDULE )
-                for ( int h = 0; h < n; h++ )
+                #pragma omp parallel for collapse(2) private(temp) schedule( LAMA_OMP_SCHEDULE )
+
+                for( int h = 0; h < n; h++ )
                 {
-                    for ( int i = 0; i < m; i++ )
+                    for( int i = 0; i < m; i++ )
                     {
                         temp = 0.0;
-                        for ( int j = 0; j < k; j++ )
+
+                        for( int j = 0; j < k; j++ )
                         {
                             temp += A[lda * j + i] * B[ldb * h + j];
                         }
+
                         C[ldc * i + h] = alpha * temp + beta * C[ldc * i + h];
                     }
                 }
@@ -255,24 +272,26 @@ void OpenMPBLAS3::gemm(
                 return;
             }
         }
-        else if ( TransA == CblasNoTrans )
+        else if( TransA == CblasNoTrans )
         {
-            if ( TransB == CblasNoTrans )
+            if( TransB == CblasNoTrans )
             {
                 // A = 'N'; B = 'N'
                 //std::cout << "lda:" << lda << ", ldb:" << ldb << ", ldc:" << ldc << "\n";
                 //std::cout << "n:" << n << ", m:" << m << ", k:" << k << "\n";
 
-#pragma omp parallel for collapse(2) schedule( LAMA_OMP_SCHEDULE )
-                for ( int h = 0; h < n; h++ )
+                #pragma omp parallel for collapse(2) schedule( LAMA_OMP_SCHEDULE )
+                for( int h = 0; h < n; h++ )
                 {
-                    for ( int i = 0; i < m; i++ )
+                    for( int i = 0; i < m; i++ )
                     {
                         ValueType temp = 0.0;
-                        for ( int j = 0; j < k; j++ )
+
+                        for( int j = 0; j < k; j++ )
                         {
                             temp += A[lda * i + j] * B[ldb * j + h];
                         }
+
                         C[ldc * i + h] = alpha * temp + beta * C[ldc * i + h];
                     }
                 }
@@ -280,21 +299,24 @@ void OpenMPBLAS3::gemm(
             else if( TransB == CblasTrans )
             {
                 ValueType temp = 0.0;
-#pragma omp parallel for collapse(2) private(temp) schedule( LAMA_OMP_SCHEDULE )
-                for ( int h = 0; h < n; h++ )
+                #pragma omp parallel for collapse(2) private(temp) schedule( LAMA_OMP_SCHEDULE )
+
+                for( int h = 0; h < n; h++ )
                 {
-                    for ( int i = 0; i < m; i++ )
+                    for( int i = 0; i < m; i++ )
                     {
                         temp = 0.0;
-                        for ( int j = 0; j < k; j++ )
+
+                        for( int j = 0; j < k; j++ )
                         {
                             temp += A[lda * i + j] * B[ldb * h + j];
                         }
+
                         C[ldc * i + h] = alpha * temp + beta * C[ldc * i + h];
                     }
                 }
             }
-            else if ( TransB == CblasConjTrans )
+            else if( TransB == CblasConjTrans )
             {
                 LAMA_THROWEXCEPTION( "gemm for complexe matrix is not supported yet" )
             }
@@ -305,18 +327,19 @@ void OpenMPBLAS3::gemm(
                 return;
             }
         }
-        else if ( TransA == CblasConjTrans )
+        else if( TransA == CblasConjTrans )
         {
             LAMA_THROWEXCEPTION( "gemm for complexe matrix is not supported yet" )
+
             if( TransB == CblasNoTrans )
             {
 
             }
-            else if ( TransB == CblasConjTrans )
+            else if( TransB == CblasConjTrans )
             {
 
             }
-            else if ( TransB == CblasTrans )
+            else if( TransB == CblasTrans )
             {
 
             }

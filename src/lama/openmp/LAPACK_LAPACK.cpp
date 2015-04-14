@@ -2,7 +2,7 @@
  * @file LAPACK_LAPACK.cpp
  *
  * @license
- * Copyright (c) 2009-2013
+ * Copyright (c) 2009-2015
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -108,14 +108,46 @@ extern "C"
 
 #endif /* LAMA_FORTRAN_BLAS_STYLE */
 
-    void F77_sgetrf( const int* m, const int* n, float* a, const int* lda, int* ipivot, int* info );
-    void F77_dgetrf( const int* m, const int* n, double* a, const int* lda, int* ipivot, int* info );
-    void F77_sgetri( const int* n, float* a, const int* lda, int* ipivot, float* work, const int* ldwork, int* info );
-    void F77_dgetri( const int* n, double* a, const int* lda, int* ipivot, double* work, const int* ldwork, int* info );
-    void F77_stptrs( char* uplo, char* transa, char* diag, const int* n, const int* nrhs, const float* ap, float* b, const int* ldb, int* info );
-    void F77_dtptrs( char* uplo, char* transa, char* diag, const int* n, const int* nrhs, const double* ap, double* b, const int* ldb, int* info );
-    int F77_slaswp( const int* n, float* a, const int* lda, const int* k1, const int* k2, const int* ipiv, const int* incx );
-    int F77_dlaswp( const int* n, double* a, const int* lda, const int* k1, const int* k2, const int* ipiv, const int* incx );
+void F77_sgetrf( const int* m, const int* n, float* a, const int* lda, int* ipivot, int* info );
+void F77_dgetrf( const int* m, const int* n, double* a, const int* lda, int* ipivot, int* info );
+void F77_sgetri( const int* n, float* a, const int* lda, int* ipivot, float* work, const int* ldwork, int* info );
+void F77_dgetri( const int* n, double* a, const int* lda, int* ipivot, double* work, const int* ldwork, int* info );
+void F77_stptrs(
+    char* uplo,
+    char* transa,
+    char* diag,
+    const int* n,
+    const int* nrhs,
+    const float* ap,
+    float* b,
+    const int* ldb,
+    int* info );
+void F77_dtptrs(
+    char* uplo,
+    char* transa,
+    char* diag,
+    const int* n,
+    const int* nrhs,
+    const double* ap,
+    double* b,
+    const int* ldb,
+    int* info );
+int F77_slaswp(
+    const int* n,
+    float* a,
+    const int* lda,
+    const int* k1,
+    const int* k2,
+    const int* ipiv,
+    const int* incx );
+int F77_dlaswp(
+    const int* n,
+    double* a,
+    const int* lda,
+    const int* k1,
+    const int* k2,
+    const int* ipiv,
+    const int* incx );
 
 #ifdef __cplusplus
 } /*extern "C"*/
@@ -156,15 +188,15 @@ IndexType LAPACK_LAPACK::getrf(
 #define F77_info info
 #endif
 
-    if ( order == CblasColMajor )
+    if( order == CblasColMajor )
     {
         F77_sgetrf( &F77_M, &F77_N, A, &F77_lda, ipiv, &F77_info );
     }
-    else if ( m == n && n == lda )
+    else if( m == n && n == lda )
     {
-        for ( int i = 0; i < m; ++i )
+        for( int i = 0; i < m; ++i )
         {
-            for ( int j = i + 1; j < n; ++j )
+            for( int j = i + 1; j < n; ++j )
             {
                 std::swap( A[i * n + j], A[j * m + i] );
             }
@@ -172,9 +204,9 @@ IndexType LAPACK_LAPACK::getrf(
 
         F77_sgetrf( &F77_M, &F77_N, A, &F77_lda, ipiv, &F77_info );
 
-        for ( int i = 0; i < m; ++i )
+        for( int i = 0; i < m; ++i )
         {
-            for ( int j = i + 1; j < n; ++j )
+            for( int j = i + 1; j < n; ++j )
             {
                 std::swap( A[i * n + j], A[j * m + i] );
             }
@@ -185,16 +217,16 @@ IndexType LAPACK_LAPACK::getrf(
         LAMA_THROWEXCEPTION( "row major only supported for square matrices" );
     }
 
-    for ( int i = 0; i < m; ++i )
+    for( int i = 0; i < m; ++i )
     {
-        --ipiv[i];   // Fortran numbering from 1 to n ->  0 to n-1
+        --ipiv[i]; // Fortran numbering from 1 to n ->  0 to n-1
     }
 
-    if ( info < 0 )
+    if( info < 0 )
     {
         LAMA_THROWEXCEPTION( "illegal argument " << ( -info ) )
     }
-    else if ( info > 0 )
+    else if( info > 0 )
     {
         LAMA_THROWEXCEPTION( "value(" << info << "," << info << ")" << " is exactly zero" )
     }
@@ -230,15 +262,15 @@ IndexType LAPACK_LAPACK::getrf(
 #define F77_info info
 #endif
 
-    if ( order == CblasColMajor )
+    if( order == CblasColMajor )
     {
         F77_dgetrf( &F77_M, &F77_N, A, &F77_lda, ipiv, &F77_info );
     }
-    else if ( m == n && n == lda )
+    else if( m == n && n == lda )
     {
-        for ( int i = 0; i < m; ++i )
+        for( int i = 0; i < m; ++i )
         {
-            for ( int j = i + 1; j < n; ++j )
+            for( int j = i + 1; j < n; ++j )
             {
                 std::swap( A[i * n + j], A[j * m + i] );
             }
@@ -246,9 +278,9 @@ IndexType LAPACK_LAPACK::getrf(
 
         F77_dgetrf( &F77_M, &F77_N, A, &F77_lda, ipiv, &F77_info );
 
-        for ( int i = 0; i < m; ++i )
+        for( int i = 0; i < m; ++i )
         {
-            for ( int j = i + 1; j < n; ++j )
+            for( int j = i + 1; j < n; ++j )
             {
                 std::swap( A[i * n + j], A[j * m + i] );
             }
@@ -259,16 +291,16 @@ IndexType LAPACK_LAPACK::getrf(
         LAMA_THROWEXCEPTION( "row major only supported for square matrices" );
     }
 
-    for ( int i = 0; i < m; ++i )
+    for( int i = 0; i < m; ++i )
     {
-        --ipiv[i];   // Fortran numbering from 1 to n ->  0 to n-1
+        --ipiv[i]; // Fortran numbering from 1 to n ->  0 to n-1
     }
 
-    if ( info < 0 )
+    if( info < 0 )
     {
         LAMA_THROWEXCEPTION( "illegal argument " << ( -info ) )
     }
-    else if ( info > 0 )
+    else if( info > 0 )
     {
         LAMA_THROWEXCEPTION( "value(" << info << "," << info << ")" << " is exactly zero" )
     }
@@ -303,7 +335,7 @@ void LAPACK_LAPACK::getinv( const IndexType n, float* a, const IndexType lda )
 
     F77_sgetrf( &F77_N, &F77_N, a, &F77_lda, ipiv.get(), &F77_info );
 
-    if ( F77_info )
+    if( F77_info )
     {
         LAMA_THROWEXCEPTION( "LAPACK sgetrf failed, info = " << F77_info )
     }
@@ -312,7 +344,7 @@ void LAPACK_LAPACK::getinv( const IndexType n, float* a, const IndexType lda )
 
     F77_sgetri( &F77_N, a, &F77_lda, ipiv.get(), work.get(), &F77_N, &F77_info );
 
-    if ( F77_info )
+    if( F77_info )
     {
         LAMA_THROWEXCEPTION( "LAPACK sgetri failed, info = " << F77_info )
     }
@@ -343,7 +375,7 @@ void LAPACK_LAPACK::getinv( const IndexType n, double* a, const IndexType lda )
 
     F77_dgetrf( &F77_N, &F77_N, a, &F77_lda, ipiv.get(), &F77_info );
 
-    if ( F77_info )
+    if( F77_info )
     {
         LAMA_THROWEXCEPTION( "LAPACK dgetrf failed, info = " << F77_info )
     }
@@ -352,7 +384,7 @@ void LAPACK_LAPACK::getinv( const IndexType n, double* a, const IndexType lda )
 
     F77_dgetri( &F77_N, a, &F77_lda, ipiv.get(), work.get(), &F77_N, &F77_info );
 
-    if ( F77_info )
+    if( F77_info )
     {
         LAMA_THROWEXCEPTION( "LAPACK dgetri failed, info = " << F77_info )
     }
@@ -363,12 +395,7 @@ void LAPACK_LAPACK::getinv( const IndexType n, double* a, const IndexType lda )
 /* ------------------------------------------------------------------------- */
 
 template<>
-int LAPACK_LAPACK::getri(
-    const CBLAS_ORDER order,
-    const int n,
-    float* const a,
-    const int lda,
-    int* const ipiv )
+int LAPACK_LAPACK::getri( const CBLAS_ORDER order, const int n, float* const a, const int lda, int* const ipiv )
 {
     LAMA_REGION( "LAPACK.LAPACK.getri<float>" )
 
@@ -378,24 +405,24 @@ int LAPACK_LAPACK::getri(
 
     // translate C indexes into  Fortran Indexes for ipiv
 
-    for ( int i = 0; i < n; ++i )
+    for( int i = 0; i < n; ++i )
     {
         ++ipiv[i];
     }
 
     // transpose if not column major order
 
-    if ( order != CblasColMajor )
+    if( order != CblasColMajor )
     {
         LAMA_ASSERT_EQUAL_ERROR( lda, n )
 
-        for ( int i = 0; i < n; ++i )
+        for( int i = 0; i < n; ++i )
         {
             // swap row and column
 
-            for ( int j = i + 1; j < n; ++j )
+            for( int j = i + 1; j < n; ++j )
             {
-                std::swap( a[ i * n + j], a[ j * n + i ] );
+                std::swap( a[i * n + j], a[j * n + i] );
             }
         }
     }
@@ -413,24 +440,24 @@ int LAPACK_LAPACK::getri(
 
     F77_sgetri( &F77_N, a, &F77_lda, ipiv, work.get(), &F77_N, &F77_info );
 
-    if ( order != CblasColMajor )
+    if( order != CblasColMajor )
     {
-        // transpose back 
+        // transpose back
 
-        for ( int i = 0; i < n; ++i )
+        for( int i = 0; i < n; ++i )
         {
-            for ( int j = i + 1; j < n; ++j )
+            for( int j = i + 1; j < n; ++j )
             {
-                std::swap( a[ i * n + j], a[ j * n + i ] );
+                std::swap( a[i * n + j], a[j * n + i] );
             }
         }
     }
 
-    if ( info < 0 )
+    if( info < 0 )
     {
         LAMA_THROWEXCEPTION( "illegal argument " << ( -info ) )
     }
-    else if ( info > 0 )
+    else if( info > 0 )
     {
         LAMA_THROWEXCEPTION( "value(" << info << "," << info << ")" << " is exactly zero" )
     }
@@ -443,12 +470,7 @@ int LAPACK_LAPACK::getri(
 /* ------------------------------------------------------------------------- */
 
 template<>
-int LAPACK_LAPACK::getri(
-    const CBLAS_ORDER order,
-    const int n,
-    double* const a,
-    const int lda,
-    int* const ipiv )
+int LAPACK_LAPACK::getri( const CBLAS_ORDER order, const int n, double* const a, const int lda, int* const ipiv )
 {
     LAMA_REGION( "LAPACK.LAPACK.getri<double>" )
 
@@ -458,24 +480,24 @@ int LAPACK_LAPACK::getri(
 
     // translate C indexes into  Fortran Indexes for ipiv
 
-    for ( int i = 0; i < n; ++i )
+    for( int i = 0; i < n; ++i )
     {
         ++ipiv[i];
     }
 
     // transpose if not column major order
 
-    if ( order != CblasColMajor )
+    if( order != CblasColMajor )
     {
         LAMA_ASSERT_EQUAL_ERROR( lda, n )
 
-        for ( int i = 0; i < n; ++i )
+        for( int i = 0; i < n; ++i )
         {
             // swap row and column
 
-            for ( int j = i + 1; j < n; ++j )
+            for( int j = i + 1; j < n; ++j )
             {
-                std::swap( a[ i * n + j], a[ j * n + i ] );
+                std::swap( a[i * n + j], a[j * n + i] );
             }
         }
     }
@@ -493,24 +515,24 @@ int LAPACK_LAPACK::getri(
 
     F77_dgetri( &F77_N, a, &F77_lda, ipiv, work.get(), &F77_N, &F77_info );
 
-    if ( order != CblasColMajor )
+    if( order != CblasColMajor )
     {
-        // transpose back 
+        // transpose back
 
-        for ( int i = 0; i < n; ++i )
+        for( int i = 0; i < n; ++i )
         {
-            for ( int j = i + 1; j < n; ++j )
+            for( int j = i + 1; j < n; ++j )
             {
-                std::swap( a[ i * n + j], a[ j * n + i ] );
+                std::swap( a[i * n + j], a[j * n + i] );
             }
         }
     }
 
-    if ( info < 0 )
+    if( info < 0 )
     {
         LAMA_THROWEXCEPTION( "illegal argument " << ( -info ) )
     }
-    else if ( info > 0 )
+    else if( info > 0 )
     {
         LAMA_THROWEXCEPTION( "value(" << info << "," << info << ")" << " is exactly zero" )
     }
@@ -561,15 +583,14 @@ int LAPACK_LAPACK::tptrs(
     F77_DI = C2F_CHAR( &DI );
 #endif
 
-    LAMA_LOG_INFO( logger, "tptrs<float>, n = " << n << ", nrhs = " << nrhs
-                   << ", order = " << order << ", UL = " << UL
-                   << ", TA = " << TA << ", DI = " << DI );
+    LAMA_LOG_INFO( logger,
+                   "tptrs<float>, n = " << n << ", nrhs = " << nrhs << ", order = " << order << ", UL = " << UL << ", TA = " << TA << ", DI = " << DI );
 
-    if ( order == CblasColMajor )
+    if( order == CblasColMajor )
     {
         F77_stptrs( F77_UL, F77_TA, F77_DI, &F77_n, &F77_nrhs, AP, B, &F77_ldb, &info );
     }
-    else if ( order == CblasRowMajor )
+    else if( order == CblasRowMajor )
     {
         // TODO: transpose matrix.
         LAMA_THROWEXCEPTION( "row major order not supported for tptrs" );
@@ -621,15 +642,14 @@ int LAPACK_LAPACK::tptrs(
     F77_DI = C2F_CHAR( &DI );
 #endif
 
-    LAMA_LOG_INFO( logger, "tptrs<double>, n = " << n << ", nrhs = " << nrhs
-                   << ", order = " << order << ", UL = " << UL
-                   << ", TA = " << TA << ", DI = " << DI );
+    LAMA_LOG_INFO( logger,
+                   "tptrs<double>, n = " << n << ", nrhs = " << nrhs << ", order = " << order << ", UL = " << UL << ", TA = " << TA << ", DI = " << DI );
 
-    if ( order == CblasColMajor )
+    if( order == CblasColMajor )
     {
         F77_dtptrs( F77_UL, F77_TA, F77_DI, &F77_n, &F77_nrhs, AP, B, &F77_ldb, &info );
     }
-    else if ( order == CblasRowMajor )
+    else if( order == CblasRowMajor )
     {
         // TODO: transpose matrix.
         LAMA_THROWEXCEPTION( "row major order not supported for tptrs" );
@@ -656,11 +676,11 @@ void LAPACK_LAPACK::laswp(
 
     int i = K1;
 
-    if ( order == CblasRowMajor )
+    if( order == CblasRowMajor )
     {
-        for ( i = K1; i < K2; ++i )
+        for( i = K1; i < K2; ++i )
         {
-            if ( ipiv[i * INCX] == i )
+            if( ipiv[i * INCX] == i )
             {
                 continue;
             }
@@ -668,7 +688,7 @@ void LAPACK_LAPACK::laswp(
             BLAS_BLAS1::swap<float>( N, &A[ipiv[i * INCX] * LDA], INCX, &A[i * LDA], INCX, syncToken );
         }
     }
-    else if ( order == CblasColMajor )
+    else if( order == CblasColMajor )
     {
 #ifdef F77_INT
         F77_INT F77_N = N, F77_LDA = LDA, F77_K1 = K1, F77_K2 = K2, F77_INCX = INCX;
@@ -710,11 +730,11 @@ void LAPACK_LAPACK::laswp(
 
     int i = K1;
 
-    if ( order == CblasRowMajor )
+    if( order == CblasRowMajor )
     {
-        for ( i = K1; i < K2; ++i )
+        for( i = K1; i < K2; ++i )
         {
-            if ( ipiv[i * INCX] == i )
+            if( ipiv[i * INCX] == i )
             {
                 continue;
             }
@@ -722,7 +742,7 @@ void LAPACK_LAPACK::laswp(
             BLAS_BLAS1::swap<double>( N, &A[ipiv[i * INCX] * LDA], INCX, &A[i * LDA], INCX, syncToken );
         }
     }
-    else if ( order == CblasColMajor )
+    else if( order == CblasColMajor )
     {
 #ifdef F77_INT
         F77_INT F77_N = N, F77_LDA = LDA, F77_K1 = K1, F77_K2 = K2, F77_INCX = INCX;
@@ -749,7 +769,7 @@ void LAPACK_LAPACK::laswp(
 
 void LAPACK_LAPACK::setInterface( BLASInterface& BLAS )
 {
-    // Note: macro takes advantage of same name for routines and type definitions 
+    // Note: macro takes advantage of same name for routines and type definitions
     //       ( e.g. routine CUDABLAS1::sum<ValueType> is set for BLAS::BLAS1::sum variable
 
     LAMA_INTERFACE_REGISTER_T( BLAS, getrf, float )

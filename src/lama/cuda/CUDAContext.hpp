@@ -2,7 +2,7 @@
  * @file CUDAContext.hpp
  *
  * @license
- * Copyright (c) 2009-2013
+ * Copyright (c) 2009-2015
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -169,7 +169,7 @@ private:
     SyncToken* memcpyAsyncFromCUDAHost( void* dst, const void* src, const size_t size ) const;
     SyncToken* memcpyAsyncToCUDAHost( void* dst, const void* src, const size_t size ) const;
 
-    mutable boost::weak_ptr<const class Context> mHostContext;  //!< preferred host context
+    mutable boost::weak_ptr<const class Context> mHostContext; //!< preferred host context
 
     int mDeviceNr; //!< number of device for this context
 
@@ -200,6 +200,7 @@ private:
     LAMA_LOG_DECL_STATIC_LOGGER( logger )
 };
 
-} //namespace lama
+}
+//namespace lama
 
 #endif // LAMA_CUDA_CONTEXT_HPP_

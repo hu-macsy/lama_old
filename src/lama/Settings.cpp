@@ -2,7 +2,7 @@
  * @file Settings.cpp
  *
  * @license
- * Copyright (c) 2009-2013
+ * Copyright (c) 2009-2015
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -51,11 +51,11 @@ bool Settings::convertValue( int& flag, const char* stringVal )
 {
     int nread = sscanf( stringVal, "%d", &flag );
 
-    if ( nread == 1 )
+    if( nread == 1 )
     {
         return true;
     }
- 
+
     return false;
 }
 
@@ -63,35 +63,35 @@ bool Settings::convertYesNoString( bool& flag, const char* stringVal )
 {
     char key = static_cast<char>( toupper( stringVal[0] ) );
 
-    bool done = true;  // becomes false if no legal value has been found
+    bool done = true; // becomes false if no legal value has been found
 
     // to upper
 
-    if ( key == '0' ) 
+    if( key == '0' )
     {
         flag = false;
     }
-    else if ( key == '1' ) 
+    else if( key == '1' )
     {
         flag = true;
     }
-    else if ( key == 'J' ) 
+    else if( key == 'J' )
     {
         flag = true;
     }
-    else if ( key == 'Y' ) 
+    else if( key == 'Y' )
     {
         flag = true;
     }
-    else if ( key == 'T' ) 
+    else if( key == 'T' )
     {
         flag = true;
     }
-    else if ( key == 'N' ) 
+    else if( key == 'N' )
     {
         flag = false;
     }
-    else if ( key == 'F' ) 
+    else if( key == 'F' )
     {
         flag = false;
     }
@@ -100,7 +100,7 @@ bool Settings::convertYesNoString( bool& flag, const char* stringVal )
         // could not identify meaning
         done = false;
     }
- 
+
     return done;
 }
 
@@ -108,59 +108,59 @@ bool Settings::convertYesNoString( bool& flag, const char* stringVal )
 
 bool Settings::getEnvironment( bool& flag, const char* envVarName )
 {
-    const char* env = getenv ( envVarName );
+    const char* env = getenv( envVarName );
 
-    if ( !env ) 
+    if( !env )
     {
         LAMA_LOG_INFO( logger, envVarName << " not set, will use other default" )
 
-        return false;   // no initialization by environment
+        return false; // no initialization by environment
     }
 
     bool done = convertYesNoString( flag, env );
 
-    if ( !done )
+    if( !done )
     {
-        LAMA_LOG_ERROR( logger, "Environment variable " << envVarName << "=" << env 
-                                << ", is illegal setting, assume FALSE" )
+        LAMA_LOG_ERROR( logger,
+                        "Environment variable " << envVarName << "=" << env << ", is illegal setting, assume FALSE" )
 
         flag = false;
     }
 
-    return true;   // environment variable was available
+    return true; // environment variable was available
 }
 
 bool Settings::getEnvironment( int& val, const char* envVarName )
 {
-    const char* env = getenv ( envVarName );
+    const char* env = getenv( envVarName );
 
-    if ( !env )
+    if( !env )
     {
         LAMA_LOG_INFO( logger, envVarName << " not set, will select by compute capability" )
 
-        return false;   // no initialization by environment
+        return false; // no initialization by environment
     }
 
     bool done = convertValue( val, env );
 
-    if ( !done )
+    if( !done )
     {
-        LAMA_LOG_ERROR( logger, "Environment variable " << envVarName << "=" << env
-                                << ", is illegal setting, assume FALSE" )
+        LAMA_LOG_ERROR( logger,
+                        "Environment variable " << envVarName << "=" << env << ", is illegal setting, assume FALSE" )
 
         return false;
     }
 
-    return true;   // environment variable was available
+    return true; // environment variable was available
 }
 
 bool Settings::getEnvironment( std::string& val, const char* envVarName )
 {
     const char *env = getenv( envVarName );
 
-    if ( env )
-    { 
-        val  = env;
+    if( env )
+    {
+        val = env;
 
         LAMA_LOG_INFO( logger, envVarName << " = " << val );
 
@@ -178,11 +178,11 @@ bool Settings::getEnvironment( std::string& val, const char* envVarName, const C
 
     bool hasSet = false;
 
-    if ( isRoot )
+    if( isRoot )
     {
         hasSet = getEnvironment( val, envVarName );
 
-        if ( hasSet )
+        if( hasSet )
         {
             comm.bcast( val, 0 );
         }
@@ -197,10 +197,10 @@ bool Settings::getEnvironment( std::string& val, const char* envVarName, const C
         std::string rootVal;
 
         comm.bcast( rootVal, 0 );
- 
+
         bool hasRootSet = rootVal.length() > 0;
 
-        if ( hasRootSet )
+        if( hasRootSet )
         {
             val = rootVal;
 
@@ -226,11 +226,11 @@ bool Settings::init()
     int i = 0;
     char *s = *environ;
 
-    for (; s; i++) 
+    for( ; s; i++ )
     {
-        if ( strncmp( s, "LAMA_", 5 ) == 0 )
+        if( strncmp( s, "LAMA_", 5 ) == 0 )
         {
-            printf("%s\n", s);
+            printf( "%s\n", s );
         }
 
         s = *( environ + i );

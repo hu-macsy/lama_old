@@ -2,7 +2,7 @@
  * @file HaloBuilder.cpp
  *
  * @license
- * Copyright (c) 2009-2013
+ * Copyright (c) 2009-2015
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -65,10 +65,12 @@ void HaloBuilder::build( const Distribution& distribution, const std::vector<Ind
         communicator.computeOwners( &owners[0], distribution, &requiredIndexes[0], nIndexes );
     }
 #ifdef LAMA_LOG_TRACE
-    for ( unsigned int i = 0; i < requiredIndexes.size(); ++i )
+
+    for( unsigned int i = 0; i < requiredIndexes.size(); ++i )
     {
         LAMA_LOG_TRACE( logger, "Index " << requiredIndexes[i] << " belongs to " << owners[i] )
     }
+
 #endif
 
     CommunicationPlan& requiredPlan = halo.mRequiredPlan;
@@ -83,7 +85,7 @@ void HaloBuilder::build( const Distribution& distribution, const std::vector<Ind
 
     std::vector<IndexType> counts( noPartitions, -1 );
 
-    for ( IndexType p = 0; p < requiredPlan.size(); ++p )
+    for( IndexType p = 0; p < requiredPlan.size(); ++p )
     {
         LAMA_LOG_TRACE( logger,
                         "requiredPlan[ " << p << "]: offset = " << requiredPlan[p].offset << ", pid = " << requiredPlan[p].partitionId << ", quantity = " << requiredPlan[p].quantity )
@@ -98,7 +100,7 @@ void HaloBuilder::build( const Distribution& distribution, const std::vector<Ind
 
     // Note: size of requiredIndexesByOwner == requiredPlan.totalQuanitity()
 
-    for ( IndexType jj = 0; jj < requiredPlan.totalQuantity(); ++jj )
+    for( IndexType jj = 0; jj < requiredPlan.totalQuantity(); ++jj )
     {
         PartitionId owner = owners[jj];
 
@@ -140,11 +142,13 @@ void HaloBuilder::build( const Distribution& distribution, const std::vector<Ind
     {
         HostReadAccess<IndexType> provide( halo.mProvidesIndexes );
         HostReadAccess<IndexType> required( halo.mRequiredIndexes );
-        for ( int i = 0; i < provide.size(); ++i )
+
+        for( int i = 0; i < provide.size(); ++i )
         {
             LAMA_LOG_TRACE( logger, "halo.mProvidesIndexes[" << i << "] " << provide[i] )
         }
-        for ( int i = 0; i < required.size(); ++i )
+
+        for( int i = 0; i < required.size(); ++i )
         {
             LAMA_LOG_TRACE( logger, "halo.mRequiredIndexes[" << i << "] " << required[i] )
         }
@@ -155,7 +159,7 @@ void HaloBuilder::build( const Distribution& distribution, const std::vector<Ind
 
     HostWriteAccess<IndexType> providesIndexes( halo.mProvidesIndexes );
 
-    for ( PartitionId p = 0; p < providesPlan.size(); ++p )
+    for( PartitionId p = 0; p < providesPlan.size(); ++p )
     {
         IndexType n = providesPlan[p].quantity;
 
@@ -164,7 +168,7 @@ void HaloBuilder::build( const Distribution& distribution, const std::vector<Ind
 
         IndexType* partitionIndexes = providesIndexes.get() + providesPlan[p].offset;
 
-        for ( IndexType i = 0; i < n; i++ )
+        for( IndexType i = 0; i < n; i++ )
         {
             IndexType localIndex = distribution.global2local( partitionIndexes[i] );
             LAMA_ASSERT( localIndex != nIndex,

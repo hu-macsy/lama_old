@@ -2,7 +2,7 @@
  * @file MICSyncToken.hpp
  *
  * @license
- * Copyright (c) 2009-2013
+ * Copyright (c) 2009-2015
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -75,7 +75,7 @@ private:
 
     MICContextPtr mMICContext; // needed for synchronization
 
-    int mSignal;    // set by an offload computation
+    int mSignal; // set by an offload computation
 };
 
 } // namespace

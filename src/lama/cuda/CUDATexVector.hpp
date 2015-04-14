@@ -2,7 +2,7 @@
  * @file CUDATexVector.hpp
  *
  * @license
- * Copyright (c) 2009-2013
+ * Copyright (c) 2009-2015
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -34,24 +34,24 @@
 /* --------------------------------------------------------------------------- */
 
 /************************************************************************************
-*
-*  Global variable for vector texture is needed for all supported arithmetic types
-*
-*  Due to static declaration it is safe to use it in different source files
-*
-*  Some algorihtms use two vectors at the same type (might be unsupported on some devices)
-*
-*************************************************************************************/
+ *
+ *  Global variable for vector texture is needed for all supported arithmetic types
+ *
+ *  Due to static declaration it is safe to use it in different source files
+ *
+ *  Some algorihtms use two vectors at the same type (might be unsupported on some devices)
+ *
+ *************************************************************************************/
 
-static texture<int4, 1> texVectorZXref;
+static texture<int4,1> texVectorZXref;
 
-static texture<float2, 1> texVectorCXref;
+static texture<float2,1> texVectorCXref;
 
-static texture<float, 1> texVectorSXref;
+static texture<float,1> texVectorSXref;
 
-static texture<int2, 1> texVectorDXref;
+static texture<int2,1> texVectorDXref;
 
-static texture<int, 1> texVectorIref;
+static texture<int,1> texVectorIref;
 
 __inline__ static void vectorBindTexture( const float* vector )
 {

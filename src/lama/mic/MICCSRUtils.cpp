@@ -2,7 +2,7 @@
  * @file MICCSRUtils.cpp
  *
  * @license
- * Copyright (c) 2009-2013
+ * Copyright (c) 2009-2015
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -73,13 +73,13 @@ IndexType MICCSRUtils::scanSerial( IndexType array[], const IndexType numValues 
 
     int device = MICContext::getCurrentDevice();
 
-    #pragma offload target( mic : device ), in( arrayPtr, numValues ), out( runningSum )
+#pragma offload target( mic : device ), in( arrayPtr, numValues ), out( runningSum )
     {
         IndexType* array = static_cast<IndexType*>( arrayPtr );
 
         runningSum = 0;
 
-        for ( IndexType i = 0; i < numValues; i++ )
+        for( IndexType i = 0; i < numValues; i++ )
         {
             IndexType tmp = runningSum;
             runningSum += array[i];
@@ -100,20 +100,21 @@ IndexType MICCSRUtils::scanParallel( PartitionId numThreads, IndexType array[], 
 
     void* arrayPtr = array;
 
-    void* threadCounterPtr;   // temporary array on MIC device
+    void* threadCounterPtr; // temporary array on MIC device
 
-    #pragma offload target( mic ), in( arrayPtr, numValues, numThreads ), out( threadCounterPtr )
+#pragma offload target( mic ), in( arrayPtr, numValues, numThreads ), out( threadCounterPtr )
     {
-        IndexType* threadCounter = new IndexType[ numThreads ];
+        IndexType* threadCounter = new IndexType[numThreads];
 
-        const IndexType* array = ( IndexType* ) arrayPtr;
+        const IndexType* array = (IndexType*) arrayPtr;
 
         #pragma omp parallel
         {
             IndexType myCounter = 0;
 
             #pragma omp for schedule(static)
-            for ( IndexType i = 0; i < numValues; i++ )
+
+            for( IndexType i = 0; i < numValues; i++ )
             {
                 myCounter += array[i];
             }
@@ -130,7 +131,7 @@ IndexType MICCSRUtils::scanParallel( PartitionId numThreads, IndexType array[], 
 
     // Each thread sets now its offsets
 
-    #pragma offload target( mic ), in( threadCounterPtr, arrayPtr, numValues )
+#pragma offload target( mic ), in( threadCounterPtr, arrayPtr, numValues )
     {
         IndexType* threadCounter = static_cast<IndexType*>( threadCounterPtr );
         IndexType* array = static_cast<IndexType*>( arrayPtr );
@@ -140,7 +141,8 @@ IndexType MICCSRUtils::scanParallel( PartitionId numThreads, IndexType array[], 
             IndexType myRunningSum = threadCounter[omp_get_thread_num()];
 
             #pragma omp for schedule(static)
-            for ( IndexType i = 0; i < numValues; i++ )
+
+            for( IndexType i = 0; i < numValues; i++ )
             {
                 IndexType tmp = myRunningSum;
                 myRunningSum += array[i];
@@ -148,7 +150,7 @@ IndexType MICCSRUtils::scanParallel( PartitionId numThreads, IndexType array[], 
             }
         }
 
-        delete [] threadCounter;
+        delete[] threadCounter;
     }
 
     return runningSum;;
@@ -160,7 +162,7 @@ IndexType MICCSRUtils::scan( IndexType array[], const IndexType numValues )
 {
     int numThreads = 1; // will be set to available threads in parallel region
 
-    #pragma offload target( mic ), out( numThreads )
+#pragma offload target( mic ), out( numThreads )
     {
         #pragma omp parallel
         #pragma omp master
@@ -171,7 +173,7 @@ IndexType MICCSRUtils::scan( IndexType array[], const IndexType numValues )
 
     LAMA_LOG_INFO( logger, "scan " << numValues << " entries, #threads = " << numThreads )
 
-    if ( numThreads < minThreads )
+    if( numThreads < minThreads )
     {
         return scanSerial( array, numValues );
     }
@@ -193,22 +195,23 @@ bool MICCSRUtils::validOffsets( const IndexType array[], const IndexType n, cons
 
     const void* arrayPtr = array;
 
-    #pragma offload target( mic : device ) in( arrayPtr, n, total ) out( validFlag )
+#pragma offload target( mic : device ) in( arrayPtr, n, total ) out( validFlag )
     {
         validFlag = true;
 
         const IndexType* array = static_cast<const IndexType*>( arrayPtr );
 
         #pragma omp parallel for reduction( && : validFlag )
-        for ( IndexType i = 0; i < n; i++ )
+
+        for( IndexType i = 0; i < n; i++ )
         {
-            if ( array[i] > array[i + 1] ) 
+            if( array[i] > array[i + 1] )
             {
                 validFlag = false;
             }
         }
 
-        if ( array[n] != total )
+        if( array[n] != total )
         {
             validFlag = false;
         }
@@ -229,7 +232,7 @@ IndexType MICCSRUtils::sizes2offsets( IndexType array[], const IndexType numValu
 
     int device = MICContext::getCurrentDevice();
 
-    #pragma offload target( mic : device ), in( arrayPtr, numValues, totalValues )
+#pragma offload target( mic : device ), in( arrayPtr, numValues, totalValues )
     {
         IndexType* array = static_cast<IndexType*>( arrayPtr );
 
@@ -248,13 +251,14 @@ void MICCSRUtils::offsets2sizes( IndexType sizes[], const IndexType offsets[], c
     void* sizesPtr = sizes;
     const void* offsetsPtr = offsets;
 
-    #pragma offload target( MIC ), in( sizesPtr, offsetsPtr, numRows )
+#pragma offload target( MIC ), in( sizesPtr, offsetsPtr, numRows )
     {
         IndexType* sizes = static_cast<IndexType*>( sizesPtr );
         const IndexType* offsets = static_cast<const IndexType*>( offsetsPtr );
 
         #pragma omp parallel for
-        for ( IndexType i = 0; i < numRows; i++ )
+
+        for( IndexType i = 0; i < numRows; i++ )
         {
             sizes[i] = offsets[i + 1] - offsets[i];
         }
@@ -270,7 +274,8 @@ void MICCSRUtils::offsets2sizesGather(
     const IndexType numRows )
 {
     #pragma omp parallel for schedule(LAMA_OMP_SCHEDULE)
-    for ( IndexType i = 0; i < numRows; i++ )
+
+    for( IndexType i = 0; i < numRows; i++ )
     {
         IndexType row = rowIndexes[i];
         sizes[i] = offsets[row + 1] - offsets[row];
@@ -279,35 +284,33 @@ void MICCSRUtils::offsets2sizesGather(
 
 /* --------------------------------------------------------------------------- */
 
-bool MICCSRUtils::hasDiagonalProperty(
-    const IndexType numDiagonals,
-    const IndexType csrIA[],
-    const IndexType csrJA[] )
+bool MICCSRUtils::hasDiagonalProperty( const IndexType numDiagonals, const IndexType csrIA[], const IndexType csrJA[] )
 {
     LAMA_LOG_INFO( logger, "hasDiagonalProperty, #numDiagonals = " << numDiagonals )
 
     bool diagonalProperty = true;
 
-    size_t csrIAPtr = ( size_t ) csrIA;
-    size_t csrJAPtr = ( size_t ) csrJA;
+    size_t csrIAPtr = (size_t) csrIA;
+    size_t csrJAPtr = (size_t) csrJA;
 
-    #pragma offload target( mic ), in( csrIAPtr, csrJAPtr, numDiagonals ), out( diagonalProperty )
+#pragma offload target( mic ), in( csrIAPtr, csrJAPtr, numDiagonals ), out( diagonalProperty )
     {
-        const IndexType* csrIA = ( IndexType* ) csrIAPtr;
-        const IndexType* csrJA = ( IndexType* ) csrJAPtr;
+        const IndexType* csrIA = (IndexType*) csrIAPtr;
+        const IndexType* csrJA = (IndexType*) csrJAPtr;
 
         diagonalProperty = true;
 
         #pragma omp parallel for reduction( && : diagonalProperty )
-        for ( IndexType i = 0; i < numDiagonals; ++i )
+
+        for( IndexType i = 0; i < numDiagonals; ++i )
         {
-            if ( diagonalProperty )
+            if( diagonalProperty )
             {
-                if ( csrIA[i] == csrIA[i + 1] )
+                if( csrIA[i] == csrIA[i + 1] )
                 {
                     diagonalProperty = false;
                 }
-                else if ( csrJA[csrIA[i]] != i )
+                else if( csrJA[csrIA[i]] != i )
                 {
                     diagonalProperty = false;
                 }
@@ -334,7 +337,8 @@ void MICCSRUtils::sortRowElements(
     LAMA_LOG_INFO( logger, "sort elements in each of " << numRows << " rows, diagonal flag = " << diagonalFlag )
 
     #pragma omp parallel for
-    for ( IndexType i = 0; i < numRows; ++i )
+
+    for( IndexType i = 0; i < numRows; ++i )
     {
         // use bubble sort as sort algorithm
 
@@ -343,21 +347,21 @@ void MICCSRUtils::sortRowElements(
 
         bool sorted = false;
 
-        while ( !sorted )
+        while( !sorted )
         {
             sorted = true; // will be reset if any wrong order appears
 
-            for ( IndexType jj = start; jj < end; ++jj )
+            for( IndexType jj = start; jj < end; ++jj )
             {
                 bool swapIt = false;
 
                 // if diagonalFlag is set, column i is the smallest one
 
-                if ( diagonalFlag && ( csrJA[jj + 1] == i ) && ( csrJA[jj] != i ) )
+                if( diagonalFlag && ( csrJA[jj + 1] == i ) && ( csrJA[jj] != i ) )
                 {
                     swapIt = true;
                 }
-                else if ( diagonalFlag && ( csrJA[jj] == i ) )
+                else if( diagonalFlag && ( csrJA[jj] == i ) )
                 {
                     swapIt = false;
                 }
@@ -366,13 +370,14 @@ void MICCSRUtils::sortRowElements(
                     swapIt = csrJA[jj] > csrJA[jj + 1];
                 }
 
-                if ( swapIt )
+                if( swapIt )
                 {
                     sorted = false;
                     std::swap( csrJA[jj], csrJA[jj + 1] );
                     std::swap( csrValues[jj], csrValues[jj + 1] );
                 }
             }
+
             --end;
         }
     }
@@ -385,11 +390,12 @@ IndexType MICCSRUtils::countNonEmptyRowsByOffsets( const IndexType offsets[], co
     IndexType counter = 0;
 
     #pragma omp parallel for reduction( +:counter )
-    for ( IndexType i = 0; i < numRows; ++i )
+
+    for( IndexType i = 0; i < numRows; ++i )
     {
         const IndexType nzRow = offsets[i + 1] - offsets[i];
 
-        if ( nzRow > 0 )
+        if( nzRow > 0 )
         {
             counter++;
         }
@@ -412,11 +418,11 @@ void MICCSRUtils::setNonEmptyRowsByOffsets(
 
     // Note: this routine is not easy to parallelize, no offsets for rowIndexes available
 
-    for ( IndexType i = 0; i < numRows; ++i )
+    for( IndexType i = 0; i < numRows; ++i )
     {
         const IndexType nzRow = offsets[i + 1] - offsets[i];
 
-        if ( nzRow > 0 )
+        if( nzRow > 0 )
         {
             rowIndexes[counter] = i;
             counter++;
@@ -443,18 +449,19 @@ void MICCSRUtils::scaleRows(
 
     int device = MICContext::getCurrentDevice();
 
-    #pragma offload target( MIC : device ) in( numRows, csrValuesPtr, csrIAPtr, valuesPtr )
+#pragma offload target( MIC : device ) in( numRows, csrValuesPtr, csrIAPtr, valuesPtr )
     {
         ValueType1* csrValues = static_cast<ValueType1*>( csrValuesPtr );
         const ValueType2* values = static_cast<const ValueType2*>( valuesPtr );
         const IndexType* csrIA = static_cast<const IndexType*>( csrIAPtr );
 
-        #pragma omp parallel for 
-        for ( IndexType i = 0; i < numRows; ++i )
+        #pragma omp parallel for
+
+        for( IndexType i = 0; i < numRows; ++i )
         {
             ValueType1 tmp = static_cast<ValueType1>( values[i] );
-    
-            for ( IndexType j = csrIA[i]; j < csrIA[i + 1]; ++j )
+
+            for( IndexType j = csrIA[i]; j < csrIA[i + 1]; ++j )
             {
                 csrValues[j] *= tmp;
             }
@@ -478,22 +485,22 @@ void MICCSRUtils::convertCSR2CSC(
 {
     LAMA_LOG_INFO( logger, "convertCSR2CSC of matrix " << numRows << " x " << numColumns )
 
-    LAMA_ASSERT_EQUAL_DEBUG( numValues, rIA[ numRows ] )
+    LAMA_ASSERT_EQUAL_DEBUG( numValues, rIA[numRows] )
 
     // initialization of column counters with 0
 
-    for ( IndexType i = 0; i < numColumns; ++i )
+    for( IndexType i = 0; i < numColumns; ++i )
     {
         cIA[i] = 0;
     }
 
     // loop over all rows of the row matrix to count columns, not yet MIC parallelized
 
-    for ( IndexType i = 0; i < numRows; ++i )
+    for( IndexType i = 0; i < numRows; ++i )
     {
         // loop over all none zero elements of column i
 
-        for ( IndexType jj = rIA[i]; jj < rIA[i + 1]; ++jj )
+        for( IndexType jj = rIA[i]; jj < rIA[i + 1]; ++jj )
         {
             IndexType j = rJA[jj];
             LAMA_ASSERT_DEBUG( j < numColumns, "column index " << j << " out of range, #cols = " << numColumns )
@@ -505,13 +512,13 @@ void MICCSRUtils::convertCSR2CSC(
 
     LAMA_LOG_INFO( logger, "convertCSR2CSC, #num values counted = " << cIA[ numColumns ] )
 
-    LAMA_ASSERT_EQUAL_DEBUG( numValues, cIA[ numColumns ] )
+    LAMA_ASSERT_EQUAL_DEBUG( numValues, cIA[numColumns] )
 
     // fill in the array cJA and cValues
 
-    for ( IndexType i = 0; i < numRows; ++i )
+    for( IndexType i = 0; i < numRows; ++i )
     {
-        for ( IndexType jj = rIA[i]; jj < rIA[i + 1]; ++jj )
+        for( IndexType jj = rIA[i]; jj < rIA[i + 1]; ++jj )
         {
             IndexType j = rJA[jj];
             cJA[cIA[j]] = i;
@@ -524,7 +531,7 @@ void MICCSRUtils::convertCSR2CSC(
 
     // set back the old offsets
 
-    for ( IndexType i = numColumns; i > 0; --i )
+    for( IndexType i = numColumns; i > 0; --i )
     {
         cIA[i] = cIA[i - 1];
     }
@@ -552,10 +559,9 @@ void MICCSRUtils::normalGEMV(
     SyncToken* syncToken )
 {
     LAMA_LOG_INFO( logger,
-                   "normalGEMV<" << Scalar::getType<ValueType>() 
-                   << ">, result[" << numRows << "] = " << alpha << " * A * x + " << beta << " * y " )
+                   "normalGEMV<" << Scalar::getType<ValueType>() << ">, result[" << numRows << "] = " << alpha << " * A * x + " << beta << " * y " )
 
-    if ( syncToken )
+    if( syncToken )
     {
         MICSyncToken* micSyncToken = dynamic_cast<MICSyncToken*>( syncToken );
         LAMA_ASSERT_ERROR( micSyncToken, "no MIC sync token provided" )
@@ -571,29 +577,31 @@ void MICCSRUtils::normalGEMV(
     const void* csrJAPtr = csrJA;
     const void* csrValuesPtr = csrValues;
 
-    #pragma offload target( mic:0 )in( resultPtr, xPtr, yPtr, \
+#pragma offload target( mic:0 )in( resultPtr, xPtr, yPtr, \
                           csrIAPtr, csrJAPtr, csrValuesPtr, alpha, beta, numRows )
     {
-        ValueType* result = ( ValueType* ) resultPtr;
-        const ValueType* x = ( ValueType* ) xPtr;
-        const ValueType* y = ( ValueType* ) yPtr;
-        const IndexType* csrIA = ( IndexType* ) csrIAPtr;
-        const IndexType* csrJA = ( IndexType* ) csrJAPtr;
-        const ValueType* csrValues = ( ValueType* ) csrValuesPtr;
+        ValueType* result = (ValueType*) resultPtr;
+        const ValueType* x = (ValueType*) xPtr;
+        const ValueType* y = (ValueType*) yPtr;
+        const IndexType* csrIA = (IndexType*) csrIAPtr;
+        const IndexType* csrJA = (IndexType*) csrJAPtr;
+        const ValueType* csrValues = (ValueType*) csrValuesPtr;
 
         #pragma omp parallel
         {
             #pragma omp for schedule(LAMA_OMP_SCHEDULE)
-            for ( IndexType i = 0; i < numRows; ++i )
+
+            for( IndexType i = 0; i < numRows; ++i )
             {
                 ValueType temp = 0.0;
-    
-                for ( IndexType jj = csrIA[i]; jj < csrIA[i + 1]; ++jj )
+
+                for( IndexType jj = csrIA[i]; jj < csrIA[i + 1]; ++jj )
                 {
                     IndexType j = csrJA[jj];
                     temp += csrValues[jj] * x[j];
                 }
-                if ( 0 == beta )
+
+                if( 0 == beta )
                 {
                     result[i] = alpha * temp;
                 }
@@ -620,7 +628,7 @@ void MICCSRUtils::sparseGEMV(
     const ValueType csrValues[],
     SyncToken* syncToken )
 {
-    if ( syncToken )
+    if( syncToken )
     {
         MICSyncToken* micSyncToken = dynamic_cast<MICSyncToken*>( syncToken );
         LAMA_ASSERT_ERROR( micSyncToken, "no MIC sync token provided" )
@@ -630,39 +638,40 @@ void MICCSRUtils::sparseGEMV(
     LAMA_REGION( "MIC.CSR.sparseGEMV" )
 
     // conversion of pointer to size_t to cheat offload
-    
-    const size_t resultPtr = ( size_t ) result;
-    const size_t xPtr = ( size_t ) x;
-    const size_t rowIndexesPtr = ( size_t ) rowIndexes;
-    const size_t csrIAPtr = ( size_t ) csrIA;
-    const size_t csrJAPtr = ( size_t ) csrJA;
-    const size_t csrValuesPtr = ( size_t ) csrValues;
 
-    #pragma offload target( mic ), in( resultPtr, xPtr, rowIndexesPtr, csrIAPtr, csrJAPtr, csrValuesPtr, alpha, numNonZeroRows )
+    const size_t resultPtr = (size_t) result;
+    const size_t xPtr = (size_t) x;
+    const size_t rowIndexesPtr = (size_t) rowIndexes;
+    const size_t csrIAPtr = (size_t) csrIA;
+    const size_t csrJAPtr = (size_t) csrJA;
+    const size_t csrValuesPtr = (size_t) csrValues;
+
+#pragma offload target( mic ), in( resultPtr, xPtr, rowIndexesPtr, csrIAPtr, csrJAPtr, csrValuesPtr, alpha, numNonZeroRows )
     {
-        ValueType* result = ( ValueType* ) resultPtr;
-        const ValueType* x = ( ValueType* ) xPtr;
-        const IndexType* rowIndexes = ( IndexType* ) rowIndexesPtr;
-        const IndexType* csrIA = ( IndexType* ) csrIAPtr;
-        const IndexType* csrJA = ( IndexType* ) csrJAPtr;
-        const ValueType* csrValues = ( ValueType* ) csrValuesPtr;
+        ValueType* result = (ValueType*) resultPtr;
+        const ValueType* x = (ValueType*) xPtr;
+        const IndexType* rowIndexes = (IndexType*) rowIndexesPtr;
+        const IndexType* csrIA = (IndexType*) csrIAPtr;
+        const IndexType* csrJA = (IndexType*) csrJAPtr;
+        const ValueType* csrValues = (ValueType*) csrValuesPtr;
 
         #pragma omp parallel
         {
             // Note: region will be entered by each thread
-    
+
             #pragma omp for schedule( LAMA_OMP_SCHEDULE )
 
-            for ( IndexType ii = 0; ii < numNonZeroRows; ++ii )
+            for( IndexType ii = 0; ii < numNonZeroRows; ++ii )
             {
                 ValueType temp = 0.0;
                 IndexType i = rowIndexes[ii];
-    
-                for ( IndexType jj = csrIA[i]; jj < csrIA[i + 1]; ++jj )
+
+                for( IndexType jj = csrIA[i]; jj < csrIA[i + 1]; ++jj )
                 {
                     IndexType j = csrJA[jj];
                     temp += csrValues[jj] * x[j];
                 }
+
                 result[i] += alpha * temp;
             }
         }
@@ -689,7 +698,7 @@ void MICCSRUtils::gemm(
     LAMA_LOG_INFO( logger,
                    "gemm<" << Scalar::getType<ValueType>() << ">, " << " result " << m << " x " << n << " CSR " << m << " x " << p )
 
-    if ( syncToken )
+    if( syncToken )
     {
         MICSyncToken* micSyncToken = dynamic_cast<MICSyncToken*>( syncToken );
         LAMA_ASSERT_ERROR( micSyncToken, "no MIC sync token provided" )
@@ -707,8 +716,8 @@ void MICCSRUtils::gemm(
     int device = MICContext::getCurrentDevice();
 
     // gemm is  dense = sparse * dense
-  
-    #pragma offload target( MIC : device ) in( alpha, beta, m, n, p, xPtr, yPtr, \
+
+#pragma offload target( MIC : device ) in( alpha, beta, m, n, p, xPtr, yPtr, \
                                                csrIAPtr, csrJAPtr, csrValuesPtr, resultPtr )
     {
         ValueType* result = static_cast<ValueType*>( resultPtr );
@@ -721,23 +730,24 @@ void MICCSRUtils::gemm(
 
         #pragma omp parallel for schedule(LAMA_OMP_SCHEDULE)
 
-        for ( IndexType i = 0; i < m; ++i )
+        for( IndexType i = 0; i < m; ++i )
         {
-            for ( IndexType k = 0; k < n; ++k )
+            for( IndexType k = 0; k < n; ++k )
             {
                 ValueType temp = 0.0;
 
-                for ( IndexType jj = csrIA[i]; jj < csrIA[i + 1]; ++jj )
+                for( IndexType jj = csrIA[i]; jj < csrIA[i + 1]; ++jj )
                 {
                     IndexType j = csrJA[jj];
 
                     // LAMA_ASSERT_DEBUG( j < p , "index j = " << j << " out of range " << p )
-    
+
                     // csrValues[jj] stands for CSR( i, j )
 
                     temp += csrValues[jj] * x[j * n + k]; // x(j,k)
-    
+
                 }
+
                 result[i * n + k] = alpha * temp + beta * y[i * n + k];
             }
         }
@@ -758,10 +768,10 @@ void MICCSRUtils::jacobi(
     const IndexType numRows,
     class SyncToken* syncToken )
 {
-    LAMA_LOG_INFO( logger, "jacobi<" << Scalar::getType<ValueType>() << ">" 
-                           << ", #rows = " << numRows << ", omega = " << omega )
+    LAMA_LOG_INFO( logger,
+                   "jacobi<" << Scalar::getType<ValueType>() << ">" << ", #rows = " << numRows << ", omega = " << omega )
 
-    if ( syncToken )
+    if( syncToken )
     {
         MICSyncToken* micSyncToken = dynamic_cast<MICSyncToken*>( syncToken );
         LAMA_ASSERT_ERROR( micSyncToken, "no MIC sync token provided" )
@@ -770,43 +780,45 @@ void MICCSRUtils::jacobi(
 
     LAMA_REGION( "MIC.CSR.jacobi" )
 
-    const size_t solutionPtr = ( size_t ) solution;
-    const size_t oldSolutionPtr = ( size_t ) oldSolution;
-    const size_t rhsPtr = ( size_t ) rhs;
-    const size_t csrIAPtr = ( size_t ) csrIA;
-    const size_t csrJAPtr = ( size_t ) csrJA;
-    const size_t csrValuesPtr = ( size_t ) csrValues;
+    const size_t solutionPtr = (size_t) solution;
+    const size_t oldSolutionPtr = (size_t) oldSolution;
+    const size_t rhsPtr = (size_t) rhs;
+    const size_t csrIAPtr = (size_t) csrIA;
+    const size_t csrJAPtr = (size_t) csrJA;
+    const size_t csrValuesPtr = (size_t) csrValues;
 
-    #pragma offload target( mic ), in( solutionPtr, oldSolutionPtr, rhsPtr, csrIAPtr, csrJAPtr, csrValuesPtr, omega, numRows )
+#pragma offload target( mic ), in( solutionPtr, oldSolutionPtr, rhsPtr, csrIAPtr, csrJAPtr, csrValuesPtr, omega, numRows )
     {
-        ValueType* solution = ( ValueType* ) solutionPtr;
-        const ValueType* oldSolution = ( ValueType* ) oldSolutionPtr;
-        const ValueType* rhs = ( ValueType* ) rhsPtr;
-        const IndexType* csrIA = ( IndexType* ) csrIAPtr;
-        const IndexType* csrJA = ( IndexType* ) csrJAPtr;
-        const ValueType* csrValues = ( ValueType* ) csrValuesPtr;
+        ValueType* solution = (ValueType*) solutionPtr;
+        const ValueType* oldSolution = (ValueType*) oldSolutionPtr;
+        const ValueType* rhs = (ValueType*) rhsPtr;
+        const IndexType* csrIA = (IndexType*) csrIAPtr;
+        const IndexType* csrJA = (IndexType*) csrJAPtr;
+        const ValueType* csrValues = (ValueType*) csrValuesPtr;
 
         const ValueType oneMinusOmega = static_cast<ValueType>( 1 ) - omega;
 
         #pragma omp parallel
         {
             #pragma omp for schedule( LAMA_OMP_SCHEDULE )
-            for ( IndexType i = 0; i < numRows; i++ )
+
+            for( IndexType i = 0; i < numRows; i++ )
             {
                 ValueType temp = rhs[i];
                 const ValueType diag = csrValues[csrIA[i]];
-                for ( IndexType j = csrIA[i] + 1; j < csrIA[i + 1]; j++ )
+
+                for( IndexType j = csrIA[i] + 1; j < csrIA[i + 1]; j++ )
                 {
                     temp -= csrValues[j] * oldSolution[csrJA[j]];
                 }
 
                 // here we take advantange of a good branch precondiction
-    
-                if ( omega == 1.0 )
+
+                if( omega == 1.0 )
                 {
                     solution[i] = temp / diag;
                 }
-                else if ( omega == 0.5 )
+                else if( omega == 0.5 )
                 {
                     solution[i] = omega * ( temp / diag + oldSolution[i] );
                 }
@@ -834,39 +846,40 @@ void MICCSRUtils::jacobiHalo(
     const ValueType omega,
     const IndexType numNonEmptyRows )
 {
-    LAMA_LOG_INFO( logger, "jacobiHalo<" << Scalar::getType<ValueType>() << ">" 
-                   << ", #rows (not empty) = " << numNonEmptyRows << ", omega = " << omega );
+    LAMA_LOG_INFO( logger,
+                   "jacobiHalo<" << Scalar::getType<ValueType>() << ">" << ", #rows (not empty) = " << numNonEmptyRows << ", omega = " << omega );
 
     LAMA_REGION( "MIC.CSR.jacabiHalo" )
 
-    const size_t solutionPtr = ( size_t ) solution;
-    const size_t oldSolutionPtr = ( size_t ) oldSolution;
-    const size_t localValuesPtr = ( size_t ) localValues;
-    const size_t localIAPtr = ( size_t ) localIA;
-    const size_t haloIAPtr = ( size_t ) haloIA;
-    const size_t haloJAPtr = ( size_t ) haloJA;
-    const size_t haloValuesPtr = ( size_t ) haloValues;
-    const size_t haloRowIndexesPtr = ( size_t ) haloRowIndexes;
+    const size_t solutionPtr = (size_t) solution;
+    const size_t oldSolutionPtr = (size_t) oldSolution;
+    const size_t localValuesPtr = (size_t) localValues;
+    const size_t localIAPtr = (size_t) localIA;
+    const size_t haloIAPtr = (size_t) haloIA;
+    const size_t haloJAPtr = (size_t) haloJA;
+    const size_t haloValuesPtr = (size_t) haloValues;
+    const size_t haloRowIndexesPtr = (size_t) haloRowIndexes;
 
-    #pragma offload target( mic ), in( solutionPtr, oldSolutionPtr, localValuesPtr, localIAPtr, \
+#pragma offload target( mic ), in( solutionPtr, oldSolutionPtr, localValuesPtr, localIAPtr, \
                                        haloIAPtr, haloJAPtr, haloValuesPtr, haloRowIndexesPtr, \
                                        omega, numNonEmptyRows )
     {
-        ValueType* solution = ( ValueType* ) solutionPtr;
-        const ValueType* oldSolution = ( ValueType* ) oldSolutionPtr;
-        const ValueType* localValues = ( ValueType* ) localValuesPtr;
-        const IndexType* localIA = ( IndexType* ) localIAPtr;
-        const IndexType* haloIA = ( IndexType* ) haloIAPtr;
-        const IndexType* haloJA = ( IndexType* ) haloJAPtr;
-        const ValueType* haloValues = ( ValueType* ) haloValuesPtr;
-        const IndexType* haloRowIndexes = ( IndexType* ) haloRowIndexesPtr;
+        ValueType* solution = (ValueType*) solutionPtr;
+        const ValueType* oldSolution = (ValueType*) oldSolutionPtr;
+        const ValueType* localValues = (ValueType*) localValuesPtr;
+        const IndexType* localIA = (IndexType*) localIAPtr;
+        const IndexType* haloIA = (IndexType*) haloIAPtr;
+        const IndexType* haloJA = (IndexType*) haloJAPtr;
+        const ValueType* haloValues = (ValueType*) haloValuesPtr;
+        const IndexType* haloRowIndexes = (IndexType*) haloRowIndexesPtr;
 
         #pragma omp parallel for schedule( LAMA_OMP_SCHEDULE )
-        for ( IndexType ii = 0; ii < numNonEmptyRows; ++ii )
+
+        for( IndexType ii = 0; ii < numNonEmptyRows; ++ii )
         {
             IndexType i = ii; // default: rowIndexes == NULL stands for identity
 
-            if ( haloRowIndexes )
+            if( haloRowIndexes )
             {
                 i = haloRowIndexes[ii];
             }
@@ -875,12 +888,12 @@ void MICCSRUtils::jacobiHalo(
 
             const ValueType diag = localValues[localIA[i]];
 
-            for ( IndexType j = haloIA[i]; j < haloIA[i + 1]; j++ )
+            for( IndexType j = haloIA[i]; j < haloIA[i + 1]; j++ )
             {
                 temp += haloValues[j] * oldSolution[haloJA[j]];
             }
 
-            if ( omega == 1.0 )
+            if( omega == 1.0 )
             {
                 solution[i] -= temp / diag;
             }
@@ -906,55 +919,56 @@ void MICCSRUtils::jacobiHaloWithDiag(
     const ValueType omega,
     const IndexType numNonEmptyRows )
 {
-    LAMA_LOG_INFO( logger, "jacobiHaloWithDiag<" << Scalar::getType<ValueType>() << ">" 
-                   << ", #rows (not empty) = " << numNonEmptyRows << ", omega = " << omega );
+    LAMA_LOG_INFO( logger,
+                   "jacobiHaloWithDiag<" << Scalar::getType<ValueType>() << ">" << ", #rows (not empty) = " << numNonEmptyRows << ", omega = " << omega );
 
     LAMA_REGION( "MIC.CSR.jacabiHaloWithDiag" )
 
-    const size_t solutionPtr = ( size_t ) solution;
-    const size_t oldSolutionPtr = ( size_t ) oldSolution;
-    const size_t localDiagValuesPtr = ( size_t ) localDiagValues;
-    const size_t haloIAPtr = ( size_t ) haloIA;
-    const size_t haloJAPtr = ( size_t ) haloJA;
-    const size_t haloValuesPtr = ( size_t ) haloValues;
-    const size_t haloRowIndexesPtr = ( size_t ) haloRowIndexes;
+    const size_t solutionPtr = (size_t) solution;
+    const size_t oldSolutionPtr = (size_t) oldSolution;
+    const size_t localDiagValuesPtr = (size_t) localDiagValues;
+    const size_t haloIAPtr = (size_t) haloIA;
+    const size_t haloJAPtr = (size_t) haloJA;
+    const size_t haloValuesPtr = (size_t) haloValues;
+    const size_t haloRowIndexesPtr = (size_t) haloRowIndexes;
 
-    #pragma offload target( mic ), in( solutionPtr, oldSolutionPtr, localDiagValuesPtr, \
+#pragma offload target( mic ), in( solutionPtr, oldSolutionPtr, localDiagValuesPtr, \
                                        haloIAPtr, haloJAPtr, haloValuesPtr, haloRowIndexesPtr, \
                                        omega, numNonEmptyRows )
     {
-        ValueType* solution = ( ValueType* ) solutionPtr;
-        const ValueType* oldSolution = ( ValueType* ) oldSolutionPtr;
-        const ValueType* localDiagValues = ( ValueType* ) localDiagValuesPtr;
-        const IndexType* haloIA = ( IndexType* ) haloIAPtr;
-        const IndexType* haloJA = ( IndexType* ) haloJAPtr;
-        const ValueType* haloValues = ( ValueType* ) haloValuesPtr;
-        const IndexType* haloRowIndexes = ( IndexType* ) haloRowIndexesPtr;
+        ValueType* solution = (ValueType*) solutionPtr;
+        const ValueType* oldSolution = (ValueType*) oldSolutionPtr;
+        const ValueType* localDiagValues = (ValueType*) localDiagValuesPtr;
+        const IndexType* haloIA = (IndexType*) haloIAPtr;
+        const IndexType* haloJA = (IndexType*) haloJAPtr;
+        const ValueType* haloValues = (ValueType*) haloValuesPtr;
+        const IndexType* haloRowIndexes = (IndexType*) haloRowIndexesPtr;
 
         const ValueType oneMinusOmega = static_cast<ValueType>( 1 ) - omega;
 
         #pragma omp parallel
         {
             #pragma omp for schedule( LAMA_OMP_SCHEDULE )
-            for ( IndexType ii = 0; ii < numNonEmptyRows; ++ii )
+
+            for( IndexType ii = 0; ii < numNonEmptyRows; ++ii )
             {
                 IndexType i = ii; // default: rowIndexes == NULL stands for identity
-    
-                if ( haloRowIndexes )
+
+                if( haloRowIndexes )
                 {
                     i = haloRowIndexes[ii];
                 }
 
                 ValueType temp = 0.0;
-    
+
                 const ValueType diag = localDiagValues[i];
-    
-                for ( IndexType j = haloIA[i]; j < haloIA[i + 1]; j++ )
+
+                for( IndexType j = haloIA[i]; j < haloIA[i + 1]; j++ )
                 {
                     temp += haloValues[j] * oldSolution[haloJA[j]];
                 }
-    
-                if ( omega == 1.0 )
+
+                if( omega == 1.0 )
                 {
                     solution[i] -= temp / diag;
                 }
@@ -998,7 +1012,7 @@ IndexType MICCSRUtils::matrixAddSizes(
 
     int device = MICContext::getCurrentDevice();
 
-    #pragma offload target( mic ) in ( numRows, numColumns, diagonalProperty, cSizesPtr, \
+#pragma offload target( mic ) in ( numRows, numColumns, diagonalProperty, cSizesPtr, \
                                        aIAPtr, aJAPtr, bIAPtr, bJAPtr )
     {
         IndexType* cSizes = static_cast<IndexType*>( cSizesPtr );
@@ -1011,32 +1025,33 @@ IndexType MICCSRUtils::matrixAddSizes(
         #pragma omp parallel
         {
             IndexType* indexList = new IndexType[numColumns];
-    
-            for ( IndexType j = 0; j < numColumns; j++ )
+
+            for( IndexType j = 0; j < numColumns; j++ )
             {
                 indexList[j] = NINIT;
             }
-    
+
             #pragma omp for
-            for ( IndexType i = 0; i < numRows; ++i )
+
+            for( IndexType i = 0; i < numRows; ++i )
             {
                 IndexType length = 0;
                 IndexType firstCol = END;
-    
+
                 bool diagonal = false; // will be set if diagonal element is set
 
                 // loop over all none zero elements of row i of input matrix a
 
-                for ( IndexType jj = aIA[i]; jj < aIA[i + 1]; ++jj )
+                for( IndexType jj = aIA[i]; jj < aIA[i + 1]; ++jj )
                 {
                     // j is column of none zero element jj of row i of input matrix a
                     // so we are at position a(i,j)
 
                     IndexType j = aJA[jj];
-    
+
                     // element a(i,j) will generate an output element c(i,j)
-    
-                    if ( indexList[j] == NINIT )
+
+                    if( indexList[j] == NINIT )
                     {
                         // Add column position j to the indexList
 
@@ -1044,59 +1059,59 @@ IndexType MICCSRUtils::matrixAddSizes(
                         firstCol = j;
                         ++length;
 
-                        if ( j == i )
+                        if( j == i )
                         {
                             diagonal = true;
                         }
                     }
                 }
-    
-                for ( IndexType jj = bIA[i]; jj < bIA[i + 1]; ++jj )
+
+                for( IndexType jj = bIA[i]; jj < bIA[i + 1]; ++jj )
                 {
                     // j is column of none zero element jj of row i of input matrix b
                     // so we are at position b(i,j)
-    
+
                     IndexType j = bJA[jj];
-    
+
                     // element a(i,j) will generate an output element c(i,j)
-    
-                    if ( indexList[j] == NINIT )
+
+                    if( indexList[j] == NINIT )
                     {
-    
+
                         // Add column position j to the indexList
-    
+
                         indexList[j] = firstCol;
                         firstCol = j;
                         ++length;
-    
-                        if ( j == i )
+
+                        if( j == i )
                         {
                             diagonal = true;
                         }
                     }
                 }
-    
-                if ( diagonalProperty && !diagonal )
+
+                if( diagonalProperty && !diagonal )
                 {
                     ++length; // diagaonal needed, but not filled yet
                 }
-    
+
                 // so we have now the correct length
-    
+
                 cSizes[i] = length;
-    
+
                 // reset indexList for next use
-    
-                while ( firstCol != END )
+
+                while( firstCol != END )
                 {
                     IndexType nextCol = indexList[firstCol];
                     indexList[firstCol] = NINIT;
                     firstCol = nextCol;
                 }
-    
+
             } // end loop over all rows of input matrices
-    
-            delete [] indexList;
+
+            delete[] indexList;
         }
     }
 
@@ -1139,7 +1154,7 @@ IndexType MICCSRUtils::matrixMultiplySizes(
 
     int device = MICContext::getCurrentDevice();
 
-    #pragma offload target( mic : device ) in ( m, n, diagonalProperty, cSizesPtr, \
+#pragma offload target( mic : device ) in ( m, n, diagonalProperty, cSizesPtr, \
                                                 aIAPtr, aJAPtr, bIAPtr, bJAPtr ), out( newElems, doubleElems )
     {
         const IndexType NINIT = n + 1; // marks unused colums
@@ -1159,13 +1174,14 @@ IndexType MICCSRUtils::matrixMultiplySizes(
         {
             IndexType* indexList = new IndexType[n];
 
-            for ( IndexType j = 0; j < n; j++ )
+            for( IndexType j = 0; j < n; j++ )
             {
                 indexList[j] = NINIT;
             }
 
             #pragma omp for
-            for ( IndexType i = 0; i < m; ++i )
+
+            for( IndexType i = 0; i < m; ++i )
             {
                 IndexType length = 0;
                 IndexType firstCol = END;
@@ -1174,40 +1190,41 @@ IndexType MICCSRUtils::matrixMultiplySizes(
 
                 // loop over all none zero elements of row i of input matrix a
 
-                for ( IndexType jj = aIA[i]; jj < aIA[i + 1]; ++jj )
+                for( IndexType jj = aIA[i]; jj < aIA[i + 1]; ++jj )
                 {
                     // j is column of none zero element jj of row i of input matrix a
                     // so we are at position a(i,j)
-    
+
                     IndexType j = aJA[jj];
-    
+
                     // loop over all none zero elements of row j of input matrix b
                     // that is the row of b that corresponds to the column of the current
                     // element of a
-    
-                    for ( IndexType kk = bIA[j]; kk < bIA[j + 1]; ++kk )
+
+                    for( IndexType kk = bIA[j]; kk < bIA[j + 1]; ++kk )
                     {
                         // k is the column of none zero element kk of row j of input matrix b
                         // so we are looking at position b(j,k)
-    
+
                         IndexType k = bJA[kk];
 
                         // if ( k < 0 || k >= n ) std::cout << "k = " << k << " illegal" << std::endl;
-    
+
                         // element a(i,j) an b(j,k) will generate the output element c(i,k)
-    
-                        if ( indexList[k] == NINIT )
+
+                        if( indexList[k] == NINIT )
                         {
                             // Add column position k to the indexList
-    
+
                             indexList[k] = firstCol;
                             firstCol = k;
                             ++length;
 
-                            if ( k == i )
+                            if( k == i )
                             {
                                 diagonal = true;
                             }
+
                             newElems++;
                         }
                         else
@@ -1216,33 +1233,33 @@ IndexType MICCSRUtils::matrixMultiplySizes(
                         }
                     }
                 }
-    
-                if ( diagonalProperty && !diagonal )
+
+                if( diagonalProperty && !diagonal )
                 {
                     ++length; // diagaonal needed, but not filled yet
                 }
-    
+
                 // so we have now the correct length
-    
+
                 // std::cout << "row will have " << length << " entries " << std::endl;
 
                 cSizes[i] = length;
-    
+
                 // reset indexList for next use
-    
-                while ( firstCol != END )
+
+                while( firstCol != END )
                 {
                     IndexType nextCol = indexList[firstCol];
                     indexList[firstCol] = NINIT;
                     firstCol = nextCol;
                 }
-    
+
             } //end loop over all rows of input matrix
-    
-            delete [] indexList;
+
+            delete[] indexList;
         }
     }
-    
+
     IndexType totalSize = sizes2offsets( cSizes, m );
 
     return totalSize;
@@ -1288,7 +1305,7 @@ void MICCSRUtils::matrixAdd(
 
     int device = MICContext::getCurrentDevice();
 
-    #pragma offload target( mic : device ) in ( numRows, numColumns, diagonalProperty, \
+#pragma offload target( mic : device ) in ( numRows, numColumns, diagonalProperty, \
                                                cJAPtr, cValuesPtr, cIAPtr, \
                                                aIAPtr, aJAPtr, aValuesPtr, bIAPtr, bJAPtr, bValuesPtr )
     {
@@ -1308,83 +1325,84 @@ void MICCSRUtils::matrixAdd(
             IndexType* indexList = new IndexType[numColumns];
             ValueType* valueList = new ValueType[numColumns];
 
-            for ( IndexType j = 0; j < numColumns; j++ )
+            for( IndexType j = 0; j < numColumns; j++ )
             {
                 indexList[j] = NINIT;
                 valueList[j] = 0.0;
             }
 
             #pragma omp for
-            for ( IndexType i = 0; i < numRows; ++i )
+
+            for( IndexType i = 0; i < numRows; ++i )
             {
                 IndexType length = 0;
                 IndexType firstCol = END;
 
-                for ( IndexType jj = aIA[i]; jj < aIA[i + 1]; ++jj )
+                for( IndexType jj = aIA[i]; jj < aIA[i + 1]; ++jj )
                 {
                     // j is column of none zero element jj of row i of input matrix a
                     // so we are at position a(i,j)
-    
+
                     IndexType j = aJA[jj];
-    
+
                     valueList[j] += alpha * aValues[jj];
-    
+
                     // element a(i,j) will generate an output element c(i,j)
-    
-                    if ( indexList[j] == NINIT )
+
+                    if( indexList[j] == NINIT )
                     {
                         // Add column position j to the indexList
-    
+
                         indexList[j] = firstCol;
-    
+
                         firstCol = j;
                         ++length;
                     }
                 }
-    
-                for ( IndexType jj = bIA[i]; jj < bIA[i + 1]; ++jj )
+
+                for( IndexType jj = bIA[i]; jj < bIA[i + 1]; ++jj )
                 {
                     // j is column of none zero element jj of row i of input matrix b
                     // so we are at position b(i,j)
-    
+
                     IndexType j = bJA[jj];
-    
+
                     valueList[j] += beta * bValues[jj];
-    
+
                     // element b(i,j) will generate an output element c(i,j)
-    
-                    if ( indexList[j] == NINIT )
+
+                    if( indexList[j] == NINIT )
                     {
                         // Add column position j to the indexList
-    
+
                         indexList[j] = firstCol;
-    
+
                         firstCol = j;
                         ++length;
                     }
                 }
-    
+
                 IndexType offset = cIA[i];
-    
-                if ( diagonalProperty )
+
+                if( diagonalProperty )
                 {
                     // first element is reserved for diagonal element
                     cJA[offset] = i;
                     cValues[offset] = 0.0;
                     ++offset;
                 }
-    
+
                 // fill in csrJA, csrValues and reset indexList, valueList for next use
-    
-                while ( firstCol != END )
+
+                while( firstCol != END )
                 {
                     IndexType nextCol = indexList[firstCol];
                     ValueType val = valueList[firstCol];
-    
+
                     indexList[firstCol] = NINIT;
                     valueList[firstCol] = 0.0; // reset for next time
-    
-                    if ( diagonalProperty && firstCol == i )
+
+                    if( diagonalProperty && firstCol == i )
                     {
                         cValues[cIA[i]] = val;
                     }
@@ -1394,14 +1412,14 @@ void MICCSRUtils::matrixAdd(
                         cValues[offset] = val;
                         ++offset;
                     }
-    
+
                     firstCol = nextCol;
                 }
-    
+
             } //end loop over all rows of input matrix a
-    
-            delete [] indexList;
-            delete [] valueList;
+
+            delete[] indexList;
+            delete[] valueList;
         }
     }
 }
@@ -1443,7 +1461,7 @@ void MICCSRUtils::matrixMultiply(
 
     int device = MICContext::getCurrentDevice();
 
-    #pragma offload target( mic : device ) in ( m, n, diagonalProperty, alpha, \
+#pragma offload target( mic : device ) in ( m, n, diagonalProperty, alpha, \
                                                 cJAPtr, cValuesPtr, cIAPtr, \
                                                 aIAPtr, aJAPtr, aValuesPtr, bIAPtr, bJAPtr, bValuesPtr )
     {
@@ -1463,20 +1481,21 @@ void MICCSRUtils::matrixMultiply(
         {
             IndexType* indexList = new IndexType[n];
 
-            for ( IndexType j = 0; j < n; j++ )
+            for( IndexType j = 0; j < n; j++ )
             {
                 indexList[j] = NINIT;
             }
 
             #pragma omp for
-            for ( IndexType i = 0; i < m; ++i )
+
+            for( IndexType i = 0; i < m; ++i )
             {
                 IndexType length = 0;
                 IndexType firstCol = END;
 
                 // loop over all none zero elements of row i of input matrix a
 
-                for ( IndexType jj = aIA[i]; jj < aIA[i + 1]; ++jj )
+                for( IndexType jj = aIA[i]; jj < aIA[i + 1]; ++jj )
                 {
                     // j is column of none zero element jj of row i of input matrix a
                     // so we are at position a(i,j)
@@ -1487,7 +1506,7 @@ void MICCSRUtils::matrixMultiply(
                     // that is the row of b that corresponds to the column of the current
                     // element of a
 
-                    for ( IndexType kk = bIA[j]; kk < bIA[j + 1]; ++kk )
+                    for( IndexType kk = bIA[j]; kk < bIA[j + 1]; ++kk )
                     {
                         // k is the column of none zero element kk of row j of input matrix b
                         // so we are looking at position b(j,k)
@@ -1496,35 +1515,35 @@ void MICCSRUtils::matrixMultiply(
 
                         // element a(i,j) an b(j,k) will generate the output element c(i,k)
 
-                        if ( indexList[k] == NINIT )
+                        if( indexList[k] == NINIT )
                         {
                             // Add column position k to the indexList
-    
+
                             indexList[k] = firstCol;
                             firstCol = k;
                             ++length;
                         }
                     }
                 }
-    
+
                 IndexType offset = cIA[i];
-    
-                if ( diagonalProperty )
+
+                if( diagonalProperty )
                 {
                     // first element is reserved for diagonal element
                     cJA[offset] = i;
                     ++offset;
                 }
-    
+
                 // fill in csrJA and reset indexList for next use
 
-                while ( firstCol != END )
+                while( firstCol != END )
                 {
                     IndexType nextCol = indexList[firstCol];
-    
+
                     indexList[firstCol] = NINIT;
-    
-                    if ( diagonalProperty && firstCol == i )
+
+                    if( diagonalProperty && firstCol == i )
                     {
                         // diagonal already added before
                     }
@@ -1533,53 +1552,54 @@ void MICCSRUtils::matrixMultiply(
                         cJA[offset] = firstCol;
                         ++offset;
                     }
-    
+
                     firstCol = nextCol;
                 }
-    
+
                 // make sure that we have still the right offsets
-    
+
             } //end loop over all rows of input matrix a
 
-            delete [] indexList;
+            delete[] indexList;
         }
-    
+
         #pragma omp parallel for
-        for ( IndexType i = 0; i < m; ++i )
+
+        for( IndexType i = 0; i < m; ++i )
         {
             //loop over all none zero elements of row i of output matrix c
-            for ( IndexType jj = cIA[i]; jj < cIA[i + 1]; ++jj )
+            for( IndexType jj = cIA[i]; jj < cIA[i + 1]; ++jj )
             {
                 IndexType j = cJA[jj];
                 cValues[jj] = 0.0;
-    
-                if ( j == -1 )
+
+                if( j == -1 )
                 {
                     continue;
                 }
-    
-                for ( IndexType kk = aIA[i]; kk < aIA[i + 1]; ++kk )
+
+                for( IndexType kk = aIA[i]; kk < aIA[i + 1]; ++kk )
                 {
                     ValueType b_kj = 0.0;
-    
+
                     IndexType k = aJA[kk];
-    
+
                     //TODO: See above this loop can be avoided if we choose to work
                     //      with a temporarie array like it is done in SMMP.
                     //      But we will have less parallelisem in this case
-    
-                    for ( IndexType ll = bIA[k]; ll < bIA[k + 1]; ++ll )
+
+                    for( IndexType ll = bIA[k]; ll < bIA[k + 1]; ++ll )
                     {
-                        if ( bJA[ll] == j )
+                        if( bJA[ll] == j )
                         {
                             b_kj = bValues[ll];
                             break;
                         }
                     }
-    
+
                     cValues[jj] += aValues[kk] * b_kj;
                 }
-    
+
                 cValues[jj] *= alpha;
             }
         }
@@ -1589,18 +1609,21 @@ void MICCSRUtils::matrixMultiply(
 /* --------------------------------------------------------------------------- */
 
 // MIC device needs nIndex value
-
-__attribute__( ( target( mic ) ) )
+__attribute__( ( target( mic ) ))
 static IndexType targetNIndex = nIndex;
 
-__attribute__( ( target( mic ) ) )
-static IndexType findCol( const IndexType columns[], const IndexType n, const IndexType j, IndexType lastPos )
+__attribute__( ( target( mic ) ))
+static IndexType findCol(
+    const IndexType columns[],
+    const IndexType n,
+    const IndexType j,
+    IndexType lastPos )
 {
     // lastPos is index from where to start
 
-    for ( IndexType i = 0; i < n; ++i )
+    for( IndexType i = 0; i < n; ++i )
     {
-        if ( columns[lastPos] == j )
+        if( columns[lastPos] == j )
         {
             // found, return lastPos, increment it for next search
 
@@ -1609,7 +1632,7 @@ static IndexType findCol( const IndexType columns[], const IndexType n, const In
 
         lastPos++;
 
-        if ( lastPos > n )
+        if( lastPos > n )
         {
             lastPos = 0;
         }
@@ -1637,21 +1660,21 @@ ValueType MICCSRUtils::absMaxDiffRowUnsorted(
 
     IndexType helpIndex = 0; // some kind of thread-safe global value for findCol
 
-    for ( IndexType i1 = 0; i1 < n1; ++i1 )
+    for( IndexType i1 = 0; i1 < n1; ++i1 )
     {
         ValueType diff = csrValues1[i1];
 
         IndexType j = csrJA1[i1];
         IndexType i2 = findCol( csrJA2, n2, j, helpIndex );
 
-        if ( i2 != targetNIndex )
+        if( i2 != targetNIndex )
         {
             diff -= csrValues2[i2];
         }
 
         diff = std::abs( diff );
 
-        if ( diff > val )
+        if( diff > val )
         {
             val = diff;
         }
@@ -1661,19 +1684,19 @@ ValueType MICCSRUtils::absMaxDiffRowUnsorted(
 
     helpIndex = 0;
 
-    for ( IndexType i2 = 0; i2 < n2; ++i2 )
+    for( IndexType i2 = 0; i2 < n2; ++i2 )
     {
         IndexType j = csrJA2[i2];
         IndexType i1 = findCol( csrJA1, n1, j, helpIndex );
 
-        if ( i1 != targetNIndex )
+        if( i1 != targetNIndex )
         {
             continue; // already compare in first loop
         }
 
         ValueType diff = std::abs( csrValues2[i2] );
 
-        if ( diff > val )
+        if( diff > val )
         {
             val = diff;
         }
@@ -1700,16 +1723,16 @@ ValueType MICCSRUtils::absMaxDiffRowSorted(
     IndexType i2 = 0;
     IndexType i1 = 0;
 
-    while ( i1 < n1 || i2 < n2 )
+    while( i1 < n1 || i2 < n2 )
     {
         ValueType diff = 0;
 
-        if ( i1 >= n1 ) // row of matrix1 completely traversed
+        if( i1 >= n1 ) // row of matrix1 completely traversed
         {
             diff = csrValues2[i2];
             ++i2;
         }
-        else if ( i2 >= n2 ) // row of matrix2 completely traversed
+        else if( i2 >= n2 ) // row of matrix2 completely traversed
         {
             diff = csrValues1[i1];
             ++i1;
@@ -1721,26 +1744,28 @@ ValueType MICCSRUtils::absMaxDiffRowSorted(
             IndexType j1 = csrJA1[i1];
             IndexType j2 = csrJA2[i2];
 
-            if ( j1 == j2 )
+            if( j1 == j2 )
             {
                 diff = csrValues1[i1] - csrValues2[i2];
                 ++i1;
                 ++i2;
             }
-            else if ( j1 < j2 )
+            else if( j1 < j2 )
             {
                 diff = csrValues1[i1];
                 ++i1;
-                if ( i1 < n1 )
+
+                if( i1 < n1 )
                 {
                     // LAMA_ASSERT_ERROR( csrJA1[i1-1] < csrJA1[i1], "unsorted col indexes at csrJA1[" << i1 << "]" )
                 }
             }
-            else if ( j1 > j2 )
+            else if( j1 > j2 )
             {
                 diff = csrValues2[i2];
                 ++i2;
-                if ( i2 < n2 )
+
+                if( i2 < n2 )
                 {
                     // LAMA_ASSERT_ERROR( csrJA2[i2-1] < csrJA2[i2], "unsorted col indexes at csrJA2[" << i2 << "]" )
                 }
@@ -1749,7 +1774,7 @@ ValueType MICCSRUtils::absMaxDiffRowSorted(
 
         diff = std::abs( diff );
 
-        if ( diff > val )
+        if( diff > val )
         {
             val = diff;
         }
@@ -1784,7 +1809,7 @@ ValueType MICCSRUtils::absMaxDiffVal(
     const void* csrJA2Ptr = csrJA2;
     const void* csrValues2Ptr = csrValues2;
 
-    #pragma offload target( mic ), in( csrIA1Ptr, csrJA1Ptr, csrValues1Ptr,  \
+#pragma offload target( mic ), in( csrIA1Ptr, csrJA1Ptr, csrValues1Ptr,  \
                                        csrIA2Ptr, csrJA2Ptr, csrValues2Ptr,  \
                                        numRows, sortedRows ), out ( val )
     {
@@ -1803,8 +1828,8 @@ ValueType MICCSRUtils::absMaxDiffVal(
             const IndexType,
             const IndexType[],
             const ValueType[] );
-    
-        if ( sortedRows )
+
+        if( sortedRows )
         {
             absMaxDiffRow = MICCSRUtils::absMaxDiffRowSorted<ValueType>;
         }
@@ -1820,26 +1845,28 @@ ValueType MICCSRUtils::absMaxDiffVal(
             ValueType threadVal = 0;
 
             #pragma omp for schedule( LAMA_OMP_SCHEDULE )
-            for ( IndexType i = 0; i < numRows; ++i )
+
+            for( IndexType i = 0; i < numRows; ++i )
             {
                 IndexType offs1 = csrIA1[i];
                 IndexType offs2 = csrIA2[i];
                 IndexType n1 = csrIA1[i + 1] - offs1;
                 IndexType n2 = csrIA2[i + 1] - offs2;
-    
+
                 ValueType maxRow = 0;
 
-                maxRow = absMaxDiffRow( n1, &csrJA1[offs1], &csrValues1[offs1], n2, &csrJA2[offs2], &csrValues2[offs2] );
-    
-                if ( maxRow > threadVal )
+                maxRow = absMaxDiffRow( n1, &csrJA1[offs1], &csrValues1[offs1], n2, &csrJA2[offs2],
+                                        &csrValues2[offs2] );
+
+                if( maxRow > threadVal )
                 {
                     threadVal = maxRow;
                 }
             }
-    
+
             #pragma omp critical
             {
-                if ( threadVal > val )
+                if( threadVal > val )
                 {
                     val = threadVal;
                 }
@@ -1870,12 +1897,12 @@ void MICCSRUtils::setInterface( CSRUtilsInterface& CSRUtils )
     LAMA_INTERFACE_REGISTER( CSRUtils, matrixMultiplySizes )
 
     /*
-    LAMA_INTERFACE_REGISTER_T( CSRUtils, convertCSR2CSC, float )
-    LAMA_INTERFACE_REGISTER_T( CSRUtils, convertCSR2CSC, double )
+     LAMA_INTERFACE_REGISTER_T( CSRUtils, convertCSR2CSC, float )
+     LAMA_INTERFACE_REGISTER_T( CSRUtils, convertCSR2CSC, double )
 
-    LAMA_INTERFACE_REGISTER_T( CSRUtils, sortRowElements, float )
-    LAMA_INTERFACE_REGISTER_T( CSRUtils, sortRowElements, double )
-    */
+     LAMA_INTERFACE_REGISTER_T( CSRUtils, sortRowElements, float )
+     LAMA_INTERFACE_REGISTER_T( CSRUtils, sortRowElements, double )
+     */
 
     LAMA_INTERFACE_REGISTER_TT( CSRUtils, scaleRows, float, float )
     LAMA_INTERFACE_REGISTER_TT( CSRUtils, scaleRows, float, double )
@@ -1893,7 +1920,7 @@ void MICCSRUtils::setInterface( CSRUtilsInterface& CSRUtils )
 
     LAMA_INTERFACE_REGISTER_T( CSRUtils, matrixAdd, float )
     LAMA_INTERFACE_REGISTER_T( CSRUtils, matrixAdd, double )
-    
+
     LAMA_INTERFACE_REGISTER_T( CSRUtils, matrixMultiply, float )
     LAMA_INTERFACE_REGISTER_T( CSRUtils, matrixMultiply, double )
 
@@ -1902,7 +1929,7 @@ void MICCSRUtils::setInterface( CSRUtilsInterface& CSRUtils )
 
     LAMA_INTERFACE_REGISTER_T( CSRUtils, jacobiHalo, float )
     LAMA_INTERFACE_REGISTER_T( CSRUtils, jacobiHalo, double )
-    
+
     LAMA_INTERFACE_REGISTER_T( CSRUtils, jacobiHaloWithDiag, float )
     LAMA_INTERFACE_REGISTER_T( CSRUtils, jacobiHaloWithDiag, double )
 

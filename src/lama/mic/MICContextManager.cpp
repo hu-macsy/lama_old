@@ -2,7 +2,7 @@
  * @file MICContextManager.cpp
  *
  * @license
- * Copyright (c) 2009-2013
+ * Copyright (c) 2009-2015
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -49,7 +49,6 @@ namespace lama
 /* ----------------------------------------------------------------------------- */
 
 // definition of array with weak pointers so that we can return shared pointers without allocating again
-
 boost::weak_ptr<MICContext> MICContextManager::mMICContext[LAMA_MAX_MIC_DEVICES];
 
 MICContextManager MICContextManager::theInstance;
@@ -60,12 +59,12 @@ int MICContextManager::defaultDeviceNr = LAMA_DEFAULT_DEVICE_NUMBER;
 
 int MICContextManager::getDefaultDeviceNr()
 {
-    if ( defaultDeviceNr == LAMA_DEFAULT_DEVICE_NUMBER )
+    if( defaultDeviceNr == LAMA_DEFAULT_DEVICE_NUMBER )
     {
 
-        // not yet set, so do it now exactly once 
+        // not yet set, so do it now exactly once
 
-        if ( getenv( LAMA_MIC_ENV_FOR_DEVICE ) )
+        if( getenv( LAMA_MIC_ENV_FOR_DEVICE ) )
         {
             std::string devNumber( getenv( LAMA_MIC_ENV_FOR_DEVICE ) );
             std::istringstream devNumberReader( devNumber );
@@ -95,7 +94,7 @@ MICContextManager::MICContextManager()
 
     // initialize the weak pointers for different devices ( probably not necessary )
 
-    for ( int i = 0; i < LAMA_MAX_MIC_DEVICES; i++ )
+    for( int i = 0; i < LAMA_MAX_MIC_DEVICES; i++ )
     {
         mMICContext[i] = boost::weak_ptr<MICContext>();
     }
@@ -107,9 +106,9 @@ MICContextManager::~MICContextManager()
 {
     LAMA_LOG_DEBUG( logger, "~MICContextManager" )
 
-    for ( int i = 0; i < LAMA_MAX_MIC_DEVICES; i++ )
+    for( int i = 0; i < LAMA_MAX_MIC_DEVICES; i++ )
     {
-        if ( mMICContext[i].expired() )
+        if( mMICContext[i].expired() )
         {
             LAMA_LOG_DEBUG( logger, "expired MICContext for device " << i )
         }
@@ -126,7 +125,7 @@ ContextPtr MICContextManager::getInstance( int deviceNr )
 {
     int micDeviceNr = deviceNr;
 
-    if ( micDeviceNr == LAMA_DEFAULT_DEVICE_NUMBER )
+    if( micDeviceNr == LAMA_DEFAULT_DEVICE_NUMBER )
     {
         micDeviceNr = getDefaultDeviceNr();
 
@@ -134,14 +133,14 @@ ContextPtr MICContextManager::getInstance( int deviceNr )
     }
     else
     {
-        LAMA_ASSERT_ERROR( 0 <= micDeviceNr && micDeviceNr < LAMA_MAX_MIC_DEVICES,
-                           "device = " << micDeviceNr << " out of range"
-                           << ", max supported device = " << LAMA_MAX_MIC_DEVICES )
+        LAMA_ASSERT_ERROR(
+            0 <= micDeviceNr && micDeviceNr < LAMA_MAX_MIC_DEVICES,
+            "device = " << micDeviceNr << " out of range" << ", max supported device = " << LAMA_MAX_MIC_DEVICES )
     }
 
     boost::shared_ptr<MICContext> context = boost::shared_ptr<MICContext>();
 
-    if ( mMICContext[micDeviceNr].expired() )
+    if( mMICContext[micDeviceNr].expired() )
     {
         // create a new context for the device and return the shared pointer
 

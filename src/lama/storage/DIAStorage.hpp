@@ -2,7 +2,7 @@
  * @file DIAStorage.hpp
  *
  * @license
- * Copyright (c) 2009-2013
+ * Copyright (c) 2009-2015
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -57,7 +57,7 @@ class LAMA_DLL_IMPORTEXPORT DIAStorage: public CRTPMatrixStorage<DIAStorage<Valu
 {
 public:
 
-	typedef ValueType StorageValueType;
+    typedef ValueType StorageValueType;
 
     /** Getter of type name of the matrix storage format. */
 
@@ -199,7 +199,7 @@ public:
     /** Implementation of MatrixStorage::matrixTimesVector for DIA */
 
     virtual void matrixTimesVector(
-    	LAMAArray<ValueType>& result,
+        LAMAArray<ValueType>& result,
         const ValueType alpha,
         const LAMAArray<ValueType>& x,
         const ValueType beta,
@@ -217,7 +217,7 @@ public:
     /** Implementation of MatrixStorage::matrixTimesVectorAsync for DIA */
 
     virtual SyncToken* matrixTimesVectorAsync(
-    	LAMAArray<ValueType>& result,
+        LAMAArray<ValueType>& result,
         const ValueType alpha,
         const LAMAArray<ValueType>& x,
         const ValueType beta,
@@ -358,15 +358,17 @@ private:
 
     // take this one for diag-major order (fits best for GPUs)
 
-    static inline IndexType diaindex( const IndexType irow, 
-                                      const IndexType idiag, 
-                                      const IndexType numRows, 
-                                      const IndexType numDiagonals )
+    static inline IndexType diaindex(
+        const IndexType irow,
+        const IndexType idiag,
+        const IndexType numRows,
+        const IndexType numDiagonals )
     {
         LAMA_ASSERT_ERROR( irow >= 0, "irow = " << irow );
         LAMA_ASSERT_ERROR( idiag >= 0, "idiag = " << idiag );
         LAMA_ASSERT_ERROR( irow < numRows, "irow = " << irow << " out of range, numRows = " << numRows );
-        LAMA_ASSERT_ERROR( idiag < numDiagonals, "idiag = " << idiag << " out of range, numDiagonals = " << numDiagonals );
+        LAMA_ASSERT_ERROR( idiag < numDiagonals,
+                           "idiag = " << idiag << " out of range, numDiagonals = " << numDiagonals );
 
         return idiag * numRows + irow;
     }
@@ -378,8 +380,9 @@ private:
     static void setUsedDiagonal( bool upperDiagonalUsed[], bool lowerDiagonalUsed[], IndexType i, IndexType j );
 
     LAMA_LOG_DECL_STATIC_LOGGER( logger ) //!< logger for this matrix format
-};
+}    ;
 
-} // namespace lama
+}
+// namespace lama
 
 #endif // LAMA_DIASTORAGE_HPP_

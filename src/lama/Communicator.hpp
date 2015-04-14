@@ -187,7 +187,7 @@ public:
 
     virtual PartitionId getNodeSize() const = 0;
 
-    /** @brief Getter of node rank 
+    /** @brief Getter of node rank
      *
      * @return rank of this partition on its node, 0 <= rank < getNodeSize()
      */
@@ -267,10 +267,10 @@ public:
      *  @param[in]    root   processor with values for all processors
      *  @param[in]    allvals values for all processors (size must be n * size() )
      *
-     *  virtual void scatter( 
-     *      TypeId myvals[], 
-     *      const IndexType n, 
-     *      const PartitionId root, 
+     *  virtual void scatter(
+     *      TypeId myvals[],
+     *      const IndexType n,
+     *      const PartitionId root,
      *      const TypeId allvals[] ) const = 0;
      */
 
@@ -297,10 +297,10 @@ public:
      *  @param[in]    root   processor with values for all processors
      *  @param[in]    myvals values that this processor contributes
      *
-     *  virtual void gather( 
-     *      TypeId allvals[], 
-     *      const IndexType n, 
-     *      const PartitionId root, 
+     *  virtual void gather(
+     *      TypeId allvals[],
+     *      const IndexType n,
+     *      const PartitionId root,
      *      const TypeId myvals[] ) const = 0;
      */
 
@@ -339,7 +339,7 @@ public:
      *  @param[in,out] location   is an additional int value, only out for root
      *  @param[in]     root       rank of processor that has valid results at end of the routine
      *
-     *  Only root processor will contain the maximal value and the location loc, 
+     *  Only root processor will contain the maximal value and the location loc,
      *
      * virtual void maxloc( TypeId& val, IndexType& location, const PartitionId root ) const = 0;
      */
@@ -387,7 +387,7 @@ public:
      *
      *  A default implementation is provided that returns a NoSyncToken. Derived classes
      *  should override this method if there is a benefit of using asynchronous transfers.
-     * 
+     *
      *  virtual SyncToken* shiftDataAsync(
      *      TypeId newVals[],
      *      const TypeId oldVals[],
@@ -396,18 +396,18 @@ public:
      */
 
     /** @brief Exchange of data between all processors by communication plans.
-     *  
+     *
      *  @param[out] recvData   buffer for data received from other processors
      *  @param[in]  recvPlan   number of elements and offsets for receiving
      *  @param[in]  sendData   buffer for data to send to other processors
      *  @param[in]  sendPlan   contains number of elements and offsets for sending data
-     *  
-     *  All send and receive data between each pair of processors must be a contiguous  
-     *  part of the sendData or recvData.                                              
-     *   
-     *  The size of recvData must be recvPlan.totalQuantity().  
-     *  The size of sendData must be sendPlan.totalQuantity(). 
-     */                                                                   
+     *
+     *  All send and receive data between each pair of processors must be a contiguous
+     *  part of the sendData or recvData.
+     *
+     *  The size of recvData must be recvPlan.totalQuantity().
+     *  The size of sendData must be sendPlan.totalQuantity().
+     */
 
     /** All-to-all exchange of an IndexType value between all processors.
      *
@@ -420,90 +420,90 @@ public:
     virtual void all2all( IndexType recvValues[], const IndexType sendValues[] ) const = 0;
 
     /** @brief Expanded macro by BOOST_PP_REPEAT that defines all virtual routines for one type.
-     * 
+     *
      *  @param z next available repetition dimension
      *  @param I is the actual instantation by BOOST_PP_REPEAT
      *  @param _ remains unused here
-     * 
+     *
      *  Note: this macro is needed as virtual routines must not be templates
      */
 
 #define COMMUNICATOR_METHODS( z, I, _)                                    \
-                                                                          \
+    \
     virtual void exchangeByPlan(                                          \
-        ARRAY_TYPE##I* const recvData,                                    \
-        const CommunicationPlan& recvPlan,                                \
-        const ARRAY_TYPE##I* const sendData,                              \
-        const CommunicationPlan& sendPlan ) const = 0;                    \
-                                                                          \
+            ARRAY_TYPE##I* const recvData,                                    \
+            const CommunicationPlan& recvPlan,                                \
+            const ARRAY_TYPE##I* const sendData,                              \
+            const CommunicationPlan& sendPlan ) const = 0;                    \
+    \
     virtual SyncToken* exchangeByPlanAsync(                               \
-        ARRAY_TYPE##I* const recvData,                                    \
-        const CommunicationPlan& recvPlan,                                \
-        const ARRAY_TYPE##I* const sendData,                              \
-        const CommunicationPlan& sendPlan ) const = 0;                    \
-                                                                          \
+            ARRAY_TYPE##I* const recvData,                                    \
+            const CommunicationPlan& recvPlan,                                \
+            const ARRAY_TYPE##I* const sendData,                              \
+            const CommunicationPlan& sendPlan ) const = 0;                    \
+    \
     virtual void bcast(                                                   \
-        ARRAY_TYPE##I val[],                                              \
-        const IndexType n,                                                \
-        const PartitionId root ) const = 0;                               \
-                                                                          \
+            ARRAY_TYPE##I val[],                                              \
+            const IndexType n,                                                \
+            const PartitionId root ) const = 0;                               \
+    \
     virtual void scatter(                                                 \
-        ARRAY_TYPE##I myvals[],                                           \
-        const IndexType n,                                                \
-        const PartitionId root,                                           \
-        const ARRAY_TYPE##I allvals[] ) const = 0;                        \
-                                                                          \
+            ARRAY_TYPE##I myvals[],                                           \
+            const IndexType n,                                                \
+            const PartitionId root,                                           \
+            const ARRAY_TYPE##I allvals[] ) const = 0;                        \
+    \
     virtual void scatterV(                                                \
-        ARRAY_TYPE##I myvals[],                                           \
-        const IndexType n,                                                \
-        const PartitionId root,                                           \
-        const ARRAY_TYPE##I allvals[],                                    \
-        const IndexType sizes[] ) const = 0;                              \
-                                                                          \
+            ARRAY_TYPE##I myvals[],                                           \
+            const IndexType n,                                                \
+            const PartitionId root,                                           \
+            const ARRAY_TYPE##I allvals[],                                    \
+            const IndexType sizes[] ) const = 0;                              \
+    \
     virtual void gather(                                                  \
-        ARRAY_TYPE##I allvals[],                                          \
-        const IndexType n,                                                \
-        const PartitionId root,                                           \
-        const ARRAY_TYPE##I myvals[] ) const = 0;                         \
-                                                                          \
+            ARRAY_TYPE##I allvals[],                                          \
+            const IndexType n,                                                \
+            const PartitionId root,                                           \
+            const ARRAY_TYPE##I myvals[] ) const = 0;                         \
+    \
     virtual void gatherV(                                                 \
-        ARRAY_TYPE##I allvals[],                                          \
-        const IndexType n,                                                \
-        const PartitionId root,                                           \
-        const ARRAY_TYPE##I myvals[],                                     \
-        const IndexType sizes[] ) const = 0;                              \
-                                                                          \
+            ARRAY_TYPE##I allvals[],                                          \
+            const IndexType n,                                                \
+            const PartitionId root,                                           \
+            const ARRAY_TYPE##I myvals[],                                     \
+            const IndexType sizes[] ) const = 0;                              \
+    \
     virtual void swap(                                                    \
-        ARRAY_TYPE##I val[],                                              \
-        const IndexType n,                                                \
-        const PartitionId partner ) const = 0;                            \
-                                                                          \
+            ARRAY_TYPE##I val[],                                              \
+            const IndexType n,                                                \
+            const PartitionId partner ) const = 0;                            \
+    \
     virtual void maxloc(                                                  \
-        ARRAY_TYPE##I& val,                                               \
-        IndexType& location,                                              \
-        const PartitionId root ) const = 0;                               \
-                                                                          \
+            ARRAY_TYPE##I& val,                                               \
+            IndexType& location,                                              \
+            const PartitionId root ) const = 0;                               \
+    \
     virtual ARRAY_TYPE##I min(                                            \
-        const ARRAY_TYPE##I value ) const = 0;                            \
-                                                                          \
+            const ARRAY_TYPE##I value ) const = 0;                            \
+    \
     virtual ARRAY_TYPE##I sum(                                            \
-        const ARRAY_TYPE##I value ) const = 0;                            \
-                                                                          \
+            const ARRAY_TYPE##I value ) const = 0;                            \
+    \
     virtual ARRAY_TYPE##I max(                                            \
-        const ARRAY_TYPE##I value ) const = 0;                            \
-                                                                          \
+            const ARRAY_TYPE##I value ) const = 0;                            \
+    \
     virtual IndexType shiftData(                                          \
-        ARRAY_TYPE##I newVals[],                                          \
-        const IndexType newSize,                                          \
-        const ARRAY_TYPE##I oldVals[],                                    \
-        const IndexType oldSize,                                          \
-        const int direction ) const = 0;                                  \
-                                                                          \
+            ARRAY_TYPE##I newVals[],                                          \
+            const IndexType newSize,                                          \
+            const ARRAY_TYPE##I oldVals[],                                    \
+            const IndexType oldSize,                                          \
+            const int direction ) const = 0;                                  \
+    \
     virtual SyncToken* shiftDataAsync(                                    \
-        ARRAY_TYPE##I newVals[],                                          \
-        const ARRAY_TYPE##I oldVals[],                                    \
-        const IndexType size,                                             \
-        const int direction ) const = 0;                                  \
+            ARRAY_TYPE##I newVals[],                                          \
+            const ARRAY_TYPE##I oldVals[],                                    \
+            const IndexType size,                                             \
+            const int direction ) const = 0;                                  \
 
 
     // define communicator methods for all supported data types
@@ -519,7 +519,6 @@ public:
      *************************************************************************************/
 
     // Sum of size_t values needed for large quantities like memory usage
-
     virtual size_t sum( const size_t value ) const = 0;
 
     // Broadcast of characters needed for strings
@@ -537,7 +536,6 @@ public:
      *************************************************************************************/
 
     // Boolean global reduction operations are implemented by using the sum reduction.
-
     virtual bool all( const bool flag ) const;
     virtual bool any( const bool flag ) const;
 
@@ -560,7 +558,7 @@ public:
     {
         PartitionId root = 0;
         gather( allvals, n, root, myvals );
-        bcast ( allvals, n * getSize(), root );
+        bcast( allvals, n * getSize(), root );
 
         // @ToDo: implement this by a circular shift
     }
@@ -621,12 +619,18 @@ public:
      *  This method is not virtual but will use the pure virtual methods of base classes.
      */
     template<typename ValueType>
-    void updateHalo( LAMAArray<ValueType>& haloValues, const LAMAArray<ValueType>& localValues, const Halo& halo ) const;
+    void updateHalo(
+        LAMAArray<ValueType>& haloValues,
+        const LAMAArray<ValueType>& localValues,
+        const Halo& halo ) const;
 
     /** @brief Asynchronous update of halo array via Halo object. */
 
     template<typename ValueType>
-    SyncToken* updateHaloAsync( LAMAArray<ValueType>& haloValues, const LAMAArray<ValueType>& localValues, const Halo& halo ) const;
+    SyncToken* updateHaloAsync(
+        LAMAArray<ValueType>& haloValues,
+        const LAMAArray<ValueType>& localValues,
+        const Halo& halo ) const;
 
     /** @brief Shift on LAMA arrays.
      *
@@ -651,7 +655,10 @@ public:
      *  Note: All partitions must have the same size for send/recv array
      */
     template<typename ValueType>
-    SyncToken* shiftAsync( LAMAArray<ValueType>& recvArray, const LAMAArray<ValueType>& sendArray, const int direction ) const;
+    SyncToken* shiftAsync(
+        LAMAArray<ValueType>& recvArray,
+        const LAMAArray<ValueType>& sendArray,
+        const int direction ) const;
 
     /** Override routine of base class Printable. */
 
@@ -664,7 +671,7 @@ public:
         return mCommunicatorType;
     }
 
-    /** This routine provides a context that might be most efficient for 
+    /** This routine provides a context that might be most efficient for
      *  the communication of data.
      *
      * @param[in] array is a LAMA array that is used for communication
@@ -712,7 +719,7 @@ PartitionId Communicator::getNeighbor( int pos ) const
     PartitionId size = getSize();
     PartitionId rank = getRank();
 
-    LAMA_ASSERT( std::abs(pos) <= size, "neighbor pos "<<pos<<" out of range ("<<size<<")" )
+    LAMA_ASSERT( std::abs( pos ) <= size, "neighbor pos "<<pos<<" out of range ("<<size<<")" )
 
     return ( size + rank + pos ) % size;
 }
@@ -740,7 +747,7 @@ void Communicator::exchangeByPlan(
 
     ReadAccess<ValueType> sendData( sendArray, comCtx );
 
-    // Data will be received at the same context where send data is 
+    // Data will be received at the same context where send data is
 
     WriteOnlyAccess<ValueType> recvData( recvArray, comCtx, recvSize );
 
@@ -767,7 +774,8 @@ SyncToken* Communicator::exchangeByPlanAsync(
     LAMA_LOG_DEBUG( logger, *this << ": exchangeByPlanAsync, comCtx = " << *comCtx )
 
     boost::shared_ptr<ReadAccess<ValueType> > sendData( new ReadAccess<ValueType>( sendArray, comCtx ) );
-    boost::shared_ptr<WriteAccess<ValueType> > recvData( new WriteOnlyAccess<ValueType>( recvArray, comCtx, recvSize ) );
+    boost::shared_ptr<WriteAccess<ValueType> > recvData(
+                    new WriteOnlyAccess<ValueType>( recvArray, comCtx, recvSize ) );
 
     SyncToken* token( exchangeByPlanAsync( recvData->get(), recvPlan, sendData->get(), sendPlan ) );
 
@@ -777,7 +785,7 @@ SyncToken* Communicator::exchangeByPlanAsync(
     token->pushAccess( recvData );
     token->pushAccess( sendData );
 
-    // return ownership of new created object 
+    // return ownership of new created object
 
     return token;
 }

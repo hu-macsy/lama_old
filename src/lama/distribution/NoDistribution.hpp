@@ -2,7 +2,7 @@
  * @file NoDistribution.hpp
  *
  * @license
- * Copyright (c) 2009-2013
+ * Copyright (c) 2009-2015
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -47,10 +47,10 @@ namespace lama
 
 /** Distribution class that stands for a replicated distribution.
  *
- *  With this distribution an object has an incarnation on each 
- *  processor. 
+ *  With this distribution an object has an incarnation on each
+ *  processor.
  *
- *  Usually, methods should take care of consistency among 
+ *  Usually, methods should take care of consistency among
  *  all processors, i.e. writes and update operations must be
  *  done on all partitions. But a replicated object can also be used
  *  like a private incarnation on each processor.
@@ -79,7 +79,10 @@ public:
 
     /** Static methods to create a NoDistribution. */
 
-    static NoDistribution* create( const CommunicatorPtr commPtr, const IndexType globalSize, const float weight = 1.0 );
+    static NoDistribution* create(
+        const CommunicatorPtr commPtr,
+        const IndexType globalSize,
+        const float weight = 1.0 );
 
     static NoDistribution* create( const CommunicatorPtr commPtr, const Matrix& matrix, const float weight = 1.0 );
 
@@ -89,7 +92,7 @@ private:
 
     LAMA_LOG_DECL_STATIC_LOGGER( logger )
 
-    static bool initialized;  //!< used for static registration
+    static    bool initialized; //!< used for static registration
 };
 
 }

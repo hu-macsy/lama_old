@@ -2,7 +2,7 @@
  * @file CUDALAPACK.hpp
  *
  * @license
- * Copyright (c) 2009-2013
+ * Copyright (c) 2009-2015
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -43,7 +43,8 @@
 namespace lama
 {
 
-class SyncToken;   // forward declaration
+class SyncToken;
+// forward declaration
 
 class LAMA_DLL_IMPORTEXPORT CUDALAPACK
 {
@@ -60,9 +61,9 @@ public:
 
 private:
 
-    static bool initialized;   //!< static initialization used for registration
+    static bool initialized; //!< static initialization used for registration
 
-    static bool registerInterface();  //!< registration
+    static bool registerInterface(); //!< registration
 
     template<typename ValueType>
     static void laswp(

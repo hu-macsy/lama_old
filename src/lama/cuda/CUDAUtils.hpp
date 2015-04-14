@@ -2,7 +2,7 @@
  * @file CUDAUtils.hpp
  *
  * @license
- * Copyright (c) 2009-2013
+ * Copyright (c) 2009-2015
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -76,9 +76,12 @@ public:
 
     /** CUDA implementation for UtilsInterface::Copy::setScale. */
 
-    template<typename ValueType, typename otherValueType>
-    static void setScale( ValueType outValues[], const ValueType value,
-                          const otherValueType inValues[], const IndexType n );
+    template<typename ValueType,typename otherValueType>
+    static void setScale(
+        ValueType outValues[],
+        const ValueType value,
+        const otherValueType inValues[],
+        const IndexType n );
 
     /** CUDA function implements UtilsInterface::Reductions::maxval */
 
@@ -129,11 +132,12 @@ private:
 
     LAMA_LOG_DECL_STATIC_LOGGER( logger )
 
-    static bool initialized;   //!< static initialization used for registration
+    static    bool initialized; //!< static initialization used for registration
 
-    static bool registerInterface();  //!< registration
+    static bool registerInterface();//!< registration
 };
 
-} // namespace lama
+}
+// namespace lama
 
 #endif //  LAMA_CUDA_UTILS_HPP_

@@ -2,7 +2,7 @@
  * @file SyncToken.cpp
  *
  * @license
- * Copyright (c) 2009-2013
+ * Copyright (c) 2009-2015
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -59,7 +59,7 @@ SyncToken::CGuard::~CGuard()
     // this destructor is called at the end of the program
     // Give an error message if not all SyncTokens have been deleted
 
-    if ( countSyncToken )
+    if( countSyncToken )
     {
         LAMA_LOG_ERROR( logger, "Remaining SyncToken (undeleted) = " << countSyncToken );
     }
@@ -74,7 +74,7 @@ SyncToken::CGuard SyncToken::cguard;
 /* ------------------------------------------------------------------------ */
 
 SyncToken::SyncToken()
-    : mSynchronized( false )
+                : mSynchronized( false )
 {
     LAMA_LOG_DEBUG( logger, "SyncToken constructed" )
 
@@ -85,7 +85,7 @@ SyncToken::~SyncToken()
 {
     LAMA_LOG_DEBUG( logger, "~SyncToken" )
 
-    if ( !mSynchronized )
+    if( !mSynchronized )
     {
         LAMA_LOG_WARN( logger, "no synchronization called on SyncToken" )
     }
@@ -106,7 +106,7 @@ void SyncToken::pushAccess( shared_ptr<BaseAccess> access )
 {
     LAMA_ASSERT_ERROR( access.get(), "NULL access cannot be pushed for synchronization." )
 
-    if ( mSynchronized )
+    if( mSynchronized )
     {
         LAMA_LOG_DEBUG( logger, *this << ": push access not done, already synchronized" )
     }
@@ -126,7 +126,7 @@ void SyncToken::pushArray( shared_ptr<_LAMAArray> array )
 {
     LAMA_ASSERT_ERROR( array.get(), "NULL array cannot be pushed for synchronization." )
 
-    if ( mSynchronized )
+    if( mSynchronized )
     {
         LAMA_LOG_DEBUG( logger, *this << ": push array not done, already synchronized" )
 
@@ -159,7 +159,7 @@ bool SyncToken::isSynchronized() const
 
 void SyncToken::setSynchronized()
 {
-    if ( mSynchronized )
+    if( mSynchronized )
     {
         LAMA_THROWEXCEPTION( *this << " is already synchronized" )
     }
@@ -171,7 +171,7 @@ void SyncToken::setSynchronized()
     mAccesses.clear();
     mArrays.clear();
 
-    for ( size_t i = 0; i < mSynchronizedFunctions.size(); ++i )
+    for( size_t i = 0; i < mSynchronizedFunctions.size(); ++i )
     {
         mSynchronizedFunctions[i]();
     }

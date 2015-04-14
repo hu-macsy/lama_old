@@ -2,7 +2,7 @@
  * @file CUDAStreamSyncToken.cpp
  *
  * @license
- * Copyright (c) 2009-2013
+ * Copyright (c) 2009-2015
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -53,8 +53,8 @@ CUDAStreamSyncToken::CUDAStreamSyncToken( CUDAContextPtr cudaContext, CUstream s
 CUDAStreamSyncToken::CUDAStreamSyncToken( CUDAContextPtr cudaContext, CUstream stream, CUevent event )
     : mCUDAContext( cudaContext ), mStream( stream ), mEvent( event )
 {
-    LAMA_LOG_DEBUG( logger, "StreamSyncToken for " << *cudaContext << " generated" 
-                             << ", event = " << event << ", stream = " << stream )
+    LAMA_LOG_DEBUG( logger,
+                    "StreamSyncToken for " << *cudaContext << " generated" << ", event = " << event << ", stream = " << stream )
 }
 
 CUDAStreamSyncToken::~CUDAStreamSyncToken()
@@ -64,7 +64,7 @@ CUDAStreamSyncToken::~CUDAStreamSyncToken()
 
 void CUDAStreamSyncToken::wait()
 {
-    if ( isSynchronized() )
+    if( isSynchronized() )
     {
         return;
     }
@@ -76,7 +76,7 @@ void CUDAStreamSyncToken::wait()
 
         LAMA_CONTEXT_ACCESS( mCUDAContext )
 
-        if ( mEvent != 0 )
+        if( mEvent != 0 )
         {
             LAMA_CUDA_DRV_CALL( cuEventSynchronize( mEvent ), "cuEventSynchronize( " << mEvent << " ) failed." )
             LAMA_CUDA_DRV_CALL( cuEventDestroy( mEvent ), "cuEventDestroy( " << mEvent << " ) failed." );
@@ -97,16 +97,17 @@ void CUDAStreamSyncToken::wait()
 
 bool CUDAStreamSyncToken::probe() const
 {
-    if ( isSynchronized() )
+    if( isSynchronized() )
     {
         return true;
     }
+
     return probeEvent( mEvent );
 }
 
 cudaStream_t CUDAStreamSyncToken::getCUDAStream() const
 {
-    return ( cudaStream_t ) mStream;
+    return (cudaStream_t) mStream;
 }
 
 bool CUDAStreamSyncToken::probeEvent( const CUevent& stopEvent ) const
@@ -117,7 +118,7 @@ bool CUDAStreamSyncToken::probeEvent( const CUevent& stopEvent ) const
 
     CUresult result = cuEventQuery( stopEvent );
 
-    if ( result != CUDA_SUCCESS && result != CUDA_ERROR_NOT_READY )
+    if( result != CUDA_SUCCESS && result != CUDA_ERROR_NOT_READY )
     {
         LAMA_CUDA_DRV_CALL( result, "cuEventQuery failed for CUevent " << stopEvent << '.' );
     }
@@ -131,7 +132,7 @@ bool CUDAStreamSyncToken::queryEvent( const CUevent event ) const
 
     CUresult result = cuEventQuery( event );
 
-    if ( result != CUDA_SUCCESS || result != CUDA_ERROR_NOT_READY )
+    if( result != CUDA_SUCCESS || result != CUDA_ERROR_NOT_READY )
     {
         LAMA_CUDA_DRV_CALL( result, "cuEventQuery failed for CUevent "<<event<<'.' );
     }

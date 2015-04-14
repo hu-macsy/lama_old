@@ -2,7 +2,7 @@
  * @file OpenMPCSRUtils.cpp
  *
  * @license
- * Copyright (c) 2009-2013
+ * Copyright (c) 2009-2015
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -56,7 +56,8 @@
 namespace lama
 {
 
-using std::abs;    // is used for abs( float ), abs( double )
+using std::abs;
+// is used for abs( float ), abs( double )
 
 LAMA_LOG_DEF_LOGGER( OpenMPCSRUtils::logger, "OpenMP.CSRUtils" )
 
@@ -74,7 +75,7 @@ IndexType OpenMPCSRUtils::scanSerial( IndexType array[], const IndexType numValu
 
     IndexType runningSum = 0;
 
-    for ( IndexType i = 0; i < numValues; i++ )
+    for( IndexType i = 0; i < numValues; i++ )
     {
         IndexType tmp = runningSum;
         runningSum += array[i];
@@ -103,7 +104,8 @@ IndexType OpenMPCSRUtils::scanParallel( PartitionId numThreads, IndexType array[
         IndexType myCounter = 0;
 
         #pragma omp for schedule(static)
-        for ( IndexType i = 0; i < numValues; i++ )
+
+        for( IndexType i = 0; i < numValues; i++ )
         {
             myCounter += array[i];
         }
@@ -120,7 +122,8 @@ IndexType OpenMPCSRUtils::scanParallel( PartitionId numThreads, IndexType array[
         IndexType myRunningSum = threadCounter[omp_get_thread_num()];
 
         #pragma omp for schedule(static)
-        for ( IndexType i = 0; i < numValues; i++ )
+
+        for( IndexType i = 0; i < numValues; i++ )
         {
             IndexType tmp = myRunningSum;
             myRunningSum += array[i];
@@ -145,7 +148,7 @@ IndexType OpenMPCSRUtils::scan( IndexType array[], const IndexType numValues )
 
     LAMA_LOG_INFO( logger, "scan " << numValues << " entries, #threads = " << numThreads )
 
-    if ( numThreads < minThreads )
+    if( numThreads < minThreads )
     {
         return scanSerial( array, numValues );
     }
@@ -164,16 +167,17 @@ bool OpenMPCSRUtils::validOffsets( const IndexType array[], const IndexType n, c
     bool validFlag = true;
 
     #pragma omp parallel for schedule(LAMA_OMP_SCHEDULE) reduction( && : validFlag )
-    for ( IndexType i = 0; i < n; i++ )
+
+    for( IndexType i = 0; i < n; i++ )
     {
-        if ( !( array[i] <= array[i + 1] ) )
+        if( !( array[i] <= array[i + 1] ) )
         {
             LAMA_LOG_DEBUG( logger, "illegal offsets at pos " << i << ": " << array[i] << " - " << array[i+1] )
             validFlag = false;
         }
     }
 
-    if ( array[n] != total )
+    if( array[n] != total )
     {
         LAMA_LOG_DEBUG( logger, "last entry in offset array = " << array[n] << " illegal, should be " << total )
         validFlag = false;
@@ -199,7 +203,8 @@ IndexType OpenMPCSRUtils::sizes2offsets( IndexType array[], const IndexType numV
 void OpenMPCSRUtils::offsets2sizes( IndexType sizes[], const IndexType offsets[], const IndexType numRows )
 {
     #pragma omp parallel for schedule(LAMA_OMP_SCHEDULE)
-    for ( IndexType i = 0; i < numRows; i++ )
+
+    for( IndexType i = 0; i < numRows; i++ )
     {
         sizes[i] = offsets[i + 1] - offsets[i];
     }
@@ -214,7 +219,8 @@ void OpenMPCSRUtils::offsets2sizesGather(
     const IndexType numRows )
 {
     #pragma omp parallel for schedule(LAMA_OMP_SCHEDULE)
-    for ( IndexType i = 0; i < numRows; i++ )
+
+    for( IndexType i = 0; i < numRows; i++ )
     {
         IndexType row = rowIndexes[i];
         sizes[i] = offsets[row + 1] - offsets[row];
@@ -233,17 +239,19 @@ bool OpenMPCSRUtils::hasDiagonalProperty(
     bool diagonalProperty = true;
 
     #pragma omp parallel for reduction( && : diagonalProperty )
-    for ( IndexType i = 0; i < numDiagonals; ++i )
+
+    for( IndexType i = 0; i < numDiagonals; ++i )
     {
-        if ( !diagonalProperty )
+        if( !diagonalProperty )
         {
             continue;
         }
-        if ( csrIA[i] == csrIA[i + 1] )
+
+        if( csrIA[i] == csrIA[i + 1] )
         {
             diagonalProperty = false;
         }
-        else if ( csrJA[csrIA[i]] != i )
+        else if( csrJA[csrIA[i]] != i )
         {
             diagonalProperty = false;
         }
@@ -268,7 +276,8 @@ void OpenMPCSRUtils::sortRowElements(
     LAMA_LOG_INFO( logger, "sort elements in each of " << numRows << " rows, diagonal flag = " << diagonalFlag )
 
     #pragma omp parallel for
-    for ( IndexType i = 0; i < numRows; ++i )
+
+    for( IndexType i = 0; i < numRows; ++i )
     {
         // use bubble sort as sort algorithm
 
@@ -279,27 +288,27 @@ void OpenMPCSRUtils::sortRowElements(
 
         bool sorted = false;
 
-        while ( !sorted )
+        while( !sorted )
         {
             sorted = true; // will be reset if any wrong order appears
 
             LAMA_LOG_TRACE( logger, "sort from " << start << " - " << end )
 
-            for ( IndexType jj = start; jj < end; ++jj )
+            for( IndexType jj = start; jj < end; ++jj )
             {
                 bool swapIt = false;
 
                 LAMA_ASSERT_DEBUG(
-                    csrJA[ jj ] != csrJA[ jj + 1 ],
+                    csrJA[jj] != csrJA[jj + 1],
                     "row " << i << ": " << jj << ", column index " << csrJA[jj] << ", " << csrJA[ jj+1] << " appears twice" );
 
                 // if diagonalFlag is set, column i is the smallest one
 
-                if ( diagonalFlag && ( csrJA[jj + 1] == i ) && ( csrJA[jj] != i ) )
+                if( diagonalFlag && ( csrJA[jj + 1] == i ) && ( csrJA[jj] != i ) )
                 {
                     swapIt = true;
                 }
-                else if ( diagonalFlag && ( csrJA[jj] == i ) )
+                else if( diagonalFlag && ( csrJA[jj] == i ) )
                 {
                     swapIt = false;
                 }
@@ -308,7 +317,7 @@ void OpenMPCSRUtils::sortRowElements(
                     swapIt = csrJA[jj] > csrJA[jj + 1];
                 }
 
-                if ( swapIt )
+                if( swapIt )
                 {
                     LAMA_LOG_TRACE( logger, "swap at pos " << jj << " : " << csrJA[jj] << " - " << csrJA[ jj+1 ] )
                     sorted = false;
@@ -316,6 +325,7 @@ void OpenMPCSRUtils::sortRowElements(
                     std::swap( csrValues[jj], csrValues[jj + 1] );
                 }
             }
+
             --end;
         }
     }
@@ -328,11 +338,12 @@ IndexType OpenMPCSRUtils::countNonEmptyRowsByOffsets( const IndexType offsets[],
     IndexType counter = 0;
 
     #pragma omp parallel for reduction( +:counter )
-    for ( IndexType i = 0; i < numRows; ++i )
+
+    for( IndexType i = 0; i < numRows; ++i )
     {
         const IndexType nzRow = offsets[i + 1] - offsets[i];
 
-        if ( nzRow > 0 )
+        if( nzRow > 0 )
         {
             counter++;
         }
@@ -355,11 +366,11 @@ void OpenMPCSRUtils::setNonEmptyRowsByOffsets(
 
     // Note: this routine is not easy to parallelize, no offsets for rowIndexes available
 
-    for ( IndexType i = 0; i < numRows; ++i )
+    for( IndexType i = 0; i < numRows; ++i )
     {
         const IndexType nzRow = offsets[i + 1] - offsets[i];
 
-        if ( nzRow > 0 )
+        if( nzRow > 0 )
         {
             rowIndexes[counter] = i;
             counter++;
@@ -382,11 +393,11 @@ void OpenMPCSRUtils::scaleRows(
 {
     #pragma omp parallel for schedule( LAMA_OMP_SCHEDULE )
 
-    for ( IndexType i = 0; i < numRows; ++i )
+    for( IndexType i = 0; i < numRows; ++i )
     {
         ValueType1 tmp = static_cast<ValueType1>( values[i] );
 
-        for ( IndexType j = csrIA[i]; j < csrIA[i + 1]; ++j )
+        for( IndexType j = csrIA[i]; j < csrIA[i + 1]; ++j )
         {
             csrValues[j] *= tmp;
         }
@@ -416,12 +427,13 @@ void OpenMPCSRUtils::convertCSR2CSC(
 
     LAMA_LOG_INFO( logger, "convertCSR2CSC of matrix " << numRows << " x " << numColumns )
 
-    LAMA_ASSERT_EQUAL_DEBUG( numValues, rIA[ numRows ] )
+    LAMA_ASSERT_EQUAL_DEBUG( numValues, rIA[numRows] )
 
     // initialization of column counters with 0
 
     #pragma omp parallel for
-    for ( IndexType i = 0; i < numColumns; ++i )
+
+    for( IndexType i = 0; i < numColumns; ++i )
     {
         cscIA[i] = 0;
     }
@@ -429,11 +441,12 @@ void OpenMPCSRUtils::convertCSR2CSC(
     // loop over all rows of the row matrix to count columns, not yet OpenMP parallelized
 
     #pragma omp parallel for
-    for ( IndexType i = 0; i < numRows; ++i )
+
+    for( IndexType i = 0; i < numRows; ++i )
     {
         // loop over all none zero elements of column i
 
-        for ( IndexType jj = rIA[i]; jj < rIA[i + 1]; ++jj )
+        for( IndexType jj = rIA[i]; jj < rIA[i + 1]; ++jj )
         {
             IndexType j = rJA[jj];
             #pragma omp atomic
@@ -445,14 +458,15 @@ void OpenMPCSRUtils::convertCSR2CSC(
 
     LAMA_LOG_INFO( logger, "convertCSR2CSC, #num values counted = " << cscIA[ numColumns ] )
 
-    LAMA_ASSERT_EQUAL_DEBUG( numValues, cscIA[ numColumns ] )
+    LAMA_ASSERT_EQUAL_DEBUG( numValues, cscIA[numColumns] )
 
     // temporary copy neeeded of cscIA
 
     std::vector<IndexType> cscIA1( numColumns );
 
     #pragma omp parallel for
-    for ( IndexType i = 0; i < numColumns; ++i )
+
+    for( IndexType i = 0; i < numColumns; ++i )
     {
         cscIA1[i] = cscIA[i];
     }
@@ -460,12 +474,13 @@ void OpenMPCSRUtils::convertCSR2CSC(
     // fill in the array cscJA and cscValues
 
     #pragma omp parallel for
-    for ( IndexType i = 0; i < numRows; ++i )
+
+    for( IndexType i = 0; i < numRows; ++i )
     {
-        for ( IndexType jj = rIA[i]; jj < rIA[i + 1]; ++jj )
+        for( IndexType jj = rIA[i]; jj < rIA[i + 1]; ++jj )
         {
             IndexType j = rJA[jj];
-            IndexType k = atomicInc( cscIA1[j] );  // k keeps old value
+            IndexType k = atomicInc( cscIA1[j] ); // k keeps old value
             cscJA[k] = i;
             cscValues[k] = rValues[jj];
         }
@@ -490,11 +505,9 @@ void OpenMPCSRUtils::normalGEMV(
     SyncToken* syncToken )
 {
     LAMA_LOG_INFO( logger,
-                   "normalGEMV<" << Scalar::getType<ValueType>()
-                   << ", #threads = " << omp_get_max_threads() 
-                   << ">, result[" << numRows << "] = " << alpha << " * A * x + " << beta << " * y " )
+                   "normalGEMV<" << Scalar::getType<ValueType>() << ", #threads = " << omp_get_max_threads() << ">, result[" << numRows << "] = " << alpha << " * A * x + " << beta << " * y " )
 
-    if ( syncToken )
+    if( syncToken )
     {
         LAMA_THROWEXCEPTION( "asynchronous execution should be done by LAMATask before" )
     }
@@ -513,16 +526,18 @@ void OpenMPCSRUtils::normalGEMV(
         LAMA_REGION( "OpenMP.CSR.normalGEMV" )
 
         #pragma omp for schedule(LAMA_OMP_SCHEDULE)
-        for ( IndexType i = 0; i < numRows; ++i )
+
+        for( IndexType i = 0; i < numRows; ++i )
         {
             ValueType temp = 0.0;
 
-            for ( IndexType jj = csrIA[i]; jj < csrIA[i + 1]; ++jj )
+            for( IndexType jj = csrIA[i]; jj < csrIA[i + 1]; ++jj )
             {
                 IndexType j = csrJA[jj];
                 temp += csrValues[jj] * x[j];
             }
-            if ( 0 == beta )
+
+            if( 0 == beta )
             {
                 result[i] = alpha * temp;
             }
@@ -533,13 +548,15 @@ void OpenMPCSRUtils::normalGEMV(
         }
     }
 
-    if ( LAMA_LOG_TRACE_ON( logger ) )
+    if( LAMA_LOG_TRACE_ON( logger ) )
     {
         std::cout << "NormalGEMV: result = ";
-        for ( IndexType i = 0; i < numRows; ++i )
+
+        for( IndexType i = 0; i < numRows; ++i )
         {
             std::cout << " " << result[i];
         }
+
         std::cout << std::endl;
     }
 }
@@ -561,11 +578,9 @@ void OpenMPCSRUtils::normalGEVM(
     SyncToken* syncToken )
 {
     LAMA_LOG_INFO( logger,
-                   "normalGEVM<" << Scalar::getType<ValueType>()
-                   << ", #threads = " << omp_get_max_threads()
-                   << ">, result[" << numColumns << "] = " << alpha << " * x * A + " << beta << " * y " )
+                   "normalGEVM<" << Scalar::getType<ValueType>() << ", #threads = " << omp_get_max_threads() << ">, result[" << numColumns << "] = " << alpha << " * x * A + " << beta << " * y " )
 
-    if ( syncToken )
+    if( syncToken )
     {
         LAMA_THROWEXCEPTION( "asynchronous execution should be done by LAMATask before" )
     }
@@ -580,18 +595,21 @@ void OpenMPCSRUtils::normalGEVM(
         // Note: region will be entered by each thread
         LAMA_REGION( "OpenMP.CSR.normalGEVM" )
         #pragma omp for schedule(LAMA_OMP_SCHEDULE)
-        for ( IndexType i = 0; i < numColumns; ++i )
+
+        for( IndexType i = 0; i < numColumns; ++i )
         {
             ValueType sum = 0.0;
             bool diag = false;
-            if ( i < numRows && csrIA[i] != csrIA[i+1] && csrJA[ csrIA[i] ] == i )
+
+            if( i < numRows && csrIA[i] != csrIA[i + 1] && csrJA[csrIA[i]] == i )
             {
-                sum += csrValues[ csrIA[i] ] * x[i];
+                sum += csrValues[csrIA[i]] * x[i];
                 diag = true;
             }
-            for ( IndexType j = 0; j < numRows; ++j )
+
+            for( IndexType j = 0; j < numRows; ++j )
             {
-                for ( IndexType k = csrIA[j]; k < csrIA[j + 1]; ++k )
+                for( IndexType k = csrIA[j]; k < csrIA[j + 1]; ++k )
                 {
                     if( !( diag && i == j ) && csrJA[k] == i )
                     {
@@ -600,26 +618,30 @@ void OpenMPCSRUtils::normalGEVM(
                     }
                 }
             }
+
             result[i] = alpha * sum;
         }
     }
 
-    if ( 0 != beta )
+    if( 0 != beta )
     {
         #pragma omp for schedule(LAMA_OMP_SCHEDULE)
+
         for( IndexType i = 0; i < numColumns; ++i )
         {
             result[i] += beta * y[i];
         }
     }
 
-    if ( LAMA_LOG_TRACE_ON( logger ) )
+    if( LAMA_LOG_TRACE_ON( logger ) )
     {
         std::cout << "NormalGEVM: result = ";
-        for ( IndexType i = 0; i < numColumns; ++i )
+
+        for( IndexType i = 0; i < numColumns; ++i )
         {
             std::cout << " " << result[i];
         }
+
         std::cout << std::endl;
     }
 }
@@ -638,7 +660,7 @@ void OpenMPCSRUtils::sparseGEMV(
     const ValueType csrValues[],
     SyncToken* syncToken )
 {
-    if ( syncToken )
+    if( syncToken )
     {
         LAMA_THROWEXCEPTION( "asynchronous execution should be done by LAMATask before" )
     }
@@ -651,28 +673,31 @@ void OpenMPCSRUtils::sparseGEMV(
 
         #pragma omp for schedule(LAMA_OMP_SCHEDULE)
 
-        for ( IndexType ii = 0; ii < numNonZeroRows; ++ii )
+        for( IndexType ii = 0; ii < numNonZeroRows; ++ii )
         {
             ValueType temp = 0.0;
             IndexType i = rowIndexes[ii];
 
-            for ( IndexType jj = csrIA[i]; jj < csrIA[i + 1]; ++jj )
+            for( IndexType jj = csrIA[i]; jj < csrIA[i + 1]; ++jj )
             {
                 IndexType j = csrJA[jj];
                 temp += csrValues[jj] * x[j];
             }
+
             result[i] += alpha * temp;
         }
     }
 
-    if ( LAMA_LOG_TRACE_ON( logger ) )
+    if( LAMA_LOG_TRACE_ON( logger ) )
     {
         std::cout << "sparseGEMV: result = ";
-        for ( IndexType ii = 0; ii < numNonZeroRows; ++ii )
+
+        for( IndexType ii = 0; ii < numNonZeroRows; ++ii )
         {
             IndexType i = rowIndexes[ii];
             std::cout << " " << i << ":" << result[i];
         }
+
         std::cout << std::endl;
     }
 }
@@ -692,7 +717,7 @@ void OpenMPCSRUtils::sparseGEVM(
     const ValueType csrValues[],
     SyncToken* syncToken )
 {
-    if ( syncToken )
+    if( syncToken )
     {
         LAMA_THROWEXCEPTION( "asynchronous execution should be done by LAMATask before" )
     }
@@ -704,13 +729,16 @@ void OpenMPCSRUtils::sparseGEVM(
         LAMA_REGION( "OpenMP.CSR.normalGEVM" )
 
         #pragma omp for schedule(LAMA_OMP_SCHEDULE)
-        for ( IndexType i = 0; i < numColumns; ++i )
+
+        for( IndexType i = 0; i < numColumns; ++i )
         {
             ValueType sum = 0.0;
-            for ( IndexType jj = 0; jj < numNonZeroRows; ++jj )
+
+            for( IndexType jj = 0; jj < numNonZeroRows; ++jj )
             {
                 IndexType j = rowIndexes[jj];
-                for ( IndexType k = csrIA[j]; k < csrIA[j + 1]; ++k )
+
+                for( IndexType k = csrIA[j]; k < csrIA[j + 1]; ++k )
                 {
                     if( csrJA[k] == i )
                     {
@@ -719,17 +747,20 @@ void OpenMPCSRUtils::sparseGEVM(
                     }
                 }
             }
+
             result[i] = alpha * sum;
         }
     }
 
-    if ( LAMA_LOG_TRACE_ON( logger ) )
+    if( LAMA_LOG_TRACE_ON( logger ) )
     {
         std::cout << "sparseGEMV: result = ";
-        for ( IndexType i = 0; i < numColumns; ++i )
+
+        for( IndexType i = 0; i < numColumns; ++i )
         {
             std::cout << " " << result[i];
         }
+
         std::cout << std::endl;
     }
 }
@@ -754,20 +785,20 @@ void OpenMPCSRUtils::gemm(
     LAMA_LOG_INFO( logger,
                    "gemm<" << Scalar::getType<ValueType>() << ">, " << " result " << m << " x " << n << " CSR " << m << " x " << p )
 
-    if ( syncToken )
+    if( syncToken )
     {
         LAMA_THROWEXCEPTION( "asynchronous execution should be done by LAMATask before" )
     }
 
     #pragma omp parallel for schedule(LAMA_OMP_SCHEDULE)
 
-    for ( IndexType i = 0; i < m; ++i )
+    for( IndexType i = 0; i < m; ++i )
     {
-        for ( IndexType k = 0; k < n; ++k )
+        for( IndexType k = 0; k < n; ++k )
         {
             ValueType temp = 0.0;
 
-            for ( IndexType jj = csrIA[i]; jj < csrIA[i + 1]; ++jj )
+            for( IndexType jj = csrIA[i]; jj < csrIA[i + 1]; ++jj )
             {
                 IndexType j = csrJA[jj];
 
@@ -778,6 +809,7 @@ void OpenMPCSRUtils::gemm(
                 temp += csrValues[jj] * x[j * n + k]; // x(j,k)
 
             }
+
             result[i * n + k] = alpha * temp + beta * y[i * n + k];
         }
     }
@@ -800,7 +832,7 @@ void OpenMPCSRUtils::jacobi(
     LAMA_LOG_INFO( logger,
                    "jacobi<" << Scalar::getType<ValueType>() << ">" << ", #rows = " << numRows << ", omega = " << omega )
 
-    if ( syncToken )
+    if( syncToken )
     {
         LAMA_THROWEXCEPTION( "asynchronous execution should be done by LAMATask before" )
     }
@@ -812,22 +844,24 @@ void OpenMPCSRUtils::jacobi(
         LAMA_REGION( "OpenMP.CSR.jacobi" )
 
         #pragma omp for schedule( LAMA_OMP_SCHEDULE )
-        for ( IndexType i = 0; i < numRows; i++ )
+
+        for( IndexType i = 0; i < numRows; i++ )
         {
             ValueType temp = rhs[i];
             const ValueType diag = csrValues[csrIA[i]];
-            for ( IndexType j = csrIA[i] + 1; j < csrIA[i + 1]; j++ )
+
+            for( IndexType j = csrIA[i] + 1; j < csrIA[i + 1]; j++ )
             {
                 temp -= csrValues[j] * oldSolution[csrJA[j]];
             }
 
             // here we take advantange of a good branch precondiction
 
-            if ( omega == 1.0 )
+            if( omega == 1.0 )
             {
                 solution[i] = temp / diag;
             }
-            else if ( omega == 0.5 )
+            else if( omega == 0.5 )
             {
                 solution[i] = omega * ( temp / diag + oldSolution[i] );
             }
@@ -854,19 +888,20 @@ void OpenMPCSRUtils::jacobiHalo(
     const ValueType omega,
     const IndexType numNonEmptyRows )
 {
-    LAMA_LOG_INFO( logger, "jacobiHalo<" << Scalar::getType<ValueType>() << ">"
-                   << ", #rows (not empty) = " << numNonEmptyRows << ", omega = " << omega );
+    LAMA_LOG_INFO( logger,
+                   "jacobiHalo<" << Scalar::getType<ValueType>() << ">" << ", #rows (not empty) = " << numNonEmptyRows << ", omega = " << omega );
 
     #pragma omp parallel
     {
         LAMA_REGION( "OpenMP.CSR.jacabiHalo" )
 
         #pragma omp for schedule( LAMA_OMP_SCHEDULE )
-        for ( IndexType ii = 0; ii < numNonEmptyRows; ++ii )
+
+        for( IndexType ii = 0; ii < numNonEmptyRows; ++ii )
         {
             IndexType i = ii; // default: rowIndexes == NULL stands for identity
 
-            if ( haloRowIndexes )
+            if( haloRowIndexes )
             {
                 i = haloRowIndexes[ii];
             }
@@ -875,12 +910,12 @@ void OpenMPCSRUtils::jacobiHalo(
 
             const ValueType diag = localValues[localIA[i]];
 
-            for ( IndexType j = haloIA[i]; j < haloIA[i + 1]; j++ )
+            for( IndexType j = haloIA[i]; j < haloIA[i + 1]; j++ )
             {
                 temp += haloValues[j] * oldSolution[haloJA[j]];
             }
 
-            if ( omega == 1.0 )
+            if( omega == 1.0 )
             {
                 solution[i] -= temp / diag;
             }
@@ -906,19 +941,20 @@ void OpenMPCSRUtils::jacobiHaloWithDiag(
     const ValueType omega,
     const IndexType numNonEmptyRows )
 {
-    LAMA_LOG_INFO( logger, "jacobiHaloWithDiag<" << Scalar::getType<ValueType>() << ">"
-                   << ", #rows (not empty) = " << numNonEmptyRows << ", omega = " << omega );
+    LAMA_LOG_INFO( logger,
+                   "jacobiHaloWithDiag<" << Scalar::getType<ValueType>() << ">" << ", #rows (not empty) = " << numNonEmptyRows << ", omega = " << omega );
 
     #pragma omp parallel
     {
         LAMA_REGION( "OpenMP.CSR.jacabiHaloWithDiag" )
 
         #pragma omp for schedule( LAMA_OMP_SCHEDULE )
-        for ( IndexType ii = 0; ii < numNonEmptyRows; ++ii )
+
+        for( IndexType ii = 0; ii < numNonEmptyRows; ++ii )
         {
             IndexType i = ii; // default: rowIndexes == NULL stands for identity
 
-            if ( haloRowIndexes )
+            if( haloRowIndexes )
             {
                 i = haloRowIndexes[ii];
             }
@@ -927,12 +963,12 @@ void OpenMPCSRUtils::jacobiHaloWithDiag(
 
             const ValueType diag = localDiagValues[i];
 
-            for ( IndexType j = haloIA[i]; j < haloIA[i + 1]; j++ )
+            for( IndexType j = haloIA[i]; j < haloIA[i + 1]; j++ )
             {
                 temp += haloValues[j] * oldSolution[haloJA[j]];
             }
 
-            if ( omega == 1.0 )
+            if( omega == 1.0 )
             {
                 solution[i] -= temp / diag;
             }
@@ -970,13 +1006,14 @@ IndexType OpenMPCSRUtils::matrixAddSizes(
     {
         boost::scoped_array<IndexType> indexList( new IndexType[numColumns] );
 
-        for ( IndexType j = 0; j < numColumns; j++ )
+        for( IndexType j = 0; j < numColumns; j++ )
         {
             indexList[j] = NINIT;
         }
 
         #pragma omp for
-        for ( IndexType i = 0; i < numRows; ++i )
+
+        for( IndexType i = 0; i < numRows; ++i )
         {
             IndexType length = 0;
             IndexType firstCol = END;
@@ -985,7 +1022,7 @@ IndexType OpenMPCSRUtils::matrixAddSizes(
 
             // loop over all none zero elements of row i of input matrix a
 
-            for ( IndexType jj = aIA[i]; jj < aIA[i + 1]; ++jj )
+            for( IndexType jj = aIA[i]; jj < aIA[i + 1]; ++jj )
             {
                 // j is column of none zero element jj of row i of input matrix a
                 // so we are at position a(i,j)
@@ -994,7 +1031,7 @@ IndexType OpenMPCSRUtils::matrixAddSizes(
 
                 // element a(i,j) will generate an output element c(i,j)
 
-                if ( indexList[j] == NINIT )
+                if( indexList[j] == NINIT )
                 {
                     LAMA_LOG_TRACE( logger, "entry for [" << i << "," << j << "] by a" )
 
@@ -1004,14 +1041,14 @@ IndexType OpenMPCSRUtils::matrixAddSizes(
                     firstCol = j;
                     ++length;
 
-                    if ( j == i )
+                    if( j == i )
                     {
                         diagonal = true;
                     }
                 }
             }
 
-            for ( IndexType jj = bIA[i]; jj < bIA[i + 1]; ++jj )
+            for( IndexType jj = bIA[i]; jj < bIA[i + 1]; ++jj )
             {
                 // j is column of none zero element jj of row i of input matrix b
                 // so we are at position b(i,j)
@@ -1020,7 +1057,7 @@ IndexType OpenMPCSRUtils::matrixAddSizes(
 
                 // element a(i,j) will generate an output element c(i,j)
 
-                if ( indexList[j] == NINIT )
+                if( indexList[j] == NINIT )
                 {
                     LAMA_LOG_TRACE( logger, "entry for [" << i << "," << j << "] by b" )
 
@@ -1030,14 +1067,14 @@ IndexType OpenMPCSRUtils::matrixAddSizes(
                     firstCol = j;
                     ++length;
 
-                    if ( j == i )
+                    if( j == i )
                     {
                         diagonal = true;
                     }
                 }
             }
 
-            if ( diagonalProperty && !diagonal )
+            if( diagonalProperty && !diagonal )
             {
                 ++length; // diagaonal needed, but not filled yet
             }
@@ -1050,7 +1087,7 @@ IndexType OpenMPCSRUtils::matrixAddSizes(
 
             // reset indexList for next use
 
-            while ( firstCol != END )
+            while( firstCol != END )
             {
                 LAMA_LOG_TRACE( logger, "entry [" << i << "," << firstCol << "] will be set" )
                 IndexType nextCol = indexList[firstCol];
@@ -1094,13 +1131,14 @@ IndexType OpenMPCSRUtils::matrixMultiplySizes(
     {
         boost::scoped_array<IndexType> indexList( new IndexType[n] );
 
-        for ( IndexType j = 0; j < n; j++ )
+        for( IndexType j = 0; j < n; j++ )
         {
             indexList[j] = NINIT;
         }
 
         #pragma omp for
-        for ( IndexType i = 0; i < m; ++i )
+
+        for( IndexType i = 0; i < m; ++i )
         {
             IndexType length = 0;
             IndexType firstCol = END;
@@ -1109,7 +1147,7 @@ IndexType OpenMPCSRUtils::matrixMultiplySizes(
 
             // loop over all none zero elements of row i of input matrix a
 
-            for ( IndexType jj = aIA[i]; jj < aIA[i + 1]; ++jj )
+            for( IndexType jj = aIA[i]; jj < aIA[i + 1]; ++jj )
             {
                 // j is column of none zero element jj of row i of input matrix a
                 // so we are at position a(i,j)
@@ -1120,7 +1158,7 @@ IndexType OpenMPCSRUtils::matrixMultiplySizes(
                 // that is the row of b that corresponds to the column of the current
                 // element of a
 
-                for ( IndexType kk = bIA[j]; kk < bIA[j + 1]; ++kk )
+                for( IndexType kk = bIA[j]; kk < bIA[j + 1]; ++kk )
                 {
                     // k is the column of none zero element kk of row j of input matrix b
                     // so we are looking at position b(j,k)
@@ -1131,7 +1169,7 @@ IndexType OpenMPCSRUtils::matrixMultiplySizes(
 
                     // element a(i,j) an b(j,k) will generate the output element c(i,k)
 
-                    if ( indexList[k] == NINIT )
+                    if( indexList[k] == NINIT )
                     {
                         LAMA_LOG_TRACE( logger, "entry for [" << i << "," << k << "]" )
 
@@ -1141,10 +1179,11 @@ IndexType OpenMPCSRUtils::matrixMultiplySizes(
                         firstCol = k;
                         ++length;
 
-                        if ( k == i )
+                        if( k == i )
                         {
                             diagonal = true;
                         }
+
                         newElems++;
                     }
                     else
@@ -1154,7 +1193,7 @@ IndexType OpenMPCSRUtils::matrixMultiplySizes(
                 }
             }
 
-            if ( diagonalProperty && !diagonal )
+            if( diagonalProperty && !diagonal )
             {
                 ++length; // diagaonal needed, but not filled yet
             }
@@ -1167,7 +1206,7 @@ IndexType OpenMPCSRUtils::matrixMultiplySizes(
 
             // reset indexList for next use
 
-            while ( firstCol != END )
+            while( firstCol != END )
             {
                 LAMA_LOG_TRACE( logger, "entry [" << i << "," << firstCol << "] will be set" )
                 IndexType nextCol = indexList[firstCol];
@@ -1176,7 +1215,6 @@ IndexType OpenMPCSRUtils::matrixMultiplySizes(
             }
 
         } //end loop over all rows of input matrix
-
 
     }
 
@@ -1219,19 +1257,20 @@ void OpenMPCSRUtils::matrixAdd(
         boost::scoped_array<IndexType> indexList( new IndexType[numColumns] );
         boost::scoped_array<ValueType> valueList( new ValueType[numColumns] );
 
-        for ( IndexType j = 0; j < numColumns; j++ )
+        for( IndexType j = 0; j < numColumns; j++ )
         {
             indexList[j] = NINIT;
             valueList[j] = 0.0;
         }
 
         #pragma omp for
-        for ( IndexType i = 0; i < numRows; ++i )
+
+        for( IndexType i = 0; i < numRows; ++i )
         {
             IndexType length = 0;
             IndexType firstCol = END;
 
-            for ( IndexType jj = aIA[i]; jj < aIA[i + 1]; ++jj )
+            for( IndexType jj = aIA[i]; jj < aIA[i + 1]; ++jj )
             {
                 // j is column of none zero element jj of row i of input matrix a
                 // so we are at position a(i,j)
@@ -1244,7 +1283,7 @@ void OpenMPCSRUtils::matrixAdd(
 
                 // element a(i,j) will generate an output element c(i,j)
 
-                if ( indexList[j] == NINIT )
+                if( indexList[j] == NINIT )
                 {
                     // Add column position j to the indexList
 
@@ -1255,7 +1294,7 @@ void OpenMPCSRUtils::matrixAdd(
                 }
             }
 
-            for ( IndexType jj = bIA[i]; jj < bIA[i + 1]; ++jj )
+            for( IndexType jj = bIA[i]; jj < bIA[i + 1]; ++jj )
             {
                 // j is column of none zero element jj of row i of input matrix b
                 // so we are at position b(i,j)
@@ -1268,7 +1307,7 @@ void OpenMPCSRUtils::matrixAdd(
 
                 // element b(i,j) will generate an output element c(i,j)
 
-                if ( indexList[j] == NINIT )
+                if( indexList[j] == NINIT )
                 {
                     // Add column position j to the indexList
 
@@ -1281,7 +1320,7 @@ void OpenMPCSRUtils::matrixAdd(
 
             IndexType offset = cIA[i];
 
-            if ( diagonalProperty )
+            if( diagonalProperty )
             {
                 // first element is reserved for diagonal element
                 LAMA_LOG_TRACE( logger, "entry for [" << i << "," << i << "] as diagonal" )
@@ -1292,7 +1331,7 @@ void OpenMPCSRUtils::matrixAdd(
 
             // fill in csrJA, csrValues and reset indexList, valueList for next use
 
-            while ( firstCol != END )
+            while( firstCol != END )
             {
                 IndexType nextCol = indexList[firstCol];
                 ValueType val = valueList[firstCol];
@@ -1300,7 +1339,7 @@ void OpenMPCSRUtils::matrixAdd(
                 indexList[firstCol] = NINIT;
                 valueList[firstCol] = 0.0; // reset for next time
 
-                if ( diagonalProperty && firstCol == i )
+                if( diagonalProperty && firstCol == i )
                 {
                     LAMA_LOG_TRACE( logger, "diagonal already added before" )
                     LAMA_LOG_TRACE( logger, "entry for [" << i << "," << i << "] = " << val )
@@ -1319,7 +1358,7 @@ void OpenMPCSRUtils::matrixAdd(
 
             // make sure that we have still the right offsets
 
-            LAMA_ASSERT_EQUAL_DEBUG( offset, cIA[i+1] )
+            LAMA_ASSERT_EQUAL_DEBUG( offset, cIA[i + 1] )
 
         } //end loop over all rows of input matrix a
     }
@@ -1350,20 +1389,21 @@ void OpenMPCSRUtils::matrixMultiplyJA(
     {
         boost::scoped_array<IndexType> indexList( new IndexType[numColumns] );
 
-        for ( IndexType j = 0; j < numColumns; j++ )
+        for( IndexType j = 0; j < numColumns; j++ )
         {
             indexList[j] = NINIT;
         }
 
         #pragma omp for
-        for ( IndexType i = 0; i < numRows; ++i )
+
+        for( IndexType i = 0; i < numRows; ++i )
         {
             IndexType length = 0;
             IndexType firstCol = END;
 
             // loop over all none zero elements of row i of input matrix a
 
-            for ( IndexType jj = aIA[i]; jj < aIA[i + 1]; ++jj )
+            for( IndexType jj = aIA[i]; jj < aIA[i + 1]; ++jj )
             {
                 // j is column of none zero element jj of row i of input matrix a
                 // so we are at position a(i,j)
@@ -1374,7 +1414,7 @@ void OpenMPCSRUtils::matrixMultiplyJA(
                 // that is the row of b that corresponds to the column of the current
                 // element of a
 
-                for ( IndexType kk = bIA[j]; kk < bIA[j + 1]; ++kk )
+                for( IndexType kk = bIA[j]; kk < bIA[j + 1]; ++kk )
                 {
                     // k is the column of none zero element kk of row j of input matrix b
                     // so we are looking at position b(j,k)
@@ -1383,7 +1423,7 @@ void OpenMPCSRUtils::matrixMultiplyJA(
 
                     // element a(i,j) an b(j,k) will generate the output element c(i,k)
 
-                    if ( indexList[k] == NINIT )
+                    if( indexList[k] == NINIT )
                     {
                         // Add column position k to the indexList
 
@@ -1397,7 +1437,7 @@ void OpenMPCSRUtils::matrixMultiplyJA(
 
             IndexType offset = cIA[i];
 
-            if ( diagonalProperty )
+            if( diagonalProperty )
             {
                 // first element is reserved for diagonal element
                 LAMA_LOG_TRACE( logger, "entry for [" << i << "," << i << "] as diagonal" )
@@ -1407,13 +1447,13 @@ void OpenMPCSRUtils::matrixMultiplyJA(
 
             // fill in csrJA and reset indexList for next use
 
-            while ( firstCol != END )
+            while( firstCol != END )
             {
                 IndexType nextCol = indexList[firstCol];
 
                 indexList[firstCol] = NINIT;
 
-                if ( diagonalProperty && firstCol == i )
+                if( diagonalProperty && firstCol == i )
                 {
                     LAMA_LOG_TRACE( logger, "diagonal already added before" )
                 }
@@ -1429,7 +1469,7 @@ void OpenMPCSRUtils::matrixMultiplyJA(
 
             // make sure that we have still the right offsets
 
-            LAMA_ASSERT_EQUAL_DEBUG( offset, cIA[i+1] )
+            LAMA_ASSERT_EQUAL_DEBUG( offset, cIA[i + 1] )
 
         } //end loop over all rows of input matrix a
     }
@@ -1522,20 +1562,21 @@ void OpenMPCSRUtils::matrixMultiply(
     {
         boost::scoped_array<IndexType> indexList( new IndexType[n] );
 
-        for ( IndexType j = 0; j < n; j++ )
+        for( IndexType j = 0; j < n; j++ )
         {
             indexList[j] = NINIT;
         }
 
         #pragma omp for
-        for ( IndexType i = 0; i < m; ++i )
+
+        for( IndexType i = 0; i < m; ++i )
         {
             IndexType length = 0;
             IndexType firstCol = END;
 
             // loop over all none zero elements of row i of input matrix a
 
-            for ( IndexType jj = aIA[i]; jj < aIA[i + 1]; ++jj )
+            for( IndexType jj = aIA[i]; jj < aIA[i + 1]; ++jj )
             {
                 // j is column of none zero element jj of row i of input matrix a
                 // so we are at position a(i,j)
@@ -1546,7 +1587,7 @@ void OpenMPCSRUtils::matrixMultiply(
                 // that is the row of b that corresponds to the column of the current
                 // element of a
 
-                for ( IndexType kk = bIA[j]; kk < bIA[j + 1]; ++kk )
+                for( IndexType kk = bIA[j]; kk < bIA[j + 1]; ++kk )
                 {
                     // k is the column of none zero element kk of row j of input matrix b
                     // so we are looking at position b(j,k)
@@ -1555,7 +1596,7 @@ void OpenMPCSRUtils::matrixMultiply(
 
                     // element a(i,j) an b(j,k) will generate the output element c(i,k)
 
-                    if ( indexList[k] == NINIT )
+                    if( indexList[k] == NINIT )
                     {
                         // Add column position k to the indexList
 
@@ -1569,7 +1610,7 @@ void OpenMPCSRUtils::matrixMultiply(
 
             IndexType offset = cIA[i];
 
-            if ( diagonalProperty )
+            if( diagonalProperty )
             {
                 // first element is reserved for diagonal element
                 LAMA_LOG_TRACE( logger, "entry for [" << i << "," << i << "] as diagonal" )
@@ -1579,13 +1620,13 @@ void OpenMPCSRUtils::matrixMultiply(
 
             // fill in csrJA and reset indexList for next use
 
-            while ( firstCol != END )
+            while( firstCol != END )
             {
                 IndexType nextCol = indexList[firstCol];
 
                 indexList[firstCol] = NINIT;
 
-                if ( diagonalProperty && firstCol == i )
+                if( diagonalProperty && firstCol == i )
                 {
                     LAMA_LOG_TRACE( logger, "diagonal already added before" )
                 }
@@ -1607,20 +1648,21 @@ void OpenMPCSRUtils::matrixMultiply(
     }
 
     #pragma omp parallel for
-    for ( IndexType i = 0; i < m; ++i )
+
+    for( IndexType i = 0; i < m; ++i )
     {
         //loop over all none zero elements of row i of output matrix c
-        for ( IndexType jj = cIA[i]; jj < cIA[i + 1]; ++jj )
+        for( IndexType jj = cIA[i]; jj < cIA[i + 1]; ++jj )
         {
             IndexType j = cJA[jj];
             cValues[jj] = 0.0;
 
-            if ( j == -1 )
+            if( j == -1 )
             {
                 continue;
             }
 
-            for ( IndexType kk = aIA[i]; kk < aIA[i + 1]; ++kk )
+            for( IndexType kk = aIA[i]; kk < aIA[i + 1]; ++kk )
             {
                 ValueType b_kj = 0.0;
 
@@ -1630,9 +1672,9 @@ void OpenMPCSRUtils::matrixMultiply(
                 //      with a temporarie array like it is done in SMMP.
                 //      But we will have less parallelisem in this case
 
-                for ( IndexType ll = bIA[k]; ll < bIA[k + 1]; ++ll )
+                for( IndexType ll = bIA[k]; ll < bIA[k + 1]; ++ll )
                 {
-                    if ( bJA[ll] == j )
+                    if( bJA[ll] == j )
                     {
                         b_kj = bValues[ll];
                         break;
@@ -1655,9 +1697,9 @@ static IndexType findCol( const IndexType columns[], const IndexType n, const In
 {
     // lastPos is index from where to start
 
-    for ( IndexType i = 0; i < n; ++i )
+    for( IndexType i = 0; i < n; ++i )
     {
-        if ( columns[lastPos] == j )
+        if( columns[lastPos] == j )
         {
             // found, return lastPos, increment it for next search
 
@@ -1666,7 +1708,7 @@ static IndexType findCol( const IndexType columns[], const IndexType n, const In
 
         lastPos++;
 
-        if ( lastPos > n )
+        if( lastPos > n )
         {
             lastPos = 0;
         }
@@ -1694,21 +1736,21 @@ ValueType OpenMPCSRUtils::absMaxDiffRowUnsorted(
 
     IndexType helpIndex = 0; // some kind of thread-safe global value for findCol
 
-    for ( IndexType i1 = 0; i1 < n1; ++i1 )
+    for( IndexType i1 = 0; i1 < n1; ++i1 )
     {
         ValueType diff = csrValues1[i1];
 
         IndexType j = csrJA1[i1];
         IndexType i2 = findCol( csrJA2, n2, j, helpIndex );
 
-        if ( i2 != nIndex )
+        if( i2 != nIndex )
         {
             diff -= csrValues2[i2];
         }
 
         diff = abs( diff );
 
-        if ( diff > val )
+        if( diff > val )
         {
             val = diff;
         }
@@ -1718,19 +1760,19 @@ ValueType OpenMPCSRUtils::absMaxDiffRowUnsorted(
 
     helpIndex = 0;
 
-    for ( IndexType i2 = 0; i2 < n2; ++i2 )
+    for( IndexType i2 = 0; i2 < n2; ++i2 )
     {
         IndexType j = csrJA2[i2];
         IndexType i1 = findCol( csrJA1, n1, j, helpIndex );
 
-        if ( i1 != nIndex )
+        if( i1 != nIndex )
         {
             continue; // already compare in first loop
         }
 
         ValueType diff = abs( csrValues2[i2] );
 
-        if ( diff > val )
+        if( diff > val )
         {
             val = diff;
         }
@@ -1757,16 +1799,16 @@ ValueType OpenMPCSRUtils::absMaxDiffRowSorted(
     IndexType i2 = 0;
     IndexType i1 = 0;
 
-    while ( i1 < n1 || i2 < n2 )
+    while( i1 < n1 || i2 < n2 )
     {
         ValueType diff = 0;
 
-        if ( i1 >= n1 ) // row of matrix1 completely traversed
+        if( i1 >= n1 ) // row of matrix1 completely traversed
         {
             diff = csrValues2[i2];
             ++i2;
         }
-        else if ( i2 >= n2 ) // row of matrix2 completely traversed
+        else if( i2 >= n2 ) // row of matrix2 completely traversed
         {
             diff = csrValues1[i1];
             ++i1;
@@ -1778,35 +1820,37 @@ ValueType OpenMPCSRUtils::absMaxDiffRowSorted(
             IndexType j1 = csrJA1[i1];
             IndexType j2 = csrJA2[i2];
 
-            if ( j1 == j2 )
+            if( j1 == j2 )
             {
                 diff = csrValues1[i1] - csrValues2[i2];
                 ++i1;
                 ++i2;
             }
-            else if ( j1 < j2 )
+            else if( j1 < j2 )
             {
                 diff = csrValues1[i1];
                 ++i1;
-                if ( i1 < n1 )
+
+                if( i1 < n1 )
                 {
-                    LAMA_ASSERT_ERROR( csrJA1[i1-1] < csrJA1[i1], "unsorted col indexes at csrJA1[" << i1 << "]" )
+                    LAMA_ASSERT_ERROR( csrJA1[i1 - 1] < csrJA1[i1], "unsorted col indexes at csrJA1[" << i1 << "]" )
                 }
             }
-            else if ( j1 > j2 )
+            else if( j1 > j2 )
             {
                 diff = csrValues2[i2];
                 ++i2;
-                if ( i2 < n2 )
+
+                if( i2 < n2 )
                 {
-                    LAMA_ASSERT_ERROR( csrJA2[i2-1] < csrJA2[i2], "unsorted col indexes at csrJA2[" << i2 << "]" )
+                    LAMA_ASSERT_ERROR( csrJA2[i2 - 1] < csrJA2[i2], "unsorted col indexes at csrJA2[" << i2 << "]" )
                 }
             }
         }
 
         diff = abs( diff );
 
-        if ( diff > val )
+        if( diff > val )
         {
             val = diff;
         }
@@ -1839,7 +1883,7 @@ ValueType OpenMPCSRUtils::absMaxDiffVal(
         const IndexType[],
         const ValueType[] );
 
-    if ( sortedRows )
+    if( sortedRows )
     {
         absMaxDiffRow = OpenMPCSRUtils::absMaxDiffRowSorted<ValueType>;
     }
@@ -1855,7 +1899,8 @@ ValueType OpenMPCSRUtils::absMaxDiffVal(
         ValueType threadVal = static_cast<ValueType>( 0.0 );
 
         #pragma omp for schedule( LAMA_OMP_SCHEDULE )
-        for ( IndexType i = 0; i < numRows; ++i )
+
+        for( IndexType i = 0; i < numRows; ++i )
         {
             IndexType offs1 = csrIA1[i];
             IndexType offs2 = csrIA2[i];
@@ -1866,7 +1911,7 @@ ValueType OpenMPCSRUtils::absMaxDiffVal(
 
             maxRow = absMaxDiffRow( n1, &csrJA1[offs1], &csrValues1[offs1], n2, &csrJA2[offs2], &csrValues2[offs2] );
 
-            if ( maxRow > threadVal )
+            if( maxRow > threadVal )
             {
                 threadVal = maxRow;
             }
@@ -1876,7 +1921,7 @@ ValueType OpenMPCSRUtils::absMaxDiffVal(
         {
             LAMA_LOG_TRACE( logger, "max val of thread  = " << threadVal << ", global was " << val )
 
-            if ( threadVal > val )
+            if( threadVal > val )
             {
                 val = threadVal;
             }
@@ -1918,12 +1963,12 @@ void OpenMPCSRUtils::setInterface( CSRUtilsInterface& CSRUtils )
     LAMA_INTERFACE_REGISTER_T( CSRUtils, jacobiHalo, ARITHMETIC_TYPE##I )            \
     LAMA_INTERFACE_REGISTER_T( CSRUtils, jacobiHaloWithDiag, ARITHMETIC_TYPE##I )    \
     LAMA_INTERFACE_REGISTER_T( CSRUtils, absMaxDiffVal, ARITHMETIC_TYPE##I )         \
-                                                                                     \
+    \
     BOOST_PP_REPEAT( ARITHMETIC_TYPE_CNT,                                            \
                      LAMA_CSR_UTILS2_REGISTER,                                       \
                      ARITHMETIC_TYPE##I )                                            \
 
-BOOST_PP_REPEAT( ARITHMETIC_TYPE_CNT, LAMA_CSR_UTILS_REGISTER, _ )
+    BOOST_PP_REPEAT( ARITHMETIC_TYPE_CNT, LAMA_CSR_UTILS_REGISTER, _ )
 
 #undef LAMA_CSR_UTILS_REGISTER
 #undef LAMA_CSR_UTILS2_REGISTER

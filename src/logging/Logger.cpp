@@ -2,7 +2,7 @@
  * @file Logger.cpp
  *
  * @license
- * Copyright (c) 2009-2013
+ * Copyright (c) 2009-2015
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -83,7 +83,7 @@ Level Logger::getEffectiveLevel() const
     return level;
 }
 
-void Logger::setLevel( const Level level, const bool force/*= true*/)
+void Logger::setLevel( const Level level, const bool force/*= true*/ )
 {
     // if level is already set and there is no force => return
     if ( !force && mSetFlag )
@@ -92,7 +92,6 @@ void Logger::setLevel( const Level level, const bool force/*= true*/)
     }
 
     mLevel = level;
-
     mSetFlag = force;
 
     // traverse the sons but do no longer force

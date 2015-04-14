@@ -2,7 +2,7 @@
  * @file LAPACKe_LAPACK.cpp
  *
  * @license
- * Copyright (c) 2009-2013
+ * Copyright (c) 2009-2015
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -49,7 +49,7 @@ namespace lama
 
 /* ---------------------------------------------------------------------------------------*/
 
-/** mklCast converts pointers to LAMA complex numbers to 
+/** mklCast converts pointers to LAMA complex numbers to
  *  ML pointers for complex numbers. This is safe as both
  *  are internally represented in the same way.
  */
@@ -80,11 +80,11 @@ static int lapack_order( const CBLAS_ORDER order )
 {
     int matrix_order = LAPACK_COL_MAJOR;
 
-    if ( order == CblasColMajor )
+    if( order == CblasColMajor )
     {
         matrix_order = LAPACK_COL_MAJOR;
     }
-    else if ( order == CblasRowMajor )
+    else if( order == CblasRowMajor )
     {
         matrix_order = LAPACK_ROW_MAJOR;
     }
@@ -115,13 +115,13 @@ IndexType LAPACKe_LAPACK::getrf(
 {
     LAMA_LOG_INFO( logger, "getrf<float> for A of size " << m << " x " << n )
 
-    int info = LAPACKE_sgetrf( lapack_order( order), m, n, A, lda, ipiv );
+    int info = LAPACKE_sgetrf( lapack_order( order ), m, n, A, lda, ipiv );
 
-    if ( info < 0 )
+    if( info < 0 )
     {
         LAMA_THROWEXCEPTION( "illegal argument " << ( -info ) )
     }
-    else if ( info > 0 )
+    else if( info > 0 )
     {
         LAMA_THROWEXCEPTION( "value(" << info << "," << info << ")" << " is exactly zero" )
     }
@@ -148,11 +148,11 @@ IndexType LAPACKe_LAPACK::getrf(
 
     int info = LAPACKE_dgetrf( matrix_order, m, n, A, lda, ipiv );
 
-    if ( info < 0 )
+    if( info < 0 )
     {
         LAMA_THROWEXCEPTION( "illegal argument " << ( -info ) )
     }
-    else if ( info > 0 )
+    else if( info > 0 )
     {
         LAMA_THROWEXCEPTION( "value(" << info << "," << info << ")" << " is exactly zero" )
     }
@@ -175,13 +175,13 @@ IndexType LAPACKe_LAPACK::getrf(
 {
     LAMA_LOG_INFO( logger, "getrf<ComplexFloat> for a of size " << m << " x " << n )
 
-    int info = LAPACKE_cgetrf( lapack_order( order), m, n, mklCast( a ), lda, ipiv );
+    int info = LAPACKE_cgetrf( lapack_order( order ), m, n, mklCast( a ), lda, ipiv );
 
-    if ( info < 0 )
+    if( info < 0 )
     {
         LAMA_THROWEXCEPTION( "illegal argument " << ( -info ) )
     }
-    else if ( info > 0 )
+    else if( info > 0 )
     {
         LAMA_THROWEXCEPTION( "value(" << info << "," << info << ")" << " is exactly zero" )
     }
@@ -204,13 +204,13 @@ IndexType LAPACKe_LAPACK::getrf(
 {
     LAMA_LOG_INFO( logger, "getrf<ComplexFloat> for a of size " << m << " x " << n )
 
-    int info = LAPACKE_zgetrf( lapack_order( order), m, n, mklCast( a ), lda, ipiv );
+    int info = LAPACKE_zgetrf( lapack_order( order ), m, n, mklCast( a ), lda, ipiv );
 
-    if ( info < 0 )
+    if( info < 0 )
     {
         LAMA_THROWEXCEPTION( "illegal argument " << ( -info ) )
     }
-    else if ( info > 0 )
+    else if( info > 0 )
     {
         LAMA_THROWEXCEPTION( "value(" << info << "," << info << ")" << " is exactly zero" )
     }
@@ -223,13 +223,7 @@ IndexType LAPACKe_LAPACK::getrf(
 /* ------------------------------------------------------------------------- */
 
 template<>
-IndexType LAPACKe_LAPACK::getrf(
-    const CBLAS_ORDER,
-    const int,
-    const int,
-    LongDouble* const,
-    const int,
-    int* const )
+IndexType LAPACKe_LAPACK::getrf( const CBLAS_ORDER, const int, const int, LongDouble* const, const int, int* const )
 {
     // LongDouble not supported by LAPACK, should give a serious runtime error
     LAMA_THROWEXCEPTION( "getrf<LongDouble> unsupported" )
@@ -254,14 +248,14 @@ void LAPACKe_LAPACK::getinv( const IndexType n, float* a, const IndexType lda )
 
     // return error if factorization did not work
 
-    if ( info )
+    if( info )
     {
         LAMA_THROWEXCEPTION( "MKL sgetrf failed, info = " << info )
     }
 
     info = LAPACKE_sgetri( LAPACK_COL_MAJOR, n, a, lda, ipiv.get() );
 
-    if ( info )
+    if( info )
     {
         LAMA_THROWEXCEPTION( "MKL sgetri failed, info = " << info )
     }
@@ -286,14 +280,14 @@ void LAPACKe_LAPACK::getinv( const IndexType n, double* a, const IndexType lda )
 
     // return error if factorization did not work
 
-    if ( info )
+    if( info )
     {
         LAMA_THROWEXCEPTION( "MKL dgetrf failed, info = " << info )
     }
 
     info = LAPACKE_dgetri( matrix_order, n, a, lda, ipiv.get() );
 
-    if ( info )
+    if( info )
     {
         LAMA_THROWEXCEPTION( "MKL dgetri failed, info = " << info )
     }
@@ -318,14 +312,14 @@ void LAPACKe_LAPACK::getinv( const IndexType n, ComplexFloat* a, const IndexType
 
     // return error if factorization did not work
 
-    if ( info )
+    if( info )
     {
         LAMA_THROWEXCEPTION( "MKL sgetrf failed, info = " << info )
     }
 
     info = LAPACKE_cgetri( LAPACK_COL_MAJOR, n, mklCast( a ), lda, ipiv.get() );
 
-    if ( info )
+    if( info )
     {
         LAMA_THROWEXCEPTION( "MKL sgetri failed, info = " << info )
     }
@@ -361,14 +355,14 @@ void LAPACKe_LAPACK::getinv( const IndexType n, ComplexDouble* a, const IndexTyp
 
     // return error if factorization did not work
 
-    if ( info )
+    if( info )
     {
         LAMA_THROWEXCEPTION( "MKL sgetrf failed, info = " << info )
     }
 
     info = LAPACKE_zgetri( LAPACK_COL_MAJOR, n, mklCast( a ), lda, ipiv.get() );
 
-    if ( info )
+    if( info )
     {
         LAMA_THROWEXCEPTION( "MKL sgetri failed, info = " << info )
     }
@@ -379,12 +373,7 @@ void LAPACKe_LAPACK::getinv( const IndexType n, ComplexDouble* a, const IndexTyp
 /* ------------------------------------------------------------------------- */
 
 template<>
-int LAPACKe_LAPACK::getri(
-    const CBLAS_ORDER order,
-    const int n,
-    float* const a,
-    const int lda,
-    int* const ipiv )
+int LAPACKe_LAPACK::getri( const CBLAS_ORDER order, const int n, float* const a, const int lda, int* const ipiv )
 {
     LAMA_LOG_INFO( logger, "getri<float> for A of size " << n << " x " << n )
 
@@ -392,11 +381,11 @@ int LAPACKe_LAPACK::getri(
 
     int info = LAPACKE_sgetri( matrix_order, n, a, lda, ipiv );
 
-    if ( info < 0 )
+    if( info < 0 )
     {
         LAMA_THROWEXCEPTION( "illegal argument " << ( -info ) )
     }
-    else if ( info > 0 )
+    else if( info > 0 )
     {
         LAMA_THROWEXCEPTION( "value(" << info << "," << info << ")" << " is exactly zero" )
     }
@@ -409,12 +398,7 @@ int LAPACKe_LAPACK::getri(
 /* ------------------------------------------------------------------------- */
 
 template<>
-int LAPACKe_LAPACK::getri(
-    const CBLAS_ORDER order,
-    const int n,
-    double* const a,
-    const int lda,
-    int* const ipiv )
+int LAPACKe_LAPACK::getri( const CBLAS_ORDER order, const int n, double* const a, const int lda, int* const ipiv )
 {
     LAMA_LOG_INFO( logger, "getri<double> for A of size " << n << " x " << n )
 
@@ -422,11 +406,11 @@ int LAPACKe_LAPACK::getri(
 
     int info = LAPACKE_dgetri( matrix_order, n, a, lda, ipiv );
 
-    if ( info < 0 )
+    if( info < 0 )
     {
         LAMA_THROWEXCEPTION( "illegal argument " << ( -info ) )
     }
-    else if ( info > 0 )
+    else if( info > 0 )
     {
         LAMA_THROWEXCEPTION( "value(" << info << "," << info << ")" << " is exactly zero" )
     }
@@ -439,12 +423,7 @@ int LAPACKe_LAPACK::getri(
 /* ------------------------------------------------------------------------- */
 
 template<>
-int LAPACKe_LAPACK::getri(
-    const CBLAS_ORDER order,
-    const int n,
-    ComplexFloat* const a,
-    const int lda,
-    int* const ipiv )
+int LAPACKe_LAPACK::getri( const CBLAS_ORDER order, const int n, ComplexFloat* const a, const int lda, int* const ipiv )
 {
     LAMA_LOG_INFO( logger, "getri<ComplexFloat> for A of size " << n << " x " << n )
 
@@ -452,11 +431,11 @@ int LAPACKe_LAPACK::getri(
 
     int info = LAPACKE_cgetri( matrix_order, n, mklCast( a ), lda, ipiv );
 
-    if ( info < 0 )
+    if( info < 0 )
     {
         LAMA_THROWEXCEPTION( "illegal argument " << ( -info ) )
     }
-    else if ( info > 0 )
+    else if( info > 0 )
     {
         LAMA_THROWEXCEPTION( "value(" << info << "," << info << ")" << " is exactly zero" )
     }
@@ -482,11 +461,11 @@ int LAPACKe_LAPACK::getri(
 
     int info = LAPACKE_zgetri( matrix_order, n, mklCast( a ), lda, ipiv );
 
-    if ( info < 0 )
+    if( info < 0 )
     {
         LAMA_THROWEXCEPTION( "illegal argument " << ( -info ) )
     }
-    else if ( info > 0 )
+    else if( info > 0 )
     {
         LAMA_THROWEXCEPTION( "value(" << info << "," << info << ")" << " is exactly zero" )
     }
@@ -499,12 +478,7 @@ int LAPACKe_LAPACK::getri(
 /* ------------------------------------------------------------------------- */
 
 template<>
-IndexType LAPACKe_LAPACK::getri(
-    const CBLAS_ORDER,
-    const int,
-    LongDouble* const,
-    const int,
-    int* const )
+IndexType LAPACKe_LAPACK::getri( const CBLAS_ORDER, const int, LongDouble* const, const int, int* const )
 {
     // LongDouble not supported by LAPACK, should give a serious runtime error
     LAMA_THROWEXCEPTION( "getri<LongDouble> unsupported" )
@@ -532,9 +506,8 @@ int LAPACKe_LAPACK::tptrs(
 
     int matrix_order = lapack_order( order );
 
-    LAMA_LOG_INFO( logger, "tptrs<float>, n = " << n << ", nrhs = " << nrhs 
-                   << ", order = " << matrix_order << ", UL = " << UL 
-                   << ", TA = " << TA << ", DI = " << DI );
+    LAMA_LOG_INFO( logger,
+                   "tptrs<float>, n = " << n << ", nrhs = " << nrhs << ", order = " << matrix_order << ", UL = " << UL << ", TA = " << TA << ", DI = " << DI );
 
     LAMA_ASSERT_ERROR( ldb >= std::max( 1, n ), "ldb = " << ldb << " out of range" );
 
@@ -565,9 +538,8 @@ int LAPACKe_LAPACK::tptrs(
 
     int matrix_order = lapack_order( order );
 
-    LAMA_LOG_INFO( logger, "tptrs<double>, n = " << n << ", nrhs = " << nrhs 
-                   << ", order = " << matrix_order << ", UL = " << UL 
-                   << ", TA = " << TA << ", DI = " << DI );
+    LAMA_LOG_INFO( logger,
+                   "tptrs<double>, n = " << n << ", nrhs = " << nrhs << ", order = " << matrix_order << ", UL = " << UL << ", TA = " << TA << ", DI = " << DI );
 
     int info = LAPACKE_dtptrs( matrix_order, UL, TA, DI, n, nrhs, AP, B, ldb );
 
@@ -596,9 +568,8 @@ int LAPACKe_LAPACK::tptrs(
 
     int matrix_order = lapack_order( order );
 
-    LAMA_LOG_INFO( logger, "tptrs<ComplexFloat>, n = " << n << ", nrhs = " << nrhs 
-                   << ", order = " << matrix_order << ", UL = " << UL 
-                   << ", TA = " << TA << ", DI = " << DI );
+    LAMA_LOG_INFO( logger,
+                   "tptrs<ComplexFloat>, n = " << n << ", nrhs = " << nrhs << ", order = " << matrix_order << ", UL = " << UL << ", TA = " << TA << ", DI = " << DI );
 
     LAMA_ASSERT_ERROR( ldb >= std::max( 1, n ), "ldb = " << ldb << " out of range" );
 
@@ -629,9 +600,8 @@ int LAPACKe_LAPACK::tptrs(
 
     int matrix_order = lapack_order( order );
 
-    LAMA_LOG_INFO( logger, "tptrs<ComplexDouble>, n = " << n << ", nrhs = " << nrhs
-                   << ", order = " << matrix_order << ", UL = " << UL
-                   << ", TA = " << TA << ", DI = " << DI );
+    LAMA_LOG_INFO( logger,
+                   "tptrs<ComplexDouble>, n = " << n << ", nrhs = " << nrhs << ", order = " << matrix_order << ", UL = " << UL << ", TA = " << TA << ", DI = " << DI );
 
     LAMA_ASSERT_ERROR( ldb >= std::max( 1, n ), "ldb = " << ldb << " out of range" );
 
@@ -665,7 +635,7 @@ int LAPACKe_LAPACK::tptrs(
 
 void LAPACKe_LAPACK::setInterface( BLASInterface& BLAS )
 {
-    // Note: macro takes advantage of same name for routines and type definitions 
+    // Note: macro takes advantage of same name for routines and type definitions
     //       ( e.g. routine CUDABLAS1::sum<ValueType> is set for BLAS::BLAS1::sum variable
 
 #define LAMA_LAPACK_REGISTER(z, I, _)                                \
@@ -674,7 +644,7 @@ void LAPACKe_LAPACK::setInterface( BLASInterface& BLAS )
     LAMA_INTERFACE_REGISTER_T( BLAS, getinv, ARITHMETIC_TYPE##I )    \
     LAMA_INTERFACE_REGISTER_T( BLAS, tptrs, ARITHMETIC_TYPE##I )     \
 
-BOOST_PP_REPEAT( ARITHMETIC_TYPE_CNT, LAMA_LAPACK_REGISTER, _ )
+    BOOST_PP_REPEAT( ARITHMETIC_TYPE_CNT, LAMA_LAPACK_REGISTER, _ )
 
 #undef LAMA_LAPACK_REGISTER
 }

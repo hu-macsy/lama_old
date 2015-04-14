@@ -2,7 +2,7 @@
  * @file CriterionTest.hpp
  *
  * @license
- * Copyright (c) 2009-2013
+ * Copyright (c) 2009-2015
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -74,29 +74,23 @@ LAMA_LOG_DEF_LOGGER( logger, "Test.CriterionTest" );
 BOOST_AUTO_TEST_CASE( ConstructorTest )
 {
     BOOST_CHECK_EQUAL( mIterationCountCriterion1->getIterationExtrema(), 10 );
-
     BOOST_CHECK_EQUAL( mIterationCountCriterion2->getIterationExtrema(), 8 );
-
     Criterion* boolcondition1 = new Criterion();
     CriterionPtr testcriterion1 = CriterionPtr( boolcondition1 );
     BOOST_CHECK_EQUAL( testcriterion1->getOperation(), Criterion::AND );
-
     Criterion* boolcondition2 = new Criterion( true );
     CriterionPtr testcriterion2 = CriterionPtr( boolcondition2 );
     BOOST_CHECK_EQUAL( testcriterion2->getOperation(), Criterion::AND );
-
     Criterion* boolcondition3 = new Criterion( boolcondition1 );
     CriterionPtr testcriterion3 = CriterionPtr( boolcondition3 );
     BOOST_CHECK_EQUAL( testcriterion3->getOperation(), testcriterion1->getOperation() );
     BOOST_CHECK_EQUAL( testcriterion3->getLeftChild(), testcriterion1->getLeftChild() );
     BOOST_CHECK_EQUAL( testcriterion3->getRightChild(), testcriterion1->getRightChild() );
-
     Criterion* boolcondition4 = new Criterion( testcriterion1, true );
     CriterionPtr testcriterion4 = CriterionPtr( boolcondition4 );
     BOOST_CHECK_EQUAL( testcriterion4->getOperation(), testcriterion1->getOperation() );
     BOOST_CHECK_EQUAL( testcriterion4->getLeftChild(), testcriterion1->getLeftChild() );
     BOOST_CHECK_EQUAL( testcriterion4->getRightChild(), testcriterion1->getRightChild() );
-
     Criterion* boolcondition5 = new Criterion( mIterationCountCriterion1Ptr, mIterationCountCriterion2Ptr,
             Criterion::AND );
     CriterionPtr testcriterion5 = CriterionPtr( boolcondition5 );
@@ -122,10 +116,8 @@ BOOST_AUTO_TEST_CASE( ConditionTest )
 {
     mCriterionRoot = mIterationCountCriterion1Ptr && mIterationCountCriterion2Ptr;
     testCheckCriterion( mCriterionRoot, Criterion::AND );
-
     mCriterionRoot = mIterationCountCriterion1Ptr || mIterationCountCriterion2Ptr;
     testCheckCriterion( mCriterionRoot, Criterion::OR );
-
     //TODO negation!!!
     //mCriterionRoot = !(mIterationCountCriterion1Ptr || mIterationCountCriterion2Ptr) && ((mIterationCountCriterion2Ptr && !true) || false);
 }
@@ -147,7 +139,6 @@ BOOST_AUTO_TEST_CASE( SetAndGetChildTest )
     testcriterion->setLeftChild( mIterationCountCriterion1Ptr );
     testcriterion->setRightChild( mIterationCountCriterion2Ptr );
     testcriterion->setOperation( Criterion::OR );
-
     BOOST_CHECK_EQUAL( testcriterion->getLeftChild(), mIterationCountCriterion1Ptr );
     BOOST_CHECK_EQUAL( testcriterion->getRightChild(), mIterationCountCriterion2Ptr );
     BOOST_CHECK_EQUAL( testcriterion->getOperation(), Criterion::OR );

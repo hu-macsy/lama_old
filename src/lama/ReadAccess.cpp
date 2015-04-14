@@ -2,7 +2,7 @@
  * @file CSRStorage.cpp
  *
  * @license
- * Copyright (c) 2009-2013
+ * Copyright (c) 2009-2015
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -37,7 +37,6 @@
 // boost
 #include <boost/preprocessor.hpp>
 
-
 namespace lama
 {
 
@@ -49,11 +48,11 @@ LAMA_LOG_DEF_TEMPLATE_LOGGER( template<typename ValueType>, ReadAccess<ValueType
 
 template<typename ValueType>
 ReadAccess<ValueType>::ReadAccess( const LAMAArray<ValueType>& array, ContextPtr context )
-    : mArrayView( &array )
+                : mArrayView( &array )
 {
-    LAMA_ASSERT_ERROR( context, "NULL context for read access");
+    LAMA_ASSERT_ERROR( context, "NULL context for read access" );
     //LAMA_LOG_DEBUG(logger, "will acquire read access for " << *mArrayView << " at " << *context )
-    mIndex = mArrayView->acquireReadAccess(context);
+    mIndex = mArrayView->acquireReadAccess( context );
     //LAMA_LOG_TRACE(logger, "acquired read access for " << *mArrayView << " at " << *context );
 }
 
@@ -67,7 +66,7 @@ ReadAccess<ValueType>::~ReadAccess()
 template<typename ValueType>
 const ValueType* ReadAccess<ValueType>::get() const
 {
-    if ( mArrayView == 0 )
+    if( mArrayView == 0 )
     {
         LAMA_THROWEXCEPTION( "ReadAccess::get fails, has already been released." )
     }
@@ -82,7 +81,7 @@ const ValueType* ReadAccess<ValueType>::get() const
 template<typename ValueType>
 void ReadAccess<ValueType>::release()
 {
-    if ( mArrayView )
+    if( mArrayView )
     {
         //LAMA_LOG_DEBUG(logger, "release read access for " << *mArrayView  );
         //LAMA_LOG_DEBUG(logger, "release read access for " << *mArray
@@ -94,6 +93,7 @@ void ReadAccess<ValueType>::release()
     {
         //LAMA_LOG_TRACE(logger, "release read access for an already released array");
     }
+
     mArrayView = 0;
 }
 
@@ -101,7 +101,8 @@ template<typename ValueType>
 void ReadAccess<ValueType>::writeAt( std::ostream& stream ) const
 {
     stream << "ReadAccess to ";
-    if ( mArrayView )
+
+    if( mArrayView )
     {
         stream << *mArrayView;
     }
@@ -114,7 +115,7 @@ void ReadAccess<ValueType>::writeAt( std::ostream& stream ) const
 // template instantiation for the supported data types
 
 #define LAMA_READ_ACCESS_INSTANTIATE(z, I, _)                               \
-template class LAMA_DLL_IMPORTEXPORT ReadAccess< ARRAY_TYPE##I >;
+    template class LAMA_DLL_IMPORTEXPORT ReadAccess< ARRAY_TYPE##I >;
 
 BOOST_PP_REPEAT( ARRAY_TYPE_CNT, LAMA_READ_ACCESS_INSTANTIATE, _ )
 

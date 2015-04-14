@@ -2,7 +2,7 @@
  * @file Criterion.hpp
  *
  * @license
- * Copyright (c) 2009-2013
+ * Copyright (c) 2009-2015
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -176,7 +176,7 @@ protected:
 
     LAMA_LOG_DECL_STATIC_LOGGER( logger )
 
-private:
+private    :
     CriterionPtr mLeftChild;
     CriterionPtr mRightChild;
     BooleanOperator mOperation;

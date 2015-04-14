@@ -2,7 +2,7 @@
  * @file LAMAThreadPool.hpp
  *
  * @license
- * Copyright (c) 2009-2013
+ * Copyright (c) 2009-2015
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -135,7 +135,7 @@ private:
 
     LAMA_LOG_DECL_STATIC_LOGGER( logger )
 
-    unsigned int mTaskId; // last given task id
+    unsigned    int mTaskId; // last given task id
 
     int mMaxSize;// number of worker threads
 
@@ -155,6 +155,7 @@ private:
     WorkerState mWorkerState; //used to indicate the state of the worker
 };
 
-} // namespace lama
+}
+// namespace lama
 
 #endif // LAMA_THREAD_POOL_HPP_

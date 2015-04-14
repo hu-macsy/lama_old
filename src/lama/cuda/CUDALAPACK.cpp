@@ -2,7 +2,7 @@
  * @file CUDALAPACK.cpp
  *
  * @license
- * Copyright (c) 2009-2013
+ * Copyright (c) 2009-2015
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -56,13 +56,13 @@ void CUDALAPACK::laswp(
     int info = 0;
     int i = k1;
 
-    if ( order == CblasRowMajor )
+    if( order == CblasRowMajor )
     {
         int feedback = 0;
 
-        for ( i = k1; i < k2 /*&& feedback == LAMA_STATUS_SUCCESS*/; ++i )
+        for( i = k1; i < k2 /*&& feedback == LAMA_STATUS_SUCCESS*/; ++i )
         {
-            if ( ipiv_h[i * incx] == i )
+            if( ipiv_h[i * incx] == i )
             {
                 continue;
             }
@@ -73,7 +73,7 @@ void CUDALAPACK::laswp(
 
         info = -1 * (IndexType) feedback;
     }
-    else if ( order == CblasColMajor )
+    else if( order == CblasColMajor )
     {
         info = n + lda;
     }
@@ -83,10 +83,11 @@ void CUDALAPACK::laswp(
         BLASHelper::XERBLA_cpu( 0, info, "slaswp", "Illegal order setting." );
     }
 
-    if ( info < 0 )
+    if( info < 0 )
     {
         //TODO: throw exception
     }
+
 //        return info;
 }
 
@@ -105,13 +106,13 @@ void CUDALAPACK::laswp(
     int info = 0;
     int i = k1;
 
-    if ( order == CblasRowMajor )
+    if( order == CblasRowMajor )
     {
         int feedback = 0;
 
-        for ( i = k1; i < k2 /*&& feedback == LAMA_STATUS_SUCCESS*/; ++i )
+        for( i = k1; i < k2 /*&& feedback == LAMA_STATUS_SUCCESS*/; ++i )
         {
-            if ( ipiv_h[i * incx] == i )
+            if( ipiv_h[i * incx] == i )
             {
                 continue;
             }
@@ -122,7 +123,7 @@ void CUDALAPACK::laswp(
 
         info = -1 * (IndexType) feedback;
     }
-    else if ( order == CblasColMajor )
+    else if( order == CblasColMajor )
     {
         info = n + lda;
     }
@@ -132,10 +133,11 @@ void CUDALAPACK::laswp(
         BLASHelper::XERBLA_cpu( 0, info, "dlaswp", "Illegal order setting." );
     }
 
-    if ( info < 0 )
+    if( info < 0 )
     {
         //TODO: throw exception
     }
+
 //        return info;
 }
 
@@ -145,7 +147,7 @@ void CUDALAPACK::laswp(
 
 void CUDALAPACK::setInterface( BLASInterface& BLAS )
 {
-    // Note: macro takes advantage of same name for routines and type definitions 
+    // Note: macro takes advantage of same name for routines and type definitions
     //       ( e.g. routine CUDABLAS1::sum<ValueType> is set for BLAS::BLAS1::sum variable
 
     LAMA_INTERFACE_REGISTER_T( BLAS, laswp, float )
@@ -170,7 +172,6 @@ bool CUDALAPACK::registerInterface()
 /* --------------------------------------------------------------------------- */
 
 bool CUDALAPACK::initialized = registerInterface();
-
 
 } /* namespace lama */
 

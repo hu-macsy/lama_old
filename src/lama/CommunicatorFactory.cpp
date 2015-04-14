@@ -2,7 +2,7 @@
  * @file CommunicatorFactory.cpp
  *
  * @license
- * Copyright (c) 2009-2013
+ * Copyright (c) 2009-2015
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -68,7 +68,7 @@ CommunicatorFactory& CommunicatorFactory::getFactory()
 
     // Note: using the auto_ptr guarantees that the instance will be freed at end of the program
 
-    if ( !theCommunicatorFactory.get() )
+    if( !theCommunicatorFactory.get() )
     {
         // printf("create the communicator factory instance\n");
 
@@ -88,7 +88,7 @@ CommunicatorPtr CommunicatorFactory::get( const std::string& type, int& argc, ch
 
     CommunicatorToManagerMap::const_iterator id = factory.mCommunicatorToManagerMap.find( type );
 
-    if ( id != factory.mCommunicatorToManagerMap.end() )
+    if( id != factory.mCommunicatorToManagerMap.end() )
     {
         return id->second->getCommunicator( argc, argv );
     }
@@ -101,7 +101,7 @@ CommunicatorPtr CommunicatorFactory::get( const std::string& type, int& argc, ch
 
     id = factory.mCommunicatorToManagerMap.find( factory.getDefaultCommunicatorType() );
 
-    if ( id != factory.mCommunicatorToManagerMap.end() )
+    if( id != factory.mCommunicatorToManagerMap.end() )
     {
         return id->second->getCommunicator( argc, argv );
     }
@@ -125,11 +125,11 @@ CommunicatorPtr CommunicatorFactory::get()
 
 const std::string& CommunicatorFactory::getDefaultCommunicatorType() const
 {
-    if ( mDefaultCommunicatorType.length() == 0 )
+    if( mDefaultCommunicatorType.length() == 0 )
     {
         // default communicator has not been defined yet, so do it
 
-        if ( getenv( LAMA_ENV_FOR_COMMUNICATOR ) )
+        if( getenv( LAMA_ENV_FOR_COMMUNICATOR ) )
         {
             setDefaultCommunicatorType( getenv( LAMA_ENV_FOR_COMMUNICATOR ) );
         }
@@ -151,7 +151,7 @@ boost::shared_ptr<CommunicatorManager> CommunicatorFactory::getCommunicatorManag
 
 void CommunicatorFactory::setDefaultCommunicatorType( const std::string& defaultType ) const
 {
-    if ( mCommunicatorToManagerMap.find( defaultType ) != mCommunicatorToManagerMap.end() )
+    if( mCommunicatorToManagerMap.find( defaultType ) != mCommunicatorToManagerMap.end() )
     {
         mDefaultCommunicatorType = defaultType;
 
@@ -168,11 +168,11 @@ void CommunicatorFactory::setDefaultCommunicatorType( const std::string& default
 
 void CommunicatorFactory::setDefaultCommunicatorType() const
 {
-    if ( mCommunicatorToManagerMap.find( "MPI" ) != mCommunicatorToManagerMap.end() )
+    if( mCommunicatorToManagerMap.find( "MPI" ) != mCommunicatorToManagerMap.end() )
     {
         mDefaultCommunicatorType = "MPI";
     }
-    else if ( mCommunicatorToManagerMap.find( "none" ) != mCommunicatorToManagerMap.end() )
+    else if( mCommunicatorToManagerMap.find( "none" ) != mCommunicatorToManagerMap.end() )
     {
         mDefaultCommunicatorType = "none";
     }
@@ -214,7 +214,7 @@ void CommunicatorFactory::addCommunicatorManager(
 
     CommunicatorToManagerMap::const_iterator it = mCommunicatorToManagerMap.find( type );
 
-    if ( it != mCommunicatorToManagerMap.end() )
+    if( it != mCommunicatorToManagerMap.end() )
     {
         // CommunicatorManager might be replaced, e.g. for Host context (DefaultHost or CUDAHost)
 

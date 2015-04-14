@@ -2,7 +2,7 @@
  * @file BLASInterface.hpp
  *
  * @license
- * Copyright (c) 2009-2013
+ * Copyright (c) 2009-2015
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -45,14 +45,15 @@
 namespace lama
 {
 
-class SyncToken;   // forward declaration
+class SyncToken;
+// forward declaration
 
 /** Interface struct for BLAS routines.
  *
  *  This interface contains function pointer type definitions for all used routines
  *  and tables with actual values for the functions.
  *
- *  The interface is grouped in several structures 
+ *  The interface is grouped in several structures
  *
  *  - BLAS1 for BLAS level-1 routines
  *  - BLAS2 for BLAS level-2 routines
@@ -67,7 +68,7 @@ struct BLASInterface
 
     /** Function pointer type definitions for BLAS1 routines. */
 
-    template<typename ValueType> 
+    template<typename ValueType>
     struct BLAS1
     {
         /**
@@ -81,11 +82,12 @@ struct BLASInterface
          * @param[in] incX   incX storage spacing between considered elements of x.
          * @param[out] x     vector x (unchanged if n<=0 or incX <= 0 ).
          */
-        typedef void ( *scal ) ( const IndexType n, 
-                                 const ValueType alpha, 
-                                 ValueType* x, 
-                                 const IndexType incX, 
-                                 SyncToken* syncToken );
+        typedef void (*scal)(
+            const IndexType n,
+            const ValueType alpha,
+            ValueType* x,
+            const IndexType incX,
+            SyncToken* syncToken );
 
         /**
          * @brief nrm2 computes the Euclidean norm of the n-vector x
@@ -99,10 +101,7 @@ struct BLASInterface
          * return            the Euclidian norm within considered elements
          *                   of x (returns zero if n <=0, incX <= 0).
          */
-        typedef ValueType ( *nrm2 ) ( const IndexType n, 
-                                      const ValueType* x, 
-                                      const IndexType incX, 
-                                      SyncToken* syncToken );
+        typedef ValueType (*nrm2)( const IndexType n, const ValueType* x, const IndexType incX, SyncToken* syncToken );
 
         /**
          * @brief asum computes the sum of the absolute values of the elements
@@ -116,10 +115,10 @@ struct BLASInterface
          * return            the sum of absolute values within considered elements
          *                   of x (returns zero if n<=0 or incX <= 0).
          */
-        typedef ValueType ( *asum ) ( const IndexType n, const ValueType* x, const IndexType incX, SyncToken* syncToken );
-    
+        typedef ValueType (*asum)( const IndexType n, const ValueType* x, const IndexType incX, SyncToken* syncToken );
+
         /** max norm: maxnorm(x) = max( x_i ) */
-    
+
         /**
          * @brief iamax finds the smallest index of the maximum magnitude
          * element of vector x.
@@ -131,8 +130,8 @@ struct BLASInterface
          * return            the smallest index of the maximum magnitude
          *                   within considered elements of x (returns zero if n <=0 or incX <=0).
          */
-        typedef IndexType (*iamax) ( const IndexType n, const ValueType* x, const IndexType incX, SyncToken* syncToken );
-    
+        typedef IndexType (*iamax)( const IndexType n, const ValueType* x, const IndexType incX, SyncToken* syncToken );
+
         /**
          * @brief swap interchanges considered elements of vector x with vector y.
          *
@@ -146,13 +145,14 @@ struct BLASInterface
          * @param[out] x     vector x (unchanged if n<=0, incX <=0 or or incY <=0).
          * @param[out] y     vector y (unchanged if n<=0, incX <=0 or or incY <=0).
          */
-        typedef void (*swap) ( const IndexType n,
-        		               ValueType* x,
-        		               const IndexType incX,
-        		               ValueType* y,
-        		               const IndexType incY,
-        		               SyncToken* syncToken );
-    
+        typedef void (*swap)(
+            const IndexType n,
+            ValueType* x,
+            const IndexType incX,
+            ValueType* y,
+            const IndexType incY,
+            SyncToken* syncToken );
+
         /**
          * @brief copy copies the vector x to the vector y.
          *
@@ -165,13 +165,14 @@ struct BLASInterface
          * @param[in] incY   storage spacing between elements of y
          * @param[out] y     result (unchanged if n<=0, incX <=0 or or incY <=0 )
          */
-        typedef void ( *copy )( const IndexType n,
-                                const ValueType* x,
-                                const IndexType incX,
-                                ValueType* y,
-                                const IndexType incY,
-                                SyncToken* syncToken );
-    
+        typedef void (*copy)(
+            const IndexType n,
+            const ValueType* x,
+            const IndexType incX,
+            ValueType* y,
+            const IndexType incY,
+            SyncToken* syncToken );
+
         /**
          * @brief axpy multiplies scalar alpha by vector x and
          * adds the result to vector y.
@@ -186,14 +187,15 @@ struct BLASInterface
          * @param[in] incY   storage spacing between elements of y
          * @param[out] y     result (unchanged if n<=0, incX <=0 or or incY <=0)
          */
-        typedef void ( *axpy )( const IndexType n,
-                                ValueType alpha,
-                                const ValueType* x,
-                                const IndexType incX,
-                                ValueType* y,
-                                const IndexType incY,
-                                SyncToken* syncToken );
-    
+        typedef void (*axpy)(
+            const IndexType n,
+            ValueType alpha,
+            const ValueType* x,
+            const IndexType incX,
+            ValueType* y,
+            const IndexType incY,
+            SyncToken* syncToken );
+
         /**
          * @brief dot computes the dot product of two vectors.
          * It returns the dot product of the vectors x and y if successfull,
@@ -208,13 +210,14 @@ struct BLASInterface
          * @param[in] incY   storage spacing between elements of y.
          * return            dot product (returns zero if n <= 0, incX <=0 or or incY <=0).
          */
-        typedef ValueType ( *dot )( const IndexType n,
-                                    const ValueType* x,
-                                    const IndexType incX,
-                                    const ValueType* y,
-                                    const IndexType inc,
-                                    SyncToken* syncToken );
-    
+        typedef ValueType (*dot)(
+            const IndexType n,
+            const ValueType* x,
+            const IndexType incX,
+            const ValueType* y,
+            const IndexType inc,
+            SyncToken* syncToken );
+
         /**
          * @brief sum adds the multiplication of scalar alpha by vector x and the multiplication of
          * scalar beta by vector y into a new vector z.
@@ -228,19 +231,19 @@ struct BLASInterface
          * @param[in] y      vector with n elements.
          * @param[out] z     result of adding the 2 multiplications (unchanged if n <= 0).
          */
-        typedef void ( *sum ) ( const IndexType n, 
-                                const ValueType alpha, 
-                                const ValueType* x, 
-                                ValueType beta, 
-                                const ValueType* y, 
-                                ValueType* z, 
-                                SyncToken* syncToken );
+        typedef void (*sum)(
+            const IndexType n,
+            const ValueType alpha,
+            const ValueType* x,
+            ValueType beta,
+            const ValueType* y,
+            ValueType* z,
+            SyncToken* syncToken );
     };
 
     // declare variables of function pointers, i.e. arrays indexed by each type
 
-    LAMA_INTERFACE_DEFINE_T( BLAS1, scal )
-    LAMA_INTERFACE_DEFINE_T( BLAS1, nrm2 )
+    LAMA_INTERFACE_DEFINE_T( BLAS1, scal )LAMA_INTERFACE_DEFINE_T( BLAS1, nrm2 )
     LAMA_INTERFACE_DEFINE_T( BLAS1, asum )
     LAMA_INTERFACE_DEFINE_T( BLAS1, iamax )
     LAMA_INTERFACE_DEFINE_T( BLAS1, viamax )
@@ -289,20 +292,20 @@ struct BLASInterface
          *
          */
         typedef void ( *gemv ) ( const CBLAS_ORDER order,
-                                 const CBLAS_TRANSPOSE trans,
-                                 const IndexType m,
-                                 const IndexType n,
-                                 const ValueType alpha,
-                                 const ValueType *A,
-                                 const IndexType lda,
-                                 const ValueType *x,
-                                 const IndexType incX,
-                                 const ValueType beta,
-                                 ValueType *y,
-                                 const IndexType incY,
-                                 SyncToken* syncToken );
+                        const CBLAS_TRANSPOSE trans,
+                        const IndexType m,
+                        const IndexType n,
+                        const ValueType alpha,
+                        const ValueType *A,
+                        const IndexType lda,
+                        const ValueType *x,
+                        const IndexType incX,
+                        const ValueType beta,
+                        ValueType *y,
+                        const IndexType incY,
+                        SyncToken* syncToken );
     };
-    
+
     LAMA_INTERFACE_DEFINE_T( BLAS2, gemv )
 
     template<typename ValueType>
@@ -361,23 +364,23 @@ struct BLASInterface
          * @param[in] ldc     leading dimension of two-dimensional array used to store matrix C.
          * @param[in,out] syncToken is optional synchronization taken that might be used for asynchronous execution
          */
-    
-        typedef void ( *gemm ) ( const CBLAS_ORDER order, 
-                                 const CBLAS_TRANSPOSE transA, 
-                                 const CBLAS_TRANSPOSE transB,
-                                 const IndexType m, 
-                                 const IndexType n, 
-                                 const IndexType k, 
-                                 const ValueType alpha, 
-                                 const ValueType* A,
-                                 const IndexType lda,
-                                 const ValueType* B, 
-                                 const IndexType ldb,
-                                 const ValueType beta, 
-                                 ValueType* C, 
-                                 const IndexType ldc, 
-                                 SyncToken* syncToken );
-    
+
+        typedef void ( *gemm ) ( const CBLAS_ORDER order,
+                        const CBLAS_TRANSPOSE transA,
+                        const CBLAS_TRANSPOSE transB,
+                        const IndexType m,
+                        const IndexType n,
+                        const IndexType k,
+                        const ValueType alpha,
+                        const ValueType* A,
+                        const IndexType lda,
+                        const ValueType* B,
+                        const IndexType ldb,
+                        const ValueType beta,
+                        ValueType* C,
+                        const IndexType ldc,
+                        SyncToken* syncToken );
+
     };
 
     LAMA_INTERFACE_DEFINE_T( BLAS3, gemm )
@@ -432,7 +435,7 @@ struct BLASInterface
          */
 
         typedef IndexType (*getrf) (const CBLAS_ORDER order, const IndexType m, const IndexType n, ValueType* a,
-                            const IndexType lda, IndexType* ipivot);
+                        const IndexType lda, IndexType* ipivot);
 
         /** Method computes the inverse of a matrix by using the LAPACK routines getrf and getri
          *
@@ -443,12 +446,12 @@ struct BLASInterface
          *
          *  Note that the storage order (column-wise or row-wise does not matter at all)
          */
-    
+
         typedef void (*getinv) ( const IndexType n, ValueType* a, const IndexType lda );
-    
+
         /**  */
         typedef IndexType (*getri) ( const CBLAS_ORDER , const IndexType n, ValueType* a,
-                            const IndexType lda, IndexType* ipivot);
+                        const IndexType lda, IndexType* ipivot);
 
         /**
          * @brief tptrs solves the following equation system:
@@ -483,16 +486,16 @@ struct BLASInterface
          *                     of B.
          */
 
-        typedef IndexType (*tptrs) ( const CBLAS_ORDER order, 
-                                     const CBLAS_UPLO uplo, 
-                                     const CBLAS_TRANSPOSE trans,
-                                     const CBLAS_DIAG diag, 
-                                     const IndexType n, 
-                                     const IndexType nrhs, 
-                                     const ValueType* AP, 
-                                     ValueType* B,
-                                     const IndexType ldb );
-    
+        typedef IndexType (*tptrs) ( const CBLAS_ORDER order,
+                        const CBLAS_UPLO uplo,
+                        const CBLAS_TRANSPOSE trans,
+                        const CBLAS_DIAG diag,
+                        const IndexType n,
+                        const IndexType nrhs,
+                        const ValueType* AP,
+                        ValueType* B,
+                        const IndexType ldb );
+
         /**
          * @brief performs a series of row interchanges on the matrix A.
          * One row interchange is initiated for each of rows k1 through k2 of A.
@@ -524,15 +527,15 @@ struct BLASInterface
          * @param[out] syncToken TODO[doxy] Complete Description.
          */
 
-        typedef void ( *laswp ) ( const CBLAS_ORDER order, 
-                                  const IndexType n, 
-                                  ValueType* A, 
-                                  const IndexType lda, 
-                                  const IndexType k1,
-                                  const IndexType k2,   
-                                  const IndexType* ipiv,   
-                                  const IndexType incx,   
-                                  SyncToken* syncToken);
+        typedef void ( *laswp ) ( const CBLAS_ORDER order,
+                        const IndexType n,
+                        ValueType* A,
+                        const IndexType lda,
+                        const IndexType k1,
+                        const IndexType k2,
+                        const IndexType* ipiv,
+                        const IndexType incx,
+                        SyncToken* syncToken);
     };
 
     LAMA_INTERFACE_DEFINE_T( LAPACK, getrf )
@@ -555,7 +558,7 @@ struct BLASInterface
 
         typedef void ( *inverse ) ( const IndexType n, const IndexType nB, const ValueType* a, const class Communicator& comm );
     };
-    
+
     LAMA_INTERFACE_DEFINE_T( SCALAPACK, inverse )
 
     /** Default constructor, initializes function pointer variables with NULL */
@@ -568,6 +571,7 @@ struct BLASInterface
     }
 };
 
-} //namespace lama
+}
+//namespace lama
 
 #endif // LAMA_BLAS_INTERFACE_HPP_

@@ -2,7 +2,7 @@
  * @file CUDAStreamSyncToken.hpp
  *
  * @license
- * Copyright (c) 2009-2013
+ * Copyright (c) 2009-2015
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -45,14 +45,14 @@
 #include <cuda.h>
 
 #if __GNUC__ >= 4 &&  __GNUC_MINOR__ > 6
-    #pragma GCC diagnostic push
-    #pragma GCC diagnostic ignored "-Wunused-parameter"
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wunused-parameter"
 #endif //__GNUC__ >= 4 &&  __GNUC_MINOR__ > 6
 
 #include <cuda_runtime.h> /* no diagnostic for this one */
 
 #if __GNUC__ >= 4 &&  __GNUC_MINOR__ > 6
-    #pragma GCC diagnostic pop
+#pragma GCC diagnostic pop
 #endif //__GNUC__ >= 4&&  __GNUC_MINOR__ > 6
 
 #include <lama/config.hpp>
@@ -87,7 +87,10 @@ public:
 
     CUDAStreamSyncToken( CUDAContextPtr context, CUstream stream, CUevent event );
 
-    void setEvent( CUevent event ) { mEvent = event; }
+    void setEvent( CUevent event )
+    {
+        mEvent = event;
+    }
 
     virtual ~CUDAStreamSyncToken();
 

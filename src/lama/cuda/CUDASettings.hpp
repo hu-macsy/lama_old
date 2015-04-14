@@ -2,7 +2,7 @@
  * @file CUDASettings.hpp
  *
  * @license
- * Copyright (c) 2009-2013
+ * Copyright (c) 2009-2015
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -38,7 +38,7 @@
 namespace lama
 {
 
-/** This class determines whether the texture and or shared memory on a GPU 
+/** This class determines whether the texture and or shared memory on a GPU
  *  device should be used or not.
  *
  *  This class provides only static methods.
@@ -75,13 +75,13 @@ private:
 
     LAMA_LOG_DECL_STATIC_LOGGER( logger )
 
-    static bool initialized;  //!< will be set true after determination of theUseTextureFlag
+    static    bool initialized; //!< will be set true after determination of theUseTextureFlag
 
-    static bool theUseTextureFlag; //!< result for useTexture if initialized is true
+    static bool theUseTextureFlag;//!< result for useTexture if initialized is true
 
-    static bool theUseSharedMemFlag; //!< result for useTexture if initialized is true
+    static bool theUseSharedMemFlag;//!< result for useTexture if initialized is true
 
-    static int theBlockSize;   //!< result for blockSize if initialized is true
+    static int theBlockSize;//!< result for blockSize if initialized is true
 
     /**
      *   Get the (major) compute capability for the current active device.
@@ -94,6 +94,7 @@ private:
     static void initialize();
 };
 
-} // namespace
+}
+// namespace
 
 #endif //  LAMA_CUDA_TEXTURE_HPP_

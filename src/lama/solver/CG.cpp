@@ -2,7 +2,7 @@
  * @file CG.cpp
  *
  * @license
- * Copyright (c) 2009-2013
+ * Copyright (c) 2009-2015
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -109,7 +109,7 @@ void CG::iterate()
     Scalar alpha;
     Scalar beta;
 
-    if ( this->getIterationCount() == 0 )
+    if( this->getIterationCount() == 0 )
     {
         this->getResidual();
     }
@@ -123,7 +123,7 @@ void CG::iterate()
     LAMA_LOG_INFO( logger, "Doing preconditioning." )
 
     //CG implementation start
-    if ( !mPreconditioner )
+    if( !mPreconditioner )
     {
         LAMA_REGION( "Solver.CG.setZ" )
         z = residual;
@@ -142,7 +142,7 @@ void CG::iterate()
     LAMA_LOG_DEBUG( logger, "pScalar = " << pScalar )
     LAMA_LOG_INFO( logger, "Calculating p." )
 
-    if ( this->getIterationCount() == 0 )
+    if( this->getIterationCount() == 0 )
     {
         p = z;
     }
@@ -150,7 +150,7 @@ void CG::iterate()
     {
         LAMA_REGION( "Solver.CG.setP" )
 
-        if ( lastPScalar.getValue<double>() == 0.0 )
+        if( lastPScalar.getValue<double>() == 0.0 )
         {
             beta = 0.0;
         }
@@ -175,7 +175,7 @@ void CG::iterate()
     const Scalar pqProd = p.dotProduct( q );
     LAMA_LOG_DEBUG( logger, "pqProd = " << pqProd )
 
-    if ( pqProd.getValue<double>() == 0.0 )
+    if( pqProd.getValue<double>() == 0.0 )
     {
         alpha = 0.0;
     }
@@ -204,7 +204,7 @@ void CG::iterate()
 
 double CG::getAverageIterationTime() const
 {
-    return (totalIterationTime - totalPreconditionerTime) / this->getIterationCount();
+    return ( totalIterationTime - totalPreconditionerTime ) / this->getIterationCount();
 }
 
 double CG::getAveragePreconditionerTime() const

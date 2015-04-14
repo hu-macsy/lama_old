@@ -2,7 +2,7 @@
  * @file CUDAMatrixStorageTest.cpp
  *
  * @license
- * Copyright (c) 2009-2013
+ * Copyright (c) 2009-2015
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -48,7 +48,7 @@
 using namespace boost;
 using namespace lama;
 
-typedef boost::mpl::list<double,float> test_types;
+typedef boost::mpl::list<double, float> test_types;
 
 /* --------------------------------------------------------------------- */
 
@@ -62,28 +62,22 @@ template<typename StorageType>
 void setCSRData( StorageType& storage )
 {
     typedef typename StorageType::StorageValueType ValueType; //!< This is the type of the matrix values.
-
     const IndexType numValues = 12;
     const IndexType numRows = 7;
     const IndexType numColumns = 4;
-
     static double values[] =
     { 6.0, 4.0, 7.0, 9.0, 4.0, 2.0, 5.0, 3.0, 2.0, 1.0, 1.0, 2.0 };
     static IndexType ja[] =
     { 0, 3, 0, 2, 3, 0, 1, 3, 0, 3, 1, 3 };
     static IndexType ia[] =
     { 0, 2, 3, 5, 8, 10, 10, 12 };
-
     // just make sure that number of entries in values matches the matrix size
-
-    BOOST_CHECK_EQUAL( int( sizeof(values) / sizeof(double) ), numValues );
-    BOOST_CHECK_EQUAL( sizeof(values) / sizeof(double), sizeof(ja) / sizeof(IndexType) );
-    BOOST_CHECK_EQUAL( int( sizeof(ia) / sizeof(IndexType) ), numRows + 1 );
-
+    BOOST_CHECK_EQUAL( int( sizeof( values ) / sizeof( double ) ), numValues );
+    BOOST_CHECK_EQUAL( sizeof( values ) / sizeof( double ), sizeof( ja ) / sizeof( IndexType ) );
+    BOOST_CHECK_EQUAL( int( sizeof( ia ) / sizeof( IndexType ) ), numRows + 1 );
     LAMAArray<IndexType> csrIas;
     LAMAArray<IndexType> csrJas;
     LAMAArray<ValueType> csrValues;
-
     HostWriteOnlyAccess<IndexType> myIa( csrIas, numRows + 1 );
     HostWriteOnlyAccess<IndexType> myJa( csrJas, numValues );
     HostWriteOnlyAccess<ValueType> myData( csrValues, numValues );
@@ -92,19 +86,18 @@ void setCSRData( StorageType& storage )
     {
         myIa[ii] = ia[ii];
     }
+
     for ( IndexType jj = 0; jj < numValues; jj++ )
     {
         myJa[jj] = ja[jj];
-        myData[jj] = static_cast<ValueType>(values[jj]);
+        myData[jj] = static_cast<ValueType>( values[jj] );
     }
 
     myIa.release();
     myJa.release();
     myData.release();
-
     ContextPtr host = ContextFactory::getContext( Context::Host );
     ContextPtr cuda = lama_test::CUDAContext::getContext();
-
     storage.setContext( host );
     storage.setCSRData( numRows, numColumns, numValues, csrIas, csrJas, csrValues );
 
@@ -120,6 +113,7 @@ void setCSRData( StorageType& storage )
 
     storage.setContext( cuda );
     storage.setCSRData( numRows, numColumns, numValues, csrIas, csrJas, csrValues );
+
     // fill with the csr sparse data
     for ( IndexType i = 0; i < numRows; ++i )
     {
@@ -136,11 +130,10 @@ void testSetMethod()
 {
     StorageType storage;
     setCSRData( storage );
-
 }
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( setXToCSRData, ValueType, test_types ) {
-
+BOOST_AUTO_TEST_CASE_TEMPLATE( setXToCSRData, ValueType, test_types )
+{
     testSetMethod<ELLStorage<ValueType> >();
     testSetMethod<DenseStorage<ValueType> >();
     testSetMethod<CSRStorage<ValueType> >();

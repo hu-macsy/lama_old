@@ -2,7 +2,7 @@
  * @file CyclicDistributionTest.cpp
  *
  * @license
- * Copyright (c) 2009-2013
+ * Copyright (c) 2009-2015
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -55,13 +55,10 @@ struct CyclicDistributionTestConfig
     CyclicDistributionTestConfig()
     {
         comm = CommunicatorFactory::get( "MPI" );
-
         size = comm->getSize();
         rank = comm->getRank();
-
         chunkSize = size;
         globalSize = 10 * size;
-
         dist = DistributionPtr( new CyclicDistribution( globalSize, chunkSize, comm ) );
     }
 
@@ -106,13 +103,15 @@ BOOST_AUTO_TEST_CASE( cyclicGlobal2Local )
 {
     //test local2global
     IndexType counter = rank * chunkSize;
+
     for ( IndexType i = 0; i < dist->getLocalSize(); i++ )
     {
         if ( i != 0 && i % chunkSize == 0 )
         {
             counter += ( size - 1 ) * chunkSize;
         }
-        BOOST_CHECK_EQUAL( dist->local2global(i), counter );
+
+        BOOST_CHECK_EQUAL( dist->local2global( i ), counter );
         counter++;
     }
 }
@@ -123,13 +122,9 @@ BOOST_AUTO_TEST_CASE( cyclicComputeOwnersTest )
 {
     chunkSize = 3;
     globalSize = 16;
-
     std::vector<IndexType> localSizes;
-
     std::vector<PartitionId> theOwners; // used for verification
-
     CyclicDistribution distribution( globalSize, chunkSize, comm );
-
     IndexType chunkOffset = 0;
     IndexType chunkNr = 0;
 
@@ -137,8 +132,8 @@ BOOST_AUTO_TEST_CASE( cyclicComputeOwnersTest )
     {
         PartitionId owner = chunkNr % size;
         theOwners.push_back( owner );
-
         chunkOffset++;
+
         if ( chunkOffset == chunkSize )
         {
             chunkOffset = 0;
@@ -155,7 +150,6 @@ BOOST_AUTO_TEST_CASE( cyclicComputeOwnersTest )
 
     std::vector<PartitionId> owners;
     distribution.computeOwners( indexes, owners );
-
     BOOST_CHECK_EQUAL( globalSize, static_cast<IndexType>( owners.size() ) );
     BOOST_CHECK_EQUAL( globalSize, static_cast<IndexType>( theOwners.size() ) );
 
@@ -171,7 +165,6 @@ BOOST_AUTO_TEST_CASE( cyclicComputeOwnersTest )
 BOOST_AUTO_TEST_CASE( cyclicTest )
 {
     // Test cyclic distribution for different global sizes and chunk sizes
-
     IndexType globalSizes[] =
     { 1, 50, 200 };
     IndexType chunkSizes[] =
@@ -181,17 +174,16 @@ BOOST_AUTO_TEST_CASE( cyclicTest )
     for ( IndexType i = 0; i < 3; ++i )
     {
         IndexType globalSize = globalSizes[i];
+
         //BOOST_FOREACH(IndexType chunkSize, chunkSizes)
         for ( IndexType j = 0; j < 4; ++j )
         {
             IndexType chunkSize = chunkSizes[i];
             // printf("Test cyclic distribution of %d elements in chunks of size %d\n", globalSize, chunkSize);
             CyclicDistribution cyclicDist( globalSize, chunkSize, comm );
-
             // test the routines getNumChunks + getNumTotalChunks
             IndexType sumLocalChunks = cyclicDist.getCommunicator().sum( cyclicDist.getNumLocalChunks() );
             BOOST_CHECK_EQUAL( cyclicDist.getNumTotalChunks(), sumLocalChunks );
-
         }
     }
 }
@@ -204,10 +196,9 @@ BOOST_AUTO_TEST_CASE( isEqualTest )
     DistributionPtr cyclicdist2( cyclicdist1 );
     DistributionPtr cyclicdist3( new CyclicDistribution( 1, comm->getSize(), comm ) );
     DistributionPtr cyclicdist4( new CyclicDistribution( 3, comm->getSize(), comm ) );
-
-    BOOST_CHECK( (*cyclicdist1).isEqual( *cyclicdist2 ) );
-    BOOST_CHECK( (*cyclicdist1).isEqual( *cyclicdist3 ) );
-    BOOST_CHECK( !(*cyclicdist1).isEqual( *cyclicdist4 ) );
+    BOOST_CHECK( ( *cyclicdist1 ).isEqual( *cyclicdist2 ) );
+    BOOST_CHECK( ( *cyclicdist1 ).isEqual( *cyclicdist3 ) );
+    BOOST_CHECK( !( *cyclicdist1 ).isEqual( *cyclicdist4 ) );
 }
 /* --------------------------------------------------------------------- */
 

@@ -2,7 +2,7 @@
  * @file SpecializedJacobi.hpp
  *
  * @license
- * Copyright (c) 2009-2013
+ * Copyright (c) 2009-2015
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -103,7 +103,8 @@ private:
     void iterateTyped( const SparseMatrix<ValueType>& );
 
     template<typename ValueType>
-    void iterateSync( LAMAArray<ValueType>& solution,
+    void iterateSync(
+        LAMAArray<ValueType>& solution,
         const SparseMatrix<ValueType>& coefficients,
         const LAMAArray<ValueType>& localOldSolution,
         LAMAArray<ValueType>& haloOldSolution,
@@ -111,7 +112,8 @@ private:
         const ValueType omega );
 
     template<typename ValueType>
-    void iterateAsync( LAMAArray<ValueType>& solution,
+    void iterateAsync(
+        LAMAArray<ValueType>& solution,
         const SparseMatrix<ValueType>& coefficients,
         const LAMAArray<ValueType>& localOldSolution,
         LAMAArray<ValueType>& haloOldSolution,

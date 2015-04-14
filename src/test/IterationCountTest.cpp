@@ -2,7 +2,7 @@
  * @file IterationCountTest.cpp
  *
  * @license
- * Copyright (c) 2009-2013
+ * Copyright (c) 2009-2015
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -48,7 +48,7 @@
 using namespace lama;
 using namespace boost;
 
-typedef boost::mpl::list<double,float> test_types;
+typedef boost::mpl::list<double, float> test_types;
 
 /* --------------------------------------------------------------------- */
 
@@ -79,15 +79,11 @@ LAMA_LOG_DEF_LOGGER( logger, "Test.IterationCountTest" )
 BOOST_AUTO_TEST_CASE( ConstructorTest )
 {
     BOOST_CHECK_EQUAL( mCriterionDouble->getIterationExtrema(), 5 );
-
     BOOST_CHECK_EQUAL( mCriterionFloat->getIterationExtrema(), 10 );
-
     IterationCount* testcriterion = new IterationCount();
     BOOST_CHECK_EQUAL( testcriterion->getIterationExtrema(), 1 );
-
     IterationCount* testcriterion2 = new IterationCount( *testcriterion );
     BOOST_CHECK_EQUAL( testcriterion2->getIterationExtrema(), 1 );
-
 }
 
 /* --------------------------------------------------------------------- */
@@ -97,7 +93,6 @@ BOOST_AUTO_TEST_CASE( SetAndGetIterationCountTest )
     BOOST_CHECK_EQUAL( 5, mCriterionDouble->getIterationExtrema() );
     mCriterionDouble->setIterationExtrema( 15 );
     BOOST_CHECK_EQUAL( 15, mCriterionDouble->getIterationExtrema() );
-
     BOOST_CHECK_EQUAL( 10, mCriterionFloat->getIterationExtrema() );
     mCriterionFloat->setIterationExtrema( 3 );
     BOOST_CHECK_EQUAL( 3, mCriterionFloat->getIterationExtrema() );
@@ -109,24 +104,20 @@ template<typename ValueType>
 void testIsSatisfiedmethod( IndexType expectedIterationCount )
 {
     DefaultJacobi jacobi( "IterationCountTest Jacobi" );
-
     EquationHelper::EquationSystem<ValueType> system = EquationHelper::get3x3SystemA<ValueType>();
-
     const CSRSparseMatrix<ValueType> coefficients( system.coefficients );
     const DenseVector<ValueType> rhs( system.rhs );
     DenseVector<ValueType> solution( 3, 1.0 );
-
     CriterionPtr criterion( new IterationCount( 10 ) );
-
     jacobi.initialize( coefficients );
     jacobi.setStoppingCriterion( criterion );
     jacobi.solve( solution, rhs );
-
     BOOST_CHECK_EQUAL( expectedIterationCount, jacobi.getIterationCount() );
 }
 ;
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( testIsSatisfied, ValueType, test_types ) {
+BOOST_AUTO_TEST_CASE_TEMPLATE( testIsSatisfied, ValueType, test_types )
+{
     testIsSatisfiedmethod<ValueType>( 10 );
 }
 
@@ -136,16 +127,14 @@ BOOST_AUTO_TEST_CASE( writeAtTest )
 {
     LAMA_WRITEAT_PTR_TEST( mCriterionDouble );
     LAMA_WRITEAT_PTR_TEST( mCriterionFloat );
-
     std::stringstream mStream;
     mStream << mCriterionDouble;
     std::string mString = mStream.str();
-    BOOST_CHECK( mString.compare("Maximal") );
-
+    BOOST_CHECK( mString.compare( "Maximal" ) );
     mStream.clear();
     mStream << mCriterionFloat;
     mString = mStream.str();
-    BOOST_CHECK( mString.compare("Minimal") );
+    BOOST_CHECK( mString.compare( "Minimal" ) );
 }
 /* --------------------------------------------------------------------- */
 

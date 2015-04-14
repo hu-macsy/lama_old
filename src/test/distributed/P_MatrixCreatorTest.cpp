@@ -2,7 +2,7 @@
  * @file P_MatrixCreatorTest.cpp
  *
  * @license
- * Copyright (c) 2009-2013
+ * Copyright (c) 2009-2015
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -43,7 +43,7 @@
 using namespace boost;
 using namespace lama;
 
-typedef boost::mpl::list<double,float> test_types;
+typedef boost::mpl::list<double, float> test_types;
 
 /* --------------------------------------------------------------------- */
 
@@ -71,15 +71,10 @@ LAMA_LOG_DEF_LOGGER( logger, "Test.P_MatrixCreatorTest" );
 BOOST_AUTO_TEST_CASE_TEMPLATE( randomTest, ValueType, test_types )
 {
     const IndexType globalSize = 100;
-
     DistributionPtr dist( new BlockDistribution( globalSize, comm ) );
-
     CSRSparseMatrix<ValueType> matrix;
-
     matrix.allocate( dist, dist );
-
     MatrixCreator<ValueType>::fillRandom( matrix, 0.05 );
-
 //  std::cout << "random matrix = " << matrix << std::endl;
 }
 
@@ -88,20 +83,13 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( randomTest, ValueType, test_types )
 BOOST_AUTO_TEST_CASE_TEMPLATE( testPoisson, ValueType, test_types )
 {
     CSRSparseMatrix<ValueType> matrix;
-
     LAMA_CHECK_THROW(
     {   MatrixCreator<ValueType>::buildPoisson1D( matrix, 5, 100 );}, Exception );
-
     MatrixCreator<ValueType>::buildPoisson1D( matrix, 3, 100 );
-
 //std::cout << "Poisson1D3P matrix = " << matrix << std::endl;
-
     MatrixCreator<ValueType>::buildPoisson2D( matrix, 5, 10, 10 );
-
 //std::cout << "Poisson2D5P matrix = " << matrix << std::endl;
-
     MatrixCreator<ValueType>::buildPoisson3D( matrix, 7, 5, 5, 5 );
-
 //std::cout << "Poisson3D7P matrix = " << matrix << std::endl;
 }
 

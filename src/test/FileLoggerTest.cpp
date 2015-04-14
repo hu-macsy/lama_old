@@ -2,7 +2,7 @@
  * @file FileLoggerTest.cpp
  *
  * @license
- * Copyright (c) 2009-2013
+ * Copyright (c) 2009-2015
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -58,7 +58,6 @@ BOOST_AUTO_TEST_CASE( LoggingTest )
     FileLogger& flogger = FileLogger::getFileLogger();
     // This should throw an exception
     LAMA_CHECK_THROW( flogger.setLogFile( "/15/16/17" ), Exception );
-
     const std::string path = Configuration::getInstance().getPath();
     LAMA_LOG_INFO( logger, "Configuration path = " << path );
     std::string logFileName( path + "/" + "FileLoggerTestFile.log" );
@@ -66,10 +65,8 @@ BOOST_AUTO_TEST_CASE( LoggingTest )
     flogger.setLogFile( logFileName );
     // Setting same name twice should be okay
     flogger.setLogFile( logFileName );
-
     // Setting other name should throw an exception
     LAMA_CHECK_THROW( flogger.setLogFile( logFileName + "1" ), Exception );
-
     flogger.logMessage( testMessage );
     flogger.closeLogFile();
     boost::scoped_array<char> fileInput( new char[testMessage.length()] );
@@ -77,7 +74,7 @@ BOOST_AUTO_TEST_CASE( LoggingTest )
     fileStream.open( logFileName.c_str(), std::fstream::in );
     fileStream.read( fileInput.get(), testMessage.length() );
 
-    for ( IndexType i = 0; i < (IndexType) testMessage.length(); ++i )
+    for ( IndexType i = 0; i < ( IndexType ) testMessage.length(); ++i )
     {
         BOOST_CHECK_EQUAL( testMessage[i], fileInput[i] );
     }

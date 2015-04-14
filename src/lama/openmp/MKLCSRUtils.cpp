@@ -2,7 +2,7 @@
  * @file MKLCSRUtils.cpp
  *
  * @license
- * Copyright (c) 2009-2013
+ * Copyright (c) 2009-2015
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -77,12 +77,12 @@ void MKLCSRUtils::normalGEMV(
     LAMA_LOG_INFO( logger,
                    "normalGEMV<float>, result[" << numRows << "] = " << alpha << " * A * x + " << beta << " * y " )
 
-    if ( syncToken )
+    if( syncToken )
     {
         LAMA_THROWEXCEPTION( "asynchronous execution should be done by LAMATask before" )
     }
 
-    if ( y != result && beta != 0 )
+    if( y != result && beta != 0 )
     {
         OpenMPUtils::set( result, y, numRows );
     }
@@ -91,7 +91,7 @@ void MKLCSRUtils::normalGEMV(
 
     char transa = 'n';
 
-    // General, - triangular, Non-Unit, C for zero-indexing 
+    // General, - triangular, Non-Unit, C for zero-indexing
 
     char matdescra[6];
 
@@ -102,18 +102,10 @@ void MKLCSRUtils::normalGEMV(
 
     // const_cast needed, MKL interface does not support it
 
-    mkl_scsrmv( &transa, 
-                const_cast<IndexType*>( &numRows ), 
-                const_cast<IndexType*>( &numColumns ), 
-                const_cast<float*>( &alpha ),
-                matdescra, 
-                const_cast<float*>( csrValues ), 
-                const_cast<IndexType*>( csrJA ), 
-                const_cast<IndexType*>( csrIA ), 
-                const_cast<IndexType*>( csrIA + 1 ),
-                const_cast<float*>( x ), 
-                const_cast<float*>( &beta ), 
-                result );
+    mkl_scsrmv( &transa, const_cast<IndexType*>( &numRows ), const_cast<IndexType*>( &numColumns ),
+                const_cast<float*>( &alpha ), matdescra, const_cast<float*>( csrValues ),
+                const_cast<IndexType*>( csrJA ), const_cast<IndexType*>( csrIA ), const_cast<IndexType*>( csrIA + 1 ),
+                const_cast<float*>( x ), const_cast<float*>( &beta ), result );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -138,12 +130,12 @@ void MKLCSRUtils::normalGEMV(
     LAMA_LOG_INFO( logger,
                    "normalGEMV<double>, result[" << numRows << "] = " << alpha << " * A * x + " << beta << " * y " )
 
-    if ( syncToken )
+    if( syncToken )
     {
         LAMA_THROWEXCEPTION( "asynchronous execution should be done by LAMATask before" )
     }
 
-    if ( y != result && beta != 0 )
+    if( y != result && beta != 0 )
     {
         OpenMPUtils::set( result, y, numRows );
     }
@@ -152,7 +144,7 @@ void MKLCSRUtils::normalGEMV(
 
     char transa = 'n';
 
-    // General, - triangular, Non-Unit, C for zero-indexing 
+    // General, - triangular, Non-Unit, C for zero-indexing
 
     char matdescra[6];
 
@@ -163,18 +155,10 @@ void MKLCSRUtils::normalGEMV(
 
     // const_cast needed, MKL interface does not support it
 
-    mkl_dcsrmv( &transa, 
-                const_cast<IndexType*>( &numRows ), 
-                const_cast<IndexType*>( &numColumns ), 
-                const_cast<double*>( &alpha ),
-                matdescra, 
-                const_cast<double*>( csrValues ), 
-                const_cast<IndexType*>( csrJA ), 
-                const_cast<IndexType*>( csrIA ), 
-                const_cast<IndexType*>( csrIA + 1 ),
-                const_cast<double*>( x ), 
-                const_cast<double*>( &beta ), 
-                result );
+    mkl_dcsrmv( &transa, const_cast<IndexType*>( &numRows ), const_cast<IndexType*>( &numColumns ),
+                const_cast<double*>( &alpha ), matdescra, const_cast<double*>( csrValues ),
+                const_cast<IndexType*>( csrJA ), const_cast<IndexType*>( csrIA ), const_cast<IndexType*>( csrIA + 1 ),
+                const_cast<double*>( x ), const_cast<double*>( &beta ), result );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -193,23 +177,24 @@ void MKLCSRUtils::convertCSR2CSC(
 {
     // Intel MKL supports csr to csc only for square matrices
 
-    if ( numRows == numColumns )
+    if( numRows == numColumns )
     {
         LAMA_REGION( "MKL.CSRUtils.convertCSR2CSC" )
 
         LAMA_LOG_INFO( logger, "convertCSR2CSC of matrix " << numRows << " x " << numColumns )
 
-        int job[] = { 0, 0, 0, 0, 0, 1 };
+        int job[] =
+        { 0, 0, 0, 0, 0, 1 };
 
-        int info = 0;  // not used yet
+        int info = 0; // not used yet
 
-        mkl_scsrcsc( job, &numRows, 
-                     const_cast<float*>( csrValues ), const_cast<IndexType*>( csrJA ), 
+        mkl_scsrcsc( job, &numRows, const_cast<float*>( csrValues ), const_cast<IndexType*>( csrJA ),
                      const_cast<IndexType*>( csrIA ), cscValues, cscJA, cscIA, &info );
     }
     else
     {
-        OpenMPCSRUtils::convertCSR2CSC( cscIA, cscJA, cscValues, csrIA, csrJA, csrValues, numRows, numColumns, numValues );
+        OpenMPCSRUtils::convertCSR2CSC( cscIA, cscJA, cscValues, csrIA, csrJA, csrValues, numRows, numColumns,
+                                        numValues );
     }
 }
 
@@ -229,24 +214,24 @@ void MKLCSRUtils::convertCSR2CSC(
 {
     // Intel MKL supports csr to csc only for square matrices
 
-    if ( numRows == numColumns )
+    if( numRows == numColumns )
     {
         LAMA_REGION( "MKL.CSRUtils.convertCSR2CSC" )
 
         LAMA_LOG_INFO( logger, "convertCSR2CSC of matrix " << numRows << " x " << numColumns )
 
-        int job[] = { 0, 0, 0, 0, 0, 1 };
+        int job[] =
+        { 0, 0, 0, 0, 0, 1 };
 
-        int info = 0;  // not used yet
+        int info = 0; // not used yet
 
-        mkl_dcsrcsc( job, &numRows, const_cast<double*>( csrValues ), 
-                     const_cast<IndexType*>( csrJA ), 
-                     const_cast<IndexType*>( csrIA ), 
-                     cscValues, cscJA, cscIA, &info );
+        mkl_dcsrcsc( job, &numRows, const_cast<double*>( csrValues ), const_cast<IndexType*>( csrJA ),
+                     const_cast<IndexType*>( csrIA ), cscValues, cscJA, cscIA, &info );
     }
     else
     {
-        OpenMPCSRUtils::convertCSR2CSC( cscIA, cscJA, cscValues, csrIA, csrJA, csrValues, numRows, numColumns, numValues );
+        OpenMPCSRUtils::convertCSR2CSC( cscIA, cscJA, cscValues, csrIA, csrJA, csrValues, numRows, numColumns,
+                                        numValues );
     }
 }
 
@@ -262,7 +247,7 @@ void MKLCSRUtils::setInterface( CSRUtilsInterface& CSRUtils )
 
     Settings::getEnvironment( useMKL, "LAMA_USE_MKL" );
 
-    if ( !useMKL )
+    if( !useMKL )
     {
         LAMA_LOG_INFO( logger, "MKL routines for Host Interface are disabled" )
         return;

@@ -2,7 +2,7 @@
  * @file P_NormTest.cpp
  *
  * @license
- * Copyright (c) 2009-2013
+ * Copyright (c) 2009-2015
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -44,7 +44,7 @@
 using namespace boost;
 using namespace lama;
 
-typedef boost::mpl::list<float,double> test_types;
+typedef boost::mpl::list<float, double> test_types;
 
 /* --------------------------------------------------------------------- */
 
@@ -80,34 +80,20 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( Norm, ValueType, test_types )
         for ( IndexType size = 0; size < 4; ++size )
         {
             DistributionPtr dist( new BlockDistribution( size, comm ) );
-
             const ValueType VAL = 1.0;
-
             DenseVector<ValueType> repVector( size, VAL );
-
             DenseVector<ValueType> distVector;
-
             distVector.setContext( context );
-
             distVector = repVector;
-
             distVector.redistribute( dist );
-    
             Scalar l1norm = distVector.l1Norm();
-
             ValueType expectedL1Norm = static_cast<ValueType>( size );
-
             BOOST_CHECK_CLOSE( l1norm.getValue<ValueType>(), expectedL1Norm, 1 );
-    
             Scalar l2norm = distVector.l2Norm();
-
             ValueType expectedL2Norm = static_cast<ValueType>( size );
             expectedL2Norm = std::sqrt( expectedL2Norm );
-    
             BOOST_CHECK_CLOSE( l2norm.getValue<ValueType>(), expectedL2Norm, 1 );
-    
             Scalar maxNorm = distVector.maxNorm();
-
             ValueType expectedMaxNorm = static_cast<ValueType>( VAL );
 
             if ( size == 0 )

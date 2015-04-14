@@ -2,7 +2,7 @@
  * @file MICUtils.hpp
  *
  * @license
- * Copyright (c) 2009-2013
+ * Copyright (c) 2009-2015
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -61,11 +61,12 @@ public:
 
     /** MIC implementation for UtilsInterface::Copy::setScale */
 
-    template<typename ValueType, typename OtherValueType>
-    static void setScale( ValueType outValues[], 
-                          const ValueType value, 
-                          const OtherValueType inValues[], 
-                          const IndexType n );
+    template<typename ValueType,typename OtherValueType>
+    static void setScale(
+        ValueType outValues[],
+        const ValueType value,
+        const OtherValueType inValues[],
+        const IndexType n );
 
     /*  This method is an implementation of UtilsInterface::validIndexes */
 
@@ -141,6 +142,7 @@ private:
     LAMA_LOG_DECL_STATIC_LOGGER( logger )
 };
 
-} // namespace lama
+}
+// namespace lama
 
 #endif //  LAMA_MIC_UTILS_HPP_

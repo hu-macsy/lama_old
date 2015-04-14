@@ -2,7 +2,7 @@
  * @file Context.cpp
  *
  * @license
- * Copyright (c) 2009-2013
+ * Copyright (c) 2009-2015
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -37,14 +37,15 @@
 namespace lama_test
 {
 
-std::map<lama::ContextType,lama::ContextPtr> Context::contexts;
+std::map<lama::ContextType, lama::ContextPtr> Context::contexts;
 
 lama::ContextPtr Context::getContext( const lama::ContextType type )
 {
-    if( !contexts[type] )
+    if ( !contexts[type] )
     {
         contexts[type] = lama::ContextFactory::getContext( type );
     }
+
     return contexts[type];
 }
 

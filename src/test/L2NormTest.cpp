@@ -2,7 +2,7 @@
  * @file L2NormTest.cpp
  *
  * @license
- * Copyright (c) 2009-2013
+ * Copyright (c) 2009-2015
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -52,7 +52,7 @@ BOOST_AUTO_TEST_SUITE( L2NormTest )
 
 LAMA_LOG_DEF_LOGGER( logger, "Test.L2NormTest" )
 
-typedef boost::mpl::list<float,double> test_types;
+typedef boost::mpl::list<float, double> test_types;
 
 /* --------------------------------------------------------------------- */
 
@@ -60,25 +60,18 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( L2NormVectorTests, ValueType, test_types )
 {
     IndexType n = 4;
     ValueType val = 5.0;
-
     DenseVector<ValueType> vec( n, val );
     L2Norm l2norm;
-
     ValueType expected = std::sqrt( n * val * val );
-
     BOOST_CHECK_EQUAL( expected, l2norm( vec ) );
-
     HostWriteAccess<ValueType> hwa( vec.getLocalValues() );
     hwa[0] = 1.0;
     hwa[1] = -2.0;
     hwa[2] = 3.0;
     hwa[3] = -4.0;
     hwa.release();
-
     expected = static_cast<ValueType>( 5.47722 );
-
     Scalar s = l2norm( vec );
-
     BOOST_CHECK_CLOSE( expected, s.getValue<ValueType>(), 1 );
 }
 
@@ -88,7 +81,6 @@ BOOST_AUTO_TEST_CASE( L2NormScalarTests )
 {
     Scalar scalar( -4.0 );
     L2Norm l2norm;
-
     BOOST_CHECK_EQUAL( Scalar( 4.0 ), l2norm( scalar ) );
 }
 

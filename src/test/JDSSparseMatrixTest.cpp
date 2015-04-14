@@ -2,7 +2,7 @@
  * @file JDSSparseMatrixTest.cpp
  *
  * @license
- * Copyright (c) 2009-2013
+ * Copyright (c) 2009-2015
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -55,7 +55,6 @@ void commonTestCases( ContextPtr loc )
 {
     JDSSparseMatrix<ValueType> jdsMatrix;
     SparseMatrixTest< JDSSparseMatrix<ValueType> > jdsSparseMatrixTest( jdsMatrix );
-
     jdsSparseMatrixTest.mMatrix.setContext( loc );
 
     if ( base_test_case )
@@ -73,8 +72,7 @@ void typeNameTest( )
 {
     JDSSparseMatrix<ValueType> jdsMatrix;
     std::string s = jdsMatrix.typeName();
-
-    BOOST_CHECK( s.length() > 0);
+    BOOST_CHECK( s.length() > 0 );
 }
 
 } // namespace JDSSparseMatrixTest

@@ -2,7 +2,7 @@
  * @file MPISyncToken.cpp
  *
  * @license
- * Copyright (c) 2009-2013
+ * Copyright (c) 2009-2015
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -45,14 +45,14 @@ namespace lama
 
 MPISyncToken::MPISyncToken( PartitionId nRequests )
     : mNRequests( nRequests ), mUsedRequests( 0 ), mRequests( new MPI_Request[mNRequests] ), mStatuses(
-        new MPI_Status[mNRequests] )
+          new MPI_Status[mNRequests] )
 {
     LAMA_LOG_INFO( logger, "MPISyncToken for " << mNRequests << " requests constructed" )
 }
 
 MPISyncToken::~MPISyncToken()
 {
-    if ( !isSynchronized() )
+    if( !isSynchronized() )
     {
         LAMA_LOG_DEBUG( logger, *this << ": synchnronized at destructor" )
         wait();
@@ -68,7 +68,7 @@ void MPISyncToken::wait()
 {
     LAMA_REGION( "SyncToken.MPI.wait" )
 
-    if ( isSynchronized() )
+    if( isSynchronized() )
     {
         LAMA_LOG_WARN( logger, *this << ": waiting twice" )
 
@@ -89,7 +89,7 @@ bool MPISyncToken::probe() const
     // not well defined yet
 
     int flag = 0;
-    LAMA_MPICALL( logger, MPI_Testall( mUsedRequests, mRequests.get(), &flag, mStatuses.get()), "MPI_Testall" );
+    LAMA_MPICALL( logger, MPI_Testall( mUsedRequests, mRequests.get(), &flag, mStatuses.get() ), "MPI_Testall" );
     return flag != 0;
 }
 

@@ -2,7 +2,7 @@
  * @file Distribution.hpp
  *
  * @license
- * Copyright (c) 2009-2013
+ * Copyright (c) 2009-2015
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -55,7 +55,8 @@ namespace lama
 
 typedef boost::shared_ptr<const class Distribution> DistributionPtr;
 
-class Matrix;  // Forward declaration 
+class Matrix;
+// Forward declaration
 
 /** Abstract base class for a one-dimensional distribution.
  *
@@ -93,8 +94,11 @@ public:
      *  Note: Internally, this routine requires that all derived classes implement a corresponding
      *        create method that will be registered during static initialization.
      */
-    static Distribution* getDistribution( const std::string& kind, const CommunicatorPtr comm, 
-                                          const IndexType globalSize, const float weight = 1.0 );
+    static Distribution* getDistribution(
+        const std::string& kind,
+        const CommunicatorPtr comm,
+        const IndexType globalSize,
+        const float weight = 1.0 );
 
     /**
      * @brief Distribution factory to get a distribution of a certain kind and a certain type
@@ -108,8 +112,11 @@ public:
      *
      * Note: the current distribution of matrix does not matter.
      */
-    static Distribution* getDistribution( const std::string& kind, const CommunicatorPtr comm, 
-                                          const Matrix& matrix, const float weight = 1.0 );
+    static Distribution* getDistribution(
+        const std::string& kind,
+        const CommunicatorPtr comm,
+        const Matrix& matrix,
+        const float weight = 1.0 );
 
     /** Constructor for a distribution.
      *
@@ -270,7 +277,7 @@ protected:
     IndexType mGlobalSize;
     CommunicatorPtr mCommunicator;
 
-    /** Type definition of a function to create a distribution. 
+    /** Type definition of a function to create a distribution.
      *
      *  @param[in] commPtr is the communicator
      *  @param[in] globalSize number of elements to distribute
@@ -280,7 +287,7 @@ protected:
      *  their compute power. E.g. a partition with weight = 4 will get two times the load
      *  of a partition with weight = 2 and four times the load of a partition with weigth = 1.
      */
-    typedef Distribution* ( *CreateFn1 ) ( CommunicatorPtr commPtr, IndexType globalSize, float weight );
+    typedef Distribution* (*CreateFn1)( CommunicatorPtr commPtr, IndexType globalSize, float weight );
 
     /** Type definition of a function to create a distribution with a connectivity matrix.
      *
@@ -292,13 +299,13 @@ protected:
      *  their compute power. E.g. a partition with weight = 4 will get two times the load
      *  of a partition with weight = 2 and four times the load of a partition with weigth = 1.
      */
-    typedef Distribution* ( *CreateFn2 ) ( CommunicatorPtr commPtr, const Matrix& matrix, float weight );
+    typedef Distribution* (*CreateFn2)( CommunicatorPtr commPtr, const Matrix& matrix, float weight );
 
     /** This method should be called by distribution classes to register their create operation. */
 
     static void addCreator( const std::string& kind, CreateFn1 create1, CreateFn2 create2 );
 
-    /** Common helper function for derived classes to register their static create methods 
+    /** Common helper function for derived classes to register their static create methods
      *
      */
     template<typename Derived>
@@ -306,34 +313,35 @@ protected:
     {
         // Due to overloading of create we have the create routines by their signature.
 
-        Derived* ( *der_create1 ) ( const CommunicatorPtr communicator,
-                                    const IndexType globalSize,
-                                    const float weight ) = &Derived::create;
+        Derived* (*der_create1)(
+            const CommunicatorPtr communicator,
+            const IndexType globalSize,
+            const float weight ) = &Derived::create;
 
-        Derived* ( *der_create2 ) ( const CommunicatorPtr communicator,
-                                    const Matrix& matrix,
-                                    const float weight ) = &Derived::create;
+        Derived* (*der_create2)(
+            const CommunicatorPtr communicator,
+            const Matrix& matrix,
+            const float weight ) = &Derived::create;
 
         // Due to different covariant return type, casting is needed
 
-        CreateFn1 create1 = ( Distribution::CreateFn1 ) der_create1;
-        CreateFn2 create2 = ( Distribution::CreateFn2 ) der_create2;
+        CreateFn1 create1 = (Distribution::CreateFn1) der_create1;
+        CreateFn2 create2 = (Distribution::CreateFn2) der_create2;
 
-        Distribution::addCreator( kind, ( CreateFn1 ) create1, ( CreateFn2 ) create2 );
+        Distribution::addCreator( kind, (CreateFn1) create1, (CreateFn2) create2 );
 
         return true;
     }
 
 private:
 
-    typedef std::map< std::string, std::pair< CreateFn1, CreateFn2 > > CreatorMap;
+    typedef std::map<std::string,std::pair<CreateFn1,CreateFn2> > CreatorMap;
 
     static CreatorMap& getFactory();
 
     Distribution(); // disable default constructor
 
-    LAMA_LOG_DECL_STATIC_LOGGER( logger )
-};
+    LAMA_LOG_DECL_STATIC_LOGGER( logger )};
 
 IndexType Distribution::getGlobalSize() const
 {

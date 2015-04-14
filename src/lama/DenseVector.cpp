@@ -2,7 +2,7 @@
  * @file DenseVector.hpp
  *
  * @license
- * Copyright (c) 2009-2013
+ * Copyright (c) 2009-2015
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -61,35 +61,36 @@ namespace lama
 LAMA_LOG_DEF_TEMPLATE_LOGGER( template<typename ValueType>, DenseVector<ValueType>::logger, "Vector.DenseVector" )
 
 template<typename ValueType>
-DenseVector<ValueType>::DenseVector( ) : Vector( 0 ), mLocalValues()
+DenseVector<ValueType>::DenseVector()
+                : Vector( 0 ), mLocalValues()
 {
 }
 
 template<typename ValueType>
-DenseVector<ValueType>::DenseVector( ContextPtr context ) : Vector( 0, context ), mLocalValues()
+DenseVector<ValueType>::DenseVector( ContextPtr context )
+                : Vector( 0, context ), mLocalValues()
 {
 }
 
 template<typename ValueType>
 DenseVector<ValueType>::DenseVector( DistributionPtr distribution )
-    : Vector( distribution ), mLocalValues( distribution->getLocalSize() )
+                : Vector( distribution ), mLocalValues( distribution->getLocalSize() )
 {
     LAMA_LOG_INFO( logger, "Construct dense vector, size = " << distribution->getGlobalSize()
-                   // << ", type = " << typename(ValueType)
+    // << ", type = " << typename(ValueType)
                    << ", distribution = " << *distribution << ", local size = " << distribution->getLocalSize() << ", no initialization" )
 }
 
 template<typename ValueType>
 DenseVector<ValueType>::DenseVector( const IndexType size, const ValueType value, ContextPtr context )
-    : Vector( size, context ), mLocalValues( size, value )
+                : Vector( size, context ), mLocalValues( size, value )
 {
     LAMA_LOG_INFO( logger, "Construct dense vector, size = " << size << ", init =" << value )
 }
 
 template<typename ValueType>
 DenseVector<ValueType>::DenseVector( DistributionPtr distribution, const ValueType value, ContextPtr context )
-    : Vector( distribution, context ), 
-      mLocalValues( distribution->getLocalSize(), value )
+                : Vector( distribution, context ), mLocalValues( distribution->getLocalSize(), value )
 {
     LAMA_LOG_INFO( logger,
                    "Construct dense vector, size = " << distribution->getGlobalSize() << ", distribution = " << *distribution << ", local size = " << distribution->getLocalSize() << ", init = " << value )
@@ -97,7 +98,7 @@ DenseVector<ValueType>::DenseVector( DistributionPtr distribution, const ValueTy
 
 template<typename ValueType>
 DenseVector<ValueType>::DenseVector( const Vector& other )
-    : Vector( other )
+                : Vector( other )
 {
     allocate( getDistributionPtr() );
     assign( other );
@@ -106,7 +107,7 @@ DenseVector<ValueType>::DenseVector( const Vector& other )
 template<typename ValueType>
 DenseVector<ValueType>::DenseVector( const Vector& other, DistributionPtr distribution )
 
-    : Vector( other )
+                : Vector( other )
 {
     assign( other );
     redistribute( distribution );
@@ -142,7 +143,7 @@ void DenseVector<ValueType>::readFromFile( const std::string& filename )
     long dataTypeSize = -1;
     std::string vecFileName( filename + ".vec" );
 
-    if ( myRank == host )
+    if( myRank == host )
     {
         readVectorHeader( filename + ".frv", fileType, dataTypeSize );
 
@@ -161,23 +162,26 @@ void DenseVector<ValueType>::readFromFile( const std::string& filename )
 
     allocate( dist );
 
-    if ( myRank == host )
+    if( myRank == host )
     {
         // host owns all elements, all others have no elements
 
-        switch ( fileType )
+        switch( fileType )
         {
-        case File::FORMATTED: //ASCII
-            readVectorFromFormattedFile( vecFileName );
-            break;
-        case File::BINARY: //Binary without number of elements in the vector file
-            readVectorFromBinaryFile( vecFileName, dataType );
-            break;
-        case File::XDR: //XDR following the IEEE standard
-            readVectorFromXDRFile( vecFileName, dataTypeSize );
-            break;
-        default:
-            throw Exception( "Unknown File Type." );
+            case File::FORMATTED: //ASCII
+                readVectorFromFormattedFile( vecFileName );
+                break;
+
+            case File::BINARY: //Binary without number of elements in the vector file
+                readVectorFromBinaryFile( vecFileName, dataType );
+                break;
+
+            case File::XDR: //XDR following the IEEE standard
+                readVectorFromXDRFile( vecFileName, dataTypeSize );
+                break;
+
+            default:
+                throw Exception( "Unknown File Type." );
         }
 
         // @TODO do not throw exception as application will hang
@@ -188,7 +192,7 @@ void DenseVector<ValueType>::readFromFile( const std::string& filename )
 
 template<typename ValueType>
 DenseVector<ValueType>::DenseVector( const _LAMAArray& localValues, DistributionPtr distribution )
-    : Vector( distribution )
+                : Vector( distribution )
 {
     LAMA_ASSERT_EQUAL_ERROR( localValues.size(), distribution->getLocalSize() )
 
@@ -205,7 +209,7 @@ DenseVector<ValueType>::DenseVector( const _LAMAArray& localValues, Distribution
 template<typename ValueType>
 DenseVector<ValueType>::DenseVector( const Expression<Scalar,Vector,Times>& expression )
 
-    : Vector( expression.getArg2() )
+                : Vector( expression.getArg2() )
 {
     LAMA_LOG_INFO( logger, "Constructor( alpha * x )" )
     Vector::operator=( expression );
@@ -215,9 +219,9 @@ DenseVector<ValueType>::DenseVector( const Expression<Scalar,Vector,Times>& expr
 
 template<typename ValueType>
 DenseVector<ValueType>::DenseVector(
-    const Expression<Expression<Scalar,Vector,Times>,Expression<Scalar,Vector,Times>,Plus>& expression )//Expression_SV_SV
+    const Expression<Expression<Scalar,Vector,Times>,Expression<Scalar,Vector,Times>,Plus>& expression ) //Expression_SV_SV
 
-    : Vector( expression.getArg1().getArg2() )
+                : Vector( expression.getArg1().getArg2() )
 {
     allocate( getDistributionPtr() );
     LAMA_LOG_INFO( logger, "Constructor( alpha * x + beta * y )" )
@@ -228,10 +232,10 @@ DenseVector<ValueType>::DenseVector(
 
 template<typename ValueType>
 DenseVector<ValueType>::DenseVector(
-    const Expression<Expression<Scalar,Expression<Matrix,Vector,Times>,Times>,Expression<Scalar,Vector,Times>,Plus>& expression )//Expression_SMV_SV
+    const Expression<Expression<Scalar,Expression<Matrix,Vector,Times>,Times>,Expression<Scalar,Vector,Times>,Plus>& expression ) //Expression_SMV_SV
 
-    : Vector( expression.getArg1().getArg2().getArg1().getDistributionPtr(),
-              expression.getArg1().getArg2().getArg1().getContextPtr() )
+                : Vector( expression.getArg1().getArg2().getArg1().getDistributionPtr(),
+                          expression.getArg1().getArg2().getArg1().getContextPtr() )
 {
     allocate( getDistributionPtr() );
     LAMA_LOG_INFO( logger, "Constructor( alpha * A * x + b * y )" )
@@ -242,9 +246,9 @@ DenseVector<ValueType>::DenseVector(
 
 template<typename ValueType>
 DenseVector<ValueType>::DenseVector(
-    const Expression<Expression<Scalar,Expression<Vector,Matrix,Times>,Times>,Expression<Scalar,Vector,Times>,Plus>& expression )//Expression_SVM_SV
-    : Vector( expression.getArg1().getArg2().getArg2().getColDistributionPtr(),
-              expression.getArg1().getArg2().getArg2().getContextPtr() )
+    const Expression<Expression<Scalar,Expression<Vector,Matrix,Times>,Times>,Expression<Scalar,Vector,Times>,Plus>& expression ) //Expression_SVM_SV
+                : Vector( expression.getArg1().getArg2().getArg2().getColDistributionPtr(),
+                          expression.getArg1().getArg2().getArg2().getContextPtr() )
 {
     allocate( getDistributionPtr() );
     LAMA_LOG_INFO( logger, "Constructor( alpha * x * A + b * y )" )
@@ -256,8 +260,8 @@ DenseVector<ValueType>::DenseVector(
 template<typename ValueType>
 DenseVector<ValueType>::DenseVector( const Expression<Scalar,Expression<Matrix,Vector,Times>,Times>& expression )
 
-    : Vector( expression.getArg2().getArg1().getDistributionPtr(),
-              expression.getArg2().getArg1().getContextPtr() )
+                : Vector( expression.getArg2().getArg1().getDistributionPtr(),
+                          expression.getArg2().getArg1().getContextPtr() )
 {
     allocate( getDistributionPtr() );
     LAMA_LOG_INFO( logger, "Constructor( alpha * A * x )" )
@@ -268,8 +272,8 @@ DenseVector<ValueType>::DenseVector( const Expression<Scalar,Expression<Matrix,V
 
 template<typename ValueType>
 DenseVector<ValueType>::DenseVector( const Expression<Scalar,Expression<Vector,Matrix,Times>,Times>& expression )
-    : Vector( expression.getArg2().getArg2().getColDistributionPtr(),
-              expression.getArg2().getArg2().getContextPtr() )
+                : Vector( expression.getArg2().getArg2().getColDistributionPtr(),
+                          expression.getArg2().getArg2().getContextPtr() )
 {
     allocate( getDistributionPtr() );
     LAMA_LOG_INFO( logger, "Constructor( alpha * x * A )" )
@@ -280,7 +284,7 @@ DenseVector<ValueType>::DenseVector( const Expression<Scalar,Expression<Vector,M
 
 template<typename ValueType>
 DenseVector<ValueType>::DenseVector( const Expression<Matrix,Vector,Times>& expression )
-    : Vector( expression.getArg1().getDistributionPtr(), expression.getArg1().getContextPtr() )
+                : Vector( expression.getArg1().getDistributionPtr(), expression.getArg1().getContextPtr() )
 {
     allocate( getDistributionPtr() );
     LAMA_LOG_INFO( logger, "Constructor( A * x )" )
@@ -291,7 +295,7 @@ DenseVector<ValueType>::DenseVector( const Expression<Matrix,Vector,Times>& expr
 
 template<typename ValueType>
 DenseVector<ValueType>::DenseVector( const Expression<Vector,Matrix,Times>& expression )
-    : Vector( expression.getArg2().getColDistributionPtr(), expression.getArg2().getContextPtr() )
+                : Vector( expression.getArg2().getColDistributionPtr(), expression.getArg2().getContextPtr() )
 {
     allocate( getDistributionPtr() );
     LAMA_LOG_INFO( logger, "Constructor( x * A )" )
@@ -341,8 +345,8 @@ template<typename ValueType>
 void DenseVector<ValueType>::setValues( const _LAMAArray& values )
 {
     LAMA_ASSERT_ERROR(
-        values.size() == mLocalValues.size(),
-        "Size of values = " << values.size() << ", does not match local size of vector = " << mLocalValues.size() );
+                    values.size() == mLocalValues.size(),
+                    "Size of values = " << values.size() << ", does not match local size of vector = " << mLocalValues.size() );
 
     LAMAArrayUtils::assign( mLocalValues, values );
 }
@@ -374,7 +378,7 @@ DenseVector<ValueType>* DenseVector<ValueType>::create( DistributionPtr distribu
 }
 
 template<typename ValueType>
-DenseVector<ValueType>* DenseVector<ValueType>::copy( ) const
+DenseVector<ValueType>* DenseVector<ValueType>::copy() const
 {
     // create a new dense vector with the copy constructor
 
@@ -418,13 +422,14 @@ Scalar DenseVector<ValueType>::getValue( IndexType globalIndex ) const
     ValueType myValue = 0.0;
     const IndexType localIndex = getDistribution().global2local( globalIndex );
 
-    if ( localIndex != nIndex )
+    if( localIndex != nIndex )
     {
         HostReadAccess<ValueType> localAccess( mLocalValues );
 
         LAMA_LOG_TRACE( logger, "index "<< globalIndex << " is local " << localIndex )
         myValue = localAccess[localIndex];
     }
+
     ValueType allValue = getDistribution().getCommunicator().sum( myValue );
     LAMA_LOG_TRACE( logger, "myValue = " << myValue << ", allValue = " << allValue )
     return Scalar( allValue );
@@ -436,16 +441,17 @@ Scalar DenseVector<ValueType>::min() const
     //TODO: need a interface function for this
     HostReadAccess<ValueType> localValues( mLocalValues );
     ValueType localMin = localValues[0];
-    #pragma omp parallel
+#pragma omp parallel
     {
         ValueType myLocalMin = localMin;
-        #pragma omp for
-        for ( IndexType i = 0; i < localValues.size(); ++i )
+#pragma omp for
+
+        for( IndexType i = 0; i < localValues.size(); ++i )
         {
             myLocalMin = std::min( localValues[i], myLocalMin );
         }
 
-        #pragma omp critical
+#pragma omp critical
         {
             localMin = std::min( localMin, myLocalMin );
         }
@@ -456,21 +462,22 @@ Scalar DenseVector<ValueType>::min() const
 template<typename ValueType>
 Scalar DenseVector<ValueType>::max() const
 {
-    LAMA_ASSERT_ERROR( mLocalValues.size() > 0 , "no local values for max" )
+    LAMA_ASSERT_ERROR( mLocalValues.size() > 0, "no local values for max" )
 
     //TODO: need a interface function for this
     HostReadAccess<ValueType> localValues( mLocalValues );
     ValueType localMax = localValues[0];
-    #pragma omp parallel
+#pragma omp parallel
     {
         ValueType myLocalMax = localMax;
-        #pragma omp for
-        for ( IndexType i = 0; i < localValues.size(); ++i )
+#pragma omp for
+
+        for( IndexType i = 0; i < localValues.size(); ++i )
         {
             myLocalMax = std::max( localValues[i], myLocalMax );
         }
 
-        #pragma omp critical
+#pragma omp critical
         {
             localMax = std::max( localMax, myLocalMax );
         }
@@ -487,7 +494,7 @@ Scalar DenseVector<ValueType>::l1Norm() const
 
     ValueType localL1Norm = static_cast<ValueType>( 0 );
 
-    if ( nnu > 0 )
+    if( nnu > 0 )
     {
         //choose preferred context
 
@@ -513,10 +520,10 @@ template<typename ValueType>
 Scalar DenseVector<ValueType>::l2Norm() const
 {
     IndexType nnu = mLocalValues.size();
-    
+
     ValueType localDotProduct = static_cast<ValueType>( 0 );
 
-    if ( nnu > 0 )
+    if( nnu > 0 )
     {
         // choose preferred context as context of vector, might be changed by availability
 
@@ -547,7 +554,7 @@ Scalar DenseVector<ValueType>::maxNorm() const
 
     ValueType localMaxNorm = static_cast<ValueType>( 0 );
 
-    if ( nnu > 0 )
+    if( nnu > 0 )
     {
         ContextPtr loc = mContext; // loc might be set to Host
 
@@ -565,8 +572,7 @@ Scalar DenseVector<ValueType>::maxNorm() const
     ValueType globalMaxNorm = comm.max( localMaxNorm );
 
     LAMA_LOG_INFO( logger,
-                   comm << ": max norm " << *this << ", local max norm of " << nnu << " elements: "
-                   << localMaxNorm << ", max norm global = " << globalMaxNorm )
+                   comm << ": max norm " << *this << ", local max norm of " << nnu << " elements: " << localMaxNorm << ", max norm global = " << globalMaxNorm )
 
     return globalMaxNorm;
 }
@@ -580,10 +586,11 @@ void DenseVector<ValueType>::swap( Vector& other )
 
     DenseVector* otherPtr = dynamic_cast<DenseVector*>( &other );
 
-    if ( !otherPtr )
+    if( !otherPtr )
     {
         LAMA_THROWEXCEPTION( "Tried to swap with a Vector of a different type." )
     }
+
     Vector::swapVector( other );
     mLocalValues.swap( otherPtr->mLocalValues );
     mHaloValues.swap( otherPtr->mHaloValues );
@@ -592,10 +599,8 @@ void DenseVector<ValueType>::swap( Vector& other )
 template<typename ValueType>
 void DenseVector<ValueType>::writeAt( std::ostream& stream ) const
 {
-    stream << "DenseVector<" << getValueType() << ">" 
-           << "( size = " << size() << ", local = " << mLocalValues.size() 
-           << ", dist = " << getDistribution() 
-           << ", loc  = " << *getContext() << " )";
+    stream << "DenseVector<" << getValueType() << ">" << "( size = " << size() << ", local = " << mLocalValues.size()
+                    << ", dist = " << getDistribution() << ", loc  = " << *getContext() << " )";
 }
 
 template<typename ValueType>
@@ -619,7 +624,7 @@ void DenseVector<ValueType>::vectorPlusVector(
 
     const IndexType nnu = result.size();
 
-    if ( result == x && result == y ) //result = alpha * result + beta * result
+    if( result == x && result == y ) //result = alpha * result + beta * result
     {
         //result = alpha * result + beta * result
         //=>
@@ -635,16 +640,16 @@ void DenseVector<ValueType>::vectorPlusVector(
         LAMA_CONTEXT_ACCESS( context )
         scale( resultAccess.get(), alpha + beta, nnu );
     }
-    else if ( result == x ) //result = alpha * result + beta * y
+    else if( result == x ) //result = alpha * result + beta * y
     {
         ReadAccess<ValueType> yAccess( y, context );
         WriteAccess<ValueType> resultAccess( result, context, true );
 
-        if ( beta == 0.0 )
+        if( beta == 0.0 )
         {
             LAMA_LOG_DEBUG( logger, "vectorPlusVector: result *= alpha" )
 
-            if ( alpha != 1.0 ) // result *= alpha
+            if( alpha != 1.0 ) // result *= alpha
             {
                 LAMA_CONTEXT_ACCESS( context )
                 scale( resultAccess.get(), alpha, nnu );
@@ -654,16 +659,17 @@ void DenseVector<ValueType>::vectorPlusVector(
                 // do nothing: result = 1 * result
             }
         }
-        else if ( beta == 1.0 ) // result = alpha * result + y
+        else if( beta == 1.0 ) // result = alpha * result + y
         {
             LAMA_LOG_DEBUG( logger, "vectorPlusVector: result = alpha * result + y" )
 
-            if ( alpha != 1.0 ) // result = alpha * result + y
+            if( alpha != 1.0 ) // result = alpha * result + y
             {
                 // result *= alpha
                 LAMA_CONTEXT_ACCESS( context )
                 scale( resultAccess.get(), alpha, nnu );
             }
+
             // result += y
             LAMA_CONTEXT_ACCESS( context )
             axpy( nnu, 1/*alpha*/, yAccess.get(), 1, resultAccess.get(), 1, NULL );
@@ -673,16 +679,17 @@ void DenseVector<ValueType>::vectorPlusVector(
             LAMA_LOG_DEBUG( logger,
                             "vectorPlusVector: result = alpha(" << alpha << ")" << " * result + beta(" << beta << ") * y" )
 
-            if ( alpha != 1.0 )
+            if( alpha != 1.0 )
             {
                 LAMA_CONTEXT_ACCESS( context )
                 scale( resultAccess.get(), alpha, nnu );
             }
+
             LAMA_CONTEXT_ACCESS( context )
             axpy( nnu, beta, yAccess.get(), 1, resultAccess.get(), 1, NULL );
         }
     }
-    else if ( result == y ) // result = alpha * x + beta * result
+    else if( result == y ) // result = alpha * x + beta * result
     {
         LAMA_LOG_DEBUG( logger,
                         "vectorPlusVector: result = alpha(" << alpha << ")" << " * x + beta(" << beta << ") * result" )
@@ -692,14 +699,14 @@ void DenseVector<ValueType>::vectorPlusVector(
         ReadAccess<ValueType> xAccess( x, context );
         WriteAccess<ValueType> resultAccess( result, context, true );
 
-        if ( beta != 1.0 ) // result = [alpha * x + ] beta * result
+        if( beta != 1.0 ) // result = [alpha * x + ] beta * result
         {
             // result *= beta
             LAMA_CONTEXT_ACCESS( context )
             scale( resultAccess.get(), beta, nnu );
         }
 
-        if ( alpha != 0.0 )
+        if( alpha != 0.0 )
         {
             // result = alpha * x + result
             LAMA_CONTEXT_ACCESS( context )
@@ -730,7 +737,7 @@ SyncToken* DenseVector<ValueType>::vectorPlusVectorAsync(
     const ValueType /*alpha*/,
     const LAMAArray<ValueType>& /*x*/,
     const ValueType /*beta*/,
-    const LAMAArray<ValueType>& /*y*/ )
+    const LAMAArray<ValueType>& /*y*/)
 {
     LAMA_THROWEXCEPTION( "vectorPlusVectorAsync not implemented yet" )
 }
@@ -742,32 +749,32 @@ void DenseVector<ValueType>::assign( const Expression_SV_SV& expression )
     const Expression_SV& exp2 = expression.getArg2();
 
     const ValueType alpha = exp1.getArg1().getValue<ValueType>();
-    const Vector&   x     = exp1.getArg2();
-    const ValueType beta  = exp2.getArg1().getValue<ValueType>();
-    const Vector&   y     = exp2.getArg2();
+    const Vector& x = exp1.getArg2();
+    const ValueType beta = exp2.getArg1().getValue<ValueType>();
+    const Vector& y = exp2.getArg2();
 
     LAMA_LOG_DEBUG( logger, *this << ": assign" << alpha << " * x:" << x << " + " << beta << " * y:" << y )
 
     LAMA_LOG_DEBUG( logger, "dist of x = " << x.getDistribution() )
     LAMA_LOG_DEBUG( logger, "dist of y = " << y.getDistribution() )
 
-    if ( x.getDistribution() != y.getDistribution() )
+    if( x.getDistribution() != y.getDistribution() )
     {
         LAMA_THROWEXCEPTION(
-            "distribution do not match for z = alpha * x + beta * y, z = "<< *this <<" , x = "<< x <<" , y = "<< y )
+                        "distribution do not match for z = alpha * x + beta * y, z = "<< *this <<" , x = "<< x <<" , y = "<< y )
     }
 
-    if ( x.getDistribution() != getDistribution() || x.size() != size() )
+    if( x.getDistribution() != getDistribution() || x.size() != size() )
     {
         resize( x.getDistributionPtr() );
     }
 
-    if ( typeid( *this ) == typeid( x ) && typeid( *this ) == typeid( y ) )
+    if( typeid( *this ) == typeid( x ) && typeid( *this ) == typeid( y ) )
     {
         const DenseVector<ValueType>& denseX = dynamic_cast<const DenseVector<ValueType>&>( x );
         const DenseVector<ValueType>& denseY = dynamic_cast<const DenseVector<ValueType>&>( y );
 
-        if ( mLocalValues.size() != denseX.mLocalValues.size() )
+        if( mLocalValues.size() != denseX.mLocalValues.size() )
         {
             mLocalValues.clear();
             WriteAccess<ValueType> localAccess( mLocalValues, mContext );
@@ -778,9 +785,9 @@ void DenseVector<ValueType>::assign( const Expression_SV_SV& expression )
         {
             // useful output to identify aliases between arguments
 
-            ReadAccess<ValueType> rZ ( mLocalValues, mContext );
-            ReadAccess<ValueType> rX ( denseX.mLocalValues, mContext );
-            ReadAccess<ValueType> rY ( denseY.mLocalValues, mContext );
+            ReadAccess<ValueType> rZ( mLocalValues, mContext );
+            ReadAccess<ValueType> rX( denseX.mLocalValues, mContext );
+            ReadAccess<ValueType> rY( denseY.mLocalValues, mContext );
 
             LAMA_LOG_DEBUG( logger, " z = " << rZ.get() << ", x = " << rX.get() << ", y = " << rY.get() )
         }
@@ -791,25 +798,24 @@ void DenseVector<ValueType>::assign( const Expression_SV_SV& expression )
     else
     {
         LAMA_THROWEXCEPTION(
-            "Can not calculate z = alpha * x + beta * y, z = " << *this << ", x = " << x << ", y = " << y << " because of type mismatch." );
+                        "Can not calculate z = alpha * x + beta * y, z = " << *this << ", x = " << x << ", y = " << y << " because of type mismatch." );
     }
 }
 
 template<typename ValueType>
 Scalar DenseVector<ValueType>::dotProduct( const Vector& other ) const
 {
-    LAMA_REGION( "Vector.Dense.dotP" )
+LAMA_REGION( "Vector.Dense.dotP" )
 
-    LAMA_LOG_INFO( logger, "Calculating dot product for " << *this << " * " << other )
+        LAMA_LOG_INFO( logger, "Calculating dot product for " << *this << " * " << other )
 
     // add other->getVectorKind() == DENSE, if sparse is also supported
 
-    if ( this->getValueType() == other.getValueType() )
+    if( this->getValueType() == other.getValueType() )
     {
-        if ( getDistribution() != other.getDistribution() )
+        if( getDistribution() != other.getDistribution() )
         {
-            LAMA_THROWEXCEPTION(
-                "distribution do not match for this * other, this = "<< *this <<" , other = "<< other )
+            LAMA_THROWEXCEPTION( "distribution do not match for this * other, this = "<< *this <<" , other = "<< other )
         }
 
         const DenseVector<ValueType>* denseOther = dynamic_cast<const DenseVector<ValueType>*>( &other );
@@ -818,7 +824,7 @@ Scalar DenseVector<ValueType>::dotProduct( const Vector& other ) const
 
         LAMA_LOG_DEBUG( logger, "Calculating local dot product at " << *mContext )
 
-        ContextPtr loc = mContext;   // prefered location is context of this vector
+        ContextPtr loc = mContext; // prefered location is context of this vector
 
         LAMA_INTERFACE_FN_DEFAULT_T( dot, loc, BLAS, BLAS1, ValueType );
 
@@ -845,7 +851,7 @@ Scalar DenseVector<ValueType>::dotProduct( const Vector& other ) const
     }
 
     LAMA_THROWEXCEPTION(
-        "Can not calculate a dot product of "<< typeid( *this ).name() <<" and "<< typeid( other ).name() )
+                    "Can not calculate a dot product of "<< typeid( *this ).name() <<" and "<< typeid( other ).name() )
 }
 
 template<typename ValueType>
@@ -940,7 +946,7 @@ void DenseVector<ValueType>::redistribute( DistributionPtr distribution )
 {
     LAMA_ASSERT_EQUAL_ERROR( size(), distribution->getGlobalSize() )
 
-    if ( getDistribution() == *distribution )
+    if( getDistribution() == *distribution )
     {
         LAMA_LOG_INFO( logger, *this << " redistribute to same distribution " << *distribution )
 
@@ -949,7 +955,7 @@ void DenseVector<ValueType>::redistribute( DistributionPtr distribution )
         setDistributionPtr( distribution );
     }
 
-    else if ( getDistribution().isReplicated() )
+    else if( getDistribution().isReplicated() )
 
     {
         LAMA_LOG_INFO( logger, *this << ": replicated vector" << " will be localized to " << *distribution )
@@ -962,10 +968,11 @@ void DenseVector<ValueType>::redistribute( DistributionPtr distribution )
             HostReadAccess<ValueType> rLocalValues( mLocalValues );
             HostWriteOnlyAccess<ValueType> wNewLocalValues( newLocalValues, newSize );
 
-            #pragma omp parallel for
-            for ( IndexType i = 0; i < size(); ++i )
+#pragma omp parallel for
+
+            for( IndexType i = 0; i < size(); ++i )
             {
-                if ( distribution->isLocal( i ) )
+                if( distribution->isLocal( i ) )
                 {
                     const IndexType iLocal = distribution->global2local( i );
                     LAMA_ASSERT_DEBUG( iLocal < newSize, "illegal index " << iLocal )
@@ -978,7 +985,7 @@ void DenseVector<ValueType>::redistribute( DistributionPtr distribution )
         setDistributionPtr( distribution );
     }
 
-    else if ( distribution->isReplicated() )
+    else if( distribution->isReplicated() )
     {
         LAMA_LOG_INFO( logger, *this << " will be replicated" )
 
@@ -1025,14 +1032,17 @@ void DenseVector<ValueType>::resizeImpl()
 /* -- IO ------------------------------------------------------------------- */
 
 template<typename ValueType>
-void DenseVector<ValueType>::readVectorHeader( const std::string& filename, File::FileType& fileType, long& dataTypeSize )
+void DenseVector<ValueType>::readVectorHeader(
+    const std::string& filename,
+    File::FileType& fileType,
+    long& dataTypeSize )
 {
     LAMA_LOG_INFO( logger, "Read Vector Header" )
 
     char charFileType;
     std::ifstream inFile( filename.c_str(), std::ios::in );
 
-    if ( !inFile.is_open() )
+    if( !inFile.is_open() )
     {
         LAMA_THROWEXCEPTION( "Unable to open vector header file " + filename + "." )
     }
@@ -1049,20 +1059,24 @@ void DenseVector<ValueType>::readVectorHeader( const std::string& filename, File
     DistributionPtr distribution( new NoDistribution( numrows ) );
     setDistributionPtr( distribution );
 
-    switch ( charFileType )
+    switch( charFileType )
     {
-    case 'b':
-        fileType = File::BINARY;
-        break;
-    case 'f':
-        fileType = File::FORMATTED;
-        break;
-    case 'x':
-        fileType = File::XDR;
-        break;
-    default:
-        LAMA_THROWEXCEPTION( "Invalid header file." )
+        case 'b':
+            fileType = File::BINARY;
+            break;
+
+        case 'f':
+            fileType = File::FORMATTED;
+            break;
+
+        case 'x':
+            fileType = File::XDR;
+            break;
+
+        default:
+            LAMA_THROWEXCEPTION( "Invalid header file." )
     }
+
     LAMA_LOG_TRACE( logger, "Read Vector Header, size = " << size() )
 }
 
@@ -1075,30 +1089,34 @@ void DenseVector<ValueType>::writeToFile(
     std::string file = fileBaseName.c_str();
     file += ".vec";
 
-    switch ( fileType )
+    switch( fileType )
     {
-    case File::FORMATTED:
-    {
-        writeVectorToFormattedFile( file );
-        break;
-    }
-    case File::BINARY:
-    {
-        writeVectorToBinaryFile( file, dataType );
-        break;
-    }
-    case File::XDR:
-    {
-        writeVectorToXDRFile( file, dataType );
-        break;
-    }
-    case File::MATRIX_MARKET:
-    {
-        writeVectorToMMFile( file, dataType );
-        break;
-    }
-    default:
-        throw Exception( "Unknown file type definition." );
+        case File::FORMATTED:
+        {
+            writeVectorToFormattedFile( file );
+            break;
+        }
+
+        case File::BINARY:
+        {
+            writeVectorToBinaryFile( file, dataType );
+            break;
+        }
+
+        case File::XDR:
+        {
+            writeVectorToXDRFile( file, dataType );
+            break;
+        }
+
+        case File::MATRIX_MARKET:
+        {
+            writeVectorToMMFile( file, dataType );
+            break;
+        }
+
+        default:
+            throw Exception( "Unknown file type definition." );
     } //switch(fileType)
 
     long dataTypeSize = getDataTypeSize<ValueType>( dataType );
@@ -1114,27 +1132,31 @@ void DenseVector<ValueType>::writeVectorHeader(
 {
     char charFileType;
 
-    switch ( fileType )
+    switch( fileType )
     {
-    case File::BINARY:
-        charFileType = 'b';
-        break;
-    case File::FORMATTED:
-        charFileType = 'f';
-        break;
-    case File::XDR:
-        charFileType = 'x';
-        break;
-    case File::MATRIX_MARKET:
-        // nothing to do for MATRIX_MARKET
-        return;
-    default:
-        LAMA_THROWEXCEPTION( "Invalid header file." )
+        case File::BINARY:
+            charFileType = 'b';
+            break;
+
+        case File::FORMATTED:
+            charFileType = 'f';
+            break;
+
+        case File::XDR:
+            charFileType = 'x';
+            break;
+
+        case File::MATRIX_MARKET:
+            // nothing to do for MATRIX_MARKET
+            return;
+
+        default:
+            LAMA_THROWEXCEPTION( "Invalid header file." )
     }
 
     std::ofstream outFile( fileName.c_str(), std::ios::out );
 
-    if ( !outFile.is_open() )
+    if( !outFile.is_open() )
     {
         LAMA_THROWEXCEPTION( "Unable to open vector header file " + fileName + "." )
     }
@@ -1152,19 +1174,20 @@ void DenseVector<ValueType>::writeVectorToMMFile( const std::string& filename, c
     mm_initialize_typecode( &veccode );
     mm_set_array( &veccode );
     mm_set_dense( &veccode );
-    if ( dataType == File::DOUBLE || dataType == File::FLOAT )
+
+    if( dataType == File::DOUBLE || dataType == File::FLOAT )
     {
         mm_set_real( &veccode );
     }
-    else if ( dataType == File::COMPLEX )
+    else if( dataType == File::COMPLEX )
     {
         mm_set_complex( &veccode );
     }
-    else if ( dataType == File::INTEGER )
+    else if( dataType == File::INTEGER )
     {
         mm_set_integer( &veccode );
     }
-    else if ( dataType == File::PATTERN )
+    else if( dataType == File::PATTERN )
     {
         mm_set_pattern( &veccode );
     }
@@ -1175,7 +1198,8 @@ void DenseVector<ValueType>::writeVectorToMMFile( const std::string& filename, c
     }
 
     std::FILE* file;
-    if ( !( file = std::fopen( filename.c_str(), "w+" ) ) )
+
+    if( !( file = std::fopen( filename.c_str(), "w+" ) ) )
     {
         LAMA_THROWEXCEPTION( "DenseVector<ValueType>::writeVectorToMMFile: '" + filename + "' could not be opened." )
     }
@@ -1185,31 +1209,35 @@ void DenseVector<ValueType>::writeVectorToMMFile( const std::string& filename, c
     mm_write_banner( file, veccode );
     mm_write_mtx_array_size( file, numRows, numRows );
 
-    if ( std::fclose( file ) != 0 )
+    if( std::fclose( file ) != 0 )
     {
         LAMA_THROWEXCEPTION( "DenseVector<ValueType>::writeVectorToMMFile: '" + filename + "' could not be closed." )
     }
+
     file = 0;
 
     std::ofstream ofile;
     ofile.open( filename.c_str(), std::ios::out | std::ios::app );
 
-    if ( ofile.fail() )
+    if( ofile.fail() )
     {
         LAMA_THROWEXCEPTION( "DenseVector<ValueType>::writeVectorToMMFile: '" + filename + "' could not be reopened." )
     }
 
     HostReadAccess<ValueType> dataRead( mLocalValues );
 
-    for ( IndexType ii = 0; ii < numRows; ++ii )
+    for( IndexType ii = 0; ii < numRows; ++ii )
     {
         ofile << ii + 1;
-        if ( dataType != File::PATTERN )
+
+        if( dataType != File::PATTERN )
         {
             ofile << " " << dataRead[ii];
         }
+
         ofile << std::endl;
     }
+
     ofile.close();
 }
 
@@ -1223,20 +1251,20 @@ void DenseVector<ValueType>::writeVectorToBinaryFile( const std::string& file, c
     outFile.close();
 }
 
-template<typename FileType, typename DataType>
+template<typename FileType,typename DataType>
 static void writeDataToXDRFile( XDRFileStream& outFile, const DataType* data, const IndexType n )
 {
-    if ( typeid( FileType ) == typeid( DataType ) )
+    if( typeid(FileType) == typeid(DataType) )
     {
-        outFile.write( data, n );  // no conversion needed
+        outFile.write( data, n ); // no conversion needed
         return;
     }
 
     // so user data has to be converted in file type data
-    
+
     boost::scoped_array<FileType> buffer( new FileType[n] );
 
-    for ( IndexType i = 0; i < n; i++ )
+    for( IndexType i = 0; i < n; i++ )
     {
         buffer[i] = static_cast<FileType>( data[i] );
     }
@@ -1260,28 +1288,35 @@ void DenseVector<ValueType>::writeVectorToXDRFile( const std::string& file, cons
 
     HostReadAccess<ValueType> dataRead( mLocalValues );
 
-    switch ( dataType )
+    switch( dataType )
     {
         case File::DOUBLE:
-            writeDataToXDRFile<double, ValueType>( outFile, dataRead.get(), numRows );
+            writeDataToXDRFile<double,ValueType>( outFile, dataRead.get(), numRows );
             break;
+
         case File::FLOAT:
-            writeDataToXDRFile<float, ValueType>( outFile, dataRead.get(), numRows );
+            writeDataToXDRFile<float,ValueType>( outFile, dataRead.get(), numRows );
             break;
+
         case File::LONG_DOUBLE:
-            writeDataToXDRFile<LongDouble, ValueType>( outFile, dataRead.get(), numRows );
+            writeDataToXDRFile<LongDouble,ValueType>( outFile, dataRead.get(), numRows );
             break;
+
         case File::COMPLEX:
-            writeDataToXDRFile<ComplexFloat, ValueType>( outFile, dataRead.get(), numRows );
+            writeDataToXDRFile<ComplexFloat,ValueType>( outFile, dataRead.get(), numRows );
             break;
+
         case File::DOUBLE_COMPLEX:
-            writeDataToXDRFile<ComplexDouble, ValueType>( outFile, dataRead.get(), numRows );
+            writeDataToXDRFile<ComplexDouble,ValueType>( outFile, dataRead.get(), numRows );
             break;
+
         case File::INTERNAL:
-            writeDataToXDRFile<ValueType, ValueType>( outFile, dataRead.get(), numRows );
+            writeDataToXDRFile<ValueType,ValueType>( outFile, dataRead.get(), numRows );
             break;
+
         case File::PATTERN:
             break;
+
         default:
             LAMA_THROWEXCEPTION( "unsupported file data type = " << dataType )
     }
@@ -1294,7 +1329,7 @@ void DenseVector<ValueType>::writeVectorToXDRFile( const std::string& file, cons
 template<typename FileType,typename DataType>
 static void writeBinaryData( std::fstream& outFile, const DataType data[], const IndexType n )
 {
-    if ( typeid(FileType) == typeid(DataType) )
+    if( typeid(FileType) == typeid(DataType) )
     {
         // no type conversion needed
 
@@ -1307,7 +1342,7 @@ static void writeBinaryData( std::fstream& outFile, const DataType data[], const
 
     boost::scoped_array<FileType> buffer( new FileType[n] );
 
-    for ( IndexType i = 0; i < n; i++ )
+    for( IndexType i = 0; i < n; i++ )
     {
         buffer[i] = static_cast<FileType>( data[i] );
     }
@@ -1327,25 +1362,31 @@ void DenseVector<ValueType>::writeVectorDataToBinaryFile( std::fstream& outFile,
     switch( type )
     {
         case File::DOUBLE:
-            writeBinaryData<double, ValueType>( outFile, dataRead.get(), numRows );
+            writeBinaryData<double,ValueType>( outFile, dataRead.get(), numRows );
             break;
+
         case File::FLOAT:
-            writeBinaryData<float, ValueType>( outFile, dataRead.get(), numRows );
+            writeBinaryData<float,ValueType>( outFile, dataRead.get(), numRows );
             break;
+
         case File::LONG_DOUBLE:
-            writeBinaryData<LongDouble, ValueType>( outFile, dataRead.get(), numRows );
+            writeBinaryData<LongDouble,ValueType>( outFile, dataRead.get(), numRows );
             break;
+
         case File::COMPLEX:
-            writeBinaryData<ComplexFloat, ValueType>( outFile, dataRead.get(), numRows );
+            writeBinaryData<ComplexFloat,ValueType>( outFile, dataRead.get(), numRows );
             break;
+
         case File::DOUBLE_COMPLEX:
-            writeBinaryData<ComplexDouble, ValueType>( outFile, dataRead.get(), numRows );
+            writeBinaryData<ComplexDouble,ValueType>( outFile, dataRead.get(), numRows );
             break;
+
         case File::INTERNAL:
-            writeBinaryData<ValueType, ValueType>( outFile, dataRead.get(), numRows );
+            writeBinaryData<ValueType,ValueType>( outFile, dataRead.get(), numRows );
             break;
+
         default:
-        LAMA_THROWEXCEPTION( "unsupported file data type = " << type )
+            LAMA_THROWEXCEPTION( "unsupported file data type = " << type )
     }
 }
 
@@ -1355,10 +1396,11 @@ void DenseVector<ValueType>::writeVectorToFormattedFile( const std::string& file
     std::fstream outFile( file.c_str(), std::ios::out );
     HostReadAccess<ValueType> dataRead( mLocalValues );
 
-    for ( IndexType i = 0; i < size(); ++i )
+    for( IndexType i = 0; i < size(); ++i )
     {
         outFile << dataRead[i] << std::endl;
     }
+
     outFile.close();
 }
 
@@ -1367,7 +1409,7 @@ void DenseVector<ValueType>::readVectorFromFormattedFile( const std::string& fil
 {
     std::ifstream inFile( fileName.c_str(), std::ios::in );
 
-    if ( !inFile.is_open() )
+    if( !inFile.is_open() )
     {
         LAMA_THROWEXCEPTION( "Could not open formatted ascii vector file." )
     }
@@ -1376,10 +1418,11 @@ void DenseVector<ValueType>::readVectorFromFormattedFile( const std::string& fil
 
     HostWriteOnlyAccess<ValueType> dataWrite( mLocalValues, n );
 
-    for ( IndexType i = 0; i < n; ++i )
+    for( IndexType i = 0; i < n; ++i )
     {
         inFile >> dataWrite[i];
     }
+
     inFile.close();
     LAMA_LOG_TRACE( logger, "read Vector From Formatted File, " << size() << " values" )
 }
@@ -1389,7 +1432,7 @@ void DenseVector<ValueType>::readVectorFromBinaryFile( const std::string& fileNa
 {
     std::fstream inFile( fileName.c_str(), std::ios::in | std::ios::binary );
 
-    if ( !inFile.is_open() )
+    if( !inFile.is_open() )
     {
         LAMA_THROWEXCEPTION( "Could not open binary vector file " << fileName << "." )
     }
@@ -1402,7 +1445,7 @@ void DenseVector<ValueType>::readVectorFromBinaryFile( const std::string& fileNa
 template<typename FileDataType,typename UserDataType>
 static void readXDRData( XDRFileStream& inFile, UserDataType data[], const IndexType n )
 {
-    if ( typeid( FileDataType ) == typeid( UserDataType ) )
+    if( typeid(FileDataType) == typeid(UserDataType) )
     {
         // no type conversion needed
 
@@ -1410,13 +1453,13 @@ static void readXDRData( XDRFileStream& inFile, UserDataType data[], const Index
         return;
     }
 
-    // allocate a temporary buffer for n values of FileDataType to read the data 
+    // allocate a temporary buffer for n values of FileDataType to read the data
 
     boost::scoped_array<FileDataType> buffer( new FileDataType[n] );
 
     inFile.read( buffer.get(), n );
 
-    for ( IndexType i = 0; i < n; i++ )
+    for( IndexType i = 0; i < n; i++ )
     {
         data[i] = static_cast<UserDataType>( buffer[i] );
     }
@@ -1427,7 +1470,7 @@ void DenseVector<ValueType>::readVectorFromXDRFile( const std::string& fileName,
 {
     XDRFileStream inFile( fileName.c_str(), std::ios::in | std::ios::binary );
 
-    if ( !inFile.is_open() )
+    if( !inFile.is_open() )
     {
         LAMA_THROWEXCEPTION( "Could not open XDR vector file." )
     }
@@ -1437,7 +1480,8 @@ void DenseVector<ValueType>::readVectorFromXDRFile( const std::string& fileName,
     inFile.read( &nnuLong );
 
     IndexType nnu = static_cast<IndexType>( nnuLong );
-    if ( size() != nnu )
+
+    if( size() != nnu )
     {
         LAMA_THROWEXCEPTION( "Header file doesn't fit to vector data file. Unequal nnu value." )
     }
@@ -1446,7 +1490,7 @@ void DenseVector<ValueType>::readVectorFromXDRFile( const std::string& fileName,
     long dataTypeSize = 0;
     inFile.read( &dataTypeSize );
 
-    if ( dataTypeSizeHeader != dataTypeSize )
+    if( dataTypeSizeHeader != dataTypeSize )
     {
         LAMA_THROWEXCEPTION( "Header file doesn't fit to vector data file. Unequal data type size." )
     }
@@ -1454,33 +1498,40 @@ void DenseVector<ValueType>::readVectorFromXDRFile( const std::string& fileName,
     // Attention: determination of file type by size is ambiguous, e.g. Complex and Double
     //            have same size. If ambiguous, own ValueType is the preferred one
 
-    File::DataType fileType = getDataType<ValueType>( dataTypeSize ); 
+    File::DataType fileType = getDataType<ValueType>( dataTypeSize );
 
     HostWriteOnlyAccess<ValueType> writeData( mLocalValues, nnu );
 
-    switch ( fileType )
+    switch( fileType )
     {
         case File::INTERNAL:
-            readXDRData<ValueType, ValueType>( inFile, writeData.get(), nnu );
+            readXDRData<ValueType,ValueType>( inFile, writeData.get(), nnu );
             break;
+
         case File::FLOAT:
-            readXDRData<float, ValueType>( inFile, writeData.get(), nnu );
+            readXDRData<float,ValueType>( inFile, writeData.get(), nnu );
             break;
+
         case File::DOUBLE:
-            readXDRData<double, ValueType>( inFile, writeData.get(), nnu );
+            readXDRData<double,ValueType>( inFile, writeData.get(), nnu );
             break;
+
         case File::COMPLEX:
-            readXDRData<ComplexFloat, ValueType>( inFile, writeData.get(), nnu );
+            readXDRData<ComplexFloat,ValueType>( inFile, writeData.get(), nnu );
             break;
+
         case File::DOUBLE_COMPLEX:
-            readXDRData<ComplexDouble, ValueType>( inFile, writeData.get(), nnu );
+            readXDRData<ComplexDouble,ValueType>( inFile, writeData.get(), nnu );
             break;
+
         case File::LONG_DOUBLE:
-            readXDRData<ComplexDouble, ValueType>( inFile, writeData.get(), nnu );
+            readXDRData<ComplexDouble,ValueType>( inFile, writeData.get(), nnu );
             break;
+
         case File::PATTERN:
             // that might be okay
             break;
+
         default:
             LAMA_THROWEXCEPTION( "Invalid data type size of vector data." )
     }
@@ -1489,14 +1540,16 @@ void DenseVector<ValueType>::readVectorFromXDRFile( const std::string& fileName,
 
     nnuLong = 0;
     inFile.read( &nnuLong );
-    if ( size() != static_cast<IndexType>( nnuLong ) )
+
+    if( size() != static_cast<IndexType>( nnuLong ) )
     {
         LAMA_THROWEXCEPTION( "Invalid header of the vector file. Unequal nnu." )
     }
 
     long checkDataType = 0;
     inFile.read( &checkDataType );
-    if ( checkDataType != dataTypeSize )
+
+    if( checkDataType != dataTypeSize )
     {
         LAMA_THROWEXCEPTION( "Invalid header of the vector file. Unequal data type size." )
     }
@@ -1509,32 +1562,37 @@ void DenseVector<ValueType>::readVectorDataFromBinaryFile( std::fstream &inFile,
 {
     IndexType n = size();
 
-    LAMA_LOG_INFO( logger, "read DenseVector<" << Scalar::getType<ValueType>()
-                           << "> from binary file, size = " << n 
-                           << ", dataType = " << ( ( Scalar::ScalarType ) type ) )
+    LAMA_LOG_INFO( logger,
+                   "read DenseVector<" << Scalar::getType<ValueType>() << "> from binary file, size = " << n << ", dataType = " << ( ( Scalar::ScalarType ) type ) )
 
     HostWriteOnlyAccess<ValueType> writeData( mLocalValues, n );
 
     switch( type )
     {
         case File::DOUBLE:
-            FileIO::readBinaryData<double, ValueType>( inFile, writeData.get(), n );
+            FileIO::readBinaryData<double,ValueType>( inFile, writeData.get(), n );
             break;
+
         case File::FLOAT:
-            FileIO::readBinaryData<float, ValueType>( inFile, writeData.get(), n );
+            FileIO::readBinaryData<float,ValueType>( inFile, writeData.get(), n );
             break;
+
         case File::LONG_DOUBLE:
-            FileIO::readBinaryData<LongDouble, ValueType>( inFile, writeData.get(), n );
+            FileIO::readBinaryData<LongDouble,ValueType>( inFile, writeData.get(), n );
             break;
+
         case File::COMPLEX:
-            FileIO::readBinaryData<ComplexFloat, ValueType>( inFile, writeData.get(), n );
+            FileIO::readBinaryData<ComplexFloat,ValueType>( inFile, writeData.get(), n );
             break;
+
         case File::DOUBLE_COMPLEX:
-            FileIO::readBinaryData<ComplexDouble, ValueType>( inFile, writeData.get(), n );
+            FileIO::readBinaryData<ComplexDouble,ValueType>( inFile, writeData.get(), n );
             break;
+
         case File::INTERNAL:
-            FileIO::readBinaryData<ValueType, ValueType>( inFile, writeData.get(), n );
+            FileIO::readBinaryData<ValueType,ValueType>( inFile, writeData.get(), n );
             break;
+
         default:
             LAMA_THROWEXCEPTION( "unsupported file data type = " << type )
     }
@@ -1555,9 +1613,9 @@ bool DenseVector<ValueType>::registerCreator()
 {
     VectorKind kind = DENSE;
 
-    // conversion needed even if createVector has only covariant return type 
+    // conversion needed even if createVector has only covariant return type
 
-    Vector::CreateFn create = ( Vector::CreateFn ) ( &DenseVector<ValueType>::createVector );
+    Vector::CreateFn create = (Vector::CreateFn) ( &DenseVector<ValueType>::createVector );
 
     Vector::addCreator( kind, Scalar::getType<ValueType>(), create );
 
@@ -1571,7 +1629,7 @@ bool DenseVector<ValueType>::initialized = registerCreator();
 
 template<typename ValueType>
 DenseVector<ValueType>::DenseVector( const DenseVector<ValueType>& other )
-    : Vector( other )
+                : Vector( other )
 {
     // implementation here can be simpler as DenseVector( const Vector& other )
 
@@ -1586,11 +1644,10 @@ DenseVector<ValueType>::DenseVector( const DenseVector<ValueType>& other )
 /* ========================================================================= */
 
 #define LAMA_DENSE_VECTOR_INSTANTIATE(z, I, _)                             \
-template class LAMA_DLL_IMPORTEXPORT DenseVector<ARITHMETIC_TYPE##I> ;  
+    template class LAMA_DLL_IMPORTEXPORT DenseVector<ARITHMETIC_TYPE##I> ;
 
 BOOST_PP_REPEAT( ARITHMETIC_TYPE_CNT, LAMA_DENSE_VECTOR_INSTANTIATE, _ )
 
 #undef LAMA_DENSE_VECTOR_INSTANTIATE
 
-
-} //namespace
+}//namespace

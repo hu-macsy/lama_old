@@ -2,7 +2,7 @@
  * @file GenLogger.cpp
  *
  * @license
- * Copyright (c) 2009-2013
+ * Copyright (c) 2009-2015
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -54,7 +54,7 @@ namespace log4lama
 
 bool GenLogger::sFlush = false;
 
-void ( *GenLogger::myPrintf ) ( const char* format, ... ) = ( void (*) ( const char* format, ... ) ) &printf ;
+void ( *GenLogger::myPrintf ) ( const char* format, ... ) = ( void ( * ) ( const char* format, ... ) )& printf ;
 
 /********************************************************************
  *  Static variable: rootLogger for generic logging                  *
@@ -90,7 +90,7 @@ GenLogger::GenLogger( const std::string& name, Logger* parent )
 
 {
 #ifdef DEBUGGING
-    printf("GenLogger %s created\n", getFullName().c_str());
+    printf( "GenLogger %s created\n", getFullName().c_str() );
 #endif
 }
 
@@ -104,26 +104,32 @@ static bool string2bool( const std::string& value )
     {
         return true;
     }
+
     if ( value == "0" )
     {
         return false;
     }
+
     if ( value == "TRUE" )
     {
         return true;
     }
+
     if ( value == "FALSE" )
     {
         return false;
     }
+
     if ( value == "ON" )
     {
         return true;
     }
+
     if ( value == "OFF" )
     {
         return false;
     }
+
     throw std::runtime_error( "illegal boolean value" );
 }
 
@@ -131,7 +137,7 @@ static bool string2bool( const std::string& value )
  *  help routine: evalEntry                                          *
  ********************************************************************/
 
-static int evalEntry( char* line, int length, const char* /* filename */)
+static int evalEntry( char* line, int length, const char* /* filename */ )
 {
     line[length] = '\0';
     string myLine = line;
@@ -198,17 +204,16 @@ static int evalEntry( char* line, int length, const char* /* filename */)
     {
         // this is not a logging entry so take it as environment
         // Note: use of putenv is unsafe for auto-strings
-
 #ifdef WIN32
         if ( getenv( name.c_str() ) == 0 )
         {
             _putenv_s( name.c_str(), value.c_str() );
         }
+
 #else
         int replace = 0; // do not override if it has already been set by user
         setenv( name.c_str(), value.c_str(), replace );
 #endif
-
         return 1;
     }
 
@@ -239,7 +244,6 @@ static int evalEntry( char* line, int length, const char* /* filename */)
 int GenLogger::readConfig( const char* fname )
 {
     char buffer[MAX_LINE_LENGTH];
-
     FILE* configFile = fopen( fname, "r" ); // file with logger configuration
 
     if ( configFile == NULL )
@@ -251,7 +255,6 @@ int GenLogger::readConfig( const char* fname )
     int bufferLength = 0;
     char eof = EOF;
     int noEntries = 0; // number of relevant entries
-
     bool stop = false; // becomes true for termination of read loop
 
     while ( !stop )
@@ -261,7 +264,6 @@ int GenLogger::readConfig( const char* fname )
         if ( c == '\n' || c == eof )
         {
             /* new line, evaluate current line */
-
             try
             {
                 noEntries += evalEntry( buffer, bufferLength, fname );
@@ -273,7 +275,6 @@ int GenLogger::readConfig( const char* fname )
             }
 
             bufferLength = 0;
-
             stop = ( c == eof );
         }
         else
@@ -283,7 +284,6 @@ int GenLogger::readConfig( const char* fname )
             if ( bufferLength == MAX_LINE_LENGTH )
             {
                 LAMA_LOG_ERROR( ( *rootLogger ), "Config file '" << fname << "', too long line, stop reading" );
-
                 stop = true;
             }
         }
@@ -307,7 +307,6 @@ void GenLogger::configure()
     }
 
     rootLogger->setLevel( WARN ); // default setting for root
-
 #ifdef LAMA_LOG
     const char* configFile = LAMA_LOG;
 #else
@@ -317,14 +316,12 @@ void GenLogger::configure()
     if ( configFile == NULL )
     {
         // environment variable not set, so we try it at $HOME/.log4lamarc
-
         const char* home = getenv( "HOME" );
 
         if ( home != NULL )
         {
             configFileString = home;
             configFileString += "/.log4lamarc";
-
             FILE* fp = fopen ( configFileString.c_str(), "r" );
 
             if ( fp != NULL )

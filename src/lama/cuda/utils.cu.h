@@ -61,7 +61,7 @@ inline dim3 makeGrid( const unsigned int numThreads, const unsigned int blockSiz
 {
     const unsigned int numBlocks = ( numThreads + blockSize - 1 ) / blockSize;
 
-    if ( numBlocks <= lama_maxGridSize_cuda )
+    if( numBlocks <= lama_maxGridSize_cuda )
     {
         //fits in a 1D grid
         return dim3( numBlocks );
@@ -185,13 +185,17 @@ unsigned int halve( const int val )
 }
 
 template<typename ValueType>
-__inline__     __device__ ValueType lamaDeviceFMA( const ValueType alpha, const ValueType v1, const ValueType beta, const ValueType v2 )
+__inline__       __device__ ValueType lamaDeviceFMA(
+    const ValueType alpha,
+    const ValueType v1,
+    const ValueType beta,
+    const ValueType v2 )
 {
     return alpha * v1 + beta * v2;
 }
 
 template<typename ValueType,int beta>
-__inline__     __device__ ValueType lamaDeviceFMA( const ValueType alpha, const ValueType v1, const ValueType v2 )
+__inline__       __device__ ValueType lamaDeviceFMA( const ValueType alpha, const ValueType v1, const ValueType v2 )
 {
     return alpha * v1 + beta * v2;
 }
@@ -239,7 +243,7 @@ double lamaDeviceFMA<double,0>( const double alpha, const double v1, const doubl
 }
 
 template<typename ValueType,int alpha,int beta>
-__inline__     __device__ ValueType lamaDeviceFMA( const ValueType v1, const ValueType v2 )
+__inline__       __device__ ValueType lamaDeviceFMA( const ValueType v1, const ValueType v2 )
 {
     return alpha * v1 + beta * v2;
 }

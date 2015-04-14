@@ -2,7 +2,7 @@
  * @file P_CGTest.cpp
  *
  * @license
- * Copyright (c) 2009-2013
+ * Copyright (c) 2009-2015
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -63,7 +63,7 @@
 using namespace boost;
 using namespace lama;
 
-typedef boost::mpl::list<float,double> test_types;
+typedef boost::mpl::list<float, double> test_types;
 
 /* --------------------------------------------------------------------- */
 
@@ -92,53 +92,36 @@ template<typename MatrixType>
 void testSolveWithoutPreconditionmethod( ContextPtr loc )
 {
     typedef typename MatrixType::MatrixValueType ValueType;
-
     const IndexType N1 = 4;
     const IndexType N2 = 4;
-
     LAMA_LOG_INFO( logger, "testSolveWithoutPreconditionmethod<" << typeid( MatrixType ).name() << " at " << *loc );
-
     LAMA_LOG_INFO( logger, "Problem size = " << N1 << " x " << N2 );
-
     CG cgSolver( "CGTestSolver" );
-
     LAMA_LOG_INFO( logger, "Solver = " << cgSolver );
-
     CSRSparseMatrix<ValueType> helpcoefficients;
     MatrixCreator<ValueType>::buildPoisson2D( helpcoefficients, 9, N1, N2 );
-
     LAMA_LOG_INFO( logger, "Poisson2D matrix = " << helpcoefficients );
-
     MatrixType coefficients( helpcoefficients );
-
     LAMA_LOG_INFO( logger, "Poisson2D matrix (converted to MatrixType)  = " << helpcoefficients );
-
     DistributionPtr dist( new BlockDistribution( coefficients.getNumRows(), comm ) );
     coefficients.redistribute( dist, dist );
     coefficients.setContext( loc );
-
     DenseVector<ValueType> solution( dist, 2.0 );
-
     const DenseVector<ValueType> exactSolution( dist, 1.0 );
     DenseVector<ValueType> rhs( dist, 1.0 );
     rhs = coefficients * exactSolution;
-
     //initialize
     IndexType expectedIterations = 15;
     CriterionPtr criterion( new IterationCount( expectedIterations ) );
     cgSolver.setStoppingCriterion( criterion );
     cgSolver.initialize( coefficients );
-
     cgSolver.solve( solution, rhs );
-
     BOOST_CHECK_EQUAL( expectedIterations, cgSolver.getIterationCount() );
-
     DenseVector<ValueType> diff( solution - exactSolution );
-
     Scalar s = maxNorm( diff );
     ValueType sval = s.getValue<ValueType>();
 
-    if ( ! ( sval < 1E-6 ) ) 
+    if ( ! ( sval < 1E-6 ) )
     {
         LAMA_LOG_ERROR( logger, "max norm of diff = " << sval << ", should be < 1E-6 " )
     }
@@ -148,8 +131,8 @@ void testSolveWithoutPreconditionmethod( ContextPtr loc )
 
 /* ------------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( testSolveWithoutPreconditioning, ValueType, test_types ) {
-
+BOOST_AUTO_TEST_CASE_TEMPLATE( testSolveWithoutPreconditioning, ValueType, test_types )
+{
     CONTEXTLOOP()
     {
         GETCONTEXT( context );
@@ -169,61 +152,49 @@ template<typename MatrixType>
 void testSolveWithPreconditionmethod( ContextPtr loc )
 {
     typedef typename MatrixType::MatrixValueType ValueType;
-
     LAMA_LOG_INFO( logger, "testSolveWithPreconditionmethod<" << typeid( MatrixType ).name() << "> on " << *loc );
-
     CG cgSolver( "CGTestSolver" );
 
-    if ( LAMA_LOG_INFO_ON( logger ) ) 
+    if ( LAMA_LOG_INFO_ON( logger ) )
     {
         LoggerPtr slogger( new CommonLogger(
-            "<SOR>: ",
-            lama::LogLevel::solverInformation,
-            lama::LoggerWriteBehaviour::toConsoleOnly,
-            std::auto_ptr<Timer>( new Timer() ) ) );
-  
+                               "<SOR>: ",
+                               lama::LogLevel::solverInformation,
+                               lama::LoggerWriteBehaviour::toConsoleOnly,
+                               std::auto_ptr<Timer>( new Timer() ) ) );
         cgSolver.setLogger( slogger );
     }
 
     const IndexType N1 = 4;
     const IndexType N2 = 4;
-
     LAMA_LOG_INFO( logger, "Problem size = " << N1 << " x " << N2 );
-
     CSRSparseMatrix<ValueType> csrCoefficients;
     MatrixCreator<ValueType>::buildPoisson2D( csrCoefficients, 9, N1, N2 );
-
     MatrixType coefficients( csrCoefficients );
     DistributionPtr dist( new BlockDistribution( coefficients.getNumRows(), comm ) );
     coefficients.redistribute( dist, dist );
     coefficients.setContext( loc );
-
     DenseVector<ValueType> solution( dist, 1.0 );
     const DenseVector<ValueType> exactSolution( dist, 2.0 );
     DenseVector<ValueType> rhs( dist, 0.0 );
     rhs = coefficients * exactSolution;
-
     IndexType expectedIterations = 10;
     CriterionPtr criterion( new IterationCount( expectedIterations ) );
     cgSolver.setStoppingCriterion( criterion );
-
     SolverPtr preconditioner( new TrivialPreconditioner( "Trivial preconditioner" ) );
     cgSolver.setPreconditioner( preconditioner );
-
     LAMA_LOG_INFO( logger, "matrix for CG solver = " << coefficients );
     cgSolver.initialize( coefficients );
     cgSolver.solve( solution, rhs );
-
     BOOST_CHECK_EQUAL( expectedIterations, cgSolver.getIterationCount() );
-
     DenseVector<ValueType> diff( solution - exactSolution );
     Scalar s = maxNorm( diff );
     LAMA_LOG_INFO( logger, "max norm ( solution - exactSolution ) = " << s );
 
     if ( s.getValue<ValueType>() >= 1E-6 )
     {
-        LAMA_LOG_ERROR( logger, "cgSolver for " << coefficients 
-                         << ": max norm ( solution - exactSolution ) = " << s );
+        LAMA_LOG_ERROR( logger, "cgSolver for " << coefficients
+                        << ": max norm ( solution - exactSolution ) = " << s );
     }
 
     BOOST_CHECK( s.getValue<ValueType>() < 1E-6 );
@@ -233,7 +204,6 @@ void testSolveWithPreconditionmethod( ContextPtr loc )
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( testSolveWithPrecondition, ValueType, test_types )
 {
-
     CONTEXTLOOP()
     {
         GETCONTEXT( context );

@@ -2,7 +2,7 @@
  * @file OpenMPUtils.cpp
  *
  * @license
- * Copyright (c) 2009-2013
+ * Copyright (c) 2009-2015
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -58,15 +58,16 @@ void OpenMPUtils::scale( ValueType mValues[], const ValueType value, const Index
 
     LAMA_LOG_INFO( logger, "scale, #n = " << n << ", value = " << value )
 
-    if ( value == static_cast<ValueType>( 1 ) )
+    if( value == static_cast<ValueType>( 1 ) )
     {
         return;
     }
 
-    if ( value == 0 )
+    if( value == 0 )
     {
         #pragma omp parallel for schedule( LAMA_OMP_SCHEDULE )
-        for ( IndexType i = 0; i < n; i++ )
+
+        for( IndexType i = 0; i < n; i++ )
         {
             mValues[i] = 0;
         }
@@ -74,7 +75,8 @@ void OpenMPUtils::scale( ValueType mValues[], const ValueType value, const Index
     else
     {
         #pragma omp parallel for schedule( LAMA_OMP_SCHEDULE )
-        for ( IndexType i = 0; i < n; i++ )
+
+        for( IndexType i = 0; i < n; i++ )
         {
             mValues[i] *= value;
         }
@@ -84,10 +86,11 @@ void OpenMPUtils::scale( ValueType mValues[], const ValueType value, const Index
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType,typename OtherValueType>
-void OpenMPUtils::setScale( ValueType outValues[], 
-                            const ValueType value,
-                            const OtherValueType inValues[], 
-                            const IndexType n )
+void OpenMPUtils::setScale(
+    ValueType outValues[],
+    const ValueType value,
+    const OtherValueType inValues[],
+    const IndexType n )
 {
     LAMA_REGION( "OpenMP.Utils.setScale" )
 
@@ -95,21 +98,22 @@ void OpenMPUtils::setScale( ValueType outValues[],
 
     // alias of outValues == inValues is no problem
 
-    if ( value == static_cast<ValueType>( 0 ) )
+    if( value == static_cast<ValueType>( 0 ) )
     {
         // Important : inValues might be undefined
         setVal( outValues, n, value );
         return;
     }
 
-    if ( value == static_cast<ValueType>( 1 ) )
+    if( value == static_cast<ValueType>( 1 ) )
     {
         set( outValues, inValues, n );
         return;
     }
 
     #pragma omp parallel for schedule( LAMA_OMP_SCHEDULE )
-    for ( IndexType i = 0; i < n; i++ )
+
+    for( IndexType i = 0; i < n; i++ )
     {
         outValues[i] = static_cast<ValueType>( inValues[i] ) * value;
     }
@@ -125,16 +129,17 @@ ValueType OpenMPUtils::sum( const ValueType array[], const IndexType n )
     LAMA_LOG_INFO( logger, "sum # array = " << array << ", n = " << n )
     ValueType val = static_cast<ValueType>( 0 );
 
-#pragma omp parallel shared( val )
+    #pragma omp parallel shared( val )
     {
         ValueType tVal = static_cast<ValueType>( 0 );
 
-#pragma omp for schedule( LAMA_OMP_SCHEDULE )
-        for ( IndexType i = 0; i < n; ++i )
+        #pragma omp for schedule( LAMA_OMP_SCHEDULE )
+
+        for( IndexType i = 0; i < n; ++i )
         {
             tVal += array[i];
         }
-        
+
         atomicAdd( val, tVal );
     }
 
@@ -151,7 +156,8 @@ void OpenMPUtils::setVal( ValueType array[], const IndexType n, const ValueType 
     LAMA_LOG_DEBUG( logger, "setVal<" << Scalar::getType<ValueType>() << ">: " << "array[" << n << "] = " << val )
 
     #pragma omp parallel for schedule( LAMA_OMP_SCHEDULE )
-    for ( IndexType i = 0; i < n; ++i )
+
+    for( IndexType i = 0; i < n; ++i )
     {
         array[i] = val;
     }
@@ -168,7 +174,8 @@ void OpenMPUtils::setOrder( ValueType array[], const IndexType n )
                     "setOrder<" << Scalar::getType<ValueType>() << ">: " << "array[" << n << "] = 0, 1, 2, ..., " << ( n - 1 ) )
 
     #pragma omp parallel for schedule( LAMA_OMP_SCHEDULE )
-    for ( IndexType i = 0; i < n; ++i )
+
+    for( IndexType i = 0; i < n; ++i )
     {
         array[i] = static_cast<ValueType>( i );
     }
@@ -200,9 +207,10 @@ ValueType OpenMPUtils::maxval( const ValueType array[], const IndexType n )
         ValueType threadVal = static_cast<ValueType>( 0.0 );
 
         #pragma omp for schedule( LAMA_OMP_SCHEDULE )
-        for ( IndexType i = 0; i < n; ++i )
+
+        for( IndexType i = 0; i < n; ++i )
         {
-            if ( array[i] > threadVal )
+            if( array[i] > threadVal )
             {
                 threadVal = array[i];
             }
@@ -212,7 +220,7 @@ ValueType OpenMPUtils::maxval( const ValueType array[], const IndexType n )
         {
             LAMA_LOG_TRACE( logger, "max val of thread = " << threadVal << ", global was " << val )
 
-            if ( threadVal > val )
+            if( threadVal > val )
             {
                 val = threadVal;
             }
@@ -238,11 +246,12 @@ ValueType OpenMPUtils::absMaxVal( const ValueType array[], const IndexType n )
         ValueType threadVal = static_cast<ValueType>( 0.0 );
 
         #pragma omp for schedule( LAMA_OMP_SCHEDULE )
-        for ( IndexType i = 0; i < n; ++i )
+
+        for( IndexType i = 0; i < n; ++i )
         {
             ValueType elem = abs( array[i] );
 
-            if ( elem > threadVal )
+            if( elem > threadVal )
             {
                 threadVal = elem;
             }
@@ -252,7 +261,7 @@ ValueType OpenMPUtils::absMaxVal( const ValueType array[], const IndexType n )
         {
             LAMA_LOG_TRACE( logger, "max val of thread  = " << threadVal << ", global was " << val )
 
-            if ( threadVal > val )
+            if( threadVal > val )
             {
                 val = threadVal;
             }
@@ -278,11 +287,12 @@ ValueType OpenMPUtils::absMaxDiffVal( const ValueType array1[], const ValueType 
         ValueType threadVal = static_cast<ValueType>( 0.0 );
 
         #pragma omp for schedule( LAMA_OMP_SCHEDULE )
-        for ( IndexType i = 0; i < n; ++i )
+
+        for( IndexType i = 0; i < n; ++i )
         {
             ValueType elem = abs( array1[i] - array2[i] );
 
-            if ( elem > threadVal )
+            if( elem > threadVal )
             {
                 threadVal = elem;
             }
@@ -292,7 +302,7 @@ ValueType OpenMPUtils::absMaxDiffVal( const ValueType array1[], const ValueType 
         {
             LAMA_LOG_TRACE( logger, "max val of thread  = " << threadVal << ", global was " << val )
 
-            if ( threadVal > val )
+            if( threadVal > val )
             {
                 val = threadVal;
             }
@@ -309,16 +319,16 @@ bool OpenMPUtils::isSorted( const ValueType array[], const IndexType n, bool asc
 {
     LAMA_REGION( "OpenMP.Utils.isSorted" )
 
-    LAMA_LOG_INFO( logger, "isSorted<" << Scalar::getType<ValueType>()
-                           << ">, n = " << n << ", ascending = " << ascending )
+    LAMA_LOG_INFO( logger,
+                   "isSorted<" << Scalar::getType<ValueType>() << ">, n = " << n << ", ascending = " << ascending )
 
-    bool sorted = true;   //!< will be set to false at violations
+    bool sorted = true; //!< will be set to false at violations
 
-    if ( ascending )
+    if( ascending )
     {
-        for ( IndexType i = 1; i < n; i++ )
+        for( IndexType i = 1; i < n; i++ )
         {
-            if ( array[i-1] > array[i] )
+            if( array[i - 1] > array[i] )
             {
                 sorted = false;
                 break;
@@ -327,9 +337,9 @@ bool OpenMPUtils::isSorted( const ValueType array[], const IndexType n, bool asc
     }
     else
     {
-        for ( IndexType i = 1; i < n; i++ )
+        for( IndexType i = 1; i < n; i++ )
         {
-            if ( array[i-1] < array[i] )
+            if( array[i - 1] < array[i] )
             {
                 sorted = false;
                 break;
@@ -351,7 +361,8 @@ void OpenMPUtils::set( ValueType1 out[], const ValueType2 in[], const IndexType 
                     "set: out<" << Scalar::getType<ValueType1>() << "[" << n << "]" << " = in<" << Scalar::getType<ValueType2>() << ">[" << n << "]" )
 
     #pragma omp parallel for schedule(LAMA_OMP_SCHEDULE)
-    for ( IndexType i = 0; i < n; i++ )
+
+    for( IndexType i = 0; i < n; i++ )
     {
         out[i] = static_cast<ValueType1>( in[i] );
     }
@@ -368,9 +379,10 @@ bool OpenMPUtils::validIndexes( const IndexType array[], const IndexType n, cons
     bool validFlag = true;
 
     #pragma omp parallel for schedule(LAMA_OMP_SCHEDULE) reduction( & : validFlag )
-    for ( IndexType i = 0; i < n; i++ )
+
+    for( IndexType i = 0; i < n; i++ )
     {
-        if ( size <= array[i] || 0 > array[i] )
+        if( size <= array[i] || 0 > array[i] )
         {
             // exception only in debug mode
 
@@ -397,7 +409,8 @@ void OpenMPUtils::setGather( ValueType1 out[], const ValueType2 in[], const Inde
                     "setGather: out<" << Scalar::getType<ValueType1>() << ">[" << n << "]" << " = in<" << Scalar::getType<ValueType2>() << ">[ indexes[" << n << "] ]" )
 
     #pragma omp parallel for schedule(LAMA_OMP_SCHEDULE)
-    for ( IndexType i = 0; i < n; i++ )
+
+    for( IndexType i = 0; i < n; i++ )
     {
         out[i] = static_cast<ValueType1>( in[indexes[i]] );
     }
@@ -411,11 +424,11 @@ void OpenMPUtils::setScatter( ValueType1 out[], const IndexType indexes[], const
     LAMA_REGION( "OpenMP.Utils.setScatter" )
 
     LAMA_LOG_DEBUG( logger,
-                    "setScatter: out<" << Scalar::getType<ValueType1>() << ">"
-                     << "[ indexes[" << n << "] ]" << " = in<" << Scalar::getType<ValueType2>() << ">[" << n << "]" )
+                    "setScatter: out<" << Scalar::getType<ValueType1>() << ">" << "[ indexes[" << n << "] ]" << " = in<" << Scalar::getType<ValueType2>() << ">[" << n << "]" )
 
     #pragma omp parallel for schedule(LAMA_OMP_SCHEDULE)
-    for ( IndexType i = 0; i < n; i++ )
+
+    for( IndexType i = 0; i < n; i++ )
     {
         out[indexes[i]] = static_cast<ValueType1>( in[i] );
     }
@@ -433,7 +446,8 @@ void OpenMPUtils::invert( ValueType array[], const IndexType n )
     ValueType one = static_cast<ValueType>( 1.0 );
 
     #pragma omp parallel for schedule( LAMA_OMP_SCHEDULE )
-    for ( IndexType i = 0; i < n; ++i )
+
+    for( IndexType i = 0; i < n; ++i )
     {
         array[i] = one / array[i];
     }
@@ -447,9 +461,9 @@ void OpenMPUtils::setInterface( UtilsInterface& Utils )
 {
     // Instantations for IndexType, not done by ARITHMETIC_TYPE macrods
 
-    LAMA_INTERFACE_REGISTER   ( Utils, validIndexes )
+    LAMA_INTERFACE_REGISTER( Utils, validIndexes )
 
-    // we keep the registrations for IndexType as we do not need conversions 
+    // we keep the registrations for IndexType as we do not need conversions
 
     LAMA_INTERFACE_REGISTER_T( Utils, sum, IndexType )
     LAMA_INTERFACE_REGISTER_T( Utils, setVal, IndexType )
@@ -478,9 +492,9 @@ void OpenMPUtils::setInterface( UtilsInterface& Utils )
     LAMA_INTERFACE_REGISTER_T( Utils, absMaxDiffVal, ARITHMETIC_TYPE##I )            \
     LAMA_INTERFACE_REGISTER_T( Utils, isSorted, ARITHMETIC_TYPE##I )                 \
     LAMA_INTERFACE_REGISTER_T( Utils, invert, ARITHMETIC_TYPE##I )                   \
-    BOOST_PP_REPEAT( ARITHMETIC_TYPE_CNT, LAMA_UTILS2_REGISTER, ARITHMETIC_TYPE##I )  
+    BOOST_PP_REPEAT( ARITHMETIC_TYPE_CNT, LAMA_UTILS2_REGISTER, ARITHMETIC_TYPE##I )
 
-BOOST_PP_REPEAT( ARITHMETIC_TYPE_CNT, LAMA_UTILS_REGISTER, _ )
+    BOOST_PP_REPEAT( ARITHMETIC_TYPE_CNT, LAMA_UTILS_REGISTER, _ )
 
 #undef LAMA_UTILS_REGISTER
 #undef LAMA_UTILS2_REGISTER

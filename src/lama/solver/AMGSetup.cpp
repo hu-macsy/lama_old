@@ -2,7 +2,7 @@
  * @file AMGSetup.cpp
  *
  * @license
- * Copyright (c) 2009-2013
+ * Copyright (c) 2009-2015
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -38,9 +38,8 @@ namespace lama
 {
 
 AMGSetup::AMGSetup()
-    : mHostOnlyLevel( std::numeric_limits<IndexType>::max() ), 
-      mHostOnlyVars( 0 ), 
-      mReplicatedLevel( std::numeric_limits<IndexType>::max() )
+    : mHostOnlyLevel( std::numeric_limits<IndexType>::max() ), mHostOnlyVars( 0 ), mReplicatedLevel(
+          std::numeric_limits<IndexType>::max() )
 {
 }
 

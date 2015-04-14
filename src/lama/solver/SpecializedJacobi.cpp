@@ -2,7 +2,7 @@
  * @file SpecializedJacobi.cpp
  *
  * @license
- * Copyright (c) 2009-2013
+ * Copyright (c) 2009-2015
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -100,11 +100,11 @@ void SpecializedJacobi::initialize( const Matrix& coefficients )
 //                "Coefficients matrix " << typeid(coefficients).name() << "(" << coefficients << ") is of unsupported type for SpecializedJacobi specialization (must be SparseMatrix)." );
 //        }
 //    }
-	if( coefficients.getMatrixKind() == Matrix::DENSE )
-	{
-		LAMA_THROWEXCEPTION(
-				"Coefficients matrix " << typeid(coefficients).name() << "(" << coefficients << ") is of unsupported type for SpecializedJacobi specialization (must be SparseMatrix)." );
-	}
+    if( coefficients.getMatrixKind() == Matrix::DENSE )
+    {
+        LAMA_THROWEXCEPTION(
+            "Coefficients matrix " << typeid(coefficients).name() << "(" << coefficients << ") is of unsupported type for SpecializedJacobi specialization (must be SparseMatrix)." );
+    }
 
     OmegaSolver::initialize( coefficients );
 
@@ -116,19 +116,20 @@ void SpecializedJacobi::initialize( const Matrix& coefficients )
 
     SpecializedJacobiRuntime& runtime = getRuntime();
 
-    if ( !runtime.mOldSolution.get() )
+    if( !runtime.mOldSolution.get() )
     {
         LAMA_LOG_DEBUG( logger, "Creating old solution vector using properties of the coefficient matrix. " )
-        runtime.mOldSolution.reset( Vector::createVector( runtime.mCoefficients->getValueType(),
-                                    runtime.mCoefficients->getDistributionPtr() ) );
+        runtime.mOldSolution.reset(
+            Vector::createVector( runtime.mCoefficients->getValueType(),
+                                  runtime.mCoefficients->getDistributionPtr() ) );
     }
 
-    // try dynamic cast for all supported arithmetic types 
+    // try dynamic cast for all supported arithmetic types
 
 #define LAMA_CONVERSION(z, I, _)                                                                              \
     {                                                                                                         \
         const SparseMatrix<ARITHMETIC_TYPE##I>* sparseTypeCoefficients =                                      \
-            dynamic_cast<const SparseMatrix<ARITHMETIC_TYPE##I>*>( runtime.mCoefficients );                   \
+                dynamic_cast<const SparseMatrix<ARITHMETIC_TYPE##I>*>( runtime.mCoefficients );                   \
         if ( sparseTypeCoefficients )                                                                         \
         {                                                                                                     \
             LAMA_LOG_DEBUG( logger, "Creating " << Scalar::getType<ARITHMETIC_TYPE##I>() << " diagonal. " )   \
@@ -141,24 +142,24 @@ void SpecializedJacobi::initialize( const Matrix& coefficients )
         }                                                                                                     \
     }                                                                                                         \
 
-BOOST_PP_REPEAT( ARITHMETIC_TYPE_CNT, LAMA_CONVERSION, _ )
+    BOOST_PP_REPEAT( ARITHMETIC_TYPE_CNT, LAMA_CONVERSION, _ )
 
 #undef LAMA_CONVERSION
 
     // has already been check in initialize, but in any case
 
-    LAMA_THROWEXCEPTION(
+    LAMA_THROWEXCEPTION    (
         getConstRuntime().mCoefficients << ": unsupported matrix type (only SparseMatrix<ValueType> supported)." )
 
 //    mPointerOldSolution = &mOldSolution; --> in every solve-call
 }
-
 void SpecializedJacobi::solve( Vector& solution, const Vector& rhs )
 {
-    if ( getConstRuntime().mSolveInit )
+    if( getConstRuntime().mSolveInit )
     {
         LAMA_LOG_DEBUG( logger, "Previous initialization of solver found! Will be overriden!" )
     }
+
     solveInit( solution, rhs );
     solveImpl();
     solveFinalize();
@@ -167,23 +168,23 @@ void SpecializedJacobi::solve( Vector& solution, const Vector& rhs )
 void SpecializedJacobi::solveInit( Vector& solution, const Vector& rhs )
 {
     //Check if oldSolution already exists, if not create copy of solution
-    if ( !getConstRuntime().mOldSolution.get() )
+    if( !getConstRuntime().mOldSolution.get() )
     {
         getRuntime().mOldSolution.reset( solution.create() );
 
-        if ( getConstRuntime().mCoefficients->getNumColumns() != getConstRuntime().mOldSolution->size() )
+        if( getConstRuntime().mCoefficients->getNumColumns() != getConstRuntime().mOldSolution->size() )
         {
             LAMA_THROWEXCEPTION(
                 "Size of old solution vector " << *getConstRuntime().mOldSolution << " does not match number of columns of the coefficient matrix " << getConstRuntime().mCoefficients->getNumColumns() );
         }
 
-        if ( getConstRuntime().mCoefficients->getColDistribution()
-                != getConstRuntime().mOldSolution->getDistribution() )
+        if( getConstRuntime().mCoefficients->getColDistribution() != getConstRuntime().mOldSolution->getDistribution() )
         {
             LAMA_THROWEXCEPTION(
                 "Distribution of " << *getConstRuntime().mOldSolution << " = " << getConstRuntime().mOldSolution->getDistribution() << " does not match column distribution of " << *getConstRuntime().mCoefficients << " = " << getConstRuntime().mCoefficients->getColDistribution() );
         }
     }
+
     getRuntime().mProxyOldSolution = getConstRuntime().mOldSolution.get();
 
     IterativeSolver::solveInit( solution, rhs );
@@ -194,11 +195,12 @@ void SpecializedJacobi::solveFinalize()
 //    MF: ?????
 //    if( &( mProxyOldSolution.getConstReference() ) ==
 //        &( mSolution.getConstReference() ) )
-    if ( getConstRuntime().mIterations % 2 )
+    if( getConstRuntime().mIterations % 2 )
     {
         LAMA_LOG_DEBUG( logger, "mProxyOldSolution = *mSolution" )
         *getRuntime().mProxyOldSolution = *getRuntime().mSolution;
     }
+
     LAMA_LOG_DEBUG( logger, " end solve " )
 }
 
@@ -211,7 +213,7 @@ void SpecializedJacobi::iterate()
 #define LAMA_TYPE_CAST( z, I, _)                                                                  \
     {                                                                                             \
         const SparseMatrix<ARITHMETIC_TYPE##I>* sparseTypedCoefficients =                         \
-            dynamic_cast<const SparseMatrix<ARITHMETIC_TYPE##I>*>( getRuntime().mCoefficients );  \
+                dynamic_cast<const SparseMatrix<ARITHMETIC_TYPE##I>*>( getRuntime().mCoefficients );  \
         if ( sparseTypedCoefficients )                                                            \
         {                                                                                         \
             iterateTyped( *sparseTypedCoefficients );                                             \
@@ -225,7 +227,7 @@ void SpecializedJacobi::iterate()
 
     // has already been check in initialize, but in any case
 
-    LAMA_THROWEXCEPTION(
+    LAMA_THROWEXCEPTION        (
         getConstRuntime().mCoefficients << ": unsupported matrix type (only SparseMatrix<ValueType> supported)." )
 }
 
@@ -237,7 +239,7 @@ void SpecializedJacobi::iterateTyped( const SparseMatrix<ValueType>& coefficient
     LAMA_LOG_INFO( logger,
                    *getConstRuntime().mSolution << " = " << coefficients << " * " << *getConstRuntime().mOldSolution << " = " << *getConstRuntime().mRhs )
 
-    if ( coefficients.getNumRows() == 0 )
+    if( coefficients.getNumRows() == 0 )
     {
         LAMA_LOG_WARN( logger, "Zero sized matrix given. Won't execute any calculations in this iteration. " )
         return;
@@ -257,7 +259,7 @@ void SpecializedJacobi::iterateTyped( const SparseMatrix<ValueType>& coefficient
     const Vector& oldSolution = getRuntime().mProxyOldSolution.getConstReference();
 
     //1. Check if all Vectors are DenseVectors
-    if ( typeid(DenseVector<ValueType> ) == typeid( oldSolution )
+    if( typeid(DenseVector<ValueType> ) == typeid( oldSolution )
             && typeid( *getRuntime().mSolution ) == typeid( oldSolution )
             && typeid( *getRuntime().mRhs ) == typeid( oldSolution ) )
     {
@@ -268,7 +270,7 @@ void SpecializedJacobi::iterateTyped( const SparseMatrix<ValueType>& coefficient
 
         ContextPtr localContext = coefficients.getLocalStorage().getContextPtr();
 
-        if ( mContext )
+        if( mContext )
         {
             localContext = mContext;
         }
@@ -277,64 +279,70 @@ void SpecializedJacobi::iterateTyped( const SparseMatrix<ValueType>& coefficient
 
         // from rhs and solution we need only the local parts as LAMA arrays
 
-        const LAMAArray<ValueType>& localRhs  = denseRhs.getLocalValues();
-        LAMAArray<ValueType>& localSolution   = denseSolution.getLocalValues();
+        const LAMAArray<ValueType>& localRhs = denseRhs.getLocalValues();
+        LAMAArray<ValueType>& localSolution = denseSolution.getLocalValues();
         const LAMAArray<ValueType>& localOldSolution = denseOldSolution.getLocalValues();
-        LAMAArray<ValueType>&       haloOldSolution  = denseOldSolution.getHaloValues();
+        LAMAArray<ValueType>& haloOldSolution = denseOldSolution.getHaloValues();
 
         const LAMAArray<ValueType>* diagonal = dynamic_cast<const LAMAArray<ValueType>*>( getRuntime().mDiagonal.get() );
- 
+
         using boost::function;
         using boost::bind;
         using boost::cref;
 
-        void ( lama::MatrixStorage<ValueType>::*jacobiIterateHalo ) ( 
-			LAMAArray<ValueType>& localSolution,
+        void (lama::MatrixStorage<ValueType>::*jacobiIterateHalo)(
+            LAMAArray<ValueType>& localSolution,
             const LAMAArray<ValueType>& localDiagonal,
             const LAMAArray<ValueType>& oldHaloSolution,
             const ValueType omega ) const = &MatrixStorage<ValueType>::jacobiIterateHalo;
 
         // will call jacobiIterateHalo( haloMatrix, localSolution, diagonal, haloOldSolution, omega )
 
-        function <void( const MatrixStorage<ValueType>* haloMatrix,
-        		LAMAArray<ValueType>& localResult,
-				const LAMAArray<ValueType>& haloX )> haloF =
+        function<
+        void(
+            const MatrixStorage<ValueType>* haloMatrix,
+            LAMAArray<ValueType>& localResult,
+            const LAMAArray<ValueType>& haloX )> haloF =
 
-             bind( jacobiIterateHalo, _1, _2, cref(*diagonal), _3, omega );
+                bind( jacobiIterateHalo, _1, _2, cref( *diagonal ), _3, omega );
 
-        if ( Matrix::SYNCHRONOUS == coefficients.getCommunicationKind() )
+        if( Matrix::SYNCHRONOUS == coefficients.getCommunicationKind() )
         {
             // For the local operation a jacobi step is done
 
-            void ( lama::MatrixStorage<ValueType>::*jacobiIterate ) ( 
-				LAMAArray<ValueType>& solution,
+            void (lama::MatrixStorage<ValueType>::*jacobiIterate)(
+                LAMAArray<ValueType>& solution,
                 const LAMAArray<ValueType>& oldSolution,
                 const LAMAArray<ValueType>& rhs,
                 const ValueType omega ) const = &MatrixStorage<ValueType>::jacobiIterate;
 
             // Bind the additional arguments like localRhs and omega
 
-            function <void( const MatrixStorage<ValueType>* haloMatrix,
-            				LAMAArray<ValueType>& localResult,
-                            const LAMAArray<ValueType>& localX )> localF =
+            function<
+            void(
+                const MatrixStorage<ValueType>* haloMatrix,
+                LAMAArray<ValueType>& localResult,
+                const LAMAArray<ValueType>& localX )> localF =
 
-                bind( jacobiIterate, _1, _2, _3, cref( localRhs ), omega );
+                    bind( jacobiIterate, _1, _2, _3, cref( localRhs ), omega );
 
             coefficients.haloOperationSync( localSolution, localOldSolution, haloOldSolution, localF, haloF );
         }
         else
         {
-            SyncToken* ( lama::MatrixStorage<ValueType>::*jacobiIterateAsync ) ( 
-				LAMAArray<ValueType>& solution,
+            SyncToken* (lama::MatrixStorage<ValueType>::*jacobiIterateAsync)(
+                LAMAArray<ValueType>& solution,
                 const LAMAArray<ValueType>& oldSolution,
                 const LAMAArray<ValueType>& rhs,
                 const ValueType omega ) const = &MatrixStorage<ValueType>::jacobiIterateAsync;
 
-            function <SyncToken*( const MatrixStorage<ValueType>* haloMatrix,
-					LAMAArray<ValueType>& localResult,
-					const LAMAArray<ValueType>& localX )> localAsyncF =
+            function<
+            SyncToken*(
+                const MatrixStorage<ValueType>* haloMatrix,
+                LAMAArray<ValueType>& localResult,
+                const LAMAArray<ValueType>& localX )> localAsyncF =
 
-                bind( jacobiIterateAsync, _1, _2, _3, boost::cref( localRhs ), omega );
+                    bind( jacobiIterateAsync, _1, _2, _3, boost::cref( localRhs ), omega );
 
             coefficients.haloOperationAsync( localSolution, localOldSolution, haloOldSolution, localAsyncF, haloF );
         }

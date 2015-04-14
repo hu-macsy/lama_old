@@ -2,7 +2,7 @@
  * @file P_RedistributorTest.cpp
  *
  * @license
- * Copyright (c) 2009-2013
+ * Copyright (c) 2009-2015
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -46,7 +46,7 @@
 using namespace lama;
 using namespace boost;
 
-typedef boost::mpl::list<double,float> test_types;
+typedef boost::mpl::list<double, float> test_types;
 
 /* --------------------------------------------------------------------- */
 
@@ -73,40 +73,30 @@ LAMA_LOG_DEF_LOGGER( logger, "Test.P_RedistributorTest" );
 BOOST_AUTO_TEST_CASE_TEMPLATE( redistributeTest, ValueType, test_types )
 {
     IndexType size = 10;
-
     IndexType chunkSize = 1;
-
     shared_ptr<Distribution> distBlock( new BlockDistribution( size, comm ) );
     shared_ptr<Distribution> distCyclic( new CyclicDistribution( size, chunkSize, comm ) );
-
     IndexType blockLocalSize = distBlock->getLocalSize();
     IndexType cyclicLocalSize = distCyclic->getLocalSize();
-
     LAMAArray<ValueType> myData1( blockLocalSize );
-
     {
         HostWriteAccess<ValueType> data ( myData1 );
+
         for ( IndexType i = 0; i < blockLocalSize; i++ )
         {
             data[i] = static_cast<ValueType>( 100 * comm->getRank() + i );
         }
     }
-
     LAMAArray<ValueType> myData2( cyclicLocalSize );
-
     Redistributor r1( distCyclic, distBlock );
     Redistributor r2( distBlock, distCyclic );
-
     LAMA_LOG_DEBUG( logger, "redistribute 1" );
-
     r1.redistribute( myData2, myData1 );
-
     LAMA_LOG_DEBUG( logger, "redistribute 2" );
-
     r2.redistribute( myData1, myData2 );
-
     {
         HostReadAccess<ValueType> data ( myData1 );
+
         for ( IndexType i = 0; i < blockLocalSize; i++ )
         {
             ValueType expected = static_cast<ValueType>( 100 * comm->getRank() + i );
@@ -120,12 +110,9 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( redistributeTest, ValueType, test_types )
 BOOST_AUTO_TEST_CASE( writeAtTest )
 {
     IndexType size = 10;
-
     IndexType chunkSize = 1;
-
     shared_ptr<Distribution> distBlock( new BlockDistribution( size, comm ) );
     shared_ptr<Distribution> distCyclic( new CyclicDistribution( size, chunkSize, comm ) );
-
     Redistributor r( distCyclic, distBlock );
     LAMA_WRITEAT_TEST( r );
 }

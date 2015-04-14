@@ -2,7 +2,7 @@
  * @file StorageMethods.cpp
  *
  * @license
- * Copyright (c) 2009-2013
+ * Copyright (c) 2009-2015
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -90,7 +90,8 @@ void StorageMethods<ValueType>::localizeCSR(
     // set the local sizes independently
 
     #pragma omp parallel for schedule(LAMA_OMP_SCHEDULE)
-    for ( IndexType i = 0; i < localNumRows; i++ )
+
+    for( IndexType i = 0; i < localNumRows; i++ )
     {
         IndexType globalI = rowDist.local2global( i );
         wLocalIA[i] = rGlobalIA[globalI + 1] - rGlobalIA[globalI];
@@ -115,20 +116,20 @@ void StorageMethods<ValueType>::localizeCSR(
 
     #pragma omp parallel for schedule(LAMA_OMP_SCHEDULE)
 
-    for ( IndexType i = 0; i < localNumRows; i++ )
+    for( IndexType i = 0; i < localNumRows; i++ )
     {
         IndexType globalI = rowDist.local2global( i );
 
         IndexType localOffset = wLocalIA[i];
 
-        for ( IndexType jj = rGlobalIA[globalI]; jj < rGlobalIA[globalI + 1]; ++jj )
+        for( IndexType jj = rGlobalIA[globalI]; jj < rGlobalIA[globalI + 1]; ++jj )
         {
             wLocalJA[localOffset] = rGlobalJA[jj];
             wLocalValues[localOffset] = rGlobalValues[jj];
             ++localOffset;
         }
 
-        LAMA_ASSERT_DEBUG( localOffset == wLocalIA[i+1],
+        LAMA_ASSERT_DEBUG( localOffset == wLocalIA[i + 1],
                            ", localOffset = " << localOffset << ", expected " << wLocalIA[i+1] )
     }
 }
@@ -215,8 +216,7 @@ void StorageMethods<ValueType>::redistributeCSR(
 
     LAMA_ASSERT_EQUAL_ERROR( sourceNumRows, sourceIA.size() - 1 )
 
-    LAMA_LOG_INFO( logger,
-                   "redistributeCSR, #source rows = " << sourceNumRows << ", #target rows = " << targetNumRows )
+    LAMA_LOG_INFO( logger, "redistributeCSR, #source rows = " << sourceNumRows << ", #target rows = " << targetNumRows )
 
     // Redistribution of row sizes, requires size array
 
@@ -372,7 +372,7 @@ void StorageMethods<ValueType>::splitCSR(
     LAMA_LOG_INFO( logger,
                    "splitCSR (#rows = " << numRows << ", #values = " << csrJA.size() << ", colDist = " << colDist )
 
-    if ( rowDist )
+    if( rowDist )
     {
         numRows = rowDist->getLocalSize();
     }
@@ -385,11 +385,11 @@ void StorageMethods<ValueType>::splitCSR(
 
     #pragma omp parallel for schedule(LAMA_OMP_SCHEDULE)
 
-    for ( IndexType i = 0; i < numRows; i++ )
+    for( IndexType i = 0; i < numRows; i++ )
     {
         IndexType globalI = i;
 
-        if ( rowDist )
+        if( rowDist )
         {
             globalI = rowDist->local2global( i );
         }
@@ -397,9 +397,9 @@ void StorageMethods<ValueType>::splitCSR(
         IndexType localNonZeros = 0;
         IndexType haloNonZeros = 0;
 
-        for ( IndexType jj = ia[globalI]; jj < ia[globalI + 1]; ++jj )
+        for( IndexType jj = ia[globalI]; jj < ia[globalI + 1]; ++jj )
         {
-            if ( colDist.isLocal( ja[jj] ) )
+            if( colDist.isLocal( ja[jj] ) )
             {
                 ++localNonZeros;
             }
@@ -434,11 +434,12 @@ void StorageMethods<ValueType>::splitCSR(
     HostReadAccess<ValueType> values( csrValues );
 
     #pragma omp parallel for schedule(LAMA_OMP_SCHEDULE)
-    for ( IndexType i = 0; i < numRows; i++ )
+
+    for( IndexType i = 0; i < numRows; i++ )
     {
         IndexType globalI = i;
 
-        if ( rowDist )
+        if( rowDist )
         {
             globalI = rowDist->local2global( i );
         }
@@ -450,11 +451,11 @@ void StorageMethods<ValueType>::splitCSR(
 
         LAMA_LOG_TRACE( logger, "fill halo row " << i << " from " << haloOffset << " to " << wHaloIA[i+1] )
 
-        for ( IndexType jj = ia[globalI]; jj < ia[globalI + 1]; ++jj )
+        for( IndexType jj = ia[globalI]; jj < ia[globalI + 1]; ++jj )
         {
             const IndexType jLocal = colDist.global2local( ja[jj] );
 
-            if ( jLocal != nIndex )
+            if( jLocal != nIndex )
             {
                 // Attention: local gets already local column indexes
 
@@ -480,9 +481,9 @@ void StorageMethods<ValueType>::splitCSR(
             }
         }
 
-        LAMA_ASSERT_DEBUG( localOffset == wLocalIA[i+1],
+        LAMA_ASSERT_DEBUG( localOffset == wLocalIA[i + 1],
                            ", localOffset = " << localOffset << ", expected " << wLocalIA[i+1] )
-        LAMA_ASSERT_DEBUG( haloOffset == wHaloIA[i+1],
+        LAMA_ASSERT_DEBUG( haloOffset == wHaloIA[i + 1],
                            ", haloOffset = " << haloOffset << ", expected " << wHaloIA[i+1] )
     }
 }
@@ -507,7 +508,7 @@ void _StorageMethods::buildHalo(
     {
         HostReadAccess<IndexType> ja( haloJA );
 
-        for ( IndexType jj = 0; jj < haloNumValues; jj++ )
+        for( IndexType jj = 0; jj < haloNumValues; jj++ )
         {
             haloIndexes.push_back( ja[jj] );
         }
@@ -537,7 +538,7 @@ void _StorageMethods::buildHalo(
     {
         HostWriteAccess<IndexType> ja( haloJA );
 
-        for ( IndexType jj = 0; jj < haloNumValues; jj++ )
+        for( IndexType jj = 0; jj < haloNumValues; jj++ )
         {
             const IndexType columnIndex = ja[jj];
 
@@ -586,7 +587,8 @@ void StorageMethods<ValueType>::joinCSR(
     HostReadAccess<IndexType> ia2( haloIA );
 
     #pragma omp parallel for schedule(LAMA_OMP_SCHEDULE)
-    for ( IndexType i = 0; i < numRows; ++i )
+
+    for( IndexType i = 0; i < numRows; ++i )
     {
         IndexType nonZeros = 0; // count for each row in parallel
 
@@ -612,34 +614,36 @@ void StorageMethods<ValueType>::joinCSR(
     // merging of each row is independent from other rows
 
     #pragma omp parallel for schedule(LAMA_OMP_SCHEDULE)
-    for ( IndexType i = 0; i < numRows; ++i )
+
+    for( IndexType i = 0; i < numRows; ++i )
     {
         IndexType offset = ia[i];
         IndexType offset1 = ia1[i];
         IndexType offset2 = ia2[i];
 
-        if ( i < numKeepDiagonals )
+        if( i < numKeepDiagonals )
         {
-            if ( offset1 >= ia1[i + 1] )
+            if( offset1 >= ia1[i + 1] )
             {
                 LAMA_LOG_FATAL( logger, "no diagonal element for first CSR input data" )
                 LAMA_THROWEXCEPTION( "keep diagonal error" )
                 // @todo this exception caused segmentation faults when thrown
             }
+
             ja[offset] = ja1[offset1];
             values[offset++] = values1[offset1++];
         }
 
         // merge other data by order of column indexes
 
-        for ( IndexType k = offset; k < ia[i + 1]; ++k )
+        for( IndexType k = offset; k < ia[i + 1]; ++k )
         {
             // merge the row data of local and halo
 
             bool isNext1 = offset1 < ia1[i + 1];
             bool isNext2 = offset2 < ia2[i + 1]; // if same type
 
-            if ( isNext1 && isNext2 )
+            if( isNext1 && isNext2 )
             {
                 // both arrays not empty, take the one with smaller global index
 
@@ -647,12 +651,12 @@ void StorageMethods<ValueType>::joinCSR(
                 isNext2 = !isNext1;
             }
 
-            if ( isNext1 )
+            if( isNext1 )
             {
                 ja[k] = ja1[offset1];
                 values[k] = values1[offset1++];
             }
-            else if ( isNext2 )
+            else if( isNext2 )
             {
                 ja[k] = ja2[offset2];
                 values[k] = values2[offset2++];
@@ -663,15 +667,15 @@ void StorageMethods<ValueType>::joinCSR(
             }
         }
 
-        LAMA_ASSERT_EQUAL_DEBUG( offset1, ia1[i+1] )
-        LAMA_ASSERT_EQUAL_DEBUG( offset2, ia2[i+1] )
+        LAMA_ASSERT_EQUAL_DEBUG( offset1, ia1[i + 1] )
+        LAMA_ASSERT_EQUAL_DEBUG( offset2, ia2[i + 1] )
     }
 }
 
 /* -------------------------------------------------------------------------- */
 
 #define LAMA_STORAGE_METHODS_INSTANTIATE(z, I, _)                              \
-template class LAMA_DLL_IMPORTEXPORT StorageMethods<ARITHMETIC_TYPE##I> ;  
+    template class LAMA_DLL_IMPORTEXPORT StorageMethods<ARITHMETIC_TYPE##I> ;
 
 BOOST_PP_REPEAT( ARITHMETIC_TYPE_CNT, LAMA_STORAGE_METHODS_INSTANTIATE, _ )
 
@@ -679,4 +683,4 @@ BOOST_PP_REPEAT( ARITHMETIC_TYPE_CNT, LAMA_STORAGE_METHODS_INSTANTIATE, _ )
 
 /* -------------------------------------------------------------------------- */
 
-} // namespace LAMA
+}// namespace LAMA

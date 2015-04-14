@@ -2,7 +2,7 @@
  * @file SingleGridSetup.hpp
  *
  * @license
- * Copyright (c) 2009-2013
+ * Copyright (c) 2009-2015
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -59,12 +59,12 @@ void SingleGridSetup::initialize( const Matrix& coefficients )
 {
     LAMA_REGION( "initialize_SingleGridSetup" )
 
-	LAMA_LOG_DEBUG( logger, "SingleGridSetup::initialize" )
+    LAMA_LOG_DEBUG( logger, "SingleGridSetup::initialize" )
 
     // set default solver
-    if ( !mSolver )
+    if( !mSolver )
     {
-    	LAMA_LOG_DEBUG( logger, "new sor" )
+        LAMA_LOG_DEBUG( logger, "new sor" )
         SOR* sorSolver = new SOR( "10x SingleGridSetup SOR Solver" );
 
         CriterionPtr criterion( new IterationCount( 10 ) );

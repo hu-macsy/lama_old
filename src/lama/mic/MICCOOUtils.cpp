@@ -2,7 +2,7 @@
  * @file MICCOOUtils.cpp
  *
  * @license
- * Copyright (c) 2009-2013
+ * Copyright (c) 2009-2015
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -76,19 +76,19 @@ void MICCOOUtils::getCSRSizes(
     void* csrSizesPtr = csrSizes;
     const void* cooIAPtr = cooIA;
 
-    // load distribution is done implicitly by block distribution of csrSizes 
+    // load distribution is done implicitly by block distribution of csrSizes
 
-    #pragma offload target( mic ) in( numRows, numValues, csrSizesPtr, cooIAPtr )
+#pragma offload target( mic ) in( numRows, numValues, csrSizesPtr, cooIAPtr )
     {
-        IndexType* csrSizes = ( IndexType* ) csrSizesPtr;
-        const IndexType* cooIA    = ( const IndexType* ) cooIAPtr;
+        IndexType* csrSizes = (IndexType*) csrSizesPtr;
+        const IndexType* cooIA = (const IndexType*) cooIAPtr;
 
-        #pragma omp parallel 
+        #pragma omp parallel
         {
             // initialize size array for each row
-    
+
             #pragma omp for
-            for ( IndexType i = 0; i <= numRows; i++ )
+            for( IndexType i = 0; i <= numRows; i++ )
             {
                 csrSizes[i] = 0;
             }
@@ -96,7 +96,8 @@ void MICCOOUtils::getCSRSizes(
             // increment size of a row for each used row value
 
             #pragma omp for
-            for ( IndexType k = 0; k < numValues; k++ )
+
+            for( IndexType k = 0; k < numValues; k++ )
             {
                 IndexType i = cooIA[k];
                 #pragma omp atomic
@@ -109,18 +110,18 @@ void MICCOOUtils::getCSRSizes(
 /* --------------------------------------------------------------------------- */
 
 template<typename COOValueType,typename CSRValueType>
-void MICCOOUtils::getCSRValues( IndexType csrJA[], 
-                                CSRValueType csrValues[], 
-                                IndexType csrIA[],
-                                const IndexType numRows,
-                                const IndexType numValues,
-                                const IndexType cooIA[],
-                                const IndexType cooJA[],
-                                const COOValueType cooValues[] )
+void MICCOOUtils::getCSRValues(
+    IndexType csrJA[],
+    CSRValueType csrValues[],
+    IndexType csrIA[],
+    const IndexType numRows,
+    const IndexType numValues,
+    const IndexType cooIA[],
+    const IndexType cooJA[],
+    const COOValueType cooValues[] )
 {
     LAMA_LOG_ERROR( logger,
-                   "get CSRValues<" << Scalar::getType<COOValueType>() << ", " << Scalar::getType<CSRValueType>() << ">" 
-                       << ", #rows = " << numRows << ", #values = " << numValues )
+                    "get CSRValues<" << Scalar::getType<COOValueType>() << ", " << Scalar::getType<CSRValueType>() << ">" << ", #rows = " << numRows << ", #values = " << numValues )
 
     void* csrJAPtr = csrJA;
     void* csrValuesPtr = csrValues;
@@ -130,22 +131,23 @@ void MICCOOUtils::getCSRValues( IndexType csrJA[],
     const void* cooJAPtr = cooJA;
     const void* cooValuesPtr = cooValues;
 
-    #pragma offload target( mic ) in( numRows, numValues, csrJAPtr, csrValuesPtr, csrIAPtr, cooIAPtr, cooJAPtr, cooValuesPtr )
+#pragma offload target( mic ) in( numRows, numValues, csrJAPtr, csrValuesPtr, csrIAPtr, cooIAPtr, cooJAPtr, cooValuesPtr )
     {
-        std::vector<IndexType> rowOffset( numRows );  // temp copy of csrIA
+        std::vector<IndexType> rowOffset( numRows ); // temp copy of csrIA
 
-        IndexType* csrJA    = ( IndexType* ) cooJAPtr;
-        CSRValueType* csrValues    = ( CSRValueType* ) csrValuesPtr;
-        const IndexType* csrIA = ( IndexType* ) csrIAPtr;
+        IndexType* csrJA = (IndexType*) cooJAPtr;
+        CSRValueType* csrValues = (CSRValueType*) csrValuesPtr;
+        const IndexType* csrIA = (IndexType*) csrIAPtr;
 
-        const IndexType* cooIA    = ( const IndexType* ) cooIAPtr;
-        const IndexType* cooJA    = ( const IndexType* ) cooJAPtr;
-        const COOValueType* cooValues    = ( const COOValueType* ) cooValuesPtr;
+        const IndexType* cooIA = (const IndexType*) cooIAPtr;
+        const IndexType* cooJA = (const IndexType*) cooJAPtr;
+        const COOValueType* cooValues = (const COOValueType*) cooValuesPtr;
 
         #pragma omp parallel
         {
             #pragma omp for
-            for ( IndexType i = 0; i < numRows; ++i )
+
+            for( IndexType i = 0; i < numRows; ++i )
             {
                 rowOffset[i] = csrIA[i];
             }
@@ -153,12 +155,13 @@ void MICCOOUtils::getCSRValues( IndexType csrJA[],
             // traverse the non-zero values and put data at the right places
 
             #pragma omp for
-            for ( IndexType k = 0; k < numValues; k++ )
+
+            for( IndexType k = 0; k < numValues; k++ )
             {
                 IndexType i = cooIA[k];
-    
+
                 IndexType offset = __sync_fetch_and_add( &rowOffset[i], 1 );
-    
+
                 csrJA[offset] = cooJA[k];
                 csrValues[offset] = static_cast<CSRValueType>( cooValues[k] );
             }
@@ -176,8 +179,7 @@ void MICCOOUtils::offsets2ia(
     const IndexType numDiagonals )
 {
     LAMA_LOG_INFO( logger,
-                   "build cooIA( " << numValues << " ) from csrIA( " << ( numRows + 1 )
-                    << " ), #diagonals = " << numDiagonals )
+                   "build cooIA( " << numValues << " ) from csrIA( " << ( numRows + 1 ) << " ), #diagonals = " << numDiagonals )
 
     const void* csrIAPtr = csrIA;
     void* cooIAPtr = cooIA;
@@ -185,32 +187,33 @@ void MICCOOUtils::offsets2ia(
     // parallel execution only possible if we have no separate diagonal elements
     // or if CSR data has diagonal property
 
-    #pragma offload target( mic ) in( numRows, numDiagonals, csrIAPtr, cooIAPtr )
+#pragma offload target( mic ) in( numRows, numDiagonals, csrIAPtr, cooIAPtr )
     {
         const IndexType* csrIA = static_cast<const IndexType*>( csrIAPtr );
 
-        IndexType* cooIA    = static_cast<IndexType*>( cooIAPtr );
+        IndexType* cooIA = static_cast<IndexType*>( cooIAPtr );
 
-        #pragma omp parallel for 
-        for ( IndexType i = 0; i < numRows; ++i )
+        #pragma omp parallel for
+
+        for( IndexType i = 0; i < numRows; ++i )
         {
             IndexType csrOffset = csrIA[i];
-            IndexType cooOffset = 0;        // additional offset due to diagonals
+            IndexType cooOffset = 0; // additional offset due to diagonals
 
-            if ( i < numDiagonals )
+            if( i < numDiagonals )
             {
                 // diagonal elements will be the first nrows entries
-    
+
                 cooIA[i] = i;
-                csrOffset += 1;                   // do not fill diagonal element again
+                csrOffset += 1; // do not fill diagonal element again
                 cooOffset = numDiagonals - i - 1; // offset in coo moves
             }
 
             // now fill remaining part of row i
 
-            for ( IndexType jj = csrOffset; jj < csrIA[i + 1]; ++jj )
+            for( IndexType jj = csrOffset; jj < csrIA[i + 1]; ++jj )
             {
-                cooIA[ jj + cooOffset] = i;
+                cooIA[jj + cooOffset] = i;
             }
         }
     }
@@ -228,42 +231,42 @@ void MICCOOUtils::setCSRData(
     const IndexType numDiagonals )
 {
     LAMA_LOG_INFO( logger,
-                   "build cooValues( << " << numValues << " from csrValues + csrIA( " << ( numRows + 1 )
-                    << " ), #diagonals = " << numDiagonals )
+                   "build cooValues( << " << numValues << " from csrValues + csrIA( " << ( numRows + 1 ) << " ), #diagonals = " << numDiagonals )
 
     const void* csrValuesPtr = csrValues;
     const void* csrIAPtr = csrIA;
 
     void* cooValuesPtr = cooValues;
 
-    #pragma offload target( mic ) in( numRows, numDiagonals, csrIAPtr, csrValuesPtr, cooValuesPtr )
+#pragma offload target( mic ) in( numRows, numDiagonals, csrIAPtr, csrValuesPtr, cooValuesPtr )
     {
         const CSRValueType* csrValues = static_cast<const CSRValueType*>( csrValuesPtr );
-        const IndexType*    csrIA     = static_cast<const IndexType*>( csrIAPtr );
+        const IndexType* csrIA = static_cast<const IndexType*>( csrIAPtr );
 
         COOValueType* cooValues = static_cast<COOValueType*>( cooValuesPtr );
 
         #pragma omp parallel for
-        for ( IndexType i = 0; i < numRows; ++i )
+
+        for( IndexType i = 0; i < numRows; ++i )
         {
             IndexType csrOffset = csrIA[i];
-            IndexType cooOffset = 0;        // additional offset due to diagonals
+            IndexType cooOffset = 0; // additional offset due to diagonals
 
-            if ( i < numDiagonals )
+            if( i < numDiagonals )
             {
                 // diagonal elements become the first 'numDiagonal' entries
 
                 cooValues[i] = static_cast<COOValueType>( csrValues[csrOffset] );
 
-                csrOffset += 1;                   // do not fill diagonal element again
+                csrOffset += 1; // do not fill diagonal element again
                 cooOffset = numDiagonals - i - 1; // offset in coo moves
             }
 
             // now fill remaining part of row i
 
-            for ( IndexType jj = csrOffset; jj < csrIA[i + 1]; ++jj )
+            for( IndexType jj = csrOffset; jj < csrIA[i + 1]; ++jj )
             {
-                cooValues[ jj + cooOffset] = static_cast<COOValueType>( csrValues[ jj ] );
+                cooValues[jj + cooOffset] = static_cast<COOValueType>( csrValues[jj] );
             }
         }
     }
@@ -288,11 +291,9 @@ void MICCOOUtils::normalGEMV(
     LAMA_REGION( "MIC.COO.normalGEMV" )
 
     LAMA_LOG_INFO( logger,
-                   "normalGEMV<" << Scalar::getType<ValueType>()
-                   << ">, result[" << numRows << "] = " << alpha
-                   << " * A( coo, #vals = " << numValues << " ) * x + " << beta << " * y " )
+                   "normalGEMV<" << Scalar::getType<ValueType>() << ">, result[" << numRows << "] = " << alpha << " * A( coo, #vals = " << numValues << " ) * x + " << beta << " * y " )
 
-    if ( syncToken )
+    if( syncToken )
     {
         MICSyncToken* micSyncToken = dynamic_cast<MICSyncToken*>( syncToken );
         LAMA_ASSERT_ERROR( micSyncToken, "no MIC sync token provided" )
@@ -303,31 +304,32 @@ void MICCOOUtils::normalGEMV(
 
     MICUtils::setScale( result, beta, y, numRows );
 
-    void* resultPtr          = result;
-    const void* cooIAPtr     = cooIA;
-    const void* cooJAPtr     = cooJA;
+    void* resultPtr = result;
+    const void* cooIAPtr = cooIA;
+    const void* cooJAPtr = cooJA;
     const void* cooValuesPtr = cooValues;
-    const void* xPtr         = x;
+    const void* xPtr = x;
 
-    #pragma offload target( mic ), in( numRows, numValues, resultPtr, alpha, cooIAPtr, cooJAPtr, cooValuesPtr, xPtr )
+#pragma offload target( mic ), in( numRows, numValues, resultPtr, alpha, cooIAPtr, cooJAPtr, cooValuesPtr, xPtr )
     {
         ValueType* result = static_cast<ValueType*>( resultPtr );
         const ValueType* x = static_cast<const ValueType*>( xPtr );
 
-        const IndexType* cooIA     = static_cast<const IndexType*>( cooIAPtr );
-        const IndexType* cooJA     = static_cast<const IndexType*>( cooJAPtr );
+        const IndexType* cooIA = static_cast<const IndexType*>( cooIAPtr );
+        const IndexType* cooJA = static_cast<const IndexType*>( cooJAPtr );
         const ValueType* cooValues = static_cast<const ValueType*>( cooValuesPtr );
 
         // Atomic update decreases performance by a factor of 4
-        
+
         #pragma omp parallel
         {
             #pragma omp for
-            for ( IndexType k = 0; k < numValues; ++k )
+
+            for( IndexType k = 0; k < numValues; ++k )
             {
                 IndexType i = cooIA[k];
 
-                const ValueType val = alpha * cooValues[k] * x[ cooJA[k] ];
+                const ValueType val = alpha * cooValues[k] * x[cooJA[k]];
 
                 #pragma omp atomic
                 result[i] += val;
@@ -356,7 +358,7 @@ void MICCOOUtils::jacobi(
     LAMA_LOG_INFO( logger,
                    "jacobi<" << Scalar::getType<ValueType>() << ">" << ", #rows = " << numRows << ", omega = " << omega )
 
-    if ( syncToken )
+    if( syncToken )
     {
         MICSyncToken* micSyncToken = dynamic_cast<MICSyncToken*>( syncToken );
         LAMA_ASSERT_ERROR( micSyncToken, "no MIC sync token provided" )
@@ -368,42 +370,44 @@ void MICCOOUtils::jacobi(
     // solution = omega * rhs * dinv + ( 1 - omega * oldSolution
     // solution -= omega * B * oldSolution * dinv
 
-    void* solutionPtr    = solution;
-    const void* cooIAPtr     = cooIA;
-    const void* cooJAPtr     = cooJA;
+    void* solutionPtr = solution;
+    const void* cooIAPtr = cooIA;
+    const void* cooJAPtr = cooJA;
     const void* cooValuesPtr = cooValues;
-    const void* oldSolutionPtr  = oldSolution;
-    const void* rhsPtr  = rhs;
+    const void* oldSolutionPtr = oldSolution;
+    const void* rhsPtr = rhs;
 
-    #pragma offload target( mic ), in( numRows, cooNumValues, solutionPtr, cooIAPtr, cooJAPtr, cooValuesPtr, \
+#pragma offload target( mic ), in( numRows, cooNumValues, solutionPtr, cooIAPtr, cooJAPtr, cooValuesPtr, \
                                        rhsPtr, oldSolutionPtr, omega )
     {
         ValueType* solution = static_cast<ValueType*>( solutionPtr );
         const ValueType* oldSolution = static_cast<const ValueType*>( oldSolutionPtr );
         const ValueType* rhs = static_cast<const ValueType*>( rhsPtr );
 
-        const IndexType* cooIA     = static_cast<const IndexType*>( cooIAPtr );
-        const IndexType* cooJA     = static_cast<const IndexType*>( cooJAPtr );
+        const IndexType* cooIA = static_cast<const IndexType*>( cooIAPtr );
+        const IndexType* cooJA = static_cast<const IndexType*>( cooJAPtr );
         const ValueType* cooValues = static_cast<const ValueType*>( cooValuesPtr );
 
         const ValueType oneMinusOmega = static_cast<ValueType>( 1.0 ) - omega;
 
         #pragma omp parallel for
-        for ( IndexType i = 0; i < numRows; ++i )
+
+        for( IndexType i = 0; i < numRows; ++i )
         {
             solution[i] = omega * rhs[i] / cooValues[i] + oneMinusOmega * oldSolution[i];
         }
 
         #pragma omp parallel for
-        for ( IndexType k = numRows; k < cooNumValues; ++k )
+
+        for( IndexType k = numRows; k < cooNumValues; ++k )
         {
             IndexType i = cooIA[k];
             IndexType j = cooJA[k];
-   
+
             // we must use atomic updates as different threads might update same row i
-  
+
             const ValueType update = omega * cooValues[k] * oldSolution[j] / cooValues[i];
- 
+
             #pragma omp atomic
             solution[i] -= update;
         }

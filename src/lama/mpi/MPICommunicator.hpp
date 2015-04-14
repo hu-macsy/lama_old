@@ -2,7 +2,7 @@
  * @file MPICommunicator.hpp
  *
  * @license
- * Copyright (c) 2009-2013
+ * Copyright (c) 2009-2015
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -68,7 +68,7 @@ class LAMA_DLL_IMPORTEXPORT MPICommunicator: public CRTPCommunicator<MPICommunic
 // Only MPICommunicatorManager is allowed to create MPI communicator
 
     friend class MPICommunicatorManager;
-    friend class CRTPCommunicator<MPICommunicator>;
+    friend class CRTPCommunicator<MPICommunicator> ;
 
 public:
     virtual ~MPICommunicator();
@@ -210,7 +210,7 @@ private:
 
     LAMA_LOG_DECL_STATIC_LOGGER( logger )
 
-    static const int defaultTag;
+    static    const int defaultTag;
 protected:
     MPICommunicator( int& argc, char** & argv, const std::string& type );
 
@@ -219,7 +219,7 @@ protected:
     virtual ContextPtr getCommunicationContext( const _LAMAArray& array ) const;
 
     int mRank; // rank of this processor
-    int mSize; // size of communicator
+    int mSize;// size of communicator
 
     bool mExternInitialization;
 
@@ -229,7 +229,7 @@ protected:
 
     Communicator::ThreadSafetyLevel mThreadSafetyLevel;
 
-    bool isCUDAAware;   // if true data on CUDA context can be communicated
+    bool isCUDAAware;// if true data on CUDA context can be communicated
 };
 
 }

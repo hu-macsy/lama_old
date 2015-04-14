@@ -2,7 +2,7 @@
  * @file CSRStorageTest.cpp
  *
  * @license
- * Copyright (c) 2009-2013
+ * Copyright (c) 2009-2015
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -53,13 +53,11 @@ namespace CSRStorageTest
 template<typename ValueType>
 void commonTestCases( ContextPtr loc )
 {
-
     CSRStorage<ValueType> csrStorage;
     MatrixStorageTest<ValueType> storageTest( csrStorage );
-
     storageTest.mMatrixStorage.setContext( loc );
 
-    if( base_test_case )
+    if ( base_test_case )
     {
         MATRIXSTORAGE_COMMONTESTCASES( storageTest );
     }
@@ -76,18 +74,15 @@ void constructorTest()
 {
     const IndexType numRows = 10;
     const IndexType numColumns = 15;
-
     CSRStorage<ValueType> csrStorage;
-
     csrStorage.allocate( numRows, numColumns );
-
     BOOST_REQUIRE_EQUAL( numRows, csrStorage.getNumRows() );
     BOOST_REQUIRE_EQUAL( numColumns, csrStorage.getNumColumns() );
     BOOST_REQUIRE_EQUAL( 0, csrStorage.getNumValues() );
 
-    for( IndexType i = 0; i < numRows; ++i )
+    for ( IndexType i = 0; i < numRows; ++i )
     {
-        for( IndexType j = 0; j < numColumns; ++j )
+        for ( IndexType j = 0; j < numColumns; ++j )
         {
             float v = static_cast<float>( csrStorage.getValue( i, j ) );
             BOOST_CHECK_SMALL( v, 1.0e-5f );
@@ -102,34 +97,26 @@ void constructorTest1( ContextPtr loc )
 {
     const IndexType numRows = 3;
     const IndexType numColumns = 3;
-
     const IndexType ia[] =
     { 0, 1, 2, 4 };
-
     // Note: ja, values are stored column-major order
     const IndexType ja[] =
     { 0, 1, 2, 2 };
     const ValueType values[] =
     { 0.5f, 0.5f, 0.3f, 0.2f };
-
     const IndexType numValues = ia[numRows];
-    const IndexType sizeJA = sizeof( ja ) / sizeof(IndexType);
-    const IndexType sizeValues = sizeof( values ) / sizeof(ValueType);
-
+    const IndexType sizeJA = sizeof( ja ) / sizeof( IndexType );
+    const IndexType sizeValues = sizeof( values ) / sizeof( ValueType );
     BOOST_CHECK_EQUAL( numValues, sizeJA );
     BOOST_CHECK_EQUAL( numValues, sizeValues );
-
     LAMAArray<IndexType> csrIA( numRows + 1, ia );
     LAMAArray<IndexType> csrJA( numValues, ja );
     LAMAArray<ValueType> csrValues( numValues, values );
-
     CSRStorage<ValueType> csrStorage( numRows, numColumns, numValues, csrIA, csrJA, csrValues );
-
     BOOST_REQUIRE_EQUAL( numRows, csrStorage.getNumRows() );
     BOOST_REQUIRE_EQUAL( numColumns, csrStorage.getNumColumns() );
     BOOST_REQUIRE_EQUAL( numValues, csrStorage.getNumValues() );
     BOOST_CHECK( csrStorage.hasDiagonalProperty() );
-
     {
         HostReadAccess<IndexType> csrIA( csrStorage.getIA() );
         HostReadAccess<IndexType> csrJA( csrStorage.getJA() );
@@ -137,44 +124,41 @@ void constructorTest1( ContextPtr loc )
 
         // CSR keeps values in same order
 
-        for( IndexType i = 0; i < numRows + 1; ++i )
+        for ( IndexType i = 0; i < numRows + 1; ++i )
         {
             BOOST_CHECK_EQUAL( ia[i], csrIA[i] );
         }
 
-        for( IndexType i = 0; i < numValues; ++i )
+        for ( IndexType i = 0; i < numValues; ++i )
         {
             BOOST_CHECK_EQUAL( ja[i], csrJA[i] );
             BOOST_CHECK_EQUAL( values[i], csrValues[i] );
         }
     }
-
     // copy constructor on all available locations
     CSRStorage<ValueType> csrStorageCopy( csrStorage, loc );
-
     BOOST_REQUIRE_EQUAL( numRows, csrStorageCopy.getNumRows() );
     BOOST_REQUIRE_EQUAL( numColumns, csrStorageCopy.getNumColumns() );
     BOOST_REQUIRE_EQUAL( numValues, csrStorageCopy.getNumValues() );
     BOOST_CHECK( csrStorageCopy.hasDiagonalProperty() );
-
     {
-         HostReadAccess<IndexType> csrIA( csrStorageCopy.getIA() );
-         HostReadAccess<IndexType> csrJA( csrStorageCopy.getJA() );
-         HostReadAccess<ValueType> csrValues( csrStorageCopy.getValues() );
+        HostReadAccess<IndexType> csrIA( csrStorageCopy.getIA() );
+        HostReadAccess<IndexType> csrJA( csrStorageCopy.getJA() );
+        HostReadAccess<ValueType> csrValues( csrStorageCopy.getValues() );
 
-         // CSR keeps values in same order
+        // CSR keeps values in same order
 
-         for( IndexType i = 0; i < numRows + 1; ++i )
-         {
-             BOOST_CHECK_EQUAL( ia[i], csrIA[i] );
-         }
+        for ( IndexType i = 0; i < numRows + 1; ++i )
+        {
+            BOOST_CHECK_EQUAL( ia[i], csrIA[i] );
+        }
 
-         for( IndexType i = 0; i < numValues; ++i )
-         {
-             BOOST_CHECK_EQUAL( ja[i], csrJA[i] );
-             BOOST_CHECK_EQUAL( values[i], csrValues[i] );
-         }
-     }
+        for ( IndexType i = 0; i < numValues; ++i )
+        {
+            BOOST_CHECK_EQUAL( ja[i], csrJA[i] );
+            BOOST_CHECK_EQUAL( values[i], csrValues[i] );
+        }
+    }
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */
@@ -184,7 +168,6 @@ void typeNameTest()
 {
     CSRStorage<ValueType> csrStorage;
     std::string s = csrStorage.typeName();
-
     BOOST_CHECK( s.length() > 0 );
 }
 

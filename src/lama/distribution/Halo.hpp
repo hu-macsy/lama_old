@@ -2,7 +2,7 @@
  * @file Halo.hpp
  *
  * @license
- * Copyright (c) 2009-2013
+ * Copyright (c) 2009-2015
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -161,7 +161,7 @@ IndexType Halo::global2halo( const IndexType globalIndex ) const
 {
     const std::map<IndexType,IndexType>::const_iterator elem = mGlobal2Halo.find( globalIndex );
 
-    if ( elem == mGlobal2Halo.end() )
+    if( elem == mGlobal2Halo.end() )
     {
         return nIndex;
     }

@@ -2,7 +2,7 @@
  * @file CSRSparseMatrixTest.cpp
  *
  * @license
- * Copyright (c) 2009-2013
+ * Copyright (c) 2009-2015
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -53,7 +53,6 @@ void commonTestCases( ContextPtr loc )
 {
     CSRSparseMatrix<ValueType> csrMatrix;
     SparseMatrixTest< CSRSparseMatrix<ValueType> > csrSparseMatrixTest( csrMatrix );
-
     csrSparseMatrixTest.mMatrix.setContext( loc );
 
     if ( base_test_case )
@@ -72,8 +71,7 @@ void typeNameTest( )
 {
     CSRSparseMatrix<ValueType> csrMatrix;
     std::string s = csrMatrix.typeName();
-
-    BOOST_CHECK( s.length() > 0);
+    BOOST_CHECK( s.length() > 0 );
 }
 
 } // namespace CSRSparseMatrixTest
@@ -86,7 +84,7 @@ BOOST_AUTO_TEST_SUITE( CSRSparseMatrixTest )
 LAMA_LOG_DEF_LOGGER( logger, "Test.SparseMatrixTest.CSRSparseMatrixTest" )
 
 LAMA_AUTO_TEST_CASE_CT( commonTestCases, CSRSparseMatrixTest )
-LAMA_AUTO_TEST_CASE_T( typeNameTest, CSRSparseMatrixTest)
+LAMA_AUTO_TEST_CASE_T( typeNameTest, CSRSparseMatrixTest )
 /* ------------------------------------------------------------------------------------------------------------------ */
 
 BOOST_AUTO_TEST_SUITE_END()

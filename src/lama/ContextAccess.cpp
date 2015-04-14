@@ -2,7 +2,7 @@
  * @file ContextAccess.cpp
  *
  * @license
- * Copyright (c) 2009-2013
+ * Copyright (c) 2009-2015
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -41,7 +41,7 @@ namespace lama
 LAMA_LOG_DEF_LOGGER( ContextAccess::logger, "ContextAccess" )
 
 ContextAccess::ContextAccess( ContextPtr context, const char* file, int line )
-    : mContext( *context ), mReleased( false ), mFile( file ), mLine( line )
+                : mContext( *context ), mReleased( false ), mFile( file ), mLine( line )
 {
     LAMA_LOG_INFO( logger, *this << " enabled" )
 
@@ -50,7 +50,7 @@ ContextAccess::ContextAccess( ContextPtr context, const char* file, int line )
 
 void ContextAccess::release()
 {
-    if ( mReleased )
+    if( mReleased )
     {
         return;
     }

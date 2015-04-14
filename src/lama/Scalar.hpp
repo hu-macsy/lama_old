@@ -2,7 +2,7 @@
  * @file Scalar.hpp
  *
  * @license
- * Copyright (c) 2009-2013
+ * Copyright (c) 2009-2015
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -60,7 +60,7 @@ namespace lama
  * that are universal for all arithmetic types, especially for code
  * parts that use book syntax.
  *
- * For a Scalar the arithmetic operations +, -, *, / etc. are 
+ * For a Scalar the arithmetic operations +, -, *, / etc. are
  * also supported to allow a high flexibility. But for efficiency
  * these operations should be avoided in all critical code parts.
  */
@@ -83,15 +83,15 @@ public:
      */
     enum ScalarType
     {
-        INDEX_TYPE,           //!<  synonymous for IndexType
-        FLOAT,                //!<  synonymous for float
-        DOUBLE,               //!<  synonymous for double
-        LONG_DOUBLE,          //!<  synonymous for long double
-        COMPLEX,              //!<  synonymous for complex
-        DOUBLE_COMPLEX,       //!<  synonymous for double complex
-        LONG_DOUBLE_COMPLEX,  //!<  synonymous for long double complex
-        PATTERN,              //!<  dummy type of size 0
-        INTERNAL,             //!<  take the type currently in use, getType<ValueType>()
+        INDEX_TYPE, //!<  synonymous for IndexType
+        FLOAT, //!<  synonymous for float
+        DOUBLE, //!<  synonymous for double
+        LONG_DOUBLE, //!<  synonymous for long double
+        COMPLEX, //!<  synonymous for complex
+        DOUBLE_COMPLEX, //!<  synonymous for double complex
+        LONG_DOUBLE_COMPLEX, //!<  synonymous for long double complex
+        PATTERN, //!<  dummy type of size 0
+        INTERNAL, //!<  take the type currently in use, getType<ValueType>()
         UNKNOWN
     };
 
@@ -108,7 +108,7 @@ public:
     /**
      * @brief Constructs a scalar representing the passed real value.
      *
-     * The templated conversion constructor needs to be explicit, 
+     * The templated conversion constructor needs to be explicit,
      * because the operator==(Scalar,Scalar) can lead to ambiguities.
      *
      * @tparam ValueType          type of the input argument value for constructor of Scalar
@@ -230,9 +230,9 @@ protected:
 
     LAMA_LOG_DECL_STATIC_LOGGER( logger )
 
-private:
+private    :
 
-    ComplexLongDouble mValue;   //!< use highest precision for presentation
+    ComplexLongDouble mValue; //!< use highest precision for presentation
 };
 
 /** Output of ScalarType in stream is supported and very useful.
@@ -254,49 +254,49 @@ ValueType cast( const Scalar& scalar )
 const Scalar zero;
 
 inline Scalar::Scalar()
-    : mValue( 0.0, 0.0 )
+                : mValue( 0.0, 0.0 )
 {
 }
 
 template<typename ValueType>
 inline Scalar::Scalar( const ValueType value )
-    : mValue( value, 0.0 )
+                : mValue( value, 0.0 )
 {
 }
 
 inline Scalar::Scalar( const float value )
-    : mValue( value, 0.0 )
+                : mValue( value, 0.0 )
 {
 }
 
 inline Scalar::Scalar( const float real, const float imag )
-    : mValue( real, imag )
+                : mValue( real, imag )
 {
 }
 
 inline Scalar::Scalar( const double value )
-    : mValue( value, 0.0 )
+                : mValue( value, 0.0 )
 {
 }
 
 inline Scalar::Scalar( const double real, const double imag )
-    : mValue( real, imag )
+                : mValue( real, imag )
 {
 }
 
 inline Scalar::Scalar( const LongDouble value )
-    : mValue( value, 0.0 )
+                : mValue( value, 0.0 )
 {
 }
 
 inline Scalar::Scalar( const LongDouble real, const LongDouble imag )
-    : mValue( real, imag )
+                : mValue( real, imag )
 {
 }
 
 template<typename ValueType>
 inline Scalar::Scalar( const Complex<ValueType> value )
-    : mValue( value.real(), value.imag() )
+                : mValue( value.real(), value.imag() )
 {
 }
 
@@ -340,10 +340,12 @@ inline bool Scalar::isReal() const
 
 inline void Scalar::writeAt( std::ostream& stream ) const
 {
-    if ( isReal() )
+    if( isReal() )
     {
         stream << "Scalar(" << mValue.real() << ")";
-    } else {
+    }
+    else
+    {
         stream << "Scalar(" << mValue.real() << "," << mValue.imag() << ")";
     }
 }
@@ -403,27 +405,27 @@ inline size_t Scalar::getTypeSize( const ScalarType type )
     switch( type )
     {
         case FLOAT:
-            typeSize = sizeof( float );
+            typeSize = sizeof(float);
             break;
 
         case DOUBLE:
-            typeSize = sizeof( double );
+            typeSize = sizeof(double);
             break;
 
         case LONG_DOUBLE:
-            typeSize = sizeof( LongDouble );
+            typeSize = sizeof(LongDouble);
             break;
 
         case COMPLEX:
-            typeSize = sizeof( ComplexFloat );
+            typeSize = sizeof(ComplexFloat);
             break;
 
         case DOUBLE_COMPLEX:
-            typeSize = sizeof( ComplexDouble );
+            typeSize = sizeof(ComplexDouble);
             break;
 
         case LONG_DOUBLE_COMPLEX:
-            typeSize = sizeof( ComplexLongDouble );
+            typeSize = sizeof(ComplexLongDouble);
             break;
 
         default:

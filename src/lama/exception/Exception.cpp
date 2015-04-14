@@ -2,7 +2,7 @@
  * @file Exception.cpp
  *
  * @license
- * Copyright (c) 2009-2013
+ * Copyright (c) 2009-2015
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -42,12 +42,12 @@
 #include <sstream>
 
 #ifndef _WIN32
-    #include <execinfo.h>
+#include <execinfo.h>
 #endif //_WIND32
 
 #ifdef __GNUC__
-    #include <cxxabi.h>
-    #include <cstring>
+#include <cxxabi.h>
+#include <cstring>
 #endif // __GNUC__
 
 namespace lama
@@ -59,35 +59,35 @@ Exception::UnsupportedType Exception::unsupportedSetting = Exception::UNSUPPORTE
 
 Exception::UnsupportedType Exception::getUnsupportedSetting()
 {
-    if ( unsupportedSetting == UNSUPPORTED_UNDEFINED )
+    if( unsupportedSetting == UNSUPPORTED_UNDEFINED )
     {
         std::string val = "WARN";
 
         bool isSet = Settings::getEnvironment( val, "LAMA_UNSUPPORTED" );
 
-        if ( !isSet )
+        if( !isSet )
         {
             LAMA_LOG_WARN( logger, "LAMA_UNSUPPORTED not set, default is WARN" )
         }
 
         // transform to uppercase
 
-        for ( std::string::iterator p = val.begin(); val.end() != p; ++p )
+        for( std::string::iterator p = val.begin(); val.end() != p; ++p )
         {
             *p = static_cast<char>( toupper( *p ) );
         }
 
         LAMA_LOG_INFO( logger, "LAMA_UNSUPPORTED=" << val << ", setting used for LAMA" )
 
-        if ( "IGNORE" == val )
+        if( "IGNORE" == val )
         {
             unsupportedSetting = UNSUPPORTED_IGNORE;
         }
-        else if ( "WARN" == val )
+        else if( "WARN" == val )
         {
             unsupportedSetting = UNSUPPORTED_WARN;
         }
-        else if ( "ERROR" == val )
+        else if( "ERROR" == val )
         {
             unsupportedSetting = UNSUPPORTED_ERROR;
         }
@@ -131,7 +131,7 @@ void Exception::addCallStack( std::ostringstream& output )
     size_t stackDepth = backtrace( stackAddrs, maxDepth );
     char** stackStrings = backtrace_symbols( stackAddrs, stackDepth );
 
-    for ( size_t i = 1; i < stackDepth; i++ )
+    for( size_t i = 1; i < stackDepth; i++ )
     {
         output << "   stack[" << i << "] : " << demangle( stackStrings[i] ) << std::endl;
     }
@@ -148,19 +148,21 @@ std::string Exception::demangle( const char* functionName )
 
     char* begin = 0;
     char* end = 0;
+
     // find the parentheses and address offset surrounding the mangled name
-    for ( char *j = string; *j; ++j )
+    for( char *j = string; *j; ++j )
     {
-        if ( *j == '(' )
+        if( *j == '(' )
         {
             begin = j;
         }
-        else if ( *j == '+' )
+        else if( *j == '+' )
         {
             end = j;
         }
     }
-    if ( begin && end )
+
+    if( begin && end )
     {
         begin++;
         *end = '\0';
@@ -168,7 +170,8 @@ std::string Exception::demangle( const char* functionName )
 
         int status;
         char *ret = abi::__cxa_demangle( begin, 0, 0, &status );
-        if ( status == 0 )
+
+        if( status == 0 )
         {
             // return value may be a realloc() of the input
             demangledString = ret;
@@ -181,7 +184,8 @@ std::string Exception::demangle( const char* functionName )
             //function[sz-1] = ' ';
             demangledString = string;
         }
-        if ( ret )
+
+        if( ret )
         {
             free( ret );
         }
@@ -191,6 +195,7 @@ std::string Exception::demangle( const char* functionName )
         // didn't find the mangled name, just print the whole line
         demangledString = string;
     }
+
     return demangledString;
 }
 

@@ -2,7 +2,7 @@
  * @file LAMAInterface.hpp
  *
  * @license
- * Copyright (c) 2009-2013
+ * Copyright (c) 2009-2015
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -57,7 +57,7 @@ namespace lama
  * Note: Instead of using virtual routines this class uses function pointer variables.
  *       They are stored in one- or two-dimensional arrays indexed by types.
  */
-class LAMA_DLL_IMPORTEXPORT LAMAInterface : public Printable
+class LAMA_DLL_IMPORTEXPORT LAMAInterface: public Printable
 {
 public:
 
@@ -74,22 +74,22 @@ public:
 
     // one member variable for each Interface
 
-    BLASInterface       BLAS;        //!< interface table for BLAS routines
+    BLASInterface BLAS; //!< interface table for BLAS routines
 
-    CSRUtilsInterface   CSRUtils;
+    CSRUtilsInterface CSRUtils;
     DenseUtilsInterface DenseUtils;
-    ELLUtilsInterface   ELLUtils;
-    JDSUtilsInterface   JDSUtils;
-    DIAUtilsInterface   DIAUtils;
-    COOUtilsInterface   COOUtils;
-    UtilsInterface      Utils;
+    ELLUtilsInterface ELLUtils;
+    JDSUtilsInterface JDSUtils;
+    DIAUtilsInterface DIAUtils;
+    COOUtilsInterface COOUtils;
+    UtilsInterface Utils;
 
 protected:
 
-    LAMA_LOG_DECL_STATIC_LOGGER(logger)
-};
+    LAMA_LOG_DECL_STATIC_LOGGER(logger)};
 
-} //namespace lama
+}
+//namespace lama
 
 /** macros for getting function pointers
  *
@@ -101,7 +101,7 @@ protected:
 
 #define LAMA_INTERFACE_FN( function, loc, module, structname )                                \
     typename module##Interface::structname::function function =                               \
-       loc->getInterface().module.function();                                                 \
+            loc->getInterface().module.function();                                                 \
     if ( function == NULL )                                                                   \
     {                                                                                         \
         LAMA_THROWEXCEPTION( "Method " #module "::" #function " not available on " << *loc ); \
@@ -111,7 +111,7 @@ protected:
 
 #define LAMA_INTERFACE_FN_DEFAULT( function, loc, module, structname )                        \
     typename module##Interface::structname::function function =                               \
-       loc->getInterface().module.function();                                                 \
+            loc->getInterface().module.function();                                                 \
     if ( function == NULL )                                                                   \
     {                                                                                         \
         LAMA_UNSUPPORTED( "Method " #module "::" #function " not available on " << *loc );    \
@@ -142,7 +142,7 @@ protected:
 
 #define LAMA_INTERFACE_FN_DEFAULT_T( function, loc, module, structname, ValueType )           \
     typename module##Interface::structname<ValueType>::function function =                    \
-       loc->getInterface().module.function<ValueType>();                                      \
+            loc->getInterface().module.function<ValueType>();                                      \
     if ( function == NULL )                                                                   \
     {                                                                                         \
         LAMA_UNSUPPORTED( "Method " #module "::" #function " not available on " << *loc );    \

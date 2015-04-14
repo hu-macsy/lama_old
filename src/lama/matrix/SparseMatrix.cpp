@@ -2,7 +2,7 @@
  * @file SparseMatrix.cpp
  *
  * @license
- * Copyright (c) 2009-2013
+ * Copyright (c) 2009-2015
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -70,9 +70,10 @@ LAMA_LOG_DEF_TEMPLATE_LOGGER( template<typename ValueType>, SparseMatrix<ValueTy
 /* ---------------------------------------------------------------------------------------*/
 
 template<typename ValueType>
-SparseMatrix<ValueType>::SparseMatrix( boost::shared_ptr<MatrixStorage<ValueType> > storage ) :
+SparseMatrix<ValueType>::SparseMatrix( boost::shared_ptr<MatrixStorage<ValueType> > storage )
+    :
 
-    CRTPMatrix<SparseMatrix<ValueType>, ValueType >( storage->getNumRows(), storage->getNumColumns() )
+    CRTPMatrix<SparseMatrix<ValueType>,ValueType>( storage->getNumRows(), storage->getNumColumns() )
 {
     mLocalData = storage;
     // create empty halo with same storage format
@@ -85,17 +86,18 @@ template<typename ValueType>
 SparseMatrix<ValueType>::SparseMatrix( boost::shared_ptr<MatrixStorage<ValueType> > storage, DistributionPtr rowDist )
     :
 
-    CRTPMatrix<SparseMatrix<ValueType>, ValueType >( rowDist, DistributionPtr( new NoDistribution( storage->getNumColumns() ) ) )
+    CRTPMatrix<SparseMatrix<ValueType>,ValueType>(
+       rowDist, DistributionPtr( new NoDistribution( storage->getNumColumns() ) ) )
 {
     mLocalData = storage;
     // create empty halo with same storage format
     mHaloData = shared_ptr<MatrixStorage<ValueType> >( storage->create() );
 
-    if ( storage->getNumRows() == rowDist->getLocalSize() )
+    if( storage->getNumRows() == rowDist->getLocalSize() )
     {
         // data fits, no more to do
     }
-    else if ( storage->getNumRows() == rowDist->getGlobalSize() )
+    else if( storage->getNumRows() == rowDist->getGlobalSize() )
     {
         // localize the data according to row distribution, use splitHalo with replicated columns
 
@@ -116,7 +118,7 @@ SparseMatrix<ValueType>::SparseMatrix(
     DistributionPtr colDist )
     :
 
-    CRTPMatrix<SparseMatrix<ValueType>, ValueType >( rowDist, colDist )
+    CRTPMatrix<SparseMatrix<ValueType>,ValueType>( rowDist, colDist )
 {
     LAMA_ASSERT_EQUAL_ERROR( localData->getNumColumns(), colDist->getGlobalSize() )
 
@@ -124,14 +126,14 @@ SparseMatrix<ValueType>::SparseMatrix(
     // create empty halo with same storage format
     mHaloData = shared_ptr<MatrixStorage<ValueType> >( localData->create() );
 
-    if ( localData->getNumRows() == rowDist->getLocalSize() )
+    if( localData->getNumRows() == rowDist->getLocalSize() )
     {
         // build just the halo
 
         mLocalData->splitHalo( *mLocalData, *mHaloData, mHalo, *colDist, NULL );
 
     }
-    else if ( localData->getNumRows() == rowDist->getGlobalSize() )
+    else if( localData->getNumRows() == rowDist->getGlobalSize() )
     {
         // we also localize the data
 
@@ -154,7 +156,7 @@ SparseMatrix<ValueType>::SparseMatrix(
     DistributionPtr colDist )
     :
 
-    CRTPMatrix<SparseMatrix<ValueType>, ValueType >( rowDist, colDist )
+    CRTPMatrix<SparseMatrix<ValueType>,ValueType>( rowDist, colDist )
 {
     LAMA_LOG_INFO( logger, "Construct sparse matrix with finalized local, halo storage + Halo" )
 
@@ -190,7 +192,7 @@ void SparseMatrix<ValueType>::checkSettings()
 {
     Matrix::checkSettings();
 
-    if ( mHaloData->getNumRows() )
+    if( mHaloData->getNumRows() )
     {
         // If halo storage is available, its size must fit with local storage
 
@@ -219,7 +221,7 @@ bool SparseMatrix<ValueType>::isConsistent() const
 
         // ToDo: check Halo
     }
-    catch ( ... )
+    catch( ... )
     {
         consistencyErrors = 1;
     }
@@ -239,7 +241,7 @@ SparseMatrix<ValueType>::SparseMatrix( const Matrix& other, const bool transpose
 {
     Matrix::inheritAttributes( other ); // context, communication, compute kind
 
-    if ( transposeFlag )
+    if( transposeFlag )
     {
         assignTranspose( other );
     }
@@ -267,7 +269,7 @@ template<typename ValueType>
 SparseMatrix<ValueType>::SparseMatrix( const SparseMatrix<ValueType>& other )
     :
 
-    CRTPMatrix<SparseMatrix<ValueType>, ValueType >( other )
+    CRTPMatrix<SparseMatrix<ValueType>,ValueType>( other )
 
 {
     // instead of calling assign( other ), we copy directly to avoid type queries
@@ -351,7 +353,7 @@ void SparseMatrix<ValueType>::assign( const Matrix& matrix )
 
     const SparseMatrix<ValueType>* sparseMatrix = dynamic_cast<const SparseMatrix<ValueType>*>( &matrix );
 
-    if ( sparseMatrix )
+    if( sparseMatrix )
     {
         // for a sparse matrix local + halo part can be assigned
 
@@ -381,7 +383,7 @@ void SparseMatrix<ValueType>::assignTranspose( const Matrix& matrix )
 
     const SparseMatrix<ValueType>* sparseMatrix = dynamic_cast<const SparseMatrix<ValueType>*>( &matrix );
 
-    if ( sparseMatrix )
+    if( sparseMatrix )
     {
         assignTransposeImpl( *sparseMatrix );
     }
@@ -403,17 +405,17 @@ void SparseMatrix<ValueType>::assignTransposeImpl( const SparseMatrix<ValueType>
 
     Matrix::setDistributedMatrix( matrix.getColDistributionPtr(), matrix.getDistributionPtr() );
 
-    if ( getDistribution().isReplicated() && getColDistribution().isReplicated() )
+    if( getDistribution().isReplicated() && getColDistribution().isReplicated() )
     {
         mLocalData->assignTranspose( matrix.getLocalStorage() );
         mHaloData->allocate( getDistribution().getLocalSize(), mNumColumns );
         mHalo.clear();
     }
-    else if ( getDistribution().isReplicated() )
+    else if( getDistribution().isReplicated() )
     {
         LAMA_THROWEXCEPTION( "transpose not supported for replicated matrices with distributed columns" )
     }
-    else if ( getColDistribution().isReplicated() )
+    else if( getColDistribution().isReplicated() )
     {
         LAMA_THROWEXCEPTION( "transpose not supported for distributed matrices with replicated columns" )
     }
@@ -474,7 +476,8 @@ void SparseMatrix<ValueType>::assignTransposeImpl( const SparseMatrix<ValueType>
             const IndexType nJA = sendJA.size();
 
             HostWriteAccess<IndexType> ja( sendJA );
-            for ( IndexType jj = 0; jj < nJA; ++jj )
+
+            for( IndexType jj = 0; jj < nJA; ++jj )
             {
                 ja[jj] = dist.local2global( ja[jj] );
             }
@@ -528,8 +531,9 @@ void SparseMatrix<ValueType>::assignTransposeImpl( const SparseMatrix<ValueType>
 /* -------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void SparseMatrix<ValueType>::assign( const SparseMatrix<ValueType>& matrix ){
-    if ( this == &matrix )
+void SparseMatrix<ValueType>::assign( const SparseMatrix<ValueType>& matrix )
+{
+    if( this == &matrix )
     {
         LAMA_LOG_INFO( logger, "self assign sparse matrix = " << matrix )
     }
@@ -571,7 +575,8 @@ void SparseMatrix<ValueType>::assign( const _MatrixStorage& storage )
 template<typename ValueType>
 void SparseMatrix<ValueType>::assign( const _MatrixStorage& storage, DistributionPtr rowDist, DistributionPtr colDist )
 {
-    LAMA_LOG_INFO( logger, "assign storage = " << storage << ", row dist = " << *rowDist << ", col dist = " << *colDist );
+    LAMA_LOG_INFO( logger,
+                   "assign storage = " << storage << ", row dist = " << *rowDist << ", col dist = " << *colDist );
 
     LAMA_ASSERT_EQUAL_ERROR( storage.getNumColumns(), colDist->getGlobalSize() )
 
@@ -579,7 +584,7 @@ void SparseMatrix<ValueType>::assign( const _MatrixStorage& storage, Distributio
 
     const MatrixStorage<ValueType>* typedStorage = dynamic_cast<const MatrixStorage<ValueType>*>( &storage );
 
-    if ( !typedStorage )
+    if( !typedStorage )
     {
         mLocalData->assign( storage ); // conversion
         typedStorage = mLocalData.get();
@@ -589,32 +594,32 @@ void SparseMatrix<ValueType>::assign( const _MatrixStorage& storage, Distributio
 
     const Communicator& comm = rowDist->getCommunicator();
 
-    bool isLocal  = storage.getNumRows() == rowDist->getLocalSize();
+    bool isLocal = storage.getNumRows() == rowDist->getLocalSize();
     bool isGlobal = storage.getNumRows() == rowDist->getGlobalSize();
 
-    bool allLocal  = comm.all( isLocal  );    // local storage on all processors
-    bool allGlobal = comm.all( isGlobal );    // global storage on all processors
+    bool allLocal = comm.all( isLocal ); // local storage on all processors
+    bool allGlobal = comm.all( isGlobal ); // global storage on all processors
 
-    if ( allLocal )
+    if( allLocal )
     {
         // each processor has exactly its local part
 
         typedStorage->splitHalo( *mLocalData, *mHaloData, mHalo, *colDist, NULL );
     }
 
-    else if ( allGlobal )
+    else if( allGlobal )
     {
         // we also localize the rows of the matrix
 
         typedStorage->splitHalo( *mLocalData, *mHaloData, mHalo, *colDist, rowDist.get() );
     }
- 
+
     else
     {
         // Note: all processors with throw this exception
 
-        LAMA_THROWEXCEPTION( comm << ": " << storage << ": does not fit to row distribution " 
-                              << *rowDist << ", isLocal = " << isLocal << ", isGlobal = " << isGlobal )
+        LAMA_THROWEXCEPTION(
+            comm << ": " << storage << ": does not fit to row distribution " << *rowDist << ", isLocal = " << isLocal << ", isGlobal = " << isGlobal )
     }
 
     LAMA_LOG_INFO( logger, "assign done: " << *this );
@@ -625,7 +630,7 @@ void SparseMatrix<ValueType>::assign( const _MatrixStorage& storage, Distributio
 template<typename ValueType>
 void SparseMatrix<ValueType>::buildLocalStorage( _MatrixStorage& storage ) const
 {
-    if ( getColDistribution().isReplicated() )
+    if( getColDistribution().isReplicated() )
     {
         // copy local storage with format / value conversion
 
@@ -685,7 +690,7 @@ void SparseMatrix<ValueType>::redistribute( DistributionPtr rowDistributionPtr, 
 
     // Handle all cases where we do not have to join the local/halo data of matrix
 
-    if ( getDistribution() == *oldRowDistributionPtr && getColDistribution() == *oldColDistributionPtr )
+    if( getDistribution() == *oldRowDistributionPtr && getColDistribution() == *oldColDistributionPtr )
     {
         LAMA_LOG_INFO( logger, "row/column distribution are same" )
         return;
@@ -695,7 +700,7 @@ void SparseMatrix<ValueType>::redistribute( DistributionPtr rowDistributionPtr, 
     ContextPtr localCtx = mLocalData->getContextPtr();
     ContextPtr haloCtx = mHaloData->getContextPtr();
 
-    if ( oldColDistributionPtr->isReplicated() )
+    if( oldColDistributionPtr->isReplicated() )
     {
         LAMA_LOG_DEBUG( logger, "No column distribution, no halo" )
     }
@@ -753,14 +758,14 @@ set( const MatrixStorage<ValueType>& otherLocalData, DistributionPtr otherDist )
 
     LAMA_ASSERT_EQUAL_ERROR( otherLocalData.getNumColumns(), getColDistribution().getGlobalSize() )
 
-    if ( *otherDist == getDistribution() )
+    if( *otherDist == getDistribution() )
     {
         LAMA_LOG_INFO( logger, "same row distribution, assign local" )
 
         otherLocalData.splitHalo( *mLocalData, *mHaloData, mHalo, getColDistribution(), NULL );
 
     }
-    else if ( otherDist->isReplicated() )
+    else if( otherDist->isReplicated() )
     {
         // we have to localize and split the other matrix
 
@@ -772,7 +777,7 @@ set( const MatrixStorage<ValueType>& otherLocalData, DistributionPtr otherDist )
         otherLocalData.splitHalo( *mLocalData, *mHaloData, mHalo, getColDistribution(), getDistributionPtr().get() );
 
     }
-    else if ( getDistribution().isReplicated() )
+    else if( getDistribution().isReplicated() )
     {
         LAMA_LOG_INFO( logger, "Replication of distributed matrix storage: " << otherLocalData )
 
@@ -822,13 +827,13 @@ void SparseMatrix<ValueType>::getLocalRow( DenseVector<ValueType>& row, const In
 
     // Owner of row fills the row by data from local and halo data
 
-    for ( IndexType j = 0; j < getNumColumns(); ++j )
+    for( IndexType j = 0; j < getNumColumns(); ++j )
     {
         IndexType jLocal = distributionCol.global2local( j );
 
         LAMA_LOG_TRACE( logger, "global column " << j << " of " << getNumColumns() << " is local " << jLocal )
 
-        if ( nIndex != jLocal )
+        if( nIndex != jLocal )
         {
             rowAccess[j] = mLocalData->getValue( iLocal, jLocal );
         }
@@ -860,7 +865,7 @@ void SparseMatrix<ValueType>::getRow( Vector& row, const IndexType globalRowInde
 
     // on a replicated matrix each processor can fill the row
 
-    if ( getDistribution().isReplicated() )
+    if( getDistribution().isReplicated() )
     {
         LAMA_LOG_INFO( logger, "get local row " << globalRowIndex )
 
@@ -878,7 +883,7 @@ void SparseMatrix<ValueType>::getRow( Vector& row, const IndexType globalRowInde
 
     IndexType owner = 0;
 
-    if ( localRowIndex != nIndex )
+    if( localRowIndex != nIndex )
     {
         getLocalRow( *typedRow, localRowIndex );
         owner = comm.getRank() + 1;
@@ -901,7 +906,7 @@ void SparseMatrix<ValueType>::getRow( Vector& row, const IndexType globalRowInde
 template<typename ValueType>
 void SparseMatrix<ValueType>::getDiagonal( Vector& diagonal ) const
 {
-    if ( getDistribution() != getColDistribution() )
+    if( getDistribution() != getColDistribution() )
     {
         LAMA_THROWEXCEPTION( *this << ": set diagonal only supported for row = col distribution." )
     }
@@ -919,12 +924,12 @@ void SparseMatrix<ValueType>::getDiagonal( Vector& diagonal ) const
 template<typename ValueType>
 void SparseMatrix<ValueType>::setDiagonal( const Vector& diagonal )
 {
-    if ( getDistribution() != getColDistribution() )
+    if( getDistribution() != getColDistribution() )
     {
         LAMA_THROWEXCEPTION( *this << ": set diagonal only supported for row = col distribution." )
     }
 
-    if ( getDistribution() != diagonal.getDistribution() )
+    if( getDistribution() != diagonal.getDistribution() )
     {
         LAMA_THROWEXCEPTION( diagonal << ": distribution does not fit row distribution of matrix" )
     }
@@ -943,7 +948,7 @@ void SparseMatrix<ValueType>::setDiagonal( const Vector& diagonal )
 template<typename ValueType>
 void SparseMatrix<ValueType>::setDiagonal( Scalar value )
 {
-    if ( getDistribution() != getColDistribution() )
+    if( getDistribution() != getColDistribution() )
     {
         LAMA_THROWEXCEPTION( "Diagonal calculation only for equal distributions." )
     }
@@ -956,7 +961,7 @@ void SparseMatrix<ValueType>::setDiagonal( Scalar value )
 template<typename ValueType>
 void SparseMatrix<ValueType>::scale( const Vector& scaling )
 {
-    if ( scaling.getDistribution() != getDistribution() )
+    if( scaling.getDistribution() != getDistribution() )
     {
         LAMA_THROWEXCEPTION(
             scaling << ": scale vector distribution does not fit matrix row distribution " << getDistribution() );
@@ -970,7 +975,7 @@ void SparseMatrix<ValueType>::scale( const Vector& scaling )
 
     // scale Halo storage only if it is used; otherwise there might be a size mismatch
 
-    if ( mHaloData->getNumRows() )
+    if( mHaloData->getNumRows() )
     {
         mHaloData->scale( localValues );
     }
@@ -982,15 +987,15 @@ template<typename ValueType>
 void SparseMatrix<ValueType>::scale( Scalar scaling )
 {
     /* removed: not required
-    if ( getDistribution() != getColDistribution() )
-    {
-        LAMA_THROWEXCEPTION( "Scale only for equal distributions." )
-    }
-    */
+     if ( getDistribution() != getColDistribution() )
+     {
+     LAMA_THROWEXCEPTION( "Scale only for equal distributions." )
+     }
+     */
 
     mLocalData->scale( scaling );
 
-    if ( mHaloData->getNumRows() )
+    if( mHaloData->getNumRows() )
     {
         mHaloData->scale( scaling );
     }
@@ -1009,7 +1014,7 @@ void SparseMatrix<ValueType>::matrixTimesMatrix(
     LAMA_LOG_INFO( logger,
                    "result = alpha * A * B + beta * C with result = " << result << ", alpha = " << alpha << ", A = " << *this << ", B = " << B << ", beta = " << beta << ", C = " << C )
 
-    if ( result.getMatrixKind() == Matrix::DENSE )
+    if( result.getMatrixKind() == Matrix::DENSE )
     {
         // we can deal here with DenseMatrix = SparseMatrix * DenseMatrix + DenseMatrix as it can
         // be considered as matrixTimesVectorN
@@ -1026,7 +1031,7 @@ void SparseMatrix<ValueType>::matrixTimesMatrix(
 
         const DenseMatrix<ValueType>* typedC = dynamic_cast<const DenseMatrix<ValueType>*>( &C );
 
-        if ( betaVal != 0 )
+        if( betaVal != 0 )
         {
             LAMA_ASSERT_ERROR( typedC, "Must be dense matrix<" << getValueType() << "> : " << C )
         }
@@ -1101,7 +1106,7 @@ void SparseMatrix<ValueType>::matrixPlusMatrixImpl(
     LAMA_ASSERT_EQUAL_DEBUG( A.getDistribution(), B.getDistribution() )
     LAMA_ASSERT_EQUAL_DEBUG( A.getColDistribution(), B.getColDistribution() )
 
-    if ( !B.getColDistribution().isReplicated() )
+    if( !B.getColDistribution().isReplicated() )
     {
         LAMA_THROWEXCEPTION( "matrixA * matrixB only supported for replicated columns" << " in matrixB = " << B )
     }
@@ -1132,7 +1137,7 @@ void SparseMatrix<ValueType>::matrixTimesMatrixImpl(
 
     LAMA_LOG_DEBUG( logger, "Context lhs before mult " << mLocalData->getContext() )
 
-    if ( !B.getColDistribution().isReplicated() )
+    if( !B.getColDistribution().isReplicated() )
     {
         LAMA_THROWEXCEPTION( "matrixA * matrixB only supported for replicated columns" << " in matrixB = " << B )
     }
@@ -1141,7 +1146,7 @@ void SparseMatrix<ValueType>::matrixTimesMatrixImpl(
 
     LAMA_ASSERT_EQUAL_DEBUG( A.getColDistribution(), B.getDistribution() )
 
-    if ( beta != 0.0 )
+    if( beta != 0.0 )
     {
         LAMA_ASSERT_ERROR( C.getDistribution() == A.getDistribution(),
                            "Row distribution must be " << A.getDistribution() << ": " << C )
@@ -1157,7 +1162,7 @@ void SparseMatrix<ValueType>::matrixTimesMatrixImpl(
 
     LAMA_LOG_INFO( logger, "local result =  " << *mLocalData )
 
-    if ( !A.getColDistribution().isReplicated() )
+    if( !A.getColDistribution().isReplicated() )
     {
         CSRStorage<ValueType> haloB; // take CSR format, avoids additional conversions
 
@@ -1185,28 +1190,31 @@ void SparseMatrix<ValueType>::haloOperationSync(
     LAMAArray<ValueType>& localResult,
     const LAMAArray<ValueType>& localX,
     LAMAArray<ValueType>& haloX,
-    boost::function <void( const MatrixStorage<ValueType>* localMatrix, 
-                           LAMAArray<ValueType>& localResult,
-                           const LAMAArray<ValueType>& localX )> localF,
-    boost::function <void( const MatrixStorage<ValueType>* haloMatrix, 
-                           LAMAArray<ValueType>& localResult,
-                           const LAMAArray<ValueType>& haloX )> haloF ) const
+    boost::function<
+    void(
+        const MatrixStorage<ValueType>* localMatrix,
+        LAMAArray<ValueType>& localResult,
+        const LAMAArray<ValueType>& localX )> localF,
+    boost::function<
+    void(
+        const MatrixStorage<ValueType>* haloMatrix,
+        LAMAArray<ValueType>& localResult,
+        const LAMAArray<ValueType>& haloX )> haloF ) const
 {
     const Communicator& comm = getColDistribution().getCommunicator();
 
-    if ( !mHalo.isEmpty() )
+    if( !mHalo.isEmpty() )
     {
         // gather local values of X needed by other processors
 
-        if ( mHalo.getProvidesIndexes().size() > 0 )
+        if( mHalo.getProvidesIndexes().size() > 0 )
         {
             // We might receive vaules but do not send them, so the halo might be none empty but provides indexes are.
 
             LAMA_REGION( "Mat.Sp.syncGatherHalo" )
 
-            LAMA_LOG_INFO( logger, comm << ": gather " << mHalo.getProvidesIndexes().size() 
-                                   << " values of X to provide on "
-                                   <<  *localX.getValidContext( Context::Host ) );
+            LAMA_LOG_INFO( logger,
+                           comm << ": gather " << mHalo.getProvidesIndexes().size() << " values of X to provide on " << *localX.getValidContext( Context::Host ) );
 
             LAMAArrayUtils::gather( mTempSendValues, localX, mHalo.getProvidesIndexes() );
 
@@ -1221,12 +1229,12 @@ void SparseMatrix<ValueType>::haloOperationSync(
             comm.exchangeByPlan( haloX, mHalo.getRequiredPlan(), mTempSendValues, mHalo.getProvidesPlan() );
         }
 
-        if ( haloX.size() > 0 )
+        if( haloX.size() > 0 )
         {
             LAMA_REGION( "Mat.Sp.syncPrefetchHalo" )
 
-            LAMA_LOG_INFO( logger, comm << ": prefetch " << haloX.size() << " halo values of X to : "
-                                   << mHaloData->getContext() );
+            LAMA_LOG_INFO( logger,
+                           comm << ": prefetch " << haloX.size() << " halo values of X to : " << mHaloData->getContext() );
 
             // During the local computation we prefetch already haloX where it is need
 
@@ -1237,25 +1245,24 @@ void SparseMatrix<ValueType>::haloOperationSync(
     {
         LAMA_LOG_INFO( logger, "No halo update needed." )
 
-        haloX.clear();   // sets size to 0, but does not free allocated memory
+        haloX.clear(); // sets size to 0, but does not free allocated memory
     }
 
     {
         LAMA_REGION( "Mat.Sp.syncLocal" )
 
-        LAMA_LOG_INFO( logger, comm << ": synchronous computation localResult[ " << localResult.size()
-                               << "] = localF( localMatrix, localX[ " << localX.size()
-                               << "] ) on " << mLocalData->getContext() )
+        LAMA_LOG_INFO( logger,
+                       comm << ": synchronous computation localResult[ " << localResult.size() << "] = localF( localMatrix, localX[ " << localX.size() << "] ) on " << mLocalData->getContext() )
 
         localF( mLocalData.get(), localResult, localX );
     }
 
-    if ( haloX.size() > 0 )
+    if( haloX.size() > 0 )
     {
         LAMA_REGION( "Mat.Sp.syncHalo" )
 
-        LAMA_LOG_INFO( logger, comm << ": compute with " << haloX.size()
-                               << " halo values on " << mHaloData->getContext() );
+        LAMA_LOG_INFO( logger,
+                       comm << ": compute with " << haloX.size() << " halo values on " << mHaloData->getContext() );
 
         // now we can update the result with haloMatrix and halo values of X
 
@@ -1269,15 +1276,19 @@ void SparseMatrix<ValueType>::haloOperationSync(
 
 template<typename ValueType>
 void SparseMatrix<ValueType>::vectorHaloOperationSync(
-                LAMAArray<ValueType>& localResult,
-                const LAMAArray<ValueType>& localX,
-                const LAMAArray<ValueType>& localY,
-                boost::function <void( const MatrixStorage<ValueType>* localMatrix,
-                                       LAMAArray<ValueType>& localResult,
-                                       const LAMAArray<ValueType>& localX )> calcF,
-                boost::function <void( LAMAArray<ValueType>& localResult,
-                                       const LAMAArray<ValueType>& localX,
-                                       const LAMAArray<ValueType>& localY )> addF ) const
+    LAMAArray<ValueType>& localResult,
+    const LAMAArray<ValueType>& localX,
+    const LAMAArray<ValueType>& localY,
+    boost::function<
+    void(
+        const MatrixStorage<ValueType>* localMatrix,
+        LAMAArray<ValueType>& localResult,
+        const LAMAArray<ValueType>& localX )> calcF,
+    boost::function<
+    void(
+        LAMAArray<ValueType>& localResult,
+        const LAMAArray<ValueType>& localX,
+        const LAMAArray<ValueType>& localY )> addF ) const
 {
     DistributionPtr rowDist = getDistributionPtr();
     DistributionPtr colDist = getColDistributionPtr();
@@ -1290,12 +1301,14 @@ void SparseMatrix<ValueType>::vectorHaloOperationSync(
     ContextPtr haloContext = mLocalData->getContextPtr();
 
     IndexType xSize = localX.size();
-    LAMA_ASSERT( xSize == rowDist->getLocalSize(), "size mismatch of localX and rowDistribution " << xSize << " != " << rowDist->getLocalSize() )
+    LAMA_ASSERT( xSize == rowDist->getLocalSize(),
+                 "size mismatch of localX and rowDistribution " << xSize << " != " << rowDist->getLocalSize() )
 
     IndexType ySize = localY.size();
     IndexType resultSize = localResult.size();
     LAMA_ASSERT( ySize == resultSize, "size mismatch of localY and localResult" << ySize << " != " << resultSize )
-    LAMA_ASSERT( ySize == colDist->getLocalSize(), "size mismatch of localY and columnDistribution" << ySize << " != " << colDist->getLocalSize() )
+    LAMA_ASSERT( ySize == colDist->getLocalSize(),
+                 "size mismatch of localY and columnDistribution" << ySize << " != " << colDist->getLocalSize() )
 
     LAMA_INTERFACE_FN( sizes2offsets, hostContext, CSRUtils, Offsets );
 
@@ -1310,15 +1323,14 @@ void SparseMatrix<ValueType>::vectorHaloOperationSync(
     LAMAArray<ValueType> toOthersResult( xSize * numParts );
     LAMAArray<ValueType> fromOthersResult( xSize * numParts );
 
-    if ( numParts != 1 )
+    if( numParts != 1 )
     {
         // calc halo vector parts
         {
             LAMA_REGION( "Vec.Times.Mat.others" )
 
-            LAMA_LOG_INFO( logger, comm << ": synchronous computation othersResult[ " << toOthersResult.size()
-                                        << "] = localF( haloMatrix, localX[ " << xSize
-                                        << "] ) on " << haloContext )
+            LAMA_LOG_INFO( logger,
+                           comm << ": synchronous computation othersResult[ " << toOthersResult.size() << "] = localF( haloMatrix, localX[ " << xSize << "] ) on " << haloContext )
 
             calcF( mHaloData.get(), haloResult, localX );
 
@@ -1326,12 +1338,14 @@ void SparseMatrix<ValueType>::vectorHaloOperationSync(
             {
                 HostReadAccess<ValueType> h( haloResult );
                 HostWriteAccess<ValueType> o( toOthersResult );
-                for(IndexType i = 0; i < toOthersResult.size(); ++i )
+
+                for( IndexType i = 0; i < toOthersResult.size(); ++i )
                 {
                     IndexType localIndex = mHalo.global2halo( i );
+
                     if( localIndex != nIndex )
                     {
-                        o[i] = h[ localIndex ];
+                        o[i] = h[localIndex];
                     }
                     else
                     {
@@ -1350,7 +1364,7 @@ void SparseMatrix<ValueType>::vectorHaloOperationSync(
 
             for( IndexType i = 0; i < numParts; ++i )
             {
-                comm.gather( &fromOthers[0], sizes[i], i, &toOthers[ offsets[i] ] );
+                comm.gather( &fromOthers[0], sizes[i], i, &toOthers[offsets[i]] );
             }
         }
         toOthersResult.prefetch( localContext );
@@ -1360,9 +1374,8 @@ void SparseMatrix<ValueType>::vectorHaloOperationSync(
     {
         LAMA_REGION( "Vec.Times.Mat.local" )
 
-        LAMA_LOG_INFO( logger, comm << ": synchronous computation localResult[ " << resultSize
-                                    << "] = localF( localMatrix, localX[ " << xSize
-                                    << "] ) on " << localContext )
+        LAMA_LOG_INFO( logger,
+                       comm << ": synchronous computation localResult[ " << resultSize << "] = localF( localMatrix, localX[ " << xSize << "] ) on " << localContext )
 
         calcF( mLocalData.get(), localResult, localX );
     }
@@ -1371,24 +1384,24 @@ void SparseMatrix<ValueType>::vectorHaloOperationSync(
     {
         LAMA_REGION( "Vec.Vec.add" )
 
-        LAMA_LOG_INFO( logger, comm << ": synchronous computation localResult[ " << resultSize
-                                    << "] = localF( localMatrix, localX[ " << xSize
-                                    << "] ) on " << localContext )
+        LAMA_LOG_INFO( logger,
+                       comm << ": synchronous computation localResult[ " << resultSize << "] = localF( localMatrix, localX[ " << xSize << "] ) on " << localContext )
 
-        if ( numParts != 1 )
+        if( numParts != 1 )
         {
             HostWriteAccess<ValueType> localData( localResult );
             HostReadAccess<ValueType> otherData( fromOthersResult );
+
             for( IndexType i = 0; i < numParts; ++i )
             {
-                if ( i == myPart )
+                if( i == myPart )
                 {
                     continue;
                 }
 
                 for( IndexType j = 0; j < xSize; ++j )
                 {
-                    localData[j] += otherData[ i * xSize + j ];
+                    localData[j] += otherData[i * xSize + j];
                 }
             }
         }
@@ -1406,27 +1419,30 @@ void SparseMatrix<ValueType>::haloOperationAsync(
     LAMAArray<ValueType>& localResult,
     const LAMAArray<ValueType>& localX,
     LAMAArray<ValueType>& haloX,
-    boost::function <SyncToken*( const MatrixStorage<ValueType>* localMatrix, 
-                                 LAMAArray<ValueType>& localResult,
-                                 const LAMAArray<ValueType>& localX )> localAsyncF,
-    boost::function <void( const MatrixStorage<ValueType>* haloMatrix, 
-                           LAMAArray<ValueType>& localResult,
-                           const LAMAArray<ValueType>& haloX )> haloF ) const
+    boost::function<
+    SyncToken*(
+        const MatrixStorage<ValueType>* localMatrix,
+        LAMAArray<ValueType>& localResult,
+        const LAMAArray<ValueType>& localX )> localAsyncF,
+    boost::function<
+    void(
+        const MatrixStorage<ValueType>* haloMatrix,
+        LAMAArray<ValueType>& localResult,
+        const LAMAArray<ValueType>& haloX )> haloF ) const
 {
     const Communicator& comm = getColDistribution().getCommunicator();
 
     // We might receive vaules but do not send them, so the halo might be none empty but provides indexes are.
 
-    if ( mHalo.getProvidesIndexes().size() > 0 )
+    if( mHalo.getProvidesIndexes().size() > 0 )
     {
         LAMA_REGION( "Mat.Sp.asyncGatherHalo" )
 
         // gather of halo data cannot be overlapped with local computations on a device
         // Note: gather will be done where denseX is available
 
-        LAMA_LOG_INFO( logger, comm << ": gather " << mHalo.getProvidesIndexes().size() 
-                               << " values of X to provide on "
-                               <<  *localX.getValidContext( Context::Host ) );
+        LAMA_LOG_INFO( logger,
+                       comm << ": gather " << mHalo.getProvidesIndexes().size() << " values of X to provide on " << *localX.getValidContext( Context::Host ) );
 
         LAMAArrayUtils::gather( mTempSendValues, localX, mHalo.getProvidesIndexes() );
 
@@ -1434,22 +1450,21 @@ void SparseMatrix<ValueType>::haloOperationAsync(
 
         mTempSendValues.prefetch( comm.getCommunicationContext( mTempSendValues ) );
     }
- 
+
     std::auto_ptr<SyncToken> localComputation;
 
     {
         LAMA_REGION( "Mat.Sp.asyncLocal" )
 
-        LAMA_LOG_INFO( logger, comm << ": start async computation localResult[ " << localResult.size()
-                               << "] = localF( localMatrix, localX[ " << localX.size()
-                               << "] ) on " << mLocalData->getContext() )
+        LAMA_LOG_INFO( logger,
+                       comm << ": start async computation localResult[ " << localResult.size() << "] = localF( localMatrix, localX[ " << localX.size() << "] ) on " << mLocalData->getContext() )
 
         localComputation.reset( localAsyncF( mLocalData.get(), localResult, localX ) );
     }
 
     // during local computation we exchange halo and prefetch all needed halo data
 
-    if ( !mHalo.isEmpty() )
+    if( !mHalo.isEmpty() )
     {
         LAMA_REGION( "Mat.Sp.asyncExchangeHalo" )
 
@@ -1462,17 +1477,16 @@ void SparseMatrix<ValueType>::haloOperationAsync(
 
     // start now transfer of the halo values of X to halo context where it is needed
 
-    if ( haloX.size() > 0 )
+    if( haloX.size() > 0 )
 
     {
         LAMA_REGION( "Mat.Sp.asyncPrefetchHalo")
 
         ContextPtr haloLocation = mHaloData->getContextPtr();
 
-        LAMA_LOG_INFO( logger, comm << ": prefetch " << haloX.size() << " halo values of X to : "
-                              << *haloLocation );
+        LAMA_LOG_INFO( logger, comm << ": prefetch " << haloX.size() << " halo values of X to : " << *haloLocation );
 
-        haloX.prefetch( haloLocation );  // implicit wait at next access of haloX
+        haloX.prefetch( haloLocation ); // implicit wait at next access of haloX
     }
 
     {
@@ -1485,14 +1499,14 @@ void SparseMatrix<ValueType>::haloOperationAsync(
         LAMA_LOG_INFO( logger, comm << ": local computation ready." )
     }
 
-    if ( haloX.size() > 0 )
+    if( haloX.size() > 0 )
     {
         // now we can update the result with haloMatrix and halo values of X
 
         LAMA_REGION("Mat.Sp.asyncHalo")
 
-        LAMA_LOG_INFO( logger, comm << ": compute with " << haloX.size()
-                               << " halo values on " << mHaloData->getContext() );
+        LAMA_LOG_INFO( logger,
+                       comm << ": compute with " << haloX.size() << " halo values on " << mHaloData->getContext() );
 
         haloF( mHaloData.get(), localResult, haloX );
     }
@@ -1504,15 +1518,19 @@ void SparseMatrix<ValueType>::haloOperationAsync(
 
 template<typename ValueType>
 void SparseMatrix<ValueType>::vectorHaloOperationAsync(
+    LAMAArray<ValueType>& localResult,
+    const LAMAArray<ValueType>& localX,
+    const LAMAArray<ValueType>& localY,
+    boost::function<
+    SyncToken*(
+        const MatrixStorage<ValueType>* localMatrix,
+        LAMAArray<ValueType>& localResult,
+        const LAMAArray<ValueType>& localX )> calcF,
+    boost::function<
+    /*SyncToken**/void(
         LAMAArray<ValueType>& localResult,
         const LAMAArray<ValueType>& localX,
-        const LAMAArray<ValueType>& localY,
-        boost::function <SyncToken*( const MatrixStorage<ValueType>* localMatrix,
-                        LAMAArray<ValueType>& localResult,
-                        const LAMAArray<ValueType>& localX )> calcF,
-        boost::function </*SyncToken**/void ( LAMAArray<ValueType>& localResult,
-                        const LAMAArray<ValueType>& localX,
-                        const LAMAArray<ValueType>& localY )> addF ) const
+        const LAMAArray<ValueType>& localY )> addF ) const
 {
     DistributionPtr rowDist = getDistributionPtr();
     DistributionPtr colDist = getColDistributionPtr();
@@ -1525,12 +1543,14 @@ void SparseMatrix<ValueType>::vectorHaloOperationAsync(
     ContextPtr haloContext = mLocalData->getContextPtr();
 
     IndexType xSize = localX.size();
-    LAMA_ASSERT( xSize == rowDist->getLocalSize(), "size mismatch of localX and rowDistribution " << xSize << " != " << rowDist->getLocalSize() )
+    LAMA_ASSERT( xSize == rowDist->getLocalSize(),
+                 "size mismatch of localX and rowDistribution " << xSize << " != " << rowDist->getLocalSize() )
 
     IndexType ySize = localY.size();
     IndexType resultSize = localResult.size();
     LAMA_ASSERT( ySize == resultSize, "size mismatch of localY and localResult" << ySize << " != " << resultSize )
-    LAMA_ASSERT( ySize == colDist->getLocalSize(), "size mismatch of localY and columnDistribution" << ySize << " != " << colDist->getLocalSize() )
+    LAMA_ASSERT( ySize == colDist->getLocalSize(),
+                 "size mismatch of localY and columnDistribution" << ySize << " != " << colDist->getLocalSize() )
 
     LAMA_INTERFACE_FN( sizes2offsets, hostContext, CSRUtils, Offsets );
 
@@ -1545,15 +1565,14 @@ void SparseMatrix<ValueType>::vectorHaloOperationAsync(
     LAMAArray<ValueType> toOthersResult( xSize * numParts );
     LAMAArray<ValueType> fromOthersResult( xSize * numParts );
 
-    if ( numParts != 1 )
+    if( numParts != 1 )
     {
         // calc halo vector parts
         {
             LAMA_REGION( "Vec.Times.Mat.others" )
 
-            LAMA_LOG_INFO( logger, comm << ": asynchronous computation othersResult[" << toOthersResult.size()
-                                        << "] = localF( haloMatrix, localX[" << xSize
-                                        << "] ) on " << haloContext )
+            LAMA_LOG_INFO( logger,
+                           comm << ": asynchronous computation othersResult[" << toOthersResult.size() << "] = localF( haloMatrix, localX[" << xSize << "] ) on " << haloContext )
 
             delete calcF( mHaloData.get(), haloResult, localX );
 
@@ -1561,12 +1580,14 @@ void SparseMatrix<ValueType>::vectorHaloOperationAsync(
 
             HostReadAccess<ValueType> h( haloResult );
             HostWriteAccess<ValueType> o( toOthersResult );
-            for(IndexType i = 0; i < toOthersResult.size(); ++i )
+
+            for( IndexType i = 0; i < toOthersResult.size(); ++i )
             {
                 IndexType localIndex = mHalo.global2halo( i );
+
                 if( localIndex != nIndex )
                 {
-                    o[i] = h[ localIndex ];
+                    o[i] = h[localIndex];
                 }
                 else
                 {
@@ -1582,28 +1603,27 @@ void SparseMatrix<ValueType>::vectorHaloOperationAsync(
     {
         LAMA_REGION( "Vec.Times.Mat.local" )
 
-        LAMA_LOG_INFO( logger, comm << ": asynchronous computation localResult[" << resultSize
-                                    << "] = localF( localMatrix, localX[" << xSize
-                                    << "] ) on " << localContext )
+        LAMA_LOG_INFO( logger,
+                       comm << ": asynchronous computation localResult[" << resultSize << "] = localF( localMatrix, localX[" << xSize << "] ) on " << localContext )
 
         localComputation.reset( calcF( mLocalData.get(), localResult, localX ) );
     }
 
-    if ( numParts != 1 )
+    if( numParts != 1 )
     {
         // start vector part exchange
         {
             LAMA_REGION( "vector.swapping" )
 
-            LAMA_LOG_INFO( logger, comm << " vector swapping: toOthers[" << toOthersResult.size()
-                           << "], fromOthersResult[" << fromOthersResult.size() << "]" )
+            LAMA_LOG_INFO( logger,
+                           comm << " vector swapping: toOthers[" << toOthersResult.size() << "], fromOthersResult[" << fromOthersResult.size() << "]" )
 
             HostReadAccess<ValueType> toOthers( toOthersResult );
             HostWriteAccess<ValueType> fromOthers( fromOthersResult );
 
             for( IndexType i = 0; i < numParts; ++i )
             {
-                comm.gather( &fromOthers[0], sizes[i], i, &toOthers[ offsets[i] ] );
+                comm.gather( &fromOthers[0], sizes[i], i, &toOthers[offsets[i]] );
             }
         }
 
@@ -1616,23 +1636,24 @@ void SparseMatrix<ValueType>::vectorHaloOperationAsync(
     {
         LAMA_REGION( "Vec.Vec.add" )
 
-        LAMA_LOG_INFO( logger, comm << ": asynchronous computation localResult[ " << resultSize
-                                    << "] = localF( localMatrix, localX[ " << xSize
-                                    << "] ) on " << localContext )
+        LAMA_LOG_INFO( logger,
+                       comm << ": asynchronous computation localResult[ " << resultSize << "] = localF( localMatrix, localX[ " << xSize << "] ) on " << localContext )
 
-        if ( numParts != 1 )
+        if( numParts != 1 )
         {
             HostWriteAccess<ValueType> localData( localResult );
             HostReadAccess<ValueType> otherData( fromOthersResult );
+
             for( IndexType i = 0; i < numParts; ++i )
             {
-                if ( i == myPart )
+                if( i == myPart )
                 {
                     continue;
                 }
+
                 for( IndexType j = 0; j < xSize; ++j )
                 {
-                    localData[j] += otherData[ i * xSize + j ];
+                    localData[j] += otherData[i * xSize + j];
                 }
             }
         }
@@ -1659,18 +1680,18 @@ void SparseMatrix<ValueType>::matrixTimesVectorImpl(
     const LAMAArray<ValueType>& localY = denseY.getLocalValues();
 
     const LAMAArray<ValueType>& localX = denseX.getLocalValues();
-    LAMAArray<ValueType>& haloX        = denseX.getHaloValues();
+    LAMAArray<ValueType>& haloX = denseX.getHaloValues();
 
     // if halo is empty, asynchronous execution is not helpful
 
-    void ( lama::MatrixStorage<ValueType>::*matrixTimesVector ) (
+    void (lama::MatrixStorage<ValueType>::*matrixTimesVector)(
         LAMAArray<ValueType>& result,
         const ValueType alpha,
         const LAMAArray<ValueType>& x,
         const ValueType beta,
         const LAMAArray<ValueType>& y ) const = &MatrixStorage<ValueType>::matrixTimesVector;
 
-    SyncToken* ( lama::MatrixStorage<ValueType>::*matrixTimesVectorAsync ) (
+    SyncToken* (lama::MatrixStorage<ValueType>::*matrixTimesVectorAsync)(
         LAMAArray<ValueType>& result,
         const ValueType alpha,
         const LAMAArray<ValueType>& x,
@@ -1681,31 +1702,37 @@ void SparseMatrix<ValueType>::matrixTimesVectorImpl(
 
     // routine for halo matrix is same for sync and async version
 
-    boost::function <void( const MatrixStorage<ValueType>* haloMatrix, 
-                           LAMAArray<ValueType>& localResult,
-                           const LAMAArray<ValueType>& haloX )> haloF =
+    boost::function<
+    void(
+        const MatrixStorage<ValueType>* haloMatrix,
+        LAMAArray<ValueType>& localResult,
+        const LAMAArray<ValueType>& haloX )> haloF =
 
-        // boost::bind( matrixTimesVector, _1, _2, alphaValue, _3, one, boost::cref( localResult ) );
+            // boost::bind( matrixTimesVector, _1, _2, alphaValue, _3, one, boost::cref( localResult ) );
 
-        boost::bind( matrixTimesVector, _1, _2, alphaValue, _3, one, _2 );
+            boost::bind( matrixTimesVector, _1, _2, alphaValue, _3, one, _2 );
 
-    if ( Matrix::SYNCHRONOUS == getCommunicationKind() )
+    if( Matrix::SYNCHRONOUS == getCommunicationKind() )
     {
-        boost::function <void( const MatrixStorage<ValueType>* localMatrix, 
-				               LAMAArray<ValueType>& localResult,
-                               const LAMAArray<ValueType>& localX )> localF =
+        boost::function<
+        void(
+            const MatrixStorage<ValueType>* localMatrix,
+            LAMAArray<ValueType>& localResult,
+            const LAMAArray<ValueType>& localX )> localF =
 
-           boost::bind( matrixTimesVector, _1, _2, alphaValue, _3, betaValue, boost::cref( localY ) );
+                boost::bind( matrixTimesVector, _1, _2, alphaValue, _3, betaValue, boost::cref( localY ) );
 
         haloOperationSync( localResult, localX, haloX, localF, haloF );
     }
     else
     {
-        boost::function <SyncToken*( const MatrixStorage<ValueType>* localMatrix, 
-				                     LAMAArray<ValueType>& localResult,
-                                     const LAMAArray<ValueType>& localX )> localAsyncF =
+        boost::function<
+        SyncToken*(
+            const MatrixStorage<ValueType>* localMatrix,
+            LAMAArray<ValueType>& localResult,
+            const LAMAArray<ValueType>& localX )> localAsyncF =
 
-           boost::bind( matrixTimesVectorAsync, _1, _2, alphaValue, _3, betaValue, boost::cref( localY ) );
+                boost::bind( matrixTimesVectorAsync, _1, _2, alphaValue, _3, betaValue, boost::cref( localY ) );
 
         haloOperationAsync( localResult, localX, haloX, localAsyncF, haloF );
     }
@@ -1731,14 +1758,14 @@ void SparseMatrix<ValueType>::vectorTimesMatrixImpl(
 
     // vectorTimesMatrix: x^ = x * A
 
-    void ( MatrixStorage<ValueType>::*vectorTimesMatrix ) (
+    void (MatrixStorage<ValueType>::*vectorTimesMatrix)(
         LAMAArray<ValueType>& result,
         const ValueType alpha,
         const LAMAArray<ValueType>& x,
         const ValueType beta,
         const LAMAArray<ValueType>& y ) const = &MatrixStorage<ValueType>::vectorTimesMatrix;
 
-    SyncToken* ( MatrixStorage<ValueType>::*vectorTimesMatrixAsync ) (
+    SyncToken* (MatrixStorage<ValueType>::*vectorTimesMatrixAsync)(
         LAMAArray<ValueType>& result,
         const ValueType alpha,
         const LAMAArray<ValueType>& x,
@@ -1747,7 +1774,7 @@ void SparseMatrix<ValueType>::vectorTimesMatrixImpl(
 
     // vectorPlusVector: result = alpha * x^ + beta * y
 
-    void ( *vPlusV ) (
+    void (*vPlusV)(
         ContextPtr context,
         LAMAArray<ValueType>& result,
         const ValueType alpha,
@@ -1755,13 +1782,13 @@ void SparseMatrix<ValueType>::vectorTimesMatrixImpl(
         const ValueType beta,
         const LAMAArray<ValueType>& y ) = &DenseVector<ValueType>::vectorPlusVector;
 
-    /*SyncToken**/void ( *vPlusVAsync ) (
+    /*SyncToken**/void (*vPlusVAsync)(
         ContextPtr context,
         LAMAArray<ValueType>& result,
         const ValueType alpha,
         const LAMAArray<ValueType>& x,
         const ValueType beta,
-        const LAMAArray<ValueType>& y ) = &DenseVector<ValueType>::vectorPlusVector;//TODO use async: Exception not yet implemented
+        const LAMAArray<ValueType>& y ) = &DenseVector<ValueType>::vectorPlusVector; //TODO use async: Exception not yet implemented
 
     ValueType one = 1;
     ValueType zero = 0;
@@ -1770,31 +1797,40 @@ void SparseMatrix<ValueType>::vectorTimesMatrixImpl(
     // todo: think about this if its useful to upload the vector (again)
     ContextPtr hostContext = ContextFactory::getContext( Context::Host );
 
-    if ( Matrix::SYNCHRONOUS == getCommunicationKind() )
+    if( Matrix::SYNCHRONOUS == getCommunicationKind() )
     {
-        boost::function <void( const MatrixStorage<ValueType>* localMatrix,
-                               LAMAArray<ValueType>& localResult,
-                               const LAMAArray<ValueType>& localX )> calcF =
-           boost::bind( vectorTimesMatrix, _1, _2, one, _3, zero, _2 );
+        boost::function<
+        void(
+            const MatrixStorage<ValueType>* localMatrix,
+            LAMAArray<ValueType>& localResult,
+            const LAMAArray<ValueType>& localX )> calcF = boost::bind( vectorTimesMatrix, _1, _2, one,
+                    _3, zero, _2 );
 
-        boost::function <void( LAMAArray<ValueType>& localResult,
-                               const LAMAArray<ValueType>& localX,
-                               const LAMAArray<ValueType>& localY )> addF  =
-            boost::bind( vPlusV, hostContext, _1, alphaValue, _2, betaValue, _3 );
+        boost::function<
+        void(
+            LAMAArray<ValueType>& localResult,
+            const LAMAArray<ValueType>& localX,
+            const LAMAArray<ValueType>& localY )> addF = boost::bind( vPlusV, hostContext, _1,
+                    alphaValue, _2, betaValue, _3 );
 
         vectorHaloOperationSync( localResult, localX, localY, calcF, addF );
     }
     else
     {
-        boost::function <SyncToken*( const MatrixStorage<ValueType>* localMatrix,
-                                     LAMAArray<ValueType>& localResult,
-                                     const LAMAArray<ValueType>& localX )> calcAsyncF =
-           boost::bind( vectorTimesMatrixAsync, _1, _2, one, _3, zero, _2 );
+        boost::function<
+        SyncToken*(
+            const MatrixStorage<ValueType>* localMatrix,
+            LAMAArray<ValueType>& localResult,
+            const LAMAArray<ValueType>& localX )> calcAsyncF = boost::bind( vectorTimesMatrixAsync, _1,
+                    _2, one, _3, zero, _2 );
 
-        boost::function </*SyncToken**/void ( LAMAArray<ValueType>& localResult,
-                        const LAMAArray<ValueType>& localX,
-                        const LAMAArray<ValueType>& localY )> addAsyncF =
-            boost::bind( vPlusVAsync, hostContext, _1, alphaValue, _2, betaValue, _3 );
+        boost::function<
+        /*SyncToken**/void(
+            LAMAArray<ValueType>& localResult,
+            const LAMAArray<ValueType>& localX,
+            const LAMAArray<ValueType>& localY )> addAsyncF = boost::bind( vPlusVAsync, hostContext, _1,
+                    alphaValue, _2, betaValue,
+                    _3 );
 
         vectorHaloOperationAsync( localResult, localX, localY, calcAsyncF, addAsyncF );
     }
@@ -1851,11 +1887,11 @@ void SparseMatrix<ValueType>::matrixTimesVector(
 {
     LAMA_LOG_INFO( logger, result << " = " << alpha << " * " << *this << " * " << x << " + " << beta << " * " << y )
 
-    if ( ( &result == &y ) && ( beta != Scalar( 0.0 ) ) )
+    if( ( &result == &y ) && ( beta != Scalar( 0.0 ) ) )
     {
         LAMA_LOG_DEBUG( logger, "alias: result = y is well handled" )
     }
-    else if ( &result == &x )
+    else if( &result == &x )
     {
         LAMA_THROWEXCEPTION( "alias: result = x is not handled, use temporary" )
     }
@@ -1890,19 +1926,19 @@ void SparseMatrix<ValueType>::matrixTimesVector(
 
 template<typename ValueType>
 void SparseMatrix<ValueType>::vectorTimesMatrix(
-        Vector& result,
-        const Scalar alpha,
-        const Vector& x,
-        const Scalar beta,
-        const Vector& y ) const
+    Vector& result,
+    const Scalar alpha,
+    const Vector& x,
+    const Scalar beta,
+    const Vector& y ) const
 {
     LAMA_LOG_INFO( logger, result << " = " << alpha << " * " << x << " * " << *this << " + " << beta << " * " << y )
 
-    if ( ( &result == &y ) && ( beta != Scalar( 0.0 ) ) )
+    if( ( &result == &y ) && ( beta != Scalar( 0.0 ) ) )
     {
         LAMA_LOG_DEBUG( logger, "alias: result = y is well handled" )
     }
-    else if ( &result == &x )
+    else if( &result == &x )
     {
         LAMA_THROWEXCEPTION( "alias: result = x is not handled, use temporary" )
     }
@@ -1958,7 +1994,7 @@ Scalar SparseMatrix<ValueType>::maxNorm() const
     ValueType myMax = mLocalData->maxNorm();
     ValueType myMaxHalo = mHaloData->maxNorm();
 
-    if ( myMaxHalo > myMax )
+    if( myMaxHalo > myMax )
     {
         myMax = myMaxHalo;
     }
@@ -1982,14 +2018,14 @@ Scalar SparseMatrix<ValueType>::maxDiffNorm( const Matrix& other ) const
 
     LAMA_REGION( "Mat.Sp.maxDiffNorm" )
 
-    if ( ( getDistribution() == other.getDistribution() ) && getColDistribution().isReplicated()
+    if( ( getDistribution() == other.getDistribution() ) && getColDistribution().isReplicated()
             && other.getColDistribution().isReplicated() && ( getValueType() == other.getValueType() ) )
     {
         const SparseMatrix<ValueType>* typedOther = dynamic_cast<const SparseMatrix<ValueType>*>( &other );
         LAMA_ASSERT_DEBUG( typedOther, "SERIOUS: wrong dynamic cast: " << other )
         return maxDiffNormImpl( *typedOther );
     }
-    else if ( !getColDistribution().isReplicated() )
+    else if( !getColDistribution().isReplicated() )
     {
         // @todo handle maxDiffNorm on sparse matrices with column distribution
         LAMA_THROWEXCEPTION( "maxDiffNorm not available: " << *this << " has column distribution" )
@@ -2075,23 +2111,21 @@ Scalar SparseMatrix<ValueType>::getValue( IndexType i, IndexType j ) const
     ValueType myValue = 0.0;
     const IndexType iLocal = distributionRow.global2local( i );
 
-    if ( iLocal != nIndex )
+    if( iLocal != nIndex )
     {
         LAMA_LOG_TRACE( logger, "row " << i << " is local " << iLocal )
         IndexType jLocal = distributionCol.global2local( j );
 
-        if ( nIndex != jLocal )
+        if( nIndex != jLocal )
         {
-            LAMA_LOG_TRACE( logger, "global(" << i << "," << j << ")"
-                            " is local(" << iLocal << "," << jLocal << ")" )
+            LAMA_LOG_TRACE( logger, "global(" << i << "," << j << ")" " is local(" << iLocal << "," << jLocal << ")" )
             myValue = mLocalData->getValue( iLocal, jLocal );
             LAMA_LOG_TRACE( logger, "found local value " << myValue )
         }
         else
         {
             jLocal = mHalo.global2halo( j );
-            LAMA_LOG_TRACE( logger, "global(" << i << "," << j << ")"
-                            " is halo(" << iLocal << "," << jLocal << ")" )
+            LAMA_LOG_TRACE( logger, "global(" << i << "," << j << ")" " is halo(" << iLocal << "," << jLocal << ")" )
             myValue = mHaloData->getValue( iLocal, jLocal );
             LAMA_LOG_TRACE( logger, "found halo value " << myValue )
         }
@@ -2143,7 +2177,7 @@ void SparseMatrix<ValueType>::wait() const
 template<typename ValueType>
 bool SparseMatrix<ValueType>::hasDiagonalProperty() const
 {
-    if ( getDistribution() != getColDistribution() )
+    if( getDistribution() != getColDistribution() )
     {
         return false;
     }
@@ -2160,7 +2194,7 @@ bool SparseMatrix<ValueType>::hasDiagonalProperty() const
 template<typename ValueType>
 void SparseMatrix<ValueType>::resetDiagonalProperty()
 {
-    if ( getDistribution() != getColDistribution() )
+    if( getDistribution() != getColDistribution() )
     {
         LAMA_THROWEXCEPTION( "diagonal property not possible " )
     }
@@ -2185,9 +2219,9 @@ SparseMatrix<ValueType>* SparseMatrix<ValueType>::create() const
 
     shared_ptr<MatrixStorage<ValueType> > newLocalData( mLocalData->create() );
 
-    // use auto pointer for new sparse matrix to get data freed in case of Exception 
+    // use auto pointer for new sparse matrix to get data freed in case of Exception
 
-    std::auto_ptr<SparseMatrix<ValueType> > newSparseMatrix ( new SparseMatrix<ValueType>( newLocalData ) );
+    std::auto_ptr<SparseMatrix<ValueType> > newSparseMatrix( new SparseMatrix<ValueType>( newLocalData ) );
 
     // inherit the context for local and halo storage
 
@@ -2195,8 +2229,8 @@ SparseMatrix<ValueType>* SparseMatrix<ValueType>::create() const
 
     newSparseMatrix->setCommunicationKind( this->getCommunicationKind() );
 
-    LAMA_LOG_INFO( logger, *this << ": create -> " << *newSparseMatrix << " @ " << newSparseMatrix->getContext()
-                                  << ", kind = " << newSparseMatrix->getCommunicationKind() );
+    LAMA_LOG_INFO( logger,
+                   *this << ": create -> " << *newSparseMatrix << " @ " << newSparseMatrix->getContext() << ", kind = " << newSparseMatrix->getCommunicationKind() );
 
     return newSparseMatrix.release();
 }
@@ -2235,7 +2269,7 @@ void SparseMatrix<ValueType>::setIdentity( DistributionPtr dist )
     mLocalData->setIdentity( localNumRows );
     mHaloData->allocate( localNumRows, 0 );
 
-    mHalo.clear();  // no exchange needed
+    mHalo.clear(); // no exchange needed
 
     LAMA_LOG_INFO( logger, *this << ": identity" )
 }
@@ -2243,20 +2277,23 @@ void SparseMatrix<ValueType>::setIdentity( DistributionPtr dist )
 /* ------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void SparseMatrix<ValueType>::setDenseData( DistributionPtr rowDist, DistributionPtr colDist,
-                                            const _LAMAArray& values, const Scalar eps )
+void SparseMatrix<ValueType>::setDenseData(
+    DistributionPtr rowDist,
+    DistributionPtr colDist,
+    const _LAMAArray& values,
+    const Scalar eps )
 {
-    Matrix::setDistributedMatrix( rowDist, colDist ); 
+    Matrix::setDistributedMatrix( rowDist, colDist );
 
-    IndexType localNumRows  = rowDist->getLocalSize();
+    IndexType localNumRows = rowDist->getLocalSize();
     IndexType globalNumCols = colDist->getGlobalSize();
 
     mLocalData->setDenseData( localNumRows, globalNumCols, values, eps.getValue<ValueType>() );
 
-    if ( !colDist->isReplicated() )
+    if( !colDist->isReplicated() )
     {
         // localize the data according to row distribution, use splitHalo with replicated columns
-    
+
         mLocalData->splitHalo( *mLocalData, *mHaloData, mHalo, getColDistribution(), NULL );
     }
     else
@@ -2271,22 +2308,22 @@ void SparseMatrix<ValueType>::setDenseData( DistributionPtr rowDist, Distributio
 /* ------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void SparseMatrix<ValueType>::setCSRData( 
-    DistributionPtr rowDist, 
+void SparseMatrix<ValueType>::setCSRData(
+    DistributionPtr rowDist,
     DistributionPtr colDist,
     const IndexType numValues,
-    const LAMAArray<IndexType>& ia, 
+    const LAMAArray<IndexType>& ia,
     const LAMAArray<IndexType>& ja,
     const _LAMAArray& values )
 {
     Matrix::setDistributedMatrix( rowDist, colDist );
 
-    IndexType localNumRows   = rowDist->getLocalSize();
-    IndexType globalNumCols  = colDist->getGlobalSize();
+    IndexType localNumRows = rowDist->getLocalSize();
+    IndexType globalNumCols = colDist->getGlobalSize();
 
     mLocalData->setCSRData( localNumRows, globalNumCols, numValues, ia, ja, values );
 
-    if ( !colDist->isReplicated() )
+    if( !colDist->isReplicated() )
     {
         // localize the data according to row distribution, use splitHalo with replicated columns
 
@@ -2322,13 +2359,13 @@ void SparseMatrix<ValueType>::writeToFile(
     const File::IndexDataType indexDataTypeIA /* = LONG */,
     const File::IndexDataType indexDataTypeJA /* = LONG */) const
 {
-    if ( getDistribution().isReplicated() && getColDistribution().isReplicated() )
+    if( getDistribution().isReplicated() && getColDistribution().isReplicated() )
     {
         // make sure that only one processor writes to file
 
         const Communicator& comm = getDistribution().getCommunicator();
 
-        if ( comm.getRank() == 0 )
+        if( comm.getRank() == 0 )
         {
             mLocalData->writeToFile( fileName, fileType, dataType, indexDataTypeIA, indexDataTypeJA );
         }
@@ -2338,7 +2375,7 @@ void SparseMatrix<ValueType>::writeToFile(
 
         comm.synchronize();
     }
-    else if ( hasDiagonalProperty() )
+    else if( hasDiagonalProperty() )
     {
         LAMA_LOG_INFO( logger, "write distributed matrix" )
 
@@ -2346,7 +2383,7 @@ void SparseMatrix<ValueType>::writeToFile(
 
         // as diagonal element is first one we can identify the global id of each row by the column index
 
-        if ( getColDistribution().isReplicated() )
+        if( getColDistribution().isReplicated() )
         {
 
             mLocalData->writeToFile( comm.getSize(), comm.getRank(), fileName, fileType, dataType, indexDataTypeIA,
@@ -2388,7 +2425,7 @@ void SparseMatrix<ValueType>::readFromFile( const std::string& fileName )
     IndexType numRows = 0; // will be the size of the vector
     IndexType numCols = 0; // will be the size of the vector
 
-    if ( myRank == host )
+    if( myRank == host )
     {
         mLocalData->readFromFile( fileName );
         numRows = mLocalData->getNumRows();
@@ -2403,7 +2440,7 @@ void SparseMatrix<ValueType>::readFromFile( const std::string& fileName )
     DistributionPtr dist( new CyclicDistribution( numRows, numRows, comm ) );
     DistributionPtr colDist( new NoDistribution( numCols ) );
 
-    if ( myRank == host )
+    if( myRank == host )
     {
         Matrix::setDistributedMatrix( dist, colDist );
     }
@@ -2419,17 +2456,16 @@ void SparseMatrix<ValueType>::readFromFile( const std::string& fileName )
 /* ========================================================================= */
 
 #define LAMA_SPARSE_MATRIX_INSTANTIATE(z, I, _)                            \
-template<>                                                                 \
-const char* SparseMatrix<ARITHMETIC_TYPE##I>::typeName()                   \
-{                                                                          \
-    return "SparseMatrix<ARITHMETIC_TYPE##I>";                             \
-}                                                                          \
-                                                                           \
-template class LAMA_DLL_IMPORTEXPORT SparseMatrix<ARITHMETIC_TYPE##I> ;  
+    template<>                                                                 \
+    const char* SparseMatrix<ARITHMETIC_TYPE##I>::typeName()                   \
+    {                                                                          \
+        return "SparseMatrix<ARITHMETIC_TYPE##I>";                             \
+    }                                                                          \
+    \
+    template class LAMA_DLL_IMPORTEXPORT SparseMatrix<ARITHMETIC_TYPE##I> ;
 
 BOOST_PP_REPEAT( ARITHMETIC_TYPE_CNT, LAMA_SPARSE_MATRIX_INSTANTIATE, _ )
 
 #undef LAMA_SPARSE_MATRIX_INSTANTIATE
-
 
 } //namespace lama

@@ -2,7 +2,7 @@
  * @file CUDAException.cpp
  *
  * @license
- * Copyright (c) 2009-2013
+ * Copyright (c) 2009-2015
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -68,7 +68,7 @@ CUDAException::~CUDAException() throw ()
 
 void lama_printError_cuda( const int error, const char* file, const int line )
 {
-    if ( error != cudaSuccess )
+    if( error != cudaSuccess )
     {
         fprintf( stderr, "CUDA error: %s (%d) in %s on line %d\n", cudaGetErrorString( (cudaError_t) error ), error,
                  file, line );
@@ -78,35 +78,44 @@ void lama_printError_cuda( const int error, const char* file, const int line )
 void lama_printError_cublas( const int error, const char* file, const int line )
 {
     char errorMsg[256];
-    if ( error != CUBLAS_STATUS_SUCCESS )
+
+    if( error != CUBLAS_STATUS_SUCCESS )
     {
-        switch ( error )
+        switch( error )
         {
-        case CUBLAS_STATUS_NOT_INITIALIZED:
-            sprintf( errorMsg, "CUBLAS library not initialized" );
-            break;
-        case CUBLAS_STATUS_ALLOC_FAILED:
-            sprintf( errorMsg, "resource allocation failed" );
-            break;
-        case CUBLAS_STATUS_INVALID_VALUE:
-            sprintf( errorMsg, "unsupported numerical value was passed to function" );
-            break;
-        case CUBLAS_STATUS_ARCH_MISMATCH:
-            sprintf( errorMsg,
-                     "function requires an architectural feature absent from the architecture of the device" );
-            break;
-        case CUBLAS_STATUS_MAPPING_ERROR:
-            sprintf( errorMsg, "access to GPU memory space failed" );
-            break;
-        case CUBLAS_STATUS_EXECUTION_FAILED:
-            sprintf( errorMsg, "GPU program failed to execute" );
-            break;
-        case CUBLAS_STATUS_INTERNAL_ERROR:
-            sprintf( errorMsg, "CUBLAS library not initialized" );
-            break;
-        default:
-            sprintf( errorMsg, "Unknown" );
+            case CUBLAS_STATUS_NOT_INITIALIZED:
+                sprintf( errorMsg, "CUBLAS library not initialized" );
+                break;
+
+            case CUBLAS_STATUS_ALLOC_FAILED:
+                sprintf( errorMsg, "resource allocation failed" );
+                break;
+
+            case CUBLAS_STATUS_INVALID_VALUE:
+                sprintf( errorMsg, "unsupported numerical value was passed to function" );
+                break;
+
+            case CUBLAS_STATUS_ARCH_MISMATCH:
+                sprintf( errorMsg,
+                         "function requires an architectural feature absent from the architecture of the device" );
+                break;
+
+            case CUBLAS_STATUS_MAPPING_ERROR:
+                sprintf( errorMsg, "access to GPU memory space failed" );
+                break;
+
+            case CUBLAS_STATUS_EXECUTION_FAILED:
+                sprintf( errorMsg, "GPU program failed to execute" );
+                break;
+
+            case CUBLAS_STATUS_INTERNAL_ERROR:
+                sprintf( errorMsg, "CUBLAS library not initialized" );
+                break;
+
+            default:
+                sprintf( errorMsg, "Unknown" );
         }
+
         fprintf( stderr, "CUBLAS error: %s (%d) in %s on line %d\n", errorMsg, error, file, line );
     }
 

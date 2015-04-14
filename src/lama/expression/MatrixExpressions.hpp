@@ -2,7 +2,7 @@
  * @file MatrixExpressions.hpp
  *
  * @license
- * Copyright (c) 2009-2013
+ * Copyright (c) 2009-2015
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -58,8 +58,7 @@ namespace lama
  */
 inline Expression_SM_SM operator+( const Matrix& matrixA, const Matrix& matrixB )
 {
-    return Expression_SM_SM( Expression_SM( Scalar( 1 ), matrixA ), 
-                             Expression_SM( Scalar( 1 ), matrixB ) );
+    return Expression_SM_SM( Expression_SM( Scalar( 1 ), matrixA ), Expression_SM( Scalar( 1 ), matrixB ) );
 }
 
 /**
@@ -71,8 +70,7 @@ inline Expression_SM_SM operator+( const Matrix& matrixA, const Matrix& matrixB 
  */
 inline Expression_SM_SM operator-( const Matrix& matrixA, const Matrix& matrixB )
 {
-    return Expression_SM_SM( Expression_SM( Scalar( 1 ), matrixA ), 
-                             Expression_SM( Scalar( -1 ), matrixB ) );
+    return Expression_SM_SM( Expression_SM( Scalar( 1 ), matrixA ), Expression_SM( Scalar( -1 ), matrixB ) );
 }
 
 /* --------------------------------------------------------------- */
@@ -112,12 +110,12 @@ inline Expression_SM operator*( const Matrix& matrix, const Scalar& scalar )
  *
  * @param[in] matrix   The matrix.
  * @param[in] alpha    The scalar.
- * @return             symbolic expression [1.0/alpha] *  matrixA     
+ * @return             symbolic expression [1.0/alpha] *  matrixA
  */
 
 inline Expression_SM operator/( const Matrix& matrix, const Scalar& alpha )
 {
-    // build 1.0/ alpha as new scalar for a symbolic expression Scalar * Matrix 
+    // build 1.0/ alpha as new scalar for a symbolic expression Scalar * Matrix
 
     return Expression_SM( Scalar( 1.0 ) / alpha, matrix );
 }
@@ -185,8 +183,7 @@ inline Expression_SMM operator*( const Scalar& scalar, const Expression_SMM& exp
 {
     const Expression_SM sm = exp.getArg1();
 
-    return Expression_SMM( Expression_SM( scalar * sm.getArg1(), sm.getArg2() ), 
-                           exp.getArg2() );
+    return Expression_SMM( Expression_SM( scalar * sm.getArg1(), sm.getArg2() ), exp.getArg2() );
 }
 
 /**
@@ -201,8 +198,7 @@ inline Expression_SMM operator*( const Expression_SMM& exp, const Scalar& scalar
 {
     const Expression_SM sm = exp.getArg1();
 
-    return Expression_SMM( Expression_SM( sm.getArg1() * scalar, sm.getArg2() ), 
-                           exp.getArg2() );
+    return Expression_SMM( Expression_SM( sm.getArg1() * scalar, sm.getArg2() ), exp.getArg2() );
 }
 
 /* --------------------------------------------------------------- */
@@ -246,7 +242,7 @@ inline Expression_SMM_SM operator+( const Expression_SM& exp2, const Expression_
  */
 inline Expression_SMM_SM operator-( const Expression_SMM& exp1, const Expression_SM& exp2 )
 {
-    Expression_SM minusExp2( - exp2.getArg1(), exp2.getArg2() );
+    Expression_SM minusExp2( -exp2.getArg1(), exp2.getArg2() );
     return Expression_SMM_SM( exp1, minusExp2 );
 }
 
@@ -318,7 +314,7 @@ inline Expression_SMM_SM operator-( const Expression_SMM& exp, const Matrix& mat
  */
 inline Expression_SMM_SM operator-( const Matrix& matrix, const Expression_SMM& exp )
 {
-    // Build temporary expression for -exp 
+    // Build temporary expression for -exp
 
     Expression_SM expSM = exp.getArg1();
 
@@ -358,7 +354,7 @@ inline Expression_SM_SM operator+( const Expression_SM& exp1, const Expression_S
 
 inline Expression_SM_SM operator-( const Expression_SM& exp1, const Expression_SM& exp2 )
 {
-    Scalar minusBeta = - exp2.getArg1();
+    Scalar minusBeta = -exp2.getArg1();
 
     Expression_SM minusExp2( -exp2.getArg1(), exp2.getArg2() );
 
@@ -375,7 +371,7 @@ inline Expression_SM_SM operator-( const Expression_SM& exp1, const Expression_S
  * @brief Make a symbolic expression 'Scalar * Matrix + Scalar * Matrix' for the
  *        sum of matrix + 'Scalar * Matrix'
  *
- * @param[in] matrix    first summand          
+ * @param[in] matrix    first summand
  * @param[in] exp       symbolic expression 'Scalar * Matrix'
  * @return              Symbolic expression for the sum of the two expressions
  */
@@ -389,15 +385,15 @@ inline Expression_SM_SM operator+( const Matrix& matrix, const Expression_SM& ex
  * @brief Make a symbolic expression 'Scalar * Matrix + Scalar * Matrix' for the
  *        difference of matrix - 'Scalar * Matrix'
  *
- * @param[in] matrix    first summand          
+ * @param[in] matrix    first summand
  * @param[in] exp       symbolic expression 'Scalar * Matrix'
  * @return              Symbolic expression for the difference of the two expressions
  */
 
 inline Expression_SM_SM operator-( const Matrix& matrix, const Expression_SM& exp )
 {
-    Expression_SM minusExp( - exp.getArg1(), exp.getArg2() );
-    return Expression_SM_SM( Expression_SM( Scalar( 1 ), matrix), minusExp );
+    Expression_SM minusExp( -exp.getArg1(), exp.getArg2() );
+    return Expression_SM_SM( Expression_SM( Scalar( 1 ), matrix ), minusExp );
 }
 
 /**
@@ -405,7 +401,7 @@ inline Expression_SM_SM operator-( const Matrix& matrix, const Expression_SM& ex
  *        sum of 'Scalar * Matrix' + matrix
  *
  * @param[in] exp       symbolic expression 'Scalar * Matrix'
- * @param[in] matrix    second summand          
+ * @param[in] matrix    second summand
  * @return              Symbolic expression for the sum of the two expressions
  */
 

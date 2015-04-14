@@ -2,7 +2,7 @@
  * @file LAMAInterfaceRegistry.hpp
  *
  * @license
- * Copyright (c) 2009-2013
+ * Copyright (c) 2009-2015
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -59,7 +59,7 @@ namespace lama
  *  implemented routines that are used later for operations on vectors and matrices.
  */
 
-class LAMA_DLL_IMPORTEXPORT LAMAInterfaceRegistry : NonCopyable
+class LAMA_DLL_IMPORTEXPORT LAMAInterfaceRegistry: NonCopyable
 {
 
 public:
@@ -75,12 +75,12 @@ public:
     const LAMAInterface* getInterface( const ContextType location ) const;
 
     /** @brief Get a modify reference for a LAMAInterface; if not available an
-     *         new interface is generated. 
+     *         new interface is generated.
      *
      *  @param[in] location context type for which interface is wanted
      *  @return    reference to the corresponding interface
      *
-     *  If an interface is not available a default one will be created 
+     *  If an interface is not available a default one will be created
      *  (all function pointers are set to NULL).
      */
     LAMAInterface& modifyInterface( const ContextType location );
@@ -109,6 +109,6 @@ private:
     friend class CGuard;
 };
 
-}  // namespace
+} // namespace
 
 #endif // LAMA_LAMA_INTERFACE_REGISTRY_HPP_

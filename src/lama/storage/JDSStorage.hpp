@@ -2,7 +2,7 @@
  * @file JDSStorage.hpp
  *
  * @license
- * Copyright (c) 2009-2013
+ * Copyright (c) 2009-2015
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -65,7 +65,7 @@ class LAMA_DLL_IMPORTEXPORT JDSStorage: public CRTPMatrixStorage<JDSStorage<Valu
 {
 public:
 
-	typedef ValueType StorageValueType;
+    typedef ValueType StorageValueType;
 
     /** get typename of the matrix storage format. */
 
@@ -200,7 +200,7 @@ public:
     /** Implementation of MatrixStorage::matrixTimesVector for JDS */
 
     virtual void matrixTimesVector(
-    	LAMAArray<ValueType>& result,
+        LAMAArray<ValueType>& result,
         const ValueType alpha,
         const LAMAArray<ValueType>& x,
         const ValueType beta,
@@ -219,7 +219,7 @@ public:
     /** Implementation of MatrixStorage::matrixTimesVectorAsync for JDS */
 
     virtual SyncToken* matrixTimesVectorAsync(
-    	LAMAArray<ValueType>& result,
+        LAMAArray<ValueType>& result,
         const ValueType alpha,
         const LAMAArray<ValueType>& x,
         const ValueType beta,
@@ -259,7 +259,7 @@ public:
         const LAMAArray<ValueType>& haloOldSolution,
         const ValueType omega ) const;
 
-    /** Implementation of MatrixStorage::jacobiIterateHalo for JDS 
+    /** Implementation of MatrixStorage::jacobiIterateHalo for JDS
      *  @since 1.1.0
      */
 
@@ -411,8 +411,9 @@ private:
     void print() const;
 
     LAMA_LOG_DECL_STATIC_LOGGER( logger ) //!< logger for this matrix format
-};
+}    ;
 
-} // namespace lama
+}
+// namespace lama
 
 #endif // LAMA_JDSSTORAGE_HPP_

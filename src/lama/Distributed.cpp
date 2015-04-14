@@ -2,7 +2,7 @@
  * @file Distributed.cpp
  *
  * @license
- * Copyright (c) 2009-2013
+ * Copyright (c) 2009-2015
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -39,9 +39,9 @@ namespace lama
 
 Distributed::Distributed( DistributionPtr distribution )
 
-    : mDistribution( distribution )
+                : mDistribution( distribution )
 {
-    if ( !distribution )
+    if( !distribution )
     {
         LAMA_THROWEXCEPTION( "Distributed object must not have NULL distribution" )
     }
@@ -49,7 +49,7 @@ Distributed::Distributed( DistributionPtr distribution )
 
 Distributed::Distributed( const Distributed& other )
 
-    : mDistribution( other.mDistribution )
+                : mDistribution( other.mDistribution )
 {
     // copy shared pointer is okay, mDistribution can never be NULL
 }

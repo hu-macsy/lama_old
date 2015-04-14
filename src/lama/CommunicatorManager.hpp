@@ -2,7 +2,7 @@
  * @file CommunicatorManager.hpp
  *
  * @license
- * Copyright (c) 2009-2013
+ * Copyright (c) 2009-2015
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -79,9 +79,9 @@ protected:
 
     std::string mCommunicatorType; //!< type of communicator managed
 
-    LAMA_LOG_DECL_STATIC_LOGGER( logger )
-};
+    LAMA_LOG_DECL_STATIC_LOGGER( logger )};
 
-} // namespace lama
+}
+// namespace lama
 
 #endif // LAMA_COMMUNICATOR_MANAGER_HPP_

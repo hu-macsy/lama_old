@@ -2,7 +2,7 @@
  * @file MICBLAS3.cpp
  *
  * @license
- * Copyright (c) 2009-2013
+ * Copyright (c) 2009-2015
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -32,7 +32,6 @@
  */
 
 // hpp
-
 #include "mkl.h"
 
 #include <lama/mic/MICBLAS3.hpp>
@@ -49,13 +48,20 @@ LAMA_LOG_DEF_LOGGER( MICBLAS3::logger, "MIC.BLAS3" )
 inline static char trans2C( CBLAS_TRANSPOSE trans )
 {
     // Code-Style C Dehning
-   
-    switch ( trans )
+
+    switch( trans )
     {
-        case CblasTrans    : return 'T';
-        case CblasConjTrans: return 'C';
-        case CblasNoTrans  : return 'N';
-        default:             return ' ';
+        case CblasTrans:
+            return 'T';
+
+        case CblasConjTrans:
+            return 'C';
+
+        case CblasNoTrans:
+            return 'N';
+
+        default:
+            return ' ';
     }
 }
 
@@ -77,7 +83,7 @@ void MICBLAS3::gemm(
     const IndexType ldc,
     SyncToken* syncToken )
 {
-    if ( syncToken )
+    if( syncToken )
     {
         LAMA_LOG_WARN( logger, "no asynchronous execution for openmp possible at this level." )
     }
@@ -85,11 +91,11 @@ void MICBLAS3::gemm(
     char ta = trans2C( transA );
     char tb = trans2C( transB );
 
-    const void* aPtr = a; 
+    const void* aPtr = a;
     const void* bPtr = b;
     void* cPtr = c;
 
-    switch ( order )
+    switch( order )
     {
         case CblasColMajor:
             break;
@@ -107,14 +113,13 @@ void MICBLAS3::gemm(
 
     LAMA_LOG_INFO( logger, "gemm, ta = " << ta << ", tb = " << tb << ", a has shape " << m << " x " << n )
 
-    #pragma offload target( mic ), in( ta, tb, m, n, k, alpha, aPtr, lda, bPtr, ldb, beta, cPtr, ldc )
+#pragma offload target( mic ), in( ta, tb, m, n, k, alpha, aPtr, lda, bPtr, ldb, beta, cPtr, ldc )
     {
         const float* a = static_cast<const float*>( aPtr );
         const float* b = static_cast<const float*>( bPtr );
         float* c = static_cast<float*>( cPtr );
 
-        sgemm( &ta, &tb, &m, &n, &k,
-               &alpha, a, &lda, b, &ldb, &beta, c, &ldc );
+        sgemm( &ta, &tb, &m, &n, &k, &alpha, a, &lda, b, &ldb, &beta, c, &ldc );
     }
 }
 
@@ -136,7 +141,7 @@ void MICBLAS3::gemm(
     const IndexType ldc,
     SyncToken* syncToken )
 {
-    if ( syncToken )
+    if( syncToken )
     {
         LAMA_LOG_WARN( logger, "no asynchronous execution for openmp possible at this level." )
     }
@@ -144,11 +149,11 @@ void MICBLAS3::gemm(
     char ta = trans2C( transA );
     char tb = trans2C( transB );
 
-    const void* aPtr = a; 
+    const void* aPtr = a;
     const void* bPtr = b;
     void* cPtr = c;
 
-    switch ( order )
+    switch( order )
     {
         case CblasColMajor:
             break;
@@ -166,14 +171,13 @@ void MICBLAS3::gemm(
 
     LAMA_LOG_INFO( logger, "gemm, ta = " << ta << ", tb = " << tb << ", a has shape " << m << " x " << n )
 
-    #pragma offload target( mic ), in( ta, tb, m, n, k, alpha, aPtr, lda, bPtr, ldb, beta, cPtr, ldc )
+#pragma offload target( mic ), in( ta, tb, m, n, k, alpha, aPtr, lda, bPtr, ldb, beta, cPtr, ldc )
     {
         const double* a = static_cast<const double*>( aPtr );
         const double* b = static_cast<const double*>( bPtr );
         double* c = static_cast<double*>( cPtr );
 
-        dgemm( &ta, &tb, &m, &n, &k,
-               &alpha, a, &lda, b, &ldb, &beta, c, &ldc );
+        dgemm( &ta, &tb, &m, &n, &k, &alpha, a, &lda, b, &ldb, &beta, c, &ldc );
     }
 }
 
@@ -185,7 +189,7 @@ void MICBLAS3::setInterface( BLASInterface& BLAS )
 {
     LAMA_LOG_INFO( logger, "set BLAS3 routines for MIC in Interface" )
 
-    // Note: macro takes advantage of same name for routines and type definitions 
+    // Note: macro takes advantage of same name for routines and type definitions
     //       ( e.g. routine CUDABLAS1::sum<ValueType> is set for BLAS::BLAS1::sum variable
 
     LAMA_INTERFACE_REGISTER_T( BLAS, gemm, float )

@@ -2,7 +2,7 @@
  * @file GeneralDistributionTest.cpp
  *
  * @license
- * Copyright (c) 2009-2013
+ * Copyright (c) 2009-2015
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -55,12 +55,9 @@ struct GeneralDistributionTestConfig
     GeneralDistributionTestConfig()
     {
         comm = CommunicatorFactory::get( "MPI" );
-
         rank = comm->getRank();
         size = comm->getSize();
-
         elemsPerPartition = 10;
-
         globalSize = elemsPerPartition * size;
 
         for ( IndexType k = 0; k < elemsPerPartition; ++k )
@@ -69,7 +66,6 @@ struct GeneralDistributionTestConfig
         }
 
         dist = DistributionPtr( new GeneralDistribution( globalSize, localIndexes, comm ) );
-
     }
 
     ~GeneralDistributionTestConfig()
@@ -96,7 +92,6 @@ LAMA_LOG_DEF_LOGGER( logger, "Test.GeneralDistributionTest" );
 
 BOOST_AUTO_TEST_CASE( commonTestCases )
 {
-
     DistributionTest disttest( dist );
 
     if ( base_test_case )
@@ -122,15 +117,13 @@ BOOST_AUTO_TEST_CASE( generalSizeTest )
 BOOST_AUTO_TEST_CASE( isEqualTest )
 {
     std::vector<IndexType> localIndexes;
-
     DistributionPtr generaldist1( new GeneralDistribution( 1, localIndexes, comm ) );
     DistributionPtr generaldist2( generaldist1 );
     DistributionPtr generaldist3( new GeneralDistribution( 1, localIndexes, comm ) );
     DistributionPtr generaldist4( new GeneralDistribution( 3, localIndexes, comm ) );
-
-    BOOST_CHECK( (*generaldist1).isEqual( *generaldist2 ) );
-    BOOST_CHECK( !(*generaldist1).isEqual( *generaldist3 ) );
-    BOOST_CHECK( !(*generaldist1).isEqual( *generaldist4 ) );
+    BOOST_CHECK( ( *generaldist1 ).isEqual( *generaldist2 ) );
+    BOOST_CHECK( !( *generaldist1 ).isEqual( *generaldist3 ) );
+    BOOST_CHECK( !( *generaldist1 ).isEqual( *generaldist4 ) );
 }
 /* --------------------------------------------------------------------- */
 

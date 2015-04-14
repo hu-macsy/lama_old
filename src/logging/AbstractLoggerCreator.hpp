@@ -2,7 +2,7 @@
  * @file AbstractLoggerCreator.hpp
  *
  * @license
- * Copyright (c) 2009-2013
+ * Copyright (c) 2009-2015
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -63,7 +63,7 @@ public:
      * @param[in,out] parent is the parent logger, new logger is set as son
      */
 
-    virtual class Logger* create( const std::string& name, class Logger* parent ) const =0;
+    virtual class Logger* create( const std::string& name, class Logger* parent ) const = 0;
 };
 
 // The implementation of this static method decides which logger

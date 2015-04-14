@@ -2,7 +2,7 @@
  * @file DenseStorageTest.cpp
  *
  * @license
- * Copyright (c) 2009-2013
+ * Copyright (c) 2009-2015
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -55,11 +55,10 @@ namespace DenseStorageTest
 template<typename ValueType>
 void commonTestCases( ContextPtr loc )
 {
-
     DenseStorage<ValueType> denseStorage;
     MatrixStorageTest<ValueType> storageTest( denseStorage );
-
     storageTest.mMatrixStorage.setContext( loc );
+
     if ( base_test_case )
     {
         MATRIXSTORAGE_COMMONTESTCASES( storageTest );
@@ -77,7 +76,6 @@ void typeNameTest()
 {
     DenseStorage<ValueType> denseStorage;
     std::string s = denseStorage.typeName();
-
     BOOST_CHECK( s.length() > 0 );
 }
 
@@ -88,19 +86,16 @@ void setZeroTest()
 {
     const IndexType numRows = 4;
     const IndexType numColumns = 4;
-
     static ValueType values[] =
-    {   6.0, 0.0, 0.0, 4.0,
+    {
+        6.0, 0.0, 0.0, 4.0,
         7.0, 0.0, 0.0, 0.0,
         0.0, 0.0, 9.0, 4.0,
         2.0, 5.0, 0.0, 3.0
     };
-
     ValueType eps = static_cast<ValueType>( 1E-5 );
-
     DenseStorage<ValueType> denseStorage;
     denseStorage.setRawDenseData( numRows, numColumns, values, eps );
-
     denseStorage.setZero();
 
     for ( int i = 0; i < denseStorage.getNumRows(); ++i )

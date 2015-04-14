@@ -2,7 +2,7 @@
  * @file HostReadAccessTest.cpp
  *
  * @license
- * Copyright (c) 2009-2013
+ * Copyright (c) 2009-2015
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -51,9 +51,7 @@ LAMA_LOG_DEF_LOGGER( logger, "Test.HostReadAccessTest" )
 BOOST_AUTO_TEST_CASE( CtorTest )
 {
     const IndexType n = 10;
-
     LAMAArray<double> lamaArray( n, 1.0 );
-
     HostReadAccess<double> lamaArrayReadAccess( lamaArray );
 
     for ( IndexType i = 0; i < n; ++i )
@@ -67,15 +65,10 @@ BOOST_AUTO_TEST_CASE( CtorTest )
 BOOST_AUTO_TEST_CASE( writeAtTest )
 {
     const IndexType n = 10;
-
     LAMAArray<double> lamaArray( n, 1.0 );
-
     HostReadAccess<double> lamaArrayRAccess( lamaArray );
-
     LAMA_WRITEAT_TEST( lamaArrayRAccess );
-
     lamaArrayRAccess.release();
-
     LAMA_WRITEAT_TEST( lamaArrayRAccess );
 }
 /* --------------------------------------------------------------------- */

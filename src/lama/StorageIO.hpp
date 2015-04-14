@@ -2,7 +2,7 @@
  * @file StorageIO.hpp
  *
  * @license
- * Copyright (c) 2009-2013
+ * Copyright (c) 2009-2015
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -108,9 +108,9 @@ protected:
 
     /** Logger for this class */
 
-    LAMA_LOG_DECL_STATIC_LOGGER( logger ) 
+    LAMA_LOG_DECL_STATIC_LOGGER( logger )
 
-private:
+private    :
 
     static const int mIversion; //<! unique identification for version
 };
@@ -150,7 +150,7 @@ public:
         const File::DataType& dataType,
         const File::IndexDataType indexDataTypeIA /*=LONG*/,
         const File::IndexDataType indexDataTypeJA /*=LONG*/
-    );
+        );
 
     /** @brief Writing CSR storage to a formatted file.
      *

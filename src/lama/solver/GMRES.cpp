@@ -2,7 +2,7 @@
  * @file GMRES.cpp
  *
  * @license
- * Copyright (c) 2009-2013
+ * Copyright (c) 2009-2015
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -68,7 +68,7 @@ GMRES::GMRES( const GMRES& other )
 
 GMRES::GMRESRuntime::GMRESRuntime()
     : IterativeSolverRuntime(), mCC( 0 ), mSS( 0 ), mG( 0 ), mY( 0 ), mH( 0 ), mHd( 0 ), mV( 0 ), mW( 0 ), mT(
-        0 ), mX0( 0 )
+          0 ), mX0( 0 )
 {
 }
 
@@ -76,43 +76,48 @@ GMRES::~GMRES()
 {
 }
 
-double GMRES::getAverageIterationTime( ) const
+double GMRES::getAverageIterationTime() const
 {
-    return ( (this->totalIterationTime - this->totalPreconditionerTime) / this->getIterationCount() );
+    return ( ( this->totalIterationTime - this->totalPreconditionerTime ) / this->getIterationCount() );
 }
 
-double GMRES::getAveragePreconditionerTime( ) const
+double GMRES::getAveragePreconditionerTime() const
 {
-    return (this->totalPreconditionerTime / this->getIterationCount() );
+    return ( this->totalPreconditionerTime / this->getIterationCount() );
 }
 GMRES::GMRESRuntime::~GMRESRuntime()
 {
-    if ( mV != 0 )
+    if( mV != 0 )
     {
-        for ( unsigned int i = 0; i < mV->size(); ++i )
+        for( unsigned int i = 0; i < mV->size(); ++i )
         {
             delete ( *mV )[i];
         }
+
         delete mV;
     }
+
     mV = 0;
 
-    if ( mW != 0 )
+    if( mW != 0 )
     {
         delete mW;
     }
+
     mW = 0;
 
-    if ( mT != 0 )
+    if( mT != 0 )
     {
         delete mT;
     }
+
     mT = 0;
 
-    if ( mX0 != 0 )
+    if( mX0 != 0 )
     {
         delete mX0;
     }
+
     mX0 = 0;
 }
 
@@ -124,32 +129,37 @@ void GMRES::initialize( const Matrix& coefficients )
 
     GMRESRuntime& runtime = getRuntime();
 
-    if ( runtime.mV != 0 )
+    if( runtime.mV != 0 )
     {
-        for ( unsigned int i = 0; i < runtime.mV->size(); ++i )
+        for( unsigned int i = 0; i < runtime.mV->size(); ++i )
         {
             delete ( *runtime.mV )[i];
         }
+
         delete runtime.mV;
     }
+
     runtime.mV = 0;
 
-    if ( runtime.mW != 0 )
+    if( runtime.mW != 0 )
     {
         delete runtime.mW;
     }
+
     runtime.mW = 0;
 
-    if ( runtime.mT != 0 )
+    if( runtime.mT != 0 )
     {
         delete runtime.mT;
     }
+
     runtime.mT = 0;
 
-    if ( runtime.mX0 != 0 )
+    if( runtime.mX0 != 0 )
     {
         delete runtime.mX0;
     }
+
     runtime.mX0 = 0;
 
     boost::scoped_array<double>& mCC = runtime.mCC;
@@ -169,33 +179,35 @@ void GMRES::initialize( const Matrix& coefficients )
 
     runtime.mV = new std::vector<Vector*>( mKrylovDim + 1, 0 );
 
-    switch ( coefficients.getValueType() )
+    switch( coefficients.getValueType() )
     {
-    case Scalar::FLOAT:
-    {
+        case Scalar::FLOAT:
+        {
 
-        ( *runtime.mV )[0] = new DenseVector<float>( coefficients.getDistributionPtr() );
+            ( *runtime.mV )[0] = new DenseVector<float>( coefficients.getDistributionPtr() );
 
-        runtime.mW = new DenseVector<float>( coefficients.getDistributionPtr() );
-        runtime.mT = new DenseVector<float>( coefficients.getDistributionPtr() );
-        runtime.mX0 = new DenseVector<float>( coefficients.getDistributionPtr() );
+            runtime.mW = new DenseVector<float>( coefficients.getDistributionPtr() );
+            runtime.mT = new DenseVector<float>( coefficients.getDistributionPtr() );
+            runtime.mX0 = new DenseVector<float>( coefficients.getDistributionPtr() );
 
-        break;
-    }
-    case Scalar::DOUBLE:
-    {
-        ( *runtime.mV )[0] = new DenseVector<double>( coefficients.getDistributionPtr() );
+            break;
+        }
 
-        runtime.mW = new DenseVector<double>( coefficients.getDistributionPtr() );
-        runtime.mT = new DenseVector<double>( coefficients.getDistributionPtr() );
-        runtime.mX0 = new DenseVector<double>( coefficients.getDistributionPtr() );
+        case Scalar::DOUBLE:
+        {
+            ( *runtime.mV )[0] = new DenseVector<double>( coefficients.getDistributionPtr() );
 
-        break;
-    }
-    default:
-    {
-        LAMA_THROWEXCEPTION( "Unsupported ValueType " << coefficients.getValueType() )
-    }
+            runtime.mW = new DenseVector<double>( coefficients.getDistributionPtr() );
+            runtime.mT = new DenseVector<double>( coefficients.getDistributionPtr() );
+            runtime.mX0 = new DenseVector<double>( coefficients.getDistributionPtr() );
+
+            break;
+        }
+
+        default:
+        {
+            LAMA_THROWEXCEPTION( "Unsupported ValueType " << coefficients.getValueType() )
+        }
     }
 
     // 'force' vector operations to be computed at the same location where coefficients reside
@@ -254,34 +266,37 @@ void GMRES::iterate()
     const Matrix& A = ( *runtime.mCoefficients );
 
     // lazy allocation structure mV
-    if ( !( *runtime.mV )[krylovIndex + 1] )
+    if( !( *runtime.mV )[krylovIndex + 1] )
     {
         LAMA_REGION( "Solver.GMRES.setMV" )
 
-        switch ( A.getValueType() )
+        switch( A.getValueType() )
         {
-        case Scalar::FLOAT:
-        {
-            ( *runtime.mV )[krylovIndex + 1] = new DenseVector<float>( A.getDistributionPtr() );
-            break;
+            case Scalar::FLOAT:
+            {
+                ( *runtime.mV )[krylovIndex + 1] = new DenseVector<float>( A.getDistributionPtr() );
+                break;
+            }
+
+            case Scalar::DOUBLE:
+            {
+                ( *runtime.mV )[krylovIndex + 1] = new DenseVector<double>( A.getDistributionPtr() );
+                break;
+            }
+
+            default:
+            {
+                LAMA_THROWEXCEPTION( "Unsupported ValueType " << A.getValueType() )
+            }
         }
-        case Scalar::DOUBLE:
-        {
-            ( *runtime.mV )[krylovIndex + 1] = new DenseVector<double>( A.getDistributionPtr() );
-            break;
-        }
-        default:
-        {
-            LAMA_THROWEXCEPTION( "Unsupported ValueType " << A.getValueType() )
-        }
-        }
+
         ( *runtime.mV )[krylovIndex + 1]->setContext( A.getContextPtr() );
     }
 
     // initialize in case of GMRES start/restart
-    if ( krylovIndex == 0 )
+    if( krylovIndex == 0 )
     {
-    	LAMA_REGION( "Solver.GMRES.restartInit" )
+        LAMA_REGION( "Solver.GMRES.restartInit" )
         // Compute r0=b-Ax0
         this->getResidual();
         Vector& residual = ( *runtime.mResidual );
@@ -291,7 +306,8 @@ void GMRES::iterate()
 
         // set first search direction vCurrent
         LAMA_LOG_INFO( logger, "Doing initial preconditioning." )
-        if ( !mPreconditioner )
+
+        if( !mPreconditioner )
         {
             LAMA_REGION( "Solver.GMRES.setVCurrent" )
             vCurrent = residual;
@@ -317,7 +333,8 @@ void GMRES::iterate()
     Vector& tmp = ( *runtime.mT );
 
     LAMA_LOG_INFO( logger, "Doing preconditioning." )
-    if ( !mPreconditioner )
+
+    if( !mPreconditioner )
     {
         w = A * vCurrent;
     }
@@ -333,13 +350,15 @@ void GMRES::iterate()
 
     // orthogonalization loop
     LAMA_LOG_DEBUG( logger, "Orthogonalization of vCurrent." )
-    for ( unsigned int k = 0; k <= krylovIndex; ++k )
+
+    for( unsigned int k = 0; k <= krylovIndex; ++k )
     {
         LAMA_REGION( "Solver.GMRES.orthogonalization" )
         const Vector& Vk = *( ( *runtime.mV )[k] );
         runtime.mH[hIdxStart + k] = ( w.dotProduct( Vk ) ).getValue<double>();
         w = w - runtime.mH[hIdxStart + k] * Vk;
     }
+
     runtime.mHd[krylovIndex] = w.l2Norm().getValue<double>();
 
     // normalize/store w in vNext (not needed in last step? Storage?)
@@ -350,7 +369,8 @@ void GMRES::iterate()
 
     // apply Givens rotations to new column
     LAMA_LOG_DEBUG( logger, "Apply Givens rotations." )
-    for ( unsigned int k = 0; k < krylovIndex; ++k )
+
+    for( unsigned int k = 0; k < krylovIndex; ++k )
     {
         LAMA_REGION( "Solver.GMRES.applyRotations" )
         double tmp1 = runtime.mH[hIdxStart + k];
@@ -401,7 +421,7 @@ void GMRES::updateX( unsigned int i )
     GMRESRuntime& runtime = getRuntime();
 
     // implementation using LAPACK
-    for ( unsigned int j = 0; j <= i; ++j )
+    for( unsigned int j = 0; j <= i; ++j )
     {
         runtime.mY[j] = runtime.mG[j];
     }
@@ -412,21 +432,23 @@ void GMRES::updateX( unsigned int i )
 
     LAMA_INTERFACE_FN_t( tptrs, context, BLAS, LAPACK, double );
 
-    int info = tptrs( CblasColMajor, CblasUpper, CblasNoTrans, CblasNonUnit,
-                      i + 1, 1, runtime.mH.get(), runtime.mY.get(), i + 1 );
+    int info = tptrs( CblasColMajor, CblasUpper, CblasNoTrans, CblasNonUnit, i + 1, 1, runtime.mH.get(),
+                      runtime.mY.get(), i + 1 );
 
     LAMA_LOG_DEBUG( logger, "tptrs returned with code = " << info )
 
     // Update of solution vector
     Vector& x = runtime.mSolution.getReference();
+
     // reset x to x0
-    if ( i != 0 )
+    if( i != 0 )
     {
         x = *runtime.mX0;
     }
+
     // update x
     // TODO: Add linar combination method
-    for ( unsigned int k = 0; k <= i; ++k )
+    for( unsigned int k = 0; k <= i; ++k )
     {
         const Vector& Vk = *( ( *runtime.mV )[k] );
         x = x + runtime.mY[k] * Vk;

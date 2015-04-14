@@ -2,7 +2,7 @@
  * @file TraceConfig.cpp
  *
  * @license
- * Copyright (c) 2009-2013
+ * Copyright (c) 2009-2015
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -76,7 +76,7 @@ static std::vector<std::string> split( const std::string& params, const char sep
         args.push_back( params.substr( prevFound, found - prevFound ) );
     }
 
-    while ( found != std::string::npos );
+    while( found != std::string::npos );
 
     return args;
 }
@@ -85,7 +85,7 @@ static std::vector<std::string> split( const std::string& params, const char sep
 
 boost::shared_ptr<TraceConfig> TraceConfig::getInstancePtr()
 {
-    if ( !config )
+    if( !config )
     {
         config.reset( new TraceConfig() );
     }
@@ -106,7 +106,7 @@ void TraceConfig::setKey( const std::string& key, const std::string& value )
 {
     LAMA_LOG_INFO( logger, "Set trace key " << key << " = " << value )
 
-    if ( key == "PREFIX" )
+    if( key == "PREFIX" )
     {
         mTraceFilePrefix = value;
     }
@@ -123,6 +123,7 @@ void TraceConfig::enableVampirTrace( bool flag )
     mVampirTraceEnabled = flag;
 
 #if defined( LAMA_TRACE_LEVEL_VT )
+
     if ( mCUDAContext )
     {
         // enable the context when tracing is switched on / off
@@ -140,13 +141,15 @@ void TraceConfig::enableVampirTrace( bool flag )
 
         VTInterface::enable( flag );
     }
+
 #else
     LAMA_LOG_INFO( logger, "enableVampirTrace: flag =  " << flag << ", level VT disabled" )
 
-    if ( mVampirTraceEnabled )
+    if( mVampirTraceEnabled )
     {
         LAMA_LOG_WARN( logger, "TRACE:vt ignored, use LAMA_TRACE_LEVEL=VT for compilation." )
     }
+
 #endif
 }
 
@@ -156,15 +159,15 @@ void TraceConfig::setParam( const std::string& param )
 {
     LAMA_LOG_INFO( logger, "Set trace config value : " << param )
 
-    if ( param == "VT" )
+    if( param == "VT" )
     {
         mVampirTraceEnabled = true;
     }
-    else if ( param == "THREAD" )
+    else if( param == "THREAD" )
     {
         mThreadEnabled = true;
     }
-    else if ( param == "TIME" )
+    else if( param == "TIME" )
     {
         mTimeTraceEnabled = true;
     }
@@ -197,28 +200,28 @@ TraceConfig::TraceConfig()
 
     bool found = Settings::getEnvironment( params, LAMA_ENV_TRACE_CONFIG );
 
-    if ( found )
+    if( found )
     {
         std::vector<std::string> values = split( params, ':' );
 
-        if ( values.size() != 1 || values[0] != "OFF" )
+        if( values.size() != 1 || values[0] != "OFF" )
         {
             mEnabled = true;
 
-            for ( size_t i = 0; i < values.size(); ++i )
+            for( size_t i = 0; i < values.size(); ++i )
             {
                 std::vector<std::string> keys = split( values[i], '=' );
 
                 std::string& key = keys[0];
 
-                // make upper case of key 
+                // make upper case of key
 
-                for ( size_t j = 0; j < key.length(); j++ )
+                for( size_t j = 0; j < key.length(); j++ )
                 {
                     key[j] = static_cast<std::string::value_type>( toupper( key[j] ) );
                 }
 
-                if ( keys.size() == 1 )
+                if( keys.size() == 1 )
                 {
                     // is just a param
 
@@ -235,15 +238,15 @@ TraceConfig::TraceConfig()
     }
     else
     {
-        LAMA_LOG_WARN( logger, LAMA_ENV_TRACE_CONFIG << " not set, tracing is disabled."
-                       << " Enable by " << LAMA_ENV_TRACE_CONFIG << "=time[:vt][:thread]" )
+        LAMA_LOG_WARN( logger,
+                       LAMA_ENV_TRACE_CONFIG << " not set, tracing is disabled." << " Enable by " << LAMA_ENV_TRACE_CONFIG << "=time[:vt][:thread]" )
     }
 
     // enable/disable VampirTrace, action needed now
 
     enableVampirTrace( mVampirTraceEnabled );
 
-    if ( mTraceFilePrefix == "_" )
+    if( mTraceFilePrefix == "_" )
     {
         // no prefix specified, so take default
 
@@ -262,6 +265,7 @@ TraceConfig::TraceConfig()
             // 0 for do not overwrite existing value
             setenv( "VT_FILE_PREFIX", mTraceFilePrefix.c_str(), 0 );
         }
+
 #endif
     }
 
@@ -278,14 +282,14 @@ TraceConfig::~TraceConfig()
 {
     LAMA_LOG_DEBUG( logger, "Entering Destructor." )
 
-    if ( mVampirTraceEnabled )
+    if( mVampirTraceEnabled )
     {
         // set tracing explicitly to off now
 
         enableVampirTrace( false );
     }
 
-    if ( !mTimeTraceEnabled )
+    if( !mTimeTraceEnabled )
     {
         LAMA_LOG_INFO( logger, "~TraceConfig, no output file" )
         LAMA_LOG_DEBUG( logger, "Leaving Destructor." )
@@ -298,7 +302,7 @@ TraceConfig::~TraceConfig()
 
     fileName << mTraceFilePrefix << ".trace";
 
-    if ( mComm->getSize() > 1 )
+    if( mComm->getSize() > 1 )
     {
         fileName << "." << mComm->getRank();
     }
@@ -307,7 +311,7 @@ TraceConfig::~TraceConfig()
 
     FILE* f = fopen( fileName.str().c_str(), "w" );
 
-    if ( f == NULL )
+    if( f == NULL )
     {
         LAMA_LOG_ERROR( logger, "Could not open " << fileName.str() << " for writing time information." )
         return;
@@ -315,9 +319,9 @@ TraceConfig::~TraceConfig()
 
     // Now write each RegionTable in file
 
-    std::map<ThreadId, boost::shared_ptr<RegionTable> >::iterator it;
+    std::map<ThreadId,boost::shared_ptr<RegionTable> >::iterator it;
 
-    for ( it = mRegionTables.begin(); it != mRegionTables.end(); it++ )
+    for( it = mRegionTables.begin(); it != mRegionTables.end(); it++ )
     {
         RegionTable& table = *it->second;
         table.printTimer( f );
@@ -336,14 +340,14 @@ static boost::mutex mapMutex; // needed to avoid conflicts for accesses on mRegi
 
 RegionTable* TraceConfig::getRegionTable()
 {
-    if ( !mEnabled )
+    if( !mEnabled )
     {
         return NULL;
     }
 
     ThreadId self = Thread::getSelf();
 
-    if ( mThreadEnabled || self == mMaster )
+    if( mThreadEnabled || self == mMaster )
     {
         return getInstance().getRegionTable( self );
     }
@@ -363,7 +367,7 @@ RegionTable* TraceConfig::getRegionTable( ThreadId threadId )
 
     boost::mutex::scoped_lock scoped_lock( mapMutex );
 
-    if ( !regionTable )
+    if( !regionTable )
     {
 
         // this thread calls the first time a region

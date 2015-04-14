@@ -2,7 +2,7 @@
  * @file TaskSyncTokenTest.hpp
  *
  * @license
- * Copyright (c) 2009-2013
+ * Copyright (c) 2009-2015
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -59,14 +59,10 @@ void threadMethod( const int in, int& out )
 BOOST_AUTO_TEST_CASE( runTest )
 {
     int in = 1;
-
     int out = 0;
-
     //TODO: Check /*this*/
     TaskSyncToken testToken( bind( &TaskSyncTokenTest::threadMethod, /*this,*/in, ref( out ) ) );
-
     testToken.wait();
-
     BOOST_CHECK_EQUAL( in, out );
 }
 
@@ -76,7 +72,6 @@ BOOST_AUTO_TEST_CASE( writeAtTest )
 {
     int in = 1;
     int out = 0;
-
     TaskSyncToken testToken( bind( &TaskSyncTokenTest::threadMethod, /*this,*/in, ref( out ) ) );
     LAMA_WRITEAT_TEST( testToken );
 }

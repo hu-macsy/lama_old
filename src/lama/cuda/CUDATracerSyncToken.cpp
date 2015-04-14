@@ -2,7 +2,7 @@
  * @file CUDATracerSyncToken.cpp
  *
  * @license
- * Copyright (c) 2009-2013
+ * Copyright (c) 2009-2015
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -47,7 +47,7 @@ CUDATracerSyncToken::CUDATracerSyncToken(
 
 CUDATracerSyncToken::~CUDATracerSyncToken()
 {
-    if ( !isSynchronized() )
+    if( !isSynchronized() )
     {
         wait();
     }
@@ -58,7 +58,8 @@ void CUDATracerSyncToken::wait()
     mStreamSyncToken.synchronizeEvent( mStopEvent );
     float runTime = 0.0f;
     mStreamSyncToken.getTime( &runTime, mStartEvent, mStopEvent );
-    if ( mTracer.get() )
+
+    if( mTracer.get() )
     {
         mTracer->setRuntime( runTime / 1000.0 );
     }

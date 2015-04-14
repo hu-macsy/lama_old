@@ -2,7 +2,7 @@
  * @file DenseMatrix.hpp
  *
  * @license
- * Copyright (c) 2009-2013
+ * Copyright (c) 2009-2015
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -75,7 +75,7 @@ class LAMA_DLL_IMPORTEXPORT DenseMatrix: public CRTPMatrix<DenseMatrix<ValueType
 
 public:
 
-typedef ValueType MatrixValueType; //!< This is the type of the matrix values.
+    typedef ValueType MatrixValueType; //!< This is the type of the matrix values.
 
     typedef boost::shared_ptr<DenseStorage<ValueType> > DenseStoragePtr;
 
@@ -253,7 +253,7 @@ typedef ValueType MatrixValueType; //!< This is the type of the matrix values.
 
     virtual void setContext( const ContextPtr context );
 
-    using CRTPMatrix<DenseMatrix<ValueType>, ValueType>::setContext; // setContext( localContext, haloContext )
+    using CRTPMatrix<DenseMatrix<ValueType>,ValueType>::setContext; // setContext( localContext, haloContext )
 
     /* Implementation of pure method of class Matrix. */
 
@@ -262,23 +262,23 @@ typedef ValueType MatrixValueType; //!< This is the type of the matrix values.
         return mData[0]->getContextPtr();
     }
 
-    using CRTPMatrix<DenseMatrix<ValueType>, ValueType>::setIdentity;  // setIdentity( const IndexType n )
+    using CRTPMatrix<DenseMatrix<ValueType>,ValueType>::setIdentity; // setIdentity( const IndexType n )
 
     /** Implementation of pure method Matrix::setIdentity. */
 
     virtual void setIdentity( DistributionPtr distribution );
 
-    /** 
+    /**
      *  Implementation for Matrix::readFromFile
      */
     virtual void readFromFile( const std::string& filename );
 
     /** Implementation of pure Matrix::setDenseData */
 
-    virtual void setDenseData( 
+    virtual void setDenseData(
         DistributionPtr rowDistribution,
         DistributionPtr colDistribution,
-        const _LAMAArray& values, 
+        const _LAMAArray& values,
         const Scalar eps );
 
     /** Implementation for pure method Matrix::setCSRData. */
@@ -343,7 +343,7 @@ typedef ValueType MatrixValueType; //!< This is the type of the matrix values.
 
     /** Method that assigns a sparse matrix, specialization of assign( const Matrix& ) */
 
-    void assignSparse( const CRTPMatrix<SparseMatrix<ValueType>, ValueType >& other );
+    void assignSparse( const CRTPMatrix<SparseMatrix<ValueType>,ValueType>& other );
 
     /* Implementation of pure method of class Matrix. */
 
@@ -531,12 +531,12 @@ typedef ValueType MatrixValueType; //!< This is the type of the matrix values.
         const File::IndexDataType indexDataTypeIA = File::INT,
         const File::IndexDataType indexDataTypeJA = File::INT ) const;
     /**
-     * @brief Implementation of pure function Matrix::create with covariant return type. 
+     * @brief Implementation of pure function Matrix::create with covariant return type.
      */
     virtual DenseMatrix<ValueType>* create() const;
 
     /**
-     * @brief Implementation of pure function Matrix::copy with covariant return type. 
+     * @brief Implementation of pure function Matrix::copy with covariant return type.
      */
     virtual DenseMatrix<ValueType>* copy() const;
 
@@ -656,7 +656,7 @@ private:
 
     LAMA_LOG_DECL_STATIC_LOGGER( logger )
 
-    void computeOwners();
+    void    computeOwners();
 
     /** @brief Predicate to check if SCALapack is supported via LAMAInterface. */
 
@@ -670,9 +670,9 @@ private:
 
     static DenseMatrix<ValueType>* createMatrix();
 
-    static bool registerCreator();   //!< used in static initialization for registration
+    static bool registerCreator(); //!< used in static initialization for registration
 
-    static bool initialized;  //!< static initialization used for registration of create in matrix factory
+    static bool initialized;//!< static initialization used for registration of create in matrix factory
 };
 
 /*  template methods implementations */
@@ -695,7 +695,7 @@ void DenseMatrix<ValueType>::copyDenseMatrix( const DenseMatrix<OtherValueType>&
 
     IndexType n = static_cast<IndexType>( other.mData.size() );
 
-    for ( IndexType i = 0; i < n; ++i )
+    for( IndexType i = 0; i < n; ++i )
     {
         LAMA_LOG_DEBUG( logger, "copy block " << i << " of " << n << " = " << *other.mData[i] )
 

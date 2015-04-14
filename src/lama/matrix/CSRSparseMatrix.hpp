@@ -2,7 +2,7 @@
  * @file CSRSparseMatrix.hpp
  *
  * @license
- * Copyright (c) 2009-2013
+ * Copyright (c) 2009-2015
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -62,7 +62,7 @@ class LAMA_DLL_IMPORTEXPORT CSRSparseMatrix: public SparseMatrix<ValueType>
 
 public:
 
-	typedef ValueType MatrixValueType; //!< This is the type of the matrix values.
+    typedef ValueType MatrixValueType; //!< This is the type of the matrix values.
 
     /** Type definition of the storage type for this sparse matrix. */
 
@@ -171,7 +171,7 @@ public:
 
     // Make all assignment operators of base class visible before overwriting one
 
-    using SparseMatrix<ValueType>::operator=; 
+    using SparseMatrix<ValueType>::operator=;
 
     /** Override the default assignment operator that would not make deep copies. */
 
@@ -180,20 +180,20 @@ public:
     /** Redefine assignment operator to get the correct return value; implementation is same as for base classes. */
 
     /*
-    CSRSparseMatrix& operator=( const Matrix& matrix );
+     CSRSparseMatrix& operator=( const Matrix& matrix );
 
-    CSRSparseMatrix& operator=( const Expression<Matrix,Matrix,Times>& expression );
+     CSRSparseMatrix& operator=( const Expression<Matrix,Matrix,Times>& expression );
 
-    CSRSparseMatrix& operator=( const Expression<Scalar,Matrix,Times>& expression );
+     CSRSparseMatrix& operator=( const Expression<Scalar,Matrix,Times>& expression );
 
-    CSRSparseMatrix& operator=( const Expression<Scalar,Expression<Matrix,Matrix,Times>,Times>& expression );
+     CSRSparseMatrix& operator=( const Expression<Scalar,Expression<Matrix,Matrix,Times>,Times>& expression );
 
-    CSRSparseMatrix& operator=(
-        const Expression<Expression<Scalar,Expression<Matrix,Matrix,Times>,Times>,Expression<Scalar,Matrix,Times>,Plus> exp );
+     CSRSparseMatrix& operator=(
+     const Expression<Expression<Scalar,Expression<Matrix,Matrix,Times>,Times>,Expression<Scalar,Matrix,Times>,Plus> exp );
 
-    CSRSparseMatrix& operator=(
-        const Expression<Expression<Scalar,Matrix,Times>,Expression<Scalar,Matrix,Times>,Plus> exp );
-    */
+     CSRSparseMatrix& operator=(
+     const Expression<Expression<Scalar,Matrix,Times>,Expression<Scalar,Matrix,Times>,Plus> exp );
+     */
 
     /** Override MatrixStorage<ValueType>::getLocalStorage with covariant return type. */
 
@@ -241,11 +241,11 @@ private:
 
     LAMA_LOG_DECL_STATIC_LOGGER( logger )
 
-    static CSRSparseMatrix<ValueType>* createMatrix();
+    static    CSRSparseMatrix<ValueType>* createMatrix();
 
-    static bool registerCreator();   //!< used in static initialization for registration
+    static bool registerCreator(); //!< used in static initialization for registration
 
-    static bool initialized;  //!< static initialization used for registration of create in matrix factory
+    static bool initialized;//!< static initialization used for registration of create in matrix factory
 };
 
 template<typename ValueType>
@@ -267,8 +267,7 @@ CSRSparseMatrix<ValueType>::CSRSparseMatrix(
 
 {
     LAMA_LOG_INFO( logger,
-                   communicator << ": construct distributed matrix "
-                   << numLocalRows << " by local and halo data + owned indexes" );
+                   communicator << ": construct distributed matrix " << numLocalRows << " by local and halo data + owned indexes" );
 
     // For the distribution we need the global number of rows, not available as arg, so compute it
 

@@ -2,7 +2,7 @@
  * @file HostContext.hpp
  *
  * @license
- * Copyright (c) 2009-2013
+ * Copyright (c) 2009-2015
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -60,10 +60,10 @@ public:
 
     enum HostContextType
     {
-        DefaultHost,    //!< stands for usual CPU memory 
-        CUDAHost,       //!< pinned memory that allows faster transfer to a certain CUDA Device
-        OpenCLHost,     //!< pinned memory that allows faster communication to OpenCL device
-        GASPIHost,      //!< pinned memory that allows faster communication in GASPI
+        DefaultHost, //!< stands for usual CPU memory
+        CUDAHost, //!< pinned memory that allows faster transfer to a certain CUDA Device
+        OpenCLHost, //!< pinned memory that allows faster communication to OpenCL device
+        GASPIHost, //!< pinned memory that allows faster communication in GASPI
         MaxHostContext
     };
 

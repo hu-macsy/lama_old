@@ -2,7 +2,7 @@
  * @file RegionTable.hpp
  *
  * @license
- * Copyright (c) 2009-2013
+ * Copyright (c) 2009-2015
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -156,7 +156,7 @@ private:
 
     LAMA_LOG_DECL_STATIC_LOGGER( logger )
 
-    struct CmpString
+    struct    CmpString
     {
         bool operator()( const char* a, const char* b ) const
         {

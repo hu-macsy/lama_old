@@ -2,7 +2,7 @@
  * @file SparseMatrixHelper.cpp
  *
  * @license
- * Copyright (c) 2009-2013
+ * Copyright (c) 2009-2015
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -49,10 +49,8 @@ bool compareMatrices( const lama::CSRSparseMatrix<ValueType>& matrix, const lama
     }
 
     // Note: getLocalData returns CSRStorage<ValueType>, so we can use getIA
-
     const lama::CSRStorage<ValueType>& matrixLocal = matrix.getLocalStorage();
     const lama::CSRStorage<ValueType>& otherLocal = other.getLocalStorage();
-
     lama::HostReadAccess<lama::IndexType> ia( matrixLocal.getIA() );
     lama::HostReadAccess<lama::IndexType> iaOther( otherLocal.getIA() );
 
@@ -75,35 +73,39 @@ bool compareMatrices( const lama::CSRSparseMatrix<ValueType>& matrix, const lama
         {
             lama::IndexType j = ja[jj];
             bool found = false;
+
             for ( lama::IndexType kk = iaOther[i]; kk < iaOther[i + 1]; ++kk )
             {
                 if ( j == jaOther[kk] )
                 {
                     found = true;
+
                     if ( data[jj] != dataOther[kk] )
                     {
                         return false;
                     }
                 }
             }
+
             if ( !found )
             {
                 return false;
             }
         }
     }
+
     return true;
 }
 
 template
 #ifdef WIN32
-__declspec(dllexport)
+__declspec( dllexport )
 #endif
-bool compareMatrices( const lama::CSRSparseMatrix<double> & matrix, const lama::CSRSparseMatrix<double> & other );
+bool compareMatrices( const lama::CSRSparseMatrix<double>& matrix, const lama::CSRSparseMatrix<double>& other );
 
 template
 #ifdef WIN32
-__declspec(dllexport)
+__declspec( dllexport )
 #endif
-bool compareMatrices( const lama::CSRSparseMatrix<float> & matrix, const lama::CSRSparseMatrix<float> & other );
+bool compareMatrices( const lama::CSRSparseMatrix<float>& matrix, const lama::CSRSparseMatrix<float>& other );
 

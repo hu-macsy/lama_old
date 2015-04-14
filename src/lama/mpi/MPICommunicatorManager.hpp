@@ -2,7 +2,7 @@
  * @file MPICommunicatorManager.hpp
  *
  * @license
- * Copyright (c) 2009-2013
+ * Copyright (c) 2009-2015
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -70,7 +70,7 @@ private:
 
     LAMA_LOG_DECL_STATIC_LOGGER( logger )
 
-    static bool __init; //!< used to force call of init()
+    static    bool __init; //!< used to force call of init()
 
     static bool init();//!< create an instance that is added to communicator factory
 

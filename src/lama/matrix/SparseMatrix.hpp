@@ -2,7 +2,7 @@
  * @file SparseMatrix.hpp
  *
  * @license
- * Copyright (c) 2009-2013
+ * Copyright (c) 2009-2015
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -70,7 +70,7 @@ template<typename > class DenseMatrix;
  */
 
 template<typename ValueType>
-class LAMA_DLL_IMPORTEXPORT SparseMatrix: public CRTPMatrix<SparseMatrix<ValueType>, ValueType >
+class LAMA_DLL_IMPORTEXPORT SparseMatrix: public CRTPMatrix<SparseMatrix<ValueType>,ValueType>
 {
 
     friend class SpecializedJacobi;
@@ -95,14 +95,16 @@ public:
     const MatrixStorage<ValueType>& getLocalStorage() const
     {
         return *mLocalData;
-    };
+    }
+    ;
 
     /** Getter routine for halo part of the sparse matrix. */
 
     const MatrixStorage<ValueType>& getHaloStorage() const
     {
         return *mHaloData;
-    };
+    }
+    ;
 
     /**
      * @brief Constructor of a replicated sparse matrix with global storage.
@@ -119,7 +121,10 @@ public:
 
     SparseMatrix( boost::shared_ptr<MatrixStorage<ValueType> > storage, DistributionPtr rowDist );
 
-    SparseMatrix( boost::shared_ptr<MatrixStorage<ValueType> > storage, DistributionPtr rowDist, DistributionPtr colDist );
+    SparseMatrix(
+        boost::shared_ptr<MatrixStorage<ValueType> > storage,
+        DistributionPtr rowDist,
+        DistributionPtr colDist );
 
     /** Constructor of a sparse matrix with local and halo data available. */
 
@@ -215,7 +220,7 @@ public:
 
     /* Before overriding the virtual function make the other routine setIdentity( int n ) visible */
 
-    using CRTPMatrix<SparseMatrix<ValueType>, ValueType >::setIdentity;
+    using CRTPMatrix<SparseMatrix<ValueType>,ValueType>::setIdentity;
 
     /** Set matrix to a identity square matrix with same row and column distribution. */
 
@@ -327,11 +332,11 @@ public:
         const Vector& y ) const;
 
     void vectorTimesMatrix(
-            Vector& result,
-            const Scalar alpha,
-            const Vector& x,
-            const Scalar beta,
-            const Vector& y ) const;
+        Vector& result,
+        const Scalar alpha,
+        const Vector& x,
+        const Scalar beta,
+        const Vector& y ) const;
 
     void vectorTimesMatrixImpl(
         DenseVector<ValueType>& result,
@@ -369,12 +374,16 @@ public:
         LAMAArray<ValueType>& localResult,
         const LAMAArray<ValueType>& localX,
         LAMAArray<ValueType>& haloX,
-        boost::function <void( const MatrixStorage<ValueType>* localMatrix, 
-                               LAMAArray<ValueType>& localResult,
-                               const LAMAArray<ValueType>& localX )> localF,
-        boost::function <void( const MatrixStorage<ValueType>* haloMatrix, 
-                               LAMAArray<ValueType>& localResult,
-                               const LAMAArray<ValueType>& haloX )> haloF ) const;
+        boost::function<
+        void(
+            const MatrixStorage<ValueType>* localMatrix,
+            LAMAArray<ValueType>& localResult,
+            const LAMAArray<ValueType>& localX )> localF,
+        boost::function<
+        void(
+            const MatrixStorage<ValueType>* haloMatrix,
+            LAMAArray<ValueType>& localResult,
+            const LAMAArray<ValueType>& haloX )> haloF ) const;
 
     /**
      * @brief Operation on distributed matrix with halo exchange, async version
@@ -386,34 +395,46 @@ public:
         LAMAArray<ValueType>& localResult,
         const LAMAArray<ValueType>& localX,
         LAMAArray<ValueType>& haloX,
-        boost::function <SyncToken*( const MatrixStorage<ValueType>* localMatrix, 
-                                     LAMAArray<ValueType>& localResult,
-                                     const LAMAArray<ValueType>& localX )> localAsyncF,
-        boost::function <void( const MatrixStorage<ValueType>* haloMatrix, 
-                               LAMAArray<ValueType>& localResult,
-                               const LAMAArray<ValueType>& haloX )> haloF ) const;
+        boost::function<
+        SyncToken*(
+            const MatrixStorage<ValueType>* localMatrix,
+            LAMAArray<ValueType>& localResult,
+            const LAMAArray<ValueType>& localX )> localAsyncF,
+        boost::function<
+        void(
+            const MatrixStorage<ValueType>* haloMatrix,
+            LAMAArray<ValueType>& localResult,
+            const LAMAArray<ValueType>& haloX )> haloF ) const;
 
     void vectorHaloOperationSync(
         LAMAArray<ValueType>& localResult,
         const LAMAArray<ValueType>& localX,
         const LAMAArray<ValueType>& localY,
-        boost::function <void( const MatrixStorage<ValueType>* localMatrix,
-                               LAMAArray<ValueType>& localResult,
-                               const LAMAArray<ValueType>& localX )> calcF,
-        boost::function <void( LAMAArray<ValueType>& localResult,
-                               const LAMAArray<ValueType>& localX,
-                               const LAMAArray<ValueType>& localY )> addF ) const;
+        boost::function<
+        void(
+            const MatrixStorage<ValueType>* localMatrix,
+            LAMAArray<ValueType>& localResult,
+            const LAMAArray<ValueType>& localX )> calcF,
+        boost::function<
+        void(
+            LAMAArray<ValueType>& localResult,
+            const LAMAArray<ValueType>& localX,
+            const LAMAArray<ValueType>& localY )> addF ) const;
 
     void vectorHaloOperationAsync(
         LAMAArray<ValueType>& localResult,
         const LAMAArray<ValueType>& localX,
         const LAMAArray<ValueType>& localY,
-        boost::function <SyncToken*( const MatrixStorage<ValueType>* localMatrix,
-                        LAMAArray<ValueType>& localResult,
-                        const LAMAArray<ValueType>& localX )> calcF,
-        boost::function </*SyncToken**/void ( LAMAArray<ValueType>& localResult,
-                        const LAMAArray<ValueType>& localX,
-                        const LAMAArray<ValueType>& localY )> addF ) const;
+        boost::function<
+        SyncToken*(
+            const MatrixStorage<ValueType>* localMatrix,
+            LAMAArray<ValueType>& localResult,
+            const LAMAArray<ValueType>& localX )> calcF,
+        boost::function<
+        /*SyncToken**/void(
+            LAMAArray<ValueType>& localResult,
+            const LAMAArray<ValueType>& localX,
+            const LAMAArray<ValueType>& localY )> addF ) const;
 
     /* Implemenation of pure method of class Matrix */
 
@@ -544,18 +565,18 @@ public:
      */
     void readFromFile( const std::string& filename );
 
-    using CRTPMatrix<SparseMatrix<ValueType>, ValueType >::operator=;   // make overloaded routines visible before overwriting one
+    using CRTPMatrix<SparseMatrix<ValueType>,ValueType>::operator=; // make overloaded routines visible before overwriting one
 
-    using CRTPMatrix<SparseMatrix<ValueType>, ValueType >::getColDistribution;
-    using CRTPMatrix<SparseMatrix<ValueType>, ValueType >::getColDistributionPtr;
-    using CRTPMatrix<SparseMatrix<ValueType>, ValueType >::getDistribution;
-    using CRTPMatrix<SparseMatrix<ValueType>, ValueType >::getDistributionPtr;
-    using CRTPMatrix<SparseMatrix<ValueType>, ValueType >::setDistributionPtr;
+    using CRTPMatrix<SparseMatrix<ValueType>,ValueType>::getColDistribution;
+    using CRTPMatrix<SparseMatrix<ValueType>,ValueType>::getColDistributionPtr;
+    using CRTPMatrix<SparseMatrix<ValueType>,ValueType>::getDistribution;
+    using CRTPMatrix<SparseMatrix<ValueType>,ValueType>::getDistributionPtr;
+    using CRTPMatrix<SparseMatrix<ValueType>,ValueType>::setDistributionPtr;
 
-    using CRTPMatrix<SparseMatrix<ValueType>, ValueType >::getCommunicationKind;
+    using CRTPMatrix<SparseMatrix<ValueType>,ValueType>::getCommunicationKind;
 
-    using CRTPMatrix<SparseMatrix<ValueType>, ValueType >::getNumColumns;
-    using CRTPMatrix<SparseMatrix<ValueType>, ValueType >::getNumRows;
+    using CRTPMatrix<SparseMatrix<ValueType>,ValueType>::getNumColumns;
+    using CRTPMatrix<SparseMatrix<ValueType>,ValueType>::getNumRows;
 
     /** Override the default assignment operator to guarantee deep copy. */
 
@@ -611,9 +632,9 @@ protected:
         const ValueType beta,
         const SparseMatrix<ValueType>& C );
 
-    using CRTPMatrix<SparseMatrix<ValueType>, ValueType >::mNumRows;
-    using CRTPMatrix<SparseMatrix<ValueType>, ValueType >::mNumColumns;
-    using CRTPMatrix<SparseMatrix<ValueType>, ValueType >::mColDistribution;
+    using CRTPMatrix<SparseMatrix<ValueType>,ValueType>::mNumRows;
+    using CRTPMatrix<SparseMatrix<ValueType>,ValueType>::mNumColumns;
+    using CRTPMatrix<SparseMatrix<ValueType>,ValueType>::mColDistribution;
 private:
 
     /**
@@ -633,7 +654,7 @@ private:
      *  This routine can also handle the case that otherLocalData is a reference to the local
      *  data of this matrix ( helpful to avoid unneccessary copies ).
      */
-    void set( const MatrixStorage<ValueType>& otherLocalData, DistributionPtr otherDist );
+    void    set( const MatrixStorage<ValueType>& otherLocalData, DistributionPtr otherDist );
 
     /** Implementation of transposed assign for sparse matrix of a known value type. */
 
@@ -643,9 +664,10 @@ private:
 
     void getLocalRow( DenseVector<ValueType>& row, const IndexType iLocal ) const;
 
-    mutable LAMAArray<ValueType> mTempSendValues;//!< temporary vector for halo communications
+    mutable LAMAArray<ValueType> mTempSendValues; //!< temporary vector for halo communications
 };
 
-} // namespace lama
+}
+// namespace lama
 
 #endif // LAMA_SPARSE_MATRIX_HPP_

@@ -2,7 +2,7 @@
  * @file ResidualThreshold.hpp
  *
  * @license
- * Copyright (c) 2009-2013
+ * Copyright (c) 2009-2015
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -128,6 +128,7 @@ private:
     Scalar mFirstNormResult;
 };
 
-} //namespace lama
+}
+//namespace lama
 
 #endif // LAMA_RESIDUALTHRESHOLD_HPP_

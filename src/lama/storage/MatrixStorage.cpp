@@ -2,7 +2,7 @@
  * @file MatrixStorage.cpp
  *
  * @license
- * Copyright (c) 2009-2013
+ * Copyright (c) 2009-2015
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -68,12 +68,8 @@ LAMA_LOG_DEF_LOGGER( _MatrixStorage::logger, "MatrixStorage" )
 
 _MatrixStorage::_MatrixStorage()
 
-    : mNumRows( 0 ),
-      mNumColumns( 0 ),
-      mRowIndexes(),
-      mCompressThreshold( 0.0f ),
-      mDiagonalProperty( false ),
-      mContext( ContextFactory::getContext( Context::Host ) )
+    : mNumRows( 0 ), mNumColumns( 0 ), mRowIndexes(), mCompressThreshold( 0.0f ), mDiagonalProperty(
+          false ), mContext( ContextFactory::getContext( Context::Host ) )
 {
     LAMA_LOG_DEBUG( logger, "constructed MatrixStorage()" )
 }
@@ -113,7 +109,7 @@ void _MatrixStorage::writeAt( std::ostream& stream ) const
 
 void _MatrixStorage::setCompressThreshold( float ratio )
 {
-    if ( ratio < 0.0 || ratio > 1.0 )
+    if( ratio < 0.0 || ratio > 1.0 )
     {
         LAMA_THROWEXCEPTION( "Illegal threshold " << ratio << ", must be from 0.0 to 1.0" )
     }
@@ -187,7 +183,7 @@ void _MatrixStorage::resetDiagonalProperty()
 
 void _MatrixStorage::setContext( ContextPtr context )
 {
-    if ( context.get() != mContext.get() )
+    if( context.get() != mContext.get() )
     {
         LAMA_LOG_DEBUG( logger, *this << ": new location = " << *context << ", old location = " << *mContext )
     }
@@ -220,15 +216,10 @@ IndexType _MatrixStorage::getNumValues() const
 
 /* ---------------------------------------------------------------------------------- */
 
-static const boost::unordered_map<MatrixStorageFormat,const char*> formatToString = boost::assign::map_list_of
-    ( Format::CSR, "CSR" )
-    ( Format::ELL, "ELL" )
-    ( Format::DIA, "DIA" )
-    ( Format::JDS, "JDS" )
-    ( Format::COO, "COO" )
-    ( Format::DENSE, "DENSE" )
-    ( Format::ASSEMBLY, "ASSEMBLY" )
-    ( Format::UNDEFINED, "UNDEFINED" );
+static const boost::unordered_map<MatrixStorageFormat,const char*> formatToString = boost::assign::map_list_of(
+            Format::CSR, "CSR" )( Format::ELL, "ELL" )( Format::DIA, "DIA" )( Format::JDS, "JDS" )( Format::COO,
+                    "COO" )(
+            Format::DENSE, "DENSE" )( Format::ASSEMBLY, "ASSEMBLY" )( Format::UNDEFINED, "UNDEFINED" );
 
 const char* format2Str( const MatrixStorageFormat storageFormat )
 {
@@ -237,13 +228,14 @@ const char* format2Str( const MatrixStorageFormat storageFormat )
 
 MatrixStorageFormat str2Format( const char* str )
 {
-    for ( int format = Format::CSR; format < Format::UNDEFINED; ++format )
+    for( int format = Format::CSR; format < Format::UNDEFINED; ++format )
     {
-        if ( strcmp( formatToString.at( MatrixStorageFormat( format ) ), str ) == 0 )
+        if( strcmp( formatToString.at( MatrixStorageFormat( format ) ), str ) == 0 )
         {
             return MatrixStorageFormat( format );
         }
     }
+
     return Format::UNDEFINED;
 }
 
@@ -263,7 +255,7 @@ void _MatrixStorage::offsets2sizes( LAMAArray<IndexType>& offsets )
 
     // the following loop  is not parallel
 
-    for ( IndexType i = 0; i < n; i++ )
+    for( IndexType i = 0; i < n; i++ )
     {
         writeSizes[i] = writeSizes[i + 1] - writeSizes[i];
     }
@@ -275,7 +267,7 @@ void _MatrixStorage::offsets2sizes( LAMAArray<IndexType>& offsets )
 
 void _MatrixStorage::offsets2sizes( LAMAArray<IndexType>& sizes, const LAMAArray<IndexType>& offsets )
 {
-    if ( &sizes == &offsets )
+    if( &sizes == &offsets )
     {
         LAMA_LOG_WARN( logger, "offset2sizes: sizes and offsets are same array" )
         offsets2sizes( sizes );
@@ -290,7 +282,7 @@ void _MatrixStorage::offsets2sizes( LAMAArray<IndexType>& sizes, const LAMAArray
     writeSizes.clear(); // old values are not used
     writeSizes.resize( n );
 
-    for ( IndexType i = 0; i < n; i++ )
+    for( IndexType i = 0; i < n; i++ )
     {
         writeSizes[i] = readOffsets[i + 1] - readOffsets[i];
     }
@@ -338,13 +330,11 @@ MatrixStorage<ValueType>::MatrixStorage()
 template<typename ValueType>
 MatrixStorage<ValueType>::MatrixStorage( const IndexType numRows, const IndexType numColumns )
 
-    : _MatrixStorage(), 
-       mEpsilon( 0 )
+    : _MatrixStorage(), mEpsilon( 0 )
 {
-    setDimension ( numRows, numColumns );
+    setDimension( numRows, numColumns );
 
-    LAMA_LOG_DEBUG( logger,
-                    "constructed MatrixStorage<ValueType> for " << numRows << " x " << numColumns << " matrix" )
+    LAMA_LOG_DEBUG( logger, "constructed MatrixStorage<ValueType> for " << numRows << " x " << numColumns << " matrix" )
 }
 
 /* --------------------------------------------------------------------------- */
@@ -438,7 +428,7 @@ void MatrixStorage<ValueType>::assign( const _MatrixStorage& other )
 {
     LAMA_REGION( "Storage.assign" )
 
-    if ( &other == this )
+    if( &other == this )
     {
         // self assignments might occur during redistributions
 
@@ -450,7 +440,7 @@ void MatrixStorage<ValueType>::assign( const _MatrixStorage& other )
 
     LAMA_LOG_INFO( logger, *this << ": assign ( " << other << " )" )
 
-    if ( other.getFormat() == Format::CSR )
+    if( other.getFormat() == Format::CSR )
     {
         // CSR storage has more efficient solution: just set CSR data
 
@@ -461,7 +451,7 @@ void MatrixStorage<ValueType>::assign( const _MatrixStorage& other )
     // If the size of other value type is smaller that this value type, it might be better
     // to use the other value type.
 
-    if ( other.getValueType() == Scalar::FLOAT && getValueType() == Scalar::DOUBLE )
+    if( other.getValueType() == Scalar::FLOAT && getValueType() == Scalar::DOUBLE )
     {
         other.copyTo( *this );
         return;
@@ -564,13 +554,13 @@ void MatrixStorage<ValueType>::joinRows(
 
         // initialize counters (Attention: sizes.size() != rowSizes.size())
 
-        for ( int i = 0; i < sizes.size(); ++i )
+        for( int i = 0; i < sizes.size(); ++i )
         {
             sizes[i] = 0;
         }
 
         // count elements for each row
-        for ( int i = 0; i < rowSizes.size(); ++i )
+        for( int i = 0; i < rowSizes.size(); ++i )
         {
             sizes[indexes[i]] += rowSizes[i];
         }
@@ -600,10 +590,12 @@ void MatrixStorage<ValueType>::joinRows(
 
     // insert rows
     IndexType dataIndex = 0;
-    for ( int i = 0; i < rowSizes.size(); ++i )
+
+    for( int i = 0; i < rowSizes.size(); ++i )
     {
         IndexType currentRow = indexes[i];
-        for ( int ii = 0; ii < rowSizes[i]; ++ii )
+
+        for( int ii = 0; ii < rowSizes[i]; ++ii )
         {
             // insert data at old position 'dataIndex' in row 'currentRow'
             // at new position 'tmpIA[currentRow]'
@@ -633,13 +625,12 @@ void MatrixStorage<ValueType>::joinHalo(
     const _MatrixStorage& haloData,
     const Halo& halo,
     const Distribution& colDist,
-    const bool attemptDiagonalProperty  )
+    const bool attemptDiagonalProperty )
 {
     LAMA_REGION( "Storage.joinHalo" )
 
     LAMA_LOG_INFO( logger,
-                   "join local = " << localData << " with diag = " << localData.hasDiagonalProperty() 
-                   << " and halo = " << haloData << ", col dist = " << colDist )
+                   "join local = " << localData << " with diag = " << localData.hasDiagonalProperty() << " and halo = " << haloData << ", col dist = " << colDist )
 
     //  Default solution joins storage data via the CSR format
     //  Note: this solution works also for *this == localData or haloData
@@ -650,15 +641,14 @@ void MatrixStorage<ValueType>::joinHalo(
 
     localData.buildCSRData( localIA, localJA, localValues );
 
-    LAMA_LOG_DEBUG( logger, "local CSR: ia = " << localIA << ", ja = " 
-                             << localJA << ", values = " << localValues )
+    LAMA_LOG_DEBUG( logger, "local CSR: ia = " << localIA << ", ja = " << localJA << ", values = " << localValues )
 
     // map back the local indexes to global column indexes
     {
         IndexType numValues = localJA.size();
         HostWriteAccess<IndexType> ja( localJA );
 
-        for ( IndexType i = 0; i < numValues; i++ )
+        for( IndexType i = 0; i < numValues; i++ )
         {
             ja[i] = colDist.local2global( ja[i] );
         }
@@ -670,8 +660,7 @@ void MatrixStorage<ValueType>::joinHalo(
 
     haloData.buildCSRData( haloIA, haloJA, haloValues );
 
-    LAMA_LOG_DEBUG( logger, "halo CSR: ia = " << haloIA << ", ja = " 
-                             << haloJA << ", values = " << haloValues )
+    LAMA_LOG_DEBUG( logger, "halo CSR: ia = " << haloIA << ", ja = " << haloJA << ", values = " << haloValues )
 
     // map back the halo indexes to global column indexes
     // this mapping is given by the array of required indexes
@@ -681,7 +670,7 @@ void MatrixStorage<ValueType>::joinHalo(
         HostWriteAccess<IndexType> ja( haloJA );
         HostReadAccess<IndexType> halo2global( halo.getRequiredIndexes() );
 
-        for ( IndexType i = 0; i < numValues; i++ )
+        for( IndexType i = 0; i < numValues; i++ )
         {
             ja[i] = halo2global[ja[i]];
         }
@@ -693,7 +682,7 @@ void MatrixStorage<ValueType>::joinHalo(
 
     IndexType numKeepDiagonals = 0;
 
-    if ( attemptDiagonalProperty && localData.hasDiagonalProperty() )
+    if( attemptDiagonalProperty && localData.hasDiagonalProperty() )
     {
         numKeepDiagonals = std::min( localData.getNumRows(), localData.getNumColumns() );
         LAMA_LOG_INFO( logger, localData << ": has diagonal property, numKeepDiagonals = " << numKeepDiagonals );
@@ -722,7 +711,7 @@ void MatrixStorage<ValueType>::localize( const _MatrixStorage& globalData, const
 {
     LAMA_REGION( "Storage.localize" )
 
-    if ( rowDist.isReplicated() )
+    if( rowDist.isReplicated() )
     {
         assign( globalData );
         return;
@@ -759,7 +748,7 @@ void MatrixStorage<ValueType>::replicate( const _MatrixStorage& localData, const
 {
     LAMA_REGION( "Storage.replicate" )
 
-    if ( rowDist.isReplicated() )
+    if( rowDist.isReplicated() )
     {
         LAMA_LOG_INFO( logger, "replicate: assign due to replicated distribution" )
         assign( localData );
@@ -806,16 +795,16 @@ void MatrixStorage<ValueType>::splitHalo(
 
     LAMA_ASSERT_EQUAL( mNumColumns, colDist.getGlobalSize() )
 
-    if ( getFormat() != Format::CSR )
+    if( getFormat() != Format::CSR )
     {
-        LAMA_UNSUPPORTED("splitHalo is not supported for " << getFormat() << ", converting to CSR!");
+        LAMA_UNSUPPORTED( "splitHalo is not supported for " << getFormat() << ", converting to CSR!" );
     }
 
-    if ( colDist.isReplicated() )
+    if( colDist.isReplicated() )
     {
         // if there is no column distribution, halo is not needed
 
-        if ( rowDist )
+        if( rowDist )
         {
             localData.localize( *this, *rowDist );
         }
@@ -835,7 +824,7 @@ void MatrixStorage<ValueType>::splitHalo(
 
     // check optional row distribution if specified
 
-    if ( rowDist )
+    if( rowDist )
     {
         LAMA_LOG_INFO( logger, *this << ": split also localizes for " << *rowDist )
         LAMA_ASSERT_EQUAL( mNumRows, rowDist->getGlobalSize() )
@@ -867,8 +856,8 @@ void MatrixStorage<ValueType>::splitHalo(
     const IndexType haloNumValues = haloJA.size();
     const IndexType localNumValues = localJA.size();
 
-    LAMA_LOG_INFO( logger, *this << ": split into " << localNumValues << " local non-zeros "
-                   " and " << haloNumValues << " halo non-zeros" )
+    LAMA_LOG_INFO( logger,
+                   *this << ": split into " << localNumValues << " local non-zeros " " and " << haloNumValues << " halo non-zeros" )
 
     const IndexType localNumColumns = colDist.getLocalSize();
 
@@ -954,7 +943,7 @@ void MatrixStorage<ValueType>::invert( const MatrixStorage<ValueType>& other )
 
 template<typename ValueType>
 void MatrixStorage<ValueType>::matrixTimesVector(
-	LAMAArray<ValueType>& result,
+    LAMAArray<ValueType>& result,
     const ValueType alpha,
     const LAMAArray<ValueType>& x,
     const ValueType beta,
@@ -986,7 +975,7 @@ void MatrixStorage<ValueType>::vectorTimesMatrix(
 
 template<typename ValueType>
 void MatrixStorage<ValueType>::matrixTimesVectorN(
-	LAMAArray<ValueType>& result,
+    LAMAArray<ValueType>& result,
     const IndexType n,
     const ValueType alpha,
     const LAMAArray<ValueType>& x,
@@ -1004,7 +993,7 @@ void MatrixStorage<ValueType>::matrixTimesVectorN(
 
 template<typename ValueType>
 SyncToken* MatrixStorage<ValueType>::matrixTimesVectorAsync(
-	LAMAArray<ValueType>& result,
+    LAMAArray<ValueType>& result,
     const ValueType alpha,
     const LAMAArray<ValueType>& x,
     const ValueType beta,
@@ -1015,19 +1004,19 @@ SyncToken* MatrixStorage<ValueType>::matrixTimesVectorAsync(
     // general default: asynchronous execution is done by a new thread
 
     void (MatrixStorage::*pf)(
-    	LAMAArray<ValueType>&,
+        LAMAArray<ValueType>&,
         const ValueType,
         const LAMAArray<ValueType>&,
         const ValueType,
         const LAMAArray<ValueType>& ) const
 
-    = &MatrixStorage<ValueType>::matrixTimesVector;
+        = &MatrixStorage<ValueType>::matrixTimesVector;
 
     using boost::bind;
     using boost::ref;
     using boost::cref;
 
-    return new TaskSyncToken( bind( pf, this, ref(result), alpha, cref(x), beta, cref(y) ) );
+    return new TaskSyncToken( bind( pf, this, ref( result ), alpha, cref( x ), beta, cref( y ) ) );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -1051,7 +1040,7 @@ SyncToken* MatrixStorage<ValueType>::vectorTimesMatrixAsync(
         const ValueType,
         const LAMAArray<ValueType>& ) const
 
-    = &MatrixStorage<ValueType>::vectorTimesMatrix;
+        = &MatrixStorage<ValueType>::vectorTimesMatrix;
 
     using boost::bind;
     using boost::ref;
@@ -1086,13 +1075,13 @@ SyncToken* MatrixStorage<ValueType>::jacobiIterateAsync(
 {
     // general default: asynchronous execution is done by a new thread
 
-    void ( MatrixStorage::*pf )(
+    void (MatrixStorage::*pf)(
         LAMAArray<ValueType>&,
         const LAMAArray<ValueType>&,
         const LAMAArray<ValueType>&,
         const ValueType ) const
 
-    = &MatrixStorage<ValueType>::jacobiIterate;
+        = &MatrixStorage<ValueType>::jacobiIterate;
 
     using boost::bind;
     using boost::cref;
@@ -1144,7 +1133,7 @@ void MatrixStorage<ValueType>::matrixTimesScalar( const ValueType alpha, const M
 {
     LAMA_LOG_INFO( logger, *this << " = alpha( " << alpha << " ) x " << a )
 
-    if ( &a != this )
+    if( &a != this )
     {
         assign( a );
     }
@@ -1247,11 +1236,11 @@ template<typename ValueType>
 void MatrixStorage<ValueType>::redistribute( const _MatrixStorage& other, const Redistributor& redistributor )
 
 {
-    if ( other.getFormat() == Format::CSR && other.getValueType() == getValueType() )
+    if( other.getFormat() == Format::CSR && other.getValueType() == getValueType() )
     {
         // This special case avoids unnecssary CSR conversions
 
-        const CSRStorage<ValueType>* otherCSR = dynamic_cast<const CSRStorage<ValueType>* >( &other );
+        const CSRStorage<ValueType>* otherCSR = dynamic_cast<const CSRStorage<ValueType>*>( &other );
         LAMA_ASSERT_DEBUG( otherCSR, "serious cast error" );
         redistributeCSR( *otherCSR, redistributor );
         return;
@@ -1270,16 +1259,16 @@ void MatrixStorage<ValueType>::redistribute( const _MatrixStorage& other, const 
 
     // check for same distribution, either equal or both replicated
 
-    if ( sourceDistribution.isReplicated() && targetDistribution.isReplicated() )
+    if( sourceDistribution.isReplicated() && targetDistribution.isReplicated() )
     {
         sameDist = true;
     }
-    else if ( &sourceDistribution == &targetDistribution )
+    else if( &sourceDistribution == &targetDistribution )
     {
         sameDist = true;
     }
 
-    if ( sameDist )
+    if( sameDist )
     {
         LAMA_LOG_INFO( logger, "redistributor with same source/target distribution" )
 
@@ -1331,16 +1320,16 @@ void MatrixStorage<ValueType>::redistributeCSR( const CSRStorage<ValueType>& oth
 
     // check for same distribution, either equal or both replicated
 
-    if ( sourceDistribution.isReplicated() && targetDistribution.isReplicated() )
+    if( sourceDistribution.isReplicated() && targetDistribution.isReplicated() )
     {
         sameDist = true;
     }
-    else if ( &sourceDistribution == &targetDistribution )
+    else if( &sourceDistribution == &targetDistribution )
     {
         sameDist = true;
     }
 
-    if ( sameDist )
+    if( sameDist )
     {
         LAMA_LOG_INFO( logger, "redistributor with same source/target distribution" )
 
@@ -1361,9 +1350,8 @@ void MatrixStorage<ValueType>::redistributeCSR( const CSRStorage<ValueType>& oth
     LAMAArray<IndexType> targetJA;
     LAMAArray<ValueType> targetValues;
 
-    StorageMethods<ValueType>::redistributeCSR( targetIA, targetJA, targetValues, 
-                                                other.getIA(), other.getJA(), other.getValues(),
-            redistributor );
+    StorageMethods<ValueType>::redistributeCSR( targetIA, targetJA, targetValues, other.getIA(), other.getJA(),
+            other.getValues(), redistributor );
 
     const IndexType targetNumRows = targetIA.size() - 1;
     const IndexType targetNumValues = targetJA.size();
@@ -1415,29 +1403,29 @@ void MatrixStorage<ValueType>::setDenseData(
 
     _LAMAArray& mValues = const_cast<_LAMAArray&>( values );
 
-    switch ( values.getValueType() )
+    switch( values.getValueType() )
     {
 
 #define LAMA_DENSE_ASSIGN( z, I, _ )                                                                 \
-    case Scalar::SCALAR_ARITHMETIC_TYPE##I :                                                         \
-    {                                                                                                \
-        LAMAArray<ARITHMETIC_TYPE##I>& typedValues =                                                 \
+case Scalar::SCALAR_ARITHMETIC_TYPE##I :                                                         \
+{                                                                                                \
+    LAMAArray<ARITHMETIC_TYPE##I>& typedValues =                                                 \
             dynamic_cast<LAMAArray<ARITHMETIC_TYPE##I>&>( mValues );                                 \
-        const DenseStorageView<ARITHMETIC_TYPE##I> denseStorage( typedValues, numRows, numColumns ); \
-        ARITHMETIC_TYPE##I tmpEpsilon = static_cast<ARITHMETIC_TYPE##I>( epsilon );                  \
-        denseStorage.swapEpsilon( tmpEpsilon );                                                      \
-        assign( denseStorage );                                                                      \
-        break;                                                                                       \
-    }                                                                                                \
+    const DenseStorageView<ARITHMETIC_TYPE##I> denseStorage( typedValues, numRows, numColumns ); \
+    ARITHMETIC_TYPE##I tmpEpsilon = static_cast<ARITHMETIC_TYPE##I>( epsilon );                  \
+    denseStorage.swapEpsilon( tmpEpsilon );                                                      \
+    assign( denseStorage );                                                                      \
+    break;                                                                                       \
+}                                                                                                \
 
-    BOOST_PP_REPEAT( ARITHMETIC_TYPE_CNT, LAMA_DENSE_ASSIGN, _ )
- 
+BOOST_PP_REPEAT( ARITHMETIC_TYPE_CNT, LAMA_DENSE_ASSIGN, _ )
+
 #undef LAMA_DENSE_ASSIGN
 
-    default:
+default        :
 
-        LAMA_THROWEXCEPTION( "Unsupported type for setting dense data: " << values.getValueType() )
-    }
+    LAMA_THROWEXCEPTION( "Unsupported type for setting dense data: " << values.getValueType() )
+}
 }
 
 /* ========================================================================= */
@@ -1452,7 +1440,7 @@ void MatrixStorage<ValueType>::writeToFile(
     const File::IndexDataType indexDataTypeIA,
     const File::IndexDataType indexDataTypeJA ) const
 {
-    writeToFile( 1, 0, fileName, fileType, dataType, indexDataTypeIA, indexDataTypeJA );
+writeToFile( 1, 0, fileName, fileType, dataType, indexDataTypeIA, indexDataTypeJA );
 }
 
 template<typename ValueType>
@@ -1465,16 +1453,16 @@ void MatrixStorage<ValueType>::writeToFile(
     const File::IndexDataType indexDataTypeIA,
     const File::IndexDataType indexDataTypeJA ) const
 {
-    LAMAArray<IndexType> csrIA;
-    LAMAArray<IndexType> csrJA;
-    LAMAArray<ValueType> csrValues;
+LAMAArray<IndexType> csrIA;
+LAMAArray<IndexType> csrJA;
+LAMAArray<ValueType> csrValues;
 
-    // TODO Do not build CSR if this matrix is CSR storage
+// TODO Do not build CSR if this matrix is CSR storage
 
-    buildCSRData( csrIA, csrJA, csrValues );
+buildCSRData( csrIA, csrJA, csrValues );
 
-    StorageIO<ValueType>::writeCSRToFile( size, rank, csrIA, mNumColumns, csrJA, csrValues, fileName, fileType,
-                                          dataType, indexDataTypeIA, indexDataTypeJA );
+StorageIO<ValueType>::writeCSRToFile( size, rank, csrIA, mNumColumns, csrJA, csrValues, fileName, fileType,
+                                      dataType, indexDataTypeIA, indexDataTypeJA );
 }
 
 /*****************************************************************************/
@@ -1482,125 +1470,125 @@ void MatrixStorage<ValueType>::writeToFile(
 template<typename ValueType>
 void MatrixStorage<ValueType>::readFromFile( const std::string& fileName )
 {
-    LAMA_LOG_INFO( logger, "MatrixStorage<" << getValueType() << ">::readFromFile( " << fileName << ")" )
+LAMA_LOG_INFO( logger, "MatrixStorage<" << getValueType() << ">::readFromFile( " << fileName << ")" )
 
-    LAMA_REGION( "Storage.readFromFile" )
+LAMA_REGION( "Storage.readFromFile" )
 
-    IndexType numColumns;
-    IndexType numRows;
-    IndexType numValues;
-    LAMAArray<IndexType> csrIA;
-    LAMAArray<IndexType> csrJA;
-    LAMAArray<ValueType> csrValues;
+IndexType numColumns;
+IndexType numRows;
+IndexType numValues;
+LAMAArray<IndexType> csrIA;
+LAMAArray<IndexType> csrJA;
+LAMAArray<ValueType> csrValues;
 
-    StorageIO<ValueType>::readCSRFromFile( csrIA, numColumns, csrJA, csrValues, fileName );
+StorageIO<ValueType>::readCSRFromFile( csrIA, numColumns, csrJA, csrValues, fileName );
 
-    numRows = csrIA.size() - 1;
-    numValues = csrJA.size();
+numRows = csrIA.size() - 1;
+numValues = csrJA.size();
 
-    LAMA_LOG_INFO( logger,
-                   "read CSR storage <" << getValueType() << "> : " << numRows << " x " << numColumns << ", #values = " << numValues )
+LAMA_LOG_INFO( logger,
+               "read CSR storage <" << getValueType() << "> : " << numRows << " x " << numColumns << ", #values = " << numValues )
 
-    setCSRData( numRows, numColumns, numValues, csrIA, csrJA, csrValues );
+setCSRData( numRows, numColumns, numValues, csrIA, csrJA, csrValues );
 
-    check( "read matrix" );
+check( "read matrix" );
 }
 
 /*****************************************************************************/
 
 void _MatrixStorage::buildCSRGraph(
-                IndexType* adjIA,
-                IndexType* adjJA,
-                IndexType* vwgt,
-                CommunicatorPtr comm,
-                const IndexType* globalRowIndexes /* = NULL */,
-                IndexType* vtxdist /* = NULL */) const
+    IndexType* adjIA,
+    IndexType* adjJA,
+    IndexType* vwgt,
+    CommunicatorPtr comm,
+    const IndexType* globalRowIndexes /* = NULL */,
+    IndexType* vtxdist /* = NULL */) const
 {
-        IndexType numLocalRows = mNumRows;
+IndexType numLocalRows = mNumRows;
 
-        if ( vtxdist != NULL ) // parallel graph
-        {
-            const PartitionId MASTER = 0;
+if( vtxdist != NULL ) // parallel graph
+{
+const PartitionId MASTER = 0;
 
-            IndexType parts = comm->getSize();
+IndexType parts = comm->getSize();
 
-            // Is this valid ?
-    // LAMA_ASSERT_ERROR( getDistribution().getNumPartitions() == parts,
-    //              "mismatch number of partitions and communicator size" );
+// Is this valid ?
+// LAMA_ASSERT_ERROR( getDistribution().getNumPartitions() == parts,
+//              "mismatch number of partitions and communicator size" );
 
-            std::vector<IndexType> localNumRows( parts );
+std::vector<IndexType> localNumRows( parts );
 
-            comm->gather( vtxdist, 1, MASTER, &numLocalRows );
-            comm->bcast( vtxdist, parts, MASTER );
+comm->gather( vtxdist, 1, MASTER, &numLocalRows );
+comm->bcast( vtxdist, parts, MASTER );
 
-            vtxdist[parts] = OpenMPCSRUtils::scan( vtxdist, parts );
-        }
+vtxdist[parts] = OpenMPCSRUtils::scan( vtxdist, parts );
+}
 
-        LAMAArray<IndexType> csrIA;
-        LAMAArray<IndexType> csrJA;
-        LAMAArray<float> csrValues;
+LAMAArray<IndexType> csrIA;
+LAMAArray<IndexType> csrJA;
+LAMAArray<float> csrValues;
 
-        buildCSRData( csrIA, csrJA, csrValues );
+buildCSRData( csrIA, csrJA, csrValues );
 
-        LAMAArray<IndexType> rowSizes;
-        HostWriteOnlyAccess<IndexType> sizes( rowSizes, mNumRows );
-        HostReadAccess<IndexType> ia( csrIA );
-        OpenMPCSRUtils::offsets2sizes( sizes.get(), ia.get(), mNumRows );
+LAMAArray<IndexType> rowSizes;
+HostWriteOnlyAccess<IndexType> sizes( rowSizes, mNumRows );
+HostReadAccess<IndexType> ia( csrIA );
+OpenMPCSRUtils::offsets2sizes( sizes.get(), ia.get(), mNumRows );
 
-        HostReadAccess<IndexType> ja( csrJA );
+HostReadAccess<IndexType> ja( csrJA );
 
-        IndexType offset = 0;  // runs through JA
-        IndexType newOffset = 0;  // runs through adjJA
+IndexType offset = 0; // runs through JA
+IndexType newOffset = 0; // runs through adjJA
 
+for( IndexType i = 0; i < numLocalRows; i++ )
+{
+IndexType rowIndex = i;
 
-        for ( IndexType i = 0; i < numLocalRows; i++ )
-        {
-            IndexType rowIndex = i;
+if( globalRowIndexes != NULL )
+{
+    rowIndex = globalRowIndexes[i];
+}
 
-            if ( globalRowIndexes != NULL )
-            {
-                 rowIndex = globalRowIndexes[ i ];
-            }
+adjIA[i] = newOffset;
+vwgt[i] = sizes[i];
 
-            adjIA[ i ] = newOffset;
-            vwgt[ i ] = sizes[ i ];
+for( IndexType jj = 0; jj < sizes[i]; jj++ )
+{
+    if( rowIndex != ja[offset] ) // skip diagonal element
+    {
+        adjJA[newOffset++] = ja[offset];
+    }
 
-            for ( IndexType jj = 0; jj < sizes[ i ]; jj++ )
-            {
-               if ( rowIndex != ja[ offset ] ) // skip diagonal element
-                {
-                    adjJA[ newOffset++ ] = ja[ offset ];
-                }
+    offset++;
+}
+}
 
-                offset++;
-           }
-        }
-
-        adjIA[ numLocalRows ] = newOffset;
+adjIA[numLocalRows] = newOffset;
 }
 
 template<typename ValueType>
 bool MatrixStorage<ValueType>::checkSymmetry() const
 {
-    // check symmetry of matrix
-    IndexType n = mNumRows;
+// check symmetry of matrix
+IndexType n = mNumRows;
 
-    if ( n != mNumColumns )
+if( n != mNumColumns )
+{
+return false;
+}
+
+for( IndexType i = 0; i < n; ++i )
+{
+for( IndexType j = 0; j < i; ++j )
+{
+    if( getValue( i, j ) != getValue( j, i ) )
     {
         return false;
     }
+}
+}
 
-    for( IndexType i = 0; i < n; ++i )
-    {
-        for( IndexType j = 0; j < i; ++j )
-        {
-            if( getValue( i, j ) != getValue( j, i ) )
-            {
-                return false;
-            }
-        }
-    }
-    return true;
+return true;
 }
 
 /* ========================================================================= */
@@ -1608,27 +1596,26 @@ bool MatrixStorage<ValueType>::checkSymmetry() const
 /* ========================================================================= */
 
 #define LAMA_MATRIX_STORAGE2_INSTANTIATE(z, J, TYPE )      \
-template LAMA_DLL_IMPORTEXPORT                             \
-void MatrixStorage<TYPE>::setRawDenseData(                 \
-    const IndexType numRows,                               \
-    const IndexType numColumns,                            \
-    const ARITHMETIC_TYPE##J values[],                     \
-    const TYPE );                             
+    template LAMA_DLL_IMPORTEXPORT                             \
+    void MatrixStorage<TYPE>::setRawDenseData(                 \
+            const IndexType numRows,                               \
+            const IndexType numColumns,                            \
+            const ARITHMETIC_TYPE##J values[],                     \
+            const TYPE );
 
 #define LAMA_MATRIX_STORAGE_INSTANTIATE(z, I, _)                          \
-                                                                          \
-template class LAMA_DLL_IMPORTEXPORT MatrixStorage<ARITHMETIC_TYPE##I> ;  \
-                                                                          \
+    \
+    template class LAMA_DLL_IMPORTEXPORT MatrixStorage<ARITHMETIC_TYPE##I> ;  \
+    \
     BOOST_PP_REPEAT( ARITHMETIC_TYPE_CNT,                                 \
                      LAMA_MATRIX_STORAGE2_INSTANTIATE,                    \
                      ARITHMETIC_TYPE##I )                                 \
 
 
-BOOST_PP_REPEAT( ARITHMETIC_TYPE_CNT, LAMA_MATRIX_STORAGE_INSTANTIATE, _ )
+    BOOST_PP_REPEAT( ARITHMETIC_TYPE_CNT, LAMA_MATRIX_STORAGE_INSTANTIATE, _ )
 
 #undef LAMA_MATRIX_STORAGE_INSTANTIATE
 #undef LAMA_MATRIX_STORAGE2_INSTANTIATE
 
-} // namespace LAMA
-
+}// namespace LAMA
 

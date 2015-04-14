@@ -2,7 +2,7 @@
  * @file HostReadAccess.hpp
  *
  * @license
- * Copyright (c) 2009-2013
+ * Copyright (c) 2009-2015
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -89,16 +89,16 @@ public:
 private:
     const ValueType* const mData;
 
-    LAMA_LOG_DECL_STATIC_LOGGER( logger )
-};
+    LAMA_LOG_DECL_STATIC_LOGGER( logger )};
 
-LAMA_LOG_DEF_TEMPLATE_LOGGER( template<typename ValueType>, HostReadAccess<ValueType>::logger, "ReadAccess.HostReadAccess" )
+LAMA_LOG_DEF_TEMPLATE_LOGGER( template<typename ValueType>, HostReadAccess<ValueType>::logger,
+                              "ReadAccess.HostReadAccess" )
 
 template<typename ValueType>
 HostReadAccess<ValueType>::HostReadAccess( const LAMAArray<ValueType>& array )
-    : ReadAccess<ValueType>( array, ContextFactory::getContext( Context::Host ) ), mData( get() )
+                : ReadAccess<ValueType>( array, ContextFactory::getContext( Context::Host ) ), mData( get() )
 {
-    LAMA_LOG_DEBUG(logger, "read access on host, mData = " << mData);
+    LAMA_LOG_DEBUG( logger, "read access on host, mData = " << mData );
 }
 
 template<typename ValueType>

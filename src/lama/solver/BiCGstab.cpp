@@ -49,17 +49,17 @@ namespace lama
 LAMA_LOG_DEF_LOGGER( BiCGstab::logger, "Solver.IterativeSolver.BiCGstab" )
 
 BiCGstab::BiCGstab( const std::string& id )
-: CG( id )
+    : CG( id )
 {
 }
 
 BiCGstab::BiCGstab( const std::string& id, LoggerPtr logger )
-: CG( id, logger )
+    : CG( id, logger )
 {
 }
 
 BiCGstab::BiCGstab( const BiCGstab& other )
-: CG( other )
+    : CG( other )
 {
 }
 
@@ -84,28 +84,30 @@ void BiCGstab::initialize( const Matrix& coefficients )
 
     runtime.mOmega = 1.0;
 
-    switch ( coefficients.getValueType() )
+    switch( coefficients.getValueType() )
     {
-    case Scalar::FLOAT:
-    {
-        runtime.mRes0.reset( new DenseVector<float>( coefficients.getDistributionPtr() ) );
-        runtime.mS.reset( new DenseVector<float>( coefficients.getDistributionPtr() ) );
-        runtime.mT.reset( new DenseVector<float>( coefficients.getDistributionPtr() ) );
-        runtime.mTmp.reset( new DenseVector<float>( coefficients.getDistributionPtr() ) );
-        break;
-    }
-    case Scalar::DOUBLE:
-    {
-        runtime.mRes0.reset( new DenseVector<double>( coefficients.getDistributionPtr() ) );
-        runtime.mS.reset( new DenseVector<double>( coefficients.getDistributionPtr() ) );
-        runtime.mT.reset( new DenseVector<double>( coefficients.getDistributionPtr() ) );
-        runtime.mTmp.reset( new DenseVector<double>( coefficients.getDistributionPtr() ) );
-        break;
-    }
-    default:
-    {
-        LAMA_THROWEXCEPTION( "Unsupported ValueType " << coefficients.getValueType() )
-    }
+        case Scalar::FLOAT:
+        {
+            runtime.mRes0.reset( new DenseVector<float>( coefficients.getDistributionPtr() ) );
+            runtime.mS.reset( new DenseVector<float>( coefficients.getDistributionPtr() ) );
+            runtime.mT.reset( new DenseVector<float>( coefficients.getDistributionPtr() ) );
+            runtime.mTmp.reset( new DenseVector<float>( coefficients.getDistributionPtr() ) );
+            break;
+        }
+
+        case Scalar::DOUBLE:
+        {
+            runtime.mRes0.reset( new DenseVector<double>( coefficients.getDistributionPtr() ) );
+            runtime.mS.reset( new DenseVector<double>( coefficients.getDistributionPtr() ) );
+            runtime.mT.reset( new DenseVector<double>( coefficients.getDistributionPtr() ) );
+            runtime.mTmp.reset( new DenseVector<double>( coefficients.getDistributionPtr() ) );
+            break;
+        }
+
+        default:
+        {
+            LAMA_THROWEXCEPTION( "Unsupported ValueType " << coefficients.getValueType() )
+        }
     }
 
     // 'force' vector operations to be computed at the same location where coefficients reside
@@ -127,7 +129,7 @@ void BiCGstab::iterate()
     Scalar alpha;
     Scalar beta;
 
-    if ( this->getIterationCount() == 0 )
+    if( this->getIterationCount() == 0 )
     {
         this->getResidual();
     }
@@ -147,7 +149,7 @@ void BiCGstab::iterate()
     LAMA_LOG_INFO( logger, "Doing preconditioning." )
 
     //BiCGstab implementation start
-    if ( !mPreconditioner )
+    if( !mPreconditioner )
     {
         z = residual;
     }
@@ -159,31 +161,31 @@ void BiCGstab::iterate()
         LAMA_THROWEXCEPTION( "Preconditioning BiCGstab not implemented yet." )
     }
 
-
-    if ( this->getIterationCount() == 0 )
+    if( this->getIterationCount() == 0 )
     {
         pScalar = alpha = omega; // = 1
         p = res0 = z;
     }
-        LAMA_LOG_INFO( logger, "Calculating pScalar." )
-        pScalar = res0.dotProduct( z );
-        LAMA_LOG_DEBUG( logger, "pScalar = " << pScalar )
 
-        LAMA_LOG_INFO( logger, "Calculating p." )
+    LAMA_LOG_INFO( logger, "Calculating pScalar." )
+    pScalar = res0.dotProduct( z );
+    LAMA_LOG_DEBUG( logger, "pScalar = " << pScalar )
 
-        if ( lastPScalar.getValue<double>() == 0.0 )
-        {
-            beta = 0.0;
-        }
-        else
-        {
-            beta = ( pScalar / lastPScalar ) * ( alpha / lastOmega );
-        }
+    LAMA_LOG_INFO( logger, "Calculating p." )
 
-        LAMA_LOG_DEBUG( logger, "beta = " << beta )
-        tmp = p - lastOmega * q;
-        p = z + beta * tmp;
-        LAMA_LOG_TRACE( logger, "l2Norm( p ) = " << p.l2Norm() )
+    if( lastPScalar.getValue<double>() == 0.0 )
+    {
+        beta = 0.0;
+    }
+    else
+    {
+        beta = ( pScalar / lastPScalar ) * ( alpha / lastOmega );
+    }
+
+    LAMA_LOG_DEBUG( logger, "beta = " << beta )
+    tmp = p - lastOmega * q;
+    p = z + beta * tmp;
+    LAMA_LOG_TRACE( logger, "l2Norm( p ) = " << p.l2Norm() )
 
     {
         LAMA_REGION( "Solver.BiCGstab.calc_q" )
@@ -196,7 +198,7 @@ void BiCGstab::iterate()
     const Scalar pqProd = res0.dotProduct( q );
     LAMA_LOG_DEBUG( logger, "pqProd = " << pqProd )
 
-    if ( pqProd.getValue<double>() == 0.0 )
+    if( pqProd.getValue<double>() == 0.0 )
     {
         alpha = 0.0;
     }
@@ -204,17 +206,18 @@ void BiCGstab::iterate()
     {
         alpha = pScalar / pqProd;
     }
+
     LAMA_LOG_DEBUG( logger, "alpha = " << alpha )
 
     {
-        LAMA_LOG_DEBUG( logger, "Calculating s.")
+        LAMA_LOG_DEBUG( logger, "Calculating s." )
         LAMA_REGION( "Solver.BiCGstab.update_s")
         s = z - alpha * q;
         LAMA_LOG_TRACE( logger, "l2Norm( s ) = " << s.l2Norm() )
     }
 
     {
-        LAMA_LOG_DEBUG( logger, "Calculating t.")
+        LAMA_LOG_DEBUG( logger, "Calculating t." )
         LAMA_REGION( "Solver.BiCGstab.update_t")
         t = A * s;
         LAMA_LOG_TRACE( logger, "l2Norm( t ) = " << t.l2Norm() )
@@ -222,7 +225,7 @@ void BiCGstab::iterate()
 
     {
         LAMA_REGION( "Solver.BiCGstab.update_omega" )
-        omega = t.dotProduct(s) / t.dotProduct(t);
+        omega = t.dotProduct( s ) / t.dotProduct( t );
         LAMA_LOG_TRACE( logger, "omega = " << omega )
     }
 

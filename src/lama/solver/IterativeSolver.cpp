@@ -2,7 +2,7 @@
  * @file IterativeSolver.cpp
  *
  * @license
- * Copyright (c) 2009-2013
+ * Copyright (c) 2009-2015
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -57,7 +57,7 @@ IterativeSolver::IterativeSolver( const std::string& id, LoggerPtr logger )
 IterativeSolver::IterativeSolver( const IterativeSolver& other )
     : Solver( other )
 {
-    if ( mCriterionRootComponent )
+    if( mCriterionRootComponent )
     {
         mCriterionRootComponent.reset( new Criterion( *other.mCriterionRootComponent ) );
     }
@@ -67,7 +67,7 @@ IterativeSolver::IterativeSolver( const IterativeSolver& other )
         mCriterionRootComponent.reset( new IterationCount( 1 ) );
     }
 
-    if ( other.getPreconditioner() )
+    if( other.getPreconditioner() )
     {
         mPreconditioner = other.getPreconditioner()->copy();
     }
@@ -94,9 +94,9 @@ void IterativeSolver::initialize( const Matrix& coefficients )
 {
     Solver::initialize( coefficients );
 
-    if ( mPreconditioner )
+    if( mPreconditioner )
     {
-        if ( mPreconditioner->getConstRuntime().mInitialized )
+        if( mPreconditioner->getConstRuntime().mInitialized )
         {
             LAMA_LOG_INFO( logger, "Preconditioner already initialized, skipping recursive init." )
             mLogger->logMessage( LogLevel::solverInformation,
@@ -114,15 +114,17 @@ void IterativeSolver::solveImpl()
 {
     getRuntime().mIterations = 0;
 
-    if ( !getConstRuntime().mSolveInit )
+    if( !getConstRuntime().mSolveInit )
     {
         LAMA_THROWEXCEPTION(
-            "Solver " + this->getId() + " has not been initialized. Call solveInit( Vector& solution, const Vector& rhs ) before solving " + this->getId() )
+            "Solver " + this->getId()
+            + " has not been initialized. Call solveInit( Vector& solution, const Vector& rhs ) before solving "
+            + this->getId() )
     }
 
     logStartSolve();
 
-    while ( !criteriaAreSatisfied() )
+    while( !criteriaAreSatisfied() )
     {
         logIterationStart();
 
@@ -146,7 +148,7 @@ void IterativeSolver::setStoppingCriterion( const CriterionPtr criterion )
 
 bool IterativeSolver::criteriaAreSatisfied() const
 {
-    if ( mCriterionRootComponent.get() == 0 )
+    if( mCriterionRootComponent.get() == 0 )
     {
         LAMA_THROWEXCEPTION( this->getId() + ": No stopping criterion set." )
     }

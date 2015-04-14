@@ -2,7 +2,7 @@
  * @file DistributionTest.cpp
  *
  * @license
- * Copyright (c) 2009-2013
+ * Copyright (c) 2009-2015
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -39,7 +39,6 @@ LAMA_COMMON_TEST_CASE( DistributionTest, localSizeTest )
 {
     // general test that must work for all distributions
     // the local sizes summed up over all partitions must be the global size
-
     IndexType sumLocalSizes = mDistributionPtr->getCommunicator().sum( mDistributionPtr->getLocalSize() );
     BOOST_CHECK_EQUAL( mDistributionPtr->getGlobalSize(), sumLocalSizes );
 }
@@ -52,11 +51,11 @@ LAMA_COMMON_TEST_CASE( DistributionTest, local2GlobalTest )
     {
         if ( mDistributionPtr->isLocal( i ) )
         {
-            BOOST_CHECK_EQUAL( i, mDistributionPtr->local2global( mDistributionPtr->global2local(i) ) );
+            BOOST_CHECK_EQUAL( i, mDistributionPtr->local2global( mDistributionPtr->global2local( i ) ) );
         }
         else
         {
-            BOOST_CHECK_EQUAL( nIndex, mDistributionPtr->global2local(i) );
+            BOOST_CHECK_EQUAL( nIndex, mDistributionPtr->global2local( i ) );
         }
     }
 }
@@ -67,7 +66,7 @@ LAMA_COMMON_TEST_CASE( DistributionTest, global2LocalTest )
 {
     for ( IndexType i = 0; i < mDistributionPtr->getLocalSize(); i++ )
     {
-        BOOST_CHECK_EQUAL( i, mDistributionPtr->global2local( mDistributionPtr->local2global(i) ) );
+        BOOST_CHECK_EQUAL( i, mDistributionPtr->global2local( mDistributionPtr->local2global( i ) ) );
     }
 }
 LAMA_COMMON_TEST_CASE_END()

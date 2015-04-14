@@ -2,7 +2,7 @@
  * @file Matrix.hpp
  *
  * @license
- * Copyright (c) 2009-2013
+ * Copyright (c) 2009-2015
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -200,17 +200,14 @@ public:
      *
      *  The following must be valid: values.size() == rowDist->getLocalSize() * colDist->getGlobalSize()
      */
-    virtual void setDenseData( 
-        DistributionPtr rowDist,
-        DistributionPtr colDist, 
-        const _LAMAArray& values,
-        Scalar eps = Scalar( 0 )        ) = 0;
+    virtual void setDenseData( DistributionPtr rowDist, DistributionPtr colDist, const _LAMAArray& values, Scalar eps =
+                                   Scalar( 0 ) ) = 0;
 
-    /** This method set a matrix with the values owned by this partition in CSR format 
+    /** This method set a matrix with the values owned by this partition in CSR format
      *
      *  @param[in] rowDist distributon of rows for the matrix
      *  @param[in] colDist distributon of columns for the matrix
-     *  @param[in] numValues number of non-zero values 
+     *  @param[in] numValues number of non-zero values
      *  @param[in] ia     is the offset array for number of elements in local rows
      *  @param[in] ja     contains the (global) column indexes
      *  @param[in] values contains the matrix values for the entries specified by ja
@@ -221,20 +218,20 @@ public:
      *  - ia.size() == rowDistribution.getLocalSize() + 1 must be valid
      */
 
-    virtual void setCSRData( 
-        DistributionPtr rowDist, 
-        DistributionPtr colDist, 
+    virtual void setCSRData(
+        DistributionPtr rowDist,
+        DistributionPtr colDist,
         const IndexType numValues,
-        const LAMAArray<IndexType>& ia, 
-        const LAMAArray<IndexType>& ja, 
+        const LAMAArray<IndexType>& ia,
+        const LAMAArray<IndexType>& ja,
         const _LAMAArray& values ) = 0;
 
     /** This method sets raw dense data in the same way as setDenseData but with raw value array */
 
     template<typename ValueType>
-    void setRawDenseData( 
-        DistributionPtr rowDist, 
-        DistributionPtr colDist, 
+    void setRawDenseData(
+        DistributionPtr rowDist,
+        DistributionPtr colDist,
         const ValueType* values,
         const ValueType eps = 0 )
     {
@@ -273,15 +270,9 @@ public:
     /** Setting raw dense data for a replicated matrix, only for convenience. */
 
     template<typename ValueType>
-    void setRawDenseData( 
-        const IndexType n, 
-        const IndexType m, 
-        const ValueType* values,
-        const ValueType eps = 0 )
+    void setRawDenseData( const IndexType n, const IndexType m, const ValueType* values, const ValueType eps = 0 )
     {
-        setRawDenseData( DistributionPtr( new NoDistribution( n ) ),
-                         DistributionPtr( new NoDistribution( m ) ), 
-                         values,
+        setRawDenseData( DistributionPtr( new NoDistribution( n ) ), DistributionPtr( new NoDistribution( m ) ), values,
                          eps );
     }
 
@@ -589,8 +580,8 @@ public:
      */
     typedef enum
     {
-        ASYNCHRONOUS,   // asynchronous execution to overlap computations, communications
-        SYNCHRONOUS     // synchronous, operations will not overlap
+        ASYNCHRONOUS, // asynchronous execution to overlap computations, communications
+        SYNCHRONOUS // synchronous, operations will not overlap
     } SyncKind;
 
     /**
@@ -835,7 +826,7 @@ public:
 
     /** Type definition of a argumentless function to create a matrix. */
 
-    typedef Matrix* ( *CreateFn ) ();
+    typedef Matrix* (*CreateFn)();
 
 protected:
 
@@ -914,7 +905,6 @@ protected:
      */
     Matrix( const Matrix& other );
 
-
     /**
      * @brief Sets the global/local size of replicated matrix.
      *
@@ -951,7 +941,7 @@ protected:
 
     LAMA_LOG_DECL_STATIC_LOGGER( logger )
 
-private:
+private    :
 
     void sanityCheck( const Expression<Matrix, Matrix, Times>& exp );
 
@@ -1004,23 +994,25 @@ inline DistributionPtr Matrix::getColDistributionPtr() const
  */
 inline std::ostream& operator<<( std::ostream& stream, const Matrix::SyncKind& kind )
 {
-    switch ( kind )
+    switch( kind )
     {
-    case Matrix::SYNCHRONOUS:
-    {
-        stream << "SYNCHRONOUS";
-        break;
-    }
-    case Matrix::ASYNCHRONOUS:
-    {
-        stream << "ASYNCHRONOUS";
-        break;
-    }
-    default:
-    {
-        stream << "<unknown sync kind>";
-        break;
-    }
+        case Matrix::SYNCHRONOUS:
+        {
+            stream << "SYNCHRONOUS";
+            break;
+        }
+
+        case Matrix::ASYNCHRONOUS:
+        {
+            stream << "ASYNCHRONOUS";
+            break;
+        }
+
+        default:
+        {
+            stream << "<unknown sync kind>";
+            break;
+        }
     }
 
     return stream;
@@ -1033,23 +1025,25 @@ inline std::ostream& operator<<( std::ostream& stream, const Matrix::SyncKind& k
  */
 inline std::ostream& operator<<( std::ostream& stream, const Matrix::MatrixKind& kind )
 {
-    switch ( kind )
+    switch( kind )
     {
-    case Matrix::DENSE:
-    {
-        stream << "DENSE";
-        break;
-    }
-    case Matrix::SPARSE:
-    {
-        stream << "SPARSE";
-        break;
-    }
-    default:
-    {
-        stream << "<unknown matrix kind>";
-        break;
-    }
+        case Matrix::DENSE:
+        {
+            stream << "DENSE";
+            break;
+        }
+
+        case Matrix::SPARSE:
+        {
+            stream << "SPARSE";
+            break;
+        }
+
+        default:
+        {
+            stream << "<unknown matrix kind>";
+            break;
+        }
     }
 
     return stream;

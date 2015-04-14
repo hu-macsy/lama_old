@@ -2,7 +2,7 @@
  * @file MICBLAS1.cpp
  *
  * @license
- * Copyright (c) 2009-2013
+ * Copyright (c) 2009-2015
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -26,7 +26,7 @@
  * @endlicense
  *
  * @brief MICBLAS1.cpp
- * @author Thomas Brandes    
+ * @author Thomas Brandes
  * @date 05.07.2013
  * @since 1.1.0
  */
@@ -55,29 +55,35 @@ LAMA_LOG_DEF_LOGGER( MICBLAS1::logger, "MIC.BLAS1" )
 /** scal */
 
 template<typename ValueType>
-void MICBLAS1::scal( const IndexType n, const ValueType alpha, ValueType* x, const IndexType incX, SyncToken* syncToken )
+void MICBLAS1::scal(
+    const IndexType n,
+    const ValueType alpha,
+    ValueType* x,
+    const IndexType incX,
+    SyncToken* syncToken )
 {
-    LAMA_LOG_DEBUG( logger, "scal<" << Scalar::getType<ValueType>() << ">, n = " << n 
-                            << ", alpha = " << alpha << ", x = " << x << ", incX = " << incX )
+    LAMA_LOG_DEBUG( logger,
+                    "scal<" << Scalar::getType<ValueType>() << ">, n = " << n << ", alpha = " << alpha << ", x = " << x << ", incX = " << incX )
 
-    if ( n < 1 || incX < 1 )
+    if( n < 1 || incX < 1 )
     {
-        return; 
+        return;
     }
 
-    if ( syncToken )
+    if( syncToken )
     {
         LAMA_LOG_WARN( logger, "asynchronous execution for MIC not supported yet." )
     }
- 
+
     void* xPtr = x;
 
-    #pragma offload target( mic ) in( xPtr, n, alpha, incX )
+#pragma offload target( mic ) in( xPtr, n, alpha, incX )
     {
         ValueType* x = static_cast<ValueType*>( xPtr );
 
-        #pragma omp parallel for 
-        for ( IndexType i = 0; i < n; ++i )
+        #pragma omp parallel for
+
+        for( IndexType i = 0; i < n; ++i )
         {
             x[i * incX] *= alpha;
         }
@@ -89,32 +95,34 @@ void MICBLAS1::scal( const IndexType n, const ValueType alpha, ValueType* x, con
 template<typename ValueType>
 ValueType MICBLAS1::asum( const IndexType n, const ValueType* x, const IndexType incX, SyncToken* syncToken )
 {
-    LAMA_LOG_DEBUG( logger, "asum<" << Scalar::getType<ValueType>() << ">, n = " << n << ", x = " << x << ", incX = " << incX )
+    LAMA_LOG_DEBUG( logger,
+                    "asum<" << Scalar::getType<ValueType>() << ">, n = " << n << ", x = " << x << ", incX = " << incX )
 
-    if ( syncToken )
+    if( syncToken )
     {
         LAMA_LOG_WARN( logger, "no asynchronous execution for mic possible at this level." )
     }
 
     ValueType asum = 0;
 
-    if ( n < 1 || incX < 1 )
+    if( n < 1 || incX < 1 )
     {
         return asum;
     }
 
     const void* xPtr = x;
 
-    #pragma offload target( mic ) in( xPtr, n, incX ), out( asum )
+#pragma offload target( mic ) in( xPtr, n, incX ), out( asum )
     {
         const ValueType* x = static_cast<const ValueType*>( xPtr );
 
         asum = 0;
 
         #pragma omp parallel for reduction( + : asum )
-        for ( int i = 0; i < n; ++i )
+
+        for( int i = 0; i < n; ++i )
         {
-            asum += std::abs( x[ i * incX ] );
+            asum += std::abs( x[i * incX] );
         }
     }
 
@@ -126,56 +134,58 @@ ValueType MICBLAS1::asum( const IndexType n, const ValueType* x, const IndexType
 template<typename ValueType>
 IndexType MICBLAS1::iamax( const IndexType n, const ValueType* x, const IndexType incX, SyncToken* syncToken )
 {
-    LAMA_LOG_INFO( logger, "iamax<" << Scalar::getType<ValueType>() << " >, n = " << n 
-                            << ", x = " << x << ", incX = " << incX )
+    LAMA_LOG_INFO( logger,
+                   "iamax<" << Scalar::getType<ValueType>() << " >, n = " << n << ", x = " << x << ", incX = " << incX )
 
-    if ( syncToken )
+    if( syncToken )
     {
         LAMA_LOG_WARN( logger, "no asynchronous execution for mic possible at this level." )
     }
 
     IndexType maxIndex = 0;
 
-    if ( n < 1 || incX < 1 )
+    if( n < 1 || incX < 1 )
     {
-        return  maxIndex;
+        return maxIndex;
     }
 
     const void* xPtr = x;
 
-    #pragma offload target( mic ) in( xPtr, n, incX ), out( maxIndex )
+#pragma offload target( mic ) in( xPtr, n, incX ), out( maxIndex )
     {
         const ValueType* x = static_cast<const ValueType*>( xPtr );
 
         maxIndex = 0;
 
-        ValueType maxVal = - std::numeric_limits<ValueType>::max();
+        ValueType maxVal = -std::numeric_limits<ValueType>::max();
 
         #pragma omp parallel
-        {  
+        {
             IndexType threadMaxIndex = -1;
-            ValueType threadMaxVal   = - std::numeric_limits<ValueType>::max();
+            ValueType threadMaxVal = -std::numeric_limits<ValueType>::max();
 
-            #pragma omp for 
-            for ( int i = 0; i < n; ++i )
+            #pragma omp for
+
+            for( int i = 0; i < n; ++i )
             {
-                const ValueType& val = x[ i * incX ];
+                const ValueType& val = x[i * incX];
 
-                if ( val > threadMaxVal )
+                if( val > threadMaxVal )
                 {
                     threadMaxIndex = i;
-                    threadMaxVal   = val;
+                    threadMaxVal = val;
                 }
             }
 
             // ordered reduction needed to get smallest index
-            
+
             #pragma omp for ordered
-            for ( int nt = 0; nt < omp_get_num_threads(); ++nt )
+
+            for( int nt = 0; nt < omp_get_num_threads(); ++nt )
             {
                 #pragma omp ordered
                 {
-                    if ( threadMaxVal > maxVal )
+                    if( threadMaxVal > maxVal )
                     {
                         maxVal = threadMaxVal;
                         maxIndex = threadMaxIndex;
@@ -202,12 +212,12 @@ void MICBLAS1::swap(
     LAMA_LOG_DEBUG( logger,
                     "iamax<long double>, n = " << n << ", x = " << x << ", incX = " << incX << ", y = " << y << ", incY = " << incY )
 
-    if ( syncToken )
+    if( syncToken )
     {
         LAMA_LOG_WARN( logger, "no asynchronous execution for openmp possible at this level." )
     }
 
-    if ( n < 1 || incX < 1 || incY < 1 )
+    if( n < 1 || incX < 1 || incY < 1 )
     {
         return;
     }
@@ -215,15 +225,16 @@ void MICBLAS1::swap(
     void* xPtr = x;
     void* yPtr = y;
 
-    #pragma offload target( MIC ) in( xPtr, yPtr, incX, incY, n )
+#pragma offload target( MIC ) in( xPtr, yPtr, incX, incY, n )
     {
         ValueType* x = static_cast<ValueType*>( xPtr );
         ValueType* y = static_cast<ValueType*>( yPtr );
 
         #pragma omp parallel for
+
         for( int i = 0; i < n; ++i )
         {
-            std::swap( x[ i * incX ], y[ i * incY ] );
+            std::swap( x[i * incX], y[i * incY] );
         }
     }
 }
@@ -235,7 +246,7 @@ ValueType MICBLAS1::nrm2( const IndexType n, const ValueType* x, const IndexType
 {
     LAMA_LOG_INFO( logger, "nrm2<" << Scalar::getType<ValueType>() << ">( n = " << n << " )" )
 
-    if ( syncToken )
+    if( syncToken )
     {
         LAMA_LOG_WARN( logger, "no asynchronous execution for mic possible at this level." )
     }
@@ -244,21 +255,22 @@ ValueType MICBLAS1::nrm2( const IndexType n, const ValueType* x, const IndexType
 
     ValueType sum = 0;
 
-    if ( n < 1 || incX < 1 )
+    if( n < 1 || incX < 1 )
     {
         return sum;
     }
 
-    #pragma offload target( mic ) in( xPtr, n, incX ), out( sum )
+#pragma offload target( mic ) in( xPtr, n, incX ), out( sum )
     {
         const ValueType* x = static_cast<const ValueType*>( xPtr );
 
         sum = 0;
 
         #pragma omp parallel for reduction( + : sum )
+
         for( int i = 0; i < n; ++i )
         {
-            sum += x[ i * incX ] * x[ i * incX ];
+            sum += x[i * incX] * x[i * incX];
         }
     }
 
@@ -279,17 +291,16 @@ void MICBLAS1::copy(
     SyncToken* syncToken )
 {
     LAMA_LOG_DEBUG( logger,
-                    "copy<" << Scalar::getType<ValueType>() << ">, n = " << n 
-                     << ", x = " << x << ", incX = " << incX << ", y = " << y << ", incY = " << incY )
+                    "copy<" << Scalar::getType<ValueType>() << ">, n = " << n << ", x = " << x << ", incX = " << incX << ", y = " << y << ", incY = " << incY )
 
-    if ( syncToken )
+    if( syncToken )
     {
         LAMA_LOG_WARN( logger, "asynchronous execution for MIC not supported yet." )
     }
 
     LAMA_REGION( "MIC.BLAS1.copy" )
 
-    if ( n < 1 || incX < 1 || incY < 1 )
+    if( n < 1 || incX < 1 || incY < 1 )
     {
         return;
     }
@@ -297,13 +308,14 @@ void MICBLAS1::copy(
     const void* xPtr = x;
     void* yPtr = y;
 
-    #pragma offload target( mic ), in( xPtr, yPtr, n, incX, incY )
+#pragma offload target( mic ), in( xPtr, yPtr, n, incX, incY )
     {
-        const ValueType* x = ( ValueType* ) xPtr;
-        ValueType* y = ( ValueType* ) yPtr;
+        const ValueType* x = (ValueType*) xPtr;
+        ValueType* y = (ValueType*) yPtr;
 
-        #pragma omp parallel for 
-        for ( IndexType i = 0; i < n; ++i )
+        #pragma omp parallel for
+
+        for( IndexType i = 0; i < n; ++i )
         {
             y[i * incY] = x[i * incX];
         }
@@ -326,16 +338,15 @@ void MICBLAS1::axpy(
 {
     LAMA_REGION( "MIC.BLAS1.axpy" )
 
-    LAMA_LOG_INFO( logger, "axpy<" << Scalar::getType<ValueType>() << ",  n = " << n 
-                      << ", alpha = " << alpha << ", x = " << x << ", incX = " << incX 
-                      << ", y = " << y << ", incY = " << incY )
+    LAMA_LOG_INFO( logger,
+                   "axpy<" << Scalar::getType<ValueType>() << ",  n = " << n << ", alpha = " << alpha << ", x = " << x << ", incX = " << incX << ", y = " << y << ", incY = " << incY )
 
-    if ( syncToken )
+    if( syncToken )
     {
         LAMA_LOG_WARN( logger, "asynchronous execution for MIC not supported yet." )
     }
 
-    if ( n < 1 || incX < 1 || incY < 1 )
+    if( n < 1 || incX < 1 || incY < 1 )
     {
         return;
     }
@@ -343,15 +354,16 @@ void MICBLAS1::axpy(
     const void* xPtr = x;
     void* yPtr = y;
 
-    #pragma offload target( mic ), in( xPtr, yPtr, n, alpha, incX, incY )
+#pragma offload target( mic ), in( xPtr, yPtr, n, alpha, incX, incY )
     {
         const ValueType* x = static_cast<const ValueType*>( xPtr );
         ValueType* y = static_cast<ValueType*>( yPtr );
 
-        #pragma omp parallel for 
-        for ( IndexType i = 0; i < n; ++i )
+        #pragma omp parallel for
+
+        for( IndexType i = 0; i < n; ++i )
         {
-            y[ i * incY ] += alpha * x[ i * incX ];
+            y[i * incY] += alpha * x[i * incX];
         }
     }
 }
@@ -373,14 +385,14 @@ ValueType MICBLAS1::dot(
 
     LAMA_LOG_INFO( logger, "dot<" << Scalar::getType<ValueType>() << ">, n = " << n );
 
-    if ( syncToken )
+    if( syncToken )
     {
         LAMA_THROWEXCEPTION( "no asynchronous execution for MIC possible at this level." )
     }
 
     ValueType val = 0;
 
-    if ( n < 1 || incX < 1 || incY < 1 )
+    if( n < 1 || incX < 1 || incY < 1 )
     {
         return val;
     }
@@ -388,7 +400,7 @@ ValueType MICBLAS1::dot(
     const void* xPtr = x;
     const void* yPtr = y;
 
-    #pragma offload target( mic ), out( val ), in( xPtr, yPtr, n, incX, incY )
+#pragma offload target( mic ), out( val ), in( xPtr, yPtr, n, incX, incY )
     {
         const ValueType* x = static_cast<const ValueType*>( xPtr );
         const ValueType* y = static_cast<const ValueType*>( yPtr );
@@ -396,7 +408,8 @@ ValueType MICBLAS1::dot(
         val = 0;
 
         #pragma omp parallel for reduction( +:val )
-        for ( IndexType i = 0; i < n; ++i )
+
+        for( IndexType i = 0; i < n; ++i )
         {
             val += x[i * incX] * y[i * incY];
         }
@@ -408,15 +421,19 @@ ValueType MICBLAS1::dot(
 /** sum */
 
 template<typename ValueType>
-void MICBLAS1::sum( const IndexType n, ValueType alpha, const ValueType* x, 
-                                       ValueType beta, const ValueType* y, 
-                                       ValueType* z, SyncToken* syncToken )
+void MICBLAS1::sum(
+    const IndexType n,
+    ValueType alpha,
+    const ValueType* x,
+    ValueType beta,
+    const ValueType* y,
+    ValueType* z,
+    SyncToken* syncToken )
 {
-    LAMA_LOG_DEBUG( logger, "sum<" << Scalar::getType<ValueType>() << ">, n = " << n 
-                             << ", alpha = " << alpha << ", x = " << x 
-                             << ", beta = " << beta << ", y = " << y << ", z = " << z )
+    LAMA_LOG_DEBUG( logger,
+                    "sum<" << Scalar::getType<ValueType>() << ">, n = " << n << ", alpha = " << alpha << ", x = " << x << ", beta = " << beta << ", y = " << y << ", z = " << z )
 
-    if ( syncToken )
+    if( syncToken )
     {
         LAMA_LOG_WARN( logger, "asynchronous execution for MIC not supported yet." )
     }
@@ -427,14 +444,15 @@ void MICBLAS1::sum( const IndexType n, ValueType alpha, const ValueType* x,
     const void* yPtr = y;
     void* zPtr = z;
 
-    #pragma offload target( mic ), in( xPtr, yPtr, zPtr, alpha, beta )
+#pragma offload target( mic ), in( xPtr, yPtr, zPtr, alpha, beta )
     {
         const ValueType* x = static_cast<const ValueType*>( xPtr );
         const ValueType* y = static_cast<const ValueType*>( yPtr );
         ValueType* z = static_cast<ValueType*>( zPtr );
 
         #pragma omp parallel for
-        for ( int i = 0; i < n; i++ )
+
+        for( int i = 0; i < n; i++ )
         {
             z[i] = alpha * x[i] + beta * y[i];
         }
@@ -451,7 +469,7 @@ void MICBLAS1::setInterface( BLASInterface& BLAS )
 {
     LAMA_LOG_INFO( logger, "set BLAS1 routines for MIC in Interface" )
 
-    // Note: macro takes advantage of same name for routines and type definitions 
+    // Note: macro takes advantage of same name for routines and type definitions
     //       ( e.g. routine CUDABLAS1::sum<ValueType> is set for BLAS::BLAS1::sum variable
 
     LAMA_INTERFACE_REGISTER_T( BLAS, scal, float )

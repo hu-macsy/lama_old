@@ -2,7 +2,7 @@
  * @file lama_cublas.hpp
  *
  * @license
- * Copyright (c) 2009-2013
+ * Copyright (c) 2009-2015
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -41,7 +41,7 @@ namespace lama
 /*    cublasCast                                                                          */
 /* ---------------------------------------------------------------------------------------*/
 
-/*  cublasCast converts pointers to LAMA complex numbers to 
+/*  cublasCast converts pointers to LAMA complex numbers to
  *  cuBlas pointers for complex numbers. This is safe as both
  *  are internally represented in the same way.
  *

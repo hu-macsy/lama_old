@@ -2,7 +2,7 @@
  * @file lama_test.cpp
  *
  * @license
- * Copyright (c) 2009-2013
+ * Copyright (c) 2009-2015
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -72,10 +72,10 @@ std::string loglevel_argument = "";
 int main( int argc, char* argv[] )
 {
     bool result;
-
     // If there is no value in environment variable LAMA_TEST_CONTEXT
     // we set this value to *
     char* context = getenv( "LAMA_TEST_CONTEXT" );
+
     if ( context == NULL )
     {
         int replace = 1;
@@ -88,8 +88,7 @@ int main( int argc, char* argv[] )
         std::string testsuite;
         std::list<std::string>::iterator Iter;
         std::list<std::string> inherited_test_cases;
-        std::map<std::string,std::string> runtime_arguments;
-
+        std::map<std::string, std::string> runtime_arguments;
         /* Registration of common Testclasses and their testmethods */
         TC_REG( normtestclasses, normtestmethods );
         TC_REG( sparsematrixtestclasses, sparsematrixtestmethods );
@@ -101,6 +100,7 @@ int main( int argc, char* argv[] )
         {
             std::string s = argv[i];
             int pos = s.find( '=' );
+
             if ( pos != -1 )
                 runtime_arguments.insert(
                     std::make_pair( s.substr( 0, pos ),
@@ -108,7 +108,8 @@ int main( int argc, char* argv[] )
         }
 
         /* Find run_test in runtime parameters */
-        std::map<std::string,std::string>::iterator iterator = runtime_arguments.find( "--run_test" );
+        std::map<std::string, std::string>::iterator iterator = runtime_arguments.find( "--run_test" );
+
         if ( iterator != runtime_arguments.end() )
         {
             runtest_argument = iterator->second;
@@ -116,12 +117,14 @@ int main( int argc, char* argv[] )
 
         /* Find log_level in runtime parameters */
         iterator = runtime_arguments.find( "--log_level" );
+
         if ( iterator != runtime_arguments.end() )
         {
             loglevel_argument = iterator->second;
         }
 
         char* loglevel_env = getenv( "BOOST_TEST_LOG_LEVEL" );
+
         if ( loglevel_argument == "" && loglevel_env == NULL )
         {
             loglevel_argument = "";
@@ -135,8 +138,8 @@ int main( int argc, char* argv[] )
          * If the environment variable LAMA_TEST_CONTEXT is set before, it will be overwritten.
          * Tests will run throw all available contexts, if there is neither a environment variable
          * nor a runtime parameter. */
-
         iterator = runtime_arguments.find( "--lama_test_context" );
+
         if ( iterator != runtime_arguments.end() )
         {
             int replace = 1;
@@ -145,6 +148,7 @@ int main( int argc, char* argv[] )
 
         //if a regular expression is used in a base test:
         int posasterix = runtest_argument.find( '*' );
+
         if ( posasterix != -1 )
         {
             std::list<std::string> matchedtestcases;
@@ -184,6 +188,7 @@ int main( int argc, char* argv[] )
                 {
                     runtest_argument = *Iter;
                 }
+
                 int pos = runtest_argument.find( '/' );
                 testsuite = runtest_argument.substr( 0, pos );
                 runtest_argument = testsuite + "/*";
@@ -198,15 +203,14 @@ int main( int argc, char* argv[] )
                     {
                         std::string newarg = "";
                         newarg = category + "=" + testsuite + "/*";
-
                         char* help = new char[newarg.size() + 1];
                         newarg.copy( help, newarg.size() );
-
                         argv[i] = help;
                         break;
                     }
                 }
             }
+
             //TODO: Think about, what will happen, if there are different test suites ...
         }
 
@@ -221,7 +225,6 @@ int main( int argc, char* argv[] )
             {
                 base_test_case = true;
             }
-
 
         if ( base_test_case )
         {
@@ -252,6 +255,5 @@ int main( int argc, char* argv[] )
     /* Call main() from boost with new arguments */
     /* it is just allowed to invoke this method once */
     result = ::unit_test::unit_test_main( &init_unit_test_suite, argc, argv );
-
     return result;
 }

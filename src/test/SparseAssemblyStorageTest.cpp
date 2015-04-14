@@ -2,7 +2,7 @@
  * @file SparseAssemblyStorageTest.cpp
  *
  * @license
- * Copyright (c) 2009-2013
+ * Copyright (c) 2009-2015
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -55,7 +55,7 @@ BOOST_AUTO_TEST_SUITE( SparseAssemblyStorageTest )
 
 LAMA_LOG_DEF_LOGGER( logger, "Test.SparseAssemblyStorageTest" )
 
-typedef boost::mpl::list<float,double> ValueTypes;
+typedef boost::mpl::list<float, double> ValueTypes;
 
 /* --------------------------------------------------------------------- */
 
@@ -72,9 +72,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( ConstructorTest, T, ValueTypes )
 {
     const IndexType numRows = 10;
     const IndexType numColumns = 15;
-
     SparseAssemblyStorage<T> assemblyStorage( numRows, numColumns );
-
     BOOST_REQUIRE_EQUAL( numRows, assemblyStorage.getNumRows() );
     BOOST_REQUIRE_EQUAL( numColumns, assemblyStorage.getNumColumns() );
     BOOST_REQUIRE_EQUAL( 0, assemblyStorage.getNumValues() );
@@ -89,17 +87,15 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( ConstructorTest, T, ValueTypes )
     }
 
 // fix diagonal property for each row, can be done in parallel
-
     #pragma omp parallel for
+
     for ( IndexType i = 0; i < numRows; ++i )
     {
         assemblyStorage.fixDiagonalProperty( i );
     }
 
 // diagonal property must be recomputed
-
     assemblyStorage.resetDiagonalProperty();
-
     BOOST_CHECK( assemblyStorage.hasDiagonalProperty() );
     BOOST_CHECK_EQUAL( numRows, assemblyStorage.getNumValues() );
 }
@@ -109,27 +105,22 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( ConstructorTest, T, ValueTypes )
 BOOST_AUTO_TEST_CASE_TEMPLATE( SetRowTest, T, ValueTypes )
 {
     const IndexType n = 10;
-
     CSRStorage<T> csrStorage;
     csrStorage.setIdentity( n );
-
     SparseAssemblyStorage<T> assemblyStorage( n, n );
-
     #pragma omp parallel for
+
     for ( IndexType i = 0; i < n; ++i )
     {
         // Note: this test verifies also thread-safe use of LAMA arrays
-
         LAMAArray<IndexType> ja;
         LAMAArray<T> values;
-
         {
             HostWriteOnlyAccess<IndexType> wJa( ja, 1 );
             HostWriteOnlyAccess<T> wValues( values, 1 );
             wJa[0] = i;
             wValues[0] = 1.0;
         }
-
         assemblyStorage.setRow( i, ja, values );
     }
 
@@ -149,7 +140,6 @@ BOOST_AUTO_TEST_CASE( typeNameTest )
     SparseAssemblyStorage<double> aStoraged;
     std::string s = aStoraged.typeName();
     BOOST_CHECK_EQUAL( s, "SparseAssemblyStorage<double>" );
-
     SparseAssemblyStorage<float> aStoragef;
     s = aStoragef.typeName();
     BOOST_CHECK_EQUAL( s, "SparseAssemblyStorage<float>" );

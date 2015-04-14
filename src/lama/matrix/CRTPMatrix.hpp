@@ -2,7 +2,7 @@
  * @file CRTPMatrix.hpp
  *
  * @license
- * Copyright (c) 2009-2013
+ * Copyright (c) 2009-2015
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -103,14 +103,13 @@ public:
     {
         LAMA_REGION( "MatrixTimesVector" )
 
-        LAMA_LOG_INFO( logger,
-                       result << " = " << alpha << " * " << *this << " * " << x << " + " << beta << " * " << y )
+        LAMA_LOG_INFO( logger, result << " = " << alpha << " * " << *this << " * " << x << " + " << beta << " * " << y )
 
-        if ( &result == &y )
+        if( &result == &y )
         {
             LAMA_LOG_DEBUG( logger, "alias: result = y is well handled" )
         }
-        else if ( &result == &x )
+        else if( &result == &x )
         {
             LAMA_THROWEXCEPTION( "alias: result = x is not handled, use temporary" )
         }
@@ -151,14 +150,13 @@ public:
     {
         LAMA_REGION( "VectorTimesMatrix" )
 
-        LAMA_LOG_INFO( logger,
-                       result << " = " << alpha << " * " << *this << " * " << x << " + " << beta << " * " << y )
+        LAMA_LOG_INFO( logger, result << " = " << alpha << " * " << *this << " * " << x << " + " << beta << " * " << y )
 
-        if ( &result == &y )
+        if( &result == &y )
         {
             LAMA_LOG_DEBUG( logger, "alias: result = y is well handled" )
         }
-        else if ( &result == &x )
+        else if( &result == &x )
         {
             LAMA_THROWEXCEPTION( "alias: result = x is not handled, use temporary" )
         }

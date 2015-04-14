@@ -2,7 +2,7 @@
  * @file DIAStorageTest.cpp
  *
  * @license
- * Copyright (c) 2009-2013
+ * Copyright (c) 2009-2015
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -55,7 +55,6 @@ namespace DIAStorageTest
 template<typename ValueType>
 void commonTestCases( ContextPtr loc )
 {
-
     DIAStorage<ValueType> diaStorage;
     MatrixStorageTest<ValueType> storageTest( diaStorage );
     storageTest.mMatrixStorage.setContext( loc );
@@ -68,7 +67,6 @@ void commonTestCases( ContextPtr loc )
     {
         storageTest.runTests();
     }
-
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */
@@ -76,12 +74,9 @@ void commonTestCases( ContextPtr loc )
 template<typename ValueType>
 void constructorTest()
 {
-
     const IndexType numRows = 10;
     const IndexType numColumns = 15;
-
     DIAStorage<ValueType> diaStorage( numRows, numColumns );
-
     BOOST_REQUIRE_EQUAL( numRows, diaStorage.getNumRows() );
     BOOST_REQUIRE_EQUAL( numColumns, diaStorage.getNumColumns() );
 
@@ -105,24 +100,18 @@ void constructorTest1( log4lama::Logger& logger )
     // Test the full DIAStorge constructor and the individual getter routines of DIA storage
     const IndexType numRows = 3;
     const IndexType numColumns = 3;
-
     const IndexType offsets[] =
     { 0, 1 };
     const ValueType values[] =
     { 0.5f, 0.5f, 0.3f, 0.2f, 0.1f, 0.0f };
-
     const IndexType numValues = sizeof( values ) / sizeof( ValueType );
     const IndexType numDiagonals = sizeof( offsets ) / sizeof( IndexType );
-
     LAMAArray<IndexType> diaOffsets( 2, offsets );
     LAMAArray<ValueType> diaValues( numValues, values );
-
     DIAStorage<ValueType> diaStorage( numRows, numColumns, numDiagonals, diaOffsets, diaValues );
-
     BOOST_REQUIRE_EQUAL( numRows, diaStorage.getNumRows() );
     BOOST_REQUIRE_EQUAL( numColumns, diaStorage.getNumColumns() );
     BOOST_REQUIRE_EQUAL( numDiagonals, diaStorage.getNumDiagonals() );
-
     {
         HostReadAccess<IndexType> diaOffsets( diaStorage.getOffsets() );
         HostReadAccess<ValueType> diaValues( diaStorage.getValues() );
@@ -134,19 +123,15 @@ void constructorTest1( log4lama::Logger& logger )
             BOOST_CHECK_EQUAL( offsets[i], diaOffsets[i] );
         }
 
-        for( IndexType i = 0; i < numValues; ++i )
+        for ( IndexType i = 0; i < numValues; ++i )
         {
             BOOST_CHECK_EQUAL( values[i], diaValues[i] );
         }
     }
-
-
     // copy constructor (TODO Bea: on all available locations, after host runs without mistake
     // DIAStorage<ValueType> diaStorageCopy( diaStorage, loc );
-
 //    TODO ThoBra: weiter unten die "Nachbildung" des Copy-Constructors laeuft fehlerfrei,
 //    hier knallt es beim letzten BOOST_CHECK_EQUAL
-
 //    DIAStorage<ValueType> diaStorageCopy( diaStorage );
 //    LAMA_LOG_INFO( logger, "copy constructor" );
 //
@@ -165,27 +150,23 @@ void constructorTest1( log4lama::Logger& logger )
 //        BOOST_CHECK_EQUAL( values[4], diaValues[4] );
 //        BOOST_CHECK_EQUAL( values[5], diaValues[5] );
 //    }
-
     LAMAArray<IndexType> csrIa;
     LAMAArray<IndexType> csrJa;
     LAMAArray<ValueType> csrValues;
-
     // const IndexType csrIaResult[] = { 0, 2, 4, 5 };
     // const IndexType csrJaResult[] = { 0, 1, 1, 2, 2 };
     // const ValueType csrValuesResult[] = { 0.5, 0.2, 0.5, 0.1, 0.3 };
-
     diaStorage.buildCSRData( csrIa, csrJa, csrValues );
-
     IndexType numRowsDia = diaStorage.getNumRows();
     IndexType numColumnsDia = diaStorage.getNumColumns();
     IndexType numValuesCSR = csrJa.size();
-
     diaStorage.setCSRData( numRowsDia, numColumnsDia, numValuesCSR, csrIa, csrJa, csrValues );
     {
         HostReadAccess<ValueType> diaValues( diaStorage.getValues() );
         LAMA_LOG_INFO( logger, "diaValues.size() = " << diaValues.size() );
         BOOST_CHECK_EQUAL( diaValues.size(), numValues );
-        for( IndexType i = 0; i < numValues; ++i )
+
+        for ( IndexType i = 0; i < numValues; ++i )
         {
             BOOST_CHECK_EQUAL( values[0], diaValues[0] );
             BOOST_CHECK_EQUAL( values[1], diaValues[1] );
@@ -204,7 +185,6 @@ void typeNameTest()
 {
     DIAStorage<ValueType> diaStorage;
     std::string s = diaStorage.typeName();
-
     BOOST_CHECK( s.length() > 0 );
 }
 

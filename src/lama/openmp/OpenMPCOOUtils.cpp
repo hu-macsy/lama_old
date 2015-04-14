@@ -2,7 +2,7 @@
  * @file OpenMPCOOUtils.cpp
  *
  * @license
- * Copyright (c) 2009-2013
+ * Copyright (c) 2009-2015
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -63,14 +63,14 @@ void OpenMPCOOUtils::getCSRSizes(
 
     // initialize size array for each row
 
-    for ( IndexType i = 0; i < numRows; i++ )
+    for( IndexType i = 0; i < numRows; i++ )
     {
         csrSizes[i] = 0;
     }
 
     // increment size of a row for each used row value
 
-    for ( IndexType k = 0; k < numValues; k++ )
+    for( IndexType k = 0; k < numValues; k++ )
     {
         IndexType i = cooIA[k];
         LAMA_ASSERT_DEBUG( i < numRows, "cooIA[" << k << "] = " << i << " out of range, #rows = " << numRows )
@@ -93,7 +93,7 @@ void OpenMPCOOUtils::getCSRValues( IndexType csrJA[], CSRValueType csrValues[], 
 
     // traverse the non-zero values and put data at the right places
 
-    for ( IndexType k = 0; k < numValues; k++ )
+    for( IndexType k = 0; k < numValues; k++ )
     {
         IndexType i = cooIA[k];
 
@@ -109,7 +109,7 @@ void OpenMPCOOUtils::getCSRValues( IndexType csrJA[], CSRValueType csrValues[], 
 
     // set back the old offsets in csrIA
 
-    for ( IndexType i = numRows; i > 0; --i )
+    for( IndexType i = numRows; i > 0; --i )
     {
         csrIA[i] = csrIA[i - 1];
     }
@@ -129,34 +129,35 @@ void OpenMPCOOUtils::offsets2ia(
     const IndexType numDiagonals )
 {
     LAMA_LOG_INFO( logger,
-                   "build cooIA( " << numValues << " ) from csrIA( " << ( numRows + 1 ) 
-                    << " ), #diagonals = " << numDiagonals )
- 
+                   "build cooIA( " << numValues << " ) from csrIA( " << ( numRows + 1 ) << " ), #diagonals = " << numDiagonals )
+
     #pragma omp parallel for schedule( LAMA_OMP_SCHEDULE )
-    for ( IndexType i = 0; i < numRows; ++i )
+
+    for( IndexType i = 0; i < numRows; ++i )
     {
         IndexType csrOffset = csrIA[i];
-        IndexType cooOffset = 0;        // additional offset due to diagonals
+        IndexType cooOffset = 0; // additional offset due to diagonals
 
-        if ( i < numDiagonals )
+        if( i < numDiagonals )
         {
             // make sure that we really have at least one element in this row
 
-            LAMA_ASSERT_DEBUG( csrIA[i] < csrIA[i+1], "no elem in row " << i );
+            LAMA_ASSERT_DEBUG( csrIA[i] < csrIA[i + 1], "no elem in row " << i );
 
             // diagonal elements will be the first nrows entries
 
             cooIA[i] = i;
-            csrOffset += 1;                   // do not fill diagonal element again
+            csrOffset += 1; // do not fill diagonal element again
             cooOffset = numDiagonals - i - 1; // offset in coo moves
         }
 
         // now fill remaining part of row i
 
-        for ( IndexType jj = csrOffset; jj < csrIA[i + 1]; ++jj )
+        for( IndexType jj = csrOffset; jj < csrIA[i + 1]; ++jj )
         {
-            LAMA_LOG_TRACE( logger, "cooIA[ " << ( jj + cooOffset ) << "] = " << i << ", jj = " << jj << ", cooOffset = " << cooOffset )
-            cooIA[ jj + cooOffset] = i;
+            LAMA_LOG_TRACE( logger,
+                            "cooIA[ " << ( jj + cooOffset ) << "] = " << i << ", jj = " << jj << ", cooOffset = " << cooOffset )
+            cooIA[jj + cooOffset] = i;
         }
     }
 }
@@ -173,30 +174,30 @@ void OpenMPCOOUtils::setCSRData(
     const IndexType numDiagonals )
 {
     LAMA_LOG_INFO( logger,
-                   "build cooValues( << " << numValues << " from csrValues + csrIA( " << ( numRows + 1 ) 
-                    << " ), #diagonals = " << numDiagonals )
- 
+                   "build cooValues( << " << numValues << " from csrValues + csrIA( " << ( numRows + 1 ) << " ), #diagonals = " << numDiagonals )
+
     #pragma omp parallel for schedule(LAMA_OMP_SCHEDULE)
-    for ( IndexType i = 0; i < numRows; ++i )
+
+    for( IndexType i = 0; i < numRows; ++i )
     {
         IndexType csrOffset = csrIA[i];
-        IndexType cooOffset = 0;        // additional offset due to diagonals
+        IndexType cooOffset = 0; // additional offset due to diagonals
 
-        if ( i < numDiagonals )
+        if( i < numDiagonals )
         {
             // diagonal elements become the first 'numDiagonal' entries
 
-            cooValues[i] = static_cast<COOValueType>(csrValues[csrOffset]);
+            cooValues[i] = static_cast<COOValueType>( csrValues[csrOffset] );
 
-            csrOffset += 1;                   // do not fill diagonal element again
+            csrOffset += 1; // do not fill diagonal element again
             cooOffset = numDiagonals - i - 1; // offset in coo moves
         }
 
         // now fill remaining part of row i
 
-        for ( IndexType jj = csrOffset; jj < csrIA[i + 1]; ++jj )
+        for( IndexType jj = csrOffset; jj < csrIA[i + 1]; ++jj )
         {
-            cooValues[ jj + cooOffset] = static_cast<COOValueType>( csrValues[ jj ] );
+            cooValues[jj + cooOffset] = static_cast<COOValueType>( csrValues[jj] );
         }
     }
 }
@@ -218,12 +219,9 @@ void OpenMPCOOUtils::normalGEMV(
     SyncToken* syncToken )
 {
     LAMA_LOG_INFO( logger,
-                   "normalGEMV<" << Scalar::getType<ValueType>()
-                   << ", #threads = " << omp_get_max_threads()
-                   << ">, result[" << numRows << "] = " << alpha
-                   << " * A( coo, #vals = " << numValues << " ) * x + " << beta << " * y " )
+                   "normalGEMV<" << Scalar::getType<ValueType>() << ", #threads = " << omp_get_max_threads() << ">, result[" << numRows << "] = " << alpha << " * A( coo, #vals = " << numValues << " ) * x + " << beta << " * y " )
 
-    if ( syncToken )
+    if( syncToken )
     {
         LAMA_THROWEXCEPTION( "asynchronous execution not supported here, do it by a task" )
     }
@@ -237,7 +235,8 @@ void OpenMPCOOUtils::normalGEMV(
         LAMA_REGION( "OpenMP.COO.normalGEMV" )
 
         #pragma omp for schedule( LAMA_OMP_SCHEDULE )
-        for ( IndexType k = 0; k < numValues; ++k )
+
+        for( IndexType k = 0; k < numValues; ++k )
         {
             IndexType i = cooIA[k];
             IndexType j = cooJA[k];
@@ -268,12 +267,9 @@ void OpenMPCOOUtils::normalGEVM(
     SyncToken* syncToken )
 {
     LAMA_LOG_INFO( logger,
-                   "normalGEMV<" << Scalar::getType<ValueType>()
-                   << ", #threads = " << omp_get_max_threads()
-                   << ">, result[" << numColumns << "] = " << alpha
-                   << " * A( coo, #vals = " << numValues << " ) * x + " << beta << " * y " )
+                   "normalGEMV<" << Scalar::getType<ValueType>() << ", #threads = " << omp_get_max_threads() << ">, result[" << numColumns << "] = " << alpha << " * A( coo, #vals = " << numValues << " ) * x + " << beta << " * y " )
 
-    if ( syncToken )
+    if( syncToken )
     {
         LAMA_THROWEXCEPTION( "asynchronous execution not supported here, do it by a task" )
     }
@@ -287,7 +283,8 @@ void OpenMPCOOUtils::normalGEVM(
         LAMA_REGION( "OpenMP.COO.normalGEMV" )
 
         #pragma omp for schedule( LAMA_OMP_SCHEDULE )
-        for ( IndexType k = 0; k < numValues; ++k )
+
+        for( IndexType k = 0; k < numValues; ++k )
         {
             IndexType i = cooIA[k];
             IndexType j = cooJA[k];
@@ -321,7 +318,7 @@ void OpenMPCOOUtils::jacobi(
     LAMA_LOG_INFO( logger,
                    "jacobi<" << Scalar::getType<ValueType>() << ">" << ", #rows = " << numRows << ", omega = " << omega )
 
-    if ( syncToken )
+    if( syncToken )
     {
         LAMA_THROWEXCEPTION( "asynchronous execution should be done by LAMATask before" )
     }
@@ -334,7 +331,8 @@ void OpenMPCOOUtils::jacobi(
     const ValueType oneMinusOmega = static_cast<ValueType>( 1.0 ) - omega;
 
     #pragma omp parallel for
-    for ( IndexType i = 0; i < numRows; ++i )
+
+    for( IndexType i = 0; i < numRows; ++i )
     {
         solution[i] = omega * rhs[i] / cooValues[i] + oneMinusOmega * oldSolution[i];
     }
@@ -344,14 +342,15 @@ void OpenMPCOOUtils::jacobi(
         LAMA_REGION( "OpenMP.COO.jacobi" )
 
         #pragma omp for
-        for ( IndexType k = numRows; k < cooNumValues; ++k )
+
+        for( IndexType k = numRows; k < cooNumValues; ++k )
         {
             IndexType i = cooIA[k];
             IndexType j = cooJA[k];
 
             // we must use atomic updates as different threads might update same row i
 
-            const ValueType update = - omega * cooValues[k] * oldSolution[j] / cooValues[i];
+            const ValueType update = -omega * cooValues[k] * oldSolution[j] / cooValues[i];
 
             atomicAdd( solution[i], update );
         }
@@ -377,12 +376,12 @@ void OpenMPCOOUtils::setInterface( COOUtilsInterface& COOUtils )
     LAMA_INTERFACE_REGISTER_T( COOUtils, normalGEMV, ARITHMETIC_TYPE##I )           \
     LAMA_INTERFACE_REGISTER_T( COOUtils, normalGEVM, ARITHMETIC_TYPE##I )           \
     LAMA_INTERFACE_REGISTER_T( COOUtils, jacobi, ARITHMETIC_TYPE##I )               \
-                                                                                    \
+    \
     BOOST_PP_REPEAT( ARITHMETIC_TYPE_CNT,                                           \
                      LAMA_COO_UTILS2_REGISTER,                                      \
                      ARITHMETIC_TYPE##I )                                           \
 
-BOOST_PP_REPEAT( ARITHMETIC_TYPE_CNT, LAMA_COO_UTILS_REGISTER, _ )
+    BOOST_PP_REPEAT( ARITHMETIC_TYPE_CNT, LAMA_COO_UTILS_REGISTER, _ )
 
 #undef LAMA_COO_UTILS_REGISTER
 #undef LAMA_COO_UTILS2_REGISTER

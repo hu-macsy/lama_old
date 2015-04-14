@@ -2,7 +2,7 @@
  * @file MatrixCreator.cpp
  *
  * @license
- * Copyright (c) 2009-2013
+ * Copyright (c) 2009-2015
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -51,45 +51,55 @@ namespace lama
 
 LAMA_LOG_DEF_TEMPLATE_LOGGER( template<typename ValueType>, MatrixCreator<ValueType>::logger, "MatrixCreator" )
 
-static inline void getStencilProperties( IndexType& dimension, IndexType& length, IndexType& distance, IndexType stencilType )
+static inline void getStencilProperties(
+    IndexType& dimension,
+    IndexType& length,
+    IndexType& distance,
+    IndexType stencilType )
 {
-    switch ( stencilType )
+    switch( stencilType )
     {
-    case 27:
-        length = 1;
-        distance = 3;
-        dimension = 3;
-        break;
-    case 19:
-        length = 1;
-        distance = 2;
-        dimension = 3;
-        break;
-    case 7:
-        length = 1;
-        distance = 1;
-        dimension = 3;
-        break;
-    case 9:
-        length = 1;
-        distance = 2;
-        dimension = 2;
-        break;
-    case 5:
-        length = 1;
-        distance = 1;
-        dimension = 2;
-        break;
-    case 3:
-        length = 1;
-        distance = 1;
-        dimension = 1;
-        break;
-    default:
-        length = 1;
-        distance = 1;
-        dimension = 1;
-        LAMA_THROWEXCEPTION( "Invalid Stencil type = " << stencilType )
+        case 27:
+            length = 1;
+            distance = 3;
+            dimension = 3;
+            break;
+
+        case 19:
+            length = 1;
+            distance = 2;
+            dimension = 3;
+            break;
+
+        case 7:
+            length = 1;
+            distance = 1;
+            dimension = 3;
+            break;
+
+        case 9:
+            length = 1;
+            distance = 2;
+            dimension = 2;
+            break;
+
+        case 5:
+            length = 1;
+            distance = 1;
+            dimension = 2;
+            break;
+
+        case 3:
+            length = 1;
+            distance = 1;
+            dimension = 1;
+            break;
+
+        default:
+            length = 1;
+            distance = 1;
+            dimension = 1;
+            LAMA_THROWEXCEPTION( "Invalid Stencil type = " << stencilType )
     }
 }
 
@@ -106,7 +116,7 @@ bool MatrixCreator<ValueType>::supportedStencilType( const IndexType dimension, 
         getStencilProperties( dim, length, distance, stencilType );
         supported = ( dim == dimension );
     }
-    catch ( ... )
+    catch( ... )
     {
         supported = false; // so it is not supported
     }
@@ -131,11 +141,11 @@ static inline int getNumNeighbors( IndexType id, IndexType dim, int shift )
 {
     int neighbors = ::abs( shift );
 
-    if ( shift < 0 )
+    if( shift < 0 )
     {
         int leftBorder = id;
 
-        if ( leftBorder < neighbors )
+        if( leftBorder < neighbors )
         {
             neighbors = leftBorder;
         }
@@ -143,7 +153,8 @@ static inline int getNumNeighbors( IndexType id, IndexType dim, int shift )
     else
     {
         int rightBorder = dim - 1 - id;
-        if ( rightBorder < neighbors )
+
+        if( rightBorder < neighbors )
         {
             neighbors = rightBorder;
         }
@@ -182,12 +193,13 @@ static inline IndexType getNStencilValues(
 
     IndexType numValues = 1 + nX + nY + nZ; // maxDistance 1
 
-    if ( maxDistance >= 2 )
+    if( maxDistance >= 2 )
     {
         LAMA_ASSERT_ERROR( length == 1, "length > 1 for stencil not supported" )
         numValues += nX * nY + nX * nZ + nY * nZ;
     }
-    if ( maxDistance >= 3 )
+
+    if( maxDistance >= 3 )
     {
         LAMA_ASSERT_ERROR( length == 1, "length > 1 for stencil not supported" )
         // dimension cannot be 1, 2
@@ -224,31 +236,31 @@ static inline void getStencil(
     IndexType leftZ = getNumNeighbors( idZ, dimZ, -length );
     IndexType rightZ = getNumNeighbors( idZ, dimZ, length );
 
-    for ( IndexType jz = idZ - leftZ; jz <= idZ + rightZ; ++jz )
+    for( IndexType jz = idZ - leftZ; jz <= idZ + rightZ; ++jz )
     {
         IndexType distZ = std::abs( jz - idZ );
 
-        for ( IndexType jy = idY - leftY; jy <= idY + rightY; ++jy )
+        for( IndexType jy = idY - leftY; jy <= idY + rightY; ++jy )
         {
             IndexType distYZ = distZ + std::abs( jy - idY );
 
-            if ( distYZ > maxDistance )
+            if( distYZ > maxDistance )
             {
                 continue; // can already skip next loop
             }
 
-            for ( IndexType jx = idX - leftX; jx <= idX + rightX; ++jx )
+            for( IndexType jx = idX - leftX; jx <= idX + rightX; ++jx )
             {
                 IndexType distXYZ = distYZ + std::abs( jx - idX );
 
-                if ( distXYZ > maxDistance )
+                if( distXYZ > maxDistance )
                 {
                     continue;
                 }
 
                 // skip the diagonal element already added
 
-                if ( distXYZ == 0 )
+                if( distXYZ == 0 )
                 {
                     continue;
                 }
@@ -286,20 +298,20 @@ void MatrixCreator<ValueType>::buildPoisson(
 
     // get rank of this processor
 
-    if ( dimension == 1 )
+    if( dimension == 1 )
     {
         gridSize[0] = comm->getSize();
         gridRank[0] = comm->getRank();
         lama::BlockDistribution::getRange( dimLB[0], dimUB[0], dimX, gridRank[0], gridSize[0] );
     }
-    else if ( dimension == 2 )
+    else if( dimension == 2 )
     {
         comm->factorize2( dimX, dimY, gridSize );
         comm->getGrid2Rank( gridRank, gridSize );
         lama::BlockDistribution::getRange( dimLB[0], dimUB[0], dimX, gridRank[0], gridSize[0] );
         lama::BlockDistribution::getRange( dimLB[1], dimUB[1], dimY, gridRank[1], gridSize[1] );
     }
-    else if ( dimension == 3 )
+    else if( dimension == 3 )
     {
         comm->factorize3( dimX, dimY, dimZ, gridSize );
         comm->getGrid3Rank( gridRank, gridSize );
@@ -321,14 +333,15 @@ void MatrixCreator<ValueType>::buildPoisson(
 
     IndexType localSize = 1;
 
-    for ( int i = 0; i < dimension; i++ )
+    for( int i = 0; i < dimension; i++ )
     {
         // avoid negative sizes, can happen #procs >> #ndim
-        if ( dimLB[i] > dimUB[i] )
+        if( dimLB[i] > dimUB[i] )
         {
             localSize = 0;
             break;
         }
+
         localSize *= ( dimUB[i] - dimLB[i] + 1 );
     }
 
@@ -351,11 +364,11 @@ void MatrixCreator<ValueType>::buildPoisson(
     // compute global indexes this processor is responsibile for and number of non-zero values
     // of the rows owned by this processor
 
-    for ( IndexType idZ = dimLB[2]; idZ <= dimUB[2]; ++idZ )
+    for( IndexType idZ = dimLB[2]; idZ <= dimUB[2]; ++idZ )
     {
-        for ( IndexType idY = dimLB[1]; idY <= dimUB[1]; ++idY )
+        for( IndexType idY = dimLB[1]; idY <= dimUB[1]; ++idY )
         {
-            for ( IndexType idX = dimLB[0]; idX <= dimUB[0]; ++idX )
+            for( IndexType idX = dimLB[0]; idX <= dimUB[0]; ++idX )
             {
                 const IndexType iPos = getMatrixPosition( idX, idY, idZ, dimX, dimY, dimZ );
 
@@ -415,11 +428,11 @@ void MatrixCreator<ValueType>::buildPoisson(
         IndexType rowCounter = 0; // count local rows
         IndexType nnzCounter = 0; // count local non-zero elements
 
-        for ( IndexType idZ = dimLB[2]; idZ <= dimUB[2]; ++idZ )
+        for( IndexType idZ = dimLB[2]; idZ <= dimUB[2]; ++idZ )
         {
-            for ( IndexType idY = dimLB[1]; idY <= dimUB[1]; ++idY )
+            for( IndexType idY = dimLB[1]; idY <= dimUB[1]; ++idY )
             {
-                for ( IndexType idX = dimLB[0]; idX <= dimUB[0]; ++idX )
+                for( IndexType idX = dimLB[0]; idX <= dimUB[0]; ++idX )
                 {
                     // get column positions and values of matrix, diagonal element is first
 
@@ -428,9 +441,8 @@ void MatrixCreator<ValueType>::buildPoisson(
 
                     // check colIndexes.size() against number of values given by getNStencilValues
 
-                    LAMA_ASSERT_EQUAL_DEBUG(
-                        (int) colIndexes.size(),
-                        getNStencilValues( idX, idY, idZ, dimX, dimY, dimZ, length, maxDistance ) );
+                    LAMA_ASSERT_EQUAL_DEBUG( (int ) colIndexes.size(),
+                                             getNStencilValues( idX, idY, idZ, dimX, dimY, dimZ, length, maxDistance ) );
 
                     LAMA_ASSERT_EQUAL_DEBUG( colIndexes.size(), colValues.size() )
 
@@ -439,7 +451,7 @@ void MatrixCreator<ValueType>::buildPoisson(
 
                     ia[rowCounter + 1] = ia[rowCounter] + static_cast<IndexType>( colIndexes.size() );
 
-                    for ( size_t k = 0; k < colIndexes.size(); ++k )
+                    for( size_t k = 0; k < colIndexes.size(); ++k )
                     {
                         ja[nnzCounter] = colIndexes[k];
                         values[nnzCounter] = static_cast<ValueType>( colValues[k] );
@@ -469,7 +481,10 @@ void MatrixCreator<ValueType>::buildPoisson(
 /* ------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void MatrixCreator<ValueType>::buildPoisson1D( CSRSparseMatrix<ValueType>& matrix, const IndexType stencilType, const IndexType dim )
+void MatrixCreator<ValueType>::buildPoisson1D(
+    CSRSparseMatrix<ValueType>& matrix,
+    const IndexType stencilType,
+    const IndexType dim )
 {
     LAMA_LOG_INFO( logger, "build Poisson1D" << stencilType << "P( " << dim << ")" )
 
@@ -516,7 +531,7 @@ void MatrixCreator<ValueType>::fillRandom( Matrix& matrix, double density )
 
     const Distribution& dist = matrix.getDistribution();
 
-    if ( dist.getNumPartitions() == 1 )
+    if( dist.getNumPartitions() == 1 )
     {
         // all processors must have the same random numbers
 
@@ -546,13 +561,13 @@ void MatrixCreator<ValueType>::fillRandom( Matrix& matrix, double density )
 
     csrIA[0] = numValues;
 
-    for ( int i = 0; i < localRowSize; ++i )
+    for( int i = 0; i < localRowSize; ++i )
     {
-        for ( int j = 0; j < colSize; ++j )
+        for( int j = 0; j < colSize; ++j )
         {
             ValueType value = static_cast<ValueType>( rand() ) / static_cast<ValueType>( RAND_MAX );
 
-            if ( value < density )
+            if( value < density )
             {
                 value = static_cast<ValueType>( rand() ) / static_cast<ValueType>( RAND_MAX );
                 csrJA.push_back( j );
@@ -560,6 +575,7 @@ void MatrixCreator<ValueType>::fillRandom( Matrix& matrix, double density )
                 ++numValues;
             }
         }
+
         csrIA[i + 1] = numValues;
     }
 
@@ -595,11 +611,11 @@ void MatrixCreator<ValueType>::buildRandom(
 /* ========================================================================= */
 
 #define LAMA_MATRIX_CREATOR_INSTANTIATE(z, I, _)                           \
-template class LAMA_DLL_IMPORTEXPORT MatrixCreator<ARITHMETIC_TYPE##I> ;  
+    template class LAMA_DLL_IMPORTEXPORT MatrixCreator<ARITHMETIC_TYPE##I> ;
 
 BOOST_PP_REPEAT( ARITHMETIC_TYPE_CNT, LAMA_MATRIX_CREATOR_INSTANTIATE, _ )
 
 #undef LAMA_MATRIX_CREATOR_INSTANTIATE
 
-} // namespace lama
+}// namespace lama
 

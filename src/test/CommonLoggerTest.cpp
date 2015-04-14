@@ -2,7 +2,7 @@
  * @file CommonLoggerTest.cpp
  *
  * @license
- * Copyright (c) 2009-2013
+ * Copyright (c) 2009-2015
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -56,9 +56,7 @@ BOOST_AUTO_TEST_CASE( LoggerIdTest )
 {
     CommonLogger consoleLogger( "<CommonLoggerTest>: ", LogLevel::convergenceHistory,
                                 LoggerWriteBehaviour::toConsoleOnly );
-
     std::string s = consoleLogger.id();
-
     BOOST_CHECK_EQUAL( s, "<CommonLoggerTest>: " );
 }
 
@@ -68,11 +66,8 @@ BOOST_AUTO_TEST_CASE( setAndGetLogLevelTest )
 {
     CommonLogger consoleLogger( "<CommonLoggerTest>: ", LogLevel::convergenceHistory,
                                 LoggerWriteBehaviour::toConsoleOnly, std::auto_ptr<Timer>( new Timer() ) );
-
     BOOST_CHECK_EQUAL( consoleLogger.getLogLevel(), LogLevel::convergenceHistory );
-
     consoleLogger.setLogLevel( LogLevel::completeInformation );
-
     BOOST_CHECK_EQUAL( consoleLogger.getLogLevel(), LogLevel::completeInformation );
 }
 
@@ -81,14 +76,10 @@ BOOST_AUTO_TEST_CASE( setAndGetLogLevelTest )
 void logMessageTest( std::string logFileName, LoggerWriteBehaviour::LoggerWriteBehaviour lwb )
 {
     LAMA_LOG_DEBUG( logger, "CommonLoggerTest with LoggerWriteBehaviour: " << lwb );
-
     CommonLogger consoleAndFileLogger( "<CommonLoggerTest>: ", LogLevel::noLogging, lwb, logFileName,
                                        std::auto_ptr<Timer>( new Timer() ) );
-
     FileLogger::getFileLogger().setLogFile( logFileName );
-
     consoleAndFileLogger.logMessage( LogLevel::completeInformation, std::string( "OmittedMessage\n" ) );
-
     FileLogger::getFileLogger().closeLogFile();
 }
 
@@ -98,7 +89,6 @@ BOOST_AUTO_TEST_CASE( ConsoleAndFileLoggingTest )
     const std::string path = Configuration::getInstance().getPath();
     LAMA_LOG_INFO( logger, "Configuration path = " << path );
     std::string logFileName( path + "/" + "LogFileCommonLogger.log" );
-
     logMessageTest( logFileName, LoggerWriteBehaviour::toFileAndConsole );
     logMessageTest( logFileName, LoggerWriteBehaviour::toFileOnly );
     logMessageTest( logFileName, LoggerWriteBehaviour::toConsoleOnly );

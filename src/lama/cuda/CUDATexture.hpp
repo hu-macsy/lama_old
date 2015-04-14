@@ -55,11 +55,11 @@ private:
 
     LAMA_LOG_DECL_STATIC_LOGGER( logger )
 
-    static bool initialized;  //!< will be set true after determination of theUseTextureFlag
+    static    bool initialized; //!< will be set true after determination of theUseTextureFlag
 
-    static bool theUseTextureFlag; //!< result for useTexture if initialized is true
+    static bool theUseTextureFlag;//!< result for useTexture if initialized is true
 
-    /** Set theUseTextureFlag by environment variable 
+    /** Set theUseTextureFlag by environment variable
      *
      *  @return true if environment variable was correctly set to yes or no or 0 or 1
      *
@@ -75,6 +75,7 @@ private:
     static void setUseTextureByDevice();
 };
 
-} // namespace
+}
+// namespace
 
 #endif //  LAMA_CUDA_TEXTURE_HPP_

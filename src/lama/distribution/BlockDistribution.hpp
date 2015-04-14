@@ -2,7 +2,7 @@
  * @file BlockDistribution.hpp
  *
  * @license
- * Copyright (c) 2009-2013
+ * Copyright (c) 2009-2015
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -100,7 +100,8 @@ public:
 
     /** Static methods to create a block distribution. */
 
-    static BlockDistribution* create( const CommunicatorPtr commPtr, const IndexType globalSize, const float weight = 1.0 );
+    static BlockDistribution* create( const CommunicatorPtr commPtr, const IndexType globalSize, const float weight =
+                                          1.0 );
 
     static BlockDistribution* create( const CommunicatorPtr commPtr, const Matrix& matrix, const float weight = 1.0 );
 
@@ -108,15 +109,15 @@ protected:
 
     LAMA_LOG_DECL_STATIC_LOGGER( logger )
 
-private:
+private    :
 
     BlockDistribution(); // disable default constructor as it has no size
 
     IndexType mBlockSize;//!< block size of each partition
-    IndexType mLB;    //!< lower bound value of local range
-    IndexType mUB;    //!< upper bound value of local range
+    IndexType mLB;//!< lower bound value of local range
+    IndexType mUB;//!< upper bound value of local range
 
-    static bool initialized;  //!< static initialization used for registration of create in Distribution factory
+    static bool initialized;//!< static initialization used for registration of create in Distribution factory
 
 };
 

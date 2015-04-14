@@ -2,7 +2,7 @@
  * @file ELLStorage.cpp
  *
  * @license
- * Copyright (c) 2009-2013
+ * Copyright (c) 2009-2015
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -121,7 +121,7 @@ ELLStorage<ValueType>::ELLStorage(
 template<typename ValueType>
 ELLStorage<ValueType>::ELLStorage( const ELLStorage<ValueType>& other )
 
-    : CRTPMatrixStorage<ELLStorage<ValueType>, ValueType>( 0, 0 )
+    : CRTPMatrixStorage<ELLStorage<ValueType>,ValueType>( 0, 0 )
 {
     LAMA_LOG_INFO( logger, "constructor # other = " << other )
 
@@ -137,15 +137,14 @@ ELLStorage<ValueType>& ELLStorage<ValueType>::operator=( const ELLStorage<ValueT
 {
     // nothing to do for self assignments
 
-    if ( &other == this )
+    if( &other == this )
     {
         return *this;
     }
 
     // For optimization: fillValues, resetDiagonalProperty, check is not really needed
 
-    setELLData( other.mNumRows, other.mNumColumns, other.mNumValuesPerRow,
-                other.mIA, other.mJA, other.mValues );
+    setELLData( other.mNumRows, other.mNumColumns, other.mNumValuesPerRow, other.mIA, other.mJA, other.mValues );
 
     return *this;
 }
@@ -155,7 +154,7 @@ ELLStorage<ValueType>& ELLStorage<ValueType>::operator=( const ELLStorage<ValueT
 template<typename ValueType>
 ELLStorage<ValueType>& ELLStorage<ValueType>::operator=( const _MatrixStorage& other )
 {
-    assign( other );   // calls virtual method of MatrixStorage
+    assign( other ); // calls virtual method of MatrixStorage
 
     return *this;
 }
@@ -176,15 +175,16 @@ void ELLStorage<ValueType>::print() const
     HostReadAccess<IndexType> ja( mJA );
     HostReadAccess<ValueType> values( mValues );
 
-    for ( IndexType i = 0; i < mNumRows; i++ )
+    for( IndexType i = 0; i < mNumRows; i++ )
     {
         cout << "Row " << i << " ( " << ia[i] << " entries ) :";
 
-        for ( IndexType jj = 0; jj < ia[i]; ++jj )
+        for( IndexType jj = 0; jj < ia[i]; ++jj )
         {
             IndexType pos = jj * mNumRows + i;
             cout << " " << ja[pos] << ":" << values[pos];
         }
+
         cout << endl;
     }
 }
@@ -290,13 +290,13 @@ bool ELLStorage<ValueType>::checkDiagonalProperty() const
 
     bool diagonalProperty = true;
 
-    if ( numDiagonals == 0 )
+    if( numDiagonals == 0 )
     {
         // diagonal property is given for zero-sized matrices
 
         diagonalProperty = true;
     }
-    else if ( mNumValuesPerRow < 1 )
+    else if( mNumValuesPerRow < 1 )
     {
         // no elements, so certainly it does not have diagonl property
 
@@ -327,8 +327,8 @@ void ELLStorage<ValueType>::clear()
 {
     LAMA_LOG_INFO( logger, "clear" )
 
-    mNumRows         = 0;
-    mNumColumns      = 0;
+    mNumRows = 0;
+    mNumColumns = 0;
     mNumValuesPerRow = 0;
 
     mIA.clear();
@@ -367,7 +367,7 @@ void ELLStorage<ValueType>::buildCSR(
     // just copy the size array mIA
     set( csrIA.get(), ellSizes.get(), mNumRows );
 
-    if ( ja == NULL || values == NULL )
+    if( ja == NULL || values == NULL )
     {
         csrIA.resize( mNumRows );
         return;
@@ -381,7 +381,8 @@ void ELLStorage<ValueType>::buildCSR(
     WriteOnlyAccess<IndexType> csrJA( *ja, loc, numValues );
     WriteOnlyAccess<OtherValueType> csrValues( *values, loc, numValues );
 
-    getCSRValues( csrJA.get(), csrValues.get(), csrIA.get(), mNumRows, mNumValuesPerRow, ellSizes.get(), ellJA.get(), ellValues.get() );
+    getCSRValues( csrJA.get(), csrValues.get(), csrIA.get(), mNumRows, mNumValuesPerRow, ellSizes.get(), ellJA.get(),
+                  ellValues.get() );
 
 }
 
@@ -400,12 +401,10 @@ void ELLStorage<ValueType>::setCSRDataImpl(
 {
     LAMA_REGION( "Storage.ELL<-CSR" )
 
-    LAMA_LOG_INFO( logger, "set CSR data on " << *loc 
-                            << ": numRows = " << numRows << ", numColumns = " << numColumns 
-                            << ", numValues = " << numValues 
-                            << ", compress threshold = " << mCompressThreshold )
+    LAMA_LOG_INFO( logger,
+                   "set CSR data on " << *loc << ": numRows = " << numRows << ", numColumns = " << numColumns << ", numValues = " << numValues << ", compress threshold = " << mCompressThreshold )
 
-    if ( numRows == 0 )
+    if( numRows == 0 )
     {
         // just allocate will clear member arrays
 
@@ -447,17 +446,17 @@ void ELLStorage<ValueType>::setCSRDataImpl(
 
     const IndexType dataSize = mNumValuesPerRow * mNumRows;
 
-    if ( mNumRows > 200 && mNumValuesPerRow > 0 )
+    if( mNumRows > 200 && mNumValuesPerRow > 0 )
     {
         // make this check only on larger matrices, dataSize must not be equal 0
 
         double fillRate = double( numValues ) / double( dataSize );
 
-        if ( fillRate < 0.5 )
+        if( fillRate < 0.5 )
         {
-            LAMA_LOG_WARN( logger, *this << ": fill rate = " << fillRate 
-                           << " ( " << numValues << " non-zero values ), consider using JDS" )
-        } 
+            LAMA_LOG_WARN( logger,
+                           *this << ": fill rate = " << fillRate << " ( " << numValues << " non-zero values ), consider using JDS" )
+        }
     }
 
     {
@@ -468,7 +467,7 @@ void ELLStorage<ValueType>::setCSRDataImpl(
         ReadAccess<OtherValueType> csrValues( values, loc );
 
         ReadAccess<IndexType> ellIA( mIA, loc );
- 
+
         WriteOnlyAccess<IndexType> ellJA( mJA, loc, dataSize );
         WriteOnlyAccess<ValueType> ellValues( mValues, loc, dataSize );
 
@@ -476,23 +475,21 @@ void ELLStorage<ValueType>::setCSRDataImpl(
 
         LAMA_CONTEXT_ACCESS( loc )
 
-        setCSRValues( ellJA.get(), ellValues.get(), 
-                      ellIA.get(), mNumRows, mNumValuesPerRow, 
-                      csrIA.get(), csrJA.get(), csrValues.get() 
-                    );
+        setCSRValues( ellJA.get(), ellValues.get(), ellIA.get(), mNumRows, mNumValuesPerRow, csrIA.get(), csrJA.get(),
+                      csrValues.get() );
 
         LAMA_LOG_DEBUG( logger, " size = " <<ellJA.size() )
 
         IndexType numDiagonals = std::min( mNumRows, mNumColumns );
 
-        if ( numDiagonals == 0)
-        { 
+        if( numDiagonals == 0 )
+        {
             mDiagonalProperty = true;
         }
-        else if ( numValues == 0 )
+        else if( numValues == 0 )
         {
             mDiagonalProperty = false;
-        } 
+        }
         else
         {
             LAMA_CONTEXT_ACCESS( loc )
@@ -500,7 +497,7 @@ void ELLStorage<ValueType>::setCSRDataImpl(
         }
     }
 
-    if ( numRows == numColumns && !mDiagonalProperty )
+    if( numRows == numColumns && !mDiagonalProperty )
     {
         LAMA_LOG_INFO( logger, *this << ": square matrix has not diagonal property" )
     }
@@ -534,7 +531,7 @@ void ELLStorage<ValueType>::setELLData(
     LAMAArrayUtils::assignImpl( mIA, ia, loc );
     LAMAArrayUtils::assignImpl( mJA, ja, loc );
 
-    LAMAArrayUtils::assign( mValues, values, loc );  // supports type conversion
+    LAMAArrayUtils::assign( mValues, values, loc ); // supports type conversion
 
     // fill up my arrays ja and values to make matrix-multiplication fast
 
@@ -551,8 +548,7 @@ void ELLStorage<ValueType>::setELLData(
 
         LAMA_CONTEXT_ACCESS( loc )
 
-        fillELLValues( ellJA.get(), ellValues.get(),
-                       ellIA.get(), mNumRows, mNumValuesPerRow );
+        fillELLValues( ellJA.get(), ellValues.get(), ellIA.get(), mNumRows, mNumValuesPerRow );
     }
 
     // check is expensive, so do it only if ASSERT_LEVEL is on DEBUG mode
@@ -774,9 +770,9 @@ void ELLStorage<ValueType>::allocate( IndexType numRows, IndexType numColumns )
 {
     LAMA_LOG_INFO( logger, "allocate ELL sparse matrix of size " << numRows << " x " << numColumns )
 
-    clear();   
+    clear();
 
-    mNumRows    = numRows;
+    mNumRows = numRows;
     mNumColumns = numColumns;
 
     LAMA_LOG_DEBUG( logger, "resize mIA, mNumRows = " << mNumRows )
@@ -868,7 +864,7 @@ void ELLStorage<ValueType>::buildRowIndexes( const ContextPtr loc )
 
     mRowIndexes.clear();
 
-    if ( mNumRows == 0 )
+    if( mNumRows == 0 )
     {
         return;
     }
@@ -883,10 +879,10 @@ void ELLStorage<ValueType>::buildRowIndexes( const ContextPtr loc )
 
     float usage = float( nonZeroRows ) / float( mNumRows );
 
-    if ( usage >= mCompressThreshold )
+    if( usage >= mCompressThreshold )
     {
-        LAMA_LOG_INFO( logger, "ELLStorage: do not build row indexes, usage = " << usage 
-                                << " >= " << mCompressThreshold << " ( threshold )" )
+        LAMA_LOG_INFO( logger,
+                       "ELLStorage: do not build row indexes, usage = " << usage << " >= " << mCompressThreshold << " ( threshold )" )
         return;
     }
 
@@ -922,7 +918,7 @@ void ELLStorage<ValueType>::compress( const ValueType eps /* = 0.0 */)
     IndexType newNumValuesPerRow = maxval( IA.get(), mNumRows );
 
     // Do further steps, if new array could be smaller
-    if ( newNumValuesPerRow < mNumValuesPerRow )
+    if( newNumValuesPerRow < mNumValuesPerRow )
     {
         // 3. Step: Allocate new JA and Values array
         LAMAArray<ValueType> newValuesArray;
@@ -931,7 +927,8 @@ void ELLStorage<ValueType>::compress( const ValueType eps /* = 0.0 */)
         WriteOnlyAccess<IndexType> newJA( newJAArray, loc, mNumRows * newNumValuesPerRow );
 
         // 4. Step: Compute new JA and Values array
-        compressValues( IA.get(), JA.get(), values.get(), mNumRows, mNumValuesPerRow, eps, newNumValuesPerRow, newJA.get(), newValues.get() );
+        compressValues( IA.get(), JA.get(), values.get(), mNumRows, mNumValuesPerRow, eps, newNumValuesPerRow,
+                        newJA.get(), newValues.get() );
 
         mJA.swap( newJAArray );
         mValues.swap( newValuesArray );
@@ -972,7 +969,7 @@ size_t ELLStorage<ValueType>::getMemoryUsageImpl() const
 
 template<typename ValueType>
 void ELLStorage<ValueType>::matrixTimesVector(
-	LAMAArray<ValueType>& result,
+    LAMAArray<ValueType>& result,
     const ValueType alpha,
     const LAMAArray<ValueType>& x,
     const ValueType beta,
@@ -986,7 +983,7 @@ void ELLStorage<ValueType>::matrixTimesVector(
 
     ContextPtr loc = getContextPtr();
 
-    if ( mNumValuesPerRow == 0 )
+    if( mNumValuesPerRow == 0 )
     {
         // this matrix is ZERO, so all to do is result = beta * y
 
@@ -1009,13 +1006,13 @@ void ELLStorage<ValueType>::matrixTimesVector(
 
     // Possible alias of result and y must be handled by coressponding accesses
 
-    if ( result == y )
+    if( result == y )
     {
         // only write access for y, no read access for result
 
         WriteAccess<ValueType> wResult( result, loc );
 
-        if ( mRowIndexes.size() > 0 && ( beta == 1.0 ) )
+        if( mRowIndexes.size() > 0 && ( beta == 1.0 ) )
         {
             // y += alpha * thisMatrix * x, can take advantage of row indexes
 
@@ -1064,7 +1061,7 @@ void ELLStorage<ValueType>::vectorTimesMatrix(
     LAMA_ASSERT_EQUAL_ERROR( x.size(), mNumRows )
     LAMA_ASSERT_EQUAL_ERROR( result.size(), mNumColumns )
 
-    if ( ( beta != 0.0 ) && ( result != y ) )
+    if( ( beta != 0.0 ) && ( result != y ) )
     {
         LAMA_ASSERT_EQUAL_ERROR( y.size(), mNumColumns )
     }
@@ -1084,13 +1081,13 @@ void ELLStorage<ValueType>::vectorTimesMatrix(
 
     // Possible alias of result and y must be handled by coressponding accesses
 
-    if ( result == y )
+    if( result == y )
     {
         // only write access for y, no read access for result
 
         WriteAccess<ValueType> wResult( result, loc );
 
-        if ( mRowIndexes.size() > 0 && ( beta == 1.0 ) )
+        if( mRowIndexes.size() > 0 && ( beta == 1.0 ) )
         {
             // y += alpha * thisMatrix * x, can take advantage of row indexes
 
@@ -1125,7 +1122,7 @@ void ELLStorage<ValueType>::vectorTimesMatrix(
 
 template<typename ValueType>
 SyncToken* ELLStorage<ValueType>::matrixTimesVectorAsync(
-	LAMAArray<ValueType>& result,
+    LAMAArray<ValueType>& result,
     const ValueType alpha,
     const LAMAArray<ValueType>& x,
     const ValueType beta,
@@ -1137,18 +1134,18 @@ SyncToken* ELLStorage<ValueType>::matrixTimesVectorAsync(
 
     LAMA_LOG_INFO( logger, *this << ": matrixTimesVectorAsync on " << *loc )
 
-    if ( loc->getType() == Context::Host )
+    if( loc->getType() == Context::Host )
     {
         // execution as separate thread
 
-        void ( ELLStorage::*pf )(
-        	LAMAArray<ValueType>&,
+        void (ELLStorage::*pf)(
+            LAMAArray<ValueType>&,
             const ValueType,
             const LAMAArray<ValueType>&,
             const ValueType,
             const LAMAArray<ValueType>& ) const
 
-        = &ELLStorage<ValueType>::matrixTimesVector;
+            = &ELLStorage<ValueType>::matrixTimesVector;
 
         using boost::bind;
         using boost::ref;
@@ -1156,13 +1153,13 @@ SyncToken* ELLStorage<ValueType>::matrixTimesVectorAsync(
 
         LAMA_LOG_INFO( logger, *this << ": matrixTimesVectorAsync on Host by own thread" )
 
-        return new TaskSyncToken( bind( pf, this, ref(result), alpha, cref(x), beta, cref(y) ) );
+        return new TaskSyncToken( bind( pf, this, ref( result ), alpha, cref( x ), beta, cref( y ) ) );
     }
 
     LAMA_ASSERT_EQUAL_ERROR( x.size(), mNumColumns )
     LAMA_ASSERT_EQUAL_ERROR( y.size(), mNumRows )
 
-    if ( mNumValuesPerRow == 0 )
+    if( mNumValuesPerRow == 0 )
     {
         // this matrix is ZERO, so all to do is result = beta * y
         // that is already sychronized here
@@ -1188,13 +1185,13 @@ SyncToken* ELLStorage<ValueType>::matrixTimesVectorAsync(
 
     // Possible alias of result and y must be handled by coressponding accesses
 
-    if ( result == y )
+    if( result == y )
     {
         // only write access for y, no read access for result
 
         shared_ptr<WriteAccess<ValueType> > wResult( new WriteAccess<ValueType>( result, loc ) );
 
-        if ( mRowIndexes.size() > 0 && ( beta == 1.0 ) )
+        if( mRowIndexes.size() > 0 && ( beta == 1.0 ) )
         {
             // y += alpha * thisMatrix * x, can take advantage of row indexes
 
@@ -1206,8 +1203,8 @@ SyncToken* ELLStorage<ValueType>::matrixTimesVectorAsync(
 
             LAMA_CONTEXT_ACCESS( loc )
 
-            sparseGEMV( wResult->get(), alpha, rX->get(), mNumRows, mNumValuesPerRow, numNonZeroRows, rRowIndexes->get(),
-                        ellIA->get(), ellJA->get(), ellValues->get(), syncToken.get() );
+            sparseGEMV( wResult->get(), alpha, rX->get(), mNumRows, mNumValuesPerRow, numNonZeroRows,
+                        rRowIndexes->get(), ellIA->get(), ellJA->get(), ellValues->get(), syncToken.get() );
         }
         else
         {
@@ -1265,7 +1262,7 @@ SyncToken* ELLStorage<ValueType>::vectorTimesMatrixAsync(
 
     LAMA_LOG_INFO( logger, *this << ": vectorTimesMatrixAsync on " << *loc )
 
-    if ( loc->getType() == Context::Host )
+    if( loc->getType() == Context::Host )
     {
         // execution as separate thread
 
@@ -1276,7 +1273,7 @@ SyncToken* ELLStorage<ValueType>::vectorTimesMatrixAsync(
             const ValueType,
             const LAMAArray<ValueType>& ) const
 
-        = &ELLStorage<ValueType>::vectorTimesMatrix;
+            = &ELLStorage<ValueType>::vectorTimesMatrix;
 
         using boost::bind;
         using boost::ref;
@@ -1290,7 +1287,7 @@ SyncToken* ELLStorage<ValueType>::vectorTimesMatrixAsync(
     LAMA_ASSERT_EQUAL_ERROR( x.size(), mNumRows )
     LAMA_ASSERT_EQUAL_ERROR( result.size(), mNumColumns )
 
-    if ( ( beta != 0.0 ) && ( result != y ) )
+    if( ( beta != 0.0 ) && ( result != y ) )
     {
         LAMA_ASSERT_EQUAL_ERROR( y.size(), mNumColumns )
     }
@@ -1310,13 +1307,13 @@ SyncToken* ELLStorage<ValueType>::vectorTimesMatrixAsync(
 
     // Possible alias of result and y must be handled by coressponding accesses
 
-    if ( result == y )
+    if( result == y )
     {
         // only write access for y, no read access for result
 
         shared_ptr<WriteAccess<ValueType> > wResult( new WriteAccess<ValueType>( result, loc ) );
 
-        if ( mRowIndexes.size() > 0 && ( beta == 1.0 ) )
+        if( mRowIndexes.size() > 0 && ( beta == 1.0 ) )
         {
             // y += alpha * thisMatrix * x, can take advantage of row indexes
 
@@ -1380,7 +1377,7 @@ void ELLStorage<ValueType>::jacobiIterate(
 
     LAMA_ASSERT_ERROR( mDiagonalProperty, *this << ": jacobiIterate requires diagonal property" )
 
-    if ( solution == oldSolution )
+    if( solution == oldSolution )
     {
         LAMA_THROWEXCEPTION( "alias of solution and oldSolution unsupported" )
     }
@@ -1422,17 +1419,17 @@ SyncToken* ELLStorage<ValueType>::jacobiIterateAsync(
 
     ContextPtr loc = getContextPtr();
 
-    if ( loc->getType() == Context::Host )
+    if( loc->getType() == Context::Host )
     {
         // used later in OpenMP to generate a TaskSyncToken
 
-        void ( ELLStorage::*jb )(
+        void (ELLStorage::*jb)(
             LAMAArray<ValueType>&,
             const LAMAArray<ValueType>&,
             const LAMAArray<ValueType>&,
             const ValueType omega ) const
 
-        = &ELLStorage<ValueType>::jacobiIterate;
+            = &ELLStorage<ValueType>::jacobiIterate;
 
         using boost::bind;
         using boost::cref;
@@ -1447,7 +1444,7 @@ SyncToken* ELLStorage<ValueType>::jacobiIterateAsync(
 
     LAMA_ASSERT_ERROR( mDiagonalProperty, *this << ": jacobiIterate requires diagonal property" )
 
-    if ( solution == oldSolution )
+    if( solution == oldSolution )
     {
         LAMA_THROWEXCEPTION( "alias of solution and oldSolution unsupported" )
     }
@@ -1510,7 +1507,7 @@ void ELLStorage<ValueType>::jacobiIterateHalo(
 
     boost::shared_ptr<LAMAArray<ValueType> > tmpLocalDiagonal;
 
-    if ( localStorage.getFormat() == Format::ELL )
+    if( localStorage.getFormat() == Format::ELL )
     {
         const ELLStorage<ValueType>* ellLocal;
 
@@ -1565,7 +1562,7 @@ void ELLStorage<ValueType>::jacobiIterateHalo(
 
         const IndexType numNonEmptyRows = mRowIndexes.size();
 
-        if ( numNonEmptyRows != 0 )
+        if( numNonEmptyRows != 0 )
         {
             ReadAccess<IndexType> haloRowIndexes( mRowIndexes, loc );
 
@@ -1595,7 +1592,7 @@ ValueType ELLStorage<ValueType>::maxNorm() const
 {
     LAMA_LOG_INFO( logger, *this << ": maxNorm()" )
 
-    if ( mNumRows == 0 || mNumValuesPerRow == 0 )
+    if( mNumRows == 0 || mNumValuesPerRow == 0 )
     {
         return 0.0f;
     }
@@ -1635,7 +1632,7 @@ void ELLStorage<ValueType>::matrixTimesMatrix(
     //    boost::shared_ptr<CSRStorage<ValueType> > tmpB;
     boost::shared_ptr<ELLStorage<ValueType> > tmpC;
 
-    if ( a.getFormat() == Format::ELL )
+    if( a.getFormat() == Format::ELL )
     {
         ellA = dynamic_cast<const ELLStorage<ValueType>*>( &a );
         LAMA_ASSERT_DEBUG( ellA, "could not cast to ELLStorage " << a )
@@ -1644,7 +1641,8 @@ void ELLStorage<ValueType>::matrixTimesMatrix(
     {
         LAMA_LOG_ERROR( logger, a << ": a not ELL format" )
     }
-    if ( b.getFormat() == Format::ELL )
+
+    if( b.getFormat() == Format::ELL )
     {
         ellB = dynamic_cast<const ELLStorage<ValueType>*>( &b );
         LAMA_ASSERT_DEBUG( ellB, "could not cast to ELLStorage " << b )
@@ -1654,7 +1652,7 @@ void ELLStorage<ValueType>::matrixTimesMatrix(
         LAMA_UNSUPPORTED( b << ": b not ELL format" )
     }
 
-    if ( ellA == NULL || ellB == NULL )
+    if( ellA == NULL || ellB == NULL )
     {
         // input matrices not ELL format, so try via CSR
 
@@ -1662,9 +1660,9 @@ void ELLStorage<ValueType>::matrixTimesMatrix(
         return;
     }
 
-    if ( beta != 0.0 )
+    if( beta != 0.0 )
     {
-        if ( ( c.getFormat() == Format::ELL ) && ( &c != this ) )
+        if( ( c.getFormat() == Format::ELL ) && ( &c != this ) )
         {
             ellC = dynamic_cast<const ELLStorage<ValueType>*>( &c );
             LAMA_ASSERT_DEBUG( ellC, "could not cast to ELLStorage " << c )
@@ -1681,7 +1679,7 @@ void ELLStorage<ValueType>::matrixTimesMatrix(
     ELLStorage<ValueType> tmp;
     tmp.matrixTimesMatrixELL( alpha, *ellA, *ellB );
 
-    if ( beta != 0 )
+    if( beta != 0 )
     {
         ELLStorage<ValueType> tmp1;
         tmp1.matrixAddMatrixELL( 1.0, tmp, beta, *ellC );
@@ -1736,10 +1734,8 @@ void ELLStorage<ValueType>::matrixTimesMatrixELL(
         LAMA_CONTEXT_ACCESS( loc )
 
         // 1. Step: compute resulting IA array
-        matrixMultiplySizes( cIA.get(),
-                             a.getNumRows(), a.getNumColumns(), b.getNumRows(), false,
-                             aIA.get(), aJA.get(), a.getNumValuesPerRow(),
-                             bIA.get(), bJA.get(), b.getNumValuesPerRow() );
+        matrixMultiplySizes( cIA.get(), a.getNumRows(), a.getNumColumns(), b.getNumRows(), false, aIA.get(), aJA.get(),
+                             a.getNumValuesPerRow(), bIA.get(), bJA.get(), b.getNumValuesPerRow() );
 
         // 2. Step: compute length of longest row
         mNumValuesPerRow = maxval( cIA.get(), mNumRows );
@@ -1749,10 +1745,9 @@ void ELLStorage<ValueType>::matrixTimesMatrixELL(
         WriteOnlyAccess<ValueType> cValues( mValues, loc, mNumValuesPerRow * mNumRows );
 
         // 4. Step: Compute cJA and cValues
-        matrixMultiply( cJA.get(), cValues.get(), cIA.get(), mNumValuesPerRow,
-                        mNumRows, mNumColumns, b.getNumRows(), false, alpha,
-                        aIA.get(), aJA.get(), aValues.get(), a.getNumValuesPerRow(),
-                        bIA.get(), bJA.get(), bValues.get(), b.getNumValuesPerRow() );
+        matrixMultiply( cJA.get(), cValues.get(), cIA.get(), mNumValuesPerRow, mNumRows, mNumColumns, b.getNumRows(),
+                        false, alpha, aIA.get(), aJA.get(), aValues.get(), a.getNumValuesPerRow(), bIA.get(), bJA.get(),
+                        bValues.get(), b.getNumValuesPerRow() );
     }
 
     // 5. Step: Computation of C might have produced some zero elements
@@ -1800,9 +1795,8 @@ void ELLStorage<ValueType>::matrixAddMatrixELL(
         LAMA_CONTEXT_ACCESS( loc )
 
         // 1. Step: Compute IA array
-        matrixAddSizes( cIA.get(), a.getNumRows(), a.getNumColumns(), false,
-                        aIA.get(), aJA.get(), a.getNumValuesPerRow(),
-                        bIA.get(), bJA.get(), b.getNumValuesPerRow() );
+        matrixAddSizes( cIA.get(), a.getNumRows(), a.getNumColumns(), false, aIA.get(), aJA.get(),
+                        a.getNumValuesPerRow(), bIA.get(), bJA.get(), b.getNumValuesPerRow() );
 
         // 2. Step: compute length of longest row
         mNumValuesPerRow = maxval( cIA.get(), mNumRows );
@@ -1812,10 +1806,9 @@ void ELLStorage<ValueType>::matrixAddMatrixELL(
         WriteOnlyAccess<ValueType> cValues( mValues, loc, mNumValuesPerRow * mNumRows );
 
         // 4. Step: Compute cJA and cValues
-        matrixAdd( cJA.get(), cValues.get(), cIA.get(), mNumValuesPerRow,
-                   mNumRows, mNumColumns, false,
-                   alpha, aIA.get(), aJA.get(), aValues.get(), a.getNumValuesPerRow(),
-                   beta, bIA.get(), bJA.get(), bValues.get(), b.getNumValuesPerRow() );
+        matrixAdd( cJA.get(), cValues.get(), cIA.get(), mNumValuesPerRow, mNumRows, mNumColumns, false, alpha,
+                   aIA.get(), aJA.get(), aValues.get(), a.getNumValuesPerRow(), beta, bIA.get(), bJA.get(),
+                   bValues.get(), b.getNumValuesPerRow() );
 
     }
 
@@ -1850,18 +1843,17 @@ ELLStorage<ValueType>* ELLStorage<ValueType>::copy() const
 /* ========================================================================= */
 
 #define LAMA_ELL_STORAGE_INSTANTIATE(z, I, _)                              \
-                                                                           \
-template<>                                                                 \
-const char* ELLStorage<ARITHMETIC_TYPE##I>::typeName()                     \
-{                                                                          \
-    return "ELLStorage<ARITHMETIC_TYPE##I>";                               \
-}                                                                          \
-                                                                           \
-template class LAMA_DLL_IMPORTEXPORT ELLStorage<ARITHMETIC_TYPE##I> ;  
+    \
+    template<>                                                                 \
+    const char* ELLStorage<ARITHMETIC_TYPE##I>::typeName()                     \
+    {                                                                          \
+        return "ELLStorage<ARITHMETIC_TYPE##I>";                               \
+    }                                                                          \
+    \
+    template class LAMA_DLL_IMPORTEXPORT ELLStorage<ARITHMETIC_TYPE##I> ;
 
 BOOST_PP_REPEAT( ARITHMETIC_TYPE_CNT, LAMA_ELL_STORAGE_INSTANTIATE, _ )
 
 #undef LAMA_ELL_STORAGE_INSTANTIATE
-
 
 } // namespace LAMA

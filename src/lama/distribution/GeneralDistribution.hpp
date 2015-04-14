@@ -2,7 +2,7 @@
  * @file GeneralDistribution.hpp
  *
  * @license
- * Copyright (c) 2009-2013
+ * Copyright (c) 2009-2015
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -78,9 +78,9 @@ public:
         const CommunicatorPtr communicator );
 
     GeneralDistribution(
-        const std::vector<IndexType>& row2Partition, 
-	const IndexType globalSize,
-	const CommunicatorPtr communicator  );
+        const std::vector<IndexType>& row2Partition,
+        const IndexType globalSize,
+        const CommunicatorPtr communicator );
 
     explicit GeneralDistribution( const Distribution& other );
 

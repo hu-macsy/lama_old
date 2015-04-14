@@ -2,7 +2,7 @@
  * @file ReadAccess.hpp
  *
  * @license
- * Copyright (c) 2009-2013
+ * Copyright (c) 2009-2015
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -110,8 +110,7 @@ private:
 
     size_t mIndex;
 
-    LAMA_LOG_DECL_STATIC_LOGGER( logger )
-};
+    LAMA_LOG_DECL_STATIC_LOGGER( logger )};
 
 template<typename ValueType>
 inline IndexType ReadAccess<ValueType>::size() const

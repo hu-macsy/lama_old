@@ -2,7 +2,7 @@
  * @file MaxNormTest.cpp
  *
  * @license
- * Copyright (c) 2009-2013
+ * Copyright (c) 2009-2015
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -54,7 +54,7 @@ BOOST_AUTO_TEST_SUITE( MaxNormTest )
 
 LAMA_LOG_DEF_LOGGER( logger, "Test.MaxNormTest" );
 
-typedef boost::mpl::list<float,double> test_types;
+typedef boost::mpl::list<float, double> test_types;
 
 /* --------------------------------------------------------------------- */
 
@@ -62,23 +62,17 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( MaxNormVectorTests, ValueType, test_types )
 {
     IndexType n = 4;
     ValueType val = 5.0;
-
     DenseVector<ValueType> vec( n, val );
     MaxNorm maxnorm;
-
     ValueType expected = 5.0;
-
     BOOST_CHECK_EQUAL( expected, maxnorm( vec ) );
-
     HostWriteAccess<ValueType> hwa( vec.getLocalValues() );
     hwa[0] = 1.0;
     hwa[1] = -2.0;
     hwa[2] = 3.0;
     hwa[3] = -4.5;
     hwa.release();
-
     expected = 4.5;
-
     BOOST_CHECK_EQUAL( expected, maxnorm( vec ) );
 }
 
@@ -88,7 +82,6 @@ BOOST_AUTO_TEST_CASE( MaxNormScalarTests )
 {
     Scalar scalar( -4.0 );
     MaxNorm maxnorm;
-
     BOOST_CHECK_EQUAL( Scalar( 4.0 ), maxnorm( scalar ) );
 }
 

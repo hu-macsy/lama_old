@@ -2,7 +2,7 @@
  * @file InverseSolverTest.cpp
  *
  * @license
- * Copyright (c) 2009-2013
+ * Copyright (c) 2009-2015
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -55,7 +55,7 @@
 using namespace boost;
 using namespace lama;
 
-typedef boost::mpl::list<float,double> test_types;
+typedef boost::mpl::list<float, double> test_types;
 
 #define LAMA_TO_TEXT( t ) #t
 
@@ -71,29 +71,23 @@ template<typename MatrixType>
 void testSolveMethod( ContextPtr context )
 {
     typedef typename MatrixType::MatrixValueType ValueType;
-
     EquationHelper::EquationSystem<ValueType> system = EquationHelper::get8x8SystemA<ValueType>();
-
     DenseVector<ValueType> solution( system.coefficients.getNumRows(), 0.0 );
     DenseVector<ValueType> reference( system.solution );
     MatrixType coefficients( system.coefficients );
-
     coefficients.setContext( context );
     LAMA_LOG_INFO( logger, "InverseSolverTest uses context = " << context->getType() );
-
     DenseVector<ValueType> rhs( system.rhs );
-
     InverseSolver inverseSolver( "InverseSolverTest solver" );
     inverseSolver.initialize( coefficients );
-
     inverseSolver.solve( solution, rhs );
-
     DenseVector<ValueType> diff( reference - solution );
     Scalar maxDiff = maxNorm( diff );
     BOOST_CHECK( maxDiff.getValue<ValueType>() < 1E-6 );
 }
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( InverseTest, ValueType, test_types ) {
+BOOST_AUTO_TEST_CASE_TEMPLATE( InverseTest, ValueType, test_types )
+{
     CONTEXTLOOP()
     {
         GETCONTEXT( context );
@@ -104,7 +98,6 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( InverseTest, ValueType, test_types ) {
         testSolveMethod< COOSparseMatrix<ValueType> >( context );
         //TODO: DIA crashs
         //testSolveMethod< DIASparseMatrix<ValueType> >( context );
-
     }
 }
 
@@ -114,23 +107,16 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( InverseTest2, ValueType, test_types )
 {
     EquationHelper::EquationSystem<ValueType> system =
         EquationHelper::get4x4SystemA<ValueType>();
-
     const IndexType n = 4;
-
     DenseVector<ValueType> solution( n, 1.0 );
     DenseVector<ValueType> solution2( n, 1.0 );
-
     std::string s = "DataType";
     InverseSolver inverseSolver( "InverseSolverTest<" + s + "> solver" );
-
     // DenseMatrix<ValueType> inverse = DenseMatrix<ValueType>( system.coefficients );
     DenseMatrix<ValueType> origin = DenseMatrix<ValueType>( system.coefficients );
     DenseMatrix<ValueType> result = DenseMatrix<ValueType>( system.coefficients );
-
     inverseSolver.initialize( origin );
-
     const Matrix& inverse = inverseSolver.getInverse();
-
     origin.matrixTimesMatrix( result, 1.0, inverse, 0.0, result );
 
     for ( IndexType i = 0; i < n; ++i )
@@ -138,6 +124,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( InverseTest2, ValueType, test_types )
         for ( IndexType j = 0; j < n; ++j )
         {
             Scalar scalar = result.getValue( i, j );
+
             if ( i == j )
             {
                 BOOST_CHECK_CLOSE( 1.0, scalar.getValue<ValueType>(), 1 );
@@ -163,9 +150,7 @@ BOOST_AUTO_TEST_CASE( writeAtTest )
 BOOST_AUTO_TEST_CASE( copyTest )
 {
     InverseSolver inverseSolver1( "InverseSolver" );
-
     SolverPtr solverptr = inverseSolver1.copy();
-
     BOOST_CHECK_EQUAL( solverptr->getId(), "InverseSolver" );
 }
 /* ------------------------------------------------------------------------- */

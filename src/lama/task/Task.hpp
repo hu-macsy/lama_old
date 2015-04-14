@@ -2,7 +2,7 @@
  * @file Task.hpp
  *
  * @license
- * Copyright (c) 2009-2013
+ * Copyright (c) 2009-2015
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -130,13 +130,14 @@ private:
 
     /** Thread pool will be allocated on need, shared pointer guarantees deallocation. */
 
-    static boost::shared_ptr<LAMAThreadPool> theThreadPool;
+    static    boost::shared_ptr<LAMAThreadPool> theThreadPool;
 
     static LAMAThreadPool& getThreadPool();
 
     boost::shared_ptr<LAMAThreadTask> mTask;
 };
 
-} // namespace lama
+}
+// namespace lama
 
 #endif // LAMA_TASK_HPP_

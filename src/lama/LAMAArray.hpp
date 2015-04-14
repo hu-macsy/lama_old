@@ -2,7 +2,7 @@
  * @file LAMAArray.hpp
  *
  * @license
- * Copyright (c) 2009-2013
+ * Copyright (c) 2009-2015
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -91,7 +91,7 @@ public:
      * @param type specifies the type of the array to be created.
      *
      */
-   
+
     static _LAMAArray* create( const Scalar::ScalarType type );
 
     /**
@@ -106,7 +106,7 @@ public:
 protected:
 
     explicit _LAMAArray( const IndexType n )
-        : mSize( n ), constFlag( false )
+                    : mSize( n ), constFlag( false )
     {
     }
 
@@ -129,8 +129,8 @@ protected:
 template<typename ValueType>
 class LAMA_DLL_IMPORTEXPORT LAMAArray: public _LAMAArray
 {
-	friend class ReadAccess<ValueType>;
-	friend class WriteAccess<ValueType>;
+    friend class ReadAccess<ValueType> ;
+    friend class WriteAccess<ValueType> ;
 
 public:
 
@@ -291,7 +291,7 @@ public:
     virtual Scalar::ScalarType getValueType() const;
 
     /**
-     * @brief reserve a certain amount of data at a specific context 
+     * @brief reserve a certain amount of data at a specific context
      *
      * @param[in] context where a certain amount of data should be reserved
      * @param[in] capacity amount of data to be allocated
@@ -362,7 +362,7 @@ protected:
 
     LAMA_LOG_DECL_STATIC_LOGGER( logger )
 
-    mutable boost::recursive_mutex access_mutex;// needed to make accesses thread-safe
+mutable    boost::recursive_mutex access_mutex; // needed to make accesses thread-safe
 };
 
 /**
@@ -405,11 +405,11 @@ inline IndexType _LAMAArray::size() const
 template<typename ValueType>
 template<typename OtherValueType>
 LAMAArray<ValueType>::LAMAArray( const IndexType n, const OtherValueType* const values )
-    : _LAMAArray( n ), mSyncToken( 0 )
+                : _LAMAArray( n ), mSyncToken( 0 )
 {
     setHostContext();
 
-    if ( n <= 0 )
+    if( n <= 0 )
     {
         LAMA_LOG_DEBUG( logger, "Zero-sized array with value constructed: " << *this )
         return;
@@ -421,8 +421,9 @@ LAMAArray<ValueType>::LAMAArray( const IndexType n, const OtherValueType* const 
 
     ValueType* host_pointer = static_cast<ValueType*>( host.pointer );
 
-    #pragma omp parallel for schedule(LAMA_OMP_SCHEDULE)
-    for ( int i = 0; i < mSize; ++i )
+#pragma omp parallel for schedule(LAMA_OMP_SCHEDULE)
+
+    for( int i = 0; i < mSize; ++i )
     {
         host_pointer[i] = static_cast<ValueType>( values[i] );
     }

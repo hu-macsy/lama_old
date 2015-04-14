@@ -2,7 +2,7 @@
  * @file CSRStorage.hpp
  *
  * @license
- * Copyright (c) 2009-2013
+ * Copyright (c) 2009-2015
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -78,7 +78,7 @@ class LAMA_DLL_IMPORTEXPORT CSRStorage: public CRTPMatrixStorage<CSRStorage<Valu
 {
 public:
 
-	typedef ValueType StorageValueType;
+    typedef ValueType StorageValueType;
 
     /** get typename of the matrix storage format. */
 
@@ -88,7 +88,7 @@ public:
 
     CSRStorage();
 
-    /** Constructor for CSR storage by corresponding arrays. 
+    /** Constructor for CSR storage by corresponding arrays.
      *
      */
 
@@ -236,11 +236,11 @@ public:
 
     IndexType getNumValues() const;
 
-    /** This method sorts entries in each row by column indexes. 
+    /** This method sorts entries in each row by column indexes.
      *
      *  @param[in] diagonalProperty if true first entry in a row is diagonal element if available
      *
-     *  This method does not force diagonal property for the storage as it will not fill up 
+     *  This method does not force diagonal property for the storage as it will not fill up
      *  a diagonal element if it is not available.
      *
      *  Note: matrix multiplication with CUSparse requires sorted rows, diagonalProperty = false
@@ -257,7 +257,7 @@ public:
      * @param[out] diagonal is the typed LAMA array for output
      */
     template<typename OtherValueType>
-    void getDiagonalImpl( LAMAArray<OtherValueType>& diagonal ) const  __attribute__( ( noinline ) );
+    void getDiagonalImpl( LAMAArray<OtherValueType>& diagonal ) const __attribute__( ( noinline ) );
 
     /** Typed version of setDiagonal
      *
@@ -365,11 +365,12 @@ public:
 
     /** Override splitHalo with version that avoids unnecessary conversions. */
 
-    virtual void splitHalo( MatrixStorage<ValueType>& localData,
-                            MatrixStorage<ValueType>& haloData,
-                            Halo& halo,
-                            const Distribution& colDist,
-                            const Distribution* rowDist ) const;
+    virtual void splitHalo(
+        MatrixStorage<ValueType>& localData,
+        MatrixStorage<ValueType>& haloData,
+        Halo& halo,
+        const Distribution& colDist,
+        const Distribution* rowDist ) const;
 
     /** General routine to build any kind of CSR storage.
      *
@@ -399,7 +400,7 @@ public:
     /** Implementation of MatrixStorage::matrixTimesVector for CSR */
 
     virtual void matrixTimesVector(
-    	LAMAArray<ValueType>& result,
+        LAMAArray<ValueType>& result,
         const ValueType alpha,
         const LAMAArray<ValueType>& x,
         const ValueType beta,
@@ -416,7 +417,7 @@ public:
         const LAMAArray<ValueType>& y ) const;
 
     virtual void matrixTimesVectorN(
-    	LAMAArray<ValueType>& result,
+        LAMAArray<ValueType>& result,
         const IndexType n,
         const ValueType alpha,
         const LAMAArray<ValueType>& x,
@@ -426,7 +427,7 @@ public:
     /** Implementation of MatrixStorage::matrixTimesVectorAsync for CSR */
 
     virtual SyncToken* matrixTimesVectorAsync(
-    	LAMAArray<ValueType>& result,
+        LAMAArray<ValueType>& result,
         const ValueType alpha,
         const LAMAArray<ValueType>& x,
         const ValueType beta,
@@ -512,8 +513,7 @@ public:
      * @param[out] values corresponding to the columns
      */
 
-    void buildSparseRowData( LAMAArray<IndexType>& ja,
-        LAMAArray<ValueType>& values ) const;
+    void buildSparseRowData( LAMAArray<IndexType>& ja, LAMAArray<ValueType>& values ) const;
 
     using MatrixStorage<ValueType>::prefetch;
     using MatrixStorage<ValueType>::getContext;
@@ -551,15 +551,15 @@ private:
 
     /** Logger for this class. */
 
-    LAMA_LOG_DECL_STATIC_LOGGER( logger ) 
+    LAMA_LOG_DECL_STATIC_LOGGER( logger )
 
     /** Matrix + Matrix for CSR only */
 
-    void matrixAddMatrixCSR( const ValueType alpha,
-                             const CSRStorage<ValueType>& a,
-                             const ValueType beta,
-                             const CSRStorage<ValueType>& b,
-                             const ContextPtr loc );
+    void    matrixAddMatrixCSR( const ValueType alpha,
+                                const CSRStorage<ValueType>& a,
+                                const ValueType beta,
+                                const CSRStorage<ValueType>& b,
+                                const ContextPtr loc );
 
     /** Matrix times Matrix for CSR only */
 

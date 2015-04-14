@@ -2,7 +2,7 @@
  * @file BLASHelper.cpp
  *
  * @license
- * Copyright (c) 2009-2013
+ * Copyright (c) 2009-2015
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -48,11 +48,11 @@ char BLASHelper::lapack_uplo( const CBLAS_UPLO uplo )
 {
     char UL = 'U';
 
-    if ( uplo == CblasUpper )
+    if( uplo == CblasUpper )
     {
         UL = 'U';
     }
-    else if ( uplo == CblasLower )
+    else if( uplo == CblasLower )
     {
         UL = 'L';
     }
@@ -70,15 +70,15 @@ char BLASHelper::lapack_transpose( const CBLAS_TRANSPOSE trans )
 {
     char TA = 'N';
 
-    if ( trans == CblasNoTrans )
+    if( trans == CblasNoTrans )
     {
         TA = 'N';
     }
-    else if ( trans == CblasTrans )
+    else if( trans == CblasTrans )
     {
         TA = 'T';
     }
-    else if ( trans == CblasConjTrans )
+    else if( trans == CblasConjTrans )
     {
         TA = 'C';
     }
@@ -96,11 +96,11 @@ char BLASHelper::lapack_diag( const CBLAS_DIAG diag )
 {
     char DI = 'N';
 
-    if ( diag == CblasNonUnit )
+    if( diag == CblasNonUnit )
     {
         DI = 'N';
     }
-    else if ( diag == CblasUnit )
+    else if( diag == CblasUnit )
     {
         DI = 'U';
     }

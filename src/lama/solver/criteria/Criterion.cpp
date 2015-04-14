@@ -2,7 +2,7 @@
  * @file Criterion.cpp
  *
  * @license
- * Copyright (c) 2009-2013
+ * Copyright (c) 2009-2015
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -57,13 +57,13 @@ Criterion::Criterion( const bool boolean )
 
 Criterion::Criterion( const Criterion& other )
     : Printable( other ), mLeftChild( other.mLeftChild ), mRightChild( other.mRightChild ), mOperation(
-        other.mOperation ), mModifier( false )
+          other.mOperation ), mModifier( false )
 {
 }
 
 Criterion::Criterion( const CriterionPtr other, const bool modifier )
     : mLeftChild( other->mLeftChild ), mRightChild( other->mRightChild ), mOperation( other->mOperation ), mModifier(
-        modifier == other->mModifier )
+          modifier == other->mModifier )
 {
 }
 
@@ -93,20 +93,20 @@ bool Criterion::isSatisfied( const lama::IterativeSolver& solver )
 
     bool satisfied = true;
 
-    if ( !hasLeftChild() && !hasRightChild() )
+    if( !hasLeftChild() && !hasRightChild() )
     {
         return mModifier;
     }
 
-    if ( !hasLeftChild() )
+    if( !hasLeftChild() )
     {
         satisfied = mRightChild->isSatisfied( solver );
     }
-    else if ( !hasRightChild() )
+    else if( !hasRightChild() )
     {
         satisfied = mLeftChild->isSatisfied( solver );
     }
-    else if ( mOperation == AND )
+    else if( mOperation == AND )
     {
         satisfied = mLeftChild->isSatisfied( solver ) && mRightChild->isSatisfied( solver );
     }
@@ -160,16 +160,16 @@ void Criterion::setOperation( const Criterion::BooleanOperator operation )
 
 void Criterion::writeAt( std::ostream& stream ) const
 {
-    if ( hasLeftChild() && hasRightChild() ) //boolean operation
+    if( hasLeftChild() && hasRightChild() ) //boolean operation
     {
-        if ( !mModifier )
+        if( !mModifier )
         {
             stream << "!";
         }
 
         stream << "(" << *getLeftChild();
 
-        if ( getOperation() == Criterion::AND )
+        if( getOperation() == Criterion::AND )
         {
             stream << " && ";
         }

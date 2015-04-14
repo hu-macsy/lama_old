@@ -2,7 +2,7 @@
  * @file DefaultJacobi.cpp
  *
  * @license
- * Copyright (c) 2009-2013
+ * Copyright (c) 2009-2015
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -90,10 +90,10 @@ void DefaultJacobi::initialize( const Matrix& coefficients )
 
     DefaultJacobiRuntime& runtime = getRuntime();
 
-    if ( !runtime.mDiagonalTimesRhs.get() )
+    if( !runtime.mDiagonalTimesRhs.get() )
     {
-        runtime.mDiagonalTimesRhs.reset( Vector::createVector( coefficients.getValueType(),
-                                                               coefficients.getDistributionPtr() ) );
+        runtime.mDiagonalTimesRhs.reset(
+            Vector::createVector( coefficients.getValueType(), coefficients.getDistributionPtr() ) );
 
         LAMA_LOG_DEBUG( logger, "Created diagonalTimesRhs vector = " << *runtime.mDiagonalTimesRhs )
     }
@@ -137,10 +137,11 @@ void DefaultJacobi::initialize( const Matrix& coefficients )
 
 void DefaultJacobi::solve( Vector& solution, const Vector& rhs )
 {
-    if ( getConstRuntime().mSolveInit )
+    if( getConstRuntime().mSolveInit )
     {
         LAMA_LOG_WARN( logger, "Previous initialization of solver found! Will be overriden!" )
     }
+
     solveInit( solution, rhs );
     solveImpl();
     solveFinalize();
@@ -149,14 +150,16 @@ void DefaultJacobi::solve( Vector& solution, const Vector& rhs )
 void DefaultJacobi::solveInit( Vector& solution, const Vector& rhs )
 {
     DefaultJacobiRuntime& runtime = getRuntime();
+
     //Check if oldSolution already exists, if not create copy of solution
-    if ( !runtime.mOldSolution.get() )
+    if( !runtime.mOldSolution.get() )
     {
         runtime.mOldSolution.reset( solution.create() );
     }
+
     runtime.mProxyOldSolution = runtime.mOldSolution.get();
 
-    if ( !runtime.mDiagonalTimesRhs.get() || !runtime.mDiagonalInverted.get() )
+    if( !runtime.mDiagonalTimesRhs.get() || !runtime.mDiagonalInverted.get() )
     {
         LAMA_THROWEXCEPTION( "No initialization executed before running solve." )
     }
@@ -173,11 +176,13 @@ void DefaultJacobi::solveFinalize()
 //    if( &( mProxyOldSolution.getConstReference() ) ==
 //        &( mSolution.getConstReference() ) )
     DefaultJacobiRuntime& runtime = getRuntime();
-    if ( runtime.mIterations % 2 )
+
+    if( runtime.mIterations % 2 )
     {
         LAMA_LOG_DEBUG( logger, "mProxyOldSolution = *mSolution" )
         *runtime.mProxyOldSolution = *runtime.mSolution;
     }
+
     LAMA_LOG_DEBUG( logger, " end solve " )
 }
 
@@ -203,38 +208,42 @@ void DefaultJacobi::iterate()
     LAMA_LOG_DEBUG( logger, " mSolution  =  mDiagonalTimesRhs -  mDiagonalTimesLU * oldSolution " )
     *runtime.mSolution = *runtime.mDiagonalTimesRhs - *runtime.mDiagonalTimesLU * oldSolution;
 
-    if ( omega != 1.0 )
+    if( omega != 1.0 )
     {
         LAMA_LOG_DEBUG( logger, " mSolution = omega * mSolution - (omega - 1.0) * oldSolution " )
         *runtime.mSolution = omega * ( *runtime.mSolution ) - ( omega - 1.0 ) * oldSolution;
     }
 
-    if ( LAMA_LOG_TRACE_ON( logger ) )
+    if( LAMA_LOG_TRACE_ON( logger ) )
     {
         LAMA_LOG_TRACE( logger, "Solution " << *runtime.mSolution )
         const DenseVector<ValueType>& sol = dynamic_cast<const DenseVector<ValueType>&>( *runtime.mSolution );
         HostReadAccess<ValueType> rsol( sol.getLocalValues() );
         std::cout << "Solution: ";
-        for ( IndexType i = 0; i < rsol.size(); ++i )
+
+        for( IndexType i = 0; i < rsol.size(); ++i )
         {
             std::cout << " " << rsol[i];
         }
+
         std::cout << std::endl;
     }
 }
 
 void DefaultJacobi::iterate()
 {
-    switch ( getRuntime().mDiagonalTimesLU->getValueType() )
+    switch( getRuntime().mDiagonalTimesLU->getValueType() )
     {
-    case Scalar::FLOAT:
-        iterate<float>();
-        break;
-    case Scalar::DOUBLE:
-        iterate<double>();
-        break;
-    default:
-        LAMA_THROWEXCEPTION( "Unsupported ValueType " << getRuntime().mDiagonalTimesLU->getValueType() )
+        case Scalar::FLOAT:
+            iterate<float>();
+            break;
+
+        case Scalar::DOUBLE:
+            iterate<double>();
+            break;
+
+        default:
+            LAMA_THROWEXCEPTION( "Unsupported ValueType " << getRuntime().mDiagonalTimesLU->getValueType() )
     }
 }
 

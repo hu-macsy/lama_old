@@ -2,7 +2,7 @@
  * @file Settings.hpp
  *
  * @license
- * Copyright (c) 2009-2013
+ * Copyright (c) 2009-2015
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -25,7 +25,7 @@
  * SOFTWARE.
  * @endlicense
  *
- * @brief Utilities for LAMA settings                                       
+ * @brief Utilities for LAMA settings
  * @author Thomas Brandes
  * @date 19.06.2013
  * @since 1.0.1
@@ -40,7 +40,7 @@ namespace lama
 
 class Communicator;
 
-/** 
+/**
  *  This singleton class provides methods to query environment variables.
  *
  *  Note: This should be the only module to access environment variables
@@ -90,14 +90,14 @@ private:
 
     LAMA_LOG_DECL_STATIC_LOGGER( logger )
 
-    /** convert the string value to a boolean value, name only used for messages. 
+    /** convert the string value to a boolean value, name only used for messages.
      *
      *  @param[out]  flag is boolean variable that will be set
      *  @param[in]   value is string to be converted
      *  @return      true if string could be converted, false if no legal value has been found
      */
 
-    static bool convertYesNoString( bool& flag, const char* value );
+static    bool convertYesNoString( bool& flag, const char* value );
 
     /** convert the string value to an int value
      *
@@ -111,6 +111,7 @@ private:
     static bool init();
 };
 
-} // namespace
+}
+// namespace
 
 #endif //  LAMA_SETTINGS_HPP_

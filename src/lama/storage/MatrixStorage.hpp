@@ -2,7 +2,7 @@
  * @file MatrixStorage.hpp
  *
  * @license
- * Copyright (c) 2009-2013
+ * Copyright (c) 2009-2015
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -57,20 +57,22 @@ template<typename ValueType> class CSRStorage;
  */
 namespace Format
 {
-    typedef enum
-    {
-        CSR,      //!< Compressed Sparse Row
-        ELL,      //!< ELLPack
-        DIA,      //!< Diagonal
-        JDS,      //!< Jagged Diagonal Storage
-        COO,      //!< Coordinate list
-        DENSE,    //!< Dense, all elements are stored
-        ASSEMBLY, //!<  Matrix storage used for assembling of values
-        UNDEFINED //!<  Default value 
-    } MatrixStorageFormat;
-};
+typedef enum
+{
+    CSR, //!< Compressed Sparse Row
+    ELL, //!< ELLPack
+    DIA, //!< Diagonal
+    JDS, //!< Jagged Diagonal Storage
+    COO, //!< Coordinate list
+    DENSE, //!< Dense, all elements are stored
+    ASSEMBLY, //!<  Matrix storage used for assembling of values
+    UNDEFINED //!<  Default value
+} MatrixStorageFormat;
+}
+;
 
-using Format::MatrixStorageFormat;  //!< useful abbreviation
+using Format::MatrixStorageFormat;
+//!< useful abbreviation
 
 LAMA_DLL_IMPORTEXPORT std::ostream& operator<<( std::ostream& stream, const MatrixStorageFormat storageFormat );
 
@@ -165,7 +167,7 @@ public:
 
     inline const Context& getContext() const;
 
-    /** @brief Pure method that prefetches storage data into a given context. 
+    /** @brief Pure method that prefetches storage data into a given context.
      *
      *  @param context specifies location where data will resize
      */
@@ -490,7 +492,7 @@ protected:
 
     LAMA_LOG_DECL_STATIC_LOGGER( logger ) //!< logger for this matrix format
 
-    ContextPtr mContext;//!< preferred context for the storage
+    ContextPtr    mContext;//!< preferred context for the storage
 
 protected:
 
@@ -514,7 +516,7 @@ class LAMA_DLL_IMPORTEXPORT MatrixStorage: public _MatrixStorage
 {
 public:
 
-	typedef ValueType StorageValueType;
+    typedef ValueType StorageValueType;
 
     /** Constructor of matrix storage contains dimensions of the matrix. */
 
@@ -788,7 +790,7 @@ public:
      */
 
     virtual void matrixTimesVector(
-    	LAMAArray<ValueType>& result,
+        LAMAArray<ValueType>& result,
         const ValueType alpha,
         const LAMAArray<ValueType>& x,
         const ValueType beta,
@@ -802,7 +804,7 @@ public:
         const LAMAArray<ValueType>& y ) const;
 
     virtual void matrixTimesVectorN(
-    	LAMAArray<ValueType>& result,
+        LAMAArray<ValueType>& result,
         const IndexType n,
         const ValueType alpha,
         const LAMAArray<ValueType>& x,
@@ -819,7 +821,7 @@ public:
      */
 
     virtual SyncToken* matrixTimesVectorAsync(
-    	LAMAArray<ValueType>& result,
+        LAMAArray<ValueType>& result,
         const ValueType alpha,
         const LAMAArray<ValueType>& x,
         const ValueType beta,
@@ -960,12 +962,12 @@ public:
         const LAMAArray<ValueType>& haloOldSolution,
         const ValueType omega ) const;
 
-    // Note: Asynchronous version of jacobiIterateHalo not supported 
+    // Note: Asynchronous version of jacobiIterateHalo not supported
 
     using _MatrixStorage::getContext;
     using _MatrixStorage::getContextPtr;
 
-    // Use this method to change epsiolon temporarily  
+    // Use this method to change epsiolon temporarily
 
     void swapEpsilon( ValueType& epsilon ) const
     {

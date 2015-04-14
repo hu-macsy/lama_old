@@ -2,7 +2,7 @@
  * @file LAMAThreadPool.cpp
  *
  * @license
- * Copyright (c) 2009-2013
+ * Copyright (c) 2009-2015
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -44,10 +44,10 @@
 #include <boost/bind.hpp>
 
 #ifdef _OPENMP
-    #include <omp.h>
+#include <omp.h>
 #else
-    #define omp_get_max_threads() 1
-    #define omp_set_num_threads( x )
+#define omp_get_max_threads() 1
+#define omp_set_num_threads( x )
 #endif
 
 namespace lama
@@ -67,7 +67,8 @@ boost::shared_ptr<LAMAThreadTask> LAMAThreadTask::create(
     boost::shared_ptr<LAMAThreadTask> task = boost::shared_ptr<LAMAThreadTask>( new LAMAThreadTask() );
 
     task->mWork = work;
-    if ( numOmpThreads == 0 )
+
+    if( numOmpThreads == 0 )
     {
         task->ompThreads = omp_get_max_threads();
     }
@@ -95,7 +96,7 @@ LAMAThreadPool::LAMAThreadPool( int size )
 
     // Create all threads just from the beginning, on demand might be possible later
 
-    for ( int i = 0; i < mMaxSize; i++ )
+    for( int i = 0; i < mMaxSize; i++ )
     {
         mThreads.push_back( new boost::thread( boost::bind( &LAMAThreadPool::worker, this, i ) ) );
     }
@@ -109,9 +110,10 @@ boost::shared_ptr<LAMAThreadTask> LAMAThreadPool::schedule( boost::function<void
     boost::thread thisThread;
     bool isRecursiveTask = false;
     std::vector<boost::thread*>::const_iterator end = mThreads.end();
-    for ( std::vector<boost::thread*>::const_iterator it = mThreads.begin(); it != end; ++it )
+
+    for( std::vector<boost::thread*>::const_iterator it = mThreads.begin(); it != end; ++it )
     {
-        if ( *( *it ) == thisThread )
+        if( *( *it ) == thisThread )
         {
             isRecursiveTask = true;
             break;
@@ -120,13 +122,14 @@ boost::shared_ptr<LAMAThreadTask> LAMAThreadPool::schedule( boost::function<void
 
     boost::shared_ptr<LAMAThreadTask> task = LAMAThreadTask::create( work, mTaskId++, numOmpThreads );
 
-    if ( isRecursiveTask )
+    if( isRecursiveTask )
     {
         LAMA_LOG_WARN( logger, "Executing recursive taks synchronously to avoid deadlocks." )
         work();
         task->mState = LAMAThreadTask::FINISHED;
         return task;
     }
+
     boost::mutex::scoped_lock lock( mTaskQueueMutex );
 
     mTaskQueue.push( task );
@@ -148,11 +151,11 @@ void LAMAThreadPool::wait( boost::shared_ptr<LAMAThreadTask> task )
 
     LAMA_LOG_DEBUG( logger, "wait on task id = " << task->mTaskId << ", state = " << task->mState )
 
-    while ( task->mState != LAMAThreadTask::FINISHED )
+    while( task->mState != LAMAThreadTask::FINISHED )
     {
         boost::mutex::scoped_lock lock( mNotifyFinishMutex );
 
-        if ( task->mState != LAMAThreadTask::FINISHED )
+        if( task->mState != LAMAThreadTask::FINISHED )
         {
             // wait on signal for a finishing thread
             // Attention: do not output here, as worker thread might finish and notify before wait
@@ -179,7 +182,7 @@ void LAMAThreadPool::worker( int id )
     int ompThreads = -1;
     // wait for a new task
 
-    while ( true )
+    while( true )
     {
         boost::shared_ptr<LAMAThreadTask> task;
 
@@ -188,7 +191,7 @@ void LAMAThreadPool::worker( int id )
         {
             boost::mutex::scoped_lock lock( mTaskQueueMutex );
 
-            if ( mTaskQueue.empty() )
+            if( mTaskQueue.empty() )
             {
                 // Instead of busy wait this thread waits on notification
 
@@ -207,7 +210,7 @@ void LAMAThreadPool::worker( int id )
                 task = mTaskQueue.front();
                 mTaskQueue.pop();
 
-                if ( !task )
+                if( !task )
                 {
                     LAMA_LOG_DEBUG( logger, "worker thread " << id << " picked shutdown task" )
                     // this is the shutdown task
@@ -216,13 +219,14 @@ void LAMAThreadPool::worker( int id )
             }
         }
 
-        if ( task )
+        if( task )
         {
             LAMA_LOG_DEBUG( logger,
                             "worker thread " << id << " runs task " << task->mTaskId << " with " << task->ompThreads << " OMP threads" )
 
             task->mState = LAMAThreadTask::RUNNING;
-            if ( task->ompThreads != ompThreads )
+
+            if( task->ompThreads != ompThreads )
             {
                 omp_set_num_threads( task->ompThreads );
                 ompThreads = task->ompThreads;
@@ -232,7 +236,7 @@ void LAMAThreadPool::worker( int id )
             {
                 task->mWork();
             }
-            catch ( ... )
+            catch( ... )
             {
                 LAMA_LOG_INFO( logger, "worker thread got exception, has been caught" )
                 task->mException = true;
@@ -263,11 +267,12 @@ LAMAThreadPool::~LAMAThreadPool()
 
     boost::shared_ptr<LAMAThreadTask> shutdownTask; // NULL pointer
 
-    {   // lock access to the task queue before adding shutdown tasks
+    {
+        // lock access to the task queue before adding shutdown tasks
 
         boost::mutex::scoped_lock lock( mTaskQueueMutex );
 
-        for ( size_t i = 0; i < mThreads.size(); i++ )
+        for( size_t i = 0; i < mThreads.size(); i++ )
         {
             mTaskQueue.push( shutdownTask );
         }
@@ -281,7 +286,7 @@ LAMAThreadPool::~LAMAThreadPool()
 
     // and now wait for completion of all worker threads and delete them
 
-    for ( size_t i = 0; i < mThreads.size(); ++i )
+    for( size_t i = 0; i < mThreads.size(); ++i )
     {
         LAMA_LOG_DEBUG( logger, "wait for worker thread " << i )
         mThreads[i]->join();

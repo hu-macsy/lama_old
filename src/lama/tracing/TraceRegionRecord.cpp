@@ -2,7 +2,7 @@
  * @file TraceRegionRecord.cpp
  *
  * @license
- * Copyright (c) 2009-2013
+ * Copyright (c) 2009-2015
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -56,14 +56,14 @@ void TraceRegionRecord::start( const char* regionName, const char* file, int lno
 {
     // enter a region withtout using member variables
 
-    if ( !TraceConfig::globalTraceFlag )
+    if( !TraceConfig::globalTraceFlag )
     {
         return;
     }
 
     boost::shared_ptr<TraceConfig> traceConfig = TraceConfig::getInstancePtr();
 
-    if ( !traceConfig->isEnabled() )
+    if( !traceConfig->isEnabled() )
     {
         return;
     }
@@ -72,7 +72,7 @@ void TraceRegionRecord::start( const char* regionName, const char* file, int lno
 
     RegionTable* regionTable = traceConfig->getRegionTable();
 
-    if ( !regionTable )
+    if( !regionTable )
     {
         return; // Tracing is disabled here
     }
@@ -82,12 +82,12 @@ void TraceRegionRecord::start( const char* regionName, const char* file, int lno
     LAMA_LOG_DEBUG( logger,
                     "Thread " << regionTable->getId() << ": enters region " << regionName << ", timer = " << regionId )
 
-    if ( traceConfig->isTimeTraceEnabled() )
+    if( traceConfig->isTimeTraceEnabled() )
     {
         regionTable->start( regionId, startTime );
     }
 
-    if ( traceConfig->isVampirTraceEnabled() )
+    if( traceConfig->isVampirTraceEnabled() )
     {
         VTInterface::enter( regionTable->getRegion( regionId ) );
     }
@@ -99,21 +99,21 @@ void TraceRegionRecord::stop( const char* regionName )
 {
     // enter a region withtout using member variables
 
-    if ( !TraceConfig::globalTraceFlag )
+    if( !TraceConfig::globalTraceFlag )
     {
         return;
     }
 
     boost::shared_ptr<TraceConfig> traceConfig = TraceConfig::getInstancePtr();
 
-    if ( !traceConfig->isEnabled() )
+    if( !traceConfig->isEnabled() )
     {
         return;
     }
 
     RegionTable* regionTable = traceConfig->getRegionTable();
 
-    if ( !regionTable )
+    if( !regionTable )
     {
         return; // Tracing is disabled here
     }
@@ -126,12 +126,12 @@ void TraceRegionRecord::stop( const char* regionName )
 
     LAMA_LOG_DEBUG( logger, "Thread " << regionTable->getId() << ": leaves region " << regionName )
 
-    if ( traceConfig->isTimeTraceEnabled() )
+    if( traceConfig->isTimeTraceEnabled() )
     {
         regionTable->stop( regionId, stopTime );
     }
 
-    if ( traceConfig->isVampirTraceEnabled() )
+    if( traceConfig->isVampirTraceEnabled() )
     {
         VTInterface::leave( regionTable->getRegion( regionId ) );
     }
@@ -145,7 +145,7 @@ void TraceRegionRecord::enter( const char* regionName, const char* file, int lno
 
     mRegionTable = mTraceConfig->getRegionTable();
 
-    if ( !mRegionTable )
+    if( !mRegionTable )
     {
         return; // Tracing is disabled here
     }
@@ -157,14 +157,14 @@ void TraceRegionRecord::enter( const char* regionName, const char* file, int lno
 
     mTimeTrace = mTraceConfig->isTimeTraceEnabled();
 
-    if ( mTimeTrace )
+    if( mTimeTrace )
     {
         mRegionTable->start( mRegionId, mStartTime );
     }
 
     mVampirTrace = mTraceConfig->isVampirTraceEnabled();
 
-    if ( mVampirTrace )
+    if( mVampirTrace )
     {
         VTInterface::enter( mRegionTable->getRegion( mRegionId ) );
     }
@@ -176,7 +176,7 @@ TraceRegionRecord::TraceRegionRecord( const char* regionName, const char* file, 
 {
     mRegionTable = NULL;
 
-    if ( !TraceConfig::globalTraceFlag )
+    if( !TraceConfig::globalTraceFlag )
     {
         // tracing is switched off in source code
         return;
@@ -184,7 +184,7 @@ TraceRegionRecord::TraceRegionRecord( const char* regionName, const char* file, 
 
     mTraceConfig = TraceConfig::getInstancePtr();
 
-    if ( !mTraceConfig->isEnabled() )
+    if( !mTraceConfig->isEnabled() )
     {
         return;
     }
@@ -198,7 +198,7 @@ TraceRegionRecord::TraceRegionRecord( const char* regionName, int n, const char*
 {
     mRegionTable = NULL;
 
-    if ( !TraceConfig::globalTraceFlag )
+    if( !TraceConfig::globalTraceFlag )
     {
         // tracing is switched off in source code
         return;
@@ -206,7 +206,7 @@ TraceRegionRecord::TraceRegionRecord( const char* regionName, int n, const char*
 
     mTraceConfig = TraceConfig::getInstancePtr();
 
-    if ( !mTraceConfig->isEnabled() )
+    if( !mTraceConfig->isEnabled() )
     {
         return;
     }
@@ -224,7 +224,7 @@ TraceRegionRecord::TraceRegionRecord( const char* regionName, int n, const char*
 
 TraceRegionRecord::~TraceRegionRecord()
 {
-    if ( !mRegionTable )
+    if( !mRegionTable )
     {
         // tracing was not enabled at all
 
@@ -236,12 +236,12 @@ TraceRegionRecord::~TraceRegionRecord()
     LAMA_LOG_DEBUG( logger,
                     "Thread " << mRegionTable->getId() << ": leaves region " << mRegionTable->getRegion( mRegionId ).getRegionName() << ", timer = " << mRegionId )
 
-    if ( mTimeTrace )
+    if( mTimeTrace )
     {
         mRegionTable->stop( mRegionId, stopTime );
     }
 
-    if ( mVampirTrace )
+    if( mVampirTrace )
     {
         VTInterface::leave( mRegionTable->getRegion( mRegionId ) );
     }
@@ -253,7 +253,7 @@ double TraceRegionRecord::spentLast( const char* name )
 {
     RegionTable* regionTable = TraceConfig::getInstance().getRegionTable();
 
-    if ( !regionTable )
+    if( !regionTable )
     {
         LAMA_LOG_WARN( logger, "spentLast " << name << ": trace is disabled" )
     }

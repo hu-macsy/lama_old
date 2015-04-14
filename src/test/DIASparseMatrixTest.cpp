@@ -2,7 +2,7 @@
  * @file DIASparseMatrixTest.cpp
  *
  * @license
- * Copyright (c) 2009-2013
+ * Copyright (c) 2009-2015
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -53,7 +53,6 @@ void commonTestCases( ContextPtr loc )
 {
     DIASparseMatrix<ValueType> diaMatrix;
     SparseMatrixTest< DIASparseMatrix<ValueType> > diaSparseMatrixTest( diaMatrix );
-
     diaSparseMatrixTest.mMatrix.setContext( loc );
 
     if ( base_test_case )
@@ -72,8 +71,7 @@ void typeNameTest( )
 {
     DIASparseMatrix<ValueType> diaMatrix;
     std::string s = diaMatrix.typeName();
-
-    BOOST_CHECK( s.length() > 0);
+    BOOST_CHECK( s.length() > 0 );
 }
 
 } // namespace DIASparseMatrixTest

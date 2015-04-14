@@ -2,7 +2,7 @@
  * @file TestMacros.hpp
  *
  * @license
- * Copyright (c) 2009-2013
+ * Copyright (c) 2009-2015
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -104,7 +104,6 @@ inline lama::Scalar scalarEps<double>()
 inline std::string getEnvContext()
 {
     std::string context;  // default is using each context
-
     const char* envContext = getenv( "LAMA_TEST_CONTEXT" );
 
     if ( !envContext )
@@ -112,7 +111,7 @@ inline std::string getEnvContext()
         context = "*";
         return context;
     }
-    
+
     context = envContext;
 
     // to upper for convenience
@@ -123,8 +122,8 @@ inline std::string getEnvContext()
     }
 
     if ( context == "HOST" )
-    { 
-        context = "Host";    // set back 
+    {
+        context = "Host";    // set back
     }
     else if ( context == "CUDA" || context == "OPENCL" || context == "MIC" )
     {
@@ -134,7 +133,7 @@ inline std::string getEnvContext()
     {
         context = "*";
     }
-    
+
     return context;
 }
 
@@ -147,12 +146,12 @@ inline std::string getEnvContext()
 inline lama::ContextType mapEnvContexttoContextType( std::string contextname )
 {
     lama::ContextType myContext;
-    std::map<std::string,lama::ContextType> contextmap = 
-       boost::assign::map_list_of ( "Host", lama::Context::Host )
-                                  ( "CUDA", lama::Context::CUDA )
-                                  ( "OPENCL", lama::Context::OpenCL )
-                                  ( "MIC", lama::Context::MIC )
-                                  ( "MaxContext", lama::Context::MaxContext );
+    std::map<std::string, lama::ContextType> contextmap =
+        boost::assign::map_list_of ( "Host", lama::Context::Host )
+        ( "CUDA", lama::Context::CUDA )
+        ( "OPENCL", lama::Context::OpenCL )
+        ( "MIC", lama::Context::MIC )
+        ( "MaxContext", lama::Context::MaxContext );
     myContext = contextmap[contextname];
     return myContext;
 }
@@ -352,32 +351,32 @@ inline lama::ContextType mapEnvContexttoContextType( std::string contextname )
 // we need the double trick, otherwise we just see ARITHMETIC_TYPE##I in output
 
 #define STR1( x ) #x
-#define STR( x ) STR1( x ) 
+#define STR( x ) STR1( x )
 
 #define LAMA_RUN_TEST(z, I, method )                                                             \
-try                                                                                              \
-{                                                                                                \
-   method<ARITHMETIC_TYPE##I>( context );                                                        \
-}                                                                                                \
-catch( Exception )                                                                               \
-{                                                                                                \
-    LAMA_LOG_WARN( logger, #method << "<" << STR( ARITHMETIC_TYPE##I ) << "> cannot run on "     \
-                   << context->getType() << ", corresponding function not implemented yet." );   \
-    return;                                                                                      \
-}                                                                                                \
+    try                                                                                              \
+    {                                                                                                \
+        method<ARITHMETIC_TYPE##I>( context );                                                        \
+    }                                                                                                \
+    catch( Exception )                                                                               \
+    {                                                                                                \
+        LAMA_LOG_WARN( logger, #method << "<" << STR( ARITHMETIC_TYPE##I ) << "> cannot run on "     \
+                       << context->getType() << ", corresponding function not implemented yet." );   \
+        return;                                                                                      \
+    }                                                                                                \
 
 
-/*
- * @brief HelperMacro LAMA_AUTO_TEST_CASE_CT( name, classname )
- *
- * This macro creates a boost test auto case, which uses all possible contexts.
- * The test case name is based on the name of the given test method.
- *
- * @param name          name of test method, which will invoke.
- * @param classname     name of the given test class.
- */
+    /*
+     * @brief HelperMacro LAMA_AUTO_TEST_CASE_CT( name, classname )
+     *
+     * This macro creates a boost test auto case, which uses all possible contexts.
+     * The test case name is based on the name of the given test method.
+     *
+     * @param name          name of test method, which will invoke.
+     * @param classname     name of the given test class.
+     */
 #define LAMA_AUTO_TEST_CASE_CT( name, classname )                                             \
-                                                                                              \
+    \
     BOOST_AUTO_TEST_CASE( name )                                                              \
     {                                                                                         \
         CONTEXTLOOP()                                                                         \
@@ -394,26 +393,26 @@ catch( Exception )                                                              
     }
 
 #define LAMA_RUN_TESTL(z, I, method )                                                            \
-try                                                                                              \
-{                                                                                                \
-   method<ARITHMETIC_TYPE##I>( context, logger );                                                \
-}                                                                                                \
-catch( Exception )                                                                               \
-{                                                                                                \
-    LAMA_LOG_WARN( logger, #method << "<" << STR( ARITHMETIC_TYPE##I ) << "> cannot run on "     \
-                   << context->getType() << ", corresponding function not implemented yet." );   \
-    return;                                                                                      \
-}                                                                                                \
+    try                                                                                              \
+    {                                                                                                \
+        method<ARITHMETIC_TYPE##I>( context, logger );                                                \
+    }                                                                                                \
+    catch( Exception )                                                                               \
+    {                                                                                                \
+        LAMA_LOG_WARN( logger, #method << "<" << STR( ARITHMETIC_TYPE##I ) << "> cannot run on "     \
+                       << context->getType() << ", corresponding function not implemented yet." );   \
+        return;                                                                                      \
+    }                                                                                                \
 
-/*
- * @brief HelperMacro LAMA_AUTO_TEST_CASE_CTL( name, classname )
- *
- * This macro creates a boost test auto case, which uses all possible contexts.
- * The test case name is based on the name of the given test method.
- *
- * @param name          name of test method, which will invoke.
- * @param classname     name of the given test class.
- */
+    /*
+     * @brief HelperMacro LAMA_AUTO_TEST_CASE_CTL( name, classname )
+     *
+     * This macro creates a boost test auto case, which uses all possible contexts.
+     * The test case name is based on the name of the given test method.
+     *
+     * @param name          name of test method, which will invoke.
+     * @param classname     name of the given test class.
+     */
 #define LAMA_AUTO_TEST_CASE_CTL( name, classname )                                                                     \
     BOOST_AUTO_TEST_CASE( name )                                                                                       \
     {                                                                                                                  \
@@ -429,16 +428,16 @@ catch( Exception )                                                              
     }
 
 
-/*
- * @brief HelperMacro LAMA_AUTO_TEST_CASE_CTT( name, classname )
- *
- * This macro creates a boost test auto case, which uses all possible contexts.
- * The test case name is based on the name of the given test method. All combinations
- * of ValueTypes (at the moment float and double) will be executed.
- *
- * @param name       name of test method, which will invoke.
- * @param classname  name of the given test class.
- */
+    /*
+     * @brief HelperMacro LAMA_AUTO_TEST_CASE_CTT( name, classname )
+     *
+     * This macro creates a boost test auto case, which uses all possible contexts.
+     * The test case name is based on the name of the given test method. All combinations
+     * of ValueTypes (at the moment float and double) will be executed.
+     *
+     * @param name       name of test method, which will invoke.
+     * @param classname  name of the given test class.
+     */
 
 #define LAMA_AUTO_TEST_CASE_CTT( name, classname )                                                                     \
     BOOST_AUTO_TEST_CASE( name )                                                                                       \
@@ -495,16 +494,16 @@ catch( Exception )                                                              
         }                                                                                                              \
     }
 
-/*
- * @brief HelperMacro LAMA_AUTO_TEST_CASE_CTDUMMY( name, classname, logger )
- *
- * This macro creates a boost test auto case, which uses all possible contexts. The test case name is based
- * on the name of the given test method. Uses a dummy type to execute the test, that is needed for methods
- * that needs templating for other reasons (usage of the lama interface).
- *
- * @param name          name of test method, which will invoke.
- * @param classname     name of the given test class.
- */
+    /*
+     * @brief HelperMacro LAMA_AUTO_TEST_CASE_CTDUMMY( name, classname, logger )
+     *
+     * This macro creates a boost test auto case, which uses all possible contexts. The test case name is based
+     * on the name of the given test method. Uses a dummy type to execute the test, that is needed for methods
+     * that needs templating for other reasons (usage of the lama interface).
+     *
+     * @param name          name of test method, which will invoke.
+     * @param classname     name of the given test class.
+     */
 
 #define LAMA_AUTO_TEST_CASE_CTDUMMY( name, classname )                                                                 \
     BOOST_AUTO_TEST_CASE( name )                                                                                       \
@@ -556,39 +555,39 @@ catch( Exception )                                                              
         }                                                                                                              \
     }
 
-/*
- * @brief HelperMacro COMMONTESTCASEINVOKER( object_name, method_name )
- *
- * This macro represents the invoke of a common used test method.
- *
- * @param object_name     name of the object, which consists the test method.
- * @param method_name     name of method that will be called.
- */
+    /*
+     * @brief HelperMacro COMMONTESTCASEINVOKER( object_name, method_name )
+     *
+     * This macro represents the invoke of a common used test method.
+     *
+     * @param object_name     name of the object, which consists the test method.
+     * @param method_name     name of method that will be called.
+     */
 
 #define COMMONTESTCASEINVOKER( object_name, method_name )                                                              \
     { if ( testcase == #method_name ) object_name.method_name(); }
 
-/*
- * @brief HelperMacro COMMONTESTCASEINVOKER_TEMPLATE( object_name, method_name, ValueType )
- *
- * This macro represents the invoke of a common used test method.
- *
- * @param object_name     name of the object, which consists the test method.
- * @param method_name     name of method that will be called.
- */
+    /*
+     * @brief HelperMacro COMMONTESTCASEINVOKER_TEMPLATE( object_name, method_name, ValueType )
+     *
+     * This macro represents the invoke of a common used test method.
+     *
+     * @param object_name     name of the object, which consists the test method.
+     * @param method_name     name of method that will be called.
+     */
 
 #define COMMONTESTCASEINVOKER_TEMPLATE( object_name, method_name, ValueType )                                          \
     { if ( testcase == #method_name ) object_name.method_name<ValueType>(); }
 
-/*
- * @brief HelperMacro LAMA_COMMON_TEST_CASE_TM( classname, templatename, methodname )
- *
- * This macro creates a templated test method, which can be used by test cases.
- *
- * @param classname       name of the test class.
- * @param templatename    name of a template.
- * @param methodname      name of the test method, that will be created.
- */
+    /*
+     * @brief HelperMacro LAMA_COMMON_TEST_CASE_TM( classname, templatename, methodname )
+     *
+     * This macro creates a templated test method, which can be used by test cases.
+     *
+     * @param classname       name of the test class.
+     * @param templatename    name of a template.
+     * @param methodname      name of the test method, that will be created.
+     */
 
 #define LAMA_COMMON_TEST_CASE_TM( classname, templatename, methodname )                                                \
     template<typename templatename>                                                                                    \
@@ -597,27 +596,27 @@ catch( Exception )                                                              
         const std::string lama_common_testcase_method = #methodname;                                                   \
         if ( loglevel_argument == "test_suite" )                                                                       \
             BOOST_TEST_MESSAGE( "    Entering common test case \"" + lama_common_testcase_method + "\" " );            \
-         
-/*
- * @brief HelperMacro LAMA_COMMON_TEST_CASE_TM_END()
- *
- * This macro closes this testmethod.
- *
- */
+
+        /*
+         * @brief HelperMacro LAMA_COMMON_TEST_CASE_TM_END()
+         *
+         * This macro closes this testmethod.
+         *
+         */
 
 #define LAMA_COMMON_TEST_CASE_TM_END();                                                                                \
     if ( loglevel_argument == "test_suite" )                                                                           \
         BOOST_TEST_MESSAGE( "    Leaving common test case \"" + lama_common_testcase_method + "\" " );                 \
     }
 
-/*
- * @brief HelperMacro LAMA_COMMON_TEST_CASE( classname, methodname )
- *
- * This macro creates a test method, which is used by many test cases.
- *
- * @param classname       name of the test class.
- * @param methodname      name of the test method, that will be created.
- */
+        /*
+         * @brief HelperMacro LAMA_COMMON_TEST_CASE( classname, methodname )
+         *
+         * This macro creates a test method, which is used by many test cases.
+         *
+         * @param classname       name of the test class.
+         * @param methodname      name of the test method, that will be created.
+         */
 
 #define LAMA_COMMON_TEST_CASE( classname, methodname )                                                                 \
     void classname::methodname()                                                                                       \
@@ -625,38 +624,38 @@ catch( Exception )                                                              
         const std::string lama_common_testcase_method = #methodname;                                                   \
         if ( loglevel_argument == "test_suite" )                                                                       \
             BOOST_TEST_MESSAGE( "    Entering common test case \"" + lama_common_testcase_method + "\" " );            \
-         
-/*
- * @brief HelperMacro LAMA_COMMON_TEST_CASE_END()
- *
- * This macro closes this test method.
- *
- */
+
+        /*
+         * @brief HelperMacro LAMA_COMMON_TEST_CASE_END()
+         *
+         * This macro closes this test method.
+         *
+         */
 
 #define LAMA_COMMON_TEST_CASE_END();                                                                                   \
     if ( loglevel_argument == "test_suite" )                                                                           \
         BOOST_TEST_MESSAGE( "    Leaving common test case \"" + lama_common_testcase_method + "\" " );                 \
     }
 
-/*
- * @brief HelperMacro LAMA_COMMON_TEST_CASE_RUNNER( classname )
- *
- * This macro creates the runTests()-Method to invoke all common test methods.
- *
- */
+        /*
+         * @brief HelperMacro LAMA_COMMON_TEST_CASE_RUNNER( classname )
+         *
+         * This macro creates the runTests()-Method to invoke all common test methods.
+         *
+         */
 
 #define LAMA_COMMON_TEST_CASE_RUNNER( classname );                                                                     \
     void classname::runTests()
 
-/*
- * @brief HelperMacro LAMA_COMMON_TEST_CASE( classname, templatename, methodname )
- *
- * This macro creates a test method, which is used by many test cases.
- *
- * @param classname       name of the test class.
- * @param templatename    name of the template.
- * @param methodname      name of the test method, that will be created.
- */
+        /*
+         * @brief HelperMacro LAMA_COMMON_TEST_CASE( classname, templatename, methodname )
+         *
+         * This macro creates a test method, which is used by many test cases.
+         *
+         * @param classname       name of the test class.
+         * @param templatename    name of the template.
+         * @param methodname      name of the test method, that will be created.
+         */
 
 #define LAMA_COMMON_TEST_CASE_TEMPLATE( classname, templatename, methodname )                                          \
     extern std::string loglevel_argument;                                                                              \
@@ -675,24 +674,24 @@ catch( Exception )                                                              
 
 
 
-/*
- * @brief HelperMacro LAMA_COMMON_TEST_CASE_END()
- *
- * This macro closes this test method.
- *
- */
+        /*
+         * @brief HelperMacro LAMA_COMMON_TEST_CASE_END()
+         *
+         * This macro closes this test method.
+         *
+         */
 
 #define LAMA_COMMON_TEST_CASE_TEMPLATE_END();                                                                          \
     if ( loglevel_argument == "test_suite" )                                                                           \
-      LAMA_LOG_INFO( logger, "    Leaving common test case \"" + lama_common_testcase_method + "\" " );                \
+        LAMA_LOG_INFO( logger, "    Leaving common test case \"" + lama_common_testcase_method + "\" " );                \
     }
 
-/*
- * @brief HelperMacro LAMA_COMMON_TEST_CASE_RUNNER( classname )
- *
- * This macro creates the runTests()-Method to invoke all common test methods.
- *
- */
+        /*
+         * @brief HelperMacro LAMA_COMMON_TEST_CASE_RUNNER( classname )
+         *
+         * This macro creates the runTests()-Method to invoke all common test methods.
+         *
+         */
 
 #define LAMA_COMMON_TEST_CASE_RUNNER_TEMPLATE( classname );                                                            \
     template<typename StorageType>                                                                                     \

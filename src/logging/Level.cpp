@@ -2,7 +2,7 @@
  * @file Level.cpp
  *
  * @license
- * Copyright (c) 2009-2013
+ * Copyright (c) 2009-2015
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -53,23 +53,29 @@ const char* level2str( const Level level )
 {
     switch ( level )
     {
+        case TRACE:
+            return "TRACE";
 
-    case TRACE:
-        return "TRACE";
-    case DEBUG:
-        return "DEBUG";
-    case INFO:
-        return "INFO";
-    case WARN:
-        return "WARN";
-    case SERROR:
-        return "ERROR";
-    case FATAL:
-        return "FATAL";
-    case OFF:
-        return "OFF";
-    default:
-        return "UNKNOWN";
+        case DEBUG:
+            return "DEBUG";
+
+        case INFO:
+            return "INFO";
+
+        case WARN:
+            return "WARN";
+
+        case SERROR:
+            return "ERROR";
+
+        case FATAL:
+            return "FATAL";
+
+        case OFF:
+            return "OFF";
+
+        default:
+            return "UNKNOWN";
     }
 }
 
@@ -82,7 +88,6 @@ std::ostream& operator<<( std::ostream& os, const Level& level )
 Level str2level( const std::string& value )
 {
     const char* cvalue = value.c_str();
-
     Level level;
 
     if ( strcmp( cvalue, "TRACE" ) == 0 )

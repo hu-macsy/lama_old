@@ -2,7 +2,7 @@
  * @file DefaultHostContextManager.cpp
  *
  * @license
- * Copyright (c) 2009-2013
+ * Copyright (c) 2009-2015
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -66,7 +66,7 @@ void DefaultHostContextManager::setAsCurrent()
 /* ------------------------------------------------------------------------ */
 
 DefaultHostContextManager::DefaultHostContextManager()
-    : ContextManager( Context::Host )
+                : ContextManager( Context::Host )
 {
     // The singleton object adds itself to the device factory as manager for Host devices.
 
@@ -94,14 +94,14 @@ ContextPtr DefaultHostContextManager::getContext( int deviceNr )
 {
     boost::shared_ptr<DefaultHostContext> context;
 
-    if ( deviceNr != LAMA_DEFAULT_DEVICE_NUMBER )
+    if( deviceNr != LAMA_DEFAULT_DEVICE_NUMBER )
     {
         LAMA_LOG_WARN( logger, "Context number ignored for HostContext, deviceNr = " << deviceNr )
     }
 
     // use the last contextInstance if it is still valid
 
-    if ( contextInstance.expired() )
+    if( contextInstance.expired() )
     {
         // create a new instance of DefaultHostContext and keep it for further uses
 

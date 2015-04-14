@@ -2,7 +2,7 @@
  * @file FileIO.hpp
  *
  * @license
- * Copyright (c) 2009-2013
+ * Copyright (c) 2009-2015
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -63,25 +63,25 @@ public:
 
     /** Reading binary data with implicit conversion from FileDataType to UserDataType */
 
-    template<typename FileDataType, typename UserDataType>
+    template<typename FileDataType,typename UserDataType>
     static void readBinaryData( std::fstream& inFile, UserDataType data[], const IndexType n );
-  
+
     /** Reading binary data with implicit conversion from FileDataType to UserDataType and adding offset */
 
-    template<typename FileDataType, typename UserDataType, int offset>
+    template<typename FileDataType,typename UserDataType,int offset>
     static void readBinaryData( std::fstream& inFile, UserDataType data[], const IndexType n );
 };
 
 /* -------------------------------------------------------------------------- */
 
-template<typename FileDataType, typename UserDataType>
+template<typename FileDataType,typename UserDataType>
 void FileIO::readBinaryData( std::fstream& inFile, UserDataType data[], const IndexType n )
 {
-    if ( typeid( FileDataType ) == typeid( UserDataType ) )
+    if( typeid(FileDataType) == typeid(UserDataType) )
     {
         // no type conversion needed
 
-        inFile.read( reinterpret_cast<char*>( data ), sizeof( UserDataType ) * n );
+        inFile.read( reinterpret_cast<char*>( data ), sizeof(UserDataType) * n );
     }
     else
     {
@@ -89,21 +89,21 @@ void FileIO::readBinaryData( std::fstream& inFile, UserDataType data[], const In
 
         boost::scoped_array<FileDataType> buffer( new FileDataType[n] );
 
-        inFile.read( reinterpret_cast<char*>( buffer.get() ), sizeof( FileDataType ) * n );
+        inFile.read( reinterpret_cast<char*>( buffer.get() ), sizeof(FileDataType) * n );
 
-        for ( IndexType i = 0; i < n; i++ )
+        for( IndexType i = 0; i < n; i++ )
         {
             data[i] = static_cast<UserDataType>( buffer[i] );
         }
     }
 }
 
-template<typename FileDataType, typename UserDataType, int offset>
+template<typename FileDataType,typename UserDataType,int offset>
 void FileIO::readBinaryData( std::fstream& inFile, UserDataType data[], const IndexType n )
 {
-    if ( offset == 0 )
+    if( offset == 0 )
     {
-        readBinaryData<FileDataType, UserDataType>( inFile, data, n );
+        readBinaryData<FileDataType,UserDataType>( inFile, data, n );
         return;
     }
 
@@ -111,9 +111,9 @@ void FileIO::readBinaryData( std::fstream& inFile, UserDataType data[], const In
 
     boost::scoped_array<FileDataType> buffer( new FileDataType[n] );
 
-    inFile.read( reinterpret_cast<char*>( buffer.get() ), sizeof( FileDataType ) * n );
+    inFile.read( reinterpret_cast<char*>( buffer.get() ), sizeof(FileDataType) * n );
 
-    for ( IndexType i = 0; i < n; i++ )
+    for( IndexType i = 0; i < n; i++ )
     {
         data[i] = static_cast<UserDataType>( buffer[i] + offset );
     }

@@ -2,7 +2,7 @@
  * @file XDRFileStream.hpp
  *
  * @license
- * Copyright (c) 2009-2013
+ * Copyright (c) 2009-2015
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -145,11 +145,12 @@ private:
 template<typename ValueType>
 void XDRFileStream::write( ValueType * const input, const std::streamsize n )
 {
-    if ( m_openmode & std::ios::in )
+    if( m_openmode & std::ios::in )
     {
         LAMA_THROWEXCEPTION( "XDRFileStream: Stream is not in Output mode" )
     }
-    for ( std::streamsize i = 0; i < n; i++ )
+
+    for( std::streamsize i = 0; i < n; i++ )
     {
         xdrWrite( &input[i] );
     }
@@ -164,11 +165,12 @@ void XDRFileStream::write( ValueType * const input )
 template<typename ValueType>
 void XDRFileStream::read( ValueType * const input, const std::streamsize n )
 {
-    if ( m_openmode & std::ios::out )
+    if( m_openmode & std::ios::out )
     {
         LAMA_THROWEXCEPTION( "XDRFileStream: Stream is not in Input mode" )
     }
-    for ( std::streamsize i = 0; i < n; i++ )
+
+    for( std::streamsize i = 0; i < n; i++ )
     {
         xdrRead( &input[i] );
     }
@@ -183,16 +185,18 @@ void XDRFileStream::read( ValueType * const input )
 template<typename ValueType>
 void XDRFileStream::xdrRead( ValueType* const data )
 {
-    if ( !is_open() )
+    if( !is_open() )
     {
         LAMA_THROWEXCEPTION( "Error trying to read from closed XDRFileStream" )
     }
+
     const int length = getSize( *data );
     *data = 0;
     char* dataptr = reinterpret_cast<char*>( data );
-    if ( isLittleEndian() )
+
+    if( isLittleEndian() )
     {
-        for ( int pos = length - 1; pos >= 0; pos-- )
+        for( int pos = length - 1; pos >= 0; pos-- )
         {
             m_filestream.read( dataptr + pos, 1 );
         }
@@ -201,8 +205,9 @@ void XDRFileStream::xdrRead( ValueType* const data )
     {
         m_filestream.read( dataptr, length );
     }
+
     //correct the signed bit
-    if ( typeid(ValueType) == typeid(long) )
+    if( typeid(ValueType) == typeid(long) )
     {
         int i = 0 | static_cast<long>( *data );
         *data = 0;
@@ -212,34 +217,40 @@ void XDRFileStream::xdrRead( ValueType* const data )
 template<typename ValueType>
 void XDRFileStream::xdrWrite( const ValueType* const data )
 {
-    if ( !is_open() )
+    if( !is_open() )
     {
         LAMA_THROWEXCEPTION( "Error trying to read from closed XDRFileStream" )
     }
+
     const int length = getSize( *data );
     //correct the signed bit
     ValueType tempData = *data;
-    if ( typeid(ValueType) == typeid(unsigned long) )
+
+    if( typeid(ValueType) == typeid(unsigned long) )
     {
         //Check if unsigned long is over the limit of XDR
-        if ( ( ( static_cast<long>( *data ) ) ) > ( ( static_cast<long>( 1 ) << ( length * 8 ) ) - 1 ) )
+        if( ( ( static_cast<long>( *data ) ) ) > ( ( static_cast<long>( 1 ) << ( length * 8 ) ) - 1 ) )
         {
             LAMA_THROWEXCEPTION( "unsigned long is to big for XDR (Limit 4 Byte)" )
         }
     }
-    if ( typeid(ValueType) == typeid(long) )
+
+    if( typeid(ValueType) == typeid(long) )
     {
-        if ( std::abs( static_cast<long>( *data ) ) >= ( 1 << 30 ) - 1 )
+        if( std::abs( static_cast<long>( *data ) ) >= ( 1 << 30 ) - 1 )
         {
             LAMA_THROWEXCEPTION( "long is to big for XDR (Limit 4 Byte)" )
         }
+
         int temp = static_cast<long>( *data );
         tempData = static_cast<ValueType>( 0 | temp );
     }
+
     char* dataptr = reinterpret_cast<char*>( &tempData );
-    if ( isLittleEndian() )
+
+    if( isLittleEndian() )
     {
-        for ( int pos = length - 1; pos >= 0; pos-- )
+        for( int pos = length - 1; pos >= 0; pos-- )
         {
             m_filestream.write( dataptr + pos, 1 );
         }
@@ -255,34 +266,35 @@ int XDRFileStream::getSize( const ValueType )
 {
     int size = 0;
 
-    if ( typeid(ValueType) == typeid(double) )
+    if( typeid(ValueType) == typeid(double) )
     {
         size = 8;
     }
-    else if ( typeid(ValueType) == typeid(float) )
+    else if( typeid(ValueType) == typeid(float) )
     {
         size = 4;
     }
-    else if ( typeid(ValueType) == typeid(int) )
+    else if( typeid(ValueType) == typeid(int) )
     {
         size = 4;
     }
-    else if ( typeid(ValueType) == typeid(long) )
+    else if( typeid(ValueType) == typeid(long) )
     {
         size = 4;
     }
-    else if ( typeid(ValueType) == typeid(unsigned long) )
+    else if( typeid(ValueType) == typeid(unsigned long) )
     {
         size = 4;
     }
-    else if ( typeid(ValueType) == typeid(unsigned int) )
+    else if( typeid(ValueType) == typeid(unsigned int) )
     {
         size = 4;
     }
     else
     {
-    	LAMA_THROWEXCEPTION( "XDRFileStream: Type not permitted: " << typeid(ValueType).name() )
+        LAMA_THROWEXCEPTION( "XDRFileStream: Type not permitted: " << typeid(ValueType).name() )
     }
+
     return size;
 }
 

@@ -2,7 +2,7 @@
  * @file L1NormTest.hpp
  *
  * @license
- * Copyright (c) 2009-2013
+ * Copyright (c) 2009-2015
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -52,7 +52,7 @@ BOOST_AUTO_TEST_SUITE( L1NormTest )
 
 LAMA_LOG_DEF_LOGGER( logger, "Test.L1NormTest" )
 
-typedef boost::mpl::list<float,double> test_types;
+typedef boost::mpl::list<float, double> test_types;
 
 /* --------------------------------------------------------------------- */
 
@@ -60,23 +60,17 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( L1NormVectorTests, ValueType, test_types )
 {
     IndexType n = 4;
     ValueType val = 5.0;
-
     DenseVector<ValueType> vec( n, val );
     L1Norm l1norm;
-
     ValueType expected = n * val;
-
     BOOST_CHECK_EQUAL( expected, l1norm( vec ) );
-
     HostWriteAccess<ValueType> hwa( vec.getLocalValues() );
     hwa[0] = 1.0;
     hwa[1] = -2.0;
     hwa[2] = 3.0;
     hwa[3] = -4.0;
     hwa.release();
-
     expected = 10.0;
-
     BOOST_CHECK_EQUAL( expected, l1norm( vec ) );
 }
 
@@ -86,7 +80,6 @@ BOOST_AUTO_TEST_CASE( L1NormScalarTests )
 {
     Scalar scalar( -4.0 );
     L1Norm l1norm;
-
     BOOST_CHECK_EQUAL( Scalar( 4.0 ), l1norm( scalar ) );
 }
 

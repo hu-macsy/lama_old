@@ -2,7 +2,7 @@
  * @file P_DenseMatrixTest.cpp
  *
  * @license
- * Copyright (c) 2009-2013
+ * Copyright (c) 2009-2015
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -56,7 +56,7 @@
 using namespace boost;
 using namespace lama;
 
-typedef boost::mpl::list<double,float> test_types;
+typedef boost::mpl::list<double, float> test_types;
 
 /* --------------------------------------------------------------------- */
 
@@ -84,13 +84,11 @@ LAMA_LOG_DEF_LOGGER( logger, "Test.P_DenseMatrixTest" );
 BOOST_AUTO_TEST_CASE_TEMPLATE( buildTest, ValueType, test_types )
 {
     PartitionId size = comm->getSize();
-
     int numRows = 3 * size;
     int numCols = 5 * size;
-
     scoped_array<ValueType> values( new ValueType[ numRows * numCols ] );
 
-    for ( IndexType i = 0; i < numRows; ++i)
+    for ( IndexType i = 0; i < numRows; ++i )
     {
         for ( IndexType j = 0; j < numCols; ++j )
         {
@@ -104,22 +102,21 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( buildTest, ValueType, test_types )
 
     for ( IndexType i = 0; i < numRows; ++i )
     {
-        for ( IndexType j = 0; j<numCols; ++j )
+        for ( IndexType j = 0; j < numCols; ++j )
         {
             Scalar value = repM.getValue( i , j );
-            Scalar expectedvalue = Scalar( static_cast<ValueType>(values[i * numCols + j]) );
+            Scalar expectedvalue = Scalar( static_cast<ValueType>( values[i * numCols + j] ) );
             LAMA_CHECK_SCALAR_SMALL( value - expectedvalue, ValueType, eps<ValueType>() );
         }
     }
 
-    shared_ptr<Distribution> dist( new BlockDistribution(numRows, comm) );
-    shared_ptr<Distribution> distCol( new BlockDistribution(numCols, comm) );
-
+    shared_ptr<Distribution> dist( new BlockDistribution( numRows, comm ) );
+    shared_ptr<Distribution> distCol( new BlockDistribution( numCols, comm ) );
     DenseMatrix<ValueType> distM( repM, dist, distCol );
 
-    for (IndexType i = 0; i<numRows; ++i)
+    for ( IndexType i = 0; i < numRows; ++i )
     {
-        for (IndexType j = 0; j<numCols; ++j)
+        for ( IndexType j = 0; j < numCols; ++j )
         {
             Scalar value = distM.getValue( i, j );
             Scalar expectedvalue = repM.getValue( i, j );
@@ -144,38 +141,31 @@ void cyclicMultVectorTest( const IndexType chunkSize, const IndexType n )
 
     DenseMatrix<float> repMatrix;
     repMatrix.setRawDenseData( n, n, values.get() );
-
     boost::shared_ptr<Distribution> dist( new CyclicDistribution( n, chunkSize, comm ) );
-
     DenseMatrix<float> distMatrix( repMatrix, dist, dist );
-
     distMatrix.setCommunicationKind( Matrix::ASYNCHRONOUS );
-
     DenseVector<float> x( dist, 1.0f );
-
     DenseVector<float> res( dist, 0.0f );
-
     res = distMatrix * x;
 
     for ( IndexType i = 0; i < n; ++i )
     {
-        BOOST_CHECK_CLOSE( 1.0f, res.getValue(i).getValue<float>(), 1.0 / (10.0*n) );
+        BOOST_CHECK_CLOSE( 1.0f, res.getValue( i ).getValue<float>(), 1.0 / ( 10.0 * n ) );
     }
 
     res = 0.0;
 
     for ( IndexType i = 0; i < n; ++i )
     {
-        BOOST_CHECK_EQUAL( 0.0f, res.getValue(i) );
+        BOOST_CHECK_EQUAL( 0.0f, res.getValue( i ) );
     }
 
     distMatrix.setCommunicationKind( Matrix::SYNCHRONOUS );
-
     res = distMatrix * x;
 
     for ( IndexType i = 0; i < n; ++i )
     {
-        BOOST_CHECK_CLOSE( 1.0f, res.getValue(i).getValue<float>(), 1.0/(10.0*n) );
+        BOOST_CHECK_CLOSE( 1.0f, res.getValue( i ).getValue<float>(), 1.0 / ( 10.0 * n ) );
     }
 }
 
@@ -203,17 +193,16 @@ static Distribution* createDistribution( const IndexType n, CommunicatorPtr comm
         {
             if ( k % size == rank )
             {
-                localIndexes.push_back(k);
+                localIndexes.push_back( k );
             }
         }
 
-        dist = new GeneralDistribution( n, localIndexes, comm);
+        dist = new GeneralDistribution( n, localIndexes, comm );
     }
     else if ( kind == 3 )
     {
         IndexType chunkSize = comm->getSize();
-
-        dist = new CyclicDistribution( n, chunkSize, comm);
+        dist = new CyclicDistribution( n, chunkSize, comm );
     }
     else
     {
@@ -227,17 +216,13 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( maxDiffNormTest, ValueType, test_types )
 {
     DenseMatrix<ValueType> n6m4SMatrix  = TestSparseMatrices::n6m4MatrixE1<ValueType>();
     DenseMatrix<ValueType> n6m4SMatrix1 = 2.5 * n6m4SMatrix;
-
-    shared_ptr<Distribution> dist( new BlockDistribution(n6m4SMatrix1.getNumRows(), comm) );
-    shared_ptr<Distribution> distCol( new BlockDistribution(n6m4SMatrix1.getNumColumns(), comm) );
-
+    shared_ptr<Distribution> dist( new BlockDistribution( n6m4SMatrix1.getNumRows(), comm ) );
+    shared_ptr<Distribution> distCol( new BlockDistribution( n6m4SMatrix1.getNumColumns(), comm ) );
     DenseMatrix<ValueType> distM( n6m4SMatrix1, dist, distCol );
-
     // check matrices with different distributions
-    Scalar maxDiffNorm = n6m4SMatrix.maxDiffNorm(distM);
+    Scalar maxDiffNorm = n6m4SMatrix.maxDiffNorm( distM );
     BOOST_CHECK_EQUAL( maxDiffNorm.getValue<ValueType>(), 13.5 );
-
-    maxDiffNorm = distM.maxDiffNorm(n6m4SMatrix);
+    maxDiffNorm = distM.maxDiffNorm( n6m4SMatrix );
     BOOST_CHECK_EQUAL( maxDiffNorm.getValue<ValueType>(), 13.5 );
 }
 
@@ -245,18 +230,16 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( multVectorTest, ValueType, test_types )
 {
     int numRows = 20;
     int numCols = 31;
-
     // definition of raw data for setup and comparison
-
     scoped_array<ValueType> valuesA( new ValueType[numRows * numCols] );
     scoped_array<ValueType> valuesX( new ValueType[numCols] );
     scoped_array<ValueType> valuesY( new ValueType[numRows] );
 
     // intialise data for the matrix
 
-    for ( IndexType i = 0; i<numRows; ++i )
+    for ( IndexType i = 0; i < numRows; ++i )
     {
-        for ( IndexType j = 0; j<numCols; ++j )
+        for ( IndexType j = 0; j < numCols; ++j )
         {
             ValueType value = static_cast<ValueType> ( 100.0 - ::fabs( 2.0 * i - j ) );
             valuesA[i * numCols + j] = value;
@@ -265,30 +248,28 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( multVectorTest, ValueType, test_types )
 
     // initialize the vector x
 
-    for ( IndexType j = 0; j < numCols; ++j)
+    for ( IndexType j = 0; j < numCols; ++j )
     {
         valuesX[j] = static_cast<ValueType> ( 1.2 * ( j + 1 ) );
     }
 
 // compute Y = A * X for comparison
 
-    for (IndexType i = 0; i<numRows; ++i)
+    for ( IndexType i = 0; i < numRows; ++i )
     {
         valuesY[i] = 0.0;
-        for (IndexType j = 0; j<numCols; ++j)
+
+        for ( IndexType j = 0; j < numCols; ++j )
         {
-            valuesY[i] += static_cast<ValueType> ( valuesA[i*numCols+j]*valuesX[j] );
+            valuesY[i] += static_cast<ValueType> ( valuesA[i * numCols + j] * valuesX[j] );
         }
     }
 
     // construct replicated matrix A and vector X to be redistributed
-
     DenseMatrix<ValueType> rA;
     rA.setRawDenseData( numRows, numCols, valuesA.get() );
-    DenseVector<ValueType> rX( numCols, valuesX.get());
-
+    DenseVector<ValueType> rX( numCols, valuesX.get() );
     // try different distributions for rows and colums
-
     DistributionPtr rowDist;
     DistributionPtr colDist;
 
@@ -303,7 +284,6 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( multVectorTest, ValueType, test_types )
             for ( int k = 0; k < 2; k++ )
             {
                 // redistribute A, X, setup result vector Y
-
                 DenseMatrix<ValueType> A( rA, rowDist, colDist );
                 DenseVector<ValueType> X( rX, colDist );
 
@@ -317,9 +297,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( multVectorTest, ValueType, test_types )
                 }
 
                 LAMA_LOG_INFO( logger, "mult matrix A = " << A << " with vector X = " << X );
-
                 DenseVector<ValueType> result ( A * X );
-
                 BOOST_REQUIRE_EQUAL( result.size(), numRows );
                 BOOST_REQUIRE_EQUAL( result.getDistribution(), *rowDist );
 
@@ -337,25 +315,20 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( multVectorTest, ValueType, test_types )
     }
 
     //Tests for Cyclic Dist speciliatzion in case of a square matrix
-
     {
         PartitionId size = comm->getSize();
         IndexType chunkSize = 7;
-
         IndexType n = 2 * size * chunkSize;
         cyclicMultVectorTest( chunkSize, n );
-
         n = 3 * size * chunkSize + chunkSize - 2;
         cyclicMultVectorTest( chunkSize, n );
-
         //Calculate the size so that each process gets more than one chunk and that not
         //all chunks have the same numbers of chunks and that we have at least von chunk that is not
         // square
-        n = 3 * size * chunkSize + size/2 * chunkSize + chunkSize - 2;
+        n = 3 * size * chunkSize + size / 2 * chunkSize + chunkSize - 2;
         cyclicMultVectorTest( chunkSize, n );
-
         //not all process get a chunk
-        n = size/2 * chunkSize + chunkSize - 2;
+        n = size / 2 * chunkSize + chunkSize - 2;
         cyclicMultVectorTest( chunkSize, n );
     }
 }
@@ -366,21 +339,22 @@ BOOST_AUTO_TEST_CASE( buildSquareTest )
 {
     PartitionId rank = comm->getRank();
     PartitionId size = comm->getSize();
-
     int numRows = 3 * size;
     int numCols = 3 * size;
-
     scoped_array<double> values( new double[numRows * numCols] );
+
     for ( IndexType i = 0; i < numRows; ++i )
     {
         for ( IndexType j = 0; j < numCols; ++j )
         {
             double value = 0.0;
+
             if ( j == i || j + size == i || j - size == i || j + 2 * size == i || j - 2 * size == i
                     || j + ( numRows - 1 ) == i || j - ( numRows - 1 ) == i )
             {
                 value = 1000.0 * ( i + 1 ) + ( j + 1 );
             }
+
             values[i * numCols + j] = value;
         }
     }
@@ -392,7 +366,7 @@ BOOST_AUTO_TEST_CASE( buildSquareTest )
     {
         for ( IndexType j = 0; j < numCols; ++j )
         {
-            BOOST_CHECK_CLOSE( values[i*numCols +j], repM.getValue( i, j ).getValue<double>(), 1e-16 );
+            BOOST_CHECK_CLOSE( values[i * numCols + j], repM.getValue( i, j ).getValue<double>(), 1e-16 );
         }
     }
 
@@ -409,7 +383,6 @@ BOOST_AUTO_TEST_CASE( buildSquareTest )
     }
 
     shared_ptr<Distribution> dist( new GeneralDistribution( numRows, localIndexes, comm ) );
-
     DenseMatrix<double> distM( repM, dist, dist );
 
     for ( IndexType i = 0; i < numRows; ++i )
@@ -427,6 +400,7 @@ BOOST_AUTO_TEST_CASE( buildSquareTest )
 void cyclicDistTestImpl( const IndexType chunkSize, const IndexType n )
 {
     boost::scoped_array<float> values( new float[n * n] );
+
     for ( IndexType i = 0; i < n; ++i )
     {
         for ( IndexType j = 0; j < n; ++j )
@@ -437,9 +411,7 @@ void cyclicDistTestImpl( const IndexType chunkSize, const IndexType n )
 
     DenseMatrix<float> repMatrix;
     repMatrix.setRawDenseData( n, n, values.get() );
-
     boost::shared_ptr<Distribution> dist( new CyclicDistribution( n, chunkSize, comm ) );
-
     DenseMatrix<float> distMatrix( repMatrix, dist, dist );
 
     for ( IndexType i = 0; i < n; i++ )
@@ -457,21 +429,16 @@ void cyclicDistTestImpl( const IndexType chunkSize, const IndexType n )
 BOOST_AUTO_TEST_CASE( cyclicDistTest )
 {
     PartitionId size = comm->getSize();
-
     const IndexType chunkSize = 7;
-
     IndexType n = 2 * size * chunkSize;
     cyclicDistTestImpl( chunkSize, n );
-
     n = 3 * size * chunkSize + chunkSize - 2;
     cyclicDistTestImpl( chunkSize, n );
-
     //Calculate the size so that each process gets more than one chunk and that not
     //all chunks have the same numbers of chunks and that we have at least von chunk that is not
     // square
     n = 3 * size * chunkSize + size / 2 * chunkSize + chunkSize - 2;
     cyclicDistTestImpl( chunkSize, n );
-
     //not all process get a chunk
     n = size / 2 * chunkSize + chunkSize - 2;
     cyclicDistTestImpl( chunkSize, n );

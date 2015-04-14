@@ -2,7 +2,7 @@
  * @file COOUtilsTest.cpp
  *
  * @license
- * Copyright (c) 2009-2013
+ * Copyright (c) 2009-2015
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -66,75 +66,58 @@ template<typename NoType>
 void offsets2iaTest( ContextPtr loc )
 {
     LAMA_INTERFACE_FN( offsets2ia, loc, COOUtils, Counting );
-
     // Test without diagonal property
     {
         const IndexType offsets_values[] =
         { 0, 2, 2, 3, 5 };
         const IndexType ia_values[] =
         { 0, 0, 2, 3, 3 };
-
-        const IndexType numOffsets = sizeof( offsets_values ) / sizeof(IndexType);
+        const IndexType numOffsets = sizeof( offsets_values ) / sizeof( IndexType );
         const IndexType numRows = numOffsets - 1;
-        const IndexType numValues = sizeof( ia_values ) / sizeof(IndexType);
-
+        const IndexType numValues = sizeof( ia_values ) / sizeof( IndexType );
         // verify that offsets and ia fit
-
         BOOST_REQUIRE_EQUAL( numValues, offsets_values[numRows] );
-
         LAMAArray<IndexType> offsets( numOffsets, offsets_values );
         LAMAArray<IndexType> ia;
         ReadAccess<IndexType> rOffsets( offsets, loc );
         const IndexType numDiagonals = 0;
-
         {
             WriteOnlyAccess<IndexType> wIA( ia, loc, numValues );
-
             LAMA_CONTEXT_ACCESS( loc );
-
             offsets2ia( wIA.get(), numValues, rOffsets.get(), numRows, numDiagonals );
         }
-
         HostReadAccess<IndexType> rIA( ia );
-        for( int i = 0; i < numValues; ++i )
+
+        for ( int i = 0; i < numValues; ++i )
         {
             BOOST_CHECK_EQUAL( rIA[i], ia_values[i] );
         }
     }
-
     // Test with diagonal property
     {
         const IndexType offsets_values[] =
         { 0, 2, 5, 7, 9 };
-
         // Result with diagonals = 0: ia_values[] = { 0, 0, 1, 1, 1, 2, 2, 3, 3 };
         // But with 3 diagonals we get this:
         const IndexType ia_values[] =
         { 0, 1, 2, 0, 1, 1, 2, 3, 3 };
-
-        const IndexType numOffsets = sizeof( offsets_values ) / sizeof(IndexType);
+        const IndexType numOffsets = sizeof( offsets_values ) / sizeof( IndexType );
         const IndexType numRows = numOffsets - 1;
-        const IndexType numValues = sizeof( ia_values ) / sizeof(IndexType);
-
+        const IndexType numValues = sizeof( ia_values ) / sizeof( IndexType );
         // verify that offsets and ia fit
-
         BOOST_REQUIRE_EQUAL( numValues, offsets_values[numRows] );
-
         LAMAArray<IndexType> offsets( numOffsets, offsets_values );
         LAMAArray<IndexType> ia;
         ReadAccess<IndexType> rOffsets( offsets, loc );
         const IndexType numDiagonals = 3;
-
         {
             WriteOnlyAccess<IndexType> wIA( ia, loc, numValues );
-
             LAMA_CONTEXT_ACCESS( loc );
-
             offsets2ia( wIA.get(), numValues, rOffsets.get(), numRows, numDiagonals );
         }
-
         HostReadAccess<IndexType> rIA( ia );
-        for( int i = 0; i < numValues; ++i )
+
+        for ( int i = 0; i < numValues; ++i )
         {
             // LAMA_LOG_TRACE( logger,  "rIA[" << i << "] = " << rIA[i] << ", expects " << ia_values[i] )
             BOOST_CHECK_EQUAL( rIA[i], ia_values[i] );
@@ -146,45 +129,36 @@ template<typename NoType>
 void setCSRDataTest( ContextPtr loc )
 {
     LAMA_INTERFACE_FN_TT( setCSRData, loc, COOUtils, Conversions, IndexType, IndexType );
-
     // setCSRData is for conversion of CSR storage to COO storage
     // is usually just a copy but has some reordering if diagonal property is required
     // here we test only for csrJA
     {
         const IndexType offsets_values[] =
         { 0, 2, 5, 7, 9 };
-
         const IndexType csrja_values[] =
         { 0, 5, 1, 4, 5, 2, 0, 4, 3 };
         const IndexType cooja_values[] =
         { 0, 1, 2, 5, 4, 5, 0, 4, 3 };
-
-        const IndexType numOffsets = sizeof( offsets_values ) / sizeof(IndexType);
+        const IndexType numOffsets = sizeof( offsets_values ) / sizeof( IndexType );
         const IndexType numRows = numOffsets - 1;
         const IndexType numDiagonals = 3;
-        const IndexType numValues = sizeof( csrja_values ) / sizeof(IndexType);
-
+        const IndexType numValues = sizeof( csrja_values ) / sizeof( IndexType );
         // verify that offsets and ia fit
-
         BOOST_REQUIRE_EQUAL( numValues, offsets_values[numRows] );
         BOOST_REQUIRE( numDiagonals <= numRows );
-
         LAMAArray<IndexType> offsets( numOffsets, offsets_values );
         LAMAArray<IndexType> csrJA( numValues, csrja_values );
         LAMAArray<IndexType> cooJA;
         ReadAccess<IndexType> rOffsets( offsets, loc );
         ReadAccess<IndexType> rCSRJA( csrJA, loc );
-
         {
             WriteOnlyAccess<IndexType> wCOOJA( cooJA, loc, numValues );
-
             LAMA_CONTEXT_ACCESS( loc );
-
             setCSRData( wCOOJA.get(), rCSRJA.get(), numValues, rOffsets.get(), numRows, numDiagonals );
         }
-
         HostReadAccess<IndexType> rCOOJA( cooJA );
-        for( int i = 0; i < numValues; ++i )
+
+        for ( int i = 0; i < numValues; ++i )
         {
             BOOST_CHECK_EQUAL( rCOOJA[i], cooja_values[i] );
         }

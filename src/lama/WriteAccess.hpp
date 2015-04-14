@@ -2,7 +2,7 @@
  * @file WriteAccess.hpp
  *
  * @license
- * Copyright (c) 2009-2013
+ * Copyright (c) 2009-2015
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -78,7 +78,7 @@ public:
      * one want to write only to the passed wrapped LAMAArray. If the passed LAMAArray is not valid at location and keep
      * is true the LAMAArray will be made valid at location before this constructor returns.
      */
-	WriteAccess( LAMAArray<ValueType>& array, ContextPtr context, const bool keep = true );
+    WriteAccess( LAMAArray<ValueType>& array, ContextPtr context, const bool keep = true );
 
     /**
      * @brief Acquires a WriteAccess to the passed LAMAArray for the passed location with resize.
@@ -102,7 +102,7 @@ public:
      *
      * Attention: this kind of write access assumes that the array is completely new written.
      */
-	WriteAccess( LAMAArray<ValueType>& array, ContextPtr context, const IndexType size, const bool keep = true );
+    WriteAccess( LAMAArray<ValueType>& array, ContextPtr context, const IndexType size, const bool keep = true );
 
     /**
      * @brief Acquires a WriteAccess to the passed LAMAArray for a valid context.
@@ -197,7 +197,7 @@ protected:
 
     LAMA_LOG_DECL_STATIC_LOGGER( logger )
 
-    LAMAArray<ValueType>* mArrayView;
+LAMAArray    <ValueType>* mArrayView;
 
     size_t mIndex; // index for this context access
 };
@@ -220,14 +220,14 @@ public:
     /** Create a write access with keep flag = false. */
 
     WriteOnlyAccess( LAMAArray<ValueType>& array, ContextPtr context )
-        : WriteAccess<ValueType>( array, context, false )
+                    : WriteAccess<ValueType>( array, context, false )
     {
     }
 
     /** Create a write access with keep flag = false and do also a resize. */
 
     WriteOnlyAccess( LAMAArray<ValueType>& array, ContextPtr context, const IndexType size )
-        : WriteAccess<ValueType>( array, context, size, false )
+                    : WriteAccess<ValueType>( array, context, size, false )
     {
     }
 
@@ -240,7 +240,7 @@ public:
 template<typename ValueType>
 inline IndexType WriteAccess<ValueType>::size() const
 {
-    if ( mArrayView )
+    if( mArrayView )
     {
         return mArrayView->size();
     }

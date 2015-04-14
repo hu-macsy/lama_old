@@ -64,31 +64,31 @@ public:
      *  @param[in] matrix  the matrix the distribution is dedicated for
      *  @param[in] weights  weights for the computational load to the processors
      */
-    MetisDistribution( const CommunicatorPtr comm,
-                       const Matrix& matrix,
-                       std::vector<float>& weights );
+    MetisDistribution( const CommunicatorPtr comm, const Matrix& matrix, std::vector<float>& weights );
 
     /** Same as above but with individual weight of each processor. */
 
-    MetisDistribution( const CommunicatorPtr comm,
-                       const Matrix& matrix,
-                       float weight );
+    MetisDistribution( const CommunicatorPtr comm, const Matrix& matrix, float weight );
 
     virtual ~MetisDistribution();
 
     virtual void writeAt( std::ostream& stream ) const;
 
-    static MetisDistribution* create( const CommunicatorPtr communicator, const IndexType globalSize, const float weight = 1.0 );
+    static MetisDistribution* create(
+        const CommunicatorPtr communicator,
+        const IndexType globalSize,
+        const float weight = 1.0 );
 
-    static MetisDistribution* create( const CommunicatorPtr communicator, const Matrix& matrix, const float weight = 1.0 );
+    static MetisDistribution* create(
+        const CommunicatorPtr communicator,
+        const Matrix& matrix,
+        const float weight = 1.0 );
 
 private:
 
     MetisDistribution();
 
-    void computeIt( const CommunicatorPtr comm,
-                    const Matrix& matrix,
-                    std::vector<float>& weights );
+    void computeIt( const CommunicatorPtr comm, const Matrix& matrix, std::vector<float>& weights );
 
     template<typename weightType>
     void callPartitioning(
@@ -109,15 +109,16 @@ private:
 
     LAMA_LOG_DECL_STATIC_LOGGER( logger )
 
-    std::vector<float> mWeights;
+    std    ::vector<float> mWeights;
 
     void normWeights( std::vector<float>& weights );
 
-    static bool registerCreator();   //!< used in static initialization for registration
+    static bool registerCreator(); //!< used in static initialization for registration
 
-    static bool initialized;  //!< static initialization used for registration of create in Distribution factory
+    static bool initialized;//!< static initialization used for registration of create in Distribution factory
 };
 
-} // namespace lama
+}
+// namespace lama
 
 #endif // LAMA_METISDISTRIBUTION_HPP_

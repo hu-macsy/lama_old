@@ -2,7 +2,7 @@
  * @file SimpleAMGTest.cpp
  *
  * @license
- * Copyright (c) 2009-2013
+ * Copyright (c) 2009-2015
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -59,7 +59,7 @@
 using namespace boost;
 using namespace lama;
 
-typedef boost::mpl::list<float,double> test_types;
+typedef boost::mpl::list<float, double> test_types;
 
 /* ------------------------------------------------------------------------- */
 
@@ -73,37 +73,29 @@ template<typename MatrixType>
 void solverTestMethod( ContextPtr context )
 {
     typedef typename MatrixType::MatrixValueType ValueType;
-
     LoggerPtr consoleLogger(
         new CommonLogger( "<SimpleAMG>: ", LogLevel::noLogging, LoggerWriteBehaviour::toConsoleOnly,
                           std::auto_ptr<Timer>( new Timer() ) ) );
-
     EquationHelper::EquationSystem<ValueType> system = EquationHelper::get8x8SystemA<ValueType>();
-
     DenseVector<ValueType> solution( system.coefficients.getNumRows(), 0.0 );
     const DenseVector<ValueType> rhs( system.rhs );
-
     const DenseVector<ValueType> refSolution( system.solution );
     MatrixType coefficients( system.coefficients );
-
     coefficients.setContext( context );
     LAMA_LOG_INFO( logger, "SimpleAMGTest uses context = " << context->getType() );
-
     SimpleAMG amg( "AMGTest solver", consoleLogger );
-
     CriterionPtr minCriterion( new IterationCount( 10 ) );
     amg.setStoppingCriterion( minCriterion );
-
     amg.setMaxLevels( 2 );
     amg.initialize( coefficients );
     amg.solve( solution, rhs );
-
     DenseVector<ValueType> diff( solution - refSolution );
     Scalar maxDiff = maxNorm( diff );
     BOOST_CHECK( maxDiff.getValue<ValueType>() < 1e-5 );
 }
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( solverTest, ValueType, test_types ) {
+BOOST_AUTO_TEST_CASE_TEMPLATE( solverTest, ValueType, test_types )
+{
     CONTEXTLOOP()
     {
         GETCONTEXT( context );
@@ -121,23 +113,16 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( solverTest, ValueType, test_types ) {
 BOOST_AUTO_TEST_CASE_TEMPLATE ( testDefaultCriterionSet, ValueType, test_types )
 {
     SimpleAMG amg( "SimpleAMG" );
-
     const IndexType N1 = 4;
     const IndexType N2 = 4;
-
     CSRSparseMatrix<ValueType> coefficients;
     MatrixCreator<ValueType>::buildPoisson2D( coefficients, 9, N1, N2 );
-
     const DenseVector<ValueType> rhs( coefficients.getNumRows(), 1.0 );
-
     DenseVector<ValueType> solution( coefficients.getNumRows(), 1.0 );
-
     DenseVector<ValueType> exactSolution( solution );
     amg.setMaxLevels( 2 );
     amg.initialize( coefficients );
-
     amg.solve( solution, rhs );
-
     BOOST_CHECK_EQUAL( amg.getIterationCount(), 1 );
 }
 
@@ -154,9 +139,7 @@ BOOST_AUTO_TEST_CASE( writeAtTest )
 BOOST_AUTO_TEST_CASE( copyTest )
 {
     SimpleAMG amgSolver1( "AMGTestSolver" );
-
     SolverPtr solverptr = amgSolver1.copy();
-
     BOOST_CHECK_EQUAL( solverptr->getId(), "AMGTestSolver" );
 }
 /* ------------------------------------------------------------------------- */

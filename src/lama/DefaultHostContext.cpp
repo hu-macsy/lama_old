@@ -2,7 +2,7 @@
  * @file DefaultHostContext.cpp
  *
  * @license
- * Copyright (c) 2009-2013
+ * Copyright (c) 2009-2015
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -63,12 +63,12 @@ DefaultHostContext::DefaultHostContext()
 
 DefaultHostContext::~DefaultHostContext()
 {
-    if ( mNumberOfAllocates > 0 )
+    if( mNumberOfAllocates > 0 )
     {
         LAMA_LOG_ERROR( logger, *this << ": " << mNumberOfAllocates << " allocate without free" )
     }
 
-    if ( mNumberOfAllocatedBytes != 0 )
+    if( mNumberOfAllocatedBytes != 0 )
     {
         LAMA_LOG_ERROR( logger,
                         *this << ": number of allocated bytes = " << mNumberOfAllocatedBytes << ", mismatch of free/allocate sizes" )
@@ -83,9 +83,9 @@ void DefaultHostContext::writeAt( std::ostream& stream ) const
 
     int nThreads = 1;
 
-    #pragma omp parallel
+#pragma omp parallel
     {
-        #pragma omp master
+#pragma omp master
         {
             nThreads = omp_get_num_threads();
         }
@@ -96,13 +96,13 @@ void DefaultHostContext::writeAt( std::ostream& stream ) const
 
 void* DefaultHostContext::allocate( const size_t size ) const
 {
-    LAMA_REGION( "Host.allocate" )
+LAMA_REGION( "Host.allocate" )
 
-    LAMA_ASSERT_ERROR( size > 0, "allocate with size = " << size << " should not be done" )
+        LAMA_ASSERT_ERROR( size > 0, "allocate with size = " << size << " should not be done" )
 
     void* pointer = malloc( size );
 
-    if ( pointer == NULL )
+    if( pointer == NULL )
     {
         LAMA_THROWEXCEPTION( "malloc failed for size = " << size )
     }
@@ -145,9 +145,9 @@ void DefaultHostContext::free( ContextData& contextData ) const
 
 void DefaultHostContext::memcpy( void* dst, const void* src, const size_t size ) const
 {
-    LAMA_REGION( "Host.memcpy" )
+LAMA_REGION( "Host.memcpy" )
 
-    LAMA_LOG_DEBUG( logger, "memcpy: " << dst << " <- " << src << ", size = " << size )
+        LAMA_LOG_DEBUG( logger, "memcpy: " << dst << " <- " << src << ", size = " << size )
     ::memcpy( dst, src, size );
 }
 
@@ -168,10 +168,7 @@ void DefaultHostContext::memcpy( ContextData& dst, const ContextData& src, const
     memcpy( dst.pointer, src.pointer, size );
 }
 
-SyncToken* DefaultHostContext::memcpyAsync(
-    ContextData& dst,
-    const ContextData& src,
-    const size_t size ) const
+SyncToken* DefaultHostContext::memcpyAsync( ContextData& dst, const ContextData& src, const size_t size ) const
 {
     LAMA_ASSERT_ERROR( dst.context->getType() == getType() && src.context->getType() == getType(),
                        "Can not copy from "<< *(src.context) << " to " << *(dst.context) )

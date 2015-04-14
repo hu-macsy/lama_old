@@ -2,7 +2,7 @@
  * @file FileLogger.cpp
  *
  * @license
- * Copyright (c) 2009-2013
+ * Copyright (c) 2009-2015
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -44,7 +44,7 @@ namespace lama
 
 FileLogger::~FileLogger()
 {
-    if ( mFileStream.is_open() )
+    if( mFileStream.is_open() )
     {
         mFileStream.close();
     }
@@ -63,16 +63,18 @@ void FileLogger::logMessage( const std::string& message )
 
 void FileLogger::setLogFile( const std::string& logFileName )
 {
-    if ( !mFileStream.is_open() )
+    if( !mFileStream.is_open() )
     {
         mFileStream.open( logFileName.c_str(), std::fstream::out );
-        if ( mFileStream.fail() )
+
+        if( mFileStream.fail() )
         {
             LAMA_THROWEXCEPTION( "Could not open log file " << logFileName );
         }
+
         mFileName = logFileName;
     }
-    else if ( logFileName != mFileName )
+    else if( logFileName != mFileName )
     {
         LAMA_THROWEXCEPTION( "Tried to set the log file of the logger to two different files." );
     }
@@ -80,7 +82,7 @@ void FileLogger::setLogFile( const std::string& logFileName )
 
 void FileLogger::closeLogFile()
 {
-    if ( mFileStream.is_open() )
+    if( mFileStream.is_open() )
     {
         mFileStream.close();
         mFileName = "";

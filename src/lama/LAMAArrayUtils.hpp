@@ -2,7 +2,7 @@
  * @file LAMAArrayUtils.hpp
  *
  * @license
- * Copyright (c) 2009-2013
+ * Copyright (c) 2009-2015
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -79,7 +79,7 @@ public:
 
     template<typename ValueType1>
     static void assignScalar( LAMAArray<ValueType1>& target, const Scalar& value, ContextPtr context )
-    __attribute__( ( noinline ) );
+                    __attribute__( ( noinline ) );
 
     static void assignScalar( _LAMAArray& target, const Scalar& value, ContextPtr context );
 
@@ -96,25 +96,26 @@ public:
     /** Scaled assignment on LAMAArray.
      *
      *  @param[out] result  output array
-     *  @param[in]  beta    scaling factor 
-     *  @param[in]  y       source array 
+     *  @param[in]  beta    scaling factor
+     *  @param[in]  y       source array
      *  @param[in]  context location where operation is done
      */
 
     template<typename ValueType>
-    static void assignScaled( LAMAArray<ValueType>& result,
-                              const ValueType beta,
-                              const LAMAArray<ValueType>& y,
-                              ContextPtr context );
+    static void assignScaled(
+        LAMAArray<ValueType>& result,
+        const ValueType beta,
+        const LAMAArray<ValueType>& y,
+        ContextPtr context );
 
 private:
 
     template<typename ValueType>
     static void assignImpl1( LAMAArray<ValueType>& target, const _LAMAArray& source, ContextPtr context );
 
-    LAMA_LOG_DECL_STATIC_LOGGER( logger )
-};
+    LAMA_LOG_DECL_STATIC_LOGGER( logger )};
 
-} // namespace
+}
+// namespace
 
 #endif // LAMA_LAMA_ARRAY_UTILS_HPP_

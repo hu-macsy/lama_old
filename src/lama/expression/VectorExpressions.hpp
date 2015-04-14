@@ -2,7 +2,7 @@
  * @file VectorExpressions.hpp
  *
  * @license
- * Copyright (c) 2009-2013
+ * Copyright (c) 2009-2015
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -41,11 +41,11 @@ namespace lama
 {
 
 /**
- * @brief Create a symbolic expression for the product alpha * vectorX                 
+ * @brief Create a symbolic expression for the product alpha * vectorX
  *
  * @param[in] alpha     The scalar.
  * @param[in] vectorX   The vector.
- * @return              Symbolic expression alpha * vectorX        
+ * @return              Symbolic expression alpha * vectorX
  */
 
 inline Expression_SV operator*( const Scalar& alpha, const Vector& vectorX )
@@ -58,7 +58,7 @@ inline Expression_SV operator*( const Scalar& alpha, const Vector& vectorX )
  *
  * @param[in] vectorX   The vector.
  * @param[in] alpha     The scalar.
- * @return              Symbolic expression alpha * vectorX       
+ * @return              Symbolic expression alpha * vectorX
  *
  * Note: due to normalization the arguments are switched in the symbolic expression
  */
@@ -73,12 +73,12 @@ inline Expression_SV operator*( const Vector& vectorX, const Scalar& alpha )
  *
  * @param[in] vector   The vector.
  * @param[in] alpha    The scalar.
- * @return             Symbolic expression [1.0/alpha] * x      
+ * @return             Symbolic expression [1.0/alpha] * x
  */
 
 inline Expression_SV operator/( const Vector& vector, const Scalar& alpha )
 {
-    // build 1.0/ alpha as new scalar for a symbolic expression Scalar * Vector 
+    // build 1.0/ alpha as new scalar for a symbolic expression Scalar * Vector
 
     return Expression_SV( Scalar( 1 ) / alpha, vector );
 }
@@ -123,7 +123,7 @@ inline Expression_SV_SV operator+( const Vector& vector, const Expression_SV& ex
 
 inline Expression_SV_SV operator+( const Expression_SV& exp, const Vector& vector )
 {
-    return Expression_SV_SV( exp, Expression_SV( Scalar( 1 ), vector) );
+    return Expression_SV_SV( exp, Expression_SV( Scalar( 1 ), vector ) );
 }
 
 /**
@@ -154,8 +154,7 @@ inline Expression_SV_SV operator+( const Expression_SV& exp1, const Expression_S
 
 inline Expression_SV_SV operator-( const Vector& x, const Vector& y )
 {
-    return Expression_SV_SV( Expression_SV( Scalar( 1 ), x ), 
-                             Expression_SV( Scalar( -1 ), y ) );
+    return Expression_SV_SV( Expression_SV( Scalar( 1 ), x ), Expression_SV( Scalar( -1 ), y ) );
 }
 
 /**
@@ -169,7 +168,7 @@ inline Expression_SV_SV operator-( const Vector& x, const Vector& y )
 
 inline Expression_SV_SV operator-( const Expression_SV& exp, const Vector& vector )
 {
-    return Expression_SV_SV( exp, Expression_SV( -1.0, vector  ));
+    return Expression_SV_SV( exp, Expression_SV( -1.0, vector ) );
 }
 
 /**
@@ -184,7 +183,7 @@ inline Expression_SV_SV operator-( const Vector& vector, const Expression_SV& ex
 {
     Expression_SV minusExp( -exp.getArg1(), exp.getArg2() );
 
-    return Expression_SV_SV( Expression_SV( 1.0, vector ) , minusExp );
+    return Expression_SV_SV( Expression_SV( 1.0, vector ), minusExp );
 }
 
 /**

@@ -2,7 +2,7 @@
  * @file LoggerProvider.cpp
  *
  * @license
- * Copyright (c) 2009-2013
+ * Copyright (c) 2009-2015
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -78,7 +78,6 @@ Logger& LoggerProvider::getInstance( const std::string& name ) const
     }
 
     std::vector<std::string> tokens;
-
     // Skip delimiters at beginning.
     std::string::size_type lastPos = name.find_first_not_of( ".", 0 );
     // Find first "non-delimiter".
@@ -86,7 +85,6 @@ Logger& LoggerProvider::getInstance( const std::string& name ) const
 
     while ( std::string::npos != pos || std::string::npos != lastPos )
     {
-
         // Found a token, add it to the vector.
         tokens.push_back( name.substr( lastPos, pos - lastPos ) );
         // Skip delimiters.  Note the "not_of"
@@ -98,14 +96,11 @@ Logger& LoggerProvider::getInstance( const std::string& name ) const
     if ( !mLoggerCreator )
     {
         std::ostringstream errorMsg;
-
         errorMsg << "no LoggerCreator set in LoggerProvider" << ", cannot get instance for " << name;
-
         throw std::runtime_error( errorMsg.str() );
     }
 
     // now find the logger in the hierarchy tree
-
     Logger* instance = &mLoggerCreator->getRoot();
 
     for ( size_t i = 0; i < tokens.size(); i++ )
@@ -132,7 +127,6 @@ Logger& LoggerProvider::getInstance( const std::string& name ) const
         }
 
         // go to the next deeper level
-
         instance = son;
     }
 

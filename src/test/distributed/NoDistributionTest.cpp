@@ -2,7 +2,7 @@
  * @file NoDistributionTest.cpp
  *
  * @license
- * Copyright (c) 2009-2013
+ * Copyright (c) 2009-2015
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -56,10 +56,8 @@ struct NoDistributionTestConfig
     NoDistributionTestConfig()
     {
         comm = CommunicatorFactory::get( "MPI" );
-
         rank = comm->getRank();
         size = comm->getSize();
-
         blockSize = 17;
         dist = DistributionPtr( new NoDistribution( blockSize * size ) );
     }
@@ -87,7 +85,6 @@ LAMA_LOG_DEF_LOGGER( logger, "Test.NoDistributionTest" );
 
 BOOST_AUTO_TEST_CASE( CtorTest )
 {
-
     DistributionPtr nodist( new NoDistribution( 20 ) );
     BOOST_CHECK_EQUAL( nodist->getCommunicatorPtr()->getType(), "none" );
     BOOST_CHECK_EQUAL( nodist->getGlobalSize(), 20 );
@@ -126,9 +123,8 @@ BOOST_AUTO_TEST_CASE( isEqualTest )
     DistributionPtr nodist2( nodist1 );
     DistributionPtr nodist3( new NoDistribution( 1 ) );
     DistributionPtr nodist4( new NoDistribution( 2 ) );
-
-    BOOST_CHECK( (*nodist1).isEqual( *nodist2 ) );
-    BOOST_CHECK( (*nodist1).isEqual( *nodist3 ) );
-    BOOST_CHECK( !(*nodist1).isEqual( *nodist4 ) );
+    BOOST_CHECK( ( *nodist1 ).isEqual( *nodist2 ) );
+    BOOST_CHECK( ( *nodist1 ).isEqual( *nodist3 ) );
+    BOOST_CHECK( !( *nodist1 ).isEqual( *nodist4 ) );
 }
 /* --------------------------------------------------------------------- */BOOST_AUTO_TEST_SUITE_END();

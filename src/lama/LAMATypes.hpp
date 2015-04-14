@@ -2,7 +2,7 @@
  * @file LAMATypes.hpp
  *
  * @license
- * Copyright (c) 2009-2013
+ * Copyright (c) 2009-2015
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -95,7 +95,7 @@ typedef int PartitionId;
  */
 static const PartitionId nPartition = std::numeric_limits<PartitionId>::max();
 
-}  // namespace lama
+} // namespace lama
 
 // Number of supported arithmetic types, maximal number is currently 4
 

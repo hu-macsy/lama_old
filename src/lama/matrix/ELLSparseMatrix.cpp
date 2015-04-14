@@ -2,7 +2,7 @@
  * @file ELLSparseMatrix.cpp
  *
  * @license
- * Copyright (c) 2009-2013
+ * Copyright (c) 2009-2015
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -44,7 +44,8 @@ namespace lama
 
 /* -------------------------------------------------------------------------- */
 
-LAMA_LOG_DEF_TEMPLATE_LOGGER( template<typename ValueType>, ELLSparseMatrix<ValueType>::logger, "Matrix.SparseMatrix.ELLSparseMatrix" )
+LAMA_LOG_DEF_TEMPLATE_LOGGER( template<typename ValueType>, ELLSparseMatrix<ValueType>::logger,
+                              "Matrix.SparseMatrix.ELLSparseMatrix" )
 
 /* -------------------------------------------------------------------------- */
 
@@ -56,7 +57,7 @@ boost::shared_ptr<MatrixStorage<ValueType> > ELLSparseMatrix<ValueType>::createS
 
 template<typename ValueType>
 boost::shared_ptr<MatrixStorage<ValueType> > ELLSparseMatrix<ValueType>::createStorage(
-    const IndexType numRows, 
+    const IndexType numRows,
     const IndexType numColumns )
 {
     shared_ptr<MatrixStorage<ValueType> > storage( new StorageType() );
@@ -91,8 +92,8 @@ ELLSparseMatrix<ValueType>::ELLSparseMatrix( const IndexType numRows, const Inde
 template<typename ValueType>
 ELLSparseMatrix<ValueType>::ELLSparseMatrix( DistributionPtr rowDist, DistributionPtr colDist )
 
-    : SparseMatrix<ValueType>( createStorage( rowDist->getLocalSize(), colDist->getGlobalSize() ),
-                                   rowDist, colDist )
+    : SparseMatrix<ValueType>( createStorage( rowDist->getLocalSize(), colDist->getGlobalSize() ), rowDist,
+                               colDist )
 {
     // Note: splitting of local rows to local + halo part is done by SparseMatrix constructor
 }
@@ -122,7 +123,7 @@ ELLSparseMatrix<ValueType>::ELLSparseMatrix( const Matrix& other, bool transpose
     this->setContext( other.getContextPtr() );
     this->setCommunicationKind( other.getCommunicationKind() );
 
-    if ( transposeFlag )
+    if( transposeFlag )
     {
         SparseMatrix<ValueType>::assignTranspose( other );
     }
@@ -135,10 +136,7 @@ ELLSparseMatrix<ValueType>::ELLSparseMatrix( const Matrix& other, bool transpose
 /* -------------------------------------------------------------------------- */
 
 template<typename ValueType>
-ELLSparseMatrix<ValueType>::ELLSparseMatrix(
-    const Matrix& other, 
-    DistributionPtr rowDist, 
-    DistributionPtr colDist )
+ELLSparseMatrix<ValueType>::ELLSparseMatrix( const Matrix& other, DistributionPtr rowDist, DistributionPtr colDist )
 
     : SparseMatrix<ValueType>( createStorage() )
 
@@ -170,8 +168,8 @@ ELLSparseMatrix<ValueType>::ELLSparseMatrix( const _MatrixStorage& globalData )
 
 template<typename ValueType>
 ELLSparseMatrix<ValueType>::ELLSparseMatrix(
-    const _MatrixStorage& localData, 
-    DistributionPtr rowDist, 
+    const _MatrixStorage& localData,
+    DistributionPtr rowDist,
     DistributionPtr colDist )
 
     : SparseMatrix<ValueType>( createStorage() )
@@ -183,12 +181,12 @@ ELLSparseMatrix<ValueType>::ELLSparseMatrix(
 /* -------------------------------------------------------------------------- */
 
 template<typename ValueType>
-ELLSparseMatrix<ValueType>::ELLSparseMatrix( const Expression_SM& expression ) 
+ELLSparseMatrix<ValueType>::ELLSparseMatrix( const Expression_SM& expression )
 
     : SparseMatrix<ValueType>( createStorage() )
 
 {
-    const Matrix& master = expression.getArg2(); 
+    const Matrix& master = expression.getArg2();
 
     SparseMatrix<ValueType>::setContext( master.getContextPtr() );
     SparseMatrix<ValueType>::setCommunicationKind( master.getCommunicationKind() );
@@ -199,12 +197,12 @@ ELLSparseMatrix<ValueType>::ELLSparseMatrix( const Expression_SM& expression )
 /* -------------------------------------------------------------------------- */
 
 template<typename ValueType>
-ELLSparseMatrix<ValueType>::ELLSparseMatrix( const Expression_SMM& expression ) 
+ELLSparseMatrix<ValueType>::ELLSparseMatrix( const Expression_SMM& expression )
 
     : SparseMatrix<ValueType>( createStorage() )
 
 {
-    const Matrix& master = expression.getArg1().getArg2(); 
+    const Matrix& master = expression.getArg1().getArg2();
 
     SparseMatrix<ValueType>::setContext( master.getContextPtr() );
     SparseMatrix<ValueType>::setCommunicationKind( master.getCommunicationKind() );
@@ -382,9 +380,9 @@ bool ELLSparseMatrix<ValueType>::registerCreator()
 {
     MatrixStorageFormat storageFormat = Format::ELL;
 
-    // conversion needed even if createMatrix has only covariant return type 
+    // conversion needed even if createMatrix has only covariant return type
 
-    Matrix::CreateFn create = ( Matrix::CreateFn ) ( &ELLSparseMatrix<ValueType>::createMatrix );
+    Matrix::CreateFn create = (Matrix::CreateFn) ( &ELLSparseMatrix<ValueType>::createMatrix );
 
     Matrix::addCreator( storageFormat, Scalar::getType<ValueType>(), create );
 
@@ -399,17 +397,16 @@ bool ELLSparseMatrix<ValueType>::initialized = registerCreator();
 /* ========================================================================= */
 
 #define LAMA_ELL_SPARSE_MATRIX_INSTANTIATE(z, I, _)                        \
-                                                                           \
-template<>                                                                 \
-const char* ELLSparseMatrix<ARITHMETIC_TYPE##I>::typeName()                \
-{                                                                          \
-    return "ELLSparseMatrix<ARITHMETIC_TYPE##I>";                          \
-}                                                                          \
-                                                                           \
-template class LAMA_DLL_IMPORTEXPORT ELLSparseMatrix<ARITHMETIC_TYPE##I> ;  
+    \
+    template<>                                                                 \
+    const char* ELLSparseMatrix<ARITHMETIC_TYPE##I>::typeName()                \
+    {                                                                          \
+        return "ELLSparseMatrix<ARITHMETIC_TYPE##I>";                          \
+    }                                                                          \
+    \
+    template class LAMA_DLL_IMPORTEXPORT ELLSparseMatrix<ARITHMETIC_TYPE##I> ;
 
 BOOST_PP_REPEAT( ARITHMETIC_TYPE_CNT, LAMA_ELL_SPARSE_MATRIX_INSTANTIATE, _ )
-
 
 #undef LAMA_ELL_SPARSE_MATRIX_INSTANTIATE
 

@@ -2,7 +2,7 @@
  * @file Timer.hpp
  *
  * @license
- * Copyright (c) 2009-2013
+ * Copyright (c) 2009-2015
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -89,7 +89,7 @@ public:
      * @brief Stops and resets the timer.
      *
      * @param[in] timerId   the ID of the timer
-     * 
+     *
      * Note: this routine might be typically called after a call of getTime
      */
     void stopAndReset( const std::string& timerId );
@@ -98,7 +98,7 @@ public:
      * @brief Reset a timer.
      *
      * @param[in] timerId  the ID of an existing timer
-     * 
+     *
      * The timer might also be an already started timer.
      */
     void reset( const std::string& timerId );

@@ -2,7 +2,7 @@
  * @file BLAS_BLAS3.cpp
  *
  * @license
- * Copyright (c) 2009-2013
+ * Copyright (c) 2009-2015
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -55,54 +55,120 @@ typedef int F77Int;
 
 template<typename ValueType>
 static inline
-void wrapperGemm( const CBLAS_ORDER order, const CBLAS_TRANSPOSE transA,
-                  const CBLAS_TRANSPOSE transB, const int m, const int n,
-                  const int k, const ValueType alpha, const ValueType* a, const int lda,
-                  const ValueType* b, const int ldb, const ValueType beta, ValueType* c, const int ldc );
+void wrapperGemm(
+    const CBLAS_ORDER order,
+    const CBLAS_TRANSPOSE transA,
+    const CBLAS_TRANSPOSE transB,
+    const int m,
+    const int n,
+    const int k,
+    const ValueType alpha,
+    const ValueType* a,
+    const int lda,
+    const ValueType* b,
+    const int ldb,
+    const ValueType beta,
+    ValueType* c,
+    const int ldc );
 
 template<>
-void wrapperGemm( const CBLAS_ORDER order, const CBLAS_TRANSPOSE transA,
-                  const CBLAS_TRANSPOSE transB, const int m, const int n,
-                  const int k, const float alpha, const float* a, const int lda,
-                  const float* b, const int ldb, const float beta, float* c, const int ldc )
+void wrapperGemm(
+    const CBLAS_ORDER order,
+    const CBLAS_TRANSPOSE transA,
+    const CBLAS_TRANSPOSE transB,
+    const int m,
+    const int n,
+    const int k,
+    const float alpha,
+    const float* a,
+    const int lda,
+    const float* b,
+    const int ldb,
+    const float beta,
+    float* c,
+    const int ldc )
 {
     cblas_sgemm( order, transA, transB, m, n, k, alpha, a, lda, b, ldb, beta, c, ldc );
 }
 
 template<>
-void wrapperGemm( const CBLAS_ORDER order, const CBLAS_TRANSPOSE transA,
-                  const CBLAS_TRANSPOSE transB, const int m, const int n,
-                  const int k, const double alpha, const double* a, const int lda,
-                  const double* b, const int ldb, const double beta, double* c, const int ldc )
+void wrapperGemm(
+    const CBLAS_ORDER order,
+    const CBLAS_TRANSPOSE transA,
+    const CBLAS_TRANSPOSE transB,
+    const int m,
+    const int n,
+    const int k,
+    const double alpha,
+    const double* a,
+    const int lda,
+    const double* b,
+    const int ldb,
+    const double beta,
+    double* c,
+    const int ldc )
 {
     cblas_dgemm( order, transA, transB, m, n, k, alpha, a, lda, b, ldb, beta, c, ldc );
 }
 
 template<>
-void wrapperGemm( const CBLAS_ORDER order, const CBLAS_TRANSPOSE transA,
-                  const CBLAS_TRANSPOSE transB, const int m, const int n,
-                  const int k, const ComplexFloat alpha, const ComplexFloat* a, const int lda,
-                  const ComplexFloat* b, const int ldb, const ComplexFloat beta, ComplexFloat* c, const int ldc )
+void wrapperGemm(
+    const CBLAS_ORDER order,
+    const CBLAS_TRANSPOSE transA,
+    const CBLAS_TRANSPOSE transB,
+    const int m,
+    const int n,
+    const int k,
+    const ComplexFloat alpha,
+    const ComplexFloat* a,
+    const int lda,
+    const ComplexFloat* b,
+    const int ldb,
+    const ComplexFloat beta,
+    ComplexFloat* c,
+    const int ldc )
 {
     // Attention: alpha and beta are passed by a pointer
     cblas_cgemm( order, transA, transB, m, n, k, &alpha, a, lda, b, ldb, &beta, c, ldc );
 }
 
 template<>
-void wrapperGemm( const CBLAS_ORDER order, const CBLAS_TRANSPOSE transA,
-                  const CBLAS_TRANSPOSE transB, const int m, const int n,
-                  const int k, const ComplexDouble alpha, const ComplexDouble* a, const int lda,
-                  const ComplexDouble* b, const int ldb, const ComplexDouble beta, ComplexDouble* c, const int ldc )
+void wrapperGemm(
+    const CBLAS_ORDER order,
+    const CBLAS_TRANSPOSE transA,
+    const CBLAS_TRANSPOSE transB,
+    const int m,
+    const int n,
+    const int k,
+    const ComplexDouble alpha,
+    const ComplexDouble* a,
+    const int lda,
+    const ComplexDouble* b,
+    const int ldb,
+    const ComplexDouble beta,
+    ComplexDouble* c,
+    const int ldc )
 {
     // Attention: alpha and beta are passed by a pointer
     cblas_zgemm( order, transA, transB, m, n, k, &alpha, a, lda, b, ldb, &beta, c, ldc );
 }
 
 template<>
-void wrapperGemm( const CBLAS_ORDER, const CBLAS_TRANSPOSE,
-                  const CBLAS_TRANSPOSE, const int, const int,
-                  const int, const LongDouble, const LongDouble*, const int,
-                  const LongDouble*, const int, const LongDouble, LongDouble*, const int )
+void wrapperGemm(
+    const CBLAS_ORDER,
+    const CBLAS_TRANSPOSE,
+    const CBLAS_TRANSPOSE,
+    const int,
+    const int,
+    const int,
+    const LongDouble,
+    const LongDouble*,
+    const int,
+    const LongDouble*,
+    const int,
+    const LongDouble,
+    LongDouble*,
+    const int )
 {
     LAMA_THROWEXCEPTION( "LongDouble not supported by BLAS, please set LAMA_USE_BLAS=0" )
 }
@@ -127,12 +193,10 @@ void BLAS_BLAS3::gemm(
 {
     LAMA_REGION( "BLAS.BLAS3.gemm" )
 
-    LAMA_LOG_INFO( logger, "gemm<" << Scalar::getType<ValueType>() << ">: "
-                   << "m = " << m << ", n = " << n << ", k = " << k 
-                    << ", lda = " << lda << ", ldb = " << ldb << ", ldc = " << ldc 
-                    << ", alpha = " << alpha << ", beta = " << beta )
+    LAMA_LOG_INFO( logger,
+                   "gemm<" << Scalar::getType<ValueType>() << ">: " << "m = " << m << ", n = " << n << ", k = " << k << ", lda = " << lda << ", ldb = " << ldb << ", ldc = " << ldc << ", alpha = " << alpha << ", beta = " << beta )
 
-    if ( syncToken )
+    if( syncToken )
     {
         LAMA_LOG_WARN( logger, "no asynchronous execution for openmp possible at this level." )
     }
@@ -148,30 +212,30 @@ void BLAS_BLAS3::setInterface( BLASInterface& BLAS )
 {
     // using BLAS wrappers might be disabled explicitly by environment variable
 
-    int  level   = 0;
+    int level = 0;
 
     bool useBLAS = Settings::getEnvironment( level, "LAMA_USE_BLAS" );
 
-    if ( !useBLAS || ( level <= 0 ) )
+    if( !useBLAS || ( level <= 0 ) )
     {
         LAMA_LOG_INFO( logger, "BLAS3 wrapper routines for Host Interface are disabled (LAMA_USE_BLAS not set or 0)" )
         return;
     }
-    else if ( level > 2 )
+    else if( level > 2 )
     {
-        LAMA_LOG_INFO( logger, "BLAS3 wrapper routines for Host Interface are disabled (LAMA_USE_BLAS = " << level << ")" )
+        LAMA_LOG_INFO( logger,
+                       "BLAS3 wrapper routines for Host Interface are disabled (LAMA_USE_BLAS = " << level << ")" )
         return;
     }
 
     LAMA_LOG_INFO( logger, "set BLAS3 wrapper routines for Host Context in Interface" )
 
-
-    // Note: macro takes advantage of same name for routines and type definitions 
+    // Note: macro takes advantage of same name for routines and type definitions
     //       ( e.g. routine CUDABLAS1::sum<ValueType> is set for BLAS::BLAS1::sum variable
 
 #define LAMA_BLAS3_REGISTER(z, I, _)                                            \
     LAMA_INTERFACE_REGISTER1_T( BLAS, gemm, ARITHMETIC_TYPE##I )                \
-     
+
     BOOST_PP_REPEAT( ARITHMETIC_TYPE_CNT, LAMA_BLAS3_REGISTER, _ )
 
 #undef LAMA_BLAS3_REGISTER

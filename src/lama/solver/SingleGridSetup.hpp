@@ -2,7 +2,7 @@
  * @file SingleGridSetup.hpp
  *
  * @license
- * Copyright (c) 2009-2013
+ * Copyright (c) 2009-2015
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -103,7 +103,7 @@ private:
 
     LAMA_LOG_DECL_STATIC_LOGGER( logger )
 
-    SolverPtr mSolver;
+    SolverPtr    mSolver;
     std::auto_ptr<Matrix> mIdentity;
 
     std::auto_ptr<Vector> mSolutionVector;

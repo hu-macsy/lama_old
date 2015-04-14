@@ -2,7 +2,7 @@
  * @file UtilsInterface.hpp
  *
  * @license
- * Copyright (c) 2009-2013
+ * Copyright (c) 2009-2015
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -43,7 +43,8 @@
 namespace lama
 {
 
-class SyncToken;  // forward declaration 
+class SyncToken;
+// forward declaration
 
 /** Structure with pointers for all Utils methods. */
 
@@ -61,7 +62,7 @@ struct UtilsInterface
          *  @return true if \f$ 0 \le array[i] < size \forall i = 0, ..., n-1\f$
          */
 
-        typedef bool ( *validIndexes) ( const IndexType array[], const IndexType n, const IndexType size );
+        typedef bool (*validIndexes)( const IndexType array[], const IndexType n, const IndexType size );
     };
 
     LAMA_INTERFACE_DEFINE( Indexes, validIndexes )
@@ -71,7 +72,7 @@ struct UtilsInterface
      *  @tparam ValueType specifies the value type used in the reduction.
      */
 
-    template<typename ValueType>
+template    <typename ValueType>
     struct Reductions
     {
         /** @brief Sum n contiguously stored values.
@@ -158,36 +159,36 @@ struct UtilsInterface
         /** Set out[i] = in[i],  0 <= i < n */
 
         typedef void ( *set ) ( ValueType1 out[],
-                                const ValueType2 in[],
-                                const IndexType n );
+                        const ValueType2 in[],
+                        const IndexType n );
 
         /** @brief scaled array assignment, out = in * value
          *
-         *  Set out[i] = scale * in[i],  0 <= i < n 
+         *  Set out[i] = scale * in[i],  0 <= i < n
          *
          *  @param[in,out]  outValues  is the output array
          *  @param[in]      scaleValue scaling factor
          *  @param[in,out]  inValues   is the array with entries to scale
-         *  @param[in]      n          is the number of entries 
+         *  @param[in]      n          is the number of entries
          */
         typedef void ( *setScale ) ( ValueType1 outValues[],
-                                     const ValueType1 scaleValue,
-                                     const ValueType2 inValues[],
-                                     const IndexType n );
+                        const ValueType1 scaleValue,
+                        const ValueType2 inValues[],
+                        const IndexType n );
 
         /** Set out[i] = in[ indexes[i] ],  \f$0 \le i < n\f$ */
 
         typedef void ( *setGather ) ( ValueType1 out[],
-                                      const ValueType2 in[],
-                                      const IndexType indexes[],
-                                      const IndexType n );
+                        const ValueType2 in[],
+                        const IndexType indexes[],
+                        const IndexType n );
 
         /** Set out[ indexes[i] ] = in [i] */
 
         typedef void ( *setScatter ) ( ValueType1 out[],
-                                       const IndexType indexes[],
-                                       const ValueType2 in[],
-                                       const IndexType n );
+                        const IndexType indexes[],
+                        const ValueType2 in[],
+                        const IndexType n );
     };
 
     template<typename ValueType>
@@ -214,8 +215,8 @@ struct UtilsInterface
          *  @param[in]      n      is the number of entries in values
          */
         typedef void ( *scale ) ( ValueType values[],
-                                  const ValueType value,
-                                  const IndexType n );
+                        const ValueType value,
+                        const IndexType n );
     };
 
     LAMA_INTERFACE_DEFINE_TT( Copy, setGather )
@@ -238,7 +239,7 @@ struct UtilsInterface
 
 struct CSRUtilsInterface
 {
-    /** Structure defining function types for operations on CSR data 
+    /** Structure defining function types for operations on CSR data
      *
      *  @tparam ValueType is the value type of the matrix element, e.g. float, double
      */
@@ -255,34 +256,35 @@ struct CSRUtilsInterface
          *
          *  Note: This routine does not force the diagonal property, only if each diagonal element is already available
          */
-        typedef void ( *sortRowElements ) ( IndexType csrJA[],
-                                            ValueType csrValues[],
-                                            const IndexType csrIA[],
-                                            const IndexType numRows,
-                                            const bool diagonalFlag ) ;
+        typedef void (*sortRowElements)(
+            IndexType csrJA[],
+            ValueType csrValues[],
+            const IndexType csrIA[],
+            const IndexType numRows,
+            const bool diagonalFlag );
     };
 
     LAMA_INTERFACE_DEFINE_T( Operations, sortRowElements )
 
     /** Structure with type definitions for solver routines */
 
-    template<typename ValueType>
+template    <typename ValueType>
     struct Solver
     {
-       /** Method to compute one iteration step in Jacobi method
-        *
-        *  solution = omega * ( rhs + B * oldSolution) * dinv  + ( 1 - omega ) * oldSolution
-        *
-        */
-       typedef void ( *jacobi ) ( ValueType solution[],
-                                  const IndexType csrIA[],
-                                  const IndexType csrJA[],
-                                  const ValueType csrValues[],
-                                  const ValueType oldSolution[],
-                                  const ValueType rhs[],
-                                  const ValueType omega,
-                                  const IndexType numRows,
-                                  SyncToken* syncToken );
+        /** Method to compute one iteration step in Jacobi method
+         *
+         *  solution = omega * ( rhs + B * oldSolution) * dinv  + ( 1 - omega ) * oldSolution
+         *
+         */
+        typedef void ( *jacobi ) ( ValueType solution[],
+                        const IndexType csrIA[],
+                        const IndexType csrJA[],
+                        const ValueType csrValues[],
+                        const ValueType oldSolution[],
+                        const ValueType rhs[],
+                        const ValueType omega,
+                        const IndexType numRows,
+                        SyncToken* syncToken );
 
         /** Method to compute one iteration step in Jacobi method
          *
@@ -290,15 +292,15 @@ struct CSRUtilsInterface
          *
          */
         typedef void ( *jacobiHalo ) ( ValueType solution[],
-                                       const IndexType localIA[],
-                                       const ValueType localValues[],
-                                       const IndexType haloIA[],
-                                       const IndexType haloJA[],
-                                       const ValueType haloValues[],
-                                       const IndexType haloRowIndexes[],
-                                       const ValueType oldSolution[],
-                                       const ValueType omega,
-                                       const IndexType numNonEmptyRows );
+                        const IndexType localIA[],
+                        const ValueType localValues[],
+                        const IndexType haloIA[],
+                        const IndexType haloJA[],
+                        const ValueType haloValues[],
+                        const IndexType haloRowIndexes[],
+                        const ValueType oldSolution[],
+                        const ValueType omega,
+                        const IndexType numNonEmptyRows );
 
         /** Method to compute one iteration step in Jacobi method
          *
@@ -307,14 +309,14 @@ struct CSRUtilsInterface
          *  @since 1.1.0
          */
         typedef void ( *jacobiHaloWithDiag ) ( ValueType solution[],
-					                           const ValueType localDiagValues[],
-					                           const IndexType haloIA[],
-					                           const IndexType haloJA[],
-					                           const ValueType haloValues[],
-					                           const IndexType haloRowIndexes[],
-					                           const ValueType oldSolution[],
-					                           const ValueType omega,
-					                           const IndexType numNonEmptyRows );
+                        const ValueType localDiagValues[],
+                        const IndexType haloIA[],
+                        const IndexType haloJA[],
+                        const ValueType haloValues[],
+                        const IndexType haloRowIndexes[],
+                        const ValueType oldSolution[],
+                        const ValueType omega,
+                        const IndexType numNonEmptyRows );
     };
 
     LAMA_INTERFACE_DEFINE_T( Solver, jacobi )
@@ -357,7 +359,7 @@ struct CSRUtilsInterface
 
         typedef void ( *offsets2sizes ) ( IndexType sizes[], const IndexType offsets[], const IndexType n );
 
-        /** Check for a legal offset array. 
+        /** Check for a legal offset array.
          *
          *  @param[in] array is the array with offsets
          *  @param[in] n array has n + 1 entries
@@ -383,9 +385,9 @@ struct CSRUtilsInterface
          */
 
         typedef IndexType ( *matrixAddSizes ) ( IndexType cIa[], const IndexType numRows,
-                                           const IndexType numColumns, bool diagonalProperty,
-                                           const IndexType aIA[], const IndexType aJA[],
-                                           const IndexType bIA[], const IndexType bJA[] );
+                        const IndexType numColumns, bool diagonalProperty,
+                        const IndexType aIA[], const IndexType aJA[],
+                        const IndexType bIA[], const IndexType bJA[] );
 
         /** This method computes the row sizes for result matrix C of matrix multiplication A x B
          *
@@ -398,13 +400,13 @@ struct CSRUtilsInterface
          *  @param[in]  bIA, bJA are the index arrays of matrix B
          */
 
-        typedef IndexType ( *matrixMultiplySizes ) ( IndexType cSizes[], 
-                                                     const IndexType m, 
-                                                     const IndexType n, 
-                                                     const IndexType k,
-                                                     bool diagonalProperty,
-                                                     const IndexType aIA[], const IndexType aJA[],
-                                                     const IndexType bIA[], const IndexType bJA[] );
+        typedef IndexType ( *matrixMultiplySizes ) ( IndexType cSizes[],
+                        const IndexType m,
+                        const IndexType n,
+                        const IndexType k,
+                        bool diagonalProperty,
+                        const IndexType aIA[], const IndexType aJA[],
+                        const IndexType bIA[], const IndexType bJA[] );
 
         /** This method computes the column indexes for result matrix C of matrix multiplication A x B
          *
@@ -418,10 +420,10 @@ struct CSRUtilsInterface
          */
 
         typedef void ( *matrixMultiplyJA ) ( IndexType cJA[], const IndexType cIA[],
-                                             const IndexType numRows, const IndexType numColumns,
-                                             bool diagonalProperty,
-                                             const IndexType aIA[], const IndexType aJA[],
-                                             const IndexType bIA[], const IndexType bJA[] );
+                        const IndexType numRows, const IndexType numColumns,
+                        bool diagonalProperty,
+                        const IndexType aIA[], const IndexType aJA[],
+                        const IndexType bIA[], const IndexType bJA[] );
 
         /** This method checks whether the CSR structure data has the diagonal property.
          *
@@ -433,8 +435,8 @@ struct CSRUtilsInterface
          *  The diagonal property is given if the first column index in the row is same as the row index.
          */
         typedef bool ( *hasDiagonalProperty ) ( const IndexType numDiagonals,
-                                                const IndexType csrIA[],
-                                                const IndexType csrJA[] );
+                        const IndexType csrIA[],
+                        const IndexType csrJA[] );
 
     };
 
@@ -466,13 +468,13 @@ struct CSRUtilsInterface
          */
 
         typedef void( *convertCSR2CSC ) ( IndexType cscIA[],
-                                          IndexType cscJA[],
-                                          ValueType cscValues[],
-                                          const IndexType csrIA[],
-                                          const IndexType csrJA[],
-                                          const ValueType csrValues[],
-                                          IndexType numRows, IndexType numColumns,
-                                          IndexType numValues );
+                        IndexType cscJA[],
+                        ValueType cscValues[],
+                        const IndexType csrIA[],
+                        const IndexType csrJA[],
+                        const ValueType csrValues[],
+                        IndexType numRows, IndexType numColumns,
+                        IndexType numValues );
     };
 
     LAMA_INTERFACE_DEFINE_T( Transpose, convertCSR2CSC )
@@ -496,9 +498,9 @@ struct CSRUtilsInterface
          */
 
         typedef void ( *scaleRows ) ( ValueType1 csrValues[],
-                                      const IndexType csrIA[],
-                                      const IndexType numRows,
-                                      const ValueType2 values[] );
+                        const IndexType csrIA[],
+                        const IndexType numRows,
+                        const ValueType2 values[] );
     };
 
     LAMA_INTERFACE_DEFINE_TT( Scale, scaleRows )
@@ -518,8 +520,8 @@ struct CSRUtilsInterface
          */
 
         typedef ValueType ( *absMaxDiffVal ) ( IndexType numRows, bool sortedRows,
-           const IndexType csrIA1[], const IndexType csrJA1[], const ValueType csrValues1[],
-           const IndexType csrIA2[], const IndexType csrJA2[], const ValueType csrValues2[] );
+                        const IndexType csrIA1[], const IndexType csrJA1[], const ValueType csrValues1[],
+                        const IndexType csrIA2[], const IndexType csrJA2[], const ValueType csrValues2[] );
     };
 
     LAMA_INTERFACE_DEFINE_T( Reductions, absMaxDiffVal )
@@ -550,29 +552,29 @@ struct CSRUtilsInterface
          */
 
         typedef void ( *normalGEMV ) ( ValueType result[],
-                                       const ValueType alpha,
-                                       const ValueType x[],
-                                       const ValueType beta,
-                                       const ValueType y[],
-                                       const IndexType numRows,
-                                       const IndexType numColumns,
-                                       const IndexType nnz,
-                                       const IndexType csrIA[],
-                                       const IndexType csrJA[],
-                                       const ValueType csrValues[],
-                                       SyncToken* syncToken );
+                        const ValueType alpha,
+                        const ValueType x[],
+                        const ValueType beta,
+                        const ValueType y[],
+                        const IndexType numRows,
+                        const IndexType numColumns,
+                        const IndexType nnz,
+                        const IndexType csrIA[],
+                        const IndexType csrJA[],
+                        const ValueType csrValues[],
+                        SyncToken* syncToken );
 
         typedef void ( *normalGEVM ) ( ValueType result[],
-                                       const ValueType alpha,
-                                       const ValueType x[],
-                                       const ValueType beta,
-                                       const ValueType y[],
-                                       const IndexType numRows,
-                                       const IndexType numColumns,
-                                       const IndexType csrIA[],
-                                       const IndexType csrJA[],
-                                       const ValueType csrValues[],
-                                       SyncToken* syncToken );
+                        const ValueType alpha,
+                        const ValueType x[],
+                        const ValueType beta,
+                        const ValueType y[],
+                        const IndexType numRows,
+                        const IndexType numColumns,
+                        const IndexType csrIA[],
+                        const IndexType csrJA[],
+                        const ValueType csrValues[],
+                        SyncToken* syncToken );
 
         /** result = alpha * CSR-Matrix * x, CSR matrix has only some non-zero rows
          *
@@ -589,25 +591,25 @@ struct CSRUtilsInterface
          */
 
         typedef void ( *sparseGEMV ) ( ValueType result[],
-                                       const ValueType alpha,
-                                       const ValueType x[],
-                                       const IndexType numNonZeroRows,
-                                       const IndexType rowIndexes[],
-                                       const IndexType csrIA[],
-                                       const IndexType csrJA[],
-                                       const ValueType csrValues[],
-                                       SyncToken* syncToken );
+                        const ValueType alpha,
+                        const ValueType x[],
+                        const IndexType numNonZeroRows,
+                        const IndexType rowIndexes[],
+                        const IndexType csrIA[],
+                        const IndexType csrJA[],
+                        const ValueType csrValues[],
+                        SyncToken* syncToken );
 
         typedef void ( *sparseGEVM ) ( ValueType result[],
-                                       const ValueType alpha,
-                                       const ValueType x[],
-                                       const IndexType numColumns,
-                                       const IndexType numNonZeroRows,
-                                       const IndexType rowIndexes[],
-                                       const IndexType csrIA[],
-                                       const IndexType csrJA[],
-                                       const ValueType csrValues[],
-                                       SyncToken* syncToken );
+                        const ValueType alpha,
+                        const ValueType x[],
+                        const IndexType numColumns,
+                        const IndexType numNonZeroRows,
+                        const IndexType rowIndexes[],
+                        const IndexType csrIA[],
+                        const IndexType csrJA[],
+                        const ValueType csrValues[],
+                        SyncToken* syncToken );
 
         /**  This method computes result = alpha * CSR * x + beta * y  with dense result, x, y
          *
@@ -623,17 +625,17 @@ struct CSRUtilsInterface
          */
 
         typedef void ( *gemm ) ( ValueType result[],
-                                 const ValueType alpha,
-                                 const ValueType x[],
-                                 const ValueType beta,
-                                 const ValueType y[],
-                                 const IndexType m,
-                                 const IndexType n,
-                                 const IndexType p,
-                                 const IndexType csrIA[],
-                                 const IndexType csrJA[],
-                                 const ValueType csrValues[],
-                                 SyncToken* syncToken );
+                        const ValueType alpha,
+                        const ValueType x[],
+                        const ValueType beta,
+                        const ValueType y[],
+                        const IndexType m,
+                        const IndexType n,
+                        const IndexType p,
+                        const IndexType csrIA[],
+                        const IndexType csrJA[],
+                        const ValueType csrValues[],
+                        SyncToken* syncToken );
 
         /** computes c = alpha * a + beta * b for CSR sparse matrices a, b, c
          *
@@ -652,19 +654,19 @@ struct CSRUtilsInterface
          */
 
         typedef void ( *matrixAdd ) ( IndexType cJA[],
-                                      ValueType cValues[],
-                                      const IndexType cIA[],
-                                      const IndexType numRows,
-                                      const IndexType numColumns,
-                                      const bool diagonalProperty,
-                                      const ValueType alpha,
-                                      const IndexType aIA[],
-                                      const IndexType aJA[],
-                                      const ValueType aValues[],
-                                      const ValueType beta,
-                                      const IndexType bIA[],
-                                      const IndexType bJA[],
-                                      const ValueType bValues[] );
+                        ValueType cValues[],
+                        const IndexType cIA[],
+                        const IndexType numRows,
+                        const IndexType numColumns,
+                        const bool diagonalProperty,
+                        const ValueType alpha,
+                        const IndexType aIA[],
+                        const IndexType aJA[],
+                        const ValueType aValues[],
+                        const ValueType beta,
+                        const IndexType bIA[],
+                        const IndexType bJA[],
+                        const ValueType bValues[] );
 
         /** computes c = alpha * a * b for CSR sparse matrices a, b, c
          *
@@ -683,19 +685,19 @@ struct CSRUtilsInterface
          */
 
         typedef void ( *matrixMultiply ) ( const IndexType cIa[],
-                                           IndexType cJA[],
-                                           ValueType cValues[],
-                                           const IndexType m,
-                                           const IndexType n,
-                                           const IndexType k,
-                                           const ValueType alpha,
-                                           bool diagonalProperty,
-                                           const IndexType aIA[],
-                                           const IndexType aJA[],
-                                           const ValueType aValues[],
-                                           const IndexType bIA[],
-                                           const IndexType bJA[],
-                                           const ValueType bValues[] );
+                        IndexType cJA[],
+                        ValueType cValues[],
+                        const IndexType m,
+                        const IndexType n,
+                        const IndexType k,
+                        const ValueType alpha,
+                        bool diagonalProperty,
+                        const IndexType aIA[],
+                        const IndexType aJA[],
+                        const ValueType aValues[],
+                        const IndexType bIA[],
+                        const IndexType bJA[],
+                        const ValueType bValues[] );
     };
 
     LAMA_INTERFACE_DEFINE_T( Mult, normalGEMV )
@@ -722,31 +724,32 @@ struct DenseUtilsInterface
     template<typename DenseValueType>
     struct Counting
     {
-         /** Counting non-zero values in dense storage for conversion to CSR
-          *
-          *  @param[out] csrSizes is an array that contains for each row the number of non-zero elements
-          *  @param[in]  diagonalFlag if true the diagonal elements are counted in any case
-          *  @param[in]  numRows number of rows
-          *  @param[in]  numColumns number of columns
-          *  @param[in]  denseValues size is numRows x numColumns, array with all matrix elements of dense format
-          *  @param[in]  eps is threshold when an element is to be considered as non-zero
-          *
-          *  The matrix values are stored row-wise in denseValues.
-          */
+        /** Counting non-zero values in dense storage for conversion to CSR
+         *
+         *  @param[out] csrSizes is an array that contains for each row the number of non-zero elements
+         *  @param[in]  diagonalFlag if true the diagonal elements are counted in any case
+         *  @param[in]  numRows number of rows
+         *  @param[in]  numColumns number of columns
+         *  @param[in]  denseValues size is numRows x numColumns, array with all matrix elements of dense format
+         *  @param[in]  eps is threshold when an element is to be considered as non-zero
+         *
+         *  The matrix values are stored row-wise in denseValues.
+         */
 
-        typedef void ( *getCSRSizes )( IndexType csrSizes[],
-                                       bool diagonalFlag,
-                                       const IndexType numRows,
-                                       const IndexType numColumns,
-                                       const DenseValueType denseValues[],
-                                       const DenseValueType eps );
+        typedef void (*getCSRSizes)(
+            IndexType csrSizes[],
+            bool diagonalFlag,
+            const IndexType numRows,
+            const IndexType numColumns,
+            const DenseValueType denseValues[],
+            const DenseValueType eps );
     };
 
     LAMA_INTERFACE_DEFINE_T( Counting, getCSRSizes )
 
     /** Function pointer type definitions for conversion on dense storage. */
 
-    template<typename DenseValueType, typename CSRValueType>
+template    <typename DenseValueType, typename CSRValueType>
     struct Conversions
     {
         /** Convesion of dense matrix to CSR storage format
@@ -764,22 +767,22 @@ struct DenseUtilsInterface
          *                  by getCSRSizes.
          */
         typedef void ( *getCSRValues ) ( IndexType csrJA[],
-                                         CSRValueType csrValues[],
-                                         const IndexType csrIA[],
-                                         const bool diagonalFlag,
-                                         const IndexType numRows,
-                                         const IndexType numColumns,
-                                         const DenseValueType denseValues[],
-                                         const DenseValueType eps );
+                        CSRValueType csrValues[],
+                        const IndexType csrIA[],
+                        const bool diagonalFlag,
+                        const IndexType numRows,
+                        const IndexType numColumns,
+                        const DenseValueType denseValues[],
+                        const DenseValueType eps );
 
         /** Conversion of CSR format to dense matrix. */
 
         typedef void ( *setCSRValues ) ( DenseValueType denseValues[],
-                                         const IndexType numRows,
-                                         const IndexType numColumns,
-                                         const IndexType csrIA[],
-                                         const IndexType csrJA[],
-                                         const CSRValueType csrValues[] );
+                        const IndexType numRows,
+                        const IndexType numColumns,
+                        const IndexType csrIA[],
+                        const IndexType csrJA[],
+                        const CSRValueType csrValues[] );
     };
 
     LAMA_INTERFACE_DEFINE_TT( Conversions, setCSRValues )
@@ -793,25 +796,25 @@ struct DenseUtilsInterface
         /** Copy values of dense matrix; supports also conversion. */
 
         typedef void ( *copyDenseValues ) ( DenseValueType1 newValues[],
-                                            const IndexType numRows,
-                                           const IndexType numColumns,
-                                           const DenseValueType2 oldValues[] );
+                        const IndexType numRows,
+                        const IndexType numColumns,
+                        const DenseValueType2 oldValues[] );
 
-         /** Get diagonal of a dense matrix, type conversion is supported. */
+        /** Get diagonal of a dense matrix, type conversion is supported. */
 
-         typedef void ( *getDiagonal ) ( DenseValueType1 diagonalValues[],
-                                         const IndexType numDiagonalValues,
-                                         const DenseValueType2 denseValues[],
-                                         const IndexType numRows,
-                                         const IndexType numColumns );
+        typedef void ( *getDiagonal ) ( DenseValueType1 diagonalValues[],
+                        const IndexType numDiagonalValues,
+                        const DenseValueType2 denseValues[],
+                        const IndexType numRows,
+                        const IndexType numColumns );
 
-         /** Set diagonal of a dense matrix, type conversion is supported. */
+        /** Set diagonal of a dense matrix, type conversion is supported. */
 
-         typedef void ( *setDiagonal ) ( DenseValueType1 denseValues[],
-                                         const IndexType numRows,
-                                         const IndexType numColumns,
-                                         const DenseValueType2 diagonalValues[],
-                                         const IndexType numDiagonalValues );
+        typedef void ( *setDiagonal ) ( DenseValueType1 denseValues[],
+                        const IndexType numRows,
+                        const IndexType numColumns,
+                        const DenseValueType2 diagonalValues[],
+                        const IndexType numDiagonalValues );
     };
 
     LAMA_INTERFACE_DEFINE_TT( Copy, copyDenseValues )
@@ -826,16 +829,16 @@ struct DenseUtilsInterface
         /** Scale all elements of the dense matrix with a value */
 
         typedef void ( *scaleValue ) ( DenseValueType denseValues[],
-                                       const IndexType numRows,
-                                       const IndexType numColumns,
-                                       const DenseValueType val );
+                        const IndexType numRows,
+                        const IndexType numColumns,
+                        const DenseValueType val );
 
         /** Set diagonal elements with one and the same value. */
 
         typedef void ( *setDiagonalValue ) ( DenseValueType denseValues[],
-                                             const IndexType numRows,
-                                             const IndexType numColumns,
-                                             const DenseValueType val );
+                        const IndexType numRows,
+                        const IndexType numColumns,
+                        const DenseValueType val );
     };
 
     LAMA_INTERFACE_DEFINE_T( Modify, scaleValue )
@@ -858,14 +861,14 @@ struct DenseUtilsInterface
          */
 
         typedef void ( *normalGEMV ) ( ValueType result[],
-                                       const ValueType alpha,
-                                       const ValueType x[],
-                                       const ValueType beta,
-                                       const ValueType y[],
-                                       const IndexType numRows,
-                                       const IndexType numColumns,
-                                       const ValueType denseValues[],
-                                       SyncToken* syncToken );
+                        const ValueType alpha,
+                        const ValueType x[],
+                        const ValueType beta,
+                        const ValueType y[],
+                        const IndexType numRows,
+                        const IndexType numColumns,
+                        const ValueType denseValues[],
+                        SyncToken* syncToken );
     };
 
     LAMA_INTERFACE_DEFINE_T( Mult, normalGEMV )
@@ -901,31 +904,33 @@ struct ELLUtilsInterface
          *  The ELL storage stands for a square matrix and must have diagonal property.
          */
 
-        typedef void ( *jacobi ) ( ValueType solution[],
-                                   const IndexType numRows,
-                                   const IndexType ellNumValuesPerRow,
-                                   const IndexType ellSizes[],
-                                   const IndexType ellJA[],
-                                   const ValueType ellValues[],
-                                   const ValueType oldSolution[],
-                                   const ValueType rhs[],
-                                   const ValueType omega,
-                                   SyncToken* syncToken );
+        typedef void (*jacobi)(
+            ValueType solution[],
+            const IndexType numRows,
+            const IndexType ellNumValuesPerRow,
+            const IndexType ellSizes[],
+            const IndexType ellJA[],
+            const ValueType ellValues[],
+            const ValueType oldSolution[],
+            const ValueType rhs[],
+            const ValueType omega,
+            SyncToken* syncToken );
 
-        typedef void ( *jacobiHalo ) (ValueType solution[],
-                                      const IndexType numRows,
-                                      const ValueType diagonal[],
-                                      const IndexType ellNumValuesPerRow,
-                                      const IndexType ellSizes[],
-                                      const IndexType ellJA[],
-                                      const ValueType ellValues[],
-                                      const IndexType rowIndexes[],
-                                      const IndexType numNonEmptyRows,
-                                      const ValueType oldSolution[],
-                                      const ValueType omega,
-                                      SyncToken* syncToken );
-                                      
-       /**
+        typedef void (*jacobiHalo)(
+            ValueType solution[],
+            const IndexType numRows,
+            const ValueType diagonal[],
+            const IndexType ellNumValuesPerRow,
+            const IndexType ellSizes[],
+            const IndexType ellJA[],
+            const ValueType ellValues[],
+            const IndexType rowIndexes[],
+            const IndexType numNonEmptyRows,
+            const ValueType oldSolution[],
+            const ValueType omega,
+            SyncToken* syncToken );
+
+        /**
          *  This method fills up the arrays ja and values of the ELL format with
          *  useful values to make matrix-vector multiplication efficient.
          *
@@ -935,7 +940,7 @@ struct ELLUtilsInterface
          *  @param[in]  numRows number of rows
          *  @param[in]  numValuesPerRow number of values in each row
          */
-        typedef void ( *fillELLValues ) (
+        typedef void (*fillELLValues)(
             IndexType ellJA[],
             ValueType ellValues[],
             const IndexType ellSizes[],
@@ -943,8 +948,7 @@ struct ELLUtilsInterface
             const IndexType numValuesPerRow );
     };
 
-    LAMA_INTERFACE_DEFINE_T( Solver, jacobi )
-    LAMA_INTERFACE_DEFINE_T( Solver, jacobiHalo )
+    LAMA_INTERFACE_DEFINE_T( Solver, jacobi )LAMA_INTERFACE_DEFINE_T( Solver, jacobiHalo )
     LAMA_INTERFACE_DEFINE_T( Solver, fillELLValues )
 
     /** Conversion routines between ELL and CSR storage format. */
@@ -964,24 +968,24 @@ struct ELLUtilsInterface
          */
 
         typedef void ( *getCSRValues ) ( IndexType csrJA[],
-                                         CSRValueType csrValues[],
-                                         const IndexType csrIA[],
-                                         const IndexType numRows,
-                                         const IndexType numValuesPerRow,
-                                         const IndexType ellSizes[],
-                                         const IndexType ellJA[],
-                                         const ELLValueType ellValues[] );
+                        CSRValueType csrValues[],
+                        const IndexType csrIA[],
+                        const IndexType numRows,
+                        const IndexType numValuesPerRow,
+                        const IndexType ellSizes[],
+                        const IndexType ellJA[],
+                        const ELLValueType ellValues[] );
 
         /** Conversion from CSR data to ELL data      */
 
         typedef void( *setCSRValues ) ( IndexType ellJA[],
-                                        ELLValueType ellValues[],
-                                        const IndexType ellSizes[],
-                                        const IndexType numRows,
-                                        const IndexType numValuesPerRow,
-                                        const IndexType csrIA[],
-                                        const IndexType csrJA[],
-                                        const CSRValueType csrValues[] );
+                        ELLValueType ellValues[],
+                        const IndexType ellSizes[],
+                        const IndexType numRows,
+                        const IndexType numValuesPerRow,
+                        const IndexType csrIA[],
+                        const IndexType csrJA[],
+                        const CSRValueType csrValues[] );
 
     };
 
@@ -1003,12 +1007,12 @@ struct ELLUtilsInterface
          */
 
         typedef void ( *compressIA ) ( const IndexType ellSizes[],
-                                       const IndexType ellJA[],
-                                       const ValueType ellValues[],
-                                       const IndexType numRows,
-                                       const IndexType numValuesPerRow,
-                                       const ValueType eps,
-                                       IndexType newIA[] );
+                        const IndexType ellJA[],
+                        const ValueType ellValues[],
+                        const IndexType numRows,
+                        const IndexType numValuesPerRow,
+                        const ValueType eps,
+                        IndexType newIA[] );
 
         /** Compresses the given JA and values array using epsilon
          *
@@ -1022,14 +1026,14 @@ struct ELLUtilsInterface
          */
 
         typedef void ( *compressValues ) ( const IndexType ellSizes[],
-                                           const IndexType ellJA[],
-                                           const ValueType ellValues[],
-                                           const IndexType numRows,
-                                           const IndexType numValuesPerRow,
-                                           const ValueType eps,
-                                           const IndexType newNumValuesPerRow,
-                                           IndexType newJA[],
-                                           ValueType newValues[] );
+                        const IndexType ellJA[],
+                        const ValueType ellValues[],
+                        const IndexType numRows,
+                        const IndexType numValuesPerRow,
+                        const ValueType eps,
+                        const IndexType newNumValuesPerRow,
+                        IndexType newJA[],
+                        ValueType newValues[] );
 
     };
 
@@ -1051,13 +1055,13 @@ struct ELLUtilsInterface
          */
 
         typedef void ( *getRow ) ( OtherValueType row[],
-                                   const IndexType i,
-                                   const IndexType numRows,
-                                   const IndexType numColumns,
-                                   const IndexType numValuesPerRow,
-                                   const IndexType ellSizes[],
-                                   const IndexType ellJA[],
-                                   const ValueType ellValues[] );
+                        const IndexType i,
+                        const IndexType numRows,
+                        const IndexType numColumns,
+                        const IndexType numValuesPerRow,
+                        const IndexType ellSizes[],
+                        const IndexType ellJA[],
+                        const ValueType ellValues[] );
 
         /** Returns one element of the matrix
          *
@@ -1070,12 +1074,12 @@ struct ELLUtilsInterface
          */
 
         typedef OtherValueType ( *getValue ) ( const IndexType i,
-                                               const IndexType j,
-                                               const IndexType numRows,
-                                               const IndexType numValuesPerRow,
-                                               const IndexType ellSizes[], 
-                                               const IndexType ellJA[],
-                                               const ValueType ellValues[] );
+                        const IndexType j,
+                        const IndexType numRows,
+                        const IndexType numValuesPerRow,
+                        const IndexType ellSizes[],
+                        const IndexType ellJA[],
+                        const ValueType ellValues[] );
     };
 
     LAMA_INTERFACE_DEFINE_TT( Getter, getRow )
@@ -1084,22 +1088,22 @@ struct ELLUtilsInterface
     struct Operations
     {
         typedef IndexType ( *countNonEmptyRowsBySizes ) ( const IndexType ellSizes[],
-                                                          const IndexType numRows );
+                        const IndexType numRows );
 
-        typedef void ( *setNonEmptyRowsBySizes ) (  IndexType rowIndexes[],
-                                                    const IndexType numNonEmptyRows,
-                                                    const IndexType ellSizes[],
-                                                    const IndexType numRows );
+        typedef void ( *setNonEmptyRowsBySizes ) ( IndexType rowIndexes[],
+                        const IndexType numNonEmptyRows,
+                        const IndexType ellSizes[],
+                        const IndexType numRows );
 
         typedef bool ( *hasDiagonalProperty ) ( const IndexType numDiagonals,
-                                                const IndexType ellJA[] );
+                        const IndexType ellJA[] );
 
         typedef void ( *check ) ( const IndexType mNumRows,
-                                  const IndexType mNumValuesPerRow,
-                                  const IndexType mNumColumns,
-                                  const IndexType ellSizes[],
-                                  const IndexType ellJA[],
-                                  const char* msg );
+                        const IndexType mNumValuesPerRow,
+                        const IndexType mNumColumns,
+                        const IndexType ellSizes[],
+                        const IndexType ellJA[],
+                        const char* msg );
     };
 
     LAMA_INTERFACE_DEFINE( Operations, countNonEmptyRowsBySizes )
@@ -1125,16 +1129,16 @@ struct ELLUtilsInterface
          */
 
         typedef void ( *normalGEMV ) ( ValueType result[],
-                                       const ValueType alpha,
-                                       const ValueType x[],
-                                       const ValueType beta,
-                                       const ValueType y[],
-                                       const IndexType numRows,
-                                       const IndexType numValuesPerRow,
-                                       const IndexType ellSizes[],
-                                       const IndexType ellJA[],
-                                       const ValueType ellValues[],
-                                       SyncToken* syncToken );
+                        const ValueType alpha,
+                        const ValueType x[],
+                        const ValueType beta,
+                        const ValueType y[],
+                        const IndexType numRows,
+                        const IndexType numValuesPerRow,
+                        const IndexType ellSizes[],
+                        const IndexType ellJA[],
+                        const ValueType ellValues[],
+                        SyncToken* syncToken );
 
         /** result = alpha * ELL-Matrix * x, CSR matrix has only some non-zero rows
          *
@@ -1151,46 +1155,46 @@ struct ELLUtilsInterface
          */
 
         typedef void ( *sparseGEMV ) ( ValueType result[],
-                                       const ValueType alpha,
-                                       const ValueType x[],
-                                       const IndexType numRows,
-                                       const IndexType numValuesPerRow,
-                                       const IndexType numNonZeroRows,
-                                       const IndexType rowIndexes[],
-                                       const IndexType ellSizes[],
-                                       const IndexType ellJA[],
-                                       const ValueType ellValues[],
-                                       SyncToken* syncToken );
+                        const ValueType alpha,
+                        const ValueType x[],
+                        const IndexType numRows,
+                        const IndexType numValuesPerRow,
+                        const IndexType numNonZeroRows,
+                        const IndexType rowIndexes[],
+                        const IndexType ellSizes[],
+                        const IndexType ellJA[],
+                        const ValueType ellValues[],
+                        SyncToken* syncToken );
 
         /** Implementation for ELLUtilsInterface::Mult::normalGEVM  */
 
         typedef void ( *normalGEVM ) ( ValueType result[],
-                                       const ValueType alpha,
-                                       const ValueType x[],
-                                       const ValueType beta,
-                                       const ValueType y[],
-                                       const IndexType numRows,
-                                       const IndexType numColumns,
-                                       const IndexType numValuesPerRow,
-                                       const IndexType ellSizes[],
-                                       const IndexType ellJA[],
-                                       const ValueType ellValues[],
-                                       SyncToken* syncToken );
+                        const ValueType alpha,
+                        const ValueType x[],
+                        const ValueType beta,
+                        const ValueType y[],
+                        const IndexType numRows,
+                        const IndexType numColumns,
+                        const IndexType numValuesPerRow,
+                        const IndexType ellSizes[],
+                        const IndexType ellJA[],
+                        const ValueType ellValues[],
+                        SyncToken* syncToken );
 
         /** Implementation for ELLUtilsInterface::Mult::sparseGEVM  */
 
         typedef void ( *sparseGEVM ) ( ValueType result[],
-                                       const ValueType alpha,
-                                       const ValueType x[],
-                                       const IndexType numRows,
-                                       const IndexType numColumns,
-                                       const IndexType numValuesPerRow,
-                                       const IndexType numNonZeroRows,
-                                       const IndexType rowIndexes[],
-                                       const IndexType ellSizes[],
-                                       const IndexType ellJA[],
-                                       const ValueType ellValues[],
-                                       SyncToken* syncToken );
+                        const ValueType alpha,
+                        const ValueType x[],
+                        const IndexType numRows,
+                        const IndexType numColumns,
+                        const IndexType numValuesPerRow,
+                        const IndexType numNonZeroRows,
+                        const IndexType rowIndexes[],
+                        const IndexType ellSizes[],
+                        const IndexType ellJA[],
+                        const ValueType ellValues[],
+                        SyncToken* syncToken );
     };
 
     LAMA_INTERFACE_DEFINE_T( Mult, normalGEMV )
@@ -1203,13 +1207,13 @@ struct ELLUtilsInterface
     template<typename ValueType>
     struct Reductions
     {
-         /** This method returns the maximal absolute value of an ELLPACK matrix. */
+        /** This method returns the maximal absolute value of an ELLPACK matrix. */
 
-         typedef ValueType ( *absMaxVal ) ( const IndexType numRows,
-                                            const IndexType numValuesPerRow,
-                                            const IndexType ellSizes[],
-                                            const ValueType ellValues[]
-                                          );
+        typedef ValueType ( *absMaxVal ) ( const IndexType numRows,
+                        const IndexType numValuesPerRow,
+                        const IndexType ellSizes[],
+                        const ValueType ellValues[]
+        );
     };
 
     LAMA_INTERFACE_DEFINE_T( Reductions, absMaxVal )
@@ -1218,10 +1222,10 @@ struct ELLUtilsInterface
     struct Scale
     {
         typedef void ( *scaleValue ) ( const IndexType numRows,
-                                       const IndexType numValuesPerRow,
-                                       const IndexType ellSizes[],
-                                       ValueType ellValues[],
-                                       const OtherValueType values[] );
+                        const IndexType numValuesPerRow,
+                        const IndexType ellSizes[],
+                        ValueType ellValues[],
+                        const OtherValueType values[] );
     };
 
     LAMA_INTERFACE_DEFINE_TT( Scale, scaleValue )
@@ -1246,16 +1250,16 @@ struct ELLUtilsInterface
          */
 
         typedef void ( *matrixMultiplySizes ) ( IndexType cSizes[],
-                                                const IndexType m, 
-                                                const IndexType n, 
-                                                const IndexType k,
-                                                const bool diagonalProperty,
-                                                const IndexType aSizes[],
-                                                const IndexType aJA[],
-                                                const IndexType aNumValuesPerRow,
-                                                const IndexType bSizes[],
-                                                const IndexType bJA[],
-                                                const IndexType bNumValuesPerRow );
+                        const IndexType m,
+                        const IndexType n,
+                        const IndexType k,
+                        const bool diagonalProperty,
+                        const IndexType aSizes[],
+                        const IndexType aJA[],
+                        const IndexType aNumValuesPerRow,
+                        const IndexType bSizes[],
+                        const IndexType bJA[],
+                        const IndexType bNumValuesPerRow );
 
         /** @brief Compute the row sizes of result matrix C for matrix addition A + B
          *
@@ -1273,15 +1277,15 @@ struct ELLUtilsInterface
          *  Note: this routines does not need any value array as only structure is computed
          */
         typedef void ( *matrixAddSizes ) ( IndexType cSizes[],
-                                           const IndexType m,
-                                           const IndexType n,
-                                           const bool diagonalProperty,
-                                           const IndexType aSizes[],
-                                           const IndexType aJA[],
-                                           const IndexType aNumValuesPerRow,
-                                           const IndexType bSizes[],
-                                           const IndexType bJA[],
-                                           const IndexType bNumValuesPerRow );
+                        const IndexType m,
+                        const IndexType n,
+                        const bool diagonalProperty,
+                        const IndexType aSizes[],
+                        const IndexType aJA[],
+                        const IndexType aNumValuesPerRow,
+                        const IndexType bSizes[],
+                        const IndexType bJA[],
+                        const IndexType bNumValuesPerRow );
     };
 
     LAMA_INTERFACE_DEFINE( MatrixExpBuild, matrixAddSizes )
@@ -1306,22 +1310,22 @@ struct ELLUtilsInterface
          */
 
         typedef void ( *matrixAdd ) ( IndexType cJA[],
-                                      ValueType cValues[],
-                                      const IndexType cSizes[],
-                                      const IndexType cNumValuesPerRow,
-                                      const IndexType m,
-                                      const IndexType n,
-                                      const bool diagonalProperty,
-                                      const ValueType alpha,
-                                      const IndexType aSizes[],
-                                      const IndexType aJA[],
-                                      const ValueType aValues[],
-                                      const IndexType aNumValuesPerRow,
-                                      const ValueType beta,
-                                      const IndexType bSizes[],
-                                      const IndexType bJA[],
-                                      const ValueType bValues[],
-                                      const IndexType bNumValuesPerRow );
+                        ValueType cValues[],
+                        const IndexType cSizes[],
+                        const IndexType cNumValuesPerRow,
+                        const IndexType m,
+                        const IndexType n,
+                        const bool diagonalProperty,
+                        const ValueType alpha,
+                        const IndexType aSizes[],
+                        const IndexType aJA[],
+                        const ValueType aValues[],
+                        const IndexType aNumValuesPerRow,
+                        const ValueType beta,
+                        const IndexType bSizes[],
+                        const IndexType bJA[],
+                        const ValueType bValues[],
+                        const IndexType bNumValuesPerRow );
 
         /** @brief computes c = alpha * a * b for ELL sparse matrices a, b, c
          *
@@ -1339,22 +1343,22 @@ struct ELLUtilsInterface
          */
 
         typedef void ( *matrixMultiply ) ( IndexType cJA[],
-                                           ValueType cValues[],
-                                           const IndexType cSizes[],
-                                           const IndexType cNumValuesPerRow,
-                                           const IndexType m,
-                                           const IndexType n,
-                                           const IndexType k,
-                                           const bool diagonalProperty,
-                                           const ValueType alpha,
-                                           const IndexType aSizes[],
-                                           const IndexType aJA[],
-                                           const ValueType aValues[],
-                                           const IndexType aNumValuesPerRow,
-                                           const IndexType bSizes[],
-                                           const IndexType bJA[],
-                                           const ValueType bValues[],
-                                           const IndexType bNumValuesPerRow );
+                        ValueType cValues[],
+                        const IndexType cSizes[],
+                        const IndexType cNumValuesPerRow,
+                        const IndexType m,
+                        const IndexType n,
+                        const IndexType k,
+                        const bool diagonalProperty,
+                        const ValueType alpha,
+                        const IndexType aSizes[],
+                        const IndexType aJA[],
+                        const ValueType aValues[],
+                        const IndexType aNumValuesPerRow,
+                        const IndexType bSizes[],
+                        const IndexType bJA[],
+                        const ValueType bValues[],
+                        const IndexType bNumValuesPerRow );
     };
 
     LAMA_INTERFACE_DEFINE_T( MatrixExp, matrixAdd )
@@ -1375,42 +1379,43 @@ struct JDSUtilsInterface
     template<typename ValueType>
     struct Solver
     {
-       /** Method to compute one iteration step in Jacobi method
-        *
-        *  solution = omega * ( rhs + B * oldSolution) * dinv  + ( 1 - omega ) * oldSolution
-        *
-        */
-       typedef void ( *jacobi ) ( ValueType* const solution,
-                                  const IndexType numRows,
-                                  const IndexType jdsPerm[],
-                                  const IndexType jdsIlg[],
-                                  const IndexType jdsNumDiagonals,
-                                  const IndexType jdsDlg[],
-                                  const IndexType jdsJA[],
-                                  const ValueType jdsValues[],
-                                  const ValueType oldSolution[],
-                                  const ValueType rhs[],
-                                  const ValueType omega,
-                                  SyncToken* syncToken );
+        /** Method to compute one iteration step in Jacobi method
+         *
+         *  solution = omega * ( rhs + B * oldSolution) * dinv  + ( 1 - omega ) * oldSolution
+         *
+         */
+        typedef void (*jacobi)(
+            ValueType* const solution,
+            const IndexType numRows,
+            const IndexType jdsPerm[],
+            const IndexType jdsIlg[],
+            const IndexType jdsNumDiagonals,
+            const IndexType jdsDlg[],
+            const IndexType jdsJA[],
+            const ValueType jdsValues[],
+            const ValueType oldSolution[],
+            const ValueType rhs[],
+            const ValueType omega,
+            SyncToken* syncToken );
 
         /** Method to compute one iteration step in Jacobi method with halo.  */
 
-        typedef void ( *jacobiHalo ) ( ValueType solution[],
-                                       const IndexType numRows,
-                                       const ValueType invDiagonal[],
-                                       const IndexType numDiagonals,
-                                       const IndexType jdsHaloPerm[],
-                                       const IndexType jdsHaloIlg[],
-                                       const IndexType jdsHaloDlg[],
-                                       const IndexType jdsHaloJA[],
-                                       const ValueType jdsHaloValues[],
-                                       const ValueType oldSolution[],
-                                       const ValueType omega,
-                                       SyncToken* syncToken );
+        typedef void (*jacobiHalo)(
+            ValueType solution[],
+            const IndexType numRows,
+            const ValueType invDiagonal[],
+            const IndexType numDiagonals,
+            const IndexType jdsHaloPerm[],
+            const IndexType jdsHaloIlg[],
+            const IndexType jdsHaloDlg[],
+            const IndexType jdsHaloJA[],
+            const ValueType jdsHaloValues[],
+            const ValueType oldSolution[],
+            const ValueType omega,
+            SyncToken* syncToken );
     };
 
-    LAMA_INTERFACE_DEFINE_T( Solver, jacobi )
-    LAMA_INTERFACE_DEFINE_T( Solver, jacobiHalo )
+    LAMA_INTERFACE_DEFINE_T( Solver, jacobi )LAMA_INTERFACE_DEFINE_T( Solver, jacobiHalo )
 
     struct Sort
     {
@@ -1430,8 +1435,8 @@ struct JDSUtilsInterface
          */
 
         typedef void ( *sortRows ) ( IndexType array[],
-                                     IndexType perm[],
-                                     const IndexType n );
+                        IndexType perm[],
+                        const IndexType n );
 
         /** Compute the inverse permutation for a given permutation.
          *
@@ -1448,8 +1453,8 @@ struct JDSUtilsInterface
          */
 
         typedef void ( *setInversePerm ) ( IndexType inversePerm[],
-                                           const IndexType perm[],
-                                           const IndexType n );
+                        const IndexType perm[],
+                        const IndexType n );
 
         /** Compute dlg array from ilg array.
          *
@@ -1470,8 +1475,8 @@ struct JDSUtilsInterface
          *  /endcode
          */
 
-         typedef IndexType ( *ilg2dlg ) ( IndexType dlg[], const IndexType numDiagonals,
-                                          const IndexType ilg[], const IndexType numRows );
+        typedef IndexType ( *ilg2dlg ) ( IndexType dlg[], const IndexType numDiagonals,
+                        const IndexType ilg[], const IndexType numRows );
 
     };
 
@@ -1496,14 +1501,14 @@ struct JDSUtilsInterface
          */
 
         typedef void ( *getCSRValues ) ( IndexType csrJA[],
-                                         CSRValueType csrValues[],
-                                         const IndexType csrIA[],
-                                         const IndexType numRows,
-                                         const IndexType jdsPerm[],
-                                         const IndexType jdsILG[],
-                                         const IndexType jdsDLG[],
-                                         const IndexType jdsJA[],
-                                         const JDSValueType jdsValues[] );
+                        CSRValueType csrValues[],
+                        const IndexType csrIA[],
+                        const IndexType numRows,
+                        const IndexType jdsPerm[],
+                        const IndexType jdsILG[],
+                        const IndexType jdsDLG[],
+                        const IndexType jdsJA[],
+                        const JDSValueType jdsValues[] );
 
         /** Conversion of CSR storage data to JDS data
          *
@@ -1520,15 +1525,15 @@ struct JDSUtilsInterface
          */
 
         typedef void( *setCSRValues ) ( IndexType jdsJA[],
-                                        JDSValueType jdsValues[],
-                                        const IndexType numRows,
-                                        const IndexType jdsPerm[],
-                                        const IndexType jdsILG[],
-                                        const IndexType numDiagonals,
-                                        const IndexType jdsDLG[],
-                                        const IndexType csrIA[],
-                                        const IndexType csrJA[],
-                                        const CSRValueType csrValues[] );
+                        JDSValueType jdsValues[],
+                        const IndexType numRows,
+                        const IndexType jdsPerm[],
+                        const IndexType jdsILG[],
+                        const IndexType numDiagonals,
+                        const IndexType jdsDLG[],
+                        const IndexType csrIA[],
+                        const IndexType csrJA[],
+                        const CSRValueType csrValues[] );
     };
 
     // Define tables ( indexed by template value types) for all methods
@@ -1553,32 +1558,32 @@ struct JDSUtilsInterface
          */
 
         typedef void ( *normalGEMV ) ( ValueType result[],
-                                       const ValueType alpha,
-                                       const ValueType x[],
-                                       const ValueType beta,
-                                       const ValueType y[],
-                                       const IndexType numRows,
-                                       const IndexType jdsPerm[],
-                                       const IndexType jdsILG[],
-                                       const IndexType ndlg,
-                                       const IndexType jdsDLG[],
-                                       const IndexType jdsJA[],
-                                       const ValueType jdsValues[],
-                                       SyncToken* syncToken );
+                        const ValueType alpha,
+                        const ValueType x[],
+                        const ValueType beta,
+                        const ValueType y[],
+                        const IndexType numRows,
+                        const IndexType jdsPerm[],
+                        const IndexType jdsILG[],
+                        const IndexType ndlg,
+                        const IndexType jdsDLG[],
+                        const IndexType jdsJA[],
+                        const ValueType jdsValues[],
+                        SyncToken* syncToken );
 
         typedef void ( *normalGEVM ) ( ValueType result[],
-                                       const ValueType alpha,
-                                       const ValueType x[],
-                                       const ValueType beta,
-                                       const ValueType y[],
-                                       const IndexType numColumns,
-                                       const IndexType jdsPerm[],
-                                       const IndexType jdsILG[],
-                                       const IndexType ndlg,
-                                       const IndexType jdsDLG[],
-                                       const IndexType jdsJA[],
-                                       const ValueType jdsValues[],
-                                       SyncToken* syncToken );
+                        const ValueType alpha,
+                        const ValueType x[],
+                        const ValueType beta,
+                        const ValueType y[],
+                        const IndexType numColumns,
+                        const IndexType jdsPerm[],
+                        const IndexType jdsILG[],
+                        const IndexType ndlg,
+                        const IndexType jdsDLG[],
+                        const IndexType jdsJA[],
+                        const ValueType jdsValues[],
+                        SyncToken* syncToken );
     };
 
     LAMA_INTERFACE_DEFINE_T( Mult, normalGEMV )
@@ -1588,23 +1593,23 @@ struct JDSUtilsInterface
     struct Getter
     {
         typedef void ( *getRow ) ( OtherValueType row[],
-                                   const IndexType i,
-                                   const IndexType numColumns,
-                                   const IndexType numRows,
-                                   const IndexType perm[],
-                                   const IndexType ilg[],
-                                   const IndexType dlg[],
-                                   const IndexType ja[],
-                                   const ValueType values[] );
+                        const IndexType i,
+                        const IndexType numColumns,
+                        const IndexType numRows,
+                        const IndexType perm[],
+                        const IndexType ilg[],
+                        const IndexType dlg[],
+                        const IndexType ja[],
+                        const ValueType values[] );
 
         typedef ValueType (*getValue ) ( const IndexType i,
-                                         const IndexType j,
-                                         const IndexType numRows,
-                                         const IndexType* dlg,
-                                         const IndexType* ilg,
-                                         const IndexType* perm,
-                                         const IndexType* ja,
-                                         const ValueType* values );
+                        const IndexType j,
+                        const IndexType numRows,
+                        const IndexType* dlg,
+                        const IndexType* ilg,
+                        const IndexType* perm,
+                        const IndexType* ja,
+                        const ValueType* values );
 
     };
 
@@ -1615,11 +1620,11 @@ struct JDSUtilsInterface
     struct Scale
     {
         typedef void ( *scaleValue ) ( const IndexType numRows,
-                                       const IndexType perm[],
-                                       const IndexType ilg[],
-                                       const IndexType dlg[],
-                                       ValueType mValues[],
-                                       const OtherValueType values[] );
+                        const IndexType perm[],
+                        const IndexType ilg[],
+                        const IndexType dlg[],
+                        ValueType mValues[],
+                        const OtherValueType values[] );
     };
 
     LAMA_INTERFACE_DEFINE_TT( Scale, scaleValue )
@@ -1627,11 +1632,11 @@ struct JDSUtilsInterface
     struct Helper
     {
         typedef bool ( *checkDiagonalProperty ) ( const IndexType numDiagonals,
-                                                  const IndexType numRows,
-                                                  const IndexType numColumns,
-                                                  const IndexType perm[],
-                                                  const IndexType ja[],
-                                                  const IndexType dlg[] );
+                        const IndexType numRows,
+                        const IndexType numColumns,
+                        const IndexType perm[],
+                        const IndexType ja[],
+                        const IndexType dlg[] );
     };
 
     LAMA_INTERFACE_DEFINE( Helper, checkDiagonalProperty )
@@ -1669,48 +1674,49 @@ struct DIAUtilsInterface
          *  - diaValues has numDiagonals x max(numRows, numColumns) entries
          */
 
-        typedef void ( *getCSRSizes ) ( IndexType csrSizes[],
-                                        bool diagonalFlag,
-                                        const IndexType numRows,
-                                        const IndexType numColumns,
-                                        const IndexType numDiagonals,
-                                        const IndexType diaOffsets[],
-                                        const ValueType diaValues[],
-                                        const ValueType eps );
+        typedef void (*getCSRSizes)(
+            IndexType csrSizes[],
+            bool diagonalFlag,
+            const IndexType numRows,
+            const IndexType numColumns,
+            const IndexType numDiagonals,
+            const IndexType diaOffsets[],
+            const ValueType diaValues[],
+            const ValueType eps );
 
     };
 
     LAMA_INTERFACE_DEFINE_T( Counting, getCSRSizes )
 
-    template<typename DIAValueType, typename CSRValueType>
+template    <typename DIAValueType, typename CSRValueType>
     struct Conversions
     {
         /** Type definition of function pointer for conversion of DIA storage data to CSR data.
-        *
-        *  @param[out] csrJA will contain the column indexes
-        *  @param[out] csrValues will contain the matrix elements
-        *  @param[in] csrIA is the array with the offsets (must already be available before)
-        *  @param[in] numRows is the number of rows
-        *  @param[in] numColumns is the number of columns
-        *  @param[in] numDiagonals number of diagonals used in the DIA format
-        *  @param[in] diaOffsets diagonal offsets, size is numDiagonals
-        *  @param[in] diaValues are stored values of the diagonals
-        *  @param[in] eps threshold value when an element should be considered as zero
-        *
-        *   - csrIA has numRows + 1 entries
-        *   - csrJA and csrValues must have at least numValues entries, numValues = csrIA[numRows]
-        */
+         *
+         *  @param[out] csrJA will contain the column indexes
+         *  @param[out] csrValues will contain the matrix elements
+         *  @param[in] csrIA is the array with the offsets (must already be available before)
+         *  @param[in] numRows is the number of rows
+         *  @param[in] numColumns is the number of columns
+         *  @param[in] numDiagonals number of diagonals used in the DIA format
+         *  @param[in] diaOffsets diagonal offsets, size is numDiagonals
+         *  @param[in] diaValues are stored values of the diagonals
+         *  @param[in] eps threshold value when an element should be considered as zero
+         *
+         *   - csrIA has numRows + 1 entries
+         *   - csrJA and csrValues must have at least numValues entries, numValues = csrIA[numRows]
+         */
 
         typedef void ( *getCSRValues ) ( IndexType csrJA[],
-                                         CSRValueType csrValues[],
-                                         const IndexType csrIA[],
-                                         const bool diagonalFlag,
-                                         const IndexType numRows,
-                                         const IndexType numColumns,
-                                         const IndexType numDiagonals,
-                                         const IndexType diaOffsets[],
-                                         const DIAValueType diaValues[],
-                                         const DIAValueType eps );
+                        CSRValueType csrValues[],
+                        const IndexType csrIA[],
+                        const bool diagonalFlag,
+                        const IndexType numRows,
+                        const IndexType numColumns,
+                        const IndexType numDiagonals,
+                        const IndexType diaOffsets[],
+                        const DIAValueType diaValues[],
+                        const DIAValueType eps );
     };
 
     LAMA_INTERFACE_DEFINE_TT( Conversions, getCSRValues )
@@ -1732,16 +1738,16 @@ struct DIAUtilsInterface
          */
 
         typedef void ( *normalGEMV ) ( ValueType result[],
-                                       const ValueType alpha,
-                                       const ValueType x[],
-                                       const ValueType beta,
-                                       const ValueType y[],
-                                       const IndexType numRows,
-                                       const IndexType numColumns,
-                                       const IndexType numDiagonals,
-                                       const IndexType diaOffsets[],
-                                       const ValueType diaValues[],
-                                       SyncToken* syncToken );
+                        const ValueType alpha,
+                        const ValueType x[],
+                        const ValueType beta,
+                        const ValueType y[],
+                        const IndexType numRows,
+                        const IndexType numColumns,
+                        const IndexType numDiagonals,
+                        const IndexType diaOffsets[],
+                        const ValueType diaValues[],
+                        SyncToken* syncToken );
 
         /** result = alpha * x * CSR-Matrix + b * y.
          *
@@ -1757,16 +1763,16 @@ struct DIAUtilsInterface
          */
 
         typedef void ( *normalGEVM ) ( ValueType result[],
-                                       const ValueType alpha,
-                                       const ValueType x[],
-                                       const ValueType beta,
-                                       const ValueType y[],
-                                       const IndexType numRows,
-                                       const IndexType numColumns,
-                                       const IndexType numDiagonals,
-                                       const IndexType diaOffsets[],
-                                       const ValueType diaValues[],
-                                       SyncToken* syncToken );
+                        const ValueType alpha,
+                        const ValueType x[],
+                        const ValueType beta,
+                        const ValueType y[],
+                        const IndexType numRows,
+                        const IndexType numColumns,
+                        const IndexType numDiagonals,
+                        const IndexType diaOffsets[],
+                        const ValueType diaValues[],
+                        SyncToken* syncToken );
     };
 
     LAMA_INTERFACE_DEFINE_T( Mult, normalGEMV )
@@ -1777,21 +1783,21 @@ struct DIAUtilsInterface
     template<typename ValueType>
     struct Solver
     {
-       /** Method to compute one iteration step in Jacobi method
-        *
-        *  solution = omega * ( rhs + B * oldSolution) * dinv  + ( 1 - omega ) * oldSolution
-        *
-        */
-       typedef void ( *jacobi ) ( ValueType* const solution,
-                                  const IndexType numColumns,
-                                  const IndexType numDiagonals,
-                                  const IndexType diaOffset[],
-                                  const ValueType diaValues[],
-                                  const ValueType oldSolution[],
-                                  const ValueType rhs[],
-                                  const ValueType omega,
-                                  const IndexType numRows,
-                                  SyncToken* syncToken );
+        /** Method to compute one iteration step in Jacobi method
+         *
+         *  solution = omega * ( rhs + B * oldSolution) * dinv  + ( 1 - omega ) * oldSolution
+         *
+         */
+        typedef void ( *jacobi ) ( ValueType* const solution,
+                        const IndexType numColumns,
+                        const IndexType numDiagonals,
+                        const IndexType diaOffset[],
+                        const ValueType diaValues[],
+                        const ValueType oldSolution[],
+                        const ValueType rhs[],
+                        const ValueType omega,
+                        const IndexType numRows,
+                        SyncToken* syncToken );
     };
 
     LAMA_INTERFACE_DEFINE_T( Solver, jacobi )
@@ -1801,14 +1807,14 @@ struct DIAUtilsInterface
     template<typename ValueType>
     struct Reductions
     {
-         /** This method returns the maximal absolute value of an ELLPACK matrix. */
+        /** This method returns the maximal absolute value of an ELLPACK matrix. */
 
-         typedef ValueType ( *absMaxVal ) ( const IndexType numRows,
-                                            const IndexType numColumns,
-                                            const IndexType numDiagonals,
-                                            const IndexType diaOffsets[],
-                                            const ValueType diaValues[]
-                                          );
+        typedef ValueType ( *absMaxVal ) ( const IndexType numRows,
+                        const IndexType numColumns,
+                        const IndexType numDiagonals,
+                        const IndexType diaOffsets[],
+                        const ValueType diaValues[]
+        );
     };
 
     LAMA_INTERFACE_DEFINE_T( Reductions, absMaxVal )
@@ -1836,10 +1842,11 @@ struct COOUtilsInterface
          *  @param[in] array with row indexes of COO storage (size is numValues)
          */
 
-        typedef void ( *getCSRSizes )( IndexType csrSizes[],
-                                       const IndexType numRows,
-                                       const IndexType numValues,
-                                       const IndexType cooIA[] );
+        typedef void (*getCSRSizes)(
+            IndexType csrSizes[],
+            const IndexType numRows,
+            const IndexType numValues,
+            const IndexType cooIA[] );
 
         /** Routine for conversion of CSR offset array to COO ia array
          *
@@ -1852,16 +1859,16 @@ struct COOUtilsInterface
          *  The diagonal values will be stored at the beginning of the array cooIA.
          */
 
-        typedef void ( *offsets2ia )( IndexType cooIA[],
-                                      const IndexType numValues,
-                                      const IndexType csrIA[],
-                                      const IndexType numRows,
-                                      const IndexType numDiagonals );
+        typedef void (*offsets2ia)(
+            IndexType cooIA[],
+            const IndexType numValues,
+            const IndexType csrIA[],
+            const IndexType numRows,
+            const IndexType numDiagonals );
 
     };
 
-    LAMA_INTERFACE_DEFINE( Counting, getCSRSizes )
-    LAMA_INTERFACE_DEFINE( Counting, offsets2ia )
+    LAMA_INTERFACE_DEFINE( Counting, getCSRSizes )LAMA_INTERFACE_DEFINE( Counting, offsets2ia )
 
     template<typename COOValueType, typename CSRValueType>
     struct Conversions
@@ -1879,13 +1886,13 @@ struct COOUtilsInterface
          */
 
         typedef void ( *getCSRValues )( IndexType csrJA[],
-                                        CSRValueType csrValues[],
-                                        IndexType csrIA[],
-                                        const IndexType numRow,
-                                        const IndexType numValues,
-                                        const IndexType cooIA[],
-                                        const IndexType cooJA[],
-                                        const COOValueType cooValues[] );
+                        CSRValueType csrValues[],
+                        IndexType csrIA[],
+                        const IndexType numRow,
+                        const IndexType numValues,
+                        const IndexType cooIA[],
+                        const IndexType cooJA[],
+                        const COOValueType cooValues[] );
 
         /** Conversion of CSR data (ja, values) to COO data.
          *
@@ -1902,11 +1909,11 @@ struct COOUtilsInterface
          */
 
         typedef void ( *setCSRData ) ( COOValueType cooValues[],
-                                       const CSRValueType csrValues[],
-                                       const IndexType numValues,
-                                       const IndexType csrIA[],
-                                       const IndexType numRows,
-                                       const IndexType numDiagonals );
+                        const CSRValueType csrValues[],
+                        const IndexType numValues,
+                        const IndexType csrIA[],
+                        const IndexType numRows,
+                        const IndexType numDiagonals );
     };
 
     LAMA_INTERFACE_DEFINE_TT( Conversions, getCSRValues )
@@ -1929,28 +1936,28 @@ struct COOUtilsInterface
          */
 
         typedef void ( *normalGEMV ) ( ValueType result[],
-                                       const ValueType alpha,
-                                       const ValueType x[],
-                                       const ValueType beta,
-                                       const ValueType y[],
-                                       const IndexType numRows,
-                                       const IndexType nnz,
-                                       const IndexType cooIA[],
-                                       const IndexType cooJA[],
-                                       const ValueType cooValues[],
-                                       SyncToken* syncToken );
+                        const ValueType alpha,
+                        const ValueType x[],
+                        const ValueType beta,
+                        const ValueType y[],
+                        const IndexType numRows,
+                        const IndexType nnz,
+                        const IndexType cooIA[],
+                        const IndexType cooJA[],
+                        const ValueType cooValues[],
+                        SyncToken* syncToken );
 
         typedef void ( *normalGEVM ) ( ValueType result[],
-                                       const ValueType alpha,
-                                       const ValueType x[],
-                                       const ValueType beta,
-                                       const ValueType y[],
-                                       const IndexType numRows,
-                                       const IndexType nnz,
-                                       const IndexType cooIA[],
-                                       const IndexType cooJA[],
-                                       const ValueType cooValues[],
-                                       SyncToken* syncToken );
+                        const ValueType alpha,
+                        const ValueType x[],
+                        const ValueType beta,
+                        const ValueType y[],
+                        const IndexType numRows,
+                        const IndexType nnz,
+                        const IndexType cooIA[],
+                        const IndexType cooJA[],
+                        const ValueType cooValues[],
+                        SyncToken* syncToken );
     };
 
     LAMA_INTERFACE_DEFINE_T( Mult, normalGEMV )
@@ -1960,21 +1967,21 @@ struct COOUtilsInterface
     template<typename ValueType>
     struct Solver
     {
-       /** Method to compute one iteration step in Jacobi method
-        *
-        *  solution = omega * ( rhs + B * oldSolution) * dinv  + ( 1 - omega ) * oldSolution
-        *
-        */
-       typedef void ( *jacobi ) ( ValueType* const solution,
-                                  const IndexType cooNumValues,
-                                  const IndexType cooIA[],
-                                  const IndexType cooJA[],
-                                  const ValueType cooValues[],
-                                  const ValueType oldSolution[],
-                                  const ValueType rhs[],
-                                  const ValueType omega,
-                                  const IndexType numRows,
-                                  SyncToken* syncToken );
+        /** Method to compute one iteration step in Jacobi method
+         *
+         *  solution = omega * ( rhs + B * oldSolution) * dinv  + ( 1 - omega ) * oldSolution
+         *
+         */
+        typedef void ( *jacobi ) ( ValueType* const solution,
+                        const IndexType cooNumValues,
+                        const IndexType cooIA[],
+                        const IndexType cooJA[],
+                        const ValueType cooValues[],
+                        const ValueType oldSolution[],
+                        const ValueType rhs[],
+                        const ValueType omega,
+                        const IndexType numRows,
+                        SyncToken* syncToken );
 
         /** Method to compute one iteration step in Jacobi method
          *
@@ -1982,14 +1989,14 @@ struct COOUtilsInterface
          *
          */
         typedef void ( *jacobiHalo ) ( ValueType solution[],
-                                       const ValueType diaValues[],
-                                       const IndexType haloIA[],
-                                       const IndexType haloJA[],
-                                       const ValueType haloValues[],
-                                       const IndexType haloRowIndexes[],
-                                       const ValueType oldSolution[],
-                                       const ValueType omega,
-                                       const IndexType numNonEmptyRows );
+                        const ValueType diaValues[],
+                        const IndexType haloIA[],
+                        const IndexType haloJA[],
+                        const ValueType haloValues[],
+                        const IndexType haloRowIndexes[],
+                        const ValueType oldSolution[],
+                        const ValueType omega,
+                        const IndexType numNonEmptyRows );
     };
 
     LAMA_INTERFACE_DEFINE_T( Solver, jacobi )
@@ -2000,6 +2007,7 @@ struct COOUtilsInterface
     COOUtilsInterface ();
 };
 
-} //namespace lama
+}
+//namespace lama
 
 #endif // LAMA_UTILS_INTERFACE_HPP_

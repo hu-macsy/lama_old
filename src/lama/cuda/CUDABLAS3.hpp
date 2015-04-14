@@ -2,7 +2,7 @@
  * @file CUDABLAS3.hpp
  *
  * @license
- * Copyright (c) 2009-2013
+ * Copyright (c) 2009-2015
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -47,7 +47,8 @@
 namespace lama
 {
 
-class SyncToken;   // forward declaration
+class SyncToken;
+// forward declaration
 
 class LAMA_DLL_IMPORTEXPORT CUDABLAS3
 {
@@ -224,11 +225,12 @@ private:
 
     LAMA_LOG_DECL_STATIC_LOGGER( logger )
 
-    static bool initialized;   //!< static initialization used for registration
+    static    bool initialized; //!< static initialization used for registration
 
-    static bool registerInterface();  //!< registration
+    static bool registerInterface();//!< registration
 };
 
-} /* namespace lama */
+}
+/* namespace lama */
 
 #endif // LAMA_CUDABLAS3_HPP_

@@ -2,7 +2,7 @@
  * @file TraceConfig.hpp
  *
  * @license
- * Copyright (c) 2009-2013
+ * Copyright (c) 2009-2015
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -155,7 +155,7 @@ public:
 
     private:
 
-        bool saveFlag;   // used to save state of global trace flag
+        bool saveFlag; // used to save state of global trace flag
     };
 
     static bool globalTraceFlag;
@@ -186,7 +186,7 @@ private:
      *  Use of shared pointer for entry in map
      */
 
-    std::map<ThreadId, boost::shared_ptr<RegionTable> > mRegionTables;
+    std::map<ThreadId,boost::shared_ptr<RegionTable> > mRegionTables;
 
     /** Get the region table by the id of a thread. */
 
@@ -202,8 +202,9 @@ private:
 
     LAMA_LOG_DECL_STATIC_LOGGER( logger )
 
-};
+}    ;
 
-} // namespace tracing
+}
+// namespace tracing
 
 #endif // LAMA_TRACING_TRACE_CONFIG_HPP_

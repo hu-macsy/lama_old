@@ -2,7 +2,7 @@
  * @file OpenMPBLAS1.hpp
  *
  * @license
- * Copyright (c) 2009-2013
+ * Copyright (c) 2009-2015
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -62,7 +62,12 @@ public:
      * This function is the OpenMP implementation of lama::BLASInterface::scal
      */
     template<typename ValueType>
-    static void scal( const IndexType n, const ValueType alpha, ValueType* x, const IndexType incX, SyncToken* syncToken );
+    static void scal(
+        const IndexType n,
+        const ValueType alpha,
+        ValueType* x,
+        const IndexType incX,
+        SyncToken* syncToken );
 
     /**
      * This function is the OpenMP implementation of lama::BLASInterface::nrm2
@@ -86,7 +91,13 @@ public:
      * This function is the OpenMP implementation of lama::BLASInterface::swap
      */
     template<typename ValueType>
-    static void swap( const IndexType n, ValueType* y, const IndexType incY, ValueType* x, const IndexType incX, SyncToken* syncToken );
+    static void swap(
+        const IndexType n,
+        ValueType* y,
+        const IndexType incY,
+        ValueType* x,
+        const IndexType incX,
+        SyncToken* syncToken );
 
     /**
      * This function is the OpenMP implementation of lama::BLASInterface::copy
@@ -129,7 +140,14 @@ public:
      * This function is the OpenMP implementation of lama::BLASInterface::sum
      */
     template<typename ValueType>
-    static void sum( const IndexType n, ValueType alpha, const ValueType* x, ValueType beta, const ValueType* y, ValueType* z, SyncToken* syncToken );
+    static void sum(
+        const IndexType n,
+        ValueType alpha,
+        const ValueType* x,
+        ValueType beta,
+        const ValueType* y,
+        ValueType* z,
+        SyncToken* syncToken );
 
     static void setInterface( struct BLASInterface& BLAS );
 
@@ -142,6 +160,7 @@ private:
     LAMA_LOG_DECL_STATIC_LOGGER( logger )
 };
 
-} /* namespace lama */
+}
+/* namespace lama */
 
 #endif // LAMA_OPENMP_BLAS1_HPP_

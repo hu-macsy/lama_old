@@ -2,7 +2,7 @@
  * @file Walltime.cpp
  *
  * @license
- * Copyright (c) 2009-2013
+ * Copyright (c) 2009-2015
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -46,7 +46,7 @@
 
 #else
 
-#include <sys/time.h>  
+#include <sys/time.h>
 
 #endif
 
@@ -55,7 +55,7 @@ namespace lama
 
 double Walltime::get()
 {
-    
+
 #if defined( _OPENMP )
 
     return omp_get_wtime();
@@ -65,7 +65,7 @@ double Walltime::get()
     SYSTEMTIME lpSystemTime;
     GetLocalTime( &lpSystemTime );
     return ( lpSystemTime.wHour * 60.0 + lpSystemTime.wMinute ) * 60.0 +
-           lpSystemTime.wSecond + lpSystemTime.wMilliseconds * 0.001;
+    lpSystemTime.wSecond + lpSystemTime.wMilliseconds * 0.001;
 
 #else
 
@@ -76,8 +76,8 @@ double Walltime::get()
 
     return (double) tp.tv_sec + tp.tv_usec * 0.000001;
 
-#endif 
-     
+#endif
+
 }
 
 } // namespace lama

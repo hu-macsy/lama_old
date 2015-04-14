@@ -2,7 +2,7 @@
  * @file MatrixTest.cpp
  *
  * @license
- * Copyright (c) 2009-2013
+ * Copyright (c) 2009-2015
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -68,23 +68,19 @@ LAMA_LOG_DEF_LOGGER( logger, "Test.MatrixTest" )
 
 /* --------------------------------------------------------------------- */
 
-typedef boost::mpl::list<CSRSparseMatrix<float>,ELLSparseMatrix<float>,COOSparseMatrix<double>,JDSSparseMatrix<float>,
-        DIASparseMatrix<double>,DenseMatrix<double> > MatrixTypes;
+typedef boost::mpl::list<CSRSparseMatrix<float>, ELLSparseMatrix<float>, COOSparseMatrix<double>, JDSSparseMatrix<float>,
+        DIASparseMatrix<double>, DenseMatrix<double> > MatrixTypes;
 
 /* --------------------------------------------------------------------- */
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( TypeNameTest, MatrixType, MatrixTypes )
 {
     const std::string classTypeName = MatrixType::typeName();
-
     MatrixType matrix;
     const Matrix* ptrMatrix = &matrix;
-
     const std::string objTypeName = ptrMatrix->getTypeName();
-
     LAMA_LOG_INFO( logger, matrix << ": class name = " << classTypeName
                    << ", object name = " << objTypeName );
-
     BOOST_CHECK( objTypeName == classTypeName );
 }
 
@@ -93,32 +89,21 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( TypeNameTest, MatrixType, MatrixTypes )
 BOOST_AUTO_TEST_CASE_TEMPLATE( RandomTest, MatrixType, MatrixTypes )
 {
     typedef typename MatrixType::MatrixValueType ValueType;
-
     const IndexType numRows = 150;
     const IndexType numColumns = 160;
-
     const double density = 0.1; // 10% density
-
     MatrixType matrix( numRows, numColumns );
     MatrixCreator<ValueType>::fillRandom( matrix, density );
-
     LAMA_LOG_INFO( logger, "Random matrix = " << matrix );
-
     BOOST_CHECK_EQUAL( numRows, matrix.getNumRows() );
     BOOST_CHECK_EQUAL( numColumns, matrix.getNumColumns() );
-
     IndexType numValues = matrix.getNumValues();
-
 // should be very unlikely that number of values diverges much from expected number. */
-
     BOOST_CHECK( density * numRows * numColumns * 2.0 > numValues );
     BOOST_CHECK( density * numRows * numColumns * 0.5 < numValues );
-
     double sparsityRate = matrix.getSparsityRate();
-
     BOOST_CHECK( density * 2.0 > sparsityRate );
     BOOST_CHECK( density * 0.5 < sparsityRate );
-
     size_t memUsage = matrix.getMemoryUsage();
     size_t denseUsage = numRows * numColumns * sizeof( ValueType );
 
@@ -134,17 +119,11 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( RandomTest, MatrixType, MatrixTypes )
 BOOST_AUTO_TEST_CASE_TEMPLATE( ReadWriteTest, MatrixType, MatrixTypes )
 {
     CommunicatorPtr comm = CommunicatorFactory::get(); // get default, MPI or serial
-
     LAMA_LOG_INFO( logger, "ReadWriteTest for MatrixType = " << typeid( MatrixType ).name() );
-
     std::string prefix = Configuration::getInstance().getPath();
-
     LAMA_LOG_INFO( logger, "prefix = " << prefix );
-
     LAMA_LOG_INFO( logger, "readWriteTest: check loading float matrix" );
-
 // load an available testfile matrix.
-
     std::string formattedInputFile = prefix + "/bp__1600.mtx";
     MatrixType formattedMatrix( formattedInputFile );
     LAMA_LOG_INFO( logger, "formatted input matrix = " << formattedMatrix );
@@ -152,7 +131,6 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( ReadWriteTest, MatrixType, MatrixTypes )
     if ( formattedMatrix.getMatrixKind() == Matrix::SPARSE )
     {
         // just some additional test, be careful, is too large for dense matrices
-
         std::string formattedInputFile = prefix + "/2D_poisson_256_formatted.frm";
         std::string xdrInputFile = prefix + "/2D_poisson_256_xdr.frm";
         MatrixType formattedPoisson( formattedInputFile );
@@ -161,35 +139,23 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( ReadWriteTest, MatrixType, MatrixTypes )
     }
 
     LAMA_LOG_INFO( logger, "readWriteTest: check writing and loading formatted matrix" );
-
     std::string formattedFileName = prefix + "/test_matrix_formatted.tmp.frm";
-
     formattedMatrix.writeToFile( formattedFileName, File::FORMATTED, File::FLOAT, File::INT, File::INT );
     MatrixType readFormattedMatrix( formattedFileName );
     testSameMatrix( formattedMatrix, readFormattedMatrix );
-
     LAMA_LOG_INFO( logger, "readWriteTest: check writing and loading XDR matrix" );
-
     std::string xdrFileName = prefix + "/test_matrix_xdr.tmp.frm";
-
     formattedMatrix.writeToFile( xdrFileName, File::XDR, File::DOUBLE, File::LONG, File::LONG );
     MatrixType readXDRMatrix( xdrFileName );
     testSameMatrix( readXDRMatrix, formattedMatrix );
-
     LAMA_LOG_INFO( logger, "readWriteTest: check writing and loading binary matrix" );
-
     std::string binaryFileName = prefix + "/test_matrix_bin.tmp.frm";
-
 // Be careful: binary read must fit to the format that has been used for the write
-
     formattedMatrix.writeToFile( binaryFileName, File::BINARY, File::INTERNAL, File::INT, File::INT );
     MatrixType readBinaryMatrix( binaryFileName );
     testSameMatrix( formattedMatrix, readBinaryMatrix );
-
     LAMA_LOG_INFO( logger, "readWriteTest: check writing and loading Matrix Market matrix" );
-
     std::string matrixMarketFileName = prefix + "/test_matrix_mm.tmp.mtx";
-
     formattedMatrix.writeToFile( matrixMarketFileName, File::MATRIX_MARKET, File::DOUBLE );
     MatrixType readMarketMatrix( matrixMarketFileName );
     testSameMatrix( formattedMatrix, readMarketMatrix );
@@ -200,17 +166,11 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( ReadWriteTest, MatrixType, MatrixTypes )
 BOOST_AUTO_TEST_CASE_TEMPLATE( DenseMatrixMultTest, MatrixType, MatrixTypes )
 {
     typedef typename MatrixType::MatrixValueType ValueType;
-
 // DenseMatrix = MatrixType * DenseMatrix
-
     MatrixType matrix1 = TestSparseMatrices::n6m4MatrixE1<ValueType>();
-
     DenseMatrix<ValueType> matrix2 = TestSparseMatrices::n4m3MatrixE2<ValueType>();
-
     DenseMatrix<ValueType> matrixP( matrix1 * matrix2 );
-
     DenseMatrix<ValueType> matrixR = TestSparseMatrices::n6m3MatrixERes<ValueType>();
-
     testSameMatrix( matrixR, matrixP );
 }
 

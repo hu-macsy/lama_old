@@ -2,7 +2,7 @@
  * @file LAMAArray.cpp
  *
  * @license
- * Copyright (c) 2009-2013
+ * Copyright (c) 2009-2015
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -58,20 +58,22 @@ typedef Context::ContextData::AccessKind AccessKind;
 
 _LAMAArray* _LAMAArray::create( const Scalar::ScalarType valueType )
 {
-    switch ( valueType )
+    switch( valueType )
     {
-    case Scalar::FLOAT:
-    {
-        return new LAMAArray<float>();
-    }
-    case Scalar::DOUBLE:
-    {
-        return new LAMAArray<double>();
-    }
-    default:
-    {
-        LAMA_THROWEXCEPTION( "Unsupported ValueType " << valueType )
-    }
+        case Scalar::FLOAT:
+        {
+            return new LAMAArray<float>();
+        }
+
+        case Scalar::DOUBLE:
+        {
+            return new LAMAArray<double>();
+        }
+
+        default:
+        {
+            LAMA_THROWEXCEPTION( "Unsupported ValueType " << valueType )
+        }
     }
 }
 
@@ -94,7 +96,7 @@ size_t _LAMAArray::nContextIndex = maxSize();
 
 template<typename ValueType>
 LAMAArray<ValueType>::LAMAArray()
-    : _LAMAArray( 0 ), mSyncToken( 0 )
+                : _LAMAArray( 0 ), mSyncToken( 0 )
 {
     setHostContext();
     LAMA_LOG_DEBUG( logger, "created new context array: " << *this )
@@ -115,11 +117,11 @@ void LAMAArray<ValueType>::setHostContext()
 
 template<typename ValueType>
 LAMAArray<ValueType>::LAMAArray( const IndexType n )
-    : _LAMAArray( n ), mSyncToken( 0 )
+                : _LAMAArray( n ), mSyncToken( 0 )
 {
     setHostContext();
 
-    if ( n > 0 )
+    if( n > 0 )
     {
         ContextData& host = *mContextData[0];
         host.allocate( mSize * sizeof(ValueType) );
@@ -130,11 +132,11 @@ LAMAArray<ValueType>::LAMAArray( const IndexType n )
 
 template<typename ValueType>
 LAMAArray<ValueType>::LAMAArray( const IndexType n, const ValueType& value )
-    : _LAMAArray( n ), mSyncToken( 0 )
+                : _LAMAArray( n ), mSyncToken( 0 )
 {
     setHostContext();
 
-    if ( n <= 0 )
+    if( n <= 0 )
     {
         LAMA_LOG_INFO( logger, "Construtor LAMAArray, size = 0, value = " << value )
         return;
@@ -146,8 +148,9 @@ LAMAArray<ValueType>::LAMAArray( const IndexType n, const ValueType& value )
 
     ValueType* host_pointer = static_cast<ValueType*>( host.pointer );
 
-    #pragma omp parallel for schedule(LAMA_OMP_SCHEDULE)
-    for ( int i = 0; i < mSize; ++i )
+#pragma omp parallel for schedule(LAMA_OMP_SCHEDULE)
+
+    for( int i = 0; i < mSize; ++i )
     {
         host_pointer[i] = value;
     }
@@ -160,7 +163,7 @@ LAMAArray<ValueType>::LAMAArray( const IndexType n, const ValueType& value )
 
 template<typename ValueType>
 LAMAArray<ValueType>::LAMAArray( const LAMAArray<ValueType>& other )
-    : _LAMAArray( other.mSize ), mSyncToken( 0 )
+                : _LAMAArray( other.mSize ), mSyncToken( 0 )
 {
     // find a valid location of the other array in any context
     setHostContext(); // make default initialization
@@ -183,11 +186,11 @@ LAMAArray<ValueType>::~LAMAArray()
 
     // check for existing read / write lock
 
-    if ( LAMA_LOG_WARN_ON(logger) )
+    if( LAMA_LOG_WARN_ON( logger ) )
     {
-        for ( size_t i = 0; i < mContextData.size(); i++ )
+        for( size_t i = 0; i < mContextData.size(); i++ )
         {
-            if ( mContextData[i]->lock[ContextData::Read] || mContextData[i]->lock[ContextData::Write] )
+            if( mContextData[i]->lock[ContextData::Read] || mContextData[i]->lock[ContextData::Write] )
             {
                 locked = true;
                 break;
@@ -198,13 +201,13 @@ LAMAArray<ValueType>::~LAMAArray()
 
     // give a warning, never throw an exception in destructor ( might crash )
 
-    if ( locked )
+    if( locked )
     {
         LAMA_LOG_WARN( logger, "Destructor on read/write locked array: " << *this )
     }
 
     {
-        for ( size_t i = 0; i < mContextData.size(); i++ )
+        for( size_t i = 0; i < mContextData.size(); i++ )
         {
             delete mContextData[i];
         }
@@ -236,18 +239,18 @@ LAMAArray<ValueType>& LAMAArray<ValueType>::operator=( const LAMAArray<ValueType
 
     // this array should have no read/write access
 
-    for ( size_t i = 0; i < mContextData.size(); i++ )
+    for( size_t i = 0; i < mContextData.size(); i++ )
     {
         ContextData& entry = *mContextData[i];
 
-        if ( entry.lock[ContextData::Read] || entry.lock[ContextData::Write] )
+        if( entry.lock[ContextData::Read] || entry.lock[ContextData::Write] )
         {
             LAMA_THROWEXCEPTION( *this << ": cannot copy/assign to locked array" )
         }
 
         // make all entries invalid because we will overwrite them
 
-        if ( entry.valid )
+        if( entry.valid )
         {
             entry.valid = false;
             LAMA_LOG_DEBUG( logger, *this << ": invalidated at index = " << i << " for " << entry.context )
@@ -257,12 +260,12 @@ LAMAArray<ValueType>& LAMAArray<ValueType>::operator=( const LAMAArray<ValueType
     // each valid data of the other array will be copied into the same context for this array
     size_t nOtherContexts = other.mContextData.size();
 
-    for ( size_t i = 0; i < nOtherContexts; i++ )
+    for( size_t i = 0; i < nOtherContexts; i++ )
     {
         LAMA_LOG_TRACE( logger, "Other Context index = " << i )
         const ContextData& otherEntry = *other.mContextData[i];
 
-        if ( !otherEntry.valid )
+        if( !otherEntry.valid )
         {
             LAMA_LOG_TRACE( logger,
                             other << ": context " << i << " of " << nOtherContexts << " for " << *otherEntry.context << " is invalid, will not be copied" )
@@ -280,7 +283,7 @@ LAMAArray<ValueType>& LAMAArray<ValueType>::operator=( const LAMAArray<ValueType
 
         // and then copy the data within the same context
 
-        if ( mSize > 0 )
+        if( mSize > 0 )
         {
             fetch( contextEntry, otherEntry );
         }
@@ -308,18 +311,18 @@ void LAMAArray<ValueType>::assign( const LAMAArray<ValueType>& other, ContextPtr
 
     // this array should have no read/write access
 
-    for ( size_t i = 0; i < mContextData.size(); i++ )
+    for( size_t i = 0; i < mContextData.size(); i++ )
     {
         ContextData& entry = *mContextData[i];
 
-        if ( entry.lock[ContextData::Read] || entry.lock[ContextData::Write] )
+        if( entry.lock[ContextData::Read] || entry.lock[ContextData::Write] )
         {
             LAMA_THROWEXCEPTION( *this << ": cannot copy/assign to locked array" )
         }
 
         // make all entries invalid because we will overwrite them
 
-        if ( entry.valid )
+        if( entry.valid )
         {
             entry.valid = false;
             LAMA_LOG_DEBUG( logger, *this << ": invalidated at index = " << i << " for " << entry.context )
@@ -334,12 +337,12 @@ void LAMAArray<ValueType>::assign( const LAMAArray<ValueType>& other, ContextPtr
 
     bool copyDone = false;
 
-    for ( size_t i = 0; i < nOtherContexts; i++ )
+    for( size_t i = 0; i < nOtherContexts; i++ )
     {
         LAMA_LOG_TRACE( logger, "Other Context index = " << i )
         const ContextData& otherEntry = *other.mContextData[i];
 
-        if ( otherEntry.context != context )
+        if( otherEntry.context != context )
         {
             continue;
         }
@@ -355,7 +358,7 @@ void LAMAArray<ValueType>::assign( const LAMAArray<ValueType>& other, ContextPtr
 
         // and then copy the data within the same context
 
-        if ( mSize > 0 )
+        if( mSize > 0 )
         {
             fetch( contextEntry, otherEntry );
         }
@@ -380,7 +383,7 @@ void LAMAArray<ValueType>::swap( LAMAArray<ValueType>& other )
 
     // we cannot swap if there is any access for any array
 
-    for ( size_t i = 0; i < mContextData.size(); i++ )
+    for( size_t i = 0; i < mContextData.size(); i++ )
     {
         LAMA_ASSERT_ERROR( 0 == mContextData[i]->lock[ContextData::Read],
                            *this << ": cannot be swapped, " << " read lock on " << *mContextData[i]->context )
@@ -388,7 +391,7 @@ void LAMAArray<ValueType>::swap( LAMAArray<ValueType>& other )
                            *this << ": cannot be swapped, " << " write lock on " << *mContextData[i]->context )
     }
 
-    for ( size_t i = 0; i < other.mContextData.size(); i++ )
+    for( size_t i = 0; i < other.mContextData.size(); i++ )
     {
         LAMA_ASSERT_ERROR( 0 == other.mContextData[i]->lock[ContextData::Read],
                            other << ": cannot be swapped, " << " read lock on " << *other.mContextData[i]->context )
@@ -417,7 +420,7 @@ void LAMAArray<ValueType>::prefetch( ContextPtr context ) const
                     "prefetch on " << *context << ": contextIndex = " << contextIndex << ", validIndex = " << validIndex )
     ContextData& contextEntry = *mContextData[contextIndex];
 
-    if ( contextEntry.valid || mSize == 0 )
+    if( contextEntry.valid || mSize == 0 )
     {
         return;
     }
@@ -448,11 +451,12 @@ template<typename ValueType>
 ContextPtr LAMAArray<ValueType>::getValidContext( const Context::ContextType preferredType /*= Context::Host*/) const
 {
     ContextPtr validContext;
-    for ( size_t i = 0; i < mContextData.size(); ++i )
+
+    for( size_t i = 0; i < mContextData.size(); ++i )
     {
         const ContextData& entry = *mContextData[i];
 
-        if ( entry.valid )
+        if( entry.valid )
         {
             validContext = entry.context;
         }
@@ -463,11 +467,12 @@ ContextPtr LAMAArray<ValueType>::getValidContext( const Context::ContextType pre
             continue;
         }
 
-        if ( preferredType == validContext->getType() )
+        if( preferredType == validContext->getType() )
         {
             break;
         }
     }
+
     return validContext;
 }
 
@@ -480,15 +485,15 @@ void LAMAArray<ValueType>::reserve( ContextPtr context, const IndexType capacity
 
     // search for an available entry
 
-    for ( size_t i = 0; i < mContextData.size(); ++i )
+    for( size_t i = 0; i < mContextData.size(); ++i )
     {
         const ContextData& entry = *mContextData[i];
 
-        if ( *entry.context == *context )
+        if( *entry.context == *context )
         {
             contextIndex = i;
         }
-        else if ( entry.lock[ContextData::Write] )
+        else if( entry.lock[ContextData::Write] )
         {
             LAMA_THROWEXCEPTION( "no further access on write locked array " << *this )
         }
@@ -496,7 +501,7 @@ void LAMAArray<ValueType>::reserve( ContextPtr context, const IndexType capacity
 
     // if context is used first time, make new entry for context data
 
-    if ( contextIndex == nContextIndex )
+    if( contextIndex == nContextIndex )
     {
         contextIndex = mContextData.size();
         mContextData.push_back( new ContextData( context ) );
@@ -509,7 +514,7 @@ void LAMAArray<ValueType>::reserve( ContextPtr context, const IndexType capacity
 
     // now resize
 
-    bool copyFlag = mContextData[ contextIndex ]->valid;
+    bool copyFlag = mContextData[contextIndex]->valid;
 
     reserve( contextIndex, capacity, copyFlag );
 }
@@ -524,48 +529,50 @@ void LAMAArray<ValueType>::fetch( ContextData& target, const ContextData& source
     LAMA_ASSERT_DEBUG( source.valid, "fetch from invalid source" )
     LAMA_ASSERT_DEBUG( !target.valid, "fetch to valid target" )
     LAMA_ASSERT_DEBUG( mSize, "size = 0, no fetch needed" )
-    LAMA_ASSERT_DEBUG( target.size >= mSize*sizeof(ValueType),
+    LAMA_ASSERT_DEBUG( target.size >= mSize * sizeof(ValueType),
                        *this << ": fetch has insufficient capacity on target context " << target.context )
     size_t transferSize = mSize * sizeof(ValueType);
 
-    if ( target.context->getType() == Context::Host && source.context->getType() != Context::Host )
+    if( target.context->getType() == Context::Host && source.context->getType() != Context::Host )
     {
         ValueType* target_pointer = static_cast<ValueType*>( target.pointer );
 
         // to ensure first touch
-        #pragma omp parallel for schedule(LAMA_OMP_SCHEDULE)
-        for ( IndexType i = 0; i < mSize; ++i )
+#pragma omp parallel for schedule(LAMA_OMP_SCHEDULE)
+
+        for( IndexType i = 0; i < mSize; ++i )
         {
             target_pointer[i] = 0;
         }
     }
 
-    if ( source.context->getType() == Context::Host && target.context->getType() == Context::Host )
+    if( source.context->getType() == Context::Host && target.context->getType() == Context::Host )
     {
         ValueType* target_pointer = static_cast<ValueType*>( target.pointer );
 
         ValueType* source_pointer = static_cast<ValueType*>( source.pointer );
 
         // to preserve first touch
-        #pragma omp parallel for schedule(LAMA_OMP_SCHEDULE)
-        for ( IndexType i = 0; i < mSize; ++i )
+#pragma omp parallel for schedule(LAMA_OMP_SCHEDULE)
+
+        for( IndexType i = 0; i < mSize; ++i )
         {
             target_pointer[i] = source_pointer[i];
         }
     }
-    else if ( source.context->canUseData( *target.context ) )
+    else if( source.context->canUseData( *target.context ) )
     {
         LAMA_LOG_DEBUG( logger,
                         "same use context transfer to " << *target.context << " from " << *source.context << ", size = " << transferSize )
         source.context->memcpy( target.pointer, source.pointer, transferSize );
     }
-    else if ( target.context->cancpy( target, source ) )
+    else if( target.context->cancpy( target, source ) )
     {
         LAMA_LOG_DEBUG( logger,
                         "transfer to " << *target.context << " from " << *source.context << ", size = " << transferSize )
         target.context->memcpy( target, source, transferSize );
     }
-    else if ( source.context->cancpy( target, source ) )
+    else if( source.context->cancpy( target, source ) )
     {
         LAMA_LOG_DEBUG( logger,
                         "transfer from " << *source.context << " to " << *target.context << ", size = " << transferSize )
@@ -595,24 +602,24 @@ SyncToken* LAMAArray<ValueType>::fetchAsync( ContextData& target, const ContextD
     LAMA_ASSERT_DEBUG( source.valid, "async fetch from invalid source" )
     LAMA_ASSERT_DEBUG( !target.valid, "async fetch to valid target" )
     LAMA_ASSERT_DEBUG( mSize, "size = 0, no fetch needed" )
-    LAMA_ASSERT_DEBUG( target.size >= mSize*sizeof(ValueType),
+    LAMA_ASSERT_DEBUG( target.size >= mSize * sizeof(ValueType),
                        *this << ": fetch has insufficient capacity on target context " << target.context )
 
     size_t transferSize = mSize * sizeof(ValueType);
 
-    if ( source.context->canUseData( *target.context ) )
+    if( source.context->canUseData( *target.context ) )
     {
         LAMA_LOG_DEBUG( logger,
                         "same use context async transfer to " << *target.context << " from " << *source.context << ", size = " << transferSize )
         return source.context->memcpyAsync( target.pointer, source.pointer, transferSize );
     }
-    else if ( target.context->cancpy( target, source ) )
+    else if( target.context->cancpy( target, source ) )
     {
         LAMA_LOG_INFO( logger,
                        "async transfer from " << *source.context << " to " << *target.context << ", size = " << transferSize )
         return target.context->memcpyAsync( target, source, transferSize );
     }
-    else if ( source.context->cancpy( target, source ) )
+    else if( source.context->cancpy( target, source ) )
     {
         LAMA_LOG_INFO( logger,
                        "async transfer from " << *source.context << " to " << *target.context << ", size = " << transferSize )
@@ -621,7 +628,7 @@ SyncToken* LAMAArray<ValueType>::fetchAsync( ContextData& target, const ContextD
     else
     {
         LAMA_THROWEXCEPTION(
-            "no async memory transfer from " << *source.context << " to " << *target.context << " supported" );
+                        "no async memory transfer from " << *source.context << " to " << *target.context << " supported" );
     }
 }
 
@@ -632,11 +639,11 @@ void LAMAArray<ValueType>::wait() const
 {
     LAMA_LOG_TRACE( logger, "wait" )
 
-    if ( 0 != mSyncToken.get() )
+    if( 0 != mSyncToken.get() )
     {
         LAMA_LOG_DEBUG( logger, "Waiting for SyncToken: " << *mSyncToken )
 
-        mSyncToken.reset();  // waits for transfer and frees resources
+        mSyncToken.reset(); // waits for transfer and frees resources
     }
 }
 
@@ -648,7 +655,7 @@ void LAMAArray<ValueType>::clear()
     LAMA_LOG_DEBUG( logger, *this << ": clear" )
     wait();
 
-    for ( size_t i = 0; i < mContextData.size(); ++i )
+    for( size_t i = 0; i < mContextData.size(); ++i )
     {
         LAMA_ASSERT( 0 == mContextData[i]->lock[ContextData::Read], "Tried to clear a locked LAMAArray " << *this )
         LAMA_ASSERT( 0 == mContextData[i]->lock[ContextData::Write], "Tried to clear a locked LAMAArray " << *this )
@@ -667,7 +674,7 @@ void LAMAArray<ValueType>::purge()
     LAMA_LOG_DEBUG( logger, *this << " will be purged" )
     wait();
 
-    for ( size_t i = 0; i < mContextData.size(); ++i )
+    for( size_t i = 0; i < mContextData.size(); ++i )
     {
         ContextData& entry = *mContextData[i];
         LAMA_ASSERT( entry.lock[ContextData::Read] == 0, "Tried to purge a locked LAMAArray " << *this )
@@ -725,10 +732,10 @@ void LAMAArray<ValueType>::resize( const size_t index, const IndexType size )
     LAMA_ASSERT_DEBUG( index < mContextData.size(), "Invalid context index = " << index )
     ContextData& entry = *mContextData[index];
     LAMA_ASSERT_ERROR(
-        1 == entry.lock[ContextData::Write],
-        *this << ": tried to resize on " << *entry.context << ", new size = " << size << " without WriteAccess" )
+                    1 == entry.lock[ContextData::Write],
+                    *this << ": tried to resize on " << *entry.context << ", new size = " << size << " without WriteAccess" )
 
-    if ( size * sizeof(ValueType) > entry.size )
+    if( size * sizeof(ValueType) > entry.size )
     {
         reserve( index, size, true ); // copies old data
     }
@@ -747,17 +754,17 @@ void LAMAArray<ValueType>::reserve( const size_t index, const IndexType capacity
     ContextData& entry = *mContextData[index];
     LAMA_ASSERT_ERROR( 0 == mSyncToken.get(), "Although a write access exists we have a running transfer." )
 
-    if ( capacity * sizeof(ValueType) > entry.size )
+    if( capacity * sizeof(ValueType) > entry.size )
     {
         LAMA_LOG_TRACE( logger,
                         "growing capacity of " << *this << " from " << entry.size/sizeof(ValueType) << " to " << capacity << " at " << *entry.context )
         LAMA_ASSERT_DEBUG( !copy || entry.valid, "reserve with copy on non-valid context" )
 
-        if ( entry.pointer )
+        if( entry.pointer )
         {
             IndexType copySize = 0;
 
-            if ( copy )
+            if( copy )
             {
                 copySize = mSize;
             }
@@ -804,7 +811,7 @@ int LAMAArray<ValueType>::acquireReadAccess( ContextPtr context ) const
 
     // fetch only if size > 0, there might be no valid location for mSize == 0
 
-    if ( !contextEntry.valid && ( mSize > 0 ) )
+    if( !contextEntry.valid && ( mSize > 0 ) )
     {
         LAMA_ASSERT_DEBUG( validIndex != nContextIndex, "no valid context for " << *this )
         LAMA_LOG_TRACE( logger, "data not valid at " << *contextEntry.context )
@@ -814,7 +821,7 @@ int LAMAArray<ValueType>::acquireReadAccess( ContextPtr context ) const
         reserve( contextIndex, mSize, false );
         fetch( contextEntry, validEntry );
     }
-    else if ( mSize > 0 )
+    else if( mSize > 0 )
     {
         LAMA_LOG_TRACE( logger, "data already valid for " << *contextEntry.context )
     }
@@ -837,8 +844,7 @@ void LAMAArray<ValueType>::releaseReadAccess( const size_t index ) const
     ContextData& entry = *mContextData[index];
     LAMA_LOG_TRACE( logger,
                     "release read access on " << *entry.context << ", #read locks = " << static_cast<unsigned short>( entry.lock[ContextData::Read] ) )
-    LAMA_ASSERT( entry.lock[ContextData::Read] > 0,
-                 "Tried to release a non existing ReadAccess on " << *entry.context )
+    LAMA_ASSERT( entry.lock[ContextData::Read] > 0, "Tried to release a non existing ReadAccess on " << *entry.context )
     --entry.lock[ContextData::Read];
     LAMA_LOG_TRACE( logger,
                     "ready release read access on " << *entry.context << ", #read locks = " << static_cast<unsigned short>( entry.lock[ContextData::Read] ) )
@@ -857,17 +863,17 @@ void LAMAArray<ValueType>::getAccess(
     validIndex = nContextIndex;
     LAMA_LOG_TRACE( logger, "check access for " << *context )
 
-    for ( size_t i = 0; i < mContextData.size(); ++i )
+    for( size_t i = 0; i < mContextData.size(); ++i )
     {
         const ContextData& entry = *mContextData[i];
 
-        if ( context->canUseData( *entry.context ) )
+        if( context->canUseData( *entry.context ) )
         {
             LAMA_LOG_TRACE( logger, "can use context at index " << i )
             contextIndex = i;
         }
 
-        if ( !entry.valid )
+        if( !entry.valid )
         {
             LAMA_ASSERT_DEBUG( 0 == entry.lock[ContextData::Read], "read access on non valid location" )
             LAMA_ASSERT_DEBUG( 0 == entry.lock[ContextData::Write], "write access on non valid location" )
@@ -876,21 +882,21 @@ void LAMAArray<ValueType>::getAccess(
 
         //  so we have found a context with valid data
 
-        if ( validIndex == nContextIndex )
+        if( validIndex == nContextIndex )
         {
             validIndex = i;
         }
 
-        if ( entry.lock[ContextData::Read] )
+        if( entry.lock[ContextData::Read] )
         {
             LAMA_ASSERT_DEBUG( 0 == entry.lock[ContextData::Write], "write and read access" )
 
-            if ( kind == ContextData::Write )
+            if( kind == ContextData::Write )
             {
                 LAMA_THROWEXCEPTION( "try to get write access on read locked array " << *this )
             }
         }
-        else if ( entry.lock[ContextData::Write] )
+        else if( entry.lock[ContextData::Write] )
         {
             LAMA_THROWEXCEPTION( "no further access on write locked array " << *this )
         }
@@ -898,7 +904,7 @@ void LAMAArray<ValueType>::getAccess(
 
     // if context is used first time, make new entry for context data
 
-    if ( contextIndex == nContextIndex )
+    if( contextIndex == nContextIndex )
     {
         contextIndex = mContextData.size();
         mContextData.push_back( new ContextData( context ) );
@@ -928,14 +934,14 @@ int LAMAArray<ValueType>::acquireWriteAccess( ContextPtr context, bool keepFlag 
 
     // fetch only if size > 0, there might be no valid location for mSize == 0
 
-    if ( !contextEntry.valid && mSize > 0 )
+    if( !contextEntry.valid && mSize > 0 )
     {
         LAMA_LOG_TRACE( logger, "data not valid at " << *contextEntry.context )
         // make sure that we have enough memory on the target context
         // old data is invalid so it must not be saved.
         reserve( contextIndex, mSize, 0 );
 
-        if ( keepFlag )
+        if( keepFlag )
         {
             LAMA_ASSERT_DEBUG( validIndex != nContextIndex, "no valid context for " << *this )
             const ContextData& validEntry = *mContextData[validIndex];
@@ -946,7 +952,7 @@ int LAMAArray<ValueType>::acquireWriteAccess( ContextPtr context, bool keepFlag 
     size_t noContexts = mContextData.size();
     LAMA_LOG_TRACE( logger, "invalidate for " << noContexts << " context locations" )
 
-    for ( size_t i = 0; i < noContexts; ++i )
+    for( size_t i = 0; i < noContexts; ++i )
     {
         mContextData[i]->valid = false;
     }
@@ -965,11 +971,11 @@ int LAMAArray<ValueType>::acquireWriteAccess()
     boost::recursive_mutex::scoped_lock scoped_lock( access_mutex );
     size_t contextIndex = nContextIndex;
 
-    for ( size_t i = 0; i < mContextData.size(); ++i )
+    for( size_t i = 0; i < mContextData.size(); ++i )
     {
         const ContextData& entry = *mContextData[i];
 
-        if ( entry.valid )
+        if( entry.valid )
         {
             contextIndex = acquireWriteAccess( entry.context, true );
             break;
@@ -1011,13 +1017,13 @@ void LAMAArray<ValueType>::writeAt( std::ostream& stream ) const
     stream << Scalar::getType<ValueType>();
     stream << ">(" << mSize;
 
-    for ( size_t i = 0; i < mContextData.size(); ++i )
+    for( size_t i = 0; i < mContextData.size(); ++i )
     {
         const ContextData& entry = *mContextData[i];
         // unsigned char for locks must be casted for output stream
         stream << ", " << *entry.context << ": c=" << entry.size / sizeof(ValueType) << ", v=" << entry.valid << ", #r="
-               << static_cast<unsigned short>( entry.lock[ContextData::Read] ) << ", #w="
-               << static_cast<unsigned short>( entry.lock[ContextData::Write] );
+                        << static_cast<unsigned short>( entry.lock[ContextData::Read] ) << ", #w="
+                        << static_cast<unsigned short>( entry.lock[ContextData::Write] );
     }
 
     stream << ")";
@@ -1027,11 +1033,11 @@ void LAMAArray<ValueType>::writeAt( std::ostream& stream ) const
 
 template<typename ValueType>
 LAMAArrayRef<ValueType>::LAMAArrayRef( ValueType* pointer, IndexType size )
-    : LAMAArray<ValueType>()
+                : LAMAArray<ValueType>()
 {
     // Important: context must be set to the DefaultHostContext
 
-    if ( size != 0 && pointer == NULL )
+    if( size != 0 && pointer == NULL )
     {
         LAMA_THROWEXCEPTION( "LAMAArryRef with NULL pointer" )
     }
@@ -1044,11 +1050,11 @@ LAMAArrayRef<ValueType>::LAMAArrayRef( ValueType* pointer, IndexType size )
 
 template<typename ValueType>
 LAMAArrayRef<ValueType>::LAMAArrayRef( const ValueType* pointer, IndexType size )
-    : LAMAArray<ValueType>()
+                : LAMAArray<ValueType>()
 {
     // Important: context must be set to the DefaultHostContext
 
-    if ( size != 0 && pointer == NULL )
+    if( size != 0 && pointer == NULL )
     {
         LAMA_THROWEXCEPTION( "LAMAArryRef with NULL pointer" )
     }
@@ -1064,14 +1070,13 @@ LAMAArrayRef<ValueType>::LAMAArrayRef( const ValueType* pointer, IndexType size 
 /* ---------------------------------------------------------------------------------*/
 
 #define LAMA_ARRAY_INSTANTIATE(z, I, _)                               \
-template class LAMA_DLL_IMPORTEXPORT LAMAArray<ARRAY_TYPE##I> ;       \
-template class LAMA_DLL_IMPORTEXPORT LAMAArrayRef<ARRAY_TYPE##I> ;
- 
+    template class LAMA_DLL_IMPORTEXPORT LAMAArray<ARRAY_TYPE##I> ;       \
+    template class LAMA_DLL_IMPORTEXPORT LAMAArrayRef<ARRAY_TYPE##I> ;
+
 // template instantiation for the supported data types
 
 BOOST_PP_REPEAT( ARRAY_TYPE_CNT, LAMA_ARRAY_INSTANTIATE, _ )
 
 #undef LAMA_ARRAY_INSTANTIATE
 
-
-} // namespace LAMA
+}// namespace LAMA

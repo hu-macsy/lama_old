@@ -2,7 +2,7 @@
  * @file OpenMPELLUtils.hpp
  *
  * @license
- * Copyright (c) 2009-2013
+ * Copyright (c) 2009-2015
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -45,7 +45,8 @@
 namespace lama
 {
 
-class SyncToken;  // forward declaration 
+class SyncToken;
+// forward declaration
 
 /** This class provides routines to converse ELL storage data to CSR storage data and vice versa.
  *
@@ -77,9 +78,13 @@ private:
 
     /** Addressing function for the arrays ellJA[numRows*numValuesPerRow] and ellValues: column-major order */
 
-    static inline IndexType ellindex( const IndexType i, const IndexType jj, const IndexType numRows, const IndexType /* numValuesPerRow */ )
+    static inline IndexType ellindex(
+        const IndexType i,
+        const IndexType jj,
+        const IndexType numRows,
+        const IndexType /* numValuesPerRow */)
     {
-        return jj * numRows + i;            // column major-order
+        return jj * numRows + i; // column major-order
         // return i * numValuesPerRow + jj;    // row major-order
     }
 
@@ -176,8 +181,8 @@ private:
         const IndexType ellJA[],
         const ELLValueType ellValues[] );
 
-     template<typename ValueType>
-     static void fillELLValues(
+    template<typename ValueType>
+    static void fillELLValues(
         IndexType ellJA[],
         ValueType ellValues[],
         const IndexType ellSizes[],
@@ -370,13 +375,14 @@ private:
 
     LAMA_LOG_DECL_STATIC_LOGGER( logger )
 
-    static bool initialized;
+    static    bool initialized;
 
     static bool registerInterface();
 };
 
 /* --------------------------------------------------------------------------- */
 
-} // namespace lama
+}
+// namespace lama
 
 #endif  //  LAMA_ELL_STORAGE_UTILS_HPP_

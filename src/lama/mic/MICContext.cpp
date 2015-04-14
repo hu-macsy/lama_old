@@ -2,7 +2,7 @@
  * @file MICContext.cpp
  *
  * @license
- * Copyright (c) 2009-2013
+ * Copyright (c) 2009-2015
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -59,11 +59,11 @@ __attribute__( ( target( mic ) ) ) bool chk_target00()
 {
     bool retval;
 
-    #ifdef __MIC__
-        retval = true;
-    #else
-        retval = false;
-    #endif
+#ifdef __MIC__
+    retval = true;
+#else
+    retval = false;
+#endif
 
     return retval;
 }
@@ -81,30 +81,30 @@ MICContext::MICContext( int deviceNr )
     numDevices = _Offload_number_of_devices();
 #endif
 
-    if ( numDevices < 1 )
+    if( numDevices < 1 )
     {
         LAMA_THROWEXCEPTION( "No mic devices available" )
     }
 
     // ToDo: allow for any device
-    
+
     mDeviceNr = 0;
 
     LAMA_LOG_INFO( logger, "Using device " << mDeviceNr << " of " << numDevices << " installed devices" )
 
     bool targetOK = false;
 
-    #pragma offload target( mic: mDeviceNr ) in( mDeviceNr )
+#pragma offload target( mic: mDeviceNr ) in( mDeviceNr )
     targetOK = chk_target00();
 
-    if ( !targetOK )
+    if( !targetOK )
     {
         LAMA_THROWEXCEPTION( "Could not offload to device " << mDeviceNr )
     }
 
     int numCores;
 
-    #pragma offload target( mic: mDeviceNr ) out( numCores )
+#pragma offload target( mic: mDeviceNr ) out( numCores )
     {
         #pragma omp parallel
         {
@@ -155,16 +155,16 @@ bool MICContext::canUseData( const Context& other ) const
 {
     // same object by pointer can always use same data.
 
-    if ( this == &other )
+    if( this == &other )
     {
         return true;
     }
 
     // MIC device can use only data on same MIC device
 
-    if ( other.getType() == MIC )
+    if( other.getType() == MIC )
     {
-        const MICContext& otherMIC= static_cast<const MICContext&>( other );
+        const MICContext& otherMIC = static_cast<const MICContext&>( other );
         return otherMIC.mDeviceNr == mDeviceNr;
     }
 
@@ -179,7 +179,7 @@ void* MICContext::allocate( const size_t size ) const
 
     LAMA_LOG_INFO( logger, "allocate, init pointer = " << pointer )
 
-    #pragma offload target( mic : mDeviceNr ), in( size ), out( pointer )
+#pragma offload target( mic : mDeviceNr ), in( size ), out( pointer )
     {
         pointer = ::malloc( size );
     }
@@ -203,7 +203,7 @@ void MICContext::free( void* pointer, const size_t size ) const
 {
     LAMA_LOG_INFO( logger, "free " << size << " bytes on MIC device, ptr = " << pointer )
 
-    #pragma offload target( mic : mDeviceNr ), in( pointer )
+#pragma offload target( mic : mDeviceNr ), in( pointer )
     {
         ::free( pointer );
     }
@@ -223,38 +223,40 @@ void MICContext::memcpy( void* dst, const void* src, const size_t size ) const
 {
     LAMA_LOG_INFO( logger, "memcpy " << size << " bytes on MIC device, " << dst << " <- " << src )
 
-    const size_t dst_ptr = ( size_t ) dst;
-    const size_t src_ptr = ( size_t ) src;
+    const size_t dst_ptr = (size_t) dst;
+    const size_t src_ptr = (size_t) src;
 
-    if ( ( size & 7 ) == 0  && ( dst_ptr & 7 ) == 0 && ( src_ptr & 7 ) == 0 ) 
+    if( ( size & 7 ) == 0 && ( dst_ptr & 7 ) == 0 && ( src_ptr & 7 ) == 0 )
     {
         LAMA_REGION( "MIC.memcpy8" )
 
-        #pragma offload target( mic : mDeviceNr ) in( src_ptr, dst_ptr, size )
+#pragma offload target( mic : mDeviceNr ) in( src_ptr, dst_ptr, size )
         {
-            double* dst = ( double* ) dst_ptr;
-            const double* src = ( const double* ) src_ptr;
-    
+            double* dst = (double*) dst_ptr;
+            const double* src = (const double*) src_ptr;
+
             #pragma omp parallel for
-            for ( int i = 0; i < ( size >> 3 ); ++ i )
+
+            for( int i = 0; i < ( size >> 3 ); ++i )
             {
-               dst[i] = src[i]; 
+                dst[i] = src[i];
             }
         }
     }
-    else if ( ( size & 3 ) == 0  && ( dst_ptr & 3 ) == 0 && ( src_ptr & 3 ) == 0 ) 
+    else if( ( size & 3 ) == 0 && ( dst_ptr & 3 ) == 0 && ( src_ptr & 3 ) == 0 )
     {
         LAMA_REGION( "MIC.memcpy4" )
 
-        #pragma offload target( mic : mDeviceNr ) in( src_ptr, dst_ptr, size )
+#pragma offload target( mic : mDeviceNr ) in( src_ptr, dst_ptr, size )
         {
-            float* dst = ( float* ) dst_ptr;
-            const float* src = ( const float* ) src_ptr;
-    
+            float* dst = (float*) dst_ptr;
+            const float* src = (const float*) src_ptr;
+
             #pragma omp parallel for
-            for ( int i = 0; i < ( size >> 2 ); ++ i )
+
+            for( int i = 0; i < ( size >> 2 ); ++i )
             {
-               dst[i] = src[i]; 
+                dst[i] = src[i];
             }
         }
     }
@@ -262,11 +264,11 @@ void MICContext::memcpy( void* dst, const void* src, const size_t size ) const
     {
         LAMA_REGION( "MIC.memcpy1" )
 
-        #pragma offload target( mic : mDeviceNr ) in( src_ptr, dst_ptr, size )
+#pragma offload target( mic : mDeviceNr ) in( src_ptr, dst_ptr, size )
         {
-            void* dst = ( void* ) dst_ptr;
-            const void* src = ( const void* ) src_ptr;
-    
+            void* dst = (void*) dst_ptr;
+            const void* src = (const void*) src_ptr;
+
             ::memcpy( dst, src, size );
         }
     }
@@ -279,12 +281,12 @@ void MICContext::memcpyToHost( void* dst, const void* src, const size_t size ) c
     LAMA_LOG_INFO( logger, "memcpy " << size << " bytes from MIC to Host" )
 
     LAMA_REGION( "MIC.memcpyToHost" )
-    
-    uint8_t* dst8 = ( uint8_t* ) dst;
 
-    #pragma offload target( mic : mDeviceNr ) out( dst8 : length( size ) ), in( size ), in( src )
+    uint8_t* dst8 = (uint8_t*) dst;
+
+#pragma offload target( mic : mDeviceNr ) out( dst8 : length( size ) ), in( size ), in( src )
     {
-        const uint8_t* src8 = ( const uint8_t* ) src;
+        const uint8_t* src8 = (const uint8_t*) src;
         ::memcpy( dst8, src8, size );
     }
 }
@@ -296,12 +298,12 @@ void MICContext::memcpyFromHost( void* dst, const void* src, const size_t size )
     LAMA_LOG_INFO( logger, "memcpy " << size << " bytes on MIC device, dst = " << dst << ", src = " << src )
 
     LAMA_REGION( "MIC.memcpyFromHost1" )
-    
-    uint8_t* src8 = ( uint8_t* ) src;
 
-    #pragma offload target( mic : mDeviceNr ) in( src8 : length( size ) ), in( size ), in( dst )
+    uint8_t* src8 = (uint8_t*) src;
+
+#pragma offload target( mic : mDeviceNr ) in( src8 : length( size ) ), in( size ), in( dst )
     {
-        uint8_t* dst8 = ( uint8_t* ) dst;
+        uint8_t* dst8 = (uint8_t*) dst;
         ::memcpy( dst8, src8, size );
     }
 }
@@ -332,19 +334,19 @@ void MICContext::memcpy( ContextData& dst, const ContextData& src, const size_t 
     const Context::ContextType dstType = dst.context->getType();
     const Context::ContextType srcType = src.context->getType();
 
-    if ( srcType == Host && dstType == MIC )
+    if( srcType == Host && dstType == MIC )
     {
         LAMA_LOG_INFO( logger, "copy from Host to MIC" )
         memcpyFromHost( dst.pointer, src.pointer, size );
         LAMA_LOG_INFO( logger, "ready copy from Host to MIC" )
     }
-    else if ( srcType == MIC && dstType == Host )
+    else if( srcType == MIC && dstType == Host )
     {
         LAMA_LOG_INFO( logger, "copy from MIC to Host" )
         memcpyToHost( dst.pointer, src.pointer, size );
         LAMA_LOG_INFO( logger, "ready copy from MIC to Host" )
     }
-    else if ( srcType == MIC && dstType == MIC )
+    else if( srcType == MIC && dstType == MIC )
     {
         LAMA_LOG_INFO( logger, "copy from MIC to MIC" )
         memcpy( dst.pointer, src.pointer, size );
@@ -377,7 +379,7 @@ SyncToken* MICContext::getSyncToken() const
 int MICContext::getCurrentDevice()
 {
     // ToDo: get current device, make sure that access has been enabled
-    
+
     return 0;
 }
 

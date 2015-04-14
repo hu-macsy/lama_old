@@ -2,7 +2,7 @@
  * @file CUDAHostContextManager.cpp
  *
  * @license
- * Copyright (c) 2009-2013
+ * Copyright (c) 2009-2015
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -81,14 +81,14 @@ ContextPtr CUDAHostContextManager::getContext( int deviceNr )
 {
     boost::shared_ptr<const CUDAHostContext> context;
 
-    if ( deviceNr != LAMA_DEFAULT_DEVICE_NUMBER )
+    if( deviceNr != LAMA_DEFAULT_DEVICE_NUMBER )
     {
         LAMA_LOG_WARN( logger, "Context number ignored for HostContext, deviceNr = " << deviceNr )
     }
 
     // use the last contextInstance if it is still valid
 
-    if ( contextInstance.expired() )
+    if( contextInstance.expired() )
     {
         // create a new instance of CUDAHostContext and keep it for further uses
 
@@ -111,12 +111,12 @@ ContextPtr CUDAHostContextManager::getContext( int deviceNr )
 
 void CUDAHostContextManager::setAsCurrent( ContextPtr cudaContext )
 {
-    if ( !cudaContext )
+    if( !cudaContext )
     {
         LAMA_THROWEXCEPTION( "no valid CUDAContext, is NULL" )
     }
 
-    if ( cudaContext->getType() != Context::CUDA )
+    if( cudaContext->getType() != Context::CUDA )
     {
         LAMA_THROWEXCEPTION( "no valid CUDAContext, is not CUDA" )
     }

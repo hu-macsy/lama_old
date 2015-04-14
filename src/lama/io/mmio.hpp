@@ -2,7 +2,7 @@
  * @file mmio.hpp
  *
  * @license
- * Copyright (c) 2009-2013
+ * Copyright (c) 2009-2015
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -149,7 +149,5 @@ char* getErrorString( int error );
 //int mm_write_mtx_crd( char fname[], int M, int N, int nz, int I[], int J[], double val[], MM_typecode matcode );
 //int mm_read_mtx_crd_data( FILE* f, int M, int N, int nz, int I[], int J[], double val[], MM_typecode matcode );
 //int mm_read_mtx_crd_entry( FILE* f, int* I, int* J, double* real, double* img, MM_typecode matcode );
-
 //int mm_read_unsymmetric_sparse( const char* fname, int* M_, int* N_, int* nz_, double** val_, int** I_, int** J_ );
-
 #endif /** MM_IO_HPP */

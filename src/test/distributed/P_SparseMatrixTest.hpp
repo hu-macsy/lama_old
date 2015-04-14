@@ -2,7 +2,7 @@
  * @file P_SparseMatrixTest.hpp
  *
  * @license
- * Copyright (c) 2009-2013
+ * Copyright (c) 2009-2015
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -38,7 +38,8 @@
 using namespace lama;
 
 static std::string psparseMatrixtestclasses[] =
-{   "P_CSRSparseMatrixTest", "P_COOSparseMatrixTest", "P_ELLSparseMatrixTest", "P_DIASparseMatrixTest",
+{
+    "P_CSRSparseMatrixTest", "P_COOSparseMatrixTest", "P_ELLSparseMatrixTest", "P_DIASparseMatrixTest",
     "P_JDSSparseMatrixTest"
 };
 

@@ -2,7 +2,7 @@
  * @file DenseVector.hpp
  *
  * @license
- * Copyright (c) 2009-2013
+ * Copyright (c) 2009-2015
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -193,28 +193,28 @@ public:
      *
      * @param[in] expression     alpha * A * x
      */
-    DenseVector( const Expression<Scalar, Expression<Matrix, Vector, Times>, Times>& expression );
+    DenseVector( const Expression<Scalar,Expression<Matrix,Vector,Times>,Times>& expression );
 
     /**
      * @brief creates a DenseVector with the Expression alpha * x * A.
      *
      * @param[in] expression     alpha * x * A
      */
-    DenseVector( const Expression<Scalar, Expression<Vector, Matrix, Times>, Times>& expression );
+    DenseVector( const Expression<Scalar,Expression<Vector,Matrix,Times>,Times>& expression );
 
     /**
      * @brief creates a DenseVector with the Expression A * x.
      *
      * @param[in] expression     A * x
      */
-    DenseVector( const Expression<Matrix, Vector, Times>& expression );
+    DenseVector( const Expression<Matrix,Vector,Times>& expression );
 
     /**
      * @brief creates a DenseVector with the Expression x * A.
      *
      * @param[in] expression     x * A
      */
-    DenseVector( const Expression<Vector, Matrix, Times>& expression );
+    DenseVector( const Expression<Vector,Matrix,Times>& expression );
 
     /**
      * @brief releases all allocated resources.
@@ -237,7 +237,7 @@ public:
     DenseVector& operator=( const Scalar );
 
     /**
-     * This method implements Vector::readFromFile. 
+     * This method implements Vector::readFromFile.
      *
      * The distribution of the vector is CYCLIC(n) where n is the size of
      * the vector. So only the first processor will hold all values.
@@ -259,18 +259,18 @@ public:
     virtual void setValues( const _LAMAArray& values );
 
     /**
-     * Implementation of Vector::create with covariant return type. 
+     * Implementation of Vector::create with covariant return type.
      */
 
     virtual DenseVector* create() const;
 
     /**
-     * Implementation of Vector::create with covariant return type. 
+     * Implementation of Vector::create with covariant return type.
      */
     virtual DenseVector* create( DistributionPtr distribution ) const;
 
     /**
-     * Implementation of Vector::copy with covariant return type. 
+     * Implementation of Vector::copy with covariant return type.
      */
 
     virtual DenseVector* copy() const;
@@ -381,7 +381,7 @@ public:
 
     virtual Scalar dotProduct( const Vector& other ) const;
 
-    using Vector::prefetch;  // prefetch() with no arguments
+    using Vector::prefetch; // prefetch() with no arguments
 
     virtual void prefetch( const ContextPtr location ) const;
 
@@ -406,46 +406,46 @@ protected:
 
     LAMA_LOG_DECL_STATIC_LOGGER( logger )
 
-private:
+private    :
 
     void writeVectorToFormattedFile(const std::string& fileName) const;
 
     void writeVectorToBinaryFile(
-        const std::string& fileName,
-        const File::DataType outputType ) const;
+                    const std::string& fileName,
+                    const File::DataType outputType ) const;
 
     void writeVectorToXDRFile(
-        const std::string& fileName,
-        const File::DataType outputType ) const;
+                    const std::string& fileName,
+                    const File::DataType outputType ) const;
 
     void writeVectorDataToBinaryFile(
-        std::fstream& outFile,
-        const File::DataType outputType ) const;
+                    std::fstream& outFile,
+                    const File::DataType outputType ) const;
 
     void readVectorHeader( const std::string& filename, File::FileType& fileType, long& dataTypeSize );
 
     void writeVectorHeader(
-        const std::string& fileName,
-        const File::FileType& fileType,
-        const long dataTypeSize ) const;
+                    const std::string& fileName,
+                    const File::FileType& fileType,
+                    const long dataTypeSize ) const;
 
     void writeVectorToMMFile(
-        const std::string& filename,
-        const File::DataType& dataType ) const;
+                    const std::string& filename,
+                    const File::DataType& dataType ) const;
 
     void readVectorFromFormattedFile( const std::string& fileName );
 
     void readVectorFromBinaryFile(
-        const std::string& fileName,
-        const File::DataType dataType );
+                    const std::string& fileName,
+                    const File::DataType dataType );
 
     void readVectorFromXDRFile(
-        const std::string& fileName,
-        const long dataTypeSizeHeader );
+                    const std::string& fileName,
+                    const long dataTypeSizeHeader );
 
     void readVectorDataFromBinaryFile(
-        std::fstream &inFile,
-        const File::DataType dataType );
+                    std::fstream &inFile,
+                    const File::DataType dataType );
 
     LAMAArray<ValueType> mLocalValues; //!< my local values of vector
 
@@ -455,9 +455,9 @@ private:
 
     static DenseVector<ValueType>* createVector();
 
-    static bool registerCreator();   //!< used in static initialization for registration
+    static bool registerCreator();//!< used in static initialization for registration
 
-    static bool initialized;  //!< static initialization used for registration of create in Vector factory
+    static bool initialized;//!< static initialization used for registration of create in Vector factory
 };
 
 /* ------------------------------------------------------------------------- */
@@ -465,7 +465,7 @@ private:
 template<typename ValueType>
 template<typename OtherValueType>
 DenseVector<ValueType>::DenseVector( const IndexType size, const OtherValueType* values, ContextPtr context )
-    : Vector( size, context )
+                : Vector( size, context )
 {
     // use LAMA array reference to avoid copy of the raw data
 

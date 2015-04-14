@@ -2,7 +2,7 @@
  * @file StorageIO.cpp
  *
  * @license
- * Copyright (c) 2009-2013
+ * Copyright (c) 2009-2015
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -91,19 +91,19 @@ void StorageIO<ValueType>::writeCSRToFormattedFile(
     HostReadAccess<IndexType> ja( csrJA );
     HostReadAccess<ValueType> data( csrValues );
 
-    for ( IndexType i = 0; i < numRows + 1; ++i )
+    for( IndexType i = 0; i < numRows + 1; ++i )
     {
         IndexType tmp = ia[i] + 1;
         amgfile << tmp << std::endl;
     }
 
-    for ( IndexType j = 0; j < numValues; ++j )
+    for( IndexType j = 0; j < numValues; ++j )
     {
         IndexType tmp = ja[j] + 1;
         amgfile << tmp << std::endl;
     }
 
-    for ( IndexType j = 0; j < numValues; ++j )
+    for( IndexType j = 0; j < numValues; ++j )
     {
         amgfile << data[j] << std::endl;
     }
@@ -126,14 +126,14 @@ void StorageIO<ValueType>::readCSRFromFormattedFile(
     //Reading matrix data
     std::ifstream amgfile( fileName.c_str(), std::ios::in ); // open .amg
 
-    if ( amgfile.fail() )
+    if( amgfile.fail() )
     {
         LAMA_THROWEXCEPTION( "Could not open file '" << fileName << "'." )
     }
 
     HostWriteOnlyAccess<IndexType> ia( csrIA, numRows + 1 );
 
-    for ( IndexType i = 0; i < numRows + 1; ++i )
+    for( IndexType i = 0; i < numRows + 1; ++i )
     {
         amgfile >> ia[i];
         --ia[i];
@@ -144,13 +144,13 @@ void StorageIO<ValueType>::readCSRFromFormattedFile(
     HostWriteOnlyAccess<IndexType> ja( csrJA, numValues );
     HostWriteOnlyAccess<ValueType> data( csrValues, numValues );
 
-    for ( IndexType j = 0; j < numValues; ++j )
+    for( IndexType j = 0; j < numValues; ++j )
     {
         amgfile >> ja[j];
         --ja[j];
     }
 
-    for ( IndexType j = 0; j < numValues; ++j )
+    for( IndexType j = 0; j < numValues; ++j )
     {
         amgfile >> data[j];
     }
@@ -163,7 +163,7 @@ void StorageIO<ValueType>::readCSRFromFormattedFile(
 template<typename FileType,typename DataType,int offset>
 static void writeBinaryData( std::fstream& outFile, const DataType data[], const IndexType n )
 {
-    if ( ( offset == 0 ) && ( typeid(FileType) == typeid(DataType) ) )
+    if( ( offset == 0 ) && ( typeid(FileType) == typeid(DataType) ) )
     {
         // no type conversion needed
 
@@ -176,7 +176,7 @@ static void writeBinaryData( std::fstream& outFile, const DataType data[], const
 
     scoped_array<FileType> buffer( new FileType[n] );
 
-    for ( IndexType i = 0; i < n; i++ )
+    for( IndexType i = 0; i < n; i++ )
     {
         buffer[i] = static_cast<FileType>( data[i] + offset );
     }
@@ -198,10 +198,10 @@ static void writeBinaryData( std::fstream& outFile, const DataType data[], const
 template<typename ValueType>
 static FileIO::file_size_t expectedCSRFileSize( const IndexType numRows, const IndexType numValues )
 {
-    FileIO::file_size_t size = sizeof( IndexType ) * ( numRows + 1 );  // size of csrIA
+    FileIO::file_size_t size = sizeof(IndexType) * ( numRows + 1 ); // size of csrIA
 
-    size += sizeof( IndexType ) * numValues;  // size of csrJA
-    size += sizeof( ValueType ) * numValues;  // size of csrValues
+    size += sizeof(IndexType) * numValues; // size of csrJA
+    size += sizeof(ValueType) * numValues; // size of csrValues
 
     return size;
 }
@@ -216,8 +216,8 @@ void StorageIO<ValueType>::readCSRFromBinaryFile(
     const std::string& fileName,
     const IndexType numRows )
 {
-    LAMA_LOG_INFO( logger, "read CSR<" << Scalar::getType<ValueType>() <<
-                           "> storage from binary file " << fileName << ", #rows = " << numRows )
+    LAMA_LOG_INFO( logger,
+                   "read CSR<" << Scalar::getType<ValueType>() << "> storage from binary file " << fileName << ", #rows = " << numRows )
 
     LAMA_REGION( "StorageIO.readCSRFromBinaryFile" )
 
@@ -231,53 +231,50 @@ void StorageIO<ValueType>::readCSRFromBinaryFile(
 
     // read offset array IA
 
-    FileIO::readBinaryData<IndexType, IndexType, -1>( inFile, ia.get(), numRows + 1 );
+    FileIO::readBinaryData<IndexType,IndexType, -1>( inFile, ia.get(), numRows + 1 );
 
     IndexType numValues = ia[numRows];
 
     HostWriteOnlyAccess<IndexType> ja( csrJA, numValues );
     HostWriteOnlyAccess<ValueType> values( csrValues, numValues );
 
-    FileIO::readBinaryData<IndexType, IndexType, -1>( inFile, ja.get(), numValues );
-    
+    FileIO::readBinaryData<IndexType,IndexType, -1>( inFile, ja.get(), numValues );
+
     // now we can calculate the expected size
 
     FileIO::file_size_t expectedSize = expectedCSRFileSize<ValueType>( numRows, numValues );
 
-    if ( expectedSize == actualSize )
+    if( expectedSize == actualSize )
     {
-        LAMA_LOG_INFO( logger, "read binary data of type " << csrValues.getValueType() 
-                               << ", no conversion" )
-        FileIO::readBinaryData<ValueType, ValueType, 0>( inFile, values.get(), numValues );
+        LAMA_LOG_INFO( logger, "read binary data of type " << csrValues.getValueType() << ", no conversion" )
+        FileIO::readBinaryData<ValueType,ValueType,0>( inFile, values.get(), numValues );
     }
-    else if ( actualSize == expectedCSRFileSize<float>( numRows, numValues )  )
+    else if( actualSize == expectedCSRFileSize<float>( numRows, numValues ) )
     {
         LAMA_LOG_WARN( logger, "read binary data of type float, conversion to " << csrValues.getValueType() )
-        FileIO::readBinaryData<float, ValueType, 0>( inFile, values.get(), numValues );
+        FileIO::readBinaryData<float,ValueType,0>( inFile, values.get(), numValues );
     }
-    else if ( actualSize == expectedCSRFileSize<double>( numRows, numValues )  )
+    else if( actualSize == expectedCSRFileSize<double>( numRows, numValues ) )
     {
         LAMA_LOG_WARN( logger, "read binary data of type double, conversion to " << csrValues.getValueType() )
-        FileIO::readBinaryData<double, ValueType, 0>( inFile, values.get(), numValues );
+        FileIO::readBinaryData<double,ValueType,0>( inFile, values.get(), numValues );
     }
-    else if ( actualSize == expectedCSRFileSize<ComplexFloat>( numRows, numValues )  )
+    else if( actualSize == expectedCSRFileSize<ComplexFloat>( numRows, numValues ) )
     {
         LAMA_LOG_WARN( logger, "read binary data of type double, conversion to " << csrValues.getValueType() )
-        FileIO::readBinaryData<ComplexFloat, ValueType, 0>( inFile, values.get(), numValues );
+        FileIO::readBinaryData<ComplexFloat,ValueType,0>( inFile, values.get(), numValues );
     }
-    else if ( actualSize == expectedCSRFileSize<ComplexDouble>( numRows, numValues )  )
+    else if( actualSize == expectedCSRFileSize<ComplexDouble>( numRows, numValues ) )
     {
         LAMA_LOG_WARN( logger, "read binary data of type double, conversion to " << csrValues.getValueType() )
-        FileIO::readBinaryData<ComplexDouble, ValueType, 0>( inFile, values.get(), numValues );
+        FileIO::readBinaryData<ComplexDouble,ValueType,0>( inFile, values.get(), numValues );
     }
     else
     {
-        LAMA_THROWEXCEPTION( "File " << fileName << " has unexpected file size = " << actualSize 
-                             << ", #rows = " << numRows << ", #values = " << numValues  
-                             << ", expected for float = " << expectedCSRFileSize<float>( numRows, numValues )
-                             << ", or expected for double = " << expectedCSRFileSize<double>( numRows, numValues ) )
+        LAMA_THROWEXCEPTION(
+                        "File " << fileName << " has unexpected file size = " << actualSize << ", #rows = " << numRows << ", #values = " << numValues << ", expected for float = " << expectedCSRFileSize<float>( numRows, numValues ) << ", or expected for double = " << expectedCSRFileSize<double>( numRows, numValues ) )
     }
-        
+
     inFile.close();
 }
 
@@ -286,7 +283,7 @@ void StorageIO<ValueType>::readCSRFromBinaryFile(
 template<typename FileType,typename DataType,int offset>
 static void writeData( XDRFileStream& outFile, const DataType data[], const IndexType n )
 {
-    if ( ( offset == 0 ) && ( typeid(FileType) == typeid(DataType) ) )
+    if( ( offset == 0 ) && ( typeid(FileType) == typeid(DataType) ) )
     {
         // no type conversion needed
 
@@ -298,7 +295,7 @@ static void writeData( XDRFileStream& outFile, const DataType data[], const Inde
 
     FileType* buffer = new FileType[n];
 
-    for ( IndexType i = 0; i < n; i++ )
+    for( IndexType i = 0; i < n; i++ )
     {
         buffer[i] = static_cast<FileType>( data[i] + offset );
     }
@@ -311,7 +308,7 @@ static void writeData( XDRFileStream& outFile, const DataType data[], const Inde
 template<typename FileType,typename DataType,int offset>
 static void readData( XDRFileStream& inFile, DataType data[], const IndexType n )
 {
-    if ( ( offset == 0 ) && ( typeid(FileType) == typeid(DataType) ) )
+    if( ( offset == 0 ) && ( typeid(FileType) == typeid(DataType) ) )
     {
         // no type conversion needed
 
@@ -325,7 +322,7 @@ static void readData( XDRFileStream& inFile, DataType data[], const IndexType n 
 
     inFile.read( buffer, n ); // read data as required file type
 
-    for ( IndexType i = 0; i < n; i++ )
+    for( IndexType i = 0; i < n; i++ )
     {
         data[i] = static_cast<DataType>( buffer[i] + offset );
     }
@@ -362,15 +359,15 @@ void StorageIO<ValueType>::writeCSRToXDRFile(
     outFile.write( &nnu );
     outFile.write( &indexDataTypeSizeIA );
 
-    if ( indexDataTypeSizeIA == sizeof(IndexType) )
+    if( indexDataTypeSizeIA == sizeof(IndexType) )
     {
         writeData<IndexType,IndexType,1>( outFile, iaRead.get(), numRows + 1 );
     }
-    else if ( indexDataTypeSizeIA == TypeTraits<long>::size )
+    else if( indexDataTypeSizeIA == TypeTraits<long>::size )
     {
         writeData<long,IndexType,1>( outFile, iaRead.get(), numRows + 1 );
     }
-    else if ( indexDataTypeSizeIA == TypeTraits<int>::size )
+    else if( indexDataTypeSizeIA == TypeTraits<int>::size )
     {
         writeData<int,IndexType,1>( outFile, iaRead.get(), numRows + 1 );
     }
@@ -383,15 +380,15 @@ void StorageIO<ValueType>::writeCSRToXDRFile(
     outFile.write( &nna );
     outFile.write( &indexDataTypeSizeJA );
 
-    if ( indexDataTypeSizeJA == sizeof(IndexType) )
+    if( indexDataTypeSizeJA == sizeof(IndexType) )
     {
         writeData<IndexType,IndexType,0>( outFile, jaRead.get(), numValues );
     }
-    else if ( indexDataTypeSizeJA == TypeTraits<long>::size )
+    else if( indexDataTypeSizeJA == TypeTraits<long>::size )
     {
         writeData<long,IndexType,0>( outFile, jaRead.get(), numValues );
     }
-    else if ( indexDataTypeSizeJA == TypeTraits<int>::size )
+    else if( indexDataTypeSizeJA == TypeTraits<int>::size )
     {
         writeData<int,IndexType,0>( outFile, jaRead.get(), numValues );
     }
@@ -402,25 +399,25 @@ void StorageIO<ValueType>::writeCSRToXDRFile(
     outFile.write( &nna );
     outFile.write( &dataTypeSize );
 
-    if ( dataTypeSize == sizeof(ValueType) )
+    if( dataTypeSize == sizeof(ValueType) )
     {
-        writeData<ValueType, ValueType, 0>( outFile, dataRead.get(), numValues );
+        writeData<ValueType,ValueType,0>( outFile, dataRead.get(), numValues );
     }
-    else if ( dataTypeSize == TypeTraits<double>::size )
+    else if( dataTypeSize == TypeTraits<double>::size )
     {
-        writeData<double, ValueType, 0>( outFile, dataRead.get(), numValues );
+        writeData<double,ValueType,0>( outFile, dataRead.get(), numValues );
     }
-    else if ( dataTypeSize == TypeTraits<float>::size )
+    else if( dataTypeSize == TypeTraits<float>::size )
     {
-        writeData<float, ValueType, 0>( outFile, dataRead.get(), numValues );
+        writeData<float,ValueType,0>( outFile, dataRead.get(), numValues );
     }
-    else if ( dataTypeSize == TypeTraits<ComplexFloat>::size )
+    else if( dataTypeSize == TypeTraits<ComplexFloat>::size )
     {
-        writeData<ComplexFloat, ValueType, 0>( outFile, dataRead.get(), numValues );
+        writeData<ComplexFloat,ValueType,0>( outFile, dataRead.get(), numValues );
     }
-    else if ( dataTypeSize == TypeTraits<ComplexDouble>::size )
+    else if( dataTypeSize == TypeTraits<ComplexDouble>::size )
     {
-        writeData<ComplexDouble, ValueType, 0>( outFile, dataRead.get(), numValues );
+        writeData<ComplexDouble,ValueType,0>( outFile, dataRead.get(), numValues );
     }
 
     outFile.write( &dataTypeSize );
@@ -445,7 +442,7 @@ void StorageIO<ValueType>::readCSRFromXDRFile(
     int indexDataTypeSizeJA;
     int dataTypeSize;
 
-    if ( !xdrFile.is_open() )
+    if( !xdrFile.is_open() )
     {
         LAMA_THROWEXCEPTION( "Unable to open XDR matrix file." )
     }
@@ -456,21 +453,21 @@ void StorageIO<ValueType>::readCSRFromXDRFile(
 
     // check for mismatch in header and XDR matrix file.
 
-    LAMA_ASSERT_EQUAL_ERROR( numRows, ( IndexType ) nnu )
+    LAMA_ASSERT_EQUAL_ERROR( numRows, (IndexType ) nnu )
 
     xdrFile.read( &indexDataTypeSizeIA );
 
     HostWriteOnlyAccess<IndexType> m_ia( csrIA, numRows + 1 );
 
-    if ( sizeof(IndexType) == indexDataTypeSizeIA )
+    if( sizeof(IndexType) == indexDataTypeSizeIA )
     {
         readData<IndexType,IndexType, -1>( xdrFile, m_ia, numRows + 1 );
     }
-    else if ( indexDataTypeSizeIA == TypeTraits<int>::size )
+    else if( indexDataTypeSizeIA == TypeTraits<int>::size )
     {
         readData<int,IndexType, -1>( xdrFile, m_ia, numRows + 1 );
     }
-    else if ( indexDataTypeSizeIA == TypeTraits<long>::size )
+    else if( indexDataTypeSizeIA == TypeTraits<long>::size )
     {
         readData<long,IndexType, -1>( xdrFile, m_ia, numRows + 1 );
     }
@@ -495,21 +492,21 @@ void StorageIO<ValueType>::readCSRFromXDRFile(
     int nna;
     xdrFile.read( &nna );
 
-    LAMA_ASSERT_EQUAL_ERROR( numValues, ( IndexType ) nna );
+    LAMA_ASSERT_EQUAL_ERROR( numValues, (IndexType ) nna );
 
     xdrFile.read( &indexDataTypeSizeJA );
 
     HostWriteOnlyAccess<IndexType> m_ja( csrJA, numValues );
 
-    if ( sizeof(IndexType) == indexDataTypeSizeJA )
+    if( sizeof(IndexType) == indexDataTypeSizeJA )
     {
         readData<IndexType,IndexType,0>( xdrFile, m_ja.get(), numValues );
     }
-    else if ( indexDataTypeSizeJA == TypeTraits<long>::size )
+    else if( indexDataTypeSizeJA == TypeTraits<long>::size )
     {
         readData<long,IndexType,0>( xdrFile, m_ja.get(), numValues );
     }
-    else if ( indexDataTypeSizeJA == TypeTraits<int>::size )
+    else if( indexDataTypeSizeJA == TypeTraits<int>::size )
     {
         readData<int,IndexType,0>( xdrFile, m_ja.get(), numValues );
     }
@@ -538,19 +535,19 @@ void StorageIO<ValueType>::readCSRFromXDRFile(
 
     HostWriteOnlyAccess<ValueType> m_data( csrValues, numValues );
 
-    if ( dataTypeSize == TypeTraits<double>::size )
+    if( dataTypeSize == TypeTraits<double>::size )
     {
         readData<double,ValueType,0>( xdrFile, m_data.get(), numValues );
     }
-    else if ( dataTypeSize == TypeTraits<float>::size )
+    else if( dataTypeSize == TypeTraits<float>::size )
     {
         readData<float,ValueType,0>( xdrFile, m_data.get(), numValues );
     }
-    else if ( dataTypeSize == TypeTraits<ComplexFloat>::size )
+    else if( dataTypeSize == TypeTraits<ComplexFloat>::size )
     {
         readData<ComplexFloat,ValueType,0>( xdrFile, m_data.get(), numValues );
     }
-    else if ( dataTypeSize == TypeTraits<ComplexDouble>::size )
+    else if( dataTypeSize == TypeTraits<ComplexDouble>::size )
     {
         readData<ComplexDouble,ValueType,0>( xdrFile, m_data.get(), numValues );
     }
@@ -599,11 +596,11 @@ void StorageIO<ValueType>::writeCSRToBinaryFile(
 
     // write ia, add offset 1
 
-    if ( indexDataTypeSizeIA == TypeTraits<int>::size || sizeof(long) == TypeTraits<int>::size )
+    if( indexDataTypeSizeIA == TypeTraits<int>::size || sizeof(long) == TypeTraits<int>::size )
     {
         writeBinaryData<int,IndexType,1>( outFile, iaRead.get(), numRows + 1 );
     }
-    else if ( indexDataTypeSizeIA == TypeTraits<long>::size )
+    else if( indexDataTypeSizeIA == TypeTraits<long>::size )
     {
         writeBinaryData<long,IndexType,1>( outFile, iaRead.get(), numRows + 1 );
     }
@@ -614,11 +611,11 @@ void StorageIO<ValueType>::writeCSRToBinaryFile(
 
     // write m_ja
 
-    if ( indexDataTypeSizeJA == TypeTraits<int>::size || sizeof(long) == TypeTraits<int>::size )
+    if( indexDataTypeSizeJA == TypeTraits<int>::size || sizeof(long) == TypeTraits<int>::size )
     {
         writeBinaryData<int,IndexType,1>( outFile, jaRead.get(), numValues );
     }
-    else if ( indexDataTypeSizeJA == TypeTraits<long>::size )
+    else if( indexDataTypeSizeJA == TypeTraits<long>::size )
     {
         writeBinaryData<long,IndexType,1>( outFile, jaRead.get(), numValues );
     }
@@ -627,19 +624,19 @@ void StorageIO<ValueType>::writeCSRToBinaryFile(
         LAMA_THROWEXCEPTION( "(write unformatted) Unknown index data type size of JA." )
     }
 
-    if ( dataTypeSize == TypeTraits<double>::size )
+    if( dataTypeSize == TypeTraits<double>::size )
     {
         writeBinaryData<double,ValueType,0>( outFile, dataRead.get(), numValues );
     }
-    else if ( dataTypeSize == TypeTraits<float>::size )
+    else if( dataTypeSize == TypeTraits<float>::size )
     {
         writeBinaryData<float,ValueType,0>( outFile, dataRead.get(), numValues );
     }
-    else if ( dataTypeSize == TypeTraits<ComplexFloat>::size )
+    else if( dataTypeSize == TypeTraits<ComplexFloat>::size )
     {
         writeBinaryData<ComplexFloat,ValueType,0>( outFile, dataRead.get(), numValues );
     }
-    else if ( dataTypeSize == TypeTraits<ComplexDouble>::size )
+    else if( dataTypeSize == TypeTraits<ComplexDouble>::size )
     {
         writeBinaryData<ComplexDouble,ValueType,0>( outFile, dataRead.get(), numValues );
     }
@@ -672,31 +669,30 @@ void StorageIO<ValueType>::writeCSRToMMFile(
     mm_set_matrix( &matcode );
     mm_set_sparse( &matcode );
 
-    if ( dataType == File::DOUBLE || dataType == File::FLOAT || dataType == File::INTERNAL )
+    if( dataType == File::DOUBLE || dataType == File::FLOAT || dataType == File::INTERNAL )
     {
         mm_set_real( &matcode );
     }
-    else if ( dataType == File::COMPLEX )
+    else if( dataType == File::COMPLEX )
     {
         mm_set_complex( &matcode );
     }
-    else if ( dataType == File::INTEGER )
+    else if( dataType == File::INTEGER )
     {
         mm_set_integer( &matcode );
     }
-    else if ( dataType == File::PATTERN )
+    else if( dataType == File::PATTERN )
     {
         mm_set_pattern( &matcode );
     }
     else
     {
-        LAMA_THROWEXCEPTION( "SparseMatrix::writeMatrixToMMFile: "
-                             "unknown datatype." << dataType )
+        LAMA_THROWEXCEPTION( "SparseMatrix::writeMatrixToMMFile: " "unknown datatype." << dataType )
     }
 
     std::FILE* file;
 
-    if ( !( file = std::fopen( fileName.c_str(), "w+" ) ) )
+    if( !( file = std::fopen( fileName.c_str(), "w+" ) ) )
     {
         LAMA_THROWEXCEPTION( "SparseMatrix::writeMatrixToMMFile: '" + fileName + "' could not be opened." )
     }
@@ -704,7 +700,7 @@ void StorageIO<ValueType>::writeCSRToMMFile(
     mm_write_banner( file, matcode );
     mm_write_mtx_crd_size( file, numRows, numColumns, numValues );
 
-    if ( std::fclose( file ) != 0 )
+    if( std::fclose( file ) != 0 )
     {
         LAMA_THROWEXCEPTION( "SparseMatrix::writeMatrixToMMFile: '" + fileName + "' could not be closed." )
     }
@@ -713,7 +709,7 @@ void StorageIO<ValueType>::writeCSRToMMFile(
     std::ofstream ofile;
     ofile.open( fileName.c_str(), std::ios::out | std::ios::app );
 
-    if ( ofile.fail() )
+    if( ofile.fail() )
     {
         LAMA_THROWEXCEPTION( "SparseMatrix>::writeMatrixToMMFile: '" + fileName + "' could not be reopened." )
     }
@@ -722,13 +718,13 @@ void StorageIO<ValueType>::writeCSRToMMFile(
     HostReadAccess<IndexType> ja( csrJA );
     HostReadAccess<ValueType> data( csrValues );
 
-    for ( IndexType ii = 0; ii < numRows; ++ii )
+    for( IndexType ii = 0; ii < numRows; ++ii )
     {
-        for ( IndexType jj = ia[ii]; jj < ia[ii + 1]; ++jj )
+        for( IndexType jj = ia[ii]; jj < ia[ii + 1]; ++jj )
         {
             ofile << ii + 1 << " " << ja[jj] + 1;
 
-            if ( dataType != File::PATTERN )
+            if( dataType != File::PATTERN )
             {
                 ofile << " " << data[jj];
             }
@@ -752,7 +748,7 @@ struct MatrixValue
     ValueType v;
 
     MatrixValue( IndexType row, IndexType col, ValueType val )
-        : i( row ), j( col ), v( val )
+                    : i( row ), j( col ), v( val )
     {
     }
 };
@@ -770,7 +766,7 @@ void StorageIO<ValueType>::readCSRFromMMFile(
     std::FILE* file;
     file = fopen( fileName.c_str(), "r" );
 
-    if ( !file )
+    if( !file )
     {
         LAMA_THROWEXCEPTION( "Could not open file '" << fileName << "'." )
     }
@@ -778,25 +774,24 @@ void StorageIO<ValueType>::readCSRFromMMFile(
     MM_typecode matcode;
     int errorCode = mm_read_banner( file, &matcode );
 
-    if ( errorCode != 0 )
+    if( errorCode != 0 )
     {
-        LAMA_THROWEXCEPTION(
-            "Could not process Matrix Market banner. Cause: '" << getErrorString( errorCode ) << "'." );
+        LAMA_THROWEXCEPTION( "Could not process Matrix Market banner. Cause: '" << getErrorString( errorCode ) << "'." );
     }
 
     bool isPattern = mm_is_pattern( matcode );
 
-    if ( mm_is_complex( matcode ) )
+    if( mm_is_complex( matcode ) )
     {
         LAMA_THROWEXCEPTION( "Unsupported data type in file '" << fileName << "'." )
     }
 
-    if ( !mm_is_matrix( matcode ) )
+    if( !mm_is_matrix( matcode ) )
     {
         LAMA_THROWEXCEPTION( "'" << fileName << "' did not contain a matrix." )
     }
 
-    if ( !mm_is_sparse( matcode ) )
+    if( !mm_is_sparse( matcode ) )
     {
         LAMA_THROWEXCEPTION( "'" << fileName << "' did not contain a sparse matrix." )
     }
@@ -811,16 +806,16 @@ void StorageIO<ValueType>::readCSRFromMMFile(
 
     errorCode = mm_read_mtx_crd_size( file, &numRows, &numColumns, &numValues );
 
-    if ( errorCode != 0 )
+    if( errorCode != 0 )
     {
         LAMA_THROWEXCEPTION(
-            "Could not read values from file '" << fileName << "'. Cause: '" << getErrorString( errorCode ) << "'." );
+                        "Could not read values from file '" << fileName << "'. Cause: '" << getErrorString( errorCode ) << "'." );
     }
 
     LAMA_LOG_INFO( logger,
                    "mmx values: #rows = " << numRows << ", #cols = " << numColumns << ", #values = " << numValues )
 
-    if ( std::fclose( file ) != 0 )
+    if( std::fclose( file ) != 0 )
     {
         LAMA_THROWEXCEPTION( "'" << fileName << "' could not be closed." )
     }
@@ -829,16 +824,16 @@ void StorageIO<ValueType>::readCSRFromMMFile(
     std::ifstream ifile;
     ifile.open( fileName.c_str(), std::ios::in );
 
-    if ( ifile.fail() )
+    if( ifile.fail() )
     {
         LAMA_THROWEXCEPTION( "Could not reopen file '" << fileName << "'." )
     }
 
     HostWriteOnlyAccess<IndexType> ia( csrIA, numRows + 1 );
     // initialize ia;
-    #pragma omp parallel for schedule(LAMA_OMP_SCHEDULE)
+#pragma omp parallel for schedule(LAMA_OMP_SCHEDULE)
 
-    for ( IndexType i = 0; i < numRows + 1; i++ )
+    for( IndexType i = 0; i < numRows + 1; i++ )
     {
         ia[i] = 0;
     }
@@ -848,7 +843,7 @@ void StorageIO<ValueType>::readCSRFromMMFile(
     //Jump to the beginning of the Values
     char c = '%';
 
-    while ( c == '%' )
+    while( c == '%' )
     {
         ifile >> c;
         ifile.ignore( 1024, '\n' );
@@ -857,7 +852,7 @@ void StorageIO<ValueType>::readCSRFromMMFile(
     std::vector<MatrixValue<ValueType> > values;
 
     //Set the right size of the Vector
-    if ( symmetric )
+    if( symmetric )
     {
         values.reserve( numValues * 2 - numRows );
     }
@@ -870,14 +865,14 @@ void StorageIO<ValueType>::readCSRFromMMFile(
     //Create Input Vector
     MatrixValue<ValueType> val( 0, 0, 0 );
 
-    for ( int l = 0; l < lines && !ifile.eof(); ++l )
+    for( int l = 0; l < lines && !ifile.eof(); ++l )
     {
         //TODO Read Vector !!!
         // read ia
         ifile >> val.i;
         ifile >> val.j;
 
-        if ( !isPattern )
+        if( !isPattern )
         {
             ifile >> val.v;
         }
@@ -885,9 +880,9 @@ void StorageIO<ValueType>::readCSRFromMMFile(
         ++ia[val.i];
 
         // if the matrix is symmetric, the value appears in row 'column' again.
-        if ( symmetric )
+        if( symmetric )
         {
-            if ( val.j != val.i )
+            if( val.j != val.i )
             {
                 ++ia[val.j];
                 ++numValues;
@@ -903,7 +898,7 @@ void StorageIO<ValueType>::readCSRFromMMFile(
         values.push_back( val );
     }
 
-    if ( ifile.eof() )
+    if( ifile.eof() )
     {
         LAMA_THROWEXCEPTION( "'" << fileName << "': reached end of file, before having read all data." )
     }
@@ -916,7 +911,7 @@ void StorageIO<ValueType>::readCSRFromMMFile(
 
     //create absolute Values of ia
 
-    for ( int i = 1; i < numRows; i++ )
+    for( int i = 1; i < numRows; i++ )
     {
         ia[i] += ia[i - 1];
         LAMA_LOG_INFO( logger, "offset[" << i << "] = " << ia[i] )
@@ -924,21 +919,21 @@ void StorageIO<ValueType>::readCSRFromMMFile(
 
     ia[numRows] = numValues;
     //initialize ia and data
-    #pragma omp parallel for schedule(LAMA_OMP_SCHEDULE)
+#pragma omp parallel for schedule(LAMA_OMP_SCHEDULE)
 
-    for ( IndexType i = 0; i < numValues; i++ )
+    for( IndexType i = 0; i < numValues; i++ )
     {
         ja[i] = -1;
         data[i] = 0;
     }
 
-    for ( IndexType elem = 0; elem < numValues; elem++ )
+    for( IndexType elem = 0; elem < numValues; elem++ )
     {
         MatrixValue<ValueType> value = values[elem];
         IndexType offset = ia[value.i];
         IndexType pos = 0;
 
-        while ( ja[offset + pos] != -1 )
+        while( ja[offset + pos] != -1 )
         {
             pos++;
         }
@@ -985,20 +980,20 @@ void _StorageIO::getFileInfo(
 
     size_t pos = fileName.find_last_of( "." );
 
-    if ( pos == std::string::npos )
+    if( pos == std::string::npos )
     {
         // no suffix available, give it a try with <filename>.amg
 
         getFileInfo( fileType, np, baseName, fileName + "." + AMG_FILE_MATRIX_HEADER_SUFFIX );
 
-        if ( np >= 1 )
+        if( np >= 1 )
         {
             return;
         }
 
         getFileInfo( fileType, np, baseName, fileName + ".0." + AMG_FILE_MATRIX_HEADER_SUFFIX );
 
-        if ( np >= 1 )
+        if( np >= 1 )
         {
             return;
         }
@@ -1008,7 +1003,7 @@ void _StorageIO::getFileInfo(
         return;
     }
 
-    if ( !fileExists( fileName ) )
+    if( !fileExists( fileName ) )
     {
         return;
     }
@@ -1019,12 +1014,12 @@ void _StorageIO::getFileInfo(
 
     LAMA_LOG_DEBUG( logger, "File info of " << fileName << ": base = " << baseName << ", suffix = " << suffix )
 
-    if ( suffix == MATRIX_MARKET_FILE_SUFFIX )
+    if( suffix == MATRIX_MARKET_FILE_SUFFIX )
     {
         np = 1;
         fileType = File::MATRIX_MARKET;
     }
-    else if ( suffix == AMG_FILE_MATRIX_HEADER_SUFFIX )
+    else if( suffix == AMG_FILE_MATRIX_HEADER_SUFFIX )
     {
         // read the header file to find out about the number of partitions
 
@@ -1037,7 +1032,7 @@ void _StorageIO::getFileInfo(
 
         readCSRHeader( numRows, numColumns, numValues, np, rank, fileType, fileName );
 
-        if ( np > 1 )
+        if( np > 1 )
         {
             // ToDo: base name must be cut
         }
@@ -1056,24 +1051,27 @@ void _StorageIO::writeCSRHeader(
 {
     char charFileType;
 
-    switch ( fileType )
+    switch( fileType )
     {
-    case File::BINARY:
-        charFileType = 'b';
-        break;
-    case File::FORMATTED:
-        charFileType = 'f';
-        break;
-    case File::XDR:
-        charFileType = 'x';
-        break;
-    default:
-        LAMA_THROWEXCEPTION( "Invalid header file." )
+        case File::BINARY:
+            charFileType = 'b';
+            break;
+
+        case File::FORMATTED:
+            charFileType = 'f';
+            break;
+
+        case File::XDR:
+            charFileType = 'x';
+            break;
+
+        default:
+            LAMA_THROWEXCEPTION( "Invalid header file." )
     }
 
     std::fstream outFile( fileName.c_str(), std::ios::out );
 
-    if ( !outFile.is_open() )
+    if( !outFile.is_open() )
     {
         LAMA_THROWEXCEPTION( "Unable to open matrix header file " + fileName + "." )
     }
@@ -1104,7 +1102,7 @@ void _StorageIO::readCSRHeader(
 {
     std::ifstream frmFile( frmFileName.c_str(), std::ios::in ); // open *.frm
 
-    if ( !frmFile.is_open() )
+    if( !frmFile.is_open() )
     {
         LAMA_THROWEXCEPTION( "Could not open header file " + frmFileName + "." )
     }
@@ -1118,30 +1116,33 @@ void _StorageIO::readCSRHeader(
 
     frmFile >> ch >> iversion;
 
-    switch ( ch )
+    switch( ch )
     {
-    case 'f':
-    {
-        fileType = File::FORMATTED;
-        break;
-    }
-    case 'b':
-    {
-        fileType = File::BINARY;
-        break;
-    }
-    case 'x':
-    {
-        fileType = File::XDR;
-        break;
-    }
-    default:
-    {
-        LAMA_THROWEXCEPTION( "Invalid file format: " << ch << "." )
-    }
+        case 'f':
+        {
+            fileType = File::FORMATTED;
+            break;
+        }
+
+        case 'b':
+        {
+            fileType = File::BINARY;
+            break;
+        }
+
+        case 'x':
+        {
+            fileType = File::XDR;
+            break;
+        }
+
+        default:
+        {
+            LAMA_THROWEXCEPTION( "Invalid file format: " << ch << "." )
+        }
     } //switch (ch)
 
-    if ( iversion != mIversion )
+    if( iversion != mIversion )
     {
         LAMA_THROWEXCEPTION( "Invalid file version: " << iversion << ", should be " << mIversion )
     }
@@ -1171,7 +1172,7 @@ static bool hasSuffix( const std::string& name, const char* suffix )
 {
     size_t lenSuffix = strlen( suffix );
 
-    if ( name.size() >= lenSuffix )
+    if( name.size() >= lenSuffix )
     {
         return name.substr( name.size() - lenSuffix, lenSuffix ) == suffix;
     }
@@ -1192,13 +1193,13 @@ void StorageIO<ValueType>::writeCSRToFile(
     const File::DataType& dataType,
     const File::IndexDataType indexDataTypeIA /*=LONG*/,
     const File::IndexDataType indexDataTypeJA /*=LONG*/
-)
+    )
 {
     LAMA_REGION( "StorageIO.writeCSRToFile " )
 
     std::string fileBaseName;
 
-    if ( hasSuffix( fileName, ".frm" ) )
+    if( hasSuffix( fileName, ".frm" ) )
     {
         fileBaseName = fileName.substr( 0, fileName.size() - 4 ).c_str();
     }
@@ -1209,7 +1210,7 @@ void StorageIO<ValueType>::writeCSRToFile(
 
     // for multiple parititions we generate an own id for each partition
 
-    if ( size > 1 )
+    if( size > 1 )
     {
         char rankstr[10];
         sprintf( rankstr, ".%d", rank );
@@ -1224,42 +1225,46 @@ void StorageIO<ValueType>::writeCSRToFile(
     LAMA_ASSERT_ERROR( indexDataTypeSizeJA > 0, "indexDataTypeJA = " << indexDataTypeJA << " unsupported" )
     LAMA_ASSERT_ERROR( dataTypeSize >= 0, "dataTypeSize = " << dataTypeSize << " unsupported" )
 
-    switch ( fileType )
+    switch( fileType )
     {
-    case File::FORMATTED:
-    {
-        writeCSRToFormattedFile( csrIA, csrJA, csrValues, fileBaseName + ".amg" );
-
-        break;
-    }
-    case File::BINARY:
-    {
-        writeCSRToBinaryFile( csrIA, csrJA, csrValues, fileBaseName + ".amg", indexDataTypeSizeIA,
-                              indexDataTypeSizeJA, dataTypeSize );
-        break;
-    }
-    case File::XDR:
-    {
-        writeCSRToXDRFile( csrIA, csrJA, csrValues, fileBaseName + ".amg", indexDataTypeSizeIA, indexDataTypeSizeJA,
-                           dataTypeSize );
-        break;
-    }
-    case File::MATRIX_MARKET:
-    {
-        std::string name = fileName;
-
-        if ( fileName.substr( fileName.size() - 4, 4 ) != ".mtx" )
+        case File::FORMATTED:
         {
-            name += ".mtx";
+            writeCSRToFormattedFile( csrIA, csrJA, csrValues, fileBaseName + ".amg" );
+
+            break;
         }
 
-        writeCSRToMMFile( csrIA, numColumns, csrJA, csrValues, name, dataType );
-        return;
-    }
-    default:
-    {
-        LAMA_THROWEXCEPTION( "Unknown file type definition." )
-    }
+        case File::BINARY:
+        {
+            writeCSRToBinaryFile( csrIA, csrJA, csrValues, fileBaseName + ".amg", indexDataTypeSizeIA,
+                                  indexDataTypeSizeJA, dataTypeSize );
+            break;
+        }
+
+        case File::XDR:
+        {
+            writeCSRToXDRFile( csrIA, csrJA, csrValues, fileBaseName + ".amg", indexDataTypeSizeIA, indexDataTypeSizeJA,
+                               dataTypeSize );
+            break;
+        }
+
+        case File::MATRIX_MARKET:
+        {
+            std::string name = fileName;
+
+            if( fileName.substr( fileName.size() - 4, 4 ) != ".mtx" )
+            {
+                name += ".mtx";
+            }
+
+            writeCSRToMMFile( csrIA, numColumns, csrJA, csrValues, name, dataType );
+            return;
+        }
+
+        default:
+        {
+            LAMA_THROWEXCEPTION( "Unknown file type definition." )
+        }
     } //switch(fileType)
 
     const IndexType numRows = csrIA.size() - 1;
@@ -1282,12 +1287,12 @@ void StorageIO<ValueType>::readCSRFromFile(
 
     std::string suffix;
 
-    if ( fileName.size() >= 4 )
+    if( fileName.size() >= 4 )
     {
         suffix = fileName.substr( fileName.size() - 4, 4 );
     }
 
-    if ( suffix == ".mtx" )
+    if( suffix == ".mtx" )
     {
         readCSRFromMMFile( csrIA, numColumns, csrJA, csrValues, fileName );
         return;
@@ -1295,7 +1300,7 @@ void StorageIO<ValueType>::readCSRFromFile(
 
     std::string baseFileName = fileName;
 
-    if ( suffix == ".frm" )
+    if( suffix == ".frm" )
     {
         baseFileName = fileName.substr( 0, fileName.size() - 4 );
     }
@@ -1316,26 +1321,29 @@ void StorageIO<ValueType>::readCSRFromFile(
     LAMA_LOG_INFO( logger,
                    "readCSRHeader( " << frmFileName << " ): " << numRows << " x " << numColumns << ", #values = " << numValues )
 
-    switch ( fileType )
+    switch( fileType )
     {
-    case File::FORMATTED:
-    {
-        readCSRFromFormattedFile( csrIA, csrJA, csrValues, amgFileName, numRows );
-        break;
-    }
-    case File::BINARY:
-    {
-        // Attention: no type conversion here, so data sizes must fit
-        readCSRFromBinaryFile( csrIA, csrJA, csrValues, amgFileName, numRows );
-        break;
-    }
-    case File::XDR:
-    {
-        readCSRFromXDRFile( csrIA, csrJA, csrValues, amgFileName, numRows );
-        break;
-    }
-    default:
-        LAMA_THROWEXCEPTION( "Read storage file: unknown file type = " << fileType )
+        case File::FORMATTED:
+        {
+            readCSRFromFormattedFile( csrIA, csrJA, csrValues, amgFileName, numRows );
+            break;
+        }
+
+        case File::BINARY:
+        {
+            // Attention: no type conversion here, so data sizes must fit
+            readCSRFromBinaryFile( csrIA, csrJA, csrValues, amgFileName, numRows );
+            break;
+        }
+
+        case File::XDR:
+        {
+            readCSRFromXDRFile( csrIA, csrJA, csrValues, amgFileName, numRows );
+            break;
+        }
+
+        default:
+            LAMA_THROWEXCEPTION( "Read storage file: unknown file type = " << fileType )
     }
 }
 
@@ -1344,7 +1352,7 @@ void StorageIO<ValueType>::readCSRFromFile(
 /* ========================================================================= */
 
 #define LAMA_STORAGE_IO_INSTANTIATE(z, I, _)                              \
-template class LAMA_DLL_IMPORTEXPORT StorageIO<ARITHMETIC_TYPE##I> ;  
+    template class LAMA_DLL_IMPORTEXPORT StorageIO<ARITHMETIC_TYPE##I> ;
 
 BOOST_PP_REPEAT( ARITHMETIC_TYPE_CNT, LAMA_STORAGE_IO_INSTANTIATE, _ )
 
@@ -1352,4 +1360,4 @@ BOOST_PP_REPEAT( ARITHMETIC_TYPE_CNT, LAMA_STORAGE_IO_INSTANTIATE, _ )
 
 /* -------------------------------------------------------------------------- */
 
-} // namespace LAMA
+}// namespace LAMA

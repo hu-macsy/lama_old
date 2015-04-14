@@ -2,7 +2,7 @@
  * @file CRTPMatrixStorage.hpp
  *
  * @license
- * Copyright (c) 2009-2013
+ * Copyright (c) 2009-2015
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -95,219 +95,220 @@ public:
     {
         Scalar::ScalarType arrayType = values.getValueType();
 
-        switch ( arrayType  )
+        switch( arrayType )
         {
 
 #define LAMA_SET_CSR_CALL( z, I, _ )                                                            \
-        case Scalar::SCALAR_ARITHMETIC_TYPE##I:                                                 \
-        {                                                                                       \
-            const LAMAArray<ARITHMETIC_TYPE##I>& typedValues =                                  \
-                dynamic_cast<const LAMAArray<ARITHMETIC_TYPE##I>&>( values );                   \
-            static_cast<Derived*>( this )->setCSRDataImpl(                                      \
-                numRows, numColumns, numValues, ia, ja, typedValues, this->getContextPtr() );   \
-            break;                                                                              \
-        }                                                                                       \
+case Scalar::SCALAR_ARITHMETIC_TYPE##I:                                                 \
+{                                                                                       \
+    const LAMAArray<ARITHMETIC_TYPE##I>& typedValues =                                  \
+            dynamic_cast<const LAMAArray<ARITHMETIC_TYPE##I>&>( values );                   \
+    static_cast<Derived*>( this )->setCSRDataImpl(                                      \
+            numRows, numColumns, numValues, ia, ja, typedValues, this->getContextPtr() );   \
+    break;                                                                              \
+}                                                                                       \
 
-        BOOST_PP_REPEAT( ARITHMETIC_TYPE_CNT, LAMA_SET_CSR_CALL, _ )
+BOOST_PP_REPEAT( ARITHMETIC_TYPE_CNT, LAMA_SET_CSR_CALL, _ )
 
 #undef LAMA_SET_CSR_CALL
 
-        default:
-        {
-            LAMA_THROWEXCEPTION( *this << ": setCSRData with value type " << arrayType << " not supported" )
-        }
-        }
-    }
+default            :
+{
+    LAMA_THROWEXCEPTION( *this << ": setCSRData with value type " << arrayType << " not supported" )
+}
+}
+}
 
-    /** Implementation for _MatrixStorage::buildCSRSizes */
+/** Implementation for _MatrixStorage::buildCSRSizes */
 
-    void buildCSRSizes( LAMAArray<IndexType>& ia ) const
-    {
-        // The sizes will be available via buildCSR with NULL for ja, values
+void buildCSRSizes( LAMAArray<IndexType>& ia ) const
+{
+// The sizes will be available via buildCSR with NULL for ja, values
 
-        LAMAArray<IndexType>* ja = NULL;
-        LAMAArray<ValueType>* values = NULL;
+LAMAArray<IndexType>* ja = NULL;
+LAMAArray<ValueType>* values = NULL;
 
-        static_cast<const Derived*>( this )->buildCSR( ia, ja, values, this->getContextPtr() );
-    }
+static_cast<const Derived*>( this )->buildCSR( ia, ja, values, this->getContextPtr() );
+}
 
-    void buildCSRData( LAMAArray<IndexType>& csrIA, LAMAArray<IndexType>& csrJA, _LAMAArray& csrValues ) const
-    {
-        Scalar::ScalarType arrayType = csrValues.getValueType();
+void buildCSRData( LAMAArray<IndexType>& csrIA, LAMAArray<IndexType>& csrJA, _LAMAArray& csrValues ) const
+{
+Scalar::ScalarType arrayType = csrValues.getValueType();
 
-        switch ( arrayType )
-        {
+switch ( arrayType )
+{
 #define LAMA_BUILD_CSR_CALL( z, I, _ )                                        \
-        case Scalar::SCALAR_ARITHMETIC_TYPE##I:                               \
-        {                                                                     \
-            LAMAArray<ARITHMETIC_TYPE##I>& typedValues =                      \
-                dynamic_cast<LAMAArray<ARITHMETIC_TYPE##I>&>( csrValues );    \
-            static_cast<const Derived*>( this )->buildCSR(                    \
-                csrIA, &csrJA, &typedValues, this->getContextPtr() );         \
-            break;                                                            \
-        }                                                                     \
+case Scalar::SCALAR_ARITHMETIC_TYPE##I:                               \
+{                                                                     \
+    LAMAArray<ARITHMETIC_TYPE##I>& typedValues =                      \
+            dynamic_cast<LAMAArray<ARITHMETIC_TYPE##I>&>( csrValues );    \
+    static_cast<const Derived*>( this )->buildCSR(                    \
+            csrIA, &csrJA, &typedValues, this->getContextPtr() );         \
+    break;                                                            \
+}                                                                     \
 
-        BOOST_PP_REPEAT( ARITHMETIC_TYPE_CNT, LAMA_BUILD_CSR_CALL, _ )
+BOOST_PP_REPEAT( ARITHMETIC_TYPE_CNT, LAMA_BUILD_CSR_CALL, _ )
 
 #undef LAMA_BUILD_CSR_CALL
 
-        default:
-        {
-            LAMA_THROWEXCEPTION( *this << ": build CSR with value type " << arrayType << " not supported" )
-        }
+default:
+{
+    LAMA_THROWEXCEPTION( *this << ": build CSR with value type " << arrayType << " not supported" )
+}
 
-        }
+}
 
-    }
+}
 
-    /** Get the i-th row of a storage as LAMA array. */
+/** Get the i-th row of a storage as LAMA array. */
 
-    void getRow( _LAMAArray& row, const IndexType irow ) const
-    {
-        Scalar::ScalarType arrayType = row.getValueType();
+void getRow( _LAMAArray& row, const IndexType irow ) const
+{
+Scalar::ScalarType arrayType = row.getValueType();
 
-        switch ( arrayType )
-        {
+switch ( arrayType )
+{
 #define LAMA_GET_ROW_CALL( z, I, _ )                                           \
-        case Scalar::SCALAR_ARITHMETIC_TYPE##I:                                \
-        {                                                                      \
-            LAMAArray<ARITHMETIC_TYPE##I>& typedRow =                          \
-                dynamic_cast<LAMAArray<ARITHMETIC_TYPE##I>&>( row );           \
-            static_cast<const Derived*>( this )->getRowImpl( typedRow, irow ); \
-            break;                                                             \
-        }                                                                      \
+case Scalar::SCALAR_ARITHMETIC_TYPE##I:                                \
+{                                                                      \
+    LAMAArray<ARITHMETIC_TYPE##I>& typedRow =                          \
+            dynamic_cast<LAMAArray<ARITHMETIC_TYPE##I>&>( row );           \
+    static_cast<const Derived*>( this )->getRowImpl( typedRow, irow ); \
+    break;                                                             \
+}                                                                      \
 
-        BOOST_PP_REPEAT( ARITHMETIC_TYPE_CNT, LAMA_GET_ROW_CALL, _ )
+BOOST_PP_REPEAT( ARITHMETIC_TYPE_CNT, LAMA_GET_ROW_CALL, _ )
 
 #undef LAMA_GET_ROW_CALL
 
-        default:
-        {
-            LAMA_THROWEXCEPTION( "getRow for array of type " << arrayType << " not supported" )
-        }
+default:
+{
+    LAMA_THROWEXCEPTION( "getRow for array of type " << arrayType << " not supported" )
+}
 
-        }
-    }
+}
+}
 
-    void getDiagonal( _LAMAArray& diagonal ) const
-    {
-        if ( !this->hasDiagonalProperty() )
-        {
-            LAMA_THROWEXCEPTION( *this << ": has not diagonal property, cannot get diagonal" )
-        }
+void getDiagonal( _LAMAArray& diagonal ) const
+{
+if ( !this->hasDiagonalProperty() )
+{
+LAMA_THROWEXCEPTION( *this << ": has not diagonal property, cannot get diagonal" )
+}
 
-        Scalar::ScalarType arrayType = diagonal.getValueType();
+Scalar::ScalarType arrayType = diagonal.getValueType();
 
-        switch ( arrayType )
-        {
+switch ( arrayType )
+{
 #define LAMA_GET_DIAGONAL_CALL( z, I, _ )                                           \
-        case Scalar::SCALAR_ARITHMETIC_TYPE##I:                                     \
-        {                                                                           \
-            LAMAArray<ARITHMETIC_TYPE##I>& typedDiagonal =                          \
-                dynamic_cast<LAMAArray<ARITHMETIC_TYPE##I>&>( diagonal );           \
-            static_cast<const Derived*>( this )->getDiagonalImpl( typedDiagonal );  \
-            break;                                                             \
-        }                                                                           \
+case Scalar::SCALAR_ARITHMETIC_TYPE##I:                                     \
+{                                                                           \
+    LAMAArray<ARITHMETIC_TYPE##I>& typedDiagonal =                          \
+            dynamic_cast<LAMAArray<ARITHMETIC_TYPE##I>&>( diagonal );           \
+    static_cast<const Derived*>( this )->getDiagonalImpl( typedDiagonal );  \
+    break;                                                             \
+}                                                                           \
 
-        BOOST_PP_REPEAT( ARITHMETIC_TYPE_CNT, LAMA_GET_DIAGONAL_CALL, _ )
+BOOST_PP_REPEAT( ARITHMETIC_TYPE_CNT, LAMA_GET_DIAGONAL_CALL, _ )
 
 #undef LAMA_GET_DIAGONAL_CALL
 
-        default:
-            LAMA_THROWEXCEPTION( "getDiagonal for array of type " << arrayType << " not supported" )
+default:
+    LAMA_THROWEXCEPTION( "getDiagonal for array of type " << arrayType << " not supported" )
 
-        }
-    }
+}
+}
 
-    void setDiagonal( const Scalar value )
-    {
-        if ( !this->hasDiagonalProperty() )
-        {
-            LAMA_THROWEXCEPTION( *this << ": has not diagonal property, cannot set diagonal" )
-        }
+void setDiagonal( const Scalar value )
+{
+if ( !this->hasDiagonalProperty() )
+{
+LAMA_THROWEXCEPTION( *this << ": has not diagonal property, cannot set diagonal" )
+}
 
-        static_cast<Derived*>( this )->setDiagonalImpl( value );
-    }
+static_cast<Derived*>( this )->setDiagonalImpl( value );
+}
 
-    void setDiagonal( const _LAMAArray& diagonal )
-    {
-        IndexType numDiagonalElements = diagonal.size();
+void setDiagonal( const _LAMAArray& diagonal )
+{
+IndexType numDiagonalElements = diagonal.size();
 
-        if ( numDiagonalElements > this->getNumRows() || numDiagonalElements > this->getNumColumns() )
-        {
-            LAMA_THROWEXCEPTION( "Diagonal of size " << numDiagonalElements << " too large for matrix: " << *this )
-        }
+if ( numDiagonalElements > this->getNumRows() || numDiagonalElements > this->getNumColumns() )
+{
+LAMA_THROWEXCEPTION( "Diagonal of size " << numDiagonalElements << " too large for matrix: " << *this )
+}
 
-        if ( !this->hasDiagonalProperty() )
-        {
-            LAMA_THROWEXCEPTION( *this << ": has not diagonal property, cannot set diagonal" )
-        }
+if ( !this->hasDiagonalProperty() )
+{
+LAMA_THROWEXCEPTION( *this << ": has not diagonal property, cannot set diagonal" )
+}
 
-        Scalar::ScalarType arrayType = diagonal.getValueType();
+Scalar::ScalarType arrayType = diagonal.getValueType();
 
-        switch ( arrayType )
-        {
+switch ( arrayType )
+{
 #define LAMA_SET_DIAGONAL_CALL( z, I, _ )                                           \
-        case Scalar::SCALAR_ARITHMETIC_TYPE##I:                                     \
-        {                                                                           \
-            const LAMAArray<ARITHMETIC_TYPE##I>& typedDiagonal =                    \
-                dynamic_cast<const LAMAArray<ARITHMETIC_TYPE##I>&>( diagonal );     \
-            static_cast<Derived*>( this )->setDiagonalImpl( typedDiagonal );        \
-            break;                                                                  \
-        }                                                                           \
+case Scalar::SCALAR_ARITHMETIC_TYPE##I:                                     \
+{                                                                           \
+    const LAMAArray<ARITHMETIC_TYPE##I>& typedDiagonal =                    \
+            dynamic_cast<const LAMAArray<ARITHMETIC_TYPE##I>&>( diagonal );     \
+    static_cast<Derived*>( this )->setDiagonalImpl( typedDiagonal );        \
+    break;                                                                  \
+}                                                                           \
 
-        BOOST_PP_REPEAT( ARITHMETIC_TYPE_CNT, LAMA_SET_DIAGONAL_CALL, _ )
+BOOST_PP_REPEAT( ARITHMETIC_TYPE_CNT, LAMA_SET_DIAGONAL_CALL, _ )
 
 #undef LAMA_SET_DIAGONAL_CALL
 
-        default:
-            LAMA_THROWEXCEPTION( "setDiagonal to array of type " << arrayType << " not supported" )
-        }
-    }
+default:
+    LAMA_THROWEXCEPTION( "setDiagonal to array of type " << arrayType << " not supported" )
+}
+}
 
-    void scale( const Scalar value )
-    {
-        static_cast<Derived*>( this )->scaleImpl( value );
-    }
+void scale( const Scalar value )
+{
+static_cast<Derived*>( this )->scaleImpl( value );
+}
 
-    /** Polymorph implementation for MatrixStorage<ValueType>::scale */
+/** Polymorph implementation for MatrixStorage<ValueType>::scale */
 
-    void scale( const _LAMAArray& diagonal )
-    {
-        LAMA_ASSERT_EQUAL_ERROR( this->getNumRows(), diagonal.size() )
+void scale( const _LAMAArray& diagonal )
+{
+LAMA_ASSERT_EQUAL_ERROR( this->getNumRows(), diagonal.size() )
 
-        Scalar::ScalarType arrayType = diagonal.getValueType();
+Scalar::ScalarType arrayType = diagonal.getValueType();
 
-        switch ( arrayType )
-        {
+switch ( arrayType )
+{
 #define LAMA_SCALE_CALL( z, I, _ )                                                  \
-        case Scalar::SCALAR_ARITHMETIC_TYPE##I:                                     \
-            {                                                                           \
-                const LAMAArray<ARITHMETIC_TYPE##I>& typedDiagonal =                    \
-                    dynamic_cast<const LAMAArray<ARITHMETIC_TYPE##I>&>( diagonal );     \
-                static_cast<Derived*>( this )->scaleImpl( typedDiagonal );              \
-                break;                                                                  \
-            }                                                                           \
+case Scalar::SCALAR_ARITHMETIC_TYPE##I:                                     \
+{                                                                           \
+    const LAMAArray<ARITHMETIC_TYPE##I>& typedDiagonal =                    \
+            dynamic_cast<const LAMAArray<ARITHMETIC_TYPE##I>&>( diagonal );     \
+    static_cast<Derived*>( this )->scaleImpl( typedDiagonal );              \
+    break;                                                                  \
+}                                                                           \
 
-        BOOST_PP_REPEAT( ARITHMETIC_TYPE_CNT, LAMA_SCALE_CALL, _ )
+BOOST_PP_REPEAT( ARITHMETIC_TYPE_CNT, LAMA_SCALE_CALL, _ )
 
 #undef LAMA_SCALE_CALL
 
-        default:
-            LAMA_THROWEXCEPTION( "scale of type " << arrayType << " not supported" )
-        }
-    }
+default:
+    LAMA_THROWEXCEPTION( "scale of type " << arrayType << " not supported" )
+}
+}
 
-    /** Implementation of MatrixStorage::getTypeName for derived class. */
+/** Implementation of MatrixStorage::getTypeName for derived class. */
 
-    virtual const char* getTypeName() const
-    {
-        // each derived class provides static method to get the type name.
+virtual const char* getTypeName() const
+{
+// each derived class provides static method to get the type name.
 
-        return Derived::typeName();
-    }
+return Derived::typeName();
+}
 };
 
-} // namespace lama
+}
+// namespace lama
 
 #endif // LAMA_CRTP_MATRIX_STORAGE_HPP_
