@@ -56,6 +56,7 @@ set ( CLASSES
         InverseSolver
         IterativeSolver
         OmegaSolver
+	Richardson
         SimpleAMG
         SingleGridSetup
         SolutionProxy

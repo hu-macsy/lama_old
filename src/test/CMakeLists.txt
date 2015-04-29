@@ -98,6 +98,7 @@ set ( SOURCE_FILES
         NoCommunicatorTest
         ResidualStagnationTest
         ResidualThresholdTest
+	RichardsonTest
         ScalarTest
         SimpleAMGTest
         SolutionProxyTest
