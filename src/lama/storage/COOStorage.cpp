@@ -689,6 +689,46 @@ void COOStorage<ValueType>::setDiagonalImpl( const LAMAArray<OtherType>& diagona
 /* ------------------------------------------------------------------------------------------------------------------ */
 
 template<typename ValueType>
+ValueType COOStorage<ValueType>::l1Norm() const
+{
+	LAMA_LOG_INFO( logger, *this << ": l1Norm()" )
+
+    const IndexType n = mNumValues;
+
+	ContextPtr loc = getContextPtr();
+
+    LAMA_INTERFACE_FN_T( asum, loc, BLAS, BLAS1, ValueType )
+
+	ReadAccess<ValueType> data( mValues, loc );
+
+	LAMA_CONTEXT_ACCESS( loc );
+
+	return asum( n, data.get(), 1, NULL );
+}
+
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType>
+ValueType COOStorage<ValueType>::l2Norm() const
+{
+	LAMA_LOG_INFO( logger, *this << ": l2Norm()" )
+
+    const IndexType n = mNumValues;
+
+	ContextPtr loc = getContextPtr();
+
+    LAMA_INTERFACE_FN_T( dot, loc, BLAS, BLAS1, ValueType )
+
+	ReadAccess<ValueType> data( mValues, loc );
+
+	LAMA_CONTEXT_ACCESS( loc );
+
+	return sqrt(dot( n, data.get(), 1, data.get(), 1, NULL ));
+}
+
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType>
 ValueType COOStorage<ValueType>::maxNorm() const
 {
     LAMA_LOG_INFO( logger, *this << ": maxNorm()" )

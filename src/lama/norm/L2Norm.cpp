@@ -55,6 +55,11 @@ Scalar L2Norm::apply( const Vector& vector ) const
     return l2Norm( vector );
 }
 
+Scalar L2Norm::apply( const Matrix& matrix ) const
+{
+    return l2Norm( matrix );
+}
+
 Scalar l2Norm( const Scalar& scalar )
 {
     return abs( scalar );
@@ -63,6 +68,11 @@ Scalar l2Norm( const Scalar& scalar )
 Scalar l2Norm( const Vector& vector )
 {
     return vector.l2Norm();
+}
+
+Scalar l2Norm( const Matrix& matrix )
+{
+    return matrix.l2Norm();
 }
 
 }

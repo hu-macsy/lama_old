@@ -1511,52 +1511,52 @@ return mData;
 template<typename ValueType>
 Scalar DenseMatrix<ValueType>::getValue( lama::IndexType i, lama::IndexType j ) const
 {
-ValueType myValue = 0.0;
+	ValueType myValue = 0.0;
 
-const Distribution& colDist = getColDistribution();
-const Distribution& rowDist = getDistribution();
+	const Distribution& colDist = getColDistribution();
+	const Distribution& rowDist = getDistribution();
 
-const Communicator& comm = rowDist.getCommunicator();
+	const Communicator& comm = rowDist.getCommunicator();
 
-if( getDistribution().isLocal( i ) )
-{
-const IndexType iLocal = getDistribution().global2local( i );
+	if( getDistribution().isLocal( i ) )
+	{
+		const IndexType iLocal = getDistribution().global2local( i );
 
-PartitionId owner = comm.getRank();
+		PartitionId owner = comm.getRank();
 
-if( colDist.getNumPartitions() == 1 )
-{
-    owner = 0;
-}
+		if( colDist.getNumPartitions() == 1 )
+		{
+			owner = 0;
+		}
 
-IndexType jLocal = -1;
+		IndexType jLocal = -1;
 
-if( colDist.isLocal( j ) )
-{
-    jLocal = colDist.global2local( j );
-}
-else
-{
-    owner = mOwners[j];
+		if( colDist.isLocal( j ) )
+		{
+			jLocal = colDist.global2local( j );
+		}
+		else
+		{
+			owner = mOwners[j];
 
-    for( PartitionId k = 0; k <= j; ++k )
-    {
-        if( owner == mOwners[k] )
-        {
-            ++jLocal;
-        }
-    }
-}
+			for( PartitionId k = 0; k <= j; ++k )
+			{
+				if( owner == mOwners[k] )
+				{
+				    ++jLocal;
+				}
+			}
+		}
 
-LAMA_ASSERT_ERROR( jLocal != nIndex, "non local column index" )
-LAMA_LOG_TRACE( logger,
-                "getting value for index(" << i << "," << j << ")" << " which is localy ( " << iLocal << "," << jLocal << " )" )
-myValue = mData[owner]->getValue( iLocal, jLocal );
-}
+		LAMA_ASSERT_ERROR( jLocal != nIndex, "non local column index" )
+		LAMA_LOG_TRACE( logger,
+				        "getting value for index(" << i << "," << j << ")" << " which is localy ( " << iLocal << "," << jLocal << " )" )
+		myValue = mData[owner]->getValue( iLocal, jLocal );
+	}
 
-LAMA_LOG_TRACE( logger, "My value is " << myValue << " starting sum reduction to produce final result." )
+	LAMA_LOG_TRACE( logger, "My value is " << myValue << " starting sum reduction to produce final result." )
 
-return comm.sum( myValue );
+	return comm.sum( myValue );
 }
 
 template<typename ValueType>
@@ -1936,21 +1936,61 @@ res->mData[0]->matrixTimesMatrix( alpha.getValue<ValueType>(), *mData[0], *Bp->m
 template<typename ValueType>
 Scalar DenseMatrix<ValueType>::maxNorm() const
 {
-ValueType myMaxDiff = 0.0;
+	ValueType myMaxDiff = 0.0;
 
-for( size_t i = 0; i < mData.size(); ++i )
-{
-ValueType maxDiff = mData[i]->maxNorm();
+	for( size_t i = 0; i < mData.size(); ++i )
+	{
+		ValueType maxDiff = mData[i]->maxNorm();
 
-if( maxDiff > myMaxDiff )
-{
-    myMaxDiff = maxDiff;
+		if( maxDiff > myMaxDiff )
+		{
+			myMaxDiff = maxDiff;
+		}
+	}
+
+	const Communicator& comm = getDistribution().getCommunicator();
+
+	return comm.max( myMaxDiff );
 }
+
+/* -------------------------------------------------------------------------- */
+
+template<typename ValueType>
+Scalar DenseMatrix<ValueType>::l1Norm() const
+{
+	const Communicator& comm = getDistribution().getCommunicator();	
+
+	ValueType mySum = 0.0;
+
+	IndexType n = mData.size();
+
+	for(IndexType i = 0; i < n; i++)
+	{
+		mySum += mData[i]->l1Norm();
+	}
+
+	return comm.sum( mySum );
 }
 
-const Communicator& comm = getDistribution().getCommunicator();
+/* -------------------------------------------------------------------------- */
 
-return comm.max( myMaxDiff );
+template<typename ValueType>
+Scalar DenseMatrix<ValueType>::l2Norm() const
+{
+	const Communicator& comm = getDistribution().getCommunicator();
+
+	ValueType mySum = 0.0;
+	ValueType tmp;
+
+	IndexType n = mData.size();
+
+	for(IndexType i = 0; i < n; i++)
+	{
+		tmp = mData[i]->l2Norm();
+		mySum += tmp * tmp;
+	}
+
+	return sqrt( comm.sum( mySum ) );
 }
 
 /* -------------------------------------------------------------------------- */

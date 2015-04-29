@@ -327,6 +327,14 @@ public:
 
     void scaleImpl( const Scalar value );
 
+    /** Implementation for MatrixStorage::l1Norm */
+
+    virtual ValueType l1Norm() const;
+
+    /** Implementation for MatrixStorage::l2Norm */
+
+    virtual ValueType l2Norm() const;
+
     /** Implementation for MatrixStorage::maxNorm */
 
     virtual ValueType maxNorm() const;

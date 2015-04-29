@@ -76,6 +76,15 @@ public:
      * @return              the l2 norm of the Vector vector.
      */
     virtual Scalar apply( const Vector& vector ) const;
+
+    /**
+     * @brief calculates the l2 norm of the passed Matrix.
+     *
+     * @param[in] matrix    the Matrix to calculate the l2 norm of.
+     *
+     * @return              the l2 norm of the Matrix matrix.
+     */
+    virtual Scalar apply( const Matrix& matrix ) const;
 };
 
 /**
@@ -95,6 +104,15 @@ LAMA_DLL_IMPORTEXPORT Scalar l2Norm( const Scalar& scalar );
  * @return              the l2 norm of the Vector vector.
  */
 LAMA_DLL_IMPORTEXPORT Scalar l2Norm( const Vector& vector );
+
+/**
+ * @brief calculates the l2 norm of the passed Matrix.
+ *
+ * @param[in] vector    the Matrix to calculate the l2 norm of.
+ *
+ * @return              the l2 norm of the Matrix matrix.
+ */
+LAMA_DLL_IMPORTEXPORT Scalar l2Norm( const Matrix& matrix );
 
 }
 

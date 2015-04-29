@@ -37,6 +37,7 @@
 #include <lama/config.hpp>
 
 // others
+#include <lama/matrix/Matrix.hpp>
 #include <lama/Vector.hpp>
 #include <lama/Scalar.hpp>
 
@@ -86,6 +87,16 @@ public:
      */
     Scalar operator()( const Vector& vector ) const;
 
+	/**
+     * @brief Calculates the norm of the passed Matrix.
+     *
+     * To call this is equivalent to call apply with the same argument.
+     *
+     * @param[in] vector    the Matrix to caluclate the norm for.
+     * @return              the norm of matrix.
+     */
+    Scalar operator()( const Matrix& matrix ) const;
+
     /**
      * @brief Calculates the norm of the passed Scalar.
      *
@@ -101,6 +112,14 @@ public:
      * @return              the norm of vector.
      */
     virtual Scalar apply( const Vector& vector ) const =0;
+
+    /**
+     * @brief Calculates the norm of the passed Matrix.
+     *
+     * @param[in] vector    the Matrix to caluclate the norm for.
+     * @return              the norm of matrix.
+     */
+    virtual Scalar apply( const Matrix& matrix ) const =0;
 };
 
 }

@@ -55,4 +55,9 @@ Scalar Norm::operator()( const Vector& vector ) const
     return apply( vector );
 }
 
+Scalar Norm::operator()( const Matrix& matrix ) const
+{
+    return apply( matrix );
+}
+
 }

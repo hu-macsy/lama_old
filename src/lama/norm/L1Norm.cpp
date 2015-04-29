@@ -55,6 +55,11 @@ Scalar L1Norm::apply( const Vector& vector ) const
     return l1Norm( vector );
 }
 
+Scalar L1Norm::apply( const Matrix& matrix ) const
+{
+    return l1Norm( matrix );
+}
+
 Scalar l1Norm( const Scalar& scalar )
 {
     return abs( scalar );
@@ -63,6 +68,11 @@ Scalar l1Norm( const Scalar& scalar )
 Scalar l1Norm( const Vector& vector )
 {
     return vector.l1Norm();
+}
+
+Scalar l1Norm( const Matrix& matrix )
+{
+    return matrix.l1Norm();
 }
 
 }

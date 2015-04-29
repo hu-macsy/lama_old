@@ -1588,6 +1588,52 @@ void ELLStorage<ValueType>::jacobiIterateHalo(
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
+ValueType ELLStorage<ValueType>::l1Norm() const
+{
+	LAMA_LOG_INFO( logger, *this << ": l1Norm()" )
+
+    if( mNumRows == 0 || mNumValuesPerRow == 0 )
+    {
+        return 0.0f;
+    }
+
+    ContextPtr loc = getContextPtr();
+
+    LAMA_INTERFACE_FN_T( asum, loc, BLAS, BLAS1, ValueType )
+
+	ReadAccess<ValueType> data( mValues, loc );
+
+	LAMA_CONTEXT_ACCESS( loc );
+
+	return asum( mValues.size(), data.get(), 1, NULL );
+}
+
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType>
+ValueType ELLStorage<ValueType>::l2Norm() const
+{
+	LAMA_LOG_INFO( logger, *this << ": l2Norm()" )
+
+    if( mNumRows == 0 || mNumValuesPerRow == 0 )
+    {
+        return 0.0f;
+    }
+
+    ContextPtr loc = getContextPtr();
+
+    LAMA_INTERFACE_FN_T( dot, loc, BLAS, BLAS1, ValueType )
+
+	ReadAccess<ValueType> data( mValues, loc );
+
+	LAMA_CONTEXT_ACCESS( loc );
+
+	return sqrt(dot( mValues.size(), data.get(), 1, data.get(), 1, NULL ));
+}
+
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType>
 ValueType ELLStorage<ValueType>::maxNorm() const
 {
     LAMA_LOG_INFO( logger, *this << ": maxNorm()" )

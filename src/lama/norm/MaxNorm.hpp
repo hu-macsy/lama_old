@@ -51,11 +51,15 @@ public:
     virtual Scalar apply( const Scalar& scalar ) const;
 
     virtual Scalar apply( const Vector& vector ) const;
+
+    virtual Scalar apply( const Matrix& matrix ) const;
 };
 
 LAMA_DLL_IMPORTEXPORT Scalar maxNorm( const Scalar& scalar );
 
 LAMA_DLL_IMPORTEXPORT Scalar maxNorm( const Vector& vector );
+
+LAMA_DLL_IMPORTEXPORT Scalar maxNorm( const Matrix& matrix );
 
 }
 

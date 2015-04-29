@@ -716,6 +716,24 @@ public:
      */
     virtual void invert( const Matrix& other ) = 0;
 
+	/**
+     * @brief Returns the L1 norm of this.
+     *
+     * @return the L1 norm of this.
+     *
+     * l1Norm computes the sum of the absolute values of this.
+     */
+    virtual Scalar l1Norm() const = 0;
+
+    /**
+     * @brief Returns the L2 norm of this.
+     *
+     * @return the L2 norm of this.
+     *
+     * l2Norm computes the sum of the absolute values of this.
+     */
+    virtual Scalar l2Norm() const = 0;
+
     /**
      * @brief Getter routine of the max norm of this matrix.
      *

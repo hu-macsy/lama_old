@@ -1414,6 +1414,56 @@ void JDSStorage<ValueType>::jacobiIterateHalo(
 
 }
 
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType>
+ValueType JDSStorage<ValueType>::l1Norm() const
+{
+    LAMA_LOG_INFO( logger, *this << ": l1Norm()" )
+
+    const IndexType n = mNumValues;
+
+    if( n == 0 )
+    {
+        return 0.0f;
+    }
+
+	ContextPtr loc = getContextPtr();
+
+    LAMA_INTERFACE_FN_T( asum, loc, BLAS, BLAS1, ValueType )
+
+	ReadAccess<ValueType> data( mValues, loc );
+
+	LAMA_CONTEXT_ACCESS( loc )
+
+	return asum( n, data.get(), 1, NULL );
+}
+
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType>
+ValueType JDSStorage<ValueType>::l2Norm() const
+{
+    LAMA_LOG_INFO( logger, *this << ": l2Norm()" )
+
+    const IndexType n = mNumValues;
+
+    if( n == 0 )
+    {
+        return 0.0f;
+    }
+
+	ContextPtr loc = getContextPtr();
+
+    LAMA_INTERFACE_FN_T( dot, loc, BLAS, BLAS1, ValueType )
+
+	ReadAccess<ValueType> data( mValues, loc );
+
+	LAMA_CONTEXT_ACCESS( loc )
+
+	return sqrt(dot( n, data.get(), 1, data.get(), 1, NULL ));
+}
+
 /* ------------------------------------------------------------------------------------------------------------------ */
 
 template<typename ValueType>

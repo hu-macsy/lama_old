@@ -1993,20 +1993,61 @@ void SparseMatrix<ValueType>::matrixTimesScalar( const Matrix& other, Scalar alp
 /* -------------------------------------------------------------------------- */
 
 template<typename ValueType>
-Scalar SparseMatrix<ValueType>::maxNorm() const
+Scalar SparseMatrix<ValueType>::l1Norm() const
 {
-    LAMA_REGION( "Mat.Sp.maxNorm" )
+    LAMA_REGION( "Mat.Sp.l1Norm" )
 
+    ValueType myValue = mLocalData->l1Norm();
+    myValue += mHaloData->l1Norm();
+
+
+    const Communicator& comm = getDistribution().getCommunicator();
+
+    ValueType allValue = comm.sum( myValue );
+
+    LAMA_LOG_INFO( logger, "l1 norm: local value = " << myValue << ", value = " << allValue )
+
+    return allValue;
+}
+
+/* -------------------------------------------------------------------------- */
+
+template<typename ValueType>
+Scalar SparseMatrix<ValueType>::l2Norm() const
+{
+    LAMA_REGION( "Mat.Sp.l2Norm" )
+
+	ValueType tmp = mLocalData->l2Norm();
+    ValueType myValue = tmp * tmp;
+    tmp = mHaloData->l2Norm();
+	myValue += tmp * tmp;
+
+    const Communicator& comm = getDistribution().getCommunicator();
+
+    ValueType allValue = comm.max( myValue );
+
+	allValue = sqrt( allValue );
+
+    LAMA_LOG_INFO( logger, "max norm: local value = " << myValue << ", global value = " << allValue )
+
+    return allValue;
+}
+
+template<typename ValueType>
+Scalar SparseMatrix<ValueType>::maxNorm() const
+ {
+    LAMA_REGION( "Mat.Sp.maxNorm" )
+ 
     ValueType myMax = mLocalData->maxNorm();
     ValueType myMaxHalo = mHaloData->maxNorm();
-
+ 
     if( myMaxHalo > myMax )
     {
         myMax = myMaxHalo;
     }
-
+ 
     const Communicator& comm = getDistribution().getCommunicator();
-
+ 
     ValueType allMax = comm.max( myMax );
 
     LAMA_LOG_INFO( logger, "max norm: local max = " << myMax << ", global max = " << allMax )

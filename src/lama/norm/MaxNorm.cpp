@@ -55,6 +55,11 @@ Scalar MaxNorm::apply( const Vector& vector ) const
     return maxNorm( vector );
 }
 
+Scalar MaxNorm::apply( const Matrix& matrix ) const
+{
+    return maxNorm( matrix );
+}
+
 Scalar maxNorm( const Scalar& scalar )
 {
     return abs( scalar );
@@ -63,6 +68,11 @@ Scalar maxNorm( const Scalar& scalar )
 Scalar maxNorm( const Vector& vector )
 {
     return vector.maxNorm();
+}
+
+Scalar maxNorm( const Matrix& matrix )
+{
+    return matrix.maxNorm();
 }
 
 }

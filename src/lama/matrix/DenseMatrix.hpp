@@ -438,6 +438,12 @@ public:
         this->invert( *this );
     }
 
+    /* Implementation of pure method of class Matrix. */
+    virtual Scalar l1Norm() const;
+
+    /* Implementation of pure method of class Matrix. */
+    virtual Scalar l2Norm() const;
+
     /** Implementation of Matrix::maxNorm for dense matrices. */
 
     virtual Scalar maxNorm() const;

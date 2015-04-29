@@ -92,6 +92,7 @@ set ( SOURCE_FILES
         LAMAArrayTest
         LAPACKTest
         MatrixStorageConversionTest
+		MatrixNormTest
         MatrixTest
         MaxNormTest
         NoCommunicatorTest

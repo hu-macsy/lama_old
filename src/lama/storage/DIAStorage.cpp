@@ -716,6 +716,42 @@ void DIAStorage<ValueType>::writeAt( std::ostream& stream ) const
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
+ValueType DIAStorage<ValueType>::l1Norm() const
+{
+    LAMA_LOG_INFO( logger, *this << ": l1Norm()" )
+
+    ContextPtr loc = getContextPtr();
+
+    LAMA_INTERFACE_FN_T( asum, loc, BLAS, BLAS1, ValueType )
+
+	ReadAccess<ValueType> data( mValues, loc );
+
+	LAMA_CONTEXT_ACCESS( loc );
+
+	return asum( mValues.size(), data.get(), 1, NULL );
+}
+
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType>
+ValueType DIAStorage<ValueType>::l2Norm() const
+{
+    LAMA_LOG_INFO( logger, *this << ": l2Norm()" )
+
+    ContextPtr loc = getContextPtr();
+
+    LAMA_INTERFACE_FN_T( dot, loc, BLAS, BLAS1, ValueType )
+
+	ReadAccess<ValueType> data( mValues, loc );
+
+	LAMA_CONTEXT_ACCESS( loc );
+
+	return sqrt(dot( mValues.size(), data.get(), 1, data.get(), 1, NULL ));
+}
+
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType>
 ValueType DIAStorage<ValueType>::maxNorm() const
 {
     LAMA_LOG_INFO( logger, *this << ": maxNorm()" )

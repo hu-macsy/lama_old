@@ -234,6 +234,44 @@ void SparseAssemblyStorage<ValueType>::check( const char* msg ) const
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
+ValueType SparseAssemblyStorage<ValueType>::l1Norm() const
+{
+    ValueType val = static_cast<ValueType>( 0.0 );
+
+    for( IndexType i = 0; i < mNumRows; ++i )
+    {
+        for( size_t jj = 0; jj < mRows[i].values.size(); ++jj )
+        {
+            val += abs( mRows[i].values[jj] );
+        }
+    }
+
+    return val;
+}
+
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType>
+ValueType SparseAssemblyStorage<ValueType>::l2Norm() const
+{
+    ValueType val = static_cast<ValueType>( 0.0 );
+	ValueType tmp;
+    for( IndexType i = 0; i < mNumRows; ++i )
+    {
+        for( size_t jj = 0; jj < mRows[i].values.size(); ++jj )
+        {
+			tmp = abs( mRows[i].values[jj] );
+            val += tmp * tmp;
+        }
+    }
+
+    return sqrt(val);
+}
+
+
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType>
 ValueType SparseAssemblyStorage<ValueType>::maxNorm() const
 {
     ValueType maxval = static_cast<ValueType>( 0.0 );

@@ -449,6 +449,12 @@ public:
         const Scalar beta,
         const Matrix& C ) const;
 
+    /* Implementation of pure method of class Matrix. */
+    virtual Scalar l1Norm() const;
+
+    /* Implementation of pure method of class Matrix. */
+    virtual Scalar l2Norm() const;
+
     /** Implementation of pure method of class Matrix for sparse matrices. */
 
     virtual Scalar maxNorm() const;

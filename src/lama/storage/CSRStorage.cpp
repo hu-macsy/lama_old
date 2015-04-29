@@ -967,6 +967,8 @@ void CSRStorage<ValueType>::scaleImpl( const Scalar scalar )
 
     WriteAccess<ValueType> csrValues( mValues, loc );
 
+	LAMA_CONTEXT_ACCESS( loc )
+
     ValueType value = scalar.getValue<ValueType>();
 
     scale( csrValues.get(), value, mNumValues );
@@ -2163,6 +2165,52 @@ void CSRStorage<ValueType>::matrixTimesMatrixCSR(
     buildRowIndexes();
 //    check( "result of matrix x matrix" ); // just verify for a correct matrix
 //    mDiagonalProperty = checkDiagonalProperty();
+}
+
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType>
+ValueType CSRStorage<ValueType>::l1Norm() const
+{
+	LAMA_LOG_INFO( logger, *this << ": l1Norm()" )
+
+    if( mNumValues == 0 )
+    {
+        return 0.0f;
+    }
+
+	ContextPtr loc = getContextPtr();
+
+    LAMA_INTERFACE_FN_T( asum, loc, BLAS, BLAS1, ValueType )
+
+	ReadAccess<ValueType> data( mValues, loc );
+
+	LAMA_CONTEXT_ACCESS( loc );
+
+	return asum( mNumValues, data.get(), 1, NULL );
+}
+
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType>
+ValueType CSRStorage<ValueType>::l2Norm() const
+{
+	LAMA_LOG_INFO( logger, *this << ": l2Norm()" )
+
+    if( mNumValues == 0 )
+    {
+        return 0.0f;
+    }
+
+	ContextPtr loc = getContextPtr();
+
+    LAMA_INTERFACE_FN_T( dot, loc, BLAS, BLAS1, ValueType )
+
+	ReadAccess<ValueType> data( mValues, loc );
+
+	LAMA_CONTEXT_ACCESS( loc );
+
+	return sqrt(dot( mNumValues, data.get(), 1, data.get(), 1, NULL ));
 }
 
 /* --------------------------------------------------------------------------- */
