@@ -107,6 +107,7 @@ set ( SOURCE_FILES
         SpecializedJacobiTest
         StorageIOTest
         TaskSyncTokenTest
+	TFQMRTest
         ThreadPoolTest
         TimerTest
         TracingTest

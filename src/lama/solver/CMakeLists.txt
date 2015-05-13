@@ -63,6 +63,7 @@ set ( CLASSES
         Solver
         SOR
         SpecializedJacobi
+	TFQMR
         TrivialPreconditioner
     )
     

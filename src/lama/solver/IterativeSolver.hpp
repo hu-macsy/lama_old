@@ -116,7 +116,7 @@ public:
      *
      * @param[in] criterion the new criterion.
      */
-    void setStoppingCriterion( const CriterionPtr criterion );
+    virtual void setStoppingCriterion( const CriterionPtr criterion );
 
     /**
      * @brief Sets the preconditioner of this solver.
