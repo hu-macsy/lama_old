@@ -33,7 +33,7 @@ using namespace lama;
 
 
 
-typedef boost::mpl::list<double> test_types;
+typedef boost::mpl::list<float,double> test_types;
 
 /* --------------------------------------------------------------------- */
 
@@ -108,8 +108,8 @@ void testSolveWithPreconditionmethod( ContextPtr context )
 
     TFQMR TFQMRSolver( "TFQMRTestSolver", slogger );
 
-    const IndexType N1 = 100;
-    const IndexType N2 = 100;
+    const IndexType N1 = 40;
+    const IndexType N2 = 40;
 
     LAMA_LOG_INFO( logger, "Problem size = " << N1 << " x " << N2 );
 
@@ -138,7 +138,7 @@ void testSolveWithPreconditionmethod( ContextPtr context )
     TFQMRSolver.initialize( coefficients );
     TFQMRSolver.solve( solution, rhs );
 
-    BOOST_CHECK( expectedIterations > TFQMRSolver.getIterationCount() );
+    BOOST_CHECK( expectedIterations >= TFQMRSolver.getIterationCount() );
 
     DenseVector<ValueType> diff( solution - exactSolution );
     Scalar s = maxNorm( diff );
@@ -176,8 +176,8 @@ void testSolveWithoutPreconditionmethod( ContextPtr context )
 
     TFQMR TFQMRSolver( "TFQMRTestSolver", slogger );
 
-    const IndexType N1 = 4;
-    const IndexType N2 = 4;
+    const IndexType N1 = 40;
+    const IndexType N2 = 40;
 
     LAMA_LOG_INFO( logger, "Problem size = " << N1 << " x " << N2 );
 
@@ -201,19 +201,19 @@ void testSolveWithoutPreconditionmethod( ContextPtr context )
     LAMA_LOG_INFO( logger, "rhs = " << rhs );
 
     //initialize
-    IndexType expectedIterations = 10;
+    IndexType expectedIterations = 300  ;
     CriterionPtr criterion( new IterationCount( expectedIterations ) );
     TFQMRSolver.setStoppingCriterion( criterion );
     TFQMRSolver.initialize( coefficients );
 
     TFQMRSolver.solve( solution, rhs );
 
-    BOOST_CHECK( expectedIterations > TFQMRSolver.getIterationCount() );
+    BOOST_CHECK( expectedIterations >= TFQMRSolver.getIterationCount() );
 
     DenseVector<ValueType> diff( solution - exactSolution );
     Scalar s = maxNorm( diff );
     LAMA_LOG_INFO( logger, "maxNorm of ( solution - exactSolution ) = " << s.getValue<ValueType>() );
-    BOOST_CHECK( s.getValue<ValueType>() < 1E-6 );
+    BOOST_CHECK( s.getValue<ValueType>() < 1E-4 );
 }
 
 /* --------------------------------------------------------------------- */
