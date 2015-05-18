@@ -26,7 +26,7 @@
  * @endlicense
  *
  * @brief TFQMR.cpp
- * @author 
+ * @author David schissler
  * @date 13.05.2015
  * @since
  */

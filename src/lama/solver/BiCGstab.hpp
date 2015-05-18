@@ -33,8 +33,13 @@
 #ifndef LAMA_BICGSTAB_HPP_
 #define LAMA_BICGSTAB_HPP_
 
-#include <lama/solver/CG.hpp>
+#include <lama/config.hpp>
 
+// base classes
+#include <lama/solver/IterativeSolver.hpp>
+
+// logging
+#include <logging/Logger.hpp>
 namespace lama
 {
 
@@ -42,10 +47,9 @@ namespace lama
  * @brief The class BiCGstab represents a IterativeSolver which uses the krylov subspace stabilized BiCG method
  *        to solve a system of linear equations iteratively.
  */
-class LAMA_DLL_IMPORTEXPORT BiCGstab: public CG
+class LAMA_DLL_IMPORTEXPORT BiCGstab: public IterativeSolver
 {
 public:
-
     /**
      * @brief Creates a BiCG solver with a given ID.
      *
@@ -78,23 +82,38 @@ public:
      */
     virtual SolverPtr copy();
 
-    struct BiCGstabRuntime: CGRuntime
+    struct BiCGstabRuntime: IterativeSolverRuntime
     {
         BiCGstabRuntime();
         virtual ~BiCGstabRuntime();
 
         boost::shared_ptr<Vector> mRes0;
-        boost::shared_ptr<Vector> mS;
-        boost::shared_ptr<Vector> mT;
-        boost::shared_ptr<Vector> mTmp;
+        boost::shared_ptr<Vector> mVecV;
+        boost::shared_ptr<Vector> mVecP;
+        boost::shared_ptr<Vector> mVecS;
+        boost::shared_ptr<Vector> mVecT;
         Scalar mOmega;
+        Scalar mAlpha;
+        Scalar mBeta;
+        Scalar mRhoOld;
+        Scalar mRhoNew;
     };
 
     /**
      * @brief Returns the complete configuration of the derived class
      */
     virtual BiCGstabRuntime& getRuntime();
-
+/**
+    * @brief To avoid division by zero if our approximation is fine after some iterate()
+    * we combine our stopping criteria by disjunction with ResidualThreshhold.
+    * Keep in mind that setStoppingCriterion(const CriterionPtr) is virtual.
+    */
+    virtual void setStoppingCriterion( const CriterionPtr criterion ); 
+    /** 
+    * @brief Initializes vectors and values of the runtime
+    */
+    virtual void solveInit( Vector& solution, const Vector& rhs );
+    
     /**
      * @brief Returns the complete configuration of the derived class
      */

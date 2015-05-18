@@ -133,7 +133,7 @@ void testSolveWithPreconditionmethod( ContextPtr context )
     typedef typename MatrixType::MatrixValueType ValueType;
 
     LoggerPtr slogger(
-        new CommonLogger( "<BiCGstab>: ", LogLevel::convergenceHistory, LoggerWriteBehaviour::toConsoleOnly,
+        new CommonLogger( "<BiCGstab>: ", LogLevel::noLogging, LoggerWriteBehaviour::toConsoleOnly,
                           std::auto_ptr<Timer>( new Timer() ) ) );
 
     BiCGstab BiCGstabSolver( "BiCGstabTestSolver", slogger );
@@ -201,7 +201,7 @@ void testSolveWithoutPreconditionmethod( ContextPtr context )
     typedef typename MatrixType::MatrixValueType ValueType;
 
         LoggerPtr slogger(
-        new CommonLogger( "<BiCGstab>: ", LogLevel::convergenceHistory, LoggerWriteBehaviour::toConsoleOnly,
+        new CommonLogger( "<BiCGstab>: ", LogLevel::noLogging, LoggerWriteBehaviour::toConsoleOnly,
                           std::auto_ptr<Timer>( new Timer() ) ) );
 
     BiCGstab BiCGstabSolver( "BiCGstabTestSolver", slogger );

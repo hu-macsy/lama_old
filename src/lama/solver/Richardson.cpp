@@ -26,7 +26,7 @@
  * @endlicense
  *
  * @brief Richardson.cpp
- * @author 
+ * @author David Schissler
  * @date 17.04.2015
  * @since 
  */
@@ -96,9 +96,6 @@ void Richardson::solveInit( Vector& solution, const Vector& rhs ){
 }
 
 void Richardson::solveFinalize(){
-//    MF: ?????
-//    if( &( mProxyOldSolution.getConstReference() ) ==
-//        &( mSolution.getConstReference() ) )
     RichardsonRuntime& runtime = getRuntime();
     if ( runtime.mIterations % 2 ){
         LAMA_LOG_DEBUG( logger, "mProxyOldSolution = *mSolution" )

@@ -102,31 +102,8 @@ BOOST_AUTO_TEST_CASE( CtorTest )
 
 
 }
-
 /* --------------------------------------------------------------------- */
-/*
-BOOST_AUTO_TEST_CASE( testDefaultCriterionSet )
-{
-    typedef double ValueType;
-    Richardson richi( "TestRichardson" );
 
-    const IndexType N1 = 4;
-    const IndexType N2 = 4;
-
-    CSRSparseMatrix<ValueType> coefficients;
-    MatrixCreator<ValueType>::buildPoisson2D( coefficients, 5, N1, N2 );
-
-    const DenseVector<ValueType> rhs( coefficients.getLocalNumRows(), 1.0 );
-
-    DenseVector<ValueType> solution( rhs );
-
-    richi.initialize( coefficients );
-
-    richi.solve( solution, rhs );
-
-    BOOST_CHECK_EQUAL( richi.getIterationCount(), 1 );
-}
-*/
 template<typename MatrixType>
 void testSolveWithPreconditionmethod( ContextPtr context )
 {
@@ -161,7 +138,7 @@ void testSolveWithPreconditionmethod( ContextPtr context )
     const DenseVector<ValueType> exactSolution( coefficients.getDistributionPtr(), 2.0 );
     DenseVector<ValueType> rhs( coefficients * exactSolution );
 
-    IndexType expectedIterations = 150;
+    IndexType expectedIterations = 200;
     CriterionPtr criterion( new IterationCount( expectedIterations ) );
     rSolver.setStoppingCriterion( criterion );
 
@@ -193,12 +170,11 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( testSolveWithPrecondition, T, test_types ) {
     {
         GETCONTEXT( context );
         testSolveWithPreconditionmethod< CSRSparseMatrix<ValueType> >( context );
-     /*   testSolveWithPreconditionmethod< ELLSparseMatrix<ValueType> >( context );
+        testSolveWithPreconditionmethod< ELLSparseMatrix<ValueType> >( context );
         testSolveWithPreconditionmethod< COOSparseMatrix<ValueType> >( context );
         testSolveWithPreconditionmethod< JDSSparseMatrix<ValueType> >( context );
         testSolveWithPreconditionmethod< DIASparseMatrix<ValueType> >( context );
         testSolveWithPreconditionmethod< DenseMatrix<ValueType> >( context );
-    */
         // ToDo: does not work with NP=2:    testSolveWithPreconditionmethod< DIASparseMatrix<ValueType> >();
         // ToDo: does not work with NP=2:    testSolveWithPreconditionmethod< DenseMatrix<ValueType> >();
     }
@@ -230,19 +206,6 @@ void testSolveWithoutPreconditionmethod( ContextPtr context )
 
     coefficients.setContext( context );
     LAMA_LOG_INFO( logger, "RichardsonTest uses context = " << context->getType() );
-
-/*
-    LAMAArray<ValueType>& entries = helpcoefficients.getLocalStorage().getValues();
-
-    ReadAccess<ValueType> readEntries( entries, context );
-
-    DenseVector<ValueType> entriesVec( entries.size(), readEntries.get() );
-
-    Scalar omega = entriesVec.l2Norm();
-
-    omega = 2.0/(3.0*omega);
-*/
-
 
     Richardson rSolver( "RichardsonTestSolver",slogger);    
 

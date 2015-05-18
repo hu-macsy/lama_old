@@ -26,10 +26,11 @@
  * @endlicense
  *
  * @brief TFQMR.hpp
- * @author 
+ * @author David Schissler
  * @date 13.05.2015
  * @since 
- */#ifndef LAMA_TFQMR_HPP
+ */
+ #ifndef LAMA_TFQMR_HPP
 
 #define LAMA_TFQMR_HPP
 
@@ -109,7 +110,7 @@ public:
     */
     virtual TFQMRRuntime& getRuntime();
     /**
-    * @brief In order to avoid division by zero if our approximation is fine after some iterate()
+    * @brief To avoid division by zero if our approximation is fine after some iterate()
     * we combine our stopping criteria by disjunction with ResidualStagnation.
     * Keep in mind that setStoppingCriterion(const CriterionPtr) is virtual.
     */

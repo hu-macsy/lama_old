@@ -26,7 +26,7 @@
  * @endlicense
  *
  * @brief Richardson.hpp
- * @author 
+ * @author David Schissler
  * @date 17.04.2015
  * @since 
  */
