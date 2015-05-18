@@ -58,6 +58,7 @@ set ( SOURCE_FILES
 		BLAS2Test
 		BLAS3Test
         CGTest
+	CGSTest
         CommonLoggerTest
         CommunicatorTest
         COOSparseMatrixTest
