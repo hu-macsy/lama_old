@@ -46,6 +46,12 @@ namespace lama
 /**
  * @brief The class BiCGstab represents a IterativeSolver which uses the krylov subspace stabilized BiCG method
  *        to solve a system of linear equations iteratively.
+ *
+ * Remarks: 
+ * 1. The scalars in the algorithm are set to zero if the norm of the residual is smaller than 
+ * machine precision (3*eps) to avoid devision by zero. In this case the solution doesn't change anymore.
+ * 2. In this case it makes sense to take the residual since we have to update the residual in each
+ * iterate() anyways (contrary to e.g. TFQMR solver).
  */
 class LAMA_DLL_IMPORTEXPORT BiCGstab: public IterativeSolver
 {
@@ -92,6 +98,9 @@ public:
         boost::shared_ptr<Vector> mVecP;
         boost::shared_ptr<Vector> mVecS;
         boost::shared_ptr<Vector> mVecT;
+
+        Scalar mEps;
+        Scalar mResNorm;
         Scalar mOmega;
         Scalar mAlpha;
         Scalar mBeta;
@@ -103,12 +112,6 @@ public:
      * @brief Returns the complete configuration of the derived class
      */
     virtual BiCGstabRuntime& getRuntime();
-/**
-    * @brief To avoid division by zero if our approximation is fine after some iterate()
-    * we combine our stopping criteria by disjunction with ResidualThreshhold.
-    * Keep in mind that setStoppingCriterion(const CriterionPtr) is virtual.
-    */
-    virtual void setStoppingCriterion( const CriterionPtr criterion ); 
     /** 
     * @brief Initializes vectors and values of the runtime
     */

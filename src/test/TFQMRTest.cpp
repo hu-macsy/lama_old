@@ -138,7 +138,7 @@ void testSolveWithPreconditionmethod( ContextPtr context )
     TFQMRSolver.initialize( coefficients );
     TFQMRSolver.solve( solution, rhs );
 
-    BOOST_CHECK( expectedIterations >= TFQMRSolver.getIterationCount() );
+    BOOST_CHECK_EQUAL( expectedIterations,TFQMRSolver.getIterationCount() );
 
     DenseVector<ValueType> diff( solution - exactSolution );
     Scalar s = maxNorm( diff );
@@ -208,7 +208,7 @@ void testSolveWithoutPreconditionmethod( ContextPtr context )
 
     TFQMRSolver.solve( solution, rhs );
 
-    BOOST_CHECK( expectedIterations >= TFQMRSolver.getIterationCount() );
+    BOOST_CHECK_EQUAL( expectedIterations,TFQMRSolver.getIterationCount() );
 
     DenseVector<ValueType> diff( solution - exactSolution );
     Scalar s = maxNorm( diff );

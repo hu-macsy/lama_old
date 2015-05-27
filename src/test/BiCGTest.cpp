@@ -143,7 +143,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( testSolveWithPrecondition, ValueType, test_types 
         testSolveWithPreconditionmethod< COOSparseMatrix<ValueType> >( context );
         testSolveWithPreconditionmethod< JDSSparseMatrix<ValueType> >( context );
         testSolveWithPreconditionmethod< DIASparseMatrix<ValueType> >( context );
-//        testSolveWithPreconditionmethod< DenseMatrix<ValueType> >( context );
+        testSolveWithPreconditionmethod< DenseMatrix<ValueType> >( context );
         // ToDo: does not work with NP=2:    testSolveWithPreconditionmethod< DIASparseMatrix<ValueType> >();
         // ToDo: does not work with NP=2:    testSolveWithPreconditionmethod< DenseMatrix<ValueType> >();
     }
@@ -195,7 +195,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( testSolveWithoutPreconditioning, ValueType, test_
         testSolveWithoutPreconditionmethod< JDSSparseMatrix<ValueType> >( context );
         testSolveWithoutPreconditionmethod< COOSparseMatrix<ValueType> >( context );
         testSolveWithoutPreconditionmethod< DIASparseMatrix<ValueType> >( context );
-//        testSolveWithoutPreconditionmethod< DenseMatrix<ValueType> >( context );
+        testSolveWithoutPreconditionmethod< DenseMatrix<ValueType> >( context );
         // ToDo: does not run for NP=2: testSolveWithoutPreconditionmethod< DenseMatrix<T> >();
         // ToDo: does not run for NP=2: testSolveWithoutPreconditionmethod< DIASparseMatrix<T> >();
     }

@@ -114,7 +114,7 @@ void testSolveWithPreconditionmethod( ContextPtr context )
 
     CSRSparseMatrix<ValueType> helpcoefficients;
     MatrixCreator<ValueType>::buildPoisson2D( helpcoefficients, 9, N1, N2 );
-
+                
     // convert to the corresponding matrix type, keep distribution
 
     MatrixType coefficients( helpcoefficients );
@@ -127,7 +127,7 @@ void testSolveWithPreconditionmethod( ContextPtr context )
     const DenseVector<ValueType> exactSolution( coefficients.getDistributionPtr(), 2.0 );
     DenseVector<ValueType> rhs( coefficients * exactSolution );
 
-    IndexType expectedIterations = 180;
+    IndexType expectedIterations = 160;
     CriterionPtr criterion( new IterationCount( expectedIterations ) );
     CGSSolver.setStoppingCriterion( criterion );
 
@@ -137,7 +137,7 @@ void testSolveWithPreconditionmethod( ContextPtr context )
     CGSSolver.initialize( coefficients );
     CGSSolver.solve( solution, rhs );
 
-    BOOST_CHECK( expectedIterations >= CGSSolver.getIterationCount() );
+    BOOST_CHECK_EQUAL( expectedIterations, CGSSolver.getIterationCount() );
 
     DenseVector<ValueType> diff( solution - exactSolution );
     Scalar s = maxNorm( diff );
@@ -200,14 +200,14 @@ void testSolveWithoutPreconditionmethod( ContextPtr context )
     LAMA_LOG_INFO( logger, "rhs = " << rhs );
 
     //initialize
-    IndexType expectedIterations = 100  ;
+    IndexType expectedIterations = 170  ;
     CriterionPtr criterion( new IterationCount( expectedIterations ) );
     CGSSolver.setStoppingCriterion( criterion );
     CGSSolver.initialize( coefficients );
 
     CGSSolver.solve( solution, rhs );
 
-    BOOST_CHECK( expectedIterations >= CGSSolver.getIterationCount() );
+    BOOST_CHECK_EQUAL( expectedIterations ,CGSSolver.getIterationCount() );
 
     DenseVector<ValueType> diff( solution - exactSolution );
     Scalar s = maxNorm( diff );

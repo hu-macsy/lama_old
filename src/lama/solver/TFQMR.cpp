@@ -45,7 +45,6 @@
 
 #include <lama/solver/criteria/ResidualStagnation.hpp>
 
-
 #include <limits>
 
 namespace lama{ 
@@ -77,11 +76,12 @@ void TFQMR::initialize( const Matrix& coefficients ){
     Solver::initialize( coefficients );
  	TFQMRRuntime& runtime = getRuntime();
 
-    runtime.mAlpha  = 0.0;
-    runtime.mBeta   = 0.0;
-    runtime.mC      = 0.0;
-    runtime.mEta    = 0.0;
-    runtime.mTheta  = 0.0;
+    runtime.mAlpha = 0.0;
+    runtime.mBeta = 0.0;
+    runtime.mC = 0.0;
+    runtime.mEta = 0.0;
+    runtime.mTheta = 0.0;
+    runtime.mEps = std::numeric_limits<double>::epsilon()*3;            //CAREFUL: No abstract type
 
     Scalar::ScalarType type = coefficients.getValueType();
     
@@ -98,9 +98,7 @@ void TFQMR::initialize( const Matrix& coefficients ){
     runtime.mVecVOdd->setContext( coefficients.getContextPtr() );
     runtime.mVecW->setContext( coefficients.getContextPtr() );
     runtime.mVecZ->setContext( coefficients.getContextPtr() );
-    
 }
-
 
 void TFQMR::solveInit( Vector& solution, const Vector& rhs ){
     TFQMRRuntime& runtime = getRuntime();
@@ -142,7 +140,6 @@ void TFQMR::solveInit( Vector& solution, const Vector& rhs ){
     runtime.mVecVEven.reset( mVecVEven );
     runtime.mVecW.reset( mVecW );
 
-
     *runtime.mVecZ = A * (*runtime.mResidual);
     *runtime.mVecD *= (0.0);                   
 
@@ -159,99 +156,97 @@ void TFQMR::solveInit( Vector& solution, const Vector& rhs ){
 void TFQMR::iterationEven(){
 	TFQMRRuntime& runtime = getRuntime();
 
-	const Vector& vecZ		= *runtime.mVecZ;
-	const Vector& initialR	= *runtime.mInitialR;
-	const Vector& vecVEven 	= *runtime.mVecVEven;
-		  Vector& vecVOdd	= *runtime.mVecVOdd;
-	const Scalar& rho 		= runtime.mRhoOld;
-	
-	const Scalar dotProduct	= vecZ.dotProduct( initialR );
+	const Vector& vecZ = *runtime.mVecZ;
+	const Vector& initialR = *runtime.mInitialR;
+	const Vector& vecVEven = *runtime.mVecVEven;
+    Vector& vecVOdd	= *runtime.mVecVOdd;
+	const Scalar& rho = runtime.mRhoOld;
+    const Scalar& eps = runtime.mEps;
 
+
+	const Scalar dotProduct	= vecZ.dotProduct( initialR );
 	Scalar& alpha = runtime.mAlpha;	
 
-	alpha = rho / dotProduct;
-	vecVOdd  = vecVEven - alpha*vecZ;
+    if(abs(dotProduct)< eps)  // scalar is small
+        alpha = 0.0;
+	else alpha = rho / dotProduct;
 
+	vecVOdd  = vecVEven - alpha*vecZ;
 }
 
 void TFQMR::iterationOdd(){
 	TFQMRRuntime& runtime = getRuntime();
 
-	const Matrix& A 		= *runtime.mCoefficients;
-	const Vector& vecW		= *runtime.mVecW;
-	const Vector& vecVOdd 	= *runtime.mVecVOdd;
-	   Vector& vecVEven 	= *runtime.mVecVEven;
-	        Scalar& rhoOld	= runtime.mRhoOld;	  	  
-	Scalar& rhoNew 	= runtime.mRhoNew;
-	Scalar& beta		= runtime.mBeta;
+	const Matrix& A = *runtime.mCoefficients;
+    const Vector& initialR = *runtime.mInitialR;
+	const Vector& vecW = *runtime.mVecW;
+	const Vector& vecVOdd = *runtime.mVecVOdd;
+	Vector& vecVEven = *runtime.mVecVEven;
+	Scalar& rhoOld= runtime.mRhoOld;	  	  
+	Scalar& rhoNew = runtime.mRhoNew;
+	Scalar& beta = runtime.mBeta;
 	Vector& vecZ = *runtime.mVecZ;
-
-	const Vector& initialR = *runtime.mInitialR;
+    const Scalar& eps = runtime.mEps;
 
 	rhoNew 	= vecW.dotProduct(initialR);
-	beta   	= rhoNew / rhoOld;
+
+    if(abs(rhoOld)<eps)                 // scalar is small
+        beta=0.0;
+    else beta = rhoNew / rhoOld;
+
 	vecVEven = vecW + beta* vecVOdd;
+
 	vecZ *= beta;
 	vecZ = beta * A * vecVOdd + beta * vecZ;
 	vecZ = A * vecVEven + vecZ;
     rhoOld = rhoNew;
 }	
 
-
-
 void TFQMR::iterate(){
-    TFQMRRuntime& runtime	= getRuntime();
+    TFQMRRuntime& runtime = getRuntime();
 	const IndexType& iteration = runtime.mIterations; 
-		  L2Norm norm;
+	L2Norm norm;
 
-    const Matrix& A 		= *runtime.mCoefficients;
-    	  Vector& vecW 		= *runtime.mVecW;
-    	  Vector& vecD 		= *runtime.mVecD;
-	  Vector& solution      = *runtime.mSolution;
-    const Scalar& alpha 	= runtime.mAlpha;
-	  Scalar& c             = runtime.mC;
-          Scalar& eta 		= runtime.mEta;
-    	  Scalar& theta 	= runtime.mTheta;
-    	  Scalar& tau 		= runtime.mTau;
-
+    const Matrix& A = *runtime.mCoefficients;
+    Vector& vecW = *runtime.mVecW;
+    Vector& vecD = *runtime.mVecD;
+	Vector& solution = *runtime.mSolution;
+    const Scalar& alpha = runtime.mAlpha;
+	Scalar& c = runtime.mC;
+    Scalar& eta = runtime.mEta;
+    Scalar& theta = runtime.mTheta;
+    Scalar& tau = runtime.mTau;
+    Scalar& eps = runtime.mEps;
     const Vector* vecVp;
-
+   
     // if iteration = even -> need mVecVEven, else need mVecVOdd    
     if( (iteration % 2) == 0 ) vecVp = &(*runtime.mVecVEven);
     else vecVp = &(*runtime.mVecVOdd);
-
-
     const Vector& vecV = *vecVp;
-
-    if( (iteration % 2) == 0 && iteration > 0 )
-        iterationOdd();
 
     if( (iteration % 2) == 0 )
     	iterationEven();
 
     vecW = vecW - alpha * A * vecV;
 
-    Scalar tempScal = theta*theta*eta/alpha;
-    vecD = vecV + tempScal * vecD;				
-    theta = norm.apply(vecW)/tau;
+    Scalar tempScal;
+    if(abs(alpha)<eps || abs(theta)< eps || abs(eta)<eps)   // scalar is small 
+        tempScal=0.0;
+    else tempScal = theta*theta*eta/alpha;
+
+    vecD = vecV + tempScal * vecD;
+
+    if(abs(tau)<eps)        // scalar is small
+        theta = 0.0;			
+    else theta = norm.apply(vecW)/tau;
+    
     c = 1.0 / sqrt( 1.0 + theta*theta);
     tau = tau* theta * c;
-
     eta = c*c*alpha;
     solution = solution + eta * vecD;
-}
 
-void TFQMR::setStoppingCriterion( const CriterionPtr criterion ){
-    Scalar eps = std::numeric_limits<double>::epsilon()*5;                // NOT ABSTRACT.
-    IndexType lookback = 2;
-
-    NormPtr norm = NormPtr( new MaxNorm() );
-    CriterionPtr rs( new ResidualStagnation( norm, lookback, eps ));
-
-    LAMA_ASSERT_ERROR( criterion, "Criterion defined is NULL." )
-    LAMA_LOG_INFO( logger, "Criteria " << *criterion << " defined." )
-
-    mCriterionRootComponent = ( criterion ||  rs );
+    if( (iteration % 2) == 1 )
+        iterationOdd();
 }
 
 SolverPtr TFQMR::copy(){

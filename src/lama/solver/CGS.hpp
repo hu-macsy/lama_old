@@ -47,6 +47,14 @@ namespace lama
 /**
  * @brief The class CGS represents a IterativeSolver which uses the krylov subspace Conjugate Gradient Squared
  * method to solve a system of linear equations iteratively. Keep in mind that this method is not stable.
+ *
+ * Remarks:
+ * 1. This method is not numerically stable. This effect gets a bit annulled by 2.
+ * 2. The scalars in the algorithm are set to zero if the norm of the residual is smaller than 
+ * machine precision (3*eps) to avoid devision by zero. In this case the solution doesn't
+ * change anymore.
+ * 3. In this case it makes sense to take the residual since we have to update the residual in each
+ * iterate() anyways (contrary to e.g. TFQMR solver).
  */
 class LAMA_DLL_IMPORTEXPORT CGS: public IterativeSolver
 {
@@ -89,23 +97,20 @@ public:
         virtual ~CGSRuntime();
 
         boost::shared_ptr<Vector> mRes0;
-        boost::shared_ptr<Vector> mResOld;
         boost::shared_ptr<Vector> mVecP;
         boost::shared_ptr<Vector> mVecQ;
         boost::shared_ptr<Vector> mVecU;
-        Scalar mAlpha;
+        boost::shared_ptr<Vector> mVecT;
+
+        Scalar mEps;
+        Scalar mResNorm;
+        Scalar mInnerProdRes;
     };
 
     /**
      * @brief Returns the complete configuration of the derived class
      */
     virtual CGSRuntime& getRuntime();
-/**
-    * @brief To avoid division by zero if our approximation is fine after some iterate()
-    * we combine our stopping criteria by disjunction with ResidualThreshhold.
-    * Keep in mind that setStoppingCriterion(const CriterionPtr) is virtual.
-    */
-    virtual void setStoppingCriterion( const CriterionPtr criterion ); 
     /** 
     * @brief Initializes vectors and values of the runtime
     */

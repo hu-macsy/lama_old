@@ -76,13 +76,13 @@ void CGS::initialize( const Matrix& coefficients ){
     Solver::initialize( coefficients );
  	CGSRuntime& runtime = getRuntime();
 
-    runtime.mAlpha  = 1.0;
-
+    runtime.mResNorm = 1.0;
+    runtime.mEps = std::numeric_limits<double>::epsilon()*3;            //CAREFUL: No abstract type
 
     Scalar::ScalarType type = coefficients.getValueType();
 
     runtime.mRes0.reset( Vector::createVector( type, coefficients.getDistributionPtr() ) );
-    runtime.mResOld.reset(Vector::createVector( type, coefficients.getDistributionPtr() ));
+    runtime.mVecT.reset(Vector::createVector( type, coefficients.getDistributionPtr() ));
     runtime.mVecP.reset( Vector::createVector( type, coefficients.getDistributionPtr() ) );
     runtime.mVecQ.reset( Vector::createVector( type, coefficients.getDistributionPtr() ) );
     runtime.mVecU.reset( Vector::createVector( type, coefficients.getDistributionPtr() ) );
@@ -92,6 +92,7 @@ void CGS::initialize( const Matrix& coefficients ){
     runtime.mVecP->setContext( coefficients.getContextPtr() );
     runtime.mVecQ->setContext( coefficients.getContextPtr() );
     runtime.mVecU->setContext( coefficients.getContextPtr() );
+    runtime.mVecT->setContext( coefficients.getContextPtr() );
 }
 
 
@@ -134,6 +135,9 @@ void CGS::solveInit( Vector& solution, const Vector& rhs ){
     Vector* vecU = (*runtime.mResidual).copy();
     runtime.mVecU.reset(vecU);
 
+    //initial <res,res> inner product;
+    runtime.mInnerProdRes = (*runtime.mRes0).dotProduct(*runtime.mRes0);
+
     runtime.mSolveInit = true;
 }
 
@@ -144,46 +148,52 @@ void CGS::iterate(){
     
     const Vector& res0 = *runtime.mRes0;
     Vector& res = *runtime.mResidual;
-    Vector& resOld = *runtime.mResOld;
     Vector& vecP = *runtime.mVecP;
     Vector& vecQ = *runtime.mVecQ;
     Vector& vecU = *runtime.mVecU;
+    Vector& vecT = *runtime.mVecT;
     Vector& solution = *runtime.mSolution;
-    Scalar& alpha = runtime.mAlpha;
+    Scalar& innerProdRes = runtime.mInnerProdRes;
+
+    Scalar alpha;
     Scalar beta;
-	
-    if(this->getIterationCount() >0){
-        resOld = res;
-        res = res - alpha*A*vecU;
-        res = res - alpha*A*vecQ;
-        beta = res.dotProduct(res0)/resOld.dotProduct(res0);
-        vecU = res + beta*vecQ;
-        vecP = vecU + beta*beta*vecP;
-        vecP = vecP + beta*vecQ;
-    }
 
-    resOld= A *vecP;                  // CAREFUL: We use resOld as a temporary Vector.
+    const Scalar& eps = runtime.mEps;
+    Scalar& resNorm = runtime.mResNorm;
+	MaxNorm norm;
 
-    alpha= res.dotProduct(res0)/res0.dotProduct(resOld);
-    vecQ= vecU - alpha*A*vecP;
+
+
+    vecT= A *vecP;         
+
+    if(resNorm< eps)    //residual is small
+        alpha=0.0;
+    else alpha= innerProdRes/vecT.dotProduct(res0);
+
+    vecQ= vecU - alpha*vecT;
     solution = solution + alpha*vecU;
     solution = solution +alpha*vecQ;
+
+    Scalar innerProdResOld = innerProdRes;
+
+    res = res - alpha*A*vecU;
+    res = res - alpha*A*vecQ; 
+    innerProdRes = res.dotProduct(res0);
+
+    resNorm = norm.apply(res);
+
+    if(resNorm < eps)               // residual is small
+        beta=0.0;
+    else beta = innerProdRes/ innerProdResOld ;
+
+    vecU = res + beta*vecQ;
+    vecP = vecU + beta*beta*vecP;
+    vecP = vecP + beta*vecQ;
 
     //End Implementation
     mCGSRuntime.mSolution.setDirty( false );
 }
 
-void CGS::setStoppingCriterion( const CriterionPtr criterion ){
-    
-    Scalar eps = std::numeric_limits<double>::epsilon()*2;                // NOT ABSTRACT.
-
-    NormPtr norm = NormPtr( new MaxNorm() );
-    CriterionPtr rt( new ResidualThreshold( norm, eps, ResidualThreshold::Relative ) );
-    LAMA_ASSERT_ERROR( criterion, "Criterion defined is NULL." )
-    LAMA_LOG_INFO( logger, "Criteria " << *criterion << " defined." )
-
-    mCriterionRootComponent = ( criterion ||  rt );
-}
 
 SolverPtr CGS::copy(){
     return SolverPtr( new CGS( *this ) );

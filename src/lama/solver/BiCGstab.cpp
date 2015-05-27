@@ -80,6 +80,8 @@ void BiCGstab::initialize( const Matrix& coefficients ){
     runtime.mAlpha  = 1.0;
     runtime.mOmega = 1.0;
     runtime.mRhoOld = 1.0;
+    runtime.mResNorm = 1.0;
+    runtime.mEps = std::numeric_limits<double>::epsilon()*3;                    //CAREFUL: No abstract type
 
     Scalar::ScalarType type = coefficients.getValueType();
 
@@ -155,37 +157,44 @@ void BiCGstab::iterate(){
     Scalar& omega = runtime.mOmega;
     Scalar& rhoOld = runtime.mRhoOld;
     Scalar& rhoNew = runtime.mRhoNew;
-	
-    if(this->getIterationCount() >0)
-        res = vecS - omega*vecT;
+  
+    const Scalar& eps = runtime.mEps;
+    Scalar& resNorm = runtime.mResNorm;
+    MaxNorm norm;
+
 
     rhoNew = res0.dotProduct(res);
-    beta = rhoNew/rhoOld*(alpha/omega);
+
+    if(resNorm<eps) // residual is small
+        beta=0.0;
+    else beta = rhoNew/rhoOld*(alpha/omega);
+    
     vecP = vecP-omega*vecV;
     vecP = res+beta*vecP;
     vecV=A*vecP;
-    alpha=rhoNew/res0.dotProduct(vecV);
+
+    Scalar innerProd = res0.dotProduct(vecV);
+    if(resNorm<eps)    // residual is small
+        alpha= 0.0;
+    else alpha=rhoNew/innerProd;
+    
     vecS=res-alpha*vecV;
     vecT=A*vecS;
-    omega=vecT.dotProduct(vecS)/vecT.dotProduct(vecT);
+
+    innerProd = vecT.dotProduct(vecT);
+    if(resNorm<eps) //residual is small
+        omega=0.0;
+    else omega=vecT.dotProduct(vecS)/innerProd;
+  
     solution= solution+alpha*vecP;
     solution = solution + omega*vecS;
+       res = vecS - omega*vecT;
     rhoOld=rhoNew;
+
+    resNorm = norm.apply(res); 
 
     //BiCGStab implementation end
     mBiCGstabRuntime.mSolution.setDirty( false );
-}
-
-void BiCGstab::setStoppingCriterion( const CriterionPtr criterion ){
-    
-    Scalar eps = std::numeric_limits<double>::epsilon()*5;                // NOT ABSTRACT.
-
-    NormPtr norm = NormPtr( new MaxNorm() );
-    CriterionPtr rt( new ResidualThreshold( norm, eps, ResidualThreshold::Relative ) );
-    LAMA_ASSERT_ERROR( criterion, "Criterion defined is NULL." )
-    LAMA_LOG_INFO( logger, "Criteria " << *criterion << " defined." )
-
-    mCriterionRootComponent = ( criterion ||  rt );
 }
 
 SolverPtr BiCGstab::copy(){
