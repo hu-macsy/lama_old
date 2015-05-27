@@ -76,7 +76,7 @@ void CGS::initialize( const Matrix& coefficients ){
     Solver::initialize( coefficients );
  	CGSRuntime& runtime = getRuntime();
 
-    runtime.mResNorm = 1.0;
+    runtime.mNormRes = 1.0;
     runtime.mEps = std::numeric_limits<double>::epsilon()*3;            //CAREFUL: No abstract type
 
     Scalar::ScalarType type = coefficients.getValueType();
@@ -159,14 +159,14 @@ void CGS::iterate(){
     Scalar beta;
 
     const Scalar& eps = runtime.mEps;
-    Scalar& resNorm = runtime.mResNorm;
+    Scalar& normRes = runtime.mNormRes;
 	MaxNorm norm;
 
 
 
     vecT= A *vecP;         
 
-    if(resNorm< eps)    //residual is small
+    if(normRes< eps)    //residual is small
         alpha=0.0;
     else alpha= innerProdRes/vecT.dotProduct(res0);
 
@@ -180,9 +180,9 @@ void CGS::iterate(){
     res = res - alpha*A*vecQ; 
     innerProdRes = res.dotProduct(res0);
 
-    resNorm = norm.apply(res);
+    normRes = norm.apply(res);
 
-    if(resNorm < eps)               // residual is small
+    if(normRes < eps)               // residual is small
         beta=0.0;
     else beta = innerProdRes/ innerProdResOld ;
 

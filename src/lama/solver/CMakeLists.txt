@@ -52,6 +52,7 @@ set ( CLASSES
         BiCGstab
         CG
 	CGS
+        CGNR
         DefaultJacobi
         GMRES
         InverseSolver

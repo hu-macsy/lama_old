@@ -103,7 +103,7 @@ public:
         boost::shared_ptr<Vector> mVecT;
 
         Scalar mEps;
-        Scalar mResNorm;
+        Scalar mNormRes;
         Scalar mInnerProdRes;
     };
 
