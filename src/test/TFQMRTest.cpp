@@ -1,4 +1,3 @@
-
 #include <boost/test/unit_test.hpp>
 #include <boost/mpl/list.hpp>
 
@@ -128,7 +127,7 @@ void testSolveWithPreconditionmethod( ContextPtr context )
     const DenseVector<ValueType> exactSolution( coefficients.getDistributionPtr(), 2.0 );
     DenseVector<ValueType> rhs( coefficients * exactSolution );
 
-    IndexType expectedIterations = 300;
+    IndexType expectedIterations = 200;
     CriterionPtr criterion( new IterationCount( expectedIterations ) );
     TFQMRSolver.setStoppingCriterion( criterion );
 
@@ -201,7 +200,7 @@ void testSolveWithoutPreconditionmethod( ContextPtr context )
     LAMA_LOG_INFO( logger, "rhs = " << rhs );
 
     //initialize
-    IndexType expectedIterations = 300  ;
+    IndexType expectedIterations = 200  ;
     CriterionPtr criterion( new IterationCount( expectedIterations ) );
     TFQMRSolver.setStoppingCriterion( criterion );
     TFQMRSolver.initialize( coefficients );
@@ -245,11 +244,11 @@ BOOST_AUTO_TEST_CASE( writeAtTest )
 
 BOOST_AUTO_TEST_CASE( copyTest )
 {
-    TFQMR TFQMRSolver1( "CGTestSolver" );
+    TFQMR TFQMRSolver1( "TFQMRTestSolver" );
 
     SolverPtr solverptr = TFQMRSolver1.copy();
 
-    BOOST_CHECK_EQUAL( solverptr->getId(), "CGTestSolver" );
+    BOOST_CHECK_EQUAL( solverptr->getId(), "TFQMRTestSolver" );
 }
 /* --------------------------------------------------------------------- */
 

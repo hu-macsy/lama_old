@@ -42,9 +42,6 @@
 
 #include <lama/DenseVector.hpp>
 
-#include <lama/solver/criteria/ResidualStagnation.hpp>
-#include <lama/solver/criteria/ResidualThreshold.hpp>
-
 
 #include <limits>
 

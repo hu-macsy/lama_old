@@ -127,7 +127,7 @@ void testSolveWithPreconditionmethod( ContextPtr context )
     const DenseVector<ValueType> exactSolution( coefficients.getDistributionPtr(), 2.0 );
     DenseVector<ValueType> rhs( coefficients * exactSolution );
 
-    IndexType expectedIterations = 160;
+    IndexType expectedIterations = 300;
     CriterionPtr criterion( new IterationCount( expectedIterations ) );
     CGSSolver.setStoppingCriterion( criterion );
 
@@ -154,7 +154,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( testSolveWithPrecondition, T, test_types ) {
         GETCONTEXT( context );
         testSolveWithPreconditionmethod< CSRSparseMatrix<ValueType> >( context );
         testSolveWithPreconditionmethod< ELLSparseMatrix<ValueType> >( context );
-        testSolveWithPreconditionmethod< COOSparseMatrix<ValueType> >( context );
+        testSolveWithPreconditionmethod< COOSparseMatrix<ValueType> >( context );    
         testSolveWithPreconditionmethod< JDSSparseMatrix<ValueType> >( context );
         testSolveWithPreconditionmethod< DIASparseMatrix<ValueType> >( context );
         testSolveWithPreconditionmethod< DenseMatrix<ValueType> >( context );
@@ -200,7 +200,7 @@ void testSolveWithoutPreconditionmethod( ContextPtr context )
     LAMA_LOG_INFO( logger, "rhs = " << rhs );
 
     //initialize
-    IndexType expectedIterations = 170  ;
+    IndexType expectedIterations = 300  ;
     CriterionPtr criterion( new IterationCount( expectedIterations ) );
     CGSSolver.setStoppingCriterion( criterion );
     CGSSolver.initialize( coefficients );

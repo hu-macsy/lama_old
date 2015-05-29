@@ -58,8 +58,9 @@ set ( SOURCE_FILES
 		BLAS2Test
 		BLAS3Test
         CGTest
+       #CGNETest
         CGNRTest
-	CGSTest
+    	CGSTest
         CommonLoggerTest
         CommunicatorTest
         COOSparseMatrixTest
@@ -97,10 +98,11 @@ set ( SOURCE_FILES
 		MatrixNormTest
         MatrixTest
         MaxNormTest
+        MINRESTest
         NoCommunicatorTest
         ResidualStagnationTest
         ResidualThresholdTest
-	RichardsonTest
+	    RichardsonTest
         ScalarTest
         SimpleAMGTest
         SolutionProxyTest
@@ -109,7 +111,7 @@ set ( SOURCE_FILES
         SpecializedJacobiTest
         StorageIOTest
         TaskSyncTokenTest
-	TFQMRTest
+	    TFQMRTest
         ThreadPoolTest
         TimerTest
         TracingTest

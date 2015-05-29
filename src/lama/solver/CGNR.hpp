@@ -124,8 +124,6 @@ protected:
     CGNRRuntime mCGNRRuntime;
     /**
      * @brief Performs one CGNR iteration based on Matrix/Vector operations. 
-     * iterationOdd() and iterationEven() is some update for iterate() based on
-     * the number of iterations (even, odd).
      */
     virtual void iterate();
 

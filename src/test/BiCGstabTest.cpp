@@ -315,11 +315,11 @@ BOOST_AUTO_TEST_CASE( writeAtTest )
 
 BOOST_AUTO_TEST_CASE( copyTest )
 {
-    BiCGstab BiCGstabSolver1( "CGTestSolver" );
+    BiCGstab BiCGstabSolver1( "BiCGTestSolver" );
 
     SolverPtr solverptr = BiCGstabSolver1.copy();
 
-    BOOST_CHECK_EQUAL( solverptr->getId(), "CGTestSolver" );
+    BOOST_CHECK_EQUAL( solverptr->getId(), "BiCGTestSolver" );
 }
 /* --------------------------------------------------------------------- */
 

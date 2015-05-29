@@ -51,12 +51,14 @@ set ( CLASSES
         BiCG
         BiCGstab
         CG
-	CGS
+    	CGS
+    #   CGNE
         CGNR
         DefaultJacobi
         GMRES
         InverseSolver
         IterativeSolver
+        MINRES
         OmegaSolver
 	Richardson
         SimpleAMG

@@ -39,11 +39,8 @@
 #include <lama/expression/MatrixVectorExpressions.hpp>
 
 #include <lama/norm/L2Norm.hpp>
-#include <lama/norm/MaxNorm.hpp>
 
 #include <lama/DenseVector.hpp>
-
-#include <lama/solver/criteria/ResidualStagnation.hpp>
 
 #include <limits>
 

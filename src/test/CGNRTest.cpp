@@ -102,7 +102,7 @@ void testSolveWithPreconditionmethod( ContextPtr context )
     typedef typename MatrixType::MatrixValueType ValueType;
 
     LoggerPtr slogger(
-        new CommonLogger( "<CGNR>: ", LogLevel::convergenceHistory, LoggerWriteBehaviour::toConsoleOnly,
+        new CommonLogger( "<CGNR>: ", LogLevel::noLogging, LoggerWriteBehaviour::toConsoleOnly,
                           std::auto_ptr<Timer>( new Timer() ) ) );
 
     CGNR CGNRSolver( "CGNRTestSolver", slogger );
@@ -170,7 +170,7 @@ void testSolveWithoutPreconditionmethod( ContextPtr context )
     typedef typename MatrixType::MatrixValueType ValueType;
 
         LoggerPtr slogger(
-        new CommonLogger( "<CGNR>: ", LogLevel::convergenceHistory, LoggerWriteBehaviour::toConsoleOnly,
+        new CommonLogger( "<CGNR>: ", LogLevel::noLogging, LoggerWriteBehaviour::toConsoleOnly,
                           std::auto_ptr<Timer>( new Timer() ) ) );
 
     CGNR CGNRSolver( "CGNRTestSolver", slogger );

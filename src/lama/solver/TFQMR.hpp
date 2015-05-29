@@ -136,8 +136,8 @@ protected:
      * the number of iterations (even, odd).
      */
     virtual void iterate();
-    virtual void iterationOdd();
-    virtual void iterationEven();
+    void iterationOdd();
+    void iterationEven();
 
     LAMA_LOG_DECL_STATIC_LOGGER( logger )
 };
