@@ -33,7 +33,7 @@
 #pragma once
 
 // for dll import
-#include <logging/config.hpp>
+#include <common/config.hpp>
 
 // others
 #include <logging/SourceLocation.hpp>
@@ -59,7 +59,7 @@ namespace log4lama
 
  */
 
-class LOG4LAMA_DLL_IMPORTEXPORT Logger
+class LAMA_DLL_IMPORTEXPORT Logger
 {
 
     friend class LoggerProvider;

@@ -7,10 +7,8 @@
 
 LAMA_LOG_DEF_LOGGER( myLogger, "LogTest" )
 
-int threadRoutine( void* params )
+int threadRoutine( int param )
 {
-    int param = *( static_cast<int*>( params ) );
-
     LAMA_LOG_THREAD( "thread_" << param )
  
     LAMA_LOG_INFO( myLogger, "starts" )
@@ -40,7 +38,8 @@ int main( int argc, char** argv )
 
     for ( int i = 0; i < N; ++i )
     {
-        threads[i] = new boost::thread( threadRoutine, &params[i] );
+        LAMA_LOG_INFO( myLogger, "create thread " << i )
+        threads[i] = new boost::thread( threadRoutine, params[i] );
     }
 
     LAMA_LOG_INFO( myLogger, "go sleep for 5 seconds" )

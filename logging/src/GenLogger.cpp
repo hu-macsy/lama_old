@@ -419,7 +419,7 @@ void GenLogger::log( const char* level, SourceLocation& loc, const string& msg )
     std::ostringstream output;
 
     writeTime( output );
-    output << ": " << getFullName() << "@" << getCurrentThreadId();
+    output << ": " << getFullName() << "@" << common::Thread::getCurrentThreadId();
     output << " (" << loc.mFileName << "::" << loc.mLine << ",func=" << loc.mFuncName << ")";
     output << " " << level << " " << msg << std::endl;
 

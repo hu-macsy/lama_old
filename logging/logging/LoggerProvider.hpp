@@ -33,7 +33,7 @@
 #pragma once
 
 // for dll import
-#include <logging/config.hpp>
+#include <common/config.hpp>
 
 // others
 #include <logging/AbstractLoggerCreator.hpp>
@@ -51,7 +51,7 @@ AbstractLoggerCreator& theLoggerCreator();
  * to the required logger in this hierarchy. If a logger is not available
  * it will be added before to the hierarchy.
  */
-class LOG4LAMA_DLL_IMPORTEXPORT LoggerProvider
+class LAMA_DLL_IMPORTEXPORT LoggerProvider
 {
 
 public:

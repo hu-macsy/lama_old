@@ -58,6 +58,7 @@ find_package ( Boost COMPONENTS thread REQUIRED )
 
 file( GLOB CPP_SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp" )
 file( GLOB HPP_HEADERS "${CMAKE_CURRENT_SOURCE_DIR}/logging/*.hpp" )
+file( GLOB COMMON_HEADERS "${CMAKE_CURRENT_SOURCE_DIR}/common/*.hpp" )
 
 ### add definitions ###
 
@@ -65,7 +66,7 @@ file( GLOB HPP_HEADERS "${CMAKE_CURRENT_SOURCE_DIR}/logging/*.hpp" )
 add_definitions ( -DLAMA_LOG_LEVEL_DEBUG )
 
 include_directories( . ${CMAKE_CURRENT_SOURCE_DIR} )
-include_directories( Boost_INCLUDE_DIR )
+include_directories( ${Boost_INCLUDE_DIR} )
 
 if ( WIN32 )
 	add_definitions ( -DLOG4LAMA_COMPILING_DLL )
@@ -82,3 +83,4 @@ add_subdirectory( examples )
 
 install ( TARGETS ${LOGGING_LIBRARY} DESTINATION lib )
 install ( FILES ${HPP_HEADERS} DESTINATION include/logging )
+install ( FILES ${COMMON_HEADERS} DESTINATION include/common )

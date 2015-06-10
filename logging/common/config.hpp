@@ -1,5 +1,5 @@
 /**
- * @file thread_ids.hpp
+ * @file logging/config.hpp
  *
  * @license
  * Copyright (c) 2009-2015
@@ -25,21 +25,31 @@
  * SOFTWARE.
  * @endlicense
  *
- * @brief Definition of routine to set and query names for threads
- * @author Thomas Brandes
+ * @brief config.hpp
+ * @author Jiri Kraus
  * @date 10.06.2015
  */
+//No include header guards be cause we want to allow this header to be included multiple times
+#ifdef WIN32
+#ifdef min
+#undef min
+#endif //min
+#ifdef max
+#undef max
+#endif //max
+//Do not display warnings about dll-interface issues.
+//TODO: How can we resolve these issues? Do we want to resolve these issues?
+#pragma warning( disable : 4251 )
 
-#pragma once
-
-namespace log4lama
-{
-
-    /** Set a name for the current thread. */
-
-    void defineCurrentThreadId( const char* name );
-
-    /** Query the name of the current thread. */
-
-    const char* getCurrentThreadId();
-}
+#ifndef LAMA_DLL_IMPORTEXPORT
+#ifdef LAMA_COMPILING_DLL
+#define LAMA_DLL_IMPORTEXPORT   __declspec( dllexport )
+#else //LAMA_COMPILING_DLL is defined
+#define LAMA_DLL_IMPORTEXPORT   __declspec( dllimport )
+#endif //LAMA_COMPILING_DLL
+#endif //LAMA_DLL_IMPORTEXPORT
+#else //WIN32 is not defined
+#ifndef LAMA_DLL_IMPORTEXPORT
+#define LAMA_DLL_IMPORTEXPORT
+#endif //LAMA_DLL_IMPORTEXPORT
+#endif //WIN32

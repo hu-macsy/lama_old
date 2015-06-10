@@ -185,7 +185,7 @@
 #include "logging/Logger.hpp"
 #include "logging/LoggerProvider.hpp"
 
-#include "logging/thread_ids.hpp"
+#include "logging/Thread.hpp"
 
 /*******************************************************
  *   Definitions for logging                           *
@@ -325,11 +325,11 @@
 
 // macro defines a name for the current thread 
 
-#define LAMA_LOG_THREAD( name )                              \
-{                                                            \
-    std::ostringstream oname;                                \
-    oname << name;                                           \
-    log4lama::defineCurrentThreadId( oname.str().c_str() );  \
+#define LAMA_LOG_THREAD( name )                                    \
+{                                                                  \
+    std::ostringstream oname;                                      \
+    oname << name;                                                 \
+    common::Thread::defineCurrentThreadId( oname.str().c_str() );  \
 }
 
 #endif

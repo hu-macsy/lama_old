@@ -1,5 +1,5 @@
 /**
- * @file SourceLocation.hpp
+ * @file Thread.hpp
  *
  * @license
  * Copyright (c) 2009-2015
@@ -25,59 +25,68 @@
  * SOFTWARE.
  * @endlicense
  *
- * @brief SourceLocation.hpp
+ * @brief Definition of the class Thread to manage thread ids and names
  * @author Thomas Brandes
- * @date 10.06.2015
+ * @date 11.06.2015
  */
-
 #pragma once
 
-#include <ostream>
-
+// for dll_import
 #include <common/config.hpp>
 
-namespace log4lama
+// boost
+#include <boost/thread.hpp>
+
+namespace common
 {
 
-/** SourceLocation is a structure containing file, line and function info;
- * it specifies a location in a source file, e.g. for logging statement
- *
- */
+#ifdef WIN32
+#define LAMA_USE_BOOST_THREADID
+#endif
 
-struct LAMA_DLL_IMPORTEXPORT SourceLocation
+#ifndef LAMA_USE_BOOST_THREADID
+/** boost::thread::id is only available with Boost 1.35 and higher */
+#include <boost/version.hpp>
+
+#define LAMA_BOOST_VERSION_PROVIDES_ID 103501
+
+#if BOOST_VERSION < LAMA_BOOST_VERSION_PROVIDES_ID
+#include <pthread.h>
+#else
+#define LAMA_USE_BOOST_THREADID
+#endif
+#endif
+
+class LAMA_DLL_IMPORTEXPORT Thread
 {
+public:
 
-    const char* mFileName; //!< Name of the source file
-    const char* mFuncName; //!< Name of the function
-    int mLine; //!< Line number of location in source file
+#ifdef LAMA_USE_BOOST_THREADID
+    typedef boost::thread::id Id;
+#else
+    typedef pthread_t Id;
+#endif
 
-    /** Constructor of a location */
+    /** returns the id of the calling Thread. */
+    static Id getSelf();
 
-    SourceLocation( const char* const filename, const char* const funcname, const int line );
+    /** Set a name for the current thread. */
 
+    static void defineCurrentThreadId( const char* name );
+
+    /** Query the name of the current thread. */
+
+    static const char* getCurrentThreadId();
 };
 
-std::ostream& operator<<( std::ostream& os, const SourceLocation& loc );
-
+inline Thread::Id Thread::getSelf()
+{
+#ifdef LAMA_USE_BOOST_THREADID
+    return boost::this_thread::get_id();
+#else
+    return pthread_self();
+#endif
 }
 
-#if !defined(LOG4LAMA_LOCATION)
-#if defined(_MSC_VER)
-#if _MSC_VER >= 1300
-#define __LOG4LAMA_FUNC__ __FUNCSIG__
-#endif
-#else
-#if defined(__GNUC__)
-// this macro gives the whole signature
-// #define __LOG4LAMA_FUNC__ __PRETTY_FUNCTION__
-// this macro is standardized
-#define __LOG4LAMA_FUNC__ __func__
-#endif
-#endif
 
-#if !defined(__LOG4LAMA_FUNC__)
-#define __LOG4LAMA_FUNC__ ""
-#endif
-
-#define LOG4LAMA_LOCATION log4lama::SourceLocation(__FILE__, __LOG4LAMA_FUNC__, __LINE__)
-#endif
+} // namespace lama

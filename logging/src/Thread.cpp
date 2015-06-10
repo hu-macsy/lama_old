@@ -1,5 +1,5 @@
 /**
- * @file thread_ids.cpp
+ * @file Thread.cpp
  *
  * @license
  * Copyright (c) 2009-2015
@@ -30,7 +30,7 @@
  * @date   10.06.2015
  */
 
-#include <logging/thread_ids.hpp>
+#include <logging/Thread.hpp>
 
 #include <boost/thread.hpp>
 #include <map>
@@ -38,24 +38,22 @@
 using namespace boost;
 using namespace std;
 
-namespace log4lama
+namespace common
 {
-
-typedef thread::id thread_id;
 
 // Map that defines mapping thread ids -> thread names (as strings) 
 
-static map<thread_id, string> mapThreads;
+static map<Thread::Id, string> mapThreads;
 
 mutex map_mutex; // Make access to map thread safe
 
-void defineCurrentThreadId( const char* name )
+void Thread::defineCurrentThreadId( const char* name )
 {
     mutex::scoped_lock scoped_lock( map_mutex ); 
 
-    thread_id id = this_thread::get_id();
+    thread::id id = this_thread::get_id();
     
-    map<thread_id, string>::iterator it = mapThreads.find( id );
+    map<thread::id, string>::iterator it = mapThreads.find( id );
 
     if ( it == mapThreads.end() )
     {
@@ -73,20 +71,27 @@ void defineCurrentThreadId( const char* name )
     }
 }
 
-const char* getCurrentThreadId()
+const char* Thread::getCurrentThreadId()
 {
     mutex::scoped_lock scoped_lock( map_mutex ); 
 
-    thread_id id = this_thread::get_id();
+    thread::id id = this_thread::get_id();
 
-    map<thread_id, string>::const_iterator it = mapThreads.find( id );
+    map<thread::id, string>::iterator it = mapThreads.find( id );
 
     if ( it == mapThreads.end() )
     {
-        // No name define yet
+        // No name defined yet
 
-        return "<unk_thread>";
+        ostringstream thread_name;
+ 
+        thread_name << "t_" << id ;
 
+        mapThreads[ id ] = thread_name.str();
+   
+        it = mapThreads.find( id );
+
+        return it->second.c_str();
     }
     else
     {

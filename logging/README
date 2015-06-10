@@ -41,3 +41,8 @@ Some coding rules regarding smaller projects.
     - supported by all relevant compilers
     - avoid file names that might appear in many projects, e.g. config.hpp
 
+* config file for DLL_IMPORT, DLL_EXPORT, or better file for Windows Support
+
+    - only one file for all projects
+    - no LAMA naming
+    - where to install
