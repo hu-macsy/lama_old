@@ -1,0 +1,43 @@
+Some coding rules regarding smaller projects.
+
+* All projects should install in the same installation directory
+
+  - INSTALL_PREFIX should be the same for all projects like logging, trace, kernel, ...
+ 
+    <install_prefix>/include/<project-1>/*.hpp
+    <install_prefix>/include/<project-2>/*.hpp
+
+    <install_prefix>/lib/<libproject-1>
+    <install_prefix>/lib/<libproject-2>
+
+  Advantages:
+
+  - only one include and library path for projects that use multiple smaller projects
+
+  Disadvantages:
+
+  - each subproject needs its own include directory
+  - difficult to uninstall a subproject
+
+* All projects should use a common CMake modules directory
+
+  Advantage:
+
+  - same FindBoost, so boost is always used in the same version
+  - same handling for all projects
+
+  Disadvantage:
+
+  - not clear which modules are really necessary for which project
+
+* Version handling
+
+   - each subproject gets its own version
+   - @since directive should be avoided (difficult to guarantee consistency)
+
+* pragma once
+
+    - simpler, more efficient
+    - supported by all relevant compilers
+    - avoid file names that might appear in many projects, e.g. config.hpp
+
