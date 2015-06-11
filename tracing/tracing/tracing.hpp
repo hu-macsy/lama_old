@@ -33,7 +33,7 @@
 
 #pragma once
 
-#if defined( LAMA_TRACE_LEVEL_VT ) || defined( LAMA_TRACE_LEVEL_TIME )
+#if defined( LAMA_TRACE_LEVEL_ON ) 
 
 #include <tracing/TraceRegionRecord.hpp>
 #include <tracing/TraceConfig.hpp>
@@ -44,14 +44,18 @@
 #define LAMA_REGION_END( name ) tracing::TraceRegionRecord::stop( name );
 #define LAMA_TRACE_SCOPE( flag ) tracing::TraceConfig::TraceScope LAMA_Scp__( flag );
 #define LAMA_TIMETRACER( name ) tracing::TraceRegionRecord::spentLast( name );
+
 #elif defined( LAMA_TRACE_LEVEL_OFF )
+
 #define LAMA_REGION( name )
 #define LAMA_REGION_START( name )
 #define LAMA_REGION_END( name )
 #define LAMA_REGION_N( name, n )
 #define LAMA_TRACE_SCOPE( flag )
 #define LAMA_TIMETRACER( name ) 0.0
+
 #else
+
 //Macro LAMA_REGION should also be defined in case of error for convenience with Eclipse.
 #define LAMA_REGION( name )
 #define LAMA_REGION_START( name )
@@ -59,6 +63,6 @@
 #define LAMA_REGION_N( name, n )
 #define LAMA_TRACE_SCOPE( flag )
 #define LAMA_TIMETRACER( name ) 0.0
-#error "Must define LAMA_TRACE_LEVEL_xxx with xxx = VT, TIME, or OFF"
+#error "Must define LAMA_TRACE_LEVEL_xxx with xxx = ON, or OFF"
 
 #endif

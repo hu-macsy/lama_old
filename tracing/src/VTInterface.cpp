@@ -45,9 +45,9 @@ namespace tracing
  *  supports the definition of a group for a region.
  */
 
-#define NEW_VT
+#undef NEW_VT
 
-#ifdef LAMA_TRACE_LEVEL_VT
+#ifdef USE_VAMPIRTRACE
 
 #ifdef NEW_VT
 extern "C" unsigned int VT_User_def__( const char* name, const char* group, const char* file, int lno );
@@ -67,7 +67,7 @@ void VTInterface::define( RegionEntry& region )
 {
     region.mVTId = 0;
 
-#if defined( LAMA_TRACE_LEVEL_VT ) && defined( NEW_VT )
+#if defined( USE_VAMPIRTRACE ) && defined( NEW_VT )
     const std::string& fullName = region.mName;
 
     //  check region name for <group_name>.<method_name>
@@ -92,7 +92,7 @@ void VTInterface::define( RegionEntry& region )
 #endif
 }
 
-#if defined( LAMA_TRACE_LEVEL_VT )
+#if defined( USE_VAMPIRTRACE )
 
 void VTInterface::enter( const RegionEntry& region )
 {
@@ -116,7 +116,7 @@ void VTInterface::enter( const RegionEntry& )
 
 #endif
 
-#if defined( LAMA_TRACE_LEVEL_VT )
+#if defined( USE_VAMPIRTRACE )
 
 void VTInterface::leave( const RegionEntry& region )
 {
@@ -137,7 +137,7 @@ void VTInterface::leave( const RegionEntry& )
 
 #endif
 
-#if defined( LAMA_TRACE_LEVEL_VT )
+#if defined( USE_VAMPIRTRACE )
 
 void VTInterface::enable( const bool flag )
 {

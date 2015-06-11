@@ -53,14 +53,15 @@ file( GLOB HPP_HEADERS "${CMAKE_CURRENT_SOURCE_DIR}/tracing/*.hpp" )
 
 ### add definitions ###
 
-set ( ROOT /home/brandes/local )
+# set ( CMAKE_INSTALL_PREFIX /home/brandes/local )
 
 find_library( LOGGING_LIBRARY 
               NAMES log4lama 
-              HINTS ${ROOT}/lib )
+              HINTS ${CMAKE_INSTALL_PREFIX}/lib )
+
 
 include_directories( . ${CMAKE_CURRENT_SOURCE_DIR} )
-include_directories( ${ROOT}/include )
+include_directories( ${CMAKE_INSTALL_PREFIX}/include )
 
 if ( WIN32 )
     add_definitions ( -DLOG4LAMA_COMPILING_DLL )
@@ -72,6 +73,19 @@ add_definitions( -DLAMA_LOG_LEVEL_DEBUG )
 
 add_library ( ${TRACING_LIBRARY} SHARED ${CPP_SOURCES} )
 target_link_libraries( ${TRACING_LIBRARY} ${LOGGING_LIBRARY} )
+
+find_package ( VampirTrace )
+find_package ( MPI )
+
+message( STATUS "VAMPIRTRACE found = ${VAMPIRTRACE_FOUND}" )
+message( STATUS "MPI found = ${MPI_FOUND}" )
+
+if ( ${VAMPIRTRACE_FOUND} )
+    message( STATUS "VAMPIRTRACE found, lib = ${VAMPIRTRACE_LIBRARIES}" )
+    add_definitions( -DUSE_VAMPIRTRACE )
+    include_directories( ${VAMPIRTRACE_INCLUDE_DIR} )
+    target_link_libraries( ${TRACING_LIBRARY} ${VAMPIRTRACE_LIBRARIES} ${MPI_LIBRARIES} )
+endif ()
 
 add_subdirectory( examples )
 

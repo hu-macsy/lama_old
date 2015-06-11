@@ -88,7 +88,7 @@ boost::shared_ptr<TraceConfig> TraceConfig::getInstancePtr()
 
 /* -------------------------------------------------------------------------- */
 
-#if defined( LAMA_TRACE_LEVEL_VT )
+#if defined( USE_VAMPIRTRACE )
 extern "C" void VT_User_trace_on__();
 extern "C" void VT_User_trace_off__();
 #endif
@@ -115,32 +115,18 @@ void TraceConfig::enableVampirTrace( bool flag )
 {
     mVampirTraceEnabled = flag;
 
-#if defined( LAMA_TRACE_LEVEL_VT )
+#if defined( USE_VAMPIRTRACE )
 
-    if ( mCUDAContext )
-    {
-        // enable the context when tracing is switched on / off
+    LAMA_LOG_INFO( logger, "enableVampirTrace: flag =  " << flag << ", no context" )
 
-        LAMA_LOG_INFO( logger, "enableVampirTrace: flag =  " << flag
-                       << ", context = " << *mCUDAContext )
-
-        LAMA_CONTEXT_ACCESS( mCUDAContext )
-
-        VTInterface::enable( flag );
-    }
-    else
-    {
-        LAMA_LOG_INFO( logger, "enableVampirTrace: flag =  " << flag << ", no context" )
-
-        VTInterface::enable( flag );
-    }
+    VTInterface::enable( flag );
 
 #else
-    LAMA_LOG_INFO( logger, "enableVampirTrace: flag =  " << flag << ", level VT disabled" )
+    LAMA_LOG_INFO( logger, "enableVampirTrace: flag =  " << flag << ", VAMPIRTRACE not used" )
 
     if( mVampirTraceEnabled )
     {
-        LAMA_LOG_WARN( logger, "TRACE:vt ignored, use LAMA_TRACE_LEVEL=VT for compilation." )
+        LAMA_LOG_WARN( logger, "TRACE:vt ignored, define USE_VAMPIRTRACE for compilation." )
     }
 
 #endif
@@ -259,7 +245,7 @@ TraceConfig::TraceConfig()
     else
     {
         // prefix set, use it also for VampirTrace
-#if defined( LAMA_TRACE_LEVEL_VT )
+#if defined( USE_VAMPIRTRACE )
         if ( mVampirTraceEnabled )
         {
             // 0 for do not overwrite existing value
