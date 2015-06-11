@@ -118,6 +118,11 @@ public:
         return mTimeTraceEnabled;
     }
 
+    bool isCallTreeEnabled()
+    {
+        return mCallTreeEnabled;
+    }
+
     const char* getFilePrefix() const
     {
         return getInstance().mTraceFilePrefix.c_str();
@@ -167,6 +172,8 @@ private:
     bool mEnabled;
 
     bool mTimeTraceEnabled;
+
+    bool mCallTreeEnabled;
 
     bool mVampirTraceEnabled;
 

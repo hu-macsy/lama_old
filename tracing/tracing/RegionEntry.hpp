@@ -53,16 +53,24 @@ struct RegionEntry
         mCalls = 0;
 
         mVTId = 0;
+        mFirst = true;    // for first access
     }
 
     const char* getRegionName() const
     {
         return mName.c_str();
     }
+
     const char* getFileName() const
     {
         return mFile;
     }
+
+    int getFileToken() const
+    {
+        return 0;
+    }
+
     int getLine() const
     {
         return mLine;
@@ -93,6 +101,13 @@ struct RegionEntry
         mCalls++;
     }
 
+    bool firstAccess() 
+    {
+        bool is = mFirst;
+        mFirst = false;
+        return is;
+    }
+
     /** subtract time of called regions to get exlusive time. */
 
     void subRegionCall( double spentTime )
@@ -115,6 +130,8 @@ private:
     double mLastTime; //!< time of last call
     double mInclusiveTime; //!< time totally spent in a region
     double mExclusiveTime; //!< time exclusively spent in a region
+
+    bool mFirst;
 };
 
 }

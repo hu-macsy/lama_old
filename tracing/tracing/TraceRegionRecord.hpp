@@ -112,6 +112,7 @@ private:
     int mRegionId;// Reference id of region in region table.
 
     bool mTimeTrace;//!< set to true if timing should be done
+    bool mCallTree;//!< set to true if calltree tracing should be done
     bool mVampirTrace;//!< set to true if Vampir trace should be done
 
     double mStartTime;//!< walltime of region start

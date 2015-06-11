@@ -150,6 +150,11 @@ void TraceConfig::setParam( const std::string& param )
     {
         mTimeTraceEnabled = true;
     }
+    else if( param == "CT" )
+    {
+        mCallTreeEnabled = true;
+        LAMA_LOG_WARN( logger, param << " is still under development" )
+    }
     else
     {
         LAMA_LOG_WARN( logger, param << " is unknown option for TRACE" )
@@ -171,6 +176,7 @@ TraceConfig::TraceConfig()
     mThreadEnabled = false;
     mVampirTraceEnabled = false;
     mTimeTraceEnabled = false;
+    mCallTreeEnabled = false;
     mTraceFilePrefix = "_";
 
     // value of environmentvariable:  param1:param2=valx:param3:param4=valy

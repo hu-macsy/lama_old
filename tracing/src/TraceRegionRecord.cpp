@@ -38,6 +38,7 @@
 // others
 #include <tracing/RegionTable.hpp>
 #include <tracing/TraceConfig.hpp>
+#include <tracing/CallTree.hpp>
 #include <tracing/VTInterface.hpp>
 
 #include <cstdio>
@@ -86,6 +87,11 @@ void TraceRegionRecord::start( const char* regionName, const char* file, int lno
         regionTable->start( regionId, startTime );
     }
 
+    if( traceConfig->isCallTreeEnabled() )
+    {
+        CallTree::enter( regionId, regionTable->getRegion( regionId ), startTime );
+    }
+
     if( traceConfig->isVampirTraceEnabled() )
     {
         VTInterface::enter( regionTable->getRegion( regionId ) );
@@ -130,6 +136,11 @@ void TraceRegionRecord::stop( const char* regionName )
         regionTable->stop( regionId, stopTime );
     }
 
+    if( traceConfig->isCallTreeEnabled() )
+    {
+        CallTree::leave( regionId, regionTable->getRegion( regionId ), stopTime );
+    }
+
     if( traceConfig->isVampirTraceEnabled() )
     {
         VTInterface::leave( regionTable->getRegion( regionId ) );
@@ -159,6 +170,13 @@ void TraceRegionRecord::enter( const char* regionName, const char* file, int lno
     if( mTimeTrace )
     {
         mRegionTable->start( mRegionId, mStartTime );
+    }
+
+    mCallTree = mTraceConfig->isCallTreeEnabled();
+
+    if( mCallTree )
+    {
+        CallTree::enter( mRegionId, mRegionTable->getRegion( mRegionId ), mStartTime );
     }
 
     mVampirTrace = mTraceConfig->isVampirTraceEnabled();
@@ -238,6 +256,11 @@ TraceRegionRecord::~TraceRegionRecord()
     if( mTimeTrace )
     {
         mRegionTable->stop( mRegionId, stopTime );
+    }
+
+    if( mCallTree )
+    {
+        CallTree::leave( mRegionId, mRegionTable->getRegion( mRegionId ), stopTime );
     }
 
     if( mVampirTrace )
