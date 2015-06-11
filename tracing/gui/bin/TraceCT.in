@@ -1,0 +1,41 @@
+#!/bin/bash
+
+echo "starting Performance Result Callgraph ..."
+
+# set directories containing all needed jar files
+
+export LIBDIR=${CMAKE_INSTALL_PREFIX}
+
+# define libs that are needed
+
+# might be added: cobertura.jar
+
+LIBS="${CMAKE_INSTALL_PREFIX}/bin/${GUI_JAR}.jar ${JAR1} ${JAR2} ${JAR3} ${JAR4}"
+
+for lib in $LIBS; do 
+
+# test if library is really available
+
+    if [ -a $lib ]; then
+
+# okay we add it to the CLASSPATH
+
+      if test "$CLASSPATH" = ""; then
+         CLASSPATH=$lib
+        else
+         CLASSPATH=$CLASSPATH:$lib
+      fi
+
+  else
+
+    echo "ERROR: The library $lib is not available"
+
+  fi
+
+done
+
+echo "CLASSPATH = $CLASSPATH"
+
+export CLASSPATH
+
+java adaptor.Calltree.CalltreePM $*

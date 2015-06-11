@@ -87,6 +87,7 @@ if ( ${VAMPIRTRACE_FOUND} )
     target_link_libraries( ${TRACING_LIBRARY} ${VAMPIRTRACE_LIBRARIES} ${MPI_LIBRARIES} )
 endif ()
 
+add_subdirectory( gui )
 add_subdirectory( examples )
 
 ### install ###
