@@ -35,6 +35,8 @@
 
 cmake_minimum_required ( VERSION 2.8 )
 
+project( logging CXX )
+
 ### Define variables needed for logging library 
 ### Variables are put in the cache so they might be used in other scopes
 

@@ -34,6 +34,8 @@
 
 cmake_minimum_required ( VERSION 2.8 )
 
+project( common CXX )
+
 set ( CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/../CMake/Modules" )
 
 # Set default build type to RELEASE, can be changed via ccmake

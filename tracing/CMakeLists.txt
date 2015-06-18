@@ -34,6 +34,8 @@
 
 cmake_minimum_required ( VERSION 2.8 )
 
+project( tracing CXX )
+
 set ( TRACING_LIBRARY scaitrace
       CACHE FILEPATH "trace library" )
 

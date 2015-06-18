@@ -34,6 +34,8 @@
 
 cmake_minimum_required ( VERSION 2.8 )
 
+project ( lama )
+
 ### Include all other projects 
 
 add_subdirectory( ../common "${CMAKE_CURRENT_BINARY_DIR}/common" )
