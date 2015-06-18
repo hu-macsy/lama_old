@@ -34,48 +34,8 @@
 
 cmake_minimum_required ( VERSION 2.8 )
 
-set ( CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/../CMake/Modules" )
+### Include all other projects 
 
-# Set default build type to RELEASE, can be changed via ccmake
-
-if (NOT CMAKE_BUILD_TYPE)
-   set(CMAKE_BUILD_TYPE RELEASE CACHE STRING
-      "Choose the type of build, options are: None Debug Release."
-      FORCE)
-endif (NOT CMAKE_BUILD_TYPE)
-
-### Boost thread required
-
-set ( Boost_DEBUG TRUE )
-set ( Boost_DETAILED_FAILURE_MSG TRUE )
-
-find_package ( Boost COMPONENTS thread REQUIRED )
-
-### Define variables needed for common library 
-### Variables are put in the cache so they might be used in other scopes
-
-set ( COMMON_LIBRARY common 
-      CACHE FILEPATH "common library" )
-
-set ( COMMON_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR} 
-      CACHE PATH "common include directory" )
-
-file( GLOB CPP_SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp" )
-file( GLOB HPP_HEADERS "${CMAKE_CURRENT_SOURCE_DIR}/common/*.hpp" )
-
-include_directories( ${COMMON_INCLUDE_DIR} )
-include_directories( ${Boost_INCLUDE_DIR} )
-
-if ( WIN32 )
-	add_definitions ( -DCOMMON_COMPILING_DLL )
-endif ( WIN32 )
-
-### add library and put path to search path ###
-
-add_library ( ${COMMON_LIBRARY} SHARED ${CPP_SOURCES} )
-target_link_libraries( ${COMMON_LIBRARY} ${Boost_THREAD_LIBRARY} )
-
-### install ###
-
-install ( TARGETS ${COMMON_LIBRARY} DESTINATION lib )
-install ( FILES ${HPP_HEADERS} DESTINATION include/common )
+add_subdirectory( ../common "${CMAKE_CURRENT_BINARY_DIR}/common" )
+add_subdirectory( ../logging "${CMAKE_CURRENT_BINARY_DIR}/logging" )
+add_subdirectory( ../tracing "${CMAKE_CURRENT_BINARY_DIR}/tracing" )

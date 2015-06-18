@@ -34,16 +34,20 @@
 
 cmake_minimum_required ( VERSION 2.8 )
 
-set ( TRACING_LIBRARY scaitrace )
+set ( TRACING_LIBRARY scaitrace
+      CACHE FILEPATH "trace library" )
+
+set ( TRACING_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR} 
+      CACHE PATH "traing include directory" )
 
 set ( CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/../CMake/Modules" )
 
 # Set default build type to RELEASE, can be changed via ccmake
 
-if (NOT CMAKE_BUILD_TYPE)
-   set(CMAKE_BUILD_TYPE RELEASE CACHE STRING
-      "Choose the type of build, options are: None Debug Release."
-      FORCE)
+if ( NOT CMAKE_BUILD_TYPE )
+   set( CMAKE_BUILD_TYPE RELEASE 
+        CACHE STRING "Choose the type of build, options are: None Debug Release."
+        FORCE)
 endif (NOT CMAKE_BUILD_TYPE)
 
 ### Source files for tracing library
@@ -59,8 +63,13 @@ find_library( LOGGING_LIBRARY
               NAMES logging 
               HINTS ${CMAKE_INSTALL_PREFIX}/lib )
 
-include_directories( . ${CMAKE_CURRENT_SOURCE_DIR} )
-include_directories( ${CMAKE_INSTALL_PREFIX}/include )
+set ( LOGGING_INCLUDE_DIR 
+            ${CMAKE_INSTALL_PREFIX}/include 
+            CACHE PATH "include" )
+
+include_directories( ${TRACING_INCLUDE_DIR} )
+include_directories( ${COMMON_INCLUDE_DIR} )
+include_directories( ${LOGGING_INCLUDE_DIR} )
 
 if ( WIN32 )
     add_definitions ( -DLOG4LAMA_COMPILING_DLL )

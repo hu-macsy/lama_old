@@ -35,7 +35,14 @@
 
 cmake_minimum_required ( VERSION 2.8 )
 
-set ( LOGGING_LIBRARY logging )
+### Define variables needed for logging library 
+### Variables are put in the cache so they might be used in other scopes
+
+set ( LOGGING_LIBRARY logging 
+      CACHE FILEPATH "logging library" )
+
+set ( LOGGING_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR} 
+      CACHE PATH "logging include directory" )
 
 set ( CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/../CMake/Modules" )
 
@@ -54,9 +61,14 @@ set ( Boost_DETAILED_FAILURE_MSG TRUE )
 
 find_package ( Boost COMPONENTS thread REQUIRED )
 
+# Common library of other project is used here
+# It might be either installed or variables are already in CACHE
+
 find_library( COMMON_LIBRARY 
               NAMES common
               HINTS ${CMAKE_INSTALL_PREFIX}/lib )
+
+set ( COMMON_INCLUDE_DIR ${CMAKE_INSTALL_PREFIX}/include CACHE PATH "include" )
 
 ### Source files for logging library
 
@@ -66,11 +78,12 @@ file( GLOB HPP_HEADERS "${CMAKE_CURRENT_SOURCE_DIR}/logging/*.hpp" )
 ### add definitions ###
 
 # GenLogger uses also logging
+
 add_definitions ( -DLAMA_LOG_LEVEL_DEBUG )
 
-include_directories( . ${CMAKE_CURRENT_SOURCE_DIR} )
 include_directories( ${Boost_INCLUDE_DIR} )
-include_directories( ${CMAKE_INSTALL_PREFIX}/include )
+include_directories( ${COMMON_INCLUDE_DIR} )
+include_directories( ${LOGGING_INCLUDE_DIR} )
 
 if ( WIN32 )
 	add_definitions ( -DCOMMON_COMPILING_DLL )
