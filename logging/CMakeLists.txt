@@ -25,7 +25,7 @@
  # SOFTWARE.
  # @endlicense
  #
- # @brief logging/CMakeLists.txt
+ # @brief CMake configuration file for Logging library
  # @author Thomas Brandes
  # @date 09.06.2015
  # @since 2.0.0
@@ -35,7 +35,7 @@
 
 cmake_minimum_required ( VERSION 2.8 )
 
-set ( LOGGING_LIBRARY log4lama )
+set ( LOGGING_LIBRARY logging )
 
 set ( CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/../CMake/Modules" )
 
@@ -54,11 +54,14 @@ set ( Boost_DETAILED_FAILURE_MSG TRUE )
 
 find_package ( Boost COMPONENTS thread REQUIRED )
 
+find_library( COMMON_LIBRARY 
+              NAMES common
+              HINTS ${CMAKE_INSTALL_PREFIX}/lib )
+
 ### Source files for logging library
 
 file( GLOB CPP_SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp" )
 file( GLOB HPP_HEADERS "${CMAKE_CURRENT_SOURCE_DIR}/logging/*.hpp" )
-file( GLOB COMMON_HEADERS "${CMAKE_CURRENT_SOURCE_DIR}/common/*.hpp" )
 
 ### add definitions ###
 
@@ -67,15 +70,16 @@ add_definitions ( -DLAMA_LOG_LEVEL_DEBUG )
 
 include_directories( . ${CMAKE_CURRENT_SOURCE_DIR} )
 include_directories( ${Boost_INCLUDE_DIR} )
+include_directories( ${CMAKE_INSTALL_PREFIX}/include )
 
 if ( WIN32 )
-	add_definitions ( -DLOG4LAMA_COMPILING_DLL )
+	add_definitions ( -DCOMMON_COMPILING_DLL )
 endif ( WIN32 )
 
 ### add library and put path to search path ###
 
 add_library ( ${LOGGING_LIBRARY} SHARED ${CPP_SOURCES} )
-target_link_libraries( ${LOGGING_LIBRARY} ${Boost_THREAD_LIBRARY} )
+target_link_libraries( ${LOGGING_LIBRARY} ${COMMON_LIBRARY} ${Boost_THREAD_LIBRARY} )
 
 add_subdirectory( examples )
 
@@ -83,4 +87,3 @@ add_subdirectory( examples )
 
 install ( TARGETS ${LOGGING_LIBRARY} DESTINATION lib )
 install ( FILES ${HPP_HEADERS} DESTINATION include/logging )
-install ( FILES ${COMMON_HEADERS} DESTINATION include/common )

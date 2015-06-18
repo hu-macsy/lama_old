@@ -38,7 +38,7 @@
 
 #include <stdexcept>
 
-namespace log4lama
+namespace logging
 {
 
 // The LoggerProvier will be created at first access.
@@ -132,4 +132,4 @@ Logger& LoggerProvider::getInstance( const std::string& name ) const
     return *instance;
 }
 
-} // namespace log4lama
+} // namespace logging

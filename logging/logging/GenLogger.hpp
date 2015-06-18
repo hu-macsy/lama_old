@@ -35,7 +35,7 @@
 // base classes
 #include <logging/Logger.hpp>
 
-namespace log4lama
+namespace logging
 {
 
 /** GenLogger is a simple and generic solution of the abstract Logger class */

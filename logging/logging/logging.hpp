@@ -185,17 +185,17 @@
 #include "logging/Logger.hpp"
 #include "logging/LoggerProvider.hpp"
 
-#include "logging/Thread.hpp"
+#include "common/Thread.hpp"
 
 /*******************************************************
  *   Definitions for logging                           *
  *******************************************************/
 
-#define LAMA_LOG_DECL_STATIC_LOGGER(aLogger) static class log4lama::Logger& aLogger;
-#define LAMA_LOG_DEF_LOGGER(aLogger,name) log4lama::Logger& aLogger = \
-        log4lama::LoggerProvider::getProvider().getInstance(std::string(name));
-#define LAMA_LOG_DEF_TEMPLATE_LOGGER(temp,aLogger,name) temp log4lama::Logger& aLogger = \
-        log4lama::LoggerProvider::getProvider().getInstance(std::string(name));
+#define LAMA_LOG_DECL_STATIC_LOGGER(aLogger) static class logging::Logger& aLogger;
+#define LAMA_LOG_DEF_LOGGER(aLogger,name) logging::Logger& aLogger = \
+        logging::LoggerProvider::getProvider().getInstance(std::string(name));
+#define LAMA_LOG_DEF_TEMPLATE_LOGGER(temp,aLogger,name) temp logging::Logger& aLogger = \
+        logging::LoggerProvider::getProvider().getInstance(std::string(name));
 #define LAMA_LOG_USING(alogger) using alogger;
 
 #include <sstream>
@@ -215,12 +215,12 @@
  *   LAMA_LOG_SET_XXXX                                 *
  *******************************************************/
 
-#define LAMA_LOG_SET_TRACE(logger) { logger.setLevel(log4lama::TRACE, true); }
-#define LAMA_LOG_SET_DEBUG(logger) { logger.setLevel(log4lama::DEBUG, true); }
-#define LAMA_LOG_SET_INFO(logger) { logger.setLevel(log4lama::INFO, true); }
-#define LAMA_LOG_SET_WARN(logger) { logger.setLevel(log4lama::WARN, true); }
-#define LAMA_LOG_SET_ERROR(logger) { logger.setLevel(log4lama::ERROR, true); }
-#define LAMA_LOG_SET_FATAL(logger) { logger.setLevel(log4lama::FATAL, true); }
+#define LAMA_LOG_SET_TRACE(logger) { logger.setLevel(logging::TRACE, true); }
+#define LAMA_LOG_SET_DEBUG(logger) { logger.setLevel(logging::DEBUG, true); }
+#define LAMA_LOG_SET_INFO(logger) { logger.setLevel(logging::INFO, true); }
+#define LAMA_LOG_SET_WARN(logger) { logger.setLevel(logging::WARN, true); }
+#define LAMA_LOG_SET_ERROR(logger) { logger.setLevel(logging::ERROR, true); }
+#define LAMA_LOG_SET_FATAL(logger) { logger.setLevel(logging::FATAL, true); }
 
 #else
 

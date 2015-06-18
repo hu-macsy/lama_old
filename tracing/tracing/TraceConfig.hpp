@@ -37,8 +37,8 @@
 #include <common/NonCopyable.hpp>
 
 // others
-#include <logging/Thread.hpp>
 #include <logging/logging.hpp>
+#include <common/Thread.hpp>
 
 // boost
 #include <boost/shared_ptr.hpp>
@@ -69,7 +69,7 @@ class RegionTable;
  * information at runtime, e.g. the collected time information of the regions.
  */
 
-class LAMA_DLL_IMPORTEXPORT TraceConfig: private common::NonCopyable
+class COMMON_DLL_IMPORTEXPORT TraceConfig: private common::NonCopyable
 {
 public:
 

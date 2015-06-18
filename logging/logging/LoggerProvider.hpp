@@ -38,7 +38,7 @@
 // others
 #include <logging/AbstractLoggerCreator.hpp>
 
-namespace log4lama
+namespace logging
 {
 
 // creator will be used for the static loggers
@@ -51,7 +51,7 @@ AbstractLoggerCreator& theLoggerCreator();
  * to the required logger in this hierarchy. If a logger is not available
  * it will be added before to the hierarchy.
  */
-class LAMA_DLL_IMPORTEXPORT LoggerProvider
+class COMMON_DLL_IMPORTEXPORT LoggerProvider
 {
 
 public:

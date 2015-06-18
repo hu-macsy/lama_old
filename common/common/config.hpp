@@ -1,5 +1,5 @@
 /**
- * @file lama/NonCopyable.hpp
+ * @file logging/config.hpp
  *
  * @license
  * Copyright (c) 2009-2015
@@ -25,33 +25,31 @@
  * SOFTWARE.
  * @endlicense
  *
- * @brief Definition of help class that disables default copy constructors.
+ * @brief config.hpp
  * @author Jiri Kraus
- * @date 04.04.2011
- * @since 1.0.0
+ * @date 10.06.2015
  */
+//No include header guards be cause we want to allow this header to be included multiple times
+#ifdef WIN32
+#ifdef min
+#undef min
+#endif //min
+#ifdef max
+#undef max
+#endif //max
+//Do not display warnings about dll-interface issues.
+//TODO: How can we resolve these issues? Do we want to resolve these issues?
+#pragma warning( disable : 4251 )
 
-#pragma once
-
-// for dll_import
-#include <common/config.hpp>
-
-namespace common
-{
-
-/** Base class to disable compiler generated copy constructor and assignment operator. */
-class LAMA_DLL_IMPORTEXPORT NonCopyable
-{
-protected:
-    NonCopyable()
-    {
-    }
-    ~NonCopyable()
-    {
-    }
-private:
-    NonCopyable( const NonCopyable& other );
-    const NonCopyable& operator=( const NonCopyable& other );
-};
-
-}
+#ifndef COMMON_DLL_IMPORTEXPORT
+#ifdef COMMON_COMPILING_DLL
+#define COMMON_DLL_IMPORTEXPORT   __declspec( dllexport )
+#else //COMMON_COMPILING_DLL is defined
+#define COMMON_DLL_IMPORTEXPORT   __declspec( dllimport )
+#endif //COMMON_COMPILING_DLL
+#endif //COMMON_DLL_IMPORTEXPORT
+#else //WIN32 is not defined
+#ifndef COMMON_DLL_IMPORTEXPORT
+#define COMMON_DLL_IMPORTEXPORT
+#endif //COMMON_DLL_IMPORTEXPORT
+#endif //WIN32

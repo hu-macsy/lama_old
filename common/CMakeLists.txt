@@ -25,16 +25,14 @@
  # SOFTWARE.
  # @endlicense
  #
- # @brief tracing/CMakeLists.txt
+ # @brief CMake configuration file for common library
  # @author Thomas Brandes
- # @date 10.06.2015
+ # @date 09.06.2015
 ###
 
 ### Set required CMake version
 
 cmake_minimum_required ( VERSION 2.8 )
-
-set ( TRACING_LIBRARY scaitrace )
 
 set ( CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/../CMake/Modules" )
 
@@ -46,50 +44,33 @@ if (NOT CMAKE_BUILD_TYPE)
       FORCE)
 endif (NOT CMAKE_BUILD_TYPE)
 
-### Source files for tracing library
+### Boost thread required
+
+set ( Boost_DEBUG TRUE )
+set ( Boost_DETAILED_FAILURE_MSG TRUE )
+
+find_package ( Boost COMPONENTS thread REQUIRED )
+
+### Source files for common library
+
+set ( COMMON_LIBRARY common )
 
 file( GLOB CPP_SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp" )
-file( GLOB HPP_HEADERS "${CMAKE_CURRENT_SOURCE_DIR}/tracing/*.hpp" )
+file( GLOB HPP_HEADERS "${CMAKE_CURRENT_SOURCE_DIR}/common/*.hpp" )
 
-### add definitions ###
-
-# set ( CMAKE_INSTALL_PREFIX /home/brandes/local )
-
-find_library( LOGGING_LIBRARY 
-              NAMES logging 
-              HINTS ${CMAKE_INSTALL_PREFIX}/lib )
-
-include_directories( . ${CMAKE_CURRENT_SOURCE_DIR} )
-include_directories( ${CMAKE_INSTALL_PREFIX}/include )
+include_directories( ${CMAKE_CURRENT_SOURCE_DIR} )
+include_directories( ${Boost_INCLUDE_DIR} )
 
 if ( WIN32 )
-    add_definitions ( -DLOG4LAMA_COMPILING_DLL )
+	add_definitions ( -DCOMMON_COMPILING_DLL )
 endif ( WIN32 )
-
-add_definitions( -DLAMA_LOG_LEVEL_DEBUG )
 
 ### add library and put path to search path ###
 
-add_library ( ${TRACING_LIBRARY} SHARED ${CPP_SOURCES} )
-target_link_libraries( ${TRACING_LIBRARY} ${LOGGING_LIBRARY} )
-
-find_package ( VampirTrace )
-find_package ( MPI )
-
-message( STATUS "VAMPIRTRACE found = ${VAMPIRTRACE_FOUND}" )
-message( STATUS "MPI found = ${MPI_FOUND}" )
-
-if ( ${VAMPIRTRACE_FOUND} )
-    message( STATUS "VAMPIRTRACE found, lib = ${VAMPIRTRACE_LIBRARIES}" )
-    add_definitions( -DUSE_VAMPIRTRACE )
-    include_directories( ${VAMPIRTRACE_INCLUDE_DIR} )
-    target_link_libraries( ${TRACING_LIBRARY} ${VAMPIRTRACE_LIBRARIES} ${MPI_LIBRARIES} )
-endif ()
-
-add_subdirectory( gui )
-add_subdirectory( examples )
+add_library ( ${COMMON_LIBRARY} SHARED ${CPP_SOURCES} )
+target_link_libraries( ${COMMON_LIBRARY} ${Boost_THREAD_LIBRARY} )
 
 ### install ###
 
-install ( TARGETS ${TRACING_LIBRARY} DESTINATION lib )
-install ( FILES ${HPP_HEADERS} DESTINATION include/tracing )
+install ( TARGETS ${COMMON_LIBRARY} DESTINATION lib )
+install ( FILES ${HPP_HEADERS} DESTINATION include/common )

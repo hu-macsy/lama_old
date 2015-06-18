@@ -68,7 +68,7 @@ void TraceRegionRecord::start( const char* regionName, const char* file, int lno
         return;
     }
 
-    double startTime = lama::Walltime::get();
+    double startTime = common::Walltime::get();
 
     RegionTable* regionTable = traceConfig->getRegionTable();
 
@@ -89,7 +89,7 @@ void TraceRegionRecord::start( const char* regionName, const char* file, int lno
 
     if( traceConfig->isCallTreeEnabled() )
     {
-        CallTree::enter( regionId, regionTable->getRegion( regionId ), startTime );
+        CallTree::enter( regionId, regionTable->getRegion( regionId ) );
     }
 
     if( traceConfig->isVampirTraceEnabled() )
@@ -127,7 +127,7 @@ void TraceRegionRecord::stop( const char* regionName )
 
     int regionId = regionTable->getCurrentRegionId( regionName );
 
-    double stopTime = lama::Walltime::get();
+    double stopTime = common::Walltime::get();
 
     LAMA_LOG_DEBUG( logger, "Thread " << regionTable->getId() << ": leaves region " << regionName )
 
@@ -138,7 +138,7 @@ void TraceRegionRecord::stop( const char* regionName )
 
     if( traceConfig->isCallTreeEnabled() )
     {
-        CallTree::leave( regionId, regionTable->getRegion( regionId ), stopTime );
+        CallTree::leave( regionId, regionTable->getRegion( regionId ) );
     }
 
     if( traceConfig->isVampirTraceEnabled() )
@@ -151,7 +151,7 @@ void TraceRegionRecord::stop( const char* regionName )
 
 void TraceRegionRecord::enter( const char* regionName, const char* file, int lno )
 {
-    mStartTime = lama::Walltime::get();
+    mStartTime = common::Walltime::get();
 
     mRegionTable = mTraceConfig->getRegionTable();
 
@@ -176,7 +176,7 @@ void TraceRegionRecord::enter( const char* regionName, const char* file, int lno
 
     if( mCallTree )
     {
-        CallTree::enter( mRegionId, mRegionTable->getRegion( mRegionId ), mStartTime );
+        CallTree::enter( mRegionId, mRegionTable->getRegion( mRegionId ) );
     }
 
     mVampirTrace = mTraceConfig->isVampirTraceEnabled();
@@ -248,7 +248,7 @@ TraceRegionRecord::~TraceRegionRecord()
         return;
     }
 
-    double stopTime = lama::Walltime::get();
+    double stopTime = common::Walltime::get();
 
     LAMA_LOG_DEBUG( logger,
                     "Thread " << mRegionTable->getId() << ": leaves region " << mRegionTable->getRegion( mRegionId ).getRegionName() << ", timer = " << mRegionId )
@@ -260,7 +260,7 @@ TraceRegionRecord::~TraceRegionRecord()
 
     if( mCallTree )
     {
-        CallTree::leave( mRegionId, mRegionTable->getRegion( mRegionId ), stopTime );
+        CallTree::leave( mRegionId, mRegionTable->getRegion( mRegionId ) );
     }
 
     if( mVampirTrace )

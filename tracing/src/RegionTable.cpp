@@ -197,7 +197,7 @@ double RegionTable::elapsed( int regionId )
 
         if( call.mRegion == regionId )
         {
-            elapsedTime += lama::Walltime::get() - call.mTimeStart;
+            elapsedTime += common::Walltime::get() - call.mTimeStart;
         }
     }
 

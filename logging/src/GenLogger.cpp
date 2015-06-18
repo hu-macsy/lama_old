@@ -47,7 +47,7 @@
 
 using namespace std;
 
-namespace log4lama
+namespace logging
 {
 
 // default is not to flush
@@ -315,13 +315,13 @@ void GenLogger::configure()
 
     if ( configFile == NULL )
     {
-        // environment variable not set, so we try it at $HOME/.log4lamarc
+        // environment variable not set, so we try it at $HOME/.logging
         const char* home = getenv( "HOME" );
 
         if ( home != NULL )
         {
             configFileString = home;
-            configFileString += "/.log4lamarc";
+            configFileString += "/.loggingrc";
             FILE* fp = fopen ( configFileString.c_str(), "r" );
 
             if ( fp != NULL )
@@ -334,7 +334,7 @@ void GenLogger::configure()
 
     if ( configFile == NULL )
     {
-        LAMA_LOG_WARN( ( *rootLogger ), "LAMA_LOG not set, no $HOME/.log4lamarc, so use default configuration" );
+        LAMA_LOG_WARN( ( *rootLogger ), "LAMA_LOG not set, no $HOME/.logging, so use default configuration" );
     }
     else if ( strlen( configFile ) == 0 )
     {
@@ -492,5 +492,5 @@ void GenLogger::setFlush( bool flush )
     GenLogger::sFlush = flush;
 }
 
-} //namespace log4lama
+} //namespace logging
 

@@ -35,15 +35,29 @@
 
 #include <string>
 
-namespace lama
+#include <stdint.h>
+
+namespace common
 {
+
+typedef uint64_t INTEGER_8;
 
 /**
  * @brief A simple static class that delivers walltime (used for logging and tracing)
  */
-class LAMA_DLL_IMPORTEXPORT Walltime
+class COMMON_DLL_IMPORTEXPORT Walltime
 {
 public:
+
+    /** Get the current walltime.
+     *
+     *  @return current walltime in ticks
+     */
+    static INTEGER_8 timestamp();
+
+    /** Number of ticks per second, so timestamp() / timerate() gives time in seconds. */
+
+    static INTEGER_8 timerate();
 
     /** Get the current walltime.
      *

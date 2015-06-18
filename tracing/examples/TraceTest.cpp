@@ -10,8 +10,9 @@ void subA()
 void subB()
 {
     LAMA_REGION( "B" )
-    sleep(1);
     subA();
+
+    sleep(2);
 }
 
 int main()
@@ -20,9 +21,9 @@ int main()
 
     LAMA_REGION( "main" )
 
-    sleep(1);
-
     subA();
     subB();
+
+    sleep(3);
 }
 

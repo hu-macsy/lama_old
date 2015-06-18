@@ -38,7 +38,9 @@
 
 #include <omp.h>
 
-#elif defined( _WIN32 )
+#endif
+
+#if defined( _WIN32 )
 
 #include <windows.h>
 
@@ -48,8 +50,44 @@
 
 #endif
 
-namespace lama
+namespace common
 {
+
+INTEGER_8 Walltime::timestamp()
+{
+#if defined( WIN32 )
+
+    SYSTEMTIME lpSystemTime;
+    GetLocalTime( &lpSystemTime );
+
+    INTEGER_8 ticks = lpSystemTime.wHour;
+    ticks = ticks * 60 + lpSystemTime.wMinute;
+    ticks = ticks * 60 + lpSystemTime.wSecond;
+    ticks = ticks * 1000 + lpSystemTime.wMilliseconds;
+
+#else
+
+    struct timeval tp;
+    struct timezone tzp;
+
+    gettimeofday( &tp, &tzp );
+
+    INTEGER_8 ticks = tp.tv_sec;
+    ticks = ticks * 1000000 + tp.tv_usec;
+
+#endif
+
+    return ticks;
+}
+
+INTEGER_8 Walltime::timerate()
+{
+#if defined( WIN32 )
+    return static_cast<INTEGER_8>( 1000 );       // one tick is a ms
+#else
+    return static_cast<INTEGER_8>( 1000000 );    // one tick is a us
+#endif
+}
 
 double Walltime::get()
 {

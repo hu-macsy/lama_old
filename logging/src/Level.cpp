@@ -34,7 +34,7 @@
 
 #include <cstring>
 
-namespace log4lama
+namespace logging
 {
 
 /** Attention: these strings are of no help as initialization might be done after use. */
@@ -125,4 +125,4 @@ Level str2level( const std::string& value )
     return level;
 }
 
-} //namespace log4lama
+} //namespace logging

@@ -37,7 +37,7 @@
 
 // others
 #include <tracing/RegionEntry.hpp>
-#include <logging/Thread.hpp>
+#include <common/Thread.hpp>
 
 // logging
 #include <logging/logging.hpp>
@@ -70,7 +70,7 @@ namespace tracing
  all regions.
  */
 
-class LAMA_DLL_IMPORTEXPORT RegionTable
+class COMMON_DLL_IMPORTEXPORT RegionTable
 {
 
 public:

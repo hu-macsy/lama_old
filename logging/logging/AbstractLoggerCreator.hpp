@@ -34,7 +34,7 @@
 
 #include <logging/Logger.hpp>
 
-namespace log4lama
+namespace logging
 {
 
 /** Abstract class from which classes must derive that can create loggers. */

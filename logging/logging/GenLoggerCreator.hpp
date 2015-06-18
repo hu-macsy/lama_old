@@ -35,7 +35,7 @@
 // base classes
 #include <logging/AbstractLoggerCreator.hpp>
 
-namespace log4lama
+namespace logging
 {
 
 class GenLoggerCreator: public AbstractLoggerCreator

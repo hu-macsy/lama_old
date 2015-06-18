@@ -30,7 +30,7 @@
  * @date   10.06.2015
  */
 
-#include <logging/Thread.hpp>
+#include <common/Thread.hpp>
 
 #include <boost/thread.hpp>
 #include <map>

@@ -33,7 +33,7 @@
 // hpp
 #include <logging/Logger.hpp>
 
-namespace log4lama
+namespace logging
 {
 
 Logger::Logger( const std::string& name, Logger* const parent )
@@ -105,4 +105,4 @@ bool Logger::isRootLogger() const
     return mParent == NULL;
 }
 
-} // namespace log4lama
+} // namespace logging

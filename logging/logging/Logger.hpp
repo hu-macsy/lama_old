@@ -45,7 +45,7 @@
 
 /** Namespace for logging in LAMA */
 
-namespace log4lama
+namespace logging
 {
 
 /**************************************************************************
@@ -59,7 +59,7 @@ namespace log4lama
 
  */
 
-class LAMA_DLL_IMPORTEXPORT Logger
+class COMMON_DLL_IMPORTEXPORT Logger
 {
 
     friend class LoggerProvider;
@@ -246,5 +246,5 @@ private:
     const Logger& operator=( const Logger& other ); // Disable default assignment operator
 };
 
-} //namespace log4lama
+} //namespace logging
 

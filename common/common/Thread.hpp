@@ -1,5 +1,5 @@
 /**
- * @file logging/config.hpp
+ * @file Thread.hpp
  *
  * @license
  * Copyright (c) 2009-2015
@@ -25,31 +25,68 @@
  * SOFTWARE.
  * @endlicense
  *
- * @brief config.hpp
- * @author Jiri Kraus
- * @date 10.06.2015
+ * @brief Definition of the class Thread to manage thread ids and names
+ * @author Thomas Brandes
+ * @date 11.06.2015
  */
-//No include header guards be cause we want to allow this header to be included multiple times
-#ifdef WIN32
-#ifdef min
-#undef min
-#endif //min
-#ifdef max
-#undef max
-#endif //max
-//Do not display warnings about dll-interface issues.
-//TODO: How can we resolve these issues? Do we want to resolve these issues?
-#pragma warning( disable : 4251 )
+#pragma once
 
-#ifndef LAMA_DLL_IMPORTEXPORT
-#ifdef LAMA_COMPILING_DLL
-#define LAMA_DLL_IMPORTEXPORT   __declspec( dllexport )
-#else //LAMA_COMPILING_DLL is defined
-#define LAMA_DLL_IMPORTEXPORT   __declspec( dllimport )
-#endif //LAMA_COMPILING_DLL
-#endif //LAMA_DLL_IMPORTEXPORT
-#else //WIN32 is not defined
-#ifndef LAMA_DLL_IMPORTEXPORT
-#define LAMA_DLL_IMPORTEXPORT
-#endif //LAMA_DLL_IMPORTEXPORT
-#endif //WIN32
+// for dll_import
+#include <common/config.hpp>
+
+// boost
+#include <boost/thread.hpp>
+
+namespace common
+{
+
+#ifdef WIN32
+#define LAMA_USE_BOOST_THREADID
+#endif
+
+#ifndef LAMA_USE_BOOST_THREADID
+/** boost::thread::id is only available with Boost 1.35 and higher */
+#include <boost/version.hpp>
+
+#define LAMA_BOOST_VERSION_PROVIDES_ID 103501
+
+#if BOOST_VERSION < LAMA_BOOST_VERSION_PROVIDES_ID
+#include <pthread.h>
+#else
+#define LAMA_USE_BOOST_THREADID
+#endif
+#endif
+
+class COMMON_DLL_IMPORTEXPORT Thread
+{
+public:
+
+#ifdef LAMA_USE_BOOST_THREADID
+    typedef boost::thread::id Id;
+#else
+    typedef pthread_t Id;
+#endif
+
+    /** returns the id of the calling Thread. */
+    static Id getSelf();
+
+    /** Set a name for the current thread. */
+
+    static void defineCurrentThreadId( const char* name );
+
+    /** Query the name of the current thread. */
+
+    static const char* getCurrentThreadId();
+};
+
+inline Thread::Id Thread::getSelf()
+{
+#ifdef LAMA_USE_BOOST_THREADID
+    return boost::this_thread::get_id();
+#else
+    return pthread_self();
+#endif
+}
+
+
+} // namespace lama

@@ -44,7 +44,7 @@
 
 using namespace std;
 
-namespace log4lama
+namespace logging
 {
 
 // GenLoggerCreator becomes the 'static' global logger creator.
@@ -84,5 +84,5 @@ Logger* GenLoggerCreator::create( const std::string& name, Logger* parent ) cons
     return new GenLogger( name, parent );
 }
 
-} //namespace log4lama
+} //namespace logging
 

@@ -35,7 +35,7 @@
 #include <ostream>
 #include <string>
 
-namespace log4lama
+namespace logging
 {
 typedef enum
 {

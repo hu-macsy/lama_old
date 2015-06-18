@@ -13,9 +13,9 @@ class CallTree
 {
 public:
 
-    static void enter( const int region_id, RegionEntry& region, double time );
+    static void enter( const int region_id, RegionEntry& region );
 
-    static void leave( const int region_id, const RegionEntry& region, double time );
+    static void leave( const int region_id, const RegionEntry& region );
 
     static void finish();
 

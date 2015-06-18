@@ -35,7 +35,7 @@
 
 #include <string.h>
 
-namespace log4lama
+namespace logging
 {
 
 SourceLocation::SourceLocation( const char* const filename, const char* const funcname, const int line )

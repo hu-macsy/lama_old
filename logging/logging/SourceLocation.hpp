@@ -36,7 +36,7 @@
 
 #include <common/config.hpp>
 
-namespace log4lama
+namespace logging
 {
 
 /** SourceLocation is a structure containing file, line and function info;
@@ -44,7 +44,7 @@ namespace log4lama
  *
  */
 
-struct LAMA_DLL_IMPORTEXPORT SourceLocation
+struct COMMON_DLL_IMPORTEXPORT SourceLocation
 {
 
     const char* mFileName; //!< Name of the source file
@@ -79,5 +79,5 @@ std::ostream& operator<<( std::ostream& os, const SourceLocation& loc );
 #define __LOG4LAMA_FUNC__ ""
 #endif
 
-#define LOG4LAMA_LOCATION log4lama::SourceLocation(__FILE__, __LOG4LAMA_FUNC__, __LINE__)
+#define LOG4LAMA_LOCATION logging::SourceLocation(__FILE__, __LOG4LAMA_FUNC__, __LINE__)
 #endif

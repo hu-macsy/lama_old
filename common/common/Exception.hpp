@@ -43,13 +43,13 @@
 /**
  * @brief The namespace common holds common stuff useful for different C++ projects
  */
-namespace lama
+namespace common
 {
 
 /**
- * @brief The class Exception represents a general exception in lama.
+ * @brief The class Exception represents a general exception in common library.
  */
-class LAMA_DLL_IMPORTEXPORT Exception: public std::exception
+class COMMON_DLL_IMPORTEXPORT Exception: public std::exception
 {
 public:
 
@@ -98,5 +98,5 @@ protected:
         std::ostringstream errorStr;                                               \
         errorStr<<"Exception in line "<<__LINE__<<" of file "<<__FILE__<<"\n";     \
         errorStr<<"    Message: "<<msg<<"\n";                                      \
-        throw lama::Exception( errorStr.str() );                                   \
+        throw common::Exception( errorStr.str() );                                 \
     }
