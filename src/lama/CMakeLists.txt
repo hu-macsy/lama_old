@@ -86,7 +86,6 @@ set ( CLASSES
         StorageIO
         SyncToken
         Vector
-        Walltime
         WriteAccess
     )
 
@@ -94,7 +93,6 @@ set ( HEADERS
         HostReadAccess
         HostWriteAccess
         LAMATypes
-        NonCopyable
         NoSyncToken
         TypeTraits
         BLASInterface

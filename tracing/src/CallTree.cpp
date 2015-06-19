@@ -3,7 +3,7 @@
 
 
 #include "common/Exception.hpp"
-#include "tracing/Walltime.hpp"
+#include "common/Walltime.hpp"
 
 #include <cstdio>
 #include <stdint.h>

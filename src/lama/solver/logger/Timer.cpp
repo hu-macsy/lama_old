@@ -36,7 +36,7 @@
 
 // others
 #include <lama/exception/Exception.hpp>
-#include <lama/Walltime.hpp>
+#include <common/Walltime.hpp>
 
 #include <iostream>
 #include <cstdio>
@@ -84,7 +84,7 @@ void Timer::start( const std::string& timerId )
     }
     else
     {
-        timer.startTime = Walltime::get();
+        timer.startTime = common::Walltime::get();
         timer.isRunning = true;
     }
 }
@@ -106,7 +106,7 @@ void Timer::stop( const std::string& timerId )
     }
 
     timer.isRunning = false;
-    timer.totalTime = timer.totalTime + ( Walltime::get() - timer.startTime );
+    timer.totalTime = timer.totalTime + ( common::Walltime::get() - timer.startTime );
 }
 
 void Timer::reset( const std::string& timerId )
@@ -121,7 +121,7 @@ void Timer::reset( const std::string& timerId )
     TimerData& timer = it->second;
 
     timer.totalTime = 0.0;
-    timer.startTime = Walltime::get();
+    timer.startTime = common::Walltime::get();
 }
 
 double Timer::getTime( const std::string& timerId )
@@ -140,7 +140,7 @@ double Timer::getTime( const std::string& timerId )
         return timer.totalTime;
     }
 
-    return timer.totalTime + ( Walltime::get() - timer.startTime );
+    return timer.totalTime + ( common::Walltime::get() - timer.startTime );
 }
 
 void Timer::stopAndReset( const std::string& timerId )

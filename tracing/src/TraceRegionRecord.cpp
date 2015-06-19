@@ -33,13 +33,13 @@
 // hpp
 #include <tracing/TraceRegionRecord.hpp>
 
-#include <tracing/Walltime.hpp>
-
 // others
 #include <tracing/RegionTable.hpp>
 #include <tracing/TraceConfig.hpp>
 #include <tracing/CallTree.hpp>
 #include <tracing/VTInterface.hpp>
+
+#include <common/Walltime.hpp>
 
 #include <cstdio>
 
