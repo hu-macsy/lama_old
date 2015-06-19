@@ -37,7 +37,7 @@
 #include <common/config.hpp>
 
 // base classes
-#include <lama/NonCopyable.hpp>
+#include <common/NonCopyable.hpp>
 #include <lama/Printable.hpp>
 
 namespace lama
@@ -45,7 +45,7 @@ namespace lama
 
 /** Base class for all kind of access classes; accesses must always provide a release method. */
 
-class COMMON_DLL_IMPORTEXPORT BaseAccess: public Printable, private NonCopyable
+class COMMON_DLL_IMPORTEXPORT BaseAccess: public Printable, private common::NonCopyable
 {
 public:
 

@@ -40,7 +40,7 @@
 
 // base classes
 #include <lama/Printable.hpp>
-#include <lama/NonCopyable.hpp>
+#include <common/NonCopyable.hpp>
 
 #include <lama/LAMATypes.hpp>
 
@@ -76,7 +76,7 @@ typedef boost::shared_ptr<const Context> ContextPtr;
  *
  *  A copy constructor for a context is not provided.
  */
-class COMMON_DLL_IMPORTEXPORT Context: public Printable, private NonCopyable
+class COMMON_DLL_IMPORTEXPORT Context: public Printable, private common::NonCopyable
 {
 public:
 
@@ -96,7 +96,7 @@ public:
         MaxContext //!< used for dimension of ContextType arrays
     };
 
-    struct COMMON_DLL_IMPORTEXPORT ContextData: private NonCopyable
+    struct COMMON_DLL_IMPORTEXPORT ContextData: private common::NonCopyable
     {
         enum AccessKind
         {

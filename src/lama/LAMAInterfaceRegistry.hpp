@@ -38,7 +38,7 @@
 #include <common/config.hpp>
 
 // base classes
-#include <lama/NonCopyable.hpp>
+#include <common/NonCopyable.hpp>
 
 // others
 #include <lama/LAMAInterface.hpp>
@@ -59,7 +59,7 @@ namespace lama
  *  implemented routines that are used later for operations on vectors and matrices.
  */
 
-class COMMON_DLL_IMPORTEXPORT LAMAInterfaceRegistry: NonCopyable
+class COMMON_DLL_IMPORTEXPORT LAMAInterfaceRegistry: common::NonCopyable
 {
 
 public:

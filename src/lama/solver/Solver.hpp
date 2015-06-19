@@ -38,7 +38,7 @@
 #include <common/config.hpp>
 
 // base classes
-#include <lama/NonCopyable.hpp>
+#include <common/NonCopyable.hpp>
 #include <lama/Printable.hpp>
 
 // others
@@ -215,7 +215,7 @@ public:
     /**
      * @brief Status independent solver informations
      */
-    struct SolverRuntime: public NonCopyable
+    struct SolverRuntime: public common::NonCopyable
     {
         SolverRuntime();
         virtual ~SolverRuntime();

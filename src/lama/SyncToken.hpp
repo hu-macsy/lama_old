@@ -38,7 +38,7 @@
 #include <common/config.hpp>
 
 // base classes
-#include <lama/NonCopyable.hpp>
+#include <common/NonCopyable.hpp>
 #include <lama/Printable.hpp>
 
 // logging
@@ -80,7 +80,7 @@ class _LAMAArray;
  *
  */
 
-class COMMON_DLL_IMPORTEXPORT SyncToken: public Printable, private NonCopyable
+class COMMON_DLL_IMPORTEXPORT SyncToken: public Printable, private common::NonCopyable
 {
 public:
 

@@ -40,7 +40,7 @@
 #include <common/config.hpp>
 
 // base classes
-#include <lama/NonCopyable.hpp>
+#include <common/NonCopyable.hpp>
 
 // others
 #include <lama/solver/AMGSetup.hpp>
@@ -71,7 +71,7 @@ class AMGSetupManager;
  *  Note: The type of the AMG setup is given by a string.
  */
 
-class COMMON_DLL_IMPORTEXPORT AMGSetupFactory: NonCopyable
+class COMMON_DLL_IMPORTEXPORT AMGSetupFactory: common::NonCopyable
 
 {
 public:

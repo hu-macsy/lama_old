@@ -40,7 +40,7 @@
 #include <common/config.hpp>
 
 // base classes
-#include <lama/NonCopyable.hpp>
+#include <common/NonCopyable.hpp>
 
 // others
 #include <lama/Communicator.hpp>
@@ -71,7 +71,7 @@ class CommunicatorManager;
  *  Note: The type of the communicator is given by a string.
  */
 
-class COMMON_DLL_IMPORTEXPORT CommunicatorFactory: NonCopyable
+class COMMON_DLL_IMPORTEXPORT CommunicatorFactory: common::NonCopyable
 
 {
 public:

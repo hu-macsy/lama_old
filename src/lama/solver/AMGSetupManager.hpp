@@ -38,7 +38,7 @@
 #include <common/config.hpp>
 
 // base classes
-#include <lama/NonCopyable.hpp>
+#include <common/NonCopyable.hpp>
 
 // others
 #include <lama/solver/AMGSetup.hpp>
@@ -57,7 +57,7 @@ namespace lama
  *
  */
 
-class AMGSetupManager: private NonCopyable
+class AMGSetupManager: private common::NonCopyable
 {
 public:
 

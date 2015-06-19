@@ -37,7 +37,7 @@
 #include <common/config.hpp>
 
 // base classes
-#include <lama/NonCopyable.hpp>
+#include <common/NonCopyable.hpp>
 #include <lama/Printable.hpp>
 
 // others
@@ -64,7 +64,7 @@ namespace lama
  *  with new context classes and types.
  */
 
-class COMMON_DLL_IMPORTEXPORT ContextManager: public Printable, private NonCopyable
+class COMMON_DLL_IMPORTEXPORT ContextManager: public Printable, private common::NonCopyable
 {
 public:
 

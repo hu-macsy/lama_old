@@ -39,7 +39,7 @@
 #include <common/config.hpp>
 
 // base classes
-#include <lama/NonCopyable.hpp>
+#include <common/NonCopyable.hpp>
 
 #include <string>
 #include <fstream>
@@ -50,7 +50,7 @@ namespace lama
 /**
  * @brief Singleton-based logger for write only file-logging purposes.
  */
-class COMMON_DLL_IMPORTEXPORT FileLogger: private NonCopyable
+class COMMON_DLL_IMPORTEXPORT FileLogger: private common::NonCopyable
 {
 public:
 

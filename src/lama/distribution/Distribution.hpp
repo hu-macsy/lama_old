@@ -37,7 +37,7 @@
 #include <common/config.hpp>
 
 // base classes
-#include <lama/NonCopyable.hpp>
+#include <common/NonCopyable.hpp>
 #include <lama/Printable.hpp>
 
 // others
@@ -65,7 +65,7 @@ class Matrix;
  *
  * Default and copy constructor are not available for this class (noncopyable).
  */
-class COMMON_DLL_IMPORTEXPORT Distribution: public Printable, private NonCopyable
+class COMMON_DLL_IMPORTEXPORT Distribution: public Printable, private common::NonCopyable
 {
 
 public:

@@ -38,7 +38,7 @@
 #include <common/config.hpp>
 
 // base classes
-#include <lama/NonCopyable.hpp>
+#include <common/NonCopyable.hpp>
 
 // others
 #include <lama/Communicator.hpp>
@@ -57,7 +57,7 @@ namespace lama
  *
  */
 
-class CommunicatorManager: private NonCopyable
+class CommunicatorManager: private common::NonCopyable
 {
 public:
 
