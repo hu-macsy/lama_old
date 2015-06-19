@@ -1644,7 +1644,7 @@ DenseVector<ValueType>::DenseVector( const DenseVector<ValueType>& other )
 /* ========================================================================= */
 
 #define LAMA_DENSE_VECTOR_INSTANTIATE(z, I, _)                             \
-    template class LAMA_DLL_IMPORTEXPORT DenseVector<ARITHMETIC_TYPE##I> ;
+    template class COMMON_DLL_IMPORTEXPORT DenseVector<ARITHMETIC_TYPE##I> ;
 
 BOOST_PP_REPEAT( ARITHMETIC_TYPE_CNT, LAMA_DENSE_VECTOR_INSTANTIATE, _ )
 

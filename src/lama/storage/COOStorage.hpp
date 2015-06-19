@@ -35,7 +35,7 @@
 #define LAMA_COOSTORAGE_HPP_
 
 // for dll_import
-#include <lama/config.hpp>
+#include <common/config.hpp>
 
 // base classes
 #include <lama/storage/CRTPMatrixStorage.hpp>
@@ -63,7 +63,7 @@ namespace lama
  */
 
 template<typename ValueType>
-class LAMA_DLL_IMPORTEXPORT COOStorage: public CRTPMatrixStorage<COOStorage<ValueType>,ValueType>
+class COMMON_DLL_IMPORTEXPORT COOStorage: public CRTPMatrixStorage<COOStorage<ValueType>,ValueType>
 {
 public:
 

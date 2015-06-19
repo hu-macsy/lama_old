@@ -34,7 +34,7 @@
 #define LAMA_OPENMP_COO_UTILS_HPP_
 
 // for dll_import
-#include <lama/config.hpp>
+#include <common/config.hpp>
 
 // others
 #include <lama/LAMATypes.hpp>
@@ -55,7 +55,7 @@ namespace lama
  *  and CSR as well as matrix times vector operation.
  */
 
-class LAMA_DLL_IMPORTEXPORT OpenMPCOOUtils
+class COMMON_DLL_IMPORTEXPORT OpenMPCOOUtils
 {
 public:
 

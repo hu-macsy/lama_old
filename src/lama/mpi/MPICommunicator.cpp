@@ -1013,7 +1013,7 @@ void MPICommunicator::writeAt( std::ostream& stream ) const
 // template instantiation for the supported array types
 
 #define LAMA_MPI_METHODS_INSTANTIATE(z, I, _)                         \
-    template LAMA_DLL_IMPORTEXPORT                                    \
+    template COMMON_DLL_IMPORTEXPORT                                    \
     void MPICommunicator::maxlocImpl(                                 \
             ARRAY_TYPE##I &, IndexType&, PartitionId) const;
 

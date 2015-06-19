@@ -34,7 +34,7 @@
 #define LAMA_HOSTCONTEXT_HPP_
 
 // for dll_import
-#include <lama/config.hpp>
+#include <common/config.hpp>
 
 // base classes
 #include <lama/Context.hpp>
@@ -49,7 +49,7 @@ namespace lama
  *  routines to allocate/free memory.
  */
 
-class LAMA_DLL_IMPORTEXPORT HostContext: public Context
+class COMMON_DLL_IMPORTEXPORT HostContext: public Context
 {
 
 public:

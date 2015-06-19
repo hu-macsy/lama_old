@@ -34,7 +34,7 @@
 #define LAMA_BASE_ACCESS_HPP_
 
 // for dll_import
-#include <lama/config.hpp>
+#include <common/config.hpp>
 
 // base classes
 #include <lama/NonCopyable.hpp>
@@ -45,7 +45,7 @@ namespace lama
 
 /** Base class for all kind of access classes; accesses must always provide a release method. */
 
-class LAMA_DLL_IMPORTEXPORT BaseAccess: public Printable, private NonCopyable
+class COMMON_DLL_IMPORTEXPORT BaseAccess: public Printable, private NonCopyable
 {
 public:
 

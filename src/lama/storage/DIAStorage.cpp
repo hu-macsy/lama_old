@@ -1241,7 +1241,7 @@ DIAStorage<ValueType>* DIAStorage<ValueType>::copy() const
         return "DIAStorage<ARITHMETIC_TYPE##I>";                               \
     }                                                                          \
     \
-    template class LAMA_DLL_IMPORTEXPORT DIAStorage<ARITHMETIC_TYPE##I> ;
+    template class COMMON_DLL_IMPORTEXPORT DIAStorage<ARITHMETIC_TYPE##I> ;
 
 BOOST_PP_REPEAT( ARITHMETIC_TYPE_CNT, LAMA_DIA_STORAGE_INSTANTIATE, _ )
 

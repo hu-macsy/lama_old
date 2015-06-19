@@ -312,8 +312,8 @@ bool LAMAArrayView<ValueType>::operator!=( const LAMAArrayConstView<ValueType>& 
 // template instantiation for the supported data types
 
 #define LAMA_ARRAY_VIEW_INSTANTIATE(z, I, _)                                   \
-    template class LAMA_DLL_IMPORTEXPORT LAMAArrayView< ARRAY_TYPE##I >;        \
-    template class LAMA_DLL_IMPORTEXPORT LAMAArrayConstView< ARRAY_TYPE##I >;
+    template class COMMON_DLL_IMPORTEXPORT LAMAArrayView< ARRAY_TYPE##I >;        \
+    template class COMMON_DLL_IMPORTEXPORT LAMAArrayConstView< ARRAY_TYPE##I >;
 
 BOOST_PP_REPEAT( ARRAY_TYPE_CNT, LAMA_ARRAY_VIEW_INSTANTIATE, _ )
 

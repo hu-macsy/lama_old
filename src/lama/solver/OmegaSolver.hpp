@@ -35,7 +35,7 @@
 #define LAMA_OMEGASOLVER_HPP_
 
 // for dll_import
-#include <lama/config.hpp>
+#include <common/config.hpp>
 
 // base classes
 #include <lama/solver/IterativeSolver.hpp>
@@ -53,7 +53,7 @@ typedef boost::shared_ptr<OmegaSolver> OldSolutionHandlerPtr;
  * @brief The OldSolutionHandler class only manages the omega parameter
  * For solvers like Jacobi and SOR
  */
-class LAMA_DLL_IMPORTEXPORT OmegaSolver: public IterativeSolver
+class COMMON_DLL_IMPORTEXPORT OmegaSolver: public IterativeSolver
 {
 public:
 

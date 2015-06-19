@@ -34,7 +34,7 @@
 #define LAMA_DENSEMATRIX_HPP_
 
 // for dll_import
-#include <lama/config.hpp>
+#include <common/config.hpp>
 
 // base classes
 #include <lama/matrix/CRTPMatrix.hpp>
@@ -70,7 +70,7 @@ template<typename ValueType> class DenseVector;
  */
 
 template<typename ValueType>
-class LAMA_DLL_IMPORTEXPORT DenseMatrix: public CRTPMatrix<DenseMatrix<ValueType>,ValueType>
+class COMMON_DLL_IMPORTEXPORT DenseMatrix: public CRTPMatrix<DenseMatrix<ValueType>,ValueType>
 {
 
 public:

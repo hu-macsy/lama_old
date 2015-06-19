@@ -36,7 +36,7 @@
 #define LAMA_CONTEXT_HPP_
 
 // for dll_import
-#include <lama/config.hpp>
+#include <common/config.hpp>
 
 // base classes
 #include <lama/Printable.hpp>
@@ -76,7 +76,7 @@ typedef boost::shared_ptr<const Context> ContextPtr;
  *
  *  A copy constructor for a context is not provided.
  */
-class LAMA_DLL_IMPORTEXPORT Context: public Printable, private NonCopyable
+class COMMON_DLL_IMPORTEXPORT Context: public Printable, private NonCopyable
 {
 public:
 
@@ -96,7 +96,7 @@ public:
         MaxContext //!< used for dimension of ContextType arrays
     };
 
-    struct LAMA_DLL_IMPORTEXPORT ContextData: private NonCopyable
+    struct COMMON_DLL_IMPORTEXPORT ContextData: private NonCopyable
     {
         enum AccessKind
         {
@@ -329,7 +329,7 @@ ContextType    mContextType;
 
 typedef Context::ContextType ContextType;
 
-LAMA_DLL_IMPORTEXPORT std::ostream& operator<<( std::ostream& stream, const ContextType type );
+COMMON_DLL_IMPORTEXPORT std::ostream& operator<<( std::ostream& stream, const ContextType type );
 
 }
 

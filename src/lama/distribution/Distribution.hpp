@@ -34,7 +34,7 @@
 #define LAMA_DISTRIBUTION_HPP_
 
 // for dll_import
-#include <lama/config.hpp>
+#include <common/config.hpp>
 
 // base classes
 #include <lama/NonCopyable.hpp>
@@ -65,7 +65,7 @@ class Matrix;
  *
  * Default and copy constructor are not available for this class (noncopyable).
  */
-class LAMA_DLL_IMPORTEXPORT Distribution: public Printable, private NonCopyable
+class COMMON_DLL_IMPORTEXPORT Distribution: public Printable, private NonCopyable
 {
 
 public:

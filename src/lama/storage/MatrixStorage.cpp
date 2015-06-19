@@ -1596,7 +1596,7 @@ return true;
 /* ========================================================================= */
 
 #define LAMA_MATRIX_STORAGE2_INSTANTIATE(z, J, TYPE )      \
-    template LAMA_DLL_IMPORTEXPORT                             \
+    template COMMON_DLL_IMPORTEXPORT                             \
     void MatrixStorage<TYPE>::setRawDenseData(                 \
             const IndexType numRows,                               \
             const IndexType numColumns,                            \
@@ -1605,7 +1605,7 @@ return true;
 
 #define LAMA_MATRIX_STORAGE_INSTANTIATE(z, I, _)                          \
     \
-    template class LAMA_DLL_IMPORTEXPORT MatrixStorage<ARITHMETIC_TYPE##I> ;  \
+    template class COMMON_DLL_IMPORTEXPORT MatrixStorage<ARITHMETIC_TYPE##I> ;  \
     \
     BOOST_PP_REPEAT( ARITHMETIC_TYPE_CNT,                                 \
                      LAMA_MATRIX_STORAGE2_INSTANTIATE,                    \

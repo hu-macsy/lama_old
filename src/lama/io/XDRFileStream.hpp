@@ -35,7 +35,7 @@
 #define XDRFILESTREAM_HPP_
 
 // for dll_import
-#include <lama/config.hpp>
+#include <common/config.hpp>
 #include <lama/exception/Exception.hpp>
 
 // others
@@ -51,7 +51,7 @@ namespace lama
  * @brief XDR file stream class to access XDR files
  * Supported data types: (unsigned) int, (unsigned) long, float, double
  */
-class LAMA_DLL_IMPORTEXPORT XDRFileStream
+class COMMON_DLL_IMPORTEXPORT XDRFileStream
 {
 public:
     /**

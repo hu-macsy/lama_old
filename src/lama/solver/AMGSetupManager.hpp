@@ -35,7 +35,7 @@
 #define LAMA_AMG_SETUP_MANAGER_HPP_
 
 // for dll_import
-#include <lama/config.hpp>
+#include <common/config.hpp>
 
 // base classes
 #include <lama/NonCopyable.hpp>

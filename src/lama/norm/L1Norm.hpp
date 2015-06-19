@@ -34,7 +34,7 @@
 #define LAMA_L1NORM_HPP_
 
 // for dll_import
-#include <lama/config.hpp>
+#include <common/config.hpp>
 
 // base classes
 #include <lama/norm/Norm.hpp>
@@ -42,7 +42,7 @@
 namespace lama
 {
 
-class LAMA_DLL_IMPORTEXPORT L1Norm: public lama::Norm
+class COMMON_DLL_IMPORTEXPORT L1Norm: public lama::Norm
 {
 public:
     L1Norm();

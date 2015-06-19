@@ -37,7 +37,7 @@
 #define LAMA_AMG_SETUP_FACTORY_HPP_
 
 // for dll_import
-#include <lama/config.hpp>
+#include <common/config.hpp>
 
 // base classes
 #include <lama/NonCopyable.hpp>
@@ -71,7 +71,7 @@ class AMGSetupManager;
  *  Note: The type of the AMG setup is given by a string.
  */
 
-class LAMA_DLL_IMPORTEXPORT AMGSetupFactory: NonCopyable
+class COMMON_DLL_IMPORTEXPORT AMGSetupFactory: NonCopyable
 
 {
 public:

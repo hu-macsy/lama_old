@@ -34,7 +34,7 @@
 #define LAMA_AMG_SETUP_HPP_
 
 // for dll_import
-#include <lama/config.hpp>
+#include <common/config.hpp>
 
 // others
 #include <lama/matrix/Matrix.hpp>
@@ -52,7 +52,7 @@ typedef boost::shared_ptr<class AMGSetup> AMGSetupPtr;
  * @todo The current Interface of AMGSetup is just for evaluation so this should be changed to meet all requirements.
  *       (e.g. Pre and Post Smoothing)
  */
-class LAMA_DLL_IMPORTEXPORT AMGSetup
+class COMMON_DLL_IMPORTEXPORT AMGSetup
 {
 public:
 

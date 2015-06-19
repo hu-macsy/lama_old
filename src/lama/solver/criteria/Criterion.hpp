@@ -35,7 +35,7 @@
 #define LAMA_BOOLEANCONDITION_HPP_
 
 // for dll_import
-#include <lama/config.hpp>
+#include <common/config.hpp>
 
 // base classes
 #include <lama/Printable.hpp>
@@ -66,7 +66,7 @@ typedef boost::shared_ptr<Criterion> CriterionPtr;
  *
  * Criterion can be composed with the logical operators &&, ||, and !.
  */
-class LAMA_DLL_IMPORTEXPORT Criterion: public Printable
+class COMMON_DLL_IMPORTEXPORT Criterion: public Printable
 {
 public:
 

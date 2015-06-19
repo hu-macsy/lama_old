@@ -351,7 +351,7 @@ using std::sqrt;
 using std::abs;
 
 template<typename ValueType>
-class LAMA_DLL_IMPORTEXPORT Complex
+class COMMON_DLL_IMPORTEXPORT Complex
 {
 public:
     CUDA_CALLABLE_MEMBER

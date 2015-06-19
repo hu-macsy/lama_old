@@ -35,7 +35,7 @@
 #define LAMA_RESIDUALTHRESHOLD_HPP_
 
 // for dll_import
-#include <lama/config.hpp>
+#include <common/config.hpp>
 
 // base classes
 #include <lama/solver/criteria/Criterion.hpp>
@@ -57,7 +57,7 @@ namespace lama
  * absolute or relative to the initial residue.
  *
  */
-class LAMA_DLL_IMPORTEXPORT ResidualThreshold: public Criterion
+class COMMON_DLL_IMPORTEXPORT ResidualThreshold: public Criterion
 {
 public:
     /**

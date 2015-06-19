@@ -34,7 +34,7 @@
 #define LAMA_NO_COMMUNICATOR_HPP_
 
 // for dll_import
-#include <lama/config.hpp>
+#include <common/config.hpp>
 
 // base classes
 #include <lama/CRTPCommunicator.hpp>
@@ -46,7 +46,7 @@ namespace lama
  *  partition or processor.
  */
 
-class LAMA_DLL_IMPORTEXPORT NoCommunicator: public CRTPCommunicator<NoCommunicator>
+class COMMON_DLL_IMPORTEXPORT NoCommunicator: public CRTPCommunicator<NoCommunicator>
 {
 
     friend class CRTPCommunicator<NoCommunicator> ;

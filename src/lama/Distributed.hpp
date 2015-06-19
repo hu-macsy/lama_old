@@ -34,7 +34,7 @@
 #define LAMA_DISTRIBUTED_HPP_
 
 // for dll_import
-#include <lama/config.hpp>
+#include <common/config.hpp>
 
 // base classes
 #include <lama/Printable.hpp>
@@ -51,7 +51,7 @@ namespace lama
  * always be specified. You can use NoDistribtion for non distributed objects.
  * */
 
-class LAMA_DLL_IMPORTEXPORT Distributed: public Printable
+class COMMON_DLL_IMPORTEXPORT Distributed: public Printable
 {
 public:
 

@@ -2360,7 +2360,7 @@ void CSRStorage<ValueType>::buildSparseRowData(
         return "CSRStorage<ARITHMETIC_TYPE##I>";                               \
     }                                                                          \
     \
-    template class LAMA_DLL_IMPORTEXPORT CSRStorage<ARITHMETIC_TYPE##I> ;      \
+    template class COMMON_DLL_IMPORTEXPORT CSRStorage<ARITHMETIC_TYPE##I> ;      \
     \
     template void CSRStorage<ARITHMETIC_TYPE##I>::setCSRDataSwap(              \
             const IndexType numRows,                                               \

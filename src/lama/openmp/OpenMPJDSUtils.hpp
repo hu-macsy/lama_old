@@ -34,7 +34,7 @@
 #define LAMA_OPENMP_JDS_UTILS_HPP_
 
 // for dll_import
-#include <lama/config.hpp>
+#include <common/config.hpp>
 
 // others
 #include <lama/LAMATypes.hpp>
@@ -49,7 +49,7 @@ namespace lama
 
 /** This class provides OpenMP implementations as needed for JDSUtilsInterface.  */
 
-class LAMA_DLL_IMPORTEXPORT OpenMPJDSUtils
+class COMMON_DLL_IMPORTEXPORT OpenMPJDSUtils
 {
 public:
 

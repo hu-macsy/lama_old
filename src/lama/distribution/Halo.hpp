@@ -34,7 +34,7 @@
 #define LAMA_HALO_HPP_
 
 // for dll_import
-#include <lama/config.hpp>
+#include <common/config.hpp>
 
 // base classes
 #include <lama/Printable.hpp>
@@ -58,7 +58,7 @@ namespace lama
  *  data provided for other partitions.
  */
 
-class LAMA_DLL_IMPORTEXPORT Halo: public Printable
+class COMMON_DLL_IMPORTEXPORT Halo: public Printable
 {
     friend class HaloBuilder;
 

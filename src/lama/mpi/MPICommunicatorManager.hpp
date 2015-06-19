@@ -37,7 +37,7 @@
 #include <mpi.h> //Intel MPI need mpi.h to be included before stdio.h so this header comes first
 
 // for dll_import
-#include <lama/config.hpp>
+#include <common/config.hpp>
 
 // base classes
 #include <lama/CommunicatorManager.hpp>

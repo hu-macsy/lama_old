@@ -35,7 +35,7 @@
 #define LAMA_EXCEPTION_HPP_
 
 // for dll_import
-#include <lama/config.hpp>
+#include <common/config.hpp>
 
 // logging
 #include <logging/logging.hpp>
@@ -52,7 +52,7 @@ namespace lama
 /**
  * @brief The class Exception represents a general exception in lama.
  */
-class LAMA_DLL_IMPORTEXPORT Exception: public std::exception
+class COMMON_DLL_IMPORTEXPORT Exception: public std::exception
 {
 public:
 

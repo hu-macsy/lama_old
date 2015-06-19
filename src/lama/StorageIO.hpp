@@ -34,7 +34,7 @@
 #define LAMA_STORAGE_IO_HPP_
 
 // for dll_import
-#include <lama/config.hpp>
+#include <common/config.hpp>
 
 // others
 #include <lama/LAMAArray.hpp>
@@ -54,7 +54,7 @@ namespace lama
  *  the local columns) and a halo part (for the non-local columns). Furthermore,
  *  it builds the halo for exchanging the non-local values between processors.
  */
-class LAMA_DLL_IMPORTEXPORT _StorageIO
+class COMMON_DLL_IMPORTEXPORT _StorageIO
 {
 public:
 
@@ -120,7 +120,7 @@ private    :
  * @tparam ValueType is the type of the matrix values.
  */
 template<typename ValueType>
-class LAMA_DLL_IMPORTEXPORT StorageIO: public _StorageIO
+class COMMON_DLL_IMPORTEXPORT StorageIO: public _StorageIO
 {
 public:
 

@@ -34,7 +34,7 @@
 #define LAMA_VECTOR_HPP_
 
 // for dll_import
-#include <lama/config.hpp>
+#include <common/config.hpp>
 
 // base classes
 #include <lama/Distributed.hpp>
@@ -76,7 +76,7 @@ typedef boost::shared_ptr<class Vector> VectorPtr;
  * This base class can be used to define dense and sparse vectors of
  * any type.
  */
-class LAMA_DLL_IMPORTEXPORT Vector: public Distributed
+class COMMON_DLL_IMPORTEXPORT Vector: public Distributed
 {
 public:
 

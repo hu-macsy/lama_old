@@ -34,7 +34,7 @@
 #define LAMA_JDSSTORAGE_HPP_
 
 // for dll_import
-#include <lama/config.hpp>
+#include <common/config.hpp>
 
 // base classes
 #include <lama/storage/CRTPMatrixStorage.hpp>
@@ -61,7 +61,7 @@ namespace lama
  *  Note: default copy constructor and assignment operator can be used.
  */
 template<typename ValueType>
-class LAMA_DLL_IMPORTEXPORT JDSStorage: public CRTPMatrixStorage<JDSStorage<ValueType>,ValueType>
+class COMMON_DLL_IMPORTEXPORT JDSStorage: public CRTPMatrixStorage<JDSStorage<ValueType>,ValueType>
 {
 public:
 

@@ -34,7 +34,7 @@
 #define LAMA_UTILS_INTERFACE_HPP_
 
 // for dll_import
-#include <lama/config.hpp>
+#include <common/config.hpp>
 
 // others
 #include <lama/macros/interface.hpp>

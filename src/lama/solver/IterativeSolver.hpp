@@ -35,7 +35,7 @@
 #define LAMA_ITERATIVESOLVER_HPP_
 
 // for dll_import
-#include <lama/config.hpp>
+#include <common/config.hpp>
 
 // base classes
 #include <lama/solver/Solver.hpp>
@@ -52,7 +52,7 @@ namespace lama
 /**
  * @brief Uses iterative methods to solve the equation system.
  */
-class LAMA_DLL_IMPORTEXPORT IterativeSolver: public Solver
+class COMMON_DLL_IMPORTEXPORT IterativeSolver: public Solver
 {
 public:
     /**

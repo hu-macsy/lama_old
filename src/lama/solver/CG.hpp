@@ -34,7 +34,7 @@
 #define LAMA_CG_HPP_
 
 // for dll_import
-#include <lama/config.hpp>
+#include <common/config.hpp>
 
 // base classes
 #include <lama/solver/IterativeSolver.hpp>
@@ -46,7 +46,7 @@ namespace lama
  * @brief The class CG represents a IterativeSolver which uses the krylov subspace CG method
  *        to solve a system of linear equations iteratively.
  */
-class LAMA_DLL_IMPORTEXPORT CG: public IterativeSolver
+class COMMON_DLL_IMPORTEXPORT CG: public IterativeSolver
 {
 public:
     /**

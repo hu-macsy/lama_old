@@ -35,7 +35,7 @@
 #define LAMA_TFQMR_HPP
 
 // for dll_import
-#include <lama/config.hpp>
+#include <common/config.hpp>
 
 // base classes
 #include <lama/solver/IterativeSolver.hpp>
@@ -56,7 +56,7 @@ namespace lama
  * it has to be additionally computed in each iterate() (contrary to e.g. BiCGstab solver;
  * no higher costs). 
  */
-class LAMA_DLL_IMPORTEXPORT TFQMR: public IterativeSolver
+class COMMON_DLL_IMPORTEXPORT TFQMR: public IterativeSolver
 {
 public:
     /**

@@ -34,7 +34,7 @@
 #define LAMA_STORAGE_METHODS_HPP_
 
 // for dll_import
-#include <lama/config.hpp>
+#include <common/config.hpp>
 
 // others
 #include <lama/LAMATypes.hpp>
@@ -43,7 +43,7 @@
 namespace lama
 {
 
-class LAMA_DLL_IMPORTEXPORT _StorageMethods
+class COMMON_DLL_IMPORTEXPORT _StorageMethods
 {
 public:
 
@@ -71,7 +71,7 @@ protected:
  *  @tparam ValueType is the value type of the matrix values.
  */
 template<typename ValueType>
-class LAMA_DLL_IMPORTEXPORT StorageMethods: public _StorageMethods
+class COMMON_DLL_IMPORTEXPORT StorageMethods: public _StorageMethods
 {
 public:
 

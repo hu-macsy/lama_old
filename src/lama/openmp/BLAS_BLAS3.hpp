@@ -34,7 +34,7 @@
 #define LAMA_OPENMPBLAS3_HPP_
 
 // for dll_import
-#include <lama/config.hpp>
+#include <common/config.hpp>
 
 // others
 #include <lama/LAMATypes.hpp>
@@ -51,7 +51,7 @@ namespace lama
  *  @todo Add information here about use of native BLAS1 libraries
  */
 
-class LAMA_DLL_IMPORTEXPORT BLAS_BLAS3
+class COMMON_DLL_IMPORTEXPORT BLAS_BLAS3
 {
 public:
 

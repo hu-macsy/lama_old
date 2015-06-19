@@ -34,7 +34,7 @@
 #define LAMA_PRINTABLE_HPP_
 
 // for dll_import
-#include <lama/config.hpp>
+#include <common/config.hpp>
 
 #include <ostream>
 
@@ -47,7 +47,7 @@
  *
  * The operator<< is especially helpful for logging messages.
  */
-class LAMA_DLL_IMPORTEXPORT Printable
+class COMMON_DLL_IMPORTEXPORT Printable
 {
 public:
     /**
@@ -90,6 +90,6 @@ protected:
  *
  * @return a reference to the passed stream.
  */
-LAMA_DLL_IMPORTEXPORT std::ostream& operator<<( std::ostream& stream, const Printable& object );
+COMMON_DLL_IMPORTEXPORT std::ostream& operator<<( std::ostream& stream, const Printable& object );
 
 #endif // LAMA_PRINTABLE_HPP_

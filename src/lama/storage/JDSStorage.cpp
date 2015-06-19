@@ -1658,7 +1658,7 @@ JDSStorage<ValueType>* JDSStorage<ValueType>::copy() const
         return "JDSStorage<ARITHMETIC_TYPE##I>";                               \
     }                                                                          \
     \
-    template class LAMA_DLL_IMPORTEXPORT JDSStorage<ARITHMETIC_TYPE##I> ;
+    template class COMMON_DLL_IMPORTEXPORT JDSStorage<ARITHMETIC_TYPE##I> ;
 
 BOOST_PP_REPEAT( ARITHMETIC_TYPE_CNT, LAMA_JDS_STORAGE_INSTANTIATE, _ )
 

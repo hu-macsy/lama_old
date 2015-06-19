@@ -34,7 +34,7 @@
 #define LAMA_NO_COMMUNICATOR_MANAGER_HPP_
 
 // for dll_import
-#include <lama/config.hpp>
+#include <common/config.hpp>
 
 // base classes
 #include <lama/CommunicatorManager.hpp>

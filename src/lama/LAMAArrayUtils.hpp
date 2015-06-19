@@ -33,7 +33,7 @@
 #ifndef LAMA_LAMA_ARRAY_UTILS_HPP_
 #define LAMA_LAMA_ARRAY_UTILS_HPP_
 // for dll_import
-#include <lama/config.hpp>
+#include <common/config.hpp>
 
 // others
 #include <lama/LAMAArray.hpp>
@@ -46,7 +46,7 @@ namespace lama
 
 /** Class that contains some utility routines used at several places. */
 
-class LAMA_DLL_IMPORTEXPORT LAMAArrayUtils
+class COMMON_DLL_IMPORTEXPORT LAMAArrayUtils
 {
 
 public:

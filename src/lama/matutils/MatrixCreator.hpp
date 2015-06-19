@@ -35,7 +35,7 @@
 #define LAMA_MATRIX_CREATOR_HPP_
 
 // for dll_import
-#include <lama/config.hpp>
+#include <common/config.hpp>
 
 // others
 #include <lama/matrix/CSRSparseMatrix.hpp>
@@ -62,7 +62,7 @@ namespace lama
  */
 
 template<typename ValueType>
-class LAMA_DLL_IMPORTEXPORT MatrixCreator
+class COMMON_DLL_IMPORTEXPORT MatrixCreator
 {
 public:
 

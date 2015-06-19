@@ -34,7 +34,7 @@
 #define LAMA_READ_ACCESS_HPP_
 
 // for dll_import
-#include <lama/config.hpp>
+#include <common/config.hpp>
 
 // base classes
 #include <lama/BaseAccess.hpp>
@@ -62,7 +62,7 @@ namespace lama
  * @tparam ValueType is the value type stored in the wrapped container.
  */
 template<typename ValueType>
-class LAMA_DLL_IMPORTEXPORT ReadAccess: public BaseAccess
+class COMMON_DLL_IMPORTEXPORT ReadAccess: public BaseAccess
 {
 public:
 

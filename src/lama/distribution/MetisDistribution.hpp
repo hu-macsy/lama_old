@@ -34,7 +34,7 @@
 #define LAMA_METISDISTRIBUTION_HPP_
 
 // for dll_import
-#include <lama/config.hpp>
+#include <common/config.hpp>
 
 // base classes
 #include <lama/distribution/GeneralDistribution.hpp>
@@ -54,7 +54,7 @@ namespace lama
  *
  */
 
-class LAMA_DLL_IMPORTEXPORT MetisDistribution: public GeneralDistribution
+class COMMON_DLL_IMPORTEXPORT MetisDistribution: public GeneralDistribution
 {
 public:
 

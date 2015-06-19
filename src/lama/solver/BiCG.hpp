@@ -44,7 +44,7 @@ namespace lama
  * @brief The class BiCG represents a IterativeSolver which uses the krylov subspace BiCG method
  *        to solve a system of linear equations iteratively.
  */
-class LAMA_DLL_IMPORTEXPORT BiCG: public CG
+class COMMON_DLL_IMPORTEXPORT BiCG: public CG
 {
 public:
 

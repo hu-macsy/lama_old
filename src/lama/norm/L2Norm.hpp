@@ -34,7 +34,7 @@
 #define LAMA_L2NORM_HPP_
 
 // for dll_import
-#include <lama/config.hpp>
+#include <common/config.hpp>
 
 // base classes
 #include <lama/norm/Norm.hpp>
@@ -46,7 +46,7 @@ namespace lama
  * @brief L2Norm is a functor specialization of Norm that calculates the l2 norm
  *        for the passed values.
  */
-class LAMA_DLL_IMPORTEXPORT L2Norm: public lama::Norm
+class COMMON_DLL_IMPORTEXPORT L2Norm: public lama::Norm
 {
 public:
     /**
@@ -94,7 +94,7 @@ public:
  *
  * @return              the l2 norm of the Scalar scalar.
  */
-LAMA_DLL_IMPORTEXPORT Scalar l2Norm( const Scalar& scalar );
+COMMON_DLL_IMPORTEXPORT Scalar l2Norm( const Scalar& scalar );
 
 /**
  * @brief calculates the l2 norm of the passed Vector.
@@ -103,7 +103,7 @@ LAMA_DLL_IMPORTEXPORT Scalar l2Norm( const Scalar& scalar );
  *
  * @return              the l2 norm of the Vector vector.
  */
-LAMA_DLL_IMPORTEXPORT Scalar l2Norm( const Vector& vector );
+COMMON_DLL_IMPORTEXPORT Scalar l2Norm( const Vector& vector );
 
 /**
  * @brief calculates the l2 norm of the passed Matrix.
@@ -112,7 +112,7 @@ LAMA_DLL_IMPORTEXPORT Scalar l2Norm( const Vector& vector );
  *
  * @return              the l2 norm of the Matrix matrix.
  */
-LAMA_DLL_IMPORTEXPORT Scalar l2Norm( const Matrix& matrix );
+COMMON_DLL_IMPORTEXPORT Scalar l2Norm( const Matrix& matrix );
 
 }
 

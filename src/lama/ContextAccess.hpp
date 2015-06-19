@@ -35,7 +35,7 @@
 #define LAMA_CONTEXT_ACCESS_HPP_
 
 // for dll_import
-#include <lama/config.hpp>
+#include <common/config.hpp>
 
 // base classes
 #include <lama/BaseAccess.hpp>
@@ -57,7 +57,7 @@ namespace lama
  *  Member variables contain source code location where access to the context
  *  was enabled.
  */
-class LAMA_DLL_IMPORTEXPORT ContextAccess: public BaseAccess
+class COMMON_DLL_IMPORTEXPORT ContextAccess: public BaseAccess
 {
 public:
 

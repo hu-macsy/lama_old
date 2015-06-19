@@ -34,13 +34,13 @@
 #define LAMA_NONCOPYABLE_HPP_
 
 // for dll_import
-#include <lama/config.hpp>
+#include <common/config.hpp>
 
 namespace lama
 {
 
 /** Base class to disable compiler generated copy constructor and assignment operator. */
-class LAMA_DLL_IMPORTEXPORT NonCopyable
+class COMMON_DLL_IMPORTEXPORT NonCopyable
 {
 protected:
     NonCopyable()

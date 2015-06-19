@@ -34,7 +34,7 @@
 #define LAMA_MIC_CONTEXT_HPP_
 
 // for dll_import
-#include <lama/config.hpp>
+#include <common/config.hpp>
 
 // base classes
 #include <lama/Context.hpp>
@@ -52,7 +52,7 @@ namespace lama
  * @brief MICContext initializes the MIC device with the given number.
  *
  */
-class LAMA_DLL_IMPORTEXPORT MICContext: public Context, public boost::enable_shared_from_this<MICContext>
+class COMMON_DLL_IMPORTEXPORT MICContext: public Context, public boost::enable_shared_from_this<MICContext>
 {
 
     friend class MICContextManager;

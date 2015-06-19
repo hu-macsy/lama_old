@@ -404,7 +404,7 @@ bool XXXSparseMatrix<ValueType>::initialized = registerCreator();
         return "XXXSparseMatrix<ARITHMETIC_TYPE##I>";                          \
     }                                                                          \
     \
-    template class LAMA_DLL_IMPORTEXPORT XXXSparseMatrix<ARITHMETIC_TYPE##I> ;
+    template class COMMON_DLL_IMPORTEXPORT XXXSparseMatrix<ARITHMETIC_TYPE##I> ;
 
 BOOST_PP_REPEAT( ARITHMETIC_TYPE_CNT, LAMA_XXX_SPARSE_MATRIX_INSTANTIATE, _ )
 

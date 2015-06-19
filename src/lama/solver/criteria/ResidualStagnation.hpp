@@ -35,7 +35,7 @@
 #define LAMA_RESIDUALSTAGNATION_HPP_
 
 // for dll_import
-#include <lama/config.hpp>
+#include <common/config.hpp>
 
 // base classes
 #include <lama/solver/criteria/Criterion.hpp>
@@ -56,7 +56,7 @@ class IterativeSolver;
  * @param IterativeSolver The type solver in which this criterion is used.
  *        Most commonly this is the abstract sblas::IterativeSolver type.
  */
-class LAMA_DLL_IMPORTEXPORT ResidualStagnation: public Criterion
+class COMMON_DLL_IMPORTEXPORT ResidualStagnation: public Criterion
 {
 
 public:

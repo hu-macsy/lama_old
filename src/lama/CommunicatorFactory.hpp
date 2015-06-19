@@ -37,7 +37,7 @@
 #define LAMA_COMMUNICATOR_FACTORY_HPP_
 
 // for dll_import
-#include <lama/config.hpp>
+#include <common/config.hpp>
 
 // base classes
 #include <lama/NonCopyable.hpp>
@@ -71,7 +71,7 @@ class CommunicatorManager;
  *  Note: The type of the communicator is given by a string.
  */
 
-class LAMA_DLL_IMPORTEXPORT CommunicatorFactory: NonCopyable
+class COMMON_DLL_IMPORTEXPORT CommunicatorFactory: NonCopyable
 
 {
 public:

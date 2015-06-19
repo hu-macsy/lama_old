@@ -722,32 +722,32 @@ void Communicator::bcast( std::string& val, const PartitionId root ) const
 
 #define LAMA_COMMUNICATOR_INSTANTIATIONS( z, I, _ )         \
     \
-    template LAMA_DLL_IMPORTEXPORT                              \
+    template COMMON_DLL_IMPORTEXPORT                              \
     IndexType Communicator::shift0(                             \
             ARRAY_TYPE##I targetVals[],                             \
             const IndexType maxTargetSize,                          \
             const ARRAY_TYPE##I sourceVals[],                       \
             const IndexType sourceSize ) const;                     \
     \
-    template LAMA_DLL_IMPORTEXPORT                              \
+    template COMMON_DLL_IMPORTEXPORT                              \
     void Communicator::shiftArray(                              \
             LAMAArray<ARRAY_TYPE##I>& recvArray,                    \
             const LAMAArray<ARRAY_TYPE##I>& sendArray,              \
             const int direction ) const;                            \
     \
-    template LAMA_DLL_IMPORTEXPORT                              \
+    template COMMON_DLL_IMPORTEXPORT                              \
     SyncToken* Communicator::shiftAsync(                        \
             LAMAArray<ARRAY_TYPE##I>& recvArray,                    \
             const LAMAArray<ARRAY_TYPE##I>& sendArray,              \
             const int direction ) const;                            \
     \
-    template LAMA_DLL_IMPORTEXPORT                              \
+    template COMMON_DLL_IMPORTEXPORT                              \
     void Communicator::updateHalo(                              \
             LAMAArray<ARRAY_TYPE##I>& haloValues,                   \
             const LAMAArray<ARRAY_TYPE##I>& localValues,            \
             const Halo& halo ) const;                               \
     \
-    template LAMA_DLL_IMPORTEXPORT                              \
+    template COMMON_DLL_IMPORTEXPORT                              \
     SyncToken* Communicator::updateHaloAsync(                   \
             LAMAArray<ARRAY_TYPE##I>& haloValues,                   \
             const LAMAArray<ARRAY_TYPE##I>& localValues,            \

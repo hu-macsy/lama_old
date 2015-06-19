@@ -34,7 +34,7 @@
 #define LAMA_FILE_IO_HPP_
 
 // for dll_import
-#include <lama/config.hpp>
+#include <common/config.hpp>
 
 #include <lama/LAMATypes.hpp>
 #include <lama/Scalar.hpp>
@@ -48,7 +48,7 @@ namespace lama
 
 /** This class provides File operations needed for LAMA.  */
 
-class LAMA_DLL_IMPORTEXPORT FileIO
+class COMMON_DLL_IMPORTEXPORT FileIO
 {
 
 public:

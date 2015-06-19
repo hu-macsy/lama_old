@@ -34,7 +34,7 @@
 #define LAMA_ELL_SPARSE_MATRIX_HPP_
 
 // for dll_import
-#include <lama/config.hpp>
+#include <common/config.hpp>
 
 // base classes
 #include <lama/matrix/SparseMatrix.hpp>
@@ -57,7 +57,7 @@ namespace lama
  */
 
 template<typename ValueType>
-class LAMA_DLL_IMPORTEXPORT ELLSparseMatrix: public SparseMatrix<ValueType>
+class COMMON_DLL_IMPORTEXPORT ELLSparseMatrix: public SparseMatrix<ValueType>
 {
 
 public:

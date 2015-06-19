@@ -34,7 +34,7 @@
 #define LAMA_OPENMP_DENSE_UTILS_HPP_
 
 // for dll_import
-#include <lama/config.hpp>
+#include <common/config.hpp>
 
 // others
 #include <lama/LAMATypes.hpp>
@@ -53,7 +53,7 @@ namespace lama
 /** This class provides OpenMP implementations for methods in lama::DenseUtilsInterface
  */
 
-class LAMA_DLL_IMPORTEXPORT OpenMPDenseUtils
+class COMMON_DLL_IMPORTEXPORT OpenMPDenseUtils
 {
 public:
 

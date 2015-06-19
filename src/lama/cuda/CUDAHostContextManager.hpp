@@ -34,7 +34,7 @@
 #define LAMA_CUDA_HOST_CONTEXT_MANAGER_HPP_
 
 // for dll_import
-#include <lama/config.hpp>
+#include <common/config.hpp>
 
 // base classes
 #include <lama/ContextManager.hpp>
@@ -54,7 +54,7 @@ class CUDAHostContext;
  *  pointers can be obtained by the Context factory.
  */
 
-class LAMA_DLL_IMPORTEXPORT CUDAHostContextManager: public ContextManager
+class COMMON_DLL_IMPORTEXPORT CUDAHostContextManager: public ContextManager
 {
 
 public:

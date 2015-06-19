@@ -404,7 +404,7 @@ bool COOSparseMatrix<ValueType>::initialized = registerCreator();
         return "COOSparseMatrix<ARITHMETIC_TYPE##I>";                          \
     }                                                                          \
     \
-    template class LAMA_DLL_IMPORTEXPORT COOSparseMatrix<ARITHMETIC_TYPE##I> ;
+    template class COMMON_DLL_IMPORTEXPORT COOSparseMatrix<ARITHMETIC_TYPE##I> ;
 
 BOOST_PP_REPEAT( ARITHMETIC_TYPE_CNT, LAMA_COO_SPARSE_MATRIX_INSTANTIATE, _ )
 

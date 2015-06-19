@@ -34,7 +34,7 @@
 #define LAMA_BLOCKDISTRIBUTION_HPP_
 
 // for dll_import
-#include <lama/config.hpp>
+#include <common/config.hpp>
 
 // base classes
 #include <lama/distribution/Distribution.hpp>
@@ -47,7 +47,7 @@ namespace lama
  *  BlockDistribution is noncopyable as Distribution is noncopyable
  *
  */
-class LAMA_DLL_IMPORTEXPORT BlockDistribution: public Distribution
+class COMMON_DLL_IMPORTEXPORT BlockDistribution: public Distribution
 {
 public:
 

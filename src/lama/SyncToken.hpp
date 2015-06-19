@@ -35,7 +35,7 @@
 #define LAMA_SYNC_TOKEN_HPP_
 
 // for dll_import
-#include <lama/config.hpp>
+#include <common/config.hpp>
 
 // base classes
 #include <lama/NonCopyable.hpp>
@@ -80,7 +80,7 @@ class _LAMAArray;
  *
  */
 
-class LAMA_DLL_IMPORTEXPORT SyncToken: public Printable, private NonCopyable
+class COMMON_DLL_IMPORTEXPORT SyncToken: public Printable, private NonCopyable
 {
 public:
 

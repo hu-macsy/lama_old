@@ -34,7 +34,7 @@
 #define LAMA_MIC_ELL_UTILS_HPP_
 
 // for dll_import
-#include <lama/config.hpp>
+#include <common/config.hpp>
 
 // others
 #include <lama/LAMATypes.hpp>
@@ -53,7 +53,7 @@ class SyncToken;
  *  All routines work on already allocated data and utilize MIC for their parallelization.
  */
 
-class LAMA_DLL_IMPORTEXPORT MICELLUtils
+class COMMON_DLL_IMPORTEXPORT MICELLUtils
 {
 
 public:

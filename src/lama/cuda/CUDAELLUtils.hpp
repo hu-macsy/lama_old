@@ -34,7 +34,7 @@
 #define LAMA_CUDA_ELL_UTILS_HPP_
 
 // for dll_import
-#include <lama/config.hpp>
+#include <common/config.hpp>
 
 // others
 #include <lama/LAMATypes.hpp>
@@ -51,7 +51,7 @@ namespace lama
  *  All routines work on already allocated data and utilize CUDA for their parallelization.
  */
 
-class LAMA_DLL_IMPORTEXPORT CUDAELLUtils
+class COMMON_DLL_IMPORTEXPORT CUDAELLUtils
 {
 public:
 

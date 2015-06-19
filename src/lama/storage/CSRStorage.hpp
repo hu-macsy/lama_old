@@ -34,7 +34,7 @@
 #define LAMA_CSRSTORAGE_HPP_
 
 // for dll_import
-#include <lama/config.hpp>
+#include <common/config.hpp>
 
 // base classes
 #include <lama/storage/CRTPMatrixStorage.hpp>
@@ -74,7 +74,7 @@ namespace lama
  *  @tparam ValueType is the value type of the matrix values.
  */
 template<typename ValueType>
-class LAMA_DLL_IMPORTEXPORT CSRStorage: public CRTPMatrixStorage<CSRStorage<ValueType>,ValueType>
+class COMMON_DLL_IMPORTEXPORT CSRStorage: public CRTPMatrixStorage<CSRStorage<ValueType>,ValueType>
 {
 public:
 

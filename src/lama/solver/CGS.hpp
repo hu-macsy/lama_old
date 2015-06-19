@@ -34,7 +34,7 @@
 #ifndef LAMA_CGS_HPP_
 #define LAMA_CGS_HPP_
 
-#include <lama/config.hpp>
+#include <common/config.hpp>
 
 // base classes
 #include <lama/solver/IterativeSolver.hpp>
@@ -56,7 +56,7 @@ namespace lama
  * 3. In this case it makes sense to take the residual since we have to update the residual in each
  * iterate() anyways (contrary to e.g. TFQMR solver).
  */
-class LAMA_DLL_IMPORTEXPORT CGS: public IterativeSolver
+class COMMON_DLL_IMPORTEXPORT CGS: public IterativeSolver
 {
 public:
     /**

@@ -35,7 +35,7 @@
 #define LAMA_SOLVER_HPP_
 
 // for dll_import
-#include <lama/config.hpp>
+#include <common/config.hpp>
 
 // base classes
 #include <lama/NonCopyable.hpp>
@@ -68,7 +68,7 @@ typedef boost::shared_ptr<Solver> SolverPtr;
  * functionality for coefficient, rhs and solution storing, provides
  * a custom ID for a solver and a residual calculation capabilities.
  */
-class LAMA_DLL_IMPORTEXPORT Solver: public Printable
+class COMMON_DLL_IMPORTEXPORT Solver: public Printable
 {
 public:
     /**

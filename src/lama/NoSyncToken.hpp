@@ -34,7 +34,7 @@
 #define LAMA_NOSYNCTOKEN_HPP_
 
 // for dll_import
-#include <lama/config.hpp>
+#include <common/config.hpp>
 
 // base classes
 #include <lama/SyncToken.hpp>
@@ -42,7 +42,7 @@
 namespace lama
 {
 
-class LAMA_DLL_IMPORTEXPORT NoSyncToken: public SyncToken
+class COMMON_DLL_IMPORTEXPORT NoSyncToken: public SyncToken
 {
 public:
 

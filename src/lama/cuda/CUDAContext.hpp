@@ -34,7 +34,7 @@
 #define LAMA_CUDA_CONTEXT_HPP_
 
 // for dll_import
-#include <lama/config.hpp>
+#include <common/config.hpp>
 
 // base classes
 #include <lama/Context.hpp>
@@ -57,7 +57,7 @@
 namespace lama
 {
 
-class LAMA_DLL_IMPORTEXPORT CUDAStreamSyncToken;
+class COMMON_DLL_IMPORTEXPORT CUDAStreamSyncToken;
 
 /**
  *  Define here the name of the environment variable that can be used
@@ -74,7 +74,7 @@ class LAMA_DLL_IMPORTEXPORT CUDAStreamSyncToken;
  * initialized in the constructor and cleaned up in the destructor. CUDAContext
  * uses a static counter to avoid multiple device initializations.
  */
-class LAMA_DLL_IMPORTEXPORT CUDAContext: public Context, public boost::enable_shared_from_this<CUDAContext>
+class COMMON_DLL_IMPORTEXPORT CUDAContext: public Context, public boost::enable_shared_from_this<CUDAContext>
 {
 
     friend class CUDAContextManager;

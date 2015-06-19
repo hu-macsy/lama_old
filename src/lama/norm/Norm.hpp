@@ -34,7 +34,7 @@
 #define LAMA_NORM_HPP_
 
 // for dll_import
-#include <lama/config.hpp>
+#include <common/config.hpp>
 
 // others
 #include <lama/matrix/Matrix.hpp>
@@ -54,7 +54,7 @@ typedef boost::shared_ptr<Norm> NormPtr;
  * The Functor Norm is mainly used by the stopping criteria ResidualThreshold and
  * ResidualStagnation, to allow a to customize the Norms for these stopping criteria.
  */
-class LAMA_DLL_IMPORTEXPORT Norm
+class COMMON_DLL_IMPORTEXPORT Norm
 {
 public:
     /**

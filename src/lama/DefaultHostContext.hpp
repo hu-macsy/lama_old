@@ -34,7 +34,7 @@
 #define LAMA_DEFAULT_HOST_CONTEXT_HPP_
 
 // for dll_import
-#include <lama/config.hpp>
+#include <common/config.hpp>
 
 // base classes
 #include <lama/HostContext.hpp>
@@ -54,7 +54,7 @@ namespace lama
  *  The default host context allocates/frees data in the usual way.
  */
 
-class LAMA_DLL_IMPORTEXPORT DefaultHostContext: public HostContext
+class COMMON_DLL_IMPORTEXPORT DefaultHostContext: public HostContext
 {
 
     friend class DefaultHostContextManager; //!< can only create DefaultHostContext

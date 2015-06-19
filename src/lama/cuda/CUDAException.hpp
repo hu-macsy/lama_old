@@ -34,7 +34,7 @@
 #define LAMA_CUDAEXCEPTION_HPP_
 
 // for dll_import
-#include <lama/config.hpp>
+#include <common/config.hpp>
 
 // base classes
 #include <lama/exception/Exception.hpp>
@@ -44,7 +44,7 @@
 namespace lama
 {
 
-class LAMA_DLL_IMPORTEXPORT CUDAException: public Exception
+class COMMON_DLL_IMPORTEXPORT CUDAException: public Exception
 {
 public:
     CUDAException( const std::string& message, const cudaError_t cudaError );

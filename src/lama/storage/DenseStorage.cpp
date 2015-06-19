@@ -1289,8 +1289,8 @@ return new DenseStorage<ValueType>( *this );
         return "DenseStorageView<ARITHMETIC_TYPE##I>";                          \
     }                                                                           \
     \
-    template class LAMA_DLL_IMPORTEXPORT DenseStorage<ARITHMETIC_TYPE##I> ;     \
-    template class LAMA_DLL_IMPORTEXPORT DenseStorageView<ARITHMETIC_TYPE##I> ;
+    template class COMMON_DLL_IMPORTEXPORT DenseStorage<ARITHMETIC_TYPE##I> ;     \
+    template class COMMON_DLL_IMPORTEXPORT DenseStorageView<ARITHMETIC_TYPE##I> ;
 
 BOOST_PP_REPEAT( ARITHMETIC_TYPE_CNT, LAMA_DENSE_STORAGE_INSTANTIATE, _ )
 

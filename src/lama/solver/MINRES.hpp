@@ -35,7 +35,7 @@
 #define LAMA_MINRES_HPP
 
 // for dll_import
-#include <lama/config.hpp>
+#include <common/config.hpp>
 
 // base classes
 #include <lama/solver/IterativeSolver.hpp>
@@ -49,7 +49,7 @@ namespace lama
  * @brief The class MINRES represents a IterativeSolver which uses the krylov subspace Minimum Residual (MINRES)
  * method to solve a system of linear equations iteratively.
  */
-class LAMA_DLL_IMPORTEXPORT MINRES: public IterativeSolver
+class COMMON_DLL_IMPORTEXPORT MINRES: public IterativeSolver
 {
 public:
     /**

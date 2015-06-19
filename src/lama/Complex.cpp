@@ -36,8 +36,8 @@
 namespace lama
 {
 
-template class LAMA_DLL_IMPORTEXPORT Complex<float> ;
-template class LAMA_DLL_IMPORTEXPORT Complex<double> ;
-template class LAMA_DLL_IMPORTEXPORT Complex<long double> ;
+template class COMMON_DLL_IMPORTEXPORT Complex<float> ;
+template class COMMON_DLL_IMPORTEXPORT Complex<double> ;
+template class COMMON_DLL_IMPORTEXPORT Complex<long double> ;
 
 }

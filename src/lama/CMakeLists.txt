@@ -91,7 +91,6 @@ set ( CLASSES
     )
 
 set ( HEADERS
-        config
         HostReadAccess
         HostWriteAccess
         LAMATypes
@@ -268,7 +267,7 @@ target_link_libraries ( ama ${LAMA_LINK_LIBRARIES} )
 
 ### add definitions ###
 if ( WIN32 )
-    add_definitions ( -DLAMA_COMPILING_DLL )
+    add_definitions ( -DCOMMON_COMPILING_DLL )
 endif ( WIN32 )
 
 ### install ###

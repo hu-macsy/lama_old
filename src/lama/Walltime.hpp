@@ -34,7 +34,7 @@
 #define LAMA_WALLTIME_HPP_
 
 // for dll_import
-#include <lama/config.hpp>
+#include <common/config.hpp>
 
 #include <string>
 
@@ -44,7 +44,7 @@ namespace lama
 /**
  * @brief A simple static class that delivers walltime (used for logging and tracing)
  */
-class LAMA_DLL_IMPORTEXPORT Walltime
+class COMMON_DLL_IMPORTEXPORT Walltime
 {
 public:
 

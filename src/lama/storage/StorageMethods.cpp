@@ -675,7 +675,7 @@ void StorageMethods<ValueType>::joinCSR(
 /* -------------------------------------------------------------------------- */
 
 #define LAMA_STORAGE_METHODS_INSTANTIATE(z, I, _)                              \
-    template class LAMA_DLL_IMPORTEXPORT StorageMethods<ARITHMETIC_TYPE##I> ;
+    template class COMMON_DLL_IMPORTEXPORT StorageMethods<ARITHMETIC_TYPE##I> ;
 
 BOOST_PP_REPEAT( ARITHMETIC_TYPE_CNT, LAMA_STORAGE_METHODS_INSTANTIATE, _ )
 

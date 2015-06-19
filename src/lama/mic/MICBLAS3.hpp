@@ -34,7 +34,7 @@
 #define LAMA_MIC_BLAS3_HPP_
 
 // for dll_import
-#include <lama/config.hpp>
+#include <common/config.hpp>
 
 // others
 #include <lama/LAMATypes.hpp>
@@ -49,7 +49,7 @@ namespace lama
  *  @todo Add information here about use of native BLAS3 libraries
  */
 
-class LAMA_DLL_IMPORTEXPORT MICBLAS3
+class COMMON_DLL_IMPORTEXPORT MICBLAS3
 {
 public:
 

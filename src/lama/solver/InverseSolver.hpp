@@ -34,7 +34,7 @@
 #define LAMA_INVERSESOLVER_HPP_
 
 // for dll_import
-#include <lama/config.hpp>
+#include <common/config.hpp>
 
 // base classes
 #include <lama/solver/Solver.hpp>
@@ -51,7 +51,7 @@ namespace lama
 /**
  * @brief Solver class that uses matrix inverse to solve an equation system.
  */
-class LAMA_DLL_IMPORTEXPORT InverseSolver: public Solver
+class COMMON_DLL_IMPORTEXPORT InverseSolver: public Solver
 {
 public:
     /**

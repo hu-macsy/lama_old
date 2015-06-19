@@ -34,7 +34,7 @@
 #define LAMA_BLAS_BLAS1_HPP_
 
 // for dll_import
-#include <lama/config.hpp>
+#include <common/config.hpp>
 
 // others
 #include <lama/LAMATypes.hpp>
@@ -52,7 +52,7 @@ class SyncToken;
  *  @todo Add information here about use of native BLAS1 libraries
  */
 
-class LAMA_DLL_IMPORTEXPORT BLAS_BLAS1
+class COMMON_DLL_IMPORTEXPORT BLAS_BLAS1
 {
 public:
 

@@ -34,7 +34,7 @@
 #define LAMA_CYCLIC_DISTRIBUTION_HPP_
 
 // for dll_import
-#include <lama/config.hpp>
+#include <common/config.hpp>
 
 // base classes
 #include <lama/distribution/Distribution.hpp>
@@ -46,7 +46,7 @@ namespace lama
  * a certain block size and these chunks are assigned in a round-robin manner
  * to the available partitions.
  */
-class LAMA_DLL_IMPORTEXPORT CyclicDistribution: public Distribution
+class COMMON_DLL_IMPORTEXPORT CyclicDistribution: public Distribution
 {
 public:
 

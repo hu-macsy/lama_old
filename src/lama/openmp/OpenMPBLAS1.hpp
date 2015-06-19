@@ -34,7 +34,7 @@
 #define LAMA_OPENMP_BLAS1_HPP_
 
 // for dll_import
-#include <lama/config.hpp>
+#include <common/config.hpp>
 
 // others
 #include <lama/LAMATypes.hpp>
@@ -54,7 +54,7 @@ namespace lama
  *  rather fast.
  */
 
-class LAMA_DLL_IMPORTEXPORT OpenMPBLAS1
+class COMMON_DLL_IMPORTEXPORT OpenMPBLAS1
 {
 public:
 

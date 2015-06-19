@@ -34,7 +34,7 @@
 #define LAMA_OPENMP_UTILS_HPP_
 
 // for dll_import
-#include <lama/config.hpp>
+#include <common/config.hpp>
 
 // others
 #include <lama/LAMATypes.hpp>
@@ -50,7 +50,7 @@ namespace lama
 
 /** General utilities of the LAMA Interface implemented in OpenMP  */
 
-class LAMA_DLL_IMPORTEXPORT OpenMPUtils
+class COMMON_DLL_IMPORTEXPORT OpenMPUtils
 {
 public:
 

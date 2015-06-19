@@ -37,7 +37,7 @@
 #include <mpi.h> //Intel MPI need mpi.h to be included before stdio.h so this header comes first
 
 // for dll_import
-#include <lama/config.hpp>
+#include <common/config.hpp>
 
 // base classes
 #include <lama/CRTPCommunicator.hpp>
@@ -62,7 +62,7 @@ namespace lama
  *  MPI_Init is called in the constructor, MPI_Finalize is called in the destructor.
  */
 
-class LAMA_DLL_IMPORTEXPORT MPICommunicator: public CRTPCommunicator<MPICommunicator>
+class COMMON_DLL_IMPORTEXPORT MPICommunicator: public CRTPCommunicator<MPICommunicator>
 {
 
 // Only MPICommunicatorManager is allowed to create MPI communicator

@@ -34,7 +34,7 @@
 #define LAMA_COMMONLOGGER_HPP_
 
 // for dll_import
-#include <lama/config.hpp>
+#include <common/config.hpp>
 
 // base classes
 #include <lama/solver/logger/Logger.hpp>
@@ -45,7 +45,7 @@ namespace lama
 /**
  * @brief A CommonLogger which adds no prefix to its messages.
  */
-class LAMA_DLL_IMPORTEXPORT CommonLogger: public Logger
+class COMMON_DLL_IMPORTEXPORT CommonLogger: public Logger
 {
 public:
     /**

@@ -55,7 +55,7 @@
 #pragma GCC diagnostic pop
 #endif //__GNUC__ >= 4&&  __GNUC_MINOR__ > 6
 
-#include <lama/config.hpp>
+#include <common/config.hpp>
 #include <lama/SyncToken.hpp>
 
 namespace lama
@@ -67,7 +67,7 @@ typedef boost::shared_ptr<const CUDAContext> CUDAContextPtr;
 
 /** Class that sycnchronizes with a CUDA stream. */
 
-class LAMA_DLL_IMPORTEXPORT CUDAStreamSyncToken: public lama::SyncToken
+class COMMON_DLL_IMPORTEXPORT CUDAStreamSyncToken: public lama::SyncToken
 
 {
 

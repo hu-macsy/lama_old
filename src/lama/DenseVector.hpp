@@ -34,7 +34,7 @@
 #define LAMA_DENSE_VECTOR_HPP_
 
 // for dll_import
-#include <lama/config.hpp>
+#include <common/config.hpp>
 
 // base classes
 #include <lama/Vector.hpp>
@@ -65,7 +65,7 @@ namespace lama
  * @tparam ValueType the value type for the vector values.
  */
 template<typename ValueType>
-class LAMA_DLL_IMPORTEXPORT DenseVector: public Vector
+class COMMON_DLL_IMPORTEXPORT DenseVector: public Vector
 {
 public:
 

@@ -35,7 +35,7 @@
 #define LAMA_SOLUTIONPROXY_HPP_
 
 // for dll_import
-#include <lama/config.hpp>
+#include <common/config.hpp>
 
 // others
 #include <lama/Vector.hpp>
@@ -51,7 +51,7 @@ namespace lama
  * access to the underlying vector marks the proxy as dirty and by that signals
  * the solver to recalculate the residual.
  */
-class LAMA_DLL_IMPORTEXPORT SolutionProxy
+class COMMON_DLL_IMPORTEXPORT SolutionProxy
 {
 public:
 

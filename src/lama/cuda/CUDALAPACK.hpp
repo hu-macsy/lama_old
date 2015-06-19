@@ -34,7 +34,7 @@
 #define LAMA_CUDALAPACK_HPP_
 
 // for dll_import
-#include <lama/config.hpp>
+#include <common/config.hpp>
 
 #include <lama/LAMATypes.hpp>
 
@@ -46,7 +46,7 @@ namespace lama
 class SyncToken;
 // forward declaration
 
-class LAMA_DLL_IMPORTEXPORT CUDALAPACK
+class COMMON_DLL_IMPORTEXPORT CUDALAPACK
 {
 public:
 

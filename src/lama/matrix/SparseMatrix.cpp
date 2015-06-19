@@ -2509,7 +2509,7 @@ void SparseMatrix<ValueType>::readFromFile( const std::string& fileName )
         return "SparseMatrix<ARITHMETIC_TYPE##I>";                             \
     }                                                                          \
     \
-    template class LAMA_DLL_IMPORTEXPORT SparseMatrix<ARITHMETIC_TYPE##I> ;
+    template class COMMON_DLL_IMPORTEXPORT SparseMatrix<ARITHMETIC_TYPE##I> ;
 
 BOOST_PP_REPEAT( ARITHMETIC_TYPE_CNT, LAMA_SPARSE_MATRIX_INSTANTIATE, _ )
 

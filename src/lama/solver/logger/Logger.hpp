@@ -34,7 +34,7 @@
 #define LAMA_SOLVER_LOGGER_HPP_
 
 // for dll_import
-#include <lama/config.hpp>
+#include <common/config.hpp>
 
 // base classes
 #include <lama/NonCopyable.hpp>
@@ -65,7 +65,7 @@ typedef boost::shared_ptr<Logger> LoggerPtr;
  * operations. Derived classes may use the createPrefix() method to
  * customize messages.
  */
-class LAMA_DLL_IMPORTEXPORT Logger: private NonCopyable
+class COMMON_DLL_IMPORTEXPORT Logger: private NonCopyable
 {
 public:
 

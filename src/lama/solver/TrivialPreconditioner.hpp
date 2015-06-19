@@ -35,7 +35,7 @@
 #define LAMA_TRIVIALPRECONDITIONER_HPP_
 
 // for dll_import
-#include <lama/config.hpp>
+#include <common/config.hpp>
 
 // base classes
 #include <lama/solver/Solver.hpp>
@@ -43,7 +43,7 @@
 namespace lama
 {
 
-class LAMA_DLL_IMPORTEXPORT TrivialPreconditioner: public Solver
+class COMMON_DLL_IMPORTEXPORT TrivialPreconditioner: public Solver
 {
 public:
     TrivialPreconditioner( const std::string& id );

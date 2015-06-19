@@ -36,7 +36,7 @@
 #define LAMA_CRTP_COMMUNICATOR_HPP_
 
 // for dll_import
-#include <lama/config.hpp>
+#include <common/config.hpp>
 #include <boost/preprocessor.hpp>
 
 // base classes
@@ -53,7 +53,7 @@ namespace lama
  */
 
 template<class Derived>
-class LAMA_DLL_IMPORTEXPORT CRTPCommunicator: public Communicator
+class COMMON_DLL_IMPORTEXPORT CRTPCommunicator: public Communicator
 {
 public:
 

@@ -34,7 +34,7 @@
 #define LAMA_DIASTORAGE_HPP_
 
 // for dll_import
-#include <lama/config.hpp>
+#include <common/config.hpp>
 
 // base classes
 #include <lama/storage/CRTPMatrixStorage.hpp>
@@ -53,7 +53,7 @@ namespace lama
  *  @tparam ValueType is the value type of the matrix values.
  */
 template<typename ValueType>
-class LAMA_DLL_IMPORTEXPORT DIAStorage: public CRTPMatrixStorage<DIAStorage<ValueType>,ValueType>
+class COMMON_DLL_IMPORTEXPORT DIAStorage: public CRTPMatrixStorage<DIAStorage<ValueType>,ValueType>
 {
 public:
 

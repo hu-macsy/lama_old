@@ -74,11 +74,11 @@ typedef enum
 using Format::MatrixStorageFormat;
 //!< useful abbreviation
 
-LAMA_DLL_IMPORTEXPORT std::ostream& operator<<( std::ostream& stream, const MatrixStorageFormat storageFormat );
+COMMON_DLL_IMPORTEXPORT std::ostream& operator<<( std::ostream& stream, const MatrixStorageFormat storageFormat );
 
-LAMA_DLL_IMPORTEXPORT const char* format2Str( const MatrixStorageFormat storageFormat );
+COMMON_DLL_IMPORTEXPORT const char* format2Str( const MatrixStorageFormat storageFormat );
 
-LAMA_DLL_IMPORTEXPORT MatrixStorageFormat str2Format( const char* str );
+COMMON_DLL_IMPORTEXPORT MatrixStorageFormat str2Format( const char* str );
 
 /** The class _MatrixStorage is the base class for all matrix storage classes
  supported by LAMA.
@@ -96,7 +96,7 @@ LAMA_DLL_IMPORTEXPORT MatrixStorageFormat str2Format( const char* str );
  storage should take place.
  */
 
-class LAMA_DLL_IMPORTEXPORT _MatrixStorage: public Printable
+class COMMON_DLL_IMPORTEXPORT _MatrixStorage: public Printable
 {
 public:
 
@@ -512,7 +512,7 @@ class Distribution;
  *  @tparam ValueType is the value type of the matrix values.
  */
 template<typename ValueType>
-class LAMA_DLL_IMPORTEXPORT MatrixStorage: public _MatrixStorage
+class COMMON_DLL_IMPORTEXPORT MatrixStorage: public _MatrixStorage
 {
 public:
 

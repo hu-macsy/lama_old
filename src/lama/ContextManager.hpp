@@ -34,7 +34,7 @@
 #define LAMA_CONTEXT_MANAGER_HPP_
 
 // for dll_import
-#include <lama/config.hpp>
+#include <common/config.hpp>
 
 // base classes
 #include <lama/NonCopyable.hpp>
@@ -64,7 +64,7 @@ namespace lama
  *  with new context classes and types.
  */
 
-class LAMA_DLL_IMPORTEXPORT ContextManager: public Printable, private NonCopyable
+class COMMON_DLL_IMPORTEXPORT ContextManager: public Printable, private NonCopyable
 {
 public:
 

@@ -34,7 +34,7 @@
 #define LAMA_LAMAARRAYVIEW_HPP_
 
 // for dll_import
-#include <lama/config.hpp>
+#include <common/config.hpp>
 
 // base classes
 #include <lama/Printable.hpp>
@@ -60,7 +60,7 @@ class LAMAArrayConstView;
  * @tparam ValueType is the type stored in this container.
  */
 template<typename ValueType>
-class LAMA_DLL_IMPORTEXPORT LAMAArrayView: public Printable
+class COMMON_DLL_IMPORTEXPORT LAMAArrayView: public Printable
 {
     friend class ReadAccess<ValueType> ;
     friend class WriteAccess<ValueType> ;

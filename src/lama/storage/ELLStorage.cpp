@@ -1896,7 +1896,7 @@ ELLStorage<ValueType>* ELLStorage<ValueType>::copy() const
         return "ELLStorage<ARITHMETIC_TYPE##I>";                               \
     }                                                                          \
     \
-    template class LAMA_DLL_IMPORTEXPORT ELLStorage<ARITHMETIC_TYPE##I> ;
+    template class COMMON_DLL_IMPORTEXPORT ELLStorage<ARITHMETIC_TYPE##I> ;
 
 BOOST_PP_REPEAT( ARITHMETIC_TYPE_CNT, LAMA_ELL_STORAGE_INSTANTIATE, _ )
 

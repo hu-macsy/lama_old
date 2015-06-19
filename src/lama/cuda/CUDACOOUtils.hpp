@@ -34,7 +34,7 @@
 #define LAMA_CUDA_COO_UTILS_HPP_
 
 // for dll_import
-#include <lama/config.hpp>
+#include <common/config.hpp>
 
 // others
 #include <lama/LAMATypes.hpp>
@@ -51,7 +51,7 @@ class SyncToken;
  *
  */
 
-class LAMA_DLL_IMPORTEXPORT CUDACOOUtils
+class COMMON_DLL_IMPORTEXPORT CUDACOOUtils
 {
 public:
 

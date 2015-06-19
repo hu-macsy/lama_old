@@ -35,7 +35,7 @@
 #define LAMA_CRTP_MATRIX_HPP_
 
 // for dll_import
-#include <lama/config.hpp>
+#include <common/config.hpp>
 
 #include <lama/expression/all.hpp>
 

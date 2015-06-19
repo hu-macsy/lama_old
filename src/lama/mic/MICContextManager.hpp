@@ -34,7 +34,7 @@
 #define LAMA_MIC_CONTEXT_MANAGER_HPP_
 
 // for dll_import
-#include <lama/config.hpp>
+#include <common/config.hpp>
 
 // base classes
 #include <lama/ContextManager.hpp>
@@ -62,7 +62,7 @@ class MICContext;
  *  It provides instances of MICContext for a given device number.
  */
 
-class LAMA_DLL_IMPORTEXPORT MICContextManager: public ContextManager
+class COMMON_DLL_IMPORTEXPORT MICContextManager: public ContextManager
 {
 public:
 

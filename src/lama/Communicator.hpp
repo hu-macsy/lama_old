@@ -34,7 +34,7 @@
 #define LAMA_COMMUNICATOR_HPP_
 
 // for dll_import
-#include <lama/config.hpp>
+#include <common/config.hpp>
 
 // base classes
 #include <lama/NonCopyable.hpp>
@@ -89,7 +89,7 @@ class Halo;
  * Default copy constructor and assignment operator are disabled.
  *
  */
-class LAMA_DLL_IMPORTEXPORT Communicator: public Printable, private NonCopyable
+class COMMON_DLL_IMPORTEXPORT Communicator: public Printable, private NonCopyable
 {
 
 public:

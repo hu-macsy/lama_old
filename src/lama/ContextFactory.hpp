@@ -34,7 +34,7 @@
 #define LAMA_CONTEXT_FACTORY_HPP_
 
 // for dll_import
-#include <lama/config.hpp>
+#include <common/config.hpp>
 
 // base classes
 #include <lama/NonCopyable.hpp>
@@ -75,7 +75,7 @@ class ContextManager;
  *  For each supported context type a context manager must register to the
  *  factory otherwise the type remains unsupported.
  */
-class LAMA_DLL_IMPORTEXPORT ContextFactory: NonCopyable
+class COMMON_DLL_IMPORTEXPORT ContextFactory: NonCopyable
 {
 public:
 

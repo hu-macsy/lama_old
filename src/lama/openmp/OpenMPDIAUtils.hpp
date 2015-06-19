@@ -34,7 +34,7 @@
 #define LAMA_OPENMP_DIA_UTILS_HPP_
 
 // for dll_import
-#include <lama/config.hpp>
+#include <common/config.hpp>
 
 // others
 #include <lama/LAMATypes.hpp>
@@ -46,7 +46,7 @@ namespace lama
 /** This class provides routines to converse DIA storage data to CSR storage data and vice versa.
  */
 
-class LAMA_DLL_IMPORTEXPORT OpenMPDIAUtils
+class COMMON_DLL_IMPORTEXPORT OpenMPDIAUtils
 {
 public:
 

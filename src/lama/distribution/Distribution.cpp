@@ -624,18 +624,18 @@ Distribution* Distribution::getDistribution(
 // Macro to instantiate for type pair ARRAY_TYPE##I, ARRAY_TYPE##J
 #define LAMA_DISTRIBUTE2_INSTANTIATE(z, J, TYPE)                           \
     \
-    template LAMA_DLL_IMPORTEXPORT void Distribution::replicate(               \
+    template COMMON_DLL_IMPORTEXPORT void Distribution::replicate(               \
             TYPE allValues[],                                                      \
             const ARRAY_TYPE##J localValues[] ) const;                             \
 
 
 #define LAMA_DISTRIBUTE_INSTANTIATE(z, I, _)                               \
-    template LAMA_DLL_IMPORTEXPORT void Distribution::replicateRagged(         \
+    template COMMON_DLL_IMPORTEXPORT void Distribution::replicateRagged(         \
             ARRAY_TYPE##I allValues[],                                             \
             const ARRAY_TYPE##I localValues[],                                     \
             const IndexType allOffsets[] ) const;                                  \
     \
-    template LAMA_DLL_IMPORTEXPORT void Distribution::replicateN(              \
+    template COMMON_DLL_IMPORTEXPORT void Distribution::replicateN(              \
             ARRAY_TYPE##I allValues[],                                             \
             const ARRAY_TYPE##I localValues[],                                     \
             const IndexType n ) const;                                             \

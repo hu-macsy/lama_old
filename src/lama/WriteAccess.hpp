@@ -34,7 +34,7 @@
 #define LAMA_WRITE_ACCESS_HPP_
 
 // for dll_import
-#include <lama/config.hpp>
+#include <common/config.hpp>
 
 // base classes
 #include <lama/BaseAccess.hpp>
@@ -61,7 +61,7 @@ namespace lama
  * @tparam ValueType is the value type stored in the wrapped container.
  */
 template<typename ValueType>
-class LAMA_DLL_IMPORTEXPORT WriteAccess: public BaseAccess
+class COMMON_DLL_IMPORTEXPORT WriteAccess: public BaseAccess
 {
 public:
 
@@ -213,7 +213,7 @@ LAMAArray    <ValueType>* mArrayView;
  * @tparam ValueType is the value type stored in the wrapped container.
  */
 template<typename ValueType>
-class LAMA_DLL_IMPORTEXPORT WriteOnlyAccess: public WriteAccess<ValueType>
+class COMMON_DLL_IMPORTEXPORT WriteOnlyAccess: public WriteAccess<ValueType>
 {
 public:
 

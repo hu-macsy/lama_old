@@ -34,7 +34,7 @@
 #define LAMA_TASK_HPP_
 
 // for dll_import
-#include <lama/config.hpp>
+#include <common/config.hpp>
 
 // base classes
 #include <lama/Printable.hpp>
@@ -80,7 +80,7 @@ namespace lama
  * }
  * \endcode
  */
-class LAMA_DLL_IMPORTEXPORT Task: public Printable
+class COMMON_DLL_IMPORTEXPORT Task: public Printable
 {
 
 public:

@@ -34,7 +34,7 @@
 #define LAMA_SIMPLEAMG_HPP_
 
 // for dll_import
-#include <lama/config.hpp>
+#include <common/config.hpp>
 
 // base classes
 #include <lama/solver/IterativeSolver.hpp>
@@ -47,7 +47,7 @@
 namespace lama
 {
 
-class LAMA_DLL_IMPORTEXPORT SimpleAMG: public lama::IterativeSolver
+class COMMON_DLL_IMPORTEXPORT SimpleAMG: public lama::IterativeSolver
 {
 public:
 

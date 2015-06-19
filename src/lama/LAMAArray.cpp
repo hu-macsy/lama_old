@@ -1070,8 +1070,8 @@ LAMAArrayRef<ValueType>::LAMAArrayRef( const ValueType* pointer, IndexType size 
 /* ---------------------------------------------------------------------------------*/
 
 #define LAMA_ARRAY_INSTANTIATE(z, I, _)                               \
-    template class LAMA_DLL_IMPORTEXPORT LAMAArray<ARRAY_TYPE##I> ;       \
-    template class LAMA_DLL_IMPORTEXPORT LAMAArrayRef<ARRAY_TYPE##I> ;
+    template class COMMON_DLL_IMPORTEXPORT LAMAArray<ARRAY_TYPE##I> ;       \
+    template class COMMON_DLL_IMPORTEXPORT LAMAArrayRef<ARRAY_TYPE##I> ;
 
 // template instantiation for the supported data types
 

@@ -34,7 +34,7 @@
 #define LAMA_SCALAR_HPP_
 
 // for dll_import
-#include <lama/config.hpp>
+#include <common/config.hpp>
 
 // base classes
 #include <lama/Printable.hpp>
@@ -64,7 +64,7 @@ namespace lama
  * also supported to allow a high flexibility. But for efficiency
  * these operations should be avoided in all critical code parts.
  */
-class LAMA_DLL_IMPORTEXPORT Scalar: public Printable
+class COMMON_DLL_IMPORTEXPORT Scalar: public Printable
 {
 public:
 
@@ -238,7 +238,7 @@ private    :
 /** Output of ScalarType in stream is supported and very useful.
  */
 
-LAMA_DLL_IMPORTEXPORT std::ostream& operator<<( std::ostream& stream, const Scalar::ScalarType& object );
+COMMON_DLL_IMPORTEXPORT std::ostream& operator<<( std::ostream& stream, const Scalar::ScalarType& object );
 
 /** @brief Cast operator to convert a Scalar into corresponding basic type.
  *

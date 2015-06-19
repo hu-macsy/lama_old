@@ -34,7 +34,7 @@
 #define LAMA_OPENMP_LAPACK_HPP_
 
 // for dll_import
-#include <lama/config.hpp>
+#include <common/config.hpp>
 
 // others
 #include <lama/LAMATypes.hpp>

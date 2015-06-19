@@ -34,7 +34,7 @@
 #define LAMA_COMMUNICATION_PLAN_HPP_
 
 // for dll_import
-#include <lama/config.hpp>
+#include <common/config.hpp>
 
 // base classes
 #include <lama/Printable.hpp>
@@ -67,7 +67,7 @@ class Communicator;
  * where the number of elements is zero.
  *
  */
-class LAMA_DLL_IMPORTEXPORT CommunicationPlan: public Printable
+class COMMON_DLL_IMPORTEXPORT CommunicationPlan: public Printable
 {
 public:
 

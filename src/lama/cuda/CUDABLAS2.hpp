@@ -34,7 +34,7 @@
 #define LAMA_CUDABLAS2_HPP_
 
 // for dll_import
-#include <lama/config.hpp>
+#include <common/config.hpp>
 
 // others
 #include <lama/LAMATypes.hpp>
@@ -58,7 +58,7 @@ namespace lama
  *
  */
 
-class LAMA_DLL_IMPORTEXPORT CUDABLAS2
+class COMMON_DLL_IMPORTEXPORT CUDABLAS2
 {
 public:
 

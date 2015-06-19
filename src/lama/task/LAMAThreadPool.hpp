@@ -34,7 +34,7 @@
 #define LAMA_THREAD_POOL_HPP_
 
 // for dll_import
-#include <lama/config.hpp>
+#include <common/config.hpp>
 
 // logging
 #include <logging/logging.hpp>
@@ -65,7 +65,7 @@ typedef unsigned int TaskId;
  *  shared pointer so that ownership never matters.
  */
 
-struct LAMA_DLL_IMPORTEXPORT LAMAThreadTask
+struct COMMON_DLL_IMPORTEXPORT LAMAThreadTask
 {
     enum TaskState
     {
@@ -100,7 +100,7 @@ struct LAMA_DLL_IMPORTEXPORT LAMAThreadTask
  either here or at its creation.
  */
 
-class LAMA_DLL_IMPORTEXPORT LAMAThreadPool
+class COMMON_DLL_IMPORTEXPORT LAMAThreadPool
 {
 
 public:

@@ -35,7 +35,7 @@
 #define LAMA_ITERATIONCOUNT_HPP_
 
 // for dll_import
-#include <lama/config.hpp>
+#include <common/config.hpp>
 
 // base classes
 #include <lama/solver/criteria/Criterion.hpp>
@@ -54,7 +54,7 @@ class IterativeSolver;
  * of iterations is larger or smaller than a configured number of iterations.
  * Depending on the configured IterationCheckMode.
  */
-class LAMA_DLL_IMPORTEXPORT IterationCount: public Criterion
+class COMMON_DLL_IMPORTEXPORT IterationCount: public Criterion
 {
 public:
     /**

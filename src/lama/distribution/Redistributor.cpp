@@ -294,12 +294,12 @@ void Redistributor::buildRowPlans(
 /* ========================================================================= */
 
 /*
- template LAMA_DLL_IMPORTEXPORT
+ template COMMON_DLL_IMPORTEXPORT
  void Redistributor::redistributeN ( LAMAArray<float>& targetArray,
  const LAMAArray<float>& sourceArray,
  IndexType n ) const;
 
- template LAMA_DLL_IMPORTEXPORT
+ template COMMON_DLL_IMPORTEXPORT
  void Redistributor::redistributeN ( LAMAArray<double>& targetArray,
  const LAMAArray<double>& sourceArray,
  IndexType n ) const;

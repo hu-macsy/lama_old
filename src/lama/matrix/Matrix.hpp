@@ -34,7 +34,7 @@
 #define LAMA_MATRIX_HPP_
 
 // for dll_import
-#include <lama/config.hpp>
+#include <common/config.hpp>
 
 // base classes
 #include <lama/Distributed.hpp>
@@ -66,7 +66,7 @@ typedef boost::shared_ptr<class Matrix> MatrixPtr;
  * Matrix is one of the LAMA Base Types and should be used in all situations where it is not necessary to access a
  * single element or to create a new Matrix.
  */
-class LAMA_DLL_IMPORTEXPORT Matrix: public Distributed
+class COMMON_DLL_IMPORTEXPORT Matrix: public Distributed
 {
 
 public:

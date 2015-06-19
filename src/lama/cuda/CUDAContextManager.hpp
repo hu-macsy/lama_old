@@ -34,7 +34,7 @@
 #define LAMA_CUDA_CONTEXT_MANAGER_HPP_
 
 // for dll_import
-#include <lama/config.hpp>
+#include <common/config.hpp>
 
 // base classes
 #include <lama/ContextManager.hpp>
@@ -61,7 +61,7 @@ class CUDAContext;
  *  It provides instances of CUDAContext for a given device number.
  */
 
-class LAMA_DLL_IMPORTEXPORT CUDAContextManager: public ContextManager
+class COMMON_DLL_IMPORTEXPORT CUDAContextManager: public ContextManager
 {
 public:
 

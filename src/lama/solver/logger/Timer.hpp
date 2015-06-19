@@ -34,7 +34,7 @@
 #define LAMA_TIMER_HPP_
 
 // for dll_import
-#include <lama/config.hpp>
+#include <common/config.hpp>
 
 // base classes
 #include <lama/solver/logger/Timer.hpp>
@@ -51,7 +51,7 @@ namespace lama
  * An object of this class provides routines to start and stop timers that
  * are identified by a string.
  */
-class LAMA_DLL_IMPORTEXPORT Timer
+class COMMON_DLL_IMPORTEXPORT Timer
 {
 public:
 

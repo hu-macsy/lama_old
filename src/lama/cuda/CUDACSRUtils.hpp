@@ -34,7 +34,7 @@
 #define LAMA_CUDA_CSR_UTILS_HPP_
 
 // for dll_import
-#include <lama/config.hpp>
+#include <common/config.hpp>
 
 // others
 #include <lama/SyncToken.hpp>
@@ -49,7 +49,7 @@
 namespace lama
 {
 
-class LAMA_DLL_IMPORTEXPORT CUDACSRUtils
+class COMMON_DLL_IMPORTEXPORT CUDACSRUtils
 {
 public:
     /** Helper routine for conversion CSR to CSR format.  */

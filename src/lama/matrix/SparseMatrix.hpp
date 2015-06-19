@@ -34,7 +34,7 @@
 #define LAMA_SPARSE_MATRIX_HPP_
 
 // for dll_import
-#include <lama/config.hpp>
+#include <common/config.hpp>
 
 // base classes
 #include <lama/matrix/CRTPMatrix.hpp>
@@ -70,7 +70,7 @@ template<typename > class DenseMatrix;
  */
 
 template<typename ValueType>
-class LAMA_DLL_IMPORTEXPORT SparseMatrix: public CRTPMatrix<SparseMatrix<ValueType>,ValueType>
+class COMMON_DLL_IMPORTEXPORT SparseMatrix: public CRTPMatrix<SparseMatrix<ValueType>,ValueType>
 {
 
     friend class SpecializedJacobi;

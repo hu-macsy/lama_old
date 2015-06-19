@@ -34,7 +34,7 @@
 #define LAMA_CUDA_DIA_UTILS_HPP_
 
 // for dll_import
-#include <lama/config.hpp>
+#include <common/config.hpp>
 
 // others
 #include <lama/LAMATypes.hpp>
@@ -49,7 +49,7 @@ namespace lama
  *
  */
 
-class LAMA_DLL_IMPORTEXPORT CUDADIAUtils
+class COMMON_DLL_IMPORTEXPORT CUDADIAUtils
 {
 public:
 

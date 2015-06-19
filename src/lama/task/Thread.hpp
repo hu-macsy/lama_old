@@ -34,7 +34,7 @@
 #define LAMA_THREAD_HPP_
 
 // for dll_import
-#include <lama/config.hpp>
+#include <common/config.hpp>
 
 // boost
 #include <boost/thread.hpp>
@@ -59,7 +59,7 @@ namespace lama
 #endif
 #endif
 
-class LAMA_DLL_IMPORTEXPORT Thread
+class COMMON_DLL_IMPORTEXPORT Thread
 {
 public:
 

@@ -47,7 +47,7 @@ typedef boost::shared_ptr<const MICContext> MICContextPtr;
 
 /** Class that sycnchronizes with a MIC offload transfer or computation. */
 
-class LAMA_DLL_IMPORTEXPORT MICSyncToken: public lama::SyncToken
+class COMMON_DLL_IMPORTEXPORT MICSyncToken: public lama::SyncToken
 
 {
 public:

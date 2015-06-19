@@ -34,7 +34,7 @@
 #define LAMA_LAMA_INTERFACE_HPP_
 
 // for dll_import
-#include <lama/config.hpp>
+#include <common/config.hpp>
 
 // base classes
 #include <lama/Printable.hpp>
@@ -57,7 +57,7 @@ namespace lama
  * Note: Instead of using virtual routines this class uses function pointer variables.
  *       They are stored in one- or two-dimensional arrays indexed by types.
  */
-class LAMA_DLL_IMPORTEXPORT LAMAInterface: public Printable
+class COMMON_DLL_IMPORTEXPORT LAMAInterface: public Printable
 {
 public:
 

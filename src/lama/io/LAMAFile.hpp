@@ -34,14 +34,14 @@
 #define LAMA_LAMAFILE_HPP_
 
 // for dll_import
-#include <lama/config.hpp>
+#include <common/config.hpp>
 
 namespace lama
 {
 
 /** Common base class for LAMA input and output files. */
 
-class LAMA_DLL_IMPORTEXPORT LAMAFile
+class COMMON_DLL_IMPORTEXPORT LAMAFile
 {
 public:
 

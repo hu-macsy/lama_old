@@ -34,7 +34,7 @@
 #define LAMA_TASKSYNCTOKEN_HPP_
 
 // for dll_import
-#include <lama/config.hpp>
+#include <common/config.hpp>
 
 // base classes
 #include <lama/SyncToken.hpp>
@@ -47,7 +47,7 @@ namespace lama
 
 /** Class to run a function asynchronously as a asynchronous Task. */
 
-class LAMA_DLL_IMPORTEXPORT TaskSyncToken: public SyncToken
+class COMMON_DLL_IMPORTEXPORT TaskSyncToken: public SyncToken
 {
 public:
 

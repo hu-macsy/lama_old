@@ -36,7 +36,7 @@
 #define LAMA_FILELOGGER_HPP_
 
 // for dll_import
-#include <lama/config.hpp>
+#include <common/config.hpp>
 
 // base classes
 #include <lama/NonCopyable.hpp>
@@ -50,7 +50,7 @@ namespace lama
 /**
  * @brief Singleton-based logger for write only file-logging purposes.
  */
-class LAMA_DLL_IMPORTEXPORT FileLogger: private NonCopyable
+class COMMON_DLL_IMPORTEXPORT FileLogger: private NonCopyable
 {
 public:
 

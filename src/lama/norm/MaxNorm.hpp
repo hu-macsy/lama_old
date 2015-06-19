@@ -34,7 +34,7 @@
 #define LAMA_MAXNORM_HPP_
 
 // for dll_import
-#include <lama/config.hpp>
+#include <common/config.hpp>
 
 // base classes
 #include <lama/norm/Norm.hpp>
@@ -42,7 +42,7 @@
 namespace lama
 {
 
-class LAMA_DLL_IMPORTEXPORT MaxNorm: public lama::Norm
+class COMMON_DLL_IMPORTEXPORT MaxNorm: public lama::Norm
 {
 public:
     MaxNorm();
@@ -55,11 +55,11 @@ public:
     virtual Scalar apply( const Matrix& matrix ) const;
 };
 
-LAMA_DLL_IMPORTEXPORT Scalar maxNorm( const Scalar& scalar );
+COMMON_DLL_IMPORTEXPORT Scalar maxNorm( const Scalar& scalar );
 
-LAMA_DLL_IMPORTEXPORT Scalar maxNorm( const Vector& vector );
+COMMON_DLL_IMPORTEXPORT Scalar maxNorm( const Vector& vector );
 
-LAMA_DLL_IMPORTEXPORT Scalar maxNorm( const Matrix& matrix );
+COMMON_DLL_IMPORTEXPORT Scalar maxNorm( const Matrix& matrix );
 
 }
 

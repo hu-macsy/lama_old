@@ -34,7 +34,7 @@
 #define LAMA_DENSESTORAGE_HPP_
 
 // for dll_import
-#include <lama/config.hpp>
+#include <common/config.hpp>
 
 // base classes
 #include <lama/storage/CRTPMatrixStorage.hpp>
@@ -56,7 +56,7 @@ template<typename ValueType> class DenseStorage;
  *  @tparam ValueType is the value type of the matrix values.
  */
 template<typename ValueType>
-class LAMA_DLL_IMPORTEXPORT DenseStorageView: public CRTPMatrixStorage<DenseStorageView<ValueType>,ValueType>
+class COMMON_DLL_IMPORTEXPORT DenseStorageView: public CRTPMatrixStorage<DenseStorageView<ValueType>,ValueType>
 {
 public:
 
@@ -374,7 +374,7 @@ private:
  *  @tparam ValueType is the value type of the matrix values.
  */
 template<typename ValueType>
-class LAMA_DLL_IMPORTEXPORT DenseStorage: public DenseStorageView<ValueType>
+class COMMON_DLL_IMPORTEXPORT DenseStorage: public DenseStorageView<ValueType>
 {
 public:
 

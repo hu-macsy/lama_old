@@ -35,7 +35,7 @@
 #define LAMA_DEFAULTJACOBI_HPP_
 
 // for dll_import
-#include <lama/config.hpp>
+#include <common/config.hpp>
 
 // base classes
 #include <lama/solver/OmegaSolver.hpp>
@@ -46,7 +46,7 @@
 namespace lama
 {
 
-class LAMA_DLL_IMPORTEXPORT DefaultJacobi: public OmegaSolver
+class COMMON_DLL_IMPORTEXPORT DefaultJacobi: public OmegaSolver
 {
 public:
     DefaultJacobi( const std::string& id );

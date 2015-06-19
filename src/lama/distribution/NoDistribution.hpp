@@ -34,7 +34,7 @@
 #define LAMA_NODISTRIBUTION_HPP_
 
 // for dll_import
-#include <lama/config.hpp>
+#include <common/config.hpp>
 
 // base classes
 #include <lama/distribution/Distribution.hpp>
@@ -55,7 +55,7 @@ namespace lama
  *  done on all partitions. But a replicated object can also be used
  *  like a private incarnation on each processor.
  */
-class LAMA_DLL_IMPORTEXPORT NoDistribution: public Distribution
+class COMMON_DLL_IMPORTEXPORT NoDistribution: public Distribution
 {
 public:
 

@@ -36,7 +36,7 @@
 #define LAMA_RICHARDSON_HPP
 
 // for dll_import
-#include <lama/config.hpp>
+#include <common/config.hpp>
 
 // base classes
 #include <lama/solver/OmegaSolver.hpp>
@@ -47,7 +47,7 @@
 namespace lama
 {
 
-class LAMA_DLL_IMPORTEXPORT Richardson: public OmegaSolver
+class COMMON_DLL_IMPORTEXPORT Richardson: public OmegaSolver
 {
 public:
     Richardson( const std::string& id );

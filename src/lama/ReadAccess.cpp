@@ -115,7 +115,7 @@ void ReadAccess<ValueType>::writeAt( std::ostream& stream ) const
 // template instantiation for the supported data types
 
 #define LAMA_READ_ACCESS_INSTANTIATE(z, I, _)                               \
-    template class LAMA_DLL_IMPORTEXPORT ReadAccess< ARRAY_TYPE##I >;
+    template class COMMON_DLL_IMPORTEXPORT ReadAccess< ARRAY_TYPE##I >;
 
 BOOST_PP_REPEAT( ARRAY_TYPE_CNT, LAMA_READ_ACCESS_INSTANTIATE, _ )
 

@@ -36,7 +36,7 @@
 #include <mpi.h>
 
 // for dll_import
-#include <lama/config.hpp>
+#include <common/config.hpp>
 
 // base classes
 #include <lama/SyncToken.hpp>
@@ -52,7 +52,7 @@ namespace lama
 
 /** Class for MPI synchronization that waits on pending messages. */
 
-class LAMA_DLL_IMPORTEXPORT MPISyncToken: public SyncToken
+class COMMON_DLL_IMPORTEXPORT MPISyncToken: public SyncToken
 {
 public:
 

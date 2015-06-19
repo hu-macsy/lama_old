@@ -404,7 +404,7 @@ bool ELLSparseMatrix<ValueType>::initialized = registerCreator();
         return "ELLSparseMatrix<ARITHMETIC_TYPE##I>";                          \
     }                                                                          \
     \
-    template class LAMA_DLL_IMPORTEXPORT ELLSparseMatrix<ARITHMETIC_TYPE##I> ;
+    template class COMMON_DLL_IMPORTEXPORT ELLSparseMatrix<ARITHMETIC_TYPE##I> ;
 
 BOOST_PP_REPEAT( ARITHMETIC_TYPE_CNT, LAMA_ELL_SPARSE_MATRIX_INSTANTIATE, _ )
 

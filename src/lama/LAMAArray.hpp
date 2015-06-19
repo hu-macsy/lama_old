@@ -36,7 +36,7 @@
 #define LAMA_LAMA_ARRAY_HPP_
 
 // for dll_import
-#include <lama/config.hpp>
+#include <common/config.hpp>
 
 // base classes
 #include <lama/Printable.hpp>
@@ -71,7 +71,7 @@ class WriteAccess;
 
 /** Common base class for typed LAMAArray. */
 
-class LAMA_DLL_IMPORTEXPORT _LAMAArray: public Printable
+class COMMON_DLL_IMPORTEXPORT _LAMAArray: public Printable
 {
 
 public:
@@ -127,7 +127,7 @@ protected:
  * indirectly accessed via a ReadAccess or a WriteAccess.
  */
 template<typename ValueType>
-class LAMA_DLL_IMPORTEXPORT LAMAArray: public _LAMAArray
+class COMMON_DLL_IMPORTEXPORT LAMAArray: public _LAMAArray
 {
     friend class ReadAccess<ValueType> ;
     friend class WriteAccess<ValueType> ;
@@ -371,7 +371,7 @@ mutable    boost::recursive_mutex access_mutex; // needed to make accesses threa
  * @tparam ValueType is the type stored in this container.
  */
 template<typename ValueType>
-class LAMA_DLL_IMPORTEXPORT LAMAArrayRef: public LAMAArray<ValueType>
+class COMMON_DLL_IMPORTEXPORT LAMAArrayRef: public LAMAArray<ValueType>
 {
 public:
 
