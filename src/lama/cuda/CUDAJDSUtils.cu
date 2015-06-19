@@ -42,7 +42,7 @@
 #include <lama/cuda/CUDAUtils.hpp>
 
 #include <lama/exception/LAMAAssert.hpp>
-#include <lama/tracing.hpp>
+#include <tracing/tracing.hpp>
 
 #include <lama/LAMAInterface.hpp>
 #include <lama/LAMAInterfaceRegistry.hpp>

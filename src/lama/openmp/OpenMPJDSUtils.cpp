@@ -48,7 +48,7 @@
 #include <lama/macros/unused.hpp>
 
 // trace
-#include <lama/tracing.hpp>
+#include <tracing/tracing.hpp>
 
 // boost
 #include <boost/scoped_array.hpp>

@@ -43,7 +43,7 @@
 #include <lama/matrix/CSRSparseMatrix.hpp>
 
 // tracing
-#include <lama/tracing.hpp>
+#include <tracing/tracing.hpp>
 
 namespace lama
 {

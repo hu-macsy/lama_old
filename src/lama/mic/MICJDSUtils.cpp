@@ -47,7 +47,7 @@
 #include <lama/exception/LAMAAssert.hpp>
 
 // trace
-#include <lama/tracing.hpp>
+#include <tracing/tracing.hpp>
 
 namespace lama
 {

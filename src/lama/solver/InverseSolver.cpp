@@ -40,7 +40,7 @@
 #include <lama/matrix/DenseMatrix.hpp>
 
 #include <lama/LAMAInterface.hpp>
-#include <lama/tracing.hpp>
+#include <tracing/tracing.hpp>
 
 #include <lama/expression/MatrixVectorExpressions.hpp>
 

@@ -42,6 +42,8 @@ set ( TRACING_LIBRARY scaitrace
 set ( TRACING_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR} 
       CACHE PATH "traing include directory" )
 
+mark_as_advanced( TRACING_LIBRARY TRACING_INCLUDE_DIR )
+
 set ( CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/../CMake/Modules" )
 
 # Set default build type to RELEASE, can be changed via ccmake

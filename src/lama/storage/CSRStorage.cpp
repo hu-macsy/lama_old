@@ -57,7 +57,7 @@
 // boost
 #include <boost/bind.hpp>
 #include <boost/preprocessor.hpp>
-#include <lama/tracing.hpp>
+#include <tracing/tracing.hpp>
 
 #include <cmath>
 

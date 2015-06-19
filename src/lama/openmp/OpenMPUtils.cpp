@@ -37,7 +37,7 @@
 
 // others
 #include <lama/LAMAInterfaceRegistry.hpp>
-#include <lama/tracing.hpp>
+#include <tracing/tracing.hpp>
 
 // boost
 #include <boost/preprocessor.hpp>

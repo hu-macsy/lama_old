@@ -44,7 +44,7 @@
 #include <lama/exception/LAMAAssert.hpp>
 
 // tracing
-#include <lama/tracing.hpp>
+#include <tracing/tracing.hpp>
 
 #include <boost/bind.hpp>
 

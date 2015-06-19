@@ -42,7 +42,7 @@
 #include <lama/matrix/Matrix.hpp>
 
 // tracing
-#include <lama/tracing.hpp>
+#include <tracing/tracing.hpp>
 
 // boost
 #include <boost/preprocessor.hpp>

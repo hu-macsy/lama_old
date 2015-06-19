@@ -88,7 +88,7 @@ void verifySameMatrix( Matrix& m1, Matrix& m2 )
 }
 
 template<typename ValueType>
-void verifySameMatrix( Matrix& m1, Matrix& m2, ValueType eps, log4lama::Logger& logger )
+void verifySameMatrix( Matrix& m1, Matrix& m2, ValueType eps, logging::Logger& logger )
 {
     BOOST_REQUIRE_EQUAL( m1.getNumRows(), m2.getNumRows() );
     BOOST_REQUIRE_EQUAL( m1.getNumColumns(), m2.getNumColumns() );
@@ -179,7 +179,7 @@ void GEMMTestImpl( const int n, const int m, const int k, ValueType eps, Context
 /* ----------------------------- test functions --------------------------------------------------------------------- */
 
 template<typename ValueType>
-void assignmentMultiplicationTest( log4lama::Logger& logger )
+void assignmentMultiplicationTest( logging::Logger& logger )
 {
     IndexType n = 4;
     //4x4 * 4x4
@@ -317,7 +317,7 @@ void assignmentMultiplicationTest( log4lama::Logger& logger )
 /* ------------------------------------------------------------------------------------------------------------------ */
 
 template<typename ValueType>
-void xGEMMOperationTest( log4lama::Logger& logger )
+void xGEMMOperationTest( logging::Logger& logger )
 {
     //alpha * A * B + beta * C
     {

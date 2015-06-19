@@ -33,7 +33,7 @@
 
 #pragma once
 
-#if defined( LAMA_TRACE_LEVEL_ON ) 
+#if defined( LAMA_TRACE_ON ) 
 
 #include <tracing/TraceRegionRecord.hpp>
 #include <tracing/TraceConfig.hpp>
@@ -45,7 +45,7 @@
 #define LAMA_TRACE_SCOPE( flag ) tracing::TraceConfig::TraceScope LAMA_Scp__( flag );
 #define LAMA_TIMETRACER( name ) tracing::TraceRegionRecord::spentLast( name );
 
-#elif defined( LAMA_TRACE_LEVEL_OFF )
+#elif defined( LAMA_TRACE_OFF )
 
 #define LAMA_REGION( name )
 #define LAMA_REGION_START( name )
@@ -63,6 +63,6 @@
 #define LAMA_REGION_N( name, n )
 #define LAMA_TRACE_SCOPE( flag )
 #define LAMA_TIMETRACER( name ) 0.0
-#error "Must define LAMA_TRACE_LEVEL_xxx with xxx = ON, or OFF"
+#error "Must define LAMA_TRACE_xxx with xxx = ON, or OFF"
 
 #endif

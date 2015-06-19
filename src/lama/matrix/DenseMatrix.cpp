@@ -41,7 +41,7 @@
 #include <lama/LAMAInterface.hpp>
 #include <lama/ContextAccess.hpp>
 #include <lama/NoSyncToken.hpp>
-#include <lama/tracing.hpp>
+#include <tracing/tracing.hpp>
 
 #include <lama/distribution/NoDistribution.hpp>
 #include <lama/distribution/CyclicDistribution.hpp>

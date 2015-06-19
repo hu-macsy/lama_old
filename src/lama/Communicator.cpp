@@ -42,7 +42,7 @@
 #include <lama/distribution/Halo.hpp>
 
 // tracing
-#include <lama/tracing.hpp>
+#include <tracing/tracing.hpp>
 
 using namespace std;
 

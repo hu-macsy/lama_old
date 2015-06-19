@@ -39,7 +39,7 @@
 #include <lama/cuda/CUDAError.hpp>
 
 #include <lama/ContextAccess.hpp>
-#include <lama/tracing.hpp>
+#include <tracing/tracing.hpp>
 
 namespace lama
 {

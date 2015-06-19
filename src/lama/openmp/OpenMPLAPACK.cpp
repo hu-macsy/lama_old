@@ -39,7 +39,7 @@
 
 #include <lama/LAMAInterfaceRegistry.hpp>
 #include <lama/BLASInterface.hpp>
-#include <lama/tracing.hpp>
+#include <tracing/tracing.hpp>
 #include <boost/scoped_array.hpp>
 
 // macros

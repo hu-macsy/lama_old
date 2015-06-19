@@ -43,7 +43,7 @@
 // others
 #include <lama/distribution/Distribution.hpp>
 #include <lama/distribution/Halo.hpp>
-#include <lama/tracing.hpp>
+#include <tracing/tracing.hpp>
 
 #include <lama/LAMAArray.hpp>
 #include <lama/HostReadAccess.hpp>

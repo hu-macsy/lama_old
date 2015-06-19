@@ -90,15 +90,15 @@ add_definitions ( -DLAMA_ASSERT_LEVEL_${LAMA_ASSERT_LEVEL} )
 # completely ignored. If TRACE is set to VT, regions will be traced
 # (entry, exit event) for VampirTrace.
 
-LIST ( APPEND TRACE_CHOICES "VT" "TIME" "OFF" )
+LIST ( APPEND TRACE_CHOICES "ON" "OFF" )
 
 if ( NOT LAMA_TRACE_LEVEL )
     set ( DEFAULT_TRACE_LEVEL "OFF" )
 endif ( NOT LAMA_TRACE_LEVEL )
 
 set ( LAMA_TRACE_LEVEL ${DEFAULT_TRACE_LEVEL} CACHE STRING
-     "Choose level of TRACE: VT (for VampirTrace), TIME(region timing), SIMPLE(simple timing) or OFF (default)" )
+     "Choose level of TRACE: ON (enabled) or OFF (disabled, default)" )
 set ( CACHE LAMA_TRACE_LEVEL PROPERTY STRINGS ${TRACE_CHOICES} )
 checkValue( ${LAMA_TRACE_LEVEL} "${TRACE_CHOICES}" )
 
-add_definitions( -DLAMA_TRACE_LEVEL_${LAMA_TRACE_LEVEL} )
+add_definitions( -DLAMA_TRACE_${LAMA_TRACE_LEVEL} )

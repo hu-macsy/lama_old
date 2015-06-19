@@ -35,6 +35,11 @@
 lama_set_source_dir ()
 
 ### include directories ###
+
+include_directories( ${COMMON_INCLUDE_DIR}  )
+include_directories( ${LOGGING_INCLUDE_DIR} )
+include_directories( ${TRACING_INCLUDE_DIR} )
+
 if ( METIS_FOUND )
     include_directories( ${METIS_INCLUDE_DIR} ) 
 endif ( METIS_FOUND )
@@ -92,7 +97,6 @@ set ( HEADERS
         LAMATypes
         NonCopyable
         NoSyncToken
-        tracing
         TypeTraits
         BLASInterface
         UtilsInterface
@@ -133,7 +137,6 @@ add_subdirectory ( openmp )
 add_subdirectory ( solver )
 add_subdirectory ( storage )
 add_subdirectory ( task )
-add_subdirectory ( tracing )
 
 ### set link directories ###
 if ( WIN32 )
@@ -147,8 +150,8 @@ add_library ( ama ${LAMA_LIBRARY_TYPE} ${CXX_SOURCES} ${HEADERS} )
 
 
 ### set target link libraries ###
-set( LAMA_LINK_LIBRARIES log4lama )
-set ( ADDITIONAL_LINKER_FLAGS "-Wl,--whole-archive -L\${LAMA_ROOT}/lib -lama -llog4lama" )
+set( LAMA_LINK_LIBRARIES ${LOGGING_LIBRARY} )
+set ( ADDITIONAL_LINKER_FLAGS "-Wl,--whole-archive -L\${LAMA_ROOT}/lib -lama -llogging" )
 
 # amacuda
 if ( CUDA_FOUND AND LAMA_USE_CUDA AND CUDA_HAVE_GPU )

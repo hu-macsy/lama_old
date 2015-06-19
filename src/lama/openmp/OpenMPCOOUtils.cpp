@@ -38,7 +38,7 @@
 // others
 #include <lama/LAMAInterface.hpp>
 #include <lama/LAMAInterfaceRegistry.hpp>
-#include <lama/tracing.hpp>
+#include <tracing/tracing.hpp>
 
 #include <lama/openmp/OpenMP.hpp>
 

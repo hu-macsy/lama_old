@@ -37,14 +37,14 @@
 // others
 #include <lama/openmp/OpenMPCSRUtils.hpp>
 #include <lama/openmp/OpenMPDIAUtils.hpp>
-#include <lama/tracing.hpp>
+#include <tracing/tracing.hpp>
 
 #include <lama/HostReadAccess.hpp>
 #include <lama/HostWriteAccess.hpp>
 #include <lama/LAMAInterface.hpp>
 #include <lama/ContextAccess.hpp>
 #include <lama/task/TaskSyncToken.hpp>
-#include <lama/tracing.hpp>
+#include <tracing/tracing.hpp>
 
 // macros
 #include <lama/macros/unused.hpp>

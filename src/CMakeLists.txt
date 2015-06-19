@@ -52,6 +52,12 @@ set ( LAMA_VERSION_PATCH 1 )
 set ( LAMA_VERSION_COUNT 3 )
 set ( LAMA_VERSION ${LAMA_VERSION_MAJOR}.${LAMA_VERSION_MINOR}.${LAMA_VERSION_PATCH} )
 
+### Include all other projects 
+
+add_subdirectory( ../common "${CMAKE_CURRENT_BINARY_DIR}/common" )
+add_subdirectory( ../logging "${CMAKE_CURRENT_BINARY_DIR}/logging" )
+add_subdirectory( ../tracing "${CMAKE_CURRENT_BINARY_DIR}/tracing" )
+
 ### Variables / CMAKE Functions ###
 include ( Variables )
 include ( SearchPackages )
@@ -119,7 +125,7 @@ endif ( Boost_INCLUDE_DIR )
 
 ### add subdirectories ###
 add_subdirectory ( lama )
-add_subdirectory ( logging )
+
 if ( FOUND_BOOST_TEST AND LAMA_BUILD_TEST )
     add_subdirectory ( test )
 endif ( FOUND_BOOST_TEST AND LAMA_BUILD_TEST )

@@ -54,7 +54,7 @@
 #include <lama/openmp/OpenMPCSRUtils.hpp>
 
 // tracing
-#include <lama/tracing.hpp>
+#include <tracing/tracing.hpp>
 
 // tracing
 #include <boost/bind.hpp>

@@ -39,7 +39,7 @@
 #include <lama/LAMAInterfaceRegistry.hpp>
 
 // tracing with LAMA_REGION
-#include <lama/tracing.hpp>
+#include <tracing/tracing.hpp>
 #include <omp.h>
 
 #include <cmath>

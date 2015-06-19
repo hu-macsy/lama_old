@@ -41,7 +41,7 @@
 #include <lama/expression/MatrixVectorExpressions.hpp>
 
 // assert
-#include <lama/tracing.hpp>
+#include <tracing/tracing.hpp>
 
 namespace lama
 {

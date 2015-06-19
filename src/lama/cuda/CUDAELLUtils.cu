@@ -43,7 +43,7 @@
 #include <lama/LAMAInterface.hpp>
 #include <lama/LAMAInterfaceRegistry.hpp>
 #include <lama/macros/unused.hpp>
-#include <lama/tracing.hpp>
+#include <tracing/tracing.hpp>
 
 // cuda
 #include <cuda.h>

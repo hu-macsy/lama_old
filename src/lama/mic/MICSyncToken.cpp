@@ -35,7 +35,7 @@
 #include <lama/mic/MICSyncToken.hpp>
 
 // others
-#include <lama/tracing.hpp>
+#include <tracing/tracing.hpp>
 #include <lama/exception/LAMAAssert.hpp>
 
 namespace lama

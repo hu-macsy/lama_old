@@ -43,7 +43,7 @@
 #include <lama/macros/unused.hpp>
 
 // tracing
-#include <lama/tracing.hpp>
+#include <tracing/tracing.hpp>
 
 // boost
 #include <boost/bind.hpp>

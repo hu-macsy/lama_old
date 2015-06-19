@@ -44,7 +44,7 @@
 #include <lama/Settings.hpp>
 
 // trace
-#include <lama/tracing.hpp>
+#include <tracing/tracing.hpp>
 
 #include <mkl.h>
 

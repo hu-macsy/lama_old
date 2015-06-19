@@ -35,7 +35,7 @@
 #include <lama/task/LAMAThreadPool.hpp>
 
 // tracing
-#include <lama/tracing.hpp>
+#include <tracing/tracing.hpp>
 
 // assert
 #include <lama/exception/LAMAAssert.hpp>

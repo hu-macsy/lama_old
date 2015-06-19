@@ -35,7 +35,7 @@
 
 #include <lama/CommunicatorFactory.hpp>
 #include <lama/task/LAMAThreadPool.hpp>
-#include <lama/tracing.hpp>
+#include <tracing/tracing.hpp>
 
 #include <memory>
 #include <boost/bind.hpp>

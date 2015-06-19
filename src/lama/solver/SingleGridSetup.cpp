@@ -39,7 +39,7 @@
 #include <lama/solver/criteria/IterationCount.hpp>
 
 // tracing
-#include <lama/tracing.hpp>
+#include <tracing/tracing.hpp>
 
 namespace lama
 {

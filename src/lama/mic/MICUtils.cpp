@@ -37,7 +37,7 @@
 // others
 #include <lama/mic/MICContext.hpp>
 #include <lama/LAMAInterfaceRegistry.hpp>
-#include <lama/tracing.hpp>
+#include <tracing/tracing.hpp>
 
 namespace lama
 {

@@ -62,6 +62,8 @@ set ( COMMON_LIBRARY common
 set ( COMMON_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR} 
       CACHE PATH "common include directory" )
 
+mark_as_advanced( COMMON_INCLUDE_DIR COMMON_LIBRARY )
+
 file( GLOB CPP_SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp" )
 file( GLOB HPP_HEADERS "${CMAKE_CURRENT_SOURCE_DIR}/common/*.hpp" )
 

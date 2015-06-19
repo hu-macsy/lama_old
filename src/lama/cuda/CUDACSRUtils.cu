@@ -39,7 +39,9 @@
 #include <lama/ContextFactory.hpp>
 #include <lama/LAMAInterface.hpp>
 #include <lama/LAMAInterfaceRegistry.hpp>
-#include <lama/tracing.hpp>
+
+// tracing
+#include <tracing/tracing.hpp>
 
 // others cuda
 #include <lama/cuda/utils.cu.h>

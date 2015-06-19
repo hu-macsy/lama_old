@@ -35,7 +35,7 @@
 #include <lama/mpi/MPISyncToken.hpp>
 
 // others
-#include <lama/tracing.hpp>
+#include <tracing/tracing.hpp>
 #include <lama/mpi/MPIUtils.hpp>
 
 #include <lama/exception/LAMAAssert.hpp>

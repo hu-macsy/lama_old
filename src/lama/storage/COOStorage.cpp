@@ -48,7 +48,7 @@
 #include <lama/openmp/OpenMPCOOUtils.hpp>
 #include <lama/openmp/OpenMPCSRUtils.hpp>
 
-#include <lama/tracing.hpp>
+#include <tracing/tracing.hpp>
 #include <boost/preprocessor.hpp>
 
 using std::auto_ptr;

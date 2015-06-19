@@ -41,7 +41,7 @@
 #include <lama/LAMAArrayUtils.hpp>
 
 // tracing
-#include <lama/tracing.hpp>
+#include <tracing/tracing.hpp>
 
 #include <boost/bind.hpp>
 #include <boost/preprocessor.hpp>

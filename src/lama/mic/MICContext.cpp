@@ -38,7 +38,7 @@
 #include <lama/NoSyncToken.hpp>
 #include <lama/mic/MICSyncToken.hpp>
 
-#include <lama/tracing.hpp>
+#include <tracing/tracing.hpp>
 #include <omp.h>
 #include <mkl.h>
 

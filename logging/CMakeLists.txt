@@ -46,6 +46,8 @@ set ( LOGGING_LIBRARY logging
 set ( LOGGING_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR} 
       CACHE PATH "logging include directory" )
 
+mark_as_advanced( LOGGING_INCLUDE_DIR LOGGING_LIBRARY )
+
 set ( CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/../CMake/Modules" )
 
 # Set default build type to RELEASE, can be changed via ccmake

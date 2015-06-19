@@ -33,7 +33,7 @@
 
 #include <boost/test/unit_test.hpp>
 
-#include <lama/tracing.hpp>
+#include <tracing/tracing.hpp>
 
 #ifdef _WIN32
 #include <Windows.h>

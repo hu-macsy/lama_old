@@ -36,7 +36,7 @@
 
 // others
 #include <lama/DenseVector.hpp>
-#include <lama/tracing.hpp>
+#include <tracing/tracing.hpp>
 
 #include <lama/expression/VectorExpressions.hpp>
 #include <lama/expression/MatrixVectorExpressions.hpp>

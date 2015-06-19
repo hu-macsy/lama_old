@@ -41,7 +41,7 @@
 #include <lama/cuda/CUDADIAUtils.hpp>
 #include <lama/cuda/CUDAStreamSyncToken.hpp>
 #include <lama/cuda/CUDASettings.hpp>
-#include <lama/tracing.hpp>
+#include <tracing/tracing.hpp>
 
 // thrust
 #include <thrust/device_ptr.h>

@@ -85,13 +85,18 @@ const char* Thread::getCurrentThreadId()
 
         ostringstream thread_name;
  
-        thread_name << "t_" << id ;
+        thread_name << "t_" << id;
 
-        mapThreads[ id ] = thread_name.str();
-   
-        it = mapThreads.find( id );
+        /* Attention: This fails when called before program start:
 
-        return it->second.c_str();
+           mapThreads[ id ] = thread_name.str();
+
+           it = mapThreads.find( id );
+
+           return it->second.c_str();
+        */
+
+        return thread_name.str().c_str();
     }
     else
     {

@@ -50,7 +50,7 @@
 #include <lama/io/FileIO.hpp>
 #include <lama/io/FileType.hpp>
 
-#include <lama/tracing.hpp>
+#include <tracing/tracing.hpp>
 
 #include <boost/scoped_array.hpp>
 #include <boost/preprocessor.hpp>

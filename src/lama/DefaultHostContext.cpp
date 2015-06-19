@@ -41,7 +41,7 @@
 #include <lama/task/TaskSyncToken.hpp>
 
 // tracing
-#include <lama/tracing.hpp>
+#include <tracing/tracing.hpp>
 
 // boost
 #include <boost/bind.hpp>

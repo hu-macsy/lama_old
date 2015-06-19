@@ -45,7 +45,7 @@
 #include <lama/exception/Exception.hpp>
 
 #include <lama/openmp/OpenMPCSRUtils.hpp>
-#include <lama/tracing.hpp>
+#include <tracing/tracing.hpp>
 
 // boost
 #include <boost/scoped_array.hpp>

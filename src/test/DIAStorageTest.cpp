@@ -95,7 +95,7 @@ void constructorTest()
 /* ------------------------------------------------------------------------------------------------------------------ */
 
 template<typename ValueType>
-void constructorTest1( log4lama::Logger& logger )
+void constructorTest1( logging::Logger& logger )
 {
     // Test the full DIAStorge constructor and the individual getter routines of DIA storage
     const IndexType numRows = 3;

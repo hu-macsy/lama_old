@@ -14,6 +14,8 @@ find_jar( JAR2 jfreechart-1.0.8 PATHS ${LIBDIR} )
 find_jar( JAR3 jcommon-1.0.12 PATHS ${LIBDIR} )
 find_jar( JAR4 log4j-1.2.13 PATHS ${LIBDIR} )
 
+mark_as_advanced( JAR1 JAR2 JAR3 JAR4 )
+
 file( GLOB_RECURSE JAVA_SRC "*.java" )
 
 set(VERSION 1.0.0)

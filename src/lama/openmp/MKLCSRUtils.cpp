@@ -45,7 +45,7 @@
 #include <lama/Settings.hpp>
 
 // trace
-#include <lama/tracing.hpp>
+#include <tracing/tracing.hpp>
 #include <lama/macros/unused.hpp>
 
 #include <mkl_spblas.h>

@@ -45,7 +45,7 @@
 #include <lama/macros/unused.hpp>
 
 // tracing with LAMA_REGION
-#include <lama/tracing.hpp>
+#include <tracing/tracing.hpp>
 
 // blas
 #include <boost/preprocessor.hpp>

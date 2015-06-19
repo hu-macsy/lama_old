@@ -43,7 +43,7 @@
 #include <cuda.h>
 #include <cusparse_v2.h>
 
-#include <lama/tracing.hpp>
+#include <tracing/tracing.hpp>
 
 #include <lama/ContextFactory.hpp>
 

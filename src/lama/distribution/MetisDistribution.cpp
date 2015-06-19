@@ -37,7 +37,7 @@
 #include <lama/matrix/CSRSparseMatrix.hpp>
 
 // others
-#include <lama/tracing.hpp>
+#include <tracing/tracing.hpp>
 
 extern "C"
 {
