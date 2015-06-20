@@ -43,14 +43,17 @@
 #include <lama/HostWriteAccess.hpp>
 #include <lama/LAMAInterface.hpp>
 #include <lama/ContextAccess.hpp>
-#include <lama/task/TaskSyncToken.hpp>
-#include <tracing/tracing.hpp>
+#include <lama/TaskSyncToken.hpp>
 
 // macros
 #include <lama/macros/unused.hpp>
 
+// tracing
+#include <tracing/tracing.hpp>
+
 // boost
 #include <boost/scoped_array.hpp>
+#include <boost/bind.hpp>
 
 namespace lama
 {

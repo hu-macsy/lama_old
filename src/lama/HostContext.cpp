@@ -37,7 +37,7 @@
 // others
 #include <lama/DefaultHostContext.hpp>
 
-#include <lama/task/TaskSyncToken.hpp>
+#include <lama/TaskSyncToken.hpp>
 
 #include <cstdio>
 

@@ -77,7 +77,7 @@ namespace tasking
  * }
  * \endcode
  */
-class COMMON_DLL_IMPORTEXPORT Task: public common::Printable
+class COMMON_DLL_IMPORTEXPORT Task: public Printable
 {
 
 public:

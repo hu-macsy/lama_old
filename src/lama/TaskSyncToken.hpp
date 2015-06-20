@@ -1,5 +1,5 @@
 /**
- * @file Thread.cpp
+ * @file TaskSyncToken.hpp
  *
  * @license
  * Copyright (c) 2009-2015
@@ -25,25 +25,62 @@
  * SOFTWARE.
  * @endlicense
  *
- * @brief Definition the clas Thread
- * @author Jiri Kraus
- * @date 30.03.2012
- * @since 1.0.0
+ * @brief Definition of a class that starts new Task.
+ * @author Thomas Brandes
+ * @date 04.05.2011
  */
 
-// hpp
-#include <lama/task/Thread.hpp>
+#pragma once
+
+// for dll_import
+#include <common/config.hpp>
+
+#include <tasking/Task.hpp>
+
+// base classes
+#include <lama/SyncToken.hpp>
+
+// others
 
 namespace lama
 {
 
-Thread::Id Thread::getSelf()
+/** Class to run a function asynchronously as a asynchronous Task. */
+
+class COMMON_DLL_IMPORTEXPORT TaskSyncToken: public SyncToken
 {
-#ifdef LAMA_USE_BOOST_THREADID
-    return boost::this_thread::get_id();
-#else
-    return pthread_self();
-#endif
+public:
+
+    /** This constructor starts a function as a Task and
+     *  gives the SyncToken to wait on the completion.
+     */
+    TaskSyncToken( boost::function<void()> function, int numOmpThreads = 0 );
+
+    /** This constructor starts a function as a Task and
+     *  gives the SyncToken to wait on the completion.
+     */
+    TaskSyncToken();
+
+    virtual void run( boost::function<void()> function, int numOmpThreads = 0 );
+
+    virtual ~TaskSyncToken();
+
+    /** Wait for the completion of the Task. */
+
+    virtual void wait();
+
+    /** Test for the completion of the Task. */
+
+    virtual bool probe() const;
+
+    virtual void writeAt( std::ostream& stream ) const;
+
+private:
+
+    boost::shared_ptr<tasking::Task> mTask;
+
+    LAMA_LOG_DECL_STATIC_LOGGER( logger )
+};
+
 }
 
-} // namespace lama

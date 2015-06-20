@@ -42,7 +42,7 @@
 #include <lama/LAMAInterface.hpp>
 #include <lama/LAMAArrayUtils.hpp>
 
-#include <lama/task/TaskSyncToken.hpp>
+#include <lama/TaskSyncToken.hpp>
 
 #include <lama/openmp/OpenMPUtils.hpp>
 #include <lama/openmp/OpenMPCOOUtils.hpp>
@@ -50,6 +50,7 @@
 
 #include <tracing/tracing.hpp>
 #include <boost/preprocessor.hpp>
+#include <boost/bind.hpp>
 
 using std::auto_ptr;
 using boost::shared_ptr;

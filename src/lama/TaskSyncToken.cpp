@@ -32,18 +32,19 @@
  */
 
 // hpp
-#include <lama/task/TaskSyncToken.hpp>
+#include <lama/TaskSyncToken.hpp>
 
 // tracing
 #include <tracing/tracing.hpp>
 
 // boost
-#include <boost/thread/xtime.hpp>
 #include <boost/bind.hpp>
 #include <boost/ref.hpp>
 #include <boost/utility.hpp>
 
 using namespace boost;
+
+using tasking::Task;
 
 namespace lama
 {

@@ -46,7 +46,7 @@
 
 #include <lama/distribution/Redistributor.hpp>
 
-#include <lama/task/TaskSyncToken.hpp>
+#include <lama/TaskSyncToken.hpp>
 
 #include <lama/openmp/OpenMPUtils.hpp>
 #include <lama/openmp/OpenMPCSRUtils.hpp>

@@ -38,7 +38,7 @@
 #include <lama/exception/LAMAAssert.hpp>
 #include <lama/openmp/OpenMP.hpp>
 
-#include <lama/task/TaskSyncToken.hpp>
+#include <lama/TaskSyncToken.hpp>
 
 // tracing
 #include <tracing/tracing.hpp>

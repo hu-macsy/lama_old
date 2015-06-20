@@ -112,7 +112,6 @@ set ( SOURCE_FILES
         StorageIOTest
         TaskSyncTokenTest
 	    TFQMRTest
-        ThreadPoolTest
         TimerTest
         TracingTest
         UtilsTest
@@ -137,6 +136,7 @@ include_directories ( .. ../lama ${Boost_INCLUDE_DIRS} )
 include_directories ( ${COMMON_INCLUDE_DIR}  )
 include_directories ( ${LOGGING_INCLUDE_DIR} )
 include_directories ( ${TRACING_INCLUDE_DIR} )
+include_directories ( ${TASKING_INCLUDE_DIR} )
 
 if ( LAMA_BLAS_NAME STREQUAL "MKL" )
     include_directories ( ${MKL_INCLUDE_DIRS} )

@@ -39,7 +39,7 @@
 #include <lama/HostReadAccess.hpp>
 #include <lama/LAMAArrayUtils.hpp>
 #include <lama/LAMAInterface.hpp>
-#include <lama/task/TaskSyncToken.hpp>
+#include <lama/TaskSyncToken.hpp>
 #include <lama/NoSyncToken.hpp>
 #include <lama/ReadAccess.hpp>
 #include <lama/WriteAccess.hpp>
@@ -49,6 +49,7 @@
 
 // boost
 #include <boost/preprocessor.hpp>
+#include <boost/bind.hpp>
 
 namespace lama
 {

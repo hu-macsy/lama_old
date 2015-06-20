@@ -57,6 +57,7 @@ set ( LAMA_VERSION ${LAMA_VERSION_MAJOR}.${LAMA_VERSION_MINOR}.${LAMA_VERSION_PA
 add_subdirectory( ../common "${CMAKE_CURRENT_BINARY_DIR}/common" )
 add_subdirectory( ../logging "${CMAKE_CURRENT_BINARY_DIR}/logging" )
 add_subdirectory( ../tracing "${CMAKE_CURRENT_BINARY_DIR}/tracing" )
+add_subdirectory( ../tasking "${CMAKE_CURRENT_BINARY_DIR}/tasking" )
 
 ### Variables / CMAKE Functions ###
 include ( Variables )

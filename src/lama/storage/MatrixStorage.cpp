@@ -50,7 +50,7 @@
 #include <lama/openmp/OpenMPUtils.hpp>
 #include <lama/openmp/OpenMPCSRUtils.hpp>
 
-#include <lama/task/TaskSyncToken.hpp>
+#include <lama/TaskSyncToken.hpp>
 
 // tracing
 #include <tracing/tracing.hpp>

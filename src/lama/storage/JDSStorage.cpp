@@ -43,13 +43,14 @@
 #include <lama/ReadAccess.hpp>
 #include <lama/WriteAccess.hpp>
 #include <lama/LAMAArrayUtils.hpp>
-#include <lama/task/TaskSyncToken.hpp>
+#include <lama/TaskSyncToken.hpp>
 
 // tracing
 #include <tracing/tracing.hpp>
 
 // boost
 #include <boost/preprocessor.hpp>
+#include <boost/bind.hpp>
 
 namespace lama
 {

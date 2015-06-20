@@ -39,6 +39,7 @@ lama_set_source_dir ()
 include_directories( ${COMMON_INCLUDE_DIR}  )
 include_directories( ${LOGGING_INCLUDE_DIR} )
 include_directories( ${TRACING_INCLUDE_DIR} )
+include_directories( ${TASKING_INCLUDE_DIR} )
 
 if ( METIS_FOUND )
     include_directories( ${METIS_INCLUDE_DIR} ) 
@@ -84,6 +85,7 @@ set ( CLASSES
         Settings
         StorageIO
         SyncToken
+        TaskSyncToken
         Vector
         WriteAccess
     )
@@ -132,7 +134,6 @@ add_subdirectory ( norm )
 add_subdirectory ( openmp )
 add_subdirectory ( solver )
 add_subdirectory ( storage )
-add_subdirectory ( task )
 
 ### set link directories ###
 if ( WIN32 )
@@ -147,8 +148,11 @@ add_library ( ama ${LAMA_LIBRARY_TYPE} ${CXX_SOURCES} ${HEADERS} )
 
 ### set target link libraries ###
 
-set( LAMA_LINK_LIBRARIES ${LOGGING_LIBRARY} )
+set ( LAMA_LINK_LIBRARIES ${LOGGING_LIBRARY} )
 set ( ADDITIONAL_LINKER_FLAGS "-Wl,--whole-archive -L\${LAMA_ROOT}/lib -lama -llogging" )
+
+set ( LAMA_LINK_LIBRARIES ${LAMA_LINK_LIBRARIES} ${TASKING_LIBRARY} )
+set ( ADDITIONAL_LINKER_FLAGS "${ADDITIONAL_LINKER_FLAGS} -ltasking" )
 
 if ( LAMA_TRACE_LEVEL STREQUAL "ON" )
     set( LAMA_LINK_LIBRARIES ${LAMA_LINK_LIBRARIES} ${TRACING_LIBRARY} )

@@ -38,7 +38,7 @@
 
 // base classes
 #include <lama/Context.hpp>
-#include <lama/task/TaskSyncToken.hpp>
+#include <lama/TaskSyncToken.hpp>
 
 namespace lama
 {
