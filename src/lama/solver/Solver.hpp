@@ -39,7 +39,7 @@
 
 // base classes
 #include <common/NonCopyable.hpp>
-#include <lama/Printable.hpp>
+#include <common/Printable.hpp>
 
 // others
 #include <lama/Vector.hpp>

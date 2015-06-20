@@ -37,7 +37,7 @@
 #include <common/config.hpp>
 
 // base classes
-#include <lama/Printable.hpp>
+#include <common/Printable.hpp>
 
 // interface structures used in LAMAInterface
 

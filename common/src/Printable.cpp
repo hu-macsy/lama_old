@@ -36,9 +36,6 @@
 
 #include <typeinfo>
 
-namespace common
-{
-
 bool Printable::extended = false;
 
 void Printable::enableExtended( const bool flag )
@@ -59,9 +56,7 @@ void Printable::writeAt( std::ostream& stream ) const
     stream << typeid( *this ).name();
 }
 
-}
-
-std::ostream& operator<<( std::ostream& stream, const common::Printable& object )
+std::ostream& operator<<( std::ostream& stream, const Printable& object )
 {
     object.writeAt( stream );
     return stream;

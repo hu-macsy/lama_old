@@ -79,7 +79,6 @@ set ( CLASSES
         LAMAInterfaceRegistry
         NoCommunicator
         NoCommunicatorManager
-        Printable
         ReadAccess
         Scalar
         Settings
@@ -147,8 +146,14 @@ add_library ( ama ${LAMA_LIBRARY_TYPE} ${CXX_SOURCES} ${HEADERS} )
 
 
 ### set target link libraries ###
+
 set( LAMA_LINK_LIBRARIES ${LOGGING_LIBRARY} )
 set ( ADDITIONAL_LINKER_FLAGS "-Wl,--whole-archive -L\${LAMA_ROOT}/lib -lama -llogging" )
+
+if ( LAMA_TRACE_LEVEL STREQUAL "ON" )
+    set( LAMA_LINK_LIBRARIES ${LAMA_LINK_LIBRARIES} ${TRACING_LIBRARY} )
+    set ( ADDITIONAL_LINKER_FLAGS "${ADDITIONAL_LINKER_FLAGS} -lscaitrace" )
+endif ( )
 
 # amacuda
 if ( CUDA_FOUND AND LAMA_USE_CUDA AND CUDA_HAVE_GPU )

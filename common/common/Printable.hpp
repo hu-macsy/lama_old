@@ -31,14 +31,15 @@
  * @since 1.0.0
  */
 
+#pragma once
+
 // for dll_import
 #include <common/config.hpp>
 
 #include <ostream>
 
-namespace common
+// Note: Printable is not in any namespace (might be common, but causes problems for operator <<)
 
-{
 /**
  * @brief The class Printable is used as a base class for all classes
  *        that should provide the output operator << to print info about it.
@@ -91,7 +92,6 @@ protected:
  *
  * @return a reference to the passed stream.
  */
-}
 
-COMMON_DLL_IMPORTEXPORT std::ostream& operator<<( std::ostream& stream, const common::Printable& object );
+COMMON_DLL_IMPORTEXPORT std::ostream& operator<<( std::ostream& stream, const Printable& object );
 

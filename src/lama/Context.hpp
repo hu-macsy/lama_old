@@ -39,7 +39,7 @@
 #include <common/config.hpp>
 
 // base classes
-#include <lama/Printable.hpp>
+#include <common/Printable.hpp>
 #include <common/NonCopyable.hpp>
 
 #include <lama/LAMATypes.hpp>

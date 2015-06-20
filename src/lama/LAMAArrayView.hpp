@@ -37,7 +37,7 @@
 #include <common/config.hpp>
 
 // base classes
-#include <lama/Printable.hpp>
+#include <common/Printable.hpp>
 
 // others
 #include <lama/LAMAArray.hpp>

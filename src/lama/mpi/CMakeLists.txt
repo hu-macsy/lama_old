@@ -59,22 +59,12 @@ if ( CMAKE_COMPILER_IS_GNUCXX )
     set_source_files_properties ( ${CXX_SOURCES} PROPERTIES COMPILE_FLAGS "-Wno-unused-parameter" )
 endif ( CMAKE_COMPILER_IS_GNUCXX )
 
-if ( LAMA_TRACE_LEVEL STREQUAL "VT" )
-    find_package ( VampirTrace REQUIRED)
-    include_directories ( ${VAMPIRTRACE_INCLUDE_DIR} )
-endif ( LAMA_TRACE_LEVEL STREQUAL "VT" )
 ################################################################################
 
 ### add library ###
 add_library ( amampi ${LAMA_LIBRARY_TYPE} ${CXX_SOURCES} )
 
 ### set target link libraries ###  
-################################################################################
-#TODO: RECHECK!
-if ( LAMA_TRACE_LEVEL STREQUAL "VT" )
-    target_link_libraries ( amampi ${VAMPIRTRACE_LIBRARIES} )
-endif ( LAMA_TRACE_LEVEL STREQUAL "VT" )
-################################################################################
 
 target_link_libraries ( amampi ${MPI_LIBRARIES} )
 

@@ -35,7 +35,7 @@
 #include <map>
 
 #include <lama/Scalar.hpp>
-#include <lama/Printable.hpp>
+#include <common/Printable.hpp>
 #include <lama/Context.hpp>
 #include <lama/ContextFactory.hpp>
 
