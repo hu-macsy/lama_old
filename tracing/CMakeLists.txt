@@ -71,12 +71,20 @@ set ( LOGGING_INCLUDE_DIR
             ${CMAKE_INSTALL_PREFIX}/include 
             CACHE PATH "include" )
 
+find_library( COMMON_LIBRARY 
+              NAMES common
+              HINTS ${CMAKE_INSTALL_PREFIX}/lib )
+
+set ( COMMON_INCLUDE_DIR 
+            ${CMAKE_INSTALL_PREFIX}/include 
+            CACHE PATH "include" )
+
 include_directories( ${TRACING_INCLUDE_DIR} )
 include_directories( ${COMMON_INCLUDE_DIR} )
 include_directories( ${LOGGING_INCLUDE_DIR} )
 
 if ( WIN32 )
-    add_definitions ( -DLOG4LAMA_COMPILING_DLL )
+    add_definitions ( -DCOMMON_COMPILING_DLL )
 endif ( WIN32 )
 
 add_definitions( -DLAMA_LOG_LEVEL_DEBUG )
@@ -84,19 +92,25 @@ add_definitions( -DLAMA_LOG_LEVEL_DEBUG )
 ### add library and put path to search path ###
 
 add_library ( ${TRACING_LIBRARY} SHARED ${CPP_SOURCES} )
-target_link_libraries( ${TRACING_LIBRARY} ${LOGGING_LIBRARY} )
+target_link_libraries( ${TRACING_LIBRARY} ${LOGGING_LIBRARY} ${COMMON_LIBRARY} )
 
-find_package ( VampirTrace )
-find_package ( MPI )
 
-message( STATUS "VAMPIRTRACE found = ${VAMPIRTRACE_FOUND}" )
-message( STATUS "MPI found = ${MPI_FOUND}" )
+if ( FALSE )
 
-if ( ${VAMPIRTRACE_FOUND} )
-    message( STATUS "VAMPIRTRACE found, lib = ${VAMPIRTRACE_LIBRARIES}" )
-    add_definitions( -DUSE_VAMPIRTRACE )
-    include_directories( ${VAMPIRTRACE_INCLUDE_DIR} )
-    target_link_libraries( ${TRACING_LIBRARY} ${VAMPIRTRACE_LIBRARIES} ${MPI_LIBRARIES} )
+### VampirTrace is not easy to add for tracing, is in development
+
+    find_package ( VampirTrace )
+
+    message( STATUS "VAMPIRTRACE found = ${VAMPIRTRACE_FOUND}" )
+    message( STATUS "MPI found = ${MPI_FOUND}" )
+
+    if ( ${VAMPIRTRACE_FOUND} )
+        message( STATUS "VAMPIRTRACE found, lib = ${VAMPIRTRACE_LIBRARIES}" )
+        add_definitions( -DUSE_VAMPIRTRACE )
+        include_directories( ${VAMPIRTRACE_INCLUDE_DIR} )
+        target_link_libraries( ${TRACING_LIBRARY} ${VAMPIRTRACE_LIBRARIES} ${MPI_LIBRARIES} )
+    endif ()
+
 endif ()
 
 add_subdirectory( gui )

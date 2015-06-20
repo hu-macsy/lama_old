@@ -9,7 +9,9 @@ include( UseJava )
 
 set( LIBDIR ${CMAKE_CURRENT_SOURCE_DIR}/lib )
 
+# Java GUI uses Java Graph Package Grappa
 find_jar( JAR1 grappa1_2 PATHS ${LIBDIR} )
+
 find_jar( JAR2 jfreechart-1.0.8 PATHS ${LIBDIR} )
 find_jar( JAR3 jcommon-1.0.12 PATHS ${LIBDIR} )
 find_jar( JAR4 log4j-1.2.13 PATHS ${LIBDIR} )

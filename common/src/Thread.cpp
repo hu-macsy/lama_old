@@ -31,29 +31,69 @@
  */
 
 #include <common/Thread.hpp>
+#include <common/Exception.hpp>
 
-#include <boost/thread.hpp>
 #include <map>
+#include <string>
 
-using namespace boost;
 using namespace std;
 
 namespace common
 {
 
-// Map that defines mapping thread ids -> thread names (as strings) 
+Thread::Id Thread::getSelf()
+{
+    return pthread_self();
+}
+
+// Map that defines mapping thread ids -> thread names (as strings)
 
 static map<Thread::Id, string> mapThreads;
 
-mutex map_mutex; // Make access to map thread safe
+Thread::Mutex::Mutex()
+{
+    int rc = pthread_mutex_init( &p_mutex, NULL );
+
+    if ( rc != 0 )
+    {
+        COMMON_THROWEXCEPTION( "mutex init failed, rc = " << rc )
+    }
+}
+
+Thread::Mutex::~Mutex()
+{
+    pthread_mutex_destroy( &p_mutex );
+}
+
+void Thread::Mutex::lock()
+{
+    pthread_mutex_lock( &p_mutex );
+}
+
+void Thread::Mutex::unlock()
+{
+    pthread_mutex_unlock( &p_mutex );
+}
+
+Thread::ScopedLock::ScopedLock( Mutex& mutex ) : mMutex( mutex )
+{
+    mMutex.lock();
+}
+
+Thread::ScopedLock::~ScopedLock( )
+{
+    mMutex.unlock();
+}
+
+Thread::Mutex map_mutex; // Make access to map thread safe
 
 void Thread::defineCurrentThreadId( const char* name )
 {
-    mutex::scoped_lock scoped_lock( map_mutex ); 
+    ScopedLock lock( map_mutex );
 
-    thread::id id = this_thread::get_id();
-    
-    map<thread::id, string>::iterator it = mapThreads.find( id );
+    Thread::Id id = getSelf();
+
+    map<Thread::Id, string>::iterator it = mapThreads.find( id );
 
     if ( it == mapThreads.end() )
     {
@@ -73,18 +113,18 @@ void Thread::defineCurrentThreadId( const char* name )
 
 const char* Thread::getCurrentThreadId()
 {
-    mutex::scoped_lock scoped_lock( map_mutex ); 
+    Thread::ScopedLock lock( map_mutex );
 
-    thread::id id = this_thread::get_id();
+    Thread::Id id = getSelf();
 
-    map<thread::id, string>::iterator it = mapThreads.find( id );
+    map<Thread::Id, string>::iterator it = mapThreads.find( id );
 
     if ( it == mapThreads.end() )
     {
         // No name defined yet
 
         ostringstream thread_name;
- 
+
         thread_name << "t_" << id;
 
         /* Attention: This fails when called before program start:

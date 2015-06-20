@@ -32,24 +32,43 @@
 
 # Try to find OpenMP compile and link flags for the OpenMP example
 
-find_package(OpenMP)
-
-if (OPENMP_FOUND)
-    set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
-endif()
-
 # LogTest example, here we compile also LOG_TRACE macros
 
 add_executable( LogTest LogTest.cpp )
 target_link_libraries( LogTest ${LOGGING_LIBRARY} )
 set_target_properties( LogTest PROPERTIES COMPILE_FLAGS -DLAMA_LOG_LEVEL_TRACE )
 
-add_executable( ThreadTest ThreadTest.cpp )
-target_link_libraries( ThreadTest ${LOGGING_LIBRARY} )
+# ThreadTest example, here we need the Boost Thread library
+
+# Boost thread required
+
+set ( Boost_DEBUG TRUE )
+set ( Boost_DETAILED_FAILURE_MSG TRUE )
+
+find_package ( Boost COMPONENTS thread system )
+
+if ( Boost_THREAD_FOUND )
+    if ( Boost_SYSTEM_FOUND )
+        add_executable( ThreadTest ThreadTest.cpp )
+        target_link_libraries( ThreadTest ${LOGGING_LIBRARY} ${Boost_THREAD_LIBRARY} ${Boost_SYSTEM_LIBRARY} )
+    else ()
+        message ( STATUS "Boost system library not found" )
+    endif ()
+else ()
+    message ( STATUS "Boost thread library not found" )
+endif ()
+
+# OpenMPTest example
+
+find_package ( OpenMP )
 
 if ( OPENMP_FOUND )
     # Adding this example only possible if OpenMP is available
     add_executable( OpenMPTest OpenMPTest.cpp )
     target_link_libraries( OpenMPTest ${LOGGING_LIBRARY} )
+    set_target_properties( OpenMPTest PROPERTIES COMPILE_FLAGS ${OpenMP_CXX_FLAGS} )
+    set_target_properties( OpenMPTest PROPERTIES LINK_FLAGS ${OpenMP_CXX_FLAGS} )
+else ()
+    message ( STATUS "OpenMP example not built, no compiler option found" )
 endif()
 

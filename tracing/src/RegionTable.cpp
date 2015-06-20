@@ -35,16 +35,21 @@
 
 // others
 #include <tracing/VTInterface.hpp>
+
 #include <common/Walltime.hpp>
+#include <common/Thread.hpp>
 
 #include <cstdio>
+#include <cstdlib>
+
+using common::Thread;
 
 namespace tracing
 {
 
 /* -------------------------------------------------------------------------- */
 
-static boost::mutex printMutex; // needed to avoid mixing output of threads
+static Thread::Mutex printMutex; // needed to avoid mixing output of threads
 
 /* -------------------------------------------------------------------------- */
 
@@ -251,7 +256,7 @@ const RegionEntry& RegionTable::getRegion( int regionId ) const
 
 void RegionTable::printTimer()
 {
-    boost::mutex::scoped_lock scoped_lock( printMutex );
+    Thread::ScopedLock lock( printMutex );
 
     printTimer( stdout );
 }

@@ -87,8 +87,13 @@ find_library(VAMPIRTRACE_OTF_LIBRARY
              NAMES otf open-trace-format
              HINTS ${_vampirtrace_LIBRARY_SEARCH_DIRS})
 
+# serial: vt
+# OpenMP: vt-mt
+# MPI : vt-mpi
+# MPI + OpenMP: vt-hyb vt.hyb
+
 find_library(VAMPIRTRACE_VT_LIBRARY 
-             NAMES vt-hyb vt.hyb
+             NAMES vt-hyb
              HINTS ${_vampirtrace_LIBRARY_SEARCH_DIRS})
 
 if (VAMPIRTRACE_VT_LIBRARY AND VAMPIRTRACE_OTF_LIBRARY)

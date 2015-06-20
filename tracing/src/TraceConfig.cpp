@@ -43,6 +43,8 @@
 namespace tracing
 {
 
+using common::Thread;
+
 /* -------------------------------------------------------------------------- *
  *   Static class variables                                                   *
  * -------------------------------------------------------------------------- */
@@ -263,7 +265,7 @@ TraceConfig::TraceConfig()
 
     // save id of this main thread
 
-    mMaster = common::Thread::getSelf();
+    mMaster = Thread::getSelf();
 
     LAMA_LOG_INFO( logger, "ThreadConfig: enabled = " << mEnabled )
 }
@@ -314,7 +316,7 @@ TraceConfig::~TraceConfig()
 
     // Now write each RegionTable in file
 
-    std::map<ThreadId,boost::shared_ptr<RegionTable> >::iterator it;
+    std::map<ThreadId, boost::shared_ptr<RegionTable> >::iterator it;
 
     for( it = mRegionTables.begin(); it != mRegionTables.end(); it++ )
     {
@@ -329,7 +331,7 @@ TraceConfig::~TraceConfig()
 
 /* -------------------------------------------------------------------------- */
 
-static boost::mutex mapMutex; // needed to avoid conflicts for accesses on mRegionTables
+static Thread::Mutex mapMutex; // needed to avoid conflicts for accesses on mRegionTables
 
 /* -------------------------------------------------------------------------- */
 
@@ -360,7 +362,7 @@ RegionTable* TraceConfig::getRegionTable( ThreadId threadId )
 
     // make sure that not two different threads try to allocate a table
 
-    boost::mutex::scoped_lock scoped_lock( mapMutex );
+    Thread::ScopedLock lock( mapMutex );
 
     if( !regionTable )
     {

@@ -6,7 +6,7 @@ int main( int argc, char** argv )
 {
     // macro to give the current thread a name that appears in further logs
 
-    LAMA_LOG_THREAD( "main" )
+    // LAMA_LOG_THREAD( "main" )
     
     LAMA_LOG_INFO( myLogger, "a message about progress in the program" )
     LAMA_LOG_DEBUG( myLogger, "a message useful to find bugs in the program" )

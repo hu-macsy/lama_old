@@ -5,8 +5,9 @@
 #include "common/Exception.hpp"
 #include "common/Walltime.hpp"
 
-#include <cstdio>
+#include <fstream>
 #include <stdint.h>
+#include <unistd.h>
 #include <vector>
 #include <utility>
 
@@ -14,63 +15,64 @@ namespace tracing
 
 {
 
+using std::endl;
+
 #define MAX_CT_COUNTERS 4
 
 typedef uint64_t CounterArray[MAX_CT_COUNTERS];
 
 static int traced_counters = 1;
 
-static FILE* outfile = NULL;
+static std::ofstream outfile;
 
 static void printRegionEntry( int region_id, RegionEntry& region )
 {
-    fprintf( outfile, "# begin info line\n" );
-    fprintf( outfile, "fl %d %s\n", region.getFileToken(), region.getFileName() );
-    fprintf( outfile, "fn %d", region_id );
-
-    fprintf( outfile, " %d", 0 ); // src_region_id
-    fprintf( outfile, " %s", region.getRegionName() );
-    fprintf( outfile, " %d", 10 ); // kind
-    fprintf( outfile, " %d", region.getLine() ); 
-    fprintf( outfile, " %d", region.getLine() ); 
-    fprintf( outfile, " %s", "?" ); 
-    fprintf( outfile, "\n" );
-    fprintf( outfile, "0" );
+    outfile << "# begin info line" << endl;
+    outfile << "fl " << region.getFileToken() << " " << region.getFileName() << endl;
+    outfile << "fn " << region_id;
+    outfile << " 0";  //  src_region_id ;
+    outfile << " " <<  region.getRegionName();
+    outfile << " 10";  // kind
+    outfile << " " << region.getLine(); 
+    outfile << " " << region.getLine(); 
+    outfile << " ?"; 
+    outfile << endl;
+    outfile << "0";
     for ( int i = 0; i < traced_counters; ++i )
     {
-        fprintf( outfile, " 0" );
+        outfile << " 0";
     }
-    fprintf( outfile, "\n" );
-    fprintf( outfile, "# end info line\n" );
+    outfile << endl;
+    outfile << "# end info line" << endl;
 }
 
 static void printRegion( int region_id, bool callFlag )
 {
     if ( callFlag )
     {
-        fprintf( outfile, "c" );
+        outfile << "c";
     }
 
-    fprintf( outfile, "fl %d\n", 0 );
+    outfile << "fl 0" << endl;;
 
     if ( callFlag )
     {
-        fprintf( outfile, "c" );
+        outfile << "c";
     }
 
-    fprintf( outfile, "fn %d\n", region_id );
+    outfile << "fn " << region_id << endl;
 }
 
 static void printCounters( int line, const CounterArray& counters )
 {
-    fprintf( outfile, "%d", line );
+    outfile <<  line;
    
     for( int i = 0; i < traced_counters; ++i )
     {
-        fprintf( outfile, " %lld", counters[i] );
+        outfile << " " << counters[i];
     }
 
-    fprintf( outfile, "\n" );
+    outfile << endl;
 }
 
 struct CTEntry
@@ -88,7 +90,7 @@ struct CTEntry
         {
              // cost line
 
-             fprintf( outfile, "# begin cost line\n" );
+             outfile << "# begin cost line" << endl;
 
              printRegion( caller, false );
 
@@ -96,17 +98,17 @@ struct CTEntry
 
              printCounters( scl, costs );
 
-             fprintf( outfile, "# end cost line\n" );
+             outfile << "# end cost line" << endl;
         }
         else
         {
-             fprintf( outfile, "# begin trace call\n" );
+             outfile << "# begin trace call" << endl;
              printRegion( caller, false );
              printRegion( callee, true );
-             fprintf( outfile, "calls %d 0\n", calls ); 
+             outfile << "calls " << calls << " 0" << endl; 
              int scl = 0; // source code line not supported here
              printCounters( scl, costs );
-             fprintf( outfile, "# end trace call\n" );
+             outfile << "# end trace call" << endl;
         }
     }
 
@@ -357,25 +359,25 @@ void CallTree::enter( const int region_id, RegionEntry& region )
     {
         printf( "open calltree file\n" );
 
-        outfile = fopen( "calltree.ct", "w" );
+        outfile.open( "calltree.ct", std::ios::out );
 
-        if ( outfile == NULL )
+        if ( outfile.fail() )
         {
             COMMON_THROWEXCEPTION( "Could not open calltree.ct" )
         }
 
-        fprintf( outfile, "pid %d\n", getpid() );
-        fprintf( outfile, "cmd program_name\n" );
-        fprintf( outfile, "part %d\n", 1 );
-        fprintf( outfile, "\n" );
+        outfile << "pid " << getpid() << endl;
+        outfile << "cmd program_name" << endl;
+        outfile << "part 1" << endl;
+        outfile << endl;
 
-        fprintf( outfile, "# rate %lld\n", common::Walltime::timerate() );
+        outfile << "# rate " << common::Walltime::timerate() << endl;
 
         double rate = 1.0 / common::Walltime::timerate();
 
-        fprintf( outfile, "event WALL_TICKS wallticks\n" );
-        fprintf( outfile, "events WALL_TICKS\n" );
-        fprintf( outfile, "define WALL_TIME %f WALL_TICKS\n", rate );
+        outfile << "event WALL_TICKS wallticks" << endl;
+        outfile << "events WALL_TICKS" << endl;
+        outfile << "define WALL_TIME " << rate << " WALL_TICKS" << endl;
     }
   
     if ( region.firstAccess() )
@@ -449,22 +451,21 @@ void CallTree::leave( const int region_id, const RegionEntry& region )
 
 void CallTree::finish()
 {
-    if ( outfile != NULL )
+    if ( outfile.is_open() )
     {
         const CounterArray& totalCosts = CT.getTotalCosts();
 
-        fprintf( outfile, "# closed by finish\n" );
-        fprintf( outfile, "totals " );
+        outfile << "# closed by finish" << endl;
+        outfile << "totals ";
         for ( int i = 0; i < traced_counters; ++i )
         {
-            fprintf( outfile, " %lld", totalCosts[i] );
+            outfile << " " << totalCosts[i];
         }
-        fprintf( outfile, "\n" );
-        fprintf( outfile, "# cache has %d hits and %d misses\n", CT.getHits(), CT.getMisses() );
-        fclose( outfile );
+        outfile << endl;
+        outfile << "# cache has " << CT.getHits() << " hits and "
+                << CT.getMisses() << " misses" << endl;
+        outfile.close();
     }
- 
-    outfile = NULL;
 }
 
 static Guard myGuard;

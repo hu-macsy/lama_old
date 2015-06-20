@@ -58,13 +58,6 @@ if (NOT CMAKE_BUILD_TYPE)
       FORCE)
 endif (NOT CMAKE_BUILD_TYPE)
 
-### Boost thread required
-
-set ( Boost_DEBUG TRUE )
-set ( Boost_DETAILED_FAILURE_MSG TRUE )
-
-find_package ( Boost COMPONENTS thread REQUIRED )
-
 # Common library of other project is used here
 # It might be either installed or variables are already in CACHE
 
@@ -96,7 +89,7 @@ endif ( WIN32 )
 ### add library and put path to search path ###
 
 add_library ( ${LOGGING_LIBRARY} SHARED ${CPP_SOURCES} )
-target_link_libraries( ${LOGGING_LIBRARY} ${COMMON_LIBRARY} ${Boost_THREAD_LIBRARY} )
+target_link_libraries( ${LOGGING_LIBRARY} ${COMMON_LIBRARY} )
 
 add_subdirectory( examples )
 

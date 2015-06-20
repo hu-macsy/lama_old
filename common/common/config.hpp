@@ -1,5 +1,5 @@
 /**
- * @file logging/config.hpp
+ * @file common/config.hpp
  *
  * @license
  * Copyright (c) 2009-2015
@@ -25,11 +25,13 @@
  * SOFTWARE.
  * @endlicense
  *
- * @brief config.hpp
+ * @brief General configuration file to deal with different features of Windows/Linux
  * @author Jiri Kraus
  * @date 10.06.2015
  */
+
 //No include header guards be cause we want to allow this header to be included multiple times
+
 #ifdef WIN32
 #ifdef min
 #undef min

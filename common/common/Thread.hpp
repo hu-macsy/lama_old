@@ -1,5 +1,5 @@
 /**
- * @file Thread.hpp
+ * @file common/Thread.hpp
  *
  * @license
  * Copyright (c) 2009-2015
@@ -32,42 +32,24 @@
 #pragma once
 
 // for dll_import
+
 #include <common/config.hpp>
 
-// boost
-#include <boost/thread.hpp>
+#include <pthread.h>
 
 namespace common
 {
 
-#ifdef WIN32
-#define LAMA_USE_BOOST_THREADID
-#endif
-
-#ifndef LAMA_USE_BOOST_THREADID
-/** boost::thread::id is only available with Boost 1.35 and higher */
-#include <boost/version.hpp>
-
-#define LAMA_BOOST_VERSION_PROVIDES_ID 103501
-
-#if BOOST_VERSION < LAMA_BOOST_VERSION_PROVIDES_ID
-#include <pthread.h>
-#else
-#define LAMA_USE_BOOST_THREADID
-#endif
-#endif
+/** This class helps to deal with thread ids and to name threads.
+ *  It also supports critical regions by mutex and scoped locks.
+ */
 
 class COMMON_DLL_IMPORTEXPORT Thread
 {
 public:
 
-#ifdef LAMA_USE_BOOST_THREADID
-    typedef boost::thread::id Id;
-#else
     typedef pthread_t Id;
-#endif
 
-    /** returns the id of the calling Thread. */
     static Id getSelf();
 
     /** Set a name for the current thread. */
@@ -77,16 +59,49 @@ public:
     /** Query the name of the current thread. */
 
     static const char* getCurrentThreadId();
+
+    /** Own mutex class for synchronization of threads */
+
+    class Mutex
+    {
+    public:
+
+        /** Constructor creates and initalizes the mutex. */
+
+        Mutex();
+
+        /** Destructor frees and releases the mutex. */
+
+        ~Mutex();
+
+        /** Lock the mutex when entering a critical section. */
+
+        void lock();
+
+        /** Unlocks the mutex when leaving a critical section. */
+
+        void unlock();
+
+    private:
+
+        pthread_mutex_t p_mutex;
+    };
+
+    /** Locking of a mutex within a scope, unlock by destructor. */
+
+    class ScopedLock
+    {
+    public:
+
+        ScopedLock( Mutex& mutex );
+
+        ~ScopedLock();
+
+    private:
+
+        Mutex& mMutex;
+    };
 };
 
-inline Thread::Id Thread::getSelf()
-{
-#ifdef LAMA_USE_BOOST_THREADID
-    return boost::this_thread::get_id();
-#else
-    return pthread_self();
-#endif
-}
 
-
-} // namespace lama
+} //namespace lama
