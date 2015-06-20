@@ -35,6 +35,7 @@
 
 #include <map>
 #include <string>
+#include <iostream>
 
 using namespace std;
 
@@ -60,9 +61,29 @@ Thread::Mutex::Mutex()
     }
 }
 
+Thread::Condition::Condition()
+{
+    int rc = pthread_cond_init( &p_condition, NULL );
+
+    if ( rc != 0 )
+    {
+        COMMON_THROWEXCEPTION( "condition init failed, rc = " << rc )
+    }
+}
+
 Thread::Mutex::~Mutex()
 {
-    pthread_mutex_destroy( &p_mutex );
+    int rc = pthread_mutex_destroy( &p_mutex );
+
+    if ( rc != 0 )
+    {
+        COMMON_THROWEXCEPTION( "mutex destroy failed, rc = " << rc )
+    }
+}
+
+Thread::Condition::~Condition()
+{
+    pthread_cond_destroy( &p_condition );
 }
 
 void Thread::Mutex::lock()
@@ -73,6 +94,21 @@ void Thread::Mutex::lock()
 void Thread::Mutex::unlock()
 {
     pthread_mutex_unlock( &p_mutex );
+}
+
+void Thread::Condition::notify_one()
+{
+    pthread_cond_signal ( &p_condition );
+}
+
+void Thread::Condition::notify_all()
+{
+    pthread_cond_broadcast ( &p_condition );
+}
+
+void Thread::Condition::wait( ScopedLock& lock )
+{
+    pthread_cond_wait( &p_condition, &lock.mMutex.p_mutex );
 }
 
 Thread::ScopedLock::ScopedLock( Mutex& mutex ) : mMutex( mutex )
@@ -93,6 +129,8 @@ void Thread::defineCurrentThreadId( const char* name )
 
     Thread::Id id = getSelf();
 
+    cout << "defineCurrentThreadId, id = " << id << ", name = " << name << endl;
+
     map<Thread::Id, string>::iterator it = mapThreads.find( id );
 
     if ( it == mapThreads.end() )
@@ -100,12 +138,16 @@ void Thread::defineCurrentThreadId( const char* name )
         // name not defined yet
 
         mapThreads[ id ] = string( name );
+
+        cout << "Thread " << id << " defines name " << name << endl;
     }
     else
     {
         // already defined, but probably on purporse
 
         // cout << "Redefine Thread " << id << " = " << it->second << " as " << name << endl;
+
+        cout << "Thread " << id << " named " << it->second << ", renamed to " << name << endl;
 
         it->second = name;
     }

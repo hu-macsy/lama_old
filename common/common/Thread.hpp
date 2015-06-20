@@ -64,6 +64,9 @@ public:
 
     class Mutex
     {
+
+    friend class ScopedLock;  // allow access to the mutex
+
     public:
 
         /** Constructor creates and initalizes the mutex. */
@@ -82,8 +85,6 @@ public:
 
         void unlock();
 
-    private:
-
         pthread_mutex_t p_mutex;
     };
 
@@ -91,16 +92,48 @@ public:
 
     class ScopedLock
     {
+
+    friend class Condition;  // allow access to the mutex
+
     public:
 
         ScopedLock( Mutex& mutex );
 
         ~ScopedLock();
 
-    private:
-
         Mutex& mMutex;
     };
+
+    /** Own condition class for synchronization of threads */
+
+    class Condition
+    {
+    public:
+
+        /** Constructor creates and initalizes the mutex. */
+
+        Condition();
+
+        /** Destructor frees and releases the mutex. */
+
+        ~Condition();
+
+        /** Lock the mutex when entering a critical section. */
+
+        void notify_one();
+
+        /** Unlocks the mutex when leaving a critical section. */
+
+        void notify_all();
+
+        void wait( ScopedLock& lock );
+
+    private:
+
+        pthread_cond_t p_condition;
+    };
+
+
 };
 
 

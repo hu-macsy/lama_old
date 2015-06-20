@@ -61,6 +61,8 @@ file( GLOB HPP_HEADERS "${CMAKE_CURRENT_SOURCE_DIR}/tracing/*.hpp" )
 
 ### add definitions ###
 
+find_package( Boost REQUIRED COMPONENTS )
+
 # set ( CMAKE_INSTALL_PREFIX /home/brandes/local )
 
 find_library( LOGGING_LIBRARY 
@@ -81,6 +83,7 @@ set ( COMMON_INCLUDE_DIR
 
 include_directories( ${TRACING_INCLUDE_DIR} )
 include_directories( ${COMMON_INCLUDE_DIR} )
+include_directories( ${Boost_INCLUDE_DIR} )
 include_directories( ${LOGGING_INCLUDE_DIR} )
 
 if ( WIN32 )

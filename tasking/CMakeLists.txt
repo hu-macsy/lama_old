@@ -25,77 +25,91 @@
  # SOFTWARE.
  # @endlicense
  #
- # @brief CMake configuration file for Logging library
+ # @brief tasking/CMakeLists.txt
  # @author Thomas Brandes
- # @date 09.06.2015
- # @since 2.0.0
+ # @date 10.06.2015
 ###
 
 ### Set required CMake version
 
 cmake_minimum_required ( VERSION 2.8 )
 
-project( logging CXX )
+project( tasking CXX )
 
-### Define variables needed for logging library 
-### Variables are put in the cache so they might be used in other scopes
+set ( TASKING_LIBRARY tasking
+      CACHE FILEPATH "tasking library" )
 
-set ( LOGGING_LIBRARY logging 
-      CACHE FILEPATH "logging library" )
+set ( TASKING_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR} 
+      CACHE PATH "tasking include directory" )
 
-set ( LOGGING_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR} 
-      CACHE PATH "logging include directory" )
-
-mark_as_advanced( LOGGING_INCLUDE_DIR LOGGING_LIBRARY )
+mark_as_advanced( TASKING_LIBRARY TASKING_INCLUDE_DIR )
 
 set ( CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/../CMake/Modules" )
 
 # Set default build type to RELEASE, can be changed via ccmake
 
-if (NOT CMAKE_BUILD_TYPE)
-   set(CMAKE_BUILD_TYPE RELEASE CACHE STRING
-      "Choose the type of build, options are: None Debug Release."
-      FORCE)
+if ( NOT CMAKE_BUILD_TYPE )
+   set( CMAKE_BUILD_TYPE RELEASE 
+        CACHE STRING "Choose the type of build, options are: None Debug Release."
+        FORCE)
 endif (NOT CMAKE_BUILD_TYPE)
 
-find_package( Boost REQUIRED COMPONENTS )
+### Source files for tasking library
 
-# Common library of other project is used here
-# It might be either installed or variables are already in CACHE
+file( GLOB CPP_SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp" )
+file( GLOB HPP_HEADERS "${CMAKE_CURRENT_SOURCE_DIR}/tasking/*.hpp" )
+
+### add definitions ###
+
+# set ( CMAKE_INSTALL_PREFIX /home/brandes/local )
+
+find_package( Boost REQUIRED COMPONENTS )
 
 find_library( COMMON_LIBRARY 
               NAMES common
               HINTS ${CMAKE_INSTALL_PREFIX}/lib )
 
-set ( COMMON_INCLUDE_DIR ${CMAKE_INSTALL_PREFIX}/include CACHE PATH "include" )
+set ( COMMON_INCLUDE_DIR 
+            ${CMAKE_INSTALL_PREFIX}/include 
+            CACHE PATH "include" )
 
-### Source files for logging library
+find_library( LOGGING_LIBRARY 
+              NAMES logging 
+              HINTS ${CMAKE_INSTALL_PREFIX}/lib )
 
-file( GLOB CPP_SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp" )
-file( GLOB HPP_HEADERS "${CMAKE_CURRENT_SOURCE_DIR}/logging/*.hpp" )
+set ( LOGGING_INCLUDE_DIR 
+            ${CMAKE_INSTALL_PREFIX}/include 
+            CACHE PATH "include" )
 
-### add definitions ###
+find_library( TRACING_LIBRARY 
+              NAMES scaitrace
+              HINTS ${CMAKE_INSTALL_PREFIX}/lib )
 
-# GenLogger uses also logging
+set ( TRACING_INCLUDE_DIR 
+            ${CMAKE_INSTALL_PREFIX}/include 
+            CACHE PATH "include" )
 
-add_definitions ( -DLAMA_LOG_LEVEL_DEBUG )
-
-include_directories( ${Boost_INCLUDE_DIR} )
+include_directories( ${TASKING_INCLUDE_DIR} )
+include_directories( ${TRACING_INCLUDE_DIR} )
 include_directories( ${COMMON_INCLUDE_DIR} )
 include_directories( ${LOGGING_INCLUDE_DIR} )
+include_directories( ${Boost_INCLUDE_DIR} )
 
 if ( WIN32 )
-	add_definitions ( -DCOMMON_COMPILING_DLL )
+    add_definitions ( -DCOMMON_COMPILING_DLL )
 endif ( WIN32 )
+
+add_definitions( -DLAMA_LOG_LEVEL_DEBUG )
+add_definitions( -DLAMA_TRACE_ON )
 
 ### add library and put path to search path ###
 
-add_library ( ${LOGGING_LIBRARY} SHARED ${CPP_SOURCES} )
-target_link_libraries( ${LOGGING_LIBRARY} ${COMMON_LIBRARY} )
+add_library ( ${TASKING_LIBRARY} SHARED ${CPP_SOURCES} )
+target_link_libraries( ${TASKING_LIBRARY} ${TRACING_LIBRARY} ${LOGGING_LIBRARY} ${COMMON_LIBRARY} )
 
 add_subdirectory( examples )
 
 ### install ###
 
-install ( TARGETS ${LOGGING_LIBRARY} DESTINATION lib )
-install ( FILES ${HPP_HEADERS} DESTINATION include/logging )
+install ( TARGETS ${TASKING_LIBRARY} DESTINATION lib )
+install ( FILES ${HPP_HEADERS} DESTINATION include/tasking )

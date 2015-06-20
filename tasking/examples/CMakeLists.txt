@@ -25,20 +25,13 @@
  # SOFTWARE.
  # @endlicense
  #
- # @brief CMake configuration file for common library
+ # @brief CMake configuration file for common examples
  # @author Thomas Brandes
- # @date 09.06.2015
+ # @date 16.06.2015
 ###
 
-### Set required CMake version
+# ThreadTest example
 
-cmake_minimum_required ( VERSION 2.8 )
+add_executable( ThreadPoolTest ThreadPoolTest.cpp )
+target_link_libraries( ThreadPoolTest ${TASKING_LIBRARY} )
 
-project ( lama )
-
-### Include all other projects 
-
-add_subdirectory( ../common "${CMAKE_CURRENT_BINARY_DIR}/common" )
-add_subdirectory( ../logging "${CMAKE_CURRENT_BINARY_DIR}/logging" )
-add_subdirectory( ../tracing "${CMAKE_CURRENT_BINARY_DIR}/tracing" )
-add_subdirectory( ../tasking "${CMAKE_CURRENT_BINARY_DIR}/tasking" )
