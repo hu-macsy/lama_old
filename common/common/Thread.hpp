@@ -69,9 +69,14 @@ public:
 
     public:
 
-        /** Constructor creates and initalizes the mutex. */
+        /** Constructor creates and initalizes the mutex. 
+         *
+         *  @param[in] isRecursive if true the mutex will be recursive
+         *
+         *  A recursive mutex might be locked by the same thread several times.
+         */
 
-        Mutex();
+        Mutex( const bool isRecursive = false );
 
         /** Destructor frees and releases the mutex. */
 
@@ -86,6 +91,8 @@ public:
         void unlock();
 
         pthread_mutex_t p_mutex;
+
+        pthread_mutexattr_t p_mutexattr;
     };
 
     /** Locking of a mutex within a scope, unlock by destructor. */
@@ -118,11 +125,11 @@ public:
 
         ~Condition();
 
-        /** Lock the mutex when entering a critical section. */
+        /** Notifiy one thread waiting a the condition */
 
         void notify_one();
 
-        /** Unlocks the mutex when leaving a critical section. */
+        /** Notifiy all threds waiting on the condition. */
 
         void notify_all();
 

@@ -51,9 +51,16 @@ Thread::Id Thread::getSelf()
 
 static map<Thread::Id, string> mapThreads;
 
-Thread::Mutex::Mutex()
+Thread::Mutex::Mutex( bool isRecursive )
 {
-    int rc = pthread_mutex_init( &p_mutex, NULL );
+    pthread_mutexattr_init( &p_mutexattr);
+
+    if ( isRecursive )
+    {
+        pthread_mutexattr_settype( &p_mutexattr, PTHREAD_MUTEX_RECURSIVE);
+    }
+
+    int rc = pthread_mutex_init( &p_mutex, &p_mutexattr );
 
     if ( rc != 0 )
     {

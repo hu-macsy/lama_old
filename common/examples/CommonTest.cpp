@@ -43,7 +43,7 @@
 using namespace std;
 using namespace common;
 
-Thread::Mutex mutex;
+Thread::Mutex mutex( true );  // recursive mutex
 
 static int SLEEP_TIME  = 2;
 static int N_THREADS   = 4;
@@ -55,6 +55,7 @@ void* threadRoutine( void* )
     cout << "Thread " << Thread::getCurrentThreadId() << " starts" << endl;
 
     Thread::ScopedLock lock( mutex );
+    Thread::ScopedLock lock1( mutex );   // second lock by same thread is okay for recursive mutex
 
     cout << "Thread " << Thread::getCurrentThreadId() << " enters critical region" << endl;
     sleep( SLEEP_TIME );
