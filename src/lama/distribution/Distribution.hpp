@@ -50,6 +50,9 @@
 // boost
 #include <boost/shared_ptr.hpp>
 
+#include <map>
+#include <utility>
+
 namespace lama
 {
 

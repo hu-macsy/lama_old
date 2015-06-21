@@ -41,10 +41,11 @@
 #include <lama/matrix/all.hpp>
 
 #include <lama/matutils/MatrixCreator.hpp>
-#include <lama/Walltime.hpp>
+#include <common/Walltime.hpp>
 
 using namespace lama;
 using namespace std;
+using common::Walltime;
 
 static bool verboseFlag = false;
 

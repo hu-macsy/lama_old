@@ -39,7 +39,7 @@
 #include <lama/DenseVector.hpp>
 #include <lama/CommunicatorFactory.hpp>
 #include <lama/distribution/GenBlockDistribution.hpp>
-#include <lama/distribution/MetisDistribution.hpp>
+// #include <lama/distribution/MetisDistribution.hpp>
 
 #include <lama/solver/GMRES.hpp>
 #include <lama/solver/TrivialPreconditioner.hpp>
@@ -145,7 +145,7 @@ int main( int argc, char* argv[] )
         if ( lamaconf.useMetis() )
         {
             LamaTiming timer( comm, "Metis" );
-            dist.reset( new MetisDistribution( lamaconf.getCommunicatorPtr(), inMatrix, weight ) );
+            // dist.reset( new MetisDistribution( lamaconf.getCommunicatorPtr(), inMatrix, weight ) );
         }
         else
         {

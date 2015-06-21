@@ -64,14 +64,18 @@ const int MPICommunicator::defaultTag = 1;
 LAMA_LOG_DEF_LOGGER( MPICommunicator::logger, "Communicator.MPICommunicator" )
 
 MPICommunicator::MPICommunicator( int& argc, char** & argv, const std::string& type )
-    : CRTPCommunicator<MPICommunicator>( type ), mThreadSafetyLevel( Communicator::Funneled )
+    : CRTPCommunicator<MPICommunicator>( type ), 
+      mMainThread( common::Thread::getSelf() ),
+      mThreadSafetyLevel( Communicator::Funneled )
 {
     LAMA_LOG_DEBUG( logger, "Communicator constructed, type = " << type )
     initialize( argc, argv );
 }
 
 MPICommunicator::MPICommunicator( int& argc, char** & argv )
-    : CRTPCommunicator<MPICommunicator>( "MPI" ), mThreadSafetyLevel( Communicator::Funneled )
+    : CRTPCommunicator<MPICommunicator>( "MPI" ), 
+      mMainThread( common::Thread::getSelf() ),
+      mThreadSafetyLevel( Communicator::Funneled )
 {
     LAMA_TRACE_SCOPE( false ) // switch off tracing in this scope as it might call this constructor again
 
@@ -606,7 +610,7 @@ inline MPI_Comm MPICommunicator::selectMPIComm() const
         return mComm;
     }
 
-    const boost::thread thisThread;
+    const common::Thread::Id thisThread = common::Thread::getSelf();
 
     if( thisThread == mMainThread )
     {

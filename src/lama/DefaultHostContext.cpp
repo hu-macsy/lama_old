@@ -109,7 +109,7 @@ LAMA_REGION( "Host.allocate" )
 
     // allocate must be thread-safe in case where multiple threads use LAMA arrays
 
-    boost::recursive_mutex::scoped_lock scoped_lock( allocate_mutex );
+    common::Thread::ScopedLock lock( allocate_mutex );
 
     mNumberOfAllocatedBytes += size;
     mNumberOfAllocates++;
@@ -131,7 +131,7 @@ void DefaultHostContext::free( void* pointer, const size_t size ) const
     LAMA_ASSERT_ERROR( mNumberOfAllocates >= 1, "Invalid Free, because there are no open allocates." )
     ::free( pointer );
 
-    boost::recursive_mutex::scoped_lock scoped_lock( allocate_mutex );
+    common::Thread::ScopedLock lock( allocate_mutex );
 
     mNumberOfAllocatedBytes -= size;
     mNumberOfAllocates--;

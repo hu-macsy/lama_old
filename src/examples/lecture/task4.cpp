@@ -6,13 +6,14 @@
 #include <lama/storage/SparseAssemblyStorage.hpp>
 #include <lama/matrix/CSRSparseMatrix.hpp>
 #include <lama/DenseVector.hpp>
-#include <lama/tracing.hpp>
 
 #include <lama/solver/CG.hpp>
 #include <lama/solver/criteria/IterationCount.hpp>
 
 #include <lama/CommunicatorFactory.hpp>
 #include <lama/distribution/BlockDistribution.hpp>
+
+#include <tracing/tracing.hpp>
 
 #include <iostream>
 

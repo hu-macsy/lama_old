@@ -49,10 +49,11 @@
 #include <lama/solver/criteria/IterationCount.hpp>
 #include <lama/norm/L2Norm.hpp>
 
-#include <lama/Walltime.hpp>
+#include <common/Walltime.hpp>
 
 using namespace std;
 using namespace lama;
+using common::Walltime;
 
 void dummy( const LamaConfig& lamaconf )
 {

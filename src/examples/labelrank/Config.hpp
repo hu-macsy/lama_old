@@ -10,7 +10,7 @@
 #include <lama.hpp>
 
 #include <lama/Context.hpp>
-#include <lama/Printable.hpp>
+#include <common/Printable.hpp>
 #include <lama/matrix/Matrix.hpp>
 #include <lama/CommunicatorFactory.hpp>
 

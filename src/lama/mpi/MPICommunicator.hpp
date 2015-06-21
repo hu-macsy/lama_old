@@ -31,8 +31,7 @@
  * @since 1.0.0
  */
 
-#ifndef LAMA_MPI_COMMUNICATOR_HPP_
-#define LAMA_MPI_COMMUNICATOR_HPP_
+#pragma once
 
 #include <mpi.h> //Intel MPI need mpi.h to be included before stdio.h so this header comes first
 
@@ -49,8 +48,8 @@
 // logging
 #include <logging/logging.hpp>
 
-// boost
-#include <boost/thread/thread.hpp>
+// Thread
+#include <common/Thread.hpp>
 
 #include <vector>
 
@@ -204,7 +203,7 @@ private:
 
     void initialize( int& argc, char** & argv );
 
-    const boost::thread mMainThread;
+    const common::Thread::Id mMainThread;  // id of thread that calls constructor
 
     inline MPI_Comm selectMPIComm() const;
 
@@ -233,5 +232,3 @@ protected:
 };
 
 }
-
-#endif // LAMA_MPI_COMMUNICATOR_HPP_

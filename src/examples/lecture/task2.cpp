@@ -6,10 +6,11 @@
 #include <lama/storage/SparseAssemblyStorage.hpp>
 #include <lama/matrix/CSRSparseMatrix.hpp>
 #include <lama/DenseVector.hpp>
-#include <lama/tracing.hpp>
 
 #include <lama/expression/all.hpp>
 #include <lama/norm/L2Norm.hpp>
+
+#include <tracing/tracing.hpp>
 
 #include <iostream>
 

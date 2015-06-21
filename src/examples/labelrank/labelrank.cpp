@@ -5,15 +5,15 @@
 #include <lama/storage/DenseStorage.hpp>
 #include <lama/CommunicatorFactory.hpp>
 #include <lama/expression/all.hpp>
-#include <lama/Walltime.hpp>
+#include <common/Walltime.hpp>
 
 #include <cstdio>
 #include <cstdlib>
 #include <iomanip>
-#include <sys/time.h>
 
 using namespace std;
 using namespace lama;
+using common::Walltime;
 
 /** ValueType is the type used for matrix and vector elements. */
 

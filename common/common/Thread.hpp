@@ -95,6 +95,21 @@ public:
         pthread_mutexattr_t p_mutexattr;
     };
 
+    /** Add derived class which is a recursive mutex by default constructor. */
+
+    class RecursiveMutex : public Mutex
+    {
+    public:
+
+        RecursiveMutex() : Mutex( true )
+        {
+        }
+
+        ~RecursiveMutex() 
+        {
+        }
+    };
+
     /** Locking of a mutex within a scope, unlock by destructor. */
 
     class ScopedLock

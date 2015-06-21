@@ -43,7 +43,8 @@
 using namespace std;
 using namespace common;
 
-Thread::Mutex mutex( true );  // recursive mutex
+// Thread::Mutex mutex( true );  // recursive mutex
+Thread::RecursiveMutex mutex;
 
 static int SLEEP_TIME  = 2;
 static int N_THREADS   = 4;

@@ -41,10 +41,6 @@
 #include <lama/ContextFactory.hpp>
 #include <lama/SyncToken.hpp>
 
-// boost
-#include <boost/thread/recursive_mutex.hpp>
-#include <boost/preprocessor.hpp>
-
 #include <memory>
 #include <limits>
 
@@ -797,7 +793,7 @@ IndexType LAMAArray<ValueType>::capacity( const size_t index ) const
 template<typename ValueType>
 int LAMAArray<ValueType>::acquireReadAccess( ContextPtr context ) const
 {
-    boost::recursive_mutex::scoped_lock scoped_lock( access_mutex );
+    common::Thread::ScopedLock lock( mAccessMutex );
 
     LAMA_ASSERT_DEBUG( context, "NULL pointer for context" )
     size_t contextIndex; // for entry that belongs to context
@@ -838,7 +834,7 @@ int LAMAArray<ValueType>::acquireReadAccess( ContextPtr context ) const
 template<typename ValueType>
 void LAMAArray<ValueType>::releaseReadAccess( const size_t index ) const
 {
-    boost::recursive_mutex::scoped_lock scoped_lock( access_mutex );
+    common::Thread::ScopedLock lock( mAccessMutex );
 
     LAMA_ASSERT_DEBUG( index < mContextData.size(), "index out of range" )
     ContextData& entry = *mContextData[index];
@@ -920,7 +916,7 @@ void LAMAArray<ValueType>::getAccess(
 template<typename ValueType>
 int LAMAArray<ValueType>::acquireWriteAccess( ContextPtr context, bool keepFlag )
 {
-    boost::recursive_mutex::scoped_lock scoped_lock( access_mutex );
+    common::Thread::ScopedLock lock( mAccessMutex );
 
     LAMA_ASSERT_DEBUG( context, "NULL pointer for context" )
     LAMA_LOG_TRACE( logger, "acquire write access on " << *context )
@@ -968,7 +964,8 @@ int LAMAArray<ValueType>::acquireWriteAccess( ContextPtr context, bool keepFlag 
 template<typename ValueType>
 int LAMAArray<ValueType>::acquireWriteAccess()
 {
-    boost::recursive_mutex::scoped_lock scoped_lock( access_mutex );
+    common::Thread::ScopedLock lock( mAccessMutex );
+
     size_t contextIndex = nContextIndex;
 
     for( size_t i = 0; i < mContextData.size(); ++i )
@@ -990,7 +987,7 @@ int LAMAArray<ValueType>::acquireWriteAccess()
 template<typename ValueType>
 void LAMAArray<ValueType>::releaseWriteAccess( const size_t index )
 {
-    boost::recursive_mutex::scoped_lock scoped_lock( access_mutex );
+    common::Thread::ScopedLock lock( mAccessMutex );
 
     LAMA_ASSERT_DEBUG( index < mContextData.size(), "index out of range" )
     ContextData& entry = *mContextData[index];

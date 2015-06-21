@@ -28,13 +28,11 @@
  * @brief Class that is useful for timing in MPI programs
  * @author Thomas Brandes
  * @date 09.07.2013
- * @since 1.1.0
  */
 
-#ifndef LAMA_TIMING_HPP_
-#define LAMA_TIMING_HPP_
+#pragma once
 
-#include <lama/Walltime.hpp>
+#include <common/Walltime.hpp>
 #include <iostream>
 #include <lama/Communicator.hpp>
 
@@ -71,12 +69,12 @@ LamaTiming::LamaTiming( const lama::Communicator& comm, const char* name ) :
     mComm( comm ),
     mName( name )
 {
-    mStart = lama::Walltime::get();
+    mStart = common::Walltime::get();
 }
 
 LamaTiming::~LamaTiming()
 {
-    double myTime = lama::Walltime::get() - mStart;
+    double myTime = common::Walltime::get() - mStart;
 
     double maxTime = mComm.max( myTime );
 
@@ -85,6 +83,3 @@ LamaTiming::~LamaTiming()
         std::cout << mName << ": took " << maxTime << " seconds" << std::endl;
     }
 }
-
-#endif // LAMA_TIMING_HPP
-

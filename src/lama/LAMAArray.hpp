@@ -48,7 +48,7 @@
 #include <lama/Scalar.hpp>
 
 // boost
-#include <boost/thread/recursive_mutex.hpp>
+#include <common/Thread.hpp>
 
 #include <vector>
 
@@ -362,7 +362,7 @@ protected:
 
     LAMA_LOG_DECL_STATIC_LOGGER( logger )
 
-mutable    boost::recursive_mutex access_mutex; // needed to make accesses thread-safe
+    mutable common::Thread::RecursiveMutex mAccessMutex; // needed to make accesses thread-safe
 };
 
 /**

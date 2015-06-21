@@ -35,13 +35,13 @@
 
 // for dll_import
 #include <common/config.hpp>
+#include <common/Thread.hpp>
 
 // base classes
 #include <lama/HostContext.hpp>
 
 // boost
 #include <boost/weak_ptr.hpp>
-#include <boost/thread/recursive_mutex.hpp>
 
 namespace lama
 {
@@ -100,7 +100,7 @@ mutable    size_t mNumberOfAllocates; //!< variable counts allocates
 
     mutable size_t mNumberOfAllocatedBytes;//!< variable counts allocated bytes
 
-    mutable boost::recursive_mutex allocate_mutex;// needed to make allocate/free thread-safe
+    mutable common::Thread::RecursiveMutex allocate_mutex;// needed to make allocate/free thread-safe
 };
 
 }

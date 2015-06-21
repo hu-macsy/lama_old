@@ -31,13 +31,12 @@
  * @since 1.1.0
  */
 
-#ifndef LAMA_CONFIG_HPP_
-#define LAMA_CONFIG_HPP_
+#pragma once
 
 #include <lama.hpp>
 
 #include <lama/Context.hpp>
-#include <lama/Printable.hpp>
+#include <common/Printable.hpp>
 #include <lama/matrix/all.hpp>
 #include <lama/CommunicatorFactory.hpp>
 #include <lama/solver/logger/LogLevel.hpp>
@@ -581,5 +580,3 @@ lama::SparseMatrix<ValueType>* LamaConfig::createSparseMatrix( const char* forma
     }
 }
 
-
-#endif
