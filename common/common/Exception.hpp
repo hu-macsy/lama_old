@@ -25,10 +25,9 @@
  * SOFTWARE.
  * @endlicense
  *
- * @brief Interface of the class Exception.
+ * @brief Definition of class Exception and macro for throwing it
  * @author Thomas Brandes
  * @date 11.06.2015
- * @since 1.0.0
  */
 
 #pragma once
@@ -56,47 +55,49 @@ public:
     /**
      * @brief The default constructor creates an Exception with no message.
      */
-    Exception()
-    {
-    }
+    Exception();
 
     /**
      * @brief This constructor creates an Exception with the passed message.
      *
      * @param[in] message  the message to assign to this.
      */
-    Exception( const std::string& message ) : mMessage( message )
-    {
-    }
+    Exception( const std::string& message );
 
     /**
      * @brief The destructor destroys this Exception.
      */
-    virtual ~Exception() throw ()
-    {
-    }
+    virtual ~Exception() throw ();
 
     /**
      * @brief what() returns the message of this Exception.
      *
      * @return the message of this Exception.
      */
-    virtual const char* what() const throw ()
-    {
-        return mMessage.c_str();
-    }
+    virtual const char* what() const throw ();
+
+    /**
+     *  @brief Method that prints the current call stack in an output stream.
+     *
+     *  Very useful utility for identification of bugs, only supported for GNU compiler.
+     */
+    static void addCallStack( std::ostringstream& output );
 
 protected:
 
     std::string mMessage;
+
+    static std::string demangle( const char* string );
 };
 
 }  // namespace common
 
-#define COMMON_THROWEXCEPTION( msg )                                               \
-    {                                                                              \
-        std::ostringstream errorStr;                                               \
-        errorStr<<"Exception in line "<<__LINE__<<" of file "<<__FILE__<<"\n";     \
-        errorStr<<"    Message: "<<msg<<"\n";                                      \
-        throw common::Exception( errorStr.str() );                                 \
-    }
+#define COMMON_THROWEXCEPTION( msg )                                           \
+{                                                                              \
+    std::ostringstream errorStr;                                               \
+    errorStr<<"Exception in line "<<__LINE__<<" of file "<<__FILE__<<"\n";     \
+    errorStr<<"    Message: "<<msg<<"\n";                                      \
+    common::Exception::addCallStack( errorStr );                               \
+    throw common::Exception( errorStr.str() );                                 \
+}
+

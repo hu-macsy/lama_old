@@ -35,3 +35,5 @@
 add_executable( CommonTest CommonTest.cpp )
 target_link_libraries( CommonTest ${COMMON_LIBRARY} )
 
+add_executable( ExceptionTest ExceptionTest.cpp )
+target_link_libraries( ExceptionTest ${COMMON_LIBRARY} )
