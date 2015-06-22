@@ -1,0 +1,134 @@
+/**
+ * @file common/examples/ConditionTest.cpp
+ *
+ * @license
+ * Copyright (c) 2009-2015
+ * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
+ * for Fraunhofer-Gesellschaft
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ * @endlicense
+ *
+ * @brief Example with pthreads using Condition of the common library.
+ *
+ * @author Thomas Brandes
+ * @date 19.06.2015
+ */
+
+#include "common/Thread.hpp"
+#include "common/Walltime.hpp"
+#include "common/Exception.hpp"
+
+#include <iostream>
+#include <cstdlib>
+#include <vector>
+#include <unistd.h>
+
+using namespace std;
+using namespace common;
+
+Thread::Mutex barrierMutex;
+Thread::Mutex printMutex;
+Thread::Condition barrierCondition;
+
+static const int N_THREADS   = 16;
+
+// Define routine that is executed by one thread
+
+static int thread_cnt = 0;
+
+static void barrier()
+{
+    Thread::ScopedLock lock( barrierMutex );
+
+    thread_cnt ++;
+     
+    if ( thread_cnt != N_THREADS )
+    {
+        // Some others not at barrier so wait
+        barrierCondition.wait( lock );
+    }
+    else
+    {
+        // Now all threads have reached
+        thread_cnt = 0;
+        barrierCondition.notifyAll();
+    }
+}
+
+// Shared array for all threads
+
+static int sharedArray[ N_THREADS ];
+
+static void* threadRoutine( void* args )
+{
+    int arg = *( ( int* ) args );
+
+    sharedArray[arg] = arg;
+
+    barrier();
+
+    int sum = 0;
+
+    for ( int i = 0; i < N_THREADS; ++i )
+    {
+        sum += sharedArray[i];
+    }
+
+    int expected_sum = N_THREADS * ( N_THREADS-1 ) / 2;
+
+    if ( sum != expected_sum )
+    {
+        COMMON_THROWEXCEPTION( "sum = " << sum << ", expected = " << expected_sum )
+    }
+
+    {
+        Thread::ScopedLock lock( printMutex );
+        std::cout << "Thread " << arg << " has correct sum = " << sum << std::endl;
+    }
+}
+
+int main( int argc, char** argv )
+{
+    // macro to give the current thread a name that appears in further logs
+
+    std::vector<pthread_t> threads( N_THREADS );
+    std::vector<int> threadArgs( N_THREADS );
+
+    double time = Walltime::get();
+
+    for ( int i = 0; i < N_THREADS; ++i )
+    {
+        threadArgs[i] = i;
+
+        int rc = pthread_create( &threads[i], NULL, &threadRoutine, &threadArgs[i] );
+
+        if ( rc != 0 )
+        {
+            COMMON_THROWEXCEPTION( "Could not create pthread " << i << " of " << N_THREADS << ", rc = " << rc )
+        }
+    }
+
+    for ( int i = 0; i < N_THREADS; ++i )
+    {
+        pthread_join( threads[i], NULL );
+    }
+
+    std::cout << "All threads are terminated correctly." << std::endl;
+}

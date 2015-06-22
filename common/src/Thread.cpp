@@ -103,12 +103,12 @@ void Thread::Mutex::unlock()
     pthread_mutex_unlock( &p_mutex );
 }
 
-void Thread::Condition::notify_one()
+void Thread::Condition::notifyOne()
 {
     pthread_cond_signal ( &p_condition );
 }
 
-void Thread::Condition::notify_all()
+void Thread::Condition::notifyAll()
 {
     pthread_cond_broadcast ( &p_condition );
 }

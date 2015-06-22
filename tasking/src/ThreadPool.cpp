@@ -157,7 +157,7 @@ boost::shared_ptr<ThreadTask> ThreadPool::schedule( boost::function<void()> work
 
     //  notifiy one waiting worker
 
-    mNotifyTask.notify_one();
+    mNotifyTask.notifyOne();
 
     return task;
 }
@@ -272,7 +272,7 @@ void ThreadPool::worker( int id )
 
             // notify threads waiting on a finished task
 
-            mNotifyFinished.notify_all();
+            mNotifyFinished.notifyAll();
         }
     }
 
@@ -301,7 +301,7 @@ ThreadPool::~ThreadPool()
 
         // notifiy all waiting worker threads about new task
 
-        mNotifyTask.notify_all();
+        mNotifyTask.notifyAll();
     }
 
     LAMA_LOG_DEBUG( logger, "added " << mThreads.size() << " shutdown tasks" )

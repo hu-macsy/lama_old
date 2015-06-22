@@ -142,11 +142,11 @@ public:
 
         /** Notifiy one thread waiting a the condition */
 
-        void notify_one();
+        void notifyOne();
 
         /** Notifiy all threds waiting on the condition. */
 
-        void notify_all();
+        void notifyAll();
 
         void wait( ScopedLock& lock );
 
