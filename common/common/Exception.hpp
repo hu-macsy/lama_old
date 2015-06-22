@@ -101,3 +101,31 @@ protected:
     throw common::Exception( errorStr.str() );                                 \
 }
 
+#define COMMON_ASSERT( cond, msg )                                             \
+{                                                                              \
+    if (!(cond))                                                               \
+    {                                                                          \
+        std::ostringstream errorStr;                                           \
+        errorStr << "Assertion failed in line " << __LINE__;                   \
+        errorStr << " of file " << __FILE__ << "\n";                           \
+        errorStr << "    Condition: " << #cond << "\n";                        \
+        errorStr << "    Message: " << msg << "\n";                            \
+        common::Exception::addCallStack( errorStr );                           \
+        throw common::Exception( errorStr.str() );                             \
+    }                                                                          \
+}
+
+#define COMMON_ASSERT_EQUAL( exp1, exp2, msg )                                 \
+{                                                                              \
+    if ( ( exp1 ) != ( exp2 ) )                                                \
+    {                                                                          \
+        std::ostringstream errorStr;                                           \
+        errorStr << "Assert equal failed in line " << __LINE__;                \
+        errorStr << " of file " << __FILE__ << "\n";                           \
+        errorStr << "    Message: " << msg << "\n";                            \
+        errorStr << "    exp_1: " << #exp1 " = " << exp1 << "\n";              \
+        errorStr << "    exp_2: " << #exp2 " = " << exp2 << "\n";              \
+        common::Exception::addCallStack( errorStr );                           \
+        throw common::Exception( errorStr.str() );                             \
+    }                                                                          \
+}

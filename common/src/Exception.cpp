@@ -80,7 +80,7 @@ void Exception::addCallStack( std::ostringstream& output )
 
     for( size_t i = 1; i < stackDepth; i++ )
     {
-        output << "   stack[" << i << "] : " << demangle( stackStrings[i] ) << std::endl;
+        output << "    stack[" << i << "] : " << demangle( stackStrings[i] ) << std::endl;
     }
 
     free( stackStrings ); // malloc()ed by backtrace_symbols

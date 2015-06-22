@@ -41,19 +41,31 @@ void sub( int val )
     {
         COMMON_THROWEXCEPTION( "sub: val must not be negative, val = " << val )
     }
+
+    COMMON_ASSERT( val < 10, "val = " << val << " must be less 10" )
+
+    COMMON_ASSERT_EQUAL( val, 3, "None" )
 }
 
 int main()
 {
-    try
-    {
-        sub( -1 );
-    }
-    catch ( const std::exception& exception )
-    {
-        // Importation: exception is a reference, so we get the routine of common::Exception
+    int vals[] = { -1, 15, 5, 3 };
+ 
+    int nargs = sizeof( vals ) / sizeof( int );
 
-        std::cout << "Got exception: " << exception.what() << std::endl;
+    for ( int i = 0; i < nargs; ++ i )
+    {
+        try
+        {
+            sub( vals[i] );
+            std::cout << "Call of sub( " << vals[i] << " terminated correctly" << std::endl;
+        }
+        catch ( const std::exception& exception )
+        {
+            // Importation: exception is a reference, so we get the routine of common::Exception
+    
+            std::cout << "Got exception: " << exception.what() << std::endl;
+        }
     }
 }
 
