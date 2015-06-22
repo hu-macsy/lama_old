@@ -41,7 +41,7 @@
 #include <boost/enable_shared_from_this.hpp>
 
 // others
-#include <lama/task/Thread.hpp>
+#include <common/Thread.hpp>
 
 #include <cuda.h>
 #include <cuda_runtime.h>
@@ -185,7 +185,7 @@ private:
 
     std::string mDeviceName; //!< name set during initialization
 
-    Thread::Id mOwnerThread;
+    common::Thread::Id mOwnerThread;
 
     mutable int mNumberOfAllocates; //!< variable counts allocates
     mutable long long mNumberOfAllocatedBytes; //!< variable counts allocated bytes on device

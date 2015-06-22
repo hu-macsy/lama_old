@@ -34,6 +34,7 @@
 #include <boost/test/unit_test.hpp>
 #include <boost/mpl/list.hpp>
 #include <boost/scoped_array.hpp>
+#include <boost/bind.hpp>
 
 #include <lama/ContextFactory.hpp>
 #include <lama/WriteAccess.hpp>
@@ -44,7 +45,7 @@
 
 #include <lama/exception/LAMAAssert.hpp>
 
-#include <lama/task/Task.hpp>
+#include <tasking/Task.hpp>
 
 #include <lama/LAMAInterface.hpp>
 #include <lama/cuda/CUDAStreamSyncToken.hpp>
@@ -56,6 +57,7 @@
 
 using namespace boost;
 using namespace lama;
+using tasking::Task;
 
 typedef boost::mpl::list<double, float> test_types;
 
