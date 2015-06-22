@@ -155,7 +155,6 @@ void TraceConfig::setParam( const std::string& param )
     else if( param == "CT" )
     {
         mCallTreeEnabled = true;
-        LAMA_LOG_WARN( logger, param << " is still under development" )
     }
     else
     {
@@ -228,7 +227,8 @@ TraceConfig::TraceConfig()
     else
     {
         LAMA_LOG_WARN( logger,
-                       LAMA_ENV_TRACE_CONFIG << " not set, tracing is disabled." << " Enable by " << LAMA_ENV_TRACE_CONFIG << "=time[:vt][:thread]" )
+                       LAMA_ENV_TRACE_CONFIG << " not set, tracing is disabled." 
+                       << " Enable by " << LAMA_ENV_TRACE_CONFIG << "=time|ct[:vt][:thread]" )
     }
 
     // enable/disable VampirTrace, action needed now

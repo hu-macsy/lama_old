@@ -30,12 +30,12 @@ static void printRegionEntry( int region_id, RegionEntry& region )
     outfile << "# begin info line" << endl;
     outfile << "fl " << region.getFileToken() << " " << region.getFileName() << endl;
     outfile << "fn " << region_id;
-    outfile << " 0";  //  src_region_id ;
+    outfile << " 0";  //  src_region_id, does not matter
     outfile << " " <<  region.getRegionName();
-    outfile << " 10";  // kind
+    outfile << " 2";  // function 
     outfile << " " << region.getLine(); 
     outfile << " " << region.getLine(); 
-    outfile << " ?"; 
+    outfile << " ?";   // module name, does not matter
     outfile << endl;
     outfile << "0";
     for ( int i = 0; i < traced_counters; ++i )
@@ -353,11 +353,15 @@ static void getCounters( uint64_t counter_vals[] )
     counter_vals[0] = common::Walltime::timestamp();
 }
 
+LAMA_LOG_DEF_LOGGER( CallTree::logger, "CallTree" )
+
 void CallTree::enter( const int region_id, RegionEntry& region )
 {
-    if ( outfile == NULL )
+    LAMA_LOG_DEBUG( logger, "enter " << region_id << " " << region.getRegionName() )
+
+    if ( !outfile.is_open() )
     {
-        printf( "open calltree file\n" );
+        LAMA_LOG_DEBUG( logger, "open calltree file" );
 
         outfile.open( "calltree.ct", std::ios::out );
 
@@ -416,7 +420,9 @@ void CallTree::enter( const int region_id, RegionEntry& region )
 
 void CallTree::leave( const int region_id, const RegionEntry& region )
 {
-    if ( outfile == NULL )
+    LAMA_LOG_DEBUG( logger, "leave " << region_id << " " << region.getRegionName() )
+
+    if ( !outfile.is_open() )
     {
         COMMON_THROWEXCEPTION( "calltree.ct not open" )
     }
@@ -453,6 +459,8 @@ void CallTree::finish()
 {
     if ( outfile.is_open() )
     {
+        LAMA_LOG_DEBUG( logger, "finish, close outfile" )
+
         const CounterArray& totalCosts = CT.getTotalCosts();
 
         outfile << "# closed by finish" << endl;
@@ -465,6 +473,10 @@ void CallTree::finish()
         outfile << "# cache has " << CT.getHits() << " hits and "
                 << CT.getMisses() << " misses" << endl;
         outfile.close();
+    }
+    else
+    {
+        LAMA_LOG_DEBUG( logger, "finish, outfile was closed" )
     }
 }
 

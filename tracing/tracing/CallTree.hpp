@@ -3,6 +3,8 @@
 
 #include "tracing/RegionEntry.hpp"
 
+#include "logging/logging.hpp"
+
 #include <vector>
 
 namespace tracing
@@ -22,6 +24,8 @@ public:
 private:
 
     static std::vector<int> theCallStack;
+
+    LAMA_LOG_DECL_STATIC_LOGGER( logger )
 };
 
 }

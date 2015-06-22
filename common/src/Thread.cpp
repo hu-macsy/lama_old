@@ -37,6 +37,11 @@
 #include <string>
 #include <iostream>
 
+
+// define LOCAL_DEBUG for debugging this source code
+
+#undef LOCAL_DEBUG
+
 using namespace std;
 
 namespace common
@@ -136,7 +141,9 @@ void Thread::defineCurrentThreadId( const char* name )
 
     Thread::Id id = getSelf();
 
+#ifdef LOCAL_DEBUG
     cout << "defineCurrentThreadId, id = " << id << ", name = " << name << endl;
+#endif
 
     map<Thread::Id, string>::iterator it = mapThreads.find( id );
 
@@ -146,7 +153,9 @@ void Thread::defineCurrentThreadId( const char* name )
 
         mapThreads[ id ] = string( name );
 
+#ifdef LOCAL_DEBUG
         cout << "Thread " << id << " defines name " << name << endl;
+#endif
     }
     else
     {
@@ -154,7 +163,9 @@ void Thread::defineCurrentThreadId( const char* name )
 
         // cout << "Redefine Thread " << id << " = " << it->second << " as " << name << endl;
 
+#ifdef LOCAL_DEBUG
         cout << "Thread " << id << " named " << it->second << ", renamed to " << name << endl;
+#endif
 
         it->second = name;
     }
