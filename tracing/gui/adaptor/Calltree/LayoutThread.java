@@ -22,6 +22,11 @@ import java.io.DataOutputStream;
 import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
+
+import java.io.FileInputStream;
+import java.io.FileWriter;
+import java.io.BufferedWriter;
 
 import org.apache.log4j.Logger;
 
@@ -252,6 +257,25 @@ class LayoutThread extends Thread {
 
     } // handleProcess
 
+    protected void readReplace(String filename, 
+            String searchPattern1, String replacementPattern1,
+            String searchPattern2, String replacementPattern2) throws IOException {
+        String line;
+        StringBuffer buffer = new StringBuffer();
+        FileInputStream fileInputStream = new FileInputStream(filename);
+        BufferedReader reader = new BufferedReader(
+                new InputStreamReader(fileInputStream));
+        while((line = reader.readLine()) != null) {
+            String line1 = line.replaceAll(searchPattern1, replacementPattern1);
+            String line2 = line1.replaceAll(searchPattern2, replacementPattern2);
+            buffer.append(line2 + "\n");
+        }
+        reader.close();
+        BufferedWriter out = new BufferedWriter(new FileWriter(filename));
+        out.write(buffer.toString());
+        out.close();
+    }
+
     /**
      * {@inheritDoc}
      *
@@ -266,6 +290,25 @@ class LayoutThread extends Thread {
         if (myLayoutProcess != null) {
             
             int rc = handleProcess(myLayoutProcess, inputName, outputName);
+
+            // new version of dot requires update of output
+            // widht=3.14 -> width="3.14", height=1.56 -> height="1.56"
+
+            // sed -e "s/width=\([0-9]*\.[0-9]*\)/width=\"\1\"/g"      \
+            //     -e "s/height=\([0-9]*\.[0-9]*\)/height=\"\1\"/g"      \
+            //     -i $1
+
+            String searchPattern1 = "width=(\\d*\\.\\d*)";
+            String replacePattern1 = "width=\"$1\""; 
+            String searchPattern2 = "height=([0-9]*\\.[0-9]*)";
+            String replacePattern2 = "height=\"$1\""; 
+
+            try {
+                readReplace( outputName, searchPattern1, replacePattern1,
+                                         searchPattern2, replacePattern2 );
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
 
             // in case of error return
 
