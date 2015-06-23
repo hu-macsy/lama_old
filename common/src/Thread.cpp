@@ -206,9 +206,31 @@ const char* Thread::getCurrentThreadId()
     }
 }
 
+void Thread::start( pthread_routine start_routine, void* arg )
+{
+    int rc = pthread_create( &tid, NULL, start_routine, arg );
+ 
+    COMMON_ASSERT_EQUAL( 0, rc, "pthread_create failed" )
+
+    running = true;
+}
+
+void Thread::join()
+{
+    if ( running )
+    {
+        int rc = pthread_join( tid, NULL );
+        COMMON_ASSERT_EQUAL( 0, rc, "pthread_join failed" )
+
+        // std::cout << "PThread " << std::hex << tid << " terminated." << std::endl;
+    }
+
+    running = false;
+}
+
 Thread::~Thread()
 {
-    pthread_join( tid, NULL );
+    join();
 }
 
 } // namespace

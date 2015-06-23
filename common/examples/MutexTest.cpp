@@ -1,5 +1,5 @@
 /**
- * @file common/examples/ThreadTest.cpp
+ * @file common/examples/MutexTest.cpp
  *
  * @license
  * Copyright (c) 2009-2015

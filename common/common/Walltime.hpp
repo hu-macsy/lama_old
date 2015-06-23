@@ -1,5 +1,5 @@
 /**
- * @file Walltime.hpp
+ * @file common/Walltime.hpp
  *
  * @license
  * Copyright (c) 2009-2015
@@ -25,16 +25,14 @@
  * SOFTWARE.
  * @endlicense
  *
- * @brief Class that gives back walltime
+ * @brief Definition of static class that provides high precision walltime
  * @author Thomas Brandes
  * @date 11.06.2015
  */
 
-// for dll_import
 #include <common/config.hpp>
 
 #include <string>
-
 #include <stdint.h>
 
 namespace common
@@ -72,4 +70,4 @@ private:
     Walltime();
 };
 
-} // namespace lama
+} // namespace

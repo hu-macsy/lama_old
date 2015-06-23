@@ -34,6 +34,7 @@
 // for dll_import
 
 #include <common/config.hpp>
+#include <common/NonCopyable.hpp>
 
 #include <pthread.h>
 
@@ -44,7 +45,7 @@ namespace common
  *  It also supports critical regions by mutex and scoped locks.
  */
 
-class COMMON_DLL_IMPORTEXPORT Thread
+class COMMON_DLL_IMPORTEXPORT Thread : common::NonCopyable
 {
 public:
 
@@ -155,17 +156,33 @@ public:
         pthread_cond_t p_condition;
     };
 
+    typedef void* (*pthread_routine) (void*);
+
+    Thread() : running( false )
+    {
+    }
+
     /** Constructor of a new thread that executes a void routine with one reference argument. */
 
     template<typename T>
     Thread( void (*work) ( T& ), T& arg )
     {
-        typedef void* (*pthread_routine) (void*);
-        void *parg = (void *) (&arg);
-        // void* (*routine) (void*) = ( void* (*) (void*) ) work;
+        void *parg = (void *) ( &arg );
         pthread_routine routine = ( pthread_routine ) work;
-        int rc = pthread_create( &tid, NULL, routine, parg );
+        start( routine, parg );
     }
+
+    template<typename T>
+    void run( void (*work) ( T& ), T& arg )
+    {
+        void *parg = (void *) ( &arg );
+        pthread_routine routine = ( pthread_routine ) work;
+        start( routine, parg );
+    }
+
+    void start( pthread_routine start_routine, void* arg );
+
+    void join();
 
     /** Destructor of thread, waits for its termination. */
 
@@ -174,6 +191,7 @@ public:
 private:
 
     pthread_t tid;
+    bool      running;
 };
 
 } // namespace 
