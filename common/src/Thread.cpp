@@ -206,4 +206,9 @@ const char* Thread::getCurrentThreadId()
     }
 }
 
+Thread::~Thread()
+{
+    pthread_join( tid, NULL );
+}
+
 } // namespace

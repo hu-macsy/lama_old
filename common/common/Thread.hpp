@@ -155,8 +155,25 @@ public:
         pthread_cond_t p_condition;
     };
 
+    /** Constructor of a new thread that executes a void routine with one reference argument. */
 
+    template<typename T>
+    Thread( void (*work) ( T& ), T& arg )
+    {
+        typedef void* (*pthread_routine) (void*);
+        void *parg = (void *) (&arg);
+        // void* (*routine) (void*) = ( void* (*) (void*) ) work;
+        pthread_routine routine = ( pthread_routine ) work;
+        int rc = pthread_create( &tid, NULL, routine, parg );
+    }
+
+    /** Destructor of thread, waits for its termination. */
+
+    ~Thread();
+
+private:
+
+    pthread_t tid;
 };
 
-
-} //namespace lama
+} // namespace 
