@@ -69,6 +69,10 @@ public:
 
     TraceRegionRecord( const char* regionName, int n, const char* fileName, int lno );
 
+    /** Trace record for the current region, name must match regionName */
+
+    TraceRegionRecord( const char* regionName );
+
     /** Destructor of a tracer object, produces 'stop' entry in trace file. */
 
     ~TraceRegionRecord();
@@ -92,13 +96,17 @@ public:
 
     static void stop( const char* regionName );
 
+    void enter();
+
+    void leave();
+
 private:
 
     LAMA_LOG_DECL_STATIC_LOGGER( logger )
 
-    /** Common routine used in all constructors. */
+    /** Common routine for all constructors to check for settings of trace. */
 
-    void    enter( const char* regionName, const char* file, int lno );
+    void initSettings();
 
     /** Each region timing keeps a shared pointer to the configuration.
      *  By this way it is guaranteed that timer information is only printed
@@ -109,6 +117,8 @@ private:
 
     class RegionTable* mRegionTable; // pointer to thread region time table
 
+    class RegionEntry* mRegionEntry;
+
     int mRegionId;// Reference id of region in region table.
 
     bool mTimeTrace;//!< set to true if timing should be done
@@ -118,4 +128,31 @@ private:
     double mStartTime;//!< walltime of region start
 };
 
-}
+class ScopedTraceRecord : private TraceRegionRecord
+{
+public:
+
+    ScopedTraceRecord( const char* regionName, const char* fileName, int lno ) :
+
+        TraceRegionRecord( regionName, fileName, lno )
+
+    {
+        enter();
+    }
+
+    ScopedTraceRecord( const char* regionName, const int suffix_n, const char* fileName, int lno ) :
+
+        TraceRegionRecord( regionName, suffix_n, fileName, lno )
+
+    {
+        enter();
+    }
+
+    ~ScopedTraceRecord()
+    {
+        leave();
+    }
+};
+
+}  // namescape
+

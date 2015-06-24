@@ -37,6 +37,7 @@
 
 // others
 #include <tracing/RegionEntry.hpp>
+#include <tracing/CallStack.hpp>
 #include <common/Thread.hpp>
 
 // logging
@@ -46,6 +47,7 @@
 #include <cstdio>
 #include <vector>
 #include <map>
+#include <fstream>
 
 namespace tracing
 {
@@ -116,18 +118,18 @@ public:
 
     /** Enter a region with the timestamp. */
 
-    void start( int regionId, double wallTime );
+    void start( int regionId, const CounterArray& startValues );
 
     /** Leave the region with the timestamp.
      *
      *  @param[in] regionId is the id of region to leave, must match the last on call stack
      *  @param[in] wallTime is time stamp of call
      */
-    void stop( int regionId, double wallTime );
+    void stop( int regionId, const CounterArray& stopValues );
 
     /** Leave the region with the timestamp. */
 
-    void stop( const char* regionName, double wallTime );
+    void stop( const char* regionName, const CounterArray& stopValues );
 
     /** Return the elapsed time up to now.
      It will add also the time of a running region.
@@ -145,9 +147,11 @@ public:
 
     /** This routine prints timing information. */
 
-    void printTimer();
+    void printTimer( std::ostream& );
 
-    void printTimer( FILE* f );
+    /** This routine prints timing information in std::cout */
+
+    void printTimer();
 
 private:
 
@@ -163,6 +167,8 @@ private:
 
     /** Structure for entry on the call stack (id, starttime) */
 
+    /** Disabled:
+
     struct CallEntry
     {
         CallEntry( int region, double timeStart )
@@ -174,8 +180,11 @@ private:
         int mRegion; //!< reference id for the region
         double mTimeStart;//!< absolute time when call started
     };
+    */
 
-    std::vector<CallEntry> callStack;
+    // std::vector<CallEntry> callStack;
+
+    CallStack callStack;
 
     std::vector<RegionEntry> array; //!<  Entries for all timers
 

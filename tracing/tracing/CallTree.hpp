@@ -2,6 +2,7 @@
 #pragma once
 
 #include "tracing/RegionEntry.hpp"
+#include "tracing/Counters.hpp"
 
 #include "logging/logging.hpp"
 
@@ -15,9 +16,9 @@ class CallTree
 {
 public:
 
-    static void enter( const int region_id, RegionEntry& region );
+    static void enter( const int region_id, RegionEntry& region, const CounterArray& startValues );
 
-    static void leave( const int region_id, const RegionEntry& region );
+    static void leave( const int region_id, const RegionEntry& region, const CounterArray& stopValues );
 
     static void finish();
 

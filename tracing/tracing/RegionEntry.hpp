@@ -33,6 +33,8 @@
 #pragma once
 
 #include <string>
+#include <fstream>
+#include <iomanip>
 
 namespace tracing
 {
@@ -80,14 +82,17 @@ struct RegionEntry
     {
         return mCalls;
     }
+
     double getLastTime() const
     {
         return mLastTime;
     }
+
     double getInclusiveTime() const
     {
         return mInclusiveTime;
     }
+
     double getExclusiveTime() const
     {
         return mExclusiveTime;
@@ -123,15 +128,25 @@ struct RegionEntry
 
     const char* mFile; // file name where region is defined
 
+    void printTime( std::ostream& outfile ) const
+    {
+        outfile << "Time " << mName << " (in ms) : ";
+        outfile << "#calls = " << mCalls;
+        outfile << ", inclusive = " << std::fixed << std::setprecision(6) << ( mInclusiveTime * 1000.0 );
+        outfile << ", exclusive = " << std::fixed << std::setprecision(6) << ( mExclusiveTime * 1000.0 );
+        outfile << std::endl;
+    }
+
 private:
 
-    int mCalls; //!< count number of calls for a region
+    int mCalls;            //!< counts number of calls for this region
 
-    double mLastTime; //!< time of last call
-    double mInclusiveTime; //!< time totally spent in a region
+    double mLastTime;      //!< time spent on latest call
+
+    double mInclusiveTime; //!< time totally spent in a region 
     double mExclusiveTime; //!< time exclusively spent in a region
 
-    bool mFirst;
+    bool mFirst;           //!< only true for first access
 };
 
 }

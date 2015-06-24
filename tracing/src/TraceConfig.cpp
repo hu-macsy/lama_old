@@ -296,20 +296,25 @@ TraceConfig::~TraceConfig()
 
     fileName << mTraceFilePrefix << ".trace";
 
-    /* Disabled for the moment:
+    /* For parallel processes we should add suffix for rank
 
     if( mComm->getSize() > 1 )
     {
         fileName << "." << mComm->getRank();
     }
+
     */
 
     LAMA_LOG_INFO( logger, "~TraceConfig, output file = " << fileName.str() )
 
-    FILE* f = fopen( fileName.str().c_str(), "w" );
+    std::ofstream outfile;
 
-    if( f == NULL )
+    outfile.open( fileName.str().c_str(), std::ios::out );
+
+    if ( outfile.fail() )
     {
+        // do not throw exception as only tracing caused problem
+
         LAMA_LOG_ERROR( logger, "Could not open " << fileName.str() << " for writing time information." )
         return;
     }
@@ -321,12 +326,13 @@ TraceConfig::~TraceConfig()
     for( it = mRegionTables.begin(); it != mRegionTables.end(); it++ )
     {
         RegionTable& table = *it->second;
-        table.printTimer( f );
+
+        table.printTimer( outfile );
     }
 
-    fclose( f );
+    outfile.close();
 
-    LAMA_LOG_DEBUG( logger, "Leaving Destructor." )
+    LAMA_LOG_DEBUG( logger, "~TraceConfig finished" )
 }
 
 /* -------------------------------------------------------------------------- */

@@ -38,9 +38,12 @@
 
 #include <common/Walltime.hpp>
 #include <common/Thread.hpp>
+#include <common/Exception.hpp>
 
 #include <cstdio>
 #include <cstdlib>
+
+using namespace std;
 
 using common::Thread;
 
@@ -84,46 +87,46 @@ void RegionTable::init()
 
 /* ---------------------------------------------------------------------- */
 
-void RegionTable::start( int regionId, double wallTime )
+void RegionTable::start( int regionId, const CounterArray& startValues )
 {
-    LAMA_LOG_DEBUG( logger, "start region " << regionId << ", time = " << wallTime )
+    LAMA_LOG_DEBUG( logger, "start region " << regionId << ", time = " << startValues.getWalltime() )
 
-    callStack.push_back( CallEntry( regionId, wallTime ) );
+    callStack.push( regionId, startValues );
 }
 
 /* ---------------------------------------------------------------------- */
 
-void RegionTable::stop( int regionId, double wallTime )
+void RegionTable::stop( int regionId, const CounterArray& stopValues )
 {
-    LAMA_LOG_DEBUG( logger, "stop region " << regionId << ", time = " << wallTime )
+    LAMA_LOG_DEBUG( logger, "stop region " << regionId << ", time = " << stopValues.getWalltime() )
 
-    if( callStack.size() == 0 )
+    if( callStack.empty() )
     {
         LAMA_LOG_ERROR( logger, "stop region on empty call region stack" )
         return;
     }
 
-    CallEntry call = callStack.back();
+    const int currentRegionId = callStack.currentRegionId();
 
-    if( ( call.mRegion >= 0 ) && ( call.mRegion != regionId ) )
+    if( ( currentRegionId >= 0 ) )
     {
-        fprintf( stderr, "mismatch in call stack, stop %s but in %s\n", array[regionId].mName.c_str(),
-                 array[call.mRegion].mName.c_str() );
-        return;
+        COMMON_ASSERT_EQUAL( currentRegionId, regionId, 
+                             "mismatch call stack, current region = " << array[currentRegionId].mName
+                             << ", stop for " << array[regionId].mName )
     }
 
-    callStack.pop_back();
-
-    double spentTime = wallTime - call.mTimeStart;
+    double spentTime = stopValues.getWalltime( callStack.currentCounters() );
 
     array[regionId].addCall( spentTime );
 
+    callStack.pop();
+
     // correct exclusive time of previous entry in call stack
 
-    if( callStack.size() )
+    if( !callStack.empty() )
     {
-        CallEntry before = callStack.back();
-        array[before.mRegion].subRegionCall( spentTime );
+        int currentRegionId = callStack.currentRegionId();
+        array[currentRegionId].subRegionCall( spentTime );
     }
 }
 
@@ -131,13 +134,13 @@ void RegionTable::stop( int regionId, double wallTime )
 
 int RegionTable::getCurrentRegionId( const char* regionName )
 {
-    if( callStack.size() )
+    if( !callStack.empty() )
     {
         // check that regionName is the last region on the current call stack
 
-        const CallEntry& call = callStack.back();
+        const int currentRegionId = callStack.currentRegionId();
 
-        const RegionEntry& callRegion = getRegion( call.mRegion );
+        const RegionEntry& callRegion = getRegion( currentRegionId );
 
         if( strcmp( callRegion.getRegionName(), regionName ) != 0 )
         {
@@ -145,7 +148,7 @@ int RegionTable::getCurrentRegionId( const char* regionName )
             return 0;
         }
 
-        return call.mRegion;
+        return currentRegionId;
     }
     else
     {
@@ -171,13 +174,13 @@ int RegionTable::getCurrentRegionId( const char* regionName )
 
 /* ---------------------------------------------------------------------- */
 
-void RegionTable::stop( const char* regionName, double wallTime )
+void RegionTable::stop( const char* regionName, const CounterArray& counterValues )
 {
     // check that regionName is the last region on the current call stack
 
-    const CallEntry& call = callStack.back();
+    const int currentRegionId = callStack.currentRegionId();
 
-    const RegionEntry callRegion = getRegion( call.mRegion );
+    const RegionEntry callRegion = getRegion( currentRegionId );
 
     if( strcmp( callRegion.getRegionName(), regionName ) != 0 )
     {
@@ -185,7 +188,7 @@ void RegionTable::stop( const char* regionName, double wallTime )
         return;
     }
 
-    stop( call.mRegion, wallTime );
+    stop( currentRegionId, counterValues );
 }
 
 /* ---------------------------------------------------------------------- */
@@ -193,6 +196,8 @@ void RegionTable::stop( const char* regionName, double wallTime )
 double RegionTable::elapsed( int regionId )
 {
     double elapsedTime = array[regionId].getInclusiveTime();
+
+    /* Not yet
 
     // might be that region is still on the stack
 
@@ -205,6 +210,7 @@ double RegionTable::elapsed( int regionId )
             elapsedTime += common::Walltime::get() - call.mTimeStart;
         }
     }
+    */
 
     return elapsedTime;
 }
@@ -258,22 +264,18 @@ void RegionTable::printTimer()
 {
     Thread::ScopedLock lock( printMutex );
 
-    printTimer( stdout );
+    printTimer( cout );
 }
 
 /* ---------------------------------------------------------------------- */
 
-void RegionTable::printTimer( FILE* f )
+void RegionTable::printTimer( ostream& outfile )
 {
-    LAMA_LOG_INFO( logger, "Summary of all timers for thread " << mThreadId )
+    LAMA_LOG_INFO( logger, "Summary of all timers for thread " << Thread::getThreadId( mThreadId ) );
 
-    std::ostringstream threadInfo;
-
-    threadInfo << mThreadId;
-
-    fprintf( f, "====================================\n" );
-    fprintf( f, "Timing info of regions for Thread %s\n", threadInfo.str().c_str() );
-    fprintf( f, "====================================\n" );
+    outfile << "========================================" << endl;
+    outfile << "Timing info of regions for Thread " << Thread::getThreadId( mThreadId ) << endl;
+    outfile << "========================================" << endl;
 
     // use map iterator for alphabetical output
 
@@ -286,8 +288,7 @@ void RegionTable::printTimer( FILE* f )
 
         const RegionEntry& region = array[regionId];
 
-        fprintf( f, "Time %s (in ms) : #calls = %d, inclusive = %5.2f, exclusive = %5.2f\n", name.c_str(),
-                 region.getCalls(), region.getInclusiveTime() * 1000.0, region.getExclusiveTime() * 1000.0 );
+        region.printTime( outfile );
     }
 }
 

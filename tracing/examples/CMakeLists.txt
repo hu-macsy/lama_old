@@ -6,3 +6,6 @@ target_link_libraries( TraceTest ${TRACING_LIBRARY} ${COMMON_LIBRARY} )
 
 add_executable( TraceCalls TraceCalls.cpp )
 target_link_libraries( TraceCalls ${TRACING_LIBRARY} ${COMMON_LIBRARY} )
+
+add_executable( TraceThreads TraceThreads.cpp )
+target_link_libraries( TraceThreads ${TRACING_LIBRARY} ${COMMON_LIBRARY} )
