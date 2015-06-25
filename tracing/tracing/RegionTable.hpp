@@ -59,9 +59,9 @@ class COMMON_DLL_IMPORTEXPORT RegionTable
 
 public:
 
-    /** Constructor of a new region table. 
+    /** Constructor of a new region table.
      *
-     *  The region table must contain the thread id as it might be 
+     *  The region table must contain the thread id as it might be
      *  written later by main thread.
      */
 
@@ -84,7 +84,7 @@ public:
 
     int getRegionId( const char* name );
 
-    /** Return the elapsed time up to now.  
+    /** Return the elapsed time up to now.
      *  It will add also the time of a running region.
      */
 
@@ -114,7 +114,7 @@ private:
     {
         bool operator()( const char* a, const char* b ) const
         {
-            return std::strcmp( a, b) < 0;
+            return std::strcmp( a, b ) < 0;
         }
     };
 

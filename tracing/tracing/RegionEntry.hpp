@@ -48,7 +48,7 @@ typedef unsigned int VTRegionId;
  *  for time spent in it ( inclusive + exclusive)
  */
 
-class RegionEntry 
+class RegionEntry
 {
 public:
 
@@ -58,7 +58,6 @@ public:
         mInclusiveTime = 0.0;
         mExclusiveTime = 0.0;
         mCalls = 0;
-
         mVTId = 0;
         mFirst = true;    // for first access
     }
@@ -115,7 +114,7 @@ public:
         mCalls++;
     }
 
-    bool firstAccess() 
+    bool firstAccess()
     {
         bool is = mFirst;
         mFirst = false;
@@ -141,8 +140,8 @@ public:
     {
         outfile << "Time " << mName << " (in ms) : ";
         outfile << "#calls = " << mCalls;
-        outfile << ", inclusive = " << std::fixed << std::setprecision(6) << ( mInclusiveTime * 1000.0 );
-        outfile << ", exclusive = " << std::fixed << std::setprecision(6) << ( mExclusiveTime * 1000.0 );
+        outfile << ", inclusive = " << std::fixed << std::setprecision( 6 ) << ( mInclusiveTime * 1000.0 );
+        outfile << ", exclusive = " << std::fixed << std::setprecision( 6 ) << ( mExclusiveTime * 1000.0 );
         outfile << std::endl;
     }
 
@@ -159,7 +158,7 @@ private:
 
     double mLastTime;      //!< time spent on latest call
 
-    double mInclusiveTime; //!< time totally spent in a region 
+    double mInclusiveTime; //!< time totally spent in a region
     double mExclusiveTime; //!< time exclusively spent in a region
 
     bool mFirst;           //!< only true for first access

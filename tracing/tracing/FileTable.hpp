@@ -55,7 +55,7 @@ public:
 
     /** Constructor of a new file table.
      *
-     *  The region table must contain the thread id as it might be 
+     *  The region table must contain the thread id as it might be
      *  written later by main thread.
      */
 
@@ -86,7 +86,7 @@ private:
     {
         bool operator()( const char* a, const char* b ) const
         {
-            return std::strcmp( a, b) < 0;
+            return std::strcmp( a, b ) < 0;
         }
     };
 

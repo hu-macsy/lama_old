@@ -66,24 +66,19 @@ extern "C" void VT_User_trace_off__();
 void VTInterface::define( RegionEntry& region )
 {
     region.mVTId = 0;
-
 #if defined( USE_VAMPIRTRACE ) && defined( NEW_VT )
     const std::string& fullName = region.mName;
-
     //  check region name for <group_name>.<method_name>
-
     size_t pindex = fullName.find_first_of( "." );
 
     if ( pindex == std::string::npos )
     {
         // region id without "." belong to group LAMA
-
         region.mVTId = VT_User_def__( region.getRegionName(), "LAMA", region.getFileName(), region.mLine );
     }
     else
     {
         // split the region name and define it
-
         std::string groupName = fullName.substr( 0, pindex );
         std::string regionName = fullName.substr( pindex + 1 );
         region.mVTId = VT_User_def__( regionName.c_str(), groupName.c_str(), region.getFileName(), region.mLine );
@@ -103,7 +98,6 @@ void VTInterface::enter( const RegionEntry& region )
                      region.getFileName(),
                      region.getLine() );
 #endif
-
 }
 
 #else

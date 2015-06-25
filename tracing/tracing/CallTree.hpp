@@ -12,7 +12,7 @@ namespace tracing
 
 {
 
-class CallTree 
+class CallTree
 {
 public:
 

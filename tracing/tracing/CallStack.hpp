@@ -45,9 +45,9 @@ struct CallStackEntry
     int          mRegionId;       //! name of the region
     CounterArray mCounterValues;  //! values of performance counters at entry
 
-    CallStackEntry( int regionId, const CounterArray& counterValues ) : 
-        mRegionId( regionId ), 
-        mCounterValues( counterValues ) 
+    CallStackEntry( int regionId, const CounterArray& counterValues ) :
+        mRegionId( regionId ),
+        mCounterValues( counterValues )
     {
     }
 
@@ -60,7 +60,7 @@ class CallStack
 {
 public:
 
-    void clear() 
+    void clear()
     {
         stack.clear();
     }
@@ -75,7 +75,7 @@ public:
         stack.pop_back();
     }
 
-    /** Get the costs for the total call of the current region 
+    /** Get the costs for the total call of the current region
      *
      *  @param[out] costs are the difference between counterValues at entry and counterVals
      *  @param[in]  counterVals are counter values at exit of the current region
@@ -84,7 +84,6 @@ public:
     void getCosts( CounterArray& costs, const CounterArray& counterVals ) const
     {
         const CounterArray& enterVals = stack.back().mCounterValues;
-
         costs = counterVals - enterVals;
     }
 

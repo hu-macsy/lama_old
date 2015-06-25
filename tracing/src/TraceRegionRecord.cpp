@@ -56,7 +56,7 @@ void TraceRegionRecord::initSettings()
 {
     mTraceData = NULL;
 
-    if( !TraceConfig::globalTraceFlag )
+    if ( !TraceConfig::globalTraceFlag )
     {
         // tracing is switched off in source code
         return;
@@ -64,7 +64,7 @@ void TraceRegionRecord::initSettings()
 
     mTraceConfig = TraceConfig::getInstancePtr();
 
-    if( !mTraceConfig->isEnabled() )
+    if ( !mTraceConfig->isEnabled() )
     {
         return;
     }
@@ -74,7 +74,6 @@ void TraceRegionRecord::initSettings()
     if ( mTraceData )
     {
         // get detailed info about what to trace
-
         mTimeTrace   = mTraceConfig->isTimeTraceEnabled();
         mCallTree    = mTraceConfig->isCallTreeEnabled();
         mVampirTrace = mTraceConfig->isVampirTraceEnabled();
@@ -104,7 +103,6 @@ TraceRegionRecord::TraceRegionRecord( const char* regionName )
     if ( mTraceData )
     {
         // getCurrentRegionId very fast, matches name against call stack if available
-
         mRegionId    = mTraceData->getCurrentRegionId( regionName );
     }
     else
@@ -124,13 +122,9 @@ TraceRegionRecord::TraceRegionRecord( const char* regionName, int n, const char*
     if ( mTraceData )
     {
         // compose a new name for the region with n as suffix
-
         std::ostringstream fullRegionName;
-    
         fullRegionName << regionName << "_" << n;
-
         mRegionId    = mTraceData->getRegionId( fullRegionName.str().c_str(), file, lno );
-
         // full region name is no longer needed, will be available by region table
     }
     else
@@ -149,19 +143,19 @@ TraceRegionRecord::~TraceRegionRecord()
 
 void TraceRegionRecord::enter()
 {
-    if( !mTraceData )
+    if ( !mTraceData )
     {
-        return;   // tracing disabled 
+        return;   // tracing disabled
     }
 
     RegionEntry& regionEntry = mTraceData->getRegion( mRegionId );
 
-    if( mTimeTrace | mCallTree )
+    if ( mTimeTrace | mCallTree )
     {
         mTraceData->enter( mRegionId, regionEntry, mCallTree );
     }
 
-    if( mVampirTrace )
+    if ( mVampirTrace )
     {
         VTInterface::enter( regionEntry );
     }
@@ -171,19 +165,19 @@ void TraceRegionRecord::enter()
 
 void TraceRegionRecord::leave()
 {
-    if( !mTraceData )
+    if ( !mTraceData )
     {
         return;   // tracing was not enabled at all
     }
 
     RegionEntry& regionEntry = mTraceData->getRegion( mRegionId );
 
-    if( mTimeTrace | mCallTree )
+    if ( mTimeTrace | mCallTree )
     {
         mTraceData->leave( mRegionId, regionEntry, mCallTree );
     }
 
-    if( mVampirTrace )
+    if ( mVampirTrace )
     {
         VTInterface::leave( regionEntry );
     }
@@ -193,8 +187,7 @@ void TraceRegionRecord::leave()
 
 void TraceRegionRecord::start( const char* regionName, const char* file, int lno )
 {
-    // static version has to build a new record 
-
+    // static version has to build a new record
     TraceRegionRecord record( regionName, file, lno );
     record.enter();
 }
@@ -203,8 +196,7 @@ void TraceRegionRecord::start( const char* regionName, const char* file, int lno
 
 void TraceRegionRecord::stop( const char* regionName )
 {
-    // static version has to build a new record 
-
+    // static version has to build a new record
     TraceRegionRecord record( regionName );  // region should be known here
     record.leave();
 }
@@ -215,19 +207,15 @@ double TraceRegionRecord::spentLast( const char* name )
 {
     TraceData* traceData = TraceConfig::getInstance().getTraceData();
 
-    if( !traceData )
+    if ( !traceData )
     {
         LAMA_LOG_WARN( logger, "spentLast " << name << ": trace is disabled" )
     }
 
     int regionId = traceData->getRegionId( name, NULL, 0 );
-
     const RegionEntry& region = traceData->getRegion( regionId );
-
     double lastTime = region.getLastTime();
-
     LAMA_LOG_DEBUG( logger, "Spent time for last call of " << region.getRegionName() << " : " << lastTime )
-
     return lastTime;
 }
 

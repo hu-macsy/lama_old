@@ -60,19 +60,16 @@ LAMA_LOG_DEF_LOGGER( RegionTable::logger, "RegionTable" )
 
 /* ---------------------------------------------------------------------- */
 
-RegionTable::RegionTable( const char* threadName ) 
+RegionTable::RegionTable( const char* threadName )
 {
     // threadName can be NULL if tracing is only for main thread
-
     if ( threadName != NULL )
     {
         mThreadName = threadName;
     }
 
     LAMA_LOG_DEBUG( logger, "Constructor RegionTable" )
-
     // avoid too much reallocations at the beginning
-
     array.reserve( 16 );
 }
 
@@ -82,7 +79,7 @@ RegionTable::~RegionTable()
 {
     LAMA_LOG_DEBUG( logger, "~RegionTable" )
 
-    if( LAMA_LOG_INFO_ON( logger ) )
+    if ( LAMA_LOG_INFO_ON( logger ) )
     {
         printTimer();
     }
@@ -93,7 +90,6 @@ RegionTable::~RegionTable()
 double RegionTable::elapsed( int regionId )
 {
     double elapsedTime = array[regionId].getInclusiveTime();
-
     /* Not yet
 
     // might be that region is still on the stack
@@ -108,7 +104,6 @@ double RegionTable::elapsed( int regionId )
         }
     }
     */
-
     return elapsedTime;
 }
 
@@ -116,22 +111,17 @@ double RegionTable::elapsed( int regionId )
 
 int RegionTable::getRegionId( const char* regionName, const char* file, int scl )
 {
-    std::map<const char*,int,CmpString>::iterator it = mapTimer.find( regionName );
+    std::map<const char*, int, CmpString>::iterator it = mapTimer.find( regionName );
 
-    if( it == mapTimer.end() )
+    if ( it == mapTimer.end() )
     {
         int regionId = array.size();
-
         array.push_back( RegionEntry() );
-
         RegionEntry& entry = array[regionId];
-
         entry.mName = regionName;
         entry.mFile = file;
         entry.mLine = scl;
-
         VTInterface::define( entry );
-
         // do not use this: mapTimer[regionName] = regionId; // causes problems with composed strings
         mapTimer[entry.mName.c_str()] = static_cast<int>( regionId );
         LAMA_LOG_DEBUG( logger,
@@ -141,7 +131,6 @@ int RegionTable::getRegionId( const char* regionName, const char* file, int scl 
     else
     {
         // alread defined
-
         return it->second;
     }
 }
@@ -150,16 +139,15 @@ int RegionTable::getRegionId( const char* regionName, const char* file, int scl 
 
 int RegionTable::getRegionId( const char* regionName )
 {
-    std::map<const char*,int,CmpString>::iterator it = mapTimer.find( regionName );
+    std::map<const char*, int, CmpString>::iterator it = mapTimer.find( regionName );
 
-    if( it == mapTimer.end() )
+    if ( it == mapTimer.end() )
     {
         COMMON_THROWEXCEPTION( "Region " << regionName << " never defined" )
     }
     else
     {
         // already defined
-
         return it->second;
     }
 }
@@ -181,7 +169,6 @@ const RegionEntry& RegionTable::getRegion( int regionId ) const
 void RegionTable::printTimer()
 {
     Thread::ScopedLock lock( printMutex );
-
     printTimer( cout );
 }
 
@@ -205,16 +192,13 @@ void RegionTable::printTimer( ostream& outfile )
     }
 
     // use map iterator for alphabetical output
+    std::map<const char*, int, CmpString>::iterator it;
 
-    std::map<const char*,int,CmpString>::iterator it;
-
-    for( it = mapTimer.begin(); it != mapTimer.end(); it++ )
+    for ( it = mapTimer.begin(); it != mapTimer.end(); it++ )
     {
         int regionId = it->second;
         const std::string& name = it->first;
-
         const RegionEntry& region = array[regionId];
-
         region.printTime( outfile );
     }
 }

@@ -43,7 +43,7 @@ static const int MAX_COUNTERS = 1;
 
 static const int usedCounters = 1;    //!< number of counters used, <= MAX_COUNTERS
 
-static inline int enabledCounters() 
+static inline int enabledCounters()
 {
     return usedCounters;
 }
@@ -57,7 +57,7 @@ public:
 
     CounterArray( bool stampIt = false )
     {
-        if ( stampIt ) 
+        if ( stampIt )
         {
             stamp();
         }
@@ -148,7 +148,7 @@ public:
     virtual void writeAt( std::ostream& stream ) const
     {
         stream << "CounterArray={ " ;
-        write( stream, ", " ); 
+        write( stream, ", " );
         stream << " }";
     }
 
@@ -157,7 +157,6 @@ private:
     void stamp()
     {
         // currently we count only time ticks
-
         values[0] = common::Walltime::timestamp();
     }
 

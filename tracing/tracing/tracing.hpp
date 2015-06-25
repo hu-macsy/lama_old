@@ -33,7 +33,7 @@
 
 #pragma once
 
-#if defined( LAMA_TRACE_ON ) 
+#if defined( LAMA_TRACE_ON )
 
 #include <tracing/TraceRegionRecord.hpp>
 #include <tracing/TraceConfig.hpp>

@@ -67,7 +67,6 @@ struct CTTEntry
     void addCallCosts( const CounterArray& callCosts )
     {
         costs += callCosts;
-
         calls++;  // addCallCosts stands for exactly one additional call
     }
 
@@ -76,21 +75,19 @@ struct CTTEntry
         this->caller = caller;
         this->callee = callee;
         this->scl    = scl;
-
         costs = vals;
-
         calls = 1;
     }
 
     bool isSame( int other_caller, int other_callee, int other_scl )
     {
-         return other_caller == caller && other_callee == callee && other_scl == scl;
+        return other_caller == caller && other_callee == callee && other_scl == scl;
     }
 };
 
 #define CALL_CACHE_SIZE 16
 
-/** A CallTreeTable does not directly write all info records in the file but keeps 
+/** A CallTreeTable does not directly write all info records in the file but keeps
  *  them for a certain time in a cache.
 
  *  Note: each thread has its own table, so no synchronization is required here
@@ -100,7 +97,7 @@ class CallTreeTable : private common::NonCopyable
 {
 public:
 
-    /** Generate a new CallTree table and open the corresponding output file. 
+    /** Generate a new CallTree table and open the corresponding output file.
      *
      *  @param threadName is the name of the thread
      *
@@ -122,7 +119,7 @@ public:
 
     void addExclusiveCosts( const int regionId, const int scl, const CounterArray& currentCounterValues );
 
-    /** Generate a cost call record about call costs for a region 
+    /** Generate a cost call record about call costs for a region
      *
      *  @param[in] caller is the id of the calling region
      *  @param[in] callee is the id of the called region
@@ -146,7 +143,7 @@ private:
     CounterArray totalCosts;
 
     CTTEntry mCallEntryCache[CALL_CACHE_SIZE];
-     
+
     int callCachePos;
     int callCacheLast;
 

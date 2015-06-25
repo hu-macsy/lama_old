@@ -44,12 +44,10 @@ LAMA_LOG_DEF_LOGGER( FileTable::logger, "FileTable" )
 
 /* ---------------------------------------------------------------------- */
 
-FileTable::FileTable() 
+FileTable::FileTable()
 {
     LAMA_LOG_DEBUG( logger, "Constructor FileTable" )
-
     // avoid too much reallocations at the beginning
-
     array.reserve( 16 );
 }
 
@@ -64,24 +62,19 @@ FileTable::~FileTable()
 
 int FileTable::getFileId( const char* fileName )
 {
-    std::map<const char*,int,CmpString>::iterator it = mapTimer.find( fileName );
+    std::map<const char*, int, CmpString>::iterator it = mapTimer.find( fileName );
 
-    if( it == mapTimer.end() )
+    if ( it == mapTimer.end() )
     {
         int fileId = array.size();
-
         array.push_back( fileName );
-
         const std::string& name = array[fileId];
-
         mapTimer[ name.c_str() ] = static_cast<int>( fileId );
-
         return fileId;
     }
     else
     {
         // alread defined
-
         return it->second;
     }
 }

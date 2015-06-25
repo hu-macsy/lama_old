@@ -46,7 +46,7 @@ class TraceData
 public:
 
     typedef common::Thread::Id ThreadId;
-    
+
     /** Constructor of a new region table.
      *
      *  @param[in] threadId  id of the thread to which region table belongs
@@ -103,13 +103,13 @@ private:
 
     CallStack     mCallStack;
 
-    RegionTable   mRegionTable;     // counts timing of regions 
+    RegionTable   mRegionTable;     // counts timing of regions
 
     CallTreeTable mCallTreeTable;   // generates call tree trace file
 
 protected:
 
-   LAMA_LOG_DECL_STATIC_LOGGER( logger )
+    LAMA_LOG_DECL_STATIC_LOGGER( logger )
 
 };
 

@@ -187,7 +187,7 @@ private:
      *  Use of shared pointer for entry in map
      */
 
-    std::map<ThreadId,boost::shared_ptr<TraceData> > mTraceDataMap;
+    std::map<ThreadId, boost::shared_ptr<TraceData> > mTraceDataMap;
 
     /** Get the trace data by the id of a thread. */
 

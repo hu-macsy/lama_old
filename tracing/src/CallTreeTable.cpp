@@ -45,7 +45,7 @@ void CTTEntry::writeEntry( ostream& outfile )
 {
     if ( callee == - 1 )
     {
-        // cost line
+        // cost entry
         outfile << "# begin exclusive cost line" << endl;
         outfile << "fl 0" << endl;
         outfile << "fn " << caller << endl;
@@ -56,6 +56,7 @@ void CTTEntry::writeEntry( ostream& outfile )
     }
     else
     {
+        // call entry
         outfile << "# begin call cost line" << endl;
         outfile << "fl 0" << endl;
         outfile << "fn " << caller << endl;
@@ -73,13 +74,11 @@ void CTTEntry::writeRegion( ostream& outfile, const int regionId, const int file
 {
     std::string regionName = region.getRegionName();
     std::string groupName  = "?";
-
     size_t pindex = regionName.find_first_of( "." );
 
     if ( pindex != std::string::npos )
     {
         // split the region name and define it
-
         groupName  = regionName.substr( 0, pindex );
         regionName = regionName.substr( pindex + 1 );
     }
@@ -135,7 +134,6 @@ void CallTreeTable::clear()
 void CallTreeTable::close()
 {
     // file might not have been opened, can be closed several times
-
     if ( outfile.is_open() )
     {
         LAMA_LOG_DEBUG( logger, "close calltree file " << mFileName );
@@ -158,7 +156,6 @@ void CallTreeTable::open( const char* threadSuffix )
     }
 
     mFileName = "calltree.ct";
-
     LAMA_LOG_DEBUG( logger, "open calltree file" );
 
     if ( threadSuffix != NULL )
@@ -191,7 +188,6 @@ CallTreeTable::CallTreeTable( const char* threadSuffix )
     callCacheLast = 0;
     cacheHit = 0;
     cacheMiss = 0;
-
     open( threadSuffix );
 }
 
@@ -204,7 +200,6 @@ CallTreeTable::~CallTreeTable()
 void CallTreeTable::writeRegion( const int regionId, const RegionEntry& region )
 {
     int fileId = mFileTable.getFileId( region.getFileName() );
-
     CTTEntry::writeRegion( outfile, regionId, fileId, region );
 }
 
@@ -241,20 +236,15 @@ void CallTreeTable::add( int caller, int callee, int scl, const CounterArray& co
 void CallTreeTable::addExclusiveCosts( const int regionId, const int scl, const CounterArray& currentCounterValues )
 {
     CounterArray costs = currentCounterValues - lastCounterValues;
-
     LAMA_LOG_DEBUG( logger, "region " << regionId << ", add exclusive costs: " << costs )
-
     totalCosts += costs;     // sum of all exclusive costs will be the total costs
-
     lastCounterValues = currentCounterValues;  // uses current counters as start for next time
-
     add( regionId, -1, scl, costs );
 }
 
 void CallTreeTable::addCallCosts( int caller, int callee, int scl, const CounterArray& costs )
 {
     LAMA_LOG_DEBUG( logger, "call " << caller << " -> " << callee << ", add call costs: " << costs )
-
     add( caller, callee, scl, costs );
 }
 

@@ -44,9 +44,7 @@ LAMA_LOG_DEF_LOGGER( TraceData::logger, "TraceData" )
 void TraceData::enter( const int regionId, RegionEntry& region, const bool callTreeFlag )
 {
     COMMON_ASSERT( &region != NULL, "NULL pointer for region" )
-
     CounterArray enterCounterValues( true );  // get stamp of all counters
-
     LAMA_LOG_DEBUG( logger, "enter " << regionId << ", region= " << &region )
     // LAMA_LOG_DEBUG( logger, "enter " << regionId << ", " << region << ", counters = " << enterCounterValues )
 
@@ -55,24 +53,19 @@ void TraceData::enter( const int regionId, RegionEntry& region, const bool callT
         if ( region.firstAccess() )
         {
             // write Info about the region in the call tree
-
             mCallTreeTable.writeRegion( regionId, region ) ;
         }
 
         if ( mCallStack.empty() )
         {
             // This is the first time we enter a region, do initialization
-    
             mCallTreeTable.initCounters( enterCounterValues );
         }
         else
         {
             // Before we enter the called region add exclusive costs so far for caller region
-    
             int caller_region = mCallStack.currentRegionId();
-    
             int scl = 0;
-    
             mCallTreeTable.addExclusiveCosts( caller_region, scl, enterCounterValues );
         }
     }
@@ -83,9 +76,7 @@ void TraceData::enter( const int regionId, RegionEntry& region, const bool callT
 void TraceData::leave( const int regionId, RegionEntry& region, const bool callTreeFlag )
 {
     COMMON_ASSERT( &region != NULL, "NULL pointer for region" )
-
     CounterArray leaveCounterValues( true );  // get stamp of all counters
-
     LAMA_LOG_DEBUG( logger, "leave " << regionId << ", region = " << &region )
 
     // LAMA_LOG_DEBUG( logger, "leave " << regionId << ", " << region << ", counters = " << leaveCounterValues )
@@ -99,10 +90,9 @@ void TraceData::leave( const int regionId, RegionEntry& region, const bool callT
     const int currentRegionId = mCallStack.currentRegionId();
 
     COMMON_ASSERT_EQUAL( currentRegionId, regionId,
-                         "mismatch call stack, current region = " 
+                         "mismatch call stack, current region = "
                          << mRegionTable.getRegion( currentRegionId ).getRegionName()
                          << ", stop for " << region.getRegionName() )
-
     double spentTime = leaveCounterValues.getWalltime( mCallStack.currentCounters() );
 
     CounterArray costs;
@@ -114,12 +104,10 @@ void TraceData::leave( const int regionId, RegionEntry& region, const bool callT
     mCallTreeTable.addExclusiveCosts( regionId, 0, leaveCounterValues );
 
     LAMA_LOG_DEBUG( logger, region.getRegionName() << ", spent time = " << spentTime << ", costs = " << costs )
-
     mCallStack.pop();
 
     // correct exclusive time of previous entry in call stack
-
-    if( !mCallStack.empty() )
+    if ( !mCallStack.empty() )
     {
         int callRegionId = mCallStack.currentRegionId();
         RegionEntry& callRegion = mRegionTable.getRegion( callRegionId );
@@ -134,16 +122,14 @@ void TraceData::leave( const int regionId, RegionEntry& region, const bool callT
 }
 
 int TraceData::getCurrentRegionId( const char* regionName )
-{ 
-    if( !mCallStack.empty() )
+{
+    if ( !mCallStack.empty() )
     {
         // check that regionName is the last region on the current call stack
-
         const int currentRegionId = mCallStack.currentRegionId();
-
         const RegionEntry& callRegion = getRegion( currentRegionId );
 
-        if( strcmp( callRegion.getRegionName(), regionName ) != 0 )
+        if ( strcmp( callRegion.getRegionName(), regionName ) != 0 )
         {
             COMMON_THROWEXCEPTION( "mismatch in call stack, stop " << regionName <<
                                    ", but currently called region is " << callRegion.getRegionName() )
@@ -161,9 +147,9 @@ int TraceData::getCurrentRegionId( const char* regionName )
 }
 
 TraceData::TraceData( ThreadId threadId, bool mThreadEnabled ) :
-     mThreadId( threadId ), 
-     mRegionTable( mThreadEnabled ? common::Thread::getThreadName( threadId ) : NULL ),
-     mCallTreeTable( mThreadEnabled ? common::Thread::getThreadName( threadId ) : NULL )
+    mThreadId( threadId ),
+    mRegionTable( mThreadEnabled ? common::Thread::getThreadName( threadId ) : NULL ),
+    mCallTreeTable( mThreadEnabled ? common::Thread::getThreadName( threadId ) : NULL )
 {
     LAMA_LOG_DEBUG( logger, "TraceData for thread " << threadId )
 }
