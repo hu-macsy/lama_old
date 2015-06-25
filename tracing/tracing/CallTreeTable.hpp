@@ -32,6 +32,7 @@
 #pragma once
 
 #include "tracing/RegionEntry.hpp"
+#include "tracing/FileTable.hpp"
 #include "tracing/Counters.hpp"
 
 #include "logging/logging.hpp"
@@ -61,7 +62,7 @@ struct CTTEntry
 
     void writeEntry( std::ostream& outfile );
 
-    static void writeRegion( std::ostream& outfile, const int regionId, const RegionEntry& region );
+    static void writeRegion( std::ostream& outfile, const int regionId, const int fileId, const RegionEntry& region );
 
     void addCallCosts( const CounterArray& callCosts )
     {
@@ -173,6 +174,8 @@ private:
     /** Open the output file for the calltree */
 
     void open( const char* threadName );
+
+    FileTable mFileTable;
 };
 
 } // namespace

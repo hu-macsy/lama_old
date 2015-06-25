@@ -46,9 +46,10 @@ static const int WORKLOAD = 10;
 
 /* ----------------------------------------------------------------------- */
 
-void mwork( const int in, int& out )
+void work( int& out )
 {
-    out = in;
+    int in = out;
+
     int factor = in % 4 + 1;
 
     // just do some stupid work, workload depends on in
@@ -69,18 +70,6 @@ void mwork( const int in, int& out )
 
     out = in;
 }
-
-void* work( void* )
-{
-    int in = 5;
-    int out;
-    mwork( in, out );
-    if ( out == 1000 )
-    {
-        COMMON_THROWEXCEPTION( "illegal value" )
-    }
-}
-
 /* ----------------------------------------------------------------- */
 
 void doTasking( int N )
@@ -89,9 +78,10 @@ void doTasking( int N )
 
     for ( int i = 0; i < N; ++i )
     {
-        void* arg = NULL;
+        int arg = 1;
+        int omp_threads = 1;
 
-        Task task( boost::bind( &work, arg), 1 );
+        Task task( boost::bind( &work, boost::ref( arg )), omp_threads );
  
         // Note: synchronization is expensive
 
@@ -105,18 +95,9 @@ void doThreading( int N )
 {
     for ( int i = 0; i < N; ++i )
     {
-        void* arg = NULL;
+        int arg = 1;
 
-        pthread_t tid;
-
-        int rc = pthread_create( &tid, NULL, &work, arg );
-
-        if ( rc != 0 )
-        {
-            COMMON_THROWEXCEPTION( "Could not create pthread " << i << " of " << N << ", rc = " << rc )
-        }
-
-        pthread_join( tid, NULL );
+        common::Thread thread( &work, arg );
     }
 }
 

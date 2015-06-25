@@ -69,18 +69,31 @@ void CTTEntry::writeEntry( ostream& outfile )
     }
 }
 
-void CTTEntry::writeRegion( ostream& outfile, const int regionId, const RegionEntry& region )
+void CTTEntry::writeRegion( ostream& outfile, const int regionId, const int fileId, const RegionEntry& region )
 {
+    std::string regionName = region.getRegionName();
+    std::string groupName  = "?";
+
+    size_t pindex = regionName.find_first_of( "." );
+
+    if ( pindex != std::string::npos )
+    {
+        // split the region name and define it
+
+        groupName  = regionName.substr( 0, pindex );
+        regionName = regionName.substr( pindex + 1 );
+    }
+
     CounterArray zeroCosts;   // all values are zero
     outfile << "# begin region info line" << endl;
-    outfile << "fl " << region.getFileToken() << " " << region.getFileName() << endl;
+    outfile << "fl " << fileId << " " << region.getFileName() << endl;
     outfile << "fn " << regionId;
     outfile << " 0";  //  src_regionId, does not matter
-    outfile << " " <<  region.getRegionName();
+    outfile << " " <<  regionName;
     outfile << " 2";  // function
     outfile << " " << region.getLine();
     outfile << " " << region.getLine();
-    outfile << " ?";   // module name, does not matter
+    outfile << " " << groupName;
     outfile << endl;
     outfile << "0 ";
     zeroCosts.write( outfile, " " );
@@ -190,7 +203,9 @@ CallTreeTable::~CallTreeTable()
 
 void CallTreeTable::writeRegion( const int regionId, const RegionEntry& region )
 {
-    CTTEntry::writeRegion( outfile, regionId, region );
+    int fileId = mFileTable.getFileId( region.getFileName() );
+
+    CTTEntry::writeRegion( outfile, regionId, fileId, region );
 }
 
 int CallTreeTable::find( int caller, int callee, int scl )
