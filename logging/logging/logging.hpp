@@ -325,11 +325,11 @@
 
 // macro defines a name for the current thread 
 
-#define LAMA_LOG_THREAD( name )                                    \
-{                                                                  \
-    std::ostringstream oname;                                      \
-    oname << name;                                                 \
-    common::Thread::defineCurrentThreadId( oname.str().c_str() );  \
+#define LAMA_LOG_THREAD( name )                                      \
+{                                                                    \
+    std::ostringstream oname;                                        \
+    oname << name;                                                   \
+    common::Thread::defineCurrentThreadName( oname.str().c_str() );  \
 }
 
 #endif
