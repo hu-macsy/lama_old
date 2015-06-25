@@ -49,7 +49,7 @@
 namespace tracing
 {
 
-class RegionTable;
+class TraceData;
 
 /** Name of environment variable used to specify trace configuration. */
 
@@ -128,12 +128,12 @@ public:
         return getInstance().mTraceFilePrefix.c_str();
     }
 
-    /** Get region timings for the current thread.
+    /** Get trace data for the current thread.
      *
-     *  @return pointers to the RegionTable for the calling thread (might be NULL)
+     *  @return pointers to the TraceData for the calling thread (might be NULL)
      */
 
-    RegionTable* getRegionTable();
+    TraceData* getTraceData();
 
     void traceOff();
 
@@ -187,11 +187,11 @@ private:
      *  Use of shared pointer for entry in map
      */
 
-    std::map<ThreadId,boost::shared_ptr<RegionTable> > mRegionTables;
+    std::map<ThreadId,boost::shared_ptr<TraceData> > mTraceDataMap;
 
-    /** Get the region table by the id of a thread. */
+    /** Get the trace data by the id of a thread. */
 
-    RegionTable* getRegionTable( ThreadId threadId );
+    TraceData* getTraceData( ThreadId threadId );
 
     /** The only one instance allocated at program start. */
 

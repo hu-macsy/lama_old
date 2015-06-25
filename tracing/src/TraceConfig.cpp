@@ -35,7 +35,7 @@
 
 // others
 #include <tracing/VTInterface.hpp>
-#include <tracing/RegionTable.hpp>
+#include <tracing/TraceData.hpp>
 
 #include <iostream>
 #include <cstdlib>
@@ -319,15 +319,15 @@ TraceConfig::~TraceConfig()
         return;
     }
 
-    // Now write each RegionTable in file
+    // Now write each TraceData in file
 
-    std::map<ThreadId, boost::shared_ptr<RegionTable> >::iterator it;
+    std::map<ThreadId, boost::shared_ptr<TraceData> >::iterator it;
 
-    for( it = mRegionTables.begin(); it != mRegionTables.end(); it++ )
+    for( it = mTraceDataMap.begin(); it != mTraceDataMap.end(); it++ )
     {
-        RegionTable& table = *it->second;
+        TraceData& data = *it->second;
 
-        table.printTimer( outfile );
+        data.printTimer( outfile );
     }
 
     outfile.close();
@@ -337,11 +337,11 @@ TraceConfig::~TraceConfig()
 
 /* -------------------------------------------------------------------------- */
 
-static Thread::Mutex mapMutex; // needed to avoid conflicts for accesses on mRegionTables
+static Thread::Mutex mapMutex; // needed to avoid conflicts for accesses on mTraceDataMap
 
 /* -------------------------------------------------------------------------- */
 
-RegionTable* TraceConfig::getRegionTable()
+TraceData* TraceConfig::getTraceData()
 {
     if( !mEnabled )
     {
@@ -352,7 +352,7 @@ RegionTable* TraceConfig::getRegionTable()
 
     if( mThreadEnabled || self == mMaster )
     {
-        return getInstance().getRegionTable( self );
+        return getInstance().getTraceData( self );
     }
     else
     {
@@ -362,25 +362,26 @@ RegionTable* TraceConfig::getRegionTable()
 
 /* -------------------------------------------------------------------------- */
 
-RegionTable* TraceConfig::getRegionTable( ThreadId threadId )
+TraceData* TraceConfig::getTraceData( ThreadId threadId )
 {
-    boost::shared_ptr<RegionTable> regionTable = mRegionTables[threadId];
-
     // make sure that not two different threads try to allocate a table
+    // read / write access at same time might also result in a crash
 
     Thread::ScopedLock lock( mapMutex );
 
-    if( !regionTable )
+    boost::shared_ptr<TraceData> traceData = mTraceDataMap[threadId];
+
+    if( !traceData )
     {
 
         // this thread calls the first time a region
 
-        regionTable.reset( new RegionTable( threadId ) );
+        traceData.reset( new TraceData( threadId, mThreadEnabled ) );
 
-        mRegionTables[threadId] = regionTable;
+        mTraceDataMap[threadId] = traceData;
     }
 
-    return regionTable.get();
+    return traceData.get();
 }
 
 /* -------------------------------------------------------------------------- */

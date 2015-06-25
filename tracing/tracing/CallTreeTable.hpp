@@ -91,15 +91,23 @@ struct CTTEntry
 
 /** A CallTreeTable does not directly write all info records in the file but keeps 
  *  them for a certain time in a cache.
+
+ *  Note: each thread has its own table, so no synchronization is required here
  */
 
 class CallTreeTable : private common::NonCopyable
 {
 public:
 
-    /** Generate a new CallTree table and open the corresponding output file. */
+    /** Generate a new CallTree table and open the corresponding output file. 
+     *
+     *  @param threadName is the name of the thread
+     *
+     *  threadName == NULL might be used if call tree data is only collected for
+     *  the master/main thread.
+     */
 
-    CallTreeTable();
+    CallTreeTable( const char* threadName );
 
     /** Destructor will also write final entries and close the output file. */
 
@@ -136,7 +144,7 @@ private:
     CounterArray lastCounterValues;
     CounterArray totalCosts;
 
-    CTTEntry call_cache[CALL_CACHE_SIZE];
+    CTTEntry mCallEntryCache[CALL_CACHE_SIZE];
      
     int callCachePos;
     int callCacheLast;
@@ -145,6 +153,8 @@ private:
     int cacheMiss;   // count misses for every new entry
 
     std::ofstream outfile;
+
+    std::string mFileName;  // name of the output file
 
     int newPos();
 
@@ -162,7 +172,7 @@ private:
 
     /** Open the output file for the calltree */
 
-    void open();
+    void open( const char* threadName );
 };
 
 } // namespace

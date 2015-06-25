@@ -100,9 +100,11 @@ public:
 
     void leave();
 
-private:
+protected:
 
     LAMA_LOG_DECL_STATIC_LOGGER( logger )
+
+private:
 
     /** Common routine for all constructors to check for settings of trace. */
 
@@ -115,9 +117,7 @@ private:
 
     boost::shared_ptr<class TraceConfig> mTraceConfig;
 
-    class RegionTable* mRegionTable; // pointer to thread region time table
-
-    class RegionEntry* mRegionEntry;
+    class TraceData* mTraceData; // pointer to all trace data of the thread
 
     int mRegionId;// Reference id of region in region table.
 
@@ -137,6 +137,7 @@ public:
         TraceRegionRecord( regionName, fileName, lno )
 
     {
+        LAMA_LOG_DEBUG( logger, "ScopedTraceRecord" )
         enter();
     }
 
@@ -145,11 +146,13 @@ public:
         TraceRegionRecord( regionName, suffix_n, fileName, lno )
 
     {
+        LAMA_LOG_DEBUG( logger, "ScopedTraceRecord" )
         enter();
     }
 
     ~ScopedTraceRecord()
     {
+        LAMA_LOG_DEBUG( logger, "~ScopedTraceRecord, call leave" )
         leave();
     }
 };

@@ -34,11 +34,11 @@
 
 // for dll_import
 #include <common/config.hpp>
+#include <common/Thread.hpp>
 
 // others
 #include <tracing/RegionEntry.hpp>
 #include <tracing/CallStack.hpp>
-#include <common/Thread.hpp>
 
 // logging
 #include <logging/logging.hpp>
@@ -52,87 +52,40 @@
 namespace tracing
 {
 
-/** Class to collect timing information about different regions in
- an instrumented program.
-
- For each region timers are defined. Timing for a routine must
- be started and stopped according a subroutine call structure.
-
- \code
- start( region1, <timestamp_1> )
- start( region2, <timestamp_2> )
- stop( region2, <timestamp_3> )
- start( region3, <timestamp_4> )
- elapsed( region1, <timestamp_5> )
- stop( region3, <timestamp_6> )
- stop( region1, <timestamp_7> )
- \endcode
-
- At the end of a run, inclusive and exclusive time is available for
- all regions.
- */
+/** Class that manages all regions in a table */
 
 class COMMON_DLL_IMPORTEXPORT RegionTable
 {
 
 public:
 
-    typedef common::Thread::Id ThreadId;
-
-    /** Constructor of a new region table.
+    /** Constructor of a new region table. 
      *
-     *  @param[in] threadId  id of the thread to which region table belongs
+     *  The region table must contain the thread id as it might be 
+     *  written later by main thread.
      */
 
-    RegionTable( ThreadId threadId );
+    RegionTable( const char* threadName );
 
     /** Destructor. */
 
     ~RegionTable();
 
-    /** Query of the thread id to which thread table belongs. */
-
-    ThreadId getId() const
-    {
-        return mThreadId;
-    }
-
     /** Get the id of a region, creates a new entry if region is not available yet.
      *
-     *  @param[in] id     is the name of the region
+     *  @param[in] name   is the name of the region
      *  @param[in] file   is the name of the source file where region is defined
      *  @param[in] lno    is the line number of the region in the source file
      */
 
-    int getRegion( const char* id, const char* file, int lno );
+    int getRegionId( const char* name, const char* file, int lno );
 
-    /** Get the id of the current region
-     *
-     *  @param[in] regionName   must match the name of the current region
-     */
-    int getCurrentRegionId( const char* regionName );
+    /** Get the id of an existing region, throws exception if not defined. */
 
-    /** Initialization of the timers. Resets all timers. */
+    int getRegionId( const char* name );
 
-    void init();
-
-    /** Enter a region with the timestamp. */
-
-    void start( int regionId, const CounterArray& startValues );
-
-    /** Leave the region with the timestamp.
-     *
-     *  @param[in] regionId is the id of region to leave, must match the last on call stack
-     *  @param[in] wallTime is time stamp of call
-     */
-    void stop( int regionId, const CounterArray& stopValues );
-
-    /** Leave the region with the timestamp. */
-
-    void stop( const char* regionName, const CounterArray& stopValues );
-
-    /** Return the elapsed time up to now.
-     It will add also the time of a running region.
+    /** Return the elapsed time up to now.  
+     *  It will add also the time of a running region.
      */
 
     double elapsed( int regionId );
@@ -165,30 +118,9 @@ private:
         }
     };
 
-    /** Structure for entry on the call stack (id, starttime) */
-
-    /** Disabled:
-
-    struct CallEntry
-    {
-        CallEntry( int region, double timeStart )
-        {
-            mRegion = region;
-            mTimeStart = timeStart;
-        }
-
-        int mRegion; //!< reference id for the region
-        double mTimeStart;//!< absolute time when call started
-    };
-    */
-
-    // std::vector<CallEntry> callStack;
-
-    CallStack callStack;
+    // CallStack callStack;
 
     std::vector<RegionEntry> array; //!<  Entries for all timers
-
-    ThreadId mThreadId;
 
     /** Map of region strings to region ids that are the indexes to array.
      *
@@ -197,6 +129,9 @@ private:
      */
 
     std::map<const char*, int, CmpString> mapTimer;
+
+    std::string mThreadName;
+
 };
 
 }

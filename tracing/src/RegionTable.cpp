@@ -60,135 +60,32 @@ LAMA_LOG_DEF_LOGGER( RegionTable::logger, "RegionTable" )
 
 /* ---------------------------------------------------------------------- */
 
-RegionTable::RegionTable( ThreadId threadId )
-    : mThreadId( threadId )
+RegionTable::RegionTable( const char* threadName ) 
 {
-    LAMA_LOG_DEBUG( logger, "Thread " << threadId << ": creates RegionTable" )
+    // threadName can be NULL if tracing is only for main thread
+
+    if ( threadName != NULL )
+    {
+        mThreadName = threadName;
+    }
+
+    LAMA_LOG_DEBUG( logger, "Constructor RegionTable" )
+
+    // avoid too much reallocations at the beginning
+
+    array.reserve( 16 );
 }
 
 /* ---------------------------------------------------------------------- */
 
 RegionTable::~RegionTable()
 {
+    LAMA_LOG_DEBUG( logger, "~RegionTable" )
+
     if( LAMA_LOG_INFO_ON( logger ) )
     {
         printTimer();
     }
-}
-
-/* ---------------------------------------------------------------------- */
-
-void RegionTable::init()
-{
-    // clear the callstack
-
-    callStack.clear();
-}
-
-/* ---------------------------------------------------------------------- */
-
-void RegionTable::start( int regionId, const CounterArray& startValues )
-{
-    LAMA_LOG_DEBUG( logger, "start region " << regionId << ", time = " << startValues.getWalltime() )
-
-    callStack.push( regionId, startValues );
-}
-
-/* ---------------------------------------------------------------------- */
-
-void RegionTable::stop( int regionId, const CounterArray& stopValues )
-{
-    LAMA_LOG_DEBUG( logger, "stop region " << regionId << ", time = " << stopValues.getWalltime() )
-
-    if( callStack.empty() )
-    {
-        LAMA_LOG_ERROR( logger, "stop region on empty call region stack" )
-        return;
-    }
-
-    const int currentRegionId = callStack.currentRegionId();
-
-    if( ( currentRegionId >= 0 ) )
-    {
-        COMMON_ASSERT_EQUAL( currentRegionId, regionId, 
-                             "mismatch call stack, current region = " << array[currentRegionId].mName
-                             << ", stop for " << array[regionId].mName )
-    }
-
-    double spentTime = stopValues.getWalltime( callStack.currentCounters() );
-
-    array[regionId].addCall( spentTime );
-
-    callStack.pop();
-
-    // correct exclusive time of previous entry in call stack
-
-    if( !callStack.empty() )
-    {
-        int currentRegionId = callStack.currentRegionId();
-        array[currentRegionId].subRegionCall( spentTime );
-    }
-}
-
-/* ---------------------------------------------------------------------- */
-
-int RegionTable::getCurrentRegionId( const char* regionName )
-{
-    if( !callStack.empty() )
-    {
-        // check that regionName is the last region on the current call stack
-
-        const int currentRegionId = callStack.currentRegionId();
-
-        const RegionEntry& callRegion = getRegion( currentRegionId );
-
-        if( strcmp( callRegion.getRegionName(), regionName ) != 0 )
-        {
-            fprintf( stderr, "mismatch in call stack, stop %s but in %s\n", regionName, callRegion.getRegionName() );
-            return 0;
-        }
-
-        return currentRegionId;
-    }
-    else
-    {
-        // no callstack available, so we search it
-
-        std::map<const char*,int,CmpString>::iterator it = mapTimer.find( regionName );
-
-        if( it == mapTimer.end() )
-        {
-            LAMA_LOG_FATAL( logger, "Region " << regionName << " never defined" )
-            exit( -1 );
-        }
-        else
-        {
-            // alread defined
-
-            return it->second;
-        }
-    }
-
-    return 0; // avoids warning
-}
-
-/* ---------------------------------------------------------------------- */
-
-void RegionTable::stop( const char* regionName, const CounterArray& counterValues )
-{
-    // check that regionName is the last region on the current call stack
-
-    const int currentRegionId = callStack.currentRegionId();
-
-    const RegionEntry callRegion = getRegion( currentRegionId );
-
-    if( strcmp( callRegion.getRegionName(), regionName ) != 0 )
-    {
-        fprintf( stderr, "mismatch in call stack, stop %s but in %s\n", regionName, callRegion.getRegionName() );
-        return;
-    }
-
-    stop( currentRegionId, counterValues );
 }
 
 /* ---------------------------------------------------------------------- */
@@ -217,30 +114,51 @@ double RegionTable::elapsed( int regionId )
 
 /* ---------------------------------------------------------------------- */
 
-int RegionTable::getRegion( const char* id, const char* file, int lno )
+int RegionTable::getRegionId( const char* regionName, const char* file, int scl )
 {
-    std::map<const char*,int,CmpString>::iterator it = mapTimer.find( id );
+    std::map<const char*,int,CmpString>::iterator it = mapTimer.find( regionName );
 
     if( it == mapTimer.end() )
     {
-        const size_t regionId = array.size();
-        array.resize( regionId + 1 );
+        int regionId = array.size();
+
+        array.push_back( RegionEntry() );
+
         RegionEntry& entry = array[regionId];
-        entry.mName = id;
+
+        entry.mName = regionName;
         entry.mFile = file;
-        entry.mLine = lno;
+        entry.mLine = scl;
 
         VTInterface::define( entry );
 
-        // do not use this: mapTimer[id] = regionId; // causes problems with composed strings
+        // do not use this: mapTimer[regionName] = regionId; // causes problems with composed strings
         mapTimer[entry.mName.c_str()] = static_cast<int>( regionId );
         LAMA_LOG_DEBUG( logger,
-                        "Thread " << mThreadId << " added region " << regionId << "( " << array[regionId].mName << ") for region " << id )
+                        "Added region " << regionId << "( " << array[regionId].mName << ") for region " << regionName )
         return static_cast<int>( regionId );
     }
     else
     {
         // alread defined
+
+        return it->second;
+    }
+}
+
+/* ---------------------------------------------------------------------- */
+
+int RegionTable::getRegionId( const char* regionName )
+{
+    std::map<const char*,int,CmpString>::iterator it = mapTimer.find( regionName );
+
+    if( it == mapTimer.end() )
+    {
+        COMMON_THROWEXCEPTION( "Region " << regionName << " never defined" )
+    }
+    else
+    {
+        // already defined
 
         return it->second;
     }
@@ -271,11 +189,20 @@ void RegionTable::printTimer()
 
 void RegionTable::printTimer( ostream& outfile )
 {
-    LAMA_LOG_INFO( logger, "Summary of all timers for thread " << Thread::getThreadId( mThreadId ) );
+    LAMA_LOG_INFO( logger, "Summary of all timers for thread " << mThreadName  );
 
-    outfile << "========================================" << endl;
-    outfile << "Timing info of regions for Thread " << Thread::getThreadId( mThreadId ) << endl;
-    outfile << "========================================" << endl;
+    if ( mThreadName.size() > 0 )
+    {
+        outfile << "========================================" << endl;
+        outfile << "Timing info of regions for Thread " << mThreadName << endl;
+        outfile << "========================================" << endl;
+    }
+    else
+    {
+        outfile << "=========================================" << endl;
+        outfile << "Timing info of regions (only main thread)" << endl;
+        outfile << "=========================================" << endl;
+    }
 
     // use map iterator for alphabetical output
 

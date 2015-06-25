@@ -32,8 +32,11 @@
 
 #pragma once
 
+#include "common/Printable.hpp"
+
 #include <string>
 #include <fstream>
+#include <iostream>
 #include <iomanip>
 
 namespace tracing
@@ -45,8 +48,10 @@ typedef unsigned int VTRegionId;
  *  for time spent in it ( inclusive + exclusive)
  */
 
-struct RegionEntry
+class RegionEntry 
 {
+public:
+
     RegionEntry()
     {
         mLastTime = 0.0;
@@ -56,6 +61,10 @@ struct RegionEntry
 
         mVTId = 0;
         mFirst = true;    // for first access
+    }
+
+    ~RegionEntry()
+    {
     }
 
     const char* getRegionName() const
@@ -136,6 +145,13 @@ struct RegionEntry
         outfile << ", exclusive = " << std::fixed << std::setprecision(6) << ( mExclusiveTime * 1000.0 );
         outfile << std::endl;
     }
+
+    /*
+    virtual void writeAt( std::ostream& outfile ) const
+    {
+        outfile << "Region( name = " << mName << " )";
+    }
+    */
 
 private:
 

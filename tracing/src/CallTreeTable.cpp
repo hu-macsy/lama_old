@@ -95,7 +95,7 @@ int CallTreeTable::newPos()
         return callCachePos++;
     }
 
-    call_cache[callCacheLast].writeEntry( outfile );
+    mCallEntryCache[callCacheLast].writeEntry( outfile );
     int pos = callCacheLast++;
 
     if ( callCacheLast == CALL_CACHE_SIZE )
@@ -112,7 +112,7 @@ void CallTreeTable::clear()
 {
     for ( int i = 0; i < callCachePos; ++i )
     {
-        call_cache[i].writeEntry( outfile );
+        mCallEntryCache[i].writeEntry( outfile );
     }
 
     callCachePos  = 0;
@@ -125,6 +125,7 @@ void CallTreeTable::close()
 
     if ( outfile.is_open() )
     {
+        LAMA_LOG_DEBUG( logger, "close calltree file " << mFileName );
         outfile << "# closed by close" << endl;
         outfile << "totals ";
         totalCosts.write( outfile, " " );
@@ -132,22 +133,32 @@ void CallTreeTable::close()
         outfile << "# cache has " << cacheHit << " hits and "
                 << cacheMiss << " misses" << endl;
         outfile.close();
+        mFileName.clear();
     }
 }
 
-void CallTreeTable::open()
+void CallTreeTable::open( const char* threadSuffix )
 {
     if ( outfile.is_open() )
     {
         return;
     }
 
+    mFileName = "calltree.ct";
+
     LAMA_LOG_DEBUG( logger, "open calltree file" );
-    outfile.open( "calltree.ct", ios::out );
+
+    if ( threadSuffix != NULL )
+    {
+        mFileName += ".";
+        mFileName += threadSuffix;
+    }
+
+    outfile.open( mFileName.c_str(), ios::out );
 
     if ( outfile.fail() )
     {
-        COMMON_THROWEXCEPTION( "Could not open calltree.ct" )
+        COMMON_THROWEXCEPTION( "Could not open " << mFileName )
     }
 
     outfile << "pid " << getpid() << endl;
@@ -161,13 +172,14 @@ void CallTreeTable::open()
     outfile << "define WALL_TIME " << rate << " WALL_TICKS" << endl;
 }
 
-CallTreeTable::CallTreeTable()
+CallTreeTable::CallTreeTable( const char* threadSuffix )
 {
     callCachePos = 0;
     callCacheLast = 0;
     cacheHit = 0;
     cacheMiss = 0;
-    open();
+
+    open( threadSuffix );
 }
 
 CallTreeTable::~CallTreeTable()
@@ -185,7 +197,7 @@ int CallTreeTable::find( int caller, int callee, int scl )
 {
     for ( int i = 0; i < callCachePos; ++i )
     {
-        if ( call_cache[i].isSame( caller, callee, scl ) )
+        if ( mCallEntryCache[i].isSame( caller, callee, scl ) )
         {
             cacheHit++;
             return i;
@@ -202,18 +214,20 @@ void CallTreeTable::add( int caller, int callee, int scl, const CounterArray& co
 
     if ( pos >= 0 )
     {
-        call_cache[pos].addCallCosts( costs );
+        mCallEntryCache[pos].addCallCosts( costs );
     }
     else
     {
         pos = newPos();
-        call_cache[pos].set( caller, callee, scl, costs );
+        mCallEntryCache[pos].set( caller, callee, scl, costs );
     }
 }
 
 void CallTreeTable::addExclusiveCosts( const int regionId, const int scl, const CounterArray& currentCounterValues )
 {
     CounterArray costs = currentCounterValues - lastCounterValues;
+
+    LAMA_LOG_DEBUG( logger, "region " << regionId << ", add exclusive costs: " << costs )
 
     totalCosts += costs;     // sum of all exclusive costs will be the total costs
 
@@ -224,6 +238,8 @@ void CallTreeTable::addExclusiveCosts( const int regionId, const int scl, const 
 
 void CallTreeTable::addCallCosts( int caller, int callee, int scl, const CounterArray& costs )
 {
+    LAMA_LOG_DEBUG( logger, "call " << caller << " -> " << callee << ", add call costs: " << costs )
+
     add( caller, callee, scl, costs );
 }
 
