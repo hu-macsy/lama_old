@@ -120,14 +120,14 @@ public:
 
     double getWalltime() const
     {
-        return values[0] / common::Walltime::timerate();
+        return double( values[0] ) / double( common::Walltime::timerate() );
     }
 
     /** Return walltime as difference to previous counter values */
 
     double getWalltime( const CounterArray& other ) const
     {
-        return ( values[0] - other.values[0] ) / common::Walltime::timerate();
+        return double ( values[0] - other.values[0] ) / double( common::Walltime::timerate() );
     }
 
     /** This method writes just the counter values in a stream, separated by a given string. */
