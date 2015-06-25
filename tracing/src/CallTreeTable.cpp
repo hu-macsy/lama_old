@@ -30,9 +30,12 @@
  * @date 24.06.2015
  */
 
+#include "tracing/CallTreeTable.hpp"
+
 #include "common/Exception.hpp"
 
-#include "tracing/CallTreeTable.hpp"
+// getpid required
+#include <unistd.h>
 
 namespace tracing
 {
