@@ -30,6 +30,8 @@
  * @date 11.06.2015
  */
 
+#pragma once
+
 #include <common/config.hpp>
 
 #include <string>

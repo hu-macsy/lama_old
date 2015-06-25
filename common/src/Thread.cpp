@@ -135,14 +135,14 @@ Thread::ScopedLock::~ScopedLock( )
 
 Thread::Mutex map_mutex; // Make access to map thread safe
 
-void Thread::defineCurrentThreadId( const char* name )
+void Thread::defineCurrentThreadName( const char* name )
 {
     ScopedLock lock( map_mutex );
 
     Thread::Id id = getSelf();
 
 #ifdef LOCAL_DEBUG
-    cout << "defineCurrentThreadId, id = " << id << ", name = " << name << endl;
+    cout << "defineCurrentThreadName, id = " << id << ", name = " << name << endl;
 #endif
 
     map<Thread::Id, string>::iterator it = mapThreads.find( id );
@@ -171,11 +171,9 @@ void Thread::defineCurrentThreadId( const char* name )
     }
 }
 
-const char* Thread::getCurrentThreadId()
+const char* Thread::getThreadName( Thread::Id id )
 {
     Thread::ScopedLock lock( map_mutex );
-
-    Thread::Id id = getSelf();
 
     map<Thread::Id, string>::iterator it = mapThreads.find( id );
 
@@ -204,6 +202,11 @@ const char* Thread::getCurrentThreadId()
 
         return it->second.c_str();
     }
+}
+
+const char* Thread::getCurrentThreadName()
+{
+    return getThreadName( getSelf() );
 }
 
 void Thread::start( pthread_routine start_routine, void* arg )

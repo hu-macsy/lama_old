@@ -55,11 +55,15 @@ public:
 
     /** Set a name for the current thread. */
 
-    static void defineCurrentThreadId( const char* name );
+    static void defineCurrentThreadName( const char* name );
+
+    /** Query the name of a thread. */
+
+    static const char* getThreadName( Id id );
 
     /** Query the name of the current thread. */
 
-    static const char* getCurrentThreadId();
+    static const char* getCurrentThreadName();
 
     /** Own mutex class for synchronization of threads */
 
