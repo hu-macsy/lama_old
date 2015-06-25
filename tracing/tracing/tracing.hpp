@@ -33,13 +33,13 @@
 
 #pragma once
 
-#if defined( LAMA_TRACE_ON ) 
+#if defined( LAMA_TRACE_ON )
 
 #include <tracing/TraceRegionRecord.hpp>
 #include <tracing/TraceConfig.hpp>
 
-#define LAMA_REGION( name ) tracing::TraceRegionRecord LAMA_Trc__( name, __FILE__, __LINE__ );
-#define LAMA_REGION_N( name, n ) tracing::TraceRegionRecord LAMA_Trc__( name, n, __FILE__, __LINE__ );
+#define LAMA_REGION( name ) tracing::ScopedTraceRecord LAMA_Trc__( name, __FILE__, __LINE__ );
+#define LAMA_REGION_N( name, n ) tracing::ScopedTraceRecord LAMA_Trc__( name, n, __FILE__, __LINE__ );
 #define LAMA_REGION_START( name ) tracing::TraceRegionRecord::start( name, __FILE__, __LINE__ );
 #define LAMA_REGION_END( name ) tracing::TraceRegionRecord::stop( name );
 #define LAMA_TRACE_SCOPE( flag ) tracing::TraceConfig::TraceScope LAMA_Scp__( flag );

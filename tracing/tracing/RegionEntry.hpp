@@ -32,7 +32,12 @@
 
 #pragma once
 
+#include "common/Printable.hpp"
+
 #include <string>
+#include <fstream>
+#include <iostream>
+#include <iomanip>
 
 namespace tracing
 {
@@ -43,17 +48,22 @@ typedef unsigned int VTRegionId;
  *  for time spent in it ( inclusive + exclusive)
  */
 
-struct RegionEntry
+class RegionEntry
 {
+public:
+
     RegionEntry()
     {
         mLastTime = 0.0;
         mInclusiveTime = 0.0;
         mExclusiveTime = 0.0;
         mCalls = 0;
-
         mVTId = 0;
         mFirst = true;    // for first access
+    }
+
+    ~RegionEntry()
+    {
     }
 
     const char* getRegionName() const
@@ -80,14 +90,17 @@ struct RegionEntry
     {
         return mCalls;
     }
+
     double getLastTime() const
     {
         return mLastTime;
     }
+
     double getInclusiveTime() const
     {
         return mInclusiveTime;
     }
+
     double getExclusiveTime() const
     {
         return mExclusiveTime;
@@ -101,7 +114,7 @@ struct RegionEntry
         mCalls++;
     }
 
-    bool firstAccess() 
+    bool firstAccess()
     {
         bool is = mFirst;
         mFirst = false;
@@ -123,15 +136,32 @@ struct RegionEntry
 
     const char* mFile; // file name where region is defined
 
+    void printTime( std::ostream& outfile ) const
+    {
+        outfile << "Time " << mName << " (in ms) : ";
+        outfile << "#calls = " << mCalls;
+        outfile << ", inclusive = " << std::fixed << std::setprecision( 6 ) << ( mInclusiveTime * 1000.0 );
+        outfile << ", exclusive = " << std::fixed << std::setprecision( 6 ) << ( mExclusiveTime * 1000.0 );
+        outfile << std::endl;
+    }
+
+    /*
+    virtual void writeAt( std::ostream& outfile ) const
+    {
+        outfile << "Region( name = " << mName << " )";
+    }
+    */
+
 private:
 
-    int mCalls; //!< count number of calls for a region
+    int mCalls;            //!< counts number of calls for this region
 
-    double mLastTime; //!< time of last call
+    double mLastTime;      //!< time spent on latest call
+
     double mInclusiveTime; //!< time totally spent in a region
     double mExclusiveTime; //!< time exclusively spent in a region
 
-    bool mFirst;
+    bool mFirst;           //!< only true for first access
 };
 
 }

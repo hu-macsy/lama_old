@@ -34,6 +34,7 @@
 // for dll_import
 
 #include <common/config.hpp>
+#include <common/NonCopyable.hpp>
 
 #include <pthread.h>
 
@@ -44,7 +45,7 @@ namespace common
  *  It also supports critical regions by mutex and scoped locks.
  */
 
-class COMMON_DLL_IMPORTEXPORT Thread
+class COMMON_DLL_IMPORTEXPORT Thread : common::NonCopyable
 {
 public:
 
@@ -54,11 +55,15 @@ public:
 
     /** Set a name for the current thread. */
 
-    static void defineCurrentThreadId( const char* name );
+    static void defineCurrentThreadName( const char* name );
+
+    /** Query the name of a thread. */
+
+    static const char* getThreadName( Id id );
 
     /** Query the name of the current thread. */
 
-    static const char* getCurrentThreadId();
+    static const char* getCurrentThreadName();
 
     /** Own mutex class for synchronization of threads */
 
@@ -155,8 +160,42 @@ public:
         pthread_cond_t p_condition;
     };
 
+    typedef void* (*pthread_routine) (void*);
 
+    Thread() : running( false )
+    {
+    }
+
+    /** Constructor of a new thread that executes a void routine with one reference argument. */
+
+    template<typename T>
+    Thread( void (*work) ( T& ), T& arg )
+    {
+        void *parg = (void *) ( &arg );
+        pthread_routine routine = ( pthread_routine ) work;
+        start( routine, parg );
+    }
+
+    template<typename T>
+    void run( void (*work) ( T& ), T& arg )
+    {
+        void *parg = (void *) ( &arg );
+        pthread_routine routine = ( pthread_routine ) work;
+        start( routine, parg );
+    }
+
+    void start( pthread_routine start_routine, void* arg );
+
+    void join();
+
+    /** Destructor of thread, waits for its termination. */
+
+    ~Thread();
+
+private:
+
+    pthread_t tid;
+    bool      running;
 };
 
-
-} //namespace lama
+} // namespace 

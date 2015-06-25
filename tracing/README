@@ -1,3 +1,26 @@
+tracing
+=======
+
+This library supports timing and tracing of C++ programs.
+
+1. Instrumentation
+
+{
+    TRACE_REGION_N( "Name_" << 1 )
+}
+
+{
+    TRACE_REGION( "Name" )
+}
+
+2. Running
+
+export LAMA_TRACE=time
+
+ - timing of all traced regions in main thread
+ - output file is <executable>.trace
+
+export LAMA_TRACE=time:thread
 
 Attention: using of VampirTrace library needs some more sophisticated library path
 

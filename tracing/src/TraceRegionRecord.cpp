@@ -34,9 +34,9 @@
 #include <tracing/TraceRegionRecord.hpp>
 
 // others
-#include <tracing/RegionTable.hpp>
+
+#include <tracing/TraceData.hpp>
 #include <tracing/TraceConfig.hpp>
-#include <tracing/CallTree.hpp>
 #include <tracing/VTInterface.hpp>
 
 #include <common/Walltime.hpp>
@@ -52,148 +52,11 @@ LAMA_LOG_DEF_LOGGER( TraceRegionRecord::logger, "TraceRegionRecord" )
 
 /* -------------------------------------------------------------------------- */
 
-void TraceRegionRecord::start( const char* regionName, const char* file, int lno )
+void TraceRegionRecord::initSettings()
 {
-    // enter a region withtout using member variables
+    mTraceData = NULL;
 
-    if( !TraceConfig::globalTraceFlag )
-    {
-        return;
-    }
-
-    boost::shared_ptr<TraceConfig> traceConfig = TraceConfig::getInstancePtr();
-
-    if( !traceConfig->isEnabled() )
-    {
-        return;
-    }
-
-    double startTime = common::Walltime::get();
-
-    RegionTable* regionTable = traceConfig->getRegionTable();
-
-    if( !regionTable )
-    {
-        return; // Tracing is disabled here
-    }
-
-    int regionId = regionTable->getRegion( regionName, file, lno );
-
-    LAMA_LOG_DEBUG( logger,
-                    "Thread " << regionTable->getId() << ": enters region " << regionName << ", timer = " << regionId )
-
-    if( traceConfig->isTimeTraceEnabled() )
-    {
-        regionTable->start( regionId, startTime );
-    }
-
-    if( traceConfig->isCallTreeEnabled() )
-    {
-        CallTree::enter( regionId, regionTable->getRegion( regionId ) );
-    }
-
-    if( traceConfig->isVampirTraceEnabled() )
-    {
-        VTInterface::enter( regionTable->getRegion( regionId ) );
-    }
-}
-
-/* -------------------------------------------------------------------------- */
-
-void TraceRegionRecord::stop( const char* regionName )
-{
-    // enter a region withtout using member variables
-
-    if( !TraceConfig::globalTraceFlag )
-    {
-        return;
-    }
-
-    boost::shared_ptr<TraceConfig> traceConfig = TraceConfig::getInstancePtr();
-
-    if( !traceConfig->isEnabled() )
-    {
-        return;
-    }
-
-    RegionTable* regionTable = traceConfig->getRegionTable();
-
-    if( !regionTable )
-    {
-        return; // Tracing is disabled here
-    }
-
-    // getCurrentRegionId very fast, matches name against call stack if available
-
-    int regionId = regionTable->getCurrentRegionId( regionName );
-
-    double stopTime = common::Walltime::get();
-
-    LAMA_LOG_DEBUG( logger, "Thread " << regionTable->getId() << ": leaves region " << regionName )
-
-    if( traceConfig->isTimeTraceEnabled() )
-    {
-        regionTable->stop( regionId, stopTime );
-    }
-
-    if( traceConfig->isCallTreeEnabled() )
-    {
-        CallTree::leave( regionId, regionTable->getRegion( regionId ) );
-    }
-
-    if( traceConfig->isVampirTraceEnabled() )
-    {
-        VTInterface::leave( regionTable->getRegion( regionId ) );
-    }
-}
-
-/* -------------------------------------------------------------------------- */
-
-void TraceRegionRecord::enter( const char* regionName, const char* file, int lno )
-{
-    mStartTime = common::Walltime::get();
-
-    mRegionTable = mTraceConfig->getRegionTable();
-
-    if( !mRegionTable )
-    {
-        return; // Tracing is disabled here
-    }
-
-    mRegionId = mRegionTable->getRegion( regionName, file, lno );
-
-    LAMA_LOG_DEBUG( logger,
-                    "Thread " << mRegionTable->getId() << ": enters region " << regionName << ", timer = " << mRegionId )
-
-    mTimeTrace = mTraceConfig->isTimeTraceEnabled();
-
-    if( mTimeTrace )
-    {
-        mRegionTable->start( mRegionId, mStartTime );
-    }
-
-    mCallTree = mTraceConfig->isCallTreeEnabled();
-
-    if( mCallTree )
-    {
-        CallTree::enter( mRegionId, mRegionTable->getRegion( mRegionId ) );
-    }
-
-    mVampirTrace = mTraceConfig->isVampirTraceEnabled();
-
-    if( mVampirTrace )
-    {
-        VTInterface::enter( mRegionTable->getRegion( mRegionId ) );
-    }
-}
-
-/* -------------------------------------------------------------------------- */
-
-TraceRegionRecord::TraceRegionRecord( const char* regionName, const char* file, int lno )
-{
-    mRegionTable = NULL;
-
-    if( !TraceConfig::globalTraceFlag )
+    if ( !TraceConfig::globalTraceFlag )
     {
         // tracing is switched off in source code
         return;
@@ -201,91 +64,157 @@ TraceRegionRecord::TraceRegionRecord( const char* regionName, const char* file, 
 
     mTraceConfig = TraceConfig::getInstancePtr();
 
-    if( !mTraceConfig->isEnabled() )
+    if ( !mTraceConfig->isEnabled() )
     {
         return;
     }
 
-    enter( regionName, file, lno );
+    mTraceData = mTraceConfig->getTraceData();
+
+    if ( mTraceData )
+    {
+        // get detailed info about what to trace
+        mTimeTrace   = mTraceConfig->isTimeTraceEnabled();
+        mCallTree    = mTraceConfig->isCallTreeEnabled();
+        mVampirTrace = mTraceConfig->isVampirTraceEnabled();
+    }
+}
+
+/* -------------------------------------------------------------------------- */
+
+TraceRegionRecord::TraceRegionRecord( const char* regionName, const char* file, int scl )
+{
+    initSettings();
+
+    // if tracing is enable we get the region, may be it will be defined
+
+    if ( mTraceData )
+    {
+        mRegionId    = mTraceData->getRegionId( regionName, file, scl );
+    }
+}
+
+/* -------------------------------------------------------------------------- */
+
+TraceRegionRecord::TraceRegionRecord( const char* regionName )
+{
+    initSettings();
+
+    if ( mTraceData )
+    {
+        // getCurrentRegionId very fast, matches name against call stack if available
+        mRegionId    = mTraceData->getCurrentRegionId( regionName );
+    }
+    else
+    {
+        mRegionId    = 0;
+    }
 }
 
 /* -------------------------------------------------------------------------- */
 
 TraceRegionRecord::TraceRegionRecord( const char* regionName, int n, const char* file, int lno )
 {
-    mRegionTable = NULL;
+    initSettings();
 
-    if( !TraceConfig::globalTraceFlag )
+    // if tracing is enable we get the region, may be it will be defined
+
+    if ( mTraceData )
     {
-        // tracing is switched off in source code
-        return;
+        // compose a new name for the region with n as suffix
+        std::ostringstream fullRegionName;
+        fullRegionName << regionName << "_" << n;
+        mRegionId    = mTraceData->getRegionId( fullRegionName.str().c_str(), file, lno );
+        // full region name is no longer needed, will be available by region table
     }
-
-    mTraceConfig = TraceConfig::getInstancePtr();
-
-    if( !mTraceConfig->isEnabled() )
+    else
     {
-        return;
+        mRegionId    = 0;
     }
-
-    // compose a new name for the region with n as suffix
-
-    std::ostringstream fullRegionName;
-
-    fullRegionName << regionName << "_" << n;
-
-    enter( fullRegionName.str().c_str(), file, lno );
 }
 
 /* -------------------------------------------------------------------------- */
 
 TraceRegionRecord::~TraceRegionRecord()
 {
-    if( !mRegionTable )
-    {
-        // tracing was not enabled at all
+}
 
-        return;
+/* -------------------------------------------------------------------------- */
+
+void TraceRegionRecord::enter()
+{
+    if ( !mTraceData )
+    {
+        return;   // tracing disabled
     }
 
-    double stopTime = common::Walltime::get();
+    RegionEntry& regionEntry = mTraceData->getRegion( mRegionId );
 
-    LAMA_LOG_DEBUG( logger,
-                    "Thread " << mRegionTable->getId() << ": leaves region " << mRegionTable->getRegion( mRegionId ).getRegionName() << ", timer = " << mRegionId )
-
-    if( mTimeTrace )
+    if ( mTimeTrace | mCallTree )
     {
-        mRegionTable->stop( mRegionId, stopTime );
+        mTraceData->enter( mRegionId, regionEntry, mCallTree );
     }
 
-    if( mCallTree )
+    if ( mVampirTrace )
     {
-        CallTree::leave( mRegionId, mRegionTable->getRegion( mRegionId ) );
+        VTInterface::enter( regionEntry );
+    }
+}
+
+/* -------------------------------------------------------------------------- */
+
+void TraceRegionRecord::leave()
+{
+    if ( !mTraceData )
+    {
+        return;   // tracing was not enabled at all
     }
 
-    if( mVampirTrace )
+    RegionEntry& regionEntry = mTraceData->getRegion( mRegionId );
+
+    if ( mTimeTrace | mCallTree )
     {
-        VTInterface::leave( mRegionTable->getRegion( mRegionId ) );
+        mTraceData->leave( mRegionId, regionEntry, mCallTree );
     }
+
+    if ( mVampirTrace )
+    {
+        VTInterface::leave( regionEntry );
+    }
+}
+
+/* -------------------------------------------------------------------------- */
+
+void TraceRegionRecord::start( const char* regionName, const char* file, int lno )
+{
+    // static version has to build a new record
+    TraceRegionRecord record( regionName, file, lno );
+    record.enter();
+}
+
+/* -------------------------------------------------------------------------- */
+
+void TraceRegionRecord::stop( const char* regionName )
+{
+    // static version has to build a new record
+    TraceRegionRecord record( regionName );  // region should be known here
+    record.leave();
 }
 
 /* -------------------------------------------------------------------------- */
 
 double TraceRegionRecord::spentLast( const char* name )
 {
-    RegionTable* regionTable = TraceConfig::getInstance().getRegionTable();
+    TraceData* traceData = TraceConfig::getInstance().getTraceData();
 
-    if( !regionTable )
+    if ( !traceData )
     {
         LAMA_LOG_WARN( logger, "spentLast " << name << ": trace is disabled" )
     }
 
-    int regionId = regionTable->getRegion( name, NULL, 0 );
-
-    const RegionEntry& region = regionTable->getRegion( regionId );
-
+    int regionId = traceData->getRegionId( name, NULL, 0 );
+    const RegionEntry& region = traceData->getRegion( regionId );
     double lastTime = region.getLastTime();
-
     LAMA_LOG_DEBUG( logger, "Spent time for last call of " << region.getRegionName() << " : " << lastTime )
     return lastTime;
 }

@@ -39,9 +39,8 @@
 #include <lama/cuda/CUDAHostContext.hpp>
 #include <lama/cuda/CUDAError.hpp>
 
-#include <lama/task/TaskSyncToken.hpp>
+#include <lama/TaskSyncToken.hpp>
 #include <lama/NoSyncToken.hpp>
-#include <lama/task/Thread.hpp>
 
 #include <lama/ContextAccess.hpp>
 
@@ -64,6 +63,8 @@
 // Be careful: the memory transfer waits for unfinished GPU computations
 
 #undef MEMCOPY_TASK
+
+using common::Thread;
 
 namespace lama
 {

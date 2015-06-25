@@ -35,7 +35,7 @@
 
 // others
 #include <tracing/VTInterface.hpp>
-#include <tracing/RegionTable.hpp>
+#include <tracing/TraceData.hpp>
 
 #include <iostream>
 #include <cstdlib>
@@ -70,8 +70,7 @@ static std::vector<std::string> split( const std::string& params, const char sep
         found = params.find( seperator, prevFound );
         args.push_back( params.substr( prevFound, found - prevFound ) );
     }
-
-    while( found != std::string::npos );
+    while ( found != std::string::npos );
 
     return args;
 }
@@ -80,7 +79,7 @@ static std::vector<std::string> split( const std::string& params, const char sep
 
 boost::shared_ptr<TraceConfig> TraceConfig::getInstancePtr()
 {
-    if( !config )
+    if ( !config )
     {
         config.reset( new TraceConfig() );
     }
@@ -101,7 +100,7 @@ void TraceConfig::setKey( const std::string& key, const std::string& value )
 {
     LAMA_LOG_INFO( logger, "Set trace key " << key << " = " << value )
 
-    if( key == "PREFIX" )
+    if ( key == "PREFIX" )
     {
         mTraceFilePrefix = value;
     }
@@ -116,17 +115,13 @@ void TraceConfig::setKey( const std::string& key, const std::string& value )
 void TraceConfig::enableVampirTrace( bool flag )
 {
     mVampirTraceEnabled = flag;
-
 #if defined( USE_VAMPIRTRACE )
-
     LAMA_LOG_INFO( logger, "enableVampirTrace: flag =  " << flag << ", no context" )
-
     VTInterface::enable( flag );
-
 #else
     LAMA_LOG_INFO( logger, "enableVampirTrace: flag =  " << flag << ", VAMPIRTRACE not used" )
 
-    if( mVampirTraceEnabled )
+    if ( mVampirTraceEnabled )
     {
         LAMA_LOG_WARN( logger, "TRACE:vt ignored, define USE_VAMPIRTRACE for compilation." )
     }
@@ -140,22 +135,21 @@ void TraceConfig::setParam( const std::string& param )
 {
     LAMA_LOG_INFO( logger, "Set trace config value : " << param )
 
-    if( param == "VT" )
+    if ( param == "VT" )
     {
         mVampirTraceEnabled = true;
     }
-    else if( param == "THREAD" )
+    else if ( param == "THREAD" )
     {
         mThreadEnabled = true;
     }
-    else if( param == "TIME" )
+    else if ( param == "TIME" )
     {
         mTimeTraceEnabled = true;
     }
-    else if( param == "CT" )
+    else if ( param == "CT" )
     {
         mCallTreeEnabled = true;
-        LAMA_LOG_WARN( logger, param << " is still under development" )
     }
     else
     {
@@ -168,58 +162,48 @@ void TraceConfig::setParam( const std::string& param )
 TraceConfig::TraceConfig()
 {
     // mComm = CommunicatorFactory::get();
-
     // mCUDAContext = ContextFactory::getContext( Context::CUDA );
-
     // should be done explicitly
     // mCUDAContext = ContextFactory::getContext( Context::CUDA );
-
     mEnabled = false;
     mThreadEnabled = false;
     mVampirTraceEnabled = false;
     mTimeTraceEnabled = false;
     mCallTreeEnabled = false;
     mTraceFilePrefix = "_";
-
     // value of environmentvariable:  param1:param2=valx:param3:param4=valy
-
     std::string params;
+    const char* env = getenv( LAMA_ENV_TRACE_CONFIG );
 
-    const char *env = getenv( LAMA_ENV_TRACE_CONFIG );
-
-    if( env )
+    if ( env )
     {
         params = env;
-
         std::vector<std::string> values = split( params, ':' );
 
-        if( values.size() != 1 || values[0] != "OFF" )
+        if ( values.size() != 1 || values[0] != "OFF" )
         {
             mEnabled = true;
 
-            for( size_t i = 0; i < values.size(); ++i )
+            for ( size_t i = 0; i < values.size(); ++i )
             {
                 std::vector<std::string> keys = split( values[i], '=' );
-
                 std::string& key = keys[0];
 
                 // make upper case of key
 
-                for( size_t j = 0; j < key.length(); j++ )
+                for ( size_t j = 0; j < key.length(); j++ )
                 {
                     key[j] = static_cast<std::string::value_type>( toupper( key[j] ) );
                 }
 
-                if( keys.size() == 1 )
+                if ( keys.size() == 1 )
                 {
                     // is just a param
-
                     setParam( key );
                 }
                 else
                 {
                     // is param=val
-
                     setKey( key, keys[1] );
                 }
             }
@@ -228,22 +212,19 @@ TraceConfig::TraceConfig()
     else
     {
         LAMA_LOG_WARN( logger,
-                       LAMA_ENV_TRACE_CONFIG << " not set, tracing is disabled." << " Enable by " << LAMA_ENV_TRACE_CONFIG << "=time[:vt][:thread]" )
+                       LAMA_ENV_TRACE_CONFIG << " not set, tracing is disabled."
+                       << " Enable by " << LAMA_ENV_TRACE_CONFIG << "=time|ct[:vt][:thread]" )
     }
 
     // enable/disable VampirTrace, action needed now
-
     enableVampirTrace( mVampirTraceEnabled );
 
-    if( mTraceFilePrefix == "_" )
+    if ( mTraceFilePrefix == "_" )
     {
         // no prefix specified, so take default
-
         mTraceFilePrefix = "LAMA";
-
         // environment variable "_" contains name of last command
-
-        const char *env = getenv( "_" );
+        const char* env = getenv( "_" );
 
         if ( env )
         {
@@ -264,9 +245,7 @@ TraceConfig::TraceConfig()
     }
 
     // save id of this main thread
-
     mMaster = Thread::getSelf();
-
     LAMA_LOG_INFO( logger, "ThreadConfig: enabled = " << mEnabled )
 }
 
@@ -276,14 +255,13 @@ TraceConfig::~TraceConfig()
 {
     LAMA_LOG_DEBUG( logger, "Entering Destructor." )
 
-    if( mVampirTraceEnabled )
+    if ( mVampirTraceEnabled )
     {
         // set tracing explicitly to off now
-
         enableVampirTrace( false );
     }
 
-    if( !mTimeTraceEnabled )
+    if ( !mTimeTraceEnabled )
     {
         LAMA_LOG_INFO( logger, "~TraceConfig, no output file" )
         LAMA_LOG_DEBUG( logger, "Leaving Destructor." )
@@ -291,62 +269,58 @@ TraceConfig::~TraceConfig()
     }
 
     // now print all info in a file
-
     std::ostringstream fileName;
-
     fileName << mTraceFilePrefix << ".trace";
-
-    /* Disabled for the moment:
+    /* For parallel processes we should add suffix for rank
 
     if( mComm->getSize() > 1 )
     {
         fileName << "." << mComm->getRank();
     }
+
     */
-
     LAMA_LOG_INFO( logger, "~TraceConfig, output file = " << fileName.str() )
+    std::ofstream outfile;
+    outfile.open( fileName.str().c_str(), std::ios::out );
 
-    FILE* f = fopen( fileName.str().c_str(), "w" );
-
-    if( f == NULL )
+    if ( outfile.fail() )
     {
+        // do not throw exception as only tracing caused problem
         LAMA_LOG_ERROR( logger, "Could not open " << fileName.str() << " for writing time information." )
         return;
     }
 
-    // Now write each RegionTable in file
+    // Now write each TraceData in file
+    std::map<ThreadId, boost::shared_ptr<TraceData> >::iterator it;
 
-    std::map<ThreadId, boost::shared_ptr<RegionTable> >::iterator it;
-
-    for( it = mRegionTables.begin(); it != mRegionTables.end(); it++ )
+    for ( it = mTraceDataMap.begin(); it != mTraceDataMap.end(); it++ )
     {
-        RegionTable& table = *it->second;
-        table.printTimer( f );
+        TraceData& data = *it->second;
+        data.printTimer( outfile );
     }
 
-    fclose( f );
-
-    LAMA_LOG_DEBUG( logger, "Leaving Destructor." )
+    outfile.close();
+    LAMA_LOG_DEBUG( logger, "~TraceConfig finished" )
 }
 
 /* -------------------------------------------------------------------------- */
 
-static Thread::Mutex mapMutex; // needed to avoid conflicts for accesses on mRegionTables
+static Thread::Mutex mapMutex; // needed to avoid conflicts for accesses on mTraceDataMap
 
 /* -------------------------------------------------------------------------- */
 
-RegionTable* TraceConfig::getRegionTable()
+TraceData* TraceConfig::getTraceData()
 {
-    if( !mEnabled )
+    if ( !mEnabled )
     {
         return NULL;
     }
 
     ThreadId self = common::Thread::getSelf();
 
-    if( mThreadEnabled || self == mMaster )
+    if ( mThreadEnabled || self == mMaster )
     {
-        return getInstance().getRegionTable( self );
+        return getInstance().getTraceData( self );
     }
     else
     {
@@ -356,25 +330,21 @@ RegionTable* TraceConfig::getRegionTable()
 
 /* -------------------------------------------------------------------------- */
 
-RegionTable* TraceConfig::getRegionTable( ThreadId threadId )
+TraceData* TraceConfig::getTraceData( ThreadId threadId )
 {
-    boost::shared_ptr<RegionTable> regionTable = mRegionTables[threadId];
-
     // make sure that not two different threads try to allocate a table
-
+    // read / write access at same time might also result in a crash
     Thread::ScopedLock lock( mapMutex );
+    boost::shared_ptr<TraceData> traceData = mTraceDataMap[threadId];
 
-    if( !regionTable )
+    if ( !traceData )
     {
-
         // this thread calls the first time a region
-
-        regionTable.reset( new RegionTable( threadId ) );
-
-        mRegionTables[threadId] = regionTable;
+        traceData.reset( new TraceData( threadId, mThreadEnabled ) );
+        mTraceDataMap[threadId] = traceData;
     }
 
-    return regionTable.get();
+    return traceData.get();
 }
 
 /* -------------------------------------------------------------------------- */

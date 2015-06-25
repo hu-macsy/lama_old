@@ -76,10 +76,8 @@ static void barrier()
 
 static int sharedArray[ N_THREADS ];
 
-static void* threadRoutine( void* args )
+static void threadRoutine( int& arg )
 {
-    int arg = *( ( int* ) args );
-
     sharedArray[arg] = arg;
 
     barrier();
@@ -93,10 +91,7 @@ static void* threadRoutine( void* args )
 
     int expected_sum = N_THREADS * ( N_THREADS-1 ) / 2;
 
-    if ( sum != expected_sum )
-    {
-        COMMON_THROWEXCEPTION( "sum = " << sum << ", expected = " << expected_sum )
-    }
+    COMMON_ASSERT_EQUAL( sum, expected_sum, "Wrong value after thread barrier" )
 
     {
         Thread::ScopedLock lock( printMutex );
@@ -108,26 +103,20 @@ int main( int argc, char** argv )
 {
     // macro to give the current thread a name that appears in further logs
 
-    std::vector<pthread_t> threads( N_THREADS );
-    std::vector<int> threadArgs( N_THREADS );
+    Thread threads[N_THREADS];
+    int threadArgs[N_THREADS];
 
     double time = Walltime::get();
 
     for ( int i = 0; i < N_THREADS; ++i )
     {
         threadArgs[i] = i;
-
-        int rc = pthread_create( &threads[i], NULL, &threadRoutine, &threadArgs[i] );
-
-        if ( rc != 0 )
-        {
-            COMMON_THROWEXCEPTION( "Could not create pthread " << i << " of " << N_THREADS << ", rc = " << rc )
-        }
+        threads[i].run( threadRoutine, threadArgs[i] );
     }
 
     for ( int i = 0; i < N_THREADS; ++i )
     {
-        pthread_join( threads[i], NULL );
+        threads[i].join();
     }
 
     std::cout << "All threads are terminated correctly." << std::endl;

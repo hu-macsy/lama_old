@@ -25,27 +25,30 @@
  * SOFTWARE.
  * @endlicense
  *
- * @brief Contains error checking macros like ASSERT and LAMACALL.
+ * @brief Contains error checking macros like LAMA_ASSERT that can be enabled
+ *        or disabled at runtime
+ *
  * @author Jiri Kraus
  * @date 02.03.2011
- * @since 1.0.0
  */
 
-#ifndef LAMA_ASSERT_HPP_
-#define LAMA_ASSERT_HPP_
+#pragma once
 
 #include <lama/exception/Exception.hpp>
+#include <common/Exception.hpp>
 
 #include <sstream>
 #include <cstdio>
 #include <iostream>
 
-//Little help for the Eclipse Parser
+// Little help for the Eclipse Parser
+
 #ifdef __CDT_PARSER__
 #define LAMA_ASSERT_LEVEL_DEBUG
 #endif
 
 #ifndef LAMA_ASSERT_LEVEL_OFF
+
 #    ifndef LAMA_CHECK_ASSERTS
 /**
  * @brief The macro LAMACHECKASSERTS is used to control the checking of
@@ -75,64 +78,23 @@ static inline void unused( const ValueType1&, const ValueType2& )
 
 #ifndef LAMA_CHECK_ASSERTS
 
-/**
- * @brief LAMA_ASSERT(exp, msg) is a more sophisticated assert macro.
- *
- * LAMA_ASSERT(exp, msg) is a more sophisticated assert macro. If LAMACHECKASSERTS is
- * defined and the expression exp does not evaluate to true an lama::Exception
- * is thrown. The macro will generate a message for the exception with this
- * content
- * "Assertion Failed in line <lineno> of file <filename>\n\tMessage: msg\n"
- * As the message for the exception is build using a stringstream msg can be
- * everything that can be appended to an output stream, e.g.
- * " The dimension (="<<v.size()<<") needs to be at least "<<minSize
- * If LAMACHECKASSERTS is not defined LAMA_ASSERT(exp,msg) will be replaced by nothing.
- *
- * @param exp   the expression to test. [IN]
- * @param msg   the message to assign to the exception. [IN]
- * @throws      lama::Exception
- */
 #define LAMA_ASSERT(exp, msg) unused( exp );
 
 #define LAMA_ASSERT_EQUAL(exp1, exp2) unused( exp1, exp2 );
 
-/**
- * @brief LAMA_CHECK_ERROR(msg) is a convenience macro to check the last error
- *        that has been occurred in the lama library.
- *
- * CHECKLAMAERROR(msg) is a convenience macro to check the last error that has
- * that has been occurred in the lama library. If the last error is not
- * LAMA_STATUS_SUCCESS an lama::Exception is thrown. It will be build like
- * the exception thrown by the macro LAMACALL.
- *
- * If LAMA_CHECK_ASSERTS is not defined LAMA_CHECK_ERROR(msg) will not check the last
- * error.
- *
- * @param msg   the message to assign to the exception. [IN]
- * @throws      lama::Exception
- */
-#define LAMA_CHECK_ERROR(msg)
-
 #else // LAMACHECKASSERTS DEFINED
+
 #define LAMA_ASSERT(exp, msg)                                                           \
-    if (!(exp))                                                                         \
-    {                                                                                   \
-        std::ostringstream errorStr;                                                    \
-        errorStr << "Assertion Failed in line " << __LINE__;                            \
-        errorStr << " of file " << __FILE__ << "\n";                                    \
-        errorStr << "    Message: " << msg << "\n";                                     \
-        lama::Exception::addCallStack( errorStr );                                      \
-        throw lama::Exception( errorStr.str() );                                        \
-    }
+    COMMON_ASSERT( exp, msg )
 
 #define LAMA_ASSERT_EQUAL(exp1, exp2)                                                   \
-    LAMA_ASSERT(exp1 == exp2, #exp1 " = " << exp1                                   \
-                << " must be equal to " #exp2 " = " << exp2 )
+    COMMON_ASSERT_EQUAL( exp1, exp2, "LAMA equality error" ) 
 
 #endif // LAMA_CHECK_ASSERTS
-#if defined(LAMA_ASSERT_LEVEL_OFF)
 
-#define LAMA_ASSERT_ERROR(exp, msg)                                                  \
+#if defined( LAMA_ASSERT_LEVEL_OFF )
+
+#define LAMA_ASSERT_ERROR(exp, msg)                                                 \
     {                                                                               \
         unused( exp );                                                              \
         if ( false )                                                                \
@@ -140,8 +102,11 @@ static inline void unused( const ValueType1&, const ValueType2& )
             std::cout<<msg;                                                         \
         }                                                                           \
     }
-#define LAMA_ASSERT_EQUAL_ERROR(exp1, exp2) unused( exp1, exp2 );
-#define LAMA_ASSERT_DEBUG(exp, msg)                                                  \
+
+#define LAMA_ASSERT_EQUAL_ERROR( exp1, exp2 )                                       \
+    unused( exp1, exp2 );
+
+#define LAMA_ASSERT_DEBUG(exp, msg)                                                 \
     {                                                                               \
         unused( exp );                                                              \
         if ( false )                                                                \
@@ -149,7 +114,9 @@ static inline void unused( const ValueType1&, const ValueType2& )
             std::cout<<msg;                                                         \
         }                                                                           \
     }
-#define LAMA_ASSERT_EQUAL_DEBUG(exp1, exp2) unused(exp1, exp2 );
+
+#define LAMA_ASSERT_EQUAL_DEBUG( exp1, exp2 )                                      \
+    unused( exp1, exp2 );
 
 #elif defined(LAMA_ASSERT_LEVEL_ERROR)
 
@@ -186,5 +153,3 @@ static inline void unused( const ValueType1&, const ValueType2& )
 #define LAMA_ASSERT_EQUAL_DEBUG(exp1, exp2)  unused( exp1, exp2 );
 
 #endif
-
-#endif // LAMA_ASSERT_HPP_

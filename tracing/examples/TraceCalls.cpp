@@ -19,9 +19,7 @@ void subB( int& X )
 int main()
 {
     double time = common::Walltime::get();
-
     int X = 0;
-
     LAMA_REGION( "main" )
 
     for ( int i = 0; i < 10000; ++i )
@@ -30,6 +28,7 @@ int main()
         {
             subA( X );
         }
+
         for ( int j = 0; j < 20; ++ j )
         {
             subB( X );
@@ -37,6 +36,5 @@ int main()
     }
 
     time = common::Walltime::get() - time;
-
     printf( "X = %d, number of calls, time = %f s\n", X, time );
 }

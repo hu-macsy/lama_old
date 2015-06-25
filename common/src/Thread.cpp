@@ -37,6 +37,11 @@
 #include <string>
 #include <iostream>
 
+
+// define LOCAL_DEBUG for debugging this source code
+
+#undef LOCAL_DEBUG
+
 using namespace std;
 
 namespace common
@@ -130,13 +135,15 @@ Thread::ScopedLock::~ScopedLock( )
 
 Thread::Mutex map_mutex; // Make access to map thread safe
 
-void Thread::defineCurrentThreadId( const char* name )
+void Thread::defineCurrentThreadName( const char* name )
 {
     ScopedLock lock( map_mutex );
 
     Thread::Id id = getSelf();
 
-    cout << "defineCurrentThreadId, id = " << id << ", name = " << name << endl;
+#ifdef LOCAL_DEBUG
+    cout << "defineCurrentThreadName, id = " << id << ", name = " << name << endl;
+#endif
 
     map<Thread::Id, string>::iterator it = mapThreads.find( id );
 
@@ -146,7 +153,9 @@ void Thread::defineCurrentThreadId( const char* name )
 
         mapThreads[ id ] = string( name );
 
+#ifdef LOCAL_DEBUG
         cout << "Thread " << id << " defines name " << name << endl;
+#endif
     }
     else
     {
@@ -154,17 +163,17 @@ void Thread::defineCurrentThreadId( const char* name )
 
         // cout << "Redefine Thread " << id << " = " << it->second << " as " << name << endl;
 
+#ifdef LOCAL_DEBUG
         cout << "Thread " << id << " named " << it->second << ", renamed to " << name << endl;
+#endif
 
         it->second = name;
     }
 }
 
-const char* Thread::getCurrentThreadId()
+const char* Thread::getThreadName( Thread::Id id )
 {
     Thread::ScopedLock lock( map_mutex );
-
-    Thread::Id id = getSelf();
 
     map<Thread::Id, string>::iterator it = mapThreads.find( id );
 
@@ -193,6 +202,38 @@ const char* Thread::getCurrentThreadId()
 
         return it->second.c_str();
     }
+}
+
+const char* Thread::getCurrentThreadName()
+{
+    return getThreadName( getSelf() );
+}
+
+void Thread::start( pthread_routine start_routine, void* arg )
+{
+    int rc = pthread_create( &tid, NULL, start_routine, arg );
+ 
+    COMMON_ASSERT_EQUAL( 0, rc, "pthread_create failed" )
+
+    running = true;
+}
+
+void Thread::join()
+{
+    if ( running )
+    {
+        int rc = pthread_join( tid, NULL );
+        COMMON_ASSERT_EQUAL( 0, rc, "pthread_join failed" )
+
+        // std::cout << "PThread " << std::hex << tid << " terminated." << std::endl;
+    }
+
+    running = false;
+}
+
+Thread::~Thread()
+{
+    join();
 }
 
 } // namespace

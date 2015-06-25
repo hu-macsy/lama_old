@@ -34,6 +34,7 @@
 
 // for dll_import
 #include <common/config.hpp>
+#include <common/NonCopyable.hpp>
 
 #include <exception>
 #include <string>
@@ -46,7 +47,9 @@ namespace common
 {
 
 /**
- * @brief The class Exception represents a general exception in common library.
+ * @brief Exception is an exception class that contains also the call stack in its message.
+ *
+ * Note: default copy constructor of Exception is used when throwing an exception.
  */
 class COMMON_DLL_IMPORTEXPORT Exception: public std::exception
 {
@@ -92,6 +95,14 @@ protected:
 
 }  // namespace common
 
+/**
+ * @brief The macro COMMON_THROWEXCEPTION throws an exception that contains
+ *        source code file and line as well as call stack in its message.
+ *
+ * @param[in] msg   message to indicate reason for the exception
+ * @throws    common::Exception (derived from std::exception)
+ */
+
 #define COMMON_THROWEXCEPTION( msg )                                           \
 {                                                                              \
     std::ostringstream errorStr;                                               \
@@ -100,6 +111,18 @@ protected:
     common::Exception::addCallStack( errorStr );                               \
     throw common::Exception( errorStr.str() );                                 \
 }
+
+/**
+ * @brief The macro COMMON_ASSERT checks a condition and throws an exception 
+ *        when the condition fails.
+ *
+ * @param[in] cond  boolean expression that is checked
+ * @param[in] msg   message to indicate reason for the exception
+ * @throws    common::Exception (derived from std::exception)
+ *
+ * The message text will also contain the condition as string, file location
+ * and the current call stack.
+ */
 
 #define COMMON_ASSERT( cond, msg )                                             \
 {                                                                              \
@@ -115,9 +138,24 @@ protected:
     }                                                                          \
 }
 
+/**
+ * @brief The macro COMMON_ASSERT_EQUAL checks to expressions for equality
+ *        and throws an exception when they are different.
+ *
+ * @param[in] exp1  first expression for comparison
+ * @param[in] exp2  second expression for comparison
+ * @param[in] msg   message to indicate reason for the exception
+ * @throws    common::Exception (derived from std::exception)
+ *
+ * Attention: the equality operator == must be defined for the two expressions.
+ *
+ * The message text will also contain the expressions and their values as string, 
+ * file location and the current call stack.
+ */
+
 #define COMMON_ASSERT_EQUAL( exp1, exp2, msg )                                 \
 {                                                                              \
-    if ( ( exp1 ) != ( exp2 ) )                                                \
+    if ( ! ( ( exp1 ) == ( exp2 ) ) )                                          \
     {                                                                          \
         std::ostringstream errorStr;                                           \
         errorStr << "Assert equal failed in line " << __LINE__;                \

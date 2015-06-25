@@ -1,5 +1,5 @@
 /**
- * @file common/Walltime.hpp
+ * @file FileTable.hpp
  *
  * @license
  * Copyright (c) 2009-2015
@@ -25,51 +25,80 @@
  * SOFTWARE.
  * @endlicense
  *
- * @brief Definition of static class that provides high precision walltime
+ * @brief Definition of class that maps file names to ids
  * @author Thomas Brandes
  * @date 11.06.2015
  */
 
 #pragma once
 
+// for dll_import
 #include <common/config.hpp>
 
-#include <string>
-#include <stdint.h>
+#include <logging/logging.hpp>
 
-namespace common
+#include<vector>
+#include<cstring>
+#include<string>
+#include<map>
+#include<cstdio>
+
+namespace tracing
 {
 
-typedef uint64_t INTEGER_8;
+/** Class that manages all used file names in a table */
 
-/**
- * @brief A simple static class that delivers walltime (used for logging and tracing)
- */
-class COMMON_DLL_IMPORTEXPORT Walltime
+class COMMON_DLL_IMPORTEXPORT FileTable
 {
+
 public:
 
-    /** Get the current walltime.
+    /** Constructor of a new file table.
      *
-     *  @return current walltime in ticks
+     *  The region table must contain the thread id as it might be
+     *  written later by main thread.
      */
-    static INTEGER_8 timestamp();
 
-    /** Number of ticks per second, so timestamp() / timerate() gives time in seconds. */
+    FileTable();
 
-    static INTEGER_8 timerate();
+    /** Destructor. */
 
-    /** Get the current walltime.
+    ~FileTable();
+
+    /** Get the id of a file, creates a new entry if file is not available yet.
      *
-     *  @return current walltime in seconds
+     *  @param[in] name   is the name of the region
      */
-    static double get();
+
+    int getFileId( const char* name );
+
+    /** Get file name by its id. */
+
+    const char* getFileName( int fileId );
+
+protected:
+
+    LAMA_LOG_DECL_STATIC_LOGGER( logger )
 
 private:
 
-    /** Private constructor for a static class. */
+    struct    CmpString
+    {
+        bool operator()( const char* a, const char* b ) const
+        {
+            return std::strcmp( a, b ) < 0;
+        }
+    };
 
-    Walltime();
+    std::vector<std::string> array; //!<  Entries for all filenames
+
+    /** Map of file strings to file ids that are the indexes to array.
+     *
+     *  Timer strings are given by pointer; pointers will be always valid as string
+     *  remains as member variable in array.
+     */
+
+    std::map<const char*, int, CmpString> mapTimer;
 };
 
-} // namespace
+}

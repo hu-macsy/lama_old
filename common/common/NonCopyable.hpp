@@ -1,5 +1,5 @@
 /**
- * @file lama/NonCopyable.hpp
+ * @file common/NonCopyable.hpp
  *
  * @license
  * Copyright (c) 2009-2015
@@ -39,18 +39,56 @@
 namespace common
 {
 
-/** Base class to disable compiler generated copy constructor and assignment operator. */
+/** @brief Base class to disable compiler generated copy constructor and assignment operator.
+ *
+ *  All classes where the default copy constructor might result in serious problems should
+ *  derive from this class.
+ *
+ *  In the following class dynamically allocated data is freed in the destructor. If an 
+ *  instance variable has been copied the destructor is called twice and the data
+ *  would be freed twice.
+ *
+ *  \code
+ *  class Example : common::NonCopyable
+ *  {
+ *      ~Example() 
+ *      {
+ *         if ( mData != NULL) delete mData;
+ *         mData = NULL;
+ *      }
+ *      private :
+ *         Data* mData;
+ *  };
+ *  \endcode
+ *
+ *  A class that is derived from this base class can never be used itself in a container class.
+ *
+ *  \code
+ *  std::vector<Example> myExamples;   // not possible
+ *  std::vector<*Example> myExamples;  // allocate variables always by own constructor
+ *  \endcode
+ *
+ * The typical error message for using it in a container class is as follows:
+ *
+ * NonCopyable.hpp: error »const common::NonCopyable& common::NonCopyable::operator=(const common::NonCopyable&)« is private
+ */
+
 class COMMON_DLL_IMPORTEXPORT NonCopyable
 {
 protected:
+
     NonCopyable()
     {
     }
+
     ~NonCopyable()
     {
     }
+
 private:
+
     NonCopyable( const NonCopyable& other );
+
     const NonCopyable& operator=( const NonCopyable& other );
 };
 
