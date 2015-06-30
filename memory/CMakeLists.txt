@@ -1,0 +1,113 @@
+###
+ # @file CMakeLists.txt
+ #
+ # @license
+ # Copyright (c) 2009-2015
+ # Fraunhofer Institute for Algorithms and Scientific Computing SCAI
+ # for Fraunhofer-Gesellschaft
+ #
+ # Permission is hereby granted, free of charge, to any person obtaining a copy
+ # of this software and associated documentation files (the "Software"), to deal
+ # in the Software without restriction, including without limitation the rights
+ # to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ # copies of the Software, and to permit persons to whom the Software is
+ # furnished to do so, subject to the following conditions:
+ #
+ # The above copyright notice and this permission notice shall be included in
+ # all copies or substantial portions of the Software.
+ #
+ # THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ # IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ # FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ # AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ # SOFTWARE.
+ # @endlicense
+ #
+ # @brief memory/CMakeLists.txt
+ # @author Thomas Brandes
+ # @date 30.06.2015
+###
+
+### Set required CMake version
+
+cmake_minimum_required ( VERSION 2.8 )
+
+project( memory CXX )
+
+set ( MEMORY_LIBRARY memory
+      CACHE FILEPATH "memory library" )
+
+set ( MEMORY_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR} 
+      CACHE PATH "memory include directory" )
+
+mark_as_advanced( MEMORY_LIBRARY MEMORY_INCLUDE_DIR )
+
+set ( CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/../CMake/Modules" )
+
+# Set default build type to RELEASE, can be changed via ccmake
+
+if ( NOT CMAKE_BUILD_TYPE )
+   set( CMAKE_BUILD_TYPE RELEASE 
+        CACHE STRING "Choose the type of build, options are: None Debug Release."
+        FORCE)
+endif (NOT CMAKE_BUILD_TYPE)
+
+### Source files for memory library
+
+file( GLOB CPP_SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp" )
+file( GLOB HPP_HEADERS "${CMAKE_CURRENT_SOURCE_DIR}/memory/*.hpp" )
+
+### add definitions ###
+
+# set ( CMAKE_INSTALL_PREFIX /home/brandes/local )
+
+find_package( Boost REQUIRED COMPONENTS )
+
+find_library( COMMON_LIBRARY 
+              NAMES common
+              HINTS ${CMAKE_INSTALL_PREFIX}/lib )
+
+set ( COMMON_INCLUDE_DIR 
+            ${CMAKE_INSTALL_PREFIX}/include 
+            CACHE PATH "include" )
+
+find_library( LOGGING_LIBRARY 
+              NAMES logging 
+              HINTS ${CMAKE_INSTALL_PREFIX}/lib )
+
+set ( LOGGING_INCLUDE_DIR 
+            ${CMAKE_INSTALL_PREFIX}/include 
+            CACHE PATH "include" )
+
+find_library( TASKING_LIBRARY 
+              NAMES tasking
+              HINTS ${CMAKE_INSTALL_PREFIX}/lib )
+
+set ( TASKING_INCLUDE_DIR 
+            ${CMAKE_INSTALL_PREFIX}/include 
+            CACHE PATH "include" )
+
+include_directories( ${MEMORY_INCLUDE_DIR} )
+include_directories( ${COMMON_INCLUDE_DIR} )
+include_directories( ${LOGGING_INCLUDE_DIR} )
+include_directories( ${Boost_INCLUDE_DIR} )
+
+if ( WIN32 )
+    add_definitions ( -DCOMMON_COMPILING_DLL )
+endif ( WIN32 )
+
+add_definitions( -DLAMA_LOG_LEVEL_DEBUG )
+
+### add library and put path to search path ###
+
+add_library ( ${MEMORY_LIBRARY} SHARED ${CPP_SOURCES} )
+target_link_libraries( ${MEMORY_LIBRARY} ${TASKING_LIBRARY} ${LOGGING_LIBRARY} ${COMMON_LIBRARY} )
+
+add_subdirectory( examples )
+
+### install ###
+
+install ( TARGETS ${MEMORY_LIBRARY} DESTINATION lib )
+install ( FILES ${HPP_HEADERS} DESTINATION include/memory )
