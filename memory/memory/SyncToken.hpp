@@ -49,7 +49,7 @@
 namespace memory
 {
 
-class BaseAccess;
+class Access;
 class _LAMAArray;
 
 /** Abstract class that defines tokens for asynchronous operations.
@@ -113,7 +113,7 @@ public:
      *  @param access shared pointer to an access
      */
 
-    void pushAccess( boost::shared_ptr<BaseAccess> access );
+    void pushAccess( boost::shared_ptr<Access> access );
 
     /** Add a LAMA array that will be free after synchronization
      *
@@ -165,7 +165,7 @@ private    :
 
     /** Vector of accesses that will be freed after completion. */
 
-    std::vector< boost::shared_ptr<BaseAccess> > mAccesses;
+    std::vector< boost::shared_ptr<Access> > mAccesses;
 
     std::vector< boost::shared_ptr<_LAMAArray> > mArrays;
 

@@ -33,6 +33,8 @@
  */
 #pragma once
 
+#include <memory/ContextData.hpp>
+
 // for dll_import
 #include <common/config.hpp>
 
@@ -55,10 +57,6 @@ class SyncToken;
 
 class Context;
 // forward declaration
-
-/** Context pointers will be always const, so context can never be modified. */
-
-typedef boost::shared_ptr<const Context> ContextPtr;
 
 /** @brief This class is a common base class for all possible contexts.
  *
@@ -92,68 +90,6 @@ public:
         MaxContext //!< used for dimension of ContextType arrays
     };
 
-    struct COMMON_DLL_IMPORTEXPORT ContextData: private common::NonCopyable
-    {
-        enum AccessKind
-        {
-            Read, //!<  read access to the array, can be multiple
-            Write, //!<  write access to the array, only one at a time
-            MaxAccessKind //!<  internal use for dimension of arrays
-        };
-
-        ContextPtr context; //!<  shared pointer to the context
-
-        void* pointer; //!<  pointer to the data on the context
-
-        size_t size; //!<  size of a single element
-
-        bool allocated; //!<  is true if data has been allocated by context
-
-        bool valid; //!<  is true if there is a valid copy on the context
-
-        unsigned char lock[MaxAccessKind]; //!<  read, write lock
-
-        /** Constructor, context must always be given. */
-
-        ContextData( ContextPtr context );
-
-        ~ContextData();
-
-        /** allocate data for the Context array on the context */
-
-        void allocate( const size_t size );
-
-        /** set reference instead of own data allocation. */
-
-        void setRef( void* reference, const size_t size );
-
-        /** Reallocate new memory on the context
-         *
-         *  @param newSize   number of entries for new allocated memory
-         *  @param saveSize  number of entries to copy back from old memory
-         *
-         */
-        void realloc( const size_t newSize, const size_t saveSize );
-
-        /** free data for the Context array on the context */
-
-        void free();
-
-        bool isPinned() const;
-
-        void setPinned() const;
-
-        void setCleanFunction( boost::function<void( void* )> cleanFunktion ) const;
-
-    private:
-
-        mutable bool pinned;
-
-        mutable boost::function<void( void* )> mCleanFunktion;
-
-        ContextData(); // disable default constructor
-    };
-
     virtual ~Context();
 
     /** Method to get the type of the context. */
@@ -181,13 +117,14 @@ public:
 
     virtual void writeAt( std::ostream& stream ) const;
 
-///////** This method allocates memory and must be implemented by
-//     *  each Context.
-//     *
-//     *  @param[in] size is the number of bytes needed
-//     *  @return pointer to the allocated data, NULL if not enough data is available
-//     */
-//    virtual void* allocate( const size_t size ) const = 0;
+    /** This method allocates memory and must be implemented by
+     *  each Context.
+     *
+     *  @param[in] size is the number of bytes needed
+     *  @return pointer to the allocated data, NULL if not enough data is available
+     */
+
+    virtual void* allocate( const size_t size ) const = 0;
 
     /** This method allocates memory and must be implemented by
      *  each Context. The pointer to the allocated memory is stored in contextData.pointer.
@@ -198,8 +135,6 @@ public:
      *                            NULL if not enough data is available
      */
     virtual void allocate( ContextData& contextData, const size_t size ) const = 0;
-
-    virtual void* allocate( const size_t size ) const = 0;
 
     /**
      * This method free's allocated data allocated by this allocator.

@@ -43,6 +43,7 @@
 
 // others
 #include <memory/Context.hpp>
+#include <memory/ContextManager.hpp>
 #include <memory/SyncToken.hpp>
 #include <memory/Scalar.hpp>
 
@@ -104,16 +105,19 @@ public:
 
 protected:
 
-    explicit _LAMAArray( const IndexType n )
-                    : mSize( n ), constFlag( false )
+    explicit _LAMAArray( const IndexType n, const IndexType size )
+                    : mSize( n ), mValueSize( size ), constFlag( false )
     {
     }
 
-    IndexType mSize; //!< number of entries for the context array, common for all contexts
+    IndexType mSize;        //!< number of entries for the context array, common for all contexts
+    IndexType mValueSize;   //!< number of bytes needed for one data element
 
     bool constFlag; //!< if true the array cannot be written
 
     static size_t nContextIndex; // stands for no valid index
+
+    LAMA_LOG_DECL_STATIC_LOGGER( logger )
 };
 
 /**
@@ -271,7 +275,8 @@ public:
     /**
      * @brief sets the size of this to 0 but does not free any memory
      *
-     * This operation should be used before a write-only access that is
+     * Clear also invalidates all data. So this operation
+     * should be used before a write-only access that is
      * followed by a resize of the array. It avoids data transfer between
      * two contextes.
      */
@@ -301,39 +306,38 @@ public:
 protected:
 
     using _LAMAArray::mSize;
+    using _LAMAArray::mValueSize;
     using _LAMAArray::constFlag;
 
-    ValueType* get( size_t index );
+    ValueType* get( ContextDataRef );
 
     const ValueType* get( const size_t index ) const;
 
-    void clear( const size_t index );
+    void clear( ContextDataRef index );
 
-    void resize( const size_t index, const IndexType newSize );
+    void resize( ContextDataRef index, const IndexType newSize );
 
-    void reserve( const size_t index, const IndexType capacity, const bool copy ) const;
+    void reserve( ContextDataRef index, const IndexType capacity ) const;
 
-    IndexType capacity( const size_t index ) const;
+    IndexType capacity( ContextDataRef index ) const;
 
     /** Complete handling to get read access for a certain context.
      *
      * \returns index of context data array that contains the valid entry.
      */
-    int acquireReadAccess( ContextPtr context ) const;
+    ContextDataRef acquireReadAccess( ContextPtr context ) const;
 
-    void releaseReadAccess( const size_t index ) const;
+    void releaseReadAccess( ContextDataRef ref ) const;
 
     /** Complete handling to get write access for a certain context.
      *
      * \returns index of context data array that contains the valid entry.
      */
-    int acquireWriteAccess( ContextPtr context, bool keepFlag );
+    ContextDataRef acquireWriteAccess( ContextPtr context, bool keepFlag );
 
-    int acquireWriteAccess();
+    void releaseWriteAccess( ContextDataRef );
 
-    void releaseWriteAccess( const size_t index );
-
-    void copy( const int toIndex, const int fromIndex ) const;
+    // void copy( const int toIndex, const int fromIndex ) const;
 
     /** Copy data from a valid source context to an invalid target context.
      *
@@ -341,23 +345,13 @@ protected:
      *  in the target context.
      */
 
-    void fetch( Context::ContextData& target, const Context::ContextData& source ) const;
+    void fetch( ContextData& target, const ContextData& source ) const;
 
     /** Asynchronous copy data from a valid source context to an invalid target context. */
 
-    SyncToken* fetchAsync( Context::ContextData& target, const Context::ContextData& source ) const;
+    SyncToken* fetchAsync( ContextData& target, const ContextData& source ) const;
 
-    void getAccess(
-        size_t& contextIndex,
-        size_t& validIndex,
-        ContextPtr context,
-        Context::ContextData::AccessKind kind ) const;
-
-    void setHostContext();
-
-    mutable std::vector<Context::ContextData*> mContextData; // available context, pointers are never NULL
-
-    mutable std::auto_ptr<SyncToken> mSyncToken; //!<  outstanding transfers
+    mutable ContextManager mContextManager;
 
     LAMA_LOG_DECL_STATIC_LOGGER( logger )
 
@@ -388,7 +382,7 @@ protected:
 
     using LAMAArray<ValueType>::mSize;
 
-    using LAMAArray<ValueType>::mContextData;
+    using LAMAArray<ValueType>::mContextManager;
     using LAMAArray<ValueType>::constFlag;
 };
 
@@ -404,9 +398,9 @@ inline IndexType _LAMAArray::size() const
 template<typename ValueType>
 template<typename OtherValueType>
 LAMAArray<ValueType>::LAMAArray( const IndexType n, const OtherValueType* const values )
-                : _LAMAArray( n ), mSyncToken( 0 )
+                : _LAMAArray( n )
 {
-    setHostContext();
+    ContextData& host = mContextManager.getContextData( Context::getContext( Context::Host ), ContextData::Write );
 
     if( n <= 0 )
     {
@@ -414,7 +408,6 @@ LAMAArray<ValueType>::LAMAArray( const IndexType n, const OtherValueType* const 
         return;
     }
 
-    Context::ContextData& host = *mContextData[0];
     host.allocate( mSize * sizeof(ValueType) );
     LAMA_LOG_DEBUG( logger, "constructed: " << *this )
 

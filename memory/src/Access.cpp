@@ -1,5 +1,5 @@
 /**
- * @file BaseAccess.cpp
+ * @file Access.cpp
  *
  * @license
  * Copyright (c) 2009-2015
@@ -25,31 +25,36 @@
  * SOFTWARE.
  * @endlicense
  *
- * @brief Implementations for class BaseAccess.
+ * @brief Implementations for class Access.
  * @author Jiri Kraus
  * @date 20.05.2011
- * @since 1.0.0
  */
 
 // hpp
-#include <memory/BaseAccess.hpp>
+#include <memory/Access.hpp>
 
 namespace memory
 {
 
-BaseAccess::BaseAccess()
+/* ---------------------------------------------------------------------------------*/
+
+LAMA_LOG_DEF_LOGGER( Access::logger, "Access" )
+
+/* ---------------------------------------------------------------------------------*/
+
+Access::Access()
 {
 }
 
-BaseAccess::~BaseAccess()
+Access::~Access()
 {
 }
 
-void BaseAccess::writeAt( std::ostream& stream ) const
+void Access::writeAt( std::ostream& stream ) const
 {
     // only default method, derived classes are expected to overwrite this method
 
-    stream << "BaseAccess";
+    stream << "Access";
 }
 
 }

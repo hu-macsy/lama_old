@@ -72,11 +72,12 @@ void writeArray( LAMAArray<T>& array )
     {
         writeAccess[i] = 3;
     }
-
 }
 
 int main()
 {
+    LAMA_LOG_THREAD( "Main" )
+
     LAMAArray<IndexType> lamaArray; // default, not allocated at all
 
     sumArray( lamaArray );

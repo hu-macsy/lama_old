@@ -1,5 +1,5 @@
 /**
- * @file Context.hpp
+ * @file ContextData.hpp
  *
  * @license
  * Copyright (c) 2009-2015
@@ -32,11 +32,33 @@
  */
 #pragma once
 
+#include <logging/logging.hpp>
+
+#include <common/config.hpp>
+#include <common/NonCopyable.hpp>
+#include <common/Exception.hpp>
+#include <common/Printable.hpp>
+
+#include <boost/shared_ptr.hpp>
+#include <boost/function.hpp>
+
 namespace memory
 {
 
-struct COMMON_DLL_IMPORTEXPORT ContextData: private common::NonCopyable
+class Context;
+
+/** Context pointers will be always const, so context can never be modified. */
+
+typedef boost::shared_ptr<const Context> ContextPtr;
+
+/** Objects of this class are used to manage different incarnations
+ *  of a LAMA array at different contexts.
+ */
+
+class COMMON_DLL_IMPORTEXPORT ContextData: public Printable, private common::NonCopyable
 {
+public:
+
     enum AccessKind
     {
         Read, //!<  read access to the array, can be multiple
@@ -48,19 +70,26 @@ struct COMMON_DLL_IMPORTEXPORT ContextData: private common::NonCopyable
 
     void* pointer; //!<  pointer to the data on the context
 
-    size_t size; //!<  size of a single element
+    void* get() { return pointer; }
+
+    const void* get() const { return pointer; }
+
+    size_t size; //!<  allocated size stands also for capacity
 
     bool allocated; //!<  is true if data has been allocated by context
 
     bool valid; //!<  is true if there is a valid copy on the context
-
-    unsigned char lock[MaxAccessKind]; //!<  read, write lock
 
     /** Constructor, context must always be given. */
 
     ContextData( ContextPtr context );
 
     ~ContextData();
+
+    size_t capacity() const 
+    {
+        return size;
+    }
 
     /** allocate data for the Context array on the context */
 
@@ -78,6 +107,8 @@ struct COMMON_DLL_IMPORTEXPORT ContextData: private common::NonCopyable
      */
     void realloc( const size_t newSize, const size_t saveSize );
 
+    void reserve( const size_t newSize, const size_t validSize );
+
     /** free data for the Context array on the context */
 
     void free();
@@ -88,7 +119,37 @@ struct COMMON_DLL_IMPORTEXPORT ContextData: private common::NonCopyable
 
     void setCleanFunction( boost::function<void( void* )> cleanFunktion ) const;
 
+    void addLock( const AccessKind kind )
+    {
+        ++lock[kind];
+    }
+
+    void releaseLock( const AccessKind kind );
+
+    bool locked() const 
+    {
+        return lock[Write] > 0 || lock[Read] > 0;
+    }
+
+    bool locked( AccessKind kind ) const 
+    {
+        return lock[kind] > 0 ;
+    }
+
+    void setValid( bool flag ) 
+    {
+        valid = flag;
+    }
+
+    virtual void writeAt( std::ostream& stream ) const;
+
+protected:
+
+    LAMA_LOG_DECL_STATIC_LOGGER( logger )
+
 private:
+
+    unsigned char lock[MaxAccessKind]; //!<  read, write lock
 
     mutable bool pinned;
 

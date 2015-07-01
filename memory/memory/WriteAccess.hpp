@@ -36,7 +36,7 @@
 #include <common/config.hpp>
 
 // base classes
-#include <memory/BaseAccess.hpp>
+#include <memory/Access.hpp>
 
 // others
 #include <memory/LAMAArray.hpp>
@@ -60,7 +60,7 @@ namespace memory
  * @tparam ValueType is the value type stored in the wrapped container.
  */
 template<typename ValueType>
-class COMMON_DLL_IMPORTEXPORT WriteAccess: public BaseAccess
+class COMMON_DLL_IMPORTEXPORT WriteAccess: public Access
 {
 public:
 
@@ -196,9 +196,9 @@ protected:
 
     LAMA_LOG_DECL_STATIC_LOGGER( logger )
 
-LAMAArray    <ValueType>* mArrayView;
+    LAMAArray <ValueType>* mArrayView;
 
-    size_t mIndex; // index for this context access
+    ContextDataRef mContextDataRef; // index for this context access
 };
 
 /**

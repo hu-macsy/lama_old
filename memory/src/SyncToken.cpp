@@ -35,7 +35,7 @@
 #include <memory/SyncToken.hpp>
 
 // others
-#include <memory/BaseAccess.hpp>
+#include <memory/Access.hpp>
 #include <memory/LAMAArray.hpp>
 
 #include <common/Exception.hpp>
@@ -101,7 +101,7 @@ void SyncToken::writeAt( std::ostream& stream ) const
 
 /* ------------------------------------------------------------------------ */
 
-void SyncToken::pushAccess( shared_ptr<BaseAccess> access )
+void SyncToken::pushAccess( shared_ptr<Access> access )
 {
     COMMON_ASSERT( access.get(), "NULL access cannot be pushed for synchronization." )
 

@@ -1,5 +1,5 @@
 /**
- * @file BaseAccess.hpp
+ * @file Access.hpp
  *
  * @license
  * Copyright (c) 2009-2015
@@ -39,22 +39,29 @@
 #include <common/NonCopyable.hpp>
 #include <common/Printable.hpp>
 
+// logging
+#include <logging/logging.hpp>
+
 namespace memory
 {
 
-/** Base class for all kind of access classes; accesses must always provide a release method. */
+/**  class for all kind of access classes; accesses must always provide a release method. */
 
-class COMMON_DLL_IMPORTEXPORT BaseAccess: public Printable, private common::NonCopyable
+class COMMON_DLL_IMPORTEXPORT Access: public Printable, private common::NonCopyable
 {
 public:
 
-    BaseAccess();
+    Access();
 
-    virtual ~BaseAccess();
+    virtual ~Access();
 
     virtual void release() = 0;
 
     virtual void writeAt( std::ostream& stream ) const;
+
+protected:
+
+    LAMA_LOG_DECL_STATIC_LOGGER( logger )
 };
 
 } // namespace

@@ -36,16 +36,10 @@
 #include <common/config.hpp>
 
 // base classes
-#include <memory/BaseAccess.hpp>
+#include <memory/Access.hpp>
 
 // others
 #include <memory/LAMAArray.hpp>
-// #include <memory/Context.hpp>
-
-// #include <common/Exception.hpp>
-
-// logging
-#include <logging/logging.hpp>
 
 namespace memory
 {
@@ -60,7 +54,7 @@ namespace memory
  * @tparam ValueType is the value type stored in the wrapped container.
  */
 template<typename ValueType>
-class COMMON_DLL_IMPORTEXPORT ReadAccess: public BaseAccess
+class COMMON_DLL_IMPORTEXPORT ReadAccess: public Access
 {
 public:
 
@@ -71,19 +65,34 @@ public:
      * @param[in] context   the context that needs a read acess
      * @throws Exception    if the ReadAccess can not be acquired, e.g. because a WriteAccess exists.
      */
-    ReadAccess( const LAMAArray<ValueType>& array, ContextPtr context );
+    ReadAccess( const LAMAArray<ValueType>& array, ContextPtr context )
+    {
+        COMMON_ASSERT( context, "NULL context for read access" );
+
+        LAMA_LOG_DEBUG( logger, "ReadAccess: create for " << array << " @ " << context )
+
+        mContextDataIndex = mArrayView->acquireReadAccess( context );
+    }
 
     /**
      * @brief Releases the ReadAccess on the associated LAMAArray.
      */
-    virtual ~ReadAccess();
+    virtual ~ReadAccess() 
+    {
+        release();
+    }
 
     /**
      * @brief Returns a valid pointer to the data usable for the context.
      *
      * @return a pointer to the wrapped LAMAArray.
      */
-    const ValueType* get() const;
+    const ValueType* get() const
+    {
+        COMMON_ASSERT( mArrayView, "ReadAccess::get fails, has already been released." )
+
+        return static_cast<const ValueType*>( mArrayView->get( mContextDataIndex ) );
+    }
 
     /**
      * @brief Releases the acquired ReadAccess.
@@ -91,29 +100,54 @@ public:
      * Release is mandatory to unlock the array so that it might be
      * used for further write accesses.
      */
-    virtual void release();
+    virtual void release()
+    {
+        if ( mArrayView )
+        {
+            mArrayView->releaseReadAccess( mContextDataIndex );
+        }
 
-    virtual void writeAt( std::ostream& stream ) const;
+        mArrayView = NULL;
+    }
+
+    virtual void writeAt( std::ostream& stream ) const
+    {
+        stream << "ReadAccess ";
+
+        if( mArrayView )
+        {
+            stream << "to " << *mArrayView;
+        }
+        else
+        {
+            stream << "released.";
+        }
+    }
 
     /**
      * @brief Returns the size of the array
      *
      * @return  the size of the wrapped LAMAArray
      */
-    inline IndexType size() const;
+    inline IndexType size() const
+    {
+        if ( mArrayView )
+        { 
+            return mArrayView->size();
+        }
+        else
+        {
+            return 0;
+        }
+    }
 
 private:
 
-    const LAMAArray<ValueType>* mArrayView;
+    const LAMAArray<ValueType>* mArrayView;   // read access to this associated LAMA array
 
-    size_t mIndex;
+    ContextDataRef mContextDataIndex;   // reference to the context data of the read
 
-    LAMA_LOG_DECL_STATIC_LOGGER( logger )};
-
-template<typename ValueType>
-inline IndexType ReadAccess<ValueType>::size() const
-{
-    return mArrayView->size();
-}
+    // not possible if only header file: LAMA_LOG_DECL_STATIC_LOGGER( logger )
+};
 
 } // namespace
