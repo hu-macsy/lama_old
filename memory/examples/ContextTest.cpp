@@ -320,6 +320,36 @@ int main()
     std::cout << "Y @ " << *hostContext << ", valid = " << Y.isValid( hostContext )
               << ", capacity = " << Y.capacity( hostContext ) << std::endl;
 
+    Y.clear();
+
+    std::cout << "Y cleared now" << std::endl;
+
+    // valid should be the same for Y, capacity should be 0 if not valid
+
+    std::cout << "Y @ " << *userContext << ", valid = " << Y.isValid( userContext )
+              << ", capacity = " << Y.capacity( userContext ) << std::endl;
+
+    std::cout << "Y @ " << *userContext2 << ", valid = " << Y.isValid( userContext2 )
+              << ", capacity = " << Y.capacity( userContext2 ) << std::endl;
+
+    std::cout << "Y @ " << *hostContext << ", valid = " << Y.isValid( hostContext )
+              << ", capacity = " << Y.capacity( hostContext ) << std::endl;
+
+    Y.purge();
+
+    std::cout << "Y purged now" << std::endl;
+
+    // valid should be the same for Y, capacity should be 0 if not valid
+
+    std::cout << "Y @ " << *userContext << ", valid = " << Y.isValid( userContext )
+              << ", capacity = " << Y.capacity( userContext ) << std::endl;
+
+    std::cout << "Y @ " << *userContext2 << ", valid = " << Y.isValid( userContext2 )
+              << ", capacity = " << Y.capacity( userContext2 ) << std::endl;
+
+    std::cout << "Y @ " << *hostContext << ", valid = " << Y.isValid( hostContext )
+              << ", capacity = " << Y.capacity( hostContext ) << std::endl;
+
     int values[] = { 1, 2, 3, 4 };
 
     LAMAArray<float> v ( 4, values );   // implicit type conversion allowed

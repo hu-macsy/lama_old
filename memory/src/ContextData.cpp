@@ -67,7 +67,7 @@ ContextData::~ContextData()
 {
     LAMA_LOG_DEBUG( logger, "~ContextData @ " << *context << ", size = " << size )
 
-    // free();  
+    free(); 
 }
 
 /* ---------------------------------------------------------------------------------*/

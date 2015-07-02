@@ -37,6 +37,7 @@
 
 #include <memory/ContextData.hpp>
 #include <memory/SyncToken.hpp>
+#include <memory/Context.hpp>
 
 #include <logging/logging.hpp>
 
@@ -141,6 +142,12 @@ public:
     void prefetch( ContextPtr context, size_t size );
 
     void setValidData( ContextPtr context, const ContextManager& other, const size_t size );
+
+    /** This routine tries to find a context where valid data is available */
+
+    ContextPtr getValidContext( const Context::ContextType preferredType );
+
+    void reserve( ContextPtr context, const size_t size, const size_t validSize );
 
 protected:
 

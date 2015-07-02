@@ -101,8 +101,42 @@ public:
      */
     inline IndexType size() const;
 
-    virtual ContextPtr getValidContext( const Context::ContextType preferredType = Context::Host ) const = 0;
+    /**
+     * @brief Gets the first context where the data of this LAMAArray is available.
+     *
+     * If possible a context of the passed preferred type is returned.
+     *
+     * @param[in] preferredType the preferred type for the valid context.
+     * @return                  a context there the data of this LAMAArray is available.
+     * 
+     * Note: NULL pointer is returned if no valid data is available
+     */
+    ContextPtr getValidContext( const Context::ContextType preferredType = Context::Host ) const;
 
+    /**
+     * @brief Prefetches the contents of the container to the passed context.
+     *
+     * @param[in] context  the context to prefetch to
+     *
+     * This method prefetches the contents of the container to the context.
+     * If this valid at location nothing happens,if not a transfer from a valid location
+     * to the passed location is started. Because the transfer is handled by LAMAArray and to
+     * maintain the consistency of the container only one running transfer can exist at any
+     * point in time. There for if two prefetches to two different invalid locations are
+     * started one after the other the second transfer does not start before the first one is finished.
+     */
+    void prefetch( ContextPtr context ) const;
+
+    /**
+     * @brief Query the capacity ( in number of elements ) at a certain context.
+     */
+    IndexType capacity( ContextPtr context ) const;
+    
+    /**
+     * @brief Query if data is valid in a certain context
+     */
+    bool isValid( ContextPtr context ) const;
+    
 protected:
 
     explicit _LAMAArray( const IndexType n, const IndexType size )
@@ -248,40 +282,6 @@ public:
     void swap( LAMAArray<ValueType>& other );
 
     /**
-     * @brief Prefetches the contents of the container to the passed context.
-     *
-     * @param[in] context  the context to prefetch to
-     *
-     * This method prefetches the contents of the container to the context.
-     * If this valid at location nothing happens,if not a transfer from a valid location
-     * to the passed location is started. Because the transfer is handled by LAMAArray and to
-     * maintain the consistency of the container only one running transfer can exist at any
-     * point in time. There for if two prefetches to two different invalid locations are
-     * started one after the other the second transfer does not start before the first one is finished.
-     */
-    void prefetch( ContextPtr context ) const;
-
-    /**
-     * @brief Query the capacity ( in number of elements ) at a certain context.
-     */
-    IndexType capacity( ContextPtr context ) const;
-    
-    /**
-     * @brief Query if data is valid in a certain context
-     */
-    bool isValid( ContextPtr context ) const;
-    
-    /**
-     * @brief Gets the first context where the data of this LAMAArray is available.
-     *
-     * If possible a context of the passed preferred type is returned.
-     *
-     * @param[in] preferredType the preferred type for the valid context.
-     * @return                  a context there the data of this LAMAArray is available.
-     */
-    ContextPtr getValidContext( const Context::ContextType preferredType = Context::Host ) const;
-
-    /**
      * @brief sets the size of this to 0 but does not free any memory
      *
      * Clear also invalidates all data. So this operation
@@ -311,6 +311,8 @@ public:
      *
      */
     void reserve( ContextPtr context, const IndexType capacity );
+
+    using _LAMAArray::capacity;
 
 protected:
 

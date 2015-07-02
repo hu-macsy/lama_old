@@ -28,7 +28,6 @@
  * @brief Implementation and instantiation for template class WriteAccess.
  * @author Lauretta Schubert
  * @date 22.08.2012
- * @since 1.0.0
  */
 
 // hpp
@@ -47,10 +46,10 @@ LAMA_LOG_DEF_TEMPLATE_LOGGER( template<typename ValueType>, WriteAccess<ValueTyp
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-WriteAccess<ValueType>::WriteAccess( LAMAArray<ValueType>& view, ContextPtr context, const bool keep /* = true*/)
-                : mArrayView( &view )
+WriteAccess<ValueType>::WriteAccess( LAMAArray<ValueType>& view, ContextPtr context, const bool keep /* = true*/ )
+    : mArrayView( &view )
 {
-    if( view.constFlag )
+    if ( view.constFlag )
     {
         COMMON_THROWEXCEPTION( "write on const array not allowed" )
     }
@@ -66,22 +65,21 @@ WriteAccess<ValueType>::WriteAccess(
     LAMAArray<ValueType>& array,
     ContextPtr context,
     const IndexType size,
-    const bool keep /* = false */)
+    const bool keep /* = false */ )
 
-                : mArrayView( &array )
+    : mArrayView( &array )
 
 {
-    if( array.constFlag )
+    if ( array.constFlag )
     {
         COMMON_THROWEXCEPTION( "write on const array not allowed" )
     }
 
     LAMA_LOG_DEBUG( logger,
                     "acquire write access for " << *mArrayView << " at " << *context << ", size = " << size << ", keep = " << keep )
-
     mContextDataIndex = mArrayView->acquireWriteAccess( context, keep );
 
-    if( !keep )
+    if ( !keep )
     {
         mArrayView->clear( mContextDataIndex );
     }
@@ -93,18 +91,16 @@ WriteAccess<ValueType>::WriteAccess(
 
 template<typename ValueType>
 WriteAccess<ValueType>::WriteAccess( LAMAArray<ValueType>& array )
-                : mArrayView( &array )
+    : mArrayView( &array )
 {
-    if( array.constFlag )
+    if ( array.constFlag )
     {
         COMMON_THROWEXCEPTION( "write on const array not allowed" )
     }
 
     LAMA_LOG_DEBUG( logger, "acquire write access for " << *mArrayView << " at first valid context " )
-
     const bool keepFlag = true;
-
-    mContextDataIndex = mArrayView->acquireWriteAccess( Context::getContext( Context::Host), keepFlag );
+    mContextDataIndex = mArrayView->acquireWriteAccess( Context::getContext( Context::Host ), keepFlag );
     mData = mArrayView->get( mContextDataIndex );
     LAMA_LOG_TRACE( logger, "mData = " << mData << ", mContextDataIndex = " << mContextDataIndex )
 }
@@ -119,7 +115,7 @@ WriteAccess<ValueType>::~WriteAccess()
 template<typename ValueType>
 ValueType* WriteAccess<ValueType>::get()
 {
-    if( !mArrayView )
+    if ( !mArrayView )
     {
         COMMON_THROWEXCEPTION( "illegal get(): access has already been released." )
     }
@@ -167,12 +163,11 @@ IndexType WriteAccess<ValueType>::capacity() const
 template<typename ValueType>
 void WriteAccess<ValueType>::release()
 {
-    if( mArrayView )
+    if ( mArrayView )
     {
         LAMA_LOG_DEBUG( logger, "release write access for " << *mArrayView )
         mArrayView->releaseWriteAccess( mContextDataIndex );
     }
-
     else
     {
         LAMA_LOG_DEBUG( logger, "release write access for an already released LAMAArray" )
@@ -187,11 +182,10 @@ void WriteAccess<ValueType>::writeAt( std::ostream& stream ) const
 {
     stream << "WriteAccess to ";
 
-    if( mArrayView )
+    if ( mArrayView )
     {
         stream << *mArrayView;
     }
-
     else
     {
         stream << "already releases array view.";

@@ -277,6 +277,36 @@ const ContextData& ContextManager::getValidData() const
 
 /* ---------------------------------------------------------------------------------*/
 
+ContextPtr ContextManager::getValidContext( const Context::ContextType preferredType )
+{
+    ContextPtr result;
+
+    for ( size_t index = 0; index < mContextData.size(); ++index )
+    {
+        const ContextData& entry = *mContextData[index];
+
+        if ( entry.isValid() )
+        {
+            if ( entry.context->getType() == preferredType )
+            {
+                return entry.context;
+            }
+            else if ( result )
+            {
+                // do not overwrite first context found
+            }
+            else
+            {
+                result = entry.context;
+            }
+        }
+    }
+
+    return result;  // might be NULL
+}
+
+/* ---------------------------------------------------------------------------------*/
+
 ContextDataIndex ContextManager::acquireAccess( ContextPtr context, AccessKind kind,
         size_t allocSize, size_t validSize )
 {
@@ -505,6 +535,24 @@ void ContextManager::prefetch( ContextPtr context, size_t size )
     // so any query for valid data must wait for token.
 
     data.setValid( true );  
+}
+
+/* ---------------------------------------------------------------------------------*/
+
+void ContextManager::reserve( ContextPtr context, const size_t size, const size_t validSize )
+{
+    ContextData& data = (*this)[context];
+
+    COMMON_ASSERT( !data.locked( ContextData::Write), "no reserve on write locked data." )
+
+    if ( data.isValid() )
+    {
+        data.reserve( size, validSize );
+    }
+    else
+    {
+        data.reserve( size, 0 );  // no valid data
+    }
 }
 
 } // namespace

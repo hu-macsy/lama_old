@@ -28,7 +28,6 @@
  * @brief Scalar.hpp
  * @author Jiri Kraus
  * @date 22.02.2011
- * @since 1.0.0
  */
 
 #pragma once
