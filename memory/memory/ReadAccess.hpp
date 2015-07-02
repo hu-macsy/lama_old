@@ -41,6 +41,8 @@
 // others
 #include <memory/LAMAArray.hpp>
 
+#include <logging/logging.hpp>
+
 namespace memory
 {
 
@@ -143,13 +145,17 @@ public:
         }
     }
 
+protected:
+
+    LAMA_LOG_DECL_STATIC_LOGGER( logger )
+
 private:
 
     const LAMAArray<ValueType>* mArrayView;   // read access to this associated LAMA array
 
     ContextDataIndex mContextDataIndex;   // reference to the context data of the read
-
-    // not possible if only header file: LAMA_LOG_DECL_STATIC_LOGGER( logger )
 };
+
+LAMA_LOG_DEF_TEMPLATE_LOGGER( template<typename ValueType>, ReadAccess<ValueType>::logger, "ReadAccess" )
 
 } // namespace

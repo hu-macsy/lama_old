@@ -249,4 +249,158 @@ inline IndexType WriteAccess<ValueType>::size() const
     }
 }
 
+/* --------------------------------------------------------------------------- */
+
+LAMA_LOG_DEF_TEMPLATE_LOGGER( template<typename ValueType>, WriteAccess<ValueType>::logger, "WriteAccess" )
+
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType>
+WriteAccess<ValueType>::WriteAccess( LAMAArray<ValueType>& view, ContextPtr context, const bool keep /* = true*/ )
+    : mArrayView( &view )
+{
+    if ( view.constFlag )
+    {
+        COMMON_THROWEXCEPTION( "write on const array not allowed" )
+    }
+
+    LAMA_LOG_DEBUG( logger, "acquire write access for " << *mArrayView << " at " << *context << ", keep = " << keep )
+    mContextDataIndex = mArrayView->acquireWriteAccess( context, keep );
+    mData = mArrayView->get( mContextDataIndex );
+    LAMA_LOG_TRACE( logger, "mData = " << mData )
 }
+
+template<typename ValueType>
+WriteAccess<ValueType>::WriteAccess(
+    LAMAArray<ValueType>& array,
+    ContextPtr context,
+    const IndexType size,
+    const bool keep /* = false */ )
+
+    : mArrayView( &array )
+
+{
+    if ( array.constFlag )
+    {
+        COMMON_THROWEXCEPTION( "write on const array not allowed" )
+    }
+
+    LAMA_LOG_DEBUG( logger,
+                    "acquire write access for " << *mArrayView << " at " << *context << ", size = " << size << ", keep = " << keep )
+    mContextDataIndex = mArrayView->acquireWriteAccess( context, keep );
+
+    if ( !keep )
+    {
+        mArrayView->clear( mContextDataIndex );
+    }
+
+    mArrayView->resize( mContextDataIndex, size );
+    mData = mArrayView->get( mContextDataIndex );
+    LAMA_LOG_TRACE( logger, "mData = " << mData << ", mContextDataIndex = " << mContextDataIndex )
+}
+
+template<typename ValueType>
+WriteAccess<ValueType>::WriteAccess( LAMAArray<ValueType>& array )
+    : mArrayView( &array )
+{
+    if ( array.constFlag )
+    {
+        COMMON_THROWEXCEPTION( "write on const array not allowed" )
+    }
+
+    LAMA_LOG_DEBUG( logger, "acquire write access for " << *mArrayView << " at first valid context " )
+    const bool keepFlag = true;
+    mContextDataIndex = mArrayView->acquireWriteAccess( Context::getContext( Context::Host ), keepFlag );
+    mData = mArrayView->get( mContextDataIndex );
+    LAMA_LOG_TRACE( logger, "mData = " << mData << ", mContextDataIndex = " << mContextDataIndex )
+}
+
+template<typename ValueType>
+WriteAccess<ValueType>::~WriteAccess()
+{
+    LAMA_LOG_DEBUG( logger, "~WriteAccess: release" )
+    release();
+}
+
+template<typename ValueType>
+ValueType* WriteAccess<ValueType>::get()
+{
+    if ( !mArrayView )
+    {
+        COMMON_THROWEXCEPTION( "illegal get(): access has already been released." )
+    }
+
+    return mData;
+}
+
+template<typename ValueType>
+void WriteAccess<ValueType>::clear()
+{
+    COMMON_ASSERT( mArrayView, "WriteAccess has already been released." )
+    mArrayView->clear( mContextDataIndex );
+    mData = NULL;
+    LAMA_LOG_DEBUG( logger, "cleared " << *mArrayView )
+}
+
+template<typename ValueType>
+void WriteAccess<ValueType>::resize( const IndexType newSize )
+{
+    COMMON_ASSERT( mArrayView, "WriteAccess has already been released." )
+    // do not log before check of mArrayView
+    LAMA_LOG_DEBUG( logger, "resize " << *mArrayView << " to new size " << newSize )
+    mArrayView->resize( mContextDataIndex, newSize );
+    mData = mArrayView->get( mContextDataIndex );
+    LAMA_LOG_TRACE( logger, "mData = " << mData )
+}
+
+template<typename ValueType>
+void WriteAccess<ValueType>::reserve( const IndexType capacity )
+{
+    COMMON_ASSERT( mArrayView, "WriteAccess has already been released." )
+    LAMA_LOG_DEBUG( logger, "reserve " << *mArrayView << " to new capacity " << capacity )
+    mArrayView->reserve( mContextDataIndex, capacity ); // copy = true for old data
+    mData = mArrayView->get( mContextDataIndex );
+    LAMA_LOG_TRACE( logger, "mData = " << mData )
+}
+
+template<typename ValueType>
+IndexType WriteAccess<ValueType>::capacity() const
+{
+    COMMON_ASSERT( mArrayView, "WriteAccess has already been released." )
+    return mArrayView->capacity( mContextDataIndex );
+}
+
+template<typename ValueType>
+void WriteAccess<ValueType>::release()
+{
+    if ( mArrayView )
+    {
+        LAMA_LOG_DEBUG( logger, "release write access for " << *mArrayView )
+        mArrayView->releaseWriteAccess( mContextDataIndex );
+    }
+    else
+    {
+        LAMA_LOG_DEBUG( logger, "release write access for an already released LAMAArray" )
+    }
+
+    mArrayView = 0;
+    mData = 0;
+}
+
+template<typename ValueType>
+void WriteAccess<ValueType>::writeAt( std::ostream& stream ) const
+{
+    stream << "WriteAccess to ";
+
+    if ( mArrayView )
+    {
+        stream << *mArrayView;
+    }
+    else
+    {
+        stream << "already releases array view.";
+    }
+}
+
+} // namespace
+
