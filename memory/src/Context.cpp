@@ -61,13 +61,11 @@ bool Context::operator==( const Context& other ) const
 
     bool same = this == &other;
 
-    // otherwise: both contexts must have same type and can use data of each other
+    // otherwise: both contexts must agree that they can use data of each other
 
     if( !same )
     {
-        same = mContextType == other.mContextType;
-
-        COMMON_ASSERT( canUseData( other ), other.canUseData( *this ) )
+        COMMON_ASSERT_EQUAL( canUseData( other ), other.canUseData( *this ), "unsymmetry" )
 
         same = same && canUseData( other ) && other.canUseData( *this );
     }
@@ -88,7 +86,7 @@ void Context::writeAt( std::ostream& stream ) const
     stream << "Context";
 }
 
-std::ostream& operator<<( std::ostream& stream, const ContextType type )
+std::ostream& operator<<( std::ostream& stream, const ContextType& type )
 {
     if( type == Context::Host )
     {
@@ -106,9 +104,17 @@ std::ostream& operator<<( std::ostream& stream, const ContextType type )
     {
         stream << "MIC";
     }
+    else if( type == Context::UserContext )
+    {
+        stream << "UserContext";
+    }
+    else if( type == Context::UserContext1 )
+    {
+        stream << "UserContext1";
+    }
     else
     {
-        stream << (int) type;
+        stream << "Context_" << ( int ) type;
     }
 
     return stream;

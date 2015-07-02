@@ -143,6 +143,8 @@ public:
 
     virtual void writeAt( std::ostream& stream ) const;
 
+    void copyFrom( const ContextData& source, size_t size );
+
 protected:
 
     LAMA_LOG_DECL_STATIC_LOGGER( logger )

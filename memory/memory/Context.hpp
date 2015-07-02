@@ -83,11 +83,13 @@ public:
      */
     enum ContextType
     {
-        Host, //!< context for cpu + main memory
-        CUDA, //!< CUDA GPU device
-        MIC, //!< Intel Many-Integrated-Core Architecture
-        OpenCL, //!< OpenCL GPU device, currently not supported
-        MaxContext //!< used for dimension of ContextType arrays
+        Host,          //!< context for cpu + main memory
+        CUDA,          //!< CUDA GPU device
+        MIC,           //!< Intel Many-Integrated-Core Architecture
+        OpenCL,        //!< OpenCL GPU device, currently not supported
+        UserContext,   //!< can be used for a new derived Context class
+        UserContext1,  //!< ucan be used for a new derived Context class
+        MaxContext     //!< used for dimension of ContextType arrays
     };
 
     virtual ~Context();
@@ -114,6 +116,14 @@ public:
      *  @param[in] other is the context against which the check is done
      */
     virtual bool canUseData( const Context& other ) const = 0;
+
+    virtual bool canCopyFrom( const Context& other ) const { return false; }
+
+    virtual bool canCopyTo( const Context& other ) const { return false; }
+
+    virtual void memcpyFrom( void* dst, const Context& srcContext, const void* src, size_t size ) const {}
+
+    virtual void memcpyTo( const Context& dstContext, void* dst, const void* src, size_t size ) const {}
 
     virtual void writeAt( std::ostream& stream ) const;
 
@@ -292,7 +302,6 @@ protected:
 
 typedef Context::ContextType ContextType;
 
-COMMON_DLL_IMPORTEXPORT std::ostream& operator<<( std::ostream& stream, const ContextType type );
+COMMON_DLL_IMPORTEXPORT std::ostream& operator<<( std::ostream& stream, const ContextType& type );
 
 }
-

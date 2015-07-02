@@ -108,6 +108,8 @@ protected:
     explicit _LAMAArray( const IndexType n, const IndexType size )
                     : mSize( n ), mValueSize( size ), constFlag( false )
     {
+        LAMA_LOG_DEBUG( logger, "construct LAMAArray, n = " << n << ", size " << size )
+        LAMA_LOG_DEBUG( logger, "construct LAMAArray, mSize = " << mSize << ", mValueSize " << mValueSize )
     }
 
     IndexType mSize;        //!< number of entries for the context array, common for all contexts
@@ -355,7 +357,7 @@ protected:
 
     LAMA_LOG_DECL_STATIC_LOGGER( logger )
 
-    mutable common::Thread::RecursiveMutex mAccessMutex; // needed to make accesses thread-safe
+    // mutable common::Thread::RecursiveMutex mAccessMutex; // needed to make accesses thread-safe
 };
 
 /**

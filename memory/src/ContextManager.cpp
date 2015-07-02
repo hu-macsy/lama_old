@@ -213,7 +213,7 @@ ContextDataRef ContextManager::getValidData()
     {
         ContextData& entry = *mContextData[i];
 
-        if ( entry.valid )
+        if ( !entry.valid )
         {
             continue;
         }
@@ -246,22 +246,54 @@ ContextDataRef ContextManager::acquireAccess( ContextPtr context, AccessKind kin
 
     if( !data.valid && allocSize > 0 )
     {
-        LAMA_LOG_DEBUG( logger, "data not valid at " << data.context )
+        LAMA_LOG_DEBUG( logger, "data not valid at " << *data.context )
 
         // make sure that we have enough memory on the target context
         // old data is invalid so it must not be saved.
 
-        data.realloc( allocSize, 0 );  // do not save any old values
+        data.reserve( allocSize, 0 );  // do not save any old values
 
         if ( validSize )
         {
-            ContextDataRef validEntry = getValidData();
+            ContextDataRef validIndex = getValidData();
 
-            COMMON_THROWEXCEPTION( "not available yet" )
+            ContextData& validEntry = (*this)[validIndex];
 
-            // fetch( data, validEntry );  // validSize
+            LAMA_LOG_INFO( logger, "valid data here: " << validEntry )
 
-            // contextEntry.copyFrom( validEntry, validSize );
+            try
+            {
+                data.copyFrom( validEntry, validSize );
+            }
+            catch ( common::Exception& ex )
+            {
+                LAMA_LOG_INFO( logger, data << " copy from " << validEntry << " not supported" )
+
+                // try it via host
+           
+                ContextPtr hostContext = Context::getContext( Context::Host );
+                
+                if ( *data.context == *hostContext )
+                {
+                     COMMON_THROWEXCEPTION( "unsupported" )
+                }
+                if ( *validEntry.context == *hostContext )
+                {
+                     COMMON_THROWEXCEPTION( "unsupported" )
+                }
+
+                ContextDataRef hostIndex = getContextData( hostContext, ContextData::Read );
+                ContextData& hostEntry = (*this)[hostIndex];
+
+                if ( ! hostEntry.valid )
+                {
+                    hostEntry.reserve( allocSize, 0 );  // reserve it
+                    hostEntry.copyFrom( validEntry, validSize );
+                    hostEntry.setValid( true );
+                }
+
+                data.copyFrom( hostEntry, validSize );
+            }
         }
     }
 

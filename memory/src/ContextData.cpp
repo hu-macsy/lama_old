@@ -233,8 +233,34 @@ void ContextData::releaseLock( AccessKind kind )
 
 void ContextData::writeAt( std::ostream& stream ) const
 {
-    stream << "ContextData( size = " << size << ", readLocks = " << ( (int) lock[Read] ) 
+    stream << "ContextData @ " << *context 
+           << " ( size = " << size << ", readLocks = " << ( (int) lock[Read] ) 
            << ", writeLocks = " << ( (int) lock[Write] ) << " )";
+}
+
+void ContextData::copyFrom( const ContextData& other, size_t size )
+{
+    LAMA_LOG_INFO( logger, "copyFrom " << *other.context << " to " << *context << ", size = " << size )
+
+    if ( *context == *other.context )
+    {
+        context->memcpy( pointer, other.pointer, size );
+    }
+    else if ( context->canCopyFrom( *other.context ) )
+    {
+        context->memcpyFrom( pointer, *other.context, other.pointer, size );
+    }
+    else if ( other.context->canCopyTo( *context ) )
+    {
+        other.context->memcpyTo( *context, pointer, other.pointer, size );
+    }
+    else
+    {
+        COMMON_THROWEXCEPTION( "copyFrom  " 
+            << *other.context << " to " << *context << ", size = " << size  << " NOT SUPPORTED" )
+
+        // Note: calling routine can deal with it by involving ContextData available on host
+    }
 }
 
 } // namespace

@@ -65,7 +65,7 @@ public:
      * @param[in] context   the context that needs a read acess
      * @throws Exception    if the ReadAccess can not be acquired, e.g. because a WriteAccess exists.
      */
-    ReadAccess( const LAMAArray<ValueType>& array, ContextPtr context )
+    ReadAccess( const LAMAArray<ValueType>& array, ContextPtr context ) : mArrayView( &array )
     {
         COMMON_ASSERT( context, "NULL context for read access" );
 
@@ -79,6 +79,7 @@ public:
      */
     virtual ~ReadAccess() 
     {
+        LAMA_LOG_DEBUG( logger, "~ReadAccess" )
         release();
     }
 
@@ -104,6 +105,7 @@ public:
     {
         if ( mArrayView )
         {
+            LAMA_LOG_DEBUG( logger, "ReadAccess: realase for " << *mArrayView )
             mArrayView->releaseReadAccess( mContextDataIndex );
         }
 

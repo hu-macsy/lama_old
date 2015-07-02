@@ -34,3 +34,6 @@
 
 add_executable( Array1 Array1.cpp )
 target_link_libraries( Array1 ${MEMORY_LIBRARY} )
+
+add_executable( ContextTest ContextTest.cpp )
+target_link_libraries( ContextTest ${MEMORY_LIBRARY} )

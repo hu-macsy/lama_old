@@ -113,6 +113,7 @@ template<typename ValueType>
 WriteAccess<ValueType>::~WriteAccess()
 {
     LAMA_LOG_DEBUG( logger, "~WriteAccess: release" )
+    release();
 }
 
 template<typename ValueType>

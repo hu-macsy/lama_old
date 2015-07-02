@@ -101,7 +101,10 @@ LAMAArray<ValueType>::LAMAArray()
 
     ContextDataRef data = mContextManager.getContextData( host, ContextData::Write );
 
-    LAMA_LOG_DEBUG( logger, "created new context array: " << *this )
+    LAMA_LOG_DEBUG( logger, "created new LAMA array, mSize = " << mSize )
+    LAMA_LOG_DEBUG( logger, "created new LAMA array, mValueSize = " << mValueSize )
+    
+    // LAMA_LOG_DEBUG( logger, "created new context array: " << *this )
 }
 
 template<typename ValueType>
@@ -113,7 +116,7 @@ LAMAArray<ValueType>::LAMAArray( const IndexType n ) : _LAMAArray( n, sizeof( Va
 
     size_t validSize = 0;   // no valid data availalbe, so even don't search for it
 
-    ContextDataRef index = mContextManager.acquireAccess( host, ContextData::Write, n * sizeof( ValueType ), validSize );
+    ContextDataRef index = mContextManager.acquireAccess( host, ContextData::Write, mSize * mValueSize, validSize );
 
     ContextData& data = mContextManager[index];
    
@@ -128,7 +131,7 @@ LAMAArray<ValueType>::LAMAArray( const IndexType n, const ValueType& value ) : _
 
     ContextPtr host = Context::getContext( Context::Host );
 
-    ContextDataRef index = mContextManager.acquireAccess( host, ContextData::Write, n * sizeof( ValueType ), 0 );
+    ContextDataRef index = mContextManager.acquireAccess( host, ContextData::Write, mSize * mValueSize, 0 );
 
     ContextData& data = mContextManager[index];
 
@@ -731,9 +734,11 @@ IndexType LAMAArray<ValueType>::capacity( ContextDataRef index ) const
 template<typename ValueType>
 ContextDataRef LAMAArray<ValueType>::acquireReadAccess( ContextPtr context ) const
 {
-    common::Thread::ScopedLock lock( mAccessMutex );
+    // common::Thread::ScopedLock lock( mAccessMutex );
 
-    size_t allocSize = mSize * sizeof( ValueType );
+    LAMA_LOG_DEBUG( logger, "acquireReadAccess for " << *this );
+
+    size_t allocSize = mSize * mValueSize;
     size_t validSize = allocSize;                   // read access needs valid data in any case
 
     return mContextManager.acquireAccess( context, ContextData::Read, allocSize, validSize );
@@ -744,7 +749,7 @@ ContextDataRef LAMAArray<ValueType>::acquireReadAccess( ContextPtr context ) con
 template<typename ValueType>
 void LAMAArray<ValueType>::releaseReadAccess( ContextDataRef index ) const
 {
-    common::Thread::ScopedLock lock( mAccessMutex );
+    // common::Thread::ScopedLock lock( mAccessMutex );
 
     mContextManager[index].releaseLock( ContextData::Read );
 }
@@ -754,7 +759,7 @@ void LAMAArray<ValueType>::releaseReadAccess( ContextDataRef index ) const
 template<typename ValueType>
 ContextDataRef LAMAArray<ValueType>::acquireWriteAccess( ContextPtr context, bool keepFlag )
 {
-    common::Thread::ScopedLock lock( mAccessMutex );
+    // common::Thread::ScopedLock lock( mAccessMutex );
 
     size_t allocSize = mSize * sizeof( ValueType );
     size_t validSize = keepFlag ? allocSize : 0 ;
@@ -767,7 +772,7 @@ ContextDataRef LAMAArray<ValueType>::acquireWriteAccess( ContextPtr context, boo
 template<typename ValueType>
 void LAMAArray<ValueType>::releaseWriteAccess( ContextDataRef index )
 {
-    common::Thread::ScopedLock lock( mAccessMutex );
+    // common::Thread::ScopedLock lock( mAccessMutex );
 
     ContextData& data = mContextManager[index];
 
@@ -792,7 +797,8 @@ template<typename ValueType>
 void LAMAArray<ValueType>::writeAt( std::ostream& stream ) const
 {
     stream << "LAMAArray<";
-    stream << Scalar::getType<ValueType>();
+    // stream << Scalar::getType<ValueType>();
+    // stream << mValueSize;
     stream << ">(" << mSize;
 
 /*
