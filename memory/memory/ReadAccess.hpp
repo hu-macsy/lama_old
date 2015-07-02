@@ -147,7 +147,7 @@ private:
 
     const LAMAArray<ValueType>* mArrayView;   // read access to this associated LAMA array
 
-    ContextDataRef mContextDataIndex;   // reference to the context data of the read
+    ContextDataIndex mContextDataIndex;   // reference to the context data of the read
 
     // not possible if only header file: LAMA_LOG_DECL_STATIC_LOGGER( logger )
 };

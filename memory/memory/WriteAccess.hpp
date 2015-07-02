@@ -198,7 +198,7 @@ protected:
 
     LAMAArray <ValueType>* mArrayView;
 
-    ContextDataRef mContextDataRef; // index for this context access
+    ContextDataIndex mContextDataIndex; // index for this context access
 };
 
 /**

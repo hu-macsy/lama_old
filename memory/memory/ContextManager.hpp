@@ -53,7 +53,12 @@
 namespace memory
 {
 
-typedef size_t ContextDataRef;
+/* References to ContextData is needed for the lifetime of accesses.
+ * ContextData& is not useful as ContextData can move in dynamic arrays.
+ * Therefore the index to the array of ContextData is used.
+ */
+
+typedef size_t ContextDataIndex;
 
 /** An object of this class manages the different incarnations of an array
  *  at different contexts.
@@ -69,13 +74,11 @@ public:
 
     ~ContextManager();
 
-    /** Get the context data for a given context.
-     *  This routine also checks if the wanted access is possible
-     *
+    /** Get the context data for a given context. A new entry can be created.
      *  This routine does not any locks or handling of data allocation or transfers.
      */
 
-    ContextDataRef getContextData( ContextPtr context, ContextData::AccessKind kind );
+    ContextDataIndex getContextData( ContextPtr context );
 
     /** This routine provides context data for an access at a given context. 
      *
@@ -87,15 +90,31 @@ public:
      *  @returns  index to a corresponding entry for ContextData.
      */
 
-    ContextDataRef acquireAccess( ContextPtr context, ContextData::AccessKind, size_t allocSize, size_t validSize );
+    ContextDataIndex acquireAccess( ContextPtr context, ContextData::AccessKind, size_t allocSize, size_t validSize );
+
+    /**
+     * @brief Query the capacity ( in number of elements ) at a certain context.
+     */
+    size_t capacity( ContextPtr context ) const;
+
+    /**
+     * @brief Query if data is valid in a certain context
+     */
+    bool isValid( ContextPtr context ) const;
 
     /** Wait for last outstanding memory transfer. */
 
     void wait();
   
-    /** Return true if there is at least one access to any context data. */
+    /** Return true if there is at least one access to any context data. 
+     *  For a locked array further write access is not possible.
+     */
 
     bool locked() const;
+
+    /** Return true if there is at least one write access to any context data. */
+
+    bool writeLocked() const;
 
     void invalidateAll();
 
@@ -109,9 +128,19 @@ public:
 
     /** Operator [] gives access to the ContextData by a reference. */
 
-    ContextData& operator[]( ContextDataRef ref );
+    ContextData& operator[]( ContextDataIndex ref );
+
+    ContextData& operator[]( ContextPtr context );
+
+    /** Swap of ContextManager required for swap of LAMA arrays. */
 
     void swap( ContextManager& other );
+
+    /** prefetch: starts memory transfer to context asynchronously if valid data is required. */
+
+    void prefetch( ContextPtr context, size_t size );
+
+    void setValidData( ContextPtr context, const ContextManager& other, const size_t size );
 
 protected:
 
@@ -124,13 +153,26 @@ protected:
      *  or for uninitialized arrays (should give a warning).
      */
 
-    ContextDataRef getValidData();
+    ContextDataIndex findValidData() const;
+
+    const ContextData& getValidData() const;
 
 private:
 
     std::vector<ContextData*> mContextData; // available context, pointers are never NULL
 
     std::auto_ptr<SyncToken> mSyncToken; //!<  outstanding transfers
+
+    ContextDataIndex findContextData( ContextPtr context ) const;
+
+    // copy valid data from source to target, might involve other context data
+    // e.g. if transfer via host is required
+
+    void fetch( ContextData& target, const ContextData& source, size_t size );
+
+    SyncToken* fetchAsync( ContextData& target, const ContextData& source, size_t size );
+
+    mutable common::Thread::RecursiveMutex mAccessMutex; // needed to make accesses thread-safe
 };
 
 }  // namespace 

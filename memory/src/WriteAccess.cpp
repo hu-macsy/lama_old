@@ -56,8 +56,8 @@ WriteAccess<ValueType>::WriteAccess( LAMAArray<ValueType>& view, ContextPtr cont
     }
 
     LAMA_LOG_DEBUG( logger, "acquire write access for " << *mArrayView << " at " << *context << ", keep = " << keep )
-    mContextDataRef = mArrayView->acquireWriteAccess( context, keep );
-    mData = mArrayView->get( mContextDataRef );
+    mContextDataIndex = mArrayView->acquireWriteAccess( context, keep );
+    mData = mArrayView->get( mContextDataIndex );
     LAMA_LOG_TRACE( logger, "mData = " << mData )
 }
 
@@ -79,16 +79,16 @@ WriteAccess<ValueType>::WriteAccess(
     LAMA_LOG_DEBUG( logger,
                     "acquire write access for " << *mArrayView << " at " << *context << ", size = " << size << ", keep = " << keep )
 
-    mContextDataRef = mArrayView->acquireWriteAccess( context, keep );
+    mContextDataIndex = mArrayView->acquireWriteAccess( context, keep );
 
     if( !keep )
     {
-        mArrayView->clear( mContextDataRef );
+        mArrayView->clear( mContextDataIndex );
     }
 
-    mArrayView->resize( mContextDataRef, size );
-    mData = mArrayView->get( mContextDataRef );
-    LAMA_LOG_TRACE( logger, "mData = " << mData << ", mContextDataRef = " << mContextDataRef )
+    mArrayView->resize( mContextDataIndex, size );
+    mData = mArrayView->get( mContextDataIndex );
+    LAMA_LOG_TRACE( logger, "mData = " << mData << ", mContextDataIndex = " << mContextDataIndex )
 }
 
 template<typename ValueType>
@@ -104,9 +104,9 @@ WriteAccess<ValueType>::WriteAccess( LAMAArray<ValueType>& array )
 
     const bool keepFlag = true;
 
-    mContextDataRef = mArrayView->acquireWriteAccess( Context::getContext( Context::Host), keepFlag );
-    mData = mArrayView->get( mContextDataRef );
-    LAMA_LOG_TRACE( logger, "mData = " << mData << ", mContextDataRef = " << mContextDataRef )
+    mContextDataIndex = mArrayView->acquireWriteAccess( Context::getContext( Context::Host), keepFlag );
+    mData = mArrayView->get( mContextDataIndex );
+    LAMA_LOG_TRACE( logger, "mData = " << mData << ", mContextDataIndex = " << mContextDataIndex )
 }
 
 template<typename ValueType>
@@ -131,7 +131,7 @@ template<typename ValueType>
 void WriteAccess<ValueType>::clear()
 {
     COMMON_ASSERT( mArrayView, "WriteAccess has already been released." )
-    mArrayView->clear( mContextDataRef );
+    mArrayView->clear( mContextDataIndex );
     mData = NULL;
     LAMA_LOG_DEBUG( logger, "cleared " << *mArrayView )
 }
@@ -142,8 +142,8 @@ void WriteAccess<ValueType>::resize( const IndexType newSize )
     COMMON_ASSERT( mArrayView, "WriteAccess has already been released." )
     // do not log before check of mArrayView
     LAMA_LOG_DEBUG( logger, "resize " << *mArrayView << " to new size " << newSize )
-    mArrayView->resize( mContextDataRef, newSize );
-    mData = mArrayView->get( mContextDataRef );
+    mArrayView->resize( mContextDataIndex, newSize );
+    mData = mArrayView->get( mContextDataIndex );
     LAMA_LOG_TRACE( logger, "mData = " << mData )
 }
 
@@ -152,8 +152,8 @@ void WriteAccess<ValueType>::reserve( const IndexType capacity )
 {
     COMMON_ASSERT( mArrayView, "WriteAccess has already been released." )
     LAMA_LOG_DEBUG( logger, "reserve " << *mArrayView << " to new capacity " << capacity )
-    mArrayView->reserve( mContextDataRef, capacity ); // copy = true for old data
-    mData = mArrayView->get( mContextDataRef );
+    mArrayView->reserve( mContextDataIndex, capacity ); // copy = true for old data
+    mData = mArrayView->get( mContextDataIndex );
     LAMA_LOG_TRACE( logger, "mData = " << mData )
 }
 
@@ -161,7 +161,7 @@ template<typename ValueType>
 IndexType WriteAccess<ValueType>::capacity() const
 {
     COMMON_ASSERT( mArrayView, "WriteAccess has already been released." )
-    return mArrayView->capacity( mContextDataRef );
+    return mArrayView->capacity( mContextDataIndex );
 }
 
 template<typename ValueType>
@@ -170,7 +170,7 @@ void WriteAccess<ValueType>::release()
     if( mArrayView )
     {
         LAMA_LOG_DEBUG( logger, "release write access for " << *mArrayView )
-        mArrayView->releaseWriteAccess( mContextDataRef );
+        mArrayView->releaseWriteAccess( mContextDataIndex );
     }
 
     else

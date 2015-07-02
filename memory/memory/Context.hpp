@@ -125,6 +125,18 @@ public:
 
     virtual void memcpyTo( const Context& dstContext, void* dst, const void* src, size_t size ) const {}
 
+    virtual SyncToken* memcpyFromAsync( void* dst, const Context& srcContext, const void* src, size_t size ) const
+    {
+        memcpyFrom( dst, srcContext, src, size );
+        return NULL;
+    }
+
+    virtual SyncToken* memcpyToAsync( const Context& dstContext, void* dst, const void* src, size_t size ) const 
+    {
+        memcpyTo( dstContext, dst, src, size );
+        return NULL;
+    }
+
     virtual void writeAt( std::ostream& stream ) const;
 
     /** This method allocates memory and must be implemented by

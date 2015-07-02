@@ -181,9 +181,13 @@ const char* Thread::getThreadName( Thread::Id id )
     {
         // No name defined yet
 
-        ostringstream thread_name;
+        /* Building a string on the stack is not useful.
 
-        thread_name << "t_" << id;
+           ostringstream thread_name;
+           thread_name << "t_" << id;
+           return thread_name.str().c_str();
+
+        */
 
         /* Attention: This fails when called before program start:
 
@@ -194,8 +198,9 @@ const char* Thread::getThreadName( Thread::Id id )
            return it->second.c_str();
         */
 
-        return thread_name.str().c_str();
+        return "<unk_thread>";
     }
+
     else
     {
         // return the defined name

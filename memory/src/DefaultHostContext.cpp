@@ -67,7 +67,8 @@ DefaultHostContext::~DefaultHostContext()
     if( mNumberOfAllocatedBytes != 0 )
     {
         LAMA_LOG_ERROR( logger,
-                        *this << ": number of allocated bytes = " << mNumberOfAllocatedBytes << ", mismatch of free/allocate sizes" )
+                        *this << ": number of allocated bytes = " << mNumberOfAllocatedBytes 
+                         << ", should be 0, so mismatch of free/allocate sizes" )
     }
 
     LAMA_LOG_INFO( logger, "~DefaultHostContext" )

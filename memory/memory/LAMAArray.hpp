@@ -117,7 +117,7 @@ protected:
 
     bool constFlag; //!< if true the array cannot be written
 
-    static size_t nContextIndex; // stands for no valid index
+    mutable ContextManager mContextManager;
 
     LAMA_LOG_DECL_STATIC_LOGGER( logger )
 };
@@ -130,6 +130,16 @@ protected:
  * LAMAArray its contents on all supported locations, e.g. Host, CUDA and OpenCL. It transparently handles
  * synchronization between the locations. To enforce the consistency of the data a LAMAArray can be only
  * indirectly accessed via a ReadAccess or a WriteAccess.
+ *
+ * Compared to a C++ container like std::vector some differences must be taken into account:
+ * 
+ *  - There is never a call of the default constructor, destructor or copy constructor of ValueType
+ *    (so data is always handled bytewise in case of context transfers or reallocation)
+ *  - Iterators are not provided
+ *
+ *  Even if ValueType is usally float or double, other data types might also be used
+ *  (especially structures of such data). Do not use any ValueType that contains pointers
+ *  or references; these might be invalid when data is moved to another context.
  */
 template<typename ValueType>
 class COMMON_DLL_IMPORTEXPORT LAMAArray: public _LAMAArray
@@ -252,13 +262,15 @@ public:
     void prefetch( ContextPtr context ) const;
 
     /**
-     * @brief Checks if the data of this LAMAArray is available at the passed context.
-     *
-     * @param[in] context   the context to check for availability of data.
-     * @return              if the data of this LAMAArray is available at context
+     * @brief Query the capacity ( in number of elements ) at a certain context.
      */
-    bool isAvailableAt( ContextPtr context ) const;
-
+    IndexType capacity( ContextPtr context ) const;
+    
+    /**
+     * @brief Query if data is valid in a certain context
+     */
+    bool isValid( ContextPtr context ) const;
+    
     /**
      * @brief Gets the first context where the data of this LAMAArray is available.
      *
@@ -268,11 +280,6 @@ public:
      * @return                  a context there the data of this LAMAArray is available.
      */
     ContextPtr getValidContext( const Context::ContextType preferredType = Context::Host ) const;
-
-    /**
-     * Waits for potentially running prefetch.
-     */
-    void wait() const;
 
     /**
      * @brief sets the size of this to 0 but does not free any memory
@@ -311,53 +318,37 @@ protected:
     using _LAMAArray::mValueSize;
     using _LAMAArray::constFlag;
 
-    ValueType* get( ContextDataRef );
+    ValueType* get( ContextDataIndex index );
 
-    const ValueType* get( const size_t index ) const;
+    const ValueType* get( ContextDataIndex index ) const;
 
-    void clear( ContextDataRef index );
+    void clear( ContextDataIndex index );
 
-    void resize( ContextDataRef index, const IndexType newSize );
+    void resize( ContextDataIndex index, const IndexType newSize );
 
-    void reserve( ContextDataRef index, const IndexType capacity ) const;
+    void reserve( ContextDataIndex index, const IndexType capacity ) const;
 
-    IndexType capacity( ContextDataRef index ) const;
+    IndexType capacity( ContextDataIndex index ) const;
 
     /** Complete handling to get read access for a certain context.
      *
      * \returns index of context data array that contains the valid entry.
      */
-    ContextDataRef acquireReadAccess( ContextPtr context ) const;
+    ContextDataIndex acquireReadAccess( ContextPtr context ) const;
 
-    void releaseReadAccess( ContextDataRef ref ) const;
+    void releaseReadAccess( ContextDataIndex ref ) const;
 
     /** Complete handling to get write access for a certain context.
      *
      * \returns index of context data array that contains the valid entry.
      */
-    ContextDataRef acquireWriteAccess( ContextPtr context, bool keepFlag );
+    ContextDataIndex acquireWriteAccess( ContextPtr context, bool keepFlag );
 
-    void releaseWriteAccess( ContextDataRef );
-
-    // void copy( const int toIndex, const int fromIndex ) const;
-
-    /** Copy data from a valid source context to an invalid target context.
-     *
-     *  This routine assumes that there is already sufficient memory allocated
-     *  in the target context.
-     */
+    void releaseWriteAccess( ContextDataIndex );
 
     void fetch( ContextData& target, const ContextData& source ) const;
 
-    /** Asynchronous copy data from a valid source context to an invalid target context. */
-
-    SyncToken* fetchAsync( ContextData& target, const ContextData& source ) const;
-
-    mutable ContextManager mContextManager;
-
     LAMA_LOG_DECL_STATIC_LOGGER( logger )
-
-    // mutable common::Thread::RecursiveMutex mAccessMutex; // needed to make accesses thread-safe
 };
 
 /**
@@ -400,9 +391,11 @@ inline IndexType _LAMAArray::size() const
 template<typename ValueType>
 template<typename OtherValueType>
 LAMAArray<ValueType>::LAMAArray( const IndexType n, const OtherValueType* const values )
-                : _LAMAArray( n )
+                : _LAMAArray( n, sizeof( ValueType ) )
 {
-    ContextData& host = mContextManager.getContextData( Context::getContext( Context::Host ), ContextData::Write );
+    ContextPtr hostContext = Context::getContext( Context::Host );
+
+    ContextData& host = mContextManager[ hostContext ];
 
     if( n <= 0 )
     {
@@ -411,6 +404,7 @@ LAMAArray<ValueType>::LAMAArray( const IndexType n, const OtherValueType* const 
     }
 
     host.allocate( mSize * sizeof(ValueType) );
+
     LAMA_LOG_DEBUG( logger, "constructed: " << *this )
 
     ValueType* host_pointer = static_cast<ValueType*>( host.pointer );
@@ -422,7 +416,8 @@ LAMAArray<ValueType>::LAMAArray( const IndexType n, const OtherValueType* const 
         host_pointer[i] = static_cast<ValueType>( values[i] );
     }
 
-    host.valid = true;
+    host.setValid( true );
+
     LAMA_LOG_DEBUG( logger, "constructed: " << *this )
 }
 

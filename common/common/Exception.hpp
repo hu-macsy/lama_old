@@ -158,7 +158,7 @@ protected:
     if ( ! ( ( exp1 ) == ( exp2 ) ) )                                          \
     {                                                                          \
         std::ostringstream errorStr;                                           \
-        errorStr << "Assert equal failed in line " << __LINE__;                \
+        errorStr << "Assert == failed in line " << __LINE__;                   \
         errorStr << " of file " << __FILE__ << "\n";                           \
         errorStr << "    Message: " << msg << "\n";                            \
         errorStr << "    exp_1: " << #exp1 " = " << exp1 << "\n";              \
@@ -167,3 +167,19 @@ protected:
         throw common::Exception( errorStr.str() );                             \
     }                                                                          \
 }
+
+#define COMMON_ASSERT_LE( exp1, exp2, msg )                                    \
+{                                                                              \
+    if ( ! ( ( exp1 ) <= ( exp2 ) ) )                                          \
+    {                                                                          \
+        std::ostringstream errorStr;                                           \
+        errorStr << "Assert <= failed in line " << __LINE__;                   \
+        errorStr << " of file " << __FILE__ << "\n";                           \
+        errorStr << "    Message: " << msg << "\n";                            \
+        errorStr << "    exp_1: " << #exp1 " = " << exp1 << "\n";              \
+        errorStr << "    exp_2: " << #exp2 " = " << exp2 << "\n";              \
+        common::Exception::addCallStack( errorStr );                           \
+        throw common::Exception( errorStr.str() );                             \
+    }                                                                          \
+}
+

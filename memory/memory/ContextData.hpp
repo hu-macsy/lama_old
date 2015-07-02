@@ -46,6 +46,7 @@ namespace memory
 {
 
 class Context;
+class SyncToken;
 
 /** Context pointers will be always const, so context can never be modified. */
 
@@ -57,6 +58,12 @@ typedef boost::shared_ptr<const Context> ContextPtr;
 
 class COMMON_DLL_IMPORTEXPORT ContextData: public Printable, private common::NonCopyable
 {
+private:
+
+    bool valid; //!<  is true if there is a valid copy on the context
+
+    size_t size; //!<  allocated size stands also for capacity
+
 public:
 
     enum AccessKind
@@ -74,11 +81,7 @@ public:
 
     const void* get() const { return pointer; }
 
-    size_t size; //!<  allocated size stands also for capacity
-
     bool allocated; //!<  is true if data has been allocated by context
-
-    bool valid; //!<  is true if there is a valid copy on the context
 
     /** Constructor, context must always be given. */
 
@@ -141,9 +144,16 @@ public:
         valid = flag;
     }
 
+    bool isValid() const
+    {
+        return valid;
+    }
+
     virtual void writeAt( std::ostream& stream ) const;
 
     void copyFrom( const ContextData& source, size_t size );
+
+    SyncToken* copyFromAsync( const ContextData& source, size_t size );
 
 protected:
 
