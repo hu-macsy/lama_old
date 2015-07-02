@@ -74,6 +74,10 @@ void writeArray( LAMAArray<T>& array )
     }
 }
 
+struct SSS {
+int X; double Y;
+};
+
 int main()
 {
     LAMA_LOG_THREAD( "Main" )
@@ -83,4 +87,6 @@ int main()
     sumArray( lamaArray );
     writeArray( lamaArray );
     sumArray( lamaArray );
+
+    LAMAArray<SSS> sssArray( 10 );
 }
