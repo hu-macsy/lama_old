@@ -33,8 +33,6 @@
  */
 #pragma once
 
-#include <memory/ContextData.hpp>
-
 // for dll_import
 #include <common/config.hpp>
 
@@ -57,6 +55,9 @@ class SyncToken;
 
 class Context;
 // forward declaration
+
+/** Context pointers will be always const, so context can never be modified. */
+typedef boost::shared_ptr<const Context> ContextPtr;
 
 /** @brief This class is a common base class for all possible contexts.
  *
@@ -148,16 +149,6 @@ public:
 
     virtual void* allocate( const size_t size ) const = 0;
 
-    /** This method allocates memory and must be implemented by
-     *  each Context. The pointer to the allocated memory is stored in contextData.pointer.
-     *
-     *  @param[out] contextData   the ContextData the memory should be allocated for
-     *  @param[in] size           is the number of bytes needed
-     *  @return                   pointer to the allocated data,
-     *                            NULL if not enough data is available
-     */
-    virtual void allocate( ContextData& contextData, const size_t size ) const = 0;
-
     /**
      * This method free's allocated data allocated by this allocator.
      *
@@ -167,15 +158,6 @@ public:
      * The pointer must have been allocated by the same allocator with the given size.
      */
     virtual void free( void* pointer, const size_t size ) const = 0;
-
-    /**
-     * This method free's allocated data allocated by this allocator.
-     *
-     * @param[in] contextData which holds the pointer to the allocated data.
-     *
-     * The pointer must have been allocated by the same allocator.
-     */
-    virtual void free( ContextData& contextData ) const = 0;
 
     /** Memory copy within the same context.
      *
@@ -198,31 +180,6 @@ public:
      * This memory copies size values.
      */
     virtual SyncToken* memcpyAsync( void* dst, const void* src, const size_t size ) const = 0;
-
-    /** Checks if this Context can copy from src to dst
-     *
-     * @param[in] dst   the dst ContextData
-     * @param[in] src   the src ContextData
-     * @return          if this Context can copy from src to dst.
-     */
-    virtual bool cancpy( const ContextData& dst, const ContextData& src ) const =0;
-
-    /** Memory copy.
-     *
-     * Copies the first size bytes from src->pointer to dst->pointer. the memory pointed to by src
-     * might be registered in a certain way to allow faster memory transfers.
-     * However the memory pointed to by src->pointer will not be altered by this function.
-     *
-     * param[in] dst pointer to the destination
-     * param[in] src pointer to the source
-     * param[in] size is the number of bytes to be copied.
-     *
-     * This memory copies size values
-     *
-     */
-    virtual void memcpy( ContextData& dst, const ContextData& src, const size_t size ) const = 0;
-
-    virtual SyncToken* memcpyAsync( ContextData& dst, const ContextData& src, const size_t size ) const = 0;
 
     /** Getter routine for a new sync token that allows to asynchronous computations on the context.
      *

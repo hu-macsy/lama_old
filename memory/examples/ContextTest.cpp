@@ -98,17 +98,6 @@ public:
         ::free( pointer );
     }
 
-    virtual void allocate( ContextData& contextData, const size_t size ) const
-    {
-        contextData.pointer = allocate( size );
-    }
-
-    virtual void free( ContextData& contextData ) const
-    {
-        COMMON_ASSERT_EQUAL( contextData.context->getType(), getType(), "type mismatch" )
-        contextData.free();
-    }
-
     virtual void memcpy( void* target, const void* source, const size_t size ) const
     {
         ::memcpy( target, source, size );
@@ -122,20 +111,6 @@ public:
     virtual SyncToken* memcpyAsync( void* dst, const void* src, const size_t size ) const
     {
         return new TaskSyncToken( boost::bind( &::memcpy, dst, src, size ) );
-    }
-
-    virtual bool cancpy( const ContextData& dst, const ContextData& src ) const
-    {
-        return ( dst.context->getType() == getType() && src.context->getType() == getType() )
-               || ( dst.context->getType() == Context::Host && src.context->getType() == getType() )
-               || ( dst.context->getType() == getType() && src.context->getType() == Context::Host )
-               || ( dst.context->getType() == Context::Host && src.context->getType() == Context::Host );
-    }
-
-    virtual void memcpy( ContextData& dst, const ContextData& src, const size_t size ) const
-    {
-        COMMON_ASSERT( cancpy( dst, src ), "Can not copy from " << * ( src.context ) << " to " << * ( dst.context ) );
-        memcpy( dst.pointer, src.pointer, size );
     }
 
     virtual bool canCopyFrom( const Context& other ) const
@@ -174,12 +149,6 @@ public:
         {
             COMMON_THROWEXCEPTION( "copy to " << dstContext << " from " << *this << " not supported" )
         }
-    }
-
-    virtual SyncToken* memcpyAsync( ContextData& dst, const ContextData& src, const size_t size ) const
-    {
-        COMMON_ASSERT( cancpy( dst, src ), "Can not copy from " << * ( src.context ) << " to " << * ( dst.context ) );
-        return memcpyAsync( dst.pointer, src.pointer, size );
     }
 
     virtual TaskSyncToken* getSyncToken() const

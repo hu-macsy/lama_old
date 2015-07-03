@@ -37,3 +37,6 @@ target_link_libraries( Array1 ${MEMORY_LIBRARY} )
 
 add_executable( ContextTest ContextTest.cpp )
 target_link_libraries( ContextTest ${MEMORY_LIBRARY} )
+
+add_executable( BenchArray BenchArray.cpp )
+target_link_libraries( BenchArray ${MEMORY_LIBRARY} )

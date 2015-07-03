@@ -48,6 +48,18 @@ LAMA_LOG_DEF_LOGGER( ContextManager::logger, "ContextManager" )
 
 /* ---------------------------------------------------------------------------------*/
 
+ContextManager::ContextManager() :
+
+    mContextData(),
+    mSyncToken()
+
+{
+    mLock[ContextData::Read] = 0;
+    mLock[ContextData::Write] = 0;
+}
+
+/* ---------------------------------------------------------------------------------*/
+
 void ContextManager::wait()
 {
     if ( 0 != mSyncToken.get() )
@@ -61,38 +73,51 @@ void ContextManager::wait()
 
 bool ContextManager::locked() const
 {
-    bool locked = false;
-
-    // check for existing read / write lock
-
-    for ( size_t i = 0; i < mContextData.size(); ++i )
-    {
-        if ( mContextData[i]->locked() )
-        {
-            return true;
-        }
-    }
-
-    return false;
+    return ( mLock[ContextData::Write] > 0 ) || ( mLock[ContextData::Read] > 0 );
 }
 
 /* ---------------------------------------------------------------------------------*/
 
-bool ContextManager::writeLocked() const
+bool ContextManager::locked( ContextData::AccessKind kind ) const
 {
-    bool locked = false;
+    return ( mLock[kind] > 0 );
+}
 
-    // check for existing read / write lock
+/* ---------------------------------------------------------------------------------*/
 
-    for ( size_t i = 0; i < mContextData.size(); ++i )
+void ContextManager::lockAccess( ContextData::AccessKind kind )
+{
+    // common::Thread::ScopedLock( mutex );
+    if ( kind == ContextData::Read )
     {
-        if ( mContextData[i]->locked( ContextData::Write ) )
-        {
-            return true;
-        }
+        COMMON_ASSERT_EQUAL( 0, mLock[ContextData::Write], "no read access possible" )
+    }
+    else if ( kind == ContextData::Write )
+    {
+        COMMON_ASSERT_EQUAL( 0, mLock[ContextData::Write], "no further write access possible" )
+        COMMON_ASSERT_EQUAL( 0, mLock[ContextData::Read], "no write access possible" )
     }
 
-    return false;
+    mLock[kind]++;
+}
+
+/* ---------------------------------------------------------------------------------*/
+
+void ContextManager::unlockAccess( ContextData::AccessKind kind )
+{
+    // common::Thread::ScopedLock( mutex );
+
+    COMMON_ASSERT_LE( 1, mLock[kind], "release access " << kind << ", never acquired" )
+
+    mLock[kind]--;
+}
+
+/* ---------------------------------------------------------------------------------*/
+
+void ContextManager::releaseAccess( ContextDataIndex index, ContextData::AccessKind kind )
+{
+    // we should check that this is really the context data for which access was reserved
+    unlockAccess( kind );
 }
 
 /* ---------------------------------------------------------------------------------*/
@@ -101,11 +126,11 @@ void ContextManager::purge()
 {
     // purge frees all data but keeps the ContextData entries
     wait();
+    COMMON_ASSERT( !locked(), "purge on array with access" )
 
     for ( size_t i = 0; i < mContextData.size(); ++i )
     {
         ContextData& entry = ( *this )[i];
-        COMMON_ASSERT( !entry.locked(), "purge, but locked " << entry );
         entry.free();
     }
 }
@@ -151,7 +176,7 @@ ContextDataIndex ContextManager::findContextData( ContextPtr context ) const
     {
         ContextData& entry = *mContextData[i];
 
-        if ( context->canUseData( *entry.context ) )
+        if ( context->canUseData( *entry.context() ) )
         {
             break;
         }
@@ -241,7 +266,6 @@ ContextDataIndex ContextManager::findValidData() const
     for ( index = 0; index < mContextData.size(); ++index )
     {
         const ContextData& entry = *mContextData[index];
-
         LAMA_LOG_INFO( logger, "check valid: " << entry )
 
         if ( entry.isValid() )
@@ -287,9 +311,9 @@ ContextPtr ContextManager::getValidContext( const Context::ContextType preferred
 
         if ( entry.isValid() )
         {
-            if ( entry.context->getType() == preferredType )
+            if ( entry.context()->getType() == preferredType )
             {
-                return entry.context;
+                return entry.context();
             }
             else if ( result )
             {
@@ -297,7 +321,7 @@ ContextPtr ContextManager::getValidContext( const Context::ContextType preferred
             }
             else
             {
-                result = entry.context;
+                result = entry.context();
             }
         }
     }
@@ -310,16 +334,8 @@ ContextPtr ContextManager::getValidContext( const Context::ContextType preferred
 ContextDataIndex ContextManager::acquireAccess( ContextPtr context, AccessKind kind,
         size_t allocSize, size_t validSize )
 {
-    if ( kind == ContextData::Write )
-    {
-        COMMON_ASSERT( !locked(), "No write access on locked array possible" )
-    }
-    else if ( kind == ContextData::Read )
-    {
-        COMMON_ASSERT( !writeLocked(), "No read access on write locked array possible" )
-    }
-
     COMMON_ASSERT( context, "NULL pointer for context" )
+    lockAccess( kind );
     LAMA_LOG_DEBUG( logger, "acquire access on " << *context << ", kind = " << kind
                     << ", allocSize = " << allocSize << ", validSize = " << validSize )
     ContextDataIndex index = getContextData( context );
@@ -330,7 +346,7 @@ ContextDataIndex ContextManager::acquireAccess( ContextPtr context, AccessKind k
 
     if ( !data.isValid() && allocSize > 0 )
     {
-        LAMA_LOG_DEBUG( logger, "data not valid at " << *data.context )
+        LAMA_LOG_DEBUG( logger, "data not valid at " << *data.context() )
         // make sure that we have enough memory on the target context
         // old data is invalid so it must not be saved.
         data.reserve( allocSize, 0 );  // do not save any old values
@@ -349,7 +365,6 @@ ContextDataIndex ContextManager::acquireAccess( ContextPtr context, AccessKind k
         data.setValid( true );  // for next access the data @ context is valid.
     }
 
-    data.addLock( kind );
     LAMA_LOG_DEBUG( logger, "acquired access :" << data );
     return index;
 }
@@ -368,12 +383,12 @@ void ContextManager::fetch( ContextData& target, const ContextData& source, size
         // try it via host
         ContextPtr hostContext = Context::getContext( Context::Host );
 
-        if ( *target.context == *hostContext )
+        if ( *target.context() == *hostContext )
         {
             COMMON_THROWEXCEPTION( "unsupported" )
         }
 
-        if ( *source.context == *hostContext )
+        if ( *source.context() == *hostContext )
         {
             COMMON_THROWEXCEPTION( "unsupported" )
         }
@@ -403,22 +418,20 @@ SyncToken* ContextManager::fetchAsync( ContextData& target, const ContextData& s
     catch ( common::Exception& ex )
     {
         LAMA_LOG_INFO( logger, target << " async copy from " << source << " not supported" )
-
         // try it via host
         ContextPtr hostContext = Context::getContext( Context::Host );
 
-        if ( *target.context == *hostContext )
+        if ( *target.context() == *hostContext )
         {
             COMMON_THROWEXCEPTION( "unsupported" )
         }
 
-        if ( *source.context == *hostContext )
+        if ( *source.context() == *hostContext )
         {
             COMMON_THROWEXCEPTION( "unsupported" )
         }
 
-        ContextDataIndex hostIndex = getContextData( hostContext );
-        ContextData& hostEntry = ( *this )[hostIndex];
+        ContextData& hostEntry = ( *this )[hostContext];
 
         if ( ! hostEntry.isValid() )
         {
@@ -447,7 +460,7 @@ void ContextManager::copyAllValidEntries( const ContextManager& other, const siz
             continue; // do not copy any invalid data
         }
 
-        ContextData& data = operator[]( getContextData( otherData.context ) );
+        ContextData& data = operator[]( getContextData( otherData.context() ) );
 
         if ( size > 0 )
         {
@@ -471,13 +484,9 @@ void ContextManager::setValidData( ContextPtr context, const ContextManager& oth
     }
 
     // there must be at least one valid entry
-
     const ContextData& validData = other.getValidData();
-
     data.reserve( size, 0 );
-
     fetch( data, validData, size );
-  
     data.setValid( true );
 }
 
@@ -517,33 +526,28 @@ void ContextManager::prefetch( ContextPtr context, size_t size )
     }
 
     wait();
-
     data.reserve( size, 0 );
-
     const ContextData& validEntry = getValidData();
-
     SyncToken* token = fetchAsync( data, validEntry, size );
- 
+
     if ( token != NULL )
     {
         // save it, so we can wait for it
-
         mSyncToken.reset( token );
     }
 
     // we set data already as valid even if transfer is not finished yet.
     // so any query for valid data must wait for token.
-
-    data.setValid( true );  
+    data.setValid( true );
 }
 
 /* ---------------------------------------------------------------------------------*/
 
 void ContextManager::reserve( ContextPtr context, const size_t size, const size_t validSize )
 {
-    ContextData& data = (*this)[context];
+    ContextData& data = ( *this )[context];
 
-    COMMON_ASSERT( !data.locked( ContextData::Write), "no reserve on write locked data." )
+    // ToDo: must have a write access here COMMON_ASSERT( !data.locked( ContextData::Write ), "no reserve on write locked data." )
 
     if ( data.isValid() )
     {

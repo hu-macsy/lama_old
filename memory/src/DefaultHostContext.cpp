@@ -114,11 +114,6 @@ void* DefaultHostContext::allocate( const size_t size ) const
     return pointer;
 }
 
-void DefaultHostContext::allocate( ContextData& contextData, const size_t size ) const
-{
-    contextData.pointer = allocate( size );
-}
-
 void DefaultHostContext::free( void* pointer, const size_t size ) const
 {
     LAMA_LOG_DEBUG( logger, "free " << pointer << ", size = " << size )
@@ -133,12 +128,6 @@ void DefaultHostContext::free( void* pointer, const size_t size ) const
     mNumberOfAllocates--;
 }
 
-void DefaultHostContext::free( ContextData& contextData ) const
-{
-    COMMON_ASSERT_EQUAL( contextData.context->getType(), getType(), "Context mismatch" )
-    contextData.free();
-}
-
 void DefaultHostContext::memcpy( void* dst, const void* src, const size_t size ) const
 {
     LAMA_LOG_DEBUG( logger, "memcpy: " << dst << " <- " << src << ", size = " << size )
@@ -149,24 +138,6 @@ void DefaultHostContext::memcpy( void* dst, const void* src, const size_t size )
 SyncToken* DefaultHostContext::memcpyAsync( void* dst, const void* src, const size_t size ) const
 {
     return new TaskSyncToken( boost::bind( &::memcpy, dst, src, size ) );
-}
-
-bool DefaultHostContext::cancpy( const ContextData& dst, const ContextData& src ) const
-{
-    return dst.context->getType() == getType() && src.context->getType() == getType();
-}
-
-void DefaultHostContext::memcpy( ContextData& dst, const ContextData& src, const size_t size ) const
-{
-    COMMON_ASSERT( cancpy( dst, src ), "Can not copy from " << *src.context << " to " << *dst.context )
-    memcpy( dst.pointer, src.pointer, size );
-}
-
-SyncToken* DefaultHostContext::memcpyAsync( ContextData& dst, const ContextData& src, const size_t size ) const
-{
-    COMMON_ASSERT( cancpy( dst, src ), "Can not copy from " << *src.context << " to " << *dst.context )
-
-    return memcpyAsync( dst.pointer, src.pointer, size );
 }
 
 static boost::weak_ptr<class DefaultHostContext> contextInstance;

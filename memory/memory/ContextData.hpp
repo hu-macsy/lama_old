@@ -60,9 +60,15 @@ class COMMON_DLL_IMPORTEXPORT ContextData: public Printable, private common::Non
 {
 private:
 
-    bool valid; //!<  is true if there is a valid copy on the context
-
     size_t size; //!<  allocated size stands also for capacity
+
+    ContextPtr mContext; //!<  shared pointer to the context
+
+    void* pointer; //!<  pointer to the data on the context
+
+    bool valid;     //!<  is true if data at context is valid
+
+    bool allocated; //!<  is true if data has been allocated by context
 
 public:
 
@@ -73,15 +79,11 @@ public:
         MaxAccessKind //!<  internal use for dimension of arrays
     };
 
-    ContextPtr context; //!<  shared pointer to the context
-
-    void* pointer; //!<  pointer to the data on the context
-
     void* get() { return pointer; }
 
-    const void* get() const { return pointer; }
+    ContextPtr context() const { return mContext; }
 
-    bool allocated; //!<  is true if data has been allocated by context
+    const void* get() const { return pointer; }
 
     /** Constructor, context must always be given. */
 
@@ -116,29 +118,6 @@ public:
 
     void free();
 
-    bool isPinned() const;
-
-    void setPinned() const;
-
-    void setCleanFunction( boost::function<void( void* )> cleanFunktion ) const;
-
-    void addLock( const AccessKind kind )
-    {
-        ++lock[kind];
-    }
-
-    void releaseLock( const AccessKind kind );
-
-    bool locked() const 
-    {
-        return lock[Write] > 0 || lock[Read] > 0;
-    }
-
-    bool locked( AccessKind kind ) const 
-    {
-        return lock[kind] > 0 ;
-    }
-
     void setValid( bool flag ) 
     {
         valid = flag;
@@ -160,12 +139,6 @@ protected:
     LAMA_LOG_DECL_STATIC_LOGGER( logger )
 
 private:
-
-    unsigned char lock[MaxAccessKind]; //!<  read, write lock
-
-    mutable bool pinned;
-
-    mutable boost::function<void( void* )> mCleanFunktion;
 
     ContextData(); // disable default constructor
 };

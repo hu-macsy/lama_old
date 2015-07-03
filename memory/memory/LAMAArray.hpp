@@ -408,13 +408,13 @@ LAMAArray<ValueType>::LAMAArray( const IndexType n, const OtherValueType* const 
 
     LAMA_LOG_DEBUG( logger, "constructed: " << *this )
 
-    ValueType* host_pointer = static_cast<ValueType*>( host.pointer );
+    ValueType* hostData = static_cast<ValueType*>( host.get() );
 
 #pragma omp parallel for schedule(LAMA_OMP_SCHEDULE)
 
     for( int i = 0; i < mSize; ++i )
     {
-        host_pointer[i] = static_cast<ValueType>( values[i] );
+        hostData[i] = static_cast<ValueType>( values[i] );
     }
 
     host.setValid( true );
@@ -482,11 +482,11 @@ LAMAArray<ValueType>::LAMAArray( const IndexType n ) : _LAMAArray( n, sizeof( Va
 
     size_t validSize = 0;   // no valid data availalbe, so even don't search for it
 
+    // Use of acquireAccess guarantees allocation of data
+
     ContextDataIndex index = mContextManager.acquireAccess( host, ContextData::Write, mSize * mValueSize, validSize );
 
-    ContextData& data = mContextManager[index];
-   
-    data.releaseLock( ContextData::Write );
+    releaseWriteAccess( index );
 }
 
 template<typename ValueType>
@@ -497,23 +497,27 @@ LAMAArray<ValueType>::LAMAArray( const IndexType n, const ValueType& value ) : _
 
     ContextPtr host = Context::getContext( Context::Host );
 
-    ContextDataIndex index = mContextManager.acquireAccess( host, ContextData::Write, mSize * mValueSize, 0 );
+    size_t validSize = 0;   // no valid data availalbe, so even don't search for it
+
+    // Use of acquireAccess guarantees allocation of data
+
+    ContextDataIndex index = mContextManager.acquireAccess( host, ContextData::Write, mSize * mValueSize, validSize );
 
     ContextData& data = mContextManager[index];
 
     if ( n > 0 )
     {
-        ValueType* host_pointer = static_cast<ValueType*>( data.pointer );
+        ValueType* hostData = static_cast<ValueType*>( data.get() );
 
 #pragma omp parallel for schedule(LAMA_OMP_SCHEDULE)
 
         for ( int i = 0; i < mSize; ++i )
         {
-            host_pointer[i] = value;
+            hostData[i] = value;
         }
     }
 
-    data.releaseLock( ContextData::Write );
+    releaseWriteAccess( index );
 
     LAMA_LOG_DEBUG( logger, "constructed: " << *this )
 }
@@ -689,7 +693,7 @@ void LAMAArray<ValueType>::purge()
 template<typename ValueType>
 ValueType* LAMAArray<ValueType>::get( ContextDataIndex index )
 {
-    return static_cast<ValueType*>( mContextManager[index].pointer );
+    return static_cast<ValueType*>( mContextManager[index].get() );
 }
 
 /* ---------------------------------------------------------------------------------*/
@@ -697,7 +701,7 @@ ValueType* LAMAArray<ValueType>::get( ContextDataIndex index )
 template<typename ValueType>
 const ValueType* LAMAArray<ValueType>::get( ContextDataIndex index ) const
 {
-    return static_cast<const ValueType*>( mContextManager[index].pointer );
+    return static_cast<const ValueType*>( mContextManager[index].get() );
 }
 
 /* ---------------------------------------------------------------------------------*/
@@ -707,7 +711,7 @@ void LAMAArray<ValueType>::clear( const ContextDataIndex index )
 {
     ContextData& data = mContextManager[index];
 
-    COMMON_ASSERT( data.locked( ContextData::Write ), "clear illegal here " << data )
+    // ToDo: COMMON_ASSERT( data.locked( ContextData::Write ), "clear illegal here " << data )
 
     mSize = 0;
 }
@@ -719,7 +723,7 @@ void LAMAArray<ValueType>::resize( ContextDataIndex index, const IndexType size 
 {
     ContextData& entry = mContextManager[index];
 
-    COMMON_ASSERT( entry.locked( ContextData::Write ), "resize illegal here " << entry )
+    // COMMON_ASSERT( entry.locked( ContextData::Write ), "resize illegal here " << entry )
 
     size_t allocSize = size * mValueSize;
 
@@ -780,7 +784,7 @@ void LAMAArray<ValueType>::releaseReadAccess( ContextDataIndex index ) const
 {
     // common::Thread::ScopedLock lock( mAccessMutex );
 
-    mContextManager[index].releaseLock( ContextData::Read );
+    mContextManager.releaseAccess( index, ContextData::Read );
 }
 
 /* ---------------------------------------------------------------------------------*/
@@ -805,7 +809,7 @@ void LAMAArray<ValueType>::releaseWriteAccess( ContextDataIndex index )
 
     ContextData& data = mContextManager[index];
 
-    data.releaseLock( ContextData::Write );
+    mContextManager.releaseAccess( index, ContextData::Write );
 
     LAMA_LOG_INFO( logger, "releaseWriteAccess: " << data );
 }

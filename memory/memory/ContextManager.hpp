@@ -69,9 +69,7 @@ class ContextManager : private common::NonCopyable
 {
 public:
 
-    ContextManager() : mSyncToken( 0 )
-    {
-    }
+    ContextManager();
 
     ~ContextManager();
 
@@ -92,6 +90,14 @@ public:
      */
 
     ContextDataIndex acquireAccess( ContextPtr context, ContextData::AccessKind, size_t allocSize, size_t validSize );
+
+    /** This routine must be called when an access is released, otherwise further accesses are not allowed. 
+     *
+     *  @param[in] index   index to a corresponding entry for ContextData
+     *  @param[in] kind    kind of access, read or write
+     */
+
+    void releaseAccess( ContextDataIndex index, ContextData::AccessKind );
 
     /**
      * @brief Query the capacity ( in number of elements ) at a certain context.
@@ -115,7 +121,7 @@ public:
 
     /** Return true if there is at least one write access to any context data. */
 
-    bool writeLocked() const;
+    bool locked( ContextData::AccessKind kind ) const;
 
     void invalidateAll();
 
@@ -180,6 +186,14 @@ private:
     SyncToken* fetchAsync( ContextData& target, const ContextData& source, size_t size );
 
     mutable common::Thread::RecursiveMutex mAccessMutex; // needed to make accesses thread-safe
+
+    void lockAccess( ContextData::AccessKind );
+
+    void unlockAccess( ContextData::AccessKind );
+
+    int mLock[ContextData::MaxAccessKind];
+
 };
+
 
 }  // namespace 
