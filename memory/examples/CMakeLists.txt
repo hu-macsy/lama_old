@@ -40,3 +40,6 @@ target_link_libraries( ContextTest ${MEMORY_LIBRARY} )
 
 add_executable( BenchArray BenchArray.cpp )
 target_link_libraries( BenchArray ${MEMORY_LIBRARY} )
+
+add_executable( Aliasing Aliasing.cpp )
+target_link_libraries( Aliasing ${MEMORY_LIBRARY} )

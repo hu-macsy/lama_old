@@ -56,6 +56,16 @@ ContextData::ContextData( ContextPtr context ) :
 {
 }
 
+ContextData::ContextData() :
+
+    mContext(),
+    pointer( 0 ),
+    size( 0 ),
+    allocated( false ),
+    valid( false )
+{
+}
+
 /* ---------------------------------------------------------------------------------*/
 
 ContextData::~ContextData()

@@ -322,5 +322,21 @@ int main()
     int values[] = { 1, 2, 3, 4 };
 
     LAMAArray<float> v ( 4, values );   // implicit type conversion allowed
+
+    {
+        ReadAccess<float> read( v, userContext );
+        WriteAccess<float> write( v, userContext );
+    }
+
+    try
+    {
+        ReadAccess<float> read( v, userContext );
+        WriteAccess<float> write( v, userContext2 );
+        COMMON_THROWEXCEPTION( "read and write access at same time not possible" )
+    }
+    catch ( common::Exception& ex )
+    {
+        std::cout << "Exception caught: " << ex.what() << std::endl;
+    }
 }
 

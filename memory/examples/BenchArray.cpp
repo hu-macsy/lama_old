@@ -67,6 +67,11 @@ void routineLAMA( double& res, IndexType n )
     sub( res, read.get(), n );
 }
 
+void routineLAMA1( double& res, IndexType n )
+{
+    LAMAArray<double> X( n );
+}
+
 void routineSimple( double& res, IndexType n )
 {
     LAMA_LOG_TRACE( logger, "routineSimple, n = " << n )
@@ -99,16 +104,26 @@ int main()
 
         for ( int i = 0; i < ITER; ++i )
         {
-            routineLAMA( res, N );
+            routineLAMA1( res, N );
         }
 
         double time2 = common::Walltime::get();
+
+        for ( int i = 0; i < ITER; ++i )
+        {
+            routineLAMA( res, N );
+        }
+
+        double time3 = common::Walltime::get();
+
         double ts = ( time1 - time ) * 1000.0;
-        double tl = ( time2 - time1 ) * 1000.0;
+        double tl1 = ( time2 - time1 ) * 1000.0;
+        double tl = ( time3 - time2 ) * 1000.0;
 
         cout << "Case " << k << ": N = " << N << ", ITER = " << ITER << endl;
         cout << "res = " << res << endl;
         cout << "routineSimple: " << ts << " ms "  << endl;
+        cout << "routineLAMA1: " << tl1 << " ms "  << endl;
         cout << "routineLAMA: " << tl << " ms "  << endl;
         cout << endl;
     }

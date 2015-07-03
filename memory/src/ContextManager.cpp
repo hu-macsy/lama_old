@@ -85,17 +85,45 @@ bool ContextManager::locked( ContextData::AccessKind kind ) const
 
 /* ---------------------------------------------------------------------------------*/
 
-void ContextManager::lockAccess( ContextData::AccessKind kind )
+bool ContextManager::isAccessContext( ContextPtr context )
 {
-    // common::Thread::ScopedLock( mutex );
-    if ( kind == ContextData::Read )
+    if ( !accessContext )
     {
-        COMMON_ASSERT_EQUAL( 0, mLock[ContextData::Write], "no read access possible" )
+        return false;
     }
-    else if ( kind == ContextData::Write )
+
+    return *context == *accessContext;
+}
+
+/* ---------------------------------------------------------------------------------*/
+
+void ContextManager::lockAccess( ContextData::AccessKind kind, ContextPtr context )
+{
+    common::Thread::ScopedLock lock( mAccessMutex );
+
+    if ( ( mLock[ContextData::Read] == 0 ) && ( mLock[ContextData::Write] == 0 ) )
     {
-        COMMON_ASSERT_EQUAL( 0, mLock[ContextData::Write], "no further write access possible" )
-        COMMON_ASSERT_EQUAL( 0, mLock[ContextData::Read], "no write access possible" )
+        // first access, so we can set access context
+
+        accessContext = context;
+    } 
+    else if ( !isAccessContext( context ) )
+    {
+        // some checks are required
+
+        if ( kind == ContextData::Read )
+        {
+            COMMON_ASSERT_EQUAL( 0, mLock[ContextData::Write], "write lock, no read access possible" )
+        }
+        else if ( kind == ContextData::Write )
+        {
+            COMMON_ASSERT_EQUAL( 0, mLock[ContextData::Read], "no write access possible, is locked" )
+            COMMON_ASSERT_EQUAL( 0, mLock[ContextData::Write], "no write access possible, is locked" )
+        }
+
+        // multiple reads will set access context to NULL
+
+        accessContext.reset();
     }
 
     mLock[kind]++;
@@ -105,11 +133,16 @@ void ContextManager::lockAccess( ContextData::AccessKind kind )
 
 void ContextManager::unlockAccess( ContextData::AccessKind kind )
 {
-    // common::Thread::ScopedLock( mutex );
+    common::Thread::ScopedLock lock( mAccessMutex );
 
     COMMON_ASSERT_LE( 1, mLock[kind], "release access " << kind << ", never acquired" )
 
     mLock[kind]--;
+
+    if ( ( mLock[ContextData::Write] == 0 ) && ( mLock[ContextData::Write] == 0 ) )
+    {
+        accessContext.reset();
+    }
 }
 
 /* ---------------------------------------------------------------------------------*/
@@ -159,8 +192,8 @@ ContextManager::~ContextManager()
 
     for ( size_t i = 0; i < mContextData.size(); i++ )
     {
-        LAMA_LOG_INFO( logger, "~ContextManager, delete " << *mContextData[i] )
-        delete mContextData[i];
+        LAMA_LOG_INFO( logger, "~ContextManager, free " << mContextData[i] )
+        mContextData[i].free();
     }
 
     mContextData.clear();
@@ -174,7 +207,7 @@ ContextDataIndex ContextManager::findContextData( ContextPtr context ) const
 
     for ( i = 0; i < mContextData.size(); ++i )
     {
-        ContextData& entry = *mContextData[i];
+        const ContextData& entry = mContextData[i];
 
         if ( context->canUseData( *entry.context() ) )
         {
@@ -193,7 +226,7 @@ bool ContextManager::isValid( ContextPtr context ) const
 
     if ( index < mContextData.size() )
     {
-        ContextData& entry = *mContextData[index];
+        const ContextData& entry = mContextData[index];
         return entry.isValid();
     }
     else
@@ -210,7 +243,7 @@ size_t ContextManager::capacity( ContextPtr context ) const
 
     if ( index < mContextData.size() )
     {
-        ContextData& entry = *mContextData[index];
+        const ContextData& entry = mContextData[index];
         return entry.capacity();
     }
     else
@@ -235,7 +268,7 @@ ContextDataIndex ContextManager::getContextData( ContextPtr context )
             mContextData.reserve( LAMA_MAX_CONTEXTS );
         }
 
-        mContextData.push_back( new ContextData( context ) );
+        mContextData.push_back( ContextData( context ) );
         LAMA_LOG_DEBUG( logger, "new context data entry for " << *context << ", index = " << contextIndex )
     }
 
@@ -247,7 +280,7 @@ ContextDataIndex ContextManager::getContextData( ContextPtr context )
 ContextData& ContextManager::operator[] ( ContextDataIndex index )
 {
     COMMON_ASSERT( index < mContextData.size(), "index = " << index << " is illegal index, size = " << mContextData.size() )
-    return *mContextData[index];
+    return mContextData[index];
 }
 
 /* ---------------------------------------------------------------------------------*/
@@ -265,7 +298,7 @@ ContextDataIndex ContextManager::findValidData() const
 
     for ( index = 0; index < mContextData.size(); ++index )
     {
-        const ContextData& entry = *mContextData[index];
+        const ContextData& entry = mContextData[index];
         LAMA_LOG_INFO( logger, "check valid: " << entry )
 
         if ( entry.isValid() )
@@ -291,7 +324,7 @@ const ContextData& ContextManager::getValidData() const
 
     if ( index < mContextData.size() )
     {
-        return *mContextData[index];
+        return mContextData[index];
     }
     else
     {
@@ -307,7 +340,7 @@ ContextPtr ContextManager::getValidContext( const Context::ContextType preferred
 
     for ( size_t index = 0; index < mContextData.size(); ++index )
     {
-        const ContextData& entry = *mContextData[index];
+        const ContextData& entry = mContextData[index];
 
         if ( entry.isValid() )
         {
@@ -335,7 +368,7 @@ ContextDataIndex ContextManager::acquireAccess( ContextPtr context, AccessKind k
         size_t allocSize, size_t validSize )
 {
     COMMON_ASSERT( context, "NULL pointer for context" )
-    lockAccess( kind );
+    lockAccess( kind, context );
     LAMA_LOG_DEBUG( logger, "acquire access on " << *context << ", kind = " << kind
                     << ", allocSize = " << allocSize << ", validSize = " << validSize )
     ContextDataIndex index = getContextData( context );
@@ -453,7 +486,7 @@ void ContextManager::copyAllValidEntries( const ContextManager& other, const siz
 
     for ( size_t i = 0; i < nOtherContexts; i++ )
     {
-        const ContextData& otherData = *other.mContextData[i];
+        const ContextData& otherData = other.mContextData[i];
 
         if ( !otherData.isValid() )
         {
@@ -499,7 +532,7 @@ void ContextManager::invalidateAll()
 
     for ( size_t i = 0; i < noContexts; ++i )
     {
-        mContextData[i]->setValid( false );
+        mContextData[i].setValid( false );
     }
 }
 

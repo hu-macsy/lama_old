@@ -172,7 +172,7 @@ protected:
 
 private:
 
-    std::vector<ContextData*> mContextData; // available context, pointers are never NULL
+    std::vector<ContextData> mContextData; // Incarnations of the array at different contexts
 
     std::auto_ptr<SyncToken> mSyncToken; //!<  outstanding transfers
 
@@ -187,12 +187,17 @@ private:
 
     mutable common::Thread::RecursiveMutex mAccessMutex; // needed to make accesses thread-safe
 
-    void lockAccess( ContextData::AccessKind );
+    void lockAccess( ContextData::AccessKind, ContextPtr context );
 
     void unlockAccess( ContextData::AccessKind );
 
     int mLock[ContextData::MaxAccessKind];
 
+    ContextPtr accessContext;  // context that has locked
+
+    bool isAccessContext( ContextPtr context );
+
+    void updateAccessContext( ContextPtr context ); 
 };
 
 

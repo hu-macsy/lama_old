@@ -35,7 +35,6 @@
 #include <logging/logging.hpp>
 
 #include <common/config.hpp>
-#include <common/NonCopyable.hpp>
 #include <common/Exception.hpp>
 #include <common/Printable.hpp>
 
@@ -52,11 +51,18 @@ class SyncToken;
 
 typedef boost::shared_ptr<const Context> ContextPtr;
 
-/** Objects of this class are used to manage different incarnations
- *  of a LAMA array at different contexts.
+/** @brief Objects of this class are used to manage different incarnations
+ *         of a LAMA array at different contexts.
+ *
+ *  As this class might be used in a container, default constructor
+ *  and copy constructor are provided.
+ *
+ *  The destructor will not free the allocated data as this might result
+ *  in memory corruptions. The free method must be called explicitly to
+ *  free the allocated data.
  */
 
-class COMMON_DLL_IMPORTEXPORT ContextData: public Printable, private common::NonCopyable
+class COMMON_DLL_IMPORTEXPORT ContextData: public Printable
 {
 private:
 
@@ -89,6 +95,10 @@ public:
 
     ContextData( ContextPtr context );
 
+    ContextData();  // allow default constructor for container
+
+    /** Destructor, will NOT free allocated data at a context. */
+
     ~ContextData();
 
     size_t capacity() const 
@@ -114,7 +124,7 @@ public:
 
     void reserve( const size_t newSize, const size_t validSize );
 
-    /** free data for the Context array on the context */
+    /** free allocated data at the corresponding context */
 
     void free();
 
@@ -138,9 +148,6 @@ protected:
 
     LAMA_LOG_DECL_STATIC_LOGGER( logger )
 
-private:
-
-    ContextData(); // disable default constructor
 };
 
 }
