@@ -56,6 +56,10 @@ ContextManager::ContextManager() :
 {
     mLock[ContextData::Read] = 0;
     mLock[ContextData::Write] = 0;
+    multiContext = false;
+    multiThreaded = false;
+  
+    LAMA_LOG_DEBUG( logger, "ContextManager()" )
 }
 
 /* ---------------------------------------------------------------------------------*/
@@ -85,63 +89,116 @@ bool ContextManager::locked( ContextData::AccessKind kind ) const
 
 /* ---------------------------------------------------------------------------------*/
 
-bool ContextManager::isAccessContext( ContextPtr context )
+bool ContextManager::hasAccessConflict( ContextData::AccessKind kind ) const
 {
-    if ( !accessContext )
-    {
-        return false;
-    }
+    bool conflict = false;
 
-    return context.get() == accessContext.get();
+    if ( kind == ContextData::Read )
+    {
+        conflict = locked( ContextData::Write );
+    }
+    else if ( kind == ContextData::Write )
+    {
+        conflict = locked();
+    }
+    return conflict;
 }
 
 /* ---------------------------------------------------------------------------------*/
 
 void ContextManager::lockAccess( ContextData::AccessKind kind, ContextPtr context )
 {
-   //  common::Thread::ScopedLock lock( mAccessMutex );
+    common::Thread::ScopedLock lock( mAccessMutex );
 
-    if ( ( mLock[ContextData::Read] == 0 ) && ( mLock[ContextData::Write] == 0 ) )
+    common::Thread::Id id = common::Thread::getSelf();
+
+    LAMA_LOG_DEBUG( logger, "lockAccess, kind = " << kind << ", #reads = "
+                     << mLock[ContextData::Read] << ", #writes = " << mLock[ContextData::Write] )
+
+    if ( !locked() )
     {
         // first access, so we can set access context
 
-        accessContext = context;
+        accessContext  = context;
+        accessThread   = id;
+        multiContext   = false;
+        multiThreaded  = false;
+
+        LAMA_LOG_DEBUG( logger, "first access, set context = " << *context << ", set thread = " << id )
+
     } 
-    else if ( !isAccessContext( context ) )
+    else if ( !hasAccessConflict( kind ) )
     {
-        // some checks are required
+        // multiple reads
 
-        if ( kind == ContextData::Read )
+        if ( accessContext.get() != context.get() )
         {
-            COMMON_ASSERT_EQUAL( 0, mLock[ContextData::Write], "write lock, no read access possible" )
-        }
-        else if ( kind == ContextData::Write )
-        {
-            COMMON_ASSERT_EQUAL( 0, mLock[ContextData::Read], "no write access possible, is locked" )
-            COMMON_ASSERT_EQUAL( 0, mLock[ContextData::Write], "no write access possible, is locked" )
+            multiContext = true;
+            LAMA_LOG_DEBUG( logger, "multiple Context for read" )
         }
 
-        // multiple reads will set access context to NULL
+        if ( id != accessThread )
+        {
+            multiThreaded = true;
+            LAMA_LOG_DEBUG( logger, "multiple Thread for read" )
+        }
+    }
+    else if ( multiContext || ( accessContext.get() != context.get() ) )
+    {
+        // access at different context
 
-        accessContext.reset();
+        COMMON_THROWEXCEPTION( "Access conflict, kind = " << kind << ", #reads = "
+                 << mLock[ContextData::Read] << ", #writes = " << mLock[ContextData::Write] 
+                 << ", more than one context" )
+    }
+    else if ( multiThreaded || id != accessThread )
+    {
+        // same context but different thread
+ 
+        while ( locked() )
+        {
+            LAMA_LOG_DEBUG( logger, id << ": wait for free access, blocked by " << accessThread << ", multiple = " << multiThreaded )
+            mAccessCondition.wait( lock );
+            LAMA_LOG_DEBUG( logger, id << ": have now free access" )
+        }
+
+        accessContext  = context;
+        accessThread   = id;
+        multiContext   = false;
+        multiThreaded  = false;
+    }
+    else
+    {
+        LAMA_LOG_DEBUG( logger, "same thread, same context, multiThreaded = " << multiThreaded << ", multiContext = " << multiContext )
+        // same thread, same context, that is okay for now
     }
 
     mLock[kind]++;
+
+    LAMA_LOG_DEBUG( logger, "lockAccess done, kind = " << kind << ", #reads = "
+                     << mLock[ContextData::Read] << ", #writes = " << mLock[ContextData::Write] )
 }
 
 /* ---------------------------------------------------------------------------------*/
 
 void ContextManager::unlockAccess( ContextData::AccessKind kind )
 {
-   //  common::Thread::ScopedLock lock( mAccessMutex );
+    common::Thread::ScopedLock lock( mAccessMutex );
 
     COMMON_ASSERT_LE( 1, mLock[kind], "release access " << kind << ", never acquired" )
 
     mLock[kind]--;
 
-    if ( ( mLock[ContextData::Write] == 0 ) && ( mLock[ContextData::Write] == 0 ) )
+    LAMA_LOG_WARN( logger, "Access released, kind = " << kind << ", #reads = "
+                 << mLock[ContextData::Read] << ", #writes = " << mLock[ContextData::Write] )
+ 
+    if ( ( mLock[ContextData::Write] == 0 ) && ( mLock[ContextData::Read] == 0 ) )
     {
-        accessContext.reset();
+        multiContext = false;
+        multiThreaded = false;
+        LAMA_LOG_INFO( logger, "unlocked: reset access context = NULL " )
+        LAMA_LOG_WARN( logger, common::Thread::getSelf() << ": notify waiting thread" )
+        mAccessCondition.notifyOne();  // Notify waiting thread
     }
 }
 

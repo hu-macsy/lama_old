@@ -150,5 +150,9 @@ protected:
 
 };
 
+/** Output of AccessKind in stream is supported and very useful.  */
+
+COMMON_DLL_IMPORTEXPORT std::ostream& operator<<( std::ostream& stream, const memory::ContextData::AccessKind& object );
+
 }
 

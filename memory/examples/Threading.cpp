@@ -47,15 +47,11 @@ LAMA_LOG_DEF_LOGGER( logger, "Threading" )
 
 using namespace memory;
 
-
 void readJob( LAMAArray<double>& X )
 {
     HostReadAccess<double> read( X );
-
     double s = read[0];
-
     LAMA_LOG_INFO( logger, "Do Read job, size = " << read.size() << ", val = " << s )
-
     int error = 0;
 
     for ( int k = 0; k < 100; ++k )
@@ -70,17 +66,18 @@ void readJob( LAMAArray<double>& X )
                 {
                     LAMA_LOG_ERROR( logger, "Read error at i = " << i << ", is " << v << ", expected " << s )
                 }
+
                 ++error;
             }
         }
     }
 }
 
-
 void writeJob( LAMAArray<double>& X )
 {
-    HostWriteAccess<double> write( X );
+    // Note: different thread on same context will wait until other access is released
 
+    HostWriteAccess<double> write( X );
     LAMA_LOG_INFO( logger, "Do Write job, size = " << write.size() << ", val = " << write[0] )
 
     for ( int i = 0; i < write.size(); ++i )
@@ -89,51 +86,47 @@ void writeJob( LAMAArray<double>& X )
     }
 }
 
-
 void job( LAMAArray<double>* X )
 {
     int r = rand();
+    int kind = r % 5;
 
-    int kind = r % 2;
-
-    LAMA_LOG_INFO( logger, "job, r = " << r << ", kind = " << kind << ", X = " << X )
-
-    if ( kind > 0 )
+    try
     {
-        readJob( *X );
-    }
-    else
-    {
-        writeJob( *X );
-    }
+        LAMA_LOG_INFO( logger, "job, r = " << r << ", kind = " << kind << ", X = " << X )
 
-    LAMA_LOG_INFO( logger, "job, r = " << r << ", kind = " << kind << ", finished" )
+        if ( kind > 0 )
+        {
+            readJob( *X );
+        }
+        else
+        {
+            writeJob( *X );
+        }
+
+        LAMA_LOG_INFO( logger, "job, r = " << r << ", kind = " << kind << ", finished" )
+    }
+    catch ( common::Exception ex )
+    {
+        LAMA_LOG_ERROR( logger, "job, r = " << r << ", kind = " << kind << ", caught exception: " << ex.what() )
+    }
 }
-
 using namespace tasking;
-
 int main()
 {
-    std::vector<boost::shared_ptr<tasking::Task> > tasks;
-
+    LAMA_LOG_THREAD( "main" )
     LAMAArray<double> X( 100000, 10 );
-
     LAMA_LOG_INFO( logger, "X = " << X << " at " << ( &X ) )
+    tasking::ThreadPool pool( 10 );
 
-    tasking::ThreadPool pool( 4 );
-
-    for ( int k = 0; k < 16; ++k )
+    for ( int k = 0; k < 100; ++k )
     {
-        boost::shared_ptr<tasking::Task> task( new Task( boost::bind( &job, &X )  ) );
-        tasks.push_back( task );
+        pool.schedule( boost::bind( &job, &X )  );
     }
 
     LAMA_LOG_INFO( logger, "synchronize" )
 
-    for ( int k = 0; k < 16; ++k )
-    {
-        tasks[k]->synchronize();
-    }
-    // pool.wait()  // otherwise
-}
+    // Wait on pool until all tasks are finished
 
+    pool.shutdown();  // otherwise
+}

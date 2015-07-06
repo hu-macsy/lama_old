@@ -185,7 +185,8 @@ private:
 
     SyncToken* fetchAsync( ContextData& target, const ContextData& source, size_t size );
 
-    mutable common::Thread::RecursiveMutex mAccessMutex; // needed to make accesses thread-safe
+    mutable common::Thread::Mutex mAccessMutex; // needed to make accesses thread-safe, must not be recursive 
+    mutable common::Thread::Condition mAccessCondition;  // notify if all accesses are released
 
     void lockAccess( ContextData::AccessKind, ContextPtr context );
 
@@ -193,11 +194,13 @@ private:
 
     int mLock[ContextData::MaxAccessKind];
 
-    ContextPtr accessContext;  // context that has locked
+    ContextPtr accessContext;    // context that has locked
+    common::Thread::Id accessThread;     // thread that has locked
 
-    bool isAccessContext( ContextPtr context );
+    bool  multiContext;   // multiple reads at different Context
+    bool  multiThreaded;  // multiple reads by different threads
 
-    void updateAccessContext( ContextPtr context ); 
+    bool hasAccessConflict( ContextData::AccessKind ) const;
 };
 
 

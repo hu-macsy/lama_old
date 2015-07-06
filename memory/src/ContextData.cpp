@@ -251,4 +251,24 @@ SyncToken* ContextData::copyFromAsync( const ContextData& other, size_t size )
     }
 }
 
+std::ostream& operator<<( std::ostream& stream, const memory::ContextData::AccessKind& object )
+{
+    switch( object )
+    {
+        case memory::ContextData::Write :
+            stream << "Write";
+            break;
+
+        case memory::ContextData::Read :
+            stream << "Read";
+            break;
+
+        default:
+            stream << "<unk_access_kind>";
+    }
+
+    return stream;
+}
+
 } // namespace
+
