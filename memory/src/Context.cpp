@@ -55,30 +55,6 @@ Context::~Context()
     LAMA_LOG_DEBUG( logger, "~Context( type = " << mContextType << " )" )
 }
 
-bool Context::operator==( const Context& other ) const
-{
-    // pointer equality gives always true.
-
-    bool same = this == &other;
-
-    // otherwise: both contexts must agree that they can use data of each other
-
-    if( !same )
-    {
-        COMMON_ASSERT_EQUAL( canUseData( other ), other.canUseData( *this ), "unsymmetry" )
-
-        same = same && canUseData( other ) && other.canUseData( *this );
-    }
-
-    LAMA_LOG_TRACE( logger, *this << " == " << other << " is " << same )
-    return same;
-}
-
-bool Context::operator!=( const Context& other ) const
-{
-    return !operator==( other );
-}
-
 void Context::writeAt( std::ostream& stream ) const
 {
     // write identification of this object

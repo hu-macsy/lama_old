@@ -202,7 +202,7 @@ void ContextData::copyFrom( const ContextData& other, size_t size )
 {
     LAMA_LOG_INFO( logger, "copyFrom " << *other.mContext << " to " << *mContext << ", size = " << size )
 
-    if ( *mContext == *other.mContext )
+    if ( mContext.get() == other.mContext.get() )
     {
         mContext->memcpy( pointer, other.pointer, size );
     }
@@ -226,8 +226,10 @@ SyncToken* ContextData::copyFromAsync( const ContextData& other, size_t size )
 {
     LAMA_LOG_INFO( logger, "copyFrom " << *other.mContext << " to " << *mContext << ", size = " << size )
 
-    if ( *mContext == *other.mContext )
+    if ( mContext.get() == other.mContext.get() )
     {
+        // pointer equality implies it is the same context
+
         return mContext->memcpyAsync( pointer, other.pointer, size );
     }
     else if ( mContext->canCopyFrom( *other.mContext ) )

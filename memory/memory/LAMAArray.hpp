@@ -28,8 +28,10 @@
  * @brief Definition of a new dynamic array class where the array data can be
  *        used in different contexts and where the data is moved implicitly
  *        when corresponding read/write accesses are required
- * @author Thomas Brandes
+ *
+ * @author Thomas Brandes, Jiri Krause
  * @date 14.03.2011
+ * @revised 03.07.2015
  */
 
 #pragma once
@@ -38,7 +40,6 @@
 #include <common/config.hpp>
 
 // base classes
-#include <common/Printable.hpp>
 
 // others
 #include <memory/Context.hpp>
@@ -46,8 +47,8 @@
 #include <memory/SyncToken.hpp>
 #include <memory/Scalar.hpp>
 
-// boost
-#include <common/Thread.hpp>
+// common
+#include <common/Printable.hpp>
 
 #include <vector>
 
@@ -72,6 +73,16 @@ class WriteAccess;
 
 class COMMON_DLL_IMPORTEXPORT _LAMAArray: public Printable
 {
+    // Member variables of this class
+
+protected:
+
+    IndexType mSize;        //!< number of entries for the context array, common for all contexts
+    IndexType mValueSize;   //!< number of bytes needed for one data element
+
+    bool constFlag;         //!< if true the array cannot be written
+
+    mutable ContextManager mContextManager;  //!< takes control of accesses and allocations
 
 public:
 
@@ -141,16 +152,8 @@ protected:
     explicit _LAMAArray( const IndexType n, const IndexType size )
                     : mSize( n ), mValueSize( size ), constFlag( false )
     {
-        LAMA_LOG_DEBUG( logger, "construct LAMAArray, n = " << n << ", size " << size )
         LAMA_LOG_DEBUG( logger, "construct LAMAArray, mSize = " << mSize << ", mValueSize " << mValueSize )
     }
-
-    IndexType mSize;        //!< number of entries for the context array, common for all contexts
-    IndexType mValueSize;   //!< number of bytes needed for one data element
-
-    bool constFlag; //!< if true the array cannot be written
-
-    mutable ContextManager mContextManager;
 
     LAMA_LOG_DECL_STATIC_LOGGER( logger )
 };
@@ -177,10 +180,13 @@ protected:
 template<typename ValueType>
 class COMMON_DLL_IMPORTEXPORT LAMAArray: public _LAMAArray
 {
+public:
+
+    // WriteAccess and ReadAccess should be allowed to call some methods that
+    // use ContextDataIndex for more efficient usage
+
     friend class ReadAccess<ValueType> ;
     friend class WriteAccess<ValueType> ;
-
-public:
 
     /**
      * @brief LAMAArray() creates an empty LAMAArray with size 0
@@ -245,26 +251,10 @@ public:
      */
     LAMAArray<ValueType>& operator=( const LAMAArray<ValueType>& other );
 
-    /*
-     * @brief Checks if the LAMAArray referenced by other is the same as the LAMAArray reference by this.
-     *
-     * @param[in]   other   the LAMAArrayC to compare this with.
-     * @return              if this and other are referencing the same LAMAArray.
-     */
-    bool operator==( const LAMAArray<ValueType>& other ) const
-    {
-        return &other == this;
-    }
-
-    bool operator!=( const LAMAArray<ValueType>& other ) const
-    {
-        return &other != this;
-    }
-
     /**
-     * @brief Copies the passed LAMAArray into this.
+     * @brief Assignment of array values with valid values at a given other.
      *
-     * @param[in] other     the LAMAArray to copy
+     * @param[in] other     the LAMAArray whose values are copied
      * @param[in] context   the context where the assignment should be carried out
      *
      * The assign method copies the passed LAMAArray.
@@ -420,6 +410,34 @@ LAMAArray<ValueType>::LAMAArray( const IndexType n, const OtherValueType* const 
     host.setValid( true );
 
     LAMA_LOG_DEBUG( logger, "constructed: " << *this )
+}
+
+/* ---------------------------------------------------------------------------------*/
+
+void _LAMAArray::prefetch( ContextPtr context ) const
+{
+    mContextManager.prefetch( context, mSize * mValueSize );
+}
+
+/* ---------------------------------------------------------------------------------*/
+
+bool _LAMAArray::isValid( ContextPtr context ) const
+{
+    return mContextManager.isValid( context );
+}
+
+/* ---------------------------------------------------------------------------------*/
+
+IndexType _LAMAArray::capacity( ContextPtr context ) const
+{
+    return mContextManager.capacity( context ) / mValueSize;
+}
+
+/* ---------------------------------------------------------------------------------*/
+
+ContextPtr _LAMAArray::getValidContext( const Context::ContextType preferredType ) const
+{
+    return mContextManager.getValidContext( preferredType );
 }
 
 typedef ContextData::AccessKind AccessKind;
@@ -623,39 +641,13 @@ void LAMAArray<ValueType>::swap( LAMAArray<ValueType>& other )
     COMMON_ASSERT( !other.mContextManager.locked(), "swap: other array locked" )
     COMMON_ASSERT( mContextManager.locked(), "this array locked" )
 
+    COMMON_ASSERT_EQUAL( mValueSize, other.mValueSize, "serious size mismatch" )
+
     std::swap( mSize, other.mSize );
 
     mContextManager.swap( other.mContextManager );
 
     LAMA_LOG_DEBUG( logger, *this << ": has been swapped with other = " << other )
-}
-
-/* ---------------------------------------------------------------------------------*/
-
-void _LAMAArray::prefetch( ContextPtr context ) const
-{
-    mContextManager.prefetch( context, mSize * mValueSize );
-}
-
-/* ---------------------------------------------------------------------------------*/
-
-bool _LAMAArray::isValid( ContextPtr context ) const
-{
-    return mContextManager.isValid( context );
-}
-
-/* ---------------------------------------------------------------------------------*/
-
-IndexType _LAMAArray::capacity( ContextPtr context ) const
-{
-    return mContextManager.capacity( context ) / mValueSize;
-}
-
-/* ---------------------------------------------------------------------------------*/
-
-ContextPtr _LAMAArray::getValidContext( const Context::ContextType preferredType ) const
-{
-    return mContextManager.getValidContext( preferredType );
 }
 
 /* ---------------------------------------------------------------------------------*/
@@ -767,8 +759,6 @@ IndexType LAMAArray<ValueType>::capacity( ContextDataIndex index ) const
 template<typename ValueType>
 ContextDataIndex LAMAArray<ValueType>::acquireReadAccess( ContextPtr context ) const
 {
-    // common::Thread::ScopedLock lock( mAccessMutex );
-
     LAMA_LOG_DEBUG( logger, "acquireReadAccess for " << *this );
 
     size_t allocSize = mSize * mValueSize;
@@ -782,8 +772,6 @@ ContextDataIndex LAMAArray<ValueType>::acquireReadAccess( ContextPtr context ) c
 template<typename ValueType>
 void LAMAArray<ValueType>::releaseReadAccess( ContextDataIndex index ) const
 {
-    // common::Thread::ScopedLock lock( mAccessMutex );
-
     mContextManager.releaseAccess( index, ContextData::Read );
 }
 
@@ -792,8 +780,6 @@ void LAMAArray<ValueType>::releaseReadAccess( ContextDataIndex index ) const
 template<typename ValueType>
 ContextDataIndex LAMAArray<ValueType>::acquireWriteAccess( ContextPtr context, bool keepFlag )
 {
-    // common::Thread::ScopedLock lock( mAccessMutex );
-
     size_t allocSize = mSize * sizeof( ValueType );
     size_t validSize = keepFlag ? allocSize : 0 ;
 
@@ -805,8 +791,6 @@ ContextDataIndex LAMAArray<ValueType>::acquireWriteAccess( ContextPtr context, b
 template<typename ValueType>
 void LAMAArray<ValueType>::releaseWriteAccess( ContextDataIndex index )
 {
-    // common::Thread::ScopedLock lock( mAccessMutex );
-
     ContextData& data = mContextManager[index];
 
     mContextManager.releaseAccess( index, ContextData::Write );

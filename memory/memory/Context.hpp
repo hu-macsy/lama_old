@@ -1,4 +1,5 @@
 /**
+
  * @file Context.hpp
  *
  * @license
@@ -101,15 +102,6 @@ public:
     {
         return mContextType;
     }
-
-    /** This predicate returns true if two contexts can use same data and
-     *  have the same type.
-     */
-    bool operator==( const Context& other ) const;
-
-    /** The inequality operator is just the inverse to operator==. */
-
-    bool operator!=( const Context& other ) const;
 
     /** This predicate returns true if one context can use data of another context.
      *  This pure routine must be implemented by base classes.

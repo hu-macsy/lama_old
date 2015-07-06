@@ -62,6 +62,16 @@ namespace memory
 template<typename ValueType>
 class COMMON_DLL_IMPORTEXPORT WriteAccess: public Access
 {
+    // member variables
+
+protected:
+
+    LAMAArray <ValueType>* mArray;
+
+    ValueType* mData;   // current pointer to the data, cache value for mArray->get( mContextDataIndex )
+
+    ContextDataIndex mContextDataIndex; // index for this context access
+
 public:
 
     /**
@@ -80,30 +90,6 @@ public:
     WriteAccess( LAMAArray<ValueType>& array, ContextPtr context, const bool keep = true );
 
     /**
-     * @brief Acquires a WriteAccess to the passed LAMAArray for the passed location with resize.
-     *
-     * @param[in] array     the LAMAArray to acquire a WriteAccess for
-     * @param[in] context   the context to acquire a WriteAccess for
-     * @param[in] size      the new size of the LAMA array
-     * @param[in] keep      if false, implicit clear, old values of the array are no more needed
-     * @throws Exception    if the WriteAccess can not be acquired, e.g. because another WriteAccess exists.
-     *
-     * If the keep flag is set to false, no valid data must be transferred between different devices and it is
-     * no memory copy needed in case of a reallocation.
-     *
-     * \code
-     *    WriteAccess wData( context, data, 100, false );
-     *    // same as
-     *    data.clear(); WriteAccess wData( context, data ); wData.resize( size );
-     *    // better than this solution that might still have transfers
-     *    WriteAccess wData( context, data ); wData.clear(); wData.resize( size );
-     * \endcode
-     *
-     * Attention: this kind of write access assumes that the array is completely new written.
-     */
-    WriteAccess( LAMAArray<ValueType>& array, ContextPtr context, const IndexType size, const bool keep = true );
-
-    /**
      * @brief Acquires a WriteAccess to the passed LAMAArray for a valid context.
      *
      * @param[in] array     the LAMAArray to acquire a WriteAccess for
@@ -114,10 +100,6 @@ public:
      * the data currently resides.
      */
     explicit WriteAccess( LAMAArray<ValueType>& array );
-
-    //WriteAccess( LAMAArray<ValueType>& array, ContextType context, const bool keep = true );
-
-    //WriteAccess( LAMAArray<ValueType>& view, ContextType context, const bool keep = true );
 
     /**
      * @brief Releases the WriteAccess on the associated LAMAArray.
@@ -132,24 +114,10 @@ public:
     ValueType* get();
 
     /**
-     * @brief Sets the size of the LAMAArray to 0.
+     * @brief Clear of the LAMA array.
      *
-     * This operation only sets the size but does not free any reserved memory.
-     *
-     * This operation should always be called when an array is completely rewritten.
-     * to avoid that data will be transfered from other locations or copying of old
-     * values during the resize.
-     *
-     *   \code
-     *   LAMAArray& arr = ...
-     *   arr.clear();
-     *   HostWriteAccess writeArr( arr );
-     *   writeArr.resize( 100 );
-     *   for ( int i = 0; i < 100; i++)
-     *   {
-     *       writeArr[i] = 0.0;
-     *   }
-     *   \endcode
+     * This operation is the same as calling it directly for the LAMA array.
+     * It does not free any data but all data is no more valid.
      */
     void clear();
 
@@ -181,6 +149,9 @@ public:
      */
     virtual void release();
 
+    /**
+     * @brief Override method of base class Printable
+     */
     virtual void writeAt( std::ostream& stream ) const;
 
     /**
@@ -192,13 +163,7 @@ public:
 
 protected:
 
-    ValueType* mData; // pointer to the context data
-
     LAMA_LOG_DECL_STATIC_LOGGER( logger )
-
-    LAMAArray <ValueType>* mArrayView;
-
-    ContextDataIndex mContextDataIndex; // index for this context access
 };
 
 /**
@@ -216,38 +181,46 @@ class COMMON_DLL_IMPORTEXPORT WriteOnlyAccess: public WriteAccess<ValueType>
 {
 public:
 
-    /** Create a write access with keep flag = false. */
+    /** Create a write access with keep flag = false.
+     *
+     *  Attention: this kind of write access assumes that the array is completely new written.
+     */
 
     WriteOnlyAccess( LAMAArray<ValueType>& array, ContextPtr context )
-                    : WriteAccess<ValueType>( array, context, false )
+        : WriteAccess<ValueType>( array, context, false )
     {
+        LAMA_LOG_DEBUG( logger, "WriteOnlyAccess<" << Scalar::getType<ValueType>() << ">" )
     }
 
-    /** Create a write access with keep flag = false and do also a resize. */
-
+    /**
+     *  @brief Acquire a write only access with a resize.
+     *
+     * @param[in] array     the LAMAArray for which access is required
+     * @param[in] context   the context where data will be written later
+     * @param[in] size      the new size of the LAMA array.
+     *
+     * Attention: this kind of write access assumes that the array is completely new written.
+     */
     WriteOnlyAccess( LAMAArray<ValueType>& array, ContextPtr context, const IndexType size )
-                    : WriteAccess<ValueType>( array, context, size, false )
+        : WriteAccess<ValueType>( array, context, size, false )
     {
+        this->clear( mContextDataIndex );           // invalides all data before resize
+        this->resize( mContextDataIndex, size );
     }
 
     ~WriteOnlyAccess()
     {
-        LAMA_LOG_TRACE( WriteAccess<ValueType>::logger, "~WriteOnlyAccess" )
+        LAMA_LOG_DEBUG( WriteAccess<ValueType>::logger, "~WriteOnlyAccess<" << Scalar::getType<ValueType>() << ">" )
     }
-};
 
-template<typename ValueType>
-inline IndexType WriteAccess<ValueType>::size() const
-{
-    if( mArrayView )
-    {
-        return mArrayView->size();
-    }
-    else
-    {
-        COMMON_THROWEXCEPTION( "cannot call size on released array" )
-    }
-}
+protected:
+    using WriteAccess<ValueType>::logger;   // no additinal logger for this derived class
+
+private:
+
+    using WriteAccess<ValueType>::mArray;
+    using WriteAccess<ValueType>::mContextDataIndex;
+};
 
 /* --------------------------------------------------------------------------- */
 
@@ -257,62 +230,31 @@ LAMA_LOG_DEF_TEMPLATE_LOGGER( template<typename ValueType>, WriteAccess<ValueTyp
 
 template<typename ValueType>
 WriteAccess<ValueType>::WriteAccess( LAMAArray<ValueType>& view, ContextPtr context, const bool keep /* = true*/ )
-    : mArrayView( &view )
+    : mArray( &view )
 {
     if ( view.constFlag )
     {
         COMMON_THROWEXCEPTION( "write on const array not allowed" )
     }
 
-    LAMA_LOG_DEBUG( logger, "acquire write access for " << *mArrayView << " at " << *context << ", keep = " << keep )
-    mContextDataIndex = mArrayView->acquireWriteAccess( context, keep );
-    mData = mArrayView->get( mContextDataIndex );
-    LAMA_LOG_TRACE( logger, "mData = " << mData )
-}
-
-template<typename ValueType>
-WriteAccess<ValueType>::WriteAccess(
-    LAMAArray<ValueType>& array,
-    ContextPtr context,
-    const IndexType size,
-    const bool keep /* = false */ )
-
-    : mArrayView( &array )
-
-{
-    if ( array.constFlag )
-    {
-        COMMON_THROWEXCEPTION( "write on const array not allowed" )
-    }
-
-    LAMA_LOG_DEBUG( logger,
-                    "acquire write access for " << *mArrayView << " at " << *context << ", size = " << size << ", keep = " << keep )
-    mContextDataIndex = mArrayView->acquireWriteAccess( context, keep );
-
-    if ( !keep )
-    {
-        mArrayView->clear( mContextDataIndex );
-    }
-
-    mArrayView->resize( mContextDataIndex, size );
-    mData = mArrayView->get( mContextDataIndex );
-    LAMA_LOG_TRACE( logger, "mData = " << mData << ", mContextDataIndex = " << mContextDataIndex )
+    LAMA_LOG_DEBUG( logger, "acquire write access for " << *mArray << " at " << *context << ", keep = " << keep )
+    mContextDataIndex = mArray->acquireWriteAccess( context, keep );
+    mData = mArray->get( mContextDataIndex );     // cache the data pointer
 }
 
 template<typename ValueType>
 WriteAccess<ValueType>::WriteAccess( LAMAArray<ValueType>& array )
-    : mArrayView( &array )
+    : mArray( &array )
 {
     if ( array.constFlag )
     {
         COMMON_THROWEXCEPTION( "write on const array not allowed" )
     }
 
-    LAMA_LOG_DEBUG( logger, "acquire write access for " << *mArrayView << " at first valid context " )
+    LAMA_LOG_DEBUG( logger, "acquire write access for " << *mArray << " at first valid context " )
     const bool keepFlag = true;
-    mContextDataIndex = mArrayView->acquireWriteAccess( Context::getContext( Context::Host ), keepFlag );
-    mData = mArrayView->get( mContextDataIndex );
-    LAMA_LOG_TRACE( logger, "mData = " << mData << ", mContextDataIndex = " << mContextDataIndex )
+    mContextDataIndex = mArray->acquireWriteAccess( Context::getContext( Context::Host ), keepFlag );
+    mData = mArray->get( mContextDataIndex );     // cache the data pointer
 }
 
 template<typename ValueType>
@@ -325,65 +267,73 @@ WriteAccess<ValueType>::~WriteAccess()
 template<typename ValueType>
 ValueType* WriteAccess<ValueType>::get()
 {
-    if ( !mArrayView )
-    {
-        COMMON_THROWEXCEPTION( "illegal get(): access has already been released." )
-    }
+    COMMON_ASSERT( mArray, "illegal get(): access has already been released." )
 
-    return mData;
+    return mData;    // mData might be NULL if size of array is 0
+}
+
+template<typename ValueType>
+inline IndexType WriteAccess<ValueType>::size() const
+{
+    if ( mArray )
+    {
+        return mArray->size();
+    }
+    else
+    {
+        COMMON_THROWEXCEPTION( "cannot call size on released array" )
+    }
 }
 
 template<typename ValueType>
 void WriteAccess<ValueType>::clear()
 {
-    COMMON_ASSERT( mArrayView, "WriteAccess has already been released." )
-    mArrayView->clear( mContextDataIndex );
-    mData = NULL;
-    LAMA_LOG_DEBUG( logger, "cleared " << *mArrayView )
+    COMMON_ASSERT( mArray, "WriteAccess has already been released." )
+    mArray->clear( mContextDataIndex );
+    LAMA_LOG_DEBUG( logger, "cleared " << *mArray )
+    mData = mArray->get( mContextDataIndex );     // not really needed
 }
 
 template<typename ValueType>
 void WriteAccess<ValueType>::resize( const IndexType newSize )
 {
-    COMMON_ASSERT( mArrayView, "WriteAccess has already been released." )
-    // do not log before check of mArrayView
-    LAMA_LOG_DEBUG( logger, "resize " << *mArrayView << " to new size " << newSize )
-    mArrayView->resize( mContextDataIndex, newSize );
-    mData = mArrayView->get( mContextDataIndex );
-    LAMA_LOG_TRACE( logger, "mData = " << mData )
+    COMMON_ASSERT( mArray, "WriteAccess has already been released." )
+    // do not log before check of mArray
+    LAMA_LOG_DEBUG( logger, "resize " << *mArray << " to new size " << newSize )
+    mArray->resize( mContextDataIndex, newSize );
+    mData = mArray->get( mContextDataIndex );     // data might be reallocated
 }
 
 template<typename ValueType>
 void WriteAccess<ValueType>::reserve( const IndexType capacity )
 {
-    COMMON_ASSERT( mArrayView, "WriteAccess has already been released." )
-    LAMA_LOG_DEBUG( logger, "reserve " << *mArrayView << " to new capacity " << capacity )
-    mArrayView->reserve( mContextDataIndex, capacity ); // copy = true for old data
-    mData = mArrayView->get( mContextDataIndex );
-    LAMA_LOG_TRACE( logger, "mData = " << mData )
+    COMMON_ASSERT( mArray, "WriteAccess has already been released." )
+    LAMA_LOG_DEBUG( logger, "reserve " << *mArray << " to new capacity " << capacity )
+    mArray->reserve( mContextDataIndex, capacity ); // copy = true for old data
+    mData = mArray->get( mContextDataIndex );     // data might be reallocated
 }
 
 template<typename ValueType>
 IndexType WriteAccess<ValueType>::capacity() const
 {
-    COMMON_ASSERT( mArrayView, "WriteAccess has already been released." )
-    return mArrayView->capacity( mContextDataIndex );
+    COMMON_ASSERT( mArray, "WriteAccess has already been released." )
+    return mArray->capacity( mContextDataIndex );
 }
 
 template<typename ValueType>
 void WriteAccess<ValueType>::release()
 {
-    if ( mArrayView )
+    if ( mArray )
     {
-        LAMA_LOG_DEBUG( logger, "release write access for " << *mArrayView )
-        mArrayView->releaseWriteAccess( mContextDataIndex );
+        LAMA_LOG_DEBUG( logger, "release write access for " << *mArray )
+        mArray->releaseWriteAccess( mContextDataIndex );
     }
     else
     {
         LAMA_LOG_DEBUG( logger, "release write access for an already released LAMAArray" )
     }
 
-    mArrayView = 0;
+    mArray = 0;
     mData = 0;
 }
 
@@ -392,9 +342,9 @@ void WriteAccess<ValueType>::writeAt( std::ostream& stream ) const
 {
     stream << "WriteAccess to ";
 
-    if ( mArrayView )
+    if ( mArray )
     {
-        stream << *mArrayView;
+        stream << *mArray;
     }
     else
     {

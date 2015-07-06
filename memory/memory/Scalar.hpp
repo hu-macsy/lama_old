@@ -162,4 +162,9 @@ inline Scalar::ScalarType Scalar::getType<double>()
     return DOUBLE;
 }
 
+
+/** Output of ScalarType in stream is supported and very useful.  */
+
+COMMON_DLL_IMPORTEXPORT std::ostream& operator<<( std::ostream& stream, const Scalar::ScalarType& object );
+
 } //namespace 

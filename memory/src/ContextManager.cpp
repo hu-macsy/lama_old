@@ -92,14 +92,14 @@ bool ContextManager::isAccessContext( ContextPtr context )
         return false;
     }
 
-    return *context == *accessContext;
+    return context.get() == accessContext.get();
 }
 
 /* ---------------------------------------------------------------------------------*/
 
 void ContextManager::lockAccess( ContextData::AccessKind kind, ContextPtr context )
 {
-    common::Thread::ScopedLock lock( mAccessMutex );
+   //  common::Thread::ScopedLock lock( mAccessMutex );
 
     if ( ( mLock[ContextData::Read] == 0 ) && ( mLock[ContextData::Write] == 0 ) )
     {
@@ -133,7 +133,7 @@ void ContextManager::lockAccess( ContextData::AccessKind kind, ContextPtr contex
 
 void ContextManager::unlockAccess( ContextData::AccessKind kind )
 {
-    common::Thread::ScopedLock lock( mAccessMutex );
+   //  common::Thread::ScopedLock lock( mAccessMutex );
 
     COMMON_ASSERT_LE( 1, mLock[kind], "release access " << kind << ", never acquired" )
 
@@ -416,12 +416,12 @@ void ContextManager::fetch( ContextData& target, const ContextData& source, size
         // try it via host
         ContextPtr hostContext = Context::getContext( Context::Host );
 
-        if ( *target.context() == *hostContext )
+        if ( target.context()->getType() == Context::Host )
         {
             COMMON_THROWEXCEPTION( "unsupported" )
         }
 
-        if ( *source.context() == *hostContext )
+        if ( source.context()->getType() == Context::Host )
         {
             COMMON_THROWEXCEPTION( "unsupported" )
         }
@@ -451,15 +451,15 @@ SyncToken* ContextManager::fetchAsync( ContextData& target, const ContextData& s
     catch ( common::Exception& ex )
     {
         LAMA_LOG_INFO( logger, target << " async copy from " << source << " not supported" )
-        // try it via host
+
         ContextPtr hostContext = Context::getContext( Context::Host );
 
-        if ( *target.context() == *hostContext )
+        if ( target.context()->getType() == Context::Host )
         {
             COMMON_THROWEXCEPTION( "unsupported" )
         }
 
-        if ( *source.context() == *hostContext )
+        if ( source.context()->getType() == Context::Host )
         {
             COMMON_THROWEXCEPTION( "unsupported" )
         }
