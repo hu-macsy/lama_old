@@ -258,6 +258,11 @@ void ThreadPool::worker( int id )
             {
                 task->mWork();
             }
+            catch( common::Exception& ex )
+            {
+                LAMA_LOG_INFO( logger, "worker thread got exception, has been caught: " << ex.what() )
+                task->mException = true;
+            }
             catch( ... )
             {
                 LAMA_LOG_INFO( logger, "worker thread got exception, has been caught" )
