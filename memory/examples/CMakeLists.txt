@@ -43,3 +43,6 @@ target_link_libraries( BenchArray ${MEMORY_LIBRARY} )
 
 add_executable( Aliasing Aliasing.cpp )
 target_link_libraries( Aliasing ${MEMORY_LIBRARY} )
+
+add_executable( Threading Threading.cpp )
+target_link_libraries( Threading ${MEMORY_LIBRARY} )

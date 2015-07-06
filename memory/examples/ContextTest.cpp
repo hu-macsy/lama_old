@@ -64,9 +64,14 @@ private:
 
 public:
 
+    ~MockContext()
+    {
+        LAMA_LOG_DEBUG( logger, "~MockContext: " << *this )
+    }
+
     virtual void writeAt( std::ostream& stream ) const
     {
-        stream << "Context( kind = User, dev = " << mDeviceNr << ")";
+        stream << "MockContext( dev = " << mDeviceNr << " )";
     }
 
     virtual bool canUseData( const Context& other ) const
@@ -156,14 +161,18 @@ public:
         return new TaskSyncToken();
     }
 
+    /** Static method that delivers a MockContext for a certain device.
+     *
+     *  During the initialization this function will be registered at the base class Context
+     */
+
     static ContextPtr getContext( int deviceNr );
 
 private:
 
     // MockContext uses the type UserContext as its type
 
-    MockContext( int deviceNr )
-        : Context( Context::UserContext )
+    MockContext( int deviceNr ) : Context( Context::UserContext )
     {
         mDeviceNr = deviceNr;
     }
@@ -173,6 +182,8 @@ private:
     static bool initialized;   // initialization will register getContext as creator for Context
 };
 
+/* --------------------------------------------------------------------- */
+
 bool MockContext::init()
 {
     Context::addCreator( Context::UserContext, &MockContext::getContext );
@@ -181,6 +192,8 @@ bool MockContext::init()
 bool MockContext::initialized = MockContext::init();
 
 static std::vector<boost::weak_ptr<class MockContext> > contextInstances( 6 );
+
+/* --------------------------------------------------------------------- */
 
 ContextPtr MockContext::getContext( int deviceNr )
 {
