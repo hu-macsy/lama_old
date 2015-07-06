@@ -288,9 +288,10 @@ void ThreadPool::worker( int id )
 
 /* ------------------------------------------------------------------------- */
 
-ThreadPool::~ThreadPool()
+void ThreadPool::shutdown()
 {
-    LAMA_LOG_INFO( logger, "~ThreadPool: shut down " << mThreads.size() << " threads" )
+    LAMA_LOG_INFO( logger, "shut down " << mThreads.size() << " threads, " 
+                           << mTaskQueue.size() << " tasks in queue" )
 
     boost::shared_ptr<ThreadTask> shutdownTask; // NULL pointer
 
@@ -319,6 +320,13 @@ ThreadPool::~ThreadPool()
         pthread_join( mThreads[i], NULL );
         LAMA_LOG_DEBUG( logger, "worker thread " << i << " terminated (joined)" )
     }
+}
+
+/* ------------------------------------------------------------------------- */
+
+ThreadPool::~ThreadPool()
+{
+    shutdown();
 }
 
 } // namespace lama

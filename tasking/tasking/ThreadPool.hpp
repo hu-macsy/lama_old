@@ -35,6 +35,7 @@
 
 #include <common/config.hpp>
 #include <common/Thread.hpp>
+#include <common/NonCopyable.hpp>
 
 #include <logging/logging.hpp>
 
@@ -99,7 +100,7 @@ struct COMMON_DLL_IMPORTEXPORT ThreadTask
  either here or at its creation.
  */
 
-class COMMON_DLL_IMPORTEXPORT ThreadPool
+class COMMON_DLL_IMPORTEXPORT ThreadPool : private common::NonCopyable
 {
 
 public:
@@ -121,6 +122,10 @@ public:
     /** Wait on completion of a task. */
 
     void wait( boost::shared_ptr<ThreadTask> task );
+
+    /** Wait on completion of all scheduled tasks */
+
+    void shutdown();
 
     /** Destructor shuts down and deletes all threads of the pool. */
 
