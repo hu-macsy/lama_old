@@ -32,11 +32,7 @@
 
 # ThreadTest example
 
-add_executable( ExceptionTest ExceptionTest.cpp )
-target_link_libraries( ExceptionTest ${COMMON_LIBRARY} )
-
-add_executable( MutexTest MutexTest.cpp )
-target_link_libraries( MutexTest ${COMMON_LIBRARY} )
-
-add_executable( ConditionTest ConditionTest.cpp )
-target_link_libraries( ConditionTest ${COMMON_LIBRARY} )
+foreach ( executable ExceptionTest MutexTest ConditionTest FactoryTest Factory2Test )
+    add_executable( ${executable} ${executable}.cpp )
+    target_link_libraries( ${executable} ${COMMON_LIBRARY} )
+endforeach ( executable )
