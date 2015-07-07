@@ -178,8 +178,19 @@ private:
 
     ContextDataIndex findContextData( ContextPtr context ) const;
 
-    // copy valid data from source to target, might involve other context data
-    // e.g. if transfer via host is required
+    /** Help routine that copies valid data from one context to the other.
+     *
+     *  @param[in] source specifies the valid data that is copied
+     *  @param[in] size is the number of bytes to copy
+     *  @param[out] target specifies the new place to which the data is transferred.
+     *
+     *  The source and target data can belong to different arrays so this routine
+     *  is also used for copy or assignment operations.
+     *
+     *  If a direct transfer from source to target is not possible (unsupported by
+     *  the context) it will be tried to copy the data by involving a tempoarary 
+     *  copy in the Host context (copy belongs to the array with this ContextManager).
+     */
 
     void fetch( ContextData& target, const ContextData& source, size_t size );
 

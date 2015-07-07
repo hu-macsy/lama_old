@@ -32,17 +32,7 @@
 
 # Array1 example
 
-add_executable( Array1 Array1.cpp )
-target_link_libraries( Array1 ${MEMORY_LIBRARY} )
-
-add_executable( ContextTest ContextTest.cpp )
-target_link_libraries( ContextTest ${MEMORY_LIBRARY} )
-
-add_executable( BenchArray BenchArray.cpp )
-target_link_libraries( BenchArray ${MEMORY_LIBRARY} )
-
-add_executable( Aliasing Aliasing.cpp )
-target_link_libraries( Aliasing ${MEMORY_LIBRARY} )
-
-add_executable( Threading Threading.cpp )
-target_link_libraries( Threading ${MEMORY_LIBRARY} )
+foreach ( executable Array1 ContextTest BenchArray Aliasing Threading Create )
+    add_executable( ${executable} ${executable}.cpp )
+    target_link_libraries( ${executable} ${MEMORY_LIBRARY} )
+endforeach ( executable )

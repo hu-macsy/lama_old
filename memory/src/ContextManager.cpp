@@ -189,15 +189,14 @@ void ContextManager::unlockAccess( ContextData::AccessKind kind )
 
     mLock[kind]--;
 
-    LAMA_LOG_WARN( logger, "Access released, kind = " << kind << ", #reads = "
+    LAMA_LOG_DEBUG( logger, kind << "Access released, #reads = "
                  << mLock[ContextData::Read] << ", #writes = " << mLock[ContextData::Write] )
  
     if ( ( mLock[ContextData::Write] == 0 ) && ( mLock[ContextData::Read] == 0 ) )
     {
         multiContext = false;
         multiThreaded = false;
-        LAMA_LOG_INFO( logger, "unlocked: reset access context = NULL " )
-        LAMA_LOG_WARN( logger, common::Thread::getSelf() << ": notify waiting thread" )
+        LAMA_LOG_DEBUG( logger, common::Thread::getSelf() << ": notify threads waiting for access" )
         mAccessCondition.notifyOne();  // Notify waiting thread
     }
 }

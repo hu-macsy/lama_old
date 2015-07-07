@@ -49,8 +49,10 @@
 
 // common
 #include <common/Printable.hpp>
+#include <memory/Factory.hpp>
 
 #include <vector>
+#include <map>
 
 /** Number of contexts that might be used in maximum. This number
  *  is used for reservation of entries but does not imply any restrictions.
@@ -71,7 +73,7 @@ class WriteAccess;
 
 /** Common base class for typed LAMAArray. */
 
-class COMMON_DLL_IMPORTEXPORT ContextArray: public Printable
+class COMMON_DLL_IMPORTEXPORT ContextArray: public Printable, public common::Factory<Scalar::ScalarType, ContextArray*>
 {
     // Member variables of this class
 
@@ -95,14 +97,14 @@ public:
      */
     virtual Scalar::ScalarType getValueType() const = 0;
 
+    using common::Factory<Scalar::ScalarType, ContextArray*>::create;
+
     /**
-     * @brief Create an empty array of a certain type.
-     *
-     * @param type specifies the type of the array to be created.
-     *
+     *  Each derived class must provide a create function. This will
+     *  allow writing general routines that require temporary data.
      */
 
-    static ContextArray* create( const Scalar::ScalarType type );
+    virtual ContextArray* create() = 0;
 
     /**
      * @brief Query the current size of the LAMA array, i.e. number of entries.
@@ -149,10 +151,12 @@ public:
     
 protected:
 
-    explicit ContextArray( const IndexType n, const IndexType size )
-                    : mSize( n ), mValueSize( size ), constFlag( false )
+    explicit ContextArray( const IndexType n, const IndexType size ) : 
+
+        mSize( n ), 
+        mValueSize( size ), 
+        constFlag( false )
     {
-        LAMA_LOG_DEBUG( logger, "construct LAMAArray, mSize = " << mSize << ", mValueSize " << mValueSize )
     }
 
     /** Complete handling to get read access for a certain context.
@@ -165,6 +169,8 @@ protected:
      * \returns index of context data array that contains the valid entry.
      */
     ContextDataIndex acquireReadAccess( ContextPtr context ) const;
+
+    /** Release an acquired read access. */
 
     void releaseReadAccess( ContextDataIndex ref ) const;
 
@@ -179,11 +185,16 @@ protected:
      */
     ContextDataIndex acquireWriteAccess( ContextPtr context, bool keepFlag );
 
+    /** Release an acquired write access. */
+
     void releaseWriteAccess( ContextDataIndex );
 
-    /** Static class variable for logger. */
+    /** Query the capacity for a certain access. 
+     *
+     *  @param[in] index is the reference to the context data as the result of an acquired access.
+     */
 
-    LAMA_LOG_DECL_STATIC_LOGGER( logger )
+    IndexType capacity( ContextDataIndex index ) const;
 };
 
 /* ---------------------------------------------------------------------------------*/
@@ -211,6 +222,8 @@ inline bool ContextArray::isValid( ContextPtr context ) const
 
 inline IndexType ContextArray::capacity( ContextPtr context ) const
 {
+    // will return 0 if no data is available at the specified context
+
     return mContextManager.capacity( context ) / mValueSize;
 }
 
@@ -218,9 +231,9 @@ inline IndexType ContextArray::capacity( ContextPtr context ) const
 
 IndexType ContextArray::capacity( ContextDataIndex index ) const
 {
-    ContextData& entry = mContextManager[index];
+    const ContextData& entry = mContextManager[index];
 
-    return static_cast<IndexType>( entry.capacity() / sizeof( ValueType ) );
+    return static_cast<IndexType>( entry.capacity() / mValueSize );
 }
 
 /* ---------------------------------------------------------------------------------*/
@@ -232,10 +245,8 @@ inline ContextPtr ContextArray::getValidContext( const Context::ContextType pref
 
 /* ---------------------------------------------------------------------------------*/
 
-ContextDataIndex ConextArray::acquireReadAccess( ContextPtr context ) const
+ContextDataIndex ContextArray::acquireReadAccess( ContextPtr context ) const
 {
-    LAMA_LOG_DEBUG( logger, "acquireReadAccess for " << *this );
-
     size_t allocSize = mSize * mValueSize;
     size_t validSize = allocSize;                   // read access needs valid data in any case
 
@@ -253,7 +264,7 @@ void ContextArray::releaseReadAccess( ContextDataIndex index ) const
 
 ContextDataIndex ContextArray::acquireWriteAccess( ContextPtr context, bool keepFlag )
 {
-    size_t allocSize = mSize * sizeof( ValueType );
+    size_t allocSize = mSize * mValueSize;
     size_t validSize = keepFlag ? allocSize : 0 ;    // valid data only if keepFlag is set
 
     return mContextManager.acquireAccess( context, ContextData::Write, allocSize, validSize );
@@ -261,14 +272,9 @@ ContextDataIndex ContextArray::acquireWriteAccess( ContextPtr context, bool keep
 
 /* ---------------------------------------------------------------------------------*/
 
-template<typename ValueType>
-void LAMAArray<ValueType>::releaseWriteAccess( ContextDataIndex index )
+void ContextArray::releaseWriteAccess( ContextDataIndex index )
 {
     mContextManager.releaseAccess( index, ContextData::Write );
 }
-
-/* ---------------------------------------------------------------------------------*/
-
-LAMA_LOG_DEF_LOGGER( ContextArray::logger, "ContextArray" )
 
 }  // namespace 
