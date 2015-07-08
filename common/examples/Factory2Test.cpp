@@ -31,7 +31,7 @@
  * @date 19.06.2015
  */
 
-#include <common/Factory2.hpp>
+#include <common/Factory.hpp>
 #include <common/Printable.hpp>
 
 #include <iostream>
@@ -41,10 +41,11 @@ using namespace common;
 enum Kind 
 {
     D1, 
-    D2
+    D2,
+    D3
 };
 
-class Base : public Factory2<Kind, int, Base*>, public Printable
+class Base : public Factory1<Kind, int, Base*>, public Printable
 {
 public:
     virtual void writeAt( std::ostream& stream ) const
@@ -84,13 +85,18 @@ bool Derived1::init()
     return true;
 }
 
-class Derived2 : public Base, private Factory2<Kind, int, Base*>::Register<Derived2, D2>
+class Derived2 : public Base, private Factory1<Kind, int, Base*>::Register<Derived2>
 {
 public:
  
     int mVal;
 
     Derived2( int val ) : mVal( val ) {}
+
+    static inline Kind createValue() 
+    { 
+        return D2;
+    }
 
     static Base* create( int val )
     {
@@ -107,6 +113,15 @@ private:
 
 int main()
 {
+    std::vector<Kind> values;
+
+    Base::getCreateValues( values );
+
+    for ( size_t i = 0; i < values.size(); ++i )
+    {
+        std::cout << "Registered values[" << i << "] = " << values[i] << std::endl;
+    }
+
     Base* obj1 = Base::create(D1, 15);
     Base* obj2 = Base::create(D2, -5);
 

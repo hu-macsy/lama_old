@@ -38,29 +38,34 @@
 
 using namespace common;
 
-enum Kind 
-{
-    D1, 
-    D2
-};
+/** Base class provides a Factory with a create routine.
+ *
+ */
 
-class Base : public Factory<Kind, Base*>, public Printable
+class Base : public Factory<std::string, Base*>, public Printable
 {
 public:
+
     virtual void writeAt( std::ostream& stream ) const
     {
         stream << "Base";
     }
 };
 
+/** Derived class that registers manually in the factory. */
+
 class Derived1 : public Base //  Factory<int, *Base>::Manager<Derived1, 1>
 {
 public:
+
+    /** Method that creates objects of type Derived2 that will be used for registration. */
 
     static Base* create()
     {
         return new Derived1();
     }
+
+private:
 
     virtual void writeAt( std::ostream& stream ) const
     {
@@ -68,21 +73,35 @@ public:
     }
 
     static bool init();
-    static bool initialized;
 
+    static bool initialized;
 };
 
 bool Derived1::initialized = Derived1::init();
 
 bool Derived1::init()
 {
-    addCreator( D1, &create );
+    addCreator( "D1", &create );
     return true;
 }
 
-class Derived2 : public Base, private Factory<Kind, Base*>::Register<Derived2, D2>
+/** @brief Derived class of Base that uses Register class of Factory.
+ *
+ *  This class demonstrates automatic registration in the factory of the base class.
+ */
+class Derived2 : public Base, private Factory<std::string, Base*>::Register<Derived2>
 {
 public:
+  
+    /** This static functions provides the value for which this class registers in the factory. */
+
+    static inline std::string createValue()
+    {
+        return "D2";
+    }
+
+    /** Method that creates objects of type Derived2 that will be used for registration. */
+
     static Base* create()
     {
         return new Derived2();
@@ -98,8 +117,17 @@ private:
 
 int main()
 {
-    Base* obj1 = Base::create(D1);
-    Base* obj2 = Base::create(D2);
+    std::vector<std::string> values;
+
+    Base::getCreateValues( values );
+
+    for ( size_t i = 0; i < values.size(); ++i )
+    {
+        std::cout << "Registered values[" << i << "] = " << values[i] << std::endl;
+    }
+
+    Base* obj1 = Base::create("D1");
+    Base* obj2 = Base::create("D2");
 
     std::cout << "obj1 is " << *obj1 << std::endl;
     std::cout << "obj2 is " << *obj2 << std::endl;
