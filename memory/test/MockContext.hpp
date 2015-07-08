@@ -25,10 +25,9 @@
  * SOFTWARE.
  * @endlicense
  *
- * @brief Contains the implementation of the class ContextTest.
- * @author: Alexander Büchel, Thomas Brandes
- * @date 01.02.2012
- * @since 1.0.0
+ * @brief Definition of a Context class used for mock objects during tests.
+ * @author: Thomas Brandes
+ * @date 05.07.2015
  **/
 
 #include <memory/Context.hpp>
@@ -180,7 +179,7 @@ static std::vector<boost::weak_ptr<class MockContext> > contextInstances( 6 );
 
 /* --------------------------------------------------------------------- */
 
-ContextPtr MockContext::create( int deviceNr )
+inline ContextPtr MockContext::create( int deviceNr )
 {
     boost::shared_ptr<MockContext> context;
 
