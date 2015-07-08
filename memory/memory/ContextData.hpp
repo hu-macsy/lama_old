@@ -39,7 +39,6 @@
 #include <common/Printable.hpp>
 
 #include <boost/shared_ptr.hpp>
-#include <boost/function.hpp>
 
 namespace memory
 {

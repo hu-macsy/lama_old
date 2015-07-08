@@ -40,6 +40,9 @@ using namespace common;
 
 /** Base class provides a Factory with a create routine.
  *
+ *  \code
+ *  *Base create( std::string )
+ *  \endcode
  */
 
 class Base : public Factory<std::string, Base*>, public Printable
@@ -89,7 +92,7 @@ bool Derived1::init()
  *
  *  This class demonstrates automatic registration in the factory of the base class.
  */
-class Derived2 : public Base, private Factory<std::string, Base*>::Register<Derived2>
+class Derived2 : public Base, Base::Register<Derived2>
 {
 public:
   

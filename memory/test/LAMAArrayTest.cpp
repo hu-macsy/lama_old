@@ -34,14 +34,14 @@
 #include <boost/test/unit_test.hpp>
 #include <boost/mpl/list.hpp>
 
-#include <test/TestMacros.hpp>
-
-#include <lama/LAMAArray.hpp>
-#include <lama/HostWriteAccess.hpp>
-#include <lama/HostReadAccess.hpp>
+#include <memory/LAMAArray.hpp>
+#include <memory/LAMAArrayRef.hpp>
+#include <memory/HostWriteAccess.hpp>
+#include <memory/HostReadAccess.hpp>
 
 using namespace boost;
-using namespace lama;
+using namespace common;
+using namespace memory;
 
 /* --------------------------------------------------------------------- */
 
@@ -72,8 +72,8 @@ BOOST_AUTO_TEST_CASE( releaseTest )
     }
 
     writeAccess.release();
-    LAMA_CHECK_THROW( { writeAccess.resize( 20 ); }, Exception );
-    LAMA_CHECK_THROW( { writeAccess[0] = static_cast<IndexType> ( 5.0 ); }, Exception );
+    BOOST_CHECK_THROW( { writeAccess.resize( 20 ); }, Exception );
+    BOOST_CHECK_THROW( { writeAccess[0] = static_cast<IndexType> ( 5.0 ); }, Exception );
     HostReadAccess<IndexType> readAccess( lamaArray );
 
     for ( IndexType i = 0; i < 5; i++ )
@@ -123,8 +123,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( accessTest , ValueType, test_types )
             BOOST_CHECK_EQUAL( value, lamaArrayRAccess[i] );
         }
 
-        LAMA_CHECK_THROW(
-        {   HostWriteAccess<ValueType> tmpWriteAccess( lamaArray );}, Exception );
+        HostWriteAccess<ValueType> tmpWriteAccess( lamaArray );
     }
     {
         HostWriteAccess<ValueType> lamaArrayWAccess( lamaArray );
@@ -134,8 +133,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( accessTest , ValueType, test_types )
             lamaArrayWAccess[i] = value2;
         }
 
-        LAMA_CHECK_THROW(
-        {   HostReadAccess<ValueType> tmpReadAccess( lamaArray );}, Exception );
+        HostReadAccess<ValueType> tmpReadAccess( lamaArray );
+
         lamaArrayWAccess.release();
         HostReadAccess<ValueType> lamaArrayRAccess( lamaArray );
 
@@ -159,7 +158,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( refTest, ValueType, test_types )
         LAMAArrayRef<ValueType> lamaArray( myData, 10 );
         HostWriteAccess<ValueType> lamaArrayWAccess( lamaArray );
         // resize of a LAMA array with referenced data is not possible
-        LAMA_CHECK_THROW(
+        BOOST_CHECK_THROW(
         {   lamaArrayWAccess.resize( 20 );}, Exception );
 
         for ( IndexType i = 0; i < n; ++i )
@@ -182,7 +181,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( refTest, ValueType, test_types )
         LAMAArrayRef<ValueType> lamaArray( myData1, 10 );
         BOOST_CHECK_EQUAL( 10, lamaArray.size() );
         // Write access should not be allowed
-        LAMA_CHECK_THROW(
+        BOOST_CHECK_THROW(
         {
             HostWriteAccess<ValueType> lamaArrayWAccess( lamaArray );
         }
@@ -190,13 +189,6 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( refTest, ValueType, test_types )
     }
 }
 
-/* --------------------------------------------------------------------- */
-
-BOOST_AUTO_TEST_CASE( writeAtTest )
-{
-    LAMAArray<IndexType> lamaArray;
-    LAMA_WRITEAT_TEST( lamaArray );
-}
 /* --------------------------------------------------------------------- */
 
 BOOST_AUTO_TEST_SUITE_END();

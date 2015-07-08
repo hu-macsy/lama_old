@@ -1,5 +1,5 @@
 /**
- * @file ContextManager.hpp
+ * @file ContextDataManager.hpp
  *
  * @license
  * Copyright (c) 2009-2015
@@ -65,13 +65,13 @@ typedef size_t ContextDataIndex;
  *  at different contexts.
  */
 
-class ContextManager : private common::NonCopyable
+class ContextDataManager : private common::NonCopyable
 {
 public:
 
-    ContextManager();
+    ContextDataManager();
 
-    ~ContextManager();
+    ~ContextDataManager();
 
     /** Get the context data for a given context. A new entry can be created.
      *  This routine does not any locks or handling of data allocation or transfers.
@@ -131,7 +131,7 @@ public:
 
     /** Copy operator */
 
-    void copyAllValidEntries( const ContextManager& other, const size_t size );
+    void copyAllValidEntries( const ContextDataManager& other, const size_t size );
 
     /** Operator [] gives access to the ContextData by a reference. */
 
@@ -139,19 +139,19 @@ public:
 
     ContextData& operator[]( ContextPtr context );
 
-    /** Swap of ContextManager required for swap of LAMA arrays. */
+    /** Swap of ContextDataManager required for swap of LAMA arrays. */
 
-    void swap( ContextManager& other );
+    void swap( ContextDataManager& other );
 
     /** prefetch: starts memory transfer to context asynchronously if valid data is required. */
 
     void prefetch( ContextPtr context, size_t size );
 
-    void setValidData( ContextPtr context, const ContextManager& other, const size_t size );
+    void setValidData( ContextPtr context, const ContextDataManager& other, const size_t size );
 
     /** This routine tries to find a context where valid data is available */
 
-    ContextPtr getValidContext( const Context::ContextType preferredType );
+    ContextPtr getValidContext( const ContextType preferredType );
 
     void reserve( ContextPtr context, const size_t size, const size_t validSize );
 
@@ -189,7 +189,7 @@ private:
      *
      *  If a direct transfer from source to target is not possible (unsupported by
      *  the context) it will be tried to copy the data by involving a tempoarary 
-     *  copy in the Host context (copy belongs to the array with this ContextManager).
+     *  copy in the Host context (copy belongs to the array with this ContextDataManager).
      */
 
     void fetch( ContextData& target, const ContextData& source, size_t size );

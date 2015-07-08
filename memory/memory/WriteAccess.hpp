@@ -253,7 +253,7 @@ WriteAccess<ValueType>::WriteAccess( LAMAArray<ValueType>& array )
 
     LAMA_LOG_DEBUG( logger, "acquire write access for " << *mArray << " at first valid context " )
     const bool keepFlag = true;
-    mContextDataIndex = mArray->acquireWriteAccess( Context::getContext( Context::Host ), keepFlag );
+    mContextDataIndex = mArray->acquireWriteAccess( Context::getContext( context::Host ), keepFlag );
     mData = mArray->get( mContextDataIndex );     // cache the data pointer
 }
 

@@ -55,7 +55,7 @@ int main()
 
     LAMAArray<float> lamaArray ( N, 1.0 );
 
-    boost::shared_ptr<LAMAArray<float> > lamaArray1( lamaArray.create() );
+    boost::shared_ptr<LAMAArray<float> > lamaArray1( lamaArray.clone() );
 
     *lamaArray1 = lamaArray;
 

@@ -1,5 +1,5 @@
 /**
- * @file ContextManger.cpp
+ * @file ContextDataManger.cpp
  *
  * @license
  * Copyright (c) 2009-2015
@@ -25,14 +25,14 @@
  * SOFTWARE.
  * @endlicense
  *
- * @brief Implementation of methods for class ContextManager.
+ * @brief Implementation of methods for class ContextDataManager.
  * @author Thomas Brandes
  * @date 14.03.2011
  */
 
 // hpp
 
-#include <memory/ContextManager.hpp>
+#include <memory/ContextDataManager.hpp>
 #include <memory/Context.hpp>
 
 #include <common/Exception.hpp>
@@ -44,11 +44,11 @@ typedef ContextData::AccessKind AccessKind;
 
 /* ---------------------------------------------------------------------------------*/
 
-LAMA_LOG_DEF_LOGGER( ContextManager::logger, "ContextManager" )
+LAMA_LOG_DEF_LOGGER( ContextDataManager::logger, "ContextDataManager" )
 
 /* ---------------------------------------------------------------------------------*/
 
-ContextManager::ContextManager() :
+ContextDataManager::ContextDataManager() :
 
     mContextData(),
     mSyncToken()
@@ -59,12 +59,12 @@ ContextManager::ContextManager() :
     multiContext = false;
     multiThreaded = false;
   
-    LAMA_LOG_DEBUG( logger, "ContextManager()" )
+    LAMA_LOG_DEBUG( logger, "ContextDataManager()" )
 }
 
 /* ---------------------------------------------------------------------------------*/
 
-void ContextManager::wait()
+void ContextDataManager::wait()
 {
     if ( 0 != mSyncToken.get() )
     {
@@ -75,21 +75,21 @@ void ContextManager::wait()
 
 /* ---------------------------------------------------------------------------------*/
 
-bool ContextManager::locked() const
+bool ContextDataManager::locked() const
 {
     return ( mLock[ContextData::Write] > 0 ) || ( mLock[ContextData::Read] > 0 );
 }
 
 /* ---------------------------------------------------------------------------------*/
 
-bool ContextManager::locked( ContextData::AccessKind kind ) const
+bool ContextDataManager::locked( ContextData::AccessKind kind ) const
 {
     return ( mLock[kind] > 0 );
 }
 
 /* ---------------------------------------------------------------------------------*/
 
-bool ContextManager::hasAccessConflict( ContextData::AccessKind kind ) const
+bool ContextDataManager::hasAccessConflict( ContextData::AccessKind kind ) const
 {
     bool conflict = false;
 
@@ -106,7 +106,7 @@ bool ContextManager::hasAccessConflict( ContextData::AccessKind kind ) const
 
 /* ---------------------------------------------------------------------------------*/
 
-void ContextManager::lockAccess( ContextData::AccessKind kind, ContextPtr context )
+void ContextDataManager::lockAccess( ContextData::AccessKind kind, ContextPtr context )
 {
     common::Thread::ScopedLock lock( mAccessMutex );
 
@@ -181,7 +181,7 @@ void ContextManager::lockAccess( ContextData::AccessKind kind, ContextPtr contex
 
 /* ---------------------------------------------------------------------------------*/
 
-void ContextManager::unlockAccess( ContextData::AccessKind kind )
+void ContextDataManager::unlockAccess( ContextData::AccessKind kind )
 {
     common::Thread::ScopedLock lock( mAccessMutex );
 
@@ -203,7 +203,7 @@ void ContextManager::unlockAccess( ContextData::AccessKind kind )
 
 /* ---------------------------------------------------------------------------------*/
 
-void ContextManager::releaseAccess( ContextDataIndex index, ContextData::AccessKind kind )
+void ContextDataManager::releaseAccess( ContextDataIndex index, ContextData::AccessKind kind )
 {
     // we should check that this is really the context data for which access was reserved
     unlockAccess( kind );
@@ -211,7 +211,7 @@ void ContextManager::releaseAccess( ContextDataIndex index, ContextData::AccessK
 
 /* ---------------------------------------------------------------------------------*/
 
-void ContextManager::purge()
+void ContextDataManager::purge()
 {
     // purge frees all data but keeps the ContextData entries
     wait();
@@ -226,7 +226,7 @@ void ContextManager::purge()
 
 /* ---------------------------------------------------------------------------------*/
 
-ContextManager::~ContextManager()
+ContextDataManager::~ContextDataManager()
 {
     wait();
     // explicit free for all context data needed
@@ -248,7 +248,7 @@ ContextManager::~ContextManager()
 
     for ( size_t i = 0; i < mContextData.size(); i++ )
     {
-        LAMA_LOG_INFO( logger, "~ContextManager, free " << mContextData[i] )
+        LAMA_LOG_INFO( logger, "~ContextDataManager, free " << mContextData[i] )
         mContextData[i].free();
     }
 
@@ -257,7 +257,7 @@ ContextManager::~ContextManager()
 
 /* ---------------------------------------------------------------------------------*/
 
-ContextDataIndex ContextManager::findContextData( ContextPtr context ) const
+ContextDataIndex ContextDataManager::findContextData( ContextPtr context ) const
 {
     ContextDataIndex i;
 
@@ -276,7 +276,7 @@ ContextDataIndex ContextManager::findContextData( ContextPtr context ) const
 
 /* ---------------------------------------------------------------------------------*/
 
-bool ContextManager::isValid( ContextPtr context ) const
+bool ContextDataManager::isValid( ContextPtr context ) const
 {
     ContextDataIndex index = findContextData( context );
 
@@ -293,7 +293,7 @@ bool ContextManager::isValid( ContextPtr context ) const
 
 /* ---------------------------------------------------------------------------------*/
 
-size_t ContextManager::capacity( ContextPtr context ) const
+size_t ContextDataManager::capacity( ContextPtr context ) const
 {
     ContextDataIndex index = findContextData( context );
 
@@ -310,7 +310,7 @@ size_t ContextManager::capacity( ContextPtr context ) const
 
 /* ---------------------------------------------------------------------------------*/
 
-ContextDataIndex ContextManager::getContextData( ContextPtr context )
+ContextDataIndex ContextDataManager::getContextData( ContextPtr context )
 {
     bool found = false;
     size_t contextIndex = findContextData( context );
@@ -333,7 +333,7 @@ ContextDataIndex ContextManager::getContextData( ContextPtr context )
 
 /* ---------------------------------------------------------------------------------*/
 
-ContextData& ContextManager::operator[] ( ContextDataIndex index )
+ContextData& ContextDataManager::operator[] ( ContextDataIndex index )
 {
     COMMON_ASSERT( index < mContextData.size(), "index = " << index << " is illegal index, size = " << mContextData.size() )
     return mContextData[index];
@@ -341,14 +341,14 @@ ContextData& ContextManager::operator[] ( ContextDataIndex index )
 
 /* ---------------------------------------------------------------------------------*/
 
-ContextData& ContextManager::operator[] ( ContextPtr context )
+ContextData& ContextDataManager::operator[] ( ContextPtr context )
 {
     return operator[]( getContextData( context ) );
 }
 
 /* ---------------------------------------------------------------------------------*/
 
-ContextDataIndex ContextManager::findValidData() const
+ContextDataIndex ContextDataManager::findValidData() const
 {
     ContextDataIndex index;
 
@@ -374,7 +374,7 @@ ContextDataIndex ContextManager::findValidData() const
 
 /* ---------------------------------------------------------------------------------*/
 
-const ContextData& ContextManager::getValidData() const
+const ContextData& ContextDataManager::getValidData() const
 {
     ContextDataIndex index = findValidData();
 
@@ -390,7 +390,7 @@ const ContextData& ContextManager::getValidData() const
 
 /* ---------------------------------------------------------------------------------*/
 
-ContextPtr ContextManager::getValidContext( const Context::ContextType preferredType )
+ContextPtr ContextDataManager::getValidContext( const ContextType preferredType )
 {
     ContextPtr result;
 
@@ -420,7 +420,7 @@ ContextPtr ContextManager::getValidContext( const Context::ContextType preferred
 
 /* ---------------------------------------------------------------------------------*/
 
-ContextDataIndex ContextManager::acquireAccess( ContextPtr context, AccessKind kind,
+ContextDataIndex ContextDataManager::acquireAccess( ContextPtr context, AccessKind kind,
         size_t allocSize, size_t validSize )
 {
     COMMON_ASSERT( context, "NULL pointer for context" )
@@ -460,7 +460,7 @@ ContextDataIndex ContextManager::acquireAccess( ContextPtr context, AccessKind k
 
 /* ---------------------------------------------------------------------------------*/
 
-void ContextManager::fetch( ContextData& target, const ContextData& source, size_t size )
+void ContextDataManager::fetch( ContextData& target, const ContextData& source, size_t size )
 {
     try
     {
@@ -470,14 +470,14 @@ void ContextManager::fetch( ContextData& target, const ContextData& source, size
     {
         LAMA_LOG_INFO( logger, target << " copy from " << source << " not supported" )
         // try it via host
-        ContextPtr hostContext = Context::getContext( Context::Host );
+        ContextPtr hostContext = Context::getContext( context::Host );
 
-        if ( target.context()->getType() == Context::Host )
+        if ( target.context()->getType() == context::Host )
         {
             COMMON_THROWEXCEPTION( "unsupported" )
         }
 
-        if ( source.context()->getType() == Context::Host )
+        if ( source.context()->getType() == context::Host )
         {
             COMMON_THROWEXCEPTION( "unsupported" )
         }
@@ -497,7 +497,7 @@ void ContextManager::fetch( ContextData& target, const ContextData& source, size
 
 /* ---------------------------------------------------------------------------------*/
 
-SyncToken* ContextManager::fetchAsync( ContextData& target, const ContextData& source, size_t size )
+SyncToken* ContextDataManager::fetchAsync( ContextData& target, const ContextData& source, size_t size )
 {
     try
     {
@@ -508,14 +508,14 @@ SyncToken* ContextManager::fetchAsync( ContextData& target, const ContextData& s
     {
         LAMA_LOG_INFO( logger, target << " async copy from " << source << " not supported" )
 
-        ContextPtr hostContext = Context::getContext( Context::Host );
+        ContextPtr hostContext = Context::getContext( context::Host );
 
-        if ( target.context()->getType() == Context::Host )
+        if ( target.context()->getType() == context::Host )
         {
             COMMON_THROWEXCEPTION( "unsupported" )
         }
 
-        if ( source.context()->getType() == Context::Host )
+        if ( source.context()->getType() == context::Host )
         {
             COMMON_THROWEXCEPTION( "unsupported" )
         }
@@ -535,7 +535,7 @@ SyncToken* ContextManager::fetchAsync( ContextData& target, const ContextData& s
 
 /* ---------------------------------------------------------------------------------*/
 
-void ContextManager::copyAllValidEntries( const ContextManager& other, const size_t size )
+void ContextDataManager::copyAllValidEntries( const ContextDataManager& other, const size_t size )
 {
     // each valid data of the other array will be copied into the same context for this array
     size_t nOtherContexts = other.mContextData.size();
@@ -563,7 +563,7 @@ void ContextManager::copyAllValidEntries( const ContextManager& other, const siz
 
 /* ---------------------------------------------------------------------------------*/
 
-void ContextManager::setValidData( ContextPtr context, const ContextManager& other, const size_t size )
+void ContextDataManager::setValidData( ContextPtr context, const ContextDataManager& other, const size_t size )
 {
     ContextData& data = operator[]( context );
 
@@ -581,7 +581,7 @@ void ContextManager::setValidData( ContextPtr context, const ContextManager& oth
 
 /* ---------------------------------------------------------------------------------*/
 
-void ContextManager::invalidateAll()
+void ContextDataManager::invalidateAll()
 {
     size_t noContexts = mContextData.size();
     LAMA_LOG_DEBUG( logger, "invalidate for " << noContexts << " context locations" )
@@ -594,7 +594,7 @@ void ContextManager::invalidateAll()
 
 /* ---------------------------------------------------------------------------------*/
 
-void ContextManager::swap( ContextManager& other )
+void ContextDataManager::swap( ContextDataManager& other )
 {
     // there must be no accesses to the swapped arrays as references would be invalid. */
     COMMON_ASSERT( !locked(), "" )
@@ -605,7 +605,7 @@ void ContextManager::swap( ContextManager& other )
 
 /* ---------------------------------------------------------------------------------*/
 
-void ContextManager::prefetch( ContextPtr context, size_t size )
+void ContextDataManager::prefetch( ContextPtr context, size_t size )
 {
     ContextData& data = operator[]( context );
 
@@ -632,7 +632,7 @@ void ContextManager::prefetch( ContextPtr context, size_t size )
 
 /* ---------------------------------------------------------------------------------*/
 
-void ContextManager::reserve( ContextPtr context, const size_t size, const size_t validSize )
+void ContextDataManager::reserve( ContextPtr context, const size_t size, const size_t validSize )
 {
     ContextData& data = ( *this )[context];
 

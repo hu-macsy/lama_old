@@ -101,6 +101,7 @@ void ContextData::setRef( void* reference, const size_t size )
     pointer = reference;
     this->size = size;
     allocated = false;
+    valid     = true;   // we assume it as valid data
 
     if ( !pointer && size )
     {

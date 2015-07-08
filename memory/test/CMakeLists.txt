@@ -25,14 +25,19 @@
  # SOFTWARE.
  # @endlicense
  #
- # @brief CMake configuration file for common examples
+ # @brief CMake configuration file for memory tests
  # @author Thomas Brandes
  # @date 16.06.2015
 ###
 
-# Array1 example
+file ( GLOB CPP_SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/*.cpp" )
 
-foreach ( executable Array1 BenchArray Aliasing Threading Create )
-    add_executable( ${executable} ${executable}.cpp )
-    target_link_libraries( ${executable} ${MEMORY_LIBRARY} )
-endforeach ( executable )
+add_executable ( MemoryTest ${CPP_SOURCES} )
+
+find_package ( Boost REQUIRED COMPONENTS unit_test_framework )
+
+target_link_libraries ( MemoryTest 
+    ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY}
+    ${MEMORY_LIBRARY}
+    )
+

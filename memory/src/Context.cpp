@@ -64,27 +64,27 @@ void Context::writeAt( std::ostream& stream ) const
 
 std::ostream& operator<<( std::ostream& stream, const ContextType& type )
 {
-    if( type == Context::Host )
+    if( type == context::Host )
     {
         stream << "Host";
     }
-    else if( type == Context::CUDA )
+    else if( type == context::CUDA )
     {
         stream << "CUDA";
     }
-    else if( type == Context::OpenCL )
+    else if( type == context::OpenCL )
     {
         stream << "OpenCL";
     }
-    else if( type == Context::MIC )
+    else if( type == context::MIC )
     {
         stream << "MIC";
     }
-    else if( type == Context::UserContext )
+    else if( type == context::UserContext )
     {
         stream << "UserContext";
     }
-    else if( type == Context::UserContext1 )
+    else if( type == context::UserContext1 )
     {
         stream << "UserContext1";
     }
@@ -136,56 +136,12 @@ ContextPtr Context::getHostContext() const
 {
     // take the default host context of the context factory
 
-    return getContext( Context::Host );
+    return getContext( context::Host );
 }
 
-/* ---------------------------------------------------------------------------------*/
-
-/** Map container to get for the key the create function. */
-
-typedef std::map<Context::ContextType, Context::CreateFn> CreatorMap;
-
-static CreatorMap& getFactory()
+ContextPtr Context::getContext( ContextType type, int deviceNr )
 {
-    static std::auto_ptr<CreatorMap> factory;
-
-    if( !factory.get() )
-    {
-        factory = std::auto_ptr<CreatorMap>( new CreatorMap() );
-    }
-
-    return *factory;
-}
-
-void Context::addCreator( const Context::ContextType type,  CreateFn create )
-{
-    CreatorMap& factory = getFactory();
-
-    // checks for multiple entries is not really necessary here, so just add entry in map container.
-
-    factory[type] = create;
-}
-
-ContextPtr Context::getContext( Context::ContextType type, int deviceNr )
-{
-    ContextPtr context;
-
-    COMMON_ASSERT( type < Context::MaxContext, "illegal device type = " << type << ", out of range" )
-
-    const CreatorMap& factory = getFactory();
-
-    CreatorMap::const_iterator fn = factory.find( type );
-
-    if ( fn != factory.end() )
-    {
-        context = fn->second( deviceNr );
-    }
-    else
-    {
-        COMMON_THROWEXCEPTION( "Context " << type << " not supported: no creator available" )
-    }
-
-    return context;
+    return create( type, deviceNr );
 }
 
 }

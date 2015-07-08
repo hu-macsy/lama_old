@@ -87,6 +87,10 @@ public:
         static bool initialized;
     };
 
+    /** @brief check if create is supported for a given input value */
+
+    static bool canCreate( const InputType type );
+
     /** @brief Method to get all registered values. */
 
     static void getCreateValues( std::vector<InputType>& values );
@@ -138,7 +142,7 @@ bool Factory<InputType, OutputType>::Register<Derived>::initialized =
 template<typename InputType, typename OutputType> 
 OutputType Factory<InputType, OutputType>::create( const InputType type )
 {
-    OutputType value = 0;
+    OutputType value;
 
     const CreatorMap& factory = getFactory();
 
@@ -177,6 +181,16 @@ void Factory<InputType, OutputType>::addCreator( const InputType type, CreateFn 
     // checks for multiple entries is not really necessary here, so just add entry in map container.
 
     factory[type] = create;
+}
+
+template<typename InputType, typename OutputType>
+bool Factory<InputType, OutputType>::canCreate( InputType value )
+{
+    CreatorMap& factory = getFactory();
+
+    typename CreatorMap::const_iterator it = factory.find( value );
+
+    return it != factory.end();
 }
 
 template<typename InputType, typename OutputType>
@@ -239,6 +253,10 @@ public:
         static bool initialized;
     };
 
+    /** @brief check if create is supported for a given input value */
+
+    static bool canCreate( const InputType type );
+
     /** @brief Method to get all registered values. */
 
     static void getCreateValues( std::vector<InputType>& values );
@@ -290,7 +308,7 @@ bool Factory1<InputType, ValueType, OutputType>::Register<Derived>::initialized 
 template<typename InputType, typename ValueType, typename OutputType> 
 OutputType Factory1<InputType, ValueType, OutputType>::create( const InputType type, const ValueType val )
 {
-    OutputType value = 0;
+    OutputType value;
 
     const CreatorMap& factory = getFactory();
 
@@ -329,6 +347,16 @@ void Factory1<InputType, ValueType, OutputType>::addCreator( const InputType typ
     // checks for multiple entries is not really necessary here, so just add entry in map container.
 
     factory[type] = create;
+}
+
+template<typename InputType, typename ValueType, typename OutputType>
+bool Factory1<InputType, ValueType, OutputType>::canCreate( InputType value )
+{
+    CreatorMap& factory = getFactory();
+
+    typename CreatorMap::const_iterator it = factory.find( value );
+
+    return it != factory.end();
 }
 
 template<typename InputType, typename ValueType, typename OutputType>

@@ -53,7 +53,7 @@ namespace memory
  *  The default host context allocates/frees data in the usual way.
  */
 
-class COMMON_DLL_IMPORTEXPORT DefaultHostContext: public HostContext
+class COMMON_DLL_IMPORTEXPORT DefaultHostContext: public HostContext, Context::Register<DefaultHostContext>
 {
 
 public:
@@ -65,7 +65,9 @@ public:
         return HostContext::DefaultHost;
     }
 
-    static ContextPtr getContext( int deviceNr );
+    static ContextPtr create( int deviceNr );
+
+    static ContextType createValue() { return context::Host; }
 
     virtual void writeAt( std::ostream& stream ) const;
 
@@ -90,10 +92,6 @@ private:
     mutable size_t mNumberOfAllocatedBytes;//!< variable counts allocated bytes
 
     mutable common::Thread::RecursiveMutex allocate_mutex;// needed to make allocate/free thread-safe
-
-    static bool init();
-
-    static bool initialized;   // initialization will register getContext as creator for Context
 };
 
 }

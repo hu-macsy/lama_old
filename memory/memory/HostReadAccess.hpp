@@ -93,7 +93,7 @@ LAMA_LOG_DEF_TEMPLATE_LOGGER( template<typename ValueType>, HostReadAccess<Value
 
 template<typename ValueType>
 HostReadAccess<ValueType>::HostReadAccess( const LAMAArray<ValueType>& array )
-                : ReadAccess<ValueType>( array, Context::getContext( Context::Host ) ), mData( get() )
+                : ReadAccess<ValueType>( array, Context::getContext( context::Host ) ), mData( get() )
 {
     LAMA_LOG_DEBUG( logger, "read access on host, mData = " << mData );
 }

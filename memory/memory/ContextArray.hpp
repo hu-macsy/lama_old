@@ -43,13 +43,13 @@
 
 // others
 #include <memory/Context.hpp>
-#include <memory/ContextManager.hpp>
+#include <memory/ContextDataManager.hpp>
 #include <memory/SyncToken.hpp>
 #include <memory/Scalar.hpp>
 
 // common
 #include <common/Printable.hpp>
-#include <memory/Factory.hpp>
+#include <common/Factory.hpp>
 
 #include <vector>
 #include <map>
@@ -71,9 +71,15 @@ class ReadAccess;
 template<typename ValueType>
 class WriteAccess;
 
-/** Common base class for typed LAMAArray. */
+/** Common base class for typed LAMAArray. 
+ * 
+ *  Base class provides also a factory for creating arrays.
+ */
 
-class COMMON_DLL_IMPORTEXPORT ContextArray: public Printable, public common::Factory<Scalar::ScalarType, ContextArray*>
+class COMMON_DLL_IMPORTEXPORT ContextArray: 
+
+    public Printable, 
+    public common::Factory<Scalar::ScalarType, ContextArray*>
 {
     // Member variables of this class
 
@@ -84,7 +90,7 @@ protected:
 
     bool constFlag;         //!< if true the array cannot be written
 
-    mutable ContextManager mContextManager;  //!< takes control of accesses and allocations
+    mutable ContextDataManager mContextDataManager;  //!< takes control of accesses and allocations
 
 public:
 
@@ -104,7 +110,7 @@ public:
      *  allow writing general routines that require temporary data.
      */
 
-    virtual ContextArray* create() = 0;
+    virtual ContextArray* clone() = 0;
 
     /**
      * @brief Query the current size of the LAMA array, i.e. number of entries.
@@ -123,7 +129,7 @@ public:
      * 
      * Note: NULL pointer is returned if no valid data is available
      */
-    ContextPtr getValidContext( const Context::ContextType preferredType = Context::Host ) const;
+    ContextPtr getValidContext( const ContextType preferredType = context::Host ) const;
 
     /**
      * @brief Prefetches the contents of the container to the passed context.
@@ -208,14 +214,14 @@ inline IndexType ContextArray::size() const
 
 inline void ContextArray::prefetch( ContextPtr context ) const
 {
-    mContextManager.prefetch( context, mSize * mValueSize );
+    mContextDataManager.prefetch( context, mSize * mValueSize );
 }
 
 /* ---------------------------------------------------------------------------------*/
 
 inline bool ContextArray::isValid( ContextPtr context ) const
 {
-    return mContextManager.isValid( context );
+    return mContextDataManager.isValid( context );
 }
 
 /* ---------------------------------------------------------------------------------*/
@@ -224,57 +230,57 @@ inline IndexType ContextArray::capacity( ContextPtr context ) const
 {
     // will return 0 if no data is available at the specified context
 
-    return mContextManager.capacity( context ) / mValueSize;
+    return mContextDataManager.capacity( context ) / mValueSize;
 }
 
 /* ---------------------------------------------------------------------------------*/
 
-IndexType ContextArray::capacity( ContextDataIndex index ) const
+inline IndexType ContextArray::capacity( ContextDataIndex index ) const
 {
-    const ContextData& entry = mContextManager[index];
+    const ContextData& entry = mContextDataManager[index];
 
     return static_cast<IndexType>( entry.capacity() / mValueSize );
 }
 
 /* ---------------------------------------------------------------------------------*/
 
-inline ContextPtr ContextArray::getValidContext( const Context::ContextType preferredType ) const
+inline ContextPtr ContextArray::getValidContext( const ContextType preferredType ) const
 {
-    return mContextManager.getValidContext( preferredType );
+    return mContextDataManager.getValidContext( preferredType );
 }
 
 /* ---------------------------------------------------------------------------------*/
 
-ContextDataIndex ContextArray::acquireReadAccess( ContextPtr context ) const
+inline ContextDataIndex ContextArray::acquireReadAccess( ContextPtr context ) const
 {
     size_t allocSize = mSize * mValueSize;
     size_t validSize = allocSize;                   // read access needs valid data in any case
 
-    return mContextManager.acquireAccess( context, ContextData::Read, allocSize, validSize );
+    return mContextDataManager.acquireAccess( context, ContextData::Read, allocSize, validSize );
 }
 
 /* ---------------------------------------------------------------------------------*/
 
-void ContextArray::releaseReadAccess( ContextDataIndex index ) const
+inline void ContextArray::releaseReadAccess( ContextDataIndex index ) const
 {
-    mContextManager.releaseAccess( index, ContextData::Read );
+    mContextDataManager.releaseAccess( index, ContextData::Read );
 }
 
 /* ---------------------------------------------------------------------------------*/
 
-ContextDataIndex ContextArray::acquireWriteAccess( ContextPtr context, bool keepFlag )
+inline ContextDataIndex ContextArray::acquireWriteAccess( ContextPtr context, bool keepFlag )
 {
     size_t allocSize = mSize * mValueSize;
     size_t validSize = keepFlag ? allocSize : 0 ;    // valid data only if keepFlag is set
 
-    return mContextManager.acquireAccess( context, ContextData::Write, allocSize, validSize );
+    return mContextDataManager.acquireAccess( context, ContextData::Write, allocSize, validSize );
 }
 
 /* ---------------------------------------------------------------------------------*/
 
-void ContextArray::releaseWriteAccess( ContextDataIndex index )
+inline void ContextArray::releaseWriteAccess( ContextDataIndex index )
 {
-    mContextManager.releaseAccess( index, ContextData::Write );
+    mContextDataManager.releaseAccess( index, ContextData::Write );
 }
 
 }  // namespace 

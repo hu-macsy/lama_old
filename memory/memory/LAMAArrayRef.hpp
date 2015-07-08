@@ -38,19 +38,20 @@
 
 #include <memory/LAMAArray.hpp>
 
-/** Number of contexts that might be used in maximum. This number
- *  is used for reservation of entries but does not imply any restrictions.
- */
-
-#define LAMA_MAX_CONTEXTS 4
-
 namespace memory
 {
 
 /**
- * @brief LAMAArrayRef is a container that uses external data.
+ * @brief LAMAArrayRef is a container that uses already allocated Host memory
  *
  * @tparam ValueType is the type stored in this container.
+ *
+ * In some situations data is already available at the host and copying the
+ * data would cause some loss of performance. This class allows construction
+ * of a LAMA array that uses this allocated data.
+ *
+ * An object of this class is restricted in its use. Any resize operation that
+ * would cause reallocation of data at the host throws an exception.
  */
 template<typename ValueType>
 class COMMON_DLL_IMPORTEXPORT LAMAArrayRef: public LAMAArray<ValueType>
@@ -70,8 +71,9 @@ public:
 protected:
 
     using LAMAArray<ValueType>::mSize;
+    using LAMAArray<ValueType>::mValueSize;
 
-    using LAMAArray<ValueType>::mContextManager;
+    using LAMAArray<ValueType>::mContextDataManager;
     using LAMAArray<ValueType>::constFlag;
 };
 
@@ -88,13 +90,13 @@ LAMAArrayRef<ValueType>::LAMAArrayRef( ValueType* pointer, IndexType size )
         COMMON_THROWEXCEPTION( "LAMAArryRef with NULL pointer" )
     }
 
-/*
-    ContextData& host = *mContextData[0];
-    host.setRef( pointer, size * sizeof(ValueType) );
-*/
+    ContextData& host = mContextDataManager[ Context::getContext( context::Host ) ];
+    host.setRef( pointer, size * mValueSize );
 
     mSize = size;
 }
+
+/* ---------------------------------------------------------------------------------*/
 
 template<typename ValueType>
 LAMAArrayRef<ValueType>::LAMAArrayRef( const ValueType* pointer, IndexType size )
@@ -107,15 +109,17 @@ LAMAArrayRef<ValueType>::LAMAArrayRef( const ValueType* pointer, IndexType size 
         COMMON_THROWEXCEPTION( "LAMAArryRef with NULL pointer" )
     }
 
-/*
-    ContextData& host = *mContextData[0];
+    ContextData& host = mContextDataManager[ Context::getContext( context::Host ) ];
+
+    // dealing with const references in ContextData is not supported
+
     host.setRef( const_cast<ValueType*>( pointer ), size * sizeof(ValueType) );
 
-    constFlag = true; // makes sure that we cannot have a WriteAccess
+    // Take care of const awareness by setting a flag
+
+    constFlag = true; 
 
     mSize = size;
-*/
-
 }
 
 }  // namespace 

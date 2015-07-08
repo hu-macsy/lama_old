@@ -49,7 +49,7 @@ namespace memory
 /* ------------------------------------------------------------------------- */
 
 HostContext::HostContext()
-                : Context( Host )
+                : Context( context::Host )
 {
 }
 
@@ -70,7 +70,7 @@ bool HostContext::canUseData( const Context& other ) const
 
     // different Host devices can use same data
 
-    if( other.getType() == Host )
+    if( other.getType() == context::Host )
     {
         return true;
         // equal if other is HostContext and has same host type

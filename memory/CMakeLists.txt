@@ -106,6 +106,7 @@ add_library ( ${MEMORY_LIBRARY} SHARED ${CPP_SOURCES} )
 target_link_libraries( ${MEMORY_LIBRARY} ${TASKING_LIBRARY} ${LOGGING_LIBRARY} ${COMMON_LIBRARY} )
 
 add_subdirectory( examples )
+add_subdirectory( test )
 
 ### install ###
 

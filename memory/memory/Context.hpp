@@ -38,6 +38,7 @@
 #include <common/config.hpp>
 
 // base classes
+#include <common/Factory.hpp>
 #include <common/Printable.hpp>
 #include <common/NonCopyable.hpp>
 
@@ -60,22 +61,8 @@ class Context;
 /** Context pointers will be always const, so context can never be modified. */
 typedef boost::shared_ptr<const Context> ContextPtr;
 
-/** @brief This class is a common base class for all possible contexts.
- *
- *  A context stands for a compute and data environment to run certain code.
- *
- *  Each context must provide routines to allocate and free data for the context as
- *  well as copy data in suitable memory locations accessible for the context.
- *
- *  Furthermore, each context should provide routines to transfer memory from the HOST to
- *  to the context and vice versa.
- *
- *  A copy constructor for a context is not provided.
- */
-class COMMON_DLL_IMPORTEXPORT Context: public Printable, private common::NonCopyable
+namespace context
 {
-public:
-
     /** Enumeration type for the supported contexts. The type is used to select
      *  the appropriate code that will be used for the computations in the context.
      *
@@ -93,6 +80,29 @@ public:
         UserContext1,  //!< ucan be used for a new derived Context class
         MaxContext     //!< used for dimension of ContextType arrays
     };
+}
+
+typedef context::ContextType ContextType;
+
+/** @brief This class is a common base class for all possible contexts.
+ *
+ *  A context stands for a compute and data environment to run certain code.
+ *
+ *  Each context must provide routines to allocate and free data for the context as
+ *  well as copy data in suitable memory locations accessible for the context.
+ *
+ *  Furthermore, each context should provide routines to transfer memory from the HOST to
+ *  to the context and vice versa.
+ *
+ *  A copy constructor for a context is not provided.
+ */
+class COMMON_DLL_IMPORTEXPORT Context: 
+  
+    public common::Factory1<ContextType, int, ContextPtr>,
+    public Printable, 
+    private common::NonCopyable
+{
+public:
 
     virtual ~Context();
 
@@ -222,18 +232,14 @@ public:
      *
      *  @throws Exception if the context of the requested type is not available
      */
-    static ContextPtr getContext( const Context::ContextType type, int deviceNr = -1 );
+    static ContextPtr getContext( const ContextType type, int deviceNr = -1 );
 
     /** Checks if a context of the passed type is available.
      *
      * @param[in] type  is the type of context that is wanted
      * @return          if a context of the passed type is available
      */
-    static bool hasContext( const Context::ContextType type );
-
-    /** Type definition of a function that delivers a context by a device id */
-
-    typedef ContextPtr (*CreateFn)( int );
+    static bool hasContext( const ContextType type );
 
 protected:
 
@@ -250,18 +256,9 @@ protected:
     mutable const char* mFile;//!< File name where context has been enabled
 
     mutable int mLine;//!< Line number where context has been enabled
-
-    /** This method adds a Context creator routine for a certain type.
-     *  By this way it is possible to create an object of a derived class 
-     *  that might be added later dynamically.
-     */
-
-    static void addCreator( const Context::ContextType type,  CreateFn create );
 };
 
 /** Make ContextType visible in namespace, but not the different enumeration values. */
-
-typedef Context::ContextType ContextType;
 
 COMMON_DLL_IMPORTEXPORT std::ostream& operator<<( std::ostream& stream, const ContextType& type );
 

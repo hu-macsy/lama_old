@@ -142,7 +142,7 @@ SyncToken* DefaultHostContext::memcpyAsync( void* dst, const void* src, const si
 
 static boost::weak_ptr<class DefaultHostContext> contextInstance;
 
-ContextPtr DefaultHostContext::getContext( int deviceNr )
+ContextPtr DefaultHostContext::create( int deviceNr )
 {
     boost::shared_ptr<DefaultHostContext> context;
 
@@ -170,13 +170,6 @@ ContextPtr DefaultHostContext::getContext( int deviceNr )
 
     return context;
 }
-
-bool DefaultHostContext::init()
-{
-    Context::addCreator( Context::Host, &DefaultHostContext::getContext );
-}
-
-bool DefaultHostContext::initialized = DefaultHostContext::init();
 
 } // namespace
 
