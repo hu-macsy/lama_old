@@ -249,7 +249,10 @@ if ( NOT ${LAMA_LIBRARY_TYPE} STREQUAL STATIC )
     set ( ADDITIONAL_LINKER_FLAGS "-ldl -L\${LAMA_ROOT}/lib -lama" )
     # if boost system is found, add it to the linker flaggs
     if ( Boost_SYSTEM_LIBRARY )
-        set ( ADDITIONAL_LINKER_FLAGS "${ADDITIONAL_LINKER_FLAGS} -L${Boost_LIBRARY_DIRS} -lboost_system" )
+        foreach ( LIBRARY_DIR ${Boost_LIBRARY_DIRS} )
+            set ( ADDITIONAL_LINKER_FLAGS "${ADDITIONAL_LINKER_FLAGS} -L${LIBRARY_DIR}" )
+        endforeach ( LIBRARY_DIR )
+        set ( ADDITIONAL_LINKER_FLAGS "${ADDITIONAL_LINKER_FLAGS} -lboost_system" )
     endif( Boost_SYSTEM_LIBRARY )  
 endif ( NOT ${LAMA_LIBRARY_TYPE} STREQUAL STATIC )
 
