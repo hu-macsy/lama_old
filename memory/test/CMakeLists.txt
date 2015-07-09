@@ -38,6 +38,6 @@ find_package ( Boost REQUIRED COMPONENTS unit_test_framework )
 
 target_link_libraries ( MemoryTest 
     ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY}
-    ${MEMORY_LIBRARY}
+    ${memory_LIBRARY}
     )
 

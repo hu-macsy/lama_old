@@ -36,13 +36,13 @@ cmake_minimum_required ( VERSION 2.8 )
 
 project( memory CXX )
 
-set ( MEMORY_LIBRARY memory
+set ( memory_LIBRARY memory
       CACHE FILEPATH "memory library" )
 
-set ( MEMORY_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR} 
+set ( memory_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR} 
       CACHE PATH "memory include directory" )
 
-mark_as_advanced( MEMORY_LIBRARY MEMORY_INCLUDE_DIR )
+mark_as_advanced( memory_LIBRARY memory_INCLUDE_DIR )
 
 set ( CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/../CMake/Modules" )
 
@@ -59,39 +59,30 @@ endif (NOT CMAKE_BUILD_TYPE)
 file( GLOB CPP_SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp" )
 file( GLOB HPP_HEADERS "${CMAKE_CURRENT_SOURCE_DIR}/memory/*.hpp" )
 
+add_library ( ${memory_LIBRARY} SHARED ${CPP_SOURCES} )
+
 ### add definitions ###
 
 # set ( CMAKE_INSTALL_PREFIX /home/brandes/local )
 
 find_package( Boost REQUIRED COMPONENTS )
 
-find_library( COMMON_LIBRARY 
-              NAMES common
-              HINTS ${CMAKE_INSTALL_PREFIX}/lib )
+foreach ( module common logging tasking )
 
-set ( COMMON_INCLUDE_DIR 
+   find_library( ${module}_LIBRARY 
+                 NAMES ${module}
+                 HINTS ${CMAKE_INSTALL_PREFIX}/lib )
+
+   set ( ${module}_INCLUDE_DIR
             ${CMAKE_INSTALL_PREFIX}/include 
             CACHE PATH "include" )
+ 
+   include_directories( ${${module}_INCLUDE_DIR} )
 
-find_library( LOGGING_LIBRARY 
-              NAMES logging 
-              HINTS ${CMAKE_INSTALL_PREFIX}/lib )
+   target_link_libraries( ${memory_LIBRARY} ${${module}_LIBRARY} )
 
-set ( LOGGING_INCLUDE_DIR 
-            ${CMAKE_INSTALL_PREFIX}/include 
-            CACHE PATH "include" )
+endforeach()
 
-find_library( TASKING_LIBRARY 
-              NAMES tasking
-              HINTS ${CMAKE_INSTALL_PREFIX}/lib )
-
-set ( TASKING_INCLUDE_DIR 
-            ${CMAKE_INSTALL_PREFIX}/include 
-            CACHE PATH "include" )
-
-include_directories( ${MEMORY_INCLUDE_DIR} )
-include_directories( ${COMMON_INCLUDE_DIR} )
-include_directories( ${LOGGING_INCLUDE_DIR} )
 include_directories( ${Boost_INCLUDE_DIR} )
 
 if ( WIN32 )
@@ -102,13 +93,11 @@ add_definitions( -DLAMA_LOG_LEVEL_DEBUG )
 
 ### add library and put path to search path ###
 
-add_library ( ${MEMORY_LIBRARY} SHARED ${CPP_SOURCES} )
-target_link_libraries( ${MEMORY_LIBRARY} ${TASKING_LIBRARY} ${LOGGING_LIBRARY} ${COMMON_LIBRARY} )
 
 add_subdirectory( examples )
 add_subdirectory( test )
 
 ### install ###
 
-install ( TARGETS ${MEMORY_LIBRARY} DESTINATION lib )
+install ( TARGETS ${memory_LIBRARY} DESTINATION lib )
 install ( FILES ${HPP_HEADERS} DESTINATION include/memory )
