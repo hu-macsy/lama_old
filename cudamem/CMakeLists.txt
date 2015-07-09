@@ -25,7 +25,7 @@
  # SOFTWARE.
  # @endlicense
  #
- # @brief memory/CMakeLists.txt
+ # @brief cudamem/CMakeLists.txt
  # @author Thomas Brandes
  # @date 30.06.2015
 ###
@@ -34,17 +34,17 @@
 
 cmake_minimum_required ( VERSION 2.8 )
 
-project( memory CXX )
+project( cudamem CXX )
 
-set ( memory_LIBRARY memory
-      CACHE FILEPATH "memory library" )
+include ( FindCUDA )
 
-set ( memory_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR} 
-      CACHE PATH "memory include directory" )
+set ( cudamem_LIBRARY cudamem
+      CACHE FILEPATH "cudamem library" )
 
-mark_as_advanced( memory_LIBRARY memory_INCLUDE_DIR )
+set ( cudamem_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR} 
+      CACHE PATH "cudamem include directory" )
 
-include_directories( ${memory_INCLUDE_DIR} )
+mark_as_advanced( cudamem_LIBRARY cudamem_INCLUDE_DIR )
 
 set ( CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/../CMake/Modules" )
 
@@ -56,12 +56,14 @@ if ( NOT CMAKE_BUILD_TYPE )
         FORCE)
 endif (NOT CMAKE_BUILD_TYPE)
 
-### Source files for memory library
+### Source files for cudamem library
 
 file( GLOB CPP_SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp" )
-file( GLOB HPP_HEADERS "${CMAKE_CURRENT_SOURCE_DIR}/memory/*.hpp" )
+file( GLOB HPP_HEADERS "${CMAKE_CURRENT_SOURCE_DIR}/cudamem/*.hpp" )
 
-add_library ( ${memory_LIBRARY} SHARED ${CPP_SOURCES} )
+include_directories( ${cudamem_INCLUDE_DIR} )
+
+add_library ( ${cudamem_LIBRARY} SHARED ${CPP_SOURCES} )
 
 ### add definitions ###
 
@@ -69,7 +71,7 @@ add_library ( ${memory_LIBRARY} SHARED ${CPP_SOURCES} )
 
 find_package( Boost REQUIRED COMPONENTS )
 
-foreach ( module common logging tasking )
+foreach ( module common logging memory )
 
    find_library( ${module}_LIBRARY 
                  NAMES ${module}
@@ -78,14 +80,21 @@ foreach ( module common logging tasking )
    set ( ${module}_INCLUDE_DIR
             ${CMAKE_INSTALL_PREFIX}/include 
             CACHE PATH "include" )
- 
+
    include_directories( ${${module}_INCLUDE_DIR} )
 
-   target_link_libraries( ${memory_LIBRARY} ${${module}_LIBRARY} )
+   ### link the required library 
+
+   target_link_libraries( ${cudamem_LIBRARY} ${${module}_LIBRARY} )
 
 endforeach()
 
 include_directories( ${Boost_INCLUDE_DIR} )
+include_directories( ${CUDA_TOOLKIT_INCLUDE} )
+
+target_link_libraries( ${cudamem_LIBRARY} ${CUDA_cublas_LIBRARY}  )
+target_link_libraries( ${cudamem_LIBRARY} ${CUDA_cusparse_LIBRARY}  )
+target_link_libraries( ${cudamem_LIBRARY} ${CUDA_CUDA_LIBRARY} ${CUDA_CUDART_LIBRARY} )
 
 if ( WIN32 )
     add_definitions ( -DCOMMON_COMPILING_DLL )
@@ -93,13 +102,9 @@ endif ( WIN32 )
 
 add_definitions( -DLAMA_LOG_LEVEL_DEBUG )
 
-### add library and put path to search path ###
-
-
 add_subdirectory( examples )
-add_subdirectory( test )
 
 ### install ###
 
-install ( TARGETS ${memory_LIBRARY} DESTINATION lib )
-install ( FILES ${HPP_HEADERS} DESTINATION include/memory )
+install ( TARGETS ${cudamem_LIBRARY} DESTINATION lib )
+install ( FILES ${HPP_HEADERS} DESTINATION include/cudamem )
