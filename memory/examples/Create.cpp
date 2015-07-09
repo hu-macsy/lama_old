@@ -71,11 +71,11 @@ int main()
 
     std::cout << "LAMAArray<float>::initialized = " << LAMAArray<float>::initialized << std::endl;
 
-    boost::shared_ptr<ContextArray> lamaArray2( ContextArray::create( Scalar::FLOAT ) );
+    boost::shared_ptr<ContextArray> lamaArray2( ContextArray::create( scalar::FLOAT ) );
 
     std::cout << "lamaArray2 = " << *lamaArray2 << std::endl;
 
-    boost::shared_ptr<ContextArray> lamaArray3( ContextArray::create( Scalar::DOUBLE ) );
+    boost::shared_ptr<ContextArray> lamaArray3( ContextArray::create( scalar::DOUBLE ) );
 
     std::cout << "lamaArray3 = " << *lamaArray3 << std::endl;
 }

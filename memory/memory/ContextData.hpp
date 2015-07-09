@@ -77,13 +77,6 @@ private:
 
 public:
 
-    enum AccessKind
-    {
-        Read, //!<  read access to the array, can be multiple
-        Write, //!<  write access to the array, only one at a time
-        MaxAccessKind //!<  internal use for dimension of arrays
-    };
-
     void* get() { return pointer; }
 
     ContextPtr context() const { return mContext; }
@@ -148,10 +141,6 @@ protected:
     LAMA_LOG_DECL_STATIC_LOGGER( logger )
 
 };
-
-/** Output of AccessKind in stream is supported and very useful.  */
-
-COMMON_DLL_IMPORTEXPORT std::ostream& operator<<( std::ostream& stream, const memory::ContextData::AccessKind& object );
 
 }
 

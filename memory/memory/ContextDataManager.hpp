@@ -43,11 +43,11 @@
 
 #include <common/NonCopyable.hpp>
 
+#include <vector>
+
 /** Number of contexts that might be used in maximum. This number
  *  is used for reservation of entries but does not imply any restrictions.
  */
-
-#include <vector>
 
 #define LAMA_MAX_CONTEXTS 4
 
@@ -89,7 +89,7 @@ public:
      *  @returns  index to a corresponding entry for ContextData.
      */
 
-    ContextDataIndex acquireAccess( ContextPtr context, ContextData::AccessKind, size_t allocSize, size_t validSize );
+    ContextDataIndex acquireAccess( ContextPtr context, AccessKind kind, size_t allocSize, size_t validSize );
 
     /** This routine must be called when an access is released, otherwise further accesses are not allowed. 
      *
@@ -97,7 +97,7 @@ public:
      *  @param[in] kind    kind of access, read or write
      */
 
-    void releaseAccess( ContextDataIndex index, ContextData::AccessKind );
+    void releaseAccess( ContextDataIndex index, AccessKind kind );
 
     /**
      * @brief Query the capacity ( in number of elements ) at a certain context.
@@ -121,7 +121,7 @@ public:
 
     /** Return true if there is at least one write access to any context data. */
 
-    bool locked( ContextData::AccessKind kind ) const;
+    bool locked( AccessKind kind ) const;
 
     void invalidateAll();
 
@@ -154,6 +154,8 @@ public:
     ContextPtr getValidContext( const ContextType preferredType );
 
     void reserve( ContextPtr context, const size_t size, const size_t validSize );
+
+    void resize( const size_t size, const size_t validSize );
 
 protected:
 
@@ -199,11 +201,11 @@ private:
     mutable common::Thread::Mutex mAccessMutex; // needed to make accesses thread-safe, must not be recursive 
     mutable common::Thread::Condition mAccessCondition;  // notify if all accesses are released
 
-    void lockAccess( ContextData::AccessKind, ContextPtr context );
+    void lockAccess( AccessKind kind, ContextPtr context );
 
-    void unlockAccess( ContextData::AccessKind );
+    void unlockAccess( AccessKind kind );
 
-    int mLock[ContextData::MaxAccessKind];
+    int mLock[context::MaxAccessKind];
 
     ContextPtr accessContext;    // context that has locked
     common::Thread::Id accessThread;     // thread that has locked
@@ -211,7 +213,7 @@ private:
     bool  multiContext;   // multiple reads at different Context
     bool  multiThreaded;  // multiple reads by different threads
 
-    bool hasAccessConflict( ContextData::AccessKind ) const;
+    bool hasAccessConflict( AccessKind kind ) const;
 };
 
 

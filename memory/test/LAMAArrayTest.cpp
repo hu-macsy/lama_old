@@ -25,10 +25,9 @@
  * SOFTWARE.
  * @endlicense
  *
- * @brief Contains the implementation of the class LAMAArrayTest.
- * @author: Alexander Büchel, Lauretta Schubert
- * @date 18.04.2012
- * @since 1.0.0
+ * @brief Basic tests for LAMA arrays.
+ * @author: Thomas Brandes
+ * @date 08.07.2015
  **/
 
 #include <boost/test/unit_test.hpp>
@@ -49,20 +48,60 @@ BOOST_AUTO_TEST_SUITE( LAMAArrayTest )
 
 /* --------------------------------------------------------------------- */
 
-LAMA_LOG_DEF_LOGGER( logger, "Test.LAMAArrayTest" )
+template<typename ValueType>
+void readTest( const ValueType values[], const size_t N, const ValueType sum )
+{
+    ValueType mySum = 0;
 
-typedef boost::mpl::list<float, double> test_types;
+    for ( IndexType i = 0; i < N; ++i )
+    {
+        mySum += values[i];
+    }
+
+    BOOST_CHECK_EQUAL( sum, mySum );
+}
 
 /* --------------------------------------------------------------------- */
+
+
+BOOST_AUTO_TEST_CASE( ConstructorTest )
+{
+    ContextPtr host = Context::getContext( context::Host );
+
+    const IndexType N = 100;
+
+    LAMAArray<float> array1( N );
+    LAMAArray<float> array2( N, 5.0f );
+   
+    BOOST_CHECK_EQUAL( array1.size(), N );
+    BOOST_CHECK_EQUAL( array2.size(), N );
+
+    BOOST_CHECK_EQUAL( array1.capacity( host ), N );
+    BOOST_CHECK_EQUAL( array2.capacity( host ), N );
+
+    BOOST_CHECK_EQUAL( array1.isValid( host ), false );
+    BOOST_CHECK_EQUAL( array2.isValid( host ), true );
+
+    // read access on uninitialized non-empty array
+    // should throw exception as there is no valid data
+
+    BOOST_CHECK_THROW(
+    {
+        HostReadAccess<float>read( array1 );
+
+    }, Exception )
+
+    {
+        HostReadAccess<float> read( array2 );
+        readTest<float>( read.get(), N, N * 5 );
+    }
+}
 
 BOOST_AUTO_TEST_CASE( releaseTest )
 {
     LAMAArray<IndexType> lamaArray; // default, not allocated at all
-    LAMA_LOG_INFO( logger, "make read test access on empty array\n" );
     HostReadAccess<IndexType> readTestAccess( lamaArray );
-    LAMA_LOG_INFO( logger, "release read on empty array\n" );
     readTestAccess.release();
-    LAMA_LOG_INFO( logger, "make write test access on empty array\n" );
     HostWriteAccess<IndexType> writeAccess( lamaArray );
     writeAccess.resize( 10 );
 
@@ -109,34 +148,34 @@ BOOST_AUTO_TEST_CASE( resizeTest )
 
 /* --------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( accessTest , ValueType, test_types )
+BOOST_AUTO_TEST_CASE( accessTest )
 {
     const IndexType n = 10;
-    const ValueType value = 1.0;
-    const ValueType value2 = 2.0;
-    LAMAArray<ValueType> lamaArray( n, value );
+    const double value = 1.0;
+    const double value2 = 2.0;
+    LAMAArray<double> lamaArray( n, value );
     {
-        HostReadAccess<ValueType> lamaArrayRAccess( lamaArray );
+        HostReadAccess<double> lamaArrayRAccess( lamaArray );
 
         for ( IndexType i = 0; i < n; ++i )
         {
             BOOST_CHECK_EQUAL( value, lamaArrayRAccess[i] );
         }
 
-        HostWriteAccess<ValueType> tmpWriteAccess( lamaArray );
+        HostWriteAccess<double> tmpWriteAccess( lamaArray );
     }
     {
-        HostWriteAccess<ValueType> lamaArrayWAccess( lamaArray );
+        HostWriteAccess<double> lamaArrayWAccess( lamaArray );
 
         for ( IndexType i = 0; i < n; ++i )
         {
             lamaArrayWAccess[i] = value2;
         }
 
-        HostReadAccess<ValueType> tmpReadAccess( lamaArray );
+        HostReadAccess<double> tmpReadAccess( lamaArray );
 
         lamaArrayWAccess.release();
-        HostReadAccess<ValueType> lamaArrayRAccess( lamaArray );
+        HostReadAccess<double> lamaArrayRAccess( lamaArray );
 
         for ( IndexType i = 0; i < n; ++i )
         {
@@ -147,46 +186,40 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( accessTest , ValueType, test_types )
 
 /* --------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( refTest, ValueType, test_types )
+BOOST_AUTO_TEST_CASE( createTest )
 {
-    const IndexType n = 10;
-    const ValueType value = 3.5;
-    ValueType myData[10] =
-    {   1, 2, 3, 4, 5, 5, 4, 3, 2, 1};
-    const ValueType* myData1 = myData;
+    LAMAArray<float> A( 10, 1.0f );
+    LAMAArray<double> B( 10, 3.1415 );
+    LAMAArray<IndexType> C( 10, 5 );
+
+    std::vector<ScalarType> values;
+
+    ContextArray::getCreateValues( values );
+
+    for ( size_t i = 0; i < values.size(); ++i )
     {
-        LAMAArrayRef<ValueType> lamaArray( myData, 10 );
-        HostWriteAccess<ValueType> lamaArrayWAccess( lamaArray );
-        // resize of a LAMA array with referenced data is not possible
-        BOOST_CHECK_THROW(
-        {   lamaArrayWAccess.resize( 20 );}, Exception );
-
-        for ( IndexType i = 0; i < n; ++i )
-        {
-            lamaArrayWAccess[i] = value;
-        }
-
-        // destructor of lamaArray should write data back
+        std::cout << "Registered values[" << i << "] = " << values[i] << std::endl;
     }
 
-// we used the LAMA array for computations on myData, verify it
+    BOOST_ASSERT( ContextArray::hasCreate( scalar::FLOAT ) );
+    BOOST_ASSERT( ContextArray::hasCreate( scalar::DOUBLE ) );
+    BOOST_ASSERT( ContextArray::hasCreate( scalar::INDEX_TYPE ) );
+    BOOST_ASSERT( !ContextArray::hasCreate( scalar::INTERNAL ) );
 
-    for ( IndexType i = 0; i < n; ++i )
-    {
-        BOOST_CHECK_EQUAL( value, myData[i] );
-    }
+    ContextArray* ca1 = ContextArray::create( scalar::FLOAT );
 
+    BOOST_ASSERT( ca1 );
+
+    LAMAArray<double>* da1 = dynamic_cast<LAMAArray<double>*>( ca1 );
+    LAMAArray<float>* fa1 = dynamic_cast<LAMAArray<float>*>( ca1 );
+
+    BOOST_ASSERT( !da1 );
+    BOOST_ASSERT( fa1 );
+
+    BOOST_CHECK_THROW(
     {
-        // this will create a LAMA array with a const reference,
-        LAMAArrayRef<ValueType> lamaArray( myData1, 10 );
-        BOOST_CHECK_EQUAL( 10, lamaArray.size() );
-        // Write access should not be allowed
-        BOOST_CHECK_THROW(
-        {
-            HostWriteAccess<ValueType> lamaArrayWAccess( lamaArray );
-        }
-        , Exception );
-    }
+        ca1 = ContextArray::create( scalar::INTERNAL );
+    }, Exception );
 }
 
 /* --------------------------------------------------------------------- */

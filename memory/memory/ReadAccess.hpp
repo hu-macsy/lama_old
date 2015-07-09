@@ -76,7 +76,7 @@ public:
     {
         COMMON_ASSERT( context, "NULL context for read access not allowed" );
 
-        LAMA_LOG_DEBUG( logger, "ReadAccess<" << Scalar::getType<ValueType>()
+        LAMA_LOG_DEBUG( logger, "ReadAccess<" << getScalarType<ValueType>()
                         << "> : create for " << array << " @ " << *context )
 
         mContextDataIndex = mArray->acquireReadAccess( context );
@@ -87,7 +87,7 @@ public:
      */
     virtual ~ReadAccess()
     {
-        LAMA_LOG_DEBUG( logger, "~ReadAccess<" << Scalar::getType<ValueType>() << ">" )
+        LAMA_LOG_DEBUG( logger, "~ReadAccess<" << getScalarType<ValueType>() << ">" )
         release();
     }
 
@@ -113,7 +113,7 @@ public:
     {
         if ( mArray )
         {
-            LAMA_LOG_DEBUG( logger, "ReadAccess<" << Scalar::getType<ValueType>() << ">: realase for " << *mArray )
+            LAMA_LOG_DEBUG( logger, "ReadAccess<" << getScalarType<ValueType>() << ">: realase for " << *mArray )
             mArray->releaseReadAccess( mContextDataIndex );
         }
 
@@ -122,7 +122,7 @@ public:
 
     virtual void writeAt( std::ostream& stream ) const
     {
-        stream << "ReadAccess<" << Scalar::getType<ValueType>() << "> ";
+        stream << "ReadAccess<" << getScalarType<ValueType>() << "> ";
 
         if ( mArray )
         {

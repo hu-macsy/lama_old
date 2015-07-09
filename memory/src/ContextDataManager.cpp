@@ -40,8 +40,6 @@
 namespace memory
 {
 
-typedef ContextData::AccessKind AccessKind;
-
 /* ---------------------------------------------------------------------------------*/
 
 LAMA_LOG_DEF_LOGGER( ContextDataManager::logger, "ContextDataManager" )
@@ -54,8 +52,8 @@ ContextDataManager::ContextDataManager() :
     mSyncToken()
 
 {
-    mLock[ContextData::Read] = 0;
-    mLock[ContextData::Write] = 0;
+    mLock[context::Read] = 0;
+    mLock[context::Write] = 0;
     multiContext = false;
     multiThreaded = false;
   
@@ -77,27 +75,27 @@ void ContextDataManager::wait()
 
 bool ContextDataManager::locked() const
 {
-    return ( mLock[ContextData::Write] > 0 ) || ( mLock[ContextData::Read] > 0 );
+    return ( mLock[context::Write] > 0 ) || ( mLock[context::Read] > 0 );
 }
 
 /* ---------------------------------------------------------------------------------*/
 
-bool ContextDataManager::locked( ContextData::AccessKind kind ) const
+bool ContextDataManager::locked( AccessKind kind ) const
 {
     return ( mLock[kind] > 0 );
 }
 
 /* ---------------------------------------------------------------------------------*/
 
-bool ContextDataManager::hasAccessConflict( ContextData::AccessKind kind ) const
+bool ContextDataManager::hasAccessConflict( AccessKind kind ) const
 {
     bool conflict = false;
 
-    if ( kind == ContextData::Read )
+    if ( kind == context::Read )
     {
-        conflict = locked( ContextData::Write );
+        conflict = locked( context::Write );
     }
-    else if ( kind == ContextData::Write )
+    else if ( kind == context::Write )
     {
         conflict = locked();
     }
@@ -106,14 +104,14 @@ bool ContextDataManager::hasAccessConflict( ContextData::AccessKind kind ) const
 
 /* ---------------------------------------------------------------------------------*/
 
-void ContextDataManager::lockAccess( ContextData::AccessKind kind, ContextPtr context )
+void ContextDataManager::lockAccess( AccessKind kind, ContextPtr context )
 {
     common::Thread::ScopedLock lock( mAccessMutex );
 
     common::Thread::Id id = common::Thread::getSelf();
 
     LAMA_LOG_DEBUG( logger, "lockAccess, kind = " << kind << ", #reads = "
-                     << mLock[ContextData::Read] << ", #writes = " << mLock[ContextData::Write] )
+                     << mLock[context::Read] << ", #writes = " << mLock[context::Write] )
 
     if ( !locked() )
     {
@@ -148,7 +146,7 @@ void ContextDataManager::lockAccess( ContextData::AccessKind kind, ContextPtr co
         // access at different context
 
         COMMON_THROWEXCEPTION( "Access conflict, kind = " << kind << ", #reads = "
-                 << mLock[ContextData::Read] << ", #writes = " << mLock[ContextData::Write] 
+                 << mLock[context::Read] << ", #writes = " << mLock[context::Write] 
                  << ", more than one context" )
     }
     else if ( multiThreaded || id != accessThread )
@@ -176,12 +174,12 @@ void ContextDataManager::lockAccess( ContextData::AccessKind kind, ContextPtr co
     mLock[kind]++;
 
     LAMA_LOG_DEBUG( logger, "lockAccess done, kind = " << kind << ", #reads = "
-                     << mLock[ContextData::Read] << ", #writes = " << mLock[ContextData::Write] )
+                     << mLock[context::Read] << ", #writes = " << mLock[context::Write] )
 }
 
 /* ---------------------------------------------------------------------------------*/
 
-void ContextDataManager::unlockAccess( ContextData::AccessKind kind )
+void ContextDataManager::unlockAccess( context::AccessKind kind )
 {
     common::Thread::ScopedLock lock( mAccessMutex );
 
@@ -190,9 +188,9 @@ void ContextDataManager::unlockAccess( ContextData::AccessKind kind )
     mLock[kind]--;
 
     LAMA_LOG_DEBUG( logger, kind << "Access released, #reads = "
-                 << mLock[ContextData::Read] << ", #writes = " << mLock[ContextData::Write] )
+                 << mLock[context::Read] << ", #writes = " << mLock[context::Write] )
  
-    if ( ( mLock[ContextData::Write] == 0 ) && ( mLock[ContextData::Read] == 0 ) )
+    if ( ( mLock[context::Write] == 0 ) && ( mLock[context::Read] == 0 ) )
     {
         multiContext = false;
         multiThreaded = false;
@@ -203,7 +201,7 @@ void ContextDataManager::unlockAccess( ContextData::AccessKind kind )
 
 /* ---------------------------------------------------------------------------------*/
 
-void ContextDataManager::releaseAccess( ContextDataIndex index, ContextData::AccessKind kind )
+void ContextDataManager::releaseAccess( ContextDataIndex index, context::AccessKind kind )
 {
     // we should check that this is really the context data for which access was reserved
     unlockAccess( kind );
@@ -219,7 +217,7 @@ void ContextDataManager::purge()
 
     for ( size_t i = 0; i < mContextData.size(); ++i )
     {
-        ContextData& entry = ( *this )[i];
+        ContextData& entry = mContextData[i];
         entry.free();
     }
 }
@@ -448,7 +446,7 @@ ContextDataIndex ContextDataManager::acquireAccess( ContextPtr context, AccessKi
         }
     }
 
-    if ( kind == ContextData::Write )
+    if ( kind == context::Write )
     {
         invalidateAll();        // invalidate all entries
         data.setValid( true );  // for next access the data @ context is valid.
@@ -634,9 +632,11 @@ void ContextDataManager::prefetch( ContextPtr context, size_t size )
 
 void ContextDataManager::reserve( ContextPtr context, const size_t size, const size_t validSize )
 {
+    wait();  // valid is checked so outstanding transfers must be finished
+
     ContextData& data = ( *this )[context];
 
-    // ToDo: must have a write access here COMMON_ASSERT( !data.locked( ContextData::Write ), "no reserve on write locked data." )
+    // ToDo: must have a write access here COMMON_ASSERT( !data.locked( context::Write ), "no reserve on write locked data." )
 
     if ( data.isValid() )
     {
@@ -647,6 +647,28 @@ void ContextDataManager::reserve( ContextPtr context, const size_t size, const s
         data.reserve( size, 0 );  // no valid data
     }
 }
+
+/* ---------------------------------------------------------------------------------*/
+
+void ContextDataManager::resize( const size_t size, const size_t validSize )
+{
+    COMMON_ASSERT( !locked(), "Array is locked, no resize possible" )
+
+    wait();  // valid is checked so outstanding transfers must be finished
+
+    for ( size_t i = 0; i < mContextData.size(); ++i )
+    {
+        ContextData& data = mContextData[i];
+
+        if ( data.isValid() )
+        {
+            data.reserve( size, validSize );
+        }
+    }
+}
+
+/* ---------------------------------------------------------------------------------*/
+
 
 } // namespace
 

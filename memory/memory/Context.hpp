@@ -80,9 +80,20 @@ namespace context
         UserContext1,  //!< ucan be used for a new derived Context class
         MaxContext     //!< used for dimension of ContextType arrays
     };
+
+    /** Enumeration type for access kind, may be read or write */
+
+    enum AccessKind
+    {
+        Read, //!<  read access to the array, can be multiple
+        Write, //!<  write access to the array, only one at a time
+        MaxAccessKind //!<  internal use for dimension of arrays
+    };
 }
 
 typedef context::ContextType ContextType;
+
+typedef context::AccessKind AccessKind;
 
 /** @brief This class is a common base class for all possible contexts.
  *
@@ -261,5 +272,9 @@ protected:
 /** Make ContextType visible in namespace, but not the different enumeration values. */
 
 COMMON_DLL_IMPORTEXPORT std::ostream& operator<<( std::ostream& stream, const ContextType& type );
+
+/** Output of AccessKind in stream is supported and very useful.  */
+
+COMMON_DLL_IMPORTEXPORT std::ostream& operator<<( std::ostream& stream, const AccessKind& kind );
 
 }

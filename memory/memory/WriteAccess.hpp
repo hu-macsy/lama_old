@@ -189,7 +189,7 @@ public:
     WriteOnlyAccess( LAMAArray<ValueType>& array, ContextPtr context )
         : WriteAccess<ValueType>( array, context, false )
     {
-        LAMA_LOG_DEBUG( logger, "WriteOnlyAccess<" << Scalar::getType<ValueType>() << ">" )
+        LAMA_LOG_DEBUG( logger, "WriteOnlyAccess<" << getScalarType<ValueType>() << ">" )
     }
 
     /**
@@ -210,7 +210,7 @@ public:
 
     ~WriteOnlyAccess()
     {
-        LAMA_LOG_DEBUG( WriteAccess<ValueType>::logger, "~WriteOnlyAccess<" << Scalar::getType<ValueType>() << ">" )
+        LAMA_LOG_DEBUG( WriteAccess<ValueType>::logger, "~WriteOnlyAccess<" << getScalarType<ValueType>() << ">" )
     }
 
 protected:

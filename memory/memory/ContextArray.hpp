@@ -79,7 +79,7 @@ class WriteAccess;
 class COMMON_DLL_IMPORTEXPORT ContextArray: 
 
     public Printable, 
-    public common::Factory<Scalar::ScalarType, ContextArray*>
+    public common::Factory<ScalarType, ContextArray*>
 {
     // Member variables of this class
 
@@ -101,9 +101,9 @@ public:
     /**
      * @brief Query the value type of the array elements, e.g. DOUBLE or FLOAT.
      */
-    virtual Scalar::ScalarType getValueType() const = 0;
+    virtual ScalarType getValueType() const = 0;
 
-    using common::Factory<Scalar::ScalarType, ContextArray*>::create;
+    using common::Factory<ScalarType, ContextArray*>::create;
 
     /**
      *  Each derived class must provide a create function. This will
@@ -143,7 +143,7 @@ public:
      * point in time. There for if two prefetches to two different invalid locations are
      * started one after the other the second transfer does not start before the first one is finished.
      */
-    void prefetch( ContextPtr context ) const;
+    void prefetch( ContextPtr context );
 
     /**
      * @brief Query the capacity ( in number of elements ) at a certain context.
@@ -154,7 +154,15 @@ public:
      * @brief Query if data is valid in a certain context
      */
     bool isValid( ContextPtr context ) const;
-    
+
+    /**
+     * @brief resize the array
+     * 
+     * Changes the size of the array. No memory is freed if the size becomes smaller.
+     * Reserves additional memory on all valid locations.
+     */
+    void resize( IndexType size );
+ 
 protected:
 
     explicit ContextArray( const IndexType n, const IndexType size ) : 
@@ -212,7 +220,7 @@ inline IndexType ContextArray::size() const
 
 /* ---------------------------------------------------------------------------------*/
 
-inline void ContextArray::prefetch( ContextPtr context ) const
+inline void ContextArray::prefetch( ContextPtr context )
 {
     mContextDataManager.prefetch( context, mSize * mValueSize );
 }
@@ -222,6 +230,17 @@ inline void ContextArray::prefetch( ContextPtr context ) const
 inline bool ContextArray::isValid( ContextPtr context ) const
 {
     return mContextDataManager.isValid( context );
+}
+
+/* ---------------------------------------------------------------------------------*/
+
+inline void ContextArray::resize( IndexType size )
+{
+    // resize on all valid locations
+
+    mContextDataManager.resize( size * mValueSize, mSize * mValueSize );
+
+    mSize = size;   
 }
 
 /* ---------------------------------------------------------------------------------*/
@@ -256,14 +275,14 @@ inline ContextDataIndex ContextArray::acquireReadAccess( ContextPtr context ) co
     size_t allocSize = mSize * mValueSize;
     size_t validSize = allocSize;                   // read access needs valid data in any case
 
-    return mContextDataManager.acquireAccess( context, ContextData::Read, allocSize, validSize );
+    return mContextDataManager.acquireAccess( context, context::Read, allocSize, validSize );
 }
 
 /* ---------------------------------------------------------------------------------*/
 
 inline void ContextArray::releaseReadAccess( ContextDataIndex index ) const
 {
-    mContextDataManager.releaseAccess( index, ContextData::Read );
+    mContextDataManager.releaseAccess( index, context::Read );
 }
 
 /* ---------------------------------------------------------------------------------*/
@@ -273,14 +292,14 @@ inline ContextDataIndex ContextArray::acquireWriteAccess( ContextPtr context, bo
     size_t allocSize = mSize * mValueSize;
     size_t validSize = keepFlag ? allocSize : 0 ;    // valid data only if keepFlag is set
 
-    return mContextDataManager.acquireAccess( context, ContextData::Write, allocSize, validSize );
+    return mContextDataManager.acquireAccess( context, context::Write, allocSize, validSize );
 }
 
 /* ---------------------------------------------------------------------------------*/
 
 inline void ContextArray::releaseWriteAccess( ContextDataIndex index )
 {
-    mContextDataManager.releaseAccess( index, ContextData::Write );
+    mContextDataManager.releaseAccess( index, context::Write );
 }
 
 }  // namespace 

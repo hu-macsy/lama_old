@@ -37,43 +37,43 @@
 namespace memory
 {
 
-std::ostream& operator<<( std::ostream& stream, const Scalar::ScalarType& object )
+std::ostream& operator<<( std::ostream& stream, const ScalarType& object )
 {
     switch( object )
     {
-        case Scalar::FLOAT:
+        case scalar::FLOAT:
             stream << "float";
             break;
 
-        case Scalar::DOUBLE:
+        case scalar::DOUBLE:
             stream << "double";
             break;
 
-        case Scalar::INDEX_TYPE:
+        case scalar::INDEX_TYPE:
             stream << "IndexType";
             break;
 
-        case Scalar::LONG_DOUBLE:
+        case scalar::LONG_DOUBLE:
             stream << "LongDouble";
             break;
 
-        case Scalar::COMPLEX:
+        case scalar::COMPLEX:
             stream << "ComplexFloat";
             break;
 
-        case Scalar::DOUBLE_COMPLEX:
+        case scalar::DOUBLE_COMPLEX:
             stream << "ComplexDouble";
             break;
 
-        case Scalar::LONG_DOUBLE_COMPLEX:
+        case scalar::LONG_DOUBLE_COMPLEX:
             stream << "ComplexLongDouble";
             break;
 
-        case Scalar::INTERNAL:
+        case scalar::INTERNAL:
             stream << "_Internal";
             break;
 
-        case Scalar::PATTERN:
+        case scalar::PATTERN:
             stream << "_Pattern";
             break;
 

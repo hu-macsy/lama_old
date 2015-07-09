@@ -53,6 +53,8 @@ LAMA_LOG_DEF_LOGGER( logger, "Test.memory" )
 
 typedef boost::mpl::list<float, double> test_types;
 
+/* --------------------------------------------------------------------- */
+
 template<typename ValueType>
 static void update( ValueType* data, size_t size )
 {
@@ -66,34 +68,66 @@ static void update( ValueType* data, size_t size )
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( refTest, ValueType, test_types )
 {
+    ContextPtr context = Context::create( context::UserContext, 0 );
+    ContextPtr host = Context::create( context::Host, -1 );
+
+    BOOST_ASSERT( context );
+    BOOST_ASSERT( host );
+
     const IndexType n = 10;
     ValueType myData[10] = {   1, 2, 3, 4, 5, 5, 4, 3, 2, 1};
+    const ValueType* myConstData = myData;
 
     {
         // LAMA array keeps myData on Host
 
         LAMAArrayRef<ValueType> lamaArray( myData, 10 );
 
-        ContextPtr context = Context::create( context::UserContext, 0 );
-        ContextPtr host = Context::create( context::Host, -1 );
-
-        BOOST_ASSERT( context );
-
         {
+            // modify the data @ context
+
             WriteAccess<ValueType> write( lamaArray, context );
             update( write.get(), 10 );
         }
 
         {
+            // get valid data back @ host
+
             ReadAccess<ValueType> read( lamaArray, host );
         }
-    }
 
-    for ( IndexType i = 0; i < n; ++i )
-    {
-        BOOST_CHECK_EQUAL( myData[i], 1 );
+        {
+            WriteAccess<ValueType> write( lamaArray, host );
+            BOOST_CHECK_THROW(
+            {
+                write.resize( 20 );
+            },
+            Exception )
+        }
+
+        for ( IndexType i = 0; i < n; ++i )
+        {
+            BOOST_CHECK_EQUAL( myData[i], 1 );
+        }
+
+        {
+            // this will create a LAMA array with a const reference,
+
+            LAMAArrayRef<ValueType> lamaArray( myConstData, 10 );
+
+            BOOST_CHECK_EQUAL( 10, lamaArray.size() );
+            // Write access should not be allowed
+            BOOST_CHECK_THROW(
+            {
+                HostWriteAccess<ValueType> lamaArrayWAccess( lamaArray );
+            }
+            , Exception );
+        }
     }
 }
+
+/* --------------------------------------------------------------------- */
+
 
 /* --------------------------------------------------------------------- */
 

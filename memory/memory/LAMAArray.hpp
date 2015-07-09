@@ -25,7 +25,7 @@
  * SOFTWARE.
  * @endlicense
  *
- * @brief Definition of a new dynamic array class where the array data can be
+ * @brief Definition of a dynamic array class where the array data can be
  *        used in different contexts and where the data is moved implicitly
  *        when corresponding read/write accesses are required
  *
@@ -37,12 +37,6 @@
 #pragma once
 
 #include <memory/ContextArray.hpp>
-
-/** Number of contexts that might be used in maximum. This number
- *  is used for reservation of entries but does not imply any restrictions.
- */
-
-#define LAMA_MAX_CONTEXTS 4
 
 namespace memory
 {
@@ -70,7 +64,7 @@ template<typename ValueType>
 class COMMON_DLL_IMPORTEXPORT LAMAArray: 
 
     public ContextArray,
-    public common::Factory<Scalar::ScalarType, ContextArray*>::Register<LAMAArray<ValueType> >
+    public ContextArray::Register<LAMAArray<ValueType> >
 
 {
 public:
@@ -192,7 +186,7 @@ public:
     /**
      * @brief Implementation of pure method.
      */
-    virtual Scalar::ScalarType getValueType() const;
+    virtual ScalarType getValueType() const;
 
     /**
      * @brief reserve a certain amount of data at a specific context
@@ -205,9 +199,13 @@ public:
 
     using ContextArray::capacity;
 
-    static Scalar::ScalarType createValue() 
+    /** Method that must be provided to guarantee a correct registration in
+     *  the ContextArray factory. 
+     */
+
+    static ScalarType createValue() 
     {
-        Scalar::getType<ValueType>();
+        return getScalarType<ValueType>();
     }
 
 protected:
@@ -283,26 +281,18 @@ LAMAArray<ValueType>::LAMAArray()
 
     ContextDataIndex data = mContextDataManager.getContextData( host );
 
-    LAMA_LOG_DEBUG( logger, "created new LAMA array, mSize = " << mSize )
-    LAMA_LOG_DEBUG( logger, "created new LAMA array, mValueSize = " << mValueSize )
-    
-    // LAMA_LOG_DEBUG( logger, "created new context array: " << *this )
+    LAMA_LOG_DEBUG( logger, "created new LAMA array: " << *this )
 }
 
 template<typename ValueType>
 LAMAArray<ValueType>::LAMAArray( const IndexType n ) : ContextArray( n, sizeof( ValueType) )
 {
+    // reserves already memory on the host, but this data is not valid
+
     ContextPtr host = Context::getContext( context::Host );
+    mContextDataManager.reserve( host, n * mValueSize, 0 );
 
-    // just allocate the data at host context with a corresponding write access
-
-    size_t validSize = 0;   // no valid data availalbe, so even don't search for it
-
-    // Use of acquireAccess guarantees allocation of data
-
-    ContextDataIndex index = mContextDataManager.acquireAccess( host, ContextData::Write, mSize * mValueSize, validSize );
-
-    releaseWriteAccess( index );
+    LAMA_LOG_DEBUG( logger, "created new LAMA array: " << *this )
 }
 
 template<typename ValueType>
@@ -317,7 +307,7 @@ LAMAArray<ValueType>::LAMAArray( const IndexType n, const ValueType& value ) : C
 
     // Use of acquireAccess guarantees allocation of data
 
-    ContextDataIndex index = mContextDataManager.acquireAccess( host, ContextData::Write, mSize * mValueSize, validSize );
+    ContextDataIndex index = mContextDataManager.acquireAccess( host, context::Write, mSize * mValueSize, validSize );
 
     ContextData& data = mContextDataManager[index];
 
@@ -377,11 +367,11 @@ LAMAArray<ValueType>* LAMAArray<ValueType>::clone()
 /* ---------------------------------------------------------------------------------*/
 
 template<typename ValueType>
-Scalar::ScalarType LAMAArray<ValueType>::getValueType() const
+ScalarType LAMAArray<ValueType>::getValueType() const
 {
     // Note: this is implementation of the pure method of base class ContextArray.
 
-    return Scalar::getType<ValueType>();
+    return getScalarType<ValueType>();
 }
 
 /* ---------------------------------------------------------------------------------*/
@@ -403,7 +393,7 @@ LAMAArray<ValueType>& LAMAArray<ValueType>::operator=( const LAMAArray<ValueType
 
     // ToDo: we might add an exception on same thread: only valid write location is copied
 
-    COMMON_ASSERT( !other.mContextDataManager.locked( ContextData::Write ), "assign of a write locked array" )
+    COMMON_ASSERT( !other.mContextDataManager.locked( context::Write ), "assign of a write locked array" )
 
     mContextDataManager.invalidateAll();
 
@@ -519,7 +509,7 @@ void LAMAArray<ValueType>::clear( const ContextDataIndex index )
 
     ContextData& data = mContextDataManager[index];
 
-    // ToDo: COMMON_ASSERT( data.locked( ContextData::Write ), "clear illegal here " << data )
+    // ToDo: COMMON_ASSERT( data.locked( context::Write ), "clear illegal here " << data )
 
     mSize = 0;
 }
@@ -531,7 +521,7 @@ void LAMAArray<ValueType>::resize( ContextDataIndex index, const IndexType size 
 {
     ContextData& entry = mContextDataManager[index];
 
-    // COMMON_ASSERT( entry.locked( ContextData::Write ), "resize illegal here " << entry )
+    // COMMON_ASSERT( entry.locked( context::Write ), "resize illegal here " << entry )
 
     size_t allocSize = size * mValueSize;
 
@@ -557,7 +547,17 @@ void LAMAArray<ValueType>::resize( ContextDataIndex index, const IndexType size 
 template<typename ValueType>
 void LAMAArray<ValueType>::reserve( ContextDataIndex index, const IndexType size ) const
 {
-    COMMON_THROWEXCEPTION( "not available yet" )
+    if ( size <= mSize )
+    {
+        return;   // nothing to do
+    }
+
+    ContextData& entry = mContextDataManager[index];
+   
+    size_t allocSize = size * mValueSize;
+    size_t validSize = mSize * mValueSize;
+
+    entry.reserve( allocSize, validSize );
 }
 
 /* ---------------------------------------------------------------------------------*/
@@ -566,7 +566,7 @@ template<typename ValueType>
 void LAMAArray<ValueType>::writeAt( std::ostream& stream ) const
 {
     stream << "LAMAArray<";
-    stream << Scalar::getType<ValueType>();
+    stream << getScalarType<ValueType>();
     stream << ">(" << mSize; stream << ")";
 }
 

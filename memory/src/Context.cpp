@@ -64,33 +64,55 @@ void Context::writeAt( std::ostream& stream ) const
 
 std::ostream& operator<<( std::ostream& stream, const ContextType& type )
 {
-    if( type == context::Host )
+    switch ( type )
     {
-        stream << "Host";
+        case context::Host :
+            stream << "Host";
+            break;
+
+        case context::CUDA :
+            stream << "CUDA";
+            break;
+
+        case context::OpenCL :
+            stream << "OpenCL";
+            break;
+
+        case context::UserContext :
+            stream << "UserContext";
+            break;
+
+        case context::UserContext1 :
+            stream << "UserContext1";
+            break;
+
+        case context::MIC :
+            stream << "MIC";
+            break;
+
+        default:
+            stream << "ContextType_" << (int) type;
     }
-    else if( type == context::CUDA )
+
+    return stream;
+}
+
+/* -----------------------------------------------------------------------------*/
+
+std::ostream& operator<<( std::ostream& stream, const AccessKind& kind )
+{
+    switch ( kind )
     {
-        stream << "CUDA";
-    }
-    else if( type == context::OpenCL )
-    {
-        stream << "OpenCL";
-    }
-    else if( type == context::MIC )
-    {
-        stream << "MIC";
-    }
-    else if( type == context::UserContext )
-    {
-        stream << "UserContext";
-    }
-    else if( type == context::UserContext1 )
-    {
-        stream << "UserContext1";
-    }
-    else
-    {
-        stream << "Context_" << ( int ) type;
+        case context::Write :
+            stream << "Write";
+            break;
+
+        case context::Read :
+            stream << "Read";
+            break;
+
+        default:
+            stream << "AccessKind_" << (int) kind;
     }
 
     return stream;
@@ -138,6 +160,8 @@ ContextPtr Context::getHostContext() const
 
     return getContext( context::Host );
 }
+
+/* ---------------------------------------------------------------------------------*/
 
 ContextPtr Context::getContext( ContextType type, int deviceNr )
 {

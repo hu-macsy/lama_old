@@ -57,21 +57,10 @@ namespace memory
  */
 typedef int IndexType;
 
-/**
- * @brief The class Scalar represents a multi precision scalar.
- *
- * An object of the class Scalar is used in LAMA in all code parts
- * that are universal for all arithmetic types, especially for code
- * parts that use book syntax.
- *
- * For a Scalar the arithmetic operations +, -, *, / etc. are
- * also supported to allow a high flexibility. But for efficiency
- * these operations should be avoided in all critical code parts.
- */
-class COMMON_DLL_IMPORTEXPORT Scalar
-{
-public:
+/** Namespace for enumeration type. */
 
+namespace scalar
+{
     /** Enumeration type for supported value types in LAMA.
      *
      *  This enumeration type is result of many query operations for LAMA classes
@@ -80,11 +69,12 @@ public:
      *  \code
      *    CSRSparseMatrix<double> a;
      *    a.getValueType()  // returns ScalarType::DOUBLE
-     *    Scalar::getType<double>()  // return ScalarType DOUBLE
+     *    getScalarType<double>()  // return ScalarType DOUBLE
      *  \endcode
      *
      *  It is especially useful when casting variables of base classes to derived classes.
      */
+
     enum ScalarType
     {
         INDEX_TYPE, //!<  synonymous for IndexType
@@ -95,39 +85,30 @@ public:
         DOUBLE_COMPLEX, //!<  synonymous for double complex
         LONG_DOUBLE_COMPLEX, //!<  synonymous for long double complex
         PATTERN, //!<  dummy type of size 0
-        INTERNAL, //!<  take the type currently in use, getType<ValueType>()
+        INTERNAL, //!<  take the type currently in use, getScalarType<ValueType>()
         UNKNOWN
     };
+}
 
-    /**
-     * @brief Returns the size of the given ScalarType.
-     *
-     * @param[in] type    the given ScalarType.
-     * @return            the size of the given ScalarType.
-     */
-    inline static size_t getTypeSize( const ScalarType type );
+typedef scalar::ScalarType ScalarType;
 
-    /**
-     * @brief Conversion of a C type into value of enum ScalarType.
-     *
-     * @tparam ValueType    C++ type that should be converted
-     * @return      value of enum type ScalarType that represents the C++ type.
-     */
-    template<typename ValueType> inline static ScalarType getType();
-    
-};
-
-inline size_t Scalar::getTypeSize( const ScalarType type )
+/**
+ * @brief Returns the size of the given ScalarType.
+ *
+ * @param[in] type    the given ScalarType.
+ * @return            the size of the given ScalarType.
+ */
+inline size_t getTypeSize( const ScalarType type )
 {
     size_t typeSize = 0;
 
     switch( type )
     {
-        case FLOAT:
+        case scalar::FLOAT:
             typeSize = sizeof( float );
             break;
 
-        case DOUBLE:
+        case scalar::DOUBLE:
             typeSize = sizeof( double );
             break;
 
@@ -138,33 +119,38 @@ inline size_t Scalar::getTypeSize( const ScalarType type )
     return typeSize;
 }
 
-template<typename ValueType>
-inline Scalar::ScalarType Scalar::getType()
+/**
+ * @brief Conversion of a C type into value of enum ScalarType.
+ *
+ * @tparam ValueType    C++ type that should be converted
+ * @return      value of enum type ScalarType that represents the C++ type.
+ */
+template<typename ValueType> inline ScalarType getScalarType()
 {
-    return UNKNOWN;
+    return scalar::UNKNOWN;
+}
+    
+template<>
+inline ScalarType getScalarType<IndexType>()
+{
+    return scalar::INDEX_TYPE;
 }
 
 template<>
-inline Scalar::ScalarType Scalar::getType<IndexType>()
+inline ScalarType getScalarType<float>()
 {
-    return INDEX_TYPE;
+    return scalar::FLOAT;
 }
 
 template<>
-inline Scalar::ScalarType Scalar::getType<float>()
+inline ScalarType getScalarType<double>()
 {
-    return FLOAT;
-}
-
-template<>
-inline Scalar::ScalarType Scalar::getType<double>()
-{
-    return DOUBLE;
+    return scalar::DOUBLE;
 }
 
 
 /** Output of ScalarType in stream is supported and very useful.  */
 
-COMMON_DLL_IMPORTEXPORT std::ostream& operator<<( std::ostream& stream, const Scalar::ScalarType& object );
+COMMON_DLL_IMPORTEXPORT std::ostream& operator<<( std::ostream& stream, const ScalarType& object );
 
 } //namespace 
