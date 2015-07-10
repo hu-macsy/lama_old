@@ -1,0 +1,15 @@
+#include <memory/ContextAccess.hpp>
+#include <memory/ContextArray.hpp>
+#include <memory/ContextData.hpp>
+#include <memory/ContextDataManager.hpp>
+#include <memory/Context.hpp>
+#include <memory/DefaultHostContext.hpp>
+#include <memory/HostContext.hpp>
+#include <memory/HostReadAccess.hpp>
+#include <memory/HostWriteAccess.hpp>
+#include <memory/LAMAArray.hpp>
+#include <memory/LAMAArrayRef.hpp>
+#include <memory/ReadAccess.hpp>
+#include <memory/SyncToken.hpp>
+#include <memory/TaskSyncToken.hpp>
+#include <memory/WriteAccess.hpp>

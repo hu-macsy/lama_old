@@ -74,6 +74,10 @@ std::ostream& operator<<( std::ostream& stream, const ContextType& type )
             stream << "CUDA";
             break;
 
+        case context::CUDAHost :
+            stream << "CUDAHost";
+            break;
+
         case context::OpenCL :
             stream << "OpenCL";
             break;

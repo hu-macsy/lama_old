@@ -272,14 +272,18 @@ LAMA_LOG_DEF_TEMPLATE_LOGGER( template<typename ValueType>, LAMAArray<ValueType>
 /* ---------------------------------------------------------------------------------*/
 
 template<typename ValueType>
-LAMAArray<ValueType>::LAMAArray()
-                : ContextArray( 0, sizeof( ValueType ) )
+LAMAArray<ValueType>::LAMAArray() : 
+
+    ContextArray( 0, sizeof( ValueType ) )
+
 {
     // just make an entry for host context
 
+    /*
     ContextPtr host = Context::getContext( context::Host );
 
     ContextDataIndex data = mContextDataManager.getContextData( host );
+    */
 
     LAMA_LOG_DEBUG( logger, "created new LAMA array: " << *this )
 }
@@ -424,7 +428,7 @@ void LAMAArray<ValueType>::assign( const LAMAArray<ValueType>& other, ContextPtr
 
     // ToDo: we might add an exception on same thread: only valid write location is copied
 
-    COMMON_ASSERT( !other.mContextDataManager.writeLocked(), "assign of a write locked array" )
+    COMMON_ASSERT( !other.mContextDataManager.locked( context::Write ), "assign of a write locked array" )
 
     mContextDataManager.invalidateAll();
 
@@ -567,7 +571,8 @@ void LAMAArray<ValueType>::writeAt( std::ostream& stream ) const
 {
     stream << "LAMAArray<";
     stream << getScalarType<ValueType>();
-    stream << ">(" << mSize; stream << ")";
+    stream << ">(" << mSize; stream << ") ";
+    stream << mContextDataManager;
 }
 
 /* ---------------------------------------------------------------------------------*/

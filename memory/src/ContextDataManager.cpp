@@ -472,12 +472,12 @@ void ContextDataManager::fetch( ContextData& target, const ContextData& source, 
 
         if ( target.context()->getType() == context::Host )
         {
-            COMMON_THROWEXCEPTION( "unsupported" )
+            COMMON_THROWEXCEPTION( "Unsupported: copy to host from: " << *source.context() )
         }
 
         if ( source.context()->getType() == context::Host )
         {
-            COMMON_THROWEXCEPTION( "unsupported" )
+            COMMON_THROWEXCEPTION( "Unsupported: copy from host to: " << *target.context() )
         }
 
         ContextData& hostEntry = ( *this )[hostContext];
@@ -664,6 +664,27 @@ void ContextDataManager::resize( const size_t size, const size_t validSize )
         {
             data.reserve( size, validSize );
         }
+    }
+}
+
+/* ---------------------------------------------------------------------------------*/
+
+void ContextDataManager::writeAt( std::ostream& stream ) const
+{
+    if ( mContextData.size() == 0 )
+    {
+        stream << "no data";
+        return;
+    }
+
+    for ( size_t i = 0; i < mContextData.size(); ++i )
+    {
+        if ( i > 0 )
+        {
+            stream << ", ";
+        }
+
+        stream << mContextData[i];
     }
 }
 

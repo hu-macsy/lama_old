@@ -51,7 +51,9 @@ namespace memory
 LAMA_LOG_DEF_LOGGER( CUDAHostContext::logger, "Context.CUDAHostContext" );
 
 CUDAHostContext::CUDAHostContext( boost::shared_ptr<const CUDAContext> cudaContext )
-    : mCUDAContext( cudaContext )
+
+    : Context( context::CUDAHost ),
+      mCUDAContext( cudaContext )
 {
     if( !cudaContext )
     {
@@ -131,9 +133,87 @@ SyncToken* CUDAHostContext::memcpyAsync( void* dst, const void* src, const size_
     return syncToken.release();
 }
 
-HostContext::HostContextType CUDAHostContext::getHostType() const
+/* ----------------------------------------------------------------------------- */
+
+bool CUDAHostContext::canUseData( const Context& other ) const
 {
-    return CUDAHost;
+    // same object by pointer can always use same data.
+
+    if( this == &other )
+    {
+        return true;
+    }
+
+    // different Host devices can use same data
+
+    if( other.getType() == context::Host )
+    {
+        return true;
+        // equal if other is HostContext and has same host type
+        // const HostContext& otherHost = static_cast<const HostContext&> (other);
+        // return otherHost.getHostType() == getHostType();
+    }
+
+    return false;
+}
+
+/* ------------------------------------------------------------------------- */
+
+SyncToken* CUDAHostContext::getSyncToken() const
+{
+    COMMON_THROWEXCEPTION( "not supported yet" )
+
+    return NULL;
+}
+
+/* ----------------------------------------------------------------------------- */
+/*      Factory::Register - create( int )                                        */
+/* ----------------------------------------------------------------------------- */
+
+#define LAMA_MAX_CUDA_DEVICES 5
+#define LAMA_DEFAULT_DEVICE_NUMBER -1
+
+static boost::weak_ptr<CUDAHostContext> mCUDAHostContext[LAMA_MAX_CUDA_DEVICES];
+
+ContextPtr CUDAHostContext::create( int deviceNr )
+{
+    int cudaDeviceNr = deviceNr;
+
+    if ( cudaDeviceNr == LAMA_DEFAULT_DEVICE_NUMBER )
+    {
+        cudaDeviceNr = 0;
+
+        // no need here to check for a good value
+    }
+    else
+    {
+        COMMON_ASSERT(
+            0 <= cudaDeviceNr && cudaDeviceNr < LAMA_MAX_CUDA_DEVICES,
+            "device = " << cudaDeviceNr << " out of range" << ", max supported device = " << LAMA_MAX_CUDA_DEVICES )
+    }
+
+    boost::shared_ptr<CUDAHostContext> context = boost::shared_ptr<CUDAHostContext>();
+
+    if( mCUDAHostContext[cudaDeviceNr].expired() )
+    {
+        // create a new context for the device and return the shared pointer
+
+        boost::shared_ptr<const CUDAContext> cuda = boost::dynamic_pointer_cast<const CUDAContext>( Context::getContext( context::CUDA, cudaDeviceNr ) );
+
+        context = boost::shared_ptr<CUDAHostContext>( new CUDAHostContext( cuda ) );
+
+        // we keep a weak pointer so that we can return
+
+        mCUDAHostContext[cudaDeviceNr] = context;
+    }
+    else
+    {
+        // the weak pointer to the device is still okay, so return a shared pointer for it
+
+        context = mCUDAHostContext[cudaDeviceNr].lock();
+    }
+
+    return context;
 }
 
 } // namespace

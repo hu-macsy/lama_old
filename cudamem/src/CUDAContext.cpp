@@ -212,7 +212,7 @@ ContextPtr CUDAContext::getHostContext() const
 
     if ( mHostContext.expired() )
     {
-        context = ContextPtr( new CUDAHostContext( shared_from_this() ) );
+        context = Context::getContext( context::CUDAHost, mDeviceNr );
         mHostContext = context; // save it here as a weak pointer to avoid cycles
     }
     else
@@ -349,9 +349,10 @@ SyncToken* CUDAContext::memcpyAsync( void* dst, const void* src, const size_t si
 
 void CUDAContext::memcpyFromHost( void* dst, const void* src, const size_t size ) const
 {
-    LAMA_CONTEXT_ACCESS( shared_from_this() )
-    // LAMA_REGION( "CUDA.memcpyHost->Dev" )
     LAMA_LOG_INFO( logger, "copy " << size << " bytes from " << src << " (host) to " << dst << " (device) " )
+
+    LAMA_CONTEXT_ACCESS( shared_from_this() )
+
     LAMA_CUDA_DRV_CALL( cuMemcpyHtoD( ( CUdeviceptr ) dst, src, size ),
                         "cuMemcpyHToD( " << dst << ", " << src << ", " << size << ") failed " )
 }
@@ -361,22 +362,22 @@ void CUDAContext::memcpyFromHost( void* dst, const void* src, const size_t size 
 SyncToken* CUDAContext::memcpyAsyncFromHost( void* dst, const void* src, const size_t size ) const
 {
     LAMA_LOG_INFO( logger, "async copy " << size << " bytes from " << src << " (host) to " << dst << " (device) " )
+
     // as current thread has disabled the context, another thread might use it
-#ifdef MEMCPY_TASK
-    return new TaskSyncToken( boost::bind( &CUDAContext::memcpyFromHost, this, dst, src, size ) );
-#else
+
     memcpyFromHost( dst, src, size );
+
     return NULL;
-#endif
 }
 
 /* ----------------------------------------------------------------------------- */
 
 void CUDAContext::memcpyToHost( void* dst, const void* src, const size_t size ) const
 {
-    // LAMA_REGION( "CUDA.memcpyDev->Host" )
-    LAMA_CONTEXT_ACCESS( shared_from_this() )
     LAMA_LOG_INFO( logger, "copy " << size << " bytes from " << src << " (device) to " << dst << " (host) " )
+
+    LAMA_CONTEXT_ACCESS( shared_from_this() )
+
     LAMA_CUDA_DRV_CALL( cuMemcpyDtoH( dst, ( CUdeviceptr ) src, size ),
                         "cuMemcpyDToH( " << dst << ", " << src << ", " << size << ") failed " )
 }
@@ -386,13 +387,12 @@ void CUDAContext::memcpyToHost( void* dst, const void* src, const size_t size ) 
 SyncToken* CUDAContext::memcpyAsyncToHost( void* dst, const void* src, const size_t size ) const
 {
     LAMA_LOG_INFO( logger, "async copy " << size << " bytes from " << src << " (device) to " << dst << " (host) " )
+
     // as current thread has disabled the context, another thread might use it
-#ifdef MEMCPY_TASK
-    return new TaskSyncToken( boost::bind( &CUDAContext::memcpyToHost, this, dst, src, size ) );
-#else
+
     memcpyToHost( dst, src, size );
+
     return NULL;
-#endif
 }
 
 /* ----------------------------------------------------------------------------- */
@@ -469,6 +469,46 @@ CUDAStreamSyncToken* CUDAContext::getTransferSyncToken() const
 
 /* ----------------------------------------------------------------------------- */
 
+bool CUDAContext::canCopyFrom( const Context& other ) const
+{
+    // copy from host to this context should always be supported
+
+    return other.getType() == context::Host;
+}
+
+bool CUDAContext::canCopyTo( const Context& other ) const
+{
+    // copy from this context to host should always be supported
+
+    return other.getType() == context::Host;
+}
+
+void CUDAContext::memcpyFrom( void* dst, const Context& srcContext, const void* src, size_t size ) const
+{
+    if ( srcContext.getType() == context::Host )
+    {
+        memcpyFromHost( dst, src, size );
+    }
+    else
+    {
+        COMMON_THROWEXCEPTION( "copy from " << srcContext << " to " << *this << " not supported" )
+    }
+}
+
+void CUDAContext::memcpyTo( const Context& dstContext, void* dst, const void* src, size_t size ) const
+{
+    if ( dstContext.getType() == context::Host )
+    {
+        memcpyToHost( dst, src, size );
+    }
+    else
+    {
+        COMMON_THROWEXCEPTION( "copy to " << dstContext << " from " << *this << " not supported" )
+    }
+}
+
+/* ----------------------------------------------------------------------------- */
+
 #define LAMA_DEFAULT_DEVICE_NUMBER -1
 #define LAMA_MAX_CUDA_DEVICES 4
 
@@ -476,6 +516,10 @@ static int getDefaultDeviceNr()
 {
     return 0;
 }
+
+/* ----------------------------------------------------------------------------- */
+/*      Factory::Register - create( int )                                        */
+/* ----------------------------------------------------------------------------- */
 
 static boost::weak_ptr<CUDAContext> mCUDAContext[LAMA_MAX_CUDA_DEVICES];
 

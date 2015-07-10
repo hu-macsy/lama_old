@@ -37,7 +37,8 @@
 #include <common/Thread.hpp>
 
 // base classes
-#include <memory/HostContext.hpp>
+#include <memory/Context.hpp>
+#include <memory/TaskSyncToken.hpp>
 
 // boost
 #include <boost/weak_ptr.hpp>
@@ -53,21 +54,19 @@ namespace memory
  *  The default host context allocates/frees data in the usual way.
  */
 
-class COMMON_DLL_IMPORTEXPORT DefaultHostContext: public HostContext, Context::Register<DefaultHostContext>
+class COMMON_DLL_IMPORTEXPORT DefaultHostContext: public Context, Context::Register<DefaultHostContext>
 {
 
 public:
 
     virtual ~DefaultHostContext();
 
-    HostContextType getHostType() const
-    {
-        return HostContext::DefaultHost;
-    }
-
     static ContextPtr create( int deviceNr );
 
-    static ContextType createValue() { return context::Host; }
+    static ContextType createValue() 
+    { 
+        return context::Host; 
+    }
 
     virtual void writeAt( std::ostream& stream ) const;
 
@@ -80,6 +79,10 @@ public:
     /** This routine implements Context::memcpyAsync  */
 
     virtual SyncToken* memcpyAsync( void* dst, const void* src, const size_t size ) const;
+
+    virtual bool canUseData( const Context& other ) const;
+
+    virtual TaskSyncToken* getSyncToken() const;
 
 private:
 

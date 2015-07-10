@@ -65,7 +65,7 @@ typedef size_t ContextDataIndex;
  *  at different contexts.
  */
 
-class ContextDataManager : private common::NonCopyable
+class ContextDataManager : private common::NonCopyable, public Printable
 {
 public:
 
@@ -156,6 +156,8 @@ public:
     void reserve( ContextPtr context, const size_t size, const size_t validSize );
 
     void resize( const size_t size, const size_t validSize );
+
+    virtual void writeAt( std::ostream& stream ) const;
 
 protected:
 

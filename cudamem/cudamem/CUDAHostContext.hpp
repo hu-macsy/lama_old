@@ -57,11 +57,20 @@ namespace memory
  *  corresponding CUDA context.
  */
 
-class COMMON_DLL_IMPORTEXPORT CUDAHostContext: public HostContext
+class COMMON_DLL_IMPORTEXPORT CUDAHostContext: 
+
+    public Context, 
+    public Context::Register<CUDAHostContext>
 {
-    friend class CUDAContext; // can only create this host context
 
 public:
+
+    static ContextPtr create( int deviceNr );
+
+    static ContextType createValue()
+    {
+        return context::CUDAHost;
+    }
 
     virtual ~CUDAHostContext();
 
@@ -73,9 +82,11 @@ public:
 
     virtual SyncToken* memcpyAsync( void* dst, const void* src, const size_t size ) const;
 
-    virtual HostContextType getHostType() const;
+    virtual bool canUseData( const Context& other ) const;
 
-private:
+    virtual SyncToken* getSyncToken() const;
+
+protected:
 
     LAMA_LOG_DECL_STATIC_LOGGER( logger )
 

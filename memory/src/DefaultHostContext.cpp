@@ -49,7 +49,7 @@ namespace memory
 
 LAMA_LOG_DEF_LOGGER( DefaultHostContext::logger, "Context.DefaultHostContext" )
 
-DefaultHostContext::DefaultHostContext()
+DefaultHostContext::DefaultHostContext() : Context( context::Host )
 {
     mNumberOfAllocatedBytes = 0;
     mNumberOfAllocates = 0;
@@ -171,5 +171,39 @@ ContextPtr DefaultHostContext::create( int deviceNr )
     return context;
 }
 
+/* ------------------------------------------------------------------------- */
+
+bool DefaultHostContext::canUseData( const Context& other ) const
+{
+    // same object by pointer can always use same data.
+
+    if( this == &other )
+    {
+        return true;
+    }
+
+    // different Host devices can use same data
+
+    if( other.getType() == context::Host )
+    {
+        return true;
+        // equal if other is HostContext and has same host type
+        // const HostContext& otherHost = static_cast<const HostContext&> (other);
+        // return otherHost.getHostType() == getHostType();
+    }
+
+    return false;
+}
+
+/* ------------------------------------------------------------------------- */
+
+TaskSyncToken* DefaultHostContext::getSyncToken() const
+{
+    // on Host we will run asynchronous computations as a task
+
+    return new TaskSyncToken();
+}
+
 } // namespace
+
 

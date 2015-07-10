@@ -74,6 +74,7 @@ namespace context
     {
         Host,          //!< context for cpu + main memory
         CUDA,          //!< CUDA GPU device
+        CUDAHost,      //!< pinned memory that allows faster transfer to a certain CUDA Device
         MIC,           //!< Intel Many-Integrated-Core Architecture
         OpenCL,        //!< OpenCL GPU device, currently not supported
         UserContext,   //!< can be used for a new derived Context class
@@ -278,3 +279,4 @@ COMMON_DLL_IMPORTEXPORT std::ostream& operator<<( std::ostream& stream, const Co
 COMMON_DLL_IMPORTEXPORT std::ostream& operator<<( std::ostream& stream, const AccessKind& kind );
 
 }
+

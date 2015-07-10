@@ -104,6 +104,10 @@ public:
 
     virtual bool canUseData( const Context& other ) const;
 
+    virtual bool canCopyFrom( const Context& other ) const;
+
+    virtual bool canCopyTo( const Context& other ) const;
+
     virtual void writeAt( std::ostream& stream ) const;
 
     virtual void* allocate( const size_t size ) const;
@@ -111,6 +115,10 @@ public:
     virtual void free( void* pointer, const size_t size ) const;
 
     virtual void memcpy( void* dst, const void* src, const size_t size ) const;
+
+    virtual void memcpyFrom( void* dst, const Context& srcContext, const void* src, size_t size ) const;
+
+    virtual void memcpyTo( const Context& dstContext, void* dst, const void* src, size_t size ) const;
 
     virtual SyncToken* memcpyAsync( void* dst, const void* src, const size_t size ) const;
 

@@ -35,7 +35,5 @@
 #   - include_directories are taken over from project
 #
 
-foreach ( executable Example1 )
-    add_executable( ${executable} ${executable}.cpp )
-    target_link_libraries( ${executable} ${cudamem_LIBRARY} )
-endforeach ( executable )
+cuda_add_executable( Example1 Example1.cu )
+target_link_libraries( Example1 ${cudamem_LIBRARY} )
