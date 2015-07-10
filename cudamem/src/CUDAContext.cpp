@@ -93,6 +93,13 @@ CUDAContext::CUDAContext( int deviceNr )
     numUsedDevices++;
     Context::enable( __FILE__, __LINE__ );
     LAMA_CUDA_DRV_CALL( cuDeviceGet( &mCUdevice, mDeviceNr ), "cuDeviceGet device " << mDeviceNr );
+
+    cudaDeviceProp properties;
+    cudaGetDeviceProperties( &properties, mCUdevice );
+
+    LAMA_LOG_ERROR( logger, "canMapHostMemory = " << properties.canMapHostMemory );
+
+
     char deviceName[256];
     LAMA_CUDA_DRV_CALL( cuDeviceGetName( deviceName, 256, mCUdevice ), "cuDeviceGetName" );
     mDeviceName = deviceName; // save it as string member variable for output

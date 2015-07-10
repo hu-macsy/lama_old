@@ -27,8 +27,7 @@
  *
  * @brief Context.cpp
  * @author Thomas Brandes
- * @date 11.07.2011
- * @since 1.0.0
+ * @date 10.07.2015
  */
 
 // hpp

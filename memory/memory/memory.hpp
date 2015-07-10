@@ -4,7 +4,6 @@
 #include <memory/ContextDataManager.hpp>
 #include <memory/Context.hpp>
 #include <memory/DefaultHostContext.hpp>
-#include <memory/HostContext.hpp>
 #include <memory/HostReadAccess.hpp>
 #include <memory/HostWriteAccess.hpp>
 #include <memory/LAMAArray.hpp>

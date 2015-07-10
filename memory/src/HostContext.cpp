@@ -1,5 +1,5 @@
 /**
- * @file DefaultHostContext.cpp
+ * @file HostContext.cpp
  *
  * @license
  * Copyright (c) 2009-2015
@@ -25,13 +25,13 @@
  * SOFTWARE.
  * @endlicense
  *
- * @brief DefaultHostContext.cpp
+ * @brief HostContext.cpp
  * @author Thomas Brandes
  * @date 11.07.2011
  */
 
 // hpp
-#include <memory/DefaultHostContext.hpp>
+#include <memory/HostContext.hpp>
 
 // others
 #include <common/Exception.hpp>
@@ -47,17 +47,17 @@ using namespace boost;
 namespace memory
 {
 
-LAMA_LOG_DEF_LOGGER( DefaultHostContext::logger, "Context.DefaultHostContext" )
+LAMA_LOG_DEF_LOGGER( HostContext::logger, "Context.HostContext" )
 
-DefaultHostContext::DefaultHostContext() : Context( context::Host )
+HostContext::HostContext() : Context( context::Host )
 {
     mNumberOfAllocatedBytes = 0;
     mNumberOfAllocates = 0;
 
-    LAMA_LOG_INFO( logger, "DefaultHostContext created" )
+    LAMA_LOG_INFO( logger, "HostContext created" )
 }
 
-DefaultHostContext::~DefaultHostContext()
+HostContext::~HostContext()
 {
     if( mNumberOfAllocates > 0 )
     {
@@ -71,10 +71,10 @@ DefaultHostContext::~DefaultHostContext()
                          << ", should be 0, so mismatch of free/allocate sizes" )
     }
 
-    LAMA_LOG_INFO( logger, "~DefaultHostContext" )
+    LAMA_LOG_INFO( logger, "~HostContext" )
 }
 
-void DefaultHostContext::writeAt( std::ostream& stream ) const
+void HostContext::writeAt( std::ostream& stream ) const
 {
     // write identification of this object
 
@@ -88,10 +88,10 @@ void DefaultHostContext::writeAt( std::ostream& stream ) const
         }
     }
 
-    stream << "DefaultHostContext( #Threads = " << nThreads << " )";
+    stream << "HostContext( #Threads = " << nThreads << " )";
 }
 
-void* DefaultHostContext::allocate( const size_t size ) const
+void* HostContext::allocate( const size_t size ) const
 {
     COMMON_ASSERT( size > 0, "allocate with size = " << size << " should not be done" )
 
@@ -114,7 +114,7 @@ void* DefaultHostContext::allocate( const size_t size ) const
     return pointer;
 }
 
-void DefaultHostContext::free( void* pointer, const size_t size ) const
+void HostContext::free( void* pointer, const size_t size ) const
 {
     LAMA_LOG_DEBUG( logger, "free " << pointer << ", size = " << size )
 
@@ -128,36 +128,36 @@ void DefaultHostContext::free( void* pointer, const size_t size ) const
     mNumberOfAllocates--;
 }
 
-void DefaultHostContext::memcpy( void* dst, const void* src, const size_t size ) const
+void HostContext::memcpy( void* dst, const void* src, const size_t size ) const
 {
     LAMA_LOG_DEBUG( logger, "memcpy: " << dst << " <- " << src << ", size = " << size )
 
     ::memcpy( dst, src, size );
 }
 
-SyncToken* DefaultHostContext::memcpyAsync( void* dst, const void* src, const size_t size ) const
+SyncToken* HostContext::memcpyAsync( void* dst, const void* src, const size_t size ) const
 {
     return new TaskSyncToken( boost::bind( &::memcpy, dst, src, size ) );
 }
 
-static boost::weak_ptr<class DefaultHostContext> contextInstance;
+static boost::weak_ptr<class HostContext> contextInstance;
 
-ContextPtr DefaultHostContext::create( int deviceNr )
+ContextPtr HostContext::create( int deviceNr )
 {
-    boost::shared_ptr<DefaultHostContext> context;
+    boost::shared_ptr<HostContext> context;
 
     if ( deviceNr >= 0 )
     {
-        LAMA_LOG_WARN( logger, "Context number ignored for DefaultHostContext, deviceNr = " << deviceNr )
+        LAMA_LOG_WARN( logger, "Context number ignored for HostContext, deviceNr = " << deviceNr )
     }
 
     // use the last contextInstance if it is still valid
 
     if( contextInstance.expired() )
     {
-        // create a new instance of DefaultHostContext and keep it for further uses
+        // create a new instance of HostContext and keep it for further uses
 
-        context = boost::shared_ptr<DefaultHostContext>( new DefaultHostContext() );
+        context = boost::shared_ptr<HostContext>( new HostContext() );
 
         contextInstance = context;
     }
@@ -173,7 +173,7 @@ ContextPtr DefaultHostContext::create( int deviceNr )
 
 /* ------------------------------------------------------------------------- */
 
-bool DefaultHostContext::canUseData( const Context& other ) const
+bool HostContext::canUseData( const Context& other ) const
 {
     // same object by pointer can always use same data.
 
@@ -197,7 +197,7 @@ bool DefaultHostContext::canUseData( const Context& other ) const
 
 /* ------------------------------------------------------------------------- */
 
-TaskSyncToken* DefaultHostContext::getSyncToken() const
+TaskSyncToken* HostContext::getSyncToken() const
 {
     // on Host we will run asynchronous computations as a task
 

@@ -49,8 +49,14 @@
 namespace memory
 {
 
-class Access;
-class _LAMAArray;
+/** Simple base class where classes might derived from to become SyncTokenMember. 
+ * 
+ *  A SyncToken can take over ownership of shared pointer objects derived from this class.
+ */
+
+class SyncTokenMember
+{
+};
 
 /** Abstract class that defines tokens for asynchronous operations.
  *
@@ -113,14 +119,7 @@ public:
      *  @param access shared pointer to an access
      */
 
-    void pushAccess( boost::shared_ptr<Access> access );
-
-    /** Add a LAMA array that will be free after synchronization
-     *
-     *  @param array shared pointer to an array
-     */
-
-    void pushArray( boost::shared_ptr<_LAMAArray> array );
+    void pushToken( boost::shared_ptr<SyncTokenMember> token );
 
     /** Add a routine to be called after synchronization. */
 
@@ -165,9 +164,7 @@ private    :
 
     /** Vector of accesses that will be freed after completion. */
 
-    std::vector< boost::shared_ptr<Access> > mAccesses;
-
-    std::vector< boost::shared_ptr<_LAMAArray> > mArrays;
+    std::vector< boost::shared_ptr<SyncTokenMember > > mTokens;
 
     bool mSynchronized;
 

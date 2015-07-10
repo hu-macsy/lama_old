@@ -1,5 +1,5 @@
 /**
- * @file DefaultHostContext.hpp
+ * @file HostContext.hpp
  *
  * @license
  * Copyright (c) 2009-2015
@@ -25,7 +25,7 @@
  * SOFTWARE.
  * @endlicense
  *
- * @brief DefaultHostContext.hpp
+ * @brief HostContext.hpp
  * @author Thomas Brandes
  * @date 10.07.2011
  */
@@ -54,19 +54,20 @@ namespace memory
  *  The default host context allocates/frees data in the usual way.
  */
 
-class COMMON_DLL_IMPORTEXPORT DefaultHostContext: public Context, Context::Register<DefaultHostContext>
+class COMMON_DLL_IMPORTEXPORT HostContext: public Context, Context::Register<HostContext>
 {
 
 public:
 
-    virtual ~DefaultHostContext();
+    virtual ~HostContext();
+
+    /** Static method required for create to use in Context::Register */
 
     static ContextPtr create( int deviceNr );
 
-    static ContextType createValue() 
-    { 
-        return context::Host; 
-    }
+    /** Static method required for Context::Register */
+
+    static ContextType createValue();
 
     virtual void writeAt( std::ostream& stream ) const;
 
@@ -86,7 +87,7 @@ public:
 
 private:
 
-    DefaultHostContext();
+    HostContext();
 
     LAMA_LOG_DECL_STATIC_LOGGER( logger )
 
@@ -96,5 +97,10 @@ private:
 
     mutable common::Thread::RecursiveMutex allocate_mutex;// needed to make allocate/free thread-safe
 };
+
+inline ContextType HostContext::createValue() 
+{
+    return context::Host;
+}
 
 }

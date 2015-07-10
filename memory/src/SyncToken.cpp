@@ -101,42 +101,21 @@ void SyncToken::writeAt( std::ostream& stream ) const
 
 /* ------------------------------------------------------------------------ */
 
-void SyncToken::pushAccess( shared_ptr<Access> access )
+void SyncToken::pushToken( shared_ptr<SyncTokenMember> token )
 {
-    COMMON_ASSERT( access.get(), "NULL access cannot be pushed for synchronization." )
+    COMMON_ASSERT( token.get(), "NULL token cannot be pushed for synchronization." )
 
     if( mSynchronized )
     {
-        LAMA_LOG_DEBUG( logger, *this << ": push access not done, already synchronized" )
+        LAMA_LOG_DEBUG( logger, *this << ": push token not done, already synchronized" )
     }
     else
     {
-        LAMA_LOG_DEBUG( logger, *this << ": push access, will be freed at synchronization" )
+        LAMA_LOG_DEBUG( logger, *this << ": push token, will be freed at synchronization" )
 
-        // take ownership of the access so it is not deleted before synchronization
+        // take ownership of the token so it is not deleted before synchronization
 
-        mAccesses.push_back( access );
-    }
-}
-
-/* ------------------------------------------------------------------------ */
-
-void SyncToken::pushArray( shared_ptr<_LAMAArray> array )
-{
-    COMMON_ASSERT( array.get(), "NULL array cannot be pushed for synchronization." )
-
-    if( mSynchronized )
-    {
-        LAMA_LOG_DEBUG( logger, *this << ": push array not done, already synchronized" )
-
-    }
-    else
-    {
-        LAMA_LOG_DEBUG( logger, *this << ": push array, will be freed at synchronization" )
-
-        // take ownership of the pointer, have to be deleted at synchronization
-
-        mArrays.push_back( array );
+        mTokens.push_back( token );
     }
 }
 
@@ -165,10 +144,9 @@ void SyncToken::setSynchronized()
 
     mSynchronized = true;
 
-    // after synchronization we can give up ownership of accesses, arrays, childs
+    // after synchronization we can give up ownership of tokens
 
-    mAccesses.clear();
-    mArrays.clear();
+    mTokens.clear();
 
     for( size_t i = 0; i < mSynchronizedFunctions.size(); ++i )
     {
