@@ -120,7 +120,7 @@ public:
 
     virtual void memcpyTo( const Context& dstContext, void* dst, const void* src, size_t size ) const;
 
-    virtual SyncToken* memcpyAsync( void* dst, const void* src, const size_t size ) const;
+    virtual tasking::SyncToken* memcpyAsync( void* dst, const void* src, const size_t size ) const;
 
     /** The CUDA interface used for the implementation requires that the device
      *  must be set via a setDevice routine. This method takes care of it if this
@@ -138,7 +138,7 @@ public:
 
     /** Implementation for Context::getSyncToken */
 
-    virtual SyncToken* getSyncToken() const;
+    virtual tasking::SyncToken* getSyncToken() const;
 
     static ContextType createValue() 
     {
@@ -168,10 +168,10 @@ private:
     void memcpyFromCUDAHost( void* dst, const void* src, const size_t size ) const;
     void memcpyToCUDAHost( void* dst, const void* src, const size_t size ) const;
 
-    SyncToken* memcpyAsyncFromHost( void* dst, const void* src, const size_t size ) const;
-    SyncToken* memcpyAsyncToHost( void* dst, const void* src, const size_t size ) const;
-    SyncToken* memcpyAsyncFromCUDAHost( void* dst, const void* src, const size_t size ) const;
-    SyncToken* memcpyAsyncToCUDAHost( void* dst, const void* src, const size_t size ) const;
+    tasking::SyncToken* memcpyAsyncFromHost( void* dst, const void* src, const size_t size ) const;
+    tasking::SyncToken* memcpyAsyncToHost( void* dst, const void* src, const size_t size ) const;
+    tasking::SyncToken* memcpyAsyncFromCUDAHost( void* dst, const void* src, const size_t size ) const;
+    tasking::SyncToken* memcpyAsyncToCUDAHost( void* dst, const void* src, const size_t size ) const;
 
     mutable boost::weak_ptr<const class Context> mHostContext; //!< preferred host context
 

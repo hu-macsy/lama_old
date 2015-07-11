@@ -31,12 +31,13 @@
  **/
 
 #include <memory/Context.hpp>
-#include <memory/TaskSyncToken.hpp>
+#include <tasking/TaskSyncToken.hpp>
 
 #include <boost/bind.hpp>
 #include <boost/weak_ptr.hpp>
 
 using namespace memory;
+using namespace tasking;
 
 /** Exampes of a new context class that implements all relevant routines. */
 

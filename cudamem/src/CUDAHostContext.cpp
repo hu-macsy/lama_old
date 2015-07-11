@@ -45,6 +45,8 @@
 
 #include <boost/bind.hpp>
 
+using tasking::SyncToken;
+
 namespace memory
 {
 

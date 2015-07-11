@@ -49,11 +49,13 @@
 #include <boost/shared_ptr.hpp>
 #include <boost/function.hpp>
 
+namespace tasking
+{
+    class SyncToken;    // forward declaration
+}
+
 namespace memory
 {
-
-class SyncToken;
-// forward declaration
 
 class Context;
 // forward declaration
@@ -140,13 +142,13 @@ public:
 
     virtual void memcpyTo( const Context& dstContext, void* dst, const void* src, size_t size ) const {}
 
-    virtual SyncToken* memcpyFromAsync( void* dst, const Context& srcContext, const void* src, size_t size ) const
+    virtual tasking::SyncToken* memcpyFromAsync( void* dst, const Context& srcContext, const void* src, size_t size ) const
     {
         memcpyFrom( dst, srcContext, src, size );
         return NULL;
     }
 
-    virtual SyncToken* memcpyToAsync( const Context& dstContext, void* dst, const void* src, size_t size ) const 
+    virtual tasking::SyncToken* memcpyToAsync( const Context& dstContext, void* dst, const void* src, size_t size ) const 
     {
         memcpyTo( dstContext, dst, src, size );
         return NULL;
@@ -193,14 +195,14 @@ public:
      *
      * This memory copies size values.
      */
-    virtual SyncToken* memcpyAsync( void* dst, const void* src, const size_t size ) const = 0;
+    virtual tasking::SyncToken* memcpyAsync( void* dst, const void* src, const size_t size ) const = 0;
 
     /** Getter routine for a new sync token that allows to asynchronous computations on the context.
      *
      *  @returns new SyncToken object
      */
 
-    virtual SyncToken* getSyncToken() const = 0;
+    virtual tasking::SyncToken* getSyncToken() const = 0;
 
     /**
      * @brief Enable computations in the context.

@@ -44,7 +44,6 @@
 // others
 #include <memory/Context.hpp>
 #include <memory/ContextDataManager.hpp>
-#include <memory/SyncToken.hpp>
 #include <memory/Scalar.hpp>
 
 // common

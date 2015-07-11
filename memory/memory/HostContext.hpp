@@ -38,7 +38,7 @@
 
 // base classes
 #include <memory/Context.hpp>
-#include <memory/TaskSyncToken.hpp>
+#include <tasking/TaskSyncToken.hpp>
 
 // boost
 #include <boost/weak_ptr.hpp>
@@ -79,11 +79,11 @@ public:
 
     /** This routine implements Context::memcpyAsync  */
 
-    virtual SyncToken* memcpyAsync( void* dst, const void* src, const size_t size ) const;
+    virtual tasking::SyncToken* memcpyAsync( void* dst, const void* src, const size_t size ) const;
 
     virtual bool canUseData( const Context& other ) const;
 
-    virtual TaskSyncToken* getSyncToken() const;
+    virtual tasking::TaskSyncToken* getSyncToken() const;
 
 private:
 

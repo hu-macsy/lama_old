@@ -40,6 +40,8 @@
 namespace memory
 {
 
+using tasking::SyncToken;
+
 /* ---------------------------------------------------------------------------------*/
 
 LAMA_LOG_DEF_LOGGER( ContextDataManager::logger, "ContextDataManager" )

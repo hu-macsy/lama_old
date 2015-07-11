@@ -37,7 +37,7 @@
 #include <common/Exception.hpp>
 #include <common/OpenMP.hpp>
 
-#include <memory/TaskSyncToken.hpp>
+#include <tasking/TaskSyncToken.hpp>
 
 // boost
 #include <boost/bind.hpp>
@@ -135,9 +135,9 @@ void HostContext::memcpy( void* dst, const void* src, const size_t size ) const
     ::memcpy( dst, src, size );
 }
 
-SyncToken* HostContext::memcpyAsync( void* dst, const void* src, const size_t size ) const
+tasking::SyncToken* HostContext::memcpyAsync( void* dst, const void* src, const size_t size ) const
 {
-    return new TaskSyncToken( boost::bind( &::memcpy, dst, src, size ) );
+    return new tasking::TaskSyncToken( boost::bind( &::memcpy, dst, src, size ) );
 }
 
 static boost::weak_ptr<class HostContext> contextInstance;
@@ -197,11 +197,11 @@ bool HostContext::canUseData( const Context& other ) const
 
 /* ------------------------------------------------------------------------- */
 
-TaskSyncToken* HostContext::getSyncToken() const
+tasking::TaskSyncToken* HostContext::getSyncToken() const
 {
     // on Host we will run asynchronous computations as a task
 
-    return new TaskSyncToken();
+    return new tasking::TaskSyncToken();
 }
 
 } // namespace

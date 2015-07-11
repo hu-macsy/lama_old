@@ -33,7 +33,7 @@
 #pragma once
 
 // base classes
-#include <memory/SyncToken.hpp>
+#include <tasking/SyncToken.hpp>
 
 // boost
 #include <boost/shared_ptr.hpp>
@@ -55,7 +55,7 @@
 #endif //__GNUC__ >= 4&&  __GNUC_MINOR__ > 6
 
 #include <common/config.hpp>
-#include <memory/SyncToken.hpp>
+#include <tasking/SyncToken.hpp>
 
 namespace memory
 {
@@ -66,7 +66,7 @@ typedef boost::shared_ptr<const CUDAContext> CUDAContextPtr;
 
 /** Class that sycnchronizes with a CUDA stream. */
 
-class COMMON_DLL_IMPORTEXPORT CUDAStreamSyncToken: public SyncToken
+class COMMON_DLL_IMPORTEXPORT CUDAStreamSyncToken: public tasking::SyncToken
 
 {
 

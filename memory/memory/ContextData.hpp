@@ -40,11 +40,15 @@
 
 #include <boost/shared_ptr.hpp>
 
+namespace tasking
+{
+class SyncToken;
+}
+
 namespace memory
 {
 
 class Context;
-class SyncToken;
 
 /** Context pointers will be always const, so context can never be modified. */
 
@@ -134,7 +138,7 @@ public:
 
     void copyFrom( const ContextData& source, size_t size );
 
-    SyncToken* copyFromAsync( const ContextData& source, size_t size );
+    tasking::SyncToken* copyFromAsync( const ContextData& source, size_t size );
 
 protected:
 

@@ -36,7 +36,7 @@
 #pragma once
 
 #include <memory/ContextData.hpp>
-#include <memory/SyncToken.hpp>
+#include <tasking/SyncToken.hpp>
 #include <memory/Context.hpp>
 
 #include <logging/logging.hpp>
@@ -178,7 +178,7 @@ private:
 
     std::vector<ContextData> mContextData; // Incarnations of the array at different contexts
 
-    std::auto_ptr<SyncToken> mSyncToken; //!<  outstanding transfers
+    std::auto_ptr<tasking::SyncToken> mSyncToken; //!<  outstanding transfers
 
     ContextDataIndex findContextData( ContextPtr context ) const;
 
@@ -198,7 +198,7 @@ private:
 
     void fetch( ContextData& target, const ContextData& source, size_t size );
 
-    SyncToken* fetchAsync( ContextData& target, const ContextData& source, size_t size );
+    tasking::SyncToken* fetchAsync( ContextData& target, const ContextData& source, size_t size );
 
     mutable common::Thread::Mutex mAccessMutex; // needed to make accesses thread-safe, must not be recursive 
     mutable common::Thread::Condition mAccessCondition;  // notify if all accesses are released

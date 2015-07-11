@@ -37,7 +37,7 @@
 
 // others
 #include <memory/HostContext.hpp>
-#include <memory/SyncToken.hpp>
+#include <tasking/SyncToken.hpp>
 
 #include <cudamem/CUDAContext.hpp>
 
@@ -80,11 +80,11 @@ public:
 
     virtual void memcpy( void* dst, const void* src, const size_t size ) const;
 
-    virtual SyncToken* memcpyAsync( void* dst, const void* src, const size_t size ) const;
+    virtual tasking::SyncToken* memcpyAsync( void* dst, const void* src, const size_t size ) const;
 
     virtual bool canUseData( const Context& other ) const;
 
-    virtual SyncToken* getSyncToken() const;
+    virtual tasking::SyncToken* getSyncToken() const;
 
 protected:
 

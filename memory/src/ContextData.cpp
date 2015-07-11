@@ -38,8 +38,11 @@
 #include <common/Exception.hpp>
 #include <logging/logging.hpp>
 
+using tasking::SyncToken;
+
 namespace memory
 {
+
 /* ---------------------------------------------------------------------------------*/
 
 LAMA_LOG_DEF_LOGGER( ContextData::logger, "ContextData" )

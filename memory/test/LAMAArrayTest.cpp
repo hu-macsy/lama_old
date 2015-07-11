@@ -201,10 +201,10 @@ BOOST_AUTO_TEST_CASE( createTest )
         std::cout << "Registered values[" << i << "] = " << values[i] << std::endl;
     }
 
-    BOOST_ASSERT( ContextArray::hasCreate( scalar::FLOAT ) );
-    BOOST_ASSERT( ContextArray::hasCreate( scalar::DOUBLE ) );
-    BOOST_ASSERT( ContextArray::hasCreate( scalar::INDEX_TYPE ) );
-    BOOST_ASSERT( !ContextArray::hasCreate( scalar::INTERNAL ) );
+    BOOST_ASSERT( ContextArray::canCreate( scalar::FLOAT ) );
+    BOOST_ASSERT( ContextArray::canCreate( scalar::DOUBLE ) );
+    BOOST_ASSERT( ContextArray::canCreate( scalar::INDEX_TYPE ) );
+    BOOST_ASSERT( !ContextArray::canCreate( scalar::INTERNAL ) );
 
     ContextArray* ca1 = ContextArray::create( scalar::FLOAT );
 

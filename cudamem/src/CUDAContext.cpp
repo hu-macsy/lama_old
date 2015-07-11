@@ -39,7 +39,7 @@
 // others
 #include <cudamem/CUDAStreamSyncToken.hpp>
 
-#include <memory/TaskSyncToken.hpp>
+#include <tasking/TaskSyncToken.hpp>
 #include <memory/ContextAccess.hpp>
 
 // boost
@@ -52,6 +52,7 @@
 #include <memory>
 
 using common::Thread;
+using tasking::SyncToken;
 
 namespace memory
 {
