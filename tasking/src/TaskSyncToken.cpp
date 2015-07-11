@@ -28,11 +28,11 @@
  * @brief TaskSyncToken.cpp
  * @author Thomas Brandes
  * @date 04.05.2011
- * @since 1.0.0
  */
 
 // hpp
-#include <memory/TaskSyncToken.hpp>
+#include <tasking/TaskSyncToken.hpp>
+#include <common/Exception.hpp>
 
 // boost
 #include <boost/bind.hpp>
@@ -43,7 +43,7 @@ using namespace boost;
 
 using tasking::Task;
 
-namespace memory
+namespace tasking
 {
 
 LAMA_LOG_DEF_LOGGER( TaskSyncToken::logger, "SyncToken.TaskSyncToken" )
@@ -56,6 +56,7 @@ TaskSyncToken::TaskSyncToken( boost::function<void()> function, int numOmpThread
 
 TaskSyncToken::TaskSyncToken()
 {
+    LAMA_LOG_DEBUG( logger, "TaskSyncToken(): no function set" )
     // empty task token
 }
 
@@ -68,28 +69,47 @@ void TaskSyncToken::run( boost::function<void()> function, int numOmpThreads /* 
 
 TaskSyncToken::~TaskSyncToken()
 {
+    LAMA_LOG_DEBUG( logger, "~TaskSyncToken: wait" )
+
     wait();
+
+    LAMA_LOG_DEBUG( logger, "~TaskSyncToken: wait done" )
 }
 
 void TaskSyncToken::wait()
 {
+    LAMA_LOG_DEBUG( logger, "wait" )
+
     if( isSynchronized() )
     {
         return;
     }
 
-    // set synchronized already here as synchronize might throw exception
-
-    setSynchronized();
-
     if( mTask ) // might be running task
     {
         LAMA_LOG_DEBUG( logger, "Waiting for thread " << mTask )
 
-        mTask->synchronize(); // not really needed as destructor will be called
+        try
+        {
+            mTask->synchronize(); // not really needed as destructor will be called
+        }
+        catch ( common::Exception& ex )
+        {
+            LAMA_LOG_ERROR( logger, "Task caught exception: " << ex.what() );
+        }
 
         mTask = boost::shared_ptr<Task>(); // implies call destructor of mTask
+
+        mTask.reset();  // implies call destructor of mTask
     }
+    else
+    {
+        LAMA_LOG_DEBUG( logger, "no task to synchronize." )
+    }
+
+    // Now we can free tokens and call clean functions, do not call it before mTask is synchronized
+
+    setSynchronized();
 }
 
 bool TaskSyncToken::probe() const

@@ -32,17 +32,13 @@
  */
 
 // hpp
-#include <memory/SyncToken.hpp>
-
-// others
-#include <memory/Access.hpp>
-#include <memory/LAMAArray.hpp>
+#include <tasking/SyncToken.hpp>
 
 #include <common/Exception.hpp>
 
 using boost::shared_ptr;
 
-namespace memory
+namespace tasking
 {
 
 LAMA_LOG_DEF_LOGGER( SyncToken::logger, "SyncToken" )
@@ -111,7 +107,7 @@ void SyncToken::pushToken( shared_ptr<SyncTokenMember> token )
     }
     else
     {
-        LAMA_LOG_DEBUG( logger, *this << ": push token, will be freed at synchronization" )
+        LAMA_LOG_ERROR( logger, *this << ": push token, will be freed at synchronization" )
 
         // take ownership of the token so it is not deleted before synchronization
 
@@ -137,10 +133,13 @@ bool SyncToken::isSynchronized() const
 
 void SyncToken::setSynchronized()
 {
-    if( mSynchronized )
+    if ( mSynchronized )
     {
         COMMON_THROWEXCEPTION( *this << " is already synchronized" )
     }
+
+    LAMA_LOG_INFO( logger, "setSynchronized, free " << mTokens.size() << " SyncTokenMember "
+                           << " and call " << mSynchronizedFunctions.size() << " clean functions" )
 
     mSynchronized = true;
 

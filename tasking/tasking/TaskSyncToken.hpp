@@ -38,11 +38,11 @@
 #include <tasking/Task.hpp>
 
 // base classes
-#include <memory/SyncToken.hpp>
+#include <tasking/SyncToken.hpp>
 
 // others
 
-namespace memory
+namespace tasking
 {
 
 /** Class to run a function asynchronously as a asynchronous Task. */

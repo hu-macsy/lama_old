@@ -46,7 +46,7 @@
 #include <boost/shared_ptr.hpp>
 #include <boost/function.hpp>
 
-namespace memory
+namespace tasking
 {
 
 /** Simple base class where classes might derived from to become SyncTokenMember. 
@@ -56,6 +56,15 @@ namespace memory
 
 class SyncTokenMember
 {
+public:
+
+    SyncTokenMember()
+    {
+    }
+
+    virtual ~SyncTokenMember() 
+    {
+    }
 };
 
 /** Abstract class that defines tokens for asynchronous operations.

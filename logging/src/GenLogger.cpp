@@ -54,7 +54,7 @@ namespace logging
 
 bool GenLogger::sFlush = false;
 
-void ( *GenLogger::myPrintf ) ( const char* format, ... ) = ( void ( * ) ( const char* format, ... ) )& printf ;
+void ( *GenLogger::myPrintf ) ( const char* format, ... ) = ( void (* ) ( const char* format, ... ) )& printf ;
 
 /********************************************************************
  *  Static variable: rootLogger for generic logging                  *
@@ -387,6 +387,7 @@ static void writeVal2( std::ostringstream& stream, int val )
     {
         stream << "0";
     }
+
     stream << val;
 }
 

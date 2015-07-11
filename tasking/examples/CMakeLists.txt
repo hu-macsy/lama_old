@@ -37,3 +37,7 @@ target_link_libraries( ThreadPoolTest ${TASKING_LIBRARY} )
 
 add_executable( BenchTasking BenchTasking.cpp )
 target_link_libraries( BenchTasking ${TASKING_LIBRARY} )
+
+add_executable( Token Token.cpp )
+target_link_libraries( Token ${TASKING_LIBRARY} )
+
