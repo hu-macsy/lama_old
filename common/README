@@ -4,10 +4,12 @@ Project common
 Some basic functionality:
 
  - Exception (with callstack in message)
+ - Assert macros
  - Thread (Thread identifiers, Mutex, Condition, all based on pthread)
  - Printable (base class for objects to be used in streams with <<)
  - Walltime (global wallclock timing)
  - NonCopyable (base class for all classes where to disable default copy constructor)
+ - Factory template class
 
 Note:
 

@@ -1,5 +1,5 @@
 /**
- * @file common/examples/ConditionTest.cpp
+ * @file common/examples/Barrier.cpp
  *
  * @license
  * Copyright (c) 2009-2015
@@ -25,7 +25,7 @@
  * SOFTWARE.
  * @endlicense
  *
- * @brief Example with pthreads using Condition of the common library.
+ * @brief Example with pthreads using Condition of the common library to implement barrier.
  *
  * @author Thomas Brandes
  * @date 19.06.2015
@@ -44,8 +44,9 @@ using namespace std;
 using namespace common;
 
 Thread::Mutex barrierMutex;
-Thread::Mutex printMutex;
 Thread::Condition barrierCondition;
+
+Thread::Mutex printMutex;
 
 static const int N_THREADS   = 16;
 
@@ -101,8 +102,6 @@ static void threadRoutine( int& arg )
 
 int main( int argc, char** argv )
 {
-    // macro to give the current thread a name that appears in further logs
-
     Thread threads[N_THREADS];
     int threadArgs[N_THREADS];
 

@@ -32,7 +32,7 @@
 
 # ThreadTest example
 
-foreach ( executable ExceptionTest MutexTest ConditionTest FactoryTest Factory2Test )
+foreach ( executable ExceptionDemo CriticalRegion Barrier DemoFactory DemoFactory1 )
     add_executable( ${executable} ${executable}.cpp )
     target_link_libraries( ${executable} ${COMMON_LIBRARY} )
 endforeach ( executable )

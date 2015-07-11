@@ -1,5 +1,5 @@
 /**
- * @file common/examples/FactoryTest.cpp
+ * @file common/examples/DemoFactory.cpp
  *
  * @license
  * Copyright (c) 2009-2015
@@ -35,6 +35,7 @@
 #include <common/Printable.hpp>
 
 #include <iostream>
+#include <typeinfo>
 
 using namespace common;
 
@@ -95,7 +96,7 @@ bool Derived1::init()
 class Derived2 : public Base, Base::Register<Derived2>
 {
 public:
-  
+
     /** This static functions provides the value for which this class registers in the factory. */
 
     static inline std::string createValue()
@@ -118,21 +119,71 @@ private:
     }
 };
 
+/** @brief Derived template class of Base that uses Register class of Factory.
+ */
+template<typename T>
+class Derived : public Base, Base::Register<Derived<T> >
+{
+public:
+
+    /** This static functions provides the value for which this class registers in the factory. */
+
+    static inline std::string createValue()
+    {
+        return typeid( T ).name();
+    }
+
+    /** Method that creates objects of type Derived2 that will be used for registration. */
+
+    static Base* create()
+    {
+        return new Derived<T>();
+    }
+
+private:
+
+    T mValue;
+
+    virtual void writeAt( std::ostream&  stream ) const
+    {
+        stream << "Derived<" << typeid( T ).name() << ">";
+    }
+};
+
+template class Derived<int>;
+template class Derived<float>;
+
+using namespace std;
+
 int main()
 {
-    std::vector<std::string> values;
+    vector<string> values;  // string is create type for the factory
 
     Base::getCreateValues( values );
 
+    cout << "Factory of Base: " << endl;
+
     for ( size_t i = 0; i < values.size(); ++i )
     {
-        std::cout << "Registered values[" << i << "] = " << values[i] << std::endl;
+        cout << "   Registered values[" << i << "] = " << values[i] << endl;
     }
 
-    Base* obj1 = Base::create("D1");
-    Base* obj2 = Base::create("D2");
+    Base* obj1 = Base::create( "D1" );
+    Base* obj2 = Base::create( "D2" );
+    Base* obj3 = Base::create( typeid( int ).name() );
 
-    std::cout << "obj1 is " << *obj1 << std::endl;
-    std::cout << "obj2 is " << *obj2 << std::endl;
+    cout << "obj1 is " << *obj1 << endl;
+    cout << "obj2 is " << *obj2 << endl;
+
+    cout << "obj3 is " << *obj3 << endl;
+
+    try 
+    {
+        Base* obj = Base::create( "na" );
+    }
+    catch ( Exception& ex )
+    {
+        cout << "Caught exception: " << ex.what() << endl;
+    }
 }
 

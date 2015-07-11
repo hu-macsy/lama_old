@@ -1,5 +1,5 @@
 /**
- * @file common/examples/ExceptionTest.cpp
+ * @file common/examples/ExceptionDemo.cpp
  *
  * @license
  * Copyright (c) 2009-2015
@@ -25,7 +25,7 @@
  * SOFTWARE.
  * @endlicense
  *
- * @brief Example with Exception
+ * @brief Demo example program using Exception and ASSERT macros.
  *
  * @author Thomas Brandes
  * @date 19.06.2015
@@ -42,14 +42,16 @@ void sub( int val )
         COMMON_THROWEXCEPTION( "sub: val must not be negative, val = " << val )
     }
 
-    COMMON_ASSERT( val < 10, "val = " << val << " must be less 10" )
+    COMMON_ASSERT ( val % 2 == 0, "val = " << val << " must be even" )
 
-    COMMON_ASSERT_EQUAL( val, 3, "None" )
+    COMMON_ASSERT_LT( val, 10, "val = " << val << " must be less than 10" )
+
+    COMMON_ASSERT_EQUAL( val, 4, "None" )
 }
 
 int main()
 {
-    int vals[] = { -1, 15, 5, 3 };
+    int vals[] = { -1, 5, 14, 6, 4 };
  
     int nargs = sizeof( vals ) / sizeof( int );
 
@@ -58,7 +60,7 @@ int main()
         try
         {
             sub( vals[i] );
-            std::cout << "Call of sub( " << vals[i] << " terminated correctly" << std::endl;
+            std::cout << "Call of sub( " << vals[i] << ") terminated correctly" << std::endl;
         }
         catch ( const std::exception& exception )
         {

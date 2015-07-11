@@ -1,5 +1,5 @@
 /**
- * @file common/examples/FactoryTest.cpp
+ * @file common/examples/DemoFactory1.cpp
  *
  * @license
  * Copyright (c) 2009-2015

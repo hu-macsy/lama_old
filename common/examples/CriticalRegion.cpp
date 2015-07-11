@@ -1,5 +1,5 @@
 /**
- * @file common/examples/MutexTest.cpp
+ * @file common/examples/CriticalRegion.cpp
  *
  * @license
  * Copyright (c) 2009-2015
@@ -25,7 +25,7 @@
  * SOFTWARE.
  * @endlicense
  *
- * @brief Example with pthreads using the common library.
+ * @brief Example with pthreads and a critical region using the common library 
  *
  * @author Thomas Brandes
  * @date 19.06.2015
@@ -43,8 +43,7 @@
 using namespace std;
 using namespace common;
 
-// Thread::Mutex mutex( true );  // recursive mutex
-Thread::RecursiveMutex mutex;
+Thread::RecursiveMutex mutex;    // recursive mutex needed here
 
 static int SLEEP_TIME  = 2;
 static int N_THREADS   = 4;
@@ -53,14 +52,16 @@ static int N_THREADS   = 4;
 
 void* threadRoutine( void* )
 {
-    cout << "Thread " << Thread::getCurrentThreadName() << " starts" << endl;
+    Thread::Id self = Thread::getSelf();
+
+    cout << "Thread " << self << " starts" << endl;
 
     Thread::ScopedLock lock( mutex );
     Thread::ScopedLock lock1( mutex );   // second lock by same thread is okay for recursive mutex
 
-    cout << "Thread " << Thread::getCurrentThreadName() << " enters critical region" << endl;
+    cout << "Thread " << self << " enters critical region" << endl;
     sleep( SLEEP_TIME );
-    cout << "Thread " << Thread::getCurrentThreadName() << " leaves critical region" << endl;
+    cout << "Thread " << self << " leaves critical region" << endl;
 }
 
 int main( int argc, char** argv )
@@ -94,8 +95,8 @@ int main( int argc, char** argv )
 
     cout << "Termination of " << N_THREADS << " threads after " << time << " seconds" << endl;
 
-    if ( time < N_THREADS * SLEEP_TIME )
-    {
-        cout << "ERROR: threads seem to enter critial region at same time" << endl;
-    }
+    // If critical region is implemented correctly, time must be > ( #threds * sleep_time )
+
+    COMMON_ASSERT_LT( N_THREADS * SLEEP_TIME, time, 
+                      "ERROR: " << N_THREADS << " threads seem to enter critial region at same time" )
 }
