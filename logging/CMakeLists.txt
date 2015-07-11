@@ -40,13 +40,13 @@ project( logging CXX )
 ### Define variables needed for logging library 
 ### Variables are put in the cache so they might be used in other scopes
 
-set ( LOGGING_LIBRARY logging 
+set ( logging_LIBRARY logging 
       CACHE FILEPATH "logging library" )
 
-set ( LOGGING_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR} 
+set ( logging_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR} 
       CACHE PATH "logging include directory" )
 
-mark_as_advanced( LOGGING_INCLUDE_DIR LOGGING_LIBRARY )
+mark_as_advanced( logging_INCLUDE_DIR logging_LIBRARY )
 
 set ( CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/../CMake/Modules" )
 
@@ -63,11 +63,11 @@ find_package( Boost REQUIRED COMPONENTS )
 # Common library of other project is used here
 # It might be either installed or variables are already in CACHE
 
-find_library( COMMON_LIBRARY 
+find_library( common_LIBRARY 
               NAMES common
               HINTS ${CMAKE_INSTALL_PREFIX}/lib )
 
-set ( COMMON_INCLUDE_DIR ${CMAKE_INSTALL_PREFIX}/include CACHE PATH "include" )
+set ( common_INCLUDE_DIR ${CMAKE_INSTALL_PREFIX}/include CACHE PATH "include" )
 
 ### Source files for logging library
 
@@ -81,8 +81,8 @@ file( GLOB HPP_HEADERS "${CMAKE_CURRENT_SOURCE_DIR}/logging/*.hpp" )
 add_definitions ( -DLAMA_LOG_LEVEL_DEBUG )
 
 include_directories( ${Boost_INCLUDE_DIR} )
-include_directories( ${COMMON_INCLUDE_DIR} )
-include_directories( ${LOGGING_INCLUDE_DIR} )
+include_directories( ${common_INCLUDE_DIR} )
+include_directories( ${logging_INCLUDE_DIR} )
 
 if ( WIN32 )
 	add_definitions ( -DCOMMON_COMPILING_DLL )
@@ -90,12 +90,12 @@ endif ( WIN32 )
 
 ### add library and put path to search path ###
 
-add_library ( ${LOGGING_LIBRARY} SHARED ${CPP_SOURCES} )
-target_link_libraries( ${LOGGING_LIBRARY} ${COMMON_LIBRARY} )
+add_library ( ${logging_LIBRARY} SHARED ${CPP_SOURCES} )
+target_link_libraries( ${logging_LIBRARY} ${common_LIBRARY} )
 
 add_subdirectory( examples )
 
 ### install ###
 
-install ( TARGETS ${LOGGING_LIBRARY} DESTINATION lib )
+install ( TARGETS ${logging_LIBRARY} DESTINATION lib )
 install ( FILES ${HPP_HEADERS} DESTINATION include/logging )

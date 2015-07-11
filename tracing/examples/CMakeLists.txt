@@ -1,11 +1,8 @@
 
 add_definitions( -DLAMA_TRACE_ON )
 
-add_executable( TraceTest TraceTest.cpp )
-target_link_libraries( TraceTest ${TRACING_LIBRARY} ${COMMON_LIBRARY} )
 
-add_executable( TraceCalls TraceCalls.cpp )
-target_link_libraries( TraceCalls ${TRACING_LIBRARY} ${COMMON_LIBRARY} )
-
-add_executable( TraceThreads TraceThreads.cpp )
-target_link_libraries( TraceThreads ${TRACING_LIBRARY} ${COMMON_LIBRARY} )
+foreach ( executable TraceTest TraceCalls TraceThreads )
+    add_executable( ${executable} ${executable}.cpp )
+    target_link_libraries( ${executable} ${tracing_LIBRARY} )
+endforeach ( executable )

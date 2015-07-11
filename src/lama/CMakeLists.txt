@@ -36,10 +36,10 @@ lama_set_source_dir ()
 
 ### include directories ###
 
-include_directories( ${COMMON_INCLUDE_DIR}  )
-include_directories( ${LOGGING_INCLUDE_DIR} )
-include_directories( ${TRACING_INCLUDE_DIR} )
-include_directories( ${TASKING_INCLUDE_DIR} )
+include_directories( ${common_INCLUDE_DIR}  )
+include_directories( ${logging_INCLUDE_DIR} )
+include_directories( ${tracing_INCLUDE_DIR} )
+include_directories( ${tasking_INCLUDE_DIR} )
 
 if ( METIS_FOUND )
     include_directories( ${METIS_INCLUDE_DIR} ) 
@@ -148,14 +148,14 @@ add_library ( ama ${LAMA_LIBRARY_TYPE} ${CXX_SOURCES} ${HEADERS} )
 
 ### set target link libraries ###
 
-set ( LAMA_LINK_LIBRARIES ${LOGGING_LIBRARY} )
+set ( LAMA_LINK_LIBRARIES ${logging_LIBRARY} )
 set ( ADDITIONAL_LINKER_FLAGS "-Wl,--whole-archive -L\${LAMA_ROOT}/lib -lama -llogging" )
 
-set ( LAMA_LINK_LIBRARIES ${LAMA_LINK_LIBRARIES} ${TASKING_LIBRARY} )
+set ( LAMA_LINK_LIBRARIES ${LAMA_LINK_LIBRARIES} ${tasking_LIBRARY} )
 set ( ADDITIONAL_LINKER_FLAGS "${ADDITIONAL_LINKER_FLAGS} -ltasking" )
 
 if ( LAMA_TRACE_LEVEL STREQUAL "ON" )
-    set( LAMA_LINK_LIBRARIES ${LAMA_LINK_LIBRARIES} ${TRACING_LIBRARY} )
+    set( LAMA_LINK_LIBRARIES ${LAMA_LINK_LIBRARIES} ${tracing_LIBRARY} )
     set ( ADDITIONAL_LINKER_FLAGS "${ADDITIONAL_LINKER_FLAGS} -lscaitrace" )
 endif ( )
 

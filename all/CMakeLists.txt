@@ -36,9 +36,8 @@ cmake_minimum_required ( VERSION 2.8 )
 
 project ( lama )
 
-### Include all other projects 
+### Include all other projects, but we have to specify the binary dir
 
-add_subdirectory( ../common "${CMAKE_CURRENT_BINARY_DIR}/common" )
-add_subdirectory( ../logging "${CMAKE_CURRENT_BINARY_DIR}/logging" )
-add_subdirectory( ../tracing "${CMAKE_CURRENT_BINARY_DIR}/tracing" )
-add_subdirectory( ../tasking "${CMAKE_CURRENT_BINARY_DIR}/tasking" )
+foreach ( module common logging tracing tasking memory cudamem )
+    add_subdirectory( ../${module} "${CMAKE_CURRENT_BINARY_DIR}/${module}" )
+endforeach ()

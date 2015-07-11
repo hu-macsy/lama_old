@@ -51,13 +51,13 @@ endif (NOT CMAKE_BUILD_TYPE)
 ### Define variables needed for common library 
 ### Variables are put in the cache so they might be used in other scopes
 
-set ( COMMON_LIBRARY common 
+set ( common_LIBRARY common 
       CACHE FILEPATH "common library" )
 
-set ( COMMON_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR} 
+set ( common_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR} 
       CACHE PATH "common include directory" )
 
-mark_as_advanced ( COMMON_INCLUDE_DIR COMMON_LIBRARY )
+mark_as_advanced ( common_INCLUDE_DIR common_LIBRARY )
 
 ###  Here we use PThread library for threads
 ###  Note: FindThreads in CMake is available as Module, but is buggy, needs update of CheckIncludeFiles.cmake
@@ -67,7 +67,7 @@ find_library( PTHREADS_LIBRARY NAMES pthread pthreads )
 file( GLOB CPP_SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp" )
 file( GLOB HPP_HEADERS "${CMAKE_CURRENT_SOURCE_DIR}/common/*.hpp" )
 
-include_directories( ${COMMON_INCLUDE_DIR} )
+include_directories( ${common_INCLUDE_DIR} )
 
 if ( WIN32 )
 	add_definitions ( -DCOMMON_COMPILING_DLL )
@@ -75,15 +75,15 @@ endif ( WIN32 )
 
 ### add library and put path to search path ###
 
-add_library ( ${COMMON_LIBRARY} SHARED ${CPP_SOURCES} )
-target_link_libraries( ${COMMON_LIBRARY} ${PTHREADS_LIBRARY} )
+add_library ( ${common_LIBRARY} SHARED ${CPP_SOURCES} )
+target_link_libraries( ${common_LIBRARY} ${PTHREADS_LIBRARY} )
 
 if ( CMAKE_COMPILER_IS_GNUCXX )
-#   set_target_properties( ${COMMON_LIBRARY} PROPERTIES LINK_FLAGS "-Wl,--no-as-needed" )
+#   set_target_properties( ${common_LIBRARY} PROPERTIES LINK_FLAGS "-Wl,--no-as-needed" )
 endif ()
 
 add_subdirectory ( examples )
 ### install ###
 
-install ( TARGETS ${COMMON_LIBRARY} DESTINATION lib )
+install ( TARGETS ${common_LIBRARY} DESTINATION lib )
 install ( FILES ${HPP_HEADERS} DESTINATION include/common )

@@ -36,13 +36,13 @@ cmake_minimum_required ( VERSION 2.8 )
 
 project( tasking CXX )
 
-set ( TASKING_LIBRARY tasking
+set ( tasking_LIBRARY tasking
       CACHE FILEPATH "tasking library" )
 
-set ( TASKING_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR} 
+set ( tasking_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR} 
       CACHE PATH "tasking include directory" )
 
-mark_as_advanced( TASKING_LIBRARY TASKING_INCLUDE_DIR )
+mark_as_advanced( tasking_LIBRARY tasking_INCLUDE_DIR )
 
 set ( CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/../CMake/Modules" )
 
@@ -59,40 +59,34 @@ endif (NOT CMAKE_BUILD_TYPE)
 file( GLOB CPP_SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp" )
 file( GLOB HPP_HEADERS "${CMAKE_CURRENT_SOURCE_DIR}/tasking/*.hpp" )
 
+### add library and put path to search path ###
+
+add_library ( ${tasking_LIBRARY} SHARED ${CPP_SOURCES} )
+
+include_directories( ${tasking_INCLUDE_DIR} )
+
 ### add definitions ###
 
 # set ( CMAKE_INSTALL_PREFIX /home/brandes/local )
 
 find_package( Boost REQUIRED COMPONENTS )
 
-find_library( COMMON_LIBRARY 
-              NAMES common
-              HINTS ${CMAKE_INSTALL_PREFIX}/lib )
+foreach ( module common logging tracing )
 
-set ( COMMON_INCLUDE_DIR 
+   find_library( ${module}_LIBRARY 
+                 NAMES ${module}
+                 HINTS ${CMAKE_INSTALL_PREFIX}/lib )
+
+   set ( ${module}_INCLUDE_DIR
             ${CMAKE_INSTALL_PREFIX}/include 
             CACHE PATH "include" )
 
-find_library( LOGGING_LIBRARY 
-              NAMES logging 
-              HINTS ${CMAKE_INSTALL_PREFIX}/lib )
+   include_directories( ${${module}_INCLUDE_DIR} )
 
-set ( LOGGING_INCLUDE_DIR 
-            ${CMAKE_INSTALL_PREFIX}/include 
-            CACHE PATH "include" )
+   target_link_libraries( ${tasking_LIBRARY} ${${module}_LIBRARY} )
 
-find_library( TRACING_LIBRARY 
-              NAMES scaitrace
-              HINTS ${CMAKE_INSTALL_PREFIX}/lib )
+endforeach()
 
-set ( TRACING_INCLUDE_DIR 
-            ${CMAKE_INSTALL_PREFIX}/include 
-            CACHE PATH "include" )
-
-include_directories( ${TASKING_INCLUDE_DIR} )
-include_directories( ${TRACING_INCLUDE_DIR} )
-include_directories( ${COMMON_INCLUDE_DIR} )
-include_directories( ${LOGGING_INCLUDE_DIR} )
 include_directories( ${Boost_INCLUDE_DIR} )
 
 if ( WIN32 )
@@ -102,14 +96,9 @@ endif ( WIN32 )
 add_definitions( -DLAMA_LOG_LEVEL_DEBUG )
 add_definitions( -DLAMA_TRACE_ON )
 
-### add library and put path to search path ###
-
-add_library ( ${TASKING_LIBRARY} SHARED ${CPP_SOURCES} )
-target_link_libraries( ${TASKING_LIBRARY} ${TRACING_LIBRARY} ${LOGGING_LIBRARY} ${COMMON_LIBRARY} )
-
 add_subdirectory( examples )
 
 ### install ###
 
-install ( TARGETS ${TASKING_LIBRARY} DESTINATION lib )
+install ( TARGETS ${tasking_LIBRARY} DESTINATION lib )
 install ( FILES ${HPP_HEADERS} DESTINATION include/tasking )

@@ -71,7 +71,7 @@ add_library ( ${cudamem_LIBRARY} SHARED ${CPP_SOURCES} )
 
 find_package( Boost REQUIRED COMPONENTS )
 
-foreach ( module common logging memory )
+foreach ( module common logging memory tasking )
 
    find_library( ${module}_LIBRARY 
                  NAMES ${module}

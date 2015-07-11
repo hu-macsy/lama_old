@@ -34,5 +34,5 @@
 
 foreach ( executable ExceptionDemo CriticalRegion Barrier DemoFactory DemoFactory1 )
     add_executable( ${executable} ${executable}.cpp )
-    target_link_libraries( ${executable} ${COMMON_LIBRARY} )
+    target_link_libraries( ${executable} ${common_LIBRARY} )
 endforeach ( executable )

@@ -36,13 +36,13 @@ cmake_minimum_required ( VERSION 2.8 )
 
 project( tracing CXX )
 
-set ( TRACING_LIBRARY scaitrace
+set ( tracing_LIBRARY tracing
       CACHE FILEPATH "trace library" )
 
-set ( TRACING_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR} 
+set ( tracing_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR} 
       CACHE PATH "traing include directory" )
 
-mark_as_advanced( TRACING_LIBRARY TRACING_INCLUDE_DIR )
+mark_as_advanced( tracing_LIBRARY tracing_INCLUDE_DIR )
 
 set ( CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/../CMake/Modules" )
 
@@ -59,32 +59,33 @@ endif (NOT CMAKE_BUILD_TYPE)
 file( GLOB CPP_SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp" )
 file( GLOB HPP_HEADERS "${CMAKE_CURRENT_SOURCE_DIR}/tracing/*.hpp" )
 
+add_library ( ${tracing_LIBRARY} SHARED ${CPP_SOURCES} )
+
+include_directories( ${tracing_INCLUDE_DIR} )
+
 ### add definitions ###
 
 find_package( Boost REQUIRED COMPONENTS )
 
 # set ( CMAKE_INSTALL_PREFIX /home/brandes/local )
 
-find_library( LOGGING_LIBRARY 
-              NAMES logging 
-              HINTS ${CMAKE_INSTALL_PREFIX}/lib )
+foreach ( module common logging )
 
-set ( LOGGING_INCLUDE_DIR 
+   find_library( ${module}_LIBRARY 
+                 NAMES ${module}
+                 HINTS ${CMAKE_INSTALL_PREFIX}/lib )
+
+   set ( ${module}_INCLUDE_DIR
             ${CMAKE_INSTALL_PREFIX}/include 
             CACHE PATH "include" )
 
-find_library( COMMON_LIBRARY 
-              NAMES common
-              HINTS ${CMAKE_INSTALL_PREFIX}/lib )
+   include_directories( ${${module}_INCLUDE_DIR} )
 
-set ( COMMON_INCLUDE_DIR 
-            ${CMAKE_INSTALL_PREFIX}/include 
-            CACHE PATH "include" )
+   target_link_libraries( ${tracing_LIBRARY} ${${module}_LIBRARY} )
 
-include_directories( ${TRACING_INCLUDE_DIR} )
-include_directories( ${COMMON_INCLUDE_DIR} )
+endforeach()
+
 include_directories( ${Boost_INCLUDE_DIR} )
-include_directories( ${LOGGING_INCLUDE_DIR} )
 
 if ( WIN32 )
     add_definitions ( -DCOMMON_COMPILING_DLL )
@@ -93,10 +94,6 @@ endif ( WIN32 )
 add_definitions( -DLAMA_LOG_LEVEL_DEBUG )
 
 ### add library and put path to search path ###
-
-add_library ( ${TRACING_LIBRARY} SHARED ${CPP_SOURCES} )
-target_link_libraries( ${TRACING_LIBRARY} ${LOGGING_LIBRARY} ${COMMON_LIBRARY} )
-
 
 if ( FALSE )
 
@@ -111,7 +108,7 @@ if ( FALSE )
         message( STATUS "VAMPIRTRACE found, lib = ${VAMPIRTRACE_LIBRARIES}" )
         add_definitions( -DUSE_VAMPIRTRACE )
         include_directories( ${VAMPIRTRACE_INCLUDE_DIR} )
-        target_link_libraries( ${TRACING_LIBRARY} ${VAMPIRTRACE_LIBRARIES} ${MPI_LIBRARIES} )
+        target_link_libraries( ${tracing_LIBRARY} ${VAMPIRTRACE_LIBRARIES} ${MPI_LIBRARIES} )
     endif ()
 
 endif ()
@@ -121,5 +118,5 @@ add_subdirectory( examples )
 
 ### install ###
 
-install ( TARGETS ${TRACING_LIBRARY} DESTINATION lib )
+install ( TARGETS ${tracing_LIBRARY} DESTINATION lib )
 install ( FILES ${HPP_HEADERS} DESTINATION include/tracing )

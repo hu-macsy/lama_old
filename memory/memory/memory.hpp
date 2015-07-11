@@ -9,6 +9,4 @@
 #include <memory/LAMAArray.hpp>
 #include <memory/LAMAArrayRef.hpp>
 #include <memory/ReadAccess.hpp>
-#include <memory/SyncToken.hpp>
-#include <memory/TaskSyncToken.hpp>
 #include <memory/WriteAccess.hpp>

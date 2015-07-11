@@ -32,12 +32,8 @@
 
 # ThreadTest example
 
-add_executable( ThreadPoolTest ThreadPoolTest.cpp )
-target_link_libraries( ThreadPoolTest ${TASKING_LIBRARY} )
-
-add_executable( BenchTasking BenchTasking.cpp )
-target_link_libraries( BenchTasking ${TASKING_LIBRARY} )
-
-add_executable( Token Token.cpp )
-target_link_libraries( Token ${TASKING_LIBRARY} )
+foreach ( executable ThreadPoolTest BenchTasking Token )
+   add_executable( ${executable} ${executable}.cpp )
+   target_link_libraries( ${executable} ${tasking_LIBRARY} )
+endforeach()
 
