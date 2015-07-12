@@ -25,7 +25,7 @@
  * SOFTWARE.
  * @endlicense
  *
- * @brief Level.hpp
+ * @brief Definition of different logging levels.
  * @author Thomas Brandes
  * @date 10.06.2015
  */
@@ -37,6 +37,11 @@
 
 namespace logging
 {
+/** @brief Enumeration type for different logging levels.
+ *
+ *  The values are ordered. Setting a lower level also enables all
+ *  higher levels. 
+ */
 typedef enum
 {
     TRACE, //!< even more detailed than DEBUG

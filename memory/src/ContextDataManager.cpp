@@ -1,5 +1,5 @@
 /**
- * @file ContextDataManger.cpp
+ * @file ContextDataManager.cpp
  *
  * @license
  * Copyright (c) 2009-2015

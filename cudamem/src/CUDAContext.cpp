@@ -481,14 +481,18 @@ bool CUDAContext::canCopyFrom( const Context& other ) const
 {
     // copy from host to this context should always be supported
 
-    return other.getType() == context::Host;
+    ContextType otherType = other.getType();
+
+    return ( otherType == context::Host ) || ( otherType == context::CUDAHost );
 }
 
 bool CUDAContext::canCopyTo( const Context& other ) const
 {
     // copy from this context to host should always be supported
 
-    return other.getType() == context::Host;
+    ContextType otherType = other.getType();
+
+    return ( otherType == context::Host ) || ( otherType == context::CUDAHost );
 }
 
 void CUDAContext::memcpyFrom( void* dst, const Context& srcContext, const void* src, size_t size ) const
@@ -496,6 +500,10 @@ void CUDAContext::memcpyFrom( void* dst, const Context& srcContext, const void* 
     if ( srcContext.getType() == context::Host )
     {
         memcpyFromHost( dst, src, size );
+    }
+    else if ( srcContext.getType() == context::CUDAHost )
+    {
+        memcpyFromCUDAHost( dst, src, size );
     }
     else
     {
@@ -508,6 +516,10 @@ void CUDAContext::memcpyTo( const Context& dstContext, void* dst, const void* sr
     if ( dstContext.getType() == context::Host )
     {
         memcpyToHost( dst, src, size );
+    }
+    else if ( dstContext.getType() == context::CUDAHost )
+    {
+        memcpyToCUDAHost( dst, src, size );
     }
     else
     {

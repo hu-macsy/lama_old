@@ -25,7 +25,7 @@
  * SOFTWARE.
  * @endlicense
  *
- * @brief Level.cpp
+ * @brief Implementation of conversion routines between level enum and strings.
  * @author Thomas Brandes
  * @date 01.03.2011
  */
@@ -37,16 +37,8 @@
 namespace logging
 {
 
-/** Attention: these strings are of no help as initialization might be done after use. */
-
-static const std::string TRACE_ID = "TRACE";
-static const std::string DEBUG_ID = "DEBUG";
-static const std::string INFO_ID = "INFO";
-static const std::string WARN_ID = "WARN";
-static const std::string SERROR_ID = "ERROR";
-static const std::string FATAL_ID = "FATAL";
-static const std::string OFF_ID = "OFF";
-static const std::string UNKOWN_ID = "UNKNOWN";
+// Attention: Do not use any static (string) variables here 
+// as init might be done after first loggings
 
 const char* level2str( const Level level )
 {

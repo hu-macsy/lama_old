@@ -40,15 +40,17 @@
 // boost
 #include <boost/shared_ptr.hpp>
 
+/** Namespace for all data structures used in tracing library. */
+
+namespace tracing
+{
+
 /** This class is a helper class for tracing a scope in C++.
  *
  *  The constructor of an object creates a start entry and the destructor the stop entry
  *  for trace files. The use of this class is much safer than using calls of routines start and
  *  stop explicitly as it works also very well in case of exception.
  */
-
-namespace tracing
-{
 
 class TraceRegionRecord
 {

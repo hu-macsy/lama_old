@@ -72,9 +72,9 @@ public:
 
     /** Get the id of a region, creates a new entry if region is not available yet.
      *
-     *  @param[in] id     is the name of the region
-     *  @param[in] file   is the name of the source file where region is defined
-     *  @param[in] scl    is the line number of the region in the source file
+     *  @param[in] regionName is the name of the region
+     *  @param[in] file       is the name of the source file where region is defined
+     *  @param[in] scl        is the line number of the region in the source file
      */
     int getRegionId( const char* regionName, const char* file, int scl )
     {

@@ -221,9 +221,10 @@ class Factory1
 {
 public:
 
-    /** This method creates an object by specifying an input value.
+    /** This method creates an object by specifying two input values
      *
-     *  @param[in] type is the input value
+     *  @param[in] type is the first input value
+     *  @param[in] val is the second input value
      *  @returns value of output type
      *
      *  @throws Exception if for type no create function has been registered.

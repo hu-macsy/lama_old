@@ -37,6 +37,8 @@
 #include <cuda.h>
 #include <cublas_v2.h>
 
+/** Namespace for routines using CUDA. */
+
 namespace cuda
 {
 /** Function that translates enum CUresult to strings. */

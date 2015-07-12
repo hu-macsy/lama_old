@@ -46,6 +46,8 @@
 #include <boost/shared_ptr.hpp>
 #include <boost/function.hpp>
 
+/** Namespace for all data structures used in the tasking library. */
+
 namespace tasking
 {
 
@@ -123,12 +125,12 @@ public:
      */
     virtual void writeAt( std::ostream& stream ) const;
 
-    /** Add a read/write access to the token so that LAMA arrays remain locked until synchronization.
+    /** Add a shared pointer to this SyncToken to take ownership
      *
-     *  @param access shared pointer to an access
+     *  @param member shared pointer to an object that can be SyncTokenMember
      */
 
-    void pushToken( boost::shared_ptr<SyncTokenMember> token );
+    void pushToken( boost::shared_ptr<SyncTokenMember> member );
 
     /** Add a routine to be called after synchronization. */
 
@@ -148,7 +150,7 @@ protected:
 
     LAMA_LOG_DECL_STATIC_LOGGER(logger)
 
-private    :
+private:
 
     /** Helper class for a static object on which should be act at termination. */
 
@@ -171,11 +173,11 @@ private    :
 
     static CGuard cguard;//!< required to call routine at its destructor
 
-    /** Vector of accesses that will be freed after completion. */
+    /** Vector of shared pointers  that will be released after completion. */
 
     std::vector< boost::shared_ptr<SyncTokenMember > > mTokens;
 
-    bool mSynchronized;
+    bool mSynchronized;  //!< if true the token has already been synchronized.
 
     std::vector< boost::function<void()> > mSynchronizedFunctions;
 };

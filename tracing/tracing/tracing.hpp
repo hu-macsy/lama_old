@@ -28,7 +28,6 @@
  * @brief Definition of macros for tracing/profiling
  * @author Lauretta Schubert, Thomas Brandes
  * @date 12.08.2011
- * @since 1.0.0
  */
 
 #pragma once

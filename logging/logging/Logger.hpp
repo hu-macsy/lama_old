@@ -43,7 +43,7 @@
 #include <string>
 #include <vector>
 
-/** Namespace for logging in LAMA */
+/** Namespace for logging data structures */
 
 namespace logging
 {

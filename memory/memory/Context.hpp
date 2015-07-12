@@ -54,6 +54,8 @@ namespace tasking
     class SyncToken;    // forward declaration
 }
 
+/** Namespace for all data structures of the context memory management. */
+
 namespace memory
 {
 
@@ -62,6 +64,8 @@ class Context;
 
 /** Context pointers will be always const, so context can never be modified. */
 typedef boost::shared_ptr<const Context> ContextPtr;
+
+/** Namespace for enumeration of context types and access kinds. */
 
 namespace context
 {
