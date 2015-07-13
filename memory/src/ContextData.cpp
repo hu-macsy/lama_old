@@ -208,20 +208,25 @@ void ContextData::copyFrom( const ContextData& other, size_t size )
 
     if ( mContext.get() == other.mContext.get() )
     {
+        LAMA_LOG_INFO( logger, "copy on same context" )
         mContext->memcpy( pointer, other.pointer, size );
     }
     else if ( mContext->canCopyFrom( *other.mContext ) )
     {
+        LAMA_LOG_INFO( logger, "copy from" )
         mContext->memcpyFrom( pointer, *other.mContext, other.pointer, size );
     }
     else if ( other.mContext->canCopyTo( *mContext ) )
     {
+        LAMA_LOG_INFO( logger, "copy to" )
         other.mContext->memcpyTo( *mContext, pointer, other.pointer, size );
     }
     else
     {
+        LAMA_LOG_WARN( logger, "copyFrom " << *other.mContext << " to " << *mContext << " UNSUPPORTED" )
+
         COMMON_THROWEXCEPTION( "copyFrom  "
-                               << *other.mContext << " to " << *mContext << ", size = " << size  << " NOT SUPPORTED" )
+                               << *other.mContext << " to " << *mContext << ", size = " << size  << " UNSUPPORTED" )
         // Note: calling routine can deal with it by involving ContextData available on host
     }
 }

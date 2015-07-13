@@ -1,7 +1,7 @@
 #include "logging/logging.hpp"
 #include "omp.h"
 
-LAMA_LOG_DEF_LOGGER( myLogger, "LogTest" )
+LAMA_LOG_DEF_LOGGER( myLogger, "LogOpenMP" )
 
 int main( int argc, char** argv )
 {

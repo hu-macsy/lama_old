@@ -108,6 +108,8 @@ public:
 
     virtual bool canCopyTo( const Context& other ) const;
 
+    bool canCopyCUDA( const CUDAContext& other ) const;
+
     virtual void writeAt( std::ostream& stream ) const;
 
     virtual void* allocate( const size_t size ) const;
@@ -115,6 +117,10 @@ public:
     virtual void free( void* pointer, const size_t size ) const;
 
     virtual void memcpy( void* dst, const void* src, const size_t size ) const;
+
+    void memcpyToCUDA( const CUDAContext& dstContext, void* dst, const void* src, const size_t size ) const;
+
+    void memcpyFromCUDA( void* dst, const CUDAContext& srcContext, const void* src, const size_t size ) const;
 
     virtual void memcpyFrom( void* dst, const Context& srcContext, const void* src, size_t size ) const;
 

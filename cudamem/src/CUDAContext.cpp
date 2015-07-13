@@ -86,8 +86,8 @@ CUDAContext::CUDAContext( int deviceNr )
 
     if ( numUsedDevices == 0 )
     {
-        unsigned int flags = 0; // must be set to zero
-        LAMA_CUDA_DRV_CALL( cuInit( flags ), "cuInit failed for first used CUDA device" )
+        unsigned int flags = 0;    // must be set to zero
+        LAMA_CUDA_DRV_CALL( cuInit( flags ), "cuInit failed, probably no GPU devices available" )
     }
 
     currentDeviceNr = deviceNr;
@@ -323,6 +323,44 @@ void CUDAContext::memcpy( void* dst, const void* src, const size_t size ) const
                         "cuMemcpyDtoD( " << dst << ", " << src << ", " << size << " ) failed" )
 }
 
+void CUDAContext::memcpyToCUDA( const CUDAContext& dstContext, void* dst, const void* src, const size_t size ) const
+{
+    LAMA_CONTEXT_ACCESS( shared_from_this() )
+
+    unsigned int flags = 0;  // not any meaning now
+
+    LAMA_CUDA_DRV_CALL( cuCtxEnablePeerAccess( dstContext.mCUcontext, flags ), "cuCtxEnablePeerAccess" )
+
+    // unified adressing makes this possible
+
+    LAMA_LOG_INFO( logger, "copy " << size << " bytes to " << dst << " @ " << dstContext
+                                   << " from " << src << " @ " << *this )
+
+    LAMA_CUDA_DRV_CALL( cuMemcpyDtoD( ( CUdeviceptr ) dst, ( CUdeviceptr ) src, size ),
+                        "cuMemcpyDtoD( " << dst << ", " << src << ", " << size << " ) failed" )
+
+    LAMA_CUDA_DRV_CALL( cuCtxDisablePeerAccess( dstContext.mCUcontext ), "cuCtxDisablePeerAccess" )
+}
+
+void CUDAContext::memcpyFromCUDA( void* dst, const CUDAContext& srcContext, const void* src, const size_t size ) const
+{
+    LAMA_CONTEXT_ACCESS( shared_from_this() )
+
+    unsigned int flags = 0;  // not any meaning now
+
+    LAMA_CUDA_DRV_CALL( cuCtxEnablePeerAccess( srcContext.mCUcontext, flags ), "cuCtxEnablePeerAccess" )
+
+    // unified adressing makes this possible
+
+    LAMA_LOG_INFO( logger, "copy " << size << " bytes from " << src << " @ " << srcContext  
+                                   << " to " << dst << " @ " << *this )
+
+    LAMA_CUDA_DRV_CALL( cuMemcpyDtoD( ( CUdeviceptr ) dst, ( CUdeviceptr ) src, size ),
+                        "cuMemcpyDtoD( " << dst << ", " << src << ", " << size << " ) failed" )
+
+    LAMA_CUDA_DRV_CALL( cuCtxDisablePeerAccess( srcContext.mCUcontext ), "cuCtxDisablePeerAccess" )
+}
+
 /* ----------------------------------------------------------------------------- */
 
 SyncToken* CUDAContext::memcpyAsync( void* dst, const void* src, const size_t size ) const
@@ -479,20 +517,105 @@ CUDAStreamSyncToken* CUDAContext::getTransferSyncToken() const
 
 bool CUDAContext::canCopyFrom( const Context& other ) const
 {
-    // copy from host to this context should always be supported
+    bool supported = false;
 
     ContextType otherType = other.getType();
 
-    return ( otherType == context::Host ) || ( otherType == context::CUDAHost );
+    if ( otherType == context::Host )
+    {
+        // CUDADevice -> Host is supported
+
+        supported = true;
+    }
+    else if ( otherType == context::CUDAHost )
+    {
+        // CUDADevice -> CUDA Host is supported
+
+        supported = true;
+    }
+    else if ( otherType == context::CUDA )
+    {
+        const CUDAContext* otherCUDA = dynamic_cast<const CUDAContext*>( &other );
+
+        COMMON_ASSERT( otherCUDA, "dynamic_cast<CUDAContext*> failed" )
+
+        if ( otherCUDA->mDeviceNr == mDeviceNr )
+        {
+            // CUDADevice i -> CUDADevice i 
+            supported = true;
+        }
+        else
+        {
+            // might depend on GPU device capabilities
+
+            supported = true;
+        } 
+    }
+
+    LAMA_LOG_INFO( logger, "canCopyFrom " << other << " to this " << *this << ", supported = " << supported )
+
+    return supported;
+}
+
+bool CUDAContext::canCopyCUDA( const CUDAContext& other ) const
+{
+    bool supported = false;
+
+    if ( other.mDeviceNr == mDeviceNr )
+    {
+        supported = true;
+    }
+    else
+    {
+        // Check for the access capability
+
+        LAMA_CONTEXT_ACCESS( shared_from_this() )
+
+	    int accessCapability = 0;
+
+        LAMA_CUDA_DRV_CALL(
+            cuDeviceCanAccessPeer( &accessCapability, mDeviceNr, other.mDeviceNr),
+            "cuDeviceCanAccessPeer failed" );
+
+        if ( accessCapability >= 1 )
+        {
+            supported = true;
+        }
+    }
+
+    return supported;
 }
 
 bool CUDAContext::canCopyTo( const Context& other ) const
 {
-    // copy from this context to host should always be supported
+    bool supported = false;
 
     ContextType otherType = other.getType();
 
-    return ( otherType == context::Host ) || ( otherType == context::CUDAHost );
+    if ( otherType == context::Host )
+    {
+        // CUDADevice -> Host is supported
+
+        supported = true;
+    }
+    else if ( otherType == context::CUDAHost )
+    {
+        // CUDADevice -> CUDA Host is supported
+
+        supported = true;
+    }
+    else if ( otherType == context::CUDA )
+    {
+        const CUDAContext* otherCUDA = dynamic_cast<const CUDAContext*>( &other );
+
+        COMMON_ASSERT( otherCUDA, "dynamic_cast<CUDAContext*> failed" )
+
+        supported = canCopyCUDA( *otherCUDA );
+    }
+
+    LAMA_LOG_INFO( logger, "canCopyTo " << other << " from this " << *this << ", supported = " << supported )
+
+    return supported;
 }
 
 void CUDAContext::memcpyFrom( void* dst, const Context& srcContext, const void* src, size_t size ) const
@@ -505,8 +628,17 @@ void CUDAContext::memcpyFrom( void* dst, const Context& srcContext, const void* 
     {
         memcpyFromCUDAHost( dst, src, size );
     }
+    else if ( srcContext.getType() == context::CUDA )
+    {
+        const CUDAContext* srcCUDAContext = dynamic_cast<const CUDAContext*>( &srcContext );
+
+        COMMON_ASSERT( srcCUDAContext, "dynamic_cast<CUDAContext*> failed" )
+
+        memcpyFromCUDA( dst, *srcCUDAContext, src, size );
+    }
     else
     {
+        LAMA_LOG_ERROR( logger, "copy from " << srcContext << " to " << *this << " not supported" )
         COMMON_THROWEXCEPTION( "copy from " << srcContext << " to " << *this << " not supported" )
     }
 }
@@ -521,8 +653,17 @@ void CUDAContext::memcpyTo( const Context& dstContext, void* dst, const void* sr
     {
         memcpyToCUDAHost( dst, src, size );
     }
+    else if ( dstContext.getType() == context::CUDA )
+    {
+        const CUDAContext* dstCUDAContext = dynamic_cast<const CUDAContext*>( &dstContext );
+
+        COMMON_ASSERT( dstCUDAContext, "dynamic_cast<CUDAContext*> failed" )
+
+        memcpyToCUDA( *dstCUDAContext, dst, src, size );
+    }
     else
     {
+        LAMA_LOG_ERROR( logger, "copy to " << dstContext << " from " << *this << " not supported" )
         COMMON_THROWEXCEPTION( "copy to " << dstContext << " from " << *this << " not supported" )
     }
 }
