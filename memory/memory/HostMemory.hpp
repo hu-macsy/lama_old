@@ -1,5 +1,5 @@
 /**
- * @file HostContext.hpp
+ * @file HostMemory.hpp
  *
  * @license
  * Copyright (c) 2009-2015
@@ -25,7 +25,7 @@
  * SOFTWARE.
  * @endlicense
  *
- * @brief HostContext.hpp
+ * @brief HostMemory.hpp
  * @author Thomas Brandes
  * @date 10.07.2011
  */
@@ -37,12 +37,11 @@
 #include <common/Thread.hpp>
 
 // base classes
-#include <memory/Context.hpp>
+#include <memory/Memory.hpp>
 #include <tasking/TaskSyncToken.hpp>
 
 // boost
 #include <boost/weak_ptr.hpp>
-#include <boost/enable_shared_from_this.hpp>
 
 namespace memory
 {
@@ -55,46 +54,40 @@ namespace memory
  *  The default host context allocates/frees data in the usual way.
  */
 
-class COMMON_DLL_IMPORTEXPORT HostContext: 
-
-    public Context, 
-    private Context::Register<HostContext>,
-    public boost::enable_shared_from_this<HostContext>
+class COMMON_DLL_IMPORTEXPORT HostMemory: public Memory
 {
 
 public:
 
-    virtual ~HostContext();
+    HostMemory( boost::shared_ptr<const class HostContext> hostContext );   
 
-    /** Static method required for create to use in Context::Register */
-
-    static ContextPtr create( int deviceNr );
-
-    /** Static method required for Context::Register */
-
-    static ContextType createValue();
+    virtual ~HostMemory();
 
     virtual void writeAt( std::ostream& stream ) const;
 
-    virtual bool canUseMemory( const Memory& memory ) const;
+    virtual void* allocate( const size_t size ) const;
 
-    virtual tasking::TaskSyncToken* getSyncToken() const;
+    virtual void free( void* pointer, const size_t size ) const;
 
-    virtual MemoryPtr getMemory() const;
+    virtual void memcpy( void* dst, const void* src, const size_t size ) const;
+
+    /** This routine implements Context::memcpyAsync  */
+
+    virtual tasking::SyncToken* memcpyAsync( void* dst, const void* src, const size_t size ) const;
+
+    virtual ContextPtr getContext() const;
 
 private:
 
-    mutable boost::weak_ptr<class Memory> mMemory;
-
-    HostContext();
+    boost::shared_ptr<const HostContext> mHostContext;
 
     LAMA_LOG_DECL_STATIC_LOGGER( logger )
+
+    mutable size_t mNumberOfAllocates; //!< variable counts allocates
+
+    mutable size_t mNumberOfAllocatedBytes;//!< variable counts allocated bytes
+
+    mutable common::Thread::RecursiveMutex allocate_mutex;// needed to make allocate/free thread-safe
 };
 
-inline ContextType HostContext::createValue() 
-{
-    return context::Host;
 }
-
-}  // namespace
-

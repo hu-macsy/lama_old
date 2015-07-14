@@ -1,5 +1,5 @@
 /**
- * @file CUDAHostContext.hpp
+ * @file CUDAHostMemory.hpp
  *
  * @license
  * Copyright (c) 2009-2015
@@ -36,7 +36,7 @@
 #include <common/config.hpp>
 
 // others
-#include <memory/HostContext.hpp>
+#include <memory/Memory.hpp>
 #include <tasking/SyncToken.hpp>
 
 #include <cudamem/CUDAContext.hpp>
@@ -57,22 +57,16 @@ namespace memory
  *  corresponding CUDA context.
  */
 
-class COMMON_DLL_IMPORTEXPORT CUDAHostContext: 
+class COMMON_DLL_IMPORTEXPORT CUDAHostMemory: 
 
-    public Context, 
-    public Context::Register<CUDAHostContext>
+    public Memory 
 {
 
 public:
 
-    static ContextPtr create( int deviceNr );
+    CUDAHostMemory( boost::shared_ptr<const CUDAContext> cudaContext );
 
-    static ContextType createValue()
-    {
-        return context::CUDAHost;
-    }
-
-    virtual ~CUDAHostContext();
+    virtual ~CUDAHostMemory();
 
     virtual void* allocate( const size_t size ) const;
 
@@ -82,15 +76,13 @@ public:
 
     virtual tasking::SyncToken* memcpyAsync( void* dst, const void* src, const size_t size ) const;
 
-    virtual bool canUseData( const Context& other ) const;
+    /** On CUDAHostMemory we work usually with the HostContext. */
 
-    virtual tasking::SyncToken* getSyncToken() const;
+    virtual ContextPtr getContext() const;
 
 protected:
 
     LAMA_LOG_DECL_STATIC_LOGGER( logger )
-
-    CUDAHostContext( boost::shared_ptr<const CUDAContext> cudaContext );
 
     virtual void writeAt( std::ostream& stream ) const;
 

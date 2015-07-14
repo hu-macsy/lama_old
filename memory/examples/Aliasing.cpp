@@ -52,7 +52,7 @@ void add ( Array& res, const Array& a, const Array& b )
 
     IndexType n = res.size();
 
-    HostWriteAccess<double> write( res );
+    HostWriteOnlyAccess<double> write( res );
     HostReadAccess<double>read1( a );
     HostReadAccess<double>read2( b );
  

@@ -265,7 +265,7 @@ ContextDataIndex ContextDataManager::findContextData( ContextPtr context ) const
     {
         const ContextData& entry = mContextData[i];
 
-        if ( context->canUseData( *entry.context() ) )
+        if ( context->canUseMemory( *entry.memory() ) )
         {
             break;
         }
@@ -315,16 +315,23 @@ ContextDataIndex ContextDataManager::getContextData( ContextPtr context )
     bool found = false;
     size_t contextIndex = findContextData( context );
 
+    LAMA_LOG_DEBUG( logger, "contextIndex = " << contextIndex << ", size = " << mContextData.size() )
+
     // if context is used first time, make new entry for context data
 
     if ( contextIndex == mContextData.size() )
     {
         if ( contextIndex == 0 )
         {
-            mContextData.reserve( LAMA_MAX_CONTEXTS );
+            mContextData.reserve( MEMORY_MAX_CONTEXTS );
         }
 
-        mContextData.push_back( ContextData( context ) );
+        MemoryPtr memoryPtr = context->getMemory();
+
+        COMMON_ASSERT( memoryPtr, "getMemory failed for context = " << *context )
+
+        mContextData.push_back( ContextData( memoryPtr ) );
+
         LAMA_LOG_DEBUG( logger, "new context data entry for " << *context << ", index = " << contextIndex )
     }
 
@@ -400,9 +407,11 @@ ContextPtr ContextDataManager::getValidContext( const ContextType preferredType 
 
         if ( entry.isValid() )
         {
-            if ( entry.context()->getType() == preferredType )
+            ContextPtr context = entry.memory()->getContext();
+
+            if ( context->getType() == preferredType )
             {
-                return entry.context();
+                return context;
             }
             else if ( result )
             {
@@ -410,7 +419,7 @@ ContextPtr ContextDataManager::getValidContext( const ContextType preferredType 
             }
             else
             {
-                result = entry.context();
+                result = context;
             }
         }
     }
@@ -435,7 +444,7 @@ ContextDataIndex ContextDataManager::acquireAccess( ContextPtr context, AccessKi
 
     if ( !data.isValid() && allocSize > 0 )
     {
-        LAMA_LOG_DEBUG( logger, "data not valid at " << *data.context() )
+        LAMA_LOG_DEBUG( logger, "data not valid at " << *data.memory() )
         // make sure that we have enough memory on the target context
         // old data is invalid so it must not be saved.
         data.reserve( allocSize, 0 );  // do not save any old values
@@ -451,8 +460,9 @@ ContextDataIndex ContextDataManager::acquireAccess( ContextPtr context, AccessKi
     if ( kind == context::Write )
     {
         invalidateAll();        // invalidate all entries
-        data.setValid( true );  // for next access the data @ context is valid.
     }
+
+    data.setValid( true );  // for next access the data @ context is valid.
 
     LAMA_LOG_DEBUG( logger, "acquired access :" << data );
     return index;
@@ -469,18 +479,20 @@ void ContextDataManager::fetch( ContextData& target, const ContextData& source, 
     catch ( common::Exception& ex )
     {
         LAMA_LOG_INFO( logger, target << " copy from " << source << " not supported" )
+
         // try it via host
+
+        if ( target.memory()->getType() == memtype::HostMemory )
+        {
+            COMMON_THROWEXCEPTION( "Unsupported: copy to host from: " << *source.memory() )
+        }
+
+        if ( source.memory()->getType() == memtype::HostMemory )
+        {
+            COMMON_THROWEXCEPTION( "Unsupported: copy from host to: " << *target.memory() )
+        }
+
         ContextPtr hostContext = Context::getContext( context::Host );
-
-        if ( target.context()->getType() == context::Host )
-        {
-            COMMON_THROWEXCEPTION( "Unsupported: copy to host from: " << *source.context() )
-        }
-
-        if ( source.context()->getType() == context::Host )
-        {
-            COMMON_THROWEXCEPTION( "Unsupported: copy from host to: " << *target.context() )
-        }
 
         ContextData& hostEntry = ( *this )[hostContext];
 
@@ -510,12 +522,12 @@ SyncToken* ContextDataManager::fetchAsync( ContextData& target, const ContextDat
 
         ContextPtr hostContext = Context::getContext( context::Host );
 
-        if ( target.context()->getType() == context::Host )
+        if ( target.memory()->getType() == memtype::HostMemory )
         {
             COMMON_THROWEXCEPTION( "unsupported" )
         }
 
-        if ( source.context()->getType() == context::Host )
+        if ( source.memory()->getType() == memtype::HostMemory )
         {
             COMMON_THROWEXCEPTION( "unsupported" )
         }
@@ -549,7 +561,7 @@ void ContextDataManager::copyAllValidEntries( const ContextDataManager& other, c
             continue; // do not copy any invalid data
         }
 
-        ContextData& data = operator[]( getContextData( otherData.context() ) );
+        ContextData& data = operator[]( getContextData( otherData.memory()->getContext() ) );
 
         if ( size > 0 )
         {

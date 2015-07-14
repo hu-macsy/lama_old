@@ -66,9 +66,9 @@ int main()
     ContextPtr cudaContext2 = Context::getContext( context::CUDA, 1 );
     std::cout << "cudaContext2 = " << *cudaContext2 << std::endl;
 
-    std::cout << "try to get " << context::CUDAHost << " context from factory" << std::endl;
-    ContextPtr cudaHostContext = Context::getContext( context::CUDAHost, 1 );
-    std::cout << "cudaHostContext = " << *cudaHostContext << std::endl;
+    std::cout << "try to get " << context::Host << " context from factory" << std::endl;
+    ContextPtr hostContext = Context::getContext( context::Host, 1 );
+    std::cout << "hostContext = " << *hostContext << std::endl;
 
     const IndexType N = 100;
 
@@ -78,7 +78,7 @@ int main()
 
     {
         LAMA_LOG_INFO( logger, "write only on cuda host" )
-        WriteOnlyAccess<double> write( data, cudaHostContext, N );
+        WriteOnlyAccess<double> write( data, hostContext, N );
         double* v = write.get();
         for ( IndexType i = 0; i < N; ++i )
         {

@@ -93,7 +93,9 @@ public:
      *
      *  CUDAHostContext is used as host context to support faster and asynchronous memory transfer.
      */
-    virtual ContextPtr getHostContext() const;
+    virtual MemoryPtr getHostMemory() const;
+
+    virtual MemoryPtr getMemory() const;
 
     int getDeviceNr() const
     {
@@ -102,31 +104,9 @@ public:
 
     /** Each host context can use data of each other host context.  */
 
-    virtual bool canUseData( const Context& other ) const;
-
-    virtual bool canCopyFrom( const Context& other ) const;
-
-    virtual bool canCopyTo( const Context& other ) const;
-
-    bool canCopyCUDA( const CUDAContext& other ) const;
+    virtual bool canUseMemory( const Memory& other ) const;
 
     virtual void writeAt( std::ostream& stream ) const;
-
-    virtual void* allocate( const size_t size ) const;
-
-    virtual void free( void* pointer, const size_t size ) const;
-
-    virtual void memcpy( void* dst, const void* src, const size_t size ) const;
-
-    void memcpyToCUDA( const CUDAContext& dstContext, void* dst, const void* src, const size_t size ) const;
-
-    void memcpyFromCUDA( void* dst, const CUDAContext& srcContext, const void* src, const size_t size ) const;
-
-    virtual void memcpyFrom( void* dst, const Context& srcContext, const void* src, size_t size ) const;
-
-    virtual void memcpyTo( const Context& dstContext, void* dst, const void* src, size_t size ) const;
-
-    virtual tasking::SyncToken* memcpyAsync( void* dst, const void* src, const size_t size ) const;
 
     /** The CUDA interface used for the implementation requires that the device
      *  must be set via a setDevice routine. This method takes care of it if this
@@ -153,6 +133,8 @@ public:
 
     static ContextPtr create( int deviceNr );
 
+    CUcontext mCUcontext; //!< data structure for context
+
 protected:
 
     /**
@@ -169,23 +151,12 @@ protected:
 
 private:
 
-    void memcpyFromHost( void* dst, const void* src, const size_t size ) const;
-    void memcpyToHost( void* dst, const void* src, const size_t size ) const;
-    void memcpyFromCUDAHost( void* dst, const void* src, const size_t size ) const;
-    void memcpyToCUDAHost( void* dst, const void* src, const size_t size ) const;
-
-    tasking::SyncToken* memcpyAsyncFromHost( void* dst, const void* src, const size_t size ) const;
-    tasking::SyncToken* memcpyAsyncToHost( void* dst, const void* src, const size_t size ) const;
-    tasking::SyncToken* memcpyAsyncFromCUDAHost( void* dst, const void* src, const size_t size ) const;
-    tasking::SyncToken* memcpyAsyncToCUDAHost( void* dst, const void* src, const size_t size ) const;
-
-    mutable boost::weak_ptr<const class Context> mHostContext; //!< preferred host context
+    mutable boost::weak_ptr<class Memory> mMemory;     //!< memory management for this devie
+    mutable boost::weak_ptr<class Memory> mHostMemory; //!< preferred host memory
 
     int mDeviceNr; //!< number of device for this context
 
     CUdevice mCUdevice; //!< data structure for device
-
-    CUcontext mCUcontext; //!< data structure for context
 
     CUstream mTransferStream; //!< stream for memory transfers
     CUstream mComputeStream; //!< stream for asynchronous computations
@@ -197,15 +168,9 @@ private:
 
     common::Thread::Id mOwnerThread;
 
-    mutable int mNumberOfAllocates; //!< variable counts allocates
-    mutable long long mNumberOfAllocatedBytes; //!< variable counts allocated bytes on device
-    mutable long long mMaxNumberOfAllocatedBytes; //!< variable counts the maximum allocated bytes
-
     static int currentDeviceNr; //!< number of device currently set for CUDA
 
     static int numUsedDevices; //!< total number of used devices
-
-    static size_t minPinnedSize;
 
     LAMA_LOG_DECL_STATIC_LOGGER( logger )
 };

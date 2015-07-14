@@ -29,8 +29,7 @@
  *        used in different contexts and where the data is moved implicitly
  *        when corresponding read/write accesses are required
  * @author Thomas Brandes
- * @date 14.03.2011
- * @since 1.0.0
+ * @date 19.07.2015
  */
 
 #pragma once
@@ -45,11 +44,7 @@
 
 #include <vector>
 
-/** Number of contexts that might be used in maximum. This number
- *  is used for reservation of entries but does not imply any restrictions.
- */
-
-#define LAMA_MAX_CONTEXTS 4
+#define MEMORY_MAX_CONTEXTS 4
 
 namespace memory
 {

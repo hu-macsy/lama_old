@@ -39,16 +39,21 @@
 
 using namespace common;
 
-/** Base class provides a Factory with a create routine.
+/** Base class that provides by deriving from Factory a factory with a create routine.
+ *
+ *  The input value for the create routine is a string, the output value a pointer to
+ *  a Base object.
  *
  *  \code
- *  *Base create( std::string )
+ *       *Base create( std::string )
  *  \endcode
  */
 
 class Base : public Factory<std::string, Base*>, public Printable
 {
 public:
+
+    // Override default method of class Printable
 
     virtual void writeAt( std::ostream& stream ) const
     {

@@ -32,6 +32,7 @@
 
 // hpp
 #include <memory/HostContext.hpp>
+#include <memory/HostMemory.hpp>
 
 // others
 #include <common/Exception.hpp>
@@ -51,26 +52,11 @@ LAMA_LOG_DEF_LOGGER( HostContext::logger, "Context.HostContext" )
 
 HostContext::HostContext() : Context( context::Host )
 {
-    mNumberOfAllocatedBytes = 0;
-    mNumberOfAllocates = 0;
-
     LAMA_LOG_INFO( logger, "HostContext created" )
 }
 
 HostContext::~HostContext()
 {
-    if( mNumberOfAllocates > 0 )
-    {
-        LAMA_LOG_ERROR( logger, *this << ": " << mNumberOfAllocates << " allocate without free" )
-    }
-
-    if( mNumberOfAllocatedBytes != 0 )
-    {
-        LAMA_LOG_ERROR( logger,
-                        *this << ": number of allocated bytes = " << mNumberOfAllocatedBytes 
-                         << ", should be 0, so mismatch of free/allocate sizes" )
-    }
-
     LAMA_LOG_INFO( logger, "~HostContext" )
 }
 
@@ -91,55 +77,6 @@ void HostContext::writeAt( std::ostream& stream ) const
     stream << "HostContext( #Threads = " << nThreads << " )";
 }
 
-void* HostContext::allocate( const size_t size ) const
-{
-    COMMON_ASSERT( size > 0, "allocate with size = " << size << " should not be done" )
-
-    void* pointer = malloc( size );
-
-    if( pointer == NULL )
-    {
-        COMMON_THROWEXCEPTION( "malloc failed for size = " << size )
-    }
-
-    // allocate must be thread-safe in case where multiple threads use LAMA arrays
-
-    common::Thread::ScopedLock lock( allocate_mutex );
-
-    mNumberOfAllocatedBytes += size;
-    mNumberOfAllocates++;
-
-    LAMA_LOG_DEBUG( logger, "allocated " << pointer << ", size = " << size )
-
-    return pointer;
-}
-
-void HostContext::free( void* pointer, const size_t size ) const
-{
-    LAMA_LOG_DEBUG( logger, "free " << pointer << ", size = " << size )
-
-    COMMON_ASSERT( mNumberOfAllocates >= 1, "Invalid free, because there are no open allocates." )
-
-    ::free( pointer );
-
-    common::Thread::ScopedLock lock( allocate_mutex );
-
-    mNumberOfAllocatedBytes -= size;
-    mNumberOfAllocates--;
-}
-
-void HostContext::memcpy( void* dst, const void* src, const size_t size ) const
-{
-    LAMA_LOG_DEBUG( logger, "memcpy: " << dst << " <- " << src << ", size = " << size )
-
-    ::memcpy( dst, src, size );
-}
-
-tasking::SyncToken* HostContext::memcpyAsync( void* dst, const void* src, const size_t size ) const
-{
-    return new tasking::TaskSyncToken( boost::bind( &::memcpy, dst, src, size ) );
-}
-
 static boost::weak_ptr<class HostContext> contextInstance;
 
 ContextPtr HostContext::create( int deviceNr )
@@ -153,11 +90,11 @@ ContextPtr HostContext::create( int deviceNr )
 
     // use the last contextInstance if it is still valid
 
-    if( contextInstance.expired() )
+    if ( contextInstance.expired() )
     {
         // create a new instance of HostContext and keep it for further uses
 
-        context = boost::shared_ptr<HostContext>( new HostContext() );
+        context.reset( new HostContext() );
 
         contextInstance = context;
     }
@@ -173,26 +110,33 @@ ContextPtr HostContext::create( int deviceNr )
 
 /* ------------------------------------------------------------------------- */
 
-bool HostContext::canUseData( const Context& other ) const
+bool HostContext::canUseMemory( const Memory& other ) const
 {
     // same object by pointer can always use same data.
 
-    if( this == &other )
+    if ( other.getType() == memtype::HostMemory )
     {
         return true;
     }
+}
 
-    // different Host devices can use same data
+/* ------------------------------------------------------------------------- */
 
-    if( other.getType() == context::Host )
+MemoryPtr HostContext::getMemory() const
+{
+    MemoryPtr memory;
+
+    if ( mMemory.expired() )
     {
-        return true;
-        // equal if other is HostContext and has same host type
-        // const HostContext& otherHost = static_cast<const HostContext&> (other);
-        // return otherHost.getHostType() == getHostType();
+        memory.reset( new HostMemory( shared_from_this() ) );
+        mMemory = memory;
+    }
+    else
+    {
+        memory = mMemory.lock();
     }
 
-    return false;
+    return memory;
 }
 
 /* ------------------------------------------------------------------------- */
@@ -205,5 +149,4 @@ tasking::TaskSyncToken* HostContext::getSyncToken() const
 }
 
 } // namespace
-
 

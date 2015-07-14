@@ -32,6 +32,7 @@
 
 // hpp
 #include <memory/Context.hpp>
+#include <memory/Memory.hpp>
 
 // assert
 #include <common/Exception.hpp>
@@ -73,24 +74,12 @@ std::ostream& operator<<( std::ostream& stream, const ContextType& type )
             stream << "CUDA";
             break;
 
-        case context::CUDAHost :
-            stream << "CUDAHost";
-            break;
-
         case context::OpenCL :
             stream << "OpenCL";
             break;
 
         case context::UserContext :
             stream << "UserContext";
-            break;
-
-        case context::UserContext1 :
-            stream << "UserContext1";
-            break;
-
-        case context::MIC :
-            stream << "MIC";
             break;
 
         default:
@@ -157,11 +146,12 @@ void Context::disable( const char* file, int line ) const
 
 /* ---------------------------------------------------------------------------------*/
 
-ContextPtr Context::getHostContext() const
+MemoryPtr Context::getHostMemory() const
 {
-    // take the default host context of the context factory
+    // take the host memory of the memory factory
 
-    return getContext( context::Host );
+    ContextPtr host = Context::getContext( context::Host );
+    return host->getMemory();
 }
 
 /* ---------------------------------------------------------------------------------*/

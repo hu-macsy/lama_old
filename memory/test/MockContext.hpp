@@ -31,10 +31,13 @@
  **/
 
 #include <memory/Context.hpp>
+#include <memory/Memory.hpp>
+ 
 #include <tasking/TaskSyncToken.hpp>
 
 #include <boost/bind.hpp>
 #include <boost/weak_ptr.hpp>
+#include "MockMemory.hpp"
 
 using namespace memory;
 using namespace tasking;
@@ -53,6 +56,8 @@ private:
 
     int mDeviceNr;     // MockContext with different device numbers are not equal
 
+    mutable boost::weak_ptr<Memory> mMemory;
+
 public:
 
     ~MockContext()
@@ -65,86 +70,44 @@ public:
         stream << "MockContext( dev = " << mDeviceNr << " )";
     }
 
-    virtual bool canUseData( const Context& other ) const
+    virtual MemoryPtr getMemory() const
     {
-        if ( other.getType() != context::UserContext ) 
+        MemoryPtr memory;
+
+        if ( mMemory.expired() )
+        {
+            memory.reset( new MockMemory( mDeviceNr ) );
+            mMemory = memory;
+        }
+        else
+        {
+            memory = mMemory.lock();
+        }
+
+        return memory;
+    }
+
+    virtual bool canUseMemory( const Memory& memory ) const
+    {
+        COMMON_ASSERT( &memory, "NULL memory" )
+
+        if ( memory.getType() != memtype ::UserMemory )
         {
             return false;
         }
 
-        const MockContext* otherMock = dynamic_cast<const MockContext*>( &other );
- 
-        COMMON_ASSERT( otherMock, "dynamic_cast<const MockContext*> failed" )
+        const MockMemory* mockMemory = dynamic_cast<const MockMemory*>( &memory );
 
-        return otherMock->mDeviceNr == mDeviceNr;   // only on same device
+        COMMON_ASSERT( mockMemory, "NULL mock memory" )
+
+        return mockMemory->getDeviceNr() == mDeviceNr;
+        
+        // return &memory == getMemory().get();
     }
 
     virtual ContextType getType() const
     {
         return context::UserContext;
-    }
-
-    virtual void* allocate( const size_t size ) const
-    {
-        return malloc( size );
-    }
-
-    virtual void free( void* pointer, const size_t ) const
-    {
-        ::free( pointer );
-    }
-
-    virtual void memcpy( void* target, const void* source, const size_t size ) const
-    {
-        ::memcpy( target, source, size );
-    }
-
-    static SyncToken* theMemcpyAsync( void* dst, const void* src, const size_t size )
-    {
-        return new TaskSyncToken( boost::bind( &::memcpy, dst, src, size ) );
-    }
-
-    virtual SyncToken* memcpyAsync( void* dst, const void* src, const size_t size ) const
-    {
-        return new TaskSyncToken( boost::bind( &::memcpy, dst, src, size ) );
-    }
-
-    virtual bool canCopyFrom( const Context& other ) const
-    {
-        // copy from host to this context should always be supported
-
-        return other.getType() == context::Host;
-    }
-
-    virtual bool canCopyTo( const Context& other ) const
-    {
-        // copy from this context to host should always be supported
-
-        return other.getType() == context::Host;
-    }
-
-    virtual void memcpyFrom( void* dst, const Context& srcContext, const void* src, size_t size ) const 
-    {
-        if ( srcContext.getType() == context::Host )
-        {
-            ::memcpy( dst, src, size );
-        }
-        else
-        {
-            COMMON_THROWEXCEPTION( "copy from " << srcContext << " to " << *this << " not supported" )
-        }
-    }
-
-    virtual void memcpyTo( const Context& dstContext, void* dst, const void* src, size_t size ) const 
-    {
-        if ( dstContext.getType() == context::Host )
-        {
-            ::memcpy( dst, src, size );
-        }
-        else
-        {
-            COMMON_THROWEXCEPTION( "copy to " << dstContext << " from " << *this << " not supported" )
-        }
     }
 
     virtual TaskSyncToken* getSyncToken() const

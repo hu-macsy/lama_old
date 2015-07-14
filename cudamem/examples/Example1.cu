@@ -60,11 +60,21 @@ int main()
 {
     std::cout << "try to get " << context::CUDA << " context from factory" << std::endl;
     ContextPtr cudaContext = Context::getContext( context::CUDA );
+    COMMON_ASSERT( cudaContext, "NULL context" )
     std::cout << "cudaContext = " << *cudaContext << std::endl;
 
-    std::cout << "try to get " << context::CUDAHost << " context from factory" << std::endl;
-    ContextPtr cudaHostContext = Context::getContext( context::CUDAHost );
-    std::cout << "cudaHostContext = " << *cudaContext << std::endl;
+    MemoryPtr cudaMemory = cudaContext->getMemory();
+    COMMON_ASSERT( cudaMemory, "NULL memory" )
+    std::cout << "cudaMemory = " << *cudaMemory << std::endl;
+
+    std::cout << "try to get " << context::Host << " context from factory" << std::endl;
+    ContextPtr hostContext = Context::getContext( context::Host );
+    COMMON_ASSERT( hostContext, "NULL context" )
+    std::cout << "hostContext = " << *hostContext << std::endl;
+
+    MemoryPtr hostMemory = hostContext->getMemory();
+    COMMON_ASSERT( hostMemory, "NULL memory" )
+    std::cout << "hostMemory = " << *hostMemory << std::endl;
 
     const IndexType N = 100;
 
@@ -74,13 +84,15 @@ int main()
 
     {
         LAMA_LOG_INFO( logger, "write only on cuda host" )
-        WriteOnlyAccess<double> write( data, cudaHostContext, N );
+        WriteOnlyAccess<double> write( data, hostContext, N );
         double* v = write.get();
         for ( IndexType i = 0; i < N; ++i )
         {
             v[i] = 1.0;
         }
     }
+
+    std::cout << "After host write: data = " << data << std::endl;
 
     {
         LAMA_LOG_INFO( logger, "read on cuda" )
@@ -90,12 +102,16 @@ int main()
         std::cout << "sum = " << s << ", should be " << N  << std::endl;
     }
 
+    std::cout << "After cuda read: data = " << data << std::endl;
+
     {
         LAMA_LOG_INFO( logger, "write on cuda" )
         WriteAccess<double> write( data, cudaContext );
         LAMA_CONTEXT_ACCESS( cudaContext )
         add( write.get(), data.size() );
     }
+
+    std::cout << "After cuda write: data = " << data << std::endl;
 
     {
         LAMA_LOG_INFO( logger, "read on host" )
@@ -105,5 +121,7 @@ int main()
             COMMON_ASSERT_EQUAL( read[i], 2.0, "wrong value after add" )
         }
     }
+
+    std::cout << "After host read: data = " << data << std::endl;
 }
 

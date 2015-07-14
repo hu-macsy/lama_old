@@ -1,5 +1,5 @@
 /**
- * @file CUDAHostContext.cpp
+ * @file CUDAHostMemory.cpp
  *
  * @license
  * Copyright (c) 2009-2015
@@ -33,12 +33,11 @@
  */
 
 // hpp
-#include <cudamem/CUDAHostContext.hpp>
+#include <cudamem/CUDAHostMemory.hpp>
 
 // others
 #include <cudamem/CUDAError.hpp>
 #include <cudamem/CUDAStreamSyncToken.hpp>
-
 #include <memory/ContextAccess.hpp>
 
 #include <common/Exception.hpp>
@@ -50,34 +49,34 @@ using tasking::SyncToken;
 namespace memory
 {
 
-LAMA_LOG_DEF_LOGGER( CUDAHostContext::logger, "Context.CUDAHostContext" );
+LAMA_LOG_DEF_LOGGER( CUDAHostMemory::logger, "Context.CUDAHostMemory" );
 
-CUDAHostContext::CUDAHostContext( boost::shared_ptr<const CUDAContext> cudaContext )
+CUDAHostMemory::CUDAHostMemory( boost::shared_ptr<const CUDAContext> cudaContext )
 
-    : Context( context::CUDAHost ),
+    : Memory( memtype::CUDAHostMemory ),
       mCUDAContext( cudaContext )
 {
     if( !cudaContext )
     {
-        COMMON_THROWEXCEPTION( "CUDAHostContext requires valid CUDAContext, is NULL" )
+        COMMON_THROWEXCEPTION( "CUDAHostMemory requires valid CUDAContext, is NULL" )
     }
 
-    LAMA_LOG_INFO( logger, "CUDAHostContext created, allows faster transfer HOST <-> " << *mCUDAContext )
+    LAMA_LOG_INFO( logger, "CUDAHostMemory created, allows faster transfer HOST <-> " << *mCUDAContext )
 }
 
-CUDAHostContext::~CUDAHostContext()
+CUDAHostMemory::~CUDAHostMemory()
 {
 }
 
-void CUDAHostContext::writeAt( std::ostream& stream ) const
+void CUDAHostMemory::writeAt( std::ostream& stream ) const
 {
     // write identification of this object
-    stream << "CUDAHostContext(" << mCUDAContext->getDeviceNr() << ":lama_host_Alloc/Free_cuda)";
+    stream << "CUDAHostMemory(" << mCUDAContext->getDeviceNr() << ":lama_host_Alloc/Free_cuda)";
 }
 
-void* CUDAHostContext::allocate( const size_t size ) const
+void* CUDAHostMemory::allocate( const size_t size ) const
 {
-    // LAMA_REGION( "CUDAHostContext::allocate" )
+    // LAMA_REGION( "CUDAHostMemory::allocate" )
     LAMA_LOG_TRACE( logger, *this << ": allocate " << size << " bytes" )
 
     void* pointer = 0;
@@ -91,9 +90,9 @@ void* CUDAHostContext::allocate( const size_t size ) const
     return pointer;
 }
 
-void CUDAHostContext::free( void* pointer, const size_t size ) const
+void CUDAHostMemory::free( void* pointer, const size_t size ) const
 {
-    // LAMA_REGION( "CUDAHostContext::free" )
+    // LAMA_REGION( "CUDAHostMemory::free" )
     // Be careful: do not use
     // ContextAccess useCUDA( ContextPtr( mCUDAContext ) );
     // as this defines a function and not a variable
@@ -106,12 +105,12 @@ void CUDAHostContext::free( void* pointer, const size_t size ) const
     LAMA_LOG_DEBUG( logger, *this << ": freed " << size << " bytes, pointer = " << pointer )
 }
 
-void CUDAHostContext::memcpy( void* dst, const void* src, const size_t size ) const
+void CUDAHostMemory::memcpy( void* dst, const void* src, const size_t size ) const
 {
     ::memcpy( dst, src, size );
 }
 
-SyncToken* CUDAHostContext::memcpyAsync( void* dst, const void* src, const size_t size ) const
+SyncToken* CUDAHostMemory::memcpyAsync( void* dst, const void* src, const size_t size ) const
 {
     LAMA_CONTEXT_ACCESS( mCUDAContext )
 
@@ -135,87 +134,12 @@ SyncToken* CUDAHostContext::memcpyAsync( void* dst, const void* src, const size_
     return syncToken.release();
 }
 
-/* ----------------------------------------------------------------------------- */
-
-bool CUDAHostContext::canUseData( const Context& other ) const
+ContextPtr CUDAHostMemory::getContext() const
 {
-    // same object by pointer can always use same data.
+    // Note: some CUDA devices can access directly the host memory
 
-    if( this == &other )
-    {
-        return true;
-    }
-
-    // different Host devices can use same data
-
-    if( other.getType() == context::Host )
-    {
-        return true;
-        // equal if other is HostContext and has same host type
-        // const HostContext& otherHost = static_cast<const HostContext&> (other);
-        // return otherHost.getHostType() == getHostType();
-    }
-
-    return false;
-}
-
-/* ------------------------------------------------------------------------- */
-
-SyncToken* CUDAHostContext::getSyncToken() const
-{
-    COMMON_THROWEXCEPTION( "not supported yet" )
-
-    return NULL;
-}
-
-/* ----------------------------------------------------------------------------- */
-/*      Factory::Register - create( int )                                        */
-/* ----------------------------------------------------------------------------- */
-
-#define LAMA_MAX_CUDA_DEVICES 5
-#define LAMA_DEFAULT_DEVICE_NUMBER -1
-
-static boost::weak_ptr<CUDAHostContext> mCUDAHostContext[LAMA_MAX_CUDA_DEVICES];
-
-ContextPtr CUDAHostContext::create( int deviceNr )
-{
-    int cudaDeviceNr = deviceNr;
-
-    if ( cudaDeviceNr == LAMA_DEFAULT_DEVICE_NUMBER )
-    {
-        cudaDeviceNr = 0;
-
-        // no need here to check for a good value
-    }
-    else
-    {
-        COMMON_ASSERT(
-            0 <= cudaDeviceNr && cudaDeviceNr < LAMA_MAX_CUDA_DEVICES,
-            "device = " << cudaDeviceNr << " out of range" << ", max supported device = " << LAMA_MAX_CUDA_DEVICES )
-    }
-
-    boost::shared_ptr<CUDAHostContext> context = boost::shared_ptr<CUDAHostContext>();
-
-    if( mCUDAHostContext[cudaDeviceNr].expired() )
-    {
-        // create a new context for the device and return the shared pointer
-
-        boost::shared_ptr<const CUDAContext> cuda = boost::dynamic_pointer_cast<const CUDAContext>( Context::getContext( context::CUDA, cudaDeviceNr ) );
-
-        context = boost::shared_ptr<CUDAHostContext>( new CUDAHostContext( cuda ) );
-
-        // we keep a weak pointer so that we can return
-
-        mCUDAHostContext[cudaDeviceNr] = context;
-    }
-    else
-    {
-        // the weak pointer to the device is still okay, so return a shared pointer for it
-
-        context = mCUDAHostContext[cudaDeviceNr].lock();
-    }
-
-    return context;
+    ContextPtr host = Context::getContext( context::Host );
+    return host;
 }
 
 } // namespace

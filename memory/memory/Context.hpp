@@ -59,10 +59,14 @@ namespace tasking
 namespace memory
 {
 
-class Context;
-// forward declaration
+class Memory;  // forward declaration
+
+typedef boost::shared_ptr<Memory> MemoryPtr;
+
+class Context;   // forward declaration
 
 /** Context pointers will be always const, so context can never be modified. */
+
 typedef boost::shared_ptr<const Context> ContextPtr;
 
 /** Namespace for enumeration of context types and access kinds. */
@@ -80,11 +84,8 @@ namespace context
     {
         Host,          //!< context for cpu + main memory
         CUDA,          //!< CUDA GPU device
-        CUDAHost,      //!< pinned memory that allows faster transfer to a certain CUDA Device
-        MIC,           //!< Intel Many-Integrated-Core Architecture
         OpenCL,        //!< OpenCL GPU device, currently not supported
         UserContext,   //!< can be used for a new derived Context class
-        UserContext1,  //!< ucan be used for a new derived Context class
         MaxContext     //!< used for dimension of ContextType arrays
     };
 
@@ -98,9 +99,10 @@ namespace context
     };
 }
 
-typedef context::ContextType ContextType;
+// Make ContexType and AccessKind visible, but not enum values. 
 
-typedef context::AccessKind AccessKind;
+using context::ContextType;
+using context::AccessKind;
 
 /** @brief This class is a common base class for all possible contexts.
  *
@@ -126,80 +128,16 @@ public:
 
     /** Method to get the type of the context. */
 
-    ContextType getType() const
-    {
-        return mContextType;
-    }
+    ContextType getType() const;
 
-    /** This predicate returns true if one context can use data of another context.
-     *  This pure routine must be implemented by base classes.
+    /** This predicate returns true if this context can use a certain memory class.
+     *  This pure routine must be implemented by derived classes.
      *
-     *  @param[in] other is the context against which the check is done
+     *  @param[in] memory is the memory against which the check is done
      */
-    virtual bool canUseData( const Context& other ) const = 0;
-
-    virtual bool canCopyFrom( const Context& other ) const { return false; }
-
-    virtual bool canCopyTo( const Context& other ) const { return false; }
-
-    virtual void memcpyFrom( void* dst, const Context& srcContext, const void* src, size_t size ) const {}
-
-    virtual void memcpyTo( const Context& dstContext, void* dst, const void* src, size_t size ) const {}
-
-    virtual tasking::SyncToken* memcpyFromAsync( void* dst, const Context& srcContext, const void* src, size_t size ) const
-    {
-        memcpyFrom( dst, srcContext, src, size );
-        return NULL;
-    }
-
-    virtual tasking::SyncToken* memcpyToAsync( const Context& dstContext, void* dst, const void* src, size_t size ) const 
-    {
-        memcpyTo( dstContext, dst, src, size );
-        return NULL;
-    }
+    virtual bool canUseMemory( const Memory& other ) const = 0;
 
     virtual void writeAt( std::ostream& stream ) const;
-
-    /** This method allocates memory and must be implemented by
-     *  each Context.
-     *
-     *  @param[in] size is the number of bytes needed
-     *  @return pointer to the allocated data, NULL if not enough data is available
-     */
-
-    virtual void* allocate( const size_t size ) const = 0;
-
-    /**
-     * This method free's allocated data allocated by this allocator.
-     *
-     * @param[in] pointer is the pointer to the allocated data.
-     * @param[in] size is the number of bytes that have been allocated with pointer.
-     *
-     * The pointer must have been allocated by the same allocator with the given size.
-     */
-    virtual void free( void* pointer, const size_t size ) const = 0;
-
-    /** Memory copy within the same context.
-     *
-     * param[in] dst pointer to the destination
-     * param[in] src pointer to the source
-     * param[in] size is the number of bytes to be copied.
-     *
-     * This memory copies size values.
-     *
-     */
-    virtual void memcpy( void* dst, const void* src, const size_t size ) const = 0;
-
-    /** Asynchronous memory copy within the same context.
-     *
-     * param[in] dst pointer to the destination
-     * param[in] src pointer to the source
-     * param[in] size is the number of bytes to be copied.
-     * return new SyncToken object for the asynchronous operation.
-     *
-     * This memory copies size values.
-     */
-    virtual tasking::SyncToken* memcpyAsync( void* dst, const void* src, const size_t size ) const = 0;
 
     /** Getter routine for a new sync token that allows to asynchronous computations on the context.
      *
@@ -227,16 +165,23 @@ public:
 
     const class LAMAInterface& getInterface() const;
 
-    /** Get the preferred host context for a context.
+    /** This method returns the memory that is used at this context. 
+     *
+     *  Note: canUseMemory( *getMemory() ) is always true.
+     */
+
+    virtual MemoryPtr getMemory() const = 0;
+
+    /** Get the preferred host memory for a context.
      *
      *  Depending on the device, the host data might be allocated
      *  in such a way that faster and/or asynchronous memory transfer is supported.
      *
-     *  As default, the default Host context is returned. Derived classes of
+     *  As default, the standard Host memory is returned. Derived classes of
      *  Context should override this method to provide more efficient solutions.
      */
 
-    virtual ContextPtr getHostContext() const;
+    virtual MemoryPtr getHostMemory() const;
  
     /** This method can be used to get a context of a certain type.
      *
@@ -250,7 +195,7 @@ public:
      *
      *  @throws Exception if the context of the requested type is not available
      */
-    static ContextPtr getContext( const ContextType type, int deviceNr = -1 );
+    static ContextPtr getContext( const ContextType type = context::Host, int deviceNr = -1 );
 
     /** Checks if a context of the passed type is available.
      *
@@ -275,6 +220,11 @@ protected:
 
     mutable int mLine;//!< Line number where context has been enabled
 };
+
+inline ContextType Context::getType() const
+{
+    return mContextType;
+}
 
 /** Make ContextType visible in namespace, but not the different enumeration values. */
 

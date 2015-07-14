@@ -58,6 +58,8 @@ typedef boost::mpl::list<float, double> test_types;
 template<typename ValueType>
 static void update( ValueType* data, size_t size )
 {
+    LAMA_LOG_INFO( logger, "update at data = " << data )
+
     for ( size_t i = 0; i < size; ++i )
     {
         data[i] = 1;
@@ -78,10 +80,14 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( refTest, ValueType, test_types )
     ValueType myData[10] = {   1, 2, 3, 4, 5, 5, 4, 3, 2, 1};
     const ValueType* myConstData = myData;
 
+    LAMA_LOG_INFO( logger, "myData = " << myData )
+
     {
         // LAMA array keeps myData on Host
 
         LAMAArrayRef<ValueType> lamaArray( myData, 10 );
+
+        LAMA_LOG_INFO( logger, "lamaArray = " << lamaArray )
 
         {
             // modify the data @ context
@@ -89,6 +95,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( refTest, ValueType, test_types )
             WriteAccess<ValueType> write( lamaArray, context );
             update( write.get(), 10 );
         }
+
+        LAMA_LOG_INFO( logger, "modified at userContext: lamaArray = " << lamaArray )
 
         {
             // get valid data back @ host

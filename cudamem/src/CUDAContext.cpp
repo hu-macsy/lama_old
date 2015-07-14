@@ -33,7 +33,8 @@
 
 // hpp
 #include <cudamem/CUDAContext.hpp>
-#include <cudamem/CUDAHostContext.hpp>
+#include <cudamem/CUDAHostMemory.hpp>
+#include <cudamem/CUDAMemory.hpp>
 #include <cudamem/CUDAError.hpp>
 
 // others
@@ -65,10 +66,6 @@ int CUDAContext::currentDeviceNr = -1;
 
 int CUDAContext::numUsedDevices = 0;
 
-//TODO: Determine good general default value
-//TODO: Add setter routine for this
-size_t CUDAContext::minPinnedSize = std::numeric_limits<size_t>::max();
-
 cusparseHandle_t CUDAContext_cusparseHandle = 0;
 cublasHandle_t CUDAContext_cublasHandle = 0;
 
@@ -78,9 +75,6 @@ CUDAContext::CUDAContext( int deviceNr )
     : Context( context::CUDA ), mDeviceNr( deviceNr )
 {
     LAMA_LOG_DEBUG( logger, "construct CUDAContext, device nr = = " << deviceNr )
-    mNumberOfAllocatedBytes = 0;
-    mNumberOfAllocates = 0;
-    mMaxNumberOfAllocatedBytes = 0;
 
     // Note: logging is safe as CUDA context is always created after static initializations
 
@@ -126,23 +120,10 @@ CUDAContext::~CUDAContext()
 {
     LAMA_LOG_INFO( logger, "~CUDAContext: " << *this )
 
-    if ( mNumberOfAllocates > 0 )
-    {
-        LAMA_LOG_ERROR( logger, *this << ": " << mNumberOfAllocates << " allocate without free" )
-    }
-    else if ( mNumberOfAllocates < 0 )
-    {
-        LAMA_LOG_ERROR( logger, *this << ": " << mNumberOfAllocates << " free without allocate" )
-    }
-
-    if ( mNumberOfAllocatedBytes != 0 )
-    {
-        LAMA_LOG_ERROR( logger,
-                        *this << ": number of allocated bytes = " << mNumberOfAllocatedBytes << ", mismatch of free/allocate sizes" )
-    }
-
     numUsedDevices--;
+
     // context must be valid before streams are destroyed
+
     CUresult res = cuCtxPushCurrent( mCUcontext );
 
     if ( res == CUDA_ERROR_DEINITIALIZED )
@@ -181,9 +162,6 @@ CUDAContext::~CUDAContext()
             CUDAContext_cublasHandle = 0;
         }
 
-//        cublasShutdown();
-
-//        lama_shutdown_cuda();
         if ( CUDAContext_cusparseHandle )
         {
             cusparseStatus_t error = cusparseDestroy( CUDAContext_cusparseHandle );
@@ -208,28 +186,46 @@ CUDAContext::~CUDAContext()
     {
         currentDeviceNr = -1;
     }
-
-    LAMA_LOG_INFO( logger, "Max allocated device memory " << mMaxNumberOfAllocatedBytes << " bytes." )
 }
 
 /* ----------------------------------------------------------------------------- */
 
-ContextPtr CUDAContext::getHostContext() const
+MemoryPtr CUDAContext::getMemory() const
 {
-    ContextPtr context;
+    MemoryPtr memory;
 
-    if ( mHostContext.expired() )
+    if ( mMemory.expired() )
     {
-        context = Context::getContext( context::CUDAHost, mDeviceNr );
-        mHostContext = context; // save it here as a weak pointer to avoid cycles
+        memory.reset( new CUDAMemory( shared_from_this() ) );
+        mMemory = memory; // save it here as a weak pointer to avoid cycles
+    }
+    else
+    {
+        // the last memory instance is still valid, so we return just shared pointer to it
+        memory = mMemory.lock();
+    }
+
+    return memory;
+}
+
+/* ----------------------------------------------------------------------------- */
+
+MemoryPtr CUDAContext::getHostMemory() const
+{
+    MemoryPtr memory;
+
+    if ( mHostMemory.expired() )
+    {
+        memory.reset( new CUDAHostMemory( shared_from_this() ) );
+        mHostMemory = memory; // save it here as a weak pointer to avoid cycles
     }
     else
     {
         // the last host context instance is still valid, so we return just shared pointer to it
-        context = mHostContext.lock();
+        memory = mHostMemory.lock();
     }
 
-    return context;
+    return memory;
 }
 
 /* ----------------------------------------------------------------------------- */
@@ -263,233 +259,20 @@ void CUDAContext::enable( const char* file, int line ) const
 
 /* ----------------------------------------------------------------------------- */
 
-bool CUDAContext::canUseData( const Context& other ) const
+bool CUDAContext::canUseMemory( const Memory& other ) const
 {
-    // same object by pointer can always use same data.
-    if ( this == &other )
-    {
-        return true;
-    }
-
     // CUDA device can use only data on same CUDA device
 
-    if ( other.getType() == context::CUDA )
+    if ( other.getType() == memtype::CUDAMemory )
     {
-        const CUDAContext& otherCUDA = static_cast<const CUDAContext&>( other );
-        return otherCUDA.mDeviceNr == mDeviceNr;
+        const CUDAMemory* otherCUDAMem = dynamic_cast<const CUDAMemory*>( &other );
+
+        COMMON_ASSERT( otherCUDAMem, "serious type mismatch" )
+
+        return otherCUDAMem->getDeviceNr() == mDeviceNr;
     }
 
     return false;
-}
-
-/* ----------------------------------------------------------------------------- */
-
-void* CUDAContext::allocate( const size_t size ) const
-{
-    // LAMA_REGION( "CUDA.allocate" )
-    LAMA_CONTEXT_ACCESS( shared_from_this() )
-    COMMON_ASSERT( size > 0, "should not call allocate for size = " << size )
-    LAMA_LOG_TRACE( logger, *this << ": allocate " << size << " bytes" )
-    CUdeviceptr pointer = 0;
-    LAMA_CUDA_DRV_CALL(
-        cuMemAlloc( &pointer, size ),
-        "cuMemAlloc( size = " << size << " ) failed. This allocation would require a total of " << mMaxNumberOfAllocatedBytes + size << " bytes global memory." )
-    LAMA_LOG_DEBUG( logger, *this << ": allocated " << size << " bytes, ptr = " << ( ( void* ) pointer ) )
-    mNumberOfAllocatedBytes += size;
-    mNumberOfAllocates++;
-    mMaxNumberOfAllocatedBytes = std::max( mNumberOfAllocatedBytes, mMaxNumberOfAllocatedBytes );
-    return ( void* ) pointer;
-}
-
-/* ----------------------------------------------------------------------------- */
-
-void CUDAContext::free( void* pointer, const size_t size ) const
-{
-    // LAMA_REGION( "CUDA.free" )
-    LAMA_CONTEXT_ACCESS( shared_from_this() )
-    LAMA_LOG_DEBUG( logger, *this << ": free " << size << " bytes, ptr = " << pointer )
-    LAMA_CUDA_DRV_CALL( cuMemFree( ( CUdeviceptr ) pointer ), "cuMemFree( " << pointer << " ) failed" )
-    mNumberOfAllocatedBytes -= size;
-    mNumberOfAllocates--;
-}
-
-/* ----------------------------------------------------------------------------- */
-
-void CUDAContext::memcpy( void* dst, const void* src, const size_t size ) const
-{
-    LAMA_CONTEXT_ACCESS( shared_from_this() )
-    LAMA_LOG_INFO( logger, "copy " << size << " bytes from " << src << " (device) to " << dst << " (device) " )
-    LAMA_CUDA_DRV_CALL( cuMemcpyDtoD( ( CUdeviceptr ) dst, ( CUdeviceptr ) src, size ),
-                        "cuMemcpyDtoD( " << dst << ", " << src << ", " << size << " ) failed" )
-}
-
-void CUDAContext::memcpyToCUDA( const CUDAContext& dstContext, void* dst, const void* src, const size_t size ) const
-{
-    LAMA_CONTEXT_ACCESS( shared_from_this() )
-
-    unsigned int flags = 0;  // not any meaning now
-
-    LAMA_CUDA_DRV_CALL( cuCtxEnablePeerAccess( dstContext.mCUcontext, flags ), "cuCtxEnablePeerAccess" )
-
-    // unified adressing makes this possible
-
-    LAMA_LOG_INFO( logger, "copy " << size << " bytes to " << dst << " @ " << dstContext
-                                   << " from " << src << " @ " << *this )
-
-    LAMA_CUDA_DRV_CALL( cuMemcpyDtoD( ( CUdeviceptr ) dst, ( CUdeviceptr ) src, size ),
-                        "cuMemcpyDtoD( " << dst << ", " << src << ", " << size << " ) failed" )
-
-    LAMA_CUDA_DRV_CALL( cuCtxDisablePeerAccess( dstContext.mCUcontext ), "cuCtxDisablePeerAccess" )
-}
-
-void CUDAContext::memcpyFromCUDA( void* dst, const CUDAContext& srcContext, const void* src, const size_t size ) const
-{
-    LAMA_CONTEXT_ACCESS( shared_from_this() )
-
-    unsigned int flags = 0;  // not any meaning now
-
-    LAMA_CUDA_DRV_CALL( cuCtxEnablePeerAccess( srcContext.mCUcontext, flags ), "cuCtxEnablePeerAccess" )
-
-    // unified adressing makes this possible
-
-    LAMA_LOG_INFO( logger, "copy " << size << " bytes from " << src << " @ " << srcContext  
-                                   << " to " << dst << " @ " << *this )
-
-    LAMA_CUDA_DRV_CALL( cuMemcpyDtoD( ( CUdeviceptr ) dst, ( CUdeviceptr ) src, size ),
-                        "cuMemcpyDtoD( " << dst << ", " << src << ", " << size << " ) failed" )
-
-    LAMA_CUDA_DRV_CALL( cuCtxDisablePeerAccess( srcContext.mCUcontext ), "cuCtxDisablePeerAccess" )
-}
-
-/* ----------------------------------------------------------------------------- */
-
-SyncToken* CUDAContext::memcpyAsync( void* dst, const void* src, const size_t size ) const
-{
-    // LAMA_REGION( "CUDA.memcpyDtoDAsync" )
-    LAMA_CONTEXT_ACCESS( shared_from_this() )
-    // use auto pointer so memory will be freed in case of exceptions
-    LAMA_LOG_INFO( logger, "copy async " << size << " bytes from " << src << " (device) to " << dst << " (device) " )
-    LAMA_CUDA_DRV_CALL( cuMemcpyDtoDAsync( ( CUdeviceptr ) dst, ( CUdeviceptr ) src, size, mTransferStream ),
-                        "cuMemcpyDtoDAsync( " << dst << ", " << src << ", " << size << ") failed " )
-    // sync token should not synchronize on the full stream but only on the transfer, so add event
-    CUevent event;
-    LAMA_CUDA_DRV_CALL( cuEventCreate( &event, CU_EVENT_DEFAULT | CU_EVENT_DISABLE_TIMING ), "Could not create event " )
-    LAMA_CUDA_DRV_CALL( cuEventRecord( event, mTransferStream ), "cuEventRecord failed for CUevent " << event << '.' )
-    // This way timing might be added
-    // CuEvent startEevent;
-    // CuEvent stopEevent;
-    // startEvent = CUDAStreamSyncToken::getStartEvent( shared_from_this(), mTransferStream )
-    // LAMA_CUDA_DRV_CALL( cuEventCreate( &startEvent, CU_EVENT_DEFAULT )
-    // LAMA_CUDA_DRV_CALL( cuEventRecord( startEvent, mTransferStream )
-    // now cuMemcpyDToDAsync
-    // stopEvent = CUDAStreamSyncToken::getStopEvent( shared_from_this(), mTransferStream )
-    // LAMA_CUDA_DRV_CALL( cuEventCreate( &stopEvent, CU_EVENT_DEFAULT | CU_EVENT_DISABLE_TIMING ),
-    // LAMA_CUDA_DRV_CALL( cuEventRecord( &stopEvent, mTransferStream )
-    // new CUDAStreamSyncToken( shared_from_this(), mTransferStream, startEvent, stopEvent )
-    // -> will synchronize on stopEvent, gets time as follows
-    // LAMA_CUDA_DRV_CALL( cuEventElapsedTime( time, startEvent, stopEvent ),
-    return new CUDAStreamSyncToken( shared_from_this(), mTransferStream, event );
-}
-
-/* ----------------------------------------------------------------------------- */
-
-void CUDAContext::memcpyFromHost( void* dst, const void* src, const size_t size ) const
-{
-    LAMA_LOG_INFO( logger, "copy " << size << " bytes from " << src << " (host) to " << dst << " (device) " )
-
-    LAMA_CONTEXT_ACCESS( shared_from_this() )
-
-    LAMA_CUDA_DRV_CALL( cuMemcpyHtoD( ( CUdeviceptr ) dst, src, size ),
-                        "cuMemcpyHToD( " << dst << ", " << src << ", " << size << ") failed " )
-}
-
-/* ----------------------------------------------------------------------------- */
-
-SyncToken* CUDAContext::memcpyAsyncFromHost( void* dst, const void* src, const size_t size ) const
-{
-    LAMA_LOG_INFO( logger, "async copy " << size << " bytes from " << src << " (host) to " << dst << " (device) " )
-
-    // as current thread has disabled the context, another thread might use it
-
-    memcpyFromHost( dst, src, size );
-
-    return NULL;
-}
-
-/* ----------------------------------------------------------------------------- */
-
-void CUDAContext::memcpyToHost( void* dst, const void* src, const size_t size ) const
-{
-    LAMA_LOG_INFO( logger, "copy " << size << " bytes from " << src << " (device) to " << dst << " (host) " )
-
-    LAMA_CONTEXT_ACCESS( shared_from_this() )
-
-    LAMA_CUDA_DRV_CALL( cuMemcpyDtoH( dst, ( CUdeviceptr ) src, size ),
-                        "cuMemcpyDToH( " << dst << ", " << src << ", " << size << ") failed " )
-}
-
-/* ----------------------------------------------------------------------------- */
-
-SyncToken* CUDAContext::memcpyAsyncToHost( void* dst, const void* src, const size_t size ) const
-{
-    LAMA_LOG_INFO( logger, "async copy " << size << " bytes from " << src << " (device) to " << dst << " (host) " )
-
-    // as current thread has disabled the context, another thread might use it
-
-    memcpyToHost( dst, src, size );
-
-    return NULL;
-}
-
-/* ----------------------------------------------------------------------------- */
-
-void CUDAContext::memcpyFromCUDAHost( void* dst, const void* src, const size_t size ) const
-{
-    // LAMA_REGION( "CUDA.memcpyCUDAHost->Dev")
-    LAMA_CONTEXT_ACCESS( shared_from_this() )
-    LAMA_LOG_INFO( logger, "copy " << size << " bytes from " << src << " (host) to " << dst << " (device) " )
-    LAMA_CUDA_DRV_CALL( cuMemcpyHtoD( ( CUdeviceptr ) dst, src, size ),
-                        "cuMemcpyHToD( " << dst << ", " << src << ", " << size << ") failed " )
-}
-
-/* ----------------------------------------------------------------------------- */
-
-SyncToken* CUDAContext::memcpyAsyncFromCUDAHost( void* dst, const void* src, const size_t size ) const
-{
-    // LAMA_REGION( "CUDA.memcpyHtoDAsync" )
-    LAMA_CONTEXT_ACCESS( shared_from_this() )
-    LAMA_LOG_INFO( logger, "copy async " << size << " bytes from " << src << " (host) to " << dst << " (device) " )
-    LAMA_CUDA_DRV_CALL( cuMemcpyHtoDAsync( ( CUdeviceptr ) dst, src, size, mTransferStream ),
-                        "cuMemcpyHtoDAsync( " << dst << ", " << src << ", " << size << ") failed " )
-    return new CUDAStreamSyncToken( shared_from_this(), mTransferStream );
-}
-
-/* ----------------------------------------------------------------------------- */
-
-void CUDAContext::memcpyToCUDAHost( void* dst, const void* src, const size_t size ) const
-{
-    // LAMA_REGION( "CUDA.memcpyDev->CUDAHost" )
-    LAMA_CONTEXT_ACCESS( shared_from_this() )
-    LAMA_LOG_INFO( logger, "copy " << size << " bytes from " << src << " (device) to " << dst << " (cuda host) " )
-    LAMA_CUDA_DRV_CALL( cuMemcpyDtoH( dst, ( CUdeviceptr ) src, size ),
-                        "cuMemcpyDToH( " << dst << ", " << src << ", " << size << ") failed " )
-}
-
-/* ----------------------------------------------------------------------------- */
-
-SyncToken* CUDAContext::memcpyAsyncToCUDAHost( void* dst, const void* src, const size_t size ) const
-{
-    // LAMA_REGION( "CUDA.memcpyDtoHAsync" )
-    LAMA_CONTEXT_ACCESS( shared_from_this() )
-    LAMA_LOG_INFO( logger, "copy async " << size << " bytes from " << src << " (device) to " << dst << " (host) " )
-    LAMA_CUDA_DRV_CALL(
-        cuMemcpyDtoHAsync( dst, ( CUdeviceptr ) src, size, mTransferStream ),
-        "cuMemcpyDtoHAsync( " << dst << ", " << src << ", " << size << ", " << mTransferStream << ") failed " )
-    // sync token should not synchronize on the full stream but only on the transfer, so add event
-    CUevent event;
-    LAMA_CUDA_DRV_CALL( cuEventCreate( &event, CU_EVENT_DEFAULT | CU_EVENT_DISABLE_TIMING ), "Could not create event " )
-    LAMA_CUDA_DRV_CALL( cuEventRecord( event, mTransferStream ), "cuEventRecord failed for CUevent " << event << '.' )
-    return new CUDAStreamSyncToken( shared_from_this(), mTransferStream, event );
 }
 
 /* ----------------------------------------------------------------------------- */
@@ -511,161 +294,6 @@ SyncToken* CUDAContext::getSyncToken() const
 CUDAStreamSyncToken* CUDAContext::getTransferSyncToken() const
 {
     return new CUDAStreamSyncToken( shared_from_this(), mTransferStream );
-}
-
-/* ----------------------------------------------------------------------------- */
-
-bool CUDAContext::canCopyFrom( const Context& other ) const
-{
-    bool supported = false;
-
-    ContextType otherType = other.getType();
-
-    if ( otherType == context::Host )
-    {
-        // CUDADevice -> Host is supported
-
-        supported = true;
-    }
-    else if ( otherType == context::CUDAHost )
-    {
-        // CUDADevice -> CUDA Host is supported
-
-        supported = true;
-    }
-    else if ( otherType == context::CUDA )
-    {
-        const CUDAContext* otherCUDA = dynamic_cast<const CUDAContext*>( &other );
-
-        COMMON_ASSERT( otherCUDA, "dynamic_cast<CUDAContext*> failed" )
-
-        if ( otherCUDA->mDeviceNr == mDeviceNr )
-        {
-            // CUDADevice i -> CUDADevice i 
-            supported = true;
-        }
-        else
-        {
-            // might depend on GPU device capabilities
-
-            supported = true;
-        } 
-    }
-
-    LAMA_LOG_INFO( logger, "canCopyFrom " << other << " to this " << *this << ", supported = " << supported )
-
-    return supported;
-}
-
-bool CUDAContext::canCopyCUDA( const CUDAContext& other ) const
-{
-    bool supported = false;
-
-    if ( other.mDeviceNr == mDeviceNr )
-    {
-        supported = true;
-    }
-    else
-    {
-        // Check for the access capability
-
-        LAMA_CONTEXT_ACCESS( shared_from_this() )
-
-	    int accessCapability = 0;
-
-        LAMA_CUDA_DRV_CALL(
-            cuDeviceCanAccessPeer( &accessCapability, mDeviceNr, other.mDeviceNr),
-            "cuDeviceCanAccessPeer failed" );
-
-        if ( accessCapability >= 1 )
-        {
-            supported = true;
-        }
-    }
-
-    return supported;
-}
-
-bool CUDAContext::canCopyTo( const Context& other ) const
-{
-    bool supported = false;
-
-    ContextType otherType = other.getType();
-
-    if ( otherType == context::Host )
-    {
-        // CUDADevice -> Host is supported
-
-        supported = true;
-    }
-    else if ( otherType == context::CUDAHost )
-    {
-        // CUDADevice -> CUDA Host is supported
-
-        supported = true;
-    }
-    else if ( otherType == context::CUDA )
-    {
-        const CUDAContext* otherCUDA = dynamic_cast<const CUDAContext*>( &other );
-
-        COMMON_ASSERT( otherCUDA, "dynamic_cast<CUDAContext*> failed" )
-
-        supported = canCopyCUDA( *otherCUDA );
-    }
-
-    LAMA_LOG_INFO( logger, "canCopyTo " << other << " from this " << *this << ", supported = " << supported )
-
-    return supported;
-}
-
-void CUDAContext::memcpyFrom( void* dst, const Context& srcContext, const void* src, size_t size ) const
-{
-    if ( srcContext.getType() == context::Host )
-    {
-        memcpyFromHost( dst, src, size );
-    }
-    else if ( srcContext.getType() == context::CUDAHost )
-    {
-        memcpyFromCUDAHost( dst, src, size );
-    }
-    else if ( srcContext.getType() == context::CUDA )
-    {
-        const CUDAContext* srcCUDAContext = dynamic_cast<const CUDAContext*>( &srcContext );
-
-        COMMON_ASSERT( srcCUDAContext, "dynamic_cast<CUDAContext*> failed" )
-
-        memcpyFromCUDA( dst, *srcCUDAContext, src, size );
-    }
-    else
-    {
-        LAMA_LOG_ERROR( logger, "copy from " << srcContext << " to " << *this << " not supported" )
-        COMMON_THROWEXCEPTION( "copy from " << srcContext << " to " << *this << " not supported" )
-    }
-}
-
-void CUDAContext::memcpyTo( const Context& dstContext, void* dst, const void* src, size_t size ) const
-{
-    if ( dstContext.getType() == context::Host )
-    {
-        memcpyToHost( dst, src, size );
-    }
-    else if ( dstContext.getType() == context::CUDAHost )
-    {
-        memcpyToCUDAHost( dst, src, size );
-    }
-    else if ( dstContext.getType() == context::CUDA )
-    {
-        const CUDAContext* dstCUDAContext = dynamic_cast<const CUDAContext*>( &dstContext );
-
-        COMMON_ASSERT( dstCUDAContext, "dynamic_cast<CUDAContext*> failed" )
-
-        memcpyToCUDA( *dstCUDAContext, dst, src, size );
-    }
-    else
-    {
-        LAMA_LOG_ERROR( logger, "copy to " << dstContext << " from " << *this << " not supported" )
-        COMMON_THROWEXCEPTION( "copy to " << dstContext << " from " << *this << " not supported" )
-    }
 }
 
 /* ----------------------------------------------------------------------------- */

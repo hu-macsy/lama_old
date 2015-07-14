@@ -49,9 +49,9 @@ LAMA_LOG_DEF_LOGGER( ContextData::logger, "ContextData" )
 
 /* ---------------------------------------------------------------------------------*/
 
-ContextData::ContextData( ContextPtr context ) :
+ContextData::ContextData( MemoryPtr memory ) :
 
-    mContext( context ),
+    mMemory( memory ),
     pointer( 0 ),
     size( 0 ),
     allocated( false ),
@@ -61,7 +61,7 @@ ContextData::ContextData( ContextPtr context ) :
 
 ContextData::ContextData() :
 
-    mContext(),
+    mMemory(),
     pointer( 0 ),
     size( 0 ),
     allocated( false ),
@@ -73,7 +73,7 @@ ContextData::ContextData() :
 
 ContextData::~ContextData()
 {
-    LAMA_LOG_DEBUG( logger, "~ContextData @ " << *mContext << ", size = " << size )
+    LAMA_LOG_DEBUG( logger, "~ContextData @ " << *mMemory << ", size = " << size )
 
     free(); 
 }
@@ -82,13 +82,13 @@ ContextData::~ContextData()
 
 void ContextData::allocate( const size_t size )
 {
-    COMMON_ASSERT( 0 == pointer, "ContextData data already given at " << *mContext )
+    COMMON_ASSERT( 0 == pointer, "ContextData data already given at " << *mMemory )
 
-    pointer = mContext->allocate( size );
+    pointer = mMemory->allocate( size );
 
     if ( !pointer )
     {
-        COMMON_THROWEXCEPTION( "Could not allocate ContextData of size = " << size << " on " << *mContext )
+        COMMON_THROWEXCEPTION( "Could not allocate ContextData of size = " << size << " on " << *mMemory )
     }
 
     this->size = size;
@@ -100,7 +100,7 @@ void ContextData::allocate( const size_t size )
 
 void ContextData::setRef( void* reference, const size_t size )
 {
-    COMMON_ASSERT( 0 == pointer, "ContextData data already given at " << *mContext )
+    COMMON_ASSERT( 0 == pointer, "ContextData data already given at " << *mMemory )
     pointer = reference;
     this->size = size;
     allocated = false;
@@ -118,20 +118,20 @@ void ContextData::setRef( void* reference, const size_t size )
 
 void ContextData::free()
 {
-    LAMA_LOG_TRACE( logger, "free for " << *mContext )
+    LAMA_LOG_TRACE( logger, "free for " << *mMemory )
 
-    if ( mContext && pointer )
+    if ( mMemory && pointer )
     {
         if ( allocated )
         {
-            mContext->free( pointer, size );
+            mMemory->free( pointer, size );
         }
     }
 
     pointer = 0;
     size = 0;
     valid = false;
-    // we do not delete the mContext pointers as output will cause runtime errors
+    // we do not delete the mMemory pointers as output will cause runtime errors
 }
 
 /* ---------------------------------------------------------------------------------*/
@@ -141,7 +141,7 @@ void ContextData::realloc( const size_t newSize, const size_t validSize )
     // Note: realloc can also be used to shrink the array size
 
     COMMON_ASSERT( allocated, "Cannot realloc data set by reference" )
-    COMMON_ASSERT( mContext, "no mContext available for realloc" )
+    COMMON_ASSERT( mMemory, "no mMemory available for realloc" )
 
     COMMON_ASSERT_LE( validSize, size, "size of valid data is more than actual size" )
     COMMON_ASSERT_LE( validSize, newSize, "size of valid data is more than new size" )
@@ -153,20 +153,20 @@ void ContextData::realloc( const size_t newSize, const size_t validSize )
     if ( validSize <= 0 )
     {
         // existent data is no more needed
-        mContext->free( pointer, size );
+        mMemory->free( pointer, size );
     }
 
     // allocate new memory
 
-    pointer = mContext->allocate( newSize );
+    pointer = mMemory->allocate( newSize );
     size = newSize;
 
     if ( validSize > 0 )
     {
         // copy the old entries in the new memory befree free of old memory
 
-        mContext->memcpy( pointer, oldPointer, validSize );
-        mContext->free( oldPointer, oldSize );
+        mMemory->memcpy( pointer, oldPointer, validSize );
+        mMemory->free( oldPointer, oldSize );
     }
 }
 
@@ -186,7 +186,7 @@ void ContextData::reserve( const size_t newSize, const size_t validSize )
 
         // first allocation of the data, validSize is also 0
 
-        pointer = mContext->allocate( newSize );
+        pointer = mMemory->allocate( newSize );
         size = newSize;
         allocated = true;
         return;
@@ -199,60 +199,60 @@ void ContextData::writeAt( std::ostream& stream ) const
 {
     stream << "ContextData ( size = " << size 
            << ", valid = " << valid << ", capacity = " << size 
-           << " ) @ " << *mContext;
+           << " ) @ " << *mMemory;
 }
 
 void ContextData::copyFrom( const ContextData& other, size_t size )
 {
-    LAMA_LOG_INFO( logger, "copyFrom " << *other.mContext << " to " << *mContext << ", size = " << size )
+    LAMA_LOG_INFO( logger, "copyFrom " << *other.mMemory << " to " << *mMemory << ", size = " << size )
 
-    if ( mContext.get() == other.mContext.get() )
+    if ( mMemory.get() == other.mMemory.get() )
     {
         LAMA_LOG_INFO( logger, "copy on same context" )
-        mContext->memcpy( pointer, other.pointer, size );
+        mMemory->memcpy( pointer, other.pointer, size );
     }
-    else if ( mContext->canCopyFrom( *other.mContext ) )
+    else if ( mMemory->canCopyFrom( *other.mMemory ) )
     {
         LAMA_LOG_INFO( logger, "copy from" )
-        mContext->memcpyFrom( pointer, *other.mContext, other.pointer, size );
+        mMemory->memcpyFrom( pointer, *other.mMemory, other.pointer, size );
     }
-    else if ( other.mContext->canCopyTo( *mContext ) )
+    else if ( other.mMemory->canCopyTo( *mMemory ) )
     {
         LAMA_LOG_INFO( logger, "copy to" )
-        other.mContext->memcpyTo( *mContext, pointer, other.pointer, size );
+        other.mMemory->memcpyTo( *mMemory, pointer, other.pointer, size );
     }
     else
     {
-        LAMA_LOG_WARN( logger, "copyFrom " << *other.mContext << " to " << *mContext << " UNSUPPORTED" )
+        LAMA_LOG_WARN( logger, "copyFrom " << *other.mMemory << " to " << *mMemory << " UNSUPPORTED" )
 
         COMMON_THROWEXCEPTION( "copyFrom  "
-                               << *other.mContext << " to " << *mContext << ", size = " << size  << " UNSUPPORTED" )
+                               << *other.mMemory << " to " << *mMemory << ", size = " << size  << " UNSUPPORTED" )
         // Note: calling routine can deal with it by involving ContextData available on host
     }
 }
 
 SyncToken* ContextData::copyFromAsync( const ContextData& other, size_t size )
 {
-    LAMA_LOG_INFO( logger, "copyFrom " << *other.mContext << " to " << *mContext << ", size = " << size )
+    LAMA_LOG_INFO( logger, "copyFrom " << *other.mMemory << " to " << *mMemory << ", size = " << size )
 
-    if ( mContext.get() == other.mContext.get() )
+    if ( mMemory.get() == other.mMemory.get() )
     {
         // pointer equality implies it is the same context
 
-        return mContext->memcpyAsync( pointer, other.pointer, size );
+        return mMemory->memcpyAsync( pointer, other.pointer, size );
     }
-    else if ( mContext->canCopyFrom( *other.mContext ) )
+    else if ( mMemory->canCopyFrom( *other.mMemory ) )
     {
-        return mContext->memcpyFromAsync( pointer, *other.mContext, other.pointer, size );
+        return mMemory->memcpyFromAsync( pointer, *other.mMemory, other.pointer, size );
     }
-    else if ( other.mContext->canCopyTo( *mContext ) )
+    else if ( other.mMemory->canCopyTo( *mMemory ) )
     {
-        return other.mContext->memcpyToAsync( *mContext, pointer, other.pointer, size );
+        return other.mMemory->memcpyToAsync( *mMemory, pointer, other.pointer, size );
     }
     else
     {
         COMMON_THROWEXCEPTION( "copyFrom  "
-                               << *other.mContext << " to " << *mContext << ", size = " << size  << " NOT SUPPORTED" )
+                               << *other.mMemory << " to " << *mMemory << ", size = " << size  << " NOT SUPPORTED" )
 
         // Note: calling routine can deal with it by involving ContextData available on host
 

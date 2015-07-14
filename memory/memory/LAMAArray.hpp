@@ -81,6 +81,14 @@ public:
     LAMAArray();
 
     /**
+     * @brief Create a LAMA array and set its preferred context.
+     *
+     * If an array is created with a given context, this context is used to find the memory
+     * and host memory where data should be allocated.
+     */
+    explicit LAMAArray( ContextPtr context );
+
+    /**
      * @brief LAMAArray( const IndexType n ) creates a LAMAArray of size n
      *
      * @param[in] n the size of the LAMAArray to create
@@ -277,19 +285,31 @@ LAMAArray<ValueType>::LAMAArray() :
     ContextArray( 0, sizeof( ValueType ) )
 
 {
-    // just make an entry for host context
+    LAMA_LOG_DEBUG( logger, "created new LAMA array: " << *this )
+}
 
-    /*
-    ContextPtr host = Context::getContext( context::Host );
+/* ---------------------------------------------------------------------------------*/
 
-    ContextDataIndex data = mContextDataManager.getContextData( host );
-    */
+template<typename ValueType>
+LAMAArray<ValueType>::LAMAArray( ContextPtr context ) :
+
+    ContextArray( 0, sizeof( ValueType ) )
+
+{
+    // just make the first entry for the context
+
+    ContextDataIndex data = mContextDataManager.getContextData( context );
 
     LAMA_LOG_DEBUG( logger, "created new LAMA array: " << *this )
 }
 
+/* ---------------------------------------------------------------------------------*/
+
 template<typename ValueType>
-LAMAArray<ValueType>::LAMAArray( const IndexType n ) : ContextArray( n, sizeof( ValueType) )
+LAMAArray<ValueType>::LAMAArray( const IndexType n ) : 
+
+    ContextArray( n, sizeof( ValueType) )
+
 {
     // reserves already memory on the host, but this data is not valid
 
@@ -298,6 +318,8 @@ LAMAArray<ValueType>::LAMAArray( const IndexType n ) : ContextArray( n, sizeof( 
 
     LAMA_LOG_DEBUG( logger, "created new LAMA array: " << *this )
 }
+
+/* ---------------------------------------------------------------------------------*/
 
 template<typename ValueType>
 LAMAArray<ValueType>::LAMAArray( const IndexType n, const ValueType& value ) : ContextArray( n, sizeof( ValueType ) )
@@ -335,9 +357,10 @@ LAMAArray<ValueType>::LAMAArray( const IndexType n, const ValueType& value ) : C
 /* ---------------------------------------------------------------------------------*/
 
 template<typename ValueType>
-LAMAArray<ValueType>::LAMAArray( const LAMAArray<ValueType>& other )
+LAMAArray<ValueType>::LAMAArray( const LAMAArray<ValueType>& other ): 
 
-    : ContextArray( other.mSize, sizeof( ValueType ) )
+    ContextArray( other.mSize, sizeof( ValueType ) )
+
 {
     mContextDataManager.copyAllValidEntries( other.mContextDataManager, mSize * mValueSize );
 }
@@ -415,7 +438,7 @@ void LAMAArray<ValueType>::assign( const LAMAArray<ValueType>& other, ContextPtr
 {
     LAMA_LOG_DEBUG( logger, other << " will be assigned to " << *this )
 
-    if ( other == *this )
+    if ( &other == this )
     {
          mContextDataManager.setValidData( context, mContextDataManager, mSize * mValueSize );
          return;

@@ -25,7 +25,7 @@
  * SOFTWARE.
  * @endlicense
  *
- * @brief Contains the implementation of the class LAMAArrayTest.
+ * @brief Demo program for the Factory of LAMAArray.
  * @author: Thomas Brandes, Lauretta Schubert
  * @date 18.04.2012
  **/
@@ -46,6 +46,10 @@ using namespace std;
 using namespace memory;
 
 LAMA_LOG_DEF_LOGGER( logger, "CreateTest" )
+
+// Template instantiation of LAMArray
+
+template class LAMAArray<double>;
 
 int main()
 {

@@ -32,6 +32,8 @@
  */
 #pragma once
 
+#include <memory/Memory.hpp>
+
 #include <logging/logging.hpp>
 
 #include <common/config.hpp>
@@ -47,12 +49,6 @@ class SyncToken;
 
 namespace memory
 {
-
-class Context;
-
-/** Context pointers will be always const, so context can never be modified. */
-
-typedef boost::shared_ptr<const Context> ContextPtr;
 
 /** @brief Objects of this class are used to manage different incarnations
  *         of a LAMA array at different contexts.
@@ -71,7 +67,7 @@ private:
 
     size_t size; //!<  allocated size stands also for capacity
 
-    ContextPtr mContext; //!<  shared pointer to the context
+    MemoryPtr mMemory; //!<  shared pointer to the context
 
     void* pointer; //!<  pointer to the data on the context
 
@@ -81,15 +77,24 @@ private:
 
 public:
 
-    void* get() { return pointer; }
+    void* get()
+    {
+        return pointer;
+    }
 
-    ContextPtr context() const { return mContext; }
+    MemoryPtr memory() const
+    {
+        return mMemory;
+    }
 
-    const void* get() const { return pointer; }
+    const void* get() const
+    {
+        return pointer;
+    }
 
     /** Constructor, context must always be given. */
 
-    ContextData( ContextPtr context );
+    ContextData( MemoryPtr memory );
 
     ContextData();  // allow default constructor for container
 
@@ -97,7 +102,7 @@ public:
 
     ~ContextData();
 
-    size_t capacity() const 
+    size_t capacity() const
     {
         return size;
     }
@@ -124,7 +129,7 @@ public:
 
     void free();
 
-    void setValid( bool flag ) 
+    void setValid( bool flag )
     {
         valid = flag;
     }
@@ -143,7 +148,6 @@ public:
 protected:
 
     LAMA_LOG_DECL_STATIC_LOGGER( logger )
-
 };
 
 }
