@@ -46,10 +46,6 @@
 #include <cusparse.h>
 #include <cublas_v2.h>
 
-// boost
-#include <boost/weak_ptr.hpp>
-#include <boost/version.hpp>
-
 #include <string>
 
 namespace memory
@@ -73,7 +69,7 @@ public:
     /**
      * @brief Constructor for the CUDA memory management.
      */
-    CUDAMemory( boost::shared_ptr<const class CUDAContext> cudaContext );
+    CUDAMemory( common::shared_ptr<const class CUDAContext> cudaContext );
 
     /**
      * @brief The destructor destroys this CUDA device, and frees the initialized
@@ -107,7 +103,7 @@ private:
 
     bool canCopyCUDA( const CUDAMemory& other ) const;
 
-    boost::shared_ptr<const CUDAContext> mCUDAContext;
+    common::shared_ptr<const CUDAContext> mCUDAContext;
 
     void memcpyFromHost( void* dst, const void* src, const size_t size ) const;
     void memcpyToHost( void* dst, const void* src, const size_t size ) const;
@@ -121,8 +117,6 @@ private:
     tasking::SyncToken* memcpyAsyncToHost( void* dst, const void* src, const size_t size ) const;
     tasking::SyncToken* memcpyAsyncFromCUDAHost( void* dst, const void* src, const size_t size ) const;
     tasking::SyncToken* memcpyAsyncToCUDAHost( void* dst, const void* src, const size_t size ) const;
-
-    mutable boost::weak_ptr<const class Context> mHostContext; //!< preferred host context
 
     mutable int mNumberOfAllocates; //!< variable counts allocates
     mutable long long mNumberOfAllocatedBytes; //!< variable counts allocated bytes on device

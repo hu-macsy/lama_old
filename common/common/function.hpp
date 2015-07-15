@@ -25,7 +25,7 @@
  * SOFTWARE.
  * @endlicense
  *
- * @brief Embedding bind in common namespace.
+ * @brief Embedding function in common namespace.
  * @author Jiri Kraus
  * @date 10.06.2015
  */

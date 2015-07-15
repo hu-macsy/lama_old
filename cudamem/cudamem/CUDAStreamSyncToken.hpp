@@ -34,8 +34,7 @@
 // base classes
 #include <tasking/SyncToken.hpp>
 
-// boost
-#include <boost/shared_ptr.hpp>
+#include <common/shared_ptr.hpp>
 
 #include <list>
 #include <memory>
@@ -61,7 +60,7 @@ namespace memory
 
 class CUDAContext;
 
-typedef boost::shared_ptr<const CUDAContext> CUDAContextPtr;
+typedef common::shared_ptr<const CUDAContext> CUDAContextPtr;
 
 /** Class that sycnchronizes with a CUDA stream. */
 

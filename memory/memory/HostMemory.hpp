@@ -40,8 +40,7 @@
 #include <memory/Memory.hpp>
 #include <tasking/TaskSyncToken.hpp>
 
-// boost
-#include <boost/weak_ptr.hpp>
+#include <common/shared_ptr.hpp>
 
 namespace memory
 {
@@ -59,7 +58,7 @@ class COMMON_DLL_IMPORTEXPORT HostMemory: public Memory
 
 public:
 
-    HostMemory( boost::shared_ptr<const class HostContext> hostContext );   
+    HostMemory( common::shared_ptr<const class HostContext> hostContext );   
 
     virtual ~HostMemory();
 
@@ -79,7 +78,7 @@ public:
 
 private:
 
-    boost::shared_ptr<const HostContext> mHostContext;
+    common::shared_ptr<const HostContext> mHostContext;
 
     LAMA_LOG_DECL_STATIC_LOGGER( logger )
 

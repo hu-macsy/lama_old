@@ -35,10 +35,9 @@
 #include <tracing/tracing.hpp>
 
 #include <memory>
-#include <boost/bind.hpp>
-#include <boost/scoped_array.hpp>
+#include <common/bind.hpp>
 
-using namespace boost;
+using namespace common;
 using namespace tasking;
 
 LAMA_LOG_DEF_LOGGER( logger, "Test.ThreadPoolTest" )
@@ -113,7 +112,7 @@ void runTest()
                 for ( int i = 0; i < ntasks; i++ )
                 {
                     x[i] = -1;
-                    pool.schedule( boost::bind( &work, i, ref( x[i] ) ) );
+                    pool.schedule( bind( &work, i, ref( x[i] ) ) );
                 }
 
                 // end of scope: pool waits for all tasks/work to be finished
@@ -145,14 +144,14 @@ void waitTest()
         for ( int j = 0; j < thread_configs; ++j )
         {
             LAMA_REGION_N( "PoolWait", thread_sizes[j] * 100 + ntasks )
-            scoped_array<int> x( new int[ntasks] ); // array with result for each task
-            scoped_array<shared_ptr<ThreadTask> > tasks( new shared_ptr<ThreadTask> [ntasks] );
+            std::vector<int> x( ntasks );  // array with result for each task
+            std::vector<shared_ptr<ThreadTask> > tasks( ntasks );
             ThreadPool pool( thread_sizes[j] );
 
             for ( int i = 0; i < ntasks; i++ )
             {
                 x[i] = -1;
-                tasks[i] = pool.schedule( boost::bind( &work, i, ref( x[i] ) ) );
+                tasks[i] = pool.schedule( bind( &work, i, ref( x[i] ) ) );
             }
 
             for ( int i = 0; i < ntasks; i++ )
@@ -184,8 +183,8 @@ void singleTest()
         int resultThread;
         int resultMaster;
 
-        common::shared_ptr<ThreadTask> task = pool.schedule(
-                    boost::bind( &work, i, ref( resultThread ) ) );
+        shared_ptr<ThreadTask> task = pool.schedule( bind( &work, i, ref( resultThread ) ) );
+
         // Master thread does something and then waits
         rnd = ( rnd + 19 ) % 17;
         work( i + rnd, ref( resultMaster ) );

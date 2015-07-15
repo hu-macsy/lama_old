@@ -1,5 +1,5 @@
 /**
- * @file common/shared_ptr.hpp
+ * @file common/weak_ptr.hpp
  *
  * @license
  * Copyright (c) 2009-2015
@@ -25,7 +25,7 @@
  * SOFTWARE.
  * @endlicense
  *
- * @brief Embedding shared_ptr in common namespace.
+ * @brief Embedding weak_ptr in common namespace.
  * @author Thomas Brandes
  * @date 15.07.2015
  */
@@ -35,17 +35,14 @@
 #if __cplusplus > 199711L
 #include <memory>
 #else
-#include <boost/shared_ptr.hpp>
-#include <boost/enable_shared_from_this.hpp>
+#include <boost/weak_ptr.hpp>
 #endif
 
 namespace common
 {
- #if __cplusplus > 199711L
-    using std::shared_ptr;
-    using std::enable_shared_from_this;
+#if __cplusplus > 199711L
+    using std::weak_ptr;
 #else
-    using boost::shared_ptr;
-    using boost::enable_shared_from_this;
+    using boost::weak_ptr;
 #endif
 }

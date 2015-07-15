@@ -28,7 +28,6 @@
  * @brief Definition of class for a thread pool
  * @author Thomas Brandes
  * @date 27.12.2012
- * @since 1.0.0
  */
 
 #pragma once
@@ -71,7 +70,7 @@ struct COMMON_DLL_IMPORTEXPORT ThreadTask
         FINISHED    //!< Task is terminated, structure still exists
     };
 
-    boost::function<void()> mWork;  //!< task function to be executed
+    common::function<void()> mWork;  //!< task function to be executed
 
     volatile TaskState mState; //!< current state of the task
 
@@ -84,7 +83,7 @@ struct COMMON_DLL_IMPORTEXPORT ThreadTask
     /** Create a new task as a shared pointer */
 
     static common::shared_ptr<ThreadTask> create(
-        boost::function<void()> work,
+        common::function<void()> work,
         unsigned int taskId,
         int numOmpThreads = 0 );
 };
@@ -116,7 +115,7 @@ public:
      *  @return shared pointer for the task
      */
 
-    common::shared_ptr<ThreadTask> schedule( boost::function<void()> work, int numOmpThreads = 0 );
+    common::shared_ptr<ThreadTask> schedule( common::function<void()> work, int numOmpThreads = 0 );
 
     /** Wait on completion of a task. */
 
@@ -162,13 +161,13 @@ private:
     common::Thread::Mutex mNotifyFinishMutex;// used for wait on mNotifyFinished
 
     enum WorkerState
-    {   
-        WORKING, 
+    {
+        WORKING,
         WAITING
     };
 
     WorkerState mWorkerState; //used to indicate the state of the worker
 };
 
-} // namespace 
+} // namespace
 

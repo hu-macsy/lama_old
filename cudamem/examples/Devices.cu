@@ -1,12 +1,12 @@
 
-#include <memory/memory.hpp>
+#include <iostream>
+
+#include <common/Exception.hpp>
 
 #include <logging/logging.hpp>
 
-#include <iostream>
-
-using namespace std;
-using namespace memory;
+// using namespace std;
+// using namespace memory;
 
 int main()
 {

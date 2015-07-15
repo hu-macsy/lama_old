@@ -36,13 +36,18 @@
 #include <functional>
 #else
 #include <boost/bind.hpp>
+#include <boost/ref.hpp>
 #endif
 
 namespace common
 {
 #if __cplusplus > 199711L
     using std::bind;
+    using std::ref;
+    using std::cref;
 #else
     using boost::bind;
+    using boost::ref;
+    using boost::cref;
 #endif
 }

@@ -34,18 +34,13 @@
 
 #include <memory/Context.hpp>
 
-// for dll_import
 #include <common/config.hpp>
-
-// base classes
 #include <common/Printable.hpp>
 #include <common/NonCopyable.hpp>
+#include <common/shared_ptr.hpp>
 
 // logging
 #include <logging/logging.hpp>
-
-// boost
-#include <boost/shared_ptr.hpp>
 
 namespace tasking
 {

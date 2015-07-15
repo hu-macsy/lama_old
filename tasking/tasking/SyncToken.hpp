@@ -45,15 +45,15 @@
 #include <common/shared_ptr.hpp>
 
 #include <vector>
-#include <boost/function.hpp>
+#include <common/function.hpp>
 
 /** Namespace for all data structures used in the tasking library. */
 
 namespace tasking
 {
 
-/** Simple base class where classes might derived from to become SyncTokenMember. 
- * 
+/** Simple base class where classes might derived from to become SyncTokenMember.
+ *
  *  A SyncToken can take over ownership of shared pointer objects derived from this class.
  */
 
@@ -65,7 +65,7 @@ public:
     {
     }
 
-    virtual ~SyncTokenMember() 
+    virtual ~SyncTokenMember()
     {
     }
 };
@@ -135,7 +135,7 @@ public:
 
     /** Add a routine to be called after synchronization. */
 
-    void pushRoutine( boost::function<void()> function );
+    void pushRoutine( common::function<void()> routine );
 
 protected:
 
@@ -149,7 +149,7 @@ protected:
 
     /** Logger for this class. */
 
-    LAMA_LOG_DECL_STATIC_LOGGER(logger)
+    LAMA_LOG_DECL_STATIC_LOGGER( logger )
 
 private:
 
@@ -180,7 +180,7 @@ private:
 
     bool mSynchronized;  //!< if true the token has already been synchronized.
 
-    std::vector< boost::function<void()> > mSynchronizedFunctions;
+    std::vector< common::function<void()> > mSynchronizedFunctions;
 };
 
 }

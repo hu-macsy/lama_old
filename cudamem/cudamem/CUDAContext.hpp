@@ -37,19 +37,15 @@
 
 // base classes
 #include <memory/Context.hpp>
-#include <boost/enable_shared_from_this.hpp>
 
 // others
 #include <common/Thread.hpp>
+#include <common/weak_ptr.hpp>
 
 #include <cuda.h>
 #include <cuda_runtime.h>
 #include <cusparse.h>
 #include <cublas_v2.h>
-
-// boost
-#include <boost/weak_ptr.hpp>
-#include <boost/version.hpp>
 
 #include <string>
 
@@ -77,7 +73,7 @@ class COMMON_DLL_IMPORTEXPORT CUDAContext:
 
     public Context, 
     public Context::Register<CUDAContext>,
-    public boost::enable_shared_from_this<CUDAContext>
+    public common::enable_shared_from_this<CUDAContext>
 {
 
 public:
@@ -151,8 +147,8 @@ protected:
 
 private:
 
-    mutable boost::weak_ptr<class Memory> mMemory;     //!< memory management for this devie
-    mutable boost::weak_ptr<class Memory> mHostMemory; //!< preferred host memory
+    mutable common::weak_ptr<class Memory> mMemory;     //!< memory management for this devie
+    mutable common::weak_ptr<class Memory> mHostMemory; //!< preferred host memory
 
     int mDeviceNr; //!< number of device for this context
 

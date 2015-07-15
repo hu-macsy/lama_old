@@ -33,8 +33,8 @@
 #include <memory/Memory.hpp>
 #include <tasking/TaskSyncToken.hpp>
 
-#include <boost/bind.hpp>
-#include <boost/weak_ptr.hpp>
+#include <common/bind.hpp>
+#include <common/weak_ptr.hpp>
 
 using namespace memory;
 using namespace tasking;
@@ -103,12 +103,12 @@ public:
 
     static SyncToken* theMemcpyAsync( void* dst, const void* src, const size_t size )
     {
-        return new TaskSyncToken( boost::bind( &::memcpy, dst, src, size ) );
+        return new TaskSyncToken( common::bind( &::memcpy, dst, src, size ) );
     }
 
     virtual SyncToken* memcpyAsync( void* dst, const void* src, const size_t size ) const
     {
-        return new TaskSyncToken( boost::bind( &::memcpy, dst, src, size ) );
+        return new TaskSyncToken( common::bind( &::memcpy, dst, src, size ) );
     }
 
     virtual bool canCopyFrom( const Memory& other ) const

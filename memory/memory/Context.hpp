@@ -46,9 +46,7 @@
 #include <logging/logging.hpp>
 
 #include <common/shared_ptr.hpp>
-
-// boost
-#include <boost/function.hpp>
+#include <common/function.hpp>
 
 namespace tasking
 {

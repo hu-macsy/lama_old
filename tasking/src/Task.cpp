@@ -28,7 +28,6 @@
  * @brief Definition of the class Task for asynchronous function execution.
  * @author Thomas Brandes
  * @date 21.11.2011
- * @since 1.0.0
  */
 
 // hpp
@@ -36,9 +35,7 @@
 
 // others
 #include <common/Exception.hpp>
-
-// boost
-#include <boost/bind.hpp>
+#include <common/bind.hpp>
 
 #include <limits>
 
@@ -47,13 +44,13 @@ namespace tasking
 
 /* ------------------------------------------------------------------------- */
 
-boost::shared_ptr<ThreadPool> Task::theThreadPool;
+common::shared_ptr<ThreadPool> Task::theThreadPool;
 
 /* ------------------------------------------------------------------------- */
 
 ThreadPool& Task::getThreadPool()
 {
-    if( !theThreadPool )
+    if ( !theThreadPool )
     {
         theThreadPool.reset( new ThreadPool( 1 ) );
     }
@@ -67,7 +64,7 @@ LAMA_LOG_DEF_LOGGER( Task::logger, "Task" )
 
 /* ------------------------------------------------------------------------- */
 
-Task::Task( boost::function<void()> taskFunction, int numOmpThreads /* = 0 */)
+Task::Task( common::function<void()> taskFunction, int numOmpThreads /* = 0 */ )
 
 {
     LAMA_LOG_DEBUG( logger, "Creating Task" )
@@ -88,7 +85,7 @@ Task::~Task()
 
 void Task::synchronize()
 {
-    if( !mTask )
+    if ( !mTask )
     {
         return;
     }
@@ -99,7 +96,7 @@ void Task::synchronize()
 
     LAMA_LOG_DEBUG( logger, "Task = " << mTask->mTaskId << " finished" << ", exception = " << mTask->mException )
 
-    if( mTask->mException )
+    if ( mTask->mException )
     {
         COMMON_THROWEXCEPTION( "Task got exception" )
     }
@@ -123,7 +120,7 @@ void Task::writeAt( std::ostream& stream ) const
 
 Task::Id Task::getId() const
 {
-    if( mTask )
+    if ( mTask )
     {
         return mTask->mTaskId;
     }

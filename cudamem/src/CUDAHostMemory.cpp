@@ -40,7 +40,10 @@
 
 #include <common/Exception.hpp>
 
-#include <boost/bind.hpp>
+#include <common/bind.hpp>
+
+// import ::memcpy 
+#include <cstring>
 
 using tasking::SyncToken;
 
@@ -49,7 +52,7 @@ namespace memory
 
 LAMA_LOG_DEF_LOGGER( CUDAHostMemory::logger, "Memory.CUDAHostMemory" );
 
-CUDAHostMemory::CUDAHostMemory( boost::shared_ptr<const CUDAContext> cudaContext ) : 
+CUDAHostMemory::CUDAHostMemory( common::shared_ptr<const CUDAContext> cudaContext ) : 
 
     Memory( memtype::CUDAHostMemory ),
     mCUDAContext( cudaContext )

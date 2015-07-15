@@ -40,10 +40,8 @@
 
 #include <tasking/TaskSyncToken.hpp>
 
-// boost
-#include <boost/bind.hpp>
-
-using namespace boost;
+using  common::shared_ptr;
+using  common::weak_ptr;
 
 namespace memory
 {
@@ -77,11 +75,11 @@ void HostContext::writeAt( std::ostream& stream ) const
     stream << "HostContext( #Threads = " << nThreads << " )";
 }
 
-static boost::weak_ptr<class HostContext> contextInstance;
+static weak_ptr<class HostContext> contextInstance;
 
 ContextPtr HostContext::create( int deviceNr )
 {
-    boost::shared_ptr<HostContext> context;
+    shared_ptr<HostContext> context;
 
     if ( deviceNr >= 0 )
     {

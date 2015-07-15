@@ -42,8 +42,7 @@
 
 #include <logging/logging.hpp>
 
-// boost
-#include <boost/weak_ptr.hpp>
+#include <common/weak_ptr.hpp>
 
 namespace memory
 {
@@ -66,7 +65,7 @@ class COMMON_DLL_IMPORTEXPORT CUDAHostMemory:
 
 public:
 
-    CUDAHostMemory( boost::shared_ptr<const CUDAContext> cudaContext );
+    CUDAHostMemory( common::shared_ptr<const CUDAContext> cudaContext );
 
     virtual ~CUDAHostMemory();
 
@@ -88,7 +87,7 @@ protected:
 
     virtual void writeAt( std::ostream& stream ) const;
 
-    boost::shared_ptr<const CUDAContext> mCUDAContext;   // fast DMA transfer to this device
+    common::shared_ptr<const CUDAContext> mCUDAContext;   // fast DMA transfer to this device
 };
 
 }

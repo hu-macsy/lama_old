@@ -35,23 +35,23 @@
 #include <common/Exception.hpp>
 
 // boost
-#include <boost/bind.hpp>
-#include <boost/ref.hpp>
-#include <boost/utility.hpp>
-
-using namespace boost;
+#include <common/bind.hpp>
 
 using tasking::Task;
+using common::function;
+using common::shared_ptr;
 
 namespace tasking
 {
 
 LAMA_LOG_DEF_LOGGER( TaskSyncToken::logger, "SyncToken.TaskSyncToken" )
 
-TaskSyncToken::TaskSyncToken( boost::function<void()> function, int numOmpThreads /* = 0 */)
-    : mTask( new Task( function, numOmpThreads ) )
+TaskSyncToken::TaskSyncToken( function<void()> routine, int numOmpThreads ) :
+
+    mTask( new Task( routine, numOmpThreads ) )
+
 {
-    LAMA_LOG_DEBUG( logger, "Thread " << *mTask << " with function " << function << " started." )
+    LAMA_LOG_DEBUG( logger, "Thread " << *mTask << " with routine started." )
 }
 
 TaskSyncToken::TaskSyncToken()
@@ -60,11 +60,11 @@ TaskSyncToken::TaskSyncToken()
     // empty task token
 }
 
-void TaskSyncToken::run( boost::function<void()> function, int numOmpThreads /* = 0 */)
+void TaskSyncToken::run( function<void()> routine, int numOmpThreads /* = 0 */ )
 {
-    mTask = boost::shared_ptr<Task>( new Task( function, numOmpThreads ) );
+    mTask = shared_ptr<Task>( new Task( routine, numOmpThreads ) );
 
-    LAMA_LOG_DEBUG( logger, "Thread " << *mTask << " with function " << function << " started." )
+    LAMA_LOG_DEBUG( logger, "Thread " << *mTask << " with routine started." )
 }
 
 TaskSyncToken::~TaskSyncToken()
@@ -80,12 +80,12 @@ void TaskSyncToken::wait()
 {
     LAMA_LOG_DEBUG( logger, "wait" )
 
-    if( isSynchronized() )
+    if ( isSynchronized() )
     {
         return;
     }
 
-    if( mTask ) // might be running task
+    if ( mTask ) // might be running task
     {
         LAMA_LOG_DEBUG( logger, "Waiting for thread " << mTask )
 
@@ -98,7 +98,7 @@ void TaskSyncToken::wait()
             LAMA_LOG_ERROR( logger, "Task caught exception: " << ex.what() );
         }
 
-        mTask = boost::shared_ptr<Task>(); // implies call destructor of mTask
+        mTask = shared_ptr<Task>(); // implies call destructor of mTask
 
         mTask.reset();  // implies call destructor of mTask
     }
@@ -114,7 +114,7 @@ void TaskSyncToken::wait()
 
 bool TaskSyncToken::probe() const
 {
-    if( !mTask )
+    if ( !mTask )
     {
         return true;
     }
@@ -126,7 +126,7 @@ void TaskSyncToken::writeAt( std::ostream& stream ) const
 {
     stream << "TaskSyncToken( ";
 
-    if( mTask )
+    if ( mTask )
     {
         stream << *mTask;
     }

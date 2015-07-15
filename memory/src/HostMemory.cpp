@@ -41,17 +41,15 @@
 
 #include <tasking/TaskSyncToken.hpp>
 
-// boost
-#include <boost/bind.hpp>
-
-using namespace boost;
+#include <common/bind.hpp>
+#include <cstring>
 
 namespace memory
 {
 
 LAMA_LOG_DEF_LOGGER( HostMemory::logger, "Memory.HostMemory" )
 
-HostMemory::HostMemory( boost::shared_ptr<const HostContext> hostContext ) : 
+HostMemory::HostMemory( common::shared_ptr<const HostContext> hostContext ) : 
 
     Memory( memtype::HostMemory ),
     mHostContext( hostContext )
@@ -132,7 +130,7 @@ void HostMemory::memcpy( void* dst, const void* src, const size_t size ) const
 
 tasking::SyncToken* HostMemory::memcpyAsync( void* dst, const void* src, const size_t size ) const
 {
-    return new tasking::TaskSyncToken( boost::bind( &::memcpy, dst, src, size ) );
+    return new tasking::TaskSyncToken( common::bind( &::memcpy, dst, src, size ) );
 }
 
 ContextPtr HostMemory::getContext() const

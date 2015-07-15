@@ -37,7 +37,7 @@
 #include <common/Thread.hpp>
 #include <common/Exception.hpp>
 
-#include <boost/bind.hpp>
+#include <common/bind.hpp>
 
 using namespace std;
 using namespace tasking;
@@ -81,7 +81,7 @@ void doTasking( int N )
         int arg = 1;
         int omp_threads = 1;
 
-        Task task( boost::bind( &work, boost::ref( arg )), omp_threads );
+        Task task( common::bind( &work, common::ref( arg )), omp_threads );
  
         // Note: synchronization is expensive
 

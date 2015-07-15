@@ -40,9 +40,9 @@
 #include <memory/Context.hpp>
 #include <tasking/TaskSyncToken.hpp>
 
-// boost
-#include <boost/weak_ptr.hpp>
-#include <boost/enable_shared_from_this.hpp>
+// common
+#include <common/shared_ptr.hpp>
+#include <common/weak_ptr.hpp>
 
 namespace memory
 {
@@ -59,7 +59,7 @@ class COMMON_DLL_IMPORTEXPORT HostContext:
 
     public Context, 
     private Context::Register<HostContext>,
-    public boost::enable_shared_from_this<HostContext>
+    public common::enable_shared_from_this<HostContext>
 {
 
 public:
@@ -84,7 +84,7 @@ public:
 
 private:
 
-    mutable boost::weak_ptr<class Memory> mMemory;
+    mutable common::weak_ptr<class Memory> mMemory;
 
     HostContext();
 

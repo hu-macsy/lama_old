@@ -36,6 +36,7 @@
 #include <common/config.hpp>
 
 #include <tasking/Task.hpp>
+#include <common/shared_ptr.hpp>
 
 // base classes
 #include <tasking/SyncToken.hpp>
@@ -51,17 +52,17 @@ class COMMON_DLL_IMPORTEXPORT TaskSyncToken: public SyncToken
 {
 public:
 
-    /** This constructor starts a function as a Task and
+    /** This constructor starts a routine as a Task and
      *  gives the SyncToken to wait on the completion.
      */
-    TaskSyncToken( boost::function<void()> function, int numOmpThreads = 0 );
+    TaskSyncToken( common::function<void()> routine, int numOmpThreads = 0 );
 
     /** This constructor starts a function as a Task and
      *  gives the SyncToken to wait on the completion.
      */
     TaskSyncToken();
 
-    virtual void run( boost::function<void()> function, int numOmpThreads = 0 );
+    virtual void run( common::function<void()> function, int numOmpThreads = 0 );
 
     virtual ~TaskSyncToken();
 
@@ -77,7 +78,7 @@ public:
 
 private:
 
-    boost::shared_ptr<tasking::Task> mTask;
+    common::shared_ptr<tasking::Task> mTask;
 
     LAMA_LOG_DECL_STATIC_LOGGER( logger )
 };

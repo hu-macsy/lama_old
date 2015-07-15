@@ -28,7 +28,6 @@
  * @brief Implementation of non-pure methods of abstract class SyncToken.
  * @author Thomas Brandes, Jiri Kraus
  * @date 22.03.2011
- * @since 1.0.0
  */
 
 // hpp
@@ -36,7 +35,7 @@
 
 #include <common/Exception.hpp>
 
-using boost::shared_ptr;
+using common::shared_ptr;
 
 namespace tasking
 {
@@ -54,7 +53,7 @@ SyncToken::CGuard::~CGuard()
     // this destructor is called at the end of the program
     // Give an error message if not all SyncTokens have been deleted
 
-    if( countSyncToken )
+    if ( countSyncToken )
     {
         LAMA_LOG_ERROR( logger, "Remaining SyncToken (undeleted) = " << countSyncToken );
     }
@@ -69,7 +68,7 @@ SyncToken::CGuard SyncToken::cguard;
 /* ------------------------------------------------------------------------ */
 
 SyncToken::SyncToken()
-                : mSynchronized( false )
+    : mSynchronized( false )
 {
     LAMA_LOG_DEBUG( logger, "SyncToken constructed" )
 
@@ -80,7 +79,7 @@ SyncToken::~SyncToken()
 {
     LAMA_LOG_DEBUG( logger, "~SyncToken" )
 
-    if( !mSynchronized )
+    if ( !mSynchronized )
     {
         LAMA_LOG_WARN( logger, "no synchronization called on SyncToken" )
     }
@@ -97,11 +96,11 @@ void SyncToken::writeAt( std::ostream& stream ) const
 
 /* ------------------------------------------------------------------------ */
 
-void SyncToken::pushToken( boost::shared_ptr<SyncTokenMember> member )
+void SyncToken::pushToken( shared_ptr<SyncTokenMember> member )
 {
     COMMON_ASSERT( member.get(), "NULL token cannot be pushed for synchronization." )
 
-    if( mSynchronized )
+    if ( mSynchronized )
     {
         LAMA_LOG_DEBUG( logger, *this << ": push token not done, already synchronized" )
     }
@@ -117,9 +116,9 @@ void SyncToken::pushToken( boost::shared_ptr<SyncTokenMember> member )
 
 /* ----------------------------------------------------------------------- */
 
-void SyncToken::pushRoutine( boost::function<void()> function )
+void SyncToken::pushRoutine( common::function<void()> routine )
 {
-    mSynchronizedFunctions.push_back( function );
+    mSynchronizedFunctions.push_back( routine );
 }
 
 /* ----------------------------------------------------------------------- */
@@ -139,7 +138,7 @@ void SyncToken::setSynchronized()
     }
 
     LAMA_LOG_INFO( logger, "setSynchronized, free " << mTokens.size() << " SyncTokenMember "
-                           << " and call " << mSynchronizedFunctions.size() << " clean functions" )
+                   << " and call " << mSynchronizedFunctions.size() << " clean functions" )
 
     mSynchronized = true;
 
@@ -147,7 +146,7 @@ void SyncToken::setSynchronized()
 
     mTokens.clear();
 
-    for( size_t i = 0; i < mSynchronizedFunctions.size(); ++i )
+    for ( size_t i = 0; i < mSynchronizedFunctions.size(); ++i )
     {
         mSynchronizedFunctions[i]();
     }

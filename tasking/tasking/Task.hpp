@@ -42,9 +42,8 @@
 // logging
 #include <logging/logging.hpp>
 
-// boost
-#include <boost/function.hpp>
-#include <boost/shared_ptr.hpp>
+#include <common/function.hpp>
+#include <common/shared_ptr.hpp>
 
 namespace tasking
 {
@@ -54,7 +53,7 @@ namespace tasking
  * Task represents a asynchronous task, which allows synchronization. To start an
  * asynchronous task one simply have to construct a Task object and pass a pointer to
  * the function to execute to its constructor. If the signature of the function does not fit
- * boost::bind can be used to build an appropriate function pointer. Be careful with reference because they
+ * common::bind can be used to build an appropriate function pointer. Be careful with reference because they
  * need special wrapper objects. E.g.
  * \code
  *
@@ -65,7 +64,7 @@ namespace tasking
  * void bar( Vector& y, const Matrix& A, const Scalar alpha, const Vector& x)
  * {
  *     //construct function pointer
- *     boost::function<void()> function = boost::bind( foo, boost::ref(y), alpha ,boost::cref(A), boost::cref(x) );
+ *     common::function<void()> function = common::bind( foo, common::ref(y), alpha, common::cref(A), common::cref(x) );
  *
  *     //start asynchronous tasks
  *     Task task( function );
@@ -93,9 +92,9 @@ public:
      *  @param[in] numOmpThreads number of openmp threads the task should use
      *                           (if numOmpThreads == 0 omp_get_max_threads() is used)
      *
-     *  By using boost::function, it is possible to bind arguments via boost::bind.
+     *  By using common::function, it is possible to bind arguments via common::bind.
      */
-    Task( boost::function<void()> function, int numOmpThreads = 0 );
+    Task( common::function<void()> function, int numOmpThreads = 0 );
 
     /**
      *  Destructor. Implicitly synchronizes the Task.
@@ -127,11 +126,11 @@ private:
 
     /** Thread pool will be allocated on need, shared pointer guarantees deallocation. */
 
-    static boost::shared_ptr<ThreadPool> theThreadPool;
+    static common::shared_ptr<ThreadPool> theThreadPool;
 
     static ThreadPool& getThreadPool();
 
-    boost::shared_ptr<ThreadTask> mTask;
+    common::shared_ptr<ThreadTask> mTask;
 };
 
-}  // namespace 
+}  // namespace

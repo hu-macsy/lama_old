@@ -35,8 +35,8 @@
  
 #include <tasking/TaskSyncToken.hpp>
 
-#include <boost/bind.hpp>
-#include <boost/weak_ptr.hpp>
+#include <common/bind.hpp>
+#include <common/weak_ptr.hpp>
 #include "MockMemory.hpp"
 
 using namespace memory;
@@ -56,7 +56,7 @@ private:
 
     int mDeviceNr;     // MockContext with different device numbers are not equal
 
-    mutable boost::weak_ptr<Memory> mMemory;
+    mutable common::weak_ptr<Memory> mMemory;
 
 public:
 
@@ -139,13 +139,13 @@ private:
 
 /* --------------------------------------------------------------------- */
 
-static std::vector<boost::weak_ptr<class MockContext> > contextInstances( 6 );
+static std::vector<common::weak_ptr<class MockContext> > contextInstances( 6 );
 
 /* --------------------------------------------------------------------- */
 
 inline ContextPtr MockContext::create( int deviceNr )
 {
-    boost::shared_ptr<MockContext> context;
+    common::shared_ptr<MockContext> context;
 
     COMMON_ASSERT( deviceNr < 6, "number of instances limited" )
 
@@ -155,7 +155,7 @@ inline ContextPtr MockContext::create( int deviceNr )
     {
         // create a new instance of MockContext and keep it for further uses
 
-        context = boost::shared_ptr<MockContext>( new MockContext( deviceNr ) );
+        context = common::shared_ptr<MockContext>( new MockContext( deviceNr ) );
 
         contextInstances[deviceNr] = context;
     }

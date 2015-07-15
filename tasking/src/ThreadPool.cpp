@@ -28,7 +28,6 @@
  * @brief Implementation of class for a thread pool
  * @author Thomas Brandes
  * @date 27.12.2012
- * @since 1.0.0
  */
 
 // hpp
@@ -37,20 +36,12 @@
 // tracing
 #include <tracing/tracing.hpp>
 
-// assert
 #include <common/Exception.hpp>
-
-// boost
-#include <boost/bind.hpp>
-
-#ifdef _OPENMP
-#include <omp.h>
-#else
-#define omp_get_max_threads() 1
-#define omp_set_num_threads( x )
-#endif
+#include <common/OpenMP.hpp>
 
 using common::Thread;
+using common::shared_ptr;
+using common::function;
 
 namespace tasking
 {
@@ -61,16 +52,16 @@ LAMA_LOG_DEF_LOGGER( ThreadPool::logger, "ThreadPool" )
 
 /* ------------------------------------------------------------------------- */
 
-boost::shared_ptr<ThreadTask> ThreadTask::create(
-    boost::function<void()> work,
+shared_ptr<ThreadTask> ThreadTask::create(
+    function<void()> work,
     unsigned int taskId,
-    int numOmpThreads /* = 0 */)
+    int numOmpThreads /* = 0 */ )
 {
-    boost::shared_ptr<ThreadTask> task = boost::shared_ptr<ThreadTask>( new ThreadTask() );
+    shared_ptr<ThreadTask> task = shared_ptr<ThreadTask>( new ThreadTask() );
 
     task->mWork = work;
 
-    if( numOmpThreads == 0 )
+    if ( numOmpThreads == 0 )
     {
         task->ompThreads = omp_get_max_threads();
     }
@@ -108,10 +99,10 @@ ThreadPool::ThreadPool( int size )
 
     // Create all threads just from the beginning, on demand might be possible later
 
-    for( int i = 0; i < mMaxSize; i++ )
+    for ( int i = 0; i < mMaxSize; i++ )
     {
         pthread_t id;
-        
+
         mThreadArgs[i].pool = this;
         mThreadArgs[i].i    = i;
 
@@ -123,23 +114,23 @@ ThreadPool::ThreadPool( int size )
 
 /* ------------------------------------------------------------------------- */
 
-boost::shared_ptr<ThreadTask> ThreadPool::schedule( boost::function<void()> work, int numOmpThreads /* = 0 */)
+shared_ptr<ThreadTask> ThreadPool::schedule( function<void()> work, int numOmpThreads /* = 0 */ )
 {
     LAMA_REGION( "ThreadPool::schedule" )
     Thread::Id thisThread = Thread::getSelf();
     bool isRecursiveTask = false;
     std::vector<Thread::Id>::const_iterator end = mThreads.end();
 
-    for( std::vector<pthread_t>::const_iterator it = mThreads.begin(); it != end; ++it )
+    for ( std::vector<pthread_t>::const_iterator it = mThreads.begin(); it != end; ++it )
     {
-        if( *it == thisThread )
+        if ( *it == thisThread )
         {
             isRecursiveTask = true;
             break;
         }
     }
 
-    boost::shared_ptr<ThreadTask> task = ThreadTask::create( work, mTaskId++, numOmpThreads );
+    shared_ptr<ThreadTask> task = ThreadTask::create( work, mTaskId++, numOmpThreads );
 
     if ( isRecursiveTask )
     {
@@ -164,7 +155,7 @@ boost::shared_ptr<ThreadTask> ThreadPool::schedule( boost::function<void()> work
 
 /* ------------------------------------------------------------------------- */
 
-void ThreadPool::wait( boost::shared_ptr<ThreadTask> task )
+void ThreadPool::wait( shared_ptr<ThreadTask> task )
 {
     if ( !task )
     {
@@ -173,11 +164,11 @@ void ThreadPool::wait( boost::shared_ptr<ThreadTask> task )
 
     LAMA_LOG_DEBUG( logger, "wait on task id = " << task->mTaskId << ", state = " << task->mState )
 
-    while( task->mState != ThreadTask::FINISHED )
+    while ( task->mState != ThreadTask::FINISHED )
     {
         Thread::ScopedLock lock( mNotifyFinishMutex );
 
-        if( task->mState != ThreadTask::FINISHED )
+        if ( task->mState != ThreadTask::FINISHED )
         {
             // wait on signal for a finishing thread
             // Attention: do not output here, as worker thread might finish and notify before wait
@@ -204,16 +195,16 @@ void ThreadPool::worker( int id )
     int ompThreads = -1;
     // wait for a new task
 
-    while( true )
+    while ( true )
     {
-        boost::shared_ptr<ThreadTask> task;
+        shared_ptr<ThreadTask> task;
 
         // pick up a new task if available
 
         {
             Thread::ScopedLock lock( mTaskQueueMutex );
 
-            if( mTaskQueue.empty() )
+            if ( mTaskQueue.empty() )
             {
                 // Instead of busy wait this thread waits on notification
 
@@ -232,7 +223,7 @@ void ThreadPool::worker( int id )
                 task = mTaskQueue.front();
                 mTaskQueue.pop();
 
-                if( !task )
+                if ( !task )
                 {
                     LAMA_LOG_DEBUG( logger, "worker thread " << id << " picked shutdown task" )
                     // this is the shutdown task
@@ -241,14 +232,14 @@ void ThreadPool::worker( int id )
             }
         }
 
-        if( task )
+        if ( task )
         {
             LAMA_LOG_DEBUG( logger,
                             "worker thread " << id << " runs task " << task->mTaskId << " with " << task->ompThreads << " OMP threads" )
 
             task->mState = ThreadTask::RUNNING;
 
-            if( task->ompThreads != ompThreads )
+            if ( task->ompThreads != ompThreads )
             {
                 omp_set_num_threads( task->ompThreads );
                 ompThreads = task->ompThreads;
@@ -258,12 +249,12 @@ void ThreadPool::worker( int id )
             {
                 task->mWork();
             }
-            catch( common::Exception& ex )
+            catch ( common::Exception& ex )
             {
                 LAMA_LOG_INFO( logger, "worker thread got exception, has been caught: " << ex.what() )
                 task->mException = true;
             }
-            catch( ... )
+            catch ( ... )
             {
                 LAMA_LOG_INFO( logger, "worker thread got exception, has been caught" )
                 task->mException = true;
@@ -290,17 +281,17 @@ void ThreadPool::worker( int id )
 
 void ThreadPool::shutdown()
 {
-    LAMA_LOG_INFO( logger, "shut down " << mThreads.size() << " threads, " 
-                           << mTaskQueue.size() << " tasks in queue" )
+    LAMA_LOG_INFO( logger, "shut down " << mThreads.size() << " threads, "
+                   << mTaskQueue.size() << " tasks in queue" )
 
-    boost::shared_ptr<ThreadTask> shutdownTask; // NULL pointer
+    shared_ptr<ThreadTask> shutdownTask; // NULL pointer
 
     {
         // lock access to the task queue before adding shutdown tasks
 
         Thread::ScopedLock lock( mTaskQueueMutex );
 
-        for( size_t i = 0; i < mThreads.size(); i++ )
+        for ( size_t i = 0; i < mThreads.size(); i++ )
         {
             mTaskQueue.push( shutdownTask );
         }
@@ -314,7 +305,7 @@ void ThreadPool::shutdown()
 
     // and now wait for completion of all worker threads and delete them
 
-    for( size_t i = 0; i < mThreads.size(); ++i )
+    for ( size_t i = 0; i < mThreads.size(); ++i )
     {
         LAMA_LOG_DEBUG( logger, "wait for worker thread " << i )
         pthread_join( mThreads[i], NULL );
