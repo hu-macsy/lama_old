@@ -39,9 +39,8 @@
 
 #include <logging/logging.hpp>
 
-#include <boost/shared_ptr.hpp>
-#include <boost/function.hpp>
-#include <boost/version.hpp>
+#include <common/function.hpp>
+#include <common/shared_ptr.hpp>
 
 #include <pthread.h>
 
@@ -84,7 +83,7 @@ struct COMMON_DLL_IMPORTEXPORT ThreadTask
 
     /** Create a new task as a shared pointer */
 
-    static boost::shared_ptr<ThreadTask> create(
+    static common::shared_ptr<ThreadTask> create(
         boost::function<void()> work,
         unsigned int taskId,
         int numOmpThreads = 0 );
@@ -117,11 +116,11 @@ public:
      *  @return shared pointer for the task
      */
 
-    boost::shared_ptr<ThreadTask> schedule( boost::function<void()> work, int numOmpThreads = 0 );
+    common::shared_ptr<ThreadTask> schedule( boost::function<void()> work, int numOmpThreads = 0 );
 
     /** Wait on completion of a task. */
 
-    void wait( boost::shared_ptr<ThreadTask> task );
+    void wait( common::shared_ptr<ThreadTask> task );
 
     /** Wait on completion of all scheduled tasks */
 
@@ -154,7 +153,7 @@ private:
     std::vector<pthread_t> mThreads;     // worker threads of this pool
     std::vector<ThreadData> mThreadArgs; // arguments for each worker thread
 
-    std::queue<boost::shared_ptr<ThreadTask> > mTaskQueue;
+    std::queue<common::shared_ptr<ThreadTask> > mTaskQueue;
 
     common::Thread::Condition mNotifyFinished;// notify about finished tasks
     common::Thread::Condition mNotifyTask;// notify about new task

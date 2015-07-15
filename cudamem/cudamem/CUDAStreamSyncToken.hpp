@@ -28,7 +28,6 @@
  * @brief CUDAStreamSyncToken.hpp
  * @author Jiri Kraus, Thomas Brandes
  * @date 28.07.2011
- * @since 1.0.0
  */
 #pragma once
 

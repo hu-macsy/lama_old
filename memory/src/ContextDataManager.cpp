@@ -328,6 +328,16 @@ ContextDataIndex ContextDataManager::getContextData( ContextPtr context )
 
         MemoryPtr memoryPtr = context->getMemory();
 
+        if ( context->getType() == context::Host )
+        {
+            // For host context we might find more convenient memory
+
+            if ( contextIndex > 0 )
+            {
+                memoryPtr = mContextData[0].memory()->getContext()->getHostMemory();
+            }
+        }
+
         COMMON_ASSERT( memoryPtr, "getMemory failed for context = " << *context )
 
         mContextData.push_back( ContextData( memoryPtr ) );

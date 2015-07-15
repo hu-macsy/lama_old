@@ -25,10 +25,9 @@
  * SOFTWARE.
  * @endlicense
  *
- * @brief Host context where memory is pinned for fast transfer to CUDA device
+ * @brief Host memory management for page-locked memory for fast transfer to CUDA device
  * @author Thomas Brandes, Jiri Kraus
  * @date 04.07.2011
- * @since 1.0.0
  */
 #pragma once
 
@@ -49,12 +48,15 @@
 namespace memory
 {
 
-/** Alternative context to DefaultHostContext so that memory will be allocated
+/** Alternative memory to HostMemory so that memory will be allocated
  *  on pinned memory that allows faster transfer to a certain CUDA device.
  *
  *  As the CUDA Host memory will only allow faster transfer to a certain device
  *  and requires CUDA initialization, we will store also a shared pointer to the
  *  corresponding CUDA context.
+ *
+ *  Note: copy routines between CUDA Host and CUDA device are already provided 
+ *        by CUDA memory class and are not required here.
  */
 
 class COMMON_DLL_IMPORTEXPORT CUDAHostMemory: 
@@ -86,7 +88,7 @@ protected:
 
     virtual void writeAt( std::ostream& stream ) const;
 
-    boost::shared_ptr<const CUDAContext> mCUDAContext;
+    boost::shared_ptr<const CUDAContext> mCUDAContext;   // fast DMA transfer to this device
 };
 
 }

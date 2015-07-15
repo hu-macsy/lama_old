@@ -42,8 +42,9 @@
 // logging
 #include <logging/logging.hpp>
 
+#include <common/shared_ptr.hpp>
+
 #include <vector>
-#include <boost/shared_ptr.hpp>
 #include <boost/function.hpp>
 
 /** Namespace for all data structures used in the tasking library. */
@@ -130,7 +131,7 @@ public:
      *  @param member shared pointer to an object that can be SyncTokenMember
      */
 
-    void pushToken( boost::shared_ptr<SyncTokenMember> member );
+    void pushToken( common::shared_ptr<SyncTokenMember> member );
 
     /** Add a routine to be called after synchronization. */
 
@@ -175,7 +176,7 @@ private:
 
     /** Vector of shared pointers  that will be released after completion. */
 
-    std::vector< boost::shared_ptr<SyncTokenMember > > mTokens;
+    std::vector< common::shared_ptr<SyncTokenMember > > mTokens;
 
     bool mSynchronized;  //!< if true the token has already been synchronized.
 

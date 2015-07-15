@@ -28,7 +28,6 @@
  * @brief HostWriteAccess.hpp
  * @author Thomas Brandes
  * @date 02.05.2011
- * @since 1.0.0
  */
 
 #pragma once
@@ -55,13 +54,13 @@ public:
     /**
      * @brief acquire a WriteAccess to the passed LAMAArray for the host location
      *
-     * @param[in] view      the LAMAArray to acquire a WriteAccess for
+     * @param[in] array     the LAMAArray to acquire a WriteAccess for
      * @param[in] keep      if the contents of the LAMAArray should be kept or not (default: true)
      * @throws Exception    if the WriteAccess can not be acquired, e.g. because another WriteAccess exists.
      *
      * @see WriteAccess for more details
      */
-    HostWriteAccess( LAMAArray<ValueType>& view, const bool keep = true );
+    HostWriteAccess( LAMAArray<ValueType>& array, const bool keep = true );
 
     /**
      * @brief acquire a WriteAccess to the passed LAMAArray for the host location
@@ -93,14 +92,7 @@ public:
      *
      * @return  a pointer to the data of the wrapped LAMAArray
      */
-    inline operator ValueType*();
-
-    /**
-     * @brief appends val to the end of the wrapped LAMAArray.
-     *
-     * @param[in] val   the value to append
-     */
-    void push_back( const ValueType val );
+    inline operator ValueType* ();
 
     using WriteAccess<ValueType>::size;
 
@@ -130,32 +122,30 @@ public:
 
     /** Creates a write access with keep flag = false. */
 
-    HostWriteOnlyAccess( LAMAArray<ValueType>& array )
-                    : HostWriteAccess<ValueType>( array, false )
-    {
-    }
+    explicit HostWriteOnlyAccess( LAMAArray<ValueType>& array );
 
     /** Creates a write access with keep flag = false and do also a resize. */
 
-    HostWriteOnlyAccess( LAMAArray<ValueType>& array, const IndexType size )
-                    : HostWriteAccess<ValueType>( array, size, false )
-    {
-    }
+    HostWriteOnlyAccess( LAMAArray<ValueType>& array, const IndexType size );
 
-    ~HostWriteOnlyAccess()
-    {
-    }
+    /** Destructor. */
+
+    ~HostWriteOnlyAccess();
 };
 
 template<typename ValueType>
-HostWriteAccess<ValueType>::HostWriteAccess( LAMAArray<ValueType>& array, const IndexType size, const bool keep )
-                : WriteAccess<ValueType>( array, Context::getContext( context::Host ), size, keep )
+HostWriteAccess<ValueType>::HostWriteAccess( LAMAArray<ValueType>& array, const IndexType size, const bool keep ) :
+
+    WriteAccess<ValueType>( array, Context::getContext( context::Host ), size, keep )
+
 {
 }
 
 template<typename ValueType>
-HostWriteAccess<ValueType>::HostWriteAccess( LAMAArray<ValueType>& view, const bool keep /* = true */)
-                : WriteAccess<ValueType>( view, Context::getContext( context::Host ), keep )
+HostWriteAccess<ValueType>::HostWriteAccess( LAMAArray<ValueType>& array, const bool keep ) :
+
+    WriteAccess<ValueType>( array, Context::getContext( context::Host ), keep )
+
 {
 }
 
@@ -168,23 +158,37 @@ template<typename ValueType>
 ValueType& HostWriteAccess<ValueType>::operator[]( const IndexType i )
 {
     COMMON_ASSERT( mData, "[" << i << "]: HostWriteAccess has already been released or has not been allocated." )
-
     return mData[i];
 }
 
 template<typename ValueType>
-inline HostWriteAccess<ValueType>::operator ValueType*()
+inline HostWriteAccess<ValueType>::operator ValueType* ()
 {
     return mData;
 }
 
 template<typename ValueType>
-void HostWriteAccess<ValueType>::push_back( const ValueType val )
+inline HostWriteOnlyAccess<ValueType>::HostWriteOnlyAccess( LAMAArray<ValueType>& array ) :
+
+    HostWriteAccess<ValueType>( array, false )
+
 {
-    const IndexType currentSize = size();
-    resize( currentSize + 1 );
-    mData[currentSize] = val;
 }
 
+template<typename ValueType>
+inline HostWriteOnlyAccess<ValueType>::HostWriteOnlyAccess( LAMAArray<ValueType>& array, const IndexType size ) :
+
+    HostWriteAccess<ValueType>( array, false )
+
+{
+    this->resize( 0 );
+    this->resize( size );
 }
+
+template<typename ValueType>
+inline HostWriteOnlyAccess<ValueType>::~HostWriteOnlyAccess()
+{
+}
+
+}  // namespace
 

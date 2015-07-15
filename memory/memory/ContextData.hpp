@@ -40,8 +40,6 @@
 #include <common/Exception.hpp>
 #include <common/Printable.hpp>
 
-#include <boost/shared_ptr.hpp>
-
 namespace tasking
 {
 class SyncToken;

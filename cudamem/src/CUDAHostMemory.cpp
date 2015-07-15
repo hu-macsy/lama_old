@@ -25,19 +25,17 @@
  * SOFTWARE.
  * @endlicense
  *
- * @brief Definition of a host context that allocates pinned memory so that
- *        memory transfer for CUDA context is faster.
+ * @brief Implementation of methods for page-locked memory management to enable 
+ *        fast DMA transfers to CUDA devices.
+ *
  * @author Thomas Brandes
- * @date 16.07.2011
- * @since 1.0.0
+ * @date 16.07.2015
  */
 
-// hpp
 #include <cudamem/CUDAHostMemory.hpp>
-
-// others
 #include <cudamem/CUDAError.hpp>
 #include <cudamem/CUDAStreamSyncToken.hpp>
+
 #include <memory/ContextAccess.hpp>
 
 #include <common/Exception.hpp>
@@ -49,29 +47,26 @@ using tasking::SyncToken;
 namespace memory
 {
 
-LAMA_LOG_DEF_LOGGER( CUDAHostMemory::logger, "Context.CUDAHostMemory" );
+LAMA_LOG_DEF_LOGGER( CUDAHostMemory::logger, "Memory.CUDAHostMemory" );
 
-CUDAHostMemory::CUDAHostMemory( boost::shared_ptr<const CUDAContext> cudaContext )
+CUDAHostMemory::CUDAHostMemory( boost::shared_ptr<const CUDAContext> cudaContext ) : 
 
-    : Memory( memtype::CUDAHostMemory ),
-      mCUDAContext( cudaContext )
+    Memory( memtype::CUDAHostMemory ),
+    mCUDAContext( cudaContext )
+
 {
-    if( !cudaContext )
-    {
-        COMMON_THROWEXCEPTION( "CUDAHostMemory requires valid CUDAContext, is NULL" )
-    }
-
+    COMMON_ASSERT( cudaContext, "CUDAHostMemory requires valid CUDAContext, is NULL" )
     LAMA_LOG_INFO( logger, "CUDAHostMemory created, allows faster transfer HOST <-> " << *mCUDAContext )
 }
 
 CUDAHostMemory::~CUDAHostMemory()
 {
+    LAMA_LOG_INFO( logger, "~CUDAHostMemory for " << *mCUDAContext )
 }
 
 void CUDAHostMemory::writeAt( std::ostream& stream ) const
 {
-    // write identification of this object
-    stream << "CUDAHostMemory(" << mCUDAContext->getDeviceNr() << ":lama_host_Alloc/Free_cuda)";
+    stream << "CUDAHostMemory( <-> " << *mCUDAContext << " )";
 }
 
 void* CUDAHostMemory::allocate( const size_t size ) const
@@ -120,7 +115,8 @@ SyncToken* CUDAHostMemory::memcpyAsync( void* dst, const void* src, const size_t
 
     LAMA_CUDA_RT_CALL(
         cudaMemcpyAsync( dst, src, size, cudaMemcpyHostToHost, syncToken->getCUDAStream() ),
-        "cudaMemcpyAsync( " << dst << ", " << src << ", " << size << ", " << cudaMemcpyHostToHost << ", " << syncToken->getCUDAStream() << ") failed " )
+        "cudaMemcpyAsync( " << dst << ", " << src << ", " << size << ", " 
+        << cudaMemcpyHostToHost << ", " << syncToken->getCUDAStream() << ") failed " )
 
     CUevent event;
 
@@ -136,7 +132,9 @@ SyncToken* CUDAHostMemory::memcpyAsync( void* dst, const void* src, const size_t
 
 ContextPtr CUDAHostMemory::getContext() const
 {
-    // Note: some CUDA devices can access directly the host memory
+    // Currently Host device should do operations on Host memory
+    // Possible extension: the corresponding CUDA device can also access the host memory
+    //                     with limited PCIe bandwidth (Zero Copy, e.g. on Tegra K1)
 
     ContextPtr host = Context::getContext( context::Host );
     return host;

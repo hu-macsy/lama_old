@@ -26,25 +26,19 @@
  * @endlicense
  *
  * @brief Contains the implementation of the class CUDAContext.
- * @author Thomas Brandes
+ * @author Thomas Brandes, Jiri Kraus
  * @date 15.07.2011
- * @since 1.0.0
  */
 
-// hpp
 #include <cudamem/CUDAContext.hpp>
 #include <cudamem/CUDAHostMemory.hpp>
 #include <cudamem/CUDAMemory.hpp>
 #include <cudamem/CUDAError.hpp>
-
-// others
 #include <cudamem/CUDAStreamSyncToken.hpp>
 
 #include <tasking/TaskSyncToken.hpp>
-#include <memory/ContextAccess.hpp>
 
-// boost
-#include <boost/bind.hpp>
+#include <memory/ContextAccess.hpp>
 
 #include <cublas_v2.h>
 #include <cuda.h>
@@ -71,8 +65,11 @@ cublasHandle_t CUDAContext_cublasHandle = 0;
 
 /**  constructor  *********************************************************/
 
-CUDAContext::CUDAContext( int deviceNr )
-    : Context( context::CUDA ), mDeviceNr( deviceNr )
+CUDAContext::CUDAContext( int deviceNr ) : 
+
+    Context( context::CUDA ), 
+    mDeviceNr( deviceNr )
+
 {
     LAMA_LOG_DEBUG( logger, "construct CUDAContext, device nr = = " << deviceNr )
 

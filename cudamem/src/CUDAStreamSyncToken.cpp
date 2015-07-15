@@ -28,7 +28,6 @@
  * @brief CUDAStreamSyncToken.cpp
  * @author Jiri Kraus
  * @date 20.05.2011
- * @since 1.0.0
  */
 
 // hpp
@@ -43,14 +42,21 @@
 namespace memory
 {
 
-CUDAStreamSyncToken::CUDAStreamSyncToken( CUDAContextPtr cudaContext, CUstream stream )
-    : mCUDAContext( cudaContext ), mStream( stream ), mEvent( 0 )
+CUDAStreamSyncToken::CUDAStreamSyncToken( CUDAContextPtr cudaContext, CUstream stream ) : 
+
+    mCUDAContext( cudaContext ), 
+    mStream( stream ), 
+    mEvent( 0 )
+
 {
     LAMA_LOG_DEBUG( logger, "StreamSyncToken for " << *cudaContext << " generated, stream = " << stream )
 }
 
-CUDAStreamSyncToken::CUDAStreamSyncToken( CUDAContextPtr cudaContext, CUstream stream, CUevent event )
-    : mCUDAContext( cudaContext ), mStream( stream ), mEvent( event )
+CUDAStreamSyncToken::CUDAStreamSyncToken( CUDAContextPtr cudaContext, CUstream stream, CUevent event ) : 
+
+    mCUDAContext( cudaContext ), 
+    mStream( stream ), 
+    mEvent( event )
 {
     LAMA_LOG_DEBUG( logger,
                     "StreamSyncToken for " << *cudaContext << " generated" << ", event = " << event << ", stream = " << stream )

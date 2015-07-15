@@ -28,7 +28,6 @@
  * @brief Error handling for CUDA ( runtime, api, cublas, cusparse )
  * @author Thomas Brandes
  * @date 15.07.2012
- * @since 1.0.0
  */
 #pragma once
 

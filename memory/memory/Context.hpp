@@ -45,8 +45,9 @@
 // logging
 #include <logging/logging.hpp>
 
+#include <common/shared_ptr.hpp>
+
 // boost
-#include <boost/shared_ptr.hpp>
 #include <boost/function.hpp>
 
 namespace tasking
@@ -61,13 +62,13 @@ namespace memory
 
 class Memory;  // forward declaration
 
-typedef boost::shared_ptr<Memory> MemoryPtr;
+typedef common::shared_ptr<Memory> MemoryPtr;
 
 class Context;   // forward declaration
 
 /** Context pointers will be always const, so context can never be modified. */
 
-typedef boost::shared_ptr<const Context> ContextPtr;
+typedef common::shared_ptr<const Context> ContextPtr;
 
 /** Namespace for enumeration of context types and access kinds. */
 

@@ -77,7 +77,7 @@ public:
      *
      * @return  a constant pointer to the data of the wrapped LAMAArray
      */
-    inline operator const ValueType*() const;
+    inline operator const ValueType* () const;
 
     using ReadAccess<ValueType>::get;
 
@@ -86,14 +86,17 @@ public:
 private:
     const ValueType* const mData;
 
-    LAMA_LOG_DECL_STATIC_LOGGER( logger )};
+    LAMA_LOG_DECL_STATIC_LOGGER( logger )
+};
 
 LAMA_LOG_DEF_TEMPLATE_LOGGER( template<typename ValueType>, HostReadAccess<ValueType>::logger,
                               "ReadAccess.HostReadAccess" )
 
 template<typename ValueType>
-HostReadAccess<ValueType>::HostReadAccess( const LAMAArray<ValueType>& array )
-                : ReadAccess<ValueType>( array, Context::getContext( context::Host ) ), mData( get() )
+HostReadAccess<ValueType>::HostReadAccess( const LAMAArray<ValueType>& array ) :
+
+    ReadAccess<ValueType>( array, Context::getContext( context::Host ) ), mData( get() )
+
 {
     LAMA_LOG_DEBUG( logger, "read access on host, mData = " << mData );
 }
@@ -111,7 +114,7 @@ inline const ValueType& HostReadAccess<ValueType>::operator[]( const IndexType i
 }
 
 template<typename ValueType>
-inline HostReadAccess<ValueType>::operator const ValueType*() const
+inline HostReadAccess<ValueType>::operator const ValueType* () const
 {
     LAMA_LOG_TRACE( logger, "mData = " << mData )
     return mData;

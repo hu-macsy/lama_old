@@ -28,10 +28,8 @@
  * @brief Contains the implementation of the class CUDAError.
  * @author Thomas Brandes
  * @date 15.07.2011
- * @since 1.0.0
  */
 
-// hpp
 #include <cudamem/CUDAError.hpp>
 
 #include <cuda.h>

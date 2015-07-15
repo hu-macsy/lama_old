@@ -25,33 +25,24 @@
  * SOFTWARE.
  * @endlicense
  *
- * @brief Contains the implementation of the class CUDAMemory.
+ * @brief Contains the implementation of methods for the class CUDAMemory.
  * @author Thomas Brandes
  * @date 15.07.2011
- * @since 1.0.0
  */
 
-// hpp
 #include <cudamem/CUDAMemory.hpp>
 #include <cudamem/CUDAHostMemory.hpp>
 #include <cudamem/CUDAError.hpp>
-
-// others
 #include <cudamem/CUDAStreamSyncToken.hpp>
 
-#include <tasking/TaskSyncToken.hpp>
 #include <memory/ContextAccess.hpp>
 
-// boost
-#include <boost/bind.hpp>
+#include <tasking/TaskSyncToken.hpp>
 
-#include <cublas_v2.h>
 #include <cuda.h>
-#include <cusparse.h>
 
 #include <memory>
 
-using common::Thread;
 using tasking::SyncToken;
 
 namespace memory
@@ -107,6 +98,8 @@ int CUDAMemory::getDeviceNr() const
     return mCUDAContext->getDeviceNr();
 }
 
+/* ----------------------------------------------------------------------------- */
+
 ContextPtr CUDAMemory::getContext() const
 {
     return mCUDAContext;
@@ -160,6 +153,8 @@ void CUDAMemory::memcpy( void* dst, const void* src, const size_t size ) const
                         "cuMemcpyDtoD( " << dst << ", " << src << ", " << size << " ) failed" )
 }
 
+/* ----------------------------------------------------------------------------- */
+
 void CUDAMemory::memcpyToCUDA( const CUDAMemory& dstMemory, void* dst, const void* src, const size_t size ) const
 {
     LAMA_CONTEXT_ACCESS( mCUDAContext )
@@ -178,6 +173,8 @@ void CUDAMemory::memcpyToCUDA( const CUDAMemory& dstMemory, void* dst, const voi
 
     LAMA_CUDA_DRV_CALL( cuCtxDisablePeerAccess( dstMemory.mCUDAContext->mCUcontext ), "cuCtxDisablePeerAccess" )
 }
+
+/* ----------------------------------------------------------------------------- */
 
 void CUDAMemory::memcpyFromCUDA( void* dst, const CUDAMemory& srcMemory, const void* src, const size_t size ) const
 {
@@ -353,6 +350,7 @@ bool CUDAMemory::canCopyFrom( const Memory& other ) const
     else if ( otherType == memtype::CUDAHostMemory )
     {
         // CUDADevice -> CUDA Host is supported
+        // Note: slower but okay if CUDA Host memory does not belong to this device 
 
         supported = true;
     }
@@ -369,6 +367,8 @@ bool CUDAMemory::canCopyFrom( const Memory& other ) const
 
     return supported;
 }
+
+/* ----------------------------------------------------------------------------- */
 
 bool CUDAMemory::canCopyCUDA( const CUDAMemory& other ) const
 {
@@ -398,6 +398,8 @@ bool CUDAMemory::canCopyCUDA( const CUDAMemory& other ) const
 
     return supported;
 }
+
+/* ----------------------------------------------------------------------------- */
 
 bool CUDAMemory::canCopyTo( const Memory& other ) const
 {
@@ -431,6 +433,8 @@ bool CUDAMemory::canCopyTo( const Memory& other ) const
     return supported;
 }
 
+/* ----------------------------------------------------------------------------- */
+
 void CUDAMemory::memcpyFrom( void* dst, const Memory& srcMemory, const void* src, size_t size ) const
 {
     if ( srcMemory.getType() == memtype::HostMemory )
@@ -455,6 +459,8 @@ void CUDAMemory::memcpyFrom( void* dst, const Memory& srcMemory, const void* src
         COMMON_THROWEXCEPTION( "copy from " << srcMemory << " to " << *this << " not supported" )
     }
 }
+
+/* ----------------------------------------------------------------------------- */
 
 void CUDAMemory::memcpyTo( const Memory& dstMemory, void* dst, const void* src, size_t size ) const
 {

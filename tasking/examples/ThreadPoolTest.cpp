@@ -184,7 +184,7 @@ void singleTest()
         int resultThread;
         int resultMaster;
 
-        boost::shared_ptr<ThreadTask> task = pool.schedule(
+        common::shared_ptr<ThreadTask> task = pool.schedule(
                     boost::bind( &work, i, ref( resultThread ) ) );
         // Master thread does something and then waits
         rnd = ( rnd + 19 ) % 17;

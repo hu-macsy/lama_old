@@ -76,14 +76,21 @@ int main()
     COMMON_ASSERT( hostMemory, "NULL memory" )
     std::cout << "hostMemory = " << *hostMemory << std::endl;
 
+    MemoryPtr cudaHostMemory = cudaContext->getHostMemory();
+    COMMON_ASSERT( cudaHostMemory, "NULL memory" )
+    std::cout << "cudaHostMemory = " << *cudaHostMemory << std::endl;
+
     const IndexType N = 100;
 
-    LAMAArray<double> data;
+    LAMAArray<double> data( cudaContext );
+    // LAMAArray<double> data;
     
     std::cout << "data = " << data << std::endl;
 
     {
         LAMA_LOG_INFO( logger, "write only on cuda host" )
+        // HostWriteOnlyAccess<double> write( data,  N );
+
         WriteOnlyAccess<double> write( data, hostContext, N );
         double* v = write.get();
         for ( IndexType i = 0; i < N; ++i )
