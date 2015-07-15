@@ -89,7 +89,8 @@ CUDAContext::CUDAContext( int deviceNr ) :
     cudaDeviceProp properties;
     cudaGetDeviceProperties( &properties, mCUdevice );
 
-    LAMA_LOG_ERROR( logger, "canMapHostMemory = " << properties.canMapHostMemory );
+    // feature might be important to indicate that we can use CUDAHostMemory on device
+    // LAMA_LOG_ERROR( logger, "canMapHostMemory = " << properties.canMapHostMemory );
 
 
     char deviceName[256];

@@ -110,12 +110,21 @@ ContextPtr HostContext::create( int deviceNr )
 
 bool HostContext::canUseMemory( const Memory& other ) const
 {
-    // same object by pointer can always use same data.
+    // if memory is HostMemory we can use it
 
     if ( other.getType() == memtype::HostMemory )
     {
         return true;
     }
+
+    // Host memory of other devices is also okay
+
+    if ( other.getContext()->getType() == context::Host )
+    {
+        return true;
+    }
+
+    return false;
 }
 
 /* ------------------------------------------------------------------------- */

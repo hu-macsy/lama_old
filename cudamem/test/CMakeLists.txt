@@ -25,17 +25,19 @@
  # SOFTWARE.
  # @endlicense
  #
- # @brief CMake configuration file for common examples
+ # @brief CMake configuration file for memory tests
  # @author Thomas Brandes
  # @date 16.06.2015
 ###
 
-# REMARKS
-#
-#   - include_directories are taken over from project
-#
+file ( GLOB CU_SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/*.cu" )
 
-foreach ( executable Example1 Example2 Devices )
-    cuda_add_executable( ${executable} ${executable}.cu )
-    target_link_libraries( ${executable} ${cudamem_LIBRARY} )
-endforeach ( executable )
+cuda_add_executable ( CUDATest ${CU_SOURCES} )
+
+find_package ( Boost REQUIRED COMPONENTS unit_test_framework )
+
+target_link_libraries ( CUDATest 
+    ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY}
+    ${cudamem_LIBRARY}
+    )
+
