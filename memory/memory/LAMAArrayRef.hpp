@@ -60,13 +60,13 @@ public:
 
     /** Contruct a container for a host array. */
 
-    LAMAArrayRef( ValueType* pointer, IndexType size );
+    LAMAArrayRef( IndexType size, ValueType* pointer );
 
     /** Contruct a container for a const host array.
      *  Due to the const pointer it is guaranteed that the array cannot be modified
      */
 
-    LAMAArrayRef( const ValueType* pointer, IndexType size );
+    LAMAArrayRef( IndexType size, const ValueType* pointer );
 
 protected:
 
@@ -80,7 +80,7 @@ protected:
 /* ---------------------------------------------------------------------------------*/
 
 template<typename ValueType>
-LAMAArrayRef<ValueType>::LAMAArrayRef( ValueType* pointer, IndexType size )
+LAMAArrayRef<ValueType>::LAMAArrayRef( IndexType size, ValueType* pointer )
                 : LAMAArray<ValueType>()
 {
     // Important: context must be set to the DefaultHostContext
@@ -99,7 +99,7 @@ LAMAArrayRef<ValueType>::LAMAArrayRef( ValueType* pointer, IndexType size )
 /* ---------------------------------------------------------------------------------*/
 
 template<typename ValueType>
-LAMAArrayRef<ValueType>::LAMAArrayRef( const ValueType* pointer, IndexType size )
+LAMAArrayRef<ValueType>::LAMAArrayRef( IndexType size, const ValueType* pointer )
                 : LAMAArray<ValueType>()
 {
     // Important: context must be set to the DefaultHostContext

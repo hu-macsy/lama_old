@@ -35,6 +35,7 @@
 
 #include <cuda.h>
 #include <cublas_v2.h>
+#include <cusparse_v2.h>
 
 /** Namespace for routines using CUDA. */
 
@@ -47,6 +48,10 @@ const char* cudaDriverErrorString( CUresult res );
 /** Function that translates enum cublasStatus to strings. */
 
 const char* cublasErrorString( cublasStatus_t res );
+
+/** Function that translates enum cuparseStatus to strings. */
+
+const char* cusparseErrorString( cusparseStatus_t res );
 
 }
 
@@ -107,20 +112,21 @@ const char* cublasErrorString( cublasStatus_t res );
     }
 
 #define LAMA_CUSPARSE_CALL( call, msg )                                             \
-    {                                                                                   \
-        cusparseStatus_t res = call;                                                    \
-        if ( CUSPARSE_STATUS_SUCCESS != res )                                           \
-        {                                                                               \
-            std::ostringstream errorStr;                                                \
-            errorStr << "CUSparse error in line " << __LINE__;                          \
-            errorStr << " of file " << __FILE__ << std::endl;                           \
-            errorStr << "  Call : " #call;                                              \
-            errorStr << "  Msg  : " << msg << std::endl;                                \
-            errorStr << "  Error: ";                                                    \
-            errorStr << "cusparseStatus = " << res << "\n";                             \
-            common::Exception::addCallStack( errorStr );                                  \
-            throw common::Exception( errorStr.str() );                                    \
-        }                                                                               \
+    {                                                                               \
+        cusparseStatus_t res = call;                                                \
+        if ( CUSPARSE_STATUS_SUCCESS != res )                                       \
+        {                                                                           \
+            std::ostringstream errorStr;                                            \
+            errorStr << "CUSparse error in line " << __LINE__;                      \
+            errorStr << " of file " << __FILE__ << std::endl;                       \
+            errorStr << "  Call : " #call;                                          \
+            errorStr << "  Msg  : " << msg << std::endl;                            \
+            errorStr << "  Error: ";                                                \
+            errorStr << cuda::cusparseErrorString( res );                           \
+            errorStr << ", cusparseStatus = " << res << "\n";                       \
+            common::Exception::addCallStack( errorStr );                            \
+            throw common::Exception( errorStr.str() );                              \
+        }                                                                           \
     }
 
 #define LAMA_CHECK_CUDA_ACCESS                                                          \

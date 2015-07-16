@@ -207,6 +207,60 @@ const char* cublasErrorString( cublasStatus_t res )
     return str;
 }
 
+const char* cusparseErrorString( cusparseStatus_t res )
+{
+    const char* str = "";
+
+    switch ( res )
+
+    {
+        case CUSPARSE_STATUS_SUCCESS:
+            str = "CUSPARSE successful";
+            break;
+
+        case CUSPARSE_STATUS_NOT_INITIALIZED:
+            str = "CUSPARSE library not initialized";
+            break;
+
+        case CUSPARSE_STATUS_ALLOC_FAILED:
+            str = "resource allocation failed";
+            break;
+
+        case CUSPARSE_STATUS_INVALID_VALUE:
+            str = "unsupported numerical value was passed to function";
+            break;
+
+        case CUSPARSE_STATUS_ARCH_MISMATCH:
+            str = "function requires an architectural feature absent from the architecture of the device";
+            break;
+
+        case CUSPARSE_STATUS_MAPPING_ERROR:
+            str = "access to GPU memory space failed";
+            break;
+
+        case CUSPARSE_STATUS_EXECUTION_FAILED:
+            str = "GPU program failed to execute";
+            break;
+
+        case CUSPARSE_STATUS_INTERNAL_ERROR:
+            str = "CUSPARSE internal error";
+            break;
+
+        case CUSPARSE_STATUS_MATRIX_TYPE_NOT_SUPPORTED:
+            str = "CUSPARSE unsupported matrix type";
+            break;
+
+        case CUSPARSE_STATUS_ZERO_PIVOT:
+            str = "CUSPARSE zero pivot";
+            break;
+
+        default:
+            str = "Unknown CUSPARSE error";
+    }
+
+    return str;
+}
+
 /* ----------------------------------------------------------------------------- */
 
 } //namespace

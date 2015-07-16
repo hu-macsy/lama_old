@@ -25,10 +25,9 @@
  * SOFTWARE.
  * @endlicense
  *
- * @brief Definition of context class for CUDA devices and a context manager class.
+ * @brief Definition of context class for CUDA devices.
  * @author Thomas Brandes, Jiri Kraus
- * @date 15.07.2011
- * @revides 08.07.2015
+ * @date 08.07.2015
  */
 #pragma once
 
@@ -91,6 +90,9 @@ public:
      */
     virtual MemoryPtr getHostMemory() const;
 
+    /**
+     *  @brief Implementation of Context::getMemory for this class.
+     */
     virtual MemoryPtr getMemory() const;
 
     int getDeviceNr() const
@@ -98,7 +100,9 @@ public:
         return mDeviceNr;
     }
 
-    /** Each host context can use data of each other host context.  */
+    /** 
+     *  @brief Implementation of Context::canUseMemory for this class. 
+     */
 
     virtual bool canUseMemory( const Memory& other ) const;
 
@@ -118,18 +122,29 @@ public:
 
     CUDAStreamSyncToken* getTransferSyncToken() const;
 
-    /** Implementation for Context::getSyncToken */
+    /** 
+     *  @brief Implementation for Context::getSyncToken 
+     */
 
     virtual tasking::SyncToken* getSyncToken() const;
+
+    // Using this context might require accessing the context
+
+    CUcontext getCUcontext() const
+    {
+        return mCUcontext;
+    }
+
+    /** This routine is required for Register in Context Factory. */
 
     static ContextType createValue() 
     {
         return context::CUDA;
     }
 
-    static ContextPtr create( int deviceNr );
+    /** This routine is required for Register in Context Factory. */
 
-    CUcontext mCUcontext; //!< data structure for context
+    static ContextPtr create( int deviceNr );
 
 protected:
 
@@ -147,6 +162,8 @@ protected:
 
 private:
 
+    CUcontext mCUcontext; //!< data structure for context
+
     mutable common::weak_ptr<class Memory> mMemory;     //!< memory management for this devie
     mutable common::weak_ptr<class Memory> mHostMemory; //!< preferred host memory
 
@@ -157,7 +174,7 @@ private:
     CUstream mTransferStream; //!< stream for memory transfers
     CUstream mComputeStream; //!< stream for asynchronous computations
 
-    cublasHandle_t mCublasHandle; //!< handle to cublas library
+    cublasHandle_t   mCublasHandle;   //!< handle to cublas library
     cusparseHandle_t mCusparseHandle; //!< handle to cusparse library
 
     std::string mDeviceName; //!< name set during initialization
