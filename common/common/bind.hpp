@@ -1,5 +1,5 @@
 /**
- * @file common/shared_ptr.hpp
+ * @file common/bind.hpp
  *
  * @license
  * Copyright (c) 2009-2015
@@ -26,8 +26,8 @@
  * @endlicense
  *
  * @brief Embedding bind in common namespace.
- * @author Jiri Kraus
- * @date 10.06.2015
+ * @author Thomas Brandes
+ * @date 15.07.2015
  */
 
 #pragma once

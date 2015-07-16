@@ -25,7 +25,7 @@
  * SOFTWARE.
  * @endlicense
  *
- * @brief Scalar.hpp
+ * @brief Definition of enum type for scalar value types typically used in numerical applications.
  * @author Jiri Kraus
  * @date 22.02.2011
  */

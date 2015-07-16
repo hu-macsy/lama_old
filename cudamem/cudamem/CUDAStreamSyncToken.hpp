@@ -25,7 +25,8 @@
  * SOFTWARE.
  * @endlicense
  *
- * @brief CUDAStreamSyncToken.hpp
+ * @brief Defintion of a SyncToken class that synchronizes with computations and
+ *        memory transfers on CUDA devices.
  * @author Jiri Kraus, Thomas Brandes
  * @date 28.07.2011
  */
@@ -40,17 +41,7 @@
 #include <memory>
 
 #include <cuda.h>
-
-#if __GNUC__ >= 4 &&  __GNUC_MINOR__ > 6
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wunused-parameter"
-#endif //__GNUC__ >= 4 &&  __GNUC_MINOR__ > 6
-
 #include <cuda_runtime.h> /* no diagnostic for this one */
-
-#if __GNUC__ >= 4 &&  __GNUC_MINOR__ > 6
-#pragma GCC diagnostic pop
-#endif //__GNUC__ >= 4&&  __GNUC_MINOR__ > 6
 
 #include <common/config.hpp>
 #include <tasking/SyncToken.hpp>

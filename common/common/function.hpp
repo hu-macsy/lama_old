@@ -1,5 +1,5 @@
 /**
- * @file common/shared_ptr.hpp
+ * @file common/function.hpp
  *
  * @license
  * Copyright (c) 2009-2015
@@ -25,9 +25,9 @@
  * SOFTWARE.
  * @endlicense
  *
- * @brief Embedding function in common namespace.
- * @author Jiri Kraus
- * @date 10.06.2015
+ * @brief Embedding function, either std::function or boost::function, in common namespace.
+ * @author Thomas Brandes
+ * @date 15.07.2015
  */
 
 #pragma once

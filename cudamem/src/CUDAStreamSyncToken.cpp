@@ -25,7 +25,7 @@
  * SOFTWARE.
  * @endlicense
  *
- * @brief CUDAStreamSyncToken.cpp
+ * @brief Implementation of methods for class CUDAStreamSyncToken.
  * @author Jiri Kraus
  * @date 20.05.2011
  */

@@ -30,8 +30,7 @@
  *        when corresponding read/write accesses are required
  *
  * @author Thomas Brandes, Jiri Krause
- * @date 14.03.2011
- * @revised 03.07.2015
+ * @date 03.07.2015
  */
 
 #pragma once

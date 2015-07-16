@@ -25,7 +25,8 @@
  * SOFTWARE.
  * @endlicense
  *
- * @brief HostContext.hpp
+ * @brief Definition of context class that stands for execution on the host, 
+ *        i.e. convenctional CPU or multiple CPUs.
  * @author Thomas Brandes
  * @date 10.07.2011
  */
@@ -74,7 +75,11 @@ public:
 
     static ContextType createValue();
 
+    /** Override Printable::writeAt with version for this class. */
+
     virtual void writeAt( std::ostream& stream ) const;
+
+    /** Implement pure method Context::canUseMemory */
 
     virtual bool canUseMemory( const Memory& memory ) const;
 

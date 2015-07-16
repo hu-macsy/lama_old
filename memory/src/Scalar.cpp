@@ -25,7 +25,7 @@
  * SOFTWARE.
  * @endlicense
  *
- * @brief Scalar.cpp
+ * @brief Implementation of operations on ScalarType.
  * @author Jiri Kraus
  * @date 07.11.2011
  * @since 1.0.0

@@ -25,7 +25,7 @@
  * SOFTWARE.
  * @endlicense
  *
- * @brief HostWriteAccess.hpp
+ * @brief Definition of a write access that uses directly the host context.
  * @author Thomas Brandes
  * @date 02.05.2011
  */
