@@ -106,7 +106,7 @@ void SyncToken::pushToken( shared_ptr<SyncTokenMember> member )
     }
     else
     {
-        LAMA_LOG_ERROR( logger, *this << ": push token, will be freed at synchronization" )
+        LAMA_LOG_INFO( logger, *this << ": push token, will be freed at synchronization" )
 
         // take ownership of the token so it is not deleted before synchronization
 

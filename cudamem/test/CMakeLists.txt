@@ -31,8 +31,9 @@
 ###
 
 file ( GLOB CU_SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/*.cu" )
+file ( GLOB CPP_SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/*.cpp" )
 
-cuda_add_executable ( CUDATest ${CU_SOURCES} )
+cuda_add_executable ( CUDATest ${CU_SOURCES} ${CPP_SOURCES} )
 
 find_package ( Boost REQUIRED COMPONENTS unit_test_framework )
 

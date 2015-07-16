@@ -49,6 +49,9 @@
 using common::Thread;
 using tasking::SyncToken;
 
+cusparseHandle_t CUDAContext_cusparseHandle = 0;
+cublasHandle_t CUDAContext_cublasHandle = 0;
+
 namespace memory
 {
 
@@ -60,8 +63,6 @@ int CUDAContext::currentDeviceNr = -1;
 
 int CUDAContext::numUsedDevices = 0;
 
-cusparseHandle_t CUDAContext_cusparseHandle = 0;
-cublasHandle_t CUDAContext_cublasHandle = 0;
 
 /**  constructor  *********************************************************/
 

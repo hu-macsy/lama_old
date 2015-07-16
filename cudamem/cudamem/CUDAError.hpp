@@ -123,12 +123,11 @@ const char* cublasErrorString( cublasStatus_t res );
         }                                                                               \
     }
 
-#define LAMA_CHECK_CUDA_ACCESS                                                        \
-    {                                                                                     \
-        CUcontext pctx;                                                                   \
-        const int cudaErrorValue = cuCtxGetCurrent( &pctx );                              \
-        LAMA_ASSERT_EQUAL_ERROR( cudaErrorValue, cudaSuccess )                            \
-        LAMA_ASSERT_ERROR( pctx, "No current context, forgotten LAMA_CONTEXT_ACCESS ?" ) \
+#define LAMA_CHECK_CUDA_ACCESS                                                          \
+    {                                                                                   \
+        CUcontext pctx;                                                                 \
+        LAMA_CUDA_DRV_CALL( cuCtxGetCurrent( &pctx ), "" );                             \
+        COMMON_ASSERT( pctx, "No current context, forgotten LAMA_CONTEXT_ACCESS ?" )    \
     }
 
 #define LAMA_CHECK_CUDA_ERROR                                                         \

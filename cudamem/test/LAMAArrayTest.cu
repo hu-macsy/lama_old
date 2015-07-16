@@ -145,9 +145,11 @@ BOOST_AUTO_TEST_CASE( CopyTest )
     LAMAArray<float> array( cuda );
 
     initArray<float>( array, N, 1.0 );
-
+    // array is valid @ host
     array.prefetch( cuda );
+    // now array is valid @ host, cuda
 
+    // Copy contructor, copies all valid data at their locations
     LAMAArray<float> array1( array );
 
     BOOST_ASSERT( array1.isValid( host ) );
@@ -156,7 +158,9 @@ BOOST_AUTO_TEST_CASE( CopyTest )
     float expected = cudaSum( array, cuda );
     float result = cudaSum( array1, cuda );
 
-    std::cout << "sum (on CUDA device) is " << result << ", expected = " << expected << std::endl;
+    std::cout << "LAMAArray, copy: sum (on CUDA device) is " << result 
+              << ", expected = " << expected << std::endl;
+
     BOOST_CHECK_EQUAL( result, expected );
 }
 
