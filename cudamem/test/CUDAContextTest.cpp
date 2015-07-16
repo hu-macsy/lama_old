@@ -47,7 +47,7 @@
 
 using tasking::Task;
 using tasking::SyncToken;
-using memory::CUDAStreamSyncToken;
+using tasking::CUDAStreamSyncToken;
 
 using namespace memory;
 

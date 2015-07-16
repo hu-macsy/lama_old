@@ -46,6 +46,7 @@
 #include <cstring>
 
 using tasking::SyncToken;
+using tasking::CUDAStreamSyncToken;
 
 namespace memory
 {

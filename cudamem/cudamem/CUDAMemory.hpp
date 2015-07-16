@@ -47,10 +47,13 @@
 
 #include <string>
 
+namespace tasking
+{
+    class COMMON_DLL_IMPORTEXPORT CUDAStreamSyncToken;
+}
+
 namespace memory
 {
-
-class COMMON_DLL_IMPORTEXPORT CUDAStreamSyncToken;
 
 /**
  * @brief CUDAMemory initializes the CUDA device with the given number.

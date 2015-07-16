@@ -48,20 +48,20 @@
 
 namespace memory
 {
+    class CUDAContext;
 
-class CUDAContext;
+    typedef common::shared_ptr<const CUDAContext> CUDAContextPtr;
+}
 
-typedef common::shared_ptr<const CUDAContext> CUDAContextPtr;
+namespace tasking
+{
 
 /** Class that sycnchronizes with a CUDA stream. */
 
-class COMMON_DLL_IMPORTEXPORT CUDAStreamSyncToken: public tasking::SyncToken
+class COMMON_DLL_IMPORTEXPORT CUDAStreamSyncToken: public SyncToken
 
 {
-
 public:
-
-    friend class CUDAStreamSyncTokenPtr;
 
     /** Constructor for a sychronization token.
      *
@@ -71,9 +71,9 @@ public:
      *  A pointer to the CUDA context is required to enable/disable it.
      */
 
-    CUDAStreamSyncToken( CUDAContextPtr context, CUstream stream );
+    CUDAStreamSyncToken( memory::CUDAContextPtr context, CUstream stream );
 
-    CUDAStreamSyncToken( CUDAContextPtr context, CUstream stream, CUevent event );
+    CUDAStreamSyncToken( memory::CUDAContextPtr context, CUstream stream, CUevent event );
 
     void setEvent( CUevent event )
     {
@@ -104,9 +104,10 @@ public:
 
 private:
 
-    CUDAContextPtr mCUDAContext; // needed for synchronization
+    memory::CUDAContextPtr mCUDAContext; // needed for synchronization
 
     const CUstream mStream;
+
     CUevent mEvent;
 };
 

@@ -48,10 +48,13 @@
 
 #include <string>
 
+namespace tasking
+{
+    class CUDAStreamSyncToken;  // forward 
+}
+
 namespace memory
 {
-
-class COMMON_DLL_IMPORTEXPORT CUDAStreamSyncToken;
 
 /**
  *  Define here the name of the environment variable that can be used
@@ -118,9 +121,9 @@ public:
 
     virtual void disable( const char* filename, int line ) const;
 
-    CUDAStreamSyncToken* getComputeSyncToken() const;
+    tasking::CUDAStreamSyncToken* getComputeSyncToken() const;
 
-    CUDAStreamSyncToken* getTransferSyncToken() const;
+    tasking::CUDAStreamSyncToken* getTransferSyncToken() const;
 
     /** 
      *  @brief Implementation for Context::getSyncToken 

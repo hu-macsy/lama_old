@@ -48,6 +48,7 @@
 
 using common::Thread;
 using tasking::SyncToken;
+using tasking::CUDAStreamSyncToken;
 
 cusparseHandle_t CUDAContext_cusparseHandle = 0;
 cublasHandle_t CUDAContext_cublasHandle = 0;
