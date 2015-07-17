@@ -52,7 +52,7 @@ int threadRoutine( int id, int param )
     return 0;
 }
 
-int main( int argc, char** argv )
+int main( int, char** )
 {
     // macro to give the current thread a name that appears in further logs
 

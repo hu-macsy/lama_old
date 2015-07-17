@@ -51,21 +51,21 @@ LAMA_LOG_DEF_LOGGER( ContextData::logger, "ContextData" )
 
 ContextData::ContextData( MemoryPtr memory ) :
 
+    size( 0 ),
     mMemory( memory ),
     pointer( 0 ),
-    size( 0 ),
-    allocated( false ),
-    valid( false )
+    valid( false ),
+    allocated( false )
 {
 }
 
 ContextData::ContextData() :
 
+    size( 0 ),
     mMemory(),
     pointer( 0 ),
-    size( 0 ),
-    allocated( false ),
-    valid( false )
+    valid( false ), 
+    allocated( false )
 {
 }
 

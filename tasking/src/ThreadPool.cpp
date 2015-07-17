@@ -86,6 +86,8 @@ static void* threadRoutine( void* p )
     LAMA_LOG_THREAD( "ThreadPoolWorker_" << args->i )
 
     args->pool->worker( args->i );
+
+    return NULL;
 }
 
 ThreadPool::ThreadPool( int size )
@@ -107,6 +109,8 @@ ThreadPool::ThreadPool( int size )
         mThreadArgs[i].i    = i;
 
         int rc = pthread_create( &id, NULL, &threadRoutine, &mThreadArgs[i] );
+
+        COMMON_ASSERT( rc == 0, "pthread_create failed, rc = " << rc )
 
         mThreads.push_back( id );
     }

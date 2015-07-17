@@ -206,6 +206,9 @@ void ContextDataManager::unlockAccess( context::AccessKind kind )
 void ContextDataManager::releaseAccess( ContextDataIndex index, context::AccessKind kind )
 {
     // we should check that this is really the context data for which access was reserved
+ 
+    COMMON_ASSERT_LT( index, mContextData.size(), "Illegal context data index = " << index )
+
     unlockAccess( kind );
 }
 
@@ -312,7 +315,6 @@ size_t ContextDataManager::capacity( ContextPtr context ) const
 
 ContextDataIndex ContextDataManager::getContextData( ContextPtr context )
 {
-    bool found = false;
     size_t contextIndex = findContextData( context );
 
     LAMA_LOG_DEBUG( logger, "contextIndex = " << contextIndex << ", size = " << mContextData.size() )

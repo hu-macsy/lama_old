@@ -185,6 +185,7 @@ int main()
     try 
     {
         Base* obj = Base::create( "na" );
+        cout << "obj is " << *obj << endl;
     }
     catch ( Exception& ex )
     {

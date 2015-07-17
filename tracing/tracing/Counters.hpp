@@ -94,6 +94,8 @@ public:
         {
             values[i] = other.values[i];
         }
+
+        return *this;
     }
 
     /** Override default copy constructor. */

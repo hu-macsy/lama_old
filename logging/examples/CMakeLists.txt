@@ -66,8 +66,9 @@ if ( OPENMP_FOUND )
     # Adding this example only possible if OpenMP is available
     add_executable( LogOpenMP LogOpenMP.cpp )
     target_link_libraries( LogOpenMP ${logging_LIBRARY} )
-    set_target_properties( LogOpenMP PROPERTIES COMPILE_FLAGS ${OpenMP_CXX_FLAGS} )
-    set_target_properties( LogOpenMP PROPERTIES LINK_FLAGS ${OpenMP_CXX_FLAGS} )
+    # Note: OpenMP_CXX_FLAGS are already set globally
+    # set_target_properties( LogOpenMP PROPERTIES COMPILE_FLAGS ${OpenMP_CXX_FLAGS} )
+    # set_target_properties( LogOpenMP PROPERTIES LINK_FLAGS ${OpenMP_CXX_FLAGS} )
 else ()
     message ( STATUS "LogOpenMP example not built, no compiler option found" )
 endif()

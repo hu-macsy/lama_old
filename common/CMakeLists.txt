@@ -34,19 +34,19 @@
 
 cmake_minimum_required ( VERSION 2.8 )
 
-# Note: also use C language as FindThreds does not work otherwise 
-
-project( common CXX C )
+project ( common CXX )
 
 set ( CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/../CMake/Modules" )
 
 # Set default build type to RELEASE, can be changed via ccmake
 
-if (NOT CMAKE_BUILD_TYPE)
-   set(CMAKE_BUILD_TYPE RELEASE CACHE STRING
+if ( NOT CMAKE_BUILD_TYPE )
+   set ( CMAKE_BUILD_TYPE RELEASE CACHE STRING
       "Choose the type of build, options are: None Debug Release."
       FORCE)
-endif (NOT CMAKE_BUILD_TYPE)
+endif ( NOT CMAKE_BUILD_TYPE )
+
+include ( SetCPPFlags )
 
 ### Define variables needed for common library 
 ### Variables are put in the cache so they might be used in other scopes
@@ -62,12 +62,12 @@ mark_as_advanced ( common_INCLUDE_DIR common_LIBRARY )
 ###  Here we use PThread library for threads
 ###  Note: FindThreads in CMake is available as Module, but is buggy, needs update of CheckIncludeFiles.cmake
 
-find_library( PTHREADS_LIBRARY NAMES pthread pthreads )
+find_library ( PTHREADS_LIBRARY NAMES pthread pthreads )
 
-file( GLOB CPP_SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp" )
-file( GLOB HPP_HEADERS "${CMAKE_CURRENT_SOURCE_DIR}/common/*.hpp" )
+file ( GLOB CPP_SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp" )
+file ( GLOB HPP_HEADERS "${CMAKE_CURRENT_SOURCE_DIR}/common/*.hpp" )
 
-include_directories( ${common_INCLUDE_DIR} )
+include_directories ( ${common_INCLUDE_DIR} )
 
 if ( WIN32 )
 	add_definitions ( -DCOMMON_COMPILING_DLL )
@@ -78,11 +78,8 @@ endif ( WIN32 )
 add_library ( ${common_LIBRARY} SHARED ${CPP_SOURCES} )
 target_link_libraries( ${common_LIBRARY} ${PTHREADS_LIBRARY} )
 
-if ( CMAKE_COMPILER_IS_GNUCXX )
-#   set_target_properties( ${common_LIBRARY} PROPERTIES LINK_FLAGS "-Wl,--no-as-needed" )
-endif ()
-
 add_subdirectory ( examples )
+
 ### install ###
 
 install ( TARGETS ${common_LIBRARY} DESTINATION lib )

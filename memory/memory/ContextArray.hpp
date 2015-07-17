@@ -161,7 +161,21 @@ public:
      * Reserves additional memory on all valid locations.
      */
     void resize( IndexType size );
- 
+
+    /**
+     * @brief clear of an array is the same as resize 0 
+     *
+     * \code
+     *   ContextArray& array = ...
+     *   // this sequence of statements just invalidates all data
+     *   IndexType size = array.size();
+     *   array.clear();
+     *   array.resize( 0 );
+     * \endcode
+     */
+
+    void clear();
+
 protected:
 
     explicit ContextArray( const IndexType n, const IndexType size ) : 
@@ -240,6 +254,15 @@ inline void ContextArray::resize( IndexType size )
     mContextDataManager.resize( size * mValueSize, mSize * mValueSize );
 
     mSize = size;   
+}
+
+/* ---------------------------------------------------------------------------------*/
+
+inline void ContextArray::clear()
+{
+    COMMON_ASSERT( !mContextDataManager.locked(), "Tried to clear a locked LAMAArray " << *this )
+
+    mSize = 0;
 }
 
 /* ---------------------------------------------------------------------------------*/

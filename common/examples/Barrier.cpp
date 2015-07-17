@@ -100,12 +100,10 @@ static void threadRoutine( int& arg )
     }
 }
 
-int main( int argc, char** argv )
+int main( int, char** )
 {
     Thread threads[N_THREADS];
     int threadArgs[N_THREADS];
-
-    double time = Walltime::get();
 
     for ( int i = 0; i < N_THREADS; ++i )
     {

@@ -35,7 +35,7 @@
 
 LAMA_LOG_DEF_LOGGER( myLogger, "Demo" )
 
-int main( int argc, char** argv )
+int main( int, char** )
 {
     // macro to give the current thread a name that appears in further logs
 

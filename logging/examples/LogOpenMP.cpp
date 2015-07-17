@@ -3,7 +3,7 @@
 
 LAMA_LOG_DEF_LOGGER( myLogger, "LogOpenMP" )
 
-int main( int argc, char** argv )
+int main( int, char** )
 {
     LAMA_LOG_THREAD( "main" )
 

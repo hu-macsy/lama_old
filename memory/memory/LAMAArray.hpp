@@ -175,16 +175,6 @@ public:
     void swap( LAMAArray<ValueType>& other );
 
     /**
-     * @brief sets the size of this to 0 but does not free any memory
-     *
-     * Clear just invalidates all data. This operation
-     * is used before a write-only access that is
-     * followed by a resize of the array. It avoids data transfer between
-     * two contextes as there is no more any valid data.
-     */
-    void clear();
-
-    /**
      * @brief sets the size of this to 0 an frees all memory
      */
     void purge();
@@ -206,6 +196,7 @@ public:
     void reserve( ContextPtr context, const IndexType capacity );
 
     using ContextArray::capacity;
+    using ContextArray::clear;
 
     /** Method that must be provided to guarantee a correct registration in
      *  the ContextArray factory. 
@@ -261,7 +252,7 @@ LAMAArray<ValueType>::LAMAArray( const IndexType n, const OtherValueType* const 
 
     ValueType* hostData = static_cast<ValueType*>( host.get() );
 
-#pragma omp parallel for schedule(LAMA_OMP_SCHEDULE)
+#pragma omp parallel for
 
     for( int i = 0; i < mSize; ++i )
     {
@@ -298,7 +289,7 @@ LAMAArray<ValueType>::LAMAArray( ContextPtr context ) :
 {
     // just make the first entry for the context
 
-    ContextDataIndex data = mContextDataManager.getContextData( context );
+    /* ContextDataIndex data = */  mContextDataManager.getContextData( context );
 
     LAMA_LOG_DEBUG( logger, "created new LAMA array: " << *this )
 }
@@ -341,7 +332,7 @@ LAMAArray<ValueType>::LAMAArray( const IndexType n, const ValueType& value ) : C
     {
         ValueType* hostData = static_cast<ValueType*>( data.get() );
 
-#pragma omp parallel for schedule(LAMA_OMP_SCHEDULE)
+#pragma omp parallel for 
 
         for ( int i = 0; i < mSize; ++i )
         {
@@ -492,16 +483,6 @@ void LAMAArray<ValueType>::reserve( ContextPtr context, const IndexType capacity
 /* ---------------------------------------------------------------------------------*/
 
 template<typename ValueType>
-void LAMAArray<ValueType>::clear()
-{
-    COMMON_ASSERT( !mContextDataManager.locked(), "Tried to clear a locked LAMAArray " << *this )
-
-    mSize = 0;
-}
-
-/* ---------------------------------------------------------------------------------*/
-
-template<typename ValueType>
 void LAMAArray<ValueType>::purge()
 {
     mContextDataManager.purge();
@@ -536,7 +517,7 @@ void LAMAArray<ValueType>::clear( const ContextDataIndex index )
 
     ContextData& data = mContextDataManager[index];
 
-    // ToDo: COMMON_ASSERT( data.locked( context::Write ), "clear illegal here " << data )
+    COMMON_ASSERT( mContextDataManager.locked( context::Write ), "clear illegal here: " << data )
 
     mSize = 0;
 }

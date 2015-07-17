@@ -89,12 +89,12 @@ std::ostream& operator<<( std::ostream& stream, const MemoryType& type )
 
 /* ---------------------------------------------------------------------------------*/
 
-bool Memory::canCopyFrom( const Memory& srcMemory ) const
+bool Memory::canCopyFrom( const Memory& ) const
 {
     return false;
 }
 
-bool Memory::canCopyTo( const Memory& dstMemory ) const
+bool Memory::canCopyTo( const Memory& ) const
 {
     return false;
 }

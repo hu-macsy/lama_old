@@ -62,9 +62,11 @@ void* threadRoutine( void* )
     cout << "Thread " << self << " enters critical region" << endl;
     sleep( SLEEP_TIME );
     cout << "Thread " << self << " leaves critical region" << endl;
+
+    return NULL;
 }
 
-int main( int argc, char** argv )
+int main( int, char** )
 {
     // macro to give the current thread a name that appears in further logs
 

@@ -32,6 +32,7 @@
 
 #include <boost/test/unit_test.hpp>
 #include <boost/mpl/list.hpp>
+#include <boost/assert.hpp>
 
 #include <memory/LAMAArray.hpp>
 #include <memory/LAMAArrayRef.hpp>
@@ -201,24 +202,25 @@ BOOST_AUTO_TEST_CASE( createTest )
         std::cout << "Registered values[" << i << "] = " << values[i] << std::endl;
     }
 
-    BOOST_ASSERT( ContextArray::canCreate( scalar::FLOAT ) );
-    BOOST_ASSERT( ContextArray::canCreate( scalar::DOUBLE ) );
-    BOOST_ASSERT( ContextArray::canCreate( scalar::INDEX_TYPE ) );
-    BOOST_ASSERT( !ContextArray::canCreate( scalar::INTERNAL ) );
+    BOOST_CHECK( ContextArray::canCreate( scalar::FLOAT ) );
+    BOOST_CHECK( ContextArray::canCreate( scalar::DOUBLE ) );
+    BOOST_CHECK( ContextArray::canCreate( scalar::INDEX_TYPE ) );
+    BOOST_CHECK( !ContextArray::canCreate( scalar::INTERNAL ) );
 
     ContextArray* ca1 = ContextArray::create( scalar::FLOAT );
 
-    BOOST_ASSERT( ca1 );
+    BOOST_REQUIRE( ca1 );
 
     LAMAArray<double>* da1 = dynamic_cast<LAMAArray<double>*>( ca1 );
     LAMAArray<float>* fa1 = dynamic_cast<LAMAArray<float>*>( ca1 );
 
-    BOOST_ASSERT( !da1 );
-    BOOST_ASSERT( fa1 );
+    BOOST_CHECK( da1 == NULL );
+    BOOST_CHECK( fa1 != NULL );
 
     BOOST_CHECK_THROW(
     {
-        ca1 = ContextArray::create( scalar::INTERNAL );
+        ContextArray* ca1 = ContextArray::create( scalar::INTERNAL );
+        ca1->clear();
     }, Exception );
 }
 

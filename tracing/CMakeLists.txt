@@ -49,10 +49,12 @@ set ( CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/../CMake/Modules" )
 # Set default build type to RELEASE, can be changed via ccmake
 
 if ( NOT CMAKE_BUILD_TYPE )
-   set( CMAKE_BUILD_TYPE RELEASE 
+   set ( CMAKE_BUILD_TYPE RELEASE 
         CACHE STRING "Choose the type of build, options are: None Debug Release."
         FORCE)
-endif (NOT CMAKE_BUILD_TYPE)
+endif ( NOT CMAKE_BUILD_TYPE )
+
+include ( SetCPPFlags )
 
 ### Source files for tracing library
 

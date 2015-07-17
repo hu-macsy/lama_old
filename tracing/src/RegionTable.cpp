@@ -197,7 +197,6 @@ void RegionTable::printTimer( ostream& outfile )
     for ( it = mapTimer.begin(); it != mapTimer.end(); it++ )
     {
         int regionId = it->second;
-        const std::string& name = it->first;
         const RegionEntry& region = array[regionId];
         region.printTime( outfile );
     }

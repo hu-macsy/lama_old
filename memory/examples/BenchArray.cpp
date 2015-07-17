@@ -70,6 +70,7 @@ void routineLAMA( double& res, IndexType n )
 void routineLAMA1( double& res, IndexType n )
 {
     LAMAArray<double> X( n );
+    res = 0.0;
 }
 
 void routineSimple( double& res, IndexType n )

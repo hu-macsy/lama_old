@@ -73,8 +73,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( refTest, ValueType, test_types )
     ContextPtr context = Context::create( context::UserContext, 0 );
     ContextPtr host = Context::create( context::Host, -1 );
 
-    BOOST_ASSERT( context );
-    BOOST_ASSERT( host );
+    BOOST_CHECK( context );
+    BOOST_CHECK( host );
 
     const IndexType n = 10;
     ValueType myData[10] = {   1, 2, 3, 4, 5, 5, 4, 3, 2, 1};
