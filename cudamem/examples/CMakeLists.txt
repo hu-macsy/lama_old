@@ -39,3 +39,8 @@ foreach ( executable Example1 Example2 )
     cuda_add_executable( ${executable} ${executable}.cu )
     target_link_libraries( ${executable} ${cudamem_LIBRARY} )
 endforeach ( executable )
+
+foreach ( executable MemBandwidth )
+    add_executable( ${executable} ${executable}.cpp )
+    target_link_libraries( ${executable} ${cudamem_LIBRARY} )
+endforeach ( executable )
