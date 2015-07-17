@@ -37,8 +37,7 @@
 #include <common/config.hpp>
 #include <logging/logging.hpp>
 
-// boost
-#include <boost/shared_ptr.hpp>
+#include <common/shared_ptr.hpp>
 
 /** Namespace for all data structures used in tracing library. */
 
@@ -117,7 +116,7 @@ private:
      *  when all timings even of running threads are finished.
      */
 
-    boost::shared_ptr<class TraceConfig> mTraceConfig;
+    common::shared_ptr<class TraceConfig> mTraceConfig;
 
     class TraceData* mTraceData; // pointer to all trace data of the thread
 

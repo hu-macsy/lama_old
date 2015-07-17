@@ -151,7 +151,7 @@ void Thread::defineCurrentThreadName( const char* name )
     {
         // name not defined yet
 
-        mapThreads[ id ] = string( name );
+        mapThreads.insert( std::pair<Thread::Id, string>( id, name ) );
 
 #ifdef LOCAL_DEBUG
         cout << "Thread " << id << " defines name " << name << endl;

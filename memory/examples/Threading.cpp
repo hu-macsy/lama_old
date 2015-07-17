@@ -36,7 +36,7 @@
 #include <common/Exception.hpp>
 #include <tasking/ThreadPool.hpp>
 #include <tasking/Task.hpp>
-#include <boost/bind.hpp>
+#include <common/bind.hpp>
 
 using namespace memory;
 using namespace tasking;
@@ -121,7 +121,7 @@ int main()
 
     for ( int k = 0; k < 100; ++k )
     {
-        pool.schedule( boost::bind( &job, &X )  );
+        pool.schedule( common::bind( &job, &X )  );
     }
 
     LAMA_LOG_INFO( logger, "synchronize" )

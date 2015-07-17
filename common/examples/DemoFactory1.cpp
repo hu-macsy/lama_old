@@ -31,7 +31,7 @@
  * @date 19.06.2015
  */
 
-#include <common/Factory.hpp>
+#include <common/Factory1.hpp>
 #include <common/Printable.hpp>
 
 #include <iostream>

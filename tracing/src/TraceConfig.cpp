@@ -44,12 +44,13 @@ namespace tracing
 {
 
 using common::Thread;
+using common::shared_ptr;
 
 /* -------------------------------------------------------------------------- *
  *   Static class variables                                                   *
  * -------------------------------------------------------------------------- */
 
-boost::shared_ptr<TraceConfig> TraceConfig::config;
+shared_ptr<TraceConfig> TraceConfig::config;
 
 bool TraceConfig::globalTraceFlag = true;
 
@@ -77,7 +78,7 @@ static std::vector<std::string> split( const std::string& params, const char sep
 
 /* -------------------------------------------------------------------------- */
 
-boost::shared_ptr<TraceConfig> TraceConfig::getInstancePtr()
+shared_ptr<TraceConfig> TraceConfig::getInstancePtr()
 {
     if ( !config )
     {
@@ -291,7 +292,7 @@ TraceConfig::~TraceConfig()
     }
 
     // Now write each TraceData in file
-    std::map<ThreadId, boost::shared_ptr<TraceData> >::iterator it;
+    std::map<ThreadId, shared_ptr<TraceData> >::iterator it;
 
     for ( it = mTraceDataMap.begin(); it != mTraceDataMap.end(); it++ )
     {
@@ -334,14 +335,25 @@ TraceData* TraceConfig::getTraceData( ThreadId threadId )
 {
     // make sure that not two different threads try to allocate a table
     // read / write access at same time might also result in a crash
-    Thread::ScopedLock lock( mapMutex );
-    boost::shared_ptr<TraceData> traceData = mTraceDataMap[threadId];
 
-    if ( !traceData )
+    Thread::ScopedLock lock( mapMutex );
+
+    shared_ptr<TraceData> traceData;
+
+    // Old stuff: shared_ptr<TraceData> traceData = mTraceDataMap[threadId];
+
+    std::map<ThreadId, common::shared_ptr<TraceData> >::const_iterator it = mTraceDataMap.find( threadId );
+
+    if ( it == mTraceDataMap.end() )
     {
         // this thread calls the first time a region
+
         traceData.reset( new TraceData( threadId, mThreadEnabled ) );
-        mTraceDataMap[threadId] = traceData;
+        mTraceDataMap.insert( std::pair<ThreadId, shared_ptr<TraceData> >( threadId, traceData ) );
+    }
+    else
+    {
+        traceData = it->second;
     }
 
     return traceData.get();

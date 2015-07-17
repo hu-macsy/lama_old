@@ -38,7 +38,7 @@
 #include <common/config.hpp>
 
 // base classes
-#include <common/Factory.hpp>
+#include <common/Factory1.hpp>
 #include <common/Printable.hpp>
 #include <common/NonCopyable.hpp>
 

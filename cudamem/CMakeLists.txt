@@ -71,7 +71,12 @@ add_library ( ${cudamem_LIBRARY} SHARED ${CPP_SOURCES} )
 
 # set ( CMAKE_INSTALL_PREFIX /home/brandes/local )
 
-find_package( Boost REQUIRED COMPONENTS )
+if ( CXX_SUPPORTS_C11 )
+    set ( CUDA_NVCC_FLAGS "${CUDA_NVCC_FLAGS} --std=c++11" )
+else ( CXX_SUPPORTS_C11 )
+    find_package( Boost REQUIRED COMPONENTS )
+    include_directories( ${Boost_INCLUDE_DIR} )
+endif ( CXX_SUPPORTS_C11 )
 
 foreach ( module common logging memory tasking )
 
@@ -91,7 +96,6 @@ foreach ( module common logging memory tasking )
 
 endforeach()
 
-include_directories( ${Boost_INCLUDE_DIR} )
 include_directories( ${CUDA_TOOLKIT_INCLUDE} )
 
 target_link_libraries( ${cudamem_LIBRARY} ${CUDA_cublas_LIBRARY}  )

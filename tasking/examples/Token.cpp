@@ -1,5 +1,5 @@
 /**
- * @file BenchTasking.cpp
+ * @file Token.cpp
  *
  * @license
  * Copyright (c) 2009-2015
@@ -25,7 +25,7 @@
  * SOFTWARE.
  * @endlicense
  *
- * @brief Compare performance of Task vs. Thread
+ * @brief Demo program of using Task and SyncToken
  * @author Thomas Brandes
  * @date 02.02.2012
  * @since 1.0.0

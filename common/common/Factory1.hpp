@@ -1,5 +1,5 @@
 /**
- * @file Factory.hpp
+ * @file Factory1.hpp
  *
  * @license
  * Copyright (c) 2009-2015
@@ -25,7 +25,7 @@
  * SOFTWARE.
  * @endlicense
  *
- * @brief Template class for Factory 
+ * @brief Template class for Factory where create routine has additional argument
  *
  * @author Thomas Brandes
  * @date 08.07.2015
@@ -50,19 +50,20 @@ namespace common
  *  A factory is especially useful for dynamic extensions of libraries
  *  as creator functions might be registered later.
  */
-template<typename InputType, typename OutputType>
-class Factory
+template<typename InputType, typename ValueType, typename OutputType>
+class Factory1
 {
 public:
 
-    /** This method creates an object by specifying an input value.
+    /** This method creates an object by specifying two input values
      *
-     *  @param[in] type is the input value
+     *  @param[in] type is the first input value
+     *  @param[in] val is the second input value
      *  @returns value of output type
      *
      *  @throws Exception if for type no create function has been registered.
      */
-    static OutputType create( const InputType type );
+    static OutputType create( const InputType type, const ValueType val );
 
     /** This template class can be used as base class for derived classes
      *  to force registration. 
@@ -99,7 +100,7 @@ protected:
 
     /** Create function that must be provided by derived classes */
 
-    typedef OutputType ( *CreateFn ) ();
+    typedef OutputType ( *CreateFn ) ( ValueType val );
 
     /** Routine to register the create routine in the factory. */
 
@@ -114,9 +115,9 @@ private:
     static CreatorMap& getFactory();
 };
 
-template<typename InputType, typename OutputType> 
+template<typename InputType, typename ValueType, typename OutputType> 
 template<class Derived>
-Factory<InputType, OutputType>::Register<Derived>::Register()
+Factory1<InputType, ValueType, OutputType>::Register<Derived>::Register()
 {
     // Use of initialized forces its initialization and therefore registration
 
@@ -126,21 +127,21 @@ Factory<InputType, OutputType>::Register<Derived>::Register()
     }
 }
 
-template<typename InputType, typename OutputType> 
+template<typename InputType, typename ValueType, typename OutputType> 
 template<class Derived>
-inline bool Factory<InputType, OutputType>::Register<Derived>::init()
+inline bool Factory1<InputType, ValueType, OutputType>::Register<Derived>::init()
 {
    Derived::addCreator( Derived::createValue(), Derived::create );
    return true;
 }
 
-template<typename InputType, typename OutputType> 
+template<typename InputType, typename ValueType, typename OutputType> 
 template<class Derived>
-bool Factory<InputType, OutputType>::Register<Derived>::initialized = 
-    Factory<InputType, OutputType>::Register<Derived>::init();
+bool Factory1<InputType, ValueType, OutputType>::Register<Derived>::initialized = 
+    Factory1<InputType, ValueType, OutputType>::Register<Derived>::init();
 
-template<typename InputType, typename OutputType> 
-OutputType Factory<InputType, OutputType>::create( const InputType type )
+template<typename InputType, typename ValueType, typename OutputType> 
+OutputType Factory1<InputType, ValueType, OutputType>::create( const InputType type, const ValueType val )
 {
     OutputType value;
 
@@ -150,7 +151,7 @@ OutputType Factory<InputType, OutputType>::create( const InputType type )
 
     if ( fn  != factory.end() )
     {
-        value = fn->second();
+        value = fn->second( val );
     }
     else
     {
@@ -160,21 +161,21 @@ OutputType Factory<InputType, OutputType>::create( const InputType type )
     return value;
 }
 
-template<typename InputType, typename OutputType>
-std::map<InputType, OutputType(* )() >& Factory<InputType, OutputType>::getFactory()
+template<typename InputType, typename ValueType, typename OutputType>
+std::map<InputType, OutputType(* )( ValueType ) >& Factory1<InputType, ValueType, OutputType>::getFactory()
 {
     static std::auto_ptr<CreatorMap> factory;
 
     if ( !factory.get() )
     {
-        factory = std::auto_ptr<CreatorMap>( new CreatorMap() );
+        factory.reset( new CreatorMap() );
     }
 
     return *factory;
 }
 
-template<typename InputType, typename OutputType>
-void Factory<InputType, OutputType>::addCreator( const InputType type, CreateFn create )
+template<typename InputType, typename ValueType, typename OutputType>
+void Factory1<InputType, ValueType, OutputType>::addCreator( const InputType type, CreateFn create )
 {
     CreatorMap& factory = getFactory();
 
@@ -183,8 +184,8 @@ void Factory<InputType, OutputType>::addCreator( const InputType type, CreateFn 
     factory.insert( std::pair<InputType, CreateFn>( type, create ) );
 }
 
-template<typename InputType, typename OutputType>
-bool Factory<InputType, OutputType>::canCreate( InputType value )
+template<typename InputType, typename ValueType, typename OutputType>
+bool Factory1<InputType, ValueType, OutputType>::canCreate( InputType value )
 {
     CreatorMap& factory = getFactory();
 
@@ -193,8 +194,8 @@ bool Factory<InputType, OutputType>::canCreate( InputType value )
     return it != factory.end();
 }
 
-template<typename InputType, typename OutputType>
-void Factory<InputType, OutputType>::getCreateValues( std::vector<InputType>& values )
+template<typename InputType, typename ValueType, typename OutputType>
+void Factory1<InputType, ValueType, OutputType>::getCreateValues( std::vector<InputType>& values )
 {
     CreatorMap& factory = getFactory();
 

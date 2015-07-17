@@ -60,7 +60,10 @@ endif ( NOT CMAKE_BUILD_TYPE )
 
 include ( SetCPPFlags )
 
-find_package( Boost REQUIRED COMPONENTS )
+if ( NOT CXX_SUPPORTS_C11 )
+    find_package( Boost REQUIRED COMPONENTS )
+    include_directories( ${Boost_INCLUDE_DIR} )
+endif ( NOT CXX_SUPPORTS_C11 )
 
 # Common library of other project is used here
 # It might be either installed or variables are already in CACHE
@@ -82,7 +85,6 @@ file( GLOB HPP_HEADERS "${CMAKE_CURRENT_SOURCE_DIR}/logging/*.hpp" )
 
 add_definitions ( -DLAMA_LOG_LEVEL_DEBUG )
 
-include_directories( ${Boost_INCLUDE_DIR} )
 include_directories( ${common_INCLUDE_DIR} )
 include_directories( ${logging_INCLUDE_DIR} )
 

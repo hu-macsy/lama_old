@@ -32,12 +32,19 @@
 
 file ( GLOB CPP_SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/*.cpp" )
 
-add_executable ( MemoryTest ${CPP_SOURCES} )
+# Boost is not required, but if not available tests are not built
 
-find_package ( Boost REQUIRED COMPONENTS unit_test_framework )
+find_package ( Boost COMPONENTS unit_test_framework )
 
-target_link_libraries ( MemoryTest 
-    ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY}
-    ${memory_LIBRARY}
-    )
+if ( Boost_UNIT_TEST_FRAMEWORK_FOUND )
 
+    include_directories ( ${Boost_INCLUDE_DIR} )
+
+    add_executable ( MemoryTest ${CPP_SOURCES} )
+
+    target_link_libraries ( MemoryTest 
+        ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY}
+        ${memory_LIBRARY}
+        )
+
+endif ( Boost_UNIT_TEST_FRAMEWORK_FOUND )

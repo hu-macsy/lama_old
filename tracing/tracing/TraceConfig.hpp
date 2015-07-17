@@ -40,8 +40,7 @@
 #include <logging/logging.hpp>
 #include <common/Thread.hpp>
 
-// boost
-#include <boost/shared_ptr.hpp>
+#include <common/shared_ptr.hpp>
 
 #include <string>
 #include <map>
@@ -93,7 +92,7 @@ public:
     /**
      * Get the actual trace configuration as a shared pointer.
      */
-    static boost::shared_ptr<TraceConfig> getInstancePtr();
+    static common::shared_ptr<TraceConfig> getInstancePtr();
 
     /**
      * Query if tracing is enabled.
@@ -187,7 +186,7 @@ private:
      *  Use of shared pointer for entry in map
      */
 
-    std::map<ThreadId, boost::shared_ptr<TraceData> > mTraceDataMap;
+    std::map<ThreadId, common::shared_ptr<TraceData> > mTraceDataMap;
 
     /** Get the trace data by the id of a thread. */
 
@@ -195,7 +194,7 @@ private:
 
     /** The only one instance allocated at program start. */
 
-    static boost::shared_ptr<TraceConfig> config;
+    static common::shared_ptr<TraceConfig> config;
 
     LAMA_LOG_DECL_STATIC_LOGGER( logger )
 };

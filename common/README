@@ -11,10 +11,24 @@ Some basic functionality:
  - NonCopyable (base class for all classes where to disable default copy constructor)
  - Factory template class
 
+Distinction between C++11 or using boost
+
+ - shared_ptr.hpp, weak_ptr.hpp, function.hpp, bind.hpp
+
 Note:
 
  - common uses pthread
- - common does NOT use any boost functionality
+ - common does NOT use any boost functionality itself
  - linking with libcommon is required
 
 Examples are provided.
+
+-----------------------------------------
+
+mkdir build
+cmake .. CMAKE_INSTALL_PREFIX=$HOME/local
+
+
+cmake .. -DCMAKE_CXX_COMPILER=icpc -DCMAKE_C_COMPILER=icccmake -DCMAKE_INSTALL_PREFIX=$HÒME/local ..
+
+-----------------------------------------------

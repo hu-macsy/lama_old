@@ -27,8 +27,7 @@
  *
  * @brief Extensive test program for ThreadPool
  * @author Thomas Brandes
- * @date 02.02.2012
- * @since 1.0.0
+ * @date 13.07.2015
  */
 
 #include <tasking/ThreadPool.hpp>

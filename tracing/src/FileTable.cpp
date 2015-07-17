@@ -69,7 +69,7 @@ int FileTable::getFileId( const char* fileName )
         int fileId = array.size();
         array.push_back( fileName );
         const std::string& name = array[fileId];
-        mapTimer[ name.c_str() ] = static_cast<int>( fileId );
+        mapTimer.insert( std::pair<const char*, int>( name.c_str(), fileId ) );
         return fileId;
     }
     else

@@ -38,12 +38,13 @@
 
 #include <common/Exception.hpp>
 
-#include <boost/shared_ptr.hpp>
+#include <common/shared_ptr.hpp>
 
 #include <iostream> 
 
 using namespace std;
 using namespace memory;
+using common::shared_ptr;
 
 LAMA_LOG_DEF_LOGGER( logger, "CreateTest" )
 
@@ -59,7 +60,7 @@ int main()
 
     LAMAArray<float> lamaArray ( N, 1.0 );
 
-    boost::shared_ptr<LAMAArray<float> > lamaArray1( lamaArray.clone() );
+    shared_ptr<LAMAArray<float> > lamaArray1( lamaArray.clone() );
 
     *lamaArray1 = lamaArray;
 
@@ -75,11 +76,11 @@ int main()
 
     std::cout << "LAMAArray<float>::initialized = " << LAMAArray<float>::initialized << std::endl;
 
-    boost::shared_ptr<ContextArray> lamaArray2( ContextArray::create( scalar::FLOAT ) );
+    shared_ptr<ContextArray> lamaArray2( ContextArray::create( scalar::FLOAT ) );
 
     std::cout << "lamaArray2 = " << *lamaArray2 << std::endl;
 
-    boost::shared_ptr<ContextArray> lamaArray3( ContextArray::create( scalar::DOUBLE ) );
+    shared_ptr<ContextArray> lamaArray3( ContextArray::create( scalar::DOUBLE ) );
 
     std::cout << "lamaArray3 = " << *lamaArray3 << std::endl;
 }

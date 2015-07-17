@@ -71,7 +71,10 @@ include_directories( ${tasking_INCLUDE_DIR} )
 
 # set ( CMAKE_INSTALL_PREFIX /home/brandes/local )
 
-find_package( Boost REQUIRED COMPONENTS )
+if ( NOT CXX_SUPPORTS_C11 )
+    find_package( Boost REQUIRED COMPONENTS )
+    include_directories( ${Boost_INCLUDE_DIR} )
+endif ( NOT CXX_SUPPORTS_C11 )
 
 foreach ( module common logging tracing )
 
@@ -88,8 +91,6 @@ foreach ( module common logging tracing )
    target_link_libraries( ${tasking_LIBRARY} ${${module}_LIBRARY} )
 
 endforeach()
-
-include_directories( ${Boost_INCLUDE_DIR} )
 
 if ( WIN32 )
     add_definitions ( -DCOMMON_COMPILING_DLL )
