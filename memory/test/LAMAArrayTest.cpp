@@ -187,6 +187,63 @@ BOOST_AUTO_TEST_CASE( accessTest )
 
 /* --------------------------------------------------------------------- */
 
+BOOST_AUTO_TEST_CASE( aliasTest )
+{
+    const IndexType N = 10;
+    const double value = 1.0;
+    LAMAArray<double> lamaArray( N, value );
+
+    {
+        // read and write access at same time by same thread
+
+        HostReadAccess<double> read( lamaArray );
+        HostWriteAccess<double> write( lamaArray );
+
+        for ( IndexType i = 0; i < N; ++i )
+        {
+            write[i] = 2.0 * read[i];
+        }
+    }
+    {
+        // verify that operation was really on the same array
+
+        HostReadAccess<double> read( lamaArray );
+        readTest<double>( read.get(), N, N * value * 2.0 );
+    }
+    {
+        // with a single write access resize is possilbe
+
+        HostWriteAccess<double> write( lamaArray );
+        write.resize( 2 * N );
+    }
+    {
+        // with read and write at the same time resize throws Exception
+
+        HostWriteAccess<double> write( lamaArray );
+        HostReadAccess<double> read( lamaArray );
+        BOOST_CHECK_THROW(
+        { 
+            write.resize( 3 * N );
+        }, Exception );
+    }
+    {
+        // read and write access at same time by same thread
+
+        HostWriteAccess<double> write( lamaArray );
+        HostReadAccess<double> read( lamaArray );
+
+        // a clear is not possible as it affects the other access
+        // Note: clear is the same as resize( 0 )
+
+        BOOST_CHECK_THROW(
+        {
+            write.clear();
+        }, Exception );
+    }
+}
+
+/* --------------------------------------------------------------------- */
+
 BOOST_AUTO_TEST_CASE( createTest )
 {
     LAMAArray<float> A( 10, 1.0f );

@@ -517,7 +517,8 @@ void LAMAArray<ValueType>::clear( const ContextDataIndex index )
 
     ContextData& data = mContextDataManager[index];
 
-    COMMON_ASSERT( mContextDataManager.locked( context::Write ), "clear illegal here: " << data )
+    COMMON_ASSERT_EQUAL( 1, mContextDataManager.locked( context::Write ), "multiple write access for clear" << data )
+    COMMON_ASSERT_EQUAL( 0, mContextDataManager.locked( context::Read ), "further read access, cannot clear " << data )
 
     mSize = 0;
 }
@@ -527,6 +528,11 @@ void LAMAArray<ValueType>::clear( const ContextDataIndex index )
 template<typename ValueType>
 void LAMAArray<ValueType>::resize( ContextDataIndex index, const IndexType size )
 {
+    ContextData& data = mContextDataManager[index];
+
+    COMMON_ASSERT_EQUAL( 1, mContextDataManager.locked( context::Write ), "multiple write access for resize" << data )
+    COMMON_ASSERT_EQUAL( 0, mContextDataManager.locked( context::Read ), "further read access, cannot resize" << data )
+
     ContextData& entry = mContextDataManager[index];
 
     // COMMON_ASSERT( entry.locked( context::Write ), "resize illegal here " << entry )
