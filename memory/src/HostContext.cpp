@@ -25,7 +25,7 @@
  * SOFTWARE.
  * @endlicense
  *
- * @brief HostContext.cpp
+ * @brief Implementation of methods for class HostContext.
  * @author Thomas Brandes
  * @date 11.07.2011
  */
@@ -113,10 +113,14 @@ bool HostContext::canUseMemory( const Memory& other ) const
 {
     bool canUseIt = false;
 
-    // same object by pointer can always use same data.
-
     if ( other.getType() == memtype::HostMemory )
     {
+        canUseIt = true;
+    }
+    else if ( other.getContext()->getType() == context::Host )
+    {
+        // If other memory can be used on Host it is okay
+
         canUseIt = true;
     }
 

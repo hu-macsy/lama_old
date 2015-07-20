@@ -25,7 +25,7 @@
  * SOFTWARE.
  * @endlicense
  *
- * @brief GenLoggerCreator.cpp
+ * @brief Implemenation of methods for class GenLoggerCreator.
  * @author Thomas Brandes
  * @date 01.03.2011
  */

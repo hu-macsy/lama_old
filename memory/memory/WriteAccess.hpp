@@ -25,7 +25,7 @@
  * SOFTWARE.
  * @endlicense
  *
- * @brief WriteAccess.hpp
+ * @brief Definition of a template class for writing to a LAMA array.
  * @author Thomas Brandes
  * @date 29.04.2011
  */
@@ -152,64 +152,6 @@ public:
 protected:
 
     LAMA_LOG_DECL_STATIC_LOGGER( logger )
-};
-
-/**
- * @brief WriteOnlyAccess is a write access where no existing values of the array are needed (keepFlag).
- *
- * This derived class has been added for more convenience as it avoids the use of the keepFlag param.
- *
- * A WriteOnlyAccess should be used whenever possible. It avoids any memory transfer of no more
- * needed values between devices and in case of a reallocation it avoids copying of old values.
- *
- * @tparam ValueType is the value type stored in the wrapped container.
- */
-template<typename ValueType>
-class COMMON_DLL_IMPORTEXPORT WriteOnlyAccess: public WriteAccess<ValueType>
-{
-public:
-
-    /** Create a write access with keep flag = false.
-     *
-     *  Attention: this kind of write access assumes that the array is completely new written.
-     */
-
-    WriteOnlyAccess( LAMAArray<ValueType>& array, ContextPtr context )
-        : WriteAccess<ValueType>( array, context, false )
-    {
-        LAMA_LOG_DEBUG( logger, "WriteOnlyAccess<" << getScalarType<ValueType>() << ">" )
-    }
-
-    /**
-     *  @brief Acquire a write only access with a resize.
-     *
-     * @param[in] array     the LAMAArray for which access is required
-     * @param[in] context   the context where data will be written later
-     * @param[in] size      the new size of the LAMA array.
-     *
-     * Attention: this kind of write access assumes that the array is completely new written.
-     */
-    WriteOnlyAccess( LAMAArray<ValueType>& array, ContextPtr context, const IndexType size )
-        : WriteAccess<ValueType>( array, context, false )
-    {
-        this->resize( 0 );                   // invalidates all data before resize
-        this->resize( size );
-
-        LAMA_LOG_DEBUG( logger, "WriteOnlyAccess<" << getScalarType<ValueType>() << ">: " << *mArray )
-    }
-
-    ~WriteOnlyAccess()
-    {
-        LAMA_LOG_DEBUG( WriteAccess<ValueType>::logger, "~WriteOnlyAccess<" << getScalarType<ValueType>() << ">" )
-    }
-
-protected:
-    using WriteAccess<ValueType>::logger;   // no additinal logger for this derived class
-
-private:
-
-    using WriteAccess<ValueType>::mArray;
-    using WriteAccess<ValueType>::mContextDataIndex;
 };
 
 /* --------------------------------------------------------------------------- */

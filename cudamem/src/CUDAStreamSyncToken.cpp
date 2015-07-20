@@ -25,7 +25,7 @@
  * SOFTWARE.
  * @endlicense
  *
- * @brief CUDAStreamSyncToken.cpp
+ * @brief Implementation of methods for class CUDAStreamSyncToken.
  * @author Jiri Kraus
  * @date 20.05.2011
  */
@@ -39,10 +39,10 @@
 
 #include <memory/ContextAccess.hpp>
 
-namespace memory
+namespace tasking
 {
 
-CUDAStreamSyncToken::CUDAStreamSyncToken( CUDAContextPtr cudaContext, CUstream stream ) : 
+CUDAStreamSyncToken::CUDAStreamSyncToken( memory::CUDAContextPtr cudaContext, CUstream stream ) : 
 
     mCUDAContext( cudaContext ), 
     mStream( stream ), 
@@ -52,7 +52,7 @@ CUDAStreamSyncToken::CUDAStreamSyncToken( CUDAContextPtr cudaContext, CUstream s
     LAMA_LOG_DEBUG( logger, "StreamSyncToken for " << *cudaContext << " generated, stream = " << stream )
 }
 
-CUDAStreamSyncToken::CUDAStreamSyncToken( CUDAContextPtr cudaContext, CUstream stream, CUevent event ) : 
+CUDAStreamSyncToken::CUDAStreamSyncToken( memory::CUDAContextPtr cudaContext, CUstream stream, CUevent event ) : 
 
     mCUDAContext( cudaContext ), 
     mStream( stream ), 

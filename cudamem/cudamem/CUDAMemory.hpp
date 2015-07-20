@@ -25,10 +25,9 @@
  * SOFTWARE.
  * @endlicense
  *
- * @brief Definition of context class for CUDA devices and a context manager class.
+ * @brief Definition of memory class for CUDA devices.
  * @author Thomas Brandes, Jiri Kraus
- * @date 15.07.2011
- * @revides 08.07.2015
+ * @date 08.07.2015
  */
 #pragma once
 
@@ -48,10 +47,13 @@
 
 #include <string>
 
+namespace tasking
+{
+    class COMMON_DLL_IMPORTEXPORT CUDAStreamSyncToken;
+}
+
 namespace memory
 {
-
-class COMMON_DLL_IMPORTEXPORT CUDAStreamSyncToken;
 
 /**
  * @brief CUDAMemory initializes the CUDA device with the given number.

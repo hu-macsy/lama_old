@@ -25,27 +25,29 @@
  # SOFTWARE.
  # @endlicense
  #
- # @brief CMake configuration file for common examples
+ # @brief CMake configuration file for memory tests
  # @author Thomas Brandes
  # @date 16.06.2015
 ###
 
-# REMARKS
-#
-#   - include_directories are taken over from project
-#
+file ( GLOB CU_SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/*.cu" )
+file ( GLOB CPP_SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/*.cpp" )
 
-foreach ( executable CUSparseExample )
-    add_executable( ${executable} ${executable}.cpp )
-    target_link_libraries( ${executable} ${cudamem_LIBRARY} )
-endforeach ( executable )
+find_package ( Boost COMPONENTS unit_test_framework )
 
-foreach ( executable Example1 Example2 Devices )
-    cuda_add_executable( ${executable} ${executable}.cu )
-    target_link_libraries( ${executable} ${cudamem_LIBRARY} )
-endforeach ( executable )
+if ( Boost_UNIT_TEST_FRAMEWORK_FOUND )
 
-foreach ( executable MemBandwidth )
-    add_executable( ${executable} ${executable}.cpp )
-    target_link_libraries( ${executable} ${cudamem_LIBRARY} )
-endforeach ( executable )
+    include_directories ( ${Boost_INCLUDE_DIR} )
+
+    cuda_add_executable ( CUDATest ${CU_SOURCES} ${CPP_SOURCES} )
+
+    target_link_libraries ( CUDATest 
+        ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY}
+        ${cudamem_LIBRARY}
+        )
+
+else ( Boost_UNIT_TEST_FRAMEWORK_FOUND )
+
+    message ( STATUS "cudamem/test/CUDATest not built, no Boost UnitTest Framework found" )
+
+endif ( Boost_UNIT_TEST_FRAMEWORK_FOUND )

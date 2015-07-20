@@ -181,7 +181,7 @@ void ContextDataManager::lockAccess( AccessKind kind, ContextPtr context )
 
 /* ---------------------------------------------------------------------------------*/
 
-void ContextDataManager::unlockAccess( context::AccessKind kind )
+void ContextDataManager::unlockAccess( AccessKind kind )
 {
     common::Thread::ScopedLock lock( mAccessMutex );
 
@@ -203,7 +203,7 @@ void ContextDataManager::unlockAccess( context::AccessKind kind )
 
 /* ---------------------------------------------------------------------------------*/
 
-void ContextDataManager::releaseAccess( ContextDataIndex index, context::AccessKind kind )
+void ContextDataManager::releaseAccess( ContextDataIndex index, AccessKind kind )
 {
     // we should check that this is really the context data for which access was reserved
  

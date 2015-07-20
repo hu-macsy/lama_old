@@ -85,7 +85,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( refTest, ValueType, test_types )
     {
         // LAMA array keeps myData on Host
 
-        LAMAArrayRef<ValueType> lamaArray( myData, 10 );
+        LAMAArrayRef<ValueType> lamaArray( 10, myData );
 
         LAMA_LOG_INFO( logger, "lamaArray = " << lamaArray )
 
@@ -121,7 +121,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( refTest, ValueType, test_types )
         {
             // this will create a LAMA array with a const reference,
 
-            LAMAArrayRef<ValueType> lamaArray( myConstData, 10 );
+            LAMAArrayRef<ValueType> lamaArray( 10, myConstData );
 
             BOOST_CHECK_EQUAL( 10, lamaArray.size() );
             // Write access should not be allowed

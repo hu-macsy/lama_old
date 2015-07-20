@@ -25,10 +25,9 @@
  * SOFTWARE.
  * @endlicense
  *
- * @brief HostReadAccess.hpp
+ * @brief Definition of class for read access that uses directly the host.
  * @author Thomas Brandes
- * @date 02.05.2011
- * @since 1.0.0
+ * @date 02.07.2015
  */
 
 #pragma once
@@ -43,7 +42,10 @@ namespace memory
 {
 
 /**
- * @brief HostReadAccess is a specialization of ReadAccess for a host context with an extended interface.
+ * @brief HostReadAccess is a specialization of ReadAccess for a host context.
+ *
+ * It also provides the index operator [] to get direct access to elements of 
+ * the array on the host.
  *
  * @tparam ValueType is the type stored in the wrapped container.
  */

@@ -25,7 +25,7 @@
  * SOFTWARE.
  * @endlicense
  *
- * @brief SourceLocation.hpp
+ * @brief Definition of a struct that describes a source code location.
  * @author Thomas Brandes
  * @date 10.06.2015
  */

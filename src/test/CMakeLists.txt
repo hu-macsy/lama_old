@@ -133,10 +133,10 @@ endif ( NOT ( Boost_UNIT_TEST_FRAMEWORK_LIBRARY OR Boost_REGEX ) )
 
 ### set include directories ###
 include_directories ( .. ../lama ${Boost_INCLUDE_DIRS} )
-include_directories ( ${COMMON_INCLUDE_DIR}  )
-include_directories ( ${LOGGING_INCLUDE_DIR} )
-include_directories ( ${TRACING_INCLUDE_DIR} )
-include_directories ( ${TASKING_INCLUDE_DIR} )
+include_directories ( ${common_INCLUDE_DIR}  )
+include_directories ( ${logging_INCLUDE_DIR} )
+include_directories ( ${tracing_INCLUDE_DIR} )
+include_directories ( ${tasking_INCLUDE_DIR} )
 
 if ( LAMA_BLAS_NAME STREQUAL "MKL" )
     include_directories ( ${MKL_INCLUDE_DIRS} )

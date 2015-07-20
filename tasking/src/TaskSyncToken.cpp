@@ -25,9 +25,9 @@
  * SOFTWARE.
  * @endlicense
  *
- * @brief TaskSyncToken.cpp
+ * @brief Implementation of methods for class TaskSyncToken.
  * @author Thomas Brandes
- * @date 04.05.2011
+ * @date 14.07.2015
  */
 
 // hpp

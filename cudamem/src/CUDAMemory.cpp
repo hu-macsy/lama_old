@@ -44,6 +44,7 @@
 #include <memory>
 
 using tasking::SyncToken;
+using tasking::CUDAStreamSyncToken;
 
 namespace memory
 {
@@ -161,7 +162,9 @@ void CUDAMemory::memcpyToCUDA( const CUDAMemory& dstMemory, void* dst, const voi
 
     unsigned int flags = 0;  // not any meaning now
 
-    LAMA_CUDA_DRV_CALL( cuCtxEnablePeerAccess( dstMemory.mCUDAContext->mCUcontext, flags ), "cuCtxEnablePeerAccess" )
+    CUcontext dstCUcontext = dstMemory.mCUDAContext->getCUcontext();
+
+    LAMA_CUDA_DRV_CALL( cuCtxEnablePeerAccess( dstCUcontext, flags ), "cuCtxEnablePeerAccess" )
 
     // unified adressing makes this possible
 
@@ -171,7 +174,7 @@ void CUDAMemory::memcpyToCUDA( const CUDAMemory& dstMemory, void* dst, const voi
     LAMA_CUDA_DRV_CALL( cuMemcpyDtoD( ( CUdeviceptr ) dst, ( CUdeviceptr ) src, size ),
                         "cuMemcpyDtoD( " << dst << ", " << src << ", " << size << " ) failed" )
 
-    LAMA_CUDA_DRV_CALL( cuCtxDisablePeerAccess( dstMemory.mCUDAContext->mCUcontext ), "cuCtxDisablePeerAccess" )
+    LAMA_CUDA_DRV_CALL( cuCtxDisablePeerAccess( dstCUcontext ), "cuCtxDisablePeerAccess" )
 }
 
 /* ----------------------------------------------------------------------------- */
@@ -182,7 +185,9 @@ void CUDAMemory::memcpyFromCUDA( void* dst, const CUDAMemory& srcMemory, const v
 
     unsigned int flags = 0;  // not any meaning now
 
-    LAMA_CUDA_DRV_CALL( cuCtxEnablePeerAccess( srcMemory.mCUDAContext->mCUcontext, flags ), "cuCtxEnablePeerAccess" )
+    CUcontext srcCUcontext = srcMemory.mCUDAContext->getCUcontext();
+
+    LAMA_CUDA_DRV_CALL( cuCtxEnablePeerAccess( srcCUcontext, flags ), "cuCtxEnablePeerAccess" )
 
     // unified adressing makes this possible
 
@@ -192,7 +197,7 @@ void CUDAMemory::memcpyFromCUDA( void* dst, const CUDAMemory& srcMemory, const v
     LAMA_CUDA_DRV_CALL( cuMemcpyDtoD( ( CUdeviceptr ) dst, ( CUdeviceptr ) src, size ),
                         "cuMemcpyDtoD( " << dst << ", " << src << ", " << size << " ) failed" )
 
-    LAMA_CUDA_DRV_CALL( cuCtxDisablePeerAccess( srcMemory.mCUDAContext->mCUcontext ), "cuCtxDisablePeerAccess" )
+    LAMA_CUDA_DRV_CALL( cuCtxDisablePeerAccess( srcCUcontext ), "cuCtxDisablePeerAccess" )
 }
 
 /* ----------------------------------------------------------------------------- */

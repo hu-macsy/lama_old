@@ -25,7 +25,7 @@
  * SOFTWARE.
  * @endlicense
  *
- * @brief HostWriteAccess.hpp
+ * @brief Definition of a write access that uses directly the host context.
  * @author Thomas Brandes
  * @date 02.05.2011
  */
@@ -105,34 +105,6 @@ protected:
     using WriteAccess<ValueType>::mData;
 };
 
-/**
- * @brief HostWriteOnlyAccess is a write access where no existing values of the array are needed (keepFlag = false).
- *
- * This derived class has been added for more convenience as it avoids the use of the keepFlag param.
- *
- * A HostWriteOnlyAccess should be used whenever possible. It avoids any memory transfer of no more
- * needed values between devices and in case of a reallocation it avoids copying of old values.
- *
- * @tparam ValueType is the value type for an element of this.
- */
-template<typename ValueType>
-class HostWriteOnlyAccess: public HostWriteAccess<ValueType>
-{
-public:
-
-    /** Creates a write access with keep flag = false. */
-
-    explicit HostWriteOnlyAccess( LAMAArray<ValueType>& array );
-
-    /** Creates a write access with keep flag = false and do also a resize. */
-
-    HostWriteOnlyAccess( LAMAArray<ValueType>& array, const IndexType size );
-
-    /** Destructor. */
-
-    ~HostWriteOnlyAccess();
-};
-
 template<typename ValueType>
 HostWriteAccess<ValueType>::HostWriteAccess( LAMAArray<ValueType>& array, const IndexType size, const bool keep ) :
 
@@ -165,29 +137,6 @@ template<typename ValueType>
 inline HostWriteAccess<ValueType>::operator ValueType* ()
 {
     return mData;
-}
-
-template<typename ValueType>
-inline HostWriteOnlyAccess<ValueType>::HostWriteOnlyAccess( LAMAArray<ValueType>& array ) :
-
-    HostWriteAccess<ValueType>( array, false )
-
-{
-}
-
-template<typename ValueType>
-inline HostWriteOnlyAccess<ValueType>::HostWriteOnlyAccess( LAMAArray<ValueType>& array, const IndexType size ) :
-
-    HostWriteAccess<ValueType>( array, false )
-
-{
-    this->resize( 0 );
-    this->resize( size );
-}
-
-template<typename ValueType>
-inline HostWriteOnlyAccess<ValueType>::~HostWriteOnlyAccess()
-{
 }
 
 }  // namespace

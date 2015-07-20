@@ -28,7 +28,6 @@
  * @brief Implementation of class Printable.
  * @author Jiri Kraus
  * @date 05.08.2011
- * @since 1.0.0
  */
 
 // hpp

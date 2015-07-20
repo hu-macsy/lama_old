@@ -25,7 +25,7 @@
  * SOFTWARE.
  * @endlicense
  *
- * @brief Logger.cpp
+ * @brief Implementation of methods for Logger to deal with name hierarchies.
  * @author Thomas Brandes
  * @date 01.03.2011
  */

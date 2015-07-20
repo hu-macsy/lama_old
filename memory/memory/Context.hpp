@@ -134,7 +134,7 @@ public:
      *
      *  @param[in] memory is the memory against which the check is done
      */
-    virtual bool canUseMemory( const Memory& other ) const = 0;
+    virtual bool canUseMemory( const Memory& memory ) const = 0;
 
     virtual void writeAt( std::ostream& stream ) const;
 
@@ -182,7 +182,9 @@ public:
 
     virtual MemoryPtr getHostMemory() const;
  
-    /** This method can be used to get a context of a certain type.
+    /** @brief Get a context of a certain type from the Context factory.
+     *
+     *  Note: This is the same as Factory::create but with default values.
      *
      *  The shared pointer guarantees that a context will live at least
      *  as long as arrays are allocated on it.

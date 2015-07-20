@@ -25,7 +25,7 @@
  * SOFTWARE.
  * @endlicense
  *
- * @brief HostMemory.hpp
+ * @brief Definion of memory class for usual Host/CPU memory.
  * @author Thomas Brandes
  * @date 14.07.2015
  */

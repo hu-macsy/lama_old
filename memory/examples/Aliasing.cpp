@@ -32,7 +32,7 @@
 
 #include <memory/Context.hpp>
 #include <memory/HostReadAccess.hpp>
-#include <memory/HostWriteAccess.hpp>
+#include <memory/HostWriteOnlyAccess.hpp>
 #include <common/Exception.hpp>
 
 using namespace memory;

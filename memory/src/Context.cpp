@@ -25,7 +25,7 @@
  * SOFTWARE.
  * @endlicense
  *
- * @brief Context.cpp
+ * @brief Implementation of methods for the Context base class and its factory.
  * @author Thomas Brandes
  * @date 10.07.2015
  */
@@ -41,6 +41,8 @@
 
 namespace memory
 {
+
+/* -----------------------------------------------------------------------------*/
 
 LAMA_LOG_DEF_LOGGER( Context::logger, "Context" )
 

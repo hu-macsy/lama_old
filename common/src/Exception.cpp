@@ -25,7 +25,7 @@
  * SOFTWARE.
  * @endlicense
  *
- * @brief Exception.cpp
+ * @brief Implementation of methods for class Exception.
  * @author Jiri Kraus
  * @date 01.03.2011
  */

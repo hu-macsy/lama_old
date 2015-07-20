@@ -38,6 +38,7 @@
 // base classes
 #include <common/NonCopyable.hpp>
 #include <common/Printable.hpp>
+#include <tasking/SyncToken.hpp>
 
 // logging
 #include <logging/logging.hpp>
@@ -47,7 +48,11 @@ namespace memory
 
 /**  class for all kind of access classes; accesses must always provide a release method. */
 
-class COMMON_DLL_IMPORTEXPORT Access: public Printable, private common::NonCopyable
+class COMMON_DLL_IMPORTEXPORT Access: 
+
+    public Printable, 
+    private common::NonCopyable,
+    public tasking::SyncTokenMember
 {
 public:
 

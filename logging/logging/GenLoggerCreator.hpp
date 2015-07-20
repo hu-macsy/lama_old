@@ -25,7 +25,7 @@
  * SOFTWARE.
  * @endlicense
  *
- * @brief GenLoggerCreator.hpp
+ * @brief Definition of a specific Logger creator that implements the abstract one.
  * @author Thomas Brandes
  * @date 10.06.2015
  */

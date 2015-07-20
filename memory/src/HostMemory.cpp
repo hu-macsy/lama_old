@@ -25,9 +25,9 @@
  * SOFTWARE.
  * @endlicense
  *
- * @brief HostMemory.cpp
+ * @brief Implementation of methods for Host memory by using stdlib routines.
  * @author Thomas Brandes
- * @date 11.07.2011
+ * @date 17.07.2015
  */
 
 // hpp

@@ -48,6 +48,10 @@
 
 using common::Thread;
 using tasking::SyncToken;
+using tasking::CUDAStreamSyncToken;
+
+cusparseHandle_t CUDAContext_cusparseHandle = 0;
+cublasHandle_t CUDAContext_cublasHandle = 0;
 
 namespace memory
 {
@@ -60,8 +64,6 @@ int CUDAContext::currentDeviceNr = -1;
 
 int CUDAContext::numUsedDevices = 0;
 
-cusparseHandle_t CUDAContext_cusparseHandle = 0;
-cublasHandle_t CUDAContext_cublasHandle = 0;
 
 /**  constructor  *********************************************************/
 
@@ -89,7 +91,8 @@ CUDAContext::CUDAContext( int deviceNr ) :
     cudaDeviceProp properties;
     cudaGetDeviceProperties( &properties, mCUdevice );
 
-    LAMA_LOG_ERROR( logger, "canMapHostMemory = " << properties.canMapHostMemory );
+    // feature might be important to indicate that we can use CUDAHostMemory on device
+    // LAMA_LOG_ERROR( logger, "canMapHostMemory = " << properties.canMapHostMemory );
 
 
     char deviceName[256];

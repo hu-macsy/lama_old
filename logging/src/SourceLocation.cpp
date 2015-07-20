@@ -25,7 +25,7 @@
  * SOFTWARE.
  * @endlicense
  *
- * @brief SourceLocation.cpp
+ * @brief Implementation of methods for class SourceLocation.
  * @author Thomas Brandes
  * @date 01.03.2011
  */
