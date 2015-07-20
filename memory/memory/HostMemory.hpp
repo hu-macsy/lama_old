@@ -27,7 +27,7 @@
  *
  * @brief HostMemory.hpp
  * @author Thomas Brandes
- * @date 10.07.2011
+ * @date 14.07.2015
  */
 
 #pragma once
@@ -45,12 +45,12 @@
 namespace memory
 {
 
-/** @brief This class implements the default HOST context.
+/** @brief This class implements the default HOST memory.
  *
  *  This class is implemented as a singleton, only one default host
- *  context is available.
+ *  memory is available.
  *
- *  The default host context allocates/frees data in the usual way.
+ *  The host memory allocates/frees data in the usual way.
  */
 
 class COMMON_DLL_IMPORTEXPORT HostMemory: public Memory
@@ -75,6 +75,10 @@ public:
     virtual tasking::SyncToken* memcpyAsync( void* dst, const void* src, const size_t size ) const;
 
     virtual ContextPtr getContext() const;
+
+    /** This routine returns the singleton instance of the HostMemory. */
+
+    static MemoryPtr getIt();
 
 private:
 

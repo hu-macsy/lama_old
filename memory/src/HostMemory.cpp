@@ -135,9 +135,23 @@ tasking::SyncToken* HostMemory::memcpyAsync( void* dst, const void* src, const s
 
 ContextPtr HostMemory::getContext() const
 {
-    // on HostMemory we work always with the HostContext, take it from factory
+    return mHostContext;
+}
 
-    return Context::getContext( context::Host );
+MemoryPtr HostMemory::getIt()
+{
+    static common::shared_ptr<HostMemory> instance;
+
+    if ( !instance.get() )
+    {
+        LAMA_LOG_DEBUG( logger, "Create instance for HostMemory" ) 
+
+        ContextPtr host = Context::getContext( context::Host );
+        common::shared_ptr<const HostContext> hostContext = common::dynamic_pointer_cast<const HostContext>( host );
+        instance.reset( new HostMemory( hostContext ) );
+    }
+
+    return instance;
 }
 
 } // namespace

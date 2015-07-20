@@ -28,7 +28,7 @@
  * @brief Definition of base class for memory management.
  *
  * @author Thomas Brandes
- * @date 14.07.2011
+ * @date 14.07.2015
  */
 #pragma once
 
@@ -126,19 +126,23 @@ public:
      */
     virtual void memcpyFrom( void* dst, const Memory& srcMemory, const void* src, size_t size ) const;
 
+    /** Copy to other memory from this memory. 
+     *
+     *  If canCopyTo( dstMemory ) is false, this method throws an exception.
+     */
     virtual void memcpyTo( const Memory& dstMemory, void* dst, const void* src, size_t size ) const;
 
-    virtual tasking::SyncToken* memcpyFromAsync( void* dst, const Memory& srcMemory, const void* src, size_t size ) const
-    {
-        memcpyFrom( dst, srcMemory, src, size );
-        return NULL;
-    }
+    /** @brief Asynchronous version of memcpyFrom.
+     *
+     *  In this base class a default implementation is provided that does the memory transfer synchronously.
+     */
+    virtual tasking::SyncToken* memcpyFromAsync( void* dst, const Memory& srcMemory, const void* src, size_t size ) const;
 
-    virtual tasking::SyncToken* memcpyToAsync( const Memory& dstMemory, void* dst, const void* src, size_t size ) const 
-    {
-        memcpyTo( dstMemory, dst, src, size );
-        return NULL;
-    }
+    /** @brief Asynchronous version of memcpyTo.
+     *
+     *  In this base class a default implementation is provided that does the memory transfer synchronously.
+     */
+    virtual tasking::SyncToken* memcpyToAsync( const Memory& dstMemory, void* dst, const void* src, size_t size ) const;
 
     virtual void writeAt( std::ostream& stream ) const;
 
@@ -179,11 +183,17 @@ public:
      * param[in] size is the number of bytes to be copied.
      * return new SyncToken object for the asynchronous operation.
      *
-     * This memory copies size values.
+     * Base class provides default implementation where asynchronous copy is done synchronously.
      */
-    virtual tasking::SyncToken* memcpyAsync( void* dst, const void* src, const size_t size ) const = 0;
+    virtual tasking::SyncToken* memcpyAsync( void* dst, const void* src, const size_t size ) const;
 
-    /** Return a context at which memory can be used, e.g. to be initialized. */
+    /** Return a context at which memory can be used, e.g. to be initialized. 
+     *
+     *  This method must be implemented by all derived classes.
+     *
+     *  Hint: Often, Context and Memory come along together. Cyclic references with shared pointers
+     *        should be avoided. 
+     */
 
     virtual ContextPtr getContext() const = 0;
 
@@ -207,7 +217,7 @@ inline MemoryType Memory::getType() const
     return mMemoryType;
 }
 
-/** Make ContextType visible in namespace, but not the different enumeration values. */
+/** This method make is possible to use enum values of MemoryType in output streams. */
 
 COMMON_DLL_IMPORTEXPORT std::ostream& operator<<( std::ostream& stream, const MemoryType& type );
 

@@ -42,7 +42,6 @@
 
 // common
 #include <common/shared_ptr.hpp>
-#include <common/weak_ptr.hpp>
 
 namespace memory
 {
@@ -83,8 +82,6 @@ public:
     virtual MemoryPtr getMemory() const;
 
 private:
-
-    mutable common::weak_ptr<class Memory> mMemory;
 
     HostContext();
 

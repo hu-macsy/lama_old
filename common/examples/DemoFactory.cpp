@@ -61,6 +61,8 @@ public:
     }
 };
 
+/* -----------------------------------------------------------------------------*/
+
 /** Derived class that registers manually in the factory. */
 
 class Derived1 : public Base //  Factory<int, *Base>::Manager<Derived1, 1>
@@ -93,6 +95,9 @@ bool Derived1::init()
     addCreator( "D1", &create );
     return true;
 }
+
+/* -----------------------------------------------------------------------------*/
+
 
 /** @brief Derived class of Base that uses Register class of Factory.
  *
@@ -155,10 +160,14 @@ private:
     }
 };
 
+// Instantiation of template class, does also the registration
+
 template class Derived<int>;
 template class Derived<float>;
 
 using namespace std;
+
+/* -----------------------------------------------------------------------------*/
 
 int main()
 {
@@ -191,5 +200,7 @@ int main()
     {
         cout << "Caught exception: " << ex.what() << endl;
     }
+
+    cout << "DemoFactory terminated correctly" << endl;
 }
 

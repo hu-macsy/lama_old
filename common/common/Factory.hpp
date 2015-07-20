@@ -91,7 +91,11 @@ public:
 
     static bool canCreate( const InputType type );
 
-    /** @brief Method to get all registered values. */
+    /** @brief Method to get all registered values. 
+     *
+     *  @param[out] values contains all registered values of InputType for 
+     *              which a CreateFn has been registered.
+     */
 
     static void getCreateValues( std::vector<InputType>& values );
 
@@ -113,6 +117,10 @@ private:
 
     static CreatorMap& getFactory();
 };
+
+/* -----------------------------------------------------------------------------*/
+/*  Implementation of methods for class Register of template class              */
+/* -----------------------------------------------------------------------------*/
 
 template<typename InputType, typename OutputType> 
 template<class Derived>
@@ -138,6 +146,10 @@ template<typename InputType, typename OutputType>
 template<class Derived>
 bool Factory<InputType, OutputType>::Register<Derived>::initialized = 
     Factory<InputType, OutputType>::Register<Derived>::init();
+
+/* -----------------------------------------------------------------------------*/
+/*  Implementation of methods for template class                                */
+/* -----------------------------------------------------------------------------*/
 
 template<typename InputType, typename OutputType> 
 OutputType Factory<InputType, OutputType>::create( const InputType type )

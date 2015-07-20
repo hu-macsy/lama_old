@@ -37,6 +37,7 @@
 // others
 #include <common/Exception.hpp>
 #include <common/OpenMP.hpp>
+#include <common/weak_ptr.hpp>
 
 #include <tasking/TaskSyncToken.hpp>
 
@@ -126,19 +127,7 @@ bool HostContext::canUseMemory( const Memory& other ) const
 
 MemoryPtr HostContext::getMemory() const
 {
-    MemoryPtr memory;
-
-    if ( mMemory.expired() )
-    {
-        memory.reset( new HostMemory( shared_from_this() ) );
-        mMemory = memory;
-    }
-    else
-    {
-        memory = mMemory.lock();
-    }
-
-    return memory;
+    return HostMemory::getIt();
 }
 
 /* ------------------------------------------------------------------------- */
