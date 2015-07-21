@@ -56,7 +56,7 @@ namespace memory
  *
  *  The destructor will not free the allocated data as this might result
  *  in memory corruptions. The free method must be called explicitly to
- *  free the allocated data.
+ *  free the allocated data. This might be done by other constructors.
  */
 
 class COMMON_DLL_IMPORTEXPORT ContextData: public Printable

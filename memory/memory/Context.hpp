@@ -129,7 +129,12 @@ public:
 
     ContextType getType() const;
 
-    /** This predicate returns true if this context can use a certain memory class.
+    /** @brief  Predicate to check in a context whether a certain memory class can be used.
+     *
+     *  If an incarnation of a LAMAArray has a valid copy that can be used, no additional memory
+     *  or memcopy is required. But be careful: it might be faster to use other memory at this
+     *  context.
+     *
      *  This pure routine must be implemented by derived classes.
      *
      *  @param[in] memory is the memory against which the check is done

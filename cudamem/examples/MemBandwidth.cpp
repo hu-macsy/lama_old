@@ -21,8 +21,8 @@ void bench( LAMAArray<ValueType>& array )
     ContextPtr cudaContext = Context::getContext( context::CUDA );
     ContextPtr hostContext = Context::getContext( context::Host );
 
-    const IndexType N = 1024;
-    const IndexType NITER = 16;
+    const IndexType N = 8 * 1024 * 1024;
+    const IndexType NITER = 128;
 
     {
         HostWriteOnlyAccess<ValueType> read( array, N );
@@ -53,7 +53,10 @@ void bench( LAMAArray<ValueType>& array )
     bytes *= NITER;
     double mbytes = bytes / ( 1024.0 * 1024.0 );
 
+    double gBytePerSecond = ( mbytes / 1024.0 ) / time;
+
     std::cout << "Transfer " << mbytes << " MBytes in " << time << " seconds." << std::endl;
+    std::cout << "This is " << gBytePerSecond << " GByte/s (round trip)" << std::endl;
 }
 
 
@@ -62,8 +65,8 @@ int main()
     ContextPtr cudaContext = Context::getContext( context::CUDA );
     ContextPtr hostContext = Context::getContext( context::Host );
 
-    LAMAArray<float> A1;
-    LAMAArray<float> A2( hostContext );
+    LAMAArray<float> A1( hostContext );  // same as LAMAArray<float> A1;
+    LAMAArray<float> A2( cudaContext );
 
     bench( A1 );
     bench( A2 );

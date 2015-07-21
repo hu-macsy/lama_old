@@ -50,7 +50,7 @@ BOOST_AUTO_TEST_SUITE( LAMAArrayTest )
 /* --------------------------------------------------------------------- */
 
 template<typename ValueType>
-void readTest( const ValueType values[], const size_t N, const ValueType sum )
+void readTest( const ValueType values[], const IndexType N, const ValueType sum )
 {
     ValueType mySum = 0;
 

@@ -260,16 +260,49 @@ ContextDataManager::~ContextDataManager()
 
 /* ---------------------------------------------------------------------------------*/
 
-ContextDataIndex ContextDataManager::findContextData( ContextPtr context ) const
+ContextDataIndex ContextDataManager::findMemoryData( MemoryPtr memory ) const
 {
+    const ContextDataIndex nindex = mContextData.size();
+
     ContextDataIndex i;
 
-    for ( i = 0; i < mContextData.size(); ++i )
+    // search for entry
+
+    for ( i = 0; i < nindex; ++i )
     {
         const ContextData& entry = mContextData[i];
 
+        // comparison for memory is just pointer equality
+
+        if ( entry.memory().get() == memory.get() )
+        {
+            break;
+        }
+    }
+
+    return i;
+}
+
+/* ---------------------------------------------------------------------------------*/
+
+ContextDataIndex ContextDataManager::findContextData( ContextPtr context ) const
+{
+    const ContextDataIndex nindex = mContextData.size();
+
+    ContextDataIndex i;
+
+    // search for entry
+
+    for ( i = 0; i < nindex; ++i )
+    {
+        const ContextData& entry = mContextData[i];
+
+        // can this entry be used 
+
         if ( context->canUseMemory( *entry.memory() ) )
         {
+            // First touch policy, so no further search, not even for valid entries
+
             break;
         }
     }
@@ -332,7 +365,7 @@ ContextDataIndex ContextDataManager::getContextData( ContextPtr context )
 
         if ( context->getType() == context::Host )
         {
-            // For host context we might find more convenient memory
+            // For host context we might find more convenient memory by first touch
 
             if ( contextIndex > 0 )
             {
@@ -345,6 +378,31 @@ ContextDataIndex ContextDataManager::getContextData( ContextPtr context )
         mContextData.push_back( ContextData( memoryPtr ) );
 
         LAMA_LOG_DEBUG( logger, "new context data entry for " << *context << ", index = " << contextIndex )
+    }
+
+    return contextIndex;
+}
+
+/* ---------------------------------------------------------------------------------*/
+
+ContextDataIndex ContextDataManager::getMemoryData( MemoryPtr memoryPtr )
+{
+    size_t contextIndex = findMemoryData( memoryPtr );
+
+    LAMA_LOG_DEBUG( logger, "contextIndex = " << contextIndex << ", size = " << mContextData.size() )
+
+    // if this memory is used first time, make new entry for context data
+
+    if ( contextIndex == mContextData.size() )
+    {
+        if ( contextIndex == 0 )
+        {
+            mContextData.reserve( MEMORY_MAX_CONTEXTS );
+        }
+
+        mContextData.push_back( ContextData( memoryPtr ) );
+
+        LAMA_LOG_DEBUG( logger, "new data entry for " << *memoryPtr << ", index = " << contextIndex )
     }
 
     return contextIndex;

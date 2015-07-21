@@ -35,17 +35,13 @@
 #   - include_directories are taken over from project
 #
 
-foreach ( executable CUSparseExample )
+foreach ( executable CUSparseExample MemBandwidth )
     add_executable( ${executable} ${executable}.cpp )
     target_link_libraries( ${executable} ${cudamem_LIBRARY} )
 endforeach ( executable )
 
-foreach ( executable Example1 Example2 Devices )
+foreach ( executable Example1 Example2 Devices BenchContext )
     cuda_add_executable( ${executable} ${executable}.cu )
     target_link_libraries( ${executable} ${cudamem_LIBRARY} )
 endforeach ( executable )
 
-foreach ( executable MemBandwidth )
-    add_executable( ${executable} ${executable}.cpp )
-    target_link_libraries( ${executable} ${cudamem_LIBRARY} )
-endforeach ( executable )

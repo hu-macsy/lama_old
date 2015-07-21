@@ -30,8 +30,7 @@
  * @date 03.07.2015
  **/
 
-#include <memory/LAMAArray.hpp>
-#include <memory/HostReadAccess.hpp>
+#include <memory/memory.hpp>
 
 #include <common/Walltime.hpp>
 
@@ -62,14 +61,42 @@ void sub( double& res, const double data[], IndexType size )
 void routineLAMA( double& res, IndexType n )
 {
     LAMA_LOG_TRACE( logger, "routineLAMA, n = " << n )
-    LAMAArray<double> X( n, 1.0 );
-    HostReadAccess<double> read( X );
-    sub( res, read.get(), n );
+
+    LAMAArray<double> X;
+    {
+        HostWriteOnlyAccess<double> write( X, n );
+        init( write.get(), n, 1.0 );
+    }
+    {
+        HostReadAccess<double> read( X );
+        sub( res, read.get(), n );
+    }
 }
 
-void routineLAMA1( double& res, IndexType n )
+void routineLAMA_1( double& res, IndexType n )
 {
-    LAMAArray<double> X( n );
+    LAMAArray<double> X;
+    res = 0.0;
+}
+
+void routineLAMA_2( double& res, IndexType n )
+{
+    LAMAArray<double> X;
+    {
+        HostWriteOnlyAccess<double> write( X, n );
+    }
+    res = 0.0;
+}
+
+void routineLAMA_3( double& res, IndexType n )
+{
+    LAMAArray<double> X;
+    {
+        HostWriteOnlyAccess<double> write( X, n );
+    }
+    {
+        HostReadAccess<double> read( X );
+    }
     res = 0.0;
 }
 
@@ -104,31 +131,53 @@ int main()
             routineSimple( res, N );
         }
 
-        double time1 = common::Walltime::get();
+        double ts = ( common::Walltime::get() - time ) * 1000.0;
+
+        time = common::Walltime::get();
 
         for ( int i = 0; i < ITER; ++i )
         {
-            routineLAMA1( res, N );
+            routineLAMA_1( res, N );
         }
 
-        double time2 = common::Walltime::get();
+        double tl1 = ( common::Walltime::get() - time ) * 1000.0;
+
+
+        time = common::Walltime::get();
+
+        for ( int i = 0; i < ITER; ++i )
+        {
+            routineLAMA_2( res, N );
+        }
+
+        double tl2 = ( common::Walltime::get() - time ) * 1000.0;
+
+        time = common::Walltime::get();
+
+        for ( int i = 0; i < ITER; ++i )
+        {
+            routineLAMA_3( res, N );
+        }
+
+        double tl3 = ( common::Walltime::get() - time ) * 1000.0;
+
+        time = common::Walltime::get();
 
         for ( int i = 0; i < ITER; ++i )
         {
             routineLAMA( res, N );
         }
 
-        double time3 = common::Walltime::get();
+        double tl = ( common::Walltime::get() - time ) * 1000.0;
 
-        double ts = ( time1 - time ) * 1000.0;
-        double tl1 = ( time2 - time1 ) * 1000.0;
-        double tl = ( time3 - time2 ) * 1000.0;
 
         cout << "Case " << k << ": N = " << N << ", ITER = " << ITER << endl;
         cout << "res = " << res << endl;
         cout << "routineSimple: " << ts << " ms "  << endl;
-        cout << "routineLAMA1: " << tl1 << " ms "  << endl;
         cout << "routineLAMA: " << tl << " ms "  << endl;
+        cout << "routineLAMA_1: " << tl1 << " ms "  << endl;
+        cout << "routineLAMA_2: " << tl2 << " ms "  << endl;
+        cout << "routineLAMA_3: " << tl3 << " ms "  << endl;
         cout << endl;
     }
 }

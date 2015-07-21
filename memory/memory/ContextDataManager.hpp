@@ -74,6 +74,12 @@ public:
 
     ContextDataIndex getContextData( ContextPtr context );
 
+    /** Get the data for a given memory. A new entry can be created.
+     *  This routine does not any locks or handling of data allocation or transfers.
+     */
+
+    ContextDataIndex getMemoryData( MemoryPtr context );
+
     /** This routine provides context data for an access at a given context. 
      *
      *  @param[in] context context at which data is needed
@@ -176,6 +182,8 @@ private:
     std::auto_ptr<tasking::SyncToken> mSyncToken; //!<  outstanding transfers
 
     ContextDataIndex findContextData( ContextPtr context ) const;
+
+    ContextDataIndex findMemoryData( MemoryPtr memory ) const;
 
     /** Help routine that copies valid data from one context to the other.
      *

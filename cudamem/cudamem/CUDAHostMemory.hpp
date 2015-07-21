@@ -81,6 +81,8 @@ public:
 
     virtual ContextPtr getContext() const;
 
+    const CUDAContext& getCUDAContext() const { return *mCUDAContext; }
+
 protected:
 
     LAMA_LOG_DECL_STATIC_LOGGER( logger )

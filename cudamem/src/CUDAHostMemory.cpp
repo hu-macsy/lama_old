@@ -75,7 +75,6 @@ void CUDAHostMemory::writeAt( std::ostream& stream ) const
 
 void* CUDAHostMemory::allocate( const size_t size ) const
 {
-    // LAMA_REGION( "CUDAHostMemory::allocate" )
     LAMA_LOG_TRACE( logger, *this << ": allocate " << size << " bytes" )
 
     void* pointer = 0;
@@ -85,6 +84,16 @@ void* CUDAHostMemory::allocate( const size_t size ) const
     LAMA_CUDA_DRV_CALL( cuMemAllocHost( &pointer, size ), "cuMemAllocHost( size = " << size << " ) failed" )
 
     LAMA_LOG_DEBUG( logger, *this << ": allocated " << size << " bytes, pointer = " << pointer )
+
+    unsigned int flags = 0;
+
+    void* pDevice = NULL;
+
+    // check if we can use HostMemory also for device computations
+
+    LAMA_CUDA_RT_CALL( cudaHostGetDevicePointer( &pDevice, pointer, flags ), "cudaHostGetDevicePointer" )
+
+    COMMON_ASSERT_EQUAL( pDevice, pointer, "Not yet supported: pointer conversion for different context" )
 
     return pointer;
 }

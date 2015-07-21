@@ -83,7 +83,6 @@ int main()
     const IndexType N = 100;
 
     LAMAArray<double> data( cudaContext );
-    // LAMAArray<double> data;
     
     std::cout << "data = " << data << std::endl;
 
@@ -123,9 +122,10 @@ int main()
     {
         LAMA_LOG_INFO( logger, "read on host" )
         HostReadAccess<double> read( data );
+        sleep( 1 );
         for ( IndexType i = 0; i < N; ++i )
         {
-            COMMON_ASSERT_EQUAL( read[i], 2.0, "wrong value after add" )
+            COMMON_ASSERT_EQUAL( read[i], 2 * 1.0, "wrong value after add, i = " << i )
         }
     }
 

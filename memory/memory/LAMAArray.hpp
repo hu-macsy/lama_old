@@ -80,12 +80,19 @@ public:
     LAMAArray();
 
     /**
-     * @brief Create a LAMA array and set its preferred context.
+     * @brief Create a LAMA array and give it a first touch on a context
      *
-     * If an array is created with a given context, this context is used to find the memory
-     * and host memory where data should be allocated.
+     * The first context decides about the default context and the default memory          
+     * used for the array. This is only a performance issue in some situations.
      */
     explicit LAMAArray( ContextPtr context );
+
+    /**
+     * @brief Create a LAMA array and give it a first touch on a memory.
+     *
+     * The first memory decides which data should be used whenever possible.
+     */
+    explicit LAMAArray( MemoryPtr context );
 
     /**
      * @brief LAMAArray( const IndexType n ) creates a LAMAArray of size n
@@ -289,6 +296,21 @@ LAMAArray<ValueType>::LAMAArray( ContextPtr context ) :
     // just make the first entry for the context
 
     /* ContextDataIndex data = */  mContextDataManager.getContextData( context );
+
+    LAMA_LOG_DEBUG( logger, "created new LAMA array: " << *this )
+}
+
+/* ---------------------------------------------------------------------------------*/
+
+template<typename ValueType>
+LAMAArray<ValueType>::LAMAArray( MemoryPtr memory ) :
+
+    ContextArray( 0, sizeof( ValueType ) )
+
+{
+    // just make the first entry for the memory
+
+    /* ContextDataIndex data = */  mContextDataManager.getMemoryData( memory );
 
     LAMA_LOG_DEBUG( logger, "created new LAMA array: " << *this )
 }

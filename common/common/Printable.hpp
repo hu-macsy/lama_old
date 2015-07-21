@@ -28,7 +28,6 @@
  * @brief Base class to be used for base classes that will output on a stream.
  * @author Jiri Kraus
  * @date 05.08.2011
- * @since 1.0.0
  */
 
 #pragma once

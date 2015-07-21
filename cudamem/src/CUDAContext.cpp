@@ -261,6 +261,8 @@ void CUDAContext::enable( const char* file, int line ) const
 
 bool CUDAContext::canUseMemory( const Memory& other ) const
 {
+    bool canUse = false;
+
     // CUDA device can use only data on same CUDA device
 
     if ( other.getType() == memtype::CUDAMemory )
@@ -269,10 +271,24 @@ bool CUDAContext::canUseMemory( const Memory& other ) const
 
         COMMON_ASSERT( otherCUDAMem, "serious type mismatch" )
 
-        return otherCUDAMem->getDeviceNr() == mDeviceNr;
+        canUse = otherCUDAMem->getDeviceNr() == mDeviceNr;
     }
 
-    return false;
+    // Zero-Copy: we can use CUDA Host memory 
+
+    if ( other.getType() == memtype::CUDAHostMemory )
+    {
+        const CUDAHostMemory* otherCUDAHostMem = dynamic_cast<const CUDAHostMemory*>( &other );
+
+        COMMON_ASSERT( otherCUDAHostMem, "serious type mismatch" )
+
+        canUse = otherCUDAHostMem->getCUDAContext().getDeviceNr() == mDeviceNr;
+    }
+
+    LAMA_LOG_DEBUG( logger, *this << ": " << ( canUse ? "can use " : "can't use " )
+                            << other )
+
+    return canUse;
 }
 
 /* ----------------------------------------------------------------------------- */
