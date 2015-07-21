@@ -43,7 +43,7 @@
 // others
 #include <memory/Context.hpp>
 #include <memory/ContextDataManager.hpp>
-#include <memory/Scalar.hpp>
+#include <memory/ScalarType.hpp>
 
 // common
 #include <common/Printable.hpp>

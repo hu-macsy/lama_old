@@ -1,5 +1,5 @@
 /**
- * @file Scalar.hpp
+ * @file ScalarType.hpp
  *
  * @license
  * Copyright (c) 2009-2015

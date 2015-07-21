@@ -1,5 +1,5 @@
 /**
- * @file Scalar.cpp
+ * @file ScalarType.cpp
  *
  * @license
  * Copyright (c) 2009-2015
@@ -28,11 +28,10 @@
  * @brief Implementation of operations on ScalarType.
  * @author Jiri Kraus
  * @date 07.11.2011
- * @since 1.0.0
  */
 
 // hpp
-#include <memory/Scalar.hpp>
+#include <memory/ScalarType.hpp>
 
 namespace memory
 {
