@@ -31,8 +31,8 @@
  **/
 
 #include <memory/LAMAArray.hpp>
-#include <memory/HostWriteAccess.hpp>
-#include <memory/HostReadAccess.hpp>
+#include <memory/WriteAccess.hpp>
+#include <memory/ReadAccess.hpp>
 
 #include <logging/logging.hpp>
 
@@ -64,12 +64,15 @@ int main()
 
     *lamaArray1 = lamaArray;
 
-    HostReadAccess<float> read( lamaArray );
-    HostReadAccess<float> read1( *lamaArray1 );
+    ReadAccess<float> read( lamaArray );
+    ReadAccess<float> read1( *lamaArray1 );
    
+    const float* data = read.get();
+    const float* data1 = read1.get();
+
     for ( IndexType i = 0; i < N; ++i )
     {
-        COMMON_ASSERT_EQUAL( read[i], read1[i], "" )
+        COMMON_ASSERT_EQUAL( data[i], data1[i], "" )
     }
   
     std::cout << "Create finished" << std::endl;

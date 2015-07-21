@@ -2,8 +2,8 @@
 
 #include <memory/Context.hpp>
 #include <memory/LAMAArray.hpp>
-#include <memory/HostReadAccess.hpp>
-#include <memory/HostWriteAccess.hpp>
+#include <memory/ReadAccess.hpp>
+#include <memory/WriteAccess.hpp>
 
 #include "MockContext.hpp"
 

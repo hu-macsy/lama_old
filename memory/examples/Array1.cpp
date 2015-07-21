@@ -31,8 +31,8 @@
  **/
 
 #include <memory/LAMAArray.hpp>
-#include <memory/HostWriteAccess.hpp>
-#include <memory/HostReadAccess.hpp>
+#include <memory/WriteAccess.hpp>
+#include <memory/ReadAccess.hpp>
 
 #include <logging/logging.hpp>
 
@@ -48,12 +48,15 @@ void sumArray( const LAMAArray<T>& array )
 {
     LAMA_LOG_INFO( logger, "read access on " << array );
 
-    HostReadAccess<T> readAccess( array );
-    
+    ReadAccess<T> readAccess( array );
+   
+    const T* data = readAccess.get();
+ 
     T sum = 0;
+
     for ( int i = 0; i < array.size(); ++i )
     {
-        sum += readAccess[i];
+        sum += data[i];
     }
 
     cout << "Sum of " << array << " = " << sum << endl;
@@ -64,13 +67,15 @@ void writeArray( LAMAArray<T>& array )
 {
     LAMA_LOG_INFO( logger, "make write test access on empty array\n" );
 
-    HostWriteAccess<T> writeAccess( array );
+    WriteAccess<T> writeAccess( array );
 
     writeAccess.resize( 10 );
 
+    T* data = writeAccess.get();
+
     for ( IndexType i = 0; i < 10; i++ )
     {
-        writeAccess[i] = 3;
+        data[i] = 3;
     }
 }
 

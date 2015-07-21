@@ -83,6 +83,22 @@ public:
     }
 
     /**
+     * @brief Acquires a ReadAccess to the passed LAMAArray for the host context.
+     *
+     * @param[in] context   the context that needs a read acess
+     * @throws Exception    if the ReadAccess can not be acquired, e.g. because a WriteAccess exists.
+     */
+    ReadAccess( const LAMAArray<ValueType>& array ) : mArray( &array )
+    {
+        ContextPtr contextPtr = Context::getContextPtr( context::Host );
+
+        LAMA_LOG_DEBUG( logger, "ReadAccess<" << getScalarType<ValueType>()
+                        << "> : create for " << array << " @ " << *contextPtr )
+
+        mContextDataIndex = mArray->acquireReadAccess( contextPtr );
+    }
+
+    /**
      * @brief Releases the ReadAccess on the associated LAMAArray.
      */
     virtual ~ReadAccess()

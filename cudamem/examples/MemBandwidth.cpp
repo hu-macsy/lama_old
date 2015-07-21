@@ -25,10 +25,11 @@ void bench( LAMAArray<ValueType>& array )
     const IndexType NITER = 128;
 
     {
-        HostWriteOnlyAccess<ValueType> read( array, N );
+        WriteOnlyAccess<ValueType> write( array, N );
+        ValueType* data = write.get();
         for ( IndexType i = 0; i < N; ++i )
         {
-            read[i] = 1.0;
+            data[i] = 1.0;
         }
     }
 
@@ -42,7 +43,7 @@ void bench( LAMAArray<ValueType>& array )
         }
         // Transfer: CUDA->Host by WriteAccess on HOST, invalidates CUDA
         {
-            HostWriteAccess<ValueType> write( array );
+            WriteAccess<ValueType> write( array );
         }
     }
 

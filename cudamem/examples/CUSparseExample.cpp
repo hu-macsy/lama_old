@@ -49,10 +49,10 @@ template<typename ValueType>
 void outArray( const LAMAArray<ValueType>& array, const char* name )
 {
     std::cout << name << "[ " << array.size() << " ] = {";
-    HostReadAccess<ValueType> read( array );
+    ReadAccess<ValueType> read( array );
     for ( int i = 0; i < array.size(); ++i )
     {
-        std::cout << " " << read[i];
+        std::cout << " " << read.get()[i];
     }
     std::cout << " }" << std::endl;
 }

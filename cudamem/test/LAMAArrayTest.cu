@@ -51,10 +51,12 @@ using namespace memory;
 template <typename T>
 void initArray( LAMAArray<T>& array, int N, T val )
 {
-    HostWriteOnlyAccess<T> write( array, N );
+    WriteOnlyAccess<T> write( array, N );
+    T* data = write.get();
+
     for ( int i = 0; i < N; ++i )
     {
-        write[i] = val + static_cast<T>( i );
+        data[i] = val + static_cast<T>( i );
     }
 }
 

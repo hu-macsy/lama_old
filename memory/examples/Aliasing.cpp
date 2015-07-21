@@ -31,8 +31,8 @@
  **/
 
 #include <memory/Context.hpp>
-#include <memory/HostReadAccess.hpp>
-#include <memory/HostWriteOnlyAccess.hpp>
+#include <memory/ReadAccess.hpp>
+#include <memory/WriteOnlyAccess.hpp>
 #include <common/Exception.hpp>
 
 using namespace memory;
@@ -52,13 +52,19 @@ void add ( Array& res, const Array& a, const Array& b )
 
     IndexType n = res.size();
 
-    HostWriteOnlyAccess<double> write( res );
-    HostReadAccess<double>read1( a );
-    HostReadAccess<double>read2( b );
+    ContextPtr host = Context::getContextPtr( context::Host );
+
+    WriteOnlyAccess<double> write( res, host );
+    ReadAccess<double>read1( a, host );
+    ReadAccess<double>read2( b, host );
  
+    double* resPtr = write.get();
+    const double* aPtr = read1.get();
+    const double* bPtr = read2.get();
+
     for ( IndexType i = 0; i < n; ++i )
     {
-        write[i] = read1[i] + read2[i];
+        resPtr[i] = aPtr[i] + bPtr[i];
     }
 }
 

@@ -36,8 +36,8 @@
 
 #include <memory/LAMAArray.hpp>
 #include <memory/LAMAArrayRef.hpp>
-#include <memory/HostWriteAccess.hpp>
-#include <memory/HostReadAccess.hpp>
+#include <memory/WriteAccess.hpp>
+#include <memory/ReadAccess.hpp>
 
 using namespace boost;
 using namespace common;
@@ -88,12 +88,12 @@ BOOST_AUTO_TEST_CASE( ConstructorTest )
 
     BOOST_CHECK_THROW(
     {
-        HostReadAccess<float>read( array1 );
+        ReadAccess<float>read( array1 );
 
     }, Exception )
 
     {
-        HostReadAccess<float> read( array2 );
+        ReadAccess<float> read( array2 );
         readTest<float>( read.get(), N, N * 5 );
     }
 }
@@ -101,24 +101,27 @@ BOOST_AUTO_TEST_CASE( ConstructorTest )
 BOOST_AUTO_TEST_CASE( releaseTest )
 {
     LAMAArray<IndexType> lamaArray; // default, not allocated at all
-    HostReadAccess<IndexType> readTestAccess( lamaArray );
+    ReadAccess<IndexType> readTestAccess( lamaArray );
     readTestAccess.release();
-    HostWriteAccess<IndexType> writeAccess( lamaArray );
+    WriteAccess<IndexType> writeAccess( lamaArray );
     writeAccess.resize( 10 );
+
+    IndexType* data = writeAccess.get();
 
     for ( IndexType i = 0; i < 10; i++ )
     {
-        writeAccess[i] = 3;
+        data[i] = 3;
     }
 
     writeAccess.release();
     BOOST_CHECK_THROW( { writeAccess.resize( 20 ); }, Exception );
-    BOOST_CHECK_THROW( { writeAccess[0] = static_cast<IndexType> ( 5.0 ); }, Exception );
-    HostReadAccess<IndexType> readAccess( lamaArray );
+    BOOST_CHECK_THROW( { writeAccess.get()[0] = static_cast<IndexType> ( 5.0 ); }, Exception );
+    ReadAccess<IndexType> readAccess( lamaArray );
+    const IndexType* readData = readAccess.get();
 
     for ( IndexType i = 0; i < 5; i++ )
     {
-        BOOST_CHECK_EQUAL( 3, readAccess[i] );
+        BOOST_CHECK_EQUAL( 3, readData[i] );
     }
 
     readAccess.release();
@@ -130,18 +133,19 @@ BOOST_AUTO_TEST_CASE( resizeTest )
 {
     LAMAArray<IndexType> lamaArray; // default, not allocated at all
     {
-        HostWriteAccess<IndexType> writeAccess( lamaArray );
+        WriteAccess<IndexType> writeAccess( lamaArray );
         // Possible problem: fetch from any location not possible
         writeAccess.resize( 10 );
+        IndexType* data = writeAccess.get();
 
         for ( IndexType i = 0; i < 10; i++ )
         {
-            writeAccess[i] = static_cast<IndexType>( 3.0 );
+            data[i] = static_cast<IndexType>( 3.0 );
         }
     }
     lamaArray.purge();
     {
-        HostWriteAccess<IndexType> writeAccess( lamaArray );
+        WriteAccess<IndexType> writeAccess( lamaArray );
         // Possible problem: fetch from any location not possible
         writeAccess.resize( 10 );
     }
@@ -156,31 +160,31 @@ BOOST_AUTO_TEST_CASE( accessTest )
     const double value2 = 2.0;
     LAMAArray<double> lamaArray( n, value );
     {
-        HostReadAccess<double> lamaArrayRAccess( lamaArray );
+        ReadAccess<double> lamaArrayRAccess( lamaArray );
 
         for ( IndexType i = 0; i < n; ++i )
         {
-            BOOST_CHECK_EQUAL( value, lamaArrayRAccess[i] );
+            BOOST_CHECK_EQUAL( value, lamaArrayRAccess.get()[i] );
         }
 
-        HostWriteAccess<double> tmpWriteAccess( lamaArray );
+        WriteAccess<double> tmpWriteAccess( lamaArray );
     }
     {
-        HostWriteAccess<double> lamaArrayWAccess( lamaArray );
+        WriteAccess<double> lamaArrayWAccess( lamaArray );
 
         for ( IndexType i = 0; i < n; ++i )
         {
-            lamaArrayWAccess[i] = value2;
+            lamaArrayWAccess.get()[i] = value2;
         }
 
-        HostReadAccess<double> tmpReadAccess( lamaArray );
+        ReadAccess<double> tmpReadAccess( lamaArray );
 
         lamaArrayWAccess.release();
-        HostReadAccess<double> lamaArrayRAccess( lamaArray );
+        ReadAccess<double> lamaArrayRAccess( lamaArray );
 
         for ( IndexType i = 0; i < n; ++i )
         {
-            BOOST_CHECK_EQUAL( value2, lamaArrayRAccess[i] );
+            BOOST_CHECK_EQUAL( value2, lamaArrayRAccess.get()[i] );
         }
     }
 }
@@ -196,31 +200,31 @@ BOOST_AUTO_TEST_CASE( aliasTest )
     {
         // read and write access at same time by same thread
 
-        HostReadAccess<double> read( lamaArray );
-        HostWriteAccess<double> write( lamaArray );
+        ReadAccess<double> read( lamaArray );
+        WriteAccess<double> write( lamaArray );
 
         for ( IndexType i = 0; i < N; ++i )
         {
-            write[i] = 2.0 * read[i];
+            write.get()[i] = 2.0 * read.get()[i];
         }
     }
     {
         // verify that operation was really on the same array
 
-        HostReadAccess<double> read( lamaArray );
+        ReadAccess<double> read( lamaArray );
         readTest<double>( read.get(), N, N * value * 2.0 );
     }
     {
         // with a single write access resize is possilbe
 
-        HostWriteAccess<double> write( lamaArray );
+        WriteAccess<double> write( lamaArray );
         write.resize( 2 * N );
     }
     {
         // with read and write at the same time resize throws Exception
 
-        HostWriteAccess<double> write( lamaArray );
-        HostReadAccess<double> read( lamaArray );
+        WriteAccess<double> write( lamaArray );
+        ReadAccess<double> read( lamaArray );
         BOOST_CHECK_THROW(
         { 
             write.resize( 3 * N );
@@ -229,8 +233,8 @@ BOOST_AUTO_TEST_CASE( aliasTest )
     {
         // read and write access at same time by same thread
 
-        HostWriteAccess<double> write( lamaArray );
-        HostReadAccess<double> read( lamaArray );
+        WriteAccess<double> write( lamaArray );
+        ReadAccess<double> read( lamaArray );
 
         // a clear is not possible as it affects the other access
         // Note: clear is the same as resize( 0 )

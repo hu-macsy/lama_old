@@ -31,8 +31,8 @@
  **/
 
 #include <memory/Context.hpp>
-#include <memory/HostReadAccess.hpp>
-#include <memory/HostWriteAccess.hpp>
+#include <memory/ReadAccess.hpp>
+#include <memory/WriteAccess.hpp>
 #include <common/Exception.hpp>
 #include <tasking/ThreadPool.hpp>
 #include <tasking/Task.hpp>
@@ -49,16 +49,17 @@ using namespace memory;
 
 void readJob( LAMAArray<double>& X )
 {
-    HostReadAccess<double> read( X );
-    double s = read[0];
-    LAMA_LOG_INFO( logger, "Do Read job, size = " << read.size() << ", val = " << s )
+    ReadAccess<double> read( X );
+    const double* data = read.get();
+    double s = data[0];
+    LAMA_LOG_INFO( logger, "Do Read job, size = " << X.size() << ", val = " << s )
     int error = 0;
 
     for ( int k = 0; k < 100; ++k )
     {
-        for ( int i = 1; i < read.size(); ++i )
+        for ( int i = 1; i < X.size(); ++i )
         {
-            double v = read[i];
+            double v = data[i];
 
             if ( v !=  s )
             {
@@ -77,12 +78,15 @@ void writeJob( LAMAArray<double>& X )
 {
     // Note: different thread on same context will wait until other access is released
 
-    HostWriteAccess<double> write( X );
-    LAMA_LOG_INFO( logger, "Do Write job, size = " << write.size() << ", val = " << write[0] )
+    WriteAccess<double> write( X );
+ 
+    double* data = write.get();
+
+    LAMA_LOG_INFO( logger, "Do Write job, size = " << write.size() << ", val = " << data[0] )
 
     for ( int i = 0; i < write.size(); ++i )
     {
-        write[i] = write[i] + 1.0;
+        data[i] = data[i] + 1.0;
     }
 }
 

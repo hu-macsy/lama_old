@@ -38,9 +38,6 @@
 #include <memory/Context.hpp>
 #include <memory/HostContext.hpp>
 #include <memory/HostMemory.hpp>
-#include <memory/HostReadAccess.hpp>
-#include <memory/HostWriteAccess.hpp>
-#include <memory/HostWriteOnlyAccess.hpp>
 #include <memory/LAMAArray.hpp>
 #include <memory/LAMAArrayRef.hpp>
 #include <memory/ReadAccess.hpp>

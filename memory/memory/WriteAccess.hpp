@@ -77,8 +77,22 @@ public:
     /**
      * @brief Acquires a WriteAccess to the passed LAMAArray for the passed location.
      *
+     * @param[in] array       the LAMAArray to acquire a WriteAccess for
+     * @param[in] contextPtr  the context to acquire a WriteAccess for
+     * @param[in] keep        if false, implicit clear, old values of the array are no more needed
+     * @throws Exception      if the WriteAccess can not be acquired, e.g. because another WriteAccess exists.
+     *
+     * This constructor acquires a WriteAccess to the passed LAMAArray for the passed location. Depending on the flag
+     * keep the LAMAArray is updated on location or not. This flag can be used to acquire write only access, e.g. if
+     * one want to write only to the passed wrapped LAMAArray. If the passed LAMAArray is not valid at location and keep
+     * is true the LAMAArray will be made valid at location before this constructor returns.
+     */
+    WriteAccess( LAMAArray<ValueType>& array, ContextPtr contextPtr, const bool keep = true );
+
+    /**
+     * @brief Acquires a WriteAccess to the passed LAMAArray for the passed location.
+     *
      * @param[in] array     the LAMAArray to acquire a WriteAccess for
-     * @param[in] context   the context to acquire a WriteAccess for
      * @param[in] keep      if false, implicit clear, old values of the array are no more needed
      * @throws Exception    if the WriteAccess can not be acquired, e.g. because another WriteAccess exists.
      *
@@ -87,7 +101,7 @@ public:
      * one want to write only to the passed wrapped LAMAArray. If the passed LAMAArray is not valid at location and keep
      * is true the LAMAArray will be made valid at location before this constructor returns.
      */
-    WriteAccess( LAMAArray<ValueType>& array, ContextPtr context, const bool keep = true );
+    WriteAccess( LAMAArray<ValueType>& array, const bool keep = true );
 
     /**
      * @brief Releases the WriteAccess on the associated LAMAArray.
@@ -161,13 +175,28 @@ LAMA_LOG_DEF_TEMPLATE_LOGGER( template<typename ValueType>, WriteAccess<ValueTyp
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-WriteAccess<ValueType>::WriteAccess( LAMAArray<ValueType>& array, ContextPtr context, const bool keep /* = true*/ )
+WriteAccess<ValueType>::WriteAccess( LAMAArray<ValueType>& array, ContextPtr contextPtr, const bool keep )
     : mArray( &array )
 {
     COMMON_ASSERT( !array.constFlag, "WriteAccess on const array not allowed: " << array )
 
-    LAMA_LOG_DEBUG( logger, "acquire write access for " << *mArray << " at " << *context << ", keep = " << keep )
-    mContextDataIndex = mArray->acquireWriteAccess( context, keep );
+    LAMA_LOG_DEBUG( logger, "acquire write access for " << *mArray << " at " << *contextPtr << ", keep = " << keep )
+    mContextDataIndex = mArray->acquireWriteAccess( contextPtr, keep );
+    mData = mArray->get( mContextDataIndex );     // cache the data pointer
+}
+
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType>
+WriteAccess<ValueType>::WriteAccess( LAMAArray<ValueType>& array, const bool keep /* = true*/ )
+    : mArray( &array )
+{
+    COMMON_ASSERT( !array.constFlag, "WriteAccess on const array not allowed: " << array )
+
+    ContextPtr contextPtr = Context::getContextPtr( context::Host );
+
+    LAMA_LOG_DEBUG( logger, "acquire write access for " << *mArray << " at " << *contextPtr << ", keep = " << keep )
+    mContextDataIndex = mArray->acquireWriteAccess( contextPtr, keep );
     mData = mArray->get( mContextDataIndex );     // cache the data pointer
 }
 

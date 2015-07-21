@@ -64,11 +64,11 @@ void routineLAMA( double& res, IndexType n )
 
     LAMAArray<double> X;
     {
-        HostWriteOnlyAccess<double> write( X, n );
+        WriteOnlyAccess<double> write( X, n );
         init( write.get(), n, 1.0 );
     }
     {
-        HostReadAccess<double> read( X );
+        ReadAccess<double> read( X );
         sub( res, read.get(), n );
     }
 }
@@ -83,7 +83,7 @@ void routineLAMA_2( double& res, IndexType n )
 {
     LAMAArray<double> X;
     {
-        HostWriteOnlyAccess<double> write( X, n );
+        WriteOnlyAccess<double> write( X, n );
     }
     res = 0.0;
 }
@@ -92,10 +92,10 @@ void routineLAMA_3( double& res, IndexType n )
 {
     LAMAArray<double> X;
     {
-        HostWriteOnlyAccess<double> write( X, n );
+        WriteOnlyAccess<double> write( X, n );
     }
     {
-        HostReadAccess<double> read( X );
+        ReadAccess<double> read( X );
     }
     res = 0.0;
 }

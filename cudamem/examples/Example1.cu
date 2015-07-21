@@ -121,11 +121,11 @@ int main()
 
     {
         LAMA_LOG_INFO( logger, "read on host" )
-        HostReadAccess<double> read( data );
+        ReadAccess<double> read( data );
         sleep( 1 );
         for ( IndexType i = 0; i < N; ++i )
         {
-            COMMON_ASSERT_EQUAL( read[i], 2 * 1.0, "wrong value after add, i = " << i )
+            COMMON_ASSERT_EQUAL( read.get()[i], 2 * 1.0, "wrong value after add, i = " << i )
         }
     }
 

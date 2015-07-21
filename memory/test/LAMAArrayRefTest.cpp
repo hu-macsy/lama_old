@@ -33,11 +33,7 @@
 #include <boost/test/unit_test.hpp>
 #include <boost/mpl/list.hpp>
 
-#include <memory/LAMAArrayRef.hpp>
-#include <memory/HostWriteAccess.hpp>
-#include <memory/HostReadAccess.hpp>
-
-#include "MockContext.hpp"
+#include <memory/memory.hpp>
 
 using namespace boost;
 using namespace common;
@@ -127,7 +123,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( refTest, ValueType, test_types )
             // Write access should not be allowed
             BOOST_CHECK_THROW(
             {
-                HostWriteAccess<ValueType> lamaArrayWAccess( lamaArray );
+                WriteAccess<ValueType> lamaArrayWAccess( lamaArray, host);
             }
             , Exception );
         }

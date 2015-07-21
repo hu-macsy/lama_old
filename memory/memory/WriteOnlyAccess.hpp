@@ -70,6 +70,12 @@ public:
         LAMA_LOG_DEBUG( logger, "WriteOnlyAccess<" << getScalarType<ValueType>() << ">" )
     }
 
+    WriteOnlyAccess( LAMAArray<ValueType>& array )
+        : WriteAccess<ValueType>( array, false )
+    {
+        LAMA_LOG_DEBUG( logger, "WriteOnlyAccess<" << getScalarType<ValueType>() << ">" )
+    }
+
     /**
      *  @brief Acquire a write only access with a resize.
      *
@@ -81,6 +87,15 @@ public:
      */
     WriteOnlyAccess( LAMAArray<ValueType>& array, ContextPtr context, const IndexType size )
         : WriteAccess<ValueType>( array, context, false )
+    {
+        this->resize( 0 );      // invalidates all data before resize
+        this->resize( size );   // now resize
+
+        LAMA_LOG_DEBUG( logger, "WriteOnlyAccess<" << getScalarType<ValueType>() << ">: " << *mArray )
+    }
+
+    WriteOnlyAccess( LAMAArray<ValueType>& array, const IndexType size )
+        : WriteAccess<ValueType>( array, false )
     {
         this->resize( 0 );      // invalidates all data before resize
         this->resize( size );   // now resize

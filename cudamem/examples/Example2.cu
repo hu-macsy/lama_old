@@ -77,7 +77,7 @@ int main()
     std::cout << "data = " << data << std::endl;
 
     {
-        LAMA_LOG_INFO( logger, "write only on cuda host" )
+        LAMA_LOG_INFO( logger, "write only on host" )
         WriteOnlyAccess<double> write( data, hostContext, N );
         double* v = write.get();
         for ( IndexType i = 0; i < N; ++i )
@@ -110,10 +110,11 @@ int main()
 
     {
         LAMA_LOG_INFO( logger, "read on host" )
-        HostReadAccess<double> read( data );
+        ReadAccess<double> read( data );
+        const double* values = read.get();
         for ( IndexType i = 0; i < N; ++i )
         {
-            COMMON_ASSERT_EQUAL( read[i], 3.0, "wrong value after add" )
+            COMMON_ASSERT_EQUAL( values[i], 3.0, "wrong value after add" )
         }
     }
 }

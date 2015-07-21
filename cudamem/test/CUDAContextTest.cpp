@@ -113,25 +113,25 @@ BOOST_AUTO_TEST_CASE( allocateTest )
 BOOST_AUTO_TEST_CASE ( releaseTest )
 {
     LAMAArray<IndexType> ctxArray; // default, not allocated at all
-    HostReadAccess<IndexType> readTestAccess( ctxArray );
+    ReadAccess<IndexType> readTestAccess( ctxArray );
     readTestAccess.release();
-    HostWriteAccess<IndexType> writeAccess( ctxArray );
+    WriteAccess<IndexType> writeAccess( ctxArray );
     writeAccess.resize( 10 );
 
     for ( IndexType i = 0; i < 10; i++ )
     {
-        writeAccess[i] = 3;
+        writeAccess.get()[i] = 3;
     }
 
     writeAccess.release();
     //Should throw exception, because of already released writeAccess
     BOOST_CHECK_THROW( { writeAccess.resize( 20 ); }, common::Exception );
     // This is not checked:  writeAccess[0] = 5.0; -> crashes
-    HostReadAccess<IndexType> readAccess( ctxArray );
+    ReadAccess<IndexType> readAccess( ctxArray );
 
     for ( IndexType i = 0; i < 5; i++ )
     {
-        BOOST_CHECK_EQUAL( 3, readAccess[i] );
+        BOOST_CHECK_EQUAL( 3, readAccess.get()[i] );
     }
 
     readAccess.release();
@@ -143,18 +143,18 @@ BOOST_AUTO_TEST_CASE( resizeTest )
 {
     LAMAArray<IndexType> ctxArray; // default, not allocated at all
     {
-        HostWriteAccess<IndexType> writeAccess( ctxArray );
+        WriteAccess<IndexType> writeAccess( ctxArray );
         // Possible problem: fetch from any location not possible
         writeAccess.resize( 10 );
 
         for ( IndexType i = 0; i < 10; i++ )
         {
-            writeAccess[i] = 3;
+            writeAccess.get()[i] = 3;
         }
     }
     ctxArray.purge();
     {
-        HostWriteAccess<IndexType> writeAccess( ctxArray );
+        WriteAccess<IndexType> writeAccess( ctxArray );
         // Possible problem: fetch from any location not possible
         writeAccess.resize( 10 );
     }
@@ -183,11 +183,11 @@ BOOST_AUTO_TEST_CASE( asyncTest )
 
     token->wait();  
 
-    HostReadAccess<float> hostV( vector );
+    ReadAccess<float> hostV( vector );
 
     for ( IndexType i = 0; i < n; ++i )
     {
-        BOOST_CHECK_EQUAL( value * alpha, hostV[i] );
+        BOOST_CHECK_EQUAL( value * alpha, hostV.get()[i] );
     }
 }
 
@@ -208,11 +208,11 @@ BOOST_AUTO_TEST_CASE( syncTest )
         scal( n, alpha, cudaV.get(), 1, token.get() );
         // synchronize on token at end of this scope
     }
-    HostReadAccess<float> hostV( vector );
+    ReadAccess<float> hostV( vector );
 
     for ( IndexType i = 0; i < n; ++i )
     {
-        BOOST_CHECK_EQUAL( value * alpha, hostV[i] );
+        BOOST_CHECK_EQUAL( value * alpha, hostV.get()[i] );
     }
 }
 
