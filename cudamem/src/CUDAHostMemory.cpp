@@ -143,13 +143,13 @@ SyncToken* CUDAHostMemory::memcpyAsync( void* dst, const void* src, const size_t
     return syncToken.release();
 }
 
-ContextPtr CUDAHostMemory::getContext() const
+ContextPtr CUDAHostMemory::getContextPtr() const
 {
     // Currently Host device should do operations on Host memory
     // Possible extension: the corresponding CUDA device can also access the host memory
     //                     with limited PCIe bandwidth (Zero Copy, e.g. on Tegra K1)
 
-    ContextPtr host = Context::getContext( context::Host );
+    ContextPtr host = Context::getContextPtr( context::Host );
     return host;
 }
 

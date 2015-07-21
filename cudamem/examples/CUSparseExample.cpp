@@ -59,7 +59,7 @@ void outArray( const LAMAArray<ValueType>& array, const char* name )
 
 int main()
 {
-    ContextPtr cuda = Context::getContext( context::CUDA );
+    ContextPtr cuda = Context::getContextPtr( context::CUDA );
 
     /***********************************************************************
      *  Definition of input data via LAMA arrays                           *

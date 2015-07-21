@@ -49,10 +49,10 @@ namespace memory
 
 LAMA_LOG_DEF_LOGGER( HostMemory::logger, "Memory.HostMemory" )
 
-HostMemory::HostMemory( common::shared_ptr<const HostContext> hostContext ) : 
+HostMemory::HostMemory( common::shared_ptr<const HostContext> hostContextPtr ) : 
 
     Memory( memtype::HostMemory ),
-    mHostContext( hostContext )
+    mHostContextPtr( hostContextPtr )
 {
     mNumberOfAllocatedBytes = 0;
     mNumberOfAllocates = 0;
@@ -81,7 +81,7 @@ void HostMemory::writeAt( std::ostream& stream ) const
 {
     // write identification of this object
 
-    stream << "HostMemory( " << *mHostContext << " )";
+    stream << "HostMemory( " << *mHostContextPtr << " )";
 }
 
 void* HostMemory::allocate( const size_t size ) const
@@ -133,25 +133,26 @@ tasking::SyncToken* HostMemory::memcpyAsync( void* dst, const void* src, const s
     return new tasking::TaskSyncToken( common::bind( &::memcpy, dst, src, size ) );
 }
 
-ContextPtr HostMemory::getContext() const
+ContextPtr HostMemory::getContextPtr() const
 {
-    return mHostContext;
+    return mHostContextPtr;
 }
 
 MemoryPtr HostMemory::getIt()
 {
-    static common::shared_ptr<HostMemory> instance;
+    static common::shared_ptr<HostMemory> instancePtr;
 
-    if ( !instance.get() )
+    if ( !instancePtr.get() )
     {
         LAMA_LOG_DEBUG( logger, "Create instance for HostMemory" ) 
 
-        ContextPtr host = Context::getContext( context::Host );
-        common::shared_ptr<const HostContext> hostContext = common::dynamic_pointer_cast<const HostContext>( host );
-        instance.reset( new HostMemory( hostContext ) );
+        ContextPtr contextPtr = Context::getContextPtr( context::Host );
+        common::shared_ptr<const HostContext> hostContextPtr = common::dynamic_pointer_cast<const HostContext>( contextPtr );
+        COMMON_ASSERT( hostContextPtr.get(), "Serious: dynamic cast failed" )
+        instancePtr.reset( new HostMemory( hostContextPtr ) );
     }
 
-    return instance;
+    return instancePtr;
 }
 
 } // namespace

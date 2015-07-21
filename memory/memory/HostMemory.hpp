@@ -74,7 +74,7 @@ public:
 
     virtual tasking::SyncToken* memcpyAsync( void* dst, const void* src, const size_t size ) const;
 
-    virtual ContextPtr getContext() const;
+    virtual ContextPtr getContextPtr() const;
 
     /** This routine returns the singleton instance of the HostMemory. */
 
@@ -82,7 +82,7 @@ public:
 
 private:
 
-    common::shared_ptr<const HostContext> mHostContext;
+    common::shared_ptr<const HostContext> mHostContextPtr;
 
     LAMA_LOG_DECL_STATIC_LOGGER( logger )
 

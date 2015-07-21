@@ -86,8 +86,8 @@ ValueType cudaSum( LAMAArray<ValueType>& array, ContextPtr cuda )
 
 BOOST_AUTO_TEST_CASE( ConstructorTest )
 {
-    ContextPtr host = Context::getContext( context::Host );
-    ContextPtr cuda = Context::getContext( context::CUDA );
+    ContextPtr host = Context::getContextPtr( context::Host );
+    ContextPtr cuda = Context::getContextPtr( context::CUDA );
 
     LAMAArray<float> array( cuda );
 
@@ -102,8 +102,8 @@ BOOST_AUTO_TEST_CASE( ConstructorTest )
 
 BOOST_AUTO_TEST_CASE( PrefetchTest )
 {
-    ContextPtr host = Context::getContext( context::Host );
-    ContextPtr cuda = Context::getContext( context::CUDA );
+    ContextPtr host = Context::getContextPtr( context::Host );
+    ContextPtr cuda = Context::getContextPtr( context::CUDA );
 
     IndexType N = 128;
 
@@ -137,8 +137,8 @@ BOOST_AUTO_TEST_CASE( PrefetchTest )
 
 BOOST_AUTO_TEST_CASE( CopyTest )
 {
-    ContextPtr host = Context::getContext( context::Host );
-    ContextPtr cuda = Context::getContext( context::CUDA );
+    ContextPtr host = Context::getContextPtr( context::Host );
+    ContextPtr cuda = Context::getContextPtr( context::CUDA );
 
     IndexType N = 128;
 

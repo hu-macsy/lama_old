@@ -59,15 +59,15 @@ void add( ValueType array[], const IndexType n )
 int main()
 {
     std::cout << "try to get " << context::CUDA << " context from factory" << std::endl;
-    ContextPtr cudaContext1 = Context::getContext( context::CUDA, 0 );
+    ContextPtr cudaContext1 = Context::getContextPtr( context::CUDA, 0 );
     std::cout << "cudaContext1 = " << *cudaContext1 << std::endl;
 
     std::cout << "try to get " << context::CUDA << " context from factory" << std::endl;
-    ContextPtr cudaContext2 = Context::getContext( context::CUDA, 1 );
+    ContextPtr cudaContext2 = Context::getContextPtr( context::CUDA, 1 );
     std::cout << "cudaContext2 = " << *cudaContext2 << std::endl;
 
     std::cout << "try to get " << context::Host << " context from factory" << std::endl;
-    ContextPtr hostContext = Context::getContext( context::Host, 1 );
+    ContextPtr hostContext = Context::getContextPtr( context::Host, 1 );
     std::cout << "hostContext = " << *hostContext << std::endl;
 
     const IndexType N = 100;

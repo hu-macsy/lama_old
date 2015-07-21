@@ -80,9 +80,14 @@ public:
         return pointer;
     }
 
-    MemoryPtr memory() const
+    MemoryPtr getMemoryPtr() const
     {
         return mMemory;
+    }
+
+    const Memory& getMemory() const
+    {
+        return *mMemory;
     }
 
     const void* get() const

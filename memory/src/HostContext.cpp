@@ -117,7 +117,7 @@ bool HostContext::canUseMemory( const Memory& other ) const
     {
         canUseIt = true;
     }
-    else if ( other.getContext()->getType() == context::Host )
+    else if ( other.getContext().getType() == context::Host )
     {
         // If other memory can be used on Host it is okay
 
@@ -129,7 +129,7 @@ bool HostContext::canUseMemory( const Memory& other ) const
 
 /* ------------------------------------------------------------------------- */
 
-MemoryPtr HostContext::getMemory() const
+MemoryPtr HostContext::getMemoryPtr() const
 {
     return HostMemory::getIt();
 }

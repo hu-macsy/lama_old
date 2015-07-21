@@ -87,8 +87,8 @@ LAMA_LOG_DEF_LOGGER( logger, "Test.CUDAContextTest" );
 BOOST_AUTO_TEST_CASE( getContextTest )
 {
     // Test will take the default CUDA device
-    ContextPtr cudaContext1 = Context::getContext( context::CUDA );
-    ContextPtr cudaContext2 = Context::getContext( context::CUDA );
+    ContextPtr cudaContext1 = Context::getContextPtr( context::CUDA );
+    ContextPtr cudaContext2 = Context::getContextPtr( context::CUDA );
     // Two queries for the same context should deliver same pointer
     BOOST_CHECK( cudaContext1.get() == cudaContext2.get() );
 }
@@ -98,7 +98,7 @@ BOOST_AUTO_TEST_CASE( getContextTest )
 BOOST_AUTO_TEST_CASE( allocateTest )
 {
     LAMAArray<int> ctxArray; // default, not allocated at all
-    ContextPtr cudaContext = Context::getContext( context::CUDA );
+    ContextPtr cudaContext = Context::getContextPtr( context::CUDA );
     {
         WriteAccess<int> array( ctxArray, cudaContext );
         array.resize( 10 );
@@ -164,7 +164,7 @@ BOOST_AUTO_TEST_CASE( resizeTest )
 
 BOOST_AUTO_TEST_CASE( asyncTest )
 {
-    ContextPtr cudaContext = Context::getContext( context::CUDA );
+    ContextPtr cudaContext = Context::getContextPtr( context::CUDA );
     const IndexType n = 100;
     const float value = 1.4;
     const float alpha = 0.5;
@@ -195,7 +195,7 @@ BOOST_AUTO_TEST_CASE( asyncTest )
 
 BOOST_AUTO_TEST_CASE( syncTest )
 {
-    ContextPtr cudaContext = Context::getContext( context::CUDA );
+    ContextPtr cudaContext = Context::getContextPtr( context::CUDA );
 
     const IndexType n = 100;
     const float value = 1.4;

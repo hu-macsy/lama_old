@@ -111,8 +111,8 @@ void routineSimple( double& res, IndexType n )
 
 int main()
 {
-    ContextPtr host = Context::getContext( context::Host );
-    MemoryPtr hostMem = host->getMemory();
+    ContextPtr host = Context::getContextPtr( context::Host );
+    MemoryPtr hostMem = host->getMemoryPtr();
 
     static int ITER_VEC[] = { 1000000, 100000, 10000, 1000, 100, 10, 1 };
     static int N_VEC[]    = { 1, 10, 100, 1000, 10000, 100000, 1000000 };

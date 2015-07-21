@@ -36,6 +36,7 @@
 #pragma once
 
 #include <memory/LAMAArray.hpp>
+#include <memory/HostMemory.hpp>
 
 namespace memory
 {
@@ -89,7 +90,7 @@ LAMAArrayRef<ValueType>::LAMAArrayRef( IndexType size, ValueType* pointer )
         COMMON_THROWEXCEPTION( "LAMAArryRef with NULL pointer" )
     }
 
-    ContextData& host = mContextDataManager[ Context::getContext( context::Host ) ];
+    ContextData& host = mContextDataManager[ HostMemory::getIt() ];
     host.setRef( pointer, size * mValueSize );
 
     mSize = size;
@@ -108,7 +109,7 @@ LAMAArrayRef<ValueType>::LAMAArrayRef( IndexType size, const ValueType* pointer 
         COMMON_THROWEXCEPTION( "LAMAArryRef with NULL pointer" )
     }
 
-    ContextData& host = mContextDataManager[ Context::getContext( context::Host ) ];
+    ContextData& host = mContextDataManager[ HostMemory::getIt() ];
 
     // dealing with const references in ContextData is not supported
 

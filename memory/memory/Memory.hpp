@@ -195,7 +195,12 @@ public:
      *        should be avoided. 
      */
 
-    virtual ContextPtr getContext() const = 0;
+    virtual ContextPtr getContextPtr() const = 0;
+
+    const Context& getContext() const 
+    {
+        return *getContextPtr();
+    }
 
 protected:
 

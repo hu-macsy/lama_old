@@ -242,11 +242,11 @@ template<typename OtherValueType>
 LAMAArray<ValueType>::LAMAArray( const IndexType n, const OtherValueType* const values )
                 : ContextArray( n, sizeof( ValueType ) )
 {
-    ContextPtr hostContext = Context::getContext( context::Host );
+    ContextPtr hostContextPtr = Context::getContextPtr( context::Host );
 
-    ContextData& host = mContextDataManager[ hostContext ];
+    ContextData& host = mContextDataManager[ hostContextPtr ];
 
-    if( n <= 0 )
+    if ( n <= 0 )
     {
         LAMA_LOG_DEBUG( logger, "Zero-sized array with value constructed: " << *this )
         return;
@@ -325,8 +325,8 @@ LAMAArray<ValueType>::LAMAArray( const IndexType n ) :
 {
     // reserves already memory on the host, but this data is not valid
 
-    ContextPtr host = Context::getContext( context::Host );
-    mContextDataManager.reserve( host, n * mValueSize, 0 );
+    ContextPtr hostPtr = Context::getContextPtr( context::Host );
+    mContextDataManager.reserve( hostPtr, n * mValueSize, 0 );
 
     LAMA_LOG_DEBUG( logger, "created new LAMA array: " << *this )
 }
@@ -339,7 +339,7 @@ LAMAArray<ValueType>::LAMAArray( const IndexType n, const ValueType& value ) : C
 {
     // In constructor of the LAMA array lock of accesses is not required 
 
-    ContextPtr host = Context::getContext( context::Host );
+    ContextPtr host = Context::getContextPtr( context::Host );
 
     size_t validSize = 0;   // no valid data availalbe, so even don't search for it
 

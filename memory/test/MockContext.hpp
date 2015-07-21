@@ -70,7 +70,7 @@ public:
         stream << "MockContext( dev = " << mDeviceNr << " )";
     }
 
-    virtual MemoryPtr getMemory() const
+    virtual MemoryPtr getMemoryPtr() const
     {
         MemoryPtr memory;
 

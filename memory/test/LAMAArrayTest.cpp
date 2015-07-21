@@ -67,7 +67,7 @@ void readTest( const ValueType values[], const IndexType N, const ValueType sum 
 
 BOOST_AUTO_TEST_CASE( ConstructorTest )
 {
-    ContextPtr host = Context::getContext( context::Host );
+    ContextPtr host = Context::getContextPtr( context::Host );
 
     const IndexType N = 100;
 

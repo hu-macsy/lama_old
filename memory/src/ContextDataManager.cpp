@@ -274,7 +274,7 @@ ContextDataIndex ContextDataManager::findMemoryData( MemoryPtr memory ) const
 
         // comparison for memory is just pointer equality
 
-        if ( entry.memory().get() == memory.get() )
+        if ( entry.getMemoryPtr().get() == memory.get() )
         {
             break;
         }
@@ -299,7 +299,7 @@ ContextDataIndex ContextDataManager::findContextData( ContextPtr context ) const
 
         // can this entry be used 
 
-        if ( context->canUseMemory( *entry.memory() ) )
+        if ( context->canUseMemory( entry.getMemory() ) )
         {
             // First touch policy, so no further search, not even for valid entries
 
@@ -361,7 +361,7 @@ ContextDataIndex ContextDataManager::getContextData( ContextPtr context )
             mContextData.reserve( MEMORY_MAX_CONTEXTS );
         }
 
-        MemoryPtr memoryPtr = context->getMemory();
+        MemoryPtr memoryPtr = context->getMemoryPtr();
 
         if ( context->getType() == context::Host )
         {
@@ -369,7 +369,7 @@ ContextDataIndex ContextDataManager::getContextData( ContextPtr context )
 
             if ( contextIndex > 0 )
             {
-                memoryPtr = mContextData[0].memory()->getContext()->getHostMemory();
+                memoryPtr = mContextData[0].getMemory().getContext().getHostMemoryPtr();
             }
         }
 
@@ -421,6 +421,13 @@ ContextData& ContextDataManager::operator[] ( ContextDataIndex index )
 ContextData& ContextDataManager::operator[] ( ContextPtr context )
 {
     return operator[]( getContextData( context ) );
+}
+
+/* ---------------------------------------------------------------------------------*/
+
+ContextData& ContextDataManager::operator[] ( MemoryPtr memory )
+{
+    return operator[]( getMemoryData( memory ) );
 }
 
 /* ---------------------------------------------------------------------------------*/
@@ -477,7 +484,7 @@ ContextPtr ContextDataManager::getValidContext( const ContextType preferredType 
 
         if ( entry.isValid() )
         {
-            ContextPtr context = entry.memory()->getContext();
+            ContextPtr context = entry.getMemory().getContextPtr();
 
             if ( context->getType() == preferredType )
             {
@@ -514,7 +521,7 @@ ContextDataIndex ContextDataManager::acquireAccess( ContextPtr context, AccessKi
 
     if ( !data.isValid() && allocSize > 0 )
     {
-        LAMA_LOG_DEBUG( logger, "data not valid at " << *data.memory() )
+        LAMA_LOG_DEBUG( logger, "data not valid at " << data.getMemory() )
         // make sure that we have enough memory on the target context
         // old data is invalid so it must not be saved.
         data.reserve( allocSize, 0 );  // do not save any old values
@@ -552,19 +559,19 @@ void ContextDataManager::fetch( ContextData& target, const ContextData& source, 
 
         // try it via host
 
-        if ( target.memory()->getType() == memtype::HostMemory )
+        if ( target.getMemory().getType() == memtype::HostMemory )
         {
-            COMMON_THROWEXCEPTION( "Unsupported: copy to host from: " << *source.memory() )
+            COMMON_THROWEXCEPTION( "Unsupported: copy to host from: " << source.getMemory() )
         }
 
-        if ( source.memory()->getType() == memtype::HostMemory )
+        if ( source.getMemory().getType() == memtype::HostMemory )
         {
-            COMMON_THROWEXCEPTION( "Unsupported: copy from host to: " << *target.memory() )
+            COMMON_THROWEXCEPTION( "Unsupported: copy from host to: " << target.getMemory() )
         }
 
-        ContextPtr hostContext = Context::getContext( context::Host );
+        ContextPtr hostContextPtr = Context::getContextPtr( context::Host );
 
-        ContextData& hostEntry = ( *this )[hostContext];
+        ContextData& hostEntry = ( *this )[hostContextPtr];
 
         if ( ! hostEntry.isValid() )
         {
@@ -590,19 +597,19 @@ SyncToken* ContextDataManager::fetchAsync( ContextData& target, const ContextDat
     {
         LAMA_LOG_INFO( logger, target << " async copy from " << source << " not supported" )
 
-        ContextPtr hostContext = Context::getContext( context::Host );
+        ContextPtr hostContextPtr = Context::getContextPtr( context::Host );
 
-        if ( target.memory()->getType() == memtype::HostMemory )
+        if ( target.getMemory().getType() == memtype::HostMemory )
         {
             COMMON_THROWEXCEPTION( "unsupported" )
         }
 
-        if ( source.memory()->getType() == memtype::HostMemory )
+        if ( source.getMemory().getType() == memtype::HostMemory )
         {
             COMMON_THROWEXCEPTION( "unsupported" )
         }
 
-        ContextData& hostEntry = ( *this )[hostContext];
+        ContextData& hostEntry = ( *this )[hostContextPtr];
 
         if ( ! hostEntry.isValid() )
         {
@@ -631,7 +638,7 @@ void ContextDataManager::copyAllValidEntries( const ContextDataManager& other, c
             continue; // do not copy any invalid data
         }
 
-        ContextData& data = operator[]( getContextData( otherData.memory()->getContext() ) );
+        ContextData& data = operator[]( getContextData( otherData.getMemory().getContextPtr() ) );
 
         if ( size > 0 )
         {

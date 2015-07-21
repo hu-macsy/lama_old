@@ -87,16 +87,16 @@ public:
     virtual ~CUDAContext();
 
     /**
-     *  Override Context::getHostContext
+     *  Override Context::getHostMemoryPtr
      *
-     *  CUDAHostContext is used as host context to support faster and asynchronous memory transfer.
+     *  CUDAHostMemory is used as host memory to support faster and asynchronous memory transfer.
      */
-    virtual MemoryPtr getHostMemory() const;
+    virtual MemoryPtr getHostMemoryPtr() const;
 
     /**
      *  @brief Implementation of Context::getMemory for this class.
      */
-    virtual MemoryPtr getMemory() const;
+    virtual MemoryPtr getMemoryPtr() const;
 
     int getDeviceNr() const
     {

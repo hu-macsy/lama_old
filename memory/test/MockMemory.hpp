@@ -76,9 +76,9 @@ public:
         stream << "MockMemory( dev = " << mDeviceNr << " )";
     }
 
-    virtual ContextPtr getContext() const
+    virtual ContextPtr getContextPtr() const
     {
-        return Context::getContext( context::UserContext, mDeviceNr );
+        return Context::getContextPtr( context::UserContext, mDeviceNr );
     }
 
     virtual MemoryType getType() const

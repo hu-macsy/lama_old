@@ -79,7 +79,7 @@ public:
 
     /** On CUDAHostMemory we work usually with the HostContext. */
 
-    virtual ContextPtr getContext() const;
+    virtual ContextPtr getContextPtr() const;
 
     const CUDAContext& getCUDAContext() const { return *mCUDAContext; }
 

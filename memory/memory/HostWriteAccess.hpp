@@ -108,7 +108,7 @@ protected:
 template<typename ValueType>
 HostWriteAccess<ValueType>::HostWriteAccess( LAMAArray<ValueType>& array, const IndexType size, const bool keep ) :
 
-    WriteAccess<ValueType>( array, Context::getContext( context::Host ), size, keep )
+    WriteAccess<ValueType>( array, Context::getContextPtr( context::Host ), size, keep )
 
 {
 }
@@ -116,7 +116,7 @@ HostWriteAccess<ValueType>::HostWriteAccess( LAMAArray<ValueType>& array, const 
 template<typename ValueType>
 HostWriteAccess<ValueType>::HostWriteAccess( LAMAArray<ValueType>& array, const bool keep ) :
 
-    WriteAccess<ValueType>( array, Context::getContext( context::Host ), keep )
+    WriteAccess<ValueType>( array, Context::getContextPtr( context::Host ), keep )
 
 {
 }

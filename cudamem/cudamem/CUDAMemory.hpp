@@ -99,7 +99,7 @@ public:
 
     virtual tasking::SyncToken* memcpyAsync( void* dst, const void* src, const size_t size ) const;
 
-    virtual ContextPtr getContext() const;
+    virtual ContextPtr getContextPtr() const;
 
 private:
 

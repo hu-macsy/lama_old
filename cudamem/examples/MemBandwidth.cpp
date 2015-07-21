@@ -18,8 +18,8 @@ LAMA_LOG_DEF_LOGGER( logger, "MemBandwidth" )
 template <typename ValueType> 
 void bench( LAMAArray<ValueType>& array )
 {
-    ContextPtr cudaContext = Context::getContext( context::CUDA );
-    ContextPtr hostContext = Context::getContext( context::Host );
+    ContextPtr cudaContext = Context::getContextPtr( context::CUDA );
+    ContextPtr hostContext = Context::getContextPtr( context::Host );
 
     const IndexType N = 8 * 1024 * 1024;
     const IndexType NITER = 128;
@@ -62,8 +62,8 @@ void bench( LAMAArray<ValueType>& array )
 
 int main()
 {
-    ContextPtr cudaContext = Context::getContext( context::CUDA );
-    ContextPtr hostContext = Context::getContext( context::Host );
+    ContextPtr cudaContext = Context::getContextPtr( context::CUDA );
+    ContextPtr hostContext = Context::getContextPtr( context::Host );
 
     LAMAArray<float> A1( hostContext );  // same as LAMAArray<float> A1;
     LAMAArray<float> A2( cudaContext );

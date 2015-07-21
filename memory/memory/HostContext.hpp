@@ -84,7 +84,7 @@ public:
 
     virtual tasking::TaskSyncToken* getSyncToken() const;
 
-    virtual MemoryPtr getMemory() const;
+    virtual MemoryPtr getMemoryPtr() const;
 
 private:
 

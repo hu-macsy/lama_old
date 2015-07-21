@@ -101,7 +101,7 @@ int CUDAMemory::getDeviceNr() const
 
 /* ----------------------------------------------------------------------------- */
 
-ContextPtr CUDAMemory::getContext() const
+ContextPtr CUDAMemory::getContextPtr() const
 {
     return mCUDAContext;
 }

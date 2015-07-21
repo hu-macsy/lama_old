@@ -15,9 +15,9 @@ BOOST_AUTO_TEST_CASE( ContextTest )
 
     using namespace memory;
 
-    ContextPtr userContext  = Context::getContext( context::UserContext, 1 );
-    ContextPtr userContext2 = Context::getContext( context::UserContext, 2 );
-    ContextPtr hostContext  = Context::getContext( context::Host );
+    ContextPtr userContext  = Context::getContextPtr( context::UserContext, 1 );
+    ContextPtr userContext2 = Context::getContextPtr( context::UserContext, 2 );
+    ContextPtr hostContext  = Context::getContextPtr( context::Host );
 
     LAMA_LOG_INFO( logger, "userContext = " << *userContext );
 

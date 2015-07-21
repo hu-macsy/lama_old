@@ -190,7 +190,7 @@ CUDAContext::~CUDAContext()
 
 /* ----------------------------------------------------------------------------- */
 
-MemoryPtr CUDAContext::getMemory() const
+MemoryPtr CUDAContext::getMemoryPtr() const
 {
     MemoryPtr memory;
 
@@ -210,7 +210,7 @@ MemoryPtr CUDAContext::getMemory() const
 
 /* ----------------------------------------------------------------------------- */
 
-MemoryPtr CUDAContext::getHostMemory() const
+MemoryPtr CUDAContext::getHostMemoryPtr() const
 {
     MemoryPtr memory;
 

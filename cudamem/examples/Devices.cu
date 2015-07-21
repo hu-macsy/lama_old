@@ -45,7 +45,7 @@ void sub( ContextPtr cudaContext )
 {
     try
     {
-        MemoryPtr mem = cudaContext->getMemory();
+        MemoryPtr mem = cudaContext->getMemoryPtr();
         cout << "CUDA context " << *cudaContext << " has mem = " << *mem << endl;
     }
     catch ( common::Exception& ex )
@@ -55,7 +55,7 @@ void sub( ContextPtr cudaContext )
 
     try
     {
-        MemoryPtr mem = cudaContext->getHostMemory();
+        MemoryPtr mem = cudaContext->getHostMemoryPtr();
         cout << "CUDA context " << *cudaContext << " has host mem = " << *mem << endl;
     }
     catch ( common::Exception& ex )

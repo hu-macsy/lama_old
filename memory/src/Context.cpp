@@ -148,17 +148,17 @@ void Context::disable( const char* file, int line ) const
 
 /* ---------------------------------------------------------------------------------*/
 
-MemoryPtr Context::getHostMemory() const
+MemoryPtr Context::getHostMemoryPtr() const
 {
     // take the host memory of the memory factory
 
-    ContextPtr host = Context::getContext( context::Host );
-    return host->getMemory();
+    ContextPtr hostContextPtr = Context::getContextPtr( context::Host );
+    return hostContextPtr->getMemoryPtr();
 }
 
 /* ---------------------------------------------------------------------------------*/
 
-ContextPtr Context::getContext( ContextType type, int deviceNr )
+ContextPtr Context::getContextPtr( ContextType type, int deviceNr )
 {
     return create( type, deviceNr );
 }

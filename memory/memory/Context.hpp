@@ -169,12 +169,15 @@ public:
 
     const class LAMAInterface& getInterface() const;
 
-    /** This method returns the memory that is used at this context. 
+    /** This method returns the memory that can be used at this context. 
      *
-     *  Note: canUseMemory( *getMemory() ) is always true.
+     *  Note: canUseMemory( *getMemory() ) must be true.
+     *
+     *  It might be possible that other memories can also be used. This
+     *  method should return the memory that gives the best performance.
      */
 
-    virtual MemoryPtr getMemory() const = 0;
+    virtual MemoryPtr getMemoryPtr() const = 0;
 
     /** Get the preferred host memory for a context.
      *
@@ -185,7 +188,7 @@ public:
      *  Context should override this method to provide more efficient solutions.
      */
 
-    virtual MemoryPtr getHostMemory() const;
+    virtual MemoryPtr getHostMemoryPtr() const;
  
     /** @brief Get a context of a certain type from the Context factory.
      *
@@ -201,7 +204,7 @@ public:
      *
      *  @throws Exception if the context of the requested type is not available
      */
-    static ContextPtr getContext( const ContextType type = context::Host, int deviceNr = -1 );
+    static ContextPtr getContextPtr( const ContextType type = context::Host, int deviceNr = -1 );
 
     /** Checks if a context of the passed type is available.
      *

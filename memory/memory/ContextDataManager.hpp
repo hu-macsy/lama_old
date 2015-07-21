@@ -140,6 +140,8 @@ public:
 
     ContextData& operator[]( ContextPtr context );
 
+    ContextData& operator[]( MemoryPtr context );
+
     /** Swap of ContextDataManager required for swap of LAMA arrays. */
 
     void swap( ContextDataManager& other );

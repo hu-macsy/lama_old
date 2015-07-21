@@ -59,24 +59,24 @@ void add( ValueType array[], const IndexType n )
 int main()
 {
     std::cout << "try to get " << context::CUDA << " context from factory" << std::endl;
-    ContextPtr cudaContext = Context::getContext( context::CUDA );
+    ContextPtr cudaContext = Context::getContextPtr( context::CUDA );
     COMMON_ASSERT( cudaContext, "NULL context" )
     std::cout << "cudaContext = " << *cudaContext << std::endl;
 
-    MemoryPtr cudaMemory = cudaContext->getMemory();
+    MemoryPtr cudaMemory = cudaContext->getMemoryPtr();
     COMMON_ASSERT( cudaMemory, "NULL memory" )
     std::cout << "cudaMemory = " << *cudaMemory << std::endl;
 
     std::cout << "try to get " << context::Host << " context from factory" << std::endl;
-    ContextPtr hostContext = Context::getContext( context::Host );
+    ContextPtr hostContext = Context::getContextPtr( context::Host );
     COMMON_ASSERT( hostContext, "NULL context" )
     std::cout << "hostContext = " << *hostContext << std::endl;
 
-    MemoryPtr hostMemory = hostContext->getMemory();
+    MemoryPtr hostMemory = hostContext->getMemoryPtr();
     COMMON_ASSERT( hostMemory, "NULL memory" )
     std::cout << "hostMemory = " << *hostMemory << std::endl;
 
-    MemoryPtr cudaHostMemory = cudaContext->getHostMemory();
+    MemoryPtr cudaHostMemory = cudaContext->getHostMemoryPtr();
     COMMON_ASSERT( cudaHostMemory, "NULL memory" )
     std::cout << "cudaHostMemory = " << *cudaHostMemory << std::endl;
 
