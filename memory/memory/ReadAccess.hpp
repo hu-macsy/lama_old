@@ -32,8 +32,8 @@
 
 #pragma once
 
-// for dll_import
 #include <common/config.hpp>
+#include <common/Exception.hpp>
 
 #include <memory/Access.hpp>
 #include <memory/LAMAArray.hpp>
@@ -61,63 +61,46 @@ private:
 
     const LAMAArray<ValueType>* mArray;   // read access to this associated LAMA array
 
-    ContextDataIndex mContextDataIndex;   // reference to the context data of the read
+    const ValueType* mData;               // pointer to the data used by the access
+
+    ContextDataIndex mContextDataIndex;   // reference to the incarnation of the array
 
 public:
 
     /**
-     * @brief Acquires a ReadAccess to the passed LAMAArray for the passed context.
+     * @brief Acquires a ReadAccess to the passed LAMAArray for a given context.
      *
-     * @param[in] array     the LAMAArray to acquire a ReadAccess for
-     * @param[in] context   the context that needs a read acess
-     * @throws Exception    if the ReadAccess can not be acquired, e.g. because a WriteAccess exists.
+     * @param[in] array      the LAMAArray to acquire a ReadAccess for
+     * @param[in] contextPtr the context that needs a read acess
+     * @throws Exception     if the ReadAccess can not be acquired, e.g. because a WriteAccess exists.
      */
-    ReadAccess( const LAMAArray<ValueType>& array, ContextPtr context ) : mArray( &array )
-    {
-        COMMON_ASSERT( context, "NULL context for read access not allowed" );
 
-        LAMA_LOG_DEBUG( logger, "ReadAccess<" << getScalarType<ValueType>()
-                        << "> : create for " << array << " @ " << *context )
-
-        mContextDataIndex = mArray->acquireReadAccess( context );
-    }
+    ReadAccess( const LAMAArray<ValueType>& array, ContextPtr contextPtr );
 
     /**
      * @brief Acquires a ReadAccess to the passed LAMAArray for the host context.
      *
-     * @param[in] context   the context that needs a read acess
+     * @param[in] array     the LAMAArray to acquire a ReadAccess for
      * @throws Exception    if the ReadAccess can not be acquired, e.g. because a WriteAccess exists.
      */
-    ReadAccess( const LAMAArray<ValueType>& array ) : mArray( &array )
-    {
-        ContextPtr contextPtr = Context::getContextPtr( context::Host );
-
-        LAMA_LOG_DEBUG( logger, "ReadAccess<" << getScalarType<ValueType>()
-                        << "> : create for " << array << " @ " << *contextPtr )
-
-        mContextDataIndex = mArray->acquireReadAccess( contextPtr );
-    }
+    ReadAccess( const LAMAArray<ValueType>& array );
 
     /**
      * @brief Releases the ReadAccess on the associated LAMAArray.
      */
-    virtual ~ReadAccess()
-    {
-        LAMA_LOG_DEBUG( logger, "~ReadAccess<" << getScalarType<ValueType>() << ">" )
-        release();
-    }
+    virtual ~ReadAccess();
 
     /**
      * @brief Returns a valid pointer to the data usable for the context.
      *
      * @return a pointer to the wrapped LAMAArray.
      */
-    const ValueType* get() const
-    {
-        COMMON_ASSERT( mArray, "ReadAccess::get fails, has already been released." )
+    const ValueType* get() const;
 
-        return mArray->get( mContextDataIndex );
-    }
+    /**
+     * @brief Allow type conversion.
+     */
+    operator const ValueType*() const;
 
     /**
      * @brief Releases the acquired ReadAccess.
@@ -125,53 +108,130 @@ public:
      * Release is mandatory to unlock the array so that it might be
      * used for further write accesses.
      */
-    virtual void release()
-    {
-        if ( mArray )
-        {
-            LAMA_LOG_DEBUG( logger, "ReadAccess<" << getScalarType<ValueType>() << ">: realase for " << *mArray )
-            mArray->releaseReadAccess( mContextDataIndex );
-        }
+    virtual void release();
 
-        mArray = NULL;
-    }
-
-    virtual void writeAt( std::ostream& stream ) const
-    {
-        stream << "ReadAccess<" << getScalarType<ValueType>() << "> ";
-
-        if ( mArray )
-        {
-            stream << "to " << *mArray;
-        }
-        else
-        {
-            stream << "released.";
-        }
-    }
+    /** 
+     * @brief Output of this object in a stream. 
+     */
+    virtual void writeAt( std::ostream& stream ) const;
 
     /**
      * @brief Returns the size of the array
      *
      * @return  the size of the wrapped LAMAArray
      */
-    inline IndexType size() const
-    {
-        if ( mArray )
-        {
-            return mArray->size();
-        }
-        else
-        {
-            return 0;
-        }
-    }
+    IndexType size() const;
 
 protected:
 
     LAMA_LOG_DECL_STATIC_LOGGER( logger )
 };
 
+/* ---------------------------------------------------------------------------------*/
+
 LAMA_LOG_DEF_TEMPLATE_LOGGER( template<typename ValueType>, ReadAccess<ValueType>::logger, "ReadAccess" )
+
+/* ---------------------------------------------------------------------------------*/
+
+template<typename ValueType>
+ReadAccess<ValueType>::ReadAccess( const LAMAArray<ValueType>& array, ContextPtr contextPtr ) : mArray( &array )
+{
+    COMMON_ASSERT( contextPtr.get(), "NULL context for read access not allowed" )
+
+    LAMA_LOG_DEBUG( logger, "ReadAccess<" << getScalarType<ValueType>()
+                    << "> : create for " << array << " @ " << *contextPtr )
+
+    mContextDataIndex = mArray->acquireReadAccess( contextPtr );
+
+    mData = mArray->get( mContextDataIndex );
+}
+
+template<typename ValueType>
+ReadAccess<ValueType>::ReadAccess( const LAMAArray<ValueType>& array ) : mArray( &array )
+{
+    ContextPtr contextPtr = Context::getContextPtr( context::Host );
+
+    LAMA_LOG_DEBUG( logger, "ReadAccess<" << getScalarType<ValueType>()
+                    << "> : create for " << array << " @ " << *contextPtr )
+
+    mContextDataIndex = mArray->acquireReadAccess( contextPtr );
+
+    mData = mArray->get( mContextDataIndex );
+}
+
+/* ---------------------------------------------------------------------------------*/
+
+template<typename ValueType>
+ReadAccess<ValueType>::~ReadAccess()
+{
+    LAMA_LOG_DEBUG( logger, "~ReadAccess<" << getScalarType<ValueType>() << ">" )
+    release();
+}
+
+/* ---------------------------------------------------------------------------------*/
+
+template<typename ValueType>
+void ReadAccess<ValueType>::release()
+{
+    if ( mArray )
+    {
+        LAMA_LOG_DEBUG( logger, "ReadAccess<" << getScalarType<ValueType>() << ">: realase for " << *mArray )
+        mArray->releaseReadAccess( mContextDataIndex );
+    }
+
+    mArray = NULL;
+}
+
+/* ---------------------------------------------------------------------------------*/
+
+template<typename ValueType>
+void ReadAccess<ValueType>::writeAt( std::ostream& stream ) const
+{
+    stream << "ReadAccess<" << getScalarType<ValueType>() << "> ";
+
+    if ( mArray )
+    {
+        stream << "to " << *mArray;
+    }
+    else
+    {
+        stream << "released.";
+    }
+}
+
+/* ---------------------------------------------------------------------------------*/
+
+template<typename ValueType>
+IndexType ReadAccess<ValueType>::size() const
+{
+    if ( mArray )
+    {
+        return mArray->size();
+    }
+    else
+    {
+        return 0;
+    }
+}
+
+/* ---------------------------------------------------------------------------------*/
+
+template<typename ValueType>
+const ValueType* ReadAccess<ValueType>::get() const
+{
+    COMMON_ASSERT( mArray, "ReadAccess::get fails, has already been released." )
+
+    return mData;
+}
+
+/* ---------------------------------------------------------------------------------*/
+
+template<typename ValueType>
+ReadAccess<ValueType>::operator const ValueType*() const
+{
+    COMMON_ASSERT( mArray, "ReadAccess has already been released." )
+
+    return mData;
+}
 
 } // namespace

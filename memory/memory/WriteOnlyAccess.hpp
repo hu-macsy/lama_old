@@ -70,6 +70,11 @@ public:
         LAMA_LOG_DEBUG( logger, "WriteOnlyAccess<" << getScalarType<ValueType>() << ">" )
     }
 
+    /** Create a write access with keep flag = false for the host context
+     *
+     *  Attention: this kind of write access assumes that the array is completely new written.
+     */
+
     WriteOnlyAccess( LAMAArray<ValueType>& array )
         : WriteAccess<ValueType>( array, false )
     {

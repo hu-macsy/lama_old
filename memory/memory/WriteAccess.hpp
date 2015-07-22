@@ -116,6 +116,13 @@ public:
     ValueType* get();
 
     /**
+     * @brief Support implicit type conversion to pointer of the data.
+     *
+     * @return a pointer to the wrapped LAMAArray.
+     */
+    operator ValueType*();
+
+    /**
      * @brief Clear of the LAMA array.
      *
      * This operation is the same as calling it directly for the LAMA array.
@@ -211,7 +218,6 @@ WriteAccess<ValueType>::~WriteAccess()
 
 /* --------------------------------------------------------------------------- */
 
-
 template<typename ValueType>
 ValueType* WriteAccess<ValueType>::get()
 {
@@ -219,6 +225,18 @@ ValueType* WriteAccess<ValueType>::get()
 
     return mData;    // mData might be NULL if size of array is 0
 }
+
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType>
+WriteAccess<ValueType>::operator ValueType*()
+{
+    COMMON_ASSERT( mArray, "illegal get(): access has already been released." )
+
+    return mData;    // mData might be NULL if size of array is 0
+}
+
+/* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
 inline IndexType WriteAccess<ValueType>::size() const
@@ -233,6 +251,8 @@ inline IndexType WriteAccess<ValueType>::size() const
     }
 }
 
+/* --------------------------------------------------------------------------- */
+
 template<typename ValueType>
 void WriteAccess<ValueType>::clear()
 {
@@ -241,6 +261,8 @@ void WriteAccess<ValueType>::clear()
     LAMA_LOG_DEBUG( logger, "cleared " << *mArray )
     mData = mArray->get( mContextDataIndex );     // not really needed
 }
+
+/* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
 void WriteAccess<ValueType>::resize( const IndexType newSize )
@@ -252,6 +274,8 @@ void WriteAccess<ValueType>::resize( const IndexType newSize )
     mData = mArray->get( mContextDataIndex );     // data might be reallocated
 }
 
+/* --------------------------------------------------------------------------- */
+
 template<typename ValueType>
 void WriteAccess<ValueType>::reserve( const IndexType capacity )
 {
@@ -261,12 +285,16 @@ void WriteAccess<ValueType>::reserve( const IndexType capacity )
     mData = mArray->get( mContextDataIndex );     // data might be reallocated
 }
 
+/* --------------------------------------------------------------------------- */
+
 template<typename ValueType>
 IndexType WriteAccess<ValueType>::capacity() const
 {
     COMMON_ASSERT( mArray, "WriteAccess has already been released." )
     return mArray->capacity( mContextDataIndex );
 }
+
+/* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
 void WriteAccess<ValueType>::release()
@@ -284,6 +312,8 @@ void WriteAccess<ValueType>::release()
     mArray = 0;
     mData = 0;
 }
+
+/* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
 void WriteAccess<ValueType>::writeAt( std::ostream& stream ) const

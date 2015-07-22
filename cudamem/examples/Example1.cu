@@ -45,7 +45,7 @@ void add_kernel( ValueType* array, IndexType n )
 }
 
 template<typename ValueType>
-void add( ValueType array[], const IndexType n )
+void add( ValueType* array, const IndexType n )
 {
     const int blockSize = 256;
     const int nblocks   = ( n + blockSize - 1 ) / blockSize;
@@ -90,11 +90,13 @@ int main()
         LAMA_LOG_INFO( logger, "write only on cuda host" )
         // HostWriteOnlyAccess<double> write( data,  N );
 
-        WriteOnlyAccess<double> write( data, hostContext, N );
-        double* v = write.get();
+        WriteOnlyAccess<double> writeData( data, N );
+
+        double* dataHost = writeData;
+
         for ( IndexType i = 0; i < N; ++i )
         {
-            v[i] = 1.0;
+            writeData[i] = 1.0;
         }
     }
 
@@ -114,7 +116,7 @@ int main()
         LAMA_LOG_INFO( logger, "write on cuda" )
         WriteAccess<double> write( data, cudaContext );
         LAMA_CONTEXT_ACCESS( cudaContext )
-        add( write.get(), data.size() );
+        add( static_cast<double*>( write ), data.size() );
     }
 
     std::cout << "After cuda write: data = " << data << std::endl;
@@ -125,7 +127,7 @@ int main()
         sleep( 1 );
         for ( IndexType i = 0; i < N; ++i )
         {
-            COMMON_ASSERT_EQUAL( read.get()[i], 2 * 1.0, "wrong value after add, i = " << i )
+            COMMON_ASSERT_EQUAL( read[i], 2 * 1.0, "wrong value after add, i = " << i )
         }
     }
 
