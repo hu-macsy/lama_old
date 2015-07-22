@@ -73,7 +73,7 @@ void routineLAMA( double& res, IndexType n )
     }
 }
 
-void routineLAMA_1( double& res, IndexType n )
+void routineLAMA_1( double& res )
 {
     LAMAArray<double> X;
     res = 0.0;
@@ -137,7 +137,7 @@ int main()
 
         for ( int i = 0; i < ITER; ++i )
         {
-            routineLAMA_1( res, N );
+            routineLAMA_1( res );
         }
 
         double tl1 = ( common::Walltime::get() - time ) * 1000.0;
