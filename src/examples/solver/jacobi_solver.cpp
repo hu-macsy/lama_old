@@ -91,7 +91,7 @@ int main( int argc, char* argv[] )
     auto_ptr<Matrix> matrixPtr;
     auto_ptr<Vector> rhsPtr;
 
-    if ( lamaconf.getValueType() == Scalar::FLOAT )
+    if ( lamaconf.getValueType() == common::scalar::FLOAT )
     {
         matrixPtr.reset( lamaconf.createSparseMatrix<float>() );
         rhsPtr.reset( new DenseVector<float>() );

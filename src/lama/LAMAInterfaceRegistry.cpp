@@ -36,6 +36,7 @@
 
 // others
 #include <lama/exception/Exception.hpp>
+#include <common/Exception.hpp>
 
 using namespace std;
 
@@ -107,7 +108,7 @@ LAMAInterfaceRegistry& LAMAInterfaceRegistry::getRegistry()
 {
     static CGuard g;
 
-    if( instance == 0 )
+    if ( instance == 0 )
     {
         instance = new LAMAInterfaceRegistry();
     }
@@ -143,7 +144,7 @@ const LAMAInterface& Context::getInterface() const
 
     // Registry throws an exception if no interface is available
 
-    LAMA_ASSERT_DEBUG( lamaInterface, "No lama interface available on " << *this )
+    COMMON_ASSERT( lamaInterface, "No lama interface available on " << *this )
 
     return *lamaInterface;
 }

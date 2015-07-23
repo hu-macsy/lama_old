@@ -319,4 +319,17 @@ BOOST_AUTO_TEST_CASE( createTest )
 
 /* --------------------------------------------------------------------- */
 
+BOOST_AUTO_TEST_CASE( validTest )
+{
+    LAMAArray<float> A( 10 );
+
+    // Array not allocated at all, should also give some default for validContext
+
+    ContextPtr validContext = A.getValidContext();
+
+    BOOST_CHECK( validContext.get() );
+}
+
+/* --------------------------------------------------------------------- */
+
 BOOST_AUTO_TEST_SUITE_END();

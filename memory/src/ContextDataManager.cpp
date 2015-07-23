@@ -501,7 +501,21 @@ ContextPtr ContextDataManager::getValidContext( const ContextType preferredType 
         }
     }
 
-    return result;  // might be NULL
+    if ( !result.get() )
+    {
+        LAMA_LOG_WARN( logger, "no valid context found for LAMAArray" )
+
+        if ( Context::hasContext( preferredType ) )
+        {
+            result = Context::getContextPtr( preferredType );
+        }
+        else
+        {
+            result = Context::getContextPtr( context::Host );
+        }
+    }
+
+    return result;  // must not be NULL
 }
 
 /* ---------------------------------------------------------------------------------*/

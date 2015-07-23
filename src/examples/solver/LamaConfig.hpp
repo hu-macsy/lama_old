@@ -35,15 +35,12 @@
 
 #include <lama.hpp>
 
-#include <lama/Context.hpp>
+#include <memory/Context.hpp>
 #include <common/Printable.hpp>
 #include <lama/matrix/all.hpp>
 #include <lama/CommunicatorFactory.hpp>
 #include <lama/solver/logger/LogLevel.hpp>
 #include <omp.h>
-#ifdef USE_CUDA
-#include <lama/cuda/CUDAHostContextManager.hpp>
-#endif
 
 #include <cstring>
 #include <vector>
@@ -100,13 +97,13 @@ public:
     template<typename ValueType>
     lama::SparseMatrix<ValueType>* createSparseMatrix( const char* format );
 
-    lama::ContextPtr getContextPtr() const
+    memory::ContextPtr getContextPtr() const
     {
         // Create a new context if not done yet
 
         if ( !mContext )
         {
-            mContext = lama::ContextFactory::getContext( mContextType, mDevice );
+            mContext = memory::Context::getContextPtr( mContextType, mDevice );
         }
 
         return mContext;
@@ -162,7 +159,7 @@ public:
         return mCommunicationKind;
     }
 
-    lama::Scalar::ScalarType getValueType() const
+    common::ScalarType getValueType() const
     {
         return mValueType;
     }
@@ -181,13 +178,13 @@ private:
 
     std::string              mMatrixFormat;
 
-    lama::Context::ContextType mContextType;
+    memory::ContextType        mContextType;
 
-    mutable lama::ContextPtr   mContext;
+    mutable memory::ContextPtr   mContext;
 
     lama::Matrix::SyncKind     mCommunicationKind;
 
-    lama::Scalar::ScalarType   mValueType;          // value type to use
+    common::ScalarType   mValueType;          // value type to use
 
     lama::CommunicatorPtr      mComm;
 
@@ -214,9 +211,9 @@ LamaConfig::LamaConfig()
 {
     mCommunicationKind = lama::Matrix::SYNCHRONOUS;
     mComm              = lama::CommunicatorFactory::get();
-    mContextType       = lama::Context::Host;
+    mContextType       = memory::context::Host;
     mMaxIter           = lama::nIndex;
-    mValueType         = lama::Scalar::DOUBLE;
+    mValueType         = common::scalar::DOUBLE;
     mLogLevel          = lama::LogLevel::convergenceHistory;
     mUseMetis          = false;
     mWeight            = 1.0f;
@@ -327,15 +324,15 @@ void LamaConfig::setArg( const char* arg )
     { 
         // Host does not require a device id
 
-        mContextType = lama::Context::Host;
+        mContextType = memory::context::Host;
     }
     else if ( ( "MIC" == val ) || ( "PHI" == val ) )
     { 
-        mContextType = lama::Context::MIC;
+        mContextType = memory::context::MIC;
     }
     else if ( ( "CUDA" == val ) || ( "GPU" == val ) )
     { 
-        mContextType = lama::Context::CUDA;
+        mContextType = memory::context::CUDA;
     }
     else if ( "PINNED" == val )
     {
@@ -359,27 +356,27 @@ void LamaConfig::setArg( const char* arg )
     }
     else if ( ( "FLOAT" == val ) || ( "SP" == val ) )
     {
-        mValueType = lama::Scalar::FLOAT;
+        mValueType = common::scalar::FLOAT;
     }
     else if ( ( "DOUBLE" == val ) || ( "DP" == val ) )
     {
-        mValueType = lama::Scalar::DOUBLE;
+        mValueType = common::scalar::DOUBLE;
     }
     else if ( ( "LONGDOUBLE" == val ) || ( "LP" == val ) )
     {
-        mValueType = lama::Scalar::LONG_DOUBLE;
+        mValueType = common::scalar::LONG_DOUBLE;
     }
     else if ( ( "COMPLEX" == val ) || ( "CP" == val ) )
     {
-        mValueType = lama::Scalar::COMPLEX;
+        mValueType = common::scalar::COMPLEX;
     }
     else if ( ( "DOUBLECOMPLEX" == val ) || ( "COMPLEXDOUBLE" == val) || ( "ZP" == val ) )
     {
-        mValueType = lama::Scalar::DOUBLE_COMPLEX;
+        mValueType = common::scalar::DOUBLE_COMPLEX;
     }
     else if ( ( "LONGCOMPLEX" == val ) || ( "COMPLEXLONG" == val) )
     {
-        mValueType = lama::Scalar::LONG_DOUBLE_COMPLEX;
+        mValueType = common::scalar::LONG_DOUBLE_COMPLEX;
     }
     else if ( "TEXTURE" == val )
     {
@@ -532,7 +529,7 @@ const char* LamaConfig::getFormat( ) const
     {
         // choose default format by context: Host -> CSR, CUDA -> ELL
 
-        if ( mContextType == lama::Context::CUDA )
+        if ( mContextType == memory::context::CUDA )
         {
             return "ELL";
         }

@@ -175,7 +175,9 @@ void LAMAArrayUtils::gather(
 template<typename ValueType>
 void LAMAArrayUtils::assignScalar( LAMAArray<ValueType>& target, const Scalar& value, ContextPtr context )
 {
-    LAMA_LOG_INFO( logger, target << " = " << value )
+    COMMON_ASSERT( context.get(), "No context specified" )
+
+    LAMA_LOG_INFO( logger, target << " = " << value << ", to do at " << *context )
 
 // assignment takes place at the given context
 
@@ -185,11 +187,9 @@ void LAMAArrayUtils::assignScalar( LAMAArray<ValueType>& target, const Scalar& v
 
     const ValueType val = value.getValue<ValueType>();
 
-    WriteAccess<ValueType> values( target, context );
+    WriteOnlyAccess<ValueType> values( target, context );
 
     LAMA_CONTEXT_ACCESS( context )
-
-// values[i] = val, i = 0, .., n-1
 
     setVal( values.get(), n, val );
 }
