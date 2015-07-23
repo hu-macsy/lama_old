@@ -311,8 +311,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( SwapTest, MatrixType, SparseMatrixTypes )
     oneVector.redistribute( rep );
     BOOST_REQUIRE_EQUAL( nullVector.getLocalValues().size(), globalSize );
     BOOST_REQUIRE_EQUAL( oneVector.getLocalValues().size(), globalSize );
-    HostReadAccess<ValueType> rNull( nullVector.getLocalValues() );
-    HostReadAccess<ValueType> rOne( oneVector.getLocalValues() );
+    ReadAccess<ValueType> rNull( nullVector.getLocalValues() );
+    ReadAccess<ValueType> rOne( oneVector.getLocalValues() );
     ValueType null = 0.0;
     ValueType one = 1.0;
 
@@ -349,13 +349,13 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( FullConstructorTest, MatrixType, SparseMatrixType
     IndexType* jaHalo = new IndexType[ numHaloValues ];
     double* valuesHalo = new double[ numHaloValues ];
     const CSRStorage<double>& localSt = matrix.getLocalStorage();
-    HostReadAccess<IndexType> iaLocalRead( localSt.getIA() );
-    HostReadAccess<IndexType> jaLocalRead( localSt.getJA() );
-    HostReadAccess<double> valuesLocalRead( localSt.getValues() );
+    ReadAccess<IndexType> iaLocalRead( localSt.getIA() );
+    ReadAccess<IndexType> jaLocalRead( localSt.getJA() );
+    ReadAccess<double> valuesLocalRead( localSt.getValues() );
     const CSRStorage<double>& haloSt = matrix.getHaloStorage();
-    HostReadAccess<IndexType> iaHaloRead( haloSt.getIA() );
-    HostReadAccess<IndexType> jaHaloRead( haloSt.getJA() );
-    HostReadAccess<double> valuesHaloRead( haloSt.getValues() );
+    ReadAccess<IndexType> iaHaloRead( haloSt.getIA() );
+    ReadAccess<IndexType> jaHaloRead( haloSt.getJA() );
+    ReadAccess<double> valuesHaloRead( haloSt.getValues() );
 
     for ( IndexType i = 0; i < numLocalRows + 1; ++i )
     {

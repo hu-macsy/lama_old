@@ -471,7 +471,7 @@ DenseVector<ValueType>::DenseVector( const IndexType size, const OtherValueType*
 {
     // use LAMA array reference to avoid copy of the raw data
 
-    LAMAArrayRef<OtherValueType> valuesArrayRef( values, size );
+    LAMAArrayRef<OtherValueType> valuesArrayRef( size, values );
 
     // use mContext instead of context to avoid NULL pointer
 

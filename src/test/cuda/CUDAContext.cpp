@@ -32,18 +32,18 @@
  */
 #include <test/cuda/CUDAContext.hpp>
 
-#include <lama/ContextFactory.hpp>
+#include <memory/Context.hpp>
 
 namespace lama_test
 {
 
-lama::ContextPtr CUDAContext::cudaContext;
+memory::ContextPtr CUDAContext::cudaContext;
 
-lama::ContextPtr CUDAContext::getContext()
+memory::ContextPtr CUDAContext::getContext()
 {
     if ( !cudaContext )
     {
-        cudaContext = lama::ContextFactory::getContext( lama::Context::CUDA, 0 );
+        cudaContext = memory::Context::getContextPtr( memory::context::CUDA, 0 );
     }
 
     return cudaContext;

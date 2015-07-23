@@ -463,7 +463,8 @@ void MPICommunicator::exchangeByPlanImpl(
     LAMA_ASSERT_ERROR( recvPlan.allocated(), "recvPlan not allocated" )
 
     LAMA_LOG_INFO( logger,
-                   *this << ": exchange for values of type " << Scalar::getType<ValueType>() << ", send to " << sendPlan.size() << " processors, recv from " << recvPlan.size() )
+                   *this << ": exchange for values of type " << common::getScalarType<ValueType>() 
+                   << ", send to " << sendPlan.size() << " processors, recv from " << recvPlan.size() )
 
     int maxReceives = recvPlan.size();
     int noReceives = 0; // will be incremented
@@ -541,7 +542,8 @@ SyncToken* MPICommunicator::exchangeByPlanAsyncImpl(
     LAMA_ASSERT_ERROR( sendPlan.allocated(), "sendPlan not allocated" )
     LAMA_ASSERT_ERROR( recvPlan.allocated(), "recvPlan not allocated" )
     LAMA_LOG_INFO( logger,
-                   *this << ": exchange for values of type " << Scalar::getType<ValueType>() << ", send to " << sendPlan.size() << " processors, recv from " << recvPlan.size() )
+                   *this << ": exchange for values of type " << common::getScalarType<ValueType>() 
+                    << ", send to " << sendPlan.size() << " processors, recv from " << recvPlan.size() )
     int noRequests = sendPlan.size() + recvPlan.size();
 
     // create MPIToken as auto_ptr, so it will be freed in case of exception
@@ -981,27 +983,27 @@ void MPICommunicator::swapImpl( ValueType val[], const IndexType n, PartitionId 
     LAMA_ASSERT_ERROR( getCount<ValueType>( mpiStatus ) == n, "size mismatch for swap" )
 }
 
-ContextPtr MPICommunicator::getCommunicationContext( const _LAMAArray& array ) const
+memory::ContextPtr MPICommunicator::getCommunicationContext( const memory::ContextArray& array ) const
 {
     // get a valid context, i.e. a context that contains valid data
 
-    ContextPtr validContext = array.getValidContext( Context::Host );
+    memory::ContextPtr validContext = array.getValidContext( memory::context::Host );
 
     LAMA_LOG_DEBUG( logger, "CommunicationContext: valid context for " << array << ": " << *validContext )
 
-    if( validContext->getType() == Context::Host )
+    if ( validContext->getType() == memory::context::Host )
     {
         return validContext;
     }
 
     // This can only be used for CUDAaware MPI
 
-    if( isCUDAAware && ( validContext->getType() == Context::CUDA ) )
+    if( isCUDAAware && ( validContext->getType() == memory::context::CUDA ) )
     {
         return validContext;
     }
 
-    return ContextFactory::getContext( Context::Host );
+    return memory::Context::getContextPtr( memory::context::Host );
 }
 
 /* ---------------------------------------------------------------------------------- */

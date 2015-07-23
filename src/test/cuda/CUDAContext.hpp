@@ -30,9 +30,10 @@
  * @date 05.04.2012
  * @since 1.0.0
  */
-#ifndef LAMA_BTEST_CUDACONTEXT_HPP_
-#define LAMA_BTEST_CUDACONTEXT_HPP_
-#include <lama/Context.hpp>
+
+#pragma once
+
+#include <memory/Context.hpp>
 
 namespace lama_test
 {
@@ -40,17 +41,15 @@ namespace lama_test
 class CUDAContext
 {
 public:
-    static lama::ContextPtr getContext();
+    static memory::ContextPtr getContext();
 private:
     CUDAContext();
     CUDAContext( const CUDAContext& );
     const CUDAContext& operator=( const CUDAContext& );
     ~CUDAContext();
 
-    static lama::ContextPtr cudaContext;
+    static memory::ContextPtr cudaContext;
 
 };
 
-} //namespace lama_test
-
-#endif // LAMA_BTEST_CUDACONTEXT_HPP_
+} // namespace 

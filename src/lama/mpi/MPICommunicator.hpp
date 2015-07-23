@@ -43,7 +43,7 @@
 
 // others
 #include <lama/LAMATypes.hpp>
-#include <lama/SyncToken.hpp>
+#include <tasking/SyncToken.hpp>
 
 // logging
 #include <logging/logging.hpp>
@@ -174,7 +174,7 @@ private:
         const PartitionId dest ) const;
 
     template<typename ValueType>
-    SyncToken* shiftAsyncImpl(
+    tasking::SyncToken* shiftAsyncImpl(
         ValueType newvals[],
         const PartitionId source,
         const ValueType oldVals[],
@@ -195,7 +195,7 @@ private:
         const CommunicationPlan& sendPlan ) const;
 
     template<typename ValueType>
-    SyncToken* exchangeByPlanAsyncImpl(
+    tasking::SyncToken* exchangeByPlanAsyncImpl(
         ValueType recvData[],
         const CommunicationPlan& recvPlan,
         const ValueType sendData[],
@@ -215,7 +215,7 @@ protected:
 
     void setNodeData();
 
-    virtual ContextPtr getCommunicationContext( const _LAMAArray& array ) const;
+    virtual memory::ContextPtr getCommunicationContext( const memory::ContextArray& array ) const;
 
     int mRank; // rank of this processor
     int mSize;// size of communicator

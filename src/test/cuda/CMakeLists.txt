@@ -40,12 +40,12 @@ set ( CLASSES
     )
 
 set ( SOURCE_FILES
-        CUDA_ContextTest
-        CUDA_HostContextTest
-        CUDA_LAMAArrayTest
+#       CUDA_ContextTest
+#       CUDA_HostContextTest
+#       CUDA_LAMAArrayTest
         CUDA_MatrixStorageTest
-        CUDA_VectorTest
-        CUDA_InterfaceRegistryTest
+#       CUDA_VectorTest
+#       CUDA_InterfaceRegistryTest
     )
 
 lama_classes ( ${CLASSES} )

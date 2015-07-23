@@ -34,7 +34,6 @@
 #include <boost/test/unit_test.hpp>
 #include <boost/mpl/list.hpp>
 
-#include <lama/HostReadAccess.hpp>
 #include <lama/distribution/Halo.hpp>
 #include <lama/distribution/HaloBuilder.hpp>
 #include <lama/distribution/Redistributor.hpp>

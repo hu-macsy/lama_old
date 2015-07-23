@@ -54,12 +54,12 @@ using namespace tasking;
 using namespace memory;
 using common::getScalarType;
 
+extern cublasHandle_t CUDAContext_cublasHandle;
+
 namespace lama
 {
 
 LAMA_LOG_DEF_LOGGER( CUDABLAS1::logger, "CUDA.BLAS1" )
-
-extern cublasHandle_t CUDAContext_cublasHandle;
 
 /* ---------------------------------------------------------------------------------------*/
 /*    scale                                                                               */

@@ -40,6 +40,8 @@
 
 #include <lama/exception/LAMAAssert.hpp>
 
+using namespace tasking;
+
 namespace lama
 {
 

@@ -117,10 +117,7 @@ endif ( NOT CUDA_cusparse_LIBRARY )
 
 ### target link libraries ###
 target_link_libraries( amacuda
-                        ${CUDA_cusparse_LIBRARY}
-                        ${CUDA_cublas_LIBRARY} 
-                        ${CUDA_CUDART_LIBRARY}
-                        ${CUDA_CUDA_LIBRARY}
+                        ${cudamem_LIBRARY}
                      )
 
 ### install library

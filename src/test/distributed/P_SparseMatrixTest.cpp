@@ -223,7 +223,7 @@ LAMA_COMMON_TEST_CASE_TEMPLATE( P_SparseMatrixTest, MatrixType, transposeTest )
     LAMA_LOG_INFO( logger, "Replicated transpose matrix = " << transMatrix );
     DenseStorage<ValueType> transStorage( transMatrix.getLocalStorage() );
     LAMA_LOG_INFO( logger, "Replicated transposed storage = " << transStorage );
-    HostReadAccess<ValueType> rValues( transStorage.getData() );
+    ReadAccess<ValueType> rValues( transStorage.getData() );
 
     for ( IndexType i = 0; i < N1; ++i )
     {

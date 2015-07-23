@@ -78,9 +78,9 @@ void setCSRData( StorageType& storage )
     LAMAArray<IndexType> csrIas;
     LAMAArray<IndexType> csrJas;
     LAMAArray<ValueType> csrValues;
-    HostWriteOnlyAccess<IndexType> myIa( csrIas, numRows + 1 );
-    HostWriteOnlyAccess<IndexType> myJa( csrJas, numValues );
-    HostWriteOnlyAccess<ValueType> myData( csrValues, numValues );
+    WriteOnlyAccess<IndexType> myIa( csrIas, numRows + 1 );
+    WriteOnlyAccess<IndexType> myJa( csrJas, numValues );
+    WriteOnlyAccess<ValueType> myData( csrValues, numValues );
 
     for ( IndexType ii = 0; ii <= numRows; ii++ )
     {
@@ -96,7 +96,7 @@ void setCSRData( StorageType& storage )
     myIa.release();
     myJa.release();
     myData.release();
-    ContextPtr host = ContextFactory::getContext( Context::Host );
+    ContextPtr host = Context::getContextPtr( context::Host );
     ContextPtr cuda = lama_test::CUDAContext::getContext();
     storage.setContext( host );
     storage.setCSRData( numRows, numColumns, numValues, csrIas, csrJas, csrValues );

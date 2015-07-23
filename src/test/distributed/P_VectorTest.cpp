@@ -176,8 +176,8 @@ void vectorCheck( DenseVector<ValueType>& v, DenseVector<ValueType>& w )
     BOOST_REQUIRE_EQUAL( vectorSize, w.size() );
     BOOST_REQUIRE_EQUAL( v.getDistribution(), w.getDistribution() );
     BOOST_REQUIRE_EQUAL( localVectorSize, v.getDistribution().getLocalSize() );
-    HostReadAccess<ValueType> vRead( v.getLocalValues() );
-    HostReadAccess<ValueType> wRead( w.getLocalValues() );
+    ReadAccess<ValueType> vRead( v.getLocalValues() );
+    ReadAccess<ValueType> wRead( w.getLocalValues() );
 
     // so we just have to compare the local values
 
@@ -236,7 +236,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( vectorTimesMatrixTest, ValueType, test_types )
     Vector& result = denseResult;
     LAMA_LOG_INFO( logger, "Vector(NoDist) = Vector(BlockDist) * Matrix(BlockDist, NoDist)" )
     result = vector * matrix;
-    ContextPtr host = ContextFactory::getContext( Context::Host );
+    ContextPtr host = Context::getContextPtr( context::Host );
     matrixTypeMatrix.setContext( host, host );
 
     for ( IndexType i = 0; i < result.size(); ++i )
@@ -251,7 +251,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( vectorTimesMatrixTest, ValueType, test_types )
         denseCorrectResult2.getLocalValues();
     scoped_array<ValueType> values( new ValueType[ numRows * numCols ] );
     {
-        HostWriteAccess<ValueType> localDenseCorrectResult2Access ( localDenseCorrectResult2 );
+        WriteAccess<ValueType> localDenseCorrectResult2Access ( localDenseCorrectResult2 );
 
         for ( IndexType j = 0; j < numCols; ++j )
         {
@@ -324,7 +324,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( matrixTimesVectorTest, ValueType, test_types )
     const Vector& vector = denseVector;
     Vector& result = denseResult;
     result = matrix * vector;
-    ContextPtr host = ContextFactory::getContext( Context::Host );
+    ContextPtr host = Context::getContextPtr( context::Host );
     matrixTypeMatrix.setContext( host, host );
 
     for ( IndexType i = 0; i < result.size(); ++i )
@@ -339,7 +339,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( matrixTimesVectorTest, ValueType, test_types )
         denseCorrectResult2.getLocalValues();
     scoped_array<ValueType> values( new ValueType[ numRows * numCols ] );
     {
-        HostWriteAccess<ValueType> localDenseCorrectResult2Access ( localDenseCorrectResult2 );
+        WriteAccess<ValueType> localDenseCorrectResult2Access ( localDenseCorrectResult2 );
 
         for ( IndexType i = 0; i < numRows; ++i )
         {
@@ -404,7 +404,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( assignLocalTest, ValueType, test_types )
     LAMA_CHECK_THROW(
     {   DenseVector<ValueType> denseVector( localData, dist );}, Exception );
     {
-        HostWriteOnlyAccess<float> wLocalData( localData, localSize );
+        WriteOnlyAccess<float> wLocalData( localData, localSize );
 
         for ( IndexType i = 0; i < localSize; ++i )
         {
@@ -481,7 +481,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( redistributeTest, ValueType, test_types )
         const LAMAArray<ValueType>& localValues = dist1Vector.getLocalValues();
         const IndexType localSize = localValues.size();
         BOOST_REQUIRE_EQUAL( localSize, dist1->getLocalSize() );
-        HostReadAccess<ValueType> rLocalValues( localValues );
+        ReadAccess<ValueType> rLocalValues( localValues );
 
         // each processor checks for correct local values
 
@@ -499,7 +499,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( redistributeTest, ValueType, test_types )
         const LAMAArray<double>& localValues = dist2Vector.getLocalValues();
         const IndexType localSize = localValues.size();
         BOOST_REQUIRE_EQUAL( localSize, dist2->getLocalSize() );
-        HostReadAccess<double> rLocalValues( localValues );
+        ReadAccess<double> rLocalValues( localValues );
 
         for ( IndexType i = 0; i < localSize; ++i )
         {
@@ -516,8 +516,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( redistributeTest, ValueType, test_types )
         const IndexType localSize = localValues2.size();
         BOOST_REQUIRE_EQUAL( localSize, vectorSize );
         BOOST_REQUIRE_EQUAL( localSize, localValues3.size() );
-        HostReadAccess<double> rLocalValues2( localValues2 );
-        HostReadAccess<ValueType> rLocalValues3( localValues3 );
+        ReadAccess<double> rLocalValues2( localValues2 );
+        ReadAccess<ValueType> rLocalValues3( localValues3 );
 
         for ( IndexType i = 0; i < localSize; ++i )
         {
@@ -548,7 +548,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( gatherTest, ValueType, test_types )
     DenseVector<ValueType> dist1Vector( replicatedVector, dist );
 // gather block-distributed vector to replicated vector
     DenseVector<ValueType> allVector( dist1Vector, rep );
-    HostReadAccess<ValueType> data( allVector.getLocalValues() );
+    ReadAccess<ValueType> data( allVector.getLocalValues() );
     BOOST_CHECK_EQUAL ( vectorSize, allVector.getLocalValues().size() );
 
     for ( IndexType i = 0; i < vectorSize; ++i )

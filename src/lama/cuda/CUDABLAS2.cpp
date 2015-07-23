@@ -48,12 +48,12 @@ using namespace tasking;
 using namespace memory;
 using common::getScalarType;
 
+extern cublasHandle_t CUDAContext_cublasHandle;
+
 namespace lama
 {
 
 LAMA_LOG_DEF_LOGGER( CUDABLAS2::logger, "CUDA.BLAS2" )
-
-extern cublasHandle_t CUDAContext_cublasHandle;
 
 /* ---------------------------------------------------------------------------------------*/
 /*    gemv                                                                                */

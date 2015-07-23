@@ -80,7 +80,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( redistributeTest, ValueType, test_types )
     IndexType cyclicLocalSize = distCyclic->getLocalSize();
     LAMAArray<ValueType> myData1( blockLocalSize );
     {
-        HostWriteAccess<ValueType> data ( myData1 );
+        WriteAccess<ValueType> data ( myData1 );
 
         for ( IndexType i = 0; i < blockLocalSize; i++ )
         {
@@ -95,7 +95,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( redistributeTest, ValueType, test_types )
     LAMA_LOG_DEBUG( logger, "redistribute 2" );
     r2.redistribute( myData1, myData2 );
     {
-        HostReadAccess<ValueType> data ( myData1 );
+        ReadAccess<ValueType> data ( myData1 );
 
         for ( IndexType i = 0; i < blockLocalSize; i++ )
         {
