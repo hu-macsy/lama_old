@@ -38,7 +38,6 @@
 #include <lama/DenseVector.hpp>
 #include <lama/Scalar.hpp>
 #include <lama/norm/MaxNorm.hpp>
-#include <lama/Context.hpp>
 
 #include <lama/matrix/CSRSparseMatrix.hpp>
 #include <lama/matrix/ELLSparseMatrix.hpp>
@@ -58,6 +57,8 @@
 #include <test/EquationHelper.hpp>
 
 #include <test/TestMacros.hpp>
+
+#include <memory/memory.hpp>
 
 using namespace boost;
 using namespace lama;
@@ -610,7 +611,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( operatorDotProductTest, ValueType, test_types )
 BOOST_AUTO_TEST_CASE( MinMaxTest )
 {
     DenseVector<double> resVector( 4, 0.0 );
-    HostWriteAccess<double> hwares( resVector.getLocalValues() );
+    WriteAccess<double> hwares( resVector.getLocalValues() );
     hwares[0] = 9.0;
     hwares[1] = -2.0;
     hwares[2] = 3.0;
@@ -670,8 +671,8 @@ BOOST_AUTO_TEST_CASE( VectorGetValueTypeTest )
 {
     DenseVector<float> v1( 4, 0.0 );
     DenseVector<double> v2( 4, 0.0 );
-    BOOST_CHECK_EQUAL( v1.getValueType(), Scalar::FLOAT );
-    BOOST_CHECK_EQUAL( v2.getValueType(), Scalar::DOUBLE );
+    BOOST_CHECK_EQUAL( v1.getValueType(), common::scalar::FLOAT );
+    BOOST_CHECK_EQUAL( v2.getValueType(), common::scalar::DOUBLE );
 }
 
 /* --------------------------------------------------------------------- */
@@ -823,7 +824,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( operatorTest, ValueType, test_types )
 {
     IndexType n = 4;
     DenseVector<ValueType> v( n, 1.0 );
-    HostWriteAccess<ValueType> hwa( v.getLocalValues() );
+    WriteAccess<ValueType> hwa( v.getLocalValues() );
 
     for ( IndexType i = 0; i < n; ++i )
     {
@@ -849,12 +850,12 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( xGEMVOperationTest, ValueType, test_types )
         DenseVector<ValueType> x( 3, 1.0 );
         DenseVector<ValueType> resVector( 4, 0.0 );
         DenseVector<ValueType> computeVector( 4, 0.0 );
-        HostWriteAccess<ValueType> hwax( x.getLocalValues() );
+        WriteAccess<ValueType> hwax( x.getLocalValues() );
         hwax[0] = 1.0;
         hwax[1] = 2.0;
         hwax[2] = 3.0;
         hwax.release();
-        HostWriteAccess<ValueType> hwares( resVector.getLocalValues() );
+        WriteAccess<ValueType> hwares( resVector.getLocalValues() );
         hwares[0] = 9.0;
         hwares[1] = 2.0;
         hwares[2] = 36.0;

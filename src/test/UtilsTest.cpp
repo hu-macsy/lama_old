@@ -35,17 +35,14 @@
 #include <boost/test/unit_test.hpp>
 
 // others
-#include <lama/ContextAccess.hpp>
-#include <lama/LAMAArray.hpp>
 #include <lama/LAMAInterface.hpp>
-#include <lama/HostReadAccess.hpp>
-#include <lama/ReadAccess.hpp>
-#include <lama/WriteAccess.hpp>
+#include <memory/memory.hpp>
 
 #include <test/TestMacros.hpp>
 
 using namespace boost;
 using namespace lama;
+using namespace memory;
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 
@@ -80,7 +77,7 @@ void scaleTest( ContextPtr loc )
         LAMA_CONTEXT_ACCESS( loc );
         scale( wValues.get(), mult, nValues );
     }
-    HostReadAccess<ValueType> rValues( values );
+    ReadAccess<ValueType> rValues( values );
 
     for ( IndexType i = 0; i < nValues; i++ )
     {
@@ -131,7 +128,7 @@ void setValTest( ContextPtr loc )
             // overwrite in the middle to check that there is no out-of-range set
             setVal( wValues.get() + n, n, 10 );
         }
-        HostReadAccess<ValueType> rValues( values );
+        ReadAccess<ValueType> rValues( values );
 
         for ( IndexType i = 0; i < n; i++ )
         {
@@ -206,7 +203,7 @@ void setOrderTest( ContextPtr loc )
             LAMA_CONTEXT_ACCESS( loc );
             setOrder( wValues.get(), n );
         }
-        HostReadAccess<IndexType> rValues( values );
+        ReadAccess<IndexType> rValues( values );
 
         for ( IndexType i = 0; i < n; i++ )
         {
@@ -239,7 +236,7 @@ void invertTest( ContextPtr loc )
             LAMA_CONTEXT_ACCESS( loc );
             invert( wValues.get(), nValues );
         }
-        HostReadAccess<ValueType> rValues( values );
+        ReadAccess<ValueType> rValues( values );
 
         for ( IndexType i = 0; i < nValues; i++ )
         {

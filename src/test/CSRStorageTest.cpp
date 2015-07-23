@@ -118,9 +118,9 @@ void constructorTest1( ContextPtr loc )
     BOOST_REQUIRE_EQUAL( numValues, csrStorage.getNumValues() );
     BOOST_CHECK( csrStorage.hasDiagonalProperty() );
     {
-        HostReadAccess<IndexType> csrIA( csrStorage.getIA() );
-        HostReadAccess<IndexType> csrJA( csrStorage.getJA() );
-        HostReadAccess<ValueType> csrValues( csrStorage.getValues() );
+        ReadAccess<IndexType> csrIA( csrStorage.getIA() );
+        ReadAccess<IndexType> csrJA( csrStorage.getJA() );
+        ReadAccess<ValueType> csrValues( csrStorage.getValues() );
 
         // CSR keeps values in same order
 
@@ -142,9 +142,9 @@ void constructorTest1( ContextPtr loc )
     BOOST_REQUIRE_EQUAL( numValues, csrStorageCopy.getNumValues() );
     BOOST_CHECK( csrStorageCopy.hasDiagonalProperty() );
     {
-        HostReadAccess<IndexType> csrIA( csrStorageCopy.getIA() );
-        HostReadAccess<IndexType> csrJA( csrStorageCopy.getJA() );
-        HostReadAccess<ValueType> csrValues( csrStorageCopy.getValues() );
+        ReadAccess<IndexType> csrIA( csrStorageCopy.getIA() );
+        ReadAccess<IndexType> csrJA( csrStorageCopy.getJA() );
+        ReadAccess<ValueType> csrValues( csrStorageCopy.getValues() );
 
         // CSR keeps values in same order
 

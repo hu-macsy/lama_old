@@ -48,6 +48,7 @@
 
 using namespace boost;
 using namespace lama;
+using namespace memory;
 
 /* --------------------------------------------------------------------- */
 
@@ -116,8 +117,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( SetRowTest, T, ValueTypes )
         LAMAArray<IndexType> ja;
         LAMAArray<T> values;
         {
-            HostWriteOnlyAccess<IndexType> wJa( ja, 1 );
-            HostWriteOnlyAccess<T> wValues( values, 1 );
+            WriteOnlyAccess<IndexType> wJa( ja, 1 );
+            WriteOnlyAccess<T> wValues( values, 1 );
             wJa[0] = i;
             wValues[0] = 1.0;
         }

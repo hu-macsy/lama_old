@@ -66,7 +66,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( MaxNormVectorTests, ValueType, test_types )
     MaxNorm maxnorm;
     ValueType expected = 5.0;
     BOOST_CHECK_EQUAL( expected, maxnorm( vec ) );
-    HostWriteAccess<ValueType> hwa( vec.getLocalValues() );
+    WriteAccess<ValueType> hwa( vec.getLocalValues() );
     hwa[0] = 1.0;
     hwa[1] = -2.0;
     hwa[2] = 3.0;

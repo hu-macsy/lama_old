@@ -35,13 +35,8 @@
 #include <boost/test/unit_test.hpp>
 
 // others
-#include <lama/ContextAccess.hpp>
-#include <lama/LAMAArray.hpp>
+#include <memory/memory.hpp>
 #include <lama/LAMAInterface.hpp>
-#include <lama/HostReadAccess.hpp>
-#include <lama/HostWriteAccess.hpp>
-#include <lama/ReadAccess.hpp>
-#include <lama/WriteAccess.hpp>
 
 #include <lama/openmp/OpenMPCSRUtils.hpp>
 
@@ -49,6 +44,7 @@
 
 using namespace boost;
 using namespace lama;
+using namespace memory;
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 
@@ -145,9 +141,9 @@ void transposeTestSquare( ContextPtr loc )
     convertCSR2CSC( wCSCIA.get(), wCSCJA.get(), wCSCValues.get(), rCSRIA.get(), rCSRJA.get(), rCSRValues.get(), numRows,
                     numColumns, numValues );
     {
-        HostReadAccess<IndexType> rCSCIA( cscIA );
-        HostWriteAccess<IndexType> wCSCJA( cscJA );
-        HostWriteAccess<ValueType> wCSCValues( cscValues );
+        ReadAccess<IndexType> rCSCIA( cscIA );
+        WriteAccess<IndexType> wCSCJA( cscJA );
+        WriteAccess<ValueType> wCSCValues( cscValues );
 
         for ( int j = 0; j <= numColumns; ++j )
         {
@@ -210,9 +206,9 @@ void transposeTestNonSquare( ContextPtr loc )
     convertCSR2CSC( wCSCIA.get(), wCSCJA.get(), wCSCValues.get(), rCSRIA.get(), rCSRJA.get(), rCSRValues.get(), numRows,
                     numColumns, numValues );
     {
-        HostReadAccess<IndexType> rCSCIA( cscIA );
-        HostWriteAccess<IndexType> wCSCJA( cscJA );
-        HostWriteAccess<ValueType> wCSCValues( cscValues );
+        ReadAccess<IndexType> rCSCIA( cscIA );
+        WriteAccess<IndexType> wCSCJA( cscJA );
+        WriteAccess<ValueType> wCSCValues( cscValues );
 
         for ( int j = 0; j <= numColumns; ++j )
         {

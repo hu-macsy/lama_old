@@ -59,9 +59,9 @@ void setCSRStorage( _MatrixStorage& storage )
     { 0, 3, 0, 2, 3, 0, 1, 3, 0, 3, 1, 3 };
     IndexType ia[] =
     { 0, 2, 3, 5, 8, 10, 10, 12 };
-    LAMAArrayRef<IndexType> csrIA( ia, numRows + 1 );
-    LAMAArrayRef<IndexType> csrJA( ja, numValues );
-    LAMAArrayRef<ValueType> csrValues( values, numValues );
+    LAMAArrayRef<IndexType> csrIA( numRows + 1, ia );
+    LAMAArrayRef<IndexType> csrJA( numValues, ja );
+    LAMAArrayRef<ValueType> csrValues( numValues, values );
     storage.setCSRData( numRows, numColumns, numValues, csrIA, csrJA, csrValues );
 }
 
@@ -116,10 +116,10 @@ void conversion( ContextPtr loc )
 
 /* ------------------------------------------------------------------------- */
 
-static ContextPtr host = ContextFactory::getContext( Context::Host );
+static ContextPtr host = Context::getContextPtr( context::Host );
 
 static ContextPtr cuda =
-    ContextFactory::hasContext( Context::CUDA ) ? ContextFactory::getContext( Context::CUDA ) :
+    Context::hasContext( context::CUDA ) ? Context::getContextPtr( context::CUDA ) :
     ContextPtr();
 
 /* ------------------------------------------------------------------------- */

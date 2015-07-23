@@ -35,17 +35,13 @@
 #include <boost/test/unit_test.hpp>
 
 // others
-#include <lama/ContextAccess.hpp>
-#include <lama/HostReadAccess.hpp>
-#include <lama/LAMAArray.hpp>
 #include <lama/LAMAInterface.hpp>
-#include <lama/ReadAccess.hpp>
-#include <lama/Scalar.hpp>
-#include <lama/WriteAccess.hpp>
+#include <memory/memory.hpp>
 #include <test/TestMacros.hpp>
 
 using namespace boost;
 using namespace lama;
+using namespace memory;
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 
@@ -99,7 +95,7 @@ void getRowTest( ContextPtr loc )
         LAMA_CONTEXT_ACCESS( loc );
         getRow( wRow.get(), i, numColumns, numRows, rPerm.get(), rIlg.get(), rDlg.get(), rJa.get(), rValues.get() );
     }
-    HostReadAccess<OtherValueType> rRow( row );
+    ReadAccess<OtherValueType> rRow( row );
 
     for ( IndexType i = 0; i < numColumns; i++ )
     {
@@ -199,7 +195,7 @@ void scaleValueTest( ContextPtr loc )
         LAMA_CONTEXT_ACCESS( loc );
         scaleValue( numRows, rPerm.get(), rIlg.get(), rDlg.get(), wValues.get(), rDiagonal.get() );
     }
-    HostReadAccess<ValueType> rValues( values );
+    ReadAccess<ValueType> rValues( values );
 
     for ( IndexType i = 0; i < nValues; i++ )
     {
@@ -318,7 +314,7 @@ void ilg2dlgTest( ContextPtr loc )
             LAMA_CONTEXT_ACCESS( loc );
             ilg2dlg( wDlg.get(), numDiagonals, rIlg.get(), numRows );
         }
-        HostReadAccess<IndexType> rDlg( dlg );
+        ReadAccess<IndexType> rDlg( dlg );
 
         for ( IndexType i = 0; i < numDiagonals; i++ )
         {
@@ -353,8 +349,8 @@ void sortRowsTest( ContextPtr loc )
             LAMA_CONTEXT_ACCESS( loc );
             sortRows( wIlg.get(), wPerm.get(), numRows );
         }
-        HostReadAccess<IndexType> rIlg( ilg );
-        HostReadAccess<IndexType> rPerm( perm );
+        ReadAccess<IndexType> rIlg( ilg );
+        ReadAccess<IndexType> rPerm( perm );
 
         for ( IndexType i = 0; i < numRows; i++ )
         {
@@ -396,7 +392,7 @@ void setInversePermTest( ContextPtr loc )
             LAMA_CONTEXT_ACCESS( loc );
             setInversePerm( wInversePerm.get(), rPerm.get(), numRows );
         }
-        HostReadAccess<IndexType> rInversePerm( inversePerm );
+        ReadAccess<IndexType> rInversePerm( inversePerm );
 
         for ( IndexType i = 0; i < numRows; i++ )
         {
@@ -476,8 +472,8 @@ void setCSRValuesTest( ContextPtr loc )
         setCSRValues( wJDSJa.get(), wJDSValues.get(), numRows, rJDSPerm.get(), rJDSIlg.get(), nJDSDlg, rJDSDlg.get(),
                       rCSRIa.get(), rCSRJa.get(), rCSRValues.get() );
     }
-    HostReadAccess<IndexType> rJDSJa( JDSJa );
-    HostReadAccess<ValueType> rJDSValues( JDSValues );
+    ReadAccess<IndexType> rJDSJa( JDSJa );
+    ReadAccess<ValueType> rJDSValues( JDSValues );
 
     for ( IndexType i = 0; i < nJDS; i++ )
     {
@@ -546,8 +542,8 @@ void getCSRValuesTest( ContextPtr loc )
         getCSRValues( wCSRJa.get(), wCSRValues.get(), rCSRIa.get(), numRows, rJDSPerm.get(), rJDSIlg.get(),
                       rJDSDlg.get(), rJDSJa.get(), rJDSValues.get() );
     }
-    HostReadAccess<IndexType> rCSRJa( CSRJa );
-    HostReadAccess<OtherValueType> rCSRValues( CSRValues );
+    ReadAccess<IndexType> rCSRJa( CSRJa );
+    ReadAccess<OtherValueType> rCSRValues( CSRValues );
 
     for ( IndexType i = 0; i < nJDS; i++ )
     {

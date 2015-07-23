@@ -35,17 +35,14 @@
 #include <boost/test/unit_test.hpp>
 
 // others
-#include <lama/ContextAccess.hpp>
-#include <lama/HostReadAccess.hpp>
-#include <lama/LAMAArray.hpp>
 #include <lama/LAMAInterface.hpp>
-#include <lama/ReadAccess.hpp>
-#include <lama/WriteAccess.hpp>
+#include <memory/memory.hpp>
 
 #include <test/TestMacros.hpp>
 
 using namespace boost;
 using namespace lama;
+using namespace memory;
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 
@@ -105,7 +102,7 @@ void setNonEmptyRowsBySizesTest( ContextPtr loc )
         setNonEmptyRowsBySizes( wRowIndexes.get(), numNonEmptyRows, rSizes.get(), n );
     }
     {
-        HostReadAccess<IndexType> rRowIndexes( rowIndexes );
+        ReadAccess<IndexType> rRowIndexes( rowIndexes );
 
         for ( int i = 0; i < numNonEmptyRows; ++i )
         {
@@ -279,7 +276,7 @@ void getRowTest( ContextPtr loc )
             LAMA_CONTEXT_ACCESS( loc );
             getRow( wRow.get(), i, numRows, numColumns, numValuesPerRow, rIa.get(), rJa.get(), rValues.get() );
         }
-        HostReadAccess<OtherValueType> rRow( row );
+        ReadAccess<OtherValueType> rRow( row );
 
         for ( IndexType i = 0; i < numColumns; i++ )
         {
@@ -315,7 +312,7 @@ void getRowTest( ContextPtr loc )
             LAMA_CONTEXT_ACCESS( loc );
             getRow( wRow.get(), i, numRows, numColumns, numValuesPerRow, rIa.get(), rJa.get(), rValues.get() );
         }
-        HostReadAccess<OtherValueType> rRow( row );
+        ReadAccess<OtherValueType> rRow( row );
 
         for ( IndexType i = 0; i < numColumns; i++ )
         {
@@ -390,7 +387,7 @@ void scaleValueTest( ContextPtr loc )
         LAMA_CONTEXT_ACCESS( loc );
         scaleValue( numRows, numValuesPerRow, rEllIa.get(), wEllValues.get(), rScaleValues.get() );
     }
-    HostReadAccess<ValueType> rEllValues( ellValues );
+    ReadAccess<ValueType> rEllValues( ellValues );
 
     for ( IndexType i = 0; i < nValues; i++ )
     {
@@ -442,8 +439,8 @@ void getCSRValuesTest( ContextPtr loc )
         getCSRValues( wCSRJa.get(), wCSRValues.get(), rCSRIa.get(), numRows, numValuesPerRow, rELLIa.get(),
                       rELLJa.get(), rELLValues.get() );
     }
-    HostReadAccess<IndexType> rCSRJa( csrJa );
-    HostReadAccess<OtherValueType> rCSRValues( csrValues );
+    ReadAccess<IndexType> rCSRJa( csrJa );
+    ReadAccess<OtherValueType> rCSRValues( csrValues );
 
     for ( IndexType i = 0; i < nCSRValues; i++ )
     {
@@ -496,8 +493,8 @@ void setCSRValuesTest( ContextPtr loc )
         setCSRValues( wELLJa.get(), wELLValues.get(), rELLIa.get(), numRows, numValuesPerRow, rCSRIa.get(),
                       rCSRJa.get(), rCSRValues.get() );
     }
-    HostReadAccess<IndexType> rELLJa( ellJa );
-    HostReadAccess<OtherValueType> rELLValues( ellValues );
+    ReadAccess<IndexType> rELLJa( ellJa );
+    ReadAccess<OtherValueType> rELLValues( ellValues );
 
     for ( IndexType i = 0; i < nELLValues; i++ )
     {
@@ -540,7 +537,7 @@ void compressIATest( ContextPtr loc )
             LAMA_CONTEXT_ACCESS( loc );
             compressIA( rELLIa.get(), rELLJa.get(), rELLValues.get(), numRows, numValuesPerRow, eps, wNewELLIa.get() );
         }
-        HostReadAccess<IndexType> rNewELLIa( newEllIa );
+        ReadAccess<IndexType> rNewELLIa( newEllIa );
 
         for ( IndexType i = 0; i < nELLIa; i++ )
         {
@@ -575,7 +572,7 @@ void compressIATest( ContextPtr loc )
             LAMA_CONTEXT_ACCESS( loc );
             compressIA( rELLIa.get(), rELLJa.get(), rELLValues.get(), numRows, numValuesPerRow, eps, wNewELLIa.get() );
         }
-        HostReadAccess<IndexType> rNewELLIa( newEllIa );
+        ReadAccess<IndexType> rNewELLIa( newEllIa );
 
         for ( IndexType i = 0; i < nELLIa; i++ )
         {
@@ -610,7 +607,7 @@ void compressIATest( ContextPtr loc )
             LAMA_CONTEXT_ACCESS( loc );
             compressIA( rELLIa.get(), rELLJa.get(), rELLValues.get(), numRows, numValuesPerRow, eps, wNewELLIa.get() );
         }
-        HostReadAccess<IndexType> rNewELLIa( newEllIa );
+        ReadAccess<IndexType> rNewELLIa( newEllIa );
 
         for ( IndexType i = 0; i < nELLIa; i++ )
         {
@@ -660,8 +657,8 @@ void compressValuesTest( ContextPtr loc )
             compressValues( rELLIa.get(), rELLJa.get(), rELLValues.get(), numRows, numValuesPerRow, eps,
                             newNumValuesPerRow, wNewELLJa.get(), wNewELLValues.get() );
         }
-        HostReadAccess<ValueType> rNewELLValues( newEllValues );
-        HostReadAccess<IndexType> rNewELLJa( newEllJa );
+        ReadAccess<ValueType> rNewELLValues( newEllValues );
+        ReadAccess<IndexType> rNewELLJa( newEllJa );
 
         for ( IndexType i = 0; i < numValues; i++ )
         {
@@ -704,8 +701,8 @@ void compressValuesTest( ContextPtr loc )
             compressValues( rELLIa.get(), rELLJa.get(), rELLValues.get(), numRows, numValuesPerRow, eps,
                             newNumValuesPerRow, wNewELLJa.get(), wNewELLValues.get() );
         }
-        HostReadAccess<ValueType> rNewELLValues( newEllValues );
-        HostReadAccess<IndexType> rNewELLJa( newEllJa );
+        ReadAccess<ValueType> rNewELLValues( newEllValues );
+        ReadAccess<IndexType> rNewELLJa( newEllJa );
 
         for ( IndexType i = 0; i < numValues; i++ )
         {
@@ -748,8 +745,8 @@ void compressValuesTest( ContextPtr loc )
             compressValues( rELLIa.get(), rELLJa.get(), rELLValues.get(), numRows, numValuesPerRow, eps,
                             newNumValuesPerRow, wNewELLJa.get(), wNewELLValues.get() );
         }
-        HostReadAccess<ValueType> rNewELLValues( newEllValues );
-        HostReadAccess<IndexType> rNewELLJa( newEllJa );
+        ReadAccess<ValueType> rNewELLValues( newEllValues );
+        ReadAccess<IndexType> rNewELLJa( newEllJa );
 
         for ( IndexType i = 0; i < numValues; i++ )
         {
@@ -797,7 +794,7 @@ void matrixMultiplySizesTest( ContextPtr loc )
             matrixMultiplySizes( wCIa.get(), numValues, numValues, numValues, false, rAIa.get(), rAJa.get(),
                                  aNumValuesPerRow, rBIa.get(), rBJa.get(), bNumValuesPerRow );
         }
-        HostReadAccess<IndexType> rCIa( CIa );
+        ReadAccess<IndexType> rCIa( CIa );
 
         for ( IndexType i = 0; i < numValues; i++ )
         {
@@ -845,7 +842,7 @@ void matrixMultiplySizesTest( ContextPtr loc )
             matrixMultiplySizes( wCIa.get(), aNumRows, numColumns, bNumRows, false, rAIa.get(), rAJa.get(),
                                  aNumValuesPerRow, rBIa.get(), rBJa.get(), bNumValuesPerRow );
         }
-        HostReadAccess<IndexType> rCIa( CIa );
+        ReadAccess<IndexType> rCIa( CIa );
 
         for ( IndexType i = 0; i < cNumRows; i++ )
         {
@@ -916,8 +913,8 @@ void matrixMultiplyTest( ContextPtr loc )
                             diagonalProperty, alpha, rAIa.get(), rAJa.get(), rAValues.get(), aNumValuesPerRow,
                             rBIa.get(), rBJa.get(), rBValues.get(), bNumValuesPerRow );
         }
-        HostReadAccess<ValueType> rCValues( CValues );
-        HostReadAccess<IndexType> rCJa( CJa );
+        ReadAccess<ValueType> rCValues( CValues );
+        ReadAccess<IndexType> rCJa( CJa );
 
         for ( IndexType i = 0; i < numValues; i++ )
         {
@@ -983,8 +980,8 @@ void matrixMultiplyTest( ContextPtr loc )
                             diagonalProperty, alpha, rAIa.get(), rAJa.get(), rAValues.get(), aNumValuesPerRow,
                             rBIa.get(), rBJa.get(), rBValues.get(), bNumValuesPerRow );
         }
-        HostReadAccess<ValueType> rCValues( CValues );
-        HostReadAccess<IndexType> rCJa( CJa );
+        ReadAccess<ValueType> rCValues( CValues );
+        ReadAccess<IndexType> rCJa( CJa );
 
         for ( IndexType i = 0; i < numValues; i++ )
         {
@@ -1052,8 +1049,8 @@ void matrixMultiplyTest( ContextPtr loc )
                             diagonalProperty, alpha, rAIa.get(), rAJa.get(), rAValues.get(), aNumValuesPerRow,
                             rBIa.get(), rBJa.get(), rBValues.get(), bNumValuesPerRow );
         }
-        HostReadAccess<ValueType> rCValues( CValues );
-        HostReadAccess<IndexType> rCJa( CJa );
+        ReadAccess<ValueType> rCValues( CValues );
+        ReadAccess<IndexType> rCJa( CJa );
 
         for ( IndexType i = 0; i < cNumValues; i++ )
         {
@@ -1108,7 +1105,7 @@ void matrixAddSizesTest( ContextPtr loc )
         matrixAddSizes( wCIa.get(), aNumRows, numColumns, diagonalProperty, rAIa.get(), rAJa.get(), aNumValuesPerRow,
                         rBIa.get(), rBJa.get(), bNumValuesPerRow );
     }
-    HostReadAccess<IndexType> rCIa( CIa );
+    ReadAccess<IndexType> rCIa( CIa );
 
     for ( IndexType i = 0; i < cNumRows; i++ )
     {
@@ -1179,8 +1176,8 @@ void matrixAddTest( ContextPtr loc )
                        alpha, rAIa.get(), rAJa.get(), rAValues.get(), aNumValuesPerRow, beta, rBIa.get(), rBJa.get(),
                        rBValues.get(), bNumValuesPerRow );
         }
-        HostReadAccess<ValueType> rCValues( CValues );
-        HostReadAccess<IndexType> rCJa( CJa );
+        ReadAccess<ValueType> rCValues( CValues );
+        ReadAccess<IndexType> rCJa( CJa );
 
         for ( IndexType i = 0; i < cNumValues; i++ )
         {
@@ -1250,8 +1247,8 @@ void matrixAddTest( ContextPtr loc )
                        alpha, rAIa.get(), rAJa.get(), rAValues.get(), aNumValuesPerRow, beta, rBIa.get(), rBJa.get(),
                        rBValues.get(), bNumValuesPerRow );
         }
-        HostReadAccess<ValueType> rCValues( CValues );
-        HostReadAccess<IndexType> rCJa( CJa );
+        ReadAccess<ValueType> rCValues( CValues );
+        ReadAccess<IndexType> rCJa( CJa );
 
         for ( IndexType i = 0; i < cNumValues; i++ )
         {

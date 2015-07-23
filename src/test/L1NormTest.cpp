@@ -64,7 +64,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( L1NormVectorTests, ValueType, test_types )
     L1Norm l1norm;
     ValueType expected = n * val;
     BOOST_CHECK_EQUAL( expected, l1norm( vec ) );
-    HostWriteAccess<ValueType> hwa( vec.getLocalValues() );
+    WriteAccess<ValueType> hwa( vec.getLocalValues() );
     hwa[0] = 1.0;
     hwa[1] = -2.0;
     hwa[2] = 3.0;

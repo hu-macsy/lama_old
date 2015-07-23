@@ -42,6 +42,7 @@
 #include <complex>
 
 using namespace lama;
+using namespace common;
 using namespace boost;
 
 // Scalar can be tested for all LAMA arithmetic types even if LAMA matrices
@@ -64,22 +65,22 @@ BOOST_AUTO_TEST_CASE( ScalarGetTypeTest )
 {
     float value_s = 2.0;
     Scalar s( value_s );
-    BOOST_CHECK_EQUAL( s.getType<float>(), Scalar::FLOAT );
+    BOOST_CHECK_EQUAL( s.getType<float>(), scalar::FLOAT );
     double value_t = 2.0;
     Scalar t( value_t );
-    BOOST_CHECK_EQUAL( t.getType<double>(), Scalar::DOUBLE );
+    BOOST_CHECK_EQUAL( t.getType<double>(), scalar::DOUBLE );
     LongDouble value_u = 2.0;
     Scalar u( value_u );
-    BOOST_CHECK_EQUAL( u.getType<LongDouble>(), Scalar::LONG_DOUBLE );
+    BOOST_CHECK_EQUAL( u.getType<LongDouble>(), scalar::LONG_DOUBLE );
     ComplexFloat value_c_v( 2.0, 1.0 );
     Scalar v( value_c_v );
-    BOOST_CHECK_EQUAL( v.getType<ComplexFloat>(), Scalar::COMPLEX );
+    BOOST_CHECK_EQUAL( v.getType<ComplexFloat>(), scalar::COMPLEX );
     ComplexDouble value_c_w( 2.0, 1.0 );
     Scalar w( value_c_w );
-    BOOST_CHECK_EQUAL( w.getType<ComplexDouble>(), Scalar::DOUBLE_COMPLEX );
+    BOOST_CHECK_EQUAL( w.getType<ComplexDouble>(), scalar::DOUBLE_COMPLEX );
     ComplexLongDouble value_c_x( 2.0, 1.0 );
     Scalar x( value_c_x );
-    BOOST_CHECK_EQUAL( x.getType<ComplexLongDouble>(), Scalar::LONG_DOUBLE_COMPLEX );
+    BOOST_CHECK_EQUAL( x.getType<ComplexLongDouble>(), scalar::LONG_DOUBLE_COMPLEX );
 }
 
 /* --------------------------------------------------------------------- */
@@ -95,22 +96,22 @@ BOOST_AUTO_TEST_CASE( ScalarTypeSizeTest )
     ComplexDouble value_c_double( 1.0, 2.0 );
     ComplexLongDouble value_c_long_double( 1.0, 2.0 );
     Scalar s_float( value_float );
-    size_t size = s_float.getTypeSize( Scalar::FLOAT );
+    size_t size = s_float.getTypeSize( scalar::FLOAT );
     BOOST_CHECK_EQUAL( size, sizeof( float ) );
     Scalar s_double( value_double );
-    size = s_double.getTypeSize( Scalar::DOUBLE );
+    size = s_double.getTypeSize( scalar::DOUBLE );
     BOOST_CHECK_EQUAL( size, sizeof( double ) );
     Scalar s_long_double( value_long_double );
-    size = s_long_double.getTypeSize( Scalar::LONG_DOUBLE );
+    size = s_long_double.getTypeSize( scalar::LONG_DOUBLE );
     BOOST_CHECK_EQUAL( size, sizeof( LongDouble ) );
     Scalar s_float_c( value_c_float );
-    size = s_float.getTypeSize( Scalar::COMPLEX );
+    size = s_float.getTypeSize( scalar::COMPLEX );
     BOOST_CHECK_EQUAL( size, sizeof( ComplexFloat ) );
     Scalar s_double_c( value_c_double );
-    size = s_double_c.getTypeSize( Scalar::DOUBLE_COMPLEX );
+    size = s_double_c.getTypeSize( scalar::DOUBLE_COMPLEX );
     BOOST_CHECK_EQUAL( size, sizeof( ComplexDouble ) );
     Scalar s_long_double_c( value_c_long_double );
-    size = s_long_double_c.getTypeSize( Scalar::LONG_DOUBLE_COMPLEX );
+    size = s_long_double_c.getTypeSize( scalar::LONG_DOUBLE_COMPLEX );
     BOOST_CHECK_EQUAL( size, sizeof( ComplexLongDouble ) );
 }
 
@@ -230,7 +231,7 @@ BOOST_AUTO_TEST_CASE( writeAtTest )
 
 /* --------------------------------------------------------------------- */
 
-void printtestmethod( std::string string, Scalar::ScalarType type )
+void printtestmethod( std::string string, scalar::ScalarType type )
 {
     std::stringstream mStream;
     mStream << type;
@@ -240,12 +241,12 @@ void printtestmethod( std::string string, Scalar::ScalarType type )
 
 BOOST_AUTO_TEST_CASE( printTest )
 {
-    printtestmethod( "float", Scalar::FLOAT );
-    printtestmethod( "double", Scalar::DOUBLE );
-    printtestmethod( "LongDouble", Scalar::LONG_DOUBLE );
-    printtestmethod( "ComplexFloat", Scalar::COMPLEX );
-    printtestmethod( "ComplexDouble", Scalar::DOUBLE_COMPLEX );
-    printtestmethod( "ComplexLongDouble", Scalar::LONG_DOUBLE_COMPLEX );
+    printtestmethod( "float", scalar::FLOAT );
+    printtestmethod( "double", scalar::DOUBLE );
+    printtestmethod( "LongDouble", scalar::LONG_DOUBLE );
+    printtestmethod( "ComplexFloat", scalar::COMPLEX );
+    printtestmethod( "ComplexDouble", scalar::DOUBLE_COMPLEX );
+    printtestmethod( "ComplexLongDouble", scalar::LONG_DOUBLE_COMPLEX );
 }
 
 /* --------------------------------------------------------------------- */BOOST_AUTO_TEST_SUITE_END();

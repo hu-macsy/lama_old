@@ -119,9 +119,9 @@ void constructorTest1( ContextPtr loc )
     BOOST_REQUIRE_EQUAL( numValuesPerRow, ellStorage.getNumValuesPerRow() );
     BOOST_REQUIRE_EQUAL( ia[0] + ia[1] + ia[2], ellStorage.getNumValues() );
     {
-        HostReadAccess<IndexType> ellIA( ellStorage.getIA() );
-        HostReadAccess<IndexType> ellJA( ellStorage.getJA() );
-        HostReadAccess<ValueType> ellValues( ellStorage.getValues() );
+        ReadAccess<IndexType> ellIA( ellStorage.getIA() );
+        ReadAccess<IndexType> ellJA( ellStorage.getJA() );
+        ReadAccess<ValueType> ellValues( ellStorage.getValues() );
 
         // ELL keeps values in same order
 
@@ -152,9 +152,9 @@ void constructorTest1( ContextPtr loc )
     BOOST_REQUIRE_EQUAL( numValuesPerRow, ellStorageCopy.getNumValuesPerRow() );
     BOOST_REQUIRE_EQUAL( ia[0] + ia[1] + ia[2], ellStorageCopy.getNumValues() );
     {
-        HostReadAccess<IndexType> ellIALocal( ellStorageCopy.getIA() );
-        HostReadAccess<IndexType> ellJALocal( ellStorageCopy.getJA() );
-        HostReadAccess<ValueType> ellValuesLocal( ellStorageCopy.getValues() );
+        ReadAccess<IndexType> ellIALocal( ellStorageCopy.getIA() );
+        ReadAccess<IndexType> ellJALocal( ellStorageCopy.getJA() );
+        ReadAccess<ValueType> ellValuesLocal( ellStorageCopy.getValues() );
 
         // ELL keeps values in same order
         for ( IndexType i = 0; i < numRows; ++i )

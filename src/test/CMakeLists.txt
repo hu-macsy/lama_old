@@ -55,65 +55,65 @@ set ( SOURCE_FILES
 #       BiCGstabTest
 #       BiCGTest
         BLAS1Test
-		BLAS2Test
-		BLAS3Test
+        BLAS2Test
+        BLAS3Test
         CGTest
        # not yet: CGNETest
 #       CGNRTest
-#   	CGSTest
+#       CGSTest
 #       CommonLoggerTest
-#       CommunicatorTest
+        CommunicatorTest
 #       COOSparseMatrixTest
 #       COOStorageTest
 #       COOUtilsTest
 #       CriterionTest
 #       CSRSparseMatrixTest
-#       CSRStorageTest
-#       CSRUtilsTest
-#       DenseMatrixTest
-#       DenseMatrixTest1
+        CSRStorageTest
+        CSRUtilsTest
+        DenseMatrixTest
+        DenseMatrixTest1
 #       DenseStorageTest
 #       DerivedSparseMatrixTest
 #       DIASparseMatrixTest
 #       DIAStorageTest
 #       ELLSparseMatrixTest
-#       ELLStorageTest
-#       ELLUtilsTest
+        ELLStorageTest
+        ELLUtilsTest
 #       ExceptionTest
 #       FileLoggerTest
 #       GMRESTest
 #       InverseSolverTest
 #       IterationCountTest
 #       JacobiTest
-#       JDSSparseMatrixTest
-#       JDSStorageTest
-#       JDSUtilsTest
-#       L1NormTest
-#       L2NormTest
-#       LAMAArrayTest
-#       LAPACKTest
-#       MatrixStorageConversionTest
-#	MatrixNormTest
-#       MatrixTest
-#       MaxNormTest
-#       MINRESTest
-#       NoCommunicatorTest
-#       ResidualStagnationTest
-#       ResidualThresholdTest
-#    RichardsonTest
-#       ScalarTest
-#       SimpleAMGTest
-#       SolutionProxyTest
-#       SORTest
-#       SparseAssemblyStorageTest
-#       SpecializedJacobiTest
-#       StorageIOTest
-#       TaskSyncTokenTest
-#    TFQMRTest
-#       TimerTest
-#       TracingTest
-#       UtilsTest
-#       VectorTest
+        JDSSparseMatrixTest
+        JDSStorageTest
+        JDSUtilsTest
+        L1NormTest
+        L2NormTest
+        LAMAArrayTest
+        LAPACKTest
+        MatrixStorageConversionTest
+        MatrixNormTest
+        MatrixTest
+        MaxNormTest
+        MINRESTest
+        NoCommunicatorTest
+        ResidualStagnationTest
+        ResidualThresholdTest
+        RichardsonTest
+        ScalarTest
+        SimpleAMGTest
+        SolutionProxyTest
+        SORTest
+        SparseAssemblyStorageTest
+        SpecializedJacobiTest
+        StorageIOTest
+        TaskSyncTokenTest
+        TFQMRTest
+        TimerTest
+        TracingTest
+        UtilsTest
+        VectorTest
     )
 
 lama_classes ( ${CLASSES} )
@@ -178,7 +178,7 @@ file ( COPY README DESTINATION ${CMAKE_BINARY_DIR}/test )
 file ( COPY xmltest.sh DESTINATION ${CMAKE_BINARY_DIR}/test ) 
 
 if ( LAMA_USE_CODE_COVERAGE )
-	### Copy the cca.sh and ccajen.sh file in build directory ###
-	configure_file( "${CMAKE_SOURCE_DIR}/test/cca.sh.in" "${CMAKE_CURRENT_BINARY_DIR}/cca.sh" @ONLY)
-	configure_file( "${CMAKE_SOURCE_DIR}/test/ccajen.sh.in" "${CMAKE_CURRENT_BINARY_DIR}/ccajen.sh" @ONLY)
+    ### Copy the cca.sh and ccajen.sh file in build directory ###
+    configure_file( "${CMAKE_SOURCE_DIR}/test/cca.sh.in" "${CMAKE_CURRENT_BINARY_DIR}/cca.sh" @ONLY)
+    configure_file( "${CMAKE_SOURCE_DIR}/test/ccajen.sh.in" "${CMAKE_CURRENT_BINARY_DIR}/ccajen.sh" @ONLY)
 endif ( LAMA_USE_CODE_COVERAGE )

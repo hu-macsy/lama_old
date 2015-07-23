@@ -34,17 +34,14 @@
 #include <boost/test/unit_test.hpp>
 #include <boost/mpl/list.hpp>
 
-#include <lama/ContextFactory.hpp>
-#include <lama/LAMAArray.hpp>
-#include <lama/HostReadAccess.hpp>
-#include <lama/WriteAccess.hpp>
+#include <memory/memory.hpp>
 #include <lama/LAMAInterface.hpp>
-#include <lama/ContextAccess.hpp>
 
 #include <test/TestMacros.hpp>
 
 using namespace boost;
 using namespace lama;
+using namespace memory;
 
 // extern bool base_test_case;
 // extern std::string testcase;
@@ -69,14 +66,14 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( inverseTest, ValueType, test_types )
     {   2.0, 1.0, 0.0, -4.0, -2.0, -1.0, 3.0, 2.0, 0.0};
     LAMAArray<ValueType> a( n * n, avalues );
     LAMAArray<IndexType> permutation( n );
-    ContextPtr loc = ContextFactory::getContext( Context::Host );
+    ContextPtr loc = Context::getContextPtr( context::Host );
     {
         WriteAccess<ValueType> wA( a, loc );
         LAMA_INTERFACE_FN_T( getinv, loc, BLAS, LAPACK, ValueType )
         getinv( n, wA.get(), n );
     }
     {
-        HostReadAccess<ValueType> rA( a );
+        ReadAccess<ValueType> rA( a );
 
         for ( int i = 0; i < n * n; ++i )
         {
@@ -99,7 +96,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( getrifTest, ValueType, test_types )
         {   2.0, 1.0, 0.0, -4.0, -2.0, -1.0, 3.0, 2.0, 0.0};
         LAMAArray<ValueType> a( n * n, avalues );
         LAMAArray<IndexType> permutation( n );
-        ContextPtr loc = ContextFactory::getContext( Context::Host );
+        ContextPtr loc = Context::getContextPtr( context::Host );
         {
             WriteAccess<ValueType> wA( a, loc );
             WriteAccess<IndexType> wPermutation( permutation, loc );
@@ -111,7 +108,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( getrifTest, ValueType, test_types )
             BOOST_CHECK_EQUAL( 0, error );
         }
         {
-            HostReadAccess<ValueType> rA( a );
+            ReadAccess<ValueType> rA( a );
 
             for ( int i = 0; i < n * n; ++i )
             {
@@ -127,7 +124,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( getrifTest, ValueType, test_types )
         {   2.0, -4.0, 3.0, 1.0, -2.0, 2.0, 0.0, -1.0, 0.0};
         LAMAArray<ValueType> a( n * n, avalues );
         LAMAArray<IndexType> permutation( n );
-        ContextPtr loc = ContextFactory::getContext( Context::Host );
+        ContextPtr loc = Context::getContextPtr( context::Host );
         {
             WriteAccess<ValueType> wA( a, loc );
             WriteAccess<IndexType> wPermutation( permutation, loc );
@@ -139,7 +136,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( getrifTest, ValueType, test_types )
             BOOST_CHECK_EQUAL( 0, error );
         }
         {
-            HostReadAccess<ValueType> rA( a );
+            ReadAccess<ValueType> rA( a );
 
             for ( int i = 0; i < n * n; ++i )
             {
@@ -168,7 +165,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( tptrsTest, ValueType, test_types )
         LAMAArray<ValueType> a( ntri, avalues );
         LAMAArray<ValueType> b1( n, bvalues1 );
         LAMAArray<ValueType> b2( n, bvalues2 );
-        ContextPtr loc = ContextFactory::getContext( Context::Host );
+        ContextPtr loc = Context::getContextPtr( context::Host );
         {
             ReadAccess<ValueType> rA( a, loc );
             WriteAccess<ValueType> wB1( b1, loc );
@@ -190,8 +187,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( tptrsTest, ValueType, test_types )
             BOOST_CHECK_EQUAL( 0, error );
         }
         {
-            HostReadAccess<ValueType> rX1( b1 );
-            HostReadAccess<ValueType> rX2( b2 );
+            ReadAccess<ValueType> rX1( b1 );
+            ReadAccess<ValueType> rX2( b2 );
 
             for ( int i = 0; i < n; ++i )
             {
@@ -227,7 +224,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( tptrsTest, ValueType, test_types )
         LAMAArray<ValueType> a2( ntri, avalues2 );
         LAMAArray<ValueType> b1( n, bvalues1 );
         LAMAArray<ValueType> b2( n, bvalues2 );
-        ContextPtr loc = ContextFactory::getContext( Context::Host );
+        ContextPtr loc = Context::getContextPtr( context::Host );
         {
             ReadAccess<ValueType> rA1( a1, loc );
             WriteAccess<ValueType> wB1( b1, loc );
@@ -252,8 +249,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( tptrsTest, ValueType, test_types )
             BOOST_CHECK_EQUAL( 0, error2 );
         }
         {
-            HostReadAccess<ValueType> rX1( b1 );
-            HostReadAccess<ValueType> rX2( b2 );
+            ReadAccess<ValueType> rX1( b1 );
+            ReadAccess<ValueType> rX2( b2 );
 
             for ( int i = 0; i < n; ++i )
             {
@@ -286,7 +283,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( tptrsTest, ValueType, test_types )
         LAMAArray<ValueType> b3( n, bvalues3 );
         LAMAArray<ValueType> b4( n, bvalues4 );
 
-        ContextPtr loc = ContextFactory::getContext( Context::Host );
+        ContextPtr loc = Context::getContextPtr( context::Host );
 
         {
             ReadAccess<ValueType> rA3( a3, loc );
@@ -319,8 +316,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( tptrsTest, ValueType, test_types )
         }
 
         {
-            HostReadAccess<ValueType> rX3( b3 );
-            HostReadAccess<ValueType> rX4( b4 );
+            ReadAccess<ValueType> rX3( b3 );
+            ReadAccess<ValueType> rX4( b4 );
 
             for ( int i = 0; i < n; ++i )
             {
@@ -345,7 +342,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( tptrsTest, ValueType, test_types )
         LAMAArray<ValueType> a( ntri, avalues );
         LAMAArray<ValueType> b1( n, bvalues1 );
         LAMAArray<ValueType> b2( n, bvalues2 );
-        ContextPtr loc = ContextFactory::getContext( Context::Host );
+        ContextPtr loc = Context::getContextPtr( context::Host );
         {
             ReadAccess<ValueType> rA( a, loc );
             WriteAccess<ValueType> wB1( b1, loc );
@@ -367,8 +364,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( tptrsTest, ValueType, test_types )
             BOOST_CHECK_EQUAL( 0, error );
         }
         {
-            HostReadAccess<ValueType> rX1( b1 );
-            HostReadAccess<ValueType> rX2( b2 );
+            ReadAccess<ValueType> rX1( b1 );
+            ReadAccess<ValueType> rX2( b2 );
 
             for ( int i = 0; i < n; ++i )
             {

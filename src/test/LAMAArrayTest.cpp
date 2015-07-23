@@ -36,12 +36,11 @@
 
 #include <test/TestMacros.hpp>
 
-#include <lama/LAMAArray.hpp>
-#include <lama/HostWriteAccess.hpp>
-#include <lama/HostReadAccess.hpp>
+#include <memory/memory.hpp>
 
 using namespace boost;
 using namespace lama;
+using namespace memory;
 
 /* --------------------------------------------------------------------- */
 
@@ -59,11 +58,11 @@ BOOST_AUTO_TEST_CASE( releaseTest )
 {
     LAMAArray<IndexType> lamaArray; // default, not allocated at all
     LAMA_LOG_INFO( logger, "make read test access on empty array\n" );
-    HostReadAccess<IndexType> readTestAccess( lamaArray );
+    ReadAccess<IndexType> readTestAccess( lamaArray );
     LAMA_LOG_INFO( logger, "release read on empty array\n" );
     readTestAccess.release();
     LAMA_LOG_INFO( logger, "make write test access on empty array\n" );
-    HostWriteAccess<IndexType> writeAccess( lamaArray );
+    WriteAccess<IndexType> writeAccess( lamaArray );
     writeAccess.resize( 10 );
 
     for ( IndexType i = 0; i < 10; i++ )
@@ -74,7 +73,7 @@ BOOST_AUTO_TEST_CASE( releaseTest )
     writeAccess.release();
     LAMA_CHECK_THROW( { writeAccess.resize( 20 ); }, Exception );
     LAMA_CHECK_THROW( { writeAccess[0] = static_cast<IndexType> ( 5.0 ); }, Exception );
-    HostReadAccess<IndexType> readAccess( lamaArray );
+    ReadAccess<IndexType> readAccess( lamaArray );
 
     for ( IndexType i = 0; i < 5; i++ )
     {
@@ -90,7 +89,7 @@ BOOST_AUTO_TEST_CASE( resizeTest )
 {
     LAMAArray<IndexType> lamaArray; // default, not allocated at all
     {
-        HostWriteAccess<IndexType> writeAccess( lamaArray );
+        WriteAccess<IndexType> writeAccess( lamaArray );
         // Possible problem: fetch from any location not possible
         writeAccess.resize( 10 );
 
@@ -101,7 +100,7 @@ BOOST_AUTO_TEST_CASE( resizeTest )
     }
     lamaArray.purge();
     {
-        HostWriteAccess<IndexType> writeAccess( lamaArray );
+        WriteAccess<IndexType> writeAccess( lamaArray );
         // Possible problem: fetch from any location not possible
         writeAccess.resize( 10 );
     }
@@ -116,7 +115,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( accessTest , ValueType, test_types )
     const ValueType value2 = 2.0;
     LAMAArray<ValueType> lamaArray( n, value );
     {
-        HostReadAccess<ValueType> lamaArrayRAccess( lamaArray );
+        ReadAccess<ValueType> lamaArrayRAccess( lamaArray );
 
         for ( IndexType i = 0; i < n; ++i )
         {
@@ -124,10 +123,10 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( accessTest , ValueType, test_types )
         }
 
         LAMA_CHECK_THROW(
-        {   HostWriteAccess<ValueType> tmpWriteAccess( lamaArray );}, Exception );
+        {   WriteAccess<ValueType> tmpWriteAccess( lamaArray );}, Exception );
     }
     {
-        HostWriteAccess<ValueType> lamaArrayWAccess( lamaArray );
+        WriteAccess<ValueType> lamaArrayWAccess( lamaArray );
 
         for ( IndexType i = 0; i < n; ++i )
         {
@@ -135,9 +134,9 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( accessTest , ValueType, test_types )
         }
 
         LAMA_CHECK_THROW(
-        {   HostReadAccess<ValueType> tmpReadAccess( lamaArray );}, Exception );
+        {   ReadAccess<ValueType> tmpReadAccess( lamaArray );}, Exception );
         lamaArrayWAccess.release();
-        HostReadAccess<ValueType> lamaArrayRAccess( lamaArray );
+        ReadAccess<ValueType> lamaArrayRAccess( lamaArray );
 
         for ( IndexType i = 0; i < n; ++i )
         {
@@ -156,8 +155,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( refTest, ValueType, test_types )
     {   1, 2, 3, 4, 5, 5, 4, 3, 2, 1};
     const ValueType* myData1 = myData;
     {
-        LAMAArrayRef<ValueType> lamaArray( myData, 10 );
-        HostWriteAccess<ValueType> lamaArrayWAccess( lamaArray );
+        LAMAArrayRef<ValueType> lamaArray( 10, myData );
+        WriteAccess<ValueType> lamaArrayWAccess( lamaArray );
         // resize of a LAMA array with referenced data is not possible
         LAMA_CHECK_THROW(
         {   lamaArrayWAccess.resize( 20 );}, Exception );
@@ -179,12 +178,12 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( refTest, ValueType, test_types )
 
     {
         // this will create a LAMA array with a const reference,
-        LAMAArrayRef<ValueType> lamaArray( myData1, 10 );
+        LAMAArrayRef<ValueType> lamaArray( 10, myData1 );
         BOOST_CHECK_EQUAL( 10, lamaArray.size() );
         // Write access should not be allowed
         LAMA_CHECK_THROW(
         {
-            HostWriteAccess<ValueType> lamaArrayWAccess( lamaArray );
+            WriteAccess<ValueType> lamaArrayWAccess( lamaArray );
         }
         , Exception );
     }

@@ -76,11 +76,11 @@ void checkTest( ContextPtr context )
         const IndexType numValues = nJa;
         const IndexType numColumns = 10;
         const IndexType numDiagonals = nDlg;
-        LAMAArrayRef<IndexType> jdsJA( valuesJa, nJa );
+        LAMAArrayRef<IndexType> jdsJA( nJa, valuesJa );
         LAMAArray<ValueType> jdsValues( nJa, 1.0 ); // only need to build JDS storage
-        LAMAArrayRef<IndexType> jdsDLG( valuesDlg, nDlg );
-        LAMAArrayRef<IndexType> jdsILG( valuesIlg, nIlg );
-        LAMAArrayRef<IndexType> jdsPerm( valuesPerm, nPerm );
+        LAMAArrayRef<IndexType> jdsDLG( nDlg, valuesDlg );
+        LAMAArrayRef<IndexType> jdsILG( nIlg, valuesIlg );
+        LAMAArrayRef<IndexType> jdsPerm( nPerm, valuesPerm );
         JDSStorage<ValueType> jdsStorage;
         jdsStorage.setContext( context );
         // setJDSData will copy/convert values up to the needed context
@@ -209,8 +209,8 @@ void constructorTest1(  ContextPtr context )
     BOOST_REQUIRE_EQUAL( numColumns, jdsStorage.getNumColumns() );
     BOOST_REQUIRE_EQUAL( numDiagonals, jdsStorage.getNumDiagonals() );
     {
-        HostReadAccess<IndexType> jdsILG( jdsStorage.getIlg() );
-        HostReadAccess<IndexType> jdsPerm( jdsStorage.getPerm() );
+        ReadAccess<IndexType> jdsILG( jdsStorage.getIlg() );
+        ReadAccess<IndexType> jdsPerm( jdsStorage.getPerm() );
 
         for ( IndexType i = 0; i < numRows; ++i )
         {
@@ -218,15 +218,15 @@ void constructorTest1(  ContextPtr context )
             BOOST_CHECK_EQUAL( perm[i], jdsPerm[i] );
         }
 
-        HostReadAccess<IndexType> jdsDLG( jdsStorage.getDlg() );
+        ReadAccess<IndexType> jdsDLG( jdsStorage.getDlg() );
 
         for ( IndexType i = 0; i < numDiagonals; ++i )
         {
             BOOST_CHECK_EQUAL( dlg[i], jdsDLG[i] );
         }
 
-        HostReadAccess<IndexType> jdsJA( jdsStorage.getJA() );
-        HostReadAccess<ValueType> jdsValues( jdsStorage.getValues() );
+        ReadAccess<IndexType> jdsJA( jdsStorage.getJA() );
+        ReadAccess<ValueType> jdsValues( jdsStorage.getValues() );
 
         // JDS keeps values in same order
 
@@ -242,8 +242,8 @@ void constructorTest1(  ContextPtr context )
     BOOST_REQUIRE_EQUAL( numColumns, jdsStorageCopy.getNumColumns() );
     BOOST_REQUIRE_EQUAL( numDiagonals, jdsStorageCopy.getNumDiagonals() );
     {
-        HostReadAccess<IndexType> jdsILG( jdsStorageCopy.getIlg() );
-        HostReadAccess<IndexType> jdsPerm( jdsStorageCopy.getPerm() );
+        ReadAccess<IndexType> jdsILG( jdsStorageCopy.getIlg() );
+        ReadAccess<IndexType> jdsPerm( jdsStorageCopy.getPerm() );
 
         for ( IndexType i = 0; i < numRows; ++i )
         {
@@ -251,15 +251,15 @@ void constructorTest1(  ContextPtr context )
             BOOST_CHECK_EQUAL( perm[i], jdsPerm[i] );
         }
 
-        HostReadAccess<IndexType> jdsDLG( jdsStorageCopy.getDlg() );
+        ReadAccess<IndexType> jdsDLG( jdsStorageCopy.getDlg() );
 
         for ( IndexType i = 0; i < numDiagonals; ++i )
         {
             BOOST_CHECK_EQUAL( dlg[i], jdsDLG[i] );
         }
 
-        HostReadAccess<IndexType> jdsJA( jdsStorageCopy.getJA() );
-        HostReadAccess<ValueType> jdsValues( jdsStorageCopy.getValues() );
+        ReadAccess<IndexType> jdsJA( jdsStorageCopy.getJA() );
+        ReadAccess<ValueType> jdsValues( jdsStorageCopy.getValues() );
 
         // JDS keeps values in same order
 
