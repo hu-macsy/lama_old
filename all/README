@@ -14,3 +14,7 @@ make
 make install
 
 
+-----------------------------
+
+-DMKL_Is64=True         // sometimes helpful
+-DCXX_SUPPORTS_C11=0    // forces using Boost

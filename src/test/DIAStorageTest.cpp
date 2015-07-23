@@ -34,8 +34,6 @@
 #include <boost/test/unit_test.hpp>
 #include <boost/mpl/list.hpp>
 
-#include <lama/ContextFactory.hpp>
-
 #include <lama/storage/DIAStorage.hpp>
 
 #include <test/MatrixStorageTest.hpp>
@@ -113,8 +111,8 @@ void constructorTest1( logging::Logger& logger )
     BOOST_REQUIRE_EQUAL( numColumns, diaStorage.getNumColumns() );
     BOOST_REQUIRE_EQUAL( numDiagonals, diaStorage.getNumDiagonals() );
     {
-        HostReadAccess<IndexType> diaOffsets( diaStorage.getOffsets() );
-        HostReadAccess<ValueType> diaValues( diaStorage.getValues() );
+        ReadAccess<IndexType> diaOffsets( diaStorage.getOffsets() );
+        ReadAccess<ValueType> diaValues( diaStorage.getValues() );
 
         // DIA keeps values in same order
 
@@ -140,7 +138,7 @@ void constructorTest1( logging::Logger& logger )
 //    BOOST_REQUIRE_EQUAL( numDiagonals, diaStorageCopy.getNumDiagonals() );
 //
 //    {
-//        HostReadAccess<ValueType> diaValues( diaStorageCopy.getValues() );
+//        ReadAccess<ValueType> diaValues( diaStorageCopy.getValues() );
 //        BOOST_CHECK_EQUAL( diaValues.size(), numValues );
 //
 //        BOOST_CHECK_EQUAL( values[0], diaValues[0] );
@@ -162,7 +160,7 @@ void constructorTest1( logging::Logger& logger )
     IndexType numValuesCSR = csrJa.size();
     diaStorage.setCSRData( numRowsDia, numColumnsDia, numValuesCSR, csrIa, csrJa, csrValues );
     {
-        HostReadAccess<ValueType> diaValues( diaStorage.getValues() );
+        ReadAccess<ValueType> diaValues( diaStorage.getValues() );
         LAMA_LOG_INFO( logger, "diaValues.size() = " << diaValues.size() );
         BOOST_CHECK_EQUAL( diaValues.size(), numValues );
 

@@ -52,39 +52,39 @@ set ( HEADERS
     )
 
 set ( SOURCE_FILES
-#       BiCGstabTest
-#       BiCGTest
+        BiCGstabTest
+        BiCGTest
         BLAS1Test
         BLAS2Test
         BLAS3Test
         CGTest
        # not yet: CGNETest
-#       CGNRTest
-#       CGSTest
-#       CommonLoggerTest
+        CGNRTest
+        CGSTest
+        CommonLoggerTest
         CommunicatorTest
-#       COOSparseMatrixTest
-#       COOStorageTest
-#       COOUtilsTest
-#       CriterionTest
-#       CSRSparseMatrixTest
+        COOSparseMatrixTest
+        COOStorageTest
+        COOUtilsTest
+        CriterionTest
+        CSRSparseMatrixTest
         CSRStorageTest
         CSRUtilsTest
         DenseMatrixTest
         DenseMatrixTest1
-#       DenseStorageTest
-#       DerivedSparseMatrixTest
-#       DIASparseMatrixTest
-#       DIAStorageTest
-#       ELLSparseMatrixTest
+        DenseStorageTest
+        DerivedSparseMatrixTest
+        DIASparseMatrixTest
+        DIAStorageTest
+        ELLSparseMatrixTest
         ELLStorageTest
         ELLUtilsTest
-#       ExceptionTest
-#       FileLoggerTest
-#       GMRESTest
-#       InverseSolverTest
-#       IterationCountTest
-#       JacobiTest
+        ExceptionTest
+        FileLoggerTest
+        GMRESTest
+        InverseSolverTest
+        IterationCountTest
+        JacobiTest
         JDSSparseMatrixTest
         JDSStorageTest
         JDSUtilsTest
