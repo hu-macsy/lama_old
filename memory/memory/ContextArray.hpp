@@ -43,11 +43,13 @@
 // others
 #include <memory/Context.hpp>
 #include <memory/ContextDataManager.hpp>
-#include <memory/ScalarType.hpp>
+
+#include <tasking/SyncToken.hpp>
 
 // common
 #include <common/Printable.hpp>
 #include <common/Factory.hpp>
+#include <common/ScalarType.hpp>
 
 #include <vector>
 #include <map>
@@ -60,6 +62,14 @@
 
 namespace memory
 {
+
+// common::IndexType will be used for indexing 
+
+using common::IndexType;
+
+// common::ScalarType will be used for Factory
+
+using common::ScalarType;
 
 // Forward declaration of friend classes.
 
@@ -77,6 +87,7 @@ class WriteAccess;
 class COMMON_DLL_IMPORTEXPORT ContextArray: 
 
     public Printable, 
+    public tasking::SyncTokenMember,
     public common::Factory<ScalarType, ContextArray*>
 {
     // Member variables of this class
@@ -141,7 +152,14 @@ public:
      * point in time. There for if two prefetches to two different invalid locations are
      * started one after the other the second transfer does not start before the first one is finished.
      */
-    void prefetch( ContextPtr context );
+    void prefetch( ContextPtr context ) const;
+
+    /** Waits for completion of prefetches. */
+
+    void wait() const
+    {
+        mContextDataManager.wait();
+    }
 
     /**
      * @brief Query the capacity ( in number of elements ) at a certain context.
@@ -225,6 +243,10 @@ protected:
 
 /* ---------------------------------------------------------------------------------*/
 
+typedef ContextArray _LAMAArray;
+
+/* ---------------------------------------------------------------------------------*/
+
 inline IndexType ContextArray::size() const
 {
     return mSize;
@@ -232,7 +254,7 @@ inline IndexType ContextArray::size() const
 
 /* ---------------------------------------------------------------------------------*/
 
-inline void ContextArray::prefetch( ContextPtr context )
+inline void ContextArray::prefetch( ContextPtr context ) const
 {
     mContextDataManager.prefetch( context, mSize * mValueSize );
 }

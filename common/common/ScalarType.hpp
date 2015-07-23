@@ -41,12 +41,9 @@
 // others
 #include <common/Exception.hpp>
 
-// logging
-#include <logging/logging.hpp>
-
 #include <cstdio>
 
-namespace memory
+namespace common
 {
 
 /** Data type that is used for indexing in LAMA.

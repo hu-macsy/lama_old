@@ -210,7 +210,7 @@ public:
 
     static ScalarType createValue() 
     {
-        return getScalarType<ValueType>();
+        return common::getScalarType<ValueType>();
     }
 
 protected:
@@ -410,7 +410,7 @@ ScalarType LAMAArray<ValueType>::getValueType() const
 {
     // Note: this is implementation of the pure method of base class ContextArray.
 
-    return getScalarType<ValueType>();
+    return common::getScalarType<ValueType>();
 }
 
 /* ---------------------------------------------------------------------------------*/
@@ -481,14 +481,14 @@ void LAMAArray<ValueType>::swap( LAMAArray<ValueType>& other )
 
     // we cannot swap if there is any access for any array
 
-    COMMON_ASSERT( !other.mContextDataManager.locked(), "swap: other array locked" )
-    COMMON_ASSERT( mContextDataManager.locked(), "this array locked" )
+    COMMON_ASSERT_EQUAL( 0, other.mContextDataManager.locked(), "swap: other array locked: " << other )
+    COMMON_ASSERT_EQUAL( 0, mContextDataManager.locked(), "this array locked: " << *this )
 
     COMMON_ASSERT_EQUAL( mValueSize, other.mValueSize, "serious size mismatch" )
 
-    std::swap( mSize, other.mSize );
-
     mContextDataManager.swap( other.mContextDataManager );
+
+    std::swap( mSize, other.mSize );
 
     LAMA_LOG_DEBUG( logger, *this << ": has been swapped with other = " << other )
 }
@@ -598,10 +598,19 @@ void LAMAArray<ValueType>::reserve( ContextDataIndex index, const IndexType size
 /* ---------------------------------------------------------------------------------*/
 
 template<typename ValueType>
+IndexType LAMAArray<ValueType>::capacity( ContextDataIndex index ) const
+{
+    const ContextData& entry = mContextDataManager[index];
+    return entry.capacity();
+}
+
+/* ---------------------------------------------------------------------------------*/
+
+template<typename ValueType>
 void LAMAArray<ValueType>::writeAt( std::ostream& stream ) const
 {
     stream << "LAMAArray<";
-    stream << getScalarType<ValueType>();
+    stream << common::getScalarType<ValueType>();
     stream << ">(" << mSize; stream << ") ";
     stream << mContextDataManager;
 }

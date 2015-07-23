@@ -53,6 +53,11 @@ namespace tasking
     class SyncToken;    // forward declaration
 }
 
+namespace lama
+{
+    class LAMAInterface;
+}
+
 /** Namespace for all data structures of the context memory management. */
 
 namespace memory
@@ -84,6 +89,7 @@ namespace context
         Host,          //!< context for cpu + main memory
         CUDA,          //!< CUDA GPU device
         OpenCL,        //!< OpenCL GPU device, currently not supported
+        MIC,           //!< Intel MIC
         UserContext,   //!< can be used for a new derived Context class
         MaxContext     //!< used for dimension of ContextType arrays
     };
@@ -167,7 +173,7 @@ public:
 
     /** This method returns the LAMA interface for a given context. */
 
-    const class LAMAInterface& getInterface() const;
+    const lama::LAMAInterface& getInterface() const;
 
     /** This method returns the memory that can be used at this context. 
      *
@@ -233,6 +239,11 @@ protected:
 inline ContextType Context::getType() const
 {
     return mContextType;
+}
+
+inline bool Context::hasContext( const ContextType type )
+{
+    return canCreate( type );
 }
 
 /** Make ContextType visible in namespace, but not the different enumeration values. */

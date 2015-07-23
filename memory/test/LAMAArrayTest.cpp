@@ -153,6 +153,38 @@ BOOST_AUTO_TEST_CASE( resizeTest )
 
 /* --------------------------------------------------------------------- */
 
+BOOST_AUTO_TEST_CASE( swapTest )
+{
+    const IndexType n1 = 10;
+    const IndexType n2 = 5;
+
+    LAMAArray<double> arr1( n1, 1 ); 
+    LAMAArray<double> arr2( n2, 2 ); 
+
+    arr1.swap( arr2 );
+
+    BOOST_CHECK_EQUAL( arr2.size(), n1 );
+    BOOST_CHECK_EQUAL( arr1.size(), n2 );
+
+    {
+        ReadAccess<double> read( arr1 );
+        for ( IndexType i = 0; i < arr1.size(); ++i )
+        {
+            BOOST_CHECK_EQUAL( 2, read[i] );
+        }
+    }
+
+    {
+        ReadAccess<double> read( arr2 );
+        for ( IndexType i = 0; i < arr2.size(); ++i )
+        {
+            BOOST_CHECK_EQUAL( 1, read[i] );
+        }
+    }
+}
+
+/* --------------------------------------------------------------------- */
+
 BOOST_AUTO_TEST_CASE( accessTest )
 {
     const IndexType n = 10;

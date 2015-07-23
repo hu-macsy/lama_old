@@ -1,5 +1,5 @@
 /**
- * @file CUDATracerSyncToken.hpp
+ * @file ScalarType.cpp
  *
  * @license
  * Copyright (c) 2009-2015
@@ -25,56 +25,62 @@
  * SOFTWARE.
  * @endlicense
  *
- * @brief CUDATracerSyncToken.hpp
- * @author schubert
- * @date 09.11.2011
- * @since 1.0.0
+ * @brief Implementation of operations on ScalarType.
+ * @author Jiri Kraus
+ * @date 07.11.2011
  */
-#ifndef LAMA_CUDATRACERSYNCTOKEN_HPP_
-#define LAMA_CUDATRACERSYNCTOKEN_HPP_
 
-// base classes
-#include <lama/SyncToken.hpp>
+// hpp
+#include <common/ScalarType.hpp>
 
-// others
-#include <lama/tracing/LAMABaseTracer.hpp>
-
-#include <lama/cuda/CUDAStreamSyncToken.hpp>
-
-#include <cuda.h>
-
-/**
- * @brief lama::CUDATracerSyncToken
- */
-class CUDATracerSyncToken: public lama::SyncToken
+namespace common
 {
-public:
-    CUDATracerSyncToken( std::auto_ptr<LAMABaseTracer> tracer, lama::CUDAStreamSyncToken& cudaStreamSyncToken );
 
-    virtual ~CUDATracerSyncToken();
+std::ostream& operator<<( std::ostream& stream, const ScalarType& object )
+{
+    switch( object )
+    {
+        case scalar::FLOAT:
+            stream << "float";
+            break;
 
-    virtual void wait();
+        case scalar::DOUBLE:
+            stream << "double";
+            break;
 
-    virtual bool probe() const;
+        case scalar::INDEX_TYPE:
+            stream << "IndexType";
+            break;
 
-    void recordStopEvent();
+        case scalar::LONG_DOUBLE:
+            stream << "LongDouble";
+            break;
 
-private:
+        case scalar::COMPLEX:
+            stream << "ComplexFloat";
+            break;
 
-    CUDATracerSyncToken();
+        case scalar::DOUBLE_COMPLEX:
+            stream << "ComplexDouble";
+            break;
 
-    CUDATracerSyncToken( const CUDATracerSyncToken& other );
+        case scalar::LONG_DOUBLE_COMPLEX:
+            stream << "ComplexLongDouble";
+            break;
 
-    CUDATracerSyncToken& operator=( const CUDATracerSyncToken& other );
+        case scalar::INTERNAL:
+            stream << "_Internal";
+            break;
 
-    CUevent mStartEvent;
-    CUevent mStopEvent;
+        case scalar::PATTERN:
+            stream << "_Pattern";
+            break;
 
-    lama::CUDAStreamSyncToken& mStreamSyncToken;
+        default:
+            stream << "Unknown";
+    }
 
-    std::auto_ptr<LAMABaseTracer> mTracer;
+    return stream;
+}
 
-    LAMA_LOG_DECL_STATIC_LOGGER( logger )
-};
-
-#endif // LAMA_CUDATRACERSYNCTOKEN_HPP_
+} //namespace 

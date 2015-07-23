@@ -138,7 +138,7 @@ ReadAccess<ValueType>::ReadAccess( const LAMAArray<ValueType>& array, ContextPtr
 {
     COMMON_ASSERT( contextPtr.get(), "NULL context for read access not allowed" )
 
-    LAMA_LOG_DEBUG( logger, "ReadAccess<" << getScalarType<ValueType>()
+    LAMA_LOG_DEBUG( logger, "ReadAccess<" << common::getScalarType<ValueType>()
                     << "> : create for " << array << " @ " << *contextPtr )
 
     mContextDataIndex = mArray->acquireReadAccess( contextPtr );
@@ -151,7 +151,7 @@ ReadAccess<ValueType>::ReadAccess( const LAMAArray<ValueType>& array ) : mArray(
 {
     ContextPtr contextPtr = Context::getContextPtr( context::Host );
 
-    LAMA_LOG_DEBUG( logger, "ReadAccess<" << getScalarType<ValueType>()
+    LAMA_LOG_DEBUG( logger, "ReadAccess<" << common::getScalarType<ValueType>()
                     << "> : create for " << array << " @ " << *contextPtr )
 
     mContextDataIndex = mArray->acquireReadAccess( contextPtr );
@@ -164,7 +164,7 @@ ReadAccess<ValueType>::ReadAccess( const LAMAArray<ValueType>& array ) : mArray(
 template<typename ValueType>
 ReadAccess<ValueType>::~ReadAccess()
 {
-    LAMA_LOG_DEBUG( logger, "~ReadAccess<" << getScalarType<ValueType>() << ">" )
+    LAMA_LOG_DEBUG( logger, "~ReadAccess<" << common::getScalarType<ValueType>() << ">" )
     release();
 }
 
@@ -175,7 +175,7 @@ void ReadAccess<ValueType>::release()
 {
     if ( mArray )
     {
-        LAMA_LOG_DEBUG( logger, "ReadAccess<" << getScalarType<ValueType>() << ">: realase for " << *mArray )
+        LAMA_LOG_DEBUG( logger, "ReadAccess<" << common::getScalarType<ValueType>() << ">: realase for " << *mArray )
         mArray->releaseReadAccess( mContextDataIndex );
     }
 
@@ -187,7 +187,7 @@ void ReadAccess<ValueType>::release()
 template<typename ValueType>
 void ReadAccess<ValueType>::writeAt( std::ostream& stream ) const
 {
-    stream << "ReadAccess<" << getScalarType<ValueType>() << "> ";
+    stream << "ReadAccess<" << common::getScalarType<ValueType>() << "> ";
 
     if ( mArray )
     {

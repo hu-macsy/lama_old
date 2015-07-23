@@ -44,7 +44,7 @@
 
 using namespace std;
 using namespace memory;
-using common::shared_ptr;
+using namespace common;
 
 LAMA_LOG_DEF_LOGGER( logger, "CreateTest" )
 

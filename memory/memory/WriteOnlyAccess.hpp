@@ -67,7 +67,7 @@ public:
     WriteOnlyAccess( LAMAArray<ValueType>& array, ContextPtr context )
         : WriteAccess<ValueType>( array, context, false )
     {
-        LAMA_LOG_DEBUG( logger, "WriteOnlyAccess<" << getScalarType<ValueType>() << ">" )
+        LAMA_LOG_DEBUG( logger, "WriteOnlyAccess<" << common::getScalarType<ValueType>() << ">" )
     }
 
     /** Create a write access with keep flag = false for the host context
@@ -78,7 +78,7 @@ public:
     WriteOnlyAccess( LAMAArray<ValueType>& array )
         : WriteAccess<ValueType>( array, false )
     {
-        LAMA_LOG_DEBUG( logger, "WriteOnlyAccess<" << getScalarType<ValueType>() << ">" )
+        LAMA_LOG_DEBUG( logger, "WriteOnlyAccess<" << common::getScalarType<ValueType>() << ">" )
     }
 
     /**
@@ -96,7 +96,7 @@ public:
         this->resize( 0 );      // invalidates all data before resize
         this->resize( size );   // now resize
 
-        LAMA_LOG_DEBUG( logger, "WriteOnlyAccess<" << getScalarType<ValueType>() << ">: " << *mArray )
+        LAMA_LOG_DEBUG( logger, "WriteOnlyAccess<" << common::getScalarType<ValueType>() << ">: " << *mArray )
     }
 
     WriteOnlyAccess( LAMAArray<ValueType>& array, const IndexType size )
@@ -105,12 +105,12 @@ public:
         this->resize( 0 );      // invalidates all data before resize
         this->resize( size );   // now resize
 
-        LAMA_LOG_DEBUG( logger, "WriteOnlyAccess<" << getScalarType<ValueType>() << ">: " << *mArray )
+        LAMA_LOG_DEBUG( logger, "WriteOnlyAccess<" << common::getScalarType<ValueType>() << ">: " << *mArray )
     }
 
     ~WriteOnlyAccess()
     {
-        LAMA_LOG_DEBUG( WriteAccess<ValueType>::logger, "~WriteOnlyAccess<" << getScalarType<ValueType>() << ">" )
+        LAMA_LOG_DEBUG( WriteAccess<ValueType>::logger, "~WriteOnlyAccess<" << common::getScalarType<ValueType>() << ">" )
     }
 
 protected:
