@@ -221,7 +221,7 @@ void SparseAssemblyStorage<ValueType>::check( const char* msg ) const
 {
     if( mNumRows != static_cast<IndexType>( mRows.size() ) )
     {
-        LAMA_THROWEXCEPTION(
+        COMMON_THROWEXCEPTION(
             msg << ": SparseAssemblyStorage: mNumRows = " << mNumRows << " does not match size of mRows = " << mRows.size() );
     }
 
@@ -385,7 +385,7 @@ ValueType SparseAssemblyStorage<ValueType>::operator()( const IndexType i, const
 {
     if( j >= mNumColumns )
     {
-        LAMA_THROWEXCEPTION( "Passed column Index " << j << " exceeds column count " << mNumColumns << "." )
+        COMMON_THROWEXCEPTION( "Passed column Index " << j << " exceeds column count " << mNumColumns << "." )
     }
 
     const std::vector<IndexType>& rJA = mRows[i].ja;
@@ -434,12 +434,12 @@ void SparseAssemblyStorage<ValueType>::set( const IndexType i, const IndexType j
 {
     if( i >= mNumRows )
     {
-        LAMA_THROWEXCEPTION( "Passed row Index " << i << " exceeds row count " << mNumRows << "." )
+        COMMON_THROWEXCEPTION( "Passed row Index " << i << " exceeds row count " << mNumRows << "." )
     }
 
     if( j >= mNumColumns )
     {
-        LAMA_THROWEXCEPTION( "Passed column Index " << j << " exceeds column count " << mNumColumns << "." )
+        COMMON_THROWEXCEPTION( "Passed column Index " << j << " exceeds column count " << mNumColumns << "." )
     }
 
     {
@@ -631,12 +631,12 @@ void SparseAssemblyStorage<ValueType>::setCSRDataImpl(
 
     if( !OpenMPCSRUtils::validOffsets( csrIA.get(), numRows, numValues ) )
     {
-        LAMA_THROWEXCEPTION( "invalid offset array" )
+        COMMON_THROWEXCEPTION( "invalid offset array" )
     }
 
     if( !OpenMPUtils::validIndexes( csrJA.get(), numValues, numColumns ) )
     {
-        LAMA_THROWEXCEPTION( "invalid column indexes in ja = " << ja << ", #columns = " << numColumns )
+        COMMON_THROWEXCEPTION( "invalid column indexes in ja = " << ja << ", #columns = " << numColumns )
     }
 
     mNumRows = numRows;

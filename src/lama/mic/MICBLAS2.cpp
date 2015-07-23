@@ -131,7 +131,7 @@ void MICBLAS2::gemv(
             break;
 
         default:
-            LAMA_THROWEXCEPTION( "Illegal order setting " << order )
+            COMMON_THROWEXCEPTION( "Illegal order setting " << order )
     }
 
     void* yPtr = y;
@@ -193,7 +193,7 @@ void MICBLAS2::gemv(
             break;
 
         default:
-            LAMA_THROWEXCEPTION( "Illegal order setting " << order )
+            COMMON_THROWEXCEPTION( "Illegal order setting " << order )
     }
 
     void* yPtr = y;

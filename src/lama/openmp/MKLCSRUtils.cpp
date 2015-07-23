@@ -81,7 +81,7 @@ void MKLCSRUtils::normalGEMV(
 
     if( syncToken )
     {
-        LAMA_THROWEXCEPTION( "asynchronous execution should be done by LAMATask before" )
+        COMMON_THROWEXCEPTION( "asynchronous execution should be done by LAMATask before" )
     }
 
     if( y != result && beta != 0 )
@@ -134,7 +134,7 @@ void MKLCSRUtils::normalGEMV(
 
     if( syncToken )
     {
-        LAMA_THROWEXCEPTION( "asynchronous execution should be done by LAMATask before" )
+        COMMON_THROWEXCEPTION( "asynchronous execution should be done by LAMATask before" )
     }
 
     if( y != result && beta != 0 )

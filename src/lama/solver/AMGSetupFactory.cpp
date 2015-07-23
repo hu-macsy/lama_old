@@ -107,7 +107,7 @@ AMGSetupPtr AMGSetupFactory::get( const std::string& type )
         return id->second->getAMGSetup();
     }
 
-    LAMA_THROWEXCEPTION( "AMGSetup for " << type << " not supported, no manager registered" )
+    COMMON_THROWEXCEPTION( "AMGSetup for " << type << " not supported, no manager registered" )
 }
 
 AMGSetupPtr AMGSetupFactory::get()
@@ -170,7 +170,7 @@ void AMGSetupFactory::setDefaultAMGSetupType() const
     }
     else
     {
-        LAMA_THROWEXCEPTION( "No default AMGSetup available" )
+        COMMON_THROWEXCEPTION( "No default AMGSetup available" )
     }
 }
 

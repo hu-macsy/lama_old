@@ -51,7 +51,7 @@
             errorStr << "MPI error in line " << __LINE__ ;                          \
             errorStr << " of file " << __FILE__ << ": ";                            \
             errorStr << msg<< "\n";                                                 \
-            lama::Exception::addCallStack( errorStr );                              \
+            common::Exception::addCallStack( errorStr );                           \
             fprintf( stderr, "%s\n", errorStr.str().c_str() );                      \
             throw MPIException( errorStr.str(), status );                           \
         }                                                                           \

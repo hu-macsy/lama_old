@@ -90,7 +90,7 @@ static int lapack_order( const CBLAS_ORDER order )
     }
     else
     {
-        LAMA_THROWEXCEPTION( "Illegal matrix order: " << order );
+        COMMON_THROWEXCEPTION( "Illegal matrix order: " << order );
     }
 
     return matrix_order;
@@ -119,11 +119,11 @@ IndexType LAPACKe_LAPACK::getrf(
 
     if( info < 0 )
     {
-        LAMA_THROWEXCEPTION( "illegal argument " << ( -info ) )
+        COMMON_THROWEXCEPTION( "illegal argument " << ( -info ) )
     }
     else if( info > 0 )
     {
-        LAMA_THROWEXCEPTION( "value(" << info << "," << info << ")" << " is exactly zero" )
+        COMMON_THROWEXCEPTION( "value(" << info << "," << info << ")" << " is exactly zero" )
     }
 
     return info;
@@ -150,11 +150,11 @@ IndexType LAPACKe_LAPACK::getrf(
 
     if( info < 0 )
     {
-        LAMA_THROWEXCEPTION( "illegal argument " << ( -info ) )
+        COMMON_THROWEXCEPTION( "illegal argument " << ( -info ) )
     }
     else if( info > 0 )
     {
-        LAMA_THROWEXCEPTION( "value(" << info << "," << info << ")" << " is exactly zero" )
+        COMMON_THROWEXCEPTION( "value(" << info << "," << info << ")" << " is exactly zero" )
     }
 
     return info;
@@ -179,11 +179,11 @@ IndexType LAPACKe_LAPACK::getrf(
 
     if( info < 0 )
     {
-        LAMA_THROWEXCEPTION( "illegal argument " << ( -info ) )
+        COMMON_THROWEXCEPTION( "illegal argument " << ( -info ) )
     }
     else if( info > 0 )
     {
-        LAMA_THROWEXCEPTION( "value(" << info << "," << info << ")" << " is exactly zero" )
+        COMMON_THROWEXCEPTION( "value(" << info << "," << info << ")" << " is exactly zero" )
     }
 
     return info;
@@ -208,11 +208,11 @@ IndexType LAPACKe_LAPACK::getrf(
 
     if( info < 0 )
     {
-        LAMA_THROWEXCEPTION( "illegal argument " << ( -info ) )
+        COMMON_THROWEXCEPTION( "illegal argument " << ( -info ) )
     }
     else if( info > 0 )
     {
-        LAMA_THROWEXCEPTION( "value(" << info << "," << info << ")" << " is exactly zero" )
+        COMMON_THROWEXCEPTION( "value(" << info << "," << info << ")" << " is exactly zero" )
     }
 
     return info;
@@ -226,7 +226,7 @@ template<>
 IndexType LAPACKe_LAPACK::getrf( const CBLAS_ORDER, const int, const int, LongDouble* const, const int, int* const )
 {
     // LongDouble not supported by LAPACK, should give a serious runtime error
-    LAMA_THROWEXCEPTION( "getrf<LongDouble> unsupported" )
+    COMMON_THROWEXCEPTION( "getrf<LongDouble> unsupported" )
 }
 
 /* ------------------------------------------------------------------------- */
@@ -250,14 +250,14 @@ void LAPACKe_LAPACK::getinv( const IndexType n, float* a, const IndexType lda )
 
     if( info )
     {
-        LAMA_THROWEXCEPTION( "MKL sgetrf failed, info = " << info )
+        COMMON_THROWEXCEPTION( "MKL sgetrf failed, info = " << info )
     }
 
     info = LAPACKE_sgetri( LAPACK_COL_MAJOR, n, a, lda, ipiv.get() );
 
     if( info )
     {
-        LAMA_THROWEXCEPTION( "MKL sgetri failed, info = " << info )
+        COMMON_THROWEXCEPTION( "MKL sgetri failed, info = " << info )
     }
 }
 
@@ -282,14 +282,14 @@ void LAPACKe_LAPACK::getinv( const IndexType n, double* a, const IndexType lda )
 
     if( info )
     {
-        LAMA_THROWEXCEPTION( "MKL dgetrf failed, info = " << info )
+        COMMON_THROWEXCEPTION( "MKL dgetrf failed, info = " << info )
     }
 
     info = LAPACKE_dgetri( matrix_order, n, a, lda, ipiv.get() );
 
     if( info )
     {
-        LAMA_THROWEXCEPTION( "MKL dgetri failed, info = " << info )
+        COMMON_THROWEXCEPTION( "MKL dgetri failed, info = " << info )
     }
 }
 
@@ -314,14 +314,14 @@ void LAPACKe_LAPACK::getinv( const IndexType n, ComplexFloat* a, const IndexType
 
     if( info )
     {
-        LAMA_THROWEXCEPTION( "MKL sgetrf failed, info = " << info )
+        COMMON_THROWEXCEPTION( "MKL sgetrf failed, info = " << info )
     }
 
     info = LAPACKE_cgetri( LAPACK_COL_MAJOR, n, mklCast( a ), lda, ipiv.get() );
 
     if( info )
     {
-        LAMA_THROWEXCEPTION( "MKL sgetri failed, info = " << info )
+        COMMON_THROWEXCEPTION( "MKL sgetri failed, info = " << info )
     }
 }
 
@@ -333,7 +333,7 @@ template<>
 void LAPACKe_LAPACK::getinv( const IndexType, LongDouble*, const IndexType )
 {
     // LongDouble not supported by LAPACK, should give a serious runtime error
-    LAMA_THROWEXCEPTION( "getinv<LongDouble> unsupported" )
+    COMMON_THROWEXCEPTION( "getinv<LongDouble> unsupported" )
 }
 
 /* ------------------------------------------------------------------------- */
@@ -357,14 +357,14 @@ void LAPACKe_LAPACK::getinv( const IndexType n, ComplexDouble* a, const IndexTyp
 
     if( info )
     {
-        LAMA_THROWEXCEPTION( "MKL sgetrf failed, info = " << info )
+        COMMON_THROWEXCEPTION( "MKL sgetrf failed, info = " << info )
     }
 
     info = LAPACKE_zgetri( LAPACK_COL_MAJOR, n, mklCast( a ), lda, ipiv.get() );
 
     if( info )
     {
-        LAMA_THROWEXCEPTION( "MKL sgetri failed, info = " << info )
+        COMMON_THROWEXCEPTION( "MKL sgetri failed, info = " << info )
     }
 }
 
@@ -383,11 +383,11 @@ int LAPACKe_LAPACK::getri( const CBLAS_ORDER order, const int n, float* const a,
 
     if( info < 0 )
     {
-        LAMA_THROWEXCEPTION( "illegal argument " << ( -info ) )
+        COMMON_THROWEXCEPTION( "illegal argument " << ( -info ) )
     }
     else if( info > 0 )
     {
-        LAMA_THROWEXCEPTION( "value(" << info << "," << info << ")" << " is exactly zero" )
+        COMMON_THROWEXCEPTION( "value(" << info << "," << info << ")" << " is exactly zero" )
     }
 
     return info;
@@ -408,11 +408,11 @@ int LAPACKe_LAPACK::getri( const CBLAS_ORDER order, const int n, double* const a
 
     if( info < 0 )
     {
-        LAMA_THROWEXCEPTION( "illegal argument " << ( -info ) )
+        COMMON_THROWEXCEPTION( "illegal argument " << ( -info ) )
     }
     else if( info > 0 )
     {
-        LAMA_THROWEXCEPTION( "value(" << info << "," << info << ")" << " is exactly zero" )
+        COMMON_THROWEXCEPTION( "value(" << info << "," << info << ")" << " is exactly zero" )
     }
 
     return info;
@@ -433,11 +433,11 @@ int LAPACKe_LAPACK::getri( const CBLAS_ORDER order, const int n, ComplexFloat* c
 
     if( info < 0 )
     {
-        LAMA_THROWEXCEPTION( "illegal argument " << ( -info ) )
+        COMMON_THROWEXCEPTION( "illegal argument " << ( -info ) )
     }
     else if( info > 0 )
     {
-        LAMA_THROWEXCEPTION( "value(" << info << "," << info << ")" << " is exactly zero" )
+        COMMON_THROWEXCEPTION( "value(" << info << "," << info << ")" << " is exactly zero" )
     }
 
     return info;
@@ -463,11 +463,11 @@ int LAPACKe_LAPACK::getri(
 
     if( info < 0 )
     {
-        LAMA_THROWEXCEPTION( "illegal argument " << ( -info ) )
+        COMMON_THROWEXCEPTION( "illegal argument " << ( -info ) )
     }
     else if( info > 0 )
     {
-        LAMA_THROWEXCEPTION( "value(" << info << "," << info << ")" << " is exactly zero" )
+        COMMON_THROWEXCEPTION( "value(" << info << "," << info << ")" << " is exactly zero" )
     }
 
     return info;
@@ -481,7 +481,7 @@ template<>
 IndexType LAPACKe_LAPACK::getri( const CBLAS_ORDER, const int, LongDouble* const, const int, int* const )
 {
     // LongDouble not supported by LAPACK, should give a serious runtime error
-    LAMA_THROWEXCEPTION( "getri<LongDouble> unsupported" )
+    COMMON_THROWEXCEPTION( "getri<LongDouble> unsupported" )
 }
 
 /* ------------------------------------------------------------------------- */
@@ -626,7 +626,7 @@ int LAPACKe_LAPACK::tptrs(
     LongDouble*,
     const int )
 {
-    LAMA_THROWEXCEPTION( "tptrs<LongDouble> unsupported" )
+    COMMON_THROWEXCEPTION( "tptrs<LongDouble> unsupported" )
 }
 
 /* --------------------------------------------------------------------------- */

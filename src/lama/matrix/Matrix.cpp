@@ -93,18 +93,18 @@ void Matrix::checkSettings() const
 {
     if( !mColDistribution )
     {
-        LAMA_THROWEXCEPTION( "NULL pointer for column distribution" )
+        COMMON_THROWEXCEPTION( "NULL pointer for column distribution" )
     }
 
     if( mNumRows != getDistribution().getGlobalSize() )
     {
-        LAMA_THROWEXCEPTION(
+        COMMON_THROWEXCEPTION(
                         "row distribution " << getDistribution() << ": global size mismatches #rows = " << mNumRows );
     }
 
     if( mNumColumns != getColDistribution().getGlobalSize() )
     {
-        LAMA_THROWEXCEPTION(
+        COMMON_THROWEXCEPTION(
                         "col distribution " << getColDistribution() << ": global size mismatches #columns = " << mNumColumns );
     }
 }
@@ -217,7 +217,7 @@ Vector* Matrix::createDenseVector( DistributionPtr distribution, const Scalar va
             return new DenseVector<float>( distribution, value.getValue<float>() );
 
         default:
-            LAMA_THROWEXCEPTION( "unsupported vector type : " << matrixValueType )
+            COMMON_THROWEXCEPTION( "unsupported vector type : " << matrixValueType )
     }
 }
 
@@ -422,7 +422,7 @@ void Matrix::sanityCheck( const Expression<Matrix,Matrix,Times>& exp )
 
     if( colDistA != rowDistB )
     {
-        LAMA_THROWEXCEPTION(
+        COMMON_THROWEXCEPTION(
                         "A * B with A = " << A << ", B = " << B << std::endl << "col size/distribution of A  = " << A.getColDistribution() << " does not match row/size distribution of B = " << B.getDistribution() );
     }
 }
@@ -444,12 +444,12 @@ void Matrix::sanityCheck( const Expression<Matrix,Matrix,Times>& exp, const Matr
 
     if( rowDistA != rowDistC )
     {
-        LAMA_THROWEXCEPTION( "Size/distribution of rows do not match: " << "ARG1 = " << A << ", ARG2 = " << C )
+        COMMON_THROWEXCEPTION( "Size/distribution of rows do not match: " << "ARG1 = " << A << ", ARG2 = " << C )
     }
 
     if( colDistB != colDistC )
     {
-        LAMA_THROWEXCEPTION( "Size/distribution of cols do not match: " << "ARG1 = " << B << ", ARG2 = " << C )
+        COMMON_THROWEXCEPTION( "Size/distribution of cols do not match: " << "ARG1 = " << B << ", ARG2 = " << C )
     }
 }
 
@@ -465,12 +465,12 @@ void Matrix::sanityCheck( const Matrix& A, const Matrix& B )
 
     if( rowDistA != rowDistB )
     {
-        LAMA_THROWEXCEPTION( "Size/distribution of rows do not match: " << "ARG1 = " << A << ", ARG2 = " << B )
+        COMMON_THROWEXCEPTION( "Size/distribution of rows do not match: " << "ARG1 = " << A << ", ARG2 = " << B )
     }
 
     if( colDistA != colDistB )
     {
-        LAMA_THROWEXCEPTION( "Size/distribution of cols do not match: " << "ARG1 = " << A << ", ARG2 = " << B )
+        COMMON_THROWEXCEPTION( "Size/distribution of cols do not match: " << "ARG1 = " << A << ", ARG2 = " << B )
     }
 }
 

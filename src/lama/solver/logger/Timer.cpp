@@ -63,7 +63,7 @@ void Timer::initialize( const std::string& timerId )
     }
     else
     {
-        LAMA_THROWEXCEPTION( "Tried to initialize an already existing timer. Timer ID: " << timerId );
+        COMMON_THROWEXCEPTION( "Tried to initialize an already existing timer. Timer ID: " << timerId );
     }
 }
 
@@ -80,7 +80,7 @@ void Timer::start( const std::string& timerId )
 
     if( timer.isRunning )
     {
-        LAMA_THROWEXCEPTION( "Tried to start an already started timer. Timer ID: " << timerId );
+        COMMON_THROWEXCEPTION( "Tried to start an already started timer. Timer ID: " << timerId );
     }
     else
     {
@@ -95,14 +95,14 @@ void Timer::stop( const std::string& timerId )
 
     if( it == m_timerData.end() )
     {
-        LAMA_THROWEXCEPTION( "Tried to stop a nonexisting Timer. Timer ID: " << timerId );
+        COMMON_THROWEXCEPTION( "Tried to stop a nonexisting Timer. Timer ID: " << timerId );
     }
 
     TimerData& timer = it->second;
 
     if( !( timer.isRunning ) )
     {
-        LAMA_THROWEXCEPTION( "Tried to stop a not running Timer. Timer ID: " << timerId );
+        COMMON_THROWEXCEPTION( "Tried to stop a not running Timer. Timer ID: " << timerId );
     }
 
     timer.isRunning = false;
@@ -115,7 +115,7 @@ void Timer::reset( const std::string& timerId )
 
     if( it == m_timerData.end() )
     {
-        LAMA_THROWEXCEPTION( "Tried to reset a nonexisting Timer. Timer ID: " << timerId );
+        COMMON_THROWEXCEPTION( "Tried to reset a nonexisting Timer. Timer ID: " << timerId );
     }
 
     TimerData& timer = it->second;
@@ -130,7 +130,7 @@ double Timer::getTime( const std::string& timerId )
 
     if( it == m_timerData.end() )
     {
-        LAMA_THROWEXCEPTION( "Tried to get time from a nonexisting Timer. Timer ID: " << timerId );
+        COMMON_THROWEXCEPTION( "Tried to get time from a nonexisting Timer. Timer ID: " << timerId );
     }
 
     TimerData& timer = it->second;
@@ -149,7 +149,7 @@ void Timer::stopAndReset( const std::string& timerId )
 
     if( it == m_timerData.end() )
     {
-        LAMA_THROWEXCEPTION( "Tried to stop and reset a nonexisting Timer. Timer ID: " << timerId );
+        COMMON_THROWEXCEPTION( "Tried to stop and reset a nonexisting Timer. Timer ID: " << timerId );
     }
 
     TimerData& timer = it->second;

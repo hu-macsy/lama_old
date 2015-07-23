@@ -104,7 +104,7 @@ protected:
             loc->getInterface().module.function();                                                 \
     if ( function == NULL )                                                                   \
     {                                                                                         \
-        LAMA_THROWEXCEPTION( "Method " #module "::" #function " not available on " << *loc ); \
+        COMMON_THROWEXCEPTION( "Method " #module "::" #function " not available on " << *loc ); \
     }
 
 /** same as LAMA_INTERFACE_FN but takes routine on Host if not available at loc */
@@ -119,7 +119,7 @@ protected:
         function = loc->getInterface().module.function();                                     \
         if ( function == NULL )                                                               \
         {                                                                                     \
-            LAMA_THROWEXCEPTION( "Method " #module "::" #function                             \
+            COMMON_THROWEXCEPTION( "Method " #module "::" #function                             \
                                  " also not available on " << *loc );                         \
         }                                                                                     \
     }
@@ -129,7 +129,7 @@ protected:
     function = loc->getInterface().module.function<ValueType>();                              \
     if ( function == NULL )                                                                   \
     {                                                                                         \
-        LAMA_THROWEXCEPTION( "Method " #module "::" #function " not available on " << *loc ); \
+        COMMON_THROWEXCEPTION( "Method " #module "::" #function " not available on " << *loc ); \
     }
 
 #define LAMA_INTERFACE_FN_t( function, loc, module, structname, ValueType )                   \
@@ -137,7 +137,7 @@ protected:
     function = loc->getInterface().module.function<ValueType>();                              \
     if ( function == NULL )                                                                   \
     {                                                                                         \
-        LAMA_THROWEXCEPTION( "Method " #module "::" #function " not available on " << *loc ); \
+        COMMON_THROWEXCEPTION( "Method " #module "::" #function " not available on " << *loc ); \
     }
 
 #define LAMA_INTERFACE_FN_DEFAULT_T( function, loc, module, structname, ValueType )           \
@@ -150,7 +150,7 @@ protected:
         function = loc->getInterface().module.function<ValueType>();                          \
         if ( function == NULL )                                                               \
         {                                                                                     \
-            LAMA_THROWEXCEPTION( "Method " #module "::" #function                             \
+            COMMON_THROWEXCEPTION( "Method " #module "::" #function                             \
                                  " also not available on " << *loc );                         \
         }                                                                                     \
     }
@@ -160,7 +160,7 @@ protected:
     function = loc->getInterface().module.function<T1,T2>();                                  \
     if ( function == NULL )                                                                   \
     {                                                                                         \
-        LAMA_THROWEXCEPTION( "Method " #module "::" #function " not available on " << *loc ); \
+        COMMON_THROWEXCEPTION( "Method " #module "::" #function " not available on " << *loc ); \
     }
 
 #endif // LAMA_LAMA_INTERFACE_HPP_

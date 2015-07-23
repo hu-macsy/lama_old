@@ -71,7 +71,7 @@ Distribution::Distribution( const IndexType globalSize, const CommunicatorPtr co
 {
     if( !mCommunicator )
     {
-        LAMA_THROWEXCEPTION( "Distribution without a Communicator is not allowed" )
+        COMMON_THROWEXCEPTION( "Distribution without a Communicator is not allowed" )
     }
 
     LAMA_LOG_INFO( logger, "Distribution( size = " << globalSize << ", comm = " << *mCommunicator << " )" )

@@ -42,6 +42,7 @@
 
 using namespace boost;
 using namespace lama;
+using common::Exception;
 
 extern bool base_test_case;
 extern std::string testcase;

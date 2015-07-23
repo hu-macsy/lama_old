@@ -99,7 +99,7 @@ static inline void getStencilProperties(
             length = 1;
             distance = 1;
             dimension = 1;
-            LAMA_THROWEXCEPTION( "Invalid Stencil type = " << stencilType )
+            COMMON_THROWEXCEPTION( "Invalid Stencil type = " << stencilType )
     }
 }
 

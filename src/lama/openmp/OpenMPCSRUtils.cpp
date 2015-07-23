@@ -512,7 +512,7 @@ void OpenMPCSRUtils::normalGEMV(
 
     if( syncToken )
     {
-        LAMA_THROWEXCEPTION( "asynchronous execution should be done by LAMATask before" )
+        COMMON_THROWEXCEPTION( "asynchronous execution should be done by LAMATask before" )
     }
 
     // ToDo: for efficiency the following cases should be considered
@@ -585,7 +585,7 @@ void OpenMPCSRUtils::normalGEVM(
 
     if( syncToken )
     {
-        LAMA_THROWEXCEPTION( "asynchronous execution should be done by LAMATask before" )
+        COMMON_THROWEXCEPTION( "asynchronous execution should be done by LAMATask before" )
     }
 
     // ToDo: for efficiency the cases of alpha and beta = 1.0 / 0.0 should be considered
@@ -665,7 +665,7 @@ void OpenMPCSRUtils::sparseGEMV(
 {
     if( syncToken )
     {
-        LAMA_THROWEXCEPTION( "asynchronous execution should be done by LAMATask before" )
+        COMMON_THROWEXCEPTION( "asynchronous execution should be done by LAMATask before" )
     }
 
     #pragma omp parallel
@@ -722,7 +722,7 @@ void OpenMPCSRUtils::sparseGEVM(
 {
     if( syncToken )
     {
-        LAMA_THROWEXCEPTION( "asynchronous execution should be done by LAMATask before" )
+        COMMON_THROWEXCEPTION( "asynchronous execution should be done by LAMATask before" )
     }
 
     #pragma omp parallel
@@ -790,7 +790,7 @@ void OpenMPCSRUtils::gemm(
 
     if( syncToken )
     {
-        LAMA_THROWEXCEPTION( "asynchronous execution should be done by LAMATask before" )
+        COMMON_THROWEXCEPTION( "asynchronous execution should be done by LAMATask before" )
     }
 
     #pragma omp parallel for schedule(LAMA_OMP_SCHEDULE)
@@ -837,7 +837,7 @@ void OpenMPCSRUtils::jacobi(
 
     if( syncToken )
     {
-        LAMA_THROWEXCEPTION( "asynchronous execution should be done by LAMATask before" )
+        COMMON_THROWEXCEPTION( "asynchronous execution should be done by LAMATask before" )
     }
 
     const ValueType oneMinusOmega = static_cast<ValueType>( 1.0 ) - omega;

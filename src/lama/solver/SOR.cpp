@@ -131,7 +131,7 @@ void SOR::initialize( const Matrix& coefficients )
     }
     else
     {
-        LAMA_THROWEXCEPTION(
+        COMMON_THROWEXCEPTION(
             "Coefficients matrix " << typeid( coefficients ).name() << "(" << coefficients << ") is of unsupported type for SOR." );
     }
 }
@@ -156,7 +156,7 @@ void SOR::iterate()
 
         default:
         {
-            LAMA_THROWEXCEPTION( "Value type " << getRuntime().mCoefficients->getValueType() << " is not implement." )
+            COMMON_THROWEXCEPTION( "Value type " << getRuntime().mCoefficients->getValueType() << " is not implement." )
         }
     }
 }

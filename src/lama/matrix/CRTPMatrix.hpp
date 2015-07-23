@@ -111,7 +111,7 @@ public:
         }
         else if( &result == &x )
         {
-            LAMA_THROWEXCEPTION( "alias: result = x is not handled, use temporary" )
+            COMMON_THROWEXCEPTION( "alias: result = x is not handled, use temporary" )
         }
         else
         {
@@ -158,7 +158,7 @@ public:
         }
         else if( &result == &x )
         {
-            LAMA_THROWEXCEPTION( "alias: result = x is not handled, use temporary" )
+            COMMON_THROWEXCEPTION( "alias: result = x is not handled, use temporary" )
         }
         else
         {

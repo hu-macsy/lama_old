@@ -1055,7 +1055,7 @@ void MICELLUtils::normalGEMV(
 
     if( numNonZerosPerRow == 0 )
     {
-        LAMA_THROWEXCEPTION( "normalGEMV should not have been called, no entries" )
+        COMMON_THROWEXCEPTION( "normalGEMV should not have been called, no entries" )
 
         // only compute: result = beta * y
     }

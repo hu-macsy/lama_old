@@ -302,7 +302,7 @@ void CSRStorage<ValueType>::setCSRDataImpl(
 
         if( n != numValues )
         {
-            LAMA_THROWEXCEPTION( "ia is invalid size array" )
+            COMMON_THROWEXCEPTION( "ia is invalid size array" )
         }
     }
     else if( ia.size() == numRows + 1 )
@@ -319,12 +319,12 @@ void CSRStorage<ValueType>::setCSRDataImpl(
 
         if( !validOffsets( csrIA.get(), numRows, numValues ) )
         {
-            LAMA_THROWEXCEPTION( "ia is invalid offset array" )
+            COMMON_THROWEXCEPTION( "ia is invalid offset array" )
         }
     }
     else
     {
-        LAMA_THROWEXCEPTION( "ia array with size = " << ia.size() << " illegal, #rows = " << numRows )
+        COMMON_THROWEXCEPTION( "ia array with size = " << ia.size() << " illegal, #rows = " << numRows )
     }
 
     LAMA_ASSERT_EQUAL_ERROR( numValues, ja.size() );
@@ -341,7 +341,7 @@ void CSRStorage<ValueType>::setCSRDataImpl(
 
         if( !validIndexes( csrJA.get(), numValues, numColumns ) )
         {
-            LAMA_THROWEXCEPTION( "invalid column indexes in ja = " << ja << ", #columns = " << numColumns )
+            COMMON_THROWEXCEPTION( "invalid column indexes in ja = " << ja << ", #columns = " << numColumns )
         }
     }
 
@@ -859,7 +859,7 @@ void CSRStorage<ValueType>::setDiagonalImpl( const Scalar value )
 
     if( !mDiagonalProperty )
     {
-        LAMA_THROWEXCEPTION( "setDiagonal: matrix storage has not diagonal property." )
+        COMMON_THROWEXCEPTION( "setDiagonal: matrix storage has not diagonal property." )
     }
 
     ValueType val = value.getValue<ValueType>();
@@ -1719,7 +1719,7 @@ void CSRStorage<ValueType>::jacobiIterate(
 
     if( &solution == &oldSolution )
     {
-        LAMA_THROWEXCEPTION( "alias of solution and oldSolution unsupported" )
+        COMMON_THROWEXCEPTION( "alias of solution and oldSolution unsupported" )
     }
 
     LAMA_ASSERT_EQUAL_DEBUG( mNumRows, oldSolution.size() )
@@ -1778,7 +1778,7 @@ void CSRStorage<ValueType>::jacobiIterateHalo(
     {
         // either copy localStorage to CSR (not recommended) or
         // just get the diagonal in localValues and set order in localIA
-        LAMA_THROWEXCEPTION( "local stroage is not CSR" )
+        COMMON_THROWEXCEPTION( "local stroage is not CSR" )
     }
 
     ContextPtr loc = getContextPtr();

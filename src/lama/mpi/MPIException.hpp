@@ -37,12 +37,12 @@
 #include <common/config.hpp>
 
 // base classes
-#include <lama/exception/Exception.hpp>
+#include <common/Exception.hpp>
 
 namespace lama
 {
 
-class COMMON_DLL_IMPORTEXPORT MPIException: public Exception
+class COMMON_DLL_IMPORTEXPORT MPIException: public common::Exception
 {
 public:
     MPIException( const std::string& message, const int mpiStatus );

@@ -152,7 +152,7 @@ DenseMatrix<ValueType>::DenseMatrix(
 
     if( matrix.getColDistribution().getNumPartitions() != 1 || matrix.getDistribution().getNumPartitions() != 1 )
     {
-        LAMA_THROWEXCEPTION( "Redistribution of a distributed DenseMatrix is not implemented yet" )
+        COMMON_THROWEXCEPTION( "Redistribution of a distributed DenseMatrix is not implemented yet" )
     }
 
     const Distribution& colDist = *colDistribution.get();
@@ -301,7 +301,7 @@ void DenseMatrix<ValueType>::writeToFile(
     }
     else
     {
-        LAMA_THROWEXCEPTION( *this << ": write to file not supported with distributions" )
+        COMMON_THROWEXCEPTION( *this << ": write to file not supported with distributions" )
     }
 }
 
@@ -661,10 +661,10 @@ void DenseMatrix<ValueType>::buildCSRData(
 {
     if( getValueType() != rowValues.getValueType() )
     {
-        LAMA_THROWEXCEPTION( "rowValues does not fit dense matrix type" )
+        COMMON_THROWEXCEPTION( "rowValues does not fit dense matrix type" )
     }
 
-    LAMA_THROWEXCEPTION( "buildCSRData not available yet: ia = " << rowIA << ", ja = " << rowJA )
+    COMMON_THROWEXCEPTION( "buildCSRData not available yet: ia = " << rowIA << ", ja = " << rowJA )
 }
 
 /* ------------------------------------------------------------------ */
@@ -746,7 +746,7 @@ void DenseMatrix<ValueType>::allocate( DistributionPtr rowDistribution, Distribu
     }
     else
     {
-        LAMA_THROWEXCEPTION( "coldistribution not handled here" )
+        COMMON_THROWEXCEPTION( "coldistribution not handled here" )
     }
 
     Matrix::setDistributedMatrix( rowDistribution, colDistribution );
@@ -767,7 +767,7 @@ void DenseMatrix<ValueType>::swap( DenseMatrix<ValueType>& other )
 template<typename ValueType>
 void DenseMatrix<ValueType>::assignTranspose( const Matrix& /* other */)
 {
-    LAMA_THROWEXCEPTION( "assignTranspose for dense matrices not supported yet" )
+    COMMON_THROWEXCEPTION( "assignTranspose for dense matrices not supported yet" )
 }
 
 template<typename ValueType>
@@ -803,7 +803,7 @@ case common::scalar::SCALAR_ARITHMETIC_TYPE##I:                                 
 #undef LAMA_COPY_DENSE_CALL
 
 default            :
-    LAMA_THROWEXCEPTION( "type of dense matrix not supported for assignment: " << other )
+    COMMON_THROWEXCEPTION( "type of dense matrix not supported for assignment: " << other )
 }
 
 return;
@@ -818,7 +818,7 @@ assignSparse( *sparseMatrix );
 return;
 }
 
-LAMA_THROWEXCEPTION( "Unsupported: assign " << other << " to " << *this )
+COMMON_THROWEXCEPTION( "Unsupported: assign " << other << " to " << *this )
 }
 
 /* ------------------------------------------------------------------ */
@@ -931,7 +931,7 @@ splitColumnData( mData, localData, numColPartitions, mOwners );
 }
 else
 {
-LAMA_THROWEXCEPTION( storage << ": does not fit to row distribution " << *rowDist )
+COMMON_THROWEXCEPTION( storage << ": does not fit to row distribution " << *rowDist )
 }
 }
 
@@ -1311,7 +1311,7 @@ Redistributor redistributor( rowDistribution, getDistributionPtr() ); // target,
 
 redistributor.redistributeN( newLocalData.getData(), oldLocalData.getData(), nCols );
 
-// LAMA_THROWEXCEPTION( "redistribution of dense rows not yet available" )
+// COMMON_THROWEXCEPTION( "redistribution of dense rows not yet available" )
 
 oldLocalData.swap( newLocalData );
 
@@ -1340,7 +1340,7 @@ LAMA_LOG_DEBUG( logger, "get values of dense matrix from row " << globalRowIndex
 
 if( !row.getDistribution().isReplicated() )
 {
-LAMA_THROWEXCEPTION( "vector for row data must be replicated" )
+COMMON_THROWEXCEPTION( "vector for row data must be replicated" )
 }
 
 // on a replicated matrix each processor can fill the row
@@ -1392,7 +1392,7 @@ getRow( *typedRow, globalRowIndex );
 }
 else
 {
-LAMA_THROWEXCEPTION(
+COMMON_THROWEXCEPTION(
     "Value type for row = " << row.getValueType () << " invalid" ", must match type of matrix = " << getValueType() )
 }
 }
@@ -1415,7 +1415,7 @@ void DenseMatrix<ValueType>::getDiagonal( Vector& diagonal ) const
 {
 if( getDistribution() != getColDistribution() )
 {
-LAMA_THROWEXCEPTION( "Diagonal calculation only for equal distributions." )
+COMMON_THROWEXCEPTION( "Diagonal calculation only for equal distributions." )
 }
 
 // todo: if ( diagonal.getVectorKind() == Vector::DENSE        )
@@ -1451,12 +1451,12 @@ void DenseMatrix<ValueType>::setDiagonal( const Vector& diagonal )
 {
 if( getDistribution() != getColDistribution() )
 {
-LAMA_THROWEXCEPTION( "Diagonal calculation only for equal distributions." )
+COMMON_THROWEXCEPTION( "Diagonal calculation only for equal distributions." )
 }
 
 if( getDistribution() != diagonal.getDistribution() )
 {
-LAMA_THROWEXCEPTION( "Diagonal calculation only for equal distributions." )
+COMMON_THROWEXCEPTION( "Diagonal calculation only for equal distributions." )
 }
 
 getLocalStorage().setDiagonal( diagonal.getLocalValues() );
@@ -1467,7 +1467,7 @@ void DenseMatrix<ValueType>::setDiagonal( const Scalar diagonalValue )
 {
 if( getDistribution() != getColDistribution() )
 {
-LAMA_THROWEXCEPTION( "Diagonal calculation only for equal distributions." )
+COMMON_THROWEXCEPTION( "Diagonal calculation only for equal distributions." )
 }
 
 getLocalStorage().setDiagonal( diagonalValue );
@@ -1478,7 +1478,7 @@ void DenseMatrix<ValueType>::scale( const Vector& vector )
 {
 if( getDistribution() != getColDistribution() )
 {
-LAMA_THROWEXCEPTION( "Diagonal calculation only for equal distributions." )
+COMMON_THROWEXCEPTION( "Diagonal calculation only for equal distributions." )
 }
 
 getLocalStorage().scale( vector.getLocalValues() );
@@ -1489,7 +1489,7 @@ void DenseMatrix<ValueType>::scale( const Scalar scaleValue )
 {
 if( getDistribution() != getColDistribution() )
 {
-LAMA_THROWEXCEPTION( "Diagonal calculation only for equal distributions." )
+COMMON_THROWEXCEPTION( "Diagonal calculation only for equal distributions." )
 }
 
 getLocalStorage().scale( scaleValue );
@@ -1879,21 +1879,21 @@ DenseMatrix* res = dynamic_cast<DenseMatrix*>( &result );
 
 if( res == NULL )
 {
-LAMA_THROWEXCEPTION( "Only DenseMatrix DenseMatrix Multiplication is supported." )
+COMMON_THROWEXCEPTION( "Only DenseMatrix DenseMatrix Multiplication is supported." )
 }
 
 const DenseMatrix* Bp = dynamic_cast<const DenseMatrix*>( &B );
 
 if( Bp == NULL )
 {
-LAMA_THROWEXCEPTION( "Only DenseMatrix DenseMatrix Multiplication is supported." )
+COMMON_THROWEXCEPTION( "Only DenseMatrix DenseMatrix Multiplication is supported." )
 }
 
 const DenseMatrix* Cp = dynamic_cast<const DenseMatrix*>( &C );
 
 if( Cp == NULL )
 {
-LAMA_THROWEXCEPTION( "Only DenseMatrix DenseMatrix Multiplication is supported." )
+COMMON_THROWEXCEPTION( "Only DenseMatrix DenseMatrix Multiplication is supported." )
 }
 
 if( res == this )
@@ -1999,7 +1999,7 @@ Scalar DenseMatrix<ValueType>::maxDiffNorm( const Matrix& other ) const
 {
 if( !( ( mNumColumns == other.getNumColumns() ) && ( mNumRows == other.getNumRows() ) ) )
 {
-LAMA_THROWEXCEPTION( "maxDiffNorm requires matrices of same format" );
+COMMON_THROWEXCEPTION( "maxDiffNorm requires matrices of same format" );
 }
 
 // Implementation works only for same distributions and same type

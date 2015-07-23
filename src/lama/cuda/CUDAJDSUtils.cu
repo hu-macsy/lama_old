@@ -1032,7 +1032,7 @@ namespace lama
 
         if ( syncToken )
         {
-            LAMA_THROWEXCEPTION( "jacobiHalo not supported for aynchronous execution" )
+            COMMON_THROWEXCEPTION( "jacobiHalo not supported for aynchronous execution" )
         }
 
         LAMA_CHECK_CUDA_ACCESS

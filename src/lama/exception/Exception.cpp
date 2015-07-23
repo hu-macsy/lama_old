@@ -53,11 +53,11 @@
 namespace lama
 {
 
-LAMA_LOG_DEF_LOGGER( Exception::logger, "Exception" )
+LAMA_LOG_DEF_LOGGER( Exception1::logger, "Exception" )
 
-Exception::UnsupportedType Exception::unsupportedSetting = Exception::UNSUPPORTED_UNDEFINED;
+Exception1::UnsupportedType Exception1::unsupportedSetting = Exception1::UNSUPPORTED_UNDEFINED;
 
-Exception::UnsupportedType Exception::getUnsupportedSetting()
+Exception1::UnsupportedType Exception1::getUnsupportedSetting()
 {
     if( unsupportedSetting == UNSUPPORTED_UNDEFINED )
     {
@@ -101,28 +101,28 @@ Exception::UnsupportedType Exception::getUnsupportedSetting()
     return unsupportedSetting;
 }
 
-Exception::Exception()
+Exception1::Exception1()
 {
 }
 
-Exception::Exception( const std::string& message )
+Exception1::Exception1( const std::string& message )
     : mMessage( message )
 {
     LAMA_LOG_WARN( logger, "EXCEPTION: " << message )
 }
 
-Exception::~Exception() throw ()
+Exception1::~Exception1() throw ()
 {
 }
 
-const char* Exception::what() const throw ()
+const char* Exception1::what() const throw ()
 {
     return mMessage.c_str();
 }
 
 #ifdef __GNUC__
 
-void Exception::addCallStack( std::ostringstream& output )
+void Exception1::addCallStack( std::ostringstream& output )
 {
     const size_t maxDepth = 20;
 
@@ -139,7 +139,7 @@ void Exception::addCallStack( std::ostringstream& output )
     free( stackStrings ); // malloc()ed by backtrace_symbols
 }
 
-std::string Exception::demangle( const char* functionName )
+std::string Exception1::demangle( const char* functionName )
 {
     boost::scoped_array<char> stringManager( new char[std::strlen( functionName ) + 1] );
     char* string = stringManager.get();
@@ -201,11 +201,11 @@ std::string Exception::demangle( const char* functionName )
 
 #else
 
-void Exception::addCallStack( std::ostringstream& )
+void Exception1::addCallStack( std::ostringstream& )
 {
 }
 
-std::string Exception::demangle( const char* functionName )
+std::string Exception1::demangle( const char* functionName )
 {
     return functionName;
 }

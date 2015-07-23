@@ -292,7 +292,7 @@ static DistributionPtr makeDistribution( const IndexType n, CommunicatorPtr comm
     }
     else
     {
-        LAMA_THROWEXCEPTION( "unsupported kind of makeDistribution" );
+        COMMON_THROWEXCEPTION( "unsupported kind of makeDistribution" );
     }
 }
 

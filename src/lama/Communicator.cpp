@@ -129,7 +129,7 @@ void Communicator::factorize2( const double sizeX, const double sizeY, Partition
 
     if( !found )
     {
-        LAMA_THROWEXCEPTION(
+        COMMON_THROWEXCEPTION(
                         "No processor 2D-grid found for usergrid " << usergrid[0] << " x " << usergrid[1] << ", NP = " << size );
     }
 
@@ -211,7 +211,7 @@ void Communicator::factorize3(
 
     if( !found )
     {
-        LAMA_THROWEXCEPTION(
+        COMMON_THROWEXCEPTION(
                         "No processor 3D-grid found for usergrid " << usergrid[0] << " x " << usergrid[1] << " x " << usergrid[2] << ", NP = " << size );
     }
 
@@ -510,7 +510,7 @@ void Communicator::computeOwners(
 
     if( distribution.getCommunicator() != *this )
     {
-        LAMA_THROWEXCEPTION( "The distribution has a different Communicator." )
+        COMMON_THROWEXCEPTION( "The distribution has a different Communicator." )
     }
 
     int nonLocal = 0;

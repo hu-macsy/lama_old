@@ -49,7 +49,7 @@ FileIO::file_size_t FileIO::getFileSize( const char* filename )
 
     if( pFile == NULL )
     {
-        LAMA_THROWEXCEPTION( "File " << filename << " could not be opened" )
+        COMMON_THROWEXCEPTION( "File " << filename << " could not be opened" )
     }
     else
     {

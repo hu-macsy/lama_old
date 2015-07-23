@@ -916,7 +916,7 @@ void OpenMPELLUtils::normalGEMV(
 
     if( numValuesPerRow == 0 )
     {
-        LAMA_THROWEXCEPTION( "normalGEMV should not have been called, no entries" )
+        COMMON_THROWEXCEPTION( "normalGEMV should not have been called, no entries" )
 
         // only compute: result = beta * y
     }
@@ -1045,7 +1045,7 @@ void OpenMPELLUtils::normalGEVM(
 
     if( syncToken )
     {
-        LAMA_THROWEXCEPTION( "asynchronous execution should be done by LAMATask before" )
+        COMMON_THROWEXCEPTION( "asynchronous execution should be done by LAMATask before" )
     }
 
     //#pragma omp parallel
@@ -1126,7 +1126,7 @@ void OpenMPELLUtils::sparseGEVM(
 
     if( syncToken )
     {
-        LAMA_THROWEXCEPTION( "asynchronous execution should be done by LAMATask before" )
+        COMMON_THROWEXCEPTION( "asynchronous execution should be done by LAMATask before" )
     }
 
     #pragma omp parallel

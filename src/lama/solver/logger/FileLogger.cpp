@@ -69,14 +69,14 @@ void FileLogger::setLogFile( const std::string& logFileName )
 
         if( mFileStream.fail() )
         {
-            LAMA_THROWEXCEPTION( "Could not open log file " << logFileName );
+            COMMON_THROWEXCEPTION( "Could not open log file " << logFileName );
         }
 
         mFileName = logFileName;
     }
     else if( logFileName != mFileName )
     {
-        LAMA_THROWEXCEPTION( "Tried to set the log file of the logger to two different files." );
+        COMMON_THROWEXCEPTION( "Tried to set the log file of the logger to two different files." );
     }
 }
 

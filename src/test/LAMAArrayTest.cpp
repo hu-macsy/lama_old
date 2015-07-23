@@ -71,8 +71,8 @@ BOOST_AUTO_TEST_CASE( releaseTest )
     }
 
     writeAccess.release();
-    LAMA_CHECK_THROW( { writeAccess.resize( 20 ); }, Exception );
-    LAMA_CHECK_THROW( { writeAccess[0] = static_cast<IndexType> ( 5.0 ); }, Exception );
+    LAMA_CHECK_THROW( { writeAccess.resize( 20 ); }, common::Exception );
+    LAMA_CHECK_THROW( { writeAccess[0] = static_cast<IndexType> ( 5.0 ); }, common::Exception );
     ReadAccess<IndexType> readAccess( lamaArray );
 
     for ( IndexType i = 0; i < 5; i++ )
@@ -122,8 +122,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( accessTest , ValueType, test_types )
             BOOST_CHECK_EQUAL( value, lamaArrayRAccess[i] );
         }
 
-        LAMA_CHECK_THROW(
-        {   WriteAccess<ValueType> tmpWriteAccess( lamaArray );}, Exception );
+        // now allowed
+        WriteAccess<ValueType> tmpWriteAccess( lamaArray );
     }
     {
         WriteAccess<ValueType> lamaArrayWAccess( lamaArray );
@@ -133,8 +133,9 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( accessTest , ValueType, test_types )
             lamaArrayWAccess[i] = value2;
         }
 
-        LAMA_CHECK_THROW(
-        {   ReadAccess<ValueType> tmpReadAccess( lamaArray );}, Exception );
+        // now allowed
+        ReadAccess<ValueType> tmpReadAccess( lamaArray );
+
         lamaArrayWAccess.release();
         ReadAccess<ValueType> lamaArrayRAccess( lamaArray );
 
@@ -159,7 +160,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( refTest, ValueType, test_types )
         WriteAccess<ValueType> lamaArrayWAccess( lamaArray );
         // resize of a LAMA array with referenced data is not possible
         LAMA_CHECK_THROW(
-        {   lamaArrayWAccess.resize( 20 );}, Exception );
+        {   lamaArrayWAccess.resize( 20 );}, common::Exception );
 
         for ( IndexType i = 0; i < n; ++i )
         {
@@ -185,7 +186,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( refTest, ValueType, test_types )
         {
             WriteAccess<ValueType> lamaArrayWAccess( lamaArray );
         }
-        , Exception );
+        , common::Exception );
     }
 }
 

@@ -214,7 +214,7 @@ IndexType LAPACK_LAPACK::getrf(
     }
     else
     {
-        LAMA_THROWEXCEPTION( "row major only supported for square matrices" );
+        COMMON_THROWEXCEPTION( "row major only supported for square matrices" );
     }
 
     for( int i = 0; i < m; ++i )
@@ -224,11 +224,11 @@ IndexType LAPACK_LAPACK::getrf(
 
     if( info < 0 )
     {
-        LAMA_THROWEXCEPTION( "illegal argument " << ( -info ) )
+        COMMON_THROWEXCEPTION( "illegal argument " << ( -info ) )
     }
     else if( info > 0 )
     {
-        LAMA_THROWEXCEPTION( "value(" << info << "," << info << ")" << " is exactly zero" )
+        COMMON_THROWEXCEPTION( "value(" << info << "," << info << ")" << " is exactly zero" )
     }
 
     return info;
@@ -288,7 +288,7 @@ IndexType LAPACK_LAPACK::getrf(
     }
     else
     {
-        LAMA_THROWEXCEPTION( "row major only supported for square matrices" );
+        COMMON_THROWEXCEPTION( "row major only supported for square matrices" );
     }
 
     for( int i = 0; i < m; ++i )
@@ -298,11 +298,11 @@ IndexType LAPACK_LAPACK::getrf(
 
     if( info < 0 )
     {
-        LAMA_THROWEXCEPTION( "illegal argument " << ( -info ) )
+        COMMON_THROWEXCEPTION( "illegal argument " << ( -info ) )
     }
     else if( info > 0 )
     {
-        LAMA_THROWEXCEPTION( "value(" << info << "," << info << ")" << " is exactly zero" )
+        COMMON_THROWEXCEPTION( "value(" << info << "," << info << ")" << " is exactly zero" )
     }
 
     return info;
@@ -337,7 +337,7 @@ void LAPACK_LAPACK::getinv( const IndexType n, float* a, const IndexType lda )
 
     if( F77_info )
     {
-        LAMA_THROWEXCEPTION( "LAPACK sgetrf failed, info = " << F77_info )
+        COMMON_THROWEXCEPTION( "LAPACK sgetrf failed, info = " << F77_info )
     }
 
     boost::scoped_array<float> work( new float[n] );
@@ -346,7 +346,7 @@ void LAPACK_LAPACK::getinv( const IndexType n, float* a, const IndexType lda )
 
     if( F77_info )
     {
-        LAMA_THROWEXCEPTION( "LAPACK sgetri failed, info = " << F77_info )
+        COMMON_THROWEXCEPTION( "LAPACK sgetri failed, info = " << F77_info )
     }
 }
 
@@ -377,7 +377,7 @@ void LAPACK_LAPACK::getinv( const IndexType n, double* a, const IndexType lda )
 
     if( F77_info )
     {
-        LAMA_THROWEXCEPTION( "LAPACK dgetrf failed, info = " << F77_info )
+        COMMON_THROWEXCEPTION( "LAPACK dgetrf failed, info = " << F77_info )
     }
 
     boost::scoped_array<double> work( new double[n] );
@@ -386,7 +386,7 @@ void LAPACK_LAPACK::getinv( const IndexType n, double* a, const IndexType lda )
 
     if( F77_info )
     {
-        LAMA_THROWEXCEPTION( "LAPACK dgetri failed, info = " << F77_info )
+        COMMON_THROWEXCEPTION( "LAPACK dgetri failed, info = " << F77_info )
     }
 }
 
@@ -455,11 +455,11 @@ int LAPACK_LAPACK::getri( const CBLAS_ORDER order, const int n, float* const a, 
 
     if( info < 0 )
     {
-        LAMA_THROWEXCEPTION( "illegal argument " << ( -info ) )
+        COMMON_THROWEXCEPTION( "illegal argument " << ( -info ) )
     }
     else if( info > 0 )
     {
-        LAMA_THROWEXCEPTION( "value(" << info << "," << info << ")" << " is exactly zero" )
+        COMMON_THROWEXCEPTION( "value(" << info << "," << info << ")" << " is exactly zero" )
     }
 
     return info;
@@ -530,11 +530,11 @@ int LAPACK_LAPACK::getri( const CBLAS_ORDER order, const int n, double* const a,
 
     if( info < 0 )
     {
-        LAMA_THROWEXCEPTION( "illegal argument " << ( -info ) )
+        COMMON_THROWEXCEPTION( "illegal argument " << ( -info ) )
     }
     else if( info > 0 )
     {
-        LAMA_THROWEXCEPTION( "value(" << info << "," << info << ")" << " is exactly zero" )
+        COMMON_THROWEXCEPTION( "value(" << info << "," << info << ")" << " is exactly zero" )
     }
 
     return info;
@@ -593,7 +593,7 @@ int LAPACK_LAPACK::tptrs(
     else if( order == CblasRowMajor )
     {
         // TODO: transpose matrix.
-        LAMA_THROWEXCEPTION( "row major order not supported for tptrs" );
+        COMMON_THROWEXCEPTION( "row major order not supported for tptrs" );
     }
 
     return info;
@@ -652,7 +652,7 @@ int LAPACK_LAPACK::tptrs(
     else if( order == CblasRowMajor )
     {
         // TODO: transpose matrix.
-        LAMA_THROWEXCEPTION( "row major order not supported for tptrs" );
+        COMMON_THROWEXCEPTION( "row major order not supported for tptrs" );
     }
 
     return info;
@@ -759,7 +759,7 @@ void LAPACK_LAPACK::laswp(
     }
     else
     {
-        LAMA_THROWEXCEPTION( "Illegal order setting: " << order );
+        COMMON_THROWEXCEPTION( "Illegal order setting: " << order );
     }
 }
 

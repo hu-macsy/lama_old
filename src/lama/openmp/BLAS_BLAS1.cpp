@@ -92,7 +92,7 @@ void wrapperScal( const int n, const ComplexDouble alpha, ComplexDouble* x, cons
 template<>
 void wrapperScal( const int, const LongDouble, LongDouble*, const int )
 {
-    LAMA_THROWEXCEPTION( "LongDouble not supported by BLAS, please set LAMA_USE_BLAS=0" )
+    COMMON_THROWEXCEPTION( "LongDouble not supported by BLAS, please set LAMA_USE_BLAS=0" )
 }
 
 /* ---------------------------------------------------------------------------------------*/
@@ -161,7 +161,7 @@ ComplexDouble wrapperNrm2( const int n, const ComplexDouble* x, const int incX )
 template<>
 LongDouble wrapperNrm2( const int, const LongDouble*, const int )
 {
-    LAMA_THROWEXCEPTION( "LongDouble not supported by BLAS, please set LAMA_USE_BLAS=0" )
+    COMMON_THROWEXCEPTION( "LongDouble not supported by BLAS, please set LAMA_USE_BLAS=0" )
     return LongDouble( 0 );
 }
 
@@ -222,7 +222,7 @@ ComplexDouble wrapperAsum( const int n, const ComplexDouble* x, const int incX )
 template<>
 LongDouble wrapperAsum( const int, const LongDouble*, const int )
 {
-    LAMA_THROWEXCEPTION( "LongDouble not supported by BLAS, please set LAMA_USE_BLAS=0" )
+    COMMON_THROWEXCEPTION( "LongDouble not supported by BLAS, please set LAMA_USE_BLAS=0" )
     return 0;
 }
 
@@ -282,7 +282,7 @@ IndexType wrapperIamax( const int n, const ComplexDouble* x, const int incX )
 template<>
 IndexType wrapperIamax( const int, const LongDouble*, const int )
 {
-    LAMA_THROWEXCEPTION( "LongDouble not supported by BLAS, please set LAMA_USE_BLAS=0" )
+    COMMON_THROWEXCEPTION( "LongDouble not supported by BLAS, please set LAMA_USE_BLAS=0" )
     return 0;
 }
 
@@ -336,7 +336,7 @@ void wrapperSwap( const int n, ComplexDouble* x, const int incX, ComplexDouble* 
 template<>
 void wrapperSwap( const int, LongDouble*, const int, LongDouble*, const int )
 {
-    LAMA_THROWEXCEPTION( "LongDouble not supported by BLAS, please set LAMA_USE_BLAS=0" )
+    COMMON_THROWEXCEPTION( "LongDouble not supported by BLAS, please set LAMA_USE_BLAS=0" )
 }
 
 template<typename ValueType>
@@ -400,7 +400,7 @@ void wrapperCopy( const int n, const ComplexDouble* x, const int incX, ComplexDo
 template<>
 void wrapperCopy( const int, const LongDouble*, const int, LongDouble*, const int )
 {
-    LAMA_THROWEXCEPTION( "LongDouble not supported by BLAS, please set LAMA_USE_BLAS=0" )
+    COMMON_THROWEXCEPTION( "LongDouble not supported by BLAS, please set LAMA_USE_BLAS=0" )
 }
 
 template<typename ValueType>
@@ -486,7 +486,7 @@ void wrapperAxpy(
 template<>
 void wrapperAxpy( const int, LongDouble, const LongDouble*, const int, LongDouble*, const int )
 {
-    LAMA_THROWEXCEPTION( "LongDouble not supported by BLAS, please set LAMA_USE_BLAS=0" )
+    COMMON_THROWEXCEPTION( "LongDouble not supported by BLAS, please set LAMA_USE_BLAS=0" )
 }
 
 template<typename ValueType>
@@ -560,7 +560,7 @@ ComplexDouble wrapperDot( const int n, const ComplexDouble* x, const int incX, c
 template<>
 LongDouble wrapperDot( const int, const LongDouble*, const int, const LongDouble*, const int )
 {
-    LAMA_THROWEXCEPTION( "LongDouble not supported by BLAS, please set LAMA_USE_BLAS=0" )
+    COMMON_THROWEXCEPTION( "LongDouble not supported by BLAS, please set LAMA_USE_BLAS=0" )
     return 0;
 }
 

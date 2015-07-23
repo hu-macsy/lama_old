@@ -51,6 +51,7 @@ inline void usleep( int t )
 
 using namespace boost;
 using namespace lama;
+using common::Exception;
 
 /* --------------------------------------------------------------------- */
 

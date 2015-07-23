@@ -154,7 +154,7 @@ GenBlockDistribution::GenBlockDistribution(
     {
         if( allWeights[p] < /*=*/0 )
         {
-            LAMA_THROWEXCEPTION( "Weight of partition " << p << " = " << allWeights[p] << " illegal, must be positive" );
+            COMMON_THROWEXCEPTION( "Weight of partition " << p << " = " << allWeights[p] << " illegal, must be positive" );
         }
 
         totalWeight += allWeights[p];

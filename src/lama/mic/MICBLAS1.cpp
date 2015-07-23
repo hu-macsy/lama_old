@@ -387,7 +387,7 @@ ValueType MICBLAS1::dot(
 
     if( syncToken )
     {
-        LAMA_THROWEXCEPTION( "no asynchronous execution for MIC possible at this level." )
+        COMMON_THROWEXCEPTION( "no asynchronous execution for MIC possible at this level." )
     }
 
     ValueType val = 0;

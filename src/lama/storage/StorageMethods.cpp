@@ -628,7 +628,7 @@ void StorageMethods<ValueType>::joinCSR(
             if( offset1 >= ia1[i + 1] )
             {
                 LAMA_LOG_FATAL( logger, "no diagonal element for first CSR input data" )
-                LAMA_THROWEXCEPTION( "keep diagonal error" )
+                COMMON_THROWEXCEPTION( "keep diagonal error" )
                 // @todo this exception caused segmentation faults when thrown
             }
 
@@ -665,7 +665,7 @@ void StorageMethods<ValueType>::joinCSR(
             }
             else
             {
-                LAMA_THROWEXCEPTION( "should not happen here" )
+                COMMON_THROWEXCEPTION( "should not happen here" )
             }
         }
 

@@ -1242,7 +1242,7 @@ void JDSStorage<ValueType>::jacobiIterate(
 
     if ( &solution == &oldSolution )
     {
-        LAMA_THROWEXCEPTION( "alias of solution and oldSolution unsupported" )
+        COMMON_THROWEXCEPTION( "alias of solution and oldSolution unsupported" )
     }
 
     LAMA_ASSERT_EQUAL_DEBUG( mNumRows, oldSolution.size() )
@@ -1311,7 +1311,7 @@ SyncToken* JDSStorage<ValueType>::jacobiIterateAsync(
 
     if ( &solution == &oldSolution )
     {
-        LAMA_THROWEXCEPTION( "alias of solution and oldSolution unsupported" )
+        COMMON_THROWEXCEPTION( "alias of solution and oldSolution unsupported" )
     }
 
     LAMA_ASSERT_EQUAL_DEBUG( mNumRows, oldSolution.size() )

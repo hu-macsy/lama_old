@@ -388,7 +388,7 @@ bool OpenMPUtils::validIndexes( const IndexType array[], const IndexType n, cons
             // exception only in debug mode
 
             /*
-             LAMA_THROWEXCEPTION( "array[" << i << "] = " << array[i]
+             COMMON_THROWEXCEPTION( "array[" << i << "] = " << array[i]
              << " is illegal index, size = " << size )
              */
 

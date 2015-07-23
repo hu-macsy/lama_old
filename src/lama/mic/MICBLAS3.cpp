@@ -108,7 +108,7 @@ void MICBLAS3::gemm(
             break;
 
         default:
-            LAMA_THROWEXCEPTION( "Illegal order setting " << order )
+            COMMON_THROWEXCEPTION( "Illegal order setting " << order )
     }
 
     LAMA_LOG_INFO( logger, "gemm, ta = " << ta << ", tb = " << tb << ", a has shape " << m << " x " << n )
@@ -166,7 +166,7 @@ void MICBLAS3::gemm(
             break;
 
         default:
-            LAMA_THROWEXCEPTION( "Illegal order setting " << order )
+            COMMON_THROWEXCEPTION( "Illegal order setting " << order )
     }
 
     LAMA_LOG_INFO( logger, "gemm, ta = " << ta << ", tb = " << tb << ", a has shape " << m << " x " << n )

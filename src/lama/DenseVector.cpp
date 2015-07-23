@@ -181,7 +181,7 @@ void DenseVector<ValueType>::readFromFile( const std::string& filename )
                 break;
 
             default:
-                throw Exception( "Unknown File Type." );
+                COMMON_THROWEXCEPTION( "Unknown File Type." );
         }
 
         // @TODO do not throw exception as application will hang
@@ -588,7 +588,7 @@ void DenseVector<ValueType>::swap( Vector& other )
 
     if( !otherPtr )
     {
-        LAMA_THROWEXCEPTION( "Tried to swap with a Vector of a different type." )
+        COMMON_THROWEXCEPTION( "Tried to swap with a Vector of a different type." )
     }
 
     Vector::swapVector( other );
@@ -739,7 +739,7 @@ SyncToken* DenseVector<ValueType>::vectorPlusVectorAsync(
     const ValueType /*beta*/,
     const LAMAArray<ValueType>& /*y*/)
 {
-    LAMA_THROWEXCEPTION( "vectorPlusVectorAsync not implemented yet" )
+    COMMON_THROWEXCEPTION( "vectorPlusVectorAsync not implemented yet" )
 }
 
 template<typename ValueType>
@@ -760,7 +760,7 @@ void DenseVector<ValueType>::assign( const Expression_SV_SV& expression )
 
     if( x.getDistribution() != y.getDistribution() )
     {
-        LAMA_THROWEXCEPTION(
+        COMMON_THROWEXCEPTION(
                         "distribution do not match for z = alpha * x + beta * y, z = "<< *this <<" , x = "<< x <<" , y = "<< y )
     }
 
@@ -797,7 +797,7 @@ void DenseVector<ValueType>::assign( const Expression_SV_SV& expression )
     }
     else
     {
-        LAMA_THROWEXCEPTION(
+        COMMON_THROWEXCEPTION(
                         "Can not calculate z = alpha * x + beta * y, z = " << *this << ", x = " << x << ", y = " << y << " because of type mismatch." );
     }
 }
@@ -815,7 +815,7 @@ LAMA_REGION( "Vector.Dense.dotP" )
     {
         if( getDistribution() != other.getDistribution() )
         {
-            LAMA_THROWEXCEPTION( "distribution do not match for this * other, this = "<< *this <<" , other = "<< other )
+            COMMON_THROWEXCEPTION( "distribution do not match for this * other, this = "<< *this <<" , other = "<< other )
         }
 
         const DenseVector<ValueType>* denseOther = dynamic_cast<const DenseVector<ValueType>*>( &other );
@@ -850,7 +850,7 @@ LAMA_REGION( "Vector.Dense.dotP" )
         return dotProduct;
     }
 
-    LAMA_THROWEXCEPTION(
+    COMMON_THROWEXCEPTION(
                     "Can not calculate a dot product of "<< typeid( *this ).name() <<" and "<< typeid( other ).name() )
 }
 
@@ -1044,7 +1044,7 @@ void DenseVector<ValueType>::readVectorHeader(
 
     if( !inFile.is_open() )
     {
-        LAMA_THROWEXCEPTION( "Unable to open vector header file " + filename + "." )
+        COMMON_THROWEXCEPTION( "Unable to open vector header file " + filename + "." )
     }
 
     IndexType numrows;
@@ -1074,7 +1074,7 @@ void DenseVector<ValueType>::readVectorHeader(
             break;
 
         default:
-            LAMA_THROWEXCEPTION( "Invalid header file." )
+            COMMON_THROWEXCEPTION( "Invalid header file." )
     }
 
     LAMA_LOG_TRACE( logger, "Read Vector Header, size = " << size() )
@@ -1116,7 +1116,7 @@ void DenseVector<ValueType>::writeToFile(
         }
 
         default:
-            throw Exception( "Unknown file type definition." );
+            COMMON_THROWEXCEPTION( "Unknown file type definition." );
     } //switch(fileType)
 
     long dataTypeSize = getDataTypeSize<ValueType>( dataType );
@@ -1151,14 +1151,14 @@ void DenseVector<ValueType>::writeVectorHeader(
             return;
 
         default:
-            LAMA_THROWEXCEPTION( "Invalid header file." )
+            COMMON_THROWEXCEPTION( "Invalid header file." )
     }
 
     std::ofstream outFile( fileName.c_str(), std::ios::out );
 
     if( !outFile.is_open() )
     {
-        LAMA_THROWEXCEPTION( "Unable to open vector header file " + fileName + "." )
+        COMMON_THROWEXCEPTION( "Unable to open vector header file " + fileName + "." )
     }
 
     outFile << charFileType << std::endl;
@@ -1193,7 +1193,7 @@ void DenseVector<ValueType>::writeVectorToMMFile( const std::string& filename, c
     }
     else
     {
-        LAMA_THROWEXCEPTION( "DenseVector<ValueType>::writeVectorToMMFile: "
+        COMMON_THROWEXCEPTION( "DenseVector<ValueType>::writeVectorToMMFile: "
                              "Unknown datatype." )
     }
 
@@ -1201,7 +1201,7 @@ void DenseVector<ValueType>::writeVectorToMMFile( const std::string& filename, c
 
     if( !( file = std::fopen( filename.c_str(), "w+" ) ) )
     {
-        LAMA_THROWEXCEPTION( "DenseVector<ValueType>::writeVectorToMMFile: '" + filename + "' could not be opened." )
+        COMMON_THROWEXCEPTION( "DenseVector<ValueType>::writeVectorToMMFile: '" + filename + "' could not be opened." )
     }
 
     IndexType numRows = size();
@@ -1211,7 +1211,7 @@ void DenseVector<ValueType>::writeVectorToMMFile( const std::string& filename, c
 
     if( std::fclose( file ) != 0 )
     {
-        LAMA_THROWEXCEPTION( "DenseVector<ValueType>::writeVectorToMMFile: '" + filename + "' could not be closed." )
+        COMMON_THROWEXCEPTION( "DenseVector<ValueType>::writeVectorToMMFile: '" + filename + "' could not be closed." )
     }
 
     file = 0;
@@ -1221,7 +1221,7 @@ void DenseVector<ValueType>::writeVectorToMMFile( const std::string& filename, c
 
     if( ofile.fail() )
     {
-        LAMA_THROWEXCEPTION( "DenseVector<ValueType>::writeVectorToMMFile: '" + filename + "' could not be reopened." )
+        COMMON_THROWEXCEPTION( "DenseVector<ValueType>::writeVectorToMMFile: '" + filename + "' could not be reopened." )
     }
 
     ReadAccess<ValueType> dataRead( mLocalValues );
@@ -1318,7 +1318,7 @@ void DenseVector<ValueType>::writeVectorToXDRFile( const std::string& file, cons
             break;
 
         default:
-            LAMA_THROWEXCEPTION( "unsupported file data type = " << dataType )
+            COMMON_THROWEXCEPTION( "unsupported file data type = " << dataType )
     }
 
     outFile.write( &nnu );
@@ -1386,7 +1386,7 @@ void DenseVector<ValueType>::writeVectorDataToBinaryFile( std::fstream& outFile,
             break;
 
         default:
-            LAMA_THROWEXCEPTION( "unsupported file data type = " << type )
+            COMMON_THROWEXCEPTION( "unsupported file data type = " << type )
     }
 }
 
@@ -1411,7 +1411,7 @@ void DenseVector<ValueType>::readVectorFromFormattedFile( const std::string& fil
 
     if( !inFile.is_open() )
     {
-        LAMA_THROWEXCEPTION( "Could not open formatted ascii vector file." )
+        COMMON_THROWEXCEPTION( "Could not open formatted ascii vector file." )
     }
 
     const IndexType n = size();
@@ -1434,7 +1434,7 @@ void DenseVector<ValueType>::readVectorFromBinaryFile( const std::string& fileNa
 
     if( !inFile.is_open() )
     {
-        LAMA_THROWEXCEPTION( "Could not open binary vector file " << fileName << "." )
+        COMMON_THROWEXCEPTION( "Could not open binary vector file " << fileName << "." )
     }
 
     readVectorDataFromBinaryFile( inFile, type );
@@ -1472,7 +1472,7 @@ void DenseVector<ValueType>::readVectorFromXDRFile( const std::string& fileName,
 
     if( !inFile.is_open() )
     {
-        LAMA_THROWEXCEPTION( "Could not open XDR vector file." )
+        COMMON_THROWEXCEPTION( "Could not open XDR vector file." )
     }
 
     // Number of elements
@@ -1483,7 +1483,7 @@ void DenseVector<ValueType>::readVectorFromXDRFile( const std::string& fileName,
 
     if( size() != nnu )
     {
-        LAMA_THROWEXCEPTION( "Header file doesn't fit to vector data file. Unequal nnu value." )
+        COMMON_THROWEXCEPTION( "Header file doesn't fit to vector data file. Unequal nnu value." )
     }
 
     // double or flaot vector data
@@ -1492,7 +1492,7 @@ void DenseVector<ValueType>::readVectorFromXDRFile( const std::string& fileName,
 
     if( dataTypeSizeHeader != dataTypeSize )
     {
-        LAMA_THROWEXCEPTION( "Header file doesn't fit to vector data file. Unequal data type size." )
+        COMMON_THROWEXCEPTION( "Header file doesn't fit to vector data file. Unequal data type size." )
     }
 
     // Attention: determination of file type by size is ambiguous, e.g. Complex and Double
@@ -1533,7 +1533,7 @@ void DenseVector<ValueType>::readVectorFromXDRFile( const std::string& fileName,
             break;
 
         default:
-            LAMA_THROWEXCEPTION( "Invalid data type size of vector data." )
+            COMMON_THROWEXCEPTION( "Invalid data type size of vector data." )
     }
 
     // Validate Header
@@ -1543,7 +1543,7 @@ void DenseVector<ValueType>::readVectorFromXDRFile( const std::string& fileName,
 
     if( size() != static_cast<IndexType>( nnuLong ) )
     {
-        LAMA_THROWEXCEPTION( "Invalid header of the vector file. Unequal nnu." )
+        COMMON_THROWEXCEPTION( "Invalid header of the vector file. Unequal nnu." )
     }
 
     long checkDataType = 0;
@@ -1551,7 +1551,7 @@ void DenseVector<ValueType>::readVectorFromXDRFile( const std::string& fileName,
 
     if( checkDataType != dataTypeSize )
     {
-        LAMA_THROWEXCEPTION( "Invalid header of the vector file. Unequal data type size." )
+        COMMON_THROWEXCEPTION( "Invalid header of the vector file. Unequal data type size." )
     }
 }
 
@@ -1594,7 +1594,7 @@ void DenseVector<ValueType>::readVectorDataFromBinaryFile( std::fstream &inFile,
             break;
 
         default:
-            LAMA_THROWEXCEPTION( "unsupported file data type = " << type )
+            COMMON_THROWEXCEPTION( "unsupported file data type = " << type )
     }
 }
 

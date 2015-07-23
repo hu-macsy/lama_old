@@ -2657,7 +2657,7 @@ namespace lama
         cudaMemcpy( &hashErrorHost, hashError, sizeof(bool), cudaMemcpyDeviceToHost );
         if ( hashErrorHost )
         {
-            LAMA_THROWEXCEPTION( "Multiplication failed!" );
+            COMMON_THROWEXCEPTION( "Multiplication failed!" );
         }
 
         // Free hashTable and hashError
@@ -3189,7 +3189,7 @@ namespace lama
 
         if ( hashErrorHost )
         {
-            LAMA_THROWEXCEPTION( "Multiplication failed!" );
+            COMMON_THROWEXCEPTION( "Multiplication failed!" );
         }
 
         // Free hashTable and hashError

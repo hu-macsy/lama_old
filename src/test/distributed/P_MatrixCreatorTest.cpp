@@ -42,6 +42,7 @@
 
 using namespace boost;
 using namespace lama;
+using common::Exception;
 
 typedef boost::mpl::list<double, float> test_types;
 

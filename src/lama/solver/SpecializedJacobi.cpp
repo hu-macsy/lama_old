@@ -96,13 +96,13 @@ void SpecializedJacobi::initialize( const Matrix& coefficients )
 //
 //        if ( !sparseMatrix )
 //        {
-//            LAMA_THROWEXCEPTION(
+//            COMMON_THROWEXCEPTION(
 //                "Coefficients matrix " << typeid(coefficients).name() << "(" << coefficients << ") is of unsupported type for SpecializedJacobi specialization (must be SparseMatrix)." );
 //        }
 //    }
     if( coefficients.getMatrixKind() == Matrix::DENSE )
     {
-        LAMA_THROWEXCEPTION(
+        COMMON_THROWEXCEPTION(
             "Coefficients matrix " << typeid(coefficients).name() << "(" << coefficients << ") is of unsupported type for SpecializedJacobi specialization (must be SparseMatrix)." );
     }
 
@@ -148,7 +148,7 @@ void SpecializedJacobi::initialize( const Matrix& coefficients )
 
     // has already been check in initialize, but in any case
 
-    LAMA_THROWEXCEPTION    (
+    COMMON_THROWEXCEPTION    (
         getConstRuntime().mCoefficients << ": unsupported matrix type (only SparseMatrix<ValueType> supported)." )
 
 //    mPointerOldSolution = &mOldSolution; --> in every solve-call
@@ -174,13 +174,13 @@ void SpecializedJacobi::solveInit( Vector& solution, const Vector& rhs )
 
         if( getConstRuntime().mCoefficients->getNumColumns() != getConstRuntime().mOldSolution->size() )
         {
-            LAMA_THROWEXCEPTION(
+            COMMON_THROWEXCEPTION(
                 "Size of old solution vector " << *getConstRuntime().mOldSolution << " does not match number of columns of the coefficient matrix " << getConstRuntime().mCoefficients->getNumColumns() );
         }
 
         if( getConstRuntime().mCoefficients->getColDistribution() != getConstRuntime().mOldSolution->getDistribution() )
         {
-            LAMA_THROWEXCEPTION(
+            COMMON_THROWEXCEPTION(
                 "Distribution of " << *getConstRuntime().mOldSolution << " = " << getConstRuntime().mOldSolution->getDistribution() << " does not match column distribution of " << *getConstRuntime().mCoefficients << " = " << getConstRuntime().mCoefficients->getColDistribution() );
         }
     }
@@ -227,7 +227,7 @@ void SpecializedJacobi::iterate()
 
     // has already been check in initialize, but in any case
 
-    LAMA_THROWEXCEPTION        (
+    COMMON_THROWEXCEPTION        (
         getConstRuntime().mCoefficients << ": unsupported matrix type (only SparseMatrix<ValueType> supported)." )
 }
 
@@ -349,7 +349,7 @@ void SpecializedJacobi::iterateTyped( const SparseMatrix<ValueType>& coefficient
     }
     else
     {
-        LAMA_THROWEXCEPTION( "Different types of required vectors." )
+        COMMON_THROWEXCEPTION( "Different types of required vectors." )
     }
 }
 

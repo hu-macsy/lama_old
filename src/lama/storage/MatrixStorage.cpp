@@ -113,7 +113,7 @@ void _MatrixStorage::setCompressThreshold( float ratio )
 {
     if( ratio < 0.0 || ratio > 1.0 )
     {
-        LAMA_THROWEXCEPTION( "Illegal threshold " << ratio << ", must be from 0.0 to 1.0" )
+        COMMON_THROWEXCEPTION( "Illegal threshold " << ratio << ", must be from 0.0 to 1.0" )
     }
 
     mCompressThreshold = ratio;
@@ -200,7 +200,7 @@ void _MatrixStorage::localize( const _MatrixStorage& global, const Distribution&
     LAMA_ASSERT_EQUAL_ERROR( getNumColumns(), global.getNumColumns() )
     LAMA_ASSERT_EQUAL_ERROR( global.getNumRows(), rowDist.getGlobalSize() )
 
-    LAMA_THROWEXCEPTION( "No default implementation for localize available, matrix = " << *this )
+    COMMON_THROWEXCEPTION( "No default implementation for localize available, matrix = " << *this )
 }
 
 /* --------------------------------------------------------------------------- */
@@ -921,12 +921,12 @@ void MatrixStorage<ValueType>::buildHalo( Halo& halo, const Distribution& colDis
 
 void _MatrixStorage::scale( const _LAMAArray& )
 {
-    LAMA_THROWEXCEPTION( "scale of rows not supported yet, matrix = " << *this )
+    COMMON_THROWEXCEPTION( "scale of rows not supported yet, matrix = " << *this )
 }
 
 void _MatrixStorage::setDiagonal( const _LAMAArray& )
 {
-    LAMA_THROWEXCEPTION( "set Diagonal not suppported yet, matrix = " << *this )
+    COMMON_THROWEXCEPTION( "set Diagonal not suppported yet, matrix = " << *this )
 }
 
 /* ------------------------------------------------------------------------- */
@@ -1426,7 +1426,7 @@ BOOST_PP_REPEAT( ARITHMETIC_TYPE_CNT, LAMA_DENSE_ASSIGN, _ )
 
 default        :
 
-    LAMA_THROWEXCEPTION( "Unsupported type for setting dense data: " << values.getValueType() )
+    COMMON_THROWEXCEPTION( "Unsupported type for setting dense data: " << values.getValueType() )
 }
 }
 

@@ -127,7 +127,7 @@ void StorageIO<ValueType>::readCSRFromFormattedFile(
 
     if( amgfile.fail() )
     {
-        LAMA_THROWEXCEPTION( "Could not open file '" << fileName << "'." )
+        COMMON_THROWEXCEPTION( "Could not open file '" << fileName << "'." )
     }
 
     WriteOnlyAccess<IndexType> ia( csrIA, numRows + 1 );
@@ -270,7 +270,7 @@ void StorageIO<ValueType>::readCSRFromBinaryFile(
     }
     else
     {
-        LAMA_THROWEXCEPTION(
+        COMMON_THROWEXCEPTION(
                         "File " << fileName << " has unexpected file size = " << actualSize << ", #rows = " << numRows << ", #values = " << numValues << ", expected for float = " << expectedCSRFileSize<float>( numRows, numValues ) << ", or expected for double = " << expectedCSRFileSize<double>( numRows, numValues ) )
     }
 
@@ -443,7 +443,7 @@ void StorageIO<ValueType>::readCSRFromXDRFile(
 
     if( !xdrFile.is_open() )
     {
-        LAMA_THROWEXCEPTION( "Unable to open XDR matrix file." )
+        COMMON_THROWEXCEPTION( "Unable to open XDR matrix file." )
     }
 
     //Read Index Vector m_ia with m_nnu + 1 elements
@@ -472,7 +472,7 @@ void StorageIO<ValueType>::readCSRFromXDRFile(
     }
     else
     {
-        LAMA_THROWEXCEPTION( "Invalid index data type size in file " + fileName )
+        COMMON_THROWEXCEPTION( "Invalid index data type size in file " + fileName )
     }
 
     int indexDataTypeSizeIACheck;
@@ -511,7 +511,7 @@ void StorageIO<ValueType>::readCSRFromXDRFile(
     }
     else
     {
-        LAMA_THROWEXCEPTION( "Invalid index data type size in file " + fileName )
+        COMMON_THROWEXCEPTION( "Invalid index data type size in file " + fileName )
     }
 
     int indexDataTypeSizeJACheck;
@@ -552,7 +552,7 @@ void StorageIO<ValueType>::readCSRFromXDRFile(
     }
     else
     {
-        LAMA_THROWEXCEPTION( "Invalid data type size in file " + fileName )
+        COMMON_THROWEXCEPTION( "Invalid data type size in file " + fileName )
     }
 
     int dataTypeSizeCheck;
@@ -605,7 +605,7 @@ void StorageIO<ValueType>::writeCSRToBinaryFile(
     }
     else
     {
-        LAMA_THROWEXCEPTION( "(write unformatted) Unknown index data type size of IA." )
+        COMMON_THROWEXCEPTION( "(write unformatted) Unknown index data type size of IA." )
     }
 
     // write m_ja
@@ -620,7 +620,7 @@ void StorageIO<ValueType>::writeCSRToBinaryFile(
     }
     else
     {
-        LAMA_THROWEXCEPTION( "(write unformatted) Unknown index data type size of JA." )
+        COMMON_THROWEXCEPTION( "(write unformatted) Unknown index data type size of JA." )
     }
 
     if( dataTypeSize == TypeTraits<double>::size )
@@ -641,7 +641,7 @@ void StorageIO<ValueType>::writeCSRToBinaryFile(
     }
     else
     {
-        LAMA_THROWEXCEPTION( "Unknown data type size." )
+        COMMON_THROWEXCEPTION( "Unknown data type size." )
     }
 
     outFile.close();
@@ -686,14 +686,14 @@ void StorageIO<ValueType>::writeCSRToMMFile(
     }
     else
     {
-        LAMA_THROWEXCEPTION( "SparseMatrix::writeMatrixToMMFile: " "unknown datatype." << dataType )
+        COMMON_THROWEXCEPTION( "SparseMatrix::writeMatrixToMMFile: " "unknown datatype." << dataType )
     }
 
     std::FILE* file;
 
     if( !( file = std::fopen( fileName.c_str(), "w+" ) ) )
     {
-        LAMA_THROWEXCEPTION( "SparseMatrix::writeMatrixToMMFile: '" + fileName + "' could not be opened." )
+        COMMON_THROWEXCEPTION( "SparseMatrix::writeMatrixToMMFile: '" + fileName + "' could not be opened." )
     }
 
     mm_write_banner( file, matcode );
@@ -701,7 +701,7 @@ void StorageIO<ValueType>::writeCSRToMMFile(
 
     if( std::fclose( file ) != 0 )
     {
-        LAMA_THROWEXCEPTION( "SparseMatrix::writeMatrixToMMFile: '" + fileName + "' could not be closed." )
+        COMMON_THROWEXCEPTION( "SparseMatrix::writeMatrixToMMFile: '" + fileName + "' could not be closed." )
     }
 
     file = 0;
@@ -710,7 +710,7 @@ void StorageIO<ValueType>::writeCSRToMMFile(
 
     if( ofile.fail() )
     {
-        LAMA_THROWEXCEPTION( "SparseMatrix>::writeMatrixToMMFile: '" + fileName + "' could not be reopened." )
+        COMMON_THROWEXCEPTION( "SparseMatrix>::writeMatrixToMMFile: '" + fileName + "' could not be reopened." )
     }
 
     ReadAccess<IndexType> ia( csrIA );
@@ -767,7 +767,7 @@ void StorageIO<ValueType>::readCSRFromMMFile(
 
     if( !file )
     {
-        LAMA_THROWEXCEPTION( "Could not open file '" << fileName << "'." )
+        COMMON_THROWEXCEPTION( "Could not open file '" << fileName << "'." )
     }
 
     MM_typecode matcode;
@@ -775,24 +775,24 @@ void StorageIO<ValueType>::readCSRFromMMFile(
 
     if( errorCode != 0 )
     {
-        LAMA_THROWEXCEPTION( "Could not process Matrix Market banner. Cause: '" << getErrorString( errorCode ) << "'." );
+        COMMON_THROWEXCEPTION( "Could not process Matrix Market banner. Cause: '" << getErrorString( errorCode ) << "'." );
     }
 
     bool isPattern = mm_is_pattern( matcode );
 
     if( mm_is_complex( matcode ) )
     {
-        LAMA_THROWEXCEPTION( "Unsupported data type in file '" << fileName << "'." )
+        COMMON_THROWEXCEPTION( "Unsupported data type in file '" << fileName << "'." )
     }
 
     if( !mm_is_matrix( matcode ) )
     {
-        LAMA_THROWEXCEPTION( "'" << fileName << "' did not contain a matrix." )
+        COMMON_THROWEXCEPTION( "'" << fileName << "' did not contain a matrix." )
     }
 
     if( !mm_is_sparse( matcode ) )
     {
-        LAMA_THROWEXCEPTION( "'" << fileName << "' did not contain a sparse matrix." )
+        COMMON_THROWEXCEPTION( "'" << fileName << "' did not contain a sparse matrix." )
     }
 
     /* symmetric matrices: only lower triangular matrix is stored */
@@ -807,7 +807,7 @@ void StorageIO<ValueType>::readCSRFromMMFile(
 
     if( errorCode != 0 )
     {
-        LAMA_THROWEXCEPTION(
+        COMMON_THROWEXCEPTION(
                         "Could not read values from file '" << fileName << "'. Cause: '" << getErrorString( errorCode ) << "'." );
     }
 
@@ -816,7 +816,7 @@ void StorageIO<ValueType>::readCSRFromMMFile(
 
     if( std::fclose( file ) != 0 )
     {
-        LAMA_THROWEXCEPTION( "'" << fileName << "' could not be closed." )
+        COMMON_THROWEXCEPTION( "'" << fileName << "' could not be closed." )
     }
 
     file = 0;
@@ -825,7 +825,7 @@ void StorageIO<ValueType>::readCSRFromMMFile(
 
     if( ifile.fail() )
     {
-        LAMA_THROWEXCEPTION( "Could not reopen file '" << fileName << "'." )
+        COMMON_THROWEXCEPTION( "Could not reopen file '" << fileName << "'." )
     }
 
     WriteOnlyAccess<IndexType> ia( csrIA, numRows + 1 );
@@ -899,7 +899,7 @@ void StorageIO<ValueType>::readCSRFromMMFile(
 
     if( ifile.eof() )
     {
-        LAMA_THROWEXCEPTION( "'" << fileName << "': reached end of file, before having read all data." )
+        COMMON_THROWEXCEPTION( "'" << fileName << "': reached end of file, before having read all data." )
     }
 
     ifile.close();
@@ -1065,14 +1065,14 @@ void _StorageIO::writeCSRHeader(
             break;
 
         default:
-            LAMA_THROWEXCEPTION( "Invalid header file." )
+            COMMON_THROWEXCEPTION( "Invalid header file." )
     }
 
     std::fstream outFile( fileName.c_str(), std::ios::out );
 
     if( !outFile.is_open() )
     {
-        LAMA_THROWEXCEPTION( "Unable to open matrix header file " + fileName + "." )
+        COMMON_THROWEXCEPTION( "Unable to open matrix header file " + fileName + "." )
     }
 
     outFile << charFileType;
@@ -1103,7 +1103,7 @@ void _StorageIO::readCSRHeader(
 
     if( !frmFile.is_open() )
     {
-        LAMA_THROWEXCEPTION( "Could not open header file " + frmFileName + "." )
+        COMMON_THROWEXCEPTION( "Could not open header file " + frmFileName + "." )
     }
 
     int iversion;
@@ -1137,13 +1137,13 @@ void _StorageIO::readCSRHeader(
 
         default:
         {
-            LAMA_THROWEXCEPTION( "Invalid file format: " << ch << "." )
+            COMMON_THROWEXCEPTION( "Invalid file format: " << ch << "." )
         }
     } //switch (ch)
 
     if( iversion != mIversion )
     {
-        LAMA_THROWEXCEPTION( "Invalid file version: " << iversion << ", should be " << mIversion )
+        COMMON_THROWEXCEPTION( "Invalid file version: " << iversion << ", should be " << mIversion )
     }
 
     frmFile >> numValues;
@@ -1262,7 +1262,7 @@ void StorageIO<ValueType>::writeCSRToFile(
 
         default:
         {
-            LAMA_THROWEXCEPTION( "Unknown file type definition." )
+            COMMON_THROWEXCEPTION( "Unknown file type definition." )
         }
     } //switch(fileType)
 
@@ -1342,7 +1342,7 @@ void StorageIO<ValueType>::readCSRFromFile(
         }
 
         default:
-            LAMA_THROWEXCEPTION( "Read storage file: unknown file type = " << fileType )
+            COMMON_THROWEXCEPTION( "Read storage file: unknown file type = " << fileType )
     }
 }
 

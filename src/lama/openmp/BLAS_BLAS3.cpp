@@ -171,7 +171,7 @@ void wrapperGemm(
     LongDouble*,
     const int )
 {
-    LAMA_THROWEXCEPTION( "LongDouble not supported by BLAS, please set LAMA_USE_BLAS=0" )
+    COMMON_THROWEXCEPTION( "LongDouble not supported by BLAS, please set LAMA_USE_BLAS=0" )
 }
 
 template<typename ValueType>

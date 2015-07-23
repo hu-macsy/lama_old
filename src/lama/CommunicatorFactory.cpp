@@ -106,7 +106,7 @@ CommunicatorPtr CommunicatorFactory::get( const std::string& type, int& argc, ch
         return id->second->getCommunicator( argc, argv );
     }
 
-    LAMA_THROWEXCEPTION( "Communicator for " << type << " not supported, no manager registered" )
+    COMMON_THROWEXCEPTION( "Communicator for " << type << " not supported, no manager registered" )
 }
 
 CommunicatorPtr CommunicatorFactory::get( const std::string& type )
@@ -178,7 +178,7 @@ void CommunicatorFactory::setDefaultCommunicatorType() const
     }
     else
     {
-        LAMA_THROWEXCEPTION( "No default communicator available" )
+        COMMON_THROWEXCEPTION( "No default communicator available" )
     }
 }
 

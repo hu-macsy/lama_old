@@ -50,6 +50,7 @@ using namespace boost;
 using namespace lama;
 using namespace memory;
 using namespace tasking;
+using common::Exception;
 
 LAMA_LOG_DEF_LOGGER( logger, "Test.CommunicatorTest" )
 

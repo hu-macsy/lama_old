@@ -375,12 +375,12 @@ void DenseStorageView<ValueType>::setCSRDataImpl(
 
     if( !OpenMPCSRUtils::validOffsets( csrIA.get(), numRows, numValues ) )
     {
-        LAMA_THROWEXCEPTION( "invalid offset array" )
+        COMMON_THROWEXCEPTION( "invalid offset array" )
     }
 
     if( !OpenMPUtils::validIndexes( csrJA.get(), numValues, numColumns ) )
     {
-        LAMA_THROWEXCEPTION( "invalid column indexes, #columns = " << numColumns )
+        COMMON_THROWEXCEPTION( "invalid column indexes, #columns = " << numColumns )
     }
 
     WriteOnlyAccess<ValueType> data( mData, loc, mNumRows * mNumColumns );

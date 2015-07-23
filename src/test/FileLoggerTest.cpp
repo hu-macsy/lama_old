@@ -43,6 +43,7 @@
 
 using namespace boost;
 using namespace lama;
+using common::Exception;
 
 /* --------------------------------------------------------------------- */
 

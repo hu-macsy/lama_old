@@ -83,7 +83,7 @@ MICContext::MICContext( int deviceNr )
 
     if( numDevices < 1 )
     {
-        LAMA_THROWEXCEPTION( "No mic devices available" )
+        COMMON_THROWEXCEPTION( "No mic devices available" )
     }
 
     // ToDo: allow for any device
@@ -99,7 +99,7 @@ MICContext::MICContext( int deviceNr )
 
     if( !targetOK )
     {
-        LAMA_THROWEXCEPTION( "Could not offload to device " << mDeviceNr )
+        COMMON_THROWEXCEPTION( "Could not offload to device " << mDeviceNr )
     }
 
     int numCores;
@@ -354,7 +354,7 @@ void MICContext::memcpy( ContextData& dst, const ContextData& src, const size_t 
     }
     else
     {
-        LAMA_THROWEXCEPTION( "Can not copy from "<< *src.context << " to " << *dst.context )
+        COMMON_THROWEXCEPTION( "Can not copy from "<< *src.context << " to " << *dst.context )
     }
 }
 

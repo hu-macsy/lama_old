@@ -150,7 +150,7 @@ void MPICommunicator::initialize( int& argc, char** & argv )
 
             default:
                 MPI_Finalize();
-                LAMA_THROWEXCEPTION( "MPI which supports at leas thread level MPI_THREAD_FUNNELED is required." )
+                COMMON_THROWEXCEPTION( "MPI which supports at leas thread level MPI_THREAD_FUNNELED is required." )
         }
 
         isCUDAAware = false;
@@ -234,7 +234,7 @@ inline MPI_Datatype MPICommunicator::getMPIType<unsigned long>()
 template<typename T1,typename T2>
 inline MPI_Datatype MPICommunicator::getMPI2Type()
 {
-    LAMA_THROWEXCEPTION( "unsupported type for MPI communication" )
+    COMMON_THROWEXCEPTION( "unsupported type for MPI communication" )
     return MPI_2INT;
 }
 
@@ -277,7 +277,7 @@ void MPICommunicator::setNodeData()
 
     if( allNodeNames == NULL )
     {
-        LAMA_THROWEXCEPTION( "Can't alloc enough memory for all node names." )
+        COMMON_THROWEXCEPTION( "Can't alloc enough memory for all node names." )
     }
 
     memset( allNodeNames, '\0', MPI_MAX_PROCESSOR_NAME * mSize );

@@ -116,7 +116,7 @@ void IterativeSolver::solveImpl()
 
     if( !getConstRuntime().mSolveInit )
     {
-        LAMA_THROWEXCEPTION(
+        COMMON_THROWEXCEPTION(
             "Solver " + this->getId()
             + " has not been initialized. Call solveInit( Vector& solution, const Vector& rhs ) before solving "
             + this->getId() )
@@ -150,7 +150,7 @@ bool IterativeSolver::criteriaAreSatisfied() const
 {
     if( mCriterionRootComponent.get() == 0 )
     {
-        LAMA_THROWEXCEPTION( this->getId() + ": No stopping criterion set." )
+        COMMON_THROWEXCEPTION( this->getId() + ": No stopping criterion set." )
     }
 
     return mCriterionRootComponent->isSatisfied( *this );

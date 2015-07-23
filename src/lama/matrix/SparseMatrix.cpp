@@ -105,7 +105,7 @@ SparseMatrix<ValueType>::SparseMatrix( boost::shared_ptr<MatrixStorage<ValueType
     }
     else
     {
-        LAMA_THROWEXCEPTION( *storage << ": does not fit to row distribution " << *rowDist )
+        COMMON_THROWEXCEPTION( *storage << ": does not fit to row distribution " << *rowDist )
     }
 }
 
@@ -141,7 +141,7 @@ SparseMatrix<ValueType>::SparseMatrix(
     }
     else
     {
-        LAMA_THROWEXCEPTION( *localData << ": does not fit to row distribution " << *rowDist )
+        COMMON_THROWEXCEPTION( *localData << ": does not fit to row distribution " << *rowDist )
     }
 }
 
@@ -389,7 +389,7 @@ void SparseMatrix<ValueType>::assignTranspose( const Matrix& matrix )
     }
     else
     {
-        LAMA_THROWEXCEPTION( "SparseMatrix::assign currently only implemented for sparse matrices of same type" )
+        COMMON_THROWEXCEPTION( "SparseMatrix::assign currently only implemented for sparse matrices of same type" )
     }
 }
 
@@ -413,11 +413,11 @@ void SparseMatrix<ValueType>::assignTransposeImpl( const SparseMatrix<ValueType>
     }
     else if( getDistribution().isReplicated() )
     {
-        LAMA_THROWEXCEPTION( "transpose not supported for replicated matrices with distributed columns" )
+        COMMON_THROWEXCEPTION( "transpose not supported for replicated matrices with distributed columns" )
     }
     else if( getColDistribution().isReplicated() )
     {
-        LAMA_THROWEXCEPTION( "transpose not supported for distributed matrices with replicated columns" )
+        COMMON_THROWEXCEPTION( "transpose not supported for distributed matrices with replicated columns" )
     }
     else
     {
@@ -618,7 +618,7 @@ void SparseMatrix<ValueType>::assign( const _MatrixStorage& storage, Distributio
     {
         // Note: all processors with throw this exception
 
-        LAMA_THROWEXCEPTION(
+        COMMON_THROWEXCEPTION(
             comm << ": " << storage << ": does not fit to row distribution " << *rowDist << ", isLocal = " << isLocal << ", isGlobal = " << isGlobal )
     }
 
@@ -908,7 +908,7 @@ void SparseMatrix<ValueType>::getDiagonal( Vector& diagonal ) const
 {
     if( getDistribution() != getColDistribution() )
     {
-        LAMA_THROWEXCEPTION( *this << ": set diagonal only supported for row = col distribution." )
+        COMMON_THROWEXCEPTION( *this << ": set diagonal only supported for row = col distribution." )
     }
 
     LAMAArray<ValueType> localDiagonal;
@@ -926,12 +926,12 @@ void SparseMatrix<ValueType>::setDiagonal( const Vector& diagonal )
 {
     if( getDistribution() != getColDistribution() )
     {
-        LAMA_THROWEXCEPTION( *this << ": set diagonal only supported for row = col distribution." )
+        COMMON_THROWEXCEPTION( *this << ": set diagonal only supported for row = col distribution." )
     }
 
     if( getDistribution() != diagonal.getDistribution() )
     {
-        LAMA_THROWEXCEPTION( diagonal << ": distribution does not fit row distribution of matrix" )
+        COMMON_THROWEXCEPTION( diagonal << ": distribution does not fit row distribution of matrix" )
     }
 
     LAMAArray<ValueType> localDiagonal;
@@ -950,7 +950,7 @@ void SparseMatrix<ValueType>::setDiagonal( Scalar value )
 {
     if( getDistribution() != getColDistribution() )
     {
-        LAMA_THROWEXCEPTION( "Diagonal calculation only for equal distributions." )
+        COMMON_THROWEXCEPTION( "Diagonal calculation only for equal distributions." )
     }
 
     mLocalData->setDiagonal( value );
@@ -963,7 +963,7 @@ void SparseMatrix<ValueType>::scale( const Vector& scaling )
 {
     if( scaling.getDistribution() != getDistribution() )
     {
-        LAMA_THROWEXCEPTION(
+        COMMON_THROWEXCEPTION(
             scaling << ": scale vector distribution does not fit matrix row distribution " << getDistribution() );
     }
 
@@ -989,7 +989,7 @@ void SparseMatrix<ValueType>::scale( Scalar scaling )
     /* removed: not required
      if ( getDistribution() != getColDistribution() )
      {
-     LAMA_THROWEXCEPTION( "Scale only for equal distributions." )
+     COMMON_THROWEXCEPTION( "Scale only for equal distributions." )
      }
      */
 
@@ -1108,7 +1108,7 @@ void SparseMatrix<ValueType>::matrixPlusMatrixImpl(
 
     if( !B.getColDistribution().isReplicated() )
     {
-        LAMA_THROWEXCEPTION( "matrixA * matrixB only supported for replicated columns" << " in matrixB = " << B )
+        COMMON_THROWEXCEPTION( "matrixA * matrixB only supported for replicated columns" << " in matrixB = " << B )
     }
 
     // Now we can do it completly locally
@@ -1139,7 +1139,7 @@ void SparseMatrix<ValueType>::matrixTimesMatrixImpl(
 
     if( !B.getColDistribution().isReplicated() )
     {
-        LAMA_THROWEXCEPTION( "matrixA * matrixB only supported for replicated columns" << " in matrixB = " << B )
+        COMMON_THROWEXCEPTION( "matrixA * matrixB only supported for replicated columns" << " in matrixB = " << B )
     }
 
     // already verified
@@ -1899,7 +1899,7 @@ void SparseMatrix<ValueType>::matrixTimesVector(
     }
     else if( &result == &x )
     {
-        LAMA_THROWEXCEPTION( "alias: result = x is not handled, use temporary" )
+        COMMON_THROWEXCEPTION( "alias: result = x is not handled, use temporary" )
     }
     else
     {
@@ -1946,7 +1946,7 @@ void SparseMatrix<ValueType>::vectorTimesMatrix(
     }
     else if( &result == &x )
     {
-        LAMA_THROWEXCEPTION( "alias: result = x is not handled, use temporary" )
+        COMMON_THROWEXCEPTION( "alias: result = x is not handled, use temporary" )
     }
     else
     {
@@ -2075,7 +2075,7 @@ Scalar SparseMatrix<ValueType>::maxDiffNorm( const Matrix& other ) const
     else if( !getColDistribution().isReplicated() )
     {
         // @todo handle maxDiffNorm on sparse matrices with column distribution
-        LAMA_THROWEXCEPTION( "maxDiffNorm not available: " << *this << " has column distribution" )
+        COMMON_THROWEXCEPTION( "maxDiffNorm not available: " << *this << " has column distribution" )
     }
     else
     {
@@ -2243,7 +2243,7 @@ void SparseMatrix<ValueType>::resetDiagonalProperty()
 {
     if( getDistribution() != getColDistribution() )
     {
-        LAMA_THROWEXCEPTION( "diagonal property not possible " )
+        COMMON_THROWEXCEPTION( "diagonal property not possible " )
     }
 
     this->mLocalData->resetDiagonalProperty();
@@ -2452,7 +2452,7 @@ void SparseMatrix<ValueType>::writeToFile(
     }
     else
     {
-        LAMA_THROWEXCEPTION( *this << ": write to file not supported with distributions" )
+        COMMON_THROWEXCEPTION( *this << ": write to file not supported with distributions" )
     }
 }
 

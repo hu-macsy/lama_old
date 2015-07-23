@@ -110,7 +110,7 @@ case common::scalar::SCALAR_ARITHMETIC_TYPE##I:                                 
 #undef LAMA_ARRAY_ASSIGN
 
 default        :
-        LAMA_THROWEXCEPTION( "unsupported source type : " )
+        COMMON_THROWEXCEPTION( "unsupported source type : " )
     }
 }
 
@@ -141,7 +141,7 @@ case common::scalar::SCALAR_ARITHMETIC_TYPE##I:                                 
 #undef LAMA_ARRAY_ASSIGN1
 
 default        :
-        LAMA_THROWEXCEPTION( "unsupported target type : " )
+        COMMON_THROWEXCEPTION( "unsupported target type : " )
     }
 }
 
@@ -224,7 +224,7 @@ case common::scalar::SCALAR_ARITHMETIC_TYPE##I:          \
 
 default        :
         {
-            LAMA_THROWEXCEPTION( target << ": assignScalar for value type " << arrayType << " not supported" )
+            COMMON_THROWEXCEPTION( target << ": assignScalar for value type " << arrayType << " not supported" )
         }
     }
 }

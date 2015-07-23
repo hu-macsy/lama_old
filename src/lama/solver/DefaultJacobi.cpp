@@ -161,7 +161,7 @@ void DefaultJacobi::solveInit( Vector& solution, const Vector& rhs )
 
     if( !runtime.mDiagonalTimesRhs.get() || !runtime.mDiagonalInverted.get() )
     {
-        LAMA_THROWEXCEPTION( "No initialization executed before running solve." )
+        COMMON_THROWEXCEPTION( "No initialization executed before running solve." )
     }
 
     LAMA_LOG_DEBUG( logger, " mDiagonalTimesRhs  =  mDiagonalInverted * rhs , rhs = " << rhs )
@@ -243,7 +243,7 @@ void DefaultJacobi::iterate()
             break;
 
         default:
-            LAMA_THROWEXCEPTION( "Unsupported ValueType " << getRuntime().mDiagonalTimesLU->getValueType() )
+            COMMON_THROWEXCEPTION( "Unsupported ValueType " << getRuntime().mDiagonalTimesLU->getValueType() )
     }
 }
 

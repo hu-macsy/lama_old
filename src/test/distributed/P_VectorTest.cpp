@@ -66,6 +66,7 @@
 
 using namespace boost;
 using namespace lama;
+using common::Exception;
 
 typedef boost::mpl::list<float, double> test_types;
 

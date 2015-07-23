@@ -206,7 +206,7 @@ void GMRES::initialize( const Matrix& coefficients )
 
         default:
         {
-            LAMA_THROWEXCEPTION( "Unsupported ValueType " << coefficients.getValueType() )
+            COMMON_THROWEXCEPTION( "Unsupported ValueType " << coefficients.getValueType() )
         }
     }
 
@@ -286,7 +286,7 @@ void GMRES::iterate()
 
             default:
             {
-                LAMA_THROWEXCEPTION( "Unsupported ValueType " << A.getValueType() )
+                COMMON_THROWEXCEPTION( "Unsupported ValueType " << A.getValueType() )
             }
         }
 

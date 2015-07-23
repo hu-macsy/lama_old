@@ -251,7 +251,7 @@ public:
      *
      void assignLocal( const _MatrixStorage&
      {
-     LAMA_THROWEXCEPTION( "not available yet" )
+     COMMON_THROWEXCEPTION( "not available yet" )
      }
      */
 

@@ -92,7 +92,7 @@ IndexType OpenMPLAPACK::getrf(
 
     if( m != n || n != lda )
     {
-        LAMA_THROWEXCEPTION( "OpenMPLAPACK:getrf only supported for square matrices" );
+        COMMON_THROWEXCEPTION( "OpenMPLAPACK:getrf only supported for square matrices" );
     }
 
     for( int i = 0; i < lda; i++ )
@@ -306,11 +306,11 @@ int OpenMPLAPACK::getri( const CBLAS_ORDER order, const int n, ValueType* const 
 
     if( info < 0 )
     {
-        LAMA_THROWEXCEPTION( "illegal argument " << ( -info ) )
+        COMMON_THROWEXCEPTION( "illegal argument " << ( -info ) )
     }
     else if( info > 0 )
     {
-        LAMA_THROWEXCEPTION( "value(" << info << "," << info << ")" << " is exactly zero" )
+        COMMON_THROWEXCEPTION( "value(" << info << "," << info << ")" << " is exactly zero" )
     }
 
     return info;
@@ -343,7 +343,7 @@ int OpenMPLAPACK::tptrs(
                 // Back substituion
                 if( diag == CblasUnit )
                 {
-                    LAMA_THROWEXCEPTION( "OpenMPLAPACK:tptrs is not implemented for CblasUnit yet" )
+                    COMMON_THROWEXCEPTION( "OpenMPLAPACK:tptrs is not implemented for CblasUnit yet" )
                 }
                 else if( diag == CblasNonUnit )
                 {
@@ -364,7 +364,7 @@ int OpenMPLAPACK::tptrs(
                 //Forward Elimination
                 if( diag == CblasUnit )
                 {
-                    LAMA_THROWEXCEPTION( "OpenMPLAPACK:tptrs is not implemented for CblasUnit yet" )
+                    COMMON_THROWEXCEPTION( "OpenMPLAPACK:tptrs is not implemented for CblasUnit yet" )
                 }
                 else if( diag == CblasNonUnit )
                 {
@@ -382,7 +382,7 @@ int OpenMPLAPACK::tptrs(
         }
         else if( trans == CblasTrans )
         {
-            LAMA_THROWEXCEPTION( "OpenMPLAPACK:tptrs is not implemented for CblasTrans yet" )
+            COMMON_THROWEXCEPTION( "OpenMPLAPACK:tptrs is not implemented for CblasTrans yet" )
 
             if( uplo == CblasUpper )
             {
@@ -409,7 +409,7 @@ int OpenMPLAPACK::tptrs(
         }
         else if( trans == CblasConjTrans )
         {
-            LAMA_THROWEXCEPTION( "OpenMPLAPACK:tptrs - colmajor - conjtrans not implemented" );
+            COMMON_THROWEXCEPTION( "OpenMPLAPACK:tptrs - colmajor - conjtrans not implemented" );
         }
     }
     else if( order == CblasRowMajor )
@@ -420,7 +420,7 @@ int OpenMPLAPACK::tptrs(
             {
                 if( diag == CblasUnit )
                 {
-                    LAMA_THROWEXCEPTION( "OpenMPLAPACK:tptrs is not implemented for CblasUnit yet" )
+                    COMMON_THROWEXCEPTION( "OpenMPLAPACK:tptrs is not implemented for CblasUnit yet" )
                 }
                 else if( diag == CblasNonUnit )
                 {
@@ -440,7 +440,7 @@ int OpenMPLAPACK::tptrs(
             {
                 if( diag == CblasUnit )
                 {
-                    LAMA_THROWEXCEPTION( "OpenMPLAPACK:tptrs is not implemented for CblasUnit yet" )
+                    COMMON_THROWEXCEPTION( "OpenMPLAPACK:tptrs is not implemented for CblasUnit yet" )
                 }
                 else if( diag == CblasNonUnit )
                 {
@@ -459,7 +459,7 @@ int OpenMPLAPACK::tptrs(
         }
         else if( trans == CblasTrans )
         {
-            LAMA_THROWEXCEPTION( "OpenMPLAPACK:tptrs - colmajor - conjtrans not implemented" );
+            COMMON_THROWEXCEPTION( "OpenMPLAPACK:tptrs - colmajor - conjtrans not implemented" );
 
             if( uplo == CblasUpper )
             {
@@ -486,7 +486,7 @@ int OpenMPLAPACK::tptrs(
         }
         else if( trans == CblasConjTrans )
         {
-            LAMA_THROWEXCEPTION( "OpenMPLAPACK:tptrs - rowmajor - conjtrans not implemented" );
+            COMMON_THROWEXCEPTION( "OpenMPLAPACK:tptrs - rowmajor - conjtrans not implemented" );
         }
     }
 

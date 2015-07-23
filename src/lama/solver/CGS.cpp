@@ -101,22 +101,22 @@ void CGS::solveInit( Vector& solution, const Vector& rhs ){
     runtime.mSolution = &solution;
 
     if ( runtime.mCoefficients->getNumRows() != runtime.mRhs->size() ){
-        LAMA_THROWEXCEPTION(
+        COMMON_THROWEXCEPTION(
             "Size of rhs vector " << *runtime.mRhs << " does not match column size of matrix " << *runtime.mCoefficients );
     }
 
     if ( runtime.mCoefficients->getNumColumns() != solution.size() ){
-        LAMA_THROWEXCEPTION(
+        COMMON_THROWEXCEPTION(
             "Size of solution vector " << solution << " does not match row size of matrix " << *runtime.mCoefficients );
     }
 
     if ( runtime.mCoefficients->getColDistribution() != solution.getDistribution() ){
-        LAMA_THROWEXCEPTION(
+        COMMON_THROWEXCEPTION(
             "Distribution of lhs " << solution << " = " << solution.getDistribution() << " does not match (row) distribution of " << *runtime.mCoefficients << " = " << runtime.mCoefficients->getColDistribution() );
     }
 
     if ( runtime.mCoefficients->getDistribution() != runtime.mRhs->getDistribution() ){
-        LAMA_THROWEXCEPTION(
+        COMMON_THROWEXCEPTION(
             "Distribution of old Solution " << *runtime.mRhs << " = " << runtime.mRhs->getDistribution() << " does not match (row) distribution of " << *runtime.mCoefficients << " = " << runtime.mCoefficients->getDistribution() );
     }
 

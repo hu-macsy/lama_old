@@ -151,7 +151,7 @@ void Richardson::iterate(){
        		iterate<double>();
         break;
     	default:
-        LAMA_THROWEXCEPTION( "Unsupported ValueType " << getRuntime().mCoefficients->getValueType() )
+        COMMON_THROWEXCEPTION( "Unsupported ValueType " << getRuntime().mCoefficients->getValueType() )
     }
 }
 

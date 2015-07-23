@@ -58,7 +58,7 @@ char BLASHelper::lapack_uplo( const CBLAS_UPLO uplo )
     }
     else
     {
-        LAMA_THROWEXCEPTION( "Illegal uplo: " << uplo );
+        COMMON_THROWEXCEPTION( "Illegal uplo: " << uplo );
     }
 
     return UL;
@@ -84,7 +84,7 @@ char BLASHelper::lapack_transpose( const CBLAS_TRANSPOSE trans )
     }
     else
     {
-        LAMA_THROWEXCEPTION( "Illegal trans: " << trans );
+        COMMON_THROWEXCEPTION( "Illegal trans: " << trans );
     }
 
     return TA;
@@ -106,7 +106,7 @@ char BLASHelper::lapack_diag( const CBLAS_DIAG diag )
     }
     else
     {
-        LAMA_THROWEXCEPTION( "Illegal diag: " << diag );
+        COMMON_THROWEXCEPTION( "Illegal diag: " << diag );
     }
 
     return DI;

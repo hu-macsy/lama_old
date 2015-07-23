@@ -62,6 +62,7 @@
 
 using namespace boost;
 using namespace lama;
+using common::Exception;
 
 #if ARITHMETIC_TYPE_CNT == 1
 typedef boost::mpl::list<ARITHMETIC_TYPE0> test_types;

@@ -442,7 +442,7 @@ void MICDIAUtils::jacobi(
 
     if( error )
     {
-        LAMA_THROWEXCEPTION( "diagonal is not first, diaOffset[0] != 0" )
+        COMMON_THROWEXCEPTION( "diagonal is not first, diaOffset[0] != 0" )
     }
 }
 

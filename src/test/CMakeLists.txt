@@ -112,7 +112,7 @@ set ( SOURCE_FILES
         TFQMRTest
         TimerTest
         TracingTest
-        UtilsTest
+#        UtilsTest
         VectorTest
     )
 

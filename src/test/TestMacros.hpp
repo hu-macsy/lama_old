@@ -357,7 +357,7 @@ inline memory::ContextType mapEnvContexttoContextType( std::string contextname )
     {                                                                                                \
         method<ARITHMETIC_TYPE##I>( context );                                                        \
     }                                                                                                \
-    catch( Exception )                                                                               \
+    catch ( common::Exception& )                                                                      \
     {                                                                                                \
         LAMA_LOG_WARN( logger, #method << "<" << STR( ARITHMETIC_TYPE##I ) << "> cannot run on "     \
                        << context->getType() << ", corresponding function not implemented yet." );   \
@@ -396,7 +396,7 @@ inline memory::ContextType mapEnvContexttoContextType( std::string contextname )
     {                                                                                                \
         method<ARITHMETIC_TYPE##I>( context, logger );                                                \
     }                                                                                                \
-    catch( Exception )                                                                               \
+    catch ( common::Exception& )                                                                               \
     {                                                                                                \
         LAMA_LOG_WARN( logger, #method << "<" << STR( ARITHMETIC_TYPE##I ) << "> cannot run on "     \
                        << context->getType() << ", corresponding function not implemented yet." );   \
@@ -454,7 +454,7 @@ inline memory::ContextType mapEnvContexttoContextType( std::string contextname )
             {                                                                                                          \
                 lama::classname::name<float, float>( context );                                                        \
             }                                                                                                          \
-            catch( Exception )                                                                                         \
+            catch ( common::Exception& )                                                                               \
             {                                                                                                          \
                 LAMA_LOG_WARN( logger, lama_classname << "::" << lama_name << "<float, float> cannot run on  "         \
                                << context->getType() << ", corresponding function not implemented yet." );             \
@@ -464,7 +464,7 @@ inline memory::ContextType mapEnvContexttoContextType( std::string contextname )
             {                                                                                                          \
                 lama::classname::name<double, double>( context );                                                      \
             }                                                                                                          \
-            catch( Exception )                                                                                         \
+            catch ( common::Exception& )                                                                               \
             {                                                                                                          \
                 LAMA_LOG_WARN( logger, lama_classname << "::" << lama_name << "<double, double> cannot run on  "       \
                                << context->getType() << ", corresponding function not implemented yet." );             \
@@ -474,7 +474,7 @@ inline memory::ContextType mapEnvContexttoContextType( std::string contextname )
             {                                                                                                          \
                 lama::classname::name<float, double>( context );                                                       \
             }                                                                                                          \
-            catch( Exception )                                                                                         \
+            catch ( common::Exception& )                                                                               \
             {                                                                                                          \
                 LAMA_LOG_WARN( logger, lama_classname << "::" << lama_name << "<float, double> cannot run on  "        \
                                << context->getType() << ", corresponding function not implemented yet." );             \
@@ -484,7 +484,7 @@ inline memory::ContextType mapEnvContexttoContextType( std::string contextname )
             {                                                                                                          \
                 lama::classname::name<double, float>( context );                                                       \
             }                                                                                                          \
-            catch( Exception )                                                                                         \
+            catch ( common::Exception& )                                                                               \
             {                                                                                                          \
                 LAMA_LOG_WARN( logger, lama_classname << "::" << lama_name << "<double, float> cannot run on  "        \
                                << context->getType() << ", corresponding function not implemented yet." );             \
@@ -520,7 +520,7 @@ inline memory::ContextType mapEnvContexttoContextType( std::string contextname )
             {                                                                                                          \
                 lama::classname::name<name>( context );                                                                \
             }                                                                                                          \
-            catch( Exception )                                                                                         \
+            catch ( common::Exception& )                                                                               \
             {                                                                                                          \
                 LAMA_LOG_WARN( logger, lama_classname << "::" << lama_name << " cannot run on  "                       \
                                << context->getType() << ", corresponding function not implemented yet." );             \
@@ -545,7 +545,7 @@ inline memory::ContextType mapEnvContexttoContextType( std::string contextname )
             {                                                                                                          \
                 lama::classname::name( context );                                                                \
             }                                                                                                          \
-            catch( Exception )                                                                                         \
+            catch ( common::Exception& )                                                                               \
             {                                                                                                          \
                 LAMA_LOG_WARN( logger, lama_classname << "::" << lama_name << " cannot run on  "                       \
                                << context->getType() << ", corresponding function not implemented yet." );             \

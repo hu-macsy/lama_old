@@ -206,7 +206,7 @@ static Distribution* createDistribution( const IndexType n, CommunicatorPtr comm
     }
     else
     {
-        LAMA_THROWEXCEPTION( "kind = " << kind << " unsupported here" )
+        COMMON_THROWEXCEPTION( "kind = " << kind << " unsupported here" )
     }
 
     return dist;

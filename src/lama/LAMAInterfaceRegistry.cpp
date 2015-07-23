@@ -68,7 +68,7 @@ const LAMAInterface* LAMAInterfaceRegistry::getInterface( const memory::ContextT
 
     if( loc == mInterfaceMap.end() )
     {
-        LAMA_THROWEXCEPTION( "No interface on location " << location << " available." )
+        COMMON_THROWEXCEPTION( "No interface on location " << location << " available." )
     }
 
     return loc->second;

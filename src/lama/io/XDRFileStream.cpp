@@ -62,7 +62,7 @@ void XDRFileStream::openFilePointer( const std::string filename, const std::ios_
     {
         if( openmode & std::ios::out )
         {
-            throw Exception( "XDRFileStream: Stream can not be in in and out mode!" );
+            COMMON_THROWEXCEPTION( "XDRFileStream: Stream can not be in in and out mode!" );
         }
     }
     else if( openmode & std::ios::out )
@@ -70,7 +70,7 @@ void XDRFileStream::openFilePointer( const std::string filename, const std::ios_
     }
     else
     {
-        throw Exception( "Unknown file access mode for opening file pointer to access XDR streams." );
+        COMMON_THROWEXCEPTION( "Unknown file access mode for opening file pointer to access XDR streams." );
     }
 
     m_openmode = openmode | std::ios::binary;
@@ -80,7 +80,7 @@ void XDRFileStream::openFilePointer( const std::string filename, const std::ios_
 
     if( !( m_filestream.is_open() ) )
     {
-        throw Exception( ( std::string( "XDRFileStream: Can not open file!" ) + m_filename ).c_str() );
+        COMMON_THROWEXCEPTION( "XDRFileStream: Can not open file " << m_filename );
     }
 
 }

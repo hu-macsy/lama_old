@@ -104,7 +104,7 @@ void OpenMPBLAS3::gemm(
             }
             else if( TransB == CblasConjTrans )
             {
-                LAMA_THROWEXCEPTION( "gemm for complexe matrix is not supported yet" )
+                COMMON_THROWEXCEPTION( "gemm for complexe matrix is not supported yet" )
             }
             else if( TransB == CblasTrans )
             {
@@ -135,7 +135,7 @@ void OpenMPBLAS3::gemm(
         }
         else if( TransA == CblasConjTrans )
         {
-            LAMA_THROWEXCEPTION( "gemm for complexe matrix is not supported yet" )
+            COMMON_THROWEXCEPTION( "gemm for complexe matrix is not supported yet" )
 
             //'C'
             if( TransB == CblasNoTrans )
@@ -181,7 +181,7 @@ void OpenMPBLAS3::gemm(
             }
             else if( TransB == CblasConjTrans )
             {
-                LAMA_THROWEXCEPTION( "gemm for complexe matrix is not supported yet" )
+                COMMON_THROWEXCEPTION( "gemm for complexe matrix is not supported yet" )
             }
             else if( TransB == CblasTrans )
             {
@@ -245,7 +245,7 @@ void OpenMPBLAS3::gemm(
             }
             else if( TransB == CblasConjTrans )
             {
-                LAMA_THROWEXCEPTION( "gemm for complexe matrix is not supported yet" )
+                COMMON_THROWEXCEPTION( "gemm for complexe matrix is not supported yet" )
             }
             else if( TransB == CblasTrans )
             {
@@ -320,7 +320,7 @@ void OpenMPBLAS3::gemm(
             }
             else if( TransB == CblasConjTrans )
             {
-                LAMA_THROWEXCEPTION( "gemm for complexe matrix is not supported yet" )
+                COMMON_THROWEXCEPTION( "gemm for complexe matrix is not supported yet" )
             }
             else
             {
@@ -331,7 +331,7 @@ void OpenMPBLAS3::gemm(
         }
         else if( TransA == CblasConjTrans )
         {
-            LAMA_THROWEXCEPTION( "gemm for complexe matrix is not supported yet" )
+            COMMON_THROWEXCEPTION( "gemm for complexe matrix is not supported yet" )
 
             if( TransB == CblasNoTrans )
             {

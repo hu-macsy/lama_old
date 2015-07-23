@@ -386,7 +386,7 @@ void OpenMPDIAUtils::normalGEMV(
     }
     else
     {
-        LAMA_THROWEXCEPTION( "no asynchronous support due to boost problem" )
+        COMMON_THROWEXCEPTION( "no asynchronous support due to boost problem" )
 
         // asynchronous execution is done by calling an own thread at higher level
     }
@@ -416,7 +416,7 @@ void OpenMPDIAUtils::normalGEVM(
 
     if( syncToken )
     {
-        LAMA_THROWEXCEPTION( "asynchronous execution should be done by LAMATask before" )
+        COMMON_THROWEXCEPTION( "asynchronous execution should be done by LAMATask before" )
     }
 
     // result := alpha * x * A + beta * y -> result:= beta * y; result += alpha * x * A

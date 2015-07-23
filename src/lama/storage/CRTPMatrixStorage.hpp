@@ -114,7 +114,7 @@ BOOST_PP_REPEAT( ARITHMETIC_TYPE_CNT, LAMA_SET_CSR_CALL, _ )
 
 default            :
 {
-    LAMA_THROWEXCEPTION( *this << ": setCSRData with value type " << arrayType << " not supported" )
+    COMMON_THROWEXCEPTION( *this << ": setCSRData with value type " << arrayType << " not supported" )
 }
 }
 }
@@ -153,7 +153,7 @@ BOOST_PP_REPEAT( ARITHMETIC_TYPE_CNT, LAMA_BUILD_CSR_CALL, _ )
 
 default:
 {
-    LAMA_THROWEXCEPTION( *this << ": build CSR with value type " << arrayType << " not supported" )
+    COMMON_THROWEXCEPTION( *this << ": build CSR with value type " << arrayType << " not supported" )
 }
 
 }
@@ -183,7 +183,7 @@ BOOST_PP_REPEAT( ARITHMETIC_TYPE_CNT, LAMA_GET_ROW_CALL, _ )
 
 default:
 {
-    LAMA_THROWEXCEPTION( "getRow for array of type " << arrayType << " not supported" )
+    COMMON_THROWEXCEPTION( "getRow for array of type " << arrayType << " not supported" )
 }
 
 }
@@ -193,7 +193,7 @@ void getDiagonal( _LAMAArray& diagonal ) const
 {
 if ( !this->hasDiagonalProperty() )
 {
-LAMA_THROWEXCEPTION( *this << ": has not diagonal property, cannot get diagonal" )
+COMMON_THROWEXCEPTION( *this << ": has not diagonal property, cannot get diagonal" )
 }
 
 memory::ScalarType arrayType = diagonal.getValueType();
@@ -214,7 +214,7 @@ BOOST_PP_REPEAT( ARITHMETIC_TYPE_CNT, LAMA_GET_DIAGONAL_CALL, _ )
 #undef LAMA_GET_DIAGONAL_CALL
 
 default:
-    LAMA_THROWEXCEPTION( "getDiagonal for array of type " << arrayType << " not supported" )
+    COMMON_THROWEXCEPTION( "getDiagonal for array of type " << arrayType << " not supported" )
 
 }
 }
@@ -223,7 +223,7 @@ void setDiagonal( const Scalar value )
 {
 if ( !this->hasDiagonalProperty() )
 {
-LAMA_THROWEXCEPTION( *this << ": has not diagonal property, cannot set diagonal" )
+COMMON_THROWEXCEPTION( *this << ": has not diagonal property, cannot set diagonal" )
 }
 
 static_cast<Derived*>( this )->setDiagonalImpl( value );
@@ -235,12 +235,12 @@ IndexType numDiagonalElements = diagonal.size();
 
 if ( numDiagonalElements > this->getNumRows() || numDiagonalElements > this->getNumColumns() )
 {
-LAMA_THROWEXCEPTION( "Diagonal of size " << numDiagonalElements << " too large for matrix: " << *this )
+COMMON_THROWEXCEPTION( "Diagonal of size " << numDiagonalElements << " too large for matrix: " << *this )
 }
 
 if ( !this->hasDiagonalProperty() )
 {
-LAMA_THROWEXCEPTION( *this << ": has not diagonal property, cannot set diagonal" )
+COMMON_THROWEXCEPTION( *this << ": has not diagonal property, cannot set diagonal" )
 }
 
 memory::ScalarType arrayType = diagonal.getValueType();
@@ -261,7 +261,7 @@ BOOST_PP_REPEAT( ARITHMETIC_TYPE_CNT, LAMA_SET_DIAGONAL_CALL, _ )
 #undef LAMA_SET_DIAGONAL_CALL
 
 default:
-    LAMA_THROWEXCEPTION( "setDiagonal to array of type " << arrayType << " not supported" )
+    COMMON_THROWEXCEPTION( "setDiagonal to array of type " << arrayType << " not supported" )
 }
 }
 
@@ -294,7 +294,7 @@ BOOST_PP_REPEAT( ARITHMETIC_TYPE_CNT, LAMA_SCALE_CALL, _ )
 #undef LAMA_SCALE_CALL
 
 default:
-    LAMA_THROWEXCEPTION( "scale of type " << arrayType << " not supported" )
+    COMMON_THROWEXCEPTION( "scale of type " << arrayType << " not supported" )
 }
 }
 

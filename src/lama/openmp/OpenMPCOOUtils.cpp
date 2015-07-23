@@ -226,7 +226,7 @@ void OpenMPCOOUtils::normalGEMV(
 
     if( syncToken )
     {
-        LAMA_THROWEXCEPTION( "asynchronous execution not supported here, do it by a task" )
+        COMMON_THROWEXCEPTION( "asynchronous execution not supported here, do it by a task" )
     }
 
     // result := alpha * A * x + beta * y -> result:= beta * y; result += alpha * A
@@ -274,7 +274,7 @@ void OpenMPCOOUtils::normalGEVM(
 
     if( syncToken )
     {
-        LAMA_THROWEXCEPTION( "asynchronous execution not supported here, do it by a task" )
+        COMMON_THROWEXCEPTION( "asynchronous execution not supported here, do it by a task" )
     }
 
     // result := alpha * x * A + beta * y -> result:= beta * y; result += alpha * x * A
@@ -323,7 +323,7 @@ void OpenMPCOOUtils::jacobi(
 
     if( syncToken )
     {
-        LAMA_THROWEXCEPTION( "asynchronous execution should be done by LAMATask before" )
+        COMMON_THROWEXCEPTION( "asynchronous execution should be done by LAMATask before" )
     }
 
     // solution = omega * ( rhs - B * oldSolution ) * dinv + ( 1 - omega * oldSolution

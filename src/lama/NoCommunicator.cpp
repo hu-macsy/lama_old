@@ -156,7 +156,7 @@ IndexType NoCommunicator::shiftImpl(
     const IndexType,
     const PartitionId ) const
 {
-    LAMA_THROWEXCEPTION( "shiftImpl should never be called for NoCommunicator" )
+    COMMON_THROWEXCEPTION( "shiftImpl should never be called for NoCommunicator" )
 }
 
 template<typename ValueType>
@@ -167,7 +167,7 @@ SyncToken* NoCommunicator::shiftAsyncImpl(
     const PartitionId,
     const IndexType ) const
 {
-    LAMA_THROWEXCEPTION( "shiftAsyncImpl should never be called for NoCommunicator" )
+    COMMON_THROWEXCEPTION( "shiftAsyncImpl should never be called for NoCommunicator" )
 }
 
 template<typename ValueType>
