@@ -59,6 +59,8 @@ namespace lama
 using std::abs;
 // is used for abs( float ), abs( double )
 
+using common::getScalarType;
+
 LAMA_LOG_DEF_LOGGER( OpenMPCSRUtils::logger, "OpenMP.CSRUtils" )
 
 /** Number of minimal threads for which parallelization is effective. */
@@ -505,7 +507,8 @@ void OpenMPCSRUtils::normalGEMV(
     SyncToken* syncToken )
 {
     LAMA_LOG_INFO( logger,
-                   "normalGEMV<" << Scalar::getType<ValueType>() << ", #threads = " << omp_get_max_threads() << ">, result[" << numRows << "] = " << alpha << " * A * x + " << beta << " * y " )
+                   "normalGEMV<" << getScalarType<ValueType>() << ", #threads = " << omp_get_max_threads() 
+                    << ">, result[" << numRows << "] = " << alpha << " * A * x + " << beta << " * y " )
 
     if( syncToken )
     {
@@ -578,7 +581,7 @@ void OpenMPCSRUtils::normalGEVM(
     SyncToken* syncToken )
 {
     LAMA_LOG_INFO( logger,
-                   "normalGEVM<" << Scalar::getType<ValueType>() << ", #threads = " << omp_get_max_threads() << ">, result[" << numColumns << "] = " << alpha << " * x * A + " << beta << " * y " )
+                   "normalGEVM<" << getScalarType<ValueType>() << ", #threads = " << omp_get_max_threads() << ">, result[" << numColumns << "] = " << alpha << " * x * A + " << beta << " * y " )
 
     if( syncToken )
     {
@@ -783,7 +786,7 @@ void OpenMPCSRUtils::gemm(
     SyncToken* syncToken )
 {
     LAMA_LOG_INFO( logger,
-                   "gemm<" << Scalar::getType<ValueType>() << ">, " << " result " << m << " x " << n << " CSR " << m << " x " << p )
+                   "gemm<" << getScalarType<ValueType>() << ">, " << " result " << m << " x " << n << " CSR " << m << " x " << p )
 
     if( syncToken )
     {
@@ -830,7 +833,7 @@ void OpenMPCSRUtils::jacobi(
     class SyncToken* syncToken )
 {
     LAMA_LOG_INFO( logger,
-                   "jacobi<" << Scalar::getType<ValueType>() << ">" << ", #rows = " << numRows << ", omega = " << omega )
+                   "jacobi<" << getScalarType<ValueType>() << ">" << ", #rows = " << numRows << ", omega = " << omega )
 
     if( syncToken )
     {
@@ -889,7 +892,7 @@ void OpenMPCSRUtils::jacobiHalo(
     const IndexType numNonEmptyRows )
 {
     LAMA_LOG_INFO( logger,
-                   "jacobiHalo<" << Scalar::getType<ValueType>() << ">" << ", #rows (not empty) = " << numNonEmptyRows << ", omega = " << omega );
+                   "jacobiHalo<" << getScalarType<ValueType>() << ">" << ", #rows (not empty) = " << numNonEmptyRows << ", omega = " << omega );
 
     #pragma omp parallel
     {
@@ -942,7 +945,7 @@ void OpenMPCSRUtils::jacobiHaloWithDiag(
     const IndexType numNonEmptyRows )
 {
     LAMA_LOG_INFO( logger,
-                   "jacobiHaloWithDiag<" << Scalar::getType<ValueType>() << ">" << ", #rows (not empty) = " << numNonEmptyRows << ", omega = " << omega );
+                   "jacobiHaloWithDiag<" << getScalarType<ValueType>() << ">" << ", #rows (not empty) = " << numNonEmptyRows << ", omega = " << omega );
 
     #pragma omp parallel
     {
@@ -1714,9 +1717,9 @@ static IndexType findCol( const IndexType columns[], const IndexType n, const In
         }
     }
 
-    // not found
+    // not found, return size
 
-    return nIndex;
+    return n;
 }
 
 /* --------------------------------------------------------------------------- */
@@ -1743,7 +1746,7 @@ ValueType OpenMPCSRUtils::absMaxDiffRowUnsorted(
         IndexType j = csrJA1[i1];
         IndexType i2 = findCol( csrJA2, n2, j, helpIndex );
 
-        if( i2 != nIndex )
+        if( i2 < n2 )
         {
             diff -= csrValues2[i2];
         }
@@ -1765,7 +1768,7 @@ ValueType OpenMPCSRUtils::absMaxDiffRowUnsorted(
         IndexType j = csrJA2[i2];
         IndexType i1 = findCol( csrJA1, n1, j, helpIndex );
 
-        if( i1 != nIndex )
+        if( i1 < n1 )
         {
             continue; // already compare in first loop
         }
@@ -1873,7 +1876,7 @@ ValueType OpenMPCSRUtils::absMaxDiffVal(
     const ValueType csrValues2[] )
 {
     LAMA_LOG_INFO( logger,
-                   "absMaxDiffVal<" << Scalar::getType<ValueType>() << ">: " << "csr[" << numRows << "], sorted = " << sortedRows )
+                   "absMaxDiffVal<" << getScalarType<ValueType>() << ">: " << "csr[" << numRows << "], sorted = " << sortedRows )
 
     ValueType (*absMaxDiffRow)(
         const IndexType,
@@ -1981,7 +1984,7 @@ void OpenMPCSRUtils::setInterface( CSRUtilsInterface& CSRUtils )
 
 bool OpenMPCSRUtils::registerInterface()
 {
-    LAMAInterface& interface = LAMAInterfaceRegistry::getRegistry().modifyInterface( Context::Host );
+    LAMAInterface& interface = LAMAInterfaceRegistry::getRegistry().modifyInterface( memory::context::Host );
     setInterface( interface.CSRUtils );
     return true;
 }

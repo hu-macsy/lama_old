@@ -181,7 +181,7 @@ void GMRES::initialize( const Matrix& coefficients )
 
     switch( coefficients.getValueType() )
     {
-        case Scalar::FLOAT:
+        case common::scalar::FLOAT:
         {
 
             ( *runtime.mV )[0] = new DenseVector<float>( coefficients.getDistributionPtr() );
@@ -193,7 +193,7 @@ void GMRES::initialize( const Matrix& coefficients )
             break;
         }
 
-        case Scalar::DOUBLE:
+        case common::scalar::DOUBLE:
         {
             ( *runtime.mV )[0] = new DenseVector<double>( coefficients.getDistributionPtr() );
 
@@ -272,13 +272,13 @@ void GMRES::iterate()
 
         switch( A.getValueType() )
         {
-            case Scalar::FLOAT:
+            case common::scalar::FLOAT:
             {
                 ( *runtime.mV )[krylovIndex + 1] = new DenseVector<float>( A.getDistributionPtr() );
                 break;
             }
 
-            case Scalar::DOUBLE:
+            case common::scalar::DOUBLE:
             {
                 ( *runtime.mV )[krylovIndex + 1] = new DenseVector<double>( A.getDistributionPtr() );
                 break;
@@ -428,7 +428,7 @@ void GMRES::updateX( unsigned int i )
 
     // ContextPtr context = getCoefficients().getContextPtr();
 
-    ContextPtr context = ContextFactory::getContext( Context::Host );
+    ContextPtr context = Context::getContextPtr( context::Host );
 
     LAMA_INTERFACE_FN_t( tptrs, context, BLAS, LAPACK, double );
 

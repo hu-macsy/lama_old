@@ -40,9 +40,9 @@
 #include <lama/Vector.hpp>
 
 // others
-#include <lama/LAMAArray.hpp>
+#include <memory/memory.hpp>
 #include <lama/LAMAArrayUtils.hpp>
-#include <lama/SyncToken.hpp>
+#include <tasking/SyncToken.hpp>
 #include <lama/TypeTraits.hpp>
 
 #include <lama/distribution/Distribution.hpp>
@@ -55,6 +55,8 @@
 #include <lama/io/XDRFileStream.hpp>
 
 #include <fstream>
+
+using namespace tasking;
 
 namespace lama
 {
@@ -143,7 +145,7 @@ public:
      * @param[in] localValues   the local values to initialize the new DenseVector with.
      * @param[in] distribution  the distribution the
      */
-    DenseVector( const _LAMAArray& localValues, DistributionPtr distribution );
+    DenseVector( const ContextArray& localValues, DistributionPtr distribution );
 
     /**
      * @brief This constructor creates a vector with the size and values stored
@@ -246,12 +248,12 @@ public:
      */
     void readFromFile( const std::string& filename );
 
-    virtual Scalar::ScalarType getValueType() const;
+    virtual memory::ScalarType getValueType() const;
 
     /**
      * Implementation of pure method.
      */
-    virtual void buildValues( _LAMAArray& values ) const;
+    virtual void buildValues( ContextArray& values ) const;
 
     /**
      * Implementation of pure method.

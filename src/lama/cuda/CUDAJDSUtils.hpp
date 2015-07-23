@@ -43,11 +43,13 @@
 // logging
 #include <logging/logging.hpp>
 
+namespace tasking
+{
+   class SyncToken;
+}
+
 namespace lama
 {
-
-class SyncToken;
-// forward declaration
 
 /** This class provides CUDA parallelized routines needed for JDS format.
  *
@@ -163,7 +165,7 @@ public:
         const ValueType oldSolution[],
         const ValueType rhs[],
         const ValueType omega,
-        SyncToken* syncToken );
+        tasking::SyncToken* syncToken );
 
     template<typename ValueType>
     static void jacobiHalo(
@@ -178,7 +180,7 @@ public:
         const ValueType jdsValuesHalo[],
         const ValueType oldSolutionHalo[],
         const ValueType omega,
-        SyncToken* syncToken );
+        tasking::SyncToken* syncToken );
 
     /** Implementation for JDSUtilsInterface::Mult:normalGEMV with CUDA on GPU */
 
@@ -196,7 +198,7 @@ public:
         const IndexType jdsDLG[],
         const IndexType jdsJA[],
         const ValueType jdsValues[],
-        SyncToken* syncToken );
+        tasking::SyncToken* syncToken );
 
     /** Implementation for JDSUtilsInterface::Mult:normalGEVM with CUDA on GPU */
 
@@ -214,7 +216,7 @@ public:
         const IndexType jdsDLG[],
         const IndexType jdsJA[],
         const ValueType jdsValues[],
-        SyncToken* syncToken );
+        tasking::SyncToken* syncToken );
 
     template<typename ValueType>
     static void sparseGEMV(
@@ -228,7 +230,7 @@ public:
         const IndexType jdsDLG[],
         const IndexType jdsJA[],
         const ValueType jdsValues[],
-        SyncToken* syncToken );
+        tasking::SyncToken* syncToken );
 
     template<typename ValueType>
     static void sparseGEVM(
@@ -242,7 +244,7 @@ public:
         const IndexType jdsDLG[],
         const IndexType jdsJA[],
         const ValueType jdsValues[],
-        SyncToken* syncToken );
+        tasking::SyncToken* syncToken );
 
     /** Routine that registers all routines of this class at the LAMA interface. */
 

@@ -36,7 +36,7 @@
 
 // others
 #include <lama/LAMAInterface.hpp>
-#include <lama/ContextAccess.hpp>
+#include <memory/ContextAccess.hpp>
 
 #include <lama/openmp/OpenMPDenseUtils.hpp>
 #include <lama/openmp/OpenMPCSRUtils.hpp>
@@ -102,7 +102,7 @@ const LAMAArray<ValueType>& DenseStorageView<ValueType>::getData() const
 template<typename ValueType>
 IndexType DenseStorageView<ValueType>::getNumValues() const
 {
-    HostReadAccess<ValueType> values( mData );
+    ReadAccess<ValueType> values( mData );
 
     IndexType count = 0;
 
@@ -141,7 +141,7 @@ void DenseStorageView<ValueType>::check( const char* /* msg */) const
 template<typename ValueType>
 void DenseStorageView<ValueType>::setDiagonalImpl( const Scalar value )
 {
-    HostWriteAccess<ValueType> wData( mData ); // use existing data
+    WriteAccess<ValueType> wData( mData ); // use existing data
 
     OpenMPDenseUtils::setDiagonalValue( wData.get(), mNumRows, mNumColumns, value.getValue<ValueType>() );
 }
@@ -154,8 +154,8 @@ void DenseStorageView<ValueType>::getRowImpl( LAMAArray<OtherType>& row, const I
 {
     LAMA_ASSERT_DEBUG( i >= 0 && i < mNumRows, "row index " << i << " out of range" )
 
-    HostWriteOnlyAccess<OtherType> wRow( row, mNumColumns );
-    HostReadAccess<ValueType> rData( mData );
+    WriteOnlyAccess<OtherType> wRow( row, mNumColumns );
+    ReadAccess<ValueType> rData( mData );
 
     #pragma omp parallel for schedule (LAMA_OMP_SCHEDULE)
 
@@ -173,9 +173,9 @@ void DenseStorageView<ValueType>::getDiagonalImpl( LAMAArray<OtherType>& diagona
 {
     IndexType numDiagonalValues = std::min( mNumColumns, mNumRows );
 
-    HostWriteOnlyAccess<OtherType> wDiagonal( diagonal, numDiagonalValues );
+    WriteOnlyAccess<OtherType> wDiagonal( diagonal, numDiagonalValues );
 
-    HostReadAccess<ValueType> rData( mData );
+    ReadAccess<ValueType> rData( mData );
 
     OpenMPDenseUtils::getDiagonal( wDiagonal.get(), numDiagonalValues, rData.get(), mNumRows, mNumColumns );
 }
@@ -187,8 +187,8 @@ template<typename OtherType>
 void DenseStorageView<ValueType>::setDiagonalImpl( const LAMAArray<OtherType>& diagonal )
 {
     IndexType numDiagonalValues = std::min( mNumColumns, mNumRows );
-    HostReadAccess<OtherType> rDiagonal( diagonal );
-    HostWriteAccess<ValueType> wData( mData );
+    ReadAccess<OtherType> rDiagonal( diagonal );
+    WriteAccess<ValueType> wData( mData );
 
     OpenMPDenseUtils::setDiagonal( wData.get(), mNumRows, mNumColumns, rDiagonal.get(), numDiagonalValues );
 }
@@ -198,7 +198,7 @@ void DenseStorageView<ValueType>::setDiagonalImpl( const LAMAArray<OtherType>& d
 template<typename ValueType>
 void DenseStorageView<ValueType>::scaleImpl( const Scalar values )
 {
-    HostWriteAccess<ValueType> wData( mData );
+    WriteAccess<ValueType> wData( mData );
 
     const ValueType val = values.getValue<ValueType>();
 
@@ -211,8 +211,8 @@ template<typename ValueType>
 template<typename OtherType>
 void DenseStorageView<ValueType>::scaleImpl( const LAMAArray<OtherType>& values )
 {
-    HostReadAccess<OtherType> rDiagonal( values );
-    HostWriteAccess<ValueType> wData( mData );
+    ReadAccess<OtherType> rDiagonal( values );
+    WriteAccess<ValueType> wData( mData );
 
     const IndexType columns = mNumColumns;
 
@@ -251,9 +251,9 @@ size_t DenseStorageView<ValueType>::getMemoryUsageImpl() const
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-Scalar::ScalarType DenseStorageView<ValueType>::getValueType() const
+common::ScalarType DenseStorageView<ValueType>::getValueType() const
 {
-    return Scalar::getType<ValueType>();
+    return common::getScalarType<ValueType>();
 }
 
 /* --------------------------------------------------------------------------- */
@@ -278,7 +278,7 @@ void DenseStorageView<ValueType>::setIdentity( const IndexType size )
 template<typename ValueType>
 void DenseStorageView<ValueType>::setIdentity()
 {
-    HostWriteOnlyAccess<ValueType> data( mData, mNumRows * mNumColumns );
+    WriteOnlyAccess<ValueType> data( mData, mNumRows * mNumColumns );
 
     const ValueType zero = static_cast<ValueType>( 0.0 );
     const ValueType one = static_cast<ValueType>( 1.0 );
@@ -296,7 +296,7 @@ void DenseStorageView<ValueType>::setIdentity()
 template<typename ValueType>
 void DenseStorageView<ValueType>::setZero()
 {
-    HostWriteOnlyAccess<ValueType> data( mData, mNumRows * mNumColumns );
+    WriteOnlyAccess<ValueType> data( mData, mNumRows * mNumColumns );
 
     const ValueType zero = static_cast<ValueType>( 0.0 );
 
@@ -319,9 +319,9 @@ void DenseStorageView<ValueType>::buildCSR(
 {
     // TODO all done on host, so loc is unused
 
-    HostReadAccess<ValueType> denseValues( mData );
+    ReadAccess<ValueType> denseValues( mData );
 
-    HostWriteOnlyAccess<IndexType> wIA( csrIA, mNumRows + 1 );
+    WriteOnlyAccess<IndexType> wIA( csrIA, mNumRows + 1 );
 
     ValueType eps = this->mEpsilon;
 
@@ -339,8 +339,8 @@ void DenseStorageView<ValueType>::buildCSR(
 
     IndexType numValues = OpenMPCSRUtils::sizes2offsets( wIA.get(), mNumRows );
 
-    HostWriteOnlyAccess<IndexType> wJA( *csrJA, numValues );
-    HostWriteOnlyAccess<OtherValueType> wValues( *csrValues, numValues );
+    WriteOnlyAccess<IndexType> wJA( *csrJA, numValues );
+    WriteOnlyAccess<OtherValueType> wValues( *csrValues, numValues );
 
     OpenMPDenseUtils::getCSRValues( wJA.get(), wValues.get(), wIA.get(), mDiagonalProperty, mNumRows, mNumColumns,
                                     denseValues.get(), eps );
@@ -361,7 +361,7 @@ void DenseStorageView<ValueType>::setCSRDataImpl(
 {
     // not yet suppored on other devices
 
-    ContextPtr loc = ContextFactory::getContext( Context::Host );
+    ContextPtr loc = Context::getContextPtr( context::Host );
 
     LAMA_LOG_INFO( logger,
                    "setCRSData for dense storage " << numRows << " x " << numColumns << ", nnz = " << numValues )
@@ -435,7 +435,7 @@ void DenseStorageView<ValueType>::invertDense( const DenseStorageView<ValueType>
 
     LAMA_ASSERT_EQUAL_ERROR( nRows, nCols )
 
-    ContextPtr loc = ContextFactory::getContext( Context::Host );
+    ContextPtr loc = Context::getContextPtr( context::Host );
 
     LAMA_INTERFACE_FN_DEFAULT_T( getinv, loc, BLAS, LAPACK, ValueType );
 
@@ -489,7 +489,7 @@ void DenseStorageView<ValueType>::matrixTimesVector(
 
         setVal( wResult.get(), mNumRows, static_cast<ValueType>( 0 ) );
     }
-    else if( result != y )
+    else if( &result != &y )
     {
         LAMA_LOG_INFO( logger, "set result = y as y != result" )
 
@@ -598,7 +598,7 @@ void DenseStorageView<ValueType>::vectorTimesMatrix(
 
         setVal( wResult.get(), mNumColumns, static_cast<ValueType>( 0 ) );
     }
-    else if( result != y )
+    else if( &result != &y )
     {
         LAMA_LOG_INFO( logger, "set result = y as y != result" )
 
@@ -674,7 +674,7 @@ void DenseStorageView<ValueType>::print() const
     using std::cout;
     using std::endl;
 
-    HostReadAccess<ValueType> values( mData );
+    ReadAccess<ValueType> values( mData );
 
     cout << "DenseStorage " << mNumRows << " x " << mNumColumns << ", addr  = " << values.get() << endl;
 
@@ -1016,8 +1016,8 @@ void DenseStorageView<ValueType>::assignDenseStorageImpl( const DenseStorageView
 
     // @ToDo: allow for arbitrary locations
 
-    HostWriteOnlyAccess<ValueType> data( mData, mNumRows * mNumColumns );
-    HostReadAccess<OtherValueType> otherData( other.getData() );
+    WriteOnlyAccess<ValueType> data( mData, mNumRows * mNumColumns );
+    ReadAccess<OtherValueType> otherData( other.getData() );
 
     OpenMPDenseUtils::copyDenseValues( data.get(), mNumRows, mNumColumns, otherData.get() );
 
@@ -1043,13 +1043,13 @@ void DenseStorageView<ValueType>::assign( const _MatrixStorage& other )
     {
         // more efficient solution for assigment of dense storage
 
-        Scalar::ScalarType arrayType = other.getValueType();
+        ScalarType arrayType = other.getValueType();
 
         switch( arrayType )
         {
 
-#define LAMA_ASSIGN_DENSE_CALL( z, I, _ )                                                        \
-case Scalar::SCALAR_ARITHMETIC_TYPE##I:                                                  \
+#define LAMA_ASSIGN_DENSE_CALL( z, I, _ )                                                \
+case common::scalar::SCALAR_ARITHMETIC_TYPE##I:                                          \
 {                                                                                        \
     const DenseStorageView<ARITHMETIC_TYPE##I>* otherTyped =                             \
             dynamic_cast<const DenseStorageView<ARITHMETIC_TYPE##I>*>( &other );             \
@@ -1107,7 +1107,7 @@ stream << getTypeName() << "( rows = " << mNumRows << ", cols = " << mNumColumns
 template<typename ValueType>
 ValueType DenseStorageView<ValueType>::getValue( const IndexType i, const IndexType j ) const
 {
-const HostReadAccess<ValueType> data( mData );
+const ReadAccess<ValueType> data( mData );
 LAMA_LOG_TRACE( logger,
                 "get value (" << i << ", " << j << ")--> " << i*mNumColumns+j << "= " << data[i*mNumColumns+j] )
 return data[i * mNumColumns + j];
@@ -1153,7 +1153,7 @@ DenseStorage<ValueType>::DenseStorage( const IndexType numRows, const IndexType 
 mNumRows = numRows;
 mNumColumns = numColumns;
 
-HostWriteOnlyAccess<ValueType> data( mData, numRows * numColumns );
+WriteOnlyAccess<ValueType> data( mData, numRows * numColumns );
 
 const ValueType zero = static_cast<ValueType>( 0 );
 

@@ -38,7 +38,7 @@
 
 // others
 #include <lama/LAMATypes.hpp>
-#include <lama/SyncToken.hpp>
+#include <tasking/SyncToken.hpp>
 
 #include <lama/openmp/BLASHelper.hpp>
 
@@ -75,7 +75,7 @@ public:
         const ValueType beta,
         ValueType* y,
         const IndexType incY,
-        SyncToken* syncToken );
+        tasking::SyncToken* syncToken );
 
     /**
      * This function is the OpenMP implementation of lama::BLAS2Interface::trmv
@@ -91,7 +91,7 @@ public:
         const IndexType lda,
         ValueType* x,
         const IndexType incX,
-        SyncToken* syncToken );
+        tasking::SyncToken* syncToken );
 
     /**
      * This function is the OpenMP implementation of lama::BLAS2Interface::trsv
@@ -107,7 +107,7 @@ public:
         const IndexType lda,
         ValueType* x,
         const IndexType incX,
-        SyncToken* syncToken );
+        tasking::SyncToken* syncToken );
 
     /**
      * This function is the OpenMP implementation of lama::BLAS2Interface::gbmv
@@ -128,7 +128,7 @@ public:
         const ValueType beta,
         ValueType* y,
         const IndexType incY,
-        SyncToken* syncToken );
+        tasking::SyncToken* syncToken );
 
     /**
      * This function is the OpenMP implementation of lama::BLAS2Interface::sbmv
@@ -147,7 +147,7 @@ public:
         const ValueType beta,
         ValueType* y,
         const IndexType incY,
-        SyncToken* syncToken );
+        tasking::SyncToken* syncToken );
 
     /**
      * This function is the OpenMP implementation of lama::BLAS2Interface::tbmv
@@ -164,7 +164,7 @@ public:
         const IndexType lda,
         ValueType* x,
         const IndexType incX,
-        SyncToken* syncToken );
+        tasking::SyncToken* syncToken );
 
     /**
      * This function is the OpenMP implementation of lama::BLAS2Interface::tbsv
@@ -181,7 +181,7 @@ public:
         const IndexType lda,
         ValueType* x,
         const IndexType incX,
-        SyncToken* syncToken );
+        tasking::SyncToken* syncToken );
 
     /**
      * This function is the OpenMP implementation of lama::BLAS2Interface::ger
@@ -198,7 +198,7 @@ public:
         const IndexType incY,
         ValueType* A,
         const IndexType lda,
-        SyncToken* syncToken );
+        tasking::SyncToken* syncToken );
 
     /**
      * This function is the OpenMP implementation of lama::BLAS2Interface::syr
@@ -213,7 +213,7 @@ public:
         const IndexType incX,
         ValueType* A,
         const IndexType lda,
-        SyncToken* syncToken );
+        tasking::SyncToken* syncToken );
 
     /**
      * This function is the OpenMP implementation of lama::BLAS2Interface::syr2
@@ -230,7 +230,7 @@ public:
         const IndexType incY,
         ValueType* A,
         const IndexType lda,
-        SyncToken* syncToken );
+        tasking::SyncToken* syncToken );
 
     /**
      * This function is the OpenMP implementation of lama::BLAS2Interface::spmv
@@ -247,7 +247,7 @@ public:
         const ValueType beta,
         ValueType* y,
         const IndexType incY,
-        SyncToken* syncToken );
+        tasking::SyncToken* syncToken );
 
     /**
      * This function is the OpenMP implementation of lama::BLAS2Interface::spr
@@ -261,7 +261,7 @@ public:
         const ValueType* x,
         const IndexType incX,
         ValueType* AP,
-        SyncToken* syncToken );
+        tasking::SyncToken* syncToken );
 
     /**
      * This function is the OpenMP implementation of lama::BLAS2Interface::spr2
@@ -277,7 +277,7 @@ public:
         const ValueType* y,
         const IndexType incY,
         ValueType* AP,
-        SyncToken* syncToken );
+        tasking::SyncToken* syncToken );
 
     /**
      * This function is the OpenMP implementation of lama::BLAS2Interface::tpmv
@@ -292,7 +292,7 @@ public:
         const ValueType* AP,
         ValueType* x,
         const IndexType incX,
-        SyncToken* syncToken );
+        tasking::SyncToken* syncToken );
 
     /**
      * This function is the OpenMP implementation of lama::BLAS2Interface::tpsv
@@ -307,7 +307,7 @@ public:
         const ValueType* Ap,
         ValueType* x,
         const IndexType incX,
-        SyncToken* syncToken );
+        tasking::SyncToken* syncToken );
 
     /**
      * @todo add doxygen comment
@@ -323,7 +323,7 @@ public:
         const double beta,
         const double* const z,
         double* y,
-        SyncToken* syncToken );
+        tasking::SyncToken* syncToken );
 
     /** Routine that sets functions pointers belonging to BLAS2 in a BLASInterface.
      *

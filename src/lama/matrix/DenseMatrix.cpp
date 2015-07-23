@@ -39,8 +39,7 @@
 
 #include <lama/DenseVector.hpp>
 #include <lama/LAMAInterface.hpp>
-#include <lama/ContextAccess.hpp>
-#include <lama/NoSyncToken.hpp>
+#include <tasking/NoSyncToken.hpp>
 #include <tracing/tracing.hpp>
 
 #include <lama/distribution/NoDistribution.hpp>
@@ -422,7 +421,7 @@ template<typename ValueType>
 void DenseMatrix<ValueType>::setDenseData(
     DistributionPtr rowDist,
     DistributionPtr colDist,
-    const _LAMAArray& values,
+    const ContextArray& values,
     const Scalar eps )
 {
     DistributionPtr tmpReplicatedColDistribution = colDist;
@@ -466,7 +465,7 @@ void DenseMatrix<ValueType>::setCSRData(
     const IndexType numValues,
     const LAMAArray<IndexType>& ia,
     const LAMAArray<IndexType>& ja,
-    const _LAMAArray& values )
+    const ContextArray& values )
 {
     DistributionPtr tmpReplicatedColDistribution = colDist;
 
@@ -575,7 +574,7 @@ bool DenseMatrix<ValueType>::hasScalaPack()
 {
     // check the LAMAInterface if ScalaPack is available ( at least on Host )
 
-    ContextPtr loc = ContextFactory::getContext( Context::Host );
+    ContextPtr loc = Context::getContextPtr( context::Host );
 
     typename BLASInterface::SCALAPACK<ValueType>::inverse inverse = loc->getInterface().BLAS.inverse<ValueType>();
 
@@ -658,7 +657,7 @@ template<typename ValueType>
 void DenseMatrix<ValueType>::buildCSRData(
     LAMAArray<IndexType>& rowIA,
     LAMAArray<IndexType>& rowJA,
-    _LAMAArray& rowValues ) const
+    ContextArray& rowValues ) const
 {
     if( getValueType() != rowValues.getValueType() )
     {
@@ -674,7 +673,7 @@ template<typename ValueType>
 void DenseMatrix<ValueType>::setCSRData(
     const LAMAArray<IndexType>& rowIA,
     const LAMAArray<IndexType>& rowJA,
-    const _LAMAArray& rowValues,
+    const ContextArray& rowValues,
     DistributionPtr,
     DistributionPtr )
 {
@@ -687,7 +686,7 @@ template<typename ValueType>
 void DenseMatrix<ValueType>::setCSRDataLocal(
     const LAMAArray<IndexType>& rowIA,
     const LAMAArray<IndexType>& rowJA,
-    const _LAMAArray& rowValues ) const
+    const ContextArray& rowValues ) const
 {
     // build DenseStorage from the CSR data
 
@@ -795,7 +794,7 @@ void DenseMatrix<ValueType>::assign( const Matrix& other )
         {
 
 #define LAMA_COPY_DENSE_CALL( z, I, _ )                                                        \
-case Scalar::SCALAR_ARITHMETIC_TYPE##I:                                                \
+case common::scalar::SCALAR_ARITHMETIC_TYPE##I:                                                \
     copyDenseMatrix( dynamic_cast<const DenseMatrix<ARITHMETIC_TYPE##I>&>( other ) );  \
     break;                                                                             \
 
@@ -979,7 +978,7 @@ LAMA_ASSERT_EQUAL_ERROR( static_cast<IndexType>( columnOwners.size() ), numColum
 
 const PartitionId numColPartitions = static_cast<PartitionId>( chunks.size() );
 
-typedef boost::shared_ptr<HostReadAccess<ValueType> > ReadAccessPtr;
+typedef boost::shared_ptr<ReadAccess<ValueType> > ReadAccessPtr;
 
 std::vector<ReadAccessPtr> chunkRead( numColPartitions );
 
@@ -989,13 +988,13 @@ for( PartitionId p = 0; p < numColPartitions; ++p )
 {
 LAMA_ASSERT_ERROR( chunks[p], "no chunk data for partition " << p )
 LAMA_ASSERT_EQUAL_ERROR( chunks[p]->getNumRows(), numRows )
-chunkRead[p].reset( new HostReadAccess<ValueType>( chunks[p]->getData() ) );
+chunkRead[p].reset( new ReadAccess<ValueType>( chunks[p]->getData() ) );
 LAMA_LOG_DEBUG( logger, "column chunk[" << p << "] : " << *chunks[p] )
 }
 
 std::vector<IndexType> chunkOffset( numColPartitions, 0 ); // offset for each chunk
 
-HostWriteAccess<ValueType> resultWrite( result.getData() );
+WriteAccess<ValueType> resultWrite( result.getData() );
 
 for( IndexType i = 0; i < numRows; ++i )
 {
@@ -1003,7 +1002,7 @@ for( IndexType j = 0; j < numColumns; ++j )
 {
 IndexType chunkId = columnOwners[j];
 
-HostReadAccess<ValueType>& chunkData = *chunkRead[chunkId];
+ReadAccess<ValueType>& chunkData = *chunkRead[chunkId];
 
 IndexType idx = chunkOffset[chunkId]++;
 resultWrite[i * numColumns + j] = chunkData[idx];
@@ -1095,7 +1094,7 @@ LAMA_ASSERT_DEBUG( columnOwners[i] < numChunks, "owner out of range" )
 chunks.clear();
 chunks.resize( numChunks );
 
-typedef boost::shared_ptr<HostWriteAccess<ValueType> > WriteAccessPtr;
+typedef boost::shared_ptr<WriteAccess<ValueType> > WriteAccessPtr;
 
 std::vector<WriteAccessPtr> chunkWrite( numChunks );
 
@@ -1104,13 +1103,13 @@ std::vector<WriteAccessPtr> chunkWrite( numChunks );
 for( PartitionId p = 0; p < numChunks; ++p )
 {
 chunks[p].reset( new DenseStorage<ValueType>( numRows, numCols[p] ) );
-chunkWrite[p].reset( new HostWriteAccess<ValueType>( chunks[p]->getData() ) );
+chunkWrite[p].reset( new WriteAccess<ValueType>( chunks[p]->getData() ) );
 LAMA_LOG_DEBUG( logger, "column chunk[" << p << "] : " << *chunks[p] )
 }
 
 std::vector<IndexType> chunkOffset( numChunks, 0 ); // offset for each chunk
 
-HostReadAccess<ValueType> columnDataRead( columnData.getData() );
+ReadAccess<ValueType> columnDataRead( columnData.getData() );
 
 for( IndexType i = 0; i < numRows; ++i )
 {
@@ -1118,7 +1117,7 @@ for( IndexType j = 0; j < numColumns; ++j )
 {
 IndexType chunkId = columnOwners[j];
 
-HostWriteAccess<ValueType>& chunkData = *chunkWrite[chunkId];
+WriteAccess<ValueType>& chunkData = *chunkWrite[chunkId];
 
 IndexType idx = chunkOffset[chunkId]++;
 chunkData[idx] = columnDataRead[i * numColumns + j];
@@ -1203,8 +1202,8 @@ LAMA_ASSERT_EQUAL_ERROR( global.getNumRows(), rowDistribution.getGlobalSize() )
 
 local.allocate( numLocalRows, numColumns );
 
-HostReadAccess<ValueType> repData( global.getData() );
-HostWriteAccess<ValueType> distData( local.getData() );
+ReadAccess<ValueType> repData( global.getData() );
+WriteAccess<ValueType> distData( local.getData() );
 
 for( IndexType irow = 0; irow < numLocalRows; ++irow )
 {
@@ -1233,8 +1232,8 @@ LAMA_ASSERT_EQUAL_DEBUG( numCols, distributedData.getNumColumns() )
 LAMA_ASSERT_EQUAL_DEBUG( replicatedData.getNumRows(), distribution.getGlobalSize() )
 LAMA_ASSERT_EQUAL_DEBUG( distributedData.getNumRows(), distribution.getLocalSize() )
 
-HostWriteAccess<ValueType> globalVals( replicatedData.getData() );
-HostReadAccess<ValueType> localVals( distributedData.getData() );
+WriteAccess<ValueType> globalVals( replicatedData.getData() );
+ReadAccess<ValueType> localVals( distributedData.getData() );
 
 // replicate distributed rows, each row has numCols entries
 
@@ -1375,7 +1374,7 @@ owner = comm.sum( owner ) - 1; // get owner via a reduction
 LAMA_ASSERT_ERROR( owner >= 0, "could not find owner of row " << globalRowIndex )
 
 {
-HostWriteAccess<ValueType> rowAccess( row.getLocalValues() );
+WriteAccess<ValueType> rowAccess( row.getLocalValues() );
 comm.bcast( rowAccess.get(), getNumColumns(), owner ); // bcast the row
 }
 }
@@ -1426,7 +1425,7 @@ if( true )
 // Dense vector with this row distribution, so we do not need a temporary array
 
 #define LAMA_GET_DIAGONAL_CALL( z, I, _ )                                          \
-    if ( diagonal.getValueType() == Scalar::SCALAR_ARITHMETIC_TYPE##I )        \
+    if ( diagonal.getValueType() == common::scalar::SCALAR_ARITHMETIC_TYPE##I )        \
     {                                                                          \
         DenseVector<ARITHMETIC_TYPE##I>& denseDiagonal =                       \
                 dynamic_cast<DenseVector<ARITHMETIC_TYPE##I>&>( diagonal );        \
@@ -1640,10 +1639,10 @@ const ValueType one = 1.0;
 {
 // resize the receive buffer to be big enough for largest part of X
 
-HostWriteOnlyAccess<ValueType> wRecvValues( *recvValues, size );
+WriteOnlyAccess<ValueType> wRecvValues( *recvValues, size );
 
-HostWriteOnlyAccess<ValueType> wSendValues( *sendValues, size );
-HostReadAccess<ValueType> rLocalX( localX );
+WriteOnlyAccess<ValueType> wSendValues( *sendValues, size );
+ReadAccess<ValueType> rLocalX( localX );
 
 // fill send buffer with local X of this processor
 
@@ -1725,7 +1724,7 @@ else
 // for synchronous communication we can use the real needed sizes
 
 {
-    HostWriteAccess<ValueType> wSendValues( *sendValues );
+    WriteAccess<ValueType> wSendValues( *sendValues );
     wSendValues.resize( localX.size() );
 }
 
@@ -2165,9 +2164,9 @@ stream << "DenseMatrix<" << Scalar::getType<ValueType>() << ">(" << mNumRows << 
 }
 
 template<typename ValueType>
-Scalar::ScalarType DenseMatrix<ValueType>::getValueType() const
+common::ScalarType DenseMatrix<ValueType>::getValueType() const
 {
-return Scalar::getType<ValueType>();
+return common::getScalarType<ValueType>();
 }
 
 template<typename ValueType>

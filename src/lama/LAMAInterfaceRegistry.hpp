@@ -42,7 +42,7 @@
 
 // others
 #include <lama/LAMAInterface.hpp>
-#include <lama/Context.hpp>
+#include <memory/Context.hpp>
 
 // macros
 #include <lama/macros/unique_name.hpp>
@@ -72,7 +72,7 @@ public:
 
     /** @brief Get const reference to an interface for a certain context type. */
 
-    const LAMAInterface* getInterface( const ContextType location ) const;
+    const LAMAInterface* getInterface( const memory::ContextType location ) const;
 
     /** @brief Get a modify reference for a LAMAInterface; if not available an
      *         new interface is generated.
@@ -83,11 +83,11 @@ public:
      *  If an interface is not available a default one will be created
      *  (all function pointers are set to NULL).
      */
-    LAMAInterface& modifyInterface( const ContextType location );
+    LAMAInterface& modifyInterface( const memory::ContextType location );
 
     /** @brief Query whether an interface for a certain context is available  */
 
-    bool hasInterface( const ContextType location ) const;
+    bool hasInterface( const memory::ContextType location ) const;
 
 private:
 
@@ -95,7 +95,7 @@ private:
 
     static LAMAInterfaceRegistry* instance;
 
-    typedef std::map<ContextType,LAMAInterface*> InterfaceMapType;
+    typedef std::map<memory::ContextType,LAMAInterface*> InterfaceMapType;
 
     InterfaceMapType mInterfaceMap;
 

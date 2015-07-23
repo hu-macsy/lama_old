@@ -35,14 +35,12 @@
 #include <lama/storage/COOStorage.hpp>
 
 // others
-#include <lama/HostReadAccess.hpp>
-#include <lama/HostWriteAccess.hpp>
-#include <lama/ContextFactory.hpp>
-#include <lama/ContextAccess.hpp>
+#include <memory/memory.hpp>
+
 #include <lama/LAMAInterface.hpp>
 #include <lama/LAMAArrayUtils.hpp>
 
-#include <lama/TaskSyncToken.hpp>
+#include <tasking/TaskSyncToken.hpp>
 
 #include <lama/openmp/OpenMPUtils.hpp>
 #include <lama/openmp/OpenMPCOOUtils.hpp>
@@ -146,8 +144,8 @@ bool COOStorage<ValueType>::checkDiagonalProperty() const
     {
         diagonalProperty = true; // intialization for reduction
 
-        HostReadAccess<IndexType> ia( mIA );
-        HostReadAccess<IndexType> ja( mJA );
+        ReadAccess<IndexType> ia( mIA );
+        ReadAccess<IndexType> ja( mJA );
 
         // The diagonal property is given if the first numDiags entries
         // are the diagonal elements
@@ -262,7 +260,7 @@ void COOStorage<ValueType>::buildCSR(
 {
     // multiple routines from interface needed, so do it on Host to be safe
 
-    ContextPtr loc = ContextFactory::getContext( Context::Host );
+    ContextPtr loc = Context::getContextPtr( context::Host );
 
     LAMA_INTERFACE_FN( getCSRSizes, loc, COOUtils, Counting )
     LAMA_INTERFACE_FN( sizes2offsets, loc, CSRUtils, Offsets )
@@ -479,9 +477,9 @@ ValueType COOStorage<ValueType>::getValue( const IndexType i, const IndexType j 
 {
     // only supported on Host at this time
 
-    const HostReadAccess<IndexType> ia( mIA );
-    const HostReadAccess<IndexType> ja( mJA );
-    const HostReadAccess<ValueType> values( mValues );
+    const ReadAccess<IndexType> ia( mIA );
+    const ReadAccess<IndexType> ja( mJA );
+    const ReadAccess<ValueType> values( mValues );
 
     LAMA_LOG_DEBUG( logger, "get value (" << i << ", " << j << ") from " << *this )
 
@@ -545,9 +543,9 @@ void COOStorage<ValueType>::setDiagonalImpl( const Scalar scalar )
 {
     IndexType numDiagonalElements = std::min( mNumColumns, mNumRows );
 
-    HostWriteAccess<ValueType> wValues( mValues );
-    HostReadAccess<IndexType> rJa( mJA );
-    HostReadAccess<IndexType> rIa( mIA );
+    WriteAccess<ValueType> wValues( mValues );
+    ReadAccess<IndexType> rJa( mJA );
+    ReadAccess<IndexType> rIa( mIA );
     ValueType value = scalar.getValue<ValueType>();
 
     for( IndexType i = 0; i < numDiagonalElements; ++i )
@@ -561,7 +559,7 @@ void COOStorage<ValueType>::setDiagonalImpl( const Scalar scalar )
 template<typename ValueType>
 void COOStorage<ValueType>::scaleImpl( const Scalar scalar )
 {
-    HostWriteAccess<ValueType> wValues( mValues );
+    WriteAccess<ValueType> wValues( mValues );
     ValueType value = scalar.getValue<ValueType>();
 
     for( IndexType i = 0; i < mNumValues; ++i )
@@ -576,9 +574,9 @@ template<typename ValueType>
 template<typename OtherType>
 void COOStorage<ValueType>::scaleImpl( const LAMAArray<OtherType>& values )
 {
-    HostReadAccess<OtherType> rValues( values );
-    HostWriteAccess<ValueType> wValues( mValues );
-    HostReadAccess<IndexType> rIa( mIA );
+    ReadAccess<OtherType> rValues( values );
+    WriteAccess<ValueType> wValues( mValues );
+    ReadAccess<IndexType> rIa( mIA );
 
     for( IndexType i = 0; i < mNumValues; ++i )
     {
@@ -617,11 +615,11 @@ void COOStorage<ValueType>::getRowImpl( LAMAArray<OtherType>& row, const IndexTy
 {
     LAMA_ASSERT_DEBUG( i >= 0 && i < mNumRows, "row index " << i << " out of range" )
 
-    HostWriteOnlyAccess<OtherType> wRow( row, mNumColumns );
+    WriteOnlyAccess<OtherType> wRow( row, mNumColumns );
 
-    const HostReadAccess<IndexType> ia( mIA );
-    const HostReadAccess<IndexType> ja( mJA );
-    const HostReadAccess<ValueType> values( mValues );
+    const ReadAccess<IndexType> ia( mIA );
+    const ReadAccess<IndexType> ja( mJA );
+    const ReadAccess<ValueType> values( mValues );
 
     for( IndexType j = 0; j < mNumColumns; ++j )
     {
@@ -803,7 +801,7 @@ void COOStorage<ValueType>::matrixTimesVector(
 
     // Possible alias of result and y must be handled by coressponding accesses
 
-    if( result == y )
+    if( &result == &y )
     {
         // only write access for y, no read access for result
 
@@ -845,7 +843,7 @@ void COOStorage<ValueType>::vectorTimesMatrix(
     LAMA_ASSERT_EQUAL_ERROR( x.size(), mNumRows )
     LAMA_ASSERT_EQUAL_ERROR( result.size(), mNumColumns )
 
-    if( ( beta != 0.0 ) && ( result != y ) )
+    if( ( beta != 0.0 ) && ( &result != &y ) )
     {
         LAMA_ASSERT_EQUAL_ERROR( y.size(), mNumColumns )
     }
@@ -864,7 +862,7 @@ void COOStorage<ValueType>::vectorTimesMatrix(
 
     // Possible alias of result and y must be handled by coressponding accesses
 
-    if( result == y )
+    if( &result == &y )
     {
         // only write access for y, no read access for result
 
@@ -907,7 +905,7 @@ auto_ptr<SyncToken> COOStorage<ValueType>::matrixTimesVectorAsyncToDo(
 
     // not yet available on other devices, so we take Host
 
-    ContextPtr loc = ContextFactory::getContext( Context::Host );
+    ContextPtr loc = Context::getContextPtr( context::Host );
 
     LAMA_LOG_INFO( logger, *this << ": matrixTimesVectorAsync on " << *loc )
 
@@ -925,7 +923,7 @@ auto_ptr<SyncToken> COOStorage<ValueType>::matrixTimesVectorAsyncToDo(
 
     // Possible alias of result and y must be handled by coressponding accesses
 
-    if( result == y )
+    if( &result == &y )
     {
         // only write access for y, no read access for result
 
@@ -938,7 +936,7 @@ auto_ptr<SyncToken> COOStorage<ValueType>::matrixTimesVectorAsyncToDo(
         normalGEMV( wResult->get(), alpha, rX->get(), beta, wResult->get(), mNumRows, mNumValues, cooIA->get(),
                     cooJA->get(), cooValues->get(), syncToken.get() );
 
-        syncToken->pushAccess( wResult );
+        syncToken->pushToken( wResult );
     }
     else
     {
@@ -950,14 +948,14 @@ auto_ptr<SyncToken> COOStorage<ValueType>::matrixTimesVectorAsyncToDo(
         normalGEMV( wResult->get(), alpha, rX->get(), beta, rY->get(), mNumRows, mNumValues, cooIA->get(), cooJA->get(),
                     cooValues->get(), syncToken.get() );
 
-        syncToken->pushAccess( shared_ptr<BaseAccess>( wResult ) );
-        syncToken->pushAccess( shared_ptr<BaseAccess>( rY ) );
+        syncToken->pushToken( wResult );
+        syncToken->pushToken( rY );
     }
 
-    syncToken->pushAccess( cooIA );
-    syncToken->pushAccess( cooJA );
-    syncToken->pushAccess( cooValues );
-    syncToken->pushAccess( rX );
+    syncToken->pushToken( cooIA );
+    syncToken->pushToken( cooJA );
+    syncToken->pushToken( cooValues );
+    syncToken->pushToken( rX );
 
     return syncToken;
 }
@@ -984,7 +982,7 @@ SyncToken* COOStorage<ValueType>::vectorTimesMatrixAsync(
 
     LAMA_LOG_INFO( logger, *this << ": vectorTimesMatrixAsync on " << *loc )
 
-    if( loc->getType() == Context::Host )
+    if( loc->getType() == context::Host )
     {
         // execution as separate thread
 
@@ -1009,7 +1007,7 @@ SyncToken* COOStorage<ValueType>::vectorTimesMatrixAsync(
     LAMA_ASSERT_EQUAL_ERROR( x.size(), mNumRows )
     LAMA_ASSERT_EQUAL_ERROR( result.size(), mNumColumns )
 
-    if( ( beta != 0.0 ) && ( result != y ) )
+    if( ( beta != 0.0 ) && ( &result != &y ) )
     {
         LAMA_ASSERT_EQUAL_ERROR( y.size(), mNumColumns )
     }
@@ -1028,7 +1026,7 @@ SyncToken* COOStorage<ValueType>::vectorTimesMatrixAsync(
 
     // Possible alias of result and y must be handled by coressponding accesses
 
-    if( result == y )
+    if( &result == &y )
     {
         // only write access for y, no read access for result
 
@@ -1041,7 +1039,7 @@ SyncToken* COOStorage<ValueType>::vectorTimesMatrixAsync(
         normalGEVM( wResult->get(), alpha, rX->get(), beta, wResult->get(), mNumRows, mNumValues, cooIA->get(),
                     cooJA->get(), cooValues->get(), syncToken.get() );
 
-        syncToken->pushAccess( wResult );
+        syncToken->pushToken( wResult );
     }
     else
     {
@@ -1053,14 +1051,14 @@ SyncToken* COOStorage<ValueType>::vectorTimesMatrixAsync(
         normalGEVM( wResult->get(), alpha, rX->get(), beta, rY->get(), mNumRows, mNumValues, cooIA->get(), cooJA->get(),
                     cooValues->get(), syncToken.get() );
 
-        syncToken->pushAccess( shared_ptr<BaseAccess>( wResult ) );
-        syncToken->pushAccess( shared_ptr<BaseAccess>( rY ) );
+        syncToken->pushToken( wResult );
+        syncToken->pushToken( rY );
     }
 
-    syncToken->pushAccess( cooIA );
-    syncToken->pushAccess( cooJA );
-    syncToken->pushAccess( cooValues );
-    syncToken->pushAccess( rX );
+    syncToken->pushToken( cooIA );
+    syncToken->pushToken( cooJA );
+    syncToken->pushToken( cooValues );
+    syncToken->pushToken( rX );
 
     return syncToken.release();
 }
@@ -1080,7 +1078,7 @@ void COOStorage<ValueType>::jacobiIterate(
 
     LAMA_ASSERT_ERROR( mDiagonalProperty, *this << ": jacobiIterate requires diagonal property" )
 
-    if( solution == oldSolution )
+    if( &solution == &oldSolution )
     {
         LAMA_THROWEXCEPTION( "alias of solution and oldSolution unsupported" )
     }
@@ -1092,7 +1090,7 @@ void COOStorage<ValueType>::jacobiIterate(
 
     ContextPtr loc = getContextPtr();
 
-    // loc = ContextFactory::getContext( Context::Host );  // does not run on other devices
+    // loc = Context::getContextPtr( context::Host );  // does not run on other devices
 
     LAMA_INTERFACE_FN_DEFAULT_T( jacobi, loc, COOUtils, Solver, ValueType )
 

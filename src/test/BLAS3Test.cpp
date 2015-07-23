@@ -35,18 +35,14 @@
 #include <boost/test/unit_test.hpp>
 
 // others
-#include <lama/ContextAccess.hpp>
-#include <lama/HostReadAccess.hpp>
-#include <lama/LAMAArray.hpp>
+#include <memory/memory.hpp>
 #include <lama/LAMAInterface.hpp>
-#include <lama/ReadAccess.hpp>
-#include <lama/Scalar.hpp>
-#include <lama/WriteAccess.hpp>
 
 #include <test/TestMacros.hpp>
 
 using namespace boost;
 using namespace lama;
+using namespace memory;
 
 namespace lama
 {
@@ -93,7 +89,7 @@ void gemmTest( ContextPtr loc )
                   wAmC.get(), ldc, NULL );
         }
         {
-            HostReadAccess<ValueType> rAmC( AmC );
+            ReadAccess<ValueType> rAmC( AmC );
 
             for ( int i = 0; i < 4; ++i )
             {
@@ -124,7 +120,7 @@ void gemmTest( ContextPtr loc )
                   wAmC.get(), ldc, NULL );
         }
         {
-            HostReadAccess<ValueType> rAmC( AmC );
+            ReadAccess<ValueType> rAmC( AmC );
 
             for ( int i = 0; i < 4; ++i )
             {
@@ -155,7 +151,7 @@ void gemmTest( ContextPtr loc )
                   wAmC.get(), ldc, NULL );
         }
         {
-            HostReadAccess<ValueType> rAmC( AmC );
+            ReadAccess<ValueType> rAmC( AmC );
 
             for ( int i = 0; i < 4; ++i )
             {
@@ -186,7 +182,7 @@ void gemmTest( ContextPtr loc )
                   wAmC.get(), ldc, NULL );
         }
         {
-            HostReadAccess<ValueType> rAmC( AmC );
+            ReadAccess<ValueType> rAmC( AmC );
 
             for ( int i = 0; i < 4; ++i )
             {
@@ -217,7 +213,7 @@ void gemmTest( ContextPtr loc )
                   wAmC.get(), ldc, NULL );
         }
         {
-            HostReadAccess<ValueType> rAmC( AmC );
+            ReadAccess<ValueType> rAmC( AmC );
 
             for ( int i = 0; i < 4; ++i )
             {
@@ -248,7 +244,7 @@ void gemmTest( ContextPtr loc )
                   wAmC.get(), ldc, NULL );
         }
         {
-            HostReadAccess<ValueType> rAmC( AmC );
+            ReadAccess<ValueType> rAmC( AmC );
 
             for ( int i = 0; i < 4; ++i )
             {
@@ -279,7 +275,7 @@ void gemmTest( ContextPtr loc )
                   wAmC.get(), ldc, NULL );
         }
         {
-            HostReadAccess<ValueType> rAmC( AmC );
+            ReadAccess<ValueType> rAmC( AmC );
 
             for ( int i = 0; i < 4; ++i )
             {
@@ -310,7 +306,7 @@ void gemmTest( ContextPtr loc )
                   wAmC.get(), ldc, NULL );
         }
         {
-            HostReadAccess<ValueType> rAmC( AmC );
+            ReadAccess<ValueType> rAmC( AmC );
 
             for ( int i = 0; i < 4; ++i )
             {

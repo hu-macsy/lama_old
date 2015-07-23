@@ -37,13 +37,17 @@
 // others
 #include <lama/LAMAInterface.hpp>
 #include <lama/LAMAInterfaceRegistry.hpp>
-#include <lama/cuda/CUDAError.hpp>
-#include <lama/cuda/CUDAStreamSyncToken.hpp>
+#include <cudamem/CUDAError.hpp>
+#include <cudamem/CUDAStreamSyncToken.hpp>
 #include <lama/openmp/BLASHelper.hpp>
 #include <lama/cuda/lama_cublas.hpp>
 
 // macros
 #include <lama/macros/unused.hpp>
+
+using namespace tasking;
+using namespace memory;
+using common::getScalarType;
 
 namespace lama
 {
@@ -192,7 +196,7 @@ void CUDABLAS3::gemm(
     const ValueType* const A_call = ( order == CblasRowMajor ) ? B : A;
     const ValueType* const B_call = ( order == CblasRowMajor ) ? A : B;
 
-    LAMA_LOG_INFO( logger, "gemm<" << Scalar::getType<ValueType>() << ">( m = " << m << ", n = " << n << ", k = " << k )
+    LAMA_LOG_INFO( logger, "gemm<" << getScalarType<ValueType>() << ">( m = " << m << ", n = " << n << ", k = " << k )
 
     if( transa == CblasTrans )
     {
@@ -533,7 +537,7 @@ void CUDABLAS3::setInterface( BLASInterface& BLAS )
 
 bool CUDABLAS3::registerInterface()
 {
-    LAMAInterface& interface = LAMAInterfaceRegistry::getRegistry().modifyInterface( Context::CUDA );
+    LAMAInterface& interface = LAMAInterfaceRegistry::getRegistry().modifyInterface( context::CUDA );
     setInterface( interface.BLAS );
     return true;
 }

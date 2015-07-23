@@ -37,10 +37,12 @@
 #include <common/config.hpp>
 
 // others
-#include <lama/LAMAArray.hpp>
+#include <memory/LAMAArray.hpp>
 #include <lama/io/FileType.hpp>
 
 #include <fstream>
+
+using namespace memory;
 
 namespace lama
 {

@@ -35,9 +35,7 @@
 #include <lama/solver/SpecializedJacobi.hpp>
 
 // others
-#include <lama/NoSyncToken.hpp>
-#include <lama/Context.hpp>
-#include <lama/ContextFactory.hpp>
+#include <tasking/NoSyncToken.hpp>
 #include <lama/LAMAArrayUtils.hpp>
 
 // tracing
@@ -45,6 +43,8 @@
 
 #include <boost/bind.hpp>
 #include <boost/preprocessor.hpp>
+
+using tasking::SyncToken;
 
 namespace lama
 {

@@ -36,7 +36,6 @@
 
 // others
 
-#include <lama/ContextFactory.hpp>
 #include <lama/LAMAInterface.hpp>
 #include <lama/LAMAInterfaceRegistry.hpp>
 
@@ -45,13 +44,13 @@
 
 // others cuda
 #include <lama/cuda/utils.cu.h>
-#include <lama/cuda/CUDAError.hpp>
+#include <cudamem/CUDAError.hpp>
 #include <lama/cuda/CUDAUtils.hpp>
 #include <lama/cuda/CUDACSRUtils.hpp>
 #include <lama/cuda/CUDACOOUtils.hpp>
 #include <lama/cuda/CUDATexture.hpp>
 #include <lama/cuda/CUDASettings.hpp>
-#include <lama/cuda/CUDAStreamSyncToken.hpp>
+#include <cudamem/CUDAStreamSyncToken.hpp>
 
 #include <cuda.h>
 #include <cuda_runtime.h>
@@ -92,6 +91,9 @@
 #define HASH_C0 1
 #define HASH_C1 1
 #define NUM_CHUNKS_PER_WARP 128
+
+using namespace memory;
+using namespace common;
 
 namespace lama
 {
@@ -939,8 +941,8 @@ namespace lama
     {
         LAMA_REGION( "CUDA.CSRUtils.scaleRows" )
 
-        LAMA_LOG_INFO( logger, "scaleRows<" << Scalar::getType<ValueType1>() << ","
-                        << Scalar::getType<ValueType2>() << ">"
+        LAMA_LOG_INFO( logger, "scaleRows<" << getScalarType<ValueType1>() << ","
+                        << getScalarType<ValueType2>() << ">"
                         << ", numrows= " << numRows )
 
         LAMA_CHECK_CUDA_ACCESS
@@ -973,7 +975,7 @@ namespace lama
     {
         LAMA_REGION( "CUDA.CSRUtils.normalGEMV" )
 
-        LAMA_LOG_INFO( logger, "normalGEMV<" << Scalar::getType<ValueType>() << ">" <<
+        LAMA_LOG_INFO( logger, "normalGEMV<" << getScalarType<ValueType>() << ">" <<
                         " result[ " << numRows << "] = " << alpha << " * A(csr) * x + " << beta << " * y " )
 
         LAMA_LOG_DEBUG( logger, "x = " << x << ", y = " << y << ", result = " << result )
@@ -997,7 +999,7 @@ namespace lama
             stream = cudaStreamSyncToken->getCUDAStream();
         }
 
-        LAMA_LOG_INFO( logger, "Start normal_gemv_kernel<" << Scalar::getType<ValueType>()
+        LAMA_LOG_INFO( logger, "Start normal_gemv_kernel<" << getScalarType<ValueType>()
                         << ", useTexture = " << useTexture << ">" );
 
         if ( useTexture )
@@ -1158,7 +1160,7 @@ namespace lama
         if ( !syncToken )
         {
             LAMA_CUDA_RT_CALL( cudaStreamSynchronize( stream ), "normalGEMV, stream = " << stream )
-            LAMA_LOG_DEBUG( logger, "normalGEMV<" << Scalar::getType<ValueType>() << "> synchronized" )
+            LAMA_LOG_DEBUG( logger, "normalGEMV<" << getScalarType<ValueType>() << "> synchronized" )
         }
 
         if ( useTexture )
@@ -1194,7 +1196,7 @@ namespace lama
                     const ValueType csrValues[],
                     SyncToken* syncToken )
     {
-        LAMA_LOG_INFO( logger, "normalGEVM<" << Scalar::getType<ValueType>() << ">" <<
+        LAMA_LOG_INFO( logger, "normalGEVM<" << getScalarType<ValueType>() << ">" <<
                         " result[ " << numColumns << "] = " << alpha << " * A(csr) * x + " << beta << " * y " )
 
         LAMA_LOG_DEBUG( logger, "x = " << x << ", y = " << y << ", result = " << result )
@@ -1218,7 +1220,7 @@ namespace lama
             stream = cudaStreamSyncToken->getCUDAStream();
         }
 
-        LAMA_LOG_INFO( logger, "Start normal_gevm_kernel<" << Scalar::getType<ValueType>()
+        LAMA_LOG_INFO( logger, "Start normal_gevm_kernel<" << getScalarType<ValueType>()
                         << ", useTexture = " << useTexture << ">" );
 
         if ( useTexture )
@@ -1379,7 +1381,7 @@ namespace lama
         if ( !syncToken )
         {
             LAMA_CUDA_RT_CALL( cudaStreamSynchronize( stream ), "normalGEVM, stream = " << stream )
-            LAMA_LOG_DEBUG( logger, "normalGEVM<" << Scalar::getType<ValueType>() << "> synchronized" )
+            LAMA_LOG_DEBUG( logger, "normalGEVM<" << getScalarType<ValueType>() << "> synchronized" )
         }
 
         if ( useTexture )
@@ -1416,7 +1418,7 @@ namespace lama
         LAMA_REGION( "CUDA.CSRUtils.sparseGEMV" )
 
         LAMA_LOG_INFO( logger,
-                        "sparseGEMV<" << Scalar::getType<ValueType>() << ">" << ", #non-zero rows = " << numNonZeroRows )
+                        "sparseGEMV<" << getScalarType<ValueType>() << ">" << ", #non-zero rows = " << numNonZeroRows )
 
         LAMA_CHECK_CUDA_ACCESS
 
@@ -1469,7 +1471,7 @@ namespace lama
         if ( !syncToken )
         {
             LAMA_CUDA_RT_CALL( cudaStreamSynchronize( stream ), "sparseGEMV, stream = " << stream )
-            LAMA_LOG_INFO( logger, "sparseGEMV<" << Scalar::getType<ValueType>() << "> synchronized" )
+            LAMA_LOG_INFO( logger, "sparseGEMV<" << getScalarType<ValueType>() << "> synchronized" )
         }
 
         if ( useTexture )
@@ -1505,7 +1507,7 @@ namespace lama
                     SyncToken* syncToken )
     {
         LAMA_LOG_INFO( logger,
-                        "sparseGEVM<" << Scalar::getType<ValueType>() << ">" << ", #non-zero rows = " << numNonZeroRows )
+                        "sparseGEVM<" << getScalarType<ValueType>() << ">" << ", #non-zero rows = " << numNonZeroRows )
 
         LAMA_CHECK_CUDA_ACCESS
 
@@ -1558,7 +1560,7 @@ namespace lama
         if ( !syncToken )
         {
             LAMA_CUDA_RT_CALL( cudaStreamSynchronize( stream ), "sparseGEVM, stream = " << stream )
-            LAMA_LOG_INFO( logger, "sparseGEVM<" << Scalar::getType<ValueType>() << "> synchronized" )
+            LAMA_LOG_INFO( logger, "sparseGEVM<" << getScalarType<ValueType>() << "> synchronized" )
         }
 
         if ( useTexture )
@@ -1750,7 +1752,7 @@ namespace lama
         dim3 dimBlock( blockSize, 1, 1 );
         dim3 dimGrid = makeGrid( numRows, dimBlock.x );
 
-        LAMA_LOG_INFO( logger, "Start csr_jacobi_kernel<" << Scalar::getType<ValueType>()
+        LAMA_LOG_INFO( logger, "Start csr_jacobi_kernel<" << getScalarType<ValueType>()
                         << ", useTexture = " << useTexture << ">" );
 
         if ( useTexture )
@@ -2593,10 +2595,11 @@ namespace lama
         thrust::device_ptr<IndexType> cIaPtr( cIa );
         thrust::fill( cIaPtr, cIaPtr + numRows, 0 );
 
-        ContextPtr loc = ContextFactory::getContext( Context::CUDA );
+        ContextPtr loc = Context::getContextPtr( context::CUDA );
+        MemoryPtr mem = loc->getMemoryPtr();
 
         bool hashErrorHost = false;
-        bool* hashError = (bool*) loc->allocate( sizeof(bool) );
+        bool* hashError = (bool*) mem->allocate( sizeof(bool) );
         cudaMemcpy( hashError, &hashErrorHost, sizeof(bool), cudaMemcpyHostToDevice );
 
         size_t free;
@@ -2623,11 +2626,11 @@ namespace lama
         }
 
         unsigned int hashTableAllocatedBytes = numChunks * NUM_ELEMENTS_PER_CHUNK * sizeof( IndexType );
-        IndexType* hashTable = ( IndexType* ) loc->allocate( hashTableAllocatedBytes );
+        IndexType* hashTable = ( IndexType* ) mem->allocate( hashTableAllocatedBytes );
 
         // chunkList table needs one integers per chunk plus 1 start pointer
         unsigned int chunkListAllocatedBytes = numChunks * sizeof( IndexType ) + sizeof( IndexType );
-        IndexType* chunkList = ( IndexType* ) loc->allocate( chunkListAllocatedBytes );
+        IndexType* chunkList = ( IndexType* ) mem->allocate( chunkListAllocatedBytes );
 
         thrust::device_ptr<IndexType> chunkListPtr( chunkList );
         thrust::transform( thrust::make_counting_iterator(0),
@@ -2658,9 +2661,9 @@ namespace lama
         }
 
         // Free hashTable and hashError
-        loc->free( (void*) hashError, sizeof(bool) );
-        loc->free( (void*) hashTable, hashTableAllocatedBytes );
-        loc->free( (void*) chunkList, chunkListAllocatedBytes );
+        mem->free( (void*) hashError, sizeof(bool) );
+        mem->free( (void*) hashTable, hashTableAllocatedBytes );
+        mem->free( (void*) chunkList, chunkListAllocatedBytes );
 
         // Convert sizes array to offset array
         thrust::exclusive_scan( cIaPtr, cIaPtr + numRows + 1, cIaPtr );
@@ -3114,10 +3117,11 @@ namespace lama
 
         LAMA_CHECK_CUDA_ACCESS
 
-        ContextPtr loc = ContextFactory::getContext( Context::CUDA );
+        ContextPtr loc = Context::getContextPtr( context::CUDA );
+        MemoryPtr mem = loc->getMemoryPtr();
 
         bool hashErrorHost = false;
-        bool* hashError = (bool*) loc->allocate( sizeof(bool) );
+        bool* hashError = (bool*) mem->allocate( sizeof(bool) );
         cudaMemcpy( hashError, &hashErrorHost, sizeof(bool), cudaMemcpyHostToDevice );
 
         size_t free;
@@ -3144,14 +3148,14 @@ namespace lama
         }
 
         unsigned int hashTableAllocatedBytes = numChunks * NUM_ELEMENTS_PER_CHUNK * ( sizeof( IndexType ) + sizeof(ValueType));
-        void* chunks = ( void* ) loc->allocate( hashTableAllocatedBytes );
+        void* chunks = ( void* ) mem->allocate( hashTableAllocatedBytes );
 
         IndexType* indexChunks = ( IndexType* ) chunks;
         ValueType* valueChunks = ( ValueType* ) ( indexChunks + numChunks * NUM_ELEMENTS_PER_CHUNK );
 
         // chunkList table needs one integers per chunk plus 1 start pointer
         unsigned int chunkListAllocatedBytes = numChunks * sizeof( IndexType ) + sizeof( IndexType );
-        IndexType* chunkList = ( IndexType* ) loc->allocate( chunkListAllocatedBytes );
+        IndexType* chunkList = ( IndexType* ) mem->allocate( chunkListAllocatedBytes );
 
         thrust::device_ptr<IndexType> chunkListPtr( chunkList );
         thrust::transform( thrust::make_counting_iterator(0),
@@ -3189,9 +3193,9 @@ namespace lama
         }
 
         // Free hashTable and hashError
-        loc->free( (void*) hashError, sizeof(bool) );
-        loc->free( (void*) chunks, hashTableAllocatedBytes );
-        loc->free( (void*) chunkList, chunkListAllocatedBytes );
+        mem->free( (void*) hashError, sizeof(bool) );
+        mem->free( (void*) chunks, hashTableAllocatedBytes );
+        mem->free( (void*) chunkList, chunkListAllocatedBytes );
 
         cudaStreamSynchronize( 0 );
         LAMA_CHECK_CUDA_ERROR
@@ -3246,7 +3250,7 @@ namespace lama
 
     bool CUDACSRUtils::registerInterface()
     {
-        LAMAInterface& interface = LAMAInterfaceRegistry::getRegistry().modifyInterface( Context::CUDA );
+        LAMAInterface& interface = LAMAInterfaceRegistry::getRegistry().modifyInterface( context::CUDA );
         setInterface( interface.CSRUtils );
         return true;
     }

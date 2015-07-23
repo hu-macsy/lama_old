@@ -38,7 +38,9 @@
 
 // others
 #include <lama/LAMATypes.hpp>
-#include <lama/LAMAArray.hpp>
+#include <memory/memory.hpp>
+
+using memory::LAMAArray;
 
 namespace lama
 {

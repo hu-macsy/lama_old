@@ -32,18 +32,18 @@
  */
 #include <test/Context.hpp>
 
-#include <lama/ContextFactory.hpp>
+#include <memory/Context.hpp>
 
 namespace lama_test
 {
 
-std::map<lama::ContextType, lama::ContextPtr> Context::contexts;
+std::map<memory::ContextType, memory::ContextPtr> Context::contexts;
 
-lama::ContextPtr Context::getContext( const lama::ContextType type )
+memory::ContextPtr Context::getContext( const memory::ContextType type )
 {
     if ( !contexts[type] )
     {
-        contexts[type] = lama::ContextFactory::getContext( type );
+        contexts[type] = memory::Context::getContextPtr( type );
     }
 
     return contexts[type];

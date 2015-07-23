@@ -48,6 +48,9 @@
 namespace lama
 {
 
+using common::getScalarType;
+using tasking::SyncToken;
+
 LAMA_LOG_DEF_LOGGER( BLAS_BLAS2::logger, "BLAS.BLAS2" )
 
 /* ---------------------------------------------------------------------------------------*/
@@ -181,7 +184,7 @@ void BLAS_BLAS2::gemv(
     LAMA_REGION( "BLAS.BLAS2.gemv" )
 
     LAMA_LOG_INFO( logger,
-                   "gemv<" << Scalar::getType<ValueType>() << ">: " << "m = " << m << ", n = " << n << ", LDA = " << lda << ", incX = " << incX << ", incY = " << incY << ", alpha = " << alpha << ", beta = " << beta )
+                   "gemv<" << getScalarType<ValueType>() << ">: " << "m = " << m << ", n = " << n << ", LDA = " << lda << ", incX = " << incX << ", incY = " << incY << ", alpha = " << alpha << ", beta = " << beta )
 
     if( m == 0 )
     {
@@ -246,7 +249,7 @@ void BLAS_BLAS2::setInterface( BLASInterface& BLAS )
 
 bool BLAS_BLAS2::registerInterface()
 {
-    LAMAInterface& interface = LAMAInterfaceRegistry::getRegistry().modifyInterface( Context::Host );
+    LAMAInterface& interface = LAMAInterfaceRegistry::getRegistry().modifyInterface( memory::context::Host );
     setInterface( interface.BLAS );
     return true;
 }

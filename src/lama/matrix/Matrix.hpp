@@ -28,10 +28,8 @@
  * @brief Abstract base class for all matrices supported by LAMA.
  * @author Jiri Kraus, Thomas Brandes
  * @date 22.02.2011
- * @since 1.0.0
  */
-#ifndef LAMA_MATRIX_HPP_
-#define LAMA_MATRIX_HPP_
+#pragma once
 
 // for dll_import
 #include <common/config.hpp>
@@ -43,7 +41,7 @@
 #include <lama/LAMATypes.hpp>
 #include <lama/Scalar.hpp>
 #include <lama/Vector.hpp>
-#include <lama/Context.hpp>
+#include <memory/memory.hpp>
 
 #include <lama/distribution/Distribution.hpp>
 #include <lama/distribution/NoDistribution.hpp>
@@ -52,6 +50,8 @@
 
 // logging
 #include <logging/logging.hpp>
+
+using namespace memory;
 
 namespace lama
 {
@@ -92,7 +92,7 @@ public:
      *
      * Note: the format of the matrix decides whether the matrix will be DENSE or SPARSE.
      */
-    static Matrix* getMatrix( const MatrixStorageFormat format, const Scalar::ScalarType type );
+    static Matrix* getMatrix( const MatrixStorageFormat format, const memory::ScalarType type );
 
     /**
      * @brief Checks for a given matrix whether the content of its data is sound.
@@ -240,7 +240,7 @@ public:
 
         // use of LAMAArrayRef instead of LAMAArray avoids additional copying of values
 
-        const LAMAArrayRef<ValueType> valueArray( values, n * m );
+        const LAMAArrayRef<ValueType> valueArray( n * m, values );
 
         setDenseData( rowDist, colDist, valueArray, Scalar( eps ) );
     }
@@ -260,9 +260,9 @@ public:
 
         // use of LAMAArrayRef instead of LAMAArray avoids additional copying of values
 
-        const LAMAArrayRef<IndexType> iaArray( ia, n + 1 );
-        const LAMAArrayRef<IndexType> jaArray( ja, numValues );
-        const LAMAArrayRef<ValueType> valueArray( values, numValues );
+        const LAMAArrayRef<IndexType> iaArray( n + 1, ia );
+        const LAMAArrayRef<IndexType> jaArray( numValues, ja );
+        const LAMAArrayRef<ValueType> valueArray( numValues, values );
 
         setCSRData( rowDist, colDist, numValues, iaArray, jaArray, valueArray );
     }
@@ -811,7 +811,7 @@ public:
     /**
      * @brief Queries the value type of the matrix elements, e.g. DOUBLE or FLOAT.
      */
-    virtual Scalar::ScalarType getValueType() const = 0;
+    virtual memory::ScalarType getValueType() const = 0;
 
     /** Returns the diagonalProperty of the local storage.
      *
@@ -951,7 +951,7 @@ protected:
 
     /** This method should be called by matrix classes to register their create operation. */
 
-    static void addCreator( const MatrixStorageFormat, Scalar::ScalarType type, CreateFn create );
+    static void addCreator( const MatrixStorageFormat, memory::ScalarType type, CreateFn create );
 
     void checkSettings() const; // check valid member variables
 
@@ -1069,4 +1069,3 @@ inline std::ostream& operator<<( std::ostream& stream, const Matrix::MatrixKind&
 
 }
 
-#endif // LAMA_MATRIX_HPP_

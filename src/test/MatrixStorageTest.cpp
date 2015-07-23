@@ -33,7 +33,6 @@
 
 #include <test/MatrixStorageTest.hpp>
 
-#include <lama/HostReadAccess.hpp>
 #include <lama/CommunicatorFactory.hpp>
 
 #include <lama/storage/DenseStorage.hpp>
@@ -259,7 +258,7 @@ LAMAArray<double> row;
 for ( IndexType i = 0; i < n; ++i )
 {
     mMatrixStorage.getRow( row, i );
-    HostReadAccess<double> rRow( row );
+    ReadAccess<double> rRow( row );
 
     for ( IndexType j = 0; j < n; ++j )
     {
@@ -296,7 +295,7 @@ LAMA_COMMON_TEST_CASE_TEMPLATE( MatrixStorageTest, ValueType, setCSRDataTest )
     LAMA_LOG_INFO( logger, "set CSR data (" << numRows << " x " << numColumns
                    << ", nnz = " << numValues << ") : matrix = " << mMatrixStorage )
     mMatrixStorage.prefetch();
-    HostReadAccess<ValueType> results( matrixDense );
+    ReadAccess<ValueType> results( matrixDense );
 
     for ( IndexType i = 0; i < numRows; i++ )
     {
@@ -341,10 +340,10 @@ LAMA_COMMON_TEST_CASE_TEMPLATE( MatrixStorageTest, ValueType, buildCSRDataTest )
     BOOST_REQUIRE_EQUAL( numValues, csrJA.size() );
     BOOST_REQUIRE_EQUAL( numValues, csrValues.size() );
 // should be the same as before
-    HostReadAccess<IndexType> ja1( matrixJA );
-    HostReadAccess<IndexType> ja2( csrJA );
-    HostReadAccess<ValueType> values1( matrixValues );
-    HostReadAccess<ValueType> values2( csrValues );
+    ReadAccess<IndexType> ja1( matrixJA );
+    ReadAccess<IndexType> ja2( csrJA );
+    ReadAccess<ValueType> values1( matrixValues );
+    ReadAccess<ValueType> values2( csrValues );
 
     for ( IndexType i = 0; i < numValues; i++ )
     {
@@ -392,7 +391,7 @@ BOOST_CHECK_EQUAL( diag.size(), mMatrixStorage.getNumRows() ); // square matrix
 LAMA_LOG_INFO( logger, "diagonalTest: get diagonal = " << diag )
 
 {
-    HostReadAccess<ValueType> rDiag ( diag );
+    ReadAccess<ValueType> rDiag ( diag );
 
     for ( IndexType i = 0; i < diag.size(); ++i )
     {
@@ -412,7 +411,7 @@ for ( IndexType i = 0; i < diag.size(); ++i )
 mMatrixStorage.setDiagonal( diag );
 
 {
-    HostReadAccess<ValueType> rDiag ( diag );
+    ReadAccess<ValueType> rDiag ( diag );
 
     for ( IndexType i = 0; i < diag.size(); ++i )
     {
@@ -482,8 +481,8 @@ LAMA_LOG_INFO( logger, "Test matrixTimesVector" )
     LAMAArray<ValueType> result ( mMatrixStorage.getNumRows() );
     mMatrixStorage.matrixTimesVector( result, alpha, x, beta, y );
     BOOST_CHECK_EQUAL( result.size(), mMatrixStorage.getNumRows() );
-    HostReadAccess<ValueType> values( orig.getData() );
-    HostReadAccess<ValueType> res( result );
+    ReadAccess<ValueType> values( orig.getData() );
+    ReadAccess<ValueType> res( result );
     int ncol = mMatrixStorage.getNumColumns();
     int nrow = mMatrixStorage.getNumRows();
 
@@ -516,8 +515,8 @@ LAMA_LOG_INFO( logger, "Test " << mMatrixStorage.getTypeName() << "::matrixTimes
         // free of token at end of this scope does the synchronization
     }
     BOOST_CHECK_EQUAL( result.size(), mMatrixStorage.getNumRows() );
-    HostReadAccess<ValueType> values( orig.getData() );
-    HostReadAccess<ValueType> res( result );
+    ReadAccess<ValueType> values( orig.getData() );
+    ReadAccess<ValueType> res( result );
     int ncol = mMatrixStorage.getNumColumns();
     int nrow = mMatrixStorage.getNumRows();
 
@@ -560,8 +559,8 @@ LAMA_LOG_INFO( logger, "Test vectorTimesMatrix" )
     LAMAArray<ValueType> result ( m );
     mMatrixStorage.vectorTimesMatrix( result, alpha, x, beta, y );
     BOOST_CHECK_EQUAL( result.size(), m );
-    HostReadAccess<ValueType> values( orig.getData() );
-    HostReadAccess<ValueType> res( result );
+    ReadAccess<ValueType> values( orig.getData() );
+    ReadAccess<ValueType> res( result );
 
     for ( IndexType j = 0; j < m; ++j )
     {
@@ -596,8 +595,8 @@ LAMA_LOG_INFO( logger, "Test vectorTimesMatrixAsync" )
     }
     LAMA_LOG_TRACE( logger, "vectorTimesMatrixAsync synchronized" )
     BOOST_CHECK_EQUAL( result.size(), m );
-    HostReadAccess<ValueType> values( orig.getData() );
-    HostReadAccess<ValueType> res( result );
+    ReadAccess<ValueType> values( orig.getData() );
+    ReadAccess<ValueType> res( result );
 
     for ( IndexType j = 0; j < m; ++j )
     {
@@ -644,8 +643,8 @@ LAMA_LOG_INFO( logger, "Test vectorTimesMatrixAsync 2" )
     }
     LAMA_LOG_TRACE( logger, "vectorTimesMatrixAsync synchronized" )
     BOOST_CHECK_EQUAL( result.size(), m );
-    HostReadAccess<ValueType> values( orig.getData() );
-    HostReadAccess<ValueType> res( result );
+    ReadAccess<ValueType> values( orig.getData() );
+    ReadAccess<ValueType> res( result );
 
     for ( IndexType j = 0; j < m; ++j )
     {
@@ -695,8 +694,8 @@ LAMA_LOG_INFO( logger, "Test vectorTimesMatrixAsync 3" )
     }
     LAMA_LOG_TRACE( logger, "vectorTimesMatrixAsync synchronized" )
     BOOST_CHECK_EQUAL( result.size(), m );
-    HostReadAccess<ValueType> values( orig.getData() );
-    HostReadAccess<ValueType> res( result );
+    ReadAccess<ValueType> values( orig.getData() );
+    ReadAccess<ValueType> res( result );
 
     for ( IndexType j = 0; j < m; ++j )
     {
@@ -756,12 +755,12 @@ LAMA_LOG_TRACE( logger, "vectorTimesMatrixAsync and matrixTimesVectorAsync synch
 
 BOOST_CHECK_EQUAL( result.size(), mMatrixStorage.getNumColumns() );
 
-HostReadAccess<ValueType> xValues( x );
-HostReadAccess<ValueType> values( orig.getData() );
-HostReadAccess<ValueType> res( result );
-HostReadAccess<ValueType> res2( result2 );
-HostReadAccess<ValueType> resD( denseResult );
-HostReadAccess<ValueType> res2D( denseResult2 );
+ReadAccess<ValueType> xValues( x );
+ReadAccess<ValueType> values( orig.getData() );
+ReadAccess<ValueType> res( result );
+ReadAccess<ValueType> res2( result2 );
+ReadAccess<ValueType> resD( denseResult );
+ReadAccess<ValueType> res2D( denseResult2 );
 
 int ncol = mMatrixStorage.getNumColumns();
 int nrow = mMatrixStorage.getNumRows();
@@ -946,8 +945,8 @@ mMatrixStorage.matrixTimesVector( y2, 1.0, x, 0.0, dummy );
 
 BOOST_CHECK_EQUAL( y1.size(), y2.size() );
 
-HostReadAccess<ValueType> rY1( y1 );
-HostReadAccess<ValueType> rY2( y2 );
+ReadAccess<ValueType> rY1( y1 );
+ReadAccess<ValueType> rY2( y2 );
 
 for ( IndexType i = 0; i < n; ++i )
 {
@@ -977,7 +976,7 @@ void MatrixStorageTest<ValueType>::jacobiTest( const ValueType omega )
     tmp.getDiagonal( diagonal );
     {
         // invert the diagonal
-        HostWriteAccess<ValueType> wDiagonal( diagonal );
+        WriteAccess<ValueType> wDiagonal( diagonal );
 
         for ( IndexType i = 0; i < n; i++ )
         {
@@ -989,9 +988,9 @@ void MatrixStorageTest<ValueType>::jacobiTest( const ValueType omega )
     tmp.matrixTimesVector( solution2, -1.0, oldSolution, 1.0, rhs );
     {
         // invert the diagonal
-        HostWriteAccess<ValueType> wSolution( solution2 );
-        HostReadAccess<ValueType> rDiagonal( diagonal );
-        HostReadAccess<ValueType> rOldSolution( oldSolution );
+        WriteAccess<ValueType> wSolution( solution2 );
+        ReadAccess<ValueType> rDiagonal( diagonal );
+        ReadAccess<ValueType> rOldSolution( oldSolution );
 
         for ( IndexType i = 0; i < n; i++ )
         {
@@ -1001,8 +1000,8 @@ void MatrixStorageTest<ValueType>::jacobiTest( const ValueType omega )
     }
     // by this way solution1 and solution2 must be equal
     {
-        HostReadAccess<ValueType> rSolution1( solution1 );
-        HostReadAccess<ValueType> rSolution2( solution2 );
+        ReadAccess<ValueType> rSolution1( solution1 );
+        ReadAccess<ValueType> rSolution2( solution2 );
 
         for ( IndexType i = 0; i < n; ++i )
         {
@@ -1055,7 +1054,7 @@ local->getDiagonal( diagonal );
 
 {
     // invert the diagonal
-    HostWriteAccess<ValueType> wDiagonal( diagonal );
+    WriteAccess<ValueType> wDiagonal( diagonal );
 
     for ( IndexType i = 0; i < numRows; i++ )
     {
@@ -1074,8 +1073,8 @@ tmp.matrixTimesVector( solution2, -omega, oldSolution, 1.0, solution2 );
 // by this way solution1 and solution2 must be equal
 
 {
-    HostReadAccess<ValueType> rSolution1( solution1 );
-    HostReadAccess<ValueType> rSolution2( solution2 );
+    ReadAccess<ValueType> rSolution1( solution1 );
+    ReadAccess<ValueType> rSolution2( solution2 );
 
     for ( IndexType i = 0; i < numRows; ++i )
     {

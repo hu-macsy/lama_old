@@ -37,9 +37,9 @@
 #include <lama/LAMAInterfaceRegistry.hpp>
 
 #include <lama/cuda/utils.cu.h>
-#include <lama/cuda/CUDAError.hpp>
+#include <cudamem/CUDAError.hpp>
 #include <lama/cuda/CUDADIAUtils.hpp>
-#include <lama/cuda/CUDAStreamSyncToken.hpp>
+#include <cudamem/CUDAStreamSyncToken.hpp>
 #include <lama/cuda/CUDASettings.hpp>
 #include <tracing/tracing.hpp>
 
@@ -48,6 +48,10 @@
 #include <thrust/sort.h>
 
 #include <boost/bind.hpp>
+
+using namespace memory;
+using namespace tasking;
+using common::getScalarType;
 
 namespace lama
 {
@@ -454,11 +458,11 @@ namespace lama
                     const IndexType numDiagonals,
                     const IndexType diaOffsets[],
                     const ValueType diaValues[],
-                    class SyncToken* syncToken )
+                    SyncToken* syncToken )
     {
         LAMA_REGION( "CUDA.DIA.normalGEMV" )
 
-        LAMA_LOG_INFO( logger, "normalGEMV<" << Scalar::getType<ValueType>() << ">"
+        LAMA_LOG_INFO( logger, "normalGEMV<" << getScalarType<ValueType>() << ">"
                         << " result[ " << numRows << "] = " << alpha
                         << " * A( #diags = " << numDiagonals << " ) * x + " << beta << " * y " )
 
@@ -480,7 +484,7 @@ namespace lama
         const bool useSharedMem = CUDASettings::useSharedMem();
         const bool useTexture = CUDASettings::useTexture();
 
-        LAMA_LOG_INFO( logger, "Start normal_gemv_kernel<" << Scalar::getType<ValueType>()
+        LAMA_LOG_INFO( logger, "Start normal_gemv_kernel<" << getScalarType<ValueType>()
                         << "> <<< blockSize = " << blockSize << ", stream = " << stream
                         << ", useTexture = " << useTexture << ", useSharedMem = " << useSharedMem << ">>>" );
 
@@ -775,11 +779,11 @@ namespace lama
                     const IndexType numDiagonals,
                     const IndexType diaOffsets[],
                     const ValueType diaValues[],
-                    class SyncToken* syncToken )
+                    SyncToken* syncToken )
     {
         LAMA_REGION( "CUDA.DIA.normalGEVM" )
 
-        LAMA_LOG_INFO( logger, "normalGEVM<" << Scalar::getType<ValueType>() << ">"
+        LAMA_LOG_INFO( logger, "normalGEVM<" << getScalarType<ValueType>() << ">"
                         << " result[ " << numRows << "] = " << alpha
                         << " * A( #diags = " << numDiagonals << " ) * x + " << beta << " * y " )
 
@@ -801,7 +805,7 @@ namespace lama
         const bool useSharedMem = CUDASettings::useSharedMem();
         const bool useTexture = CUDASettings::useTexture();
 
-        LAMA_LOG_INFO( logger, "Start normal_gevm_kernel<" << Scalar::getType<ValueType>()
+        LAMA_LOG_INFO( logger, "Start normal_gevm_kernel<" << getScalarType<ValueType>()
                         << "> <<< blockSize = " << blockSize << ", stream = " << stream
                         << ", useTexture = " << useTexture << ", useSharedMem = " << useSharedMem << ">>>" );
 
@@ -903,7 +907,7 @@ namespace lama
 
     bool CUDADIAUtils::registerInterface()
     {
-        LAMAInterface& interface = LAMAInterfaceRegistry::getRegistry().modifyInterface( Context::CUDA );
+        LAMAInterface& interface = LAMAInterfaceRegistry::getRegistry().modifyInterface( context::CUDA );
         setInterface( interface.DIAUtils );
         return true;
     }

@@ -55,6 +55,8 @@ namespace lama
 {
 
 using std::abs;
+using common::getScalarType;
+using tasking::SyncToken;
 
 LAMA_LOG_DEF_LOGGER( OpenMPDIAUtils::logger, "OpenMP.DIAUtils" )
 
@@ -130,7 +132,9 @@ void OpenMPDIAUtils::getCSRValues(
     const DIAValueType eps )
 {
     LAMA_LOG_INFO( logger,
-                   "get CSRValues<" << Scalar::getType<DIAValueType>() << ", " << Scalar::getType<CSRValueType>() << ">" << ", #rows = " << numRows << ", #diagonals = " << numDiagonals << ", #non-zero values = " << csrIA[numRows] << ", diagonalFlag = " << diagonalFlag )
+                   "get CSRValues<" << getScalarType<DIAValueType>() << ", " << getScalarType<CSRValueType>() 
+                    << ">" << ", #rows = " << numRows << ", #diagonals = " << numDiagonals 
+                    << ", #non-zero values = " << csrIA[numRows] << ", diagonalFlag = " << diagonalFlag )
 
     // we cannot check for correct sizes, but at least for valid pointers
 
@@ -246,7 +250,8 @@ void OpenMPDIAUtils::getCSRSizes(
     const DIAValueType eps )
 {
     LAMA_LOG_INFO( logger,
-                   "get CSRSizes<" << Scalar::getType<DIAValueType>() << "> for DIA matrix " << numRows << " x " << numColumns << ", #diagonals = " << numDiagonals << ", eps = " << eps << ", diagonalFlag = " << diagonalFlag )
+                   "get CSRSizes<" << getScalarType<DIAValueType>() << "> for DIA matrix " << numRows << " x " << numColumns 
+                    << ", #diagonals = " << numDiagonals << ", eps = " << eps << ", diagonalFlag = " << diagonalFlag )
 
     #pragma omp parallel for schedule(LAMA_OMP_SCHEDULE)
 
@@ -308,10 +313,10 @@ void OpenMPDIAUtils::normalGEMV(
     const ValueType diaValues[] )
 {
     LAMA_LOG_INFO( logger,
-                   "normalGEMV<" << Scalar::getType<ValueType>() << ", #threads = " << omp_get_max_threads() << ">, result[" << numRows << "] = " << alpha << " * A( dia, #diags = " << numDiagonals << " ) * x + " << beta << " * y " )
+                   "normalGEMV<" << getScalarType<ValueType>() << ", #threads = " << omp_get_max_threads() << ">, result[" << numRows << "] = " << alpha << " * A( dia, #diags = " << numDiagonals << " ) * x + " << beta << " * y " )
 
     LAMA_LOG_INFO( logger,
-                   "normalGEMV<" << Scalar::getType<ValueType>() << ">, n = " << numRows << ", d = " << numDiagonals )
+                   "normalGEMV<" << getScalarType<ValueType>() << ">, n = " << numRows << ", d = " << numDiagonals )
 
     // result := alpha * A * x + beta * y -> result:= beta * y; result += alpha * A
 
@@ -404,10 +409,10 @@ void OpenMPDIAUtils::normalGEVM(
     SyncToken* syncToken )
 {
     LAMA_LOG_INFO( logger,
-                   "normalGEVM<" << Scalar::getType<ValueType>() << ", #threads = " << omp_get_max_threads() << ">, result[" << numRows << "] = " << alpha << " * A( dia, #diags = " << numDiagonals << " ) * x + " << beta << " * y " )
+                   "normalGEVM<" << getScalarType<ValueType>() << ", #threads = " << omp_get_max_threads() << ">, result[" << numRows << "] = " << alpha << " * A( dia, #diags = " << numDiagonals << " ) * x + " << beta << " * y " )
 
     LAMA_LOG_INFO( logger,
-                   "normalGEVM<" << Scalar::getType<ValueType>() << ">, n = " << numRows << ", d = " << numDiagonals )
+                   "normalGEVM<" << getScalarType<ValueType>() << ">, n = " << numRows << ", d = " << numDiagonals )
 
     if( syncToken )
     {
@@ -481,7 +486,7 @@ void OpenMPDIAUtils::jacobi(
     class SyncToken* syncToken )
 {
     LAMA_LOG_INFO( logger,
-                   "jacobi<" << Scalar::getType<ValueType>() << ">" << ", #rows = " << numRows << ", #cols = " << numColumns << ", #diagonals = " << numDiagonals << ", omega = " << omega )
+                   "jacobi<" << getScalarType<ValueType>() << ">" << ", #rows = " << numRows << ", #cols = " << numColumns << ", #diagonals = " << numDiagonals << ", omega = " << omega )
 
     LAMA_ASSERT_EQUAL_DEBUG( 0, diaOffset[0] )
     // main diagonal must be first
@@ -557,7 +562,7 @@ void OpenMPDIAUtils::setInterface( DIAUtilsInterface& DIAUtils )
 
 bool OpenMPDIAUtils::registerInterface()
 {
-    LAMAInterface& interface = LAMAInterfaceRegistry::getRegistry().modifyInterface( Context::Host );
+    LAMAInterface& interface = LAMAInterfaceRegistry::getRegistry().modifyInterface( memory::context::Host );
     setInterface( interface.DIAUtils );
     return true;
 }

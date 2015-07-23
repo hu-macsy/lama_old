@@ -40,9 +40,7 @@
 #include <lama/storage/CRTPMatrixStorage.hpp>
 
 // others
-#include <lama/LAMAArray.hpp>
-#include <lama/HostReadAccess.hpp>
-#include <lama/HostWriteAccess.hpp>
+#include <memory/memory.hpp>
 #include <lama/Scalar.hpp>
 
 namespace lama
@@ -105,7 +103,7 @@ public:
 
     /** Getter routine for the data type of the elements. */
 
-    virtual Scalar::ScalarType getValueType() const;
+    virtual memory::ScalarType getValueType() const;
 
     /** Getter routine for the enum value that stands for this format. */
 

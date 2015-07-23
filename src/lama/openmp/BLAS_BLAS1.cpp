@@ -52,6 +52,9 @@
 namespace lama
 {
 
+using tasking::SyncToken;
+using common::getScalarType;
+
 LAMA_LOG_DEF_LOGGER( BLAS_BLAS1::logger, "BLAS.BLAS1" )
 
 /* ---------------------------------------------------------------------------------------*/
@@ -112,7 +115,7 @@ void BLAS_BLAS1::scal(
     LAMA_REGION( "BLAS.BLAS1.scal" )
 
     LAMA_LOG_DEBUG( logger,
-                    "scal<" << Scalar::getType<ValueType>() << " n = " << n << ", alpha = " << alpha << ", x = " << x << ", incX = " << incX )
+                    "scal<" << getScalarType<ValueType>() << " n = " << n << ", alpha = " << alpha << ", x = " << x << ", incX = " << incX )
 
     if( syncToken )
     {
@@ -173,7 +176,7 @@ ValueType BLAS_BLAS1::nrm2( const IndexType n, const ValueType* x, const IndexTy
     LAMA_REGION( "BLAS.BLAS1.nrm2" )
 
     LAMA_LOG_DEBUG( logger,
-                    "nrm2<" << Scalar::getType<ValueType>() << ">, n = " << n << ", x = " << x << ", incX = " << incX )
+                    "nrm2<" << getScalarType<ValueType>() << ">, n = " << n << ", x = " << x << ", incX = " << incX )
 
     if( syncToken )
     {
@@ -229,7 +232,7 @@ ValueType BLAS_BLAS1::asum( const IndexType n, const ValueType* x, const IndexTy
     LAMA_REGION( "BLAS.BLAS1.asum" )
 
     LAMA_LOG_DEBUG( logger,
-                    "asum<" << Scalar::getType<ValueType>() << ">,  n = " << n << ", x = " << x << ", incX = " << incX )
+                    "asum<" << getScalarType<ValueType>() << ">,  n = " << n << ", x = " << x << ", incX = " << incX )
 
     if( syncToken )
     {
@@ -289,7 +292,7 @@ IndexType BLAS_BLAS1::iamax( const IndexType n, const ValueType* x, const IndexT
     LAMA_REGION( "BLAS.BLAS1.iamax" )
 
     LAMA_LOG_INFO( logger,
-                   "iamax<" << Scalar::getType<ValueType>() << ">, " << "n = " << n << ", x = " << x << ", incX = " << incX )
+                   "iamax<" << getScalarType<ValueType>() << ">, " << "n = " << n << ", x = " << x << ", incX = " << incX )
 
     if( syncToken )
     {
@@ -348,7 +351,7 @@ void BLAS_BLAS1::swap(
     LAMA_REGION( "BLAS.BLAS1.swap" )
 
     LAMA_LOG_DEBUG( logger,
-                    "iamax<" << Scalar::getType<ValueType>() << ">" << ", n = " << n << ", x = " << x << ", incX = " << incX << ", y = " << y << ", incY = " << incY )
+                    "iamax<" << getScalarType<ValueType>() << ">" << ", n = " << n << ", x = " << x << ", incX = " << incX << ", y = " << y << ", incY = " << incY )
 
     if( ( incX <= 0 ) || ( incY <= 0 ) )
     {
@@ -412,7 +415,7 @@ void BLAS_BLAS1::copy(
     LAMA_REGION( "BLAS.BLAS1.copy" )
 
     LAMA_LOG_DEBUG( logger,
-                    "copy<" << Scalar::getType<ValueType>() << ">, " << "n = " << n << ", x = " << x << ", incX = " << incX << ", y = " << y << ", incY = " << incY )
+                    "copy<" << getScalarType<ValueType>() << ">, " << "n = " << n << ", x = " << x << ", incX = " << incX << ", y = " << y << ", incY = " << incY )
 
     if( ( incX <= 0 ) || ( incY <= 0 ) )
     {
@@ -499,7 +502,7 @@ void BLAS_BLAS1::axpy(
     LAMA_REGION( "BLAS.BLAS1.axpy" )
 
     LAMA_LOG_DEBUG( logger,
-                    "axpy<" << Scalar::getType<ValueType>() << ">, " << "n = " << n << ", alpha = " << alpha << ", x = " << x << ", incX = " << incX << ", y = " << y << ", incY = " << incY )
+                    "axpy<" << getScalarType<ValueType>() << ">, " << "n = " << n << ", alpha = " << alpha << ", x = " << x << ", incX = " << incX << ", y = " << y << ", incY = " << incY )
 
     if( ( incX <= 0 ) || ( incY <= 0 ) )
     {
@@ -573,7 +576,7 @@ ValueType BLAS_BLAS1::dot(
     LAMA_REGION( "BLAS.BLAS1.dot" )
 
     LAMA_LOG_DEBUG( logger,
-                    "dot<" << Scalar::getType<ValueType>() << ">, " << "n = " << n << ", x = " << x << ", incX = " << incX << ", y = " << y << ", incY = " << incY )
+                    "dot<" << getScalarType<ValueType>() << ">, " << "n = " << n << ", x = " << x << ", incX = " << incX << ", y = " << y << ", incY = " << incY )
 
     if( ( incX <= 0 ) || ( incY <= 0 ) )
     {
@@ -640,7 +643,7 @@ void BLAS_BLAS1::setInterface( BLASInterface& BLAS )
 
 bool BLAS_BLAS1::registerInterface()
 {
-    LAMAInterface& interface = LAMAInterfaceRegistry::getRegistry().modifyInterface( Context::Host );
+    LAMAInterface& interface = LAMAInterfaceRegistry::getRegistry().modifyInterface( memory::context::Host );
     setInterface( interface.BLAS );
     return true;
 }

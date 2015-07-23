@@ -38,7 +38,7 @@
 
 // others
 #include <lama/LAMATypes.hpp>
-#include <lama/SyncToken.hpp>
+#include <tasking/SyncToken.hpp>
 
 // assert
 #include <lama/exception/LAMAAssert.hpp>
@@ -114,7 +114,7 @@ public:
         const IndexType cooIA[],
         const IndexType cooJA[],
         const ValueType cooValues[],
-        SyncToken* syncToken );
+        tasking::SyncToken* syncToken );
 
     /** Implementation for CSRUtilsInterface::Mult::normalGEVM  */
 
@@ -130,7 +130,7 @@ public:
         const IndexType cooIA[],
         const IndexType cooJA[],
         const ValueType cooValues[],
-        SyncToken* syncToken );
+        tasking::SyncToken* syncToken );
 
     /** Implementation for COOUtilsInterface::Solver::jacobi  */
 
@@ -145,7 +145,7 @@ public:
         const ValueType rhs[],
         const ValueType omega,
         const IndexType numRows,
-        SyncToken* syncToken );
+        tasking::SyncToken* syncToken );
 
     /** Routine that registers all routines of this class at the LAMA interface. */
 

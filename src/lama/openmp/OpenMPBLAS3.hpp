@@ -38,7 +38,7 @@
 
 // others
 #include <lama/LAMATypes.hpp>
-#include <lama/SyncToken.hpp>
+#include <tasking/SyncToken.hpp>
 
 #include <lama/openmp/BLASHelper.hpp>
 
@@ -73,7 +73,7 @@ public:
         const ValueType beta,
         ValueType* C,
         const IndexType ldc,
-        SyncToken* syncToken );
+        tasking::SyncToken* syncToken );
 
     /** Routine that sets functions pointers belonging to BLAS1 in a BLASInterface.
      *

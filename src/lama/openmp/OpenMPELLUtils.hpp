@@ -38,15 +38,13 @@
 
 // others
 #include <lama/LAMATypes.hpp>
+#include <tasking/SyncToken.hpp>
 
 // logging
 #include <logging/logging.hpp>
 
 namespace lama
 {
-
-class SyncToken;
-// forward declaration
 
 /** This class provides routines to converse ELL storage data to CSR storage data and vice versa.
  *
@@ -288,7 +286,7 @@ private:
         const ValueType oldSolution[],
         const ValueType rhs[],
         const ValueType omega,
-        SyncToken* syncToken );
+        tasking::SyncToken* syncToken );
 
     /** Implementation for ELLUtilsInterface::Solver::jacobiHalo */
 
@@ -305,7 +303,7 @@ private:
         const IndexType numNonEmptyRows,
         const ValueType oldSolution[],
         const ValueType omega,
-        SyncToken* syncToken );
+        tasking::SyncToken* syncToken );
 
     /** Implementation for ELLUtilsInterface::Mult::normalGEMV  */
 
@@ -321,7 +319,7 @@ private:
         const IndexType csrIA[],
         const IndexType csrJA[],
         const ValueType csrValues[],
-        SyncToken* syncToken );
+        tasking::SyncToken* syncToken );
 
     /** Implementation for ELLUtilsInterface::Mult::sparseGEMV  */
 
@@ -337,7 +335,7 @@ private:
         const IndexType csrIA[],
         const IndexType csrJA[],
         const ValueType csrValues[],
-        SyncToken* syncToken );
+        tasking::SyncToken* syncToken );
 
     /** Implementation for CSRUtilsInterface::Mult:normalGEVM */
 
@@ -354,7 +352,7 @@ private:
         const IndexType ellSizes[],
         const IndexType ellJA[],
         const ValueType ellValues[],
-        SyncToken* syncToken );
+        tasking::SyncToken* syncToken );
 
     /** Implementation for CSRUtilsInterface::Mult::sparseGEVM  */
 
@@ -371,7 +369,7 @@ private:
         const IndexType ellSizes[],
         const IndexType ellJA[],
         const ValueType ellValues[],
-        SyncToken* syncToken );
+        tasking::SyncToken* syncToken );
 
     LAMA_LOG_DECL_STATIC_LOGGER( logger )
 

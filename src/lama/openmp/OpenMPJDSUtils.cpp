@@ -861,7 +861,7 @@ void OpenMPJDSUtils::setInterface( JDSUtilsInterface& JDSUtils )
 
 bool OpenMPJDSUtils::registerInterface()
 {
-    LAMAInterface& interface = LAMAInterfaceRegistry::getRegistry().modifyInterface( Context::Host );
+    LAMAInterface& interface = LAMAInterfaceRegistry::getRegistry().modifyInterface( memory::context::Host );
     setInterface( interface.JDSUtils );
     return true;
 }

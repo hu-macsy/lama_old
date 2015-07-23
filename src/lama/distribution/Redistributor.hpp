@@ -45,9 +45,10 @@
 #include <lama/distribution/Halo.hpp>
 #include <tracing/tracing.hpp>
 
-#include <lama/LAMAArray.hpp>
-#include <lama/HostReadAccess.hpp>
-#include <lama/HostWriteAccess.hpp>
+#include <memory/LAMAArray.hpp>
+#include <tasking/SyncToken.hpp>
+
+using namespace tasking;
 
 namespace lama
 {
@@ -135,9 +136,9 @@ public:
         const LAMAArray<ValueType>& sourceArray,
         const LAMAArray<IndexType>& sourceIndexes )
     {
-        HostWriteAccess<ValueType> target( targetArray );
-        HostReadAccess<ValueType> source( sourceArray );
-        HostReadAccess<IndexType> indexes( sourceIndexes );
+        WriteAccess<ValueType> target( targetArray );
+        ReadAccess<ValueType> source( sourceArray );
+        ReadAccess<IndexType> indexes( sourceIndexes );
 
         for( IndexType i = 0; i < indexes.size(); i++ )
         {
@@ -154,9 +155,9 @@ public:
         const LAMAArray<IndexType>& sourceIndexes,
         const IndexType n )
     {
-        HostWriteAccess<ValueType> target( targetArray );
-        HostReadAccess<ValueType> source( sourceArray );
-        HostReadAccess<IndexType> indexes( sourceIndexes );
+        WriteAccess<ValueType> target( targetArray );
+        ReadAccess<ValueType> source( sourceArray );
+        ReadAccess<IndexType> indexes( sourceIndexes );
 
         #pragma omp parallel for
 
@@ -185,9 +186,9 @@ public:
         const LAMAArray<IndexType>& targetIndexes,
         const LAMAArray<ValueType>& sourceArray )
     {
-        HostWriteAccess<ValueType> target( targetArray );
-        HostReadAccess<IndexType> indexes( targetIndexes );
-        HostReadAccess<ValueType> source( sourceArray );
+        WriteAccess<ValueType> target( targetArray );
+        ReadAccess<IndexType> indexes( targetIndexes );
+        ReadAccess<ValueType> source( sourceArray );
 
         for( IndexType i = 0; i < indexes.size(); i++ )
         {
@@ -204,9 +205,9 @@ public:
         const LAMAArray<ValueType>& sourceArray,
         const IndexType n )
     {
-        HostWriteAccess<ValueType> target( targetArray );
-        HostReadAccess<IndexType> indexes( targetIndexes );
-        HostReadAccess<ValueType> source( sourceArray );
+        WriteAccess<ValueType> target( targetArray );
+        ReadAccess<IndexType> indexes( targetIndexes );
+        ReadAccess<ValueType> source( sourceArray );
 
         #pragma omp parallel for
 
@@ -236,10 +237,10 @@ public:
         const LAMAArray<ValueType>& sourceArray,
         const LAMAArray<IndexType>& sourceIndexes )
     {
-        HostWriteAccess<ValueType> target( targetArray );
-        HostReadAccess<ValueType> source( sourceArray );
-        HostReadAccess<IndexType> tindexes( targetIndexes );
-        HostReadAccess<IndexType> sindexes( sourceIndexes );
+        WriteAccess<ValueType> target( targetArray );
+        ReadAccess<ValueType> source( sourceArray );
+        ReadAccess<IndexType> tindexes( targetIndexes );
+        ReadAccess<IndexType> sindexes( sourceIndexes );
 
         LAMA_ASSERT_ERROR( tindexes.size() == sindexes.size(), "index size mismatch" )
 
@@ -260,10 +261,10 @@ public:
         const LAMAArray<IndexType>& sourceIndexes,
         IndexType n )
     {
-        HostWriteAccess<ValueType> target( targetArray );
-        HostReadAccess<ValueType> source( sourceArray );
-        HostReadAccess<IndexType> tindexes( targetIndexes );
-        HostReadAccess<IndexType> sindexes( sourceIndexes );
+        WriteAccess<ValueType> target( targetArray );
+        ReadAccess<ValueType> source( sourceArray );
+        ReadAccess<IndexType> tindexes( targetIndexes );
+        ReadAccess<IndexType> sindexes( sourceIndexes );
 
         LAMA_ASSERT_ERROR( tindexes.size() == sindexes.size(), "index size mismatch" )
 
@@ -385,7 +386,7 @@ void Redistributor::redistribute( LAMAArray<ValueType>& targetArray, const LAMAA
     {
         // make sure that target array has sufficient memory
 
-        HostWriteOnlyAccess<ValueType> target( targetArray, mTargetSize );
+        WriteOnlyAccess<ValueType> target( targetArray, mTargetSize );
     }
 
     // allocate memory for source (provides) and target (required) halo
@@ -421,7 +422,7 @@ void Redistributor::redistributeN(
     {
         // make sure that target array has sufficient memory
 
-        HostWriteOnlyAccess<ValueType> target( targetArray, mTargetSize * n );
+        WriteOnlyAccess<ValueType> target( targetArray, mTargetSize * n );
     }
 
     // allocate memory for source (provides) and target (required) halo
@@ -481,10 +482,10 @@ void Redistributor::gatherV(
 {
     const IndexType n = sourceIndexes.size();
 
-    HostWriteAccess<ValueType> wTargetArray( targetArray );
-    HostReadAccess<ValueType> rSourceArray( sourceArray );
-    HostReadAccess<IndexType> rSourceOffsets( sourceOffsets );
-    HostReadAccess<IndexType> rSourceIndexes( sourceIndexes );
+    WriteAccess<ValueType> wTargetArray( targetArray );
+    ReadAccess<ValueType> rSourceArray( sourceArray );
+    ReadAccess<IndexType> rSourceOffsets( sourceOffsets );
+    ReadAccess<IndexType> rSourceIndexes( sourceIndexes );
 
     // Note: we have no target offsets array
 
@@ -512,10 +513,10 @@ void Redistributor::scatterV(
 {
     const IndexType n = targetIndexes.size();
 
-    HostWriteAccess<ValueType> wTargetArray( targetArray );
-    HostReadAccess<IndexType> rTargetOffsets( targetOffsets );
-    HostReadAccess<IndexType> rTargetIndexes( targetIndexes );
-    HostReadAccess<ValueType> rSourceArray( sourceArray );
+    WriteAccess<ValueType> wTargetArray( targetArray );
+    ReadAccess<IndexType> rTargetOffsets( targetOffsets );
+    ReadAccess<IndexType> rTargetIndexes( targetIndexes );
+    ReadAccess<ValueType> rSourceArray( sourceArray );
 
     // Note: we have no source offsets array, no parallelization possible
 
@@ -547,12 +548,12 @@ void Redistributor::copyV(
 
     const IndexType n = targetIndexes.size();
 
-    HostWriteAccess<ValueType> wTargetArray( targetArray );
-    HostReadAccess<IndexType> rTargetOffsets( targetOffsets );
-    HostReadAccess<IndexType> rTargetIndexes( targetIndexes );
-    HostReadAccess<ValueType> rSourceArray( sourceArray );
-    HostReadAccess<IndexType> rSourceOffsets( sourceOffsets );
-    HostReadAccess<IndexType> rSourceIndexes( sourceIndexes );
+    WriteAccess<ValueType> wTargetArray( targetArray );
+    ReadAccess<IndexType> rTargetOffsets( targetOffsets );
+    ReadAccess<IndexType> rTargetIndexes( targetIndexes );
+    ReadAccess<ValueType> rSourceArray( sourceArray );
+    ReadAccess<IndexType> rSourceOffsets( sourceOffsets );
+    ReadAccess<IndexType> rSourceIndexes( sourceIndexes );
 
     for( IndexType ii = 0; ii < n; ii++ )
     {

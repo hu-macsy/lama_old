@@ -133,7 +133,7 @@ void Richardson::iterate(){
     if ( LAMA_LOG_TRACE_ON( logger ) ){
         LAMA_LOG_TRACE( logger, "Solution " << *runtime.mSolution )
         const DenseVector<T>& sol = dynamic_cast<const DenseVector<T>&>( *runtime.mSolution );
-        HostReadAccess<T> rsol( sol.getLocalValues() );
+        ReadAccess<T> rsol( sol.getLocalValues() );
         std::cout << "Solution: ";
         for ( IndexType i = 0; i < rsol.size(); ++i )
         	std::cout << " " << rsol[i];
@@ -144,10 +144,10 @@ void Richardson::iterate(){
 
 void Richardson::iterate(){
     switch ( getRuntime().mCoefficients->getValueType() ){
-    	case Scalar::FLOAT:
+    	case common::scalar::FLOAT:
         	iterate<float>();
         break;
-    	case Scalar::DOUBLE:
+    	case common::scalar::DOUBLE:
        		iterate<double>();
         break;
     	default:

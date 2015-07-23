@@ -41,10 +41,13 @@
 
 // others
 #include <lama/storage/MatrixStorage.hpp>
+#include <tasking/SyncToken.hpp>
 
 #include <lama/DenseVector.hpp>
 
 #include <boost/function.hpp>
+
+using tasking::SyncToken;
 
 namespace lama
 
@@ -521,7 +524,7 @@ public:
 
     /* Implementation of pure method of class Matrix. */
 
-    virtual Scalar::ScalarType getValueType() const;
+    virtual memory::ScalarType getValueType() const;
 
     /* Implementation of pure method Matrix::create with covariant return type */
 

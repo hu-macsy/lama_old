@@ -80,7 +80,7 @@ void TFQMR::initialize( const Matrix& coefficients ){
     runtime.mTheta = 0.0;
     runtime.mEps = std::numeric_limits<double>::epsilon()*3;            //CAREFUL: No abstract type
 
-    Scalar::ScalarType type = coefficients.getValueType();
+    ScalarType type = coefficients.getValueType();
     
     runtime.mVecD.reset( Vector::createVector( type, coefficients.getDistributionPtr() ) );
     runtime.mInitialR.reset( Vector::createVector( type, coefficients.getDistributionPtr() ) );

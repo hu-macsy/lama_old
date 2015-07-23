@@ -38,7 +38,7 @@
 
 // others
 #include <lama/LAMATypes.hpp>
-#include <lama/SyncToken.hpp>
+#include <tasking/SyncToken.hpp>
 
 #include <lama/openmp/BLASHelper.hpp>
 
@@ -73,7 +73,7 @@ public:
         const ValueType beta,
         ValueType* C,
         const IndexType ldc,
-        SyncToken* syncToken );
+        tasking::SyncToken* syncToken );
 
     /**
      * @brief symm performs one of the matrix-matrix operations
@@ -159,7 +159,7 @@ public:
         const ValueType beta,
         ValueType* C,
         const IndexType ldc,
-        SyncToken* syncToken );
+        tasking::SyncToken* syncToken );
 
     /**
      * @brief trmm performs one of the matrix-matrix operations
@@ -239,7 +239,7 @@ public:
         const IndexType lda,
         ValueType* B,
         const IndexType ldb,
-        SyncToken* syncToken );
+        tasking::SyncToken* syncToken );
 
     /**
      * @brief trsm solves one of the matrix equations
@@ -323,7 +323,7 @@ public:
         const IndexType lda,
         ValueType* B,
         const IndexType ldb,
-        SyncToken* syncToken );
+        tasking::SyncToken* syncToken );
 
     /**
      * @brief syrk performs one of the symmetric rank k operations
@@ -407,7 +407,7 @@ public:
         const ValueType beta,
         ValueType* C,
         const IndexType ldc,
-        SyncToken* syncToken );
+        tasking::SyncToken* syncToken );
 
     /**
      * @brief syrk2 performs one of the symmetric rank 2k operations
@@ -497,7 +497,7 @@ public:
         const ValueType beta,
         ValueType* C,
         const IndexType ldc,
-        SyncToken* syncToken );
+        tasking::SyncToken* syncToken );
 
     /** Routine that sets functions pointers belonging to BLAS1 in a BLASInterface.
      *

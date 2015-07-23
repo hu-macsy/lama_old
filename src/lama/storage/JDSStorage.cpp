@@ -35,15 +35,10 @@
 #include <lama/storage/JDSStorage.hpp>
 
 // others
-#include <lama/ContextFactory.hpp>
-#include <lama/ContextAccess.hpp>
 #include <lama/LAMAInterface.hpp>
 
-#include <lama/HostReadAccess.hpp>
-#include <lama/ReadAccess.hpp>
-#include <lama/WriteAccess.hpp>
 #include <lama/LAMAArrayUtils.hpp>
-#include <lama/TaskSyncToken.hpp>
+#include <tasking/TaskSyncToken.hpp>
 
 // tracing
 #include <tracing/tracing.hpp>
@@ -56,7 +51,8 @@ namespace lama
 {
 // Allow for shared_ptr<ValueType> instead of boost::shared_ptr<ValueType>
 
-using boost::shared_ptr;
+using common::shared_ptr;
+using namespace::tasking;
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 
@@ -931,7 +927,7 @@ void JDSStorage<ValueType>::matrixTimesVector(
 
     // Possible alias of result and y must be handled by coressponding accesses
 
-    if( result == y )
+    if ( &result == &y )
     {
         WriteAccess<ValueType> wResult( result, loc );
 
@@ -992,7 +988,7 @@ void JDSStorage<ValueType>::vectorTimesMatrix(
 
     // Possible alias of result and y must be handled by coressponding accesses
 
-    if( result == y )
+    if ( &result == &y )
     {
         WriteAccess<ValueType> wResult( result, loc );
 
@@ -1031,7 +1027,7 @@ SyncToken* JDSStorage<ValueType>::matrixTimesVectorAsync(
 {
     ContextPtr loc = getContextPtr();
 
-    if( loc->getType() == Context::Host )
+    if ( loc->getType() == context::Host )
     {
         // workaround as boost::bind has limited number of arguments and cannot be
         // used later in OpenMP to generate a TaskSyncToken
@@ -1081,11 +1077,11 @@ SyncToken* JDSStorage<ValueType>::matrixTimesVectorAsync(
 
     // Possible alias of result and y must be handled by coressponding accesses
 
-    if( result == y )
+    if ( &result == &y )
     {
         shared_ptr<WriteAccess<ValueType> > wResult( new WriteAccess<ValueType>( result, loc ) );
 
-        syncToken->pushAccess( wResult );
+        syncToken->pushToken( wResult );
 
         // we assume that normalGEMV can deal with the alias of result, y
 
@@ -1101,8 +1097,8 @@ SyncToken* JDSStorage<ValueType>::matrixTimesVectorAsync(
         shared_ptr<WriteOnlyAccess<ValueType> > wResult( new WriteOnlyAccess<ValueType>( result, loc, mNumRows ) );
         shared_ptr<ReadAccess<ValueType> > rY( new ReadAccess<ValueType>( y, loc ) );
 
-        syncToken->pushAccess( wResult );
-        syncToken->pushAccess( rY );
+        syncToken->pushToken( wResult );
+        syncToken->pushToken( rY );
 
         LAMA_CONTEXT_ACCESS( loc )
 
@@ -1112,12 +1108,12 @@ SyncToken* JDSStorage<ValueType>::matrixTimesVectorAsync(
                     mNumDiagonals, jdsDLG->get(), jdsJA->get(), jdsValues->get(), syncToken.get() );
     }
 
-    syncToken->pushAccess( jdsPerm );
-    syncToken->pushAccess( jdsDLG );
-    syncToken->pushAccess( jdsILG );
-    syncToken->pushAccess( jdsJA );
-    syncToken->pushAccess( jdsValues );
-    syncToken->pushAccess( rX );
+    syncToken->pushToken( jdsPerm );
+    syncToken->pushToken( jdsDLG );
+    syncToken->pushToken( jdsILG );
+    syncToken->pushToken( jdsJA );
+    syncToken->pushToken( jdsValues );
+    syncToken->pushToken( rX );
 
     return syncToken.release();
 }
@@ -1134,7 +1130,7 @@ SyncToken* JDSStorage<ValueType>::vectorTimesMatrixAsync(
 {
     ContextPtr loc = getContextPtr();
 
-    if( loc->getType() == Context::Host )
+    if ( loc->getType() == context::Host )
     {
         // workaround as boost::bind has limited number of arguments and cannot be
         // used later in OpenMP to generate a TaskSyncToken
@@ -1184,11 +1180,11 @@ SyncToken* JDSStorage<ValueType>::vectorTimesMatrixAsync(
 
     // Possible alias of result and y must be handled by coressponding accesses
 
-    if( result == y )
+    if ( &result == &y )
     {
         shared_ptr<WriteAccess<ValueType> > wResult( new WriteAccess<ValueType>( result, loc ) );
 
-        syncToken->pushAccess( wResult );
+        syncToken->pushToken( wResult );
 
         // we assume that normalGEMV can deal with the alias of result, y
 
@@ -1204,8 +1200,8 @@ SyncToken* JDSStorage<ValueType>::vectorTimesMatrixAsync(
         shared_ptr<WriteOnlyAccess<ValueType> > wResult( new WriteOnlyAccess<ValueType>( result, loc, mNumColumns ) );
         shared_ptr<ReadAccess<ValueType> > rY( new ReadAccess<ValueType>( y, loc ) );
 
-        syncToken->pushAccess( wResult );
-        syncToken->pushAccess( rY );
+        syncToken->pushToken( wResult );
+        syncToken->pushToken( rY );
 
         LAMA_CONTEXT_ACCESS( loc )
 
@@ -1215,12 +1211,12 @@ SyncToken* JDSStorage<ValueType>::vectorTimesMatrixAsync(
                     mNumDiagonals, jdsDLG->get(), jdsJA->get(), jdsValues->get(), syncToken.get() );
     }
 
-    syncToken->pushAccess( jdsPerm );
-    syncToken->pushAccess( jdsDLG );
-    syncToken->pushAccess( jdsILG );
-    syncToken->pushAccess( jdsJA );
-    syncToken->pushAccess( jdsValues );
-    syncToken->pushAccess( rX );
+    syncToken->pushToken( jdsPerm );
+    syncToken->pushToken( jdsDLG );
+    syncToken->pushToken( jdsILG );
+    syncToken->pushToken( jdsJA );
+    syncToken->pushToken( jdsValues );
+    syncToken->pushToken( rX );
 
     return syncToken.release();
 }
@@ -1244,7 +1240,7 @@ void JDSStorage<ValueType>::jacobiIterate(
 
     LAMA_ASSERT_ERROR( mDiagonalProperty, *this << ": jacobiIterate requires diagonal property" )
 
-    if( solution == oldSolution )
+    if ( &solution == &oldSolution )
     {
         LAMA_THROWEXCEPTION( "alias of solution and oldSolution unsupported" )
     }
@@ -1286,7 +1282,7 @@ SyncToken* JDSStorage<ValueType>::jacobiIterateAsync(
 
     ContextPtr loc = getContextPtr();
 
-    if( loc->getType() == Context::Host )
+    if( loc->getType() == context::Host )
     {
         // On host we start directly a new task, avoids pushing accesses
 
@@ -1313,7 +1309,7 @@ SyncToken* JDSStorage<ValueType>::jacobiIterateAsync(
 
     LAMA_ASSERT_ERROR( mDiagonalProperty, *this << ": jacobiIterate requires diagonal property" )
 
-    if( solution == oldSolution )
+    if ( &solution == &oldSolution )
     {
         LAMA_THROWEXCEPTION( "alias of solution and oldSolution unsupported" )
     }
@@ -1326,21 +1322,21 @@ SyncToken* JDSStorage<ValueType>::jacobiIterateAsync(
     std::auto_ptr<SyncToken> syncToken( loc->getSyncToken() );
 
     shared_ptr<WriteAccess<ValueType> > wSolution( new WriteAccess<ValueType>( solution, loc ) );
-    syncToken->pushAccess( wSolution );
+    syncToken->pushToken( wSolution );
     shared_ptr<ReadAccess<IndexType> > jdsDLG( new ReadAccess<IndexType>( mDlg, loc ) );
-    syncToken->pushAccess( jdsDLG );
+    syncToken->pushToken( jdsDLG );
     shared_ptr<ReadAccess<IndexType> > jdsILG( new ReadAccess<IndexType>( mIlg, loc ) );
-    syncToken->pushAccess( jdsILG );
+    syncToken->pushToken( jdsILG );
     shared_ptr<ReadAccess<IndexType> > jdsPerm( new ReadAccess<IndexType>( mPerm, loc ) );
-    syncToken->pushAccess( jdsPerm );
+    syncToken->pushToken( jdsPerm );
     shared_ptr<ReadAccess<IndexType> > jdsJA( new ReadAccess<IndexType>( mJa, loc ) );
-    syncToken->pushAccess( jdsJA );
+    syncToken->pushToken( jdsJA );
     shared_ptr<ReadAccess<ValueType> > jdsValues( new ReadAccess<ValueType>( mValues, loc ) );
-    syncToken->pushAccess( jdsValues );
+    syncToken->pushToken( jdsValues );
     shared_ptr<ReadAccess<ValueType> > rOldSolution( new ReadAccess<ValueType>( oldSolution, loc ) );
-    syncToken->pushAccess( rOldSolution );
+    syncToken->pushToken( rOldSolution );
     shared_ptr<ReadAccess<ValueType> > rRhs( new ReadAccess<ValueType>( rhs, loc ) );
-    syncToken->pushAccess( rRhs );
+    syncToken->pushToken( rRhs );
 
     LAMA_CONTEXT_ACCESS( loc )
 
@@ -1502,11 +1498,11 @@ void JDSStorage<ValueType>::print() const
 
     cout << "JDSStorage of matrix " << mNumRows << " x " << mNumColumns;
     cout << ", #non-zero values = " << mNumValues << endl;
-    HostReadAccess<IndexType> perm( mPerm );
-    HostReadAccess<IndexType> ilg( mIlg );
-    HostReadAccess<IndexType> dlg( mDlg );
-    HostReadAccess<IndexType> ja( mJa );
-    HostReadAccess<ValueType> values( mValues );
+    ReadAccess<IndexType> perm( mPerm );
+    ReadAccess<IndexType> ilg( mIlg );
+    ReadAccess<IndexType> dlg( mDlg );
+    ReadAccess<IndexType> ja( mJa );
+    ReadAccess<ValueType> values( mValues );
 
     for( IndexType ii = 0; ii < mNumRows; ii++ )
     {

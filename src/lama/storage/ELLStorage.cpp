@@ -28,21 +28,17 @@
  * @brief Instantitions for template class ELLStorage.
  * @author Lauretta Schubert
  * @date 25.05.2011
- * @since 1.0.0
  */
 
 // hpp
 #include <lama/storage/ELLStorage.hpp>
 
 // others
-#include <lama/ContextAccess.hpp>
-#include <lama/HostReadAccess.hpp>
 #include <lama/LAMAArrayUtils.hpp>
 #include <lama/LAMAInterface.hpp>
-#include <lama/TaskSyncToken.hpp>
-#include <lama/NoSyncToken.hpp>
-#include <lama/ReadAccess.hpp>
-#include <lama/WriteAccess.hpp>
+#include <tasking/TaskSyncToken.hpp>
+#include <tasking/NoSyncToken.hpp>
+#include <memory/memory.hpp>
 
 // tracing
 #include <tracing/tracing.hpp>
@@ -56,6 +52,7 @@ namespace lama
 
 using std::auto_ptr;
 using boost::shared_ptr;
+using namespace tasking;
 
 /* --------------------------------------------------------------------------- */
 
@@ -73,7 +70,8 @@ ELLStorage<ValueType>::ELLStorage(
 {
     // TODO in other formats the last parameter is "const ContextPtr loc"
 
-    ContextPtr loc = ContextFactory::getContext( con );
+    ContextPtr loc = Context::getContextPtr( con );
+
     setContext( loc );
 
     // Initialization requires correct values for the IA array with 0
@@ -172,9 +170,9 @@ void ELLStorage<ValueType>::print() const
 
     cout << "ELLStorage " << mNumRows << " x " << mNumColumns << ", #values = " << getNumValues() << endl;
 
-    HostReadAccess<IndexType> ia( mIA );
-    HostReadAccess<IndexType> ja( mJA );
-    HostReadAccess<ValueType> values( mValues );
+    ReadAccess<IndexType> ia( mIA );
+    ReadAccess<IndexType> ja( mJA );
+    ReadAccess<ValueType> values( mValues );
 
     for( IndexType i = 0; i < mNumRows; i++ )
     {
@@ -899,7 +897,7 @@ void ELLStorage<ValueType>::compress( const ValueType eps /* = 0.0 */)
     LAMA_LOG_INFO( logger, "compress: eps = " << eps )
 
     // TODO: Implement for CUDA
-    ContextPtr loc = ContextFactory::getContext( Context::Host );
+    ContextPtr loc = Context::getContextPtr( context::Host );
 
     LAMA_INTERFACE_FN_T( compressIA, loc, ELLUtils, Helper, ValueType )
     LAMA_INTERFACE_FN_T( maxval, loc, Utils, Reductions, IndexType )
@@ -1007,7 +1005,7 @@ void ELLStorage<ValueType>::matrixTimesVector(
 
     // Possible alias of result and y must be handled by coressponding accesses
 
-    if( result == y )
+    if ( &result == &y )
     {
         // only write access for y, no read access for result
 
@@ -1062,7 +1060,7 @@ void ELLStorage<ValueType>::vectorTimesMatrix(
     LAMA_ASSERT_EQUAL_ERROR( x.size(), mNumRows )
     LAMA_ASSERT_EQUAL_ERROR( result.size(), mNumColumns )
 
-    if( ( beta != 0.0 ) && ( result != y ) )
+    if( ( beta != 0.0 ) && ( &result != &y ) )
     {
         LAMA_ASSERT_EQUAL_ERROR( y.size(), mNumColumns )
     }
@@ -1082,7 +1080,7 @@ void ELLStorage<ValueType>::vectorTimesMatrix(
 
     // Possible alias of result and y must be handled by coressponding accesses
 
-    if( result == y )
+    if ( &result == &y )
     {
         // only write access for y, no read access for result
 
@@ -1135,7 +1133,7 @@ SyncToken* ELLStorage<ValueType>::matrixTimesVectorAsync(
 
     LAMA_LOG_INFO( logger, *this << ": matrixTimesVectorAsync on " << *loc )
 
-    if( loc->getType() == Context::Host )
+    if( loc->getType() == context::Host )
     {
         // execution as separate thread
 
@@ -1186,7 +1184,7 @@ SyncToken* ELLStorage<ValueType>::matrixTimesVectorAsync(
 
     // Possible alias of result and y must be handled by coressponding accesses
 
-    if( result == y )
+    if ( &result == &y )
     {
         // only write access for y, no read access for result
 
@@ -1200,7 +1198,7 @@ SyncToken* ELLStorage<ValueType>::matrixTimesVectorAsync(
 
             shared_ptr<ReadAccess<IndexType> > rRowIndexes( new ReadAccess<IndexType>( mRowIndexes, loc ) );
 
-            syncToken->pushAccess( rRowIndexes );
+            syncToken->pushToken( rRowIndexes );
 
             LAMA_CONTEXT_ACCESS( loc )
 
@@ -1217,7 +1215,7 @@ SyncToken* ELLStorage<ValueType>::matrixTimesVectorAsync(
                         ellIA->get(), ellJA->get(), ellValues->get(), syncToken.get() );
         }
 
-        syncToken->pushAccess( wResult );
+        syncToken->pushToken( wResult );
     }
     else
     {
@@ -1229,14 +1227,14 @@ SyncToken* ELLStorage<ValueType>::matrixTimesVectorAsync(
         normalGEMV( wResult->get(), alpha, rX->get(), beta, rY->get(), mNumRows, mNumValuesPerRow, ellIA->get(),
                     ellJA->get(), ellValues->get(), syncToken.get() );
 
-        syncToken->pushAccess( wResult );
-        syncToken->pushAccess( rY );
+        syncToken->pushToken( wResult );
+        syncToken->pushToken( rY );
     }
 
-    syncToken->pushAccess( ellIA );
-    syncToken->pushAccess( ellJA );
-    syncToken->pushAccess( ellValues );
-    syncToken->pushAccess( rX );
+    syncToken->pushToken( ellIA );
+    syncToken->pushToken( ellJA );
+    syncToken->pushToken( ellValues );
+    syncToken->pushToken( rX );
 
     return syncToken.release();
 }
@@ -1263,7 +1261,7 @@ SyncToken* ELLStorage<ValueType>::vectorTimesMatrixAsync(
 
     LAMA_LOG_INFO( logger, *this << ": vectorTimesMatrixAsync on " << *loc )
 
-    if( loc->getType() == Context::Host )
+    if( loc->getType() == context::Host )
     {
         // execution as separate thread
 
@@ -1288,7 +1286,7 @@ SyncToken* ELLStorage<ValueType>::vectorTimesMatrixAsync(
     LAMA_ASSERT_EQUAL_ERROR( x.size(), mNumRows )
     LAMA_ASSERT_EQUAL_ERROR( result.size(), mNumColumns )
 
-    if( ( beta != 0.0 ) && ( result != y ) )
+    if ( ( beta != 0.0 ) && ( &result != &y ) )
     {
         LAMA_ASSERT_EQUAL_ERROR( y.size(), mNumColumns )
     }
@@ -1308,7 +1306,7 @@ SyncToken* ELLStorage<ValueType>::vectorTimesMatrixAsync(
 
     // Possible alias of result and y must be handled by coressponding accesses
 
-    if( result == y )
+    if ( &result == &y )
     {
         // only write access for y, no read access for result
 
@@ -1322,7 +1320,7 @@ SyncToken* ELLStorage<ValueType>::vectorTimesMatrixAsync(
 
             shared_ptr<ReadAccess<IndexType> > rows( new ReadAccess<IndexType>( mRowIndexes, loc ) );
 
-            syncToken->pushAccess( rows );
+            syncToken->pushToken( rows );
 
             LAMA_CONTEXT_ACCESS( loc )
 
@@ -1339,7 +1337,7 @@ SyncToken* ELLStorage<ValueType>::vectorTimesMatrixAsync(
                         ellSizes->get(), ellJA->get(), ellValues->get(), syncToken.get() );
         }
 
-        syncToken->pushAccess( wResult );
+        syncToken->pushToken( wResult );
     }
     else
     {
@@ -1351,14 +1349,14 @@ SyncToken* ELLStorage<ValueType>::vectorTimesMatrixAsync(
         normalGEVM( wResult->get(), alpha, rX->get(), beta, rY->get(), mNumRows, mNumColumns, mNumValuesPerRow,
                     ellSizes->get(), ellJA->get(), ellValues->get(), syncToken.get() );
 
-        syncToken->pushAccess( wResult );
-        syncToken->pushAccess( rY );
+        syncToken->pushToken( wResult );
+        syncToken->pushToken( rY );
     }
 
-    syncToken->pushAccess( ellSizes );
-    syncToken->pushAccess( ellJA );
-    syncToken->pushAccess( ellValues );
-    syncToken->pushAccess( rX );
+    syncToken->pushToken( ellSizes );
+    syncToken->pushToken( ellJA );
+    syncToken->pushToken( ellValues );
+    syncToken->pushToken( rX );
 
     return syncToken.release();
 }
@@ -1378,7 +1376,7 @@ void ELLStorage<ValueType>::jacobiIterate(
 
     LAMA_ASSERT_ERROR( mDiagonalProperty, *this << ": jacobiIterate requires diagonal property" )
 
-    if( solution == oldSolution )
+    if ( &solution == &oldSolution )
     {
         LAMA_THROWEXCEPTION( "alias of solution and oldSolution unsupported" )
     }
@@ -1420,7 +1418,7 @@ SyncToken* ELLStorage<ValueType>::jacobiIterateAsync(
 
     ContextPtr loc = getContextPtr();
 
-    if( loc->getType() == Context::Host )
+    if( loc->getType() == context::Host )
     {
         // used later in OpenMP to generate a TaskSyncToken
 
@@ -1445,7 +1443,7 @@ SyncToken* ELLStorage<ValueType>::jacobiIterateAsync(
 
     LAMA_ASSERT_ERROR( mDiagonalProperty, *this << ": jacobiIterate requires diagonal property" )
 
-    if( solution == oldSolution )
+    if ( &solution == &oldSolution )
     {
         LAMA_THROWEXCEPTION( "alias of solution and oldSolution unsupported" )
     }
@@ -1473,12 +1471,12 @@ SyncToken* ELLStorage<ValueType>::jacobiIterateAsync(
     jacobi( wSolution->get(), mNumRows, mNumValuesPerRow, ellSizes->get(), ellJA->get(), ellValues->get(),
             rOldSolution->get(), rRhs->get(), omega, syncToken.get() );
 
-    syncToken->pushAccess( rRhs );
-    syncToken->pushAccess( rOldSolution );
-    syncToken->pushAccess( ellValues );
-    syncToken->pushAccess( ellJA );
-    syncToken->pushAccess( ellSizes );
-    syncToken->pushAccess( wSolution );
+    syncToken->pushToken( rRhs );
+    syncToken->pushToken( rOldSolution );
+    syncToken->pushToken( ellValues );
+    syncToken->pushToken( ellJA );
+    syncToken->pushToken( ellSizes );
+    syncToken->pushToken( wSolution );
 
     return syncToken.release();
 }
@@ -1750,7 +1748,7 @@ void ELLStorage<ValueType>::matrixTimesMatrixELL(
                    *this << ": = " << alpha << " * A * B, with " << "A = " << a << ", B = " << b << ", all are ELL" )
 
     // TODO: Implement for CUDA
-    ContextPtr loc = ContextFactory::getContext( Context::Host );
+    ContextPtr loc = Context::getContextPtr( context::Host );
 
     LAMA_INTERFACE_FN( matrixMultiplySizes, loc, ELLUtils, MatrixExpBuild )
     LAMA_INTERFACE_FN_T( maxval, loc, Utils, Reductions, IndexType )
@@ -1812,7 +1810,7 @@ void ELLStorage<ValueType>::matrixAddMatrixELL(
                    "this = " << alpha << " * A + " << beta << " * B, with " << "A = " << a << ", B = " << b << ", all are ELL" )
 
     // TODO: Implement for CUDA
-    ContextPtr loc = ContextFactory::getContext( Context::Host );
+    ContextPtr loc = Context::getContextPtr( context::Host );
 
     LAMA_INTERFACE_FN( matrixAddSizes, loc, ELLUtils, MatrixExpBuild )
     LAMA_INTERFACE_FN_T( maxval, loc, Utils, Reductions, IndexType )

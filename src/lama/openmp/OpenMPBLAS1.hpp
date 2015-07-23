@@ -38,7 +38,7 @@
 
 // others
 #include <lama/LAMATypes.hpp>
-#include <lama/SyncToken.hpp>
+#include <tasking/SyncToken.hpp>
 
 // logging
 #include <logging/logging.hpp>
@@ -67,25 +67,25 @@ public:
         const ValueType alpha,
         ValueType* x,
         const IndexType incX,
-        SyncToken* syncToken );
+        tasking::SyncToken* syncToken );
 
     /**
      * This function is the OpenMP implementation of lama::BLASInterface::nrm2
      */
     template<typename ValueType>
-    static ValueType nrm2( const IndexType n, const ValueType* x, const IndexType incX, SyncToken* syncToken );
+    static ValueType nrm2( const IndexType n, const ValueType* x, const IndexType incX, tasking::SyncToken* syncToken );
 
     /**
      * This function is the OpenMP implementation of lama::BLASInterface::asum
      */
     template<typename ValueType>
-    static ValueType asum( const IndexType n, const ValueType* x, const IndexType incX, SyncToken* syncToken );
+    static ValueType asum( const IndexType n, const ValueType* x, const IndexType incX, tasking::SyncToken* syncToken );
 
     /**
      * This function is the OpenMP implementation of lama::BLASInterface::iamax
      */
     template<typename ValueType>
-    static IndexType iamax( const IndexType n, const ValueType* x, const IndexType incX, SyncToken* syncToken );
+    static IndexType iamax( const IndexType n, const ValueType* x, const IndexType incX, tasking::SyncToken* syncToken );
 
     /**
      * This function is the OpenMP implementation of lama::BLASInterface::swap
@@ -97,7 +97,7 @@ public:
         const IndexType incY,
         ValueType* x,
         const IndexType incX,
-        SyncToken* syncToken );
+        tasking::SyncToken* syncToken );
 
     /**
      * This function is the OpenMP implementation of lama::BLASInterface::copy
@@ -109,7 +109,7 @@ public:
         const IndexType incX,
         ValueType* y,
         const IndexType incY,
-        SyncToken* syncToken );
+        tasking::SyncToken* syncToken );
 
     /**
      * This function is the OpenMP implementation of lama::BLASInterface::axpy
@@ -122,7 +122,7 @@ public:
         const IndexType incX,
         ValueType* y,
         const IndexType incY,
-        SyncToken* syncToken );
+        tasking::SyncToken* syncToken );
 
     /**
      * This function is the OpenMP implementation of lama::BLASInterface::dot
@@ -134,7 +134,7 @@ public:
         const IndexType incX,
         const ValueType* y,
         const IndexType incY,
-        SyncToken* syncToken );
+        tasking::SyncToken* syncToken );
 
     /**
      * This function is the OpenMP implementation of lama::BLASInterface::sum
@@ -147,7 +147,7 @@ public:
         ValueType beta,
         const ValueType* y,
         ValueType* z,
-        SyncToken* syncToken );
+        tasking::SyncToken* syncToken );
 
     static void setInterface( struct BLASInterface& BLAS );
 

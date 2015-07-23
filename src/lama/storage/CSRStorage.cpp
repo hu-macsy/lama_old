@@ -36,17 +36,15 @@
 
 // others
 #include <lama/LAMAInterface.hpp>
-#include <lama/ContextAccess.hpp>
-#include <lama/HostReadAccess.hpp>
-#include <lama/HostWriteAccess.hpp>
 
 #include <lama/storage/StorageMethods.hpp>
 
 #include <lama/LAMAArrayUtils.hpp>
 
 #include <lama/distribution/Redistributor.hpp>
+#include <memory/memory.hpp>
 
-#include <lama/TaskSyncToken.hpp>
+#include <tasking/TaskSyncToken.hpp>
 
 #include <lama/openmp/OpenMPUtils.hpp>
 #include <lama/openmp/OpenMPCSRUtils.hpp>
@@ -67,6 +65,8 @@ namespace lama
 using std::abs;
 using std::auto_ptr;
 using boost::shared_ptr;
+
+using tasking::TaskSyncToken;
 
 /* --------------------------------------------------------------------------- */
 
@@ -90,7 +90,7 @@ CSRStorage<ValueType>::CSRStorage(
     const IndexType numValues,
     const LAMAArray<IndexType>& ia,
     const LAMAArray<IndexType>& ja,
-    const _LAMAArray& values )
+    const ContextArray& values )
 
     : CRTPMatrixStorage<CSRStorage<ValueType>,ValueType>()
 {
@@ -107,9 +107,9 @@ void CSRStorage<ValueType>::print() const
 
     cout << "CSRStorage " << mNumRows << " x " << mNumColumns << ", #values = " << mNumValues << endl;
 
-    HostReadAccess<IndexType> ia( mIa );
-    HostReadAccess<IndexType> ja( mJa );
-    HostReadAccess<ValueType> values( mValues );
+    ReadAccess<IndexType> ia( mIa );
+    ReadAccess<IndexType> ja( mJa );
+    ReadAccess<ValueType> values( mValues );
 
     for( IndexType i = 0; i < mNumRows; i++ )
     {
@@ -251,9 +251,9 @@ void CSRStorage<ValueType>::setIdentity( const IndexType size )
 
     mNumValues = mNumRows;
 
-    HostWriteOnlyAccess<IndexType> ia( mIa, mNumRows + 1 );
-    HostWriteOnlyAccess<IndexType> ja( mJa, mNumValues );
-    HostWriteOnlyAccess<ValueType> values( mValues, mNumValues );
+    WriteOnlyAccess<IndexType> ia( mIa, mNumRows + 1 );
+    WriteOnlyAccess<IndexType> ja( mJa, mNumValues );
+    WriteOnlyAccess<ValueType> values( mValues, mNumValues );
 
     ValueType one = static_cast<ValueType>( 1.0 );
 
@@ -403,9 +403,9 @@ template<typename ValueType>
 void CSRStorage<ValueType>::sortRows( bool diagonalProperty )
 {
     {
-        HostReadAccess<IndexType> csrIA( mIa );
-        HostWriteAccess<IndexType> csrJA( mJa );
-        HostWriteAccess<ValueType> csrValues( mValues );
+        ReadAccess<IndexType> csrIA( mIa );
+        WriteAccess<IndexType> csrJA( mJa );
+        WriteAccess<ValueType> csrValues( mValues );
 
         OpenMPCSRUtils::sortRowElements( csrJA.get(), csrValues.get(), csrIA.get(), mNumRows, diagonalProperty );
     }
@@ -462,14 +462,14 @@ void CSRStorage<ValueType>::buildRowIndexes()
         return;
     }
 
-    if( getContext().getType() != Context::Host )
+    if( getContext().getType() != context::Host )
     {
         LAMA_LOG_INFO( logger, "CSRStorage: build row indices is currently only implemented on host" )
     }
 
     // This routine is only available on the Host
 
-    ContextPtr loc = ContextFactory::getContext( Context::Host );
+    ContextPtr loc = Context::getContextPtr( context::Host );
 
     ReadAccess<IndexType> csrIA( mIa, loc );
 
@@ -611,7 +611,7 @@ void CSRStorage<ValueType>::allocate( IndexType numRows, IndexType numColumns )
     mJa.clear();
     mValues.clear();
 
-    HostWriteOnlyAccess<IndexType> ia( mIa, mNumRows + 1 );
+    WriteOnlyAccess<IndexType> ia( mIa, mNumRows + 1 );
 
     // make a correct initialization for the offset array
 
@@ -625,9 +625,9 @@ void CSRStorage<ValueType>::allocate( IndexType numRows, IndexType numColumns )
 template<typename ValueType>
 void CSRStorage<ValueType>::compress( const ValueType eps /* = 0.0 */)
 {
-    HostWriteAccess<IndexType> ia( mIa );
-    HostReadAccess<IndexType> ja( mJa );
-    HostReadAccess<ValueType> values( mValues );
+    WriteAccess<IndexType> ia( mIa );
+    ReadAccess<IndexType> ja( mJa );
+    ReadAccess<ValueType> values( mValues );
 
     IndexType nonDiagZeros = 0;
 
@@ -659,8 +659,8 @@ void CSRStorage<ValueType>::compress( const ValueType eps /* = 0.0 */)
     LAMAArray<ValueType> newValuesArray;
     LAMAArray<IndexType> newJaArray;
 
-    HostWriteOnlyAccess<ValueType> newValues( newValuesArray, newNumValues );
-    HostWriteOnlyAccess<IndexType> newJa( newJaArray, newNumValues );
+    WriteOnlyAccess<ValueType> newValues( newValuesArray, newNumValues );
+    WriteOnlyAccess<IndexType> newJa( newJaArray, newNumValues );
 
     IndexType gap = 0;
 
@@ -719,7 +719,7 @@ void CSRStorage<ValueType>::swap( LAMAArray<IndexType>& ia, LAMAArray<IndexType>
     IndexType numValues = 0;
 
     {
-        HostReadAccess<IndexType> csrIA( ia );
+        ReadAccess<IndexType> csrIA( ia );
         numValues = csrIA[mNumRows];
     }
 
@@ -767,9 +767,9 @@ template<typename ValueType>
 ValueType CSRStorage<ValueType>::getValue( const IndexType i, const IndexType j ) const
 {
     LAMA_LOG_TRACE( logger, "get value (" << i << ", " << j << ")" )
-    const HostReadAccess<IndexType> ia( mIa );
-    const HostReadAccess<IndexType> ja( mJa );
-    const HostReadAccess<ValueType> values( mValues );
+    const ReadAccess<IndexType> ia( mIa );
+    const ReadAccess<IndexType> ja( mJa );
+    const ReadAccess<ValueType> values( mValues );
     ValueType myValue = 0;
 
     LAMA_LOG_TRACE( logger, "search column in ja from " << ia[i] << ":" << ia[i + 1] )
@@ -864,8 +864,8 @@ void CSRStorage<ValueType>::setDiagonalImpl( const Scalar value )
 
     ValueType val = value.getValue<ValueType>();
 
-    HostReadAccess<IndexType> wIa( mIa );
-    HostWriteAccess<ValueType> wValues( mValues );
+    ReadAccess<IndexType> wIa( mIa );
+    WriteAccess<ValueType> wValues( mValues );
 
     for( IndexType i = 0; i < numDiagonalElements; ++i )
     {
@@ -882,10 +882,10 @@ void CSRStorage<ValueType>::setDiagonalImpl( const LAMAArray<OtherValueType>& di
     IndexType numDiagonalElements = diagonal.size();
 
     {
-        HostReadAccess<OtherValueType> rDiagonal( diagonal );
-        HostReadAccess<IndexType> csrIA( mIa );
+        ReadAccess<OtherValueType> rDiagonal( diagonal );
+        ReadAccess<IndexType> csrIA( mIa );
 
-        HostWriteAccess<ValueType> wValues( mValues ); // partial setting
+        WriteAccess<ValueType> wValues( mValues ); // partial setting
 
         //  wValues[ wIa[ i ] ] = rDiagonal[ i ];
 
@@ -907,11 +907,11 @@ void CSRStorage<ValueType>::getRowImpl( LAMAArray<OtherType>& row, const IndexTy
 {
     LAMA_ASSERT_DEBUG( i >= 0 && i < mNumRows, "row index " << i << " out of range" )
 
-    HostWriteOnlyAccess<OtherType> wRow( row, mNumColumns );
+    WriteOnlyAccess<OtherType> wRow( row, mNumColumns );
 
-    const HostReadAccess<IndexType> ia( mIa );
-    const HostReadAccess<IndexType> ja( mJa );
-    const HostReadAccess<ValueType> values( mValues );
+    const ReadAccess<IndexType> ia( mIa );
+    const ReadAccess<IndexType> ja( mJa );
+    const ReadAccess<ValueType> values( mValues );
 
     for( IndexType j = 0; j < mNumColumns; ++j )
     {
@@ -933,7 +933,7 @@ void CSRStorage<ValueType>::getDiagonalImpl( LAMAArray<OtherValueType>& diagonal
     const IndexType numDiagonalElements = std::min( mNumColumns, mNumRows );
 
     ContextPtr loc = getContextPtr();
-    WriteAccess<OtherValueType> wDiagonal( diagonal, loc, numDiagonalElements, false );
+    WriteOnlyAccess<OtherValueType> wDiagonal( diagonal, loc, numDiagonalElements );
     ReadAccess<IndexType> csrIA( mIa, loc );
     ReadAccess<ValueType> rValues( mValues, loc );
 
@@ -945,10 +945,10 @@ void CSRStorage<ValueType>::getDiagonalImpl( LAMAArray<OtherValueType>& diagonal
     /*
      const IndexType numDiagonalElements = std::min( mNumColumns, mNumRows );
 
-     HostWriteOnlyAccess<OtherValueType> wDiagonal( diagonal, numDiagonalElements );
+     WriteOnlyAccess<OtherValueType> wDiagonal( diagonal, numDiagonalElements );
 
-     HostReadAccess<IndexType> csrIA( mIa );
-     HostReadAccess<ValueType> rValues( mValues );
+     ReadAccess<IndexType> csrIA( mIa );
+     ReadAccess<ValueType> rValues( mValues );
 
      //  diagonal[ i ] = rValues[ csrIA[ i ] ], diagonal values are at the offsets
 
@@ -1265,7 +1265,7 @@ void CSRStorage<ValueType>::matrixTimesVector(
     LAMA_ASSERT_EQUAL_ERROR( x.size(), mNumColumns )
     LAMA_ASSERT_EQUAL_ERROR( result.size(), mNumRows )
 
-    if( ( beta != 0.0 ) && ( result != y ) )
+    if( ( beta != 0.0 ) && ( &result != &y ) )
     {
         LAMA_ASSERT_EQUAL_ERROR( y.size(), mNumRows )
     }
@@ -1285,7 +1285,7 @@ void CSRStorage<ValueType>::matrixTimesVector(
 
     // Possible alias of result and y must be handled by coressponding accesses
 
-    if( result == y )
+    if( &result == &y )
     {
         // only write access for y, no read access for result
 
@@ -1340,7 +1340,7 @@ void CSRStorage<ValueType>::vectorTimesMatrix(
     LAMA_ASSERT_EQUAL_ERROR( x.size(), mNumRows )
     LAMA_ASSERT_EQUAL_ERROR( result.size(), mNumColumns )
 
-    if( ( beta != 0.0 ) && ( result != y ) )
+    if( ( beta != 0.0 ) && ( &result != &y ) )
     {
         LAMA_ASSERT_EQUAL_ERROR( y.size(), mNumColumns )
     }
@@ -1360,7 +1360,7 @@ void CSRStorage<ValueType>::vectorTimesMatrix(
 
     // Possible alias of result and y must be handled by coressponding accesses
 
-    if( result == y )
+    if( &result == &y )
     {
         // only write access for y, no read access for result
 
@@ -1416,7 +1416,7 @@ void CSRStorage<ValueType>::matrixTimesVectorN(
     LAMA_ASSERT_EQUAL_ERROR( x.size(), n * mNumColumns )
     LAMA_ASSERT_EQUAL_ERROR( result.size(), n * mNumRows )
 
-    if( ( beta != 0.0 ) && ( result != y ) )
+    if( ( beta != 0.0 ) && ( &result != &y ) )
     {
         LAMA_ASSERT_EQUAL_ERROR( y.size(), n * mNumRows )
     }
@@ -1435,7 +1435,7 @@ void CSRStorage<ValueType>::matrixTimesVectorN(
 
     // Possible alias of result and y must be handled by coressponding accesses
 
-    if( result == y )
+    if( &result == &y )
     {
         // only write access for y, no read access for result
 
@@ -1480,7 +1480,7 @@ SyncToken* CSRStorage<ValueType>::matrixTimesVectorAsync(
 
     LAMA_LOG_INFO( logger, *this << ": matrixTimesVectorAsync on " << *loc )
 
-    if( loc->getType() == Context::Host )
+    if( loc->getType() == context::Host )
     {
         // execution as separate thread
 
@@ -1505,7 +1505,7 @@ SyncToken* CSRStorage<ValueType>::matrixTimesVectorAsync(
     LAMA_ASSERT_EQUAL_ERROR( x.size(), mNumColumns )
     LAMA_ASSERT_EQUAL_ERROR( result.size(), mNumRows )
 
-    if( ( beta != 0.0 ) && ( result != y ) )
+    if( ( beta != 0.0 ) && ( &result != &y ) )
     {
         LAMA_ASSERT_EQUAL_ERROR( y.size(), mNumRows )
     }
@@ -1525,7 +1525,7 @@ SyncToken* CSRStorage<ValueType>::matrixTimesVectorAsync(
 
     // Possible alias of result and y must be handled by coressponding accesses
 
-    if( result == y )
+    if( &result == &y )
     {
         // only write access for y, no read access for result
 
@@ -1539,7 +1539,7 @@ SyncToken* CSRStorage<ValueType>::matrixTimesVectorAsync(
 
             shared_ptr<ReadAccess<IndexType> > rows( new ReadAccess<IndexType>( mRowIndexes, loc ) );
 
-            syncToken->pushAccess( rows );
+            syncToken->pushToken( rows );
 
             LAMA_CONTEXT_ACCESS( loc )
 
@@ -1556,7 +1556,7 @@ SyncToken* CSRStorage<ValueType>::matrixTimesVectorAsync(
                         csrIA->get(), csrJA->get(), csrValues->get(), syncToken.get() );
         }
 
-        syncToken->pushAccess( wResult );
+        syncToken->pushToken( wResult );
     }
     else
     {
@@ -1568,14 +1568,14 @@ SyncToken* CSRStorage<ValueType>::matrixTimesVectorAsync(
         normalGEMV( wResult->get(), alpha, rX->get(), beta, rY->get(), mNumRows, mNumColumns, mNumValues, csrIA->get(),
                     csrJA->get(), csrValues->get(), syncToken.get() );
 
-        syncToken->pushAccess( wResult );
-        syncToken->pushAccess( rY );
+        syncToken->pushToken( wResult );
+        syncToken->pushToken( rY );
     }
 
-    syncToken->pushAccess( csrIA );
-    syncToken->pushAccess( csrJA );
-    syncToken->pushAccess( csrValues );
-    syncToken->pushAccess( rX );
+    syncToken->pushToken( csrIA );
+    syncToken->pushToken( csrJA );
+    syncToken->pushToken( csrValues );
+    syncToken->pushToken( rX );
 
     return syncToken.release();
 }
@@ -1602,7 +1602,7 @@ SyncToken* CSRStorage<ValueType>::vectorTimesMatrixAsync(
 
     LAMA_LOG_INFO( logger, *this << ": vectorTimesMatrixAsync on " << *loc )
 
-    if( loc->getType() == Context::Host )
+    if( loc->getType() == context::Host )
     {
         // execution as separate thread
 
@@ -1627,7 +1627,7 @@ SyncToken* CSRStorage<ValueType>::vectorTimesMatrixAsync(
     LAMA_ASSERT_EQUAL_ERROR( x.size(), mNumRows )
     LAMA_ASSERT_EQUAL_ERROR( result.size(), mNumColumns )
 
-    if( ( beta != 0.0 ) && ( result != y ) )
+    if( ( beta != 0.0 ) && ( &result != &y ) )
     {
         LAMA_ASSERT_EQUAL_ERROR( y.size(), mNumColumns )
     }
@@ -1647,7 +1647,7 @@ SyncToken* CSRStorage<ValueType>::vectorTimesMatrixAsync(
 
     // Possible alias of result and y must be handled by coressponding accesses
 
-    if( result == y )
+    if( &result == &y )
     {
         // only write access for y, no read access for result
 
@@ -1661,7 +1661,7 @@ SyncToken* CSRStorage<ValueType>::vectorTimesMatrixAsync(
 
             shared_ptr<ReadAccess<IndexType> > rows( new ReadAccess<IndexType>( mRowIndexes, loc ) );
 
-            syncToken->pushAccess( rows );
+            syncToken->pushToken( rows );
 
             LAMA_CONTEXT_ACCESS( loc )
 
@@ -1678,7 +1678,7 @@ SyncToken* CSRStorage<ValueType>::vectorTimesMatrixAsync(
                         csrJA->get(), csrValues->get(), syncToken.get() );
         }
 
-        syncToken->pushAccess( wResult );
+        syncToken->pushToken( wResult );
     }
     else
     {
@@ -1690,14 +1690,14 @@ SyncToken* CSRStorage<ValueType>::vectorTimesMatrixAsync(
         normalGEVM( wResult->get(), alpha, rX->get(), beta, rY->get(), mNumRows, mNumColumns, csrIA->get(),
                     csrJA->get(), csrValues->get(), syncToken.get() );
 
-        syncToken->pushAccess( wResult );
-        syncToken->pushAccess( rY );
+        syncToken->pushToken( wResult );
+        syncToken->pushToken( rY );
     }
 
-    syncToken->pushAccess( csrIA );
-    syncToken->pushAccess( csrJA );
-    syncToken->pushAccess( csrValues );
-    syncToken->pushAccess( rX );
+    syncToken->pushToken( csrIA );
+    syncToken->pushToken( csrJA );
+    syncToken->pushToken( csrValues );
+    syncToken->pushToken( rX );
 
     return syncToken.release();
 }
@@ -1717,7 +1717,7 @@ void CSRStorage<ValueType>::jacobiIterate(
 
     LAMA_ASSERT_ERROR( mDiagonalProperty, *this << ": jacobiIterate requires diagonal property" )
 
-    if( solution == oldSolution )
+    if( &solution == &oldSolution )
     {
         LAMA_THROWEXCEPTION( "alias of solution and oldSolution unsupported" )
     }
@@ -1729,7 +1729,7 @@ void CSRStorage<ValueType>::jacobiIterate(
 
     ContextPtr loc = getContextPtr();
 
-    // loc = ContextFactory::getContext( Context::Host );  // does not run on other devices
+    // loc = ContextFactory::getContext( context::Host );  // does not run on other devices
 
     LAMA_INTERFACE_FN_T( jacobi, loc, CSRUtils, Solver, ValueType )
 
@@ -1995,7 +1995,7 @@ void CSRStorage<ValueType>::matrixTimesMatrix(
 
     // now we have in any case all arguments as CSR Storage
 
-    ContextPtr loc = ContextFactory::getContext( Context::Host );
+    ContextPtr loc = Context::getContextPtr( context::Host );
 
     if( a.getContext().getType() == b.getContext().getType() )
     {
@@ -2036,7 +2036,7 @@ void CSRStorage<ValueType>::matrixAddMatrixCSR(
                    "this = " << alpha << " * A + " << beta << " * B, with " << "A = " << a << ", B = " << b << ", all are CSR" )
 
 //    // TODO: just temporary, MAKE loc const again!
-//    loc = ContextFactory::getContext( Context::Host );
+//    loc = Context::getContextPtr( context::Host );
 
     LAMA_INTERFACE_FN( matrixAddSizes, loc, CSRUtils, Offsets )
     LAMA_INTERFACE_FN_T( matrixAdd, loc, CSRUtils, Mult, ValueType )
@@ -2328,8 +2328,8 @@ void CSRStorage<ValueType>::buildSparseRowSizes( LAMAArray<IndexType>& rowSizes 
 {
     LAMA_LOG_DEBUG( logger, "copy nnz for each row in LAMAArray" );
 
-    HostWriteOnlyAccess<IndexType> writeRowSizes( rowSizes, mNumRows );
-    HostReadAccess<IndexType> csrIA( mIa );
+    WriteOnlyAccess<IndexType> writeRowSizes( rowSizes, mNumRows );
+    ReadAccess<IndexType> csrIA( mIa );
 
     OpenMPCSRUtils::offsets2sizes( writeRowSizes.get(), csrIA.get(), mNumRows );
 }

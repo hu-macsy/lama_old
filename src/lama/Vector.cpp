@@ -79,7 +79,7 @@ Vector::CreatorMap& Vector::getFactory()
     return *factory;
 }
 
-void Vector::addCreator( const VectorKind kind, Scalar::ScalarType type, CreateFn create )
+void Vector::addCreator( const VectorKind kind, memory::ScalarType type, CreateFn create )
 {
     CreatorMap& factory = getFactory();
 
@@ -88,7 +88,7 @@ void Vector::addCreator( const VectorKind kind, Scalar::ScalarType type, CreateF
     factory[CreatorKey( kind, type )] = create;
 }
 
-Vector* Vector::getVector( const VectorKind kind, Scalar::ScalarType type )
+Vector* Vector::getVector( const VectorKind kind, memory::ScalarType type )
 {
     Vector* newVector = NULL;
 
@@ -109,7 +109,7 @@ Vector* Vector::getVector( const VectorKind kind, Scalar::ScalarType type )
     return newVector;
 }
 
-Vector* Vector::createVector( const Scalar::ScalarType valueType, DistributionPtr distribution )
+Vector* Vector::createVector( const memory::ScalarType valueType, DistributionPtr distribution )
 {
     Vector* v = getVector( DENSE, valueType );
     v->resize( distribution );
@@ -125,7 +125,7 @@ Vector::Vector( const IndexType size, ContextPtr context )
 {
     if( !mContext )
     {
-        mContext = ContextFactory::getContext( Context::Host );
+        mContext = Context::getContextPtr( context::Host );
     }
 
     LAMA_LOG_INFO( logger, "Vector(" << size << "), replicated, on " << *mContext )
@@ -136,7 +136,7 @@ Vector::Vector( DistributionPtr distribution, ContextPtr context )
 {
     if( !mContext )
     {
-        mContext = ContextFactory::getContext( Context::Host );
+        mContext = Context::getContextPtr( context::Host );
     }
 
     LAMA_LOG_INFO( logger,

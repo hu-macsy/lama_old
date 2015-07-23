@@ -278,7 +278,7 @@ public:
     virtual void setDenseData(
         DistributionPtr rowDistribution,
         DistributionPtr colDistribution,
-        const _LAMAArray& values,
+        const ContextArray& values,
         const Scalar eps );
 
     /** Implementation for pure method Matrix::setCSRData. */
@@ -289,18 +289,18 @@ public:
         const IndexType numValues,
         const LAMAArray<IndexType>& ia,
         const LAMAArray<IndexType>& ja,
-        const _LAMAArray& values );
+        const ContextArray& values );
 
     /** Implementation of pure method for the dense storage format. */
 
-    virtual void buildCSRData( LAMAArray<IndexType>& rowIA, LAMAArray<IndexType>& rowJA, _LAMAArray& rowValues ) const;
+    virtual void buildCSRData( LAMAArray<IndexType>& rowIA, LAMAArray<IndexType>& rowJA, ContextArray& rowValues ) const;
 
     /** Implementation of pure method. */
 
     virtual void setCSRData(
         const LAMAArray<IndexType>& rowIA,
         const LAMAArray<IndexType>& rowJA,
-        const _LAMAArray& rowValues,
+        const ContextArray& rowValues,
         DistributionPtr rowDistribution,
         DistributionPtr colDistribution );
 
@@ -309,7 +309,7 @@ public:
     void setCSRDataLocal(
         const LAMAArray<IndexType>& rowIA,
         const LAMAArray<IndexType>& rowJA,
-        const _LAMAArray& rowValues ) const;
+        const ContextArray& rowValues ) const;
 
     /* Implementation of pure method of class Matrix. */
 
@@ -523,7 +523,7 @@ public:
 
     /* Implementation of pure method of class Matrix. */
 
-    virtual Scalar::ScalarType getValueType() const;
+    virtual memory::ScalarType getValueType() const;
 
     /** Method writes dense matrix to a file.
      *

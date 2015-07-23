@@ -40,11 +40,15 @@
 #include <lama/macros/interface.hpp>
 #include <lama/BLASInterface.hpp>
 
+namespace tasking
+{
+    class SyncToken;
+}
+
+// forward declaration
 namespace lama
 {
 
-class SyncToken;
-// forward declaration
 
 /** Structure with pointers for all Utils methods. */
 

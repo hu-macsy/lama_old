@@ -72,8 +72,8 @@ Redistributor::Redistributor( DistributionPtr targetDistribution, DistributionPt
     // localSourceIndexes, localTargetIndexes are used for local permutation
     // we do not know the exact sizes now so we take maximal value
 
-    HostWriteOnlyAccess<IndexType> localSourceIndexes( mLocalSourceIndexes, mSourceSize );
-    HostWriteOnlyAccess<IndexType> localTargetIndexes( mLocalTargetIndexes, mTargetSize );
+    WriteOnlyAccess<IndexType> localSourceIndexes( mLocalSourceIndexes, mSourceSize );
+    WriteOnlyAccess<IndexType> localTargetIndexes( mLocalTargetIndexes, mTargetSize );
 
     std::vector<IndexType> requiredIndexes;
 
@@ -125,9 +125,9 @@ Redistributor::Redistributor( DistributionPtr targetDistribution, DistributionPt
 
     const CommunicationPlan& providesPlan = halo.getProvidesPlan();
 
-    HostWriteAccess<IndexType> haloSourceIndexes( mHaloSourceIndexes );
-    HostWriteAccess<IndexType> haloTargetIndexes( mHaloTargetIndexes );
-    HostReadAccess<IndexType> haloProvidesIndexes( halo.getProvidesIndexes() );
+    WriteAccess<IndexType> haloSourceIndexes( mHaloSourceIndexes );
+    WriteAccess<IndexType> haloTargetIndexes( mHaloTargetIndexes );
+    ReadAccess<IndexType> haloProvidesIndexes( halo.getProvidesIndexes() );
 
     haloSourceIndexes.resize( providesPlan.totalQuantity() );
 
@@ -259,8 +259,8 @@ void Redistributor::buildRowPlans(
     // For building the new schedule we need the sizes, can be calculated by the offsets
 
     {
-        HostReadAccess<IndexType> indexes( mHaloSourceIndexes );
-        HostReadAccess<IndexType> sizes( sourceSizes );
+        ReadAccess<IndexType> indexes( mHaloSourceIndexes );
+        ReadAccess<IndexType> sizes( sourceSizes );
 
         for( IndexType i = 0; i < numProvides; i++ )
         {
@@ -271,8 +271,8 @@ void Redistributor::buildRowPlans(
     }
 
     {
-        HostReadAccess<IndexType> indexes( mHaloTargetIndexes );
-        HostReadAccess<IndexType> sizes( targetSizes );
+        ReadAccess<IndexType> indexes( mHaloTargetIndexes );
+        ReadAccess<IndexType> sizes( targetSizes );
 
         for( IndexType i = 0; i < numRequired; i++ )
         {

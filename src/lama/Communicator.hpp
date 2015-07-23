@@ -41,10 +41,9 @@
 
 // others
 #include <lama/LAMATypes.hpp>
-#include <lama/HostReadAccess.hpp>
-#include <lama/HostWriteAccess.hpp>
+#include <memory/memory.hpp>
 #include <lama/CommunicationPlan.hpp>
-#include <lama/SyncToken.hpp>
+#include <tasking/SyncToken.hpp>
 
 #include <lama/exception/LAMAAssert.hpp>
 
@@ -59,12 +58,15 @@
 #include <vector>
 //#include <cmath>
 
+namespace memory
+{
+template<typename ValueType> class LAMAArray;
+}
+
 namespace lama
 {
 
 // Forward declaration of all classes that are used in the interface
-
-template<typename ValueType> class LAMAArray;
 
 class Distribution;
 
@@ -435,7 +437,7 @@ public:
             const ARRAY_TYPE##I* const sendData,                              \
             const CommunicationPlan& sendPlan ) const = 0;                    \
     \
-    virtual SyncToken* exchangeByPlanAsync(                               \
+    virtual tasking::SyncToken* exchangeByPlanAsync(                          \
             ARRAY_TYPE##I* const recvData,                                    \
             const CommunicationPlan& recvPlan,                                \
             const ARRAY_TYPE##I* const sendData,                              \
@@ -498,7 +500,7 @@ public:
             const IndexType oldSize,                                          \
             const int direction ) const = 0;                                  \
     \
-    virtual SyncToken* shiftDataAsync(                                    \
+    virtual tasking::SyncToken* shiftDataAsync(                               \
             ARRAY_TYPE##I newVals[],                                          \
             const ARRAY_TYPE##I oldVals[],                                    \
             const IndexType size,                                             \
@@ -594,18 +596,18 @@ public:
 
     template<typename ValueType>
     void exchangeByPlan(
-        LAMAArray<ValueType>& recvArray,
+        memory::LAMAArray<ValueType>& recvArray,
         const CommunicationPlan& recvPlan,
-        const LAMAArray<ValueType>& sendArray,
+        const memory::LAMAArray<ValueType>& sendArray,
         const CommunicationPlan& sendPlan ) const;
 
     /** Asynchronous exchange of LAMAArrays. */
 
     template<typename ValueType>
-    SyncToken* exchangeByPlanAsync(
-        LAMAArray<ValueType>& recvArray,
+    tasking::SyncToken* exchangeByPlanAsync(
+        memory::LAMAArray<ValueType>& recvArray,
         const CommunicationPlan& recvPlan,
-        const LAMAArray<ValueType>& sendArray,
+        const memory::LAMAArray<ValueType>& sendArray,
         const CommunicationPlan& sendPlan ) const;
 
     /** @brief Update of halo array via Halo object.
@@ -619,16 +621,16 @@ public:
      */
     template<typename ValueType>
     void updateHalo(
-        LAMAArray<ValueType>& haloValues,
-        const LAMAArray<ValueType>& localValues,
+        memory::LAMAArray<ValueType>& haloValues,
+        const memory::LAMAArray<ValueType>& localValues,
         const Halo& halo ) const;
 
     /** @brief Asynchronous update of halo array via Halo object. */
 
     template<typename ValueType>
-    SyncToken* updateHaloAsync(
-        LAMAArray<ValueType>& haloValues,
-        const LAMAArray<ValueType>& localValues,
+    tasking::SyncToken* updateHaloAsync(
+        memory::LAMAArray<ValueType>& haloValues,
+        const memory::LAMAArray<ValueType>& localValues,
         const Halo& halo ) const;
 
     /** @brief Shift on LAMA arrays.
@@ -642,7 +644,7 @@ public:
      *        receive all the data.
      */
     template<typename ValueType>
-    void shiftArray( LAMAArray<ValueType>& recv, const LAMAArray<ValueType>& send, const int direction ) const;
+    void shiftArray( memory::LAMAArray<ValueType>& recv, const memory::LAMAArray<ValueType>& send, const int direction ) const;
 
     /** @brief Asychronous shift on LAMA arrays.
      *
@@ -654,9 +656,9 @@ public:
      *  Note: All partitions must have the same size for send/recv array
      */
     template<typename ValueType>
-    SyncToken* shiftAsync(
-        LAMAArray<ValueType>& recvArray,
-        const LAMAArray<ValueType>& sendArray,
+    tasking::SyncToken* shiftAsync(
+        memory::LAMAArray<ValueType>& recvArray,
+        const memory::LAMAArray<ValueType>& sendArray,
         const int direction ) const;
 
     /** Override routine of base class Printable. */
@@ -679,7 +681,7 @@ public:
      * Note: this routine is mainly used for sending of values; in case of CUDA aware
      *       communication it might return a CUDA context if the array has valid data there.
      */
-    virtual ContextPtr getCommunicationContext( const _LAMAArray& array ) const = 0;
+    virtual memory::ContextPtr getCommunicationContext( const memory::ContextArray& array ) const = 0;
 
 protected:
 
@@ -727,9 +729,9 @@ PartitionId Communicator::getNeighbor( int pos ) const
 
 template<typename ValueType>
 void Communicator::exchangeByPlan(
-    LAMAArray<ValueType>& recvArray,
+    memory::LAMAArray<ValueType>& recvArray,
     const CommunicationPlan& recvPlan,
-    const LAMAArray<ValueType>& sendArray,
+    const memory::LAMAArray<ValueType>& sendArray,
     const CommunicationPlan& sendPlan ) const
 {
     LAMA_ASSERT_EQUAL_ERROR( sendArray.size(), sendPlan.totalQuantity() )
@@ -740,15 +742,15 @@ void Communicator::exchangeByPlan(
     // if possible try to find a context where valid data is available
     // CUDAaware MPI: might give GPU or Host context here
 
-    ContextPtr comCtx = getCommunicationContext( sendArray );
+    memory::ContextPtr comCtx = getCommunicationContext( sendArray );
 
     LAMA_LOG_DEBUG( logger, *this << ": exchangeByPlan, comCtx = " << *comCtx )
 
-    ReadAccess<ValueType> sendData( sendArray, comCtx );
+    memory::ReadAccess<ValueType> sendData( sendArray, comCtx );
 
     // Data will be received at the same context where send data is
 
-    WriteOnlyAccess<ValueType> recvData( recvArray, comCtx, recvSize );
+    memory::WriteOnlyAccess<ValueType> recvData( recvArray, comCtx, recvSize );
 
     exchangeByPlan( recvData.get(), recvPlan, sendData.get(), sendPlan );
 }
@@ -756,19 +758,23 @@ void Communicator::exchangeByPlan(
 /* -------------------------------------------------------------------------- */
 
 template<typename ValueType>
-SyncToken* Communicator::exchangeByPlanAsync(
-    LAMAArray<ValueType>& recvArray,
+tasking::SyncToken* Communicator::exchangeByPlanAsync(
+    memory::LAMAArray<ValueType>& recvArray,
     const CommunicationPlan& recvPlan,
-    const LAMAArray<ValueType>& sendArray,
+    const memory::LAMAArray<ValueType>& sendArray,
     const CommunicationPlan& sendPlan ) const
 {
+    using memory::ReadAccess;
+    using memory::WriteAccess;
+    using memory::WriteOnlyAccess;
+
     LAMA_ASSERT_EQUAL_ERROR( sendArray.size(), sendPlan.totalQuantity() )
 
     IndexType recvSize = recvPlan.totalQuantity();
 
     // allocate accesses, SyncToken will take ownership
 
-    ContextPtr comCtx = getCommunicationContext( sendArray );
+    memory::ContextPtr comCtx = getCommunicationContext( sendArray );
 
     LAMA_LOG_DEBUG( logger, *this << ": exchangeByPlanAsync, comCtx = " << *comCtx )
 
@@ -776,13 +782,13 @@ SyncToken* Communicator::exchangeByPlanAsync(
     boost::shared_ptr<WriteAccess<ValueType> > recvData(
                     new WriteOnlyAccess<ValueType>( recvArray, comCtx, recvSize ) );
 
-    SyncToken* token( exchangeByPlanAsync( recvData->get(), recvPlan, sendData->get(), sendPlan ) );
+    tasking::SyncToken* token( exchangeByPlanAsync( recvData->get(), recvPlan, sendData->get(), sendPlan ) );
 
     // Add the read and write access to the sync token to get it freed after successful wait
     // conversion boost::shared_ptr<HostWriteAccess<ValueType> > -> boost::shared_ptr<BaseAccess> supported
 
-    token->pushAccess( recvData );
-    token->pushAccess( sendData );
+    token->pushToken( recvData );
+    token->pushToken( sendData );
 
     // return ownership of new created object
 

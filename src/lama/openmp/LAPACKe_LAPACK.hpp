@@ -38,7 +38,6 @@
 
 // others
 #include <lama/LAMATypes.hpp>
-#include <lama/SyncToken.hpp>
 #include <lama/openmp/OpenMP.hpp>
 #include <lama/cblas.hpp>
 

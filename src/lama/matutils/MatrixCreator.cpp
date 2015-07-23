@@ -35,7 +35,7 @@
 #include <lama/matutils/MatrixCreator.hpp>
 
 // others
-#include <lama/HostWriteAccess.hpp>
+#include <memory/WriteAccess.hpp>
 #include <lama/CommunicatorFactory.hpp>
 
 #include <lama/distribution/BlockDistribution.hpp>
@@ -401,18 +401,14 @@ void MatrixCreator<ValueType>::buildPoisson(
     // Allocate local matrix with correct sizes and correct first touch in case of OpenMP
     // ToDo: localMatrix( localSize, numColumns, numNonZeros, &myIA[0] );
 
-    lama::LAMAArray<IndexType> csrIA;
-    lama::LAMAArray<IndexType> csrJA;
-    lama::LAMAArray<ValueType> csrValues;
+    memory::LAMAArray<IndexType> csrIA;
+    memory::LAMAArray<IndexType> csrJA;
+    memory::LAMAArray<ValueType> csrValues;
 
     {
-        lama::HostWriteAccess<IndexType> ia( csrIA );
-        lama::HostWriteAccess<IndexType> ja( csrJA );
-        lama::HostWriteAccess<ValueType> values( csrValues );
-
-        ia.resize( localSize + 1 );
-        ja.resize( myNNA );
-        values.resize( myNNA );
+        memory::WriteOnlyAccess<IndexType> ia( csrIA, localSize + 1 );
+        memory::WriteOnlyAccess<IndexType> ja( csrJA, myNNA );
+        memory::WriteOnlyAccess<ValueType> values( csrValues, myNNA );
 
         ia[0] = 0;
 

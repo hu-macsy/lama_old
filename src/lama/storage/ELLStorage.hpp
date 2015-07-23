@@ -85,7 +85,7 @@ public:
      * @param[in] numColumns    the number of columns of the matrix
      * @param[in] con           the context type where conversion should be done
      */
-    ELLStorage( const IndexType numRows, const IndexType numColumns, const ContextType con = Context::Host );
+    ELLStorage( const IndexType numRows, const IndexType numColumns, const ContextType con = context::Host );
 
     /** Constructor for ELL storage by corresponding arrays.
      *

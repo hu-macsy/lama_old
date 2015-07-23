@@ -49,6 +49,8 @@ namespace lama
 using std::abs;
 // so we can use abs for float and double and abs for Complex<ValueType>
 
+using common::getScalarType;
+
 LAMA_LOG_DEF_LOGGER( OpenMPDenseUtils::logger, "OpenMP.DenseUtils" )
 
 /* --------------------------------------------------------------------------- */
@@ -112,7 +114,7 @@ void OpenMPDenseUtils::getCSRValues(
     const DenseValueType eps )
 {
     LAMA_LOG_INFO( logger,
-                   "get CSRValues<" << Scalar::getType<DenseValueType>() << ", " << Scalar::getType<CSRValueType>() << ">" << ", size is " << numRows << " x " << numColumns )
+                   "get CSRValues<" << getScalarType<DenseValueType>() << ", " << getScalarType<CSRValueType>() << ">" << ", size is " << numRows << " x " << numColumns )
 
     #pragma omp parallel for schedule(LAMA_OMP_SCHEDULE)
 
@@ -167,7 +169,7 @@ void OpenMPDenseUtils::setCSRValues(
     const CSRValueType csrValues[] )
 {
     LAMA_LOG_INFO( logger,
-                   "set CSRValues<" << Scalar::getType<DenseValueType>() << ", " << Scalar::getType<CSRValueType>() << ">" << ", size is " << numRows << " x " << numColumns )
+                   "set CSRValues<" << getScalarType<DenseValueType>() << ", " << getScalarType<CSRValueType>() << ">" << ", size is " << numRows << " x " << numColumns )
 
     // parallelization possible as offset array csrIA is available
 
@@ -357,7 +359,7 @@ void OpenMPDenseUtils::setInterface( DenseUtilsInterface& DenseUtils )
 
 bool OpenMPDenseUtils::registerInterface()
 {
-    LAMAInterface& interface = LAMAInterfaceRegistry::getRegistry().modifyInterface( Context::Host );
+    LAMAInterface& interface = LAMAInterfaceRegistry::getRegistry().modifyInterface( memory::context::Host );
     setInterface( interface.DenseUtils );
     return true;
 }

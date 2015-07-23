@@ -38,7 +38,7 @@
 
 // others
 #include <lama/LAMATypes.hpp>
-#include <lama/SyncToken.hpp>
+#include <tasking/SyncToken.hpp>
 
 #include <lama/openmp/BLASHelper.hpp>
 
@@ -104,7 +104,7 @@ public:
         const IndexType k2,
         const IndexType* ipiv,
         const IndexType incx,
-        SyncToken* syncToken );
+        tasking::SyncToken* syncToken );
 
     /** Routine that sets functions pointers belonging to LAPACK in a BLASInterface.
      *

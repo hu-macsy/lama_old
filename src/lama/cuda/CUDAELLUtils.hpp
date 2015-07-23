@@ -38,7 +38,7 @@
 
 // others
 #include <lama/LAMATypes.hpp>
-#include <lama/SyncToken.hpp>
+#include <tasking/SyncToken.hpp>
 
 // logging
 #include <logging/logging.hpp>
@@ -169,7 +169,7 @@ public:
         const IndexType ellIA[],
         const IndexType ellJA[],
         const ValueType ellValues[],
-        SyncToken* syncToken );
+        tasking::SyncToken* syncToken );
 
     /** Implementation for CSRUtilsInterface::Mult::normalGEVM  */
 
@@ -186,7 +186,7 @@ public:
         const IndexType ellSizes[],
         const IndexType ellJA[],
         const ValueType ellValues[],
-        SyncToken* syncToken );
+        tasking::SyncToken* syncToken );
 
     /** Implementation for ELLUtilsInterface::Mult::sparseGEMV  */
 
@@ -202,7 +202,7 @@ public:
         const IndexType ellSizes[],
         const IndexType ellJA[],
         const ValueType ellValues[],
-        SyncToken* syncToken );
+        tasking::SyncToken* syncToken );
 
     /** Implementation for ELLUtilsInterface::Mult::sparseGEVM  */
 
@@ -219,7 +219,7 @@ public:
         const IndexType ellIA[],
         const IndexType ellJA[],
         const ValueType ellValues[],
-        SyncToken* syncToken );
+        tasking::SyncToken* syncToken );
 
     /** Implementation for ELLUtilsInterface::Solver::jacobi  */
 
@@ -234,7 +234,7 @@ public:
         const ValueType oldSolution[],
         const ValueType rhs[],
         const ValueType omega,
-        SyncToken* syncToken );
+        tasking::SyncToken* syncToken );
 
     /** Implementation for ELLUtilsInterface::Solver::jacobiHalo  */
 
@@ -251,7 +251,7 @@ public:
         const IndexType numNonEmptyRows,
         const ValueType oldSolution[],
         const ValueType omega,
-        SyncToken* syncToken );
+        tasking::SyncToken* syncToken );
 
     /** Routine that registers all routines of this class at the LAMA interface. */
 

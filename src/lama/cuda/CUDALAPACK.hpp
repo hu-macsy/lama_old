@@ -40,11 +40,14 @@
 
 #include <lama/openmp/BLASHelper.hpp>
 
+namespace tasking
+{
+    class SyncToken;
+}
+
 namespace lama
 {
 
-class SyncToken;
-// forward declaration
 
 class COMMON_DLL_IMPORTEXPORT CUDALAPACK
 {
@@ -75,7 +78,7 @@ private:
         const IndexType k2,
         const IndexType* ipiv,
         const IndexType incx,
-        SyncToken* syncToken );
+        tasking::SyncToken* syncToken );
 };
 
 } /* namespace lama */

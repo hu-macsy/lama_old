@@ -35,7 +35,6 @@
 #include <boost/mpl/list.hpp>
 
 #include <lama/storage/COOStorage.hpp>
-#include <lama/HostReadAccess.hpp>
 
 #include <test/MatrixStorageTest.hpp>
 #include <test/TestMacros.hpp>
@@ -43,6 +42,7 @@
 
 using namespace boost;
 using namespace lama;
+using namespace memory;
 
 extern bool base_test_case;
 extern std::string testcase;
@@ -113,9 +113,9 @@ void constructorTest1( ContextPtr loc )
     BOOST_REQUIRE_EQUAL( numColumns, cooStorage.getNumColumns() );
     BOOST_REQUIRE_EQUAL( numValues, cooStorage.getNumValues() );
     {
-        HostReadAccess<IndexType> cooIA( cooStorage.getIA() );
-        HostReadAccess<IndexType> cooJA( cooStorage.getJA() );
-        HostReadAccess<ValueType> cooValues( cooStorage.getValues() );
+        ReadAccess<IndexType> cooIA( cooStorage.getIA() );
+        ReadAccess<IndexType> cooJA( cooStorage.getJA() );
+        ReadAccess<ValueType> cooValues( cooStorage.getValues() );
 
         // COO keeps values in same order
         for ( IndexType i = 0; i < numValues; ++i )
@@ -131,9 +131,9 @@ void constructorTest1( ContextPtr loc )
     BOOST_REQUIRE_EQUAL( numColumns, cooStorageCopy.getNumColumns() );
     BOOST_REQUIRE_EQUAL( numValues, cooStorageCopy.getNumValues() );
     {
-        HostReadAccess<IndexType> cooIA( cooStorageCopy.getIA() );
-        HostReadAccess<IndexType> cooJA( cooStorageCopy.getJA() );
-        HostReadAccess<ValueType> cooValues( cooStorageCopy.getValues() );
+        ReadAccess<IndexType> cooIA( cooStorageCopy.getIA() );
+        ReadAccess<IndexType> cooJA( cooStorageCopy.getJA() );
+        ReadAccess<ValueType> cooValues( cooStorageCopy.getValues() );
 
         // COO keeps values in same order
         for ( IndexType i = 0; i < numValues; ++i )
@@ -164,8 +164,8 @@ void checkTest( ContextPtr loc )
         // just make sure that ia and ja have correct sizes
         BOOST_REQUIRE_EQUAL( numValues, static_cast<IndexType>( sizeof( ia ) / sizeof( IndexType ) ) );
         BOOST_REQUIRE_EQUAL( numValues, static_cast<IndexType>( sizeof( ja ) / sizeof( IndexType ) ) );
-        LAMAArrayRef<IndexType> cooIA( ia, numValues );
-        LAMAArrayRef<IndexType> cooJA( ja, numValues );
+        LAMAArrayRef<IndexType> cooIA( numValues, ia );
+        LAMAArrayRef<IndexType> cooJA( numValues, ja );
         LAMAArray<ValueType> cooValues( numValues, 1.0 ); // values needed, but do not matter here
         COOStorage<ValueType> cooStorage;
         cooStorage.setContext( loc );

@@ -40,7 +40,7 @@
 #include <lama/storage/CRTPMatrixStorage.hpp>
 
 // others
-#include <lama/LAMAArray.hpp>
+#include <memory/LAMAArray.hpp>
 #include <lama/Scalar.hpp>
 
 namespace lama
@@ -406,15 +406,6 @@ private:
     /** Help routine that sets up mDlg and allocates mJa and mValues after mIlg defined. */
 
     void setupData( ContextPtr loc );
-
-    /**  Copy JDS storage but remove all entries where column index
-     *   is equal nIndex.
-     */
-
-    /*
-     * NOT USED ANYMORE
-     void setCompressJDS( const JDSStorage<ValueType>& other );
-     */
 
     void print() const;
 

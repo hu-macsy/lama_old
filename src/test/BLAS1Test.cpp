@@ -38,18 +38,15 @@
 #include <boost/test/unit_test.hpp>
 
 // others
-#include <lama/ContextAccess.hpp>
-#include <lama/HostReadAccess.hpp>
-#include <lama/LAMAArray.hpp>
+#include <memory/memory.hpp>
 #include <lama/LAMAInterface.hpp>
-#include <lama/ReadAccess.hpp>
 #include <lama/Scalar.hpp>
-#include <lama/WriteAccess.hpp>
 
 #include <test/TestMacros.hpp>
 
 using namespace boost;
 using namespace lama;
+using namespace memory;
 
 namespace lama
 {
@@ -111,7 +108,7 @@ void axpyTest( ContextPtr loc )
             axpy( -2, 5.0, wAx.get(), incX, wAy.get(), incY, NULL );
         }
         {
-            HostReadAccess<ValueType> rAy( Ay );
+            ReadAccess<ValueType> rAy( Ay );
 
             for ( int i = 0; i < 9; ++i )
             {
@@ -134,7 +131,7 @@ void axpyTest( ContextPtr loc )
             axpy( 3, 5.0, wAx.get(), 0, wAy.get(), 0, NULL );
         }
         {
-            HostReadAccess<ValueType> rAy( Ay );
+            ReadAccess<ValueType> rAy( Ay );
 
             for ( int i = 0; i < 9; ++i )
             {
@@ -161,7 +158,7 @@ void axpyTest( ContextPtr loc )
             axpy( 3, 5.0, wAx.get(), incX, wAy.get(), incY, NULL );
         }
         {
-            HostReadAccess<ValueType> rAy( Ay );
+            ReadAccess<ValueType> rAy( Ay );
 
             for ( int i = 0; i < 9; ++i )
             {
@@ -194,7 +191,7 @@ void copyTest( ContextPtr loc )
             copy( 0, wAx.get(), incX, wAy.get(), incY, NULL );
         }
         {
-            HostReadAccess<ValueType> rAy( Ay );
+            ReadAccess<ValueType> rAy( Ay );
 
             for ( int i = 0; i < 9; ++i )
             {
@@ -219,7 +216,7 @@ void copyTest( ContextPtr loc )
             copy( 3, wAx.get(), -incX, wAy.get(), -incY, NULL );
         }
         {
-            HostReadAccess<ValueType> rAy( Ay );
+            ReadAccess<ValueType> rAy( Ay );
 
             for ( int i = 0; i < 9; ++i )
             {
@@ -246,7 +243,7 @@ void copyTest( ContextPtr loc )
             copy( 3, wAx.get(), incX, wAy.get(), incY, NULL );
         }
         {
-            HostReadAccess<ValueType> rAy( Ay );
+            ReadAccess<ValueType> rAy( Ay );
 
             for ( int i = 0; i < 9; ++i )
             {
@@ -370,7 +367,7 @@ void scalTest( ContextPtr loc )
             scal( 0, 2.0, rAValues.get(), 2, NULL );
         }
         {
-            HostReadAccess<ValueType> rAValues( AValues );
+            ReadAccess<ValueType> rAValues( AValues );
 
             for ( int i = 0; i < 8; ++i )
             {
@@ -389,7 +386,7 @@ void scalTest( ContextPtr loc )
             scal( 3, 2.0, rAValues.get(), 0, NULL );
         }
         {
-            HostReadAccess<ValueType> rAValues( AValues );
+            ReadAccess<ValueType> rAValues( AValues );
 
             for ( int i = 0; i < 8; ++i )
             {
@@ -409,7 +406,7 @@ void scalTest( ContextPtr loc )
             scal( 3, 2.4, rAValues.get(), incX, NULL );
         }
         {
-            HostReadAccess<ValueType> rAValues( AValues );
+            ReadAccess<ValueType> rAValues( AValues );
             LAMA_CHECK_CLOSE( 2.4, rAValues[0], 1e-5 );
             LAMA_CHECK_CLOSE( 9.6, rAValues[3], 1e-5 );
             LAMA_CHECK_CLOSE( 16.8, rAValues[6], 1e-5 );
@@ -442,7 +439,7 @@ void sumTest( ContextPtr loc )
             sum( -1, 3.0, rAx.get(), 4.0, rAy.get(), wAz.get(), NULL );
         }
         {
-            HostReadAccess<ValueType> rAz( Az );
+            ReadAccess<ValueType> rAz( Az );
 
             for ( int i = 0; i < 5; ++i )
             {
@@ -467,7 +464,7 @@ void sumTest( ContextPtr loc )
             sum( 5, 3.0, rAx.get(), 4.0, rAy.get(), wAz.get(), NULL );
         }
         {
-            HostReadAccess<ValueType> rAz( Az );
+            ReadAccess<ValueType> rAz( Az );
             BOOST_CHECK_EQUAL( 31.0, rAz[0] );
             BOOST_CHECK_EQUAL( 30.0, rAz[1] );
             BOOST_CHECK_EQUAL( 29.0, rAz[2] );
@@ -500,8 +497,8 @@ void swapTest( ContextPtr loc )
             swap( 0, wAValues1.get(), incX, wAValues2.get(), incY, NULL );
         }
         {
-            HostReadAccess<ValueType> rAx( Ax );
-            HostReadAccess<ValueType> rAy( Ay );
+            ReadAccess<ValueType> rAx( Ax );
+            ReadAccess<ValueType> rAy( Ay );
             BOOST_CHECK_EQUAL( 1.0, rAx[0] );
             BOOST_CHECK_EQUAL( 7.0, rAy[0] );
             BOOST_CHECK_EQUAL( 3.0, rAx[2] );
@@ -526,8 +523,8 @@ void swapTest( ContextPtr loc )
             swap( nValues, wAx.get(), 0, wAy.get(), -1, NULL );
         }
         {
-            HostReadAccess<ValueType> rAx( Ax );
-            HostReadAccess<ValueType> rAy( Ay );
+            ReadAccess<ValueType> rAx( Ax );
+            ReadAccess<ValueType> rAy( Ay );
             BOOST_CHECK_EQUAL( 1.0, rAx[0] );
             BOOST_CHECK_EQUAL( 7.0, rAy[0] );
             BOOST_CHECK_EQUAL( 3.0, rAx[2] );
@@ -554,8 +551,8 @@ void swapTest( ContextPtr loc )
             swap( nValues, wAValues1.get(), incX, wAValues2.get(), incY, NULL );
         }
         {
-            HostReadAccess<ValueType> rAValues1( AValues1 );
-            HostReadAccess<ValueType> rAValues2( AValues2 );
+            ReadAccess<ValueType> rAValues1( AValues1 );
+            ReadAccess<ValueType> rAValues2( AValues2 );
             BOOST_CHECK_EQUAL( 7.0, rAValues1[0] );
             BOOST_CHECK_EQUAL( 1.0, rAValues2[0] );
             BOOST_CHECK_EQUAL( 4.0, rAValues1[2] );

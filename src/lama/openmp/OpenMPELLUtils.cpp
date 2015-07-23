@@ -59,6 +59,8 @@ namespace lama
 
 using std::abs;
 
+using common::getScalarType;
+
 /* ------------------------------------------------------------------------------------------------------------------ */
 
 LAMA_LOG_DEF_LOGGER( OpenMPELLUtils::logger, "OpenMP.ELLUtils" )
@@ -152,7 +154,7 @@ void OpenMPELLUtils::scaleValue(
     const OtherValueType values[] )
 {
     LAMA_LOG_INFO( logger,
-                   "scaleValue<" << Scalar::getType<ValueType>() << ", " << Scalar::getType<OtherValueType>() << ">" << ", #numRows = " << numRows )
+                   "scaleValue<" << getScalarType<ValueType>() << ", " << getScalarType<OtherValueType>() << ">" << ", #numRows = " << numRows )
 
     #pragma omp parallel for schedule( LAMA_OMP_SCHEDULE )
 
@@ -331,7 +333,7 @@ void OpenMPELLUtils::getCSRValues(
     const ELLValueType ellValues[] )
 {
     LAMA_LOG_INFO( logger,
-                   "get CSRValues<" << Scalar::getType<ELLValueType>() << ", " << Scalar::getType<CSRValueType>() << ">" << ", #rows = " << numRows )
+                   "get CSRValues<" << getScalarType<ELLValueType>() << ", " << getScalarType<CSRValueType>() << ">" << ", #rows = " << numRows )
 
     // parallelization possible as offset array csrIA is available
 
@@ -374,7 +376,7 @@ void OpenMPELLUtils::setCSRValues(
     const CSRValueType csrValues[] )
 {
     LAMA_LOG_INFO( logger,
-                   "set CSRValues<" << Scalar::getType<ELLValueType>() << ", " << Scalar::getType<CSRValueType>() << ">" << ", #rows = " << numRows << ", #values/row = " << numValuesPerRow )
+                   "set CSRValues<" << getScalarType<ELLValueType>() << ", " << getScalarType<CSRValueType>() << ">" << ", #rows = " << numRows << ", #values/row = " << numValuesPerRow )
 
     // parallelization possible as offset array csrIA is available
 
@@ -420,7 +422,7 @@ void OpenMPELLUtils::fillELLValues(
     const IndexType numRows,
     const IndexType numValuesPerRow )
 {
-    LAMA_LOG_INFO( logger, "fill ELLValues<" << Scalar::getType<ValueType>() )
+    LAMA_LOG_INFO( logger, "fill ELLValues<" << getScalarType<ValueType>() )
 
     #pragma omp parallel
     {
@@ -800,7 +802,7 @@ void OpenMPELLUtils::jacobi(
     class SyncToken* syncToken )
 {
     LAMA_LOG_INFO( logger,
-                   "jacobi<" << Scalar::getType<ValueType>() << ">" << ", #rows = " << numRows << ", omega = " << omega )
+                   "jacobi<" << getScalarType<ValueType>() << ">" << ", #rows = " << numRows << ", omega = " << omega )
 
     if( syncToken != NULL )
     {
@@ -910,7 +912,7 @@ void OpenMPELLUtils::normalGEMV(
     SyncToken* syncToken )
 {
     LAMA_LOG_INFO( logger,
-                   "normalGEMV<" << Scalar::getType<ValueType>() << ", #threads = " << omp_get_max_threads() << ">, result[" << numRows << "] = " << alpha << " * A( ell, #maxNZ/row = " << numValuesPerRow << " ) * x + " << beta << " * y " )
+                   "normalGEMV<" << getScalarType<ValueType>() << ", #threads = " << omp_get_max_threads() << ">, result[" << numRows << "] = " << alpha << " * A( ell, #maxNZ/row = " << numValuesPerRow << " ) * x + " << beta << " * y " )
 
     if( numValuesPerRow == 0 )
     {
@@ -987,7 +989,7 @@ void OpenMPELLUtils::sparseGEMV(
     }
 
     LAMA_LOG_INFO( logger,
-                   "sparseGEMV<" << Scalar::getType<ValueType>() << ">, n = " << numRows << ", nonZeroRows = " << numNonZeroRows << ", alpha = " << alpha )
+                   "sparseGEMV<" << getScalarType<ValueType>() << ">, n = " << numRows << ", nonZeroRows = " << numNonZeroRows << ", alpha = " << alpha )
 
     #pragma omp parallel
     {
@@ -1039,7 +1041,7 @@ void OpenMPELLUtils::normalGEVM(
     SyncToken* syncToken )
 {
     LAMA_LOG_INFO( logger,
-                   "normalGEVM<" << Scalar::getType<ValueType>() << ", #threads = " << omp_get_max_threads() << ">, result[" << numColumns << "] = " << alpha << " * x * A + " << beta << " * y " )
+                   "normalGEVM<" << getScalarType<ValueType>() << ", #threads = " << omp_get_max_threads() << ">, result[" << numColumns << "] = " << alpha << " * x * A + " << beta << " * y " )
 
     if( syncToken )
     {
@@ -1120,7 +1122,7 @@ void OpenMPELLUtils::sparseGEVM(
     SyncToken* syncToken )
 {
     LAMA_LOG_INFO( logger,
-                   "sparseGEVM<" << Scalar::getType<ValueType>() << ", #threads = " << omp_get_max_threads() << ">, result[" << numColumns << "] = " << alpha << " * x * A " )
+                   "sparseGEVM<" << getScalarType<ValueType>() << ", #threads = " << omp_get_max_threads() << ">, result[" << numColumns << "] = " << alpha << " * x * A " )
 
     if( syncToken )
     {
@@ -1218,7 +1220,7 @@ void OpenMPELLUtils::setInterface( ELLUtilsInterface& ELLUtils )
 
 bool OpenMPELLUtils::registerInterface()
 {
-    LAMAInterface& interface = LAMAInterfaceRegistry::getRegistry().modifyInterface( Context::Host );
+    LAMAInterface& interface = LAMAInterfaceRegistry::getRegistry().modifyInterface( memory::context::Host );
     setInterface( interface.ELLUtils );
     return true;
 }

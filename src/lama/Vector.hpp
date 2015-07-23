@@ -41,15 +41,17 @@
 
 // others
 #include <lama/expression/Expression.hpp>
-#include <lama/ContextFactory.hpp>
+
+#include <memory/memory.hpp>
 
 #include <lama/LAMATypes.hpp>
 #include <lama/Scalar.hpp>
-#include <lama/Context.hpp>
 #include <lama/io/FileType.hpp>
 
 // logging
 #include <logging/logging.hpp>
+
+using namespace memory;
 
 namespace lama
 {
@@ -98,13 +100,13 @@ public:
      * This factory operation allows to create a vector at runtime of any format or any type.
      * Internally, all vector classes must register their create operation.
      */
-    static Vector* getVector( const VectorKind kind, const Scalar::ScalarType valueType );
+    static Vector* getVector( const VectorKind kind, const memory::ScalarType valueType );
 
     /** @brief Create a dense vector of a certain value type and a given distribution.
      *
      *  This method keeps compatibility with an older method that did know which vectors were supported.
      */
-    static Vector* createVector( const Scalar::ScalarType valueType, DistributionPtr distribution );
+    static Vector* createVector( const memory::ScalarType valueType, DistributionPtr distribution );
 
     /**
      * @brief ExpressionMemberType is the type that is used the template Expression to store a Vector.
@@ -242,7 +244,7 @@ public:
      *
      * Only the type of the LAMA array is used as input arg to determine the value type.
      */
-    virtual void buildValues( _LAMAArray& values ) const = 0;
+    virtual void buildValues( ContextArray& values ) const = 0;
 
     /**
      * @brief Sets the local values of a vector by an array.
@@ -252,7 +254,7 @@ public:
      * Note: A conversion operator must be available for values.getValueType() to
      *       the type of this vector.
      */
-    virtual void setValues( const _LAMAArray& values ) = 0;
+    virtual void setValues( const ContextArray& values ) = 0;
 
     /**
      * @brief Assign this vector with values stored the file with the given filename.
@@ -272,12 +274,12 @@ public:
     /**
      * @brief get a vector with all local values
      */
-    virtual const _LAMAArray& getLocalValues() const = 0;
+    virtual const ContextArray& getLocalValues() const = 0;
 
     /**
      * @brief Queries the value type of the vector elements, e.g. DOUBLE or FLOAT.
      */
-    virtual Scalar::ScalarType getValueType() const = 0;
+    virtual memory::ScalarType getValueType() const = 0;
 
     /**
      * @brief Returns a copy of the value at the passed global index.
@@ -377,7 +379,7 @@ public:
     /**
      *  Assignment to vector by local values and distribution.
      */
-    virtual void assign( const _LAMAArray& localValues, DistributionPtr distribution ) = 0;
+    virtual void assign( const ContextArray& localValues, DistributionPtr distribution ) = 0;
 
     /**
      *  Builds an array with local values of a distributed vector.
@@ -387,7 +389,7 @@ public:
      *  For different value types, implicit format conversion will be done.
      *  A sparse vector should generate an array with all values.
      */
-    virtual void buildLocalValues( _LAMAArray& localValues ) const = 0;
+    virtual void buildLocalValues( ContextArray& localValues ) const = 0;
 
     /**
      * @brief Assigns the passed value to all elements of this.
@@ -520,7 +522,7 @@ typedef    Vector* ( *CreateFn ) ();
 
     /** This method should be called by vector classes to register their create operation. */
 
-    static void addCreator( const VectorKind kind, Scalar::ScalarType type, CreateFn create );
+    static void addCreator( const VectorKind kind, memory::ScalarType type, CreateFn create );
 
 private:
 
@@ -530,7 +532,7 @@ private:
 
     /** Type defintition for the key arguments used to create a Vector. */
 
-    typedef std::pair<Vector::VectorKind, Scalar::ScalarType> CreatorKey;
+    typedef std::pair<Vector::VectorKind, memory::ScalarType> CreatorKey;
 
     /** Map container to get for the key the create function. */
 

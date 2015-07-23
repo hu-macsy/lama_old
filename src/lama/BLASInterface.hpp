@@ -42,10 +42,16 @@
 #include <cstring>
 #include <lama/cblas.hpp>
 
+namespace tasking
+{
+    class SyncToken;
+}
+
+using namespace tasking;
+
 namespace lama
 {
 
-class SyncToken;
 // forward declaration
 
 /** Interface struct for BLAS routines.
@@ -243,7 +249,8 @@ struct BLASInterface
 
     // declare variables of function pointers, i.e. arrays indexed by each type
 
-    LAMA_INTERFACE_DEFINE_T( BLAS1, scal )LAMA_INTERFACE_DEFINE_T( BLAS1, nrm2 )
+    LAMA_INTERFACE_DEFINE_T( BLAS1, scal )
+    LAMA_INTERFACE_DEFINE_T( BLAS1, nrm2 )
     LAMA_INTERFACE_DEFINE_T( BLAS1, asum )
     LAMA_INTERFACE_DEFINE_T( BLAS1, iamax )
     LAMA_INTERFACE_DEFINE_T( BLAS1, viamax )

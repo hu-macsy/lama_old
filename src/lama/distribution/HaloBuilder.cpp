@@ -94,7 +94,7 @@ void HaloBuilder::build( const Distribution& distribution, const std::vector<Ind
 
     // allocate array for the required indexes sorted by owner
 
-    HostWriteAccess<IndexType> requiredIndexesByOwner( halo.mRequiredIndexes );
+    WriteAccess<IndexType> requiredIndexesByOwner( halo.mRequiredIndexes );
 
     requiredIndexesByOwner.resize( requiredPlan.totalQuantity() );
 
@@ -140,8 +140,8 @@ void HaloBuilder::build( const Distribution& distribution, const std::vector<Ind
     LAMA_LOG_INFO( logger, "exchanged plan indexes" )
 #ifdef LAMA_LOG_TRACE
     {
-        HostReadAccess<IndexType> provide( halo.mProvidesIndexes );
-        HostReadAccess<IndexType> required( halo.mRequiredIndexes );
+        ReadAccess<IndexType> provide( halo.mProvidesIndexes );
+        ReadAccess<IndexType> required( halo.mRequiredIndexes );
 
         for( int i = 0; i < provide.size(); ++i )
         {
@@ -157,7 +157,7 @@ void HaloBuilder::build( const Distribution& distribution, const std::vector<Ind
 
     // localize the provides indexes that are still global from other processors
 
-    HostWriteAccess<IndexType> providesIndexes( halo.mProvidesIndexes );
+    WriteAccess<IndexType> providesIndexes( halo.mProvidesIndexes );
 
     for( PartitionId p = 0; p < providesPlan.size(); ++p )
     {

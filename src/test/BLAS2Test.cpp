@@ -35,18 +35,15 @@
 #include <boost/test/unit_test.hpp>
 
 // others
-#include <lama/ContextAccess.hpp>
-#include <lama/HostReadAccess.hpp>
-#include <lama/LAMAArray.hpp>
+#include <memory/memory.hpp>
 #include <lama/LAMAInterface.hpp>
-#include <lama/ReadAccess.hpp>
 #include <lama/Scalar.hpp>
-#include <lama/WriteAccess.hpp>
 
 #include <test/TestMacros.hpp>
 
 using namespace boost;
 using namespace lama;
+using namespace memory;
 
 namespace lama
 {
@@ -86,7 +83,7 @@ void gemvTest( ContextPtr loc )
                   NULL );
         }
         {
-            HostReadAccess<ValueType> rAy( Ay );
+            ReadAccess<ValueType> rAy( Ay );
             BOOST_CHECK_EQUAL( result[0], rAy[0] );
             BOOST_CHECK_EQUAL( result[1], rAy[2] );
         }
@@ -120,7 +117,7 @@ void gemvTest( ContextPtr loc )
                   NULL );
         }
         {
-            HostReadAccess<ValueType> rAy( Ay );
+            ReadAccess<ValueType> rAy( Ay );
             BOOST_CHECK_EQUAL( result[0], rAy[0] );
             BOOST_CHECK_EQUAL( result[1], rAy[2] );
         }
@@ -154,7 +151,7 @@ void gemvTest( ContextPtr loc )
                   NULL );
         }
         {
-            HostReadAccess<ValueType> rAy( Ay );
+            ReadAccess<ValueType> rAy( Ay );
             BOOST_CHECK_EQUAL( result[0], rAy[0] );
             BOOST_CHECK_EQUAL( result[1], rAy[1] );
             BOOST_CHECK_EQUAL( result[2], rAy[2] );
@@ -189,7 +186,7 @@ void gemvTest( ContextPtr loc )
                   NULL );
         }
         {
-            HostReadAccess<ValueType> rAy( Ay );
+            ReadAccess<ValueType> rAy( Ay );
             BOOST_CHECK_EQUAL( result[0], rAy[0] );
             BOOST_CHECK_EQUAL( result[1], rAy[1] );
             BOOST_CHECK_EQUAL( result[2], rAy[2] );

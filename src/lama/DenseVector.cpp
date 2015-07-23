@@ -37,7 +37,7 @@
 // others
 #include <lama/LAMAArrayUtils.hpp>
 #include <lama/LAMAInterface.hpp>
-#include <lama/ContextAccess.hpp>
+#include <memory/ContextAccess.hpp>
 
 #include <lama/CommunicatorFactory.hpp>
 
@@ -328,7 +328,7 @@ DenseVector<ValueType>& DenseVector<ValueType>::operator=( const Scalar value )
 /* ------------------------------------------------------------------------- */
 
 template<typename ValueType>
-Scalar::ScalarType DenseVector<ValueType>::getValueType() const
+memory::ScalarType DenseVector<ValueType>::getValueType() const
 {
     return Scalar::getType<ValueType>();
 }
@@ -424,7 +424,7 @@ Scalar DenseVector<ValueType>::getValue( IndexType globalIndex ) const
 
     if( localIndex != nIndex )
     {
-        HostReadAccess<ValueType> localAccess( mLocalValues );
+        ReadAccess<ValueType> localAccess( mLocalValues );
 
         LAMA_LOG_TRACE( logger, "index "<< globalIndex << " is local " << localIndex )
         myValue = localAccess[localIndex];
@@ -439,7 +439,7 @@ template<typename ValueType>
 Scalar DenseVector<ValueType>::min() const
 {
     //TODO: need a interface function for this
-    HostReadAccess<ValueType> localValues( mLocalValues );
+    ReadAccess<ValueType> localValues( mLocalValues );
     ValueType localMin = localValues[0];
 #pragma omp parallel
     {
@@ -465,7 +465,7 @@ Scalar DenseVector<ValueType>::max() const
     LAMA_ASSERT_ERROR( mLocalValues.size() > 0, "no local values for max" )
 
     //TODO: need a interface function for this
-    HostReadAccess<ValueType> localValues( mLocalValues );
+    ReadAccess<ValueType> localValues( mLocalValues );
     ValueType localMax = localValues[0];
 #pragma omp parallel
     {
@@ -624,7 +624,7 @@ void DenseVector<ValueType>::vectorPlusVector(
 
     const IndexType nnu = result.size();
 
-    if( result == x && result == y ) //result = alpha * result + beta * result
+    if( &result == &x && &result == &y ) //result = alpha * result + beta * result
     {
         //result = alpha * result + beta * result
         //=>
@@ -640,7 +640,7 @@ void DenseVector<ValueType>::vectorPlusVector(
         LAMA_CONTEXT_ACCESS( context )
         scale( resultAccess.get(), alpha + beta, nnu );
     }
-    else if( result == x ) //result = alpha * result + beta * y
+    else if( &result == &x ) //result = alpha * result + beta * y
     {
         ReadAccess<ValueType> yAccess( y, context );
         WriteAccess<ValueType> resultAccess( result, context, true );
@@ -689,7 +689,7 @@ void DenseVector<ValueType>::vectorPlusVector(
             axpy( nnu, beta, yAccess.get(), 1, resultAccess.get(), 1, NULL );
         }
     }
-    else if( result == y ) // result = alpha * x + beta * result
+    else if( &result == &y ) // result = alpha * x + beta * result
     {
         LAMA_LOG_DEBUG( logger,
                         "vectorPlusVector: result = alpha(" << alpha << ")" << " * x + beta(" << beta << ") * result" )
@@ -965,8 +965,8 @@ void DenseVector<ValueType>::redistribute( DistributionPtr distribution )
         {
             const IndexType newSize = distribution->getLocalSize();
 
-            HostReadAccess<ValueType> rLocalValues( mLocalValues );
-            HostWriteOnlyAccess<ValueType> wNewLocalValues( newLocalValues, newSize );
+            ReadAccess<ValueType> rLocalValues( mLocalValues );
+            WriteOnlyAccess<ValueType> wNewLocalValues( newLocalValues, newSize );
 
 #pragma omp parallel for
 
@@ -994,8 +994,8 @@ void DenseVector<ValueType>::redistribute( DistributionPtr distribution )
         LAMAArray<ValueType> globalValues;
 
         {
-            HostReadAccess<ValueType> localData( mLocalValues );
-            HostWriteOnlyAccess<ValueType> globalData( globalValues, size() );
+            ReadAccess<ValueType> localData( mLocalValues );
+            WriteOnlyAccess<ValueType> globalData( globalValues, size() );
             getDistribution().replicate( globalData.get(), localData.get() );
         }
 
@@ -1224,7 +1224,7 @@ void DenseVector<ValueType>::writeVectorToMMFile( const std::string& filename, c
         LAMA_THROWEXCEPTION( "DenseVector<ValueType>::writeVectorToMMFile: '" + filename + "' could not be reopened." )
     }
 
-    HostReadAccess<ValueType> dataRead( mLocalValues );
+    ReadAccess<ValueType> dataRead( mLocalValues );
 
     for( IndexType ii = 0; ii < numRows; ++ii )
     {
@@ -1286,7 +1286,7 @@ void DenseVector<ValueType>::writeVectorToXDRFile( const std::string& file, cons
     outFile.write( &nnu );
     outFile.write( &dataTypeSize );
 
-    HostReadAccess<ValueType> dataRead( mLocalValues );
+    ReadAccess<ValueType> dataRead( mLocalValues );
 
     switch( dataType )
     {
@@ -1357,7 +1357,7 @@ void DenseVector<ValueType>::writeVectorDataToBinaryFile( std::fstream& outFile,
 {
     IndexType numRows = size();
 
-    HostReadAccess<ValueType> dataRead( mLocalValues );
+    ReadAccess<ValueType> dataRead( mLocalValues );
 
     switch( type )
     {
@@ -1394,7 +1394,7 @@ template<typename ValueType>
 void DenseVector<ValueType>::writeVectorToFormattedFile( const std::string& file ) const
 {
     std::fstream outFile( file.c_str(), std::ios::out );
-    HostReadAccess<ValueType> dataRead( mLocalValues );
+    ReadAccess<ValueType> dataRead( mLocalValues );
 
     for( IndexType i = 0; i < size(); ++i )
     {
@@ -1416,7 +1416,7 @@ void DenseVector<ValueType>::readVectorFromFormattedFile( const std::string& fil
 
     const IndexType n = size();
 
-    HostWriteOnlyAccess<ValueType> dataWrite( mLocalValues, n );
+    WriteOnlyAccess<ValueType> dataWrite( mLocalValues, n );
 
     for( IndexType i = 0; i < n; ++i )
     {
@@ -1500,7 +1500,7 @@ void DenseVector<ValueType>::readVectorFromXDRFile( const std::string& fileName,
 
     File::DataType fileType = getDataType<ValueType>( dataTypeSize );
 
-    HostWriteOnlyAccess<ValueType> writeData( mLocalValues, nnu );
+    WriteOnlyAccess<ValueType> writeData( mLocalValues, nnu );
 
     switch( fileType )
     {
@@ -1563,9 +1563,9 @@ void DenseVector<ValueType>::readVectorDataFromBinaryFile( std::fstream &inFile,
     IndexType n = size();
 
     LAMA_LOG_INFO( logger,
-                   "read DenseVector<" << Scalar::getType<ValueType>() << "> from binary file, size = " << n << ", dataType = " << ( ( Scalar::ScalarType ) type ) )
+                   "read DenseVector<" << Scalar::getType<ValueType>() << "> from binary file, size = " << n << ", dataType = " << ( ( memory::ScalarType ) type ) )
 
-    HostWriteOnlyAccess<ValueType> writeData( mLocalValues, n );
+    WriteOnlyAccess<ValueType> writeData( mLocalValues, n );
 
     switch( type )
     {

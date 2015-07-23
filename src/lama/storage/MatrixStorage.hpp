@@ -37,10 +37,19 @@
 #include <ostream>
 
 // others
-#include <lama/LAMAArray.hpp>
+#include <memory/memory.hpp>
 #include <lama/Communicator.hpp>
+#include <lama/Scalar.hpp>
 
 #include <lama/io/FileType.hpp>
+
+namespace tasking
+{
+class SyncToken;
+}
+
+using namespace tasking;
+using namespace memory;
 
 namespace lama
 {
@@ -124,7 +133,7 @@ public:
 
     /** Objects of this class should give info about their value type. */
 
-    virtual Scalar::ScalarType getValueType() const = 0;
+    virtual memory::ScalarType getValueType() const = 0;
 
     /** Clear the matrix storage, resets size to 0 x 0.
      *
@@ -219,7 +228,7 @@ public:
      *
      */
 
-    virtual void getRow( _LAMAArray& row, const IndexType i ) const = 0;
+    virtual void getRow( ContextArray& row, const IndexType i ) const = 0;
 
     /** This method returns the diagonal of the matrix.
      *
@@ -229,13 +238,13 @@ public:
      * for which implicit conversion is available.
      */
 
-    virtual void getDiagonal( _LAMAArray& diagonal ) const = 0;
+    virtual void getDiagonal( ContextArray& diagonal ) const = 0;
 
     /** This method sets the diagonal of a matrix storage.
      *
      * Implementation of this routine must be provided by all derived classes.
      */
-    virtual void setDiagonal( const _LAMAArray& diagonal ) = 0;
+    virtual void setDiagonal( const ContextArray& diagonal ) = 0;
 
     virtual void setDiagonal( const Scalar value ) = 0;
 
@@ -255,7 +264,7 @@ public:
      *
      * Each row of the matrix is scaled with the corresponding value.
      */
-    virtual void scale( const _LAMAArray& values ) = 0;
+    virtual void scale( const ContextArray& values ) = 0;
 
     /******************************************************************
      *  General operations on a matrix                                 *
@@ -338,7 +347,7 @@ public:
     virtual void buildCSRData(
         LAMAArray<IndexType>& csrIA,
         LAMAArray<IndexType>& csrJA,
-        _LAMAArray& csrValues ) const = 0;
+        ContextArray& csrValues ) const = 0;
 
     /** Each storage class must provide a routine to set CSR storage data.
      *
@@ -356,7 +365,7 @@ public:
         const IndexType numValues,
         const LAMAArray<IndexType>& csrIA,
         const LAMAArray<IndexType>& csrJA,
-        const _LAMAArray& csrValues ) = 0;
+        const ContextArray& csrValues ) = 0;
 
     /** Assign of matrix storage with any format or value type.
      *
@@ -540,7 +549,7 @@ public:
 
     /** Implementation of pure method. */
 
-    virtual Scalar::ScalarType getValueType() const;
+    virtual memory::ScalarType getValueType() const;
 
     /** Construct a matrix from a dense matrix in row-major order (C-style).
      *  Values of the matrix will be considered as zero if their absolute value is smaller than eps.
@@ -563,7 +572,7 @@ public:
     void setDenseData(
         const IndexType numRows,
         const IndexType numColumns,
-        const _LAMAArray& values,
+        const ContextArray& values,
         const ValueType eps = 0.0 );
 
     /**
@@ -1075,9 +1084,9 @@ void MatrixStorage<ValueType>::setRawCSRData(
 {
     // wrap the pointer data into LAMA arrays ( without copies )
 
-    LAMAArrayRef<IndexType> csrIA( ia, numRows + 1 );
-    LAMAArrayRef<IndexType> csrJA( ja, numValues );
-    LAMAArrayRef<OtherValueType> csrValues( values, numValues );
+    LAMAArrayRef<IndexType> csrIA( numRows + 1, ia );
+    LAMAArrayRef<IndexType> csrJA( numValues, ja );
+    LAMAArrayRef<OtherValueType> csrValues( numValues, values );
 
     // now set the data on the context of this storage via virtual method
 

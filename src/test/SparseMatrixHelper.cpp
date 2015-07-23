@@ -32,9 +32,7 @@
  */
 
 #include <lama/matrix/CSRSparseMatrix.hpp>
-
-#include <lama/HostReadAccess.hpp>
-
+#include <memory/memory.hpp>
 #include <test/SparseMatrixHelper.hpp>
 
 template<typename ValueType>
@@ -51,8 +49,8 @@ bool compareMatrices( const lama::CSRSparseMatrix<ValueType>& matrix, const lama
     // Note: getLocalData returns CSRStorage<ValueType>, so we can use getIA
     const lama::CSRStorage<ValueType>& matrixLocal = matrix.getLocalStorage();
     const lama::CSRStorage<ValueType>& otherLocal = other.getLocalStorage();
-    lama::HostReadAccess<lama::IndexType> ia( matrixLocal.getIA() );
-    lama::HostReadAccess<lama::IndexType> iaOther( otherLocal.getIA() );
+    memory::ReadAccess<lama::IndexType> ia( matrixLocal.getIA() );
+    memory::ReadAccess<lama::IndexType> iaOther( otherLocal.getIA() );
 
     for ( lama::IndexType i = 0; i < nnu + 1; ++i )
     {
@@ -62,10 +60,10 @@ bool compareMatrices( const lama::CSRSparseMatrix<ValueType>& matrix, const lama
         }
     }
 
-    lama::HostReadAccess<lama::IndexType> ja( matrixLocal.getJA() );
-    lama::HostReadAccess<lama::IndexType> jaOther( otherLocal.getJA() );
-    lama::HostReadAccess<ValueType> data( matrixLocal.getValues() );
-    lama::HostReadAccess<ValueType> dataOther( otherLocal.getValues() );
+    memory::ReadAccess<lama::IndexType> ja( matrixLocal.getJA() );
+    memory::ReadAccess<lama::IndexType> jaOther( otherLocal.getJA() );
+    memory::ReadAccess<ValueType> data( matrixLocal.getValues() );
+    memory::ReadAccess<ValueType> dataOther( otherLocal.getValues() );
 
     for ( lama::IndexType i = 0; i < nnu; ++i )
     {

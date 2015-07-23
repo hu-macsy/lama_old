@@ -50,6 +50,8 @@
 
 #include <mkl_spblas.h>
 
+using tasking::SyncToken;
+
 namespace lama
 {
 
@@ -273,7 +275,7 @@ void MKLCSRUtils::setInterface( CSRUtilsInterface& CSRUtils )
 
 bool MKLCSRUtils::registerInterface()
 {
-    LAMAInterface& interface = LAMAInterfaceRegistry::getRegistry().modifyInterface( Context::Host );
+    LAMAInterface& interface = LAMAInterfaceRegistry::getRegistry().modifyInterface( memory::context::Host );
     setInterface( interface.CSRUtils );
     return true;
 }

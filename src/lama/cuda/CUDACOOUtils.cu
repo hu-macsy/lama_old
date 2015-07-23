@@ -28,17 +28,17 @@
  * @brief Implementation of COO utilities with CUDA
  * @author Bea Hornef, Thomas Brandes
  * @date 04.07.2012
- * @since 1.0.0
  */
 
 #include <lama/LAMAInterface.hpp>
 #include <lama/LAMAInterfaceRegistry.hpp>
 
 #include <lama/cuda/utils.cu.h>
-#include <lama/cuda/CUDAError.hpp>
+#include <cudamem/CUDAError.hpp>
 #include <lama/cuda/CUDAUtils.hpp>
 #include <lama/cuda/CUDACOOUtils.hpp>
-#include <lama/cuda/CUDAStreamSyncToken.hpp>
+#include <cudamem/CUDAStreamSyncToken.hpp>
+#include <tasking/SyncToken.hpp>
 #include <lama/cuda/CUDASettings.hpp>
 
 // tracing
@@ -51,6 +51,9 @@
 // boost
 #include <boost/bind.hpp>
 #include <boost/preprocessor.hpp>
+
+using common::getScalarType;
+using namespace tasking;
 
 namespace lama
 {
@@ -251,7 +254,7 @@ namespace lama
     {
         LAMA_REGION( "CUDA.COO.normalGEMV" )
 
-        LAMA_LOG_INFO( logger, "normalGEMV<" << Scalar::getType<ValueType>() << ">, "
+        LAMA_LOG_INFO( logger, "normalGEMV<" << getScalarType<ValueType>() << ">, "
                         << "result[ " << numRows << "] = " << alpha
                         << " COO( #vals = " << numValues << " ) * x + " << beta << " * y" )
 
@@ -297,7 +300,7 @@ namespace lama
         dimBlock = dim3( blockSize, 1, 1 );
         dimGrid = makeGrid( numValues, dimBlock.x );
 
-        LAMA_LOG_INFO( logger, "Start cooGemvKernel<" << Scalar::getType<ValueType>()
+        LAMA_LOG_INFO( logger, "Start cooGemvKernel<" << getScalarType<ValueType>()
                         << "> <<< blockSize = " << blockSize << ", stream = " << stream
                         << ", alpha = " << alpha
                         << ", useTexture = " << useTexture << ">>>" )
@@ -416,7 +419,7 @@ namespace lama
         dimBlock = dim3( blockSize, 1, 1 );
         dimGrid = makeGrid( numValues, dimBlock.x );
 
-        LAMA_LOG_INFO( logger, "Start cooGevmKernel<" << Scalar::getType<ValueType>()
+        LAMA_LOG_INFO( logger, "Start cooGevmKernel<" << getScalarType<ValueType>()
                         << "> <<< blockSize = " << blockSize << ", stream = " << stream
                         << ", useTexture = " << useTexture << ">>>" )
 
@@ -733,7 +736,7 @@ namespace lama
 
     bool CUDACOOUtils::registerInterface()
     {
-        LAMAInterface& interface = LAMAInterfaceRegistry::getRegistry().modifyInterface( Context::CUDA );
+        LAMAInterface& interface = LAMAInterfaceRegistry::getRegistry().modifyInterface( memory::context::CUDA );
         setInterface( interface.COOUtils );
         return true;
     }
@@ -744,4 +747,4 @@ namespace lama
 
     bool CUDACOOUtils::initialized = registerInterface();
 
-} // namespace lama
+}  // namespace

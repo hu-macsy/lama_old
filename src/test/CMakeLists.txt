@@ -52,70 +52,68 @@ set ( HEADERS
     )
 
 set ( SOURCE_FILES
-        BiCGstabTest
-        BiCGTest
+#       BiCGstabTest
+#       BiCGTest
         BLAS1Test
 		BLAS2Test
 		BLAS3Test
         CGTest
-       #CGNETest
-        CGNRTest
-    	CGSTest
-        CommonLoggerTest
-        CommunicatorTest
-        COOSparseMatrixTest
-        COOStorageTest
-        COOUtilsTest
-        CriterionTest
-        CSRSparseMatrixTest
-        CSRStorageTest
-        CSRUtilsTest
-        DenseMatrixTest
-        DenseMatrixTest1
-        DenseStorageTest
-        DerivedSparseMatrixTest
-        DIASparseMatrixTest
-        DIAStorageTest
-        ELLSparseMatrixTest
-        ELLStorageTest
-        ELLUtilsTest
-        ExceptionTest
-        FileLoggerTest
-        GMRESTest
-        HostReadAccessTest
-        HostWriteAccessTest
-        InverseSolverTest
-        IterationCountTest
-        JacobiTest
-        JDSSparseMatrixTest
-        JDSStorageTest
-        JDSUtilsTest
-        L1NormTest
-        L2NormTest
-        LAMAArrayTest
-        LAPACKTest
-        MatrixStorageConversionTest
-		MatrixNormTest
-        MatrixTest
-        MaxNormTest
-        MINRESTest
-        NoCommunicatorTest
-        ResidualStagnationTest
-        ResidualThresholdTest
-	    RichardsonTest
-        ScalarTest
-        SimpleAMGTest
-        SolutionProxyTest
-        SORTest
-        SparseAssemblyStorageTest
-        SpecializedJacobiTest
-        StorageIOTest
-        TaskSyncTokenTest
-	    TFQMRTest
-        TimerTest
-        TracingTest
-        UtilsTest
-        VectorTest
+       # not yet: CGNETest
+#       CGNRTest
+#   	CGSTest
+#       CommonLoggerTest
+#       CommunicatorTest
+#       COOSparseMatrixTest
+#       COOStorageTest
+#       COOUtilsTest
+#       CriterionTest
+#       CSRSparseMatrixTest
+#       CSRStorageTest
+#       CSRUtilsTest
+#       DenseMatrixTest
+#       DenseMatrixTest1
+#       DenseStorageTest
+#       DerivedSparseMatrixTest
+#       DIASparseMatrixTest
+#       DIAStorageTest
+#       ELLSparseMatrixTest
+#       ELLStorageTest
+#       ELLUtilsTest
+#       ExceptionTest
+#       FileLoggerTest
+#       GMRESTest
+#       InverseSolverTest
+#       IterationCountTest
+#       JacobiTest
+#       JDSSparseMatrixTest
+#       JDSStorageTest
+#       JDSUtilsTest
+#       L1NormTest
+#       L2NormTest
+#       LAMAArrayTest
+#       LAPACKTest
+#       MatrixStorageConversionTest
+#	MatrixNormTest
+#       MatrixTest
+#       MaxNormTest
+#       MINRESTest
+#       NoCommunicatorTest
+#       ResidualStagnationTest
+#       ResidualThresholdTest
+#    RichardsonTest
+#       ScalarTest
+#       SimpleAMGTest
+#       SolutionProxyTest
+#       SORTest
+#       SparseAssemblyStorageTest
+#       SpecializedJacobiTest
+#       StorageIOTest
+#       TaskSyncTokenTest
+#    TFQMRTest
+#       TimerTest
+#       TracingTest
+#       UtilsTest
+#       VectorTest
     )
 
 lama_classes ( ${CLASSES} )
@@ -137,6 +135,7 @@ include_directories ( ${common_INCLUDE_DIR}  )
 include_directories ( ${logging_INCLUDE_DIR} )
 include_directories ( ${tracing_INCLUDE_DIR} )
 include_directories ( ${tasking_INCLUDE_DIR} )
+include_directories ( ${memory_INCLUDE_DIR} )
 
 if ( LAMA_BLAS_NAME STREQUAL "MKL" )
     include_directories ( ${MKL_INCLUDE_DIRS} )

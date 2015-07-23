@@ -38,7 +38,7 @@
 
 // others
 #include <lama/LAMATypes.hpp>
-#include <lama/SyncToken.hpp>
+#include <tasking/SyncToken.hpp>
 
 // CBLAS_ORDER, CBLAS_TRANSPOSE, ...
 #include <lama/cblas.hpp>
@@ -90,7 +90,7 @@ private:
         const ValueType beta,
         ValueType* y,
         const IndexType incY,
-        SyncToken* syncToken );
+        tasking::SyncToken* syncToken );
 
     /**
      * This function is the CUDA implementation of lama::BLAS2Interface::symv
@@ -108,7 +108,7 @@ private:
         const ValueType beta,
         ValueType* y,
         const IndexType incY,
-        SyncToken* syncToken );
+        tasking::SyncToken* syncToken );
 
     /**
      * This function is the CUDA implementation of lama::BLAS2Interface::trmv
@@ -124,7 +124,7 @@ private:
         const IndexType lda,
         ValueType* x,
         const IndexType incX,
-        SyncToken* syncToken );
+        tasking::SyncToken* syncToken );
 
     /**
      * This function is the CUDA implementation of lama::BLAS2Interface::trsv
@@ -140,7 +140,7 @@ private:
         const IndexType lda,
         ValueType* x,
         const IndexType incX,
-        SyncToken* syncToken );
+        tasking::SyncToken* syncToken );
 
     /**
      * This function is the CUDA implementation of lama::BLAS2Interface::gbmv
@@ -161,7 +161,7 @@ private:
         const ValueType beta,
         ValueType* y,
         const IndexType incY,
-        SyncToken* syncToken );
+        tasking::SyncToken* syncToken );
 
     /**
      * This function is the CUDA implementation of lama::BLAS2Interface::sbmv
@@ -180,7 +180,7 @@ private:
         const ValueType beta,
         ValueType* y,
         const IndexType incY,
-        SyncToken* syncToken );
+        tasking::SyncToken* syncToken );
 
     /**
      * This function is the CUDA implementation of lama::BLAS2Interface::tbmv
@@ -197,7 +197,7 @@ private:
         const IndexType lda,
         ValueType* x,
         const IndexType incX,
-        SyncToken* syncToken );
+        tasking::SyncToken* syncToken );
 
     /**
      * This function is the CUDA implementation of lama::BLAS2Interface::tbsv
@@ -214,7 +214,7 @@ private:
         const IndexType lda,
         ValueType* x,
         const IndexType incX,
-        SyncToken* syncToken );
+        tasking::SyncToken* syncToken );
 
     /**
      * This function is the CUDA implementation of lama::BLAS2Interface::ger
@@ -231,7 +231,7 @@ private:
         const IndexType incY,
         ValueType* A,
         const IndexType lda,
-        SyncToken* syncToken );
+        tasking::SyncToken* syncToken );
 
     /**
      * This function is the CUDA implementation of lama::BLAS2Interface::syr
@@ -246,7 +246,7 @@ private:
         const IndexType incX,
         ValueType* A,
         const IndexType lda,
-        SyncToken* syncToken );
+        tasking::SyncToken* syncToken );
 
     /**
      * This function is the CUDA implementation of lama::BLAS2Interface::syr2
@@ -263,7 +263,7 @@ private:
         const IndexType incY,
         ValueType* A,
         const IndexType lda,
-        SyncToken* syncToken );
+        tasking::SyncToken* syncToken );
 
     /**
      * This function is the CUDA implementation of lama::BLAS2Interface::spr
@@ -277,7 +277,7 @@ private:
         const ValueType* x,
         const IndexType incX,
         ValueType* AP,
-        SyncToken* syncToken );
+        tasking::SyncToken* syncToken );
 
     /**
      * This function is the CUDA implementation of lama::BLAS2Interface::spr2
@@ -293,7 +293,7 @@ private:
         const ValueType* y,
         const IndexType incY,
         ValueType* AP,
-        SyncToken* syncToken );
+        tasking::SyncToken* syncToken );
 
     LAMA_LOG_DECL_STATIC_LOGGER( logger )
 

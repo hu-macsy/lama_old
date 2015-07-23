@@ -58,6 +58,8 @@ add_subdirectory( ../common "${CMAKE_CURRENT_BINARY_DIR}/common" )
 add_subdirectory( ../logging "${CMAKE_CURRENT_BINARY_DIR}/logging" )
 add_subdirectory( ../tracing "${CMAKE_CURRENT_BINARY_DIR}/tracing" )
 add_subdirectory( ../tasking "${CMAKE_CURRENT_BINARY_DIR}/tasking" )
+add_subdirectory( ../memory "${CMAKE_CURRENT_BINARY_DIR}/memory" )
+add_subdirectory( ../cudamem "${CMAKE_CURRENT_BINARY_DIR}/cudamem" )
 
 ### Variables / CMAKE Functions ###
 include ( Variables )

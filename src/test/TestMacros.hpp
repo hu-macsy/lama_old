@@ -36,8 +36,7 @@
 
 #include <lama/Scalar.hpp>
 #include <common/Printable.hpp>
-#include <lama/Context.hpp>
-#include <lama/ContextFactory.hpp>
+#include <memory/Context.hpp>
 
 #include <boost/assign/list_of.hpp>
 #include <boost/preprocessor.hpp>
@@ -143,15 +142,15 @@ inline std::string getEnvContext()
  * @return the current context as a ContextType from a std::string
  */
 
-inline lama::ContextType mapEnvContexttoContextType( std::string contextname )
+inline memory::ContextType mapEnvContexttoContextType( std::string contextname )
 {
-    lama::ContextType myContext;
-    std::map<std::string, lama::ContextType> contextmap =
-        boost::assign::map_list_of ( "Host", lama::Context::Host )
-        ( "CUDA", lama::Context::CUDA )
-        ( "OPENCL", lama::Context::OpenCL )
-        ( "MIC", lama::Context::MIC )
-        ( "MaxContext", lama::Context::MaxContext );
+    memory::ContextType myContext;
+    std::map<std::string, memory::ContextType> contextmap =
+        boost::assign::map_list_of ( "Host", memory::context::Host )
+        ( "CUDA", memory::context::CUDA )
+        ( "OPENCL", memory::context::OpenCL )
+        ( "MIC", memory::context::MIC )
+        ( "MaxContext", memory::context::MaxContext );
     myContext = contextmap[contextname];
     return myContext;
 }
@@ -262,9 +261,9 @@ inline lama::ContextType mapEnvContexttoContextType( std::string contextname )
     if ( contexttype == "*" )                                                                                          \
     {                                                                                                                  \
         LAMA_LOG_INFO( logger, "LAMA_TEST_CONTEXT is not set or has value '*', so all available contexts will be used." );  \
-        for ( ContextType i = Context::Host; i < Context::MaxContext; i = static_cast<ContextType>( i + 1 ) )          \
+        for ( ContextType i = context::Host; i < context::MaxContext; i = static_cast<ContextType>( i + 1 ) )          \
         {                                                                                                              \
-            if ( ContextFactory::hasContext( i ) )                                                                     \
+            if ( Context::hasContext( i ) )                                                                            \
             {                                                                                                          \
                 listofcontexts.push_back( i );                                                                         \
                 LAMA_LOG_DEBUG( logger, "Context " << i << " is available");                                           \
@@ -288,7 +287,7 @@ inline lama::ContextType mapEnvContexttoContextType( std::string contextname )
 
 #define GETCONTEXT( loc )                                                                                              \
     ContextPtr loc;                                                                                                    \
-    loc = ContextFactory::getContext( *Iter );
+    loc = Context::getContextPtr( *Iter );
 
 /*
  * @brief HelperMacro LAMA_AUTO_TEST_CASE( name, classname )

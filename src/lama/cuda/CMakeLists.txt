@@ -39,14 +39,7 @@ set ( CLASSES
         CUDABLAS1
         CUDABLAS2
         CUDABLAS3
-        CUDAContext
-        CUDAContextManager
-        CUDAError
-        CUDAException
-        CUDAHostContext
-        CUDAHostContextManager
         CUDALAPACK
-        CUDAStreamSyncToken
         CUDASettings
         CUDATexture
     )

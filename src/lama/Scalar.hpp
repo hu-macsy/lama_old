@@ -41,6 +41,7 @@
 
 // others
 #include <lama/LAMATypes.hpp>
+#include <common/ScalarType.hpp>
 
 #include <lama/exception/LAMAAssert.hpp>
 
@@ -52,6 +53,9 @@
 
 namespace lama
 {
+
+using common::ScalarType;
+using namespace common::scalar;
 
 /**
  * @brief The class Scalar represents a multi precision scalar.
@@ -67,33 +71,6 @@ namespace lama
 class COMMON_DLL_IMPORTEXPORT Scalar: public Printable
 {
 public:
-
-    /** Enumeration type for supported value types in LAMA.
-     *
-     *  This enumeration type is result of many query operations for LAMA classes
-     *  and avoids expensive calls of the typeid operator.
-     *
-     *  \code
-     *    CSRSparseMatrix<double> a;
-     *    a.getValueType()  // returns ScalarType::DOUBLE
-     *    Scalar::getType<double>()  // return ScalarType DOUBLE
-     *  \endcode
-     *
-     *  It is especially useful when casting variables of base classes to derived classes.
-     */
-    enum ScalarType
-    {
-        INDEX_TYPE, //!<  synonymous for IndexType
-        FLOAT, //!<  synonymous for float
-        DOUBLE, //!<  synonymous for double
-        LONG_DOUBLE, //!<  synonymous for long double
-        COMPLEX, //!<  synonymous for complex
-        DOUBLE_COMPLEX, //!<  synonymous for double complex
-        LONG_DOUBLE_COMPLEX, //!<  synonymous for long double complex
-        PATTERN, //!<  dummy type of size 0
-        INTERNAL, //!<  take the type currently in use, getType<ValueType>()
-        UNKNOWN
-    };
 
     /**
      * @brief ExpressionMemberType is the type that is used the template Expression to store a Scalar.
@@ -235,16 +212,6 @@ private    :
     ComplexLongDouble mValue; //!< use highest precision for presentation
 };
 
-/** Output of ScalarType in stream is supported and very useful.
- */
-
-COMMON_DLL_IMPORTEXPORT std::ostream& operator<<( std::ostream& stream, const Scalar::ScalarType& object );
-
-/** @brief Cast operator to convert a Scalar into corresponding basic type.
- *
- *  This solutions avoids an implicit conversion of a Scalar to a basic type.
- */
-
 template<typename ValueType>
 ValueType cast( const Scalar& scalar )
 {
@@ -351,49 +318,49 @@ inline void Scalar::writeAt( std::ostream& stream ) const
 }
 
 template<typename ValueType>
-inline Scalar::ScalarType Scalar::getType()
+inline ScalarType Scalar::getType()
 {
     return UNKNOWN;
 }
 
 template<>
-inline Scalar::ScalarType Scalar::getType<IndexType>()
+inline ScalarType Scalar::getType<IndexType>()
 {
     return INDEX_TYPE;
 }
 
 template<>
-inline Scalar::ScalarType Scalar::getType<float>()
+inline ScalarType Scalar::getType<float>()
 {
     return FLOAT;
 }
 
 template<>
-inline Scalar::ScalarType Scalar::getType<double>()
+inline ScalarType Scalar::getType<double>()
 {
     return DOUBLE;
 }
 
 template<>
-inline Scalar::ScalarType Scalar::getType<LongDouble>()
+inline ScalarType Scalar::getType<LongDouble>()
 {
     return LONG_DOUBLE;
 }
 
 template<>
-inline Scalar::ScalarType Scalar::getType<ComplexFloat>()
+inline ScalarType Scalar::getType<ComplexFloat>()
 {
     return COMPLEX;
 }
 
 template<>
-inline Scalar::ScalarType Scalar::getType<ComplexDouble>()
+inline ScalarType Scalar::getType<ComplexDouble>()
 {
     return DOUBLE_COMPLEX;
 }
 
 template<>
-inline Scalar::ScalarType Scalar::getType<ComplexLongDouble>()
+inline ScalarType Scalar::getType<ComplexLongDouble>()
 {
     return LONG_DOUBLE_COMPLEX;
 }

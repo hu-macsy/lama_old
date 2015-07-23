@@ -34,7 +34,7 @@
 #include <lama/cuda/CUDABLAS1.hpp>
 #include <lama/cuda/launchHelper.hpp>
 #include <lama/cuda/utils.cu.h>
-#include <lama/cuda/CUDAError.hpp>
+#include <cudamem/CUDAError.hpp>
 
 #include <cuda_runtime.h>
 #include <boost/preprocessor.hpp>

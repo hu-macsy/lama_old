@@ -35,7 +35,7 @@
 #include <lama/NoCommunicator.hpp>
 
 // others
-#include <lama/NoSyncToken.hpp>
+#include <tasking/NoSyncToken.hpp>
 #include <lama/CommunicationPlan.hpp>
 
 // assert
@@ -59,9 +59,9 @@ NoCommunicator::~NoCommunicator()
     LAMA_LOG_DEBUG( logger, "~NoCommunicator()" )
 }
 
-ContextPtr NoCommunicator::getCommunicationContext( const _LAMAArray& ) const
+memory::ContextPtr NoCommunicator::getCommunicationContext( const memory::ContextArray& ) const
 {
-    return ContextFactory::getContext( Context::Host );
+    return memory::Context::getContextPtr( memory::context::Host );
 }
 
 bool NoCommunicator::isEqual( const Communicator& other ) const

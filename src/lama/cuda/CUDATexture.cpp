@@ -33,7 +33,7 @@
 
 #include <lama/cuda/CUDATexture.hpp>
 
-#include <lama/cuda/CUDAError.hpp>
+#include <cudamem/CUDAError.hpp>
 
 // Some calls are needed of the CUDA driver API
 

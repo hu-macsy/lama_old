@@ -44,11 +44,13 @@
 
 #include <lama/cblas.hpp>
 
+namespace tasking
+{
+    class SyncToken;
+}
+
 namespace lama
 {
-
-class SyncToken;
-// forward declaration
 
 class COMMON_DLL_IMPORTEXPORT CUDABLAS3
 {
@@ -135,7 +137,7 @@ private:
         const ValueType beta,
         ValueType* C,
         const IndexType ldc,
-        SyncToken* syncToken );
+        tasking::SyncToken* syncToken );
 
     /**
      * @brief trsm solves one of the matrix equations
@@ -219,7 +221,7 @@ private:
         const IndexType lda,
         ValueType* B,
         const IndexType ldb,
-        SyncToken* syncToken );
+        tasking::SyncToken* syncToken );
 
 private:
 

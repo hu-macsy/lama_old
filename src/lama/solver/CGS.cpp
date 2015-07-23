@@ -77,7 +77,7 @@ void CGS::initialize( const Matrix& coefficients ){
     runtime.mNormRes = 1.0;
     runtime.mEps = std::numeric_limits<double>::epsilon()*3;            //CAREFUL: No abstract type
 
-    Scalar::ScalarType type = coefficients.getValueType();
+    memory::ScalarType type = coefficients.getValueType();
 
     runtime.mRes0.reset( Vector::createVector( type, coefficients.getDistributionPtr() ) );
     runtime.mVecT.reset(Vector::createVector( type, coefficients.getDistributionPtr() ));

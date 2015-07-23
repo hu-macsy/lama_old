@@ -204,16 +204,16 @@ Matrix* Matrix::create( DistributionPtr rowDistribution, DistributionPtr colDist
 
 Vector* Matrix::createDenseVector( DistributionPtr distribution, const Scalar value ) const
 {
-    Scalar::ScalarType matrixValueType = getValueType();
+    memory::ScalarType matrixValueType = getValueType();
 
     LAMA_LOG_INFO( logger, "create vector of type " << matrixValueType )
 
     switch( matrixValueType )
     {
-        case Scalar::DOUBLE:
+        case common::scalar::DOUBLE:
             return new DenseVector<double>( distribution, value.getValue<double>() );
 
-        case Scalar::FLOAT:
+        case common::scalar::FLOAT:
             return new DenseVector<float>( distribution, value.getValue<float>() );
 
         default:
@@ -244,7 +244,7 @@ void Matrix::setContext( ContextPtr localContext, ContextPtr haloContext )
 
     // default implementation for matrices that do not support halo context
 
-    if( *localContext != *haloContext )
+    if( localContext.get() != haloContext.get() )
     {
         LAMA_LOG_WARN( logger, *this << ": halo context = " << *haloContext << " ignored" )
     }
@@ -556,7 +556,7 @@ Matrix& Matrix::operator=( const Expression_SM_SM& exp )
 
 /** The key for the matrix create routine is given by the pair of format and type. */
 
-typedef std::pair<MatrixStorageFormat,Scalar::ScalarType> CreatorKey;
+typedef std::pair<MatrixStorageFormat,memory::ScalarType> CreatorKey;
 
 /** Map container to get for the key the create function. */
 
@@ -582,7 +582,7 @@ static CreatorMap& getFactory()
     return *factory;
 }
 
-void Matrix::addCreator( const MatrixStorageFormat format, Scalar::ScalarType type, Matrix* (*create)() )
+void Matrix::addCreator( const MatrixStorageFormat format, memory::ScalarType type, Matrix* (*create)() )
 {
     CreatorMap& factory = getFactory();
 
@@ -591,7 +591,7 @@ void Matrix::addCreator( const MatrixStorageFormat format, Scalar::ScalarType ty
     factory[CreatorKey( format, type )] = create;
 }
 
-Matrix* Matrix::getMatrix( const MatrixStorageFormat format, Scalar::ScalarType type )
+Matrix* Matrix::getMatrix( const MatrixStorageFormat format, memory::ScalarType type )
 {
     Matrix* newMatrix = NULL;
 

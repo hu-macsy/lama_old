@@ -79,7 +79,7 @@ void MINRES::initialize( const Matrix& coefficients ){
     runtime.mS = 0.0;
     runtime.mSNew = 0.0;
 
-    Scalar::ScalarType type = coefficients.getValueType();
+    ScalarType type = coefficients.getValueType();
     
     runtime.mVecV.reset( Vector::createVector( type, coefficients.getDistributionPtr() ) );
     runtime.mVecVOld.reset( Vector::createVector( type, coefficients.getDistributionPtr() ) );

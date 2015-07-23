@@ -49,9 +49,10 @@
 namespace lama
 {
 
-LAMA_LOG_DEF_LOGGER( BLAS_BLAS3::logger, "BLAS.BLAS3" )
+using tasking::SyncToken;
+using common::getScalarType;
 
-typedef int F77Int;
+LAMA_LOG_DEF_LOGGER( BLAS_BLAS3::logger, "BLAS.BLAS3" )
 
 template<typename ValueType>
 static inline
@@ -194,7 +195,7 @@ void BLAS_BLAS3::gemm(
     LAMA_REGION( "BLAS.BLAS3.gemm" )
 
     LAMA_LOG_INFO( logger,
-                   "gemm<" << Scalar::getType<ValueType>() << ">: " << "m = " << m << ", n = " << n << ", k = " << k << ", lda = " << lda << ", ldb = " << ldb << ", ldc = " << ldc << ", alpha = " << alpha << ", beta = " << beta )
+                   "gemm<" << getScalarType<ValueType>() << ">: " << "m = " << m << ", n = " << n << ", k = " << k << ", lda = " << lda << ", ldb = " << ldb << ", ldc = " << ldc << ", alpha = " << alpha << ", beta = " << beta )
 
     if( syncToken )
     {
@@ -247,7 +248,7 @@ void BLAS_BLAS3::setInterface( BLASInterface& BLAS )
 
 bool BLAS_BLAS3::registerInterface()
 {
-    LAMAInterface& interface = LAMAInterfaceRegistry::getRegistry().modifyInterface( Context::Host );
+    LAMAInterface& interface = LAMAInterfaceRegistry::getRegistry().modifyInterface( memory::context::Host );
     setInterface( interface.BLAS );
     return true;
 }

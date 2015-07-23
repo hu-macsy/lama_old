@@ -28,14 +28,12 @@
  * @brief SparseMatrixHelper.hpp
  * @author Lauretta Schubert
  * @date 20.04.2012
- * @since 1.0.0
  */
-#ifndef LAMA_SPARSEMATRIXHELPER_HPP_
-#define LAMA_SPARSEMATRIXHELPER_HPP_
+
+#pragma once
 
 #include <lama/matrix/CSRSparseMatrix.hpp>
 
 template<typename ValueType>
 bool compareMatrices( const lama::CSRSparseMatrix<ValueType>& matrix, const lama::CSRSparseMatrix<ValueType>& other );
 
-#endif // LAMA_SPARSEMATRIXHELPER_HPP_

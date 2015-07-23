@@ -655,7 +655,7 @@ void LAPACKe_LAPACK::setInterface( BLASInterface& BLAS )
 
 bool LAPACKe_LAPACK::registerInterface()
 {
-    LAMAInterface& interface = LAMAInterfaceRegistry::getRegistry().modifyInterface( Context::Host );
+    LAMAInterface& interface = LAMAInterfaceRegistry::getRegistry().modifyInterface( memory::context::Host );
     setInterface( interface.BLAS );
     return true;
 }

@@ -38,15 +38,13 @@
 
 // others
 #include <lama/LAMATypes.hpp>
+#include <tasking/SyncToken.hpp>
 
 // logging
 #include <logging/logging.hpp>
 
 namespace lama
 {
-
-class SyncToken;
-// forward declaration
 
 /** This class provides routines on compressed sparse row data
  */
@@ -167,7 +165,7 @@ public:
         const IndexType csrIA[],
         const IndexType csrJA[],
         const ValueType csrValues[],
-        SyncToken* syncToken );
+        tasking::SyncToken* syncToken );
 
     /** Implementation for CSRUtilsInterface::Mult::sparseGEMV  */
 
@@ -181,7 +179,7 @@ public:
         const IndexType csrIA[],
         const IndexType csrJA[],
         const ValueType csrValues[],
-        SyncToken* syncToken );
+        tasking::SyncToken* syncToken );
 
     /** Implementation for CSRUtilsInterface::Mult:normalGEVM */
 
@@ -197,7 +195,7 @@ public:
         const IndexType csrIA[],
         const IndexType csrJA[],
         const ValueType csrValues[],
-        SyncToken* syncToken );
+        tasking::SyncToken* syncToken );
 
     /** Implementation for CSRUtilsInterface::Mult::sparseGEVM  */
 
@@ -212,7 +210,7 @@ public:
         const IndexType csrIA[],
         const IndexType csrJA[],
         const ValueType csrValues[],
-        SyncToken* syncToken );
+        tasking::SyncToken* syncToken );
 
     /** Implementation for CSRUtilsInterface::Mult::gemm  */
 
@@ -229,7 +227,7 @@ public:
         const IndexType csrIA[],
         const IndexType csrJA[],
         const ValueType csrValues[],
-        SyncToken* syncToken );
+        tasking::SyncToken* syncToken );
 
     /** Implementation for CSRUtilsInterface::Jacobi::jacobi(Async/Halo) */
 
@@ -243,7 +241,7 @@ public:
         const ValueType oldSolution[],
         const ValueType omega,
         const IndexType numRows,
-        SyncToken* syncToken );
+        tasking::SyncToken* syncToken );
 
     template<typename ValueType>
     static void jacobiHalo(

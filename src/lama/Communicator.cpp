@@ -36,7 +36,7 @@
 
 // others
 #include <lama/LAMAArrayUtils.hpp>
-#include <lama/NoSyncToken.hpp>
+#include <tasking/NoSyncToken.hpp>
 
 #include <lama/distribution/Distribution.hpp>
 #include <lama/distribution/Halo.hpp>
@@ -45,6 +45,8 @@
 #include <tracing/tracing.hpp>
 
 using namespace std;
+using namespace memory;
+using namespace tasking;
 
 namespace lama
 {
@@ -376,8 +378,8 @@ SyncToken* Communicator::shiftAsync(
 
     recvArray.clear(); // do not keep any old data, keep capacities
 
-    boost::shared_ptr<HostWriteAccess<ValueType> > recvData( new HostWriteAccess<ValueType>( recvArray ) );
-    boost::shared_ptr<HostReadAccess<ValueType> > sendData( new HostReadAccess<ValueType>( sendArray ) );
+    boost::shared_ptr<WriteAccess<ValueType> > recvData( new WriteAccess<ValueType>( recvArray ) );
+    boost::shared_ptr<ReadAccess<ValueType> > sendData( new ReadAccess<ValueType>( sendArray ) );
 
     IndexType numElems = sendData->size();
 
@@ -392,8 +394,8 @@ SyncToken* Communicator::shiftAsync(
 
     // accesses are pushed in the sync token so they are freed after synchronization
 
-    syncToken->pushAccess( sendData );
-    syncToken->pushAccess( recvData );
+    syncToken->pushToken( sendData );
+    syncToken->pushToken( recvData );
 
     return syncToken;
 }
@@ -470,9 +472,9 @@ LAMA_REGION( "Communicator.updateHaloAsync" )
     // put together the (send) values to provide for other partitions
 
     {
-        HostWriteAccess<ValueType> sendData( *sendValues );
-        HostReadAccess<ValueType> localData( localValues );
-        HostReadAccess<IndexType> sendIndexes( halo.getProvidesIndexes() );
+        WriteAccess<ValueType> sendData( *sendValues );
+        ReadAccess<ValueType> localData( localValues );
+        ReadAccess<IndexType> sendIndexes( halo.getProvidesIndexes() );
 
         for( IndexType i = 0; i < numSendValues; i++ )
         {
@@ -486,7 +488,7 @@ LAMA_REGION( "Communicator.updateHaloAsync" )
 
     // Note: it is guaranteed that access to sendValues is freed before sendValues
 
-    token->pushArray( sendValues );
+    token->pushToken( sendValues );
 
     return token;
 }
@@ -538,10 +540,10 @@ void Communicator::computeOwners(
     LAMAArray<IndexType> ownersSendArray( receiveSize );
     LAMAArray<IndexType> ownersReceiveArray( receiveSize );
     {
-        HostWriteAccess<IndexType> indexesSend( indexesSendArray );
-//        HostWriteAccess<IndexType> indexesReceive( indexesReceiveArray );
-        HostWriteAccess<IndexType> ownersSend( ownersSendArray );
-//        HostWriteAccess<IndexType> ownersReceive( ownersReceiveArray );
+        WriteAccess<IndexType> indexesSend( indexesSendArray );
+//        WriteAccess<IndexType> indexesReceive( indexesReceiveArray );
+        WriteAccess<IndexType> ownersSend( ownersSendArray );
+//        WriteAccess<IndexType> ownersReceive( ownersReceiveArray );
         nonLocal = 0; // reset, counted again
 
         for( IndexType i = 0; i < static_cast<IndexType>( nIndexes ); ++i )
@@ -567,10 +569,10 @@ void Communicator::computeOwners(
 
     for( int iProc = 0; iProc < size - 1; ++iProc )
     {
-        HostWriteAccess<IndexType> indexesSend( indexesSendArray );
-        HostWriteAccess<IndexType> indexesReceive( indexesReceiveArray );
-        HostWriteAccess<IndexType> ownersSend( ownersSendArray );
-        HostWriteAccess<IndexType> ownersReceive( ownersReceiveArray );
+        WriteAccess<IndexType> indexesSend( indexesSendArray );
+        WriteAccess<IndexType> indexesReceive( indexesReceiveArray );
+        WriteAccess<IndexType> ownersSend( ownersSendArray );
+        WriteAccess<IndexType> ownersReceive( ownersReceiveArray );
         LAMA_LOG_DEBUG( logger,
                         *this << " shift: recv " << receiveSize << ", send " << currentSize << ", direction = " << direction )
 
@@ -626,7 +628,7 @@ void Communicator::computeOwners(
         ownersReceiveArray.swap( ownersSendArray );
     }
 
-    HostWriteAccess<IndexType> ownersSend( ownersSendArray );
+    WriteAccess<IndexType> ownersSend( ownersSendArray );
 
     for( int i = 0; i < nonLocal; ++i )
     {

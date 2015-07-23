@@ -38,14 +38,13 @@
 
 // others
 #include <lama/LAMATypes.hpp>
+#include <tasking/SyncToken.hpp>
 
 // logging
 #include <logging/logging.hpp>
 
 namespace lama
 {
-
-class SyncToken;
 
 /** Implementations of methods for lama::BLASInterface with OpenMP.
  *
@@ -65,25 +64,25 @@ public:
         const ValueType alpha,
         ValueType* x,
         const IndexType incX,
-        SyncToken* syncToken );
+        tasking::SyncToken* syncToken );
 
     /**
      * This function is the Host implementation of lama::BLASInterface::nrm2 using BLAS
      */
     template<typename ValueType>
-    static ValueType nrm2( const IndexType n, const ValueType* x, const IndexType incX, SyncToken* syncToken );
+    static ValueType nrm2( const IndexType n, const ValueType* x, const IndexType incX, tasking::SyncToken* syncToken );
 
     /**
      * This function is the Host implementation of lama::BLASInterface::asum
      */
     template<typename ValueType>
-    static ValueType asum( const IndexType n, const ValueType* x, const IndexType incX, SyncToken* syncToken );
+    static ValueType asum( const IndexType n, const ValueType* x, const IndexType incX, tasking::SyncToken* syncToken );
 
     /**
      * This function is the Host implementation of lama::BLASInterface::iamax
      */
     template<typename ValueType>
-    static IndexType iamax( const IndexType n, const ValueType* x, const IndexType incX, SyncToken* syncToken );
+    static IndexType iamax( const IndexType n, const ValueType* x, const IndexType incX, tasking::SyncToken* syncToken );
 
     /**
      * This function is the Host implementation of lama::BLASInterface::swap
@@ -95,7 +94,7 @@ public:
         const IndexType incY,
         ValueType* x,
         const IndexType incX,
-        SyncToken* syncToken );
+        tasking::SyncToken* syncToken );
 
     /**
      * This function is the Host implementation of lama::BLASInterface::copy
@@ -107,7 +106,7 @@ public:
         const IndexType incX,
         ValueType* y,
         const IndexType incY,
-        SyncToken* syncToken );
+        tasking::SyncToken* syncToken );
 
     /**
      * This function is the Host implementation of lama::BLASInterface::axpy
@@ -120,7 +119,7 @@ public:
         const IndexType incX,
         ValueType* y,
         const IndexType incY,
-        SyncToken* syncToken );
+        tasking::SyncToken* syncToken );
 
     /**
      * This function is the Host implementation of lama::BLASInterface::dot
@@ -132,7 +131,7 @@ public:
         const IndexType incX,
         const ValueType* y,
         const IndexType incY,
-        SyncToken* syncToken );
+        tasking::SyncToken* syncToken );
 
     /** Routine that sets functions pointers belonging to BLAS1 in a BLASInterface.
      *

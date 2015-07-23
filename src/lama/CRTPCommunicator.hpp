@@ -41,8 +41,11 @@
 
 // base classes
 #include <lama/Communicator.hpp>
-#include <lama/NoSyncToken.hpp>
+#include <tasking/NoSyncToken.hpp>
 #include <vector>
+
+using tasking::SyncToken;
+using tasking::NoSyncToken;
 
 namespace lama
 {

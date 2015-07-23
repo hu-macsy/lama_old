@@ -35,8 +35,11 @@
 
 #include <lama/LAMAInterface.hpp>
 #include <lama/LAMAInterfaceRegistry.hpp>
-#include <lama/cuda/CUDAError.hpp>
+#include <cudamem/CUDAError.hpp>
 #include <lama/cuda/CUDALAPACK.hpp>
+
+using namespace tasking;
+using namespace memory;
 
 namespace lama
 {
@@ -162,7 +165,7 @@ void CUDALAPACK::setInterface( BLASInterface& BLAS )
 
 bool CUDALAPACK::registerInterface()
 {
-    LAMAInterface& interface = LAMAInterfaceRegistry::getRegistry().modifyInterface( Context::CUDA );
+    LAMAInterface& interface = LAMAInterfaceRegistry::getRegistry().modifyInterface( context::CUDA );
     setInterface( interface.BLAS );
     return true;
 }

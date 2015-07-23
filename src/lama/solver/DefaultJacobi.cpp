@@ -218,7 +218,7 @@ void DefaultJacobi::iterate()
     {
         LAMA_LOG_TRACE( logger, "Solution " << *runtime.mSolution )
         const DenseVector<ValueType>& sol = dynamic_cast<const DenseVector<ValueType>&>( *runtime.mSolution );
-        HostReadAccess<ValueType> rsol( sol.getLocalValues() );
+        ReadAccess<ValueType> rsol( sol.getLocalValues() );
         std::cout << "Solution: ";
 
         for( IndexType i = 0; i < rsol.size(); ++i )
@@ -234,11 +234,11 @@ void DefaultJacobi::iterate()
 {
     switch( getRuntime().mDiagonalTimesLU->getValueType() )
     {
-        case Scalar::FLOAT:
+        case common::scalar::FLOAT:
             iterate<float>();
             break;
 
-        case Scalar::DOUBLE:
+        case common::scalar::DOUBLE:
             iterate<double>();
             break;
 

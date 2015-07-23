@@ -38,7 +38,7 @@
 
 // others
 #include <lama/LAMATypes.hpp>
-#include <lama/SyncToken.hpp>
+#include <tasking/SyncToken.hpp>
 
 namespace lama
 {
@@ -92,7 +92,7 @@ public:
         const IndexType numDiagonals,
         const IndexType diaOffsets[],
         const ValueType diaValues[],
-        SyncToken* syncToken );
+        tasking::SyncToken* syncToken );
 
     /** Implementation for DIAUtilsInterface::Mult::normalGEVM  */
 
@@ -108,7 +108,7 @@ public:
         const IndexType numDiagonals,
         const IndexType diaOffsets[],
         const ValueType diaValues[],
-        SyncToken* syncToken );
+        tasking::SyncToken* syncToken );
 
     /** Implementation for DIAUtilsInterface::Solver::jacobi  */
 
@@ -123,7 +123,7 @@ public:
         const ValueType rhs[],
         const ValueType omega,
         const IndexType numRows,
-        SyncToken* syncToken );
+        tasking::SyncToken* syncToken );
 
     /** Implemenatation for DIAUtilsInterface::Reductions::absMaxVal */
 

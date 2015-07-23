@@ -101,7 +101,7 @@ void SOR::initialize( const Matrix& coefficients )
 
     // ToDo: handling with other matrix types
 
-    if( coefficients.getValueType() == Scalar::FLOAT )
+    if( coefficients.getValueType() == common::scalar::FLOAT )
     {
         const SparseMatrix<float>* A = dynamic_cast<const SparseMatrix<float>*>( &coefficients );
 
@@ -115,7 +115,7 @@ void SOR::initialize( const Matrix& coefficients )
             LAMA_LOG_INFO( logger, "conversion of iteration matrix to CSR: " << *mIterationMatrix )
         }
     }
-    else if( coefficients.getValueType() == Scalar::DOUBLE )
+    else if( coefficients.getValueType() == common::scalar::DOUBLE )
     {
         const SparseMatrix<double>* A = dynamic_cast<const SparseMatrix<double>*>( &coefficients );
 
@@ -142,13 +142,13 @@ void SOR::iterate()
 
     switch( getRuntime().mCoefficients->getValueType() )
     {
-        case Scalar::FLOAT:
+        case common::scalar::FLOAT:
         {
             iterateImpl<float>();
             break;
         }
 
-        case Scalar::DOUBLE:
+        case common::scalar::DOUBLE:
         {
             iterateImpl<double>();
             break;
@@ -186,18 +186,18 @@ void SOR::iterateImpl()
         x.updateHalo( Ahalo );
     }
 
-    HostWriteAccess<ValueType> xAcc( x.getLocalValues() );
-    HostReadAccess<ValueType> bAcc( b.getLocalValues() );
-    HostReadAccess<ValueType> aValues( csrA.getValues() );
-    HostReadAccess<IndexType> ia( csrA.getIA() );
-    HostReadAccess<IndexType> ja( csrA.getJA() );
+    WriteAccess<ValueType> xAcc( x.getLocalValues() );
+    ReadAccess<ValueType> bAcc( b.getLocalValues() );
+    ReadAccess<ValueType> aValues( csrA.getValues() );
+    ReadAccess<IndexType> ia( csrA.getIA() );
+    ReadAccess<IndexType> ja( csrA.getJA() );
 
     // Getting access to arrays is safe even if not needed
 
-    HostReadAccess<ValueType> aHaloValues( csrAHalo.getValues() );
-    HostReadAccess<IndexType> haloIa( csrAHalo.getIA() );
-    HostReadAccess<IndexType> haloJa( csrAHalo.getJA() );
-    HostReadAccess<ValueType> xHalo( x.getHaloValues() );
+    ReadAccess<ValueType> aHaloValues( csrAHalo.getValues() );
+    ReadAccess<IndexType> haloIa( csrAHalo.getIA() );
+    ReadAccess<IndexType> haloJa( csrAHalo.getJA() );
+    ReadAccess<ValueType> xHalo( x.getHaloValues() );
 
     ValueType omega = mOmega.getValue<ValueType>();
 

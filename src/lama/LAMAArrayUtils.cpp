@@ -35,10 +35,7 @@
 #include <lama/LAMAArrayUtils.hpp>
 
 // others
-#include <lama/ContextFactory.hpp>
-#include <lama/ReadAccess.hpp>
-#include <lama/WriteAccess.hpp>
-#include <lama/ContextAccess.hpp>
+#include <memory/memory.hpp>
 #include <lama/LAMAInterface.hpp>
 
 // tracing
@@ -79,7 +76,7 @@ void LAMAArrayUtils::assignImpl(
 template<typename ValueType>
 void LAMAArrayUtils::assignImpl1( LAMAArray<ValueType>& target, const _LAMAArray& source, const ContextPtr loc )
 {
-    Scalar::ScalarType sourceType = source.getValueType();
+    memory::ScalarType sourceType = source.getValueType();
 
     if( sourceType == target.getValueType() )
     {
@@ -99,12 +96,12 @@ void LAMAArrayUtils::assignImpl1( LAMAArray<ValueType>& target, const _LAMAArray
     switch( sourceType )
     {
 
-        case Scalar::INDEX_TYPE:
+        case common::scalar::INDEX_TYPE:
             assignImpl( target, dynamic_cast<const LAMAArray<IndexType>&>( source ), loc );
             break;
 
 #define LAMA_ARRAY_ASSIGN( z, I, _ )                                                                \
-case Scalar::SCALAR_ARITHMETIC_TYPE##I:                                                         \
+case common::scalar::SCALAR_ARITHMETIC_TYPE##I:                                                         \
     assignImpl( target, dynamic_cast<const LAMAArray<ARITHMETIC_TYPE##I>& >( source ), loc );   \
     break;                                                                                      \
 
@@ -130,12 +127,12 @@ void LAMAArrayUtils::assign( _LAMAArray& target, const _LAMAArray& source, const
 
     switch( target.getValueType() )
     {
-        case Scalar::INDEX_TYPE:
+        case common::scalar::INDEX_TYPE:
             assignImpl1( dynamic_cast<LAMAArray<IndexType>&>( target ), source, validLoc );
             break;
 
 #define LAMA_ARRAY_ASSIGN1( z, I, _ )                                                              \
-case Scalar::SCALAR_ARITHMETIC_TYPE##I:                                                        \
+case common::scalar::SCALAR_ARITHMETIC_TYPE##I:                                                        \
     assignImpl1( dynamic_cast<LAMAArray< ARITHMETIC_TYPE##I>& >( target ), source, validLoc ); \
     break;
 
@@ -158,7 +155,7 @@ void LAMAArrayUtils::gather(
 
 // choose location for the operation where source array is currently valid
 
-    ContextPtr context = source.getValidContext( Context::Host );
+    ContextPtr context = source.getValidContext( context::Host );
 
     LAMA_INTERFACE_FN_TT( setGather, context, Utils, Copy, ValueType1, ValueType2 )
 
@@ -199,11 +196,11 @@ void LAMAArrayUtils::assignScalar( LAMAArray<ValueType>& target, const Scalar& v
 
 void LAMAArrayUtils::assignScalar( _LAMAArray& target, const Scalar& value, ContextPtr context )
 {
-    Scalar::ScalarType arrayType = target.getValueType();
+    memory::ScalarType arrayType = target.getValueType();
 
     switch( arrayType )
     {
-        case Scalar::INDEX_TYPE:
+        case common::scalar::INDEX_TYPE:
         {
             LAMAArray<IndexType>& typedTarget = dynamic_cast<LAMAArray<IndexType>&>( target );
             assignScalar( typedTarget, value, context );
@@ -213,7 +210,7 @@ void LAMAArrayUtils::assignScalar( _LAMAArray& target, const Scalar& value, Cont
             // for all supported arithmetic types generate it
 
 #define LAMA_ARRAY_ASSIGN_SCALAR( z, I, _ )          \
-case Scalar::SCALAR_ARITHMETIC_TYPE##I:          \
+case common::scalar::SCALAR_ARITHMETIC_TYPE##I:          \
 {          \
     LAMAArray<ARITHMETIC_TYPE##I>& typedTarget =          \
             dynamic_cast<LAMAArray<ARITHMETIC_TYPE##I>&>( target );          \
@@ -274,7 +271,7 @@ void LAMAArrayUtils::assignScaled(
 
         setVal( wResult.get(), n, 0 );
     }
-    else if( result == y )
+    else if( &result == &y )
     {
         if( beta == 1 )
         {

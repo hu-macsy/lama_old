@@ -37,8 +37,7 @@
 #include <lama/openmp/OpenMPUtils.hpp>
 #include <lama/openmp/OpenMPCSRUtils.hpp>
 
-#include <lama/HostReadAccess.hpp>
-#include <lama/HostWriteAccess.hpp>
+#include <memory/memory.hpp>
 
 #include <boost/preprocessor.hpp>
 
@@ -521,8 +520,8 @@ void SparseAssemblyStorage<ValueType>::setRow(
     mRows[i].ja.resize( ja.size() );
     mRows[i].values.resize( values.size() );
 
-    HostReadAccess<IndexType> rJA( ja );
-    HostReadAccess<ValueType> rValues( values );
+    ReadAccess<IndexType> rJA( ja );
+    ReadAccess<ValueType> rValues( values );
 
     for( IndexType k = 0; k < ja.size(); ++k )
     {
@@ -626,9 +625,9 @@ void SparseAssemblyStorage<ValueType>::setCSRDataImpl(
 {
     // no more error checks here on the sizes, but on the content
 
-    HostReadAccess<IndexType> csrIA( ia );
-    HostReadAccess<IndexType> csrJA( ja );
-    HostReadAccess<OtherValueType> csrValues( values );
+    ReadAccess<IndexType> csrIA( ia );
+    ReadAccess<IndexType> csrJA( ja );
+    ReadAccess<OtherValueType> csrValues( values );
 
     if( !OpenMPCSRUtils::validOffsets( csrIA.get(), numRows, numValues ) )
     {
@@ -686,7 +685,7 @@ void SparseAssemblyStorage<ValueType>::buildCSR(
 
     LAMA_LOG_INFO( logger, *this << ": build CSR data from it" )
 
-    HostWriteOnlyAccess<IndexType> csrIA( ia, mNumRows + 1 );
+    WriteOnlyAccess<IndexType> csrIA( ia, mNumRows + 1 );
 
     // build csrSizes in ia
 
@@ -708,8 +707,8 @@ void SparseAssemblyStorage<ValueType>::buildCSR(
 
     // copy ja, values
 
-    HostWriteOnlyAccess<IndexType> csrJA( *ja, mNumValues );
-    HostWriteOnlyAccess<OtherValueType> csrValues( *values, mNumValues );
+    WriteOnlyAccess<IndexType> csrJA( *ja, mNumValues );
+    WriteOnlyAccess<OtherValueType> csrValues( *values, mNumValues );
 
     #pragma omp parallel for
 
@@ -734,7 +733,7 @@ void SparseAssemblyStorage<ValueType>::setDiagonalImpl( const LAMAArray<OtherVal
 {
     IndexType numDiagonalElements = diagonal.size();
 
-    HostReadAccess<OtherValueType> rDiagonal( diagonal );
+    ReadAccess<OtherValueType> rDiagonal( diagonal );
 
     for( IndexType i = 0; i < numDiagonalElements; ++i )
     {
@@ -750,7 +749,7 @@ void SparseAssemblyStorage<ValueType>::getDiagonalImpl( LAMAArray<OtherValueType
 {
     const IndexType numDiagonalElements = std::min( mNumColumns, mNumRows );
 
-    HostWriteOnlyAccess<OtherValueType> wDiagonal( diagonal, numDiagonalElements );
+    WriteOnlyAccess<OtherValueType> wDiagonal( diagonal, numDiagonalElements );
 
     for( IndexType i = 0; i < numDiagonalElements; ++i )
     {
@@ -766,7 +765,7 @@ void SparseAssemblyStorage<ValueType>::getRowImpl( LAMAArray<OtherType>& row, co
 {
     LAMA_ASSERT_DEBUG( i >= 0 && i < mNumRows, "row index " << i << " out of range" )
 
-    HostWriteOnlyAccess<OtherType> wRow( row, mNumColumns );
+    WriteOnlyAccess<OtherType> wRow( row, mNumColumns );
 
     for( IndexType j = 0; j < mNumColumns; ++j )
     {
@@ -824,7 +823,7 @@ void SparseAssemblyStorage<ValueType>::scaleImpl( const LAMAArray<OtherValueType
 {
     IndexType n = std::min( mNumRows, diagonal.size() );
 
-    HostReadAccess<OtherValueType> rDiagonal( diagonal );
+    ReadAccess<OtherValueType> rDiagonal( diagonal );
 
     for( IndexType i = 0; i < n; ++i )
     {

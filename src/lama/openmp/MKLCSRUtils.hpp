@@ -38,15 +38,13 @@
 
 // others
 #include <lama/LAMATypes.hpp>
+#include <tasking/SyncToken.hpp>
 
 // logging
 #include <logging/logging.hpp>
 
 namespace lama
 {
-
-class SyncToken;
-// forward declaration
 
 /** This class provides routines on compressed sparse row data
  */
@@ -84,7 +82,7 @@ public:
         const IndexType csrIA[],
         const IndexType csrJA[],
         const ValueType csrValues[],
-        SyncToken* syncToken );
+        tasking::SyncToken* syncToken );
 
     /** Routine that registers all routines of this class at the LAMA interface. */
 

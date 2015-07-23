@@ -62,6 +62,9 @@ using std::abs;
 using std::sqrt;
 // used for float, double
 
+using tasking::SyncToken;
+using common::getScalarType;
+
 LAMA_LOG_DEF_LOGGER( OpenMPBLAS1::logger, "OpenMP.BLAS1" )
 
 /** scal */
@@ -82,7 +85,7 @@ void OpenMPBLAS1::scal(
     LAMA_REGION( "OpenMP.BLAS1.scal" )
 
     LAMA_LOG_DEBUG( logger,
-                    "scal<" << Scalar::getType<ValueType>()<< ">, n = " << n << ", alpha = " << alpha << ", x = " << x << ", incX = " << incX )
+                    "scal<" << getScalarType<ValueType>()<< ">, n = " << n << ", alpha = " << alpha << ", x = " << x << ", incX = " << incX )
 
     if( syncToken )
     {
@@ -117,7 +120,7 @@ ValueType OpenMPBLAS1::nrm2( const IndexType n, const ValueType* x, const IndexT
     LAMA_REGION( "OpenMP.BLAS1.nrm2" )
 
     LAMA_LOG_DEBUG( logger,
-                    "nrm2<" << Scalar::getType<ValueType>()<< ">, n = " << n << ", x = " << x << ", incX = " << incX )
+                    "nrm2<" << getScalarType<ValueType>()<< ">, n = " << n << ", x = " << x << ", incX = " << incX )
 
     if( incX <= 0 )
     {
@@ -169,7 +172,7 @@ ValueType OpenMPBLAS1::asum( const IndexType n, const ValueType* x, const IndexT
     LAMA_REGION( "OpenMP.BLAS1.asum" )
 
     LAMA_LOG_DEBUG( logger,
-                    "asum<" << Scalar::getType<ValueType>()<< ">, n = " << n << ", x = " << x << ", incX = " << incX )
+                    "asum<" << getScalarType<ValueType>()<< ">, n = " << n << ", x = " << x << ", incX = " << incX )
 
     if( syncToken )
     {
@@ -222,7 +225,7 @@ IndexType OpenMPBLAS1::iamax( const IndexType n, const ValueType* x, const Index
     LAMA_REGION( "OpenMP.BLAS1.iamax" )
 
     LAMA_LOG_INFO( logger,
-                   "iamax<" << Scalar::getType<ValueType>()<< ">, n = " << n << ", x = " << x << ", incX = " << incX )
+                   "iamax<" << getScalarType<ValueType>()<< ">, n = " << n << ", x = " << x << ", incX = " << incX )
 
     if( syncToken )
     {
@@ -292,7 +295,7 @@ void OpenMPBLAS1::swap(
     LAMA_REGION( "OpenMP.BLAS1.swap" )
 
     LAMA_LOG_DEBUG( logger,
-                    "iamax<" << Scalar::getType<ValueType>()<< ">, n = " << n << ", x = " << x << ", incX = " << incX << ", y = " << y << ", incY = " << incY )
+                    "iamax<" << getScalarType<ValueType>()<< ">, n = " << n << ", x = " << x << ", incX = " << incX << ", y = " << y << ", incY = " << incY )
 
     if( ( incX <= 0 ) || ( incY <= 0 ) )
     {
@@ -378,7 +381,7 @@ void OpenMPBLAS1::copy(
     LAMA_REGION( "OpenMP.BLAS1.copy" )
 
     LAMA_LOG_DEBUG( logger,
-                    "copy<" << Scalar::getType<ValueType>() << ">, n = " << n << ", x = " << x << ", incX = " << incX << ", y = " << y << ", incY = " << incY )
+                    "copy<" << getScalarType<ValueType>() << ">, n = " << n << ", x = " << x << ", incX = " << incX << ", y = " << y << ", incY = " << incY )
 
     if( ( incX <= 0 ) || ( incY <= 0 ) )
     {
@@ -420,7 +423,7 @@ void OpenMPBLAS1::axpy(
     LAMA_REGION( "OpenMP.BLAS1.axpy" )
 
     LAMA_LOG_DEBUG( logger,
-                    "axpy<" << Scalar::getType<ValueType>() << ">, n = " << n << ", alpha = " << alpha << ", x = " << x << ", incX = " << incX << ", y = " << y << ", incY = " << incY )
+                    "axpy<" << getScalarType<ValueType>() << ">, n = " << n << ", alpha = " << alpha << ", x = " << x << ", incX = " << incX << ", y = " << y << ", incY = " << incY )
 
     if( ( incX <= 0 ) || ( incY <= 0 ) )
     {
@@ -466,7 +469,7 @@ ValueType OpenMPBLAS1::dot(
     LAMA_REGION( "OpenMP.BLAS1.sdot" )
 
     LAMA_LOG_DEBUG( logger,
-                    "dot<" << Scalar::getType<ValueType>() << ">, n = " << n << ", x = " << x << ", incX = " << incX << ", y = " << y << ", incY = " << incY )
+                    "dot<" << getScalarType<ValueType>() << ">, n = " << n << ", x = " << x << ", incX = " << incX << ", y = " << y << ", incY = " << incY )
 
     if( ( incX <= 0 ) || ( incY <= 0 ) )
     {
@@ -523,7 +526,7 @@ void OpenMPBLAS1::sum(
     LAMA_REGION( "OpenMP.BLAS1.dot" )
 
     LAMA_LOG_DEBUG( logger,
-                    "sum<" << Scalar::getType<ValueType>() << ">, n = " << n << ", alpha = " << alpha << ", x = " << x << ", beta = " << beta << ", y = " << y << ", z = " << z )
+                    "sum<" << getScalarType<ValueType>() << ">, n = " << n << ", alpha = " << alpha << ", x = " << x << ", beta = " << beta << ", y = " << y << ", z = " << z )
 
     if( syncToken )
     {
@@ -574,7 +577,7 @@ void OpenMPBLAS1::setInterface( BLASInterface& BLAS )
 
 bool OpenMPBLAS1::registerInterface()
 {
-    LAMAInterface& interface = LAMAInterfaceRegistry::getRegistry().modifyInterface( Context::Host );
+    LAMAInterface& interface = LAMAInterfaceRegistry::getRegistry().modifyInterface( memory::context::Host );
     setInterface( interface.BLAS );
     return true;
 }

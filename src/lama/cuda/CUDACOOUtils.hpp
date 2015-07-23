@@ -42,10 +42,13 @@
 // logging
 #include <logging/logging.hpp>
 
+namespace tasking
+{
+    class SyncToken;
+}
+
 namespace lama
 {
-
-class SyncToken;
 
 /** This class provides CUDA parallelized routines needed for COO format.
  *

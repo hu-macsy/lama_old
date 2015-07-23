@@ -33,8 +33,8 @@
 
 // lama cuda
 #include <lama/cuda/utils.cu.h>
-#include <lama/cuda/CUDAStreamSyncToken.hpp>
-#include <lama/cuda/CUDAError.hpp>
+#include <cudamem/CUDAStreamSyncToken.hpp>
+#include <cudamem/CUDAError.hpp>
 #include <lama/cuda/CUDAELLUtils.hpp>
 #include <lama/cuda/CUDAUtils.hpp>
 #include <lama/cuda/CUDASettings.hpp>
@@ -65,6 +65,10 @@
 #include <thrust/transform_reduce.h>
 
 #include <boost/bind.hpp>
+
+using namespace memory;
+
+using common::getScalarType;
 
 namespace lama
 {
@@ -495,7 +499,7 @@ namespace lama
         LAMA_REGION( "CUDA.ELL->CSR_values" )
 
         LAMA_LOG_INFO( logger,
-                        "get CSRValues<" << Scalar::getType<ELLValueType>() << ", " << Scalar::getType<CSRValueType>() << ">" << ", #rows = " << numRows )
+                        "get CSRValues<" << getScalarType<ELLValueType>() << ", " << getScalarType<CSRValueType>() << ">" << ", #rows = " << numRows )
 
         LAMA_CHECK_CUDA_ACCESS
 
@@ -567,7 +571,7 @@ namespace lama
         LAMA_REGION( "CUDA.ELL<-CSR_values" )
 
         LAMA_LOG_INFO( logger,
-                        "set CSRValues<" << Scalar::getType<ELLValueType>() << ", " << Scalar::getType<CSRValueType>() << ">" << ", #rows = " << numRows << ", #values/row = " << numValuesPerRow )
+                        "set CSRValues<" << getScalarType<ELLValueType>() << ", " << getScalarType<CSRValueType>() << ">" << ", #rows = " << numRows << ", #values/row = " << numValuesPerRow )
 
         LAMA_LOG_DEBUG( logger,
                         "ellJA = " << ellJA << ", ellValues = " << ellValues << ", ellSizes = " << ellSizes << ", csrIA = " << csrIA << ", csrJA = " << csrJA << ", csrValues = " << csrValues )
@@ -629,7 +633,7 @@ namespace lama
                     const IndexType numRows,
                     const IndexType numValuesPerRow )
     {
-        LAMA_LOG_INFO( logger, "fill ELLValues<" << Scalar::getType<ValueType>() )
+        LAMA_LOG_INFO( logger, "fill ELLValues<" << getScalarType<ValueType>() )
 
         LAMA_CHECK_CUDA_ACCESS
 
@@ -885,7 +889,7 @@ namespace lama
     {
         LAMA_REGION( "CUDA.ELL.normalGEMV" )
 
-        LAMA_LOG_INFO( logger, "normalGEMV<" << Scalar::getType<ValueType>() << ">" <<
+        LAMA_LOG_INFO( logger, "normalGEMV<" << getScalarType<ValueType>() << ">" <<
                         " result[ " << numRows << "] = " << alpha << " * A(ell) * x + " << beta << " * y " )
 
         LAMA_LOG_DEBUG( logger, "x = " << x << ", y = " << y << ", result = " << result )
@@ -908,7 +912,7 @@ namespace lama
 
         bool useTexture = CUDASettings::useTexture();
 
-        LAMA_LOG_INFO( logger, "Start normal_gemv_kernel<" << Scalar::getType<ValueType>()
+        LAMA_LOG_INFO( logger, "Start normal_gemv_kernel<" << getScalarType<ValueType>()
                         << "> <<< blockSize = " << blockSize << ", stream = " << stream
                         << ", useTexture = " << useTexture << ">>>" )
 
@@ -1371,7 +1375,7 @@ namespace lama
                     const ValueType ellValues[],
                     SyncToken* syncToken )
     {
-        LAMA_LOG_INFO( logger, "normalGEVM<" << Scalar::getType<ValueType>() << ">" <<
+        LAMA_LOG_INFO( logger, "normalGEVM<" << getScalarType<ValueType>() << ">" <<
                         " result[ " << numColumns << "] = " << alpha << " * A(ell) * x + " << beta << " * y " )
 
         LAMA_LOG_DEBUG( logger, "x = " << x << ", y = " << y << ", result = " << result )
@@ -1395,7 +1399,7 @@ namespace lama
             stream = cudaStreamSyncToken->getCUDAStream();
         }
 
-        LAMA_LOG_INFO( logger, "Start normal_gevm_kernel<" << Scalar::getType<ValueType>()
+        LAMA_LOG_INFO( logger, "Start normal_gevm_kernel<" << getScalarType<ValueType>()
                         << ", useTexture = " << useTexture << ">" );
 
         if ( useTexture )
@@ -1538,7 +1542,7 @@ namespace lama
         if ( !syncToken )
         {
             LAMA_CUDA_RT_CALL( cudaStreamSynchronize( stream ), "normalGEVM, stream = " << stream )
-            LAMA_LOG_DEBUG( logger, "normalGEVM<" << Scalar::getType<ValueType>() << "> synchronized" )
+            LAMA_LOG_DEBUG( logger, "normalGEVM<" << getScalarType<ValueType>() << "> synchronized" )
         }
 
         if ( useTexture )
@@ -1663,7 +1667,7 @@ namespace lama
     {
         LAMA_REGION( "CUDA.ELL.sparseGEMV" )
 
-        LAMA_LOG_INFO( logger, "sparseGEMV<" << Scalar::getType<ValueType>() << ">" << ", #non-zero rows = " << numNonZeroRows )
+        LAMA_LOG_INFO( logger, "sparseGEMV<" << getScalarType<ValueType>() << ">" << ", #non-zero rows = " << numNonZeroRows )
 
         LAMA_CHECK_CUDA_ACCESS
 
@@ -1687,7 +1691,7 @@ namespace lama
             vectorBindTexture( x );
         }
 
-        LAMA_LOG_INFO( logger, "Start ell_sparse_gemv_kernel<" << Scalar::getType<ValueType>()
+        LAMA_LOG_INFO( logger, "Start ell_sparse_gemv_kernel<" << getScalarType<ValueType>()
                         << "> <<< blockSize = " << blockSize << ", stream = " << stream
                         << ", useTexture = " << useTexture << ">>>" );
 
@@ -1861,7 +1865,7 @@ namespace lama
                     SyncToken* syncToken )
     {
         LAMA_LOG_INFO( logger,
-                        "sparseGEVM<" << Scalar::getType<ValueType>() << ">" << ", #non-zero rows = " << numNonZeroRows )
+                        "sparseGEVM<" << getScalarType<ValueType>() << ">" << ", #non-zero rows = " << numNonZeroRows )
 
         LAMA_CHECK_CUDA_ACCESS
 
@@ -1912,7 +1916,7 @@ namespace lama
         if ( !syncToken )
         {
             LAMA_CUDA_RT_CALL( cudaStreamSynchronize( stream ), "sparseGEVM, stream = " << stream )
-            LAMA_LOG_INFO( logger, "sparseGEVM<" << Scalar::getType<ValueType>() << "> synchronized" )
+            LAMA_LOG_INFO( logger, "sparseGEVM<" << getScalarType<ValueType>() << "> synchronized" )
         }
     }
 
@@ -2000,7 +2004,7 @@ namespace lama
         dim3 dimBlock( blockSize, 1, 1 );
         dim3 dimGrid = makeGrid( numRows, dimBlock.x );
 
-        LAMA_LOG_INFO( logger, "Start ell_jacobi_kernel<" << Scalar::getType<ValueType>()
+        LAMA_LOG_INFO( logger, "Start ell_jacobi_kernel<" << getScalarType<ValueType>()
                         << "> <<< block size = " << blockSize << ", stream = " << stream
                         << ", useTexture = " << useTexture << ">>>" );
 
@@ -2196,7 +2200,7 @@ namespace lama
 
     bool CUDAELLUtils::registerInterface()
     {
-        LAMAInterface& interface = LAMAInterfaceRegistry::getRegistry().modifyInterface( Context::CUDA );
+        LAMAInterface& interface = LAMAInterfaceRegistry::getRegistry().modifyInterface( context::CUDA );
         setInterface( interface.ELLUtils );
         return true;
     }

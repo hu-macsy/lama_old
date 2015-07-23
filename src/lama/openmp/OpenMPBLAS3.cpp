@@ -70,7 +70,9 @@ void OpenMPBLAS3::gemm(
     }
 
     LAMA_LOG_INFO( logger,
-                   "gemm<" << Scalar::getType<ValueType>() << ">: " << "m = " << m << ", n = " << n << ", k = " << k << ", lda = " << lda << ", ldb = " << ldb << ", ldc = " << ldc << ", alpha = " << alpha << ", beta = " << beta )
+                   "gemm<" << common::getScalarType<ValueType>() << ">: " << "m = " << m << ", n = " << n 
+                     << ", k = " << k << ", lda = " << lda << ", ldb = " << ldb << ", ldc = " << ldc 
+                     << ", alpha = " << alpha << ", beta = " << beta )
 
     IndexType RowMajorStrg;
     RowMajorStrg = 0;
@@ -383,7 +385,7 @@ void OpenMPBLAS3::setInterface( BLASInterface& blas )
 
 bool OpenMPBLAS3::registerInterface()
 {
-    LAMAInterface& interface = LAMAInterfaceRegistry::getRegistry().modifyInterface( Context::Host );
+    LAMAInterface& interface = LAMAInterfaceRegistry::getRegistry().modifyInterface( memory::context::Host );
     setInterface( interface.BLAS );
     return true;
 }

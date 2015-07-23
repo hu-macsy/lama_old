@@ -35,18 +35,14 @@
 #include <boost/test/unit_test.hpp>
 
 // others
-#include <lama/ContextAccess.hpp>
-#include <lama/LAMAArray.hpp>
+#include <memory/memory.hpp>
 #include <lama/LAMAInterface.hpp>
-#include <lama/HostReadAccess.hpp>
-#include <lama/HostWriteAccess.hpp>
-#include <lama/ReadAccess.hpp>
-#include <lama/WriteAccess.hpp>
 
 #include <test/TestMacros.hpp>
 
 using namespace boost;
 using namespace lama;
+using namespace memory;
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 
@@ -86,7 +82,7 @@ void offsets2iaTest( ContextPtr loc )
             LAMA_CONTEXT_ACCESS( loc );
             offsets2ia( wIA.get(), numValues, rOffsets.get(), numRows, numDiagonals );
         }
-        HostReadAccess<IndexType> rIA( ia );
+        ReadAccess<IndexType> rIA( ia );
 
         for ( int i = 0; i < numValues; ++i )
         {
@@ -115,7 +111,7 @@ void offsets2iaTest( ContextPtr loc )
             LAMA_CONTEXT_ACCESS( loc );
             offsets2ia( wIA.get(), numValues, rOffsets.get(), numRows, numDiagonals );
         }
-        HostReadAccess<IndexType> rIA( ia );
+        ReadAccess<IndexType> rIA( ia );
 
         for ( int i = 0; i < numValues; ++i )
         {
@@ -156,7 +152,7 @@ void setCSRDataTest( ContextPtr loc )
             LAMA_CONTEXT_ACCESS( loc );
             setCSRData( wCOOJA.get(), rCSRJA.get(), numValues, rOffsets.get(), numRows, numDiagonals );
         }
-        HostReadAccess<IndexType> rCOOJA( cooJA );
+        ReadAccess<IndexType> rCOOJA( cooJA );
 
         for ( int i = 0; i < numValues; ++i )
         {

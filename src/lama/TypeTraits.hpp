@@ -34,6 +34,8 @@
 #ifndef TYPETRAITS_HPP_
 #define TYPETRAITS_HPP_
 
+#include <lama/LAMATypes.hpp>
+
 namespace lama
 {
 

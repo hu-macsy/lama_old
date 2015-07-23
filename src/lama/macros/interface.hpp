@@ -33,7 +33,7 @@
 #ifndef LAMA_INTERFACE_MACROS_HPP_
 #define LAMA_INTERFACE_MACROS_HPP_
 
-#include <lama/Scalar.hpp>
+#include <common/ScalarType.hpp>
 
 /** Macro that creates for a function pointer type a table that contains pointer for each type.
  */
@@ -70,7 +70,7 @@
     functionname () const                                                                             \
     {                                                                                                 \
         return ( typename structname<ValueType>::functionname )                                       \
-               functionname##_Table[ Scalar::getType<ValueType>() ];                                  \
+               functionname##_Table[ common::getScalarType<ValueType>() ];                                  \
     }                                                                                                 \
     \
     /** Register a function pointer in the type table. */                                             \
@@ -79,14 +79,14 @@
     void functionname##_add( typename structname<ValueType>::functionname functionPtr,                \
                              bool replace )                                                           \
     {                                                                                                 \
-        if ( replace || !functionname##_Table[ Scalar::getType<ValueType>() ] )                       \
+        if ( replace || !functionname##_Table[ common::getScalarType<ValueType>() ] )                       \
         {                                                                                             \
-            functionname##_Table[ Scalar::getType<ValueType>() ]                                      \
+            functionname##_Table[ common::getScalarType<ValueType>() ]                                      \
                 = ( void (*) () ) functionPtr;                                                           \
         }                                                                                             \
     }                                                                                                 \
     \
-    void ( *functionname##_Table[ Scalar::UNKNOWN ] ) ();
+    void ( *functionname##_Table[ common::scalar::UNKNOWN ] ) ();
 
 #define LAMA_INTERFACE_DEFINE_TT( structname, functionname )                                          \
     \
@@ -97,7 +97,7 @@
     functionname () const                                                                             \
     {                                                                                                 \
         return ( typename structname<ValueType1,ValueType2>::functionname )                           \
-               functionname##_Table[ Scalar::getType<ValueType1>()][ Scalar::getType<ValueType2>() ]; \
+               functionname##_Table[ common::getScalarType<ValueType1>()][ common::getScalarType<ValueType2>() ]; \
     }                                                                                                 \
     \
     /** Register a function pointer in the type table. */                                             \
@@ -106,15 +106,15 @@
     void functionname##_add( typename structname<ValueType1, ValueType2>::functionname functionPtr,   \
                              bool replace )                                                           \
     {                                                                                                 \
-        if ( replace || !functionname##_Table[ Scalar::getType<ValueType1>() ]                        \
-                [ Scalar::getType<ValueType2>() ] )                      \
+        if ( replace || !functionname##_Table[ common::getScalarType<ValueType1>() ]                        \
+                [ common::getScalarType<ValueType2>() ] )                      \
         {                                                                                             \
-            functionname##_Table[ Scalar::getType<ValueType1>() ][ Scalar::getType<ValueType2>() ]    \
+            functionname##_Table[ common::getScalarType<ValueType1>() ][ common::getScalarType<ValueType2>() ]    \
                 = ( void (*) () ) functionPtr;                                                         \
         }                                                                                             \
     }                                                                                                 \
     \
-    void ( *functionname##_Table[ Scalar::UNKNOWN ][ Scalar::UNKNOWN] ) ();
+    void ( *functionname##_Table[ common::scalar::UNKNOWN ][ common::scalar::UNKNOWN] ) ();
 
 /** This macro registers in an interface a function pointer variable
  *  with a corresponding function.

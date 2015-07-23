@@ -35,7 +35,7 @@
 #include <lama/matrix/SparseMatrix.hpp>
 
 // others
-#include <lama/NoSyncToken.hpp>
+#include <tasking/NoSyncToken.hpp>
 #include <lama/LAMAArrayUtils.hpp>
 #include <lama/CommunicatorFactory.hpp>
 
@@ -475,7 +475,7 @@ void SparseMatrix<ValueType>::assignTransposeImpl( const SparseMatrix<ValueType>
             const Distribution& dist = matrix.getDistribution();
             const IndexType nJA = sendJA.size();
 
-            HostWriteAccess<IndexType> ja( sendJA );
+            WriteAccess<IndexType> ja( sendJA );
 
             for( IndexType jj = 0; jj < nJA; ++jj )
             {
@@ -486,8 +486,8 @@ void SparseMatrix<ValueType>::assignTransposeImpl( const SparseMatrix<ValueType>
         // Build the communication plan for sparse data
 
         {
-            HostReadAccess<IndexType> sendColSizes( sendSizes );
-            HostReadAccess<IndexType> recvColSizes( recvSizes );
+            ReadAccess<IndexType> sendColSizes( sendSizes );
+            ReadAccess<IndexType> recvColSizes( recvSizes );
 
             CommunicationPlan sendDataPlan( sendSizesPlan, sendColSizes.get() );
             CommunicationPlan recvDataPlan( recvSizesPlan, recvColSizes.get() );
@@ -508,7 +508,7 @@ void SparseMatrix<ValueType>::assignTransposeImpl( const SparseMatrix<ValueType>
 
         {
             // allocate rowSizes as offset array to avoid reallocation
-            HostWriteOnlyAccess<IndexType> rowSizes( haloRowSizes, mNumLocalRows + 1 );
+            WriteOnlyAccess<IndexType> rowSizes( haloRowSizes, mNumLocalRows + 1 );
         }
 
         MatrixStorage<ValueType>::joinRows( haloRowSizes, haloJA, haloValues, mNumLocalRows, rowIndexes, recvSizes,
@@ -823,7 +823,7 @@ void SparseMatrix<ValueType>::getLocalRow( DenseVector<ValueType>& row, const In
 
     const Distribution& distributionCol = getColDistribution();
 
-    HostWriteOnlyAccess<ValueType> rowAccess( row.getLocalValues(), getNumColumns() );
+    WriteOnlyAccess<ValueType> rowAccess( row.getLocalValues(), getNumColumns() );
 
     // Owner of row fills the row by data from local and halo data
 
@@ -896,7 +896,7 @@ void SparseMatrix<ValueType>::getRow( Vector& row, const IndexType globalRowInde
     LAMA_ASSERT_ERROR( owner >= 0, "Could not find owner of row " << globalRowIndex )
 
     {
-        HostWriteAccess<ValueType> rowAccess( typedRow->getLocalValues() );
+        WriteAccess<ValueType> rowAccess( typedRow->getLocalValues() );
         comm.bcast( rowAccess.get(), getNumColumns(), owner ); // bcast the row
     }
 }
@@ -1214,7 +1214,7 @@ void SparseMatrix<ValueType>::haloOperationSync(
             LAMA_REGION( "Mat.Sp.syncGatherHalo" )
 
             LAMA_LOG_INFO( logger,
-                           comm << ": gather " << mHalo.getProvidesIndexes().size() << " values of X to provide on " << *localX.getValidContext( Context::Host ) );
+                           comm << ": gather " << mHalo.getProvidesIndexes().size() << " values of X to provide on " << *localX.getValidContext( context::Host ) );
 
             LAMAArrayUtils::gather( mTempSendValues, localX, mHalo.getProvidesIndexes() );
 
@@ -1296,7 +1296,7 @@ void SparseMatrix<ValueType>::vectorHaloOperationSync(
     IndexType numParts = comm.getSize();
     IndexType myPart = comm.getRank();
 
-    ContextPtr hostContext = ContextFactory::getContext( Context::Host );
+    ContextPtr hostContext = Context::getContextPtr( context::Host );
     ContextPtr localContext = mLocalData->getContextPtr();
     ContextPtr haloContext = mLocalData->getContextPtr();
 
@@ -1336,8 +1336,8 @@ void SparseMatrix<ValueType>::vectorHaloOperationSync(
 
             // reassemble halo computation to global indices
             {
-                HostReadAccess<ValueType> h( haloResult );
-                HostWriteAccess<ValueType> o( toOthersResult );
+                ReadAccess<ValueType> h( haloResult );
+                WriteAccess<ValueType> o( toOthersResult );
 
                 for( IndexType i = 0; i < toOthersResult.size(); ++i )
                 {
@@ -1359,8 +1359,8 @@ void SparseMatrix<ValueType>::vectorHaloOperationSync(
         {
             LAMA_REGION( "vector.swapping" )
 
-            HostReadAccess<ValueType> toOthers( toOthersResult );
-            HostWriteAccess<ValueType> fromOthers( fromOthersResult );
+            ReadAccess<ValueType> toOthers( toOthersResult );
+            WriteAccess<ValueType> fromOthers( fromOthersResult );
 
             for( IndexType i = 0; i < numParts; ++i )
             {
@@ -1389,8 +1389,8 @@ void SparseMatrix<ValueType>::vectorHaloOperationSync(
 
         if( numParts != 1 )
         {
-            HostWriteAccess<ValueType> localData( localResult );
-            HostReadAccess<ValueType> otherData( fromOthersResult );
+            WriteAccess<ValueType> localData( localResult );
+            ReadAccess<ValueType> otherData( fromOthersResult );
 
             for( IndexType i = 0; i < numParts; ++i )
             {
@@ -1442,7 +1442,7 @@ void SparseMatrix<ValueType>::haloOperationAsync(
         // Note: gather will be done where denseX is available
 
         LAMA_LOG_INFO( logger,
-                       comm << ": gather " << mHalo.getProvidesIndexes().size() << " values of X to provide on " << *localX.getValidContext( Context::Host ) );
+                       comm << ": gather " << mHalo.getProvidesIndexes().size() << " values of X to provide on " << *localX.getValidContext( context::Host ) );
 
         LAMAArrayUtils::gather( mTempSendValues, localX, mHalo.getProvidesIndexes() );
 
@@ -1538,7 +1538,7 @@ void SparseMatrix<ValueType>::vectorHaloOperationAsync(
     IndexType numParts = comm.getSize();
     IndexType myPart = comm.getRank();
 
-    ContextPtr hostContext = ContextFactory::getContext( Context::Host );
+    ContextPtr hostContext = Context::getContextPtr( context::Host );
     ContextPtr localContext = mLocalData->getContextPtr();
     ContextPtr haloContext = mLocalData->getContextPtr();
 
@@ -1578,8 +1578,8 @@ void SparseMatrix<ValueType>::vectorHaloOperationAsync(
 
             toOthersResult.prefetch( hostContext );
 
-            HostReadAccess<ValueType> h( haloResult );
-            HostWriteAccess<ValueType> o( toOthersResult );
+            ReadAccess<ValueType> h( haloResult );
+            WriteAccess<ValueType> o( toOthersResult );
 
             for( IndexType i = 0; i < toOthersResult.size(); ++i )
             {
@@ -1618,8 +1618,8 @@ void SparseMatrix<ValueType>::vectorHaloOperationAsync(
             LAMA_LOG_INFO( logger,
                            comm << " vector swapping: toOthers[" << toOthersResult.size() << "], fromOthersResult[" << fromOthersResult.size() << "]" )
 
-            HostReadAccess<ValueType> toOthers( toOthersResult );
-            HostWriteAccess<ValueType> fromOthers( fromOthersResult );
+            ReadAccess<ValueType> toOthers( toOthersResult );
+            WriteAccess<ValueType> fromOthers( fromOthersResult );
 
             for( IndexType i = 0; i < numParts; ++i )
             {
@@ -1641,8 +1641,8 @@ void SparseMatrix<ValueType>::vectorHaloOperationAsync(
 
         if( numParts != 1 )
         {
-            HostWriteAccess<ValueType> localData( localResult );
-            HostReadAccess<ValueType> otherData( fromOthersResult );
+            WriteAccess<ValueType> localData( localResult );
+            ReadAccess<ValueType> otherData( fromOthersResult );
 
             for( IndexType i = 0; i < numParts; ++i )
             {
@@ -1798,7 +1798,7 @@ void SparseMatrix<ValueType>::vectorTimesMatrixImpl(
 
     // after gather of vector values x^ is on the host
     // todo: think about this if its useful to upload the vector (again)
-    ContextPtr hostContext = ContextFactory::getContext( Context::Host );
+    ContextPtr hostContext = Context::getContextPtr( context::Host );
 
     using boost::function;
     using boost::bind;
@@ -2252,7 +2252,7 @@ void SparseMatrix<ValueType>::resetDiagonalProperty()
 /* ------------------------------------------------------------------------- */
 
 template<typename ValueType>
-Scalar::ScalarType SparseMatrix<ValueType>::getValueType() const
+memory::ScalarType SparseMatrix<ValueType>::getValueType() const
 {
     return Scalar::getType<ValueType>();
 }

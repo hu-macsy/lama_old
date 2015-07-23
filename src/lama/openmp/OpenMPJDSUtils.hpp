@@ -38,7 +38,7 @@
 
 // others
 #include <lama/LAMATypes.hpp>
-#include <lama/SyncToken.hpp>
+#include <tasking/SyncToken.hpp>
 #include <lama/Scalar.hpp>
 
 // logging
@@ -160,7 +160,7 @@ public:
         const IndexType jdsDLG[],
         const IndexType jdsJA[],
         const ValueType jdsValues[],
-        SyncToken* syncToken );
+        tasking::SyncToken* syncToken );
 
     /** Implementation for JDSUtilsInterface::Mult:normalGEVM with OpenMP on Host */
 
@@ -178,7 +178,7 @@ public:
         const IndexType jdsDLG[],
         const IndexType jdsJA[],
         const ValueType jdsValues[],
-        SyncToken* syncToken );
+        tasking::SyncToken* syncToken );
 
     template<typename ValueType>
     static void jacobi(
@@ -193,7 +193,7 @@ public:
         const ValueType oldSolution[],
         const ValueType rhs[],
         const ValueType omega,
-        SyncToken* syncToken );
+        tasking::SyncToken* syncToken );
 
     template<typename ValueType>
     static void jacobiHalo(
@@ -208,7 +208,7 @@ public:
         const ValueType jdsHaloValues[],
         const ValueType oldSolution[],
         const ValueType omega,
-        SyncToken* syncToken );
+        tasking::SyncToken* syncToken );
 
     /** Method for registration of module routines at the interface. */
 

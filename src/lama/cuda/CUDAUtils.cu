@@ -35,7 +35,7 @@
 #include <lama/LAMAInterfaceRegistry.hpp>
 
 #include <lama/cuda/utils.cu.h>
-#include <lama/cuda/CUDAError.hpp>
+#include <cudamem/CUDAError.hpp>
 #include <lama/cuda/CUDAUtils.hpp>
 #include <lama/cuda/CUDASettings.hpp>
 
@@ -50,6 +50,10 @@
 #include <thrust/sequence.h>
 #include <thrust/transform.h>
 #include <thrust/transform_reduce.h>
+
+using namespace common;
+using namespace tasking;
+using namespace memory;
 
 namespace lama
 {
@@ -341,7 +345,7 @@ namespace lama
     template<typename ValueType>
     bool CUDAUtils::isSorted( const ValueType array[], const IndexType n, bool ascending )
     {
-        LAMA_LOG_INFO( logger, "isSorted<" << Scalar::getType<ValueType>()
+        LAMA_LOG_INFO( logger, "isSorted<" << getScalarType<ValueType>()
                         << ">, n = " << n << ", ascending = " << ascending )
 
         LAMA_CHECK_CUDA_ACCESS
@@ -397,7 +401,7 @@ namespace lama
     void CUDAUtils::setGather( ValueType1 out[], const ValueType2 in[], const IndexType indexes[], const IndexType n )
     {
         LAMA_LOG_INFO( logger,
-                        "setGather<" << Scalar::getType<ValueType1>() << "," << Scalar::getType<ValueType2>() << ">( ..., n = " << n << ")" )
+                        "setGather<" << getScalarType<ValueType1>() << "," << getScalarType<ValueType2>() << ">( ..., n = " << n << ")" )
 
         LAMA_CHECK_CUDA_ACCESS
 
@@ -428,7 +432,7 @@ namespace lama
     void CUDAUtils::setScatter( ValueType1 out[], const IndexType indexes[], const ValueType2 in[], const IndexType n )
     {
         LAMA_LOG_INFO( logger,
-                        "setScatter<" << Scalar::getType<ValueType1>() << "," << Scalar::getType<ValueType2>() << ">( ..., n = " << n << ")" )
+                        "setScatter<" << getScalarType<ValueType1>() << "," << getScalarType<ValueType2>() << ">( ..., n = " << n << ")" )
 
         LAMA_CHECK_CUDA_ACCESS
 
@@ -459,7 +463,7 @@ namespace lama
     void CUDAUtils::set( ValueType1 out[], const ValueType2 in[], const IndexType n )
     {
         LAMA_LOG_INFO( logger,
-                        "set<" << Scalar::getType<ValueType1>() << "," << Scalar::getType<ValueType2>() << ">( ..., n = " << n << ")" )
+                        "set<" << getScalarType<ValueType1>() << "," << getScalarType<ValueType2>() << ">( ..., n = " << n << ")" )
 
         LAMA_LOG_DEBUG( logger, "out = " << out << ", in = " << in )
 
@@ -487,7 +491,7 @@ namespace lama
                     const ValueType2 in[], const IndexType n )
     {
         LAMA_LOG_INFO( logger,
-                        "set<" << Scalar::getType<ValueType1>() << "," << Scalar::getType<ValueType2>() << ">( ..., n = " << n << ")" )
+                        "set<" << getScalarType<ValueType1>() << "," << getScalarType<ValueType2>() << ">( ..., n = " << n << ")" )
 
         LAMA_LOG_DEBUG( logger, "out = " << out << ", in = " << in )
 
@@ -537,7 +541,7 @@ namespace lama
     void CUDAUtils::invert( ValueType array[], const IndexType n )
     {
         LAMA_LOG_INFO( logger,
-                        "invert Vector components for vector of type " << Scalar::getType<ValueType>() << " and size n = " << n << "." )
+                        "invert Vector components for vector of type " << getScalarType<ValueType>() << " and size n = " << n << "." )
 
         if ( n <= 0 )
         {
@@ -616,7 +620,7 @@ namespace lama
 
     bool CUDAUtils::registerInterface()
     {
-        LAMAInterface& interface = LAMAInterfaceRegistry::getRegistry().modifyInterface( Context::CUDA );
+        LAMAInterface& interface = LAMAInterfaceRegistry::getRegistry().modifyInterface( context::CUDA );
         setInterface( interface.Utils );
         return true;
     }

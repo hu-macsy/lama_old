@@ -39,11 +39,9 @@
 #include <lama/openmp/OpenMPDIAUtils.hpp>
 #include <tracing/tracing.hpp>
 
-#include <lama/HostReadAccess.hpp>
-#include <lama/HostWriteAccess.hpp>
 #include <lama/LAMAInterface.hpp>
-#include <lama/ContextAccess.hpp>
-#include <lama/TaskSyncToken.hpp>
+#include <memory/ContextAccess.hpp>
+#include <tasking/TaskSyncToken.hpp>
 
 // macros
 #include <lama/macros/unused.hpp>
@@ -125,8 +123,8 @@ void DIAStorage<ValueType>::print() const
 
     cout << "DIAStorage " << mNumRows << " x " << mNumColumns << ", #diags = " << mNumDiagonals << endl;
 
-    HostReadAccess<IndexType> offset( mOffset );
-    HostReadAccess<ValueType> values( mValues );
+    ReadAccess<IndexType> offset( mOffset );
+    ReadAccess<ValueType> values( mValues );
 
     cout << "Diagonal offsets:";
 
@@ -220,10 +218,10 @@ void DIAStorage<ValueType>::getRowImpl( LAMAArray<OtherType>& row, const IndexTy
 {
     LAMA_ASSERT_DEBUG( i >= 0 && i < mNumRows, "row index " << i << " out of range" )
 
-    HostWriteOnlyAccess<OtherType> wRow( row, mNumColumns );
+    WriteOnlyAccess<OtherType> wRow( row, mNumColumns );
 
-    const HostReadAccess<IndexType> offset( mOffset );
-    const HostReadAccess<ValueType> values( mValues );
+    const ReadAccess<IndexType> offset( mOffset );
+    const ReadAccess<ValueType> values( mValues );
 
     for( IndexType j = 0; j < mNumColumns; ++j )
     {
@@ -292,7 +290,7 @@ void DIAStorage<ValueType>::setDiagonalImpl( const LAMAArray<OtherType>& diagona
 template<typename ValueType>
 void DIAStorage<ValueType>::scaleImpl( const Scalar scalar )
 {
-    HostWriteAccess<ValueType> wValues( mValues );
+    WriteAccess<ValueType> wValues( mValues );
 
     ValueType value = scalar.getValue<ValueType>();
 
@@ -309,9 +307,9 @@ template<typename OtherType>
 void DIAStorage<ValueType>::scaleImpl( const LAMAArray<OtherType>& diagonal )
 {
     {
-        HostReadAccess<OtherType> rDiagonal( diagonal );
-        HostWriteAccess<ValueType> wValues( mValues );
-        HostReadAccess<IndexType> rOffset( mOffset );
+        ReadAccess<OtherType> rDiagonal( diagonal );
+        WriteAccess<ValueType> wValues( mValues );
+        ReadAccess<IndexType> rOffset( mOffset );
 
         for( IndexType i = 0; i < mNumRows; i++ )
         {
@@ -366,7 +364,7 @@ bool DIAStorage<ValueType>::checkDiagonalProperty() const
     {
         // diagonal property is given if first diagonal is the main one
 
-        HostReadAccess<IndexType> offset( mOffset );
+        ReadAccess<IndexType> offset( mOffset );
         diagonalProperty = offset[0] == 0;
     }
 
@@ -478,12 +476,12 @@ void DIAStorage<ValueType>::buildCSR(
     LAMA_LOG_INFO( logger,
                    "buildTypedCSRData<" << Scalar::getType<OtherValueType>() << ">" << " from DIA<" << Scalar::getType<ValueType>() << "> = " << *this << ", diagonal property = " << mDiagonalProperty )
 
-    HostReadAccess<IndexType> diaOffsets( mOffset );
-    HostReadAccess<ValueType> diaValues( mValues );
+    ReadAccess<IndexType> diaOffsets( mOffset );
+    ReadAccess<ValueType> diaValues( mValues );
 
     ValueType eps = 0.0;
 
-    HostWriteOnlyAccess<IndexType> csrIA( ia, mNumRows + 1 );
+    WriteOnlyAccess<IndexType> csrIA( ia, mNumRows + 1 );
 
     OpenMPDIAUtils::getCSRSizes( csrIA.get(), mDiagonalProperty, mNumRows, mNumColumns, mNumDiagonals, diaOffsets.get(),
                                  diaValues.get(), eps );
@@ -498,8 +496,8 @@ void DIAStorage<ValueType>::buildCSR(
 
     LAMA_LOG_INFO( logger, "CSR: #non-zero values = " << numValues )
 
-    HostWriteOnlyAccess<IndexType> csrJA( *ja, numValues );
-    HostWriteOnlyAccess<OtherValueType> csrValues( *values, numValues );
+    WriteOnlyAccess<IndexType> csrJA( *ja, numValues );
+    WriteOnlyAccess<OtherValueType> csrValues( *values, numValues );
 
     OpenMPDIAUtils::getCSRValues( csrJA.get(), csrValues.get(), csrIA.get(), mDiagonalProperty, mNumRows, mNumColumns,
                                   mNumDiagonals, diaOffsets.get(), diaValues.get(), eps );
@@ -522,9 +520,9 @@ void DIAStorage<ValueType>::setCSRDataImpl(
 
     // loc is ignored, we do it on the Host
 
-    HostReadAccess<IndexType> csrIA( ia );
-    HostReadAccess<IndexType> csrJA( ja );
-    HostReadAccess<OtherValueType> csrValues( values );
+    ReadAccess<IndexType> csrIA( ia );
+    ReadAccess<IndexType> csrJA( ja );
+    ReadAccess<OtherValueType> csrValues( values );
 
     _MatrixStorage::setDimension( numRows, numColumns );
 
@@ -562,8 +560,8 @@ void DIAStorage<ValueType>::setCSRDataImpl(
 
     // now we can allocate and set the values
     {
-        HostReadAccess<IndexType> offset( mOffset );
-        HostWriteOnlyAccess<ValueType> myValues( mValues, mNumDiagonals * mNumRows );
+        ReadAccess<IndexType> offset( mOffset );
+        WriteOnlyAccess<ValueType> myValues( mValues, mNumDiagonals * mNumRows );
 
         #pragma omp parallel for schedule(LAMA_OMP_SCHEDULE)
 
@@ -632,7 +630,7 @@ void DIAStorage<ValueType>::setOffsets(
 
     LAMA_LOG_INFO( logger, "storage data requires " << mNumDiagonals << " diagonals a " << mNumRows << " values" )
 
-    HostWriteOnlyAccess<IndexType> wOffset( mOffset, mNumDiagonals );
+    WriteOnlyAccess<IndexType> wOffset( mOffset, mNumDiagonals );
 
     if( mNumDiagonals > 0 )
     {
@@ -780,7 +778,7 @@ ValueType DIAStorage<ValueType>::getValue( const IndexType i, const IndexType j 
 {
     LAMA_LOG_DEBUG( logger, "get value (" << i << ", " << j << ") from " << *this )
 
-    const HostReadAccess<IndexType> offset( mOffset );
+    const ReadAccess<IndexType> offset( mOffset );
 
     ValueType myValue = 0.0;
 
@@ -790,7 +788,7 @@ ValueType DIAStorage<ValueType>::getValue( const IndexType i, const IndexType j 
     {
         if( i + offset[d] == j )
         {
-            const HostReadAccess<ValueType> values( mValues );
+            const ReadAccess<ValueType> values( mValues );
             LAMA_LOG_DEBUG( logger,
                             "get value (" << i << ", " << j << ") is diag = " << d << ", offset = " << offset[d] << ", index = " << diaindex( i, d, mNumRows, mNumColumns ) )
             myValue = values[diaindex( i, d, mNumRows, mNumDiagonals )];
@@ -896,7 +894,7 @@ void DIAStorage<ValueType>::matrixTimesVector(
 
     // Possible alias of result and y is handled by coressponding accesses
 
-    if( result == y )
+    if( &result == &y )
     {
         LAMA_LOG_DEBUG( logger, "result == y" )
 
@@ -943,7 +941,7 @@ void DIAStorage<ValueType>::vectorTimesMatrix(
     LAMA_ASSERT_EQUAL_ERROR( x.size(), mNumRows )
     LAMA_ASSERT_EQUAL_ERROR( result.size(), mNumColumns )
 
-    if( ( beta != 0.0 ) && ( result != y ) )
+    if( ( beta != 0.0 ) && ( &result != &y ) )
     {
         LAMA_ASSERT_EQUAL_ERROR( y.size(), mNumColumns )
     }
@@ -961,7 +959,7 @@ void DIAStorage<ValueType>::vectorTimesMatrix(
 
     // Possible alias of result and y must be handled by coressponding accesses
 
-    if( result == y )
+    if( &result == &y )
     {
         // only write access for y, no read access for result
 
@@ -1002,7 +1000,7 @@ SyncToken* DIAStorage<ValueType>::matrixTimesVectorAsync(
 
     LAMA_INTERFACE_FN_DEFAULT_T( normalGEMV, loc, DIAUtils, Mult, ValueType )
 
-    if( loc->getType() == Context::Host )
+    if( loc->getType() == context::Host )
     {
         // Start directly a task, avoids pushing of accesses
 
@@ -1042,7 +1040,7 @@ SyncToken* DIAStorage<ValueType>::matrixTimesVectorAsync(
 
     // Possible alias of result and y is handled by coressponding accesses
 
-    if( result == y )
+    if( &result == &y )
     {
         LAMA_LOG_DEBUG( logger, "result == y" )
 
@@ -1050,7 +1048,7 @@ SyncToken* DIAStorage<ValueType>::matrixTimesVectorAsync(
 
         shared_ptr<WriteAccess<ValueType> > wResult( new WriteAccess<ValueType>( result, loc ) );
 
-        syncToken->pushAccess( wResult );
+        syncToken->pushToken( wResult );
 
         // we assume that normalGEMV can deal with the alias of result, y
 
@@ -1066,8 +1064,8 @@ SyncToken* DIAStorage<ValueType>::matrixTimesVectorAsync(
         shared_ptr<WriteOnlyAccess<ValueType> > wResult( new WriteOnlyAccess<ValueType>( result, loc, mNumRows ) );
         shared_ptr<ReadAccess<ValueType> > rY( new ReadAccess<ValueType>( y, loc ) );
 
-        syncToken->pushAccess( rY );
-        syncToken->pushAccess( wResult );
+        syncToken->pushToken( rY );
+        syncToken->pushToken( wResult );
 
         LAMA_CONTEXT_ACCESS( loc )
 
@@ -1075,9 +1073,9 @@ SyncToken* DIAStorage<ValueType>::matrixTimesVectorAsync(
                     diaOffsets->get(), diaValues->get(), syncToken.get() );
     }
 
-    syncToken->pushAccess( rX );
-    syncToken->pushAccess( diaValues );
-    syncToken->pushAccess( diaOffsets );
+    syncToken->pushToken( rX );
+    syncToken->pushToken( diaValues );
+    syncToken->pushToken( diaOffsets );
 
     return syncToken.release();
 }
@@ -1104,7 +1102,7 @@ SyncToken* DIAStorage<ValueType>::vectorTimesMatrixAsync(
 
     LAMA_LOG_INFO( logger, *this << ": vectorTimesMatrixAsync on " << *loc )
 
-    if( loc->getType() == Context::Host )
+    if( loc->getType() == context::Host )
     {
         // execution as separate thread
 
@@ -1129,7 +1127,7 @@ SyncToken* DIAStorage<ValueType>::vectorTimesMatrixAsync(
     LAMA_ASSERT_EQUAL_ERROR( x.size(), mNumRows )
     LAMA_ASSERT_EQUAL_ERROR( result.size(), mNumColumns )
 
-    if( ( beta != 0.0 ) && ( result != y ) )
+    if( ( beta != 0.0 ) && ( &result != &y ) )
     {
         LAMA_ASSERT_EQUAL_ERROR( y.size(), mNumColumns )
     }
@@ -1148,7 +1146,7 @@ SyncToken* DIAStorage<ValueType>::vectorTimesMatrixAsync(
 
     // Possible alias of result and y must be handled by coressponding accesses
 
-    if( result == y )
+    if( &result == &y )
     {
         // only write access for y, no read access for result
 
@@ -1161,7 +1159,7 @@ SyncToken* DIAStorage<ValueType>::vectorTimesMatrixAsync(
         normalGEVM( wResult->get(), alpha, rX->get(), beta, wResult->get(), mNumRows, mNumColumns, mNumDiagonals,
                     diaOffsets->get(), diaValues->get(), syncToken.get() );
 
-        syncToken->pushAccess( wResult );
+        syncToken->pushToken( wResult );
     }
     else
     {
@@ -1173,13 +1171,13 @@ SyncToken* DIAStorage<ValueType>::vectorTimesMatrixAsync(
         normalGEVM( wResult->get(), alpha, rX->get(), beta, rY->get(), mNumRows, mNumColumns, mNumDiagonals,
                     diaOffsets->get(), diaValues->get(), syncToken.get() );
 
-        syncToken->pushAccess( wResult );
-        syncToken->pushAccess( rY );
+        syncToken->pushToken( wResult );
+        syncToken->pushToken( rY );
     }
 
-    syncToken->pushAccess( rX );
-    syncToken->pushAccess( diaValues );
-    syncToken->pushAccess( diaOffsets );
+    syncToken->pushToken( rX );
+    syncToken->pushToken( diaValues );
+    syncToken->pushToken( diaOffsets );
 
     return syncToken.release();
 }
@@ -1197,7 +1195,7 @@ void DIAStorage<ValueType>::jacobiIterate(
 
     LAMA_ASSERT_ERROR( mDiagonalProperty, *this << ": jacobiIterate requires diagonal property" )
 
-    if( solution == oldSolution )
+    if( &solution == &oldSolution )
     {
         LAMA_THROWEXCEPTION( "alias of solution and oldSolution unsupported" )
     }
@@ -1207,11 +1205,11 @@ void DIAStorage<ValueType>::jacobiIterate(
     LAMA_ASSERT_EQUAL_DEBUG( mNumRows, mNumColumns )
     // matrix must be square
 
-    HostWriteAccess<ValueType> wSolution( solution );
-    HostReadAccess<IndexType> diaOffset( mOffset );
-    HostReadAccess<ValueType> diaValues( mValues );
-    HostReadAccess<ValueType> rOldSolution( oldSolution );
-    HostReadAccess<ValueType> rRhs( rhs );
+    WriteAccess<ValueType> wSolution( solution );
+    ReadAccess<IndexType> diaOffset( mOffset );
+    ReadAccess<ValueType> diaValues( mValues );
+    ReadAccess<ValueType> rOldSolution( oldSolution );
+    ReadAccess<ValueType> rRhs( rhs );
 
     OpenMPDIAUtils::jacobi( wSolution.get(), mNumColumns, mNumDiagonals, diaOffset.get(), diaValues.get(),
                             rOldSolution.get(), rRhs.get(), omega, mNumRows, NULL );

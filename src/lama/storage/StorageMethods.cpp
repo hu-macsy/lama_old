@@ -50,6 +50,8 @@
 // boost
 #include <boost/preprocessor.hpp>
 
+using namespace memory;
+
 namespace lama
 {
 
@@ -80,11 +82,11 @@ void StorageMethods<ValueType>::localizeCSR(
     LAMA_LOG_INFO( logger,
                    "localzeCSR (#rows = global:" << globalNumRows << ", local:" << localNumRows << ", #values( global ) = " << globalJA.size() << ", rowDist = " << rowDist )
 
-    HostReadAccess<IndexType> rGlobalIA( globalIA );
+    ReadAccess<IndexType> rGlobalIA( globalIA );
 
     // localIA will contain at first sizes, later the offsets
 
-    HostWriteOnlyAccess<IndexType> wLocalIA( localIA, localNumRows + 1 );
+    WriteOnlyAccess<IndexType> wLocalIA( localIA, localNumRows + 1 );
 
     // By using the routine local2global of a distribution we can
     // set the local sizes independently
@@ -105,11 +107,11 @@ void StorageMethods<ValueType>::localizeCSR(
 
     // so we can now allocate s of correct size
 
-    HostWriteOnlyAccess<IndexType> wLocalJA( localJA, localNumValues );
-    HostWriteOnlyAccess<ValueType> wLocalValues( localValues, localNumValues );
+    WriteOnlyAccess<IndexType> wLocalJA( localJA, localNumValues );
+    WriteOnlyAccess<ValueType> wLocalValues( localValues, localNumValues );
 
-    HostReadAccess<IndexType> rGlobalJA( globalJA );
-    HostReadAccess<ValueType> rGlobalValues( globalValues );
+    ReadAccess<IndexType> rGlobalJA( globalJA );
+    ReadAccess<ValueType> rGlobalValues( globalValues );
 
     // Due to the availability of offsets for both storages we
     // can copy the global matrix data to the local one independently
@@ -167,14 +169,14 @@ void StorageMethods<ValueType>::replicateCSR(
 
     LAMAArray<IndexType> localSizes;
 
-    HostReadAccess<IndexType> rLocalIA( localIA );
-    HostWriteOnlyAccess<IndexType> wLocalSizes( localSizes, localNumRows );
+    ReadAccess<IndexType> rLocalIA( localIA );
+    WriteOnlyAccess<IndexType> wLocalSizes( localSizes, localNumRows );
 
     OpenMPCSRUtils::offsets2sizes( wLocalSizes.get(), rLocalIA.get(), localNumRows );
 
     // global IA will contain sizes at first, but later we need the offsets
 
-    HostWriteOnlyAccess<IndexType> wGlobalIA( globalIA, globalNumRows + 1 );
+    WriteOnlyAccess<IndexType> wGlobalIA( globalIA, globalNumRows + 1 );
 
     rowDist.replicate( wGlobalIA.get(), wLocalSizes.get() );
 
@@ -186,13 +188,13 @@ void StorageMethods<ValueType>::replicateCSR(
 
     // Distribution supports a replicate routine that works on arrays with jagged rows
 
-    HostReadAccess<IndexType> rLocalJA( localJA );
-    HostWriteOnlyAccess<IndexType> wGlobalJA( globalJA, globalNumValues );
+    ReadAccess<IndexType> rLocalJA( localJA );
+    WriteOnlyAccess<IndexType> wGlobalJA( globalJA, globalNumValues );
     rowDist.replicateRagged( wGlobalJA.get(), rLocalJA.get(), wGlobalIA.get() );
     LAMA_LOG_DEBUG( logger, comm << ": JA is now replicated " )
 
-    HostReadAccess<ValueType> rLocalValues( localValues );
-    HostWriteOnlyAccess<ValueType> wGlobalValues( globalValues, globalNumValues );
+    ReadAccess<ValueType> rLocalValues( localValues );
+    WriteOnlyAccess<ValueType> wGlobalValues( globalValues, globalNumValues );
     rowDist.replicateRagged( wGlobalValues.get(), rLocalValues.get(), wGlobalIA.get() );
     LAMA_LOG_DEBUG( logger, comm << ": Values are now replicated " )
 }
@@ -223,12 +225,12 @@ void StorageMethods<ValueType>::redistributeCSR(
     LAMAArray<IndexType> sourceSizes;
 
     {
-        HostWriteOnlyAccess<IndexType> wSourceSizes( sourceSizes, sourceNumRows );
-        HostReadAccess<IndexType> rSourceIA( sourceIA );
+        WriteOnlyAccess<IndexType> wSourceSizes( sourceSizes, sourceNumRows );
+        ReadAccess<IndexType> rSourceIA( sourceIA );
 
         OpenMPCSRUtils::offsets2sizes( wSourceSizes.get(), rSourceIA.get(), sourceNumRows );
 
-        HostWriteOnlyAccess<IndexType> wTargetIA( targetIA, targetNumRows + 1 );
+        WriteOnlyAccess<IndexType> wTargetIA( targetIA, targetNumRows + 1 );
     }
 
     redistributor.redistribute( targetIA, sourceSizes );
@@ -240,7 +242,7 @@ void StorageMethods<ValueType>::redistributeCSR(
     IndexType targetNumValues;
 
     {
-        HostWriteAccess<IndexType> wTargetSizes( targetIA );
+        WriteAccess<IndexType> wTargetSizes( targetIA );
         wTargetSizes.resize( targetNumRows + 1 );
 
         targetNumValues = OpenMPCSRUtils::sizes2offsets( wTargetSizes.get(), targetNumRows );
@@ -250,8 +252,8 @@ void StorageMethods<ValueType>::redistributeCSR(
 
         // allocate target array with the correct size
 
-        HostWriteOnlyAccess<IndexType> wTargetJA( targetJA, targetNumValues );
-        HostWriteOnlyAccess<ValueType> wTargetValues( targetValues, targetNumValues );
+        WriteOnlyAccess<IndexType> wTargetJA( targetJA, targetNumValues );
+        WriteOnlyAccess<ValueType> wTargetValues( targetValues, targetNumValues );
     }
 
     redistributor.redistributeV( targetJA, targetIA, sourceJA, sourceIA );
@@ -289,9 +291,9 @@ void StorageMethods<ValueType>::exchangeHaloCSR(
 
     {
 
-        HostReadAccess<IndexType> ia( sourceIA );
-        HostReadAccess<IndexType> indexes( providesIndexes );
-        HostWriteOnlyAccess<IndexType> sizes( sourceSizes, numSendRows );
+        ReadAccess<IndexType> ia( sourceIA );
+        ReadAccess<IndexType> indexes( providesIndexes );
+        WriteOnlyAccess<IndexType> sizes( sourceSizes, numSendRows );
 
         OpenMPCSRUtils::offsets2sizesGather( sizes.get(), ia.get(), indexes, numSendRows );
     }
@@ -299,7 +301,7 @@ void StorageMethods<ValueType>::exchangeHaloCSR(
     {
         // allocate target IA with the right size
 
-        HostWriteOnlyAccess<IndexType> tmpIA( targetIA, numRecvRows + 1 );
+        WriteOnlyAccess<IndexType> tmpIA( targetIA, numRecvRows + 1 );
     }
 
     // send the sizes of the rows I will provide
@@ -312,8 +314,8 @@ void StorageMethods<ValueType>::exchangeHaloCSR(
 
     LAMA_LOG_INFO( logger, "exchanged sizes of rows, build vPlans" )
 
-    HostReadAccess<IndexType> sendSizes( sourceSizes );
-    HostReadAccess<IndexType> recvSizes( targetIA );
+    ReadAccess<IndexType> sendSizes( sourceSizes );
+    ReadAccess<IndexType> recvSizes( targetIA );
 
     CommunicationPlan provideV( halo.getProvidesPlan(), sendSizes.get() );
     CommunicationPlan requiredV( halo.getRequiredPlan(), recvSizes.get() );
@@ -329,7 +331,7 @@ void StorageMethods<ValueType>::exchangeHaloCSR(
     // row sizes of target will now become offsets
 
     {
-        HostWriteAccess<IndexType> ia( targetIA );
+        WriteAccess<IndexType> ia( targetIA );
         ia.resize( numRecvRows + 1 );
         OpenMPCSRUtils::sizes2offsets( ia.get(), numRecvRows );
     }
@@ -377,11 +379,11 @@ void StorageMethods<ValueType>::splitCSR(
         numRows = rowDist->getLocalSize();
     }
 
-    HostReadAccess<IndexType> ia( csrIA );
-    HostReadAccess<IndexType> ja( csrJA );
+    ReadAccess<IndexType> ia( csrIA );
+    ReadAccess<IndexType> ja( csrJA );
 
-    HostWriteOnlyAccess<IndexType> wLocalIA( localIA, numRows + 1 );
-    HostWriteOnlyAccess<IndexType> wHaloIA( haloIA, numRows + 1 );
+    WriteOnlyAccess<IndexType> wLocalIA( localIA, numRows + 1 );
+    WriteOnlyAccess<IndexType> wHaloIA( haloIA, numRows + 1 );
 
     #pragma omp parallel for schedule(LAMA_OMP_SCHEDULE)
 
@@ -425,13 +427,13 @@ void StorageMethods<ValueType>::splitCSR(
 
     // so we can now allocate s of correct size
 
-    HostWriteOnlyAccess<IndexType> wLocalJA( localJA, localNumValues );
-    HostWriteOnlyAccess<ValueType> wLocalValues( localValues, localNumValues );
+    WriteOnlyAccess<IndexType> wLocalJA( localJA, localNumValues );
+    WriteOnlyAccess<ValueType> wLocalValues( localValues, localNumValues );
 
-    HostWriteOnlyAccess<IndexType> wHaloJA( haloJA, haloNumValues );
-    HostWriteOnlyAccess<ValueType> wHaloValues( haloValues, haloNumValues );
+    WriteOnlyAccess<IndexType> wHaloJA( haloJA, haloNumValues );
+    WriteOnlyAccess<ValueType> wHaloValues( haloValues, haloNumValues );
 
-    HostReadAccess<ValueType> values( csrValues );
+    ReadAccess<ValueType> values( csrValues );
 
     #pragma omp parallel for schedule(LAMA_OMP_SCHEDULE)
 
@@ -506,7 +508,7 @@ void _StorageMethods::buildHalo(
     haloIndexes.reserve( haloNumValues );
 
     {
-        HostReadAccess<IndexType> ja( haloJA );
+        ReadAccess<IndexType> ja( haloJA );
 
         for( IndexType jj = 0; jj < haloNumValues; jj++ )
         {
@@ -536,7 +538,7 @@ void _StorageMethods::buildHalo(
     // convert the global indexes to halo indexes
 
     {
-        HostWriteAccess<IndexType> ja( haloJA );
+        WriteAccess<IndexType> ja( haloJA );
 
         for( IndexType jj = 0; jj < haloNumValues; jj++ )
         {
@@ -581,10 +583,10 @@ void StorageMethods<ValueType>::joinCSR(
     LAMA_LOG_INFO( logger,
                    "joinCSRData, #rows = " << numRows << ", local has " << localValues.size() << " elements" << ", halo has " << haloValues.size() << " elements" << ", keep " << numKeepDiagonals << " diagonals " )
 
-    HostWriteOnlyAccess<IndexType> ia( outIA, numRows + 1 );
+    WriteOnlyAccess<IndexType> ia( outIA, numRows + 1 );
 
-    HostReadAccess<IndexType> ia1( localIA );
-    HostReadAccess<IndexType> ia2( haloIA );
+    ReadAccess<IndexType> ia1( localIA );
+    ReadAccess<IndexType> ia2( haloIA );
 
     #pragma omp parallel for schedule(LAMA_OMP_SCHEDULE)
 
@@ -602,14 +604,14 @@ void StorageMethods<ValueType>::joinCSR(
 
     LAMA_ASSERT_ERROR( numValues == localJA.size() + haloJA.size(), "#non-zero values mismatches" )
 
-    HostWriteOnlyAccess<IndexType> ja( outJA, numValues );
-    HostWriteOnlyAccess<ValueType> values( outValues, numValues );
+    WriteOnlyAccess<IndexType> ja( outJA, numValues );
+    WriteOnlyAccess<ValueType> values( outValues, numValues );
 
-    HostReadAccess<IndexType> ja1( localJA );
-    HostReadAccess<ValueType> values1( localValues );
+    ReadAccess<IndexType> ja1( localJA );
+    ReadAccess<ValueType> values1( localValues );
 
-    HostReadAccess<IndexType> ja2( haloJA );
-    HostReadAccess<ValueType> values2( haloValues );
+    ReadAccess<IndexType> ja2( haloJA );
+    ReadAccess<ValueType> values2( haloValues );
 
     // merging of each row is independent from other rows
 

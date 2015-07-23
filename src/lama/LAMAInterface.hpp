@@ -115,7 +115,7 @@ protected:
     if ( function == NULL )                                                                   \
     {                                                                                         \
         LAMA_UNSUPPORTED( "Method " #module "::" #function " not available on " << *loc );    \
-        loc = ContextFactory::getContext( Context::Host );                                    \
+        loc = Context::getContextPtr( context::Host );                                        \
         function = loc->getInterface().module.function();                                     \
         if ( function == NULL )                                                               \
         {                                                                                     \
@@ -146,7 +146,7 @@ protected:
     if ( function == NULL )                                                                   \
     {                                                                                         \
         LAMA_UNSUPPORTED( "Method " #module "::" #function " not available on " << *loc );    \
-        loc = ContextFactory::getContext( Context::Host );                                    \
+        loc = Context::getContextPtr( context::Host );                                        \
         function = loc->getInterface().module.function<ValueType>();                          \
         if ( function == NULL )                                                               \
         {                                                                                     \

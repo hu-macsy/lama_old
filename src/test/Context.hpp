@@ -33,7 +33,7 @@
 #ifndef LAMA_BTEST_CONTEXT_HPP_
 #define LAMA_BTEST_CONTEXT_HPP_
 #include <map>
-#include <lama/Context.hpp>
+#include <memory/Context.hpp>
 
 namespace lama_test
 {
@@ -41,12 +41,12 @@ namespace lama_test
 class Context
 {
 public:
-    static lama::ContextPtr getContext( const lama::ContextType type );
+    static memory::ContextPtr getContext( const memory::ContextType type );
 private:
     Context();
     virtual ~Context();
 
-    static std::map<lama::ContextType, lama::ContextPtr> contexts;
+    static std::map<memory::ContextType, memory::ContextPtr> contexts;
 };
 
 } //namespace lama_test

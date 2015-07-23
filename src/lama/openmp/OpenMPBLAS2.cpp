@@ -66,7 +66,9 @@ void OpenMPBLAS2::gemv(
     SyncToken* syncToken )
 {
     LAMA_LOG_INFO( logger,
-                   "gemv<" << Scalar::getType<ValueType>()<< ">: M = " << M << ", N = " << N << ", LDA = " << lda << ", incX = " << incX << ", incY = " << incY << ", alpha = " << alpha << ", beta = " << beta )
+                   "gemv<" << common::getScalarType<ValueType>()<< ">: M = " << M << ", N = " << N 
+                      << ", LDA = " << lda << ", incX = " << incX << ", incY = " << incY 
+                      << ", alpha = " << alpha << ", beta = " << beta )
 
     if( M == 0 )
     {
@@ -302,7 +304,7 @@ void OpenMPBLAS2::setInterface( BLASInterface& BLAS )
 
 bool OpenMPBLAS2::registerInterface()
 {
-    LAMAInterface& interface = LAMAInterfaceRegistry::getRegistry().modifyInterface( Context::Host );
+    LAMAInterface& interface = LAMAInterfaceRegistry::getRegistry().modifyInterface( memory::context::Host );
     setInterface( interface.BLAS );
     return true;
 }

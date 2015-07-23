@@ -40,7 +40,7 @@
 #include <common/Printable.hpp>
 
 // others
-#include <lama/LAMAArray.hpp>
+#include <memory/memory.hpp>
 #include <lama/CommunicationPlan.hpp>
 
 #include <lama/exception/LAMAAssert.hpp>
@@ -49,6 +49,8 @@
 
 namespace lama
 {
+
+using namespace memory;
 
 /** The halo is an internal data structure that describes the
  *  exchange of non-local values completely.

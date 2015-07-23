@@ -35,8 +35,8 @@
 #include <lama/cuda/utils.cu.h>
 
 // others
-#include <lama/cuda/CUDAStreamSyncToken.hpp>
-#include <lama/cuda/CUDAError.hpp>
+#include <cudamem/CUDAStreamSyncToken.hpp>
+#include <cudamem/CUDAError.hpp>
 #include <lama/cuda/CUDASettings.hpp>
 #include <lama/cuda/CUDAJDSUtils.hpp>
 #include <lama/cuda/CUDAUtils.hpp>
@@ -65,6 +65,10 @@
 #include <thrust/tuple.h>
 
 #include <boost/bind.hpp>
+
+using namespace memory;
+using namespace tasking;
+using common::getScalarType;
 
 namespace lama
 {
@@ -600,8 +604,8 @@ namespace lama
         dim3 dimBlock( blockSize, 1, 1 );
         dim3 dimGrid = makeGrid( numRows, dimBlock.x );
 
-        LAMA_LOG_INFO( logger, "Start csr2jds_kernel<" << Scalar::getType<JDSValueType>()
-                        << ", " << Scalar::getType<CSRValueType>()
+        LAMA_LOG_INFO( logger, "Start csr2jds_kernel<" << getScalarType<JDSValueType>()
+                        << ", " << getScalarType<CSRValueType>()
                         << ", useSharedMem = " << useSharedMem
                         << "> ( nrows = " << numRows << ", ndiag = " << ndlg << " )" );
 
@@ -628,8 +632,8 @@ namespace lama
 
         LAMA_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "csr2jdsKernel failed" );
 
-        LAMA_LOG_INFO( logger, "Ready csr2jds_kernel<" << Scalar::getType<JDSValueType>()
-                        << ", " << Scalar::getType<CSRValueType>() << " )" )
+        LAMA_LOG_INFO( logger, "Ready csr2jds_kernel<" << getScalarType<JDSValueType>()
+                        << ", " << getScalarType<CSRValueType>() << " )" )
     }
 
     /* ------------------------------------------------------------------------------------------------------------------ */
@@ -708,7 +712,7 @@ namespace lama
         LAMA_REGION( "CUDA.JDS->CSR_values" )
 
         LAMA_LOG_INFO( logger,
-                        "get CSRValues<" << Scalar::getType<JDSValueType>() << ", " << Scalar::getType<CSRValueType>() << ">" << ", #rows = " << numRows )
+                        "get CSRValues<" << getScalarType<JDSValueType>() << ", " << getScalarType<CSRValueType>() << ">" << ", #rows = " << numRows )
 
         LAMA_CHECK_CUDA_ACCESS
 
@@ -835,7 +839,7 @@ namespace lama
         cudaStream_t stream = 0;
 
         LAMA_LOG_INFO( logger,
-                        "jacobi<" << Scalar::getType<ValueType>() << ">" << ", #rows = " << numRows << ", omega = " << omega )
+                        "jacobi<" << getScalarType<ValueType>() << ">" << ", #rows = " << numRows << ", omega = " << omega )
 
         LAMA_CHECK_CUDA_ACCESS
 
@@ -888,7 +892,7 @@ namespace lama
             }
         }
 
-        LAMA_LOG_INFO( logger, "Start jds_jacobi_kernel<" << Scalar::getType<ValueType>()
+        LAMA_LOG_INFO( logger, "Start jds_jacobi_kernel<" << getScalarType<ValueType>()
                         << ", useTexture = " << useTexture << ", useSharedMem = " << useSharedMem << ">" );
 
         if ( useTexture )
@@ -920,7 +924,7 @@ namespace lama
             }
         }
 
-        LAMA_CUDA_RT_CALL( cudaGetLastError(), "jds_jacobi_kernel<" << Scalar::getType<ValueType>()
+        LAMA_CUDA_RT_CALL( cudaGetLastError(), "jds_jacobi_kernel<" << getScalarType<ValueType>()
                         << ", " << useTexture << ", " << useSharedMem << "> failed" )
 
         if ( !syncToken )
@@ -1023,7 +1027,7 @@ namespace lama
     {
         LAMA_REGION( "CUDA.JDS.jacobiHalo" )
 
-        LAMA_LOG_INFO( logger, "jacobiHalo<" << Scalar::getType<ValueType>() << ">"
+        LAMA_LOG_INFO( logger, "jacobiHalo<" << getScalarType<ValueType>() << ">"
                         << ", #rows = " << numRows << ", omega = " << omega )
 
         if ( syncToken )
@@ -1052,7 +1056,7 @@ namespace lama
             }
         }
 
-        LAMA_LOG_INFO( logger, "Start jds_jacobi_halo_kernel<" << Scalar::getType<ValueType>()
+        LAMA_LOG_INFO( logger, "Start jds_jacobi_halo_kernel<" << getScalarType<ValueType>()
                         << ", useTexture = " << useTexture << ", useSharedMem = " << useSharedMem << ">" );
 
         if ( useTexture )
@@ -1662,7 +1666,7 @@ namespace lama
 
         LAMA_REGION( "CUDA.JDS.normalGEMV" )
 
-        LAMA_LOG_INFO( logger, "normalGEMV<" << Scalar::getType<ValueType>() << ">"
+        LAMA_LOG_INFO( logger, "normalGEMV<" << getScalarType<ValueType>() << ">"
                         << " result[ " << numRows << "] = " << alpha
                         << " * A( #jds_diags = " << ndlg << " ) * x + " << beta << " * y " )
 
@@ -1679,7 +1683,7 @@ namespace lama
 
         cudaStream_t stream = 0; // default stream if no SyncToken is available
 
-        LAMA_LOG_INFO( logger, "Start normal_gemv_kernel<" << Scalar::getType<ValueType>()
+        LAMA_LOG_INFO( logger, "Start normal_gemv_kernel<" << getScalarType<ValueType>()
                         << "> <<< blockSize = " << blockSize << ", stream = " << stream
                         << ", useTexture = " << useTexture << ", useSharedMem = " << useSharedMem << ">>>" );
 
@@ -2326,7 +2330,7 @@ namespace lama
 
         LAMA_REGION( "CUDA.JDS.normalGEVM" )
 
-        LAMA_LOG_INFO( logger, "normalGEVM<" << Scalar::getType<ValueType>() << ">"
+        LAMA_LOG_INFO( logger, "normalGEVM<" << getScalarType<ValueType>() << ">"
                         << " result[ " << numColumns << "] = " << alpha
                         << " * A( #jds_diags = " << ndlg << " ) * x + " << beta << " * y " )
 
@@ -2343,7 +2347,7 @@ namespace lama
 
         cudaStream_t stream = 0; // default stream if no SyncToken is available
 
-        LAMA_LOG_INFO( logger, "Start normal_gevm_kernel<" << Scalar::getType<ValueType>()
+        LAMA_LOG_INFO( logger, "Start normal_gevm_kernel<" << getScalarType<ValueType>()
                         << "> <<< blockSize = " << blockSize << ", stream = " << stream
                         << ", useTexture = " << useTexture << ", useSharedMem = " << useSharedMem << ">>>" );
 
@@ -2594,7 +2598,7 @@ namespace lama
     {
         LAMA_REGION( "CUDA.JDS.sparseGEMV" )
 
-        LAMA_LOG_INFO( logger, "sparseGEMV<" << Scalar::getType<ValueType>() << ">"
+        LAMA_LOG_INFO( logger, "sparseGEMV<" << getScalarType<ValueType>() << ">"
                         << ", #rows = " << numRows << ", #diags = " << ndlg )
 
         if ( ndlg == 0 )
@@ -2625,7 +2629,7 @@ namespace lama
             stream = cudaStreamSyncToken->getCUDAStream();
         }
 
-        LAMA_LOG_INFO( logger, "Start jdsgemvSparseKernel<" << Scalar::getType<ValueType>()
+        LAMA_LOG_INFO( logger, "Start jdsgemvSparseKernel<" << getScalarType<ValueType>()
                         << "> <<< blockSize = " << blockSize << ", stream = " << stream
                         << ", useTexture = " << useTexture << ", useSharedMem = " << useSharedMem << ">>>" );
 
@@ -2722,7 +2726,7 @@ namespace lama
     {
         LAMA_REGION( "CUDA.JDS.sparseGEVM" )
 
-        LAMA_LOG_INFO( logger, "sparseGEVM<" << Scalar::getType<ValueType>() << ">"
+        LAMA_LOG_INFO( logger, "sparseGEVM<" << getScalarType<ValueType>() << ">"
                         << ", #rows = " << numRows << ", #diags = " << ndlg )
 
         if ( ndlg == 0 )
@@ -2753,7 +2757,7 @@ namespace lama
             stream = cudaStreamSyncToken->getCUDAStream();
         }
 
-        LAMA_LOG_INFO( logger, "Start jdsgevMSparseKernel<" << Scalar::getType<ValueType>()
+        LAMA_LOG_INFO( logger, "Start jdsgevMSparseKernel<" << getScalarType<ValueType>()
                         << "> <<< blockSize = " << blockSize << ", stream = " << stream
                         << ", useTexture = " << useTexture << ", useSharedMem = " << useSharedMem << ">>>" );
 
@@ -2873,7 +2877,7 @@ namespace lama
 
     bool CUDAJDSUtils::registerInterface()
     {
-        LAMAInterface& interface = LAMAInterfaceRegistry::getRegistry().modifyInterface( Context::CUDA );
+        LAMAInterface& interface = LAMAInterfaceRegistry::getRegistry().modifyInterface( context::CUDA );
         setInterface( interface.JDSUtils );
         return true;
     }

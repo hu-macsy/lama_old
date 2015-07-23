@@ -39,8 +39,7 @@
 #include <lama/io/XDRFileStream.hpp>
 #include <lama/io/mmio.hpp>
 
-#include <lama/HostReadAccess.hpp>
-#include <lama/HostWriteAccess.hpp>
+#include <memory/memory.hpp>
 
 #include <lama/exception/Exception.hpp>
 
@@ -87,9 +86,9 @@ void StorageIO<ValueType>::writeCSRToFormattedFile(
 
     std::ofstream amgfile( fileName.c_str(), std::ios::out ); // open .amg
 
-    HostReadAccess<IndexType> ia( csrIA );
-    HostReadAccess<IndexType> ja( csrJA );
-    HostReadAccess<ValueType> data( csrValues );
+    ReadAccess<IndexType> ia( csrIA );
+    ReadAccess<IndexType> ja( csrJA );
+    ReadAccess<ValueType> data( csrValues );
 
     for( IndexType i = 0; i < numRows + 1; ++i )
     {
@@ -131,7 +130,7 @@ void StorageIO<ValueType>::readCSRFromFormattedFile(
         LAMA_THROWEXCEPTION( "Could not open file '" << fileName << "'." )
     }
 
-    HostWriteOnlyAccess<IndexType> ia( csrIA, numRows + 1 );
+    WriteOnlyAccess<IndexType> ia( csrIA, numRows + 1 );
 
     for( IndexType i = 0; i < numRows + 1; ++i )
     {
@@ -141,8 +140,8 @@ void StorageIO<ValueType>::readCSRFromFormattedFile(
 
     IndexType numValues = ia[numRows];
 
-    HostWriteOnlyAccess<IndexType> ja( csrJA, numValues );
-    HostWriteOnlyAccess<ValueType> data( csrValues, numValues );
+    WriteOnlyAccess<IndexType> ja( csrJA, numValues );
+    WriteOnlyAccess<ValueType> data( csrValues, numValues );
 
     for( IndexType j = 0; j < numValues; ++j )
     {
@@ -227,7 +226,7 @@ void StorageIO<ValueType>::readCSRFromBinaryFile(
 
     std::fstream inFile( fileName.c_str(), std::ios::in | std::ios::binary );
 
-    HostWriteOnlyAccess<IndexType> ia( csrIA, numRows + 1 );
+    WriteOnlyAccess<IndexType> ia( csrIA, numRows + 1 );
 
     // read offset array IA
 
@@ -235,8 +234,8 @@ void StorageIO<ValueType>::readCSRFromBinaryFile(
 
     IndexType numValues = ia[numRows];
 
-    HostWriteOnlyAccess<IndexType> ja( csrJA, numValues );
-    HostWriteOnlyAccess<ValueType> values( csrValues, numValues );
+    WriteOnlyAccess<IndexType> ja( csrJA, numValues );
+    WriteOnlyAccess<ValueType> values( csrValues, numValues );
 
     FileIO::readBinaryData<IndexType,IndexType, -1>( inFile, ja.get(), numValues );
 
@@ -345,9 +344,9 @@ void StorageIO<ValueType>::writeCSRToXDRFile(
     IndexType numValues = csrJA.size();
     IndexType numRows = csrIA.size() - 1;
 
-    HostReadAccess<IndexType> iaRead( csrIA );
-    HostReadAccess<IndexType> jaRead( csrJA );
-    HostReadAccess<ValueType> dataRead( csrValues );
+    ReadAccess<IndexType> iaRead( csrIA );
+    ReadAccess<IndexType> jaRead( csrJA );
+    ReadAccess<ValueType> dataRead( csrValues );
 
     XDRFileStream outFile( fileName.c_str(), std::ios::out );
 
@@ -457,7 +456,7 @@ void StorageIO<ValueType>::readCSRFromXDRFile(
 
     xdrFile.read( &indexDataTypeSizeIA );
 
-    HostWriteOnlyAccess<IndexType> m_ia( csrIA, numRows + 1 );
+    WriteOnlyAccess<IndexType> m_ia( csrIA, numRows + 1 );
 
     if( sizeof(IndexType) == indexDataTypeSizeIA )
     {
@@ -496,7 +495,7 @@ void StorageIO<ValueType>::readCSRFromXDRFile(
 
     xdrFile.read( &indexDataTypeSizeJA );
 
-    HostWriteOnlyAccess<IndexType> m_ja( csrJA, numValues );
+    WriteOnlyAccess<IndexType> m_ja( csrJA, numValues );
 
     if( sizeof(IndexType) == indexDataTypeSizeJA )
     {
@@ -533,7 +532,7 @@ void StorageIO<ValueType>::readCSRFromXDRFile(
 
     xdrFile.read( &dataTypeSize );
 
-    HostWriteOnlyAccess<ValueType> m_data( csrValues, numValues );
+    WriteOnlyAccess<ValueType> m_data( csrValues, numValues );
 
     if( dataTypeSize == TypeTraits<double>::size )
     {
@@ -582,9 +581,9 @@ void StorageIO<ValueType>::writeCSRToBinaryFile(
 {
     LAMA_REGION( "StorageIO.writeCSRToBinaryFile " )
 
-    HostReadAccess<IndexType> iaRead( csrIA );
-    HostReadAccess<IndexType> jaRead( csrJA );
-    HostReadAccess<ValueType> dataRead( csrValues );
+    ReadAccess<IndexType> iaRead( csrIA );
+    ReadAccess<IndexType> jaRead( csrJA );
+    ReadAccess<ValueType> dataRead( csrValues );
 
     IndexType numRows = csrIA.size() - 1;
     IndexType numValues = csrJA.size();
@@ -714,9 +713,9 @@ void StorageIO<ValueType>::writeCSRToMMFile(
         LAMA_THROWEXCEPTION( "SparseMatrix>::writeMatrixToMMFile: '" + fileName + "' could not be reopened." )
     }
 
-    HostReadAccess<IndexType> ia( csrIA );
-    HostReadAccess<IndexType> ja( csrJA );
-    HostReadAccess<ValueType> data( csrValues );
+    ReadAccess<IndexType> ia( csrIA );
+    ReadAccess<IndexType> ja( csrJA );
+    ReadAccess<ValueType> data( csrValues );
 
     for( IndexType ii = 0; ii < numRows; ++ii )
     {
@@ -829,7 +828,7 @@ void StorageIO<ValueType>::readCSRFromMMFile(
         LAMA_THROWEXCEPTION( "Could not reopen file '" << fileName << "'." )
     }
 
-    HostWriteOnlyAccess<IndexType> ia( csrIA, numRows + 1 );
+    WriteOnlyAccess<IndexType> ia( csrIA, numRows + 1 );
     // initialize ia;
 #pragma omp parallel for schedule(LAMA_OMP_SCHEDULE)
 
@@ -906,8 +905,8 @@ void StorageIO<ValueType>::readCSRFromMMFile(
     ifile.close();
     ifile.close();
     // Create csrJA, csrValues
-    HostWriteOnlyAccess<IndexType> ja( csrJA, numValues );
-    HostWriteOnlyAccess<ValueType> data( csrValues, numValues );
+    WriteOnlyAccess<IndexType> ja( csrJA, numValues );
+    WriteOnlyAccess<ValueType> data( csrValues, numValues );
 
     //create absolute Values of ia
 

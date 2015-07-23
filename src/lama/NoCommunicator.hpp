@@ -156,7 +156,7 @@ private    :
                     const T sendData[],
                     const CommunicationPlan& sendPlan ) const;
 
-    virtual ContextPtr getCommunicationContext( const _LAMAArray& array ) const;
+    virtual memory::ContextPtr getCommunicationContext( const memory::ContextArray& array ) const;
 };
 
 }

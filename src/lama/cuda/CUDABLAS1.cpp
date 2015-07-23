@@ -35,8 +35,8 @@
 #include <lama/cuda/CUDABLAS1.hpp>
 
 // others
-#include <lama/cuda/CUDAError.hpp>
-#include <lama/cuda/CUDAStreamSyncToken.hpp>
+#include <cudamem/CUDAError.hpp>
+#include <cudamem/CUDAStreamSyncToken.hpp>
 #include <lama/cuda/lama_cublas.hpp>
 #include <lama/LAMAInterface.hpp>
 #include <lama/LAMAInterfaceRegistry.hpp>
@@ -49,6 +49,10 @@
 
 // blas
 #include <boost/preprocessor.hpp>
+
+using namespace tasking;
+using namespace memory;
+using common::getScalarType;
 
 namespace lama
 {
@@ -104,7 +108,7 @@ void CUDABLAS1::scal( IndexType n, const ValueType alpha, ValueType* x_d, const 
         return;
     }
 
-    LAMA_LOG_DEBUG( logger, "scal<" << Scalar::getType<ValueType>() << "> of x[" << n << "], alpha = " << alpha )
+    LAMA_LOG_DEBUG( logger, "scal<" << getScalarType<ValueType>() << "> of x[" << n << "], alpha = " << alpha )
 
     LAMA_CHECK_CUDA_ACCESS
 
@@ -185,7 +189,7 @@ ValueType CUDABLAS1::nrm2( IndexType n, const ValueType* x_d, IndexType incX, Sy
         return 0.0;
     }
 
-    LAMA_LOG_DEBUG( logger, "nrm2<" << Scalar::getType<ValueType>() << "> of x[" << n << "]" )
+    LAMA_LOG_DEBUG( logger, "nrm2<" << getScalarType<ValueType>() << "> of x[" << n << "]" )
 
     LAMA_CHECK_CUDA_ACCESS
 
@@ -267,7 +271,7 @@ ValueType CUDABLAS1::asum( const IndexType n, const ValueType* x_d, const IndexT
         return 0.0;
     }
 
-    LAMA_LOG_DEBUG( logger, "asum<" << Scalar::getType<ValueType>() << "> of x[" << n << "]" )
+    LAMA_LOG_DEBUG( logger, "asum<" << getScalarType<ValueType>() << "> of x[" << n << "]" )
 
     LAMA_CHECK_CUDA_ACCESS
 
@@ -342,7 +346,7 @@ IndexType CUDABLAS1::iamax( const IndexType n, const ValueType* x_d, const Index
 {
     LAMA_REGION( "CUDA.BLAS1.iamax" )
 
-    LAMA_LOG_DEBUG( logger, "iamax<" << Scalar::getType<ValueType>() << "> of x[" << n << "]" )
+    LAMA_LOG_DEBUG( logger, "iamax<" << getScalarType<ValueType>() << "> of x[" << n << "]" )
 
     LAMA_CHECK_CUDA_ACCESS
 
@@ -420,7 +424,7 @@ void CUDABLAS1::swap(
         return;
     }
 
-    LAMA_LOG_DEBUG( logger, "swap<" << Scalar::getType<ValueType>() << "> of x, y with size " << n )
+    LAMA_LOG_DEBUG( logger, "swap<" << getScalarType<ValueType>() << "> of x, y with size " << n )
 
     LAMA_CHECK_CUDA_ACCESS
 
@@ -497,7 +501,7 @@ void CUDABLAS1::copy(
         return;
     }
 
-    LAMA_LOG_DEBUG( logger, "copy<" << Scalar::getType<ValueType>() << "> of x, y, n = " << n )
+    LAMA_LOG_DEBUG( logger, "copy<" << getScalarType<ValueType>() << "> of x, y, n = " << n )
 
     LAMA_CHECK_CUDA_ACCESS
 
@@ -587,7 +591,7 @@ void CUDABLAS1::axpy(
         return;
     }
 
-    LAMA_LOG_DEBUG( logger, "axpy<" << Scalar::getType<ValueType>() << "> of x, y, n = " << n << ", alpha = " << alpha )
+    LAMA_LOG_DEBUG( logger, "axpy<" << getScalarType<ValueType>() << "> of x, y, n = " << n << ", alpha = " << alpha )
 
     LAMA_CHECK_CUDA_ACCESS
 
@@ -673,7 +677,7 @@ ValueType CUDABLAS1::dot(
     LAMA_REGION( "CUDA.BLAS1.dot" )
 
     LAMA_LOG_DEBUG( logger,
-                    "dot<" << Scalar::getType<ValueType>() << ">, n = " << n << ", incX = " << incX << ", incY = " << incY << ", x_d = " << x_d << ", y_d = " << y_d )
+                    "dot<" << getScalarType<ValueType>() << ">, n = " << n << ", incX = " << incX << ", incY = " << incY << ", x_d = " << x_d << ", y_d = " << y_d )
 
     if( ( incX <= 0 ) || ( incY <= 0 ) )
     {
@@ -730,7 +734,7 @@ void CUDABLAS1::sum(
     }
 
     LAMA_LOG_DEBUG( logger,
-                    "sum<" << Scalar::getType<ValueType>() << ">, n = " << n << ", " << alpha << " * x + " << beta << " * y " )
+                    "sum<" << getScalarType<ValueType>() << ">, n = " << n << ", " << alpha << " * x + " << beta << " * y " )
 
     LAMA_CHECK_CUDA_ACCESS
 
@@ -786,7 +790,7 @@ void CUDABLAS1::setInterface( BLASInterface& BLAS )
 
 bool CUDABLAS1::registerInterface()
 {
-    LAMAInterface& interface = LAMAInterfaceRegistry::getRegistry().modifyInterface( Context::CUDA );
+    LAMAInterface& interface = LAMAInterfaceRegistry::getRegistry().modifyInterface( context::CUDA );
     setInterface( interface.BLAS );
     return true;
 }

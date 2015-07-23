@@ -41,7 +41,7 @@
 
 // others
 #include <lama/LAMATypes.hpp>
-#include <lama/LAMAArray.hpp>
+#include <memory/memory.hpp>
 
 // logging
 #include <logging/logging.hpp>

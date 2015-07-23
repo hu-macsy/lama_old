@@ -40,6 +40,8 @@ include_directories( ${common_INCLUDE_DIR}  )
 include_directories( ${logging_INCLUDE_DIR} )
 include_directories( ${tracing_INCLUDE_DIR} )
 include_directories( ${tasking_INCLUDE_DIR} )
+include_directories( ${memory_INCLUDE_DIR} )
+include_directories( ${cudamem_INCLUDE_DIR} )
 
 if ( METIS_FOUND )
     include_directories( ${METIS_INCLUDE_DIR} ) 
@@ -58,43 +60,27 @@ endif ( LAMA_BLAS_NAME STREQUAL "MKL" )
 
 ### Add classes and header files ###
 set ( CLASSES
-        BaseAccess
         CommunicationPlan
         Communicator
         CommunicatorFactory
         CommunicatorManager
         Complex
-        Context
-        ContextAccess
-        ContextFactory
-        ContextManager
-        DefaultHostContext
-        DefaultHostContextManager
         DenseVector
         Distributed
-        HostContext
-        LAMAArray
         LAMAArrayUtils
 #        LAMAArrayView
         LAMAInterface
         LAMAInterfaceRegistry
         NoCommunicator
         NoCommunicatorManager
-        ReadAccess
         Scalar
         Settings
         StorageIO
-        SyncToken
-        TaskSyncToken
         Vector
-        WriteAccess
     )
 
 set ( HEADERS
-        HostReadAccess
-        HostWriteAccess
         LAMATypes
-        NoSyncToken
         TypeTraits
         BLASInterface
         UtilsInterface
@@ -153,6 +139,9 @@ set ( ADDITIONAL_LINKER_FLAGS "-Wl,--whole-archive -L\${LAMA_ROOT}/lib -lama -ll
 
 set ( LAMA_LINK_LIBRARIES ${LAMA_LINK_LIBRARIES} ${tasking_LIBRARY} )
 set ( ADDITIONAL_LINKER_FLAGS "${ADDITIONAL_LINKER_FLAGS} -ltasking" )
+
+set ( LAMA_LINK_LIBRARIES ${LAMA_LINK_LIBRARIES} ${memory_LIBRARY} )
+set ( ADDITIONAL_LINKER_FLAGS "${ADDITIONAL_LINKER_FLAGS} -lmemory" )
 
 if ( LAMA_TRACE_LEVEL STREQUAL "ON" )
     set( LAMA_LINK_LIBRARIES ${LAMA_LINK_LIBRARIES} ${tracing_LIBRARY} )

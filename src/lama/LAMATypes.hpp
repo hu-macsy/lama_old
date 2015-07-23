@@ -35,6 +35,7 @@
 
 // include LAMA
 #include <lama/Complex.hpp>
+#include <memory/LAMAArray.hpp>
 
 #include <cstring>
 #include <limits>
@@ -60,7 +61,7 @@ namespace lama
  *  int is the good choice, might be long int or long long int for
  *  future versions that deal with very large matrices even on on processor.
  */
-typedef int IndexType;
+using memory::IndexType;
 
 /** Data type long double to have it as one word. Otherwise certain macros
  *  might fail to work correctly.

@@ -36,13 +36,16 @@
 #include <common/config.hpp>
 
 // others
-#include <lama/LAMAArray.hpp>
+#include <memory/memory.hpp>
+#include <lama/Scalar.hpp>
 
 // logging
 #include <logging/logging.hpp>
 
 namespace lama
 {
+
+using namespace memory;
 
 /** Class that contains some utility routines used at several places. */
 
@@ -66,7 +69,7 @@ public:
      *  \endcode
      *  Size of target array will be the same as the source array.
      */
-    static void assign( _LAMAArray& target, const _LAMAArray& source, ContextPtr context = ContextPtr() );
+    static void assign( ContextArray& target, const ContextArray& source, ContextPtr context = ContextPtr() );
 
     template<typename ValueType1,typename ValueType2>
     static void assignImpl( LAMAArray<ValueType1>& target, const LAMAArray<ValueType2>& source, ContextPtr context );
@@ -81,7 +84,7 @@ public:
     static void assignScalar( LAMAArray<ValueType1>& target, const Scalar& value, ContextPtr context )
                     __attribute__( ( noinline ) );
 
-    static void assignScalar( _LAMAArray& target, const Scalar& value, ContextPtr context );
+    static void assignScalar( ContextArray& target, const Scalar& value, ContextPtr context );
 
     /** This method sets a single value in a LAMA array.
      *
@@ -111,7 +114,7 @@ public:
 private:
 
     template<typename ValueType>
-    static void assignImpl1( LAMAArray<ValueType>& target, const _LAMAArray& source, ContextPtr context );
+    static void assignImpl1( LAMAArray<ValueType>& target, const ContextArray& source, ContextPtr context );
 
     LAMA_LOG_DECL_STATIC_LOGGER( logger )};
 

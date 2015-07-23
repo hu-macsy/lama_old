@@ -36,7 +36,6 @@
 #include <test/TestMacros.hpp>
 
 #include <lama/LAMATypes.hpp>
-#include <lama/HostWriteAccess.hpp>
 
 #include <lama/CommunicatorFactory.hpp>
 #include <lama/Communicator.hpp>
@@ -49,6 +48,8 @@
 
 using namespace boost;
 using namespace lama;
+using namespace memory;
+using namespace tasking;
 
 LAMA_LOG_DEF_LOGGER( logger, "Test.CommunicatorTest" )
 
@@ -258,7 +259,7 @@ for ( PartitionId p = 0; p < nProvides; ++p )
 
 BOOST_CHECK_EQUAL( noReqIndexes, providesPlan.totalQuantity() );
 
-const HostReadAccess<IndexType> providesIndexes( haloRef.getProvidesIndexes() );
+const ReadAccess<IndexType> providesIndexes( haloRef.getProvidesIndexes() );
 
 for ( PartitionId p = 0; p < providesPlan.size(); ++p )
 {
@@ -308,7 +309,7 @@ void CommunicatorTest::updateHaloTest()
     LAMA_LOG_INFO( logger, "halo is now available: " << halo );
     LAMAArray<ValueType> localData;
     {
-        HostWriteOnlyAccess<ValueType> localDataAccess( localData, distribution.getLocalSize() );
+        WriteOnlyAccess<ValueType> localDataAccess( localData, distribution.getLocalSize() );
 
         for ( IndexType i = 0; i < localData.size(); ++i )
         {
@@ -320,7 +321,7 @@ void CommunicatorTest::updateHaloTest()
     comm->updateHalo( haloData, localData, halo );
     BOOST_CHECK_EQUAL( static_cast<IndexType>( requiredIndexes.size() ), haloData.size() );
     {
-        HostReadAccess<ValueType> haloDataAccess( haloData );
+        ReadAccess<ValueType> haloDataAccess( haloData );
 
         for ( IndexType i = 0; i < static_cast<IndexType>( requiredIndexes.size() ); ++i )
         {
@@ -344,7 +345,7 @@ void CommunicatorTest::updateHaloTest()
     comm->updateHalo( haloData, localData, halo );
     BOOST_CHECK_EQUAL( static_cast<IndexType>( requiredIndexes.size() ), haloData.size() );
     {
-        HostReadAccess<ValueType> haloDataAccess( haloData );
+        ReadAccess<ValueType> haloDataAccess( haloData );
 
         for ( IndexType i = 0; i < static_cast<IndexType>( requiredIndexes.size() ); ++i )
         {
@@ -373,14 +374,14 @@ void CommunicatorTest::shiftTest()
         {
             comm->shiftArray( recvBuffer, sendBuffer, 1 );
             {
-                HostWriteAccess<ValueType> recvBufferAccess( recvBuffer );
+                WriteAccess<ValueType> recvBufferAccess( recvBuffer );
                 recvBufferAccess[rank] = static_cast<ValueType>( rank );
             }
             sendBuffer.swap( recvBuffer );
         }
 
         {
-            HostReadAccess<ValueType> recvBufferAccess( recvBuffer );
+            ReadAccess<ValueType> recvBufferAccess( recvBuffer );
 
             for ( IndexType i = 0; i < size; ++i )
             {
@@ -398,7 +399,7 @@ LAMA_COMMON_TEST_CASE_TM( CommunicatorTest, ValueType, shiftASyncTest )
     LAMAArray<ValueType> sendBuffer( 2, static_cast<ValueType>( rank ) );
     LAMAArray<ValueType> recvBuffer;
     {
-        HostWriteAccess<ValueType> sbuffer( sendBuffer );
+        WriteAccess<ValueType> sbuffer( sendBuffer );
         sbuffer[ 0 ] = static_cast<ValueType>( rank );
         sbuffer[ 1 ] = static_cast<ValueType>( comm->getNeighbor( 1 ) );
     }
@@ -410,15 +411,15 @@ LAMA_COMMON_TEST_CASE_TM( CommunicatorTest, ValueType, shiftASyncTest )
     LAMA_LOG_INFO( logger, "async shift without token, should have been synchronized here" );
     BOOST_CHECK_EQUAL( 2, recvBuffer.size() );
     {
-        HostReadAccess<ValueType> rbuffer( recvBuffer );
+        ReadAccess<ValueType> rbuffer( recvBuffer );
     }
     // dir = 0: should be like assignment
     delete comm->shiftAsync( recvBuffer, sendBuffer, 0 );
     LAMA_LOG_INFO( logger, "async shift dir = 0, self assing" );
     BOOST_CHECK_EQUAL( 2, recvBuffer.size() );
     {
-        HostReadAccess<ValueType> sbuffer( sendBuffer );
-        HostReadAccess<ValueType> rbuffer( recvBuffer );
+        ReadAccess<ValueType> sbuffer( sendBuffer );
+        ReadAccess<ValueType> rbuffer( recvBuffer );
         BOOST_CHECK_EQUAL( sbuffer[0], rbuffer[ 0 ] );
         BOOST_CHECK_EQUAL( sbuffer[1], rbuffer[ 1 ] );
     }
@@ -431,7 +432,7 @@ LAMA_COMMON_TEST_CASE_TM( CommunicatorTest, ValueType, shiftASyncTest )
     std::auto_ptr<SyncToken> token( comm->shiftAsync( recvBuffer, sendBuffer, 1 ) );
     // read access on send buffer should be possible
     {
-        HostReadAccess<ValueType> sbuffer( sendBuffer );
+        ReadAccess<ValueType> sbuffer( sendBuffer );
         ValueType value0 = static_cast<ValueType>( rank );
         BOOST_CHECK_EQUAL( value0, sbuffer[ 0 ] );
     }
@@ -440,24 +441,24 @@ LAMA_COMMON_TEST_CASE_TM( CommunicatorTest, ValueType, shiftASyncTest )
     if ( !token->isSynchronized() )
     {
         // write access on send buffer should be locked
-        LAMA_CHECK_THROW( HostWriteAccess<ValueType> sbuffer( sendBuffer ), Exception );
+        LAMA_CHECK_THROW( WriteAccess<ValueType> sbuffer( sendBuffer ), Exception );
     }
 
     if ( !token->isSynchronized() )
     {
         // read access on recv buffer should be locked if communication is not finished yet
-        LAMA_CHECK_THROW( HostReadAccess<ValueType> recvBufferAccess( recvBuffer ), Exception );
+        LAMA_CHECK_THROW( ReadAccess<ValueType> recvBufferAccess( recvBuffer ), Exception );
     }
 
     token->wait();
     token->wait(); // second wait should not harm
     {
-        HostWriteAccess<ValueType> sendBufferWrite( sendBuffer );
+        WriteAccess<ValueType> sendBufferWrite( sendBuffer );
         sendBufferWrite.resize( 0 );
     }
     BOOST_CHECK_EQUAL( 2, recvBuffer.size() );
     {
-        HostReadAccess<ValueType> rbuffer( recvBuffer );
+        ReadAccess<ValueType> rbuffer( recvBuffer );
         ValueType value0 = static_cast<ValueType>( comm->getNeighbor( -1 ) );
         ValueType value1 = static_cast<ValueType>( rank );
         BOOST_CHECK_EQUAL( value0, rbuffer[ 0 ] );

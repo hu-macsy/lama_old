@@ -43,11 +43,14 @@
 #include <cublas_v2.h>
 #include <cuda_runtime_api.h>
 
+namespace tasking
+{
+    class SyncToken;   // forward declaration
+}
+
 namespace lama
 {
 
-class SyncToken;
-// forward declaration
 
 class COMMON_DLL_IMPORTEXPORT CUDABLAS1
 {
@@ -79,25 +82,25 @@ private:
         const ValueType alpha,
         ValueType* x,
         const IndexType incX,
-        SyncToken* syncToken );
+        tasking::SyncToken* syncToken );
 
     /**
      * This function is the CUDA implementation of lama::BLASInterface::nrm2
      */
     template<typename ValueType>
-    static ValueType nrm2( const IndexType n, const ValueType* x, const IndexType incX, SyncToken* syncToken );
+    static ValueType nrm2( const IndexType n, const ValueType* x, const IndexType incX, tasking::SyncToken* syncToken );
 
     /**
      * This function is the CUDA implementation of lama::BLASInterface::asum
      */
     template<typename ValueType>
-    static ValueType asum( const IndexType n, const ValueType* x, const IndexType incX, SyncToken* syncToken );
+    static ValueType asum( const IndexType n, const ValueType* x, const IndexType incX, tasking::SyncToken* syncToken );
 
     /**
      * This function is the CUDA implementation of lama::BLASInterface::iamax
      */
     template<typename ValueType>
-    static IndexType iamax( const IndexType n, const ValueType* x, const IndexType incX, SyncToken* syncToken );
+    static IndexType iamax( const IndexType n, const ValueType* x, const IndexType incX, tasking::SyncToken* syncToken );
 
     /**
      * This function is the CUDA implementation of lama::BLASInterface::swap
@@ -109,7 +112,7 @@ private:
         const IndexType incY,
         ValueType* x,
         const IndexType incX,
-        SyncToken* syncToken );
+        tasking::SyncToken* syncToken );
 
     /**
      * This function is the CUDA implementation of lama::BLASInterface::copy
@@ -121,7 +124,7 @@ private:
         const IndexType incX,
         ValueType* y,
         const IndexType incY,
-        SyncToken* syncToken );
+        tasking::SyncToken* syncToken );
 
     /**
      * This function is the CUDA implementation of lama::BLASInterface::axpy
@@ -134,7 +137,7 @@ private:
         const IndexType incX,
         ValueType* y,
         const IndexType incY,
-        SyncToken* syncToken );
+        tasking::SyncToken* syncToken );
 
     /**
      * This function is the CUDA implementation of lama::BLASInterface::dot
@@ -146,7 +149,7 @@ private:
         const IndexType incX,
         const ValueType* y,
         const IndexType incY,
-        SyncToken* syncToken );
+        tasking::SyncToken* syncToken );
 
     /**
      * This function is the CUDA implementation of lama::BLASInterface::sum
@@ -159,7 +162,7 @@ private:
         ValueType beta,
         const ValueType* y,
         ValueType* z,
-        SyncToken* syncToken );
+        tasking::SyncToken* syncToken );
 
 private:
 

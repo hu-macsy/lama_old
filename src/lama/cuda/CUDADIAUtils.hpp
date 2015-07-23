@@ -28,10 +28,8 @@
  * @brief Implementation of DIA utilities with CUDA
  * @author Thomas Brandes
  * @date 05.07.2012
- * @since 1.0.0
  */
-#ifndef LAMA_CUDA_DIA_UTILS_HPP_
-#define LAMA_CUDA_DIA_UTILS_HPP_
+#pragma once
 
 // for dll_import
 #include <common/config.hpp>
@@ -41,6 +39,11 @@
 
 // logging
 #include <logging/logging.hpp>
+
+namespace tasking
+{
+    class SyncToken;
+}
 
 namespace lama
 {
@@ -67,7 +70,7 @@ public:
         const IndexType numDiagonals,
         const IndexType diaOffsets[],
         const ValueType diaValues[],
-        class SyncToken* syncToken );
+        tasking::SyncToken* syncToken );
 
     /** Implementation for DIAUtilsInterface::Mult:normalGEVM with CUDA on GPUs */
 
@@ -83,7 +86,7 @@ public:
         const IndexType numDiagonals,
         const IndexType diaOffsets[],
         const ValueType diaValues[],
-        class SyncToken* syncToken );
+        tasking::SyncToken* syncToken );
 
     /** Routine that registers all routines of this class at the LAMA interface. */
 
@@ -100,7 +103,4 @@ private:
 
 /* --------------------------------------------------------------------------- */
 
-}
-// namespace lama
-
-#endif //  LAMA_CUDA_DIA_UTILS_HPP_
+}  // namespace 

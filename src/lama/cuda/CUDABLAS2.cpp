@@ -37,12 +37,16 @@
 // others
 #include <lama/LAMAInterface.hpp>
 #include <lama/LAMAInterfaceRegistry.hpp>
-#include <lama/cuda/CUDAError.hpp>
-#include <lama/cuda/CUDAStreamSyncToken.hpp>
+#include <cudamem/CUDAError.hpp>
+#include <cudamem/CUDAStreamSyncToken.hpp>
 #include <lama/cuda/lama_cublas.hpp>
 
 // macros
 #include <lama/macros/unused.hpp>
+
+using namespace tasking;
+using namespace memory;
+using common::getScalarType;
 
 namespace lama
 {
@@ -215,7 +219,7 @@ void CUDABLAS2::gemv(
                       "CUDABLAS2::gemv set cublas kernel stream = " << stream );
 
     LAMA_LOG_INFO( logger,
-                   "gemv<" << Scalar::getType<ValueType>() << "> with cuBLAS: m = " << order_m << " x " << order_n )
+                   "gemv<" << getScalarType<ValueType>() << "> with cuBLAS: m = " << order_m << " x " << order_n )
 
     cublasWrapperGemv( trans_char, order_m, order_n, alpha, A, lda, x, incx, beta, y, incy );
 
@@ -253,7 +257,7 @@ void CUDABLAS2::setInterface( BLASInterface& BLAS )
 
 bool CUDABLAS2::registerInterface()
 {
-    LAMAInterface& interface = LAMAInterfaceRegistry::getRegistry().modifyInterface( Context::CUDA );
+    LAMAInterface& interface = LAMAInterfaceRegistry::getRegistry().modifyInterface( context::CUDA );
     setInterface( interface.BLAS );
     return true;
 }

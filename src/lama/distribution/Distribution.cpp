@@ -34,11 +34,11 @@
 // hpp
 #include <lama/distribution/Distribution.hpp>
 
-// others
-#include <lama/CommunicatorFactory.hpp>
-
 // assert
 #include <lama/exception/LAMAAssert.hpp>
+#include <lama/CommunicatorFactory.hpp>
+#include <lama/Scalar.hpp>
+#include <memory/memory.hpp>
 
 // tracing
 #include <tracing/tracing.hpp>
@@ -46,6 +46,8 @@
 // boost
 #include <boost/scoped_array.hpp>
 #include <boost/preprocessor.hpp>
+
+using namespace memory;
 
 namespace lama
 {

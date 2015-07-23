@@ -44,13 +44,12 @@
 #include <lama/distribution/Halo.hpp>
 
 #include <lama/LAMAInterface.hpp>
-#include <lama/ContextAccess.hpp>
 #include <lama/StorageIO.hpp>
 
 #include <lama/openmp/OpenMPUtils.hpp>
 #include <lama/openmp/OpenMPCSRUtils.hpp>
 
-#include <lama/TaskSyncToken.hpp>
+#include <tasking/TaskSyncToken.hpp>
 
 // tracing
 #include <tracing/tracing.hpp>
@@ -61,6 +60,9 @@
 #include <boost/assign/list_of.hpp>
 #include <boost/unordered_map.hpp>
 
+using tasking::SyncToken;
+using tasking::TaskSyncToken;
+
 namespace lama
 {
 
@@ -69,7 +71,7 @@ LAMA_LOG_DEF_LOGGER( _MatrixStorage::logger, "MatrixStorage" )
 _MatrixStorage::_MatrixStorage()
 
     : mNumRows( 0 ), mNumColumns( 0 ), mRowIndexes(), mCompressThreshold( 0.0f ), mDiagonalProperty(
-          false ), mContext( ContextFactory::getContext( Context::Host ) )
+          false ), mContext( Context::getContextPtr( context::Host ) )
 {
     LAMA_LOG_DEBUG( logger, "constructed MatrixStorage()" )
 }
@@ -209,7 +211,7 @@ IndexType _MatrixStorage::getNumValues() const
 
     LAMAArray<IndexType> sizes;
     buildCSRSizes( sizes );
-    HostReadAccess<IndexType> csrSizes( sizes );
+    ReadAccess<IndexType> csrSizes( sizes );
     IndexType numValues = OpenMPUtils::sum( csrSizes.get(), mNumRows );
     return numValues;
 }
@@ -251,7 +253,7 @@ void _MatrixStorage::offsets2sizes( LAMAArray<IndexType>& offsets )
 {
     const IndexType n = offsets.size() - 1;
 
-    HostWriteAccess<IndexType> writeSizes( offsets );
+    WriteAccess<IndexType> writeSizes( offsets );
 
     // the following loop  is not parallel
 
@@ -276,8 +278,8 @@ void _MatrixStorage::offsets2sizes( LAMAArray<IndexType>& sizes, const LAMAArray
 
     const IndexType n = offsets.size() - 1;
 
-    HostReadAccess<IndexType> readOffsets( offsets );
-    HostWriteAccess<IndexType> writeSizes( sizes );
+    ReadAccess<IndexType> readOffsets( offsets );
+    WriteAccess<IndexType> writeSizes( sizes );
 
     writeSizes.clear(); // old values are not used
     writeSizes.resize( n );
@@ -294,7 +296,7 @@ IndexType _MatrixStorage::sizes2offsets( LAMAArray<IndexType>& sizes )
 {
     IndexType n = sizes.size();
 
-    HostWriteAccess<IndexType> writeOffsets( sizes );
+    WriteAccess<IndexType> writeOffsets( sizes );
 
     writeOffsets.resize( n + 1 );
 
@@ -348,9 +350,9 @@ MatrixStorage<ValueType>::~MatrixStorage()
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-Scalar::ScalarType MatrixStorage<ValueType>::getValueType() const
+common::ScalarType MatrixStorage<ValueType>::getValueType() const
 {
-    return Scalar::getType<ValueType>();
+    return common::getScalarType<ValueType>();
 }
 
 /* --------------------------------------------------------------------------- */
@@ -375,7 +377,7 @@ void MatrixStorage<ValueType>::convertCSR2CSC(
     const LAMAArray<ValueType>& rowValues,
     const ContextPtr loc )
 {
-    // ContextPtr loc = ContextFactory::getContext( Context::Host );
+    // ContextPtr loc = Context::getContextPtr( context::Host );
 
     const IndexType numRows = rowIA.size() - 1;
     const IndexType numValues = rowJA.size();
@@ -416,7 +418,7 @@ void MatrixStorage<ValueType>::buildCSCData(
 
     buildCSRData( rowIA, rowJA, rowValues );
 
-    ContextPtr loc = ContextFactory::getContext( Context::Host );
+    ContextPtr loc = Context::getContextPtr( context::Host );
 
     convertCSR2CSC( colIA, colJA, colValues, mNumColumns, rowIA, rowJA, rowValues, loc );
 }
@@ -451,7 +453,7 @@ void MatrixStorage<ValueType>::assign( const _MatrixStorage& other )
     // If the size of other value type is smaller that this value type, it might be better
     // to use the other value type.
 
-    if( other.getValueType() == Scalar::FLOAT && getValueType() == Scalar::DOUBLE )
+    if ( other.getValueType() == common::scalar::FLOAT && getValueType() == common::scalar::DOUBLE )
     {
         other.copyTo( *this );
         return;
@@ -548,9 +550,9 @@ void MatrixStorage<ValueType>::joinRows(
     LAMA_LOG_INFO( logger, "join " << numLocalRows << " rows " )
 
     {
-        HostWriteOnlyAccess<IndexType> sizes( outSizes, numLocalRows );
-        HostReadAccess<IndexType> rowSizes( inSizes );
-        HostReadAccess<IndexType> indexes( rowIndexes );
+        WriteOnlyAccess<IndexType> sizes( outSizes, numLocalRows );
+        ReadAccess<IndexType> rowSizes( inSizes );
+        ReadAccess<IndexType> indexes( rowIndexes );
 
         // initialize counters (Attention: sizes.size() != rowSizes.size())
 
@@ -570,19 +572,19 @@ void MatrixStorage<ValueType>::joinRows(
 
     LAMAArray<IndexType> IA;
     {
-        HostWriteOnlyAccess<IndexType> offsets( IA, numLocalRows + 1 );
-        HostReadAccess<IndexType> sizes( outSizes );
+        WriteOnlyAccess<IndexType> offsets( IA, numLocalRows + 1 );
+        ReadAccess<IndexType> sizes( outSizes );
         OpenMPUtils::set( offsets.get(), sizes.get(), numLocalRows );
         OpenMPCSRUtils::sizes2offsets( offsets.get(), numLocalRows );
     }
 
-    HostWriteAccess<IndexType> tmpIA( IA );
-    HostWriteAccess<IndexType> ja( outJA );
-    HostWriteAccess<ValueType> values( outValues );
-    HostReadAccess<IndexType> rowSizes( inSizes );
-    HostReadAccess<IndexType> rowJA( inJA );
-    HostReadAccess<ValueType> rowValues( inValues );
-    HostReadAccess<IndexType> indexes( rowIndexes );
+    WriteAccess<IndexType> tmpIA( IA );
+    WriteAccess<IndexType> ja( outJA );
+    WriteAccess<ValueType> values( outValues );
+    ReadAccess<IndexType> rowSizes( inSizes );
+    ReadAccess<IndexType> rowJA( inJA );
+    ReadAccess<ValueType> rowValues( inValues );
+    ReadAccess<IndexType> indexes( rowIndexes );
 
     // resize data arrays
     ja.resize( rowJA.size() );
@@ -646,7 +648,7 @@ void MatrixStorage<ValueType>::joinHalo(
     // map back the local indexes to global column indexes
     {
         IndexType numValues = localJA.size();
-        HostWriteAccess<IndexType> ja( localJA );
+        WriteAccess<IndexType> ja( localJA );
 
         for( IndexType i = 0; i < numValues; i++ )
         {
@@ -667,8 +669,8 @@ void MatrixStorage<ValueType>::joinHalo(
 
     {
         IndexType numValues = haloJA.size();
-        HostWriteAccess<IndexType> ja( haloJA );
-        HostReadAccess<IndexType> halo2global( halo.getRequiredIndexes() );
+        WriteAccess<IndexType> ja( haloJA );
+        ReadAccess<IndexType> halo2global( halo.getRequiredIndexes() );
 
         for( IndexType i = 0; i < numValues; i++ )
         {
@@ -1377,7 +1379,7 @@ void MatrixStorage<ValueType>::setRawDenseData(
 
     LAMA_LOG_INFO( logger, "set dense storage " << numRows << " x " << numColumns )
 
-    LAMAArrayRef<OtherValueType> data( values, numRows * numColumns );
+    LAMAArrayRef<OtherValueType> data( numRows * numColumns, values );
 
     LAMA_LOG_INFO( logger, "use LAMA array ref: " << data << ", size = " << data.size() )
 
@@ -1407,7 +1409,7 @@ void MatrixStorage<ValueType>::setDenseData(
     {
 
 #define LAMA_DENSE_ASSIGN( z, I, _ )                                                                 \
-case Scalar::SCALAR_ARITHMETIC_TYPE##I :                                                         \
+case common::scalar::SCALAR_ARITHMETIC_TYPE##I :                                                  \
 {                                                                                                \
     LAMAArray<ARITHMETIC_TYPE##I>& typedValues =                                                 \
             dynamic_cast<LAMAArray<ARITHMETIC_TYPE##I>&>( mValues );                                 \
@@ -1531,11 +1533,11 @@ LAMAArray<float> csrValues;
 buildCSRData( csrIA, csrJA, csrValues );
 
 LAMAArray<IndexType> rowSizes;
-HostWriteOnlyAccess<IndexType> sizes( rowSizes, mNumRows );
-HostReadAccess<IndexType> ia( csrIA );
+WriteOnlyAccess<IndexType> sizes( rowSizes, mNumRows );
+ReadAccess<IndexType> ia( csrIA );
 OpenMPCSRUtils::offsets2sizes( sizes.get(), ia.get(), mNumRows );
 
-HostReadAccess<IndexType> ja( csrJA );
+ReadAccess<IndexType> ja( csrJA );
 
 IndexType offset = 0; // runs through JA
 IndexType newOffset = 0; // runs through adjJA
