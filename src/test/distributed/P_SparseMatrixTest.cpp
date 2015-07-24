@@ -44,8 +44,6 @@
 
 #include <lama/DenseVector.hpp>
 
-#include <lama/CommunicatorFactory.hpp>
-
 #include <lama/expression/MatrixExpressions.hpp>
 #include <lama/expression/MatrixVectorExpressions.hpp>
 
@@ -70,7 +68,7 @@ LAMA_LOG_DEF_TEMPLATE_LOGGER( template<typename MatrixType>, P_SparseMatrixTest<
 template<typename MatrixType>
 P_SparseMatrixTest<MatrixType>::P_SparseMatrixTest()
 {
-    comm = CommunicatorFactory::get( );
+    comm = Communicator::get( );
 }
 
 template<typename MatrixType>
@@ -86,7 +84,7 @@ LAMA_COMMON_TEST_CASE_TEMPLATE( P_SparseMatrixTest, MatrixType, cTorTest )
     LAMA_LOG_INFO( logger, "cTorTest" );
     typedef typename MatrixType::MatrixValueType ValueType;
     const IndexType n = 4;
-    CommunicatorPtr comm = CommunicatorFactory::get( "MPI" );
+    CommunicatorPtr comm = Communicator::get( "MPI" );
     DistributionPtr dist( new BlockDistribution( n, comm ) );
     CSRSparseMatrix<double> matrix( dist, dist );
     BOOST_CHECK_EQUAL( matrix.getNumRows() , n );

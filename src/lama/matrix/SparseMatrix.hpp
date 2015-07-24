@@ -528,7 +528,7 @@ public:
 
     /* Implementation of pure method Matrix::create with covariant return type */
 
-    virtual SparseMatrix<ValueType>* create() const;
+    virtual SparseMatrix<ValueType>* clone() const;
 
     /* Implementation of pure method Matrix::copy with covariant return type */
 

@@ -28,10 +28,9 @@
  * @brief DenseVector.hpp
  * @author Jiri Kraus
  * @date 22.02.2011
- * @since 1.0.0
  */
-#ifndef LAMA_DENSE_VECTOR_HPP_
-#define LAMA_DENSE_VECTOR_HPP_
+
+#pragma once
 
 // for dll_import
 #include <common/config.hpp>
@@ -67,7 +66,11 @@ namespace lama
  * @tparam ValueType the value type for the vector values.
  */
 template<typename ValueType>
-class COMMON_DLL_IMPORTEXPORT DenseVector: public Vector
+class COMMON_DLL_IMPORTEXPORT DenseVector: 
+
+    public Vector,
+
+    public Vector::Register<DenseVector<ValueType> >    // register at factory
 {
 public:
 
@@ -248,7 +251,7 @@ public:
      */
     void readFromFile( const std::string& filename );
 
-    virtual memory::ScalarType getValueType() const;
+    virtual common::ScalarType getValueType() const;
 
     /**
      * Implementation of pure method.
@@ -261,15 +264,15 @@ public:
     virtual void setValues( const ContextArray& values );
 
     /**
-     * Implementation of Vector::create with covariant return type.
+     * Implementation of Vector::clone with covariant return type.
      */
 
-    virtual DenseVector* create() const;
+    virtual DenseVector* clone() const;
 
     /**
-     * Implementation of Vector::create with covariant return type.
+     * Implementation of Vector::clone with covariant return type.
      */
-    virtual DenseVector* create( DistributionPtr distribution ) const;
+    virtual DenseVector* clone( DistributionPtr distribution ) const;
 
     /**
      * Implementation of Vector::copy with covariant return type.
@@ -453,13 +456,15 @@ private    :
 
     mutable LAMAArray<ValueType> mHaloValues;//!< my halo values of vector
 
+public:
+
     // static methods, variables to register create routine in Vector factory of base class.
 
-    static DenseVector<ValueType>* createVector();
+    static Vector* create();
 
-    static bool registerCreator();//!< used in static initialization for registration
+    // key for factory 
 
-    static bool initialized;//!< static initialization used for registration of create in Vector factory
+    static std::pair<VectorKind, common::ScalarType> createValue();
 };
 
 /* ------------------------------------------------------------------------- */
@@ -482,5 +487,3 @@ DenseVector<ValueType>::DenseVector( const IndexType size, const OtherValueType*
 }
 
 }
-
-#endif // LAMA_DENSE_VECTOR_HPP_

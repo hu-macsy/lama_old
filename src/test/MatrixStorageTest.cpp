@@ -28,12 +28,9 @@
  * @brief Contains the implementation of the class MatrixStorageTest
  * @author Thomas Brandes
  * @date 02.03.2012
- * @since 1.0.0
  */
 
 #include <test/MatrixStorageTest.hpp>
-
-#include <lama/CommunicatorFactory.hpp>
 
 #include <lama/storage/DenseStorage.hpp>
 #include <lama/storage/CSRStorage.hpp>
@@ -1027,7 +1024,7 @@ LAMA_LOG_INFO( logger, "jacobiHaloTest: matrix = " << mMatrixStorage
 
 setDenseHalo( mMatrixStorage );
 
-boost::shared_ptr<MatrixStorage<ValueType> > local( mMatrixStorage.create() );
+boost::shared_ptr<MatrixStorage<ValueType> > local( mMatrixStorage.clone() );
 
 setDenseLocal( *local );
 
@@ -1093,10 +1090,10 @@ LAMA_LOG_INFO( logger, "inverseTest for " << mMatrixStorage.getTypeName() )
 setDenseRandom( mMatrixStorage );
 
 // create storage of same type for the inverse
-boost::shared_ptr<MatrixStorage<ValueType> > inverse( mMatrixStorage.create() );
+boost::shared_ptr<MatrixStorage<ValueType> > inverse( mMatrixStorage.clone() );
 
 // create storage of same type for compare matrix
-boost::shared_ptr<MatrixStorage<ValueType> > compare( mMatrixStorage.create() );
+boost::shared_ptr<MatrixStorage<ValueType> > compare( mMatrixStorage.clone() );
 
 inverse->invert( mMatrixStorage );
 setDenseRandomInverse( *compare );

@@ -94,7 +94,7 @@ void InverseSolver::initialize( const Matrix& coefficients )
 
     LAMA_LOG_INFO( logger, "Initializing with " << coefficients )
 
-    getRuntime().mInverse = MatrixPtr( coefficients.create() );
+    getRuntime().mInverse = MatrixPtr( coefficients.clone() );
 
     getRuntime().mInverse->invert( coefficients );
 

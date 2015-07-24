@@ -117,7 +117,7 @@ void DefaultJacobi::initialize( const Matrix& coefficients )
     runtime.mDiagonalTimesLU->scale( *runtime.mDiagonalTimesRhs );
 
     LAMA_LOG_DEBUG( logger, "Create diagonal matrix" )
-    runtime.mDiagonalInverted.reset( coefficients.create() ); // zero matrix with same storage type
+    runtime.mDiagonalInverted.reset( coefficients.clone() ); // zero matrix with same storage type
     runtime.mDiagonalInverted->setIdentity( coefficients.getDistributionPtr() );
     LAMA_LOG_DEBUG( logger, "identity diagonal matrix = " << *runtime.mDiagonalInverted )
     runtime.mDiagonalInverted->inheritAttributes( coefficients );
@@ -127,7 +127,7 @@ void DefaultJacobi::initialize( const Matrix& coefficients )
 
     runtime.mDiagonalInverted->setDiagonal( *runtime.mDiagonalTimesRhs );
 
-    runtime.mOldSolution.reset( runtime.mDiagonalTimesRhs->create() );
+    runtime.mOldSolution.reset( runtime.mDiagonalTimesRhs->clone() );
     runtime.mOldSolution->setContext( runtime.mDiagonalTimesRhs->getContext() );
 
     OmegaSolver::initialize( coefficients );
@@ -154,7 +154,7 @@ void DefaultJacobi::solveInit( Vector& solution, const Vector& rhs )
     //Check if oldSolution already exists, if not create copy of solution
     if( !runtime.mOldSolution.get() )
     {
-        runtime.mOldSolution.reset( solution.create() );
+        runtime.mOldSolution.reset( solution.clone() );
     }
 
     runtime.mProxyOldSolution = runtime.mOldSolution.get();

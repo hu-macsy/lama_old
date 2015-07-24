@@ -28,10 +28,8 @@
  * @brief Base and interface class for communicators used in LAMA
  * @author Jiri Kraus, Thomas Brandes
  * @date 23.02.2011
- * @since 1.0.0
  */
-#ifndef LAMA_COMMUNICATOR_HPP_
-#define LAMA_COMMUNICATOR_HPP_
+#pragma once
 
 // for dll_import
 #include <common/config.hpp>
@@ -49,6 +47,9 @@
 
 // logging
 #include <logging/logging.hpp>
+
+// Communicator factory
+#include <common/Factory.hpp>
 
 // boost
 #include <boost/shared_ptr.hpp>
@@ -72,6 +73,10 @@ class Distribution;
 
 class Halo;
 
+class Communicator;
+
+typedef boost::shared_ptr<const Communicator> CommunicatorPtr;
+
 /**
  * @brief Base and interface class for communicators used in LAMA
  *
@@ -90,10 +95,31 @@ class Halo;
  * Default copy constructor and assignment operator are disabled.
  *
  */
-class COMMON_DLL_IMPORTEXPORT Communicator: public Printable, private common::NonCopyable
+class COMMON_DLL_IMPORTEXPORT Communicator: 
+
+    public Printable, 
+    public common::Factory<std::string, CommunicatorPtr>,
+    private common::NonCopyable
 {
 
 public:
+
+    /** Get a communicator of a certain type from the factory.
+     *
+     *  @param type is the name of the needed communicator.
+     *  @returns pointer to the desired communicator, the default one if not found
+     *
+     *  More convenient than Factory::create that throws Exception
+     */
+
+    static CommunicatorPtr get( const std::string& type );
+
+    /** Get a default communicator from the factory.
+     *
+     *  @returns pointer to the default communicator.
+     */
+
+    static CommunicatorPtr get();
 
     /** Enumeration type for supported thread safety levels. */
 
@@ -711,8 +737,6 @@ static    void getUserProcArray( PartitionId userProcArray[3] );
 
 };
 
-typedef boost::shared_ptr<const Communicator> CommunicatorPtr;
-
 /* -------------------------------------------------------------------------- */
 
 PartitionId Communicator::getNeighbor( int pos ) const
@@ -796,5 +820,3 @@ tasking::SyncToken* Communicator::exchangeByPlanAsync(
 }
 
 }
-
-#endif // LAMA_COMMUNICATOR_HPP_

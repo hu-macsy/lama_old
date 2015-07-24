@@ -1631,7 +1631,7 @@ size_t JDSStorage<ValueType>::getMemoryUsageImpl() const
 /* ------------------------------------------------------------------------------------------------------------------ */
 
 template<typename ValueType>
-JDSStorage<ValueType>* JDSStorage<ValueType>::create() const
+JDSStorage<ValueType>* JDSStorage<ValueType>::clone() const
 {
     return new JDSStorage();
 }

@@ -34,7 +34,6 @@
 #include <boost/test/unit_test.hpp>
 #include <boost/mpl/list.hpp>
 
-#include <lama/CommunicatorFactory.hpp>
 #include <lama/distribution/BlockDistribution.hpp>
 #include <lama/distribution/CyclicDistribution.hpp>
 #include <lama/distribution/GeneralDistribution.hpp>
@@ -136,7 +135,7 @@ CSRSparseMatrix<float>,
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( LocalConstructorTest, MatrixType, MatrixTypes )
 {
-    CommunicatorPtr comm = CommunicatorFactory::get();
+    CommunicatorPtr comm = Communicator::get();
     const int size = comm->getSize();
     const int n = 10;
     DistributionPtr dist( new BlockDistribution( n * size, comm ) );
@@ -161,7 +160,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( LocalConstructorTest, MatrixType, MatrixTypes )
 BOOST_AUTO_TEST_CASE_TEMPLATE( SetDenseDataTest, MatrixType, MatrixTypes )
 {
     typedef typename MatrixType::MatrixValueType ValueType;
-    CommunicatorPtr comm = CommunicatorFactory::get();
+    CommunicatorPtr comm = Communicator::get();
     // use multiple test cases for different nValues
     const IndexType nValues[] = { 0, 1, 3, 17 };
     const int nCases = sizeof( nValues ) / sizeof( IndexType );
@@ -215,7 +214,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( SetDenseDataTest, MatrixType, MatrixTypes )
 BOOST_AUTO_TEST_CASE_TEMPLATE( SetCSRDataTest, MatrixType, MatrixTypes )
 {
     typedef typename MatrixType::MatrixValueType ValueType;
-    CommunicatorPtr comm = CommunicatorFactory::get();
+    CommunicatorPtr comm = Communicator::get();
     // use multiple test cases for different nValues
     const IndexType nValues[] = { 0, 1, 3, 17 };
     const int nCases = sizeof( nValues ) / sizeof( IndexType );
@@ -266,7 +265,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( CopyConstructorTest, MatrixType, MatrixTypes )
     LAMA_LOG_INFO( logger, "Problem size = " << N1 << " x " << N2 );
     CSRSparseMatrix<double> inputA;
     MatrixCreator<double>::buildPoisson2D( inputA, 9, N1, N2 );
-    CommunicatorPtr comm = CommunicatorFactory::get();
+    CommunicatorPtr comm = Communicator::get();
     const IndexType n = inputA.getNumRows();
     DistributionPtr dist( new BlockDistribution( n, comm ) );
     MatrixType m1( inputA );
@@ -289,7 +288,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( SwapTest, MatrixType, SparseMatrixTypes )
     typedef typename MatrixType::MatrixValueType ValueType;
     const IndexType globalSize = 100;
     StorageType localStorage;
-    CommunicatorPtr comm = CommunicatorFactory::get();
+    CommunicatorPtr comm = Communicator::get();
     DistributionPtr dist( new BlockDistribution( globalSize, comm ) );
     DistributionPtr rep ( new NoDistribution( globalSize ) );
     const IndexType localSize = dist->getLocalSize();
@@ -332,7 +331,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( FullConstructorTest, MatrixType, SparseMatrixType
     CSRSparseMatrix<double> tmp( prefix + "/can___24.mtx" );
     LAMA_LOG_INFO( logger, "constructed replicated matrix by file: " << tmp );
     IndexType numTotalRows = tmp.getNumRows();
-    CommunicatorPtr comm = CommunicatorFactory::get();
+    CommunicatorPtr comm = Communicator::get();
     DistributionPtr dist = makeDistribution( numTotalRows, comm, 1 );
     LAMA_LOG_INFO( logger, "new distribution: " << *dist );
     CSRSparseMatrix<double> matrix( tmp, dist, dist );
@@ -394,7 +393,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( FullConstructorTest, MatrixType, SparseMatrixType
 BOOST_AUTO_TEST_CASE_TEMPLATE( InvertTest, MatrixType, SparseMatrixTypes )
 {
     MatrixType m1 = TestSparseMatrices::n4m4TestMatrix1<double>();
-    CommunicatorPtr comm = CommunicatorFactory::get();
+    CommunicatorPtr comm = Communicator::get();
     const IndexType n = m1.getNumRows();
     DistributionPtr bdist( new BlockDistribution( n, comm ) );
     DistributionPtr ndist( new NoDistribution( n ) );
@@ -428,7 +427,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( MatrixMultTest, MatrixType, SparseMatrixTypes )
     LAMA_LOG_INFO( logger, "verify: n6m4MatrixE1 * n4m3MatrixE2 = n6m3MatrixDRes" );
     testSameMatrix( matrixR, matrixP );
 // now we use distributions
-    CommunicatorPtr comm = CommunicatorFactory::get();
+    CommunicatorPtr comm = Communicator::get();
     DistributionPtr rowDist( new BlockDistribution( matrix1.getNumRows(), comm ) );
     DistributionPtr colDist( new BlockDistribution( matrix1.getNumColumns(), comm ) );
     DistributionPtr repDist( new NoDistribution( matrix2.getNumColumns() ) );

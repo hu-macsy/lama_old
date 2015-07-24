@@ -37,7 +37,6 @@
 // others
 #include <tasking/NoSyncToken.hpp>
 #include <lama/LAMAArrayUtils.hpp>
-#include <lama/CommunicatorFactory.hpp>
 
 #include <lama/matrix/DenseMatrix.hpp>
 
@@ -77,7 +76,7 @@ SparseMatrix<ValueType>::SparseMatrix( boost::shared_ptr<MatrixStorage<ValueType
 {
     mLocalData = storage;
     // create empty halo with same storage format
-    mHaloData = shared_ptr<MatrixStorage<ValueType> >( storage->create() );
+    mHaloData = shared_ptr<MatrixStorage<ValueType> >( storage->clone() );
 }
 
 /* ---------------------------------------------------------------------------------------*/
@@ -91,7 +90,7 @@ SparseMatrix<ValueType>::SparseMatrix( boost::shared_ptr<MatrixStorage<ValueType
 {
     mLocalData = storage;
     // create empty halo with same storage format
-    mHaloData = shared_ptr<MatrixStorage<ValueType> >( storage->create() );
+    mHaloData = shared_ptr<MatrixStorage<ValueType> >( storage->clone() );
 
     if( storage->getNumRows() == rowDist->getLocalSize() )
     {
@@ -124,7 +123,7 @@ SparseMatrix<ValueType>::SparseMatrix(
 
     mLocalData = localData;
     // create empty halo with same storage format
-    mHaloData = shared_ptr<MatrixStorage<ValueType> >( localData->create() );
+    mHaloData = shared_ptr<MatrixStorage<ValueType> >( localData->clone() );
 
     if( localData->getNumRows() == rowDist->getLocalSize() )
     {
@@ -642,7 +641,7 @@ void SparseMatrix<ValueType>::buildLocalStorage( _MatrixStorage& storage ) const
 
         bool keepDiagonalProperty = true;
 
-        boost::shared_ptr<MatrixStorage<ValueType> > tmp( mLocalData->create() );
+        boost::shared_ptr<MatrixStorage<ValueType> > tmp( mLocalData->clone() );
         tmp->joinHalo( *mLocalData, *mHaloData, mHalo, getColDistribution(), keepDiagonalProperty );
         storage = *tmp;
     }
@@ -2260,11 +2259,11 @@ memory::ScalarType SparseMatrix<ValueType>::getValueType() const
 /* ------------------------------------------------------------------------- */
 
 template<typename ValueType>
-SparseMatrix<ValueType>* SparseMatrix<ValueType>::create() const
+SparseMatrix<ValueType>* SparseMatrix<ValueType>::clone() const
 {
     LAMA_LOG_INFO( logger, "SparseMatrix<ValueType>::create" )
 
-    shared_ptr<MatrixStorage<ValueType> > newLocalData( mLocalData->create() );
+    shared_ptr<MatrixStorage<ValueType> > newLocalData( mLocalData->clone() );
 
     // use auto pointer for new sparse matrix to get data freed in case of Exception
 
@@ -2464,7 +2463,7 @@ void SparseMatrix<ValueType>::readFromFile( const std::string& fileName )
     LAMA_REGION( "Mat.Sp.readFromFile" )
 
     // Take the current default communicator
-    CommunicatorPtr comm = CommunicatorFactory::get();
+    CommunicatorPtr comm = Communicator::get();
 
     IndexType myRank = comm->getRank();
     IndexType host = 0; // reading processor

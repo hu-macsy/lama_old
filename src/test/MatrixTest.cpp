@@ -36,8 +36,6 @@
 
 #include <lama/LAMATypes.hpp>
 
-#include <lama/CommunicatorFactory.hpp>
-
 #include <lama/matrix/ELLSparseMatrix.hpp>
 #include <lama/matrix/JDSSparseMatrix.hpp>
 #include <lama/matrix/DIASparseMatrix.hpp>
@@ -118,7 +116,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( RandomTest, MatrixType, MatrixTypes )
 // Test filename constructor and writing to file for each matrx type
 BOOST_AUTO_TEST_CASE_TEMPLATE( ReadWriteTest, MatrixType, MatrixTypes )
 {
-    CommunicatorPtr comm = CommunicatorFactory::get(); // get default, MPI or serial
+    CommunicatorPtr comm = Communicator::get(); // get default, MPI or serial
     LAMA_LOG_INFO( logger, "ReadWriteTest for MatrixType = " << typeid( MatrixType ).name() );
     std::string prefix = Configuration::getInstance().getPath();
     LAMA_LOG_INFO( logger, "prefix = " << prefix );

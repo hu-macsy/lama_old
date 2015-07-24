@@ -126,7 +126,7 @@ public:
 
     /** Implementation of MatrixStorage::create for derived class. */
 
-    virtual JDSStorage* create() const;
+    virtual JDSStorage* clone() const;
 
     /** Implementation of pure method for _MatrixStorage. */
 

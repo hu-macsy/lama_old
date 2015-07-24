@@ -61,7 +61,10 @@ namespace lama
  *  MPI_Init is called in the constructor, MPI_Finalize is called in the destructor.
  */
 
-class COMMON_DLL_IMPORTEXPORT MPICommunicator: public CRTPCommunicator<MPICommunicator>
+class COMMON_DLL_IMPORTEXPORT MPICommunicator: 
+
+    public CRTPCommunicator<MPICommunicator>,
+    public Communicator::Register<MPICommunicator>           // register at factory
 {
 
 // Only MPICommunicatorManager is allowed to create MPI communicator
@@ -210,8 +213,12 @@ private:
     LAMA_LOG_DECL_STATIC_LOGGER( logger )
 
     static    const int defaultTag;
+
 protected:
+
     MPICommunicator( int& argc, char** & argv, const std::string& type );
+
+    MPICommunicator();
 
     void setNodeData();
 
@@ -229,6 +236,28 @@ protected:
     Communicator::ThreadSafetyLevel mThreadSafetyLevel;
 
     bool isCUDAAware;// if true data on CUDA context can be communicated
+
+public:
+
+    // static methods, variables to register create routine in Communicator factory of base class.
+
+    static CommunicatorPtr create();
+
+    // key for factory 
+
+    static std::string createValue();
+
+private:
+
+    // Guard class whose destructor takes care of MPI finalize
+
+    class MPIGuard
+    {
+        MPIGuard();
+        ~MPIGuard();
+    };
+
+    static MPIGuard guard;   // define one guard variable
 };
 
 }

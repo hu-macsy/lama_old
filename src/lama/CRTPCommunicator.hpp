@@ -29,11 +29,9 @@
  *        so derived classes have to provide only template routines
  * @author Thomas Brandes
  * @date 12.05.2014
- * @since 1.0.1
  */
 
-#ifndef LAMA_CRTP_COMMUNICATOR_HPP_
-#define LAMA_CRTP_COMMUNICATOR_HPP_
+#pragma once
 
 // for dll_import
 #include <common/config.hpp>
@@ -278,4 +276,3 @@ private:
 
 } // namespace lama
 
-#endif // LAMA_CRTP_MATRIX_STORAGE_HPP_

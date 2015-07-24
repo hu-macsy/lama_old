@@ -45,7 +45,6 @@
 
 #include <lama/distribution/BlockDistribution.hpp>
 #include <lama/distribution/CyclicDistribution.hpp>
-#include <lama/CommunicatorFactory.hpp>
 
 #include <test/TestSparseMatrices.hpp>
 #include <test/Configuration.hpp>
@@ -115,7 +114,7 @@ LAMA_LOG_INFO( logger, "cTorTest" );
 //TODO: to P_ test?
 const IndexType n = 4;
 
-CommunicatorPtr comm = CommunicatorFactory::get( "MPI" );
+CommunicatorPtr comm = Communicator::get( "MPI" );
 
 DistributionPtr bdist( new BlockDistribution( n, comm ) );
 DistributionPtr cdist( new CyclicDistribution( n, 1, comm ) );

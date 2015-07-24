@@ -47,7 +47,6 @@
 #include <lama/matrix/JDSSparseMatrix.hpp>
 #include <lama/matrix/DenseMatrix.hpp>
 
-#include <lama/CommunicatorFactory.hpp>
 #include <lama/distribution/BlockDistribution.hpp>
 #include <lama/distribution/CyclicDistribution.hpp>
 #include <lama/distribution/Distribution.hpp>
@@ -78,7 +77,7 @@ struct P_VectorTestConfig
 {
     P_VectorTestConfig()
     {
-        comm = CommunicatorFactory::get( "MPI" ); // default communicator
+        comm = Communicator::get( "MPI" ); // default communicator
         m_inputVectorBaseName = Configuration::getInstance().getPath() + "/testVector";
         m_formattedInputVectorBaseName = m_inputVectorBaseName + "Formatted";
         m_xdrDoubleInputVectorBaseName = m_inputVectorBaseName + "XDRDouble";

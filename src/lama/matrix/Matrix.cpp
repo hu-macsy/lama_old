@@ -47,6 +47,27 @@ namespace lama
 
 LAMA_LOG_DEF_LOGGER( Matrix::logger, "Matrix" )
 
+/* ---------------------------------------------------------------------------------------*/
+/*    Factory to create a matrix                                                          */
+/* ---------------------------------------------------------------------------------------*/
+
+// stream output for key values of creator routine required
+
+static std::ostream& operator<<( std::ostream& stream, const std::pair<MatrixStorageFormat, common::ScalarType>& key )
+{
+    stream << "<" << key.first << ", " << key.second << ">";
+    return stream;
+}
+
+Matrix* Matrix::getMatrix( const MatrixStorageFormat format, common::ScalarType type )
+{
+    std::pair<MatrixStorageFormat, common::ScalarType> val( format, type );
+    LAMA_LOG_INFO( logger, "getMatrix uses Factory::create " << val )
+    return create( val );
+}
+
+/* ----------------------------------------------------------------------- */
+
 Matrix::Matrix( const Matrix& other )
                 : Distributed( other ), mColDistribution( other.mColDistribution ), mNumRows( other.mNumRows ), mNumColumns(
                                 other.mNumColumns ), mCommunicationKind( other.mCommunicationKind )
@@ -191,20 +212,9 @@ ContextArray* Matrix::createArray() const
 
 /* ---------------------------------------------------------------------------------*/
 
-Matrix* Matrix::create( DistributionPtr rowDistribution, DistributionPtr colDistribution ) const
-{
-    std::auto_ptr<Matrix> matrix( create() );
-
-    matrix->allocate( rowDistribution, colDistribution );
-
-    return matrix.release();
-}
-
-/* ---------------------------------------------------------------------------------*/
-
 Vector* Matrix::createDenseVector( DistributionPtr distribution, const Scalar value ) const
 {
-    memory::ScalarType matrixValueType = getValueType();
+    common::ScalarType matrixValueType = getValueType();
 
     LAMA_LOG_INFO( logger, "create vector of type " << matrixValueType )
 
@@ -552,64 +562,6 @@ Matrix& Matrix::operator=( const Expression_SM_SM& exp )
     this->matrixPlusMatrix( alpha, A, beta, B );
 
     return *this;
-}
-
-/** The key for the matrix create routine is given by the pair of format and type. */
-
-typedef std::pair<MatrixStorageFormat,memory::ScalarType> CreatorKey;
-
-/** Map container to get for the key the create function. */
-
-typedef std::map<CreatorKey,Matrix::CreateFn> CreatorMap;
-
-/** Factory itself is given by a map container. */
-
-/**
- *  Getter method for the singleton factory.
- *
- *  Getter method instead of a variable guarantees that order of
- *  static intialization does not matter.
- */
-static CreatorMap& getFactory()
-{
-    static std::auto_ptr<CreatorMap> factory;
-
-    if( !factory.get() )
-    {
-        factory = std::auto_ptr<CreatorMap>( new CreatorMap() );
-    }
-
-    return *factory;
-}
-
-void Matrix::addCreator( const MatrixStorageFormat format, memory::ScalarType type, Matrix* (*create)() )
-{
-    CreatorMap& factory = getFactory();
-
-    // checks for multiple entries is not really necessary here, so just add entry in map container.
-
-    factory[CreatorKey( format, type )] = create;
-}
-
-Matrix* Matrix::getMatrix( const MatrixStorageFormat format, memory::ScalarType type )
-{
-    Matrix* newMatrix = NULL;
-
-    CreatorMap& factory = getFactory();
-
-    CreatorMap::const_iterator fn = factory.find( CreatorKey( format, type ) );
-
-    if( fn != factory.end() )
-    {
-        newMatrix = fn->second();
-    }
-    else
-    {
-        LAMA_LOG_WARN( logger, "getMatrix: no " << format << " matrix of type " << type << " not supported" )
-        return NULL;
-    }
-
-    return newMatrix;
 }
 
 }

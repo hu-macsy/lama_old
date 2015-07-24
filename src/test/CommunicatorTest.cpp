@@ -37,7 +37,6 @@
 
 #include <lama/LAMATypes.hpp>
 
-#include <lama/CommunicatorFactory.hpp>
 #include <lama/Communicator.hpp>
 
 #include <lama/distribution/HaloBuilder.hpp>
@@ -60,7 +59,7 @@ CommunicatorTest::CommunicatorTest( const char* communicatorType )
     :
     mCommunicatorType( communicatorType )
 {
-    comm = CommunicatorFactory::get( mCommunicatorType.c_str() );
+    comm = Communicator::get( mCommunicatorType.c_str() );
     rank = comm->getRank();
     size = comm->getSize();
 }
@@ -74,10 +73,10 @@ CommunicatorTest::~CommunicatorTest()
 
 LAMA_COMMON_TEST_CASE( CommunicatorTest, CommunicatorCtrTest )
 // get a communicator and give it free (shared pointer)
-comm = CommunicatorFactory::get( mCommunicatorType.c_str() );
+comm = Communicator::get( mCommunicatorType.c_str() );
 comm = CommunicatorPtr();
 // get again the MPI communicator (might be 2nd call of MPI_Init)
-comm = CommunicatorFactory::get( mCommunicatorType.c_str() );
+comm = Communicator::get( mCommunicatorType.c_str() );
 LAMA_COMMON_TEST_CASE_END()
 
 /* --------------------------------------------------------------------- */

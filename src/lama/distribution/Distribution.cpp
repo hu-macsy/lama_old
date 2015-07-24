@@ -36,7 +36,6 @@
 
 // assert
 #include <lama/exception/LAMAAssert.hpp>
-#include <lama/CommunicatorFactory.hpp>
 #include <lama/Scalar.hpp>
 #include <memory/memory.hpp>
 
@@ -59,7 +58,7 @@ LAMA_LOG_DEF_LOGGER( Distribution::logger, "Distribution" )
 /* ------  Constructor  ------------------------------------------------- */
 
 Distribution::Distribution( const IndexType globalSize )
-    : mGlobalSize( globalSize ), mCommunicator( CommunicatorFactory::get( "none" ) )
+    : mGlobalSize( globalSize ), mCommunicator( Communicator::get( "none" ) )
 {
     LAMA_LOG_INFO( logger, "Distribution(" << mGlobalSize << ") onto NoCommunicator" )
 }

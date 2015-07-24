@@ -34,7 +34,6 @@
 #include <boost/test/unit_test.hpp>
 #include <boost/mpl/list.hpp>
 
-#include <lama/CommunicatorFactory.hpp>
 #include <lama/distribution/CyclicDistribution.hpp>
 
 #include <test/distributed/DistributionTest.hpp>
@@ -54,7 +53,7 @@ struct CyclicDistributionTestConfig
 {
     CyclicDistributionTestConfig()
     {
-        comm = CommunicatorFactory::get( "MPI" );
+        comm = Communicator::get( "MPI" );
         size = comm->getSize();
         rank = comm->getRank();
         chunkSize = size;

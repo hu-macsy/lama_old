@@ -28,7 +28,6 @@
  * @brief Implementation of methods and constructors for template class XXXSparseMatrix.
  * @author Thomas Brandes
  * @date 04.08.2012
- * @since 1.0.0
  */
 
 // hpp
@@ -326,18 +325,9 @@ void XXXSparseMatrix<ValueType>::swapLocalStorage( StorageType& localStorage )
 /* -------------------------------------------------------------------------- */
 
 template<typename ValueType>
-XXXSparseMatrix<ValueType>* XXXSparseMatrix<ValueType>::createMatrix()
+XXXSparseMatrix<ValueType>* XXXSparseMatrix<ValueType>::clone() const
 {
-    XXXSparseMatrix<ValueType>* newSparseMatrix = new XXXSparseMatrix<ValueType>();
-    return newSparseMatrix;
-}
-
-/* -------------------------------------------------------------------------- */
-
-template<typename ValueType>
-XXXSparseMatrix<ValueType>* XXXSparseMatrix<ValueType>::create() const
-{
-    XXXSparseMatrix* newSparseMatrix = createMatrix();
+    XXXSparseMatrix* newSparseMatrix = new XXXSparseMatrix<ValueType>();
 
     // inherit the context, communication kind of this matrix for the new matrix
 
@@ -373,24 +363,18 @@ const char* XXXSparseMatrix<ValueType>::getTypeName() const
 
 /* -------------------------------------------------------------------------- */
 
-/* -------------------------------------------------------------------------- */
-
 template<typename ValueType>
-bool XXXSparseMatrix<ValueType>::registerCreator()
+Matrix* XXXSparseMatrix<ValueType>::create()
 {
-    MatrixStorageFormat storageFormat = Format::XXX;
-
-    // conversion needed even if createMatrix has only covariant return type
-
-    Matrix::CreateFn create = (Matrix::CreateFn) ( &XXXSparseMatrix<ValueType>::createMatrix );
-
-    Matrix::addCreator( storageFormat, Scalar::getType<ValueType>(), create );
-
-    return true;
+    return new XXXSparseMatrix<ValueType>();
 }
 
 template<typename ValueType>
-bool XXXSparseMatrix<ValueType>::initialized = registerCreator();
+std::pair<MatrixStorageFormat, common::ScalarType> XXXSparseMatrix<ValueType>::createValue()
+{
+    common::ScalarType skind = common::getScalarType<ValueType>();
+    return std::pair<MatrixStorageFormat, common::ScalarType> ( Format::XXX, skind );
+}
 
 /* ========================================================================= */
 /*       Template specializations and nstantiations                          */

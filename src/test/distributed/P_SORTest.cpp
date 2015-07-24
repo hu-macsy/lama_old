@@ -50,7 +50,6 @@
 
 #include <lama/distribution/BlockDistribution.hpp>
 #include <lama/Communicator.hpp>
-#include <lama/CommunicatorFactory.hpp>
 
 #include <lama/norm/MaxNorm.hpp>
 
@@ -76,7 +75,7 @@ struct P_SORTestConfig
 {
     P_SORTestConfig()
     {
-        comm = CommunicatorFactory::get();
+        comm = Communicator::get();
     }
 
     ~P_SORTestConfig()

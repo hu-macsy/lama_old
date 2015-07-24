@@ -1258,7 +1258,7 @@ return typeName();
 
 template<typename ValueType>
 DenseStorageView<ValueType>*
-DenseStorageView<ValueType>::create() const
+DenseStorageView<ValueType>::clone() const
 {
 return new DenseStorage<ValueType>();
 }

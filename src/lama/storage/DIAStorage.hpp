@@ -123,7 +123,7 @@ public:
 
     /** Implementation of MatrixStorage::create for derived class. */
 
-    virtual DIAStorage* create() const;
+    virtual DIAStorage* clone() const;
 
     /** Implementation of _MatrixStorage::clear  */
 

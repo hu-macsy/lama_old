@@ -28,10 +28,8 @@
  * @brief Implementation of a communicator class for non-distributed (replicated) objects.
  * @author Thomas Brandes
  * @date 15.03.2011
- * @since 1.0.0
  */
-#ifndef LAMA_NO_COMMUNICATOR_HPP_
-#define LAMA_NO_COMMUNICATOR_HPP_
+#pragma once
 
 // for dll_import
 #include <common/config.hpp>
@@ -46,7 +44,10 @@ namespace lama
  *  partition or processor.
  */
 
-class COMMON_DLL_IMPORTEXPORT NoCommunicator: public CRTPCommunicator<NoCommunicator>
+class COMMON_DLL_IMPORTEXPORT NoCommunicator: 
+
+    public CRTPCommunicator<NoCommunicator>,
+    public Communicator::Register<NoCommunicator>           // register at factory
 {
 
     friend class CRTPCommunicator<NoCommunicator> ;
@@ -157,8 +158,16 @@ private    :
                     const CommunicationPlan& sendPlan ) const;
 
     virtual memory::ContextPtr getCommunicationContext( const memory::ContextArray& array ) const;
+
+public:
+
+    // static methods, variables to register create routine in Communicator factory of base class.
+
+    static CommunicatorPtr create();
+
+    // key for factory 
+
+    static std::string createValue();
 };
 
-}
-
-#endif // LAMA_NO_COMMUNICATOR_HPP_
+} // namespace

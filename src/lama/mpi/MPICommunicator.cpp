@@ -55,6 +55,7 @@
 #include <mpi.h>
 
 using namespace std;
+using boost::shared_ptr;
 
 namespace lama
 {
@@ -69,6 +70,18 @@ MPICommunicator::MPICommunicator( int& argc, char** & argv, const std::string& t
       mThreadSafetyLevel( Communicator::Funneled )
 {
     LAMA_LOG_DEBUG( logger, "Communicator constructed, type = " << type )
+    initialize( argc, argv );
+}
+
+MPICommunicator::MPICommunicator()
+    : CRTPCommunicator<MPICommunicator>( "MPI" ), 
+      mMainThread( common::Thread::getSelf() ),
+      mThreadSafetyLevel( Communicator::Funneled )
+{
+    int argc = 0;
+    char** argv = NULL;
+
+    LAMA_LOG_DEBUG( logger, "MPICommunicator constructed, no args" )
     initialize( argc, argv );
 }
 
@@ -1026,5 +1039,47 @@ void MPICommunicator::writeAt( std::ostream& stream ) const
 BOOST_PP_REPEAT( ARRAY_TYPE_CNT, LAMA_MPI_METHODS_INSTANTIATE, _ )
 
 #undef LAMA_MPI_METHODS_INSTANTIATE
+
+/* --------------------------------------------------------------- */
+
+static shared_ptr<const MPICommunicator> theMPICommunicator;
+
+MPICommunicator::MPIGuard::MPIGuard()
+{
+}
+
+MPICommunicator::MPIGuard::~MPIGuard()
+{
+    if ( theMPICommunicator.use_count() > 1 )
+    {
+        LAMA_LOG_WARN( logger,
+                   "MPICommunicator has " << theMPICommunicator.use_count() - 1 << " remaining references, seems that not all LAMA data structures have been freed" )
+    }
+}
+
+// create a guard whose destructor at program exit takes care of MPI exit call
+
+// MPICommunicator::MPIGuard MPICommunicator::guard = 
+
+CommunicatorPtr MPICommunicator::create()
+{
+    if( !theMPICommunicator )
+    {
+        LAMA_LOG_INFO( logger, "create new MPICommunicator" )
+
+        // create a new instance of MPICommunicator, will call MPI_Init
+
+        theMPICommunicator = shared_ptr<const MPICommunicator>( new MPICommunicator() );
+    }
+
+    return theMPICommunicator;
+}
+
+/* --------------------------------------------------------------- */
+
+std::string MPICommunicator::createValue()
+{
+    return "MPI";
+}
 
 } // namespace lama

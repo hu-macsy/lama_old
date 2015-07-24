@@ -37,7 +37,6 @@ lama_set_source_dir ()
 ### Add classes and header files ###
 set ( CLASSES
         MPICommunicator
-        MPICommunicatorManager
         MPIException
         MPISyncToken
     )

@@ -49,6 +49,7 @@
 
 // C++
 #include<map>
+#include<ostream>
 
 using namespace boost;
 
@@ -61,55 +62,22 @@ LAMA_LOG_DEF_LOGGER( Vector::logger, "Vector" )
 /*    Factory to create a vector                                                          */
 /* ---------------------------------------------------------------------------------------*/
 
-/**
- *  Getter method for the singleton factory.
- *
- *  Getter method instead of a variable guarantees that order of
- *  static intialization does not matter.
- */
-Vector::CreatorMap& Vector::getFactory()
+// stream output for key values of creator routine required
+
+static std::ostream& operator<<( std::ostream& stream, const std::pair<VectorKind, common::ScalarType>& key )
 {
-    static std::auto_ptr<CreatorMap> factory;
-
-    if( !factory.get() )
-    {
-        factory = std::auto_ptr<CreatorMap>( new CreatorMap() );
-    }
-
-    return *factory;
+    stream << "<" << key.first << ", " << key.second << ">";
+    return stream;
 }
 
-void Vector::addCreator( const VectorKind kind, memory::ScalarType type, CreateFn create )
+Vector* Vector::getVector( const VectorKind kind, common::ScalarType type )
 {
-    CreatorMap& factory = getFactory();
+    // get it from the factory by building a pair as key the creator fn
 
-    // checks for multiple entries is not really necessary here, so just add entry in map container.
-
-    factory[CreatorKey( kind, type )] = create;
+    return create( std::pair<VectorKind, common::ScalarType>( kind, type ) );
 }
 
-Vector* Vector::getVector( const VectorKind kind, memory::ScalarType type )
-{
-    Vector* newVector = NULL;
-
-    CreatorMap& factory = getFactory();
-
-    CreatorMap::const_iterator fn = factory.find( CreatorKey( kind, type ) );
-
-    if( fn != factory.end() )
-    {
-        newVector = fn->second();
-    }
-    else
-    {
-        LAMA_LOG_WARN( logger, "getVector: no " << kind << " vector of type " << type << " available" )
-        return NULL;
-    }
-
-    return newVector;
-}
-
-Vector* Vector::createVector( const memory::ScalarType valueType, DistributionPtr distribution )
+Vector* Vector::createVector( const common::ScalarType valueType, DistributionPtr distribution )
 {
     Vector* v = getVector( DENSE, valueType );
     v->resize( distribution );
@@ -296,7 +264,7 @@ Vector& Vector::operator=( const Expression_SMV_SV& expression )
     if( &vectorX == this )
     {
         LAMA_LOG_DEBUG( logger, "Temporary for X required" )
-        tmpResult = boost::shared_ptr<Vector>( this->create( getDistributionPtr() ) );
+        tmpResult = boost::shared_ptr<Vector>( this->clone( getDistributionPtr() ) );
         resultPtr = tmpResult.get();
     }
 
@@ -333,7 +301,7 @@ Vector& Vector::operator=( const Expression_SVM_SV& expression )
     if( &vectorX == this )
     {
         LAMA_LOG_DEBUG( logger, "Temporary for X required" )
-        tmpResult = boost::shared_ptr<Vector>( this->create( getDistributionPtr() ) );
+        tmpResult = boost::shared_ptr<Vector>( this->clone( getDistributionPtr() ) );
         resultPtr = tmpResult.get();
     }
 

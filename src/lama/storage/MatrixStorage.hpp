@@ -425,7 +425,7 @@ public:
      *        be wrapped as a shared pointer at calling site.
      */
 
-    virtual _MatrixStorage* create() const = 0;
+    virtual _MatrixStorage* clone() const = 0;
 
     /** Each matrix storage must provide a routine that makes a new copy
      *  of the input matrix (same format and same value type).
@@ -541,7 +541,7 @@ public:
 
     /** Override _MatrixStorage::create with routine that uses covariant return type. */
 
-    virtual MatrixStorage* create() const = 0;
+    virtual MatrixStorage* clone() const = 0;
 
     /** Override _MatrixStorage::copy with routine that uses covariant return type. */
 

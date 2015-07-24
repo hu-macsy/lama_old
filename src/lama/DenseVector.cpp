@@ -39,8 +39,6 @@
 #include <lama/LAMAInterface.hpp>
 #include <memory/ContextAccess.hpp>
 
-#include <lama/CommunicatorFactory.hpp>
-
 #include <lama/distribution/NoDistribution.hpp>
 #include <lama/distribution/CyclicDistribution.hpp>
 #include <lama/distribution/Redistributor.hpp>
@@ -54,6 +52,10 @@
 
 #include <boost/scoped_array.hpp>
 #include <boost/preprocessor.hpp>
+
+#include <ostream>
+
+using namespace common;
 
 namespace lama
 {
@@ -132,7 +134,7 @@ void DenseVector<ValueType>::readFromFile( const std::string& filename )
 
     // Take the current default communicator
 
-    CommunicatorPtr comm = CommunicatorFactory::get();
+    CommunicatorPtr comm = Communicator::get();
 
     IndexType myRank = comm->getRank();
     IndexType host = 0; // reading processor
@@ -352,9 +354,9 @@ void DenseVector<ValueType>::setValues( const ContextArray& values )
 }
 
 template<typename ValueType>
-DenseVector<ValueType>* DenseVector<ValueType>::create() const
+DenseVector<ValueType>* DenseVector<ValueType>::clone() const
 {
-    LAMA_LOG_INFO( logger, "DenseVector<ValueType>::create" )
+    LAMA_LOG_INFO( logger, "DenseVector<ValueType>::clone" )
 
     DenseVector<ValueType>* newDenseVector = new DenseVector<ValueType>();
 
@@ -364,7 +366,7 @@ DenseVector<ValueType>* DenseVector<ValueType>::create() const
 }
 
 template<typename ValueType>
-DenseVector<ValueType>* DenseVector<ValueType>::create( DistributionPtr distribution ) const
+DenseVector<ValueType>* DenseVector<ValueType>::clone( DistributionPtr distribution ) const
 {
     LAMA_LOG_INFO( logger, "DenseVector<ValueType>::create" )
 
@@ -1601,29 +1603,17 @@ void DenseVector<ValueType>::readVectorDataFromBinaryFile( std::fstream &inFile,
 /* ---------------------------------------------------------------------------------*/
 
 template<typename ValueType>
-DenseVector<ValueType>* DenseVector<ValueType>::createVector()
+Vector* DenseVector<ValueType>::create()
 {
     return new DenseVector<ValueType>();
 }
 
-/* ---------------------------------------------------------------------------------*/
-
 template<typename ValueType>
-bool DenseVector<ValueType>::registerCreator()
+std::pair<VectorKind, common::ScalarType> DenseVector<ValueType>::createValue()
 {
-    VectorKind kind = DENSE;
-
-    // conversion needed even if createVector has only covariant return type
-
-    Vector::CreateFn create = (Vector::CreateFn) ( &DenseVector<ValueType>::createVector );
-
-    Vector::addCreator( kind, Scalar::getType<ValueType>(), create );
-
-    return true;
+    common::ScalarType skind = common::getScalarType<ValueType>();
+    return std::pair<VectorKind, common::ScalarType> ( DENSE, skind );
 }
-
-template<typename ValueType>
-bool DenseVector<ValueType>::initialized = registerCreator();
 
 /* ---------------------------------------------------------------------------------*/
 

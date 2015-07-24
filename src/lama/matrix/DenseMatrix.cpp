@@ -2170,22 +2170,6 @@ return common::getScalarType<ValueType>();
 }
 
 template<typename ValueType>
-DenseMatrix<ValueType>* DenseMatrix<ValueType>::create() const
-{
-LAMA_LOG_INFO( logger, "DenseMatrix<ValueType>::create" )
-
-return new DenseMatrix<ValueType>();
-}
-
-template<typename ValueType>
-DenseMatrix<ValueType>* DenseMatrix<ValueType>::copy() const
-{
-LAMA_LOG_INFO( logger, "DenseMatrix<ValueType>::copy" )
-
-return new DenseMatrix<ValueType>( *this );
-}
-
-template<typename ValueType>
 size_t DenseMatrix<ValueType>::getMemoryUsage() const
 {
 size_t memoryUsage = 0;
@@ -2201,29 +2185,29 @@ return getDistribution().getCommunicator().sum( memoryUsage );
 /* -------------------------------------------------------------------------- */
 
 template<typename ValueType>
-DenseMatrix<ValueType>* DenseMatrix<ValueType>::createMatrix()
+DenseMatrix<ValueType>* DenseMatrix<ValueType>::clone() const
 {
-return new DenseMatrix<ValueType>();
-}
-
-/* -------------------------------------------------------------------------- */
-
-template<typename ValueType>
-bool DenseMatrix<ValueType>::registerCreator()
-{
-MatrixStorageFormat storageFormat = Format::DENSE;
-
-// conversion needed even if createMatrix has only covariant return type
-
-Matrix::CreateFn create = (Matrix::CreateFn) ( &DenseMatrix<ValueType>::createMatrix );
-
-Matrix::addCreator( storageFormat, Scalar::getType<ValueType>(), create );
-
-return true;
+    return new DenseMatrix<ValueType>();
 }
 
 template<typename ValueType>
-bool DenseMatrix<ValueType>::initialized = registerCreator();
+DenseMatrix<ValueType>* DenseMatrix<ValueType>::copy() const
+{
+    return new DenseMatrix<ValueType>( *this );
+}
+
+template<typename ValueType>
+Matrix* DenseMatrix<ValueType>::create()
+{
+    return new DenseMatrix<ValueType>();
+}
+
+template<typename ValueType>
+std::pair<MatrixStorageFormat, common::ScalarType> DenseMatrix<ValueType>::createValue()
+{
+    common::ScalarType skind = common::getScalarType<ValueType>();
+    return std::pair<MatrixStorageFormat, common::ScalarType> ( Format::DENSE, skind );
+}
 
 /* ========================================================================= */
 

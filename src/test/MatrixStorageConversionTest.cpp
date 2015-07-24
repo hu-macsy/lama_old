@@ -34,8 +34,6 @@
 #include <boost/test/unit_test.hpp>
 #include <boost/mpl/list.hpp>
 
-#include <lama/CommunicatorFactory.hpp>
-
 #include <lama/storage/CSRStorage.hpp>
 #include <lama/storage/COOStorage.hpp>
 #include <lama/storage/ELLStorage.hpp>
@@ -167,7 +165,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( CreateTest, StorageType, StorageTypes )
     typedef typename StorageType::StorageValueType ValueType;
     StorageType storage;
     setCSRStorage<ValueType>( storage );
-    boost::shared_ptr<_MatrixStorage> storage1( storage.create() );
+    boost::shared_ptr<_MatrixStorage> storage1( storage.clone() );
 // check for same format and value type
     BOOST_CHECK_EQUAL( storage1->getFormat(), storage.getFormat() );
     BOOST_CHECK_EQUAL( storage1->getValueType(), storage.getValueType() );

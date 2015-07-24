@@ -28,7 +28,6 @@
  * @brief Communicator.cpp
  * @author Thomas Brandes, Jiri Kraus
  * @date 23.02.2011
- * @since 1.0.0
  */
 
 // hpp
@@ -52,6 +51,40 @@ namespace lama
 {
 
 LAMA_LOG_DEF_LOGGER( Communicator::logger, "Communicator" )
+
+CommunicatorPtr Communicator::get( const std::string& type )
+{
+    LAMA_LOG_TRACE( logger, "Get communicator of type " << type )
+
+    if ( canCreate( type ) )
+    {
+        return create( type );
+    }
+    else
+    {
+        LAMA_LOG_WARN( logger, "could not get communicator " << type << ", take default one" )
+        return get();
+    }
+}
+
+CommunicatorPtr Communicator::get()
+{
+    vector<std::string> values;  // string is create type for the factory
+
+    getCreateValues( values );
+
+    for ( size_t i = 0; i < values.size(); ++i )
+    {
+        if ( values[i] != "none" )
+        {
+            return create( values[i] );
+        }
+    }
+ 
+    // if even none is not availabe an exception is thrown
+
+    return create( "none" );
+}
 
 Communicator::Communicator( const std::string& type )
                 : mCommunicatorType( type )

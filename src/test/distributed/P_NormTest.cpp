@@ -35,7 +35,6 @@
 #include <boost/mpl/list.hpp>
 
 #include <lama/DenseVector.hpp>
-#include <lama/CommunicatorFactory.hpp>
 #include <lama/distribution/BlockDistribution.hpp>
 
 #include <test/EquationHelper.hpp>
@@ -54,7 +53,7 @@ struct P_NormTestConfig
 {
     P_NormTestConfig()
     {
-        comm = CommunicatorFactory::get();
+        comm = Communicator::get();
     }
 
     ~P_NormTestConfig()

@@ -60,8 +60,6 @@
 #include <lama/expression/VectorExpressions.hpp>
 #include <lama/expression/MatrixVectorExpressions.hpp>
 
-#include <lama/CommunicatorFactory.hpp>
-
 using namespace boost;
 using namespace lama;
 
@@ -108,7 +106,7 @@ void testSolveWithPreconditionmethod()
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( testSolveWithPrecondition, ValueType, test_types )
 {
-    CommunicatorPtr comm = CommunicatorFactory::get(); // default communicator
+    CommunicatorPtr comm = Communicator::get(); // default communicator
     testSolveWithPreconditionmethod< CSRSparseMatrix<ValueType> >();
     testSolveWithPreconditionmethod< ELLSparseMatrix<ValueType> >();
     testSolveWithPreconditionmethod< COOSparseMatrix<ValueType> >();
@@ -158,7 +156,7 @@ void testSolveWithoutPreconditionmethod()
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( testSolveWithoutPreconditioning, ValueType, test_types )
 {
-    CommunicatorPtr comm = CommunicatorFactory::get(); // default one
+    CommunicatorPtr comm = Communicator::get(); // default one
     testSolveWithoutPreconditionmethod< CSRSparseMatrix<ValueType> >();
     testSolveWithoutPreconditionmethod< ELLSparseMatrix<ValueType> >();
     testSolveWithoutPreconditionmethod< JDSSparseMatrix<ValueType> >();

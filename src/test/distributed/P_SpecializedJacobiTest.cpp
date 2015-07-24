@@ -47,7 +47,6 @@
 #include <lama/matrix/COOSparseMatrix.hpp>
 
 #include <lama/distribution/BlockDistribution.hpp>
-#include <lama/CommunicatorFactory.hpp>
 #include <lama/Communicator.hpp>
 
 #include <lama/norm/L2Norm.hpp>
@@ -83,7 +82,7 @@ struct P_SpecializedJacobiTestConfig
                               std::auto_ptr<Timer>( new Timer() ) ) );
         mJacobiDouble = new SpecializedJacobi( "SpecializedJacobiTest double solver", loggerD );
         mJacobiFloat = new SpecializedJacobi( "SpecializedJacobiTest float solver", loggerD );
-        comm = CommunicatorFactory::get( "MPI" );
+        comm = Communicator::get( "MPI" );
     }
 
     ~P_SpecializedJacobiTestConfig()

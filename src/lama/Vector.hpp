@@ -51,6 +51,9 @@
 // logging
 #include <logging/logging.hpp>
 
+#include <common/Factory.hpp>
+#include <common/ScalarType.hpp>
+
 using namespace memory;
 
 namespace lama
@@ -61,6 +64,18 @@ class Matrix;
 /** Pointer class for a vector, always use of a shared pointer. */
 
 typedef boost::shared_ptr<class Vector> VectorPtr;
+
+class Vector;
+
+/**
+ * @brief VectorKind describes if a vector is dense or sparse.
+ */
+typedef enum
+{
+    DENSE, //!< vector kind for a dense vector
+    SPARSE //!< vector kind for a sparse vector, not supported yet
+
+} VectorKind;
 
 /**
  * @brief The class Vector is a abstract type that represents a distributed 1D real or complex vector.
@@ -78,21 +93,16 @@ typedef boost::shared_ptr<class Vector> VectorPtr;
  * This base class can be used to define dense and sparse vectors of
  * any type.
  */
-class COMMON_DLL_IMPORTEXPORT Vector: public Distributed
+class COMMON_DLL_IMPORTEXPORT Vector: 
+
+     public common::Factory<std::pair<VectorKind, common::ScalarType>, Vector*>,
+     public Distributed
+
 {
 public:
 
     /**
-     * @brief VectorKind describes if a vector is dense or sparse.
-     */
-    typedef enum
-    {
-        DENSE, //!< vector kind for a dense vector
-        SPARSE //!< vector kind for a sparse vector, not supported yet
-    } VectorKind;
-
-    /**
-     * @brief Vector factory to get a matrix of a certain kind and a certain type
+     * @brief Vector factory to get a vector of a certain kind and a certain type
      *
      * @param[in] kind is either DENSE or SPARSE
      * @param[in] valueType specifies the value type as the elements, e.g. FLOAT, DOUBLE
@@ -100,13 +110,13 @@ public:
      * This factory operation allows to create a vector at runtime of any format or any type.
      * Internally, all vector classes must register their create operation.
      */
-    static Vector* getVector( const VectorKind kind, const memory::ScalarType valueType );
+    static Vector* getVector( const VectorKind kind, const common::ScalarType valueType );
 
     /** @brief Create a dense vector of a certain value type and a given distribution.
      *
      *  This method keeps compatibility with an older method that did know which vectors were supported.
      */
-    static Vector* createVector( const memory::ScalarType valueType, DistributionPtr distribution );
+    static Vector* createVector( const common::ScalarType valueType, DistributionPtr distribution );
 
     /**
      * @brief ExpressionMemberType is the type that is used the template Expression to store a Vector.
@@ -279,7 +289,7 @@ public:
     /**
      * @brief Queries the value type of the vector elements, e.g. DOUBLE or FLOAT.
      */
-    virtual memory::ScalarType getValueType() const = 0;
+    virtual common::ScalarType getValueType() const = 0;
 
     /**
      * @brief Returns a copy of the value at the passed global index.
@@ -333,19 +343,19 @@ public:
     virtual Scalar maxNorm() const = 0;
 
     /**
-     * @brief create is a virtual call of the default constructor of the derived classes
+     * @brief clone is a virtual call of the default constructor of the derived classes
      *
      * @return a pointer to the new Vector, caller takes the ownership.
      */
-    virtual Vector* create() const = 0;
+    virtual Vector* clone() const = 0;
 
     /**
-     * @brief Create is a virtual constructor, which creates a new Vector with the same concrete class as this.
+     * @brief Create is a virtual constructor, which clones a new Vector with the same concrete class as this.
      *
      * @param[in] distribution  the distribution to use for the new Vector.
      * @return                  a pointer to the new Vector, caller has the owner ship.
      */
-    virtual Vector* create( DistributionPtr distribution ) const = 0;
+    virtual Vector* clone( DistributionPtr distribution ) const = 0;
 
     /**
      *  @brief copy is a virtual call of the copy constructor of the derived classes
@@ -508,43 +518,6 @@ protected:
     ContextPtr mContext; //!< decides about location of vector operations
 
     LAMA_LOG_DECL_STATIC_LOGGER( logger )
-
-    /* ---------------------------------------------------------------------------------------*/
-    /*   Factory to create Vector of derived type                                             */
-    /* ---------------------------------------------------------------------------------------*/
-
-    /** Type definition of a argumentless function to create a vector.
-     *
-     *  @return new Vector object, calling routine takes over the ownership
-     */
-
-typedef    Vector* ( *CreateFn ) ();
-
-    /** This method should be called by vector classes to register their create operation. */
-
-    static void addCreator( const VectorKind kind, memory::ScalarType type, CreateFn create );
-
-private:
-
-    /* ---------------------------------------------------------------------------------------*/
-    /*   Factory defintions                                                                   */
-    /* ---------------------------------------------------------------------------------------*/
-
-    /** Type defintition for the key arguments used to create a Vector. */
-
-    typedef std::pair<Vector::VectorKind, memory::ScalarType> CreatorKey;
-
-    /** Map container to get for the key the create function. */
-
-    typedef std::map< CreatorKey, Vector::CreateFn > CreatorMap;
-
-    /**
-     *  Getter method for the singleton factory.
-     *
-     *  Getter method instead of a member variable guarantees that order of
-     *  static intialization does not matter.
-     */
-    static CreatorMap& getFactory();
 };
 
 IndexType Vector::size() const

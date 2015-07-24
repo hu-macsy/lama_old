@@ -28,7 +28,6 @@
  * @brief Implementation of methods and constructors for template class ELLSparseMatrix.
  * @author Thomas Brandes
  * @date 04.08.2012
- * @since 1.0.0
  */
 
 // hpp
@@ -326,18 +325,9 @@ void ELLSparseMatrix<ValueType>::swapLocalStorage( StorageType& localStorage )
 /* -------------------------------------------------------------------------- */
 
 template<typename ValueType>
-ELLSparseMatrix<ValueType>* ELLSparseMatrix<ValueType>::createMatrix()
+ELLSparseMatrix<ValueType>* ELLSparseMatrix<ValueType>::clone() const
 {
-    ELLSparseMatrix<ValueType>* newSparseMatrix = new ELLSparseMatrix<ValueType>();
-    return newSparseMatrix;
-}
-
-/* -------------------------------------------------------------------------- */
-
-template<typename ValueType>
-ELLSparseMatrix<ValueType>* ELLSparseMatrix<ValueType>::create() const
-{
-    ELLSparseMatrix* newSparseMatrix = createMatrix();
+    ELLSparseMatrix* newSparseMatrix = new ELLSparseMatrix<ValueType>();
 
     // inherit the context, communication kind of this matrix for the new matrix
 
@@ -373,24 +363,18 @@ const char* ELLSparseMatrix<ValueType>::getTypeName() const
 
 /* -------------------------------------------------------------------------- */
 
-/* -------------------------------------------------------------------------- */
-
 template<typename ValueType>
-bool ELLSparseMatrix<ValueType>::registerCreator()
+Matrix* ELLSparseMatrix<ValueType>::create()
 {
-    MatrixStorageFormat storageFormat = Format::ELL;
-
-    // conversion needed even if createMatrix has only covariant return type
-
-    Matrix::CreateFn create = (Matrix::CreateFn) ( &ELLSparseMatrix<ValueType>::createMatrix );
-
-    Matrix::addCreator( storageFormat, Scalar::getType<ValueType>(), create );
-
-    return true;
+    return new ELLSparseMatrix<ValueType>();
 }
 
 template<typename ValueType>
-bool ELLSparseMatrix<ValueType>::initialized = registerCreator();
+std::pair<MatrixStorageFormat, common::ScalarType> ELLSparseMatrix<ValueType>::createValue()
+{
+    common::ScalarType skind = common::getScalarType<ValueType>();
+    return std::pair<MatrixStorageFormat, common::ScalarType> ( Format::ELL, skind );
+}
 
 /* ========================================================================= */
 /*       Template specializations and nstantiations                          */

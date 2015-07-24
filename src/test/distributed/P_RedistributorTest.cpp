@@ -36,8 +36,6 @@
 
 #include <test/TestMacros.hpp>
 
-#include <lama/CommunicatorFactory.hpp>
-
 #include <lama/distribution/Distribution.hpp>
 #include <lama/distribution/BlockDistribution.hpp>
 #include <lama/distribution/CyclicDistribution.hpp>
@@ -54,7 +52,7 @@ struct P_RedistributorTestConfig
 {
     P_RedistributorTestConfig()
     {
-        comm = CommunicatorFactory::get();
+        comm = Communicator::get();
     }
 
     ~P_RedistributorTestConfig()

@@ -37,7 +37,6 @@
 #include <lama/distribution/Halo.hpp>
 #include <lama/distribution/HaloBuilder.hpp>
 #include <lama/distribution/Redistributor.hpp>
-#include <lama/CommunicatorFactory.hpp>
 
 #include <lama/storage/DenseStorage.hpp>
 #include <lama/storage/CSRStorage.hpp>
@@ -101,7 +100,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( buildHaloTest, StorageType, StorageTypes )
 {
     StorageType matrixStorage;
     typedef typename StorageType::StorageValueType ValueType;
-    CommunicatorPtr comm = CommunicatorFactory::get();
+    CommunicatorPtr comm = Communicator::get();
     LAMA_LOG_INFO( logger, *comm << ": buildHaloTest" );
     setDenseData( matrixStorage );
     CSRStorage<ValueType> compare;
@@ -110,8 +109,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( buildHaloTest, StorageType, StorageTypes )
     const IndexType numColumns = matrixStorage.getNumColumns();
     DistributionPtr colDist = DistributionPtr( new BlockDistribution( numColumns, comm ) );
     // create matrix storage for local and halo part of same type as matrixStorage
-    shared_ptr<MatrixStorage<ValueType> > localStorage ( matrixStorage.create() );
-    shared_ptr<MatrixStorage<ValueType> > haloStorage ( matrixStorage.create() );
+    shared_ptr<MatrixStorage<ValueType> > localStorage ( matrixStorage.clone() );
+    shared_ptr<MatrixStorage<ValueType> > haloStorage ( matrixStorage.clone() );
     Halo halo;
     LAMA_LOG_INFO( logger, *comm << ", split halo : " << matrixStorage )
     matrixStorage.splitHalo( *localStorage, *haloStorage, halo, *colDist, NULL );
@@ -143,7 +142,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( replicateTest, StorageType, StorageTypes )
 {
     typedef typename StorageType::StorageValueType ValueType;
     StorageType matrixStorage;
-    CommunicatorPtr comm = CommunicatorFactory::get();
+    CommunicatorPtr comm = Communicator::get();
     LAMA_LOG_INFO( logger, *comm << ": replicateTest" );
     setDenseData( matrixStorage );
     CSRStorage<ValueType> compare;
@@ -179,7 +178,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( redistributeTest, StorageType, StorageTypes )
 {
     typedef typename StorageType::StorageValueType ValueType;
     StorageType matrixStorage;
-    CommunicatorPtr comm = CommunicatorFactory::get();
+    CommunicatorPtr comm = Communicator::get();
     LAMA_LOG_INFO( logger, *comm << ": redistributeTest" );
     setDenseData( matrixStorage );
     CSRStorage<ValueType> compare;
@@ -220,7 +219,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( exchangeHaloTest, StorageType, StorageTypes )
     // Test for method MatrixStorage::exchangeHalo
     StorageType matrixStorage;
     typedef typename StorageType::StorageValueType ValueType;
-    CommunicatorPtr comm = CommunicatorFactory::get();
+    CommunicatorPtr comm = Communicator::get();
     LAMA_LOG_INFO( logger, *comm << ": buildHaloTest" );
     setDenseData( matrixStorage );
     CSRStorage<ValueType> compare;

@@ -48,7 +48,6 @@
 #include <lama/expression/MatrixExpressions.hpp>
 
 #include <lama/LAMAInterfaceRegistry.hpp>
-#include <lama/CommunicatorFactory.hpp>
 
 #include <test/TestSparseMatrices.hpp>
 #include <test/TestMacros.hpp>
@@ -66,7 +65,7 @@ struct P_DenseMatrixTestConfig
 {
     P_DenseMatrixTestConfig()
     {
-        comm = CommunicatorFactory::get( "MPI" );
+        comm = Communicator::get( "MPI" );
     }
 
     ~P_DenseMatrixTestConfig()

@@ -354,7 +354,7 @@ public:
 
     /** Implementation of MatrixStorage::create for derived class. */
 
-    virtual SparseAssemblyStorage* create() const
+    virtual SparseAssemblyStorage* clone() const
     {
         return new SparseAssemblyStorage();
     }

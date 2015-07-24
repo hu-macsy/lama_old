@@ -2310,7 +2310,7 @@ ValueType CSRStorage<ValueType>::maxDiffNormImpl( const CSRStorage<ValueType>& o
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-CSRStorage<ValueType>* CSRStorage<ValueType>::create() const
+CSRStorage<ValueType>* CSRStorage<ValueType>::clone() const
 {
     return new CSRStorage<ValueType>();
 }

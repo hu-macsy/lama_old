@@ -1866,7 +1866,7 @@ void ELLStorage<ValueType>::matrixAddMatrixELL(
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-ELLStorage<ValueType>* ELLStorage<ValueType>::create() const
+ELLStorage<ValueType>* ELLStorage<ValueType>::clone() const
 {
     LAMA_LOG_INFO( logger, "create" )
 

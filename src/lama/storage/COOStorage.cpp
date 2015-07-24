@@ -1112,7 +1112,7 @@ void COOStorage<ValueType>::jacobiIterate(
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-COOStorage<ValueType>* COOStorage<ValueType>::create() const
+COOStorage<ValueType>* COOStorage<ValueType>::clone() const
 {
     return new COOStorage<ValueType>();
 }

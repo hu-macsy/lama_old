@@ -34,7 +34,6 @@
 #include <boost/test/unit_test.hpp>
 #include <boost/mpl/list.hpp>
 
-#include <lama/CommunicatorFactory.hpp>
 #include <lama/distribution/BlockDistribution.hpp>
 
 #include <test/distributed/DistributionTest.hpp>
@@ -54,7 +53,7 @@ struct BlockDistributionTestConfig
 {
     BlockDistributionTestConfig()
     {
-        comm = CommunicatorFactory::get( "MPI" );
+        comm = Communicator::get( "MPI" );
         rank = comm->getRank();
         size = comm->getSize();
         blockSize = 17;

@@ -137,7 +137,7 @@ public:
 
     /** Implementation of MatrixStorage::create for derived class. */
 
-    virtual CSRStorage* create() const;
+    virtual CSRStorage* clone() const;
 
     /** Destructor of CSR sparse storage. */
 

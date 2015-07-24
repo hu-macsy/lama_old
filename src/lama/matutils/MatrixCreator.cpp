@@ -36,7 +36,6 @@
 
 // others
 #include <memory/WriteAccess.hpp>
-#include <lama/CommunicatorFactory.hpp>
 
 #include <lama/distribution/BlockDistribution.hpp>
 #include <lama/distribution/GeneralDistribution.hpp>
@@ -294,7 +293,7 @@ void MatrixCreator<ValueType>::buildPoisson(
 
     // ToDo: take communicator from input set
 
-    lama::CommunicatorPtr comm = lama::CommunicatorFactory::get( "MPI" );
+    lama::CommunicatorPtr comm = lama::Communicator::get( "MPI" );
 
     // get rank of this processor
 
@@ -595,7 +594,7 @@ void MatrixCreator<ValueType>::buildRandom(
     const IndexType size,
     const double density )
 {
-    CommunicatorPtr comm = lama::CommunicatorFactory::get( "MPI" );
+    CommunicatorPtr comm = lama::Communicator::get( "MPI" );
 
     DistributionPtr dist( new BlockDistribution( size, comm ) );
     matrix.allocate( dist, dist );

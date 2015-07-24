@@ -51,6 +51,9 @@
 // logging
 #include <logging/logging.hpp>
 
+#include <common/Factory.hpp>
+#include <common/ScalarType.hpp>
+
 using namespace memory;
 
 namespace lama
@@ -66,7 +69,11 @@ typedef boost::shared_ptr<class Matrix> MatrixPtr;
  * Matrix is one of the LAMA Base Types and should be used in all situations where it is not necessary to access a
  * single element or to create a new Matrix.
  */
-class COMMON_DLL_IMPORTEXPORT Matrix: public Distributed
+class COMMON_DLL_IMPORTEXPORT Matrix: 
+
+    public common::Factory<std::pair<MatrixStorageFormat, common::ScalarType>, Matrix*>,
+    public Distributed
+
 {
 
 public:
@@ -92,7 +99,7 @@ public:
      *
      * Note: the format of the matrix decides whether the matrix will be DENSE or SPARSE.
      */
-    static Matrix* getMatrix( const MatrixStorageFormat format, const memory::ScalarType type );
+    static Matrix* getMatrix( const MatrixStorageFormat format, const common::ScalarType type );
 
     /**
      * @brief Checks for a given matrix whether the content of its data is sound.
@@ -761,12 +768,12 @@ public:
      *     ...
      *     // Create a copy of the input matrix
      *
-     *     std::auto_ptr<Matrix> newMatrix ( matrix.create() );
+     *     std::auto_ptr<Matrix> newMatrix ( matrix.clone() );
      *     *newMatrix = matrix;
      *
      *     // Create a unity matrix of same type and same row distribution as matrix
      *
-     *     std::auto_ptr<Matrix> newMatrix ( matrix.create() );
+     *     std::auto_ptr<Matrix> newMatrix ( matrix.clone() );
      *     newMatrix->allocate( matrix.getRowDistributionPtr(), matrix.getRowDistributionPtr() );
      *     newMatrix->setIdentity();
      *     ...
@@ -776,7 +783,7 @@ public:
      * This method is a workaround to call the constructor of a derived matrix class
      * where the derived class is not known at compile time.
      */
-    virtual Matrix* create() const = 0;
+    virtual Matrix* clone() const = 0;
 
     /**
      * @brief Constructor creates a distributed zero matrix of same type as a given matrix.
@@ -784,7 +791,7 @@ public:
      * @param[in] rowDistribution   TODO[doxy] Complete Description.
      * @param[in] colDistribution   TODO[doxy] Complete Description.
      */
-    Matrix* create( DistributionPtr rowDistribution, DistributionPtr colDistribution ) const;
+    Matrix* clone( DistributionPtr rowDistribution, DistributionPtr colDistribution ) const;
 
     /**
      * @brief Constructor creates a distributed dense vector of same type as a given matrix.
@@ -811,7 +818,7 @@ public:
     /**
      * @brief Queries the value type of the matrix elements, e.g. DOUBLE or FLOAT.
      */
-    virtual memory::ScalarType getValueType() const = 0;
+    virtual common::ScalarType getValueType() const = 0;
 
     /** Returns the diagonalProperty of the local storage.
      *
@@ -841,10 +848,6 @@ public:
      * @return the memory consumption of this matrix.
      */
     virtual size_t getMemoryUsage() const = 0;
-
-    /** Type definition of a argumentless function to create a matrix. */
-
-    typedef Matrix* (*CreateFn)();
 
 protected:
 
@@ -948,10 +951,6 @@ protected:
     IndexType mNumColumns;
 
 protected:
-
-    /** This method should be called by matrix classes to register their create operation. */
-
-    static void addCreator( const MatrixStorageFormat, memory::ScalarType type, CreateFn create );
 
     void checkSettings() const; // check valid member variables
 

@@ -37,7 +37,6 @@
 #include <test/TestMacros.hpp>
 
 #include <lama/distribution/BlockDistribution.hpp>
-#include <lama/CommunicatorFactory.hpp>
 #include <lama/matutils/MatrixCreator.hpp>
 
 using namespace boost;
@@ -54,7 +53,7 @@ struct P_MatrixCreatorTestConfig
 {
     P_MatrixCreatorTestConfig()
     {
-        comm = CommunicatorFactory::get();
+        comm = Communicator::get();
     }
 
     ~P_MatrixCreatorTestConfig()

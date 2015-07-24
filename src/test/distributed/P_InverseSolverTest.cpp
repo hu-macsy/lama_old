@@ -48,8 +48,6 @@
 #include <lama/matrix/DenseMatrix.hpp>
 
 #include <lama/distribution/BlockDistribution.hpp>
-#include <lama/CommunicatorFactory.hpp>
-
 #include <lama/norm/MaxNorm.hpp>
 
 #include <lama/matutils/MatrixCreator.hpp>
@@ -89,7 +87,7 @@ void testSolveMethod( ContextPtr loc )
     MatrixCreator<ValueType>::buildPoisson2D( helpcoefficients, 9, N1, N2 );
     LAMA_LOG_DEBUG( logger, "Poisson2D matrix created" << helpcoefficients )
     MatrixType coefficients( helpcoefficients );
-    CommunicatorPtr comm = CommunicatorFactory::get();
+    CommunicatorPtr comm = Communicator::get();
     DistributionPtr dist( new BlockDistribution( coefficients.getNumRows(), comm ) );
     coefficients.redistribute( dist, dist );
     coefficients.setContext( loc );

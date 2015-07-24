@@ -34,8 +34,6 @@
 #include <boost/test/unit_test.hpp>
 #include <boost/mpl/list.hpp>
 
-#include <lama/CommunicatorFactory.hpp>
-
 #include <lama/DenseVector.hpp>
 
 #include <lama/matrix/CSRSparseMatrix.hpp>

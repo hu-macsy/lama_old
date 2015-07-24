@@ -28,10 +28,8 @@
  * @brief Definition of matrix class for distributed sparse matrixes in CSR format.
  * @author Jiri Kraus, Thomas Brandes
  * @date 22.02.2011
- * @since 1.0.0
  */
-#ifndef LAMA_CSR_SPARSE_MATRIX_HPP_
-#define LAMA_CSR_SPARSE_MATRIX_HPP_
+#pragma once
 
 // for dll_import
 #include <common/config.hpp>
@@ -57,7 +55,10 @@ namespace lama
  */
 
 template<typename ValueType>
-class COMMON_DLL_IMPORTEXPORT CSRSparseMatrix: public SparseMatrix<ValueType>
+class COMMON_DLL_IMPORTEXPORT CSRSparseMatrix: 
+
+    public SparseMatrix<ValueType>,
+    public Matrix::Register<CSRSparseMatrix<ValueType> >    // register at factory
 {
 
 public:
@@ -211,9 +212,9 @@ public:
 
     virtual void swapLocalStorage( StorageType& localStorage );
 
-    /* Implementation of pure method Matrix::create with covariant return type */
+    /* Implementation of pure method Matrix::clone with covariant return type */
 
-    virtual CSRSparseMatrix<ValueType>* create() const;
+    virtual CSRSparseMatrix<ValueType>* clone() const;
 
     /* Implementation of pure method Matrix::copy with covariant return type */
 
@@ -241,11 +242,15 @@ private:
 
     LAMA_LOG_DECL_STATIC_LOGGER( logger )
 
-    static    CSRSparseMatrix<ValueType>* createMatrix();
+public:
 
-    static bool registerCreator(); //!< used in static initialization for registration
+    // static create method that will be used to register at Matrix factory
 
-    static bool initialized;//!< static initialization used for registration of create in matrix factory
+    static Matrix* create();
+
+    // key for factory 
+
+    static std::pair<MatrixStorageFormat, common::ScalarType> createValue();
 };
 
 template<typename ValueType>
@@ -287,4 +292,3 @@ CSRSparseMatrix<ValueType>::CSRSparseMatrix(
 
 } // namespace lama
 
-#endif // LAMA_CSR_SPARSE_MATRIX_HPP_

@@ -62,8 +62,6 @@ endif ( LAMA_BLAS_NAME STREQUAL "MKL" )
 set ( CLASSES
         CommunicationPlan
         Communicator
-        CommunicatorFactory
-        CommunicatorManager
         Complex
         DenseVector
         Distributed
@@ -71,8 +69,6 @@ set ( CLASSES
 #        LAMAArrayView
         LAMAInterface
         LAMAInterfaceRegistry
-        NoCommunicator
-        NoCommunicatorManager
         Scalar
         Settings
         StorageIO

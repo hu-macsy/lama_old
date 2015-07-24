@@ -147,7 +147,7 @@ public:
 
     /** Implementation of MatrixStorage::create for derived class. */
 
-    virtual ELLStorage* create() const;
+    virtual ELLStorage* clone() const;
 
     /**
      *  Implementation of pure method of _MatrixStorage::clear

@@ -257,9 +257,9 @@ public:
 
     virtual COOStorage* copy() const;
 
-    /** Implementation of MatrixStorage::create for derived class. */
+    /** Implementation of MatrixStorage::clone for derived class. */
 
-    virtual COOStorage* create() const;
+    virtual COOStorage* clone() const;
 
     /******************************************************************
      *  Matrix times Vector                                            *

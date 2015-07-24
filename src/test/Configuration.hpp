@@ -28,13 +28,12 @@
  * @brief Configuration.hpp
  * @author Jiri Kraus
  * @date 22.02.2011
- * @since 1.0.0
  */
-#ifndef LAMA_CONFIGURATION_HPP_
-#define LAMA_CONFIGURATION_HPP_
+#pragma once
+
+#include <logging/logging.hpp>
 
 #include <string>
-#include <lama/CommunicatorFactory.hpp>
 
 class Configuration
 {
@@ -57,5 +56,3 @@ private:
     std::string mCommType;
 
 };
-
-#endif // LAMA_CONFIGURATION_HPP_

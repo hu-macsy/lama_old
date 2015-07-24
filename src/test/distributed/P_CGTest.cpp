@@ -49,7 +49,6 @@
 #include <lama/matrix/DenseMatrix.hpp>
 
 #include <lama/distribution/BlockDistribution.hpp>
-#include <lama/CommunicatorFactory.hpp>
 
 #include <lama/norm/MaxNorm.hpp>
 
@@ -73,7 +72,7 @@ struct P_CGTestConfig
 {
     P_CGTestConfig()
     {
-        comm = CommunicatorFactory::get( "MPI" );
+        comm = Communicator::get( "MPI" );
     }
 
     ~P_CGTestConfig()

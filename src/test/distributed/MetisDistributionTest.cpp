@@ -34,7 +34,6 @@
 #include <boost/test/unit_test.hpp>
 #include <boost/mpl/list.hpp>
 
-#include <lama/CommunicatorFactory.hpp>
 #include <lama/distribution/MetisDistribution.hpp>
 
 #include <test/TestMacros.hpp>
@@ -70,7 +69,7 @@ struct MetisDistributionTestConfig
 {
     MetisDistributionTestConfig()
     {
-        comm = CommunicatorFactory::get( "MPI" );
+        comm = Communicator::get( "MPI" );
         rank = comm->getRank();
         size = comm->getSize();
         std::string prefix = Configuration::getInstance().getPath();

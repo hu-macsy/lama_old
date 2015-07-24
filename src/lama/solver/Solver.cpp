@@ -173,7 +173,7 @@ const Vector& Solver::getResidual() const
 
         if( !runtime.mResidual.get() )
         {
-            runtime.mResidual.reset( runtime.mRhs->create() );
+            runtime.mResidual.reset( runtime.mRhs->clone() );
         }
 
         //mLogger->logMessage(LogLevel::completeInformation,"Residual needs revaluation.\n");

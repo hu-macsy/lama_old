@@ -48,8 +48,6 @@
 #include <lama/matrix/DenseMatrix.hpp>
 
 #include <lama/distribution/BlockDistribution.hpp>
-#include <lama/CommunicatorFactory.hpp>
-
 #include <lama/norm/MaxNorm.hpp>
 
 #include <lama/matutils/MatrixCreator.hpp>
@@ -72,7 +70,7 @@ struct P_JacobiTestConfig
 {
     P_JacobiTestConfig()
     {
-        mComm = CommunicatorFactory::get( "MPI" );
+        mComm = Communicator::get( "MPI" );
     }
 
     ~P_JacobiTestConfig()

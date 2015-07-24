@@ -88,7 +88,7 @@ public:
 
     /** Implementation of MatrixStorage::create for derived class. */
 
-    virtual DenseStorageView<ValueType>* create() const;
+    virtual DenseStorageView<ValueType>* clone() const;
 
     /** Test the storage data for inconsistencies.
      *

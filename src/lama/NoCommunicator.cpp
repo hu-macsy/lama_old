@@ -285,5 +285,40 @@ void NoCommunicator::writeAt( std::ostream& stream ) const
     stream << "NoComm";
 }
 
+/* --------------------------------------------------------------- */
+
+static boost::weak_ptr<class NoCommunicator> theNoCommunicatorInstance;
+
+CommunicatorPtr NoCommunicator::create()
+{
+    boost::shared_ptr<NoCommunicator> communicator;
+
+    // use the last communicatorInstance if it is still valid
+
+    if( theNoCommunicatorInstance.expired() )
+    {
+        // create a new instance of NoCommunicator and keep it for further uses
+
+        communicator = boost::shared_ptr<NoCommunicator>( new NoCommunicator() );
+
+        theNoCommunicatorInstance = communicator;
+    }
+    else
+    {
+        // the last communicator instance is still valid, so we return new shared pointer to it
+
+        communicator = theNoCommunicatorInstance.lock();
+    }
+
+    return communicator;
+}
+
+/* --------------------------------------------------------------- */
+
+std::string NoCommunicator::createValue()
+{
+    return "none";
+}
+
 }
 

@@ -1218,7 +1218,7 @@ void DIAStorage<ValueType>::jacobiIterate(
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-DIAStorage<ValueType>* DIAStorage<ValueType>::create() const
+DIAStorage<ValueType>* DIAStorage<ValueType>::clone() const
 {
     return new DIAStorage<ValueType>();
 }
