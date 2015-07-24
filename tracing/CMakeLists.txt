@@ -116,7 +116,12 @@ if ( FALSE )
 
 endif ()
 
-add_subdirectory( gui )
+if ( CMAKE_VERSION VERSION_GREATER 2.8.7 ) 
+	add_subdirectory( gui )
+else ()
+	message( STATUS "GUI will not be build" )
+endif( )
+
 add_subdirectory( examples )
 
 ### install ###
