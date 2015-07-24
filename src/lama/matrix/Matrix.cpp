@@ -182,11 +182,11 @@ void Matrix::setReplicatedMatrix( const IndexType numRows, const IndexType numCo
 
 /* ---------------------------------------------------------------------------------*/
 
-_LAMAArray* Matrix::createArray() const
+ContextArray* Matrix::createArray() const
 {
-    // Static method of _LAMAArray provides exactly the needed functionality.
+    // Static method of ContextArray provides exactly the needed functionality.
 
-    return _LAMAArray::create( getValueType() );
+    return ContextArray::create( getValueType() );
 }
 
 /* ---------------------------------------------------------------------------------*/

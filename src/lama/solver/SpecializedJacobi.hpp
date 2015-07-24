@@ -75,7 +75,7 @@ public:
         //TODO: LAMAArray?
         std::auto_ptr<Vector> mOldSolution;
         SolutionProxy mProxyOldSolution;
-        std::auto_ptr<_LAMAArray> mDiagonal;
+        std::auto_ptr<ContextArray> mDiagonal;
     };
 
     /**

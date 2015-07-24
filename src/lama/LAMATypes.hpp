@@ -28,10 +28,8 @@
  * @brief LAMATypes.hpp
  * @author Jiri Kraus
  * @date 23.02.2011
- * @since 1.0.0
  */
-#ifndef LAMA_LAMATYPES_HPP_
-#define LAMA_LAMATYPES_HPP_
+#pragma once
 
 // include LAMA
 #include <lama/Complex.hpp>
@@ -100,7 +98,7 @@ static const PartitionId nPartition = std::numeric_limits<PartitionId>::max();
 
 // Number of supported arithmetic types, maximal number is currently 4
 
-#define ARITHMETIC_TYPE_CNT 3
+#define ARITHMETIC_TYPE_CNT 2
 
 // List here all arithmetic types for which matrices, storages might be created
 
@@ -119,7 +117,7 @@ static const PartitionId nPartition = std::numeric_limits<PartitionId>::max();
 
 // For convenience we define ARRAY_TYPE
 
-#define ARRAY_TYPE_CNT 4
+#define ARRAY_TYPE_CNT 3
 
 #define ARRAY_TYPE0    int
 #define ARRAY_TYPE1    float
@@ -127,4 +125,3 @@ static const PartitionId nPartition = std::numeric_limits<PartitionId>::max();
 #define ARRAY_TYPE3    ComplexFloat
 #define ARRAY_TYPE4    LongDouble
 
-#endif // LAMA_LAMATYPES_HPP_

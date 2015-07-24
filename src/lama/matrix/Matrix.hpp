@@ -121,13 +121,13 @@ public:
      *
      *  @return an auto pointer to the LAMA array.
      *
-     *  Same as _LAMAArray::create( this.getValueType() )
+     *  Same as ContextArray::create( this.getValueType() )
      *
      *  Value type is known only at runtime, so pointer to the base class
      *  is returned. Auto pointer indicates that calling routine takes ownership of
      *  the allocated array.
      */
-    _LAMAArray* createArray() const;
+    ContextArray* createArray() const;
 
     /**
      * @brief Clears the full matrix, resets global and local sizes to 0.
@@ -200,7 +200,7 @@ public:
      *
      *  The following must be valid: values.size() == rowDist->getLocalSize() * colDist->getGlobalSize()
      */
-    virtual void setDenseData( DistributionPtr rowDist, DistributionPtr colDist, const _LAMAArray& values, Scalar eps =
+    virtual void setDenseData( DistributionPtr rowDist, DistributionPtr colDist, const ContextArray& values, Scalar eps =
                                    Scalar( 0 ) ) = 0;
 
     /** This method set a matrix with the values owned by this partition in CSR format
@@ -224,7 +224,7 @@ public:
         const IndexType numValues,
         const LAMAArray<IndexType>& ia,
         const LAMAArray<IndexType>& ja,
-        const _LAMAArray& values ) = 0;
+        const ContextArray& values ) = 0;
 
     /** This method sets raw dense data in the same way as setDenseData but with raw value array */
 

@@ -192,7 +192,7 @@ public:
     virtual void setDenseData(
         DistributionPtr rowDistribution,
         DistributionPtr colDistribution,
-        const _LAMAArray& values,
+        const ContextArray& values,
         Scalar eps = Scalar( 0 ) );
 
     /** Implementation for pure method Matrix::setCSRData. */
@@ -203,7 +203,7 @@ public:
         const IndexType numValues,
         const LAMAArray<IndexType>& ia,
         const LAMAArray<IndexType>& ja,
-        const _LAMAArray& values );
+        const ContextArray& values );
 
     /* Implementation of pure method of class Matrix. */
 

@@ -98,7 +98,7 @@ public:
         const IndexType numValues,
         const LAMAArray<IndexType>& ia,
         const LAMAArray<IndexType>& ja,
-        const _LAMAArray& values );
+        const ContextArray& values );
 
     /** Copy constructor can take any matrix storage. */
 

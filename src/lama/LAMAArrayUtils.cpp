@@ -41,6 +41,10 @@
 // tracing
 #include <tracing/tracing.hpp>
 
+// boost
+#include <boost/preprocessor.hpp>
+#include <lama/LAMATypes.hpp>
+
 #include <iostream>
 
 namespace lama
@@ -74,7 +78,7 @@ void LAMAArrayUtils::assignImpl(
 }
 
 template<typename ValueType>
-void LAMAArrayUtils::assignImpl1( LAMAArray<ValueType>& target, const _LAMAArray& source, const ContextPtr loc )
+void LAMAArrayUtils::assignImpl1( LAMAArray<ValueType>& target, const ContextArray& source, const ContextPtr loc )
 {
     memory::ScalarType sourceType = source.getValueType();
 
@@ -114,7 +118,7 @@ default        :
     }
 }
 
-void LAMAArrayUtils::assign( _LAMAArray& target, const _LAMAArray& source, const ContextPtr loc /* = ContextPtr() */)
+void LAMAArrayUtils::assign( ContextArray& target, const ContextArray& source, const ContextPtr loc /* = ContextPtr() */)
 {
     ContextPtr validLoc = loc;
 
@@ -125,7 +129,7 @@ void LAMAArrayUtils::assign( _LAMAArray& target, const _LAMAArray& source, const
         validLoc = source.getValidContext();
     }
 
-    switch( target.getValueType() )
+    switch ( target.getValueType() )
     {
         case common::scalar::INDEX_TYPE:
             assignImpl1( dynamic_cast<LAMAArray<IndexType>&>( target ), source, validLoc );
@@ -141,7 +145,7 @@ case common::scalar::SCALAR_ARITHMETIC_TYPE##I:                                 
 #undef LAMA_ARRAY_ASSIGN1
 
 default        :
-        COMMON_THROWEXCEPTION( "unsupported target type : " )
+        COMMON_THROWEXCEPTION( "unsupported target type : " << target.getValueType() )
     }
 }
 
@@ -194,7 +198,7 @@ void LAMAArrayUtils::assignScalar( LAMAArray<ValueType>& target, const Scalar& v
     setVal( values.get(), n, val );
 }
 
-void LAMAArrayUtils::assignScalar( _LAMAArray& target, const Scalar& value, ContextPtr context )
+void LAMAArrayUtils::assignScalar( ContextArray& target, const Scalar& value, ContextPtr context )
 {
     memory::ScalarType arrayType = target.getValueType();
 

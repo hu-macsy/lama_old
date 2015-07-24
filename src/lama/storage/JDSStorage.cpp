@@ -120,7 +120,7 @@ void JDSStorage<ValueType>::setJDSData(
     const LAMAArray<IndexType>& ilg,
     const LAMAArray<IndexType>& perm,
     const LAMAArray<IndexType>& ja,
-    const _LAMAArray& values )
+    const ContextArray& values )
 {
     LAMA_ASSERT_EQUAL_ERROR( numRows, ilg.size() )
     LAMA_ASSERT_EQUAL_ERROR( numRows, perm.size() )

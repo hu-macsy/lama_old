@@ -135,7 +135,7 @@ void SpecializedJacobi::initialize( const Matrix& coefficients )
             LAMA_LOG_DEBUG( logger, "Creating " << Scalar::getType<ARITHMETIC_TYPE##I>() << " diagonal. " )   \
             if ( !runtime.mDiagonal.get() )                                                                   \
             {                                                                                                 \
-                runtime.mDiagonal.reset( _LAMAArray::create( Scalar::getType<ARITHMETIC_TYPE##I>() ) );       \
+                runtime.mDiagonal.reset( ContextArray::create( Scalar::getType<ARITHMETIC_TYPE##I>() ) );     \
             }                                                                                                 \
             sparseTypeCoefficients->getLocalStorage().getDiagonal( *runtime.mDiagonal );                      \
             return;                                                                                           \

@@ -258,7 +258,7 @@ public:
     /**
      * Implementation of pure method.
      */
-    virtual void setValues( const _LAMAArray& values );
+    virtual void setValues( const ContextArray& values );
 
     /**
      * Implementation of Vector::create with covariant return type.
@@ -377,9 +377,9 @@ public:
 
     virtual void assign( const Vector& other );
 
-    virtual void assign( const _LAMAArray& localValues, DistributionPtr dist );
+    virtual void assign( const ContextArray& localValues, DistributionPtr dist );
 
-    virtual void buildLocalValues( _LAMAArray& localValues ) const;
+    virtual void buildLocalValues( ContextArray& localValues ) const;
 
     virtual Scalar dotProduct( const Vector& other ) const;
 

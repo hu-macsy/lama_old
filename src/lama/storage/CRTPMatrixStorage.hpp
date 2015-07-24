@@ -91,7 +91,7 @@ public:
         const IndexType numValues,
         const LAMAArray<IndexType>& ia,
         const LAMAArray<IndexType>& ja,
-        const _LAMAArray& values )
+        const ContextArray& values )
     {
         memory::ScalarType arrayType = values.getValueType();
 
@@ -131,7 +131,7 @@ LAMAArray<ValueType>* values = NULL;
 static_cast<const Derived*>( this )->buildCSR( ia, ja, values, this->getContextPtr() );
 }
 
-void buildCSRData( LAMAArray<IndexType>& csrIA, LAMAArray<IndexType>& csrJA, _LAMAArray& csrValues ) const
+void buildCSRData( LAMAArray<IndexType>& csrIA, LAMAArray<IndexType>& csrJA, ContextArray& csrValues ) const
 {
 memory::ScalarType arrayType = csrValues.getValueType();
 
@@ -162,7 +162,7 @@ default:
 
 /** Get the i-th row of a storage as LAMA array. */
 
-void getRow( _LAMAArray& row, const IndexType irow ) const
+void getRow( ContextArray& row, const IndexType irow ) const
 {
 common::scalar::ScalarType arrayType = row.getValueType();
 
@@ -189,7 +189,7 @@ default:
 }
 }
 
-void getDiagonal( _LAMAArray& diagonal ) const
+void getDiagonal( ContextArray& diagonal ) const
 {
 if ( !this->hasDiagonalProperty() )
 {
@@ -229,7 +229,7 @@ COMMON_THROWEXCEPTION( *this << ": has not diagonal property, cannot set diagona
 static_cast<Derived*>( this )->setDiagonalImpl( value );
 }
 
-void setDiagonal( const _LAMAArray& diagonal )
+void setDiagonal( const ContextArray& diagonal )
 {
 IndexType numDiagonalElements = diagonal.size();
 
@@ -272,7 +272,7 @@ static_cast<Derived*>( this )->scaleImpl( value );
 
 /** Polymorph implementation for MatrixStorage<ValueType>::scale */
 
-void scale( const _LAMAArray& diagonal )
+void scale( const ContextArray& diagonal )
 {
 LAMA_ASSERT_EQUAL_ERROR( this->getNumRows(), diagonal.size() )
 

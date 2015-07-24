@@ -195,7 +195,7 @@ public:
         const LAMAArray<IndexType>& ilg,
         const LAMAArray<IndexType>& perm,
         const LAMAArray<IndexType>& ja,
-        const _LAMAArray& values );
+        const ContextArray& values );
 
     /** Implementation of MatrixStorage::matrixTimesVector for JDS */
 

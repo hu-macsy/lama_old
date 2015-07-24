@@ -218,7 +218,7 @@ public:
         const IndexType numValuesPerRow,
         const LAMAArray<IndexType>& ia,
         const LAMAArray<IndexType>& ja,
-        const _LAMAArray& values );
+        const ContextArray& values );
 
     /* Print relevant information about matrix storage format. */
 

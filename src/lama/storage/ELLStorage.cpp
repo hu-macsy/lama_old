@@ -515,7 +515,7 @@ void ELLStorage<ValueType>::setELLData(
     const IndexType numValuesPerRow,
     const LAMAArray<IndexType>& ia,
     const LAMAArray<IndexType>& ja,
-    const _LAMAArray& values )
+    const ContextArray& values )
 {
     LAMA_ASSERT_EQUAL_ERROR( numRows, ia.size() )
     LAMA_ASSERT_EQUAL_ERROR( numRows * numValuesPerRow, ja.size() )
