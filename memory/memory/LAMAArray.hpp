@@ -142,10 +142,22 @@ public:
     virtual ~LAMAArray();
 
     /**
-     *  The method create is a function that returns a new LAMAArray as pointer.
+     *  The method clone is a function that returns a new object of the
+     *  same class as the object for which it is called. The default 
+     *  constructor is always called.
      */
 
     LAMAArray<ValueType>* clone();
+
+    /**
+     *  Similiar to clone but here the copy constructor is called.
+     */
+
+    LAMAArray<ValueType>* copy();
+
+    /** 
+     *  Static create routine that is used for the ContextArray factory.
+     */
 
     static ContextArray* create();
 
@@ -401,6 +413,14 @@ template<typename ValueType>
 LAMAArray<ValueType>* LAMAArray<ValueType>::clone()
 {
     return new LAMAArray<ValueType>();
+}
+
+/* ---------------------------------------------------------------------------------*/
+
+template<typename ValueType>
+LAMAArray<ValueType>* LAMAArray<ValueType>::copy()
+{
+    return new LAMAArray<ValueType>( *this );
 }
 
 /* ---------------------------------------------------------------------------------*/

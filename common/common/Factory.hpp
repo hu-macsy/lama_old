@@ -166,7 +166,9 @@ OutputType Factory<InputType, OutputType>::create( const InputType type )
     }
     else
     {
-        COMMON_THROWEXCEPTION( "Factory: no creator for " << type << " available" )
+        // COMMON_THROWEXCEPTION( "Factory: no creator for " << type << " available" )
+        // Be careful: operator<< for InputType might not exist
+        COMMON_THROWEXCEPTION( "Factory: no creator for available" )
     }
 
     return value;

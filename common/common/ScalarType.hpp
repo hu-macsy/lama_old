@@ -41,7 +41,7 @@
 // others
 #include <common/Exception.hpp>
 
-#include <cstdio>
+#include <iostream>
 
 namespace common
 {

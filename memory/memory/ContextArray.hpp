@@ -115,11 +115,16 @@ public:
     using common::Factory<ScalarType, ContextArray*>::create;
 
     /**
-     *  Each derived class must provide a create function. This will
+     *  Each derived class must provide a clone function. This will
      *  allow writing general routines that require temporary data.
+     *
+     *  Note: derived class might implement this routine by using covariant return types.
+     *  Note: usually same as ContextArray::create( this->getValueType() )
      */
 
     virtual ContextArray* clone() = 0;
+
+    virtual ContextArray* copy() = 0;
 
     /**
      * @brief Query the current size of the LAMA array, i.e. number of entries.
