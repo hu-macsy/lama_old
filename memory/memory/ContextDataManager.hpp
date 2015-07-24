@@ -175,8 +175,6 @@ protected:
 
     ContextDataIndex findValidData() const;
 
-    const ContextData& getValidData() const;
-
 private:
 
     std::vector<ContextData> mContextData; // Incarnations of the array at different contexts

@@ -458,22 +458,6 @@ ContextDataIndex ContextDataManager::findValidData() const
 
 /* ---------------------------------------------------------------------------------*/
 
-const ContextData& ContextDataManager::getValidData() const
-{
-    ContextDataIndex index = findValidData();
-
-    if ( index < mContextData.size() )
-    {
-        return mContextData[index];
-    }
-    else
-    {
-        COMMON_THROWEXCEPTION( "no valid data found (zero size, uninitialized array)" )
-    }
-}
-
-/* ---------------------------------------------------------------------------------*/
-
 ContextPtr ContextDataManager::getValidContext( const ContextType preferredType )
 {
     ContextPtr result;
@@ -542,9 +526,18 @@ ContextDataIndex ContextDataManager::acquireAccess( ContextPtr context, AccessKi
 
         if ( validSize )
         {
-            const ContextData& validEntry = getValidData();
-            LAMA_LOG_INFO( logger, "valid data here: " << validEntry )
-            fetch( data, validEntry, validSize );
+            ContextDataIndex validIndex = findValidData();
+ 
+            if ( validIndex < mContextData.size() )
+            {
+                const ContextData& validEntry = mContextData[ validIndex ];
+                LAMA_LOG_INFO( logger, "valid data here: " << validEntry )
+                fetch( data, validEntry, validSize );
+            }
+            else if ( kind == context::Read )
+            {
+                LAMA_LOG_WARN( logger, "acquired read access for uninitialized array" )
+            }
         }
     }
 
@@ -675,11 +668,22 @@ void ContextDataManager::setValidData( ContextPtr context, const ContextDataMana
         return;
     }
 
-    // there must be at least one valid entry
-    const ContextData& validData = other.getValidData();
-    data.reserve( size, 0 );
-    fetch( data, validData, size );
-    data.setValid( true );
+    data.reserve( size, 0 );   // reserve even if no valid data is available
+
+    ContextDataIndex validIndex = other.findValidData();
+
+    if ( validIndex < other.mContextData.size() )
+    {
+        // there must be at least one valid entry
+
+        const ContextData& validData = other.mContextData[ validIndex ];
+        fetch( data, validData, size );
+        data.setValid( true );
+    }
+    else
+    {
+        LAMA_LOG_WARN( logger, "cannot set valid data as no valid data is available (uninitialized)" )
+    }
 }
 
 /* ---------------------------------------------------------------------------------*/
@@ -718,19 +722,32 @@ void ContextDataManager::prefetch( ContextPtr context, size_t size )
     }
 
     wait();
-    data.reserve( size, 0 );
-    const ContextData& validEntry = getValidData();
-    SyncToken* token = fetchAsync( data, validEntry, size );
 
-    if ( token != NULL )
+    data.reserve( size, 0 ); 
+
+    ContextDataIndex validIndex = findValidData();
+
+    if ( validIndex < mContextData.size() )
     {
-        // save it, so we can wait for it
-        mSyncToken.reset( token );
-    }
+        const ContextData& validEntry = mContextData[ validIndex ];
 
-    // we set data already as valid even if transfer is not finished yet.
-    // so any query for valid data must wait for token.
-    data.setValid( true );
+        SyncToken* token = fetchAsync( data, validEntry, size );
+
+        if ( token != NULL )
+        {
+            // save it, so we can wait for it
+            mSyncToken.reset( token );
+        }
+
+        // we set data already as valid even if transfer is not finished yet.
+        // so any query for valid data must wait for token.
+        data.setValid( true );
+    }
+    else
+    {
+        // no valid data is not serious, but might be worth a warning 
+        LAMA_LOG_WARN( logger, "prefetch on array with no valid data" )
+    }
 }
 
 /* ---------------------------------------------------------------------------------*/

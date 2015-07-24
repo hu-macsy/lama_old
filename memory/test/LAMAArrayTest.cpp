@@ -84,13 +84,11 @@ BOOST_AUTO_TEST_CASE( ConstructorTest )
     BOOST_CHECK_EQUAL( array2.isValid( host ), true );
 
     // read access on uninitialized non-empty array
-    // should throw exception as there is no valid data
+    // gives a warning as there is no valid data
 
-    BOOST_CHECK_THROW(
     {
         ReadAccess<float>read( array1 );
-
-    }, Exception )
+    }
 
     {
         ReadAccess<float> read( array2 );
@@ -328,6 +326,17 @@ BOOST_AUTO_TEST_CASE( validTest )
     ContextPtr validContext = A.getValidContext();
 
     BOOST_CHECK( validContext.get() );
+
+    LAMAArray<float> B;
+    {
+        // read access on zero sized array, should be okay
+        ReadAccess<float> read( B );
+    }
+    LAMAArray<float> C( 10 );
+    {
+        // read access on undefined array, might give warning
+        ReadAccess<float> read( C );
+    }
 }
 
 /* --------------------------------------------------------------------- */
